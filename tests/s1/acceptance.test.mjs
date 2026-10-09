@@ -244,7 +244,45 @@ test('AT04/AT02: later retains feedback/version/material and import receipt acro
 });
 
 // Published 6e34233 human classification/@ contract; run only on its complete runtime integration.
-test('human domains and @ references pin the original revision without copying, heating, or granting Agent access', async () => {
+test('unconfigured automatic processing reports unsupported without creating a fake generated record', async () => {
+  const imported = await importMaterial(api, paperImport('https://example.invalid/contract-local/no-processor'));
+  const jobsBefore = (await api.get('/jobs')).items;
+  const recordsBefore = (await api.get('/distillations')).items;
+  const body = command({ input_refs: [sourceRef(imported.detail.material)], stage: 'content', processing_config: 'unconfigured:contract_local', question: 'contract_local: no external processor is enabled' });
+  const result = await api.request('/distillations/jobs', { method: 'POST', body });
+  assert.equal(result.status, 501, JSON.stringify(result.data));
+  assert.equal(result.data.error.code, 'unsupported_capability');
+  assert.ok(result.data.error.required_action);
+  assert.deepEqual((await api.get('/jobs')).items, jobsBefore);
+  assert.deepEqual((await api.get('/distillations')).items, recordsBefore);
+  const denied = await api.request('/distillations/jobs', { method: 'POST', body, headers: { Authorization: `Bearer ${agentToken}` } });
+  assert.equal(denied.status, 403);
+});
+
+test('actual ranking orders human attention and pinning; list refresh is neutral and explains configured strategy', async () => {
+  const first = await importMaterial(api, paperImport('https://example.invalid/contract-local/rank-a'));
+  const second = await importMaterial(api, paperImport('https://example.invalid/contract-local/rank-b'));
+  await api.write(`/materials/${first.detail.material.id}/uses`, { expected_version: first.detail.material.version, action: 'reread' });
+  const ordered = (await api.get('/materials')).items.filter(item => [first.detail.material.id, second.detail.material.id].includes(item.id));
+  assert.equal(ordered[0].id, first.detail.material.id);
+  assert.ok(ordered[0].attention_score > ordered[1].attention_score);
+  for (const item of ordered) {
+    assert.ok(item.ranking_strategy);
+    assert.ok(item.ranking_reason);
+    assert.ok(item.attention_half_life_seconds > 0);
+    assert.ok(item.attention_weights.reread > 0);
+  }
+  const beforePin = await api.get(`/materials/${second.detail.material.id}`);
+  await api.write(`/materials/${second.detail.material.id}`, { expected_version: beforePin.material.version, lifecycle: 'active', pinned: true, collection_reason: null }, { method: 'PATCH' });
+  for (let index = 0; index < 3; index++) await api.get('/materials');
+  const pinnedFirst = (await api.get('/materials')).items.filter(item => [first.detail.material.id, second.detail.material.id].includes(item.id));
+  assert.equal(pinnedFirst[0].id, second.detail.material.id, 'Manual pin must be retained ahead of decaying activity');
+  assert.equal(pinnedFirst[0].human_usage_count, beforePin.material.human_usage_count);
+  assert.equal(pinnedFirst[1].human_usage_count, ordered[0].human_usage_count);
+  assert.equal((await api.request('/materials', { headers: { Authorization: `Bearer ${agentToken}` } })).status, 403);
+});
+
+test('human domains and @ references pin the original revision without copying or granting Agent access', async () => {
   const domain = (await api.write('/material-domains', { title: 'contract_local 输入版本域', description: '人工分类；不授予读取范围' }, { status: 201 })).domain;
   const imported = await importMaterial(api, paperImport('https://example.invalid/contract-local/space-original'));
   const material = imported.detail.material;
@@ -252,7 +290,7 @@ test('human domains and @ references pin the original revision without copying, 
   const classified = await api.write(`/materials/${material.id}/domains`, { expected_version: material.version, domain_ids: [domain.id] }, { method: 'PUT' });
   assert.deepEqual(classified.material.domain_ids, [domain.id]);
   assert.equal(classified.material.current_revision, 1);
-  assert.equal(classified.material.human_usage_count, material.human_usage_count);
+  assert.equal(classified.material.agent_usage_count, material.agent_usage_count);
   const staleClassification = await api.request(`/materials/${material.id}/domains`, { method: 'PUT', body: command({ expected_version: material.version, domain_ids: [] }) });
   assert.equal(staleClassification.status, 409, JSON.stringify(staleClassification.data));
   const space = (await api.write('/project-spaces', { title: 'contract_local 人工空间' }, { status: 201 })).space;
@@ -265,16 +303,17 @@ test('human domains and @ references pin the original revision without copying, 
   assert.equal(referenced.data.space.material_refs.length, 1);
   assert.equal(referenced.data.space.material_refs[0].material_id, material.id);
   assert.equal(referenced.data.space.material_refs[0].revision, 1);
+  const afterHumanActions = await api.get(`/materials/${material.id}`);
   await importMaterial(api, paperImport(material.source_locator, changedPaperText));
   const updated = await api.get(`/materials/${material.id}`);
   assert.deepEqual(updated.material.domain_ids, [domain.id], '@ must retain the original classification');
   assert.deepEqual(updated.revisions[0], originalRevision);
   assert.equal(updated.material.current_revision, 2);
-  assert.equal(updated.material.human_usage_count, material.human_usage_count);
+  assert.equal(updated.material.human_usage_count, afterHumanActions.material.human_usage_count, 'Imports and read-only inspection must not add human signals');
   const savedSpace = (await api.get(`/project-spaces/${space.id}`)).space;
   assert.equal(savedSpace.material_refs[0].revision, 1, 'An @ reference must not silently track new source content');
   assert.equal((await api.get(`/materials/${savedSpace.material_refs[0].material_id}/revisions/1/content`)).text, paperText);
-  assert.equal(server.query('SELECT COUNT(*) AS n FROM attention_materials WHERE source_key=?', updated.material.source_key)[0].n, 1);
+  assert.equal(server.query('SELECT COUNT(*) AS n FROM attention_materials WHERE source_key=?', originalRevision.source_key)[0].n, 1);
   assert.equal(server.query('SELECT COUNT(*) AS n FROM attention_material_revisions WHERE material_id=?', material.id)[0].n, 2);
   assert.deepEqual(JSON.parse(server.query('SELECT data FROM attention_project_spaces WHERE id=?', space.id)[0].data), savedSpace);
   for (const path of ['/material-domains', '/project-spaces', `/project-spaces/${space.id}`, `/materials/${material.id}/revisions/1/content`]) {
