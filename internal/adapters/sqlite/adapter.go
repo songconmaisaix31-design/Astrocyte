@@ -10,8 +10,11 @@ import (
 	"database/sql"
 	"fmt"
 	"io/fs"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	_ "modernc.org/sqlite" // Pure-Go SQLite driver.
 )
@@ -53,6 +56,71 @@ func (db *DB) Conn() *sql.DB {
 	return db.conn
 }
 
+// backupPath returns the path to the backups directory (sibling to the DB file).
+func (db *DB) backupPath() string {
+	return filepath.Join(filepath.Dir(db.dbPath), "backups")
+}
+
+// hasExistingData checks if the database has any existing data (not a fresh creation).
+func (db *DB) hasExistingData(ctx context.Context) (bool, error) {
+	// Check if _migrations table has any records (not just exists).
+	// A fresh DB will have the table created by ensureMigrationsTable but no rows.
+	var count int
+	err := db.conn.QueryRowContext(ctx,
+		"SELECT COUNT(*) FROM _migrations",
+	).Scan(&count)
+	if err != nil {
+		// Table might not exist yet (before ensureMigrationsTable), treat as fresh.
+		if strings.Contains(err.Error(), "no such table") {
+			return false, nil
+		}
+		return false, fmt.Errorf("check migrations count: %w", err)
+	}
+	// If _migrations has records, DB is not fresh.
+	return count > 0, nil
+}
+
+// CreateBackup creates a consistent snapshot of the database before migration.
+// Uses SQLite's VACUUM INTO for a transactionally consistent copy.
+// The backup is stored in the sibling backups directory with timestamp and schema version.
+func (db *DB) CreateBackup(ctx context.Context) error {
+	hasData, err := db.hasExistingData(ctx)
+	if err != nil {
+		return fmt.Errorf("check existing data: %w", err)
+	}
+	if !hasData {
+		// Fresh database, no backup needed.
+		return nil
+	}
+
+	// Get current schema version for metadata.
+	schemaVersion, err := db.SchemaVersion(ctx)
+	if err != nil {
+		return fmt.Errorf("read schema version for backup: %w", err)
+	}
+
+	// Ensure backups directory exists.
+	backupDir := db.backupPath()
+	if err := os.MkdirAll(backupDir, 0o755); err != nil {
+		return fmt.Errorf("create backups dir: %w", err)
+	}
+
+	// Generate backup filename with timestamp (including microseconds) and schema version.
+	now := time.Now().UTC()
+	timestamp := now.Format("20060102_150405") + fmt.Sprintf("_%06d", now.Nanosecond()/1000)
+	backupFile := fmt.Sprintf("backup_%s_v%d.sqlite", timestamp, schemaVersion)
+	backupPath := filepath.Join(backupDir, backupFile)
+
+	// Use VACUUM INTO for a consistent snapshot.
+	// This creates a transactionally consistent copy of the database.
+	_, err = db.conn.ExecContext(ctx, "VACUUM INTO ?", backupPath)
+	if err != nil {
+		return fmt.Errorf("create backup snapshot: %w", err)
+	}
+
+	return nil
+}
+
 // SchemaVersion returns the current foundation schema version.
 func (db *DB) SchemaVersion(ctx context.Context) (int, error) {
 	var version int
@@ -79,6 +147,8 @@ type migrationFile struct {
 }
 
 // RunMigrations applies all pending migrations from the given filesystem.
+// Before applying any pending migrations, creates a consistent backup of
+// the existing database (per SPEC 14.3). Fresh databases skip backup.
 // Migrations are applied atomically within transactions; if any
 // migration fails, the startup must be aborted (the caller should
 // treat the returned error as fatal).
@@ -114,6 +184,23 @@ func (db *DB) RunMigrations(ctx context.Context, migrationsFS fs.FS) error {
 	applied, err := db.appliedMigrations(ctx)
 	if err != nil {
 		return fmt.Errorf("list applied migrations: %w", err)
+	}
+
+	// Check if there are pending migrations.
+	hasPending := false
+	for _, f := range files {
+		if !applied[f.id] {
+			hasPending = true
+			break
+		}
+	}
+
+	// Create backup before applying migrations (per SPEC 14.3).
+	// Backup fails → startup aborts (no migrations applied).
+	if hasPending {
+		if err := db.CreateBackup(ctx); err != nil {
+			return fmt.Errorf("pre-upgrade backup failed (startup aborted): %w", err)
+		}
 	}
 
 	for _, f := range files {

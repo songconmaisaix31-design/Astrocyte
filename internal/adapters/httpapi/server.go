@@ -96,6 +96,9 @@ func NewServer(cfg Config) *Server {
 
 	// Catch-all for unknown /api/v1/* routes — always JSON 404
 	mux.HandleFunc("/api/v1/", h.handleAPINotFound)
+	// Bare /api and /api/v1 (no trailing slash) → JSON 404
+	mux.HandleFunc("/api/v1", h.handleAPINotFound)
+	mux.HandleFunc("/api", h.handleAPINotFound)
 
 	// Build handler stack with optional static file serving
 	var innerHandler http.Handler = mux
@@ -155,8 +158,8 @@ func spaHandler(webDir string, apiHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 
-		// API routes always go to API handler
-		if strings.HasPrefix(path, "/api/") {
+		// API routes always go to API handler (including bare /api)
+		if path == "/api" || strings.HasPrefix(path, "/api/") {
 			apiHandler.ServeHTTP(w, r)
 			return
 		}
