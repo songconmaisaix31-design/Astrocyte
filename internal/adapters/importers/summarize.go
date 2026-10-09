@@ -3,6 +3,7 @@
 package importers
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,10 +14,10 @@ import (
 
 // Export is local adapter data, mapped to application ports after parsing.
 type Export struct {
-	URL, Title, Text, Summary, SourceRevision string
-	Segments                                  []Segment
-	Original                                  []byte
-	HasOriginal                               bool
+	URL, Title, Text, Summary string
+	Segments                  []Segment
+	Original                  []byte
+	HasOriginal               bool
 }
 
 type Segment struct {
@@ -44,7 +45,7 @@ func ParseSummarizeJSON(raw []byte) (Export, error) {
 		} `json:"extracted"`
 		Summary string `json:"summary"`
 	}
-	if err := json.Unmarshal(raw, &v); err != nil {
+	if err := json.Unmarshal(bytes.TrimPrefix(raw, []byte{0xef, 0xbb, 0xbf}), &v); err != nil {
 		return Export{}, fmt.Errorf("summarize export JSON: %w", err)
 	}
 	locator := v.Input.URL

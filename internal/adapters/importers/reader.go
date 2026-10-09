@@ -1,6 +1,7 @@
 package importers
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -56,9 +57,14 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		}
 		var e Export
 		mediaType, name := "text/markdown", "summarize.md"
-		if adapter == "summarize_json" || (adapter == "summarize" && strings.HasPrefix(strings.TrimSpace(string(raw)), "{")) {
+		mode := "existing_markdown_export"
+		if adapter == "summarize_json" || (adapter == "summarize" && strings.HasPrefix(strings.TrimSpace(string(bytes.TrimPrefix(raw, []byte{0xef, 0xbb, 0xbf}))), "{")) {
 			e, err = ParseSummarizeJSON(raw)
 			mediaType, name = "application/json", "summarize.json"
+			mode = "existing_json_export"
+			if !e.HasOriginal {
+				mode = "existing_summary_only_export"
+			}
 		} else {
 			e, err = ParseSummarizeMarkdown(cmd.SourceLocator, cmd.Title, raw)
 		}
@@ -80,7 +86,7 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 			}
 			spans = append(spans, span+"]: "+seg.Text)
 		}
-		source = app.ImportedSource{SourceKey: canonicalWebKey(e.URL), SourceLocator: e.URL, Kind: kind, Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: spans, Provenance: app.Provenance{Processor: "summarize", Version: "0.21.8", Mode: "existing_export", Source: e.URL}, Attachments: []app.SourceAttachment{{Name: name, MediaType: mediaType, Data: raw, SourceLocator: e.URL}}}
+		source = app.ImportedSource{SourceKey: canonicalWebKey(e.URL), SourceLocator: e.URL, Kind: kind, Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: spans, Provenance: app.Provenance{Processor: "summarize", Version: "0.21.8-format", Mode: mode, Source: e.URL}, Attachments: []app.SourceAttachment{{Name: name, MediaType: mediaType, Data: raw, SourceLocator: e.URL}}}
 	case "manual":
 		raw, err := r.exportBytes(cmd)
 		if err != nil {
