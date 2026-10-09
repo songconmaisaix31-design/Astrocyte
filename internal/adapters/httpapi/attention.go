@@ -149,7 +149,7 @@ func (h *handler) registerAttention(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/opportunities/{id}/revisions", commandHandler(h, func(c *attentionapp.OpportunityCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c attentionapp.OpportunityCommand) (any, error) {
 		return s.ReviseOpportunity(r.Context(), principal(r), r.PathValue("id"), c)
 	}))
-	mux.HandleFunc("POST /api/v1/opportunities/{id}/reviews", commandHandler(h, func(c *attentionapp.ReviewOpportunityCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c attentionapp.ReviewOpportunityCommand) (any, error) {
+	mux.HandleFunc("POST /api/v1/opportunities/{id}/reviews", commandHandler(h, func(c *attentionapp.ReviewOpportunityCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusCreated, func(r *http.Request, c attentionapp.ReviewOpportunityCommand) (any, error) {
 		return s.ReviewOpportunity(r.Context(), principal(r), r.PathValue("id"), c)
 	}))
 	mux.HandleFunc("GET /api/v1/jobs", func(w http.ResponseWriter, r *http.Request) {
