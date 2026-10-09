@@ -2,6 +2,8 @@
 
 2026-10-09。基线 `d6c1bf2`（S0 + 已交付新布局），主控分支 `s1/attention-materials-20261009`。本轮用户明确授权 S1 完整功能、多 Agent 并行开发、主控验收和最终 push。
 
+2026-10-10 更新：用户已允许 Python，下面旧阶段的无 Python 限制已撤销；当前 summarize 0.25.1 公开链接与媒体依赖接入见 [接入计划](S1-summarize-plan.md)。Go/TS/SQLite、原写域与权限边界继续沿用。完整 S1 真实验收尚未通过，最新源与主控结果见 STATUS 顶部。
+
 目标：真实 arXiv / summarize 结果导入、来源与内容版本、内容/主题/项目沉淀记录、关联与待查问题、依据和下一步齐备的候选、人工反馈、区分人类关注和机器使用、持久化作业及失败恢复。保留 Go/TS/SQLite 与新布局；只做 Attention，不扩展 Workspace/Swarm 执行。无 Python 默认链路；不新增调度框架或完成证明系统。
 
 | 轨道 | 独占 write_paths | 依赖与验收 | 停止点 |
