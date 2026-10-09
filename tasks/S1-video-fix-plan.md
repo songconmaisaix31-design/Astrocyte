@@ -17,3 +17,5 @@
 实际启动：Run run_75f5663450b7；W2 task_fbf46b3309c2 / ctx_55b0e7395a05 / term_f23619a6-1520-4c43-99b4-ac75ce926099，W0 task_6c5e48d158b5 / ctx_93524ed1e8dd / term_9969bda4-0a33-4bb5-ba7b-65ce9164849f；均本机Codex，实际模型gpt-6.1-sol。W0首启动turn未观测，读屏明确原prompt仍在composer，主控仅补Enter，随后原dispatch有真实执行/心跳；未重复派发。W0已复现Go直接启动pnpm逻辑CLI路径不能解析core，入口owner作最小realpath修复。
 
 DNS实际操作01:07：备份并修改 `%APPDATA%/mihomo-party/mihomo.yaml` 与 `work/config.yaml`，仅blacklist追加 `+.bilibili.com`，原其余解析/路由保留；控制接口热加载204，所选B站公网解析与锁定上游检查PASS，arxiv.org未调整。备份后缀 `.astrocyte-before-video-2026-10-09T17-07-13-140Z.bak`。Clash Party图形窗口恢复未成功，client缓存未通过设置UI刷新；后续设置操作可能覆盖，应核验该限制，不伪称GUI保存通过。W2于network ready后开始唯一实际媒体验收。
+
+01:19 主控决定：真实媒体桥01:08:37开始，音轨下载已结束，01:08:52启动的同一whisper进程持续CPU工作，实际转写已超过原300秒。W0仅将已有Reader与Service共享作业默认期限调整为1800秒，保留显式环境配置与86400秒上限；Codex执行上限仍为独立180秒，旧UNKNOWN不重放。不新增按业务域分派期限的契约或调度层。W3 task_82c3c3a4b5a7 / ctx_ea2d95222765 / term_82cfbb11-2a26-4a15-bc5b-ab35567dfdf3 已实际执行，先修正向验收服务与静态检查，W2结束前不启动第二媒体任务。
