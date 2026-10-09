@@ -35,6 +35,7 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
   const [creating, setCreating] = useState(false);
   const [suggestion, setSuggestion] = useState<Distillation | null>(null);
   const source = detail.revisions.find(entry => entry.revision === revision);
+  const modelContentRecords = detail.distillations.filter(record => record.stage === 'content' && record.status === 'succeeded' && record.provenance.processor === 'codex-cli' && record.input_refs.some(ref => ref.material_id === item.id && ref.revision === revision));
   const content = useMaterialContent(item.id, revision, item.lifecycle !== 'withdrawn');
   const command = useCommand(disabled || !item.version);
   const unavailable = disabled || !item.version || item.lifecycle === 'withdrawn';
@@ -59,13 +60,14 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
         <Field label="真实原文位置">{source.source_spans.length ? source.source_spans.join('；') : <MutedValue>未提供真实位置</MutedValue>}</Field>
         <ProvenanceFields value={source.provenance} />
         {source.summary && <Field label="导入摘要（独立于原文）">{source.summary}</Field>}
+        <Field label="本版本模型内容整理">{modelContentRecords.length ? `已保存 ${modelContentRecords.length} 轮 Codex 整理结果，见各轮沉淀的固定输入与实际输出。` : '尚无此版本的 Codex 内容整理结果。导入正文或既有摘要不会自动完成模型整理。'}</Field>
         <Field label="原始附件">{source.attachments?.length ? source.attachments.map(attachment => <p key={attachment.name}><a href={`/api/v1/materials/${encodeURIComponent(item.id)}/revisions/${revision}/attachments/${encodeURIComponent(attachment.name)}`} target="_blank" rel="noreferrer">{attachment.name} · {attachment.media_type}</a><br />{attachment.source_locator}</p>) : <MutedValue>未提供附件</MutedValue>}</Field>
       </> : <p role="alert">此版本的来源记录缺失，请刷新资料。</p>}
-      {item.lifecycle === 'withdrawn' ? <p>资料已撤回，原文分发与新沉淀已停止。</p> : <QueryState state={content}>{data => <><ProvenanceFields value={data.provenance} /><Field label="保存的原文 / 提取文本"><pre>{data.text || '此版本未提供可读原文；请检查原始附件。'}</pre></Field></>}</QueryState>}
+      {item.lifecycle === 'withdrawn' ? <p>资料已撤回，原文分发与新沉淀已停止。</p> : <QueryState state={content}>{data => <><Field label="导入正文状态">{data.text ? '已保存可读文本；内容获取与模型整理分别记录。' : '未提供可读正文，请检查原始附件与导入队列。'}</Field><ProvenanceFields value={data.provenance} /><Field label="保存的原文 / 提取文本"><pre>{data.text || '此版本未提供可读原文；请检查原始附件。'}</pre></Field></>}</QueryState>}
     </section>
     <section aria-label="各轮沉淀">
       <h4>各轮沉淀</h4>
-      {!detail.distillations.length && <EmptyState title="暂无沉淀记录" description="展开继续沉淀，可分别保存人工记录或检查实际自动处理服务" />}
+      {!detail.distillations.length && <EmptyState title="暂无沉淀记录" description="展开继续沉淀，选择内容整理与本轮问题，再按实际处理器能力明确提交；也可保存人工记录。" />}
       {detail.distillations.map(record => <article key={record.id} className={styles.record}>
         <h4>{stages.find(stage => stage.value === record.stage)?.label ?? record.stage} · {formatDateTime(record.created_at)}</h4>
         <ProvenanceFields value={record.provenance} />

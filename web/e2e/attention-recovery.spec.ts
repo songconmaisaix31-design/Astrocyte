@@ -28,6 +28,12 @@ test('import failure preserves input and retries the exact command identity', as
   await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
   await expect(dialog.getByRole('alert')).toContainText('恢复服务后重试');
   await expect(dialog.getByLabel('arXiv 来源')).toHaveValue('https://arxiv.org/abs/2504.16054');
+  await page.keyboard.press('Escape');
+  const add = page.locator('main').getByRole('button', { name: '添加资料', exact: true });
+  await expect(add).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog.getByLabel('arXiv 来源')).toHaveValue('https://arxiv.org/abs/2504.16054');
+  await expect(dialog.getByLabel('收藏理由（可选）')).toHaveValue('失败仍保留的长中文收藏理由'.repeat(8));
   await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
   await expect.poll(() => writes.length).toBe(2);
   expect(writes[1]).toEqual(writes[0]);
