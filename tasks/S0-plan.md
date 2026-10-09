@@ -13,6 +13,10 @@
 
 顺序：W0 先发布公共契约；W3 可同时清点。随后 W1/W2 并行。集成由 W0 接回少量胶水，领域缺陷退回对应 Worker。主 Agent 在合并结果上运行最终检查并 push。
 
+本轮客户端与实际模型：W0 使用 Codex / gpt-6.1-sol（high）；W1 使用 Claude Code / qwen3.7-max；W2 使用 Pi / qwen3.7-max；W3 使用 OpenCode / DeepSeek V4 Pro。每轨保持原负责人处理返修。
+
+已发布并合入的轨道源码：W0 集成 `856698000fba3271d25ff68434ef4ced08e2d9fc`、W1 `72409eb259dc5c4d231c9cb56be658aae6f5faf7`、W2 `96cb7f513e9358c90e83e1cc47027d8f37a3ad1d`、W3 `59fd965ba95ba998ee957418e4981e7a010dac3a`。最终验证结果见 [STATUS.md](../STATUS.md)。
+
 S0 验收入口：`go mod download`、`pnpm install --frozen-lockfile`、`pnpm check`、`pnpm test:e2e`、`pnpm build`、`pnpm dev`。
 
 此次不选择真实案例，也不降低 S3 原生接续验收。Laya/Jev/索引后端的实际选型和执行控制模式留在相关适配任务；S0 不实现任务执行账本。移除重复证明检查，保留能发现实际错误的检查。
