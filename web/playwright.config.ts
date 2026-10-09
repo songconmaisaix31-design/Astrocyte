@@ -17,6 +17,9 @@ export default defineConfig({
     url: `http://127.0.0.1:${port}`,
     timeout: 120_000,
     reuseExistingServer: false,
+    // POSIX must let dev.mjs stop its detached API/Vite process groups before
+    // their inherited stdout/stderr pipes can close. Windows uses tree kill.
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 15_000 },
     env: { ASTROCYTE_WEB_PORT: port, ASTROCYTE_PORT: process.env.ASTROCYTE_E2E_API_PORT ?? '18787' },
   },
 });
