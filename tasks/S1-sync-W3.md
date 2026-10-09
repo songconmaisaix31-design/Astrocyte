@@ -22,4 +22,10 @@ SOURCE `04a67c54a6ccdbba55dc08e5ec44c07a739d79e7` 已 push。总控单槽安排 
 
 首轮 artifacts：`web/test-results/s1-sync-local-overview-kee-02fb9-acts-explicit-at-both-sizes-chromium-{1920,1280}/` 的 error-context、test-failed-1.png、trace.zip。两尺寸 `web/test-results/workspace-{1920x1080,1280x720}.png` 与卡片截图已目视检查：保留 shell，宽屏三列/1280两列、筛选可换行、目录可读、无横溢。示例图是布局证据，不是本地项目接入证据。
 
-临时目录 `%LOCALAPPDATA%/Temp/astrocyte-dev-qQGXqS`，个人库未使用；API86296/Vite88652，父72516，创建时间03:04:56。命令结束后所属三进程均不在，15173/18787无监听，helper清理临时目录；已向主控释放单槽。仅失败两尺寸用例的修复验证待主控重新安排；不重跑已过的导航回归。
+临时目录 `%LOCALAPPDATA%/Temp/astrocyte-dev-qQGXqS`，个人库未使用；API86296/Vite88652，父72516，创建时间03:04:56。命令结束后所属三进程均不在，15173/18787无监听，Test-Path仍True，目录保留不自行清理；已向主控释放单槽。仅失败两尺寸用例的修复验证待主控重新安排；不重跑已过的导航回归。
+
+## 阶段二：已发布清单客户端
+
+普通合并 W0 已推送 `bb912efd6f28f9f3909d87ea9fc1f4acb04c9098`（含 W2 DTO），没有手改 generated API。新增 useLocalAgents 与 LocalAgentsPanel，分别显示安装/配置/可启动观察和八项原生能力的状态、原因、核实时间。计数仅来自该接口已加载记录，版本缺失保持未提供，fixture 模式不查询真实清单。清单 GET 只展示已保存探测结果；没有控制按钮或命令请求。
+
+阶段二 `pnpm --dir web typecheck`、lint、test（44/44，含 W0 新客户端单测）、build PASS。新增浏览器用例比较真实 GET local-agents 数据与页面逐项原因及八能力、刷新只发 GET；等待 W0 组装/service 源和主控单槽，尚未运行。不能从 DTO 发布或 UI 编译成功推断实际已接入，更不推断启动/接续/停止能力。

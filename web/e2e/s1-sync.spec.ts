@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import type { components } from '../src/api/schema';
 
 test('local overview keeps real empty facts explicit at both sizes', async ({ page }) => {
   await page.goto('/workspace');
@@ -26,4 +27,32 @@ test('fixture local cards filter by actual recorded association and preserve det
   await panel.getByRole('button', { name: /Fixture Project Beta.*查看项目详情/ }).click();
   await expect(page.getByRole('dialog')).toContainText('/fixture/projects/beta');
   await expect(page.getByRole('dialog').getByRole('button', { name: '编辑项目' })).toBeDisabled();
+});
+
+test('real local inventory displays saved independent observations and refreshes without commands', async ({ page }) => {
+  const commands: string[] = [];
+  page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/api/v1/')) commands.push(`${request.method()} ${request.url()}`); });
+  const responsePromise = page.waitForResponse(response => response.url().endsWith('/api/v1/local-agents'));
+  await page.goto('/workspace');
+  const response = await responsePromise;
+  expect(response.status()).toBe(200);
+  const payload = await response.json() as components['schemas']['LocalAgentListV1'];
+  const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本机 Agent 清单', exact: true }) }).first();
+  await expect(panel.locator('li')).toHaveCount(payload.items.length);
+  for (const agent of payload.items) {
+    const card = panel.locator('li').filter({ has: page.getByRole('heading', { name: agent.display_name, exact: true }) });
+    await expect(card).toContainText(agent.version ?? '未提供');
+    for (const observation of [agent.installed, agent.configured, agent.startable]) {
+      await expect(card).toContainText(observation.reason || '未提供原因');
+      if (observation.status === 'unknown') await expect(card).toContainText('未知');
+    }
+    await card.locator('summary').click();
+    await expect(card.locator('details dl > div')).toHaveCount(8);
+    for (const observation of Object.values(agent.capabilities)) await expect(card.locator('details')).toContainText(observation.reason || '未提供原因');
+  }
+  const refresh = page.waitForResponse(response => response.url().endsWith('/api/v1/local-agents'));
+  await panel.getByRole('button', { name: '刷新清单', exact: true }).click();
+  expect((await refresh).status()).toBe(200);
+  expect(commands).toEqual([]);
+  await panel.screenshot({ path: `test-results/s1-local-inventory-${page.viewportSize()?.width}.png`, animations: 'disabled' });
 });

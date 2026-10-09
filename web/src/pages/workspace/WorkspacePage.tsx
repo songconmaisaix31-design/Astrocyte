@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useProjects, useProposals, useSessions } from '../../hooks/useReadApi';
+import { useProjects, useProposals, useSessions, useLocalAgents } from '../../hooks/useReadApi';
 import { fixtureProjects, fixtureProposals, fixtureSessions } from '../../fixtures';
 import { SectionCard } from '../../components/SectionCard';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -14,6 +14,7 @@ import { matchesQuery } from '../../utils/search';
 import { Icon } from '../../components/DesignIcons';
 import styles from './WorkspacePage.module.css';
 import { LocalProjectsPanel } from './LocalProjectsPanel';
+import { LocalAgentsPanel } from './LocalAgentsPanel';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -34,6 +35,7 @@ export function WorkspacePage({ fixture, query }: Props) {
   const proj = useProjects();
   const prop = useProposals();
   const sess = useSessions();
+  const agents = useLocalAgents(!fixture);
   const [selected, setSelected] = useState<SelectedItem>(null);
 
   const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
@@ -43,7 +45,7 @@ export function WorkspacePage({ fixture, query }: Props) {
   const handleClose = useCallback(() => setSelected(null), []);
 
   return (
-    <PageFrame section="workspace" title="共同工作区" subtitle="围绕目标与项目，让想法有一个生长的地方。" fixture={fixture} onRefresh={() => { proj.retry(); prop.retry(); sess.retry(); }} rail={<><RailSummary title="工作区概览" rows={[{ label: '提案', value: fixture ? proposals.length : prop.loading ? '加载中…' : prop.error && !prop.data ? '无法获取' : proposals.length }, { label: 'Agent 会话', value: fixture ? sessions.length : sess.loading ? '加载中…' : sess.error && !sess.data ? '无法获取' : sessions.length }]} note="批准、原生接续与交接尚未启用，能力未知时不会推断可用。" /><RailSummary title="Agent 上下文" rows={sessions.map(s => ({ id: s.id, label: s.adapter, value: contextStateLabel(s.context_state), onClick: () => setSelected({ kind: 'session', data: s }) }))} note={sessions.length ? '客户端名称不代表底层模型；点击检查来源、绑定与能力。' : '暂无已连接会话；不展示模拟活跃 Agent。'} /></>}>
+    <PageFrame section="workspace" title="共同工作区" subtitle="围绕目标与项目，让想法有一个生长的地方。" fixture={fixture} onRefresh={() => { proj.retry(); prop.retry(); sess.retry(); agents.retry(); }} rail={<><RailSummary title="工作区概览" rows={[{ label: '提案', value: fixture ? proposals.length : prop.loading ? '加载中…' : prop.error && !prop.data ? '无法获取' : proposals.length }, { label: 'Agent 会话', value: fixture ? sessions.length : sess.loading ? '加载中…' : sess.error && !sess.data ? '无法获取' : sessions.length }]} note="批准、原生接续与交接尚未启用，能力未知时不会推断可用。" /><RailSummary title="Agent 上下文" rows={sessions.map(s => ({ id: s.id, label: s.adapter, value: contextStateLabel(s.context_state), onClick: () => setSelected({ kind: 'session', data: s }) }))} note={sessions.length ? '客户端名称不代表底层模型；点击检查来源、绑定与能力。' : '暂无已连接会话；不展示模拟活跃 Agent。'} /></>}>
       {(!fixture && (proj.stale || prop.stale || sess.stale)) && (
         <div role="alert" style={{
           padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
@@ -61,6 +63,7 @@ export function WorkspacePage({ fixture, query }: Props) {
       <div className={styles.grid}>
         {!projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
         <LocalProjectsPanel projects={projects} sessions={fixture ? fixtureSessions : sess.data?.items ?? []} projectState={proj} sessionState={sess} fixture={fixture} query={query} onSelect={project => setSelected({ kind: 'project', data: project })} />
+        <LocalAgentsPanel state={agents} fixture={fixture} />
 
         {/* ── Proposals ── */}
         <SectionCard tabs={['proposals']} title="提案" count={proposals.length}>
