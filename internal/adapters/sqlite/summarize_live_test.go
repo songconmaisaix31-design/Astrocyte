@@ -1,11 +1,13 @@
 package sqlite
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -29,6 +31,10 @@ func TestSummarizeVideoLiveServiceRestart(t *testing.T) {
 	if err := os.MkdirAll(root, 0700); err != nil {
 		t.Fatal(err)
 	}
+	if _, err := os.Stat(filepath.Join(root, "state.sqlite")); !os.IsNotExist(err) {
+		t.Fatal("live acceptance requires a fresh export directory; preserve earlier runs")
+	}
+	started := time.Now()
 	reader := importers.NewReader(nil)
 	extractor, err := importers.NewSummarizeExtractorWithOptions(os.Getenv("ASTROCYTE_TEST_SUMMARIZE_NODE"), os.Getenv("ASTROCYTE_TEST_SUMMARIZE_CLI"), importers.SummarizeOptions{YtDlpPath: os.Getenv("ASTROCYTE_TEST_YT_DLP"), FFmpegPath: os.Getenv("ASTROCYTE_TEST_FFMPEG"), WhisperBinary: os.Getenv("ASTROCYTE_TEST_WHISPER"), WhisperModel: os.Getenv("ASTROCYTE_TEST_WHISPER_MODEL"), Timeout: 30 * time.Minute})
 	if err != nil {
@@ -74,7 +80,14 @@ func TestSummarizeVideoLiveServiceRestart(t *testing.T) {
 	if len(content.Text) < 1000 || !strings.Contains(content.Provenance.Version, "0.25.1") || len(material.Distillations) != 0 {
 		t.Fatal("missing original content/version or accidental model output")
 	}
+	if material.Material.HumanUsageCount != 0 || material.Material.AttentionScore != 0 || len(material.Uses) != 0 {
+		t.Fatal("import or plain reads created attention/usage")
+	}
 	rev := material.Revisions[0]
+	if rev.SourceLocator != locator || content.Provenance.Source != locator || rev.Summary != "" {
+		t.Fatal("lost selected source or invented summary")
+	}
+	attachmentBytes := map[string][]byte{}
 	for _, a := range rev.Attachments {
 		got, err := service.GetAttachment(ctx, human, *job.MaterialID, 1, a.Name)
 		if err != nil {
@@ -83,6 +96,7 @@ func TestSummarizeVideoLiveServiceRestart(t *testing.T) {
 		if err = os.WriteFile(filepath.Join(root, filepath.Base(a.Name)), got.Data, 0600); err != nil {
 			t.Fatal(err)
 		}
+		attachmentBytes[a.Name] = got.Data
 	}
 	os.WriteFile(filepath.Join(root, "video-original-text.txt"), []byte(content.Text), 0600)
 	data, _ = json.MarshalIndent(material, "", "  ")
@@ -91,10 +105,34 @@ func TestSummarizeVideoLiveServiceRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	db = openAttentionDB(t, dbPath)
+	store, err = objects.New(filepath.Join(root, "objects"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	service = app.NewAttentionService(NewAttentionRepository(db), readerPort, store, app.ServiceOptions{})
 	after, err := service.GetContent(ctx, human, *job.MaterialID, 1)
 	if err != nil || after.Text != content.Text || after.Provenance != content.Provenance {
 		t.Fatal("restart lost original", err)
+	}
+	for name, before := range attachmentBytes {
+		after, err := service.GetAttachment(ctx, human, *job.MaterialID, 1, name)
+		if err != nil || !bytes.Equal(after.Data, before) {
+			t.Fatal("restart lost actual attachment", name, err)
+		}
+	}
+	afterMaterial, err := service.GetMaterial(ctx, human, *job.MaterialID)
+	if err != nil || !reflect.DeepEqual(afterMaterial, material) {
+		t.Fatal("restart changed material/source/attention", err)
+	}
+	for table, expected := range map[string]int{"attention_materials": 1, "attention_material_revisions": 1, "attention_jobs": 1, "attention_distillations": 0, "attention_opportunities": 0} {
+		var count int
+		if err := db.Conn().QueryRow("SELECT count(*) FROM " + table).Scan(&count); err != nil || count != expected {
+			t.Fatalf("unexpected persistent %s=%d: %v", table, count, err)
+		}
+	}
+	var missionEvents int
+	if err := db.Conn().QueryRow("SELECT count(*) FROM attention_outbox WHERE type LIKE '%mission%'").Scan(&missionEvents); err != nil || missionEvents != 0 {
+		t.Fatal("import created Mission event", err)
 	}
 	// The same submitted command replays its existing job; a fresh command for
 	// an unversioned remote URL deliberately refreshes under the existing Service.
@@ -102,7 +140,7 @@ func TestSummarizeVideoLiveServiceRestart(t *testing.T) {
 	if err != nil || duplicate.JobID != receipt.JobID {
 		t.Fatalf("duplicate source reran downloader: %+v %v", duplicate, err)
 	}
-	t.Logf("source=%s bytes=%d mode=%s attachments=%d spans=%d duplicate_job=%s no_distillations=true artifacts=%s", locator, len(content.Text), content.Provenance.Mode, len(rev.Attachments), len(rev.SourceSpans), duplicate.JobID, root)
+	t.Logf("source=%s bytes=%d mode=%s attachments=%d spans=%d duplicate_job=%s elapsed=%s no_distillations=true human_attention=0 mission_events=0 artifacts=%s", locator, len(content.Text), content.Provenance.Mode, len(rev.Attachments), len(rev.SourceSpans), duplicate.JobID, time.Since(started), root)
 }
 
 type liveDiagnosticReader struct {

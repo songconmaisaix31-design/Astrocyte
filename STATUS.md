@@ -2,6 +2,8 @@
 
 日期：2026-10-10。当前任务：[S1 Attention 计划](tasks/S1-plan.md) 与 [summarize 接入](tasks/S1-summarize-plan.md)。完整真实验收尚未通过。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)。下面论文第二步、首轮界面与 S0 记录为历史结果，不代表新 summarize 全部通过。
 
+视频修复正在进行，当前切片与互斥写域见 [修复计划](tasks/S1-video-fix-plan.md)。用户已授权修改所选B站来源DNS；01:07仅追加B站fake-IP例外并实际热加载204，所选URL上游网络检查PASS，音轨下载完成，唯一首次本地转写仍在执行。尚未取得最终正文/作业成功/页面正向结果。W0承担Windows项目CLI路径和已有默认期限修复，W3仅准备真实正向浏览器入口；不同时转写两个视频。以下未解决DNS与四轨释放等是前轮快照。收藏夹账号、先发现再选择的反馈范围和同步频率尚未决定，本轮先修指定单视频。
+
 用户已允许Python，原无Python限制撤销。正式接入沿用原 W0/W2/W3/W4 工作树和互斥写域，本机 Orca Codex / gpt-6.1-sol；主控没有写业务代码。当前普通合并源 `81e92ae521fadf6def68b771e005bd77cc3f7ed3`，含 W0 最终 `d8f29070073e6f2e71ae6fcca5fa259205208b8f`、W2 `777f8559d5ba3afa17c01681397b5dc2bbc0be8f`、W3 最终 `e8cc1e001cdf3468187c901f7fa1e262ebc40359` 与 W4 最终 `1a77d16c83f063c94e3df6d2a5bcaa785523b058`。各轨已 push、终端已结算释放，工作树与历史保留。W3 原 native 内存分配失败后，按同任务 retry-of 恢复原轨；没有重建调度器。
 
 已接入项目锁定 summarize/core 0.25.1、真实视频 URL 表单、上游字幕优先和本地媒体转写薄适配、真实输出/provenance、作业失败提示及同页输入恢复。Python yt-dlp 2026.08.19 使用独立环境，ffmpeg 9.0.2、whisper.cpp 1.9.2、多语言 ggml-base 在项目独立目录；冻结安装、真实工具启动与模型加载通过。全局 summarize 0.21.8 与其他软件工具未覆盖。首次模型整理仍沿既有显式 Codex 作业；本轮未发应用 LLM 请求或重放旧 UNKNOWN。
