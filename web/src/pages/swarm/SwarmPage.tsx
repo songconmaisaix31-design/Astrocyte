@@ -1,0 +1,259 @@
+import { useState, useCallback, useMemo } from 'react';
+import { useMissions } from '../../hooks/useReadApi';
+import { fixtureMissions, flattenWorkItems, flattenArtifactIds } from '../../fixtures';
+import { SectionCard } from '../../components/SectionCard';
+import { StatusBadge } from '../../components/StatusBadge';
+import { EmptyState } from '../../components/EmptyState';
+import { ErrorState } from '../../components/ErrorState';
+import { DetailPanel, Field, FieldRow, MutedValue } from '../../components/DetailPanel';
+import { missionStatusLabel, workItemStatusLabel } from '../../utils/format';
+import type { components } from '../../api/schema';
+import styles from './SwarmPage.module.css';
+
+type Mission = components['schemas']['MissionV1'];
+type WorkItem = components['schemas']['WorkItemV1'];
+
+interface Props {
+  fixture: boolean;
+}
+
+type SelectedItem =
+  | { kind: 'mission'; data: Mission }
+  | { kind: 'workitem'; data: WorkItem; missionId: string }
+  | null;
+
+export function SwarmPage({ fixture }: Props) {
+  const miss = useMissions();
+  const [selected, setSelected] = useState<SelectedItem>(null);
+
+  const missions = fixture ? fixtureMissions : (miss.data?.items ?? []);
+  const workItems = useMemo(() => flattenWorkItems(missions), [missions]);
+  const artifactIds = useMemo(() => flattenArtifactIds(missions), [missions]);
+
+  const handleClose = useCallback(() => setSelected(null), []);
+
+  return (
+    <div>
+      <div className={styles.pageHeader}>
+        <h1 className={styles.pageTitle}>集群</h1>
+        <p className={styles.pageSub}>查看任务、工作项与产物引用（只读 · S0 无 Agent 控制）</p>
+      </div>
+
+      <div className={styles.grid}>
+        {/* ── Missions ── */}
+        <SectionCard title="任务" count={missions.length}>
+          {fixture ? (
+            <MissionList items={missions} onSelect={(m) => setSelected({ kind: 'mission', data: m })} />
+          ) : miss.loading ? (
+            <div className={styles.loadingRow}>加载中…</div>
+          ) : miss.error ? (
+            <ErrorState message={miss.error} onRetry={miss.retry} />
+          ) : missions.length === 0 ? (
+            <EmptyState icon="🎯" title="暂无任务" description="任务由系统在 S1+ 中创建" />
+          ) : (
+            <MissionList items={missions} onSelect={(m) => setSelected({ kind: 'mission', data: m })} />
+          )}
+        </SectionCard>
+
+        {/* ── Work Items (flattened from missions) ── */}
+        <SectionCard title="工作项" count={workItems.length}>
+          {workItems.length === 0 ? (
+            <EmptyState icon="⚙" title="暂无工作项" description="工作项由任务分解产生" />
+          ) : (
+            <WorkItemList
+              items={workItems}
+              missions={missions}
+              onSelect={(w, mid) => setSelected({ kind: 'workitem', data: w, missionId: mid })}
+            />
+          )}
+        </SectionCard>
+
+        {/* ── Artifacts (IDs only — no artifact list endpoint in S0) ── */}
+        <SectionCard title="产物引用" count={artifactIds.length}>
+          {artifactIds.length === 0 ? (
+            <EmptyState icon="📦" title="暂无产物引用" description="工作项完成后产物引用将在此显示" />
+          ) : (
+            <ul className={styles.list} role="list">
+              {artifactIds.map((id) => (
+                <li key={id} className={styles.listItem} style={{ cursor: 'default' }}>
+                  <div className={styles.itemHeader}>
+                    <span className={styles.itemTitle}>
+                      <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{id}</code>
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionCard>
+      </div>
+
+      {/* ── Detail Panels ── */}
+      {selected && (
+        <DetailPanel
+          title={selected.kind === 'mission' ? '任务详情' : '工作项详情'}
+          onClose={handleClose}
+          showDisabledNotice
+          disabledNoticeText="S0 为只读模式。任务创建、Agent 控制和执行操作将在后续切片中启用"
+        >
+          {selected.kind === 'mission' && <MissionDetail item={selected.data} isFixture={fixture} />}
+          {selected.kind === 'workitem' && <WorkItemDetail item={selected.data} missionId={selected.missionId} isFixture={fixture} />}
+        </DetailPanel>
+      )}
+    </div>
+  );
+}
+
+// ── Lists ──
+
+function MissionList({ items, onSelect }: { items: Mission[]; onSelect: (m: Mission) => void }) {
+  return (
+    <ul className={styles.list} role="list">
+      {items.map((m) => {
+        const wiCount = m.work_items?.length ?? 0;
+        const artCount = m.artifact_ids?.length ?? 0;
+        return (
+          <li key={m.id} className={styles.listItem} tabIndex={0} role="button"
+            onClick={() => onSelect(m)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(m); }}}>
+            <div className={styles.itemHeader}>
+              <span className={`${styles.itemTitle} line-clamp-2`}>{m.goal}</span>
+              <StatusBadge value={m.status} label={missionStatusLabel(m.status)} />
+            </div>
+            <div className={styles.itemMeta}>
+              <span>v{m.version}</span>
+              <span>Grant: {m.grant_id}</span>
+              <span>{wiCount} 工作项</span>
+              <span>{artCount} 产物</span>
+            </div>
+            {m.blockers && m.blockers.length > 0 && (
+              <div className={styles.blockerRow}>
+                ⚠ {m.blockers.join('; ')}
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function WorkItemList({
+  items,
+  missions,
+  onSelect,
+}: {
+  items: WorkItem[];
+  missions: Mission[];
+  onSelect: (w: WorkItem, missionId: string) => void;
+}) {
+  // Build a map of work_item_id → mission_id
+  const wiToMission = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const m of missions) {
+      for (const wi of m.work_items ?? []) {
+        map.set(wi.id, m.id);
+      }
+    }
+    return map;
+  }, [missions]);
+
+  return (
+    <ul className={styles.list} role="list">
+      {items.map((w) => (
+        <li key={w.id} className={styles.listItem} tabIndex={0} role="button"
+          onClick={() => onSelect(w, wiToMission.get(w.id) ?? '')}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(w, wiToMission.get(w.id) ?? ''); }}}>
+          <div className={styles.itemHeader}>
+            <span className={styles.itemTitle}>
+              <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{w.id}</code>
+            </span>
+            <StatusBadge value={w.status} label={workItemStatusLabel(w.status)} />
+          </div>
+          <div className={styles.itemMeta}>
+            <span>v{w.version}</span>
+            <span>持有者: {w.holder_id ?? '未认领'}</span>
+            <span>{w.artifact_ids.length} 产物</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ── Details ──
+
+function MissionDetail({ item, isFixture }: { item: Mission; isFixture: boolean }) {
+  return (
+    <>
+      <Field label="目标">{item.goal}</Field>
+      {isFixture && <FixtureTag />}
+      <FieldRow>
+        <Field label="状态"><StatusBadge value={item.status} label={missionStatusLabel(item.status)} /></Field>
+        <Field label="版本">v{item.version}</Field>
+      </FieldRow>
+      <Field label="Grant ID">
+        <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{item.grant_id}</code>
+      </Field>
+      <Field label="工作项">
+        {(item.work_items?.length ?? 0) > 0 ? (
+          <div style={{ fontSize: 'var(--text-sm)' }}>
+            {item.work_items!.map((wi) => (
+              <div key={wi.id} style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--space-1) 0', borderBottom: '1px solid var(--color-border-light)' }}>
+                <code style={{ fontFamily: 'var(--font-mono)' }}>{wi.id}</code>
+                <StatusBadge value={wi.status} label={workItemStatusLabel(wi.status)} />
+              </div>
+            ))}
+          </div>
+        ) : <MutedValue>无工作项</MutedValue>}
+      </Field>
+      <Field label="产物引用">
+        {(item.artifact_ids?.length ?? 0) > 0
+          ? item.artifact_ids!.join(', ')
+          : <MutedValue>无</MutedValue>}
+      </Field>
+      <Field label="阻塞原因">
+        {item.blockers && item.blockers.length > 0
+          ? item.blockers.join('; ')
+          : <MutedValue>无</MutedValue>}
+      </Field>
+      <Field label="ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{item.id}</code></Field>
+    </>
+  );
+}
+
+function WorkItemDetail({ item, missionId, isFixture }: { item: WorkItem; missionId: string; isFixture: boolean }) {
+  return (
+    <>
+      {isFixture && <FixtureTag />}
+      <FieldRow>
+        <Field label="状态"><StatusBadge value={item.status} label={workItemStatusLabel(item.status)} /></Field>
+        <Field label="版本">v{item.version}</Field>
+      </FieldRow>
+      <Field label="所属任务">
+        <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{missionId}</code>
+      </Field>
+      <Field label="持有者">{item.holder_id ?? <MutedValue>未认领</MutedValue>}</Field>
+      <Field label="上下文包 ID">{item.context_packet_id ?? <MutedValue>无</MutedValue>}</Field>
+      <Field label="产物引用">
+        {item.artifact_ids.length > 0
+          ? item.artifact_ids.join(', ')
+          : <MutedValue>无</MutedValue>}
+      </Field>
+      <Field label="ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{item.id}</code></Field>
+    </>
+  );
+}
+
+// ── Helpers ──
+
+function FixtureTag() {
+  return (
+    <div style={{
+      display: 'inline-block', padding: '2px 8px', fontSize: 'var(--text-xs)',
+      fontWeight: 'var(--weight-medium)', background: 'var(--color-warning-subtle)',
+      color: '#e67700', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-warning)',
+      marginBottom: 'var(--space-3)',
+    }}>⚑ 示例数据</div>
+  );
+}
