@@ -19,11 +19,20 @@ const reasonNames: Record<string, string> = {
   cli_not_probed: '尚未检查客户端',
   cli_not_found: '未找到 CLI 入口',
   executable_not_found: '未找到 CLI 入口',
+  not_found_on_path: '命令路径中未找到 CLI 入口',
+  private_configuration_not_inspected: '未检查登录与配置',
+  native_start_not_authorized_or_tested: '尚未确认或验证启动能力',
+  cli_entry_found_on_path: '已找到 CLI 入口',
+  cli_entry_found_probe_not_run: '已找到入口，版本尚未核实',
+  cli_entry_found_probe_failed: '已找到入口，版本或帮助检查失败',
+  cli_entry_found_version_unrecognized: '已找到入口，版本未能识别',
+  cli_entry_found_version_help_passed: '版本与帮助检查通过',
+  cli_lookup_failed: 'CLI 入口查询失败',
 };
 
 export function LocalAgentsPanel({ state, fixture }: { state: ReadApiState<components['schemas']['LocalAgentListV1']>; fixture: boolean }) {
   return <SectionCard title="本机 Agent 清单" tabs={['overview', 'sessions']} padded actions={!fixture && <button type="button" className="ac-button secondary compact" disabled={state.loading} onClick={state.retry}>刷新清单</button>}>
-    <p className={styles.note}>安装、配置、可启动和原生能力分别核实。清单与版本不代表已连接项目或运行中的会话。</p>
+    <p className={styles.note}>安装、配置、可启动和原生能力分别核实。清单与版本不代表已连接项目或运行中的会话；命令路径中未找到入口，不代表其他位置没有安装。</p>
     {fixture ? <p className={styles.note}>示例模式不读取本机 Agent 清单。</p> : <QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无本机 Agent 记录">{data => <>
       <CollectionOverview title="客户端概览" description="显示服务最近保存的探测结果。刷新清单不会启动 Agent。" metrics={[
         { label: '已加载客户端', value: data.items.length },
