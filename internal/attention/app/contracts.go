@@ -43,6 +43,8 @@ type Provenance struct {
 	Source    string `json:"source"`
 }
 type Material struct {
+	Pinned           bool      `json:"pinned"`
+	Version          int       `json:"version"`
 	ID               string    `json:"id"`
 	SourceLocator    string    `json:"source_locator"`
 	Kind             string    `json:"kind"`
@@ -179,6 +181,7 @@ type DistillationResult struct {
 	Reused        bool         `json:"reused"`
 }
 type Opportunity struct {
+	Version         int         `json:"version"`
 	ID              string      `json:"id"`
 	Revision        int         `json:"revision"`
 	State           string      `json:"state"`
@@ -229,7 +232,15 @@ type RecordUseCommand struct {
 	CommandMeta
 	Action string `json:"action"`
 }
+type UpdateMaterialCommand struct {
+	CommandMeta
+	Pinned           bool    `json:"pinned"`
+	Lifecycle        string  `json:"lifecycle"`
+	CollectionReason *string `json:"collection_reason"`
+}
 type Job struct {
+	ExternalStarted  bool                    `json:"external_started"`
+	DeliveryUnknown  bool                    `json:"delivery_unknown"`
 	SchemaVersion    int                     `json:"schema_version"`
 	JobID            string                  `json:"job_id"`
 	Status           string                  `json:"status"`
@@ -271,12 +282,20 @@ type ContentResult struct {
 
 // AttentionService is the S1 boundary. Plain queries never count human attention;
 // explicit RecordUse receives the authenticated principal. Agent credentials are read-only.
+type AttachmentContent struct {
+	Data      []byte
+	MediaType string
+	Name      string
+}
+
 type AttentionService interface {
 	ListMaterials(context.Context) (apierrors.ListResult, error)
 	ListOpportunities(context.Context) (apierrors.ListResult, error)
 	ImportMaterial(context.Context, Principal, ImportMaterialCommand) (ImportJobResult, error)
 	GetMaterial(context.Context, Principal, string) (MaterialDetail, error)
+	UpdateMaterial(context.Context, Principal, string, UpdateMaterialCommand) (MaterialDetail, error)
 	GetContent(context.Context, Principal, string, int) (ContentResult, error)
+	GetAttachment(context.Context, Principal, string, int, string) (AttachmentContent, error)
 	RecordDistillation(context.Context, Principal, RecordDistillationCommand) (DistillationResult, error)
 	ListDistillations(context.Context, Principal) (apierrors.ListResult, error)
 	CreateOpportunity(context.Context, Principal, OpportunityCommand) (OpportunityDetail, error)
