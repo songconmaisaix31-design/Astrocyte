@@ -8,7 +8,6 @@ import { seedCandidate } from '../../tests/s1/scenarios.mjs';
 // Each viewport owns its own API/Vite/data directory. Existing S0 tests stay empty.
 // Synthetic contract_local inputs use real HTTP/SQLite/objects; no page.route mocks.
 test.describe('S1 contract_local with real API and persistence', () => {
-  test.describe.configure({ mode: 'serial' });
   let server: Awaited<ReturnType<typeof startS1Server>>;
   let api: Awaited<ReturnType<typeof humanAPI>>;
   test.beforeAll(async () => {
@@ -32,7 +31,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
   test('browser imports a summarize representative export and exposes its retained positions', async ({ page }, testInfo) => {
     const input = videoImport('https://youtu.be/S1LOCAL005a');
     await page.goto(`${server.webURL}/attention`);
-    await page.getByRole('button', { name: '添加资料', exact: true }).click();
+    await page.getByRole('main').getByRole('button', { name: '添加资料', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize');
     await dialog.getByLabel(/视频原始来源/).fill(input.source_locator);
@@ -46,7 +45,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     const detail = await api.get(`/materials/${job.material_id}`);
     expect(detail.material.collection_reason).toBeNull();
     await dialog.getByRole('button', { name: '关闭', exact: true }).click();
-    await page.getByRole('button', { name: '刷新', exact: true }).click();
+    await page.getByRole('button', { name: '↻ 刷新', exact: true }).click();
     const card = page.getByRole('button').filter({ has: page.getByText('contract_local 视频代表导出', { exact: true }) });
     await expect(card).toBeVisible();
     await card.focus();
@@ -67,7 +66,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     const humanCount = baseline.material.human_usage_count;
     if (humanCount === undefined) throw new Error('S1 material omitted its human usage count');
     await page.goto(`${server.webURL}/attention`);
-    await page.getByRole('button', { name: '刷新', exact: true }).click();
+    await page.getByRole('button', { name: '↻ 刷新', exact: true }).click();
     const card = page.getByRole('button').filter({ has: page.getByText(input.title, { exact: true }) });
     await card.click();
     const dialog = page.getByRole('dialog');
@@ -93,7 +92,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     const candidate = seeded.candidate.opportunity;
     if (!candidate.title) throw new Error('S1 candidate omitted its title');
     await page.goto(`${server.webURL}/attention`);
-    const card = page.getByRole('button').filter({ has: page.getByText(candidate.title, { exact: true }) });
+    const card = page.locator('li[role="button"]').filter({ has: page.getByText(candidate.title, { exact: true }) });
     await card.click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('反馈类型', { exact: true }).selectOption('later');
