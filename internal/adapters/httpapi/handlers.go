@@ -28,6 +28,10 @@ func writeError(w http.ResponseWriter, r *http.Request, status int, svcErr *apie
 			svcErr.RequestID = rid
 		}
 	}
+	// Ensure required_action is always set per OpenAPI ErrorV1 contract.
+	if svcErr.RequiredAction == "" {
+		svcErr.RequiredAction = "contact_support_with_request_id"
+	}
 	writeJSON(w, status, apierrors.Wrap(svcErr))
 }
 
@@ -36,9 +40,10 @@ func (h *handler) handleHealth(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.services.Foundation.Health(r.Context())
 	if err != nil {
 		writeError(w, r, http.StatusInternalServerError, &apierrors.ServiceError{
-			Code:      apierrors.InternalError,
-			Message:   err.Error(),
-			Retryable: true,
+			Code:           apierrors.InternalError,
+			Message:        err.Error(),
+			Retryable:      true,
+			RequiredAction: "retry_after_delay_or_contact_support",
 		})
 		return
 	}
@@ -50,9 +55,10 @@ func (h *handler) handleFoundation(w http.ResponseWriter, r *http.Request) {
 	resp, err := h.services.Foundation.Foundation(r.Context())
 	if err != nil {
 		writeError(w, r, http.StatusInternalServerError, &apierrors.ServiceError{
-			Code:      apierrors.InternalError,
-			Message:   err.Error(),
-			Retryable: true,
+			Code:           apierrors.InternalError,
+			Message:        err.Error(),
+			Retryable:      true,
+			RequiredAction: "retry_after_delay_or_contact_support",
 		})
 		return
 	}
@@ -110,9 +116,10 @@ func (h *handler) handleGetMission(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		writeError(w, r, http.StatusInternalServerError, &apierrors.ServiceError{
-			Code:      apierrors.InternalError,
-			Message:   err.Error(),
-			Retryable: true,
+			Code:           apierrors.InternalError,
+			Message:        err.Error(),
+			Retryable:      true,
+			RequiredAction: "retry_after_delay_or_contact_support",
 		})
 		return
 	}
@@ -126,9 +133,10 @@ func (h *handler) handleList(w http.ResponseWriter, r *http.Request, result apie
 			return
 		}
 		writeError(w, r, http.StatusInternalServerError, &apierrors.ServiceError{
-			Code:      apierrors.InternalError,
-			Message:   err.Error(),
-			Retryable: true,
+			Code:           apierrors.InternalError,
+			Message:        err.Error(),
+			Retryable:      true,
+			RequiredAction: "retry_after_delay_or_contact_support",
 		})
 		return
 	}
