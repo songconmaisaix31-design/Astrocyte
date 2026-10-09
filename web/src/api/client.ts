@@ -15,25 +15,36 @@ export type MaterialDetail = components['schemas']['MaterialDetailV1'];
 export type OpportunityDetail = components['schemas']['OpportunityDetailV1'];
 export type Distillation = components['schemas']['DistillationV1'];
 export type Job = components['schemas']['JobV1'];
+export type MaterialDomain = components['schemas']['MaterialDomainV1'];
+export type ProjectSpace = components['schemas']['ProjectSpaceV1'];
 
 /** Uses generated types; no command retries. Session bootstrap precedes protected reads. */
 export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) => {
   const client = createClient<paths>({ baseUrl, ...(fetchImpl ? { fetch: fetchImpl } : {}) });
   let bootstrap: Promise<void> | undefined;
+  const establishSession = async (request: Request) => {
+    const url = new URL(request.url);
+    url.pathname = `${url.pathname.slice(0, url.pathname.indexOf('/api/v1') + 7)}/auth/session`;
+    url.search = '';
+    const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: AbortSignal.timeout(10000) }));
+    // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
+    if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
+  };
   client.use({ async onRequest({ request }) {
     const path = new URL(request.url).pathname;
     if (request.method !== 'GET' || request.signal.aborted || request.headers.has('Authorization') ||
       ['/auth/session', '/health', '/foundation'].some(suffix => path.endsWith(suffix))) return request;
-    bootstrap ??= (async () => {
-      const url = new URL(request.url);
-      url.pathname = `${url.pathname.slice(0, url.pathname.indexOf('/api/v1') + 7)}/auth/session`;
-      url.search = '';
-      const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: AbortSignal.timeout(10000) }));
-      // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
-      if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
-    })().catch(error => { bootstrap = undefined; throw error; });
+    bootstrap ??= establishSession(request).catch(error => { bootstrap = undefined; throw error; });
     await bootstrap;
     return request;
+  }, async onResponse({ request, response }) {
+    if (request.method !== 'GET' || request.headers.has('Authorization') || response.status !== 403 || request.url.endsWith('/auth/session')) return response;
+    const error = await response.clone().json().catch(() => undefined) as ApiErrorBody | undefined;
+    if (!['local session required', 'local session expired'].includes(error?.error?.message ?? '')) return response;
+    // Only safe reads are repeated once after restart/expiry. No command is replayed.
+    bootstrap = establishSession(request);
+    await bootstrap;
+    return (fetchImpl ?? fetch)(request);
   } });
   return client;
 };
@@ -78,11 +89,10 @@ export function createAttentionApi(client = api) {
     if (!data) throw new Error('API returned no JSON data');
     return data;
   }
-  let session: Promise<components['schemas']['LocalSessionV1']> | undefined;
   const headers = async (key: string) => {
     if (!key.trim()) throw new Error('Idempotency key is required');
-    session ??= unwrap(client.GET('/auth/session')).catch(error => { session = undefined; throw error; });
-    return { 'Idempotency-Key': key, 'X-CSRF-Token': (await session).csrf_token };
+    const session = await unwrap(client.GET('/auth/session'));
+    return { 'Idempotency-Key': key, 'X-CSRF-Token': session.csrf_token };
   };
   return {
     getMaterial: (id: string, options?: ReadOptions) => unwrap(client.GET('/materials/{id}', { params: { path: { id } }, ...options })),
@@ -100,6 +110,15 @@ export function createAttentionApi(client = api) {
     recordMaterialUse: async (id: string, body: components['schemas']['RecordUseRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/materials/{id}/uses', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     retryJob: async (id: string, body: components['schemas']['JobCommandV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/jobs/{id}/retry', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     cancelJob: async (id: string, body: components['schemas']['JobCommandV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/jobs/{id}/cancel', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    listMaterialDomains: (options?: ReadOptions) => unwrap(client.GET('/material-domains', options)),
+    createMaterialDomain: async (body: components['schemas']['MaterialDomainRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/material-domains', { body, params: { header: await headers(key) }, ...options })),
+    reviseMaterialDomain: async (id: string, body: components['schemas']['MaterialDomainRequestV1'], key: string, options?: ReadOptions) => unwrap(client.PATCH('/material-domains/{id}', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    setMaterialDomains: async (id: string, body: components['schemas']['SetMaterialDomainsRequestV1'], key: string, options?: ReadOptions) => unwrap(client.PUT('/materials/{id}/domains', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    listProjectSpaces: (options?: ReadOptions) => unwrap(client.GET('/project-spaces', options)),
+    createProjectSpace: async (body: components['schemas']['ProjectSpaceRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/project-spaces', { body, params: { header: await headers(key) }, ...options })),
+    getProjectSpace: (id: string, options?: ReadOptions) => unwrap(client.GET('/project-spaces/{id}', { params: { path: { id } }, ...options })),
+    referenceMaterial: async (id: string, body: components['schemas']['ReferenceMaterialRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/project-spaces/{id}/references', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    removeMaterialReference: async (id: string, body: components['schemas']['RemoveMaterialReferenceRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/project-spaces/{id}/references/remove', { body, params: { path: { id }, header: await headers(key) }, ...options })),
   };
 }
 export const attentionApi = createAttentionApi();

@@ -107,7 +107,10 @@ func (g *sessionGuard) middleware(next http.Handler) http.Handler {
 				writeRejectionError(w, r, http.StatusForbidden, "Agent credential is read-only")
 				return
 			}
-			p = attentionapp.Principal{ID: "local-agent", Kind: "agent"}
+			// A credential identifies the agent, it does not grant material access.
+			// Explicit user material scopes are still being specified. Fail closed.
+			writeRejectionError(w, r, http.StatusForbidden, "Agent material access requires an explicit user scope")
+			return
 		} else {
 			cookie, err := r.Cookie(sessionCookie)
 			if err != nil {

@@ -348,6 +348,9 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /opportunities:
     get:
       operationId: listOpportunitys
@@ -458,6 +461,9 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
     post:
       operationId: createOpportunity
       summary: createOpportunity
@@ -465,8 +471,9 @@ paths:
         - opportunities
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: Idempotency-Key
           in: header
@@ -503,6 +510,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/OpportunityRequestV1"
+      security:
+        - HumanSession: []
   /projects:
     get:
       operationId: listProjects
@@ -613,6 +622,9 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
     post:
       operationId: registerProject
       summary: register Project
@@ -728,6 +740,8 @@ paths:
               name: Fixture only
               environment_id: fixture
               root_path: /fixture
+      security:
+        - HumanSession: []
   /proposals:
     get:
       operationId: listProposals
@@ -838,6 +852,9 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /sessions:
     get:
       operationId: listSessions
@@ -948,6 +965,9 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /missions:
     get:
       operationId: listMissions
@@ -1058,6 +1078,9 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /missions/{id}:
     get:
       operationId: getMission
@@ -1178,12 +1201,17 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /materials/imports:
     post:
       operationId: importMaterial
       summary: import Material
-      description: S1 human write. Requires local session and matching CSRF token.
-        Import queues durable work; reviews do not approve or execute a Mission.
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       tags:
         - materials
       x-s0-supported: false
@@ -1303,12 +1331,16 @@ paths:
               content_digest: fixture-digest
               export_text: Fixture only
       x-s1-supported: true
+      security:
+        - HumanSession: []
   /opportunities/{id}/reviews:
     post:
       operationId: reviewOpportunity
       summary: review Opportunity
-      description: S1 human write. Requires local session and matching CSRF token.
-        Import queues durable work; reviews do not approve or execute a Mission.
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       tags:
         - opportunities
       x-s0-supported: false
@@ -1446,6 +1478,8 @@ paths:
               feedback: later
               reason: Fixture only
       x-s1-supported: true
+      security:
+        - HumanSession: []
   /opportunities/{id}/admissions:
     post:
       operationId: admitOpportunity
@@ -1582,6 +1616,8 @@ paths:
               expected_version: 1
               reason: Fixture only
               policy_version: null
+      security:
+        - HumanSession: []
   /sessions/{id}/resume:
     post:
       operationId: resumeSession
@@ -1717,6 +1753,8 @@ paths:
               request_id: fixture-request
               expected_version: 1
               context_packet_id: null
+      security:
+        - HumanSession: []
   /sessions/{id}/handoff:
     post:
       operationId: handoffSession
@@ -1854,6 +1892,8 @@ paths:
               context_packet_id: fixture-packet
               target_adapter: fixture
               target_project_id: fixture-project
+      security:
+        - HumanSession: []
   /proposals/{id}/submit:
     post:
       operationId: submitProposal
@@ -1988,6 +2028,8 @@ paths:
               schema_version: 1
               request_id: fixture-request
               expected_version: 1
+      security:
+        - HumanSession: []
   /proposals/{id}/approvals:
     post:
       operationId: approveProposal
@@ -2138,6 +2180,8 @@ paths:
               stop_conditions:
                 - Fixture only
               expires_at: 2026-10-09T00:00:00Z
+      security:
+        - HumanSession: []
   /approvals/{id}/revoke:
     post:
       operationId: revokeApproval
@@ -2276,6 +2320,8 @@ paths:
               request_id: fixture-request
               expected_version: 1
               reason: Fixture only
+      security:
+        - HumanSession: []
   /missions/{id}/pause:
     post:
       operationId: pauseMission
@@ -2411,6 +2457,8 @@ paths:
               request_id: fixture-request
               expected_version: 1
               reason: Fixture only
+      security:
+        - HumanSession: []
   /missions/{id}/cancel:
     post:
       operationId: cancelMission
@@ -2546,6 +2594,8 @@ paths:
               request_id: fixture-request
               expected_version: 1
               reason: Fixture only
+      security:
+        - HumanSession: []
   /work-items/{id}/claims:
     post:
       operationId: claimWorkItem
@@ -2685,6 +2735,8 @@ paths:
               request_id: fixture-request
               expected_version: 1
               context_packet_id: fixture-packet
+      security:
+        - HumanSession: []
   /work-items/{id}/artifacts:
     post:
       operationId: submitArtifact
@@ -2826,6 +2878,8 @@ paths:
               content_digest: fixture-digest
               snapshot_ref: fixture-snapshot
               checks_ref: fixture-checks
+      security:
+        - HumanSession: []
   /artifacts/{id}/acceptance:
     post:
       operationId: acceptArtifact
@@ -2962,6 +3016,8 @@ paths:
               request_id: fixture-request
               expected_version: 1
               reason: Fixture only
+      security:
+        - HumanSession: []
   /events:
     get:
       operationId: streamEvents
@@ -3036,6 +3092,9 @@ paths:
                   retryable: false
                   required_action: Read the current S0 capabilities; choose an implemented
                     operation
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /auth/session:
     get:
       operationId: getLocalSession
@@ -3072,8 +3131,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3097,6 +3157,9 @@ paths:
         "404": *a11
         "409": *a11
         "500": *a11
+      security:
+        - HumanSession: []
+        - AgentBearer: []
     patch:
       operationId: updateMaterial
       summary: updateMaterial
@@ -3104,8 +3167,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3147,6 +3211,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateMaterialRequestV1"
+      security:
+        - HumanSession: []
   /materials/{id}/revisions/{revision}/content:
     get:
       operationId: getMaterialContent
@@ -3155,8 +3221,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3186,6 +3253,9 @@ paths:
         "404": *a11
         "409": *a11
         "500": *a11
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /materials/{id}/uses:
     post:
       operationId: recordMaterialUse
@@ -3194,8 +3264,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3237,6 +3308,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RecordUseRequestV1"
+      security:
+        - HumanSession: []
   /distillations:
     get:
       operationId: listDistillations
@@ -3245,8 +3318,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters: []
       responses:
         "200":
@@ -3265,6 +3339,9 @@ paths:
         "404": *a11
         "409": *a11
         "500": *a11
+      security:
+        - HumanSession: []
+        - AgentBearer: []
     post:
       operationId: recordDistillation
       summary: recordDistillation
@@ -3272,8 +3349,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: Idempotency-Key
           in: header
@@ -3310,6 +3388,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RecordDistillationRequestV1"
+      security:
+        - HumanSession: []
   /opportunities/{id}:
     get:
       operationId: getOpportunity
@@ -3318,8 +3398,9 @@ paths:
         - opportunities
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3343,6 +3424,9 @@ paths:
         "404": *a11
         "409": *a11
         "500": *a11
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /opportunities/{id}/revisions:
     post:
       operationId: reviseOpportunity
@@ -3351,8 +3435,9 @@ paths:
         - opportunities
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3394,6 +3479,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/OpportunityRequestV1"
+      security:
+        - HumanSession: []
   /jobs:
     get:
       operationId: listJobs
@@ -3402,8 +3489,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters: []
       responses:
         "200":
@@ -3422,6 +3510,9 @@ paths:
         "404": *a11
         "409": *a11
         "500": *a11
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /jobs/{id}:
     get:
       operationId: getJob
@@ -3430,8 +3521,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3455,6 +3547,9 @@ paths:
         "404": *a11
         "409": *a11
         "500": *a11
+      security:
+        - HumanSession: []
+        - AgentBearer: []
   /jobs/{id}/retry:
     post:
       operationId: retryJob
@@ -3463,8 +3558,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3506,6 +3602,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/JobCommandV1"
+      security:
+        - HumanSession: []
   /jobs/{id}/cancel:
     post:
       operationId: cancelJob
@@ -3514,8 +3612,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3557,6 +3656,8 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/JobCommandV1"
+      security:
+        - HumanSession: []
   /materials/{id}/revisions/{revision}/attachments/{name}:
     get:
       operationId: getMaterialAttachment
@@ -3565,8 +3666,9 @@ paths:
         - materials
       x-s1-supported: true
       description: S1 Attention service. Human writes require local session cookie and
-        CSRF token; Agent bearer credentials are read-only. Reads do not
-        increase human attention.
+        CSRF token. Agent credentials identify the caller but deny all protected
+        data access until explicit user material scopes are configured. Reads
+        never increase human attention.
       parameters:
         - name: id
           in: path
@@ -3622,6 +3724,599 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+  /material-domains:
+    get:
+      operationId: listMaterialDomains
+      summary: listMaterialDomains
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters: []
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDomainListV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+    post:
+      operationId: createMaterialDomain
+      summary: createMaterialDomain
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDomainResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaterialDomainRequestV1"
+  /material-domains/{id}:
+    patch:
+      operationId: reviseMaterialDomain
+      summary: reviseMaterialDomain
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDomainResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaterialDomainRequestV1"
+  /materials/{id}/domains:
+    put:
+      operationId: setMaterialDomains
+      summary: setMaterialDomains
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDetailV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMaterialDomainsRequestV1"
+  /project-spaces:
+    get:
+      operationId: listProjectSpaces
+      summary: listProjectSpaces
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters: []
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceListV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+    post:
+      operationId: createProjectSpace
+      summary: createProjectSpace
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectSpaceRequestV1"
+  /project-spaces/{id}:
+    get:
+      operationId: getProjectSpace
+      summary: getProjectSpace
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /project-spaces/{id}/references:
+    post:
+      operationId: referenceMaterial
+      summary: referenceMaterial
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReferenceMaterialRequestV1"
+  /project-spaces/{id}/references/remove:
+    post:
+      operationId: removeMaterialReference
+      summary: removeMaterialReference
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RemoveMaterialReferenceRequestV1"
 components:
   schemas:
     ErrorV1:
@@ -3712,6 +4407,7 @@ components:
           type: string
           enum:
             - S0
+            - S1
         capabilities:
           type: object
           additionalProperties: false
@@ -3905,6 +4601,22 @@ components:
           minimum: 1
         pinned:
           type: boolean
+        domain_ids:
+          type: array
+          items:
+            type: string
+        ranking_strategy:
+          type: string
+        ranking_reason:
+          type: string
+        attention_half_life_seconds:
+          type: number
+          exclusiveMinimum: 0
+        attention_weights:
+          type: object
+          additionalProperties:
+            type: number
+            minimum: 0
       required:
         - id
         - source_locator
@@ -4711,6 +5423,8 @@ components:
           enum:
             - arxiv
             - summarize
+            - summarize_json
+            - summarize_markdown
             - manual
       required:
         - schema_version
@@ -5438,11 +6152,9 @@ components:
         version: *a11
         mode:
           type: string
-          enum:
-            - manual
-            - arxiv
-            - summarize_export
-            - summarize_extract
+          description: Actual processing mode reported by the adapter; manual,
+            official_atom_and_pdf, original_export or summary_only. Never infer
+            automatic processing from a record.
         source: *a11
       required:
         - processor
@@ -6029,3 +6741,215 @@ components:
         - lifecycle
         - collection_reason
         - pinned
+    MaterialDomainV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a14
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        title: *a14
+        description: *a14
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - version
+        - title
+        - description
+        - created_at
+    MaterialDomainRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        title: *a14
+        description: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - title
+        - description
+    MaterialDomainResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        domain:
+          $ref: "#/components/schemas/MaterialDomainV1"
+      required:
+        - schema_version
+        - domain
+    SetMaterialDomainsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        domain_ids:
+          type: array
+          items: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - domain_ids
+    ProjectSpaceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a14
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        title: *a14
+        material_refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - version
+        - title
+        - material_refs
+        - created_at
+    ProjectSpaceRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        title: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - title
+    ProjectSpaceResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        space:
+          $ref: "#/components/schemas/ProjectSpaceV1"
+      required:
+        - schema_version
+        - space
+    ReferenceMaterialRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version: &a15
+          type: integer
+          minimum: 1
+        material_id: *a14
+        revision: *a15
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - material_id
+        - revision
+    RemoveMaterialReferenceRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        material_id: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - material_id
+    MaterialDomainListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaterialDomainV1"
+        next_cursor:
+          type:
+            - string
+            - "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    ProjectSpaceListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectSpaceV1"
+        next_cursor:
+          type:
+            - string
+            - "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+  securitySchemes:
+    HumanSession:
+      type: apiKey
+      in: cookie
+      name: astrocyte_session
+      description: Local human session established only through trusted local browser entry
+    AgentBearer:
+      type: http
+      scheme: bearer
+      description: Identifies an Agent; currently grants no protected data access
+        pending explicit user material scopes
