@@ -21,12 +21,12 @@
 | W1 Go/SQLite | 已合入 72409eb；含保留记录的迁移、一致性备份、完整错误响应 |
 | W2 三页 | 已合入 96cb7f5；含刷新失败保留数据、焦点与请求清理修正 |
 | W3 本地工具清点 | 已合入 59fd965；8 个 Agent CLI、summarize 版本与帮助入口已核实 |
-| S0 | Windows 主路径基座验收 PASS；Linux CI 浏览器阶段待结果 |
+| S0 | PASS；主 Agent 本地检查、构建、浏览器与实际启动通过，最终分支 Windows/Linux CI 通过 |
 | S1–S6、AT01–AT16 | NOT_RUN |
 
 开发使用 Codex、Claude Code、Pi、OpenCode 四种本地 Agent；CLI 名称与实际配置的模型分别记录，不以客户端名称推断模型。
 
-最终集成源：`856698000fba3271d25ff68434ef4ced08e2d9fc`。主分支普通合并提交：`fa7b97f659e6773d83d7dd864ddd0b0835ceac77`；与集成源的代码树一致。
+业务集成源：`856698000fba3271d25ff68434ef4ced08e2d9fc`；Linux 浏览器测试退出修复：`0169ce2c075c94e5c850408c6f651fb0a1718cf5`。最终源码为主分支普通合并提交 `0a0f49c25f4c2e4a7714e80387f98c48dd7441e3`。
 
 首次合并检查：`pnpm check` 在 gofmt 阶段 FAIL（`cmd/server/main.go`）；独立 `pnpm --dir web lint` FAIL（动态 Hook 依赖，另有三项警告）。原负责人修正后，主 Agent 在上述最终合并源码运行 `pnpm check` PASS。OpenAPI 保留一项 `EventV1` 未引用警告；ESLint 零错误、零警告，Vitest 37/37。
 
@@ -44,9 +44,29 @@
 | 两尺寸三页与详情截图检查 | PASS；标题、徽标、布局、示例标记和禁用操作可辨认 |
 | 构建产物在仓库外目录启动，按 OpenAPI 验证实际响应 | PASS；24 操作、空集合、501、Origin 拒绝、错误 DTO、4 网页路由 |
 
-CI 单独记录：集成源 SOURCE_SHA `856698000fba3271d25ff68434ef4ced08e2d9fc`，[运行 37897830295](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/37897830295)。Windows-2025 全部适用步骤 PASS；Ubuntu-24.04 检查、race 与构建 PASS，浏览器阶段仍在运行，W0 正在诊断异常耗时。未将其计为通过。
+退出修复合入后的主 Agent 复验：SOURCE_SHA `0a0f49c25f4c2e4a7714e80387f98c48dd7441e3`，`pnpm --dir web typecheck`、`git diff --check`、`pnpm test:e2e` 均 PASS（88/88）。应用代码未因该三行测试服务配置修改而改变。
 
-开发预览由 Orca 终端 `term_b2100c22-c321-4344-9578-8b9f42601ce2` 启动 `pnpm dev`；实际就绪状态待检查。GitHub main 尚未合入。
+## CI 与退出问题
+
+最终分支 SOURCE_SHA `0a0f49c25f4c2e4a7714e80387f98c48dd7441e3`，[运行 37901441478](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/37901441478)，整体 success：
+
+| 环境 | 实际命令与结果 |
+|---|---|
+| Windows-2025 | `go mod download`、冻结锁安装、`pnpm check`、`pnpm build`、Chromium 安装、`pnpm test:e2e` 全部 PASS |
+| Ubuntu-24.04 | 上述命令全部 PASS；另 `go test -mod=readonly -race ./...` PASS |
+
+初次集成源的 [运行 37897830295](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/37897830295) 保留为 cancelled：Windows PASS；Linux 的 88 项断言成功后服务退出卡住，取得日志时主动取消。退出卡住由 Playwright 默认强制关闭监督进程、留下持有输出管道的独立 API/Vite 进程组造成。原 W0 在 `0169ce2` 加入标准 `gracefulShutdown`（SIGTERM，15 秒），让现有开发脚本关闭自己的子进程组；未改变浏览器断言。修复前主分支 [运行 37900190606](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/37900190606) 的 Windows PASS，Linux 仍卡住后取消；修复源 [运行 37901041699](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/37901041699) 两平台 PASS，Linux 显示服务正常关闭，浏览器阶段约 50 秒完成。最终分支上述运行另行通过。
+
+## 本地交付
+
+开发预览由 Orca 终端 `term_b2100c22-c321-4344-9578-8b9f42601ce2` 启动 `pnpm dev`，就绪检查 PASS：网页、代理后的 health/foundation 均为 200。
+
+- 网页：http://127.0.0.1:5173；三页显式示例入口在 [README.md](README.md)。
+- API：http://127.0.0.1:8787/api/v1/health。
+- 数据：`C:\Users\DW\AppData\Roaming\astrocyte\state.sqlite`，位于仓库外。
+- 结束预览：在该 Orca 终端按 Ctrl+C。
+
+最终验收记录为纯文档变更，执行本地链接与 `git diff --check` 后提交；不重复触发应用全套 CI。交付分支为 `s0/workbench-foundation`，已 push；GitHub main 尚未合入。
 
 ## 后续适配准备
 

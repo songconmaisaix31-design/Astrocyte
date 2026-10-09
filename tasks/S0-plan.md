@@ -17,6 +17,8 @@
 
 已发布并合入的轨道源码：W0 集成 `856698000fba3271d25ff68434ef4ced08e2d9fc`、W1 `72409eb259dc5c4d231c9cb56be658aae6f5faf7`、W2 `96cb7f513e9358c90e83e1cc47027d8f37a3ad1d`、W3 `59fd965ba95ba998ee957418e4981e7a010dac3a`。最终验证结果见 [STATUS.md](../STATUS.md)。
 
+收口：原 W0 发布 Linux 测试退出修复 `0169ce2c075c94e5c850408c6f651fb0a1718cf5`，主 Agent 合入最终源码 `0a0f49c25f4c2e4a7714e80387f98c48dd7441e3`。本地检查、构建、88 项浏览器测试和独立启动通过；最终分支 Windows/Linux CI 全部通过。四轨及返修已结束，S0 PASS。
+
 S0 验收入口：`go mod download`、`pnpm install --frozen-lockfile`、`pnpm check`、`pnpm test:e2e`、`pnpm build`、`pnpm dev`。
 
 此次不选择真实案例，也不降低 S3 原生接续验收。Laya/Jev/索引后端的实际选型和执行控制模式留在相关适配任务；S0 不实现任务执行账本。移除重复证明检查，保留能发现实际错误的检查。
