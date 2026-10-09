@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { startS1Server } from './server.mjs';
-import { humanAPI, importMaterial } from './api.mjs';
+import { humanAPI, importMaterial, waitJob } from './api.mjs';
 import { distillation, opportunity, sourceRef } from './fixtures.mjs';
 
 const exportIndex = process.argv.indexOf('--summarize-export');
@@ -26,25 +26,36 @@ try {
   const bytes = Buffer.from(await pdfResponse.arrayBuffer());
   assert.ok(bytes.subarray(0, 5).equals(Buffer.from('%PDF-')));
   assert.deepEqual(bytes, await readFile(join(server.dataDir, 'objects', pdf.object_ref)));
-  const video = await importMaterial(api, {
+  const videoInput = {
     source_locator: actualExport.input.url, source_key: '', content_digest: '', kind: 'video', adapter: 'summarize', export_text: exported, collection_reason: null,
-  });
-  const videoContent = await api.get(`/materials/${video.detail.material.id}/revisions/1/content`);
-  assert.equal(videoContent.text, actualExport.extracted.content);
-  const videoSource = video.detail.revisions[0];
+  };
   const hasTranscript = Array.isArray(actualExport.extracted.transcriptSegments) && actualExport.extracted.transcriptSegments.length > 0;
-  if (!hasTranscript) assert.deepEqual(videoSource.source_spans, []);
-  const exportedAttachment = videoSource.attachments.find(attachment => attachment.name === 'summarize.json');
-  assert.ok(exportedAttachment);
-  assert.equal(await readFile(join(server.dataDir, 'objects', exportedAttachment.object_ref), 'utf8'), exported);
+  let video;
+  if (!hasTranscript && !actualExport.llm) {
+    // The chosen real export contains recommended-page titles, not video evidence.
+    const receipt = await api.write('/materials/imports', videoInput, { status: 202 });
+    const failed = await waitJob(api, receipt.job_id, 'failed');
+    assert.equal(failed.error?.code, 'evidence_missing');
+    assert.equal(failed.material_id, null);
+    assert.equal((await api.get('/materials')).items.some(item => item.kind === 'video'), false);
+  } else {
+    video = await importMaterial(api, videoInput);
+    const videoContent = await api.get(`/materials/${video.detail.material.id}/revisions/1/content`);
+    assert.equal(videoContent.text, actualExport.extracted.content);
+    const videoSource = video.detail.revisions[0];
+    if (!hasTranscript) assert.deepEqual(videoSource.source_spans, []);
+    const exportedAttachment = videoSource.attachments.find(attachment => attachment.name === 'summarize.json');
+    assert.ok(exportedAttachment);
+    assert.equal(await readFile(join(server.dataDir, 'objects', exportedAttachment.object_ref), 'utf8'), exported);
+  }
 
   // Honest manual traceability records, not a model summary or claims about paper/video findings.
-  const refs = [sourceRef(paper.detail.material, 1, revision.source_spans[0]), { material_id: video.detail.material.id, revision: 1, locator: video.detail.material.source_locator }];
+  const refs = [sourceRef(paper.detail.material, 1, revision.source_spans[0]), ...(video ? [{ material_id: video.detail.material.id, revision: 1, locator: video.detail.material.source_locator }] : [])];
   const records = [];
   const missing = ['PDF 尚未逐页细读', ...(!hasTranscript ? ['视频只取得网页文本，字幕与时间位置缺失'] : []), '未选择具体项目改进任务'];
   for (const stage of ['content', 'topic', 'project']) {
     const output = stage === 'content'
-      ? '人工采集记录：论文原始 PDF 与 metadata 分别保留；视频现有 summarize 导出单独保存。收藏理由未提供，不把网页文本当视频字幕。'
+      ? '人工采集记录：论文原始 PDF 与 metadata 分别保留；无有效视频证据时不创建视频资料。收藏理由未提供，不把网页文本当视频字幕。'
       : stage === 'topic'
         ? '人工待查关联：需要细读论文及取得视频字幕，才能评价这些来源是否支持当前项目改进。尚无研究结论。'
         : '人工项目关联：现有 Astrocyte 导入、SQLite 与对象层可保存来源；最小成果是可回查来源版本的候选。具体改进依据仍缺失。';
@@ -70,7 +81,7 @@ try {
   assert.equal((await reconnected.get(`/opportunities/${candidate.opportunity.id}`)).opportunity.id, candidate.opportunity.id);
   console.log(JSON.stringify({
     paper_import: 'PASS', paper_version: revision.provenance.version, original_pdf_bytes: bytes.length,
-    video_existing_export_import: 'PASS', video_extracted_characters: actualExport.extracted.totalCharacters,
+    video_existing_export_import: video ? 'PASS' : 'REJECTED_PAGE_ONLY', page_only_rejection: video ? 'NOT_APPLICABLE' : 'PASS', video_extracted_characters: actualExport.extracted.totalCharacters,
     video_transcript: hasTranscript ? 'PASS' : 'BLOCKED', video_summary: actualExport.summary ? 'available_in_export' : 'NOT_RUN',
     manual_traceability_layers: records.map(record => record.stage), automatic_distillation: 'NOT_RUN',
     model: actualExport.llm ?? null, full_AT01: hasTranscript ? 'NOT_RUN' : 'BLOCKED',
