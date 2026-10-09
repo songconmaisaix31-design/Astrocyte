@@ -44,7 +44,7 @@ try {
       const child = start(command, args, { cwd, env, detached: process.platform !== 'win32' });
       children.push(child);
       child.once('error', error => { console.error(error); void shutdown(1); });
-      child.once('exit', (code, signal) => { if (!stopping) { console.error(`Development child exited (${code ?? signal})`); void shutdown(code || 1); } });
+      child.once('exit', (code, signal) => { if (!stopping) { console.error(`Development child ${command} exited (${code ?? signal})`); void shutdown(code || 1); } });
     }
   }
 } catch (error) { console.error(error); await shutdown(1); }

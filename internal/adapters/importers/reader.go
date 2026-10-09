@@ -20,6 +20,7 @@ import (
 // allowed roots are supplied by the application's trusted configuration.
 type Reader struct {
 	Arxiv        *Arxiv
+	Summarize    *SummarizeExtractor
 	AllowedRoots []string
 }
 
@@ -53,9 +54,36 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		if p.FullText != "" {
 			source.Text = fmt.Sprintf("# %s\n\nSource: %s\nOriginal PDF: %s\n\n## Original HTML text (summarize extraction)\n\n%s", p.Title, p.HTMLURL, p.PDFURL, p.FullText)
 			source.SourceSpans = append(source.SourceSpans, "whole HTML document: "+p.HTMLURL)
-			source.Provenance = app.Provenance{Processor: "arxiv+summarize", Version: p.ID + "; summarize 0.21.8", Mode: "official_atom_pdf_and_html_text", Source: p.HTMLURL}
+			source.Provenance = app.Provenance{Processor: "arxiv+summarize", Version: p.ID + "; summarize " + p.SummarizeVersion, Mode: "official_atom_pdf_and_html_text", Source: p.HTMLURL}
 			source.Attachments = append(source.Attachments, app.SourceAttachment{Name: p.ID + ".html", MediaType: "text/html", Data: p.HTML, SourceLocator: p.HTMLURL}, app.SourceAttachment{Name: "summarize-original.json", MediaType: "application/json", Data: p.TextExport, SourceLocator: p.HTMLURL})
 		}
+	case "summarize_url":
+		if cmd.ExportText != "" || cmd.LocalFileRef != "" || (cmd.Kind != "" && cmd.Kind != "video") {
+			return source, invalid("summarize_url requires a video URL without an existing export")
+		}
+		if err := validateVideoURL(cmd.SourceLocator); err != nil {
+			return source, err
+		}
+		if r.Summarize == nil {
+			return source, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "project summarize URL extraction is disabled", RequiredAction: "enable_project_summarize_or_provide_existing_export"}
+		}
+		e, err := r.Summarize.ExtractVideo(ctx, cmd.SourceLocator)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		name := "summarize-cli-original.json"
+		if e.Mode == "upstream_media_transcript" {
+			name = "summarize-upstream-media.json"
+		}
+		attachments := []app.SourceAttachment{{Name: name, MediaType: "application/json", Data: e.Original, SourceLocator: e.URL}}
+		for _, a := range e.ExtraAttachments {
+			attachments = append(attachments, app.SourceAttachment{Name: a.Name, MediaType: a.MediaType, Data: a.Data, SourceLocator: e.URL})
+		}
+		version := e.Version
+		if e.TranscriptSource != "" {
+			version += "; " + e.TranscriptSource
+		}
+		source = app.ImportedSource{SourceKey: canonicalWebKey(e.URL), SourceLocator: e.URL, Kind: "video", Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: exportSpans(e), Provenance: app.Provenance{Processor: "summarize", Version: version, Mode: e.Mode, Source: e.URL}, Attachments: attachments}
 	case "summarize", "summarize_json", "summarize_markdown":
 		raw, err := r.exportBytes(cmd)
 		if err != nil {
@@ -84,14 +112,7 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		if kind == "" {
 			kind = "video"
 		}
-		spans := []string{}
-		for _, seg := range e.Segments {
-			span := fmt.Sprintf("%s [%.3fs", e.URL, seg.StartMS/1000)
-			if seg.EndMS != nil {
-				span += fmt.Sprintf("–%.3fs", *seg.EndMS/1000)
-			}
-			spans = append(spans, span+"]: "+seg.Text)
-		}
+		spans := exportSpans(e)
 		source = app.ImportedSource{SourceKey: canonicalWebKey(e.URL), SourceLocator: e.URL, Kind: kind, Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: spans, Provenance: app.Provenance{Processor: "summarize", Version: "0.21.8-format", Mode: mode, Source: e.URL}, Attachments: []app.SourceAttachment{{Name: name, MediaType: mediaType, Data: raw, SourceLocator: e.URL}}}
 	case "manual":
 		raw, err := r.exportBytes(cmd)
@@ -115,6 +136,18 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		}
 	}
 	return source, nil
+}
+
+func exportSpans(e Export) []string {
+	spans := []string{}
+	for _, seg := range e.Segments {
+		span := fmt.Sprintf("%s [%.3fs", e.URL, seg.StartMS/1000)
+		if seg.EndMS != nil {
+			span += fmt.Sprintf("–%.3fs", *seg.EndMS/1000)
+		}
+		spans = append(spans, span+"]: "+seg.Text)
+	}
+	return spans
 }
 
 func (r *Reader) exportBytes(cmd app.ImportMaterialCommand) ([]byte, error) {

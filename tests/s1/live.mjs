@@ -12,15 +12,15 @@ const exported = await readFile(process.argv[exportIndex + 1], 'utf8');
 const actualExport = JSON.parse(exported);
 assert.equal(actualExport.input.url, 'https://www.bilibili.com/video/BV1PReT6EEqR/');
 const requireFullText = process.argv.includes('--require-full-text');
-if (requireFullText && !process.env.ASTROCYTE_SUMMARIZE_CLI) throw new Error('Set ASTROCYTE_SUMMARIZE_CLI to the trusted installed 0.21.8 absolute CLI path');
-const server = await startS1Server({ env: requireFullText ? { ASTROCYTE_NODE: process.execPath, ASTROCYTE_SUMMARIZE_CLI: process.env.ASTROCYTE_SUMMARIZE_CLI } : {} });
+if (requireFullText && !process.env.ASTROCYTE_SUMMARIZE_CLI) throw new Error('Set ASTROCYTE_SUMMARIZE_CLI to the trusted installed absolute CLI path');
+const server = await startS1Server({ env: requireFullText ? { ASTROCYTE_ENABLE_SUMMARIZE: 'true', ASTROCYTE_NODE: process.execPath, ASTROCYTE_SUMMARIZE_CLI: process.env.ASTROCYTE_SUMMARIZE_CLI } : {} });
 try {
   const api = await humanAPI(server.apiURL);
   const paper = await importMaterial(api, {
     source_locator: 'https://arxiv.org/abs/2504.16054v1', source_key: '', content_digest: '', kind: 'paper', adapter: 'arxiv', collection_reason: null,
   }, { timeoutMs: 120_000 });
   const revision = paper.detail.revisions[0];
-  assert.match(revision.provenance.version, /^2504\.16054v1(?:; summarize 0\.21\.8)?$/);
+  assert.match(revision.provenance.version, /^2504\.16054v1(?:; summarize 0\.(?:21\.8|25\.1))?$/);
   const pdf = revision.attachments.find(attachment => attachment.media_type === 'application/pdf');
   assert.ok(pdf, 'Actual original paper PDF must be preserved');
   const pdfResponse = await fetch(`${server.apiURL}/api/v1/materials/${paper.detail.material.id}/revisions/1/attachments/${encodeURIComponent(pdf.name)}`, { headers: { Cookie: api.cookie }, signal: AbortSignal.timeout(30_000) });
