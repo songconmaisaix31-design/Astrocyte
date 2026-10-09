@@ -530,6 +530,7 @@ export interface components {
             schema_version: 1;
             /** @enum {string} */
             stage: "S0";
+            /** @description Availability of HTTP operations in S0, not evidence about installed local agent native abilities. */
             capabilities: {
                 /** @constant */
                 imports: false;
@@ -769,8 +770,10 @@ export interface components {
             /** @enum {string} */
             binding_status: "observed" | "bound" | "unavailable";
             capabilities: {
-                native_resume: boolean;
-                handoff: boolean;
+                /** @description Null means unprobed or unknown; false means verified unsupported. */
+                native_resume: boolean | null;
+                /** @description Null means unprobed or unknown; false means verified unsupported. */
+                handoff: boolean | null;
             };
             context_packet_id?: string | null;
             /** @enum {string} */
@@ -1273,6 +1276,7 @@ export interface components {
             reason: string;
         };
         /**
+         * @description Versioned SSE data envelope. Known SPEC12 payloads are discriminated by context-prefixed type; actor is injected by trusted publisher. S0 does not stream events.
          * @example {
          *       "event_id": "fixture-event",
          *       "type": "attention.opportunity_admitted",
@@ -1290,6 +1294,107 @@ export interface components {
          *         "policy_version": "fixture-policy"
          *       }
          *     }
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "type": "workspace.proposal_approved",
+         *       "schema_version": 1,
+         *       "aggregate_id": "fixture-opportunity",
+         *       "aggregate_version": 1,
+         *       "occurred_at": "2026-10-09T00:00:00Z",
+         *       "correlation_id": "fixture-request",
+         *       "causation_id": null,
+         *       "payload": {
+         *         "proposal_id": "fixture-proposal",
+         *         "revision": 1,
+         *         "grant_id": "fixture-grant",
+         *         "epoch": 1
+         *       }
+         *     }
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "type": "workspace.approval_revoked",
+         *       "schema_version": 1,
+         *       "aggregate_id": "fixture-opportunity",
+         *       "aggregate_version": 1,
+         *       "occurred_at": "2026-10-09T00:00:00Z",
+         *       "correlation_id": "fixture-request",
+         *       "causation_id": null,
+         *       "payload": {
+         *         "grant_id": "fixture-grant",
+         *         "new_epoch": 2,
+         *         "reason": "Fixture only"
+         *       }
+         *     }
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "type": "workspace.context_packet_built",
+         *       "schema_version": 1,
+         *       "aggregate_id": "fixture-opportunity",
+         *       "aggregate_version": 1,
+         *       "occurred_at": "2026-10-09T00:00:00Z",
+         *       "correlation_id": "fixture-request",
+         *       "causation_id": null,
+         *       "payload": {
+         *         "packet_id": "fixture-packet",
+         *         "snapshot_digest": "fixture-snapshot",
+         *         "predecessor_id": null
+         *       }
+         *     }
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "type": "swarm.work_item_claimed",
+         *       "schema_version": 1,
+         *       "aggregate_id": "fixture-opportunity",
+         *       "aggregate_version": 1,
+         *       "occurred_at": "2026-10-09T00:00:00Z",
+         *       "correlation_id": "fixture-request",
+         *       "causation_id": null,
+         *       "payload": {
+         *         "work_item_id": "fixture-work",
+         *         "attempt_id": "fixture-attempt",
+         *         "holder_id": "fixture-holder",
+         *         "fence": 1
+         *       }
+         *     }
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "type": "swarm.artifact_submitted",
+         *       "schema_version": 1,
+         *       "aggregate_id": "fixture-opportunity",
+         *       "aggregate_version": 1,
+         *       "occurred_at": "2026-10-09T00:00:00Z",
+         *       "correlation_id": "fixture-request",
+         *       "causation_id": null,
+         *       "payload": {
+         *         "artifact_id": "fixture-artifact",
+         *         "attempt_id": "fixture-attempt",
+         *         "snapshot": {
+         *           "environment_id": "fixture",
+         *           "repo_id": "fixture-repo",
+         *           "worktree_id": "fixture-worktree",
+         *           "head": "fixture-head",
+         *           "index_digest": "fixture-index",
+         *           "working_tree_digest": "fixture-content"
+         *         },
+         *         "checks_ref": "fixture-checks"
+         *       }
+         *     }
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "type": "swarm.artifact_accepted",
+         *       "schema_version": 1,
+         *       "aggregate_id": "fixture-opportunity",
+         *       "aggregate_version": 1,
+         *       "occurred_at": "2026-10-09T00:00:00Z",
+         *       "correlation_id": "fixture-request",
+         *       "causation_id": null,
+         *       "payload": {
+         *         "artifact_id": "fixture-artifact",
+         *         "acceptance_id": "fixture-acceptance",
+         *         "actor": "fixture-user",
+         *         "experience_id": "fixture-experience"
+         *       }
+         *     }
          */
         EventV1: {
             event_id: string;
@@ -1305,6 +1410,155 @@ export interface components {
             payload: {
                 [key: string]: unknown;
             };
+        } & ({
+            /** @constant */
+            type: "attention.opportunity_admitted";
+            payload: components["schemas"]["OpportunityAdmittedPayloadV1"];
+        } | {
+            /** @constant */
+            type: "workspace.proposal_approved";
+            payload: components["schemas"]["ProposalApprovedPayloadV1"];
+        } | {
+            /** @constant */
+            type: "workspace.approval_revoked";
+            payload: components["schemas"]["ApprovalRevokedPayloadV1"];
+        } | {
+            /** @constant */
+            type: "workspace.context_packet_built";
+            payload: components["schemas"]["ContextPacketBuiltPayloadV1"];
+        } | {
+            /** @constant */
+            type: "swarm.work_item_claimed";
+            payload: components["schemas"]["WorkItemClaimedPayloadV1"];
+        } | {
+            /** @constant */
+            type: "swarm.artifact_submitted";
+            payload: components["schemas"]["ArtifactSubmittedPayloadV1"];
+        } | {
+            /** @constant */
+            type: "swarm.artifact_accepted";
+            payload: components["schemas"]["ArtifactAcceptedPayloadV1"];
+        });
+        /**
+         * @example {
+         *       "environment_id": "fixture",
+         *       "repo_id": "fixture-repo",
+         *       "worktree_id": "fixture-worktree",
+         *       "head": "fixture-head",
+         *       "index_digest": "fixture-index",
+         *       "working_tree_digest": "fixture-content"
+         *     }
+         */
+        ProjectSnapshotV1: {
+            environment_id: string;
+            repo_id: string;
+            worktree_id: string;
+            head: string;
+            index_digest: string;
+            working_tree_digest: string;
+        };
+        /**
+         * @example {
+         *       "opportunity_id": "fixture-opportunity",
+         *       "revision": 1,
+         *       "admission_id": "fixture-admission",
+         *       "actor": "fixture-user",
+         *       "policy_version": "fixture-policy"
+         *     }
+         */
+        OpportunityAdmittedPayloadV1: {
+            opportunity_id: string;
+            revision: number;
+            admission_id: string;
+            actor: string;
+            policy_version: string;
+        };
+        /**
+         * @example {
+         *       "proposal_id": "fixture-proposal",
+         *       "revision": 1,
+         *       "grant_id": "fixture-grant",
+         *       "epoch": 1
+         *     }
+         */
+        ProposalApprovedPayloadV1: {
+            proposal_id: string;
+            revision: number;
+            grant_id: string;
+            epoch: number;
+        };
+        /**
+         * @example {
+         *       "grant_id": "fixture-grant",
+         *       "new_epoch": 2,
+         *       "reason": "Fixture only"
+         *     }
+         */
+        ApprovalRevokedPayloadV1: {
+            grant_id: string;
+            new_epoch: number;
+            reason: string;
+        };
+        /**
+         * @example {
+         *       "packet_id": "fixture-packet",
+         *       "snapshot_digest": "fixture-snapshot",
+         *       "predecessor_id": null
+         *     }
+         */
+        ContextPacketBuiltPayloadV1: {
+            packet_id: string;
+            snapshot_digest: string;
+            predecessor_id: string | null;
+        };
+        /**
+         * @example {
+         *       "work_item_id": "fixture-work",
+         *       "attempt_id": "fixture-attempt",
+         *       "holder_id": "fixture-holder",
+         *       "fence": 1
+         *     }
+         */
+        WorkItemClaimedPayloadV1: {
+            work_item_id: string;
+            attempt_id: string;
+            holder_id: string;
+            fence: number;
+        };
+        /**
+         * @example {
+         *       "artifact_id": "fixture-artifact",
+         *       "attempt_id": "fixture-attempt",
+         *       "snapshot": {
+         *         "environment_id": "fixture",
+         *         "repo_id": "fixture-repo",
+         *         "worktree_id": "fixture-worktree",
+         *         "head": "fixture-head",
+         *         "index_digest": "fixture-index",
+         *         "working_tree_digest": "fixture-content"
+         *       },
+         *       "checks_ref": "fixture-checks"
+         *     }
+         */
+        ArtifactSubmittedPayloadV1: {
+            artifact_id: string;
+            attempt_id: string;
+            snapshot: components["schemas"]["ProjectSnapshotV1"];
+            checks_ref: string;
+        };
+        /**
+         * @example {
+         *       "artifact_id": "fixture-artifact",
+         *       "acceptance_id": "fixture-acceptance",
+         *       "actor": "fixture-user",
+         *       "experience_id": "fixture-experience"
+         *     }
+         */
+        ArtifactAcceptedPayloadV1: {
+            artifact_id: string;
+            acceptance_id: string;
+            actor: string;
+            experience_id: string;
         };
     };
     responses: never;
