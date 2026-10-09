@@ -11,8 +11,9 @@ import type { components } from '../../api/schema';
 import { PageFrame, IntroCard, RailSummary } from '../../components/PageFrame';
 import { ResearchRoutes, DesignTimeline } from '../../components/DesignExamples';
 import { matchesQuery } from '../../utils/search';
-import { Icon, NetworkArt } from '../../components/DesignIcons';
+import { Icon } from '../../components/DesignIcons';
 import styles from './WorkspacePage.module.css';
+import { LocalProjectsPanel } from './LocalProjectsPanel';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -35,7 +36,7 @@ export function WorkspacePage({ fixture, query }: Props) {
   const sess = useSessions();
   const [selected, setSelected] = useState<SelectedItem>(null);
 
-  const projects = (fixture ? fixtureProjects : (proj.data?.items ?? [])).filter(p => matchesQuery(query, [p.name, p.root_path, p.environment_id]));
+  const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
   const proposals = (fixture ? fixtureProposals : (prop.data?.items ?? [])).filter(p => matchesQuery(query, [p.title, p.id, p.goal]));
   const sessions = (fixture ? fixtureSessions : (sess.data?.items ?? [])).filter(p => matchesQuery(query, [p.adapter, p.id, p.project_id]));
 
@@ -59,20 +60,7 @@ export function WorkspacePage({ fixture, query }: Props) {
 
       <div className={styles.grid}>
         {!projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
-        {/* ── Projects ── */}
-        <SectionCard tabs={['overview']} title="项目" count={projects.length}>
-          {fixture ? (
-            <ProjectList items={projects} onSelect={(p) => setSelected({ kind: 'project', data: p })} />
-          ) : proj.loading && !proj.data ? (
-            <div className={styles.loadingRow}>加载中…</div>
-          ) : proj.error && !proj.data ? (
-            <ErrorState message={proj.error} onRetry={proj.retry} />
-          ) : projects.length === 0 ? (
-            <EmptyState icon="📁" title="暂无项目" description="创建项目后将在此显示" />
-          ) : (
-            <ProjectList items={projects} onSelect={(p) => setSelected({ kind: 'project', data: p })} />
-          )}
-        </SectionCard>
+        <LocalProjectsPanel projects={projects} sessions={fixture ? fixtureSessions : sess.data?.items ?? []} projectState={proj} sessionState={sess} fixture={fixture} query={query} onSelect={project => setSelected({ kind: 'project', data: project })} />
 
         {/* ── Proposals ── */}
         <SectionCard tabs={['proposals']} title="提案" count={proposals.length}>
@@ -134,32 +122,6 @@ export function WorkspacePage({ fixture, query }: Props) {
 }
 
 // ── Lists ──
-
-function ProjectList({ items, onSelect }: { items: Project[]; onSelect: (p: Project) => void }) {
-  if (!items.length) return <EmptyState title="没有匹配的项目" description="尝试其他搜索词" />;
-  return (
-    <ul className={`${styles.list} ac-project-list`} role="list">
-      {items.map((p, index) => (
-        <li key={p.id} className={`${styles.listItem} ${index === 0 ? 'ac-project-hero' : 'ac-project-preview-card'}`} tabIndex={0} role="button"
-          onClick={() => onSelect(p)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); }}}>
-          {index === 0 && <span className="ac-overline">YOUR RESEARCH SPACE</span>}
-          <div className={index === 0 ? 'ac-project-title' : styles.itemHeader}>
-            <span className="ac-project-symbol">{p.name.slice(0, 1)}</span>
-            <span className={`${styles.itemTitle} ${index === 0 ? 'ac-project-name' : ''} line-clamp-2`}>{p.name}</span>
-          </div>
-          <span className="ac-text-button">查看项目与工作树<Icon name="arrow" size={14} /></span>
-          {index === 0 && <><NetworkArt /><span className="ac-hero-note">RESEARCH CONNECTIONS · 品牌插画</span></>}
-          <div className={styles.itemMeta}>
-            <span>{p.environment_id}</span>
-            <span className={styles.itemDesc}>{p.root_path}</span>
-            {p.worktree_id && <span>wt: {p.worktree_id}</span>}
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
 
 function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Proposal) => void }) {
   if (!items.length) return <EmptyState title="没有匹配的提案" description="尝试其他搜索词" />;

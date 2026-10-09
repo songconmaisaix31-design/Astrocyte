@@ -1,0 +1,17 @@
+# S1 同步与本地 Agent 前端 W3
+
+2026-10-10；基线 `20437708e43201e352d6c6926902e1363fd2ad3e`；分支 `s1-sync-ui-1010`。本机 Orca 原生 Codex，主控通过 worker-read 确认实际模型 `gpt-6.1-sol`。写域为 web/src（排除 api 与 pages/swarm）、web/e2e、本报告与 docs/acceptance/S1-sync.md。
+
+## 阶段一
+
+已读取 AGENTS、HANDOFF、STATUS、S1-sync-local-agent-plan、SPEC §6/§19、QUESTIONS，并用 view_image 检查指定 JPG。保留既有三页 shell/布局；只在 Attention 加入账号待接入区，把 Workspace 项目区改为参考图结构的暖白概览、平台/绑定状态/分组筛选与网格卡。卡显示服务注册目录，详情沿用原抽屉。统计基于已加载项目/会话，平台仅由匹配 project_id 的会话聚合，不推导已安装或正在运行；API 未提供分组、文件数、交接内容、活动时间，保持未提供，最近活动排序禁用。
+
+账号 B站/抖音绑定方式待确定，其余平台明确待接入，无伪连接按钮。没有新增连接、扫描、执行或摘要请求；未接入数据不得等同零更新。W0 的客户端/契约发布后由 W3 消费，不修改 API 或锁。
+
+已执行 `pnpm --dir web typecheck`、`pnpm --dir web lint`、`pnpm --dir web test`（43/43）、`pnpm --dir web build`、`git diff --check`，PASS。新增单测验证项目关联隔离、筛选组合、活动排序未知/无效值置后且不改输入。浏览器由主控授予单槽，准备执行现有 ephemeral helper 上的 targeted spec/navigation/preview-design；尚未执行，不能声明浏览器通过。
+
+## 待定用户旅程
+
+这是讨论草案，不冻结接口：确认绑定来源 → 获取更新列表 → 展示来源/状态与 Agent 反馈 → 人工选择 → 复用现有导入/作业反馈 → 回查资料版本。反馈前是否预取正文仍 pending；账号登录或公开绑定、真实目标账号、本地操作范围与读取根待用户。遇到挑战页/需登录/不可用应显示具体原因，保留先前清单，不把异常转换为空更新。项目导入和扫描入口待指定目录授权；安装/配置/可启动/原生能力分别显示，观察会话不等于控制。
+
+完整账号集成、真实同步、AT01–04、新模型整理、授权 Agent 读取、两尺寸最终真实验收尚未完成。旧 UNKNOWN 未重发；未导入个人库，未读凭据或扫描磁盘。
