@@ -78,12 +78,28 @@ func TestArxivLiveOfficialSource(t *testing.T) {
 		t.Skip("set ASTROCYTE_TEST_ARXIV_ID to the approved public paper")
 	}
 	r := NewReader(nil)
+	fullText := os.Getenv("ASTROCYTE_TEST_SUMMARIZE_CLI") != ""
+	if fullText {
+		extractor, err := NewSummarizeExtractor(os.Getenv("ASTROCYTE_TEST_SUMMARIZE_NODE"), os.Getenv("ASTROCYTE_TEST_SUMMARIZE_CLI"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.Arxiv.TextExtractor = extractor
+	}
 	s, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "arxiv", SourceLocator: id, Kind: "paper"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(s.Attachments) != 2 || !strings.HasPrefix(string(s.Attachments[0].Data), "%PDF-") || !strings.Contains(s.Text, "metadata only") || len(s.SourceSpans) != 1 {
+	if !strings.HasPrefix(string(s.Attachments[0].Data), "%PDF-") {
 		t.Fatalf("incomplete original source %+v", s)
+	}
+	if fullText {
+		if len(s.Attachments) != 4 || len(s.Text) < 5000 || !strings.Contains(s.Text, "Introduction") || !strings.Contains(s.Text, "Original HTML text") || len(s.SourceSpans) != 2 || s.Provenance.Mode != "official_atom_pdf_and_html_text" {
+			t.Fatal("lost original HTML text or provenance")
+		}
+		t.Logf("HTML_bytes=%d extracted_text_chars=%d mode=%s", len(s.Attachments[2].Data), len(s.Text), s.Provenance.Mode)
+	} else if len(s.Attachments) != 2 || !strings.Contains(s.Text, "metadata only") || len(s.SourceSpans) != 1 {
+		t.Fatal("metadata scope changed without extractor")
 	}
 	t.Logf("source=%s fixed=%s PDF_bytes=%d", s.SourceKey, s.SourceLocator, len(s.Attachments[0].Data))
 	if dir := os.Getenv("ASTROCYTE_TEST_EXPORT_DIR"); dir != "" {
