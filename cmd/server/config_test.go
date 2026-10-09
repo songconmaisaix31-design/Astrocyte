@@ -2,9 +2,37 @@ package main
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"testing"
 )
+
+func TestProjectSummarizeResolvesLocalPinWithoutGlobalCLI(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	if err := os.WriteFile(filepath.Join(root, "package.json"), []byte(`{"name":"astrocyte"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolveProjectSummarize(); err == nil {
+		t.Fatal("missing installation silently accepted")
+	}
+	packageRoot := filepath.Join(root, "node_modules", "@steipete", "summarize")
+	if err := os.MkdirAll(packageRoot, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, version := range []string{"0.21.8", "0.25.1"} {
+		if err := os.WriteFile(filepath.Join(packageRoot, "package.json"), []byte(`{"version":"`+version+`"}`), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		path, err := resolveProjectSummarize()
+		if version == "0.21.8" && err == nil {
+			t.Fatal("stale global-era version accepted")
+		}
+		if version == "0.25.1" && (err != nil || path != filepath.Join(packageRoot, "dist", "cli.js")) {
+			t.Fatalf("local CLI not resolved: %q %v", path, err)
+		}
+	}
+}
 
 func TestCodexOptInCannotImplicitlyAuthorizeSources(t *testing.T) {
 	t.Setenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION", "")
@@ -51,13 +79,19 @@ func TestImportRootsExplicitAndNoDefault(t *testing.T) {
 	}
 }
 
-func TestSummarizeExtractionRequiresExplicitInstalledPaths(t *testing.T) {
+func TestSummarizeExtractionCanBeDisabledAndRejectsInvalidPaths(t *testing.T) {
+	t.Setenv("ASTROCYTE_ENABLE_SUMMARIZE", "false")
 	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", "")
 	t.Setenv("ASTROCYTE_NODE", "missing")
 	reader, err := resolveSourceReader(nil)
 	if err != nil || reader.Arxiv.TextExtractor != nil {
-		t.Fatalf("default must retain metadata/PDF-only reader: %v %v", reader, err)
+		t.Fatalf("disabled must retain metadata/PDF-only reader: %v %v", reader, err)
 	}
+	t.Setenv("ASTROCYTE_ENABLE_SUMMARIZE", "yes")
+	if _, err := resolveSourceReader(nil); err == nil {
+		t.Fatal("accepted ambiguous summarize setting")
+	}
+	t.Setenv("ASTROCYTE_ENABLE_SUMMARIZE", "")
 	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", "relative.js")
 	if _, err := resolveSourceReader(nil); err == nil {
 		t.Fatal("accepted unverified extraction paths")
