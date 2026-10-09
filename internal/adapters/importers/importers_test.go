@@ -135,6 +135,38 @@ func TestBilibiliTrackingCanonicalSource(t *testing.T) {
 	}
 }
 
+func TestBilibiliPageOnlyIsNotVideoEvidence(t *testing.T) {
+	base := `{"input":{"url":"https://www.bilibili.com/video/BV1PReT6EEqR/"},"extracted":{"content":"recommended page links","transcriptSource":null,"transcriptSegments":null,"diagnostics":{"strategy":"html","transcript":{"textProvided":false}}},"llm":null,"summary":%s}`
+	for _, summary := range []string{`null`, `"recommended page links"`} {
+		_, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "video", ExportText: fmt.Sprintf(base, summary)})
+		var service *apierrors.ServiceError
+		if !errors.As(err, &service) || service.Code != apierrors.EvidenceMissing {
+			t.Fatalf("page-only export accepted: %v", err)
+		}
+	}
+	// Missing timestamps do not invalidate a real prior summary.
+	for _, raw := range []string{
+		`{"input":{"url":"https://www.bilibili.com/video/BV1PReT6EEqR/"},"summary":"existing human supplied video summary"}`,
+		fmt.Sprintf(base, `"genuine existing video summary"`),
+	} {
+		if e, err := ParseSummarizeJSON([]byte(raw)); err != nil || len(e.Segments) != 0 {
+			t.Fatalf("genuine summary rejected or timing invented: %+v %v", e, err)
+		}
+	}
+	// Opt in to the preserved actual installed CLI output, outside this repo.
+	if path := os.Getenv("ASTROCYTE_TEST_BILIBILI_EXPORT"); path != "" {
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = ParseSummarizeJSON(raw)
+		var service *apierrors.ServiceError
+		if !errors.As(err, &service) || service.Code != apierrors.EvidenceMissing {
+			t.Fatalf("real page-only export accepted: %v", err)
+		}
+	}
+}
+
 func TestSummarizeTimingAndMissingOriginal(t *testing.T) {
 	for _, tc := range []struct {
 		raw   string
