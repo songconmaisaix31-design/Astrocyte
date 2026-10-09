@@ -34,6 +34,27 @@ type Codex struct{ options CodexOptions }
 
 var _ app.Distiller = (*Codex)(nil)
 
+var _ app.DistillerStatusProvider = (*Codex)(nil)
+
+func (c *Codex) Status(ctx context.Context) (app.DistillerStatus, error) {
+	model := c.options.Model
+	status := app.DistillerStatus{SchemaVersion: 1, Processor: "codex-cli", Model: &model, AllowedSourceKeys: append([]string{}, c.options.AllowedSourceKeys...)}
+	config, err := c.ConfigurationID(ctx)
+	if err != nil {
+		var service *apierrors.ServiceError
+		if errors.As(err, &service) {
+			status.Reason = service.Message
+			status.RequiredAction = service.RequiredAction
+			return status, nil
+		}
+		return status, err
+	}
+	status.Available = true
+	status.ConfigurationID = &config
+	status.Reason = "Configured native text processor; provider authentication, current availability and monetary cost are not checked by this status"
+	return status, nil
+}
+
 func NewCodex(options CodexOptions) (*Codex, error) {
 	if !filepath.IsAbs(options.Executable) || strings.ToLower(filepath.Ext(options.Executable)) != ".exe" {
 		return nil, unavailable("configure the native Codex executable absolute path")
