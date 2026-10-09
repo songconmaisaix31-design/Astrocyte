@@ -398,7 +398,7 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 		t.Fatal("new question did not create work")
 	}
 	c.CommandMeta = meta("theme", 1)
-	c.Stage = "theme"
+	c.Stage = "topic"
 	c.Question = ""
 	c.OutputText = "Unresolved thematic comparison"
 	c.PendingQuestions = []string{"Need another paper"}
@@ -406,6 +406,14 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 	if err != nil || len(theme.Distillation.PendingQuestions) != 1 {
 		t.Fatal("pending evidence lost")
 	}
+	if theme.Distillation.Stage != "topic" {
+		t.Fatal("public topic stage was not preserved")
+	}
+	invalid := c
+	invalid.CommandMeta = meta("invalid-theme", 1)
+	invalid.Stage = "theme"
+	_, err = s.RecordDistillation(context.Background(), human, invalid)
+	errorCode(t, err, apierrors.ValidationFailed)
 	c.CommandMeta = meta("project", 1)
 	c.Stage = "project"
 	c.OutputText = "Project association"
@@ -430,7 +438,7 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 func TestFeedbackCASHistoryAndUnknownDimensions(t *testing.T) {
 	s, r, _ := fixture(t)
 	material := importFixture(t, s, "import", "source")
-	d, err := s.RecordDistillation(context.Background(), human, RecordDistillationCommand{CommandMeta: meta("theme", 1), InputRefs: sourceRefs(material), Stage: "theme", ProcessingConfig: "manual-v1", OutputText: "Two unresolved ideas", PendingQuestions: []string{"Need related evidence"}})
+	d, err := s.RecordDistillation(context.Background(), human, RecordDistillationCommand{CommandMeta: meta("theme", 1), InputRefs: sourceRefs(material), Stage: "topic", ProcessingConfig: "manual-v1", OutputText: "Two unresolved ideas", PendingQuestions: []string{"Need related evidence"}})
 	if err != nil {
 		t.Fatal(err)
 	}
