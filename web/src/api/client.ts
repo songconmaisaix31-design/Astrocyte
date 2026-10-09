@@ -28,21 +28,21 @@ export class ApiError extends Error {
 
 type ReadOptions = { signal?: AbortSignal };
 export function createReadApi(client = api) {
-  async function read<P extends '/health' | '/foundation' | '/materials' | '/opportunities' | '/projects' | '/proposals' | '/sessions' | '/missions'>(path: P, options: ReadOptions = {}) {
-    const { data, error, response } = await client.GET(path, { signal: options.signal });
+  async function unwrap<T>(result: Promise<{ data?: T; error?: ApiErrorBody; response: Response }>): Promise<T> {
+    const { data, error, response } = await result;
     if (error) throw new ApiError(response.status, error);
-    if (!data) throw new Error(`API returned no JSON data: ${path}`);
+    if (!data) throw new Error('API returned no JSON data');
     return data;
   }
   return {
-    getHealth: (options?: ReadOptions) => read('/health', options),
-    getFoundation: (options?: ReadOptions) => read('/foundation', options),
-    listMaterials: (options?: ReadOptions) => read('/materials', options),
-    listOpportunities: (options?: ReadOptions) => read('/opportunities', options),
-    listProjects: (options?: ReadOptions) => read('/projects', options),
-    listProposals: (options?: ReadOptions) => read('/proposals', options),
-    listSessions: (options?: ReadOptions) => read('/sessions', options),
-    listMissions: (options?: ReadOptions) => read('/missions', options),
+    getHealth: (options?: ReadOptions) => unwrap(client.GET('/health', options)),
+    getFoundation: (options?: ReadOptions) => unwrap(client.GET('/foundation', options)),
+    listMaterials: (options?: ReadOptions) => unwrap(client.GET('/materials', options)),
+    listOpportunities: (options?: ReadOptions) => unwrap(client.GET('/opportunities', options)),
+    listProjects: (options?: ReadOptions) => unwrap(client.GET('/projects', options)),
+    listProposals: (options?: ReadOptions) => unwrap(client.GET('/proposals', options)),
+    listSessions: (options?: ReadOptions) => unwrap(client.GET('/sessions', options)),
+    listMissions: (options?: ReadOptions) => unwrap(client.GET('/missions', options)),
   };
 }
 export const { getHealth, getFoundation, listMaterials, listOpportunities, listProjects, listProposals, listSessions, listMissions } = createReadApi();
