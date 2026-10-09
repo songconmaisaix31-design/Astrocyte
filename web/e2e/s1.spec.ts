@@ -181,4 +181,42 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect((await api.get('/missions')).items).toHaveLength(0);
     await page.screenshot({ path: testInfo.outputPath('s1-human-space-reference.png'), fullPage: true });
   });
+
+  test('human ranking settings begin empty, preserve versions and survive reload without inventing unknown scores', async ({ page }, testInfo) => {
+    await page.goto(`${server.webURL}/attention`);
+    const main = page.getByRole('main');
+    await expect(main.getByText('尚未配置综合排序，权重留空', { exact: true })).toBeVisible();
+    const fields = [['目标进展权重', '4'], ['当前兴趣权重', '3'], ['项目改善权重', '2'], ['创新性权重', '1']] as const;
+    for (const [label, value] of fields) {
+      await expect(main.getByLabel(label, { exact: true })).toHaveValue('');
+      await main.getByLabel(label, { exact: true }).fill(value);
+    }
+    await main.getByRole('checkbox', { name: '启用综合排序', exact: true }).check();
+    const firstResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/attention-ranking-profile') && response.request().method() === 'PUT');
+    await main.getByRole('button', { name: '保存排序配置', exact: true }).click();
+    expect((await firstResponse).status()).toBe(200);
+    await expect.poll(async () => (await api.get('/attention-ranking-profile')).profile?.version).toBe(1);
+    for (const candidate of (await api.get('/opportunities')).items) expect(candidate.composite_score == null).toBe(true);
+    await expect(main.getByText('已保存配置 v1 · 启用', { exact: true })).toBeVisible();
+    await main.getByRole('checkbox', { name: '启用综合排序', exact: true }).uncheck();
+    const secondResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/attention-ranking-profile') && response.request().method() === 'PUT');
+    await main.getByRole('button', { name: '保存排序配置', exact: true }).click();
+    expect((await secondResponse).status()).toBe(200);
+    const saved = await api.get('/attention-ranking-profile');
+    expect(saved.profile?.version).toBe(2);
+    expect(saved.profile?.enabled).toBe(false);
+    expect(saved.versions.map(profile => profile.version)).toEqual([1, 2]);
+    expect(saved.versions[0].enabled).toBe(true);
+    await page.reload();
+    await expect(main.getByText('已保存配置 v2 · 停用', { exact: true })).toBeVisible();
+    await expect(main.getByRole('checkbox', { name: '启用综合排序', exact: true })).not.toBeChecked();
+    for (const [label, value] of fields) await expect(main.getByLabel(label, { exact: true })).toHaveValue(value);
+    const history = main.locator('details').filter({ hasText: '排序配置版本历史' });
+    await history.locator('summary').click();
+    await expect(history).toContainText('v1 · 启用');
+    await expect(history).toContainText('v2 · 停用');
+    expect(await api.get('/attention-ranking-profile')).toEqual(saved);
+    expect((await api.get('/missions')).items).toHaveLength(0);
+    await page.screenshot({ path: testInfo.outputPath('s1-human-ranking-profile.png'), fullPage: true });
+  });
 });
