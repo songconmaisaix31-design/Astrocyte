@@ -14,3 +14,32 @@
 后续决定点（不阻塞 S0）：真实论文/视频/目标仓库与改进案例；原生 resume 不支持时的 S3 处理；运行 Agent 的 cooperative/mediated 模式；资料外发范围及具体判断后端。费用不限不等于资料访问与外发范围无限。
 
 当前执行计划见 [S0-plan.md](../tasks/S0-plan.md)。
+
+## S1 用户补充（2026-10-09）
+
+用户明确进入 S1，先把 Attention 的资料沉淀与候选管理做实，保留底座与新布局，以真实 API、持久化及浏览器验收 AT01–AT04，默认导入链路无 Python。
+
+- 真实论文：<https://arxiv.org/abs/2504.16054>；真实视频：<https://www.bilibili.com/video/BV1PReT6EEqR/>。原链接的 tracking 参数不构成新来源。
+- 用户纠正术语：是“域”，不是“云”。首次整理后的资料进入域，使用算法排序；人类可以主动分类、主动 @文件。日常学习与当前研究等分类由人组织。
+- 资料只有进入项目顶层空间后，Agent 才可主动认领读取。人类使用、提及和项目复用形成排序信号；Agent 读取不增加人类热度。排序升高不自行扩大读取权限。
+- 数据库和原文对象不能直接作为 Agent 的全库读取工具；本机 CLI 或 Pi 接入也必须符合资料权限。当前只研究成熟案例及原生限制，不新建权限框架。
+- 用户已确认纳入动作：人在项目空间中 @文件，建立引用并纳入该空间；原资料仍留在原分类中。不移动或复制原件，分类本身不等于纳入。
+- 用户已确认自动整理后端先使用本机 Codex CLI；使用现有配置、处理明确选定资料，不授予全库读取或私有资料无限外发权限。
+
+以下关键语义已向用户询问，仍未决定，不能据此冻结接口：Agent 可读范围是明确纳入文件、其引用资料还是项目全目录；私有资料的外发范围；候选 ready_for_review 是否必须完成主题关联。此前“高层云自动授权”、按热度层级开放权限的提议已撤销。执行计划见 [S1-plan.md](../tasks/S1-plan.md)。
+
+实际验收又发现一项默认版本行为未约定：A、B 两版已保存后重新导入旧 A，是保留 B 为当前版并指向旧 A 回执，还是恢复 A 为当前版。已询问用户；两种都必须复用旧 revision、不重复整理。未答前不以自定恢复规则作验收条件。
+
+权限设计参考已按用户要求查阅：采用 [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html) 的默认拒绝、每请求资源校验，参考 [OpenFGA 父子资源案例](https://openfga.dev/docs/modeling/parent-child) 理解项目与文件引用的关系，沿用当前 Go/SQLite，不引入 OpenFGA 服务。是否继承引用访问仍由用户决定。
+
+本机接入调查：当前 CLI help 已核对 Codex 及 Pi。普通只读不能作为数据库读取隔离的承诺；[Codex Windows 官方文档](https://learn.chatgpt.com/docs/windows/windows-sandbox) 明确 unelevated 不支持拒绝读取路径。[Pi 官方工具选项](https://github.com/earendil-works/pi/tree/main/packages/coding-agent) 支持禁用全部工具。用户已选 Codex，先用非敏感临时哨兵验证原生运行时隔离，不修改全局配置，不把文档能力当本机验收结果。向处理进程只传本次选定的正文和版本，不开放数据库或原文对象任意路径。
+
+本机实测更新：原生沙箱探针失败，第二次 CLI 自动进入 setup refresh。日志与只读 ACL 元数据确认若干路径有 CodexSandboxUsers 读取 ACE；没有改动前快照，不能确定哪些是新增，不能安全凭猜测删除。已向用户说明并停止 legacy 路径，不主动修改账户或防火墙，不把这次探测记成隔离 PASS。替代的固定文本处理参数已实测：原生 runtime 拒绝执行入口，子 Agent 关闭，测试未泄露随机哨兵且 loopback 请求为零；不声称所有工具都从 schema 移除。后续整理使用该参数，不调用 legacy setup。
+
+真实视频字幕的公开接口返回 `need_login_subtitle=true`。已核本机 OpenCLI 的无 Python 字幕命令和 [官方 Browser Bridge](https://chromewebstore.google.com/detail/opencli/ildkmabpimmkaediidaifkhjpohdnifk)，用户需正常登录并连接浏览器后才能继续该视频的真实字幕验收；登录后仍可能没有字幕。已询问用户连接状态，不读取登录凭据原件，不以推荐网页文字冒充视频正文。
+
+Codex 实测：当前原生 CLI 为 `0.162.0`。旧输出结构的一次公开论文全文整理成功；加入候选建议后的最新结构调用在 180 秒后超时，完整结果、usage 与费用未知，原生所属进程已结束。原调用不自动重试，也不拿旧结构的成功替代最新自动链路验收。已询问用户是否允许另建作业并延长时限；未答前继续其余功能与离线验收。
+
+用户再次明确：视频必须复用 summarize 开源项目。沿 SPEC P10 适配其真实既有 JSON/Markdown 导出，保存原始输出与真实时间位置；不另建视频下载/转录器。OpenCLI 字幕公开接口调查仅用于诊断指定视频缺证据，不替换默认导入链路。当前该视频的 summarize 输出仍缺真实字幕/总结，未降低 AT01。
+
+第二步用户允许另选多版本公开论文验证真实内容更新。采用 [2501.12948 官方版本历史](https://arxiv.org/abs/2501.12948) 的 v1/v2，只用于导入、持久化与版本验收；此答复没有扩大自动模型处理或私有资料外发权限。原指定论文 2504.16054 仍按其实际 v1 验收，不人工伪造 v2。
