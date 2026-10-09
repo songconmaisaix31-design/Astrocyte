@@ -37,3 +37,5 @@
 本机实测更新：原生沙箱探针失败，第二次 CLI 自动进入 setup refresh。日志与只读 ACL 元数据确认若干路径有 CodexSandboxUsers 读取 ACE；没有改动前快照，不能确定哪些是新增，不能安全凭猜测删除。已向用户说明并停止 legacy 路径，不主动修改账户或防火墙，不把这次探测记成隔离 PASS。替代的固定文本处理参数已实测：原生 runtime 拒绝执行入口，子 Agent 关闭，测试未泄露随机哨兵且 loopback 请求为零；不声称所有工具都从 schema 移除。后续整理使用该参数，不调用 legacy setup。
 
 真实视频字幕的公开接口返回 `need_login_subtitle=true`。已核本机 OpenCLI 的无 Python 字幕命令和 [官方 Browser Bridge](https://chromewebstore.google.com/detail/opencli/ildkmabpimmkaediidaifkhjpohdnifk)，用户需正常登录并连接浏览器后才能继续该视频的真实字幕验收；登录后仍可能没有字幕。已询问用户连接状态，不读取登录凭据原件，不以推荐网页文字冒充视频正文。
+
+Codex 实测：当前原生 CLI 为 `0.162.0`。旧输出结构的一次公开论文全文整理成功；加入候选建议后的最新结构调用在 180 秒后超时，完整结果、usage 与费用未知，原生所属进程已结束。原调用不自动重试，也不拿旧结构的成功替代最新自动链路验收。已询问用户是否允许另建作业并延长时限；未答前继续其余功能与离线验收。
