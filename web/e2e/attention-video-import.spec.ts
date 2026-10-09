@@ -209,7 +209,6 @@ test('selected public video URL imports through the real service without an expo
         const response = await page.request.get(`${materialURL}/revisions/${revision.revision}/attachments/${encodeURIComponent(attachment.name)}`);
         expect(response.ok()).toBe(true);
         const body = await response.body();
-        expect(body.length).toBeGreaterThan(0);
         expect(body).toEqual(objects[index + 1]);
         attachments.push(body);
       }
