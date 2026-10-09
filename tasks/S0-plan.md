@@ -1,0 +1,18 @@
+# S0 一页执行计划
+
+目标：交付独立 Go + React/TypeScript 项目、浅分层包、三页 fixture、OpenAPI 与生成客户端、SQLite 迁移、开发/检查/构建入口。
+
+起点：`de433528d360413305a4a65c997e11ef7fbf4841`。主分支：`s0/workbench-foundation`。每轨由一个 Orca Worker 在一个独立 worktree/branch 持续负责开发、测试和返修。主 Agent 维护决定、最终检查与提交。
+
+| 轨道 | 目标与可改路径 | 依赖 | 验收 | 停止点 |
+|---|---|---|---|---|
+| W0 基座/契约 | 根 package/pnpm/go 配置和锁、`contracts/`、`scripts/`、`web/src/api/`、`web/package.json`、web 工具配置、`README.md`、`dependencies.lock.json`、`.github/` | 已确认 S0 | 依赖锁定、OpenAPI 校验、客户端生成；发布接入约定；最后负责少量集成胶水 | 产品规则变化先交主 Agent；不进入 S1–S6 实现 |
+| W1 Go/SQLite | `cmd/`、`internal/`、`migrations/` | W0 公共契约、Go 工具链 | Go 测试/vet/build；迁移和重启；健康与空集合 API；未实现写接口明确拒绝 | 不改根依赖/契约/前端；变更需求交 W0 |
+| W2 三页界面 | `web/index.html`、`web/src/`（排除 `api/`）、`web/public/`、`web/e2e/` | W0 客户端和前端配置 | 三页、显式 fixture、默认真实空态；loading/empty/error/stale/disabled；两尺寸、键盘、Playwright | 不改公共 API/锁/工具配置；不把 fixture 当研究或执行事实 |
+| W3 本地工具清点 | `docs/probes/local-agents.md` | 本机现有工具 | 只读记录可调用版本和接入线索，覆盖本地 Agent、summarize；不读取密钥 | 不启动真实研究、不改 Agent 全局配置、不将版本命令当能力验收 |
+
+顺序：W0 先发布公共契约；W3 可同时清点。随后 W1/W2 并行。集成由 W0 接回少量胶水，领域缺陷退回对应 Worker。主 Agent 在合并结果上运行最终检查并 push。
+
+S0 验收入口：`go mod download`、`pnpm install --frozen-lockfile`、`pnpm check`、`pnpm test:e2e`、`pnpm build`、`pnpm dev`。
+
+此次不选择真实案例，也不降低 S3 原生接续验收。Laya/Jev/索引后端的实际选型和执行控制模式留在相关适配任务；S0 不实现任务执行账本。移除重复证明检查，保留能发现实际错误的检查。

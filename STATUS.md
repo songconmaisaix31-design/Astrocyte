@@ -1,51 +1,23 @@
-# Astrocyte 当前基线
+# Astrocyte 当前状态
 
-日期：2026-10-09。当前任务：[B0 文档基线](tasks/B0-baseline.md)。
+日期：2026-10-09。当前任务：[S0 计划](tasks/S0-plan.md)。
 
-## 仓库起点
+- 起始代码：只有 AGPL v3 LICENSE，初始提交 3a02ce38481d1885adee2e051a1b524d78376897。
+- 文档基线：de433528d360413305a4a65c997e11ef7fbf4841，已 push baseline/workbench-v0.1。该提交的 SPEC/TASKS 与用户下载文件逐字节一致。
+- 当前分支：s0/workbench-foundation。SPEC/TASKS 后续修订记录用户确认，原文保留于上述基线提交。
+- 远端：https://github.com/songconmaisaix31-design/Astrocyte。
+- 主工作树：C:\Users\DW\orca\Astrocyte；原有 charybdis 工作树保持原位。
 
-- 工作目录：`C:\Users\DW\orca\Astrocyte`。
-- 起始分支：`main`；起始 HEAD：`3a02ce38481d1885adee2e051a1b524d78376897`。
-- 远端：`https://github.com/songconmaisaix31-design/Astrocyte`。读取远端 `main` 得到同一提交。
-- 初始工作树干净；唯一已跟踪文件为 `LICENSE`，内容标明 GNU AGPL v3。
-- 已有另一工作树：`C:\Users\DW\orca\workspaces\Astrocyte\charybdis`，分支 `songconmaisaix31-design/charybdis`。本任务只修改当前工作树。
-- 本次基线分支：`baseline/workbench-v0.1`。提交以该分支 Git HEAD 为准。
+用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)：先交付 S0；主 Agent 最终 check/提交；并发无数量上限；允许依赖/模型下载；模型按任务难度选择；summarize 和 arXiv 为导入方向，案例后定。
 
-## 业务事实源
+## 环境与进度
 
-| 仓库文件 | 用户提供的原文件 | 版本 |
-|---|---|---|
-| [docs/SPEC.md](docs/SPEC.md) | `C:\Users\DW\Downloads\Workbench_DDD_Spec_v0.1.md` | v0.1，2026-10-09 |
-| [docs/TASKS.md](docs/TASKS.md) | `C:\Users\DW\Downloads\Workbench_开发时间规划_TODO_v0.1.md` | v0.1，2026-10-09 |
-
-两份文件按原文复制；本次未修改其产品规则、日期、切片或验收。后续规格维护入口为 `docs/SPEC.md`，规划维护入口为 `docs/TASKS.md`。
-
-规格已有：Go 模块化单体、React + TypeScript + Vite、SQLite；Attention / Workspace / Swarm 三个业务上下文与 Judgment 共享能力；资料准入和执行批准分离；新平台构建、安装和运行无 Python；Windows 主路径，Linux/WSL 分开验证。
-
-以上是原规格内容。开发组织、产品账本实现边界及交付节点仍有冲突，见 [待确认问题](docs/QUESTIONS.md)。26 周和各阶段日期保留为原文估算，尚未成为用户确认的排期。
-
-## 本机工具检查
-
-| 检查 | 实际结果 |
+| 项目 | 当前结果 |
 |---|---|
-| `git --version` | `2.47.0.windows.1` |
-| `node --version` | `v24.16.0` |
-| `pnpm --version` | `11.27.0` |
-| `codex --version` | `codex-cli 0.160.0` |
-| `claude --version` | `2.1.238 (Claude Code)` |
-| `Get-Command go -ErrorAction SilentlyContinue` | 当前 PATH 未找到 Go；未安装或调整环境 |
+| Node / pnpm | v24.16.0 / 11.27.0 |
+| Codex / Claude Code | 0.160.0 / 2.1.238，原生能力尚未验收 |
+| Go | 正在从官方发布安装便携工具链 |
+| S0 | NOT_RUN；已拆分 W0–W3，开始搭建 |
+| S1–S6、AT01–AT16 | NOT_RUN |
 
-上述为当前可调用版本，不是项目依赖锁定版本。Agent 原生能力和会话控制尚未探测。
-
-## 验证与切片状态
-
-| 项目 | 状态 | 结果或下一步 |
-|---|---|---|
-| 原文复制与来源核对 | PASS | 两份仓库文件与下载原文件逐字节一致 |
-| 文档相对链接/路径 | PASS | 新增文档链接及规格中的本地入口引用均可解析 |
-| `git diff --cached --check` | PASS | 无空白错误 |
-| S0 基座与契约 | NOT_RUN | 尚无代码、依赖锁、OpenAPI、迁移或启动入口 |
-| S1–S6、AT01–AT16 | NOT_RUN | 尚未实现或执行验收 |
-| 构建、测试、UI 和独立复核 | NOT_RUN | 文档基线未建立这些命令入口 |
-
-下一步：用户回答 Q1–Q3 后，更新相应规格/规划并确定 S0 任务；Q4–Q6 的回答用于安排真实适配探测和样例。Go 环境准备在安装授权明确后执行。
+下一步：发布公共契约和命令约定，后端/界面并行实现；最终检查结果在此更新。
