@@ -28,6 +28,12 @@
 
 以下关键语义已向用户询问，仍未决定，不能据此冻结接口：Agent 可读范围是明确纳入文件、其引用资料还是项目全目录；私有资料的外发范围；候选 ready_for_review 是否必须完成主题关联。此前“高层云自动授权”、按热度层级开放权限的提议已撤销。执行计划见 [S1-plan.md](../tasks/S1-plan.md)。
 
+实际验收又发现一项默认版本行为未约定：A、B 两版已保存后重新导入旧 A，是保留 B 为当前版并指向旧 A 回执，还是恢复 A 为当前版。已询问用户；两种都必须复用旧 revision、不重复整理。未答前不以自定恢复规则作验收条件。
+
 权限设计参考已按用户要求查阅：采用 [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html) 的默认拒绝、每请求资源校验，参考 [OpenFGA 父子资源案例](https://openfga.dev/docs/modeling/parent-child) 理解项目与文件引用的关系，沿用当前 Go/SQLite，不引入 OpenFGA 服务。是否继承引用访问仍由用户决定。
 
 本机接入调查：当前 CLI help 已核对 Codex 及 Pi。普通只读不能作为数据库读取隔离的承诺；[Codex Windows 官方文档](https://learn.chatgpt.com/docs/windows/windows-sandbox) 明确 unelevated 不支持拒绝读取路径。[Pi 官方工具选项](https://github.com/earendil-works/pi/tree/main/packages/coding-agent) 支持禁用全部工具。用户已选 Codex，先用非敏感临时哨兵验证原生运行时隔离，不修改全局配置，不把文档能力当本机验收结果。向处理进程只传本次选定的正文和版本，不开放数据库或原文对象任意路径。
+
+本机实测更新：原生沙箱探针失败，第二次 CLI 自动进入 setup refresh。日志与只读 ACL 元数据确认若干路径有 CodexSandboxUsers 读取 ACE；没有改动前快照，不能确定哪些是新增，不能安全凭猜测删除。已向用户说明并停止 legacy 路径，不主动修改账户或防火墙，不把这次探测记成隔离 PASS。替代的固定文本处理参数已实测：原生 runtime 拒绝执行入口，子 Agent 关闭，测试未泄露随机哨兵且 loopback 请求为零；不声称所有工具都从 schema 移除。后续整理使用该参数，不调用 legacy setup。
+
+真实视频字幕的公开接口返回 `need_login_subtitle=true`。已核本机 OpenCLI 的无 Python 字幕命令和 [官方 Browser Bridge](https://chromewebstore.google.com/detail/opencli/ildkmabpimmkaediidaifkhjpohdnifk)，用户需正常登录并连接浏览器后才能继续该视频的真实字幕验收；登录后仍可能没有字幕。已询问用户连接状态，不读取登录凭据原件，不以推荐网页文字冒充视频正文。
