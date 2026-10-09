@@ -8,8 +8,9 @@ describe('generated HTTP client read boundary', () => {
     }));
     const data = await createReadApi(createApiClient('http://127.0.0.1:8787/api/v1', fetchImpl)).listMaterials();
     expect(data).toEqual({ schema_version: 1, items: [], next_cursor: null });
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect((fetchImpl.mock.calls[0][0] as Request).url).toBe('http://127.0.0.1:8787/api/v1/materials');
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect((fetchImpl.mock.calls[0][0] as Request).url).toBe('http://127.0.0.1:8787/api/v1/auth/session');
+    expect((fetchImpl.mock.calls[1][0] as Request).url).toBe('http://127.0.0.1:8787/api/v1/materials');
   });
 
   it('preserves unsupported capability and recovery action without retrying', async () => {
