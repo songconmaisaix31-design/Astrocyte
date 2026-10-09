@@ -120,6 +120,11 @@ func TestAttentionAgentCannotBootstrapOrReadAnonymously(t *testing.T) {
 	if w := attentionRequest(s, "GET", "/api/v1/jobs", "", nil, "", "", ""); w.Code != 403 {
 		t.Fatal("unauthenticated protected read allowed")
 	}
+	for _, path := range []string{"/api/v1/materials", "/api/v1/materials/m1", "/api/v1/distillations", "/api/v1/opportunities", "/api/v1/materials/m1/revisions/1/attachments/source.pdf", "/api/v1/jobs"} {
+		if w := attentionRequest(s, "GET", path, "", nil, "", "Bearer test-agent-token", ""); w.Code != 403 {
+			t.Fatalf("unscoped Agent access allowed: %s", path)
+		}
+	}
 	r := httptest.NewRequest("GET", "/api/v1/auth/session", nil)
 	r.Host = "127.0.0.1:8787"
 	r.Header.Set("Sec-Fetch-Site", "cross-site")
