@@ -43,6 +43,18 @@ W2 `763e183df35951a3ba919f593a51168d22fee522` 普通 exact merge `73af8a6`；W0 
 
 已通过 Orca ask 向总控提交：来源候选 identity 可考虑 provider + source_kind + external_id；列表项保留来源 item identity/metadata revision，未人工选取前不变成 Material；选取复用现有 imports/jobs，不自动创建 Mission。公开/登录绑定、推荐与正文读取先后、刷新策略、明确 Agent 读取根和原生操作范围均等待用户决定；本轮不发布这些输入 schema、不新增授权或迁移。
 
+## 第四阶段：安全阶段普通集成
+
+已按 owner 正式 Handoff ordinary exact `--no-ff` 合并，无冲突、无领域重写：
+
+| Owner source | W0 merge | 范围 |
+|---|---|---|
+| W2 `47772035b39ee6ce445e6fe90bd6120b0c87e200` | `1d4e711` | 部分探测状态、取消测试、报告，沿既有未知边界 |
+| W3 `b49c1f92035ee42a875d446d3852d5d3dd44e5aa` | `9163412` | 真实发现 API 面板、项目概览、待决定账号提示与针对性浏览器用例 |
+| W1 `d0e717dd404d9ef917a31985461fc59c33e92756` | `2f70282` | 公开 B站列表适配与抖音页面解析、稳定 identity/变更比较；未组装账号同步或选择入库接口 |
+
+本阶段业务/检查源 `2f70282ae414105431832102821cefe26f677d07`：`pnpm check` PASS/exit0（19 包边界、232 示例、API contract_local 14/14、TS/lint、前端 44/44，既有 EventV1 警告保留）；`pnpm build` PASS/exit0。检查使用临时库并默认关闭模型/媒体，首次完整 S1 验收仍未成立。W3 由总控授予目标浏览器 slot；W0 不运行浏览器，待接收其最后报告/返修结果。
+
 ## 剩余 / 未执行
 
 共同工作区发现 DTO/HTTP/adapter/service/启动组装已通过真实 CLI/API 检查，UI/浏览器和四轨最终集成仍待；账号同步未实现。真实 AT01–04、应用模型、媒体和浏览器需总控单次调度；没有合入 main，没有本轮远端 CI 结果。总控已明确本 Dispatch 持续等待决定/集成，当前不发送 worker_done。
