@@ -15,7 +15,7 @@ export function DomainsPanel({ state, fixture }: { state: ReturnType<typeof useD
   return <SectionCard title="我的域" tabs={['overview', 'saved']} padded>
     <p className={styles.note}>由你主动分类，例如日常学习与当前研究。分类和算法排序不授予 Agent 读取权限。</p>
     {fixture ? <p role="note">示例模式未提供真实域，分类写操作尚未启用。</p> : <>
-      <QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无资料域">{data => <ul className={styles.timeline}>{data.items.map(domain => <li key={domain.id}><DomainEditor initial={domain} disabled={state.stale || state.loading} onSaved={state.retry} /></li>)}</ul>}</QueryState>
+      <QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无资料域">{data => <ul className={styles.timeline}>{data.items.map(domain => <li key={domain.id}><details><summary>{domain.title} · v{domain.version}</summary><DomainEditor initial={domain} disabled={state.stale || state.loading} onSaved={state.retry} /></details></li>)}</ul>}</QueryState>
       <details><summary>新建资料域</summary><DomainEditor disabled={state.stale || state.loading || !!state.error} onSaved={state.retry} /></details>
     </>}
   </SectionCard>;

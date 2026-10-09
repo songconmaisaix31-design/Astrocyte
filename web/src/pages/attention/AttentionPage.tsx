@@ -53,9 +53,6 @@ export function AttentionPage({ fixture, query }: { fixture: boolean; query: str
     {!fixture && (mat.stale || opp.stale) && <div className={styles.stale} role="alert">数据可能已过期（刷新失败），显示的是上次成功加载的数据。<button className="ac-button secondary compact" type="button" onClick={refreshCollections}>重试</button></div>}
     <div className={styles.grid}>
       <SectionCard title="" tabs={['overview']}><IntroCard section="attention" onAdd={fixture ? undefined : () => setImporting(true)} /></SectionCard>
-      <DomainsPanel state={domains} fixture={fixture} />
-      <RankingPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} />
-      <SpacesPanel fixture={fixture} materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
       <JobsPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} onMaterial={id => {
         setSelectedMat(null); setSelectedMatId(id);
       }} />
@@ -70,6 +67,9 @@ export function AttentionPage({ fixture, query }: { fixture: boolean; query: str
       <SectionCard title="我的收藏" tabs={['saved']} padded>
         {fixture ? <><EmptyState title="收藏尚未接入" description="固定样本没有真实收藏状态；不能从采集或使用次数推断收藏。" /><button className="ac-button disabled" type="button" disabled>收藏操作尚未启用</button></> : mat.loading && !mat.data ? <p role="status">加载中…</p> : mat.error && !mat.data ? <ErrorState message={mat.error} onRetry={mat.retry} /> : saved.length ? <MaterialList items={saved} onSelect={setSelectedMat} /> : <EmptyState title="暂无收藏" description="在资料详情中固定到收藏。仅显示服务明确返回的固定项。" />}
       </SectionCard>
+      <DomainsPanel state={domains} fixture={fixture} />
+      <RankingPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} />
+      <SpacesPanel fixture={fixture} materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
     </div>
     {(importing || route.query.get('import') === '1') && <DetailPanel title="添加资料" onClose={handleClose}><ImportForm fixture={fixture} onImported={() => { refreshCollections(); setQueueToken(value => value + 1); }} /></DetailPanel>}
     {(selectedMat || selectedMatId) && <DetailPanel title="素材详情" onClose={handleClose} disabledActions={fixture ? ['继续沉淀', '以后再看'] : []} showDisabledNotice disabledNoticeText={fixture ? '示例模式：所有写操作尚未启用，请退出示例模式使用真实 API' : '资料准入和任务执行尚未实现，保存不会创建 Mission'}><MaterialWorkspace key={selectedMat?.id ?? selectedMatId!} id={selectedMat?.id ?? selectedMatId!} item={selectedMat ?? undefined} fixture={fixture} refreshToken={detailToken} materials={allMaterials} domains={domains} onChanged={refreshCollections} onQueued={() => { refreshCollections(); setQueueToken(value => value + 1); }} onOpportunity={selectOpportunity} /></DetailPanel>}
