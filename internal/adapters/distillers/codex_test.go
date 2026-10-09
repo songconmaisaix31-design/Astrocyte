@@ -138,3 +138,23 @@ func TestCodexLiveSelectedPublicPaper(t *testing.T) {
 		}
 	}
 }
+
+// Native status performs version validation only; it never submits a model call.
+func TestCodexNativeConfiguredStatus(t *testing.T) {
+	executable := os.Getenv("ASTROCYTE_TEST_CODEX_EXE")
+	if executable == "" {
+		t.Skip("set native Codex executable for no-model status validation")
+	}
+	c, err := NewCodex(CodexOptions{Executable: executable, WorkRoot: t.TempDir(), Model: "gpt-6.1-sol", AllowedSourceKeys: []string{"arxiv:2504.16054"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	status, err := c.Status(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !status.Available || status.Model == nil || *status.Model != "gpt-6.1-sol" || status.ConfigurationID == nil || len(status.AllowedSourceKeys) != 1 || status.Reason == "" {
+		t.Fatalf("missing real configured facts %+v", status)
+	}
+	t.Logf("configured processor=%s model=%s configuration=%s allowed_sources=%v (provider/cost unchecked)", status.Processor, *status.Model, *status.ConfigurationID, status.AllowedSourceKeys)
+}

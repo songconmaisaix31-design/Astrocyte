@@ -34,6 +34,27 @@ type Codex struct{ options CodexOptions }
 
 var _ app.Distiller = (*Codex)(nil)
 
+var _ app.DistillerStatusProvider = (*Codex)(nil)
+
+func (c *Codex) Status(ctx context.Context) (app.DistillerStatus, error) {
+	model := c.options.Model
+	status := app.DistillerStatus{SchemaVersion: 1, Processor: "codex-cli", Model: &model, AllowedSourceKeys: append([]string{}, c.options.AllowedSourceKeys...)}
+	config, err := c.ConfigurationID(ctx)
+	if err != nil {
+		var service *apierrors.ServiceError
+		if errors.As(err, &service) {
+			status.Reason = service.Message
+			status.RequiredAction = service.RequiredAction
+			return status, nil
+		}
+		return status, err
+	}
+	status.Available = true
+	status.ConfigurationID = &config
+	status.Reason = "Configured native text processor; provider authentication, current availability and monetary cost are not checked by this status"
+	return status, nil
+}
+
 func NewCodex(options CodexOptions) (*Codex, error) {
 	if !filepath.IsAbs(options.Executable) || strings.ToLower(filepath.Ext(options.Executable)) != ".exe" {
 		return nil, unavailable("configure the native Codex executable absolute path")
@@ -66,7 +87,8 @@ func (c *Codex) ConfigurationID(ctx context.Context) (string, error) {
 	if err != nil || strings.TrimSpace(string(raw)) != cliVersion {
 		return "", unavailable("this text-only policy requires the verified native Codex 0.162.0")
 	}
-	return fmt.Sprintf("codex/0.162.0;model=%s;reasoning=high;policy=%s", c.options.Model, policyVersion), nil
+	schemaDigest := sha256.Sum256(contracts.DistillationOutputSchema)
+	return fmt.Sprintf("codex/0.162.0;model=%s;reasoning=high;policy=%s;output_schema_sha256=%x", c.options.Model, policyVersion, schemaDigest), nil
 }
 
 // Native feature switches remove shell/browser/MCP/plugin/Agent read channels.
@@ -159,18 +181,26 @@ func (c *Codex) Distill(ctx context.Context, input app.DistillationInput) (app.D
 	var stdout, stderr boundedOutput
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	if err = runProcessor(ctx, cmd, &stderr); err != nil {
-		return output, err
-	}
+	processorError := runProcessor(ctx, cmd, &stderr)
 	// Log native usage when provided, without inventing monetary cost.
 	for _, line := range bytes.Split(stdout.Bytes(), []byte("\n")) {
 		var event struct {
-			Type  string          `json:"type"`
-			Usage json.RawMessage `json:"usage"`
+			Type     string          `json:"type"`
+			Usage    json.RawMessage `json:"usage"`
+			ThreadID string          `json:"thread_id"`
 		}
-		if json.Unmarshal(line, &event) == nil && event.Type == "turn.completed" && len(event.Usage) > 0 {
+		if json.Unmarshal(line, &event) != nil {
+			continue
+		}
+		if event.Type == "thread.started" && event.ThreadID != "" {
+			slog.Info("Codex selected-text thread started", "job_id", input.JobID, "operation_id", input.OperationID, "native_thread_id", event.ThreadID)
+		}
+		if event.Type == "turn.completed" && len(event.Usage) > 0 {
 			slog.Info("Codex selected-text processing completed", "model", c.options.Model, "native_usage", string(event.Usage), "cost", "unknown")
 		}
+	}
+	if processorError != nil {
+		return output, processorError
 	}
 	raw, err := os.ReadFile(filepath.Join(dir, "output.json"))
 	if err != nil {
