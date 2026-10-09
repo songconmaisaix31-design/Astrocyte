@@ -19,7 +19,7 @@
 - 上游Chrome扩展有浏览器WebCodecs/Whisper转写，但登录资源支持需实测；CLI文档明确嵌入媒体不处理auth/cookie。不能从浏览器已登录推断指定视频可采集。
 - [扩展文档](https://github.com/steipete/summarize/blob/main/apps/chrome-extension/README.md)：扩展/daemon有安装和配对步骤，Windows npm CLI缺打包native-host exe时daemon模式受限；默认8787与Astrocyte API相同，若选择该模式必须独立配置端口。
 - 本机PATH有Node和summarize，ffmpeg来自其他软件目录；无ffprobe、whisper-cli或sherpa-onnx。这只是文件发现，不是媒体可用验收，不自动把其他软件的ffmpeg作为项目依赖。
-- 本轮没有启动模型、安装扩展/daemon、读取登录凭据、升级全局summarize或改变已有资料权限。
+- 本轮没有发应用 LLM 请求、安装扩展/daemon、读取登录凭据、升级全局summarize或改变已有资料权限。媒体依赖已独立安装，whisper.cpp 与多语言模型已实际加载；本地语音运行检查不代表指定视频转写成功。
 
 ## 原轨写域与验收
 
