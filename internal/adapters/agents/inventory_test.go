@@ -90,6 +90,29 @@ func TestProbeFailureAndMissingPathRemainSeparate(t *testing.T) {
 	}
 }
 
+func TestStartupDeadlinePublishesOnlyCompletedChecks(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	calls := 0
+	i := newInventory(func(name string) (string, error) { return "/native/" + name, nil }, func(context.Context, string, string) (string, error) {
+		calls++
+		cancel()
+		return "native 1.2.3", nil
+	})
+	if err := i.RefreshCLI(ctx); !errors.Is(err, context.Canceled) {
+		t.Fatalf("lost startup cancellation: %v", err)
+	}
+	items, _ := i.Snapshot(context.Background())
+	if calls != 1 || items[0].Version == nil || items[0].Installed.Reason != "cli_entry_found_probe_incomplete" {
+		t.Fatalf("partial probe mislabeled: %+v calls=%d", items[0], calls)
+	}
+	for _, item := range items[1:] {
+		if item.Version != nil || item.Installed.Reason != "cli_entry_found_probe_not_run" {
+			t.Fatalf("unexecuted probe mislabeled: %+v", item)
+		}
+	}
+}
+
 func TestMain(m *testing.M) {
 	if os.Getenv("ASTROCYTE_CLI_PROBE_TEST_CHILD") == "1" {
 		if len(os.Args) == 2 && os.Args[1] == "--version" {
