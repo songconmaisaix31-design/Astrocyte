@@ -126,7 +126,7 @@ test.describe('Fixture mode banner', () => {
   test('refresh button IS visible in real data mode', async ({ page }) => {
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('button:has-text("刷新")')).toBeVisible();
+    await expect(page.getByRole('button', { name: '↻ 刷新', exact: true })).toBeVisible();
   });
 });
 
@@ -378,6 +378,7 @@ test.describe('Focus management', () => {
 
 test.describe('Stale data via refresh button', () => {
   test('first load failure shows error, no stale banner', async ({ page }) => {
+    await page.route('**/api/v1/jobs', route => route.fulfill({ json: { schema_version: 1, items: [], next_cursor: null } }));
     await page.route('**/materials*', route => route.abort());
     await page.route('**/opportunities*', route => route.abort());
     await page.goto('/attention');
@@ -436,7 +437,7 @@ test.describe('Stale data via refresh button', () => {
     // 2. Block subsequent fetches and click refresh
     failMaterials = true;
     failOpportunities = true;
-    await page.locator('button:has-text("刷新")').click();
+    await page.getByRole('button', { name: '↻ 刷新', exact: true }).click();
 
     // 3. Stale banner appears with retained prior item still visible
     await expect(page.locator('text=/数据可能已过期/')).toBeVisible({ timeout: 10000 });
@@ -459,6 +460,7 @@ test.describe('Stale data via refresh button', () => {
 
 test.describe('API failure and retry', () => {
   test('shows error state and retry button on API failure', async ({ page }) => {
+    await page.route('**/api/v1/jobs', route => route.fulfill({ json: { schema_version: 1, items: [], next_cursor: null } }));
     await page.route('**/materials*', route => route.abort());
     await page.route('**/opportunities*', route => route.abort());
     await page.goto('/attention');
@@ -482,7 +484,7 @@ test.describe('API failure and retry', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.locator('button:has-text("重试")').first()).toBeVisible({ timeout: 10000 });
     const initialCount = callCount;
-    await page.locator('button:has-text("重试")').first().click();
+    await page.locator('section').filter({ has: page.getByRole('heading', { name: /^素材/ }) }).getByRole('button', { name: '重试', exact: true }).click();
     await page.waitForTimeout(500);
     expect(callCount).toBeGreaterThan(initialCount);
   });

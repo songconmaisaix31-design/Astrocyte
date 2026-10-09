@@ -8,6 +8,7 @@ export function useCommand(disabled = false) {
   const [notice, setNotice] = useState<string | null>(null);
   const busy = useRef(false);
   const mounted = useRef(false);
+  const lastRequest = useRef<{ signature: string; key: string } | null>(null);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
 
   const run = useCallback(async <T,>(command: () => Promise<T>, onSuccess?: (result: T) => void, message = '已保存') => {
@@ -19,6 +20,7 @@ export function useCommand(disabled = false) {
     try {
       const result = await command();
       if (mounted.current) {
+        lastRequest.current = null;
         onSuccess?.(result);
         setNotice(message);
       }
@@ -30,5 +32,11 @@ export function useCommand(disabled = false) {
     }
   }, [disabled]);
 
-  return { pending, error, notice, run };
+  const prepare = <T,>(payload: T) => {
+    const signature = JSON.stringify(payload);
+    if (lastRequest.current?.signature !== signature) lastRequest.current = { signature, key: crypto.randomUUID() };
+    const key = lastRequest.current.key;
+    return { body: { ...payload, schema_version: 1 as const, request_id: key }, key };
+  };
+  return { pending, error, notice, run, prepare };
 }

@@ -27,7 +27,7 @@ export interface ReadApiState<T> {
 }
 
 export function formatError(err: unknown): string {
-  if (err instanceof ApiError) return `API ${err.status}: ${err.message} · ${err.detail.error.required_action || '请检查服务后重试'}（请求 ${err.requestId}）`;
+  if (err instanceof ApiError) return `API ${err.status} [${err.code}]: ${err.message} · ${err.detail.error.required_action || '请检查服务后重试'}（请求 ${err.requestId}）`;
   if (err instanceof Error) return err.message;
   return '未知错误';
 }
