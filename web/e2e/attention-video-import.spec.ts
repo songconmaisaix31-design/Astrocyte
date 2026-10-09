@@ -122,43 +122,64 @@ test('video URL input and in-flight identity survive keyboard close and reopen',
   await page.screenshot({ path: `test-results/video-import-recovery-${page.viewportSize()?.width}.png`, fullPage: true });
 });
 
-test('selected public video URL imports through the real service without an export or model request', async ({ page }) => {
+test('selected public video URL imports through the real service without an export or model request', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_SUMMARIZE_URL !== '1', 'Requires the published summarize runtime; explicit real URL extraction only.');
-  test.setTimeout(300_000);
+  // W0's approved Reader/Service deadline is 1800s; reserve startup/cleanup
+  // separately. Run one project/worker so the selected video is extracted once.
+  const jobTimeout = 1800_000;
+  test.setTimeout(jobTimeout + 120_000);
+  const env = await summarizeEnvironment({ LOCALAPPDATA: process.env.LOCALAPPDATA ?? '', ASTROCYTE_ENABLE_SUMMARIZE: 'true', ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false' });
+  const server = await startS1Server({ browser: true, env });
   const modelRequests: string[] = [];
   page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/distillations/jobs')) modelRequests.push(request.url()); });
-  await page.goto('/attention');
-  await page.locator('main').getByRole('button', { name: '添加资料', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: '添加资料' });
-  await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize_url');
-  await dialog.getByLabel('视频链接', { exact: true }).fill(videoURL);
-  const accepted = page.waitForResponse(response => response.url().endsWith('/materials/imports') && response.request().method() === 'POST');
-  await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
-  const receipt = await accepted;
-  expect(receipt.status()).toBe(202);
-  const job: components['schemas']['ImportJobV1'] = await receipt.json();
-  expect(receipt.request().postDataJSON()).not.toHaveProperty('export_text');
-  await page.keyboard.press('Escape');
-  const row = page.locator('li').filter({ has: page.locator('strong').filter({ hasText: job.job_id }) });
-  await expect(row).toContainText('正文导入');
-  let completed: components['schemas']['JobV1'] | undefined;
-  await expect.poll(async () => {
-    const response = await page.request.get('/api/v1/jobs');
-    const jobs: components['schemas']['JobListV1'] = await response.json();
-    completed = jobs.items.find(entry => entry.job_id === job.job_id);
-    return completed?.status;
-  }, { timeout: 240_000, intervals: [2000] }).toMatch(/succeeded|failed|cancelled/);
-  await page.getByRole('button', { name: '刷新队列', exact: true }).click();
-  await expect(row).toContainText(completed!.status === 'succeeded' ? '已完成' : '失败');
-  await page.screenshot({ path: `test-results/video-import-real-${page.viewportSize()?.width}.png`, fullPage: true });
-  expect(completed!.status, JSON.stringify(completed!.error)).toBe('succeeded');
-  await row.getByRole('button', { name: '查看作业资料' }).click();
-  const detail = page.getByRole('dialog', { name: '素材详情' });
-  await expect(detail).toContainText('已保存可读文本');
-  await expect(detail).toContainText('尚无此版本的 Codex 内容整理结果');
-  await expect(detail.getByText('固定来源', { exact: true }).locator('..')).toContainText(videoURL.replace(/\/$/, ''));
-  await detail.getByRole('button', { name: '继续沉淀', exact: true }).click();
-  await expect(detail.getByLabel('自动沉淀层次', { exact: true })).toHaveValue('content');
-  expect(modelRequests).toEqual([]);
-  await page.screenshot({ path: `test-results/video-import-content-${page.viewportSize()?.width}.png`, fullPage: true });
+  try {
+    // The default Playwright dev --ephemeral server disables extraction. The
+    // helper owns a separate temporary SQLite/object store and strips ASTRO env.
+    await page.goto(`${server.webURL}/attention`);
+    await page.locator('main').getByRole('button', { name: '添加资料', exact: true }).click();
+    const dialog = page.getByRole('dialog', { name: '添加资料' });
+    await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize_url');
+    await dialog.getByLabel('视频链接', { exact: true }).fill(videoURL);
+    const accepted = page.waitForResponse(response => response.url().endsWith('/materials/imports') && response.request().method() === 'POST');
+    await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
+    const receipt = await accepted;
+    expect(receipt.status()).toBe(202);
+    const job: components['schemas']['ImportJobV1'] = await receipt.json();
+    expect(receipt.request().postDataJSON().adapter).toBe('summarize_url');
+    expect(receipt.request().postDataJSON()).not.toHaveProperty('export_text');
+    expect(receipt.request().postDataJSON()).not.toHaveProperty('local_file_ref');
+    await page.keyboard.press('Escape');
+    const row = page.locator('li').filter({ has: page.locator('strong').filter({ hasText: job.job_id }) });
+    await expect(row).toContainText('正文导入');
+    let completed: components['schemas']['JobV1'] | undefined;
+    await expect.poll(async () => {
+      const response = await page.request.get(`${server.webURL}/api/v1/jobs`);
+      expect(response.ok()).toBe(true);
+      const jobs: components['schemas']['JobListV1'] = await response.json();
+      completed = jobs.items.find(entry => entry.job_id === job.job_id);
+      return completed?.status;
+    }, { timeout: jobTimeout, intervals: [2000] }).toMatch(/succeeded|failed|cancelled/);
+    await page.getByRole('button', { name: '刷新队列', exact: true }).click();
+    await expect(row).toContainText(completed!.status === 'succeeded' ? '已完成' : '失败');
+    await page.screenshot({ path: testInfo.outputPath('video-import-real.png'), fullPage: true });
+    await testInfo.attach('actual-video-job', { body: JSON.stringify(completed, null, 2), contentType: 'application/json' });
+    expect(completed!.status, JSON.stringify(completed!.error)).toBe('succeeded');
+    await row.getByRole('button', { name: '查看作业资料' }).click();
+    const detail = page.getByRole('dialog', { name: '素材详情' });
+    await expect(detail).toContainText('已保存可读文本');
+    await expect(detail).toContainText('尚无此版本的 Codex 内容整理结果');
+    await expect(detail.getByText('固定来源', { exact: true }).locator('..')).toContainText(videoURL.replace(/\/$/, ''));
+    const original = detail.getByText('保存的原文 / 提取文本', { exact: true }).locator('..').locator('pre');
+    await expect(original).not.toHaveText('');
+    await expect(original).not.toContainText('此版本未提供可读原文');
+    await expect(detail.getByText('处理来源', { exact: true })).toHaveCount(2);
+    for (const provenance of await detail.getByText('处理来源', { exact: true }).all()) {
+      await expect(provenance.locator('..')).toContainText('summarize');
+      await expect(provenance.locator('..')).toContainText(videoURL.replace(/\/$/, ''));
+    }
+    await detail.getByRole('button', { name: '继续沉淀', exact: true }).click();
+    await expect(detail.getByLabel('自动沉淀层次', { exact: true })).toHaveValue('content');
+    expect(modelRequests).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('video-import-content.png'), fullPage: true });
+  } finally { await server.close(); }
 });
