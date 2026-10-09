@@ -4317,6 +4317,63 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RemoveMaterialReferenceRequestV1"
+  /distillations/jobs:
+    post:
+      operationId: requestDistillation
+      summary: Queue automatic distillation from explicitly selected fixed source
+        snapshots
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-triggered durable processing. Only configured authorized
+        source keys and real adapter provenance may be sent to the local Codex
+        processor. Native read isolation is mandatory; unavailable processing
+        remains explicit unsupported/failed. No source database or object paths
+        are passed to the processor.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "202":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportJobV1"
+        "400": &a16
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a16
+        "404": *a16
+        "409": *a16
+        "500": *a16
+        "501":
+          description: Native processor or read isolation unsupported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestDistillationRequestV1"
+      security:
+        - HumanSession: []
 components:
   schemas:
     ErrorV1:
@@ -6156,6 +6213,10 @@ components:
             official_atom_and_pdf, original_export or summary_only. Never infer
             automatic processing from a record.
         source: *a11
+        model:
+          type: string
+          description: Actual model reported by the processor, or explicit unknown; never
+            inferred from client name.
       required:
         - processor
         - version
@@ -6568,6 +6629,10 @@ components:
           type: boolean
         delivery_unknown:
           type: boolean
+        distillation_id:
+          type:
+            - string
+            - "null"
       required:
         - schema_version
         - job_id
@@ -6942,6 +7007,38 @@ components:
         - schema_version
         - items
         - next_cursor
+    RequestDistillationRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a16
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        input_refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        stage:
+          type: string
+          enum:
+            - content
+            - topic
+            - project
+        question: *a16
+        processing_config: *a16
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - input_refs
+        - stage
+        - question
+        - processing_config
   securitySchemes:
     HumanSession:
       type: apiKey

@@ -864,6 +864,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/distillations/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Queue automatic distillation from explicitly selected fixed source snapshots
+         * @description Human-triggered durable processing. Only configured authorized source keys and real adapter provenance may be sent to the local Codex processor. Native read isolation is mandatory; unavailable processing remains explicit unsupported/failed. No source database or object paths are passed to the processor.
+         */
+        post: operations["requestDistillation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1989,6 +2009,8 @@ export interface components {
             /** @description Actual processing mode reported by the adapter; manual, official_atom_and_pdf, original_export or summary_only. Never infer automatic processing from a record. */
             mode: string;
             source: string;
+            /** @description Actual model reported by the processor, or explicit unknown; never inferred from client name. */
+            model?: string;
         };
         MaterialRevisionV1: {
             material_id: string;
@@ -2150,6 +2172,7 @@ export interface components {
             cancel_requested: boolean;
             external_started: boolean;
             delivery_unknown: boolean;
+            distillation_id?: string | null;
         };
         ServiceErrorV1: {
             /** @enum {string} */
@@ -2275,6 +2298,17 @@ export interface components {
             schema_version: 1;
             items: components["schemas"]["ProjectSpaceV1"][];
             next_cursor: string | null;
+        };
+        RequestDistillationRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            input_refs: components["schemas"]["SourceRefV1"][];
+            /** @enum {string} */
+            stage: "content" | "topic" | "project";
+            question: string;
+            processing_config: string;
         };
     };
     responses: never;
@@ -7697,6 +7731,87 @@ export interface operations {
             };
             /** @description Structured error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    requestDistillation: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestDistillationRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJobV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Native processor or read isolation unsupported */
+            501: {
                 headers: {
                     [name: string]: unknown;
                 };

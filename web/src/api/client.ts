@@ -26,9 +26,16 @@ export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) =
     const url = new URL(request.url);
     url.pathname = `${url.pathname.slice(0, url.pathname.indexOf('/api/v1') + 7)}/auth/session`;
     url.search = '';
-    const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: AbortSignal.timeout(10000) }));
-    // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
-    if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: controller.signal }));
+      // Finish the bootstrap response and clear its timer before resolving, so
+      // browser network-idle and callers do not wait for the timeout to fire.
+      await response.arrayBuffer();
+      // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
+      if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
+    } finally { clearTimeout(timeout); }
   };
   client.use({ async onRequest({ request }) {
     const path = new URL(request.url).pathname;
@@ -42,7 +49,7 @@ export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) =
     const error = await response.clone().json().catch(() => undefined) as ApiErrorBody | undefined;
     if (!['local session required', 'local session expired'].includes(error?.error?.message ?? '')) return response;
     // Only safe reads are repeated once after restart/expiry. No command is replayed.
-    bootstrap = establishSession(request);
+    bootstrap = establishSession(request).catch(error => { bootstrap = undefined; throw error; });
     await bootstrap;
     return (fetchImpl ?? fetch)(request);
   } });
@@ -104,6 +111,7 @@ export function createAttentionApi(client = api) {
     importMaterial: async (body: components['schemas']['ImportMaterialRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/materials/imports', { body, params: { header: await headers(key) }, ...options })),
     updateMaterial: async (id: string, body: components['schemas']['UpdateMaterialRequestV1'], key: string, options?: ReadOptions) => unwrap(client.PATCH('/materials/{id}', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     recordDistillation: async (body: components['schemas']['RecordDistillationRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/distillations', { body, params: { header: await headers(key) }, ...options })),
+    requestDistillation: async (body: components['schemas']['RequestDistillationRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/distillations/jobs', { body, params: { header: await headers(key) }, ...options })),
     createOpportunity: async (body: components['schemas']['OpportunityRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/opportunities', { body, params: { header: await headers(key) }, ...options })),
     reviseOpportunity: async (id: string, body: components['schemas']['OpportunityRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/opportunities/{id}/revisions', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     reviewOpportunity: async (id: string, body: components['schemas']['ReviewOpportunityRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/opportunities/{id}/reviews', { body, params: { path: { id }, header: await headers(key) }, ...options })),

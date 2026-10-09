@@ -13,6 +13,7 @@
     "check:architecture": "node scripts/check-architecture.mjs",
     "check:dependencies": "node scripts/check-dependencies.mjs",
     "test:e2e": "pnpm --dir web test:e2e",
+    "test:s1": "node --test tests/s1/acceptance.test.mjs",
     "build": "node scripts/build.mjs",
     "start": "node scripts/start.mjs"
   },
