@@ -14,5 +14,5 @@
     "noUnusedParameters": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["*.config.ts", "e2e/**/*.ts"]
+  "include": ["*.config.ts"]
 }

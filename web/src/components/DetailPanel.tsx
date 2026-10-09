@@ -7,7 +7,7 @@ interface DetailPanelProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  /** Show disabled notice for future slice features */
+  /** Show disabled notice for unavailable features */
   showDisabledNotice?: boolean;
   disabledNoticeText?: string;
 }
@@ -17,27 +17,44 @@ export function DetailPanel({
   onClose,
   children,
   showDisabledNotice,
-  disabledNoticeText = '此功能的操作按钮将在后续版本中启用',
+  disabledNoticeText = '此功能的操作尚未启用',
 }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  // Remember the element that opened the dialog for focus restoration
   const triggerRef = useRef<Element | null>(
     typeof document !== 'undefined' ? document.activeElement : null,
   );
 
-  // Focus close button on mount
+  // Single focus-lifecycle effect: close-button focus on mount, trigger
+  // restoration on final unmount.  Uses one cancellable rAF slot so
+  // StrictMode setup₁→cleanup₁→setup₂ never schedules competing callbacks:
+  //   setup  – cancel any pending rAF from the previous cycle, capture the
+  //            trigger element (lint: refs only read in effects), schedule
+  //            close-button focus.
+  //   cleanup – cancel close-focus rAF, schedule a single-rAF trigger
+  //             restore (no nesting).  The next setup (StrictMode remount)
+  //             cancels this restore before it fires, so only the final
+  //             unmount actually restores focus.
+  const rafRef = useRef<number | null>(null);
   useEffect(() => {
-    closeRef.current?.focus();
-  }, []);
-
-  // Restore focus to trigger element on unmount
-  useEffect(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    const triggerEl = triggerRef.current;
+    rafRef.current = requestAnimationFrame(() => {
+      closeRef.current?.focus();
+    });
     return () => {
-      const el = triggerRef.current;
-      if (el && el instanceof HTMLElement) {
-        // Defer to after React's unmount cycle
-        requestAnimationFrame(() => el.focus());
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      if (triggerEl instanceof HTMLElement) {
+        rafRef.current = requestAnimationFrame(() => {
+          rafRef.current = null;
+          if (triggerEl.isConnected) triggerEl.focus();
+        });
       }
     };
   }, []);

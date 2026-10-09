@@ -26,9 +26,9 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
-	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
+	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
 func main() {

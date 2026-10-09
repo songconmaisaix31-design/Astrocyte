@@ -33,8 +33,8 @@ type ServiceError struct {
 	Code           Code   `json:"code"`
 	Message        string `json:"message"`
 	Retryable      bool   `json:"retryable"`
-	RequestID      string `json:"request_id,omitempty"`
-	RequiredAction string `json:"required_action,omitempty"`
+	RequestID      string `json:"request_id"`
+	RequiredAction string `json:"required_action"`
 }
 
 func (e *ServiceError) Error() string {

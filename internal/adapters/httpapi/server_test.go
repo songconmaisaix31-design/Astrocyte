@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -253,6 +255,38 @@ func TestAPINotFound_JSON404(t *testing.T) {
 	}
 }
 
+func TestAPINotFound_BareAPI_JSON404(t *testing.T) {
+	srv := newTestServer()
+
+	// Bare /api (no trailing slash) should return JSON 404
+	resp := doRequest(srv, "GET", "/api")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("expected 404 for /api, got %d", resp.StatusCode)
+	}
+	ct := resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type for /api: got %q, want application/json", ct)
+	}
+	errObj := readErrorBody(t, resp)
+	if errObj["code"] != "not_found" {
+		t.Errorf("code for /api: got %v, want not_found", errObj["code"])
+	}
+
+	// Bare /api/v1 (no trailing slash) should also return JSON 404
+	resp = doRequest(srv, "GET", "/api/v1")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("expected 404 for /api/v1, got %d", resp.StatusCode)
+	}
+	ct = resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type for /api/v1: got %q, want application/json", ct)
+	}
+	errObj = readErrorBody(t, resp)
+	if errObj["code"] != "not_found" {
+		t.Errorf("code for /api/v1: got %v, want not_found", errObj["code"])
+	}
+}
+
 // --- Loopback middleware with ErrorV1 ---
 
 func TestLoopbackMiddleware_RejectsNonLoopback_ErrorV1(t *testing.T) {
@@ -483,6 +517,16 @@ func TestStaticServing_APIRoutesNotServedByStatic(t *testing.T) {
 	if ct != "application/json" {
 		t.Errorf("Content-Type: got %q, want application/json", ct)
 	}
+
+	// Bare /api should return JSON 404, not index.html
+	resp = doRequest(srv, "GET", "/api")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("expected 404 for bare /api, got %d", resp.StatusCode)
+	}
+	ct = resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type for bare /api: got %q, want application/json", ct)
+	}
 }
 
 func TestStaticServing_NoDirectoryListing(t *testing.T) {
@@ -517,6 +561,101 @@ func TestStaticServing_TraversalPrevented(t *testing.T) {
 	// Must not contain passwd-like content
 	if resp.StatusCode == http.StatusOK && len(body) > 0 && string(body) != "<html>SPA</html>" {
 		t.Errorf("traversal may have served real file: status=%d body_len=%d", resp.StatusCode, len(body))
+	}
+}
+
+// mockFailingFoundationService is a test-only foundation service that always fails.
+type mockFailingFoundationService struct{}
+
+func (m *mockFailingFoundationService) Health(_ context.Context) (foundation.HealthResponse, error) {
+	return foundation.HealthResponse{}, &apierrors.ServiceError{
+		Code:      apierrors.InternalError,
+		Message:   "simulated storage failure",
+		Retryable: true,
+	}
+}
+
+func (m *mockFailingFoundationService) Foundation(_ context.Context) (foundation.FoundationResponse, error) {
+	return foundation.FoundationResponse{}, &apierrors.ServiceError{
+		Code:      apierrors.InternalError,
+		Message:   "simulated storage failure",
+		Retryable: true,
+	}
+}
+
+// TestHTTP500_ErrorV1_AllFieldsPresent verifies that HTTP 500 errors from real
+// service failures include all required ErrorV1 fields per OpenAPI contract:
+// schema_version, error.code, error.message, error.request_id, error.retryable,
+// and error.required_action.
+func TestHTTP500_ErrorV1_AllFieldsPresent(t *testing.T) {
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	cfg := Config{
+		Port:   0,
+		Logger: logger,
+		Services: Services{
+			// Inject failing foundation service to trigger real HTTP 500.
+			Foundation:    &mockFailingFoundationService{},
+			Materials:     attentionapp.NewMaterialService(),
+			Opportunities: attentionapp.NewOpportunityService(),
+			Projects:      workspaceapp.NewProjectService(),
+			Proposals:     workspaceapp.NewProposalService(),
+			Sessions:      workspaceapp.NewSessionService(),
+			Missions:      swarmapp.NewMissionService(),
+		},
+	}
+	srv := NewServer(cfg)
+
+	// Test health endpoint with failing service.
+	resp := doRequest(srv, "GET", "/api/v1/health")
+	if resp.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("expected 500, got %d", resp.StatusCode)
+	}
+
+	ct := resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type: got %q, want application/json", ct)
+	}
+
+	body := readJSON(t, resp)
+
+	// Verify top-level schema_version is present.
+	if body["schema_version"] != float64(1) {
+		t.Errorf("schema_version: got %v, want 1", body["schema_version"])
+	}
+
+	// Verify error object is present.
+	errObj, ok := body["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("error object not present or not a map")
+	}
+
+	// Verify all required fields are present and nonempty per OpenAPI ErrorV1 contract.
+	if errObj["code"] != "internal_error" {
+		t.Errorf("error.code: got %v, want internal_error", errObj["code"])
+	}
+
+	msg, ok := errObj["message"].(string)
+	if !ok || msg == "" {
+		t.Errorf("error.message: missing or empty, got %v", errObj["message"])
+	}
+
+	reqID, ok := errObj["request_id"].(string)
+	if !ok || reqID == "" {
+		t.Errorf("error.request_id: missing or empty, got %v", errObj["request_id"])
+	}
+
+	if errObj["retryable"] != true {
+		t.Errorf("error.retryable: got %v, want true", errObj["retryable"])
+	}
+
+	reqAction, ok := errObj["required_action"].(string)
+	if !ok || reqAction == "" {
+		t.Errorf("error.required_action: missing or empty, got %v", errObj["required_action"])
+	}
+
+	// Also verify X-Request-ID header is set.
+	if rid := resp.Header.Get("X-Request-ID"); rid == "" {
+		t.Error("X-Request-ID header not set")
 	}
 }
 

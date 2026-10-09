@@ -42,13 +42,28 @@ pnpm dev
 pnpm generate          # 从唯一 OpenAPI 源重新生成类型
 pnpm check:contracts   # 校验规格、示例与生成漂移
 pnpm check             # gofmt、vet、Go 测试、导入边界、TS、ESLint、Vitest
-pnpm --dir web exec playwright install chromium
+# 浏览器安装命令与共享开发机的保护设置见下文。
 pnpm test:e2e          # 1920×1080 与 1280×720，独立数据与端口
 pnpm build             # dist/astrocyte[.exe] 与 web/dist
 pnpm start             # 构建后启动本地服务，ASTROCYTE_WEB_DIR 指向 web/dist
 ```
 
 Playwright 在隔离临时数据目录运行，默认 API `18787`、网页 `15173`；可用 `ASTROCYTE_E2E_API_PORT`、`ASTROCYTE_E2E_WEB_PORT` 覆盖。它不会复用其他工作树已启动的服务。报告与失败 trace 在 `web/playwright-report`、`web/test-results`。Linux CI 另运行 race 检查；Windows 本地不以缺少 C 工具链阻止纯 Go SQLite 验证。
+
+在共享开发机安装 Chromium 前设置 `PLAYWRIGHT_SKIP_BROWSER_GC=1`，保留其他项目可能使用的浏览器版本；该设置只影响安装时的旧版本清理，不跳过下载或测试。PowerShell：
+
+```powershell
+$env:PLAYWRIGHT_SKIP_BROWSER_GC = '1'
+pnpm --dir web exec playwright install chromium
+```
+
+Linux / WSL：
+
+```sh
+PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
+```
+
+`pnpm start` 在 API 端口同时提供构建后的网页，默认打开 `http://127.0.0.1:8787/attention`；修改 `ASTROCYTE_PORT` 时使用对应端口。`ASTROCYTE_WEB_DIR` 可覆盖静态资源目录，`/api` 路径始终交给 API。
 
 `pnpm check` 与 `pnpm build` 对缺少后端或页面入口明确失败；只有契约/客户端先到位的工作树，仍需合入对应 S0 实现后才能验收完整程序。
 
@@ -59,6 +74,22 @@ Playwright 在隔离临时数据目录运行，默认 API `18787`、网页 `1517
 S0 实现健康、基座与集合只读查询；真实空数据库返回空集合。导入、准入、批准、原生接续、交接、认领、成果提交/采用和 SSE 在 S0 返回 **501 `unsupported_capability`**；请求不产生这些未来副作用。错误携带 `code/message/retryable/request_id/required_action`。客户端不会自动重试外部动作，也不会把连接失败转换为成功数据。
 
 UI fixture 必须显式进入；默认页面使用真实 API。协议中的 `fixture-*` 示例用于验证显示与数据结构，不能证明真实导入、模型能力、任务执行或成果采用。S1–S6 与 AT01–AT16 的实际验收由后续切片完成。
+
+开发服务下的三个 fixture 入口为：
+
+- 资料沉淀：`http://127.0.0.1:5173/attention?fixture=1`
+- 共同工作区：`http://127.0.0.1:5173/workspace?fixture=1`
+- 蜂群执行：`http://127.0.0.1:5173/swarm?fixture=1`
+
+构建后的服务使用同一路径和查询参数，默认端口为 `8787`。页面显示 fixture 标记；点击退出 fixture 或删除 `?fixture=1` 返回真实 API。后端数据库仍保持独立，示例不会写入业务数据。
+
+## 数据与升级备份
+
+业务数据库为 `ASTROCYTE_DATA_DIR/state.sqlite`。未指定数据目录时，后端使用 Go `os.UserConfigDir()` 下的 `astrocyte` 目录；上述启动示例显式指定仓库外路径。
+
+已有迁移记录的数据库遇到待执行迁移时，先通过 SQLite **`VACUUM INTO`** 创建一致快照，包括 WAL 中已提交的数据。备份位于同一数据目录的 `backups/backup_<UTC日期时间>_<微秒>_v<当前schema版本>.sqlite`；例如 `backups/backup_20261009_060000_123456_v1.sqlite`。新建数据库及没有待执行迁移的重启不创建备份。
+
+备份失败时启动终止，待执行迁移不会应用；迁移逐个事务提交，失败时回滚该迁移并终止启动。程序保留备份，不自动清理或自动恢复。需要恢复时先停止所有访问该数据目录的服务，保留当前数据库与 WAL 文件，再用备份恢复到匹配的程序版本；人工恢复不属于 S0 自动操作。
 
 ## 分层
 
