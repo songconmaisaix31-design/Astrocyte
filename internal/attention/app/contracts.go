@@ -141,28 +141,29 @@ type ObjectStore interface {
 	Read(context.Context, string) ([]byte, error)
 }
 type Distillation struct {
-	CandidateSuggestion *CandidateSuggestion `json:"candidate_suggestion,omitempty"`
-	ID                  string               `json:"id"`
-	InputRefs           []SourceRef          `json:"input_refs"`
-	Stage               string               `json:"stage"`
-	OutputRef           string               `json:"output_ref"`
-	OutputText          string               `json:"output_text"`
-	Status              string               `json:"status"`
-	NextQuestion        *string              `json:"next_question"`
-	Question            string               `json:"question"`
-	ProcessingConfig    string               `json:"processing_config"`
-	RelatedRefs         []SourceRef          `json:"related_refs"`
-	RelatedIdeas        []string             `json:"related_ideas"`
-	Conflicts           []string             `json:"conflicts"`
-	PendingQuestions    []string             `json:"pending_questions"`
-	GoalRefs            []string             `json:"goal_refs"`
-	ExistingAssets      []string             `json:"existing_assets"`
-	ExpectedImprovement string               `json:"expected_improvement"`
-	MinimumArtifact     string               `json:"minimum_artifact"`
-	MissingEvidence     []string             `json:"missing_evidence"`
-	Provenance          Provenance           `json:"provenance"`
-	ReuseKey            string               `json:"reuse_key"`
-	CreatedAt           time.Time            `json:"created_at"`
+	PriorDistillationIDs []string             `json:"prior_distillation_ids,omitempty"`
+	CandidateSuggestion  *CandidateSuggestion `json:"candidate_suggestion,omitempty"`
+	ID                   string               `json:"id"`
+	InputRefs            []SourceRef          `json:"input_refs"`
+	Stage                string               `json:"stage"`
+	OutputRef            string               `json:"output_ref"`
+	OutputText           string               `json:"output_text"`
+	Status               string               `json:"status"`
+	NextQuestion         *string              `json:"next_question"`
+	Question             string               `json:"question"`
+	ProcessingConfig     string               `json:"processing_config"`
+	RelatedRefs          []SourceRef          `json:"related_refs"`
+	RelatedIdeas         []string             `json:"related_ideas"`
+	Conflicts            []string             `json:"conflicts"`
+	PendingQuestions     []string             `json:"pending_questions"`
+	GoalRefs             []string             `json:"goal_refs"`
+	ExistingAssets       []string             `json:"existing_assets"`
+	ExpectedImprovement  string               `json:"expected_improvement"`
+	MinimumArtifact      string               `json:"minimum_artifact"`
+	MissingEvidence      []string             `json:"missing_evidence"`
+	Provenance           Provenance           `json:"provenance"`
+	ReuseKey             string               `json:"reuse_key"`
+	CreatedAt            time.Time            `json:"created_at"`
 }
 type RecordDistillationCommand struct {
 	CommandMeta
@@ -389,6 +390,12 @@ type Distiller interface {
 	// and isolation policy. It performs no paid model call or credential export.
 	ConfigurationID(context.Context) (string, error)
 	Distill(context.Context, DistillationInput) (DistillationOutput, error)
+}
+
+// DistillerStatusProvider is an optional factual native-runtime projection.
+// It must not invoke model processing or return a guessed model/configuration.
+type DistillerStatusProvider interface {
+	Status(context.Context) (DistillerStatus, error)
 }
 type RequestDistillationCommand struct {
 	CommandMeta

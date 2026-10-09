@@ -22,12 +22,14 @@ import (
 // ServiceOptions configures bounded local workers and attention decay. Clock
 // is injectable for deterministic rules; it must be safe for concurrent use.
 type ServiceOptions struct {
-	WorkerConcurrency int
-	MaxAttempts       int
-	JobTimeout        time.Duration
-	AttentionHalfLife time.Duration
-	AttentionWeights  map[string]float64
-	Clock             func() time.Time
+	WorkerConcurrency           int
+	MaxAttempts                 int
+	JobTimeout                  time.Duration
+	AttentionHalfLife           time.Duration
+	AttentionWeights            map[string]float64
+	Distiller                   Distiller
+	AllowedProcessingSourceKeys []string
+	Clock                       func() time.Time
 }
 
 type Service struct {
@@ -68,6 +70,7 @@ func NewAttentionService(repo Repository, sources SourceReader, objects ObjectSt
 		weights[name] = weight
 	}
 	options.AttentionWeights = weights
+	options.AllowedProcessingSourceKeys = slices.Clone(options.AllowedProcessingSourceKeys)
 	return &Service{repo: repo, sources: sources, objects: objects, options: options, wake: make(chan struct{}, 1), activeJobs: make(map[string]*activeWork), configurationError: ValidateAttentionWeights(weights)}
 }
 
@@ -252,7 +255,10 @@ func (s *Service) ListOpportunities(ctx context.Context) (apierrors.ListResult, 
 		if err != nil {
 			return err
 		}
-		// No configured profile exists in S1: preserve explicit stored order.
+		profile, err := rankingProfile(tx)
+		if err != nil {
+			return err
+		}
 		for _, row := range rows {
 			// The retained S0 list boundary has no principal. Keep derived
 			// withdrawn content out of this shared list; human detail queries
@@ -265,6 +271,7 @@ func (s *Service) ListOpportunities(ctx context.Context) (apierrors.ListResult, 
 			}
 			opportunities = append(opportunities, row.Opportunity)
 		}
+		opportunities = rankOpportunities(opportunities, profile)
 		return nil
 	})
 	return listResult(opportunities), mapError(err, "")

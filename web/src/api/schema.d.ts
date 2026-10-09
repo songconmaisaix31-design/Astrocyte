@@ -2085,6 +2085,8 @@ export interface components {
             occurred_at: string;
         };
         DistillationV1: {
+            /** @description Explicitly selected immutable prior records used by this processing operation. */
+            prior_distillation_ids?: string[];
             id: string;
             input_refs: components["schemas"]["SourceRefV1"][];
             /** @enum {string} */
