@@ -18,14 +18,14 @@ export function FixtureBanner() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 'var(--space-3) var(--space-5)',
+        padding: '8px 14px',
         marginBottom: 'var(--space-4)',
-        background: 'var(--color-warning-subtle)',
-        border: '1px solid var(--color-warning)',
+        background: 'var(--color-accent-subtle)',
+        border: '1px solid #dceee1',
         borderRadius: 'var(--radius-md)',
-        fontSize: 'var(--text-base)',
+        fontSize: '12px',
         fontWeight: 'var(--weight-medium)',
-        color: '#e67700',
+        color: 'var(--color-accent-hover)',
       }}
     >
       <span>
@@ -36,10 +36,10 @@ export function FixtureBanner() {
         onClick={exitFixture}
         style={{
           padding: 'var(--space-1) var(--space-3)',
-          border: '1px solid #e67700',
+          border: '1px solid #b2cfbc',
           borderRadius: 'var(--radius-sm)',
           background: 'transparent',
-          color: '#e67700',
+          color: 'var(--color-accent-hover)',
           cursor: 'pointer',
           fontSize: 'var(--text-sm)',
           fontWeight: 'var(--weight-medium)',

@@ -32,8 +32,8 @@ test.describe('Three-page navigation', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('共同工作区');
     await expect(page.getByRole('heading', { name: /项目/ })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /提案/ })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /会话/ })).toBeVisible();
+    await expect(page.getByRole('tab', { name: '提案与批准' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^会话/ })).toBeVisible();
   });
 
   test('navigates to 蜂群执行 page', async ({ page }) => {
@@ -81,8 +81,9 @@ test.describe('Empty API states', () => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=暂无项目').first()).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=暂无提案').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=暂无会话').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('tab', { name: '提案与批准' }).click();
+    await expect(page.locator('text=暂无提案').first()).toBeVisible({ timeout: 10000 });
   });
 
   test('蜂群执行 shows settled empty headings', async ({ page }) => {
@@ -181,8 +182,9 @@ test.describe('Fixture display — workspace sessions', () => {
     await page.goto('/workspace?fixture=1');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=示例项目').first()).toBeVisible();
-    await expect(page.locator('text=示例提案').first()).toBeVisible();
     await expect(page.locator('text=fixture-adapter').first()).toBeVisible();
+    await page.getByRole('tab', { name: '提案与批准' }).click();
+    await expect(page.locator('text=示例提案').first()).toBeVisible();
   });
 
   test('session capability shows three-state labels (null=未知)', async ({ page }) => {
@@ -227,21 +229,24 @@ test.describe('Screenshots', () => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
     const vp = page.viewportSize();
-    await page.screenshot({ path: `test-results/attention-${vp?.width}x${vp?.height}.png`, fullPage: true });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ animations: 'disabled', path: `test-results/attention-${vp?.width}x${vp?.height}.png`, fullPage: true });
   });
 
   test('共同工作区 screenshot', async ({ page }) => {
     await page.goto('/workspace?fixture=1');
     await page.waitForLoadState('networkidle');
     const vp = page.viewportSize();
-    await page.screenshot({ path: `test-results/workspace-${vp?.width}x${vp?.height}.png`, fullPage: true });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ animations: 'disabled', path: `test-results/workspace-${vp?.width}x${vp?.height}.png`, fullPage: true });
   });
 
   test('蜂群执行 screenshot', async ({ page }) => {
     await page.goto('/swarm?fixture=1');
     await page.waitForLoadState('networkidle');
     const vp = page.viewportSize();
-    await page.screenshot({ path: `test-results/swarm-${vp?.width}x${vp?.height}.png`, fullPage: true });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ animations: 'disabled', path: `test-results/swarm-${vp?.width}x${vp?.height}.png`, fullPage: true });
   });
 
   test('detail panel screenshot', async ({ page }) => {
@@ -250,7 +255,8 @@ test.describe('Screenshots', () => {
     await page.locator('[role="button"]:has-text("示例论文")').first().click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
     const vp = page.viewportSize();
-    await page.screenshot({ path: `test-results/detail-${vp?.width}x${vp?.height}.png` });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ animations: 'disabled', path: `test-results/detail-${vp?.width}x${vp?.height}.png` });
   });
 });
 

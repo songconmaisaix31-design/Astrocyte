@@ -1,36 +1,36 @@
 :root {
   /* ── Color palette ── */
   --color-bg:             #ffffff;
-  --color-bg-subtle:      #f8f9fa;
-  --color-bg-muted:       #f1f3f5;
+  --color-bg-subtle:      #f7f9f7;
+  --color-bg-muted:       #f1f4f1;
   --color-surface:        #ffffff;
-  --color-surface-hover:  #f8f9fa;
-  --color-border:         #dee2e6;
-  --color-border-light:   #e9ecef;
+  --color-surface-hover:  #f7f9f7;
+  --color-border:         #e3e8e4;
+  --color-border-light:   #e9edea;
 
-  --color-text:           #212529;
-  --color-text-secondary: #495057;
-  --color-text-muted:     #868e96;
+  --color-text:           #202b28;
+  --color-text-secondary: #617565;
+  --color-text-muted:     #7c8782;
   --color-text-disabled:  #adb5bd;
 
-  --color-accent:         #228be6;
-  --color-accent-hover:   #1c7ed6;
-  --color-accent-subtle:  #e7f5ff;
+  --color-accent:         #259666;
+  --color-accent-hover:   #247554;
+  --color-accent-subtle:  #edf7f0;
 
   /* Status colors */
-  --color-success:        #40c057;
+  --color-success:        #388b61;
   --color-success-subtle: #ebfbee;
   --color-warning:        #fab005;
   --color-warning-subtle: #fff9db;
   --color-error:          #fa5252;
   --color-error-subtle:   #fff5f5;
-  --color-info:           #228be6;
-  --color-info-subtle:    #e7f5ff;
+  --color-info:           #259666;
+  --color-info-subtle:    #edf7f0;
 
   /* Disabled / future */
-  --color-disabled-bg:    #f1f3f5;
+  --color-disabled-bg:    #f1f4f1;
   --color-disabled-text:  #adb5bd;
-  --color-disabled-border:#dee2e6;
+  --color-disabled-border:#e3e8e4;
 
   /* ── Typography ── */
   --font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei',
@@ -82,7 +82,7 @@
   --sidebar-width: 220px;
   --sidebar-collapsed: 56px;
   --content-max-width: 1400px;
-  --detail-panel-width: 400px;
+  --detail-panel-width: 545px;
 
   /* ── Transitions ── */
   --duration-fast:   100ms;

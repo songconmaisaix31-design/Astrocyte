@@ -1,77 +1,33 @@
 import { navigate } from '../router';
-import { useFoundation } from '../hooks/useReadApi';
-import styles from './Nav.module.css';
+import { useFoundation, useProjects } from '../hooks/useReadApi';
+import { fixtureProjects } from '../fixtures';
+import { Icon } from './DesignIcons';
 
-interface NavProps {
-  currentPath: string;
-}
+const items = [
+  { path: '/attention', label: '资料沉淀', icon: 'library' },
+  { path: '/workspace', label: '共同工作区', icon: 'grid' },
+  { path: '/swarm', label: '蜂群执行', icon: 'swarm' },
+] as const;
 
-const NAV_ITEMS = [
-  { path: '/attention', label: '资料沉淀', icon: '◎', shortcut: '1' },
-  { path: '/workspace', label: '共同工作区', icon: '▦', shortcut: '2' },
-  { path: '/swarm',     label: '蜂群执行', icon: '◈', shortcut: '3' },
-];
-
-export function Nav({ currentPath }: NavProps) {
+export function Nav({ currentPath, fixture, open, onNavigate }: { currentPath: string; fixture: boolean; open: boolean; onNavigate: () => void }) {
   const foundation = useFoundation();
+  const projects = useProjects();
   const caps = foundation.data?.capabilities;
-
-  return (
-    <nav className={styles.sidebar} role="navigation" aria-label="主导航">
-      <div className={styles.brand}>
-        <div className={styles.brandTitle}>Astrocyte</div>
-        <div className={styles.brandSub}>研究工作台</div>
-      </div>
-
-      <ul className={styles.navList} role="list">
-        {NAV_ITEMS.map((item) => {
-          const active = currentPath.startsWith(item.path);
-          return (
-            <li key={item.path} className={styles.navItem}>
-              <button
-                className={`${styles.navLink} ${active ? styles.navLinkActive : ''}`}
-                onClick={() => navigate(item.path)}
-                aria-current={active ? 'page' : undefined}
-                type="button"
-              >
-                <span className={styles.navIcon} aria-hidden="true">{item.icon}</span>
-                <span className={styles.navLabel}>{item.label}</span>
-                <kbd className={styles.navShortcut}>{item.shortcut}</kbd>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className={styles.footer}>
-        <div style={{ marginBottom: 'var(--space-2)', fontWeight: 'var(--weight-medium)' }}>
-          系统能力
-        </div>
-        {caps ? (
-          <>
-            <CapRow label="导入" value={caps.imports} />
-            <CapRow label="审核" value={caps.approvals} />
-            <CapRow label="执行" value={caps.execution} />
-            <CapRow label="恢复" value={caps.native_resume} />
-            <CapRow label="交接" value={caps.handoff} />
-          </>
-        ) : (
-          <div style={{ color: 'var(--color-text-disabled)' }}>
-            {foundation.loading ? '加载中…' : foundation.error ? '无法获取' : '—'}
-          </div>
-        )}
-      </div>
-    </nav>
-  );
-}
-
-function CapRow({ label, value }: { label: string; value: boolean }) {
-  return (
-    <div className={styles.capRow}>
-      <span>{label}</span>
-      <span className={value ? styles.capTrue : styles.capFalse}>
-        {value ? '●' : '○'}
-      </span>
+  const projectItems = fixture ? fixtureProjects : projects.data?.items ?? [];
+  const go = (path: string) => { const query = new URLSearchParams(window.location.search); query.delete('tab'); navigate(`${path}${query.size ? `?${query}` : ''}`); onNavigate(); };
+  return <aside className={`ac-sidebar ${open ? 'open' : ''}`}>
+    <div className="ac-nav-label">我的工作台</div>
+    <nav aria-label="主导航">{items.map(item => <button key={item.path} type="button" className={currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention') ? 'active' : ''} aria-current={currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention') ? 'page' : undefined} onClick={() => go(item.path)}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
+    <button type="button" className="ac-new-button" disabled title="资料导入与提案写入尚未启用"><Icon name="plus" size={18} />{currentPath.startsWith('/attention') || currentPath === '/' ? '添加资料' : '记录提案'}</button>
+    <div className="ac-disabled-caption">写入操作尚未启用</div>
+    <div className="ac-sidebar-divider" /><div className="ac-nav-label">我的项目{fixture && <span>示例</span>}</div>
+    {projectItems.map(project => <button type="button" className="ac-project-nav" key={project.id} onClick={() => go('/workspace')}><span className="ac-project-symbol">{project.name.slice(0, 1)}</span><span className="text-truncate">{project.name}</span></button>)}
+    {!projectItems.length && <p className="ac-sidebar-empty">{projects.loading ? '加载中…' : projects.error ? '项目列表无法获取' : '暂无已注册项目'}</p>}
+    {!fixture && projects.error && <button type="button" className="ac-text-button" onClick={projects.retry}>重试项目列表</button>}
+    {!fixture && projects.stale && <p className="ac-sidebar-empty" role="status">项目列表已过期</p>}
+    <button type="button" className="ac-register-button" disabled title="项目注册尚未启用"><Icon name="plus" size={15} />注册项目 · 尚未启用</button>
+    <div className="ac-sidebar-bottom"><div className="ac-small-quote"><Icon name="branch" size={22} /><p>把一次次探索，<br />连接成可以继承的经验。</p><button type="button" onClick={() => go('/swarm')}>查看研究成果<Icon name="arrow" size={14} /></button></div>
+      <div className="ac-capabilities" aria-label="系统能力"><span>系统能力</span>{caps ? <div>{Object.entries({ 导入: caps.imports, 审核: caps.approvals, 执行: caps.execution, 恢复: caps.native_resume, 交接: caps.handoff }).map(([label, value]) => <span key={label}>{label} · {value ? '可用' : '未启用'}</span>)}</div> : <p>{foundation.loading ? '加载中…' : '无法获取'}</p>}{foundation.stale && <p>能力信息已过期</p>}{foundation.error && <button type="button" className="ac-text-button" onClick={foundation.retry}>重试能力</button>}</div>
     </div>
-  );
+  </aside>;
 }

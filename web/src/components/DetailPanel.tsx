@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, type ReactNode } from 'react';
 import styles from './DetailPanel.module.css';
+import { Icon } from './DesignIcons';
 
 const FOCUSABLE = 'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
 
@@ -10,6 +11,7 @@ interface DetailPanelProps {
   /** Show disabled notice for unavailable features */
   showDisabledNotice?: boolean;
   disabledNoticeText?: string;
+  disabledActions?: string[];
 }
 
 export function DetailPanel({
@@ -18,6 +20,7 @@ export function DetailPanel({
   children,
   showDisabledNotice,
   disabledNoticeText = '此功能的操作尚未启用',
+  disabledActions = [],
 }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -68,6 +71,12 @@ export function DetailPanel({
     return () => document.removeEventListener('keydown', onDocKey);
   }, [onClose]);
 
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, []);
+
   // Focus trap (Tab/Shift+Tab cycle within dialog)
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -101,6 +110,7 @@ export function DetailPanel({
   );
 
   return (
+    <div className="ac-overlay" onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
     <div
       ref={panelRef}
       className={styles.overlay}
@@ -110,7 +120,7 @@ export function DetailPanel({
       onKeyDown={handleKeyDown}
     >
       <div className={styles.header}>
-        <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--weight-semibold)' }}>{title}</h3>
+        <div><span className="ac-overline">CONTEXT & PROVENANCE</span><h3 style={{ fontSize: '20px', fontWeight: 'var(--weight-semibold)' }}>{title}</h3></div>
         <button
           ref={closeRef}
           className={styles.closeBtn}
@@ -118,7 +128,7 @@ export function DetailPanel({
           aria-label="关闭"
           type="button"
         >
-          ✕
+          <Icon name="close" size={18} />
         </button>
       </div>
       <div className={styles.body}>
@@ -129,6 +139,8 @@ export function DetailPanel({
           </div>
         )}
       </div>
+      {disabledActions.length > 0 && <footer className="ac-detail-actions">{disabledActions.map(label => <button key={label} className="ac-button disabled compact" type="button" disabled title={disabledNoticeText}>{label}</button>)}</footer>}
+    </div>
     </div>
   );
 }

@@ -8,6 +8,10 @@ import { ErrorState } from '../../components/ErrorState';
 import { DetailPanel, Field, FieldRow, MutedValue } from '../../components/DetailPanel';
 import { formatDimScore, lifecycleLabel, importStatusLabel, opportunityStateLabel, materialKindLabel } from '../../utils/format';
 import type { components } from '../../api/schema';
+import { PageFrame, IntroCard, RailSummary } from '../../components/PageFrame';
+import { matchesQuery } from '../../utils/search';
+import { MaterialCover } from '../../components/MaterialCover';
+import { Icon } from '../../components/DesignIcons';
 import styles from './AttentionPage.module.css';
 
 type Material = components['schemas']['MaterialV1'];
@@ -15,16 +19,18 @@ type Opportunity = components['schemas']['OpportunityV1'];
 
 interface Props {
   fixture: boolean;
+  query: string;
 }
 
-export function AttentionPage({ fixture }: Props) {
+export function AttentionPage({ fixture, query }: Props) {
   const mat = useMaterials();
   const opp = useOpportunities();
   const [selectedMat, setSelectedMat] = useState<Material | null>(null);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
+  const [kind, setKind] = useState<Material['kind'] | 'all'>('all');
 
-  const materials = fixture ? fixtureMaterials : (mat.data?.items ?? []);
-  const opportunities = fixture ? fixtureOpportunities : (opp.data?.items ?? []);
+  const materials = (fixture ? fixtureMaterials : (mat.data?.items ?? [])).filter(m => (kind === 'all' || kind === m.kind) && matchesQuery(query, [m.title, m.source_locator, m.kind]));
+  const opportunities = (fixture ? fixtureOpportunities : (opp.data?.items ?? [])).filter(o => matchesQuery(query, [o.title, o.id, o.next_step]));
 
   const handleClose = useCallback(() => {
     setSelectedMat(null);
@@ -32,22 +38,7 @@ export function AttentionPage({ fixture }: Props) {
   }, []);
 
   return (
-    <div>
-      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h1 className={styles.pageTitle}>资料沉淀</h1>
-          <p className={styles.pageSub}>追踪文献素材与研究机会</p>
-        </div>
-        {!fixture && (
-          <button type="button" onClick={() => { mat.retry(); opp.retry(); }}
-            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-sm)',
-              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
-              background: 'var(--color-surface)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            ↻ 刷新
-          </button>
-        )}
-      </div>
-
+    <PageFrame section="attention" title="资料沉淀" subtitle="每一份关注，都可以长出新的可能。" fixture={fixture} onRefresh={() => { mat.retry(); opp.retry(); }} rail={<><RailSummary title="资料概览" rows={[{ label: '素材', value: fixture ? materials.length : mat.loading ? '加载中…' : mat.error && !mat.data ? '无法获取' : materials.length }, { label: '候选机会', value: fixture ? opportunities.length : opp.loading ? '加载中…' : opp.error && !opp.data ? '无法获取' : opportunities.length }]} note="保存资料不会自动启动任务；候选仍需人工准入。" /><RailSummary title="值得继续的问题" rows={opportunities.slice(0, 2).map(o => ({ id: o.id, label: o.title ?? o.id, value: opportunityStateLabel(o.state), onClick: () => setSelectedOpp(o) }))} note={opportunities.length ? '点击查看四维评分、最小下一步与缺失依据。' : '暂无候选机会。'} /></>}>
       {(!fixture && (mat.stale || opp.stale)) && (
         <div role="alert" style={{
           padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
@@ -63,8 +54,10 @@ export function AttentionPage({ fixture }: Props) {
       )}
 
       <div className={styles.grid}>
+        <SectionCard title="" tabs={['overview']}><IntroCard section="attention" /></SectionCard>
         {/* ── Materials Section ── */}
-        <SectionCard title="素材" count={materials.length}>
+        <SectionCard tabs={['overview']} title="素材" count={materials.length}>
+          <div className="ac-filter-row" role="group" aria-label="素材类型">{(['all', 'paper', 'video', 'text', 'file'] as const).map(value => <button key={value} type="button" className={kind === value ? 'active' : ''} aria-pressed={kind === value} onClick={() => setKind(value)}>{value === 'all' ? '全部资料' : materialKindLabel(value)}</button>)}</div>
           {fixture ? (
             <MaterialList items={materials} onSelect={setSelectedMat} />
           ) : mat.loading && !mat.data ? (
@@ -79,7 +72,7 @@ export function AttentionPage({ fixture }: Props) {
         </SectionCard>
 
         {/* ── Opportunities Section ── */}
-        <SectionCard title="机会" count={opportunities.length}>
+        <SectionCard tabs={['overview', 'opportunities']} title="机会" count={opportunities.length}>
           {fixture ? (
             <OpportunityList items={opportunities} onSelect={setSelectedOpp} />
           ) : opp.loading && !opp.data ? (
@@ -95,9 +88,12 @@ export function AttentionPage({ fixture }: Props) {
       </div>
 
       {/* ── Detail Panels ── */}
+      <SectionCard title="我的收藏" tabs={['saved']} padded><EmptyState icon="☆" title="收藏尚未接入" description="当前接口不提供收藏状态，不能从采集或使用次数推断收藏。" /><button className="ac-button disabled" type="button" disabled title="收藏接口尚未实现">收藏操作尚未启用</button></SectionCard>
+
       {selectedMat && (
         <DetailPanel
           title="素材详情"
+          disabledActions={['继续沉淀', '以后再看']}
           onClose={handleClose}
           showDisabledNotice
           disabledNoticeText="导入与审核操作尚未启用"
@@ -108,6 +104,7 @@ export function AttentionPage({ fixture }: Props) {
       {selectedOpp && (
         <DetailPanel
           title="机会详情"
+          disabledActions={['拒绝', '准入']}
           onClose={handleClose}
           showDisabledNotice
           disabledNoticeText="审核与批准操作尚未启用"
@@ -115,22 +112,25 @@ export function AttentionPage({ fixture }: Props) {
           <OpportunityDetail item={selectedOpp} isFixture={fixture} />
         </DetailPanel>
       )}
-    </div>
+    </PageFrame>
   );
 }
 
 function MaterialList({ items, onSelect }: { items: Material[]; onSelect: (m: Material) => void }) {
+  if (!items.length) return <EmptyState title="没有匹配的素材" description="尝试其他搜索词或资料类型" />;
   return (
-    <ul className={styles.list} role="list">
+    <ul className={`${styles.list} ac-material-grid`} role="list">
       {items.map((m) => (
         <li
           key={m.id}
-          className={styles.listItem}
+          className={`${styles.listItem} ac-material-card`}
           tabIndex={0}
           role="button"
           onClick={() => onSelect(m)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(m); }}}
         >
+          <MaterialCover kind={m.kind} />
+          <div className="ac-material-body">
           <div className={styles.itemHeader}>
             <span className={`${styles.itemTitle} line-clamp-2`}>{m.title ?? m.source_locator}</span>
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
@@ -143,6 +143,8 @@ function MaterialList({ items, onSelect }: { items: Material[]; onSelect: (m: Ma
             <span>{m.source_locator}</span>
             <span>v{m.current_revision}</span>
           </div>
+          <p>{m.collection_reason ?? '采集原因未记录'}</p>
+          </div>
         </li>
       ))}
     </ul>
@@ -150,17 +152,19 @@ function MaterialList({ items, onSelect }: { items: Material[]; onSelect: (m: Ma
 }
 
 function OpportunityList({ items, onSelect }: { items: Opportunity[]; onSelect: (o: Opportunity) => void }) {
+  if (!items.length) return <EmptyState title="没有匹配的机会" description="尝试其他搜索词" />;
   return (
     <ul className={styles.list} role="list">
       {items.map((o) => (
         <li
           key={o.id}
-          className={styles.listItem}
+          className={`${styles.listItem} ac-opportunity`}
           tabIndex={0}
           role="button"
           onClick={() => onSelect(o)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(o); }}}
         >
+          <span className="ac-op-icon"><Icon name="spark" size={19} /></span><div className="ac-op-body">
           <div className={styles.itemHeader}>
             <span className={`${styles.itemTitle} line-clamp-2`}>{o.title ?? o.id}</span>
             <StatusBadge value={o.state} label={opportunityStateLabel(o.state)} />
@@ -168,7 +172,9 @@ function OpportunityList({ items, onSelect }: { items: Opportunity[]; onSelect: 
           <div className={styles.itemMeta}>
             <span>{o.evidence_refs.length} 条证据</span>
             <span>r{o.revision}</span>
-            <span className={styles.itemDesc} style={{ flex: 1 }}>{o.next_step}</span>
+          </div>
+          <p>{o.missing_evidence?.length ? `缺失依据：${o.missing_evidence!.join('；')}` : '缺失依据未记录'}</p>
+          <div className="ac-op-footer"><span>最小下一步 · {o.next_step}</span><span className="ac-text-button">查看依据<Icon name="arrow" size={14} /></span></div>
           </div>
         </li>
       ))}

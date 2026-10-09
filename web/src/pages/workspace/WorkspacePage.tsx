@@ -8,6 +8,10 @@ import { ErrorState } from '../../components/ErrorState';
 import { DetailPanel, Field, FieldRow, MutedValue } from '../../components/DetailPanel';
 import { proposalStatusLabel, bindingStatusLabel, contextStateLabel, formatBudget, capabilityLabel } from '../../utils/format';
 import type { components } from '../../api/schema';
+import { PageFrame, IntroCard, RailSummary } from '../../components/PageFrame';
+import { ResearchRoutes, DesignTimeline } from '../../components/DesignExamples';
+import { matchesQuery } from '../../utils/search';
+import { Icon, NetworkArt } from '../../components/DesignIcons';
 import styles from './WorkspacePage.module.css';
 
 type Project = components['schemas']['ProjectV1'];
@@ -16,6 +20,7 @@ type Session = components['schemas']['SessionV1'];
 
 interface Props {
   fixture: boolean;
+  query: string;
 }
 
 type SelectedItem =
@@ -24,35 +29,20 @@ type SelectedItem =
   | { kind: 'session'; data: Session }
   | null;
 
-export function WorkspacePage({ fixture }: Props) {
+export function WorkspacePage({ fixture, query }: Props) {
   const proj = useProjects();
   const prop = useProposals();
   const sess = useSessions();
   const [selected, setSelected] = useState<SelectedItem>(null);
 
-  const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
-  const proposals = fixture ? fixtureProposals : (prop.data?.items ?? []);
-  const sessions = fixture ? fixtureSessions : (sess.data?.items ?? []);
+  const projects = (fixture ? fixtureProjects : (proj.data?.items ?? [])).filter(p => matchesQuery(query, [p.name, p.root_path, p.environment_id]));
+  const proposals = (fixture ? fixtureProposals : (prop.data?.items ?? [])).filter(p => matchesQuery(query, [p.title, p.id, p.goal]));
+  const sessions = (fixture ? fixtureSessions : (sess.data?.items ?? [])).filter(p => matchesQuery(query, [p.adapter, p.id, p.project_id]));
 
   const handleClose = useCallback(() => setSelected(null), []);
 
   return (
-    <div>
-      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h1 className={styles.pageTitle}>共同工作区</h1>
-          <p className={styles.pageSub}>管理项目、提案与 Agent 会话</p>
-        </div>
-        {!fixture && (
-          <button type="button" onClick={() => { proj.retry(); prop.retry(); sess.retry(); }}
-            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-sm)',
-              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
-              background: 'var(--color-surface)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            ↻ 刷新
-          </button>
-        )}
-      </div>
-
+    <PageFrame section="workspace" title="共同工作区" subtitle="围绕目标与项目，让想法有一个生长的地方。" fixture={fixture} onRefresh={() => { proj.retry(); prop.retry(); sess.retry(); }} rail={<><RailSummary title="工作区概览" rows={[{ label: '提案', value: fixture ? proposals.length : prop.loading ? '加载中…' : prop.error && !prop.data ? '无法获取' : proposals.length }, { label: 'Agent 会话', value: fixture ? sessions.length : sess.loading ? '加载中…' : sess.error && !sess.data ? '无法获取' : sessions.length }]} note="批准、原生接续与交接尚未启用，能力未知时不会推断可用。" /><RailSummary title="Agent 上下文" rows={sessions.map(s => ({ id: s.id, label: s.adapter, value: contextStateLabel(s.context_state), onClick: () => setSelected({ kind: 'session', data: s }) }))} note={sessions.length ? '客户端名称不代表底层模型；点击检查来源、绑定与能力。' : '暂无已连接会话；不展示模拟活跃 Agent。'} /></>}>
       {(!fixture && (proj.stale || prop.stale || sess.stale)) && (
         <div role="alert" style={{
           padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
@@ -68,8 +58,9 @@ export function WorkspacePage({ fixture }: Props) {
       )}
 
       <div className={styles.grid}>
+        {!projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
         {/* ── Projects ── */}
-        <SectionCard title="项目" count={projects.length}>
+        <SectionCard tabs={['overview']} title="项目" count={projects.length}>
           {fixture ? (
             <ProjectList items={projects} onSelect={(p) => setSelected({ kind: 'project', data: p })} />
           ) : proj.loading && !proj.data ? (
@@ -84,7 +75,7 @@ export function WorkspacePage({ fixture }: Props) {
         </SectionCard>
 
         {/* ── Proposals ── */}
-        <SectionCard title="提案" count={proposals.length}>
+        <SectionCard tabs={['proposals']} title="提案" count={proposals.length}>
           {fixture ? (
             <ProposalList items={proposals} onSelect={(p) => setSelected({ kind: 'proposal', data: p })} />
           ) : prop.loading && !prop.data ? (
@@ -100,7 +91,7 @@ export function WorkspacePage({ fixture }: Props) {
 
         {/* ── Sessions (full width) ── */}
         <div className={styles.fullWidth}>
-          <SectionCard title="会话" count={sessions.length}>
+          <SectionCard tabs={['overview', 'sessions']} title="会话" count={sessions.length}>
             {fixture ? (
               <SessionList items={sessions} onSelect={(s) => setSelected({ kind: 'session', data: s })} />
             ) : sess.loading && !sess.data ? (
@@ -114,6 +105,8 @@ export function WorkspacePage({ fixture }: Props) {
             )}
           </SectionCard>
         </div>
+        <SectionCard title="研究路线" tabs={['overview']}><ResearchRoutes fixture={fixture} /></SectionCard>
+        <SectionCard title="研究动态" tabs={['overview']}><DesignTimeline fixture={fixture} /></SectionCard>
       </div>
 
       {/* ── Detail Panels ── */}
@@ -121,6 +114,7 @@ export function WorkspacePage({ fixture }: Props) {
         <DetailPanel
           title={selected.kind === 'project' ? '项目详情' : selected.kind === 'proposal' ? '提案详情' : '会话详情'}
           onClose={handleClose}
+          disabledActions={selected.kind === 'proposal' ? ['批准', '拒绝'] : selected.kind === 'session' ? ['原生接续', '显式交接'] : ['编辑项目']}
           showDisabledNotice
           disabledNoticeText={
             selected.kind === 'proposal'
@@ -135,22 +129,27 @@ export function WorkspacePage({ fixture }: Props) {
           {selected.kind === 'session' && <SessionDetail item={selected.data} isFixture={fixture} />}
         </DetailPanel>
       )}
-    </div>
+    </PageFrame>
   );
 }
 
 // ── Lists ──
 
 function ProjectList({ items, onSelect }: { items: Project[]; onSelect: (p: Project) => void }) {
+  if (!items.length) return <EmptyState title="没有匹配的项目" description="尝试其他搜索词" />;
   return (
-    <ul className={styles.list} role="list">
-      {items.map((p) => (
-        <li key={p.id} className={styles.listItem} tabIndex={0} role="button"
+    <ul className={`${styles.list} ac-project-list`} role="list">
+      {items.map((p, index) => (
+        <li key={p.id} className={`${styles.listItem} ${index === 0 ? 'ac-project-hero' : 'ac-project-preview-card'}`} tabIndex={0} role="button"
           onClick={() => onSelect(p)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); }}}>
-          <div className={styles.itemHeader}>
-            <span className={`${styles.itemTitle} line-clamp-2`}>{p.name}</span>
+          {index === 0 && <span className="ac-overline">YOUR RESEARCH SPACE</span>}
+          <div className={index === 0 ? 'ac-project-title' : styles.itemHeader}>
+            <span className="ac-project-symbol">{p.name.slice(0, 1)}</span>
+            <span className={`${styles.itemTitle} ${index === 0 ? 'ac-project-name' : ''} line-clamp-2`}>{p.name}</span>
           </div>
+          <span className="ac-text-button">查看项目与工作树<Icon name="arrow" size={14} /></span>
+          {index === 0 && <><NetworkArt /><span className="ac-hero-note">RESEARCH CONNECTIONS · 品牌插画</span></>}
           <div className={styles.itemMeta}>
             <span>{p.environment_id}</span>
             <span className={styles.itemDesc}>{p.root_path}</span>
@@ -163,10 +162,11 @@ function ProjectList({ items, onSelect }: { items: Project[]; onSelect: (p: Proj
 }
 
 function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Proposal) => void }) {
+  if (!items.length) return <EmptyState title="没有匹配的提案" description="尝试其他搜索词" />;
   return (
     <ul className={styles.list} role="list">
       {items.map((p) => (
-        <li key={p.id} className={styles.listItem} tabIndex={0} role="button"
+        <li key={p.id} className={`${styles.listItem} ac-proposal-card`} tabIndex={0} role="button"
           onClick={() => onSelect(p)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); }}}>
           <div className={styles.itemHeader}>
@@ -179,6 +179,7 @@ function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Pr
             <span>{p.deliverables.length} 项交付物</span>
             <span>{p.scope.project_ids.length} 个项目</span>
           </div>
+          <span className="ac-text-button">查看范围与停止条件<Icon name="arrow" size={14} /></span>
         </li>
       ))}
     </ul>
@@ -186,19 +187,22 @@ function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Pr
 }
 
 function SessionList({ items, onSelect }: { items: Session[]; onSelect: (s: Session) => void }) {
+  if (!items.length) return <EmptyState title="没有匹配的会话" description="尝试其他搜索词" />;
   return (
-    <ul className={styles.list} role="list">
+    <ul className={`${styles.list} ac-session-grid`} role="list">
       {items.map((s) => (
-        <li key={s.id} className={styles.listItem} tabIndex={0} role="button"
+        <li key={s.id} className={`${styles.listItem} ac-session-card`} tabIndex={0} role="button"
           onClick={() => onSelect(s)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(s); }}}>
-          <div className={styles.itemHeader}>
+          <span className="ac-avatar green">{s.adapter.slice(0, 1).toUpperCase()}</span><div className={styles.itemHeader}>
             <span className={styles.itemTitle}>{s.adapter} · {s.id}</span>
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexShrink: 0 }}>
               <StatusBadge value={s.binding_status} label={bindingStatusLabel(s.binding_status)} />
               <StatusBadge value={s.context_state} label={contextStateLabel(s.context_state)} />
             </div>
           </div>
+          <span className="ac-session-context">原生接续 · {capabilityLabel(s.capabilities.native_resume)}</span>
+          <span className="ac-text-button">查看会话与能力<Icon name="arrow" size={14} /></span>
           <div className={styles.itemMeta}>
             <span>项目: {s.project_id}</span>
             {s.native_session_id && <span>Native: {s.native_session_id}</span>}
@@ -238,7 +242,11 @@ function ProposalDetail({ item, isFixture }: { item: Proposal; isFixture: boolea
           ? <ul style={{ paddingLeft: 'var(--space-5)', margin: 0 }}>{item.deliverables.map((d, i) => <li key={i}>{d}</li>)}</ul>
           : <MutedValue>无</MutedValue>}
       </Field>
-      <Field label="预算">{formatBudget(item.budget)}</Field>
+      <Field label="预算">{formatBudget(item.budget) === '—' ? <MutedValue>未知（未提供预算）</MutedValue> : formatBudget(item.budget)}</Field>
+      <FieldRow>
+        <Field label="调用上限">{item.budget?.calls ?? <MutedValue>未知</MutedValue>}</Field>
+        <Field label="费用上限">{item.budget?.money != null ? `${item.budget.money} ${item.budget.currency ?? '币种未知'}` : <MutedValue>未知</MutedValue>}</Field>
+      </FieldRow>
       <Field label="停止条件">
         {item.stop_conditions.length > 0
           ? item.stop_conditions.join('; ')
