@@ -8,7 +8,7 @@
 | 概览/项目筛选/来源目录/未知活动及交接 | SOURCE04a67c5 定向浏览器120 PASS/2 FAIL；失败为原生 option matcher，用例修复待验 | FAIL |
 | 两尺寸视觉检查 | Workspace1920/1280 与卡片示例图已目视，暖白统计、三/两列、目录和筛选可读 | PASS（布局，非真实接入） |
 | 真实本机清单 API → 页面 | SOURCEe2aa6dc 两尺寸真实 GET200；10身份、8已安装，配置/可启动/八能力全部未知；刷新GET200无写请求 | PASS（安装观察） |
-| 包含清单的定向浏览器整体 | 6项5 PASS/1 FAIL，19.1秒；1920首屏先于 API 就绪导致 ECONNREFUSED，W0脚本待修 | FAIL |
+| 包含清单的定向浏览器首轮 | 6项5 PASS/1 FAIL，19.1秒；1920首屏先于 API 就绪导致 ECONNREFUSED，修复见下一行 | FAIL（历史保留） |
 | 启动修复后原失败1920复验 | SOURCEd87604e 含W0readiness23028df；仅原用例1 PASS，9.7秒、exit0，health先于前端 | PASS（局部复验，不改写前两轮） |
 | 绑定/真实来源清单/建议/人工选取/作业 | 用户决定及契约待定 | NOT_RUN |
 | 账号同步持久化及进程重启 | 尚无真实绑定目标 | NOT_RUN |
