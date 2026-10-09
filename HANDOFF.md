@@ -2,14 +2,16 @@
 
 2026-10-09。项目目录：`C:\Users\DW\orca\Astrocyte`。
 
-交接基线：`s0/workbench-foundation` / `549c78928bd93ed7fec9ef607b7a9aa48096dc74`，已 push，尚未合入 main。
+当前交付：`ui/preview-replacement-20261009`；源码 `5c1517d652afef8273cf14dab5c28021db648cfa` 已 push，尚未合入 main。S0 交接基线为 `649d4297d5bd34ebd849944379cb07bf909d7acb`。本次任务见 [界面替换计划](tasks/UI-preview-plan.md)。
 
 ## 当前状态
 
-- S0 完成：Go + React/TypeScript 基座、三页界面、OpenAPI 客户端、SQLite 迁移与备份、开发/检查/构建入口。
-- `pnpm check`、`pnpm build`、`pnpm test:e2e` 通过；37 项单元测试、88 项浏览器测试。Windows/Linux CI 通过，含 Linux race。记录见 [STATUS.md](STATUS.md)。
+- 界面已采用用户提供的 `Astrocyte-preview.html` 设计迁入 React/TypeScript：白绿布局、搜索、导航、三页标签、封面/会话卡、右栏、插画、详情抽屉与键盘路径。现有客户端、查询层、DTO 和后端保持原边界，开发记录见 [前端交接](web/UI-preview-report.md)。
+- 主 Agent 在当前源码执行 `pnpm check`、`pnpm build`、`pnpm test:e2e` 均 PASS；37 项单元测试、112 项浏览器测试，另有两尺寸三页真实/示例截图复核。本轮 CI 仍在运行；此前 S0 的 Windows/Linux CI PASS 属于历史基线。记录见 [STATUS.md](STATUS.md)。
+- S0 完成：Go + React/TypeScript 基座、OpenAPI 客户端、SQLite 迁移与备份、开发/检查/构建入口。
 - 当前 API 提供健康、基座与空集合查询；写操作、SSE、原生接续返回 501。页面默认读真实 API；`?fixture=1` 进入示例模式。
 - S1–S6 尚未实施。8 个本地 Agent CLI 已清点；原生能力未实测。summarize 已安装，真实导出与 arXiv 导入未实现。
+- 搜索限当前页已加载数据；收藏、研究路线和事件接口尚未接入，真实拓扑禁用。HTML 的固定动态与图仅在显式示例模式展示。改为默认示例尚未决定，沿用 S0 默认真实 API 的约定。
 
 ## 阅读入口
 
@@ -27,8 +29,8 @@
 
 Go 1.27.2、Node 24.16.0、pnpm 11.27.0 已安装。Go 位于 `%LOCALAPPDATA%\Programs\go\bin\go.exe`，项目脚本可自动找到。
 
-- 预览正在运行：http://127.0.0.1:5173；API：`http://127.0.0.1:8787/api/v1/health`。
-- 预览终端：`term_b2100c22-c321-4344-9578-8b9f42601ce2`。重启时在该 Orca 终端按 Ctrl+C，再在项目根运行 `pnpm dev`；已有服务时不重复启动。
+- 预览正在运行：http://127.0.0.1:5173/workspace；设计示例入口：http://127.0.0.1:5173/workspace?fixture=1；API：`http://127.0.0.1:8787/api/v1/health`。
+- 新预览终端：`term_af3ba99d-1301-41be-be0c-860189357aaa`。旧 S0 终端已失效。重启时在新终端按 Ctrl+C，再在项目根运行 `pnpm dev`；已有服务时不重复启动。
 - 数据库：`C:\Users\DW\AppData\Roaming\astrocyte\state.sqlite`。重启沿用该目录；Windows/WSL 各用独立数据库。
 
 ```powershell

@@ -1,10 +1,35 @@
 # Astrocyte 当前状态
 
-日期：2026-10-09。当前任务：[S0 计划](tasks/S0-plan.md)。
+日期：2026-10-09。当前任务：[界面替换计划](tasks/UI-preview-plan.md)；S0 历史记录见 [S0 计划](tasks/S0-plan.md)。
+
+## 当前交付：界面替换
+
+分支 `ui/preview-replacement-20261009`。源码提交 `5c1517d652afef8273cf14dab5c28021db648cfa`，已 push；S0 交接基线 `649d4297d5bd34ebd849944379cb07bf909d7acb`。
+
+已把用户提供的 `C:\Users\DW\Downloads\Astrocyte-preview.html` 的白绿布局、品牌、顶部搜索、侧栏、三页标签、封面卡、会话卡、右栏、网络插画和详情抽屉迁入现有 React/TypeScript。保持现有 API、查询层、DTO、依赖与 Go/SQLite。开发使用 Orca Codex / `gpt-6.1-sol`，单轨独占 `web/`，主 Agent 最终检查、提交与 push。开发记录见 [前端交接](web/UI-preview-report.md)。
+
+主 Agent 在上述源码提交、Windows/PowerShell 实际验证：
+
+| 命令或操作 | 结果 |
+|---|---|
+| `pnpm check` | PASS；Go 格式/vet/测试、依赖、13 包边界、226 契约示例、生成漂移、TS、lint、37/37 单测；保留既有 `EventV1` 未引用警告 |
+| `pnpm build` | PASS；`dist/astrocyte.exe` 与 `web/dist` |
+| `pnpm test:e2e` | PASS，112/112，51.0 秒；1920×1080、1280×720，独立临时数据库与端口 |
+| 三页 × 真实/示例 × 两尺寸预览 | PASS，12 张截图，标题、横向溢出与页面运行错误检查；目视复核布局、长标题、右栏、抽屉与拓扑示例 |
+
+本轮 [CI 37928464780](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/37928464780) 针对源码 `5c1517d` 已启动，记录时仍在运行，不沿用下方 S0 的 CI PASS。后续交付记录只改文档，不重复触发应用检查。
+
+开发阶段 E2E 依次为 86/88、108/110、110/112，失败分别是旧标题断言重复匹配、新测试选错预算样本、空预算详情缺少明确未知标记；修正后 Worker 与主 Agent 各自另行取得 112/112。前轮失败保留在前端交接，不改记成功。
+
+真实限制：默认继续读取真实 API，`?fixture=1` 显式示例；改为默认示例尚未决定。搜索只筛选当前页已加载数据。收藏、研究路线与事件接口尚未接入；固定研究路线/动态/拓扑只在显式示例模式出现。写入、批准、执行、原生接续与采用仍未实现，相关按钮禁用；S1–S6、AT01–AT16 未因界面替换变成 PASS。未合入 main。
+
+当前预览：http://127.0.0.1:5173/workspace；显式示例：http://127.0.0.1:5173/workspace?fixture=1。新预览终端 `term_af3ba99d-1301-41be-be0c-860189357aaa`；API 仍为 8787，沿用仓库外数据库。停止预览在该终端按 Ctrl+C。
+
+## S0 基线与历史验收
 
 - 起始代码：只有 AGPL v3 LICENSE，初始提交 3a02ce38481d1885adee2e051a1b524d78376897。
 - 文档基线：de433528d360413305a4a65c997e11ef7fbf4841，已 push baseline/workbench-v0.1。该提交的 SPEC/TASKS 与用户下载文件逐字节一致。
-- 当前分支：s0/workbench-foundation。SPEC/TASKS 后续修订记录用户确认，原文保留于上述基线提交。
+- S0 交付分支：s0/workbench-foundation。SPEC/TASKS 后续修订记录用户确认，原文保留于上述基线提交。
 - 远端：https://github.com/songconmaisaix31-design/Astrocyte。
 - 主工作树：C:\Users\DW\orca\Astrocyte；原有 charybdis 工作树保持原位。
 
@@ -59,12 +84,12 @@
 
 ## 本地交付
 
-开发预览由 Orca 终端 `term_b2100c22-c321-4344-9578-8b9f42601ce2` 启动 `pnpm dev`，就绪检查 PASS：网页、代理后的 health/foundation 均为 200。
+S0 当时由 Orca 终端 `term_b2100c22-c321-4344-9578-8b9f42601ce2` 启动 `pnpm dev`，就绪检查 PASS：网页、代理后的 health/foundation 均为 200。该旧终端已失效且服务已停止；当前预览终端见本页顶部。
 
 - 网页：http://127.0.0.1:5173；三页显式示例入口在 [README.md](README.md)。
 - API：http://127.0.0.1:8787/api/v1/health。
 - 数据：`C:\Users\DW\AppData\Roaming\astrocyte\state.sqlite`，位于仓库外。
-- 结束预览：在该 Orca 终端按 Ctrl+C。
+- 旧预览已停止；当前预览的停止方法见本页顶部。
 
 最终验收记录为纯文档变更，执行本地链接与 `git diff --check` 后提交；不重复触发应用全套 CI。交付分支为 `s0/workbench-foundation`，已 push；GitHub main 尚未合入。
 
