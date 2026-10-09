@@ -15,6 +15,8 @@ export type MaterialDetail = components['schemas']['MaterialDetailV1'];
 export type OpportunityDetail = components['schemas']['OpportunityDetailV1'];
 export type Distillation = components['schemas']['DistillationV1'];
 export type Job = components['schemas']['JobV1'];
+export type MaterialDomain = components['schemas']['MaterialDomainV1'];
+export type ProjectSpace = components['schemas']['ProjectSpaceV1'];
 
 /** Uses generated types; no command retries. Session bootstrap precedes protected reads. */
 export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) => {
@@ -108,6 +110,15 @@ export function createAttentionApi(client = api) {
     recordMaterialUse: async (id: string, body: components['schemas']['RecordUseRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/materials/{id}/uses', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     retryJob: async (id: string, body: components['schemas']['JobCommandV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/jobs/{id}/retry', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     cancelJob: async (id: string, body: components['schemas']['JobCommandV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/jobs/{id}/cancel', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    listMaterialDomains: (options?: ReadOptions) => unwrap(client.GET('/material-domains', options)),
+    createMaterialDomain: async (body: components['schemas']['MaterialDomainRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/material-domains', { body, params: { header: await headers(key) }, ...options })),
+    reviseMaterialDomain: async (id: string, body: components['schemas']['MaterialDomainRequestV1'], key: string, options?: ReadOptions) => unwrap(client.PATCH('/material-domains/{id}', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    setMaterialDomains: async (id: string, body: components['schemas']['SetMaterialDomainsRequestV1'], key: string, options?: ReadOptions) => unwrap(client.PUT('/materials/{id}/domains', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    listProjectSpaces: (options?: ReadOptions) => unwrap(client.GET('/project-spaces', options)),
+    createProjectSpace: async (body: components['schemas']['ProjectSpaceRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/project-spaces', { body, params: { header: await headers(key) }, ...options })),
+    getProjectSpace: (id: string, options?: ReadOptions) => unwrap(client.GET('/project-spaces/{id}', { params: { path: { id } }, ...options })),
+    referenceMaterial: async (id: string, body: components['schemas']['ReferenceMaterialRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/project-spaces/{id}/references', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+    removeMaterialReference: async (id: string, body: components['schemas']['RemoveMaterialReferenceRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/project-spaces/{id}/references/remove', { body, params: { path: { id }, header: await headers(key) }, ...options })),
   };
 }
 export const attentionApi = createAttentionApi();
