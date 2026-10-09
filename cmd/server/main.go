@@ -117,6 +117,9 @@ func run(logger *slog.Logger) error {
 	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
 		services.Automatic = automatic
 	}
+	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
+		services.RankingProfile = profile
+	}
 
 	// Resolve port — invalid value fails startup.
 	port, err := resolvePort()

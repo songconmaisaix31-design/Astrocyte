@@ -884,6 +884,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/attention-ranking-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read explicit versioned candidate ranking profile
+         * @description No configured profile means manual order; no default composite weights. Settings never grant data access or execution permission.
+         */
+        get: operations["getRankingProfile"];
+        /**
+         * Update human-owned candidate ranking weights
+         * @description Human CAS+idempotent update. All weights positive; goal_progress is primary. Unknown candidate dimensions retain unknown; no delegation/approval rights are changed.
+         */
+        put: operations["updateRankingProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/distillations/processor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read actual processor availability and frozen configuration
+         * @description Runtime facts only. Unconfigured or failed native isolation remains unavailable with required_action; no synthetic automatic capability.
+         */
+        get: operations["getDistillerStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1104,6 +1148,10 @@ export interface components {
             /** Format: date-time */
             created_at?: string;
             version?: number;
+            composite_score?: number | null;
+            ranking_strategy?: string;
+            ranking_reason?: string;
+            ranking_profile_version?: number | null;
         };
         /**
          * @example {
@@ -2061,6 +2109,7 @@ export interface components {
             reuse_key: string;
             /** Format: date-time */
             created_at: string;
+            candidate_suggestion?: components["schemas"]["CandidateSuggestionV1"] | null;
         };
         RecordDistillationRequestV1: {
             /** @constant */
@@ -2146,7 +2195,7 @@ export interface components {
             request_id: string;
             expected_version: number;
             /** @enum {string} */
-            action: "reread" | "annotate" | "pin" | "adopt";
+            action: "reread" | "annotate" | "pin" | "adopt" | "mention" | "project_reuse";
         };
         JobV1: {
             /** @constant */
@@ -2309,6 +2358,60 @@ export interface components {
             stage: "content" | "topic" | "project";
             question: string;
             processing_config: string;
+            prior_distillation_ids?: string[];
+        };
+        RankingProfileV1: {
+            id: string;
+            version: number;
+            enabled: boolean;
+            weights: {
+                goal_progress: number;
+                current_interest: number;
+                project_improvement: number;
+                originality: number;
+            };
+            /** Format: date-time */
+            created_at: string;
+        };
+        RankingProfileDetailV1: {
+            /** @constant */
+            schema_version: 1;
+            configured: boolean;
+            profile: components["schemas"]["RankingProfileV1"] | null;
+            versions: components["schemas"]["RankingProfileV1"][];
+        };
+        UpdateRankingProfileRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            enabled: boolean;
+            weights: {
+                goal_progress: number;
+                current_interest: number;
+                project_improvement: number;
+                originality: number;
+            };
+        };
+        CandidateSuggestionV1: {
+            title: string;
+            evidence_refs: components["schemas"]["SourceRefV1"][];
+            goal_refs: string[];
+            dimensions: components["schemas"]["DimensionsV1"];
+            next_step: string;
+            missing_evidence: string[];
+            purpose: string;
+        };
+        DistillerStatusV1: {
+            /** @constant */
+            schema_version: 1;
+            available: boolean;
+            processor: string;
+            configuration_id: string | null;
+            model: string | null;
+            reason: string;
+            required_action: string;
+            allowed_source_keys: string[];
         };
     };
     responses: never;
@@ -7812,6 +7915,226 @@ export interface operations {
             };
             /** @description Native processor or read isolation unsupported */
             501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getRankingProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RankingProfileDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Profile adapter not connected */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    updateRankingProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRankingProfileRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RankingProfileDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Profile adapter not connected */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getDistillerStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DistillerStatusV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

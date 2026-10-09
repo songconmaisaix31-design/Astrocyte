@@ -141,27 +141,28 @@ type ObjectStore interface {
 	Read(context.Context, string) ([]byte, error)
 }
 type Distillation struct {
-	ID                  string      `json:"id"`
-	InputRefs           []SourceRef `json:"input_refs"`
-	Stage               string      `json:"stage"`
-	OutputRef           string      `json:"output_ref"`
-	OutputText          string      `json:"output_text"`
-	Status              string      `json:"status"`
-	NextQuestion        *string     `json:"next_question"`
-	Question            string      `json:"question"`
-	ProcessingConfig    string      `json:"processing_config"`
-	RelatedRefs         []SourceRef `json:"related_refs"`
-	RelatedIdeas        []string    `json:"related_ideas"`
-	Conflicts           []string    `json:"conflicts"`
-	PendingQuestions    []string    `json:"pending_questions"`
-	GoalRefs            []string    `json:"goal_refs"`
-	ExistingAssets      []string    `json:"existing_assets"`
-	ExpectedImprovement string      `json:"expected_improvement"`
-	MinimumArtifact     string      `json:"minimum_artifact"`
-	MissingEvidence     []string    `json:"missing_evidence"`
-	Provenance          Provenance  `json:"provenance"`
-	ReuseKey            string      `json:"reuse_key"`
-	CreatedAt           time.Time   `json:"created_at"`
+	CandidateSuggestion *CandidateSuggestion `json:"candidate_suggestion,omitempty"`
+	ID                  string               `json:"id"`
+	InputRefs           []SourceRef          `json:"input_refs"`
+	Stage               string               `json:"stage"`
+	OutputRef           string               `json:"output_ref"`
+	OutputText          string               `json:"output_text"`
+	Status              string               `json:"status"`
+	NextQuestion        *string              `json:"next_question"`
+	Question            string               `json:"question"`
+	ProcessingConfig    string               `json:"processing_config"`
+	RelatedRefs         []SourceRef          `json:"related_refs"`
+	RelatedIdeas        []string             `json:"related_ideas"`
+	Conflicts           []string             `json:"conflicts"`
+	PendingQuestions    []string             `json:"pending_questions"`
+	GoalRefs            []string             `json:"goal_refs"`
+	ExistingAssets      []string             `json:"existing_assets"`
+	ExpectedImprovement string               `json:"expected_improvement"`
+	MinimumArtifact     string               `json:"minimum_artifact"`
+	MissingEvidence     []string             `json:"missing_evidence"`
+	Provenance          Provenance           `json:"provenance"`
+	ReuseKey            string               `json:"reuse_key"`
+	CreatedAt           time.Time            `json:"created_at"`
 }
 type RecordDistillationCommand struct {
 	CommandMeta
@@ -187,19 +188,23 @@ type DistillationResult struct {
 	Reused        bool         `json:"reused"`
 }
 type Opportunity struct {
-	Version         int         `json:"version"`
-	ID              string      `json:"id"`
-	Revision        int         `json:"revision"`
-	State           string      `json:"state"`
-	Title           string      `json:"title"`
-	EvidenceRefs    []SourceRef `json:"evidence_refs"`
-	GoalRefs        []string    `json:"goal_refs"`
-	Dimensions      Dimensions  `json:"dimensions"`
-	NextStep        string      `json:"next_step"`
-	MissingEvidence []string    `json:"missing_evidence"`
-	Purpose         string      `json:"purpose"`
-	DistillationIDs []string    `json:"distillation_ids"`
-	CreatedAt       time.Time   `json:"created_at"`
+	CompositeScore        *float64    `json:"composite_score,omitempty"`
+	RankingStrategy       string      `json:"ranking_strategy,omitempty"`
+	RankingReason         string      `json:"ranking_reason,omitempty"`
+	RankingProfileVersion *int        `json:"ranking_profile_version,omitempty"`
+	Version               int         `json:"version"`
+	ID                    string      `json:"id"`
+	Revision              int         `json:"revision"`
+	State                 string      `json:"state"`
+	Title                 string      `json:"title"`
+	EvidenceRefs          []SourceRef `json:"evidence_refs"`
+	GoalRefs              []string    `json:"goal_refs"`
+	Dimensions            Dimensions  `json:"dimensions"`
+	NextStep              string      `json:"next_step"`
+	MissingEvidence       []string    `json:"missing_evidence"`
+	Purpose               string      `json:"purpose"`
+	DistillationIDs       []string    `json:"distillation_ids"`
+	CreatedAt             time.Time   `json:"created_at"`
 }
 type OpportunityCommand struct {
 	CommandMeta
@@ -356,26 +361,28 @@ type SourceSnapshot struct {
 	Provenance    Provenance `json:"provenance"`
 }
 type DistillationInput struct {
-	JobID            string           `json:"job_id"`
-	OperationID      string           `json:"operation_id"`
-	Inputs           []SourceSnapshot `json:"inputs"`
-	Stage            string           `json:"stage"`
-	ProcessingConfig string           `json:"processing_config"`
-	Question         string           `json:"question"`
+	PriorDistillations []Distillation   `json:"prior_distillations,omitempty"`
+	JobID              string           `json:"job_id"`
+	OperationID        string           `json:"operation_id"`
+	Inputs             []SourceSnapshot `json:"inputs"`
+	Stage              string           `json:"stage"`
+	ProcessingConfig   string           `json:"processing_config"`
+	Question           string           `json:"question"`
 }
 type DistillationOutput struct {
-	OutputText          string      `json:"output_text"`
-	NextQuestion        *string     `json:"next_question"`
-	RelatedRefs         []SourceRef `json:"related_refs"`
-	RelatedIdeas        []string    `json:"related_ideas"`
-	Conflicts           []string    `json:"conflicts"`
-	PendingQuestions    []string    `json:"pending_questions"`
-	GoalRefs            []string    `json:"goal_refs"`
-	ExistingAssets      []string    `json:"existing_assets"`
-	ExpectedImprovement string      `json:"expected_improvement"`
-	MinimumArtifact     string      `json:"minimum_artifact"`
-	MissingEvidence     []string    `json:"missing_evidence"`
-	Provenance          Provenance  `json:"provenance"`
+	CandidateSuggestion *CandidateSuggestion `json:"candidate_suggestion"`
+	OutputText          string               `json:"output_text"`
+	NextQuestion        *string              `json:"next_question"`
+	RelatedRefs         []SourceRef          `json:"related_refs"`
+	RelatedIdeas        []string             `json:"related_ideas"`
+	Conflicts           []string             `json:"conflicts"`
+	PendingQuestions    []string             `json:"pending_questions"`
+	GoalRefs            []string             `json:"goal_refs"`
+	ExistingAssets      []string             `json:"existing_assets"`
+	ExpectedImprovement string               `json:"expected_improvement"`
+	MinimumArtifact     string               `json:"minimum_artifact"`
+	MissingEvidence     []string             `json:"missing_evidence"`
+	Provenance          Provenance           `json:"provenance"`
 }
 type Distiller interface {
 	// ConfigurationID describes actual frozen processor settings, including model
@@ -385,16 +392,67 @@ type Distiller interface {
 }
 type RequestDistillationCommand struct {
 	CommandMeta
-	InputRefs        []SourceRef `json:"input_refs"`
-	Stage            string      `json:"stage"`
-	ProcessingConfig string      `json:"processing_config"`
-	Question         string      `json:"question"`
+	PriorDistillationIDs []string    `json:"prior_distillation_ids,omitempty"`
+	InputRefs            []SourceRef `json:"input_refs"`
+	Stage                string      `json:"stage"`
+	ProcessingConfig     string      `json:"processing_config"`
+	Question             string      `json:"question"`
 }
 
 // Kept separate so a runtime can expose human recording while its automatic
 // processor is blocked by missing native read isolation, with honest 501/jobs.
 type AutomaticDistillationService interface {
+	GetDistillerStatus(context.Context, Principal) (DistillerStatus, error)
 	RequestDistillation(context.Context, Principal, RequestDistillationCommand) (ImportJobResult, error)
+}
+type DistillerStatus struct {
+	SchemaVersion     int      `json:"schema_version"`
+	Available         bool     `json:"available"`
+	Processor         string   `json:"processor"`
+	ConfigurationID   *string  `json:"configuration_id"`
+	Model             *string  `json:"model"`
+	Reason            string   `json:"reason"`
+	RequiredAction    string   `json:"required_action"`
+	AllowedSourceKeys []string `json:"allowed_source_keys"`
+}
+type CandidateSuggestion struct {
+	Title           string      `json:"title"`
+	EvidenceRefs    []SourceRef `json:"evidence_refs"`
+	GoalRefs        []string    `json:"goal_refs"`
+	Dimensions      Dimensions  `json:"dimensions"`
+	NextStep        string      `json:"next_step"`
+	MissingEvidence []string    `json:"missing_evidence"`
+	Purpose         string      `json:"purpose"`
+}
+
+// A single explicit, versioned user profile controls candidate composite ordering.
+// No profile means manual order; partial or unknown dimensions never become zero.
+type RankingProfile struct {
+	ID        string             `json:"id"`
+	Version   int                `json:"version"`
+	Enabled   bool               `json:"enabled"`
+	Weights   map[string]float64 `json:"weights"`
+	CreatedAt time.Time          `json:"created_at"`
+}
+type RankingProfileDetail struct {
+	SchemaVersion int              `json:"schema_version"`
+	Configured    bool             `json:"configured"`
+	Profile       *RankingProfile  `json:"profile"`
+	Versions      []RankingProfile `json:"versions"`
+}
+type UpdateRankingProfileCommand struct {
+	CommandMeta
+	Enabled bool               `json:"enabled"`
+	Weights map[string]float64 `json:"weights"`
+}
+type RankingProfileService interface {
+	GetRankingProfile(context.Context, Principal) (RankingProfileDetail, error)
+	UpdateRankingProfile(context.Context, Principal, UpdateRankingProfileCommand) (RankingProfileDetail, error)
+}
+type RankingProfileTx interface {
+	AttentionTx
+	LoadRankingProfile() (RankingProfileDetail, error)
+	SaveRankingProfile(RankingProfileDetail, int) error
 }
 
 type AttentionService interface {
