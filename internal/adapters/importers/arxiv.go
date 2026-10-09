@@ -47,9 +47,14 @@ func NormalizeArxivID(locator string) (string, error) {
 type Paper struct {
 	ID, SourceKey, Title, Abstract, PDFURL string
 	PDF, Metadata                          []byte
+	HTMLURL, FullText                      string
+	HTML, TextExport                       []byte
 }
 
-type Arxiv struct{ Client *http.Client }
+type Arxiv struct {
+	Client        *http.Client
+	TextExtractor *SummarizeExtractor
+}
 
 func NewArxiv() *Arxiv {
 	return &Arxiv{Client: &http.Client{Timeout: 45 * time.Second, CheckRedirect: officialArxivRedirect}}
@@ -107,7 +112,21 @@ func (a *Arxiv) Read(ctx context.Context, locator string) (Paper, error) {
 	if !bytes.HasPrefix(bytes.TrimSpace(pdf), []byte("%PDF-")) {
 		return Paper{}, errors.New("arXiv original response is not a PDF")
 	}
-	return Paper{ID: fixed, SourceKey: "arxiv:" + revisionSuffix.ReplaceAllString(fixed, ""), Title: strings.Join(strings.Fields(e.Title), " "), Abstract: strings.TrimSpace(e.Summary), PDFURL: pdfURL, PDF: pdf, Metadata: metadata}, nil
+	p := Paper{ID: fixed, SourceKey: "arxiv:" + revisionSuffix.ReplaceAllString(fixed, ""), Title: strings.Join(strings.Fields(e.Title), " "), Abstract: strings.TrimSpace(e.Summary), PDFURL: pdfURL, PDF: pdf, Metadata: metadata}
+	if a.TextExtractor != nil {
+		p.HTMLURL = "https://arxiv.org/html/" + fixed
+		p.HTML, err = a.get(ctx, p.HTMLURL, 16<<20)
+		if err != nil {
+			return Paper{}, err
+		}
+		original, err := a.TextExtractor.Extract(ctx, p.HTMLURL)
+		if err != nil {
+			return Paper{}, err
+		}
+		p.FullText = original.Text
+		p.TextExport = original.Original
+	}
+	return p, nil
 }
 
 func (a *Arxiv) get(ctx context.Context, locator string, limit int64) ([]byte, error) {
