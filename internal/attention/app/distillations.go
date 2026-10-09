@@ -53,10 +53,16 @@ func (s *Service) ListDistillations(ctx context.Context, p Principal) (apierrors
 		for _, d := range all {
 			if p.Kind == "agent" {
 				if err := validateSourceRefs(tx, d.InputRefs); err != nil {
-					continue
+					if isRestricted(err) {
+						continue
+					}
+					return err
 				}
 				if err := validateSourceRefs(tx, d.RelatedRefs); err != nil {
-					continue
+					if isRestricted(err) {
+						continue
+					}
+					return err
 				}
 			}
 			rows = append(rows, d)
@@ -124,7 +130,7 @@ func (s *Service) RecordDistillation(ctx context.Context, p Principal, c RecordD
 		if !isMissing(err) {
 			return DistillationResult{}, err
 		}
-		d := Distillation{ID: rand.Text(), InputRefs: c.InputRefs, Stage: c.Stage, OutputRef: outputRef, OutputText: c.OutputText, Status: "succeeded", NextQuestion: c.NextQuestion, Question: strings.TrimSpace(c.Question), ProcessingConfig: c.ProcessingConfig, RelatedRefs: c.RelatedRefs, RelatedIdeas: nonNil(c.RelatedIdeas), Conflicts: nonNil(c.Conflicts), PendingQuestions: nonNil(c.PendingQuestions), GoalRefs: nonNil(c.GoalRefs), ExistingAssets: nonNil(c.ExistingAssets), ExpectedImprovement: c.ExpectedImprovement, MinimumArtifact: c.MinimumArtifact, MissingEvidence: nonNil(c.MissingEvidence), Provenance: Provenance{Processor: "human", Version: "1", Mode: "manual", Source: p.ID}, ReuseKey: reuseKey, CreatedAt: s.options.Clock()}
+		d := Distillation{ID: rand.Text(), InputRefs: nonNil(c.InputRefs), Stage: c.Stage, OutputRef: outputRef, OutputText: c.OutputText, Status: "succeeded", NextQuestion: c.NextQuestion, Question: strings.TrimSpace(c.Question), ProcessingConfig: c.ProcessingConfig, RelatedRefs: nonNil(c.RelatedRefs), RelatedIdeas: nonNil(c.RelatedIdeas), Conflicts: nonNil(c.Conflicts), PendingQuestions: nonNil(c.PendingQuestions), GoalRefs: nonNil(c.GoalRefs), ExistingAssets: nonNil(c.ExistingAssets), ExpectedImprovement: c.ExpectedImprovement, MinimumArtifact: c.MinimumArtifact, MissingEvidence: nonNil(c.MissingEvidence), Provenance: Provenance{Processor: "human", Version: "1", Mode: "manual", Source: p.ID}, ReuseKey: reuseKey, CreatedAt: s.options.Clock()}
 		if err := tx.SaveDistillation(d); err != nil {
 			return DistillationResult{}, err
 		}

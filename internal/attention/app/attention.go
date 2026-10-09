@@ -96,6 +96,11 @@ func isMissing(err error) bool {
 	return errors.As(err, &e) && e.Code == apierrors.NotFound
 }
 
+func isRestricted(err error) bool {
+	var e *apierrors.ServiceError
+	return errors.As(err, &e) && e.Code == apierrors.ScopeDenied
+}
+
 func authorize(p Principal, write bool) error {
 	if p.ID == "" || (p.Kind != "human" && p.Kind != "agent") || (write && p.Kind != "human") {
 		return serviceError(apierrors.ScopeDenied, "This operation requires an authenticated human session", "use_human_session")
@@ -218,7 +223,10 @@ func (s *Service) ListOpportunities(ctx context.Context) (apierrors.ListResult, 
 			// withdrawn content out of this shared list; human detail queries
 			// still retain restricted history.
 			if err := validateOpportunityAccess(tx, row.Opportunity); err != nil {
-				continue
+				if isRestricted(err) {
+					continue
+				}
+				return err
 			}
 			opportunities = append(opportunities, row.Opportunity)
 		}
@@ -238,6 +246,10 @@ func (s *Service) GetMaterial(ctx context.Context, p Principal, id string) (Mate
 		if err != nil {
 			return err
 		}
+		result, err = materialProjection(tx, result)
+		if err != nil {
+			return err
+		}
 		if p.Kind == "agent" {
 			if result.Material.Lifecycle == "withdrawn" {
 				return serviceError(apierrors.ScopeDenied, "Material was withdrawn", "choose_active_material")
@@ -249,6 +261,23 @@ func (s *Service) GetMaterial(ctx context.Context, p Principal, id string) (Mate
 		return nil
 	})
 	return s.projectAttention(result), mapError(err, "")
+}
+
+func materialProjection(tx AttentionTx, row MaterialDetail) (MaterialDetail, error) {
+	all, err := tx.ListDistillations()
+	if err != nil {
+		return row, err
+	}
+	row.Distillations = []Distillation{}
+	for _, d := range all {
+		for _, ref := range append(append([]SourceRef{}, d.InputRefs...), d.RelatedRefs...) {
+			if ref.MaterialID == row.Material.ID {
+				row.Distillations = append(row.Distillations, d)
+				break
+			}
+		}
+	}
+	return row, nil
 }
 
 func (s *Service) GetContent(ctx context.Context, p Principal, id string, revision int) (ContentResult, error) {
@@ -306,6 +335,10 @@ func (s *Service) checkMaterialAccess(ctx context.Context, id string) error {
 }
 
 func (s *Service) projectAttention(row MaterialDetail) MaterialDetail {
+	row.Revisions = nonNil(row.Revisions)
+	row.Distillations = nonNil(row.Distillations)
+	row.Uses = nonNil(row.Uses)
+	row.Material.SourceSpans = nonNil(row.Material.SourceSpans)
 	events := make([]domain.AttentionEvent, 0, len(row.Uses))
 	for _, use := range row.Uses {
 		weight := 1.0
