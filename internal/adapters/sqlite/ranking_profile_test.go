@@ -98,3 +98,50 @@ func TestRankingProfileImmutableConcurrentCASAndRestart(t *testing.T) {
 		t.Fatal("negative expected version accepted")
 	}
 }
+
+func TestRankingProfileRealServiceReceiptAndRestart(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "state.sqlite")
+	db := openAttentionDB(t, path)
+	service := app.NewAttentionService(NewAttentionRepository(db), nil, nil, app.ServiceOptions{})
+	principal := app.Principal{ID: "local-profile-human", Kind: "human"}
+	command := app.UpdateRankingProfileCommand{CommandMeta: app.CommandMeta{SchemaVersion: 1, RequestID: "profile-initial", ExpectedVersion: 1, IdempotencyKey: "profile-initial-key"}, Enabled: true, Weights: map[string]float64{"goal_progress": 4, "current_interest": 2, "project_improvement": 2, "originality": 1}}
+	first, err := service.UpdateRankingProfile(ctx, principal, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	secondCommand := command
+	secondCommand.IdempotencyKey = "profile-disable-key"
+	secondCommand.RequestID = "profile-disable"
+	secondCommand.Enabled = false
+	second, err := service.UpdateRankingProfile(ctx, principal, secondCommand)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if first.Profile.Version != 1 || second.Profile.Version != 2 || len(second.Versions) != 2 {
+		t.Fatal("profile head/history incorrect")
+	}
+	db.Close()
+	restartDB := openAttentionDB(t, path)
+	restartService := app.NewAttentionService(NewAttentionRepository(restartDB), nil, nil, app.ServiceOptions{})
+	replayed, err := restartService.UpdateRankingProfile(ctx, principal, command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !equalJSON(replayed, first) {
+		t.Fatal("restart replay did not return original complete receipt")
+	}
+	head, err := restartService.GetRankingProfile(ctx, principal)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if head.Profile.Version != 2 || head.Profile.Enabled || len(head.Versions) != 2 {
+		t.Fatal("receipt replay changed actual current head")
+	}
+	stale := secondCommand
+	stale.IdempotencyKey = "stale-profile-key"
+	stale.RequestID = "stale-profile"
+	if _, err := restartService.UpdateRankingProfile(ctx, principal, stale); err == nil {
+		t.Fatal("real service accepted stale profile CAS")
+	}
+}
