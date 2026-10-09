@@ -2,9 +2,11 @@
 
 2026-10-09。项目目录：`C:\Users\DW\orca\Astrocyte`。
 
-当前交付：`ui/preview-replacement-20261009`；源码 `5c1517d652afef8273cf14dab5c28021db648cfa` 已 push，尚未合入 main。S0 交接基线为 `649d4297d5bd34ebd849944379cb07bf909d7acb`。本次任务见 [界面替换计划](tasks/UI-preview-plan.md)。
+当前任务为 S1 开发，主控分支 `s1/attention-materials-20261009`，五条 Orca 写域轨与集成进度见 [S1 计划](tasks/S1-plan.md) 和 [STATUS.md](STATUS.md)。用户确认“域”、算法排序、人工分类、在项目空间 @文件建立引用且原分类保留、自动整理先接本机 Codex CLI。Agent 读取范围的关键决定仍待用户，不得从热度或令牌推导全库权限。真实材料为 arXiv `2504.16054` / B 站 `BV1PReT6EEqR`，默认链路无 Python；最终 AT01–AT04 未通过。
 
-## 当前状态
+历史交付：`ui/preview-replacement-20261009`；源码 `5c1517d652afef8273cf14dab5c28021db648cfa` 已 push，尚未合入 main。S0 交接基线为 `649d4297d5bd34ebd849944379cb07bf909d7acb`。以下内容描述 S1 前的界面基线，当前开发与决定以顶部链接为准。
+
+## 界面基线状态（S1 前）
 
 - 界面已采用用户提供的 `Astrocyte-preview.html` 设计迁入 React/TypeScript：白绿布局、搜索、导航、三页标签、封面/会话卡、右栏、插画、详情抽屉与键盘路径。现有客户端、查询层、DTO 和后端保持原边界，开发记录见 [前端交接](web/UI-preview-report.md)。
 - 主 Agent 在当前源码执行 `pnpm check`、`pnpm build`、`pnpm test:e2e` 均 PASS；37 项单元测试、112 项浏览器测试，另有两尺寸三页真实/示例截图复核。本轮 CI 仍在运行；此前 S0 的 Windows/Linux CI PASS 属于历史基线。记录见 [STATUS.md](STATUS.md)。

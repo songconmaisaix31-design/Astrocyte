@@ -1,8 +1,18 @@
 # Astrocyte 当前状态
 
-日期：2026-10-09。当前任务：[界面替换计划](tasks/UI-preview-plan.md)；S0 历史记录见 [S0 计划](tasks/S0-plan.md)。
+日期：2026-10-09。当前任务：[S1 Attention 计划](tasks/S1-plan.md)，开发进行中。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)。下面界面替换与 S0 验收为历史基线，不代表 S1 通过。
 
-## 当前交付：界面替换
+## S1 当前进度
+
+主控分支 `s1/attention-materials-20261009`，基线 `d6c1bf2`。Orca Codex 五条互斥写域轨持续开发与返修，实际模型 `gpt-6.1-sol`；契约、迁移、锁和入口只有 W0 写入，主控只布置、维护决定及最终验收。
+
+已发布阶段：W1 用例 `f7bf7fdb1c6f311e19a64c54cc1334d247b735ab`、W2 存储/导入 `7d27ccdde41e6ef57d8b82faa6d81e74e8fea5db`、W3 页面 `eeb269ec24fe53d5e45210870a83ffc75b23a26c`、W0 可运行后端 `d89f3567ebba07d6e7bc022ae37cbfb75dbeca01`。后续修复和扩展持续普通合并到 `s1-contract-1009`，尚未最终合入主控；阶段绿灯不能沿用到未验的新源码。
+
+实际结果：W0 在 `d89f356` 的 `pnpm check` / `pnpm build` PASS。W4 已运行独立真实 API、SQLite、对象与浏览器场景，首轮 4/8 API 通过，发现数组为 null、topic/theme 阶段不一致、反馈 HTTP 状态等问题并交原轨修复；各轮结果保留于 Worker 报告，S1 最终验收未通过。真实 arXiv `2504.16054v1` 已通过官方导入并取得 16,213,397 字节 PDF；指定 B 站视频 summarize 仅取得推荐网页文字，没有字幕或真实总结，不能作为视频验收成功。
+
+当前新增工作：人类分类的域、算法排序、项目空间 @文件引用（原分类与原文保留）、本机 Codex CLI 自动整理及原生读取隔离。Agent 默认不能读取全库；是否可读取纳入文件的间接引用仍待用户。AT01–AT04 正在验收，自动 CLI、多轮真实视频及授权 Agent 正向阅读尚未通过；S2–S6 未实施。已有 5173/8787 预览仍属于下方 UI 基线，新源码用隔离端口和临时数据库验收，不覆盖现有个人数据。
+
+## 历史交付：界面替换
 
 分支 `ui/preview-replacement-20261009`。源码提交 `5c1517d652afef8273cf14dab5c28021db648cfa`，已 push；S0 交接基线 `649d4297d5bd34ebd849944379cb07bf909d7acb`。
 
