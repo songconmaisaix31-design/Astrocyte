@@ -15,8 +15,8 @@ export interface HumanAPI {
   get<P extends string>(path: P): Promise<ReadResult<P>>;
 }
 export function humanAPI(baseURL: string): Promise<HumanAPI>;
-export function waitJob(api: HumanAPI, id: string, expected?: string): Promise<Schemas['JobV1']>;
-export function importMaterial(api: HumanAPI, body: ImportInput, options?: { status?: number; key?: string }): Promise<{
+export function waitJob(api: HumanAPI, id: string, expected?: string, timeoutMs?: number): Promise<Schemas['JobV1']>;
+export function importMaterial(api: HumanAPI, body: ImportInput, options?: { status?: number; key?: string; timeoutMs?: number }): Promise<{
   receipt: Schemas['ImportJobResultV1'];
   job: Schemas['JobV1'];
   detail: Schemas['MaterialDetailV1'];
