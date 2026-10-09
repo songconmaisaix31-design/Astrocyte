@@ -73,6 +73,8 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 
 S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/SameSiteStrict 会话；写入同时携带返回的 `csrf_token`（`X-CSRF-Token`）和稳定的 `Idempotency-Key`。正文不能设置 actor 或权限。服务重启后重新建立会话，调用者 ID 保持稳定，原幂等回执继续可用。`createAttentionApi` 提供生成类型的写入助手；连接失败保留原幂等键，不自动重发命令。可选 `ASTROCYTE_AGENT_TOKEN` 只标识 Bearer 身份，不授予全库读取权限，不能建立人类会话或写入；用户资料勾选/规则授权契约待定期间，Agent 资料与派生记录读取全部返回 403。此凭据边界不提供同机操作系统进程隔离。
 
+`GET /api/v1/local-agents` 通过同一人类会话读取缓存的 CLI 发现结果。服务启动时仅查 PATH，并在总计 10 秒、单条命令 5 秒内运行固定 version/help；未完成的探测保持未知，刷新网页不再执行 CLI。安装、配置、可启动分别报告；八项原生能力 `discover/read_context/start/resume/send/stop/observe/reconcile` 为 `supported/unsupported/unknown`，版本/帮助成功不表示登录已配置、模型可用或原生接续成功。发现不读取私有会话、凭据或项目目录，也不授予 Agent 资料读取/原生控制权限；未组装发现服务明确返回 501。当前账号绑定、列表推荐/人工选取顺序、项目读取根和原生操作范围仍等待用户决定，见 [本轮计划](tasks/S1-sync-local-agent-plan.md)。
+
 S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
 
 项目精确依赖 [`@steipete/summarize` **0.25.1**](https://github.com/steipete/summarize/blob/main/package.json)。运行 `pnpm install --frozen-lockfile` 后，`pnpm dev` / `pnpm start` 自动解析项目内 CLI 与当前 Node，不需设置全局 summarize 路径；不升级或回退全局 CLI。直接运行构建后的二进制时，从工作目录或二进制旁的已安装 checkout 查找项目依赖；将二进制单独复制到其他目录需要显式配置。`ASTROCYTE_SUMMARIZE_CLI`、`ASTROCYTE_NODE` 可覆盖为绝对路径；缺失/错误配置明确失败。入口会将 CLI 的 pnpm 链接解析为真实文件路径，使媒体桥能找到同一安装中的 summarize-core；显式覆盖 CLI 路径也执行此解析。`ASTROCYTE_ENABLE_SUMMARIZE=false` 显式关闭提取，保留 arXiv 元数据/PDF 与既有导出导入；普通临时浏览器服务也显式关闭提取。
