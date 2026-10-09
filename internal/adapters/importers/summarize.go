@@ -16,6 +16,7 @@ type Export struct {
 	URL, Title, Text, Summary, SourceRevision string
 	Segments                                  []Segment
 	Original                                  []byte
+	HasOriginal                               bool
 }
 
 type Segment struct {
@@ -60,14 +61,7 @@ func ParseSummarizeJSON(raw []byte) (Export, error) {
 			return Export{}, err
 		}
 	}
-	text := v.Extracted.Content
-	if strings.TrimSpace(text) == "" {
-		text = v.Summary
-	}
-	if strings.TrimSpace(text) == "" {
-		return Export{}, errors.New("summarize export has no readable content")
-	}
-	r := Export{URL: locator, Title: v.Extracted.Title, Text: text, Summary: v.Summary, Original: append([]byte(nil), raw...)}
+	r := Export{URL: locator, Title: v.Extracted.Title, Text: v.Extracted.Content, Summary: v.Summary, Original: append([]byte(nil), raw...), HasOriginal: strings.TrimSpace(v.Extracted.Content) != ""}
 	for _, seg := range v.Extracted.TranscriptSegments {
 		if seg.StartMS == nil || math.IsNaN(*seg.StartMS) || math.IsInf(*seg.StartMS, 0) || *seg.StartMS < 0 {
 			return Export{}, errors.New("invalid transcript startMs")
@@ -79,6 +73,20 @@ func ParseSummarizeJSON(raw []byte) (Export, error) {
 			continue
 		}
 		r.Segments = append(r.Segments, Segment{StartMS: *seg.StartMS, EndMS: seg.EndMS, Text: seg.Text})
+	}
+	if strings.TrimSpace(r.Text) == "" && len(r.Segments) > 0 {
+		lines := make([]string, 0, len(r.Segments))
+		for _, seg := range r.Segments {
+			lines = append(lines, seg.Text)
+		}
+		r.Text = strings.Join(lines, "\n")
+		r.HasOriginal = true
+	}
+	if strings.TrimSpace(r.Text) == "" {
+		r.Text = v.Summary
+	}
+	if strings.TrimSpace(r.Text) == "" {
+		return Export{}, errors.New("summarize export has no readable content")
 	}
 	return r, nil
 }

@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 )
 
 var digestPattern = regexp.MustCompile(`^[a-f0-9]{64}$`)
@@ -70,6 +71,16 @@ func (s *Store) Publish(ctx context.Context, content []byte) (string, error) {
 			return "", fmt.Errorf("publish object: %w", err)
 		}
 		if err = s.verify(digest); err != nil {
+			return "", err
+		}
+	}
+	if runtime.GOOS != "windows" {
+		dir, err := os.Open(s.root)
+		if err != nil {
+			return "", err
+		}
+		defer dir.Close()
+		if err := dir.Sync(); err != nil {
 			return "", err
 		}
 	}

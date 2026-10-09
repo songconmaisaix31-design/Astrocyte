@@ -2,12 +2,19 @@ package importers
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 func TestInstalledSummarizeExport(t *testing.T) {
@@ -22,6 +29,62 @@ func TestInstalledSummarizeExport(t *testing.T) {
 	if v.URL != "https://info.arxiv.org/help/api/user-manual.html" || !strings.Contains(v.Text, "Atom") || len(v.Segments) != 0 {
 		t.Fatal("lost real source/text or invented timing")
 	}
+}
+
+func TestReaderCanonicalDigestOriginalAndFileScope(t *testing.T) {
+	raw := `{"input":{"url":"https://www.youtube.com/watch?v=video&t=22"},"extracted":{"content":"original transcript","title":"real title","transcriptSegments":[{"startMs":22500,"text":"segment","endMs":25000}]},"summary":"actual summary"}`
+	r := NewReader(nil)
+	s, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", SourceLocator: "https://youtu.be/video", Kind: "video", ExportText: raw})
+	if err != nil || s.SourceKey != "youtube:video" || s.Text != "original transcript" || s.Summary != "actual summary" || len(s.SourceSpans) != 1 || len(s.Attachments) != 1 || string(s.Attachments[0].Data) != raw {
+		t.Fatalf("%+v %v", s, err)
+	}
+	sum := sha256.Sum256([]byte(s.Text))
+	for _, digest := range []string{hex.EncodeToString(sum[:]), "caller-made-up-digest"} {
+		_, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "video", ExportText: raw, ContentDigest: digest})
+		if (err == nil) != (digest == hex.EncodeToString(sum[:])) {
+			t.Fatal(digest, err)
+		}
+	}
+	root := t.TempDir()
+	path := filepath.Join(root, "export.json")
+	if err := os.WriteFile(path, []byte(raw), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err = r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", LocalFileRef: path})
+	var service *apierrors.ServiceError
+	if !errors.As(err, &service) || service.Code != apierrors.ScopeDenied {
+		t.Fatal("default file read allowed", err)
+	}
+	r.AllowedRoots = []string{root}
+	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", LocalFileRef: path}); err != nil {
+		t.Fatal(err)
+	}
+	outside := filepath.Join(t.TempDir(), "export.json")
+	os.WriteFile(outside, []byte(raw), 0o600)
+	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", LocalFileRef: outside}); err == nil {
+		t.Fatal("out of scope file read")
+	}
+	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize", SourceLocator: "https://youtube.com/watch?v=video"}); err == nil {
+		t.Fatal("invented unavailable backend result")
+	}
+}
+
+// Explicit opt-in uses the real official HTTP source and full original. It does
+// not choose an acceptance paper for the user or silently fall back to mocks.
+func TestArxivLiveOfficialSource(t *testing.T) {
+	id := os.Getenv("ASTROCYTE_TEST_ARXIV_ID")
+	if id == "" {
+		t.Skip("set ASTROCYTE_TEST_ARXIV_ID to the approved public paper")
+	}
+	r := NewReader(nil)
+	s, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "arxiv", SourceLocator: id, Kind: "paper"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(s.Attachments) != 2 || !strings.HasPrefix(string(s.Attachments[0].Data), "%PDF-") || !strings.Contains(s.Text, "metadata only") || len(s.SourceSpans) != 1 {
+		t.Fatalf("incomplete original source %+v", s)
+	}
+	t.Logf("source=%s fixed=%s PDF_bytes=%d", s.SourceKey, s.SourceLocator, len(s.Attachments[0].Data))
 }
 
 func TestSummarizeTimingAndMissingOriginal(t *testing.T) {

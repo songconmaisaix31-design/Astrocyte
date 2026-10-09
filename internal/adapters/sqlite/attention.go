@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
@@ -138,23 +137,24 @@ func (t *attentionTx) saveHead(table, id string, expected int, data string, extr
 	return nil
 }
 
-func requireVersion(v any, expected int) error {
-	// All heads expose aggregate Version after W0's versioned port update.
-	f := reflect.ValueOf(v).FieldByName("Version")
-	if f.IsValid() && int(f.Int()) != expected+1 {
+func requireVersion(version, expected int) error {
+	if version != expected+1 {
 		return conflict("saved aggregate version must advance exactly once")
 	}
 	return nil
 }
 
 func (t *attentionTx) SaveMaterial(v app.MaterialDetail, expected int) error {
-	if err := requireVersion(v.Material, expected); err != nil {
+	if err := requireVersion(v.Material.Version, expected); err != nil {
 		return err
 	}
 	if len(v.Revisions) == 0 || v.Material.ID == "" {
 		return conflict("material requires a source revision")
 	}
 	key := v.Revisions[0].SourceKey
+	if key == "" {
+		return conflict("material source key is required")
+	}
 	if expected > 0 {
 		old, err := t.LoadMaterial(v.Material.ID)
 		if err != nil {
@@ -246,11 +246,14 @@ func (t *attentionTx) LoadOpportunity(id string) (app.OpportunityDetail, error) 
 	return v, err
 }
 func (t *attentionTx) SaveOpportunity(v app.OpportunityDetail, expected int) error {
-	if err := requireVersion(v.Opportunity, expected); err != nil {
+	if err := requireVersion(v.Opportunity.Version, expected); err != nil {
 		return err
 	}
 	if len(v.Revisions) == 0 {
 		return conflict("opportunity requires revision history")
+	}
+	if v.Opportunity.Revision != len(v.Revisions) {
+		return conflict("opportunity current revision does not match history")
 	}
 	if expected > 0 {
 		old, err := t.LoadOpportunity(v.Opportunity.ID)
