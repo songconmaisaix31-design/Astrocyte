@@ -23,8 +23,8 @@ interface Props {
 }
 
 export function AttentionPage({ fixture, query }: Props) {
-  const mat = useMaterials();
-  const opp = useOpportunities();
+  const mat = useMaterials(!fixture);
+  const opp = useOpportunities(!fixture);
   const [selectedMat, setSelectedMat] = useState<Material | null>(null);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
   const [kind, setKind] = useState<Material['kind'] | 'all'>('all');
@@ -96,7 +96,7 @@ export function AttentionPage({ fixture, query }: Props) {
           disabledActions={['继续沉淀', '以后再看']}
           onClose={handleClose}
           showDisabledNotice
-          disabledNoticeText="导入与审核操作尚未启用"
+          disabledNoticeText={fixture ? '示例模式：所有写操作尚未启用，请退出示例模式使用真实 API' : '导入与审核操作尚未启用'}
         >
           <MaterialDetail item={selectedMat} isFixture={fixture} />
         </DetailPanel>
@@ -107,7 +107,7 @@ export function AttentionPage({ fixture, query }: Props) {
           disabledActions={['拒绝', '准入']}
           onClose={handleClose}
           showDisabledNotice
-          disabledNoticeText="审核与批准操作尚未启用"
+          disabledNoticeText={fixture ? '示例模式：所有写操作尚未启用，请退出示例模式使用真实 API' : '审核与批准操作尚未启用'}
         >
           <OpportunityDetail item={selectedOpp} isFixture={fixture} />
         </DetailPanel>
@@ -143,7 +143,7 @@ function MaterialList({ items, onSelect }: { items: Material[]; onSelect: (m: Ma
             <span>{m.source_locator}</span>
             <span>v{m.current_revision}</span>
           </div>
-          <p>{m.collection_reason ?? '采集原因未记录'}</p>
+          <p>收藏理由 · {m.collection_reason?.trim() || '未提供'}</p>
           </div>
         </li>
       ))}
@@ -174,6 +174,12 @@ function OpportunityList({ items, onSelect }: { items: Opportunity[]; onSelect: 
             <span>r{o.revision}</span>
           </div>
           <p>{o.missing_evidence?.length ? `缺失依据：${o.missing_evidence!.join('；')}` : '缺失依据未记录'}</p>
+          <div className={styles.dimensions} aria-label="四维评估">
+            <DimRow label="目标进展" value={o.dimensions.goal_progress} />
+            <DimRow label="当前兴趣" value={o.dimensions.current_interest} />
+            <DimRow label="项目改善" value={o.dimensions.project_improvement} />
+            <DimRow label="创新性" value={o.dimensions.originality} />
+          </div>
           <div className="ac-op-footer"><span>最小下一步 · {o.next_step}</span><span className="ac-text-button">查看依据<Icon name="arrow" size={14} /></span></div>
           </div>
         </li>
@@ -197,11 +203,11 @@ function MaterialDetail({ item, isFixture }: { item: Material; isFixture: boolea
       <Field label="来源定位">
         <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{item.source_locator}</code>
       </Field>
-      <Field label="采集原因">{item.collection_reason ?? <MutedValue>无</MutedValue>}</Field>
+      <Field label="收藏理由">{item.collection_reason?.trim() || <MutedValue>未提供</MutedValue>}</Field>
       <Field label="来源片段">
         {item.source_spans?.length
           ? item.source_spans.join(', ')
-          : <MutedValue>无</MutedValue>}
+          : <MutedValue>未提供真实位置</MutedValue>}
       </Field>
       <FieldRow>
         <Field label="当前版本">v{item.current_revision}</Field>
@@ -261,7 +267,7 @@ function DimRow({ label, value }: { label: string; value: { value: number | null
   return (
     <div>
       <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>{label}</span>
-      <div>{formatDimScore(value.value)} <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>({value.reason})</span></div>
+      <div>{value.value == null ? '未知' : formatDimScore(value.value)} <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>({value.reason || '依据未提供'})</span></div>
     </div>
   );
 }
