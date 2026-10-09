@@ -25,6 +25,7 @@ type memoryState struct {
 	Events        []OutboxEvent
 	Domains       map[string]MaterialDomain
 	Spaces        map[string]ProjectSpace
+	Profile       RankingProfileDetail
 }
 type memoryRepo struct {
 	mu        sync.Mutex
