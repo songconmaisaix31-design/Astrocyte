@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
@@ -41,10 +42,42 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
+	halfLife, weights, err := resolveAttentionPolicy()
+	if err != nil {
+		return err
+	}
+	importRoots, err := resolveImportRoots()
+	if err != nil {
+		return err
+	}
+	sourceReader, err := resolveSourceReader(importRoots)
+	if err != nil {
+		return err
+	}
+	origins, err := resolveAllowedOrigins()
+	if err != nil {
+		return err
+	}
+	concurrency, err := configuredPositiveInt("ASTROCYTE_JOB_CONCURRENCY", 2, 32)
+	if err != nil {
+		return err
+	}
+	maxAttempts, err := configuredPositiveInt("ASTROCYTE_JOB_MAX_ATTEMPTS", 3, 100)
+	if err != nil {
+		return err
+	}
+	jobSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", 300, 86400)
+	if err != nil {
+		return err
+	}
 	// Resolve data directory.
 	dataDir, err := resolveDataDir()
 	if err != nil {
 		return fmt.Errorf("resolve data dir: %w", err)
+	}
+	distiller, processingSourceKeys, err := resolveDistiller(context.Background(), dataDir)
+	if err != nil {
+		return err
 	}
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		return fmt.Errorf("create data dir %q: %w", dataDir, err)
@@ -72,15 +105,27 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("read schema version: %w", err)
 	}
 
-	// Assemble application services.
+	objectStore, err := objects.New(filepath.Join(dataDir, "objects"))
+	if err != nil {
+		return fmt.Errorf("open objects: %w", err)
+	}
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys})
+	// Assemble application services; Workspace and Swarm retain their S0 boundary.
 	services := httpapi.Services{
-		Foundation:    foundation.NewService(schemaVersion),
-		Materials:     attentionapp.NewMaterialService(),
-		Opportunities: attentionapp.NewOpportunityService(),
+		Attention:     attention,
+		Foundation:    foundation.NewAttentionService(schemaVersion),
+		Materials:     attention,
+		Opportunities: attention,
 		Projects:      workspaceapp.NewProjectService(),
 		Proposals:     workspaceapp.NewProposalService(),
 		Sessions:      workspaceapp.NewSessionService(),
 		Missions:      swarmapp.NewMissionService(),
+	}
+	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
+		services.Automatic = automatic
+	}
+	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
+		services.RankingProfile = profile
 	}
 
 	// Resolve port — invalid value fails startup.
@@ -102,25 +147,40 @@ func run(logger *slog.Logger) error {
 
 	// Create and start HTTP server.
 	srv := httpapi.NewServer(httpapi.Config{
-		Port:     port,
-		Logger:   logger,
-		Services: services,
-		WebDir:   webDir,
+		AgentToken:     os.Getenv("ASTROCYTE_AGENT_TOKEN"),
+		AllowedOrigins: origins,
+		Port:           port,
+		Logger:         logger,
+		Services:       services,
+		WebDir:         webDir,
 	})
 
 	// Graceful shutdown on SIGINT/SIGTERM.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+	workerCtx, cancelWorkers := context.WithCancel(context.Background())
+	defer cancelWorkers()
+	workerErrors := make(chan error, 1)
+	go func() { workerErrors <- attention.Run(workerCtx) }()
 
 	errCh := make(chan error, 1)
 	go func() {
 		errCh <- srv.ListenAndServe()
 	}()
 
+	var runError error
+	workersStopped := false
 	select {
 	case err := <-errCh:
 		if err != nil && err.Error() != "http: Server closed" {
-			return fmt.Errorf("http server: %w", err)
+			runError = fmt.Errorf("http server: %w", err)
+		}
+	case err := <-workerErrors:
+		workersStopped = true
+		if err != nil {
+			runError = fmt.Errorf("attention workers: %w", err)
+		} else {
+			runError = fmt.Errorf("attention workers stopped unexpectedly")
 		}
 	case <-ctx.Done():
 		logger.Info("shutdown signal received")
@@ -130,12 +190,20 @@ func run(logger *slog.Logger) error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("shutdown: %w", err)
+	shutdownErr := srv.Shutdown(shutdownCtx)
+	cancelWorkers()
+	if !workersStopped {
+		// Adapters honor context; wait until checkpoints are persisted before closing DB.
+		if err := <-workerErrors; err != nil && runError == nil {
+			runError = fmt.Errorf("stop attention workers: %w", err)
+		}
+	}
+	if shutdownErr != nil {
+		return fmt.Errorf("shutdown: %w", shutdownErr)
 	}
 
 	logger.Info("server stopped")
-	return nil
+	return runError
 }
 
 func resolveDataDir() (string, error) {

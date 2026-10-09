@@ -28,11 +28,11 @@ for (const [path, methods] of Object.entries(spec.paths)) {
         count++;
       }
     }
-    if (!operation['x-s0-supported']) {
+    if (!operation['x-s0-supported'] && !operation['x-s1-supported']) {
       if (operation.responses['501']?.content?.['application/json']?.example?.error?.code !== 'unsupported_capability') {
         throw new Error(`Future operation ${method} ${path} must document unsupported_capability`);
       }
     }
   }
 }
-console.log(`Validated ${count} OpenAPI examples and S0 capability boundaries`);
+console.log(`Validated ${count} OpenAPI examples and supported capability boundaries`);

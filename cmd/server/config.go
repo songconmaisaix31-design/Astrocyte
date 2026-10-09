@@ -1,0 +1,156 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
+	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+)
+
+// The source scope is startup-owned and has no implicit public/private defaults.
+// An ordinary test or dev invocation never starts model processing unless opted in.
+func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distiller, []string, error) {
+	raw := os.Getenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION")
+	if raw == "" || raw == "false" {
+		return nil, nil, nil
+	}
+	if raw != "true" {
+		return nil, nil, fmt.Errorf("ASTROCYTE_ENABLE_CODEX_DISTILLATION must be true or false")
+	}
+	var sourceKeys []string
+	if err := json.Unmarshal([]byte(os.Getenv("ASTROCYTE_PROCESSING_SOURCE_KEYS")), &sourceKeys); err != nil || len(sourceKeys) == 0 {
+		return nil, nil, fmt.Errorf("ASTROCYTE_PROCESSING_SOURCE_KEYS must be a nonempty JSON array of explicitly authorized source keys")
+	}
+	seen := make(map[string]bool)
+	for _, key := range sourceKeys {
+		if key == "" || key != strings.TrimSpace(key) || seen[key] {
+			return nil, nil, fmt.Errorf("ASTROCYTE_PROCESSING_SOURCE_KEYS entries must be distinct nonempty canonical source keys")
+		}
+		seen[key] = true
+	}
+	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_CODEX_TIMEOUT_SECONDS", 180, 86400)
+	if err != nil {
+		return nil, nil, err
+	}
+	workRoot, err := filepath.Abs(filepath.Join(dataDir, "processor-work"))
+	if err != nil {
+		return nil, nil, fmt.Errorf("resolve processor work directory: %w", err)
+	}
+	processor, err := distillers.NewCodex(distillers.CodexOptions{
+		Executable: os.Getenv("ASTROCYTE_CODEX_EXECUTABLE"),
+		WorkRoot:   workRoot, Model: os.Getenv("ASTROCYTE_CODEX_MODEL"),
+		Timeout: time.Duration(timeoutSeconds) * time.Second, AllowedSourceKeys: sourceKeys,
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("configure Codex processor: %w", err)
+	}
+	if _, err := processor.ConfigurationID(ctx); err != nil {
+		return nil, nil, fmt.Errorf("verify Codex processor configuration: %w", err)
+	}
+	return processor, sourceKeys, nil
+}
+
+// No extraction CLI is selected implicitly. A configured CLI uses the installed
+// Node executable and the adapter's extract-only, credential-free environment.
+func resolveSourceReader(roots []string) (*importers.Reader, error) {
+	reader := importers.NewReader(roots)
+	cliPath := os.Getenv("ASTROCYTE_SUMMARIZE_CLI")
+	if cliPath == "" {
+		return reader, nil
+	}
+	nodePath := os.Getenv("ASTROCYTE_NODE")
+	if nodePath == "" {
+		var err error
+		nodePath, err = exec.LookPath("node")
+		if err != nil {
+			return nil, fmt.Errorf("find Node for ASTROCYTE_SUMMARIZE_CLI: %w", err)
+		}
+		nodePath, err = filepath.Abs(nodePath)
+		if err != nil {
+			return nil, fmt.Errorf("resolve Node: %w", err)
+		}
+	}
+	extractor, err := importers.NewSummarizeExtractor(nodePath, cliPath)
+	if err != nil {
+		return nil, fmt.Errorf("configure summarize extraction: %w", err)
+	}
+	reader.Arxiv.TextExtractor = extractor
+	return reader, nil
+}
+
+// Runtime bounds are local service configuration, not client-supplied authority.
+func configuredPositiveInt(name string, defaultValue, maxValue int) (int, error) {
+	raw := os.Getenv(name)
+	if raw == "" {
+		return defaultValue, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 1 || n > maxValue {
+		return 0, fmt.Errorf("%s must be an integer from 1 to %d", name, maxValue)
+	}
+	return n, nil
+}
+
+func resolveAttentionPolicy() (time.Duration, map[string]float64, error) {
+	seconds, err := configuredPositiveInt("ASTROCYTE_ATTENTION_HALF_LIFE_SECONDS", 7*24*60*60, 315360000)
+	if err != nil {
+		return 0, nil, err
+	}
+	var weights map[string]float64
+	if raw := os.Getenv("ASTROCYTE_ATTENTION_WEIGHTS"); raw != "" {
+		if err := json.Unmarshal([]byte(raw), &weights); err != nil || weights == nil {
+			return 0, nil, fmt.Errorf("ASTROCYTE_ATTENTION_WEIGHTS must be a JSON object of event weights")
+		}
+		if err := attentionapp.ValidateAttentionWeights(weights); err != nil {
+			return 0, nil, err
+		}
+	}
+	return time.Duration(seconds) * time.Second, weights, nil
+}
+func resolveImportRoots() ([]string, error) {
+	var roots []string
+	for _, root := range filepath.SplitList(os.Getenv("ASTROCYTE_IMPORT_ROOTS")) {
+		if !filepath.IsAbs(root) {
+			return nil, fmt.Errorf("ASTROCYTE_IMPORT_ROOTS entries must be absolute directories")
+		}
+		info, err := os.Stat(root)
+		if err != nil || !info.IsDir() {
+			return nil, fmt.Errorf("ASTROCYTE_IMPORT_ROOTS entry is not a directory")
+		}
+		resolved, err := filepath.EvalSymlinks(root)
+		if err != nil {
+			return nil, fmt.Errorf("resolve import root: %w", err)
+		}
+		roots = append(roots, resolved)
+	}
+	return roots, nil
+}
+func resolveAllowedOrigins() ([]string, error) {
+	webPort, err := configuredPositiveInt("ASTROCYTE_WEB_PORT", 5173, 65535)
+	if err != nil {
+		return nil, err
+	}
+	origins := []string{fmt.Sprintf("http://127.0.0.1:%d", webPort), fmt.Sprintf("http://localhost:%d", webPort)}
+	for _, origin := range strings.Split(os.Getenv("ASTROCYTE_ALLOWED_ORIGINS"), ",") {
+		origin = strings.TrimSpace(origin)
+		if origin == "" {
+			continue
+		}
+		u, err := url.Parse(origin)
+		if err != nil || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || (u.Scheme != "http" && u.Scheme != "https") || (u.Hostname() != "127.0.0.1" && u.Hostname() != "localhost" && u.Hostname() != "::1") {
+			return nil, fmt.Errorf("ASTROCYTE_ALLOWED_ORIGINS requires exact loopback HTTP origins")
+		}
+		origins = append(origins, origin)
+	}
+	return origins, nil
+}

@@ -73,7 +73,11 @@ export interface paths {
          */
         get: operations["listOpportunitys"];
         put?: never;
-        post?: never;
+        /**
+         * createOpportunity
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        post: operations["createOpportunity"];
         delete?: never;
         options?: never;
         head?: never;
@@ -195,7 +199,7 @@ export interface paths {
         put?: never;
         /**
          * import Material
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["importMaterial"];
         delete?: never;
@@ -215,7 +219,7 @@ export interface paths {
         put?: never;
         /**
          * review Opportunity
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["reviewOpportunity"];
         delete?: never;
@@ -464,6 +468,466 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getLocalSession
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         */
+        get: operations["getLocalSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/materials/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getMaterial
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        get: operations["getMaterial"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * updateMaterial
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        patch: operations["updateMaterial"];
+        trace?: never;
+    };
+    "/materials/{id}/revisions/{revision}/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getMaterialContent
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        get: operations["getMaterialContent"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/materials/{id}/uses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * recordMaterialUse
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        post: operations["recordMaterialUse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/distillations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listDistillations
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        get: operations["listDistillations"];
+        put?: never;
+        /**
+         * recordDistillation
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        post: operations["recordDistillation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/opportunities/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getOpportunity
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        get: operations["getOpportunity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/opportunities/{id}/revisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * reviseOpportunity
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        post: operations["reviseOpportunity"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listJobs
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        get: operations["listJobs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getJob
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        get: operations["getJob"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * retryJob
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        post: operations["retryJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/jobs/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * cancelJob
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        post: operations["cancelJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/materials/{id}/revisions/{revision}/attachments/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read original immutable source attachment
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
+         */
+        get: operations["getMaterialAttachment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/material-domains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listMaterialDomains
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        get: operations["listMaterialDomains"];
+        put?: never;
+        /**
+         * createMaterialDomain
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        post: operations["createMaterialDomain"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/material-domains/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * reviseMaterialDomain
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        patch: operations["reviseMaterialDomain"];
+        trace?: never;
+    };
+    "/materials/{id}/domains": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * setMaterialDomains
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        put: operations["setMaterialDomains"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/project-spaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listProjectSpaces
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        get: operations["listProjectSpaces"];
+        put?: never;
+        /**
+         * createProjectSpace
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        post: operations["createProjectSpace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/project-spaces/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getProjectSpace
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        get: operations["getProjectSpace"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/project-spaces/{id}/references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * referenceMaterial
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        post: operations["referenceMaterial"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/project-spaces/{id}/references/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * removeMaterialReference
+         * @description Human-owned classification and project-space reference. Original material remains in its classification. References pin an existing material revision; they grant no Agent access or execution authority. Agent read scopes are pending and denied by default.
+         */
+        post: operations["removeMaterialReference"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/distillations/jobs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Queue automatic distillation from explicitly selected fixed source snapshots
+         * @description Human-triggered durable processing. Only configured authorized source keys and real adapter provenance may be sent to the local Codex processor. Native read isolation is mandatory; unavailable processing remains explicit unsupported/failed. No source database or object paths are passed to the processor.
+         */
+        post: operations["requestDistillation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attention-ranking-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read explicit versioned candidate ranking profile
+         * @description No configured profile means manual order; no default composite weights. Settings never grant data access or execution permission.
+         */
+        get: operations["getRankingProfile"];
+        /**
+         * Update human-owned candidate ranking weights
+         * @description Human CAS+idempotent update. All weights positive; goal_progress is primary. Unknown candidate dimensions retain unknown; no delegation/approval rights are changed.
+         */
+        put: operations["updateRankingProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/distillations/processor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read actual processor availability and frozen configuration
+         * @description Runtime facts only. Unconfigured or failed native isolation remains unavailable with required_action; no synthetic automatic capability.
+         */
+        get: operations["getDistillerStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -529,7 +993,7 @@ export interface components {
             /** @constant */
             schema_version: 1;
             /** @enum {string} */
-            stage: "S0";
+            stage: "S0" | "S1";
             /** @description Availability of HTTP operations in S0, not evidence about installed local agent native abilities. */
             capabilities: {
                 /** @constant */
@@ -627,6 +1091,19 @@ export interface components {
             import_status?: "queued" | "running" | "succeeded" | "failed" | "cancelled";
             human_usage_count?: number;
             agent_usage_count?: number;
+            attention_score?: number;
+            long_term_value?: number;
+            /** Format: date-time */
+            created_at?: string;
+            version?: number;
+            pinned?: boolean;
+            domain_ids?: string[];
+            ranking_strategy?: string;
+            ranking_reason?: string;
+            attention_half_life_seconds?: number;
+            attention_weights?: {
+                [key: string]: number;
+            };
         };
         /**
          * @example {
@@ -666,6 +1143,15 @@ export interface components {
             dimensions: components["schemas"]["DimensionsV1"];
             next_step: string;
             missing_evidence?: string[];
+            purpose?: string;
+            distillation_ids?: string[];
+            /** Format: date-time */
+            created_at?: string;
+            version?: number;
+            composite_score?: number | null;
+            ranking_strategy?: string;
+            ranking_reason?: string;
+            ranking_profile_version?: number | null;
         };
         /**
          * @example {
@@ -939,7 +1425,7 @@ export interface components {
             schema_version: 1;
             job_id: string;
             /** @enum {string} */
-            status: "queued";
+            status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
         };
         /**
          * @example {
@@ -1043,14 +1529,19 @@ export interface components {
             request_id: string;
             expected_version: number;
             source_locator: string;
+            /** @description Empty string requests adapter canonical source key; nonempty keys are verified by the adapter. */
             source_key: string;
             /** @enum {string} */
             kind: "paper" | "video" | "text" | "file";
+            /** @description Empty string requests server digest computation; a nonempty digest is verified against actual imported bytes. */
             content_digest: string;
             export_text?: string;
             local_file_ref?: string;
             collection_reason?: string | null;
             source_spans?: string[];
+            title?: string;
+            /** @enum {string} */
+            adapter?: "arxiv" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
         };
         /**
          * @example {
@@ -1559,6 +2050,370 @@ export interface components {
             acceptance_id: string;
             actor: string;
             experience_id: string;
+        };
+        ProvenanceV1: {
+            processor: string;
+            version: string;
+            /** @description Actual processing mode reported by the adapter; manual, official_atom_and_pdf, original_export or summary_only. Never infer automatic processing from a record. */
+            mode: string;
+            source: string;
+            /** @description Actual model reported by the processor, or explicit unknown; never inferred from client name. */
+            model?: string;
+        };
+        MaterialRevisionV1: {
+            material_id: string;
+            revision: number;
+            source_key: string;
+            source_locator: string;
+            content_digest: string;
+            object_ref: string;
+            source_spans: string[];
+            provenance: components["schemas"]["ProvenanceV1"];
+            /** Format: date-time */
+            created_at: string;
+            summary?: string;
+            attachments?: components["schemas"]["AttachmentRefV1"][];
+        };
+        UsageV1: {
+            id: string;
+            material_id: string;
+            actor_id: string;
+            /** @enum {string} */
+            actor_kind: "human" | "agent";
+            action: string;
+            /** Format: date-time */
+            occurred_at: string;
+        };
+        DistillationV1: {
+            /** @description Explicitly selected immutable prior records used by this processing operation. */
+            prior_distillation_ids?: string[];
+            id: string;
+            input_refs: components["schemas"]["SourceRefV1"][];
+            /** @enum {string} */
+            stage: "content" | "topic" | "project";
+            output_ref: string;
+            output_text: string;
+            /** @enum {string} */
+            status: "succeeded";
+            next_question: string | null;
+            question: string;
+            processing_config: string;
+            related_refs: components["schemas"]["SourceRefV1"][];
+            related_ideas: string[];
+            conflicts: string[];
+            pending_questions: string[];
+            goal_refs: string[];
+            existing_assets: string[];
+            expected_improvement: string;
+            minimum_artifact: string;
+            missing_evidence: string[];
+            provenance: components["schemas"]["ProvenanceV1"];
+            reuse_key: string;
+            /** Format: date-time */
+            created_at: string;
+            candidate_suggestion?: components["schemas"]["CandidateSuggestionV1"] | null;
+        };
+        RecordDistillationRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            input_refs: components["schemas"]["SourceRefV1"][];
+            /** @enum {string} */
+            stage: "content" | "topic" | "project";
+            output_text: string;
+            next_question?: string | null;
+            question: string;
+            processing_config: string;
+            related_refs?: components["schemas"]["SourceRefV1"][];
+            related_ideas?: string[];
+            conflicts?: string[];
+            pending_questions?: string[];
+            goal_refs?: string[];
+            existing_assets?: string[];
+            expected_improvement?: string;
+            minimum_artifact?: string;
+            missing_evidence?: string[];
+        };
+        DistillationResultV1: {
+            /** @constant */
+            schema_version: 1;
+            distillation: components["schemas"]["DistillationV1"];
+            reused: boolean;
+        };
+        MaterialDetailV1: {
+            /** @constant */
+            schema_version: 1;
+            material: components["schemas"]["MaterialV1"];
+            revisions: components["schemas"]["MaterialRevisionV1"][];
+            distillations: components["schemas"]["DistillationV1"][];
+            uses: components["schemas"]["UsageV1"][];
+        };
+        ContentV1: {
+            /** @constant */
+            schema_version: 1;
+            material_id: string;
+            revision: number;
+            content_digest: string;
+            text: string;
+            provenance: components["schemas"]["ProvenanceV1"];
+        };
+        ReviewV1: {
+            id: string;
+            opportunity_id: string;
+            revision: number;
+            /** @enum {string} */
+            feedback: "adopt" | "later" | "reject" | "revise" | "already_solved";
+            reason: string;
+            dimensions?: components["schemas"]["DimensionsV1"];
+            actor_id: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        OpportunityDetailV1: {
+            /** @constant */
+            schema_version: 1;
+            opportunity: components["schemas"]["OpportunityV1"];
+            revisions: components["schemas"]["OpportunityV1"][];
+            reviews: components["schemas"]["ReviewV1"][];
+        };
+        OpportunityRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            title: string;
+            evidence_refs: components["schemas"]["SourceRefV1"][];
+            goal_refs?: string[];
+            dimensions: components["schemas"]["DimensionsV1"];
+            next_step: string;
+            missing_evidence?: string[];
+            purpose: string;
+            distillation_ids: string[];
+        };
+        RecordUseRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @enum {string} */
+            action: "reread" | "annotate" | "pin" | "adopt" | "mention" | "project_reuse";
+        };
+        JobV1: {
+            /** @constant */
+            schema_version: 1;
+            job_id: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+            kind: string;
+            version: number;
+            dedupe_key: string;
+            operation_id: string;
+            material_id: string | null;
+            material_revision: number | null;
+            error: components["schemas"]["ServiceErrorV1"] | null;
+            attempts: number;
+            max_attempts: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: date-time */
+            deadline_at: string;
+            cancel_requested: boolean;
+            external_started: boolean;
+            delivery_unknown: boolean;
+            distillation_id?: string | null;
+        };
+        ServiceErrorV1: {
+            /** @enum {string} */
+            code: "validation_failed" | "unsupported_capability" | "version_conflict" | "context_stale" | "index_stale" | "scope_denied" | "approval_required" | "approval_revoked" | "lease_lost" | "budget_exhausted" | "provider_unavailable" | "evidence_missing" | "delivery_unknown" | "not_found" | "internal_error";
+            message: string;
+            request_id: string;
+            retryable: boolean;
+            required_action: string;
+        };
+        JobCommandV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+        };
+        LocalSessionV1: {
+            /** @constant */
+            schema_version: 1;
+            actor_id: string;
+            /** @enum {string} */
+            actor_kind: "human";
+            csrf_token: string;
+        };
+        JobListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["JobV1"][];
+            next_cursor: string | null;
+        };
+        DistillationListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["DistillationV1"][];
+            next_cursor: string | null;
+        };
+        AttachmentRefV1: {
+            name: string;
+            media_type: string;
+            object_ref: string;
+            source_locator: string;
+        };
+        UpdateMaterialRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @enum {string} */
+            lifecycle: "active" | "archived" | "withdrawn";
+            collection_reason: string | null;
+            pinned: boolean;
+        };
+        MaterialDomainV1: {
+            id: string;
+            version: number;
+            title: string;
+            description: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        MaterialDomainRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            title: string;
+            description: string;
+        };
+        MaterialDomainResultV1: {
+            /** @constant */
+            schema_version: 1;
+            domain: components["schemas"]["MaterialDomainV1"];
+        };
+        SetMaterialDomainsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            domain_ids: string[];
+        };
+        ProjectSpaceV1: {
+            id: string;
+            version: number;
+            title: string;
+            material_refs: components["schemas"]["SourceRefV1"][];
+            /** Format: date-time */
+            created_at: string;
+        };
+        ProjectSpaceRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            title: string;
+        };
+        ProjectSpaceResultV1: {
+            /** @constant */
+            schema_version: 1;
+            space: components["schemas"]["ProjectSpaceV1"];
+        };
+        ReferenceMaterialRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            material_id: string;
+            revision: number;
+        };
+        RemoveMaterialReferenceRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            material_id: string;
+        };
+        MaterialDomainListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["MaterialDomainV1"][];
+            next_cursor: string | null;
+        };
+        ProjectSpaceListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["ProjectSpaceV1"][];
+            next_cursor: string | null;
+        };
+        RequestDistillationRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            input_refs: components["schemas"]["SourceRefV1"][];
+            /** @enum {string} */
+            stage: "content" | "topic" | "project";
+            question: string;
+            processing_config: string;
+            prior_distillation_ids?: string[];
+        };
+        RankingProfileV1: {
+            id: string;
+            version: number;
+            enabled: boolean;
+            weights: {
+                goal_progress: number;
+                current_interest: number;
+                project_improvement: number;
+                originality: number;
+            };
+            /** Format: date-time */
+            created_at: string;
+        };
+        RankingProfileDetailV1: {
+            /** @constant */
+            schema_version: 1;
+            configured: boolean;
+            profile: components["schemas"]["RankingProfileV1"] | null;
+            versions: components["schemas"]["RankingProfileV1"][];
+        };
+        UpdateRankingProfileRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            enabled: boolean;
+            weights: {
+                goal_progress: number;
+                current_interest: number;
+                project_improvement: number;
+                originality: number;
+            };
+        };
+        CandidateSuggestionV1: {
+            title: string;
+            evidence_refs: components["schemas"]["SourceRefV1"][];
+            goal_refs: string[];
+            dimensions: components["schemas"]["DimensionsV1"];
+            next_step: string;
+            missing_evidence: string[];
+            purpose: string;
+        };
+        DistillerStatusV1: {
+            /** @constant */
+            schema_version: 1;
+            available: boolean;
+            processor: string;
+            configuration_id: string | null;
+            model: string | null;
+            reason: string;
+            required_action: string;
+            allowed_source_keys: string[];
         };
     };
     responses: never;
@@ -2113,6 +2968,78 @@ export interface operations {
                      *       }
                      *     }
                      */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    createOpportunity: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpportunityRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/json": components["schemas"]["ErrorV1"];
                 };
             };
@@ -2982,6 +3909,7 @@ export interface operations {
             header: {
                 /** @description Caller-scoped command deduplication key; never automatic retry */
                 "Idempotency-Key": string;
+                "X-CSRF-Token": string;
             };
             path?: never;
             cookie?: never;
@@ -3133,6 +4061,7 @@ export interface operations {
             header: {
                 /** @description Caller-scoped command deduplication key; never automatic retry */
                 "Idempotency-Key": string;
+                "X-CSRF-Token": string;
             };
             path: {
                 /** @description Registered resource identifier */
@@ -5299,6 +6228,1919 @@ export interface operations {
                      *       }
                      *     }
                      */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getLocalSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalSessionV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getMaterial: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    updateMaterial: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMaterialRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getMaterialContent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                revision: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContentV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    recordMaterialUse: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordUseRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionResultV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listDistillations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DistillationListV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    recordDistillation: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecordDistillationRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DistillationResultV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getOpportunity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    reviseOpportunity: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpportunityRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpportunityDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listJobs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobListV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    retryJob: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobCommandV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    cancelJob: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobCommandV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getMaterialAttachment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                revision: number;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Original source bytes; no filesystem paths accepted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listMaterialDomains: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Human classification result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialDomainListV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    createMaterialDomain: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MaterialDomainRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Human classification result */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialDomainResultV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    reviseMaterialDomain: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MaterialDomainRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Human classification result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialDomainResultV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setMaterialDomains: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetMaterialDomainsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Human classification result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MaterialDetailV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listProjectSpaces: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Human classification result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSpaceListV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    createProjectSpace: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectSpaceRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Human classification result */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSpaceResultV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getProjectSpace: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Human classification result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSpaceResultV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    referenceMaterial: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferenceMaterialRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Human classification result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSpaceResultV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    removeMaterialReference: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemoveMaterialReferenceRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Human classification result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSpaceResultV1"];
+                };
+            };
+            /** @description Structured error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    requestDistillation: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestDistillationRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportJobV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Native processor or read isolation unsupported */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getRankingProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RankingProfileDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Profile adapter not connected */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    updateRankingProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateRankingProfileRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RankingProfileDetailV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Profile adapter not connected */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getDistillerStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Attention result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DistillerStatusV1"];
+                };
+            };
+            /** @description Structured service error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
                     "application/json": components["schemas"]["ErrorV1"];
                 };
             };

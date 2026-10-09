@@ -2,7 +2,7 @@
 
 个人研究与创造工作台。Go 模块化单体、React + TypeScript + Vite、SQLite；开发入口见 [AGENTS.md](AGENTS.md)，当前范围见 [STATUS.md](STATUS.md)、[界面替换计划](tasks/UI-preview-plan.md) 与 [S0 计划](tasks/S0-plan.md)。
 
-三页界面采用用户提供的 `Astrocyte-preview.html` 设计，迁入现有 React 应用。顶部搜索筛选当前页已加载数据；资料类型筛选、标签页历史与键盘切换、详情抽屉可操作。默认读取真实 API，`?fixture=1` 才进入显式示例模式；未实现的写入、批准、接续与执行入口禁用。研究路线、固定动态与拓扑示例仅用于设计展示，不代表真实会话或实验结果。
+三页界面采用用户提供的 `Astrocyte-preview.html` 设计，迁入现有 React 应用。顶部搜索筛选当前页已加载数据；资料类型筛选、标签页历史与键盘切换、详情抽屉可操作。默认读取真实 API，`?fixture=1` 才进入显式示例模式。Attention 的 S1 接入见 [公共契约](tasks/S1-contract.md)；批准、接续与执行仍属后续切片。研究路线、固定动态与拓扑示例仅用于设计展示，不代表真实会话或实验结果。
 
 ## 环境
 
@@ -70,6 +70,18 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 `pnpm check` 与 `pnpm build` 对缺少后端或页面入口明确失败；只有契约/客户端先到位的工作树，仍需合入对应 S0 实现后才能验收完整程序。
 
 ## HTTP v1 与 fixture 边界
+
+S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/SameSiteStrict 会话；写入同时携带返回的 `csrf_token`（`X-CSRF-Token`）和稳定的 `Idempotency-Key`。正文不能设置 actor 或权限。服务重启后重新建立会话，调用者 ID 保持稳定，原幂等回执继续可用。`createAttentionApi` 提供生成类型的写入助手；连接失败保留原幂等键，不自动重发命令。可选 `ASTROCYTE_AGENT_TOKEN` 只标识 Bearer 身份，不授予全库读取权限，不能建立人类会话或写入；用户资料勾选/规则授权契约待定期间，Agent 资料与派生记录读取全部返回 403。此凭据边界不提供同机操作系统进程隔离。
+
+S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
+
+设置 `ASTROCYTE_SUMMARIZE_CLI` 为已安装的 summarize **0.21.8** CLI JavaScript 绝对路径，入口才为 arXiv 启用官方 HTML 全文提取；`ASTROCYTE_NODE` 可指定 Node 可执行文件绝对路径，省略时从 PATH 查找已安装 Node。显式配置无效时启动失败。固定 extract-only 参数不调用 LLM，处理环境不继承提供商凭据；保存固定版本 PDF、官方 HTML 原字节与 summarize JSON。未配置时保留明确的元数据/PDF 路径，摘要不等于全文。Bilibili 缺少真实字幕/逐字稿时报告 `evidence_missing`。
+
+队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源。本地 Codex 端口、适配、持久化队列和入口已组装；最新真实候选 schema 调用响应丢失、效果和费用未知，自动三层正路径尚未验收，不从人工记录推断自动成功。
+
+自动处理配置使用 `ASTROCYTE_ENABLE_CODEX_DISTILLATION=true` 显式启用（默认关闭）、`ASTROCYTE_CODEX_EXECUTABLE` 原生 exe 绝对路径、`ASTROCYTE_CODEX_MODEL` 明确模型名称及 `ASTROCYTE_PROCESSING_SOURCE_KEYS` JSON 数组授权范围；没有任何内置来源白名单。`ASTROCYTE_CODEX_TIMEOUT_SECONDS` 默认 180 秒。普通浏览器临时服务关闭模型和外部提取。当前 native 政策验证的是 **Windows Codex 0.162.0**，使用已授权的纯文本推理模式，运行时拒绝工具执行；不是成功的操作系统文件读取隔离。模型推理会向其提供商发送选中原文，只配置用户授权的来源，本次仅授权所给公开论文与视频；私有库未授权。CLI 自己使用既有登录，不复制或显示凭据；代码不修改全局 CLI 权限配置。
+
+`GET /api/v1/distillations/processor` 只核实原生版本与当前配置，返回实际配置模型、schema 身份及授权来源；不会调用模型，available 不代表提供商当前可连接。自动请求使用固定原文版本、显式前轮记录、问题与真实处理配置复用，完成后保留适配器来源和可空候选建议。人工确认再创建或修订候选。响应丢失的 operation 不自动或人工盲重发；已收到输出但本地保存失败的重试复用原输出。域分类和项目空间 @ 引用保留原件且不授予 Agent 访问。人工重读、提及与项目复用形成关注信号，刷新和机器读取不冒充人工行为；候选排序须先设置完整的版本化四维权重，未知维度不填零。
 
 [contracts/openapi.yaml](contracts/openapi.yaml) 是唯一 HTTP 源。全部规格 §13 路径、版本化请求/响应/错误及示例在此维护；[web/src/api/schema.d.ts](web/src/api/schema.d.ts) 自动生成，typed fetch 使用 `openapi-fetch` 的生成路径类型。业务组件调用 [client.ts](web/src/api/client.ts) 的 `createReadApi`、读取助手或 `createApiClient`。
 

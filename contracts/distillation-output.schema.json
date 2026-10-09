@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://astrocyte.local/distillation-output/v1",
+  "title": "Selected-source automatic distillation output; adapter supplies trusted provenance",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "output_text": {
+      "type": "string"
+    },
+    "next_question": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "related_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/SourceRef"
+      }
+    },
+    "related_ideas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "pending_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "goal_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "existing_assets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "expected_improvement": {
+      "type": "string"
+    },
+    "minimum_artifact": {
+      "type": "string"
+    },
+    "missing_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "candidate_suggestion": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/SourceRef"
+              }
+            },
+            "goal_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dimensions": {
+              "$ref": "#/$defs/Dimensions"
+            },
+            "next_step": {
+              "type": "string"
+            },
+            "missing_evidence": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "purpose": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "title",
+            "evidence_refs",
+            "goal_refs",
+            "dimensions",
+            "next_step",
+            "missing_evidence",
+            "purpose"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "output_text",
+    "next_question",
+    "related_refs",
+    "related_ideas",
+    "conflicts",
+    "pending_questions",
+    "goal_refs",
+    "existing_assets",
+    "expected_improvement",
+    "minimum_artifact",
+    "missing_evidence",
+    "candidate_suggestion"
+  ],
+  "$defs": {
+    "SourceRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "material_id": {
+          "type": "string"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "locator": {
+          "type": "string"
+        },
+        "span": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "material_id",
+        "revision",
+        "locator",
+        "span"
+      ]
+    },
+    "Dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "goal_progress": {
+          "$ref": "#/$defs/DimensionScore"
+        },
+        "current_interest": {
+          "$ref": "#/$defs/DimensionScore"
+        },
+        "project_improvement": {
+          "$ref": "#/$defs/DimensionScore"
+        },
+        "originality": {
+          "$ref": "#/$defs/DimensionScore"
+        }
+      },
+      "required": [
+        "goal_progress",
+        "current_interest",
+        "project_improvement",
+        "originality"
+      ]
+    },
+    "DimensionScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "reason"
+      ]
+    }
+  }
+}

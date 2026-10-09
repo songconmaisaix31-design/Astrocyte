@@ -79,7 +79,7 @@ func writeRejectionError(w http.ResponseWriter, r *http.Request, status int, mes
 			Message:        message,
 			Retryable:      false,
 			RequestID:      rid,
-			RequiredAction: "use_loopback_host_and_origin",
+			RequiredAction: "establish_local_session_and_use_allowed_origin",
 		},
 	}
 
