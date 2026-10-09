@@ -29,7 +29,7 @@ test('fixture local cards filter by actual recorded association and preserve det
   await expect(page.getByRole('dialog').getByRole('button', { name: '编辑项目' })).toBeDisabled();
 });
 
-test('real local inventory displays saved independent observations and refreshes without commands', async ({ page }) => {
+test('real local inventory displays saved independent observations and refreshes without commands', async ({ page }, testInfo) => {
   const commands: string[] = [];
   page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/api/v1/')) commands.push(`${request.method()} ${request.url()}`); });
   const responsePromise = page.waitForResponse(response => response.url().endsWith('/api/v1/local-agents'));
@@ -37,6 +37,8 @@ test('real local inventory displays saved independent observations and refreshes
   const response = await responsePromise;
   expect(response.status()).toBe(200);
   const payload = await response.json() as components['schemas']['LocalAgentListV1'];
+  await testInfo.attach('local-agents-response', { body: JSON.stringify(payload, null, 2), contentType: 'application/json' });
+  console.log('Local inventory:', JSON.stringify({ clients: payload.items.length, installed: payload.items.filter(agent => agent.installed.status === 'available').length, configured: payload.items.filter(agent => agent.configured.status === 'available').length, startable: payload.items.filter(agent => agent.startable.status === 'available').length }));
   const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本机 Agent 清单', exact: true }) }).first();
   await expect(panel.locator('li')).toHaveCount(payload.items.length);
   for (const agent of payload.items) {
@@ -50,6 +52,8 @@ test('real local inventory displays saved independent observations and refreshes
     const native = card.locator('details').filter({ has: page.locator('summary').filter({ hasText: /^原生能力/ }) }).first();
     await native.locator(':scope > summary').click();
     await expect(native.locator('dl > div')).toHaveCount(8);
+    expect(Object.values(agent.capabilities).map(observation => observation.status)).toEqual(Array(8).fill('unknown'));
+    await expect(native.locator('dd > strong')).toHaveText(Array(8).fill('未知'));
     const nativeReasons = await native.locator('dd > small[title]').evaluateAll(elements => elements.map(element => element.getAttribute('title')));
     for (const observation of Object.values(agent.capabilities)) expect(nativeReasons).toContain(observation.reason);
   }
