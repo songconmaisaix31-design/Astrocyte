@@ -25,7 +25,7 @@ export function ImportForm({ fixture, onImported }: { fixture: boolean; onImport
       <legend>导入来源</legend>
       <SelectField label="导入方式" value={adapter} onChange={value => setAdapter(value as typeof adapter)} options={[{ value: 'arxiv', label: 'arXiv 论文' }, { value: 'summarize', label: 'summarize 既有导出' }]} />
       <TextField label={adapter === 'arxiv' ? 'arXiv 来源' : '视频原始来源'} value={locator} onChange={setLocator} required hint={adapter === 'arxiv' ? '输入 arXiv 论文 ID 或公开链接。后端获取真实内容，错误会保留在导入队列。' : '填写导出对应的真实视频 URL；已有摘要若无字幕位置，将明确显示未提供。'} />
-      <TextField label="标题（可选）" value={title} onChange={setTitle} />
+      <TextField label="标题（可选）" value={title} onChange={setTitle} hint="arXiv 和 JSON 导出保留原始标题；纯文本导出可使用此标题。" />
       <TextField label="收藏理由（可选）" value={reason} onChange={setReason} multiline hint="留空会显示未提供，不补写为你的观点。导入后可以固定到收藏。" />
       {adapter === 'summarize' && <>
         <label>选择既有导出文件<input type="file" accept=".json,.txt,.md,application/json,text/plain,text/markdown" onChange={async event => {

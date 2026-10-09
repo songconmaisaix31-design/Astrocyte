@@ -75,6 +75,10 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("resolve data dir: %w", err)
 	}
+	distiller, processingSourceKeys, err := resolveDistiller(context.Background(), dataDir)
+	if err != nil {
+		return err
+	}
 	if err := os.MkdirAll(dataDir, 0o755); err != nil {
 		return fmt.Errorf("create data dir %q: %w", dataDir, err)
 	}
@@ -105,7 +109,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("open objects: %w", err)
 	}
-	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights})
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys})
 	// Assemble application services; Workspace and Swarm retain their S0 boundary.
 	services := httpapi.Services{
 		Attention:     attention,

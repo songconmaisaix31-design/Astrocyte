@@ -4,12 +4,12 @@ import { useCommand } from '../../hooks/useCommand';
 import { CommandState } from '../../components/CommandState';
 import { TextField, SelectField } from './FormControls';
 import { ReferencePicker } from './SourceFields';
-import { lines, sourceRef, stages, type Material, type SourceRef } from './model';
+import { lines, stages, type Material, type SourceRef } from './model';
 import type { components } from '../../api/schema';
 import styles from './AttentionPage.module.css';
 
 type Stage = components['schemas']['RecordDistillationRequestV1']['stage'];
-export function DistillationForm({ material, revision, materials, disabled, onSaved }: { material: Material; revision: number; materials: Material[]; disabled: boolean; onSaved: () => void }) {
+export function DistillationForm({ input, materials, disabled, onSaved }: { input: SourceRef; materials: Material[]; disabled: boolean; onSaved: () => void }) {
   const [stage, setStage] = useState<Stage>('content');
   const [output, setOutput] = useState('');
   const [question, setQuestion] = useState('');
@@ -26,7 +26,7 @@ export function DistillationForm({ material, revision, materials, disabled, onSa
   const command = useCommand(disabled);
   return <form className={styles.form} onSubmit={event => {
     event.preventDefault();
-    const request = command.prepare({ expected_version: 1, input_refs: [sourceRef(material, revision)], stage, output_text: output.trim(), question: question.trim(), processing_config: 'manual:v1', next_question: nextQuestion.trim() || null, related_refs: relatedRefs, related_ideas: lines(ideas), conflicts: lines(conflicts), pending_questions: lines(pending), goal_refs: lines(goals), existing_assets: lines(assets), expected_improvement: improvement.trim(), minimum_artifact: artifact.trim(), missing_evidence: lines(missing) });
+    const request = command.prepare({ expected_version: 1, input_refs: [input], stage, output_text: output.trim(), question: question.trim(), processing_config: 'manual:v1', next_question: nextQuestion.trim() || null, related_refs: relatedRefs, related_ideas: lines(ideas), conflicts: lines(conflicts), pending_questions: lines(pending), goal_refs: lines(goals), existing_assets: lines(assets), expected_improvement: improvement.trim(), minimum_artifact: artifact.trim(), missing_evidence: lines(missing) });
     void command.run(() => attentionApi.recordDistillation(request.body, request.key), result => {
       onSaved();
       // Keep the completed record and inputs visible for reuse or the next question.
@@ -34,8 +34,7 @@ export function DistillationForm({ material, revision, materials, disabled, onSa
     }, '已保存人工沉淀；相同输入、配置和问题由服务复用结果');
   }}>
     <h4>继续沉淀 · 人工记录</h4>
-    <p className={styles.note}>输入固定到资料 v{revision}。此表单保存你已整理的结果，来源明确为人工；导入摘要不自动等于三层沉淀完成。</p>
-    <button className="ac-button secondary compact" type="button" disabled title="当前自动整理服务尚未配置">自动总结 · 未配置</button>
+    <p className={styles.note}>输入固定到资料 v{input.revision} · {input.locator}。此表单保存你已整理的结果，来源明确为人工；导入摘要不自动等于三层沉淀完成。</p>
     <fieldset disabled={disabled || command.pending}><legend>本轮记录</legend>
       <SelectField label="沉淀层次" value={stage} onChange={value => setStage(value as Stage)} options={stages} />
       <TextField label="本轮问题" value={question} onChange={setQuestion} required />

@@ -2,9 +2,15 @@
 
 2026-10-09。项目目录：`C:\Users\DW\orca\Astrocyte`。
 
-当前交付：`ui/preview-replacement-20261009`；源码 `5c1517d652afef8273cf14dab5c28021db648cfa` 已 push，尚未合入 main。S0 交接基线为 `649d4297d5bd34ebd849944379cb07bf909d7acb`。本次任务见 [界面替换计划](tasks/UI-preview-plan.md)。
+S1 代码已普通合入主控分支 `s1/attention-materials-20261009`，业务源 `e51676bca9508d698bd9968ca1f3e4777a7469a0`，主控 check/build/E2E PASS（API14、单测40、浏览器144）。五条 Orca 写域轨与集成记录见 [S1 计划](tasks/S1-plan.md) 和 [STATUS.md](STATUS.md)，Worker 已提交/push并完成终端收口，工作树保留。用户确认“域”、算法排序、人工分类、项目空间 @文件建立引用且原分类保留、整理先接本机 Codex CLI；视频再次明确复用 summarize，现阶段导入其真实既有输出，不新建下载/转录框架。
 
-## 当前状态
+真实材料为 arXiv `2504.16054` / B 站 `BV1PReT6EEqR`，默认链路无 Python。论文全文、人工内容/主题待查记录、候选 later 已由浏览器/API/SQLite/重载核对，AT04 PASS；完整 AT01、真实最新摘要重试和授权 Agent 正向 AT03 尚未通过。指定视频 summarize 只有网页文字被产品拒绝，最新 Codex 调用超时未知未重放。Agent 范围、私有外发、候选门槛、A→B→A 默认版本与新模型作业仍待用户，不得从热度或令牌推导权限。宿主 ACL 探针副作用未凭猜测回滚，见 [W2](tasks/S1-W2.md)。
+
+当前预览已重启到 S1：http://127.0.0.1:5173/attention，API8787；原数据迁移前备份为 `%APPDATA%/astrocyte/backups/pre-s1-20261009-2230/state.sqlite`。summarize 原文提取已配置、Codex 自动处理关闭；真实验收数据只存在已清理的隔离临时库，没有灌入个人库。下文描述的 S1 前界面状态仅为历史，不是当前写入能力。完整主控结果见 STATUS 顶部。
+
+历史交付：`ui/preview-replacement-20261009`；源码 `5c1517d652afef8273cf14dab5c28021db648cfa` 已 push，尚未合入 main。S0 交接基线为 `649d4297d5bd34ebd849944379cb07bf909d7acb`。以下内容描述 S1 前的界面基线，当前开发与决定以顶部链接为准。
+
+## 界面基线状态（S1 前）
 
 - 界面已采用用户提供的 `Astrocyte-preview.html` 设计迁入 React/TypeScript：白绿布局、搜索、导航、三页标签、封面/会话卡、右栏、插画、详情抽屉与键盘路径。现有客户端、查询层、DTO 和后端保持原边界，开发记录见 [前端交接](web/UI-preview-report.md)。
 - 主 Agent 在当前源码执行 `pnpm check`、`pnpm build`、`pnpm test:e2e` 均 PASS；37 项单元测试、112 项浏览器测试，另有两尺寸三页真实/示例截图复核。本轮 CI 仍在运行；此前 S0 的 Windows/Linux CI PASS 属于历史基线。记录见 [STATUS.md](STATUS.md)。
@@ -41,9 +47,9 @@ pnpm build
 
 ## 接下来
 
-1. 与用户确认下一阶段范围及真实案例。规划的下一切片是 S1「资料到候选」；论文方向已定 arXiv，视频总结工具已定 summarize，具体材料、目标仓库和改进任务待用户选择。
-2. 按下一阶段需要补 P0-05～09：Agent 原生能力、向量索引、总结导出字段、AOCI/CodeGraph、Laya ONNX。后端与模型选型、执行控制模式、外发范围及 S3 接续降级方案，在相关切片开始前询问用户。
-3. 先写一页计划，任务固定「目标、可改路径、依赖、验收、停止点」；公共契约先发布，再按互斥文件路径并行。
+1. 继续收口 S1 的指定视频 summarize 真输出、授权 Agent 读取正路径及最新 Codex 自动整理；用户未回答的决定保持 pending，不扩大权限，不重发未知效果调用。
+2. 按确认后的范围恢复原 Worker 返修，沿原互斥写域与分支，不重新搭调度框架；若允许新模型作业，保留原失败与新作业区别，同时核对队列与 native 超时上限。
+3. 完整 AT01–AT04 通过前不宣称 S1 完成，也不进入 S2 批准/执行。P0 剩余适配仅在下一切片确需时处理。
 
 ## 开发约束
 

@@ -11,14 +11,16 @@ if (exportIndex < 0 || !process.argv[exportIndex + 1]) throw new Error('Pass --s
 const exported = await readFile(process.argv[exportIndex + 1], 'utf8');
 const actualExport = JSON.parse(exported);
 assert.equal(actualExport.input.url, 'https://www.bilibili.com/video/BV1PReT6EEqR/');
-const server = await startS1Server();
+const requireFullText = process.argv.includes('--require-full-text');
+if (requireFullText && !process.env.ASTROCYTE_SUMMARIZE_CLI) throw new Error('Set ASTROCYTE_SUMMARIZE_CLI to the trusted installed 0.21.8 absolute CLI path');
+const server = await startS1Server({ env: requireFullText ? { ASTROCYTE_NODE: process.execPath, ASTROCYTE_SUMMARIZE_CLI: process.env.ASTROCYTE_SUMMARIZE_CLI } : {} });
 try {
   const api = await humanAPI(server.apiURL);
   const paper = await importMaterial(api, {
     source_locator: 'https://arxiv.org/abs/2504.16054v1', source_key: '', content_digest: '', kind: 'paper', adapter: 'arxiv', collection_reason: null,
   }, { timeoutMs: 120_000 });
   const revision = paper.detail.revisions[0];
-  assert.equal(revision.provenance.version, '2504.16054v1');
+  assert.match(revision.provenance.version, /^2504\.16054v1(?:; summarize 0\.21\.8)?$/);
   const pdf = revision.attachments.find(attachment => attachment.media_type === 'application/pdf');
   assert.ok(pdf, 'Actual original paper PDF must be preserved');
   const pdfResponse = await fetch(`${server.apiURL}/api/v1/materials/${paper.detail.material.id}/revisions/1/attachments/${encodeURIComponent(pdf.name)}`, { headers: { Cookie: api.cookie }, signal: AbortSignal.timeout(30_000) });
@@ -26,6 +28,21 @@ try {
   const bytes = Buffer.from(await pdfResponse.arrayBuffer());
   assert.ok(bytes.subarray(0, 5).equals(Buffer.from('%PDF-')));
   assert.deepEqual(bytes, await readFile(join(server.dataDir, 'objects', pdf.object_ref)));
+  let extractedFullTextCharacters = null;
+  if (requireFullText) {
+    assert.equal(revision.provenance.mode, 'official_atom_pdf_and_html_text', 'A metadata-only import is not full paper text');
+    const html = revision.attachments.find(attachment => attachment.name === '2504.16054v1.html');
+    const originalExport = revision.attachments.find(attachment => attachment.name === 'summarize-original.json');
+    assert.ok(html && originalExport, 'Official original HTML and genuine extraction export must be retained');
+    const extracted = JSON.parse(await readFile(join(server.dataDir, 'objects', originalExport.object_ref), 'utf8'));
+    assert.equal(extracted.input.url, 'https://arxiv.org/html/2504.16054v1');
+    assert.equal(extracted.llm, null, 'The original text extraction must not call a model');
+    assert.ok(extracted.extracted.content.length > 1000, 'The selected full paper must contain more than a metadata abstract');
+    const paperContent = await api.get(`/materials/${paper.detail.material.id}/revisions/1/content`);
+    assert.ok(paperContent.text.includes(extracted.extracted.content));
+    assert.ok((await readFile(join(server.dataDir, 'objects', html.object_ref), 'utf8')).includes('2504.16054'));
+    extractedFullTextCharacters = extracted.extracted.content.length;
+  }
   const videoInput = {
     source_locator: actualExport.input.url, source_key: '', content_digest: '', kind: 'video', adapter: 'summarize', export_text: exported, collection_reason: null,
   };
@@ -77,10 +94,11 @@ try {
   assert.equal((await api.get('/missions')).items.length, 0);
   await server.restart();
   const reconnected = await humanAPI(server.apiURL);
-  assert.equal((await reconnected.get(`/materials/${paper.detail.material.id}`)).revisions[0].attachments.length, 2);
+  assert.deepEqual((await reconnected.get(`/materials/${paper.detail.material.id}`)).revisions[0].attachments, revision.attachments);
   assert.equal((await reconnected.get(`/opportunities/${candidate.opportunity.id}`)).opportunity.id, candidate.opportunity.id);
   console.log(JSON.stringify({
     paper_import: 'PASS', paper_version: revision.provenance.version, original_pdf_bytes: bytes.length,
+    paper_full_text: requireFullText ? 'PASS' : 'NOT_RUN', extracted_full_text_characters: extractedFullTextCharacters,
     video_existing_export_import: video ? 'PASS' : 'REJECTED_PAGE_ONLY', page_only_rejection: video ? 'NOT_APPLICABLE' : 'PASS', video_extracted_characters: actualExport.extracted.totalCharacters,
     video_transcript: hasTranscript ? 'PASS' : 'BLOCKED', video_summary: actualExport.summary ? 'available_in_export' : 'NOT_RUN',
     manual_traceability_layers: records.map(record => record.stage), automatic_distillation: 'NOT_RUN',

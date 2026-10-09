@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { startS1Server } from './server.mjs';
 import { command, humanAPI, importMaterial, waitJob } from './api.mjs';
-import { changedPaperText, distillation, paperImport, paperText, sourceRef, videoImport, videoTranscript } from './fixtures.mjs';
+import { changedPaperText, distillation, opportunity, paperImport, paperText, sourceRef, videoImport, videoTranscript } from './fixtures.mjs';
 import { seedCandidate } from './scenarios.mjs';
 
 // Explicit contract_local source records through the real HTTP, SQLite and object adapters.
@@ -129,6 +129,27 @@ test('AT02: Bilibili tracking and fragment aliases reuse one material and immuta
   assert.equal((await api.get(`/materials/${id}/revisions/1/content`)).text, videoTranscript);
 });
 
+test('page-only video diagnostic fails honestly and creates no Material', async () => {
+  const locator = 'https://www.bilibili.com/video/BV1S1PAGEONLY/';
+  const priorIDs = (await api.get('/materials')).items.map(item => item.id).sort();
+  const pageOnly = {
+    input: { url: locator },
+    extracted: {
+      url: locator, title: 'contract_local recommended page, not target video', content: 'contract_local recommendation titles only',
+      transcriptSource: null, transcriptSegments: null,
+      diagnostics: { strategy: 'html', transcript: { textProvided: false } },
+    },
+    summary: null, llm: null,
+  };
+  const receipt = await api.write('/materials/imports', { source_locator: locator, source_key: '', content_digest: '', kind: 'video', adapter: 'summarize_json', export_text: JSON.stringify(pageOnly), collection_reason: null }, { status: 202 });
+  const failed = await waitJob(api, receipt.job_id, 'failed');
+  assert.equal(failed.error.code, 'evidence_missing');
+  assert.ok(failed.error.required_action);
+  assert.equal(failed.material_id, null);
+  assert.deepEqual((await api.get('/materials')).items.map(item => item.id).sort(), priorIDs);
+  assert.equal(JSON.parse(server.query('SELECT data FROM attention_jobs WHERE id=?', failed.job_id)[0].data).status, 'failed');
+});
+
 test('AT03: Agent without material authorization is denied; human refresh never heats and explicit reread does', async () => {
   const imported = await importMaterial(api, paperImport('https://example.invalid/contract-local/attention'));
   await importMaterial(api, paperImport('https://example.invalid/contract-local/attention', changedPaperText));
@@ -243,15 +264,78 @@ test('AT04/AT02: later retains feedback/version/material and import receipt acro
   assert.equal((await api.get('/missions')).items.length, 0);
 });
 
+// e9a44a63 profile contract: wait for actual W1/W2 runtime before claiming this path passed.
+test('explicit candidate ranking profile preserves immutable versions, rejects stale/partial settings, and keeps unknown scores unknown', async () => {
+  const empty = await api.get('/attention-ranking-profile');
+  assert.equal(empty.configured, false);
+  assert.equal(empty.profile, null);
+  assert.deepEqual(empty.versions, []);
+  const seeded = await seedCandidate(api, 'https://example.invalid/contract-local/profile');
+  const unknownID = seeded.candidate.opportunity.id;
+  const initialUnknown = (await api.get('/opportunities')).items.find(item => item.id === unknownID);
+  assert.ok(initialUnknown.composite_score == null, 'No profile or unknown dimensions must not produce zero');
+  const weights = { goal_progress: 4, current_interest: 3, project_improvement: 2, originality: 1 };
+  const first = await api.write('/attention-ranking-profile', { enabled: true, weights }, { method: 'PUT' });
+  assert.equal(first.configured, true);
+  assert.equal(first.profile.version, 1);
+  assert.deepEqual(first.versions, [first.profile]);
+  const knownIDs = [];
+  for (const [name, value] of [['low', 0.1], ['high', 0.9]]) {
+    const dimensions = Object.fromEntries(Object.keys(weights).map(key => [key, { value, reason: `contract_local explicit ${name} score; not real project evidence` }]));
+    const result = await api.write('/opportunities', opportunity([sourceRef(seeded.detail.material)], seeded.records.map(record => record.id), { title: `contract_local ${name} ranked candidate`, dimensions }), { status: 201 });
+    knownIDs.push(result.opportunity.id);
+  }
+  const listed = (await api.get('/opportunities')).items;
+  assert.ok(listed.findIndex(item => item.id === knownIDs[1]) < listed.findIndex(item => item.id === knownIDs[0]));
+  for (const id of knownIDs) {
+    const item = listed.find(value => value.id === id);
+    assert.equal(typeof item.composite_score, 'number');
+    assert.equal(item.ranking_profile_version, 1);
+  }
+  const unknown = listed.find(item => item.id === unknownID);
+  assert.ok(unknown.composite_score == null);
+  for (const dimension of Object.values(unknown.dimensions)) assert.equal(dimension.value, null);
+  for (const invalidWeights of [{ ...weights, originality: 0 }, { goal_progress: 4 }, { ...weights, current_interest: 5 }]) {
+    const invalid = await api.request('/attention-ranking-profile', { method: 'PUT', body: command({ expected_version: 1, enabled: true, weights: invalidWeights }) });
+    assert.equal(invalid.status, 400, JSON.stringify(invalid.data));
+  }
+  const changedWeights = { ...weights, goal_progress: 5 };
+  const second = await api.write('/attention-ranking-profile', { expected_version: 1, enabled: true, weights: changedWeights }, { method: 'PUT' });
+  assert.equal(second.profile.version, 2);
+  assert.deepEqual(second.versions[0], first.profile);
+  assert.deepEqual(second.versions[1].weights, changedWeights);
+  const stale = await api.request('/attention-ranking-profile', { method: 'PUT', body: command({ expected_version: 1, enabled: false, weights }) });
+  assert.equal(stale.status, 409, JSON.stringify(stale.data));
+  const denied = await api.request('/attention-ranking-profile', { method: 'PUT', body: command({ expected_version: 2, enabled: false, weights: changedWeights }), headers: { Authorization: `Bearer ${agentToken}` } });
+  assert.equal(denied.status, 403);
+  const rows = server.query('SELECT version,data FROM attention_ranking_profile_revisions WHERE profile_id=? ORDER BY version', first.profile.id);
+  assert.deepEqual(rows.map(row => row.version), [1, 2]);
+  assert.deepEqual(JSON.parse(rows[0].data).weights, weights);
+  await server.restart();
+  api = await humanAPI(server.apiURL);
+  assert.deepEqual(await api.get('/attention-ranking-profile'), second);
+  const disabled = await api.write('/attention-ranking-profile', { expected_version: 2, enabled: false, weights: changedWeights }, { method: 'PUT' });
+  assert.equal(disabled.profile.version, 3);
+  assert.equal(disabled.versions.length, 3);
+  for (const item of (await api.get('/opportunities')).items) assert.ok(item.composite_score == null, 'Disabling explicit ranking must restore manual ordering semantics');
+  assert.equal((await api.get('/missions')).items.length, 0);
+});
+
 // Published 6e34233 human classification/@ contract; run only on its complete runtime integration.
-test('unconfigured automatic processing reports unsupported without creating a fake generated record', async () => {
+test('default disabled automatic processing denies ungranted input without creating a fake generated record', async () => {
   const imported = await importMaterial(api, paperImport('https://example.invalid/contract-local/no-processor'));
   const jobsBefore = (await api.get('/jobs')).items;
   const recordsBefore = (await api.get('/distillations')).items;
+  const status = await api.get('/distillations/processor');
+  assert.equal(status.available, false);
+  assert.equal(status.configuration_id, null);
+  assert.equal(status.model, null);
+  assert.deepEqual(status.allowed_source_keys, []);
+  assert.ok(status.reason && status.required_action);
   const body = command({ input_refs: [sourceRef(imported.detail.material)], stage: 'content', processing_config: 'unconfigured:contract_local', question: 'contract_local: no external processor is enabled' });
   const result = await api.request('/distillations/jobs', { method: 'POST', body });
-  assert.equal(result.status, 501, JSON.stringify(result.data));
-  assert.equal(result.data.error.code, 'unsupported_capability');
+  assert.equal(result.status, 403, JSON.stringify(result.data));
+  assert.equal(result.data.error.code, 'scope_denied');
   assert.ok(result.data.error.required_action);
   assert.deepEqual((await api.get('/jobs')).items, jobsBefore);
   assert.deepEqual((await api.get('/distillations')).items, recordsBefore);
