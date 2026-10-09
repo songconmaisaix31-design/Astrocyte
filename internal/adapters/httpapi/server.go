@@ -12,6 +12,8 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -31,6 +33,7 @@ type Config struct {
 	Port     int
 	Logger   *slog.Logger
 	Services Services
+	WebDir   string // Optional: directory for static file serving
 }
 
 // Services bundles all application services the HTTP layer depends on.
@@ -91,13 +94,21 @@ func NewServer(cfg Config) *Server {
 	mux.HandleFunc("POST /api/v1/artifacts/{id}/acceptance", h.notImplemented("artifact_accept"))
 	mux.HandleFunc("GET /api/v1/events", h.notImplemented("events_sse"))
 
-	// Catch-all for unknown /api/v1/* routes
-	mux.HandleFunc("/api/v1/", h.handleNotFound)
+	// Catch-all for unknown /api/v1/* routes — always JSON 404
+	mux.HandleFunc("/api/v1/", h.handleAPINotFound)
 
-	// Apply middleware stack
-	stack := loopbackMiddleware(
-		requestIDMiddleware(
-			loggingMiddleware(cfg.Logger, mux),
+	// Build handler stack with optional static file serving
+	var innerHandler http.Handler = mux
+
+	if cfg.WebDir != "" {
+		// Wrap with SPA static file serving for non-/api routes
+		innerHandler = spaHandler(cfg.WebDir, mux)
+	}
+
+	// Apply middleware stack: request ID first so all responses have it
+	stack := requestIDMiddleware(
+		loopbackMiddleware(
+			loggingMiddleware(cfg.Logger, innerHandler),
 		),
 	)
 
@@ -131,6 +142,43 @@ func (s *Server) Shutdown(ctx context.Context) error {
 // Addr returns the configured listen address (useful in tests).
 func (s *Server) Addr() string {
 	return s.httpServer.Addr
+}
+
+// spaHandler serves static files from webDir with SPA fallback.
+// - /api/* routes always go to the API mux (never static)
+// - Existing files in webDir are served directly
+// - Non-existent files get index.html (SPA fallback)
+// - No directory listing
+func spaHandler(webDir string, apiHandler http.Handler) http.Handler {
+	fileServer := http.FileServer(http.Dir(webDir))
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+
+		// API routes always go to API handler
+		if strings.HasPrefix(path, "/api/") {
+			apiHandler.ServeHTTP(w, r)
+			return
+		}
+
+		// Try to serve the file directly
+		filePath := strings.TrimPrefix(path, "/")
+		if filePath == "" {
+			filePath = "index.html"
+		}
+
+		// Check if file exists (no directory listing)
+		fullPath := webDir + "/" + filePath
+		info, err := os.Stat(fullPath)
+		if err != nil || info.IsDir() {
+			// SPA fallback: serve index.html for non-existent paths
+			http.ServeFile(w, r, webDir+"/index.html")
+			return
+		}
+
+		// Serve the actual file
+		fileServer.ServeHTTP(w, r)
+	})
 }
 
 // isLoopbackHost checks whether the request host resolves to a loopback address.

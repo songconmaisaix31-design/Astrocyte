@@ -143,10 +143,12 @@ func (h *handler) notImplemented(capability string) http.HandlerFunc {
 	}
 }
 
-// handleNotFound responds to unmatched /api/v1/* routes.
-func (h *handler) handleNotFound(w http.ResponseWriter, r *http.Request) {
+// handleAPINotFound responds to unmatched /api/v1/* routes with JSON 404.
+func (h *handler) handleAPINotFound(w http.ResponseWriter, r *http.Request) {
 	writeError(w, r, http.StatusNotFound, &apierrors.ServiceError{
-		Code:    apierrors.NotFound,
-		Message: "route not found",
+		Code:           apierrors.NotFound,
+		Message:        "API route not found",
+		Retryable:      false,
+		RequiredAction: "check_path_and_method",
 	})
 }
