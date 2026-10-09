@@ -33,9 +33,19 @@ export function AttentionPage({ fixture }: Props) {
 
   return (
     <div>
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>注意力</h1>
-        <p className={styles.pageSub}>追踪文献素材与研究机会</p>
+      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className={styles.pageTitle}>资料沉淀</h1>
+          <p className={styles.pageSub}>追踪文献素材与研究机会</p>
+        </div>
+        {!fixture && (
+          <button type="button" onClick={() => { mat.retry(); opp.retry(); }}
+            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-sm)',
+              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-surface)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            ↻ 刷新
+          </button>
+        )}
       </div>
 
       {(!fixture && (mat.stale || opp.stale)) && (
@@ -90,7 +100,7 @@ export function AttentionPage({ fixture }: Props) {
           title="素材详情"
           onClose={handleClose}
           showDisabledNotice
-          disabledNoticeText="导入与审核操作将在后续切片中启用"
+          disabledNoticeText="导入与审核操作尚未启用"
         >
           <MaterialDetail item={selectedMat} isFixture={fixture} />
         </DetailPanel>
@@ -100,7 +110,7 @@ export function AttentionPage({ fixture }: Props) {
           title="机会详情"
           onClose={handleClose}
           showDisabledNotice
-          disabledNoticeText="审核与批准操作将在后续切片中启用"
+          disabledNoticeText="审核与批准操作尚未启用"
         >
           <OpportunityDetail item={selectedOpp} isFixture={fixture} />
         </DetailPanel>
@@ -192,8 +202,8 @@ function MaterialDetail({ item, isFixture }: { item: Material; isFixture: boolea
         <Field label="ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{item.id}</code></Field>
       </FieldRow>
       <FieldRow>
-        <Field label="人工使用">{item.human_usage_count ?? 0} 次</Field>
-        <Field label="Agent 使用">{item.agent_usage_count ?? 0} 次</Field>
+        <Field label="人工使用">{item.human_usage_count != null ? `${item.human_usage_count} 次` : <MutedValue>未知</MutedValue>}</Field>
+        <Field label="Agent 使用">{item.agent_usage_count != null ? `${item.agent_usage_count} 次` : <MutedValue>未知</MutedValue>}</Field>
       </FieldRow>
     </>
   );

@@ -178,3 +178,13 @@ export function contextStateLabel(state: string): string {
 export function materialKindLabel(kind: string): string {
   return MATERIAL_KIND_LABELS[kind] ?? kind;
 }
+
+/**
+ * Three-state capability label.
+ * null = unprobed / unknown; false = verified unsupported; true = available.
+ */
+export function capabilityLabel(value: boolean | null): string {
+  if (value === true) return '● 可用';
+  if (value === false) return '○ 不可用';
+  return '◇ 未知';
+}

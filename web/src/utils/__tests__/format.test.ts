@@ -15,6 +15,7 @@ import {
   bindingStatusLabel,
   contextStateLabel,
   materialKindLabel,
+  capabilityLabel,
 } from '../format';
 
 describe('formatDate', () => {
@@ -202,5 +203,23 @@ describe('materialKindLabel', () => {
     expect(materialKindLabel('video')).toBe('视频');
     expect(materialKindLabel('text')).toBe('文本');
     expect(materialKindLabel('file')).toBe('文件');
+  });
+});
+
+describe('capabilityLabel', () => {
+  it('returns 可用 for true', () => {
+    expect(capabilityLabel(true)).toBe('● 可用');
+  });
+
+  it('returns 不可用 for false', () => {
+    expect(capabilityLabel(false)).toBe('○ 不可用');
+  });
+
+  it('returns 未知 for null (unprobed)', () => {
+    expect(capabilityLabel(null)).toBe('◇ 未知');
+  });
+
+  it('null and false produce different labels', () => {
+    expect(capabilityLabel(null)).not.toBe(capabilityLabel(false));
   });
 });

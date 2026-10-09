@@ -6,7 +6,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
 import { DetailPanel, Field, FieldRow, MutedValue } from '../../components/DetailPanel';
-import { proposalStatusLabel, bindingStatusLabel, contextStateLabel, formatBudget } from '../../utils/format';
+import { proposalStatusLabel, bindingStatusLabel, contextStateLabel, formatBudget, capabilityLabel } from '../../utils/format';
 import type { components } from '../../api/schema';
 import styles from './WorkspacePage.module.css';
 
@@ -38,9 +38,19 @@ export function WorkspacePage({ fixture }: Props) {
 
   return (
     <div>
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>工作台</h1>
-        <p className={styles.pageSub}>管理项目、提案与 Agent 会话</p>
+      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className={styles.pageTitle}>共同工作区</h1>
+          <p className={styles.pageSub}>管理项目、提案与 Agent 会话</p>
+        </div>
+        {!fixture && (
+          <button type="button" onClick={() => { proj.retry(); prop.retry(); sess.retry(); }}
+            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-sm)',
+              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-surface)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            ↻ 刷新
+          </button>
+        )}
       </div>
 
       {(!fixture && (proj.stale || prop.stale || sess.stale)) && (
@@ -114,10 +124,10 @@ export function WorkspacePage({ fixture }: Props) {
           showDisabledNotice
           disabledNoticeText={
             selected.kind === 'proposal'
-              ? '提案审批操作将在后续切片中启用'
+              ? '提案审批操作尚未启用'
               : selected.kind === 'session'
-                ? '会话恢复与交接操作将在后续切片中启用'
-                : '项目编辑操作将在后续切片中启用'
+                ? '会话恢复与交接操作尚未启用'
+                : '项目编辑操作尚未启用'
           }
         >
           {selected.kind === 'project' && <ProjectDetail item={selected.data} isFixture={fixture} />}
@@ -263,8 +273,8 @@ function SessionDetail({ item, isFixture }: { item: Session; isFixture: boolean 
       <Field label="上下文包 ID">{item.context_packet_id ?? <MutedValue>无</MutedValue>}</Field>
       <Field label="能力">
         <div style={{ fontSize: 'var(--text-sm)' }}>
-          <div>原生恢复: {item.capabilities.native_resume ? '● 可用' : '○ 不可用'}</div>
-          <div>交接: {item.capabilities.handoff ? '● 可用' : '○ 不可用'}</div>
+          <div>原生恢复: {capabilityLabel(item.capabilities.native_resume)}</div>
+          <div>交接: {capabilityLabel(item.capabilities.handoff)}</div>
         </div>
       </Field>
       <Field label="ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{item.id}</code></Field>

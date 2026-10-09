@@ -13,6 +13,9 @@ import styles from './SwarmPage.module.css';
 type Mission = components['schemas']['MissionV1'];
 type WorkItem = components['schemas']['WorkItemV1'];
 
+/** Stable empty array to avoid changing useMemo deps on every render. */
+const EMPTY_MISSIONS: Mission[] = [];
+
 interface Props {
   fixture: boolean;
 }
@@ -26,7 +29,10 @@ export function SwarmPage({ fixture }: Props) {
   const miss = useMissions();
   const [selected, setSelected] = useState<SelectedItem>(null);
 
-  const missions = fixture ? fixtureMissions : (miss.data?.items ?? []);
+  const missions = useMemo(
+    () => fixture ? fixtureMissions : (miss.data?.items ?? EMPTY_MISSIONS),
+    [fixture, miss.data],
+  );
   const workItems = useMemo(() => flattenWorkItems(missions), [missions]);
   const artifactIds = useMemo(() => flattenArtifactIds(missions), [missions]);
 
@@ -34,9 +40,19 @@ export function SwarmPage({ fixture }: Props) {
 
   return (
     <div>
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>集群</h1>
-        <p className={styles.pageSub}>查看任务、工作项与产物引用（只读 · S0 无 Agent 控制）</p>
+      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className={styles.pageTitle}>蜂群执行</h1>
+          <p className={styles.pageSub}>查看任务、工作项与产物引用</p>
+        </div>
+        {!fixture && (
+          <button type="button" onClick={() => miss.retry()}
+            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-sm)',
+              border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-surface)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            ↻ 刷新
+          </button>
+        )}
       </div>
 
       {(!fixture && miss.stale) && (
@@ -63,15 +79,29 @@ export function SwarmPage({ fixture }: Props) {
           ) : miss.error && !miss.data ? (
             <ErrorState message={miss.error} onRetry={miss.retry} />
           ) : missions.length === 0 ? (
-            <EmptyState icon="🎯" title="暂无任务" description="任务由系统在 S1+ 中创建" />
+            <EmptyState icon="🎯" title="暂无任务" description="暂无任务" />
           ) : (
             <MissionList items={missions} onSelect={(m) => setSelected({ kind: 'mission', data: m })} />
           )}
         </SectionCard>
 
-        {/* ── Work Items (flattened from missions) ── */}
+        {/* ── Work Items (flattened from missions — propagate mission state) ── */}
         <SectionCard title="工作项" count={workItems.length}>
-          {workItems.length === 0 ? (
+          {fixture ? (
+            workItems.length === 0 ? (
+              <EmptyState icon="⚙" title="暂无工作项" description="示例任务无工作项" />
+            ) : (
+              <WorkItemList
+                items={workItems}
+                missions={missions}
+                onSelect={(w, mid) => setSelected({ kind: 'workitem', data: w, missionId: mid })}
+              />
+            )
+          ) : miss.loading && !miss.data ? (
+            <div className={styles.loadingRow}>加载中…</div>
+          ) : miss.error && !miss.data ? (
+            <ErrorState message={miss.error} onRetry={miss.retry} />
+          ) : workItems.length === 0 ? (
             <EmptyState icon="⚙" title="暂无工作项" description="工作项由任务分解产生" />
           ) : (
             <WorkItemList
@@ -82,9 +112,29 @@ export function SwarmPage({ fixture }: Props) {
           )}
         </SectionCard>
 
-        {/* ── Artifacts (IDs only — no artifact list endpoint in S0) ── */}
+        {/* ── Artifacts (IDs from missions — propagate mission state) ── */}
         <SectionCard title="产物引用" count={artifactIds.length}>
-          {artifactIds.length === 0 ? (
+          {fixture ? (
+            artifactIds.length === 0 ? (
+              <EmptyState icon="📦" title="暂无产物引用" description="示例任务无产物" />
+            ) : (
+              <ul className={styles.list} role="list">
+                {artifactIds.map((id) => (
+                  <li key={id} className={styles.listItem} style={{ cursor: 'default' }}>
+                    <div className={styles.itemHeader}>
+                      <span className={styles.itemTitle}>
+                        <code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{id}</code>
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : miss.loading && !miss.data ? (
+            <div className={styles.loadingRow}>加载中…</div>
+          ) : miss.error && !miss.data ? (
+            <ErrorState message={miss.error} onRetry={miss.retry} />
+          ) : artifactIds.length === 0 ? (
             <EmptyState icon="📦" title="暂无产物引用" description="工作项完成后产物引用将在此显示" />
           ) : (
             <ul className={styles.list} role="list">
@@ -108,7 +158,7 @@ export function SwarmPage({ fixture }: Props) {
           title={selected.kind === 'mission' ? '任务详情' : '工作项详情'}
           onClose={handleClose}
           showDisabledNotice
-          disabledNoticeText="S0 为只读模式。任务创建、Agent 控制和执行操作将在后续切片中启用"
+          disabledNoticeText="任务创建与执行操作尚未启用"
         >
           {selected.kind === 'mission' && <MissionDetail item={selected.data} isFixture={fixture} />}
           {selected.kind === 'workitem' && <WorkItemDetail item={selected.data} missionId={selected.missionId} isFixture={fixture} />}
