@@ -74,3 +74,9 @@
 第一步本次核验：`pnpm check:contracts` PASS（226示例、生成类型一致；保留既有EventV1未引用警告）；`go test -mod=readonly ./internal/adapters/httpapi ./internal/attention/domain` PASS（缓存结果，非重新执行真实模型/视频）。本次只发布主控索引，不改业务代码，不重启或重放已结束作业。完整Agent可读范围、私有外发、ready门槛、A→B→A head以及Codex新作业仍见 [QUESTIONS](../docs/QUESTIONS.md)，未冻结为规则。
 
 发布到共享分支，并通过 Orca 将 W0–W4 共同交接发布到原项目 Run。原 Dispatch 已 completed，直接投递返回 dispatch_inactive，随后按运行时指引改投 Run；没有为了通知而重新启动 Workers，不声称原 Workers 已读。后续恢复每轨时将本节和 W0 契约作为共同入口。
+
+## 第二步：真实导入纵向验收与返修
+
+用户允许另选多版本公开论文验收更新；采用官方 `2501.12948v1/v2`，仅导入/版本验证，不扩展模型处理授权。主控在隔离临时服务中通过实际页面提交指定论文 `2504.16054v1`，真实全文/附件入库成功。新表单重复提交固定v1时第一次检查 FAIL：资料/来源版本未重复，但产生第二个导入作业并重新下载。该行为交原 W1 领域轨返修，不把下载重复忽略为通过。
+
+本轮只恢复 W1 与 W0：W1 沿原 `s1-domain-1009` 工作树/分支及独占 `internal/attention/domain/`、`internal/attention/app/`（排除 contracts.go）、`tasks/S1-W1.md`，修复明确不可变版本导入的作业复用，保留未固定远程来源的新获取语义、原回执与历史版本。W0 沿原 `s1-contract-1009` 工作树/分支做普通集成，公共契约/迁移/锁/入口仍唯一所有者；领域缺陷不由集成者重写。主控不写业务代码，继续页面→Service→SQLite/objects→实际重启的独立验收；视频仅用 summarize 原输出，无字幕的指定结果仍须拒绝。
