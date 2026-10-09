@@ -71,7 +71,7 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 
 ## HTTP v1 与 fixture 边界
 
-S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/SameSiteStrict 会话；写入同时携带返回的 `csrf_token`（`X-CSRF-Token`）和稳定的 `Idempotency-Key`。正文不能设置 actor 或权限。服务重启后重新建立会话，调用者 ID 保持稳定，原幂等回执继续可用。`createAttentionApi` 提供生成类型的写入助手；连接失败保留原幂等键，不自动重发命令。可选 `ASTROCYTE_AGENT_TOKEN` 只提供 Bearer 读取身份，不能建立人类会话或写入。此凭据边界不提供同机操作系统进程隔离。
+S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/SameSiteStrict 会话；写入同时携带返回的 `csrf_token`（`X-CSRF-Token`）和稳定的 `Idempotency-Key`。正文不能设置 actor 或权限。服务重启后重新建立会话，调用者 ID 保持稳定，原幂等回执继续可用。`createAttentionApi` 提供生成类型的写入助手；连接失败保留原幂等键，不自动重发命令。可选 `ASTROCYTE_AGENT_TOKEN` 只标识 Bearer 身份，不授予全库读取权限，不能建立人类会话或写入；用户资料勾选/规则授权契约待定期间，Agent 资料与派生记录读取全部返回 403。此凭据边界不提供同机操作系统进程隔离。
 
 S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
 
