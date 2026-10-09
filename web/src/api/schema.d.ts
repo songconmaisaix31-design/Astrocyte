@@ -6801,29 +6801,41 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorV1"];
                 };
             };
+            /** @description Structured service error */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
             };
+            /** @description Structured service error */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
             };
+            /** @description Structured service error */
             409: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
             };
+            /** @description Structured service error */
             500: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
             };
         };
     };

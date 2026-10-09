@@ -3599,13 +3599,29 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
         "403":
-          source: a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
         "404":
-          source: a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
         "409":
-          source: a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
         "500":
-          source: a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
 components:
   schemas:
     ErrorV1:
