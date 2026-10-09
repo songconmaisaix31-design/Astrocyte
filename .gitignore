@@ -1,0 +1,16 @@
+node_modules/
+web/dist/
+dist/
+web/playwright-report/
+web/test-results/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal

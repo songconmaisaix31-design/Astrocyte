@@ -1,0 +1,25 @@
+{
+  "name": "astrocyte",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.27.0",
+  "engines": { "node": "24.16.0", "pnpm": "11.27.0" },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "check": "node scripts/check.mjs",
+    "check:contracts": "redocly lint contracts/openapi.yaml && node scripts/validate-examples.mjs && node scripts/generate-client.mjs --check",
+    "generate": "node scripts/generate-client.mjs",
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "test:e2e": "pnpm --dir web test:e2e",
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/start.mjs"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.60.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "openapi-typescript": "7.13.0",
+    "yaml": "2.9.1"
+  }
+}
