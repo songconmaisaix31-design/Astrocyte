@@ -50,7 +50,7 @@ export async function waitJob(api, id, expected = 'succeeded', timeoutMs = 10_00
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const job = await api.get(`/jobs/${id}`);
-    if (['succeeded', 'failed', 'cancelled'].includes(job.status)) {
+    if (['succeeded', 'failed', 'cancelled', 'delivery_unknown'].includes(job.status)) {
       assert.equal(job.status, expected, JSON.stringify(job));
       return job;
     }

@@ -5,6 +5,11 @@ type ReadResult<P extends string> =
   P extends '/materials' ? Schemas['MaterialListV1'] :
   P extends '/opportunities' ? Schemas['OpportunityListV1'] :
   P extends '/missions' ? Schemas['MissionListV1'] :
+  P extends '/material-domains' ? Schemas['MaterialDomainListV1'] :
+  P extends '/project-spaces' ? Schemas['ProjectSpaceListV1'] :
+  P extends `/project-spaces/${string}` ? Schemas['ProjectSpaceResultV1'] :
+  P extends '/attention-ranking-profile' ? Schemas['RankingProfileDetailV1'] :
+  P extends '/distillations/processor' ? Schemas['DistillerStatusV1'] :
   P extends `/materials/${string}/revisions/${number}/content` ? Schemas['ContentResultV1'] :
   P extends `/materials/${string}` ? Schemas['MaterialDetailV1'] :
   P extends `/opportunities/${string}` ? Schemas['OpportunityDetailV1'] :
