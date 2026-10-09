@@ -39,7 +39,8 @@ export async function startS1Server({ browser = false, env: extraEnv = {} } = {}
   const webPort = browser ? await freePort() : apiPort;
   const apiURL = `http://127.0.0.1:${apiPort}`;
   const webURL = `http://127.0.0.1:${webPort}`;
-  const env = { ...process.env, ...extraEnv, ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(apiPort), ASTROCYTE_WEB_PORT: String(webPort) };
+  const suppliedEnv = typeof extraEnv === 'function' ? extraEnv({ dataDir, temporary }) : extraEnv;
+  const env = { ...process.env, ...suppliedEnv, ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(apiPort), ASTROCYTE_WEB_PORT: String(webPort) };
   let apiChild;
   let webChild;
 
