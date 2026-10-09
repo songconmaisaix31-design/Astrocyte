@@ -49,6 +49,7 @@ type Paper struct {
 	PDF, Metadata                          []byte
 	HTMLURL, FullText                      string
 	HTML, TextExport                       []byte
+	SummarizeVersion                       string
 }
 
 type Arxiv struct {
@@ -125,6 +126,7 @@ func (a *Arxiv) Read(ctx context.Context, locator string) (Paper, error) {
 		}
 		p.FullText = original.Text
 		p.TextExport = original.Original
+		p.SummarizeVersion = original.Version
 	}
 	return p, nil
 }
