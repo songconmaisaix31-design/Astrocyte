@@ -37,28 +37,34 @@ type Dimensions struct {
 	Originality        DimensionScore `json:"originality"`
 }
 type Provenance struct {
+	Model     string `json:"model,omitempty"`
 	Processor string `json:"processor"`
 	Version   string `json:"version"`
 	Mode      string `json:"mode"`
 	Source    string `json:"source"`
 }
 type Material struct {
-	Pinned           bool      `json:"pinned"`
-	Version          int       `json:"version"`
-	ID               string    `json:"id"`
-	SourceLocator    string    `json:"source_locator"`
-	Kind             string    `json:"kind"`
-	CurrentRevision  int       `json:"current_revision"`
-	Lifecycle        string    `json:"lifecycle"`
-	Title            string    `json:"title"`
-	CollectionReason *string   `json:"collection_reason"`
-	SourceSpans      []string  `json:"source_spans"`
-	ImportStatus     string    `json:"import_status"`
-	HumanUsageCount  int       `json:"human_usage_count"`
-	AgentUsageCount  int       `json:"agent_usage_count"`
-	AttentionScore   float64   `json:"attention_score"`
-	LongTermValue    float64   `json:"long_term_value"`
-	CreatedAt        time.Time `json:"created_at"`
+	DomainIDs                []string           `json:"domain_ids,omitempty"`
+	RankingStrategy          string             `json:"ranking_strategy,omitempty"`
+	RankingReason            string             `json:"ranking_reason,omitempty"`
+	AttentionHalfLifeSeconds float64            `json:"attention_half_life_seconds,omitempty"`
+	AttentionWeights         map[string]float64 `json:"attention_weights,omitempty"`
+	Pinned                   bool               `json:"pinned"`
+	Version                  int                `json:"version"`
+	ID                       string             `json:"id"`
+	SourceLocator            string             `json:"source_locator"`
+	Kind                     string             `json:"kind"`
+	CurrentRevision          int                `json:"current_revision"`
+	Lifecycle                string             `json:"lifecycle"`
+	Title                    string             `json:"title"`
+	CollectionReason         *string            `json:"collection_reason"`
+	SourceSpans              []string           `json:"source_spans"`
+	ImportStatus             string             `json:"import_status"`
+	HumanUsageCount          int                `json:"human_usage_count"`
+	AgentUsageCount          int                `json:"agent_usage_count"`
+	AttentionScore           float64            `json:"attention_score"`
+	LongTermValue            float64            `json:"long_term_value"`
+	CreatedAt                time.Time          `json:"created_at"`
 }
 type MaterialRevision struct {
 	MaterialID    string          `json:"material_id"`
@@ -239,6 +245,7 @@ type UpdateMaterialCommand struct {
 	CollectionReason *string `json:"collection_reason"`
 }
 type Job struct {
+	DistillationID   *string                 `json:"distillation_id,omitempty"`
 	ExternalStarted  bool                    `json:"external_started"`
 	DeliveryUnknown  bool                    `json:"delivery_unknown"`
 	SchemaVersion    int                     `json:"schema_version"`
@@ -288,6 +295,108 @@ type AttachmentContent struct {
 	Name      string
 }
 
+// MaterialDomain is a human classification; membership never grants Agent access.
+type MaterialDomain struct {
+	ID          string    `json:"id"`
+	Version     int       `json:"version"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+type MaterialDomainCommand struct {
+	CommandMeta
+	Title       string `json:"title"`
+	Description string `json:"description"`
+}
+type MaterialDomainResult struct {
+	SchemaVersion int            `json:"schema_version"`
+	Domain        MaterialDomain `json:"domain"`
+}
+type SetMaterialDomainsCommand struct {
+	CommandMeta
+	DomainIDs []string `json:"domain_ids"`
+}
+
+// ProjectSpace is an Attention projection of human-selected file references,
+// not a Workspace project/approval or an executable work directory.
+type ProjectSpace struct {
+	ID           string      `json:"id"`
+	Version      int         `json:"version"`
+	Title        string      `json:"title"`
+	MaterialRefs []SourceRef `json:"material_refs"`
+	CreatedAt    time.Time   `json:"created_at"`
+}
+type ProjectSpaceCommand struct {
+	CommandMeta
+	Title string `json:"title"`
+}
+type ProjectSpaceResult struct {
+	SchemaVersion int          `json:"schema_version"`
+	Space         ProjectSpace `json:"space"`
+}
+type ReferenceMaterialCommand struct {
+	CommandMeta
+	MaterialID string `json:"material_id"`
+	Revision   int    `json:"revision"`
+}
+type RemoveMaterialReferenceCommand struct {
+	CommandMeta
+	MaterialID string `json:"material_id"`
+}
+
+// Only selected, authorized snapshots enter the processor. There are no database
+// handles, object paths, shell capabilities or authentication fields in this input.
+type SourceSnapshot struct {
+	Ref           SourceRef  `json:"ref"`
+	SourceKey     string     `json:"source_key"`
+	Title         string     `json:"title"`
+	Text          string     `json:"text"`
+	Summary       string     `json:"summary"`
+	ContentDigest string     `json:"content_digest"`
+	Provenance    Provenance `json:"provenance"`
+}
+type DistillationInput struct {
+	JobID            string           `json:"job_id"`
+	OperationID      string           `json:"operation_id"`
+	Inputs           []SourceSnapshot `json:"inputs"`
+	Stage            string           `json:"stage"`
+	ProcessingConfig string           `json:"processing_config"`
+	Question         string           `json:"question"`
+}
+type DistillationOutput struct {
+	OutputText          string      `json:"output_text"`
+	NextQuestion        *string     `json:"next_question"`
+	RelatedRefs         []SourceRef `json:"related_refs"`
+	RelatedIdeas        []string    `json:"related_ideas"`
+	Conflicts           []string    `json:"conflicts"`
+	PendingQuestions    []string    `json:"pending_questions"`
+	GoalRefs            []string    `json:"goal_refs"`
+	ExistingAssets      []string    `json:"existing_assets"`
+	ExpectedImprovement string      `json:"expected_improvement"`
+	MinimumArtifact     string      `json:"minimum_artifact"`
+	MissingEvidence     []string    `json:"missing_evidence"`
+	Provenance          Provenance  `json:"provenance"`
+}
+type Distiller interface {
+	// ConfigurationID describes actual frozen processor settings, including model
+	// and isolation policy. It performs no paid model call or credential export.
+	ConfigurationID(context.Context) (string, error)
+	Distill(context.Context, DistillationInput) (DistillationOutput, error)
+}
+type RequestDistillationCommand struct {
+	CommandMeta
+	InputRefs        []SourceRef `json:"input_refs"`
+	Stage            string      `json:"stage"`
+	ProcessingConfig string      `json:"processing_config"`
+	Question         string      `json:"question"`
+}
+
+// Kept separate so a runtime can expose human recording while its automatic
+// processor is blocked by missing native read isolation, with honest 501/jobs.
+type AutomaticDistillationService interface {
+	RequestDistillation(context.Context, Principal, RequestDistillationCommand) (ImportJobResult, error)
+}
+
 type AttentionService interface {
 	ListMaterials(context.Context) (apierrors.ListResult, error)
 	ListOpportunities(context.Context) (apierrors.ListResult, error)
@@ -307,6 +416,15 @@ type AttentionService interface {
 	GetJob(context.Context, Principal, string) (Job, error)
 	RetryJob(context.Context, Principal, string, CommandMeta) (Job, error)
 	CancelJob(context.Context, Principal, string, CommandMeta) (Job, error)
+	ListMaterialDomains(context.Context, Principal) (apierrors.ListResult, error)
+	CreateMaterialDomain(context.Context, Principal, MaterialDomainCommand) (MaterialDomainResult, error)
+	ReviseMaterialDomain(context.Context, Principal, string, MaterialDomainCommand) (MaterialDomainResult, error)
+	SetMaterialDomains(context.Context, Principal, string, SetMaterialDomainsCommand) (MaterialDetail, error)
+	ListProjectSpaces(context.Context, Principal) (apierrors.ListResult, error)
+	CreateProjectSpace(context.Context, Principal, ProjectSpaceCommand) (ProjectSpaceResult, error)
+	GetProjectSpace(context.Context, Principal, string) (ProjectSpaceResult, error)
+	ReferenceMaterial(context.Context, Principal, string, ReferenceMaterialCommand) (ProjectSpaceResult, error)
+	RemoveMaterialReference(context.Context, Principal, string, RemoveMaterialReferenceCommand) (ProjectSpaceResult, error)
 }
 
 // Repository serializes each callback in one transaction. Do not call external
@@ -346,4 +464,10 @@ type AttentionTx interface {
 	LoadReceipt(caller, command, key string) (Receipt, error)
 	SaveReceipt(caller, command, key string, receipt Receipt) error
 	AppendEvent(OutboxEvent) error
+	ListMaterialDomains() ([]MaterialDomain, error)
+	LoadMaterialDomain(string) (MaterialDomain, error)
+	SaveMaterialDomain(MaterialDomain, int) error
+	ListProjectSpaces() ([]ProjectSpace, error)
+	LoadProjectSpace(string) (ProjectSpace, error)
+	SaveProjectSpace(ProjectSpace, int) error
 }

@@ -23,6 +23,8 @@ type memoryState struct {
 	Jobs          map[string]Job
 	Receipts      map[string]Receipt
 	Events        []OutboxEvent
+	Domains       map[string]MaterialDomain
+	Spaces        map[string]ProjectSpace
 }
 type memoryRepo struct {
 	mu        sync.Mutex
@@ -35,7 +37,7 @@ type memoryTx struct {
 }
 
 func newMemoryRepo() *memoryRepo {
-	return &memoryRepo{state: memoryState{Materials: map[string]MaterialDetail{}, Distillations: map[string]Distillation{}, Opportunities: map[string]OpportunityDetail{}, Jobs: map[string]Job{}, Receipts: map[string]Receipt{}, Events: []OutboxEvent{}}}
+	return &memoryRepo{state: memoryState{Materials: map[string]MaterialDetail{}, Distillations: map[string]Distillation{}, Opportunities: map[string]OpportunityDetail{}, Jobs: map[string]Job{}, Receipts: map[string]Receipt{}, Events: []OutboxEvent{}, Domains: map[string]MaterialDomain{}, Spaces: map[string]ProjectSpace{}}}
 }
 func clone[T any](value T) T {
 	bytes, _ := json.Marshal(value)
@@ -185,6 +187,51 @@ func (t *memoryTx) AppendEvent(e OutboxEvent) error {
 		return errors.New("injected outbox failure")
 	}
 	t.state.Events = append(t.state.Events, e)
+	return nil
+}
+
+func (t *memoryTx) ListMaterialDomains() ([]MaterialDomain, error) {
+	rows := []MaterialDomain{}
+	for _, r := range t.state.Domains {
+		rows = append(rows, r)
+	}
+	return rows, nil
+}
+func (t *memoryTx) LoadMaterialDomain(id string) (MaterialDomain, error) {
+	r, ok := t.state.Domains[id]
+	if !ok {
+		return r, apierrors.NewNotFound("domain", id)
+	}
+	return r, nil
+}
+func (t *memoryTx) SaveMaterialDomain(r MaterialDomain, v int) error {
+	old := t.state.Domains[r.ID]
+	if old.Version != v {
+		return serviceError(apierrors.VersionConflict, "CAS", "reload")
+	}
+	t.state.Domains[r.ID] = r
+	return nil
+}
+func (t *memoryTx) ListProjectSpaces() ([]ProjectSpace, error) {
+	rows := []ProjectSpace{}
+	for _, r := range t.state.Spaces {
+		rows = append(rows, r)
+	}
+	return rows, nil
+}
+func (t *memoryTx) LoadProjectSpace(id string) (ProjectSpace, error) {
+	r, ok := t.state.Spaces[id]
+	if !ok {
+		return r, apierrors.NewNotFound("space", id)
+	}
+	return r, nil
+}
+func (t *memoryTx) SaveProjectSpace(r ProjectSpace, v int) error {
+	old := t.state.Spaces[r.ID]
+	if old.Version != v {
+		return serviceError(apierrors.VersionConflict, "CAS", "reload")
+	}
+	t.state.Spaces[r.ID] = r
 	return nil
 }
 

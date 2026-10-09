@@ -10,6 +10,8 @@ import (
 	"math"
 	"net/url"
 	"strings"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
 
 // Export is local adapter data, mapped to application ports after parsing.
@@ -34,16 +36,24 @@ func ParseSummarizeJSON(raw []byte) (Export, error) {
 			URL string `json:"url"`
 		} `json:"input"`
 		Extracted struct {
-			URL                string `json:"url"`
-			Title              string `json:"title"`
-			Content            string `json:"content"`
+			URL              string  `json:"url"`
+			Title            string  `json:"title"`
+			Content          string  `json:"content"`
+			TranscriptSource *string `json:"transcriptSource"`
+			Diagnostics      struct {
+				Strategy   string `json:"strategy"`
+				Transcript struct {
+					TextProvided *bool `json:"textProvided"`
+				} `json:"transcript"`
+			} `json:"diagnostics"`
 			TranscriptSegments []struct {
 				StartMS *float64 `json:"startMs"`
 				EndMS   *float64 `json:"endMs"`
 				Text    string   `json:"text"`
 			} `json:"transcriptSegments"`
 		} `json:"extracted"`
-		Summary string `json:"summary"`
+		Summary string          `json:"summary"`
+		LLM     json.RawMessage `json:"llm"`
 	}
 	if err := json.Unmarshal(bytes.TrimPrefix(raw, []byte{0xef, 0xbb, 0xbf}), &v); err != nil {
 		return Export{}, fmt.Errorf("summarize export JSON: %w", err)
@@ -54,6 +64,18 @@ func ParseSummarizeJSON(raw []byte) (Export, error) {
 	}
 	if err := validateWebURL(locator); err != nil {
 		return Export{}, err
+	}
+	// The installed extractor can successfully return a Bilibili recommendation
+	// page while declaring that no transcript/backend ran. That is diagnostic
+	// output, not video evidence. Require these explicit fields; older genuine
+	// summaries without diagnostics or timestamps remain readable exports.
+	u, _ := url.Parse(locator)
+	host := strings.ToLower(u.Hostname())
+	if (host == "bilibili.com" || host == "www.bilibili.com" || host == "m.bilibili.com") && strings.HasPrefix(u.Path, "/video/") &&
+		v.Extracted.Diagnostics.Strategy == "html" && v.Extracted.Diagnostics.Transcript.TextProvided != nil && !*v.Extracted.Diagnostics.Transcript.TextProvided &&
+		v.Extracted.TranscriptSource == nil && len(v.Extracted.TranscriptSegments) == 0 && bytes.Equal(bytes.TrimSpace(v.LLM), []byte("null")) &&
+		(strings.TrimSpace(v.Summary) == "" || strings.TrimSpace(v.Summary) == strings.TrimSpace(v.Extracted.Content)) {
+		return Export{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "Bilibili page extraction contains no video transcript or generated summary", RequiredAction: "provide_existing_video_summary_or_real_subtitle_export"}
 	}
 	if v.Input.URL != "" && v.Extracted.URL != "" && v.Input.URL != v.Extracted.URL {
 		// Redirects are legitimate. Both values remain in the immutable export;

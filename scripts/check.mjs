@@ -10,6 +10,7 @@ await run(process.execPath, ['scripts/check-architecture.mjs']);
 await runTool('redocly', ['lint', 'contracts/openapi.yaml', '--config', 'contracts/redocly.yaml'], { cwd: root });
 await run(process.execPath, ['scripts/validate-examples.mjs']);
 await run(process.execPath, ['scripts/generate-client.mjs', '--check']);
+await run(process.execPath, ['--test', 'tests/s1/acceptance.test.mjs']);
 await runTool('tsc', ['-b']);
 await runTool('eslint', ['.']);
 await runTool('vitest', ['run']);

@@ -7,6 +7,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"maps"
+	"math"
 	"slices"
 	"strings"
 	"sync"
@@ -23,19 +26,21 @@ type ServiceOptions struct {
 	MaxAttempts       int
 	JobTimeout        time.Duration
 	AttentionHalfLife time.Duration
+	AttentionWeights  map[string]float64
 	Clock             func() time.Time
 }
 
 type Service struct {
-	repo       Repository
-	sources    SourceReader
-	objects    ObjectStore
-	options    ServiceOptions
-	wake       chan struct{}
-	runMu      sync.Mutex
-	running    bool
-	activeMu   sync.Mutex
-	activeJobs map[string]*activeWork
+	repo               Repository
+	sources            SourceReader
+	objects            ObjectStore
+	options            ServiceOptions
+	wake               chan struct{}
+	runMu              sync.Mutex
+	running            bool
+	activeMu           sync.Mutex
+	activeJobs         map[string]*activeWork
+	configurationError error
 }
 
 type activeWork struct{ cancel context.CancelFunc }
@@ -58,7 +63,23 @@ func NewAttentionService(repo Repository, sources SourceReader, objects ObjectSt
 	if options.Clock == nil {
 		options.Clock = time.Now
 	}
-	return &Service{repo: repo, sources: sources, objects: objects, options: options, wake: make(chan struct{}, 1), activeJobs: make(map[string]*activeWork)}
+	weights := map[string]float64{"reread": 1, "annotate": 2, "adopt": 3, "classify": 1, "mention": 1, "project_reuse": 3}
+	for name, weight := range options.AttentionWeights {
+		weights[name] = weight
+	}
+	options.AttentionWeights = weights
+	return &Service{repo: repo, sources: sources, objects: objects, options: options, wake: make(chan struct{}, 1), activeJobs: make(map[string]*activeWork), configurationError: ValidateAttentionWeights(weights)}
+}
+
+// ValidateAttentionWeights lets composition fail invalid configuration before
+// startup; invalid weights must never produce a plausible zero attention score.
+func ValidateAttentionWeights(weights map[string]float64) error {
+	for name, weight := range weights {
+		if !slices.Contains([]string{"reread", "annotate", "adopt", "classify", "mention", "project_reuse"}, name) || math.IsNaN(weight) || math.IsInf(weight, 0) || weight < 0 {
+			return serviceError(apierrors.ValidationFailed, "Human activity weights must be finite nonnegative supported event weights", "correct_attention_configuration")
+		}
+	}
+	return nil
 }
 
 func serviceError(code apierrors.Code, message, action string) *apierrors.ServiceError {
@@ -147,6 +168,9 @@ func command[T any](s *Service, ctx context.Context, p Principal, m CommandMeta,
 	if err := authorize(p, true); err != nil {
 		return result, mapError(err, m.RequestID)
 	}
+	if s.configurationError != nil {
+		return result, mapError(s.configurationError, m.RequestID)
+	}
 	if err := validateMeta(m); err != nil {
 		return result, mapError(err, m.RequestID)
 	}
@@ -195,15 +219,26 @@ func listResult[T any](values []T) apierrors.ListResult {
 }
 
 func (s *Service) ListMaterials(ctx context.Context) (apierrors.ListResult, error) {
+	if s.configurationError != nil {
+		return apierrors.EmptyList(), mapError(s.configurationError, "")
+	}
 	var materials []Material
 	err := s.repo.WithTx(ctx, func(tx AttentionTx) error {
 		rows, err := tx.ListMaterials()
 		if err != nil {
 			return err
 		}
+		byID := make(map[string]Material, len(rows))
+		ranks := make([]domain.MaterialRank, 0, len(rows))
+		now := s.options.Clock()
 		for _, row := range rows {
-			row = s.projectAttention(row)
-			materials = append(materials, row.Material)
+			row = s.projectAttentionAt(row, now)
+			byID[row.Material.ID] = row.Material
+			ranks = append(ranks, domain.MaterialRank{ID: row.Material.ID, Pinned: row.Material.Pinned, Activity: row.Material.AttentionScore, LongTermValue: row.Material.LongTermValue, CreatedAt: row.Material.CreatedAt})
+		}
+		for _, rank := range domain.RankMaterials(ranks) {
+			row := byID[rank.ID]
+			materials = append(materials, row)
 		}
 		return nil
 	})
@@ -239,6 +274,9 @@ func (s *Service) GetMaterial(ctx context.Context, p Principal, id string) (Mate
 	var result MaterialDetail
 	if err := authorize(p, false); err != nil {
 		return result, err
+	}
+	if s.configurationError != nil {
+		return result, mapError(s.configurationError, "")
 	}
 	err := s.repo.WithTx(ctx, func(tx AttentionTx) error {
 		var err error
@@ -335,22 +373,25 @@ func (s *Service) checkMaterialAccess(ctx context.Context, id string) error {
 }
 
 func (s *Service) projectAttention(row MaterialDetail) MaterialDetail {
+	return s.projectAttentionAt(row, s.options.Clock())
+}
+
+func (s *Service) projectAttentionAt(row MaterialDetail, now time.Time) MaterialDetail {
 	row.Revisions = nonNil(row.Revisions)
 	row.Distillations = nonNil(row.Distillations)
 	row.Uses = nonNil(row.Uses)
 	row.Material.SourceSpans = nonNil(row.Material.SourceSpans)
 	events := make([]domain.AttentionEvent, 0, len(row.Uses))
 	for _, use := range row.Uses {
-		weight := 1.0
-		if use.Action == "annotate" {
-			weight = 2
-		}
-		if use.Action == "adopt" {
-			weight = 3
-		}
+		weight := s.options.AttentionWeights[use.Action]
 		events = append(events, domain.AttentionEvent{Actor: use.ActorKind, Kind: use.Action, At: use.OccurredAt, Weight: weight})
 	}
-	row.Material.AttentionScore, _ = domain.HumanActivity(events, s.options.Clock(), s.options.AttentionHalfLife)
+	row.Material.AttentionScore, _ = domain.HumanActivity(events, now, s.options.AttentionHalfLife)
+	row.Material.DomainIDs = nonNil(row.Material.DomainIDs)
+	row.Material.RankingStrategy = domain.MaterialRankingStrategy
+	row.Material.RankingReason = fmt.Sprintf("固定=%t；人类关注=%.4f；长期价值=%.4f；固定优先，关注降序，长期价值及时间作同分排序", row.Material.Pinned, row.Material.AttentionScore, row.Material.LongTermValue)
+	row.Material.AttentionHalfLifeSeconds = s.options.AttentionHalfLife.Seconds()
+	row.Material.AttentionWeights = maps.Clone(s.options.AttentionWeights)
 	return row
 }
 

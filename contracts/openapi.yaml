@@ -3727,6 +3727,653 @@ paths:
       security:
         - HumanSession: []
         - AgentBearer: []
+  /material-domains:
+    get:
+      operationId: listMaterialDomains
+      summary: listMaterialDomains
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters: []
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDomainListV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+    post:
+      operationId: createMaterialDomain
+      summary: createMaterialDomain
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDomainResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaterialDomainRequestV1"
+  /material-domains/{id}:
+    patch:
+      operationId: reviseMaterialDomain
+      summary: reviseMaterialDomain
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDomainResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MaterialDomainRequestV1"
+  /materials/{id}/domains:
+    put:
+      operationId: setMaterialDomains
+      summary: setMaterialDomains
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDetailV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetMaterialDomainsRequestV1"
+  /project-spaces:
+    get:
+      operationId: listProjectSpaces
+      summary: listProjectSpaces
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters: []
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceListV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+    post:
+      operationId: createProjectSpace
+      summary: createProjectSpace
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectSpaceRequestV1"
+  /project-spaces/{id}:
+    get:
+      operationId: getProjectSpace
+      summary: getProjectSpace
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /project-spaces/{id}/references:
+    post:
+      operationId: referenceMaterial
+      summary: referenceMaterial
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReferenceMaterialRequestV1"
+  /project-spaces/{id}/references/remove:
+    post:
+      operationId: removeMaterialReference
+      summary: removeMaterialReference
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-owned classification and project-space reference. Original
+        material remains in its classification. References pin an existing
+        material revision; they grant no Agent access or execution authority.
+        Agent read scopes are pending and denied by default.
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Human classification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSpaceResultV1"
+        "400":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Structured error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RemoveMaterialReferenceRequestV1"
+  /distillations/jobs:
+    post:
+      operationId: requestDistillation
+      summary: Queue automatic distillation from explicitly selected fixed source
+        snapshots
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human-triggered durable processing. Only configured authorized
+        source keys and real adapter provenance may be sent to the local Codex
+        processor. Native read isolation is mandatory; unavailable processing
+        remains explicit unsupported/failed. No source database or object paths
+        are passed to the processor.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "202":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImportJobV1"
+        "400": &a16
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a16
+        "404": *a16
+        "409": *a16
+        "500": *a16
+        "501":
+          description: Native processor or read isolation unsupported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestDistillationRequestV1"
+      security:
+        - HumanSession: []
 components:
   schemas:
     ErrorV1:
@@ -4011,6 +4658,22 @@ components:
           minimum: 1
         pinned:
           type: boolean
+        domain_ids:
+          type: array
+          items:
+            type: string
+        ranking_strategy:
+          type: string
+        ranking_reason:
+          type: string
+        attention_half_life_seconds:
+          type: number
+          exclusiveMinimum: 0
+        attention_weights:
+          type: object
+          additionalProperties:
+            type: number
+            minimum: 0
       required:
         - id
         - source_locator
@@ -5550,6 +6213,10 @@ components:
             official_atom_and_pdf, original_export or summary_only. Never infer
             automatic processing from a record.
         source: *a11
+        model:
+          type: string
+          description: Actual model reported by the processor, or explicit unknown; never
+            inferred from client name.
       required:
         - processor
         - version
@@ -5962,6 +6629,10 @@ components:
           type: boolean
         delivery_unknown:
           type: boolean
+        distillation_id:
+          type:
+            - string
+            - "null"
       required:
         - schema_version
         - job_id
@@ -6135,6 +6806,239 @@ components:
         - lifecycle
         - collection_reason
         - pinned
+    MaterialDomainV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a14
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        title: *a14
+        description: *a14
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - version
+        - title
+        - description
+        - created_at
+    MaterialDomainRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        title: *a14
+        description: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - title
+        - description
+    MaterialDomainResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        domain:
+          $ref: "#/components/schemas/MaterialDomainV1"
+      required:
+        - schema_version
+        - domain
+    SetMaterialDomainsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        domain_ids:
+          type: array
+          items: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - domain_ids
+    ProjectSpaceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a14
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        title: *a14
+        material_refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - version
+        - title
+        - material_refs
+        - created_at
+    ProjectSpaceRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        title: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - title
+    ProjectSpaceResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        space:
+          $ref: "#/components/schemas/ProjectSpaceV1"
+      required:
+        - schema_version
+        - space
+    ReferenceMaterialRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version: &a15
+          type: integer
+          minimum: 1
+        material_id: *a14
+        revision: *a15
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - material_id
+        - revision
+    RemoveMaterialReferenceRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a14
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        material_id: *a14
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - material_id
+    MaterialDomainListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaterialDomainV1"
+        next_cursor:
+          type:
+            - string
+            - "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    ProjectSpaceListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectSpaceV1"
+        next_cursor:
+          type:
+            - string
+            - "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    RequestDistillationRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a16
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        input_refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        stage:
+          type: string
+          enum:
+            - content
+            - topic
+            - project
+        question: *a16
+        processing_config: *a16
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - input_refs
+        - stage
+        - question
+        - processing_config
   securitySchemes:
     HumanSession:
       type: apiKey
