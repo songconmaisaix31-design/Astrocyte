@@ -3,6 +3,7 @@ import { startS1Server } from '../../tests/s1/server.mjs';
 import { humanAPI, importMaterial } from '../../tests/s1/api.mjs';
 import { paperImport } from '../../tests/s1/fixtures.mjs';
 import type { components } from '../src/api/schema';
+import { seedCandidate } from '../../tests/s1/scenarios.mjs';
 
 type Schemas = components['schemas'];
 
@@ -51,6 +52,9 @@ test('human classification, pinned references, manual layers and candidate edits
     const detail = await api.get(`/materials/${id}`);
     expect(detail.distillations.map((record: { stage: string }) => record.stage).sort()).toEqual(['content', 'project', 'topic']);
     expect(detail.material.human_usage_count).toBe(classifiedBaseline.material.human_usage_count);
+    await dialog.getByRole('button', { name: '记录本次项目复用', exact: true }).click();
+    await expect.poll(async () => (await api.get(`/materials/${id}`)).material.human_usage_count).toBe(classifiedBaseline.material.human_usage_count! + 1);
+    expect((await api.get(`/materials/${id}`)).uses.filter((use: { action: string }) => use.action === 'project_reuse')).toHaveLength(1);
     await dialog.getByRole('button', { name: '形成候选', exact: true }).click();
     const candidateForm = dialog.locator('form').filter({ has: page.getByRole('button', { name: '保存候选', exact: true }) });
     await candidateForm.getByLabel('候选标题', { exact: true }).fill('contract_local 候选编辑');
@@ -85,5 +89,45 @@ test('human classification, pinned references, manual layers and candidate edits
     expect((await api.get('/missions')).items).toHaveLength(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath('attention-classification-space.png'), fullPage: true });
+  } finally { await server.close(); }
+});
+
+test('ranking waits for explicit complete human weights, keeps unknown scores and saves immutable profile versions', async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  const server = await startS1Server({ browser: true });
+  try {
+    let api = await humanAPI(server.apiURL);
+    await seedCandidate(api, 'https://example.invalid/contract-local/w3-ranking');
+    const getProfile = async () => await api.get('/attention-ranking-profile') as Schemas['RankingProfileDetailV1'];
+    expect((await getProfile()).configured).toBe(false);
+    await page.goto(`${server.webURL}/attention`);
+    const section = page.locator('section').filter({ has: page.getByRole('heading', { name: '候选四维排序', exact: true }) });
+    for (const label of ['目标进展', '当前兴趣', '项目改善', '创新性']) await expect(section.getByLabel(`${label}权重`, { exact: true })).toHaveValue('');
+    await expect(section.getByRole('checkbox', { name: '启用综合排序', exact: true })).not.toBeChecked();
+    await section.getByLabel('目标进展权重', { exact: true }).fill('0.5');
+    await section.getByLabel('当前兴趣权重', { exact: true }).fill('0.2');
+    await section.getByLabel('项目改善权重', { exact: true }).fill('0.2');
+    await section.getByLabel('创新性权重', { exact: true }).fill('0.1');
+    await section.getByRole('checkbox', { name: '启用综合排序', exact: true }).check();
+    await section.getByRole('button', { name: '保存排序配置', exact: true }).click();
+    await expect.poll(async () => (await getProfile()).profile?.version).toBe(1);
+    await expect(section.getByRole('button', { name: '保存排序配置', exact: true })).toBeEnabled();
+    const ranked = (await api.get('/opportunities')).items[0];
+    expect(ranked.composite_score == null).toBe(true);
+    expect(Object.values(ranked.dimensions).every(dimension => dimension.value === null)).toBe(true);
+    await section.getByLabel('目标进展权重', { exact: true }).fill('0.6');
+    await section.getByRole('button', { name: '保存排序配置', exact: true }).click();
+    await expect.poll(async () => (await getProfile()).profile?.version).toBe(2);
+    expect((await getProfile()).versions).toHaveLength(2);
+    expect((await getProfile()).versions.find(version => version.version === 1)?.weights.goal_progress).toBe(0.5);
+    await server.restart();
+    api = await humanAPI(server.apiURL);
+    await page.reload();
+    await expect(section.getByLabel('目标进展权重', { exact: true })).toHaveValue('0.6');
+    await expect(section.getByRole('checkbox', { name: '启用综合排序', exact: true })).toBeChecked();
+    expect((await getProfile()).profile?.version).toBe(2);
+    expect((await api.get('/missions')).items).toHaveLength(0);
+    await section.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: testInfo.outputPath('attention-ranking-profile.png') });
   } finally { await server.close(); }
 });
