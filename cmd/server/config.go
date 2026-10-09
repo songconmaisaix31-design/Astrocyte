@@ -17,6 +17,10 @@ import (
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
+// The selected video's observed local transcription exceeds the former 300s
+// budget. Reader and Service share the existing bounded runtime setting.
+const defaultJobTimeoutSeconds = 1800
+
 // The source scope is startup-owned and has no implicit public/private defaults.
 // An ordinary test or dev invocation never starts model processing unless opted in.
 func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distiller, []string, error) {
@@ -80,6 +84,9 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, err
 		}
 	}
+	if !filepath.IsAbs(cliPath) {
+		return nil, fmt.Errorf("ASTROCYTE_SUMMARIZE_CLI must be absolute")
+	}
 	nodePath := os.Getenv("ASTROCYTE_NODE")
 	if nodePath == "" {
 		var err error
@@ -92,7 +99,22 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, fmt.Errorf("resolve Node: %w", err)
 		}
 	}
-	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", 300, 86400)
+	for _, path := range []string{cliPath, nodePath} {
+		info, err := os.Stat(path)
+		if !filepath.IsAbs(path) || err != nil || !info.Mode().IsRegular() {
+			return nil, fmt.Errorf("summarize dependency must be an existing absolute file: %s", path)
+		}
+	}
+	// Node resolves pnpm junctions consistently with the media bridge. Go's
+	// EvalSymlinks does not resolve this Windows installation correctly.
+	resolveCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	resolved, err := exec.CommandContext(resolveCtx, nodePath, "-e", "process.stdout.write(require('node:fs').realpathSync(process.argv[1]))", cliPath).Output()
+	if err != nil {
+		return nil, fmt.Errorf("resolve summarize CLI with Node: %w", err)
+	}
+	cliPath = string(resolved)
+	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", defaultJobTimeoutSeconds, 86400)
 	if err != nil {
 		return nil, err
 	}

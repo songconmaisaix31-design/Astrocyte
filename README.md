@@ -75,7 +75,7 @@ S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/
 
 S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
 
-项目精确依赖 [`@steipete/summarize` **0.25.1**](https://github.com/steipete/summarize/blob/main/package.json)。运行 `pnpm install --frozen-lockfile` 后，`pnpm dev` / `pnpm start` 自动解析项目内 CLI 与当前 Node，不需设置全局 summarize 路径；不升级或回退全局 CLI。直接运行构建后的二进制时，从工作目录或二进制旁的已安装 checkout 查找项目依赖；将二进制单独复制到其他目录需要显式配置。`ASTROCYTE_SUMMARIZE_CLI`、`ASTROCYTE_NODE` 可覆盖为绝对路径；缺失/错误配置明确失败。`ASTROCYTE_ENABLE_SUMMARIZE=false` 显式关闭提取，保留 arXiv 元数据/PDF 与既有导出导入；普通临时浏览器服务也显式关闭提取。
+项目精确依赖 [`@steipete/summarize` **0.25.1**](https://github.com/steipete/summarize/blob/main/package.json)。运行 `pnpm install --frozen-lockfile` 后，`pnpm dev` / `pnpm start` 自动解析项目内 CLI 与当前 Node，不需设置全局 summarize 路径；不升级或回退全局 CLI。直接运行构建后的二进制时，从工作目录或二进制旁的已安装 checkout 查找项目依赖；将二进制单独复制到其他目录需要显式配置。`ASTROCYTE_SUMMARIZE_CLI`、`ASTROCYTE_NODE` 可覆盖为绝对路径；缺失/错误配置明确失败。入口会将 CLI 的 pnpm 链接解析为真实文件路径，使媒体桥能找到同一安装中的 summarize-core；显式覆盖 CLI 路径也执行此解析。`ASTROCYTE_ENABLE_SUMMARIZE=false` 显式关闭提取，保留 arXiv 元数据/PDF 与既有导出导入；普通临时浏览器服务也显式关闭提取。
 
 公开视频链接使用现有 `POST /materials/imports`，`adapter=summarize_url`、`kind=video`，不传 `export_text` / `local_file_ref`，`source_key` / `content_digest` 传空字符串由后端核验。`summarize`、`summarize_json`、`summarize_markdown` 继续导入既有输出，`arxiv` 继续固定版本论文全文。提取保存真实原输出；字幕、转写与位置缺失不补造，网页文字不等于视频内容。提取成功不表示 Codex 首次整理成功；模型仍由独立显式授权入口控制。
 
@@ -85,7 +85,7 @@ Windows x64 可运行 `pwsh -NoProfile -File scripts/install-media.ps1`（需要
 
 summarize 0.25.1 保留上游网络保护：所选公开来源应解析为实际可访问的公开地址。若系统代理的 Fake-IP DNS 把 arXiv/Bilibili 返回为 `198.18.0.0/15`，上游会拒绝，安装媒体依赖不能修复这一网络错误。需由用户决定代理/DNS配置，允许时把选定来源域名加入 Fake-IP 排除并使用其正常 DNS；项目不自动改变宿主代理、绕过 guard 或降级上游。配置完成后仍须重新验证所选材料的真实提取。
 
-队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源。本地 Codex 端口、适配、持久化队列和入口已组装；最新真实候选 schema 调用响应丢失、效果和费用未知，自动三层正路径尚未验收，不从人工记录推断自动成功。
+队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。作业期限和视频提取器共享 `ASTROCYTE_JOB_TIMEOUT_SECONDS`，正式入口默认 **1800 秒**，可显式配置 1–86400 秒。所选视频的真实本地转写已超过原 300 秒默认值，因此调整这一既有共享默认；它同时影响导入和自动整理作业的期限，Codex 自身执行上限仍为下述独立 180 秒。上游音轨下载另有自身时限，作业期限不覆盖上游限制；取消沿用现有机制。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源。本地 Codex 端口、适配、持久化队列和入口已组装；最新真实候选 schema 调用响应丢失、效果和费用未知，自动三层正路径尚未验收，不从人工记录推断自动成功。
 
 自动处理配置使用 `ASTROCYTE_ENABLE_CODEX_DISTILLATION=true` 显式启用（默认关闭）、`ASTROCYTE_CODEX_EXECUTABLE` 原生 exe 绝对路径、`ASTROCYTE_CODEX_MODEL` 明确模型名称及 `ASTROCYTE_PROCESSING_SOURCE_KEYS` JSON 数组授权范围；没有任何内置来源白名单。`ASTROCYTE_CODEX_TIMEOUT_SECONDS` 默认 180 秒。普通浏览器临时服务关闭模型和外部提取。当前 native 政策验证的是 **Windows Codex 0.162.0**，使用已授权的纯文本推理模式，运行时拒绝工具执行；不是成功的操作系统文件读取隔离。模型推理会向其提供商发送选中原文，只配置用户授权的来源，本次仅授权所给公开论文与视频；私有库未授权。CLI 自己使用既有登录，不复制或显示凭据；代码不修改全局 CLI 权限配置。
 
