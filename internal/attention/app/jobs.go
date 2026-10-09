@@ -89,7 +89,14 @@ func jobRules(j Job) domain.JobRules {
 	// SourceReader only downloads sources or parses existing exports. Ordinary
 	// imports have no paid/effectful action to reconcile. Other job kinds retain
 	// the conservative external-start recovery rule for future model adapters.
-	return domain.JobRules{State: j.Status, Attempts: j.Attempts, MaxAttempts: j.MaxAttempts, Deadline: j.DeadlineAt, ExternalStarted: j.ExternalStarted && j.Kind != "import", DeliveryUnknown: j.DeliveryUnknown}
+	external := j.ExternalStarted && j.Kind != "import"
+	if j.Kind == "distillation" {
+		var payload automaticPayload
+		if json.Unmarshal(j.Payload, &payload) == nil && payload.Result != nil {
+			external = false
+		}
+	}
+	return domain.JobRules{State: j.Status, Attempts: j.Attempts, MaxAttempts: j.MaxAttempts, Deadline: j.DeadlineAt, ExternalStarted: external, DeliveryUnknown: j.DeliveryUnknown}
 }
 
 func (s *Service) RetryJob(ctx context.Context, p Principal, id string, m CommandMeta) (Job, error) {
@@ -317,6 +324,9 @@ func (s *Service) ProcessNextJob(ctx context.Context) (bool, error) {
 	})
 	if err != nil || claimed.JobID == "" {
 		return false, mapError(err, "")
+	}
+	if claimed.Kind == "distillation" {
+		return true, s.processAutomatic(ctx, claimed)
 	}
 	var c ImportMaterialCommand
 	if err = json.Unmarshal(claimed.Payload, &c); err != nil {
