@@ -29,3 +29,5 @@ SOURCE `04a67c54a6ccdbba55dc08e5ec44c07a739d79e7` 已 push。总控单槽安排 
 普通合并 W0 已推送 `bb912efd6f28f9f3909d87ea9fc1f4acb04c9098`（含 W2 DTO），没有手改 generated API。新增 useLocalAgents 与 LocalAgentsPanel，分别显示安装/配置/可启动观察和八项原生能力的状态、原因、核实时间。计数仅来自该接口已加载记录，版本缺失保持未提供，fixture 模式不查询真实清单。清单 GET 只展示已保存探测结果；没有控制按钮或命令请求。
 
 阶段二 `pnpm --dir web typecheck`、lint、test（44/44，含 W0 新客户端单测）、build PASS。新增浏览器用例比较真实 GET local-agents 数据与页面逐项原因及八能力、刷新只发 GET；等待 W0 组装/service 源和主控单槽，尚未运行。不能从 DTO 发布或 UI 编译成功推断实际已接入，更不推断启动/接续/停止能力。
+
+W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通合并（本地合并 `6aede6d72ed2fa6aedf0f3a3e1b2ca173e46b288`）；原生版本/help 启动探测总10秒、每次5秒，GET只读缓存。主控复核后将已知原因译为中文，未知原因保留诊断详情，保持未知与不支持区别。新增实际清单 E2E 和原失败修复准备一起在单槽运行，首次 artifacts 不覆盖。

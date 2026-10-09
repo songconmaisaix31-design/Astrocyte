@@ -29,7 +29,7 @@ test('fixture local cards filter by actual recorded association and preserve det
   await expect(page.getByRole('dialog').getByRole('button', { name: '编辑项目' })).toBeDisabled();
 });
 
-test('real local inventory displays saved independent observations and refreshes without commands', async ({ page }) => {
+test('real local inventory displays saved independent observations and refreshes without commands', async ({ page }, testInfo) => {
   const commands: string[] = [];
   page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/api/v1/')) commands.push(`${request.method()} ${request.url()}`); });
   const responsePromise = page.waitForResponse(response => response.url().endsWith('/api/v1/local-agents'));
@@ -37,18 +37,25 @@ test('real local inventory displays saved independent observations and refreshes
   const response = await responsePromise;
   expect(response.status()).toBe(200);
   const payload = await response.json() as components['schemas']['LocalAgentListV1'];
+  await testInfo.attach('local-agents-response', { body: JSON.stringify(payload, null, 2), contentType: 'application/json' });
+  console.log('Local inventory:', JSON.stringify({ clients: payload.items.length, installed: payload.items.filter(agent => agent.installed.status === 'available').length, configured: payload.items.filter(agent => agent.configured.status === 'available').length, startable: payload.items.filter(agent => agent.startable.status === 'available').length }));
   const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本机 Agent 清单', exact: true }) }).first();
   await expect(panel.locator('li')).toHaveCount(payload.items.length);
   for (const agent of payload.items) {
     const card = panel.locator('li').filter({ has: page.getByRole('heading', { name: agent.display_name, exact: true }) });
     await expect(card).toContainText(agent.version ?? '未提供');
+    const readinessReasons = await card.locator(':scope > dl dd > small[title]').evaluateAll(elements => elements.map(element => element.getAttribute('title')));
     for (const observation of [agent.installed, agent.configured, agent.startable]) {
-      await expect(card).toContainText(observation.reason || '未提供原因');
+      expect(readinessReasons).toContain(observation.reason);
       if (observation.status === 'unknown') await expect(card).toContainText('未知');
     }
-    await card.locator('summary').click();
-    await expect(card.locator('details dl > div')).toHaveCount(8);
-    for (const observation of Object.values(agent.capabilities)) await expect(card.locator('details')).toContainText(observation.reason || '未提供原因');
+    const native = card.locator('details').filter({ has: page.locator('summary').filter({ hasText: /^原生能力/ }) }).first();
+    await native.locator(':scope > summary').click();
+    await expect(native.locator('dl > div')).toHaveCount(8);
+    expect(Object.values(agent.capabilities).map(observation => observation.status)).toEqual(Array(8).fill('unknown'));
+    await expect(native.locator('dd > strong')).toHaveText(Array(8).fill('未知'));
+    const nativeReasons = await native.locator('dd > small[title]').evaluateAll(elements => elements.map(element => element.getAttribute('title')));
+    for (const observation of Object.values(agent.capabilities)) expect(nativeReasons).toContain(observation.reason);
   }
   const refresh = page.waitForResponse(response => response.url().endsWith('/api/v1/local-agents'));
   await panel.getByRole('button', { name: '刷新清单', exact: true }).click();
