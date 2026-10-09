@@ -66,7 +66,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	jobSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", 300, 86400)
+	jobSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", defaultJobTimeoutSeconds, 86400)
 	if err != nil {
 		return err
 	}

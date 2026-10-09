@@ -85,7 +85,7 @@ Windows x64 可运行 `pwsh -NoProfile -File scripts/install-media.ps1`（需要
 
 summarize 0.25.1 保留上游网络保护：所选公开来源应解析为实际可访问的公开地址。若系统代理的 Fake-IP DNS 把 arXiv/Bilibili 返回为 `198.18.0.0/15`，上游会拒绝，安装媒体依赖不能修复这一网络错误。需由用户决定代理/DNS配置，允许时把选定来源域名加入 Fake-IP 排除并使用其正常 DNS；项目不自动改变宿主代理、绕过 guard 或降级上游。配置完成后仍须重新验证所选材料的真实提取。
 
-队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源。本地 Codex 端口、适配、持久化队列和入口已组装；最新真实候选 schema 调用响应丢失、效果和费用未知，自动三层正路径尚未验收，不从人工记录推断自动成功。
+队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。作业期限和视频提取器共享 `ASTROCYTE_JOB_TIMEOUT_SECONDS`，正式入口默认 **1800 秒**，可显式配置 1–86400 秒。所选视频的真实本地转写已超过原 300 秒默认值，因此调整这一既有共享默认；它同时影响导入和自动整理作业的期限，Codex 自身执行上限仍为下述独立 180 秒。上游音轨下载另有自身时限，作业期限不覆盖上游限制；取消沿用现有机制。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源。本地 Codex 端口、适配、持久化队列和入口已组装；最新真实候选 schema 调用响应丢失、效果和费用未知，自动三层正路径尚未验收，不从人工记录推断自动成功。
 
 自动处理配置使用 `ASTROCYTE_ENABLE_CODEX_DISTILLATION=true` 显式启用（默认关闭）、`ASTROCYTE_CODEX_EXECUTABLE` 原生 exe 绝对路径、`ASTROCYTE_CODEX_MODEL` 明确模型名称及 `ASTROCYTE_PROCESSING_SOURCE_KEYS` JSON 数组授权范围；没有任何内置来源白名单。`ASTROCYTE_CODEX_TIMEOUT_SECONDS` 默认 180 秒。普通浏览器临时服务关闭模型和外部提取。当前 native 政策验证的是 **Windows Codex 0.162.0**，使用已授权的纯文本推理模式，运行时拒绝工具执行；不是成功的操作系统文件读取隔离。模型推理会向其提供商发送选中原文，只配置用户授权的来源，本次仅授权所给公开论文与视频；私有库未授权。CLI 自己使用既有登录，不复制或显示凭据；代码不修改全局 CLI 权限配置。
 

@@ -17,6 +17,10 @@ import (
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
+// The selected video's observed local transcription exceeds the former 300s
+// budget. Reader and Service share the existing bounded runtime setting.
+const defaultJobTimeoutSeconds = 1800
+
 // The source scope is startup-owned and has no implicit public/private defaults.
 // An ordinary test or dev invocation never starts model processing unless opted in.
 func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distiller, []string, error) {
@@ -110,7 +114,7 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 		return nil, fmt.Errorf("resolve summarize CLI with Node: %w", err)
 	}
 	cliPath = string(resolved)
-	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", 300, 86400)
+	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", defaultJobTimeoutSeconds, 86400)
 	if err != nil {
 		return nil, err
 	}
