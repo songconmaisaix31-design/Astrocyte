@@ -7,9 +7,9 @@ interface NavProps {
 }
 
 const NAV_ITEMS = [
-  { path: '/attention', label: '注意力', icon: '◎', shortcut: '1' },
-  { path: '/workspace', label: '工作台', icon: '▦', shortcut: '2' },
-  { path: '/swarm',     label: '集群',   icon: '◈', shortcut: '3' },
+  { path: '/attention', label: '资料沉淀', icon: '◎', shortcut: '1' },
+  { path: '/workspace', label: '共同工作区', icon: '▦', shortcut: '2' },
+  { path: '/swarm',     label: '蜂群执行', icon: '◈', shortcut: '3' },
 ];
 
 export function Nav({ currentPath }: NavProps) {
@@ -20,10 +20,7 @@ export function Nav({ currentPath }: NavProps) {
     <nav className={styles.sidebar} role="navigation" aria-label="主导航">
       <div className={styles.brand}>
         <div className={styles.brandTitle}>Astrocyte</div>
-        <div className={styles.brandSub}>
-          S0 · 研究工作台
-          {foundation.data && <span style={{ marginLeft: 6, opacity: 0.6 }}>({foundation.data.stage})</span>}
-        </div>
+        <div className={styles.brandSub}>研究工作台</div>
       </div>
 
       <ul className={styles.navList} role="list">

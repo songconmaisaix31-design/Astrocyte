@@ -7,7 +7,7 @@ interface DetailPanelProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  /** Show disabled notice for future slice features */
+  /** Show disabled notice for unavailable features */
   showDisabledNotice?: boolean;
   disabledNoticeText?: string;
 }
@@ -17,7 +17,7 @@ export function DetailPanel({
   onClose,
   children,
   showDisabledNotice,
-  disabledNoticeText = '此功能的操作按钮将在后续版本中启用',
+  disabledNoticeText = '此功能的操作尚未启用',
 }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -26,18 +26,37 @@ export function DetailPanel({
     typeof document !== 'undefined' ? document.activeElement : null,
   );
 
-  // Focus close button on mount
+  // Focus close button on mount.
+  // Uses rAF so the focus happens after React's commit phase.
+  const mountRafRef = useRef<number | null>(null);
   useEffect(() => {
-    closeRef.current?.focus();
+    mountRafRef.current = requestAnimationFrame(() => {
+      closeRef.current?.focus();
+    });
+    return () => {
+      if (mountRafRef.current !== null) {
+        cancelAnimationFrame(mountRafRef.current);
+      }
+    };
   }, []);
 
-  // Restore focus to trigger element on unmount
+  // Restore focus to trigger element on final unmount.
+  // Captures trigger in setup (lint rule). Each mount cancels any pending
+  // restore rAF so StrictMode's mount-1 cleanup doesn't steal focus
+  // after the remount effect refocuses the close button.
+  const restoreRafRef = useRef<number | null>(null);
   useEffect(() => {
+    // Cancel any pending restore from a previous (StrictMode-cleaned-up) mount
+    if (restoreRafRef.current !== null) {
+      cancelAnimationFrame(restoreRafRef.current);
+      restoreRafRef.current = null;
+    }
+    const triggerEl = triggerRef.current;
     return () => {
-      const el = triggerRef.current;
-      if (el && el instanceof HTMLElement) {
-        // Defer to after React's unmount cycle
-        requestAnimationFrame(() => el.focus());
+      if (triggerEl && triggerEl instanceof HTMLElement) {
+        restoreRafRef.current = requestAnimationFrame(() => {
+          requestAnimationFrame(() => triggerEl.focus());
+        });
       }
     };
   }, []);
