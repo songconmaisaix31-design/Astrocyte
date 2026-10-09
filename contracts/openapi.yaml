@@ -3712,6 +3712,7 @@ components:
           type: string
           enum:
             - S0
+            - S1
         capabilities:
           type: object
           additionalProperties: false
@@ -4711,6 +4712,8 @@ components:
           enum:
             - arxiv
             - summarize
+            - summarize_json
+            - summarize_markdown
             - manual
       required:
         - schema_version

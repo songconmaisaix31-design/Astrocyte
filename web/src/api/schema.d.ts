@@ -781,7 +781,7 @@ export interface components {
             /** @constant */
             schema_version: 1;
             /** @enum {string} */
-            stage: "S0";
+            stage: "S0" | "S1";
             /** @description Availability of HTTP operations in S0, not evidence about installed local agent native abilities. */
             capabilities: {
                 /** @constant */
@@ -1318,7 +1318,7 @@ export interface components {
             source_spans?: string[];
             title?: string;
             /** @enum {string} */
-            adapter?: "arxiv" | "summarize" | "manual";
+            adapter?: "arxiv" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
         };
         /**
          * @example {
