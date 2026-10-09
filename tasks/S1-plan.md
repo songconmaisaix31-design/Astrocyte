@@ -72,3 +72,5 @@
 各轨消费：W1用Go端口维护状态/CAS/人机信号；W2实现端口及上述表/对象约束，迁移变更交W0；W3只调用生成客户端并显示作业标记/真实缺失，权限不从前端字段推断；W4使用OpenAPI与实际API/SQLite核对，不把accepted或403当业务正路径通过。所有跨轨字段/状态调整先交W0，不手改生成类型或抢写迁移。
 
 第一步本次核验：`pnpm check:contracts` PASS（226示例、生成类型一致；保留既有EventV1未引用警告）；`go test -mod=readonly ./internal/adapters/httpapi ./internal/attention/domain` PASS（缓存结果，非重新执行真实模型/视频）。本次只发布主控索引，不改业务代码，不重启或重放已结束作业。完整Agent可读范围、私有外发、ready门槛、A→B→A head以及Codex新作业仍见 [QUESTIONS](../docs/QUESTIONS.md)，未冻结为规则。
+
+发布到共享分支，并通过 Orca 将 W0–W4 共同交接发布到原项目 Run。原 Dispatch 已 completed，直接投递返回 dispatch_inactive，随后按运行时指引改投 Run；没有为了通知而重新启动 Workers，不声称原 Workers 已读。后续恢复每轨时将本节和 W0 契约作为共同入口。
