@@ -29,6 +29,10 @@ func (s *transportAttention) ImportMaterial(_ context.Context, p attentionapp.Pr
 func (s *transportAttention) GetAttachment(_ context.Context, _ attentionapp.Principal, _ string, _ int, _ string) (attentionapp.AttachmentContent, error) {
 	return attentionapp.AttachmentContent{Data: []byte("%PDF-original"), Name: "source.pdf", MediaType: "application/pdf"}, nil
 }
+func (s *transportAttention) ReviewOpportunity(_ context.Context, p attentionapp.Principal, id string, _ attentionapp.ReviewOpportunityCommand) (attentionapp.VersionResult, error) {
+	s.caller = p
+	return attentionapp.VersionResult{SchemaVersion: 1, ID: id, Version: 2}, nil
+}
 func secureServer() (*Server, *transportAttention) {
 	s := &transportAttention{}
 	return NewServer(Config{Services: Services{Attention: s}, AgentToken: "test-agent-token", Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}), s
@@ -144,5 +148,14 @@ func TestAttentionAttachmentOriginalMedia(t *testing.T) {
 	w = attentionRequest(s, "GET", "/api/v1/materials/m1/revisions/0/attachments/source.pdf", "", cookie, csrf, "", "")
 	if w.Code != 400 {
 		t.Fatal("invalid revision accepted")
+	}
+}
+
+func TestAttentionReviewPreservesPublishedCreatedResponse(t *testing.T) {
+	s, _ := secureServer()
+	cookie, csrf := bootstrapSession(t, s)
+	w := attentionRequest(s, "POST", "/api/v1/opportunities/o1/reviews", `{"schema_version":1,"request_id":"review-request","expected_version":1,"feedback":"later","reason":"return later"}`, cookie, csrf, "", "")
+	if w.Code != http.StatusCreated {
+		t.Fatalf("review must preserve contract 201: %d %s", w.Code, w.Body.String())
 	}
 }

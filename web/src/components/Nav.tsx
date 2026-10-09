@@ -13,13 +13,15 @@ export function Nav({ currentPath, fixture, open, onNavigate }: { currentPath: s
   const foundation = useFoundation();
   const projects = useProjects();
   const caps = foundation.data?.capabilities;
+  const attentionPage = currentPath.startsWith('/attention') || currentPath === '/';
+  const canImport = attentionPage && !fixture && !!caps?.imports && !foundation.stale;
   const projectItems = fixture ? fixtureProjects : projects.data?.items ?? [];
   const go = (path: string) => { const query = new URLSearchParams(window.location.search); query.delete('tab'); navigate(`${path}${query.size ? `?${query}` : ''}`); onNavigate(); };
   return <aside className={`ac-sidebar ${open ? 'open' : ''}`}>
     <div className="ac-nav-label">我的工作台</div>
     <nav aria-label="主导航">{items.map(item => <button key={item.path} type="button" className={currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention') ? 'active' : ''} aria-current={currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention') ? 'page' : undefined} onClick={() => go(item.path)}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
-    <button type="button" className="ac-new-button" disabled title="资料导入与提案写入尚未启用"><Icon name="plus" size={18} />{currentPath.startsWith('/attention') || currentPath === '/' ? '添加资料' : '记录提案'}</button>
-    <div className="ac-disabled-caption">写入操作尚未启用</div>
+    <button type="button" className="ac-new-button" disabled={!canImport} onClick={() => { const query = new URLSearchParams(window.location.search); query.delete('tab'); query.set('import', '1'); navigate(`/attention?${query}`); onNavigate(); }} title={canImport ? '导入 arXiv 或 summarize 既有导出' : '示例模式或服务未提供此写入能力'}><Icon name="plus" size={18} />{attentionPage ? canImport ? '添加资料' : '添加资料 · 未启用' : '记录提案'}</button>
+    <div className="ac-disabled-caption">{canImport ? '保存资料不会启动任务' : '写入操作尚未启用'}</div>
     <div className="ac-sidebar-divider" /><div className="ac-nav-label">我的项目{fixture && <span>示例</span>}</div>
     {projectItems.map(project => <button type="button" className="ac-project-nav" key={project.id} onClick={() => go('/workspace')}><span className="ac-project-symbol">{project.name.slice(0, 1)}</span><span className="text-truncate">{project.name}</span></button>)}
     {!projectItems.length && <p className="ac-sidebar-empty">{projects.loading ? '加载中…' : projects.error ? '项目列表无法获取' : '暂无已注册项目'}</p>}
