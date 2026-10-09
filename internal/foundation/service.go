@@ -48,11 +48,18 @@ type Service interface {
 
 type service struct {
 	storageSchemaVersion int
+	attention            bool
 }
 
 // NewService creates the S0 foundation service.
 func NewService(storageSchemaVersion int) Service {
 	return &service{storageSchemaVersion: storageSchemaVersion}
+}
+
+// NewAttentionService reports the assembled S1 import capability; it does not
+// imply approvals, execution, automatic judgment or native agent readiness.
+func NewAttentionService(storageSchemaVersion int) Service {
+	return &service{storageSchemaVersion: storageSchemaVersion, attention: true}
 }
 
 func (s *service) Health(_ context.Context) (HealthResponse, error) {
@@ -64,11 +71,15 @@ func (s *service) Health(_ context.Context) (HealthResponse, error) {
 }
 
 func (s *service) Foundation(_ context.Context) (FoundationResponse, error) {
+	stage := "S0"
+	if s.attention {
+		stage = "S1"
+	}
 	return FoundationResponse{
 		SchemaVersion: SchemaVersion,
-		Stage:         "S0",
+		Stage:         stage,
 		Capabilities: Capabilities{
-			Imports:      false,
+			Imports:      s.attention,
 			Approvals:    false,
 			Execution:    false,
 			NativeResume: false,

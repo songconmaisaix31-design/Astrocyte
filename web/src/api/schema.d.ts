@@ -75,7 +75,7 @@ export interface paths {
         put?: never;
         /**
          * createOpportunity
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["createOpportunity"];
         delete?: never;
@@ -199,7 +199,7 @@ export interface paths {
         put?: never;
         /**
          * import Material
-         * @description S1 human write. Requires local session and matching CSRF token. Import queues durable work; reviews do not approve or execute a Mission.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["importMaterial"];
         delete?: never;
@@ -219,7 +219,7 @@ export interface paths {
         put?: never;
         /**
          * review Opportunity
-         * @description S1 human write. Requires local session and matching CSRF token. Import queues durable work; reviews do not approve or execute a Mission.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["reviewOpportunity"];
         delete?: never;
@@ -497,7 +497,7 @@ export interface paths {
         };
         /**
          * getMaterial
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         get: operations["getMaterial"];
         put?: never;
@@ -507,7 +507,7 @@ export interface paths {
         head?: never;
         /**
          * updateMaterial
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         patch: operations["updateMaterial"];
         trace?: never;
@@ -521,7 +521,7 @@ export interface paths {
         };
         /**
          * getMaterialContent
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         get: operations["getMaterialContent"];
         put?: never;
@@ -543,7 +543,7 @@ export interface paths {
         put?: never;
         /**
          * recordMaterialUse
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["recordMaterialUse"];
         delete?: never;
@@ -561,13 +561,13 @@ export interface paths {
         };
         /**
          * listDistillations
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         get: operations["listDistillations"];
         put?: never;
         /**
          * recordDistillation
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["recordDistillation"];
         delete?: never;
@@ -585,7 +585,7 @@ export interface paths {
         };
         /**
          * getOpportunity
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         get: operations["getOpportunity"];
         put?: never;
@@ -607,7 +607,7 @@ export interface paths {
         put?: never;
         /**
          * reviseOpportunity
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["reviseOpportunity"];
         delete?: never;
@@ -625,7 +625,7 @@ export interface paths {
         };
         /**
          * listJobs
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         get: operations["listJobs"];
         put?: never;
@@ -645,7 +645,7 @@ export interface paths {
         };
         /**
          * getJob
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         get: operations["getJob"];
         put?: never;
@@ -667,7 +667,7 @@ export interface paths {
         put?: never;
         /**
          * retryJob
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["retryJob"];
         delete?: never;
@@ -687,7 +687,7 @@ export interface paths {
         put?: never;
         /**
          * cancelJob
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         post: operations["cancelJob"];
         delete?: never;
@@ -705,7 +705,7 @@ export interface paths {
         };
         /**
          * Read original immutable source attachment
-         * @description S1 Attention service. Human writes require local session cookie and CSRF token; Agent bearer credentials are read-only. Reads do not increase human attention.
+         * @description S1 Attention service. Human writes require local session cookie and CSRF token. Agent credentials identify the caller but deny all protected data access until explicit user material scopes are configured. Reads never increase human attention.
          */
         get: operations["getMaterialAttachment"];
         put?: never;
@@ -781,7 +781,7 @@ export interface components {
             /** @constant */
             schema_version: 1;
             /** @enum {string} */
-            stage: "S0";
+            stage: "S0" | "S1";
             /** @description Availability of HTTP operations in S0, not evidence about installed local agent native abilities. */
             capabilities: {
                 /** @constant */
@@ -1318,7 +1318,7 @@ export interface components {
             source_spans?: string[];
             title?: string;
             /** @enum {string} */
-            adapter?: "arxiv" | "summarize" | "manual";
+            adapter?: "arxiv" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
         };
         /**
          * @example {
@@ -1831,8 +1831,8 @@ export interface components {
         ProvenanceV1: {
             processor: string;
             version: string;
-            /** @enum {string} */
-            mode: "manual" | "arxiv" | "summarize_export" | "summarize_extract";
+            /** @description Actual processing mode reported by the adapter; manual, official_atom_and_pdf, original_export or summary_only. Never infer automatic processing from a record. */
+            mode: string;
             source: string;
         };
         MaterialRevisionV1: {
