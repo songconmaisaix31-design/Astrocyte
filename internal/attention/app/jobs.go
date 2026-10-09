@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
@@ -19,15 +20,20 @@ func (s *Service) ImportMaterial(ctx context.Context, p Principal, c ImportMater
 		if c.ExpectedVersion != 1 || strings.TrimSpace(c.SourceLocator) == "" || !slices.Contains([]string{"paper", "video", "text", "file"}, c.Kind) {
 			return ImportJobResult{}, domain.ErrInvalid
 		}
-		// A supplied export is a fixed snapshot. An unversioned remote URL or
-		// local file can change, so a new explicit command must reread it. Its
-		// receipt still prevents duplicate delivery of the same command; the
+		// A supplied export or official arXiv version is a fixed snapshot.
+		// Unversioned remote URLs and local files can change, so a new command
+		// must reread them. Its receipt prevents duplicate delivery; the
 		// canonical source key and actual digest prevent duplicate revisions.
 		refresh := ""
+		source, adapter := c.SourceLocator, c.Adapter
 		if c.ExportText == "" {
-			refresh = c.IdempotencyKey
+			if version := fixedArxivVersion(c); version != "" {
+				source, adapter = "https://arxiv.org/abs/"+version, "arxiv"
+			} else {
+				refresh = c.IdempotencyKey
+			}
 		}
-		identity := struct{ Source, Key, Kind, Adapter, Text, File, Digest, Refresh string }{c.SourceLocator, c.SourceKey, c.Kind, c.Adapter, c.ExportText, c.LocalFileRef, c.ContentDigest, refresh}
+		identity := struct{ Source, Key, Kind, Adapter, Text, File, Digest, Refresh string }{source, c.SourceKey, c.Kind, adapter, c.ExportText, c.LocalFileRef, c.ContentDigest, refresh}
 		bytes, _ := json.Marshal(identity)
 		dedupeKey := digestBytes(bytes)
 		old, err := tx.FindJobByDedupeKey(dedupeKey)
@@ -60,6 +66,31 @@ func (s *Service) ImportMaterial(ctx context.Context, p Principal, c ImportMater
 	return result, err
 }
 
+var fixedArxivID = regexp.MustCompile(`^(?:[0-9]{4}\.[0-9]{4,5}|[a-z][a-z0-9.-]*(?:\.[A-Z]{2})?/[0-9]{7})v[1-9][0-9]*$`)
+var officialArxivLocator = regexp.MustCompile(`^https?://(?:www\.|export\.)?arxiv\.org/(?:abs|pdf|html)/([^?#\s]+)(?:[?#][^\s]*)?$`)
+
+// fixedArxivVersion recognizes only version-pinned inputs for the existing
+// arXiv reader. It does not trust a source key/digest assertion or a version
+// suffix on an arbitrary URL. Local exports remain mutable even when their
+// provenance locator is a fixed paper. Validation/download stays in the reader.
+func fixedArxivVersion(c ImportMaterialCommand) string {
+	if c.Kind != "paper" || c.LocalFileRef != "" || (c.Adapter != "" && c.Adapter != "arxiv") {
+		return ""
+	}
+	id := strings.TrimPrefix(strings.TrimSpace(c.SourceLocator), "arXiv:")
+	if strings.Contains(id, "://") {
+		match := officialArxivLocator.FindStringSubmatch(id)
+		if match == nil {
+			return ""
+		}
+		id = strings.TrimSuffix(match[1], ".pdf")
+	}
+	if !fixedArxivID.MatchString(id) {
+		return ""
+	}
+	return id
+}
+
 func (s *Service) signal() {
 	select {
 	case s.wake <- struct{}{}:
@@ -89,7 +120,14 @@ func jobRules(j Job) domain.JobRules {
 	// SourceReader only downloads sources or parses existing exports. Ordinary
 	// imports have no paid/effectful action to reconcile. Other job kinds retain
 	// the conservative external-start recovery rule for future model adapters.
-	return domain.JobRules{State: j.Status, Attempts: j.Attempts, MaxAttempts: j.MaxAttempts, Deadline: j.DeadlineAt, ExternalStarted: j.ExternalStarted && j.Kind != "import", DeliveryUnknown: j.DeliveryUnknown}
+	external := j.ExternalStarted && j.Kind != "import"
+	if j.Kind == "distillation" {
+		var payload automaticPayload
+		if json.Unmarshal(j.Payload, &payload) == nil && payload.Result != nil {
+			external = false
+		}
+	}
+	return domain.JobRules{State: j.Status, Attempts: j.Attempts, MaxAttempts: j.MaxAttempts, Deadline: j.DeadlineAt, ExternalStarted: external, DeliveryUnknown: j.DeliveryUnknown}
 }
 
 func (s *Service) RetryJob(ctx context.Context, p Principal, id string, m CommandMeta) (Job, error) {
@@ -317,6 +355,9 @@ func (s *Service) ProcessNextJob(ctx context.Context) (bool, error) {
 	})
 	if err != nil || claimed.JobID == "" {
 		return false, mapError(err, "")
+	}
+	if claimed.Kind == "distillation" {
+		return true, s.processAutomatic(ctx, claimed)
 	}
 	var c ImportMaterialCommand
 	if err = json.Unmarshal(claimed.Payload, &c); err != nil {

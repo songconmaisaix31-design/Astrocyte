@@ -384,7 +384,7 @@ test.describe('Stale data via refresh button', () => {
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
     // Both materials and opportunities show error (2 sections)
-    const errorAlerts = page.locator('[role="alert"]:has-text("请求失败")');
+    const errorAlerts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^(素材|机会)/ }) }).locator('[role="alert"]:has-text("请求失败")');
     await expect(errorAlerts.first()).toBeVisible({ timeout: 10000 });
     expect(await errorAlerts.count()).toBe(2);
     // No stale banner (stale only appears when prior data was retained)
@@ -466,7 +466,7 @@ test.describe('API failure and retry', () => {
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
     // Each failed section (materials, opportunities) shows its own error + retry
-    const errorAlerts = page.locator('[role="alert"]:has-text("请求失败")');
+    const errorAlerts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^(素材|机会)/ }) }).locator('[role="alert"]:has-text("请求失败")');
     await expect(errorAlerts.first()).toBeVisible({ timeout: 10000 });
     expect(await errorAlerts.count()).toBe(2);
     const retryButtons = page.locator('[role="alert"] button:has-text("重试")');
