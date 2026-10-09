@@ -46,22 +46,22 @@ export async function humanAPI(baseURL) {
   };
 }
 
-export async function waitJob(api, id, expected = 'succeeded') {
-  const deadline = Date.now() + 10_000;
+export async function waitJob(api, id, expected = 'succeeded', timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const job = await api.get(`/jobs/${id}`);
     if (['succeeded', 'failed', 'cancelled'].includes(job.status)) {
       assert.equal(job.status, expected, JSON.stringify(job));
       return job;
     }
-    await delay(50);
+    await delay(timeoutMs > 10_000 ? 500 : 50);
   }
   throw new Error(`Job ${id} did not reach ${expected}`);
 }
 
 export async function importMaterial(api, body, options) {
   const receipt = await api.write('/materials/imports', body, { status: 202, ...options });
-  const job = await waitJob(api, receipt.job_id);
+  const job = await waitJob(api, receipt.job_id, 'succeeded', options?.timeoutMs);
   assert.ok(job.material_id);
   const detail = await api.get(`/materials/${job.material_id}`);
   return { receipt, job, detail };

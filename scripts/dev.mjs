@@ -8,7 +8,12 @@ await requireFile('web/index.html');
 const temporary = await mkdtemp(join(tmpdir(), 'astrocyte-dev-'));
 const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
 const env = { ...process.env };
-if (process.argv.includes('--ephemeral')) env.ASTROCYTE_DATA_DIR = join(temporary, 'data');
+if (process.argv.includes('--ephemeral')) {
+  env.ASTROCYTE_DATA_DIR = join(temporary, 'data');
+  // Ordinary browser checks must not inherit opt-in model/external extraction.
+  env.ASTROCYTE_ENABLE_CODEX_DISTILLATION = 'false';
+  env.ASTROCYTE_SUMMARIZE_CLI = '';
+}
 const children = [];
 let stopping = false;
 async function shutdown(code = 0) {

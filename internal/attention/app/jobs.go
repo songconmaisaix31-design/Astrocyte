@@ -32,38 +32,9 @@ func (s *Service) ImportMaterial(ctx context.Context, p Principal, c ImportMater
 		dedupeKey := digestBytes(bytes)
 		old, err := tx.FindJobByDedupeKey(dedupeKey)
 		if err == nil {
-			if old.Status == "succeeded" && old.MaterialID != nil && old.MaterialRevision != nil {
-				row, err := tx.LoadMaterial(*old.MaterialID)
-				if err != nil {
-					return ImportJobResult{}, err
-				}
-				if row.Material.Lifecycle == "withdrawn" {
-					return ImportJobResult{}, serviceError(apierrors.ScopeDenied, "Source material was withdrawn", "review_material_lifecycle")
-				}
-				if row.Material.CurrentRevision != *old.MaterialRevision {
-					var revision *MaterialRevision
-					for i := range row.Revisions {
-						if row.Revisions[i].Revision == *old.MaterialRevision {
-							revision = &row.Revisions[i]
-							break
-						}
-					}
-					if revision == nil {
-						return ImportJobResult{}, domain.ErrEvidence
-					}
-					oldVersion := row.Material.Version
-					row.Material.Version++
-					row.Material.CurrentRevision = revision.Revision
-					row.Material.SourceLocator = revision.SourceLocator
-					row.Material.SourceSpans = revision.SourceSpans
-					if err = tx.SaveMaterial(row, oldVersion); err != nil {
-						return ImportJobResult{}, err
-					}
-					if err = s.event(tx, "material_imported", row.Material.ID, row.Material.Version, c.CommandMeta, map[string]any{"material_id": row.Material.ID, "revision": revision.Revision, "reused": true}); err != nil {
-						return ImportJobResult{}, err
-					}
-				}
-			}
+			// Whether reimporting an older immutable digest restores the default
+			// head is an unanswered user decision. Reuse the recorded result
+			// without inventing a head-restoration policy here.
 			return ImportJobResult{SchemaVersion: 1, JobID: old.JobID, Status: old.Status}, nil
 		}
 		if !isMissing(err) {
@@ -516,8 +487,6 @@ func (s *Service) finishImport(ctx context.Context, claim Job, c ImportMaterialC
 		}
 		if !reused {
 			row.Revisions = append(row.Revisions, MaterialRevision{MaterialID: row.Material.ID, Revision: revision, SourceKey: source.SourceKey, SourceLocator: source.SourceLocator, ContentDigest: digest, ObjectRef: objectRef, SourceSpans: nonNil(source.SourceSpans), Provenance: source.Provenance, CreatedAt: now, Summary: source.Summary, Attachments: attachments})
-		}
-		if !reused || row.Material.CurrentRevision != revision {
 			row.Material.Version++
 			row.Material.CurrentRevision = revision
 			row.Material.ImportStatus = "succeeded"
