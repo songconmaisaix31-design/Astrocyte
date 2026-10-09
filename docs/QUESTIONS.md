@@ -39,3 +39,5 @@
 真实视频字幕的公开接口返回 `need_login_subtitle=true`。已核本机 OpenCLI 的无 Python 字幕命令和 [官方 Browser Bridge](https://chromewebstore.google.com/detail/opencli/ildkmabpimmkaediidaifkhjpohdnifk)，用户需正常登录并连接浏览器后才能继续该视频的真实字幕验收；登录后仍可能没有字幕。已询问用户连接状态，不读取登录凭据原件，不以推荐网页文字冒充视频正文。
 
 Codex 实测：当前原生 CLI 为 `0.162.0`。旧输出结构的一次公开论文全文整理成功；加入候选建议后的最新结构调用在 180 秒后超时，完整结果、usage 与费用未知，原生所属进程已结束。原调用不自动重试，也不拿旧结构的成功替代最新自动链路验收。已询问用户是否允许另建作业并延长时限；未答前继续其余功能与离线验收。
+
+用户再次明确：视频必须复用 summarize 开源项目。沿 SPEC P10 适配其真实既有 JSON/Markdown 导出，保存原始输出与真实时间位置；不另建视频下载/转录器。OpenCLI 字幕公开接口调查仅用于诊断指定视频缺证据，不替换默认导入链路。当前该视频的 summarize 输出仍缺真实字幕/总结，未降低 AT01。
