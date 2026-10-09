@@ -95,7 +95,7 @@ func (h *handler) registerAttention(mux *http.ServeMux) {
 	h.registerClassification(mux)
 	mux.HandleFunc("GET /api/v1/distillations/processor", func(w http.ResponseWriter, r *http.Request) {
 		if h.services.Automatic == nil {
-			h.attentionResult(w, r, http.StatusOK, attentionapp.DistillerStatus{SchemaVersion: 1, Processor: "codex", Available: false, Reason: "processor_not_configured", RequiredAction: "configure_and_verify_native_read_isolation", AllowedSourceKeys: []string{}}, nil)
+			h.attentionResult(w, r, http.StatusOK, attentionapp.DistillerStatus{SchemaVersion: 1, Processor: "codex", Available: false, Reason: "processor_not_configured", RequiredAction: "configure_verified_native_codex_text_processor", AllowedSourceKeys: []string{}}, nil)
 			return
 		}
 		result, err := h.services.Automatic.GetDistillerStatus(r.Context(), principal(r))

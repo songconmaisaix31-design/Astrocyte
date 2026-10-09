@@ -1,17 +1,92 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
+
+// The source scope is startup-owned and has no implicit public/private defaults.
+// An ordinary test or dev invocation never starts model processing unless opted in.
+func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distiller, []string, error) {
+	raw := os.Getenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION")
+	if raw == "" || raw == "false" {
+		return nil, nil, nil
+	}
+	if raw != "true" {
+		return nil, nil, fmt.Errorf("ASTROCYTE_ENABLE_CODEX_DISTILLATION must be true or false")
+	}
+	var sourceKeys []string
+	if err := json.Unmarshal([]byte(os.Getenv("ASTROCYTE_PROCESSING_SOURCE_KEYS")), &sourceKeys); err != nil || len(sourceKeys) == 0 {
+		return nil, nil, fmt.Errorf("ASTROCYTE_PROCESSING_SOURCE_KEYS must be a nonempty JSON array of explicitly authorized source keys")
+	}
+	seen := make(map[string]bool)
+	for _, key := range sourceKeys {
+		if key == "" || key != strings.TrimSpace(key) || seen[key] {
+			return nil, nil, fmt.Errorf("ASTROCYTE_PROCESSING_SOURCE_KEYS entries must be distinct nonempty canonical source keys")
+		}
+		seen[key] = true
+	}
+	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_CODEX_TIMEOUT_SECONDS", 180, 86400)
+	if err != nil {
+		return nil, nil, err
+	}
+	workRoot, err := filepath.Abs(filepath.Join(dataDir, "processor-work"))
+	if err != nil {
+		return nil, nil, fmt.Errorf("resolve processor work directory: %w", err)
+	}
+	processor, err := distillers.NewCodex(distillers.CodexOptions{
+		Executable: os.Getenv("ASTROCYTE_CODEX_EXECUTABLE"),
+		WorkRoot:   workRoot, Model: os.Getenv("ASTROCYTE_CODEX_MODEL"),
+		Timeout: time.Duration(timeoutSeconds) * time.Second, AllowedSourceKeys: sourceKeys,
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("configure Codex processor: %w", err)
+	}
+	if _, err := processor.ConfigurationID(ctx); err != nil {
+		return nil, nil, fmt.Errorf("verify Codex processor configuration: %w", err)
+	}
+	return processor, sourceKeys, nil
+}
+
+// No extraction CLI is selected implicitly. A configured CLI uses the installed
+// Node executable and the adapter's extract-only, credential-free environment.
+func resolveSourceReader(roots []string) (*importers.Reader, error) {
+	reader := importers.NewReader(roots)
+	cliPath := os.Getenv("ASTROCYTE_SUMMARIZE_CLI")
+	if cliPath == "" {
+		return reader, nil
+	}
+	nodePath := os.Getenv("ASTROCYTE_NODE")
+	if nodePath == "" {
+		var err error
+		nodePath, err = exec.LookPath("node")
+		if err != nil {
+			return nil, fmt.Errorf("find Node for ASTROCYTE_SUMMARIZE_CLI: %w", err)
+		}
+		nodePath, err = filepath.Abs(nodePath)
+		if err != nil {
+			return nil, fmt.Errorf("resolve Node: %w", err)
+		}
+	}
+	extractor, err := importers.NewSummarizeExtractor(nodePath, cliPath)
+	if err != nil {
+		return nil, fmt.Errorf("configure summarize extraction: %w", err)
+	}
+	reader.Arxiv.TextExtractor = extractor
+	return reader, nil
+}
 
 // Runtime bounds are local service configuration, not client-supplied authority.
 func configuredPositiveInt(name string, defaultValue, maxValue int) (int, error) {

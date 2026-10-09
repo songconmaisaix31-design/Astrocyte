@@ -1,9 +1,35 @@
 package main
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 )
+
+func TestCodexOptInCannotImplicitlyAuthorizeSources(t *testing.T) {
+	t.Setenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION", "")
+	t.Setenv("ASTROCYTE_PROCESSING_SOURCE_KEYS", "invalid")
+	processor, sources, err := resolveDistiller(context.Background(), t.TempDir())
+	if err != nil || processor != nil || len(sources) != 0 {
+		t.Fatalf("default enabled processor: %v %v %v", processor, sources, err)
+	}
+	t.Setenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION", "yes")
+	if _, _, err := resolveDistiller(context.Background(), t.TempDir()); err == nil {
+		t.Fatal("accepted ambiguous opt-in")
+	}
+	t.Setenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION", "true")
+	for _, raw := range []string{"", "null", "[]", `[""]`, `["arxiv:x","arxiv:x"]`, `[" arxiv:x"]`} {
+		t.Setenv("ASTROCYTE_PROCESSING_SOURCE_KEYS", raw)
+		if _, _, err := resolveDistiller(context.Background(), t.TempDir()); err == nil {
+			t.Fatalf("accepted missing/ambiguous source scope: %s", raw)
+		}
+	}
+	t.Setenv("ASTROCYTE_PROCESSING_SOURCE_KEYS", `["arxiv:2504.16054"]`)
+	t.Setenv("ASTROCYTE_CODEX_EXECUTABLE", "codex.cmd")
+	if _, _, err := resolveDistiller(context.Background(), t.TempDir()); err == nil {
+		t.Fatal("accepted unverified native executable")
+	}
+}
 
 func TestImportRootsExplicitAndNoDefault(t *testing.T) {
 	t.Setenv("ASTROCYTE_IMPORT_ROOTS", "")
@@ -22,6 +48,24 @@ func TestImportRootsExplicitAndNoDefault(t *testing.T) {
 	t.Setenv("ASTROCYTE_IMPORT_ROOTS", t.TempDir())
 	if roots, err := resolveImportRoots(); err != nil || len(roots) != 1 {
 		t.Fatalf("explicit root: %v %v", roots, err)
+	}
+}
+
+func TestSummarizeExtractionRequiresExplicitInstalledPaths(t *testing.T) {
+	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", "")
+	t.Setenv("ASTROCYTE_NODE", "missing")
+	reader, err := resolveSourceReader(nil)
+	if err != nil || reader.Arxiv.TextExtractor != nil {
+		t.Fatalf("default must retain metadata/PDF-only reader: %v %v", reader, err)
+	}
+	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", "relative.js")
+	if _, err := resolveSourceReader(nil); err == nil {
+		t.Fatal("accepted unverified extraction paths")
+	}
+	t.Setenv("ASTROCYTE_NODE", filepath.Join(t.TempDir(), "missing-node"))
+	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", filepath.Join(t.TempDir(), "missing-cli.js"))
+	if _, err := resolveSourceReader(nil); err == nil {
+		t.Fatal("accepted missing configured extraction tools")
 	}
 }
 
