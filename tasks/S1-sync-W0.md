@@ -55,6 +55,14 @@ W2 `763e183df35951a3ba919f593a51168d22fee522` 普通 exact merge `73af8a6`；W0 
 
 本阶段业务/检查源 `2f70282ae414105431832102821cefe26f677d07`：`pnpm check` PASS/exit0（19 包边界、232 示例、API contract_local 14/14、TS/lint、前端 44/44，既有 EventV1 警告保留）；`pnpm build` PASS/exit0。检查使用临时库并默认关闭模型/媒体，首次完整 S1 验收仍未成立。W3 由总控授予目标浏览器 slot；W0 不运行浏览器，待接收其最后报告/返修结果。
 
+## 第五阶段：保留首败，修复开发入口启动竞态
+
+W3 正式 Handoff 报告首次 UI `04a67c5` 目标集合 120 PASS/2 matcher FAIL，修正 matcher 后 `e2aa6dc` 六项 5 PASS/1 startup FAIL：第一个 1920 空页请求发生在 API CLI 启动探测约 4.3 秒内，Vite 已可访问但 API 未监听，代理 `ECONNREFUSED`。其后五项包括真实库存两尺寸通过，API 显示 10 identities/8 安装、配置/可启动/原生全部未知；这些晚期 PASS 不覆盖原首败。完整原件位置见 W3 报告。
+
+W0 修正拥有的 `scripts/dev.mjs`：先启动 API，在既有 owned-child/关闭机制下以总计 30 秒 health readiness 检查等待，再启动 Vite。API 启动失败退出或关闭信号停止等待和网页启动，按已有 helper 清理；不修改用例等待、不添加业务重试/调度框架。W3 最后 UI/report `3ec0d8331da08cb1e1127efb787768fd72cccb6c` 已普通 exact merge `eaa1829`（此前 e2aa6dc 单独 merge 只引入中文提示与实际 API 比较）。
+
+`node --check scripts/dev.mjs`、`git diff --check`、合入最终 UI 后 `pnpm --dir web exec tsc -b` PASS。实际故障分支：设置 `ASTROCYTE_PORT=invalid`、模型/媒体 false，运行 `node scripts/dev.mjs --ephemeral`，API 明确拒绝非法端口且 dev **预期 exit1**，没有启动 Vite；临时目录 `astrocyte-dev-GMdTz1` 自动清理后 `Test-Path` 为 False。正向首载与浏览器修复验收待总控调度 W3 原失败项，本轮不把语法/负例当成正向已验。
+
 ## 剩余 / 未执行
 
-共同工作区发现 DTO/HTTP/adapter/service/启动组装已通过真实 CLI/API 检查，UI/浏览器和四轨最终集成仍待；账号同步未实现。真实 AT01–04、应用模型、媒体和浏览器需总控单次调度；没有合入 main，没有本轮远端 CI 结果。总控已明确本 Dispatch 持续等待决定/集成，当前不发送 worker_done。
+共同工作区发现 DTO/HTTP/adapter/service/启动组装通过真实 CLI/API 检查，四轨安全阶段已普通合并；首载启动修复正向浏览器与总控独立最终检查仍待。账号同步、原生控制/项目接入及完整 S1 未完成。真实 AT01–04、应用模型、媒体和浏览器需总控单次调度；没有合入 main，没有本轮远端 CI 结果。未答权限/认证/刷新保持待定。W1/W2 原任务已由总控按完整范围未完成结算，安全成果保留；W0 当前继续等待最后返修验收与总控收口指令。
