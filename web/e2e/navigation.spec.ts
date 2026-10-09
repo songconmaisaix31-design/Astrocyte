@@ -385,36 +385,32 @@ test.describe('Stale data via refresh button', () => {
   });
 
   test('click refresh → fail → stale banner with retained data → retry succeeds', async ({ page }) => {
-    const neutralTitle = '保留的中性素材';
+    // MaterialV1 schema-valid items: only required fields plus collection_reason
+    // (the only nullable optional). Optional non-nullable fields are omitted.
+    const initialTitle = '保留的中性素材';
+    const refreshedTitle = '刷新后的新素材';
     const emptyResp = { schema_version: 1, items: [], next_cursor: null };
-    const withItemResp = {
-      schema_version: 1,
-      next_cursor: null,
-      items: [{
-        id: 'retained-mat-1',
-        kind: 'text',
-        lifecycle: 'active',
-        import_status: null,
-        source_locator: 'fixture:test-retained',
-        title: neutralTitle,
-        collection_reason: null,
-        source_spans: null,
-        current_revision: 1,
-        human_usage_count: null,
-        agent_usage_count: null,
-        created_at: '2026-01-01T00:00:00Z',
-        updated_at: '2026-01-01T00:00:00Z',
-      }],
-    };
 
+    const makeMaterial = (title: string) => ({
+      id: 'retained-mat-1',
+      kind: 'text',
+      source_locator: 'fixture:test-retained',
+      current_revision: 1,
+      lifecycle: 'active',
+      title,
+      collection_reason: null,
+    });
+
+    let materialsResponse = { schema_version: 1, items: [makeMaterial(initialTitle)], next_cursor: null };
     let failMaterials = false;
     let failOpportunities = false;
+
     await page.route('**/materials*', async route => {
       if (failMaterials) { await route.abort(); return; }
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(withItemResp),
+        body: JSON.stringify(materialsResponse),
       });
     });
     await page.route('**/opportunities*', async route => {
@@ -429,7 +425,7 @@ test.describe('Stale data via refresh button', () => {
     // 1. Initial load succeeds with neutral item
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator(`text=${neutralTitle}`).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`text=${initialTitle}`).first()).toBeVisible({ timeout: 10000 });
 
     // 2. Block subsequent fetches and click refresh
     failMaterials = true;
@@ -439,16 +435,17 @@ test.describe('Stale data via refresh button', () => {
     // 3. Stale banner appears with retained prior item still visible
     await expect(page.locator('text=/数据可能已过期/')).toBeVisible({ timeout: 10000 });
     // The neutral item from step 1 is still rendered (retained data)
-    await expect(page.locator(`text=${neutralTitle}`).first()).toBeVisible();
+    await expect(page.locator(`text=${initialTitle}`).first()).toBeVisible();
 
-    // 4. Restore successful responses and click stale-banner retry
+    // 4. Swap to a different item so we can prove the fresh response replaced stale data
+    materialsResponse = { schema_version: 1, items: [makeMaterial(refreshedTitle)], next_cursor: null };
     failMaterials = false;
     failOpportunities = false;
     await page.locator('[role="alert"]:has-text("数据可能已过期") button:has-text("重试")').click();
 
-    // 5. Stale banner clears, refreshed data visible
+    // 5. Stale banner clears, fresh response replaced stale data (new title visible)
     await expect(page.locator('text=/数据可能已过期/')).not.toBeVisible({ timeout: 10000 });
-    await expect(page.locator(`text=${neutralTitle}`).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(`text=${refreshedTitle}`).first()).toBeVisible({ timeout: 10000 });
   });
 });
 

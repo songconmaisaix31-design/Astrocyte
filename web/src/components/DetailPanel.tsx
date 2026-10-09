@@ -21,41 +21,39 @@ export function DetailPanel({
 }: DetailPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  // Remember the element that opened the dialog for focus restoration
   const triggerRef = useRef<Element | null>(
     typeof document !== 'undefined' ? document.activeElement : null,
   );
 
-  // Focus close button on mount.
-  // Uses rAF so the focus happens after React's commit phase.
-  const mountRafRef = useRef<number | null>(null);
+  // Single focus-lifecycle effect: close-button focus on mount, trigger
+  // restoration on final unmount.  Uses one cancellable rAF slot so
+  // StrictMode setup₁→cleanup₁→setup₂ never schedules competing callbacks:
+  //   setup  – cancel any pending rAF from the previous cycle, capture the
+  //            trigger element (lint: refs only read in effects), schedule
+  //            close-button focus.
+  //   cleanup – cancel close-focus rAF, schedule a single-rAF trigger
+  //             restore (no nesting).  The next setup (StrictMode remount)
+  //             cancels this restore before it fires, so only the final
+  //             unmount actually restores focus.
+  const rafRef = useRef<number | null>(null);
   useEffect(() => {
-    mountRafRef.current = requestAnimationFrame(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    const triggerEl = triggerRef.current;
+    rafRef.current = requestAnimationFrame(() => {
       closeRef.current?.focus();
     });
     return () => {
-      if (mountRafRef.current !== null) {
-        cancelAnimationFrame(mountRafRef.current);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
-    };
-  }, []);
-
-  // Restore focus to trigger element on final unmount.
-  // Captures trigger in setup (lint rule). Each mount cancels any pending
-  // restore rAF so StrictMode's mount-1 cleanup doesn't steal focus
-  // after the remount effect refocuses the close button.
-  const restoreRafRef = useRef<number | null>(null);
-  useEffect(() => {
-    // Cancel any pending restore from a previous (StrictMode-cleaned-up) mount
-    if (restoreRafRef.current !== null) {
-      cancelAnimationFrame(restoreRafRef.current);
-      restoreRafRef.current = null;
-    }
-    const triggerEl = triggerRef.current;
-    return () => {
-      if (triggerEl && triggerEl instanceof HTMLElement) {
-        restoreRafRef.current = requestAnimationFrame(() => {
-          requestAnimationFrame(() => triggerEl.focus());
+      if (triggerEl instanceof HTMLElement) {
+        rafRef.current = requestAnimationFrame(() => {
+          rafRef.current = null;
+          if (triggerEl.isConnected) triggerEl.focus();
         });
       }
     };

@@ -3,8 +3,15 @@
  * Wraps createReadApi with loading/error/retry/stale states.
  * Does NOT silently fall back to fixtures on error.
  *
- * Ref updates and async fetching are deferred to effects/callbacks
- * to satisfy react-hooks/refs and react-hooks/set-state-in-effect.
+ * Lifecycle:
+ *   - mountedRef + fetchIdRef guard every setState so that unmounted or
+ *     superseded request completions never write state.
+ *   - execute() begins with `await Promise.resolve()` so all subsequent
+ *     code (including the first setState) runs on the microtask queue,
+ *     not synchronously inside the effect body.
+ *   - The effect's cleanup sets mounted=false and bumps fetchId to
+ *     invalidate any in-flight request from the previous mount cycle
+ *     (important under StrictMode double-mount).
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createReadApi, ApiError, api } from '../api/client';
@@ -17,6 +24,12 @@ export interface ReadApiState<T> {
   error: string | null;
   stale: boolean;
   retry: () => void;
+}
+
+function formatError(err: unknown): string {
+  if (err instanceof ApiError) return `API ${err.status}: ${err.message}`;
+  if (err instanceof Error) return err.message;
+  return '未知错误';
 }
 
 export function useReadApi<T>(
@@ -34,37 +47,48 @@ export function useReadApi<T>(
   useEffect(() => { fetcherRef.current = fetcher; });
 
   const fetchIdRef = useRef(0);
+  const mountedRef = useRef(false);
+
+  // Stable fetch executor. All setState calls follow an `await` boundary,
+  // so they execute as microtask continuations, not synchronously in the
+  // effect body or useCallback body.
+  const execute = useCallback(async () => {
+    const id = fetchIdRef.current;
+    // True async boundary: ensures all subsequent code runs on the
+    // microtask queue, not synchronously within the caller's frame.
+    await Promise.resolve();
+    if (!mountedRef.current || id !== fetchIdRef.current) return;
+
+    setState(prev => ({ data: prev.data, loading: true, error: null, stale: prev.stale }));
+    try {
+      const result = await fetcherRef.current();
+      if (mountedRef.current && id === fetchIdRef.current) {
+        setState({ data: result, loading: false, error: null, stale: false });
+      }
+    } catch (err: unknown) {
+      if (mountedRef.current && id === fetchIdRef.current) {
+        setState(prev => ({ ...prev, loading: false, error: formatError(err), stale: !!prev.data }));
+      }
+    }
+  }, []);
 
   // Initial fetch on mount.
-  // Async IIFE defers setState to the microtask queue so the lint rule
-  // doesn't flag it as synchronous setState in an effect body.
   useEffect(() => {
-    const id = ++fetchIdRef.current;
-    void (async () => {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      try {
-        const result = await fetcherRef.current();
-        setState(prev => (id !== fetchIdRef.current ? prev : { data: result, loading: false, error: null, stale: false }));
-      } catch (err: unknown) {
-        const msg = err instanceof ApiError ? `API ${err.status}: ${err.message}` : err instanceof Error ? err.message : '未知错误';
-        setState(prev => (id !== fetchIdRef.current ? prev : { ...prev, loading: false, error: msg, stale: !!prev.data }));
-      }
-    })();
-  }, []);
+    mountedRef.current = true;
+    void execute();
+    return () => {
+      mountedRef.current = false;
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- invalidate in-flight requests
+      ++fetchIdRef.current;
+    };
+  }, [execute]);
 
   const retry = useCallback(() => {
-    const id = ++fetchIdRef.current;
-    void (async () => {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      try {
-        const result = await fetcherRef.current();
-        setState(prev => (id !== fetchIdRef.current ? prev : { data: result, loading: false, error: null, stale: false }));
-      } catch (err: unknown) {
-        const msg = err instanceof ApiError ? `API ${err.status}: ${err.message}` : err instanceof Error ? err.message : '未知错误';
-        setState(prev => (id !== fetchIdRef.current ? prev : { ...prev, loading: false, error: msg, stale: !!prev.data }));
-      }
-    })();
-  }, []);
+    if (!mountedRef.current) return;
+    ++fetchIdRef.current;
+    setState(prev => ({ ...prev, loading: true, error: null }));
+    void execute();
+  }, [execute]);
 
   return { ...state, retry };
 }
