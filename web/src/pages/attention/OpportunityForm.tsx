@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { components } from '../../api/schema';
 import { attentionApi } from '../../api/client';
 import { useCommand } from '../../hooks/useCommand';
 import { CommandState } from '../../components/CommandState';
@@ -7,22 +8,25 @@ import { ReferencePicker } from './SourceFields';
 import { dimensionLabels, lines, sourceIdentity, unknownDimensions, type Dimensions, type Distillation, type Material, type Opportunity, type SourceRef } from './model';
 import styles from './AttentionPage.module.css';
 
-export function OpportunityForm({ initial, materials, distillations, disabled, onSaved }: { initial?: Opportunity; materials: Material[]; distillations: Distillation[]; disabled: boolean; onSaved: (opportunity: Opportunity) => void }) {
-  const [title, setTitle] = useState(initial?.title ?? '');
-  const [purpose, setPurpose] = useState(initial?.purpose ?? '');
-  const [nextStep, setNextStep] = useState(initial?.next_step ?? '');
-  const [missing, setMissing] = useState(initial?.missing_evidence?.join('\n') ?? '');
-  const [goals, setGoals] = useState(initial?.goal_refs?.join('\n') ?? '');
-  const [refs, setRefs] = useState<SourceRef[]>(initial?.evidence_refs ?? []);
-  const [ids, setIds] = useState<string[]>(initial?.distillation_ids ?? []);
-  const [dimensions, setDimensions] = useState<Dimensions>(initial?.dimensions ?? unknownDimensions());
+export function OpportunityForm({ initial, suggestion, suggestionRecordID, materials, distillations, disabled, onSaved }: { initial?: Opportunity; suggestion?: components['schemas']['CandidateSuggestionV1']; suggestionRecordID?: string; materials: Material[]; distillations: Distillation[]; disabled: boolean; onSaved: (opportunity: Opportunity) => void }) {
+  const [expectedVersion, setExpectedVersion] = useState(initial?.version ?? 1);
+  const [title, setTitle] = useState(initial?.title ?? suggestion?.title ?? '');
+  const [purpose, setPurpose] = useState(initial?.purpose ?? suggestion?.purpose ?? '');
+  const [nextStep, setNextStep] = useState(initial?.next_step ?? suggestion?.next_step ?? '');
+  const [missing, setMissing] = useState((initial?.missing_evidence ?? suggestion?.missing_evidence)?.join('\n') ?? '');
+  const [goals, setGoals] = useState((initial?.goal_refs ?? suggestion?.goal_refs)?.join('\n') ?? '');
+  const [refs, setRefs] = useState<SourceRef[]>(initial?.evidence_refs ?? suggestion?.evidence_refs ?? []);
+  const [ids, setIds] = useState<string[]>(initial?.distillation_ids ?? (suggestionRecordID ? [suggestionRecordID] : []));
+  const [dimensions, setDimensions] = useState<Dimensions>(initial?.dimensions ?? suggestion?.dimensions ?? unknownDimensions());
   const command = useCommand(disabled || (!!initial && !initial.version));
   return <form className={styles.form} onSubmit={event => {
     event.preventDefault();
-    const request = command.prepare({ expected_version: initial ? initial.version! : 1, title: title.trim(), purpose: purpose.trim(), next_step: nextStep.trim(), evidence_refs: refs, distillation_ids: ids, dimensions, goal_refs: lines(goals), missing_evidence: lines(missing) });
-    void command.run(() => initial ? attentionApi.reviseOpportunity(initial.id, request.body, request.key) : attentionApi.createOpportunity(request.body, request.key), result => onSaved(result.opportunity), initial ? '已保存候选新版本；历史版本保留' : '已保存候选；尚未准入或启动任务');
+    const request = command.prepare({ expected_version: expectedVersion, title: title.trim(), purpose: purpose.trim(), next_step: nextStep.trim(), evidence_refs: refs, distillation_ids: ids, dimensions, goal_refs: lines(goals), missing_evidence: lines(missing) });
+    void command.run(() => initial ? attentionApi.reviseOpportunity(initial.id, request.body, request.key) : attentionApi.createOpportunity(request.body, request.key), result => { setExpectedVersion(result.opportunity.version ?? expectedVersion); onSaved(result.opportunity); }, initial ? '已保存候选新版本；历史版本保留' : '已保存候选；尚未准入或启动任务');
   }}>
     <h4>{initial ? '编辑候选版本' : '形成候选'}</h4>
+    {suggestion && <p className={styles.note}>从实际处理器记录 {suggestionRecordID} 载入建议；你可修订后明确保存，未自动生成任务。</p>}
+    {initial && initial.version !== expectedVersion && <p role="note">候选已更新，当前输入保留。请关闭并重新展开编辑载入最新版本，避免覆盖其他修改。</p>}
     <p className={styles.note}>候选保留依据、用途、下一步与缺失信息。服务决定候选状态；保存和采用反馈均不会批准任务。</p>
     <fieldset disabled={disabled || command.pending || (!!initial && !initial.version)}><legend>候选内容</legend>
       <TextField label="候选标题" value={title} onChange={setTitle} required />
@@ -52,7 +56,7 @@ export function OpportunityForm({ initial, materials, distillations, disabled, o
 
 export function DimensionEditor({ value, onChange }: { value: Dimensions; onChange: (value: Dimensions) => void }) {
   return <fieldset><legend>四维评估 · 未知留空</legend>
-    <p className={styles.note}>0 表示明确的零分；留空表示未知。尚未配置排序规则，不计算综合分。</p>
+    <p className={styles.note}>0 表示明确的零分；留空表示未知。综合排序由已保存的用户配置决定，未知维度不填零。</p>
     {(Object.keys(dimensionLabels) as (keyof Dimensions)[]).map(key => <div key={key} className={styles.record}>
       <TextField label={`${dimensionLabels[key]}（0–1，未知留空）`} type="number" value={value[key].value == null ? '' : String(value[key].value)} onChange={score => onChange({ ...value, [key]: { ...value[key], value: score === '' ? null : Number(score) } })} />
       <TextField label={`${dimensionLabels[key]}依据`} value={value[key].reason} onChange={reason => onChange({ ...value, [key]: { ...value[key], reason } })} required />

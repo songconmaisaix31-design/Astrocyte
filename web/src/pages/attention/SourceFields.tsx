@@ -6,7 +6,7 @@ export function SourceRefs({ refs }: { refs: SourceRef[] }) {
   return refs.length ? <ul>{refs.map(ref => <li key={sourceIdentity(ref)}>{ref.locator} · 资料 {ref.material_id} · v{ref.revision} · {ref.span || '真实位置未提供'}</li>)}</ul> : <MutedValue>依据未提供</MutedValue>;
 }
 export function ProvenanceFields({ value }: { value: Provenance }) {
-  return <Field label="处理来源">{provenanceLabel(value)} · {value.processor} · {value.version || '工具版本未提供'}<br />{value.source || '来源未提供'}</Field>;
+  return <Field label="处理来源">{provenanceLabel(value)} · {value.processor} · {value.version || '工具版本未提供'}<br />{value.source || '来源未提供'}<br />模型 · {value.model || '未提供'}</Field>;
 }
 export function ReferencePicker({ label, materials, value, onChange, disabled = false }: { label: string; materials: Material[]; value: SourceRef[]; onChange: (refs: SourceRef[]) => void; disabled?: boolean }) {
   return <fieldset disabled={disabled}><legend>{label}</legend>
