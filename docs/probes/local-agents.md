@@ -1,4 +1,50 @@
-# 本地 Agent 与工具清点（W3）
+# 本地 Agent 与工具清点
+
+## 2026-10-10 W2 新鲜探测（当前）
+
+基线 `20437708e43201e352d6c6926902e1363fd2ad3e`；开发工作树 `s1-local-agents-1010`。本轮只对明确 CLI 名称做 PATH 查找、固定 `--version` / `--help`，并读取安装包内公开协议文档；没有私有会话发现、配置/认证文件读取、整盘扫描、登录、模型请求、媒体转换或既有会话控制。`installed=available` 表示 PATH 入口存在，版本/帮助启动成功也不证明模型调用可用。
+
+| Agent | 本轮版本（version/help 均 exit 0） | PATH 入口 | configured | startable | 八项原生能力 |
+|---|---|---|---|---|---|
+| Codex | 0.162.0 | npm `codex.cmd` | unknown | unknown | 全部 unknown / NOT_RUN |
+| Claude Code | 2.1.238 | npm `claude.cmd` | unknown | unknown | 全部 unknown / NOT_RUN |
+| OpenCode | 1.18.35 | npm `opencode.cmd` | unknown | unknown | 全部 unknown / NOT_RUN |
+| Pi | 1.0.1 | npm `pi.cmd` | unknown | unknown | 全部 unknown / NOT_RUN |
+| Grok | 1.0.34 (3736acbc8658) | `.grok/bin/grok.exe` | unknown | unknown | 全部 unknown / NOT_RUN |
+| Kimi Code | 2.1.1 | `.kimi-code/bin/kimi.exe` | unknown | unknown | 全部 unknown / NOT_RUN |
+| Qwen Code | 0.24.6 | npm `qwen.cmd` | unknown | unknown | 全部 unknown / NOT_RUN |
+| Cursor | 3.23.23 (2dac2428994fe34f12658d9ecad1541b98db2c00, x64) | GUI `cursor.cmd` | unknown | unknown | 全部 unknown / NOT_RUN |
+
+额外固定名称查找：`gemini`、`cursor-agent` 未在 PATH 找到；库存记录 `installed=unavailable, reason=not_found_on_path`，不声称未安装在其他目录。PATH 中 `agent.exe --version/--help` 返回 Grok 1.0.34，是 Grok 别名，不作为独立 Cursor Agent。Cursor GUI help 没有原生 headless 会话入口，仅凭此不能证明本机所有 Cursor Agent 能力均 unsupported。
+
+八项为 `discover/read_context/start/resume/send/stop/observe/reconcile`，状态词固定 `supported/unsupported/unknown`。库存安装发现与原生会话 discover 是不同事实；安装检查不把 native discover 标记 supported。configured 保持 `private_configuration_not_inspected`，startable 保持 `native_start_not_authorized_or_tested`。能力 unknown 不开放控制按钮；unsupported 仅用于实际确认不支持的接口，当前没有这样的原生运行时结果。
+
+### 实际命令与首个失败
+
+- `Get-Command codex,claude,opencode,pi,grok,kimi,qwen,cursor,gemini,cursor-agent,agent -ErrorAction SilentlyContinue`。
+- Python `shutil.which(name+'.cmd') or shutil.which(name)` 定位预期命令；原生 EXE 用 `subprocess.run([path, flag], timeout=25)`，CMD 用 `subprocess.run(['cmd.exe','/d','/c',path,flag], timeout=25)`，仅固定 version/help。
+- 首次 Python CMD 参数额外套引号，7 个包装 CLI 返回 exit 1（命令未被识别）；Grok/Kimi 原生 EXE 成功。修正后 Codex version 成功，但打印 help 遇 `UnicodeEncodeError: 'gbk' codec can't encode character '\\u2011'`，探测脚本 exit 1；设置 `sys.stdout.reconfigure(encoding='utf-8')` 后，上表全部 version/help exit 0。首个错误是探测工具问题，未改写为原生 Agent 成功或失败。
+- `codex app-server --help` exit 0；确认本机 `stdio://` 默认、`--stdio`、实验 daemon/proxy/schema 入口。没有执行 daemon、proxy、thread list 或任何原生 RPC。
+- `ASTROCYTE_TEST_LOCAL_AGENT_CLI=1 go test ./internal/adapters/agents -run '^TestInventoryLiveCLI$' -count=1 -v`：本机适配器实际 version/help PASS，8 个版本可解析，2 个额外入口未找到。这里只测 nonsecret CLI，不测模型或原生会话。
+
+### 可直接复用的原生接口与前置条件
+
+| 路线 | 已核实证据 | 后续用途 | 必须先满足 |
+|---|---|---|---|
+| Codex app-server | 0.162.0 本机 help；[官方接口文档](https://learn.chatgpt.com/docs/app-server) | stdio JSON-RPC；initialize/initialized 握手；thread/start、thread/resume、turn/start、turn/steer；通知流和 turn/interrupt；带 cwd 的 thread/list | 明确项目/读取根、会话 ID 与所有权交接、批准工具与外发规则；用户允许会话操作且协调者安排一次运行；保存本机版本对应 schema，不由最新在线文档反推本机支持 |
+| Pi RPC | 1.0.1 包元数据、包内 `docs/rpc.md` / `rpc-commands.md`；[上游 RPC](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/rpc.md)、[命令参考](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/rpc-commands.md) | `--mode rpc` JSONL，按 id 关联响应；get_state、prompt/steer、switch_session；事件流与关闭 stdin | 显式批准的隔离 session-dir、工具/读取根、provider 配置可用性、现有会话占用交接；不能用默认 session 目录做全量发现 |
+
+Codex 文档中的 `turn/interrupt` 取消当前 turn，必须观察最终事件，不能把 `{}` 回执等同所有外部工具已停或所有客户端退出。Pi prompt 的 success 是接收/排队状态，需观察 `agent_settled`；`switch_session` 可能被扩展取消；Pi `abort` 后仍可能处理排队消息，停止新工作应先 `clear_queue`，并确认流结束。Pi 包内文档与上游一致，但本轮没有启动 RPC，故能力仍 unknown。这里提供原生薄适配路线，不新增调度器或把旧日志读取当 resume。
+
+其余帮助线索：Claude 支持 print/stream-json、continue/resume 和后台 agents；OpenCode 有 acp/serve/attach；Grok 有 agent 与 sessions；Kimi 有 acp、session 与 stream-json；Qwen 有 acp、serve 与 sessions。全部只是候选入口，不能作为已配置、可启动或八项能力已验收的证据。
+
+### 已实施边界与待定范围
+
+`agents.NewInventory()` 只进行 PATH 查找；`RefreshCLI(ctx)` 是显式版本/帮助探测，每次子命令最多 5 秒，输出保留最多 64KiB 并持续排空。Windows CMD 路径经过元字符拒绝、使用明确 CmdLine，原生子进程归属本次 Job Object，超时关闭本次子进程树；Unix 使用所属进程组。只返回结构化原因与解析后的版本，不向 API 暴露原始帮助、诊断、可执行路径或私有状态。`Snapshot` 只读缓存并复制可变字段，不启动 CLI。HTTP/组装由 W0 拥有。
+
+测试实际拒绝 exec/resume/sessions/doctor 等非 version/help 参数和 shell 元字符路径，并核实拥有的临时测试进程超时退出、Windows 空格路径包装与后代清理；不是伪造原生会话。配置、历史、全盘目录和 Agent 模型没有测试授权，故没有探测。用户尚未选择“完整原生操作”或“先库存”，Agent 可读项目根也未定；本轮不冻结项目/活动绑定契约或 SQLite 迁移，不赋予目录或资料权限，不创建 Mission/Swarm。项目 @材料引用现有 Attention 语义继续保留，热度不授权。
+
+## 2026-10-09 W3 清点（历史，以下原记录保留）
 
 日期：2026-10-09。只读探测：`Get-Command` + `--version` / `--help`（带超时）。未读取密钥、会话记录或私有文件，未扫描整盘，未安装/升级任何 Agent，未运行任何付费能力会话或真实 summarize。
 
