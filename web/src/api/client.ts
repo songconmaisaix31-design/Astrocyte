@@ -17,6 +17,8 @@ export type Distillation = components['schemas']['DistillationV1'];
 export type Job = components['schemas']['JobV1'];
 export type MaterialDomain = components['schemas']['MaterialDomainV1'];
 export type ProjectSpace = components['schemas']['ProjectSpaceV1'];
+export type RankingProfileDetail = components['schemas']['RankingProfileDetailV1'];
+export type DistillerStatus = components['schemas']['DistillerStatusV1'];
 
 /** Uses generated types; no command retries. Session bootstrap precedes protected reads. */
 export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) => {
@@ -112,6 +114,9 @@ export function createAttentionApi(client = api) {
     updateMaterial: async (id: string, body: components['schemas']['UpdateMaterialRequestV1'], key: string, options?: ReadOptions) => unwrap(client.PATCH('/materials/{id}', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     recordDistillation: async (body: components['schemas']['RecordDistillationRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/distillations', { body, params: { header: await headers(key) }, ...options })),
     requestDistillation: async (body: components['schemas']['RequestDistillationRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/distillations/jobs', { body, params: { header: await headers(key) }, ...options })),
+    getDistillerStatus: (options?: ReadOptions) => unwrap(client.GET('/distillations/processor', options)),
+    getRankingProfile: (options?: ReadOptions) => unwrap(client.GET('/attention-ranking-profile', options)),
+    updateRankingProfile: async (body: components['schemas']['UpdateRankingProfileRequestV1'], key: string, options?: ReadOptions) => unwrap(client.PUT('/attention-ranking-profile', { body, params: { header: await headers(key) }, ...options })),
     createOpportunity: async (body: components['schemas']['OpportunityRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/opportunities', { body, params: { header: await headers(key) }, ...options })),
     reviseOpportunity: async (id: string, body: components['schemas']['OpportunityRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/opportunities/{id}/revisions', { body, params: { path: { id }, header: await headers(key) }, ...options })),
     reviewOpportunity: async (id: string, body: components['schemas']['ReviewOpportunityRequestV1'], key: string, options?: ReadOptions) => unwrap(client.POST('/opportunities/{id}/reviews', { body, params: { path: { id }, header: await headers(key) }, ...options })),
