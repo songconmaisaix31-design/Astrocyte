@@ -4,8 +4,73 @@ import { test, expect } from '@playwright/test';
 import { Buffer } from 'node:buffer';
 import process from 'node:process';
 import type { components } from '../src/api/schema';
+import { startS1Server } from '../../tests/s1/server.mjs';
+import { summarizeEnvironment } from '../../scripts/summarize.mjs';
 
 const videoURL = 'https://www.bilibili.com/video/BV1PReT6EEqR/';
+
+// Explicit negative live check for the current network gate, not video acceptance.
+test('real network-blocked video job shows next step and preserves the URL', async ({ page }, testInfo) => {
+  test.skip(process.env.ASTROCYTE_TEST_SUMMARIZE_NETWORK_GUARD !== '1', 'Only run with an explicitly confirmed public-source network block.');
+  test.setTimeout(180_000);
+  const env = await summarizeEnvironment({ LOCALAPPDATA: process.env.LOCALAPPDATA ?? '', ASTROCYTE_ENABLE_SUMMARIZE: 'true', ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false' });
+  const server = await startS1Server({ browser: true, env });
+  const modelRequests: string[] = [];
+  page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/distillations/jobs')) modelRequests.push(request.url()); });
+  try {
+    await page.goto(`${server.webURL}/attention`);
+    const add = page.locator('main').getByRole('button', { name: '添加资料', exact: true });
+    await add.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: '添加资料' });
+    await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize_url');
+    await dialog.getByLabel('视频链接', { exact: true }).fill(videoURL);
+    await dialog.getByLabel('收藏理由（可选）').fill('核对公开来源获取失败，保留原链接');
+    const accepted = page.waitForResponse(response => response.url().endsWith('/materials/imports') && response.request().method() === 'POST');
+    await dialog.getByRole('button', { name: '导入资料', exact: true }).focus();
+    await page.keyboard.press('Enter');
+    const receipt = await accepted;
+    expect(receipt.status()).toBe(202);
+    const job: components['schemas']['ImportJobV1'] = await receipt.json();
+    const request = receipt.request();
+    expect(request.postDataJSON().adapter).toBe('summarize_url');
+    expect(request.postDataJSON()).not.toHaveProperty('export_text');
+    await page.keyboard.press('Escape');
+    await expect(add).toBeFocused();
+    const row = page.locator('li').filter({ has: page.locator('strong').filter({ hasText: job.job_id }) });
+    await expect(row).toContainText('正文导入');
+    let completed: components['schemas']['JobV1'] | undefined;
+    await expect.poll(async () => {
+      const response = await page.request.get(`${server.webURL}/api/v1/jobs`);
+      const jobs: components['schemas']['JobListV1'] = await response.json();
+      completed = jobs.items.find(entry => entry.job_id === job.job_id);
+      return completed?.status;
+    }, { timeout: 120_000, intervals: [1000] }).toBe('failed');
+    expect(completed!.error?.required_action).toBe('configure_public_source_network');
+    expect(completed!.material_id).toBeFalsy();
+    await page.getByRole('button', { name: '刷新队列', exact: true }).click();
+    await expect(row).toContainText('真实 DNS 解析与代理配置');
+    await expect(row).toContainText('修复后再明确重试');
+    await expect(row).not.toContainText('configure_public_source_network');
+    await page.screenshot({ path: testInfo.outputPath('real-network-failure.png'), fullPage: true });
+    await testInfo.attach('actual-failed-job', { body: JSON.stringify(completed, null, 2), contentType: 'application/json' });
+    // Replaying the accepted original command returns its original receipt and
+    // cannot start another extraction; this does not define new-form URL reuse.
+    const replay = await page.request.post(request.url(), { headers: request.headers(), data: request.postDataJSON() });
+    expect(replay.status()).toBe(202);
+    expect(await replay.json()).toEqual(job);
+    const jobsAfter: components['schemas']['JobListV1'] = await (await page.request.get(`${server.webURL}/api/v1/jobs`)).json();
+    expect(jobsAfter.items).toHaveLength(1);
+    expect(jobsAfter.items[0].attempts).toBe(completed!.attempts);
+    await add.focus();
+    await page.keyboard.press('Enter');
+    await expect(dialog.getByLabel('视频链接', { exact: true })).toHaveValue(videoURL);
+    await expect(dialog.getByLabel('收藏理由（可选）')).toHaveValue('核对公开来源获取失败，保留原链接');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('retained-video-input.png'), fullPage: true });
+    expect(modelRequests).toEqual([]);
+  } finally { await server.close(); }
+});
 
 test('video URL input and in-flight identity survive keyboard close and reopen', async ({ page }) => {
   let release!: () => void;

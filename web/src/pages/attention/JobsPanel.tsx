@@ -50,7 +50,11 @@ function JobRow({ job, onChanged, onMaterial, disabled }: { job: Job; onChanged:
     <div className={styles.itemHeader}><strong>{job.kind === 'import' ? '正文导入' : job.kind === 'distillation' ? '资料整理' : job.kind} · {job.job_id}</strong><StatusBadge value={job.status} label={importStatusLabel(job.status)} /></div>
     {job.kind === 'import' && job.status === 'succeeded' && <p className={styles.note}>已完成导入；模型整理请查看资料详情中的独立记录。</p>}
     <p className={styles.note}>尝试 {job.attempts}/{job.max_attempts} · 更新 {formatDateTime(job.updated_at)} · 截止 {formatDateTime(job.deadline_at)}</p>
-    {job.error && <p role="alert">{job.error.message} · {job.error.required_action}（请求 {job.error.request_id}）</p>}
+    {job.error && <p role="alert">{job.error.message} · {job.error.required_action === 'configure_public_source_network'
+      ? '所选公开来源被本机 DNS 或代理网络配置阻断。请检查该来源的真实 DNS 解析与代理配置，修复后再明确重试。'
+      : job.error.required_action === 'install_pinned_summarize_and_configure_local_media_tools'
+        ? '当前缺少获取视频正文所需的本地工具。请完成项目媒体依赖安装后再明确重试，也可提供已有 summarize 导出。'
+        : job.error.required_action}（请求 {job.error.request_id}）</p>}
     {job.delivery_unknown && <p role="alert">外部结果未知，需要先核对；自动重试已禁用。</p>}
     {job.cancel_requested && <p role="status">取消已请求，等待服务确认。</p>}
     {job.distillation_id && <p>已保存沉淀记录 · {job.distillation_id}</p>}
