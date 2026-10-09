@@ -47,7 +47,7 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
       <button type="button" className="ac-button secondary compact" disabled={unavailable || command.pending} onClick={() => { const request = command.prepare({ expected_version: item.version!, action: 'annotate' as const }); void command.run(() => attentionApi.recordMaterialUse(item.id, request.body, request.key), onChanged, '已记录人工标记'); }}>标记已关注</button>
       <button type="button" className="ac-button secondary compact" disabled={unavailable || command.pending} onClick={() => { const request = command.prepare({ expected_version: item.version!, action: 'project_reuse' as const }); void command.run(() => attentionApi.recordMaterialUse(item.id, request.body, request.key), onChanged, '已记录这次明确的项目复用'); }}>记录本次项目复用</button>
     </div>
-    <p className={styles.note}>普通查看、GET 和自动刷新不增加人工关注；只有你主动重读或标记才记录人工行为。</p>
+    <p className={styles.note}>普通查看、GET 和自动刷新不增加人工关注；主动重读、标记、固定收藏、分类、项目复用和 @ 提及可记录人工行为。</p>
     <CommandState {...command} />
     {editing && <MetadataForm item={item} disabled={disabled || !item.version} onSaved={onChanged} />}
     <MaterialDomainForm material={item} state={domains} disabled={unavailable} onSaved={onChanged} />
@@ -71,6 +71,7 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
         <ProvenanceFields value={record.provenance} />
         <Field label="本轮问题">{record.question || '未提供'}</Field>
         <Field label="输入版本"><SourceRefs refs={record.input_refs} /></Field>
+        <Field label="明确选入的前轮记录">{record.prior_distillation_ids?.join('；') || '本轮未选入前轮记录'}</Field>
         <Field label="整理结果"><pre>{record.output_text}</pre></Field>
         <Field label="关联资料"><SourceRefs refs={record.related_refs} /></Field>
         <Field label="关联观点 / 冲突">{[...record.related_ideas, ...record.conflicts].join('；') || '未提供'}</Field>
