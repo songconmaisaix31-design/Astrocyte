@@ -44,7 +44,7 @@ type Provenance struct {
 	Source    string `json:"source"`
 }
 type Material struct {
-	DomainIDs                []string           `json:"domain_ids,omitempty"`
+	DomainIDs                []string           `json:"domain_ids"`
 	RankingStrategy          string             `json:"ranking_strategy,omitempty"`
 	RankingReason            string             `json:"ranking_reason,omitempty"`
 	AttentionHalfLifeSeconds float64            `json:"attention_half_life_seconds,omitempty"`
