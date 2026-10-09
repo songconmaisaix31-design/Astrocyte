@@ -83,6 +83,23 @@ func (h *handler) handleListProjects(w http.ResponseWriter, r *http.Request) {
 	h.handleList(w, r, result, err)
 }
 
+// handleListLocalAgents reads the adapter's cached discovery observations.
+// A missing service is unavailable, not an empty successful inventory.
+func (h *handler) handleListLocalAgents(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Cache-Control", "no-store")
+	if h.services.LocalAgents == nil {
+		writeError(w, r, http.StatusNotImplemented, &apierrors.ServiceError{
+			Code:           apierrors.UnsupportedCapability,
+			Message:        "local Agent inventory is not assembled",
+			Retryable:      false,
+			RequiredAction: "start_a_server_with_local_agent_inventory",
+		})
+		return
+	}
+	result, err := h.services.LocalAgents.ListLocalAgents(r.Context())
+	h.attentionResult(w, r, http.StatusOK, result, err)
+}
+
 // handleListProposals responds to GET /api/v1/proposals.
 func (h *handler) handleListProposals(w http.ResponseWriter, r *http.Request) {
 	result, err := h.services.Proposals.ListProposals(r.Context())

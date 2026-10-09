@@ -21,9 +21,13 @@
 
 这些是 contract_local/离线检查，未调用应用模型、媒体转写或浏览器验收；旧 UNKNOWN 未重发。
 
-## 公共发现提案（W2 已对齐，待发布）
+## 第二阶段：公共发现契约（W2 已对齐）
 
 `GET /local-agents` 使用既有人类会话，只读缓存；GET 不执行 CLI。W2 adapter 在受控启动阶段执行有时限的 PATH version/help 发现，配置/可启动未测保持 unknown。安装/配置/可启动观察与八项原生能力分别报告，原生 enum 沿 SPEC §8.1 `supported/unsupported/unknown`。不暴露本地路径、凭据、私有会话或项目内容。W0 发布 OpenAPI、生成客户端和 app port；W2 所有者实现领域/adapter/service。
+
+W2 domain commit `1fe4269` 已通过普通 `--no-ff` 合入，merge `6a2c791`；W0 HTTP 仅读取 service 缓存，缺失服务明确 501，不伪装空库。仅 LocalAgents 组装也启用原会话保护；无会话、有效/无效 Agent bearer、外部 Origin 均在调用 service 前拒绝，安装 available 不把 configured/startable/八项原生 unknown 改成支持。非结构化内部错误脱敏。
+
+验证：`go test -mod=readonly ./internal/adapters/httpapi ./internal/workspace/app` PASS；`pnpm check:contracts` PASS（232 示例、生成漂移，原 EventV1 警告）；`pnpm --dir web exec tsc -b` PASS。这些是 transport/contract_local 检查，真实 adapter 及 server 组装尚待 W2 后续。
 
 ## 待决定契约草案（未冻结）
 
@@ -31,4 +35,4 @@
 
 ## 剩余 / 未执行
 
-共同工作区发现 DTO/HTTP/真实组装尚在开发；账号同步和四轨最终集成未完成。真实 AT01–04、应用模型、媒体和浏览器需总控单次调度；没有合入 main，没有本轮远端 CI 结果。
+共同工作区发现 DTO/HTTP 已实现，真实 adapter/service/启动组装尚待 W2；账号同步和四轨最终集成未完成。真实 AT01–04、应用模型、媒体和浏览器需总控单次调度；没有合入 main，没有本轮远端 CI 结果。总控已明确本 Dispatch 持续等待决定/集成，当前不发送 worker_done。

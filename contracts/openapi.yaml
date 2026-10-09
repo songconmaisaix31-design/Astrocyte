@@ -38,7 +38,57 @@ tags:
     description: artifacts HTTP v1 contract
   - name: events
     description: events HTTP v1 contract
+  - name: local-agents
+    description: Cached local CLI readiness and native capability observations
 paths:
+  /local-agents:
+    get:
+      operationId: listLocalAgents
+      summary: Read cached local CLI inventory
+      description: >-
+        Human-session read of bounded PATH-based CLI observations. This GET never
+        executes CLI probes, reads credentials or scans private sessions/projects.
+        Installation, configuration and startability are independent observations;
+        native capabilities require actual native runtime checks. Unknown is not
+        support. No project access or native control is granted by this inventory.
+        A server without the inventory service returns 501, not an empty success.
+      tags: [local-agents]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      responses:
+        "200":
+          description: Cached inventory; an empty array means no observed entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalAgentListV1"
+        "403":
+          description: Human session required; Agent bearer grants no access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Inventory query failed; do not substitute an empty array
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Local Agent inventory is not assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: local Agent inventory is not assembled
+                  request_id: example-request
+                  retryable: false
+                  required_action: start_a_server_with_local_agent_inventory
   /health:
     get:
       operationId: getHealth
@@ -4659,6 +4709,121 @@ components:
             engine: sqlite
             schema_version: 5
           fixture: false
+    AgentObservationV1:
+      type: object
+      additionalProperties: false
+      description: Independent readiness observation; no credential inspection is implied.
+      properties:
+        status:
+          type: string
+          enum: [available, unavailable, unknown, unsupported]
+        reason:
+          type: string
+          minLength: 1
+        checked_at:
+          type: [string, "null"]
+          format: date-time
+      required: [status, reason, checked_at]
+      examples:
+        - status: unknown
+          reason: configuration_not_inspected
+          checked_at: null
+    NativeCapabilityObservationV1:
+      type: object
+      additionalProperties: false
+      description: SPEC 8.1 native capability; CLI help or installation is insufficient evidence of support.
+      properties:
+        status:
+          type: string
+          enum: [supported, unsupported, unknown]
+        reason:
+          type: string
+          minLength: 1
+        checked_at:
+          type: [string, "null"]
+          format: date-time
+      required: [status, reason, checked_at]
+      examples:
+        - status: unknown
+          reason: native_runtime_not_tested
+          checked_at: null
+    LocalAgentV1:
+      type: object
+      additionalProperties: false
+      description: CLI installation identity, independent of any private native session, project or Mission.
+      properties:
+        id:
+          type: string
+          minLength: 1
+          description: Stable CLI adapter identity, not executable path or session ID.
+        display_name:
+          type: string
+          minLength: 1
+        version:
+          type: [string, "null"]
+          description: Observed version only; null if not observed.
+        installed:
+          $ref: "#/components/schemas/AgentObservationV1"
+        configured:
+          $ref: "#/components/schemas/AgentObservationV1"
+        startable:
+          $ref: "#/components/schemas/AgentObservationV1"
+        capabilities:
+          type: object
+          additionalProperties: false
+          properties:
+            discover:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+            read_context:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+            start:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+            resume:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+            send:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+            stop:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+            observe:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+            reconcile:
+              $ref: "#/components/schemas/NativeCapabilityObservationV1"
+          required: [discover, read_context, start, resume, send, stop, observe, reconcile]
+      required: [id, display_name, version, installed, configured, startable, capabilities]
+      examples:
+        - id: example-cli
+          display_name: Example CLI (schema example only)
+          version: null
+          installed: {status: unknown, reason: cli_not_probed, checked_at: null}
+          configured: {status: unknown, reason: configuration_not_inspected, checked_at: null}
+          startable: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+          capabilities:
+            discover: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            read_context: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            start: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            resume: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            send: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            stop: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            observe: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            reconcile: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+    LocalAgentListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocalAgentV1"
+        next_cursor:
+          type: [string, "null"]
+      required: [schema_version, items, next_cursor]
+      examples:
+        - schema_version: 1
+          items: []
+          next_cursor: null
     SourceRefV1:
       type: object
       additionalProperties: false
