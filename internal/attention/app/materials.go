@@ -83,9 +83,13 @@ func (s *Service) UpdateMaterial(ctx context.Context, p Principal, id string, c 
 		if err = s.event(tx, "material_updated", id, row.Material.Version, c.CommandMeta, map[string]any{"material_id": id, "lifecycle": c.Lifecycle, "pinned": c.Pinned}); err != nil {
 			return MaterialDetail{}, err
 		}
-		return row, nil
+		row, err = materialProjection(tx, row)
+		if err != nil {
+			return MaterialDetail{}, err
+		}
+		return s.projectAttention(row), nil
 	})
-	return s.projectAttention(row), err
+	return row, err
 }
 
 func (s *Service) GetAttachment(ctx context.Context, p Principal, id string, revision int, name string) (AttachmentContent, error) {

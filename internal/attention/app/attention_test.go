@@ -77,15 +77,6 @@ func (t *memoryTx) LoadMaterial(id string) (MaterialDetail, error) {
 	if !ok {
 		return r, apierrors.NewNotFound("material", id)
 	}
-	r.Distillations = []Distillation{}
-	for _, d := range t.state.Distillations {
-		for _, ref := range d.InputRefs {
-			if ref.MaterialID == id {
-				r.Distillations = append(r.Distillations, d)
-				break
-			}
-		}
-	}
 	return r, nil
 }
 func (t *memoryTx) FindMaterialBySourceKey(key string) (MaterialDetail, error) {
@@ -380,6 +371,18 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 	}
 	if one.Distillation.Provenance.Mode != "manual" || one.Distillation.Status != "succeeded" {
 		t.Fatal("manual provenance lost")
+	}
+	encoded, _ := json.Marshal(one.Distillation)
+	var wire map[string]json.RawMessage
+	_ = json.Unmarshal(encoded, &wire)
+	for _, field := range []string{"related_refs", "related_ideas", "conflicts", "pending_questions", "goal_refs", "existing_assets", "missing_evidence"} {
+		if string(wire[field]) != "[]" {
+			t.Fatalf("%s must be an empty wire array, got %s", field, wire[field])
+		}
+	}
+	detail, err := s.GetMaterial(context.Background(), human, material.Material.ID)
+	if err != nil || len(detail.Distillations) != 1 || detail.Distillations[0].ID != one.Distillation.ID {
+		t.Fatal("stored distillation omitted from material detail")
 	}
 	publishes := o.publishes.Load()
 	c.CommandMeta = meta("repeat", 1)
