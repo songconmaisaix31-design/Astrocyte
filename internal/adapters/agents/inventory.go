@@ -87,6 +87,7 @@ func (i *Inventory) RefreshCLI(ctx context.Context) error {
 		if err != nil {
 			continue
 		}
+		items[n].Installed.Reason = "cli_entry_found_probe_incomplete"
 		passed := true
 		for _, flag := range []string{"--version", "--help"} {
 			if ctx.Err() != nil {

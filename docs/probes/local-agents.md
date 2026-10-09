@@ -23,7 +23,7 @@
 
 - `Get-Command codex,claude,opencode,pi,grok,kimi,qwen,cursor,gemini,cursor-agent,agent -ErrorAction SilentlyContinue`。
 - Python `shutil.which(name+'.cmd') or shutil.which(name)` 定位预期命令；原生 EXE 用 `subprocess.run([path, flag], timeout=25)`，CMD 用 `subprocess.run(['cmd.exe','/d','/c',path,flag], timeout=25)`，仅固定 version/help。
-- 首次 Python CMD 参数额外套引号，7 个包装 CLI 返回 exit 1（命令未被识别）；Grok/Kimi 原生 EXE 成功。修正后 Codex version 成功，但打印 help 遇 `UnicodeEncodeError: 'gbk' codec can't encode character '\\u2011'`，探测脚本 exit 1；设置 `sys.stdout.reconfigure(encoding='utf-8')` 后，上表全部 version/help exit 0。首个错误是探测工具问题，未改写为原生 Agent 成功或失败。
+- 首次 Python CMD 参数额外套引号，6 个包装 CLI 返回 exit 1（命令未被识别）；Grok/Kimi 原生 EXE 成功。修正后 Codex version 成功，但打印 help 遇 `UnicodeEncodeError: 'gbk' codec can't encode character U+2011`，探测脚本 exit 1；设置 `sys.stdout.reconfigure(encoding='utf-8')` 后，上表全部 version/help exit 0。首个错误是探测工具问题，未改写为原生 Agent 成功或失败。
 - `codex app-server --help` exit 0；确认本机 `stdio://` 默认、`--stdio`、实验 daemon/proxy/schema 入口。没有执行 daemon、proxy、thread list 或任何原生 RPC。
 - `ASTROCYTE_TEST_LOCAL_AGENT_CLI=1 go test ./internal/adapters/agents -run '^TestInventoryLiveCLI$' -count=1 -v`：本机适配器实际 version/help PASS，8 个版本可解析，2 个额外入口未找到。这里只测 nonsecret CLI，不测模型或原生会话。
 
@@ -40,7 +40,7 @@ Codex 文档中的 `turn/interrupt` 取消当前 turn，必须观察最终事件
 
 ### 已实施边界与待定范围
 
-`agents.NewInventory()` 只进行 PATH 查找；`RefreshCLI(ctx)` 是显式版本/帮助探测，每次子命令最多 5 秒，输出保留最多 64KiB 并持续排空。Windows CMD 路径经过元字符拒绝、使用明确 CmdLine，原生子进程归属本次 Job Object，超时关闭本次子进程树；Unix 使用所属进程组。只返回结构化原因与解析后的版本，不向 API 暴露原始帮助、诊断、可执行路径或私有状态。`Snapshot` 只读缓存并复制可变字段，不启动 CLI。HTTP/组装由 W0 拥有。
+`agents.NewInventory()` 只进行 PATH 查找；`RefreshCLI(ctx)` 是显式版本/帮助探测，每次子命令最多 5 秒，输出保留最多 64KiB 并持续排空。Windows CMD 路径经过元字符拒绝、使用明确 CmdLine，原生子进程归属本次 Job Object，超时关闭本次子进程树；Unix 使用所属进程组。只返回结构化原因与解析后的版本，不向 API 暴露原始帮助、诊断、可执行路径或私有状态。`Snapshot` 只读缓存并复制可变字段，不启动 CLI。`workspaceapp.NewLocalAgentService(provider)` 通过 W0 已发布端口读取缓存；HTTP/组装由 W0 拥有。建议启动总期限 10–15 秒；上下文取消保留部分结果，未运行项标记 `cli_entry_found_probe_not_run`，只完成版本项标记 `cli_entry_found_probe_incomplete`，两探测都通过才标记 `cli_entry_found_version_help_passed`；配置和原生能力始终 unknown。
 
 测试实际拒绝 exec/resume/sessions/doctor 等非 version/help 参数和 shell 元字符路径，并核实拥有的临时测试进程超时退出、Windows 空格路径包装与后代清理；不是伪造原生会话。配置、历史、全盘目录和 Agent 模型没有测试授权，故没有探测。用户尚未选择“完整原生操作”或“先库存”，Agent 可读项目根也未定；本轮不冻结项目/活动绑定契约或 SQLite 迁移，不赋予目录或资料权限，不创建 Mission/Swarm。项目 @材料引用现有 Attention 语义继续保留，热度不授权。
 
