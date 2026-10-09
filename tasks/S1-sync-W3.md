@@ -41,3 +41,13 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 新失败仅1920首个空状态：Vite已HTTP就绪，API仍在启动版本/help探测，03:14:23 auth/session和foundation代理 ECONNREFUSED，API03:14:26.576才开始监听。真实页面显示错误，不把失败改为0数据；W0拥有scripts，已发送修复启动就绪顺序Handoff，无测试sleep/retry掩盖。1920失败迹在 `web/test-results/s1-sync-phase2/s1-sync-local-overview-kee-02fb9-acts-explicit-at-both-sizes-chromium-1920/`。原option断言修复在1280正常通过；1920修复验证被新的启动失败阻断。
 
 独立临时 `%LOCALAPPDATA%/Temp/astrocyte-dev-Cj4TbI`，个人库未使用。命令退出后15173/18787无监听、Vite86036不在，无node/server命令行匹配本工作树或该临时目录，目录仍True保留；已释放单槽。待W0脚本修复后仅复验失败1920用例，再交主控最终独立完整检查。账号绑定/同步持久化/真实项目导入或操作/AT01–04仍未运行，不声明本轮任务完成。
+
+## 启动修复后唯一失败项复验与最终交接
+
+普通合并 W0 `23028df474d0a9d5f53bce4e2386c361026c2d98`，已 push 的应用验收源 `d87604e1e3d732dc12f2c8349958d797d8324607`。W0只改既有dev启动顺序：API健康后启动Vite、启动失败不放行前端；没有业务重试/测试sleep。主控单槽 `pnpm --dir web exec playwright test s1-sync.spec.ts --project=chromium-1920 --grep 'local overview keeps real empty' --workers=1 --output=test-results/s1-sync-readiness-fix`：1 PASS，9.7秒、exit0。API03:19:02.302监听，health200先于Vite；首屏auth/session、foundation、projects、local-agents均200，空状态与disabled DOM属性正常。只是失败用例复验，不宣称整套重跑通过；首次120/2与阶段二5/1历史和trace保留。
+
+临时 `%LOCALAPPDATA%/Temp/astrocyte-dev-hJ3JOt`，Vite84548/父84984；退出后两进程不存在，无本工作树/临时目录所属server/node，15173/18787无监听。目录仍True保留，未绕过Windows helper退出后的清理限制。修复截图 `web/test-results/s1-local-empty-1920.png` 可回查；首次阶段二失败目录与readiness-fix独立，不覆盖。
+
+最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
+
+交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
