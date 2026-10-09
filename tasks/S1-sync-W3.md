@@ -31,3 +31,13 @@ SOURCE `04a67c54a6ccdbba55dc08e5ec44c07a739d79e7` 已 push。总控单槽安排 
 阶段二 `pnpm --dir web typecheck`、lint、test（44/44，含 W0 新客户端单测）、build PASS。新增浏览器用例比较真实 GET local-agents 数据与页面逐项原因及八能力、刷新只发 GET；等待 W0 组装/service 源和主控单槽，尚未运行。不能从 DTO 发布或 UI 编译成功推断实际已接入，更不推断启动/接续/停止能力。
 
 W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通合并（本地合并 `6aede6d72ed2fa6aedf0f3a3e1b2ca173e46b288`）；原生版本/help 启动探测总10秒、每次5秒，GET只读缓存。主控复核后将已知原因译为中文，未知原因保留诊断详情，保持未知与不支持区别。新增实际清单 E2E 和原失败修复准备一起在单槽运行，首次 artifacts 不覆盖。
+
+## 阶段二真实浏览器（新启动失败保留）
+
+测试前再普通合并 W0 最新 `343070262c6990f82f8ee26817ae75d29867f5f0`（包含 W1 d0e717d 和 W2 最终47772035），合并 `4c4101e86adafafd56d50f3be701fc2ba63859f4`。实际 SOURCE `e2aa6dcf1dcd29339aacc541ace76991b3263632` 已 push。
+
+主控单槽 `pnpm --dir web exec playwright test s1-sync.spec.ts --workers=1 --output=test-results/s1-sync-phase2`：5 PASS /1 FAIL，19.1秒，exit1。真实 inventory 在1920/1280均 GET200，10客户端身份/8已核实安装；其余2个入口未在PATH找到。所有配置、可启动、八项原生能力均 unknown，已核实配置/启动计数0不代表不支持。页面逐项匹配API版本、原因和八个unknown状态；刷新GET200，无非GET业务请求。标准 Playwright 附件 `local-agents-response` 保留真实JSON；截图 `web/test-results/s1-local-inventory-{1920,1280}.png` 已目视，两列/一列可读，无虚构活动或能力。所有能力在测试中展开便于复核，日常默认折叠。
+
+新失败仅1920首个空状态：Vite已HTTP就绪，API仍在启动版本/help探测，03:14:23 auth/session和foundation代理 ECONNREFUSED，API03:14:26.576才开始监听。真实页面显示错误，不把失败改为0数据；W0拥有scripts，已发送修复启动就绪顺序Handoff，无测试sleep/retry掩盖。1920失败迹在 `web/test-results/s1-sync-phase2/s1-sync-local-overview-kee-02fb9-acts-explicit-at-both-sizes-chromium-1920/`。原option断言修复在1280正常通过；1920修复验证被新的启动失败阻断。
+
+独立临时 `%LOCALAPPDATA%/Temp/astrocyte-dev-Cj4TbI`，个人库未使用。命令退出后15173/18787无监听、Vite86036不在，无node/server命令行匹配本工作树或该临时目录，目录仍True保留；已释放单槽。待W0脚本修复后仅复验失败1920用例，再交主控最终独立完整检查。账号绑定/同步持久化/真实项目导入或操作/AT01–04仍未运行，不声明本轮任务完成。
