@@ -28,6 +28,27 @@ test('material filters preserve selectable details and unknown fields', async ({
   await expect(dialog.getByRole('button', { name: '继续沉淀' })).toBeDisabled();
 });
 
+test('explicit Attention fixture never queries real materials or sends commands', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', request => {
+    if (request.url().includes('/api/v1/materials') || request.url().includes('/api/v1/opportunities') || request.method() !== 'GET') requests.push(`${request.method()} ${request.url()}`);
+  });
+  await page.goto('/attention?fixture=1');
+  await page.locator('main [role="button"]:has-text("示例论文")').first().click();
+  await expect(page.getByRole('dialog')).toContainText('示例模式：所有写操作');
+  await expect(page.getByRole('dialog').getByRole('button', { name: '继续沉淀' })).toBeDisabled();
+  expect(requests).toEqual([]);
+});
+
+test('unknown dimensions and missing collection reasons remain explicit', async ({ page }) => {
+  await page.goto('/attention?fixture=1');
+  await expect(page.locator('main [role="button"]').filter({ hasText: 'Fixture Deferred Opportunity' })).toContainText('未知');
+  await page.locator('main [role="button"]').filter({ hasText: 'Fixture Sample Paper:' }).click();
+  await expect(page.getByRole('dialog')).toContainText('收藏理由');
+  await expect(page.getByRole('dialog')).toContainText('未提供');
+  await expect(page.getByRole('dialog')).toContainText('未提供真实位置');
+});
+
 test('tabs support arrow, Home, End and browser history without losing fixture mode', async ({ page }) => {
   await page.goto('/attention?fixture=1');
   const overview = page.getByRole('tab', { name: '资料与线索' });

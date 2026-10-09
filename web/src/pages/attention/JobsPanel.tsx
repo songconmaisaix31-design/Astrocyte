@@ -1,0 +1,54 @@
+import { useEffect, useState } from 'react';
+import type { components } from '../../api/schema';
+import { attentionApi } from '../../api/client';
+import { useJobs } from '../../hooks/useAttention';
+import { useCommand } from '../../hooks/useCommand';
+import { QueryState } from '../../components/QueryState';
+import { CommandState } from '../../components/CommandState';
+import { SectionCard } from '../../components/SectionCard';
+import { StatusBadge } from '../../components/StatusBadge';
+import { formatDateTime, importStatusLabel } from '../../utils/format';
+import styles from './AttentionPage.module.css';
+
+type Job = components['schemas']['JobV1'];
+export function JobsPanel({ fixture, refreshToken, onChanged, onMaterial }: { fixture: boolean; refreshToken: number; onChanged: () => void; onMaterial: (id: string) => void }) {
+  const state = useJobs(!fixture);
+  const { retry } = state;
+  const active = !!state.data?.items.some(job => job.status === 'queued' || job.status === 'running');
+  useEffect(() => { if (refreshToken) retry(); }, [refreshToken, retry]);
+  useEffect(() => {
+    if (!active || fixture) return;
+    // Bound refresh window; job deadlines and retry limits are backend facts.
+    let ticks = 0;
+    const timer = window.setInterval(() => { if (++ticks > 150) { window.clearInterval(timer); return; } retry(); onChanged(); }, 2000);
+    return () => window.clearInterval(timer);
+  }, [active, fixture, retry, onChanged]);
+  return <SectionCard title="导入队列" tabs={['overview']} padded>
+    <p className={styles.note}>作业由本地服务持久保存；退出网页不停止导入。进行中最多自动刷新五分钟，之后可手动刷新；刷新不会记录人工关注。</p>
+    {fixture ? <p role="note">示例模式不读取真实作业，重试和取消尚未启用。</p> : <><button type="button" className="ac-button secondary compact" onClick={state.retry} disabled={state.loading}>刷新队列</button><QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无导入作业">{data => <ul className={styles.timeline}>{data.items.map(job => <JobRow key={job.job_id} job={job} onChanged={() => { state.retry(); onChanged(); }} onMaterial={onMaterial} disabled={state.stale} />)}</ul>}</QueryState></>}
+  </SectionCard>;
+}
+
+function JobRow({ job, onChanged, onMaterial, disabled }: { job: Job; onChanged: () => void; onMaterial: (id: string) => void; disabled: boolean }) {
+  const command = useCommand(disabled);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setTimeout(() => setNow(Date.now()), Math.max(0, Math.min(2147483647, Date.parse(job.deadline_at) - Date.now() + 1)));
+    return () => window.clearTimeout(timer);
+  }, [job.deadline_at]);
+  const active = job.status === 'queued' || job.status === 'running';
+  const retryable = job.status === 'failed' && !job.delivery_unknown && !!job.error?.retryable && job.attempts < job.max_attempts && Date.parse(job.deadline_at) > now;
+  return <li>
+    <div className={styles.itemHeader}><strong>{job.kind} · {job.job_id}</strong><StatusBadge value={job.status} label={importStatusLabel(job.status)} /></div>
+    <p className={styles.note}>尝试 {job.attempts}/{job.max_attempts} · 更新 {formatDateTime(job.updated_at)} · 截止 {formatDateTime(job.deadline_at)}</p>
+    {job.error && <p role="alert">{job.error.message} · {job.error.required_action}（请求 {job.error.request_id}）</p>}
+    {job.delivery_unknown && <p role="alert">外部结果未知，需要先核对；自动重试已禁用。</p>}
+    {job.cancel_requested && <p role="status">取消已请求，等待服务确认。</p>}
+    <div className={styles.actions}>
+      {job.material_id && <button className="ac-button secondary compact" type="button" onClick={() => onMaterial(job.material_id!)}>查看导入资料</button>}
+      <button className="ac-button secondary compact" type="button" disabled={disabled || command.pending || !retryable} title={retryable ? '重试失败作业' : '仅在失败可重试、次数和截止期限内、结果已知时可重试'} onClick={() => { const request = command.prepare({ expected_version: job.version }); void command.run(() => attentionApi.retryJob(job.job_id, request.body, request.key), onChanged, '已请求重试'); }}>重试导入</button>
+      <button className="ac-button secondary compact" type="button" disabled={disabled || command.pending || !active || job.cancel_requested} onClick={() => { const request = command.prepare({ expected_version: job.version }); void command.run(() => attentionApi.cancelJob(job.job_id, request.body, request.key), onChanged, '已请求取消；以作业最终状态为准'); }}>取消导入</button>
+    </div>
+    <CommandState {...command} />
+  </li>;
+}
