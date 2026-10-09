@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
@@ -42,6 +43,9 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	halfLife, weights, err := resolveAttentionPolicy()
 	if err != nil {
 		return err
@@ -75,7 +79,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("resolve data dir: %w", err)
 	}
-	distiller, processingSourceKeys, err := resolveDistiller(context.Background(), dataDir)
+	distiller, processingSourceKeys, err := resolveDistiller(ctx, dataDir)
 	if err != nil {
 		return err
 	}
@@ -110,13 +114,28 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("open objects: %w", err)
 	}
 	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys})
-	// Assemble application services; Workspace and Swarm retain their S0 boundary.
+	// Discover only public CLI version/help once at startup. Total bounded time
+	// keeps existing readiness checks responsive; GET reads the resulting cache.
+	// No configuration, private sessions, projects or native operations are read.
+	inventory := agents.NewInventory()
+	probeCtx, cancelProbe := context.WithTimeout(ctx, 10*time.Second)
+	probeErr := inventory.RefreshCLI(probeCtx)
+	cancelProbe()
+	if ctx.Err() != nil {
+		return nil
+	}
+	if probeErr != nil {
+		logger.Warn("local CLI discovery incomplete; cached partial observations retained")
+	}
+
+	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
 		Attention:     attention,
 		Foundation:    foundation.NewAttentionService(schemaVersion),
 		Materials:     attention,
 		Opportunities: attention,
 		Projects:      workspaceapp.NewProjectService(),
+		LocalAgents:   workspaceapp.NewLocalAgentService(inventory),
 		Proposals:     workspaceapp.NewProposalService(),
 		Sessions:      workspaceapp.NewSessionService(),
 		Missions:      swarmapp.NewMissionService(),
@@ -156,8 +175,6 @@ func run(logger *slog.Logger) error {
 	})
 
 	// Graceful shutdown on SIGINT/SIGTERM.
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
 	defer cancelWorkers()
 	workerErrors := make(chan error, 1)

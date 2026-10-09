@@ -2,10 +2,11 @@ openapi: 3.1.0
 info:
   title: Astrocyte HTTP v1
   version: 1.0.0
-  description: SPEC v0.1 S0 foundation. Read-only S0 operations are explicitly
-    marked. Future operations fail with 501; fixture examples are not execution
-    evidence. Authentication and provider integration are future slices; request
-    bodies never supply trusted actor identity.
+  description: SPEC v0.1 local foundation and S1 Attention contracts. Supported
+    operations are explicitly marked; unassembled capabilities fail with 501.
+    S1 protected reads use the local human session and writes require CSRF;
+    request bodies never supply trusted actor identity. Fixture examples and
+    CLI installation observations are not native execution or S1 acceptance evidence.
   license:
     name: AGPL-3.0-only
     identifier: AGPL-3.0-only
