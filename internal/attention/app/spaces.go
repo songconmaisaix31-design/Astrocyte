@@ -190,6 +190,9 @@ func (s *Service) ReferenceMaterial(ctx context.Context, p Principal, id string,
 				continue
 			}
 			if ref.Revision == c.Revision && ref.Locator == reference.Locator && ref.Span == nil {
+				if err = s.humanSignal(tx, &row, p, "mention", c.CommandMeta); err != nil {
+					return ProjectSpaceResult{}, err
+				}
 				return ProjectSpaceResult{SchemaVersion: 1, Space: space}, nil
 			}
 			space.MaterialRefs[i] = reference
