@@ -165,6 +165,23 @@ func canonicalWebKey(raw string) string {
 	}
 	u.Fragment = ""
 	host := strings.ToLower(u.Hostname())
+	if host == "bilibili.com" || host == "www.bilibili.com" || host == "m.bilibili.com" {
+		if strings.HasPrefix(u.Path, "/video/") {
+			// Tracking parameters do not identify new source content. Keep all
+			// other parameters, especially multipart page p, in source identity.
+			q := u.Query()
+			q.Del("spm_id_from")
+			q.Del("spm")
+			if q.Get("p") == "1" {
+				q.Del("p")
+			}
+			u.Scheme = "https"
+			u.Host = "www.bilibili.com"
+			u.Path = strings.TrimRight(u.Path, "/") + "/"
+			u.RawQuery = q.Encode()
+			return u.String()
+		}
+	}
 	if host == "youtu.be" {
 		return "youtube:" + strings.Trim(u.Path, "/")
 	}

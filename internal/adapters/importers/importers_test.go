@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -85,6 +86,53 @@ func TestArxivLiveOfficialSource(t *testing.T) {
 		t.Fatalf("incomplete original source %+v", s)
 	}
 	t.Logf("source=%s fixed=%s PDF_bytes=%d", s.SourceKey, s.SourceLocator, len(s.Attachments[0].Data))
+	if dir := os.Getenv("ASTROCYTE_TEST_EXPORT_DIR"); dir != "" {
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+		for _, a := range s.Attachments {
+			if err := os.WriteFile(filepath.Join(dir, filepath.Base(a.Name)), a.Data, 0o600); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := os.WriteFile(filepath.Join(dir, "arxiv-imported-text.md"), []byte(s.Text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		sum := sha256.Sum256([]byte(s.Text))
+		command := app.ImportMaterialCommand{CommandMeta: app.CommandMeta{SchemaVersion: 1, RequestID: "selected-arxiv-live-export", ExpectedVersion: 1}, Adapter: "manual", SourceKey: "", SourceLocator: s.SourceLocator, Kind: "paper", ContentDigest: hex.EncodeToString(sum[:]), ExportText: s.Text, SourceSpans: s.SourceSpans, Title: s.Title}
+		data, err := json.MarshalIndent(command, "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "arxiv-text-command.json"), data, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("actual original/metadata/text export=%s (manual text command is not full-original arxiv import)", dir)
+	}
+}
+
+func TestBilibiliTrackingCanonicalSource(t *testing.T) {
+	base := "https://www.bilibili.com/video/BV1PReT6EEqR/"
+	for _, alias := range []string{base + "?spm_id_from=333.337.search-card.all.click", base + "?spm=another&p=1#reply", "http://m.bilibili.com/video/BV1PReT6EEqR?spm_id_from=old"} {
+		if canonicalWebKey(alias) != base {
+			t.Fatalf("tracking alias %s creates a distinct source", alias)
+		}
+		// Actual export source is unchanged while callers can use tracked links.
+		raw := fmt.Sprintf(`{"input":{"url":%q},"extracted":{"content":"protocol fixture content"}}`, base)
+		s, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize", Kind: "video", SourceLocator: alias, ExportText: raw})
+		if err != nil || s.SourceKey != base || s.SourceLocator != base || len(s.SourceSpans) != 0 {
+			t.Fatalf("alias mismatch or fake timestamp: %+v %v", s, err)
+		}
+	}
+	for _, different := range []string{base + "?p=2", base + "?meaningful=other", "https://www.bilibili.com/video/BV1111111111/"} {
+		if canonicalWebKey(different) == base {
+			t.Fatalf("collapsed different content %s", different)
+		}
+	}
+	other := "https://example.org/video/BV1PReT6EEqR/?spm_id_from=keep"
+	if canonicalWebKey(other) != other {
+		t.Fatal("applied Bilibili rule to another source")
+	}
 }
 
 func TestSummarizeTimingAndMissingOriginal(t *testing.T) {

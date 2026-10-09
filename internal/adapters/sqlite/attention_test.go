@@ -382,3 +382,93 @@ func TestAttentionOpportunityFeedbackHistoryAndDistillationReuse(t *testing.T) {
 		}
 	}
 }
+
+func TestAttentionReturnToEarlierContentWithoutNewRevision(t *testing.T) {
+	ctx := context.Background()
+	path := filepath.Join(t.TempDir(), "state.sqlite")
+	db := openAttentionDB(t, path)
+	r := NewAttentionRepository(db)
+	store, err := objects.New(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	digestA, err := store.Publish(ctx, []byte("content A"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	digestB, err := store.Publish(ctx, []byte("content B"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := materialFixture(t)
+	m.Revisions[0].ContentDigest = digestA
+	m.Revisions[0].ObjectRef = digestA
+	if err := r.WithTx(ctx, func(tx app.AttentionTx) error { return tx.SaveMaterial(m, 0) }); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.WithTx(ctx, func(tx app.AttentionTx) error {
+		v, err := tx.LoadMaterial("m1")
+		if err != nil {
+			return err
+		}
+		v.Material.Version = 2
+		v.Material.CurrentRevision = 2
+		rev := v.Revisions[0]
+		rev.Revision = 2
+		rev.ContentDigest = digestB
+		rev.ObjectRef = digestB
+		v.Revisions = append(v.Revisions, rev)
+		return tx.SaveMaterial(v, 1)
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.WithTx(ctx, func(tx app.AttentionTx) error {
+		v, err := tx.LoadMaterial("m1")
+		if err != nil {
+			return err
+		}
+		v.Material.Version = 3
+		v.Material.CurrentRevision = 1
+		return tx.SaveMaterial(v, 2)
+	}); err != nil {
+		t.Fatal("could not return to immutable prior content", err)
+	}
+	db.Close()
+	db = openAttentionDB(t, path)
+	r = NewAttentionRepository(db)
+	if err := r.WithTx(ctx, func(tx app.AttentionTx) error {
+		v, err := tx.LoadMaterial("m1")
+		if err != nil {
+			return err
+		}
+		if v.Material.CurrentRevision != 1 || v.Material.Version != 3 || len(v.Revisions) != 2 || v.Revisions[1].ContentDigest != digestB {
+			t.Fatal("return lost history", v)
+		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+	var count int
+	if err := db.conn.QueryRow("SELECT count(*) FROM attention_material_revisions WHERE material_id='m1'").Scan(&count); err != nil || count != 2 {
+		t.Fatal("return created duplicate revision", count, err)
+	}
+	for _, invalid := range []int{0, 3} {
+		if err := r.WithTx(ctx, func(tx app.AttentionTx) error {
+			v, err := tx.LoadMaterial("m1")
+			if err != nil {
+				return err
+			}
+			v.Material.Version = 4
+			v.Material.CurrentRevision = invalid
+			return tx.SaveMaterial(v, 3)
+		}); err == nil {
+			t.Fatal("accepted absent current revision", invalid)
+		}
+	}
+	if _, err := store.Read(ctx, digestA); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Read(ctx, digestB); err != nil {
+		t.Fatal(err)
+	}
+}
