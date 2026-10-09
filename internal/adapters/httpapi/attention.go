@@ -92,6 +92,7 @@ func revision(r *http.Request) (int, error) {
 	return n, nil
 }
 func (h *handler) registerAttention(mux *http.ServeMux) {
+	h.registerClassification(mux)
 	s := h.services.Attention
 	mux.HandleFunc("POST /api/v1/materials/imports", commandHandler(h, func(c *attentionapp.ImportMaterialCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusAccepted, func(r *http.Request, c attentionapp.ImportMaterialCommand) (any, error) {
 		return s.ImportMaterial(r.Context(), principal(r), c)

@@ -26,9 +26,16 @@ export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) =
     const url = new URL(request.url);
     url.pathname = `${url.pathname.slice(0, url.pathname.indexOf('/api/v1') + 7)}/auth/session`;
     url.search = '';
-    const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: AbortSignal.timeout(10000) }));
-    // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
-    if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: controller.signal }));
+      // Finish the bootstrap response and clear its timer before resolving, so
+      // browser network-idle and callers do not wait for the timeout to fire.
+      await response.arrayBuffer();
+      // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
+      if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
+    } finally { clearTimeout(timeout); }
   };
   client.use({ async onRequest({ request }) {
     const path = new URL(request.url).pathname;
@@ -42,7 +49,7 @@ export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) =
     const error = await response.clone().json().catch(() => undefined) as ApiErrorBody | undefined;
     if (!['local session required', 'local session expired'].includes(error?.error?.message ?? '')) return response;
     // Only safe reads are repeated once after restart/expiry. No command is replayed.
-    bootstrap = establishSession(request);
+    bootstrap = establishSession(request).catch(error => { bootstrap = undefined; throw error; });
     await bootstrap;
     return (fetchImpl ?? fetch)(request);
   } });
