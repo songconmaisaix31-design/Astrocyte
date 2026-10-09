@@ -26,7 +26,7 @@ func (s *Service) RecordUse(ctx context.Context, p Principal, id string, c Recor
 		RecordUseCommand
 	}{id, c}
 	return command(s, ctx, p, c.CommandMeta, "RecordUse", input, func(tx AttentionTx) (VersionResult, error) {
-		if !slices.Contains([]string{"annotate", "reread", "adopt"}, c.Action) {
+		if !slices.Contains([]string{"annotate", "reread", "adopt", "mention", "project_reuse"}, c.Action) {
 			return VersionResult{}, domain.ErrInvalid
 		}
 		row, err := tx.LoadMaterial(id)
