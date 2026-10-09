@@ -14,6 +14,7 @@ import { matchesQuery } from '../../utils/search';
 import { MaterialCover } from '../../components/MaterialCover';
 import { Icon } from '../../components/DesignIcons';
 import { ImportForm } from './ImportForm';
+import { useImportDraft } from './useImportDraft';
 import { JobsPanel } from './JobsPanel';
 import { DomainsPanel } from './DomainsPanel';
 import { SpacesPanel } from './SpacesPanel';
@@ -33,6 +34,7 @@ export function AttentionPage({ fixture, query }: { fixture: boolean; query: str
   const [selectedMatId, setSelectedMatId] = useState<string | null>(null);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
   const [importing, setImporting] = useState(false);
+  const importDraft = useImportDraft(fixture);
   const [queueToken, setQueueToken] = useState(0);
   const [detailToken, setDetailToken] = useState(0);
   const [kind, setKind] = useState<Material['kind'] | 'all'>('all');
@@ -71,7 +73,7 @@ export function AttentionPage({ fixture, query }: { fixture: boolean; query: str
       <RankingPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} />
       <SpacesPanel fixture={fixture} materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
     </div>
-    {(importing || route.query.get('import') === '1') && <DetailPanel title="添加资料" onClose={handleClose}><ImportForm fixture={fixture} onImported={() => { refreshCollections(); setQueueToken(value => value + 1); }} /></DetailPanel>}
+    {(importing || route.query.get('import') === '1') && <DetailPanel title="添加资料" onClose={handleClose}><ImportForm fixture={fixture} draft={importDraft} onImported={() => { refreshCollections(); setQueueToken(value => value + 1); }} /></DetailPanel>}
     {(selectedMat || selectedMatId) && <DetailPanel title="素材详情" onClose={handleClose} disabledActions={fixture ? ['继续沉淀', '以后再看'] : []} showDisabledNotice disabledNoticeText={fixture ? '示例模式：所有写操作尚未启用，请退出示例模式使用真实 API' : '资料准入和任务执行尚未实现，保存不会创建 Mission'}><MaterialWorkspace key={selectedMat?.id ?? selectedMatId!} id={selectedMat?.id ?? selectedMatId!} item={selectedMat ?? undefined} fixture={fixture} refreshToken={detailToken} materials={allMaterials} domains={domains} onChanged={refreshCollections} onQueued={() => { refreshCollections(); setQueueToken(value => value + 1); }} onOpportunity={selectOpportunity} /></DetailPanel>}
     {selectedOpp && <DetailPanel title="机会详情" onClose={handleClose} disabledActions={fixture ? ['拒绝', '准入'] : ['准入', '任务执行']} showDisabledNotice disabledNoticeText={fixture ? '示例模式：所有写操作尚未启用，请退出示例模式使用真实 API' : '准入和任务执行尚未实现；人工反馈不会批准或启动任务'}><OpportunityWorkspace key={selectedOpp.id} item={selectedOpp} fixture={fixture} materials={allMaterials} onChanged={refreshCollections} /></DetailPanel>}
   </PageFrame>;
