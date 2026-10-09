@@ -11,6 +11,7 @@
   },
   "direct_dependencies": {
     "root": {
+      "@steipete/summarize": "0.25.1",
       "@redocly/cli": "2.60.0",
       "ajv": "8.20.0",
       "ajv-formats": "3.0.1",
@@ -45,5 +46,5 @@
     "go.mod",
     "go.sum"
   ],
-  "scope": "S0 foundation; native agent runtime and model/indexing dependencies are not installed or validated by this lock"
+  "scope": "S0 foundation and S1 summarize extraction; external media executables and native agent/model availability are validated separately, not supplied by this npm/Go lock"
 }
