@@ -8,6 +8,10 @@ const provenance: components['schemas']['ProvenanceV1'] = { processor: 'test-inj
 const detail: components['schemas']['MaterialDetailV1'] = { schema_version: 1, material: { ...material, current_revision: 2 }, revisions: [1, 2].map(revision => ({ material_id: material.id, revision, source_key: 'injected-source', source_locator: material.source_locator, content_digest: `injected-${revision}`, object_ref: `injected-${revision}`, source_spans: [], provenance, created_at: '2026-10-09T00:00:00Z' })), distillations: [], uses: [] };
 const error = { schema_version: 1, error: { code: 'provider_unavailable', message: '注入网络故障', retryable: true, request_id: 'injected-request', required_action: '恢复服务后重试' } };
 
+test.beforeEach(async ({ page }) => {
+  for (const endpoint of ['material-domains', 'project-spaces']) await page.route(`**/api/v1/${endpoint}`, route => route.fulfill({ json: { schema_version: 1, items: [] } }));
+});
+
 test('import failure preserves input and retries the exact command identity', async ({ page }) => {
   await page.route('**/api/v1/auth/session', route => route.fulfill({ json: { schema_version: 1, actor_id: 'test', actor_kind: 'human', csrf_token: 'test-csrf' } }));
   await page.route('**/api/v1/jobs', route => route.fulfill({ json: { schema_version: 1, items: [], next_cursor: null } }));
@@ -75,4 +79,25 @@ test('detail refresh failure keeps the snapshot and disables writes until recove
   await expect(dialog.getByRole('button', { name: '继续沉淀', exact: true })).toBeEnabled();
   await page.keyboard.press('Escape');
   await expect(trigger).toBeFocused();
+});
+
+test('automatic processing stays disabled when unavailable or the selected source is outside approved scope', async ({ page }) => {
+  let available = false;
+  const writes: string[] = [];
+  page.on('request', request => { if (request.method() !== 'GET') writes.push(request.url()); });
+  await page.route('**/api/v1/materials', route => route.fulfill({ json: { schema_version: 1, items: [detail.material], next_cursor: null } }));
+  await page.route(`**/api/v1/materials/${material.id}`, route => route.fulfill({ json: detail }));
+  await page.route('**/api/v1/distillations/processor', route => route.fulfill({ json: { schema_version: 1, available, processor: 'injected-status', configuration_id: available ? 'injected-config' : null, model: null, reason: '注入隔离检查未通过', required_action: '先修复实际处理环境', allowed_source_keys: [] } }));
+  await page.goto('/attention');
+  await page.locator('main [role="button"]').filter({ hasText: material.title! }).click();
+  const dialog = page.getByRole('dialog', { name: '素材详情' });
+  await dialog.getByRole('button', { name: '继续沉淀', exact: true }).click();
+  const automatic = dialog.getByRole('region', { name: '自动沉淀' });
+  await expect(automatic).toContainText('注入隔离检查未通过');
+  await expect(automatic.getByRole('button', { name: '提交自动沉淀', exact: true })).toBeDisabled();
+  available = true;
+  await automatic.getByRole('button', { name: '检查自动处理服务' }).click();
+  await expect(automatic).toContainText('此来源未纳入已批准的自动处理范围');
+  await expect(automatic.getByRole('button', { name: '提交自动沉淀', exact: true })).toBeDisabled();
+  expect(writes).toEqual([]);
 });

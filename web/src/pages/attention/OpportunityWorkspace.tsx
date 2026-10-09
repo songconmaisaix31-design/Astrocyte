@@ -41,11 +41,13 @@ function OpportunityBody({ detail, materials, distillations, disabled, onChanged
 }
 
 function ReviewForm({ item, disabled, onSaved }: { item: Opportunity; disabled: boolean; onSaved: () => void }) {
+  const [expectedVersion, setExpectedVersion] = useState(item.version);
   const [feedback, setFeedback] = useState<Feedback>('later');
   const [reason, setReason] = useState('');
   const [dimensions, setDimensions] = useState<Dimensions>(item.dimensions);
   const command = useCommand(disabled);
-  return <form className={styles.form} onSubmit={event => { event.preventDefault(); const request = command.prepare({ expected_version: item.version!, feedback, reason: reason.trim(), ...(feedback === 'reject' || feedback === 'revise' ? { dimensions } : {}) }); void command.run(() => attentionApi.reviewOpportunity(item.id, request.body, request.key), onSaved, '已保存人工反馈；未启动任务'); }}>
+  return <form className={styles.form} onSubmit={event => { event.preventDefault(); const request = command.prepare({ expected_version: expectedVersion!, feedback, reason: reason.trim(), ...(feedback === 'reject' || feedback === 'revise' ? { dimensions } : {}) }); void command.run(() => attentionApi.reviewOpportunity(item.id, request.body, request.key), result => { setExpectedVersion(result.version); onSaved(); }, '已保存人工反馈；未启动任务'); }}>
+    {item.version !== expectedVersion && <p role="note">候选已更新，当前反馈输入保留。<button className="ac-button secondary compact" type="button" onClick={() => { setExpectedVersion(item.version); setDimensions(item.dimensions); }}>针对最新候选继续反馈</button></p>}
     <fieldset disabled={disabled || command.pending}><legend>人工反馈 · 当前候选 r{item.revision}</legend>
       <SelectField label="反馈类型" value={feedback} onChange={value => setFeedback(value as Feedback)} options={feedbacks} />
       <TextField label="反馈理由" value={reason} onChange={setReason} multiline required />
@@ -63,6 +65,7 @@ function OpportunitySummary({ item }: { item: Opportunity }) {
     <Field label="用途 / 为什么值得做">{item.purpose || '未提供'}</Field>
     <Field label="下一步">{item.next_step || '未提供'}</Field>
     <Field label="评估维度"><DimensionScores value={item.dimensions} /></Field>
+    <Field label="综合排序依据">{item.ranking_reason || '未提供'} · 综合分 {item.composite_score ?? '未知'} · 配置版本 {item.ranking_profile_version ?? '未提供'}</Field>
     <Field label="证据引用"><SourceRefs refs={item.evidence_refs} /></Field>
     <Field label="关联目标">{item.goal_refs?.join('；') || '未提供'}</Field>
     <Field label="缺失证据">{item.missing_evidence?.length ? item.missing_evidence.join('；') : '缺失依据未记录'}</Field>

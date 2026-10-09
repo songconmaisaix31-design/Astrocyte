@@ -16,3 +16,18 @@ export function useDistillations(enabled = true) {
 export function useJobs(enabled = true) {
   return useReadApi(signal => attentionApi.listJobs({ signal }), { enabled });
 }
+export function useDomains(enabled = true) {
+  return useReadApi(signal => attentionApi.listMaterialDomains({ signal }), { enabled });
+}
+export function useProjectSpaces(enabled = true) {
+  return useReadApi(signal => attentionApi.listProjectSpaces({ signal }), { enabled });
+}
+export function useProjectSpace(id: string, enabled = true) {
+  return useReadApi(signal => attentionApi.getProjectSpace(id, { signal }), { enabled, key: id });
+}
+export function useRankingProfile(enabled = true) {
+  return useReadApi(signal => attentionApi.getRankingProfile({ signal }), { enabled });
+}
+export function useDistillerStatus(enabled = true) {
+  return useReadApi(signal => attentionApi.getDistillerStatus({ signal }), { enabled });
+}
