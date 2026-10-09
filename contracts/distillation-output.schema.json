@@ -61,6 +61,58 @@
       "items": {
         "type": "string"
       }
+    },
+    "candidate_suggestion": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/SourceRef"
+              }
+            },
+            "goal_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dimensions": {
+              "$ref": "#/$defs/Dimensions"
+            },
+            "next_step": {
+              "type": "string"
+            },
+            "missing_evidence": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "purpose": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "title",
+            "evidence_refs",
+            "goal_refs",
+            "dimensions",
+            "next_step",
+            "missing_evidence",
+            "purpose"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "required": [
@@ -74,7 +126,8 @@
     "existing_assets",
     "expected_improvement",
     "minimum_artifact",
-    "missing_evidence"
+    "missing_evidence",
+    "candidate_suggestion"
   ],
   "$defs": {
     "SourceRef": {
@@ -103,6 +156,49 @@
         "revision",
         "locator",
         "span"
+      ]
+    },
+    "Dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "goal_progress": {
+          "$ref": "#/$defs/DimensionScore"
+        },
+        "current_interest": {
+          "$ref": "#/$defs/DimensionScore"
+        },
+        "project_improvement": {
+          "$ref": "#/$defs/DimensionScore"
+        },
+        "originality": {
+          "$ref": "#/$defs/DimensionScore"
+        }
+      },
+      "required": [
+        "goal_progress",
+        "current_interest",
+        "project_improvement",
+        "originality"
+      ]
+    },
+    "DimensionScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "reason"
       ]
     }
   }

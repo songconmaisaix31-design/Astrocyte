@@ -4374,6 +4374,125 @@ paths:
               $ref: "#/components/schemas/RequestDistillationRequestV1"
       security:
         - HumanSession: []
+  /attention-ranking-profile:
+    get:
+      operationId: getRankingProfile
+      summary: Read explicit versioned candidate ranking profile
+      tags:
+        - materials
+      x-s1-supported: true
+      description: No configured profile means manual order; no default composite
+        weights. Settings never grant data access or execution permission.
+      parameters: []
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RankingProfileDetailV1"
+        "400": &a17
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a17
+        "404": *a17
+        "409": *a17
+        "500": *a17
+        "501":
+          description: Profile adapter not connected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+    put:
+      operationId: updateRankingProfile
+      summary: Update human-owned candidate ranking weights
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Human CAS+idempotent update. All weights positive; goal_progress is
+        primary. Unknown candidate dimensions retain unknown; no
+        delegation/approval rights are changed.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RankingProfileDetailV1"
+        "400": &a18
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a18
+        "404": *a18
+        "409": *a18
+        "500": *a18
+        "501":
+          description: Profile adapter not connected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRankingProfileRequestV1"
+      security:
+        - HumanSession: []
+  /distillations/processor:
+    get:
+      operationId: getDistillerStatus
+      summary: Read actual processor availability and frozen configuration
+      tags:
+        - materials
+      x-s1-supported: true
+      description: Runtime facts only. Unconfigured or failed native isolation remains
+        unavailable with required_action; no synthetic automatic capability.
+      parameters: []
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DistillerStatusV1"
+        "400": &a17
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a17
+        "404": *a17
+        "409": *a17
+        "500": *a17
+      security:
+        - HumanSession: []
+        - AgentBearer: []
 components:
   schemas:
     ErrorV1:
@@ -4735,6 +4854,19 @@ components:
           format: date-time
         version:
           type: integer
+          minimum: 1
+        composite_score:
+          type:
+            - number
+            - "null"
+        ranking_strategy:
+          type: string
+        ranking_reason:
+          type: string
+        ranking_profile_version:
+          type:
+            - integer
+            - "null"
           minimum: 1
       required:
         - id
@@ -6327,6 +6459,10 @@ components:
         created_at:
           type: string
           format: date-time
+        candidate_suggestion:
+          anyOf:
+            - $ref: "#/components/schemas/CandidateSuggestionV1"
+            - type: "null"
       required:
         - id
         - input_refs
@@ -6573,6 +6709,8 @@ components:
             - annotate
             - pin
             - adopt
+            - mention
+            - project_reuse
       required:
         - schema_version
         - request_id
@@ -7031,6 +7169,10 @@ components:
             - project
         question: *a16
         processing_config: *a16
+        prior_distillation_ids:
+          type: array
+          items:
+            type: string
       required:
         - schema_version
         - request_id
@@ -7039,6 +7181,171 @@ components:
         - stage
         - question
         - processing_config
+    RankingProfileV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        enabled:
+          type: boolean
+        weights:
+          type: object
+          additionalProperties: false
+          properties:
+            goal_progress:
+              type: number
+              exclusiveMinimum: 0
+            current_interest:
+              type: number
+              exclusiveMinimum: 0
+            project_improvement:
+              type: number
+              exclusiveMinimum: 0
+            originality:
+              type: number
+              exclusiveMinimum: 0
+          required:
+            - goal_progress
+            - current_interest
+            - project_improvement
+            - originality
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - version
+        - enabled
+        - weights
+        - created_at
+    RankingProfileDetailV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        configured:
+          type: boolean
+        profile:
+          anyOf:
+            - $ref: "#/components/schemas/RankingProfileV1"
+            - type: "null"
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/RankingProfileV1"
+      required:
+        - schema_version
+        - configured
+        - profile
+        - versions
+    UpdateRankingProfileRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        enabled:
+          type: boolean
+        weights:
+          type: object
+          additionalProperties: false
+          properties:
+            goal_progress:
+              type: number
+              exclusiveMinimum: 0
+            current_interest:
+              type: number
+              exclusiveMinimum: 0
+            project_improvement:
+              type: number
+              exclusiveMinimum: 0
+            originality:
+              type: number
+              exclusiveMinimum: 0
+          required:
+            - goal_progress
+            - current_interest
+            - project_improvement
+            - originality
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - enabled
+        - weights
+    CandidateSuggestionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        title: &a17
+          type: string
+        evidence_refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        goal_refs:
+          type: array
+          items: *a17
+        dimensions:
+          $ref: "#/components/schemas/DimensionsV1"
+        next_step: *a17
+        missing_evidence:
+          type: array
+          items: *a17
+        purpose: *a17
+      required:
+        - title
+        - evidence_refs
+        - goal_refs
+        - dimensions
+        - next_step
+        - missing_evidence
+        - purpose
+    DistillerStatusV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        available:
+          type: boolean
+        processor: &a17
+          type: string
+        configuration_id:
+          type:
+            - string
+            - "null"
+        model:
+          type:
+            - string
+            - "null"
+        reason: *a17
+        required_action: *a17
+        allowed_source_keys:
+          type: array
+          items: *a17
+      required:
+        - schema_version
+        - available
+        - processor
+        - configuration_id
+        - model
+        - reason
+        - required_action
+        - allowed_source_keys
   securitySchemes:
     HumanSession:
       type: apiKey

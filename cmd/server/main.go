@@ -43,6 +43,10 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
+	halfLife, weights, err := resolveAttentionPolicy()
+	if err != nil {
+		return err
+	}
 	importRoots, err := resolveImportRoots()
 	if err != nil {
 		return err
@@ -98,7 +102,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("open objects: %w", err)
 	}
-	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(importRoots), objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second})
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(importRoots), objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights})
 	// Assemble application services; Workspace and Swarm retain their S0 boundary.
 	services := httpapi.Services{
 		Attention:     attention,
@@ -109,6 +113,12 @@ func run(logger *slog.Logger) error {
 		Proposals:     workspaceapp.NewProposalService(),
 		Sessions:      workspaceapp.NewSessionService(),
 		Missions:      swarmapp.NewMissionService(),
+	}
+	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
+		services.Automatic = automatic
+	}
+	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
+		services.RankingProfile = profile
 	}
 
 	// Resolve port — invalid value fails startup.

@@ -40,15 +40,16 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
-	Automatic     attentionapp.AutomaticDistillationService
-	Attention     attentionapp.AttentionService
-	Foundation    foundation.Service
-	Materials     attentionapp.MaterialService
-	Opportunities attentionapp.OpportunityService
-	Projects      workspaceapp.ProjectService
-	Proposals     workspaceapp.ProposalService
-	Sessions      workspaceapp.SessionService
-	Missions      swarmapp.MissionService
+	RankingProfile attentionapp.RankingProfileService
+	Automatic      attentionapp.AutomaticDistillationService
+	Attention      attentionapp.AttentionService
+	Foundation     foundation.Service
+	Materials      attentionapp.MaterialService
+	Opportunities  attentionapp.OpportunityService
+	Projects       workspaceapp.ProjectService
+	Proposals      workspaceapp.ProposalService
+	Sessions       workspaceapp.SessionService
+	Missions       swarmapp.MissionService
 }
 
 // NewServer creates a new HTTP server with the given configuration.
