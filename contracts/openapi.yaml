@@ -2,9 +2,10 @@ openapi: 3.1.0
 info:
   title: Astrocyte HTTP v1
   version: 1.0.0
-  description: SPEC v0.1 S0 foundation. Read-only S0 operations are explicitly marked. Future
-    operations fail with 501; fixture examples are not execution evidence. Authentication and
-    provider integration are future slices; request bodies never supply trusted actor identity.
+  description: SPEC v0.1 S0 foundation. Read-only S0 operations are explicitly
+    marked. Future operations fail with 501; fixture examples are not execution
+    evidence. Authentication and provider integration are future slices; request
+    bodies never supply trusted actor identity.
   license:
     name: AGPL-3.0-only
     identifier: AGPL-3.0-only
@@ -71,7 +72,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -85,7 +87,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -99,7 +102,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -113,7 +117,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -127,7 +132,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
   /foundation:
     get:
       operationId: getFoundation
@@ -170,7 +176,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -184,7 +191,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -198,7 +206,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -212,7 +221,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -226,7 +236,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
   /materials:
     get:
       operationId: listMaterials
@@ -275,7 +286,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -289,7 +301,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -303,7 +316,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -317,7 +331,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -331,7 +346,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
   /opportunities:
     get:
       operationId: listOpportunitys
@@ -380,7 +396,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -394,7 +411,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -408,7 +426,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -422,7 +441,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -436,7 +456,53 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
+    post:
+      operationId: createOpportunity
+      summary: createOpportunity
+      tags:
+        - opportunities
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "201":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpportunityDetailV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpportunityRequestV1"
   /projects:
     get:
       operationId: listProjects
@@ -485,7 +551,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -499,7 +566,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -513,7 +581,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -527,7 +596,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -541,12 +611,13 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
     post:
       operationId: registerProject
       summary: register Project
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - projects
       x-s0-supported: false
@@ -582,7 +653,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -596,7 +668,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -610,7 +683,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -624,7 +698,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -638,7 +713,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -700,7 +776,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -714,7 +791,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -728,7 +806,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -742,7 +821,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -756,7 +836,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
   /sessions:
     get:
       operationId: listSessions
@@ -805,7 +886,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -819,7 +901,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -833,7 +916,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -847,7 +931,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -861,7 +946,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
   /missions:
     get:
       operationId: listMissions
@@ -910,7 +996,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -924,7 +1011,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -938,7 +1026,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -952,7 +1041,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -966,7 +1056,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
   /missions/{id}:
     get:
       operationId: getMission
@@ -1010,7 +1101,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1024,7 +1116,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -1038,7 +1131,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1052,7 +1146,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1066,7 +1161,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1080,13 +1176,14 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
   /materials/imports:
     post:
       operationId: importMaterial
       summary: import Material
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S1 human write. Requires local session and matching CSRF token.
+        Import queues durable work; reviews do not approve or execute a Mission.
       tags:
         - materials
       x-s0-supported: false
@@ -1098,6 +1195,12 @@ paths:
             type: string
             minLength: 1
           description: Caller-scoped command deduplication key; never automatic retry
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
       responses:
         "202":
           description: Future capability contract; NOT implemented in S0
@@ -1122,7 +1225,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1136,7 +1240,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1150,7 +1255,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1164,7 +1270,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1178,7 +1285,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -1194,12 +1302,13 @@ paths:
               kind: paper
               content_digest: fixture-digest
               export_text: Fixture only
+      x-s1-supported: true
   /opportunities/{id}/reviews:
     post:
       operationId: reviewOpportunity
       summary: review Opportunity
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S1 human write. Requires local session and matching CSRF token.
+        Import queues durable work; reviews do not approve or execute a Mission.
       tags:
         - opportunities
       x-s0-supported: false
@@ -1217,6 +1326,12 @@ paths:
             type: string
             minLength: 1
           description: Caller-scoped command deduplication key; never automatic retry
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
       responses:
         "201":
           description: Future capability contract; NOT implemented in S0
@@ -1241,7 +1356,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1255,7 +1371,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -1269,7 +1386,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1283,7 +1401,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1297,7 +1416,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1311,7 +1431,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -1324,12 +1445,13 @@ paths:
               expected_version: 1
               feedback: later
               reason: Fixture only
+      x-s1-supported: true
   /opportunities/{id}/admissions:
     post:
       operationId: admitOpportunity
       summary: admit Opportunity
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - opportunities
       x-s0-supported: false
@@ -1371,7 +1493,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1385,7 +1508,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -1399,7 +1523,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1413,7 +1538,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1427,7 +1553,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1441,7 +1568,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -1458,8 +1586,8 @@ paths:
     post:
       operationId: resumeSession
       summary: resume Session
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - sessions
       x-s0-supported: false
@@ -1501,7 +1629,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1515,7 +1644,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -1529,7 +1659,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1543,7 +1674,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1557,7 +1689,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1571,7 +1704,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -1587,8 +1721,8 @@ paths:
     post:
       operationId: handoffSession
       summary: handoff Session
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - sessions
       x-s0-supported: false
@@ -1630,7 +1764,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1644,7 +1779,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -1658,7 +1794,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1672,7 +1809,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1686,7 +1824,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1700,7 +1839,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -1718,8 +1858,8 @@ paths:
     post:
       operationId: submitProposal
       summary: submit Proposal
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - proposals
       x-s0-supported: false
@@ -1761,7 +1901,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1775,7 +1916,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -1789,7 +1931,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1803,7 +1946,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1817,7 +1961,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1831,7 +1976,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -1846,8 +1992,8 @@ paths:
     post:
       operationId: approveProposal
       summary: approve Proposal
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - proposals
       x-s0-supported: false
@@ -1892,7 +2038,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -1906,7 +2053,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -1920,7 +2068,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -1934,7 +2083,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -1948,7 +2098,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -1962,7 +2113,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -1990,8 +2142,8 @@ paths:
     post:
       operationId: revokeApproval
       summary: revoke Approval
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - approvals
       x-s0-supported: false
@@ -2036,7 +2188,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -2050,7 +2203,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -2064,7 +2218,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -2078,7 +2233,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -2092,7 +2248,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -2106,7 +2263,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -2122,8 +2280,8 @@ paths:
     post:
       operationId: pauseMission
       summary: pause Mission
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - missions
       x-s0-supported: false
@@ -2165,7 +2323,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -2179,7 +2338,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -2193,7 +2353,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -2207,7 +2368,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -2221,7 +2383,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -2235,7 +2398,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -2251,8 +2415,8 @@ paths:
     post:
       operationId: cancelMission
       summary: cancel Mission
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - missions
       x-s0-supported: false
@@ -2294,7 +2458,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -2308,7 +2473,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -2322,7 +2488,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -2336,7 +2503,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -2350,7 +2518,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -2364,7 +2533,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -2380,8 +2550,8 @@ paths:
     post:
       operationId: claimWorkItem
       summary: claim Work Item
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - work-items
       x-s0-supported: false
@@ -2427,7 +2597,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -2441,7 +2612,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -2455,7 +2627,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -2469,7 +2642,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -2483,7 +2657,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -2497,7 +2672,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -2513,8 +2689,8 @@ paths:
     post:
       operationId: submitArtifact
       summary: submit Artifact
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - work-items
       x-s0-supported: false
@@ -2556,7 +2732,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -2570,7 +2747,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -2584,7 +2762,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -2598,7 +2777,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -2612,7 +2792,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -2626,7 +2807,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -2648,8 +2830,8 @@ paths:
     post:
       operationId: acceptArtifact
       summary: accept Artifact
-      description: S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe
-        future DTOs only.
+      description: S0 MUST return HTTP 501 unsupported_capability without side
+        effects. Examples describe future DTOs only.
       tags:
         - artifacts
       x-s0-supported: false
@@ -2692,7 +2874,8 @@ paths:
                   message: Invalid request
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "403":
           description: Scope or user-control access denied
           content:
@@ -2706,7 +2889,8 @@ paths:
                   message: Scope or user-control access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "404":
           description: Resource not found
           content:
@@ -2720,7 +2904,8 @@ paths:
                   message: Resource not found
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "409":
           description: Resource version changed
           content:
@@ -2734,7 +2919,8 @@ paths:
                   message: Resource version changed
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -2748,7 +2934,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -2762,7 +2949,8 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
       requestBody:
         required: true
         content:
@@ -2778,8 +2966,8 @@ paths:
     get:
       operationId: streamEvents
       summary: Stream scoped events
-      description: Future cursor-based SSE projection of EventV1. S0 returns 501; the browser must never
-        infer mission state from accumulated events.
+      description: Future cursor-based SSE projection of EventV1. S0 returns 501; the
+        browser must never infer mission state from accumulated events.
       tags:
         - events
       x-s0-supported: false
@@ -2816,7 +3004,8 @@ paths:
                   message: Scope access denied
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "500":
           description: Unexpected service failure
           content:
@@ -2830,7 +3019,8 @@ paths:
                   message: Unexpected service failure
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
         "501":
           description: Capability is not implemented in S0
           content:
@@ -2844,7 +3034,578 @@ paths:
                   message: Capability is not implemented in S0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented operation
+                  required_action: Read the current S0 capabilities; choose an implemented
+                    operation
+  /auth/session:
+    get:
+      operationId: getLocalSession
+      summary: getLocalSession
+      tags:
+        - foundation
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters: []
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalSessionV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+  /materials/{id}:
+    get:
+      operationId: getMaterial
+      summary: getMaterial
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDetailV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+    patch:
+      operationId: updateMaterial
+      summary: updateMaterial
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MaterialDetailV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMaterialRequestV1"
+  /materials/{id}/revisions/{revision}/content:
+    get:
+      operationId: getMaterialContent
+      summary: getMaterialContent
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: revision
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+  /materials/{id}/uses:
+    post:
+      operationId: recordMaterialUse
+      summary: recordMaterialUse
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionResultV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordUseRequestV1"
+  /distillations:
+    get:
+      operationId: listDistillations
+      summary: listDistillations
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters: []
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DistillationListV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+    post:
+      operationId: recordDistillation
+      summary: recordDistillation
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DistillationResultV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordDistillationRequestV1"
+  /opportunities/{id}:
+    get:
+      operationId: getOpportunity
+      summary: getOpportunity
+      tags:
+        - opportunities
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpportunityDetailV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+  /opportunities/{id}/revisions:
+    post:
+      operationId: reviseOpportunity
+      summary: reviseOpportunity
+      tags:
+        - opportunities
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpportunityDetailV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OpportunityRequestV1"
+  /jobs:
+    get:
+      operationId: listJobs
+      summary: listJobs
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters: []
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobListV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+  /jobs/{id}:
+    get:
+      operationId: getJob
+      summary: getJob
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+  /jobs/{id}/retry:
+    post:
+      operationId: retryJob
+      summary: retryJob
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobCommandV1"
+  /jobs/{id}/cancel:
+    post:
+      operationId: cancelJob
+      summary: cancelJob
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Attention result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobV1"
+        "400": &a11
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": *a11
+        "404": *a11
+        "409": *a11
+        "500": *a11
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobCommandV1"
+  /materials/{id}/revisions/{revision}/attachments/{name}:
+    get:
+      operationId: getMaterialAttachment
+      summary: Read original immutable source attachment
+      tags:
+        - materials
+      x-s1-supported: true
+      description: S1 Attention service. Human writes require local session cookie and
+        CSRF token; Agent bearer credentials are read-only. Reads do not
+        increase human attention.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: revision
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Original source bytes; no filesystem paths accepted
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Structured service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          source: a11
+        "404":
+          source: a11
+        "409":
+          source: a11
+        "500":
+          source: a11
 components:
   schemas:
     ErrorV1:
@@ -2960,8 +3721,8 @@ components:
             - execution
             - native_resume
             - handoff
-          description: Availability of HTTP operations in S0, not evidence about installed local agent native
-            abilities.
+          description: Availability of HTTP operations in S0, not evidence about installed
+            local agent native abilities.
         storage:
           type: object
           additionalProperties: false
@@ -3116,6 +3877,18 @@ components:
         agent_usage_count:
           type: integer
           minimum: 0
+        attention_score:
+          type: number
+        long_term_value:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
+        pinned:
+          type: boolean
       required:
         - id
         - source_locator
@@ -3166,6 +3939,18 @@ components:
           type: array
           items:
             type: string
+        purpose:
+          type: string
+        distillation_ids:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        version:
+          type: integer
+          minimum: 1
       required:
         - id
         - revision
@@ -3709,6 +4494,10 @@ components:
           type: string
           enum:
             - queued
+            - running
+            - succeeded
+            - failed
+            - cancelled
       required:
         - schema_version
         - job_id
@@ -3874,6 +4663,8 @@ components:
           type: string
         source_key:
           type: string
+          description: Empty string requests adapter canonical source key; nonempty keys
+            are verified by the adapter.
         kind:
           type: string
           enum:
@@ -3883,6 +4674,8 @@ components:
             - file
         content_digest:
           type: string
+          description: Empty string requests server digest computation; a nonempty digest
+            is verified against actual imported bytes.
         export_text:
           type: string
         local_file_ref:
@@ -3895,6 +4688,14 @@ components:
           type: array
           items:
             type: string
+        title:
+          type: string
+        adapter:
+          type: string
+          enum:
+            - arxiv
+            - summarize
+            - manual
       required:
         - schema_version
         - request_id
@@ -4480,8 +5281,9 @@ components:
           required:
             - type
             - payload
-      description: Versioned SSE data envelope. Known SPEC12 payloads are discriminated by
-        context-prefixed type; actor is injected by trusted publisher. S0 does not stream events.
+      description: Versioned SSE data envelope. Known SPEC12 payloads are
+        discriminated by context-prefixed type; actor is injected by trusted
+        publisher. S0 does not stream events.
     ProjectSnapshotV1:
       type: object
       additionalProperties: false
@@ -4611,3 +5413,603 @@ components:
         - experience_id
       examples:
         - *a10
+    ProvenanceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        processor: &a11
+          type: string
+        version: *a11
+        mode:
+          type: string
+          enum:
+            - manual
+            - arxiv
+            - summarize_export
+            - summarize_extract
+        source: *a11
+      required:
+        - processor
+        - version
+        - mode
+        - source
+    MaterialRevisionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        material_id: &a11
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        source_key: *a11
+        source_locator: *a11
+        content_digest: *a11
+        object_ref: *a11
+        source_spans:
+          type: array
+          items: *a11
+        provenance:
+          $ref: "#/components/schemas/ProvenanceV1"
+        created_at:
+          type: string
+          format: date-time
+        summary: *a11
+        attachments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttachmentRefV1"
+      required:
+        - material_id
+        - revision
+        - source_key
+        - source_locator
+        - content_digest
+        - object_ref
+        - source_spans
+        - provenance
+        - created_at
+    UsageV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a11
+          type: string
+        material_id: *a11
+        actor_id: *a11
+        actor_kind:
+          type: string
+          enum:
+            - human
+            - agent
+        action: *a11
+        occurred_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - material_id
+        - actor_id
+        - actor_kind
+        - action
+        - occurred_at
+    DistillationV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a11
+          type: string
+        input_refs: &a12
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        stage:
+          type: string
+          enum:
+            - content
+            - topic
+            - project
+        output_ref: *a11
+        output_text: *a11
+        status:
+          type: string
+          enum:
+            - succeeded
+        next_question:
+          type:
+            - string
+            - "null"
+        question: *a11
+        processing_config: *a11
+        related_refs: *a12
+        related_ideas: &a13
+          type: array
+          items: *a11
+        conflicts: *a13
+        pending_questions: *a13
+        goal_refs: *a13
+        existing_assets: *a13
+        expected_improvement: *a11
+        minimum_artifact: *a11
+        missing_evidence: *a13
+        provenance:
+          $ref: "#/components/schemas/ProvenanceV1"
+        reuse_key: *a11
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - input_refs
+        - stage
+        - output_ref
+        - output_text
+        - status
+        - next_question
+        - question
+        - processing_config
+        - related_refs
+        - related_ideas
+        - conflicts
+        - pending_questions
+        - goal_refs
+        - existing_assets
+        - expected_improvement
+        - minimum_artifact
+        - missing_evidence
+        - provenance
+        - reuse_key
+        - created_at
+    RecordDistillationRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a11
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        input_refs: &a12
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        stage:
+          type: string
+          enum:
+            - content
+            - topic
+            - project
+        output_text: *a11
+        next_question:
+          type:
+            - string
+            - "null"
+        question: *a11
+        processing_config: *a11
+        related_refs: *a12
+        related_ideas: &a13
+          type: array
+          items: *a11
+        conflicts: *a13
+        pending_questions: *a13
+        goal_refs: *a13
+        existing_assets: *a13
+        expected_improvement: *a11
+        minimum_artifact: *a11
+        missing_evidence: *a13
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - input_refs
+        - stage
+        - output_text
+        - question
+        - processing_config
+    DistillationResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        distillation:
+          $ref: "#/components/schemas/DistillationV1"
+        reused:
+          type: boolean
+      required:
+        - schema_version
+        - distillation
+        - reused
+    MaterialDetailV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        material:
+          $ref: "#/components/schemas/MaterialV1"
+        revisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/MaterialRevisionV1"
+        distillations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DistillationV1"
+        uses:
+          type: array
+          items:
+            $ref: "#/components/schemas/UsageV1"
+      required:
+        - schema_version
+        - material
+        - revisions
+        - distillations
+        - uses
+    ContentV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        material_id: &a11
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        content_digest: *a11
+        text: *a11
+        provenance:
+          $ref: "#/components/schemas/ProvenanceV1"
+      required:
+        - schema_version
+        - material_id
+        - revision
+        - content_digest
+        - text
+        - provenance
+    ReviewV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a11
+          type: string
+        opportunity_id: *a11
+        revision:
+          type: integer
+          minimum: 1
+        feedback:
+          type: string
+          enum:
+            - adopt
+            - later
+            - reject
+            - revise
+            - already_solved
+        reason: *a11
+        dimensions:
+          $ref: "#/components/schemas/DimensionsV1"
+        actor_id: *a11
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - opportunity_id
+        - revision
+        - feedback
+        - reason
+        - actor_id
+        - created_at
+    OpportunityDetailV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        opportunity:
+          $ref: "#/components/schemas/OpportunityV1"
+        revisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/OpportunityV1"
+        reviews:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewV1"
+      required:
+        - schema_version
+        - opportunity
+        - revisions
+        - reviews
+    OpportunityRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a11
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        title: *a11
+        evidence_refs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRefV1"
+        goal_refs: &a12
+          type: array
+          items: *a11
+        dimensions:
+          $ref: "#/components/schemas/DimensionsV1"
+        next_step: *a11
+        missing_evidence: *a12
+        purpose: *a11
+        distillation_ids: *a12
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - title
+        - evidence_refs
+        - dimensions
+        - next_step
+        - purpose
+        - distillation_ids
+    RecordUseRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        action:
+          type: string
+          enum:
+            - reread
+            - annotate
+            - pin
+            - adopt
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - action
+    JobV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        job_id: &a11
+          type: string
+        status:
+          type: string
+          enum:
+            - queued
+            - running
+            - succeeded
+            - failed
+            - cancelled
+        kind: *a11
+        version: &a12
+          type: integer
+          minimum: 1
+        dedupe_key: *a11
+        operation_id: *a11
+        material_id:
+          type:
+            - string
+            - "null"
+        material_revision:
+          type:
+            - integer
+            - "null"
+          minimum: 1
+        error:
+          anyOf:
+            - $ref: "#/components/schemas/ServiceErrorV1"
+            - type: "null"
+        attempts:
+          type: integer
+          minimum: 0
+        max_attempts: *a12
+        created_at: &a13
+          type: string
+          format: date-time
+        updated_at: *a13
+        deadline_at: *a13
+        cancel_requested:
+          type: boolean
+        external_started:
+          type: boolean
+        delivery_unknown:
+          type: boolean
+      required:
+        - schema_version
+        - job_id
+        - status
+        - kind
+        - version
+        - dedupe_key
+        - operation_id
+        - material_id
+        - material_revision
+        - error
+        - attempts
+        - max_attempts
+        - created_at
+        - updated_at
+        - deadline_at
+        - cancel_requested
+        - external_started
+        - delivery_unknown
+    ServiceErrorV1:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          enum:
+            - validation_failed
+            - unsupported_capability
+            - version_conflict
+            - context_stale
+            - index_stale
+            - scope_denied
+            - approval_required
+            - approval_revoked
+            - lease_lost
+            - budget_exhausted
+            - provider_unavailable
+            - evidence_missing
+            - delivery_unknown
+            - not_found
+            - internal_error
+        message:
+          type: string
+        request_id:
+          type: string
+        retryable:
+          type: boolean
+        required_action:
+          type: string
+      required:
+        - code
+        - message
+        - request_id
+        - retryable
+        - required_action
+    JobCommandV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+    LocalSessionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        actor_id: &a11
+          type: string
+        actor_kind:
+          type: string
+          enum:
+            - human
+        csrf_token: *a11
+      required:
+        - schema_version
+        - actor_id
+        - actor_kind
+        - csrf_token
+    JobListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobV1"
+        next_cursor:
+          type:
+            - string
+            - "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    DistillationListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DistillationV1"
+        next_cursor:
+          type:
+            - string
+            - "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    AttachmentRefV1:
+      type: object
+      additionalProperties: false
+      properties:
+        name: &a11
+          type: string
+        media_type: *a11
+        object_ref: *a11
+        source_locator: *a11
+      required:
+        - name
+        - media_type
+        - object_ref
+        - source_locator
+    UpdateMaterialRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        lifecycle:
+          type: string
+          enum:
+            - active
+            - archived
+            - withdrawn
+        collection_reason:
+          type:
+            - string
+            - "null"
+        pinned:
+          type: boolean
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - lifecycle
+        - collection_reason
+        - pinned
