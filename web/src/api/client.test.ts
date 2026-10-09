@@ -2,6 +2,23 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiError, createApiClient, createReadApi, createAttentionApi } from './client';
 
 describe('generated HTTP client read boundary', () => {
+  it('reads independent CLI observations through a human session without promoting unknown capabilities', async () => {
+    const observation = { status: 'unknown', reason: 'native_runtime_not_tested', checked_at: null };
+    const inventory = { schema_version: 1, items: [{
+      id: 'contract-local-cli', display_name: 'Contract local CLI', version: null,
+      installed: { ...observation, status: 'available', reason: 'path_entry_found' },
+      configured: observation, startable: observation,
+      capabilities: Object.fromEntries(['discover', 'read_context', 'start', 'resume', 'send', 'stop', 'observe', 'reconcile'].map(name => [name, observation])),
+    }], next_cursor: null };
+    const fetchImpl = vi.fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ csrf_token: 'human' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify(inventory)));
+    const result = await createReadApi(createApiClient('http://localhost/api/v1', fetchImpl)).listLocalAgents();
+    expect(result).toEqual(inventory);
+    expect(fetchImpl.mock.calls.map(([request]) => (request as Request).url)).toEqual([
+      'http://localhost/api/v1/auth/session', 'http://localhost/api/v1/local-agents',
+    ]);
+  });
   it('returns the backend empty envelope without substituting fixtures', async () => {
     const fetchImpl = vi.fn<typeof fetch>().mockImplementation(async () => new Response(JSON.stringify({ schema_version: 1, items: [], next_cursor: null }), {
       headers: { 'Content-Type': 'application/json' },

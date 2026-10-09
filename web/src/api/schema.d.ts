@@ -1,5 +1,25 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/local-agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cached local CLI inventory
+         * @description Human-session read of bounded PATH-based CLI observations. This GET never executes CLI probes, reads credentials or scans private sessions/projects. Installation, configuration and startability are independent observations; native capabilities require actual native runtime checks. Unknown is not support. No project access or native control is granted by this inventory. A server without the inventory service returns 501, not an empty success.
+         */
+        get: operations["listLocalAgents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -988,16 +1008,32 @@ export interface components {
          *       },
          *       "fixture": false
          *     }
+         * @example {
+         *       "schema_version": 1,
+         *       "stage": "S1",
+         *       "capabilities": {
+         *         "imports": true,
+         *         "approvals": false,
+         *         "execution": false,
+         *         "native_resume": false,
+         *         "handoff": false
+         *       },
+         *       "storage": {
+         *         "engine": "sqlite",
+         *         "schema_version": 5
+         *       },
+         *       "fixture": false
+         *     }
          */
         FoundationV1: {
             /** @constant */
             schema_version: 1;
             /** @enum {string} */
             stage: "S0" | "S1";
-            /** @description Availability of HTTP operations in S0, not evidence about installed local agent native abilities. */
+            /** @description Availability of assembled HTTP operations, not evidence about installed local agent native abilities or completion of S1 acceptance. */
             capabilities: {
-                /** @constant */
-                imports: false;
+                /** @description True when the S1 material import service is assembled. */
+                imports: boolean;
                 /** @constant */
                 approvals: false;
                 /** @constant */
@@ -1014,6 +1050,134 @@ export interface components {
             };
             /** @constant */
             fixture: false;
+        };
+        /**
+         * @description Independent readiness observation; no credential inspection is implied.
+         * @example {
+         *       "status": "unknown",
+         *       "reason": "configuration_not_inspected",
+         *       "checked_at": null
+         *     }
+         */
+        AgentObservationV1: {
+            /** @enum {string} */
+            status: "available" | "unavailable" | "unknown" | "unsupported";
+            reason: string;
+            /** Format: date-time */
+            checked_at: string | null;
+        };
+        /**
+         * @description SPEC 8.1 native capability; CLI help or installation is insufficient evidence of support.
+         * @example {
+         *       "status": "unknown",
+         *       "reason": "native_runtime_not_tested",
+         *       "checked_at": null
+         *     }
+         */
+        NativeCapabilityObservationV1: {
+            /** @enum {string} */
+            status: "supported" | "unsupported" | "unknown";
+            reason: string;
+            /** Format: date-time */
+            checked_at: string | null;
+        };
+        /**
+         * @description CLI installation identity, independent of any private native session, project or Mission.
+         * @example {
+         *       "id": "example-cli",
+         *       "display_name": "Example CLI (schema example only)",
+         *       "version": null,
+         *       "installed": {
+         *         "status": "unknown",
+         *         "reason": "cli_not_probed",
+         *         "checked_at": null
+         *       },
+         *       "configured": {
+         *         "status": "unknown",
+         *         "reason": "configuration_not_inspected",
+         *         "checked_at": null
+         *       },
+         *       "startable": {
+         *         "status": "unknown",
+         *         "reason": "native_runtime_not_tested",
+         *         "checked_at": null
+         *       },
+         *       "capabilities": {
+         *         "discover": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         },
+         *         "read_context": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         },
+         *         "start": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         },
+         *         "resume": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         },
+         *         "send": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         },
+         *         "stop": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         },
+         *         "observe": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         },
+         *         "reconcile": {
+         *           "status": "unknown",
+         *           "reason": "native_runtime_not_tested",
+         *           "checked_at": null
+         *         }
+         *       }
+         *     }
+         */
+        LocalAgentV1: {
+            /** @description Stable CLI adapter identity, not executable path or session ID. */
+            id: string;
+            display_name: string;
+            /** @description Observed version only; null if not observed. */
+            version: string | null;
+            installed: components["schemas"]["AgentObservationV1"];
+            configured: components["schemas"]["AgentObservationV1"];
+            startable: components["schemas"]["AgentObservationV1"];
+            capabilities: {
+                discover: components["schemas"]["NativeCapabilityObservationV1"];
+                read_context: components["schemas"]["NativeCapabilityObservationV1"];
+                start: components["schemas"]["NativeCapabilityObservationV1"];
+                resume: components["schemas"]["NativeCapabilityObservationV1"];
+                send: components["schemas"]["NativeCapabilityObservationV1"];
+                stop: components["schemas"]["NativeCapabilityObservationV1"];
+                observe: components["schemas"]["NativeCapabilityObservationV1"];
+                reconcile: components["schemas"]["NativeCapabilityObservationV1"];
+            };
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "items": [],
+         *       "next_cursor": null
+         *     }
+         */
+        LocalAgentListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["LocalAgentV1"][];
+            next_cursor: string | null;
         };
         /**
          * @example {
@@ -2427,6 +2591,65 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listLocalAgents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cached inventory; an empty array means no observed entries */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalAgentListV1"];
+                };
+            };
+            /** @description Human session required; Agent bearer grants no access */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Inventory query failed; do not substitute an empty array */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local Agent inventory is not assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "local Agent inventory is not assembled",
+                     *         "request_id": "example-request",
+                     *         "retryable": false,
+                     *         "required_action": "start_a_server_with_local_agent_inventory"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     getHealth: {
         parameters: {
             query?: never;

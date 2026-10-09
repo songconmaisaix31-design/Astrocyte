@@ -19,6 +19,9 @@ export type MaterialDomain = components['schemas']['MaterialDomainV1'];
 export type ProjectSpace = components['schemas']['ProjectSpaceV1'];
 export type RankingProfileDetail = components['schemas']['RankingProfileDetailV1'];
 export type DistillerStatus = components['schemas']['DistillerStatusV1'];
+export type LocalAgent = components['schemas']['LocalAgentV1'];
+export type AgentObservation = components['schemas']['AgentObservationV1'];
+export type NativeCapabilityObservation = components['schemas']['NativeCapabilityObservationV1'];
 
 /** Uses generated types; no command retries. Session bootstrap precedes protected reads. */
 export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) => {
@@ -82,12 +85,13 @@ export function createReadApi(client = api) {
     listMaterials: (options?: ReadOptions) => unwrap(client.GET('/materials', options)),
     listOpportunities: (options?: ReadOptions) => unwrap(client.GET('/opportunities', options)),
     listProjects: (options?: ReadOptions) => unwrap(client.GET('/projects', options)),
+    listLocalAgents: (options?: ReadOptions) => unwrap(client.GET('/local-agents', options)),
     listProposals: (options?: ReadOptions) => unwrap(client.GET('/proposals', options)),
     listSessions: (options?: ReadOptions) => unwrap(client.GET('/sessions', options)),
     listMissions: (options?: ReadOptions) => unwrap(client.GET('/missions', options)),
   };
 }
-export const { getHealth, getFoundation, listMaterials, listOpportunities, listProjects, listProposals, listSessions, listMissions } = createReadApi();
+export const { getHealth, getFoundation, listMaterials, listOpportunities, listProjects, listLocalAgents, listProposals, listSessions, listMissions } = createReadApi();
 
 /** Human write helpers bootstrap the local session, then send CSRF and the caller's
  * idempotency key. They never retry a write or change its key on failure. */
