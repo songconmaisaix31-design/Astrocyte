@@ -31,7 +31,7 @@ test.describe('Three-page navigation', () => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('共同工作区');
-    await expect(page.getByRole('heading', { name: /项目/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '本地 Agent 与项目', exact: true })).toBeVisible();
     await expect(page.getByRole('tab', { name: '提案与批准' })).toBeVisible();
     await expect(page.getByRole('heading', { name: /^会话/ })).toBeVisible();
   });
@@ -80,7 +80,7 @@ test.describe('Empty API states', () => {
   test('共同工作区 shows settled empty headings', async ({ page }) => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=暂无项目').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=暂无会话').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('tab', { name: '提案与批准' }).click();
     await expect(page.locator('text=暂无提案').first()).toBeVisible({ timeout: 10000 });

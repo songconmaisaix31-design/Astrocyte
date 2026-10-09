@@ -47,6 +47,7 @@ type Services struct {
 	Materials      attentionapp.MaterialService
 	Opportunities  attentionapp.OpportunityService
 	Projects       workspaceapp.ProjectService
+	LocalAgents    workspaceapp.LocalAgentInventory
 	Proposals      workspaceapp.ProposalService
 	Sessions       workspaceapp.SessionService
 	Missions       swarmapp.MissionService
@@ -75,6 +76,7 @@ func NewServer(cfg Config) *Server {
 	mux.HandleFunc("GET /api/v1/materials", h.handleListMaterials)
 	mux.HandleFunc("GET /api/v1/opportunities", h.handleListOpportunities)
 	mux.HandleFunc("GET /api/v1/projects", h.handleListProjects)
+	mux.HandleFunc("GET /api/v1/local-agents", h.handleListLocalAgents)
 	mux.HandleFunc("GET /api/v1/proposals", h.handleListProposals)
 	mux.HandleFunc("GET /api/v1/sessions", h.handleListSessions)
 	mux.HandleFunc("GET /api/v1/missions", h.handleListMissions)
@@ -116,7 +118,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.Attention != nil {
+	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)
