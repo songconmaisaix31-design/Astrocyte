@@ -24,6 +24,21 @@ func TestImportRootsExplicitAndNoDefault(t *testing.T) {
 		t.Fatalf("explicit root: %v %v", roots, err)
 	}
 }
+
+func TestAttentionPolicyRejectsInvalidWeights(t *testing.T) {
+	t.Setenv("ASTROCYTE_ATTENTION_HALF_LIFE_SECONDS", "3600")
+	for _, raw := range []string{"null", "[]", "invalid", `{"reread":-1}`, `{"agent_read":100}`} {
+		t.Setenv("ASTROCYTE_ATTENTION_WEIGHTS", raw)
+		if _, _, err := resolveAttentionPolicy(); err == nil {
+			t.Fatalf("invalid attention weights accepted: %s", raw)
+		}
+	}
+	t.Setenv("ASTROCYTE_ATTENTION_WEIGHTS", `{"reread":4}`)
+	halfLife, weights, err := resolveAttentionPolicy()
+	if err != nil || halfLife.Seconds() != 3600 || weights["reread"] != 4 {
+		t.Fatalf("valid explicit attention parameters rejected: %v %v %v", halfLife, weights, err)
+	}
+}
 func TestAllowedOriginsDoNotTrustOtherHosts(t *testing.T) {
 	t.Setenv("ASTROCYTE_WEB_PORT", "15555")
 	t.Setenv("ASTROCYTE_ALLOWED_ORIGINS", "")
