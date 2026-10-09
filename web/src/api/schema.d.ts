@@ -988,16 +988,32 @@ export interface components {
          *       },
          *       "fixture": false
          *     }
+         * @example {
+         *       "schema_version": 1,
+         *       "stage": "S1",
+         *       "capabilities": {
+         *         "imports": true,
+         *         "approvals": false,
+         *         "execution": false,
+         *         "native_resume": false,
+         *         "handoff": false
+         *       },
+         *       "storage": {
+         *         "engine": "sqlite",
+         *         "schema_version": 5
+         *       },
+         *       "fixture": false
+         *     }
          */
         FoundationV1: {
             /** @constant */
             schema_version: 1;
             /** @enum {string} */
             stage: "S0" | "S1";
-            /** @description Availability of HTTP operations in S0, not evidence about installed local agent native abilities. */
+            /** @description Availability of assembled HTTP operations, not evidence about installed local agent native abilities or completion of S1 acceptance. */
             capabilities: {
-                /** @constant */
-                imports: false;
+                /** @description True when the S1 material import service is assembled. */
+                imports: boolean;
                 /** @constant */
                 approvals: false;
                 /** @constant */

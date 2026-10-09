@@ -4590,7 +4590,7 @@ components:
           properties:
             imports:
               type: boolean
-              const: false
+              description: True when the S1 material import service is assembled.
             approvals:
               type: boolean
               const: false
@@ -4609,8 +4609,8 @@ components:
             - execution
             - native_resume
             - handoff
-          description: Availability of HTTP operations in S0, not evidence about installed
-            local agent native abilities.
+          description: Availability of assembled HTTP operations, not evidence about installed
+            local agent native abilities or completion of S1 acceptance.
         storage:
           type: object
           additionalProperties: false
@@ -4646,6 +4646,18 @@ components:
           storage:
             engine: sqlite
             schema_version: 1
+          fixture: false
+        - schema_version: 1
+          stage: S1
+          capabilities:
+            imports: true
+            approvals: false
+            execution: false
+            native_resume: false
+            handoff: false
+          storage:
+            engine: sqlite
+            schema_version: 5
           fixture: false
     SourceRefV1:
       type: object
