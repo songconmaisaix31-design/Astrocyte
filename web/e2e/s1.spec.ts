@@ -219,4 +219,27 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect((await api.get('/missions')).items).toHaveLength(0);
     await page.screenshot({ path: testInfo.outputPath('s1-human-ranking-profile.png'), fullPage: true });
   });
+
+  test('default automatic processing remains disabled and opening its form never submits a model job', async ({ page }) => {
+    const input = { ...paperImport('https://example.invalid/contract-local/browser-disabled'), title: 'contract_local 未授权自动处理资料' };
+    const imported = await importMaterial(api, input);
+    const jobsBefore = server.query('SELECT COUNT(*) AS n FROM attention_jobs WHERE json_extract(data,\'$.kind\')=?', 'distillation')[0].n;
+    let automaticSubmissions = 0;
+    page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/v1/distillations/jobs')) automaticSubmissions++; });
+    await page.goto(`${server.webURL}/attention`);
+    await page.getByRole('main').getByRole('button').filter({ has: page.getByText(input.title, { exact: true }) }).click();
+    const dialog = page.getByRole('dialog');
+    const statusResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/distillations/processor'));
+    await dialog.getByRole('button', { name: '继续沉淀', exact: true }).click();
+    expect((await statusResponse).status()).toBe(200);
+    const automatic = dialog.locator('section[aria-label="自动沉淀"]');
+    await expect(automatic).toContainText('自动处理未启用');
+    await expect(automatic.getByRole('button', { name: '提交自动沉淀', exact: true })).toBeDisabled();
+    await expect(automatic.getByLabel('自动沉淀本轮问题', { exact: true })).toBeDisabled();
+    const status = await api.get('/distillations/processor');
+    expect(status).toMatchObject({ available: false, configuration_id: null, model: null, allowed_source_keys: [] });
+    expect(automaticSubmissions).toBe(0);
+    expect(server.query('SELECT COUNT(*) AS n FROM attention_jobs WHERE json_extract(data,\'$.kind\')=?', 'distillation')[0].n).toBe(jobsBefore);
+    expect((await api.get(`/materials/${imported.detail.material.id}`)).material.human_usage_count).toBe(0);
+  });
 });
