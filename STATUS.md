@@ -2,7 +2,9 @@
 
 日期：2026-10-10。当前任务：[S1 Attention 计划](tasks/S1-plan.md) 与 [summarize 接入](tasks/S1-summarize-plan.md)。完整真实验收尚未通过。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)。下面论文第二步、首轮界面与 S0 记录为历史结果，不代表新 summarize 全部通过。
 
-视频修复正在进行，当前切片与互斥写域见 [修复计划](tasks/S1-video-fix-plan.md)。用户已授权修改所选B站来源DNS；01:07仅追加B站fake-IP例外并实际热加载204，所选URL上游网络检查PASS，音轨下载完成，唯一首次本地转写仍在执行。尚未取得最终正文/作业成功/页面正向结果。W0承担Windows项目CLI路径和已有默认期限修复，W3仅准备真实正向浏览器入口；不同时转写两个视频。以下未解决DNS与四轨释放等是前轮快照。收藏夹账号、先发现再选择的反馈范围和同步频率尚未决定，本轮先修指定单视频。
+视频修复正在进行，当前切片与互斥写域见 [修复计划](tasks/S1-video-fix-plan.md)。用户已授权所选B站DNS例外，01:07实际热加载204与上游网络检查PASS。W2实际Reader/Service导入成功730.29秒，正文32908bytes、三附件与SQLite/objects重开一致，人类关注/整理/Mission0；已验收释放。W0修正Windows项目CLI真实路径与既有默认期限1800秒，Codex独立180秒不变。统一源fd9937b42842a93a9b63d417a27725bd68b48389普通合入root为017c133ec4322a6d1011874eee25e148d814fd9c，主控独立pnpm check/build PASS（API14/前端40/契约226等）。W3已01:33:18从空库真实页面提交202，唯一转写仍在进行，浏览器正向/实际服务器进程重启尚未通过。以下未解决DNS与四轨释放等是前轮快照。收藏夹账号、先发现再选择的反馈范围和同步频率尚未决定，本轮先修指定单视频。
+
+当前预览01:35:52重启为017c133业务源，5173/8787均200；个人SQLite材料/作业仍0，验收资料未灌入，Codex关闭。API PID86716、Vite56584、父64976，程序目录`%LOCALAPPDATA%/Temp/astrocyte-dev-QtmjWR`；停止前应重新核对。旧进程退出再次出现既有清理竞态，旧PID/监听实际消失后才启动新服务。无会话直接GET资料被正常403拒绝，未绕过；随后只读SQLite计数核实为空。本轮完整浏览器回归待W3媒体结束后执行。
 
 用户已允许Python，原无Python限制撤销。正式接入沿用原 W0/W2/W3/W4 工作树和互斥写域，本机 Orca Codex / gpt-6.1-sol；主控没有写业务代码。当前普通合并源 `81e92ae521fadf6def68b771e005bd77cc3f7ed3`，含 W0 最终 `d8f29070073e6f2e71ae6fcca5fa259205208b8f`、W2 `777f8559d5ba3afa17c01681397b5dc2bbc0be8f`、W3 最终 `e8cc1e001cdf3468187c901f7fa1e262ebc40359` 与 W4 最终 `1a77d16c83f063c94e3df6d2a5bcaa785523b058`。各轨已 push、终端已结算释放，工作树与历史保留。W3 原 native 内存分配失败后，按同任务 retry-of 恢复原轨；没有重建调度器。
 
