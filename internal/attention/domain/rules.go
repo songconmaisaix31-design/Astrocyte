@@ -141,7 +141,7 @@ func ValidateDimensions(dimensions map[string]DimensionScore) error {
 		if !slices.Contains(DimensionNames, name) {
 			return ErrInvalid
 		}
-		if score.Value != nil && (math.IsNaN(*score.Value) || math.IsInf(*score.Value, 0) || *score.Value < 0 || *score.Value > 1) {
+		if score.Value != nil && (math.IsNaN(*score.Value) || math.IsInf(*score.Value, 0)) {
 			return ErrInvalid
 		}
 	}
