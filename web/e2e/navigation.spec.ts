@@ -5,14 +5,11 @@
  * Config (W0-owned) sets baseURL and two viewport projects:
  *   chromium-1920 (1920x1080) and chromium-1280 (1280x720).
  * Each test runs at both viewports automatically.
+ *
+ * All page.goto calls use relative paths (config baseURL handles host/port).
+ * Empty state assertions check actual heading text, not generic role counts.
  */
 import { test, expect } from '@playwright/test';
-
-// ── Helpers ──
-
-async function waitForEmptyOrContent(page: import('@playwright/test').Page) {
-  await page.waitForSelector('[role="status"], [role="list"]', { timeout: 10000 }).catch(() => {});
-}
 
 // ── 1. Navigation across all three pages ──
 
@@ -27,26 +24,26 @@ test.describe('Three-page navigation', () => {
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('注意力');
-    await expect(page.locator('text=素材')).toBeVisible();
-    await expect(page.locator('text=机会')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /素材/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /机会/ })).toBeVisible();
   });
 
   test('navigates to workspace page', async ({ page }) => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('工作台');
-    await expect(page.locator('text=项目')).toBeVisible();
-    await expect(page.locator('text=提案')).toBeVisible();
-    await expect(page.locator('text=会话')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /项目/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /提案/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /会话/ })).toBeVisible();
   });
 
   test('navigates to swarm page', async ({ page }) => {
     await page.goto('/swarm');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('集群');
-    await expect(page.locator('text=任务')).toBeVisible();
-    await expect(page.locator('text=工作项')).toBeVisible();
-    await expect(page.locator('text=产物')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /任务/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /工作项/ })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /产物/ })).toBeVisible();
   });
 
   test('sidebar navigation links work', async ({ page }) => {
@@ -73,25 +70,26 @@ test.describe('Three-page navigation', () => {
 // ── 2. Real empty API states ──
 
 test.describe('Empty API states', () => {
-  test('attention page shows empty or loading states', async ({ page }) => {
+  test('attention page shows actual empty headings for materials and opportunities', async ({ page }) => {
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
-    await waitForEmptyOrContent(page);
-    expect(await page.locator('[role="status"]').count()).toBeGreaterThan(0);
+    // The backend returns empty lists, so we should see the real empty state headings
+    const emptyTexts = page.locator('text=/暂无素材|暂无机会|加载中/');
+    await expect(emptyTexts.first()).toBeVisible({ timeout: 10000 });
   });
 
-  test('workspace page shows empty or loading states', async ({ page }) => {
+  test('workspace page shows actual empty headings', async ({ page }) => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
-    await waitForEmptyOrContent(page);
-    expect(await page.locator('[role="status"]').count()).toBeGreaterThan(0);
+    const emptyTexts = page.locator('text=/暂无项目|暂无提案|暂无会话|加载中/');
+    await expect(emptyTexts.first()).toBeVisible({ timeout: 10000 });
   });
 
-  test('swarm page shows empty or loading states', async ({ page }) => {
+  test('swarm page shows actual empty headings', async ({ page }) => {
     await page.goto('/swarm');
     await page.waitForLoadState('networkidle');
-    await waitForEmptyOrContent(page);
-    expect(await page.locator('[role="status"]').count()).toBeGreaterThan(0);
+    const emptyTexts = page.locator('text=/暂无任务|暂无工作项|暂无产物|加载中/');
+    await expect(emptyTexts.first()).toBeVisible({ timeout: 10000 });
   });
 });
 
@@ -110,22 +108,22 @@ test.describe('Fixture mode', () => {
     await expect(page.locator('[role="alert"]:has-text("示例数据模式")')).not.toBeVisible();
   });
 
-  test('fixture data populates materials list', async ({ page }) => {
+  test('fixture data populates materials list with neutral titles', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=基于图神经网络的星形胶质细胞')).toBeVisible();
+    await expect(page.locator('text=示例论文')).toBeVisible();
   });
 
   test('fixture shows video material for summarize direction', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=星形胶质细胞研究进展综述报告')).toBeVisible();
+    await expect(page.locator('text=示例视频素材')).toBeVisible();
   });
 
   test('clicking material opens detail panel with fixture tag', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("基于图神经网络")').first().click();
+    await page.locator('[role="button"]:has-text("示例论文")').first().click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
     await expect(page.locator('[role="dialog"]')).toContainText('素材详情');
     await expect(page.locator('[role="dialog"]:has-text("示例数据")')).toBeVisible();
@@ -134,7 +132,7 @@ test.describe('Fixture mode', () => {
   test('clicking opportunity opens detail panel', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("胶质细胞-神经元代谢偶联")').first().click();
+    await page.locator('[role="button"]:has-text("示例机会")').first().click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
     await expect(page.locator('[role="dialog"]')).toContainText('机会详情');
   });
@@ -142,22 +140,22 @@ test.describe('Fixture mode', () => {
   test('workspace fixture shows projects, proposals, sessions', async ({ page }) => {
     await page.goto('/workspace?fixture=1');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=阿尔茨海默病星形胶质细胞')).toBeVisible();
-    await expect(page.locator('text=系统性综述')).toBeVisible();
-    await expect(page.locator('text=claude-code')).toBeVisible();
+    await expect(page.locator('text=示例项目').first()).toBeVisible();
+    await expect(page.locator('text=示例提案').first()).toBeVisible();
+    await expect(page.locator('text=fixture-adapter').first()).toBeVisible();
   });
 
   test('swarm fixture shows missions with blocked status', async ({ page }) => {
     await page.goto('/swarm?fixture=1');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=对AD早期星形胶质细胞')).toBeVisible();
+    await expect(page.locator('text=示例运行中任务')).toBeVisible();
     await expect(page.locator('text=已阻塞')).toBeVisible();
   });
 
   test('detail panel shows disabled notice for future features', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("基于图神经网络")').first().click();
+    await page.locator('[role="button"]:has-text("示例论文")').first().click();
     await expect(page.locator('[role="dialog"]')).toContainText('后续');
   });
 
@@ -173,7 +171,7 @@ test.describe('Fixture mode', () => {
   test('swarm detail shows fixture tag', async ({ page }) => {
     await page.goto('/swarm?fixture=1');
     await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("对AD早期")').first().click();
+    await page.locator('[role="button"]:has-text("示例运行中任务")').first().click();
     await expect(page.locator('[role="dialog"]:has-text("示例数据")')).toBeVisible();
   });
 });
@@ -205,7 +203,7 @@ test.describe('Screenshots', () => {
   test('detail panel screenshot', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("基于图神经网络")').first().click();
+    await page.locator('[role="button"]:has-text("示例论文")').first().click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
     const vp = page.viewportSize();
     await page.screenshot({ path: `test-results/detail-${vp?.width}x${vp?.height}.png` });
@@ -218,7 +216,7 @@ test.describe('Keyboard navigation', () => {
   test('Enter key opens detail from list item', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    const item = page.locator('[role="button"]:has-text("基于图神经网络")').first();
+    const item = page.locator('[role="button"]:has-text("示例论文")').first();
     await item.focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('[role="dialog"]')).toBeVisible();
@@ -227,7 +225,7 @@ test.describe('Keyboard navigation', () => {
   test('Space key opens detail from list item', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    const item = page.locator('[role="button"]:has-text("基于图神经网络")').first();
+    const item = page.locator('[role="button"]:has-text("示例论文")').first();
     await item.focus();
     await page.keyboard.press('Space');
     await expect(page.locator('[role="dialog"]')).toBeVisible();
@@ -236,16 +234,44 @@ test.describe('Keyboard navigation', () => {
   test('Escape closes detail panel', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("基于图神经网络")').first().click();
+    await page.locator('[role="button"]:has-text("示例论文")').first().click();
     await expect(page.locator('[role="dialog"]')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.locator('[role="dialog"]')).not.toBeVisible();
   });
 
+  test('Tab is trapped within open dialog', async ({ page }) => {
+    await page.goto('/attention?fixture=1');
+    await page.waitForLoadState('networkidle');
+    await page.locator('[role="button"]:has-text("示例论文")').first().click();
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible();
+
+    // Tab through all focusable elements in the dialog and verify we stay inside
+    for (let i = 0; i < 10; i++) {
+      await page.keyboard.press('Tab');
+    }
+    // The close button should still be reachable (focus stays in dialog)
+    const activeElement = page.locator('[role="dialog"] :focus');
+    await expect(activeElement).toBeVisible();
+  });
+
+  test('Focus returns to trigger after Escape closes dialog', async ({ page }) => {
+    await page.goto('/attention?fixture=1');
+    await page.waitForLoadState('networkidle');
+    const item = page.locator('[role="button"]:has-text("示例论文")').first();
+    await item.click();
+    await expect(page.locator('[role="dialog"]')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+    // Focus should return to the list item that opened the dialog
+    await expect(item).toBeFocused();
+  });
+
   test('Tab navigation through list items', async ({ page }) => {
     await page.goto('/attention?fixture=1');
     await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("基于图神经网络")').first().focus();
+    await page.locator('[role="button"]:has-text("示例论文")').first().focus();
     await page.keyboard.press('Tab');
     const focused = page.locator(':focus');
     await expect(focused).toHaveAttribute('role', 'button');
@@ -294,6 +320,7 @@ test.describe('API failure and retry', () => {
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('[role="alert"]:has-text("请求失败")')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=基于图神经网络的星形胶质细胞')).not.toBeVisible();
+    // Fixture data should NOT appear
+    await expect(page.locator('text=示例论文')).not.toBeVisible();
   });
 });

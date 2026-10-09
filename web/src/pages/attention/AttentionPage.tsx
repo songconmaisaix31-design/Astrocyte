@@ -38,14 +38,28 @@ export function AttentionPage({ fixture }: Props) {
         <p className={styles.pageSub}>追踪文献素材与研究机会</p>
       </div>
 
+      {(!fixture && (mat.stale || opp.stale)) && (
+        <div role="alert" style={{
+          padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
+          borderBottom: '1px solid var(--color-warning)', fontSize: 'var(--text-sm)',
+          color: '#92610a', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span>⚠ 数据可能已过期（刷新失败），显示的是上次成功加载的数据</span>
+          <button type="button" onClick={() => { mat.retry(); opp.retry(); }}
+            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)',
+              border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-sm)',
+              background: 'transparent', cursor: 'pointer' }}>重试</button>
+        </div>
+      )}
+
       <div className={styles.grid}>
         {/* ── Materials Section ── */}
         <SectionCard title="素材" count={materials.length}>
           {fixture ? (
             <MaterialList items={materials} onSelect={setSelectedMat} />
-          ) : mat.loading ? (
+          ) : mat.loading && !mat.data ? (
             <div className={styles.loadingRow}>加载中…</div>
-          ) : mat.error ? (
+          ) : mat.error && !mat.data ? (
             <ErrorState message={mat.error} onRetry={mat.retry} />
           ) : materials.length === 0 ? (
             <EmptyState icon="📄" title="暂无素材" description="导入文献后，素材将在此显示" />
@@ -58,9 +72,9 @@ export function AttentionPage({ fixture }: Props) {
         <SectionCard title="机会" count={opportunities.length}>
           {fixture ? (
             <OpportunityList items={opportunities} onSelect={setSelectedOpp} />
-          ) : opp.loading ? (
+          ) : opp.loading && !opp.data ? (
             <div className={styles.loadingRow}>加载中…</div>
-          ) : opp.error ? (
+          ) : opp.error && !opp.data ? (
             <ErrorState message={opp.error} onRetry={opp.retry} />
           ) : opportunities.length === 0 ? (
             <EmptyState icon="💡" title="暂无机会" description="系统识别研究机会后将在此显示" />

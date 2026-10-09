@@ -45,7 +45,8 @@ export function useReadApi<T>(
           : err instanceof Error
             ? err.message
             : '未知错误';
-        setState(prev => ({ ...prev, loading: false, error: msg, stale: false }));
+        // Retain prior data; mark stale so UI can show stale banner
+        setState(prev => ({ ...prev, loading: false, error: msg, stale: !!prev.data }));
       }
     }
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps

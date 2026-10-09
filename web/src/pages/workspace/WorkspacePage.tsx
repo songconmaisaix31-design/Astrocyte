@@ -43,14 +43,28 @@ export function WorkspacePage({ fixture }: Props) {
         <p className={styles.pageSub}>管理项目、提案与 Agent 会话</p>
       </div>
 
+      {(!fixture && (proj.stale || prop.stale || sess.stale)) && (
+        <div role="alert" style={{
+          padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
+          borderBottom: '1px solid var(--color-warning)', fontSize: 'var(--text-sm)',
+          color: '#92610a', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span>⚠ 数据可能已过期（刷新失败），显示的是上次成功加载的数据</span>
+          <button type="button" onClick={() => { proj.retry(); prop.retry(); sess.retry(); }}
+            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)',
+              border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-sm)',
+              background: 'transparent', cursor: 'pointer' }}>重试</button>
+        </div>
+      )}
+
       <div className={styles.grid}>
         {/* ── Projects ── */}
         <SectionCard title="项目" count={projects.length}>
           {fixture ? (
             <ProjectList items={projects} onSelect={(p) => setSelected({ kind: 'project', data: p })} />
-          ) : proj.loading ? (
+          ) : proj.loading && !proj.data ? (
             <div className={styles.loadingRow}>加载中…</div>
-          ) : proj.error ? (
+          ) : proj.error && !proj.data ? (
             <ErrorState message={proj.error} onRetry={proj.retry} />
           ) : projects.length === 0 ? (
             <EmptyState icon="📁" title="暂无项目" description="创建项目后将在此显示" />
@@ -63,9 +77,9 @@ export function WorkspacePage({ fixture }: Props) {
         <SectionCard title="提案" count={proposals.length}>
           {fixture ? (
             <ProposalList items={proposals} onSelect={(p) => setSelected({ kind: 'proposal', data: p })} />
-          ) : prop.loading ? (
+          ) : prop.loading && !prop.data ? (
             <div className={styles.loadingRow}>加载中…</div>
-          ) : prop.error ? (
+          ) : prop.error && !prop.data ? (
             <ErrorState message={prop.error} onRetry={prop.retry} />
           ) : proposals.length === 0 ? (
             <EmptyState icon="📋" title="暂无提案" description="系统生成提案后将在此显示" />
@@ -79,9 +93,9 @@ export function WorkspacePage({ fixture }: Props) {
           <SectionCard title="会话" count={sessions.length}>
             {fixture ? (
               <SessionList items={sessions} onSelect={(s) => setSelected({ kind: 'session', data: s })} />
-            ) : sess.loading ? (
+            ) : sess.loading && !sess.data ? (
               <div className={styles.loadingRow}>加载中…</div>
-            ) : sess.error ? (
+            ) : sess.error && !sess.data ? (
               <ErrorState message={sess.error} onRetry={sess.retry} />
             ) : sessions.length === 0 ? (
               <EmptyState icon="💻" title="暂无会话" description="Agent 会话绑定后将在此显示" />

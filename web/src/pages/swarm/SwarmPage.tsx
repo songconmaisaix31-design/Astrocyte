@@ -39,14 +39,28 @@ export function SwarmPage({ fixture }: Props) {
         <p className={styles.pageSub}>查看任务、工作项与产物引用（只读 · S0 无 Agent 控制）</p>
       </div>
 
+      {(!fixture && miss.stale) && (
+        <div role="alert" style={{
+          padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
+          borderBottom: '1px solid var(--color-warning)', fontSize: 'var(--text-sm)',
+          color: '#92610a', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span>⚠ 数据可能已过期（刷新失败），显示的是上次成功加载的数据</span>
+          <button type="button" onClick={() => miss.retry()}
+            style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--text-xs)',
+              border: '1px solid var(--color-warning)', borderRadius: 'var(--radius-sm)',
+              background: 'transparent', cursor: 'pointer' }}>重试</button>
+        </div>
+      )}
+
       <div className={styles.grid}>
         {/* ── Missions ── */}
         <SectionCard title="任务" count={missions.length}>
           {fixture ? (
             <MissionList items={missions} onSelect={(m) => setSelected({ kind: 'mission', data: m })} />
-          ) : miss.loading ? (
+          ) : miss.loading && !miss.data ? (
             <div className={styles.loadingRow}>加载中…</div>
-          ) : miss.error ? (
+          ) : miss.error && !miss.data ? (
             <ErrorState message={miss.error} onRetry={miss.retry} />
           ) : missions.length === 0 ? (
             <EmptyState icon="🎯" title="暂无任务" description="任务由系统在 S1+ 中创建" />
