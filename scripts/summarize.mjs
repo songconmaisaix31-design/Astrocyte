@@ -1,4 +1,4 @@
-import { readFile, access, realpath } from 'node:fs/promises';
+import { readFile, access, realpath, stat } from 'node:fs/promises';
 import { join, isAbsolute } from 'node:path';
 import { root } from './process.mjs';
 
@@ -20,5 +20,21 @@ export async function summarizeEnvironment(env = process.env) {
     if (!isAbsolute(path)) throw new Error('Summarize CLI and Node paths must be absolute');
     await access(path);
   }
-  return { ...env, ASTROCYTE_SUMMARIZE_CLI: cli, ASTROCYTE_NODE: node };
+  const configured = { ...env, ASTROCYTE_SUMMARIZE_CLI: cli, ASTROCYTE_NODE: node };
+  const mediaRoot = env.ASTROCYTE_MEDIA_DIR || (process.platform === 'win32' && env.LOCALAPPDATA ? join(env.LOCALAPPDATA, 'Astrocyte', 'media') : undefined);
+  if (mediaRoot) {
+    if (!isAbsolute(mediaRoot)) throw new Error('ASTROCYTE_MEDIA_DIR must be absolute');
+    const pins = JSON.parse(await readFile(join(root, 'dependencies.lock.json'), 'utf8')).external_media;
+    for (const [key, relative] of [
+      ['ASTROCYTE_YT_DLP_PATH', join(pins.yt_dlp.directory, pins.yt_dlp.executable)],
+      ['ASTROCYTE_FFMPEG_PATH', join(pins.ffmpeg.directory, pins.ffmpeg.executable)],
+      ['ASTROCYTE_WHISPER_BINARY', join(pins.whisper.directory, pins.whisper.executable)],
+      ['ASTROCYTE_WHISPER_MODEL', pins.model.file],
+    ]) {
+      if (configured[key]) continue;
+      const candidate = join(mediaRoot, relative);
+      if (await stat(candidate).then(info => info.isFile()).catch(() => false)) configured[key] = candidate;
+    }
+  }
+  return configured;
 }
