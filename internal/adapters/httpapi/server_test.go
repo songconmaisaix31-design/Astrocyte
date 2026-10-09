@@ -253,6 +253,38 @@ func TestAPINotFound_JSON404(t *testing.T) {
 	}
 }
 
+func TestAPINotFound_BareAPI_JSON404(t *testing.T) {
+	srv := newTestServer()
+
+	// Bare /api (no trailing slash) should return JSON 404
+	resp := doRequest(srv, "GET", "/api")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("expected 404 for /api, got %d", resp.StatusCode)
+	}
+	ct := resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type for /api: got %q, want application/json", ct)
+	}
+	errObj := readErrorBody(t, resp)
+	if errObj["code"] != "not_found" {
+		t.Errorf("code for /api: got %v, want not_found", errObj["code"])
+	}
+
+	// Bare /api/v1 (no trailing slash) should also return JSON 404
+	resp = doRequest(srv, "GET", "/api/v1")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("expected 404 for /api/v1, got %d", resp.StatusCode)
+	}
+	ct = resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type for /api/v1: got %q, want application/json", ct)
+	}
+	errObj = readErrorBody(t, resp)
+	if errObj["code"] != "not_found" {
+		t.Errorf("code for /api/v1: got %v, want not_found", errObj["code"])
+	}
+}
+
 // --- Loopback middleware with ErrorV1 ---
 
 func TestLoopbackMiddleware_RejectsNonLoopback_ErrorV1(t *testing.T) {
@@ -482,6 +514,16 @@ func TestStaticServing_APIRoutesNotServedByStatic(t *testing.T) {
 	ct := resp.Header.Get("Content-Type")
 	if ct != "application/json" {
 		t.Errorf("Content-Type: got %q, want application/json", ct)
+	}
+
+	// Bare /api should return JSON 404, not index.html
+	resp = doRequest(srv, "GET", "/api")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("expected 404 for bare /api, got %d", resp.StatusCode)
+	}
+	ct = resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type for bare /api: got %q, want application/json", ct)
 	}
 }
 
