@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
+import { validateResponse } from './contracts.mjs';
 
 export function command(body = {}) {
   return { schema_version: 1, request_id: randomUUID(), expected_version: 1, ...body };
@@ -11,6 +12,7 @@ export async function humanAPI(baseURL) {
   const bootstrap = await fetch(`${baseURL}/api/v1/auth/session`, { signal: AbortSignal.timeout(5000) });
   assert.equal(bootstrap.status, 200, await bootstrap.clone().text());
   const session = await bootstrap.json();
+  validateResponse('GET', '/auth/session', bootstrap.status, session);
   assert.equal(session.actor_kind, 'human');
   const cookie = bootstrap.headers.getSetCookie().map(value => value.split(';')[0]).join('; ');
   assert.ok(cookie, 'Local human session must set a cookie');
@@ -28,6 +30,7 @@ export async function humanAPI(baseURL) {
       const text = await response.text();
       let data;
       try { data = JSON.parse(text); } catch { throw new Error(`${method} ${path} returned non-JSON ${response.status}: ${text}`); }
+      validateResponse(method, path, response.status, data);
       return { status: response.status, data };
     },
     async get(path) {

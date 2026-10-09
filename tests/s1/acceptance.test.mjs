@@ -23,6 +23,12 @@ test('AT01: source/version/positions and all three manual layers persist without
   const missionsBefore = await api.get('/missions');
   const paper = await seedCandidate(api, 'https://example.invalid/contract-local/at01');
   const video = await importMaterial(api, videoImport());
+  const videoRefs = [sourceRef(video.detail.material, 1, video.detail.revisions[0].source_spans[0])];
+  for (const stage of ['content', 'topic', 'project']) {
+    const result = await api.write('/distillations', distillation(stage, videoRefs));
+    assert.equal(result.distillation.input_refs[0].revision, 1);
+    assert.equal(result.distillation.input_refs[0].span, videoRefs[0].span);
+  }
   assert.equal(paper.detail.material.collection_reason, null, 'Never invent the user collection reason');
   assert.deepEqual(paper.records.map(record => record.stage), ['content', 'topic', 'project']);
   for (const record of paper.records) {
@@ -97,15 +103,14 @@ test('AT02: YouTube URL aliases deduplicate real adapter input; legacy summary n
   assert.deepEqual(legacy.detail.material.source_spans, []);
 });
 
-test('AT03: authenticated Agent reads and human refresh never add human attention; explicit reread does', async () => {
+test('AT03: Agent without material authorization is denied; human refresh never heats and explicit reread does', async () => {
   const imported = await importMaterial(api, paperImport('https://example.invalid/contract-local/attention'));
   await importMaterial(api, paperImport('https://example.invalid/contract-local/attention', changedPaperText));
   const id = imported.detail.material.id;
   const baseline = await api.get(`/materials/${id}`);
   for (let index = 0; index < 4; index++) {
     const response = await api.request(`/materials/${id}/revisions/1/content`, { headers: { Authorization: `Bearer ${agentToken}` } });
-    assert.equal(response.status, 200, JSON.stringify(response.data));
-    assert.equal(response.data.text, paperText);
+    assert.equal(response.status, 403, JSON.stringify(response.data));
   }
   for (let index = 0; index < 3; index++) {
     await api.get('/materials');
@@ -114,8 +119,16 @@ test('AT03: authenticated Agent reads and human refresh never add human attentio
   const machineRead = await api.get(`/materials/${id}`);
   assert.equal(machineRead.material.human_usage_count, baseline.material.human_usage_count);
   assert.ok(machineRead.material.attention_score <= baseline.material.attention_score + 1e-9);
-  assert.equal(machineRead.material.agent_usage_count, baseline.material.agent_usage_count + 4);
-  assert.equal(machineRead.uses.filter(use => use.actor_kind === 'agent').length, 4);
+  assert.equal(machineRead.material.agent_usage_count, baseline.material.agent_usage_count);
+  assert.equal(machineRead.uses.filter(use => use.actor_kind === 'agent').length, baseline.uses.filter(use => use.actor_kind === 'agent').length);
+  const deniedDetail = await api.request(`/materials/${id}`, { headers: { Authorization: `Bearer ${agentToken}` } });
+  assert.equal(deniedDetail.status, 403, JSON.stringify(deniedDetail.data));
+  const deniedList = await api.request('/materials', { headers: { Authorization: `Bearer ${agentToken}` } });
+  assert.equal(deniedList.status, 403, JSON.stringify(deniedList.data));
+  for (const path of ['/distillations', '/opportunities', '/jobs', `/materials/${id}/revisions/1/attachments/original.pdf`]) {
+    const denied = await api.request(path, { headers: { Authorization: `Bearer ${agentToken}` } });
+    assert.equal(denied.status, 403, `${path}: ${JSON.stringify(denied.data)}`);
+  }
   const forbiddenWrite = await api.request(`/materials/${id}/uses`, { method: 'POST', body: command({ expected_version: machineRead.material.version, action: 'reread' }), headers: { Authorization: `Bearer ${agentToken}` } });
   assert.equal(forbiddenWrite.status, 403, JSON.stringify(forbiddenWrite.data));
   const forbiddenBootstrap = await fetch(`${server.apiURL}/api/v1/auth/session`, { headers: { Authorization: `Bearer ${agentToken}` } });
