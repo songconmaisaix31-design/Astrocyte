@@ -19,6 +19,7 @@ var _ AutomaticDistillationService = (*Service)(nil)
 // It is persisted before external calls, alongside the original operation ID.
 type automaticPayload struct {
 	Command         RequestDistillationCommand
+	Snapshots       []SourceSnapshot
 	ProcessorConfig string
 	EffectiveConfig string
 	ReuseKey        string
@@ -104,7 +105,8 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 	}{c.InputRefs, c.PriorDistillationIDs, c.Stage, effective, c.Question})
 	reuseKey := "automatic:" + digestBytes(identity)
 	result, err := command(s, ctx, p, c.CommandMeta, "RequestDistillation", c, func(tx AttentionTx) (ImportJobResult, error) {
-		if _, _, err := s.automaticInputs(tx, c); err != nil {
+		snapshots, _, err := s.automaticInputs(tx, c)
+		if err != nil {
 			return ImportJobResult{}, err
 		}
 		old, err := tx.FindJobByDedupeKey(reuseKey)
@@ -114,7 +116,7 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 		if !isMissing(err) {
 			return ImportJobResult{}, err
 		}
-		payload, err := json.Marshal(automaticPayload{Command: c, ProcessorConfig: config, EffectiveConfig: effective, ReuseKey: reuseKey})
+		payload, err := json.Marshal(automaticPayload{Command: c, Snapshots: snapshots, ProcessorConfig: config, EffectiveConfig: effective, ReuseKey: reuseKey})
 		if err != nil {
 			return ImportJobResult{}, err
 		}
@@ -157,7 +159,7 @@ func (s *Service) automaticInputs(tx AttentionTx, c RequestDistillationCommand) 
 				break
 			}
 		}
-		if !slices.Contains(s.options.AllowedProcessingSourceKeys, version.SourceKey) || !slices.Contains([]string{"arxiv", "summarize"}, version.Provenance.Processor) {
+		if !slices.Contains(s.options.AllowedProcessingSourceKeys, version.SourceKey) || !slices.Contains([]string{"arxiv", "summarize", "arxiv+summarize"}, version.Provenance.Processor) {
 			return nil, nil, serviceError(apierrors.ScopeDenied, "Source version was not authorized for public automatic processing", "choose_authorized_public_source")
 		}
 		snapshots = append(snapshots, SourceSnapshot{Ref: ref, SourceKey: version.SourceKey, Title: row.Material.Title, Summary: version.Summary, ContentDigest: version.ContentDigest, Provenance: version.Provenance})
@@ -272,14 +274,23 @@ func (s *Service) processAutomatic(ctx context.Context, claim Job) error {
 	if err != nil {
 		return s.failJob(claim, err, false)
 	}
+	if len(payload.Snapshots) == len(snapshots) {
+		// Mutable material titles must not introduce later metadata into a
+		// queued round. Immutable revisions and the original selection remain
+		// the authority; source access was rechecked immediately above.
+		for i := range snapshots {
+			snapshots[i].Title = payload.Snapshots[i].Title
+		}
+	}
 	for i, ref := range refs {
 		data, err := s.objects.Read(workCtx, ref)
 		if err != nil {
 			return s.failJob(claim, err, false)
 		}
-		if digestBytes(data) != snapshots[i].ContentDigest {
-			return s.failJob(claim, domain.ErrEvidence, false)
-		}
+		// The object port verifies the immutable object on read. The processor
+		// digest describes precisely the transmitted UTF-8 text, independently
+		// of any revision-level bundle identity (PDF/HTML/export attachments).
+		snapshots[i].ContentDigest = digestBytes(data)
 		snapshots[i].Text = string(data)
 	}
 	// Paid/native processor entry is fenced by persisted CAS. No external I/O
