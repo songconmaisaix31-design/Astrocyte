@@ -83,12 +83,6 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 	if !filepath.IsAbs(cliPath) {
 		return nil, fmt.Errorf("ASTROCYTE_SUMMARIZE_CLI must be absolute")
 	}
-	// pnpm installs the CLI behind a junction. The media bridge resolves core
-	// from this location, so it needs the real package directory.
-	cliPath, err := filepath.EvalSymlinks(cliPath)
-	if err != nil {
-		return nil, fmt.Errorf("resolve summarize CLI: %w", err)
-	}
 	nodePath := os.Getenv("ASTROCYTE_NODE")
 	if nodePath == "" {
 		var err error
@@ -101,6 +95,21 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, fmt.Errorf("resolve Node: %w", err)
 		}
 	}
+	for _, path := range []string{cliPath, nodePath} {
+		info, err := os.Stat(path)
+		if !filepath.IsAbs(path) || err != nil || !info.Mode().IsRegular() {
+			return nil, fmt.Errorf("summarize dependency must be an existing absolute file: %s", path)
+		}
+	}
+	// Node resolves pnpm junctions consistently with the media bridge. Go's
+	// EvalSymlinks does not resolve this Windows installation correctly.
+	resolveCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	resolved, err := exec.CommandContext(resolveCtx, nodePath, "-e", "process.stdout.write(require('node:fs').realpathSync(process.argv[1]))", cliPath).Output()
+	if err != nil {
+		return nil, fmt.Errorf("resolve summarize CLI with Node: %w", err)
+	}
+	cliPath = string(resolved)
 	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", 300, 86400)
 	if err != nil {
 		return nil, err
