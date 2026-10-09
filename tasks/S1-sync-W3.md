@@ -15,3 +15,11 @@
 这是讨论草案，不冻结接口：确认绑定来源 → 获取更新列表 → 展示来源/状态与 Agent 反馈 → 人工选择 → 复用现有导入/作业反馈 → 回查资料版本。反馈前是否预取正文仍 pending；账号登录或公开绑定、真实目标账号、本地操作范围与读取根待用户。遇到挑战页/需登录/不可用应显示具体原因，保留先前清单，不把异常转换为空更新。项目导入和扫描入口待指定目录授权；安装/配置/可启动/原生能力分别显示，观察会话不等于控制。
 
 完整账号集成、真实同步、AT01–04、新模型整理、授权 Agent 读取、两尺寸最终真实验收尚未完成。旧 UNKNOWN 未重发；未导入个人库，未读凭据或扫描磁盘。
+
+## 阶段一首轮浏览器（原始失败保留）
+
+SOURCE `04a67c54a6ccdbba55dc08e5ec44c07a739d79e7` 已 push。总控单槽安排 `pnpm --dir web exec playwright test s1-sync.spec.ts navigation.spec.ts preview-design.spec.ts --workers=1`：120 PASS /2 FAIL，2.3分钟，exit1。两失败均为新 empty-state 用例中对原生 `<option>` 使用 `toBeDisabled()`，Playwright 展示 `<option disabled>` 与可访问快照 disabled 却返回 enabled；改核对 `toHaveJSProperty('disabled', true)`，应用代码不改。占位账号文本/零按钮测试按主控复核移除，后续应测试实际绑定/选择行为。首次不是绿，不覆盖。
+
+首轮 artifacts：`web/test-results/s1-sync-local-overview-kee-02fb9-acts-explicit-at-both-sizes-chromium-{1920,1280}/` 的 error-context、test-failed-1.png、trace.zip。两尺寸 `web/test-results/workspace-{1920x1080,1280x720}.png` 与卡片截图已目视检查：保留 shell，宽屏三列/1280两列、筛选可换行、目录可读、无横溢。示例图是布局证据，不是本地项目接入证据。
+
+临时目录 `%LOCALAPPDATA%/Temp/astrocyte-dev-qQGXqS`，个人库未使用；API86296/Vite88652，父72516，创建时间03:04:56。命令结束后所属三进程均不在，15173/18787无监听，helper清理临时目录；已向主控释放单槽。仅失败两尺寸用例的修复验证待主控重新安排；不重跑已过的导航回归。
