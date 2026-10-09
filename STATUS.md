@@ -1,8 +1,18 @@
 # Astrocyte 当前状态
 
-日期：2026-10-09。当前任务：[S1 Attention 计划](tasks/S1-plan.md)，代码已集成并通过主控回归，完整真实验收尚未通过。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)。下面界面替换与 S0 验收为历史基线，不代表 S1 通过。
+日期：2026-10-10。当前任务：[S1 Attention 计划](tasks/S1-plan.md) 与 [summarize 接入](tasks/S1-summarize-plan.md)。完整真实验收尚未通过。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)。下面论文第二步、首轮界面与 S0 记录为历史结果，不代表新 summarize 全部通过。
 
-新增summarize正式植入任务：上游/本机核查与互斥写域已整理在 [接入草案](tasks/S1-summarize-plan.md)。用户随后允许Python，yt-dlp等依赖不再被原无Python门槛阻断；现有视频只支持既有导出，直接链接→首次整理尚未实现。恢复原W0/W2开发公开链接共同路径，浏览器扩展范围与登录视频本地转写选择仍待用户答复；权限不因Python授权而扩大。
+用户已允许Python，原无Python限制撤销。正式接入沿用原 W0/W2/W3/W4 工作树和互斥写域，本机 Orca Codex / gpt-6.1-sol；主控没有写业务代码。当前普通合并源 `81e92ae521fadf6def68b771e005bd77cc3f7ed3`，含 W0 最终 `d8f29070073e6f2e71ae6fcca5fa259205208b8f`、W2 `777f8559d5ba3afa17c01681397b5dc2bbc0be8f`、W3 最终 `e8cc1e001cdf3468187c901f7fa1e262ebc40359` 与 W4 最终 `1a77d16c83f063c94e3df6d2a5bcaa785523b058`。各轨已 push、终端已结算释放，工作树与历史保留。W3 原 native 内存分配失败后，按同任务 retry-of 恢复原轨；没有重建调度器。
+
+已接入项目锁定 summarize/core 0.25.1、真实视频 URL 表单、上游字幕优先和本地媒体转写薄适配、真实输出/provenance、作业失败提示及同页输入恢复。Python yt-dlp 2026.08.19 使用独立环境，ffmpeg 9.0.2、whisper.cpp 1.9.2、多语言 ggml-base 在项目独立目录；冻结安装、真实工具启动与模型加载通过。全局 summarize 0.21.8 与其他软件工具未覆盖。首次模型整理仍沿既有显式 Codex 作业；本轮未发应用 LLM 请求或重放旧 UNKNOWN。
+
+当前网络将 `www.bilibili.com` 解析为 `198.18.0.160`、`arxiv.org` 为 `198.18.0.40`；锁定上游的网络检查拒绝。真实 B 站 URL 经页面→HTTP202→Service→SQLite 保存为失败作业，action `configure_public_source_network`，页面中文提示可见；同命令重放与实际数据库重启保留原 job/attempt/error，无资料、沉淀、Mission或人类关注。W3 两尺寸实际页面及恢复 4 PASS / 2 SKIP；这是失败持久化通过，**不是视频正文成功、新表单去重或首次整理通过**。主控此前 Orca 内嵌页面曾 Failed to fetch 且无POST，保留该观察，不用独立 Chromium 成功解释其原因。
+
+主控在上述准确源 `pnpm check` PASS（Go/vet/mod、18包边界、226契约例子/生成、API14/14、TS/lint、前端40/40），`pnpm build` PASS；完整 `pnpm test:e2e --workers=1` 为 **146 PASS /4 SKIP、4.2分钟、exit0**，两尺寸均完成。4个跳过是两个视口的真实视频成功导入与当前网络专用负例，后者由W3显式运行并通过，前者仍未通过；本次回归未发模型请求。W0默认并发首轮完整浏览器为130 FAIL /4 PASS /2 SKIP /12 NOT_RUN，第二轮 workers=2 为142 PASS /4 FAIL /2 SKIP；后续定向8/8 PASS分别记录，原RED未抹除。运行时出现过Windows pagefile不足/native内存失败，主控最终回归没有与其他浏览器并发。测试服务退出后15173/18787监听已消失。
+
+未解决：指定视频字幕/中文转写及升级 arXiv 真正成功、最新真实自动多轮/摘要重试、授权 Agent 多次读旧资料正路径。AT04 历史真实论文 later 已通过，完整 AT01/02/03 仍未通过。需要用户决定公开来源真实DNS例外、普通视频导入复用/主动刷新行为、Agent可读范围与新模型作业；登录/扩展不从Python授权推导。不移除上游网络检查、不读取cookies、不扩大Agent权限、不自动回退旧CLI。
+
+预览已在00:32重启为当前源：[Attention](http://127.0.0.1:5173/attention)，API8787；页面和健康HTTP200，原个人库沿用且未写验收资料，Codex关闭。终端仍为 `term_af3ba99d-1301-41be-be0c-860189357aaa`；实际新API PID85056、Vite PID69864，父86148，创建2026-10-10 00:32:27，临时程序在 `%LOCALAPPDATA%/Temp/astrocyte-dev-BAxpTt`。下次停止前须重新核对，不使用此历史PID猜测操作。旧预览仍出现“子进程不存在”清理竞态，主控确认旧进程/5173/8787全退出后才启动。当前自动解析项目CLI与独立媒体，不沿用旧全局CLI覆盖。所有验收服务/自建页面已退出；主控临时库 `astrocyte-s1-Te659M` 保留，旧两个目录的自动审批删除拒绝记录见下文。未执行本轮远端CI、main合并、扩展安装或新应用LLM作业。
 
 ## 第二步：真实导入、版本与重启
 
