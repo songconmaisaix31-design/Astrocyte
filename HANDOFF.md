@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+当前轮次：2026-10-10 账号同步、本地 Agent 接入与完整 S1；先读 [STATUS 顶部](STATUS.md)、[四轨计划](tasks/S1-sync-local-agent-plan.md)、[待答决定](docs/QUESTIONS.md)。公共列表适配、缓存 CLI 清单/保护 API、局部参考图界面已合入集成轨，主控 check/build PASS、完整浏览器152 PASS/4 SKIP。账号绑定/同步入库、项目原生操作与完整 AT01–04 尚未完成，不能沿前轮单视频成功或公共部分绿标记 S1 完成。
+
+四轨固定工作树/分支 `s1-sync-contract-1010`、`s1-sync-attention-1010`、`s1-local-agents-1010`、`s1-sync-ui-1010`，本机 Orca Codex / gpt-6.1-sol。W0 是契约/入口/迁移/依赖及集成唯一 owner；W1/W2/W3 原任务未完成结算，工作树与已push源码保留。用户答复后沿原轨、原写域重新分派，不另建框架，不扫描用户目录或推导权限，不重发旧 UNKNOWN。
+
+最新 CLI 探测只核版本/help：10个已知客户端、8个安装，配置/可启动/原生均未知。官方抖音列表解析不是登录绑定；B站实际公开空收藏夹只验证空结果与错误区分，不替代用户非空收藏夹同步验收。新增平台目录保持待接入。当前业务与最终预览来源见 STATUS 最新记录；下文预览 PID 和结论仅为历史，操作前重新核实。
+
 2026-10-10。项目目录：`C:\Users\DW\orca\Astrocyte`。
 
 指定单视频导入已修好，见 [当前计划](tasks/S1-video-fix-plan.md) 与 [当前结果](STATUS.md)。用户“允许修改”已授权B站DNS例外，01:07热加载与上游检查PASS。W0修正Windows项目CLI路径及既有Reader/Service默认期限1800秒；Codex独立180秒不变。W2首次真实Service成功730.29秒；W3从空库实际页面提交指定BV成功，作业275.98秒、attempts1，保存32908bytes正文和三附件，真正停止/重启服务后API、SQLite/对象逐字节一致，同一结果resize两尺寸通过。主控复核JSON及截图，独立check/build PASS、完整E2E146 PASS/4 SKIP（4.7分钟、exit0），真实正向另为1 PASS。业务/验收源017c133ec4322a6d1011874eee25e148d814fd9c，普通最终报告合并a1a2d5213d2a17ede83c04ecbce95e308d687080只有报告差异。三轨已push、验收释放，工作树保留。
@@ -65,7 +71,7 @@ pnpm build
 
 ## 开发约束
 
-- 保持 Go/TS/SQLite、无 Python 平台与现有目录。领域在 `internal/{attention,workspace,swarm}/{domain,app}`，适配器在 `internal/adapters`，组装在 `cmd/server`，页面在 `web/src/pages`。
+- 保持 Go/TS/SQLite 与现有目录；用户已允许 Python 作为媒体依赖。领域在 `internal/{attention,workspace,swarm}/{domain,app}`，适配器在 `internal/adapters`，组装在 `cmd/server`，页面在 `web/src/pages`。
 - 修改 API 从 `contracts/openapi.yaml` 开始，运行 `pnpm generate`；不手改生成类型。契约、迁移序列、依赖锁和入口各设单一所有者。
 - 主控负责计划、决策、最终 check、提交与 push；业务代码和返修由对应 Worker 负责。使用 Orca CLI，保持一轨一 Agent、一 worktree、一 branch；难任务强模型，简单任务便宜模型。依赖/模型下载已授权，费用和调用不限。
 - S0 轨道已收口，工作树保留在 `C:\Users\DW\orca\workspaces\Astrocyte\s0-*`。后续并行时新建任务与 Dispatch；保留原有 charybdis 工作树及旧项目。
