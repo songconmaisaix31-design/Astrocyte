@@ -51,7 +51,7 @@ func (e *SummarizeExtractor) Extract(ctx context.Context, locator string) (Expor
 	version := exec.CommandContext(ctx, e.NodeExecutable, e.CLIPath, "--version")
 	version.Env = clean
 	v, err := version.Output()
-	if err != nil || !strings.Contains(string(v), "0.21.8") {
+	if err != nil || strings.TrimSpace(string(v)) != "0.21.8" {
 		return Export{}, fmt.Errorf("summarize extractor requires installed 0.21.8")
 	}
 	cmd := exec.CommandContext(ctx, e.NodeExecutable, e.CLIPath, locator, "--extract", "--json", "--format", "text", "--firecrawl", "off", "--youtube", "web", "--video-mode", "transcript", "--embedded-video", "off", "--timeout", "30s", "--retries", "0", "--metrics", "off")
