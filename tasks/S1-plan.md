@@ -8,7 +8,7 @@
 |---|---|---|---|
 | W0 契约/传输/集成 | `contracts/`、`internal/attention/app/contracts.go`、`internal/adapters/httpapi/`、`internal/foundation/`、`cmd/`、`migrations/`、`web/src/api/`、根依赖与锁、`scripts/`、`README.md`、`tasks/S1-contract.md`、`tasks/S1-W0.md` | 先发布 DTO/端口/HTTP 契约；迁移与依赖唯一所有者。最后负责普通合并和少量组装胶水；HTTP/契约/构建检查 | 领域缺陷交 W1，存储/导入缺陷交 W2，页面缺陷交 W3 |
 | W1 领域/应用 | `internal/attention/domain/`、`internal/attention/app/`（排除 `contracts.go`）、`tasks/S1-W1.md` | W0 契约；纯领域状态、三层沉淀及复用、候选版本/反馈、四维 unknown、人机关注、持久化队列用例；有意义的规则测试 | 公共契约/存储/入口更改交 W0/W2；不实现 S2 批准或执行 |
-| W2 存储/导入适配 | `internal/adapters/sqlite/`、`internal/adapters/importers/`、`internal/adapters/objects/`、`tasks/S1-W2.md` | W0 端口、W1 规则；SQLite 原子去重/CAS/作业恢复、对象发布、真实 arXiv 和 summarize 导出格式；重启与错误测试 | 迁移仅由 W0 落地；不新建视频下载/转录器，不调用 Python |
+| W2 存储/导入/整理适配 | `internal/adapters/sqlite/`、`internal/adapters/importers/`、`internal/adapters/objects/`、`internal/adapters/distillers/`、`tasks/S1-W2.md` | W0 端口、W1 规则；SQLite 原子去重/CAS/作业恢复、对象发布、真实 arXiv 和 summarize 导出；用户已选择本机 Codex CLI 整理与原生读取隔离；重启与错误测试 | 迁移仅由 W0 落地；不新建视频下载/转录器，不调用 Python，不修改全局 CLI 配置 |
 | W3 Attention 前端 | `web/src/`（排除 `api/`、`pages/workspace/`、`pages/swarm/`）、`web/e2e/`（排除 `s1.spec.ts`）、`tasks/S1-W3.md` | W0 生成客户端；真实导入/作业恢复/继续沉淀/候选反馈和详情来源链；两尺寸、键盘、异步状态；保留现有布局 | 不同时改三页；公共 API/依赖交 W0 |
 | W4 验收 | `web/e2e/s1.spec.ts`、`tests/s1/`、`docs/acceptance/S1.md`、`tasks/S1-W4.md` | 发布契约后开始；可重复 AT01–AT04，真实网络材料另验；API/持久化/浏览器相互核对 | 未执行、失败、缺真实材料明确记录，不用 mock 代替真实导入 |
 
@@ -20,4 +20,6 @@
 
 已确认纳入动作：人在项目空间中 @文件，建立引用并纳入该空间，原資料留在原分类。沿用 Attention 写域实现人类分类、项目空间文件引用与排序；不移动原件、不扩展 Workspace 执行业务。
 
-待答：Agent 可读范围、公开资料自动整理后端与外发范围、候选 readiness 关联要求。答复前继续实际公开材料获取、已确认的分类/@引用、现有 S1 独立功能和权限技术调查，不冻结未决定的共享接口，不外发私有资料。
+自动整理先接本机 Codex CLI，沿现有适配器/持久化作业实现，不新增开发框架。仅传明确选定资料正文与版本，不直接交付数据库；先验证当前 Windows 原生读取隔离。
+
+待答：Agent 可读范围、私有资料外发范围、候选 readiness 关联要求。答复前继续真实公开材料获取、分类/@引用、Codex 整理及现有 S1 功能，不冻结未决定的共享接口，不外发私有资料。

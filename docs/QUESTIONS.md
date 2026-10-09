@@ -24,5 +24,10 @@
 - 资料只有进入项目顶层空间后，Agent 才可主动认领读取。人类使用、提及和项目复用形成排序信号；Agent 读取不增加人类热度。排序升高不自行扩大读取权限。
 - 数据库和原文对象不能直接作为 Agent 的全库读取工具；本机 CLI 或 Pi 接入也必须符合资料权限。当前只研究成熟案例及原生限制，不新建权限框架。
 - 用户已确认纳入动作：人在项目空间中 @文件，建立引用并纳入该空间；原资料仍留在原分类中。不移动或复制原件，分类本身不等于纳入。
+- 用户已确认自动整理后端先使用本机 Codex CLI；使用现有配置、处理明确选定资料，不授予全库读取或私有资料无限外发权限。
 
-以下关键语义已向用户询问，仍未决定，不能据此冻结接口：Agent 可读范围是明确纳入文件、其引用资料还是项目全目录；自动整理后端与外发范围；候选 ready_for_review 是否必须完成主题关联。此前“高层云自动授权”、按热度层级开放权限的提议已撤销。执行计划见 [S1-plan.md](../tasks/S1-plan.md)。
+以下关键语义已向用户询问，仍未决定，不能据此冻结接口：Agent 可读范围是明确纳入文件、其引用资料还是项目全目录；私有资料的外发范围；候选 ready_for_review 是否必须完成主题关联。此前“高层云自动授权”、按热度层级开放权限的提议已撤销。执行计划见 [S1-plan.md](../tasks/S1-plan.md)。
+
+权限设计参考已按用户要求查阅：采用 [OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html) 的默认拒绝、每请求资源校验，参考 [OpenFGA 父子资源案例](https://openfga.dev/docs/modeling/parent-child) 理解项目与文件引用的关系，沿用当前 Go/SQLite，不引入 OpenFGA 服务。是否继承引用访问仍由用户决定。
+
+本机接入调查：当前 CLI help 已核对 Codex 及 Pi。普通只读不能作为数据库读取隔离的承诺；[Codex Windows 官方文档](https://learn.chatgpt.com/docs/windows/windows-sandbox) 明确 unelevated 不支持拒绝读取路径。[Pi 官方工具选项](https://github.com/earendil-works/pi/tree/main/packages/coding-agent) 支持禁用全部工具。用户已选 Codex，先用非敏感临时哨兵验证原生运行时隔离，不修改全局配置，不把文档能力当本机验收结果。向处理进程只传本次选定的正文和版本，不开放数据库或原文对象任意路径。
