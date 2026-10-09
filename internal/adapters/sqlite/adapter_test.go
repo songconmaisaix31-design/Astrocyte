@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"testing/fstest"
 )
@@ -428,5 +429,180 @@ func TestMigrationUpgrade_PreservesRecords(t *testing.T) {
 	}
 	if count != 3 {
 		t.Errorf("expected 3 idempotency records, got %d", count)
+	}
+}
+
+// TestPreUpgradeBackup_CreatesSnapshot verifies that RunMigrations creates
+// a consistent backup before applying pending migrations.
+func TestPreUpgradeBackup_CreatesSnapshot(t *testing.T) {
+	dir := t.TempDir()
+	dbPath := filepath.Join(dir, "test.sqlite")
+	backupsDir := filepath.Join(dir, "backups")
+
+	ctx := context.Background()
+
+	// Step 1: Create initial database with migration 001 only.
+	db, err := Open(dbPath)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+
+	mig001Only := fstest.MapFS{
+		"001_initial.sql": &fstest.MapFile{
+			Data: []byte(`
+				CREATE TABLE IF NOT EXISTS _migrations (
+					id TEXT PRIMARY KEY,
+					applied_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+				);
+				CREATE TABLE IF NOT EXISTS foundation_schema (
+					context TEXT PRIMARY KEY,
+					version INTEGER NOT NULL,
+					updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+				);
+				CREATE TABLE IF NOT EXISTS foundation_idempotency (
+					idempotency_key TEXT PRIMARY KEY,
+					caller TEXT NOT NULL,
+					command_type TEXT NOT NULL,
+					request_digest TEXT NOT NULL,
+					result_code TEXT NOT NULL,
+					created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+				);
+				INSERT OR IGNORE INTO _migrations (id) VALUES ('001_initial');
+				INSERT OR IGNORE INTO foundation_schema (context, version) VALUES ('foundation', 1);
+			`),
+		},
+	}
+
+	if err := db.RunMigrations(ctx, mig001Only); err != nil {
+		t.Fatalf("RunMigrations (001 only): %v", err)
+	}
+
+	// Insert a record to verify backup contains data.
+	_, err = db.Conn().ExecContext(ctx,
+		`INSERT INTO foundation_idempotency (idempotency_key, caller, command_type, request_digest, result_code)
+		 VALUES ('pre-upgrade-key', 'user-X', 'TestCommand', 'digest-pre', 'success')`)
+	if err != nil {
+		t.Fatalf("insert test record: %v", err)
+	}
+
+	db.Close()
+
+	// Step 2: Reopen and apply migration 002 (which triggers backup).
+	db2, err := Open(dbPath)
+	if err != nil {
+		t.Fatalf("Reopen: %v", err)
+	}
+	defer db2.Close()
+
+	migrationsDir := filepath.Join("..", "..", "..", "migrations")
+	realMigrations := os.DirFS(migrationsDir)
+
+	if err := db2.RunMigrations(ctx, realMigrations); err != nil {
+		t.Fatalf("RunMigrations (with backup): %v", err)
+	}
+
+	// Step 3: Verify backup directory was created.
+	info, err := os.Stat(backupsDir)
+	if err != nil {
+		t.Fatalf("backups directory not created: %v", err)
+	}
+	if !info.IsDir() {
+		t.Fatal("backups path is not a directory")
+	}
+
+	// Step 4: Verify backup file exists with schema version in name.
+	entries, err := os.ReadDir(backupsDir)
+	if err != nil {
+		t.Fatalf("read backups dir: %v", err)
+	}
+	if len(entries) == 0 {
+		t.Fatal("no backup file created")
+	}
+
+	// Find backup file (should be named backup_TIMESTAMP_v1.sqlite).
+	var backupFile string
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), "backup_") && strings.Contains(e.Name(), "_v1.sqlite") {
+			backupFile = filepath.Join(backupsDir, e.Name())
+			break
+		}
+	}
+	if backupFile == "" {
+		t.Fatalf("backup file with schema version not found, got: %v", entries)
+	}
+
+	// Step 5: Open backup and verify it contains old schema (v1) and retained row.
+	backupDB, err := Open(backupFile)
+	if err != nil {
+		t.Fatalf("open backup: %v", err)
+	}
+	defer backupDB.Close()
+
+	// Verify schema version is 1 (old schema before migration 002).
+	var backupVersion int
+	err = backupDB.Conn().QueryRowContext(ctx,
+		"SELECT version FROM foundation_schema WHERE context = 'foundation'").Scan(&backupVersion)
+	if err != nil {
+		t.Fatalf("query backup schema version: %v", err)
+	}
+	if backupVersion != 1 {
+		t.Errorf("backup schema version: got %d, want 1", backupVersion)
+	}
+
+	// Verify the old idempotency table structure (single PK, not composite).
+	// The backup should have the old schema where idempotency_key is the only PK.
+	var tableSQL string
+	err = backupDB.Conn().QueryRowContext(ctx,
+		"SELECT sql FROM sqlite_master WHERE type='table' AND name='foundation_idempotency'").Scan(&tableSQL)
+	if err != nil {
+		t.Fatalf("query backup table structure: %v", err)
+	}
+	// Old schema has PRIMARY KEY on idempotency_key only.
+	if !strings.Contains(tableSQL, "idempotency_key TEXT PRIMARY KEY") {
+		t.Errorf("backup should have old schema with single PK, got: %s", tableSQL)
+	}
+
+	// Verify the retained row exists in backup.
+	var retainedKey, retainedCaller string
+	err = backupDB.Conn().QueryRowContext(ctx,
+		"SELECT idempotency_key, caller FROM foundation_idempotency WHERE idempotency_key = 'pre-upgrade-key'").
+		Scan(&retainedKey, &retainedCaller)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			t.Fatal("backup missing retained row")
+		}
+		t.Fatalf("query backup retained row: %v", err)
+	}
+	if retainedKey != "pre-upgrade-key" || retainedCaller != "user-X" {
+		t.Errorf("backup retained row mismatch: got (%q, %q), want (pre-upgrade-key, user-X)",
+			retainedKey, retainedCaller)
+	}
+}
+
+// TestPreUpgradeBackup_SkipsFreshDB verifies that fresh databases skip backup.
+func TestPreUpgradeBackup_SkipsFreshDB(t *testing.T) {
+	dir := t.TempDir()
+	dbPath := filepath.Join(dir, "test.sqlite")
+	backupsDir := filepath.Join(dir, "backups")
+
+	ctx := context.Background()
+
+	// Open fresh database and apply migrations.
+	db, err := Open(dbPath)
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+	defer db.Close()
+
+	migrationsDir := filepath.Join("..", "..", "..", "migrations")
+	realMigrations := os.DirFS(migrationsDir)
+
+	if err := db.RunMigrations(ctx, realMigrations); err != nil {
+		t.Fatalf("RunMigrations: %v", err)
+	}
+
+	// Verify backups directory was NOT created for fresh DB.
+	if _, err := os.Stat(backupsDir); err == nil {
+		t.Error("backups directory should not be created for fresh database")
 	}
 }
