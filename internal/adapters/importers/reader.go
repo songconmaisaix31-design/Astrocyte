@@ -50,6 +50,12 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		}
 		digest := sha256.Sum256(p.PDF)
 		source = app.ImportedSource{SourceKey: p.SourceKey, SourceLocator: "https://arxiv.org/abs/" + p.ID, Kind: "paper", Title: p.Title, Text: fmt.Sprintf("# %s\n\nSource: https://arxiv.org/abs/%s\n\nOriginal full paper (PDF): %s\nPDF SHA256: %x\n\n## Abstract (metadata only)\n\n%s\n", p.Title, p.ID, p.PDFURL, digest, p.Abstract), Summary: p.Abstract, SourceSpans: []string{"whole document: " + p.PDFURL}, Provenance: app.Provenance{Processor: "arxiv", Version: p.ID, Mode: "official_atom_and_pdf", Source: p.PDFURL}, Attachments: []app.SourceAttachment{{Name: p.ID + ".pdf", MediaType: "application/pdf", Data: p.PDF, SourceLocator: p.PDFURL}, {Name: "metadata.atom.xml", MediaType: "application/atom+xml", Data: p.Metadata, SourceLocator: "https://export.arxiv.org/api/query?id_list=" + url.QueryEscape(p.ID)}}}
+		if p.FullText != "" {
+			source.Text = fmt.Sprintf("# %s\n\nSource: %s\nOriginal PDF: %s\n\n## Original HTML text (summarize extraction)\n\n%s", p.Title, p.HTMLURL, p.PDFURL, p.FullText)
+			source.SourceSpans = append(source.SourceSpans, "whole HTML document: "+p.HTMLURL)
+			source.Provenance = app.Provenance{Processor: "arxiv+summarize", Version: p.ID + "; summarize 0.21.8", Mode: "official_atom_pdf_and_html_text", Source: p.HTMLURL}
+			source.Attachments = append(source.Attachments, app.SourceAttachment{Name: p.ID + ".html", MediaType: "text/html", Data: p.HTML, SourceLocator: p.HTMLURL}, app.SourceAttachment{Name: "summarize-original.json", MediaType: "application/json", Data: p.TextExport, SourceLocator: p.HTMLURL})
+		}
 	case "summarize", "summarize_json", "summarize_markdown":
 		raw, err := r.exportBytes(cmd)
 		if err != nil {
