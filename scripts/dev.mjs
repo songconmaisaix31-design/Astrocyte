@@ -2,18 +2,20 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { root, web, findGo, requireFile, wait, start, stop } from './process.mjs';
+import { summarizeEnvironment } from './summarize.mjs';
 
 await requireFile('cmd/server/main.go');
 await requireFile('web/index.html');
 const temporary = await mkdtemp(join(tmpdir(), 'astrocyte-dev-'));
 const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
-const env = { ...process.env };
+let env = { ...process.env };
 if (process.argv.includes('--ephemeral')) {
   env.ASTROCYTE_DATA_DIR = join(temporary, 'data');
   // Ordinary browser checks must not inherit opt-in model/external extraction.
   env.ASTROCYTE_ENABLE_CODEX_DISTILLATION = 'false';
-  env.ASTROCYTE_SUMMARIZE_CLI = '';
+  env.ASTROCYTE_ENABLE_SUMMARIZE = 'false';
 }
+env = await summarizeEnvironment(env);
 const children = [];
 let stopping = false;
 async function shutdown(code = 0) {

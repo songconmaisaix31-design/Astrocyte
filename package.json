@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.27.0",
-  "engines": { "node": "24.16.0", "pnpm": "11.27.0" },
+  "engines": {
+    "node": "24.16.0",
+    "pnpm": "11.27.0"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "check": "node scripts/check.mjs",
@@ -23,5 +26,8 @@
     "ajv-formats": "3.0.1",
     "openapi-typescript": "7.13.0",
     "yaml": "2.9.1"
+  },
+  "dependencies": {
+    "@steipete/summarize": "0.25.1"
   }
 }
