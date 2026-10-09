@@ -32,6 +32,38 @@ func (s *Service) ImportMaterial(ctx context.Context, p Principal, c ImportMater
 		dedupeKey := digestBytes(bytes)
 		old, err := tx.FindJobByDedupeKey(dedupeKey)
 		if err == nil {
+			if old.Status == "succeeded" && old.MaterialID != nil && old.MaterialRevision != nil {
+				row, err := tx.LoadMaterial(*old.MaterialID)
+				if err != nil {
+					return ImportJobResult{}, err
+				}
+				if row.Material.Lifecycle == "withdrawn" {
+					return ImportJobResult{}, serviceError(apierrors.ScopeDenied, "Source material was withdrawn", "review_material_lifecycle")
+				}
+				if row.Material.CurrentRevision != *old.MaterialRevision {
+					var revision *MaterialRevision
+					for i := range row.Revisions {
+						if row.Revisions[i].Revision == *old.MaterialRevision {
+							revision = &row.Revisions[i]
+							break
+						}
+					}
+					if revision == nil {
+						return ImportJobResult{}, domain.ErrEvidence
+					}
+					oldVersion := row.Material.Version
+					row.Material.Version++
+					row.Material.CurrentRevision = revision.Revision
+					row.Material.SourceLocator = revision.SourceLocator
+					row.Material.SourceSpans = revision.SourceSpans
+					if err = tx.SaveMaterial(row, oldVersion); err != nil {
+						return ImportJobResult{}, err
+					}
+					if err = s.event(tx, "material_imported", row.Material.ID, row.Material.Version, c.CommandMeta, map[string]any{"material_id": row.Material.ID, "revision": revision.Revision, "reused": true}); err != nil {
+						return ImportJobResult{}, err
+					}
+				}
+			}
 			return ImportJobResult{SchemaVersion: 1, JobID: old.JobID, Status: old.Status}, nil
 		}
 		if !isMissing(err) {
@@ -212,6 +244,9 @@ func (s *Service) RecoverJobs(ctx context.Context) error {
 // backend is constructed here. It stops claims on cancellation and waits for
 // cooperative adapters before returning; adapters must honor their context.
 func (s *Service) Run(ctx context.Context) error {
+	if s.configurationError != nil {
+		return mapError(s.configurationError, "")
+	}
 	s.runMu.Lock()
 	if s.running {
 		s.runMu.Unlock()
@@ -468,6 +503,9 @@ func (s *Service) finishImport(ctx context.Context, claim Job, c ImportMaterialC
 		if row.Material.Lifecycle == "withdrawn" {
 			return serviceError(apierrors.ScopeDenied, "Source material was withdrawn", "review_material_lifecycle")
 		}
+		if row.Material.Kind != source.Kind {
+			return serviceError(apierrors.ValidationFailed, "An existing source has a different material kind", "use_existing_source_kind")
+		}
 		digests := make([]string, 0, len(row.Revisions))
 		for _, r := range row.Revisions {
 			digests = append(digests, r.ContentDigest)
@@ -478,12 +516,14 @@ func (s *Service) finishImport(ctx context.Context, claim Job, c ImportMaterialC
 		}
 		if !reused {
 			row.Revisions = append(row.Revisions, MaterialRevision{MaterialID: row.Material.ID, Revision: revision, SourceKey: source.SourceKey, SourceLocator: source.SourceLocator, ContentDigest: digest, ObjectRef: objectRef, SourceSpans: nonNil(source.SourceSpans), Provenance: source.Provenance, CreatedAt: now, Summary: source.Summary, Attachments: attachments})
+		}
+		if !reused || row.Material.CurrentRevision != revision {
 			row.Material.Version++
 			row.Material.CurrentRevision = revision
 			row.Material.ImportStatus = "succeeded"
 			row.Material.Title = source.Title
-			row.Material.SourceLocator = source.SourceLocator
-			row.Material.SourceSpans = nonNil(source.SourceSpans)
+			row.Material.SourceLocator = row.Revisions[revision-1].SourceLocator
+			row.Material.SourceSpans = row.Revisions[revision-1].SourceSpans
 			if err = tx.SaveMaterial(row, oldVersion); err != nil {
 				return err
 			}

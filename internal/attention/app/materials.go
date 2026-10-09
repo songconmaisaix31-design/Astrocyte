@@ -39,16 +39,7 @@ func (s *Service) RecordUse(ctx context.Context, p Principal, id string, c Recor
 		if row.Material.Lifecycle == "withdrawn" {
 			return VersionResult{}, serviceError(apierrors.ScopeDenied, "Material was withdrawn", "choose_active_material")
 		}
-		row.Uses = append(row.Uses, Usage{ID: rand.Text(), MaterialID: id, ActorID: p.ID, ActorKind: p.Kind, Action: c.Action, OccurredAt: s.options.Clock()})
-		row.Material.HumanUsageCount++
-		row.Material.Version++
-		if c.Action == "adopt" {
-			row.Material.LongTermValue++
-		}
-		if err = tx.SaveMaterial(row, c.ExpectedVersion); err != nil {
-			return VersionResult{}, err
-		}
-		if err = s.event(tx, "material_used", id, row.Material.Version, c.CommandMeta, map[string]any{"material_id": id, "actor_kind": "human", "action": c.Action}); err != nil {
+		if err = s.humanSignal(tx, &row, p, c.Action, c.CommandMeta); err != nil {
 			return VersionResult{}, err
 		}
 		return VersionResult{SchemaVersion: 1, ID: id, Version: row.Material.Version}, nil
@@ -83,9 +74,13 @@ func (s *Service) UpdateMaterial(ctx context.Context, p Principal, id string, c 
 		if err = s.event(tx, "material_updated", id, row.Material.Version, c.CommandMeta, map[string]any{"material_id": id, "lifecycle": c.Lifecycle, "pinned": c.Pinned}); err != nil {
 			return MaterialDetail{}, err
 		}
-		return row, nil
+		row, err = materialProjection(tx, row)
+		if err != nil {
+			return MaterialDetail{}, err
+		}
+		return s.projectAttention(row), nil
 	})
-	return s.projectAttention(row), err
+	return row, err
 }
 
 func (s *Service) GetAttachment(ctx context.Context, p Principal, id string, revision int, name string) (AttachmentContent, error) {

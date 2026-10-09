@@ -23,6 +23,8 @@ type memoryState struct {
 	Jobs          map[string]Job
 	Receipts      map[string]Receipt
 	Events        []OutboxEvent
+	Domains       map[string]MaterialDomain
+	Spaces        map[string]ProjectSpace
 }
 type memoryRepo struct {
 	mu        sync.Mutex
@@ -35,7 +37,7 @@ type memoryTx struct {
 }
 
 func newMemoryRepo() *memoryRepo {
-	return &memoryRepo{state: memoryState{Materials: map[string]MaterialDetail{}, Distillations: map[string]Distillation{}, Opportunities: map[string]OpportunityDetail{}, Jobs: map[string]Job{}, Receipts: map[string]Receipt{}, Events: []OutboxEvent{}}}
+	return &memoryRepo{state: memoryState{Materials: map[string]MaterialDetail{}, Distillations: map[string]Distillation{}, Opportunities: map[string]OpportunityDetail{}, Jobs: map[string]Job{}, Receipts: map[string]Receipt{}, Events: []OutboxEvent{}, Domains: map[string]MaterialDomain{}, Spaces: map[string]ProjectSpace{}}}
 }
 func clone[T any](value T) T {
 	bytes, _ := json.Marshal(value)
@@ -76,15 +78,6 @@ func (t *memoryTx) LoadMaterial(id string) (MaterialDetail, error) {
 	r, ok := t.state.Materials[id]
 	if !ok {
 		return r, apierrors.NewNotFound("material", id)
-	}
-	r.Distillations = []Distillation{}
-	for _, d := range t.state.Distillations {
-		for _, ref := range d.InputRefs {
-			if ref.MaterialID == id {
-				r.Distillations = append(r.Distillations, d)
-				break
-			}
-		}
 	}
 	return r, nil
 }
@@ -194,6 +187,51 @@ func (t *memoryTx) AppendEvent(e OutboxEvent) error {
 		return errors.New("injected outbox failure")
 	}
 	t.state.Events = append(t.state.Events, e)
+	return nil
+}
+
+func (t *memoryTx) ListMaterialDomains() ([]MaterialDomain, error) {
+	rows := []MaterialDomain{}
+	for _, r := range t.state.Domains {
+		rows = append(rows, r)
+	}
+	return rows, nil
+}
+func (t *memoryTx) LoadMaterialDomain(id string) (MaterialDomain, error) {
+	r, ok := t.state.Domains[id]
+	if !ok {
+		return r, apierrors.NewNotFound("domain", id)
+	}
+	return r, nil
+}
+func (t *memoryTx) SaveMaterialDomain(r MaterialDomain, v int) error {
+	old := t.state.Domains[r.ID]
+	if old.Version != v {
+		return serviceError(apierrors.VersionConflict, "CAS", "reload")
+	}
+	t.state.Domains[r.ID] = r
+	return nil
+}
+func (t *memoryTx) ListProjectSpaces() ([]ProjectSpace, error) {
+	rows := []ProjectSpace{}
+	for _, r := range t.state.Spaces {
+		rows = append(rows, r)
+	}
+	return rows, nil
+}
+func (t *memoryTx) LoadProjectSpace(id string) (ProjectSpace, error) {
+	r, ok := t.state.Spaces[id]
+	if !ok {
+		return r, apierrors.NewNotFound("space", id)
+	}
+	return r, nil
+}
+func (t *memoryTx) SaveProjectSpace(r ProjectSpace, v int) error {
+	old := t.state.Spaces[r.ID]
+	if old.Version != v {
+		return serviceError(apierrors.VersionConflict, "CAS", "reload")
+	}
+	t.state.Spaces[r.ID] = r
 	return nil
 }
 
@@ -381,6 +419,18 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 	if one.Distillation.Provenance.Mode != "manual" || one.Distillation.Status != "succeeded" {
 		t.Fatal("manual provenance lost")
 	}
+	encoded, _ := json.Marshal(one.Distillation)
+	var wire map[string]json.RawMessage
+	_ = json.Unmarshal(encoded, &wire)
+	for _, field := range []string{"related_refs", "related_ideas", "conflicts", "pending_questions", "goal_refs", "existing_assets", "missing_evidence"} {
+		if string(wire[field]) != "[]" {
+			t.Fatalf("%s must be an empty wire array, got %s", field, wire[field])
+		}
+	}
+	detail, err := s.GetMaterial(context.Background(), human, material.Material.ID)
+	if err != nil || len(detail.Distillations) != 1 || detail.Distillations[0].ID != one.Distillation.ID {
+		t.Fatal("stored distillation omitted from material detail")
+	}
 	publishes := o.publishes.Load()
 	c.CommandMeta = meta("repeat", 1)
 	c.OutputText = "Changed answer without new question"
@@ -395,7 +445,7 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 		t.Fatal("new question did not create work")
 	}
 	c.CommandMeta = meta("theme", 1)
-	c.Stage = "theme"
+	c.Stage = "topic"
 	c.Question = ""
 	c.OutputText = "Unresolved thematic comparison"
 	c.PendingQuestions = []string{"Need another paper"}
@@ -403,6 +453,14 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 	if err != nil || len(theme.Distillation.PendingQuestions) != 1 {
 		t.Fatal("pending evidence lost")
 	}
+	if theme.Distillation.Stage != "topic" {
+		t.Fatal("public topic stage was not preserved")
+	}
+	invalid := c
+	invalid.CommandMeta = meta("invalid-theme", 1)
+	invalid.Stage = "theme"
+	_, err = s.RecordDistillation(context.Background(), human, invalid)
+	errorCode(t, err, apierrors.ValidationFailed)
 	c.CommandMeta = meta("project", 1)
 	c.Stage = "project"
 	c.OutputText = "Project association"
@@ -427,7 +485,7 @@ func TestDistillationLayersReuseFixedInputsAndKeepPendingQuestion(t *testing.T) 
 func TestFeedbackCASHistoryAndUnknownDimensions(t *testing.T) {
 	s, r, _ := fixture(t)
 	material := importFixture(t, s, "import", "source")
-	d, err := s.RecordDistillation(context.Background(), human, RecordDistillationCommand{CommandMeta: meta("theme", 1), InputRefs: sourceRefs(material), Stage: "theme", ProcessingConfig: "manual-v1", OutputText: "Two unresolved ideas", PendingQuestions: []string{"Need related evidence"}})
+	d, err := s.RecordDistillation(context.Background(), human, RecordDistillationCommand{CommandMeta: meta("theme", 1), InputRefs: sourceRefs(material), Stage: "topic", ProcessingConfig: "manual-v1", OutputText: "Two unresolved ideas", PendingQuestions: []string{"Need related evidence"}})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -54,10 +54,10 @@ func TestThreeStagesPreserveUnansweredQuestions(t *testing.T) {
 	if err := ValidateDistillation("content", refs, DistillationOutput{SourcePreserved: true, Summary: "A real manual summary"}); err != nil {
 		t.Fatal(err)
 	}
-	if ValidateDistillation("theme", refs, DistillationOutput{}) == nil {
+	if ValidateDistillation("topic", refs, DistillationOutput{}) == nil {
 		t.Fatal("empty theme")
 	}
-	if err := ValidateDistillation("theme", refs, DistillationOutput{OpenQuestions: []string{"Need a second source"}}); err != nil {
+	if err := ValidateDistillation("topic", refs, DistillationOutput{OpenQuestions: []string{"Need a second source"}}); err != nil {
 		t.Fatal(err)
 	}
 	project := DistillationOutput{Goal: "g", ExistingAsset: "a", ExpectedImprovement: "i", MinimumOutcome: "m", MissingEvidence: []string{"baseline"}}

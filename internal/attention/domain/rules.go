@@ -103,7 +103,7 @@ func ValidateDistillation(stage string, inputs []InputRef, out DistillationOutpu
 		if !out.SourcePreserved || strings.TrimSpace(out.Summary) == "" {
 			return ErrEvidence
 		}
-	case "theme":
+	case "topic":
 		if len(out.Related) == 0 && strings.TrimSpace(out.ExistingView) == "" && strings.TrimSpace(out.Conflict) == "" && !hasText(out.OpenQuestions) {
 			return ErrEvidence
 		}
@@ -240,7 +240,7 @@ func HumanActivity(events []AttentionEvent, now time.Time, halfLife time.Duratio
 	}
 	var activity float64
 	for _, event := range events {
-		if event.Actor != "human" || !slices.Contains([]string{"annotate", "reread", "adopt"}, event.Kind) {
+		if event.Actor != "human" || !slices.Contains([]string{"annotate", "reread", "adopt", "classify", "mention", "project_reuse"}, event.Kind) {
 			continue
 		}
 		if event.At.IsZero() || event.At.After(now) || math.IsNaN(event.Weight) || math.IsInf(event.Weight, 0) || event.Weight < 0 {
