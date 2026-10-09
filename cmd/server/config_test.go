@@ -25,6 +25,24 @@ func TestImportRootsExplicitAndNoDefault(t *testing.T) {
 	}
 }
 
+func TestSummarizeExtractionRequiresExplicitInstalledPaths(t *testing.T) {
+	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", "")
+	t.Setenv("ASTROCYTE_NODE", "missing")
+	reader, err := resolveSourceReader(nil)
+	if err != nil || reader.Arxiv.TextExtractor != nil {
+		t.Fatalf("default must retain metadata/PDF-only reader: %v %v", reader, err)
+	}
+	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", "relative.js")
+	if _, err := resolveSourceReader(nil); err == nil {
+		t.Fatal("accepted unverified extraction paths")
+	}
+	t.Setenv("ASTROCYTE_NODE", filepath.Join(t.TempDir(), "missing-node"))
+	t.Setenv("ASTROCYTE_SUMMARIZE_CLI", filepath.Join(t.TempDir(), "missing-cli.js"))
+	if _, err := resolveSourceReader(nil); err == nil {
+		t.Fatal("accepted missing configured extraction tools")
+	}
+}
+
 func TestAttentionPolicyRejectsInvalidWeights(t *testing.T) {
 	t.Setenv("ASTROCYTE_ATTENTION_HALF_LIFE_SECONDS", "3600")
 	for _, raw := range []string{"null", "[]", "invalid", `{"reread":-1}`, `{"agent_read":100}`} {

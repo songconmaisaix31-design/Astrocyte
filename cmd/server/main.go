@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -48,6 +47,10 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	importRoots, err := resolveImportRoots()
+	if err != nil {
+		return err
+	}
+	sourceReader, err := resolveSourceReader(importRoots)
 	if err != nil {
 		return err
 	}
@@ -102,7 +105,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("open objects: %w", err)
 	}
-	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(importRoots), objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights})
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights})
 	// Assemble application services; Workspace and Swarm retain their S0 boundary.
 	services := httpapi.Services{
 		Attention:     attention,

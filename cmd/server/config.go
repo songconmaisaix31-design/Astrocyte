@@ -5,13 +5,43 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
+
+// No extraction CLI is selected implicitly. A configured CLI uses the installed
+// Node executable and the adapter's extract-only, credential-free environment.
+func resolveSourceReader(roots []string) (*importers.Reader, error) {
+	reader := importers.NewReader(roots)
+	cliPath := os.Getenv("ASTROCYTE_SUMMARIZE_CLI")
+	if cliPath == "" {
+		return reader, nil
+	}
+	nodePath := os.Getenv("ASTROCYTE_NODE")
+	if nodePath == "" {
+		var err error
+		nodePath, err = exec.LookPath("node")
+		if err != nil {
+			return nil, fmt.Errorf("find Node for ASTROCYTE_SUMMARIZE_CLI: %w", err)
+		}
+		nodePath, err = filepath.Abs(nodePath)
+		if err != nil {
+			return nil, fmt.Errorf("resolve Node: %w", err)
+		}
+	}
+	extractor, err := importers.NewSummarizeExtractor(nodePath, cliPath)
+	if err != nil {
+		return nil, fmt.Errorf("configure summarize extraction: %w", err)
+	}
+	reader.Arxiv.TextExtractor = extractor
+	return reader, nil
+}
 
 // Runtime bounds are local service configuration, not client-supplied authority.
 func configuredPositiveInt(name string, defaultValue, maxValue int) (int, error) {
