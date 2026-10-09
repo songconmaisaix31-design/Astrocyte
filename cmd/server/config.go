@@ -1,12 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
+
+	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 // Runtime bounds are local service configuration, not client-supplied authority.
@@ -20,6 +24,23 @@ func configuredPositiveInt(name string, defaultValue, maxValue int) (int, error)
 		return 0, fmt.Errorf("%s must be an integer from 1 to %d", name, maxValue)
 	}
 	return n, nil
+}
+
+func resolveAttentionPolicy() (time.Duration, map[string]float64, error) {
+	seconds, err := configuredPositiveInt("ASTROCYTE_ATTENTION_HALF_LIFE_SECONDS", 7*24*60*60, 315360000)
+	if err != nil {
+		return 0, nil, err
+	}
+	var weights map[string]float64
+	if raw := os.Getenv("ASTROCYTE_ATTENTION_WEIGHTS"); raw != "" {
+		if err := json.Unmarshal([]byte(raw), &weights); err != nil || weights == nil {
+			return 0, nil, fmt.Errorf("ASTROCYTE_ATTENTION_WEIGHTS must be a JSON object of event weights")
+		}
+		if err := attentionapp.ValidateAttentionWeights(weights); err != nil {
+			return 0, nil, err
+		}
+	}
+	return time.Duration(seconds) * time.Second, weights, nil
 }
 func resolveImportRoots() ([]string, error) {
 	var roots []string

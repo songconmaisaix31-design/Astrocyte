@@ -93,6 +93,28 @@ func revision(r *http.Request) (int, error) {
 }
 func (h *handler) registerAttention(mux *http.ServeMux) {
 	h.registerClassification(mux)
+	mux.HandleFunc("GET /api/v1/distillations/processor", func(w http.ResponseWriter, r *http.Request) {
+		if h.services.Automatic == nil {
+			h.attentionResult(w, r, http.StatusOK, attentionapp.DistillerStatus{SchemaVersion: 1, Processor: "codex", Available: false, Reason: "processor_not_configured", RequiredAction: "configure_and_verify_native_read_isolation", AllowedSourceKeys: []string{}}, nil)
+			return
+		}
+		result, err := h.services.Automatic.GetDistillerStatus(r.Context(), principal(r))
+		h.attentionResult(w, r, http.StatusOK, result, err)
+	})
+	mux.HandleFunc("GET /api/v1/attention-ranking-profile", func(w http.ResponseWriter, r *http.Request) {
+		if h.services.RankingProfile == nil {
+			h.attentionResult(w, r, http.StatusNotImplemented, nil, apierrors.NewUnsupported("ranking_profile"))
+			return
+		}
+		result, err := h.services.RankingProfile.GetRankingProfile(r.Context(), principal(r))
+		h.attentionResult(w, r, http.StatusOK, result, err)
+	})
+	mux.HandleFunc("PUT /api/v1/attention-ranking-profile", commandHandler(h, func(c *attentionapp.UpdateRankingProfileCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c attentionapp.UpdateRankingProfileCommand) (any, error) {
+		if h.services.RankingProfile == nil {
+			return nil, apierrors.NewUnsupported("ranking_profile")
+		}
+		return h.services.RankingProfile.UpdateRankingProfile(r.Context(), principal(r), c)
+	}))
 	mux.HandleFunc("POST /api/v1/distillations/jobs", commandHandler(h, func(c *attentionapp.RequestDistillationCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusAccepted, func(r *http.Request, c attentionapp.RequestDistillationCommand) (any, error) {
 		if h.services.Automatic == nil {
 			return nil, apierrors.NewUnsupported("automatic_distillation")
