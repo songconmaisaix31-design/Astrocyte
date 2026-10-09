@@ -1,10 +1,27 @@
 # Astrocyte 当前状态
 
-日期：2026-10-10。当前任务：[S1 Attention 计划](tasks/S1-plan.md) 与 [summarize 接入](tasks/S1-summarize-plan.md)。完整真实验收尚未通过。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)。下面论文第二步、首轮界面与 S0 记录为历史结果，不代表新 summarize 全部通过。
+日期：2026-10-10。当前切片：[视频修复](tasks/S1-video-fix-plan.md)。指定B站单视频链接导入已通过真实页面、API、SQLite/对象和服务器进程重启验收；完整S1尚未通过。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)，长期范围见 [S1 Attention](tasks/S1-plan.md) 与 [summarize 接入](tasks/S1-summarize-plan.md)。
 
-视频修复正在进行，当前切片与互斥写域见 [修复计划](tasks/S1-video-fix-plan.md)。用户已授权所选B站DNS例外，01:07实际热加载204与上游网络检查PASS。W2实际Reader/Service导入成功730.29秒，正文32908bytes、三附件与SQLite/objects重开一致，人类关注/整理/Mission0；已验收释放。W0修正Windows项目CLI真实路径与既有默认期限1800秒，Codex独立180秒不变。统一源fd9937b42842a93a9b63d417a27725bd68b48389普通合入root为017c133ec4322a6d1011874eee25e148d814fd9c，主控独立pnpm check/build PASS（API14/前端40/契约226等）。W3已01:33:18从空库真实页面提交202，唯一转写仍在进行，浏览器正向/实际服务器进程重启尚未通过。以下未解决DNS与四轨释放等是前轮快照。收藏夹账号、先发现再选择的反馈范围和同步频率尚未决定，本轮先修指定单视频。
+主控业务/验收合并源 `017c133ec4322a6d1011874eee25e148d814fd9c`；最后普通报告合并 `a1a2d5213d2a17ede83c04ecbce95e308d687080` 只改任务报告，代码与已验源相同。含W0最终 `cf20f6f8ef62490e3c2aade57858478c296a70cc`、W2最终 `4d318c7a2bfb4efc98ff1dde954a6886d3d62792`、W3最终 `461814a6cf5aafde3c223064a159d6b5f28fceb6`，原分支均已push、三轨已结算释放，工作树保留。沿用本机Orca Codex / gpt-6.1-sol，主控仅维护计划/决定/验收/交接，未写业务代码。
 
-当前预览01:35:52重启为017c133业务源，5173/8787均200；个人SQLite材料/作业仍0，验收资料未灌入，Codex关闭。API PID86716、Vite56584、父64976，程序目录`%LOCALAPPDATA%/Temp/astrocyte-dev-QtmjWR`；停止前应重新核对。旧进程退出再次出现既有清理竞态，旧PID/监听实际消失后才启动新服务。无会话直接GET资料被正常403拒绝，未绕过；随后只读SQLite计数核实为空。本轮完整浏览器回归待W3媒体结束后执行。
+本轮修正三个实际问题：经用户授权仅给B站追加fake-IP例外并热加载204，上游网络检查PASS；Windows项目CLI路径用既有Node realpath正确解析；正式Reader/Service已有共享默认期限由300秒改1800秒，保留显式1–86400秒配置，Codex独立180秒不变。另修真实正向浏览器测试误用关闭提取的ephemeral服务，仍复用既有helper、独立临时库和原布局，没有新建框架或冻结收藏夹契约。
+
+| 本轮命令 / 实际操作 | 结果 |
+|---|---|
+| W2真实 `TestSummarizeVideoLiveServiceRestart` | PASS，730.29秒；所选BV音轨本地转写32908bytes、三附件分存，SQLite/objects重开一致；同命令重放复用job，不代表任意新表单复用 |
+| W3显式 `ASTROCYTE_TEST_SUMMARIZE_URL=1`，成功URL用例、chromium-1280、workers=1 | 1 PASS，exit0，4.9分钟；空库真实页面POST202，job实际275.98秒完成、attempts1、deadline1800秒。source为3b1f34bd0970e3ac4a96c8b064c41db9346fcf38，无API预导入或模型整理POST |
+| 同一场真实服务停止/新进程启动，页面reload，resize1280/1920 | PASS；详情/正文/三个附件API、SQLite和对象字节重启前后相同；资料1/版本1/job1、整理0、使用关注0、Mission0；没有再次导入。主控独立复核JSON，正文与W2首轮逐字节相同，已目视正文尾段与两尺寸详情图 |
+| 主控 `pnpm check` | PASS：Go/vet/mod、18包边界、226契约示例/生成、API14/14、TS/lint、前端40/40；原EventV1警告保留 |
+| 主控 `pnpm build` | PASS：Go程序与生产网页 |
+| 主控 `pnpm test:e2e --workers=1` | 146 PASS /4 SKIP，4.7分钟、exit0；两尺寸完成，4项是默认不运行的外部正/负例，指定真实正向已单独通过，未把SKIP算成功 |
+
+当前限制：中文base ASR有同音误识，尚未逐句校准；上游segments=null，真实时间定位未提供，不补造。普通新表单同源视频仍沿现有刷新行为，复用/主动刷新语义待用户，完整AT02不能由同命令重放推出。最新自动多轮/摘要重试与授权Agent正向读取仍待，旧Codex UNKNOWN没有重发；最新arXiv DNS未调整，历史论文多版本/AT04结果保持原范围。真实转写中途取消NOT_RUN。公开UID/收藏夹或登录绑定、反馈先读标题简介还是字幕、同步频率与实际收藏夹仍待用户；未实现账号/收藏夹批量同步，不自动入库或扩大读取权限。
+
+当前预览01:35:52重启为017c133业务源，5173/8787均200；个人SQLite材料/作业仍0，验收资料未灌入，Codex关闭。API PID86716、Vite56584、父64976，程序目录`%LOCALAPPDATA%/Temp/astrocyte-dev-QtmjWR`；停止前应重新核对。旧进程退出再次出现既有清理竞态，旧PID/监听实际消失后才启动新服务。无会话直接GET资料被正常403拒绝，未绕过，随后只读SQLite计数核实为空。本轮验收服务已退出，15173/18787/15273/18887/60177/60178无监听。
+
+实际JSON/三附件/日志与三张主控复核截图入口见 [W3最终报告](tasks/S1-W3.md)；W2首次原件在`%LOCALAPPDATA%/Temp/Astrocyte-S1-video-fix-W2-ctx_55b0e7395a05/first`。Clash controlled/runtime文件与当前DNS已修改，但设置UI缓存未刷新，后续在Clash设置页操作可能覆盖例外，应保留该限制。默认开发服务留下`%LOCALAPPDATA%/Temp/astrocyte-dev-HuaPRH`（W3）与`astrocyte-dev-x8dhVu`（主控），均无服务；W3对前者的递归删除被自动审批拒绝，理由仅`blocked by policy`，未换工具绕过，需人工清理。未合main、未核验本轮远端CI、未新发应用LLM请求。
+
+## summarize 接入前轮结果（历史）
 
 用户已允许Python，原无Python限制撤销。正式接入沿用原 W0/W2/W3/W4 工作树和互斥写域，本机 Orca Codex / gpt-6.1-sol；主控没有写业务代码。当前普通合并源 `81e92ae521fadf6def68b771e005bd77cc3f7ed3`，含 W0 最终 `d8f29070073e6f2e71ae6fcca5fa259205208b8f`、W2 `777f8559d5ba3afa17c01681397b5dc2bbc0be8f`、W3 最终 `e8cc1e001cdf3468187c901f7fa1e262ebc40359` 与 W4 最终 `1a77d16c83f063c94e3df6d2a5bcaa785523b058`。各轨已 push、终端已结算释放，工作树与历史保留。W3 原 native 内存分配失败后，按同任务 retry-of 恢复原轨；没有重建调度器。
 

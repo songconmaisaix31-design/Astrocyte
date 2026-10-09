@@ -2,9 +2,13 @@
 
 2026-10-10。项目目录：`C:\Users\DW\orca\Astrocyte`。
 
-正在执行视频修复切片，见 [当前计划](tasks/S1-video-fix-plan.md)。用户“允许修改”已明确授权所选B站DNS例外，01:07热加载与上游网络检查PASS。W2首次本地转写与Service导入实际成功730.29秒，正文32908bytes和三附件重开一致，已结算释放；中文误识和无时间片段如实保留。W0已修正Windows项目CLI真实路径和既有共享默认期限1800秒，Codex独立180秒不变。主控业务普通合并017c133ec4322a6d1011874eee25e148d814fd9c的check/build PASS；W3已从独立空库真实页面提交202，正在唯一转写，页面成功/服务器进程重启尚待结果。下文假IP阻断与默认300秒为前轮快照。公开账号/收藏夹筛选的关键产品决定仍待用户，未冻结新契约。
+指定单视频导入已修好，见 [当前计划](tasks/S1-video-fix-plan.md) 与 [当前结果](STATUS.md)。用户“允许修改”已授权B站DNS例外，01:07热加载与上游检查PASS。W0修正Windows项目CLI路径及既有Reader/Service默认期限1800秒；Codex独立180秒不变。W2首次真实Service成功730.29秒；W3从空库实际页面提交指定BV成功，作业275.98秒、attempts1，保存32908bytes正文和三附件，真正停止/重启服务后API、SQLite/对象逐字节一致，同一结果resize两尺寸通过。主控复核JSON及截图，独立check/build PASS、完整E2E146 PASS/4 SKIP（4.7分钟、exit0），真实正向另为1 PASS。业务/验收源017c133ec4322a6d1011874eee25e148d814fd9c，普通最终报告合并a1a2d5213d2a17ede83c04ecbce95e308d687080只有报告差异。三轨已push、验收释放，工作树保留。
 
-01:35:52预览已重启到017c133业务源，5173/8787均200，原个人库材料/作业仍0、Codex关闭。当前准确API PID86716、Vite56584，父64976，目录`%LOCALAPPDATA%/Temp/astrocyte-dev-QtmjWR`；停止前必须重新核对所属关系/创建时间/监听，不能依赖此历史PID。尚未跑本轮完整浏览器回归，W3唯一正向媒体期间不启动其他browser/media。
+01:35:52预览已重启到017c133业务源，5173/8787均200，原个人库材料/作业仍0、Codex关闭。当前准确API PID86716、Vite56584，父64976，目录`%LOCALAPPDATA%/Temp/astrocyte-dev-QtmjWR`；停止前必须重新核对所属关系/创建时间/监听，不能依赖此历史PID。验收服务/媒体/浏览器已退出，测试端口无监听。实际原件和截图位置见 [W3](tasks/S1-W3.md)，W2首次原件保留。W3默认dev临时`astrocyte-dev-HuaPRH`被自动审批拒绝删除（仅blocked by policy）；主控默认dev`astrocyte-dev-x8dhVu`也保留且无服务，人工清理即可，不绕过审查。
+
+剩余范围：中文ASR误识、无上游时间片段；转写中途取消未实测；普通新表单视频复用/主动刷新语义待答。完整S1的最新自动多轮/摘要重试、授权Agent正向读取仍待；旧Codex UNKNOWN未重发，arXiv当前DNS未调整。账号/公开收藏夹同步、先标题简介反馈还是先字幕、同步频率与实际来源尚待用户，不冻结接口或全量自动入库。Clash持久文件/运行DNS已改，但设置UI缓存未刷新，后续设置操作可能覆盖B站例外。下文是前轮交接快照，不将其阻断或未运行结论覆盖本轮单视频成功。
+
+## summarize 接入前轮交接（历史）
 
 最新任务：用户要求正式接入 steipete/summarize，随后明确 **允许Python**，原无Python门槛不再适用。项目已锁定并组装 summarize 0.25.1、公开视频 URL 入口和上游媒体薄适配；独立 Python yt-dlp、ffmpeg、whisper.cpp 与多语言模型已经安装并检查。当前真实视频正文仍被本机假IP DNS阻断，未获得字幕/转写/首次模型整理，完整S1未通过。当前源码、最终检查与限制以 [STATUS](STATUS.md) 顶部和 [接入计划](tasks/S1-summarize-plan.md) 为准。普通视频导入复用/主动刷新、公开来源DNS调整、登录和扩展仍待用户；不改变网络检查或授权边界来绕过问题。
 

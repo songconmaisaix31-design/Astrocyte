@@ -10,14 +10,16 @@
 | W0 入口与集成 | s1-contract-1009；cmd、scripts、根依赖/锁、contracts、app/contracts.go、httpapi、foundation、migrations、web/src/api、README、tasks/S1-W0.md | 检查既有运行配置、真实媒体耗时与作业期限/取消；只修实际必要入口问题，公共文件唯一owner；W2完成后普通合并，不重写领域 |
 | W3 真实页面验收 | s1-attention-ui-1009；web/e2e/attention-video-import.spec.ts、web/e2e/summarize-env.d.ts、tasks/S1-W3.md；仅实际页面缺陷时改Attention组件 | 原成功URL opt-in场景使用强制禁用提取的ephemeral服务，不能运行真实成功链路；按既有helper明确开启所选公开源、关闭Codex，仅修真实验收入口；W2完成后再唯一运行，不与媒体任务并发 |
 
-主控负责本计划/决定/状态、用户已授权的宿主DNS例外、发布准确源码、独立页面/API/持久化验收、最终check/build/适用浏览器回归和commit/push。使用本机Orca Codex，模型以实际运行观测记录。两个Worker不得并行跑浏览器或同时下载转写同一个视频；首先由W2跑媒体正路径，主控最终页面验收。无自研调度器、Manifest或完成证明代码，公共契约未决定不冻结。
+主控仅维护计划/决定/状态、获准的宿主DNS、独立验收与最终check/build/commit/push，不写业务代码。W2媒体完成后W3才运行唯一页面任务，另一尺寸复用结果；公共契约/迁移/锁/入口由W0唯一持有并普通集成。沿用现有框架，无自研调度器、Manifest或完成证明代码。
 
 后续收藏夹切片已收到需求，尚待对齐：首批是否B站公开UID/收藏夹而无登录；先同步标题/简介待选列表供Agent反馈再勾选提取，还是先取字幕再勾选；实际绑定账号/收藏夹与同步频率。同步发现不是全量资料入库，用户决定选择哪些；不从收藏夹绑定推导全库读取、登录凭据或自动Mission授权。未答前不写账号/同步/Agent筛选新契约或大改页面。
 
-实际启动：Run run_75f5663450b7；W2 task_fbf46b3309c2 / ctx_55b0e7395a05 / term_f23619a6-1520-4c43-99b4-ac75ce926099，W0 task_6c5e48d158b5 / ctx_93524ed1e8dd / term_9969bda4-0a33-4bb5-ba7b-65ce9164849f；均本机Codex，实际模型gpt-6.1-sol。W0首启动turn未观测，读屏明确原prompt仍在composer，主控仅补Enter，随后原dispatch有真实执行/心跳；未重复派发。W0已复现Go直接启动pnpm逻辑CLI路径不能解析core，入口owner作最小realpath修复。
+执行：本机Orca Codex / 实际gpt-6.1-sol；Run run_75f5663450b7，W2 ctx_55b0e7395a05、W0 ctx_93524ed1e8dd、W3 ctx_ea2d95222765，三个原worktree/branch保留，完成后均commit/push并验收释放。入口首修RED与各轮结果保留在原owner报告，不重复派发或覆盖历史。
 
-DNS实际操作01:07：备份并修改 `%APPDATA%/mihomo-party/mihomo.yaml` 与 `work/config.yaml`，仅blacklist追加 `+.bilibili.com`，原其余解析/路由保留；控制接口热加载204，所选B站公网解析与锁定上游检查PASS，arxiv.org未调整。备份后缀 `.astrocyte-before-video-2026-10-09T17-07-13-140Z.bak`。Clash Party图形窗口恢复未成功，client缓存未通过设置UI刷新；后续设置操作可能覆盖，应核验该限制，不伪称GUI保存通过。W2于network ready后开始唯一实际媒体验收。
+DNS操作：01:07备份 `%APPDATA%/mihomo-party/mihomo.yaml` 与 `work/config.yaml`，后缀 `.astrocyte-before-video-2026-10-09T17-07-13-140Z.bak`；仅blacklist追加 `+.bilibili.com`、热加载204，上游检查PASS，arXiv/其他路由不改。设置UI缓存未刷新，后续Clash设置操作可能覆盖例外。
 
-01:19 主控决定：真实媒体桥01:08:37开始，音轨下载已结束，01:08:52启动的同一whisper进程持续CPU工作，实际转写已超过原300秒。W0仅将已有Reader与Service共享作业默认期限调整为1800秒，保留显式环境配置与86400秒上限；Codex执行上限仍为独立180秒，旧UNKNOWN不重放。不新增按业务域分派期限的契约或调度层。W3 task_82c3c3a4b5a7 / ctx_ea2d95222765 / term_82cfbb11-2a26-4a15-bc5b-ab35567dfdf3 已实际执行，先修正向验收服务与静态检查，W2结束前不启动第二媒体任务。
+期限决定：首次真实转写超过300秒，W0仅把现有Reader/Service共享默认改1800秒，保留显式1–86400秒设置；Codex执行上限独立180秒、旧UNKNOWN不重发，不新增领域预算接口。
 
-01:37 进展：W2实际成功730.29秒，正文32908bytes、三附件与SQLite/objects重开逐字节一致；final/source为4d318c7a2bfb4efc98ff1dde954a6886d3d62792/d289ddcd8ef956e71c6de8dd7d4229aa0ba6a7bb，已验收释放。W0实际Windows `filepath.EvalSymlinks` 首修仍启动失败，随后用既有Node `fs.realpathSync`最小修复（e2276a7），正式期限修正3ca589f；旧首次RED保留。W3静态源b201d0595c5dd09b2feb9fe0d8891da55923d5c9修正正向服务/同场重启/两尺寸，并删除与实际零字节stderr冲突的错误约束。普通集成fd9937b42842a93a9b63d417a27725bd68b48389已push，主控普通合入为017c133ec4322a6d1011874eee25e148d814fd9c，独立pnpm check/build PASS。W3在统一源01:33:18从空库实际页面提交202，唯一job正在转写，不能提前宣称浏览器成功。预览01:35:52已重启该业务源，两端200、原个人库材料/作业仍0；旧预览退出再次出现既有子进程已退出清理竞态，确认旧监听/PID消失后才新启动。
+交付：指定单视频从空库真实页面提交、原文/三附件、实际进程重启和同一结果两尺寸PASS；W2首轮730.29秒、W3作业275.98秒/用例1 PASS，正文同为32908bytes。主控业务源017c133ec4322a6d1011874eee25e148d814fd9c，check/build PASS，完整E2E146 PASS/4 SKIP（4.7分钟、exit0），最后报告合并a1a2d5213d2a17ede83c04ecbce95e308d687080不改代码。预览已更新，个人库不写验收资料、Codex关闭。
+
+本切片终点达成，完整S1及收藏夹尚未完成。准确各轨提交、原始输出、ASR/无时间轴、未实测取消、待答权限/刷新与人工清理见 [STATUS](../STATUS.md)、[QUESTIONS](../docs/QUESTIONS.md) 和 [W0](S1-W0.md) / [W2](S1-W2.md) / [W3](S1-W3.md)。
