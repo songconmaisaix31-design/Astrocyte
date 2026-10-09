@@ -1,11 +1,12 @@
 import { join } from 'node:path';
 import { root, requireFile, start, stop } from './process.mjs';
+import { summarizeEnvironment } from './summarize.mjs';
 
 const filename = process.platform === 'win32' ? 'dist/astrocyte.exe' : 'dist/astrocyte';
 await requireFile(filename);
 const child = start(join(root, filename), [], {
   detached: process.platform !== 'win32',
-  env: { ...process.env, ASTROCYTE_WEB_DIR: process.env.ASTROCYTE_WEB_DIR ?? join(root, 'web', 'dist') },
+  env: { ...await summarizeEnvironment(), ASTROCYTE_WEB_DIR: process.env.ASTROCYTE_WEB_DIR ?? join(root, 'web', 'dist') },
 });
 let stopping = false;
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, async () => {

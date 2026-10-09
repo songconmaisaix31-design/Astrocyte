@@ -47,7 +47,8 @@ function JobRow({ job, onChanged, onMaterial, disabled }: { job: Job; onChanged:
   const active = job.status === 'queued' || job.status === 'running';
   const retryable = job.status === 'failed' && !job.delivery_unknown && !!job.error?.retryable && job.attempts < job.max_attempts && Date.parse(job.deadline_at) > now;
   return <li>
-    <div className={styles.itemHeader}><strong>{job.kind} · {job.job_id}</strong><StatusBadge value={job.status} label={importStatusLabel(job.status)} /></div>
+    <div className={styles.itemHeader}><strong>{job.kind === 'import' ? '正文导入' : job.kind === 'distillation' ? '资料整理' : job.kind} · {job.job_id}</strong><StatusBadge value={job.status} label={importStatusLabel(job.status)} /></div>
+    {job.kind === 'import' && job.status === 'succeeded' && <p className={styles.note}>已完成导入；模型整理请查看资料详情中的独立记录。</p>}
     <p className={styles.note}>尝试 {job.attempts}/{job.max_attempts} · 更新 {formatDateTime(job.updated_at)} · 截止 {formatDateTime(job.deadline_at)}</p>
     {job.error && <p role="alert">{job.error.message} · {job.error.required_action}（请求 {job.error.request_id}）</p>}
     {job.delivery_unknown && <p role="alert">外部结果未知，需要先核对；自动重试已禁用。</p>}

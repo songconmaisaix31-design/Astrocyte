@@ -60,13 +60,25 @@ func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distill
 	return processor, sourceKeys, nil
 }
 
-// No extraction CLI is selected implicitly. A configured CLI uses the installed
-// Node executable and the adapter's extract-only, credential-free environment.
+// Extraction uses the project installation by default. Launch scripts supply
+// absolute paths; direct binary launches can resolve a checkout beside the binary
+// or above the current directory. A missing installation is an actionable error.
 func resolveSourceReader(roots []string) (*importers.Reader, error) {
 	reader := importers.NewReader(roots)
+	enabled := os.Getenv("ASTROCYTE_ENABLE_SUMMARIZE")
+	if enabled == "false" {
+		return reader, nil
+	}
+	if enabled != "" && enabled != "true" {
+		return nil, fmt.Errorf("ASTROCYTE_ENABLE_SUMMARIZE must be true or false")
+	}
 	cliPath := os.Getenv("ASTROCYTE_SUMMARIZE_CLI")
 	if cliPath == "" {
-		return reader, nil
+		var err error
+		cliPath, err = resolveProjectSummarize()
+		if err != nil {
+			return nil, err
+		}
 	}
 	nodePath := os.Getenv("ASTROCYTE_NODE")
 	if nodePath == "" {
@@ -80,12 +92,51 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, fmt.Errorf("resolve Node: %w", err)
 		}
 	}
-	extractor, err := importers.NewSummarizeExtractor(nodePath, cliPath)
+	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", 300, 86400)
+	if err != nil {
+		return nil, err
+	}
+	extractor, err := importers.NewSummarizeExtractorWithOptions(nodePath, cliPath, importers.SummarizeOptions{
+		Version: "0.25.1", YtDlpPath: os.Getenv("ASTROCYTE_YT_DLP_PATH"),
+		FFmpegPath: os.Getenv("ASTROCYTE_FFMPEG_PATH"), WhisperBinary: os.Getenv("ASTROCYTE_WHISPER_BINARY"),
+		WhisperModel: os.Getenv("ASTROCYTE_WHISPER_MODEL"), Timeout: time.Duration(timeoutSeconds) * time.Second,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("configure summarize extraction: %w", err)
 	}
 	reader.Arxiv.TextExtractor = extractor
+	reader.Summarize = extractor
 	return reader, nil
+}
+
+func resolveProjectSummarize() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("resolve project directory: %w", err)
+	}
+	starts := []string{cwd}
+	if executable, err := os.Executable(); err == nil {
+		starts = append(starts, filepath.Dir(executable))
+	}
+	for _, start := range starts {
+		for dir := start; ; dir = filepath.Dir(dir) {
+			var project struct{ Name string }
+			raw, readErr := os.ReadFile(filepath.Join(dir, "package.json"))
+			if readErr == nil && json.Unmarshal(raw, &project) == nil && project.Name == "astrocyte" {
+				packageRoot := filepath.Join(dir, "node_modules", "@steipete", "summarize")
+				var pkg struct{ Version string }
+				raw, err := os.ReadFile(filepath.Join(packageRoot, "package.json"))
+				if err != nil || json.Unmarshal(raw, &pkg) != nil || pkg.Version != "0.25.1" {
+					return "", fmt.Errorf("project summarize 0.25.1 is missing or mismatched; run pnpm install --frozen-lockfile")
+				}
+				return filepath.Join(packageRoot, "dist", "cli.js"), nil
+			}
+			if filepath.Dir(dir) == dir {
+				break
+			}
+		}
+	}
+	return "", fmt.Errorf("project summarize not found; launch with pnpm dev/start from an installed checkout, or configure absolute ASTROCYTE_SUMMARIZE_CLI and ASTROCYTE_NODE")
 }
 
 // Runtime bounds are local service configuration, not client-supplied authority.
