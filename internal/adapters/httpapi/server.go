@@ -40,6 +40,7 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
+	Automatic     attentionapp.AutomaticDistillationService
 	Attention     attentionapp.AttentionService
 	Foundation    foundation.Service
 	Materials     attentionapp.MaterialService

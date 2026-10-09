@@ -92,6 +92,13 @@ func revision(r *http.Request) (int, error) {
 	return n, nil
 }
 func (h *handler) registerAttention(mux *http.ServeMux) {
+	h.registerClassification(mux)
+	mux.HandleFunc("POST /api/v1/distillations/jobs", commandHandler(h, func(c *attentionapp.RequestDistillationCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusAccepted, func(r *http.Request, c attentionapp.RequestDistillationCommand) (any, error) {
+		if h.services.Automatic == nil {
+			return nil, apierrors.NewUnsupported("automatic_distillation")
+		}
+		return h.services.Automatic.RequestDistillation(r.Context(), principal(r), c)
+	}))
 	s := h.services.Attention
 	mux.HandleFunc("POST /api/v1/materials/imports", commandHandler(h, func(c *attentionapp.ImportMaterialCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusAccepted, func(r *http.Request, c attentionapp.ImportMaterialCommand) (any, error) {
 		return s.ImportMaterial(r.Context(), principal(r), c)
@@ -148,7 +155,7 @@ func (h *handler) registerAttention(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/opportunities/{id}/revisions", commandHandler(h, func(c *attentionapp.OpportunityCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c attentionapp.OpportunityCommand) (any, error) {
 		return s.ReviseOpportunity(r.Context(), principal(r), r.PathValue("id"), c)
 	}))
-	mux.HandleFunc("POST /api/v1/opportunities/{id}/reviews", commandHandler(h, func(c *attentionapp.ReviewOpportunityCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c attentionapp.ReviewOpportunityCommand) (any, error) {
+	mux.HandleFunc("POST /api/v1/opportunities/{id}/reviews", commandHandler(h, func(c *attentionapp.ReviewOpportunityCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusCreated, func(r *http.Request, c attentionapp.ReviewOpportunityCommand) (any, error) {
 		return s.ReviewOpportunity(r.Context(), principal(r), r.PathValue("id"), c)
 	}))
 	mux.HandleFunc("GET /api/v1/jobs", func(w http.ResponseWriter, r *http.Request) {

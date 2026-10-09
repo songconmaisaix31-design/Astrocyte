@@ -3,7 +3,7 @@ import { ApiError, createApiClient, createReadApi, createAttentionApi } from './
 
 describe('generated HTTP client read boundary', () => {
   it('returns the backend empty envelope without substituting fixtures', async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({ schema_version: 1, items: [], next_cursor: null }), {
+    const fetchImpl = vi.fn<typeof fetch>().mockImplementation(async () => new Response(JSON.stringify({ schema_version: 1, items: [], next_cursor: null }), {
       headers: { 'Content-Type': 'application/json' },
     }));
     const data = await createReadApi(createApiClient('http://127.0.0.1:8787/api/v1', fetchImpl)).listMaterials();

@@ -37,6 +37,7 @@ type Dimensions struct {
 	Originality        DimensionScore `json:"originality"`
 }
 type Provenance struct {
+	Model     string `json:"model,omitempty"`
 	Processor string `json:"processor"`
 	Version   string `json:"version"`
 	Mode      string `json:"mode"`
@@ -244,6 +245,7 @@ type UpdateMaterialCommand struct {
 	CollectionReason *string `json:"collection_reason"`
 }
 type Job struct {
+	DistillationID   *string                 `json:"distillation_id,omitempty"`
 	ExternalStarted  bool                    `json:"external_started"`
 	DeliveryUnknown  bool                    `json:"delivery_unknown"`
 	SchemaVersion    int                     `json:"schema_version"`
@@ -340,6 +342,59 @@ type ReferenceMaterialCommand struct {
 type RemoveMaterialReferenceCommand struct {
 	CommandMeta
 	MaterialID string `json:"material_id"`
+}
+
+// Only selected, authorized snapshots enter the processor. There are no database
+// handles, object paths, shell capabilities or authentication fields in this input.
+type SourceSnapshot struct {
+	Ref           SourceRef  `json:"ref"`
+	SourceKey     string     `json:"source_key"`
+	Title         string     `json:"title"`
+	Text          string     `json:"text"`
+	Summary       string     `json:"summary"`
+	ContentDigest string     `json:"content_digest"`
+	Provenance    Provenance `json:"provenance"`
+}
+type DistillationInput struct {
+	JobID            string           `json:"job_id"`
+	OperationID      string           `json:"operation_id"`
+	Inputs           []SourceSnapshot `json:"inputs"`
+	Stage            string           `json:"stage"`
+	ProcessingConfig string           `json:"processing_config"`
+	Question         string           `json:"question"`
+}
+type DistillationOutput struct {
+	OutputText          string      `json:"output_text"`
+	NextQuestion        *string     `json:"next_question"`
+	RelatedRefs         []SourceRef `json:"related_refs"`
+	RelatedIdeas        []string    `json:"related_ideas"`
+	Conflicts           []string    `json:"conflicts"`
+	PendingQuestions    []string    `json:"pending_questions"`
+	GoalRefs            []string    `json:"goal_refs"`
+	ExistingAssets      []string    `json:"existing_assets"`
+	ExpectedImprovement string      `json:"expected_improvement"`
+	MinimumArtifact     string      `json:"minimum_artifact"`
+	MissingEvidence     []string    `json:"missing_evidence"`
+	Provenance          Provenance  `json:"provenance"`
+}
+type Distiller interface {
+	// ConfigurationID describes actual frozen processor settings, including model
+	// and isolation policy. It performs no paid model call or credential export.
+	ConfigurationID(context.Context) (string, error)
+	Distill(context.Context, DistillationInput) (DistillationOutput, error)
+}
+type RequestDistillationCommand struct {
+	CommandMeta
+	InputRefs        []SourceRef `json:"input_refs"`
+	Stage            string      `json:"stage"`
+	ProcessingConfig string      `json:"processing_config"`
+	Question         string      `json:"question"`
+}
+
+// Kept separate so a runtime can expose human recording while its automatic
+// processor is blocked by missing native read isolation, with honest 501/jobs.
+type AutomaticDistillationService interface {
+	RequestDistillation(context.Context, Principal, RequestDistillationCommand) (ImportJobResult, error)
 }
 
 type AttentionService interface {
