@@ -1,0 +1,19 @@
+# S1 Attention 一页执行计划
+
+2026-10-09。基线 `d6c1bf2`（S0 + 已交付新布局），主控分支 `s1/attention-materials-20261009`。本轮用户明确授权 S1 完整功能、多 Agent 并行开发、主控验收和最终 push。
+
+目标：真实 arXiv / summarize 结果导入、来源与内容版本、内容/主题/项目沉淀记录、关联与待查问题、依据和下一步齐备的候选、人工反馈、区分人类关注和机器使用、持久化作业及失败恢复。保留 Go/TS/SQLite 与新布局；只做 Attention，不扩展 Workspace/Swarm 执行。无 Python 默认链路；不新增调度框架或完成证明系统。
+
+| 轨道 | 独占 write_paths | 依赖与验收 | 停止点 |
+|---|---|---|---|
+| W0 契约/传输/集成 | `contracts/`、`internal/attention/app/contracts.go`、`internal/adapters/httpapi/`、`internal/foundation/`、`cmd/`、`migrations/`、`web/src/api/`、根依赖与锁、`scripts/`、`README.md`、`tasks/S1-contract.md`、`tasks/S1-W0.md` | 先发布 DTO/端口/HTTP 契约；迁移与依赖唯一所有者。最后负责普通合并和少量组装胶水；HTTP/契约/构建检查 | 领域缺陷交 W1，存储/导入缺陷交 W2，页面缺陷交 W3 |
+| W1 领域/应用 | `internal/attention/domain/`、`internal/attention/app/`（排除 `contracts.go`）、`tasks/S1-W1.md` | W0 契约；纯领域状态、三层沉淀及复用、候选版本/反馈、四维 unknown、人机关注、持久化队列用例；有意义的规则测试 | 公共契约/存储/入口更改交 W0/W2；不实现 S2 批准或执行 |
+| W2 存储/导入适配 | `internal/adapters/sqlite/`、`internal/adapters/importers/`、`internal/adapters/objects/`、`tasks/S1-W2.md` | W0 端口、W1 规则；SQLite 原子去重/CAS/作业恢复、对象发布、真实 arXiv 和 summarize 导出格式；重启与错误测试 | 迁移仅由 W0 落地；不新建视频下载/转录器，不调用 Python |
+| W3 Attention 前端 | `web/src/`（排除 `api/`、`pages/workspace/`、`pages/swarm/`）、`web/e2e/`（排除 `s1.spec.ts`）、`tasks/S1-W3.md` | W0 生成客户端；真实导入/作业恢复/继续沉淀/候选反馈和详情来源链；两尺寸、键盘、异步状态；保留现有布局 | 不同时改三页；公共 API/依赖交 W0 |
+| W4 验收 | `web/e2e/s1.spec.ts`、`tests/s1/`、`docs/acceptance/S1.md`、`tasks/S1-W4.md` | 发布契约后开始；可重复 AT01–AT04，真实网络材料另验；API/持久化/浏览器相互核对 | 未执行、失败、缺真实材料明确记录，不用 mock 代替真实导入 |
+
+组织：每轨固定 1 Orca Worker + 1 worktree + 1 branch，独占写域并持续返修；完成 commit + push。W0 先发布契约，之后 W1/W2/W3/W4 并行；W0 在独立集成 worktree 普通合并，领域问题退原 Worker。主控只写本计划、决策、STATUS/HANDOFF，最终独立 check/build/E2E/真实验收后提交并 push。实际客户端和模型按启动与 Worker 回执记录，不猜测。
+
+最终验收：AT01 真实论文/视频多轮沉淀有版本且没有 Mission；AT02 同源重复和摘要重试复用或产生新版本、没有重复工作；AT03 Agent 读取不增加人类关注；AT04 later 不丢资料且不是拒绝样本。`pnpm check`、`pnpm build`、`pnpm test:e2e` 必须通过。
+
+待答：具体真实论文/视频与公开资料整理后端已向用户询问；答复前继续与案例无关的实现，不外发私有资料，不据此启用未经确认的模型提供方。
