@@ -1,5 +1,5 @@
-// Package importers adapts existing exports and official arXiv originals.
-// It never downloads video or starts transcription tools.
+// Package importers adapts exports and official originals using pinned upstream
+// summarize extraction and its existing local media pipeline.
 package importers
 
 import (
@@ -16,10 +16,17 @@ import (
 
 // Export is local adapter data, mapped to application ports after parsing.
 type Export struct {
-	URL, Title, Text, Summary string
-	Segments                  []Segment
-	Original                  []byte
-	HasOriginal               bool
+	URL, Title, Text, Summary       string
+	Segments                        []Segment
+	Original                        []byte
+	HasOriginal                     bool
+	Version, Mode, TranscriptSource string
+	ExtraAttachments                []ExportAttachment
+}
+
+type ExportAttachment struct {
+	Name, MediaType string
+	Data            []byte
 }
 
 type Segment struct {
@@ -85,6 +92,9 @@ func ParseSummarizeJSON(raw []byte) (Export, error) {
 		}
 	}
 	r := Export{URL: locator, Title: v.Extracted.Title, Text: v.Extracted.Content, Summary: v.Summary, Original: append([]byte(nil), raw...), HasOriginal: strings.TrimSpace(v.Extracted.Content) != ""}
+	if v.Extracted.TranscriptSource != nil {
+		r.TranscriptSource = *v.Extracted.TranscriptSource
+	}
 	for _, seg := range v.Extracted.TranscriptSegments {
 		if seg.StartMS == nil || math.IsNaN(*seg.StartMS) || math.IsInf(*seg.StartMS, 0) || *seg.StartMS < 0 {
 			return Export{}, errors.New("invalid transcript startMs")
