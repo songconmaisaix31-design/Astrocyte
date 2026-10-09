@@ -13,6 +13,13 @@ const capabilityNames: Record<keyof Agent['capabilities'], string> = {
   send: '发送输入', stop: '停止', observe: '观察状态', reconcile: '核对结果',
 };
 const statusNames: Record<Observation['status'], string> = { available: '可用', unavailable: '不可用', unknown: '未知', unsupported: '不支持', supported: '已支持' };
+const reasonNames: Record<string, string> = {
+  native_runtime_not_tested: '尚未验证原生能力',
+  configuration_not_inspected: '未检查登录与配置',
+  cli_not_probed: '尚未检查客户端',
+  cli_not_found: '未找到 CLI 入口',
+  executable_not_found: '未找到 CLI 入口',
+};
 
 export function LocalAgentsPanel({ state, fixture }: { state: ReadApiState<components['schemas']['LocalAgentListV1']>; fixture: boolean }) {
   return <SectionCard title="本机 Agent 清单" tabs={['overview', 'sessions']} padded actions={!fixture && <button type="button" className="ac-button secondary compact" disabled={state.loading} onClick={state.retry}>刷新清单</button>}>
@@ -37,5 +44,8 @@ export function LocalAgentsPanel({ state, fixture }: { state: ReadApiState<compo
 }
 
 function ObservationValue({ observation }: { observation: Observation }) {
-  return <><strong>{statusNames[observation.status]}</strong><small>{observation.reason || '未提供原因'}</small><small>核实时间 · {observation.checked_at ? formatDateTime(observation.checked_at) : '未核实'}</small></>;
+  const reason = reasonNames[observation.reason];
+  return <><strong>{statusNames[observation.status]}</strong><small title={observation.reason}>{reason ?? (observation.reason ? '服务返回的原因见诊断详情' : '未提供原因')}</small>
+    {!reason && observation.reason && <details><summary>诊断详情</summary><code>{observation.reason}</code></details>}
+    <small>核实时间 · {observation.checked_at ? formatDateTime(observation.checked_at) : '未核实'}</small></>;
 }

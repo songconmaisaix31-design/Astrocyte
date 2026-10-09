@@ -9,6 +9,6 @@
 .readiness dt, .capabilities dt { color: var(--color-text-secondary); }
 .readiness dd, .capabilities dd { margin: 0; display: flex; flex-direction: column; gap: 3px; overflow-wrap: anywhere; }
 .readiness small, .capabilities small { font-size: 11px; color: var(--color-text-muted); }
-.agents details { border-top: 1px solid #eae7df; margin-top: 16px; padding-top: 12px; font-size: 12px; }
+.agents > li > details { border-top: 1px solid #eae7df; margin-top: 16px; padding-top: 12px; font-size: 12px; }
 .agents summary { cursor: pointer; color: #486553; }
 @media (max-width: 1500px) { .agents { grid-template-columns: minmax(0, 1fr); } }
