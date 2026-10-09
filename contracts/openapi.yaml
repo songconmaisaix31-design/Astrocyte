@@ -6418,6 +6418,11 @@ components:
       type: object
       additionalProperties: false
       properties:
+        prior_distillation_ids:
+          type: array
+          items:
+            type: string
+          description: Explicitly selected immutable prior records used by this processing operation.
         id: &a11
           type: string
         input_refs: &a12
