@@ -2,11 +2,13 @@
 
 2026-10-09。项目目录：`C:\Users\DW\orca\Astrocyte`。
 
-S1 代码已普通合入主控分支 `s1/attention-materials-20261009`，业务源 `e51676bca9508d698bd9968ca1f3e4777a7469a0`，主控 check/build/E2E PASS（API14、单测40、浏览器144）。五条 Orca 写域轨与集成记录见 [S1 计划](tasks/S1-plan.md) 和 [STATUS.md](STATUS.md)，Worker 已提交/push并完成终端收口，工作树保留。用户确认“域”、算法排序、人工分类、项目空间 @文件建立引用且原分类保留、整理先接本机 Codex CLI；视频再次明确复用 summarize，现阶段导入其真实既有输出，不新建下载/转录框架。
+S1 代码已普通合入主控分支 `s1/attention-materials-20261009`，当前业务源 `556165c338519e7f35818d9ea05113cc3644f862`，主控 check/build/E2E PASS（API14、单测40、浏览器144，59.9秒）。五条 Orca 写域轨与集成记录见 [S1 计划](tasks/S1-plan.md) 和 [STATUS.md](STATUS.md)，本轮原 W1/W0 完成固定arXiv版本/别名作业复用修复、普通集成及push，终端已释放，工作树保留。用户确认“域”、算法排序、人工分类、项目空间 @文件建立引用且原分类保留、整理先接本机 Codex CLI；视频再次明确复用 summarize，现阶段导入其真实既有输出，不新建下载/转录框架。
+
+第二步论文纵向链路已通过：用户允许公开多版本论文，实际页面提交 `2501.12948v1/v2`，SQLite保存同一资料两个版本、对象保留两套原文/附件；不同新表单及固定v1的PDF/ID别名复用同一job、attempts=1。实际后端停止/重启后，详情、两版正文和8个附件经API/存储核对一致，浏览器两尺寸重载可看旧v1，关注0、Mission0。首次指定论文重复提交曾产生两次下载，保留该失败与后续修复区别。旧库Refresh键不迁移，首次新规则命令可能再建job；原回执/历史记录不删除。该额外论文只授权导入/版本验证，不扩大模型授权。
 
 真实材料为 arXiv `2504.16054` / B 站 `BV1PReT6EEqR`，默认链路无 Python。论文全文、人工内容/主题待查记录、候选 later 已由浏览器/API/SQLite/重载核对，AT04 PASS；完整 AT01、真实最新摘要重试和授权 Agent 正向 AT03 尚未通过。指定视频 summarize 只有网页文字被产品拒绝，最新 Codex 调用超时未知未重放。Agent 范围、私有外发、候选门槛、A→B→A 默认版本与新模型作业仍待用户，不得从热度或令牌推导权限。宿主 ACL 探针副作用未凭猜测回滚，见 [W2](tasks/S1-W2.md)。
 
-当前预览已重启到 S1：http://127.0.0.1:5173/attention，API8787；原数据迁移前备份为 `%APPDATA%/astrocyte/backups/pre-s1-20261009-2230/state.sqlite`。summarize 原文提取已配置、Codex 自动处理关闭；真实验收数据只存在已清理的隔离临时库，没有灌入个人库。下文描述的 S1 前界面状态仅为历史，不是当前写入能力。完整主控结果见 STATUS 顶部。
+当前预览已重启到最新 S1：http://127.0.0.1:5173/attention，API8787；原数据迁移前备份为 `%APPDATA%/astrocyte/backups/pre-s1-20261009-2230/state.sqlite`。summarize 原文提取已配置、Codex 自动处理关闭；真实验收数据没有灌入个人库。首轮临时库已清理，本轮两个测试库因自动审批审查拒绝目录删除而保留，服务与自建页面已关闭，准确路径见STATUS。下文描述的 S1 前界面状态仅为历史，不是当前写入能力。完整主控结果见 STATUS 顶部。
 
 历史交付：`ui/preview-replacement-20261009`；源码 `5c1517d652afef8273cf14dab5c28021db648cfa` 已 push，尚未合入 main。S0 交接基线为 `649d4297d5bd34ebd849944379cb07bf909d7acb`。以下内容描述 S1 前的界面基线，当前开发与决定以顶部链接为准。
 

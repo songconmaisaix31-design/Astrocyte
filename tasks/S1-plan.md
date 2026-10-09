@@ -80,3 +80,15 @@
 用户允许另选多版本公开论文验收更新；采用官方 `2501.12948v1/v2`，仅导入/版本验证，不扩展模型处理授权。主控在隔离临时服务中通过实际页面提交指定论文 `2504.16054v1`，真实全文/附件入库成功。新表单重复提交固定v1时第一次检查 FAIL：资料/来源版本未重复，但产生第二个导入作业并重新下载。该行为交原 W1 领域轨返修，不把下载重复忽略为通过。
 
 本轮只恢复 W1 与 W0：W1 沿原 `s1-domain-1009` 工作树/分支及独占 `internal/attention/domain/`、`internal/attention/app/`（排除 contracts.go）、`tasks/S1-W1.md`，修复明确不可变版本导入的作业复用，保留未固定远程来源的新获取语义、原回执与历史版本。W0 沿原 `s1-contract-1009` 工作树/分支做普通集成，公共契约/迁移/锁/入口仍唯一所有者；领域缺陷不由集成者重写。主控不写业务代码，继续页面→Service→SQLite/objects→实际重启的独立验收；视频仅用 summarize 原输出，无字幕的指定结果仍须拒绝。
+
+本轮收口：W1业务 `09957ee3d43bde2e555173171bf07345bca1698e` / 最终 `c1677f5b0431a852e5748870c4f100873149a7f6`，W0集成检查源 `f9646c1c93aebe23825e706b3947ce6f19ea450f` / 最终 `40f0543ddaa99d0dd1a2b99e568d50a47728a87c` 均已push且接受；主控普通合并 `556165c338519e7f35818d9ea05113cc3644f862`，没有额外业务胶水。实际客户端仍是Orca调度本机Codex / gpt-6.1-sol；未调用应用模型。
+
+主控在该新源码创建隔离正式服务。先通过Orca浏览器提交官方v1，随后实际Playwright页面新表单提交其PDF别名、abs链接与ID，三次返回同一job `BDF3MBGFQBKWYX57OC4URWJ3HK`，attempts=1、objects5且不增加。随后页面提交v2，job `BFEIIGDSIOEOCW4HSPTE3V5FYR`，同一material `JFKF5J6VWD43TN4W3LO4SVRD77`，revision1/2、原v1保持。新表单幂等键不同，不用API业务写入或mock替代操作。来源正文分别59,601/190,684字符，PDF分别1,312,189/5,034,998字节；每版原始PDF、Atom、HTML、summarize JSON都可回查。
+
+页面上传真实 `bilibili-summarize-2.json`，job `F2AQAID2RFCBWN5BRAX36XTQIQ` failed/evidence_missing，无视频资料。实际停止并用同一程序、SQLite与objects重启，详情/失败作业与之前完全一致，8附件和两版正文API字节等于原存储。SQLite实际为materials1/revisions2/jobs3/receipts6；Mission0、human_usage0。重载浏览器1920/1280可切回v1，完整正文相同、无横向溢出，1280截图目视复核；现有布局保留。
+
+`pnpm check`、`pnpm build`、`pnpm test:e2e`均在主控新合并源PASS，API14/14、单测40/40、浏览器144/144（59.9秒）。真实官方下载验收独立于代表材料套件。首次重启只读核对因SQLite行的null prototype与JSON普通对象做deepStrictEqual而失败，修正核对脚本的对象转换后另行PASS，未改产品或重新下载；首次在纯领域工作树启动浏览器因该轨无Vite依赖失败，改用已有依赖的集成/主控目录，不新增依赖。
+
+W1/W0当前Dispatch已完成、输出归档并释放，原工作树保留；旧W2兼容Dispatch仍显示retained/unsupervised，但resource absent、nextAction none，不据该投影声称有活跃Worker。本机个人预览5173/8787重编译为该源，原数据/备份保留、验收资料未灌入、自动Codex关闭。旧Refresh键首个新命令可能生成一次新规则job；A→B→A、Agent范围、私有外发、ready门槛及最新模型unknown仍待决定。论文第二步完成，视频/完整S1验收未通过。
+
+验收服务已退出，56391/56392/63627/63628监听不再存在，自建Orca页面已关闭，原用户页面保留。最后清理两个测试临时目录的PowerShell删除操作被自动审批审查拒绝，原因仅“blocked by policy”，未执行或换工具绕过；保留 `%LOCALAPPDATA%/Temp/astrocyte-s1-Uoy9rJ`、`astrocyte-s1-OHU8NF`，用户可人工清理。本机个人预览继续运行，不删除W2原始输出、历史工作树或个人库。
