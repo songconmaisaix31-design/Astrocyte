@@ -30,6 +30,11 @@ func (s *Service) GetOpportunity(ctx context.Context, p Principal, id string) (O
 				}
 			}
 		}
+		profile, err := rankingProfile(tx)
+		if err != nil {
+			return err
+		}
+		result.Opportunity = projectOpportunityRanking(result.Opportunity, profile)
 		return nil
 	})
 	return result, mapError(err, "")
