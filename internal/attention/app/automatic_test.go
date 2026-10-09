@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
@@ -75,11 +76,12 @@ func TestAutomaticFixedSnapshotsReuseAndContinuation(t *testing.T) {
 	ref, _ := o.Publish(ctx, []byte("Actual fixed source B"))
 	row.Revisions = append(row.Revisions, MaterialRevision{MaterialID: m.Material.ID, Revision: 2, SourceKey: "arxiv:public", SourceLocator: row.Material.SourceLocator, ObjectRef: ref, ContentDigest: digestBytes([]byte("Actual fixed source B")), Provenance: row.Revisions[0].Provenance})
 	row.Material.CurrentRevision = 2
+	row.Material.Title = "Later mutable title B"
 	row.Material.Version++
 	r.state.Materials[m.Material.ID] = row
 	original := d.call
 	d.call = func(ctx context.Context, i DistillationInput) (DistillationOutput, error) {
-		if i.Inputs[0].Text != "Actual fixed source A" || i.Inputs[0].Ref.Revision != 1 || i.OperationID == "" {
+		if i.Inputs[0].Text != "Actual fixed source A" || i.Inputs[0].Ref.Revision != 1 || i.OperationID == "" || (len(i.PriorDistillations) == 0 && i.Inputs[0].Title != "Original source") {
 			t.Fatalf("not frozen: %+v", i)
 		}
 		return original(ctx, i)
@@ -168,11 +170,86 @@ func TestAutomaticRealSuggestionAndLocalFailureRecovery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	s.options.Distiller = nil // Delivered result needs no model/config refresh.
 	s.ProcessNextJob(context.Background())
 	job = r.state.Jobs[job.JobID]
 	if job.Status != "succeeded" || d.calls != 1 || len(r.state.Distillations) != 1 {
 		t.Fatalf("retry resent paid work: %+v calls=%d", job, d.calls)
 	}
+}
+
+func TestAutomaticNativeFullTextInputDigest(t *testing.T) {
+	s, r, _, m, d := automaticFixture(t)
+	row := r.state.Materials[m.Material.ID]
+	row.Revisions[0].Provenance.Processor = "arxiv+summarize"
+	row.Revisions[0].ContentDigest = "revision-bundle-identity-not-transmitted-text"
+	r.state.Materials[m.Material.ID] = row
+	original := d.call
+	d.call = func(ctx context.Context, i DistillationInput) (DistillationOutput, error) {
+		if i.Inputs[0].ContentDigest != digestBytes([]byte(i.Inputs[0].Text)) || i.Inputs[0].Provenance.Processor != "arxiv+summarize" {
+			t.Fatal("processor received incorrect digest/provenance")
+		}
+		return original(ctx, i)
+	}
+	job := runAutomatic(t, s, autoCommand(m, "fulltext-digest"))
+	if job.Status != "succeeded" {
+		t.Fatalf("native fulltext denied: %+v", job)
+	}
+}
+
+func TestAutomaticCancellationAfterEntryStaysUnknown(t *testing.T) {
+	s, _, _, m, d := automaticFixture(t)
+	ctx := context.Background()
+	entered := make(chan struct{})
+	returned := make(chan error, 1)
+	d.call = func(ctx context.Context, _ DistillationInput) (DistillationOutput, error) {
+		close(entered)
+		<-ctx.Done()
+		return DistillationOutput{}, ctx.Err()
+	}
+	queued, err := s.RequestDistillation(ctx, human, autoCommand(m, "cancel-model"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	go func() { _, err := s.ProcessNextJob(ctx); returned <- err }()
+	select {
+	case <-entered:
+	case <-time.After(3 * time.Second):
+		t.Fatal("processor not entered")
+	}
+	job, _ := s.GetJob(ctx, human, queued.JobID)
+	cancelled, err := s.CancelJob(ctx, human, job.JobID, meta("explicit-cancel-model", job.Version))
+	if err != nil || !cancelled.DeliveryUnknown {
+		t.Fatalf("cancel: %+v %v", cancelled, err)
+	}
+	select {
+	case err := <-returned:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(3 * time.Second):
+		t.Fatal("owned processor not cancelled")
+	}
+	_, err = s.RetryJob(ctx, human, job.JobID, meta("cancelled-unknown-retry", cancelled.Version))
+	errorCode(t, err, apierrors.DeliveryUnknown)
+}
+
+func TestAutomaticPriorScopeCannotExpandSelectedSources(t *testing.T) {
+	s, r, _, m, d := automaticFixture(t)
+	r.state.Distillations["prior-private"] = Distillation{ID: "prior-private", Status: "succeeded", InputRefs: sourceRefs(m), RelatedRefs: []SourceRef{{MaterialID: "unselected-private-material", Revision: 1, Locator: "private"}}}
+	c := autoCommand(m, "prior-private")
+	c.PriorDistillationIDs = []string{"prior-private"}
+	_, err := s.RequestDistillation(context.Background(), human, c)
+	errorCode(t, err, apierrors.ScopeDenied)
+	if d.calls != 0 {
+		t.Fatal("unauthorized prior exposed to model")
+	}
+	row := r.state.Materials[m.Material.ID]
+	row.Revisions[0].Provenance.Processor = "manual"
+	r.state.Materials[m.Material.ID] = row
+	c = autoCommand(m, "allowkey-manual-spoof")
+	_, err = s.RequestDistillation(context.Background(), human, c)
+	errorCode(t, err, apierrors.ScopeDenied)
 }
 
 // Test-only projection, not an application source fetch.
