@@ -16,9 +16,27 @@ export type OpportunityDetail = components['schemas']['OpportunityDetailV1'];
 export type Distillation = components['schemas']['DistillationV1'];
 export type Job = components['schemas']['JobV1'];
 
-/** Uses OpenAPI-generated path, request, response and error types. No retries. */
-export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) =>
-  createClient<paths>({ baseUrl, ...(fetchImpl ? { fetch: fetchImpl } : {}) });
+/** Uses generated types; no command retries. Session bootstrap precedes protected reads. */
+export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) => {
+  const client = createClient<paths>({ baseUrl, ...(fetchImpl ? { fetch: fetchImpl } : {}) });
+  let bootstrap: Promise<void> | undefined;
+  client.use({ async onRequest({ request }) {
+    const path = new URL(request.url).pathname;
+    if (request.method !== 'GET' || request.signal.aborted || request.headers.has('Authorization') ||
+      ['/auth/session', '/health', '/foundation'].some(suffix => path.endsWith(suffix))) return request;
+    bootstrap ??= (async () => {
+      const url = new URL(request.url);
+      url.pathname = `${url.pathname.slice(0, url.pathname.indexOf('/api/v1') + 7)}/auth/session`;
+      url.search = '';
+      const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: AbortSignal.timeout(10000) }));
+      // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
+      if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
+    })().catch(error => { bootstrap = undefined; throw error; });
+    await bootstrap;
+    return request;
+  } });
+  return client;
+};
 export const api = createApiClient();
 
 export class ApiError extends Error {
