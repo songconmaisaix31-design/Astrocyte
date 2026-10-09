@@ -32,7 +32,7 @@
 
 ## 当前项目入口
 
-先读 [STATUS.md](STATUS.md)，再读当前 [S0 计划](tasks/S0-plan.md) 引用的规格章节。
+接管先读 [HANDOFF.md](HANDOFF.md) 和 [STATUS.md](STATUS.md)，再读当前任务引用的规格章节；S0 记录见 [S0 计划](tasks/S0-plan.md)。
 
 - 业务规格：[docs/SPEC.md](docs/SPEC.md)。
 - 开发规划：[docs/TASKS.md](docs/TASKS.md)。
