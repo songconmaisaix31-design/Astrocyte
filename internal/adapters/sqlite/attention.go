@@ -138,7 +138,7 @@ func (t *attentionTx) saveHead(table, id string, expected int, data string, extr
 }
 
 func requireVersion(version, expected int) error {
-	if version != expected+1 {
+	if expected < 0 || version <= 0 || version != expected+1 {
 		return conflict("saved aggregate version must advance exactly once")
 	}
 	return nil
