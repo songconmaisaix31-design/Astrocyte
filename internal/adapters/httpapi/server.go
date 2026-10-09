@@ -30,14 +30,17 @@ type Server struct {
 
 // Config holds server configuration.
 type Config struct {
-	Port     int
-	Logger   *slog.Logger
-	Services Services
-	WebDir   string // Optional: directory for static file serving
+	AgentToken     string
+	AllowedOrigins []string
+	Port           int
+	Logger         *slog.Logger
+	Services       Services
+	WebDir         string // Optional: directory for static file serving
 }
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
+	Attention     attentionapp.AttentionService
 	Foundation    foundation.Service
 	Materials     attentionapp.MaterialService
 	Opportunities attentionapp.OpportunityService
@@ -78,8 +81,12 @@ func NewServer(cfg Config) *Server {
 	mux.HandleFunc("GET /api/v1/missions/{id}", h.handleGetMission)
 
 	// Future write endpoints return 501 unsupported_capability
-	mux.HandleFunc("POST /api/v1/materials/imports", h.notImplemented("material_import"))
-	mux.HandleFunc("POST /api/v1/opportunities/{id}/reviews", h.notImplemented("opportunity_review"))
+	if cfg.Services.Attention == nil {
+		mux.HandleFunc("POST /api/v1/materials/imports", h.notImplemented("material_import"))
+		mux.HandleFunc("POST /api/v1/opportunities/{id}/reviews", h.notImplemented("opportunity_review"))
+	} else {
+		h.registerAttention(mux)
+	}
 	mux.HandleFunc("POST /api/v1/opportunities/{id}/admissions", h.notImplemented("opportunity_admission"))
 	mux.HandleFunc("POST /api/v1/projects", h.notImplemented("project_create"))
 	mux.HandleFunc("POST /api/v1/sessions/{id}/resume", h.notImplemented("session_resume"))
@@ -106,6 +113,11 @@ func NewServer(cfg Config) *Server {
 	if cfg.WebDir != "" {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
+	}
+	if cfg.Services.Attention != nil {
+		guard := newSessionGuard(cfg)
+		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
+		innerHandler = guard.middleware(innerHandler)
 	}
 
 	// Apply middleware stack: request ID first so all responses have it
@@ -196,14 +208,6 @@ func isLoopbackHost(host string) bool {
 		return true
 	}
 
-	ips, err := net.LookupIP(h)
-	if err != nil {
-		return false
-	}
-	for _, ip := range ips {
-		if ip.IsLoopback() {
-			return true
-		}
-	}
+	// Host names that merely resolve to loopback are not trusted (DNS rebinding).
 	return false
 }
