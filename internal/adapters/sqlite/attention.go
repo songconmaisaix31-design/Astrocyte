@@ -204,8 +204,8 @@ func (t *attentionTx) SaveMaterial(v app.MaterialDetail, expected int) error {
 			return conflict("material revision cannot be overwritten")
 		}
 	}
-	if v.Material.CurrentRevision != len(v.Revisions) {
-		return conflict("material current revision does not match history")
+	if v.Material.CurrentRevision < 1 || v.Material.CurrentRevision > len(v.Revisions) {
+		return conflict("material current revision is not in immutable history")
 	}
 	return nil
 }
