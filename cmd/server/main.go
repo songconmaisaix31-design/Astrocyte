@@ -6,8 +6,9 @@
 //
 // Environment variables:
 //
-//	ASTROCYTE_PORT      - HTTP listen port (default: 8787)
+//	ASTROCYTE_PORT      - HTTP listen port (default: 8787; invalid value fails startup)
 //	ASTROCYTE_DATA_DIR  - Data directory for state.sqlite (default: system data dir)
+//	ASTROCYTE_WEB_DIR   - Optional directory for static file serving (SPA fallback)
 package main
 
 import (
@@ -25,6 +26,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
+	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
@@ -58,9 +60,8 @@ func run(logger *slog.Logger) error {
 	defer db.Close()
 	logger.Info("database opened", "path", dbPath)
 
-	// Run migrations (from migrations/ directory).
-	migrationsFS := os.DirFS(findMigrationsDir())
-	if err := db.RunMigrations(context.Background(), migrationsFS); err != nil {
+	// Run embedded migrations.
+	if err := db.RunMigrations(context.Background(), migrations.FS); err != nil {
 		return fmt.Errorf("run migrations (startup aborted): %w", err)
 	}
 	logger.Info("migrations applied")
@@ -82,15 +83,29 @@ func run(logger *slog.Logger) error {
 		Missions:      swarmapp.NewMissionService(),
 	}
 
-	// Resolve port.
-	port := resolvePort()
+	// Resolve port — invalid value fails startup.
+	port, err := resolvePort()
+	if err != nil {
+		return fmt.Errorf("invalid ASTROCYTE_PORT: %w", err)
+	}
 	logger.Info("configuring server", "port", port)
+
+	// Resolve optional web dir for static serving.
+	webDir := os.Getenv("ASTROCYTE_WEB_DIR")
+	if webDir != "" {
+		info, err := os.Stat(webDir)
+		if err != nil || !info.IsDir() {
+			return fmt.Errorf("ASTROCYTE_WEB_DIR %q is not a valid directory", webDir)
+		}
+		logger.Info("static file serving enabled", "dir", webDir)
+	}
 
 	// Create and start HTTP server.
 	srv := httpapi.NewServer(httpapi.Config{
 		Port:     port,
 		Logger:   logger,
 		Services: services,
+		WebDir:   webDir,
 	})
 
 	// Graceful shutdown on SIGINT/SIGTERM.
@@ -134,31 +149,17 @@ func resolveDataDir() (string, error) {
 	return filepath.Join(dir, "astrocyte"), nil
 }
 
-func resolvePort() int {
-	if p := os.Getenv("ASTROCYTE_PORT"); p != "" {
-		if n, err := strconv.Atoi(p); err == nil && n > 0 && n < 65536 {
-			return n
-		}
+func resolvePort() (int, error) {
+	p := os.Getenv("ASTROCYTE_PORT")
+	if p == "" {
+		return 8787, nil
 	}
-	return 8787
-}
-
-func findMigrationsDir() string {
-	cwd, err := os.Getwd()
-	if err == nil {
-		dir := filepath.Join(cwd, "migrations")
-		if info, err := os.Stat(dir); err == nil && info.IsDir() {
-			return dir
-		}
+	n, err := strconv.Atoi(p)
+	if err != nil {
+		return 0, fmt.Errorf("not a number: %w", err)
 	}
-
-	exe, err := os.Executable()
-	if err == nil {
-		dir := filepath.Join(filepath.Dir(exe), "migrations")
-		if info, err := os.Stat(dir); err == nil && info.IsDir() {
-			return dir
-		}
+	if n <= 0 || n >= 65536 {
+		return 0, fmt.Errorf("port %d out of range (1-65535)", n)
 	}
-
-	return "migrations"
+	return n, nil
 }

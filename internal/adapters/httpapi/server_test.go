@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -16,8 +17,12 @@ import (
 )
 
 func newTestServer() *Server {
+	return newTestServerWithConfig(Config{})
+}
+
+func newTestServerWithConfig(extra Config) *Server {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return NewServer(Config{
+	cfg := Config{
 		Port:   0,
 		Logger: logger,
 		Services: Services{
@@ -29,7 +34,11 @@ func newTestServer() *Server {
 			Sessions:      workspaceapp.NewSessionService(),
 			Missions:      swarmapp.NewMissionService(),
 		},
-	})
+	}
+	if extra.WebDir != "" {
+		cfg.WebDir = extra.WebDir
+	}
+	return NewServer(cfg)
 }
 
 func doRequest(srv *Server, method, path string) *http.Response {
@@ -75,6 +84,8 @@ func readErrorBody(t *testing.T, resp *http.Response) map[string]any {
 	return errObj
 }
 
+// --- Health and Foundation ---
+
 func TestHealthEndpoint(t *testing.T) {
 	srv := newTestServer()
 	resp := doRequest(srv, "GET", "/api/v1/health")
@@ -95,7 +106,7 @@ func TestHealthEndpoint(t *testing.T) {
 	}
 }
 
-func TestFoundationEndpoint(t *testing.T) {
+func TestFoundationEndpoint_Structure(t *testing.T) {
 	srv := newTestServer()
 	resp := doRequest(srv, "GET", "/api/v1/foundation")
 
@@ -107,34 +118,16 @@ func TestFoundationEndpoint(t *testing.T) {
 	if body["schema_version"] != float64(1) {
 		t.Errorf("schema_version: got %v, want 1", body["schema_version"])
 	}
-	if body["stage"] != "S0" {
-		t.Errorf("stage: got %v, want S0", body["stage"])
-	}
-	if body["fixture"] != false {
-		t.Errorf("fixture: got %v, want false", body["fixture"])
-	}
-
-	caps, ok := body["capabilities"].(map[string]any)
-	if !ok {
-		t.Fatal("capabilities not a map")
-	}
-	for _, key := range []string{"imports", "approvals", "execution", "native_resume", "handoff"} {
-		if caps[key] != false {
-			t.Errorf("capabilities.%s: got %v, want false", key, caps[key])
+	// Verify structure has expected top-level keys; detailed field values
+	// are tested in foundation/service_test.go.
+	for _, key := range []string{"stage", "capabilities", "storage", "fixture"} {
+		if _, ok := body[key]; !ok {
+			t.Errorf("missing key %q in foundation response", key)
 		}
 	}
-
-	storage, ok := body["storage"].(map[string]any)
-	if !ok {
-		t.Fatal("storage not a map")
-	}
-	if storage["engine"] != "sqlite" {
-		t.Errorf("storage.engine: got %v, want sqlite", storage["engine"])
-	}
-	if storage["schema_version"] != float64(1) {
-		t.Errorf("storage.schema_version: got %v, want 1", storage["schema_version"])
-	}
 }
+
+// --- List endpoints ---
 
 func TestListEndpoints_Empty(t *testing.T) {
 	srv := newTestServer()
@@ -175,6 +168,8 @@ func TestListEndpoints_Empty(t *testing.T) {
 	}
 }
 
+// --- Single resource ---
+
 func TestGetMission_NotFound(t *testing.T) {
 	srv := newTestServer()
 	resp := doRequest(srv, "GET", "/api/v1/missions/nonexistent-id")
@@ -191,6 +186,8 @@ func TestGetMission_NotFound(t *testing.T) {
 		t.Errorf("retryable: got %v, want false", errObj["retryable"])
 	}
 }
+
+// --- 501 routes ---
 
 func TestNotImplementedRoutes(t *testing.T) {
 	srv := newTestServer()
@@ -234,7 +231,7 @@ func TestNotImplementedRoutes(t *testing.T) {
 	}
 }
 
-func TestNotFoundRoute(t *testing.T) {
+func TestAPINotFound_JSON404(t *testing.T) {
 	srv := newTestServer()
 	resp := doRequest(srv, "GET", "/api/v1/nonexistent")
 
@@ -242,37 +239,50 @@ func TestNotFoundRoute(t *testing.T) {
 		t.Fatalf("expected 404, got %d", resp.StatusCode)
 	}
 
+	ct := resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type: got %q, want application/json", ct)
+	}
+
 	errObj := readErrorBody(t, resp)
 	if errObj["code"] != "not_found" {
 		t.Errorf("code: got %v, want not_found", errObj["code"])
 	}
+	if errObj["required_action"] != "check_path_and_method" {
+		t.Errorf("required_action: got %v, want check_path_and_method", errObj["required_action"])
+	}
 }
 
-func TestLoopbackMiddleware_RejectsNonLoopback(t *testing.T) {
+// --- Loopback middleware with ErrorV1 ---
+
+func TestLoopbackMiddleware_RejectsNonLoopback_ErrorV1(t *testing.T) {
 	srv := newTestServer()
 	resp := doRequestWithHost(srv, "GET", "/api/v1/health", "evil.example.com")
 	if resp.StatusCode != http.StatusForbidden {
-		t.Fatalf("expected 403 for non-loopback host, got %d", resp.StatusCode)
+		t.Fatalf("expected 403, got %d", resp.StatusCode)
+	}
+
+	errObj := readErrorBody(t, resp)
+	if errObj["code"] != "scope_denied" {
+		t.Errorf("code: got %v, want scope_denied", errObj["code"])
+	}
+	if errObj["retryable"] != false {
+		t.Errorf("retryable: got %v, want false", errObj["retryable"])
+	}
+	if errObj["request_id"] == nil || errObj["request_id"] == "" {
+		t.Error("expected nonempty request_id in ErrorV1")
+	}
+	if errObj["required_action"] == nil || errObj["required_action"] == "" {
+		t.Error("expected nonempty required_action in ErrorV1")
+	}
+
+	// X-Request-ID header should be set.
+	if rid := resp.Header.Get("X-Request-ID"); rid == "" {
+		t.Error("expected X-Request-ID header on rejected response")
 	}
 }
 
-func TestLoopbackMiddleware_AllowsLocalhost(t *testing.T) {
-	srv := newTestServer()
-	resp := doRequestWithHost(srv, "GET", "/api/v1/health", "localhost:8787")
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("expected 200 for localhost, got %d", resp.StatusCode)
-	}
-}
-
-func TestLoopbackMiddleware_Allows127(t *testing.T) {
-	srv := newTestServer()
-	resp := doRequestWithHost(srv, "GET", "/api/v1/health", "127.0.0.1:8787")
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("expected 200 for 127.0.0.1, got %d", resp.StatusCode)
-	}
-}
-
-func TestLoopbackMiddleware_RejectsNonLoopbackOrigin(t *testing.T) {
+func TestLoopbackMiddleware_RejectsNonLoopbackOrigin_ErrorV1(t *testing.T) {
 	srv := newTestServer()
 
 	req := httptest.NewRequest("GET", "/api/v1/health", nil)
@@ -282,18 +292,57 @@ func TestLoopbackMiddleware_RejectsNonLoopbackOrigin(t *testing.T) {
 	srv.httpServer.Handler.ServeHTTP(w, req)
 
 	if w.Code != http.StatusForbidden {
-		t.Fatalf("expected 403 for non-loopback origin, got %d", w.Code)
+		t.Fatalf("expected 403, got %d", w.Code)
+	}
+
+	body, err := io.ReadAll(w.Result().Body)
+	if err != nil {
+		t.Fatalf("read body: %v", err)
+	}
+	var env map[string]any
+	if err := json.Unmarshal(body, &env); err != nil {
+		t.Fatalf("parse JSON: %v", err)
+	}
+
+	errObj, ok := env["error"].(map[string]any)
+	if !ok {
+		t.Fatal("missing error object in rejection response")
+	}
+	if errObj["code"] != "scope_denied" {
+		t.Errorf("code: got %v, want scope_denied", errObj["code"])
+	}
+	if errObj["request_id"] == nil || errObj["request_id"] == "" {
+		t.Error("expected nonempty request_id")
+	}
+	if errObj["required_action"] == nil || errObj["required_action"] == "" {
+		t.Error("expected nonempty required_action")
 	}
 }
+
+func TestLoopbackMiddleware_AllowsLoopbackHosts(t *testing.T) {
+	srv := newTestServer()
+	for _, host := range []string{"localhost:8787", "127.0.0.1:8787"} {
+		t.Run(host, func(t *testing.T) {
+			resp := doRequestWithHost(srv, "GET", "/api/v1/health", host)
+			if resp.StatusCode != http.StatusOK {
+				t.Errorf("expected 200 for %s, got %d", host, resp.StatusCode)
+			}
+		})
+	}
+}
+
+// --- Request ID ---
 
 func TestRequestIDMiddleware(t *testing.T) {
 	srv := newTestServer()
 
+	// Auto-generated.
 	resp := doRequest(srv, "GET", "/api/v1/health")
 	if rid := resp.Header.Get("X-Request-ID"); rid == "" {
 		t.Error("expected X-Request-ID header")
 	}
 
+	// Client-supplied.
 	req := httptest.NewRequest("GET", "/api/v1/health", nil)
 	req.Host = "127.0.0.1"
 	req.Header.Set("X-Request-ID", "client-id-123")
@@ -305,6 +354,8 @@ func TestRequestIDMiddleware(t *testing.T) {
 	}
 }
 
+// --- Content-Type ---
+
 func TestContentTypeJSON(t *testing.T) {
 	srv := newTestServer()
 	resp := doRequest(srv, "GET", "/api/v1/health")
@@ -314,6 +365,8 @@ func TestContentTypeJSON(t *testing.T) {
 		t.Errorf("Content-Type: got %q, want application/json", ct)
 	}
 }
+
+// --- isLoopbackHost ---
 
 func TestIsLoopbackHost(t *testing.T) {
 	tests := []struct {
@@ -338,6 +391,132 @@ func TestIsLoopbackHost(t *testing.T) {
 				t.Errorf("isLoopbackHost(%q) = %v, want %v", tt.host, got, tt.want)
 			}
 		})
+	}
+}
+
+// --- Static file serving (SPA) ---
+
+func setupWebDir(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+
+	// Create index.html
+	if err := os.WriteFile(filepath.Join(dir, "index.html"), []byte("<html>SPA</html>"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	// Create a static asset
+	if err := os.MkdirAll(filepath.Join(dir, "assets"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "assets", "style.css"), []byte("body{}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+func TestStaticServing_ServesExistingFile(t *testing.T) {
+	webDir := setupWebDir(t)
+	srv := newTestServerWithConfig(Config{WebDir: webDir})
+
+	resp := doRequest(srv, "GET", "/assets/style.css")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	if string(body) != "body{}" {
+		t.Errorf("unexpected body: %q", body)
+	}
+}
+
+func TestStaticServing_SPAServesIndexForNonAPI(t *testing.T) {
+	webDir := setupWebDir(t)
+	srv := newTestServerWithConfig(Config{WebDir: webDir})
+
+	// Non-existent path should get index.html (SPA fallback)
+	resp := doRequest(srv, "GET", "/some/spa/route")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	if string(body) != "<html>SPA</html>" {
+		t.Errorf("expected index.html content, got %q", body)
+	}
+}
+
+func TestStaticServing_RootServesIndex(t *testing.T) {
+	webDir := setupWebDir(t)
+	srv := newTestServerWithConfig(Config{WebDir: webDir})
+
+	resp := doRequest(srv, "GET", "/")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
+	}
+
+	body, _ := io.ReadAll(resp.Body)
+	if string(body) != "<html>SPA</html>" {
+		t.Errorf("expected index.html content, got %q", body)
+	}
+}
+
+func TestStaticServing_APIRoutesNotServedByStatic(t *testing.T) {
+	webDir := setupWebDir(t)
+	srv := newTestServerWithConfig(Config{WebDir: webDir})
+
+	// /api/v1/health should still go to API handler
+	resp := doRequest(srv, "GET", "/api/v1/health")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200, got %d", resp.StatusCode)
+	}
+	body := readJSON(t, resp)
+	if body["status"] != "ok" {
+		t.Errorf("expected health ok, got %v", body["status"])
+	}
+
+	// Unknown /api/v1/* should return JSON 404, not index.html
+	resp = doRequest(srv, "GET", "/api/v1/nonexistent")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", resp.StatusCode)
+	}
+	ct := resp.Header.Get("Content-Type")
+	if ct != "application/json" {
+		t.Errorf("Content-Type: got %q, want application/json", ct)
+	}
+}
+
+func TestStaticServing_NoDirectoryListing(t *testing.T) {
+	webDir := setupWebDir(t)
+	srv := newTestServerWithConfig(Config{WebDir: webDir})
+
+	// Request for directory should serve index.html (SPA fallback), not listing
+	resp := doRequest(srv, "GET", "/assets/")
+	body, _ := io.ReadAll(resp.Body)
+	// Should be SPA index, not a directory listing
+	if string(body) != "<html>SPA</html>" {
+		t.Errorf("expected SPA fallback for directory, got %q", body)
+	}
+}
+
+func TestStaticServing_TraversalPrevented(t *testing.T) {
+	webDir := setupWebDir(t)
+	srv := newTestServerWithConfig(Config{WebDir: webDir})
+
+	// Path traversal attempt: Go's http.ServeFile returns 400 for .. in paths,
+	// or our SPA fallback serves index.html. Either way, no real file is exposed.
+	resp := doRequest(srv, "GET", "/../etc/passwd")
+	body, _ := io.ReadAll(resp.Body)
+
+	// Acceptable: 400 Bad Request (Go rejects ..) or 200 with SPA index
+	if resp.StatusCode == http.StatusBadRequest {
+		return // correctly rejected
+	}
+	if string(body) == "<html>SPA</html>" {
+		return // SPA fallback, no real file exposed
+	}
+	// Must not contain passwd-like content
+	if resp.StatusCode == http.StatusOK && len(body) > 0 && string(body) != "<html>SPA</html>" {
+		t.Errorf("traversal may have served real file: status=%d body_len=%d", resp.StatusCode, len(body))
 	}
 }
 

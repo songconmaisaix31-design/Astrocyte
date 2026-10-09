@@ -4,8 +4,11 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"log/slog"
 	"net/http"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
 
 type contextKey string
@@ -20,6 +23,7 @@ func generateRequestID() string {
 }
 
 // requestIDMiddleware adds a request ID to every request context.
+// Must run before loopbackMiddleware so rejected requests get an ID.
 func requestIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rid := r.Header.Get("X-Request-ID")
@@ -35,8 +39,7 @@ func requestIDMiddleware(next http.Handler) http.Handler {
 // loggingMiddleware logs every request with method, path, status and duration.
 func loggingMiddleware(logger *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := w
-		sw := &statusWriter{ResponseWriter: start, status: http.StatusOK}
+		sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(sw, r)
 		logger.Info("request",
 			"method", r.Method,
@@ -58,9 +61,36 @@ func (sw *statusWriter) WriteHeader(code int) {
 	sw.ResponseWriter.WriteHeader(code)
 }
 
+// writeRejectionError writes an ErrorV1 JSON response for middleware rejections.
+func writeRejectionError(w http.ResponseWriter, r *http.Request, status int, message string) {
+	rid := ""
+	if v, ok := r.Context().Value(requestIDKey).(string); ok {
+		rid = v
+	}
+	if rid == "" {
+		rid = generateRequestID()
+		w.Header().Set("X-Request-ID", rid)
+	}
+
+	env := apierrors.ErrorEnvelope{
+		SchemaVersion: apierrors.SchemaVersion,
+		Error: &apierrors.ServiceError{
+			Code:           apierrors.ScopeDenied,
+			Message:        message,
+			Retryable:      false,
+			RequestID:      rid,
+			RequiredAction: "use_loopback_host_and_origin",
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(env) //nolint:errcheck
+}
+
 // loopbackMiddleware rejects requests whose Host or Origin do not
-// resolve to a loopback address. This protects the local-only API
-// from non-local access.
+// resolve to a loopback address. Returns ErrorV1 JSON with
+// nonempty request_id, retryable, and required_action.
 func loopbackMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check Host header.
@@ -69,13 +99,12 @@ func loopbackMiddleware(next http.Handler) http.Handler {
 			host = r.RemoteAddr
 		}
 		if !isLoopbackHost(host) {
-			http.Error(w, `{"code":"scope_denied","message":"non-loopback host rejected","retryable":false}`, http.StatusForbidden)
+			writeRejectionError(w, r, http.StatusForbidden, "non-loopback host rejected")
 			return
 		}
 
 		// Check Origin header if present.
 		if origin := r.Header.Get("Origin"); origin != "" {
-			// Parse origin host from the full URL.
 			originHost := origin
 			if idx := findSchemeEnd(originHost); idx >= 0 {
 				originHost = originHost[idx:]
@@ -84,7 +113,7 @@ func loopbackMiddleware(next http.Handler) http.Handler {
 				originHost = originHost[:idx]
 			}
 			if !isLoopbackHost(originHost) {
-				http.Error(w, `{"code":"scope_denied","message":"non-loopback origin rejected","retryable":false}`, http.StatusForbidden)
+				writeRejectionError(w, r, http.StatusForbidden, "non-loopback origin rejected")
 				return
 			}
 		}
