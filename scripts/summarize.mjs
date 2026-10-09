@@ -14,7 +14,9 @@ export async function summarizeEnvironment(env = process.env) {
     throw new Error('Project summarize is missing; run pnpm install --frozen-lockfile');
   }));
   if (pkg.version !== summarizeVersion) throw new Error(`Project summarize must be ${summarizeVersion}; run pnpm install --frozen-lockfile`);
-  const cli = env.ASTROCYTE_SUMMARIZE_CLI || await realpath(join(pkgRoot, pkg.bin.summarize));
+  const cliLocation = env.ASTROCYTE_SUMMARIZE_CLI || join(pkgRoot, pkg.bin.summarize);
+  if (!isAbsolute(cliLocation)) throw new Error('Summarize CLI and Node paths must be absolute');
+  const cli = await realpath(cliLocation);
   const node = env.ASTROCYTE_NODE || process.execPath;
   for (const path of [cli, node]) {
     if (!isAbsolute(path)) throw new Error('Summarize CLI and Node paths must be absolute');

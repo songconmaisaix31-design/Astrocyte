@@ -80,6 +80,15 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, err
 		}
 	}
+	if !filepath.IsAbs(cliPath) {
+		return nil, fmt.Errorf("ASTROCYTE_SUMMARIZE_CLI must be absolute")
+	}
+	// pnpm installs the CLI behind a junction. The media bridge resolves core
+	// from this location, so it needs the real package directory.
+	cliPath, err := filepath.EvalSymlinks(cliPath)
+	if err != nil {
+		return nil, fmt.Errorf("resolve summarize CLI: %w", err)
+	}
 	nodePath := os.Getenv("ASTROCYTE_NODE")
 	if nodePath == "" {
 		var err error

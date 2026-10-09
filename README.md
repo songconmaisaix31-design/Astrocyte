@@ -75,7 +75,7 @@ S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/
 
 S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
 
-项目精确依赖 [`@steipete/summarize` **0.25.1**](https://github.com/steipete/summarize/blob/main/package.json)。运行 `pnpm install --frozen-lockfile` 后，`pnpm dev` / `pnpm start` 自动解析项目内 CLI 与当前 Node，不需设置全局 summarize 路径；不升级或回退全局 CLI。直接运行构建后的二进制时，从工作目录或二进制旁的已安装 checkout 查找项目依赖；将二进制单独复制到其他目录需要显式配置。`ASTROCYTE_SUMMARIZE_CLI`、`ASTROCYTE_NODE` 可覆盖为绝对路径；缺失/错误配置明确失败。`ASTROCYTE_ENABLE_SUMMARIZE=false` 显式关闭提取，保留 arXiv 元数据/PDF 与既有导出导入；普通临时浏览器服务也显式关闭提取。
+项目精确依赖 [`@steipete/summarize` **0.25.1**](https://github.com/steipete/summarize/blob/main/package.json)。运行 `pnpm install --frozen-lockfile` 后，`pnpm dev` / `pnpm start` 自动解析项目内 CLI 与当前 Node，不需设置全局 summarize 路径；不升级或回退全局 CLI。直接运行构建后的二进制时，从工作目录或二进制旁的已安装 checkout 查找项目依赖；将二进制单独复制到其他目录需要显式配置。`ASTROCYTE_SUMMARIZE_CLI`、`ASTROCYTE_NODE` 可覆盖为绝对路径；缺失/错误配置明确失败。入口会将 CLI 的 pnpm 链接解析为真实文件路径，使媒体桥能找到同一安装中的 summarize-core；显式覆盖 CLI 路径也执行此解析。`ASTROCYTE_ENABLE_SUMMARIZE=false` 显式关闭提取，保留 arXiv 元数据/PDF 与既有导出导入；普通临时浏览器服务也显式关闭提取。
 
 公开视频链接使用现有 `POST /materials/imports`，`adapter=summarize_url`、`kind=video`，不传 `export_text` / `local_file_ref`，`source_key` / `content_digest` 传空字符串由后端核验。`summarize`、`summarize_json`、`summarize_markdown` 继续导入既有输出，`arxiv` 继续固定版本论文全文。提取保存真实原输出；字幕、转写与位置缺失不补造，网页文字不等于视频内容。提取成功不表示 Codex 首次整理成功；模型仍由独立显式授权入口控制。
 
