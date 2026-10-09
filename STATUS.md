@@ -10,6 +10,10 @@
 
 **完整 S1、真实账号同步、全面原生接入尚未完成。**关键待答项见 QUESTIONS 顶部；真实 AT01 多轮自动整理、AT02 新表单视频复用/摘要重试、AT03 授权 Agent 正向读取仍待，AT04 保留历史论文延期通过范围。旧 Codex UNKNOWN 未重发。没有降低原任务验收；原完整分派结算为未完成，公共部分通过另行记录。未合 main，未核验本轮远端 CI。下文保留前轮单视频与资料验收历史。
 
+最终普通业务合并 `e131feeeb63b203ae1a0a2332912d876f923f87a`，包含 W0 最终 `b67921f05f13e8a0cb2ff02d29a151348f514481`；相对上述完整套件业务差异仅平台名称数组，W0 后续 `pnpm --dir web typecheck` / `pnpm --dir web build` PASS。主控在重启后的实际5173页面检查1280/1920两尺寸：CLI10/安装8、默认能力折叠、平台14/待接入12、无绑定按钮、无横向溢出；目视复核清单和目录截图。截图位于 `%LOCALAPPDATA%/Temp/astrocyte-root-sync-{inventory,platforms}-{1280,1920}.png`。首次只读截图命令误引入未安装的 `playwright` 模块而未执行；改为已有 `@playwright/test` 后检查通过，没有添加依赖或产品代码。
+
+03:30:34 当前预览重启到该业务源，API8787/Vite5173正常；API PID86320、Vite77692、父74260，创建时间03:30:30/03:30:34，程序目录 `%LOCALAPPDATA%/Temp/astrocyte-dev-kcfB75`。停止前再次核实所属关系与监听。沿用原个人库，未写验收资料，summarize启用、Codex自动处理关闭。旧预览退出仍报告已不存在子进程的清理竞态；确认旧进程/监听全退出后才新启动，旧临时程序目录保留。四个 Worker 现均结算释放、输出已保留，无待释放终端；最终主控分支 `s1/attention-materials-20261009`。
+
 日期：2026-10-10。当前切片：[视频修复](tasks/S1-video-fix-plan.md)。指定B站单视频链接导入已通过真实页面、API、SQLite/对象和服务器进程重启验收；完整S1尚未通过。用户决定见 [docs/QUESTIONS.md](docs/QUESTIONS.md)，长期范围见 [S1 Attention](tasks/S1-plan.md) 与 [summarize 接入](tasks/S1-summarize-plan.md)。
 
 主控业务/验收合并源 `017c133ec4322a6d1011874eee25e148d814fd9c`；最后普通报告合并 `a1a2d5213d2a17ede83c04ecbce95e308d687080` 只改任务报告，代码与已验源相同。含W0最终 `cf20f6f8ef62490e3c2aade57858478c296a70cc`、W2最终 `4d318c7a2bfb4efc98ff1dde954a6886d3d62792`、W3最终 `461814a6cf5aafde3c223064a159d6b5f28fceb6`，原分支均已push、三轨已结算释放，工作树保留。沿用本机Orca Codex / gpt-6.1-sol，主控仅维护计划/决定/验收/交接，未写业务代码。
