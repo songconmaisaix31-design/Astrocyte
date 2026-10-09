@@ -90,7 +90,7 @@ func TestAutomaticFixedSnapshotsReuseAndContinuation(t *testing.T) {
 		t.Fatal(err)
 	}
 	job, _ := s.GetJob(ctx, human, queued.JobID)
-	if job.Status != "succeeded" || job.DistillationID == nil || d.calls != 1 {
+	if job.Status != "succeeded" || job.DistillationID == nil || d.calls != 1 || job.MaterialID == nil || *job.MaterialID != m.Material.ID || job.MaterialRevision == nil || *job.MaterialRevision != 1 {
 		t.Fatalf("job: %+v", job)
 	}
 	saved := r.state.Distillations[*job.DistillationID]
