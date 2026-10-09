@@ -122,6 +122,12 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 		}
 		now := s.options.Clock()
 		job := Job{SchemaVersion: 1, JobID: rand.Text(), Status: "queued", Kind: "distillation", Version: 1, DedupeKey: reuseKey, OperationID: rand.Text(), MaxAttempts: s.options.MaxAttempts, CreatedAt: now, UpdatedAt: now, DeadlineAt: now.Add(s.options.JobTimeout), Payload: payload, Caller: p}
+		if len(c.InputRefs) == 1 {
+			// An unambiguous source pointer supports navigation even while the
+			// job is pending/failed. Multiple inputs remain on the fixed record.
+			id, revision := c.InputRefs[0].MaterialID, c.InputRefs[0].Revision
+			job.MaterialID, job.MaterialRevision = &id, &revision
+		}
 		if unavailable != nil {
 			job.Status = "failed"
 			job.Error = mapError(unavailable, c.RequestID).(*apierrors.ServiceError)
