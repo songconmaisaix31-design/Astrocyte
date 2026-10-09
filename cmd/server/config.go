@@ -92,11 +92,20 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, fmt.Errorf("resolve Node: %w", err)
 		}
 	}
-	extractor, err := importers.NewSummarizeExtractor(nodePath, cliPath)
+	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_JOB_TIMEOUT_SECONDS", 300, 86400)
+	if err != nil {
+		return nil, err
+	}
+	extractor, err := importers.NewSummarizeExtractorWithOptions(nodePath, cliPath, importers.SummarizeOptions{
+		Version: "0.25.1", YtDlpPath: os.Getenv("ASTROCYTE_YT_DLP_PATH"),
+		FFmpegPath: os.Getenv("ASTROCYTE_FFMPEG_PATH"), WhisperBinary: os.Getenv("ASTROCYTE_WHISPER_BINARY"),
+		WhisperModel: os.Getenv("ASTROCYTE_WHISPER_MODEL"), Timeout: time.Duration(timeoutSeconds) * time.Second,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("configure summarize extraction: %w", err)
 	}
 	reader.Arxiv.TextExtractor = extractor
+	reader.Summarize = extractor
 	return reader, nil
 }
 

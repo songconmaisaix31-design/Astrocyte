@@ -79,6 +79,12 @@ S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分�
 
 公开视频链接使用现有 `POST /materials/imports`，`adapter=summarize_url`、`kind=video`，不传 `export_text` / `local_file_ref`，`source_key` / `content_digest` 传空字符串由后端核验。`summarize`、`summarize_json`、`summarize_markdown` 继续导入既有输出，`arxiv` 继续固定版本论文全文。提取保存真实原输出；字幕、转写与位置缺失不补造，网页文字不等于视频内容。提取成功不表示 Codex 首次整理成功；模型仍由独立显式授权入口控制。
 
+本地音轨回退的启动配置使用绝对路径：`ASTROCYTE_YT_DLP_PATH` 为 yt-dlp 可执行文件；`ASTROCYTE_FFMPEG_PATH` 为 ffmpeg（同目录需要 ffprobe）；`ASTROCYTE_WHISPER_BINARY` 为 whisper.cpp CLI，`ASTROCYTE_WHISPER_MODEL` 为其本地模型。提取进程只传这些指定工具，隔离 HOME/配置目录，不继承提供商、cookie 或浏览器认证。缺工具时只使用实际上游能取得的公开字幕，失败明确返回缺证据/依赖错误，不自动调用云端转写。CPU 转写受现有 `ASTROCYTE_JOB_TIMEOUT_SECONDS` 限制；安装文件、版本命令成功和所选视频转写成功需分别核实。扩展/daemon 与登录浏览器权限仍待用户回答。
+
+Windows x64 可运行 `pwsh -NoProfile -File scripts/install-media.ps1`（需要已安装 Python >=3.10；`-PythonExecutable` 可指定其绝对路径）。脚本读取依赖清单中的固定 yt-dlp、ffmpeg/ffprobe、whisper.cpp release 和固定上游 revision 的多语言 base 模型，安装至 `%LOCALAPPDATA%/Astrocyte/media`；`pnpm dev/start` 自动发现其中实际存在的工具。`ASTROCYTE_MEDIA_DIR` 或安装参数 `-MediaRoot` 可改为专用绝对目录，单项路径覆盖优先。安装仅使用版本目录/venv，不更新全局 CLI 或 Python 包。Linux/macOS 目前需自行安装对应上游工具并配置单项路径，Windows安装脚本不适用。
+
+summarize 0.25.1 保留上游网络保护：所选公开来源应解析为实际可访问的公开地址。若系统代理的 Fake-IP DNS 把 arXiv/Bilibili 返回为 `198.18.0.0/15`，上游会拒绝，安装媒体依赖不能修复这一网络错误。需由用户决定代理/DNS配置，允许时把选定来源域名加入 Fake-IP 排除并使用其正常 DNS；项目不自动改变宿主代理、绕过 guard 或降级上游。配置完成后仍须重新验证所选材料的真实提取。
+
 队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源。本地 Codex 端口、适配、持久化队列和入口已组装；最新真实候选 schema 调用响应丢失、效果和费用未知，自动三层正路径尚未验收，不从人工记录推断自动成功。
 
 自动处理配置使用 `ASTROCYTE_ENABLE_CODEX_DISTILLATION=true` 显式启用（默认关闭）、`ASTROCYTE_CODEX_EXECUTABLE` 原生 exe 绝对路径、`ASTROCYTE_CODEX_MODEL` 明确模型名称及 `ASTROCYTE_PROCESSING_SOURCE_KEYS` JSON 数组授权范围；没有任何内置来源白名单。`ASTROCYTE_CODEX_TIMEOUT_SECONDS` 默认 180 秒。普通浏览器临时服务关闭模型和外部提取。当前 native 政策验证的是 **Windows Codex 0.162.0**，使用已授权的纯文本推理模式，运行时拒绝工具执行；不是成功的操作系统文件读取隔离。模型推理会向其提供商发送选中原文，只配置用户授权的来源，本次仅授权所给公开论文与视频；私有库未授权。CLI 自己使用既有登录，不复制或显示凭据；代码不修改全局 CLI 权限配置。
