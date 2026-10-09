@@ -1540,8 +1540,11 @@ export interface components {
             collection_reason?: string | null;
             source_spans?: string[];
             title?: string;
-            /** @enum {string} */
-            adapter?: "arxiv" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
+            /**
+             * @description summarize_url extracts a selected public video URL without export_text or local_file_ref. summarize, summarize_json and summarize_markdown import existing exports. Extraction does not imply model distillation or Agent authorization.
+             * @enum {string}
+             */
+            adapter?: "arxiv" | "summarize_url" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
         };
         /**
          * @example {

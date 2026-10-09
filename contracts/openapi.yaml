@@ -5611,10 +5611,14 @@ components:
           type: string
           enum:
             - arxiv
+            - summarize_url
             - summarize
             - summarize_json
             - summarize_markdown
             - manual
+          description: summarize_url extracts a selected public video URL without export_text
+            or local_file_ref. summarize, summarize_json and summarize_markdown import existing
+            exports. Extraction does not imply model distillation or Agent authorization.
       required:
         - schema_version
         - request_id
