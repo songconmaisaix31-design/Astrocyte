@@ -75,7 +75,9 @@ S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/
 
 S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
 
-队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源；自动处理后端另待用户决定，不从人工记录推断自动能力。
+设置 `ASTROCYTE_SUMMARIZE_CLI` 为已安装的 summarize **0.21.8** CLI JavaScript 绝对路径，入口才为 arXiv 启用官方 HTML 全文提取；`ASTROCYTE_NODE` 可指定 Node 可执行文件绝对路径，省略时从 PATH 查找已安装 Node。显式配置无效时启动失败。固定 extract-only 参数不调用 LLM，处理环境不继承提供商凭据；保存固定版本 PDF、官方 HTML 原字节与 summarize JSON。未配置时保留明确的元数据/PDF 路径，摘要不等于全文。Bilibili 缺少真实字幕/逐字稿时报告 `evidence_missing`。
+
+队列配置为 `ASTROCYTE_JOB_CONCURRENCY`、`ASTROCYTE_JOB_MAX_ATTEMPTS`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`；设置边界由服务入口校验。开发网页 Origin 默认来自 `ASTROCYTE_WEB_PORT`，额外本地 Origin 使用 `ASTROCYTE_ALLOWED_ORIGINS` 逗号分隔并列出完整 scheme/host/port。会话与 CSRF 不接受任意 loopback Origin。三层人工整理明确记录 manual 来源；用户已选择本地 Codex 自动处理，入口接入和真实三层处理另需验证，不从人工记录推断自动能力。
 
 [contracts/openapi.yaml](contracts/openapi.yaml) 是唯一 HTTP 源。全部规格 §13 路径、版本化请求/响应/错误及示例在此维护；[web/src/api/schema.d.ts](web/src/api/schema.d.ts) 自动生成，typed fetch 使用 `openapi-fetch` 的生成路径类型。业务组件调用 [client.ts](web/src/api/client.ts) 的 `createReadApi`、读取助手或 `createApiClient`。
 
