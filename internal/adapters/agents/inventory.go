@@ -74,6 +74,11 @@ func (i *Inventory) RefreshCLI(ctx context.Context) error {
 	i.refresh.Lock()
 	defer i.refresh.Unlock()
 	items := i.discover()
+	for n := range items {
+		if items[n].Installed.Status == "available" {
+			items[n].Installed.Reason = "cli_entry_found_probe_not_run"
+		}
+	}
 	for n, def := range definitions {
 		if ctx.Err() != nil {
 			break
@@ -82,11 +87,17 @@ func (i *Inventory) RefreshCLI(ctx context.Context) error {
 		if err != nil {
 			continue
 		}
+		passed := true
 		for _, flag := range []string{"--version", "--help"} {
+			if ctx.Err() != nil {
+				passed = false
+				break
+			}
 			probeCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 			output, err := i.probe(probeCtx, path, flag)
 			cancel()
 			if err != nil {
+				passed = false
 				items[n].Installed.Reason = "cli_entry_found_probe_failed"
 				continue
 			}
@@ -94,10 +105,16 @@ func (i *Inventory) RefreshCLI(ctx context.Context) error {
 				if version := versionPattern.FindString(output); version != "" {
 					items[n].Version = &version
 				} else {
+					passed = false
 					items[n].Installed.Reason = "cli_entry_found_version_unrecognized"
 				}
 			}
 		}
+		if passed {
+			items[n].Installed.Reason = "cli_entry_found_version_help_passed"
+		}
+		checked := time.Now().UTC()
+		items[n].Installed.CheckedAt = &checked
 	}
 	i.mu.Lock()
 	i.items = items
