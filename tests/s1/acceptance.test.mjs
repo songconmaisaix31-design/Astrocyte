@@ -322,14 +322,20 @@ test('explicit candidate ranking profile preserves immutable versions, rejects s
 });
 
 // Published 6e34233 human classification/@ contract; run only on its complete runtime integration.
-test('unconfigured automatic processing reports unsupported without creating a fake generated record', async () => {
+test('default disabled automatic processing denies ungranted input without creating a fake generated record', async () => {
   const imported = await importMaterial(api, paperImport('https://example.invalid/contract-local/no-processor'));
   const jobsBefore = (await api.get('/jobs')).items;
   const recordsBefore = (await api.get('/distillations')).items;
+  const status = await api.get('/distillations/processor');
+  assert.equal(status.available, false);
+  assert.equal(status.configuration_id, null);
+  assert.equal(status.model, null);
+  assert.deepEqual(status.allowed_source_keys, []);
+  assert.ok(status.reason && status.required_action);
   const body = command({ input_refs: [sourceRef(imported.detail.material)], stage: 'content', processing_config: 'unconfigured:contract_local', question: 'contract_local: no external processor is enabled' });
   const result = await api.request('/distillations/jobs', { method: 'POST', body });
-  assert.equal(result.status, 501, JSON.stringify(result.data));
-  assert.equal(result.data.error.code, 'unsupported_capability');
+  assert.equal(result.status, 403, JSON.stringify(result.data));
+  assert.equal(result.data.error.code, 'scope_denied');
   assert.ok(result.data.error.required_action);
   assert.deepEqual((await api.get('/jobs')).items, jobsBefore);
   assert.deepEqual((await api.get('/distillations')).items, recordsBefore);
