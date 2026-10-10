@@ -129,6 +129,11 @@ func TestNativeHandshakeLiveNoInference(t *testing.T) {
 			if err != nil || obs.StopConfirmed || obs.Status != "idle" {
 				t.Fatalf("native idle: %+v %v", obs, err)
 			}
+			if cli == "codex" || cli == "pi" {
+				if history, err := n.ReadContext(ctx, s); err != nil || len(history) != 0 {
+					t.Fatalf("empty owned native context: messages=%d %v", len(history), err)
+				}
+			}
 			obs, err = n.Stop(ctx, s)
 			if err != nil || !obs.StopConfirmed {
 				t.Fatalf("owned exit: %+v %v", obs, err)
