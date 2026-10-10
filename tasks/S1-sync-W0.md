@@ -1,3 +1,14 @@
+# W0 本轮仓库与浏览器契约（2026-10-10）
+
+Task `task_8bcdaec3c1db` / Dispatch `ctx_6390663d09e5`。实际客户端 Orca Codex 0.162.0 / GPT-6.1-Sol high fast（主控核实屏幕）；工作树/分支 `s1-sync-contract-1010`。
+
+一页执行计划：普通合入主控 exact `6e84a92acadc7633c8d905ade246818b265df550`（merge `a66e35b`），先发最小共享契约与迁移，再沿原 owner 普通合并明确 pushed SHA，仅做入口/路由/类型胶水；领域错误返原 owner，最后适用 Go/API/生成漂移/check/build 及 W3 浏览器验收。W0 写域 contracts、两个 app/contracts.go、既有 internal/adapters/httpapi、foundation、cmd、>=009 migrations、web/src/api、scripts、tests/s1、根依赖锁、README 和本文件；W1 attention/importers/distillers/objects/sqlite（除 local_agents）、W2 workspace（除 contracts）/agents/local_agents*.go、W3 全 UI（除 api），各自持有测试/返修/报告，完整写域沿 tasks/S1-repository-browser-design-plan.md。主控已明确纠正 HTTP 路径，不新建目录。
+
+本次早期发布：W2 DTO pushed `0557bad369bdc8908f6087c606d379cb8b4c8fee` 普通合入；GitHub 缓存列表、显式公开元数据同步、人工纳入既有顶层 ProjectSpace 三端口；metadata 不克隆，placement 才 clone，expected_version 映射 repository revision。A 默认，BC/control/model/actions 各自独立；无 Mission/自动启动。009 存储公开仓库观察；010 原子保留旧来源、版本和条目，补 owner/access_mode 来源身份。W1 负责旧 public 规范化及实际桥，W0 不访问个人 Chrome；原 5173/8787 保持。
+
+已验证：基线 check:contracts PASS（233例）；新增生成第一次 FAIL（追加 schemas 误位于 securitySchemes），修正块位置后 `pnpm generate` / `pnpm check:contracts` PASS（236例、生成一致、既有 EventV1 warning），首失败保留。本次受影响 `go test -mod=readonly ./internal/adapters/httpapi ./cmd/server ./tests/s1` PASS。尚未组装 W1/W2/W3 业务，尚未真实浏览器验收；旧 AT01–04 沿用，不重复 paid/media，不重发旧 UNKNOWN。
+
+---
 # S1 同步 / 本地 Agent：W0 契约与集成
 
 ## 当前继续 Dispatch 最终交接（2026-10-10，整体 S1 未完成）
