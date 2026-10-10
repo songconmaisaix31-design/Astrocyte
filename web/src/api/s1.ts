@@ -23,6 +23,7 @@ export const trackingApi = {
   selectItems: async (id: string, body: components['schemas']['SelectSourceItemsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/tracking-sources/{id}/select', { body, params: { path: { id }, header: await headers(key) }, ...options })),
 };
 export const localProjectsApi = {
+	probeCLI: async (id: string, body: components['schemas']['DiscoverNativeSessionsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/sessions/probe', { body, params: { path: { id }, header: await headers(key) }, ...options })),
 	issueAgentToken: async (id: string, body: components['schemas']['IssueProjectAgentTokenRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/agent-token', { body, params: { path: { id }, header: await headers(key) }, ...options })),
 	discoverSessions: async (id: string, body: components['schemas']['DiscoverNativeSessionsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/sessions/discover', { body, params: { path: { id }, header: await headers(key) }, ...options })),
 	readNativeContext: (id: string, session_id: string, options?: Options) => unwrap(api.GET('/local-projects/{id}/sessions/{session_id}/context', { params: { path: { id, session_id } }, ...options })),

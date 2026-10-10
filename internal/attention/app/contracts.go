@@ -646,6 +646,7 @@ type TrackingTx interface {
 	SaveSourceItem(SourceItem) error
 }
 type ListingPage struct {
+	Observed   int
 	Items      []ListingMetadata
 	NextCursor *string
 	HasMore    bool

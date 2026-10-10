@@ -72,6 +72,7 @@ type TextProcessor interface {
 // LocalProjects is separate from the S0 project projection so old consumers do
 // not mistake a native project root for an execution/environment identity.
 type LocalProjects interface {
+	ProbeNativeCLI(context.Context, domain.Caller, string, string) (domain.NativeSession, error)
 	CheckProjectModel(context.Context, domain.Caller, string, string) (domain.LocalProject, error)
 	Shutdown(context.Context) error
 	ListProjects(context.Context, domain.Caller) ([]domain.LocalProject, error)
