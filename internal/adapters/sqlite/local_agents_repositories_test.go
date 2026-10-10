@@ -2,9 +2,11 @@ package sqlite
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
@@ -149,7 +151,8 @@ func TestGitHubPlacementFailureExplicitBoundedRetryAndInterruptedRecovery(t *tes
 	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
 	defer db.Close()
 	source := &publicMetadataFixture{metadata: []domain.GitHubMetadata{repositoryMetadata()}}
-	cloner := &checkoutFixture{base: t.TempDir(), err: errors.New("interrupted")}
+	cloneCause := errors.New("git diagnostic: retained checkout stage /private-test/stage")
+	cloner := &checkoutFixture{base: t.TempDir(), err: cloneCause}
 	spaces := &placementSpaces{}
 	s := workspace.NewGitHubRepositoryService(db, db, source, cloner, spaces)
 	human := domain.Caller{Kind: "human", ID: "browser-human"}
@@ -160,6 +163,23 @@ func TestGitHubPlacementFailureExplicitBoundedRetryAndInterruptedRecovery(t *tes
 	failed, err := s.PlaceGitHubRepository(ctx, human, items[0].ID, domain.RepositoryPlacementCommand{SpaceID: "swarm-top", ExpectedRevision: items[0].Revision})
 	if err == nil || failed.CloneStatus != "failed" || failed.CloneAttempts != 1 {
 		t.Fatal("first failure missing")
+	}
+	if !errors.Is(err, cloneCause) || !strings.Contains(err.Error(), cloneCause.Error()) {
+		t.Fatal("original clone cause or diagnostic lost", err)
+	}
+	var serviceErr *apierrors.ServiceError
+	if !errors.As(err, &serviceErr) || serviceErr.Code != apierrors.ProviderUnavailable || serviceErr.Message != "public repository checkout did not complete" || !serviceErr.Retryable || serviceErr.RequiredAction != "checkout_failed_review_or_retry" {
+		t.Fatal("safe HTTP service error lost", err)
+	}
+	// The transport extracts ServiceError with errors.As and serializes Wrap,
+	// leaving the diagnostic available to callers without exposing it over HTTP.
+	envelope, marshalErr := json.Marshal(apierrors.Wrap(serviceErr))
+	if marshalErr != nil || strings.Contains(string(envelope), cloneCause.Error()) {
+		t.Fatal("clone diagnostic exposed in HTTP envelope", string(envelope), marshalErr)
+	}
+	persisted, loadErr := db.LoadGitHubRepository(ctx, failed.ID)
+	if loadErr != nil || persisted.CloneStatus != "failed" || persisted.CloneAttempts != 1 || persisted.LastError != "checkout_failed_review_or_retry" {
+		t.Fatal("safe failure state not persisted", persisted, loadErr)
 	}
 	projects, _ := db.ListProjects(ctx)
 	if len(projects) != 0 {

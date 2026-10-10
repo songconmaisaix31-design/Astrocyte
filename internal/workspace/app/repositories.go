@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
 	"reflect"
 	"strings"
 	"time"
@@ -189,7 +188,6 @@ func (s *gitHubRepositoryService) PlaceGitHubRepository(ctx context.Context, c d
 	}
 	clone, err := s.cloner.CloneRepository(ctx, id, item.Metadata.CloneURL)
 	if err != nil {
-		slog.Warn("managed public repository checkout failed", "repository_id", id, "attempt", item.CloneAttempts, "error", err)
 		expected = item.Revision
 		item.Revision++
 		item.CloneStatus = "failed"
@@ -202,7 +200,9 @@ func (s *gitHubRepositoryService) PlaceGitHubRepository(ctx context.Context, c d
 		// instead leaves the durable cloning row for an explicit recovery call.
 		saveCtx, done := context.WithTimeout(context.Background(), 5*time.Second)
 		defer done()
-		return item, errors.Join(&apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "public repository checkout did not complete", Retryable: item.CloneAttempts < 3, RequiredAction: item.LastError}, s.store.SaveGitHubRepository(saveCtx, item, expected))
+		// Keep the safe ServiceError first for HTTP errors.As extraction, while
+		// preserving the clone diagnostic and any persistence failure for callers.
+		return item, errors.Join(&apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "public repository checkout did not complete", Retryable: item.CloneAttempts < 3, RequiredAction: item.LastError}, err, s.store.SaveGitHubRepository(saveCtx, item, expected))
 	}
 	if clone.Root == "" || clone.Head == "" {
 		return item, projectError(apierrors.EvidenceMissing, "checkout returned no actual root or HEAD")
