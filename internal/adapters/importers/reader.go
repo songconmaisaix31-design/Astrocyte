@@ -144,6 +144,22 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		if err != nil {
 			return source, err
 		}
+	case "paper_pdf":
+		if cmd.Kind != "paper" || cmd.ExportText != "" || cmd.LocalFileRef != "" {
+			return source, invalid("paper_pdf requires a public paper PDF URL without an existing export")
+		}
+		if r.Web == nil || r.Summarize == nil {
+			return source, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "paper PDF extraction is not configured", RequiredAction: "configure_summarize_paper_extraction"}
+		}
+		pdf, err := r.Web.FetchPDF(ctx, cmd.SourceLocator, 64<<20)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		result, err := r.Summarize.ExtractPDF(ctx, cmd.SourceLocator, pdf)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		source = paperPDFSource(cmd.SourceLocator, cmd.Title, result.Text, pdf, result.Original)
 	default:
 		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_paper_url_or_existing_summarize_export"}
 	}
