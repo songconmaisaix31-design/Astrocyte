@@ -37,6 +37,7 @@ export function WorkspacePage({ fixture, query }: Props) {
   const prop = useProposals();
   const sess = useSessions();
   const agents = useLocalAgents(!fixture);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
   const [selected, setSelected] = useState<SelectedItem>(null);
 
   const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
@@ -61,10 +62,11 @@ export function WorkspacePage({ fixture, query }: Props) {
         </div>
       )}
 
-      <div className={styles.grid}>
+{inventoryOpen && <DetailPanel title="检查本机 Agent" onClose={() => setInventoryOpen(false)}><LocalAgentsPanel state={agents} fixture={fixture} /></DetailPanel>}
+            <div className={styles.grid}>
         {!projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
         {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <ManagedProjectsPanel agents={agents} query={query} />}
-        <LocalAgentsPanel state={agents} fixture={fixture} />
+        <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
 
         {/* ── Proposals ── */}
         <SectionCard tabs={['proposals']} title="提案" count={proposals.length}>

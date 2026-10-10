@@ -44,7 +44,7 @@ export function SwarmPage({ fixture, query }: Props) {
   const handleClose = useCallback(() => setSelected(null), []);
 
   return (
-    <PageFrame section="swarm" title="蜂群执行" subtitle="让每一步协作，都有迹可循。" fixture={fixture} onRefresh={() => { miss.retry(); }} rail={<RailSummary title="执行概览" rows={[{ label: '任务', value: fixture ? missions.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : missions.length }, { label: '工作项', value: fixture ? workItems.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : workItems.length }, { label: '产物引用', value: fixture ? artifactIds.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : artifactIds.length }]} note="产物引用不等于已采用；暂停、取消与采用尚未启用。" />}>
+    <PageFrame section="swarm" title="蜂群空间" subtitle="先把项目放进开发空间，再由你决定下一步。" fixture={fixture} onRefresh={() => { miss.retry(); }} rail={<RailSummary title="执行概览" rows={[{ label: '任务', value: fixture ? missions.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : missions.length }, { label: '工作项', value: fixture ? workItems.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : workItems.length }, { label: '产物引用', value: fixture ? artifactIds.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : artifactIds.length }]} note="产物引用不等于已采用；暂停、取消与采用尚未启用。" />}>
       {(!fixture && miss.stale) && (
         <div role="alert" style={{
           padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',

@@ -1,3 +1,4 @@
+import { BrandIcon } from '../../components/BrandIcon';
 import { useState } from 'react';
 import { trackingApi } from '../../api/s1';
 import type { components } from '../../api/schema';
@@ -27,6 +28,7 @@ export function AccountsPanel({ fixture, onChanged, onMaterial }: { fixture: boo
   let requiresPublicURL = false;
   try { requiresPublicURL = platform === 'douyin' && new URL(locator).pathname.replace(/\/$/, '') === '/user/self'; } catch { /* Actual locator validated by form/backend. */ }
   return <SectionCard title="账号与更新清单" tabs={['overview']} padded>
+    <div className="ac-platform-heading"><BrandIcon name="bilibili" /><span>B站</span><BrandIcon name="douyin" /><span>抖音</span></div>
     <p className={styles.note}>每个平台可绑定多个创作者或公开收藏夹。先同步标题与简介，再取得 Agent 建议，由你勾选后用 summarize 获取正文。首次默认100条，服务启动同步一次。</p>
     {fixture ? <p className={styles.note}>示例模式不绑定账号、读取更新清单或提交导入。</p> : <>
       <button className="ac-button secondary compact" type="button" disabled={sources.loading} onClick={sources.retry}>重载绑定列表</button>
