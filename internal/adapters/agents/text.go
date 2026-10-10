@@ -144,9 +144,16 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 // Validate the final UTF-8 wire prompt, including the fixed authority instruction
 // and context envelope, before configuration checks or any native launch.
 func ValidateSelectedTextPrompt(prompt string) error {
-	packet := domain.ContextPacket{SchemaVersion: 1, ProjectID: "00000000-0000-0000-0000-000000000000", Mode: "selected_text"}
-	if !utf8.ValidString(prompt) || strings.TrimSpace(prompt) == "" || len(packetPrompt(packet, prompt)) > 512*1024 {
+	if !utf8.ValidString(prompt) || strings.TrimSpace(prompt) == "" || SelectedTextPromptBytes(prompt) > 512*1024 {
 		return nativeError(apierrors.ValidationFailed, "selected text input including fixed instruction/context exceeds 512 KiB or is invalid UTF-8")
 	}
 	return nil
+}
+
+// SelectedTextPromptBytes measures the exact transmitted UTF-8 payload including
+// fixed instructions/envelope. The runtime UUID always has the same36byte width.
+// It executes no process and does not record or log the supplied text.
+func SelectedTextPromptBytes(prompt string) int {
+	packet := domain.ContextPacket{SchemaVersion: 1, ProjectID: "00000000-0000-0000-0000-000000000000", Mode: "selected_text"}
+	return len(packetPrompt(packet, prompt))
 }

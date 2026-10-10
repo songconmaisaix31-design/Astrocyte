@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -99,6 +100,7 @@ func (d *selectedDistiller) Distill(ctx context.Context, input app.DistillationI
 	}
 	ctx, cancel := context.WithTimeout(ctx, d.factory.timeout)
 	defer cancel()
+	slog.Info("selected-text request preflight", "job_id", input.JobID, "operation_id", input.OperationID, "prompt_utf8_bytes", len(prompt), "wire_utf8_bytes", agents.SelectedTextPromptBytes(prompt), "output_limit_bytes", selectedOutputLimit)
 	result, err := d.factory.processor.ProcessSelectedText(ctx, d.caller, app.SelectedTextRequest{ProjectID: d.projectID, CLI: d.cli, JobID: input.JobID, OperationID: input.OperationID, Prompt: prompt, DeadlineSeconds: requestDeadline(ctx, d.factory.timeout), OutputLimit: selectedOutputLimit})
 	if err != nil {
 		return app.DistillationOutput{}, err
