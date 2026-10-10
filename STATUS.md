@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## 按确认继续完成S1（2026-10-10 22:42）
+
+用户已决定论文搜索＋正文、允许显式批量、允许获准项目Agent依据TASK/STATUS推断。新增完整CLI接入、蜂群skill/MCP工具规划和Claude-mem式长期记忆，见QUESTIONS最新段和tasks/S1-final-paper-cli-memory-plan.md。root基线8277667已push；原四轨新Run run_8c1696bb815a已启动，实际OpenCode/DeepSeek V4 Pro（TUI观察；未覆盖模型），写域和新Task/Dispatch见计划，所有旧settled ID禁止复用。W0接口与迁移/锁/入口唯一owner及最终集成，root仅计划/验收/提交。新问CLI全部已安装还是三主要客户端、记忆项目隔离还是全局/仅规划，未答不代选；论文与OpenCode原生协议/进度和工具研究独立推进。个人5173/8787仍已验d9acb43运行基线，完成新增验收前不升级、不复制测试库。下文三项待答是历史，当前本轮功能尚未完成。
+
 ## 扩容与真实项目看板已交付，论文产品选择仍待答（2026-10-10 22:31）
 
 最终全局入口返修：W3 SOURCE `3b9b491a611d43cef4cef5819231b166763ee4fb` / REPORT `b9257828cd874d71c87d9b12a5d65c5052ac927e` 普通消费，业务仅Nav导入条件移除页面限制，保留fixture/imports/stale；root SOURCE合并 `0950b04`。实际个人5173/8787两尺寸跨页入口4 PASS、fixture4 PASS、拦截GET能力关闭/未知8 PASS，合计16且分开，不等于16个真实入库验收；writes/外网/新服务0，stale未新增故障注入。root新 `pnpm build` PASS并独立实际GET确认添加资料enabled，新截图 `%TEMP%/astrocyte-root-board-final-nav-1280-20261010.png` 保留先前源码截图。W3返修已结算release；本轮所有实际owned Worker资源均release，分支/工作树保持。最终不新增模型、源扫描或广泛回归，不合main/不跑远程CI；主控文档与整分支最终push。
