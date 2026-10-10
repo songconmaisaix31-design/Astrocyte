@@ -19,6 +19,7 @@ await mkdir(output, { recursive: true });
 await copyFile(resolve(dirname(readability), 'Readability.js'), resolve(output, 'Readability.js'));
 await copyFile(resolve(base, '../../internal/adapters/importers/paper-dom.mjs'), resolve(output, 'paper-dom.mjs'));
 await copyFile(resolve(base, 'vendor/readability-LICENSE.md'), resolve(output, 'readability-LICENSE.md'));
+await copyFile(resolve(base, 'vendor/Apache-2.0.txt'), resolve(output, 'Apache-2.0.txt'));
 await copyFile(resolve(base, 'vendor/summarize-LICENSE'), resolve(output, 'summarize-LICENSE'));
 await copyFile(resolve(base, 'THIRD_PARTY.md'), resolve(output, 'THIRD_PARTY.md'));
 await writeFile(resolve(output, 'README.txt'), 'Standalone extraction assets built. Final extension action/permissions and application identity remain pending; this directory is not an installable extension. No provider credentials or automatic browsing.\n');

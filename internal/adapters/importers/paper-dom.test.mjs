@@ -44,7 +44,28 @@ test('JSON-LD and DOI aliases dedupe; invalid URLs/identities remain absent', ()
 });
 
 test('access restriction never produces full paper evidence', () => {
-  const result = extract('<article><h2>Introduction</h2><p>Access through your institution. ' + 'Restricted. '.repeat(180) + '</p><h2>Results</h2><p>Restricted.</p></article>');
+  const result = extract('<html><body><article><h1>Paper</h1><p>Access through your institution.</p></article></body></html>');
   assert.equal(result.content_state, 'restricted');
+  assert.equal(result.text, '');
+});
+
+test('unrelated page headings cannot establish article body evidence', () => {
+  const text = 'This page contains only an abstract and links to related papers. '.repeat(35);
+  const result = extract(`<html><body><nav><h2>Introduction</h2><h2>Results</h2></nav><article><h1>Abstract</h1><p>${text}</p></article><aside><h2>Introduction</h2><h2>Results</h2></aside></body></html>`);
+  assert.notEqual(result.content_state, 'readable_fulltext');
+  assert.equal(result.text, '');
+});
+
+test('public readable body stays readable with unrelated access widget', () => {
+  const text = 'A measured experimental observation with explicit evidence and limits. '.repeat(35);
+  const result = extract(`<html><body><aside>Access through your institution</aside><script>"subscribe to access"</script><div hidden>Sign in to access</div><article><h1>Paper</h1><h2>Introduction</h2><p>${text}</p><h2>Results</h2><p>${text}</p></article></body></html>`);
+  assert.equal(result.content_state, 'readable_fulltext');
+  assert.ok(result.text.includes(text));
+});
+
+test('a structured abstract is metadata even with Introduction and Results', () => {
+  const text = 'This structured abstract describes the experiment without the paper body. '.repeat(35);
+  const result = extract(`<html><body><article><h1>Paper</h1><section id="abstract"><h2>Introduction</h2><p>${text}</p><h2>Results</h2><p>${text}</p></section></article></body></html>`);
+  assert.equal(result.content_state, 'metadata_only');
   assert.equal(result.text, '');
 });

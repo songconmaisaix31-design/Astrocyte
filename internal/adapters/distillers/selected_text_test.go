@@ -36,6 +36,21 @@ func TestPromptUTF8ExactCapacityAndOutputIndependent(t *testing.T) {
 	}
 }
 
+func TestNativeEnvelopeIsPreflightedSeparatelyFromOutput(t *testing.T) {
+	// The caller prompt alone fits, but the native authority/context wrapper
+	// makes the actual wire prompt exceed its ceiling. This is a known error.
+	prompt := strings.Repeat("a", 512*1024)
+	if err := selectedPromptPreflight(prompt); err != nil {
+		t.Fatal(err)
+	}
+	if err := selectedNativePromptPreflight(prompt); err == nil {
+		t.Fatal("native envelope overflow was not caught before processor call")
+	}
+	if err := selectedNativePromptPreflight(strings.Repeat("a", 256*1024)); err != nil {
+		t.Fatal("input above old limit still rejected", err)
+	}
+}
+
 // Cross-adapter test bridge only: application consent is fixed locally, but
 // engineering request bounds are checked by the actual W2 Registry. A cancelled
 // context stops before configuration observation, directories or native calls.

@@ -80,3 +80,33 @@ func TestPaperDOMActualPublicHostCaptures(t *testing.T) {
 		})
 	}
 }
+
+func TestPaperDOMActualCrossHostFullTextAndIdentity(t *testing.T) {
+	root := os.Getenv("ASTROCYTE_PAPER_CAPTURE_ROOT")
+	if root == "" {
+		t.Skip("actual public HTML capture root not provided")
+	}
+	e := installedPaperExtractor(t)
+	keys := []string{}
+	for _, source := range []struct{ name, url string }{
+		{"pmc", "https://pmc.ncbi.nlm.nih.gov/articles/PMC11135672/"},
+		{"plos", "https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514"},
+	} {
+		html, err := os.ReadFile(filepath.Join(root, source.name+".html"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		result, err := e.InspectPaperHTML(context.Background(), source.url, html)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result.ContentState != "readable_fulltext" || len(result.Text) < 30000 || len(result.Abstract) < 1000 || result.Truncated {
+			t.Fatalf("actual full text missing: state=%s text=%d abstract=%d", result.ContentState, len(result.Text), len(result.Abstract))
+		}
+		keys = append(keys, result.SourceKey)
+		t.Logf("actual %s fulltext_bytes=%d abstract_bytes=%d identity=%s", source.name, len(result.Text), len(result.Abstract), result.SourceKey)
+	}
+	if keys[0] != keys[1] || keys[0] != "doi:10.1371/journal.pdig.0000514" {
+		t.Fatal("publisher and archive identity not shared", keys)
+	}
+}
