@@ -12,6 +12,9 @@ import (
 func TestSelectedTextFinalPromptUTF8BoundaryBeforeLaunch(t *testing.T) {
 	packet := domain.ContextPacket{SchemaVersion: 1, ProjectID: "00000000-0000-0000-0000-000000000000", Mode: "selected_text"}
 	overhead := len(packetPrompt(packet, ""))
+	if SelectedTextPromptBytes("文") != overhead+3 {
+		t.Fatal("wire UTF8 measurement differs from actual envelope")
+	}
 	for _, size := range []int{128*1024 + 1, 512*1024 - overhead} {
 		prompt := strings.Repeat("x", size)
 		if err := ValidateSelectedTextPrompt(prompt); err != nil {
