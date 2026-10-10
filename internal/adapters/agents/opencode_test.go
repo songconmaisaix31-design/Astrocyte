@@ -71,7 +71,25 @@ func opencodeTestServer(t *testing.T, username, password string) *httptest.Serve
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		_, _ = w.Write([]byte(`{"id":"sess-1"}`))
+		var body struct {
+			Title      string                   `json:"title"`
+			Permission []opencodePermissionRule `json:"permission"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		denyAll := false
+		for _, rule := range body.Permission {
+			if rule.Permission == "*" && rule.Action == "deny" {
+				denyAll = true
+			}
+		}
+		if !denyAll {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		_, _ = w.Write([]byte(`{"id":"sess-1","permission":[{"permission":"*","pattern":"*","action":"deny"}]}`))
 	})
 	mux.HandleFunc("/session/sess-1", func(w http.ResponseWriter, r *http.Request) {
 		if !auth(r) {
@@ -82,7 +100,18 @@ func opencodeTestServer(t *testing.T, username, password string) *httptest.Serve
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
-		_, _ = w.Write([]byte(`{"id":"sess-1"}`))
+		_, _ = w.Write([]byte(`{"id":"sess-1","permission":[{"permission":"*","pattern":"*","action":"deny"}]}`))
+	})
+	mux.HandleFunc("/session/sess-nodeny", func(w http.ResponseWriter, r *http.Request) {
+		if !auth(r) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		_, _ = w.Write([]byte(`{"id":"sess-nodeny"}`))
 	})
 	mux.HandleFunc("/session/sess-1/message", func(w http.ResponseWriter, r *http.Request) {
 		if !auth(r) {
@@ -151,6 +180,24 @@ func TestOpencodeSessionLifecycleOverHTTP(t *testing.T) {
 	}
 	if err := p.verifySession(context.Background(), "sess-missing"); err == nil {
 		t.Fatal("missing session verified as resumable")
+	}
+	if err := p.verifySession(context.Background(), "sess-nodeny"); err == nil {
+		t.Fatal("session without deny-by-default permission verified as safe to send")
+	}
+}
+
+// The session create body must carry the deny-all permission ruleset; a session
+// whose effective permission lacks it is fail-closed before any message is sent.
+func TestOpencodeSessionDenyPermissionFailClosed(t *testing.T) {
+	server := opencodeTestServer(t, "user", "pass")
+	defer server.Close()
+	p := newTestOpencodeProcess(server, "user", "pass")
+	if err := p.verifySession(context.Background(), "sess-nodeny"); err == nil {
+		t.Fatal("deny permission absent but verify passed")
+	}
+	var service *apierrors.ServiceError
+	if !errors.As(p.verifySession(context.Background(), "sess-nodeny"), &service) || service.Code != apierrors.ScopeDenied {
+		t.Fatal("missing deny permission is not a scope denial")
 	}
 }
 

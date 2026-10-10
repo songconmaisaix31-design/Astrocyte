@@ -7,7 +7,7 @@
 前轮结论「OpenCode 全局 instructions 不可关闭，只能等下一版本」作废。按 root 返修落地正式 driver：
 
 - **隔离机制（同版本源码）**：`@opencode-ai/core/global.ts` `make().config = Flag.OPENCODE_CONFIG_DIR ?? Path.config`（`Path.config = xdgConfig/opencode`）；`session/instruction.ts` `globalFiles = [path.join(global.config,"AGENTS.md"), path.join(global.home,".claude","CLAUDE.md")]`。把 `OPENCODE_CONFIG_DIR` 指向控制器自有空目录即可让用户全局 `AGENTS.md`、MCP、plugins、instructions 不加载；`~/.claude/CLAUDE.md` 由 `OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=1` 关闭、项目层由 `OPENCODE_DISABLE_PROJECT_CONFIG=1` 关闭。**如实限制**：`config.ts` 的 `ConfigManaged.managedConfigDir()`（Windows `%ProgramData%\opencode`）与 auth wellknown/account 远程 config 仍会加载、可能声明 MCP/plugins，本 driver 不宣称压制这些来源；本机 `%ProgramData%\opencode` 不存在，且 `permission:deny` 阻断一切工具使用。
-- **deny-by-default（最终 overlay）**：自有空 config 目录写 `opencode.json` 显式逐键 `permission:deny`（read/edit/bash/glob/grep/webfetch/websearch/task/skill/lsp/question/external_directory/doom_loop 全 deny），并设 `OPENCODE_PERMISSION` 相同对象，`config.ts` 在 wellknown/account/managed 之后 `mergeDeep` 它作最终覆盖；不传 `--auto`。**如实限制**：仅 `{"*":"deny"}` 通配不能清除继承的 specific read/bash allow，故逐键 deny；agent-specific permission（agent rules 优先）与 managed/wellknown 注入的 instructions/MCP/plugins 仍不保证压制，本 driver 不宣称残留已隔离，fail-closed 保持 `Configured=unknown`。`--pure` + `OPENCODE_DISABLE_DEFAULT_PLUGINS=1` 关闭外部/默认插件（`--pure` 不保证 MCP/plugins 不初始化）。
+- **deny-by-default（最终 overlay + session 级 deny）**：自有空 config 目录写 `opencode.json` 显式逐键 `permission:deny`，并设 `OPENCODE_PERMISSION` 相同对象，`config.ts` 在 wellknown/account/managed 之后 `mergeDeep` 作最终覆盖；不传 `--auto`。**session 级 fail-closed**：`POST /session` body 带 `permission:[{permission:"*",pattern:"*",action:"deny"}]`（官方 v2 SDK `SessionCreateData.permission:PermissionRuleset`，规则 `{permission,pattern,action}`）；已核同版本源码 `session/tools.ts:87`、`session/prompt.ts:346` 均 `Permission.merge(agent.permission, session.permission ?? [])`，`permission/index.ts` `evaluate` 用 `findLast`，故 session 规则在 Agent 规则**之后**生效、覆盖继承的 agent-specific allow（config `mergeDeep` 通配不清除 specific allow）。`createSession` 后、发消息前 `verifySession` GET `/session/:id` 复核 deny 存在，缺失即 `scope_denied` 拒发，不接管外部会话。**如实限制**：agent-specific permission 与 managed/wellknown 注入的 instructions/MCP/plugins 仍不保证全部压制，fail-closed 保持 `Configured=unknown`；`--pure` 不保证 MCP/plugins 不初始化。
 - **auth 由 CLI 原生读取**：不复制/读取 provider 凭据；`OPENCODE_SERVER_USERNAME`/`OPENCODE_SERVER_PASSWORD` 每会话随机，仅供 loopback Basic auth，不落库不打印；`opencodeIsolationEnv` 剥离继承的 `OPENCODE_*`/`XDG_CONFIG_HOME`，其余环境（含 CLI 自读的 provider 凭据）保留。
 - **协议面**：`opencode serve --hostname 127.0.0.1 --port <N>`；`POST /session`→native ID、`POST /session/:id/message`（同步等待，`parts[]`）、`GET /session/:id`、`GET /session/:id/message`、`GET /session/status`、`GET /global/health`、`POST /session/:id/abort`、`POST /instance/dispose`。
 
@@ -38,11 +38,11 @@
 |---|---|
 | `go build ./...` | PASS |
 | `go vet ./internal/adapters/agents/` | PASS |
-| `go test ./internal/workspace/... ./internal/adapters/agents/ ./internal/adapters/sqlite/`（`GOFLAGS=-p=1`） | PASS，含 app 进度回归、agents OpenCode 协议/隔离 env/快照、sqlite 进度 CAS |
+| `go test ./internal/workspace/... ./internal/adapters/agents/ ./internal/adapters/sqlite/`（`GOFLAGS=-p=1`） | PASS，含 app 进度回归、agents OpenCode 协议/隔离 env/session-deny fail-closed/快照、sqlite 进度 CAS |
 | `git diff --check` | PASS |
 | `ASTROCYTE_TEST_OPENCODE_LIVE=1 go test ./internal/adapters/agents -run TestOpencodeLiveSessionChain` | **PASS，~12s**：真实 `opencode serve` 隔离启动、显式 `Send` 正向 turn、`ReadContext` 双向、`model=deepseek-flash provider=deepseek` 真实解析、同 nativeID resume 保持原 ID、owned stop 正向退出、**跨会话 context_handoff**（新 nativeID + 携带原 selected context marker 并被新会话引用） |
 
-真实 `opencode serve` 会话链已由原 owner 运行通过；中间一轮旧 `waitHealth` 阻塞 180s（客户端超时）的首次失败保留，已改每请求 3s/整体 20s 有界超时。旧成功媒体/模型与 UNKNOWN 不重发。
+真实 `opencode serve` 会话链已由原 owner 运行通过；中间一轮旧 `waitHealth` 阻塞 180s（客户端超时）的首次失败保留，已改每请求 3s/整体 20s 有界超时。session-deny 的「覆盖继承 agent-allow」顺序经同版本源码核（`session/tools.ts:87`、`session/prompt.ts:346`、`permission/index.ts` `findLast`），wire 测试覆盖 create body 携带 deny 与 deny 缺失 fail-closed，本机无付费重发（旧成功媒体/模型与 UNKNOWN 不重发）。
 
 ## 5. Handoff 提议（交 W0/ROOT，非本轨落地）
 
