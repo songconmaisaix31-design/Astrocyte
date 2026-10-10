@@ -2,7 +2,6 @@ package agents
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -33,22 +32,20 @@ func (r *Registry) textSession(ctx context.Context, cli, prompt string, seconds 
 }
 
 func (r *Registry) ConfigurationID(ctx context.Context, cli string) (string, error) {
-	n, s, err := r.textSession(ctx, cli, "", 30)
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+	a, err := r.Adapter(cli)
 	if err != nil {
 		return "", err
 	}
-	p, err := n.get(s)
-	if err != nil {
-		return "", err
+	n := a.(*Native)
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	if n.configID == "" || time.Since(n.configAt) > 5*time.Minute {
+		return "", nativeError(apierrors.EvidenceMissing, "native configuration is unobserved or stale; explicitly probe the approved CLI")
 	}
-	obs, stopErr := n.Stop(context.WithoutCancel(ctx), s)
-	if stopErr != nil || !obs.StopConfirmed {
-		return "", nativeError(apierrors.DeliveryUnknown, "configuration native process exit is unconfirmed")
-	}
-	if p.model == "" || p.provider == "" {
-		return "", nativeError(apierrors.EvidenceMissing, "native current model/provider could not be observed without inference")
-	}
-	return fmt.Sprintf("cli:%s;version:%s;model:%s;provider:%s;policy:selected-text-tools-disabled-v1", cli, n.Version(), p.model, p.provider), nil
+	return n.configID, nil
 }
 
 func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextRequest) (domain.TextResult, error) {
@@ -72,11 +69,25 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(seconds)*time.Second)
 	defer cancel()
-	n, s, err := r.textSession(ctx, input.CLI, input.Prompt, seconds)
+	expectedConfig, err := r.ConfigurationID(ctx, input.CLI)
+	if err != nil {
+		return result, err
+	}
+	n, s, err := r.textSession(ctx, input.CLI, "", seconds)
 	if err != nil {
 		return result, err
 	}
 	defer func() { _, _ = n.Stop(context.Background(), s) }()
+	actualConfig, err := r.ConfigurationID(ctx, input.CLI)
+	if err != nil {
+		return result, err
+	}
+	if actualConfig != expectedConfig {
+		return result, nativeError(apierrors.ContextStale, "native model configuration changed; refresh before processing")
+	}
+	if _, err := n.Send(ctx, s, packetPrompt(s.ContextPacket, input.Prompt)); err != nil {
+		return result, err
+	}
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 	for {

@@ -104,23 +104,33 @@ type NativeCommand struct {
 }
 
 type NativeSession struct {
-	Ownership        string        `json:"ownership"`
-	HistoryPath      string        `json:"-"`
-	LastOperationID  string        `json:"last_operation_id"`
-	PendingOperation string        `json:"pending_operation"`
-	ID               string        `json:"id"`
-	ProjectID        string        `json:"project_id"`
-	CLI              string        `json:"cli"`
-	NativeID         string        `json:"native_id"`
-	Version          string        `json:"version"`
-	Mode             string        `json:"mode"`
-	Status           string        `json:"status"`
-	StopConfirmed    bool          `json:"stop_confirmed"`
-	ContextPacket    ContextPacket `json:"context_packet"`
-	SourceSessionID  string        `json:"source_session_id"`
-	UpdatedAt        time.Time     `json:"updated_at"`
+	Operations       map[string]NativeOperation `json:"operations"`
+	Ownership        string                     `json:"ownership"`
+	HistoryPath      string                     `json:"-"`
+	LastOperationID  string                     `json:"last_operation_id"`
+	PendingOperation string                     `json:"pending_operation"`
+	ID               string                     `json:"id"`
+	ProjectID        string                     `json:"project_id"`
+	CLI              string                     `json:"cli"`
+	NativeID         string                     `json:"native_id"`
+	Version          string                     `json:"version"`
+	Mode             string                     `json:"mode"`
+	Status           string                     `json:"status"`
+	StopConfirmed    bool                       `json:"stop_confirmed"`
+	ContextPacket    ContextPacket              `json:"context_packet"`
+	SourceSessionID  string                     `json:"source_session_id"`
+	UpdatedAt        time.Time                  `json:"updated_at"`
 	// Cooperative CLI tools do not provide an OS read-isolation guarantee.
 	Limitations []string `json:"limitations"`
+}
+
+// Bounded native-command receipts live in the existing session row. They are
+// needed for HTTP retry safety, not a task scheduler or an execution layer.
+type NativeOperation struct {
+	Action     string     `json:"action"`
+	Status     string     `json:"status"`
+	CreatedAt  time.Time  `json:"created_at"`
+	FinishedAt *time.Time `json:"finished_at"`
 }
 
 type NativeEvent struct {

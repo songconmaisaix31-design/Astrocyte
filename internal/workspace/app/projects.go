@@ -449,6 +449,7 @@ func (s *localProjectService) StartNativeSession(ctx context.Context, c domain.C
 		return session, projectError(apierrors.BudgetExhausted, "project native concurrency limit is one")
 	}
 	session = domain.NativeSession{ID: op, ProjectID: id, CLI: cmd.CLI, Mode: cmd.Mode, ContextPacket: packet, SourceSessionID: cmd.SourceSessionID, Status: "starting", PendingOperation: op, LastOperationID: op, UpdatedAt: time.Now().UTC()}
+	session.Operations = map[string]domain.NativeOperation{op: {Action: "start", Status: "pending", CreatedAt: session.UpdatedAt}}
 	if err := s.repo.SaveSession(ctx, session); err != nil {
 		return session, err
 	}
@@ -466,6 +467,16 @@ func (s *localProjectService) finishNative(ctx context.Context, session domain.N
 		session.PendingOperation = op
 	} else {
 		session.PendingOperation = ""
+	}
+	if receipt, ok := session.Operations[op]; ok {
+		now := time.Now().UTC()
+		receipt.FinishedAt = &now
+		if operationErr != nil {
+			receipt.Status = "unknown"
+		} else {
+			receipt.Status = "accepted"
+		}
+		session.Operations[op] = receipt
 	}
 	if err := s.repo.SaveSession(context.WithoutCancel(ctx), session); err != nil {
 		return session, err
@@ -503,6 +514,16 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 		return session, err
 	}
 	session.PendingOperation = op
+	if session.Operations == nil {
+		session.Operations = map[string]domain.NativeOperation{}
+	}
+	if _, exists := session.Operations[op]; exists {
+		return session, projectError(apierrors.DeliveryUnknown, "this native operation was already delivered; inspect its receipt")
+	}
+	if len(session.Operations) >= 64 {
+		return session, projectError(apierrors.BudgetExhausted, "native session command receipt bound reached")
+	}
+	session.Operations[op] = domain.NativeOperation{Action: "resume", Status: "pending", CreatedAt: time.Now().UTC()}
 	if err := s.repo.SaveSession(ctx, session); err != nil {
 		return session, err
 	}
@@ -526,7 +547,10 @@ func (s *localProjectService) SendNativeMessage(ctx context.Context, c domain.Ca
 	if err != nil {
 		return domain.NativeObservation{}, err
 	}
-	if session.LastOperationID == op {
+	if receipt, ok := session.Operations[op]; ok {
+		if receipt.Status != "accepted" {
+			return domain.NativeObservation{}, projectError(apierrors.DeliveryUnknown, "original native command delivery remains unknown")
+		}
 		return a.Observe(ctx, session)
 	}
 	if session.PendingOperation != "" || session.StopConfirmed {
@@ -536,6 +560,13 @@ func (s *localProjectService) SendNativeMessage(ctx context.Context, c domain.Ca
 		return domain.NativeObservation{}, projectError(apierrors.ValidationFailed, "native message is empty or exceeds 64 KiB")
 	}
 	session.PendingOperation = op
+	if session.Operations == nil {
+		session.Operations = map[string]domain.NativeOperation{}
+	}
+	if len(session.Operations) >= 64 {
+		return domain.NativeObservation{}, projectError(apierrors.BudgetExhausted, "native session command receipt bound reached")
+	}
+	session.Operations[op] = domain.NativeOperation{Action: "send", Status: "pending", CreatedAt: time.Now().UTC()}
 	if err := s.repo.SaveSession(ctx, session); err != nil {
 		return domain.NativeObservation{}, err
 	}
@@ -591,6 +622,37 @@ func (s *localProjectService) Shutdown(ctx context.Context) error {
 		}
 	}
 	return errors.Join(failures...)
+}
+
+func (s *localProjectService) CheckProjectModel(ctx context.Context, c domain.Caller, id, cli string) (domain.LocalProject, error) {
+	p, err := s.authorize(ctx, c, id, "read_context")
+	if err != nil {
+		return p, err
+	}
+	if p.Settings.ExternalModelCLI == "" || p.Settings.ExternalModelCLI != cli {
+		return p, projectError(apierrors.ApprovalRequired, "project external model consent does not cover the selected CLI")
+	}
+	if _, err := s.registry.Adapter(cli); err != nil {
+		return p, err
+	}
+	return p, nil
+}
+
+// Probe is explicit human interaction, never an inventory GET or startup scan.
+// It performs no model turn and stops the owned process before returning.
+func (s *localProjectService) ProbeNativeCLI(ctx context.Context, c domain.Caller, projectID, cli string) (domain.NativeSession, error) {
+	if err := human(c); err != nil {
+		return domain.NativeSession{}, err
+	}
+	started, err := s.StartNativeSession(ctx, c, projectID, domain.NativeCommand{CLI: cli, DeadlineSeconds: 30, Mode: "native"})
+	if err != nil {
+		return started, err
+	}
+	_, err = s.StopNativeSession(ctx, c, projectID, started.ID)
+	if err != nil {
+		return started, err
+	}
+	return s.repo.LoadSession(ctx, started.ID)
 }
 
 func (s *localProjectService) DiscoverNativeSessions(ctx context.Context, c domain.Caller, id, cli string) ([]domain.NativeSession, error) {
