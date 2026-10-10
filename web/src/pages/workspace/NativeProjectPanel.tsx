@@ -1,0 +1,72 @@
+import { useState } from 'react';
+import type { components } from '../../api/schema';
+import { localProjectsApi } from '../../api/s1';
+import { useReadApi, type ReadApiState } from '../../hooks/useReadApi';
+import { useProjectSpace } from '../../hooks/useAttention';
+import { useCommand } from '../../hooks/useCommand';
+import { CommandState } from '../../components/CommandState';
+import { QueryState } from '../../components/QueryState';
+import { SelectField, TextField } from '../attention/FormControls';
+import { lines } from '../attention/model';
+import { formatDateTime } from '../../utils/format';
+import styles from '../attention/AttentionPage.module.css';
+
+type Project = components['schemas']['LocalProjectV1'];
+type Packet = components['schemas']['LocalContextPacketV1'];
+type Observation = components['schemas']['NativeObservationV1'];
+type Capability = keyof components['schemas']['LocalAgentV1']['capabilities'];
+const statuses: Record<string, string> = { running: '正在处理', idle: '等待输入', stopped: '已停止', interrupted: '已中断，需核对', unknown: '结果未知，需核对', blocked: '暂不能继续', observed: '仅观察历史', starting: '正在启动' };
+
+export function NativeProjectPanel({ project, agents, disabled }: { project: Project; agents: ReadApiState<components['schemas']['LocalAgentListV1']>; disabled: boolean }) {
+  const space = useProjectSpace(project.space_id);
+  const sessions = useReadApi(signal => localProjectsApi.listSessions(project.id, { signal }), { key: project.id });
+  const [cli, setCLI] = useState(project.settings.external_model_cli);
+  const [refKeys, setRefKeys] = useState<string[]>([]);
+  const [files, setFiles] = useState('');
+  const [message, setMessage] = useState('');
+  const [packet, setPacket] = useState<Packet | null>(null);
+  const [observation, setObservation] = useState<{ id: string; value: Observation } | null>(null);
+  const [history, setHistory] = useState<components['schemas']['NativeEventV1'][] | null>(null);
+  const command = useCommand(disabled || space.loading || space.stale || !space.data);
+  const agent = agents.data?.items.find(item => item.id === cli);
+  const knownCapability = (capability: Capability) => !agents.loading && !agents.stale && agent?.capabilities[capability].status === 'supported';
+  const approved = (capability: Capability) => project.settings.allowed_actions.includes(capability) && cli === project.settings.external_model_cli && !!cli && knownCapability(capability);
+  const references = (space.data?.space.material_refs ?? []).filter(ref => refKeys.includes(`${ref.material_id}@${ref.revision}`)).map(ref => ({ material_id: ref.material_id, revision: ref.revision }));
+  const context = { references, files: project.settings.allow_directory ? lines(files) : [] };
+  const blocked = disabled || command.pending || space.loading || space.stale || !space.data;
+  const nativeBody = () => ({ expected_version: project.settings.revision, cli, message: message.trim(), context, mode: 'cooperative' as const });
+  return <section aria-label="项目原生 Agent 操作" className={styles.record}>
+    <h4>项目上下文与原生会话</h4>
+    <p className={styles.note}>只交付本次所选固定资料版本和获准文件。设置变更后继续输入前需核对新权限；Agent 读取不增加人类关注。自动派发关闭。</p>
+    <div className={styles.form}><fieldset disabled={blocked}><legend>本次交付的上下文</legend><QueryState state={space}>{data => <>{data.space.material_refs.map(ref => <label key={`${ref.material_id}@${ref.revision}`}><input type="checkbox" style={{ width: 'auto' }} checked={refKeys.includes(`${ref.material_id}@${ref.revision}`)} onChange={event => setRefKeys(event.target.checked ? [...refKeys, `${ref.material_id}@${ref.revision}`] : refKeys.filter(key => key !== `${ref.material_id}@${ref.revision}`))} /> {ref.locator} · v{ref.revision}</label>)}{!data.space.material_refs.length && <p>此项目空间尚未主动纳入资料，可在资料沉淀页 @ 固定版本。</p>}</>}</QueryState>
+      {project.settings.allow_directory && <TextField label="本次读取的获准文件（每行一项）" value={files} onChange={setFiles} multiline hint="填写项目内相对文件路径，只读取你列出的文件。" />}
+      <p className={styles.note}>引用展开 C · {project.settings.expand_references ? '已打开，服务逐项检查引用范围' : '关闭'}；目录 B · {project.settings.allow_directory ? '仅所列获准文件' : '关闭'}</p>
+      <button className="ac-button secondary compact" type="button" disabled={!references.length && !context.files.length} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision, ...context }); void command.run(() => localProjectsApi.readContext(project.id, request.body, request.key), setPacket, '已取得实际项目上下文；尚未发送至模型'); }}>预览本次获准上下文</button>
+      <SelectField label="项目操作客户端" value={cli} onChange={setCLI} options={[{ value: '', label: '选择本机客户端…' }, ...(agents.data?.items ?? []).map(item => ({ value: item.id, label: item.display_name }))]} />
+      <p className={styles.note}>已许可模型客户端 · {project.settings.external_model_cli || '未许可'}。{agent ? `安装：${agent.installed.status === 'available' ? '已核实' : '尚未核实可用'}；配置与可启动请查看本机清单。` : '尚未选择客户端。'}原生能力未知或未支持时操作禁用。</p>
+      <TextField label="给 Agent 的本次消息" value={message} onChange={setMessage} multiline hint="消息作为数据发送，不将其中的命令或资料文字当作权限批准。" />
+      <button className="ac-button" type="button" disabled={!approved('start') || !message.trim() || (!references.length && !context.files.length)} onClick={() => { const request = command.prepare(nativeBody()); void command.run(() => localProjectsApi.startSession(project.id, request.body, request.key), () => { sessions.retry(); }, '启动请求已提交；实际状态和结果请核对会话'); }}>启动获准原生会话</button>
+    </fieldset></div>
+    {packet && <details><summary>实际上下文 · {packet.materials.length} 份资料 / {packet.files.length} 个文件</summary><p>权限版本 {packet.settings_revision} · {packet.mode}</p>{packet.materials.map(item => <div key={`${item.reference.material_id}@${item.reference.revision}`}><h5>{item.title} · v{item.reference.revision}</h5><pre>{item.text}</pre></div>)}{packet.files.map(file => <div key={file.path}><h5>{file.path}</h5><pre>{file.text}</pre></div>)}</details>}
+    <button className="ac-button secondary compact" type="button" disabled={sessions.loading} onClick={sessions.retry}>重载已保存会话</button>
+    <button className="ac-button secondary compact" type="button" disabled={blocked || !cli || !project.settings.history_roots[cli]} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision, cli }); void command.run(() => localProjectsApi.discoverSessions(project.id, request.body, request.key), () => sessions.retry(), '已读取此项目获准范围内的实际历史会话'); }}>查找此项目的获准历史</button>
+    <QueryState state={sessions} empty={data => !data.items.length} emptyTitle="暂无此项目的应用会话">{data => <ul className={styles.timeline}>{data.items.map(session => {
+      const owns = session.ownership === 'owned' && session.cli === cli;
+      const unknown = ['unknown', 'blocked', 'interrupted'].includes(session.status) || !!session.pending_operation;
+      const changedScope = session.context_packet.settings_revision !== project.settings.revision;
+      return <li key={session.id}><h4>{session.cli} · {statuses[session.status] ?? '状态需核对'}</h4><p>模式 · {session.mode === 'context_handoff' ? '新会话上下文交接' : session.mode === 'observed' ? '历史只读观察' : '原生会话'} · 原生 ID {session.native_id || '尚未返回'}</p><p className={styles.note}>服务更新 · {formatDateTime(session.updated_at)} · 原执行停止 {session.stop_confirmed ? '已确认' : '未确认'}</p>
+        {unknown && <p role="status">此会话结果或停止状态需核对，暂停继续输入与自动重发。</p>}{changedScope && <p role="status">项目权限已变更，请核对原上下文；原会话继续输入受新权限限制。</p>}
+        {session.limitations.length > 0 && <details><summary>此客户端的操作限制</summary>{session.limitations.map((limit, index) => <p key={index}>{limit}</p>)}</details>}
+        <div className={styles.actions}>
+          <button className="ac-button secondary compact" type="button" disabled={blocked || session.cli !== cli} onClick={() => { void command.run(() => localProjectsApi.readNativeContext(project.id, session.id), result => setHistory(result.items), '已读取服务允许返回的真实会话记录'); }}>读取此会话的实际记录</button>
+          <button className="ac-button secondary compact" type="button" disabled={blocked || !owns || !approved('observe')} onClick={() => { void command.run(() => localProjectsApi.observeSession(project.id, session.id), result => { setObservation({ id: session.id, value: result.observation }); sessions.retry(); }, '已读取实际会话状态与输出'); }}>观察状态与日志</button>
+          <button className="ac-button secondary compact" type="button" disabled={blocked || !owns || !approved('stop') || session.stop_confirmed} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision }); void command.run(() => localProjectsApi.stopSession(project.id, session.id, request.body, request.key), result => { setObservation({ id: session.id, value: result.observation }); sessions.retry(); }, '已请求停止；以服务停止确认结果为准'); }}>停止原生会话</button>
+          <button className="ac-button secondary compact" type="button" disabled={blocked || !owns || unknown || changedScope || session.stop_confirmed || !approved('send') || !message.trim()} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision, message: message.trim() }); void command.run(() => localProjectsApi.sendMessage(project.id, session.id, request.body, request.key), result => { setObservation({ id: session.id, value: result.observation }); sessions.retry(); }, '已发送明确消息；以原生返回结果为准'); }}>发送本次消息</button>
+          <button className="ac-button secondary compact" type="button" disabled={blocked || !owns || unknown || !session.stop_confirmed || !session.native_id || !approved('resume') || !message.trim()} onClick={() => { const request = command.prepare(nativeBody()); void command.run(() => localProjectsApi.resumeSession(project.id, session.id, request.body, request.key), () => sessions.retry(), '已请求原会话接续；不支持时不会创建新会话替代'); }}>原生接续</button>
+          <button className="ac-button secondary compact" type="button" disabled={blocked || session.ownership !== 'owned' || unknown || !session.stop_confirmed || !approved('start') || !message.trim() || (!references.length && !context.files.length)} onClick={() => { const request = command.prepare({ ...nativeBody(), mode: 'context_handoff' as const, source_session_id: session.id }); void command.run(() => localProjectsApi.startSession(project.id, request.body, request.key), () => sessions.retry(), '已请求独立新会话的上下文交接；原会话保持停止，不表示原生接续'); }}>新会话上下文交接</button>
+        </div>
+        {observation?.id === session.id && <details open><summary>实际会话输出</summary><p>状态 · {statuses[observation.value.status] ?? '需核对'}；停止 · {observation.value.stop_confirmed ? '已确认' : '未确认'}</p>{observation.value.events.map(event => <pre key={`${event.sequence}:${event.kind}`}>{event.text}</pre>)}{!observation.value.events.length && <p>服务本次未返回输出。</p>}{observation.value.output_truncated && <p>输出已截断，仅展示服务返回的部分。</p>}</details>}
+      </li>;
+    })}</ul>}</QueryState>{history && <details open><summary>本次读取的会话记录</summary>{history.length ? history.map(event => <pre key={`${event.sequence}:${event.kind}`}>{event.text}</pre>) : <p>本次未返回记录，不能推导原会话为空。</p>}</details>}<CommandState {...command} />
+  </section>;
+}

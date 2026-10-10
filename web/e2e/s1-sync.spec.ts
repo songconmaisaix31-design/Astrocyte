@@ -52,8 +52,13 @@ test('real local inventory displays saved independent observations and refreshes
     const native = card.locator('details').filter({ has: page.locator('summary').filter({ hasText: /^原生能力/ }) }).first();
     await native.locator(':scope > summary').click();
     await expect(native.locator('dl > div')).toHaveCount(8);
-    expect(Object.values(agent.capabilities).map(observation => observation.status)).toEqual(Array(8).fill('unknown'));
-    await expect(native.locator('dd > strong')).toHaveText(Array(8).fill('未知'));
+    const names = { discover: '发现会话', read_context: '读取上下文', start: '启动', resume: '原生接续', send: '发送输入', stop: '停止', observe: '观察状态', reconcile: '核对结果' };
+    const labels = { supported: '已支持', unsupported: '不支持', unknown: '未知' };
+    for (const key of Object.keys(names) as (keyof typeof names)[]) {
+      const observation = agent.capabilities[key];
+      const row = native.locator('dl > div').filter({ has: page.getByText(names[key], { exact: true }) });
+      await expect(row.locator('dd > strong')).toHaveText(labels[observation.status]);
+    }
     const nativeReasons = await native.locator('dd > small[title]').evaluateAll(elements => elements.map(element => element.getAttribute('title')));
     for (const observation of Object.values(agent.capabilities)) expect(nativeReasons).toContain(observation.reason);
   }
