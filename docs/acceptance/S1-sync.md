@@ -2,6 +2,10 @@
 
 ## 2026-10-10 用户决定后续作
 
+最新内容续验 SOURCE `6ca6b0746512fff5d5177aea8589b983c9850332`：原4pmMWO库真实浏览器1 FAIL约1.4分钟。论文新术语内容 `ZMZQELUBTBFXZYW2WZF2GSGXL2` receipt复用，视频内容 `BFFPW2H3YKNZUJBBJS5H2G4NE6` 实际成功，均attempt1/unknownfalse；未重复成功模型。人工form相对定位器30秒失败，manual/topic/retry/Agent/later尚未完成。原trace/error-context/截图与日志保留于 `web/test-results/s1-real-optional-prior-fix/` 和同名command.log，原UNKNOWN保持未知。
+
+续验准备修正manual200与表单定位，候选复用真实全沉淀查询以选入不同资料记录；原生预览按项目权限、CLI及space版本失效隐藏。完整Vitest58项、typecheck/lint/build/diff PASS；这些静态结果不代表本次真实AT或原生展示返修live通过。剩余只有两项已授权的新topic，不额外调用已成功模型或原生turn。
+
 原生同一原库续验 SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b`：1 PASS（测试29.3秒/整场56.3秒），actualUI resume同NativeID、活跃真实会话记录读取、第三send/实际输出、人类停止确认，以及同状态1280/1920无横溢均通过。总量为首start+本次resume+send三短turn，未追加调用；原首FAIL保留。pznwxr同库与真实receipt/命令日志/截图保留，所属服务已关闭。仅此公开README原生流程PASS，论文UNKNOWN及完整AT01–04/非空来源人工选择仍未通过。
 
 独立原生首轮 SOURCE `6382900b787421f8628f331797c9194862833f1c`：1 FAIL/6.0分钟，测试response matcher误写路径；真实UI start200、API观察首turn completed、同活跃线程context200及human stop确认。原自有库/命令日志/trace保留，后续仅sameID第二resume/第三send，不重复start或加第四turn；完整原生浏览器流程未通过，API实际结果不替代浏览器完整验收，论文UNKNOWN独立保留。
