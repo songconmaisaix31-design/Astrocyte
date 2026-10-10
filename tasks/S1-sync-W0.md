@@ -19,6 +19,8 @@ W0 完成共享 GitHub 列表/公开元数据同步/人工 placement 契约、hu
 
 本轮首失败保留：新 schemas 曾误追加到 securitySchemes，生成解析 FAIL，修正块位置后独立 PASS；首次入口误用不存在的 store constructor 导致 cmd build FAIL，改为已有 DB 实现后独立 PASS；首次 diff 检查 EOF 空行 FAIL，后续普通提交修复。一次早期手工展开 SHA 的交接文本错误已即时向全部接收者发 exact correction，未据错误 SHA 合并。W2 首次匿名 REST403、W1 首次越界桥检查/SQL audit/无新读取的 HTTP harness 首败、W3 浏览器首轮 RED 由各 owner 保留，成功复验是另一条证据。旧 UNKNOWN 不重发，旧 AT01–04 沿用，不重复 paid/media。
 
+后续 W3 SOURCE `79c01d1fa00ff62d90a724260acb41f930289c87` 普通 merge `8ec608f27a03ddcafdcd1cec04c5b9a0754f6272` 已推送。首完整浏览器结果 `144 PASS / 16 FAIL / 18 SKIP`、27.9 分钟保留，目标复验不改写它。W3 抖音应用首读 discovery/cache 实际均 HTTP200；共享 `tests/s1/contracts.mjs` 错将 query 纳入 OpenAPI path 查找而使验收在绑定前 FAIL，W0 改为仅以 URL pathname 找 operation，原实际请求 query 与完整响应 schema 校验保留。独立离线定向检查 PASS：带查询和无查询均校验，非法 item_count 与未文档路由仍拒绝；W0 未重读个人浏览器，W3 沿原所属库续验。
+
 剩余：等待 W3 固定源码的默认浏览器回归返修、真实 GitHub metadata→人工纳入→clone 和 selected Douyin 的应用 API/普通重启验收，再执行本树一次串行稳定 check/build。首 GitHub 账号/private 范围仍未决定，仅匿名公开手工输入；GitHub 账号列表仅有界一页，HTML 降级未知字段仍未知；Douyin 只支持获准选定且已完整挂载目录，未连接/未挂载/长列表不能猜测分页。完整 S1、main 合入、远端 CI 与人工接受不由本 worker 宣称。
 
 ## 早期共享契约阶段（保留当时结果）

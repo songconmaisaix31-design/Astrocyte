@@ -11,7 +11,9 @@ addFormats(ajv);
 const validators = new Map();
 
 export function validateResponse(method, path, status, data) {
-  const route = Object.keys(spec.paths).find(candidate => new RegExp(`^${candidate.replace(/\{[^}]+\}/g, '[^/]+')}$`).test(path));
+  // Queries belong to the real request; OpenAPI operation keys contain only paths.
+  const pathname = new URL(path, 'http://localhost').pathname;
+  const route = Object.keys(spec.paths).find(candidate => new RegExp(`^${candidate.replace(/\{[^}]+\}/g, '[^/]+')}$`).test(pathname));
   const operation = spec.paths[route]?.[method.toLowerCase()];
   let response = operation?.responses?.[String(status)];
   if (response?.$ref) response = response.$ref.slice(2).split('/').reduce((value, key) => value[key], spec);
