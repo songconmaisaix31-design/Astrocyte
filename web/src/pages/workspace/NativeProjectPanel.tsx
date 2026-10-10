@@ -28,7 +28,7 @@ export function NativeProjectPanel({ project, agents, disabled }: { project: Pro
   const [files, setFiles] = useState('');
   const [message, setMessage] = useState('');
   const [deadlineSeconds, setDeadlineSeconds] = useState('180');
-  const [packet, setPacket] = useState<Packet | null>(null);
+  const [packet, setPacket] = useState<{ scopeKey: string; value: Packet } | null>(null);
   const [observation, setObservation] = useState<{ id: string; scopeKey: string; value: Observation; output: { events: Event[]; retained: boolean } } | null>(null);
   const [history, setHistory] = useState<{ scopeKey: string; events: Event[] } | null>(null);
   const command = useCommand(disabled);
@@ -43,6 +43,7 @@ export function NativeProjectPanel({ project, agents, disabled }: { project: Pro
   const displayAllowed = !disabled && !space.loading && !space.stale && !!space.data;
   const observed = displayAllowed && observation?.scopeKey === scopeKey ? observation : null;
   const observedHistory = displayAllowed && history?.scopeKey === scopeKey ? history.events : null;
+  const visiblePacket = displayAllowed && packet?.scopeKey === scopeKey && packet.value.settings_revision === project.settings.revision && packet.value.project_id === project.id ? packet.value : null;
   const readContext = async <T,>(request: Promise<T>) => {
     try { return await request; } catch (error) { setObservation(null); setHistory(null); setPacket(null); throw error; }
   };
@@ -55,7 +56,7 @@ export function NativeProjectPanel({ project, agents, disabled }: { project: Pro
     <div className={styles.form}><fieldset disabled={blocked}><legend>本次交付的上下文</legend><QueryState state={space}>{data => <>{data.space.material_refs.map(ref => <label key={`${ref.material_id}@${ref.revision}`}><input type="checkbox" style={{ width: 'auto' }} checked={refKeys.includes(`${ref.material_id}@${ref.revision}`)} onChange={event => setRefKeys(event.target.checked ? [...refKeys, `${ref.material_id}@${ref.revision}`] : refKeys.filter(key => key !== `${ref.material_id}@${ref.revision}`))} /> {ref.locator} · v{ref.revision}</label>)}{!data.space.material_refs.length && <p>此项目空间尚未主动纳入资料，可在资料沉淀页 @ 固定版本。</p>}</>}</QueryState>
       {project.settings.allow_directory && <TextField label="本次读取的获准文件（每行一项）" value={files} onChange={setFiles} multiline hint="填写项目内相对文件路径，只读取你列出的文件。" />}
       <p className={styles.note}>引用展开 C · {project.settings.expand_references ? '已打开，服务逐项检查引用范围' : '关闭'}；目录 B · {project.settings.allow_directory ? '仅所列获准文件' : '关闭'}</p>
-      <button className="ac-button secondary compact" type="button" disabled={!references.length && !context.files.length} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision, ...context }); void command.run(() => readContext(localProjectsApi.readContext(project.id, request.body, request.key)), setPacket, '已取得实际项目上下文；尚未发送至模型'); }}>预览本次获准上下文</button>
+      <button className="ac-button secondary compact" type="button" disabled={!references.length && !context.files.length} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision, ...context }); void command.run(() => readContext(localProjectsApi.readContext(project.id, request.body, request.key)), result => setPacket({ scopeKey, value: result }), '已取得实际项目上下文；尚未发送至模型'); }}>预览本次获准上下文</button>
       <SelectField label="项目操作客户端" value={cli} onChange={setCLI} options={[{ value: '', label: '选择本机客户端…' }, ...(agents.data?.items ?? []).map(item => ({ value: item.id, label: item.display_name }))]} />
       <p className={styles.note}>已许可模型客户端 · {project.settings.external_model_cli || '未许可'}。{agent ? `安装：${agent.installed.status === 'available' ? '已核实' : '尚未核实可用'}；配置与可启动请查看本机清单。` : '尚未选择客户端。'}已登记连接但能力未知时，你可明确验证获准操作；未支持的操作不可用。</p>
       <button className="ac-button secondary compact" type="button" disabled={!agent?.native_adapter_registered || !cli || cli !== project.settings.external_model_cli || !project.settings.allowed_actions.includes('start') || !project.settings.allowed_actions.includes('stop') || agents.loading || agents.stale} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision, cli }); void command.run(() => localProjectsApi.probeCLI(project.id, request.body, request.key), () => { agents.retry(); sessions.retry(); }, '原生连接验证已返回；能力以最新实际观察为准'); }}>明确验证原生连接（启动后停止）</button>
@@ -64,7 +65,7 @@ export function NativeProjectPanel({ project, agents, disabled }: { project: Pro
       <TextField label="本次会话总时限（秒）" type="number" value={deadlineSeconds} onChange={setDeadlineSeconds} numberRange={{ min: 1, max: 1800, step: '1' }} hint="包含空闲与后续输入时间。到期后服务停止会话，未知结果不会自动重发。" />
       <button className="ac-button" type="button" disabled={!approved('start') || !message.trim() || !deadlineValid || (!references.length && !context.files.length)} onClick={() => { const request = command.prepare(nativeBody()); void command.run(() => localProjectsApi.startSession(project.id, request.body, request.key), () => { agents.retry(); sessions.retry(); }, '启动请求已提交；实际状态和结果请核对会话'); }}>{actionLabel('start', '启动获准原生会话', '验证并启动获准原生会话')}</button>
     </fieldset></div>
-    {packet && displayAllowed && packet.settings_revision === project.settings.revision && packet.project_id === project.id && <details><summary>实际上下文 · {packet.materials.length} 份资料 / {packet.files.length} 个文件</summary><p>权限版本 {packet.settings_revision} · {packet.mode}</p>{packet.materials.map(item => <div key={`${item.reference.material_id}@${item.reference.revision}`}><h5>{item.title} · v{item.reference.revision}</h5><pre>{item.text}</pre></div>)}{packet.files.map(file => <div key={file.path}><h5>{file.path}</h5><pre>{file.text}</pre></div>)}</details>}
+    {visiblePacket && <details><summary>实际上下文 · {visiblePacket.materials.length} 份资料 / {visiblePacket.files.length} 个文件</summary><p>权限版本 {visiblePacket.settings_revision} · {visiblePacket.mode}</p>{visiblePacket.materials.map(item => <div key={`${item.reference.material_id}@${item.reference.revision}`}><h5>{item.title} · v{item.reference.revision}</h5><pre>{item.text}</pre></div>)}{visiblePacket.files.map(file => <div key={file.path}><h5>{file.path}</h5><pre>{file.text}</pre></div>)}</details>}
     <button className="ac-button secondary compact" type="button" disabled={sessions.loading} onClick={sessions.retry}>重载已保存会话</button>
     <button className="ac-button secondary compact" type="button" disabled={blocked || !cli || !project.settings.history_roots?.[cli]} onClick={() => { const request = command.prepare({ expected_version: project.settings.revision, cli }); void command.run(() => localProjectsApi.discoverSessions(project.id, request.body, request.key), () => sessions.retry(), '已读取此项目获准范围内的实际历史会话'); }}>查找此项目的获准历史</button>
     <QueryState state={sessions} empty={data => !data.items.length} emptyTitle="暂无此项目的应用会话">{data => <ul className={styles.timeline}>{data.items.map(session => {
