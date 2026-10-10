@@ -261,7 +261,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     await manual.getByLabel('沉淀层次', { exact: true }).selectOption('topic');
     await manual.getByLabel('本轮问题', { exact: true }).fill('人工选入两份公开资料，二者技术关联待核对');
     await manual.getByLabel('人工整理结果', { exact: true }).fill('将这两份实际公开资料并列作为待比较输入；是否有共同技术问题仍待查，无已验证结论。');
-    await manual.getByLabel('添加关联资料', { exact: true }).selectOption(video.detail.material.id);
+    await manual.getByRole('combobox', { name: '添加关联资料', exact: true }).selectOption(video.detail.material.id);
     await manual.getByLabel('待查问题（每行一项）', { exact: true }).fill('两份资料的核心问题是否可比较，哪些依据尚缺？');
     const bridging = page.waitForResponse(r => r.url().endsWith('/distillations') && r.request().method() === 'POST');
     await manual.getByRole('button', { name: '保存人工沉淀', exact: true }).click();
