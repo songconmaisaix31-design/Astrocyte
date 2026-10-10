@@ -6,7 +6,7 @@
 
 平台统一提供资料检索、上下文、代码查询、经验和任务工具，保留每个 Agent 自己的私有会话。工具名按 `attention_search`、`workspace_context`、`code_search`、`code_impact`、`swarm_list_work`、`swarm_claim`、`swarm_submit`、`experience_search` 组织，全部调用同一 Service（§13.2）。
 
-- **共享 Service 是唯一事实源**：所有工具最终落到同一组只读 Service 方法，工具层只做参数翻译与权限校验，不复刻一份业务逻辑或索引数据库。
+- **共享 Service 是唯一事实源，读写分开授权**：所有工具最终落到同一组 Service 方法，工具层只做参数翻译与权限校验，不复刻业务逻辑或索引数据库。读操作（`attention_search`/`code_search`/`swarm_list_work`/`experience_search` 等）走只读路径；写操作（`swarm_claim`/`swarm_submit` 等）复用 Service 的获准写入路径，**逐次按 action/project 授权**，不是只读旁路，也不因“工具存在”而放宽写入授权。
 - **HTTP 与 stdio 双通道**：支持 HTTP 的客户端直连本地 MCP 服务；仅支持 stdio 的客户端使用薄桥接（thin bridge），把 stdio JSON-RPC 转接到同一 Service，不各启动一份索引实例。MCP 接入采用官方 Go SDK（[R02]），不手写协议。
 - **按任务最小挂载**：工具配置按 `ToolProfile` 编译成对应客户端格式，只给当前任务挂载它需要的工具与资料，不向所有 Agent 广播全部工具定义和资料（§8.4、§13.2）。
 
@@ -37,19 +37,18 @@
 - **分层检索**：`search`（紧凑索引）→ `timeline`（时间上下文）→ `detail`（按 ID 取详情），与 claude-mem 三层一致，避免一次性拉全文。
 - **授权门槛**：记忆检索只对被授权项目/调用者开放；`experience_search` 等工具经 §1 的共享 Service 与权限校验，不因“记忆存在”而放宽项目隔离。
 
-### 2.2 PENDING（未答复，不冻结）
+### 2.2 待答范围（不冻结，不自动采集）
 
-用户对记忆的**存储/可见范围**尚未回答：项目隔离 / 全局可见 / 仅规划。未答前：
+用户已明确**要实现长期记忆**（不再有“仅规划”选项）。尚未回答的只是记忆的**存储/可见范围**：项目隔离 / 个人全局。未答前：
 
 - 不落地 `memory` 迁移表、服务接口或 FTS5 索引结构；
 - 不自动采集任何会话或 CLI 历史；
 - 不在代码里默认启用“全局记忆”或“自动捕获”。
 
-答复后由原 owner（W2 或其继任）按回答落地：
+答复后由原 owner（W2 或其继任）按回答落地，立即实现原生 SQLite FTS5：
 
 - 若**项目隔离**：新增 workspace 项目记忆表 + 服务，复用既有 SQLite FTS5；记忆按 project_id 隔离，检索按项目授权。
-- 若**仅规划**：本文件即交付物，不写存储。
-- 若**全局**：需先明确可见范围与授权模型，再扩展为全局记忆，不与项目记忆混写。
+- 若**个人全局**：先明确可见范围与授权模型（仅本人/本人可见等），再落地全局记忆，不与项目记忆混写。
 
 ### 2.3 与工具层的关系
 
@@ -57,6 +56,6 @@
 
 ## 3. 当前落地状态与下一步
 
-- 本轮 W2 交付：OpenCode 正式接口复核（见 [local-agents.md](../probes/local-agents.md)）、获准 Agent 进度（domain/app/sqlite + 测试，接口/迁移/HTTP 由 W0 落）、本工具层与记忆规划。
-- 待 W0：发布 `013_project_progress` 迁移、`ProjectProgressService` 的 HTTP 入口与 OpenAPI 契约，并最终集成三轨。
-- 待用户：记忆存储/可见范围、CLI 完整覆盖范围；未答复不冻结接口、不自动采集、不降低验收。
+- 本轮 W2 交付：OpenCode 1.18.35 loopback Basic-auth 会话驱动（`internal/adapters/agents/opencode.go`，配置隔离 + deny-by-default，见 [local-agents.md](../probes/local-agents.md)）；获准 Agent 进度四项返修（settle 返回 typed error、Set 保留 Operations、accepted retry 返回原始快照、成功结果先 durable 再 publish 且 CAS 冲突重试不重跑模型）及 `ProgressCommand` 与 W0 对齐（files + header operation identity）；本工具层与记忆规划。
+- 待 W0：发布 `013_project_progress` 迁移、`ProjectProgressService` 的 HTTP 入口与 OpenAPI 契约，并最终集成三轨；`ProgressCommand` 的操作身份来自传输层 `Idempotency-Key` header（`Caller.OperationID`），body 仅 `files`。
+- 待用户：记忆存储/可见范围、CLI 完整覆盖范围；未答复不冻结接口、不自动采集、不降低验收。答复后由原 owner（W2 或其继任）按 §2.2 落地：项目隔离则新增 workspace 项目记忆表 + 服务并复用既有 SQLite FTS5，或仅规划。

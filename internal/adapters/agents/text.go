@@ -20,7 +20,10 @@ func (r *Registry) textSession(ctx context.Context, cli, prompt string, seconds 
 	if err != nil {
 		return nil, domain.NativeSession{}, err
 	}
-	n := a.(*Native)
+	n, ok := a.(*Native)
+	if !ok {
+		return nil, domain.NativeSession{}, nativeError(apierrors.UnsupportedCapability, "this CLI adapter does not provide the selected-text processing path")
+	}
 	root, err := os.MkdirTemp("", "astrocyte-selected-text-")
 	if err != nil {
 		return nil, domain.NativeSession{}, err
@@ -41,7 +44,10 @@ func (r *Registry) ConfigurationID(ctx context.Context, cli string) (string, err
 	if err != nil {
 		return "", err
 	}
-	n := a.(*Native)
+	n, ok := a.(*Native)
+	if !ok {
+		return "", nativeError(apierrors.UnsupportedCapability, "this CLI adapter does not expose a model configuration identity")
+	}
 	n.mu.Lock()
 	defer n.mu.Unlock()
 	if n.configID == "" || time.Since(n.configAt) > 5*time.Minute {

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -10,6 +11,16 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
+
+// cloneProgress mirrors the SQLite boundary: a load returns a fresh value (no
+// shared map/slice references) so an in-memory mutation cannot leak into the
+// stored record the way a JSON decode would not.
+func cloneProgress(p domain.ProjectProgress) domain.ProjectProgress {
+	data, _ := json.Marshal(p)
+	var out domain.ProjectProgress
+	_ = json.Unmarshal(data, &out)
+	return out
+}
 
 type progressProjects struct {
 	projects map[string]domain.LocalProject
@@ -43,22 +54,31 @@ func (p *progressProjects) LoadSession(context.Context, string) (domain.NativeSe
 }
 func (p *progressProjects) SaveSession(context.Context, domain.NativeSession) error { return nil }
 
+// progressStore is a CAS repository double. failAt / conflictAt inject a storage
+// error or a version conflict on a specific save ordinal (1-based) so the test
+// can target the pending save versus the accepted publication save.
 type progressStore struct {
-	records map[string]domain.ProjectProgress
-	fail    bool
+	records    map[string]domain.ProjectProgress
+	saves      int
+	failAt     int
+	conflictAt int
 }
 
 func (s *progressStore) LoadProjectProgress(_ context.Context, id string) (domain.ProjectProgress, error) {
-	return s.records[id], nil
+	return cloneProgress(s.records[id]), nil
 }
 func (s *progressStore) SaveProjectProgress(_ context.Context, p domain.ProjectProgress, expected int) error {
-	if s.fail {
+	s.saves++
+	if s.failAt > 0 && s.saves == s.failAt {
 		return errors.New("storage unavailable")
+	}
+	if s.conflictAt > 0 && s.saves == s.conflictAt {
+		return &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "progress changed; reload before saving"}
 	}
 	if p.Revision != expected+1 {
 		return &apierrors.ServiceError{Code: apierrors.VersionConflict}
 	}
-	s.records[p.ProjectID] = p
+	s.records[p.ProjectID] = cloneProgress(p)
 	return nil
 }
 
@@ -113,6 +133,12 @@ func consentProject() domain.LocalProject {
 	return domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 1, ExternalModelCLI: "codex"}}
 }
 
+func progressHuman(op string) domain.Caller {
+	return domain.Caller{Kind: "human", ID: "h", OperationID: op}
+}
+
+const opA = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+
 func TestProgressHumanSetAndCacheRead(t *testing.T) {
 	ctx := context.Background()
 	human := domain.Caller{Kind: "human", ID: "h"}
@@ -150,46 +176,45 @@ func TestProgressHumanSetAndCacheRead(t *testing.T) {
 
 func TestProgressInferRecordsEvidenceAndIsIdempotent(t *testing.T) {
 	ctx := context.Background()
-	human := domain.Caller{Kind: "human", ID: "h"}
 	service, projects, _, processor := newProgressService()
 	projects.projects["p1"] = consentProject()
 
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: "not-a-uuid", Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, domain.Caller{Kind: "human", ID: "h", OperationID: "not-a-uuid"}, "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("inference accepted a non-UUID operation identity")
 	}
 	model := "gpt-test"
 	processor.result = domain.TextResult{Text: `{"status":"review","percent":75}`, NativeID: "nid", Model: &model}
-	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-	record, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}})
+	record, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
 	if err != nil || record.Source != "agent_inferred" || record.Status != "review" || record.Percent == nil || *record.Percent != 75 || record.NativeID != "nid" {
 		t.Fatalf("inferred record %+v %v", record, err)
 	}
 	if len(record.Evidence) != 1 || record.Evidence[0].SourcePath != "TASK.md" || record.Evidence[0].Version != "v1" || record.Evidence[0].Kind != "task" {
 		t.Fatalf("evidence not recorded from observed files %+v", record.Evidence)
 	}
+	if record.Operations[opA].Result == nil || record.Operations[opA].Result.Status != "review" {
+		t.Fatalf("accepted receipt did not keep its result snapshot %+v", record.Operations[opA])
+	}
 	calls := processor.calls
-	again, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}})
+	again, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
 	if err != nil || again.Status != "review" || processor.calls != calls {
 		t.Fatalf("same operation identity re-inferred: %+v %v calls %d->%d", again, err, calls, processor.calls)
 	}
-	if _, err := service.InferProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1", domain.ProgressCommand{OperationID: "6ba7b810-9dad-11d1-80b4-00c04fd430c9", Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1", OperationID: "6ba7b810-9dad-11d1-80b4-00c04fd430c9"}, "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("Agent-initiated inference accepted")
 	}
 }
 
 func TestProgressInferRejectsInvalidModelOutput(t *testing.T) {
 	ctx := context.Background()
-	human := domain.Caller{Kind: "human", ID: "h"}
 	service, projects, store, processor := newProgressService()
 	projects.projects["p1"] = consentProject()
 	processor.result = domain.TextResult{Text: `not json at all`, NativeID: "nid"}
-	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("invalid model output accepted")
 	} else if e, ok := err.(*apierrors.ServiceError); !ok || e.Code != apierrors.EvidenceMissing {
 		t.Fatalf("wrong rejection %v", err)
 	}
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("failed operation identity replayed")
 	}
 	if _, err := store.LoadProjectProgress(ctx, "p1"); err != nil {
@@ -199,28 +224,25 @@ func TestProgressInferRejectsInvalidModelOutput(t *testing.T) {
 
 func TestProgressInferPersistsPendingReceiptBeforeModel(t *testing.T) {
 	ctx := context.Background()
-	human := domain.Caller{Kind: "human", ID: "h"}
 	service, projects, store, processor := newProgressService()
 	projects.projects["p1"] = consentProject()
 	processor.err = &apierrors.ServiceError{Code: apierrors.DeliveryUnknown, Message: "native delivery unknown"}
-	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("unknown delivery accepted")
 	}
 	record, _ := store.LoadProjectProgress(ctx, "p1")
-	if record.Operations[op].Status != "unknown" {
+	if record.Operations[opA].Status != "unknown" {
 		t.Fatalf("unknown receipt not persisted %+v", record.Operations)
 	}
 	processor.err = nil
 	processor.result = domain.TextResult{Text: `{"status":"done"}`}
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("unknown operation identity replayed after clearing error")
 	}
 }
 
 func TestProgressInferRechecksConsentBeforePublication(t *testing.T) {
 	ctx := context.Background()
-	human := domain.Caller{Kind: "human", ID: "h"}
 	projects := &progressProjects{projects: map[string]domain.LocalProject{}, grants: map[string]domain.ProjectGrant{}}
 	store := &progressStore{records: map[string]domain.ProjectProgress{}}
 	projects.projects["p1"] = consentProject()
@@ -230,12 +252,11 @@ func TestProgressInferRechecksConsentBeforePublication(t *testing.T) {
 	// result rather than publish a stale inferred status.
 	processor := &progressProcessor{result: domain.TextResult{Text: `{"status":"review"}`, NativeID: "nid", Model: &model}}
 	service := NewProjectProgressService(projects, store, progressFiles{files: []domain.ContextFile{{Path: "TASK.md", Version: "v1", Text: "x"}}}, &revokingProcessor{next: processor, projects: projects}, progressRegistry{})
-	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("consent change mid-flight published a result")
 	}
 	record, _ := store.LoadProjectProgress(ctx, "p1")
-	if record.Source == "agent_inferred" || record.Operations[op].Status != "unknown" {
+	if record.Source == "agent_inferred" || record.Operations[opA].Status != "unknown" {
 		t.Fatalf("revoked inference published %+v", record)
 	}
 }
@@ -272,5 +293,104 @@ func TestProgressAgentReadUsesGrant(t *testing.T) {
 	projects.grants["p1/a"] = domain.ProjectGrant{ProjectID: "p1", AgentID: "a", Actions: []string{"read_context"}, RevokedAt: &now}
 	if _, err := service.GetProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1"); err == nil {
 		t.Fatal("revoked grant still readable")
+	}
+}
+
+// A human stage write must keep the durable operation receipts; otherwise a
+// retry of an already accepted inference would re-charge the model.
+func TestProgressHumanSetPreservesOperationReceipts(t *testing.T) {
+	ctx := context.Background()
+	service, projects, store, processor := newProgressService()
+	projects.projects["p1"] = consentProject()
+	model := "gpt-test"
+	processor.result = domain.TextResult{Text: `{"status":"review","percent":70}`, NativeID: "nid", Model: &model}
+
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err != nil {
+		t.Fatalf("infer %v", err)
+	}
+	if _, err := service.SetProjectProgress(ctx, domain.Caller{Kind: "human", ID: "h"}, "p1", domain.ProgressInput{Status: "done"}); err != nil {
+		t.Fatalf("human set after infer %v", err)
+	}
+	record, _ := store.LoadProjectProgress(ctx, "p1")
+	if record.Source != "human" || record.Status != "done" {
+		t.Fatalf("human set lost its own status %+v", record)
+	}
+	if record.Operations[opA].Status != "accepted" || record.Operations[opA].Result == nil {
+		t.Fatalf("human set dropped the accepted receipt %+v", record.Operations)
+	}
+	// Retrying the same operation must return the original accepted result and
+	// must not re-run the model.
+	calls := processor.calls
+	again, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
+	if err != nil || again.Status != "review" || again.Source != "agent_inferred" || again.Percent == nil || *again.Percent != 70 || processor.calls != calls {
+		t.Fatalf("accepted retry returned the live human write instead of the original result: %+v %v calls %d->%d", again, err, calls, processor.calls)
+	}
+}
+
+// A transient CAS conflict during accepted publication must be recovered by
+// reloading and re-saving the already computed result, never by re-running the
+// model turn. The computed snapshot is durably stored first (save 2) so the
+// conflict on the accepted publish (save 3) is recoverable.
+func TestProgressPublicationRecoversFromCASConflictWithoutNewModel(t *testing.T) {
+	ctx := context.Background()
+	projects := &progressProjects{projects: map[string]domain.LocalProject{"p1": consentProject()}, grants: map[string]domain.ProjectGrant{}}
+	store := &progressStore{records: map[string]domain.ProjectProgress{}, conflictAt: 3}
+	processor := &progressProcessor{result: domain.TextResult{Text: `{"status":"review"}`, NativeID: "nid"}}
+	service := NewProjectProgressService(projects, store, progressFiles{files: []domain.ContextFile{{Path: "TASK.md", Version: "v1", Text: "x"}}}, processor, progressRegistry{})
+
+	record, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
+	if err != nil || record.Status != "review" || record.Source != "agent_inferred" {
+		t.Fatalf("publication did not recover from a CAS conflict: %+v %v", record, err)
+	}
+	if processor.calls != 1 {
+		t.Fatalf("CAS recovery re-ran the model turn %d times", processor.calls)
+	}
+	if got, _ := store.LoadProjectProgress(ctx, "p1"); got.Operations[opA].Status != "accepted" || got.Operations[opA].Result == nil {
+		t.Fatalf("accepted result was not durably published %+v", got)
+	}
+}
+
+// A persistent publication failure must surface as an error, never as a nil
+// success that would falsely report a result the store never received.
+func TestProgressPublicationFailureIsNotReportedSuccess(t *testing.T) {
+	ctx := context.Background()
+	projects := &progressProjects{projects: map[string]domain.LocalProject{"p1": consentProject()}, grants: map[string]domain.ProjectGrant{}}
+	store := &progressStore{records: map[string]domain.ProjectProgress{}, failAt: 2}
+	processor := &progressProcessor{result: domain.TextResult{Text: `{"status":"review"}`, NativeID: "nid"}}
+	service := NewProjectProgressService(projects, store, progressFiles{files: []domain.ContextFile{{Path: "TASK.md", Version: "v1", Text: "x"}}}, processor, progressRegistry{})
+
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("failed computed persistence reported success")
+	}
+	// The pending receipt persisted before the model turn still blocks a replay.
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("unpublished operation was replayed after storage recovered")
+	}
+}
+
+// A crash between the durable computed save and the accepted publish must be
+// recoverable: the retry finds the computed snapshot and re-publishes it without
+// running another model turn.
+func TestProgressComputedResultRecoveredAfterPublicationFailure(t *testing.T) {
+	ctx := context.Background()
+	projects := &progressProjects{projects: map[string]domain.LocalProject{"p1": consentProject()}, grants: map[string]domain.ProjectGrant{}}
+	store := &progressStore{records: map[string]domain.ProjectProgress{}, failAt: 3}
+	processor := &progressProcessor{result: domain.TextResult{Text: `{"status":"review"}`, NativeID: "nid"}}
+	service := NewProjectProgressService(projects, store, progressFiles{files: []domain.ContextFile{{Path: "TASK.md", Version: "v1", Text: "x"}}}, processor, progressRegistry{})
+
+	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("publication failure reported success")
+	}
+	computed, _ := store.LoadProjectProgress(ctx, "p1")
+	if computed.Operations[opA].Status != "computed" || computed.Operations[opA].Result == nil {
+		t.Fatalf("computed result was not durably stored %+v", computed.Operations)
+	}
+	calls := processor.calls
+	again, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
+	if err != nil || again.Status != "review" || again.Source != "agent_inferred" || processor.calls != calls {
+		t.Fatalf("computed result not re-published without a new model turn: %+v %v calls %d->%d", again, err, calls, processor.calls)
+	}
+	if got, _ := store.LoadProjectProgress(ctx, "p1"); got.Operations[opA].Status != "accepted" {
+		t.Fatalf("recovered result not accepted %+v", got.Operations)
 	}
 }
