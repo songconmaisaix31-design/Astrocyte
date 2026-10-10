@@ -41,7 +41,7 @@ func verifyCombinedPrompt(t *testing.T, inputs []app.SourceSnapshot) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = distiller.Distill(context.Background(), app.DistillationInput{JobID: "capacity-only", OperationID: "not-started", Inputs: inputs, Stage: "association", Question: "Use both complete selected source versions; retain uncertainty."})
+	_, err = distiller.Distill(context.Background(), app.DistillationInput{JobID: "capacity-only", OperationID: "not-started", Inputs: inputs, Stage: "topic", Question: "Use both complete selected source versions; retain uncertainty."})
 	if !errors.Is(err, context.Canceled) {
 		t.Fatal("request did not reach bounded capture before model call", err)
 	}
