@@ -1,5 +1,19 @@
 # S1 同步 W2：本地项目与原生会话续作
 
+## 2026-10-10 架构边界返修（最新）
+
+W2 SOURCE **`0cd2c97b6f3b3b372649ff5045b1f58bb4dfa486`** 已普通 commit/push 到 `origin/s1-local-agents-1010`。只移除 workspace app 的 `log/slog` import/直接 Warn，并将原始 clone error 加入既有 `errors.Join`（安全 ServiceError 在首位，随后原始 clone cause、保存失败 cause）；不改公共接口、迁移、HTTP transport、架构 checker 或其他轨道。数据库安全 LastError/状态及 HTTP `errors.As` + `apierrors.Wrap` 封装保持；原始诊断可通过 error chain 与 `errors.Is` 取得。
+
+| 本轮验证 | 结果及保留日志 |
+|---|---|
+| 首 `node scripts/check-architecture.mjs` | **RED**：`internal/workspace/app imports I/O: log/slog`；`%TEMP%/astrocyte-W2-architecture-first-20261010.log`。W0 首稳定 `c334574123e2e0ed6333195ff515576628d729fa` RED 日志 `%TEMP%/astrocyte-W0-repository-check-first-20261010.log` 保持原件 |
+| 新增原始 cause 回归断言，修复前运行失败测试 | **RED**：`original clone cause or diagnostic lost`；`%TEMP%/astrocyte-W2-clone-cause-first-20261010.log` |
+| 修复后 `go test ./internal/adapters/sqlite -run '^TestGitHub' -count=1 -v` | **2 PASS / 1 SKIP**；cause identity/诊断保留，安全 ServiceError 和 HTTP JSON 不泄露原诊断，数据库 safe LastError/failed/attempt 持久化，既有去重/重启/权限/人工恢复/重试上限通过；真实公开 clone opt-in 禁用。`%TEMP%/astrocyte-W2-architecture-fix-tests-20261010.log` |
+| 修复后 `node scripts/check-architecture.mjs` | **PASS**：19 packages satisfy boundaries；checker 未修改，`%TEMP%/astrocyte-W2-architecture-fixed-20261010.log` |
+| `go vet ./internal/workspace/... ./internal/adapters/sqlite` / `go build ./...` / `git diff --check` | **PASS/exit0**；vet/build 日志 `%TEMP%/astrocyte-W2-architecture-vet-20261010.log` / `%TEMP%/astrocyte-W2-architecture-build-20261010.log` |
+
+本轮没有真实 clone、模型、浏览器、付费或媒体重放，也不改写前轮首失败/UNKNOWN。这里只验证 W2 返修及现有 HTTP 错误提取契约，未执行新的 HTTP 请求或全套 Go 测试；W0 普通集成、root 最终串行检查与 UI 验收仍由对应 owner 完成。
+
 ## 2026-10-10 公开仓库与蜂群空间（当前）
 
 本轮最终 W2 **SOURCE `57b4f7b639d197273b59b4495e66bc9775ad0b7b`** 已 push `origin/s1-local-agents-1010`；初交源码 `07266c5edd5c5dc2aa2b1421f6dcf3802ca97b56` 已经主控核代码并交 W0 普通集成。随后仅 Windows 假程序启动测试修正 `8a5d1ffcb37ce6b70c2ddcd34cf6452ce7b92a22`、REST缺/null字段显式unknown与private可见性必备校验 `57b4f7b`；最终Go/vet/build全部通过。先普通合根基线 `6e84a92`，DTO `0557bad369bdc8908f6087c606d379cb8b4c8fee`、provenance DTO `b6e21d39ce15a52ca9ea72df668f1d94bf5237a7` 分阶段 push；消费唯一 W0 契约/迁移 `fde698dfe924f0509f391228fd47cda7234d84f8`、`2d4f759e0ebf517fa3ffd55020c26d57c23b6415` 与已纠正准确 SHA `408512886b9607efdac0968c9f85d9fa04a709cf`。W2 仅修改计划的 workspace app/domain（不碰 contracts）、agents、local_agents*.go 与自身报告/probes；HTTP、迁移、入口、生成客户端及全部 UI 保持 W0/W3 owner。实际客户端按主控回执 Orca Codex0.162.0 / GPT-6.1-Sol high fast。
