@@ -121,7 +121,7 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("open objects: %w", err)
 	}
 	listingReader := importers.NewPublicListingReader(listingPython)
-	browserConfig, err := resolveSelectedBrowserConfig()
+	browserConfig, err := resolveSelectedBrowserConfig(dataDir)
 	if err != nil {
 		return fmt.Errorf("configure selected Douyin browser: %w", err)
 	}
@@ -302,7 +302,7 @@ func run(logger *slog.Logger) error {
 
 func resolveDataDir() (string, error) {
 	if dir := os.Getenv("ASTROCYTE_DATA_DIR"); dir != "" {
-		return dir, nil
+		return filepath.Abs(dir)
 	}
 	dir, err := os.UserConfigDir()
 	if err != nil {
