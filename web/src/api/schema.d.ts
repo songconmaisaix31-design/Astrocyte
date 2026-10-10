@@ -1,5 +1,85 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/source-collections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * list Source Collections
+         * @description Public favorite folders for one explicit owner, metadata only; no auto binding or cookies.
+         */
+        get: operations["listSourceCollections"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/agent-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * issue Project Agent Token
+         * @description Human-only issuance for an already approved project Agent grant. Returned once, never stored in browser fixtures or logs; tokens recheck current grant on every operation.
+         */
+        post: operations["issueProjectAgentToken"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/sessions/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * discover Native Sessions
+         * @description Reads only explicitly registered CLI history roots and filters exact project identity. External observations do not confer process control.
+         */
+        post: operations["discoverNativeSessions"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/sessions/{session_id}/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * read Native Context
+         * @description Project-scoped native context; registered history paths remain internal and do not authorize arbitrary transcript reads.
+         */
+        get: operations["readNativeContext"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tracking-sources": {
         parameters: {
             query?: never;
@@ -3035,6 +3115,9 @@ export interface components {
             allowed_tools: string[];
             external_model_cli: string;
             allow_agent_control: boolean;
+            history_roots: {
+                [key: string]: string;
+            };
         };
         LocalProjectV1: {
             id: string;
@@ -3095,6 +3178,7 @@ export interface components {
             agent_id: string;
             actions: string[];
             revoked_at: string | null;
+            expires_at: string | null;
         };
         LocalProjectGrantResultV1: {
             /** @constant */
@@ -3167,6 +3251,10 @@ export interface components {
             /** Format: date-time */
             updated_at: string;
             limitations: string[];
+            last_operation_id: string;
+            pending_operation: string;
+            /** @enum {string} */
+            ownership: "owned" | "external_observed";
         };
         NativeSessionResultV1: {
             /** @constant */
@@ -3215,6 +3303,51 @@ export interface components {
             expected_version: number;
             message: string;
         };
+        SourceCollectionV1: {
+            external_id: string;
+            owner_id: string;
+            title: string;
+            locator: string;
+            item_count: number | null;
+        };
+        SourceCollectionListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["SourceCollectionV1"][];
+            next_cursor: string | null;
+        };
+        ProjectAgentTokenV1: {
+            token: string;
+            project_id: string;
+            agent_id: string;
+            /** Format: date-time */
+            expires_at: string;
+        };
+        ProjectAgentTokenResultV1: {
+            /** @constant */
+            schema_version: 1;
+            credential: components["schemas"]["ProjectAgentTokenV1"];
+        };
+        IssueProjectAgentTokenRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            agent_id: string;
+        };
+        DiscoverNativeSessionsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            cli: string;
+        };
+        NativeContextListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["NativeEventV1"][];
+            next_cursor: string | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -3224,6 +3357,362 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listSourceCollections: {
+        parameters: {
+            query: {
+                platform: string;
+                owner_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current scoped service result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceCollectionListV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    issueProjectAgentToken: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IssueProjectAgentTokenRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current scoped service result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectAgentTokenResultV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    discoverNativeSessions: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiscoverNativeSessionsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current scoped service result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeSessionListV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    readNativeContext: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current scoped service result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeContextListV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     listTrackingSources: {
         parameters: {
             query?: never;
