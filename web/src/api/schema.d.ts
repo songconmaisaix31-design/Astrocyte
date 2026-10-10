@@ -2932,6 +2932,10 @@ export interface components {
             next_cursor: string | null;
         };
         RequestDistillationRequestV1: {
+            /** @description Human selected project whose current fixed references and model consent are rechecked before processing. */
+            project_id?: string;
+            /** @description Exact CLI permitted by that project; selected project processing never silently falls back to a global provider. */
+            cli?: string;
             /** @constant */
             schema_version: 1;
             request_id: string;
