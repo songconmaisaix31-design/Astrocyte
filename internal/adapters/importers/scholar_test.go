@@ -2,8 +2,14 @@ package importers
 
 import (
 	"context"
+	"errors"
+	"io"
+	"net/http"
 	"os"
+	"strings"
 	"testing"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
 
 func TestScholarSearchValidation(t *testing.T) {
@@ -81,6 +87,118 @@ func TestParseArxivSearch(t *testing.T) {
 	}
 }
 
+// newMockScholar returns a Scholar whose HTTP client is stubbed by handler so
+// protocol regression tests can assert the exact endpoint an identifier query
+// is routed to without touching the network.
+func newMockScholar(handler func(*http.Request) (int, string)) *Scholar {
+	s := NewScholar()
+	s.Client = &http.Client{
+		CheckRedirect: scholarRedirect,
+		Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
+			status, body := handler(r)
+			return &http.Response{
+				StatusCode: status,
+				Body:       io.NopCloser(strings.NewReader(body)),
+				Header:     http.Header{},
+				Request:    r,
+			}, nil
+		}),
+	}
+	return s
+}
+
+func TestParseDOIQuery(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{"10.1371/journal.pdig.0000514", "10.1371/journal.pdig.0000514"},
+		{"doi:10.1371/journal.pdig.0000514", "10.1371/journal.pdig.0000514"},
+		{"https://doi.org/10.1371/journal.pdig.0000514", "10.1371/journal.pdig.0000514"},
+		{"http://dx.doi.org/10.1371/journal.pdig.0000514", "10.1371/journal.pdig.0000514"},
+		{"10.7717/peerj-cs.3663/table-101", "10.7717/peerj-cs.3663/table-101"},
+		{"attention mechanism transformer", ""},
+		{"10.1234", ""},
+		{"2504.16054", ""},
+		{"https://example.com/10.1371/journal.pdig.0000514", ""},
+		{"", ""},
+	}
+	for _, c := range cases {
+		if got := parseDOIQuery(c.in); got != c.want {
+			t.Errorf("parseDOIQuery(%q) = %q, want %q", c.in, got, c.want)
+		}
+	}
+}
+
+func TestScholarExactDOIRouting(t *testing.T) {
+	var gotPath string
+	s := newMockScholar(func(r *http.Request) (int, string) {
+		gotPath = r.URL.EscapedPath()
+		return http.StatusOK, `{"status":"ok","message":{"DOI":"10.1371/journal.pdig.0000514","title":["A test paper"],"author":[{"given":"Ada","family":"Lovelace"}],"URL":"https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514","published":{"date-parts":[[2023,5,30]]},"container-title":["PLOS Digital Health"]}}`
+	})
+	hits, err := s.Search(context.Background(), ScholarCrossref, "https://doi.org/10.1371/journal.pdig.0000514", 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(hits) != 1 || hits[0].DOI != "10.1371/journal.pdig.0000514" || hits[0].SourceKey != "doi:10.1371/journal.pdig.0000514" || hits[0].ContentState != "abstract_only" {
+		t.Fatalf("unexpected hits: %+v", hits)
+	}
+	if gotPath != "/works/10.1371%2Fjournal.pdig.0000514" {
+		t.Fatalf("expected exact /works/{doi} lookup, got path %q", gotPath)
+	}
+}
+
+func TestScholarUnknownDOIExplicitNotFound(t *testing.T) {
+	s := newMockScholar(func(r *http.Request) (int, string) {
+		return http.StatusNotFound, `Resource not found.`
+	})
+	_, err := s.Search(context.Background(), ScholarCrossref, "10.9999/nonexistent.12345678", 3)
+	var se *apierrors.ServiceError
+	if !errors.As(err, &se) || se.Code != apierrors.NotFound {
+		t.Fatalf("expected explicit NotFound error, got %v", err)
+	}
+}
+
+func TestScholarExactArxivRouting(t *testing.T) {
+	var gotQuery string
+	s := newMockScholar(func(r *http.Request) (int, string) {
+		gotQuery = r.URL.RawQuery
+		return http.StatusOK, `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/2504.16054v2</id><title> A   Paper </title><summary>Abstract.</summary><published>2025-04-16T00:00:00Z</published><author><name>Alice Author</name></author></entry></feed>`
+	})
+	hits, err := s.Search(context.Background(), ScholarCrossref, "2504.16054v2", 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(hits) != 1 || hits[0].ArxivID != "2504.16054v2" || hits[0].SourceKey != "arxiv:2504.16054" {
+		t.Fatalf("unexpected hits: %+v", hits)
+	}
+	if gotQuery != "id_list=2504.16054v2" {
+		t.Fatalf("expected id_list exact-version lookup, got query %q", gotQuery)
+	}
+}
+
+func TestScholarExactArxivVersionMismatch(t *testing.T) {
+	s := newMockScholar(func(r *http.Request) (int, string) {
+		return http.StatusOK, `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/2504.16054v1</id><title>A Paper</title><summary>Abstract.</summary><published>2025-04-16T00:00:00Z</published><author><name>Alice Author</name></author></entry></feed>`
+	})
+	_, err := s.Search(context.Background(), ScholarCrossref, "2504.16054v2", 3)
+	var se *apierrors.ServiceError
+	if !errors.As(err, &se) || se.Code != apierrors.NotFound {
+		t.Fatalf("expected version mismatch NotFound, got %v", err)
+	}
+}
+
+func TestScholarKeywordQueryUsesProviderSearch(t *testing.T) {
+	var gotURL string
+	s := newMockScholar(func(r *http.Request) (int, string) {
+		gotURL = r.URL.String()
+		return http.StatusOK, `{"message":{"items":[]}}`
+	})
+	if _, err := s.Search(context.Background(), ScholarCrossref, "attention mechanism transformer", 3); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(gotURL, "/works?") || !strings.Contains(gotURL, "query=attention+mechanism+transformer") {
+		t.Fatalf("expected provider keyword search, got %q", gotURL)
+	}
+}
+
 // TestScholarSearchLive performs one credential-free query per provider. It runs
 // only with an explicit opt-in and is an observation of real public metadata,
 // never an import or a claim of full-text coverage.
@@ -107,4 +225,36 @@ func TestScholarSearchLive(t *testing.T) {
 			t.Logf("live %s returned %d hits; first=%q source=%s", provider, len(hits), hits[0].Title, hits[0].SourceKey)
 		})
 	}
+}
+
+// TestScholarExactIDLive verifies one exact identifier against each official
+// registry (no full text, no paid access). It runs only with an explicit opt-in.
+func TestScholarExactIDLive(t *testing.T) {
+	if os.Getenv("ASTROCYTE_PAPER_SEARCH_LIVE") != "1" {
+		t.Skip("live public metadata lookup not requested")
+	}
+	s := NewScholar()
+	ctx := context.Background()
+
+	t.Run("crossref doi", func(t *testing.T) {
+		hits, err := s.Search(ctx, ScholarCrossref, "10.1371/journal.pdig.0000514", 3)
+		if err != nil {
+			t.Fatalf("live DOI lookup failed: %v", err)
+		}
+		if len(hits) != 1 || hits[0].DOI != "10.1371/journal.pdig.0000514" || hits[0].Title == "" {
+			t.Fatalf("live DOI lookup returned unexpected hits: %+v", hits)
+		}
+		t.Logf("live crossref doi title=%q year=%d", hits[0].Title, hits[0].Year)
+	})
+
+	t.Run("arxiv id", func(t *testing.T) {
+		hits, err := s.Search(ctx, ScholarCrossref, "2504.16054", 3)
+		if err != nil {
+			t.Fatalf("live arXiv id_list lookup failed: %v", err)
+		}
+		if len(hits) != 1 || hits[0].ArxivID == "" || hits[0].SourceKey != "arxiv:2504.16054" {
+			t.Fatalf("live arXiv id_list returned unexpected hits: %+v", hits)
+		}
+		t.Logf("live arxiv id_list version=%q title=%q", hits[0].ArxivID, hits[0].Title)
+	})
 }

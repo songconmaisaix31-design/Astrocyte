@@ -1,5 +1,20 @@
 # S1 收尾 W1：论文检索、正文提取与独立 MV3 插件
 
+## 续三：检索精确 ID 路由返修（本轮）
+
+Branch `s1-sync-attention-1010`。主控返修：真实 `GET /api/v1/papers/search?q=10.1371%2Fjournal.pdig.0000514&provider=crossref` 把完整 DOI 当关键词，首条返回无关的 `Algorithm1:PDIG`。本续在 `importers/scholar.go` 加精确 ID 路由，写域不变，仅本文件 + `docs/acceptance/S1-paper.md` + `scholar.go`/`scholar_test.go`。
+
+- 完整 DOI/doi.org URL → Crossref 官方 `GET /works/{doi}` 单条，404 显式 `not_found`，不退关键词。
+- 合法 arXiv 编号/URL（含 `vN` 版本）→ arXiv `id_list` 精确版本，版本不符/非单条显式 `not_found`。
+- 精确 ID 判定先于 provider 关键词、与 provider 无关；默认 crossref 请求也按精确 ID 路由；普通标题/作者仍既有 provider 关键词。
+- 不改公开 DTO/HTTP/迁移/锁/入口，无新框架/代理 DNS 例外，不读个人资料/不调模型，正文/PDF/paper_snapshot 提取不动。
+
+验证：协议回归 `TestParseDOIQuery`/`TestScholarExactDOIRouting`/`TestScholarUnknownDOIExplicitNotFound`/`TestScholarExactArxivRouting`/`TestScholarExactArxivVersionMismatch`/`TestScholarKeywordQueryUsesProviderSearch` PASS；真实元数据验证各一次 `TestScholarExactIDLive`（DOI `10.1371/journal.pdig.0000514`、arXiv `2504.16054`→v1）。`go test ./internal/adapters/importers ./internal/attention/...`、`go build ./...`、`go vet`、`gofmt` PASS；`paper-dom.test.mjs` 7 PASS。Handoff：W0 `ctx_601d4fe7909f`（契约/HTTP 无需改，404 已映射）、W3 `ctx_55f6713c28e7`（UI 无需改字段，建议对未知 DOI 提示明确 404）。网络阻断保持，未新增例外。
+
+---
+
+# S1 收尾 W1：论文检索、正文提取与独立 MV3 插件
+
 Branch `s1-sync-attention-1010`。在 11791ce 基础上按主控返修完成 SSRF 边界修正、`paper_pdf` 公共 PDF 正文适配器、隔离 Chrome 插件真实加载快照；本续再补 `paper_snapshot` 插件快照离线入库（零联网/零 model）与 `isPublicIP` IPv6 文档/丢弃段收尾。写域遵循 `tasks/S1-final-paper-cli-memory-plan.md`；OpenAPI/迁移/入口/锁/契约由 W0 单一 owner，本轨仅 `internal/attention/{domain,app}` 除 contracts.go、`internal/adapters/{importers,distillers,objects}`、`internal/adapters/sqlite` 除 local_agents*.go、`extensions/paper` 除锁、`docs/acceptance/S1-paper.md`、本文件。开发客户端 OpenCode / DeepSeek V4 Pro。
 
 ## 续二交付
