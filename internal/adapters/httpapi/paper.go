@@ -8,28 +8,23 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
 
-// paperAvailabilityWire is the transport availability vocabulary consumed by
-// the paper search UI. It is derived from the domain content_state; the raw
-// domain value is retained in Detail so no provider precision is dropped.
-type paperAvailabilityWire struct {
-	Status string  `json:"status"`
-	Detail *string `json:"detail"`
-}
-
+// paperSearchHitWire is the transport projection of one public academic search
+// hit. It mirrors W1's canonical domain.PaperSearchHit (source_key/content_state/
+// pdf_urls) rather than a reduced id/availability vocabulary, so the search UI
+// can hand a hit straight back into ImportMaterial with its canonical source key.
 type paperSearchHitWire struct {
-	ID               string                `json:"id"`
-	Title            string                `json:"title"`
-	Authors          []string              `json:"authors"`
-	Year             int                   `json:"year"`
-	Venue            string                `json:"venue"`
-	SourceType       string                `json:"source_type"`
-	ArxivID          string                `json:"arxiv_id"`
-	DOI              string                `json:"doi"`
-	Locator          string                `json:"locator"`
-	Abstract         string                `json:"abstract"`
-	Availability     paperAvailabilityWire `json:"availability"`
-	AlreadyImported  bool                  `json:"already_imported"`
-	ImportMaterialID *string               `json:"import_material_id"`
+	SourceKey    string   `json:"source_key"`
+	Provider     string   `json:"provider"`
+	Title        string   `json:"title"`
+	Authors      []string `json:"authors"`
+	Year         int      `json:"year"`
+	Venue        string   `json:"venue"`
+	ArxivID      string   `json:"arxiv_id"`
+	DOI          string   `json:"doi"`
+	Locator      string   `json:"locator"`
+	Abstract     string   `json:"abstract"`
+	ContentState string   `json:"content_state"`
+	PDFURLs      []string `json:"pdf_urls"`
 }
 
 type paperSearchResultWire struct {
@@ -41,49 +36,45 @@ type paperSearchResultWire struct {
 	Warnings      []string             `json:"warnings"`
 }
 
-func availabilityStatus(contentState string) string {
-	switch contentState {
-	case "readable_fulltext":
-		return "full_text"
-	case "abstract_only":
-		return "metadata_only"
-	case "paywall", "restricted":
-		return "restricted"
-	default:
-		return "unknown"
-	}
-}
-
+// mapPaperSearchHit projects one domain hit to the wire. Content state is the
+// raw domain vocabulary; PDF URLs are passed through verbatim for the human to
+// select. No already_imported/dedup claim is fabricated: dedup resolves on the
+// ImportMaterial job, not at search time.
 func mapPaperSearchHit(h domain.PaperSearchHit) paperSearchHitWire {
-	detail := h.ContentState
-	if detail == "" {
-		detail = "abstract_only"
+	contentState := h.ContentState
+	if contentState == "" {
+		contentState = "abstract_only"
+	}
+	pdfs := h.PDFURLs
+	if pdfs == nil {
+		pdfs = []string{}
 	}
 	return paperSearchHitWire{
-		ID:           h.SourceKey,
+		SourceKey:    h.SourceKey,
+		Provider:     h.Provider,
 		Title:        h.Title,
 		Authors:      h.Authors,
 		Year:         h.Year,
 		Venue:        h.Venue,
-		SourceType:   h.Provider,
 		ArxivID:      h.ArxivID,
 		DOI:          h.DOI,
 		Locator:      h.Locator,
 		Abstract:     h.Abstract,
-		Availability: paperAvailabilityWire{Status: availabilityStatus(h.ContentState), Detail: &detail},
+		ContentState: contentState,
+		PDFURLs:      pdfs,
 	}
 }
 
 // registerPaperSearch wires public academic metadata search (GET, human-only).
 // It performs no import, no full-text extraction and no model call; a human
-// selects a hit and imports it through the existing ImportMaterial path. The
-// already_imported/import_material_id dedup columns are reserved by the wire
-// contract but are not yet populated by the search domain (W1 remaining work).
+// selects a hit and imports it through the existing ImportMaterial path
+// (adapter=paper_url|paper_pdf, source_key dedup, new revision). There is no
+// separate batch-import route: the UI submits one ImportMaterial per selected
+// hit, so a dead 501 batch entry is not retained.
 func (h *handler) registerPaperSearch(mux *http.ServeMux) {
 	s := h.services.PaperSearch
 	if s == nil {
 		mux.HandleFunc("GET /api/v1/papers/search", h.notImplemented("paper_search"))
-		mux.HandleFunc("POST /api/v1/papers/import", h.notImplemented("paper_import"))
 		return
 	}
 	mux.HandleFunc("GET /api/v1/papers/search", func(w http.ResponseWriter, r *http.Request) {
@@ -121,8 +112,4 @@ func (h *handler) registerPaperSearch(mux *http.ServeMux) {
 		}
 		h.attentionResult(w, r, http.StatusOK, paperSearchResultWire{SchemaVersion: 1, Query: q, Items: items, Warnings: []string{}}, nil)
 	})
-	// Batch import is a human-session write over selected search hits. The
-	// domain mapping onto ImportMaterial/job dedup is W1's remaining work; until
-	// it is assembled the route stays an explicit 501, never a silent success.
-	mux.HandleFunc("POST /api/v1/papers/import", h.notImplemented("paper_import"))
 }

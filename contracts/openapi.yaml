@@ -2486,68 +2486,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
-  /papers/import:
-    post:
-      operationId: importPapers
-      summary: import human-selected papers
-      description: >-
-        Human-session batch import of explicitly selected search hits. Each hit
-        routes through the existing ImportMaterial path (kind=paper) with job and
-        source_key dedup; unknown effects are never automatically replayed. The
-        request Idempotency-Key is caller-owned and sent exactly once. A server
-        without the batch import domain returns 501, never a silent success.
-      tags: [materials]
-      x-s1-supported: true
-      security:
-        - HumanSession: []
-      parameters:
-        - name: Idempotency-Key
-          in: header
-          required: true
-          schema:
-            type: string
-        - name: X-CSRF-Token
-          in: header
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PaperImportRequestV1"
-      responses:
-        "200":
-          description: Import accepted; job identity returned for later polling
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaperImportResultV1"
-        "400":
-          description: Actionable structured error; no automatic replay of unknown effects
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-        "403":
-          description: Actionable structured error; no automatic replay of unknown effects
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-        "500":
-          description: Actionable structured error; no automatic replay of unknown effects
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-        "501":
-          description: Actionable structured error; no automatic replay of unknown effects
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
   /local-projects/{id}/progress:
     get:
       operationId: getProjectProgress
@@ -8548,6 +8486,8 @@ components:
           type: string
           enum:
             - arxiv
+            - paper_url
+            - paper_pdf
             - summarize_url
             - summarize
             - summarize_json
@@ -8555,7 +8495,9 @@ components:
             - manual
           description: summarize_url extracts a selected public video URL without export_text
             or local_file_ref. summarize, summarize_json and summarize_markdown import existing
-            exports. Extraction does not imply model distillation or Agent authorization.
+            exports. paper_url extracts a selected public paper HTML body; paper_pdf extracts
+            a selected public paper PDF. Extraction does not imply model distillation or
+            Agent authorization.
       required:
         - schema_version
         - request_id
@@ -12003,79 +11945,21 @@ components:
         - expected_version
         - platform
         - owner_id
-    PaperAvailabilityV1:
-      type: object
-      additionalProperties: false
-      properties:
-        status:
-          type: string
-          enum:
-            - full_text
-            - metadata_only
-            - restricted
-            - unknown
-        detail:
-          type: string
-      required:
-        - status
-    PaperImportItemV1:
-      type: object
-      additionalProperties: false
-      properties:
-        id:
-          type: string
-          minLength: 1
-        source_type:
-          type: string
-      required:
-        - id
-    PaperImportRequestV1:
-      type: object
-      additionalProperties: false
-      properties:
-        schema_version:
-          type: integer
-          const: 1
-        request_id:
-          type: string
-          minLength: 1
-        expected_version:
-          type: integer
-          minimum: 1
-        items:
-          type: array
-          minItems: 1
-          items:
-            $ref: "#/components/schemas/PaperImportItemV1"
-        collection_reason:
-          type: string
-      required:
-        - schema_version
-        - request_id
-        - expected_version
-        - items
-      examples:
-        - schema_version: 1
-          request_id: example-request
-          expected_version: 1
-          items:
-            - id: "10.7717/peerj-cs.3829"
-              source_type: crossref
-          collection_reason: selected research paper
-    PaperImportResultV1:
-      type: object
-      additionalProperties: false
-      properties:
-        job_id:
-          type: string
-      required:
-        - job_id
     PaperSearchHitV1:
       type: object
       additionalProperties: false
       properties:
-        id:
+        source_key:
           type: string
+          description: Canonical import identity (doi:.../arxiv:... or canonical URL). The
+            human selects a hit and imports it through ImportMaterial with this key for dedup.
+        provider:
+          type: string
+          enum:
+            - crossref
+            - europepmc
+            - arxiv
+          description: Official metadata index the hit came from.
         title:
           type: string
         authors:
@@ -12086,8 +11970,6 @@ components:
           type: integer
         venue:
           type: string
-        source_type:
-          type: string
         arxiv_id:
           type: string
         doi:
@@ -12096,23 +11978,31 @@ components:
           type: string
         abstract:
           type: string
-        availability:
-          $ref: "#/components/schemas/PaperAvailabilityV1"
-        already_imported:
-          type: boolean
-        import_material_id:
-          anyOf:
-            - type: string
-            - type: "null"
+        content_state:
+          type: string
+          enum:
+            - readable_fulltext
+            - abstract_only
+            - paywall
+            - restricted
+            - unknown
+          description: Raw availability vocabulary. Metadata indexes always report
+            abstract_only; full-text availability is resolved on import, never at search time.
+        pdf_urls:
+          type: array
+          items:
+            type: string
+          description: Candidate public PDF links surfaced for human selection; a PDF is
+            never presented as metadata full text.
       required:
-        - id
+        - source_key
+        - provider
         - title
         - authors
         - year
-        - source_type
         - locator
-        - availability
-        - already_imported
+        - content_state
+        - pdf_urls
     PaperSearchResultV1:
       type: object
       additionalProperties: false
@@ -12166,41 +12056,16 @@ components:
         - source_path
         - kind
         - version
-    ProgressOperationV1:
-      type: object
-      additionalProperties: false
-      properties:
-        action:
-          type: string
-        status:
-          type: string
-          enum:
-            - pending
-            - accepted
-            - failed
-            - unknown
-        created_at:
-          type: string
-          format: date-time
-        finished_at:
-          anyOf:
-            - type: string
-              format: date-time
-            - type: "null"
-      required:
-        - action
-        - status
-        - created_at
     ProjectProgressV1:
       type: object
       additionalProperties: false
       properties:
-        schema_version:
-          type: integer
         project_id:
           type: string
         status:
           type: string
+          description: Advisory stage label. The wire reports "unknown" for an
+            unobserved project instead of inventing a stage.
         summary:
           type: string
         percent:
@@ -12210,10 +12075,13 @@ components:
               maximum: 100
             - type: "null"
         source:
-          type: string
-          enum:
-            - human
-            - agent_inferred
+          anyOf:
+            - type: string
+              enum:
+                - human
+                - agent_inferred
+            - type: "null"
+          description: Null until a human writes or an Agent inference concludes.
         evidence:
           type: array
           items:
@@ -12225,18 +12093,16 @@ components:
             - type: string
             - type: "null"
         observed_at:
-          type: string
-          format: date-time
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
+          description: Null when no observation has been recorded; never a fabricated
+            zero timestamp.
         warning:
           type: string
         revision:
           type: integer
-        pending_operation:
-          type: string
-        operations:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/ProgressOperationV1"
       required:
         - project_id
         - status
@@ -12261,9 +12127,9 @@ components:
           progress:
             project_id: project-example
             status: unknown
-            source: human
+            source: null
             evidence: []
-            observed_at: "2026-10-11T00:00:00Z"
+            observed_at: null
             revision: 0
     SetProgressRequestV1:
       type: object

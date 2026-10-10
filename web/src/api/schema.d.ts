@@ -592,26 +592,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/papers/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * import human-selected papers
-         * @description Human-session batch import of explicitly selected search hits. Each hit routes through the existing ImportMaterial path (kind=paper) with job and source_key dedup; unknown effects are never automatically replayed. The request Idempotency-Key is caller-owned and sent exactly once. A server without the batch import domain returns 501, never a silent success.
-         */
-        post: operations["importPapers"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/local-projects/{id}/progress": {
         parameters: {
             query?: never;
@@ -2365,10 +2345,10 @@ export interface components {
             source_spans?: string[];
             title?: string;
             /**
-             * @description summarize_url extracts a selected public video URL without export_text or local_file_ref. summarize, summarize_json and summarize_markdown import existing exports. Extraction does not imply model distillation or Agent authorization.
+             * @description summarize_url extracts a selected public video URL without export_text or local_file_ref. summarize, summarize_json and summarize_markdown import existing exports. paper_url extracts a selected public paper HTML body; paper_pdf extracts a selected public paper PDF. Extraction does not imply model distillation or Agent authorization.
              * @enum {string}
              */
-            adapter?: "arxiv" | "summarize_url" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
+            adapter?: "arxiv" | "paper_url" | "paper_pdf" | "summarize_url" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
         };
         /**
          * @example {
@@ -3970,54 +3950,29 @@ export interface components {
              */
             access_mode?: "public" | "browser_selected";
         };
-        PaperAvailabilityV1: {
-            /** @enum {string} */
-            status: "full_text" | "metadata_only" | "restricted" | "unknown";
-            detail?: string;
-        };
-        PaperImportItemV1: {
-            id: string;
-            source_type?: string;
-        };
-        /**
-         * @example {
-         *       "schema_version": 1,
-         *       "request_id": "example-request",
-         *       "expected_version": 1,
-         *       "items": [
-         *         {
-         *           "id": "10.7717/peerj-cs.3829",
-         *           "source_type": "crossref"
-         *         }
-         *       ],
-         *       "collection_reason": "selected research paper"
-         *     }
-         */
-        PaperImportRequestV1: {
-            /** @constant */
-            schema_version: 1;
-            request_id: string;
-            expected_version: number;
-            items: components["schemas"]["PaperImportItemV1"][];
-            collection_reason?: string;
-        };
-        PaperImportResultV1: {
-            job_id: string;
-        };
         PaperSearchHitV1: {
-            id: string;
+            /** @description Canonical import identity (doi:.../arxiv:... or canonical URL). The human selects a hit and imports it through ImportMaterial with this key for dedup. */
+            source_key: string;
+            /**
+             * @description Official metadata index the hit came from.
+             * @enum {string}
+             */
+            provider: "crossref" | "europepmc" | "arxiv";
             title: string;
             authors: string[];
             year: number;
             venue?: string;
-            source_type: string;
             arxiv_id?: string;
             doi?: string;
             locator: string;
             abstract?: string;
-            availability: components["schemas"]["PaperAvailabilityV1"];
-            already_imported: boolean;
-            import_material_id?: string | null;
+            /**
+             * @description Raw availability vocabulary. Metadata indexes always report abstract_only; full-text availability is resolved on import, never at search time.
+             * @enum {string}
+             */
+            content_state: "readable_fulltext" | "abstract_only" | "paywall" | "restricted" | "unknown";
+            /** @description Candidate public PDF links surfaced for human selection; a PDF is never presented as metadata full text. */
+            pdf_urls: string[];
         };
         /**
          * @example {
@@ -4044,33 +3999,21 @@ export interface components {
             version: string;
             excerpt?: string;
         };
-        ProgressOperationV1: {
-            action: string;
-            /** @enum {string} */
-            status: "pending" | "accepted" | "failed" | "unknown";
-            /** Format: date-time */
-            created_at: string;
-            finished_at?: string | null;
-        };
         ProjectProgressV1: {
-            schema_version?: number;
             project_id: string;
+            /** @description Advisory stage label. The wire reports "unknown" for an unobserved project instead of inventing a stage. */
             status: string;
             summary?: string;
             percent?: number | null;
-            /** @enum {string} */
-            source: "human" | "agent_inferred";
+            /** @description Null until a human writes or an Agent inference concludes. */
+            source: ("human" | "agent_inferred") | null;
             evidence: components["schemas"]["ProgressEvidenceV1"][];
             native_id?: string;
             model?: string | null;
-            /** Format: date-time */
-            observed_at: string;
+            /** @description Null when no observation has been recorded; never a fabricated zero timestamp. */
+            observed_at: string | null;
             warning?: string;
             revision: number;
-            pending_operation?: string;
-            operations?: {
-                [key: string]: components["schemas"]["ProgressOperationV1"];
-            };
         };
         /**
          * @example {
@@ -4078,9 +4021,9 @@ export interface components {
          *       "progress": {
          *         "project_id": "project-example",
          *         "status": "unknown",
-         *         "source": "human",
+         *         "source": null,
          *         "evidence": [],
-         *         "observed_at": "2026-10-11T00:00:00Z",
+         *         "observed_at": null,
          *         "revision": 0
          *       }
          *     }
@@ -6888,69 +6831,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PaperSearchResultV1"];
-                };
-            };
-            /** @description Actionable structured error; no automatic replay of unknown effects */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Actionable structured error; no automatic replay of unknown effects */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Actionable structured error; no automatic replay of unknown effects */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Actionable structured error; no automatic replay of unknown effects */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-        };
-    };
-    importPapers: {
-        parameters: {
-            query?: never;
-            header: {
-                "Idempotency-Key": string;
-                "X-CSRF-Token": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PaperImportRequestV1"];
-            };
-        };
-        responses: {
-            /** @description Import accepted; job identity returned for later polling */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaperImportResultV1"];
                 };
             };
             /** @description Actionable structured error; no automatic replay of unknown effects */
