@@ -312,6 +312,9 @@ func (s *Service) SyncTrackingSource(ctx context.Context, p Principal, id string
 		if source.Version != c.ExpectedVersion {
 			return TrackingSourceResult{}, domain.ErrVersion
 		}
+		if source.LastError != nil && source.LastError.Code == apierrors.DeliveryUnknown {
+			return TrackingSourceResult{}, domain.ErrUnknown
+		}
 		if source.Status == "syncing" || source.Status == "recommending" {
 			return TrackingSourceResult{}, serviceError(apierrors.VersionConflict, "Source work is still active", "wait_for_source_job")
 		}
@@ -556,11 +559,18 @@ func (s *Service) SyncSourcesOnce(ctx context.Context) error {
 		return mapError(err, "")
 	}
 	for _, source := range sources {
+		if source.LastError != nil && source.LastError.Code == apierrors.DeliveryUnknown {
+			continue
+		}
 		if source.Status == "syncing" || source.Status == "recommending" {
 			continue
 		}
 		recoverable := false
 		for _, job := range jobs {
+			if trackingJobSource(job) == source.ID && job.Kind == "source_sync" && (job.DeliveryUnknown || (job.Error != nil && job.Error.Code == apierrors.DeliveryUnknown)) {
+				recoverable = true // Unknown observations must not become a new startup read.
+				break
+			}
 			if trackingJobSource(job) == source.ID && job.Kind == "source_sync" && job.Status == "failed" && !job.DeliveryUnknown && job.Error != nil && job.Error.Retryable && job.Attempts < job.MaxAttempts && s.options.Clock().Before(job.DeadlineAt) {
 				superseded := false
 				for _, other := range jobs {
