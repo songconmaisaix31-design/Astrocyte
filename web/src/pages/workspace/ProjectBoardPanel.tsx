@@ -38,7 +38,6 @@ export function ProjectBoardPanel({ query, refreshToken, onManage, onClearQuery 
         <button type="button" className="ac-button secondary compact" onClick={() => onManage('', '')}>接入项目</button>
         <button type="button" className="ac-button secondary compact" onClick={state.retry} disabled={state.loading}>重载项目看板</button>
       </div></div>
-      <p className={styles.note}>打开项目写下下一步、记录复盘，或归档暂时放下的工作。</p>
       <CommandState {...refresh} />
       <QueryState state={state}>{({ snapshot }) => <>
         {snapshot.board && snapshot.status !== 'unknown' ? <ProjectBoardView items={snapshot.board.map(present)} query={query} complete={snapshot.status === 'complete'} onSelect={item => setSelectedID(item.id)} onClearQuery={onClearQuery} /> : <p role="status" className={styles.empty}>项目汇总尚未生成，项目、文件夹与客户端计数未知。可同步最近改动；已有手动登记与项目权限仍可使用。</p>}

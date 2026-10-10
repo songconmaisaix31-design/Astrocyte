@@ -32,7 +32,9 @@ test.describe('Three-page navigation', () => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('共同工作区');
-    await expect(page.getByRole('heading', { name: '本地 Agent 与项目', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '项目总览', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '项目接入与设置', exact: true })).toBeVisible();
     await expect(page.getByRole('tab', { name: '提案与批准' })).toBeVisible();
     await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
     await expect(page.getByRole('heading', { name: /^会话/ })).toBeVisible();
@@ -514,6 +516,7 @@ test.describe('API failure and retry', () => {
     await page.route('**/missions*', route => route.abort());
     await page.goto('/swarm');
     await page.waitForLoadState('networkidle');
+    await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
     // All three sections (missions, workitems, artifacts) show error — not empty state
     const errorAlerts = page.locator('[role="alert"]:has-text("暂未完成")');
     await expect(errorAlerts.first()).toBeVisible({ timeout: 10000 });

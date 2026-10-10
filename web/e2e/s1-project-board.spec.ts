@@ -39,7 +39,7 @@ test('actual project overview and human records persist across refresh and owned
     await expect(metric('来源文件夹')).toHaveText(String(new Set(snapshot.board!.flatMap(item => item.roots)).size));
     await expect(metric('已记录客户端')).toHaveText(String(new Set(snapshot.board!.flatMap(item => item.contributors.map(source => source.cli).filter(Boolean))).size));
     for (const width of [1920, 1280, 390]) {
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 1080 });
+      await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       await expect(board.getByRole('button', { name: '同步最近改动', exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const firstCard = await board.getByRole('button', { name: /^查看项目 / }).first().boundingBox();
@@ -127,7 +127,7 @@ test('actual project overview and human records persist across refresh and owned
     expect((await restoreResponse).status()).toBe(200);
     await expect(dialog.getByRole('status').filter({ hasText: '已保存项目记录' })).toBeVisible();
     for (const width of [390, 1280, 1920]) {
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 1080 });
+      await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
       await page.screenshot({ path: testInfo.outputPath(`actual-project-detail-${width}.png`), fullPage: true, animations: 'disabled' });

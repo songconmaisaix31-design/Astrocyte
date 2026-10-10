@@ -17,8 +17,7 @@ export function ProjectBoardView({ items, query, complete, onSelect, onClearQuer
     <dl className={styles.metrics} aria-label="项目统计">
       {[{ label: '项目', value: items.length }, { label: '来源文件夹', value: folders.length }, { label: '已记录客户端', value: clients.length }, { label: '有活动时间', value: items.filter(item => item.activityAt).length }, { label: '已归档', value: items.filter(item => item.archived).length }].map(metric => <div key={metric.label}><dd>{metric.value}</dd><dt>{metric.label}</dt></div>)}
     </dl>
-    <p className={styles.note}>{complete ? '当前已保存清单' : '部分来源暂不可读 · 仅统计已返回项目'}{query ? ` · 页面搜索：${query}` : ''}</p>
-    <FilterChips label="看的方式" value={view} onChange={setView} options={[{ value: 'flat', label: '平铺' }, { value: 'platform', label: '按平台' }, { value: 'group', label: '按分组' }, { value: 'timeline', label: '时间线' }]} />
+    <div className={styles.viewbar}><FilterChips label="看的方式" value={view} onChange={setView} options={[{ value: 'flat', label: '平铺' }, { value: 'platform', label: '按平台' }, { value: 'group', label: '按分组' }, { value: 'timeline', label: '时间线' }]} /><p className={styles.note}>{complete ? '当前已保存清单' : '部分来源暂不可读 · 仅统计已返回项目'}{query ? ` · 页面搜索：${query}` : ''}</p></div>
     <div className={styles.filters}>
       <div className={styles.controls}>
         <label>搜索项目<input aria-label="搜索项目" type="search" value={filters.search} placeholder="名称、目录或笔记" onChange={event => filter('search', event.target.value)} /></label>
