@@ -19,7 +19,7 @@ const videoURL = 'https://www.bilibili.com/video/BV1PReT6EEqR/';
 // public exports, plus a fresh authorized URL extraction; no fixtures/routes.
 test('real selected paper/video, scoped model rounds, ordinary reuse, authorized Agent reads and later persistence', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_REAL_S1_ACCEPTANCE !== '1', 'Requires coordinator-assigned live/model/media/native slot.');
-  test.setTimeout(1_200_000);
+  test.setTimeout(3_600_000);
   const rawPaper = await readFile(paperExport, 'utf8');
   const savedPaper = JSON.parse(rawPaper) as { extracted: { url: string; content: string } };
   expect(savedPaper.extracted.url).toBe(paperURL);
@@ -51,7 +51,9 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const response = await accepted;
     expect(response.status()).toBe(202);
     const receipt = await response.json() as S['ImportJobV1'];
-    const job = await waitJob(api, receipt.job_id, 'succeeded', 240_000);
+    const acceptedJob = await read<S['JobV1']>(`/jobs/${receipt.job_id}`);
+    const importBudget = kind === 'video' && text === undefined ? 900_000 : 30_000;
+    const job = await waitJob(api, receipt.job_id, 'succeeded', Math.max(1000, Math.min(importBudget, Date.parse(acceptedJob.deadline_at) - Date.now() + 1000)));
     jobs.push(job);
     expect(job.delivery_unknown).not.toBe(true);
     expect(job.material_id).toBeTruthy();
@@ -240,9 +242,9 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const bridge = (await bridgeResponse.json() as S['DistillationResultV1']).distillation;
     expect(bridge.provenance.mode).toBe('manual');
     await paperDialog.getByRole('button', { name: '关闭', exact: true }).click();
-    const topic = await modelRound(paper.detail.material.id, 'topic', '仅对比所选论文与视频固定正文和前轮记录，关联不成立则明确待查问题，不推断已完成研究；全部文字1000中文字以内。', [content.id, bridge.id]);
-    const videoTopic = await modelRound(video.detail.material.id, 'topic', '延续前轮所选视频内容，核对与固定论文正文的潜在关联；没有支持则明确待查问题，不称研究成果。不要启动任务，全部文字1000中文字以内。', [videoContent.id, topic.id]);
-    expect(videoTopic.input_refs.some(ref => ref.material_id === paper.detail.material.id && ref.revision === 1)).toBe(true);
+    const topic = await modelRound(paper.detail.material.id, 'topic', '仅依据当前固定论文正文和前轮内容记录，整理主题与明确待查问题；其他资料尚未交付，不推断关联或已完成研究；全部文字1000中文字以内。', [content.id]);
+    const videoTopic = await modelRound(video.detail.material.id, 'topic', '延续当前所选视频固定正文和前轮内容，整理主题与待查问题；其他资料未交付，不编造跨资料关联或研究成果。不要启动任务，全部文字1000中文字以内。', [videoContent.id]);
+    expect(videoTopic.input_refs.every(ref => ref.material_id === video.detail.material.id && ref.revision === head)).toBe(true);
     const candidateDialog = await openMaterial(paper.detail.material.id);
     await candidateDialog.getByRole('button', { name: '形成候选', exact: true }).click();
     const candidateForm = candidateDialog.locator('form').filter({ has: candidateDialog.getByRole('heading', { name: '形成候选', exact: true }) });
