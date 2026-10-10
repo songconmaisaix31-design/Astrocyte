@@ -2,6 +2,29 @@
 
 Task `task_8bcdaec3c1db` / Dispatch `ctx_6390663d09e5`。实际客户端 Orca Codex 0.162.0 / GPT-6.1-Sol high fast（主控核实屏幕）；工作树/分支 `s1-sync-contract-1010`。
 
+## 当前集成检查点（最终稳定验证待 W3 交付）
+
+已推送集成源码 `1073e81dcd8c0b33131e411cb7bb58332b198f17`，与 `origin/s1-sync-contract-1010` 一致；普通合入 W1 REPORT `123be4b8b64a770e5dc9667146d946cc228addd0`（SOURCE `38f4f4dff0e9884c77daf1c0ca333cd96d93f1e5`）、W2 REPORT `35928231e987503edec03de7942ea02edaef65a8`（SOURCE `57b4f7b639d197273b59b4495e66bc9775ad0b7b`）和 W3 初版 SOURCE `90148a34b5f9584fd2172820292a995451492f6c`。W3 最终源码、真实应用浏览器验收及本树稳定 check/build 尚未完成，不将初版源码或局部检查当最终验收。
+
+W0 完成共享 GitHub 列表/公开元数据同步/人工 placement 契约、human session + CSRF HTTP 路由、009 仓库存储迁移、010 来源 owner/access_mode 身份迁移和 011 选择目录缓存迁移；OpenAPI、生成 TS、typed API 与测试 helper 保持一致。人工 placement 只验证既有顶层 ProjectSpace，再接 W2 固定受管 clone；普通元数据同步不创建代码目录、项目或 Mission。源目录 GET 只读缓存；显式人类 POST discovery 才调用 W1 选择范围读取器。Scoped Agent 无权管理全局连接、选择或 placement，项目控制、模型和动作许可不因克隆扩大。
+
+入口已接 W1 selected-folder bridge 与 W2 public GitHub / managed clone 服务。`ec87f843a1251bd4399986684446a4b29a840452` 提供普通重启配置：缺省仅读明确应用数据目录下固定 `selected-browser.json`，或一个显式文件/完整环境配置；严格有界非凭据 JSON、固定 owner/folders、native Node/OpenCLI 路径，缺失时禁用，坏配置报错，不扫描 Chrome/profile/凭据。主控负责安装和个人配置复制；W0 不访问个人 Chrome，原 5173/8787 预览保持。
+
+| 已完成的阶段验证 | 结果与适用范围 |
+|---|---|
+| `pnpm generate` / `pnpm check:contracts` | 新共享契约 236 示例与生成漂移 PASS，既有 EventV1 unused warning 保留；不是最终全套 |
+| `go test -mod=readonly ./internal/adapters/httpapi ./cmd/server ./tests/s1` | PASS：真实 HTTP 权限/CSRF/Caller、缓存 GET 无同步、SQLite 旧数据/版本/FK 保留及新身份约束；后续入口和配置受影响 cmd tests 另行 PASS |
+| `node scripts/check-s1-project-api.mjs`（装配阶段临时真实 API） | PASS：A-B-A/固定引用/权限撤销和冷启动；GitHub 空缓存、元数据无代码目录、非法输入及 Agent/CSRF 拒绝。contract_local，无个人浏览器/模型/媒体；最终领域变化后的稳定验证待办 |
+| `pnpm --dir web typecheck`（`9f914c2` helper 修复阶段） | PASS，仅当时源码；W3 初版 UI 合入后的最终类型与浏览器返修归其 owner，不外推最终全套 |
+
+本轮首失败保留：新 schemas 曾误追加到 securitySchemes，生成解析 FAIL，修正块位置后独立 PASS；首次入口误用不存在的 store constructor 导致 cmd build FAIL，改为已有 DB 实现后独立 PASS；首次 diff 检查 EOF 空行 FAIL，后续普通提交修复。一次早期手工展开 SHA 的交接文本错误已即时向全部接收者发 exact correction，未据错误 SHA 合并。W2 首次匿名 REST403、W1 首次越界桥检查/SQL audit/无新读取的 HTTP harness 首败、W3 浏览器首轮 RED 由各 owner 保留，成功复验是另一条证据。旧 UNKNOWN 不重发，旧 AT01–04 沿用，不重复 paid/media。
+
+后续 W3 SOURCE `79c01d1fa00ff62d90a724260acb41f930289c87` 普通 merge `8ec608f27a03ddcafdcd1cec04c5b9a0754f6272` 已推送。首完整浏览器结果 `144 PASS / 16 FAIL / 18 SKIP`、27.9 分钟保留，目标复验不改写它。W3 抖音应用首读 discovery/cache 实际均 HTTP200；共享 `tests/s1/contracts.mjs` 错将 query 纳入 OpenAPI path 查找而使验收在绑定前 FAIL，W0 改为仅以 URL pathname 找 operation，原实际请求 query 与完整响应 schema 校验保留。独立离线定向检查 PASS：带查询和无查询均校验，非法 item_count 与未文档路由仍拒绝；W0 未重读个人浏览器，W3 沿原所属库续验。
+
+剩余：等待 W3 固定源码的默认浏览器回归返修、真实 GitHub metadata→人工纳入→clone 和 selected Douyin 的应用 API/普通重启验收，再执行本树一次串行稳定 check/build。首 GitHub 账号/private 范围仍未决定，仅匿名公开手工输入；GitHub 账号列表仅有界一页，HTML 降级未知字段仍未知；Douyin 只支持获准选定且已完整挂载目录，未连接/未挂载/长列表不能猜测分页。完整 S1、main 合入、远端 CI 与人工接受不由本 worker 宣称。
+
+## 早期共享契约阶段（保留当时结果）
+
 一页执行计划：普通合入主控 exact `6e84a92acadc7633c8d905ade246818b265df550`（merge `a66e35b`），先发最小共享契约与迁移，再沿原 owner 普通合并明确 pushed SHA，仅做入口/路由/类型胶水；领域错误返原 owner，最后适用 Go/API/生成漂移/check/build 及 W3 浏览器验收。W0 写域 contracts、两个 app/contracts.go、既有 internal/adapters/httpapi、foundation、cmd、>=009 migrations、web/src/api、scripts、tests/s1、根依赖锁、README 和本文件；W1 attention/importers/distillers/objects/sqlite（除 local_agents）、W2 workspace（除 contracts）/agents/local_agents*.go、W3 全 UI（除 api），各自持有测试/返修/报告，完整写域沿 tasks/S1-repository-browser-design-plan.md。主控已明确纠正 HTTP 路径，不新建目录。
 
 本次早期发布：W2 DTO pushed `0557bad369bdc8908f6087c606d379cb8b4c8fee` 普通合入；GitHub 缓存列表、显式公开元数据同步、人工纳入既有顶层 ProjectSpace 三端口；metadata 不克隆，placement 才 clone，expected_version 映射 repository revision。A 默认，BC/control/model/actions 各自独立；无 Mission/自动启动。009 存储公开仓库观察；010 原子保留旧来源、版本和条目，补 owner/access_mode 来源身份。W1 负责旧 public 规范化及实际桥，W0 不访问个人 Chrome；原 5173/8787 保持。
