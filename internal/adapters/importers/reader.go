@@ -22,11 +22,12 @@ import (
 type Reader struct {
 	Arxiv        *Arxiv
 	Summarize    *SummarizeExtractor
+	Web          *PaperWeb
 	AllowedRoots []string
 }
 
 func NewReader(allowedRoots []string) *Reader {
-	return &Reader{Arxiv: NewArxiv(), AllowedRoots: append([]string(nil), allowedRoots...)}
+	return &Reader{Arxiv: NewArxiv(), Web: NewPaperWeb(), AllowedRoots: append([]string(nil), allowedRoots...)}
 }
 
 var _ app.SourceReader = (*Reader)(nil)
@@ -124,8 +125,27 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 			return source, sourceError(err)
 		}
 		source = app.ImportedSource{SourceKey: exportSourceKey(cmd.SourceLocator, cmd.Kind), SourceLocator: cmd.SourceLocator, Kind: cmd.Kind, Title: cmd.Title, Text: string(raw), SourceSpans: append([]string{}, cmd.SourceSpans...), Provenance: app.Provenance{Processor: "manual", Version: "1", Mode: "manual", Source: cmd.SourceLocator}}
+	case "paper_url":
+		if cmd.Kind != "paper" || cmd.ExportText != "" || cmd.LocalFileRef != "" {
+			return source, invalid("paper_url requires a public paper URL without an existing export")
+		}
+		if r.Web == nil || r.Summarize == nil {
+			return source, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "paper body extraction is not configured", RequiredAction: "configure_summarize_paper_extraction"}
+		}
+		html, err := r.Web.FetchHTML(ctx, cmd.SourceLocator, 16<<20)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		snapshot, err := r.Summarize.InspectPaperHTML(ctx, cmd.SourceLocator, html)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		source, err = paperSource(snapshot, html)
+		if err != nil {
+			return source, err
+		}
 	default:
-		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_or_existing_summarize_export"}
+		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_paper_url_or_existing_summarize_export"}
 	}
 	if cmd.SourceKey != "" && cmd.SourceKey != source.SourceKey {
 		return app.ImportedSource{}, invalid("source_key differs from canonical source")

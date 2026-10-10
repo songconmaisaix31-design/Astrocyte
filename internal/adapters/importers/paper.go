@@ -12,6 +12,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 //go:embed paper-dom.mjs
@@ -88,4 +91,30 @@ func (e *SummarizeExtractor) InspectPaperHTML(ctx context.Context, locator strin
 		return PaperSnapshot{}, invalid("paper DOM result lacks matching untruncated provenance")
 	}
 	return snapshot, nil
+}
+
+// paperSource maps a DOM observation to an importable source without ever
+// presenting metadata or a PDF link as full text. A restricted page is refused;
+// a metadata-only page imports only clearly-marked metadata.
+func paperSource(snapshot PaperSnapshot, html []byte) (app.ImportedSource, error) {
+	var source app.ImportedSource
+	source.SourceKey = snapshot.SourceKey
+	source.SourceLocator = snapshot.SourceURL
+	source.Kind = "paper"
+	source.Title = snapshot.Title
+	source.Summary = snapshot.Abstract
+	source.Attachments = []app.SourceAttachment{{Name: "source.html", MediaType: "text/html", Data: html, SourceLocator: snapshot.SourceURL}}
+	source.SourceSpans = []string{"whole HTML document: " + snapshot.SourceURL}
+	version := "summarize-readability-approach " + snapshot.Provenance.Version
+	switch snapshot.ContentState {
+	case "readable_fulltext":
+		source.Text = fmt.Sprintf("# %s\n\nSource: %s\n\n## Abstract\n\n%s\n\n## Full text (HTML extraction)\n\n%s", snapshot.Title, snapshot.SourceURL, snapshot.Abstract, snapshot.Text)
+		source.Provenance = app.Provenance{Processor: "paper_url+summarize-readability", Version: version, Mode: "public_html_fulltext", Source: snapshot.SourceURL}
+	case "abstract_only":
+		source.Text = fmt.Sprintf("# %s\n\nSource: %s\n\n## Abstract (metadata only)\n\n%s", snapshot.Title, snapshot.SourceURL, snapshot.Abstract)
+		source.Provenance = app.Provenance{Processor: "paper_url+summarize-readability", Version: version, Mode: "public_html_abstract_only", Source: snapshot.SourceURL}
+	default:
+		return source, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "Access restriction detected; no entitlement bypass", RequiredAction: "choose_accessible_public_paper_or_provide_existing_export"}
+	}
+	return source, nil
 }

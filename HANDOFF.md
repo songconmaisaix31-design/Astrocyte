@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 当前入口：OpenCode四轨继续S1（2026-10-10 22:42）
+
+先读STATUS/QUESTIONS顶部与tasks/S1-final-paper-cli-memory-plan.md。原论文搜索/批量/进度问题已答，用户要求CLI完整接入、工具层规划和长期记忆；新两项CLI完整覆盖和记忆保存/可见范围待答。新Run run_8c1696bb815a，四原工作树新Dispatch全部OpenCode，实际TUI DeepSeek V4 Pro；协议turnStart unsupported不能当未启动，不重复注入。W0/W1/W2/W3写域沿计划，接口/迁移/锁/入口W0唯一owner。完成前个人preview73199/PIDs先重核且保持旧已验代码；不重发成功模型/旧UNKNOWN，不读私人Chrome历史/凭据。root不写业务代码，最终普通合并/独立验收/backup后升级并push。下文此前三项待答与全部Worker已release均为旧Run历史。
+
 ## 最新入口：项目看板已真实验收，论文选择待答（2026-10-10 22:31）
 
 最新侧栏入口返修SOURCE3b9b491 / REPORTb925782已普通消费；workspace/swarm可打开真实现有添加资料表单，4实际正向/4fixture/8GET拦截边界均PASS，非16次真实入库。root再build PASS和只读个人preview确认enabled，未发POST。最后W3新任务已结算release，所有实际owned Worker资源均已释放；下段22:26新Task待验描述是历史，不能再复用settled Dispatch。最终主控文档与分支push，个人preview73199继续运行，未合main/远程CI。
