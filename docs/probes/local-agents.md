@@ -1,5 +1,15 @@
 # 本地 Agent 与工具清点
 
+## 2026-10-10 登记项目发现与 GitHub 调查
+
+最新授权见 QUESTIONS 顶部：可读本地项目，先消费 `orca repo list --json` 的登记根与 `orca worktree list --limit 256 --json` 的本机登记工作树。固定程序只读取公开登记元数据和选定根的目录标记；不调用模型，不读取 Orca 私有库、认证原件、客户端历史正文或含认证的 remote。不把登记许可扩成 Agent B/C、写入、启动或外发许可。缺失根记录失败；主根缺失不抹掉独立登记且可访问的本机工作树，不搜索替代目录。GET 只读持久化缓存，冷重启可查；整个来源失联时保留旧时间和数据，状态 `stale`。
+
+Git 观察复用原生程序，固定 `rev-parse HEAD`、`symbolic-ref`、单条提交时间和 tracked-only porcelain status。[Git status 官方文档](https://git-scm.com/docs/git-status)描述机器可读格式及后台刷新；使用[Git 全局选项](https://git-scm.com/docs/git) `--no-optional-locks`、`GIT_OPTIONAL_LOCKS=0`，关闭 fsmonitor、hooks、untrackedCache、签名显示和子模块递归，清除继承的 `GIT_*` 路由/trace 环境。无 fetch、checkout、clone、凭据请求或补 safe.directory。所有命令使用固定二进制 argv 与既有 owned process helper，10秒/命令、120秒/场，Orca输出2MiB/Git64KiB、256候选、每登记根目录深度3/2000项；超限、取消和失联保留未知。仅检查已跟踪文件是否改变，不展示 diff/文件列表、不声称未跟踪文件也已检查。
+
+活动只来自 Orca `lastActivityAt` / `createdWithAgent`；创建客户端不是正在运行的客户端，活动不是原生会话历史，Git提交时间单列。不用 addedAt、mtime、安装库存推断 AI 最近修改。首次真实观测的明确 partial 与冷重启/身份测试见 W2 报告。
+
+GitHub 仅完成官方可复用能力调查，用户未确定同步方式、首批账号/仓库和私有权限，当前未新增 API 或下载入口。[Repository API](https://docs.github.com/en/rest/repos/repos)、[README/contents API](https://docs.github.com/en/rest/repos/contents)及[commits API](https://docs.github.com/en/rest/commits/commits)允许公开资源匿名查询；若用户选信息同步，可沿现有 Go HTTP 与 SQLite 有界快照，而无需让 Agent 执行同步。固定程序应遵循[官方最佳实践](https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api)条件请求、速率限制及有界分页；文档返回的仓库文字仍不成为命令授权。[GitHub 入门文档](https://docs.github.com/en/rest/using-the-rest-api/getting-started-with-the-rest-api)说明 `gh api` 依赖登录，因此不读取现有 token 来冒充匿名。若用户选 clone/update，需要另确认写入目标、分支、冲突及凭据使用方式；不将普通只读发现扩成 fetch/pull 或全账号下载。
+
 ## 2026-10-10 W2 原生续作（当前，源码a797324）
 
 用户现已要求全套本地操作，人类选择固定项目/CLI并分别授权 A/B/C；旧“仅库存、待答”章节保留为历史证据。实现与验证见 [W2 当前报告](../../tasks/S1-sync-W2.md)。全部原生 CLI 仅协作限制、关闭工具，不保证进程不能读其自有全局配置；宿主不读取认证文件或自动接管既有会话。

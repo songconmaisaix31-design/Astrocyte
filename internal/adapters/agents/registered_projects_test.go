@@ -186,6 +186,13 @@ func TestRegisteredGitReadIgnoresInheritedRepositoryAndFSMonitor(t *testing.T) {
 	// The fake monitor runs this test binary; its sentinel remains entirely in
 	// the test-owned temporary root, with no production hook or user ACL change.
 	git("config", "core.fsmonitor", `"`+os.Args[0]+`" -test.run=^TestRegisteredGitFSMonitorHelper$`)
+	// A repository's own config cannot redirect status reads outside its
+	// explicitly registered root, even if that other directory is accessible.
+	other := t.TempDir()
+	if err := os.WriteFile(filepath.Join(other, "marker.txt"), []byte("outside changed marker"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	git("config", "core.worktree", other)
 	t.Setenv("ASTROCYTE_FSMONITOR_SENTINEL", marker)
 	t.Setenv("GIT_DIR", filepath.Join(root, "wrong-inherited-root"))
 	g := NewRegisteredProjects().observeGit(context.Background(), root)

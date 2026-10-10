@@ -28,6 +28,10 @@ W1 SOURCE `e1061eba28aec014e3f0742434fd8c42ce256697` ordinary exact merge `2830e
 
 代码审阅发现同时refresh等待普通mutex无法响应取消的停服风险，已退W2原owner补最小锁等待与目标回归；当前不是已验完整停服。入口及受影响Go检查进行中，真实HTTP/UI验收仍待W3槽，W0未重复W2实际项目探测。
 
+入口SOURCE `fc65e028fd6c6ee50dcc1af24967f5c359baaef6` 已push；`go test -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi ./internal/adapters/sqlite ./internal/workspace/app` 和 `go vet -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi` PASS。随后ordinary消费W2 `6906f0c043f5f04e313c0201909a05fa31c606c0`（含`d8f7edb`缺主根时保留明确登记worktree）修复取消等待，整合SOURCE `c55ca977d906c52b360d4192012668468c2e72a5` 已push并交W3；合并后 `go test -mod=readonly -p 1 ./internal/adapters/sqlite ./cmd/server -run 'TestRegistered|TestResolve|TestRun' -count=1` PASS，含SQLite冷重启/stale/人类权限与并发取消目标。
+
+继续ordinary消费W2 SOURCE `bf4ef25a6d5e915c45ed92c9574d0831799ff8e7` / REPORT `e30ae4f1e105d7db8a849cc1b7d0ca6762c783d0`，再消费 `8fce45d0df71568b7eba9ada37d3dc6b775a975a`：按公开CLI规则解析Orca IDE程序、固定Git工作根，避免继承配置重定向实际观察目录。后者由原owner临时Git目标回归PASS；其两场个人登记项目真实只读结果仍归原SOURCE，不为新参数重复现场。W1推荐去重/UNKNOWN门控返修与W3真实收藏夹/项目续验尚待，整体未完成。
+
 ## 2026-10-10 最终受限交接（整体 S1 未完成，待主控接纳）
 
 最终应用整合 SOURCE `3f056d59e67ea1fcc186251c70260675e18f81d2` 已推送；普通消费 W1 REPORT `626831a8cb73030f26c8cfbce814fb43bfc4d397`、W2 REPORT `4a0b76a342f78ce2df59914813d48179415ef711`、W3 REPORT `8493ac8db9cb86c30eafdcab87bc5ec1dbee8680`（含真实AT最终报告 `56e9c85`）。相对主控默认 E2E SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f`，应用运行时代码相同，仅既有 `web/e2e/s1.spec.ts` 一旧用例断言修复与报告不同；尚未消费的主控 STATUS/QUESTIONS/计划未由W0修改。已装配公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。最后 W0 提交只改本报告，准确 REPORT SHA 由交接回执给出。
