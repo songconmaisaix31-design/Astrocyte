@@ -1,5 +1,15 @@
 # S1 sync W1 — 公开列表调查与独立同步规则
 
+## 继续阶段 13：选定抖音浏览器收藏夹（2026-10-10，开发中）
+
+本轮按主控完整互斥写域计划先普通合入 `6e84a92acadc7633c8d905ade246818b265df550`，保留原历史。主控实际核实本终端客户端 Codex 0.162.0 / GPT-6.1-Sol high fast；没有启动额外 Worker。主控负责 Chrome 插件安装，尚未显式交接浏览器，本轨没有读取个人 Chrome、Cookie、历史或其他标签。
+
+已读取安装的 OpenCLI 适配器和官方 [collections.js](https://github.com/jackwener/OpenCLI/blob/main/clis/douyin/collections.js)、[browser-fetch.js](https://github.com/jackwener/OpenCLI/blob/main/clis/douyin/_shared/browser-fetch.js)。`douyin collections` 是 creator.douyin.com 的作品合集 mix_list，不是选定用户收藏夹；user-videos 会扩展下载地址/评论，也不用于本轮。主控随后将 OpenCLI 更新为 1.8.8，实际连接状态仍由主控交接后核实，不用旧 1.8.6/未连接观察冒充当前实测。
+
+本轮先实现 `DouyinBrowser` / `SelectedFolderBridge` 的限定范围、严格元数据解析及 PublicListing 分派：宿主明确配置稳定账号 ID 和选定收藏夹 ID，HTTP 输入不能扩大允许集合；浏览器必须验证同一账号/收藏夹身份，缺字段、挑战、分页不前进、重复 ID 冲突和漏选文件夹均返回错误，零条只接受已核实成功空收藏夹。视频 ID 字符串保持精确；去重不改变实际观察行计数，没有正文/媒体/模型调用。该适配层的真实 OpenCLI transport 与实际网页结构仍待主控浏览器交接，当前不能宣称真实收藏同步完成。
+
+`go test ./internal/adapters/importers ./internal/attention/app ./internal/adapters/sqlite` PASS（3.849s / cached / 6.160s），属于 contract_local 与真实 SQLite 回归，不是实际浏览器验收。W0 已接受 `access_mode=public/browser_selected`、稳定 owner-aware identity 和目录 GET 只读缓存，正在独占发布 contracts/迁移与 POST discover；W1 负责消费、缓存与后续同轨返修。原 B站99+2观察、原 AT01–04和旧 UNKNOWN 不重跑或改写。
+
 ## 当前交接（2026-10-10，继续阶段 12 后）
 
 分支/工作树 `s1-sync-attention-1010`；当前业务 SOURCE `90c9e0419f6ef5e9b808fbd9fff6f6b734970ffe`，已push（真实metadata验证 `8c7292c`、失效行修复 `e1061eb` 均包含）。以下是已实现范围；后文按时间保留原阶段记录、首败及当时限制，不能把历史“尚未接线”当作当前状态，也不能把本地检查当作真实 S1 验收。

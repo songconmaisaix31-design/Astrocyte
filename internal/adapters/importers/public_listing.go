@@ -12,6 +12,7 @@ import (
 type PublicListing struct {
 	Bilibili *PublicBilibili
 	Uploads  *BilibiliUploads
+	Douyin   *DouyinBrowser
 }
 
 var _ app.PublicListingReader = (*PublicListing)(nil)
@@ -22,6 +23,9 @@ func NewPublicListingReader(pythonPath string) *PublicListing {
 }
 
 func (r *PublicListing) ReadPage(ctx context.Context, source app.TrackingSource, cursor string, limit int) (app.ListingPage, error) {
+	if source.Platform == "douyin" && r.Douyin != nil {
+		return r.Douyin.ReadPage(ctx, source, cursor, limit)
+	}
 	if source.Platform != "bilibili" {
 		return app.ListingPage{}, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "The current upstream adapter has no anonymous Douyin public-profile/favorite listing transport", RequiredAction: "provide_supported_public_source"}
 	}
@@ -108,6 +112,9 @@ func (r *PublicListing) ReadPage(ctx context.Context, source app.TrackingSource,
 }
 
 func (r *PublicListing) ListCollections(ctx context.Context, platform, ownerID string) ([]app.SourceCollection, error) {
+	if platform == "douyin" {
+		return r.Douyin.ListCollections(ctx, platform, ownerID)
+	}
 	if platform != "bilibili" {
 		return nil, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "Anonymous public collections are only supported for Bilibili", RequiredAction: "choose_supported_public_collection"}
 	}
