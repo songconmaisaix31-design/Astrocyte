@@ -2,7 +2,7 @@
 
 当前 Dispatch `ctx_b162c766fc84` / Task `task_95839accebf3`；开发客户端 Orca Codex，执行环境未暴露可核实的精确开发模型标识，未自行切换模型。实际联合蒸馏客户端/模型另记为Codex0.162.0/gpt-6.1-sol。独占共享契约、HTTP、入口、迁移012+、生成API、脚本及依赖锁；其他领域由原owner交付，最终普通合并精确已push提交。
 
-最终 W0 SOURCE `3b5a4343ff6fe08a56b89c24642050e932d97f9f` 已push，随后独立提交本报告为REPORT并通过Orca交接精确SHA。共享契约/HTTP/迁移/测试及普通集成范围已完成；Search/插件/进度产品决定仍pending，不宣称完整S1。下文历史各场结果保持各自精确源码，最终检查见末段。
+最终 W0 SOURCE `99b7e8e720c8f57a91485dcb658fd14dd77970ab` 已push，随后独立提交本报告为REPORT并通过Orca交接精确SHA。共享契约/HTTP/迁移/测试及普通集成范围已完成；Search/插件/进度产品决定仍pending，不宣称完整S1。下文历史各场结果保持各自精确源码，最终检查见末段。
 
 ## 基线与边界
 
@@ -74,7 +74,7 @@ SQLite/foundation/cmd定向Go测试亦PASS。未启用opt-in时项目看板测�
 
 ## 最终集成、复验与主控接受
 
-按已发布精确提交普通合入：W1 SOURCE `172d278f72cc13e8f39ee2ea2f14278e42277616` / REPORT `b91e7fff46e20c706845148879708ac151abf3a7`；W2定向修复 SOURCE `cd201962997e69bb4772d73a6d8752874085c3ef` / REPORT `9319374f4a55cf88901e2ed77b439f45aaea1b89`；W3 UI/测试 `2aa57e264aa56a7d7f271c5e087bc540f3f862ab`、最终消费W2的SOURCE `90cee4eda3c5f069325751064ecc944a303f6f77` / REPORT `1c7dfa84e8ac927cf5485e28b494219504083dd2`。最后一个W3报告普通合并为最终W0 SOURCE3b5a434，无越域业务胶水或历史覆盖。
+按已发布精确提交普通合入：W1 SOURCE `172d278f72cc13e8f39ee2ea2f14278e42277616` / REPORT `b91e7fff46e20c706845148879708ac151abf3a7`；W2定向修复 SOURCE `cd201962997e69bb4772d73a6d8752874085c3ef` / REPORT `9319374f4a55cf88901e2ed77b439f45aaea1b89`；W3 UI/测试 `2aa57e264aa56a7d7f271c5e087bc540f3f862ab`、最终消费W2的SOURCE `90cee4eda3c5f069325751064ecc944a303f6f77` / REPORT `506a9fc077c9ff4beec09e02fde50088b930bd35`（此前1c7dfa8已保留，新报告仅补两行主控结算边界）。最后一个W3报告普通合并为最终W0 SOURCE99b7e8e，无越域业务胶水或历史覆盖。
 
 主控已查看接受最终紧凑1920/1280/390布局，W3实际字段流固定c07、最终布局固定acbfc的证据保持独立，详见 `docs/acceptance/S1-paper-board.md`。W2修复仅5行领域逻辑：取非空Git提交与既有活动最大值，header创建仍独立；原领域RED、Windows SQLite URI首RED与复验分开保留。W2既有缓存应用服务7→17已知活动、0扫描/0写入的证据保留，原人工metadata adapter为模拟，未将该证据冒充实际人类记录/API。
 
@@ -89,7 +89,7 @@ SQLite/foundation/cmd定向Go测试亦PASS。未启用opt-in时项目看板测�
 
 新测试 `tests/s1/project_activity_http_test.go` 复用正常SQLite仓库、真实application服务、HTTP/session中间件及真实loopback端口。已有批准临时SQLite连接设置query_only，不启动main或任何attention/native/discovery worker，配置无source的真实仓库，执行正常human bootstrap和一次缓存GET。响应实际人类notes/review/group/intent/archive/revision与各自SQLite记录逐项相同；查询前后发现JSON/人工记录/grants/jobs行完全一致。没有模拟metadata adapter、重复源采集或模型。所属HTTP listener在测试结束Shutdown完成。
 
-测试/产品源码与文档映射：0e55f14→da515b8仅增加并修复上述HTTP测试；da515b8→3b5a434仅W3最终报告/任务文档变化，运行代码和所有测试未变。因此build/4项浏览器复验沿用0e55精确产品代码，最终check与实际缓存HTTP沿用da515精确测试代码，不为文档合并重复运行。主控消息 `msg_17c41d57fb80` 已接受实际缓存HTTP17/71与原SQL RED，并要求消费最终W3报告后结算；个人预览升级的实例验收由root负责。
+测试/产品源码与文档映射：0e55f14→da515b8仅增加并修复上述HTTP测试；da515b8→99b7e8e仅W0/W3报告/任务文档变化，运行代码和所有测试未变。因此build/4项浏览器复验沿用0e55精确产品代码，最终check与实际缓存HTTP沿用da515精确测试代码，不为文档合并重复运行。主控消息 `msg_17c41d57fb80` 已接受实际缓存HTTP17/71与原SQL RED，`msg_b2b0b3a0f42b` 要求消费已结算W3最终报告后收口；个人预览升级的实例验收由root负责。
 
 ## 剩余限制与未执行操作
 
