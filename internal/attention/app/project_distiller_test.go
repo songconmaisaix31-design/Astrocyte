@@ -20,6 +20,16 @@ type scopedTestFactory struct {
 	denied    bool
 }
 
+func TestGlobalSelectedProcessorStatusDoesNotInventAvailability(t *testing.T) {
+	s, _, _ := fixture(t)
+	s.options.Distiller = nil
+	s.options.ProjectDistillers = &scopedTestFactory{t: t}
+	status, err := s.GetDistillerStatus(context.Background(), human)
+	if err != nil || status.Available || status.Processor != "selected-project-cli" || status.ConfigurationID != nil || status.Model != nil || status.RequiredAction != "select_permitted_project_cli" {
+		t.Fatal("registered factory invented selected project/config/native availability", status, err)
+	}
+}
+
 func (f *scopedTestFactory) Resolve(_ context.Context, p Principal, project, cli string) (Distiller, error) {
 	if p != human || project != "selected-project" || cli != "selected-cli" {
 		f.t.Fatal("factory did not preserve real caller selection")

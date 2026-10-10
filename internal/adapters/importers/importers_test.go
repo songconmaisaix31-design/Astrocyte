@@ -32,6 +32,25 @@ func TestInstalledSummarizeExport(t *testing.T) {
 	}
 }
 
+func TestPaperExportIdentityRetainsOfficialVersionAndOriginal(t *testing.T) {
+	for _, tc := range []struct{ kind, locator, expected string }{
+		{"paper", "https://arxiv.org/html/2504.16054v1", "arxiv:2504.16054"},
+		{"paper", "https://www.arxiv.org/pdf/2504.16054v2.pdf", "arxiv:2504.16054"},
+		{"paper", "https://export.arxiv.org/abs/hep-th/9901001v1", "arxiv:hep-th/9901001"},
+		{"video", "https://arxiv.org/html/2504.16054v1", "https://arxiv.org/html/2504.16054v1"},
+		{"paper", "https://example.org/html/2504.16054v1", "https://example.org/html/2504.16054v1"},
+		{"paper", "https://arxiv.org/html/not-a-paper", "https://arxiv.org/html/not-a-paper"},
+	} {
+		t.Run(tc.kind+tc.locator, func(t *testing.T) {
+			raw := fmt.Sprintf(`{"input":{"url":%q},"extracted":{"title":"contract-local export","content":"different extraction bytes"}}`, tc.locator)
+			source, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: tc.kind, SourceLocator: tc.locator, ExportText: raw})
+			if err != nil || source.SourceKey != tc.expected || source.SourceLocator != tc.locator || source.Provenance.Source != tc.locator || source.Provenance.Mode != "existing_json_export" || source.Provenance.Version != "0.21.8-format" || len(source.Attachments) != 1 || string(source.Attachments[0].Data) != raw {
+				t.Fatal("export identity, version or original provenance changed", source, err)
+			}
+		})
+	}
+}
+
 func TestReaderCanonicalDigestOriginalAndFileScope(t *testing.T) {
 	raw := `{"input":{"url":"https://www.youtube.com/watch?v=video&t=22"},"extracted":{"content":"original transcript","title":"real title","transcriptSegments":[{"startMs":22500,"text":"segment","endMs":25000}]},"summary":"actual summary"}`
 	r := NewReader(nil)
