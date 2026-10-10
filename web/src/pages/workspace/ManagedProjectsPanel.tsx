@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { components } from '../../api/schema';
 import { localProjectsApi } from '../../api/s1';
 import { attentionApi } from '../../api/client';
@@ -13,6 +13,7 @@ import { SelectField, TextField } from '../attention/FormControls';
 import { ProjectSettingsForm } from './ProjectSettingsForm';
 import { NativeProjectPanel } from './NativeProjectPanel';
 import { ProjectAgentAccess } from './ProjectAgentAccess';
+import { RegisteredProjectsPanel } from './RegisteredProjectsPanel';
 import { matchesQuery } from '../../utils/search';
 import styles from './LocalProjectsPanel.module.css';
 import formStyles from '../attention/AttentionPage.module.css';
@@ -27,6 +28,7 @@ export function ManagedProjectsPanel({ agents, query }: { agents: ReadApiState<c
   const [spaceID, setSpaceID] = useState('');
   const [spaceTitle, setSpaceTitle] = useState('');
   const [candidates, setCandidates] = useState<components['schemas']['LocalProjectCandidateV1'][] | null>(null);
+  const registration = useRef<HTMLDetailsElement>(null);
   const command = useCommand(projects.loading || projects.stale || !projects.data);
   const selected = projects.data?.items.find(project => project.id === selectedID);
   const visible = (projects.data?.items ?? []).filter(project => matchesQuery(query, [project.name, project.root]));
@@ -35,10 +37,11 @@ export function ManagedProjectsPanel({ agents, query }: { agents: ReadApiState<c
     <CollectionOverview title="项目总览" description="登记你允许接入的目录，按项目设置资料、目录和模型许可。" metrics={[
       { label: '已登记项目', value: projects.data ? projects.data.items.length : projects.loading ? '加载中' : '未知' },
       { label: '项目分组', value: '未提供' }, { label: '最近活动', value: '选中项目后查看实际会话' },
-    ]}><p className={styles.note}>填写具体目录后才发现子项目，结果由你逐项登记。个人项目根尚未填写；不会扫描整盘。</p><div className={styles.controls}><label>排序<select aria-label="项目排序" value={sort} onChange={event => setSort(event.target.value)}><option value="source">服务返回顺序</option><option value="name">项目名称</option><option value="activity" disabled>最近活动 · 未提供</option></select></label></div></CollectionOverview>
+    ]}><p className={styles.note}>已允许从 Orca 登记范围发现项目，候选由你逐项登记，也可手动填写具体目录。</p><div className={styles.controls}><label>排序<select aria-label="项目排序" value={sort} onChange={event => setSort(event.target.value)}><option value="source">服务返回顺序</option><option value="name">项目名称</option><option value="activity" disabled>最近活动 · 未提供</option></select></label></div></CollectionOverview>
     <button className="ac-button secondary compact" type="button" disabled={projects.loading} onClick={projects.retry}>重载登记项目</button>
     <QueryState state={projects} empty={() => !visible.length} emptyTitle={projects.data?.items.length ? '没有匹配的本地项目' : '暂无本地项目'}>{() => <ul className={styles.cards}>{visible.map(project => <li key={project.id} className={styles.card}><button className={styles.open} type="button" onClick={() => setSelectedID(project.id)}><h3>{project.name}</h3><span>查看项目与权限 →</span></button><p>来源目录</p><code className={styles.path}>{project.root}</code><p>模型客户端 · {project.settings.external_model_cli || '尚未许可'}</p><p>A 主动纳入资料 · 默认；B 目录 · {project.settings.allow_directory ? '已打开' : '关闭'}；C 引用展开 · {project.settings.expand_references ? '已打开' : '关闭'}</p></li>)}</ul>}</QueryState>
-    <details><summary>登记项目 / 发现子项目</summary><form className={formStyles.form} onSubmit={event => {
+    <RegisteredProjectsPanel query={query} registeredRoots={projects.data?.items.map(project => project.root) ?? []} onSelect={candidate => { setName(candidate.name); setRoot(candidate.root); setCandidates(null); if (registration.current) { registration.current.open = true; registration.current.scrollIntoView({ block: 'nearest' }); } }} />
+    <details ref={registration}><summary>登记项目 / 发现子项目</summary><form className={formStyles.form} onSubmit={event => {
       event.preventDefault(); const request = command.prepare({ expected_version: 1, name: name.trim(), root: root.trim(), space_id: spaceID });
       void command.run(() => localProjectsApi.registerProject(request.body, request.key), result => { setSelectedID(result.project.id); projects.retry(); }, '已登记所选项目；默认仅主动纳入资料，目录与引用展开关闭');
     }}><fieldset disabled={command.pending || projects.loading || projects.stale || !projects.data}><legend>手动输入允许目录</legend><TextField label="项目名称" value={name} onChange={setName} required /><TextField label="项目绝对目录" value={root} onChange={value => { setRoot(value); setCandidates(null); }} required hint="仅访问你明确填写的目录，不自动登记发现结果。" />
