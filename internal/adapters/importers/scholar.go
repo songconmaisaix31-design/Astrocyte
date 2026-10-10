@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -379,6 +380,31 @@ type crossrefWorkMessage struct {
 	ContainerTitle []string `json:"container-title"`
 }
 
+// jatsTagRE matches one XML/JATS element tag (opening, closing or self-closing),
+// with or without a namespace prefix, so Crossref's JATS abstract markup can be
+// reduced to its character text. It is deliberately simple: element tags in a
+// metadata abstract do not carry attribute values containing a raw ">".
+var jatsTagRE = regexp.MustCompile(`<[^>]+>`)
+
+// plainAbstract converts a provider abstract that may carry JATS/XML markup into
+// safe plain text. Element tags are stripped, character references and named
+// entities are decoded, and duplicated whitespace introduced by tag removal is
+// collapsed. The result is always plain text, so a caller renders it without
+// HTML parsing or dangerouslySetInnerHTML and never surfaces raw <jats:p>
+// markup in a summary.
+func plainAbstract(raw string) string {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return ""
+	}
+	if !strings.Contains(s, "<") {
+		return html.UnescapeString(s)
+	}
+	s = jatsTagRE.ReplaceAllString(s, " ")
+	s = html.UnescapeString(s)
+	return strings.Join(strings.Fields(s), " ")
+}
+
 func crossrefHit(msg crossrefWorkMessage) ScholarHit {
 	doi := normalizeDOIRaw(msg.DOI)
 	authors := []string{}
@@ -398,7 +424,7 @@ func crossrefHit(msg crossrefWorkMessage) ScholarHit {
 		year = msg.Published.DateParts[0][0]
 	}
 	venue := strings.TrimSpace(strings.Join(msg.ContainerTitle, " "))
-	return ScholarHit{Provider: string(ScholarCrossref), Title: title, Authors: authors, DOI: doi, Year: year, Venue: venue, Abstract: strings.TrimSpace(msg.Abstract), Locator: locator, SourceKey: doiKey(doi, locator)}
+	return ScholarHit{Provider: string(ScholarCrossref), Title: title, Authors: authors, DOI: doi, Year: year, Venue: venue, Abstract: plainAbstract(msg.Abstract), Locator: locator, SourceKey: doiKey(doi, locator)}
 }
 
 // europePMCInt accepts the mixed number/string year representation returned by

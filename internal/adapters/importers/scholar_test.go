@@ -51,6 +51,33 @@ func TestParseCrossref(t *testing.T) {
 	}
 }
 
+// TestCrossrefJATSAbstractPlainText is a real-abstract regression: Crossref
+// returns the abstract for 10.1371/journal.pdig.0000514 as JATS markup
+// (<jats:p>…</jats:p>) with an embedded &amp; entity. The reader must reduce
+// that to safe plain text so a summary never shows raw tags or entity escapes.
+func TestCrossrefJATSAbstractPlainText(t *testing.T) {
+	raw := []byte(`{"message":{"DOI":"10.1371/journal.pdig.0000514","title":["Applying AI in clinical practice"],"abstract":"<jats:p>Research on the applications of artificial intelligence (AI) tools in medicine has increased exponentially over the last few years but its implementation in clinical practice has not seen a commensurate increase with a lack of consensus on implementing and maintaining such tools. This systematic review aims to summarize frameworks focusing on procuring, implementing, monitoring, and evaluating AI tools in clinical practice. Common themes extracted included transparency, feasibility of operation within existing workflows and integrating into existing workflows. Among the four domains (Plan, Do, Study, Act) the most common domain was Plan (84%, n = 21), followed by Study (60%, n = 15), Do (52%, n = 13), &amp; Act (24%, n = 6).</jats:p>","URL":"https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514","published":{"date-parts":[[2023,5,30]]},"container-title":["PLOS Digital Health"]}}`)
+	hit, err := parseCrossrefWork(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hit.Abstract == "" {
+		t.Fatal("abstract unexpectedly empty")
+	}
+	if strings.Contains(hit.Abstract, "<jats:p>") || strings.Contains(hit.Abstract, "</jats:p>") {
+		t.Fatalf("JATS tags not stripped: %q", hit.Abstract)
+	}
+	if strings.Contains(hit.Abstract, "&amp;") {
+		t.Fatalf("entity not decoded: %q", hit.Abstract)
+	}
+	if !strings.Contains(hit.Abstract, "& Act (24%, n = 6)") {
+		t.Fatalf("decoded entity text missing: %q", hit.Abstract)
+	}
+	if !strings.HasPrefix(hit.Abstract, "Research on the applications") {
+		t.Fatalf("abstract text corrupted: %q", hit.Abstract)
+	}
+}
+
 func TestParseEuropePMC(t *testing.T) {
 	raw := []byte(`{"resultList":{"result":[{"id":"33334934","title":"A test paper","authorString":"Jumper J; Evans R","abstractText":"Abstract here.","doi":"10.1371/journal.pdig.0000514","pubYear":2023,"journalTitle":"PLOS Digital Health","pmcid":"PMC11135672","fullTextUrlList":{"fullTextUrl":[{"url":"https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11135672/pdf/"}]}}]}}`)
 	hits, err := parseEuropePMC(raw)
