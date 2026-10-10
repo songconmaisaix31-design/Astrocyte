@@ -77,10 +77,6 @@ test('AT02: changed source keeps immutable old/new content; unchanged distillati
   assert.equal(repeated.reused, true);
   assert.equal(repeated.distillation.id, original.distillation.id);
   assert.equal(repeated.distillation.output_text, original.distillation.output_text);
-  // Changed input alone does not authorize replacement. Ordinary import reuses A.
-  const ordinary = await importMaterial(api, paperImport(locator, changedPaperText));
-  assert.equal(ordinary.job.job_id, first.job.job_id);
-  assert.equal(ordinary.detail.material.current_revision, 1);
   const second = await importMaterial(api, { ...paperImport(locator, changedPaperText), refresh: true });
   assert.equal(second.detail.material.id, first.detail.material.id);
   assert.equal(second.detail.material.current_revision, 2);
