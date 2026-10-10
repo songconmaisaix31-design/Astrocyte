@@ -32,7 +32,8 @@ await copyFile(resolve(base, 'THIRD_PARTY.md'), resolve(output, 'THIRD_PARTY.md'
 await writeFile(resolve(output, 'README.txt'),
   'Astrocyte Paper (MV3). Load this directory as an unpacked extension. ' +
   'Extraction runs only on the human-clicked current page (activeTab). ' +
-  'The same-origin application import transport is owned by W0 and is not shipped here; ' +
-  'the popup copies a metadata/fulltext snapshot to the clipboard for human review. ' +
+  'Copy the snapshot JSON from the popup, paste it into the Astrocyte Attention ' +
+  'import form for human review and confirm; the server ingests it offline via ' +
+  'adapter=paper_snapshot (no network, no model). ' +
   'No provider credentials, automatic tab reading or daemon.\n');
 console.log(`Built loadable MV3 extension: ${output}`);

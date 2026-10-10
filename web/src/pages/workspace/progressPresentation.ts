@@ -73,3 +73,18 @@ export function progressKindLabel(kind: string): string {
     default: return kind;
   }
 }
+
+/** Maximum number of human-entered relative paths accepted for one inference. */
+export const PROGRESS_FILES_LIMIT = 8;
+
+/**
+ * Parse a human-entered list of project-relative file paths (one per line) into
+ * a raw array. Empty lines are ignored and lines are NOT silently truncated: an
+ * over-limit entry is surfaced by the caller (via PROGRESS_FILES_LIMIT) so the
+ * human can correct it, rather than dropping a chosen path. The backend
+ * re-validates every path against the approved project directory, so no client
+ * parsing can widen that permission.
+ */
+export function parseProgressFiles(text: string): string[] {
+  return text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+}
