@@ -143,6 +143,9 @@ func TestPublicGitHubSyncIsAnonymousMetadataOnlyAndRejectsPrivateOrRedirect(t *t
 	if err != nil || len(items) != 1 || items[0].GitHubID != 123 || calls != 1 {
 		t.Fatalf("metadata: %v %v calls=%d", items, err, calls)
 	}
+	if items[0].MetadataSource != "github_rest" || len(items[0].UnknownFields) != 7 {
+		t.Fatal("omitted REST statistics/timestamps invented", items[0])
+	}
 	if _, err = os.Stat(base); !os.IsNotExist(err) {
 		t.Fatal("metadata created code directory")
 	}

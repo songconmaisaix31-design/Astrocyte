@@ -152,7 +152,15 @@ func TestCLIProbeDeniesOtherActionsAndBoundsOwnedProcess(t *testing.T) {
 			t.Fatalf("allowed shell path: %q", bad)
 		}
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	// This success probe starts the large Go test executable, not an installed
+	// CLI. Windows cold image startup measured 7.8s before runtime initialization
+	// (the warm helper takes <0.3s). Give that synthetic startup a bounded budget;
+	// production's 5s probes and the 150ms cancellation/3s cleanup below stay fixed.
+	startupBudget := 3 * time.Second
+	if runtime.GOOS == "windows" {
+		startupBudget = 10 * time.Second
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), startupBudget)
 	defer cancel()
 	output, err := runCLIProbe(ctx, path, "--version")
 	if err != nil || !strings.Contains(output, "1.2.3") {
