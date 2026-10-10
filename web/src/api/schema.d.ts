@@ -3624,7 +3624,15 @@ export interface components {
             session_id: string;
             /** Format: date-time */
             observed_at: string | null;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Native header creation time; never current activity or progress.
+             */
+            created_at: string | null;
+            /**
+             * Format: date-time
+             * @description An actual latest activity observation, otherwise null. Native creation headers do not establish activity.
+             */
             activity_at: string | null;
         };
         ProjectSourceObservationV1: {
@@ -3679,9 +3687,13 @@ export interface components {
             schema_version: 1;
             request_id: string;
             expected_version: number;
+            /** @description Human text, at most 65536 UTF-8 bytes. */
             notes: string;
+            /** @description Human text, at most 65536 UTF-8 bytes. */
             review: string;
+            /** @description Human group label, at most 200 UTF-8 bytes. */
             group: string;
+            /** @description Human intent text, at most 4096 UTF-8 bytes. */
             intent: string;
             archived: boolean;
             /** @description Expected human metadata revision; zero means no prior annotation. */

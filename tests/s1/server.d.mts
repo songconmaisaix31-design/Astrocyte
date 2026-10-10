@@ -10,6 +10,9 @@ export interface S1Server {
 }
 export function startS1Server(options?: {
   browser?: boolean;
+  /** Assigned isolated acceptance ports; personal 5173/8787 are rejected. */
+  apiPort?: number;
+  webPort?: number;
   /** Exact previously created helper directory and controller-approved owned root. No discovery. Reused stores default to preservation. */
   reuseOwnedTemporary?: { path: string; ownedRoot: string };
   env?: Record<string, string> | ((paths: { dataDir: string; temporary: string }) => Record<string, string>);

@@ -26,6 +26,14 @@ test('actual project board: human metadata survives refresh and cold restart wit
     assert.ok(snapshot.observed_at, 'Actual bounded startup discovery must finish');
     assert.ok(snapshot.board?.length, 'Actual registered projects must exist; empty is not a successful board acceptance');
     assert.ok(snapshot.sources?.length, 'CLI source coverage must be explicit');
+    for (const project of snapshot.board) {
+      for (const contributor of project.contributors) {
+        assert.ok(Object.hasOwn(contributor, 'created_at'), 'Creation time must be distinct from activity');
+        if (contributor.source === 'native_session_header' || contributor.source === 'native_project_metadata') {
+          assert.equal(contributor.activity_at, null, 'Native creation headers cannot claim latest activity');
+        }
+      }
+    }
     const selected = snapshot.board.find(project => project.roots.length > 0);
     assert.ok(selected, 'At least one actual registered root must be observed');
     assert.equal(selected.human.revision, 0);

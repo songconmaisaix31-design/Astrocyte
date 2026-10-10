@@ -17,7 +17,15 @@
 
 `go test -mod=readonly ./internal/adapters/httpapi ./internal/workspace/domain` PASS。运输定向验证无会话、过期会话、缺CSRF、Agent bearer、外站Origin以及伪造时间/身份/进度/权限不会进入领域；这仅证明运输边界，不替代实际存储。
 
-进行中：`tests/s1/project-board.test.mjs` 以显式opt-in运行本机真实登记来源、真实API、临时SQLite、刷新/冷启动与CAS，不植入模拟看板资料。领域/存储仍等待W2交付；最后等待W1/W2/W3精确SOURCE/REPORT普通合并及check/build/browser。
+已普通合入W2中间SOURCE `88b2bcc4b77050b50a56afd068767ceac82c5fa4`，当前业务组装 `25949b3639e8229fb9ff0b94308f75b4837417ef`。此时W2还在修正原生header创建时间与最近活动的区别，未将中间版看成最终时间语义通过。
+
+`ASTROCYTE_TEST_PROJECT_BOARD=1 node --test tests/s1/project-board.test.mjs` 首轮 **1 PASS / 0 SKIP / 31.88秒 / exit0**。真实Orca登记54个观察目录聚合14组，partial与16个原来源限制保留；Codex header来源partial，其余来源unknown明确保留。真实API人工备注/复盘/分组/意图/归档保存、陈旧CAS409、非法身份/权限/时间拒绝、刷新保留、同SQLite的所属API进程冷重启及旧会话403均通过；local project列表及grant数量未变。没有模拟看板种子、模型/媒体调用或个人Chrome。原店保留 `%LOCALAPPDATA%/Temp/astrocyte-s1-bLFn1Q`，命令原日志 `%LOCALAPPDATA%/Temp/astrocyte-w0-project-board-first-20261010.log`，所属进程已由helper退出。
+
+当前组装首轮 `pnpm check` **PASS / exit0**：Go test/vet/mod、架构与依赖、进程停止、237契约例/生成漂移、14项真实HTTP contract_local测试、TS/lint、58前端测试及diff。原日志 `%LOCALAPPDATA%/Temp/astrocyte-w0-paper-check-first-20261010.log`。测试中合成Attention资料属于contract_local，不将这些例子混算真实论文/视频。
+
+SQLite/foundation/cmd定向Go测试亦PASS。未启用opt-in时项目看板测试为 **0 PASS / 1 SKIP**，这只是默认关闭结果，不替代上述实际运行。
+
+`startS1Server` 增加可选apiPort/webPort供W3使用主控分配18787/15173；默认随机保持，5173/8787与占用端口拒绝，不停止其他owner服务。最后等待W1/W2/W3最新精确SOURCE/REPORT普通合并及最终check/build/browser；本轮尚未完整完成。
 
 ## 插件路线研究（选项，未决定）
 
@@ -25,4 +33,8 @@
 
 现有服务只接受HTTP(S)同源/明确允许Origin与Strict人类cookie+CSRF，chrome-extension直接跨源请求不属于该身份。可选路线为应用同源人工审阅后提交，或主控确认后的资源范围配对+当前权限复核/撤销；未选择或写入任何配对、宽CORS接口。[summarize公开上游](https://github.com/steipete/summarize)有可选daemon，当前已锁0.25.1不因上游main变化升级或安装daemon；W1研究对应锁定源码/许可。
 
+主控消息 `msg_aa4e0d8a97be` 已确认现有同源人类会话/CSRF作为基本审阅handoff的技术身份，不需要新增配对、宽CORS或daemon；这只批准运输准备。插件标签访问、Agent批量/自动读取产品选择仍pending，不据此启用读取或入库。
+
 首失败、UNKNOWN与未执行项将保留在本报告，不以局部修后通过替代初始记录或整体完成。
+
+新增首RED：W3在本轮真实看板浏览器规格的TypeScript编译发现 `startS1Server` 的 `.d.mts` 未同步新apiPort/webPort选项（主控转交消息 `msg_a18fd833fcd7`）。这是W0遗漏，保留首失败；已补声明，后续W3类型/浏览器验证是独立复验，不改写首RED。没有用cast或降低类型检查绕过。
