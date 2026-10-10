@@ -12,7 +12,9 @@ const graph = new Map(result.stdout.trim().split(/\r?\n/).filter(Boolean).map(li
 }));
 if (!graph.size) throw new Error('No Go packages; backend owner work is pending');
 
-const io = /^(database(?:\/|$)|net(?:\/|$)|os(?:\/|$)|io(?:\/|$)|bufio$|syscall$|log(?:\/|$)|modernc\.org\/|golang\.org\/x\/sys)/;
+// net/url parses value objects and performs no network I/O. Keep net itself and
+// every other net/* package (including net/http) outside Domain/app.
+const io = /^(database(?:\/|$)|net(?:\/(?!url$)|$)|os(?:\/|$)|io(?:\/|$)|bufio$|syscall$|log(?:\/|$)|modernc\.org\/|golang\.org\/x\/sys)/;
 const issues = [];
 for (const [name, imports] of graph) {
   const relative = name.startsWith(moduleName + '/') ? name.slice(moduleName.length + 1) : name;

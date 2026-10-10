@@ -166,7 +166,7 @@ func run(logger *slog.Logger) error {
 		Materials:     attention,
 		Opportunities: attention,
 		Projects:      workspaceapp.NewProjectService(),
-		LocalAgents:   workspaceapp.NewLocalAgentService(inventory),
+		LocalAgents:   workspaceapp.NewLocalAgentService(inventory, registry),
 		Proposals:     workspaceapp.NewProposalService(),
 		Sessions:      workspaceapp.NewSessionService(),
 		Missions:      swarmapp.NewMissionService(),
