@@ -77,10 +77,10 @@ func TestActualCachedProjectActivityHTTP(t *testing.T) {
 		return values
 	}
 	queries := []string{
-		"SELECT * FROM local_project_discovery ORDER BY id",
-		"SELECT * FROM local_project_metadata ORDER BY project_id",
-		"SELECT * FROM local_agent_grants ORDER BY id",
-		"SELECT * FROM attention_jobs ORDER BY id",
+		"SELECT * FROM local_project_discovery ORDER BY 1",
+		"SELECT * FROM local_project_metadata ORDER BY 1",
+		"SELECT * FROM local_agent_grants ORDER BY 1",
+		"SELECT * FROM attention_jobs ORDER BY 1",
 	}
 	before := make([][][]any, len(queries))
 	for i, query := range queries {
