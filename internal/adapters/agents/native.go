@@ -69,7 +69,11 @@ func (n *Native) Discover(ctx context.Context, p domain.LocalProject) ([]domain.
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	return nil, nativeError(apierrors.UnsupportedCapability, "external native history discovery requires an explicitly registered history root")
+	items, err := discoverHistory(ctx, n.id, p)
+	if err == nil {
+		n.observed("discover")
+	}
+	return items, err
 }
 
 func (n *Native) get(s domain.NativeSession) (*nativeProcess, error) {
@@ -83,6 +87,13 @@ func (n *Native) get(s domain.NativeSession) (*nativeProcess, error) {
 }
 
 func (n *Native) ReadContext(ctx context.Context, s domain.NativeSession) ([]domain.NativeEvent, error) {
+	if s.Ownership == "external_observed" {
+		events, err := readHistory(ctx, s)
+		if err == nil {
+			n.observed("read_context")
+		}
+		return events, err
+	}
 	p, err := n.get(s)
 	if err != nil {
 		return nil, err
@@ -154,6 +165,7 @@ func (n *Native) Resume(ctx context.Context, r domain.NativeRequest) (domain.Nat
 
 func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool) (domain.NativeSession, error) {
 	s := r.Session
+	s.Ownership = "owned"
 	s.ID = r.SessionID
 	s.ProjectID = r.Project.ID
 	s.CLI = n.id

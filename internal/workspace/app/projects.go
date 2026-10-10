@@ -136,6 +136,14 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 			return p, err
 		}
 	}
+	for cli, root := range cmd.Settings.HistoryRoots {
+		if _, err := s.registry.Adapter(cli); err != nil {
+			return p, err
+		}
+		if _, err := s.files.CanonicalRoot(root); err != nil {
+			return p, err
+		}
+	}
 	if cmd.Settings.ExternalModelCLI != "" {
 		if _, err := s.registry.Adapter(cmd.Settings.ExternalModelCLI); err != nil {
 			return p, err
@@ -470,6 +478,9 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 	if err != nil {
 		return session, err
 	}
+	if session.Ownership != "owned" {
+		return session, projectError(apierrors.UnsupportedCapability, "external observed session requires a verified native occupancy handoff")
+	}
 	if cmd.CLI != "" && cmd.CLI != session.CLI {
 		return session, projectError(apierrors.ScopeDenied, "resume cannot switch CLI")
 	}
@@ -534,6 +545,9 @@ func (s *localProjectService) SendNativeMessage(ctx context.Context, c domain.Ca
 	return obs, saveErr
 }
 func (s *localProjectService) stopOwned(ctx context.Context, session domain.NativeSession) error {
+	if session.Ownership != "owned" {
+		return projectError(apierrors.ScopeDenied, "only a controller-owned native process may be stopped")
+	}
 	a, err := s.registry.Adapter(session.CLI)
 	if err != nil {
 		return err
@@ -551,6 +565,38 @@ func (s *localProjectService) stopOwned(ctx context.Context, session domain.Nati
 		return saveErr
 	}
 	return err
+}
+
+func (s *localProjectService) DiscoverNativeSessions(ctx context.Context, c domain.Caller, id, cli string) ([]domain.NativeSession, error) {
+	p, err := s.authorize(ctx, c, id, "discover")
+	if err != nil {
+		return nil, err
+	}
+	a, err := s.registry.Adapter(cli)
+	if err != nil {
+		return nil, err
+	}
+	items, err := a.Discover(ctx, p)
+	if err != nil {
+		return nil, err
+	}
+	for i := range items {
+		items[i].ContextPacket = domain.ContextPacket{SchemaVersion: 1, ProjectID: id, SettingsRevision: p.Settings.Revision, Mode: "observed_history"}
+		if err := s.repo.SaveSession(ctx, items[i]); err != nil {
+			return nil, err
+		}
+	}
+	return items, nil
+}
+func (s *localProjectService) ReadNativeContext(ctx context.Context, c domain.Caller, projectID, sessionID string) ([]domain.NativeEvent, error) {
+	p, session, a, err := s.session(ctx, c, projectID, sessionID, "read_context")
+	if err != nil {
+		return nil, err
+	}
+	if session.Ownership == "external_observed" && (p.Settings.HistoryRoots[session.CLI] == "" || p.Settings.Revision != session.ContextPacket.SettingsRevision) {
+		return nil, projectError(apierrors.ApprovalRevoked, "native history scope changed; rediscover under current permissions")
+	}
+	return a.ReadContext(ctx, session)
 }
 func (s *localProjectService) StopNativeSession(ctx context.Context, c domain.Caller, projectID, sessionID string) (domain.NativeObservation, error) {
 	_, session, _, err := s.session(ctx, c, projectID, sessionID, "stop")

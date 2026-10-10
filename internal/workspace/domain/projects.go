@@ -11,14 +11,15 @@ type Caller struct {
 }
 
 type ProjectSettings struct {
-	Revision          int      `json:"revision"`
-	AllowDirectory    bool     `json:"allow_directory"`
-	AllowedSubdirs    []string `json:"allowed_subdirs"`
-	ExpandReferences  bool     `json:"expand_references"`
-	AllowedActions    []string `json:"allowed_actions"`
-	AllowedTools      []string `json:"allowed_tools"`
-	ExternalModelCLI  string   `json:"external_model_cli"`
-	AllowAgentControl bool     `json:"allow_agent_control"`
+	HistoryRoots      map[string]string `json:"history_roots"`
+	Revision          int               `json:"revision"`
+	AllowDirectory    bool              `json:"allow_directory"`
+	AllowedSubdirs    []string          `json:"allowed_subdirs"`
+	ExpandReferences  bool              `json:"expand_references"`
+	AllowedActions    []string          `json:"allowed_actions"`
+	AllowedTools      []string          `json:"allowed_tools"`
+	ExternalModelCLI  string            `json:"external_model_cli"`
+	AllowAgentControl bool              `json:"allow_agent_control"`
 }
 
 type LocalProject struct {
@@ -102,6 +103,8 @@ type NativeCommand struct {
 }
 
 type NativeSession struct {
+	Ownership        string        `json:"ownership"`
+	HistoryPath      string        `json:"-"`
 	LastOperationID  string        `json:"last_operation_id"`
 	PendingOperation string        `json:"pending_operation"`
 	ID               string        `json:"id"`
