@@ -1,5 +1,7 @@
 # S1 论文、CLI、进度与记忆收尾
 
+2026-10-11 恢复：Orca runtime 已变为 `90510c9d-1184-4e26-8291-3b372b161199`，root 新终端 `term_ab71d476-33a6-42ec-b5dd-5bb9ac628055` 已重新绑定原 Run，不建立平行 Run。原 W1 SOURCE `11791ce` 已发布（论文检索/HTML/可构建 MV3），原 W2 SOURCE `90c18d4` / REPORT `f1ace50` 仅部分成果（进度域与工具规划），都不表示整体完成。W3 重试于 23:25 异常退出 code1073807364，已提交 UI SOURCE `add30be` / REPORT `97090d5`，另有插件复核未提交改动保留；W0 runtime恢复后 abandoned/terminal_missing，未提交契约与迁移013保留。恢复仍按原四写域：W0 完成真实接口与最终普通集成；W1 补公共 PDF 提取和实际插件验证；W2 修进度错误/结果恢复并验证 OpenCode 子进程配置隔离与原生回路；W3 对齐实际 DTO 完成插件复核、真实搜索/批选/进度浏览器验收。CLI全覆盖、记忆可见范围仍待用户，不据“继续”代选。已安装/源码接口/本地测试不等于原生接入与真实端到端。
+
 23:03 W3 首次 OpenCode 在读取计划后退出，无业务改动，未结算完成。执行主机核验其专属 pwsh 59940 启动目录为 UI 工作树且没有子 OpenCode，原终端只读 `$PID` 返回 59940 和 PowerShell 提示符；依据这一实际退出事实停止旧 Dispatch `ctx_15e81ca1f271`，同 Task/Worktree/Branch 用 OpenCode 重试为 `ctx_cc2d02cac1ac`，新终端 `term_488b1577-e950-4f29-a5d0-948262c849eb`。旧失败保留；没有并行第二编辑者，其他三轨未停止。新 Worker 已实际读取任务，TUI 为 DeepSeek V4 Pro。
 
 22:42 四轨已在原工作树启动新Orca Run `run_8c1696bb815a`：W0 Task task_3097e734e4d0 / Dispatch ctx_5cc390be9fb4；W1 task_ff677991837d / ctx_b97954c9d788；W2 task_11167b05140a / ctx_fda75109968c；W3 task_88f06e405600 / ctx_15e81ca1f271。launch.effective.agent全部opencode，模型参数未覆盖；已从实际TUI观察DeepSeek V4 Pro/DeepSeek，turn-start自动协议unsupported但terminal显示活动，不据缺少协议证明重发输入。原本机个人preview73199保持，CLI完整覆盖和记忆范围两项新问题待答。
