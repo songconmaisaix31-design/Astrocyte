@@ -48,7 +48,7 @@ function JobRow({ job, onChanged, onMaterial, disabled }: { job: Job; onChanged:
   const presentation = jobPresentation(job, now);
   const { active, retryable, unknown } = presentation;
   return <li>
-    <div className={styles.itemHeader}><strong>{job.kind === 'import' ? '正文导入' : job.kind === 'distillation' ? '资料整理' : job.kind} · {job.job_id}</strong><StatusBadge value={unknown || job.status === 'failed' ? 'unknown' : job.status} label={presentation.label} /></div>
+    <div className={styles.itemHeader}><strong>{job.kind === 'import' ? '正文导入' : job.kind === 'distillation' ? '资料整理' : job.kind === 'source_sync' ? '标题清单同步' : job.kind === 'source_recommendation' ? '标题建议' : '资料处理'} · {job.job_id}</strong><StatusBadge value={unknown || job.status === 'failed' ? 'unknown' : job.status} label={presentation.label} /></div>
     {job.kind === 'import' && job.status === 'succeeded' && !unknown && <p className={styles.note}>已完成导入；模型整理请查看资料详情中的独立记录。</p>}
     <p className={styles.note}>尝试 {job.attempts}/{job.max_attempts} · 更新 {formatDateTime(job.updated_at)} · 截止 {formatDateTime(job.deadline_at)}</p>
     {presentation.message && <p role="status">{presentation.message}</p>}

@@ -3263,7 +3263,10 @@ export interface components {
             mode: string;
             materials: components["schemas"]["LocalContextMaterialV1"][];
             files: components["schemas"]["LocalContextFileV1"][];
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Time the controller captured this permission scope packet. In observed_history mode this is not a native historical message or session timestamp.
+             */
             created_at: string;
         };
         NativeSessionV1: {
@@ -3280,13 +3283,19 @@ export interface components {
             stop_confirmed: boolean;
             context_packet: components["schemas"]["LocalContextPacketV1"];
             source_session_id: string;
-            /** Format: date-time */
-            updated_at: string;
+            /**
+             * Format: date-time
+             * @description Native session observation time; null when historical time is unknown. Context packet creation time is not native history evidence.
+             */
+            updated_at: string | null;
             limitations: string[];
             last_operation_id: string;
             pending_operation: string;
-            /** @enum {string} */
-            ownership: "owned" | "external_observed";
+            /**
+             * @description Unstarted only when launch was confirmed not to have created a process; never a substitute for unknown ownership.
+             * @enum {string}
+             */
+            ownership: "owned" | "external_observed" | "unstarted";
         };
         NativeSessionResultV1: {
             /** @constant */
@@ -3382,7 +3391,8 @@ export interface components {
         };
         NativeOperationV1: {
             action: string;
-            status: string;
+            /** @enum {string} */
+            status: "pending" | "accepted" | "failed" | "unknown";
             /** Format: date-time */
             created_at: string;
             /** Format: date-time */

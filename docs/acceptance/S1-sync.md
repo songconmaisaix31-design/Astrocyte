@@ -2,6 +2,8 @@
 
 ## 2026-10-10 用户决定后续作
 
+真实项目 SOURCE `9009259b8121849a660f9738b532b7a8e9b4fb96` 首轮 1 FAIL：登记200后 history_roots:null 引发前端崩溃，原 trace 保留。修复 SOURCE `711a3cde30830496d7b0cc832f45068e798db8da`，`pnpm --dir web exec playwright test s1-projects.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-project-null-fix` 为 1 PASS，25.9秒、exit0：手动根登记、A默认、B/C独立、唯一获准README真实读取、SQLite比对、API重启保持设置均通过，同一状态1280/1920截图保留。无原生/model/media调用，个人根未定；退出后所属端口/进程已关闭并释放槽。此结果仅覆盖项目权限流程，非账号同步、原生接续或完整AT01–04。
+
 W3 恢复阶段源码 `b33a726755863404ca897dfbf59440d4e0c2e3f2` 已 push，普通合入 ca7ba6e。队列/提交错误有中文下一步、有限恢复入口及展开详情；unknown 外部结果不自动重发、不显示完成。候选门槛提示以 W1 的固定版本主题关联或待查问题规则为准。
 
 类型、lint、49项单测、build、diff检查 PASS。本轮浏览器、真实非空来源人工选取、项目注册/原生操作及完整 AT01–04/重启尚未执行；等待 W0 generated clients 与主控测试槽，不以公共阶段通过推导完整 S1。以下旧表只记录前轮历史，历史 pending 由 QUESTIONS 顶部最新用户回答覆盖。

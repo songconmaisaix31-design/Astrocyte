@@ -12,7 +12,7 @@ export function QueryState<T>({ state, children, empty, emptyTitle = '暂无记�
   }
   return <>
     {state.loading && <p role="status">正在刷新…</p>}
-    {state.stale && <div role="alert">数据可能已过期：{state.error}<button className="ac-button secondary compact" type="button" onClick={state.retry}>重试加载</button></div>}
+    {state.stale && <div role="alert">数据可能已过期：暂未取得新记录，保留上次已加载内容。<button className="ac-button secondary compact" type="button" onClick={state.retry}>重试加载</button><details><summary>加载详情</summary>{state.error}</details></div>}
     {empty?.(state.data) ? <EmptyState title={emptyTitle} /> : children(state.data)}
   </>;
 }

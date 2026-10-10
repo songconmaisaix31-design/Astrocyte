@@ -28,6 +28,9 @@ var discoveredHistory = struct {
 // Only explicit human-registered history roots are walked. Read at most a 64KiB
 // header before checking cwd; content of unmatched projects is never decoded.
 func discoverHistory(ctx context.Context, cli string, p domain.LocalProject) ([]domain.NativeSession, error) {
+	if cli != "codex" && cli != "pi" {
+		return nil, nativeError(apierrors.UnsupportedCapability, "this CLI history header scope protocol has not been verified")
+	}
 	chosen := p.Settings.HistoryRoots[cli]
 	if chosen == "" {
 		return nil, nativeError(apierrors.ApprovalRequired, "register this CLI history root explicitly before discovery")

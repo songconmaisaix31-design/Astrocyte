@@ -15,7 +15,7 @@ export function sourceRef(material: Material, revision = material.current_revisi
 }
 export const sourceIdentity = (ref: SourceRef) => `${ref.material_id}@${ref.revision}:${ref.locator}:${ref.span ?? ''}`;
 export function provenanceLabel(p: Provenance) {
-  const labels: Record<string, string> = { manual: '人工整理', arxiv: 'arXiv 导入', official_atom_and_pdf: 'arXiv 官方元数据与 PDF', summarize_export: 'summarize 既有导出', summarize_extract: 'summarize 提取', original_export: '既有原文导出', summary_only: '仅摘要导出' };
+  const labels: Record<string, string> = { manual: '人工整理', arxiv: 'arXiv 导入', official_atom_and_pdf: 'arXiv 官方元数据与 PDF', summarize_export: 'summarize 既有导出', summarize_extract: 'summarize 提取', original_export: '既有原文导出', summary_only: '仅摘要导出', selected_project_fixed_text: '获准固定版本的模型整理', selected_public_metadata_only: '公开标题与简介的模型建议' };
   return labels[p.mode] ?? (p.mode || '处理方式未提供');
 }
 export const unknownDimensions = (): Dimensions => ({ goal_progress: { value: null, reason: 'unknown' }, current_interest: { value: null, reason: 'unknown' }, project_improvement: { value: null, reason: 'unknown' }, originality: { value: null, reason: 'unknown' } });

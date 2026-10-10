@@ -34,8 +34,17 @@ type nativeProcess struct {
 	status, turnID        string
 	nativeID, sessionPath string
 	model, provider       string
+	modelObservedAt       time.Time
+	cli                   string
 	next                  int
 }
+
+// An ownership attachment failure happens after a process may have started.
+// It must never be classified as a proven unstarted launch.
+type nativeOwnershipError struct{ cause error }
+
+func (e *nativeOwnershipError) Error() string { return "native ownership attachment failed" }
+func (e *nativeOwnershipError) Unwrap() error { return e.cause }
 
 func nativeError(code apierrors.Code, message string) error {
 	return &apierrors.ServiceError{Code: code, Message: message, RequiredAction: "check_native_session_and_project_settings"}
@@ -62,6 +71,12 @@ func installedCommand(id string, args []string) (*exec.Cmd, error) {
 			return nil, nativeError(apierrors.UnsupportedCapability, "installed wrapper has no verified native entrypoint")
 		}
 		script := filepath.Join(filepath.Dir(entry), "node_modules", filepath.FromSlash(suffix))
+		if id == "claude" {
+			native := filepath.Join(filepath.Dir(entry), "node_modules", "@anthropic-ai", "claude-code", "bin", "claude.exe")
+			if info, err := os.Stat(native); err == nil && info.Mode().IsRegular() {
+				return exec.Command(native, args...), nil
+			}
+		}
 		info, err := os.Stat(script)
 		if err != nil || !info.Mode().IsRegular() {
 			return nil, nativeError(apierrors.ProviderUnavailable, "verified installed native entrypoint is unavailable")
@@ -94,7 +109,7 @@ func launchNative(id string, args []string, root string, lifetime time.Duration)
 	}
 	cmd.Stderr = io.Discard // no raw authentication/provider payload enters API logs
 	ctx, cancel := context.WithTimeout(context.Background(), lifetime)
-	p := &nativeProcess{cmd: cmd, stdin: in, done: make(chan struct{}), cancel: cancel, pending: map[string]chan map[string]json.RawMessage{}, events: []domain.NativeEvent{}, status: "idle"}
+	p := &nativeProcess{cli: id, cmd: cmd, stdin: in, done: make(chan struct{}), cancel: cancel, pending: map[string]chan map[string]json.RawMessage{}, events: []domain.NativeEvent{}, status: "idle"}
 	cleanup, err := startOwnedNative(cmd)
 	if err != nil {
 		cancel()
@@ -141,11 +156,18 @@ func (p *nativeProcess) write(v any) error {
 	}
 	p.writeMu.Lock()
 	defer p.writeMu.Unlock()
-	_, err = p.stdin.Write(append(data, '\n'))
+	data = append(data, '\n')
+	n, err := p.stdin.Write(data)
+	if err == nil && n != len(data) {
+		err = io.ErrShortWrite
+	}
 	return err
 }
 
 func (p *nativeProcess) call(ctx context.Context, method string, params map[string]any, pi bool) (map[string]json.RawMessage, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	p.mu.Lock()
@@ -161,6 +183,10 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 		for k, v := range params {
 			request[k] = v
 		}
+	}
+	if p.cli == "claude" {
+		params["subtype"] = method
+		request = map[string]any{"type": "control_request", "request_id": id, "request": params}
 	}
 	if err := p.write(request); err != nil {
 		return nil, nativeError(apierrors.DeliveryUnknown, "native request delivery is unknown")
@@ -206,6 +232,24 @@ func (p *nativeProcess) read(out io.Reader) {
 		var method, typ string
 		_ = json.Unmarshal(record["method"], &method)
 		_ = json.Unmarshal(record["type"], &typ)
+		if typ == "control_response" {
+			var response map[string]json.RawMessage
+			_ = json.Unmarshal(record["response"], &response)
+			_ = json.Unmarshal(response["request_id"], &id)
+			var subtype string
+			_ = json.Unmarshal(response["subtype"], &subtype)
+			if subtype == "error" {
+				record["error"] = json.RawMessage(`{"code":-32600}`)
+			} else {
+				record["result"] = response["response"]
+			}
+		}
+		if typ == "control_request" {
+			var requestID string
+			_ = json.Unmarshal(record["request_id"], &requestID)
+			_ = p.write(map[string]any{"type": "control_response", "response": map[string]any{"subtype": "success", "request_id": requestID, "response": map[string]any{"behavior": "deny", "message": "controller tool policy denies this request"}}})
+			continue
+		}
 		// Server requests are denied. Document content cannot approve tools or
 		// grant its own permissions. We do not forward native approval to agents.
 		if method != "" && id != "" {
@@ -267,6 +311,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		p.addEvent("turn_started", "")
 	case "turn/completed":
 		p.status = params.Turn.Status
+		p.modelObservedAt = time.Now()
 		p.addEvent("turn_"+params.Turn.Status, "")
 	}
 	switch typ {
@@ -276,6 +321,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	case "agent_settled":
 		if p.status != "failed" {
 			p.status = "completed"
+			p.modelObservedAt = time.Now()
 		}
 		p.addEvent("turn_completed", "")
 	case "message_update":
@@ -289,13 +335,59 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		}
 	case "message_end":
 		var m struct {
-			Role       string `json:"role"`
-			StopReason string `json:"stopReason"`
+			Role         string `json:"role"`
+			StopReason   string `json:"stopReason"`
+			ErrorMessage string `json:"errorMessage"`
 		}
 		_ = json.Unmarshal(r["message"], &m)
 		if m.Role == "assistant" && (m.StopReason == "error" || m.StopReason == "aborted") {
 			p.status = "failed"
 			p.addEvent("turn_failed", "")
+			p.addEvent("provider_failure", protocolReason(m.ErrorMessage))
+			slog.Warn("native model failed", "cli", p.cli, "model", p.model, "provider", p.provider, "reason", protocolReason(m.ErrorMessage))
+		}
+	case "system":
+		var subtype, sessionID, model string
+		_ = json.Unmarshal(r["subtype"], &subtype)
+		_ = json.Unmarshal(r["session_id"], &sessionID)
+		_ = json.Unmarshal(r["model"], &model)
+		if subtype == "init" {
+			if p.nativeID != "" && sessionID != p.nativeID {
+				p.status = "blocked"
+				go func() { _ = p.cmd.Cancel() }()
+				return
+			}
+			p.nativeID = sessionID
+			p.model = model
+			p.provider = "configured_cli_transport"
+			p.modelObservedAt = time.Now()
+			p.addEvent("native_session_initialized", "")
+		}
+	case "assistant":
+		var message struct {
+			Content []struct {
+				Type string `json:"type"`
+				Text string `json:"text"`
+			} `json:"content"`
+		}
+		_ = json.Unmarshal(r["message"], &message)
+		for _, part := range message.Content {
+			if part.Type == "text" {
+				p.addEvent("text", part.Text)
+			}
+		}
+	case "result":
+		var subtype string
+		var isError bool
+		_ = json.Unmarshal(r["subtype"], &subtype)
+		_ = json.Unmarshal(r["is_error"], &isError)
+		if isError || subtype != "success" {
+			p.status = "failed"
+			p.addEvent("turn_failed", "")
+		} else {
+			p.status = "completed"
+			p.modelObservedAt = time.Now()
+			p.addEvent("turn_completed", "")
 		}
 	}
 }
@@ -339,7 +431,7 @@ func packetPrompt(packet domain.ContextPacket, message string) string {
 
 func protocolReason(message string) string {
 	message = strings.ToLower(message)
-	for _, reason := range []string{"experimentalapi", "baseinstructions", "base instructions", "sandbox", "approval", "not initialized", "already initialized", "model", "project", "configuration", "cwd", "thread", "initialize", "client", "invalid", "requires", "unsupported"} {
+	for _, reason := range []string{"api key", "unauthorized", "credentials", "authentication", "rate limit", "429", "404", "expired", "experimentalapi", "baseinstructions", "base instructions", "sandbox", "approval", "not initialized", "already initialized", "model", "project", "configuration", "cwd", "thread", "initialize", "client", "invalid", "requires", "unsupported"} {
 		if strings.Contains(message, reason) {
 			return strings.ReplaceAll(reason, " ", "_") + "_rejected"
 		}

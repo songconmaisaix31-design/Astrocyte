@@ -169,7 +169,7 @@ test('selected public video URL imports through the real service without an expo
     await row.getByRole('button', { name: '查看作业资料' }).click();
     const detail = page.getByRole('dialog', { name: '素材详情' });
     await expect(detail).toContainText('已保存可读文本');
-    await expect(detail).toContainText('尚无此版本的 Codex 内容整理结果');
+    await expect(detail).toContainText('尚无此版本的模型内容整理结果');
     await expect(detail.getByText('固定来源', { exact: true }).locator('..')).toContainText(videoURL.replace(/\/$/, ''));
     const original = detail.getByText('保存的原文 / 提取文本', { exact: true }).locator('..').locator('pre');
     await expect(original).not.toHaveText('');

@@ -110,7 +110,7 @@ func (s *localProjectService) RegisterProject(ctx context.Context, c domain.Call
 	if err != nil {
 		return p, err
 	}
-	p = domain.LocalProject{ID: uuid.NewString(), Name: cmd.Name, Root: root, SpaceID: cmd.SpaceID, CreatedAt: time.Now().UTC(), Settings: domain.ProjectSettings{Revision: 1, AllowedSubdirs: []string{}, AllowedActions: []string{}, AllowedTools: []string{}}}
+	p = domain.LocalProject{ID: uuid.NewString(), Name: cmd.Name, Root: root, SpaceID: cmd.SpaceID, CreatedAt: time.Now().UTC(), Settings: domain.ProjectSettings{Revision: 1, HistoryRoots: map[string]string{}, AllowedSubdirs: []string{}, AllowedActions: []string{}, AllowedTools: []string{}}}
 	err = s.repo.SaveProject(ctx, p, 0)
 	return p, err
 }
@@ -155,6 +155,18 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 		return p, projectError(apierrors.UnsupportedCapability, "native filesystem and command tools are not scoped by this adapter")
 	}
 	cmd.Settings.Revision = p.Settings.Revision + 1
+	if cmd.Settings.HistoryRoots == nil {
+		cmd.Settings.HistoryRoots = map[string]string{}
+	}
+	if cmd.Settings.AllowedSubdirs == nil {
+		cmd.Settings.AllowedSubdirs = []string{}
+	}
+	if cmd.Settings.AllowedActions == nil {
+		cmd.Settings.AllowedActions = []string{}
+	}
+	if cmd.Settings.AllowedTools == nil {
+		cmd.Settings.AllowedTools = []string{}
+	}
 	p.Settings = cmd.Settings
 	if err := s.repo.SaveProject(ctx, p, cmd.ExpectedRevision); err != nil {
 		return p, err
@@ -163,14 +175,19 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 	if err != nil {
 		return p, err
 	}
+	var stopErrors []error
 	for _, session := range sessions {
-		if !session.StopConfirmed {
-			_ = s.stopOwned(ctx, session)
+		if session.Ownership == "owned" && !session.StopConfirmed {
+			if err := s.stopOwned(ctx, session); err != nil {
+				stopErrors = append(stopErrors, err)
+			}
 		}
 	}
-	return p, nil
+	return p, errors.Join(stopErrors...)
 }
 func (s *localProjectService) GrantProjectAgent(ctx context.Context, c domain.Caller, id string, g domain.ProjectGrant) (domain.ProjectGrant, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if err := human(c); err != nil {
 		return g, err
 	}
@@ -207,14 +224,19 @@ func (s *localProjectService) RevokeProjectAgent(ctx context.Context, c domain.C
 	if err != nil {
 		return g, err
 	}
+	var stopErrors []error
 	for _, session := range sessions {
-		if !session.StopConfirmed {
-			_ = s.stopOwned(ctx, session)
+		if session.Ownership == "owned" && !session.StopConfirmed {
+			if err := s.stopOwned(ctx, session); err != nil {
+				stopErrors = append(stopErrors, err)
+			}
 		}
 	}
-	return g, nil
+	return g, errors.Join(stopErrors...)
 }
 func (s *localProjectService) IssueProjectAgentToken(ctx context.Context, c domain.Caller, id, agentID string) (domain.AgentToken, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	var result domain.AgentToken
 	if err := human(c); err != nil {
 		return result, err
@@ -258,6 +280,12 @@ func (s *localProjectService) AuthenticateAgentToken(ctx context.Context, token 
 }
 
 func (s *localProjectService) ReadProjectContext(ctx context.Context, c domain.Caller, id string, request domain.ContextRequest) (domain.ContextPacket, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.readProjectContext(ctx, c, id, request)
+}
+
+func (s *localProjectService) readProjectContext(ctx context.Context, c domain.Caller, id string, request domain.ContextRequest) (domain.ContextPacket, error) {
 	var packet domain.ContextPacket
 	p, err := s.authorize(ctx, c, id, "read_context")
 	if err != nil {
@@ -361,7 +389,13 @@ func (s *localProjectService) nativePermission(ctx context.Context, c domain.Cal
 	return err
 }
 func (s *localProjectService) checkPacket(ctx context.Context, c domain.Caller, p domain.LocalProject, packet domain.ContextPacket) error {
+	if len(packet.Materials) > 0 && s.refs == nil {
+		return projectError(apierrors.UnsupportedCapability, "project reference reader is not connected")
+	}
 	for _, material := range packet.Materials {
+		if material.Expanded && !p.Settings.ExpandReferences {
+			return projectError(apierrors.ApprovalRevoked, "expanded reference context is revoked")
+		}
 		if _, err := s.refs.ReadSelected(ctx, c, p.SpaceID, material.Reference, material.Expanded && p.Settings.ExpandReferences); err != nil {
 			return err
 		}
@@ -424,7 +458,7 @@ func (s *localProjectService) StartNativeSession(ctx context.Context, c domain.C
 			return session, projectError(apierrors.DeliveryUnknown, "source session stop is unconfirmed")
 		}
 	}
-	packet, err := s.ReadProjectContext(ctx, c, id, cmd.Context)
+	packet, err := s.readProjectContext(ctx, c, id, cmd.Context)
 	if err != nil {
 		return session, err
 	}
@@ -460,8 +494,13 @@ func (s *localProjectService) finishNative(ctx context.Context, session domain.N
 	session.LastOperationID = op
 	session.UpdatedAt = time.Now().UTC()
 	if operationErr != nil {
-		session.Status = "unknown"
-		session.PendingOperation = op
+		if session.StopConfirmed && session.Ownership == "unstarted" {
+			session.Status = "failed"
+			session.PendingOperation = ""
+		} else {
+			session.Status = "unknown"
+			session.PendingOperation = op
+		}
 	} else {
 		session.PendingOperation = ""
 	}
@@ -469,7 +508,11 @@ func (s *localProjectService) finishNative(ctx context.Context, session domain.N
 		now := time.Now().UTC()
 		receipt.FinishedAt = &now
 		if operationErr != nil {
-			receipt.Status = "unknown"
+			if session.Status == "failed" && session.Ownership == "unstarted" && session.StopConfirmed {
+				receipt.Status = "failed"
+			} else {
+				receipt.Status = "unknown"
+			}
 		} else {
 			receipt.Status = "accepted"
 		}
@@ -501,6 +544,9 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 		return session, err
 	}
 	if session.LastOperationID == op {
+		if receipt, ok := session.Operations[op]; ok && receipt.Status != "accepted" {
+			return session, projectError(apierrors.DeliveryUnknown, "original native resume was not accepted; inspect its receipt")
+		}
 		return session, nil
 	}
 	if !session.StopConfirmed || session.NativeID == "" || session.PendingOperation != "" {
@@ -509,9 +555,22 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 	if err := s.checkPacket(ctx, c, p, session.ContextPacket); err != nil {
 		return session, err
 	}
-	packet, err := s.ReadProjectContext(ctx, c, projectID, cmd.Context)
+	sessions, err := s.repo.ListSessions(ctx, projectID)
 	if err != nil {
 		return session, err
+	}
+	for _, other := range sessions {
+		if other.ID != sessionID && other.Ownership == "owned" && !other.StopConfirmed {
+			return session, projectError(apierrors.BudgetExhausted, "project native concurrency limit is one")
+		}
+	}
+	packet, err := s.readProjectContext(ctx, c, projectID, cmd.Context)
+	if err != nil {
+		return session, err
+	}
+	packet = mergeNativeContext(session.ContextPacket, packet)
+	if len(packet.Materials) > 32 || len(packet.Files) > 32 {
+		return session, projectError(apierrors.BudgetExhausted, "cumulative native context scope exceeds bound")
 	}
 	session.PendingOperation = op
 	if session.Operations == nil {
@@ -528,6 +587,7 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 		return session, err
 	}
 	result, err := a.Resume(ctx, domain.NativeRequest{SessionID: session.ID, Project: p, Session: session, Command: cmd, Packet: packet})
+	result.ContextPacket = packet
 	return s.finishNative(ctx, result, op, err)
 }
 func (s *localProjectService) SendNativeMessage(ctx context.Context, c domain.Caller, projectID, sessionID, message string) (domain.NativeObservation, error) {
@@ -596,12 +656,17 @@ func (s *localProjectService) stopOwned(ctx context.Context, session domain.Nati
 	if saveErr := s.repo.SaveSession(context.WithoutCancel(ctx), session); saveErr != nil {
 		return saveErr
 	}
+	if !obs.StopConfirmed && err == nil {
+		return projectError(apierrors.DeliveryUnknown, "owned native stop was not positively confirmed")
+	}
 	return err
 }
 
 // Shutdown persists positive owned exits before the entrypoint closes SQLite.
 // A stale row from an unclean restart remains unconfirmed; absence is no proof.
 func (s *localProjectService) Shutdown(ctx context.Context) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	projects, err := s.repo.ListProjects(ctx)
 	if err != nil {
 		return err
@@ -656,6 +721,8 @@ func (s *localProjectService) ProbeNativeCLI(ctx context.Context, c domain.Calle
 }
 
 func (s *localProjectService) DiscoverNativeSessions(ctx context.Context, c domain.Caller, id, cli string) ([]domain.NativeSession, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	p, err := s.authorize(ctx, c, id, "discover")
 	if err != nil {
 		return nil, err
@@ -669,7 +736,7 @@ func (s *localProjectService) DiscoverNativeSessions(ctx context.Context, c doma
 		return nil, err
 	}
 	for i := range items {
-		items[i].ContextPacket = domain.ContextPacket{SchemaVersion: 1, ProjectID: id, SettingsRevision: p.Settings.Revision, Mode: "observed_history"}
+		items[i].ContextPacket = domain.ContextPacket{SchemaVersion: 1, ID: uuid.NewString(), CreatedAt: time.Now().UTC(), ProjectID: id, SettingsRevision: p.Settings.Revision, Mode: "observed_history", Materials: []domain.ContextMaterial{}, Files: []domain.ContextFile{}}
 		if err := s.repo.SaveSession(ctx, items[i]); err != nil {
 			return nil, err
 		}
@@ -677,6 +744,8 @@ func (s *localProjectService) DiscoverNativeSessions(ctx context.Context, c doma
 	return items, nil
 }
 func (s *localProjectService) ReadNativeContext(ctx context.Context, c domain.Caller, projectID, sessionID string) ([]domain.NativeEvent, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	p, session, a, err := s.session(ctx, c, projectID, sessionID, "read_context")
 	if err != nil {
 		return nil, err
@@ -692,6 +761,8 @@ func (s *localProjectService) ReadNativeContext(ctx context.Context, c domain.Ca
 	return a.ReadContext(ctx, session)
 }
 func (s *localProjectService) StopNativeSession(ctx context.Context, c domain.Caller, projectID, sessionID string) (domain.NativeObservation, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	_, session, _, err := s.session(ctx, c, projectID, sessionID, "stop")
 	if err != nil {
 		return domain.NativeObservation{}, err
@@ -704,9 +775,16 @@ func (s *localProjectService) StopNativeSession(ctx context.Context, c domain.Ca
 	return domain.NativeObservation{Status: saved.Status, StopConfirmed: saved.StopConfirmed, Events: []domain.NativeEvent{}}, err
 }
 func (s *localProjectService) ObserveNativeSession(ctx context.Context, c domain.Caller, projectID, sessionID string) (domain.NativeObservation, error) {
-	_, session, a, err := s.session(ctx, c, projectID, sessionID, "observe")
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p, session, a, err := s.session(ctx, c, projectID, sessionID, "observe")
 	if err != nil {
 		return domain.NativeObservation{}, err
+	}
+	if session.Ownership == "owned" {
+		if err := s.checkPacket(ctx, c, p, session.ContextPacket); err != nil {
+			return domain.NativeObservation{}, err
+		}
 	}
 	obs, err := a.Observe(ctx, session)
 	if err != nil {

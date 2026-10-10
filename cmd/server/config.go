@@ -78,7 +78,7 @@ func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distill
 		}
 		seen[key] = true
 	}
-	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_CODEX_TIMEOUT_SECONDS", 180, 86400)
+	timeoutSeconds, err := configuredPositiveInt("ASTROCYTE_CODEX_TIMEOUT_SECONDS", 1800, 86400)
 	if err != nil {
 		return nil, nil, err
 	}
