@@ -30,7 +30,7 @@ func AggregateProjects(projects []RegisteredProject) []ProjectSummary {
 		if !ok {
 			i = len(board)
 			byKey[id] = i
-			board = append(board, ProjectSummary{ID: id, Name: p.Name, Roots: []string{}, Observations: []RegisteredProject{}, Contributors: []ProjectContributor{}, Limitations: []string{"activity_is_not_progress_or_completion", "historical_contributors_not_current_processes", "discovery_grants_no_read_or_execution_permission"}})
+			board = append(board, ProjectSummary{ID: id, Name: p.Name, Roots: []string{}, Observations: []RegisteredProject{}, Contributors: []ProjectContributor{}, Limitations: []string{}})
 		}
 		item := &board[i]
 		duplicate := false
@@ -44,6 +44,26 @@ func AggregateProjects(projects []RegisteredProject) []ProjectSummary {
 		}
 		item.Roots = append(item.Roots, p.Root)
 		item.Observations = append(item.Observations, p)
+		limitations := []string{}
+		if p.Git.Reason != "" && (p.Git.Status == "unknown" || p.Git.Status == "unavailable") {
+			limitations = append(limitations, "git:"+p.Git.Reason)
+		}
+		for _, reason := range p.Limitations {
+			if strings.HasPrefix(reason, "native_session_sample_bound:") {
+				limitations = append(limitations, reason)
+			}
+		}
+		for _, reason := range limitations {
+			found := false
+			for _, old := range item.Limitations {
+				if old == reason {
+					found = true
+				}
+			}
+			if !found {
+				item.Limitations = append(item.Limitations, reason)
+			}
+		}
 		// Prefer the registered main checkout's name to an arbitrary worktree.
 		if p.Source == "orca_registered" {
 			item.Name = p.Name
