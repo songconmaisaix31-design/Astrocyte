@@ -157,7 +157,8 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 	extractor, err := importers.NewSummarizeExtractorWithOptions(nodePath, cliPath, importers.SummarizeOptions{
 		Version: "0.25.1", YtDlpPath: os.Getenv("ASTROCYTE_YT_DLP_PATH"),
 		FFmpegPath: os.Getenv("ASTROCYTE_FFMPEG_PATH"), WhisperBinary: os.Getenv("ASTROCYTE_WHISPER_BINARY"),
-		WhisperModel: os.Getenv("ASTROCYTE_WHISPER_MODEL"), Timeout: time.Duration(timeoutSeconds) * time.Second,
+		WhisperModel: os.Getenv("ASTROCYTE_WHISPER_MODEL"), UVXPath: os.Getenv("ASTROCYTE_UVX_PATH"),
+		Timeout: time.Duration(timeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("configure summarize extraction: %w", err)

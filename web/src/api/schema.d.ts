@@ -572,6 +572,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/papers/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * search public academic papers
+         * @description Public metadata search only. It performs no import, no full-text extraction and no model call. A human selects a result and imports it through the existing ImportMaterial path (kind=paper, adapter per site, source_key dedup, new revision). Paywalled or login-restricted content is reported, never bypassed. A server without the search service returns 501.
+         */
+        get: operations["searchPapers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * read cached project progress
+         * @description Cached human-authored or model-inferred project stage read from approved fixed TASK/STATUS files only. It is never authoritative project state, a grant or a human approval; evidence carries source, version and freshness. A server without the progress service returns 501, not an empty success.
+         */
+        get: operations["getProjectProgress"];
+        /**
+         * set human-authored project progress
+         * @description Human-authored project stage, summary and optional 0..100 percent. It is an advisory observation and never grants or expands project permission. A server without the progress service returns 501.
+         */
+        put: operations["setProjectProgress"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/progress/infer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * infer project progress from approved TASK/STATUS files
+         * @description Triggers a model inference over approved fixed TASK/STATUS files only. The caller-supplied Idempotency-Key header is the verified operation identity, persisted before the model turn so a retry cannot silently re-charge; unknown delivery is never replayed. Evidence carries source, version and freshness and never reads credentials, unapproved files or grants project control. A server without the progress service returns 501.
+         */
+        post: operations["inferProjectProgress"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/local-agents": {
         parameters: {
             query?: never;
@@ -2281,10 +2345,10 @@ export interface components {
             source_spans?: string[];
             title?: string;
             /**
-             * @description summarize_url extracts a selected public video URL without export_text or local_file_ref. summarize, summarize_json and summarize_markdown import existing exports. Extraction does not imply model distillation or Agent authorization.
+             * @description summarize_url extracts a selected public video URL without export_text or local_file_ref. summarize, summarize_json and summarize_markdown import existing exports. paper_url extracts a selected public paper HTML body; paper_pdf extracts a selected public paper PDF; paper_snapshot ingests a human-reviewed browser-plugin snapshot JSON supplied as export_text (no network or model call). Extraction does not imply model distillation or Agent authorization.
              * @enum {string}
              */
-            adapter?: "arxiv" | "summarize_url" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
+            adapter?: "arxiv" | "paper_url" | "paper_pdf" | "paper_snapshot" | "summarize_url" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
         };
         /**
          * @example {
@@ -3885,6 +3949,124 @@ export interface components {
              * @enum {string}
              */
             access_mode?: "public" | "browser_selected";
+        };
+        PaperSearchHitV1: {
+            /** @description Canonical import identity (doi:.../arxiv:... or canonical URL). The human selects a hit and imports it through ImportMaterial with this key for dedup. */
+            source_key: string;
+            /**
+             * @description Official metadata index the hit came from.
+             * @enum {string}
+             */
+            provider: "crossref" | "europepmc" | "arxiv";
+            title: string;
+            authors: string[];
+            year: number;
+            venue?: string;
+            arxiv_id?: string;
+            doi?: string;
+            locator: string;
+            abstract?: string;
+            /**
+             * @description Raw availability vocabulary. Metadata indexes always report abstract_only; full-text availability is resolved on import, never at search time.
+             * @enum {string}
+             */
+            content_state: "readable_fulltext" | "abstract_only" | "paywall" | "restricted" | "unknown";
+            /** @description Candidate public PDF links surfaced for human selection; a PDF is never presented as metadata full text. */
+            pdf_urls: string[];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "query": "attention is all you need",
+         *       "items": [],
+         *       "next_cursor": null,
+         *       "has_more": false,
+         *       "warnings": []
+         *     }
+         */
+        PaperSearchResultV1: {
+            /** @constant */
+            schema_version: 1;
+            query: string;
+            items: components["schemas"]["PaperSearchHitV1"][];
+            next_cursor: string | null;
+            has_more: boolean;
+            warnings: string[];
+        };
+        ProgressEvidenceV1: {
+            source_path: string;
+            kind: string;
+            version: string;
+            excerpt?: string;
+        };
+        ProjectProgressV1: {
+            project_id: string;
+            /** @description Advisory stage label. The wire reports "unknown" for an unobserved project instead of inventing a stage. */
+            status: string;
+            summary?: string;
+            percent?: number | null;
+            /** @description Null until a human writes or an Agent inference concludes. */
+            source: ("human" | "agent_inferred") | null;
+            evidence: components["schemas"]["ProgressEvidenceV1"][];
+            native_id?: string;
+            model?: string | null;
+            /** @description Null when no observation has been recorded; never a fabricated zero timestamp. */
+            observed_at: string | null;
+            warning?: string;
+            revision: number;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "progress": {
+         *         "project_id": "project-example",
+         *         "status": "unknown",
+         *         "source": null,
+         *         "evidence": [],
+         *         "observed_at": null,
+         *         "revision": 0
+         *       }
+         *     }
+         */
+        ProjectProgressResultV1: {
+            /** @constant */
+            schema_version: 1;
+            progress: components["schemas"]["ProjectProgressV1"];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "example-request",
+         *       "expected_version": 1,
+         *       "status": "in progress"
+         *     }
+         */
+        SetProgressRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            status: string;
+            summary?: string;
+            percent?: number | null;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "example-request",
+         *       "expected_version": 1,
+         *       "files": [
+         *         "TASK.md",
+         *         "STATUS.md"
+         *       ]
+         *     }
+         */
+        InferProgressRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            files: string[];
         };
     };
     responses: never;
@@ -6616,6 +6798,273 @@ export interface operations {
             };
             /** @description Actionable structured error; no automatic replay of unknown effects */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    searchPapers: {
+        parameters: {
+            query: {
+                q: string;
+                /** @description Provider defaults to crossref when omitted. */
+                provider?: "crossref" | "europepmc" | "arxiv";
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ephemeral metadata results; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaperSearchResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getProjectProgress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectProgressResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setProjectProgress: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetProgressRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectProgressResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    inferProjectProgress: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InferProgressRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectProgressResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
                 headers: {
                     [name: string]: unknown;
                 };

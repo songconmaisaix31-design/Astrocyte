@@ -1,3 +1,48 @@
+# S1 论文检索、进度与前端 DTO 交接（本轮 W3，已消费 W0/W1 最终单一权威契约）
+
+本轮（`run_8c1696bb815a`，W3，两个新 Dispatch）消费 W0 **`e39f8f1`/`662887e`/`cc211ce`**（单一权威 paper/progress DTO、`paper_snapshot` 进 adapter 枚举、progress infer 去 body `operation_id`）与 W1 **`0b189e5`**（`paper_snapshot` 离线摄取 adapter），替换上一 Worker 对齐 `b8dfe67`/`d89daa1` 的过期假 DTO，不再 mock 自想 DTO 或旧 `id/source_type/availability` 双轨：
+
+- **论文检索**：`GET /api/v1/papers/search?q=&provider=&limit=`（W0 契约），返回 `PaperSearchHitV1`（`source_key/provider/title/authors/year/venue/arxiv_id/doi/locator/abstract/content_state/pdf_urls`），不再有 `site`/`id`/`source_type`/`availability`/`already_imported`。检索只返回公开元数据（`content_state=abstract_only`）；原文可得性在勾选入库后由作业确定。勾选纯人工、可取消、批量入库由人显式提交且不全量。
+- **批量入库**：逐条走既有 `POST /materials/imports`（`ImportMaterialRequestV1`，`kind=paper`，`adapter=arxiv|paper_url`，`source_key` 去重、新 revision），**每项用 `crypto.randomUUID()` 幂等键**（不再自建 FNV Hash），后端 source_key/内容去重负责重复工作；`Promise.allSettled` 只确认「提交被接受」而非「入库成功」，失败汇总为单一可操作错误，成功作业在处理队列可查；不新增 scheduler/cache 或双轨 `/papers/import`。
+- **插件快照复核**：消费 W1 `paper_snapshot` adapter（`export_text`=整份已复核快照 JSON，`source_locator`=来源 URL，服务按 DOI/arXiv/URL 重新推导 `source_key`，不做网络抓取）；`pdf_urls` 映射到 `paper_pdf` adapter（SSRF 安全公开 PDF 抓取，非 arxiv-only）。人类明确选择「HTML 正文 / 公共 PDF」，快照正文保留不再让 `paper_url` 重新抓网页；摘要/截断/付费墙不当正文，无个人浏览器自动读取。
+- **项目进度**：消费 W0 `ProjectProgressV1`（`status/summary/percent/source/evidence[]/native_id/model/observed_at/warning/revision`，`source`/`observed_at` 可空，无 `operations`/`pending_operation` 内部泄漏），`ProgressEvidenceV1`（`source_path/kind/version/excerpt`，无 `freshness`）。`status=unknown` 呈现「未知」，`percent` 按 source 显示「人工记录 / Agent 估计 / 未知」，绝不伪造、不把模型百分比冒充人工输入。UI 接 `GET /local-projects/{id}/progress` 与 `POST .../progress/infer`（Idempotency-Key 即操作身份 + `files:[TASK.md,STATUS.md]`，无 body `operation_id`）。
+- CLI 原生操作沿用现有 `ManagedProjectsPanel`/`NativeProjectPanel`（start/read/resume/send/stop/observe/context_handoff），权限判断 `nativePermission.ts` 不变，不以看板即自动授权。CLI 完整覆盖与记忆隔离/全局/仅规划仍 PENDING（用户未答），未代选、未建 UI 伪工具。
+
+## 分支与源码
+
+- 分支 `s1-sync-ui-1010`，普通合入 ROOT 精确基线，保留原 owner 历史，无 squash/rebase/reset/force。
+- 本轮 UI/测试源码为一次精确提交（SOURCE），REPORT 为随后仅更新 `docs/acceptance/S1-paper-board.md` 与本任务报告的提交，精确 SHA 通过 Orca 交接。
+- 独占写域遵守 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、本文件与 `tasks/S1-final-W3.md`；未改契约、生成客户端、迁移、锁或入口（`web/src/api/` 由 W0 单一 owner 生成 `searchPapers`/`getProjectProgress`/`setProjectProgress`/`inferProjectProgress` 包装后替换本地 seam）。
+
+## DTO 交接（供 W0 集成阶段替换本地 seam）
+
+前端已按 W0 `e39f8f1` 契约形状实现本地视图（`paperSearch.ts` 的 `PaperSearchHit`/`PaperSearchResult` 精确镜像 `PaperSearchHitV1`/`PaperSearchResultV1`；`progressPresentation.ts` 的 `ProjectProgress`/`ProgressEvidence` 精确镜像 `ProjectProgressV1`/`ProgressEvidenceV1`），并直接消费真实路由。W0 生成客户端后只需：
+
+1. **论文检索**：`GET /api/v1/papers/search`（query `q`/`provider`/`limit`）→ `PaperSearchResultV1`。前端 `paperSearchClient.searchPapers` 已按此调用；W0 可替换为 `attentionApi.searchPapers(...)`。
+2. **论文入库**：沿用既有 `POST /materials/imports`（`ImportMaterialRequestV1`，`kind=paper`，`adapter` 按站点 `arxiv` 或 `paper_url`，`source_key`=hit.source_key 去重、新 revision）。`paper_url`/`paper_pdf`/`paper_snapshot` 均已进 W0 生成 adapter 枚举（`662887e`），前端 `PluginSnapshotReview.tsx`/`paperSearchClient.ts` 的过期 cast 与「未进枚举」注释已删除。
+3. **进度依据**：`GET /api/v1/local-projects/{id}/progress` → `ProjectProgressResultV1`；`POST .../progress/infer`（body `InferProgressRequestV1`{`files`}，Idempotency-Key 为操作身份）→ 同。前端 `progressClient.getProjectProgress`/`inferProjectProgress` 已按此调用；W0 可替换为 `localProjectsApi.*`。
+4. **记忆（W2，待答决定后）**：列表/搜索 → 时间线 → 详情/按项目 scoped 配置/遗忘；本轮未建 UI、未默认全局或原对话采集。
+
+## 验证
+
+| 验证 | 结果 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS/exit0 |
+| `pnpm --dir web test` | 82 PASS（论文检索 6 + 插件快照 10 + 进度 5；既有其余保持） |
+| 定向 `eslint`（新增/改动文件） | PASS/exit0 |
+| `pnpm --dir web build` | PASS/exit0（101 模块） |
+| `playwright test paper-search.spec.ts plugin-snapshot.spec.ts progress.spec.ts`（1920/1280） | **28 PASS**：检索 GET 契约载荷渲染、示例检索选择/取消 0 写、501 诚实「检索未完成」、移动 390 无横溢；插件快照正文保留+`paper_snapshot`、非 arxiv `paper_pdf`、付费墙无绕过、**同 URL 正文变化产生新幂等键（无 409）回归**；进度 GET/POST infer 带 Idempotency-Key+`files` + 未知不伪造百分比 |
+| `playwright test --config e2e/paper-snapshot.config.ts`（`ASTROCYTE_TEST_PAPER_SNAPSHOT=1`，真实浏览器闭环） | **1 PASS**：真实 fulltext 快照粘贴→`paper_snapshot` 正文入库（revision1 browser_snapshot_fulltext，source_key=doi，正文>10000 字符，`paper-snapshot.json` 附件逐字节相等）→ 同 body 去重（revisions 仍 1）→ 同 URL 改正文生成 revision2 → fresh API 后 content_digest 一致 → 1920/1280/390 无横溢 + 键盘 Enter 开/关 |
+
+## 未完成与真实限制
+
+- **真实浏览器闭环已通过**（见上表最后一行，保留库 `%TEMP%/astrocyte-s1-HgzEDq` 供 root 只读）；但元数据真实搜索（`GET /papers/search` 返回 provider 元数据）与 W1 DOI 精确查找仍由 W1 补，不冒充所有站全文可入库。
+- `paper_pdf`（abstract 快照 PDF 抓取）为在线抓取，本轮未触发；本地已取 PDF ≠ 在线抓取，不据此宣称在线 PDF 全文。
+- CLI 完整覆盖范围与记忆隔离/全局/仅规划两项仍 PENDING，未代选、未建对应 UI。
+- 未合 main/远程 CI、未更新个人 5173/8787、未安装插件/读个人 Chrome；无模型调用/旧 UNKNOWN 重放。真实数据三尺寸截图在本工作树 `web/test-results/`。
+
+---
+
 # S1 W3 项目总览与人类流程验收
 
 本报告只覆盖本轮已授权、已实现的项目看板与现有入口。论文搜索、当前页提取、插件权限与进度推断仍为 **ASKED PENDING**；没有据此选择产品方案、冻结接口或宣称完整 S1 交付。

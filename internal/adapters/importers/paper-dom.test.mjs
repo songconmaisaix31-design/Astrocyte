@@ -66,6 +66,6 @@ test('public readable body stays readable with unrelated access widget', () => {
 test('a structured abstract is metadata even with Introduction and Results', () => {
   const text = 'This structured abstract describes the experiment without the paper body. '.repeat(35);
   const result = extract(`<html><body><article><h1>Paper</h1><section id="abstract"><h2>Introduction</h2><p>${text}</p><h2>Results</h2><p>${text}</p></section></article></body></html>`);
-  assert.equal(result.content_state, 'metadata_only');
+  assert.equal(result.content_state, 'abstract_only');
   assert.equal(result.text, '');
 });

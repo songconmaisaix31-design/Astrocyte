@@ -1,5 +1,29 @@
 # 本地 Agent 与工具清点
 
+## 2026-10-11 OpenCode 1.18.35 loopback Basic-auth 会话驱动（隔离配置，正式接入）
+
+本机 npm `opencode-ai/bin/opencode.exe` 仍为 `1.18.35`，`--version`/`--help` exit 0。按用户要求不再以「等下一版本」维持 `unsupported`，改为落地正式 loopback HTTP 会话驱动。关键纠正来自同版本官方源码：
+
+- **`OPENCODE_CONFIG_DIR` 真正隔离用户全局 config**：`@opencode-ai/core/global.ts` 的 `make().config = Flag.OPENCODE_CONFIG_DIR ?? Path.config`，`Path.config = xdgConfig/opencode`；`session/instruction.ts` 的 `globalFiles = [path.join(global.config,"AGENTS.md"), ...]` 读的是 `global.config`，**不是**不可变用户目录。因此把 `OPENCODE_CONFIG_DIR` 指向控制器自有的空目录，用户全局 `AGENTS.md`、MCP、plugins、instructions 不加载（`~/.claude/CLAUDE.md` 由 `OPENCODE_DISABLE_CLAUDE_CODE_PROMPT` 关闭、项目层由 `OPENCODE_DISABLE_PROJECT_CONFIG` 关闭）。前轮「全局 instructions 不可关闭」的结论因此不成立，已作废。**注意**：这不等同于全机隔离——`config.ts` 的 `ConfigManaged.managedConfigDir()`（Windows `%ProgramData%\opencode`）与 auth wellknown/account 远程 config 仍会被加载，可能声明 MCP/plugins；本机 `%ProgramData%\opencode` 不存在，且 `permission:deny` 仍阻断一切工具使用，不据此宣称这些来源已被压制。
+- **deny-by-default 落地（最终 overlay + session 级 deny）**：自有空 config 目录写 `opencode.json` 显式逐键 `permission:deny`（read/edit/bash/glob/grep/webfetch/websearch/task/skill/lsp/question/external_directory/doom_loop 全 deny），并设 `OPENCODE_PERMISSION` 相同对象，`config.ts` 在 wellknown/account/managed 之后 `mergeDeep` 它作为最终覆盖；不传 `--auto`。**session 级 fail-closed**：`POST /session` body 带 `permission:[{permission:"*",pattern:"*",action:"deny"}]`（官方 1.18.35 v2 SDK `SessionCreateData.permission:PermissionRuleset`）；已核同版本源码 `session/tools.ts:87` 与 `session/prompt.ts:346` 均 `Permission.merge(agent.permission, session.permission ?? [])`，`permission/index.ts` 的 `evaluate` 用 `findLast`，故 session 规则在 Agent 规则**之后**生效、可覆盖继承的 agent-specific allow（与 config `mergeDeep` 通配不清除 specific allow 不同）。`createSession` 后、发消息前 `verifySession` GET `/session/:id` 复核 permission 数组非空且最后一个 rule 严格 `permission=* pattern=* action=deny`（任何后续 rule 均拒，不模拟权限算法），否则 `scope_denied` 拒发，不接管外部会话。**如实限制**：agent-specific permission 与 managed/wellknown 注入的 instructions/MCP/plugins 仍不保证全部压制，本 driver 不宣称残留已隔离，fail-closed 保持 `Configured=unknown`。`--pure` + `OPENCODE_DISABLE_DEFAULT_PLUGINS=1` 关闭外部/默认插件（`--pure` 本身不保证 MCP/plugins 不初始化）。
+- **auth 由 CLI 原生读取**：不复制/读取 provider 凭据；`OPENCODE_SERVER_USERNAME`/`OPENCODE_SERVER_PASSWORD` 每次会话随机生成，仅供本 loopback 服务 Basic auth，不落库、不打印。
+- **正式接口面**：`opencode serve --hostname 127.0.0.1 --port <N>`，`POST /session`（返回会话 id 作 native ID）、`POST /session/:id/message`（同步等待，`parts[]` 返回文本）、`GET /session/:id/message`（读会话）、`GET /session/status`、`GET /global/health`、`POST /session/:id/abort`、`POST /instance/dispose`。driver 实现 start/send/read_context/resume/stop/observe；`discover` 无已验历史头作用域协议，保持 `unsupported`；`reconcile`/`context_handoff` 沿用应用层既有 NativeOperation/模式语义，不新增方法。
+
+已交付 `internal/adapters/agents/opencode.go`：`opencodeNative` 独立会话驱动（与 stdio `*Native` 并列注册），owned subprocess + Job Object 正向退出、未知投递不重放、**同 nativeID 恢复**（resume 经 `GET /session/:id` 加载原 SID 续发，不新建会话）与**新 nativeID 交接**分开；模型按真实 `AssistantMessage` 的 `modelID`/`providerID` 解析；`Registry` 现 `List()` 为 `codex/pi/claude/opencode`。httptest 假 server 覆盖 create/send/read/verify 协议与 Basic auth、modelID/providerID、隔离 env、`permission:deny` 配置与注册快照。
+
+**真实 `opencode serve` 会话链已运行通过**（`ASTROCYTE_TEST_OPENCODE_LIVE=1`，`opencode_live_test.go`）：`opencode serve --hostname 127.0.0.1 --port <N> --pure` 隔离启动；显式 `Send` 正向 turn 回显 selected marker；`read_context` 含 user/assistant 双向；`model=deepseek-flash provider=deepseek` 从真实 reply 解析；同 nativeID resume 保持原 ID；owned stop 正向退出；**跨会话 context_handoff**：新 nativeID + 携带原 selected context marker 并被新会话引用（非仅新建会话）。首次失败保留：一轮旧 `waitHealth` 阻塞 180s（客户端超时）导致 serve 启动竞态，已改为每请求 3s/整体 20s 有界超时，非改写为成功。旧成功媒体/模型与 UNKNOWN 不重发。selected-text/distillation 路径仍依赖 `*Native` 的模型观测（`Configured=unknown`），不冒充模型就绪。
+
+## 2026-10-10 OpenCode 1.18.35 正式接口复核（serve/config/permissions + 本机版本源码）——结论已被上节更正
+
+本机 npm 原生 `bin/opencode.exe` 仍为 `1.18.35`，`--version`/`--help` 均 exit 0。按用户要求重查官方 [Server](https://docs.opencode.ai/docs/server/)、[Config](https://docs.opencode.ai/docs/config/)、[Permissions](https://docs.opencode.ai/docs/permissions/) 与同版本源码（`v1.18.35` 的 `config.ts`、`session/instruction.ts`、`mcp/index.ts`）。结论未变，且本次补充了可执行侧的证据：
+
+- **正式原生接口存在**：`opencode serve --hostname 127.0.0.1 --port <N>` 起一个 headless HTTP 服务，暴露 OpenAPI 3.1（`/doc`）；会话 `POST/GET /session[/:id]`、`POST /session/:id/message`（含 `noReply`/`system`/`tools` 字段）、`/prompt_async`、`/abort`、`/permissions/:permissionID`（对权限请求回 `response`）与 `/instance/dispose`。可用 `OPENCODE_SERVER_PASSWORD`/`OPENCODE_SERVER_USERNAME` 做 loopback HTTP Basic Auth，属“HTTP loopback owned server + auth + provided prompt”的可行协议面。
+- **deny-by-default 工具可达成**：`permission` 配置（`v1.1.1` 起合并旧 `tools` 布尔），且 `Flag.OPENCODE_PERMISSION` 用 `mergeDeep` 按进程注入权限规则；不传 `--auto`，并对每个权限请求回 `deny` 即可把 read/edit/bash/webfetch/mcp 等全部拦下。这是按进程环境变量，不是覆盖用户配置。
+- **无法安全关闭全局 instructions**：`config.ts` 的 `mergeConfigConcatArrays` 对 `instructions` 做**数组拼接 + Set 去重**，晚到的 `instructions: []` 不会清掉已继承项；`instruction.ts` 的 `globalFiles` 恒加载 `~/.config/opencode/AGENTS.md` 与 `~/.claude/CLAUDE.md`（仅 `disableClaudeCodePrompt` 关后者，AGENTS.md 无开关），并按 `findUp` 自动读项目 `AGENTS.md/CLAUDE.md/CONTEXT.md`，再叠加拼接后的 `config.instructions`。`OPENCODE_DISABLE_PROJECT_CONFIG` 只关项目层发现，不关全局。
+- **无法全局关闭 MCP**：`mcp/index.ts` 遍历合并后的 `cfg.mcp`，对每个 `enabled !== false` 的条目立即 `create`/`connect`（stdio spawn 或远程 HTTP/SSE），无观察到 pure 级全局抑制；按 key 设 `enabled:false` 需知道并覆盖用户所有 key，而覆盖用户配置被禁止。
+
+因此 OpenCode 1.18.35 的 selected-context 边界（只交付获准正文、不泄漏全局指令、不连接用户 MCP）**仍不能在不覆盖用户 CLI 配置的前提下成立**：仅凭 tools/permission deny 不能把仍在加载的全局 instructions 与已连接的 MCP 称为 selected-context 范围。原生适配对 OpenCode 保持 `unsupported`，安装/版本/help 仍分别记录为 `installed`/`version_help_passed`；不制造 PTY/daemon 包装、不改全局配置、不读取 provider 认证。若后续版本提供干净的 instructions/MCP 抑制开关，即可沿上述 HTTP 服务协议落地原生 driver。不把“正式接口存在”冒充“已接入”。
+
 ## 2026-10-10 项目汇总、会话元数据与独立人工记录
 
 本轮已授权本地项目/历史识别。沿 `RegisteredProjects`：Orca 公共登记根/工作树 + Codex、Pi、Claude 的明确原生元数据目录；CLI 安装、配置和执行权限仍独立。新增 CLI 元数据指出的目录只核 canonical 绝对路径及 `.git`/`go.mod`/`package.json`/`pyproject.toml`/`Cargo.toml`/`CMakeLists.txt` 的文件标记，不读取内容、不递归搜索父目录，不登记执行项目。排除重定向路径、home 根、系统安装目录及凭据/原生状态目录。
@@ -47,7 +71,8 @@ GitHub 仅完成官方可复用能力调查，用户未确定同步方式、首�
 | Codex0.162.0 | app-server JSON-RPC initialize/thread start+resume/turn send+interrupt/events/owned stop；完整context用thread/read校验ID/cwd后分页thread/items/list | 非推理握手与两真实公开marker turns，同原nativeID恢复且owned exit确认；实际gpt-6.1-sol/openai；后续W3真实同线程完整context200及same-ID恢复/第三send/stop通过 | 用户历史根未给；外部session占用交接/reconcile未做；新增opt-in完整context断言自身尚未运行，停止进程不隐式重启 |
 | Claude2.1.238 | 原生stream-json SDK控制initialize/interrupt、指定UUID start/同UUID resume、user消息、assistant/result事件、owned stop | 非推理握手与两真实公开marker turns、同UUID恢复、owned exit确认；实际qwen3.7-max/provider端点未核实 | 外部历史schema及pre-paid当前model观测缺失，generic selected-text明确EvidenceMissing；不将workspace成功扩展成distillation验收 |
 | Pi1.0.1 | RPC get_state/prompt/abort/clear_queue、原sessionFile resume、events、owned stop | 非推理握手通过；真实首turn definite失败，单次授权诊断authentication_rejected、stop确认 | 原生real resume尚未执行，模型失败不得算PASS；不迁移认证、不重试 |
-| OpenCode/Grok/Kimi/Qwen/Cursor | 固定安装库存 | 仅version/help证据 | registry无已验证driver，native API明确unsupported，能力不因安装而提升；不声称官方协议不存在 |
+| OpenCode1.18.35 | loopback Basic-auth serve 会话 driver（start/send/read_context/resume/stop/observe + context_handoff，配置隔离 `OPENCODE_CONFIG_DIR`+逐键 `permission:deny`+`OPENCODE_PERMISSION`+`--pure`） | httptest 假 server 协议/隔离 env/注册快照通过；真实会话链（显式 Send/ReadContext/同 ID resume/context_handoff 新 ID 携带旧上下文/owned stop，model=deepseek-flash）通过 | discover 无已验历史头协议 unsupported；selected-text 需 `*Native` 模型观测，OpenCode `Configured=unknown`；agent-specific permission 与 managed/wellknown 残留不保证压制，不冒充模型就绪/全机隔离 |
+| Grok/Kimi/Qwen/Cursor | 固定安装库存 | 仅version/help证据 | registry无已验证driver，native API明确unsupported，能力不因安装而提升；不声称官方协议不存在 |
 
 协议/公开成熟接口调查仅用于实现路线，不能替代安装版本与task-live：
 

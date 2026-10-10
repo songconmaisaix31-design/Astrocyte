@@ -22,11 +22,12 @@ import (
 type Reader struct {
 	Arxiv        *Arxiv
 	Summarize    *SummarizeExtractor
+	Web          *PaperWeb
 	AllowedRoots []string
 }
 
 func NewReader(allowedRoots []string) *Reader {
-	return &Reader{Arxiv: NewArxiv(), AllowedRoots: append([]string(nil), allowedRoots...)}
+	return &Reader{Arxiv: NewArxiv(), Web: NewPaperWeb(), AllowedRoots: append([]string(nil), allowedRoots...)}
 }
 
 var _ app.SourceReader = (*Reader)(nil)
@@ -124,8 +125,60 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 			return source, sourceError(err)
 		}
 		source = app.ImportedSource{SourceKey: exportSourceKey(cmd.SourceLocator, cmd.Kind), SourceLocator: cmd.SourceLocator, Kind: cmd.Kind, Title: cmd.Title, Text: string(raw), SourceSpans: append([]string{}, cmd.SourceSpans...), Provenance: app.Provenance{Processor: "manual", Version: "1", Mode: "manual", Source: cmd.SourceLocator}}
+	case "paper_url":
+		if cmd.Kind != "paper" || cmd.ExportText != "" || cmd.LocalFileRef != "" {
+			return source, invalid("paper_url requires a public paper URL without an existing export")
+		}
+		if r.Web == nil || r.Summarize == nil {
+			return source, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "paper body extraction is not configured", RequiredAction: "configure_summarize_paper_extraction"}
+		}
+		html, err := r.Web.FetchHTML(ctx, cmd.SourceLocator, 16<<20)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		snapshot, err := r.Summarize.InspectPaperHTML(ctx, cmd.SourceLocator, html)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		source, err = paperSource(snapshot, html)
+		if err != nil {
+			return source, err
+		}
+	case "paper_pdf":
+		if cmd.Kind != "paper" || cmd.ExportText != "" || cmd.LocalFileRef != "" {
+			return source, invalid("paper_pdf requires a public paper PDF URL without an existing export")
+		}
+		if r.Web == nil || r.Summarize == nil {
+			return source, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "paper PDF extraction is not configured", RequiredAction: "configure_summarize_paper_extraction"}
+		}
+		pdf, err := r.Web.FetchPDF(ctx, cmd.SourceLocator, 64<<20)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		result, err := r.Summarize.ExtractPDF(ctx, cmd.SourceLocator, pdf)
+		if err != nil {
+			return source, sourceError(err)
+		}
+		source = paperPDFSource(cmd.SourceLocator, cmd.Title, result.Text, pdf, result.Original)
+	case "paper_snapshot":
+		// A human-reviewed browser-plugin snapshot pasted as JSON. No network
+		// access, no model call, no paywall bypass; the snapshot is the source.
+		if cmd.Kind != "paper" || cmd.LocalFileRef != "" {
+			return source, invalid("paper_snapshot requires a paper kind without a local file")
+		}
+		if strings.TrimSpace(cmd.ExportText) == "" {
+			return source, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "a reviewed paper snapshot JSON is required", RequiredAction: "provide_reviewed_paper_snapshot"}
+		}
+		if len(cmd.ExportText) > 16<<20 {
+			return source, invalid("paper snapshot exceeds size limit")
+		}
+		var err error
+		source, err = paperSnapshotSource([]byte(cmd.ExportText), cmd.SourceLocator)
+		if err != nil {
+			return source, err
+		}
 	default:
-		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_or_existing_summarize_export"}
+		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_paper_url_paper_pdf_paper_snapshot_or_existing_summarize_export"}
 	}
 	if cmd.SourceKey != "" && cmd.SourceKey != source.SourceKey {
 		return app.ImportedSource{}, invalid("source_key differs from canonical source")

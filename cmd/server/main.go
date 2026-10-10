@@ -147,6 +147,7 @@ func run(logger *slog.Logger) error {
 		ListingReader: listingReader, CollectionReader: listingReader,
 		ListingRecommender: distillers.NewListingRecommender(textProcessor, processingTimeout),
 		ProjectDistillers:  distillers.NewSelectedTextFactory(textProcessor, processingTimeout),
+		ScholarSearcher:    importers.NewScholar(),
 	})
 	projectReferences.attention = attention
 	// This defer also covers a later startup error. It runs before the existing
@@ -195,6 +196,8 @@ func run(logger *slog.Logger) error {
 		Proposals:          workspaceapp.NewProposalService(),
 		Sessions:           workspaceapp.NewSessionService(),
 		Missions:           swarmapp.NewMissionService(),
+		PaperSearch:        attention,
+		Progress:           workspaceapp.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry),
 	}
 	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
 		services.Automatic = automatic

@@ -16,19 +16,27 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
+// nativeSnapshotter is the registry-internal observation surface shared by the
+// stdio and HTTP session drivers so SnapshotNative renders them uniformly.
+type nativeSnapshotter interface {
+	app.NativeAdapter
+	snapshot() domain.LocalAgent
+}
+
 type Registry struct {
-	adapters map[string]*Native
+	adapters map[string]app.NativeAdapter
 }
 
 // NewRegistry registers protocol implementations, not inferred CLI readiness.
 // stateRoot is controller-owned durable native session storage, not a user
 // transcript search root or an arbitrarily supplied HTTP directory.
 func NewRegistry(stateRoot string) *Registry {
-	r := &Registry{adapters: map[string]*Native{}}
+	r := &Registry{adapters: map[string]app.NativeAdapter{}}
 	slots := make(chan struct{}, 4)
 	for _, id := range []string{"codex", "pi", "claude"} {
 		r.adapters[id] = &Native{id: id, stateRoot: stateRoot, slots: slots, processes: map[string]*nativeProcess{}, capabilities: domain.UnknownNativeCapabilities()}
 	}
+	r.adapters["opencode"] = newOpencodeNative(stateRoot, slots)
 	return r
 }
 
@@ -39,7 +47,7 @@ func (r *Registry) Adapter(id string) (app.NativeAdapter, error) {
 	}
 	return adapter, nil
 }
-func (r *Registry) List() []string { return []string{"codex", "pi", "claude"} }
+func (r *Registry) List() []string { return []string{"codex", "pi", "claude", "opencode"} }
 
 // Cached native observations only. Installation belongs to the PATH inventory.
 func (r *Registry) SnapshotNative(ctx context.Context) ([]domain.LocalAgent, error) {
@@ -48,25 +56,31 @@ func (r *Registry) SnapshotNative(ctx context.Context) ([]domain.LocalAgent, err
 	}
 	items := []domain.LocalAgent{}
 	for _, cli := range r.List() {
-		n := r.adapters[cli]
-		caps := n.Capabilities()
-		item := domain.LocalAgent{ID: cli, NativeAdapterRegistered: true, Capabilities: caps, Configured: domain.Observation{Status: "unknown", Reason: "native_configuration_not_observed"}, Startable: domain.Observation{Status: "unknown", Reason: "native_start_not_observed"}}
-		n.mu.Lock()
-		if n.version != "" {
-			v := n.version
-			item.Version = &v
+		if snapshotter, ok := r.adapters[cli].(nativeSnapshotter); ok {
+			items = append(items, snapshotter.snapshot())
 		}
-		if n.configID != "" && time.Since(n.configAt) <= 5*time.Minute {
-			checked := n.configAt.UTC()
-			item.Configured = domain.Observation{Status: "available", Reason: "native_current_model_configuration_observed_authentication_not_proven", CheckedAt: &checked}
-		}
-		n.mu.Unlock()
-		if caps["start"].Status == "supported" {
-			item.Startable = domain.Observation{Status: "available", Reason: "native_protocol_session_start_observed_not_model_readiness", CheckedAt: caps["start"].CheckedAt}
-		}
-		items = append(items, item)
 	}
 	return items, nil
+}
+
+// snapshot renders the registry observation for the stdio session driver.
+func (n *Native) snapshot() domain.LocalAgent {
+	caps := n.Capabilities()
+	item := domain.LocalAgent{ID: n.id, NativeAdapterRegistered: true, Capabilities: caps, Configured: domain.Observation{Status: "unknown", Reason: "native_configuration_not_observed"}, Startable: domain.Observation{Status: "unknown", Reason: "native_start_not_observed"}}
+	n.mu.Lock()
+	if n.version != "" {
+		v := n.version
+		item.Version = &v
+	}
+	if n.configID != "" && time.Since(n.configAt) <= 5*time.Minute {
+		checked := n.configAt.UTC()
+		item.Configured = domain.Observation{Status: "available", Reason: "native_current_model_configuration_observed_authentication_not_proven", CheckedAt: &checked}
+	}
+	n.mu.Unlock()
+	if caps["start"].Status == "supported" {
+		item.Startable = domain.Observation{Status: "available", Reason: "native_protocol_session_start_observed_not_model_readiness", CheckedAt: caps["start"].CheckedAt}
+	}
+	return item
 }
 
 type Native struct {

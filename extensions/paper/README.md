@@ -1,9 +1,27 @@
 # Astrocyte Paper
 
-Independent summarize-inspired paper extraction core. Build with `node extensions/paper/build.mjs` using existing pinned project dependencies; no package installation or new lockfile. The core performs only DOM inspection, no automatic browsing, import, model call, provider credential storage, cookie access or personal tab enumeration.
+Independent summarize-inspired paper extraction extension. Build with `node extensions/paper/build.mjs`; it reuses the pinned installed summarize core to resolve the vendored Mozilla Readability **0.6.0** (Apache-2.0) and copies the browser-native extraction assets into `extensions/paper/dist`, a loadable Manifest V3 extension. No new package, lockfile, build framework, provider credential, automatic browsing or daemon is shipped.
 
-Current build stages local Readability plus Astrocyte scholarly metadata/provenance parsing. Search versus current-page/both and plugin action/permission scope remain **ASKED PENDING**. Final MV3 manifest and application transport will be implemented after the root relays those decisions; staging assets are not an installable extension.
+## Behavior
 
-Current-page design for review: a user click acquires only that page, displays title/abstract/identity and observed extraction state, and requires explicit selection before import or model processing. PDF candidates are displayed as links, not automatically fetched or described as read full text. DOM readable text requires scholarly body sections; access restrictions/unknown text stay explicit. Application writes must use a root-approved human identity path owned by W0.
+- A human click on the extension action grants `activeTab` access to the **current page only**. The popup injects Readability + `extract.js`, then shows title, abstract, DOI/arXiv identity, PDF candidate links and the observed `content_state`.
+- `content_state` is one of `readable_fulltext | abstract_only | paywall | restricted`. Full text is returned only when the page openly publishes a complete scholarly body; a PDF link or an abstract is never presented as full text; restrictions are never bypassed.
+- The popup copies a JSON snapshot to the clipboard for human review. The extension stores no provider credentials and never imports on its own.
 
-See [THIRD_PARTY.md](THIRD_PARTY.md) for exact upstream pins and licensing. Personal browser installation is reserved to the coordinator. Browser loading tests must use an isolated profile with W3 slot coordination.
+## Snapshot shape (for W0/W3 review UI)
+
+```
+{ schema_version, source_url, host_family, source_key, title, abstract,
+  authors[], doi, arxiv_id, observed_version, pdf_urls[], content_state,
+  text, warning, truncated, provenance{ processor, version, mode, source } }
+```
+
+`text` is display-only (unbounded page body). The authoritative import re-fetches server-side via the existing `POST /materials/imports` with `adapter=paper_url` + `source_locator=source_url`; it dedupes on `source_key` and re-applies a 16 MiB HTML cap, so a plugin token or pasted `text` is never trusted as the library body.
+
+## Application transport
+
+The same-origin human review/import handoff (`externally_connectable` + human session/CSRF) is owned by W0 and is intentionally not wired here. `background.js` only accepts messages from the extension's own popup; no external sender is trusted.
+
+## Licensing
+
+See [THIRD_PARTY.md](THIRD_PARTY.md). summarize (MIT, Peter Steinberger) and Mozilla Readability (Apache-2.0, Arc90/Mozilla) attributions and full license texts are copied into the built extension. Personal browser installation is reserved to the coordinator; loading tests must use an isolated profile.

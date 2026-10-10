@@ -16,14 +16,14 @@ func TestNativeLiveTurnAndOriginalSessionResume(t *testing.T) {
 		t.Skip("coordinator sole live model/native slot required")
 	}
 	registry := NewRegistry(t.TempDir())
-	for _, cli := range registry.List() {
+	for _, cli := range []string{"codex", "pi", "claude"} {
 		if !t.Run(cli, func(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 			defer cancel()
 			project := domain.LocalProject{ID: uuid.NewString(), Root: t.TempDir(), Settings: domain.ProjectSettings{Revision: 1}}
 			marker := "PUBLIC_CONTEXT_" + strings.ReplaceAll(uuid.NewString(), "-", "")
 			packet := domain.ContextPacket{ID: uuid.NewString(), SchemaVersion: 1, ProjectID: project.ID, SettingsRevision: 1, Mode: "selected_context", Materials: []domain.ContextMaterial{{Reference: domain.FixedReference{MaterialID: "public-test-marker", Revision: 1}, Text: marker}}}
-			n := registry.adapters[cli]
+			n := registry.adapters[cli].(*Native)
 			sid := uuid.NewString()
 			s, err := n.Start(ctx, domain.NativeRequest{SessionID: sid, Project: project, Session: domain.NativeSession{ID: sid, ProjectID: project.ID}, Command: domain.NativeCommand{DeadlineSeconds: 180, Message: "Reply with the supplied public context marker only."}, Packet: packet})
 			if s.NativeID != "" {

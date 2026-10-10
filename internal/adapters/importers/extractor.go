@@ -23,7 +23,11 @@ var summarizeMediaBridge []byte
 // never a cloud fallback. The bridge uses only pinned upstream media code.
 type SummarizeOptions struct {
 	Version, YtDlpPath, FFmpegPath, WhisperBinary, WhisperModel string
-	Timeout                                                     time.Duration
+	// UVXPath points at the uvx binary summarize uses to convert a local PDF to
+	// markdown. It is only required for paper_pdf extraction; empty means PDF
+	// extraction is unavailable, which is reported honestly rather than guessed.
+	UVXPath string
+	Timeout time.Duration
 }
 type SummarizeExtractor struct {
 	NodeExecutable, CLIPath string
@@ -57,6 +61,17 @@ func NewSummarizeExtractorWithOptions(nodeExecutable, cliPath string, o Summariz
 	}
 	if o.Timeout == 0 {
 		o.Timeout = 30 * time.Minute
+	}
+	if o.UVXPath != "" {
+		if err := regularAbsolute(o.UVXPath); err != nil {
+			return nil, err
+		}
+	} else if resolved, err := exec.LookPath("uvx"); err == nil {
+		// Best-effort: use the ambient uvx when no explicit path is configured.
+		// PDF extraction remains optional; its absence is reported as unavailable.
+		if abs, err := filepath.Abs(resolved); err == nil {
+			o.UVXPath = abs
+		}
 	}
 	return &SummarizeExtractor{nodeExecutable, cliPath, o}, nil
 }
@@ -102,6 +117,74 @@ func extractionAction(message, fallback string) string {
 		return "configure_public_source_network"
 	}
 	return fallback
+}
+
+// paperPDFResult is the local markdown extraction of one already-downloaded PDF,
+// plus the immutable original summarize JSON for provenance. Text is empty when
+// the document yields no readable content; it is never guessed or OCR-filled
+// without an explicit model key, which this path does not use.
+type paperPDFResult struct {
+	Text     string
+	Original []byte
+}
+
+// ExtractPDF converts an already-downloaded public PDF to markdown using the
+// pinned summarize local-PDF path (uvx + markitdown), never an LLM. The PDF
+// bytes are written to a private temp file; no URL is fetched here.
+func (e *SummarizeExtractor) ExtractPDF(ctx context.Context, pdfURL string, pdfBytes []byte) (paperPDFResult, error) {
+	if e.Options.Version != "0.25.1" {
+		return paperPDFResult{}, dependencyError("paper PDF extraction requires summarize 0.25.1")
+	}
+	if e.Options.UVXPath == "" {
+		return paperPDFResult{}, dependencyError("paper PDF extraction requires uvx (markitdown) configured")
+	}
+	if len(pdfBytes) == 0 || len(pdfBytes) > 64<<20 {
+		return paperPDFResult{}, invalid("paper PDF must contain from 1 byte to 64MiB")
+	}
+	ctx, cancel := context.WithTimeout(ctx, e.Options.Timeout)
+	defer cancel()
+	home, err := os.MkdirTemp("", "astrocyte-paper-pdf-")
+	if err != nil {
+		return paperPDFResult{}, err
+	}
+	defer os.RemoveAll(home)
+	env := e.isolatedEnv(home, false)
+	env = append(env, "UVX_PATH="+e.Options.UVXPath)
+	// uv reuses its package cache across runs; pointing it at a stable location
+	// avoids re-downloading markitdown[all] on every single-paper extraction.
+	env = append(env, "UV_CACHE_DIR="+filepath.Join(home, "uv-cache"))
+	if err = e.verifyVersion(ctx, env); err != nil {
+		return paperPDFResult{}, err
+	}
+	pdfPath := filepath.Join(home, "paper.pdf")
+	if err = os.WriteFile(pdfPath, pdfBytes, 0o600); err != nil {
+		return paperPDFResult{}, err
+	}
+	cmd := exec.CommandContext(ctx, e.NodeExecutable, e.CLIPath, pdfPath, "--extract", "--json", "--format", "text", "--firecrawl", "off", "--youtube", "web", "--video-mode", "transcript", "--embedded-video", "off", "--timeout", "120s", "--retries", "0", "--metrics", "off")
+	cmd.Env = env
+	cmd.Dir = home
+	cmd.WaitDelay = 5 * time.Second
+	var out, stderr cappedOutput
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	if err = cmd.Run(); err != nil {
+		if ctx.Err() != nil {
+			return paperPDFResult{}, ctx.Err()
+		}
+		return paperPDFResult{}, dependencyError(fmt.Sprintf("paper PDF extraction failed (%v): %s", err, stderr.String()))
+	}
+	var parsed struct {
+		Extracted struct {
+			Content string `json:"content"`
+		} `json:"extracted"`
+	}
+	if err = json.Unmarshal(out.Bytes(), &parsed); err != nil {
+		return paperPDFResult{}, fmt.Errorf("paper PDF output: %w", err)
+	}
+	if strings.TrimSpace(parsed.Extracted.Content) == "" {
+		return paperPDFResult{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "paper PDF yielded no readable full text", RequiredAction: "choose_accessible_public_paper_or_provide_existing_export"}
+	}
+	return paperPDFResult{Text: parsed.Extracted.Content, Original: append([]byte(nil), out.Bytes()...)}, nil
 }
 func (e *SummarizeExtractor) verifyVersion(ctx context.Context, env []string) error {
 	cmd := exec.CommandContext(ctx, e.NodeExecutable, e.CLIPath, "--version")
