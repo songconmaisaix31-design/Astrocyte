@@ -1,8 +1,8 @@
 # S1 同步 / 本地 Agent：W0 契约与集成
 
-## 2026-10-10 决定后继续开发（当前，未完成）
+## 2026-10-10 最终受限交接（整体 S1 未完成，待主控接纳）
 
-当前交接：整合 HEAD `ff941dab23f04e45f9e31db2e6890e1ed2102512` 已推送；普通消费 W1 REPORT `626831a8cb73030f26c8cfbce814fb43bfc4d397`、W2 REPORT `4a0b76a342f78ce2df59914813d48179415ef711`、W3 REPORT `56e9c85634156a1d3945ef59d8599b6e374c8482`。应用/测试字节与主控默认 E2E SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` 相同；仅报告与尚未消费的主控文档不同，未修改主控 STATUS/QUESTIONS/计划。已装配公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。
+最终应用整合 SOURCE `3f056d59e67ea1fcc186251c70260675e18f81d2` 已推送；普通消费 W1 REPORT `626831a8cb73030f26c8cfbce814fb43bfc4d397`、W2 REPORT `4a0b76a342f78ce2df59914813d48179415ef711`、W3 REPORT `8493ac8db9cb86c30eafdcab87bc5ec1dbee8680`（含真实AT最终报告 `56e9c85`）。相对主控默认 E2E SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f`，应用运行时代码相同，仅既有 `web/e2e/s1.spec.ts` 一旧用例断言修复与报告不同；尚未消费的主控 STATUS/QUESTIONS/计划未由W0修改。已装配公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。最后 W0 提交只改本报告，准确 REPORT SHA 由交接回执给出。
 
 W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真实 API/SQLite/objects 和明确根测试。保存结果后的冷启动恢复沿现有 `Resolve` + `ProjectSpaceID` 权限检查；`9564bca` 一度新增的未使用可选端口已由普通 `552a544` 删除，保留历史，不要求第二实现路径。新处理仍检查当前 CLI 配置，旧 UNKNOWN 不重放。旧论文 `4GQ7GKDXHZIND7CAB7GIZU3W4V` 实际模型 UNKNOWN/Result:null 保留，不推断费用、结果或根因，也不作为前轮。以下真实结果来自 W3/主控回执与原负责人报告，W0没有自行重复现场或 paid 链。
 
@@ -12,11 +12,12 @@ W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真�
 | 主控独立 `GOFLAGS=-p=1`、清除应用 opt-in 后 `pnpm check` / `pnpm build`，SOURCE `574a466f754363c27e7ec2e8a36fee7ea4bdf9cf` | PASS/exit0，14 contract_local API / 58 UI / 19包 / 232示例与客户端漂移；既有 EventV1 warning 保留 |
 | W3 实际 `s1-real-acceptance.spec.ts`，SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0` | 限定 AT01–04 **1 PASS**，测试1.5分钟/整场1.7分钟；原4pmMWO库四条新成功模型记录、真实对象发布失败后冷启动人工 retry 同 Result/attempt2无第二模型、三次获准 Agent 读取不加人类热度、later/deferred重启保留；论文为既有真实导出，不外推完整账号链 |
 | W3 实际 `s1-native-project.spec.ts`，SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` | 独立公开README原 Codex 会话 **1 PASS**，同线程 start/resume/send共三短turn、实际原上下文/输出与 human stop_confirmed；不代表其他CLI或个人项目 |
-| 主控 `pnpm test:e2e --workers=1`，SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` | 当前仍运行；已见 chromium1920 `s1.spec.ts:223` 首 FAIL，旧未配置提示断言不适配项目许可表单。实际 processor unavailable/configidnull、提交disabled、没有 model；已返原W3，整集合计数与定向复验尚待主控回执 |
+| 主控 `pnpm test:e2e --workers=1`，SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` | **152 PASS / 2 FAIL / 8 SKIP**，5.7分钟、exit1；两尺寸 `s1.spec.ts:223` 旧未配置提示断言不适配项目许可表单。实际 processor unavailable/configidnull、提交disabled、没有 model；完整首 RED 原件保留，8 SKIP不计成功 |
+| 原W3 `playwright test s1.spec.ts --grep 'default automatic processing' --workers=1`，SOURCE `bf3b5e7408245f12874830595c40e5a3a3471761` | **2 PASS**，32.1秒、exit0，两尺寸目标复验；测试只调整当前项目许可提示/空选择/未知状态断言，保留disabled/零POST/job/人类使用0。不同于完整集合重跑，不将152/2/8改成全套绿；所属端口/进程退出 |
 
-四条新成功整理来自 Codex CLI 0.162.0 / gpt-6.1-sol，旧 UNKNOWN 与真实浏览器各首 RED 原件保留。W3 已释放现场槽，主控独占默认 E2E；最新 stop输出保留/机器metadata折叠/预览scopeKey修复经 W0 TS/lint及6项相关单测、W3完整58项静态检查通过，不追加 paid native验证。真实原件、job IDs、保留库和输出路径见 owner 报告与 `docs/acceptance/S1-sync.md`。
+四条新成功整理来自 Codex CLI 0.162.0 / gpt-6.1-sol，旧 UNKNOWN 与真实浏览器各首 RED 原件保留。W3 已释放定向复验现场槽，主控独占个人真实预览：API8787/Vite5173就绪、升级前备份完成、真实个人资料/作业为空、无fixture，最终两尺寸只读复核由主控负责。最新 stop输出保留/机器metadata折叠/预览scopeKey修复经 W0 TS/lint及6项相关单测、W3完整58项静态检查通过，不追加 paid native验证。真实原件、job IDs、保留库和输出路径见 owner 报告与 `docs/acceptance/S1-sync.md`。
 
-剩余真实限制：Bili所选UID uploads HTTP412/-352挑战、favorites真实空，非空 metadata推荐→人工选择→正文链仍 NOT_RUN；Douyin self/favorite需登录，真实公开身份与匿名 transport待定。新arXiv URL获取、个人根、第二模型CLI、自动 Agent控制限度仍未完成；selected prompt输入/输出保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Pi扩展context实测 NOT_RUN，OpenCode仍有已记录限制；未知能力不推断支持。人类停止 UI 原门控由代码审阅发现并返 W3，在 `3660b0b` 修复，不冒充 W0 真实浏览器首败。未合 main/本轮远端CI/用户接受；最终独立检查、现场返修和主控接纳前本 worker 不结算完整 S1。
+剩余真实限制：Bili所选UID uploads HTTP412/-352挑战、favorites真实空，非空 metadata推荐→人工选择→正文链仍 NOT_RUN；Douyin self/favorite需登录，真实公开身份与匿名 transport待定。新arXiv URL获取、个人根、第二模型CLI、自动 Agent控制限度仍未完成；selected prompt输入/输出保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Pi扩展context实测 NOT_RUN，OpenCode仍有已记录限制；未知能力不推断支持。人类停止 UI 原门控由代码审阅发现并返 W3，在 `3660b0b` 修复，不冒充 W0 真实浏览器首败。未合 main/本轮远端CI/用户接受；原完整任务仍未实现全部验收，拟按主控接受的受限交接结算，不能宣称完整 S1 成功。
 
 最新领域修复均返原 owner，再 ordinary exact merge：W1 `f1a44b2` 对新 `attention.job_failed` 事件保存有界映射的原始 ServiceError cause，公开 job.Error 仍诚实 UNKNOWN，旧事件不补写，不保存原生正文或秘密。W2 `a797324` 离线重现同一消息1000中文token-delta在765字节即被256事件误伤；只在相同消息/turn生命周期合并连续文本，保持128KiB实际文本/256逻辑事件上限、跨控制边界分离与真实溢出拒绝。这是独立已知缺陷修复，不能证明旧论文实际 UNKNOWN 根因。W0 受影响 attention/app/sqlite 与 agents/sqlite/cmd Go tests、vet 和 server build 分别 PASS；组装 W3 `07bd294` 后 typecheck/lint/diff PASS，没有新增现场或付费调用。
 
