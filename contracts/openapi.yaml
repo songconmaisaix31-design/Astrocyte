@@ -11125,6 +11125,14 @@ components:
       type: object
       additionalProperties: false
       properties:
+        metadata_source:
+          type: string
+          enum: [github_rest, github_public_html, unknown]
+        unknown_fields:
+          type: array
+          items:
+            type: string
+          description: These metadata fields are unobserved; consumers must not display their scalar defaults as known facts.
         github_id:
           type: integer
           minimum: 1
@@ -11182,6 +11190,7 @@ components:
           $ref: "#/components/schemas/GitHubMetadataV1"
         sync_status:
           type: string
+          enum: [synced, stale, unknown]
         synced_at:
           type: string
           format: date-time
@@ -11191,6 +11200,7 @@ components:
           type: string
         clone_status:
           type: string
+          enum: [not_placed, cloning, ready, failed, interrupted, unknown]
         root:
           type: string
         head:
@@ -11239,7 +11249,7 @@ components:
           synced_at: 2026-10-10T00:00:00Z
           space_id: ""
           project_id: ""
-          clone_status: not_cloned
+          clone_status: not_placed
           root: ""
           head: ""
           clone_attempts: 0
@@ -11286,7 +11296,7 @@ components:
               synced_at: 2026-10-10T00:00:00Z
               space_id: ""
               project_id: ""
-              clone_status: not_cloned
+              clone_status: not_placed
               root: ""
               head: ""
               clone_attempts: 0
@@ -11327,7 +11337,7 @@ components:
             synced_at: 2026-10-10T00:00:00Z
             space_id: ""
             project_id: ""
-            clone_status: not_cloned
+            clone_status: not_placed
             root: ""
             head: ""
             clone_attempts: 0

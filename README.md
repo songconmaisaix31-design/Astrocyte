@@ -75,9 +75,11 @@ S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/
 
 `GET /api/v1/local-agents` 通过同一人类会话读取缓存的 CLI 清单。服务启动时仅查 PATH，并在总计 10 秒、单条命令 5 秒内运行固定 version/help；未完成的探测保持未知，刷新网页不执行 CLI。安装、配置、可启动及八项原生能力 `discover/read_context/start/resume/send/stop/observe/reconcile` 分别报告；版本/help 成功不表示模型可用。`native_adapter_registered` 仅表示后端实现了该客户端的接入协议，人类可以在已许可项目中显式 `POST /local-projects/{id}/sessions/probe` 验证空会话和停止，实际观测才更新能力。GET 和网页重载不探测、不调用模型、不推导授权；未组装能力返回 501。
 
-`/tracking-sources` 绑定多个公开发布账号或明确公开收藏夹，`/source-collections` 查询指定账号的公开收藏夹。先同步标题/简介，再给 Agent 建议，最后由人选择固定元数据 revision、排队 summarize 正文导入。启动服务时沿持久化队列同步一次，默认最多观察100条，没有定时器或全量自动入库。普通导入复用既有提取；只有明确 `refresh: true` 才重新获取，同来源旧 A 回执不把新 B 当前版本回退。B站公开列表被挑战/限流时保留失败及旧清单，不能当空同步成功；抖音 `/user/self?showTab=favorite_collection` 依赖登录，本轮公开范围不读取 cookie 或登录身份，仍需有效公开来源和支持的匿名 transport。其他平台保持待接入。
+`/tracking-sources` 绑定多个发布账号或明确收藏夹。`GET /source-collections` 只读持久化目录缓存；人类显式 `POST /source-collections/discover`（会话/CSRF/命令键）才调用公开接口或已交接的指定浏览器收藏夹，失败保留旧缓存。先同步标题/简介，再给 Agent 建议，最后由人选择固定元数据 revision、排队 summarize 正文导入。启动服务时沿持久化队列同步一次，默认最多观察100条，没有定时器或全量自动入库。普通导入复用既有提取；只有明确 `refresh: true` 才重新获取，同来源旧 A 回执不把新 B 当前版本回退。B站挑战/限流保留失败及旧清单，不能当空同步成功；抖音 `browser_selected` 仅使用主控交接的 OpenCLI 会话、稳定账号 ID 和指定收藏夹 ID，不读取无关页面、Cookie 原文或凭据，也不从 self 链接猜身份。桥未连接返回可操作错误，其他平台保持待接入。
 
-`/local-projects` 只登记人类明确选择的项目绝对路径和对应 Attention 空间；显式父根发现保留，历史读取另外登记 `history_roots` 的客户端目录并核对项目身份。默认 A 仅主动纳入的固定资料版本；B 允许明确项目子目录，C 允许当前纳入资料的一跳引用展开，均由人打开。查询不增加人类关注，作用域 Agent 读取只记机器使用。模型许可 `external_model_cli` 按项目配置、只用精确选择的 CLI 当前配置，不自行换提供方；本机 CLI 不表示模型在本机。原生接续保留原 session ID，新上下文交接明确显示 `context_handoff`，外部历史观察不获得进程控制权。调用和会话期限有界，未知动作不重放；退出服务先停止所属原生进程并保存确认状态，再关闭数据库。自动 Agent 派发仍不启用，公开抖音身份与自动控制限度仍待用户，完整验收见 [本轮计划](tasks/S1-sync-local-agent-plan.md)。
+`GET /github-repositories` 只读缓存；人类明确输入公开账号/仓库并调用 `/github-repositories/sync` 才同步元数据，单账号最多100条观察，不表示全账号完整。初次不生成代码目录。人类在 `/github-repositories/{id}/placement` 选择既有顶层蜂群开发空间后，固定程序才浅克隆到应用数据目录的 `repositories` 子目录，保存实际根与 HEAD，并登记默认 A 的项目。重复纳入复用，不启动 Agent、不赋予 BC/control/model/actions、不创建 Mission。失败或中断保留状态和所属阶段目录，只允许人类有界重试；缓存 GET 与网页重载不克隆。匿名 REST 限额后，仅明确公开仓库可采用主控已批准的官方公开 HTML 元数据后备；`metadata_source` 与 `unknown_fields` 标识来源和未观察字段，不能将其默认零值显示为事实。首批账号/私有范围仍待用户，不读取凭据或自动发现私有仓库。
+
+`/local-projects` 只登记人类明确选择的项目绝对路径和对应 Attention 空间；显式父根发现保留，历史读取另外登记 `history_roots` 的客户端目录并核对项目身份。默认 A 仅主动纳入的固定资料版本；B 允许明确项目子目录，C 允许当前纳入资料的一跳引用展开，均由人打开。查询不增加人类关注，作用域 Agent 读取只记机器使用。模型许可 `external_model_cli` 按项目配置、只用精确选择的 CLI 当前配置，不自行换提供方；本机 CLI 不表示模型在本机。原生接续保留原 session ID，新上下文交接明确显示 `context_handoff`，外部历史观察不获得进程控制权。调用和会话期限有界，未知动作不重放；退出服务先停止所属原生进程并保存确认状态，再关闭数据库。自动 Agent 派发仍不启用，未交接的浏览器范围和自动控制限度仍不推导，完整验收见 [本轮计划](tasks/S1-sync-local-agent-plan.md)。
 
 用户授权的登记项目发现通过 `GET /local-projects/registered` 查询 SQLite 缓存，GET 不执行命令。服务每次启动由固定程序在后台采集一次 Orca 实际登记根、关联 worktree、有限子项目及 Git 元数据；人类可通过 `POST /local-projects/registered/refresh` 显式刷新。来源不可用时保留旧观测和时间、标为 `stale`，部分不可用标为 `partial`，未知 Git/活动字段保持可空；Orca 创建客户端和活动时间不表示 Agent 当前正在运行。发现不自动创建项目/Attention 空间、开放 B/C、授权模型或启动 Agent；人类选取候选后沿原登记入口关联空间。Git 读取禁用 fsmonitor、hooks、未跟踪文件遍历和子模块操作，不执行项目脚本或安装依赖。停止服务取消并等待所属采集，再关闭数据库。
 
@@ -87,9 +89,9 @@ S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分�
 
 公开视频链接使用现有 `POST /materials/imports`，`adapter=summarize_url`、`kind=video`，不传 `export_text` / `local_file_ref`，`source_key` / `content_digest` 传空字符串由后端核验。`summarize`、`summarize_json`、`summarize_markdown` 继续导入既有输出，`arxiv` 继续固定版本论文全文。提取保存真实原输出；字幕、转写与位置缺失不补造，网页文字不等于视频内容。提取成功不表示 Codex 首次整理成功；模型仍由独立显式授权入口控制。
 
-本地音轨回退的启动配置使用绝对路径：`ASTROCYTE_YT_DLP_PATH` 为 yt-dlp 可执行文件；`ASTROCYTE_FFMPEG_PATH` 为 ffmpeg（同目录需要 ffprobe）；`ASTROCYTE_WHISPER_BINARY` 为 whisper.cpp CLI，`ASTROCYTE_WHISPER_MODEL` 为其本地模型。提取进程只传这些指定工具，隔离 HOME/配置目录，不继承提供商、cookie 或浏览器认证。缺工具时只使用实际上游能取得的公开字幕，失败明确返回缺证据/依赖错误，不自动调用云端转写。CPU 转写受现有 `ASTROCYTE_JOB_TIMEOUT_SECONDS` 限制；安装文件、版本命令成功和所选视频转写成功需分别核实。扩展/daemon 与登录浏览器权限仍待用户回答。
+本地音轨回退的启动配置使用绝对路径：`ASTROCYTE_YT_DLP_PATH` 为 yt-dlp 可执行文件；`ASTROCYTE_FFMPEG_PATH` 为 ffmpeg（同目录需要 ffprobe）；`ASTROCYTE_WHISPER_BINARY` 为 whisper.cpp CLI，`ASTROCYTE_WHISPER_MODEL` 为其本地模型。提取进程只传这些指定工具，隔离 HOME/配置目录，不继承提供商、cookie 或浏览器认证。缺工具时只使用实际上游能取得的公开字幕，失败明确返回缺证据/依赖错误，不自动调用云端转写。CPU 转写受现有 `ASTROCYTE_JOB_TIMEOUT_SECONDS` 限制；安装文件、版本命令成功和所选视频转写成功需分别核实。summarize 扩展/daemon 不在本轮接入；本轮登录浏览器许可仅用于 OpenCLI 指定抖音收藏夹元数据，不扩大正文外发或 summarize 来源权限。
 
-公开发布清单的 `ASTROCYTE_LISTING_PYTHON` 指向已锁定 yt-dlp 环境中的 Python 绝对路径；`pnpm dev/start` 自动选择现有媒体环境的 `Scripts/python.exe`。不会回退全局 Python、自动安装依赖或扫描项目历史；缺环境的发布同步保留配置错误，公开收藏夹 HTTP 查询仍可使用。当前不做 summarize 浏览器扩展，不接受登录采集或凭据读取。
+公开发布清单的 `ASTROCYTE_LISTING_PYTHON` 指向已锁定 yt-dlp 环境中的 Python 绝对路径；`pnpm dev/start` 自动选择现有媒体环境的 `Scripts/python.exe`。不会回退全局 Python、自动安装依赖或扫描项目历史；缺环境的发布同步保留配置错误，公开收藏夹 HTTP 查询仍可使用。当前不做 summarize 浏览器扩展；OpenCLI 仅允许明确交接的登录抖音收藏夹元数据，仍禁止凭据原文读取。
 
 Windows x64 可运行 `pwsh -NoProfile -File scripts/install-media.ps1`（需要已安装 Python >=3.10；`-PythonExecutable` 可指定其绝对路径）。脚本读取依赖清单中的固定 yt-dlp、ffmpeg/ffprobe、whisper.cpp release 和固定上游 revision 的多语言 base 模型，安装至 `%LOCALAPPDATA%/Astrocyte/media`；`pnpm dev/start` 自动发现其中实际存在的工具。`ASTROCYTE_MEDIA_DIR` 或安装参数 `-MediaRoot` 可改为专用绝对目录，单项路径覆盖优先。安装仅使用版本目录/venv，不更新全局 CLI 或 Python 包。Linux/macOS 目前需自行安装对应上游工具并配置单项路径，Windows安装脚本不适用。
 
