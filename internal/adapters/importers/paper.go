@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -117,4 +118,66 @@ func paperSource(snapshot PaperSnapshot, html []byte) (app.ImportedSource, error
 		return source, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "Access restriction detected; no entitlement bypass", RequiredAction: "choose_accessible_public_paper_or_provide_existing_export"}
 	}
 	return source, nil
+}
+
+// aclAnthologyID matches the ACL Anthology identifier embedded in its DOI and
+// PDF/landing URLs (e.g. 2024.acl-long.1, P19-1001, D19-1001).
+var aclAnthologyID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+
+// paperPDFSourceKey derives a stable material identity from a public PDF URL.
+// The ACL Anthology embeds its identifier and thus its DOI in the URL, so the
+// landing page and PDF share one source key; other sites fall back to the
+// canonical URL. A PDF link is never presented as full text itself.
+func paperPDFSourceKey(pdfURL string) string {
+	u, err := url.Parse(pdfURL)
+	if err == nil && (u.Hostname() == "aclanthology.org" || u.Hostname() == "www.aclanthology.org") {
+		id := strings.TrimSuffix(strings.TrimPrefix(u.Path, "/"), ".pdf")
+		if id != "" && !strings.Contains(id, "/") && aclAnthologyID.MatchString(id) {
+			return "doi:10.18653/v1/" + id
+		}
+	}
+	return canonicalWebKey(pdfURL)
+}
+
+// pdfName returns a stable attachment stem for a PDF URL, used for the stored
+// original document and its extraction metadata.
+func pdfName(pdfURL string) string {
+	u, err := url.Parse(pdfURL)
+	if err != nil {
+		return "paper"
+	}
+	parts := strings.Split(strings.Trim(u.Path, "/"), "/")
+	last := parts[len(parts)-1]
+	if strings.HasSuffix(strings.ToLower(last), ".pdf") {
+		last = last[:len(last)-4]
+	}
+	if last == "" {
+		return "paper"
+	}
+	return last
+}
+
+// paperPDFSource builds an importable paper source from an already-downloaded
+// public PDF and its summarize extraction. The PDF is stored as an original
+// attachment; its extracted markdown is the full text. The PDF URL is never
+// emitted as metadata full text, and a restricted/paywalled or empty document
+// never reaches this point.
+func paperPDFSource(pdfURL, title string, text string, pdf, original []byte) app.ImportedSource {
+	name := pdfName(pdfURL)
+	if title == "" {
+		title = name
+	}
+	return app.ImportedSource{
+		SourceKey:     paperPDFSourceKey(pdfURL),
+		SourceLocator: pdfURL,
+		Kind:          "paper",
+		Title:         title,
+		Text:          fmt.Sprintf("# %s\n\nSource: %s\n\n## Full text (PDF extraction)\n\n%s", title, pdfURL, text),
+		SourceSpans:   []string{"whole PDF document: " + pdfURL},
+		Provenance:    app.Provenance{Processor: "paper_pdf+summarize", Version: "summarize 0.25.1 + markitdown", Mode: "public_pdf_fulltext", Source: pdfURL},
+		Attachments: []app.SourceAttachment{
+			{Name: name + ".pdf", MediaType: "application/pdf", Data: pdf, SourceLocator: pdfURL},
+			{Name: "summarize-pdf-original.json", MediaType: "application/json", Data: original, SourceLocator: pdfURL},
+		},
+	}
 }

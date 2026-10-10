@@ -78,10 +78,23 @@ func TestIsPublicIP(t *testing.T) {
 		{"192.168.1.1", false},
 		{"169.254.1.1", false},
 		{"0.0.0.0", false},
+		{"100.64.0.1", false},
+		{"100.127.255.254", false},
+		{"192.0.0.9", false},
+		{"192.0.2.1", false},
+		{"198.18.0.1", false},
+		{"198.19.255.254", false},
+		{"198.51.100.1", false},
+		{"203.0.113.1", false},
+		{"240.0.0.1", false},
+		{"255.255.255.255", false},
 		{"::1", false},
 		{"fc00::1", false},
 		{"fe80::1", false},
+		{"::ffff:10.0.0.1", false},
+		{"::ffff:192.168.1.1", false},
 		{"2606:4700:4700::1111", true},
+		{"2001:4860:4860::8888", true},
 	}
 	for _, c := range cases {
 		if got := isPublicIP(net.ParseIP(c.addr)); got != c.want {
