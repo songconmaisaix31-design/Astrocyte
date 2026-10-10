@@ -144,7 +144,7 @@ for (const path of ['attention', 'workspace', 'swarm']) {
   test(`${path} has usable shell and no horizontal overflow`, async ({ page }) => {
     await page.goto(`/${path}?fixture=1`);
     await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('textbox', { name: '搜索当前页资料、任务或 Agent' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: path === 'workspace' ? '搜索已加载项目、目录与备注' : '搜索当前页资料、任务或 Agent' })).toBeVisible();
     await expect(page.getByRole('complementary', { name: '研究提示' })).toBeVisible();
     await expect(page.getByRole('tablist')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);

@@ -11,6 +11,7 @@ type S = components['schemas'];
 test('actual project overview and human records persist across refresh and owned cold restart', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_PROJECT_BOARD !== '1', 'Requires the controller-assigned local project/browser slot.');
   test.setTimeout(600_000);
+  page.setDefaultTimeout(30_000);
   const reusePath = process.env.ASTROCYTE_BOARD_REUSE_OWNED_TEMP;
   const ownedRoot = process.env.ASTROCYTE_BOARD_REUSE_APPROVED_ROOT;
   if (reusePath) expect(ownedRoot && resolve(ownedRoot) === resolve(reusePath)).toBeTruthy();
@@ -38,9 +39,13 @@ test('actual project overview and human records persist across refresh and owned
     await expect(metric('来源文件夹')).toHaveText(String(new Set(snapshot.board!.flatMap(item => item.roots)).size));
     await expect(metric('已记录客户端')).toHaveText(String(new Set(snapshot.board!.flatMap(item => item.contributors.map(source => source.cli).filter(Boolean))).size));
     for (const width of [1920, 1280, 390]) {
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 1080 });
+      await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       await expect(board.getByRole('button', { name: '同步最近改动', exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      const firstCard = await board.getByRole('button', { name: /^查看项目 / }).first().boundingBox();
+      console.log(JSON.stringify({ viewport: width, first_project: firstCard, viewport_height: page.viewportSize()?.height }));
+      expect(firstCard).not.toBeNull();
+      if (width >= 1280) expect(firstCard!.y + 80).toBeLessThan(page.viewportSize()!.height);
       await page.screenshot({ path: testInfo.outputPath(`actual-board-${width}.png`), fullPage: false, animations: 'disabled' });
     }
     if (process.env.ASTROCYTE_BOARD_PREVIEW_ONLY === '1') return;
@@ -83,8 +88,13 @@ test('actual project overview and human records persist across refresh and owned
     await board.getByLabel('分组', { exact: true }).selectOption(group);
     await board.getByLabel('继续意愿', { exact: true }).selectOption('想继续做');
     await board.getByLabel('搜索项目', { exact: true }).fill('复核项目来源');
+    const headerSearch = page.getByRole('textbox', { name: '搜索已加载项目、目录与备注', exact: true });
+    await expect(headerSearch).toHaveAttribute('placeholder', '搜索项目、目录或备注…');
+    await headerSearch.fill(selected.name);
     await expect(card).toHaveCount(1);
     await board.getByRole('button', { name: '清除筛选', exact: true }).click();
+    await expect(headerSearch).toHaveValue('');
+    await expect(board.getByLabel('搜索项目', { exact: true })).toHaveValue('');
     await card.click();
     await dialog.getByRole('checkbox', { name: '归档此项目（可取消并保存恢复）', exact: true }).check();
     const archiveResponse = page.waitForResponse(response => response.url().endsWith(`/registered/${selected.id}/metadata`) && response.request().method() === 'PUT');
@@ -119,7 +129,7 @@ test('actual project overview and human records persist across refresh and owned
     expect((await restoreResponse).status()).toBe(200);
     await expect(dialog.getByRole('status').filter({ hasText: '已保存项目记录' })).toBeVisible();
     for (const width of [390, 1280, 1920]) {
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 1080 });
+      await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
       await page.screenshot({ path: testInfo.outputPath(`actual-project-detail-${width}.png`), fullPage: true, animations: 'disabled' });
