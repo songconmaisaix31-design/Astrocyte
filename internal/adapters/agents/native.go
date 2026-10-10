@@ -170,8 +170,11 @@ func (n *Native) ReadContext(ctx context.Context, s domain.NativeSession) ([]dom
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	n.observed("read_context")
-	return p.observe().Events, nil
+	events, err := n.readOwnedContext(ctx, p, s)
+	if err == nil {
+		n.observed("read_context")
+	}
+	return events, err
 }
 
 var codexDisabledFeatures = []string{"shell_tool", "unified_exec", "plugins", "apps", "browser_use", "browser_use_external", "browser_use_full_cdp_access", "computer_use", "view_image", "image_generation", "multi_agent", "multi_agent_v2", "memories", "hooks", "code_mode", "code_mode_host", "skill_search", "tool_suggest", "workspace_dependencies", "realtime_conversation", "remote_plugin", "remote_models", "in_app_browser", "in_app_local_automation", "sleep_tool"}
