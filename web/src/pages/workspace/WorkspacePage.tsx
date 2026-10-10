@@ -1,3 +1,4 @@
+import { GitHubRepositoriesPanel } from './GitHubRepositoriesPanel';
 import { useState, useCallback } from 'react';
 import { useProjects, useProposals, useSessions, useLocalAgents } from '../../hooks/useReadApi';
 import { fixtureProjects, fixtureProposals, fixtureSessions } from '../../fixtures';
@@ -37,6 +38,7 @@ export function WorkspacePage({ fixture, query }: Props) {
   const prop = useProposals();
   const sess = useSessions();
   const agents = useLocalAgents(!fixture);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
   const [selected, setSelected] = useState<SelectedItem>(null);
 
   const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
@@ -61,10 +63,12 @@ export function WorkspacePage({ fixture, query }: Props) {
         </div>
       )}
 
-      <div className={styles.grid}>
-        {!projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
+{inventoryOpen && <DetailPanel title="检查本机 Agent" onClose={() => setInventoryOpen(false)}><LocalAgentsPanel state={agents} fixture={fixture} /></DetailPanel>}
+            <div className={styles.grid}>
+        {fixture && !projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
         {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <ManagedProjectsPanel agents={agents} query={query} />}
-        <LocalAgentsPanel state={agents} fixture={fixture} />
+        <GitHubRepositoriesPanel fixture={fixture} query={query} />
+        <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
 
         {/* ── Proposals ── */}
         <SectionCard tabs={['proposals']} title="提案" count={proposals.length}>
@@ -83,7 +87,7 @@ export function WorkspacePage({ fixture, query }: Props) {
 
         {/* ── Sessions (full width) ── */}
         <div className={styles.fullWidth}>
-          <SectionCard tabs={['overview', 'sessions']} title="会话" count={sessions.length}>
+          <SectionCard tabs={fixture || sessions.length || sess.error ? ['overview', 'sessions'] : ['sessions']} title="会话" count={sessions.length}>
             {fixture ? (
               <SessionList items={sessions} onSelect={(s) => setSelected({ kind: 'session', data: s })} />
             ) : sess.loading && !sess.data ? (
@@ -97,8 +101,8 @@ export function WorkspacePage({ fixture, query }: Props) {
             )}
           </SectionCard>
         </div>
-        <SectionCard title="研究路线" tabs={['overview']}><ResearchRoutes fixture={fixture} /></SectionCard>
-        <SectionCard title="研究动态" tabs={['overview']}><DesignTimeline fixture={fixture} /></SectionCard>
+        <SectionCard title="研究路线" tabs={['proposals']}><ResearchRoutes fixture={fixture} /></SectionCard>
+        <SectionCard title="研究动态" tabs={['sessions']}><DesignTimeline fixture={fixture} /></SectionCard>
       </div>
 
       {/* ── Detail Panels ── */}

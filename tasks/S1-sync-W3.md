@@ -1,5 +1,16 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 仓库、浏览器收藏与整页重设计（2026-10-10，ctx_109ed3ce3f60）
+
+固定 owner：本机 Orca Codex / GPT-6.1-Sol high fast（主控实际屏幕回执）；worktree/branch `s1-sync-ui-1010`。基线普通合入 root `6e84a92`，不重写历史。write_paths 为 `web/src/` 除 `api/`、`web/public/`、`web/e2e/`、本文件、`docs/acceptance/S1-sync.md`；全轨互斥边界见 [总计划](S1-repository-browser-design-plan.md)。W0 独占契约/客户端/入口/锁/迁移，W1 独占浏览器收藏适配，W2 独占仓库/克隆领域；跨轨只消费普通合并的公开接口。
+
+执行顺序：1. 三页导航、任务入口、渐进详情、宽窄屏视觉及官方本地资产；2. 消费 W0 GitHub 元数据/人工纳入和 selected Douyin 接口；3. 类型、lint、单测、构建；4. 主控授予独占应用浏览器槽后运行两桌面尺寸与窄屏真实API验收及持久化；5. 同 Worker 返修、commit/push/报告。资料页首屏提供导入、来源更新和队列入口，整理设置独立展开；工作区将目录发现与客户端核查收起；蜂群顶部提供开发空间，Mission 执行继续未实现。
+
+设计依据：[Apple HIG Layout](https://developer.apple.com/design/human-interface-guidelines/layout) 的清晰层次、对齐、适应尺寸和间距；[GitHub Logo](https://brand.github.com/foundations/logo) 的次要集成标识、原始比例及不暗示合作。官方站点图标原件、URL、MIME 和下载失败均记录在 `web/public/brands/provenance.json`；不用第三方 logo 包，浏览器只加载本地资产。Codex 使用 OpenAI 开发者站官方标志，不声称是独立 Codex 产品图标；Grok 官方请求403时使用通用图标，不能用自画 logo 冒充。
+
+第一阶段检查：`pnpm --dir web typecheck` PASS；`pnpm --dir web lint` PASS；`pnpm --dir web test` PASS 58/58。浏览器、最终构建及新接口整合尚未运行，不据此宣称完成。原 AT01–04、首失败和 UNKNOWN 保留，不重放付费/媒体。
+
+
 ## 本轮公开收藏与 Orca 项目续验（2026-10-10，Dispatch ctx_0c1c1e070200）
 
 最终应用/测试 SOURCE `66e05ca180cd2adee412199348dd3867841dc507`，分支 `s1-sync-ui-1010` 已 push。本机 Orca Codex / gpt-6.1-sol，写域仅 Attention/Workspace 局部 UI、原 E2E 和本报告/验收文档。用户当前已允许读取 Orca 登记的本地项目；旧“个人根未许可”和公开夹0条均仅为下文历史。GitHub 同步语义及抖音可分享的公开身份仍待答，其他平台保持待接入，自动派发不启用。报告提交只改这两份文档，不改变上述 SOURCE，精确 REPORT SHA 随交接消息提供。

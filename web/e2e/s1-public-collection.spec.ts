@@ -32,8 +32,10 @@ test('real selected Bilibili public collection persists metadata, gates selectio
   let completed = false;
   try {
     await page.goto(`${server.webURL}/attention`);
+    await page.getByRole('button', { name: /查看来源更新/ }).click();
     const accounts = page.locator('section').filter({ has: page.getByRole('heading', { name: '账号与更新清单', exact: true }) }).first();
     await accounts.getByText('绑定公开创作者 / 收藏夹', { exact: true }).click();
+    await accounts.locator('summary').filter({ hasText: /^手动填写来源身份（高级）$/ }).click();
     await accounts.getByLabel('追踪内容', { exact: true }).selectOption('favorites');
     await expect(accounts.getByLabel('收藏夹所属账号 ID', { exact: true })).toHaveValue(owner);
     const collectionsResponse = page.waitForResponse(response => response.url().includes('/api/v1/source-collections?') && response.request().method() === 'GET');
@@ -92,6 +94,7 @@ test('real selected Bilibili public collection persists metadata, gates selectio
     expect(server.query("SELECT id, data FROM attention_jobs WHERE json_extract(data,'$.kind')!='source_sync' ORDER BY id")).toEqual(originalJobs);
     expect(server.query('SELECT id, data FROM local_agent_sessions ORDER BY id')).toEqual(originalSessions);
     await page.reload();
+    await page.getByRole('button', { name: /查看来源更新/ }).click();
     await accounts.getByLabel('查看公开来源', { exact: true }).selectOption(sourceID);
     await expect(review.locator('li')).toHaveCount(synced.items.length);
     for (const width of [1280, 1920]) {
@@ -119,8 +122,10 @@ test('real public collection keeps the unavailable video visible and prevents re
   let primaryError: unknown;
   try {
     await page.goto(`${server.webURL}/attention`);
+    await page.getByRole('button', { name: /查看来源更新/ }).click();
     const accounts = page.locator('section').filter({ has: page.getByRole('heading', { name: '账号与更新清单', exact: true }) }).first();
     await accounts.getByText('绑定公开创作者 / 收藏夹', { exact: true }).click();
+    await accounts.locator('summary').filter({ hasText: /^手动填写来源身份（高级）$/ }).click();
     await accounts.getByLabel('追踪内容', { exact: true }).selectOption('favorites');
     await accounts.getByLabel('公开收藏夹 ID', { exact: true }).fill('3501892975');
     await accounts.getByLabel('公开主页 / 收藏夹链接', { exact: true }).fill(`https://space.bilibili.com/${owner}/favlist?fid=3501892975`);

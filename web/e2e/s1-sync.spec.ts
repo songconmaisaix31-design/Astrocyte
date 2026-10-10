@@ -39,6 +39,7 @@ test('real local inventory displays saved independent observations and refreshes
   const payload = await response.json() as components['schemas']['LocalAgentListV1'];
   await testInfo.attach('local-agents-response', { body: JSON.stringify(payload, null, 2), contentType: 'application/json' });
   console.log('Local inventory:', JSON.stringify({ clients: payload.items.length, installed: payload.items.filter(agent => agent.installed.status === 'available').length, configured: payload.items.filter(agent => agent.configured.status === 'available').length, startable: payload.items.filter(agent => agent.startable.status === 'available').length }));
+  await page.getByRole('button', { name: '检查本机 Agent 清单', exact: true }).click();
   const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本机 Agent 清单', exact: true }) }).first();
   await expect(panel.locator('li')).toHaveCount(payload.items.length);
   for (const agent of payload.items) {
