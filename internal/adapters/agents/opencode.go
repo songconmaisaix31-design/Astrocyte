@@ -26,9 +26,12 @@ import (
 
 // opencodeDenyPermission denies every tool explicitly. It is written into the
 // owned config and, as OPENCODE_PERMISSION, merged last by config.ts after
-// managed/well-known/account config, so a hostile or inherited allow rule cannot
-// survive. `*` is the global default; the named keys cover tools a deep merge
-// from a managed source might otherwise lift.
+// managed/well-known/account config. `*` alone is not enough because a deep
+// merge does not erase an inherited specific read/bash allow, so each named key
+// is denied too. Agent-specific permission rules (agent rules take precedence)
+// from a managed/well-known source are still not guaranteed overridden: this
+// adapter never claims that residual path is suppressed and stays fail-closed
+// (Configured=unknown, no model readiness claimed).
 const opencodeDenyPermission = `{"*":"deny","read":"deny","edit":"deny","bash":"deny","glob":"deny","grep":"deny","webfetch":"deny","websearch":"deny","task":"deny","skill":"deny","lsp":"deny","question":"deny","external_directory":"deny","doom_loop":"deny"}`
 
 // opencodeNative drives `opencode serve` over loopback HTTP with Basic auth.

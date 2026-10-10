@@ -171,6 +171,19 @@ func TestOpencodeLiveSessionChain(t *testing.T) {
 	if !strings.Contains(text(handoffObs), marker) {
 		t.Fatalf("handoff session did not reference the carried context marker: %q", text(handoffObs))
 	}
+	handoffHistory, err := adapter.ReadContext(ctx, s2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handoffHasUser := false
+	for _, e := range handoffHistory {
+		if e.Kind == "user_text" && strings.Contains(e.Text, marker) {
+			handoffHasUser = true
+		}
+	}
+	if !handoffHasUser {
+		t.Fatalf("handoff session read context did not show the carried selected content: %+v", handoffHistory)
+	}
 	if _, err := adapter.Stop(ctx, s2); err != nil {
 		t.Fatal(err)
 	}
