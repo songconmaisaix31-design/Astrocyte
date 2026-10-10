@@ -6,7 +6,7 @@
 
 W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真实 API/SQLite/objects 和明确根测试。保存结果后的冷启动恢复沿现有 `Resolve` + `ProjectSpaceID` 权限检查；`9564bca` 一度新增的未使用可选端口已由普通 `552a544` 删除，保留历史，不要求第二实现路径。新处理仍检查当前 CLI 配置，旧 UNKNOWN 不重放。W3 真源浏览器首败 CRLF/LF matcher 与保留库由主控追踪，不覆盖为成功；首轮0 paid，实际视频正文和论文原文已由主控独立核对，后续模型/原生/完整 AT 待现场结果。
 
-剩余真实限制：公开账号上游挑战/限流、无实际公开收藏条目、Douyin公开身份与匿名 transport、个人根和自动 Agent 控制限度仍未完成；selected prompt 保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Codex/Pi新完整历史扩展实测仍 NOT_RUN。人类停止 UI 原门控首败已返 W3，并在 `3660b0b` 修复；W0 TS/lint、nativePermission 3项、jobPresentation 4项目标检查 PASS，没有重复完整套件或使用现场槽；最终独立检查、现场返修和总控接收完成前本 worker 不结算完整 S1。
+剩余真实限制：公开账号上游挑战/限流、无实际公开收藏条目、Douyin公开身份与匿名 transport、个人根和自动 Agent 控制限度仍未完成；selected prompt 保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Codex/Pi新完整历史扩展实测仍 NOT_RUN。人类停止 UI 原门控由代码审阅发现并返 W3，在 `3660b0b` 修复（本项未由 W0 执行真实浏览器首败）；W0 TS/lint、nativePermission 3项、jobPresentation 4项目标检查 PASS，没有重复完整套件或使用现场槽；最终独立检查、现场返修和总控接收完成前本 worker 不结算完整 S1。
 
 Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 实际 provider `codex`、model `gpt-6.1-sol`；W0 单独拥有契约、HTTP、入口、迁移及集成写域，其他领域返修由原 owner 完成。第一步 `git fetch origin` PASS，普通合入准确主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，合并 `8d69854`。用户事实源为 QUESTIONS 顶部；公开抖音身份、个人项目根和自动 Agent 派发限度仍待用户，不由实现推导授权。
 
