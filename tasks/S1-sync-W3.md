@@ -81,6 +81,32 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## 主控明确的新整理目标（尚未执行）
+
+主控确认原生路径已接受，继续保留旧论文 `4GQ7GKDXHZIND7CAB7GIZU3W4V` UNKNOWN，不换UUID同题重发。下一阶段新paper content目标为“梳理论文关键术语及正文定义依据，缺失定义标待查，不重做旧核心方法/局限作业”，只用完整固定正文；topic只延续新术语定义记录，旧UNKNOWN不作前轮；原视频content/topic沿原授权，各资料两轮，最多4个新成功目标，遇任何新UNKNOWN即停止诊断。W2报告离线复现连续token-delta计数误伤并修复，但这不是旧paper实际根因证明；待W0普通组装发布exactSOURCE后开始。
+
+测试准备复用4pmMWO原DB/objects、已登记project/space/refs，无重复空间/@引用或媒体。模型作业默认普通receipt复用，已成功的发布恢复job不再故障注入；既有成功结果保留。首次新准备typecheck因ProjectSpaceDetailV1误名FAIL，使用生成ProjectSpaceResultV1后typecheck/lint/diff PASS；一次格式化命令PowerShell解析失败未执行静态检查，后用字面here-string完成，不当作PASS。新付费整理尚未执行，论文模型/AT01–04/完整S1仍未通过。
+
+## 原生同一会话续验：实际浏览器 PASS，首败独立保留
+
+SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` 已push，精确原自有目录/session复用：`ASTROCYTE_TEST_REAL_NATIVE_UI=1`、`ASTROCYTE_NATIVE_REUSE_OWNED_TEMP=ASTROCYTE_NATIVE_REUSE_APPROVED_ROOT=C:/Users/DW/AppData/Local/Temp/astrocyte-s1-pznwxr`、`ASTROCYTE_NATIVE_REUSE_SESSION_ID=daadea80-df3a-46f1-9e20-6777586911a2`，执行 `pnpm --dir web exec playwright test s1-native-project.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-native-original-session`：1 PASS，测试29.3秒/整场56.3秒、exit0。
+
+实际UI第二resume200且同NativeID/非context_handoff，观察actual marker，活跃真实GETcontext200返回先前与本轮user/assistant记录，第三send200并观察新输出，humanSTOP200/stop_confirmedtrue。SQLite只有1owned/native会话，start/resume/send操作accepted，最终completed/stop_confirmedtrue/pending空，资料0。没有第四turn，没有追加媒体或个人目录读取。1280/1920同实际状态截图已目视，表单与动作可换行，无横向溢出；完整记录仅在明确读取的详情展开。保留原pznwxr库供主控只读，15173/18787/53022/53023无监听、所属node/server/本场codex进程退出。
+
+实际附件来自既有Playwright报告body，原样另存 `web/test-results/s1-native-original-session/s1-native-project-human-ob-be65c-nd-sends-one-scoped-message-chromium-1920/actual-native-receipts.json`（8份真实receipt），命令日志 `web/test-results/s1-native-original-session-command.log`，同目录 `actual-native-{1280,1920}.png`。首场trace收口代码摘录读到了已准备的续验test，原错误matcher必须以SOURCE6382900 Git blob为准；原网络事件/trace未改写，首FAIL不改成PASS。此PASS仅独立公开README的原生流程，论文模型UNKNOWN、完整AT01–04、真实非空公开来源人工选择仍未完成；不能外推全部CLI或个人项目范围。
+
+## 原生首轮：真实 start 已返回，测试 response matcher 首败
+
+SOURCE `6382900b787421f8628f331797c9194862833f1c`，`ASTROCYTE_TEST_REAL_NATIVE_UI=1 pnpm --dir web exec playwright test s1-native-project.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-native-first`：1 FAIL、6.0分钟、exit1。实际UI start POST `/local-projects/{id}/sessions` 200，但测试误等待 `/sessions/start`，直至原360秒预算耗尽；未重做start。首turn实际API观察completed、输出公开README marker，活跃sameID真实GETcontext200返回原user_text与assistant marker，人类STOP200/stop_confirmedtrue。上述实际API诊断不同于浏览器完整流程PASS；context/resume/send的浏览器验收尚待续验。
+
+原库 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-pznwxr`，project `e30891f8-ad2d-459a-b399-05d0bbf7357b`，session `daadea80-df3a-46f1-9e20-6777586911a2`，nativeID `01a124d5-5910-7c10-b937-dcbcba7ebc14` 保留。完整实际命令日志 `web/test-results/s1-native-first-command.log`；原trace/error-context/截图 `web/test-results/s1-native-first/s1-native-project-human-ob-be65c-nd-sends-one-scoped-message-chromium-1920/`。续验只复用这条已确认停止会话，明确resume第二turn和send第三turn，总量包含原首start，不新增第四turn或读取个人根。续验准备typecheck首次闭包project可选性FAIL，固定已登记ID后typecheck/lint/diff PASS；响应匹配用actual generated API端点、页面等待30秒，结果unknown禁止继续输入。
+
+## Full S1 原库续验：实际首模型 UNKNOWN
+
+SOURCE `3660b0bace59fa21e1056bd29f4d0187b1da996a` 已push，同源原库 `4pmMWO`、`--output=test-results/s1-real-newline-fix`：1 FAIL，42.1秒、exit1。三个既有imports receipt复用且无第二次媒体获取；真实额外论文2501v1/v2导入成功，A→B→A保持v2当前head且旧A复用原receipt；textarea实际LF核对通过。首论文模型作业 `4GQ7GKDXHZIND7CAB7GIZU3W4V` / operation `34XJQPMRWDLX5O3CPJCBN7M6PJ` 于15:58:05.704创建、15:58:23.589为failed/delivery_unknown=true/external_started=true/attempt1，30分钟deadline未到；约18秒原生过程后未知结果，不是测试提前timeout，费用/结果不能推断。
+
+只读同库Result:null、distillations0，唯一local_agent_sessions为no-modelprobe（owned/stopped/stop_confirmed=true），不是模型作业。attention_outbox原cause与error均generic delivery_unknown，未保存更细method/reason。原trace/error-context/截图在 `web/test-results/s1-real-newline-fix/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/`，原objects/库保留。API/Vite及所属CLI进程均退出、15173/18787/59244/59245无监听；W1/W2获指定路径只读诊断，旧job不换UUID或同题重发。根主控允许在原独占槽继续独立公开README原生最多3短turn，实际read_context无新增turn；新材料模型作业须待主控明确新问题选择，完整AT01–04未通过。
+
 ## Full S1 首轮真实浏览器 RED 与原库续验准备
 
 SOURCE `393676ebc5241c1db56c721caa776e248d98dc19`，主控单槽 `ASTROCYTE_TEST_REAL_S1_ACCEPTANCE=1 pnpm --dir web exec playwright test s1-real-acceptance.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-real-first`：1 FAIL、exit1，trace 约229.1秒。论文既有真实JSON、视频既有正文与一次明确视频URL刷新三个实际作业均 succeeded/attempt1/delivery_unknown=false；SQLite 沉淀0、原生会话0，未调用模型。失败是历史CRLF被浏览器textarea规范为LF，测试却要求原始字节相等；原export不改，修正核对实际人类输入文本，不改变版本内容。
