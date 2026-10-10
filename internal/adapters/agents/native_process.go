@@ -62,6 +62,15 @@ func installedCommand(id string, args []string) (*exec.Cmd, error) {
 	}
 	ext := strings.ToLower(filepath.Ext(entry))
 	if ext == ".cmd" || ext == ".bat" || ext == ".ps1" {
+		if id == "opencode" {
+			// The npm opencode-ai package ships a native Windows binary, not a
+			// Node script; return it directly rather than a node invocation.
+			native := filepath.Join(filepath.Dir(entry), "node_modules", "opencode-ai", "bin", "opencode.exe")
+			if info, err := os.Stat(native); err == nil && info.Mode().IsRegular() {
+				return exec.Command(native, args...), nil
+			}
+			return nil, nativeError(apierrors.ProviderUnavailable, "verified installed native entrypoint is unavailable")
+		}
 		var suffix string
 		switch id {
 		case "codex":

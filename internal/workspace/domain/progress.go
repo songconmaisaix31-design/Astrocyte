@@ -16,11 +16,31 @@ type ProgressEvidence struct {
 // ProgressOperation is a durable inference receipt, mirroring NativeOperation:
 // an operation identity is persisted before the model turn so a retry cannot
 // silently re-charge. accepted/failed/unknown match the native receipt statuses.
+// A successful receipt keeps an immutable Result snapshot so a later retry
+// returns the original accepted result even after a human write has changed the
+// advisory record.
 type ProgressOperation struct {
-	Action     string     `json:"action"` // "infer"
-	Status     string     `json:"status"` // pending | accepted | failed | unknown
-	CreatedAt  time.Time  `json:"created_at"`
-	FinishedAt *time.Time `json:"finished_at,omitempty"`
+	Action     string          `json:"action"` // "infer"
+	Status     string          `json:"status"` // pending | accepted | failed | unknown
+	CreatedAt  time.Time       `json:"created_at"`
+	FinishedAt *time.Time      `json:"finished_at,omitempty"`
+	Result     *ProgressResult `json:"result,omitempty"`
+}
+
+// ProgressResult is the immutable snapshot of one accepted inference, captured
+// inside its receipt at publication time. It is the durable source of truth a
+// retry reuses, never the live advisory fields a later human write may replace.
+// SettingsRevision records the project permission revision the result was
+// computed under, so a re-publication re-checks that consent has not changed.
+type ProgressResult struct {
+	Status           string             `json:"status"`
+	Summary          string             `json:"summary,omitempty"`
+	Percent          *int               `json:"percent,omitempty"`
+	Evidence         []ProgressEvidence `json:"evidence,omitempty"`
+	NativeID         string             `json:"native_id,omitempty"`
+	Model            *string            `json:"model,omitempty"`
+	ObservedAt       time.Time          `json:"observed_at"`
+	SettingsRevision int                `json:"settings_revision"`
 }
 
 // ProjectProgress is a human-authored or model-inferred project stage. It is an
@@ -54,13 +74,13 @@ type ProgressInput struct {
 }
 
 // ProgressCommand names the bounded fixed files (for example TASK.md or
-// STATUS.md) already inside the approved project directory, plus an explicit
-// UUID operation identity for idempotent inference. The service re-validates
-// every path and never accepts an arbitrary disk path or a credential/native
-// state component.
+// STATUS.md) already inside the approved project directory. The operation
+// identity is supplied by the transport (Caller.OperationID, an Idempotency-Key
+// header), never decoded from a body, so a hostile payload cannot forge or
+// replay an inference identity. The service re-validates every path and never
+// accepts an arbitrary disk path or a credential/native state component.
 type ProgressCommand struct {
-	OperationID string   `json:"operation_id"`
-	Files       []string `json:"files"`
+	Files []string `json:"files"`
 }
 
 // ValidProgressStatus bounds the free-form status label so a hostile or

@@ -148,7 +148,7 @@ func TestNativeRepliesAreCorrelatedAndBoundedOutputCancels(t *testing.T) {
 func TestNativeBudgetIsSharedAcrossCLIsAndFailedLaunchReleasesSlot(t *testing.T) {
 	t.Setenv("PATH", "")
 	r := NewRegistry(t.TempDir())
-	n := r.adapters["codex"]
+	n := r.adapters["codex"].(*Native)
 	for i := 0; i < cap(n.slots); i++ {
 		n.slots <- struct{}{}
 	}
@@ -167,7 +167,7 @@ func TestNativeBudgetIsSharedAcrossCLIsAndFailedLaunchReleasesSlot(t *testing.T)
 
 func TestCachedConfigurationCannotBecomeFreshByObservingOldResult(t *testing.T) {
 	r := NewRegistry(t.TempDir())
-	n := r.adapters["claude"]
+	n := r.adapters["claude"].(*Native)
 	old := time.Now().Add(-10 * time.Minute)
 	p := &nativeProcess{model: "native-observed", provider: "configured_cli_transport", modelObservedAt: old}
 	n.refreshConfiguration(p)

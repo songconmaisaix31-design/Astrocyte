@@ -32,7 +32,7 @@ func (w contextRPCWriter) Write(data []byte) (int, error) {
 }
 func contextTestProcess(t *testing.T, cli string, reply func(map[string]json.RawMessage) map[string]json.RawMessage) (*Native, domain.NativeSession) {
 	t.Helper()
-	n := NewRegistry(t.TempDir()).adapters[cli]
+	n := NewRegistry(t.TempDir()).adapters[cli].(*Native)
 	p := &nativeProcess{cli: cli, nativeID: "original", cmd: &exec.Cmd{Dir: t.TempDir()}, done: make(chan struct{}), pending: map[string]chan map[string]json.RawMessage{}, status: "idle"}
 	p.stdin = contextRPCWriter{p: p, reply: reply}
 	n.processes["owned"] = p
