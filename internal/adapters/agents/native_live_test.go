@@ -93,6 +93,21 @@ func TestNativeLiveTurnAndOriginalSessionResume(t *testing.T) {
 			if !strings.Contains(text.String(), marker) {
 				t.Fatalf("original native context did not survive resume; chars=%d", text.Len())
 			}
+			if cli == "codex" || cli == "pi" {
+				history, err := n.ReadContext(ctx, resumed)
+				if err != nil {
+					t.Fatal(err)
+				}
+				originalInput := false
+				for _, event := range history {
+					if event.Kind == "user_text" && strings.Contains(event.Text, marker) {
+						originalInput = true
+					}
+				}
+				if !originalInput {
+					t.Fatal("native original user context missing after resume; attached output is not history")
+				}
+			}
 			obs, err = n.Stop(ctx, resumed)
 			if err != nil || !obs.StopConfirmed {
 				t.Fatalf("resumed stop not confirmed: %+v %v", obs, err)

@@ -338,7 +338,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		return s, err
 	}
 	if n.id == "codex" {
-		if _, err = p.call(ctx, "initialize", map[string]any{"clientInfo": map[string]any{"name": "astrocyte", "title": "Astrocyte", "version": "0.1.0"}}, false); err != nil {
+		if _, err = p.call(ctx, "initialize", map[string]any{"clientInfo": map[string]any{"name": "astrocyte", "title": "Astrocyte", "version": "0.1.0"}, "capabilities": map[string]any{"experimentalApi": true}}, false); err != nil {
 			return fail(err)
 		}
 		if err = p.write(map[string]any{"method": "initialized"}); err != nil {
