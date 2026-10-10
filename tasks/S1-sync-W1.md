@@ -1,5 +1,22 @@
 # S1 sync W1 — 公开列表调查与独立同步规则
 
+## 当前交接（2026-10-10，继续阶段 9 后）
+
+分支/工作树 `s1-sync-attention-1010`；当前业务 SOURCE `3afcf802feec38ebfd11e690ee40ea6b6a7de2b9`，已 push。以下是已实现范围；后文按时间保留原阶段记录、首败及当时限制，不能把历史“尚未接线”当作当前状态，也不能把本地检查当作真实 S1 验收。
+
+- Attention/Storage 已接应用和 SQLite：候选需同一固定资料版本的实际沉淀，满足来源/用途/下一步，并有关联主题/项目或明确开放问题；旧版本反馈不能替代当前版本。普通 URL 新表单复用既有 job，人工显式 refresh 才重新提取；固定导出换正文可新建 revision，A→B→A 复用旧 A 并保留 B head。官方 arXiv 论文导出的身份与现有 arXiv 导入归一，原件及 provenance 保留。
+- 公开账号绑定区分真实平台身份、uploads/favorites、多账号与显式收藏夹；沿用上游 yt-dlp 的 B站公开 UID 列表薄桥及官方收藏夹接口。同步最多消费 100 条提供方元数据，持久保存 cursor/计数/部分缓存/失败；挑战不是空列表，失效行不导致整页失败。启动只排一次有界 metadata sync，无定时器；推荐使用选定已许可项目/CLI，先保存实际建议，人工选择后才排选中正文的既有 summarize 导入，不自动全量入库。
+- 固定版本空间读取及 C 一跳关联受当前范围/权限约束；人工读取不增加 Agent heat。已知安全失败使用既有 job 的有界重试、期限及实际失败事件；旧 UNKNOWN 不自动重放。已返回并持久保存的 Result 遇到本地对象发布故障时，保留 OS 原因、提示修复存储并人工重试，不自动消耗修复等待期的次数；真 SQLite 重启后使用同一 Result，选定 CLI 的配置观察冷缓存也无需再调用模型，撤销许可/空间变化/引用移除仍拒绝发布。
+- 通用选定 CLI 适配器通过现有 consumer port，实际新处理仍核验配置与权限；无虚构评分或 mock 反馈。组装完整 UTF-8 输入及输出各限 128KiB，超限明确已知失败、不截断；处理限时沿用有界 job，视频上限 30 分钟。全局状态不会仅因装配了工厂就声称 CLI 可用。跨来源扩大输入上限的决定仍待主控/用户，当前未放宽。
+
+在上述 SOURCE 上已实际通过 `go test ./...`、`go vet ./...`、`go build ./...`、`node scripts/check-architecture.mjs`、`git diff --check`。测试包含 contract_local、实际 SQLite/对象文件故障恢复及原生接口参数边界；本次顶部文档整理不重复测试，不把这些结果写成付费模型、账号同步或浏览器验收。本轨业务未作新的媒体/模型调用；根前端检查、真实模型/媒体与 AT01–04 浏览器验收仍由 W0/W3 集成和 root 唯一 live 时隙安排，当前等候其现场结果及原轨返修。
+
+真实外部限制：指定 B站 UID `3494358764489275` 的公开 uploads 实测 HTTP412 / 上游 code -352 challenge，公开收藏夹目录实测 code0/count0/listnull；尚无该账号非空列表成功证据。Douyin `/user/self?showTab=favorite_collection` 需要登录，没有实际可用的公开 profile 列表 transport；未读取 cookies 或绕过挑战。已交接的真实历史视频/论文导出只能按已有导出 provenance 使用，不是本轮新官方下载/媒体提取；额外 `2501.12948v1/v2` 原件仅获导入/版本检查授权，不能调用模型。原 UNKNOWN、首败与未知效果保留；本轨不宣称全 S1 或真实账号验收完成。
+
+共享 contracts/migrations/HTTP/入口由 W0 独占，native CLI/权限桥由 W2 负责，UI/真实浏览器由 W3 负责；当前继续使用现有 ProjectSpaceID 的 scope-only 恢复路径，不增加第二套 optional port 或恢复接口。源码保持阶段 9 状态，现场领域问题返回本 Worker 修复，最终接纳由 root 决定。
+
+## 历史公共适配阶段（保留首败与当时限制）
+
 2026-10-10。工作树/分支 `s1-sync-attention-1010`，基线 `20437708e43201e352d6c6926902e1363fd2ad3e`。本机 Orca Codex；`orca orchestration worker-show --dispatch ctx_3dec09df71bd --json` 实际观察 projection.provider.model=`gpt-6.1-sol`，原生终端显示 high fast。仅修改本轨授权写域，没有应用模型调用、真实媒体转写、浏览器验收、凭据读取或宿主网络变更。
 
 ## 本阶段完成
