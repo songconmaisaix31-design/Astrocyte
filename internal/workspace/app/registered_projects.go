@@ -33,8 +33,15 @@ func (s *localProjectService) RefreshRegisteredProjects(ctx context.Context, c d
 		return domain.ProjectDiscoverySnapshot{}, projectError(apierrors.UnsupportedCapability, "registered project discovery is not connected")
 	}
 	// Serialize refreshes without locking native session/settings operations.
-	s.discoveryMu.Lock()
-	defer s.discoveryMu.Unlock()
+	select {
+	case s.discoveryGate <- struct{}{}:
+	case <-ctx.Done():
+		return domain.ProjectDiscoverySnapshot{}, ctx.Err()
+	}
+	defer func() { <-s.discoveryGate }()
+	if err := ctx.Err(); err != nil {
+		return domain.ProjectDiscoverySnapshot{}, err
+	}
 	old, err := s.discoveryRepo.LoadRegisteredProjectDiscovery(ctx)
 	if err != nil {
 		return old, err
