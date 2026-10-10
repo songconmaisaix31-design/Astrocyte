@@ -2,9 +2,9 @@
 .heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
 .heading h2 { font-size: 18px; margin: 0; }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.detailSection { margin-top: 26px; display: grid; gap: 14px; }
-.rootButton { display: grid; gap: 8px; text-align: left; overflow-wrap: anywhere; width: 100%; }
-.rootButton code { font-size: 11px; overflow-wrap: anywhere; }
+.detailSection { margin-top: 26px; display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 14px; }
+.detailSection button.rootButton { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; text-align: left; overflow-wrap: anywhere; white-space: normal; min-width: 0; width: 100%; height: auto; }
+.rootButton code { font-size: 11px; overflow-wrap: anywhere; white-space: normal; min-width: 0; }
 .provenance { list-style: none; padding: 0; display: grid; gap: 12px; }
 .provenance li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px; border: 1px solid #e5eae4; border-radius: 12px; font-size: 12px; overflow-wrap: anywhere; }
 .provenance p, .provenance code { flex-basis: 100%; min-width: 0; font-size: 11px; }
@@ -39,4 +39,4 @@
 .advanced > summary { color: #68746d; }
 @media (max-width: 1100px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .cards { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 560px) { .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 16px; } .metrics dd { font-size: 24px; } .metrics > div { min-width: 0; } .filters, .board .card { padding: 16px; } .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .controls label:first-child { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .metrics { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 12px; } .metrics dd { font-size: 22px; } .metrics dt { font-size: 10px; } .metrics > div { min-width: 0; } .filters, .board .card { padding: 16px; } .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .controls label:first-child { grid-column: 1 / -1; } }

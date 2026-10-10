@@ -24,7 +24,7 @@ function present(item: Summary): BoardProject {
   return { id: item.id, name: item.name, folders: item.roots, clients: [...new Set(item.contributors.map(source => source.cli).filter(Boolean))], sources: [...new Set([...item.observations.map(source => source.source), ...item.contributors.map(source => source.source)])], activityAt: item.last_activity_at, activitySource: [...activitySources].filter(Boolean).map(projectSourceLabel).join(' · '), activityStatus: item.last_activity_at ? '有活动记录' : '未知', ...item.human };
 }
 
-export function ProjectBoardPanel({ query, refreshToken, onManage }: { query: string; refreshToken: number; onManage: (root: string, name: string) => void }) {
+export function ProjectBoardPanel({ query, refreshToken, onManage, onClearQuery }: { query: string; refreshToken: number; onManage: (root: string, name: string) => void; onClearQuery: () => void }) {
   const state = useReadApi(signal => localProjectsApi.listRegisteredProjects({ signal }));
   const retry = state.retry;
   useEffect(() => { if (refreshToken) void Promise.resolve().then(retry); }, [refreshToken, retry]);
@@ -33,7 +33,7 @@ export function ProjectBoardPanel({ query, refreshToken, onManage }: { query: st
   const selected = state.data?.snapshot.board?.find(item => item.id === selectedID);
   return <SectionCard title="" tabs={['overview']} padded>
     <div className={styles.board}>
-      <div className={styles.heading}><h2>项目总览</h2><div className={styles.actions}>
+      <div className={styles.heading}><h2 className="sr-only">项目总览</h2><div className={styles.actions}>
         <button type="button" className="ac-button compact" disabled={state.loading || state.stale || !state.data || refresh.pending} onClick={() => { const request = refresh.prepare({ expected_version: 1 }); void refresh.run(() => localProjectsApi.refreshRegisteredProjects(request.body, request.key), state.retry, '已更新项目来源，人工记录保留'); }}>同步最近改动</button>
         <button type="button" className="ac-button secondary compact" onClick={() => onManage('', '')}>接入项目</button>
         <button type="button" className="ac-button secondary compact" onClick={state.retry} disabled={state.loading}>重载项目看板</button>
@@ -41,9 +41,9 @@ export function ProjectBoardPanel({ query, refreshToken, onManage }: { query: st
       <p className={styles.note}>打开项目写下下一步、记录复盘，或归档暂时放下的工作。</p>
       <CommandState {...refresh} />
       <QueryState state={state}>{({ snapshot }) => <>
-        {snapshot.board && snapshot.status !== 'unknown' ? <ProjectBoardView items={snapshot.board.map(present)} query={query} complete={snapshot.status === 'complete'} onSelect={item => setSelectedID(item.id)} /> : <p role="status" className={styles.empty}>项目汇总尚未生成，项目、文件夹与客户端计数未知。可同步最近改动；已有手动登记与项目权限仍可使用。</p>}
+        {snapshot.board && snapshot.status !== 'unknown' ? <ProjectBoardView items={snapshot.board.map(present)} query={query} complete={snapshot.status === 'complete'} onSelect={item => setSelectedID(item.id)} onClearQuery={onClearQuery} /> : <p role="status" className={styles.empty}>项目汇总尚未生成，项目、文件夹与客户端计数未知。可同步最近改动；已有手动登记与项目权限仍可使用。</p>}
         <p role="status" className={styles.note}>观察时间 · {snapshot.observed_at ? formatDateTime(snapshot.observed_at) : '未知'} · {snapshot.status === 'complete' ? '登记范围已读取' : snapshot.status === 'partial' ? '部分来源受限' : snapshot.status === 'stale' ? '清单已过期，保留上次结果' : '尚未取得清单'}</p>
-        {!!snapshot.sources?.length && <details><summary>客户端来源与读取限制</summary><ul className={styles.provenance}>{snapshot.sources.map((source, index) => <li key={`${source.cli}:${source.source}:${index}`}><BrandIcon name={source.cli} size={18} /><b>{source.cli || '客户端未提供'}</b><span>{source.status} · {source.source}</span><p>{source.reason || '没有提供额外说明'}</p></li>)}</ul></details>}
+        {!!snapshot.sources?.length && <details><summary>客户端来源与读取限制</summary><ul className={styles.provenance}>{snapshot.sources.map((source, index) => <li key={`${source.cli}:${source.source}:${index}`}><BrandIcon name={source.cli} size={18} /><b>{source.cli || '客户端未提供'}</b><span>{source.status} · {source.source}</span>{source.status === 'unknown' ? <p>尚未取得可核实的项目记录。</p> : <p>识别目录 · {source.matched_roots ?? '未提供'}；保存关联样本 · {source.retained_associations ?? '未提供'}；读取元数据 · {source.headers_examined ?? '未提供'}。样本数不代表全部会话。</p>}<p>{source.reason || '没有提供额外说明'}</p></li>)}</ul></details>}
         {!!snapshot.failures.length && <details><summary>{snapshot.failures.length} 个目录读取未完成</summary>{snapshot.failures.map((failure, index) => <p key={index} className={styles.note}>{failure.root || '目录清单'} · {failure.reason}</p>)}</details>}
       </>}</QueryState>
     </div>
