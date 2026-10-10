@@ -1,3 +1,4 @@
+import { DevelopmentSpacePanel } from './DevelopmentSpacePanel';
 import { useState, useCallback, useMemo } from 'react';
 import { useMissions } from '../../hooks/useReadApi';
 import { fixtureMissions, flattenWorkItems, flattenArtifactIds } from '../../fixtures';
@@ -44,7 +45,7 @@ export function SwarmPage({ fixture, query }: Props) {
   const handleClose = useCallback(() => setSelected(null), []);
 
   return (
-    <PageFrame section="swarm" title="蜂群执行" subtitle="让每一步协作，都有迹可循。" fixture={fixture} onRefresh={() => { miss.retry(); }} rail={<RailSummary title="执行概览" rows={[{ label: '任务', value: fixture ? missions.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : missions.length }, { label: '工作项', value: fixture ? workItems.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : workItems.length }, { label: '产物引用', value: fixture ? artifactIds.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : artifactIds.length }]} note="产物引用不等于已采用；暂停、取消与采用尚未启用。" />}>
+    <PageFrame section="swarm" title="蜂群空间" subtitle="先把项目放进开发空间，再由你决定下一步。" fixture={fixture} onRefresh={() => { miss.retry(); }} rail={<RailSummary title="执行概览" rows={[{ label: '任务', value: fixture ? missions.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : missions.length }, { label: '工作项', value: fixture ? workItems.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : workItems.length }, { label: '产物引用', value: fixture ? artifactIds.length : miss.loading ? '加载中…' : miss.error && !miss.data ? '无法获取' : artifactIds.length }]} note="产物引用不等于已采用；暂停、取消与采用尚未启用。" />}>
       {(!fixture && miss.stale) && (
         <div role="alert" style={{
           padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
@@ -60,9 +61,11 @@ export function SwarmPage({ fixture, query }: Props) {
       )}
 
       <div className={styles.grid}>
-        <SectionCard title="" tabs={['overview']}><IntroCard section="swarm" /></SectionCard>
-        <SectionCard title="协作视图" tabs={['overview']}><DesignGraph fixture={fixture} /></SectionCard>
+        <DevelopmentSpacePanel fixture={fixture} query={query} />
+        {fixture && <SectionCard title="" tabs={['overview']}><IntroCard section="swarm" /></SectionCard>}
+        <SectionCard title="协作视图" tabs={['timeline']}><DesignGraph fixture={fixture} /></SectionCard>
         <SectionCard title="任务时间线" tabs={['timeline']}><DesignTimeline fixture={fixture} /></SectionCard>
+        <details className="ac-secondary-records" open={fixture || missions.length > 0}><summary>已有任务记录 · {missions.length} 项</summary>
         {/* ── Missions ── */}
         <SectionCard tabs={['overview', 'timeline']} title="任务" count={missions.length}>
           {fixture ? (
@@ -105,8 +108,9 @@ export function SwarmPage({ fixture, query }: Props) {
           )}
         </SectionCard>
 
+        </details>
         {/* ── Artifacts (IDs from missions — propagate mission state) ── */}
-        <SectionCard tabs={['overview', 'artifacts']} title="产物引用" count={artifactIds.length}>
+        <SectionCard tabs={fixture || artifactIds.length ? ['overview', 'artifacts'] : ['artifacts']} title="产物引用" count={artifactIds.length}>
           {fixture ? (
             artifactIds.length === 0 ? (
               <EmptyState icon="📦" title="暂无产物引用" description="示例任务无产物" />

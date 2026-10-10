@@ -32,8 +32,10 @@ test('real selected Bilibili public collection persists metadata, gates selectio
   let completed = false;
   try {
     await page.goto(`${server.webURL}/attention`);
+    await page.getByRole('button', { name: /查看来源更新/ }).click();
     const accounts = page.locator('section').filter({ has: page.getByRole('heading', { name: '账号与更新清单', exact: true }) }).first();
-    await accounts.getByText('绑定公开创作者 / 收藏夹', { exact: true }).click();
+    await accounts.getByText('绑定创作者 / 收藏夹', { exact: true }).click();
+    await accounts.locator('summary').filter({ hasText: /^手动填写来源身份（高级）$/ }).click();
     await accounts.getByLabel('追踪内容', { exact: true }).selectOption('favorites');
     await expect(accounts.getByLabel('收藏夹所属账号 ID', { exact: true })).toHaveValue(owner);
     const collectionsResponse = page.waitForResponse(response => response.url().includes('/api/v1/source-collections?') && response.request().method() === 'GET');
@@ -53,7 +55,7 @@ test('real selected Bilibili public collection persists metadata, gates selectio
     expect(bindingHTTP.status()).toBe(200);
     const binding = await bindingHTTP.json() as S['TrackingSourceResultV1'];
     const sourceID = binding.source.id;
-    const review = accounts.getByRole('region', { name: '公开来源更新清单' });
+    const review = accounts.getByRole('region', { name: '来源更新清单' });
     await review.getByRole('button', { name: '同步新标题与简介', exact: true }).click();
     await review.getByRole('button', { name: '确认同步标题清单', exact: true }).click();
     let synced = binding;
@@ -92,7 +94,8 @@ test('real selected Bilibili public collection persists metadata, gates selectio
     expect(server.query("SELECT id, data FROM attention_jobs WHERE json_extract(data,'$.kind')!='source_sync' ORDER BY id")).toEqual(originalJobs);
     expect(server.query('SELECT id, data FROM local_agent_sessions ORDER BY id')).toEqual(originalSessions);
     await page.reload();
-    await accounts.getByLabel('查看公开来源', { exact: true }).selectOption(sourceID);
+    await page.getByRole('button', { name: /查看来源更新/ }).click();
+    await accounts.getByLabel('查看来源', { exact: true }).selectOption(sourceID);
     await expect(review.locator('li')).toHaveCount(synced.items.length);
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
@@ -119,8 +122,10 @@ test('real public collection keeps the unavailable video visible and prevents re
   let primaryError: unknown;
   try {
     await page.goto(`${server.webURL}/attention`);
+    await page.getByRole('button', { name: /查看来源更新/ }).click();
     const accounts = page.locator('section').filter({ has: page.getByRole('heading', { name: '账号与更新清单', exact: true }) }).first();
-    await accounts.getByText('绑定公开创作者 / 收藏夹', { exact: true }).click();
+    await accounts.getByText('绑定创作者 / 收藏夹', { exact: true }).click();
+    await accounts.locator('summary').filter({ hasText: /^手动填写来源身份（高级）$/ }).click();
     await accounts.getByLabel('追踪内容', { exact: true }).selectOption('favorites');
     await accounts.getByLabel('公开收藏夹 ID', { exact: true }).fill('3501892975');
     await accounts.getByLabel('公开主页 / 收藏夹链接', { exact: true }).fill(`https://space.bilibili.com/${owner}/favlist?fid=3501892975`);
@@ -130,7 +135,7 @@ test('real public collection keeps the unavailable video visible and prevents re
     expect(bindHTTP.status()).toBe(200);
     let actual = await bindHTTP.json() as S['TrackingSourceResultV1'];
     const id = actual.source.id;
-    const review = page.getByRole('region', { name: '公开来源更新清单' });
+    const review = page.getByRole('region', { name: '来源更新清单' });
     await review.getByRole('button', { name: '同步新标题与简介', exact: true }).click();
     await review.getByRole('button', { name: '确认同步标题清单', exact: true }).click();
     await expect.poll(async () => { actual = await api.get(`/tracking-sources/${id}`) as S['TrackingSourceResultV1']; return actual.source.status; }, { timeout: 90_000 }).toBe('succeeded');
@@ -160,7 +165,7 @@ test('real public collection keeps the unavailable video visible and prevents re
     await accounts.getByLabel('来源平台', { exact: true }).selectOption('douyin');
     await accounts.getByLabel('公开收藏夹 ID', { exact: true }).fill('self');
     await accounts.getByLabel('公开主页 / 收藏夹链接', { exact: true }).fill('https://www.douyin.com/user/self?showTab=favorite_collection');
-    await expect(accounts).toContainText('此 self 收藏地址需要登录。请提供可公开访问的抖音主页或公开收藏夹链接');
+    await expect(accounts).toContainText('此 self 收藏地址不能作为公开来源。请提供公开主页，或切换到已登录浏览器范围，读取并选择你的收藏夹。');
     await expect(accounts.getByRole('button', { name: '绑定公开来源', exact: true })).toBeDisabled();
     expect(selfBindings).toEqual([]);
   } catch (error) {

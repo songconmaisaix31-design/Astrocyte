@@ -34,10 +34,10 @@ func TestSelectedDouyinScopeDeniesBeforeBrowserRead(t *testing.T) {
 	fixture := &selectedBridgeFixture{}
 	r := &DouyinBrowser{Bridge: fixture, OwnerID: "MS4wLjAB_fixture", FolderIDs: []string{"123", "456"}}
 	for _, source := range []app.TrackingSource{
-		{Platform: "douyin", SourceKind: "favorites", OwnerID: "self", ExternalID: "123"},
-		{Platform: "douyin", SourceKind: "favorites", OwnerID: "MS4wLjAB_other", ExternalID: "123"},
-		{Platform: "douyin", SourceKind: "favorites", OwnerID: r.OwnerID, ExternalID: "789"},
-		{Platform: "douyin", SourceKind: "uploads", OwnerID: r.OwnerID, ExternalID: "123"},
+		{Platform: "douyin", AccessMode: "browser_selected", SourceKind: "favorites", OwnerID: "self", ExternalID: "123"},
+		{Platform: "douyin", AccessMode: "browser_selected", SourceKind: "favorites", OwnerID: "MS4wLjAB_other", ExternalID: "123"},
+		{Platform: "douyin", AccessMode: "browser_selected", SourceKind: "favorites", OwnerID: r.OwnerID, ExternalID: "789"},
+		{Platform: "douyin", AccessMode: "browser_selected", SourceKind: "uploads", OwnerID: r.OwnerID, ExternalID: "123"},
 	} {
 		if _, err := r.ReadPage(context.Background(), source, "", 100); err == nil {
 			t.Fatal("expanded scope", source)
@@ -75,7 +75,7 @@ func TestSelectedDouyinMetadataPreservesExactIDsAndBoundedObservations(t *testin
 	raw := `{"owner_id":"MS4wLjAB_fixture","folder_id":"123","status_code":0,"has_more":true,"cursor":"20","videos":[{"id":"7490000000000000001","title":"岗位","description":"完整简介"},{"id":"7490000000000000001","title":"岗位","description":"完整简介"},{"id":"7490000000000000002","unavailable_reason":"video removed"}]}`
 	f := &selectedBridgeFixture{page: raw}
 	r := &DouyinBrowser{Bridge: f, OwnerID: "MS4wLjAB_fixture", FolderIDs: []string{"123", "456"}}
-	source := app.TrackingSource{Platform: "douyin", SourceKind: "favorites", OwnerID: r.OwnerID, ExternalID: "123"}
+	source := app.TrackingSource{Platform: "douyin", AccessMode: "browser_selected", SourceKind: "favorites", OwnerID: r.OwnerID, ExternalID: "123"}
 	page, err := r.ReadPage(context.Background(), source, "", 3)
 	if err != nil || page.Observed != 3 || len(page.Items) != 2 || *page.NextCursor != "20" || page.Items[0].ExternalID != "7490000000000000001" || page.Items[0].Description != "完整简介" || page.Items[1].Locator != "" {
 		t.Fatal(page, err)

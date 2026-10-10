@@ -10,14 +10,23 @@ import (
 var _ app.TrackingTx = (*attentionTx)(nil)
 
 func (t *attentionTx) ListTrackingSources() ([]app.TrackingSource, error) {
-	return listJSON[app.TrackingSource](t, "SELECT data FROM attention_tracking_sources ORDER BY platform,source_kind,id")
+	rows, err := listJSON[app.TrackingSource](t, "SELECT data FROM attention_tracking_sources ORDER BY platform,source_kind,id")
+	for i := range rows {
+		rows[i].AccessMode = trackingAccessMode(rows[i].AccessMode)
+	}
+	return rows, err
 }
 func (t *attentionTx) LoadTrackingSource(id string) (app.TrackingSource, error) {
 	var row app.TrackingSource
 	err := t.load("SELECT data FROM attention_tracking_sources WHERE id=?", "tracking_source", id, []any{id}, &row)
+	row.AccessMode = trackingAccessMode(row.AccessMode)
 	return row, err
 }
 func (t *attentionTx) SaveTrackingSource(row app.TrackingSource, expected int) error {
+	row.AccessMode = trackingAccessMode(row.AccessMode)
+	if row.AccessMode != "public" && row.AccessMode != "browser_selected" {
+		return conflict("invalid source access mode")
+	}
 	if row.Version != expected+1 {
 		return conflict("tracking source version must advance exactly once")
 	}
@@ -26,7 +35,7 @@ func (t *attentionTx) SaveTrackingSource(row app.TrackingSource, expected int) e
 		if err != nil {
 			return err
 		}
-		if old.Platform != row.Platform || old.SourceKind != row.SourceKind || old.ExternalID != row.ExternalID || old.OwnerID != row.OwnerID {
+		if old.Platform != row.Platform || old.SourceKind != row.SourceKind || old.ExternalID != row.ExternalID || old.OwnerID != row.OwnerID || old.AccessMode != row.AccessMode {
 			return conflict("public source identity cannot change")
 		}
 	}
@@ -34,7 +43,14 @@ func (t *attentionTx) SaveTrackingSource(row app.TrackingSource, expected int) e
 	if err != nil {
 		return err
 	}
-	return t.saveHead("attention_tracking_sources", row.ID, expected, data, []string{"platform", "source_kind", "external_id"}, []any{row.Platform, row.SourceKind, row.ExternalID})
+	return t.saveHead("attention_tracking_sources", row.ID, expected, data, []string{"platform", "source_kind", "owner_id", "external_id", "access_mode"}, []any{row.Platform, row.SourceKind, row.OwnerID, row.ExternalID, row.AccessMode})
+}
+
+func trackingAccessMode(value string) string {
+	if value == "" {
+		return "public"
+	}
+	return value
 }
 func (t *attentionTx) ListSourceItems(sourceID string) ([]app.SourceItem, error) {
 	rows, err := t.conn.QueryContext(t.ctx, "SELECT data FROM attention_source_items WHERE source_id=? ORDER BY external_id", sourceID)

@@ -6,11 +6,21 @@
 
 | 轨 | 固定工作树/分支 | 独占 write_paths | 交付 |
 |---|---|---|---|
-| W0 契约与集成 | s1-sync-contract-1010 | contracts/；internal/{attention,workspace}/app/contracts.go；internal/httpapi/；internal/foundation/；cmd/；migrations/；web/src/api/；依赖与锁；scripts/；tests/s1/；tasks/S1-sync-W0.md | 先发布必要端口、唯一迁移序列/入口，最后普通合并三轨，仅补组装胶水 |
+| W0 契约与集成 | s1-sync-contract-1010 | contracts/；internal/{attention,workspace}/app/contracts.go；internal/adapters/httpapi/；internal/foundation/；cmd/；migrations/；web/src/api/；依赖与锁；scripts/；tests/s1/；tasks/S1-sync-W0.md | 先发布必要端口、唯一迁移序列/入口，最后普通合并三轨，仅补组装胶水 |
 | W1 收藏同步 | s1-sync-attention-1010 | internal/attention/{domain,app}/（除 contracts.go）；internal/adapters/{importers,distillers,objects}/；internal/adapters/sqlite/（除 local_agents*.go）；tasks/S1-sync-W1.md | 复用 OpenCLI 已登录浏览器桥，在明确选定收藏夹中读取元数据，持久化、重复同步与人工选取；保留 summarize 正文链路 |
 | W2 仓库与空间 | s1-local-agents-1010 | internal/workspace/{domain,app}/（除 contracts.go）；internal/adapters/agents/；internal/adapters/sqlite/local_agents*.go；docs/probes/local-agents.md；tasks/S1-sync-W2.md | 公开 GitHub 信息同步；人工纳入蜂群空间才固定程序克隆，持久化实际根/HEAD/状态，权限不自动扩大 |
 | W3 交互与官方图标 | s1-sync-ui-1010 | web/src/（除 api/）；web/public/；web/e2e/；docs/acceptance/S1-sync.md；tasks/S1-sync-W3.md | 整体交互重设计、官方资产、真实 API 入口；1280/1920/窄屏浏览器验收 |
 
 主控只维护计划、决定、状态、Git 与独立验收；四轨复用原 worktree/branch，各自先普通合入此基线，完成 commit + push。实际客户端/模型由运行回执核实，不指定未经用户指定的模型。浏览器插件安装由主控操作；实际个人浏览器仅一个所有者，W1 得到连接交接后读取指定抖音页，不读取私信、观看历史、无关标签或 Cookie 原文。
 
+19:24 实际四轨已经开始处理任务，屏幕确认客户端 Codex 0.162.0、GPT-6.1-Sol high fast。Run 沿用 `run_6881906f96ef`，新 Dispatch：W0 `ctx_6390663d09e5`、W1 `ctx_54629f75a8e9`、W2 `ctx_48bf6a551123`、W3 `ctx_109ed3ce3f60`；启动时输入停留 composer 的首个 unknown 回执保留，读屏确认后单次 Enter 已使各 Worker 开始工作，没有重复创建编辑者。
+
+19:47 更新：官方 Chrome Web Store 的 OpenCLI 1.0.24 已安装，CLI 1.8.8 的 doctor 实际确认扩展连接成功；已登录的抖音收藏夹页绑定到 `astrocyte-douyin`，交给 W1 单一浏览器所有者。安装时取消了一次外部应用弹窗，没有修改浏览器设置。首次 Worker 整页检查带出了隐藏的无关侧栏文字，已报告并改为限定收藏节点/明确接口；未将这些文字写入应用库。后续验收须检查实际收藏响应范围与持久化结果，插件能力不能视为账户、其他标签或全部收藏授权。
+
+W2 新增真实公开 GitHub 元数据、人工纳入、clone、冷启动和重复纳入验证通过；首个 REST 403 原件保留，新成功来源为 REST，尚不替代 HTTP/浏览器端到端验收。W3 初轮真实 API 空库三尺寸交互检查 4 PASS；主控目视指出主操作仍被大标题和空面板挤下去，已退回原 Worker 调整。四轨仍在开发和组装，未结算为整体完成。
+
 验收：真实 API → SQLite/对象存储 → 重启可查询；GitHub 信息同步没有代码目录，纳入蜂群空间有真实 clone/HEAD，重复纳入不重复克隆，不启动 Agent 或创建 Mission；收藏元数据同步不调用模型，推荐后用户选择才入库；原 AT01–04 保持回归，旧未知模型作业不重放。核心适用测试/check/build 和真实浏览器通过后才接受功能；原首个失败保留，新修复结果单独记录。原论文 DNS 例外、第二自动整理 CLI 与输入容量问题仍未答，不据插件许可扩大。
+
+20:49 收尾：W3 SOURCE `fd787319a4c1e8d9c328f3a8db87b2f8e14d06ff` / REPORT `a7981c8fe1a603bf8fee81ec7617205ea12144ed` 已push并接纳；首整套144 PASS/16 FAIL/18 SKIP保留，后续30项受影响功能、4项最终默认截图和2项实际GitHub/抖音同库重启续验分别PASS，不声明整套重跑成功。W1/W3已release，工作树与原件保留。W0最终稳定check首败为W2应用层直接slog日志越界，Go/vet/mod/deps已PASS、后续与build未跑；已沿原W2终端/工作树派最小返修 `ctx_95c21bdb8b72`（新Task `task_d66e43df9595`），只保留错误诊断并修边界，不放宽架构检查，不重复真实克隆/模型/浏览器。原W2结算清理责任转移新Dispatch；W0等待原owner推送后普通合入并最终复验。
+
+20:59 结算：W2最小返修0cd2c97/3ff9e61普通集成，最终SOURCE `682f46eac0633e3593cdceb7996df24957fe06af` / REPORT `1f864de0bb0bad348dd7d2fda860a924b7206cd4`；主控普通合并028bcc6，独立pnpm check/build PASS，个人预览已更新且界面完成求职3条同步200。原99+2保留，个人库104元数据/0正文模型原生，详情见STATUS。全部本轮Dispatch已结算release，工作树保留；刷新策略仍待用户，不扩大范围或新增调度框架。

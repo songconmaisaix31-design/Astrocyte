@@ -22,9 +22,20 @@ func NewPublicListingReader(pythonPath string) *PublicListing {
 	return &PublicListing{Bilibili: NewPublicBilibili(), Uploads: &BilibiliUploads{PythonPath: pythonPath}}
 }
 
+// ConfiguredSelectedOwner returns host configuration only; no browser command.
+func (r *PublicListing) ConfiguredSelectedOwner() string {
+	if r == nil || r.Douyin == nil {
+		return ""
+	}
+	return r.Douyin.OwnerID
+}
+
 func (r *PublicListing) ReadPage(ctx context.Context, source app.TrackingSource, cursor string, limit int) (app.ListingPage, error) {
-	if source.Platform == "douyin" && r.Douyin != nil {
+	if source.Platform == "douyin" && source.AccessMode == "browser_selected" {
 		return r.Douyin.ReadPage(ctx, source, cursor, limit)
+	}
+	if source.AccessMode != "" && source.AccessMode != "public" {
+		return app.ListingPage{}, browserScopeDenied("This platform does not have a selected browser listing adapter")
 	}
 	if source.Platform != "bilibili" {
 		return app.ListingPage{}, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "The current upstream adapter has no anonymous Douyin public-profile/favorite listing transport", RequiredAction: "provide_supported_public_source"}
