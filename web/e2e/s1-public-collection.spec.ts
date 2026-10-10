@@ -106,3 +106,58 @@ test('real selected Bilibili public collection persists metadata, gates selectio
     await server.close({ preserveData: true });
   }
 });
+
+test('real public collection keeps the unavailable video visible and prevents recommendation and body selection', async ({ page }, testInfo) => {
+  test.skip(process.env.ASTROCYTE_TEST_PUBLIC_COLLECTION !== '1', 'Requires coordinator-assigned public/browser slot.');
+  test.setTimeout(240_000);
+  const path = process.env.ASTROCYTE_S1_REUSE_OWNED_TEMP;
+  const ownedRoot = process.env.ASTROCYTE_S1_REUSE_APPROVED_ROOT;
+  expect(path && ownedRoot && resolve(path) === resolve(approvedStore) && resolve(ownedRoot) === resolve(approvedStore)).toBe(true);
+  const server = await startS1Server({ browser: true, reuseOwnedTemporary: { path: path!, ownedRoot: ownedRoot! } });
+  const api = await humanAPI(server.apiURL);
+  const originalJobs = server.query("SELECT id, data FROM attention_jobs WHERE json_extract(data,'$.kind')!='source_sync' ORDER BY id");
+  let primaryError: unknown;
+  try {
+    await page.goto(`${server.webURL}/attention`);
+    const accounts = page.locator('section').filter({ has: page.getByRole('heading', { name: '账号与更新清单', exact: true }) }).first();
+    await accounts.getByText('绑定公开创作者 / 收藏夹', { exact: true }).click();
+    await accounts.getByLabel('追踪内容', { exact: true }).selectOption('favorites');
+    await accounts.getByLabel('公开收藏夹 ID', { exact: true }).fill('3501892975');
+    await accounts.getByLabel('公开主页 / 收藏夹链接', { exact: true }).fill(`https://space.bilibili.com/${owner}/favlist?fid=3501892975`);
+    const bound = page.waitForResponse(response => response.url().endsWith('/tracking-sources') && response.request().method() === 'POST');
+    await accounts.getByRole('button', { name: '绑定公开来源', exact: true }).click();
+    const bindHTTP = await bound;
+    expect(bindHTTP.status()).toBe(200);
+    let actual = await bindHTTP.json() as S['TrackingSourceResultV1'];
+    const id = actual.source.id;
+    const review = page.getByRole('region', { name: '公开来源更新清单' });
+    await review.getByRole('button', { name: '同步新标题与简介', exact: true }).click();
+    await review.getByRole('button', { name: '确认同步标题清单', exact: true }).click();
+    await expect.poll(async () => { actual = await api.get(`/tracking-sources/${id}`) as S['TrackingSourceResultV1']; return actual.source.status; }, { timeout: 90_000 }).toBe('succeeded');
+    const unavailable = actual.items.find(item => item.metadata.provider_status === 9);
+    expect(unavailable).toBeTruthy();
+    expect(unavailable!.metadata.unavailable_reason).toBeTruthy();
+    expect(unavailable!.metadata.locator).toBe('');
+    expect(unavailable!.selected).toBe(false);
+    await review.getByRole('button', { name: '重载已保存清单', exact: true }).click();
+    await expect(review.locator('li')).toHaveCount(actual.items.length);
+    const row = review.locator('li').nth(actual.items.indexOf(unavailable!));
+    await expect(row).toContainText('原始内容当前不可用');
+    await expect(row.getByRole('checkbox')).toBeDisabled();
+    await expect(row.getByRole('link')).toHaveCount(0);
+    await expect(row.getByRole('button', { name: '获取此条 Agent 建议', exact: true })).toHaveCount(0);
+    expect(server.query("SELECT id, data FROM attention_jobs WHERE json_extract(data,'$.kind')!='source_sync' ORDER BY id")).toEqual(originalJobs);
+    expect(actual.items.every(item => !item.selected && item.recommendation === null && item.import_job_id === null && item.material_id === null)).toBe(true);
+    await testInfo.attach('actual-unavailable-collection', { body: JSON.stringify(actual, null, 2), contentType: 'application/json' });
+    for (const width of [1280, 1920]) {
+      await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
+      await row.scrollIntoViewIfNeeded();
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await page.screenshot({ path: testInfo.outputPath(`actual-unavailable-content-${width}.png`) });
+    }
+  } catch (error) {
+    primaryError = error;
+    await testInfo.attach('actual-primary-error', { body: error instanceof Error ? error.stack ?? error.message : String(error), contentType: 'text/plain' });
+    throw error;
+  } finally { await server.close({ preserveData: true, primaryError }); }
+});
