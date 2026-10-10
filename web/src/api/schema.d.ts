@@ -1,5 +1,25 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/local-projects/{id}/sessions/probe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Verify chosen native CLI connection
+         * @description Human explicitly verifies one registered native adapter in the approved project: initialize a bounded empty native session, confirm owned stop, and cache actual observations. No model turn or automatic dispatch; unknown stays unknown until observed.
+         */
+        post: operations["probeNativeCLI"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/source-collections": {
         parameters: {
             query?: never;
@@ -1577,6 +1597,8 @@ export interface components {
                 observe: components["schemas"]["NativeCapabilityObservationV1"];
                 reconcile: components["schemas"]["NativeCapabilityObservationV1"];
             };
+            /** @description Backend registry implements this CLI protocol. This is independent of installed/configured/startable and every observed native capability; a human may request explicit verification. */
+            native_adapter_registered?: boolean;
         };
         /**
          * @example {
@@ -3212,6 +3234,7 @@ export interface components {
             reference: components["schemas"]["FixedReferenceV1"];
             title: string;
             text: string;
+            expanded?: boolean;
         };
         LocalContextFileV1: {
             path: string;
@@ -3361,6 +3384,98 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    probeNativeCLI: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiscoverNativeSessionsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current scoped service result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeSessionResultV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable error; unknown effects are not replayed */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     listSourceCollections: {
         parameters: {
             query: {
