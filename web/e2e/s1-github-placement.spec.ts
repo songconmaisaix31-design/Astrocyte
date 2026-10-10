@@ -51,6 +51,7 @@ test('actual public repository metadata precedes human placement, clone and cold
     expect(existsSync(ready.root)).toBe(true);
     expect(execFileSync('git', ['-C', ready.root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()).toBe(ready.head);
     const local = (await api.get('/local-projects')).items.find((project: { id: string }) => project.id === ready.project_id);
+    if (!local) throw new Error('Ready repository did not create its actual local project');
     expect(local.settings).toMatchObject({ allow_directory: false, expand_references: false, allow_agent_control: false, external_model_cli: '', allowed_actions: [] });
     await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
     await expect(placement.getByRole('button', { name: '已纳入并克隆', exact: true })).toBeDisabled();
@@ -68,4 +69,37 @@ test('actual public repository metadata precedes human placement, clone and cold
     console.log('Actual GitHub repository data retained:', server.temporary, 'HEAD', ready.head);
   } catch (error) { primaryError = error; throw error; }
   finally { await server.close({ preserveData: true, primaryError }); }
+});
+
+// Transport contract only: no GitHub network, code clone, model or native Agent.
+test('persisted cloning requires human recovery in its original space and unknown results remain disabled', async ({ page }) => {
+  let repository: Repository = { id: 'contract-local-repo', revision: 5, metadata_revision: 1, metadata: { github_id: 0, full_name: 'contract-local/repository', html_url: 'https://github.com/contract-local/repository', clone_url: 'https://github.com/contract-local/repository.git', description: '', default_branch: '', language: '', stars: 0, archived: false, fork: false, updated_at: '2026-10-10T00:00:00Z', pushed_at: '2026-10-10T00:00:00Z', metadata_source: 'github_public_html', unknown_fields: ['stars', 'archived', 'default_branch', 'pushed_at'] }, sync_status: 'synced', synced_at: '2026-10-10T00:00:00Z', space_id: 'contract-local-space', project_id: '', clone_status: 'cloning', root: '', head: '', clone_attempts: 1, last_error: '' };
+  const requests: { body: Record<string, unknown>; key: string }[] = [];
+  await page.route('**/api/v1/github-repositories', route => route.fulfill({ json: { schema_version: 1, items: [repository], next_cursor: null } }));
+  await page.route('**/api/v1/project-spaces', route => route.fulfill({ json: { schema_version: 1, items: [{ id: 'contract-local-space', title: '原纳入空间', version: 1, material_refs: [], created_at: '2026-10-10T00:00:00Z' }], next_cursor: null } }));
+  await page.route('**/api/v1/github-repositories/contract-local-repo/placement', route => {
+    requests.push({ body: route.request().postDataJSON(), key: route.request().headers()['idempotency-key'] });
+    if (requests.length === 1) return route.fulfill({ status: 503, json: { schema_version: 1, error: { code: 'provider_unavailable', message: 'contract_local 核对尚未完成', required_action: '检查原空间后明确重试', retryable: true, request_id: 'contract-local-clone' } } });
+    repository = { ...repository, revision: 6, clone_status: 'ready', project_id: 'contract-local-project', root: '/contract-local/repository', head: 'contract-local-head' };
+    return route.fulfill({ json: { schema_version: 1, repository } });
+  });
+  await page.goto('/swarm');
+  const placement = page.locator('section').filter({ has: page.getByRole('heading', { name: 'GitHub 仓库纳入开发空间', exact: true }) }).last();
+  await expect(placement).toContainText('★ 未知');
+  expect(requests).toEqual([]);
+  await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
+  const select = placement.getByLabel('为 contract-local/repository 选择开发空间', { exact: true });
+  await expect(select).toHaveValue('contract-local-space'); await expect(select).toBeDisabled();
+  const recover = placement.getByRole('button', { name: '核对并恢复此空间克隆', exact: true });
+  await recover.click();
+  await expect(placement.getByRole('alert')).toContainText('检查原空间后明确重试');
+  await recover.click();
+  await expect(placement.getByText('代码已克隆', { exact: true })).toBeVisible();
+  expect(requests).toHaveLength(2); expect(requests[1]).toEqual(requests[0]);
+  expect(requests[0].body).toMatchObject({ expected_version: 5, space_id: 'contract-local-space' });
+  await expect(placement.getByRole('button', { name: '已纳入并克隆', exact: true })).toBeDisabled();
+  repository = { ...repository, revision: 7, clone_status: 'unknown' };
+  await page.reload(); await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
+  await expect(placement.getByRole('button', { name: '结果未知，请先核对原操作', exact: true })).toBeDisabled();
+  expect(requests).toHaveLength(2);
 });

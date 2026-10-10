@@ -75,6 +75,7 @@ test('page shortcuts and sidebar keep explicit fixture boundary', async ({ page 
   await expect(page).toHaveURL(/swarm\?fixture=1/);
   await page.getByRole('button', { name: '退出示例模式' }).click();
   await expect(page).not.toHaveURL(/fixture=1/);
+  await page.getByRole('tab', { name: '任务时间线', exact: true }).click();
   await expect(page.getByRole('button', { name: '拓扑视图' })).toBeDisabled();
   await expect(page.getByText('T-11 · 示例', { exact: true })).not.toBeVisible();
 });
@@ -95,7 +96,7 @@ test('workspace tabs retain unknown budget and disabled resume/handoff', async (
 });
 
 test('topology/list design examples have explicit provenance and keyboard details', async ({ page }) => {
-  await page.goto('/swarm?fixture=1');
+  await page.goto('/swarm?fixture=1&tab=timeline');
   await page.getByRole('button', { name: '拓扑视图' }).click();
   await expect(page.getByText('设计示意 · 非实时拓扑')).toBeVisible();
   const node = page.getByRole('button', { name: /T-14 · 示例/ });

@@ -103,7 +103,7 @@ test('ranking waits for explicit complete human weights, keeps unknown scores an
     expect((await getProfile()).configured).toBe(false);
     await page.goto(`${server.webURL}/attention`);
     await page.locator('main summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
-    const section = page.locator('section').filter({ has: page.getByRole('heading', { name: '候选四维排序', exact: true }) });
+    const section = page.locator('section').filter({ has: page.getByRole('heading', { name: '候选四维排序', exact: true }) }).last();
     for (const label of ['目标进展', '当前兴趣', '项目改善', '创新性']) await expect(section.getByLabel(`${label}权重`, { exact: true })).toHaveValue('');
     await expect(section.getByRole('checkbox', { name: '启用综合排序', exact: true })).not.toBeChecked();
     await section.getByLabel('目标进展权重', { exact: true }).fill('0.5');

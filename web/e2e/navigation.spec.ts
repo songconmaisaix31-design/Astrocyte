@@ -24,6 +24,7 @@ test.describe('Three-page navigation', () => {
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('资料沉淀');
     await expect(page.getByRole('heading', { name: /素材/ })).toBeVisible();
+    await page.getByRole('tab', { name: '研究机会', exact: true }).click();
     await expect(page.getByRole('heading', { name: /机会/ })).toBeVisible();
   });
 
@@ -52,13 +53,13 @@ test.describe('Three-page navigation', () => {
   test('sidebar navigation links work', async ({ page }) => {
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
-    await page.locator('button:has-text("共同工作区")').click();
+    await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '共同工作区', exact: true }).click();
     await expect(page).toHaveURL(/\/workspace/);
     await expect(page.locator('h1')).toContainText('共同工作区');
-    await page.locator('button:has-text("蜂群空间")').click();
+    await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '蜂群空间', exact: true }).click();
     await expect(page).toHaveURL(/\/swarm/);
     await expect(page.locator('h1')).toContainText('蜂群空间');
-    await page.locator('button:has-text("资料沉淀")').click();
+    await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '资料沉淀', exact: true }).click();
     await expect(page).toHaveURL(/\/attention/);
   });
 

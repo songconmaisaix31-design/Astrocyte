@@ -19,7 +19,7 @@ test('browser folder selection hides technical identity and preserves explicit f
   expect(discoveries).toEqual([]); expect(bindings).toEqual([]);
   await page.getByRole('button', { name: '查看来源更新', exact: true }).click();
   const accounts = page.locator('section').filter({ has: page.getByRole('heading', { name: '账号与更新清单', exact: true }) }).first();
-  await accounts.locator('summary').filter({ hasText: /^绑定公开创作者 \/ 收藏夹$/ }).click();
+  await accounts.locator('summary').filter({ hasText: /^绑定创作者 \/ 收藏夹$/ }).click();
   await accounts.getByLabel('来源平台', { exact: true }).selectOption('douyin');
   await accounts.getByLabel('追踪内容', { exact: true }).selectOption('favorites');
   await accounts.getByLabel('收藏夹读取范围', { exact: true }).selectOption('browser_selected');
