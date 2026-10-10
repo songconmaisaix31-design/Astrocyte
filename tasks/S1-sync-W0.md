@@ -63,6 +63,26 @@ W0 修正拥有的 `scripts/dev.mjs`：先启动 API，在既有 owned-child/关
 
 `node --check scripts/dev.mjs`、`git diff --check`、合入最终 UI 后 `pnpm --dir web exec tsc -b` PASS。实际故障分支：设置 `ASTROCYTE_PORT=invalid`、模型/媒体 false，运行 `node scripts/dev.mjs --ephemeral`，API 明确拒绝非法端口且 dev **预期 exit1**，没有启动 Vite；临时目录 `astrocyte-dev-GMdTz1` 自动清理后 `Test-Path` 为 False。正向首载与浏览器修复验收待总控调度 W3 原失败项，本轮不把语法/负例当成正向已验。
 
+总控随后单次调度 W3 原失败的1920用例，W3业务验收源 `d87604e1e3d732dc12f2c8349958d797d8324607`（普通合入 W0 `23028df474d0a9d5f53bce4e2386c361026c2d98`）；1 PASS、9.7秒、exit0，health 先于 Vite、首个 GET200。W3 最后报告 `ee39f2bd093bf9f493edf1e9f19cb9c368d5a07a` 已从远端 fetch 核实、普通 exact 合入，仅两份 W3 文档差异，无业务变化。原120 PASS/2 FAIL与5 PASS/1 FAIL保留，后来的单项成功不冒充完整集合重跑。W3确认15173/18787无监听、所属进程均退出，历史临时目录保留，不由W0猜测清理。
+
+当前业务源仍为 W0 `23028df`，含全部安全轨道成果与开发入口修复；最终报告普通合并不改业务字节。W0本轮未再运行浏览器/模型/媒体或重复完整检查。该精确源码交给总控执行最后独立 check/build/完整 E2E，结果由总控维护，不在本报告预填成功。
+
+## 第六阶段：总控独立完整检查与末尾静态目录补全
+
+总控正式回执：检查业务源 `23028df474d0a9d5f53bce4e2386c361026c2d98`，最终完整套件 SOURCE `bbf99ac7ce823a73170b519b014a4bea9984651e`（相对23028df只有三份报告差异）：
+
+| 总控实际命令 | 正式结果 |
+|---|---|
+| `pnpm check` | PASS/exit0；232契约示例、API contract_local 14/14、前端44/44、19包边界 |
+| `pnpm build` | PASS/exit0；Go程序与生产网页 |
+| `pnpm test:e2e --workers=1` | 152 PASS /4 SKIP，4.1分钟、exit0；last-run passed，测试15173/18787无监听。四项显式外部用例未执行，不计成功 |
+
+这份回执是在原失败用例修复后完成的独立完整验证；历史首败保留。仍不能由离线/fixture/installed接口与UI通过推断账号同步、真实完整AT01–04、原生接续或用户接受。
+
+完整套件结束后，总控在主计划记录临时单文件写域转移，授权 W0 只修改 `web/src/pages/attention/AccountsPanel.tsx` 的平台名称常量，原 W3 已结算/释放。按确认补入快手、微博、知乎、微信视频号、Instagram、TikTok、Facebook、Reddit，总计14项；B站/抖音仍在前两项，其余12项仍“待接入”。没有改变 binding/auth、列表/正文先后、刷新、目录读取或 native 操作接口。
+
+后续名称变更的独立实际命令 `pnpm --dir web typecheck`、`pnpm --dir web build`、`git diff --check` 均 PASS/exit0；没有因静态名称重复完整套件。相对已验 bbf99ac 的业务 delta 只有该数组一行；最后报告补录不改业务。新名称的真实预览可见目录/布局核查由总控执行，W0没有抢浏览器槽。最终提交与分支已 push，在最终回执中提供准确 SHA。
+
 ## 剩余 / 未执行
 
-共同工作区发现 DTO/HTTP/adapter/service/启动组装通过真实 CLI/API 检查，四轨安全阶段已普通合并；首载启动修复正向浏览器与总控独立最终检查仍待。账号同步、原生控制/项目接入及完整 S1 未完成。真实 AT01–04、应用模型、媒体和浏览器需总控单次调度；没有合入 main，没有本轮远端 CI 结果。未答权限/认证/刷新保持待定。W1/W2 原任务已由总控按完整范围未完成结算，安全成果保留；W0 当前继续等待最后返修验收与总控收口指令。
+共同工作区发现 DTO/HTTP/adapter/service/启动组装通过真实 CLI/API 检查，四轨安全阶段普通合并、启动修复和总控独立套件通过；末尾平台名称补充仅经类型/构建/差异检查，真实预览布局核查由总控执行。账号同步、原生控制/项目接入及完整 S1 未完成，用户关键决定未回答，故本 Dispatch 按总控指令以 **failed / partial** 结算原始完整任务，不能宣称 S1 完成。真实 AT01–04、最新模型整理/重试、授权 Agent 正向资料读取未在本轮执行，旧 UNKNOWN 未重发；沒有合入 main 或本轮远端 CI 结果。W3 历史临时目录需人工处理；W0 不修改个人库、宿主 DNS/proxy 或凭据，不删除其他轨贡献。

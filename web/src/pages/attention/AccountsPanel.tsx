@@ -2,7 +2,7 @@ import { CollectionOverview } from '../../components/CollectionOverview';
 import { SectionCard } from '../../components/SectionCard';
 import styles from './AccountsPanel.module.css';
 
-const platforms = ['B站', '抖音', '小红书', 'YouTube', 'X', '微信公众号'];
+const platforms = ['B站', '抖音', '小红书', 'YouTube', 'X', '微信公众号', '快手', '微博', '知乎', '微信视频号', 'Instagram', 'TikTok', 'Facebook', 'Reddit'];
 
 /** This initial panel has no connection state: binding and list contracts are still pending. */
 export function AccountsPanel({ fixture }: { fixture: boolean }) {
