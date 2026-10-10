@@ -1,5 +1,24 @@
 # W2 项目汇总与原生输入扩容
 
+## 2026-10-10 最新活动 Git 时间补漏（独立 follow-up）
+
+Task `task_5531618a1ae6` / Dispatch `ctx_a12876d7d525`，原工作树/分支 `s1-local-agents-1010`，客户端 Orca Codex、模型继承当前运行环境，未切换 provider。基线原 SOURCE `4201c899f5aa0285a0d19442b674327237967739` / REPORT `9e47c455ba07d83a66696b5bfeccf46ffff4f33c` 保留，本次业务 SOURCE `cd201962997e69bb4772d73a6d8752874085c3ef`；本段随后独立提交为 REPORT，不修改原回执。
+
+聚合最新活动加入每个成员目录非空的 `Git.LastCommitAt`，与既有 Orca 活动取最大值。提交时间在适配器的 dirty 状态查询前独立取得，因此总体 Git status 为 unknown 但非空提交时间仍参与；nil 仍未知。原生 header 的创建/观察时间不作为最新活动，创建字段保留。只修改领域聚合、领域测试、所属应用测试和本报告，没有修改契约、路由、UI、来源采集或模型/媒体。
+
+| 验证命令/行为 | 结果与原件（`%TEMP%`） |
+|---|---|
+| `go test ./internal/workspace/domain -run 'TestProjectBoardLatest' -count=1 -v` 修复前 | RED，复现 native-only、Git 比 Orca 更新、Git 部分状态失败、跨成员目录遗漏；`astrocyte-w2-git-activity-first-red.log` 保留 |
+| `go test ./internal/workspace/domain ./internal/workspace/app -count=1 -v` | PASS；3领域测试含8边界子例，缓存列表应用测试PASS，未提供缓存路径时实际缓存例明确SKIP；`astrocyte-w2-git-activity-targeted.log` |
+| 首实际缓存 opt-in | RED，Windows SQLite URI 错把盘符作 authority；测试 URI 修正为 absolute file URI，原件 `astrocyte-w2-git-activity-existing-cache.log` 保留 |
+| `$env:ASTROCYTE_TEST_PROJECT_ACTIVITY_CACHE=Join-Path $env:LOCALAPPDATA 'Temp/astrocyte-s1-meg3Pi/data/state.sqlite'; go test ./internal/workspace/domain ./internal/workspace/app -count=1 -v` | PASS/exit0；5顶层测试含上述8子例，`astrocyte-w2-git-activity-cache-retest.log` |
+| `go build -mod=readonly ./...` | PASS/exit0；`astrocyte-w2-git-activity-go-build.log` |
+| `gofmt` / `git diff --check` | PASS |
+
+实际缓存验证用 SQLite `mode=ro` 读取先前已观察 JSON，再调用真实 `ListRegisteredProjects` 应用服务；注入缓存 repository 与记录调用次数的 source，复用 `withProjectMetadata` 重投影。111目录/71组，旧7组有活动时间，新17组，恢复10组已有 Git 提交时间；source调用0、repository写入0，持久化 JSON 查询前后完全一致。项目/来源统计/失败/观测时间不变；人工字段回归使用测试注入的备注/归档/revision，未宣称读取或改动实际人工字段。
+
+限制：剩余54组最新活动仍未知，不能由会话创建或目录时间补造。此次只验证缓存应用服务路径，未启动HTTP服务器、更新个人预览或跑浏览器；W0普通合并/预览更新与W3后续界面检查由对应owner处理。未全量重新扫描本地项目、调用模型/媒体、重发UNKNOWN、运行全套后端发现或 `pnpm check`，此前真实与完整验收原件继续保留。源码与报告均在原分支普通commit后push，root/W0/W3接收精确SOURCE/REPORT作集成依据。
+
 分支 `s1-local-agents-1010`。本轮 Task `task_bade38476a47` / Dispatch `ctx_4434022e51cd`，客户端 Orca Codex，模型由运行环境继承。基线 `087127d30fc505f8fe25c52142a174f5842e2bef` 普通合并为 `0ca476d`；W0、W1、W3 依赖只普通合入已发布 SHA，未修改其他写域。
 
 ## 已交付
