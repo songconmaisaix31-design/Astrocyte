@@ -9131,6 +9131,12 @@ components:
       type: object
       additionalProperties: false
       properties:
+        project_id:
+          type: string
+          description: Human selected project whose current fixed references and model consent are rechecked before processing.
+        cli:
+          type: string
+          description: Exact CLI permitted by that project; selected project processing never silently falls back to a global provider.
         schema_version:
           type: integer
           const: 1
