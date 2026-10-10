@@ -32,7 +32,9 @@ test.describe('Three-page navigation', () => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('共同工作区');
-    await expect(page.getByRole('heading', { name: '本地 Agent 与项目', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '项目总览', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '项目接入与设置', exact: true })).toBeVisible();
     await expect(page.getByRole('tab', { name: '提案与批准' })).toBeVisible();
     await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
     await expect(page.getByRole('heading', { name: /^会话/ })).toBeVisible();
@@ -85,6 +87,7 @@ test.describe('Empty API states', () => {
 
   test('共同工作区 shows settled empty headings', async ({ page }) => {
     await page.goto('/workspace');
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible({ timeout: 10000 });
     await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
@@ -513,10 +516,16 @@ test.describe('API failure and retry', () => {
     await page.route('**/missions*', route => route.abort());
     await page.goto('/swarm');
     await page.waitForLoadState('networkidle');
-    // All three sections (missions, workitems, artifacts) show error — not empty state
-    const errorAlerts = page.locator('[role="alert"]:has-text("暂未完成")');
-    await expect(errorAlerts.first()).toBeVisible({ timeout: 10000 });
-    expect(await errorAlerts.count()).toBe(3);
+    await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
+    // Mission and workitem errors are in records; artifacts are on their own tab.
+    // Check each downstream section visibly rather than counting hidden panels.
+    for (const title of [/^任务\(/, /^工作项\(/]) {
+      const section = page.locator('section').filter({ has: page.getByRole('heading', { name: title }) });
+      await expect(section.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible({ timeout: 10000 });
+    }
+    await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
+    const artifacts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^产物引用\(/ }) });
+    await expect(artifacts.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible({ timeout: 10000 });
     // No fixture data should appear
     await expect(page.locator('text=示例运行中任务')).not.toBeVisible();
   });

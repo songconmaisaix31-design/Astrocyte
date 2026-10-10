@@ -6,11 +6,14 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { DatabaseSync } from 'node:sqlite';
 import { findGo, root, run, start, stop, web } from '../../scripts/process.mjs';
 
-async function freePort() {
+async function freePort(requested) {
+  if (requested !== undefined && (!Number.isInteger(requested) || requested < 1 || requested > 65535 || [5173, 8787].includes(requested))) {
+    throw new Error('Acceptance port must be an integer from 1 to 65535, separate from personal 5173/8787');
+  }
   const socket = createServer();
   await new Promise((resolve, reject) => {
     socket.once('error', reject);
-    socket.listen(0, '127.0.0.1', resolve);
+    socket.listen(requested ?? 0, '127.0.0.1', resolve);
   });
   const port = socket.address().port;
   await new Promise((resolve, reject) => socket.close(error => error ? reject(error) : resolve()));
@@ -51,7 +54,13 @@ async function existingOwnedTemporary(choice) {
 }
 
 /** Existing Go server and optional Vite, isolated from the Playwright/S0 service. */
-export async function startS1Server({ browser = false, env: extraEnv = {}, reuseOwnedTemporary } = {}) {
+export async function startS1Server({ browser = false, env: extraEnv = {}, reuseOwnedTemporary, apiPort: requestedAPIPort, webPort: requestedWebPort } = {}) {
+  if (!browser && requestedWebPort !== undefined) throw new Error('A web acceptance port requires browser:true');
+  // Validate/check assigned ports before creating a store or launching a child.
+  // An occupied port fails; this helper never stops another owner's process.
+  const apiPort = await freePort(requestedAPIPort);
+  const webPort = browser ? await freePort(requestedWebPort) : apiPort;
+  if (browser && apiPort === webPort) throw new Error('API and Vite acceptance ports must differ');
   const original = reuseOwnedTemporary ? await existingOwnedTemporary(reuseOwnedTemporary) : null;
   const temporary = original?.temporary ?? await mkdtemp(join(tmpdir(), 'astrocyte-s1-'));
   // Capture the approved canonical root once. Re-resolving that root during
@@ -59,11 +68,9 @@ export async function startS1Server({ browser = false, env: extraEnv = {}, reuse
   const ownedRoot = original?.ownedRoot ?? await realpath(temporary);
   const dataDir = join(temporary, 'data');
   const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
-  const apiPort = await freePort();
-  const webPort = browser ? await freePort() : apiPort;
   const apiURL = `http://127.0.0.1:${apiPort}`;
   const webURL = `http://127.0.0.1:${webPort}`;
-  const suppliedEnv = typeof extraEnv === 'function' ? extraEnv({ dataDir, temporary }) : extraEnv;
+  const suppliedEnv = typeof extraEnv === 'function' ? await extraEnv({ dataDir, temporary }) : extraEnv;
   // Do not inherit a user's active private import roots, Agent scope, fixture mode,
   // ranking settings, or paid processor enablement into repeatable CI.
   const baseEnv = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.toUpperCase().startsWith('ASTROCYTE_')));

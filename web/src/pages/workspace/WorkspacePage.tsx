@@ -1,5 +1,5 @@
 import { GitHubRepositoriesPanel } from './GitHubRepositoriesPanel';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useProjects, useProposals, useSessions, useLocalAgents } from '../../hooks/useReadApi';
 import { fixtureProjects, fixtureProposals, fixtureSessions } from '../../fixtures';
 import { SectionCard } from '../../components/SectionCard';
@@ -17,6 +17,7 @@ import styles from './WorkspacePage.module.css';
 import { LocalProjectsPanel } from './LocalProjectsPanel';
 import { LocalAgentsPanel } from './LocalAgentsPanel';
 import { ManagedProjectsPanel } from './ManagedProjectsPanel';
+import { ProjectBoardPanel } from './ProjectBoardPanel';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -25,6 +26,7 @@ type Session = components['schemas']['SessionV1'];
 interface Props {
   fixture: boolean;
   query: string;
+  onClearQuery: () => void;
 }
 
 type SelectedItem =
@@ -33,12 +35,15 @@ type SelectedItem =
   | { kind: 'session'; data: Session }
   | null;
 
-export function WorkspacePage({ fixture, query }: Props) {
+export function WorkspacePage({ fixture, query, onClearQuery }: Props) {
   const proj = useProjects();
   const prop = useProposals();
   const sess = useSessions();
   const agents = useLocalAgents(!fixture);
   const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [boardRefresh, setBoardRefresh] = useState(0);
+  const [managed, setManaged] = useState({ root: '', name: '', token: 0 });
+  const manageRef = useRef<HTMLDetailsElement>(null);
   const [selected, setSelected] = useState<SelectedItem>(null);
 
   const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
@@ -48,7 +53,7 @@ export function WorkspacePage({ fixture, query }: Props) {
   const handleClose = useCallback(() => setSelected(null), []);
 
   return (
-    <PageFrame section="workspace" title="共同工作区" subtitle="围绕目标与项目，让想法有一个生长的地方。" fixture={fixture} onRefresh={() => { proj.retry(); prop.retry(); sess.retry(); agents.retry(); }} rail={<><RailSummary title="工作区概览" rows={[{ label: '提案', value: fixture ? proposals.length : prop.loading ? '加载中…' : prop.error && !prop.data ? '无法获取' : proposals.length }, { label: 'Agent 会话', value: fixture ? sessions.length : sess.loading ? '加载中…' : sess.error && !sess.data ? '无法获取' : sessions.length }]} note="批准、原生接续与交接尚未启用，能力未知时不会推断可用。" /><RailSummary title="Agent 上下文" rows={sessions.map(s => ({ id: s.id, label: s.adapter, value: contextStateLabel(s.context_state), onClick: () => setSelected({ kind: 'session', data: s }) }))} note={sessions.length ? '客户端名称不代表底层模型；点击检查来源、绑定与能力。' : '暂无已连接会话；不展示模拟活跃 Agent。'} /></>}>
+    <PageFrame section="workspace" title="共同工作区" subtitle="看看各项目做到哪里，记下下一步，再继续。" fixture={fixture} onRefresh={() => { proj.retry(); prop.retry(); sess.retry(); agents.retry(); setBoardRefresh(value => value + 1); }} rail={<><RailSummary title="工作区概览" rows={[{ label: '提案', value: fixture ? proposals.length : prop.loading ? '加载中…' : prop.error && !prop.data ? '无法获取' : proposals.length }, { label: 'Agent 会话', value: fixture ? sessions.length : sess.loading ? '加载中…' : sess.error && !sess.data ? '无法获取' : sessions.length }]} note="批准、原生接续与交接尚未启用，能力未知时不会推断可用。" /><RailSummary title="Agent 上下文" rows={sessions.map(s => ({ id: s.id, label: s.adapter, value: contextStateLabel(s.context_state), onClick: () => setSelected({ kind: 'session', data: s }) }))} note={sessions.length ? '客户端名称不代表底层模型；点击检查来源、绑定与能力。' : '暂无已连接会话；不展示模拟活跃 Agent。'} /></>}>
       {(!fixture && (proj.stale || prop.stale || sess.stale)) && (
         <div role="alert" style={{
           padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
@@ -66,7 +71,8 @@ export function WorkspacePage({ fixture, query }: Props) {
 {inventoryOpen && <DetailPanel title="检查本机 Agent" onClose={() => setInventoryOpen(false)}><LocalAgentsPanel state={agents} fixture={fixture} /></DetailPanel>}
             <div className={styles.grid}>
         {fixture && !projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
-        {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <ManagedProjectsPanel agents={agents} query={query} />}
+        {!fixture && <ProjectBoardPanel query={query} onClearQuery={onClearQuery} refreshToken={boardRefresh} onManage={(root, name) => { setManaged(previous => ({ root, name, token: previous.token + 1 })); if (manageRef.current) manageRef.current.open = true; requestAnimationFrame(() => { manageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); manageRef.current?.querySelector('summary')?.focus(); }); }} />}
+        {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <details ref={manageRef} className="ac-secondary-records"><summary>项目接入、权限与原生操作</summary><ManagedProjectsPanel key={managed.token} initialRoot={managed.root} initialName={managed.name} agents={agents} query={query} /></details>}
         <GitHubRepositoriesPanel fixture={fixture} query={query} />
         <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
 
@@ -101,8 +107,8 @@ export function WorkspacePage({ fixture, query }: Props) {
             )}
           </SectionCard>
         </div>
-        <SectionCard title="研究路线" tabs={['proposals']}><ResearchRoutes fixture={fixture} /></SectionCard>
-        <SectionCard title="研究动态" tabs={['sessions']}><DesignTimeline fixture={fixture} /></SectionCard>
+        {fixture && <SectionCard title="研究路线" tabs={['proposals']}><ResearchRoutes fixture /></SectionCard>}
+        {fixture && <SectionCard title="研究动态" tabs={['sessions']}><DesignTimeline fixture /></SectionCard>}
       </div>
 
       {/* ── Detail Panels ── */}

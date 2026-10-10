@@ -1,5 +1,21 @@
 # 本地 Agent 与工具清点
 
+## 2026-10-10 项目汇总、会话元数据与独立人工记录
+
+本轮已授权本地项目/历史识别。沿 `RegisteredProjects`：Orca 公共登记根/工作树 + Codex、Pi、Claude 的明确原生元数据目录；CLI 安装、配置和执行权限仍独立。新增 CLI 元数据指出的目录只核 canonical 绝对路径及 `.git`/`go.mod`/`package.json`/`pyproject.toml`/`Cargo.toml`/`CMakeLists.txt` 的文件标记，不读取内容、不递归搜索父目录，不登记执行项目。排除重定向路径、home 根、系统安装目录及凭据/原生状态目录。
+
+Codex 只读 `CODEX_HOME/sessions` 或 `~/.codex/sessions` 日期目录的首条 `session_meta` 中 id/cwd/timestamp；Pi 只读 `PI_CODING_AGENT_DIR/sessions` 或 `~/.pi/agent/sessions` 一层项目目录的首条 session 元数据。每源最多 2048 目录项、64KiB 首记录；不读 SQLite/认证/全文对话。字段依据 [Codex 官方 rollout 接口](https://github.com/openai/codex/blob/main/codex-rs/core/src/rollout.rs) 和 [Pi 官方 SessionHeader](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/src/core/session-manager.ts)。
+
+Claude 路径来自 [官方会话文档](https://code.claude.com/docs/en/sessions#where-transcripts-are-stored)及 [官方 SDK 元数据读取实现](https://github.com/anthropics/claude-agent-sdk-python/blob/main/src/claude_agent_sdk/_internal/sessions.py)。本机 8 个项目目录没有 `sessions-index.json`，因此使用 `CLAUDE_CONFIG_DIR/projects` 或 `~/.claude/projects`：每文件总共最多64KiB、16条初始记录，仅解析顶层 cwd/sessionId/timestamp，舍弃 message/prompt/tool/summary；不调用 SDK 的摘要/首提示抽取、不读取尾部。异常或内部格式变化保持 partial。
+
+目录由 Orca 登记身份或实际 Git common-dir 聚合；名称、相同提交或创建客户端不是身份/贡献者证据。独立克隆及嵌套项目保持独立。原生 timestamp 记录为 `created_at`，不作为最新活动；Git 最后提交、Orca 工作树活动和原生历史关联分别保留。每根/客户端最多保留4条会话关联样本、每源最多256条关联；`entries_examined`、`headers_examined`、`matched_headers`、`matched_roots`、`retained_associations` 分开，均不是完成率或全量会话数。
+
+本轮实际有界采集曾观察111目录→71项目组，含57个原生元数据独立根、4个多目录组、5个 Codex+Claude 关联组；保留125条关联样本，来源仍 partial。Pi 已知源不存在；OpenCode/Grok/Kimi/Qwen/Cursor/Gemini/Cursor Agent 尚无可靠元数据适配，逐客户端 unknown，不从安装情况推导项目覆盖。
+
+notes/review/group/intent/archived 保存于独立 `local_project_metadata` 表，人工身份/CSRF + revision CAS 写入；updated_at 由服务生成。反复刷新保留人工字段，归档可逆，不删除代码、不改变 grants。GET 只读持久缓存、在内存聚合，不扫描或写入。人工阶段/Agent推断决定尚待答复，intent 为人工自由文字。具体验证、首 RED 和剩余验收见 [W2 报告](../../tasks/S1-paper-W2.md)。
+
+原生 selected-text 总输入上限512KiB UTF-8，包括 `packetPrompt` 固定指令和上下文信封；空/非法 UTF-8/超限在 ConfigurationID 和原生启动前拒绝，无截断。`ValidateSelectedTextPrompt` 和 `SelectedTextPromptBytes` 使用同一信封。实际发送前只记录输入字节数/输入上限/输出上限，不记录内容或配置。输出上限和原生历史128KiB保持独立；已有项目上下文/普通消息/权限限制未随之放宽。
+
 ## 2026-10-10 公开 GitHub 元数据与人工蜂群纳入
 
 本轮用户已确认“先信息、人工纳入顶层蜂群空间才克隆”。复用 Go HTTP、SQLite、`LocalProject` 与既有 `ProjectSpace` 桥；`GET /github-repositories` 只查缓存，人工同步接受公开账号名、`owner/repo` 或 `https://github.com/...`。按 [GitHub Repository REST API](https://docs.github.com/en/rest/repos/repos) 匿名查询，账号仅第一页最多100项，不声称完整账号库存；不读认证、不查私有仓库、不在元数据阶段创建代码目录。固定稳定 GitHub ID 去重，观察 revision 与 metadata_revision 分开，失败保留旧数据/时间并标 stale。

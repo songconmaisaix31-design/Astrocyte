@@ -28,13 +28,17 @@ export function App() {
   }, []);
   const props = { fixture, query };
   const modeKey = fixture ? 'fixture' : 'api';
-  const page = route.path.startsWith('/workspace') ? <WorkspacePage key={modeKey} {...props} /> : route.path.startsWith('/swarm') ? <SwarmPage key={modeKey} {...props} /> : <AttentionPage key={modeKey} {...props} />;
+  const workspace = route.path.startsWith('/workspace');
+  const workspaceTab = route.query.get('tab') ?? 'overview';
+  const searchName = workspace ? workspaceTab === 'sessions' ? '搜索已加载 Agent 会话' : workspaceTab === 'proposals' ? '搜索已加载提案' : '搜索已加载项目、目录与备注' : '搜索当前页资料、任务或 Agent';
+  const searchPlaceholder = workspace ? workspaceTab === 'sessions' ? '搜索客户端、会话或项目 ID…' : workspaceTab === 'proposals' ? '搜索提案标题、目标或 ID…' : '搜索项目、目录或备注…' : '搜索资料、任务，或一个值得继续的问题…';
+  const page = workspace ? <WorkspacePage key={modeKey} {...props} onClearQuery={() => setQuery('')} /> : route.path.startsWith('/swarm') ? <SwarmPage key={modeKey} {...props} /> : <AttentionPage key={modeKey} {...props} />;
   return <div className="ac-workbench">
     <a href="#ac-main" className="ac-skip">跳转到内容</a>
     <header className="ac-topbar"><div className="ac-topbar-inner">
       <button type="button" className="ac-icon-button ac-mobile-toggle" aria-label="展开导航" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><Icon name="menu" /></button>
       <button type="button" className="ac-brand" aria-label="Astrocyte 首页" onClick={() => navigate(`/attention${fixture ? '?fixture=1' : ''}`)}><Mark /><span>Astrocyte<small>个人研究与创造工作台</small></span></button>
-      <div className="ac-global-search"><Icon name="search" size={18} /><input id="ac-global-search" aria-label="搜索当前页资料、任务或 Agent" placeholder="搜索资料、任务，或一个值得继续的问题…" value={query} onChange={event => setQuery(event.target.value)} onKeyDown={event => { if (event.key === 'Escape') { setQuery(''); event.currentTarget.blur(); } }} />{query ? <button type="button" className="ac-icon-button" aria-label="清空搜索" onClick={() => setQuery('')}><Icon name="close" size={15} /></button> : <kbd>/</kbd>}</div>
+      <div className="ac-global-search"><Icon name="search" size={18} /><input id="ac-global-search" aria-label={searchName} placeholder={searchPlaceholder} value={query} onChange={event => setQuery(event.target.value)} onKeyDown={event => { if (event.key === 'Escape') { setQuery(''); event.currentTarget.blur(); } }} />{query ? <button type="button" className="ac-icon-button" aria-label="清空搜索" onClick={() => setQuery('')}><Icon name="close" size={15} /></button> : <kbd>/</kbd>}</div>
       <div className="ac-header-right"><span className="ac-preview-pill"><i />{fixture ? '示例数据' : '本地工作台'}</span><span className="ac-user-avatar" aria-label="本地用户">我</span></div>
     </div></header>
     <div className="ac-layout"><Nav currentPath={route.path} fixture={fixture} open={menuOpen} onNavigate={() => setMenuOpen(false)} /><main id="ac-main" className="ac-main" tabIndex={-1}>{fixture && <FixtureBanner />}{query && <p className="ac-search-note" role="status">当前页筛选：{query}（仅搜索已加载内容）</p>}{page}</main></div>

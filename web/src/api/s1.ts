@@ -24,6 +24,7 @@ export const trackingApi = {
   selectItems: async (id: string, body: components['schemas']['SelectSourceItemsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/tracking-sources/{id}/select', { body, params: { path: { id }, header: await headers(key) }, ...options })),
 };
 export const localProjectsApi = {
+  setRegisteredProjectMetadata: async (project_id: string, body: components['schemas']['SetRegisteredProjectMetadataRequestV1'], key: string, options?: Options) => unwrap(api.PUT('/local-projects/registered/{project_id}/metadata', { body, params: { path: { project_id }, header: await headers(key) }, ...options })),
   listRegisteredProjects: (options?: Options) => unwrap(api.GET('/local-projects/registered', options)),
   refreshRegisteredProjects: async (body: components['schemas']['RefreshRegisteredProjectsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/registered/refresh', { body, params: { header: await headers(key) }, ...options })),
 	probeCLI: async (id: string, body: components['schemas']['DiscoverNativeSessionsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/sessions/probe', { body, params: { path: { id }, header: await headers(key) }, ...options })),

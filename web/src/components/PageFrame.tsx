@@ -6,7 +6,7 @@ import { ActiveTab } from './activeTab';
 export type Section = 'attention' | 'workspace' | 'swarm';
 const tabs = {
   attention: [{ id: 'overview', label: '资料与线索' }, { id: 'opportunities', label: '研究机会' }, { id: 'saved', label: '我的收藏' }],
-  workspace: [{ id: 'overview', label: '研究空间' }, { id: 'sessions', label: 'Agent 会话' }, { id: 'proposals', label: '提案与批准' }],
+  workspace: [{ id: 'overview', label: '项目总览' }, { id: 'sessions', label: 'Agent 会话' }, { id: 'proposals', label: '提案与批准' }],
   swarm: [{ id: 'overview', label: '协作现场' }, { id: 'timeline', label: '任务时间线' }, { id: 'artifacts', label: '成果与继承' }],
 };
 
@@ -18,16 +18,17 @@ export function PageFrame({ section, title, subtitle, fixture, onRefresh, rail, 
   const options = tabs[section];
   const requested = route.query.get('tab');
   const active = options.some(t => t.id === requested) ? requested! : 'overview';
+  const projectOverview = section === 'workspace' && !fixture && active === 'overview';
   function selectTab(id: string) {
     const query = new URLSearchParams(route.query);
     query.set('tab', id);
     navigate(`/${section}?${query}`);
   }
   return <ActiveTab value={active}>
-    <div className="ac-breadcrumb"><span>我的工作台</span><Icon name="chevron" size={12} /><span>{title}</span><span className="ac-mode-label">{fixture ? '示例数据' : '本机数据'}</span></div>
-    <div className="ac-page-header"><div><h1>{title}</h1><p>{subtitle}</p></div>{!fixture && <button className="ac-button secondary compact" type="button" onClick={onRefresh}>↻ 刷新</button>}</div>
+    <div className={`ac-breadcrumb${projectOverview ? ' ac-board-breadcrumb' : ''}`}><span>我的工作台</span><Icon name="chevron" size={12} /><span>{title}</span><span className="ac-mode-label">{fixture ? '示例数据' : '本机数据'}</span></div>
+    <div className={`ac-page-header${projectOverview ? ' ac-board-header' : ''}`}><div><h1>{title}</h1><p>{subtitle}</p></div>{!fixture && <button className="ac-button secondary compact" type="button" onClick={onRefresh}>↻ 刷新</button>}</div>
     <div className={`ac-content-grid${fixture ? '' : ' ac-live-grid'}`}><div className="ac-center">
-      <div className="ac-tabs" role="tablist" aria-label={`${title}子页面`}>
+      <div className={`ac-tabs${projectOverview ? ' ac-board-tabs' : ''}`} role="tablist" aria-label={`${title}子页面`}>
         {options.map((tab, index) => <button key={tab.id} id={`${section}-${tab.id}-tab`} type="button" role="tab" aria-selected={active === tab.id} aria-controls={`${section}-panel`} tabIndex={active === tab.id ? 0 : -1} className={active === tab.id ? 'active' : ''} onClick={() => selectTab(tab.id)} onKeyDown={event => {
           if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
           event.preventDefault();

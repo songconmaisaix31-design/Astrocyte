@@ -17,6 +17,7 @@ test('human registers a specified project, independently saves B/C, reads only a
   await writeFile(join(projectRoot, filename), text);
   try {
     await page.goto(`${server.webURL}/workspace`);
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
     const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
     await panel.getByText('登记项目 / 发现子项目', { exact: true }).click();
     await panel.getByLabel('新项目顶层空间名称', { exact: true }).fill('临时公开项目空间');
@@ -67,6 +68,7 @@ test('human registers a specified project, independently saves B/C, reads only a
     await testInfo.attach('actual-project-settings', { body: JSON.stringify(saved.project, null, 2), contentType: 'application/json' });
     await server.restart();
     await page.reload();
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
     await panel.getByRole('button', { name: /临时公开项目.*查看项目与权限/ }).click();
     await manage.getByText('项目小权限与模型处理许可', { exact: true }).click();
     await expect(toggleB).toBeChecked();
