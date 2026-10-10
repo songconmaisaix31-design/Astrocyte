@@ -17,15 +17,17 @@ import (
 // This transactional fake exercises use cases and failure injection, not SQLite
 // or live importer acceptance. W2/W4 own those adapter/integration checks.
 type memoryState struct {
-	Materials     map[string]MaterialDetail
-	Distillations map[string]Distillation
-	Opportunities map[string]OpportunityDetail
-	Jobs          map[string]Job
-	Receipts      map[string]Receipt
-	Events        []OutboxEvent
-	Domains       map[string]MaterialDomain
-	Spaces        map[string]ProjectSpace
-	Profile       RankingProfileDetail
+	Materials       map[string]MaterialDetail
+	Distillations   map[string]Distillation
+	Opportunities   map[string]OpportunityDetail
+	Jobs            map[string]Job
+	Receipts        map[string]Receipt
+	Events          []OutboxEvent
+	Domains         map[string]MaterialDomain
+	Spaces          map[string]ProjectSpace
+	Profile         RankingProfileDetail
+	TrackingSources map[string]TrackingSource
+	SourceItems     map[string]SourceItem
 }
 type memoryRepo struct {
 	mu        sync.Mutex

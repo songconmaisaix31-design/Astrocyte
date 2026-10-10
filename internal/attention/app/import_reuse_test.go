@@ -140,7 +140,7 @@ func TestImportFixedArxivBoundary(t *testing.T) {
 			}
 			c.CommandMeta = meta("two", 1)
 			second, err := s.ImportMaterial(context.Background(), human, c)
-			if err != nil || (first.JobID == second.JobID) != tc.fixed {
+			if err != nil || first.JobID != second.JobID || (fixedArxivVersion(c) != "") != tc.fixed {
 				t.Fatalf("fixed=%t same_job=%t error=%v", tc.fixed, first.JobID == second.JobID, err)
 			}
 		})
@@ -239,6 +239,7 @@ func TestMutableImportCommandsReadUpdatedContent(t *testing.T) {
 				t.Fatal(err)
 			}
 			c.CommandMeta = meta("mutable-again", 1)
+			c.Refresh = true
 			second, err := s.ImportMaterial(ctx, human, c)
 			if err != nil || second.JobID == first.JobID {
 				t.Fatal("new command failed to schedule a mutable source read", err)

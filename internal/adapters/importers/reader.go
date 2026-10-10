@@ -14,6 +14,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
 
 // Reader accepts existing exports. Local files are disabled unless explicit
@@ -197,46 +198,7 @@ func (r *Reader) exportBytes(cmd app.ImportMaterialCommand) ([]byte, error) {
 	return os.ReadFile(resolved)
 }
 
-func canonicalWebKey(raw string) string {
-	u, err := url.Parse(raw)
-	if err != nil {
-		return raw
-	}
-	u.Fragment = ""
-	host := strings.ToLower(u.Hostname())
-	if host == "bilibili.com" || host == "www.bilibili.com" || host == "m.bilibili.com" {
-		if strings.HasPrefix(u.Path, "/video/") {
-			// Tracking parameters do not identify new source content. Keep all
-			// other parameters, especially multipart page p, in source identity.
-			q := u.Query()
-			q.Del("spm_id_from")
-			q.Del("spm")
-			if q.Get("p") == "1" {
-				q.Del("p")
-			}
-			u.Scheme = "https"
-			u.Host = "www.bilibili.com"
-			u.Path = strings.TrimRight(u.Path, "/") + "/"
-			u.RawQuery = q.Encode()
-			return u.String()
-		}
-	}
-	if host == "youtu.be" {
-		return "youtube:" + strings.Trim(u.Path, "/")
-	}
-	if host == "youtube.com" || host == "www.youtube.com" || host == "m.youtube.com" {
-		if id := u.Query().Get("v"); id != "" {
-			return "youtube:" + id
-		}
-		for _, prefix := range []string{"/shorts/", "/embed/"} {
-			if strings.HasPrefix(u.Path, prefix) {
-				return "youtube:" + strings.TrimPrefix(u.Path, prefix)
-			}
-		}
-	}
-	u.Host = strings.ToLower(u.Host)
-	return u.String()
-}
+func canonicalWebKey(raw string) string { return domain.CanonicalWebKey(raw) }
 
 func invalid(message string) *apierrors.ServiceError {
 	return &apierrors.ServiceError{Code: apierrors.ValidationFailed, Message: message, RequiredAction: "correct_source_input"}
