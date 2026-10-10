@@ -6,7 +6,7 @@
 
 | CLI | 已实现原生控制 | 独立真实结果 | 未验证/拒绝 |
 |---|---|---|---|
-| Codex0.162.0 | app-server JSON-RPC initialize/thread start+resume/turn send+interrupt/events/owned stop；完整context用thread/read校验ID/cwd后分页thread/items/list | 非推理握手与两真实公开marker turns，同原nativeID恢复且owned exit确认；实际gpt-6.1-sol/openai；完整context分页仅离线协议检查 | 用户历史根未给；外部session占用交接/reconcile未做；完整context安装协议验收NOT_RUN，停止进程不隐式重启 |
+| Codex0.162.0 | app-server JSON-RPC initialize/thread start+resume/turn send+interrupt/events/owned stop；完整context用thread/read校验ID/cwd后分页thread/items/list | 非推理握手与两真实公开marker turns，同原nativeID恢复且owned exit确认；实际gpt-6.1-sol/openai；后续W3真实同线程完整context200及same-ID恢复/第三send/stop通过 | 用户历史根未给；外部session占用交接/reconcile未做；新增opt-in完整context断言自身尚未运行，停止进程不隐式重启 |
 | Claude2.1.238 | 原生stream-json SDK控制initialize/interrupt、指定UUID start/同UUID resume、user消息、assistant/result事件、owned stop | 非推理握手与两真实公开marker turns、同UUID恢复、owned exit确认；实际qwen3.7-max/provider端点未核实 | 外部历史schema及pre-paid当前model观测缺失，generic selected-text明确EvidenceMissing；不将workspace成功扩展成distillation验收 |
 | Pi1.0.1 | RPC get_state/prompt/abort/clear_queue、原sessionFile resume、events、owned stop | 非推理握手通过；真实首turn definite失败，单次授权诊断authentication_rejected、stop确认 | 原生real resume尚未执行，模型失败不得算PASS；不迁移认证、不重试 |
 | OpenCode/Grok/Kimi/Qwen/Cursor | 固定安装库存 | 仅version/help证据 | registry无已验证driver，native API明确unsupported，能力不因安装而提升；不声称官方协议不存在 |
@@ -20,6 +20,8 @@
 - [coder/agentapi](https://github.com/coder/agentapi)的HTTP消息、状态、SSE展示了协作控制方式，但terminal稳定状态不能证明原生session ID恢复或OS隔离；未部署包装服务。[Happy](https://github.com/slopus/happy)和[Happy providers案例](https://github.com/slopus/happy-agent/blob/main/packages/happy-providers/EXAMPLES.md)用于参考原生session/中断接口，不另建远程同步、scheduler、Attempt/Manifest或证明系统。
 
 Context packet是controller选择范围的固定版本封装，不是完整原生history；external_observed packet的created_at只是发现范围封装时间，native未知updated_at为null。正向stop需拥有的进程树退出，单个abort响应/kill请求不能冒充StopConfirmed；UNKNOWN投递不重放。Codex完整context需initialize协商experimentalApi，方法不支持时返回unsupported。确认未启动的resume失败保留原owned/nativeID及停止事实，仅新操作回执failed；不是旧会话unstarted。此前真实turn/resume结果不覆盖后加的完整context断言，新增原生断言及跨session context_handoff仍NOT_RUN。当前所有真实slot已归还，个人项目/历史根待人类提供。
+
+后续W3独立 SOURCE `0d2319e`复用原会话的真实API验收：active完整context200同时含原user_text/assistant marker、same-ID resume/第三send/positive stop通过，保留首次错误URL matcher RED；不外推Pi或跨session handoff。首paper selected-text job约18秒UNKNOWN、Result=null，实际原因未保留，禁止重放。协调者随后指出流式delta计数缺陷，离线1000个小delta首次RED在765字节触及256事件；现只合并同一消息连续增量，不跨控制/消息边界，原128KiB与256事件上限仍强制。返修及针对回归通过、未新发模型，精确提交见W2 Handoff；不能把这个离线缺陷改写为首paper已确定原因。
 
 ### OpenCode1.18.35 精确范围阻塞（零native/model启动）
 
