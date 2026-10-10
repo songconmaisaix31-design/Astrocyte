@@ -467,16 +467,16 @@ func (p *opencodeProcess) verifySession(ctx context.Context, sessionID string) e
 	if json.Unmarshal(data, &session) != nil || session.ID != sessionID {
 		return nativeError(apierrors.ScopeDenied, "native session identity differs")
 	}
-	// Mirror the findLast evaluation order: the effective wildcard fallback is
-	// the last permission="*" pattern="*" rule. A non-global pattern or a later
-	// allow must not be mistaken for deny-by-default.
-	denyAll := false
-	for _, rule := range session.Permission {
-		if rule.Permission == "*" && rule.Pattern == "*" {
-			denyAll = rule.Action == "deny"
-		}
+	// The controller creates a session with exactly one deny-all rule, so the
+	// echoed permission array must be non-empty and end with the exact wildcard
+	// deny. A trailing rule (e.g. a specific read allow) would win under the
+	// server's last-match evaluation and is rejected; this check does not
+	// simulate the permission algorithm, it only asserts the owned trailing rule.
+	if len(session.Permission) == 0 {
+		return nativeError(apierrors.ScopeDenied, "session permission is empty; refusing to send")
 	}
-	if !denyAll {
+	last := session.Permission[len(session.Permission)-1]
+	if last.Permission != "*" || last.Pattern != "*" || last.Action != "deny" {
 		return nativeError(apierrors.ScopeDenied, "session deny-by-default permission is not effective; refusing to send")
 	}
 	return nil

@@ -127,6 +127,13 @@ func opencodeTestServer(t *testing.T, username, password string) *httptest.Serve
 		}
 		_, _ = w.Write([]byte(`{"id":"sess-late-allow","permission":[{"permission":"*","pattern":"*","action":"deny"},{"permission":"*","pattern":"*","action":"allow"}]}`))
 	})
+	mux.HandleFunc("/session/sess-read-allow", func(w http.ResponseWriter, r *http.Request) {
+		if !auth(r) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		_, _ = w.Write([]byte(`{"id":"sess-read-allow","permission":[{"permission":"*","pattern":"*","action":"deny"},{"permission":"read","pattern":"*","action":"allow"}]}`))
+	})
 	mux.HandleFunc("/session/sess-1/message", func(w http.ResponseWriter, r *http.Request) {
 		if !auth(r) {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -207,7 +214,7 @@ func TestOpencodeSessionDenyPermissionFailClosed(t *testing.T) {
 	server := opencodeTestServer(t, "user", "pass")
 	defer server.Close()
 	p := newTestOpencodeProcess(server, "user", "pass")
-	for _, id := range []string{"sess-nodeny", "sess-narrow", "sess-late-allow"} {
+	for _, id := range []string{"sess-nodeny", "sess-narrow", "sess-late-allow", "sess-read-allow"} {
 		var service *apierrors.ServiceError
 		if !errors.As(p.verifySession(context.Background(), id), &service) || service.Code != apierrors.ScopeDenied {
 			t.Fatalf("session %s without an effective last deny-all rule verified as safe: %v", id, service)
