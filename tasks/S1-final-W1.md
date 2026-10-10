@@ -1,5 +1,18 @@
 # S1 收尾 W1：论文检索、正文提取与独立 MV3 插件
 
+## 续四：README 与实际实现对齐返修（本轮）
+
+Branch `s1-sync-attention-1010`。root 已构建当前 MV3 `extensions/paper/dist`，但 `extensions/paper/README.md` 仍留三处旧表述——`text` 仅 display-only、authoritative import 走 `paper_url` 联网重取、应用侧 transport 刻意未接线。实际实现已落地人类复核的 `paper_snapshot` 零网络入库（存原提交 JSON + 正文/版本，provenance 明确 browser_snapshot、非 publisher 在线原件）。本续只改 `extensions/paper/README.md` 与本文件，写域不变，不改代码/接口/锁/权限，不重跑模型/抓网页/造测试。
+
+- README 改为描述真实路径：安装（`extensions/paper/dist` 作 unpacked MV3 加载）→ 点击「读取当前页并提取」→「复制快照」→ 粘贴进 Astrocyte Attention 表单人工审阅确认 → `POST /materials/imports` `adapter=paper_snapshot` 零联网入库；权限如实写 `activeTab`/`scripting`/`clipboardWrite`，无 storage/cookies/history/tabs 读权限。
+- 分清 `paper_snapshot`（离线、人类复核、不验 publisher 原件，存 `paper-snapshot.json` + 正文/版本，`browser_snapshot_*` 三态）与可选在线 `paper_url`（抓正文）/`paper_pdf`（抓 PDF 正文）两条独立联网路径；后者依赖公网源访问、当前被本机 fakeIP DNS 阻断，与快照路径无关。
+- 说明个人 Chrome 独立插件未安装；隔离 Chromium 临时 profile 加载与真实浏览器粘贴快照入库已通过，不据此宣称个人浏览器已装或多数站点 PDF 全量。
+- 应用侧 transport 仍无 `externally_connectable` 消息交接，实际交接是显式「复制→粘贴→人工确认」；`background.js` 只信插件自身 popup、外部 sender 一律拒绝。
+
+验证：`extensions/paper` 源码（`popup.js`/`popup.html`/`manifest.json`/`background.js`/`extract.js`）与 `paper_snapshot.go` 逐项核对一致（快照字段、content_state 三态、source_key 服务端重推导、provenance 落库），`git diff --check` 干净；纯文档改动，无接口/锁/权限变更，未重跑模型/抓网页/造测试。
+
+---
+
 ## 续三：检索精确 ID 路由返修（本轮）
 
 Branch `s1-sync-attention-1010`。主控返修：真实 `GET /api/v1/papers/search?q=10.1371%2Fjournal.pdig.0000514&provider=crossref` 把完整 DOI 当关键词，首条返回无关的 `Algorithm1:PDIG`。本续在 `importers/scholar.go` 加精确 ID 路由，写域不变，仅本文件 + `docs/acceptance/S1-paper.md` + `scholar.go`/`scholar_test.go`。
