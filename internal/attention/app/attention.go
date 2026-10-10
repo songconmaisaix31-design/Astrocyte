@@ -28,6 +28,10 @@ type ServiceOptions struct {
 	AttentionHalfLife           time.Duration
 	AttentionWeights            map[string]float64
 	Distiller                   Distiller
+	ProjectDistillers           ProjectDistillerFactory
+	ListingReader               PublicListingReader
+	CollectionReader            PublicCollectionReader
+	ListingRecommender          ListingRecommender
 	AllowedProcessingSourceKeys []string
 	Clock                       func() time.Time
 }
