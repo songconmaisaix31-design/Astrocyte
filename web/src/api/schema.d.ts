@@ -1,5 +1,337 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/tracking-sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * list Tracking Sources
+         * @description Public metadata only; no cookies, login, credentials or body extraction before human selection. Binding never starts execution; unavailable services return 501.
+         */
+        get: operations["listTrackingSources"];
+        put?: never;
+        /**
+         * bind Tracking Source
+         * @description Public metadata only; no cookies, login, credentials or body extraction before human selection. Binding never starts execution; unavailable services return 501.
+         */
+        post: operations["bindTrackingSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tracking-sources/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * get Tracking Source
+         * @description Public metadata only; no cookies, login, credentials or body extraction before human selection. Binding never starts execution; unavailable services return 501.
+         */
+        get: operations["getTrackingSource"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tracking-sources/{id}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * sync Tracking Source
+         * @description Sync up to 100 public metadata records; startup runs once and has no timer. Partial pages retain cached records and warnings.
+         */
+        post: operations["syncTrackingSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tracking-sources/{id}/recommend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * recommend Source Items
+         * @description Selected metadata revisions sent only to the human-approved project CLI. Recommendations do not import content or approve themselves. Unknown model outcomes are not replayed.
+         */
+        post: operations["recommendSourceItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tracking-sources/{id}/select": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * select Source Items
+         * @description Human selection of exact metadata revisions queues normal reusable summarize imports; no full-list auto import.
+         */
+        post: operations["selectSourceItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * list Local Projects
+         * @description Human registered roots only; no whole-drive discovery.
+         */
+        get: operations["listLocalProjects"];
+        put?: never;
+        /**
+         * register Local Project
+         * @description Human registers one explicit root and Attention project space; default A selected fixed refs, B/C and external model permission disabled.
+         */
+        post: operations["registerLocalProject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * discover Local Projects
+         * @description Human chooses a bounded parent root for project discovery; no arbitrary disk scanning.
+         */
+        post: operations["discoverLocalProjects"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * set Local Project Settings
+         * @description Human-only CAS settings. B allowlisted directories, C reference expansion and model CLI are explicit project permissions; revoke checked per operation.
+         */
+        put: operations["setLocalProjectSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/grants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * grant Local Project Agent
+         * @description Human-only operation-scoped Agent grant; token cannot confer permissions on itself.
+         */
+        post: operations["grantLocalProjectAgent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/grants/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * revoke Local Project Agent
+         * @description Human-only revoke; subsequent reads and native operations reload current authority.
+         */
+        post: operations["revokeLocalProjectAgent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * read Local Project Context
+         * @description Current project scoped A fixed references plus explicitly enabled B/C only; read does not increase human attention.
+         */
+        post: operations["readLocalProjectContext"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * list Native Sessions
+         * @description Native session observations for this project only; no arbitrary native histories.
+         */
+        get: operations["listNativeSessions"];
+        put?: never;
+        /**
+         * start Native Session
+         * @description Explicitly approved project CLI and actions only; automatic Agent dispatch remains disabled pending user clarification. Cooperative mode does not promise OS isolation.
+         */
+        post: operations["startNativeSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/sessions/{session_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * resume Native Session
+         * @description Native session identity and ownership must be verified; unsupported native resume never becomes a new session silently.
+         */
+        post: operations["resumeNativeSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/sessions/{session_id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * send Native Message
+         * @description Operation-scoped input to this project session. Unknown effects are never resent automatically.
+         */
+        post: operations["sendNativeMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/sessions/{session_id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * stop Native Session
+         * @description Stop only the owned native session and preserve actual stop confirmation; failed stop remains blocked.
+         */
+        post: operations["stopNativeSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/sessions/{session_id}/observe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * observe Native Session
+         * @description Read factual native output and current state; no guessed completion, no synthetic history.
+         */
+        get: operations["observeNativeSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/local-agents": {
         parameters: {
             query?: never;
@@ -1688,6 +2020,8 @@ export interface components {
          *     }
          */
         ImportMaterialRequestV1: {
+            /** @description Ordinary import reuses the existing extraction; only explicit human refresh obtains new content. */
+            refresh?: boolean;
             /** @constant */
             schema_version: 1;
             request_id: string;
@@ -2582,6 +2916,305 @@ export interface components {
             required_action: string;
             allowed_source_keys: string[];
         };
+        ListingMetadataV1: {
+            external_id: string;
+            locator: string;
+            title: string;
+            description: string;
+            author: string;
+            cover: string;
+            published_at: number;
+            provider_status: number | null;
+            unavailable_reason: string;
+        };
+        SourceRecommendationV1: {
+            /** @enum {string} */
+            status: "pending" | "running" | "succeeded" | "failed" | "unknown" | "unavailable";
+            text: string;
+            reason: string;
+            metadata_revision: number;
+            provenance: components["schemas"]["ProvenanceV1"];
+            configuration_id: string;
+            error: components["schemas"]["ServiceErrorV1"] | null;
+        };
+        TrackingSourceV1: {
+            id: string;
+            version: number;
+            /** @enum {string} */
+            platform: "bilibili" | "douyin";
+            /** @enum {string} */
+            source_kind: "uploads" | "favorites";
+            external_id: string;
+            owner_id: string;
+            locator: string;
+            title: string;
+            status: string;
+            last_success_at: string | null;
+            last_error: components["schemas"]["ServiceErrorV1"] | null;
+            next_cursor: string | null;
+            has_more: boolean;
+            warnings: string[];
+        };
+        SourceItemV1: {
+            source_id: string;
+            external_id: string;
+            revision: number;
+            metadata: components["schemas"]["ListingMetadataV1"];
+            stale: boolean;
+            selected: boolean;
+            import_job_id: string | null;
+            material_id: string | null;
+            recommendation: components["schemas"]["SourceRecommendationV1"] | null;
+        };
+        TrackingSourceResultV1: {
+            /** @constant */
+            schema_version: 1;
+            source: components["schemas"]["TrackingSourceV1"];
+            items: components["schemas"]["SourceItemV1"][];
+            next_cursor: string | null;
+            has_more: boolean;
+            warnings: string[];
+            jobs: components["schemas"]["ImportJobV1"][];
+        };
+        TrackingSourceListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["TrackingSourceV1"][];
+            next_cursor: string | null;
+        };
+        BindTrackingSourceRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @enum {string} */
+            platform: "bilibili" | "douyin";
+            /** @enum {string} */
+            source_kind: "uploads" | "favorites";
+            external_id: string;
+            owner_id?: string;
+            locator: string;
+            title?: string;
+        };
+        SyncTrackingSourceRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @default 100 */
+            limit: number;
+            cursor?: string;
+        };
+        SourceItemSelectionV1: {
+            external_id: string;
+            revision: number;
+        };
+        RecommendSourceItemsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            project_id: string;
+            cli: string;
+            items: components["schemas"]["SourceItemSelectionV1"][];
+        };
+        SelectSourceItemsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            items: components["schemas"]["SourceItemSelectionV1"][];
+            collection_reason?: string | null;
+        };
+        LocalProjectSettingsV1: {
+            revision: number;
+            allow_directory: boolean;
+            allowed_subdirs: string[];
+            expand_references: boolean;
+            allowed_actions: string[];
+            allowed_tools: string[];
+            external_model_cli: string;
+            allow_agent_control: boolean;
+        };
+        LocalProjectV1: {
+            id: string;
+            name: string;
+            root: string;
+            space_id: string;
+            settings: components["schemas"]["LocalProjectSettingsV1"];
+            /** Format: date-time */
+            created_at: string;
+        };
+        LocalProjectResultV1: {
+            /** @constant */
+            schema_version: 1;
+            project: components["schemas"]["LocalProjectV1"];
+        };
+        LocalProjectListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["LocalProjectV1"][];
+            next_cursor: string | null;
+        };
+        LocalProjectCandidateV1: {
+            root: string;
+            name: string;
+        };
+        LocalProjectCandidateListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["LocalProjectCandidateV1"][];
+            next_cursor: string | null;
+        };
+        RegisterLocalProjectRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            name: string;
+            root: string;
+            space_id: string;
+        };
+        DiscoverLocalProjectsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            root: string;
+        };
+        LocalProjectSettingsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            expected_revision: number;
+            settings: components["schemas"]["LocalProjectSettingsV1"];
+        };
+        LocalProjectGrantV1: {
+            project_id: string;
+            agent_id: string;
+            actions: string[];
+            revoked_at: string | null;
+        };
+        LocalProjectGrantResultV1: {
+            /** @constant */
+            schema_version: 1;
+            grant: components["schemas"]["LocalProjectGrantV1"];
+        };
+        GrantLocalProjectAgentRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            agent_id: string;
+            actions: string[];
+        };
+        RevokeLocalProjectAgentRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            agent_id: string;
+        };
+        FixedReferenceV1: {
+            material_id: string;
+            revision: number;
+        };
+        LocalContextMaterialV1: {
+            reference: components["schemas"]["FixedReferenceV1"];
+            title: string;
+            text: string;
+        };
+        LocalContextFileV1: {
+            path: string;
+            text: string;
+        };
+        LocalContextRequestV1: {
+            references: components["schemas"]["FixedReferenceV1"][];
+            files: string[];
+        };
+        ReadLocalProjectContextRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            references?: components["schemas"]["FixedReferenceV1"][];
+            files?: string[];
+        };
+        LocalContextPacketV1: {
+            id: string;
+            /** @constant */
+            schema_version: 1;
+            project_id: string;
+            settings_revision: number;
+            mode: string;
+            materials: components["schemas"]["LocalContextMaterialV1"][];
+            files: components["schemas"]["LocalContextFileV1"][];
+            /** Format: date-time */
+            created_at: string;
+        };
+        NativeSessionV1: {
+            id: string;
+            project_id: string;
+            cli: string;
+            native_id: string;
+            version: string;
+            mode: string;
+            status: string;
+            stop_confirmed: boolean;
+            context_packet: components["schemas"]["LocalContextPacketV1"];
+            source_session_id: string;
+            /** Format: date-time */
+            updated_at: string;
+            limitations: string[];
+        };
+        NativeSessionResultV1: {
+            /** @constant */
+            schema_version: 1;
+            session: components["schemas"]["NativeSessionV1"];
+        };
+        NativeSessionListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["NativeSessionV1"][];
+            next_cursor: string | null;
+        };
+        NativeEventV1: {
+            sequence: number;
+            kind: string;
+            text: string;
+        };
+        NativeObservationV1: {
+            status: string;
+            events: components["schemas"]["NativeEventV1"][];
+            stop_confirmed: boolean;
+            output_truncated: boolean;
+        };
+        NativeObservationResultV1: {
+            /** @constant */
+            schema_version: 1;
+            observation: components["schemas"]["NativeObservationV1"];
+        };
+        NativeSessionRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            cli: string;
+            message: string;
+            context: components["schemas"]["LocalContextRequestV1"];
+            deadline_seconds?: number;
+            /** @enum {string} */
+            mode?: "cooperative" | "context_handoff";
+            source_session_id?: string;
+        };
+        NativeMessageRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            message: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -2591,6 +3224,1713 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listTrackingSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingSourceListV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    bindTrackingSource: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BindTrackingSourceRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingSourceResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getTrackingSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingSourceResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    syncTrackingSource: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncTrackingSourceRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingSourceResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    recommendSourceItems: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecommendSourceItemsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingSourceResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    selectSourceItems: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SelectSourceItemsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingSourceResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listLocalProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalProjectListV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    registerLocalProject: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterLocalProjectRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalProjectResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    discoverLocalProjects: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiscoverLocalProjectsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalProjectCandidateListV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setLocalProjectSettings: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocalProjectSettingsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalProjectResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    grantLocalProjectAgent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrantLocalProjectAgentRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalProjectGrantResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    revokeLocalProjectAgent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeLocalProjectAgentRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalProjectGrantResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    readLocalProjectContext: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadLocalProjectContextRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LocalContextPacketV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listNativeSessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeSessionListV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    startNativeSession: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NativeSessionRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeSessionResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    resumeNativeSession: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token"?: string;
+            };
+            path: {
+                id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NativeSessionRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeSessionResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    sendNativeMessage: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token"?: string;
+            };
+            path: {
+                id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NativeMessageRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeObservationResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    stopNativeSession: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token"?: string;
+            };
+            path: {
+                id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JobCommandV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeObservationResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    observeNativeSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NativeObservationResultV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     listLocalAgents: {
         parameters: {
             query?: never;

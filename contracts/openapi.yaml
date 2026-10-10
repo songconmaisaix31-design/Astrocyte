@@ -42,6 +42,1488 @@ tags:
   - name: local-agents
     description: Cached local CLI readiness and native capability observations
 paths:
+  /tracking-sources:
+    get:
+      operationId: listTrackingSources
+      summary: list Tracking Sources
+      description: Public metadata only; no cookies, login, credentials or body
+        extraction before human selection. Binding never starts execution;
+        unavailable services return 501.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters: []
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSourceListV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+    post:
+      operationId: bindTrackingSource
+      summary: bind Tracking Source
+      description: Public metadata only; no cookies, login, credentials or body
+        extraction before human selection. Binding never starts execution;
+        unavailable services return 501.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BindTrackingSourceRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSourceResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /tracking-sources/{id}:
+    get:
+      operationId: getTrackingSource
+      summary: get Tracking Source
+      description: Public metadata only; no cookies, login, credentials or body
+        extraction before human selection. Binding never starts execution;
+        unavailable services return 501.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSourceResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /tracking-sources/{id}/sync:
+    post:
+      operationId: syncTrackingSource
+      summary: sync Tracking Source
+      description: Sync up to 100 public metadata records; startup runs once and has
+        no timer. Partial pages retain cached records and warnings.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SyncTrackingSourceRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSourceResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /tracking-sources/{id}/recommend:
+    post:
+      operationId: recommendSourceItems
+      summary: recommend Source Items
+      description: Selected metadata revisions sent only to the human-approved project
+        CLI. Recommendations do not import content or approve themselves. Unknown
+        model outcomes are not replayed.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecommendSourceItemsRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSourceResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /tracking-sources/{id}/select:
+    post:
+      operationId: selectSourceItems
+      summary: select Source Items
+      description: Human selection of exact metadata revisions queues normal reusable
+        summarize imports; no full-list auto import.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SelectSourceItemsRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingSourceResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects:
+    get:
+      operationId: listLocalProjects
+      summary: list Local Projects
+      description: Human registered roots only; no whole-drive discovery.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters: []
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalProjectListV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+    post:
+      operationId: registerLocalProject
+      summary: register Local Project
+      description: Human registers one explicit root and Attention project space;
+        default A selected fixed refs, B/C and external model permission disabled.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterLocalProjectRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalProjectResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/discover:
+    post:
+      operationId: discoverLocalProjects
+      summary: discover Local Projects
+      description: Human chooses a bounded parent root for project discovery; no
+        arbitrary disk scanning.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoverLocalProjectsRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalProjectCandidateListV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/settings:
+    put:
+      operationId: setLocalProjectSettings
+      summary: set Local Project Settings
+      description: Human-only CAS settings. B allowlisted directories, C reference
+        expansion and model CLI are explicit project permissions; revoke checked
+        per operation.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocalProjectSettingsRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalProjectResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/grants:
+    post:
+      operationId: grantLocalProjectAgent
+      summary: grant Local Project Agent
+      description: Human-only operation-scoped Agent grant; token cannot confer
+        permissions on itself.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrantLocalProjectAgentRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalProjectGrantResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/grants/revoke:
+    post:
+      operationId: revokeLocalProjectAgent
+      summary: revoke Local Project Agent
+      description: Human-only revoke; subsequent reads and native operations reload
+        current authority.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeLocalProjectAgentRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalProjectGrantResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/context:
+    post:
+      operationId: readLocalProjectContext
+      summary: read Local Project Context
+      description: Current project scoped A fixed references plus explicitly enabled
+        B/C only; read does not increase human attention.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadLocalProjectContextRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LocalContextPacketV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/sessions:
+    get:
+      operationId: listNativeSessions
+      summary: list Native Sessions
+      description: Native session observations for this project only; no arbitrary
+        native histories.
+      tags:
+        - sessions
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeSessionListV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+    post:
+      operationId: startNativeSession
+      summary: start Native Session
+      description: Explicitly approved project CLI and actions only; automatic Agent
+        dispatch remains disabled pending user clarification. Cooperative mode
+        does not promise OS isolation.
+      tags:
+        - sessions
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NativeSessionRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeSessionResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/sessions/{session_id}/resume:
+    post:
+      operationId: resumeNativeSession
+      summary: resume Native Session
+      description: Native session identity and ownership must be verified; unsupported
+        native resume never becomes a new session silently.
+      tags:
+        - sessions
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NativeSessionRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeSessionResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/sessions/{session_id}/send:
+    post:
+      operationId: sendNativeMessage
+      summary: send Native Message
+      description: Operation-scoped input to this project session. Unknown effects are
+        never resent automatically.
+      tags:
+        - sessions
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NativeMessageRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeObservationResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/sessions/{session_id}/stop:
+    post:
+      operationId: stopNativeSession
+      summary: stop Native Session
+      description: Stop only the owned native session and preserve actual stop
+        confirmation; failed stop remains blocked.
+      tags:
+        - sessions
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobCommandV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeObservationResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/sessions/{session_id}/observe:
+    get:
+      operationId: observeNativeSession
+      summary: observe Native Session
+      description: Read factual native output and current state; no guessed
+        completion, no synthetic history.
+      tags:
+        - sessions
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeObservationResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /local-agents:
     get:
       operationId: listLocalAgents
@@ -5746,6 +7228,9 @@ components:
       type: object
       additionalProperties: false
       properties:
+        refresh:
+          type: boolean
+          description: Ordinary import reuses the existing extraction; only explicit human refresh obtains new content.
         schema_version:
           type: integer
           const: 1
@@ -7533,6 +9018,921 @@ components:
         - reason
         - required_action
         - allowed_source_keys
+    ListingMetadataV1:
+      type: object
+      additionalProperties: false
+      properties:
+        external_id:
+          type: string
+        locator:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        cover:
+          type: string
+        published_at:
+          type: integer
+        provider_status:
+          anyOf:
+            - type: integer
+            - type: "null"
+        unavailable_reason:
+          type: string
+      required:
+        - external_id
+        - locator
+        - title
+        - description
+        - author
+        - cover
+        - published_at
+        - provider_status
+        - unavailable_reason
+    SourceRecommendationV1:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum:
+            - pending
+            - running
+            - succeeded
+            - failed
+            - unknown
+            - unavailable
+        text:
+          type: string
+        reason:
+          type: string
+        metadata_revision:
+          type: integer
+          minimum: 1
+        provenance:
+          $ref: "#/components/schemas/ProvenanceV1"
+        configuration_id:
+          type: string
+        error:
+          anyOf:
+            - $ref: "#/components/schemas/ServiceErrorV1"
+            - type: "null"
+      required:
+        - status
+        - text
+        - reason
+        - metadata_revision
+        - provenance
+        - configuration_id
+        - error
+    TrackingSourceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        platform:
+          type: string
+          enum:
+            - bilibili
+            - douyin
+        source_kind:
+          type: string
+          enum:
+            - uploads
+            - favorites
+        external_id:
+          type: string
+        owner_id:
+          type: string
+        locator:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        last_success_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
+        last_error:
+          anyOf:
+            - $ref: "#/components/schemas/ServiceErrorV1"
+            - type: "null"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+        has_more:
+          type: boolean
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - version
+        - platform
+        - source_kind
+        - external_id
+        - owner_id
+        - locator
+        - title
+        - status
+        - last_success_at
+        - last_error
+        - next_cursor
+        - has_more
+        - warnings
+    SourceItemV1:
+      type: object
+      additionalProperties: false
+      properties:
+        source_id:
+          type: string
+        external_id:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+        metadata:
+          $ref: "#/components/schemas/ListingMetadataV1"
+        stale:
+          type: boolean
+        selected:
+          type: boolean
+        import_job_id:
+          anyOf:
+            - type: string
+            - type: "null"
+        material_id:
+          anyOf:
+            - type: string
+            - type: "null"
+        recommendation:
+          anyOf:
+            - $ref: "#/components/schemas/SourceRecommendationV1"
+            - type: "null"
+      required:
+        - source_id
+        - external_id
+        - revision
+        - metadata
+        - stale
+        - selected
+        - import_job_id
+        - material_id
+        - recommendation
+    TrackingSourceResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        source:
+          $ref: "#/components/schemas/TrackingSourceV1"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceItemV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+        has_more:
+          type: boolean
+        warnings:
+          type: array
+          items:
+            type: string
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImportJobV1"
+      required:
+        - schema_version
+        - source
+        - items
+        - next_cursor
+        - has_more
+        - warnings
+        - jobs
+    TrackingSourceListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackingSourceV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    BindTrackingSourceRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        platform:
+          type: string
+          enum:
+            - bilibili
+            - douyin
+        source_kind:
+          type: string
+          enum:
+            - uploads
+            - favorites
+        external_id:
+          type: string
+        owner_id:
+          type: string
+        locator:
+          type: string
+        title:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - platform
+        - source_kind
+        - external_id
+        - locator
+    SyncTrackingSourceRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 100
+        cursor:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+    SourceItemSelectionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        external_id:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+      required:
+        - external_id
+        - revision
+    RecommendSourceItemsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        project_id:
+          type: string
+        cli:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceItemSelectionV1"
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - project_id
+        - cli
+        - items
+    SelectSourceItemsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceItemSelectionV1"
+        collection_reason:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - items
+    LocalProjectSettingsV1:
+      type: object
+      additionalProperties: false
+      properties:
+        revision:
+          type: integer
+          minimum: 1
+        allow_directory:
+          type: boolean
+        allowed_subdirs:
+          type: array
+          items:
+            type: string
+        expand_references:
+          type: boolean
+        allowed_actions:
+          type: array
+          items:
+            type: string
+        allowed_tools:
+          type: array
+          items:
+            type: string
+        external_model_cli:
+          type: string
+        allow_agent_control:
+          type: boolean
+      required:
+        - revision
+        - allow_directory
+        - allowed_subdirs
+        - expand_references
+        - allowed_actions
+        - allowed_tools
+        - external_model_cli
+        - allow_agent_control
+    LocalProjectV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        root:
+          type: string
+        space_id:
+          type: string
+        settings:
+          $ref: "#/components/schemas/LocalProjectSettingsV1"
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - root
+        - space_id
+        - settings
+        - created_at
+    LocalProjectResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        project:
+          $ref: "#/components/schemas/LocalProjectV1"
+      required:
+        - schema_version
+        - project
+    LocalProjectListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocalProjectV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    LocalProjectCandidateV1:
+      type: object
+      additionalProperties: false
+      properties:
+        root:
+          type: string
+        name:
+          type: string
+      required:
+        - root
+        - name
+    LocalProjectCandidateListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocalProjectCandidateV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    RegisterLocalProjectRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        root:
+          type: string
+        space_id:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - name
+        - root
+        - space_id
+    DiscoverLocalProjectsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        root:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - root
+    LocalProjectSettingsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        expected_revision:
+          type: integer
+          minimum: 1
+        settings:
+          $ref: "#/components/schemas/LocalProjectSettingsV1"
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - expected_revision
+        - settings
+    LocalProjectGrantV1:
+      type: object
+      additionalProperties: false
+      properties:
+        project_id:
+          type: string
+        agent_id:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
+        revoked_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
+      required:
+        - project_id
+        - agent_id
+        - actions
+        - revoked_at
+    LocalProjectGrantResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        grant:
+          $ref: "#/components/schemas/LocalProjectGrantV1"
+      required:
+        - schema_version
+        - grant
+    GrantLocalProjectAgentRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        agent_id:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - agent_id
+        - actions
+    RevokeLocalProjectAgentRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        agent_id:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - agent_id
+    FixedReferenceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        material_id:
+          type: string
+        revision:
+          type: integer
+          minimum: 1
+      required:
+        - material_id
+        - revision
+    LocalContextMaterialV1:
+      type: object
+      additionalProperties: false
+      properties:
+        reference:
+          $ref: "#/components/schemas/FixedReferenceV1"
+        title:
+          type: string
+        text:
+          type: string
+      required:
+        - reference
+        - title
+        - text
+    LocalContextFileV1:
+      type: object
+      additionalProperties: false
+      properties:
+        path:
+          type: string
+        text:
+          type: string
+      required:
+        - path
+        - text
+    LocalContextRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        references:
+          type: array
+          items:
+            $ref: "#/components/schemas/FixedReferenceV1"
+        files:
+          type: array
+          items:
+            type: string
+      required:
+        - references
+        - files
+    ReadLocalProjectContextRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        references:
+          type: array
+          items:
+            $ref: "#/components/schemas/FixedReferenceV1"
+        files:
+          type: array
+          items:
+            type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+    LocalContextPacketV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        schema_version:
+          type: integer
+          const: 1
+        project_id:
+          type: string
+        settings_revision:
+          type: integer
+          minimum: 1
+        mode:
+          type: string
+        materials:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocalContextMaterialV1"
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/LocalContextFileV1"
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - schema_version
+        - project_id
+        - settings_revision
+        - mode
+        - materials
+        - files
+        - created_at
+    NativeSessionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        project_id:
+          type: string
+        cli:
+          type: string
+        native_id:
+          type: string
+        version:
+          type: string
+        mode:
+          type: string
+        status:
+          type: string
+        stop_confirmed:
+          type: boolean
+        context_packet:
+          $ref: "#/components/schemas/LocalContextPacketV1"
+        source_session_id:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+        limitations:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - project_id
+        - cli
+        - native_id
+        - version
+        - mode
+        - status
+        - stop_confirmed
+        - context_packet
+        - source_session_id
+        - updated_at
+        - limitations
+    NativeSessionResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        session:
+          $ref: "#/components/schemas/NativeSessionV1"
+      required:
+        - schema_version
+        - session
+    NativeSessionListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NativeSessionV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    NativeEventV1:
+      type: object
+      additionalProperties: false
+      properties:
+        sequence:
+          type: integer
+        kind:
+          type: string
+        text:
+          type: string
+      required:
+        - sequence
+        - kind
+        - text
+    NativeObservationV1:
+      type: object
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/NativeEventV1"
+        stop_confirmed:
+          type: boolean
+        output_truncated:
+          type: boolean
+      required:
+        - status
+        - events
+        - stop_confirmed
+        - output_truncated
+    NativeObservationResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        observation:
+          $ref: "#/components/schemas/NativeObservationV1"
+      required:
+        - schema_version
+        - observation
+    NativeSessionRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        cli:
+          type: string
+        message:
+          type: string
+        context:
+          $ref: "#/components/schemas/LocalContextRequestV1"
+        deadline_seconds:
+          type: integer
+          minimum: 1
+          maximum: 1800
+        mode:
+          type: string
+          enum:
+            - cooperative
+            - context_handoff
+        source_session_id:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - cli
+        - message
+        - context
+    NativeMessageRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        message:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - message
   securitySchemes:
     HumanSession:
       type: apiKey
