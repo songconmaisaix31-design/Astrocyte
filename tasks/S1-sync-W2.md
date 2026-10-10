@@ -1,5 +1,46 @@
 # S1 同步 W2：本地项目与原生会话续作
 
+## 2026-10-10 架构边界返修（最新）
+
+W2 SOURCE **`0cd2c97b6f3b3b372649ff5045b1f58bb4dfa486`** 已普通 commit/push 到 `origin/s1-local-agents-1010`。只移除 workspace app 的 `log/slog` import/直接 Warn，并将原始 clone error 加入既有 `errors.Join`（安全 ServiceError 在首位，随后原始 clone cause、保存失败 cause）；不改公共接口、迁移、HTTP transport、架构 checker 或其他轨道。数据库安全 LastError/状态及 HTTP `errors.As` + `apierrors.Wrap` 封装保持；原始诊断可通过 error chain 与 `errors.Is` 取得。
+
+| 本轮验证 | 结果及保留日志 |
+|---|---|
+| 首 `node scripts/check-architecture.mjs` | **RED**：`internal/workspace/app imports I/O: log/slog`；`%TEMP%/astrocyte-W2-architecture-first-20261010.log`。W0 首稳定 `c334574123e2e0ed6333195ff515576628d729fa` RED 日志 `%TEMP%/astrocyte-W0-repository-check-first-20261010.log` 保持原件 |
+| 新增原始 cause 回归断言，修复前运行失败测试 | **RED**：`original clone cause or diagnostic lost`；`%TEMP%/astrocyte-W2-clone-cause-first-20261010.log` |
+| 修复后 `go test ./internal/adapters/sqlite -run '^TestGitHub' -count=1 -v` | **2 PASS / 1 SKIP**；cause identity/诊断保留，安全 ServiceError 和 HTTP JSON 不泄露原诊断，数据库 safe LastError/failed/attempt 持久化，既有去重/重启/权限/人工恢复/重试上限通过；真实公开 clone opt-in 禁用。`%TEMP%/astrocyte-W2-architecture-fix-tests-20261010.log` |
+| 修复后 `node scripts/check-architecture.mjs` | **PASS**：19 packages satisfy boundaries；checker 未修改，`%TEMP%/astrocyte-W2-architecture-fixed-20261010.log` |
+| `go vet ./internal/workspace/... ./internal/adapters/sqlite` / `go build ./...` / `git diff --check` | **PASS/exit0**；vet/build 日志 `%TEMP%/astrocyte-W2-architecture-vet-20261010.log` / `%TEMP%/astrocyte-W2-architecture-build-20261010.log` |
+
+本轮没有真实 clone、模型、浏览器、付费或媒体重放，也不改写前轮首失败/UNKNOWN。这里只验证 W2 返修及现有 HTTP 错误提取契约，未执行新的 HTTP 请求或全套 Go 测试；W0 普通集成、root 最终串行检查与 UI 验收仍由对应 owner 完成。
+
+## 2026-10-10 公开仓库与蜂群空间（当前）
+
+本轮最终 W2 **SOURCE `57b4f7b639d197273b59b4495e66bc9775ad0b7b`** 已 push `origin/s1-local-agents-1010`；初交源码 `07266c5edd5c5dc2aa2b1421f6dcf3802ca97b56` 已经主控核代码并交 W0 普通集成。随后仅 Windows 假程序启动测试修正 `8a5d1ffcb37ce6b70c2ddcd34cf6452ce7b92a22`、REST缺/null字段显式unknown与private可见性必备校验 `57b4f7b`；最终Go/vet/build全部通过。先普通合根基线 `6e84a92`，DTO `0557bad369bdc8908f6087c606d379cb8b4c8fee`、provenance DTO `b6e21d39ce15a52ca9ea72df668f1d94bf5237a7` 分阶段 push；消费唯一 W0 契约/迁移 `fde698dfe924f0509f391228fd47cda7234d84f8`、`2d4f759e0ebf517fa3ffd55020c26d57c23b6415` 与已纠正准确 SHA `408512886b9607efdac0968c9f85d9fa04a709cf`。W2 仅修改计划的 workspace app/domain（不碰 contracts）、agents、local_agents*.go 与自身报告/probes；HTTP、迁移、入口、生成客户端及全部 UI 保持 W0/W3 owner。实际客户端按主控回执 Orca Codex0.162.0 / GPT-6.1-Sol high fast。
+
+- 公开人工 GitHub 仓库/账号元数据同步，固定 ID 去重、revision/metadata_revision 分离、状态/时间持久化；GET 缓存，元数据阶段没有代码目录或 LocalProject。账号仅首100项，不声称全账号完成。API403限流时只对明确仓库至多读同一官方 HTML 页，必须证明稳定 ID/nwo/public；source/unknown_fields 保持未知，不默认为 REST、不读凭据或私有账号。
+- 人工选既有顶层 ProjectSpace 并经 human+CSRF入口校验后，固定 isolated Git 克隆应用管理目录，真实 root/HEAD 保存，再复用 LocalProject 默认 A；不自动打开 B/C/model/control/actions/grants，也不启动 Agent/Mission。钩子、template、系统/全局配置、凭据 helper、子模块与 LFS 均关闭；不运行项目脚本，不更新/覆盖既有目录，不 push。
+- staging 原子发布（Windows MoveFile/Linux RENAME_NOREPLACE），已有 target不替换；完整 target 可核 origin/HEAD 后恢复。失败/进程损失状态保留，只有明确人工恢复；clone90秒/整场120秒含等待、最多3次人工尝试，不无限重试。失败 staging保留供诊断，没有递归删除、后台目录扫描或新调度框架。
+
+| 实际验证 | 结果与原件 |
+|---|---|
+| `go test ./internal/adapters/agents -run 'TestPublicGitHub\|TestManagedClone\|TestManagedCheckoutPublication' -count=1 -v` | PASS：匿名/只元数据、不创建代码目录、私有/重定向/非 GitHub拒绝、明确限流回退与缺标记失败、unknown字段、无关 target与空目录不覆盖；`%TEMP%/astrocyte-W2-github-targeted-20261010.log` |
+| `go test ./internal/adapters/sqlite -run '^TestGitHub' -count=1 -v` | 2 PASS / 实际clone默认SKIP：SQLite版本/去重/冷重启/GET不触发、非human/无空间/旧revision拒绝、A默认与model/B/Agent拒绝、失败stale旧时间、明确恢复、3次上限与metadata不洗掉attempts；`%TEMP%/astrocyte-W2-sqlite-final-targeted-20261010.log` |
+| 首真实 `ASTROCYTE_TEST_GITHUB_REPOSITORY=1 go test ./internal/adapters/sqlite -run '^TestGitHubPublicActualCloneColdStoreAndRepeat$' -count=1 -v` | **FAIL**：匿名REST HTTP403，1.61秒，remaining0/limit60、reset12:05:31Z；无clone。`%TEMP%/astrocyte-W2-github-public-first-20261010.log`、保留目录 `astrocyte-github-public-883777751`，不改写成通过 |
+| 独立 `ASTROCYTE_TEST_GITHUB_CLONE=1 go test ./internal/adapters/agents -run '^TestManagedRepositoryPublicActualCloneAndRecovery$' -count=1 -v` | PASS18.81秒：实际公开Git clone+重建adapter复用、HEADmtime不变、错误origin拒绝；目录 `astrocyte-github-clone-1977237890`、日志 `astrocyte-W2-github-clone-first-20261010.log`。github-1仅测试target，不冒充API仓库ID |
+| 后续新场同上真实SQLite完整命令 | **PASS16.90秒/Go25.142秒**：实际REST200/source=`github_rest`/unknown=[]，ID1118209243，信息sync没有代码dir；人工placement真实clone root/HEAD、冷重启/重复不reclone/A-only；另模拟发布后终态未写的明确恢复，root/HEAD保持。`%TEMP%/astrocyte-W2-github-public-fallback-20261010.log` 文件名是历史，不表示该场使用HTML；目录 `astrocyte-github-public-1406932187` |
+| `go test -p 1 ./...`（最终缺字段守卫代码） | PASS/exit0；agents18.200秒、sqlite20.509秒，默认真实opt-in跳过不等于task-live。`%TEMP%/astrocyte-W2-go-statistics-final-20261010.log`；前一稳定版本全套也PASS，原失败不覆写 |
+| `go vet ./internal/adapters/agents ./internal/workspace/... ./internal/adapters/sqlite`、`go build ./...`、`git diff --check` | 最终PASS/exit0；没有前端检查/浏览器claim |
+| `GOOS=linux go build ./internal/adapters/agents ./internal/workspace/...` | PASS/exit0，只交叉编译，不称Linux实际clone/task-live |
+
+实际上游 `steipete/summarize` 是用户已授权公开项目，已告知主控后选择；HEAD `560197cd4b580554cccf648744c592e867b43bb5`。真实空间与SQLite留在独立验证目录，未写个人库。默认和实际两场均没有应用模型、媒体、原生Agent turn或个人 Chrome；原 AT01–04/旧UNKNOWN均未重复执行。
+
+首失败与必要返修单列：HTML parser初稿正则 `{1,4096}` 超过Go重复上限，初始化panic，随后采用线性匹配+标签长度上限；初/目标/串行Go检查的既有TestCLIProbe3秒假程序启动超时均保留。诊断冷Go测试exe启动7.839秒、runtime init39ms（agents3.3ms），同一编译程序正确quoted flags复验0.28秒PASS；不能确定宿主慢启动的具体机制。仅Windows测试假程序成功路径启动预算调整10秒，生产5秒probe及150ms取消/3秒cleanup不变，没有retry/sleep。串行首场运行中错误地消费W0合并，导致旧文件列表+新public_listing的DouyinBrowser编译错误；该场不是稳定source验收，顺序错误已告知主控，最终在稳定代码重跑。
+
+最终Go/vet/build gate已通过；W2领域交付完成，**不替代 HTTP/UI 或宣称完整S1**。真实页面验收属于 W0/W3，尚未由 W2执行；首批用户个人GitHub账号/私有范围仍待答，公开account真实非空列表尚未专场验收。HTML marker兼容性及未知字段限制保持；其他平台原子发布明确不支持，Linux仅编译/测试适用范围，不冒充Windows之外实机。没有fetch/pull更新、自启或全账号下载；3次耗尽与失败staging整理需要人工诊断，未自动删历史。
+
+## 以下为前轮历史
+
 ## 本轮登记项目续作（2026-10-10）
 
 当前 W2 runtime SOURCE `8746e38176cbd984c859ca01f5fe1fc4aaf75fe8`，沿 `s1-local-agents-1010` 原轨，已 push；新增实现 `2364ce4`、缺失主检出保留关联工作树 `d8f7edb`、取消等待修复 `6906f0c`，`bf4ef25`补沿公开CLI规则选IDE二进制（env指定/开发orca-dev/Linux默认orca-ide，拒绝shell wrapper，不启动Linux同名屏幕阅读器），`8fce45d`固定Git工作树根以拒绝repo config的目录重定向，`8746e38`给整个刷新请求（含排队）120秒总期限。先普通合入主控 `41f3fab`，再消费 W0 精确公共契约/单迁移 `4a6a5a0d4dc3624942ddd9657d0b72278250a457`；没有 reset/clean/rebase/force 或跨写域业务编辑。客户端 Orca Codex / `gpt-6.1-sol`，本轮无应用模型、native turn、媒体或浏览器调用。

@@ -21,6 +21,7 @@ test('real network-blocked video job shows next step and preserves the URL', asy
   page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/distillations/jobs')) modelRequests.push(request.url()); });
   try {
     await page.goto(`${server.webURL}/attention`);
+    await page.getByRole('button', { name: /查看处理队列/ }).click();
     const add = page.locator('main').getByRole('button', { name: '添加资料', exact: true });
     await add.focus();
     await page.keyboard.press('Enter');
@@ -138,6 +139,7 @@ test('selected public video URL imports through the real service without an expo
     // The default Playwright dev --ephemeral server disables extraction. The
     // helper owns a separate temporary SQLite/object store and strips ASTRO env.
     await page.goto(`${server.webURL}/attention`);
+    await page.getByRole('button', { name: /查看处理队列/ }).click();
     await page.locator('main').getByRole('button', { name: '添加资料', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: '添加资料' });
     await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize_url');
@@ -248,6 +250,7 @@ test('selected public video URL imports through the real service without an expo
     }
     await server.restart();
     await page.reload();
+    await page.getByRole('button', { name: /查看处理队列/ }).click();
     await expect(row).toContainText('已完成');
     const after = await loadSaved();
     expect(after).toEqual(before);

@@ -3592,6 +3592,10 @@ export interface components {
             expected_version: number;
         };
         GitHubMetadataV1: {
+            /** @enum {string} */
+            metadata_source?: "github_rest" | "github_public_html" | "unknown";
+            /** @description These metadata fields are unobserved; consumers must not display their scalar defaults as known facts. */
+            unknown_fields?: string[];
             github_id: number;
             full_name: string;
             html_url: string;
@@ -3631,7 +3635,7 @@ export interface components {
          *       "synced_at": "2026-10-10T00:00:00Z",
          *       "space_id": "",
          *       "project_id": "",
-         *       "clone_status": "not_cloned",
+         *       "clone_status": "not_placed",
          *       "root": "",
          *       "head": "",
          *       "clone_attempts": 0,
@@ -3643,12 +3647,14 @@ export interface components {
             revision: number;
             metadata_revision: number;
             metadata: components["schemas"]["GitHubMetadataV1"];
-            sync_status: string;
+            /** @enum {string} */
+            sync_status: "synced" | "stale" | "unknown";
             /** Format: date-time */
             synced_at: string;
             space_id: string;
             project_id: string;
-            clone_status: string;
+            /** @enum {string} */
+            clone_status: "not_placed" | "cloning" | "ready" | "failed" | "interrupted" | "unknown";
             root: string;
             head: string;
             clone_attempts: number;
@@ -3680,7 +3686,7 @@ export interface components {
          *           "synced_at": "2026-10-10T00:00:00Z",
          *           "space_id": "",
          *           "project_id": "",
-         *           "clone_status": "not_cloned",
+         *           "clone_status": "not_placed",
          *           "root": "",
          *           "head": "",
          *           "clone_attempts": 0,
@@ -3721,7 +3727,7 @@ export interface components {
          *         "synced_at": "2026-10-10T00:00:00Z",
          *         "space_id": "",
          *         "project_id": "",
-         *         "clone_status": "not_cloned",
+         *         "clone_status": "not_placed",
          *         "root": "",
          *         "head": "",
          *         "clone_attempts": 0,

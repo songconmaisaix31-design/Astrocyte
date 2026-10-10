@@ -1,5 +1,17 @@
 # Astrocyte 主控交接
 
+## 当前接管入口（2026-10-10 20:59，本轮交付）
+
+先读 [STATUS当前验收](STATUS.md)、[四轨计划](tasks/S1-repository-browser-design-plan.md) 与 [用户决定](docs/QUESTIONS.md)。用户已决定GitHub先信息、人工纳入蜂群顶层空间才clone，并授权插件。官方OpenCLI1.0.24/CLI1.8.8已实际连接；首次整页检查越界文字已报告、未入应用库，后续仅固定选定收藏节点。普通应用数据目录 `selected-browser.json` 只配置已批准求职3条，严禁由插件能力推导全部浏览器/凭据/Agent授权。
+
+最终应用SOURCE `682f46eac0633e3593cdceb7996df24957fe06af` / W0 REPORT `1f864de0bb0bad348dd7d2fda860a924b7206cd4`，主控普通合并 `028bcc6c34ecb4c35f255838e8e1f150cfab0326`。独立pnpm check/build PASS，236契约例/14真实API/58前端/19包边界；首架构RED由原W2最小修复cause/log边界、规则未放宽。W3首整套144/16/18保留，后续30功能+4界面+2实际持久化各PASS，不算整套重跑。原AT01–04和成功原生同ID接续沿用，不付费重放或重发UNKNOWN。所有源码/报告push，四轨及返修已release，原工作树/分支/原件保持。
+
+个人预览5173/8787已升级，原SQLite备份195945完整性通过，009–011已迁移；应用UI实际求职读取/绑定/同步200。原B站99+2/抖音3共104元数据、3来源/5成功同步、0资料/推荐/模型/原生，未灌验收库或替用户选正文。新预览exec58426，父63908/API60868/Vite79220创建20:58:25/28/33，目录astrocyte-dev-AOCTmg；进程停止先重新核对。summarize启用、全局自动Codex关闭、各项目A默认BC/model/actions独立。
+
+待用户：未来抖音新增收藏刷新策略（专用标签/现有标签/人工刷新），首批个人GitHub/私有范围、新arXiv DNS、第二自动整理CLI/输入上限。当前只观察完整挂载DOM，长列表和自动新鲜获取未完成；不主动新开或刷新个人标签。公开GitHub实际元数据/clone/重复/OS重启及失败恢复已有所属验收，无需新克隆证明。其他平台占位、Pi认证/OpenCode限制、跨会话真交接与自动派发继续明确；核心S1 AT通过不等于所有扩展全部完成。主控最终文档分支push，未合main或跑远程CI，人类视觉判断仍归用户。
+
+## 以下为前轮历史
+
 ## 当前接管入口（2026-10-10 19:00）
 
 先读 [STATUS当前验收](STATUS.md)、[用户决定](docs/QUESTIONS.md) 和 [固定四轨](tasks/S1-sync-local-agent-plan.md)。主控分支 `s1/attention-materials-20261009`，应用SOURCE `fd6938c5473eeb90fa5f0f1776cb9fc743f0ef4b` 已普通合为 `3decf3e7b91a91951bddaf94d8134ae9cf27126d`；`c5a0ff6b2dd7b9cb1546386064342e9f68012ee6` 仅合报告。主控独立check/build PASS，默认浏览器154 PASS/16 SKIP/4.6分钟/exit0；默认模型/媒体关闭，独立真实证据不混算。

@@ -1,7 +1,7 @@
 // Real HTTP/SQLite/object integration with explicit contract_local input and a
 // temporary approved project root. No model, media, native launch or browser.
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { access, mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { startS1Server } from '../tests/s1/server.mjs';
@@ -15,6 +15,16 @@ let preserveOnExit = false;
 try {
   let api = await humanAPI(server.apiURL);
   assert.deepEqual((await api.get('/tracking-sources')).items, []);
+  stage = 'repository cache and human command boundary';
+  assert.deepEqual((await api.get('/github-repositories')).items, []);
+  assert.deepEqual((await api.get('/github-repositories')).items, []);
+  assert.equal(server.query('SELECT COUNT(*) AS n FROM local_github_repositories')[0].n, 0);
+  await assert.rejects(access(join(server.dataDir, 'repositories')), { code: 'ENOENT' });
+  assert.equal((await api.request('/github-repositories/sync', { method: 'POST', body: command({ input: 'file:///unapproved' }) })).status, 400);
+  assert.equal((await api.request('/github-repositories/missing/placement', { method: 'POST', body: command({ space_id: '' }) })).status, 400);
+  assert.equal((await api.request('/github-repositories/sync', { method: 'POST', body: command({ input: 'example/repository' }), headers: { 'X-CSRF-Token': '' } })).status, 403);
+  assert.equal(server.query('SELECT COUNT(*) AS n FROM local_github_repositories')[0].n, 0);
+  await assert.rejects(access(join(server.dataDir, 'repositories')), { code: 'ENOENT' });
   stage = 'fixed source and explicit refresh';
   const imported = await importMaterial(api, paperImport());
   const material = imported.detail.material;
@@ -65,9 +75,14 @@ try {
   assert.equal((await agentRequest(`/local-projects/${project.id}/context`, { references: [], files: ['selected.txt'] })).status, 403);
   assert.equal((await agentRequest(`/local-projects/${project.id}/grants`, { agent_id: 'self', actions: ['start'] })).status, 403);
   assert.equal((await agentRequest('/tracking-sources', undefined, 'GET')).status, 403);
+  assert.equal((await agentRequest('/github-repositories', undefined, 'GET')).status, 403);
+  assert.equal((await agentRequest('/source-collections/discover', { platform: 'douyin', owner_id: 'self', access_mode: 'browser_selected' })).status, 403);
   stage = 'durable restart and grant reload';
   await server.restart();
   api = await humanAPI(server.apiURL);
+  assert.deepEqual((await api.get('/github-repositories')).items, []);
+  assert.equal(server.query('SELECT COUNT(*) AS n FROM local_github_repositories')[0].n, 0);
+  await assert.rejects(access(join(server.dataDir, 'repositories')), { code: 'ENOENT' });
   assert.equal((await agentRequest(`/local-projects/${project.id}/context`, contextBody)).status, 200);
   assert.equal(server.query('SELECT COUNT(*) AS n FROM attention_material_revisions WHERE material_id=?', material.id)[0].n, 2);
   assert.equal(JSON.parse(server.query('SELECT data FROM attention_project_spaces WHERE id=?', space.id)[0].data).material_refs[0].revision, 1);

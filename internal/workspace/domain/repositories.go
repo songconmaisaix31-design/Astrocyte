@@ -4,18 +4,34 @@ import "time"
 
 // GitHubMetadata is an anonymous public API observation, never a code checkout.
 type GitHubMetadata struct {
-	GitHubID      int64     `json:"github_id"`
-	FullName      string    `json:"full_name"`
-	HTMLURL       string    `json:"html_url"`
-	CloneURL      string    `json:"clone_url"`
-	Description   string    `json:"description"`
-	DefaultBranch string    `json:"default_branch"`
-	Language      string    `json:"language"`
-	Stars         int       `json:"stars"`
-	Archived      bool      `json:"archived"`
-	Fork          bool      `json:"fork"`
-	UpdatedAt     time.Time `json:"updated_at"`
-	PushedAt      time.Time `json:"pushed_at"`
+	MetadataSource string    `json:"metadata_source"`
+	UnknownFields  []string  `json:"unknown_fields"`
+	GitHubID       int64     `json:"github_id"`
+	FullName       string    `json:"full_name"`
+	HTMLURL        string    `json:"html_url"`
+	CloneURL       string    `json:"clone_url"`
+	Description    string    `json:"description"`
+	DefaultBranch  string    `json:"default_branch"`
+	Language       string    `json:"language"`
+	Stars          int       `json:"stars"`
+	Archived       bool      `json:"archived"`
+	Fork           bool      `json:"fork"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	PushedAt       time.Time `json:"pushed_at"`
+}
+
+// Legacy caches and test sources cannot acquire REST provenance by default.
+func NormalizeGitHubMetadata(m GitHubMetadata) GitHubMetadata {
+	if m.MetadataSource == "" {
+		m.MetadataSource = "unknown"
+	}
+	if m.UnknownFields == nil {
+		m.UnknownFields = []string{}
+		if m.MetadataSource == "unknown" {
+			m.UnknownFields = []string{"description", "default_branch", "language", "stars", "archived", "fork", "updated_at", "pushed_at"}
+		}
+	}
+	return m
 }
 
 type GitHubRepository struct {

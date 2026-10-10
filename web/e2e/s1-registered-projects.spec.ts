@@ -22,6 +22,7 @@ test('actual Orca discovery remains a read-only candidate list until human regis
   let primaryError: unknown;
   try {
     await page.goto(`${server.webURL}/workspace`);
+    await page.locator('summary').filter({ hasText: /^从 Orca 登记目录选择项目$/ }).click();
     const discovery = page.getByRole('region', { name: 'Orca 登记目录发现' });
     let actual = await read<S['RegisteredProjectDiscoveryResultV1']>('/local-projects/registered');
     await expect.poll(async () => { actual = await read<S['RegisteredProjectDiscoveryResultV1']>('/local-projects/registered'); return actual.snapshot.observed_at && Date.parse(actual.snapshot.observed_at) >= startupAt ? actual.snapshot.status : 'unknown'; }, { timeout: 130_000 }).toMatch(/complete|partial/);
