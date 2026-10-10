@@ -1,5 +1,19 @@
 # Astrocyte 当前状态
 
+## 扩容与真实项目看板已交付，论文产品选择仍待答（2026-10-10 22:31）
+
+最终全局入口返修：W3 SOURCE `3b9b491a611d43cef4cef5819231b166763ee4fb` / REPORT `b9257828cd874d71c87d9b12a5d65c5052ac927e` 普通消费，业务仅Nav导入条件移除页面限制，保留fixture/imports/stale；root SOURCE合并 `0950b04`。实际个人5173/8787两尺寸跨页入口4 PASS、fixture4 PASS、拦截GET能力关闭/未知8 PASS，合计16且分开，不等于16个真实入库验收；writes/外网/新服务0，stale未新增故障注入。root新 `pnpm build` PASS并独立实际GET确认添加资料enabled，新截图 `%TEMP%/astrocyte-root-board-final-nav-1280-20261010.png` 保留先前源码截图。W3返修已结算release；本轮所有实际owned Worker资源均release，分支/工作树保持。最终不新增模型、源扫描或广泛回归，不合main/不跑远程CI；主控文档与整分支最终push。
+
+主控分支 `s1/attention-materials-20261009`；原四轨独占写域完成普通集成，W0 SOURCE `99b7e8e720c8f57a91485dcb658fd14dd77970ab` / REPORT `42e1941a14cf795b4ddf6e41aed0172857b3ba7d`，root普通合并 `32042abd34c27d7e4a9d5b5787f98d47015576db`。root独立 `GOFLAGS=-p=1 pnpm check`、`pnpm build` **PASS/exit0**（237契约例/生成一致、14真实临时API检查、61前端单测、Go/vet/mod/架构/依赖/退出），`node --test internal/adapters/importers/paper-dom.test.mjs` **7 PASS**。原完整默认浏览器158 PASS/4 FAIL/22 SKIP保留；W3最终修复及W0受影响4例复验各PASS，未声明完整套件重跑通过。最终少量导航返修见下段，不改变已验领域/API。
+
+实际项目发现111目录/71组；受限Codex/Claude路径头部样本聚合，同项目多客户端及目录不重复计项目；固定Git活动排序，创建时间不充当活动。人工备注/复盘/分组/意愿/可逆归档由人类CSRF写入SQLite，刷新/新API进程仍保留，发现不授权Agent。W2最终Git域SOURCE `cd201962997e69bb4772d73a6d8752874085c3ef` / REPORT `9319374f4a55cf88901e2ed77b439f45aaea1b89`；W3 SOURCE `90cee4eda3c5f069325751064ecc944a303f6f77` / REPORT `506a9fc077c9ff4beec09e02fde50088b930bd35`。W0真实缓存loopback HTTP1 PASS：111/71、17已知活动、1真实人工记录，query_only数据库、原发现/人工字段/权限/jobs未变、无重新扫描；首查询不存在grants.id的RED保留。root个人库只读查询首次误用jobs.kind列报错，仅查询无写；改按现有JSON结构复验，8个作业均成功。
+
+个人预览已升级 [项目总览](http://127.0.0.1:5173/workspace)。迁移前SQLite online一致备份 `%APPDATA%/astrocyte/backups/pre-s1-project-board-20261010-222225/state.sqlite` 完整性ok；个人库012已执行、完整性ok，原104来源元数据保持，启动一次固定元数据同步使source_sync作业5→8均成功，资料/沉淀/候选/授权/原生会话/人工项目记录均0，没有复制验收库或选择正文。启动受限发现一次；root隔离Playwright实际GET200观察71项目/111目录/2客户端/17已知活动/0归档，四视图同71卡、键盘详情/备注/复盘可达、1920/1280/390无横溢/pageerror，未发POST。截图 `%TEMP%/astrocyte-root-board-{1920,1280,390}-20261010.png`；桌面首卡y604.7、移动y769.6。新preview exec73199，父48624/API52940/Vite65712创建22:23:30/33/36，程序目录astrocyte-dev-1Jyb12；停止前重新核对所属/PID/创建时间。旧exec58426已中断退出，5173/8787归新预览；保留全局自动Codex关闭、summarize启用及选定求职夹配置，不启动模型/native。
+
+512KiB完整输入沿实际SOURCE52ff956单次成功证据，实际135754 wire bytes、固定两份来源版本、持久结果与冷API重查，输出仍128KiB；费用UNKNOWN，旧UNKNOWN及原库不重发。W1独立已给论文DOM元数据/正文区分、来源/DOI及summarize复用许可；真实PMC/PLOS正文和ACL/PMLR/CVF元数据快照仅解析验，不等于多数网站PDF适配、搜索或浏览器入库。没有可安装manifest，未安装独立论文插件。
+
+待用户三个关键产品选择仍见QUESTIONS顶部：论文Search/提取范围、插件/Agent访问方式、进度人工或Agent依据推断；当前没有百分比进度，不推断完成度。另保留抖音持续新鲜获取、个人GitHub范围、arXiv DNS、其他CLI配置/原生限制。不能宣称本轮四项或整体S1全部完成。原W0/W2/W3及W2Git返修已结算release，W1受限failed/release；分支/工作树/失败原件保留。22:26仅W3原轨新Task `task_bf953532256e` / Dispatch `ctx_b423c20821bc` 返修侧栏全局添加资料，write_paths仅Nav.tsx、navigation.spec.ts、原报告；不再启动服务/发现/模型。最终main/远程CI未执行。
+
 ## 扩容与项目看板集成验收中（2026-10-10 22:02）
 
 新容量已通过一次真实论文/视频联合整理：SOURCE `52ff9564c1b40109987668a95ed4ad35946d6847`，完整原文95314+32908字节，实际最终请求135754字节，job `ZWZSJOBRPFWWVZ2HL4TAVNBSAW` 首次成功，结果 `N3PHOEWQXWAAA4MBXP6YF23YZ6` 保留两份固定引用、正文对象与SQLite记录，同库新API进程查询通过，无Mission。原库及旧UNKNOWN不变，不重复模型调用。主控已只读核验结果、引用和数据库完整性；副本 `%LOCALAPPDATA%/Temp/astrocyte-s1-7NybyZ` 留存。

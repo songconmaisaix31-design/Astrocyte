@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 最新入口：项目看板已真实验收，论文选择待答（2026-10-10 22:31）
+
+最新侧栏入口返修SOURCE3b9b491 / REPORTb925782已普通消费；workspace/swarm可打开真实现有添加资料表单，4实际正向/4fixture/8GET拦截边界均PASS，非16次真实入库。root再build PASS和只读个人preview确认enabled，未发POST。最后W3新任务已结算release，所有实际owned Worker资源均已释放；下段22:26新Task待验描述是历史，不能再复用settled Dispatch。最终主控文档与分支push，个人preview73199继续运行，未合main/远程CI。
+
+先读STATUS顶部、QUESTIONS顶部和tasks/S1-paper-project-board-plan.md。root普通合W0最终REPORT42e1941为32042abd，源码check/build和7DOM例通过；真实模型完整135754字节联合输入只成功调用一次，不再重发。真实看板111目录/71组/17已知活动，人工字段持久化/刷新/新API进程及权限边界通过；root个人实际GET/四视图/三尺寸/键盘只读确认通过。个人5173/8787已切新代码，迁移012前一致SQLite备份222225保留；新exec73199/父48624/API52940/Vite65712，停止前重核身份。个人资料/模型/原生授权仍0，原104来源元数据保持，启动一次固定同步source_sync5→8均成功。不会把验收库复制给用户。
+
+W1依Search/插件权限未答显式failed受限交接，不是插件完成；DOM资产无manifest。用户答三个问题后沿原owner工作树/分支新Task接续，不据时间代选搜索、自动站点访问或Agent进度推断。原四轨和W2Git返修已release；22:26新W3 Task task_bf953532256e / ctx_b423c20821bc仅修侧栏从workspace/swarm跳现有资料导入表单，其他权限不改；该单轨验收/结算后普通合入并最终push。原完整浏览器RED保留，最终只复验受影响例，不称全套重跑绿。此前22:02“看板待验/个人旧预览”均为历史。
+
 ## 最新入口：扩容已实测，项目看板待最终验收（2026-10-10 22:02）
 
 先读STATUS最新段落和QUESTIONS顶部。一次新增联合模型job `ZWZSJOBRPFWWVZ2HL4TAVNBSAW` 已成功并冷进程查询，实际wire135754字节；原实际库和旧UNKNOWN不重发。W0正在合并原owner最新提交，W3首屏布局/搜索语义/可访问性仍返修，当前个人预览旧基线保持，不能将中间源码当作最终验收完成。W2真实111目录/71组来自登记及受限CLI元数据，未知/样本范围保留。
