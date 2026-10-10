@@ -66,6 +66,12 @@ func (s *Service) retrySafeJobs(ctx context.Context) error {
 			if job.Status != "failed" || job.DeliveryUnknown || job.Error == nil || !job.Error.Retryable || job.CancelRequested {
 				continue
 			}
+			// The cached result is safe to publish again, but local storage must
+			// be repaired first. Keep this failed record actionable for explicit
+			// human RetryJob rather than exhausting attempts on the obstruction.
+			if job.Error.RequiredAction == "repair_storage_then_retry_cached_result" {
+				continue
+			}
 			if job.Kind != "import" && job.Kind != "source_sync" && job.Kind != "distillation" && job.Kind != "source_recommendation" {
 				continue
 			}

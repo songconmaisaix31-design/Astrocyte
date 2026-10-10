@@ -129,3 +129,29 @@ W0实际API第一套12PASS/2FAIL中，changed supplied export新job的失败断�
 Root另指出官方arxiv Reader的arxiv:baseID与现有summarize_json paper导出的HTML URL key分裂资料。本轨仅actual kind=paper+既有NormalizeArxivID接受的官方论文URL归一到相同arxiv:baseID；summarize/manual既有导出两路适用，video/其他域名/无效ID不折叠。原始固定版本URL、真实导出内容/附件和existing_*_export/manual provenance原样保存，不声明官方fresh fetch或相同bytes。未迁移/重写已存在历史重复材料，也未改共享契约。
 
 测试覆盖现代/旧arxiv ID、官方多URL版本、非paper及其他host不误并。跨adapter→Service→实际SQLite/objects→真close/reopen测试验证官方A与不同exportB同一Material/新revision2、exact B新表单job复用、旧A digest复用revision1但B head不回退、restart后唯一material及原JSON附件保留。HTTP为明确contract_local，不是真实arxiv重新抓取。该测试首次编译误用Job.Revision，随后查询误写materials表失败；按现有MaterialRevision字段/attention_materials表更正后单独PASS，首失败保留。Global status回归PASS。全Go test/vet/build、架构/diff检查PASS；实际fresh模型/媒体/browser仍由root安排。
+
+## 导入专用2501.12948两版真实原件交接（2026-10-10）
+
+Root要求AT02使用用户已授权IMPORT/version verification的2501.12948v1/v2，不授权模型。仅沿tasks/S1-plan末尾明确保留的目录查询：`C:/Users/DW/AppData/Local/Temp/astrocyte-s1-OHU8NF/data/state.sqlite`以mode=ro查历史material `JFKF5J6VWD43TN4W3LO4SVRD77`；r1/r2为同arxiv:2501.12948，原provenance是arxiv+summarize/2501.12948v1或v2;summarize0.21.8/official_atom_pdf_and_html_text，对应官方HTML。没有全盘/个人history搜索，没有修改历史库或文件。
+
+原件根 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-OHU8NF/data/objects/` 下：v1原summarize JSON文件`159560bf4f2e4f2f82d4a1a03facd615d8a923345864d6cf30514a8249d237c1`（124424bytes、59375字符/59654UTF8bytes正文、input/extracted.url=https://arxiv.org/html/2501.12948v1）；v2文件`75a089219c3dbeeb5ccef83ee8166ec63c4f956d9ff6e34fb8386f624584aae8`（390015bytes、190458字符/191455UTF8bytes正文、对应v2HTML URL）。两原正文现时直接比较不同，summary/llm均null；可将exact原JSON直接粘贴现有summarize导出+kindpaper，source_locator用各自HTML版本地址。新导出provenance仍existing_json_export，不假称本轮官方下载；W1阶段7归一材料身份，differentbytes可新revision。无需手改body、制作fixture或复制整个数据库。v2超过128KiB原生输入，但这里只导入，不能模型处理这两论文。
+
+root/W3已收到上述exact路径；原正文对象r1=`041548e2951f314ede1bfd128bbd477c86765021fec0feba0e482606c15abed5`、r2=`a65e3235482675bc6d13cae1b7e6b324db2690dbebe2f6b44f465781355daeb9`含官方Reader包装，和原JSON extracted.content形式不同，不混称同bytes。本交接不启动真实服务、browser或模型；root预告的已返回模型Result后真实对象发布失败场景保持待W3首RED，未预先改领域行为。
+
+## 继续阶段 8：已返回结果的真实本地发布恢复（2026-10-10）
+
+W3代码复核发现cached Result后普通OS Publish错误映射InternalError/Retryable=false，UI因此不能人工恢复。Root随后明确允许先在本轨自有临时目录复现/修复，不运行已知有缺陷的付费路径只为保存RED。普通合入W0 `dfd3949` 的当前W2 scope/native及W3选定模型/论文导出组装；没有编辑跨轨业务文件。
+
+真实OS回归使用contract_local Reader/processor+实际SQLite/objects：在本地processor返回时只把自有objects目录移到同一TempDir的preserved-objects并在原目录位置写普通文件，造成真实OS发布失败；原对象保留。首次测试漏SourceRef.Locator在任何处理前失败，补实际固定URL后取得真实RED：job failed、InternalError不可retry、payload.Result已保存、processor calls1，不是假称付费模型失败。修复后失败为Retryable=true，中文说明已保存Result/修复存储后重试不会再次调用模型、action=repair_storage_then_retry_cached_result；底层原OS错误保存在已有attention.job_failed事件cause_detail。只有Result已成功提交后的本地Publish失败适用，Result持久化gap/native未知保持原UNKNOWN。
+
+Root另确认存储修复必须先发生，因此此action不进入自动循环耗尽次数；其它known safe retries保持原机制。人工Retry仍受原MaxAttempts/deadline限制，不重置operation/payload/预算。回归恢复原目录、真close/reopen SQLite且processor=nil后，原job人工retry成功、attempts2、operation/deadline不变、calls仍1。应用测试验证等待修复不自动重排、重复本地失败耗尽2次后禁重试、processor始终只调用一次；未知禁重放既有测试继续通过。事件查询首次用未加attention前缀的type无行，按实际事件名更正后PASS；该测试错误保留，不改事件或历史来迎合断言。
+
+`go test ./...`、`go vet ./...`、`go build ./...`、架构/diff检查PASS。本轮没有paid/media/browser调用；实际新模型返回后页面故障/恢复由W3继续，不能将本地processor+真实OS/SQLite覆盖写成已通过付费/浏览器验收。
+
+## 继续阶段 9：选定项目冷缓存下保存已返回结果（2026-10-10）
+
+Root复核指出阶段8真实OS/SQLite测试仅走legacy，实际SelectedTextFactory.Resolve此前预先ConfigurationID，selected project_id/cli在API重启native缓存unknown时仍不能保存Result。按root明确指令，Resolve改为只验证trusted human/caller和现有ProjectSpaceID（组装桥检查项目范围/外发CLI许可，不检查native配置或启动CLI）；新请求/新处理仍沿应用已有独立ConfigurationID检查。应用cached分支原resolve/checkScope流程不变，没有增加可选接口、共享fields或entry。
+
+真实SelectedTextFactory+project_id/cli选定固定空间、contract_local权限/text port+实际SQLite/objects的OS故障测试扩展为legacy、native_unknown、revoked、space_changed、reference_removed。返回Result后恢复目录并真正close/reopen SQLite，配置标unknown、配置观察计数归零：selected native_unknown可完成原Result、配置观察0/processing仍1；撤销许可/改变项目空间/移除固定引用三者都ScopeDenied、无沉淀发布，配置观察0/processing1，UNKNOWN没有误改。native_unknown恢复后另一个新processing请求仍以EvidenceMissing失败且仅观察ConfigurationID1次，不调用处理器。全部场景PASS；此证明实际工厂和持久恢复，不把受控权限/text port说成真实付费native/完整API验收。
+
+`go test ./...`、`go vet ./...`、`go build ./...`、架构/diff检查PASS。阶段8已accepted的legacy测试仍独立保留；本轮无网络/media/model/browser调用，W0/W3继续实际已返回付费Result的故障/恢复验收。

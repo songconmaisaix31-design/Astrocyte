@@ -170,8 +170,11 @@ func (n *Native) ReadContext(ctx context.Context, s domain.NativeSession) ([]dom
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	n.observed("read_context")
-	return p.observe().Events, nil
+	events, err := n.readOwnedContext(ctx, p, s)
+	if err == nil {
+		n.observed("read_context")
+	}
+	return events, err
 }
 
 var codexDisabledFeatures = []string{"shell_tool", "unified_exec", "plugins", "apps", "browser_use", "browser_use_external", "browser_use_full_cdp_access", "computer_use", "view_image", "image_generation", "multi_agent", "multi_agent_v2", "memories", "hooks", "code_mode", "code_mode_host", "skill_search", "tool_suggest", "workspace_dependencies", "realtime_conversation", "remote_plugin", "remote_models", "in_app_browser", "in_app_local_automation", "sleep_tool"}
@@ -296,7 +299,10 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 	case n.slots <- struct{}{}:
 	default:
 		s.Ownership, s.Status, s.StopConfirmed = "unstarted", "failed", true
-		return s, nativeError(apierrors.BudgetExhausted, "controller native concurrency limit is four")
+		if resume {
+			s.Ownership = r.Session.Ownership
+		}
+		return s, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.BudgetExhausted, "controller native concurrency limit is four")}
 	}
 	p, err := n.launch(ctx, r, resume)
 	if err != nil {
@@ -308,6 +314,10 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			s.Ownership = "unstarted"
 			s.StopConfirmed = true
 			s.Status = "failed"
+			if resume {
+				s.Ownership = r.Session.Ownership
+			}
+			return s, &domain.NativePrelaunchFailure{Cause: err}
 		}
 		return s, err
 	}
@@ -335,7 +345,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		return s, err
 	}
 	if n.id == "codex" {
-		if _, err = p.call(ctx, "initialize", map[string]any{"clientInfo": map[string]any{"name": "astrocyte", "title": "Astrocyte", "version": "0.1.0"}}, false); err != nil {
+		if _, err = p.call(ctx, "initialize", map[string]any{"clientInfo": map[string]any{"name": "astrocyte", "title": "Astrocyte", "version": "0.1.0"}, "capabilities": map[string]any{"experimentalApi": true}}, false); err != nil {
 			return fail(err)
 		}
 		if err = p.write(map[string]any{"method": "initialized"}); err != nil {

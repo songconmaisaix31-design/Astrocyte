@@ -264,5 +264,43 @@ func TestNativeUnavailableLaunchDoesNotLeaveGhostWriter(t *testing.T) {
 		if !session.StopConfirmed || session.Ownership != "unstarted" || session.PendingOperation != "" || session.Operations[human.OperationID].Status != "failed" {
 			t.Fatalf("unstarted failure left ghost ownership: %+v", session)
 		}
+		if _, err := service.StartNativeSession(ctx, human, p.ID, domain.NativeCommand{CLI: "codex"}); err == nil {
+			t.Fatal("duplicate failed native start falsely succeeded")
+		}
+	}
+}
+
+func TestProvenUnstartedResumePreservesOwnedOriginalSession(t *testing.T) {
+	t.Setenv("PATH", "")
+	ctx := context.Background()
+	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
+	defer db.Close()
+	service := workspace.NewLocalProjectService(db, &localReferences{}, agents.ProjectFiles{}, agents.NewRegistry(t.TempDir()))
+	human := domain.Caller{Kind: "human", ID: "human"}
+	p, err := service.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "original ID retained", Root: t.TempDir(), SpaceID: "space"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings := p.Settings
+	settings.ExternalModelCLI, settings.AllowedActions = "codex", []string{"resume", "stop"}
+	p, err = service.SetProjectSettings(ctx, human, p.ID, domain.SettingsCommand{ExpectedRevision: p.Settings.Revision, Settings: settings})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A stored positive-stop fixture, not evidence of a task-live native ID.
+	session := domain.NativeSession{ID: uuid.NewString(), ProjectID: p.ID, CLI: "codex", NativeID: "offline-original-id", Ownership: "owned", StopConfirmed: true, Status: "stopped", ContextPacket: domain.ContextPacket{SchemaVersion: 1, ProjectID: p.ID, SettingsRevision: p.Settings.Revision}}
+	if err := db.SaveSession(ctx, session); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 2; i++ {
+		human.OperationID = uuid.NewString()
+		result, err := service.ResumeNativeSession(ctx, human, p.ID, session.ID, domain.NativeCommand{})
+		var failure *domain.NativePrelaunchFailure
+		if !errors.As(err, &failure) {
+			t.Fatalf("resume %d did not reach proven unavailable prelaunch: %v", i, err)
+		}
+		if result.NativeID != session.NativeID || result.Ownership != "owned" || !result.StopConfirmed || result.PendingOperation != "" || result.Operations[human.OperationID].Status != "failed" {
+			t.Fatalf("unstarted resume destroyed original durable session: %+v", result)
+		}
 	}
 }

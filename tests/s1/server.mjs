@@ -54,7 +54,9 @@ async function existingOwnedTemporary(choice) {
 export async function startS1Server({ browser = false, env: extraEnv = {}, reuseOwnedTemporary } = {}) {
   const original = reuseOwnedTemporary ? await existingOwnedTemporary(reuseOwnedTemporary) : null;
   const temporary = original?.temporary ?? await mkdtemp(join(tmpdir(), 'astrocyte-s1-'));
-  const ownedRoot = original?.ownedRoot ?? temporary;
+  // Capture the approved canonical root once. Re-resolving that root during
+  // cleanup could follow a subsequently replaced directory to another store.
+  const ownedRoot = original?.ownedRoot ?? await realpath(temporary);
   const dataDir = join(temporary, 'data');
   const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
   const apiPort = await freePort();
@@ -82,8 +84,7 @@ export async function startS1Server({ browser = false, env: extraEnv = {}, reuse
     if (failures.length) throw new AggregateError(failures.map(result => result.reason), `S1 server cleanup failed; retained ${temporary}`);
     if (preserveData) return;
     const target = await realpath(temporary);
-    const approved = await realpath(ownedRoot);
-    if (!inside(target, approved) || !resolve(target).startsWith(resolve(await realpath(tmpdir())) + sep)) throw new Error('Unsafe S1 cleanup path');
+    if (!inside(target, ownedRoot) || !resolve(target).startsWith(resolve(await realpath(tmpdir())) + sep)) throw new Error('Unsafe S1 cleanup path');
     await rm(temporary, { recursive: true, force: true });
     disposed = true;
   }

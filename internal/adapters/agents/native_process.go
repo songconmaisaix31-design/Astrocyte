@@ -31,6 +31,7 @@ type nativeProcess struct {
 	events                []domain.NativeEvent
 	sequence, bytes       int
 	truncated             bool
+	stopping              bool
 	status, turnID        string
 	nativeID, sessionPath string
 	model, provider       string
@@ -121,7 +122,7 @@ func launchNative(id string, args []string, root string, lifetime time.Duration)
 		cleanup()
 		cancel()
 		p.mu.Lock()
-		if waitErr != nil && p.status != "blocked" && p.status != "completed" {
+		if waitErr != nil && !p.stopping && p.status != "blocked" && p.status != "completed" {
 			p.status = "failed"
 			exit := -1
 			var nativeExit *exec.ExitError
@@ -200,6 +201,9 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 			}
 			_ = json.Unmarshal(response["error"], &failure)
 			slog.Warn("native protocol rejected operation", "method", method, "protocol_code", failure.Code, "reason", protocolReason(failure.Message))
+			if failure.Code == -32601 {
+				return nil, nativeError(apierrors.UnsupportedCapability, "installed native protocol or thread store does not support this method")
+			}
 			return nil, nativeError(apierrors.ProviderUnavailable, "native protocol rejected the operation")
 		}
 		if raw, ok := response["success"]; ok && string(raw) != "true" {
@@ -410,6 +414,9 @@ func (p *nativeProcess) stop(ctx context.Context) error {
 		return nil
 	default:
 	}
+	p.mu.Lock()
+	p.stopping = true
+	p.mu.Unlock()
 	if err := p.cmd.Cancel(); err != nil && !errors.Is(err, os.ErrProcessDone) {
 		return nativeError(apierrors.DeliveryUnknown, "native process tree stop is unconfirmed")
 	}
