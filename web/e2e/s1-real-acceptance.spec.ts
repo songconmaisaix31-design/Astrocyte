@@ -187,7 +187,9 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
           if (blockedRoot) await unlink(objectRoot);
           if (moved) await rename(retainedRoot, objectRoot);
         }
-        await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+        await server.restart();
+        api = await humanAPI(server.apiURL);
+        await page.goto(`${server.webURL}/attention`);
         await page.getByRole('button', { name: '刷新队列', exact: true }).click();
         const row = page.locator('li').filter({ has: page.locator('strong').filter({ hasText: receipt.job_id }) });
         await expect(row).toContainText('可以重试');
@@ -216,16 +218,18 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       expect(record!.prior_distillation_ids).toEqual([...prior].sort());
       modelRecords.push(record!);
       // A new request identity with the same fixed input/question reuses the receipt.
-      const body = response.request().postDataJSON() as Record<string, unknown>;
-      const key = randomUUID();
-      const repeated = await fetch(response.url(), { method: 'POST', headers: { Cookie: api.cookie, Origin: server.webURL, 'Content-Type': 'application/json', 'X-CSRF-Token': api.session.csrf_token, 'Idempotency-Key': key }, body: JSON.stringify({ ...body, request_id: key }) });
-      expect(repeated.status).toBe(202);
-      expect((await repeated.json() as S['ImportJobV1']).job_id).toBe(receipt.job_id);
-      if (!recoverPublication) await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+      if (!recoverPublication) {
+        const body = response.request().postDataJSON() as Record<string, unknown>;
+        const key = randomUUID();
+        const repeated = await fetch(response.url(), { method: 'POST', headers: { Cookie: api.cookie, Origin: server.webURL, 'Content-Type': 'application/json', 'X-CSRF-Token': api.session.csrf_token, 'Idempotency-Key': key }, body: JSON.stringify({ ...body, request_id: key }) });
+        expect(repeated.status).toBe(202);
+        expect((await repeated.json() as S['ImportJobV1']).job_id).toBe(receipt.job_id);
+        await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+      }
       return record!;
     }
     const contentQuestion = '仅依据固定论文正文列出核心方法与明确局限，保留待查问题；不要调用工具，全部文字限制1000中文字以内。';
-    const content = await modelRound(paper.detail.material.id, 'content', contentQuestion, [], true);
+    const content = await modelRound(paper.detail.material.id, 'content', contentQuestion);
     const videoContent = await modelRound(video.detail.material.id, 'content', '仅依据所选视频实际字幕提炼内容与尚待验证的主张，不补造时间或成果；全部文字限制1000中文字以内。');
     const paperDialog = await openMaterial(paper.detail.material.id);
     await paperDialog.getByRole('button', { name: '继续沉淀', exact: true }).click();
@@ -243,7 +247,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     expect(bridge.provenance.mode).toBe('manual');
     await paperDialog.getByRole('button', { name: '关闭', exact: true }).click();
     const topic = await modelRound(paper.detail.material.id, 'topic', '仅依据当前固定论文正文和前轮内容记录，整理主题与明确待查问题；其他资料尚未交付，不推断关联或已完成研究；全部文字1000中文字以内。', [content.id]);
-    const videoTopic = await modelRound(video.detail.material.id, 'topic', '延续当前所选视频固定正文和前轮内容，整理主题与待查问题；其他资料未交付，不编造跨资料关联或研究成果。不要启动任务，全部文字1000中文字以内。', [videoContent.id]);
+    const videoTopic = await modelRound(video.detail.material.id, 'topic', '延续当前所选视频固定正文和前轮内容，整理主题与待查问题；其他资料未交付，不编造跨资料关联或研究成果。不要启动任务，全部文字1000中文字以内。', [videoContent.id], true);
     expect(videoTopic.input_refs.every(ref => ref.material_id === video.detail.material.id && ref.revision === head)).toBe(true);
     const candidateDialog = await openMaterial(paper.detail.material.id);
     await candidateDialog.getByRole('button', { name: '形成候选', exact: true }).click();
