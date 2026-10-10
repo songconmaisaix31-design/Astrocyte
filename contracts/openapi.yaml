@@ -11136,7 +11136,7 @@ components:
           type: string
         source:
           type: string
-          enum: [orca_registered, subproject, git_worktree]
+          enum: [orca_registered, subproject, git_worktree, native_project_metadata]
         parent_root:
           type: string
         git:
