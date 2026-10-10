@@ -71,6 +71,11 @@ func AggregateProjects(projects []RegisteredProject) []ProjectSummary {
 		if stamp := p.Activity.LastActivityAt; stamp != nil && (item.LastActivityAt == nil || stamp.After(*item.LastActivityAt)) {
 			item.LastActivityAt = stamp
 		}
+		// Commit time is independently observed even if a later Git status query
+		// fails. Session header creation remains separate from recorded activity.
+		if stamp := p.Git.LastCommitAt; stamp != nil && (item.LastActivityAt == nil || stamp.After(*item.LastActivityAt)) {
+			item.LastActivityAt = stamp
+		}
 		for _, c := range p.Contributors {
 			found := false
 			for _, old := range item.Contributors {
