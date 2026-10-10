@@ -42,6 +42,316 @@ tags:
   - name: local-agents
     description: Cached local CLI readiness and native capability observations
 paths:
+  /source-collections:
+    get:
+      operationId: listSourceCollections
+      summary: list Source Collections
+      description: Public favorite folders for one explicit owner, metadata only; no
+        auto binding or cookies.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: platform
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: owner_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current scoped service result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceCollectionListV1"
+        "400":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/agent-token:
+    post:
+      operationId: issueProjectAgentToken
+      summary: issue Project Agent Token
+      description: Human-only issuance for an already approved project Agent grant.
+        Returned once, never stored in browser fixtures or logs; tokens recheck
+        current grant on every operation.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IssueProjectAgentTokenRequestV1"
+      responses:
+        "200":
+          description: Current scoped service result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectAgentTokenResultV1"
+        "400":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/sessions/discover:
+    post:
+      operationId: discoverNativeSessions
+      summary: discover Native Sessions
+      description: Reads only explicitly registered CLI history roots and filters
+        exact project identity. External observations do not confer process
+        control.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: false
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoverNativeSessionsRequestV1"
+      responses:
+        "200":
+          description: Current scoped service result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeSessionListV1"
+        "400":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/sessions/{session_id}/context:
+    get:
+      operationId: readNativeContext
+      summary: read Native Context
+      description: Project-scoped native context; registered history paths remain
+        internal and do not authorize arbitrary transcript reads.
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+        - AgentBearer: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current scoped service result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeContextListV1"
+        "400":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /tracking-sources:
     get:
       operationId: listTrackingSources
@@ -9400,6 +9710,10 @@ components:
           type: string
         allow_agent_control:
           type: boolean
+        history_roots:
+          type: object
+          additionalProperties:
+            type: string
       required:
         - revision
         - allow_directory
@@ -9409,6 +9723,7 @@ components:
         - allowed_tools
         - external_model_cli
         - allow_agent_control
+        - history_roots
     LocalProjectV1:
       type: object
       additionalProperties: false
@@ -9581,11 +9896,17 @@ components:
             - type: string
               format: date-time
             - type: "null"
+        expires_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
       required:
         - project_id
         - agent_id
         - actions
         - revoked_at
+        - expires_at
     LocalProjectGrantResultV1:
       type: object
       additionalProperties: false
@@ -9787,6 +10108,15 @@ components:
           type: array
           items:
             type: string
+        last_operation_id:
+          type: string
+        pending_operation:
+          type: string
+        ownership:
+          type: string
+          enum:
+            - owned
+            - external_observed
       required:
         - id
         - project_id
@@ -9800,6 +10130,9 @@ components:
         - source_session_id
         - updated_at
         - limitations
+        - last_operation_id
+        - pending_operation
+        - ownership
     NativeSessionResultV1:
       type: object
       additionalProperties: false
@@ -9933,6 +10266,135 @@ components:
         - request_id
         - expected_version
         - message
+    SourceCollectionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        external_id:
+          type: string
+        owner_id:
+          type: string
+        title:
+          type: string
+        locator:
+          type: string
+        item_count:
+          anyOf:
+            - type: integer
+              minimum: 0
+            - type: "null"
+      required:
+        - external_id
+        - owner_id
+        - title
+        - locator
+        - item_count
+    SourceCollectionListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceCollectionV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
+    ProjectAgentTokenV1:
+      type: object
+      additionalProperties: false
+      properties:
+        token:
+          type: string
+        project_id:
+          type: string
+        agent_id:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+      required:
+        - token
+        - project_id
+        - agent_id
+        - expires_at
+    ProjectAgentTokenResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        credential:
+          $ref: "#/components/schemas/ProjectAgentTokenV1"
+      required:
+        - schema_version
+        - credential
+    IssueProjectAgentTokenRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        agent_id:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - agent_id
+    DiscoverNativeSessionsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        cli:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - cli
+    NativeContextListV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/NativeEventV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - schema_version
+        - items
+        - next_cursor
   securitySchemes:
     HumanSession:
       type: apiKey
@@ -9942,5 +10404,6 @@ components:
     AgentBearer:
       type: http
       scheme: bearer
-      description: Identifies an Agent; currently grants no protected data access
-        pending explicit user material scopes
+      description: Project-scoped credential issued by a human. Current grants are
+        rechecked per operation; settings and approval remain human-only. Legacy
+        unscoped Agent credentials confer no protected data access.

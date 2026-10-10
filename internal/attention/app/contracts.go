@@ -653,6 +653,7 @@ type PublicListingReader interface {
 	ReadPage(context.Context, TrackingSource, string, int) (ListingPage, error)
 }
 type ListingRecommendationInput struct {
+	Caller      Principal
 	ProjectID   string
 	CLI         string
 	JobID       string
@@ -682,4 +683,24 @@ type PublicCollectionReader interface {
 type AttentionProjectReferences interface {
 	ReadProjectReference(context.Context, Principal, string, SourceRef, bool) (SourceSnapshot, error)
 	LinkedProjectReferences(context.Context, Principal, string, SourceRef) ([]SourceRef, error)
+}
+type SelectedTextRequest struct {
+	ProjectID       string
+	CLI             string
+	Prompt          string
+	DeadlineSeconds int
+	OutputLimit     int
+}
+type SelectedTextResult struct {
+	Text     string
+	NativeID string
+	Version  string
+	Model    *string
+}
+
+// The composition bridge rechecks project model consent on config and processing.
+// It never changes provider or converts denied scope into a fallback CLI.
+type SelectedTextProcessor interface {
+	ConfigurationID(context.Context, Principal, string, string) (string, error)
+	ProcessSelectedText(context.Context, Principal, SelectedTextRequest) (SelectedTextResult, error)
 }

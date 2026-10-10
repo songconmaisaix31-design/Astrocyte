@@ -1,5 +1,17 @@
 # S1 同步 / 本地 Agent：W0 契约与集成
 
+## 2026-10-10 决定后继续开发（当前，未完成）
+
+Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 实际 provider `codex`、model `gpt-6.1-sol`；W0 单独拥有契约、HTTP、入口、迁移及集成写域，其他领域返修由原 owner 完成。第一步 `git fetch origin` PASS，普通合入准确主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，合并 `8d69854`。用户事实源为 QUESTIONS 顶部；公开抖音身份、个人项目根和自动 Agent 派发限度仍待用户，不由实现推导授权。
+
+已推送早期消费契约 `1a6915e6a6da0820572afa6eb3e7ee12d9f4599b`（来源绑定/清单/推荐/人工选择、项目/原生端口、006/007迁移），类型客户端 `b47a3fc63e5ff07b825ecb672454ed5005743650`，共享身份与 HTTP 路由 `66d2791c07238977033ba575eaf4fde0bd53633f`。普通消费 W2 DTO `022585c` 与 `6981b90`；不是源码拷贝、reset、rebase 或历史改写。007 在供 owner 首次测试前补 version 列实现设置 CAS；不增加定时器、Mission 或新调度系统。
+
+当前新增 API `/tracking-sources`、`/source-collections`、`/local-projects`；固定版本、公开元数据、分页未完成和未知推荐字段显式表达。人类设置/授权/令牌签发独立于项目作用域 Agent 操作；transport 注入实际 Caller，项目令牌每次认证查当前 grant，原未 scoped 的 AgentToken 不扩大权限。资料消费端口要求 Attention 每次核对当前空间固定版本引用，扩展只在 C 明确开启后读当前根的直接关联，保持真实 Agent ID、只记机器使用。
+
+本阶段首败保留：首次 `pnpm generate` / `pnpm check:contracts` FAIL（三个新 schema 引用名写错）；修正为既有 `ServiceErrorV1` / `ImportJobV1` 后 PASS。首次 `pnpm --dir web typecheck` FAIL（OpenAPI default 让 refresh 生成为必填），去 default 保留 Go 默认 false 后另行 PASS。增量 schema 作者临时脚本第一次匹配未锚定行首导致 YAML indentation FAIL，修正匹配并重新生成作者自己未提交的追加块后 PASS；临时作者脚本已移除，未提交生成框架。
+
+最新阶段验证：`pnpm check:contracts` PASS（232既有示例、生成漂移一致，既有 EventV1 警告）；`go test -p 1 ./internal/adapters/httpapi ./cmd/server` PASS；`pnpm --dir web typecheck` PASS；`git diff --check` PASS。新增 contract_local transport 测试覆盖实际 Caller 注入、项目 mismatch、Agent 无权设置/授权/令牌签发、即时 revoke 拒绝、CSRF 和正文伪造身份拒绝；不当作真实 Agent/媒体/完整 S1 验收。本轮 W0 尚未运行媒体、应用模型或浏览器；等待主控 slot、各域 owner 完成和独立最后验收。
+
 2026-10-10；工作树 `s1-sync-contract-1010`，分支 `s1-sync-contract-1010`，基线 `2043770`（已 push）。客户端为当前原生 Codex，实际模型由总控 worker-read projection 独立核实为 `gpt-6.1-sol`；本终端不读取私有会话或凭据来核实。写域沿主计划；W1/W2/W3 的领域实现只通过普通 exact `--no-ff` 合并接入，缺陷退原 owner。
 
 ## 已有接口盘点
