@@ -583,7 +583,11 @@ func (s *Service) failJob(claim Job, cause error, unknown bool) error {
 		if err = tx.SaveJob(job, old); err != nil {
 			return err
 		}
-		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown, "attempts": job.Attempts, "error": job.Error, "cause": originalError})
+		event := map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown, "attempts": job.Attempts, "error": job.Error, "cause": originalError}
+		if failure, ok := cause.(interface{ FailureDetail() string }); ok {
+			event["cause_detail"] = failure.FailureDetail()
+		}
+		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, event)
 	}), "")
 }
 
