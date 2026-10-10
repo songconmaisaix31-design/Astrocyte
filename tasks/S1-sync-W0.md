@@ -2,13 +2,27 @@
 
 ## 2026-10-10 决定后继续开发（当前，未完成）
 
-当前交接：可合入主控的组装 SOURCE `df9ebc1626250691d571aa0814849f1457cb3d27` 已推送，普通消费 W1 `63e3ae0`、W2 `8703ad4` 与 W3 `07bd294`。已装配真实公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。W0 完整离线 check/build 在 `dfd3949` PASS（14 API / 54前端）；主控独立在 `9f8ec362c36a0fd88af05a4d28af7ec6342c774b` check/build PASS（14 API / 55前端 / 19包 / 232示例）。后续新增业务改动仅分别通过受影响 Go tests/vet/build 和 TS/lint，尚不宣称最新整集合或完整 S1 验收。
+当前交接：整合 HEAD `ff941dab23f04e45f9e31db2e6890e1ed2102512` 已推送；普通消费 W1 REPORT `626831a8cb73030f26c8cfbce814fb43bfc4d397`、W2 REPORT `4a0b76a342f78ce2df59914813d48179415ef711`、W3 REPORT `56e9c85634156a1d3945ef59d8599b6e374c8482`。应用/测试字节与主控默认 E2E SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` 相同；仅报告与尚未消费的主控文档不同，未修改主控 STATUS/QUESTIONS/计划。已装配公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。
 
-W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真实 API/SQLite/objects 和明确根测试。保存结果后的冷启动恢复沿现有 `Resolve` + `ProjectSpaceID` 权限检查；`9564bca` 一度新增的未使用可选端口已由普通 `552a544` 删除，保留历史，不要求第二实现路径。新处理仍检查当前 CLI 配置，旧 UNKNOWN 不重放。W3 真源浏览器首败 CRLF/LF matcher 与保留库由主控追踪，不覆盖为成功；首轮0 paid，实际视频正文和论文原文已由主控独立核对。旧论文 `4GQ7GKDXHZIND7CAB7GIZU3W4V` 实际模型 UNKNOWN 保留，不推断费用、结果或根因；主控明确授权原库四个新问题目标，由 W3 独占现场槽执行，W0 仅组装准备，当前尚无新目标验收回执。
+W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真实 API/SQLite/objects 和明确根测试。保存结果后的冷启动恢复沿现有 `Resolve` + `ProjectSpaceID` 权限检查；`9564bca` 一度新增的未使用可选端口已由普通 `552a544` 删除，保留历史，不要求第二实现路径。新处理仍检查当前 CLI 配置，旧 UNKNOWN 不重放。旧论文 `4GQ7GKDXHZIND7CAB7GIZU3W4V` 实际模型 UNKNOWN/Result:null 保留，不推断费用、结果或根因，也不作为前轮。以下真实结果来自 W3/主控回执与原负责人报告，W0没有自行重复现场或 paid 链。
 
-剩余真实限制：公开账号上游挑战/限流、无实际公开收藏条目、Douyin公开身份与匿名 transport、个人根和自动 Agent 控制限度仍未完成；selected prompt 保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Pi新完整历史扩展实测仍 NOT_RUN。W3 在 SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` 对同一原 Codex 会话续验1 PASS：实际 resume/send、活跃原上下文读取与 human stop_confirmed=true，总共三短turn；这不是全部CLI/个人项目或论文整理通过。人类停止 UI 原门控由代码审阅发现并返 W3，在 `3660b0b` 修复（本项未由 W0 执行真实浏览器首败）；W0 TS/lint、nativePermission 3项、jobPresentation 4项目标检查 PASS，没有重复完整套件或使用现场槽；最终独立检查、现场返修和总控接收完成前本 worker 不结算完整 S1。
+| 当前实际验证 | 结果及边界 |
+|---|---|
+| W0 `pnpm check` / `pnpm build`，SOURCE `dfd394916c52087094628dee4905ab582426664a` | PASS/exit0，14 API / 54 UI；历史阶段，不冒充最新全套 |
+| 主控独立 `GOFLAGS=-p=1`、清除应用 opt-in 后 `pnpm check` / `pnpm build`，SOURCE `574a466f754363c27e7ec2e8a36fee7ea4bdf9cf` | PASS/exit0，14 contract_local API / 58 UI / 19包 / 232示例与客户端漂移；既有 EventV1 warning 保留 |
+| W3 实际 `s1-real-acceptance.spec.ts`，SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0` | 限定 AT01–04 **1 PASS**，测试1.5分钟/整场1.7分钟；原4pmMWO库四条新成功模型记录、真实对象发布失败后冷启动人工 retry 同 Result/attempt2无第二模型、三次获准 Agent 读取不加人类热度、later/deferred重启保留；论文为既有真实导出，不外推完整账号链 |
+| W3 实际 `s1-native-project.spec.ts`，SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` | 独立公开README原 Codex 会话 **1 PASS**，同线程 start/resume/send共三短turn、实际原上下文/输出与 human stop_confirmed；不代表其他CLI或个人项目 |
+| 主控 `pnpm test:e2e --workers=1`，SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` | 当前仍运行；已见 chromium1920 `s1.spec.ts:223` 首 FAIL，旧未配置提示断言不适配项目许可表单。实际 processor unavailable/configidnull、提交disabled、没有 model；已返原W3，整集合计数与定向复验尚待主控回执 |
+
+四条新成功整理来自 Codex CLI 0.162.0 / gpt-6.1-sol，旧 UNKNOWN 与真实浏览器各首 RED 原件保留。W3 已释放现场槽，主控独占默认 E2E；最新 stop输出保留/机器metadata折叠/预览scopeKey修复经 W0 TS/lint及6项相关单测、W3完整58项静态检查通过，不追加 paid native验证。真实原件、job IDs、保留库和输出路径见 owner 报告与 `docs/acceptance/S1-sync.md`。
+
+剩余真实限制：Bili所选UID uploads HTTP412/-352挑战、favorites真实空，非空 metadata推荐→人工选择→正文链仍 NOT_RUN；Douyin self/favorite需登录，真实公开身份与匿名 transport待定。新arXiv URL获取、个人根、第二模型CLI、自动 Agent控制限度仍未完成；selected prompt输入/输出保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Pi扩展context实测 NOT_RUN，OpenCode仍有已记录限制；未知能力不推断支持。人类停止 UI 原门控由代码审阅发现并返 W3，在 `3660b0b` 修复，不冒充 W0 真实浏览器首败。未合 main/本轮远端CI/用户接受；最终独立检查、现场返修和主控接纳前本 worker 不结算完整 S1。
 
 最新领域修复均返原 owner，再 ordinary exact merge：W1 `f1a44b2` 对新 `attention.job_failed` 事件保存有界映射的原始 ServiceError cause，公开 job.Error 仍诚实 UNKNOWN，旧事件不补写，不保存原生正文或秘密。W2 `a797324` 离线重现同一消息1000中文token-delta在765字节即被256事件误伤；只在相同消息/turn生命周期合并连续文本，保持128KiB实际文本/256逻辑事件上限、跨控制边界分离与真实溢出拒绝。这是独立已知缺陷修复，不能证明旧论文实际 UNKNOWN 根因。W0 受影响 attention/app/sqlite 与 agents/sqlite/cmd Go tests、vet 和 server build 分别 PASS；组装 W3 `07bd294` 后 typecheck/lint/diff PASS，没有新增现场或付费调用。
+
+报告阶段首次 W1 合并推送因 GitHub443连接失败 exit128，随后同轨 W2 fetch/普通合并与合并后 push成功，`ff941da`远端确认；这是独立重试结果，不改写首失败。没有 reset/rebase/force/clean、私有目录扫描或宿主网络修改。
+
+## 当前 Dispatch 阶段历史（保留当时状态）
 
 Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 实际 provider `codex`、model `gpt-6.1-sol`；W0 单独拥有契约、HTTP、入口、迁移及集成写域，其他领域返修由原 owner 完成。第一步 `git fetch origin` PASS，普通合入准确主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，合并 `8d69854`。用户事实源为 QUESTIONS 顶部；公开抖音身份、个人项目根和自动 Agent 派发限度仍待用户，不由实现推导授权。
 
@@ -35,6 +49,8 @@ Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 
 `go test -mod=readonly -p 1 ./...` 和 `go vet -mod=readonly -p 1 ./...` 在 `2dfc1ba` PASS（应用模型/媒体 opt-in 关闭）。架构检查首次 FAIL：既有规则把 app/domain 的纯 `net/url` 解析误归为 I/O；仅豁免 `net/url`、保持 `net` 和其余 `net/*` 限制后 `pnpm check:architecture` PASS（19包）。这是后续独立修正结果。最新入口装配 `go test -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi ./internal/adapters/distillers` PASS。总控发现 W1 generic 输出限额2MiB与 W2 registry128KiB不一致，已返 W1；W3 浏览器发现 settings.history_roots=null，已返 W2。本轮这些领域返修未完成，不据此宣称完整 S1。
 
 最新阶段验证：`pnpm check:contracts` PASS（232既有示例、生成漂移一致，既有 EventV1 警告）；`go test -p 1 ./internal/adapters/httpapi ./cmd/server` PASS；`pnpm --dir web typecheck` PASS；`git diff --check` PASS。新增 contract_local transport 测试覆盖实际 Caller 注入、项目 mismatch、Agent 无权设置/授权/令牌签发、即时 revoke 拒绝、CSRF 和正文伪造身份拒绝；不当作真实 Agent/媒体/完整 S1 验收。本轮 W0 尚未运行媒体、应用模型或浏览器；等待主控 slot、各域 owner 完成和独立最后验收。
+
+## 上一 Dispatch 历史（保留原结论，非本次状态）
 
 2026-10-10；工作树 `s1-sync-contract-1010`，分支 `s1-sync-contract-1010`，基线 `2043770`（已 push）。客户端为当前原生 Codex，实际模型由总控 worker-read projection 独立核实为 `gpt-6.1-sol`；本终端不读取私有会话或凭据来核实。写域沿主计划；W1/W2/W3 的领域实现只通过普通 exact `--no-ff` 合并接入，缺陷退原 owner。
 
