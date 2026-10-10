@@ -1,3 +1,47 @@
+# S1 论文检索、进度与前端 DTO 交接（本轮 W3）
+
+本轮（`run_8c1696bb815a`，W3）延续已验看板布局，为三项已确认能力补齐前端垂直片：论文检索入口（检索 → 元数据/原文可得状态 → 勾选 → 批量入库 → 继续沉淀）、Agent 进度依据展示（TASK/STATUS 来源/阶段/新鲜度，未知不伪造百分比）。CLI 原生操作沿用现有 `ManagedProjectsPanel`/`NativeProjectPanel`（start/read/resume/send/stop/observe/context_handoff），不以看板即自动授权。记忆与工具层按待答决定仅作规划，不默认全局、不建 UI 伪工具。
+
+## 分支与源码
+
+- 分支 `s1-sync-ui-1010`，普通合入 ROOT 精确基线 `8277667`（随后快进至 `origin/s1/attention-materials-20261009`，保留原 owner 历史，无 squash/rebase/reset/force）。
+- 本轮 UI/测试源码为一次精确提交（SOURCE），REPORT 为随后仅更新 `docs/acceptance/S1-paper-board.md` 与本任务报告的提交，精确 SHA 通过 Orca 交接。
+- 独占写域遵守 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、本文件与 `tasks/S1-final-W3.md`；未改契约、生成客户端、迁移、锁或入口。
+
+## 完成内容
+
+Attention 新增清晰「检索论文」入口（顶部流程条与「来源与整理」折叠面板）。检索面板展示每条结果的标题/作者/年份/来源与**原文可得状态**（原文可得 / 仅元数据 / 受限 / 可得性未知），受限项给出受限说明，已入库项显示「查看已入库资料」且不可重复勾选；未知可得性项不可勾选、提示等待重试。勾选为纯人工、可随时「取消全部勾选」，批量入库由人显式提交，不自动全量。真实模式只走真实 API：未连接/501/未知/失败以明确文案与重试呈现，绝不用样本冒充；示例模式标注固定样本并禁止写入。
+
+进度展示层为纯函数（`progressPresentation.ts`）：百分比为 `null` 时呈现「未知」，绝不伪造数字；阶段与 TASK/STATUS 来源引用、新鲜度并列展示，无依据时呈现「未知」。CLI 原生操作继续由既有面板承载，权限判断（`nativePermission.ts`）不变，看板不据发现授予操作许可。
+
+## DTO 交接（供 W0/W1/W2 消费，接口命名/版本由 W0 单一决定）
+
+UI 已按以下本地视图形状实现并可直接消费，请 W0/W1/W2 发布对应契约后，W3 集成阶段替换 `paperSearchClient.ts`/`progressPresentation.ts` 的本地形状为生成类型（不需要改 UI 结构）：
+
+1. **论文检索（W0 契约 + W1 服务）**：`GET /papers/search?q=&cursor=&limit=` → `{ query, items:[{ id, title, authors[], year, venue, source_type, arxiv_id, doi, locator, abstract, availability:{ status: full_text|metadata_only|restricted|unknown, detail }, already_imported, import_material_id }], next_cursor, has_more, warnings[] }`。
+2. **论文批量入库（W0 契约 + W1 服务，人类 CSRF + 幂等）**：`POST /papers/import` → `{ job_id }`，body `{ items:[{ id, source_type }], collection_reason }`；继续沉淀复用既有 `POST /distillations/jobs`。
+3. **进度依据（W2 服务）**：`GET /local-projects/{id}/progress` → `{ stage, percent(null=未知), source_refs:[{ path, line? }], freshness:{ observed_at, source } }`；percent 为 null 时前端必须呈现「未知」。
+4. **原生 reconcile（W2，对应 SPEC 17.3「外部动作结果未知按原 operation 对账」）**：`POST /local-projects/{id}/sessions/{session_id}/reconcile`，用于未知外部动作对账，不自动重发。
+5. **记忆（W2，待答决定后）**：列表/搜索 → 时间线 → 详情/按项目 scoped 配置/遗忘；本轮未建 UI、未默认全局或原对话采集。
+
+## 验证
+
+| 验证 | 结果 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS/exit0 |
+| `pnpm --dir web test` | 72 PASS（新增论文检索 7 例 + 进度 4 例；既有 61 例保持） |
+| 定向 `eslint`（新增/改动文件） | PASS/exit0 |
+| `pnpm --dir web build` | PASS/exit0（96 模块） |
+| `playwright test paper-search.spec.ts`（1920/1280） | **8 PASS**：示例模式结果/可得状态/受限说明/选择/取消且 0 写请求；未知与已入库不可勾选；真实 501 呈现「检索未完成」且无样本冒充 |
+
+## 未完成与真实限制
+
+- 检索/批量入库/进度/记忆的真实端点尚未由 W0/W1/W2 发布：UI 已就绪并按真实 API 语义诚实呈现「未连接/失败」，但真实检索、批量入库、进度读取的端到端仍待 W0/W1/W2 契约落地后集成。
+- CLI 完整覆盖范围与记忆隔离/全局/仅规划两项仍 PENDING，未代选，未建对应 UI。
+- 未运行个人 5173/8787、未安装插件、未读取个人 Chrome、未合 main/远程 CI；三尺寸（1920/1280/390）真实数据截图待端到端契约落地后由 W0/root 复核（本轮 e2e 覆盖 1920/1280，390 属移动布局，见下文既有看板验收）。
+
+---
+
 # S1 W3 项目总览与人类流程验收
 
 本报告只覆盖本轮已授权、已实现的项目看板与现有入口。论文搜索、当前页提取、插件权限与进度推断仍为 **ASKED PENDING**；没有据此选择产品方案、冻结接口或宣称完整 S1 交付。
