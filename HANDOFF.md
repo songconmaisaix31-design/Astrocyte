@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 当前恢复入口（2026-10-11 01:04）
+
+先读 STATUS 顶部和 `tasks/S1-final-paper-cli-memory-plan.md` 的恢复记录。Orca runtime 为 `90510c9d-1184-4e26-8291-3b372b161199`，root `term_ab71d476-33a6-42ec-b5dd-5bb9ac628055` 已重新绑定原 Run；四轨原写域不变，新的原生 OpenCode Task/Dispatch 均已派发。旧W1/W2报告只接受为部分基线，OpenCode native/记忆未完成；W0原未提交契约与W3原未提交插件UI保持。不要使用下文旧终端/PID停止进程；原个人5173/8787本次恢复检查无监听。既有成功媒体模型和UNKNOWN不重发，root仍仅计划/决定/验收/最终提交；功能范围未答不代选。最终普通合精确owner报告、适用检查、真实浏览器与SQLite/objects、新API进程验证后备份升级并push。
+
 ## 当前入口：OpenCode四轨继续S1（2026-10-10 22:42）
 
 先读STATUS/QUESTIONS顶部与tasks/S1-final-paper-cli-memory-plan.md。原论文搜索/批量/进度问题已答，用户要求CLI完整接入、工具层规划和长期记忆；新两项CLI完整覆盖和记忆保存/可见范围待答。新Run run_8c1696bb815a，四原工作树新Dispatch全部OpenCode，实际TUI DeepSeek V4 Pro；协议turnStart unsupported不能当未启动，不重复注入。W0/W1/W2/W3写域沿计划，接口/迁移/锁/入口W0唯一owner。完成前个人preview73199/PIDs先重核且保持旧已验代码；不重发成功模型/旧UNKNOWN，不读私人Chrome历史/凭据。root不写业务代码，最终普通合并/独立验收/backup后升级并push。下文此前三项待答与全部Worker已release均为旧Run历史。

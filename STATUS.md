@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## 中断恢复后继续开发（2026-10-11 01:04）
+
+主控仍为 `s1/attention-materials-20261009`，原 Run `run_8c1696bb815a` 已绑定新 root 终端。四轨沿原工作树、分支和独占写域用 OpenCode 接续，现行 Task/Dispatch 见 [收尾计划](tasks/S1-final-paper-cli-memory-plan.md)。W1 `11791ce` 的三索引公开检索、HTML正文和可构建MV3，W2 `90c18d4`/`f1ace50` 的进度域及工具规划，W3 `add30be`/`97090d5` 的前端骨架均为部分成果；尚未完成实际插件→应用持久化、通用公开PDF、进度错误与成功结果恢复、OpenCode原生会话接入和真实UI对接。原未提交契约/迁移及UI插件复核改动保留，原Worker中断/失败不覆盖。CLI全覆盖与长期记忆可见范围仍待用户，整体S1未完成。原个人5173/8787当前无监听；最终通过后先一致备份，再恢复实际预览，不复制测试资料库。
+
 ## 按确认继续完成S1（2026-10-10 22:42）
 
 用户已决定论文搜索＋正文、允许显式批量、允许获准项目Agent依据TASK/STATUS推断。新增完整CLI接入、蜂群skill/MCP工具规划和Claude-mem式长期记忆，见QUESTIONS最新段和tasks/S1-final-paper-cli-memory-plan.md。root基线8277667已push；原四轨新Run run_8c1696bb815a已启动，实际OpenCode/DeepSeek V4 Pro（TUI观察；未覆盖模型），写域和新Task/Dispatch见计划，所有旧settled ID禁止复用。W0接口与迁移/锁/入口唯一owner及最终集成，root仅计划/验收/提交。新问CLI全部已安装还是三主要客户端、记忆项目隔离还是全局/仅规划，未答不代选；论文与OpenCode原生协议/进度和工具研究独立推进。个人5173/8787仍已验d9acb43运行基线，完成新增验收前不升级、不复制测试库。下文三项待答是历史，当前本轮功能尚未完成。
