@@ -1,5 +1,19 @@
 # W3 论文流程与项目看板
 
+## 侧栏全局添加资料返修（2026-10-10）
+
+Dispatch `ctx_b423c20821bc` / task `task_bf953532256e`；沿原 `s1-sync-ui-1010` 工作树/分支，实际 Orca Codex / 默认 GPT-6.1-Sol 继承，无模型 override、无新增 Agent。独占编辑仅 `web/src/components/Nav.tsx`、`web/e2e/navigation.spec.ts`、本文件。
+
+- 普通消费 ROOT 精确基线 `4b733a6e4484c8b38ff6892c890e45cc6a33623c`（含 W0 最终 `42e1941`），没有冲突；非本写域变化仅来自 owner 历史的普通合并。
+- SOURCE `3b9b491a611d43cef4cef5819231b166763ee4fb` 已 commit/push。删除 `canImport` 的 Attention 页面位置条件；保留 `!fixture`、服务 `capabilities.imports` 与 `!foundation.stale`。复用原 `/attention?import=1` 导航、表单及关闭行为，没有增加权限或 API。
+- 当前 `navigation.spec.ts` 没有可替换的旧添加资料断言，新增 8 个定向用例：workspace/swarm 各自实际能力下打开/关闭既有表单、删除旧 tab 参数且无写请求；fixture、能力关闭和首次能力读取失败仍禁用。能力关闭/未知场景明确为浏览器 GET 拦截。
+- `pnpm --dir web typecheck`、`pnpm --dir web exec eslint src/components/Nav.tsx e2e/navigation.spec.ts`、`pnpm build`（Go + TS + Vite，92 模块）、`git diff --check` 均 PASS / exit0；未跑全套检查或默认 E2E 服务。
+- ROOT 已普通合入 SOURCE 并确认 5173 HMR 读取新条件。随后 PowerShell stdin `node --input-type=module` 调用既有 `@playwright/test` 的 Chromium/expect，在原个人 5173/8787 执行上述定向浏览器操作：1920×1080 与 1280×720、workspace/swarm、实际/fixture/能力关闭/能力未知共 **16 PASS / exit0**。实际正向 4 项取得 foundation 200 且 imports=true，跨页打开既有“添加资料”dialog、可见导入方式、Escape 关闭及移除 import 参数全部通过；fixture 4 项与 GET 拦截负向能力 8 项单列，不能当成后端实际能力证据。
+- 该场首运行即通过，日志 `web/test-results/s1-import-navigation-first-20261010.log`、4 张 `web/test-results/import-navigation-{workspace,swarm}-{1920,1280}-20261010.png` 保留；写请求 0、外网请求 0、新服务 0。没有 POST、保存、发现刷新、正文获取、扫描、媒体或模型，也没有默认 Playwright suite / webServer 启动或全套通过声明。stale 条件在源码保留，本次未另造 foundation 刷新失败场景。
+- REPORT 为本文件随后独立报告提交，精确 SHA 通过本 Dispatch 的最终 worker_done 交接；SOURCE 与报告区分，原看板/模型/活动等历史验证不重跑或改记。本次最终集成及主控验收由 ROOT 承担，未合 main、未运行远程 CI。
+
+本次只修复全局入口，不扩大论文/插件/进度等仍待决定的范围；真实提交与导入链路不因打开表单而被宣称通过。
+
 本轮 Dispatch `ctx_d742848ca3e0` / task `task_11fedd3807d6`。固定工作树与分支 `s1-sync-ui-1010`，仅写 `web/src/`（排除 `api/`）、`web/public/`、`web/e2e/`、本文件与 `docs/acceptance/S1-paper-board.md`。实际客户端为当前 Orca Codex 会话，不另开 Agent。
 
 ## 范围与顺序
