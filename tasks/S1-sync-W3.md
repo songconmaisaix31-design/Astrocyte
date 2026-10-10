@@ -81,6 +81,12 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## 原生展示定向返修（无新增付费 turn）
+
+主控目视真实1280/1920发现human STOP回执events为空会覆盖先前实际回复。NativeProjectPanel现在分开保存最新status/stop_confirmed与已读取output，停止空回执仅在当前项目/权限/空间版本仍匹配时保留先前实际文字，并标明“此前已读取”；权限变化、服务拒绝上下文/观察读取时隐藏或清除，不复制不存在的新回复。历史按API user_text/text角色显示已发送消息/实际Agent文字，识别schema1服务wrapper后仅展示用户消息，完整原文/metadata默认折叠；未知schema保持原文。无新会话、付费turn或聊天框重构。
+
+typecheck/lint/build/diff、nativePresentation/nativePermission两文件6项定向单测PASS；停止空回执保留、权限拒绝丢弃新旧输出、schema未知不截断原文覆盖。此小修尚无新的真实原生浏览器运行，原正向1PASS是SOURCE0d2319e，不把静态检查外推本次native返修live通过。真实README续验setup同文writeFile导致mtime变化，原/新版本为真实不同snapshot，未伪称同version重复；W2按path+version合并保留scope，原论文UNKNOWN仍不重发。
+
 ## 主控明确的新整理目标（尚未执行）
 
 主控确认原生路径已接受，继续保留旧论文 `4GQ7GKDXHZIND7CAB7GIZU3W4V` UNKNOWN，不换UUID同题重发。下一阶段新paper content目标为“梳理论文关键术语及正文定义依据，缺失定义标待查，不重做旧核心方法/局限作业”，只用完整固定正文；topic只延续新术语定义记录，旧UNKNOWN不作前轮；原视频content/topic沿原授权，各资料两轮，最多4个新成功目标，遇任何新UNKNOWN即停止诊断。W2报告离线复现连续token-delta计数误伤并修复，但这不是旧paper实际根因证明；待W0普通组装发布exactSOURCE后开始。
