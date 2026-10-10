@@ -1,5 +1,25 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/source-collections/discover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Discover explicitly selected source collections
+         * @description Human CSRF command invokes a bounded public provider or an explicitly configured selected browser folder bridge and caches metadata. Failure preserves prior catalog; GET only reads cache. No binding, full body extraction, model call, credentials or automatic selection.
+         */
+        post: operations["discoverSourceCollections"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/github-repositories": {
         parameters: {
             query?: never;
@@ -89,7 +109,7 @@ export interface paths {
         };
         /**
          * list Source Collections
-         * @description Public favorite folders for one explicit owner, metadata only; no auto binding or cookies.
+         * @description Cached favorite folder metadata for one explicit owner; GET never invokes a browser, CLI or provider. Explicit human POST discovery refreshes this cache.
          */
         get: operations["listSourceCollections"];
         put?: never;
@@ -3455,6 +3475,8 @@ export interface components {
             message: string;
         };
         SourceCollectionV1: {
+            /** @enum {string} */
+            access_mode?: "public" | "browser_selected";
             external_id: string;
             owner_id: string;
             title: string;
@@ -3728,6 +3750,20 @@ export interface components {
             /** @description Existing top-level development ProjectSpace selected by the human; expected_version is the cached repository revision. */
             space_id: string;
         };
+        DiscoverSourceCollectionsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @enum {string} */
+            platform: "bilibili" | "douyin";
+            owner_id: string;
+            /**
+             * @description Omitted legacy input means public; browser_selected requires explicit human selected owner and folder identity and configured browser bridge.
+             * @enum {string}
+             */
+            access_mode?: "public" | "browser_selected";
+        };
     };
     responses: never;
     parameters: never;
@@ -3737,6 +3773,96 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    discoverSourceCollections: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DiscoverSourceCollectionsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current service result; unknown and failure states remain explicit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceCollectionListV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     listGitHubRepositories: {
         parameters: {
             query?: never;
