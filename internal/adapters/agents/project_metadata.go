@@ -148,6 +148,8 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 			continue
 		}
 		seen := map[string]bool{}
+		perRoot := map[string]int{}
+		matchedRoots := map[string]bool{}
 		var walk func(string, int) error
 		walk = func(dir string, depth int) error {
 			if err := ctx.Err(); err != nil {
@@ -190,6 +192,7 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 					if filepath.Ext(entry.Name()) != ".jsonl" || !entry.Type().IsRegular() {
 						continue
 					}
+					obs.HeadersExamined++
 					id, cwd, stamp, err := readProjectHeader(path, source.cli)
 					if err != nil {
 						partial("unverified_or_over_bound_headers_excluded")
@@ -215,11 +218,28 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 						byRoot[rootKey(canonical)] = index
 						result.Projects = append(result.Projects, domain.RegisteredProject{Root: canonical, Name: filepath.Base(canonical), Source: "native_project_metadata", Git: domain.ProjectGitObservation{Status: "unknown", Reason: "not_observed"}, Activity: domain.ProjectActivityObservation{Status: "unknown", Source: "native_session_header"}, Contributors: []domain.ProjectContributor{}, Limitations: []string{"native_header_identified_root_fixed_marker_only", "initial_metadata_timestamp_is_not_latest_activity", "observation_only_no_context_or_execution_permission"}})
 					}
-					if obs.MatchedHeaders >= 256 {
+					obs.MatchedHeaders++
+					matchedRoots[rootKey(result.Projects[index].Root)] = true
+					seen[id] = true
+					if perRoot[rootKey(result.Projects[index].Root)] >= 4 {
+						partial("per_root_session_sample_bound")
+						reason := "native_session_sample_bound:" + source.cli
+						found := false
+						for _, old := range result.Projects[index].Limitations {
+							if old == reason {
+								found = true
+							}
+						}
+						if !found {
+							result.Projects[index].Limitations = append(result.Projects[index].Limitations, reason)
+						}
+						continue
+					}
+					if obs.RetainedAssociations >= 256 {
 						return errors.New("header_bound")
 					}
-					seen[id] = true
-					obs.MatchedHeaders++
+					perRoot[rootKey(result.Projects[index].Root)]++
+					obs.RetainedAssociations++
 					result.Projects[index].Contributors = append(result.Projects[index].Contributors, domain.ProjectContributor{CLI: source.cli, Source: "native_session_header", Root: result.Projects[index].Root, SessionID: id, ObservedAt: result.ObservedAt, CreatedAt: stamp})
 				}
 				if e == io.EOF {
@@ -233,6 +253,7 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 		if err := walk(source.root, 0); err != nil {
 			partial("known_source_incomplete_or_bound_reached")
 		}
+		obs.MatchedRoots = len(matchedRoots)
 		result.Sources = append(result.Sources, obs)
 	}
 	for _, def := range definitions {
