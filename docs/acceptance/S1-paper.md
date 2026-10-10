@@ -1,6 +1,26 @@
 # S1 收尾 W1：论文检索、正文提取与独立 MV3 插件（续）
 
-2026-10-11。本轨（`s1-sync-attention-1010`）续 11791ce，按 `tasks/S1-final-paper-cli-memory-plan.md` 与主控返修完成 SSRF 网络边界修正、`paper_pdf` 公共 PDF 正文适配器，并实际隔离 Chrome 加载插件取得真实公开页快照。开发客户端 OpenCode / DeepSeek V4 Pro。检索/当前页/批量已确认，CLI 全覆盖与记忆范围仍 PENDING；公开论文 host 的 DNS/fakeIP 例外已向 root 提问待答，未代选。
+2026-10-11。本轨（`s1-sync-attention-1010`）续 11791ce，按 `tasks/S1-final-paper-cli-memory-plan.md` 与主控返修完成 SSRF 网络边界修正、`paper_pdf` 公共 PDF 正文适配器，并实际隔离 Chrome 加载插件取得真实公开页快照；本续再补 `paper_snapshot` 插件快照离线入库（无联网、无 model）与 `isPublicIP` IPv6 文档/丢弃段收尾。开发客户端 OpenCode / DeepSeek V4 Pro。检索/当前页/批量已确认，CLI 全覆盖与记忆范围仍 PENDING；公开论文 host 的 DNS/fakeIP 例外已向 root 提问待答，未代选。
+
+## 续二：`paper_snapshot` 插件快照离线入库 + IPv6 SSRF 收尾
+
+目标：真实插件快照已含 `text/source_url/source_key/content_state/provenance`，但 W3 若只再走 `paper_url` 联网会被本机 fakeIP 挡住且丢正文。为此新增**零联网**的 `paper_snapshot` 导入适配器：人类粘贴审阅后的插件快照 JSON → `ImportMaterial` → objects/jobs/revisions/去重，真正闭环而不依赖待答的代理策略。
+
+### `paper_snapshot` 适配器（`internal/adapters/importers/paper_snapshot.go` + `reader.go` case）
+
+- 输入：`adapter=paper_snapshot`、`kind=paper`、`source_locator=source_url`、`export_text=快照 JSON`。无网络读取、无 model、无 paywall 绕过、无新增协议/缓存/daemon/框架；复用既有 `ImportMaterial`/objects/jobs/revisions/dedup 全链路。
+- 解析并校验：`schema_version==1`、`source_url==source_locator`（精确）、`source_url` 为无凭据无端口 public HTTPS；`content_state` 三态。
+- **来源身份重推导，绝不信任快照自报 `source_key`**（防伪复核/异文合并）：`arxiv_id`（`NormalizeArxivID` 去版本）→ ACL 站 URL 内嵌 id（`aclAnthologySourceKey`，与 `paperPDFSourceKey` 共享，含落地页尾斜杠）→ `doi:` + `normalizeDOIRaw` → `canonicalWebKey(source_url)`。若调用方显式 `source_key` 与重推导不符，沿用既有 `ReadSource` 尾检拒绝。
+- provenance：`Processor=paper_snapshot`，`Mode=browser_snapshot_fulltext|browser_snapshot_abstract_only|browser_snapshot_truncated`（明确 browser_snapshot/user_provided，而非网络 publisher 已验证）；`Version` 携带插件 provenance.version 及 `observed <observed_version>`。
+- 正文边界：`readable_fulltext` 要求正文非空，`truncated` 显式标 `browser_snapshot_truncated` 并在正文头注「truncated」；`abstract_only` 只保留摘要（丢弃未确立全文结构的正文，绝不冒充全文）；`paywall`/`restricted` 拒绝 `EvidenceMissing`（`choose_accessible_public_paper_or_provide_existing_export`），无 entitlement 绕过。
+- 保留 original snapshot JSON 为附件 `paper-snapshot.json`（来源真相原样入 objects），`SourceSpan=browser snapshot: <source_url>`。
+
+### `isPublicIP` IPv6 收尾（`internal/adapters/importers/paper_web.go`）
+
+- 补拒 RFC 3849 文档段 `2001:db8::/32` 与 RFC 6666 丢弃段 `100::/64`（与 IPv4 reserved 同策略）；普通 global unicast IPv6（如 `2606:4700:4700::1111`、`2a00:1450:4001::`）不受误阻。用例见 `TestIsPublicIP`。
+- 不改 host DNS、不启用官方域 proxy 策略（用户未选）；已下载 ACL PDF 正文结果沿用，不重复在线下载/模型/旧 UNKNOWN。
+
+## 本续交付（前次）
 
 ## 本续交付
 
@@ -29,18 +49,19 @@
 ## 剩余 / 阻塞
 
 - `paper_url`/`paper_pdf` 的**真实公网下载 vertical 被本机 fakeIP DNS 阻断**：aclanthology.org/proceedings.mlr.press/openaccess.thecvf.com 均解析为 198.18.x.x，收紧后公网校验正确拒绝。已向 root 提三方案（A Clash DNS 例外 / B 受控公开源 allowlist / C 暂不跑），未答；B 的「明确官方域 + configured proxy + 正常 HTTPS/redirect 限制」实现提案已备审，未启用。用户答复后跑真实 ACL/PMLR/CVF PDF 下载 vertical。
-- **W0 契约对齐**（`app` 契约由 W0 唯一 owner，本轨只 handoff）：本轨 `app/paper_search.go` 的 `PaperSearchService`/`PaperSearcher` 与 W0 `b8dfe67` contracts.go 的 `PaperSearchService` 同名重复；本轨 `domain.PaperSearchQuery/Hit` 与 W0 `PaperSearchCommand/PaperMetadata` 签名不符。`importers.Scholar.Search` 已就绪，映射见下。W0 合并后由 W0 做胶水：删本轨重复接口、`Service.SearchPapers` 改 `(ctx, Principal, PaperSearchCommand) (PaperSearchResult, error)`、Scholar 命中映射 `PaperMetadata`。**W0 `PaperMetadata` 缺 `pdf_urls` 字段**，会断「搜索→PDF 候选→paper_pdf 导入」链路，需 W0 补 `pdf_urls`（本轨 `ScholarHit.PDFURLs` 已产出）。
-- 与 W3 对齐：插件快照字段 `source_url/source_key/content_state/pdf_urls/doi/arxiv_id/authors/title/abstract/warning` 已与 Go `PaperSnapshot` 一致；W3 人工审阅 UI 取 `source_url`+`content_state`+`pdf_urls` 后走 `ImportMaterial(adapter=paper_url|paper_pdf)`。
+- **W0 契约对齐**（`app`/契约由 W0 唯一 owner，本轨只 handoff，且**不再依据过期 `b8dfe67` 要求 W0 改 app 签名**——W0 已采用 canonical ports/domain）：本轨 `importers.Scholar.SearchPapers` 已实现 `app.PaperSearcher` 端口，`domain.PaperSearchQuery/Hit`（含 `PDFURLs`）与 `app.SearchPapers` 已就绪；最终接口形态、枚举与胶水由 W0 定。若 W0 契约仍需 `pdf_urls` 字段，本轨 `ScholarHit.PDFURLs` 已产出可映射。
+- 与 W3 对齐：插件快照字段 `source_url/source_key/content_state/pdf_urls/doi/arxiv_id/authors/title/abstract/warning/truncated/provenance` 已与 Go `PaperSnapshot` 一致。**W3 人工审阅 UI 现应走 `ImportMaterial(adapter=paper_snapshot, export_text=<粘贴的快照 JSON>)` 离线入库正文**，不要再走 `paper_url`（会再联网、被 fakeIP 挡、且丢已提取正文）；`source_locator` 传精确 `source_url`，`source_key` 留空由服务端从 DOI/arxiv/URL 重推导。`paper_url`/`paper_pdf` 仅在 W3 需要服务端联网提取时保留。
 
 ## 给 W0 的 ports/data 建议（延续前轮，增补）
 
 - `PaperMetadata` 建议补 `pdf_urls []string`（否则 PDF 候选无法从搜索命中传递）；`Site` 即本轨 provider（crossref/europepmc/arxiv），`PublishedAt` 建议 ISO 字符串或 null（本轨 `Year int`）。
 - 检索 `POST /api/v1/paper/search`（W0 已定 `PaperSearchCommand{Query,Limit,Site}`），命中 `content_state=abstract_only`。
-- 导入沿用 `POST /materials/imports`：`kind=paper`、`adapter=paper_url`（HTML 正文）或 `paper_pdf`（公共 PDF）、`source_locator` 为正文/PDF URL、`source_key` 去重新 revision。`paper_pdf` 依赖 summarize0.25.1 + uvx(markitdown)，需在 `cmd/server` 配 `SummarizeOptions.UVXPath`（本轨已加字段，W0 接线）。
+- 导入沿用 `POST /materials/imports`：`kind=paper`、`adapter=paper_url`（HTML 正文，联网）或 `paper_pdf`（公共 PDF，联网）或 `paper_snapshot`（插件快照，零联网）；`source_locator` 为正文/PDF/快照 `source_url`，`source_key` 去重新 revision。`paper_pdf` 依赖 summarize0.25.1 + uvx(markitdown)，需在 `cmd/server` 配 `SummarizeOptions.UVXPath`（本轨已加字段，W0 接线）；`paper_snapshot` 不依赖任何联网/uvx/LLM，仅解析粘贴 JSON。
+- 其余来源 PDF/landing 若无法与 DOI/arxiv 身份 correlate，`paperSnapshotSourceKey` 回退 canonical URL，**不伪造 source_key、不异文合并**；显式由 provenance 与附件保留原快照。
 
 ## 验证与命令
 
-- `go test ./internal/adapters/importers ./internal/attention/...` PASS；`node --test paper-dom.test.mjs` 7 PASS。
+- `go test ./internal/adapters/importers ./internal/attention/...` PASS（含 `TestPaperSnapshot*`、`TestIsPublicIP` IPv6 段、`paper_pdf` 源键/附件/魔数、检索解析、paperSource 三态）；`node --test paper-dom.test.mjs` 7 PASS。
 - `ASTROCYTE_PAPER_PDF_LIVE=1 go test -run TestPaperPDFExtractLive` PASS（36.95s）。
 - 隔离 Chromium 插件加载 + 快照脚本 PASS（见上表，脚本在本机 TEMP 诊断目录，不入库）。
 - `go build ./...`、`gofmt -l`、`go vet` 均 PASS。

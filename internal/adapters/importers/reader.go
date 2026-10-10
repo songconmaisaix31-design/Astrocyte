@@ -160,8 +160,25 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 			return source, sourceError(err)
 		}
 		source = paperPDFSource(cmd.SourceLocator, cmd.Title, result.Text, pdf, result.Original)
+	case "paper_snapshot":
+		// A human-reviewed browser-plugin snapshot pasted as JSON. No network
+		// access, no model call, no paywall bypass; the snapshot is the source.
+		if cmd.Kind != "paper" || cmd.LocalFileRef != "" {
+			return source, invalid("paper_snapshot requires a paper kind without a local file")
+		}
+		if strings.TrimSpace(cmd.ExportText) == "" {
+			return source, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "a reviewed paper snapshot JSON is required", RequiredAction: "provide_reviewed_paper_snapshot"}
+		}
+		if len(cmd.ExportText) > 16<<20 {
+			return source, invalid("paper snapshot exceeds size limit")
+		}
+		var err error
+		source, err = paperSnapshotSource([]byte(cmd.ExportText), cmd.SourceLocator)
+		if err != nil {
+			return source, err
+		}
 	default:
-		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_paper_url_or_existing_summarize_export"}
+		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_paper_url_paper_pdf_paper_snapshot_or_existing_summarize_export"}
 	}
 	if cmd.SourceKey != "" && cmd.SourceKey != source.SourceKey {
 		return app.ImportedSource{}, invalid("source_key differs from canonical source")

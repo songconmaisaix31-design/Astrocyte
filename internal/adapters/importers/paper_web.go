@@ -160,6 +160,15 @@ func isPublicIP(ip net.IP) bool {
 	if ip[0]&0xfe == 0xfc {
 		return false
 	}
+	// Documentation prefix 2001:db8::/32 (RFC 3849) and discard-only 100::/64
+	// (RFC 6666) are not globally routable unicast, mirroring the reserved IPv4
+	// ranges handled above. Ordinary global unicast IPv6 is still accepted.
+	if ip[0] == 0x20 && ip[1] == 0x01 && ip[2] == 0x0d && ip[3] == 0xb8 {
+		return false
+	}
+	if ip[0] == 0x01 && ip[1] == 0x00 && ip[2] == 0x00 && ip[3] == 0x00 && ip[4] == 0x00 && ip[5] == 0x00 && ip[6] == 0x00 && ip[7] == 0x00 {
+		return false
+	}
 	return true
 }
 
