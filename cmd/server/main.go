@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
@@ -119,13 +120,23 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("open objects: %w", err)
 	}
 	listingReader := importers.NewPublicListingReader(listingPython)
-	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys, ListingReader: listingReader, CollectionReader: listingReader})
 	nativeRoot, err := filepath.Abs(filepath.Join(dataDir, "native-sessions"))
 	if err != nil {
 		return fmt.Errorf("resolve native state directory: %w", err)
 	}
 	registry := agents.NewRegistry(nativeRoot)
-	localProjects := workspaceapp.NewLocalProjectService(db, &projectReferenceBridge{attention: attention}, agents.ProjectFiles{}, registry)
+	projectReferences := &projectReferenceBridge{}
+	localProjects := workspaceapp.NewLocalProjectService(db, projectReferences, agents.ProjectFiles{}, registry)
+	textProcessor := &selectedTextBridge{projects: localProjects, processor: registry}
+	processingTimeout := min(time.Duration(jobSeconds)*time.Second, 30*time.Minute)
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{
+		WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second,
+		AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys,
+		ListingReader: listingReader, CollectionReader: listingReader,
+		ListingRecommender: distillers.NewListingRecommender(textProcessor, processingTimeout),
+		ProjectDistillers:  distillers.NewSelectedTextFactory(textProcessor, processingTimeout),
+	})
+	projectReferences.attention = attention
 	// This defer also covers a later startup error. It runs before the existing
 	// db.Close defer; absence on a later restart never counts as a confirmed exit.
 	nativeShutdownDone := false
@@ -166,7 +177,7 @@ func run(logger *slog.Logger) error {
 		Materials:     attention,
 		Opportunities: attention,
 		Projects:      workspaceapp.NewProjectService(),
-		LocalAgents:   workspaceapp.NewLocalAgentService(inventory),
+		LocalAgents:   workspaceapp.NewLocalAgentService(inventory, registry),
 		Proposals:     workspaceapp.NewProposalService(),
 		Sessions:      workspaceapp.NewSessionService(),
 		Missions:      swarmapp.NewMissionService(),

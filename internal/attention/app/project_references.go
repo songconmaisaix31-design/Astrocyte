@@ -129,8 +129,8 @@ func projectReferenceAllowed(tx AttentionTx, spaceID string, ref SourceRef, expa
 }
 
 func (s *Service) LinkedProjectReferences(ctx context.Context, p Principal, spaceID string, root SourceRef) ([]SourceRef, error) {
-	if p.Kind != "agent" || p.ID == "" {
-		return nil, serviceError(apierrors.ScopeDenied, "Scoped project reads require a trusted Agent principal", "use_project_scoped_agent")
+	if (p.Kind != "agent" && p.Kind != "human") || p.ID == "" {
+		return nil, serviceError(apierrors.ScopeDenied, "Scoped project reads require a trusted project caller", "use_authorized_project_identity")
 	}
 	var result []SourceRef
 	err := s.repo.WithTx(ctx, func(tx AttentionTx) error {
@@ -145,8 +145,8 @@ func (s *Service) LinkedProjectReferences(ctx context.Context, p Principal, spac
 }
 
 func (s *Service) ReadProjectReference(ctx context.Context, p Principal, spaceID string, ref SourceRef, expanded bool) (SourceSnapshot, error) {
-	if p.Kind != "agent" || p.ID == "" {
-		return SourceSnapshot{}, serviceError(apierrors.ScopeDenied, "Scoped project reads require a trusted Agent principal", "use_project_scoped_agent")
+	if (p.Kind != "agent" && p.Kind != "human") || p.ID == "" {
+		return SourceSnapshot{}, serviceError(apierrors.ScopeDenied, "Scoped project reads require a trusted project caller", "use_authorized_project_identity")
 	}
 	if s.objects == nil {
 		return SourceSnapshot{}, serviceError(apierrors.ProviderUnavailable, "Original object storage is unavailable", "configure_object_store")
@@ -178,7 +178,10 @@ func (s *Service) ReadProjectReference(ctx context.Context, p Principal, spaceID
 		if err != nil {
 			return err
 		}
-		return s.machineRead(tx, &row, p)
+		if p.Kind == "agent" {
+			return s.machineRead(tx, &row, p)
+		}
+		return nil
 	})
 	if err != nil {
 		return SourceSnapshot{}, mapError(err, "")

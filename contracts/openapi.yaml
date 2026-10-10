@@ -10259,8 +10259,9 @@ components:
         source_session_id:
           type: string
         updated_at:
-          type: string
+          type: [string, "null"]
           format: date-time
+          description: Native session observation time; null when historical time is unknown. Context packet creation time is not native history evidence.
         limitations:
           type: array
           items:
@@ -10274,6 +10275,8 @@ components:
           enum:
             - owned
             - external_observed
+            - unstarted
+          description: Unstarted only when launch was confirmed not to have created a process; never a substitute for unknown ownership.
       required:
         - id
         - project_id
@@ -10560,6 +10563,7 @@ components:
           type: string
         status:
           type: string
+          enum: [pending, accepted, failed, unknown]
         created_at:
           type: string
           format: date-time

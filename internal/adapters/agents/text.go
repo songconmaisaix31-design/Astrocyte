@@ -78,9 +78,13 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 		return result, err
 	}
 	defer func() { _, _ = n.Stop(context.Background(), s) }()
-	actualConfig, err := r.ConfigurationID(ctx, input.CLI)
+	p, err := n.get(s)
 	if err != nil {
 		return result, err
+	}
+	actualConfig := n.processConfiguration(p)
+	if actualConfig == "" {
+		return result, nativeError(apierrors.EvidenceMissing, "native protocol does not report the current model before a paid turn; selected-text processing is unavailable")
 	}
 	if actualConfig != expectedConfig {
 		return result, nativeError(apierrors.ContextStale, "native model configuration changed; refresh before processing")
@@ -114,11 +118,12 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 			result.Text = text.String()
 			result.NativeID = s.NativeID
 			result.Version = s.Version
-			p, _ := n.get(s)
-			if p != nil && p.model != "" {
+			p.mu.Lock()
+			if p.model != "" {
 				model := p.model
 				result.Model = &model
 			}
+			p.mu.Unlock()
 			// Native usage/cost not implemented in this projection: null remains
 			// explicit; neither zero usage nor an invented charge is returned.
 			return result, nil

@@ -56,7 +56,7 @@ func (s *Service) processSourceSync(ctx context.Context, claim Job) error {
 	if json.Unmarshal(claim.Payload, &payload) != nil {
 		return s.failJob(claim, domain.ErrInvalid, false)
 	}
-	if s.options.ListingReader == nil {
+	if s.options.ListingReader == nil && !payload.Done {
 		return s.failTrackingJob(claim, payload.SourceID, serviceError(apierrors.ProviderUnavailable, "No public listing reader is configured", "configure_public_listing_reader"), false)
 	}
 	workCtx, cleanup, err := s.trackingWork(ctx, &claim)
@@ -92,7 +92,11 @@ func (s *Service) processSourceSync(ctx context.Context, claim Job) error {
 		if workCtx.Err() != nil {
 			return s.failTrackingJob(claim, payload.SourceID, sourceError(workCtx.Err()), false)
 		}
-		if len(page.Items) > payload.Limit-payload.Count || (page.HasMore && (page.NextCursor == nil || *page.NextCursor == "" || *page.NextCursor == payload.Cursor || len(page.Items) == 0)) {
+		observed := page.Observed
+		if observed == 0 {
+			observed = len(page.Items)
+		}
+		if observed < len(page.Items) || observed > payload.Limit-payload.Count || (page.HasMore && (page.NextCursor == nil || *page.NextCursor == "" || *page.NextCursor == payload.Cursor || observed == 0)) {
 			return s.failTrackingJob(claim, payload.SourceID, serviceError(apierrors.ProviderUnavailable, "Public listing pagination did not advance within its cap", "inspect_public_listing"), false)
 		}
 		err = s.persistListingPage(workCtx, &claim, &payload, page)
@@ -159,7 +163,11 @@ func (s *Service) persistListingPage(ctx context.Context, claim *Job, payload *s
 			indices[item.ExternalID] = item
 		}
 		// Count provider rows, including overlap, to bound actual observations.
-		next.Count += len(page.Items)
+		observed := page.Observed
+		if observed == 0 {
+			observed = len(page.Items)
+		}
+		next.Count += observed
 		next.Done = !page.HasMore || next.Count >= next.Limit
 		next.HasMore, next.NextCursor = page.HasMore, page.NextCursor
 		if page.NextCursor != nil {
@@ -208,7 +216,7 @@ func (s *Service) finishTrackingSync(ctx context.Context, claim Job, payload syn
 		for _, item := range items {
 			if slices.Contains(payload.Seen, item.ExternalID) {
 				item.Stale = false
-			} else if payload.InitialCursor == "" {
+			} else if payload.InitialCursor == "" && !hasMore {
 				item.Stale = true
 			} else {
 				continue
@@ -270,7 +278,7 @@ func (s *Service) processSourceRecommendation(ctx context.Context, claim Job) er
 		payload.Input.Caller = claim.Caller
 		output, err := s.options.ListingRecommender.Recommend(workCtx, payload.Input)
 		if err != nil {
-			return s.failTrackingJob(claim, payload.SourceID, sourceError(err), externalOutcomeUnknown(err) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled))
+			return s.failTrackingJob(claim, payload.SourceID, sourceError(err), automaticOutcomeUnknown(err))
 		}
 		if len(output) != len(payload.Input.Items) {
 			return s.failTrackingJob(claim, payload.SourceID, serviceError(apierrors.EvidenceMissing, "CLI recommendation did not cover the selected metadata", "inspect_cli_recommendation_output"), false)
