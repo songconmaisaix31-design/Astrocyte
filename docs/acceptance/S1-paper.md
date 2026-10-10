@@ -34,18 +34,21 @@ PMC/PLOS共享 `doi:10.1371/journal.pdig.0000514` 身份，原URL与各自正文
 
 - `arxiv:2504.16054` 当前rev1，**95314bytes**，SHA256 `05acdc763e444fa7b9762df6dc2c879867d6a2e38d42884dcf3b80e07cf89d64`。
 - `https://www.bilibili.com/video/BV1PReT6EEqR/` 当前rev2，**32908bytes**，SHA256 `eb1106b97e3db4ddb6465ae066d1efe29affb809aa4841d52014ede3ab45a3fc`。
-- 实际 distiller 组装调用者 prompt **135051 UTF-8 bytes**（含原文/ref/schema/指令）；逐份反序列化核正文、digest、引用未变。最终 native envelope预检PASS；输出131072bytes不变。该测试 capture 后取消，**没有模型调用，不是联合模型结果验收**。恰好512KiB及+1byte/多字节、包装额外开销分别有单测。
+- 最终使用现有API支持的 `topic` 阶段和问题 `Use both complete selected source versions; retain uncertainty.`：实际 distiller 调用者 prompt **135045 UTF-8 bytes**（含原文/ref/schema/指令），最终 native wire **135423 UTF-8 bytes**（固定包装增加378bytes）；逐份反序列化核正文、digest、引用未变。最终 native envelope预检PASS；输出131072bytes不变。该测试 capture 后取消，**没有模型调用，不是联合模型结果验收**。恰好512KiB及+1byte/多字节、包装额外开销分别有单测。
+- 历史组装曾使用非API阶段名 `association`，得到caller135051/wire135429bytes；它只验证适配器组装，不代表有效API调用。W0指出现有API只有content/topic/project，改为topic后独立retetstPASS，原观察保留、不混称实际API结果。
+- 随后精确普通合入 W2 `fc4e07469f44228a91ea258efbb3fd9f13598350` 的 `SelectedTextPromptBytes`；实际distiller在调用处理器前记录job_id/operation_id/prompt与最终wire字节数/output上限，不记原文。W0后续实际API可能改变question/config/ref/jobID，必须使用那次实际日志，不把测试135423bytes当作其调用计数。
 - 原模型 UNKNOWN不重发；主控明确仅授权 W0 在集成后做 **1次新增联合模型作业**，W1不调用模型；W0必须复核当前项目/CLI/来源许可且记录实际API job、最终请求及结果。
 
 ## 验证与保留失败
 
 - `node --test internal/adapters/importers/paper-dom.test.mjs`：最终 **7 PASS**。最初 **3 PASS/1 FAIL**；根复核后的第一新回归 **5 PASS/1 FAIL**；随后修复的green单独记录，见 `tasks/S1-paper-W1.md`，不改写首失败。
 - `go test ./internal/adapters/importers -run TestPaperDOM -v`（设置 `ASTROCYTE_PAPER_CAPTURE_ROOT`）：安装pin/隔离、3真实元数据样本、2真实全文/跨host同DOI **PASS**。
-- `go test ./internal/adapters/distillers -run 'TestCombinedPrompt|TestActualKnownPaperVideo' -v`（设置 `ASTROCYTE_CAPACITY_SOURCE_ROOT`）：合成212533bytes和真实135051bytes完整组装 **PASS**；未调用模型。
+- `go test ./internal/adapters/distillers -run 'TestCombinedPrompt|TestActualKnownPaperVideo' -v`（设置 `ASTROCYTE_CAPACITY_SOURCE_ROOT`）：最终topic合成caller212527/wire212905bytes和真实caller135045/wire135423bytes完整组装 **PASS**；未调用模型。最终log `%LOCALAPPDATA%/Temp/astrocyte-paper-W1-topic-capacity-20261010.log`。
 - `go test ./internal/adapters/importers ./internal/adapters/distillers`：PASS；实际源/capture检查默认opt-in，不能把未设环境时的SKIP记为实测。
 - `node extensions/paper/build.mjs`：PASS，仅解析资产，不是插件加载。
 - `pnpm check`：首轮PASS；最终设置上述两个opt-in根的检查也 **PASS/exit0**，Go test/vet/mod、19包边界、237契约例/生成一致、14API合成用例、TS/lint、58前端单测及diff。API合成不混入论文browser验收。日志 `%LOCALAPPDATA%/Temp/astrocyte-paper-W1-check-{final-}20261010.log`；首场与最终分别保存。
 - `pnpm build`：PASS，Go后端及React/TS/Vite生产构建；日志 `%LOCALAPPDATA%/Temp/astrocyte-paper-W1-build-20261010.log`。
+- W2字节计数helper合入后的 `go test ./internal/adapters/distillers -v`（原actual source opt-in）与 `go build -mod=readonly -trimpath -o dist/astrocyte.exe ./cmd/server`：PASS；历史association135429bytes结果log `%LOCALAPPDATA%/Temp/astrocyte-paper-W1-wire-capacity-20261010.log`。helper后 `pnpm check` **PASS/exit0**，log `%LOCALAPPDATA%/Temp/astrocyte-paper-W1-check-wire-20261010.log`；最后只改测试为合法topic阶段并执行上述针对性复验，没有再改runtime。
 
 ## 真实剩余与未执行
 

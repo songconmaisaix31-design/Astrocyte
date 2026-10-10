@@ -18,8 +18,8 @@ Own paths follow `S1-paper-project-board-plan.md`. Pending search/currentpage an
 
 ## 交付与验证
 
-Reviewed SOURCE `a21107c9b59c1977ef886f2bee43d3f81d2ec848` 已push；实际基线 `087127d30fc505f8fe25c52142a174f5842e2bef` 通过普通merge纳入，原 W1 历史保留；W2 native capacity `c6233288ce324a7eb620ee60421465fb4e4d687d` 普通合并为 `1e4fc6c929268c3020a99118f3ff90c601851337`。REPORT 是随后仅更新本报告/acceptance/说明的commit，其精确SHA由最终Orca回执交付。
+最终 SOURCE `172d278f72cc13e8f39ee2ea2f14278e42277616` 已push，runtime SOURCE `124a77cf9435e43416046b6139931f76d89c75b8`后仅改测试为现有API支持的topic阶段；前次源码 `a21107c9b59c1977ef886f2bee43d3f81d2ec848`和REPORT `95c15e62636fc6a8a0aca16e162c880e01278d65`保留。实际基线 `087127d30fc505f8fe25c52142a174f5842e2bef` 通过普通merge纳入，原 W1 历史保留；W2 native capacity `c6233288ce324a7eb620ee60421465fb4e4d687d` 普通合并为 `1e4fc6c929268c3020a99118f3ff90c601851337`，计数helper `fc4e07469f44228a91ea258efbb3fd9f13598350`也普通合入。最终REPORT 是随后仅更新本报告/acceptance的commit，其精确SHA由最终Orca回执交付。
 
-最终 `pnpm check` PASS/exit0（包括已明确设置的实际source/capture opt-in）；`pnpm build` PASS/exit0；`node extensions/paper/build.mjs` PASS；DOM回归7 PASS；Go installed+真实5站点检查PASS；原实际论文95314bytes与视频32908bytes完整组装caller prompt135051bytes，native包装预检PASS、output131072bytes，capture后取消，无模型调用。真实公开快照不等于浏览器选取入库/SQLite cold dedupe；合成API14项/前端58项不混算实际论文验收。
+`pnpm check`前次及计数helper后均PASS/exit0（包括已明确设置的实际source/capture opt-in）；`pnpm build` PASS/exit0；`node extensions/paper/build.mjs` PASS；DOM回归7 PASS；Go installed+真实5站点检查PASS；原实际论文95314bytes与视频32908bytes在合法topic阶段完整组装caller prompt135045bytes，最终native wire135423bytes、output131072bytes，capture后取消，无模型调用。计数helper后的distiller tests和Go server buildPASS，最后仅改测试stage并通过针对性复验。原association组装135051/135429bytes只属于历史适配器组装观察，不是有效API验收。真实公开快照不等于浏览器选取入库/SQLite cold dedupe；合成API14项/前端58项不混算实际论文验收。
 
 完整事实、原源digest、命令和限制见 `docs/acceptance/S1-paper.md`。主控明确W0执行唯一新增联合API模型作业，W1不调用模型、不修改原来源库、不重提媒体/旧UNKNOWN。Search/可安装插件/权限动作、实际extension loading与应用/SQLite冷版本去重均待用户决定与后续验收；本派发按原任务范围不能称完成，交付独立切片供W0集成。
