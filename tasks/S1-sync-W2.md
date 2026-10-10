@@ -2,7 +2,7 @@
 
 ## 本轮登记项目续作（2026-10-10）
 
-当前 W2 runtime SOURCE `bf4ef25a6d5e915c45ed92c9574d0831799ff8e7`，沿 `s1-local-agents-1010` 原轨，已 push；新增实现 `2364ce4`、缺失主检出保留关联工作树 `d8f7edb`、取消等待修复 `6906f0c`，`bf4ef25`只补沿公开CLI规则选IDE二进制（env指定/开发orca-dev/Linux默认orca-ide，拒绝shell wrapper，不启动Linux同名屏幕阅读器）。先普通合入主控 `41f3fab`，再消费 W0 精确公共契约/单迁移 `4a6a5a0d4dc3624942ddd9657d0b72278250a457`；没有 reset/clean/rebase/force 或跨写域业务编辑。客户端 Orca Codex / `gpt-6.1-sol`，本轮无应用模型、native turn、媒体或浏览器调用。
+当前 W2 runtime SOURCE `8fce45d0df71568b7eba9ada37d3dc6b775a975a`，沿 `s1-local-agents-1010` 原轨，已 push；新增实现 `2364ce4`、缺失主检出保留关联工作树 `d8f7edb`、取消等待修复 `6906f0c`，`bf4ef25`补沿公开CLI规则选IDE二进制（env指定/开发orca-dev/Linux默认orca-ide，拒绝shell wrapper，不启动Linux同名屏幕阅读器），`8fce45d`固定Git工作树根以拒绝repo config的目录重定向。先普通合入主控 `41f3fab`，再消费 W0 精确公共契约/单迁移 `4a6a5a0d4dc3624942ddd9657d0b72278250a457`；没有 reset/clean/rebase/force 或跨写域业务编辑。客户端 Orca Codex / `gpt-6.1-sol`，本轮无应用模型、native turn、媒体或浏览器调用。
 
 - 消费真实 Orca 登记根/关联本机工作树，并在已登记根内有界发现子项目；固定程序观察分支、HEAD、提交时间、tracked-only dirty 和 Orca 活动/创建客户端。GET 只缓存，启动一次/人工刷新由 W0 入口组装；原生会话历史不是活动元数据，创建 CLI 不代表当前进程。
 - 独立持久化观察缓存，不自动创建项目空间、B/C、Agent grant、模型或执行许可；控制仍需既有人工登记及逐请求授权。整个来源失联时旧数据/旧 `observed_at` 保留并 `stale`；首次失联为 `unknown`，不是假空成功。缺根、Git未知、目录/输出上限保留 `partial` 与具体有限原因。
@@ -19,6 +19,7 @@
 | `go test ./internal/adapters/sqlite -run '^TestRegisteredRefreshWaitCancellationDoesNotBlockShutdown$' -count=1 -v` | PASS0.19秒；占位时取消waiter及active采集，source调用一次 |
 | `go test ./...`、`go build ./...`、`go vet ./internal/adapters/agents ./internal/workspace/... ./internal/adapters/sqlite`（`6906f0c`） | 最终取消返修后 PASS；不是浏览器或应用模型检查 |
 | `go test ./internal/adapters/agents -run '^TestRegistered' -count=1`、`go build ./...`、`GOOS=linux go build ./internal/adapters/agents ./internal/workspace/...`（`bf4ef25`） | PASS；Linux仅交叉编译，不称本机Orca来源实测 |
+| `go test ./internal/adapters/agents -run '^TestRegisteredGitReadIgnoresInheritedRepositoryAndFSMonitor$' -count=1 -v`（`8fce45d`） | PASS4.68秒：故意core.worktree指向另一临时目录，仍只观察登记root，fsmonitor不执行且继承GIT_DIR不起作用；Orca短交接曾误填3.71秒量级，此处保留准确实测值 |
 | `ASTROCYTE_TEST_REGISTERED_PROJECTS=1 go test ./internal/adapters/agents -run '^TestRegisteredProjectsLiveReadOnly$' -count=1 -v` | 两独立真实只读场63.30秒/63.59秒，均 `partial`：21登记根中7可读+7子项目+40本机工作树=54，45Git known、47Orca activity known；14根不可用、2Git unknown明确保留 |
 
 首次 RED 单独保留：owned输出上限测试发现嵌入 `bytes.Buffer` 的 `ReaderFrom` 绕过 `Write` 上限，130000bytes返回成功；改为命名buffer后同一超限/取消测试另行 PASS，不把首次失败改写。其他根不可用/Git未知是实际来源限制，不是通过测试后被消除。
