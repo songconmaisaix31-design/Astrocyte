@@ -43,3 +43,9 @@ export const localProjectsApi = {
   stopSession: async (id: string, session_id: string, body: components['schemas']['JobCommandV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/sessions/{session_id}/stop', { body, params: { path: { id, session_id }, header: await headers(key) }, ...options })),
   observeSession: (id: string, session_id: string, options?: Options) => unwrap(api.GET('/local-projects/{id}/sessions/{session_id}/observe', { params: { path: { id, session_id } }, ...options })),
 };
+
+export const githubRepositoriesApi = {
+  list: (options?: Options) => unwrap(api.GET('/github-repositories', options)),
+  sync: async (body: components['schemas']['SyncGitHubRepositoriesRequestV1'], key: string, options?: Options) => unwrap(api.POST('/github-repositories/sync', { body, params: { header: await headers(key) }, ...options })),
+  place: async (id: string, body: components['schemas']['PlaceGitHubRepositoryRequestV1'], key: string, options?: Options) => unwrap(api.POST('/github-repositories/{id}/placement', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+};

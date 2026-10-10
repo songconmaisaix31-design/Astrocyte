@@ -40,6 +40,7 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
+	GitHubRepositories workspaceapp.GitHubRepositories
 	Tracking           attentionapp.TrackingService
 	LocalProjects      workspaceapp.LocalProjects
 	RegisteredProjects workspaceapp.RegisteredProjects
@@ -89,6 +90,7 @@ func NewServer(cfg Config) *Server {
 	h.registerTracking(mux)
 	h.registerLocalProjects(mux)
 	h.registerRegisteredProjects(mux)
+	h.registerRepositories(mux)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {
@@ -124,7 +126,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil {
+	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)

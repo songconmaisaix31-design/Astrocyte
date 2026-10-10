@@ -116,3 +116,30 @@ type LocalProjects interface {
 type ScopedAgentTokens interface {
 	AuthenticateAgentToken(context.Context, string) (domain.Caller, error)
 }
+
+// Public repository observations do not confer code access or Agent authority.
+// GET lists the durable cache; only a human command syncs metadata or places a
+// repository in an existing top-level space and triggers its managed clone.
+type GitHubRepositoryStore interface {
+	ListGitHubRepositories(context.Context) ([]domain.GitHubRepository, error)
+	LoadGitHubRepository(context.Context, string) (domain.GitHubRepository, error)
+	SaveGitHubRepository(context.Context, domain.GitHubRepository, int) error
+}
+
+type PublicGitHubSource interface {
+	FetchPublicRepositories(context.Context, string) ([]domain.GitHubMetadata, error)
+}
+
+type RepositoryCloner interface {
+	CloneRepository(context.Context, string, string) (domain.RepositoryClone, error)
+}
+
+type RepositorySpaces interface {
+	ValidateRepositorySpace(context.Context, domain.Caller, string) error
+}
+
+type GitHubRepositories interface {
+	ListGitHubRepositories(context.Context, domain.Caller) ([]domain.GitHubRepository, error)
+	SyncGitHubRepositories(context.Context, domain.Caller, domain.RepositorySyncCommand) ([]domain.GitHubRepository, error)
+	PlaceGitHubRepository(context.Context, domain.Caller, string, domain.RepositoryPlacementCommand) (domain.GitHubRepository, error)
+}
