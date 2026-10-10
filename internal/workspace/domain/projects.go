@@ -58,8 +58,9 @@ type ContextMaterial struct {
 }
 
 type ContextFile struct {
-	Path string `json:"path"`
-	Text string `json:"text"`
+	Version string `json:"version"`
+	Path    string `json:"path"`
+	Text    string `json:"text"`
 }
 
 type ContextPacket struct {
