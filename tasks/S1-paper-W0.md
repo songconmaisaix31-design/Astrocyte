@@ -36,3 +36,5 @@ SQLite/foundation/cmd定向Go测试亦PASS。未启用opt-in时项目看板测�
 主控消息 `msg_aa4e0d8a97be` 已确认现有同源人类会话/CSRF作为基本审阅handoff的技术身份，不需要新增配对、宽CORS或daemon；这只批准运输准备。插件标签访问、Agent批量/自动读取产品选择仍pending，不据此启用读取或入库。
 
 首失败、UNKNOWN与未执行项将保留在本报告，不以局部修后通过替代初始记录或整体完成。
+
+新增首RED：W3在本轮真实看板浏览器规格的TypeScript编译发现 `startS1Server` 的 `.d.mts` 未同步新apiPort/webPort选项（主控转交消息 `msg_a18fd833fcd7`）。这是W0遗漏，保留首失败；已补声明，后续W3类型/浏览器验证是独立复验，不改写首RED。没有用cast或降低类型检查绕过。
