@@ -2345,10 +2345,10 @@ export interface components {
             source_spans?: string[];
             title?: string;
             /**
-             * @description summarize_url extracts a selected public video URL without export_text or local_file_ref. summarize, summarize_json and summarize_markdown import existing exports. paper_url extracts a selected public paper HTML body; paper_pdf extracts a selected public paper PDF. Extraction does not imply model distillation or Agent authorization.
+             * @description summarize_url extracts a selected public video URL without export_text or local_file_ref. summarize, summarize_json and summarize_markdown import existing exports. paper_url extracts a selected public paper HTML body; paper_pdf extracts a selected public paper PDF; paper_snapshot ingests a human-reviewed browser-plugin snapshot JSON supplied as export_text (no network or model call). Extraction does not imply model distillation or Agent authorization.
              * @enum {string}
              */
-            adapter?: "arxiv" | "paper_url" | "paper_pdf" | "summarize_url" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
+            adapter?: "arxiv" | "paper_url" | "paper_pdf" | "paper_snapshot" | "summarize_url" | "summarize" | "summarize_json" | "summarize_markdown" | "manual";
         };
         /**
          * @example {
