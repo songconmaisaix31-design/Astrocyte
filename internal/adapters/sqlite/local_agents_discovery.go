@@ -26,6 +26,15 @@ func normalizeProjectDiscovery(s domain.ProjectDiscoverySnapshot) domain.Project
 		if s.Projects[i].Limitations == nil {
 			s.Projects[i].Limitations = []string{}
 		}
+		if s.Projects[i].Contributors == nil {
+			s.Projects[i].Contributors = []domain.ProjectContributor{}
+		}
+	}
+	if s.Board == nil {
+		s.Board = []domain.ProjectSummary{}
+	}
+	if s.Sources == nil {
+		s.Sources = []domain.ProjectSourceObservation{}
 	}
 	return s
 }

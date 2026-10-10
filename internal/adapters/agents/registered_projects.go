@@ -16,11 +16,12 @@ import (
 )
 
 type RegisteredProjects struct {
-	read func(context.Context, string, string) ([]byte, error)
+	read            func(context.Context, string, string) ([]byte, error)
+	metadataSources func() []projectMetadataSource
 }
 
 func NewRegisteredProjects() *RegisteredProjects {
-	return &RegisteredProjects{read: registeredReadCommand}
+	return &RegisteredProjects{read: registeredReadCommand, metadataSources: knownProjectMetadataSources}
 }
 
 type orcaRegisteredRepo struct {
@@ -191,10 +192,23 @@ func (s *RegisteredProjects) DiscoverRegistered(ctx context.Context) (domain.Pro
 			continue
 		}
 		result.Projects[i].Git = s.observeGit(ctx, result.Projects[i].Root)
+		// Public Git identity joins independent registrations of the same local
+		// worktree family without conflating clones or nested projects.
+		if result.Projects[i].Git.Status == "known" {
+			if raw, err := s.read(ctx, "git_common_dir", result.Projects[i].Root); err == nil && len(raw) < 4096 {
+				if common, err := CanonicalRoot(strings.TrimSpace(string(raw))); err == nil {
+					result.Projects[i].ProjectKey = "git:" + rootKey(common)
+				}
+			}
+		}
 		if result.Projects[i].Git.Status == "unknown" {
 			fail(result.Projects[i].Root, "git_observation_incomplete")
 		}
 	}
+	if s.metadataSources != nil {
+		s.observeProjectMetadata(ctx, &result)
+	}
+	result.Board = domain.AggregateProjects(result.Projects)
 	sort.Slice(result.Projects, func(i, j int) bool { return rootKey(result.Projects[i].Root) < rootKey(result.Projects[j].Root) })
 	return result, nil
 }
