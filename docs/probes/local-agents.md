@@ -1,6 +1,6 @@
 # 本地 Agent 与工具清点
 
-## 2026-10-10 W2 原生续作（当前，源码d5ee4a1）
+## 2026-10-10 W2 原生续作（当前，源码a797324）
 
 用户现已要求全套本地操作，人类选择固定项目/CLI并分别授权 A/B/C；旧“仅库存、待答”章节保留为历史证据。实现与验证见 [W2 当前报告](../../tasks/S1-sync-W2.md)。全部原生 CLI 仅协作限制、关闭工具，不保证进程不能读其自有全局配置；宿主不读取认证文件或自动接管既有会话。
 
@@ -22,6 +22,8 @@
 Context packet是controller选择范围的固定版本封装，不是完整原生history；external_observed packet的created_at只是发现范围封装时间，native未知updated_at为null。正向stop需拥有的进程树退出，单个abort响应/kill请求不能冒充StopConfirmed；UNKNOWN投递不重放。Codex完整context需initialize协商experimentalApi，方法不支持时返回unsupported。确认未启动的resume失败保留原owned/nativeID及停止事实，仅新操作回执failed；不是旧会话unstarted。此前真实turn/resume结果不覆盖后加的完整context断言，新增原生断言及跨session context_handoff仍NOT_RUN。当前所有真实slot已归还，个人项目/历史根待人类提供。
 
 后续W3独立 SOURCE `0d2319e`复用原会话的真实API验收：active完整context200同时含原user_text/assistant marker、same-ID resume/第三send/positive stop通过，保留首次错误URL matcher RED；不外推Pi或跨session handoff。首paper selected-text job约18秒UNKNOWN、Result=null，实际原因未保留，禁止重放。协调者随后指出流式delta计数缺陷，离线1000个小delta首次RED在765字节触及256事件；现只合并同一消息连续增量，不跨控制/消息边界，原128KiB与256事件上限仍强制。返修及针对回归通过、未新发模型，精确提交见W2 Handoff；不能把这个离线缺陷改写为首paper已确定原因。
+
+资料流程后续冻结应用SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0`/W3 REPORT `56e9c856`：四独立新整理目标真实Codex处理成功、资料AT四项通过，原UNKNOWN保持；本地publication故障恢复沿已保存Result，不重发模型。W2只读指定资料库核对四新job succeeded/unknown=false，完整范围见W2报告。自动派发仍关闭；个人项目/历史根未给，Pi认证失败、Claude自动模型选择/许可待答、OpenCode范围阻塞保持，不能称完整全面接入。默认E2E及最终集成验收仍待主控结算。
 
 ### OpenCode1.18.35 精确范围阻塞（零native/model启动）
 
