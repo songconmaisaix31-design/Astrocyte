@@ -71,7 +71,7 @@ test('page shortcuts and sidebar keep explicit fixture boundary', async ({ page 
   await page.goto('/attention?fixture=1');
   await page.keyboard.press('2');
   await expect(page).toHaveURL(/workspace\?fixture=1/);
-  await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '蜂群执行' }).click();
+  await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '蜂群空间' }).click();
   await expect(page).toHaveURL(/swarm\?fixture=1/);
   await page.getByRole('button', { name: '退出示例模式' }).click();
   await expect(page).not.toHaveURL(/fixture=1/);

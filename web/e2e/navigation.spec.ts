@@ -33,15 +33,19 @@ test.describe('Three-page navigation', () => {
     await expect(page.locator('h1')).toContainText('共同工作区');
     await expect(page.getByRole('heading', { name: '本地 Agent 与项目', exact: true })).toBeVisible();
     await expect(page.getByRole('tab', { name: '提案与批准' })).toBeVisible();
+    await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
     await expect(page.getByRole('heading', { name: /^会话/ })).toBeVisible();
   });
 
-  test('navigates to 蜂群执行 page', async ({ page }) => {
+  test('navigates to 蜂群空间 page', async ({ page }) => {
     await page.goto('/swarm');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('蜂群执行');
+    await expect(page.locator('h1')).toContainText('蜂群空间');
+    await expect(page.getByRole('heading', { name: '顶层开发空间', exact: true })).toBeVisible();
+    await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
     await expect(page.getByRole('heading', { name: /任务/ })).toBeVisible();
     await expect(page.getByRole('heading', { name: /工作项/ })).toBeVisible();
+    await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
     await expect(page.getByRole('heading', { name: /产物/ })).toBeVisible();
   });
 
@@ -51,9 +55,9 @@ test.describe('Three-page navigation', () => {
     await page.locator('button:has-text("共同工作区")').click();
     await expect(page).toHaveURL(/\/workspace/);
     await expect(page.locator('h1')).toContainText('共同工作区');
-    await page.locator('button:has-text("蜂群执行")').click();
+    await page.locator('button:has-text("蜂群空间")').click();
     await expect(page).toHaveURL(/\/swarm/);
-    await expect(page.locator('h1')).toContainText('蜂群执行');
+    await expect(page.locator('h1')).toContainText('蜂群空间');
     await page.locator('button:has-text("资料沉淀")').click();
     await expect(page).toHaveURL(/\/attention/);
   });
@@ -74,6 +78,7 @@ test.describe('Empty API states', () => {
     await page.waitForLoadState('networkidle');
     // Wait for queries to settle, then assert actual 暂无 headings
     await expect(page.locator('text=暂无素材').first()).toBeVisible({ timeout: 10000 });
+    await page.getByRole('tab', { name: '研究机会', exact: true }).click();
     await expect(page.locator('text=暂无机会').first()).toBeVisible({ timeout: 10000 });
   });
 
@@ -81,14 +86,16 @@ test.describe('Empty API states', () => {
     await page.goto('/workspace');
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible({ timeout: 10000 });
+    await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
     await expect(page.locator('text=暂无会话').first()).toBeVisible({ timeout: 10000 });
     await page.getByRole('tab', { name: '提案与批准' }).click();
     await expect(page.locator('text=暂无提案').first()).toBeVisible({ timeout: 10000 });
   });
 
-  test('蜂群执行 shows settled empty headings', async ({ page }) => {
+  test('蜂群空间 shows settled empty headings', async ({ page }) => {
     await page.goto('/swarm');
     await page.waitForLoadState('networkidle');
+    await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
     await expect(page.locator('text=暂无任务').first()).toBeVisible({ timeout: 10000 });
   });
 });
@@ -241,7 +248,7 @@ test.describe('Screenshots', () => {
     await page.screenshot({ animations: 'disabled', path: `test-results/workspace-${vp?.width}x${vp?.height}.png`, fullPage: true });
   });
 
-  test('蜂群执行 screenshot', async ({ page }) => {
+  test('蜂群空间 screenshot', async ({ page }) => {
     await page.goto('/swarm?fixture=1');
     await page.waitForLoadState('networkidle');
     const vp = page.viewportSize();

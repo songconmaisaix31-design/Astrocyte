@@ -1,3 +1,4 @@
+import { DevelopmentSpacePanel } from './DevelopmentSpacePanel';
 import { useState, useCallback, useMemo } from 'react';
 import { useMissions } from '../../hooks/useReadApi';
 import { fixtureMissions, flattenWorkItems, flattenArtifactIds } from '../../fixtures';
@@ -60,9 +61,11 @@ export function SwarmPage({ fixture, query }: Props) {
       )}
 
       <div className={styles.grid}>
-        <SectionCard title="" tabs={['overview']}><IntroCard section="swarm" /></SectionCard>
-        <SectionCard title="协作视图" tabs={['overview']}><DesignGraph fixture={fixture} /></SectionCard>
+        <DevelopmentSpacePanel fixture={fixture} query={query} />
+        {fixture && <SectionCard title="" tabs={['overview']}><IntroCard section="swarm" /></SectionCard>}
+        <SectionCard title="协作视图" tabs={['timeline']}><DesignGraph fixture={fixture} /></SectionCard>
         <SectionCard title="任务时间线" tabs={['timeline']}><DesignTimeline fixture={fixture} /></SectionCard>
+        <details className="ac-secondary-records" open={fixture || missions.length > 0}><summary>已有任务记录 · {missions.length} 项</summary>
         {/* ── Missions ── */}
         <SectionCard tabs={['overview', 'timeline']} title="任务" count={missions.length}>
           {fixture ? (
@@ -105,8 +108,9 @@ export function SwarmPage({ fixture, query }: Props) {
           )}
         </SectionCard>
 
+        </details>
         {/* ── Artifacts (IDs from missions — propagate mission state) ── */}
-        <SectionCard tabs={['overview', 'artifacts']} title="产物引用" count={artifactIds.length}>
+        <SectionCard tabs={fixture || artifactIds.length ? ['overview', 'artifacts'] : ['artifacts']} title="产物引用" count={artifactIds.length}>
           {fixture ? (
             artifactIds.length === 0 ? (
               <EmptyState icon="📦" title="暂无产物引用" description="示例任务无产物" />

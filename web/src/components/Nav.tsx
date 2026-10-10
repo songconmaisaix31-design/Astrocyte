@@ -28,7 +28,7 @@ export function Nav({ currentPath, fixture, open, onNavigate }: { currentPath: s
     {!fixture && projects.error && <button type="button" className="ac-text-button" onClick={projects.retry}>重试项目列表</button>}
     {!fixture && projects.stale && <p className="ac-sidebar-empty" role="status">项目列表已过期</p>}
     <button type="button" className="ac-register-button" onClick={() => go('/workspace')}><Icon name="plus" size={15} />管理本地项目</button>
-    <div className="ac-sidebar-bottom"><div className="ac-small-quote"><Icon name="branch" size={22} /><p>把一次次探索，<br />连接成可以继承的经验。</p><button type="button" onClick={() => go('/swarm')}>进入开发空间<Icon name="arrow" size={14} /></button></div>
+    <div className="ac-sidebar-bottom">{fixture && <div className="ac-small-quote"><Icon name="branch" size={22} /><p>把一次次探索，<br />连接成可以继承的经验。</p><button type="button" onClick={() => go('/swarm')}>进入开发空间<Icon name="arrow" size={14} /></button></div>}
       <details className="ac-capabilities" aria-label="系统能力"><summary>系统能力</summary>{caps ? <div>{Object.entries({ 导入: caps.imports, 审核: caps.approvals, 执行: caps.execution, 恢复: caps.native_resume, 交接: caps.handoff }).map(([label, value]) => <span key={label}>{label} · {value ? '可用' : '未启用'}</span>)}</div> : <p>{foundation.loading ? '加载中…' : '无法获取'}</p>}{foundation.stale && <p>能力信息已过期</p>}{foundation.error && <button type="button" className="ac-text-button" onClick={foundation.retry}>重试能力</button>}</details>
     </div>
   </aside>;

@@ -24,7 +24,7 @@ export function PageFrame({ section, title, subtitle, fixture, onRefresh, rail, 
     navigate(`/${section}?${query}`);
   }
   return <ActiveTab value={active}>
-    <div className="ac-breadcrumb"><span>我的工作台</span><Icon name="chevron" size={12} /><span>{title}</span><span className="ac-mode-label">{fixture ? '示例数据' : '真实 API'}</span></div>
+    <div className="ac-breadcrumb"><span>我的工作台</span><Icon name="chevron" size={12} /><span>{title}</span><span className="ac-mode-label">{fixture ? '示例数据' : '本机数据'}</span></div>
     <div className="ac-page-header"><div><h1>{title}</h1><p>{subtitle}</p></div>{!fixture && <button className="ac-button secondary compact" type="button" onClick={onRefresh}>↻ 刷新</button>}</div>
     <div className="ac-content-grid"><div className="ac-center">
       <div className="ac-tabs" role="tablist" aria-label={`${title}子页面`}>
@@ -38,7 +38,7 @@ export function PageFrame({ section, title, subtitle, fixture, onRefresh, rail, 
       </div>
       <div id={`${section}-panel`} role="tabpanel" aria-labelledby={`${section}-${active}-tab`} tabIndex={0}>{children}</div>
       <footer className="ac-main-footer"><span>让线索连接，让经验生长。</span><span>ASTROCYTE · {fixture ? '示例数据预览' : '本地工作台'}</span></footer>
-    </div><aside className="ac-right-rail" aria-label="研究提示">{rail}<section className="ac-rail-card ac-knowledge-card"><div className="ac-knowledge-top"><Icon name="layers" size={26} /><span>KNOWLEDGE THAT LASTS</span></div><h3>别让经验，<br />停在一个会话里。</h3><p>带着来源与适用条件，<br />把这次的发现交给下一次研究。</p><button className="ac-rail-more" type="button" onClick={() => { const query = new URLSearchParams(route.query); query.set('tab', 'artifacts'); navigate(`/swarm?${query}`); }}>查看成果与继承<Icon name="arrow" size={14} /></button></section><p className="ac-rail-foot">本地优先 · 上下文可见 · 由你批准<br /><span>ASTROCYTE RESEARCH WORKBENCH</span></p></aside></div>
+    </div><aside className="ac-right-rail" aria-label="研究提示">{rail}{fixture && <section className="ac-rail-card ac-knowledge-card"><div className="ac-knowledge-top"><Icon name="layers" size={26} /><span>KNOWLEDGE THAT LASTS</span></div><h3>别让经验，<br />停在一个会话里。</h3><p>带着来源与适用条件，<br />把这次的发现交给下一次研究。</p><button className="ac-rail-more" type="button" onClick={() => { const query = new URLSearchParams(route.query); query.set('tab', 'artifacts'); navigate(`/swarm?${query}`); }}>查看成果与继承<Icon name="arrow" size={14} /></button></section>}<p className="ac-rail-foot">本地优先 · 上下文可见 · 由你批准<br /><span>ASTROCYTE RESEARCH WORKBENCH</span></p></aside></div>
   </ActiveTab>;
 }
 

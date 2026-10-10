@@ -16,6 +16,17 @@ const assets: Record<string, string> = {
   "goose": "goose.png",
   "codex": "codex.png",
   "kimi": "kimi.ico",
+  "xiaohongshu": "xiaohongshu.ico",
+  "youtube": "youtube.png",
+  "x": "x.png",
+  "wechat": "wechat.png",
+  "kuaishou": "kuaishou.ico",
+  "weibo": "weibo.ico",
+  "zhihu": "zhihu.ico",
+  "instagram": "instagram.webp",
+  "facebook": "facebook.ico",
+  "reddit": "reddit.png",
+  "tiktok": "tiktok.png",
   "cursor-agent": "cursor.svg"
 };
 
