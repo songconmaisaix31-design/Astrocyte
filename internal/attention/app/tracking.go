@@ -454,8 +454,17 @@ func (s *Service) SyncSourcesOnce(ctx context.Context) error {
 		recoverable := false
 		for _, job := range jobs {
 			if trackingJobSource(job) == source.ID && job.Kind == "source_sync" && job.Status == "failed" && !job.DeliveryUnknown && job.Error != nil && job.Error.Retryable && job.Attempts < job.MaxAttempts && s.options.Clock().Before(job.DeadlineAt) {
-				recoverable = true
-				break
+				superseded := false
+				for _, other := range jobs {
+					if other.JobID != job.JobID && trackingJobSource(other) == source.ID && other.CreatedAt.After(job.CreatedAt) {
+						superseded = true
+						break
+					}
+				}
+				if !superseded {
+					recoverable = true
+					break
+				}
 			}
 		}
 		if recoverable {

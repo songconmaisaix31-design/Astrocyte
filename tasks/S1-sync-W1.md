@@ -99,3 +99,11 @@ W0 发现 human A scope 空洞后本轨修正：trusted human/agent 都保留自
 app project factory测试覆盖未纳入拒绝、纳入后选定body处理、撤销模型许可无fallback；adapter推荐测试保留实际caller/配置/版本与未知模型、拒绝额外评分/ID/尾随。上述为 contract_local，没有模型/媒体/浏览器调用。`go test ./...`、`go vet ./...`、`go build ./...`、`git diff --check` 全部PASS。
 
 本轮账户 live 仍未通过：给定UID公开uploads412/-352、公开收藏夹目录0，Douyin self不属公开来源且无公开profile transport。新论文DNS/rootlive时隙待主控；不改宿主代理，不用样本代替真实内容。全S1 AT01–04和当前模型/浏览器正向不能由上述本地测试宣称完成，Worker继续跟随root验收与原轨返修。
+
+## 继续阶段 5（2026-10-10）
+
+Root 首先发现通用文本请求2MiB，而真实W2 Registry只接受128KiB，之前的stub测试未覆盖这项原生边界；保持此真实集成失败，不把先前全绿改写成原生通过。本轨把自动沉淀和metadata推荐都改为128KiB输出。普通合入W0 `866b124b11033aa0f96945daa915b356e25a72c8` 后，新跨适配器测试把两条实际构造请求送到真实Registry.ProcessSelectedText；权限配置为contract_local，取消上下文仅用于在原生参数检查后、配置观察前停止，结果必须context.Canceled。没有启动CLI、访问私有配置或付费调用；此证据是原生接口边界，不是任务live模型结果。原生输入含schema/正文整体也受128KiB限制，超限明确失败，未截断正文或偷偷分块。
+
+启动恢复补两项：已持久化最终page Done payload可在reader未配置时完成，不重抓；startup只保留当前安全失败的resume，已有更新完成任务时旧失败不挡住本次启动同步。旧失败记录没有重写。新增测试分别验证两种启动分支与保存最终页后完成；可选C一跳测试验证未开启拒绝、显式关联可读、撤销根后再次拒绝，没有递归扩展。
+
+`go test ./internal/adapters/distillers ./internal/attention/app` PASS；`go test ./...`、`go vet ./...`、`go build ./...`、`node scripts/check-architecture.mjs`、`git diff --check` PASS。Root/W0后续fresh native model、媒体与W3浏览器验收未执行；真实账号公开挑战及Douyin transport限制仍保留，等待主控分配/验收，不宣称全S1完成。
