@@ -233,11 +233,14 @@ test.describe('S1 contract_local with real API and persistence', () => {
     await dialog.getByRole('button', { name: '继续沉淀', exact: true }).click();
     expect((await statusResponse).status()).toBe(200);
     const automatic = dialog.locator('section[aria-label="自动沉淀"]');
-    await expect(automatic).toContainText('自动处理未启用');
+    await expect(automatic).toContainText('请先选择已许可的项目与客户端；提交时服务会核对实际配置和本次固定版本范围。');
+    await expect(automatic).toContainText('模型 未知 · 配置 未提供');
+    await expect(automatic.getByLabel('自动沉淀的项目模型许可', { exact: true })).toHaveValue('');
+    await expect(automatic.getByRole('option', { name: '选择已许可项目…', exact: true })).toHaveCount(1);
     await expect(automatic.getByRole('button', { name: '提交自动沉淀', exact: true })).toBeDisabled();
     await expect(automatic.getByLabel('自动沉淀本轮问题', { exact: true })).toBeDisabled();
     const status = await api.get('/distillations/processor');
-    expect(status).toMatchObject({ available: false, configuration_id: null, model: null, allowed_source_keys: [] });
+    expect(status).toMatchObject({ available: false, processor: 'selected-project-cli', configuration_id: null, model: null, required_action: 'select_permitted_project_cli', allowed_source_keys: [] });
     expect(automaticSubmissions).toBe(0);
     expect(server.query('SELECT COUNT(*) AS n FROM attention_jobs WHERE json_extract(data,\'$.kind\')=?', 'distillation')[0].n).toBe(jobsBefore);
     expect((await api.get(`/materials/${imported.detail.material.id}`)).material.human_usage_count).toBe(0);
