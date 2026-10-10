@@ -121,6 +121,16 @@ func run(logger *slog.Logger) error {
 		return fmt.Errorf("open objects: %w", err)
 	}
 	listingReader := importers.NewPublicListingReader(listingPython)
+	browserConfig, err := resolveSelectedBrowserConfig()
+	if err != nil {
+		return fmt.Errorf("configure selected Douyin browser: %w", err)
+	}
+	if browserConfig != nil {
+		listingReader.Douyin = &importers.DouyinBrowser{
+			Bridge:  importers.NewOpenCLISelectedFolderBridge(browserConfig.NodePath, browserConfig.CLIMain, browserConfig.Profile, browserConfig.Session),
+			OwnerID: browserConfig.OwnerID, FolderIDs: browserConfig.FolderIDs,
+		}
+	}
 	nativeRoot, err := filepath.Abs(filepath.Join(dataDir, "native-sessions"))
 	if err != nil {
 		return fmt.Errorf("resolve native state directory: %w", err)
@@ -172,6 +182,7 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
+		GitHubRepositories: workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
 		Tracking:           attention,
 		LocalProjects:      localProjects,
 		RegisteredProjects: localProjects,
