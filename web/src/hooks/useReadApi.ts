@@ -135,6 +135,10 @@ export function useProjects() {
   return useReadApi(() => readApi.listProjects());
 }
 
+export function useLocalAgents(enabled = true) {
+  return useReadApi(signal => readApi.listLocalAgents({ signal }), { enabled });
+}
+
 export function useProposals() {
   return useReadApi(() => readApi.listProposals());
 }
