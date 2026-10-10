@@ -184,3 +184,11 @@ W3 的 SOURCE3660b0b 首次真实选定项目模型 job `4GQ7GKDXHZIND7CAB7GIZU3
 Root 明确许可原写域最小日志修复：failJob 先从原 cause 映射复制已有 ServiceError，写已有新 event.cause；公开 job.Error 的 genericUNKNOWN、状态及重试拒绝不变，已知失败的预算耗尽行为不变，既有 FailureDetail OS 细节路径继续保留。没有新增字段系统、接口或日志框架，不把原始正文、凭据或任意原生输出写入事件，不改旧 event。新回归首次 RED 正确复现 cause 丢失有限 native turn/start deadline 说明；修复后同测试 PASS，原说明和 RequiredAction 保留，公共 Error 仍通用 UNKNOWN，旧未知 event 原 bytes 不变，显式 Retry 拒绝、Recover/Process 不调用第二次，operation/deadline/payload/attempts1 不变且无沉淀。
 
 针对性 `TestAutomaticUnknownKeepsOriginalServiceCauseWithoutReplay`、既有 unknown/已知失败 retry 回归 PASS；`go test ./internal/attention/app ./internal/adapters/sqlite`、`go vet ./internal/attention/app`、`go build ./...`、`git diff --check` PASS。SOURCE `f1a44b269fc2d10a78ab3b64f3b765f3eaca5332`。本阶段无 paid/model/media/browser 调用；这是实际诊断缺失的功能修复，不将旧 UNKNOWN 改成已恢复或推定其原生原因，不宣称全 S1 验收。
+
+## 继续阶段 11：公开收藏夹重查与真实失效行（2026-10-10）
+
+本 Dispatch `ctx_514362ae7294` 普通合入主控 `41f3fab`，主控将任务收敛为公开收藏夹续验。指定 UID3494358764489275 匿名目录现在 HTTP200/code0，真实两夹：默认收藏夹2356677875/count452，王大葱的叠3501892975/count2。两夹首metadata页分别20行/has_more=true和2行/false；默认第5行是原指定BV1PReT6EEqR，external_id=2:117284634891766。原始响应独立保存于 `C:/Users/DW/AppData/Local/Temp/astrocyte-W1-public-ctx_514362ae7294/` 的 `bilibili-public-folders-first.json` 与 `bilibili-folder-{id}-page1.json`；历史目录0和上传412/-352仍保留，不改写。
+
+小夹一行是70p长视频BV11t411C7Lk，另一行BV15NQrYGEuA明确title已失效视频/attr9但仍保留BV。现解析器忽略attr导致错误可选，新增回归首RED实际输出该行Locator非空/ProviderStatus nil/UnavailableReason空。最小修复复用已有provider_status字段保留attr，非零状态留清单/计入observed但不生成可导入URL并给unavailable_reason；0保持可选、缺字段保持nil、未知非零状态保守不可用，不让坏行使整页失败。语义参考[上游开源资源列表](https://github.com/bilibili-plugins/bilibili-api-collect/blob/master/docs/fav/list.md)中的medias.attr（0正常、9UP删除、1其他删除），与本轮匿名原件一致；没有变更transport或读取cookie。
+
+`go test ./internal/adapters/importers -run 'TestFavoriteAvailability|TestStaleCollectionEntry|TestPublicListingBounds' -count=1` 修复后PASS；`git diff --check` PASS。主控把browser/model槽交W3，默认夹只推荐并人工选择原BV、复用既有正文；本轨继续纯metadata100cap/SQLite/重复sync核查，没有模型/媒体调用，真实选择入库正向仍等W3，不处理小夹长视频或失效视频。

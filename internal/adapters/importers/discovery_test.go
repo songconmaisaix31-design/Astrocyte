@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -82,6 +83,31 @@ func TestCollectionDiscoveryPreservesExactProviderIDs(t *testing.T) {
 	collections, err := parseBilibiliCollections([]byte(`{"code":0,"data":{"list":[{"id":9007199254740993,"title":"public","media_count":2}]}}`), "84912")
 	if err != nil || len(collections) != 1 || collections[0].ExternalID != "9007199254740993" || collections[0].OwnerID != "84912" {
 		t.Fatalf("large provider ID precision: %+v %v", collections, err)
+	}
+}
+
+func TestFavoriteAvailabilityUsesProviderAttrEvenWithValidBVID(t *testing.T) {
+	// Real anonymous favorite responses retain a BVID for deleted entries;
+	// URL syntax alone must not turn those entries into selectable videos.
+	raw := []byte(`{"code":0,"data":{"info":{"id":3501892975,"media_count":5},"has_more":false,"medias":[{"id":1,"type":2,"bvid":"BV11t411C7Lk","attr":0},{"id":2,"type":2,"bvid":"BV15NQrYGEuA","attr":9},{"id":3,"type":2,"bvid":"BV15NQrYGEuA","attr":1},{"id":4,"type":2,"bvid":"BV15NQrYGEuA","attr":32},{"id":5,"type":2,"bvid":"BV11t411C7Lk"}]}}`)
+	page, err := parseBilibiliFavorites(raw, "3501892975", 1)
+	if err != nil || page.Observed != 5 || len(page.Items) != 5 || page.HasMore {
+		t.Fatalf("unavailable entries must stay in the successful metadata page: %+v %v", page, err)
+	}
+	for i, item := range page.Items {
+		if i == 0 || i == 4 {
+			if item.Locator == "" || item.UnavailableReason != "" {
+				t.Fatalf("available or legacy metadata became unavailable: %+v", item)
+			}
+			continue
+		}
+		want := []int{0, 9, 1, 32}[i]
+		if item.ExternalID != "2:"+strconv.Itoa(i+1) || item.ProviderStatus == nil || *item.ProviderStatus != want || item.UnavailableReason == "" || item.Locator != "" {
+			t.Fatalf("provider unavailable row became selectable or lost exact status: %+v", item)
+		}
+	}
+	if page.Items[0].ProviderStatus == nil || *page.Items[0].ProviderStatus != 0 || page.Items[4].ProviderStatus != nil {
+		t.Fatal("missing provider status must not be invented as zero")
 	}
 }
 
