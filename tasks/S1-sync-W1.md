@@ -107,3 +107,17 @@ Root 首先发现通用文本请求2MiB，而真实W2 Registry只接受128KiB，
 启动恢复补两项：已持久化最终page Done payload可在reader未配置时完成，不重抓；startup只保留当前安全失败的resume，已有更新完成任务时旧失败不挡住本次启动同步。旧失败记录没有重写。新增测试分别验证两种启动分支与保存最终页后完成；可选C一跳测试验证未开启拒绝、显式关联可读、撤销根后再次拒绝，没有递归扩展。
 
 `go test ./internal/adapters/distillers ./internal/attention/app` PASS；`go test ./...`、`go vet ./...`、`go build ./...`、`node scripts/check-architecture.mjs`、`git diff --check` PASS。Root/W0后续fresh native model、媒体与W3浏览器验收未执行；真实账号公开挑战及Douyin transport限制仍保留，等待主控分配/验收，不宣称全S1完成。
+
+## 协调者要求的历史真实导出入口（2026-10-10）
+
+Root接受阶段5 owner implementation交接，未接受全S1/账号；明确保持同一Worker返修且暂不发worker_done、不启动本轨model/media/browser。按要求只核对仓库历史报告明确列出的公开资料原件，无个人磁盘搜索、fixture或新验证框架；路径/JSON关键字段现时存在已核对，后续导入仍需W3实际调用。
+
+- 论文真实原件目录：`C:/Users/DW/AppData/Local/Temp/Astrocyte-S1-W2-ctx_00e6f40e6fe7/full-arxiv-import/`。`summarize-original.json`196347bytes，input/extracted.url均为`https://arxiv.org/html/2504.16054v1`，extracted.content94496字符，summary/llm=null；同目录原HTML279261bytes、PDF16213397bytes、Atom4613bytes、arxiv-imported-text.md95531bytes。API现有POST `/api/v1/materials/imports`可用`adapter=summarize_json,kind=paper,source_locator=该HTML地址,export_text=原JSON`、空source_key/content_digest和新的真实CommandMeta/key，不复用历史arxiv-text-command.json的旧request/digest。新provenance为`existing_json_export/0.21.8-format`，不冒称fresh official arXiv fetch；原PDF等不自动随这条导出路径成为附件。当前UI summarize选项仍kind=video，不能冒称已支持UI论文导出；fresh arxiv模式仍需实际网络。
+- 视频真实原件目录：`C:/Users/DW/orca/workspaces/Astrocyte/s1-attention-ui-1009/web/test-results/attention-video-import-sel-d52ae--an-export-or-model-request-chromium-1280/evidence/`。`actual-video-content.json`33434bytes含原text11746字符与`processor=summarize,version=0.25.1; whisper.cpp,mode=upstream_media_transcript,source=https://www.bilibili.com/video/BV1PReT6EEqR/`；`actual-video-detail.json`保存原题“秋招企业级Agent项目，从架构讲到追问”。现有UI summarize纯文本/Markdown入口可粘贴exact text与原URL/title，不造时间位置；新provenance保持`existing_markdown_export/0.21.8-format`，原0.25.1转写provenance仍从真实content/report审阅，不伪装fresh视频URL或模型调用。
+- `summarize-upstream-media.json`33213bytes仅text/provider/error/notes/segments，provider=whisper.cpp/error=null，不是带input.url的CLI export，不能直接按JSON导入；`summarize-cli-original.json`9973bytes为旧page-only输出，不能代替正文。三附件与实际job/restart报告留原目录，不转换成fixture或修改历史记录。上述细节已向root/W3发交接。
+
+## 继续阶段 6：组装提示调用前大小校验（2026-10-10）
+
+Root批准在两条selected适配器完整组装后按UTF-8实际bytes检查128KiB，超限返回已有ValidationFailed/review_selected_text_size；不截断、不分块、不调用ProcessSelectedText。Registry保留独立原生防御。首次新增回归RED：自动/推荐都实际进入processor stub1次并返回下游格式错误；修复后相同多字节正文（字符数未超上限但UTF-8超限）两模式均known preflight failure/0processcalls。启动后BudgetExhausted/DeliveryUnknown的保守分类没有改变，原UNKNOWN没有重放。
+
+真实历史0.25.1 CLI page-only原件通过既有opt-in TestBilibiliPageOnlyIsNotVideoEvidence核验：PASS，明确evidence_missing，未运行媒体或网络。普通 `go test ./...`、`go vet ./...`、`go build ./...`、架构/diff检查仍PASS；不作为新模型任务live验收。
