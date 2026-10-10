@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { trackingApi, localProjectsApi } from '../../api/s1';
 import { useReadApi } from '../../hooks/useReadApi';
 import { useCommand } from '../../hooks/useCommand';
@@ -18,11 +18,20 @@ export function SourceReview({ id, onChanged, onMaterial }: { id: string; onChan
   const [reason, setReason] = useState('');
   const [confirmSync, setConfirmSync] = useState(false);
   const command = useCommand(state.loading || state.stale || !state.data);
+  const active = !!state.data && (['syncing', 'recommending', 'running', 'queued'].includes(state.data.source.status) || state.data.items.some(item => ['pending', 'running'].includes(item.recommendation?.status ?? '')));
+  const reload = state.retry;
+  useEffect(() => {
+    if (!active) return;
+    let ticks = 0;
+    const timer = window.setInterval(() => { if (++ticks > 150) { window.clearInterval(timer); return; } reload(); }, 2000);
+    return () => window.clearInterval(timer);
+  }, [active, reload]);
   const project = projects.data?.items.find(item => item.id === projectID);
   const cli = project?.settings.external_model_cli;
   const changed = () => { state.retry(); onChanged(); };
   return <section aria-label="公开来源更新清单" className={styles.record}>
     <button type="button" className="ac-button secondary compact" disabled={state.loading} onClick={state.retry}>重载已保存清单</button>
+    {active && <p className={styles.note}>处理进度最多自动读取五分钟，之后可手动重载；读取不会重发模型请求或获取正文。</p>}
     <QueryState state={state}>{data => {
       const eligible = data.items.filter(canSelectSourceItem);
       const picked = eligible.filter(item => selected.includes(itemKey(item)));
@@ -42,7 +51,7 @@ export function SourceReview({ id, onChanged, onMaterial }: { id: string; onChan
         </div>
         <ul className={styles.timeline}>{data.items.map(item => <li key={itemKey(item)}>
           <h4>{item.metadata.title || '标题未提供'}</h4><p>{item.metadata.description || '简介未提供'}</p><p className={styles.note}>{item.metadata.author || '作者未提供'} · 标题版本 {item.revision} · {item.stale ? '旧记录，需先同步核对' : '已保存元数据'}</p><a href={item.metadata.locator} target="_blank" rel="noreferrer">查看公开原始来源</a>
-          {item.recommendation?.status === 'succeeded' ? <><p>Agent 建议 · {item.recommendation.text || '建议文本未提供'}</p><ProvenanceFields value={item.recommendation.provenance} />{item.recommendation.metadata_revision !== item.revision && <p>建议对应旧标题版本，需重新取得建议。</p>}</> : <p role="status">{item.recommendation?.status === 'unknown' ? '建议结果未知，请先核对原处理；不会自动重发。' : item.recommendation?.status === 'running' || item.recommendation?.status === 'pending' ? '建议正在处理，完成后再选择。' : '尚未取得此标题版本的 Agent 建议。'}</p>}
+          {item.recommendation?.status === 'succeeded' && item.recommendation.error?.code !== 'delivery_unknown' ? <><p>Agent 建议 · {item.recommendation.text || '建议文本未提供'}</p><ProvenanceFields value={item.recommendation.provenance} />{item.recommendation.metadata_revision !== item.revision && <p>建议对应旧标题版本，需重新取得建议。</p>}</> : <p role="status">{item.recommendation?.status === 'unknown' || item.recommendation?.error?.code === 'delivery_unknown' ? '建议结果未知，请先核对原处理；不会自动重发。' : item.recommendation?.status === 'running' || item.recommendation?.status === 'pending' ? '建议正在处理，完成后再选择。' : item.recommendation?.status === 'failed' ? '建议暂未完成，请在处理队列核对原因；恢复配置后可明确重试。' : '尚未取得此标题版本的 Agent 建议。'}</p>}
           {item.recommendation?.error && <details><summary>建议处理详情</summary><p>{item.recommendation.error.message} · {item.recommendation.error.required_action}</p></details>}
           <label><input type="checkbox" style={{ width: 'auto' }} checked={picked.some(entry => itemKey(entry) === itemKey(item))} disabled={blocked || !canSelectSourceItem(item)} onChange={event => setSelected(event.target.checked ? [...selected, itemKey(item)] : selected.filter(key => key !== itemKey(item)))} /> {item.selected ? '已选择入库' : '选择此内容获取正文'}</label>
           {item.material_id && <button className="ac-button secondary compact" type="button" onClick={() => onMaterial(item.material_id!)}>查看已入库资料</button>}{item.import_job_id && <p className={styles.note}>正文处理已提交，请在导入队列查看进度。</p>}
