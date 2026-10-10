@@ -13,6 +13,12 @@ type InventoryProvider interface {
 	Snapshot(ctx context.Context) ([]domain.LocalAgent, error)
 }
 
+// Returns cached actual registry observations; querying never starts a CLI.
+// Installation remains supplied independently by the PATH inventory.
+type NativeRegistryObservations interface {
+	SnapshotNative(context.Context) ([]domain.LocalAgent, error)
+}
+
 // LocalAgentInventory is a human-readable installation/capability query, not
 // permission to start or resume an Agent or access its private native state.
 type LocalAgentInventory interface {
