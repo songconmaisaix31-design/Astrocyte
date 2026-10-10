@@ -53,21 +53,12 @@ export const paperContentStateLabel = (state: PaperContentState): string => {
 /** Canonical key of a hit is its contract `source_key`; fall back to locator. */
 export const paperSearchKey = (hit: PaperSearchHit): string => hit.source_key || hit.locator;
 
-/**
- * Import adapters the existing ImportMaterial entry can consume. `paper_url`
- * (HTML landing-page extraction) and `paper_pdf` (SSRF-safe public PDF fetch,
- * not arxiv-only) are in W0's generated adapter enum; `paper_snapshot` (raw
- * browser-extracted text) is W1's adapter, cast at the import seam until W0
- * adds it to the enum.
- */
-export type PaperImportAdapter = 'arxiv' | 'paper_url' | 'paper_pdf' | 'paper_snapshot';
-
 function isArxiv(hit: PaperSearchHit): boolean {
   return !!hit.arxiv_id || hit.provider === 'arxiv' || /(^|\.)arxiv\.org$/i.test(hit.locator || '');
 }
 
 /** Default import adapter for a search hit; non-arXiv sites use `paper_url` HTML extraction. */
-export function paperImportAdapter(hit: PaperSearchHit): PaperImportAdapter {
+export function paperImportAdapter(hit: PaperSearchHit): 'arxiv' | 'paper_url' {
   return isArxiv(hit) ? 'arxiv' : 'paper_url';
 }
 

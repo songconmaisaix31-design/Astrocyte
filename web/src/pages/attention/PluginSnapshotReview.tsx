@@ -1,25 +1,10 @@
 import { useState } from 'react';
 import { attentionApi } from '../../api/client';
-import type { components } from '../../api/schema';
 import { useCommand } from '../../hooks/useCommand';
 import { CommandState } from '../../components/CommandState';
 import { TextField } from './FormControls';
-import { canImportSnapshot, parsePluginSnapshot, snapshotContentStateLabel, snapshotCaveat, snapshotImportOptions, type PluginSnapshotReview, type SnapshotImportAdapter, type SnapshotImportOption } from './pluginSnapshot';
+import { canImportSnapshot, parsePluginSnapshot, snapshotContentStateLabel, snapshotCaveat, snapshotImportOptions, type PluginSnapshotReview, type SnapshotImportOption } from './pluginSnapshot';
 import styles from './AttentionPage.module.css';
-
-const toImportAdapter = (adapter: SnapshotImportAdapter): components['schemas']['ImportMaterialRequestV1']['adapter'] =>
-  adapter as components['schemas']['ImportMaterialRequestV1']['adapter'];
-
-/** Deterministic idempotency key so a retry of the same import reuses its job. */
-function stableKey(option: SnapshotImportOption): string {
-  const joined = `${option.adapter}\u0000${option.source_locator}`;
-  let h = 0x811c9dc5;
-  for (let i = 0; i < joined.length; i++) {
-    h ^= joined.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return `paper-snapshot-${(h >>> 0).toString(16)}`;
-}
 
 export function PluginSnapshotReview({ fixture, onImported }: { fixture: boolean; onImported: () => void }) {
   const [text, setText] = useState('');
@@ -36,26 +21,28 @@ export function PluginSnapshotReview({ fixture, onImported }: { fixture: boolean
 
   const submitOption = (option: SnapshotImportOption) => {
     if (!review) return;
-    const key = stableKey(option);
-    const message = option.adapter === 'paper_snapshot'
-      ? '已提交快照正文入库作业；正文由你复核后写入，服务不会重新抓取网页'
-      : option.adapter === 'paper_pdf'
-        ? '已提交公共 PDF 入库作业；由服务安全获取该公共 PDF，不会读取你的浏览器'
-        : '已提交 arXiv 官方来源入库作业';
-    void command.run(() => attentionApi.importMaterial({
-      schema_version: 1,
-      request_id: key,
+    // The idempotency key is derived by useCommand.prepare from the FULL payload
+    // signature: a failed retry of the same body keeps the key, while any body
+    // change (a new snapshot text at the same URL, a different PDF link) yields
+    // a new key so a new revision is created instead of a 409. No custom hash.
+    const request = command.prepare({
       expected_version: 1,
-      adapter: toImportAdapter(option.adapter),
+      adapter: option.adapter,
       source_locator: option.source_locator,
       source_key: '',
-      kind: 'paper',
+      kind: 'paper' as const,
       content_digest: '',
       collection_reason: null,
       title: review.title ?? '',
       refresh: false,
       ...(option.export_text ? { export_text: option.export_text } : {}),
-    }, key), () => { setReview(null); setText(''); onImported(); }, message);
+    });
+    const message = option.adapter === 'paper_snapshot'
+      ? '已提交快照正文入库作业；正文由你复核后写入，服务不会重新抓取网页'
+      : option.adapter === 'paper_pdf'
+        ? '已提交公共 PDF 入库作业；由服务安全获取该公共 PDF，不会读取你的浏览器'
+        : '已提交 arXiv 官方来源入库作业';
+    void command.run(() => attentionApi.importMaterial(request.body, request.key), () => { setReview(null); setText(''); onImported(); }, message);
   };
 
   return <section aria-label="插件快照复核导入" className={styles.record}>

@@ -2,22 +2,24 @@
  * Paper search client seam.
  *
  * W0 published `GET /api/v1/papers/search?q=&provider=&limit=` returning
- * `PaperSearchResultV1` (contracts/openapi.yaml, converged at `e39f8f1`); the
- * generated `attentionApi.searchPapers` wrapper is added by W0 during final
- * integration because `web/src/api/` is W0-owned. Until then this module calls
- * the published route directly with the exact wire shape and never fabricates
+ * `PaperSearchResultV1` (contracts/openapi.yaml); the generated
+ * `attentionApi.searchPapers` wrapper is added by W0 during final integration
+ * because `web/src/api/` is W0-owned. Until then this module calls the
+ * published route directly with the exact wire shape and never fabricates
  * results. Every failure (404/501/network) surfaces as an explicit, retryable
  * error.
  *
  * Selection is imported per-item through the existing ImportMaterial path
- * (kind=paper, adapter arxiv|paper_url, source_key dedup, new revision) with a
- * stable idempotency key per item so a retry reuses the same job. A settled
- * submission only proves the job was accepted, never that it succeeded; jobs
- * stay queryable in the existing processing queue.
+ * (kind=paper, adapter arxiv|paper_url, source_key dedup, new revision). Each
+ * item carries its own freshly generated Idempotency-Key; the backend's
+ * source/content dedup (not a client hash) prevents a duplicate revision when
+ * the same paper is submitted again, and a changed collection_reason is a new
+ * body with a new key, never a 409. A settled submission only proves the job
+ * was accepted, never that it succeeded; jobs stay queryable in the existing
+ * processing queue.
  */
 import { attentionApi } from '../../api/client';
-import type { components } from '../../api/schema';
-import { paperImportAdapter, type PaperImportAdapter, type PaperContentState, type PaperSearchHit, type PaperSearchResult } from './paperSearch';
+import { paperImportAdapter, type PaperContentState, type PaperSearchHit, type PaperSearchResult } from './paperSearch';
 
 export const PAPER_SEARCH_PATH = '/api/v1/papers/search';
 
@@ -62,17 +64,6 @@ function mapHit(raw: RawHit): PaperSearchHit {
   };
 }
 
-/** Deterministic idempotency key so a retry of the same operation reuses it. */
-function stableKey(parts: string[]): string {
-  const joined = parts.join('\u0000');
-  let h = 0x811c9dc5;
-  for (let i = 0; i < joined.length; i++) {
-    h ^= joined.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return `paper-${(h >>> 0).toString(16)}`;
-}
-
 export async function searchPapers(query: string, signal?: AbortSignal): Promise<PaperSearchResult> {
   const params = new URLSearchParams({ q: query });
   const response = await fetch(`${PAPER_SEARCH_PATH}?${params.toString()}`, { credentials: 'same-origin', signal });
@@ -90,28 +81,19 @@ export async function searchPapers(query: string, signal?: AbortSignal): Promise
 }
 
 /**
- * `paper_snapshot` is W1's adapter not yet named in the generated
- * `ImportMaterialRequestV1.adapter` enum; it is cast at this single seam for
- * W0 to confirm during final integration. `arxiv`/`paper_url`/`paper_pdf` are
- * already in the generated enum.
- */
-const toImportAdapter = (adapter: PaperImportAdapter): components['schemas']['ImportMaterialRequestV1']['adapter'] =>
-  adapter as components['schemas']['ImportMaterialRequestV1']['adapter'];
-
-/**
  * A selected hit is imported through the existing ImportMaterial path with a
- * stable idempotency key (adapter + canonical source_key + locator). The same
- * selection retried later reuses the job; source_key dedup keeps a duplicate
- * revision from being created.
+ * fresh idempotency key per item. The backend's source_key dedup keeps a
+ * duplicate revision from being created on a retry; a changed reason is a new
+ * body with a new key.
  */
 export async function importPaperHit(hit: PaperSearchHit, reason: string | null) {
   const adapter = paperImportAdapter(hit);
-  const key = stableKey(['import', adapter, hit.source_key, hit.locator]);
+  const key = crypto.randomUUID();
   return attentionApi.importMaterial({
     schema_version: 1,
     request_id: key,
     expected_version: 1,
-    adapter: toImportAdapter(adapter),
+    adapter,
     source_locator: hit.locator,
     source_key: hit.source_key,
     kind: 'paper',
@@ -124,10 +106,10 @@ export async function importPaperHit(hit: PaperSearchHit, reason: string | null)
 
 /**
  * Human-session batch import: one ImportMaterial job per selected hit, each with
- * its own stable idempotency key. Every selection is attempted; a settled
- * submission only means the job was accepted (not that it succeeded). Failures
- * are surfaced as a single actionable error, and accepted jobs remain queryable
- * in the existing processing queue. Never imports an unselected hit.
+ * its own idempotency key. Every selection is attempted; a settled submission
+ * only means the job was accepted (not that it succeeded). Failures are surfaced
+ * as a single actionable error, and accepted jobs remain queryable in the
+ * existing processing queue. Never imports an unselected hit.
  */
 export async function importPaperBatch(hits: PaperSearchHit[], reason: string | null): Promise<void> {
   const settled = await Promise.allSettled(hits.map(hit => importPaperHit(hit, reason)));

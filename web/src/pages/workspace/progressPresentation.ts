@@ -7,7 +7,8 @@
  * converged at `e39f8f1`). `source` and `observed_at` are null until a human
  * writes or an Agent inference concludes; an unobserved project is reported as
  * status=unknown with a null observed_at, never a fabricated timestamp. A
- * percent is only ever a human-authored 0..100 value — never invented.
+ * percent is a human-authored value or an evidence-backed Agent estimate, never
+ * invented and never presented as human approval when it is not.
  */
 
 export interface ProgressEvidence {
@@ -45,6 +46,11 @@ export function progressStatusLabel(status: string | null | undefined): string {
 /** Human label for the evidence source (human-authored vs Agent-inferred). */
 export function progressSourceLabel(source: ProjectProgress['source']): string {
   return source === 'human' ? '人工记录' : source === 'agent_inferred' ? 'Agent 推断' : '尚未记录';
+}
+
+/** Human label for a percent value's provenance; a model estimate is never shown as human input. */
+export function progressPercentLabel(source: ProjectProgress['source']): string {
+  return source === 'human' ? '人工记录' : source === 'agent_inferred' ? 'Agent 估计' : '未知';
 }
 
 /** Readable summary of the evidence's source files (path:version). */
