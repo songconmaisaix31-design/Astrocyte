@@ -1,8 +1,8 @@
 # S1 论文与项目看板 W0
 
-当前 Dispatch `ctx_b162c766fc84` / Task `task_95839accebf3`；客户端 Orca Codex，实际模型由当前客户端配置提供。独占共享契约、HTTP、入口、迁移012+、生成API、脚本及依赖锁；其他领域由原owner交付，最终普通合并精确已push提交。
+当前 Dispatch `ctx_b162c766fc84` / Task `task_95839accebf3`；开发客户端 Orca Codex，执行环境未暴露可核实的精确开发模型标识，未自行切换模型。实际联合蒸馏客户端/模型另记为Codex0.162.0/gpt-6.1-sol。独占共享契约、HTTP、入口、迁移012+、生成API、脚本及依赖锁；其他领域由原owner交付，最终普通合并精确已push提交。
 
-当前中间集成 SOURCE `38d0b4f3ef89abc23412fe6891f03d9625dd0bbb` 已push（W2报告与已验证checkout lineage普通合并，无业务变化）。以下check/build/API及首RED明确绑定 `967ed09eb50c988fbd9e04c99f48e91a4c023f47`，不是最终UI验收；最终完成等待W3视口返修和W2 Git活动遗漏修复。
+最终 W0 SOURCE `99b7e8e720c8f57a91485dcb658fd14dd77970ab` 已push，随后独立提交本报告为REPORT并通过Orca交接精确SHA。共享契约/HTTP/迁移/测试及普通集成范围已完成；Search/插件/进度产品决定仍pending，不宣称完整S1。下文历史各场结果保持各自精确源码，最终检查见末段。
 
 ## 基线与边界
 
@@ -27,7 +27,7 @@
 
 SQLite/foundation/cmd定向Go测试亦PASS。未启用opt-in时项目看板测试为 **0 PASS / 1 SKIP**，这只是默认关闭结果，不替代上述实际运行。
 
-`startS1Server` 增加可选apiPort/webPort供W3使用主控分配18787/15173；默认随机保持，5173/8787与占用端口拒绝，不停止其他owner服务。最后等待W1/W2/W3最新精确SOURCE/REPORT普通合并及最终check/build/browser；本轮尚未完整完成。
+`startS1Server` 增加可选apiPort/webPort供W3使用主控分配18787/15173；默认随机保持，5173/8787与占用端口拒绝，不停止其他owner服务。该阶段等待W1/W2/W3最新精确SOURCE/REPORT普通合并及最终check/build/browser，当时未完整完成。
 
 ## 插件路线研究（选项，未决定）
 
@@ -71,6 +71,25 @@ SQLite/foundation/cmd定向Go测试亦PASS。未启用opt-in时项目看板测�
 本场停止后已普通合入W2上述SOURCE与REPORT，push组装 `38d0b4f3ef89abc23412fe6891f03d9625dd0bbb`；没有新业务变化。所有W0本场所属测试进程按helper退出，个人预览不动。
 
 新增真实领域遗漏（主控 `msg_4bf502e148a8`）：已有 `Git.LastCommitAt` 未进入聚合 `LastActivityAt`，原生独立项目可能误显活动unknown（中间观察只有7/71有已知活动）。Git详情证据存在不等于汇总正确；原owner W2重开定向域/测试任务修复，W0不越域修改。会话创建仍不能作为最近活动；最终完成等待此修复及现有缓存GET验证，避免重复发现扫描。
+
+## 最终集成、复验与主控接受
+
+按已发布精确提交普通合入：W1 SOURCE `172d278f72cc13e8f39ee2ea2f14278e42277616` / REPORT `b91e7fff46e20c706845148879708ac151abf3a7`；W2定向修复 SOURCE `cd201962997e69bb4772d73a6d8752874085c3ef` / REPORT `9319374f4a55cf88901e2ed77b439f45aaea1b89`；W3 UI/测试 `2aa57e264aa56a7d7f271c5e087bc540f3f862ab`、最终消费W2的SOURCE `90cee4eda3c5f069325751064ecc944a303f6f77` / REPORT `506a9fc077c9ff4beec09e02fde50088b930bd35`（此前1c7dfa8已保留，新报告仅补两行主控结算边界）。最后一个W3报告普通合并为最终W0 SOURCE99b7e8e，无越域业务胶水或历史覆盖。
+
+主控已查看接受最终紧凑1920/1280/390布局，W3实际字段流固定c07、最终布局固定acbfc的证据保持独立，详见 `docs/acceptance/S1-paper-board.md`。W2修复仅5行领域逻辑：取非空Git提交与既有活动最大值，header创建仍独立；原领域RED、Windows SQLite URI首RED与复验分开保留。W2既有缓存应用服务7→17已知活动、0扫描/0写入的证据保留，原人工metadata adapter为模拟，未将该证据冒充实际人类记录/API。
+
+| 本轮最终命令 | 精确源码、结果及原件 |
+|---|---|
+| `pnpm check` | 组装`0e55f141d2c75eb48808002df6e047ff235f7aab` PASS/exit0：Go/vet/mod/架构/进程、237契约示例/生成漂移、14真实HTTP contract_local场、61前端例、TS/lint/diff；`%TEMP%/astrocyte-w0-assembled-check-20261010.log` |
+| `pnpm build` | 同0e55f14 PASS/exit0：Go可执行程序、TS/Vite；`astrocyte-w0-assembled-build-20261010.log` |
+| `pnpm test:e2e --workers=1 --grep 'navigates to 共同工作区 page\|swarm propagates mission error' --output=test-results/s1-w0-paper-owner-retest-20261010` | 同0e55f14 **4 PASS / 33.1秒 / exit0**，1920/1280导航与三处可见错误传播，属于受控接口失败回归；`astrocyte-w0-assembled-browser-retest-20261010.log`。中间全套4RED不改写，没有重跑无关全套 |
+| `$env:ASTROCYTE_TEST_PROJECT_ACTIVITY_HTTP=Join-Path $env:LOCALAPPDATA 'Temp/astrocyte-s1-rdqrMn/data/state.sqlite'; go test -mod=readonly ./tests/s1 -run '^TestActualCachedProjectActivityHTTP$' -count=1 -v` | 新HTTP测试SOURCE `da515b826a4d21c0bff872bafa3bb32120d99418` **1 PASS / exit0**。实际111根/71组、17已知活动、1实际人类记录；`astrocyte-w0-cached-http-retest-20261010.log` |
+| 新HTTP测试首场 | SOURCE `eebaf2820966623fe5e012d110039e66d09260bb` **RED**：预查询误按grants不存在的id列排序，在HTTP请求前失败；改按首主键列排序，原日志 `astrocyte-w0-cached-http-first-20261010.log` 独立保留 |
+| 加入HTTP测试后的 `pnpm check` | da515b8 **PASS/exit0**：完整适用检查、237契约例、14 contract_local例、61前端例、TS/lint/diff；默认无路径的actual-cache例明确SKIP，不替代上述显式实际PASS；`astrocyte-w0-final-source-check-20261010.log` |
+
+新测试 `tests/s1/project_activity_http_test.go` 复用正常SQLite仓库、真实application服务、HTTP/session中间件及真实loopback端口。已有批准临时SQLite连接设置query_only，不启动main或任何attention/native/discovery worker，配置无source的真实仓库，执行正常human bootstrap和一次缓存GET。响应实际人类notes/review/group/intent/archive/revision与各自SQLite记录逐项相同；查询前后发现JSON/人工记录/grants/jobs行完全一致。没有模拟metadata adapter、重复源采集或模型。所属HTTP listener在测试结束Shutdown完成。
+
+测试/产品源码与文档映射：0e55f14→da515b8仅增加并修复上述HTTP测试；da515b8→99b7e8e仅W0/W3报告/任务文档变化，运行代码和所有测试未变。因此build/4项浏览器复验沿用0e55精确产品代码，最终check与实际缓存HTTP沿用da515精确测试代码，不为文档合并重复运行。主控消息 `msg_17c41d57fb80` 已接受实际缓存HTTP17/71与原SQL RED，`msg_b2b0b3a0f42b` 要求消费已结算W3最终报告后收口；个人预览升级的实例验收由root负责。
 
 ## 剩余限制与未执行操作
 
