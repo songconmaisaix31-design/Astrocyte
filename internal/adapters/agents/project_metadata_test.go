@@ -48,8 +48,8 @@ func TestProjectMetadataHeaderOnlyScopeDuplicateAndUnknown(t *testing.T) {
 		t.Fatalf("all-clients unknowns missing: %+v", snapshot.Sources)
 	}
 	for _, c := range snapshot.Projects[0].Contributors {
-		if c.ActivityAt == nil || !c.ActivityAt.Equal(stamp) {
-			t.Fatal("header timestamp lost")
+		if c.CreatedAt == nil || !c.CreatedAt.Equal(stamp) || c.ActivityAt != nil {
+			t.Fatal("header creation timestamp lost or inferred as recent activity")
 		}
 	}
 }

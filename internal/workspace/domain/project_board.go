@@ -61,7 +61,7 @@ func AggregateProjects(projects []RegisteredProject) []ProjectSummary {
 			if !found {
 				item.Contributors = append(item.Contributors, c)
 			}
-			if stamp := c.ActivityAt; stamp != nil && (item.LastActivityAt == nil || stamp.After(*item.LastActivityAt)) {
+			if stamp := c.ActivityAt; c.Source != "native_session_header" && stamp != nil && (item.LastActivityAt == nil || stamp.After(*item.LastActivityAt)) {
 				item.LastActivityAt = stamp
 			}
 		}

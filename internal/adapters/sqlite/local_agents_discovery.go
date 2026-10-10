@@ -29,6 +29,17 @@ func normalizeProjectDiscovery(s domain.ProjectDiscoverySnapshot) domain.Project
 		if s.Projects[i].Contributors == nil {
 			s.Projects[i].Contributors = []domain.ProjectContributor{}
 		}
+		for j := range s.Projects[i].Contributors {
+			c := &s.Projects[i].Contributors[j]
+			// Earlier board caches projected header creation as activity. Repair
+			// only that explicitly identified source in memory on GET, no writes.
+			if c.Source == "native_session_header" {
+				if c.CreatedAt == nil {
+					c.CreatedAt = c.ActivityAt
+				}
+				c.ActivityAt = nil
+			}
+		}
 	}
 	if s.Board == nil {
 		s.Board = []domain.ProjectSummary{}
