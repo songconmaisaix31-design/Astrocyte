@@ -3237,6 +3237,8 @@ export interface components {
             expanded?: boolean;
         };
         LocalContextFileV1: {
+            /** @description Actual fixed file snapshot version returned by the project reader. */
+            version?: string;
             path: string;
             text: string;
         };
@@ -3265,6 +3267,9 @@ export interface components {
             created_at: string;
         };
         NativeSessionV1: {
+            operations?: {
+                [key: string]: components["schemas"]["NativeOperationV1"];
+            } | null;
             id: string;
             project_id: string;
             cli: string;
@@ -3320,7 +3325,7 @@ export interface components {
             context: components["schemas"]["LocalContextRequestV1"];
             deadline_seconds?: number;
             /** @enum {string} */
-            mode?: "cooperative" | "context_handoff";
+            mode?: "native" | "context_handoff";
             source_session_id?: string;
         };
         NativeMessageRequestV1: {
@@ -3374,6 +3379,14 @@ export interface components {
             schema_version: 1;
             items: components["schemas"]["NativeEventV1"][];
             next_cursor: string | null;
+        };
+        NativeOperationV1: {
+            action: string;
+            status: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            finished_at: string | null;
         };
     };
     responses: never;
