@@ -57,6 +57,7 @@ type ProjectContributor struct {
 	Root       string     `json:"root"`
 	SessionID  string     `json:"session_id"`
 	ObservedAt *time.Time `json:"observed_at"`
+	CreatedAt  *time.Time `json:"created_at"`
 	ActivityAt *time.Time `json:"activity_at"`
 }
 
