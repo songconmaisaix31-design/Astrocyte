@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -92,6 +93,34 @@ func (s *Scholar) Search(ctx context.Context, provider ScholarProvider, query st
 	default:
 		return nil, invalid("unsupported paper search provider")
 	}
+
+	// Exact-identifier routing: a complete DOI or arXiv identifier is looked up
+	// against the authoritative registry instead of being treated as free-text
+	// keywords. This keeps an unknown DOI an explicit 404 rather than surfacing
+	// unrelated works that merely share the identifier as search terms.
+	if doi := parseDOIQuery(query); doi != "" {
+		hit, err := s.crossrefWork(ctx, doi)
+		if err != nil {
+			return nil, err
+		}
+		hit.ContentState = "abstract_only"
+		if hit.SourceKey == "" {
+			hit.SourceKey = hit.Locator
+		}
+		return []ScholarHit{hit}, nil
+	}
+	if id, err := NormalizeArxivID(query); err == nil {
+		hit, err := s.arxivIDLookup(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		hit.ContentState = "abstract_only"
+		if hit.SourceKey == "" {
+			hit.SourceKey = hit.Locator
+		}
+		return []ScholarHit{hit}, nil
+	}
+
 	var (
 		raw []byte
 		err error
@@ -124,31 +153,42 @@ func (s *Scholar) Search(ctx context.Context, provider ScholarProvider, query st
 }
 
 func (s *Scholar) get(ctx context.Context, locator string, limit int64) ([]byte, error) {
+	status, b, err := s.getStatus(ctx, locator, limit)
+	if err != nil {
+		return nil, err
+	}
+	if status != http.StatusOK {
+		return nil, providerUnavailable(fmt.Errorf("provider HTTP %d", status))
+	}
+	return b, nil
+}
+
+// getStatus performs the same guarded GET as get but returns the HTTP status so
+// exact-identifier lookups can distinguish a definite 404 (unknown DOI/arXiv id)
+// from a transient provider failure.
+func (s *Scholar) getStatus(ctx context.Context, locator string, limit int64) (int, []byte, error) {
 	u, err := url.Parse(locator)
 	if err != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || !scholarHost(u.Hostname()) {
-		return nil, invalid("paper search requires an official public HTTPS endpoint")
+		return 0, nil, invalid("paper search requires an official public HTTPS endpoint")
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, locator, nil)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	req.Header.Set("User-Agent", "Astrocyte/0.1 (paper metadata search; mailto:see-project)")
 	resp, err := s.Client.Do(req)
 	if err != nil {
-		return nil, providerUnavailable(err)
+		return 0, nil, providerUnavailable(err)
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return nil, providerUnavailable(fmt.Errorf("provider HTTP %d", resp.StatusCode))
-	}
 	b, err := io.ReadAll(io.LimitReader(resp.Body, limit+1))
 	if err != nil {
-		return nil, providerUnavailable(err)
+		return resp.StatusCode, nil, providerUnavailable(err)
 	}
 	if int64(len(b)) > limit {
-		return nil, invalid("provider response exceeds search size limit")
+		return resp.StatusCode, nil, invalid("provider response exceeds search size limit")
 	}
-	return b, nil
+	return resp.StatusCode, b, nil
 }
 
 // providerUnavailable marks a network/HTTP failure as retryable with a clear
@@ -185,6 +225,96 @@ func (s *Scholar) arxivSearch(ctx context.Context, query string, limit int) ([]b
 	return s.get(ctx, u, 8<<20)
 }
 
+// completeDOI matches a fully-formed Crossref DOI: the 10. registrant prefix
+// followed by a nonempty suffix. Anything shorter (e.g. a bare "10.1234") is
+// not routed as an identifier.
+var completeDOI = regexp.MustCompile(`^10\.[0-9]{4,9}/[^\s]+$`)
+
+// parseDOIQuery recognizes a complete DOI supplied bare, with a doi: prefix, or
+// as a doi.org / dx.doi.org URL. It returns the lowercased DOI, or "" when the
+// query is not an exact DOI so the caller falls back to ordinary keyword search.
+func parseDOIQuery(query string) string {
+	q := strings.TrimSpace(query)
+	if q == "" {
+		return ""
+	}
+	if strings.Contains(q, "://") {
+		u, err := url.Parse(q)
+		if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.User != nil {
+			return ""
+		}
+		if u.Host != "doi.org" && u.Host != "www.doi.org" && u.Host != "dx.doi.org" && u.Host != "www.dx.doi.org" {
+			return ""
+		}
+		q = strings.TrimPrefix(u.Path, "/")
+		q = strings.TrimSuffix(q, "/")
+	}
+	d := normalizeDOIRaw(q)
+	if !completeDOI.MatchString(d) {
+		return ""
+	}
+	return d
+}
+
+// crossrefWork retrieves one work by its exact DOI using the official single-work
+// endpoint GET /works/{doi}. An unknown DOI stays an explicit NotFound error and
+// is never silently reinterpreted as a keyword query.
+func (s *Scholar) crossrefWork(ctx context.Context, doi string) (ScholarHit, error) {
+	u := "https://api.crossref.org/works/" + url.PathEscape(doi)
+	status, body, err := s.getStatus(ctx, u, 8<<20)
+	if err != nil {
+		return ScholarHit{}, err
+	}
+	if status == http.StatusNotFound {
+		return ScholarHit{}, notFoundDOI(doi)
+	}
+	if status != http.StatusOK {
+		return ScholarHit{}, providerUnavailable(fmt.Errorf("Crossref work HTTP %d", status))
+	}
+	hit, err := parseCrossrefWork(body)
+	if err != nil {
+		return ScholarHit{}, err
+	}
+	return hit, nil
+}
+
+// arxivIDLookup retrieves one article by its exact arXiv identifier using the
+// official id_list interface, which resolves versions correctly. A requested
+// version is matched exactly; a base identifier returns the latest version.
+func (s *Scholar) arxivIDLookup(ctx context.Context, id string) (ScholarHit, error) {
+	q := url.Values{}
+	q.Set("id_list", id)
+	u := "https://export.arxiv.org/api/query?" + q.Encode()
+	raw, err := s.get(ctx, u, 8<<20)
+	if err != nil {
+		return ScholarHit{}, err
+	}
+	hits, err := parseArxivSearch(raw)
+	if err != nil {
+		return ScholarHit{}, err
+	}
+	if len(hits) != 1 {
+		return ScholarHit{}, arxivNotFound(id)
+	}
+	hit := hits[0]
+	base := revisionSuffix.ReplaceAllString(id, "")
+	if revisionSuffix.ReplaceAllString(hit.ArxivID, "") != base {
+		return ScholarHit{}, arxivNotFound(id)
+	}
+	if revisionSuffix.MatchString(id) && hit.ArxivID != id {
+		return ScholarHit{}, arxivNotFound(id)
+	}
+	return hit, nil
+}
+
+func notFoundDOI(doi string) error {
+	return &apierrors.ServiceError{Code: apierrors.NotFound, Message: "DOI " + doi + " was not found in Crossref", RequiredAction: "check_doi_and_retry"}
+}
+
+func arxivNotFound(id string) error {
+	return &apierrors.ServiceError{Code: apierrors.NotFound, Message: "arXiv identifier " + id + " was not found", RequiredAction: "check_arxiv_id_and_retry"}
+}
+
 func (s *Scholar) parse(provider ScholarProvider, raw []byte) ([]ScholarHit, error) {
 	switch provider {
 	case ScholarCrossref:
@@ -200,48 +330,75 @@ func (s *Scholar) parse(provider ScholarProvider, raw []byte) ([]ScholarHit, err
 func parseCrossref(raw []byte) ([]ScholarHit, error) {
 	var payload struct {
 		Message struct {
-			Items []struct {
-				DOI    string   `json:"DOI"`
-				Title  []string `json:"title"`
-				Author []struct {
-					Family string `json:"family"`
-					Given  string `json:"given"`
-				} `json:"author"`
-				Abstract  string `json:"abstract"`
-				URL       string `json:"URL"`
-				Published struct {
-					DateParts [][]int `json:"date-parts"`
-				} `json:"published"`
-				ContainerTitle []string `json:"container-title"`
-			} `json:"items"`
+			Items []crossrefWorkMessage `json:"items"`
 		} `json:"message"`
 	}
 	if err := json.Unmarshal(raw, &payload); err != nil {
-		return nil, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "Crossref search response could not be parsed: " + err.Error(), Retryable: true, RequiredAction: "check_paper_search_provider_response"}
+		return nil, crossrefParseError(err)
 	}
 	hits := make([]ScholarHit, 0, len(payload.Message.Items))
 	for _, item := range payload.Message.Items {
-		doi := normalizeDOIRaw(item.DOI)
-		authors := []string{}
-		for _, a := range item.Author {
-			name := strings.TrimSpace(a.Given + " " + a.Family)
-			if name != "" {
-				authors = append(authors, name)
-			}
-		}
-		title := strings.TrimSpace(strings.Join(item.Title, " "))
-		locator := item.URL
-		if locator == "" && doi != "" {
-			locator = "https://doi.org/" + doi
-		}
-		year := 0
-		if len(item.Published.DateParts) > 0 && len(item.Published.DateParts[0]) > 0 {
-			year = item.Published.DateParts[0][0]
-		}
-		venue := strings.TrimSpace(strings.Join(item.ContainerTitle, " "))
-		hits = append(hits, ScholarHit{Provider: string(ScholarCrossref), Title: title, Authors: authors, DOI: doi, Year: year, Venue: venue, Abstract: strings.TrimSpace(item.Abstract), Locator: locator, SourceKey: doiKey(doi, locator)})
+		hits = append(hits, crossrefHit(item))
 	}
 	return hits, nil
+}
+
+// parseCrossrefWork parses the single-work response returned by GET /works/{doi},
+// whose message is a work object rather than an items array.
+func parseCrossrefWork(raw []byte) (ScholarHit, error) {
+	var payload struct {
+		Message crossrefWorkMessage `json:"message"`
+	}
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		return ScholarHit{}, crossrefParseError(err)
+	}
+	if normalizeDOIRaw(payload.Message.DOI) == "" {
+		return ScholarHit{}, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "Crossref work response lacks a DOI", Retryable: true, RequiredAction: "check_paper_search_provider_response"}
+	}
+	return crossrefHit(payload.Message), nil
+}
+
+func crossrefParseError(err error) error {
+	return &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "Crossref search response could not be parsed: " + err.Error(), Retryable: true, RequiredAction: "check_paper_search_provider_response"}
+}
+
+// crossrefWorkMessage is the shared shape of a Crossref work record, used by both
+// the keyword search (items array) and the single-work lookup.
+type crossrefWorkMessage struct {
+	DOI    string   `json:"DOI"`
+	Title  []string `json:"title"`
+	Author []struct {
+		Family string `json:"family"`
+		Given  string `json:"given"`
+	} `json:"author"`
+	Abstract  string `json:"abstract"`
+	URL       string `json:"URL"`
+	Published struct {
+		DateParts [][]int `json:"date-parts"`
+	} `json:"published"`
+	ContainerTitle []string `json:"container-title"`
+}
+
+func crossrefHit(msg crossrefWorkMessage) ScholarHit {
+	doi := normalizeDOIRaw(msg.DOI)
+	authors := []string{}
+	for _, a := range msg.Author {
+		name := strings.TrimSpace(a.Given + " " + a.Family)
+		if name != "" {
+			authors = append(authors, name)
+		}
+	}
+	title := strings.TrimSpace(strings.Join(msg.Title, " "))
+	locator := msg.URL
+	if locator == "" && doi != "" {
+		locator = "https://doi.org/" + doi
+	}
+	year := 0
+	if len(msg.Published.DateParts) > 0 && len(msg.Published.DateParts[0]) > 0 {
+		year = msg.Published.DateParts[0][0]
+	}
+	venue := strings.TrimSpace(strings.Join(msg.ContainerTitle, " "))
+	return ScholarHit{Provider: string(ScholarCrossref), Title: title, Authors: authors, DOI: doi, Year: year, Venue: venue, Abstract: strings.TrimSpace(msg.Abstract), Locator: locator, SourceKey: doiKey(doi, locator)}
 }
 
 // europePMCInt accepts the mixed number/string year representation returned by
