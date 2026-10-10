@@ -10,6 +10,8 @@ W0 先向三轨发布 Go 消费方端口、OpenAPI 与单一迁移序列：来�
 
 主控仅维护决定/计划/状态/独立最终check和提交；原表写域重新生效，上一阶段仅AccountsPanel数组的临时移交结束。每轨commit+push，最终分支push；不搭建新调度、Manifest、Hash或证明系统。
 
+15:20 写域补充：既有 `tests/s1/acceptance.test.mjs` 的导入更新断言需按用户已决定的“显式刷新”语义调整，由 W0 单一所有者负责这一个测试文件；沿既有 API 测试，仅补 `refresh:true` 等必要契约适配，不降低实际结果断言。其他轨只提供 Handoff，不修改该文件；不新增验收框架。
+
 恢复 Run `run_6881906f96ef`，本机 Orca runtime `c760364c-aa9a-47de-9f74-89f5ea621153`，主控 `term_b1eccd80-1ac5-417e-a57a-2c30d2824029`。W0 `ctx_97dad80a2fca` / `task_0125179c53eb`；W1 `ctx_ce738d4e9409` / `task_cd308a2eaf1f`；W2 `ctx_ba700dae8aca` / `task_7b6ef2cfa653`；W3 `ctx_bf18050e3ee7` / `task_bb04bd91e57a`。四轨实际 projection 均为 Codex / gpt-6.1-sol、working/live，并已普通合入决定源 `ca7ba6e`。W0 首次启动因 CLI 更新提示失败且未运行任务，保留 `ctx_5fa66a7ecb94`；跳过更新后按原 Task retry-of 复用同一终端。其后三个 turn_start_unobserved 回执经读取确认任务留在输入框，主控仅按一次 Enter，未重复任务或创建重复编辑者；实际工作状态随后确认。W0/W1/W2 先交换消费方端口，W3 不手写第二套协议。
 
 2026-10-10；基线 `c46c9ad2ec42390965b9f687e0d26627e8de5f63`，主控分支 `s1/attention-materials-20261009`。本轮用户要求多 Agent 并行：先实现 B站、抖音账号追踪同步，其他主流平台占位；参考所附“AI 作品寻回册”实现本地 Agent 接入，并完成 S1。沿用 Go/React/TypeScript/SQLite、现有 summarize 0.25.1 与本地媒体依赖，Python 已获允许。不引入开发调度框架，不重做三页，不自动创建 Mission。
