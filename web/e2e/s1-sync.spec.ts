@@ -4,10 +4,12 @@ import type { components } from '../src/api/schema';
 test('local overview keeps real empty facts explicit at both sizes', async ({ page }) => {
   const projectsResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/local-projects'));
   await page.goto('/workspace');
+  await page.getByRole('button', { name: '接入项目', exact: true }).click();
   expect((await projectsResponse).status()).toBe(200);
   await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible();
   const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
-  await expect(panel).toContainText('未提供');
+  await expect(panel).toContainText('已登记项目');
+  await expect(panel).toContainText('暂无本地项目');
   await expect(panel.getByRole('combobox', { name: '项目排序' }).locator('option[value="activity"]')).toHaveJSProperty('disabled', true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await panel.screenshot({ path: `test-results/s1-local-empty-${page.viewportSize()?.width}.png`, animations: 'disabled' });

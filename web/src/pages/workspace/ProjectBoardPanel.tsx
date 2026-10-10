@@ -11,7 +11,7 @@ import { BrandIcon } from '../../components/BrandIcon';
 import { formatDateTime } from '../../utils/format';
 import { ProjectBoardView } from './ProjectBoardView';
 import { ProjectHumanForm, type ProjectHumanFields } from './ProjectHumanForm';
-import type { BoardProject } from './projectBoardPresentation';
+import { projectSourceLabel, type BoardProject } from './projectBoardPresentation';
 import styles from './ProjectBoard.module.css';
 
 type Summary = components['schemas']['ProjectSummaryV1'];
@@ -21,7 +21,7 @@ function present(item: Summary): BoardProject {
     ...item.observations.filter(source => source.activity.last_activity_at === item.last_activity_at && item.last_activity_at).map(source => source.activity.source),
     ...item.observations.filter(source => source.git.last_commit_at === item.last_activity_at && item.last_activity_at).map(() => 'Git 提交'),
   ]);
-  return { id: item.id, name: item.name, folders: item.roots, clients: [...new Set(item.contributors.map(source => source.cli).filter(Boolean))], sources: [...new Set([...item.observations.map(source => source.source), ...item.contributors.map(source => source.source)])], activityAt: item.last_activity_at, activitySource: [...activitySources].filter(Boolean).join(' · '), activityStatus: item.last_activity_at ? '有活动记录' : '未知', ...item.human };
+  return { id: item.id, name: item.name, folders: item.roots, clients: [...new Set(item.contributors.map(source => source.cli).filter(Boolean))], sources: [...new Set([...item.observations.map(source => source.source), ...item.contributors.map(source => source.source)])], activityAt: item.last_activity_at, activitySource: [...activitySources].filter(Boolean).map(projectSourceLabel).join(' · '), activityStatus: item.last_activity_at ? '有活动记录' : '未知', ...item.human };
 }
 
 export function ProjectBoardPanel({ query, refreshToken, onManage }: { query: string; refreshToken: number; onManage: (root: string, name: string) => void }) {
@@ -35,8 +35,8 @@ export function ProjectBoardPanel({ query, refreshToken, onManage }: { query: st
     <div className={styles.board}>
       <p className={styles.note}>各客户端参与的项目汇在这里。先看下一步，再打开项目继续；记录与归档由你决定。</p>
       <div className={styles.actions}>
-        <button type="button" className="ac-button" onClick={() => onManage('', '')}>接入项目 / 原生操作</button>
-        <button type="button" className="ac-button secondary" disabled={state.loading || state.stale || !state.data || refresh.pending} onClick={() => { const request = refresh.prepare({ expected_version: 1 }); void refresh.run(() => localProjectsApi.refreshRegisteredProjects(request.body, request.key), state.retry, '已更新项目来源，人工记录保留'); }}>同步最近改动</button>
+        <button type="button" className="ac-button" disabled={state.loading || state.stale || !state.data || refresh.pending} onClick={() => { const request = refresh.prepare({ expected_version: 1 }); void refresh.run(() => localProjectsApi.refreshRegisteredProjects(request.body, request.key), state.retry, '已更新项目来源，人工记录保留'); }}>同步最近改动</button>
+        <button type="button" className="ac-button secondary" onClick={() => onManage('', '')}>接入项目</button>
       </div>
       <CommandState {...refresh} />
       <QueryState state={state}>{({ snapshot }) => <>
@@ -62,7 +62,7 @@ function ProjectBoardDetail({ item, disabled, onSaved, onManage }: { item: Summa
     <ProjectHumanForm human={item.human} disabled={disabled || command.pending} onSave={save} />
     <CommandState {...command} />
     <section className={styles.detailSection}><h4>在项目中继续</h4><p className={styles.note}>选择明确目录，查看资料权限与原生 Agent 操作。</p>{item.roots.map(root => <button key={root} type="button" className={`ac-button secondary ${styles.rootButton}`} onClick={() => onManage(root, item.name)}><span>设置与原生操作 →</span><code>{root}</code></button>)}</section>
-    <section className={styles.detailSection}><h4>已记录的参与客户端</h4>{item.contributors.length ? <ul className={styles.provenance}>{item.contributors.map((source, index) => <li key={`${source.cli}:${source.session_id}:${index}`}><BrandIcon name={source.cli} size={18} /><b>{source.cli}</b><span>{source.source}</span><code>{source.root}</code><p>活动 · {source.activity_at ? formatDateTime(source.activity_at) : '未知'}</p></li>)}</ul> : <p className={styles.note}>尚未记录参与客户端；登记时所选客户端不视为贡献证明。</p>}</section>
+    <section className={styles.detailSection}><h4>已记录的参与客户端</h4>{item.contributors.length ? <ul className={styles.provenance}>{item.contributors.map((source, index) => <li key={`${source.cli}:${source.session_id}:${index}`}><BrandIcon name={source.cli} size={18} /><b>{source.cli}</b><code>{source.root}</code><p>会话创建 · {source.created_at ? formatDateTime(source.created_at) : '未知'} · 最近活动 · {source.activity_at ? formatDateTime(source.activity_at) : '未知'}</p><details><summary>来源详情</summary>{source.source}</details></li>)}</ul> : <p className={styles.note}>当前只知道登记时选择的客户端，尚无对应项目工作记录。</p>}</section>
     <details><summary>目录、提交与来源依据</summary>{item.observations.map(observation => <div key={observation.root} className={styles.detailSection}><code className={styles.path}>{observation.root}</code><p className={styles.note}>来源 · {observation.source} · 登记时客户端 · {observation.activity.created_with_cli || '未知'}</p><p className={styles.note}>分支 · {observation.git.branch || '未知'} · 最近提交 · {observation.git.last_commit_at ? formatDateTime(observation.git.last_commit_at) : '未知'} · 工作区改动 · {observation.git.dirty === null ? '未知' : observation.git.dirty ? '有未提交更改' : '无未提交更改'}</p></div>)}{item.limitations.map((limitation, index) => <p key={index} className={styles.note}>{limitation}</p>)}</details>
   </>;
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BrandIcon } from '../../components/BrandIcon';
 import { FilterChips } from '../../components/CollectionOverview';
 import { formatDateTime } from '../../utils/format';
-import { boardSections, filterBoardProjects, initialBoardFilters, humanIntentLabel, type BoardFilters, type BoardProject } from './projectBoardPresentation';
+import { boardSections, filterBoardProjects, initialBoardFilters, humanIntentLabel, projectSourceLabel, type BoardFilters, type BoardProject } from './projectBoardPresentation';
 import styles from './ProjectBoard.module.css';
 
 export function ProjectBoardView({ items, query, complete, onSelect }: { items: BoardProject[]; query: string; complete: boolean; onSelect: (item: BoardProject) => void }) {
@@ -25,7 +25,7 @@ export function ProjectBoardView({ items, query, complete, onSelect }: { items: 
         <label>继续意愿<select value={filters.intent} onChange={event => filter('intent', event.target.value)}><option value="all">全部意愿</option>{unique(items.map(item => item.intent).filter(Boolean)).map(value => <option key={value}>{value}</option>)}<option value="__unset">尚未标记</option></select></label>
         <label>客户端<select value={filters.client} onChange={event => filter('client', event.target.value)}><option value="all">全部客户端</option>{clients.map(value => <option key={value}>{value}</option>)}<option value="unknown">客户端未知</option></select></label>
         <label>分组<select value={filters.group} onChange={event => filter('group', event.target.value)}><option value="all">全部分组</option>{unique(items.map(item => item.group).filter(Boolean)).map(value => <option key={value}>{value}</option>)}<option value="unknown">未分组</option></select></label>
-        <label>来源<select value={filters.source} onChange={event => filter('source', event.target.value)}><option value="all">全部来源</option>{unique(items.flatMap(item => item.sources)).map(value => <option key={value}>{value}</option>)}</select></label>
+        <label>来源<select value={filters.source} onChange={event => filter('source', event.target.value)}><option value="all">全部来源</option>{unique(items.flatMap(item => item.sources)).map(value => <option key={value} value={value}>{projectSourceLabel(value)}</option>)}</select></label>
         <label>活动状态<select value={filters.status} onChange={event => filter('status', event.target.value)}><option value="all">全部状态</option>{unique(items.map(item => item.activityStatus)).map(value => <option key={value}>{value}</option>)}</select></label>
         <label>归档<select value={filters.archive} onChange={event => filter('archive', event.target.value)}><option value="active">未归档</option><option value="archived">只看归档</option><option value="all">全部看</option></select></label>
         <label>排序<select value={filters.sort} onChange={event => filter('sort', event.target.value)}><option value="activity">最近记录活动</option><option value="name">项目名称</option><option value="source">来源顺序</option></select></label>

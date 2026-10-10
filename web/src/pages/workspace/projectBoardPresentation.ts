@@ -16,6 +16,8 @@ export interface BoardProject {
 }
 
 export const humanIntentLabel = (intent: string) => intent.trim() || '尚未标记';
+const sourceLabels: Record<string, string> = { orca_registered: 'Orca 登记目录', subproject: '目录内子项目', git_worktree: 'Git 工作树', orca_worktree_metadata: 'Orca 项目记录', native_session_header: '客户端会话记录', native_project_metadata: '客户端项目记录' };
+export const projectSourceLabel = (source: string) => sourceLabels[source] || source;
 export interface BoardFilters { client: string; intent: string; group: string; source: string; status: string; archive: string; search: string; sort: string }
 export const initialBoardFilters: BoardFilters = { client: 'all', intent: 'all', group: 'all', source: 'all', status: 'all', archive: 'active', search: '', sort: 'activity' };
 

@@ -7,6 +7,7 @@ for (const narrow of [false, true]) {
     page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/api/v1/')) writes.push(request.url()); });
     for (const [path, title] of [['attention', '资料沉淀'], ['workspace', '共同工作区'], ['swarm', '蜂群空间']]) {
       await page.goto(`/${path}`);
+      if (path === 'workspace') await page.getByRole('button', { name: '接入项目', exact: true }).click();
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
       await expect(page.getByRole('alert').filter({ hasText: '示例数据模式' })).toHaveCount(0);
       await expect(page.getByRole('status', { name: path === 'attention' ? '暂无素材' : path === 'workspace' ? '暂无本地项目' : '暂无开发空间', exact: true })).toBeVisible();

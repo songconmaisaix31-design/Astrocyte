@@ -42,7 +42,7 @@ export function WorkspacePage({ fixture, query }: Props) {
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [boardRefresh, setBoardRefresh] = useState(0);
   const [managed, setManaged] = useState({ root: '', name: '', token: 0 });
-  const manageRef = useRef<HTMLDivElement>(null);
+  const manageRef = useRef<HTMLDetailsElement>(null);
   const [selected, setSelected] = useState<SelectedItem>(null);
 
   const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
@@ -70,8 +70,8 @@ export function WorkspacePage({ fixture, query }: Props) {
 {inventoryOpen && <DetailPanel title="检查本机 Agent" onClose={() => setInventoryOpen(false)}><LocalAgentsPanel state={agents} fixture={fixture} /></DetailPanel>}
             <div className={styles.grid}>
         {fixture && !projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
-        {!fixture && <ProjectBoardPanel query={query} refreshToken={boardRefresh} onManage={(root, name) => { setManaged(previous => ({ root, name, token: previous.token + 1 })); requestAnimationFrame(() => { manageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); manageRef.current?.focus(); }); }} />}
-        {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <div ref={manageRef} tabIndex={-1}><ManagedProjectsPanel key={managed.token} initialRoot={managed.root} initialName={managed.name} agents={agents} query={query} /></div>}
+        {!fixture && <ProjectBoardPanel query={query} refreshToken={boardRefresh} onManage={(root, name) => { setManaged(previous => ({ root, name, token: previous.token + 1 })); if (manageRef.current) manageRef.current.open = true; requestAnimationFrame(() => { manageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); manageRef.current?.querySelector('summary')?.focus(); }); }} />}
+        {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <details ref={manageRef} className="ac-secondary-records"><summary>项目接入、权限与原生操作</summary><ManagedProjectsPanel key={managed.token} initialRoot={managed.root} initialName={managed.name} agents={agents} query={query} /></details>}
         <GitHubRepositoriesPanel fixture={fixture} query={query} />
         <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
 
