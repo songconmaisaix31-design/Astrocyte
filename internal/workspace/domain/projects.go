@@ -4,9 +4,10 @@ import "time"
 
 // Caller is supplied by the authenticated transport, never decoded from a body.
 type Caller struct {
-	Kind      string `json:"-"`
-	ID        string `json:"-"`
-	ProjectID string `json:"-"`
+	OperationID string `json:"-"`
+	Kind        string `json:"-"`
+	ID          string `json:"-"`
+	ProjectID   string `json:"-"`
 }
 
 type ProjectSettings struct {
@@ -35,10 +36,12 @@ type ProjectCandidate struct {
 }
 
 type ProjectGrant struct {
-	ProjectID string     `json:"project_id"`
-	AgentID   string     `json:"agent_id"`
-	Actions   []string   `json:"actions"`
-	RevokedAt *time.Time `json:"revoked_at"`
+	TokenDigest string     `json:"-"`
+	ExpiresAt   *time.Time `json:"expires_at"`
+	ProjectID   string     `json:"project_id"`
+	AgentID     string     `json:"agent_id"`
+	Actions     []string   `json:"actions"`
+	RevokedAt   *time.Time `json:"revoked_at"`
 }
 
 type FixedReference struct {
@@ -87,9 +90,10 @@ type SettingsCommand struct {
 }
 
 type NativeCommand struct {
-	CLI     string         `json:"cli"`
-	Message string         `json:"message"`
-	Context ContextRequest `json:"context"`
+	OperationID string         `json:"-"`
+	CLI         string         `json:"cli"`
+	Message     string         `json:"message"`
+	Context     ContextRequest `json:"context"`
 	// Lifetime is bounded by the controller, covering idle time and all turns.
 	DeadlineSeconds int    `json:"deadline_seconds"`
 	Mode            string `json:"mode"`
@@ -97,17 +101,19 @@ type NativeCommand struct {
 }
 
 type NativeSession struct {
-	ID              string        `json:"id"`
-	ProjectID       string        `json:"project_id"`
-	CLI             string        `json:"cli"`
-	NativeID        string        `json:"native_id"`
-	Version         string        `json:"version"`
-	Mode            string        `json:"mode"`
-	Status          string        `json:"status"`
-	StopConfirmed   bool          `json:"stop_confirmed"`
-	ContextPacket   ContextPacket `json:"context_packet"`
-	SourceSessionID string        `json:"source_session_id"`
-	UpdatedAt       time.Time     `json:"updated_at"`
+	LastOperationID  string        `json:"last_operation_id"`
+	PendingOperation string        `json:"pending_operation"`
+	ID               string        `json:"id"`
+	ProjectID        string        `json:"project_id"`
+	CLI              string        `json:"cli"`
+	NativeID         string        `json:"native_id"`
+	Version          string        `json:"version"`
+	Mode             string        `json:"mode"`
+	Status           string        `json:"status"`
+	StopConfirmed    bool          `json:"stop_confirmed"`
+	ContextPacket    ContextPacket `json:"context_packet"`
+	SourceSessionID  string        `json:"source_session_id"`
+	UpdatedAt        time.Time     `json:"updated_at"`
 	// Cooperative CLI tools do not provide an OS read-isolation guarantee.
 	Limitations []string `json:"limitations"`
 }
@@ -133,4 +139,26 @@ type NativeRequest struct {
 	Session   NativeSession
 	Command   NativeCommand
 	Packet    ContextPacket
+}
+
+type AgentToken struct {
+	Token     string    `json:"token"`
+	ProjectID string    `json:"project_id"`
+	AgentID   string    `json:"agent_id"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type TextRequest struct {
+	CLI             string
+	Prompt          string
+	DeadlineSeconds int
+	OutputLimit     int
+}
+
+type TextResult struct {
+	Text     string
+	NativeID string
+	Version  string
+	Model    *string
+	Usage    any
 }
