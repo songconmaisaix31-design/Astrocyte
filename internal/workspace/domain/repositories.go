@@ -20,6 +20,20 @@ type GitHubMetadata struct {
 	PushedAt       time.Time `json:"pushed_at"`
 }
 
+// Legacy caches and test sources cannot acquire REST provenance by default.
+func NormalizeGitHubMetadata(m GitHubMetadata) GitHubMetadata {
+	if m.MetadataSource == "" {
+		m.MetadataSource = "unknown"
+	}
+	if m.UnknownFields == nil {
+		m.UnknownFields = []string{}
+		if m.MetadataSource == "unknown" {
+			m.UnknownFields = []string{"description", "default_branch", "language", "stars", "archived", "fork", "updated_at", "pushed_at"}
+		}
+	}
+	return m
+}
+
 type GitHubRepository struct {
 	ID               string         `json:"id"`
 	Revision         int            `json:"revision"`
