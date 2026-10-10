@@ -10,7 +10,7 @@ func TestProjectBoardIdentityAndHistoricalContributors(t *testing.T) {
 	created := "claude"
 	projects := []RegisteredProject{
 		{Root: "/project", Name: "main", RepoID: "r", Source: "orca_registered", Activity: ProjectActivityObservation{CreatedWithCLI: &created}},
-		{Root: "/tree", Name: "worker", RepoID: "r", Source: "git_worktree", Contributors: []ProjectContributor{{CLI: "codex", Source: "native_session_header", SessionID: "s", ActivityAt: &stamp}}},
+		{Root: "/tree", Name: "worker", RepoID: "r", Source: "git_worktree", Contributors: []ProjectContributor{{CLI: "codex", Source: "native_session_header", SessionID: "s", CreatedAt: &stamp}}},
 		{Root: "/project/nested", Name: "nested", RepoID: "r", Source: "subproject"},
 		{Root: "/clone", Name: "main", RepoID: "different", Source: "orca_registered"},
 	}
@@ -20,7 +20,7 @@ func TestProjectBoardIdentityAndHistoricalContributors(t *testing.T) {
 	}
 	for _, p := range board {
 		if len(p.Roots) == 2 {
-			if p.Name != "main" || len(p.Contributors) != 1 || p.Contributors[0].CLI != "codex" || p.LastActivityAt == nil {
+			if p.Name != "main" || len(p.Contributors) != 1 || p.Contributors[0].CLI != "codex" || p.LastActivityAt != nil {
 				t.Fatalf("created-with inferred contributor: %+v", p)
 			}
 		}

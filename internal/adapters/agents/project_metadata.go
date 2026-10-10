@@ -32,7 +32,11 @@ func knownProjectMetadataSources() []projectMetadataSource {
 	if piHome == "" {
 		piHome = filepath.Join(home, ".pi", "agent")
 	}
-	return []projectMetadataSource{{"codex", filepath.Join(codexHome, "sessions"), 3}, {"pi", filepath.Join(piHome, "sessions"), 1}}
+	claudeHome := os.Getenv("CLAUDE_CONFIG_DIR")
+	if claudeHome == "" {
+		claudeHome = filepath.Join(home, ".claude")
+	}
+	return []projectMetadataSource{{"codex", filepath.Join(codexHome, "sessions"), 3}, {"pi", filepath.Join(piHome, "sessions"), 1}, {"claude", filepath.Join(claudeHome, "projects"), 1}}
 }
 
 // No database, credentials, messages, summaries, tools or filename-derived
@@ -43,6 +47,9 @@ func readProjectHeader(path, cli string) (id, cwd string, stamp *time.Time, err 
 		return "", "", nil, err
 	}
 	defer f.Close()
+	if cli == "claude" {
+		return readClaudeProjectMetadata(f)
+	}
 	line, err := bufio.NewReaderSize(io.LimitReader(f, 64*1024+1), 64*1024+1).ReadBytes('\n')
 	if (err != nil && err != io.EOF) || len(line) > 64*1024 {
 		return "", "", nil, errors.New("header_unavailable_or_over_bound")
@@ -80,6 +87,38 @@ func readProjectHeader(path, cli string) (id, cwd string, stamp *time.Time, err 
 		stamp = &utc
 	}
 	return id, cwd, stamp, nil
+}
+
+// Anthropic's official SDK documents metadata in the JSONL initial records.
+// Unlike its listing implementation, this reads no tail, firstPrompt, summary
+// or content. Sixteen records share one 64KiB budget; no cwd is followed.
+func readClaudeProjectMetadata(input io.Reader) (id, cwd string, stamp *time.Time, err error) {
+	reader := bufio.NewReaderSize(io.LimitReader(input, 64*1024+1), 64*1024+1)
+	bytesRead := 0
+	for record := 0; record < 16; record++ {
+		line, e := reader.ReadBytes('\n')
+		bytesRead += len(line)
+		if bytesRead > 64*1024 || (e != nil && e != io.EOF) {
+			return "", "", nil, errors.New("initial_metadata_over_bound")
+		}
+		var header struct {
+			Type      string `json:"type"`
+			SessionID string `json:"sessionId"`
+			Cwd       string `json:"cwd"`
+			Timestamp string `json:"timestamp"`
+		}
+		if json.Unmarshal(line, &header) == nil && (header.Type == "user" || header.Type == "assistant" || header.Type == "system") && regexp.MustCompile(`^[a-zA-Z0-9._-]{1,100}$`).MatchString(header.SessionID) && filepath.IsAbs(header.Cwd) {
+			if t, e := time.Parse(time.RFC3339Nano, header.Timestamp); e == nil && !t.After(time.Now().Add(time.Minute)) {
+				utc := t.UTC()
+				stamp = &utc
+			}
+			return header.SessionID, header.Cwd, stamp, nil
+		}
+		if e == io.EOF {
+			break
+		}
+	}
+	return "", "", nil, errors.New("initial_metadata_absent_or_unverified")
 }
 
 func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result *domain.ProjectDiscoverySnapshot) {
@@ -167,7 +206,7 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 					}
 					seen[id] = true
 					obs.MatchedHeaders++
-					result.Projects[index].Contributors = append(result.Projects[index].Contributors, domain.ProjectContributor{CLI: source.cli, Source: "native_session_header", Root: result.Projects[index].Root, SessionID: id, ObservedAt: result.ObservedAt, ActivityAt: stamp})
+					result.Projects[index].Contributors = append(result.Projects[index].Contributors, domain.ProjectContributor{CLI: source.cli, Source: "native_session_header", Root: result.Projects[index].Root, SessionID: id, ObservedAt: result.ObservedAt, CreatedAt: stamp})
 				}
 				if e == io.EOF {
 					return nil
