@@ -59,6 +59,7 @@ func NewPublicGitHubSource() *PublicGitHubSource {
 }
 
 type publicGitHubResponse struct {
+	known         map[string]bool
 	ID            int64     `json:"id"`
 	FullName      string    `json:"full_name"`
 	Private       bool      `json:"private"`
@@ -72,6 +73,34 @@ type publicGitHubResponse struct {
 	Fork          bool      `json:"fork"`
 	UpdatedAt     time.Time `json:"updated_at"`
 	PushedAt      time.Time `json:"pushed_at"`
+}
+
+func (r *publicGitHubResponse) UnmarshalJSON(data []byte) error {
+	type wire publicGitHubResponse
+	var value wire
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return err
+	}
+	*r = publicGitHubResponse(value)
+	r.known = map[string]bool{}
+	for key, value := range fields {
+		r.known[key] = string(value) != "null"
+	}
+	return nil
+}
+
+func (r publicGitHubResponse) unknownFields() []string {
+	result := []string{}
+	for _, field := range [][2]string{{"description", "description"}, {"default_branch", "default_branch"}, {"language", "language"}, {"stargazers_count", "stars"}, {"archived", "archived"}, {"fork", "fork"}, {"updated_at", "updated_at"}, {"pushed_at", "pushed_at"}} {
+		if !r.known[field[0]] {
+			result = append(result, field[1])
+		}
+	}
+	return result
 }
 
 func (s *PublicGitHubSource) FetchPublicRepositories(ctx context.Context, input string) ([]domain.GitHubMetadata, error) {
@@ -122,10 +151,10 @@ func (s *PublicGitHubSource) FetchPublicRepositories(ctx context.Context, input 
 	result := []domain.GitHubMetadata{}
 	for _, item := range items {
 		o, r, e := ParsePublicGitHubInput(item.FullName)
-		if item.Private || item.ID <= 0 || e != nil || r == "" || !strings.EqualFold(o, owner) || (repo != "" && !strings.EqualFold(r, repo)) || item.CloneURL != "https://github.com/"+item.FullName+".git" || item.HTMLURL != "https://github.com/"+item.FullName {
+		if !item.known["private"] || item.Private || item.ID <= 0 || e != nil || r == "" || !strings.EqualFold(o, owner) || (repo != "" && !strings.EqualFold(r, repo)) || item.CloneURL != "https://github.com/"+item.FullName+".git" || item.HTMLURL != "https://github.com/"+item.FullName {
 			return nil, errors.New("GitHub response is not the selected public repository")
 		}
-		result = append(result, domain.GitHubMetadata{MetadataSource: "github_rest", UnknownFields: []string{}, GitHubID: item.ID, FullName: item.FullName, HTMLURL: item.HTMLURL, CloneURL: item.CloneURL, Description: item.Description, DefaultBranch: item.DefaultBranch, Language: item.Language, Stars: item.Stars, Archived: item.Archived, Fork: item.Fork, UpdatedAt: item.UpdatedAt, PushedAt: item.PushedAt})
+		result = append(result, domain.GitHubMetadata{MetadataSource: "github_rest", UnknownFields: item.unknownFields(), GitHubID: item.ID, FullName: item.FullName, HTMLURL: item.HTMLURL, CloneURL: item.CloneURL, Description: item.Description, DefaultBranch: item.DefaultBranch, Language: item.Language, Stars: item.Stars, Archived: item.Archived, Fork: item.Fork, UpdatedAt: item.UpdatedAt, PushedAt: item.PushedAt})
 	}
 	return result, nil
 }
