@@ -25,7 +25,7 @@ test('real metadata recommendation precedes human selection and reuses the origi
     const original = await read<S['JobV1']>(`/jobs/${originalURLJob}`);
     expect(original.status).toBe('succeeded');
     const originalDetail = await read<S['MaterialDetailV1']>(`/materials/${original.material_id!}`);
-    const originalBody = await read<S['ContentResultV1']>(`/materials/${original.material_id!}/revisions/${originalDetail.material.current_revision}/content`);
+    const originalBody = await read<S['ContentV1']>(`/materials/${original.material_id!}/revisions/${originalDetail.material.current_revision}/content`);
     const originalJobs = server.query("SELECT id, data, payload FROM attention_jobs WHERE json_extract(data,'$.kind')!='source_sync' ORDER BY id");
     const originalRevisions = server.query('SELECT material_id, revision, data FROM attention_material_revisions ORDER BY material_id, revision');
     const originalMaterials = server.query('SELECT id, data FROM attention_materials ORDER BY id');
@@ -127,7 +127,7 @@ test('real metadata recommendation precedes human selection and reuses the origi
     await expect.poll(async () => { restarted = await read<S['TrackingSourceResultV1']>(`/tracking-sources/${source!.id}`); return restarted.source.status; }, { timeout: 90_000 }).toBe('succeeded');
     expect(restarted.items).toEqual(final.items);
     expect(await read<S['JobV1']>(`/jobs/${originalURLJob}`)).toEqual(original);
-    expect(await read<S['ContentResultV1']>(`/materials/${original.material_id!}/revisions/${originalDetail.material.current_revision}/content`)).toEqual(originalBody);
+    expect(await read<S['ContentV1']>(`/materials/${original.material_id!}/revisions/${originalDetail.material.current_revision}/content`)).toEqual(originalBody);
     expect(readOriginalJobRows()).toEqual(originalJobs);
     expect((await read<S['MissionListV1']>('/missions')).items).toEqual([]);
     await page.reload();

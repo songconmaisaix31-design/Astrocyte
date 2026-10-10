@@ -25,6 +25,7 @@ export function RegisteredProjectsPanel({ query, registeredRoots, onSelect }: { 
     <button className="ac-button secondary compact" type="button" disabled={state.loading || command.pending} onClick={state.retry}>重载已保存目录清单</button>{' '}
     <button className="ac-button secondary compact" type="button" disabled={state.loading || state.stale || command.pending || !state.data} onClick={() => { const request = command.prepare({ expected_version: 1 }); void command.run(() => localProjectsApi.refreshRegisteredProjects(request.body, request.key), state.retry, '已请求重新读取 Orca 登记范围；查看清单中的实际读取结果'); }}>重新读取登记目录</button>
     <CommandState {...command} />
+    {command.pending && <p role="status" className={styles.note}>正在重新读取登记目录，请稍候。期间保留上次清单，不改变项目许可。</p>}
     {state.error && !state.data && <details><summary>登记目录连接详情</summary><p>{state.error}</p></details>}
     <QueryState state={{ ...state, error: state.error ? '暂未取得登记目录，请检查服务连接后重新加载，也可手动填写明确目录。' : null }}>{({ snapshot }) => {
       const clients = [...new Set(snapshot.projects.flatMap(item => item.activity.created_with_cli ? [item.activity.created_with_cli] : []))];
