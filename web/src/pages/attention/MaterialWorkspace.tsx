@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { components } from '../../api/schema';
 import { attentionApi } from '../../api/client';
-import { useMaterialDetail, useMaterialContent, useDomains } from '../../hooks/useAttention';
+import { useMaterialDetail, useMaterialContent, useDomains, useDistillations } from '../../hooks/useAttention';
 import { useCommand } from '../../hooks/useCommand';
 import { Field, FieldRow, MutedValue } from '../../components/DetailPanel';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -34,6 +34,7 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
   const [distilling, setDistilling] = useState(false);
   const [creating, setCreating] = useState(false);
   const [suggestion, setSuggestion] = useState<Distillation | null>(null);
+  const candidateRecords = useDistillations(creating);
   const source = detail.revisions.find(entry => entry.revision === revision);
   const modelContentRecords = detail.distillations.filter(record => record.stage === 'content' && record.status === 'succeeded' && (record.provenance.mode === 'selected_project_fixed_text' || record.provenance.processor === 'codex-cli') && record.input_refs.some(ref => ref.material_id === item.id && ref.revision === revision));
   const content = useMaterialContent(item.id, revision, item.lifecycle !== 'withdrawn');
@@ -87,7 +88,7 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
         <button className="ac-button secondary" type="button" disabled={unavailable} onClick={() => { setSuggestion(null); setCreating(!creating); }}>形成候选</button>
       </div>
       {distilling && source && <><DistillationForm key={`manual:${item.id}@${revision}`} input={{ material_id: item.id, revision, locator: source.source_locator, span: null }} materials={materials} disabled={unavailable} onSaved={onChanged} /><AutomaticDistillationForm key={`automatic:${item.id}@${revision}`} input={{ material_id: item.id, revision, locator: source.source_locator, span: null }} sourceKey={source.source_key} records={detail.distillations} disabled={unavailable} onQueued={onQueued} /></>}
-      {creating && <OpportunityForm key={suggestion?.id ?? 'manual'} suggestion={suggestion?.candidate_suggestion ?? undefined} suggestionRecordID={suggestion?.id} materials={materials} distillations={detail.distillations} disabled={unavailable} onSaved={result => { onChanged(); onOpportunity(result); }} />}
+      {creating && <QueryState state={candidateRecords}>{data => <OpportunityForm key={suggestion?.id ?? 'manual'} suggestion={suggestion?.candidate_suggestion ?? undefined} suggestionRecordID={suggestion?.id} materials={materials} distillations={data.items} disabled={unavailable || candidateRecords.loading || candidateRecords.stale} onSaved={result => { onChanged(); onOpportunity(result); }} />}</QueryState>}
     </section>
     <Field label="关注行为记录">{detail.uses.length ? <ul className={styles.timeline}>{detail.uses.map(use => <li key={use.id}>{use.actor_kind === 'human' ? '人类关注' : '机器使用'} · {use.action} · {formatDateTime(use.occurred_at)}</li>)}</ul> : <MutedValue>暂无行为记录</MutedValue>}</Field>
   </>;

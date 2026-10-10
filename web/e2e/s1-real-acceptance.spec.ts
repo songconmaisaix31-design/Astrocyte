@@ -238,7 +238,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       expect(record!.provenance.mode).toBe('selected_project_fixed_text');
       expect(record!.provenance.processor).toBe('codex');
       expect(record!.output_text.length).toBeGreaterThan(20);
-      expect(record!.prior_distillation_ids).toEqual([...prior].sort());
+      expect(record!.prior_distillation_ids ?? []).toEqual([...prior].sort());
       modelRecords.push(record!);
       // A new request identity with the same fixed input/question reuses the receipt.
       if (!recoverPublication) {
@@ -257,7 +257,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const videoContent = await modelRound(video.detail.material.id, 'content', '仅依据所选视频实际字幕提炼内容与尚待验证的主张，不补造时间或成果；全部文字限制1000中文字以内。');
     const paperDialog = await openMaterial(paper.detail.material.id);
     await paperDialog.getByRole('button', { name: '继续沉淀', exact: true }).click();
-    const manual = paperDialog.locator('form').filter({ has: paperDialog.getByRole('heading', { name: '继续沉淀 · 人工记录', exact: true }) });
+    const manual = paperDialog.locator('form').filter({ has: page.getByRole('heading', { name: '继续沉淀 · 人工记录', exact: true }) });
     await manual.getByLabel('沉淀层次', { exact: true }).selectOption('topic');
     await manual.getByLabel('本轮问题', { exact: true }).fill('人工选入两份公开资料，二者技术关联待核对');
     await manual.getByLabel('人工整理结果', { exact: true }).fill('将这两份实际公开资料并列作为待比较输入；是否有共同技术问题仍待查，无已验证结论。');
@@ -266,7 +266,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const bridging = page.waitForResponse(r => r.url().endsWith('/distillations') && r.request().method() === 'POST');
     await manual.getByRole('button', { name: '保存人工沉淀', exact: true }).click();
     const bridgeResponse = await bridging;
-    expect(bridgeResponse.status()).toBe(201);
+    expect(bridgeResponse.status()).toBe(200);
     const bridge = (await bridgeResponse.json() as S['DistillationResultV1']).distillation;
     expect(bridge.provenance.mode).toBe('manual');
     await paperDialog.getByRole('button', { name: '关闭', exact: true }).click();
@@ -275,7 +275,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     expect(videoTopic.input_refs.every(ref => ref.material_id === video.detail.material.id && ref.revision === head)).toBe(true);
     const candidateDialog = await openMaterial(paper.detail.material.id);
     await candidateDialog.getByRole('button', { name: '形成候选', exact: true }).click();
-    const candidateForm = candidateDialog.locator('form').filter({ has: candidateDialog.getByRole('heading', { name: '形成候选', exact: true }) });
+    const candidateForm = candidateDialog.locator('form').filter({ has: page.getByRole('heading', { name: '形成候选', exact: true }) });
     await candidateForm.getByLabel('候选标题', { exact: true }).fill('核对真实论文与视频的证据边界');
     await candidateForm.getByLabel('候选用途 / 为什么值得做', { exact: true }).fill('人工审核两份已选公开资料和实际模型输出，保留未确认的关联。');
     await candidateForm.getByLabel('最小下一步', { exact: true }).fill('人工逐项核对原文与前轮待查问题，暂不启动任务。');

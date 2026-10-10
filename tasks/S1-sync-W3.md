@@ -81,6 +81,20 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## 新整理目标首轮：实际结果成功，optional 字段断言失败
+
+SOURCE `d72142be3b5797716a34dbb211ead219d263ed64` 已push，普通含checked W0 `df9ebc1626250691d571aa0814849f1457cb3d27` 流式合并/有限日志原因，以及原生停止/历史显示小修。原库4pmMWO、`--output=test-results/s1-real-distinct-goals` 本轮1 FAIL，55.7秒、exit1。新论文术语/定义目标作业 `ZMZQELUBTBFXZYW2WZF2GSGXL2` succeeded/attempt1/delivery_unknown=false，真实输出已保存、SQLite沉淀1；随后测试对optional prior_distillation_ids首轮未选前轮时省略的契约行为强要求[]，因此失败。其他三轮模型尚未提交，旧4GQ UNKNOWN字段保持原状。
+
+原trace/error-context/截图 `web/test-results/s1-real-distinct-goals/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/`，完整命令日志 `web/test-results/s1-real-distinct-goals-command.log`，原DB/objects全部保留。续验修正可省略无前轮字段，普通同题receipt复用这项成功结果，不重新调用其模型；原paper UNKNOWN不重发、不作为前轮。四轮/冷恢复/授权读取/later仍待后续，不把这项成功外推完整AT或旧失败根因。
+
+## 两项实际内容成功，人工表单定位首败及后续准备
+
+SOURCE `6ca6b0746512fff5d5177aea8589b983c9850332`，同4pmMWO原库、`--output=test-results/s1-real-optional-prior-fix`：1 FAIL，约1.4分钟。论文新术语内容作业 `ZMZQELUBTBFXZYW2WZF2GSGXL2` 普通receipt复用，无第二次模型调用；视频内容作业 `BFFPW2H3YKNZUJBBJS5H2G4NE6` 实际 succeeded/attempt1/unknownfalse，两条实际模型记录已保存。人工表单的相对has定位器错误地在form内再次找dialog，30秒失败；人工记录和两项topic尚未提交，旧UNKNOWN不改写。
+
+原trace/error-context/截图在 `web/test-results/s1-real-optional-prior-fix/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/`，命令日志 `web/test-results/s1-real-optional-prior-fix-command.log`，原库保留，所属API/Vite正常退出。后续修正manual/candidate相对定位器，按真实handler核对manual200/candidate201/review201；候选形成复用既有全沉淀查询，以便明确选择不同资料的真实记录，加载/失败不得假装空记录。默认未知维度留空并保留unknown原因，不编造评估。
+
+原生预览增加capture scopeKey，项目权限/CLI/空间版本任一变化隐藏旧packet；仅前端范围失效修正，未追加原生付费turn。typecheck/lint/build/diff及完整Vitest58项PASS。后续仍只完成主控已授权的两项新topic和原AT，已成功内容普通复用，完整真实验收待续。
+
 ## 原生展示定向返修（无新增付费 turn）
 
 主控目视真实1280/1920发现human STOP回执events为空会覆盖先前实际回复。NativeProjectPanel现在分开保存最新status/stop_confirmed与已读取output，停止空回执仅在当前项目/权限/空间版本仍匹配时保留先前实际文字，并标明“此前已读取”；权限变化、服务拒绝上下文/观察读取时隐藏或清除，不复制不存在的新回复。历史按API user_text/text角色显示已发送消息/实际Agent文字，识别schema1服务wrapper后仅展示用户消息，完整原文/metadata默认折叠；未知schema保持原文。无新会话、付费turn或聊天框重构。
