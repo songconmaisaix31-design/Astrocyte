@@ -66,6 +66,8 @@ type TextProcessor interface {
 // LocalProjects is separate from the S0 project projection so old consumers do
 // not mistake a native project root for an execution/environment identity.
 type LocalProjects interface {
+	CheckProjectModel(context.Context, domain.Caller, string, string) (domain.LocalProject, error)
+	Shutdown(context.Context) error
 	ListProjects(context.Context, domain.Caller) ([]domain.LocalProject, error)
 	DiscoverProjects(context.Context, domain.Caller, string) ([]domain.ProjectCandidate, error)
 	RegisterProject(context.Context, domain.Caller, domain.RegisterProjectCommand) (domain.LocalProject, error)
