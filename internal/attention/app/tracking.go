@@ -45,7 +45,13 @@ func trackingResult(tx TrackingTx, source TrackingSource) (TrackingSourceResult,
 // Source identity comes from a validated official public locator/UID, never an
 // arbitrary caller-chosen key. Multiple accounts and explicit folders coexist.
 func normalizeTrackingSource(c BindTrackingSourceCommand) (TrackingSource, error) {
-	s := TrackingSource{Platform: c.Platform, SourceKind: c.SourceKind, OwnerID: strings.TrimSpace(c.OwnerID), ExternalID: strings.TrimSpace(c.ExternalID), Title: strings.TrimSpace(c.Title), Status: "pending", Warnings: []string{}}
+	s := TrackingSource{AccessMode: normalizedSourceAccess(c.AccessMode), Platform: c.Platform, SourceKind: c.SourceKind, OwnerID: strings.TrimSpace(c.OwnerID), ExternalID: strings.TrimSpace(c.ExternalID), Title: strings.TrimSpace(c.Title), Status: "pending", Warnings: []string{}}
+	if s.AccessMode != "public" && s.AccessMode != "browser_selected" {
+		return s, domain.ErrInvalid
+	}
+	if s.AccessMode == "browser_selected" && (s.Platform != "douyin" || s.SourceKind != "favorites") {
+		return s, serviceError(apierrors.ScopeDenied, "Browser access is limited to selected Douyin favorite folders", "choose_authorized_browser_folder")
+	}
 	if c.SourceKind != "uploads" && c.SourceKind != "favorites" {
 		return s, domain.ErrInvalid
 	}
@@ -91,6 +97,14 @@ func normalizeTrackingSource(c BindTrackingSourceCommand) (TrackingSource, error
 		}
 		s.ExternalID, s.OwnerID = id, owner
 	case "douyin":
+		if s.AccessMode == "browser_selected" {
+			if u.Hostname() != "www.douyin.com" || len(parts) != 2 || parts[0] != "user" || parts[1] == "self" || !publicDouyinID.MatchString(s.OwnerID) || parts[1] != s.OwnerID || !publicDecimalID.MatchString(s.ExternalID) || u.Query().Get("collect_id") != s.ExternalID || u.Query().Get("showTab") != "favorite_collection" || u.Query().Get("showSubTab") != "favorite_folder" {
+				return s, serviceError(apierrors.ScopeDenied, "A verified account and selected favorite-folder ID are required", "discover_selected_douyin_folders")
+			}
+			q := url.Values{"showTab": {"favorite_collection"}, "showSubTab": {"favorite_folder"}, "collect_id": {s.ExternalID}}
+			s.Locator = "https://www.douyin.com/user/" + s.OwnerID + "?" + q.Encode()
+			break
+		}
 		if u.Hostname() != "www.douyin.com" || len(parts) != 2 || parts[0] != "user" || parts[1] == "self" {
 			return s, serviceError(apierrors.ScopeDenied, "Douyin /user/self requires login; public-only tracking needs a real public profile", "provide_public_douyin_profile")
 		}
@@ -106,6 +120,13 @@ func normalizeTrackingSource(c BindTrackingSourceCommand) (TrackingSource, error
 		return s, serviceError(apierrors.UnsupportedCapability, "This platform has no public listing adapter", "choose_supported_public_platform")
 	}
 	return s, nil
+}
+
+func normalizedSourceAccess(value string) string {
+	if value == "" {
+		return "public"
+	}
+	return value
 }
 
 func (s *Service) ListTrackingSources(ctx context.Context, p Principal) (apierrors.ListResult, error) {
@@ -151,6 +172,26 @@ func (s *Service) BindTrackingSource(ctx context.Context, p Principal, c BindTra
 		if err != nil {
 			return TrackingSourceResult{}, err
 		}
+		if source.AccessMode == "browser_selected" {
+			catalog, ok := tx.(CatalogTx)
+			if !ok {
+				return TrackingSourceResult{}, serviceError(apierrors.UnsupportedCapability, "Selected-folder discovery storage is unavailable", "configure_source_catalog_storage")
+			}
+			rows, err := catalog.LoadSourceCatalog(source.Platform, source.OwnerID, source.AccessMode)
+			if err != nil {
+				return TrackingSourceResult{}, err
+			}
+			verified := false
+			for _, row := range rows {
+				if row.ExternalID == source.ExternalID && row.OwnerID == source.OwnerID && row.AccessMode == source.AccessMode && row.Locator == source.Locator {
+					verified, source.Title = true, row.Title
+					break
+				}
+			}
+			if !verified {
+				return TrackingSourceResult{}, serviceError(apierrors.ScopeDenied, "This folder has not been explicitly discovered in the authorized browser", "discover_selected_douyin_folders")
+			}
+		}
 		port, err := trackingPort(tx)
 		if err != nil {
 			return TrackingSourceResult{}, err
@@ -160,7 +201,7 @@ func (s *Service) BindTrackingSource(ctx context.Context, p Principal, c BindTra
 			return TrackingSourceResult{}, err
 		}
 		for _, row := range rows {
-			if row.Platform == source.Platform && row.SourceKind == source.SourceKind && row.ExternalID == source.ExternalID {
+			if row.Platform == source.Platform && row.SourceKind == source.SourceKind && row.ExternalID == source.ExternalID && normalizedSourceAccess(row.AccessMode) == source.AccessMode && (source.AccessMode == "public" || row.OwnerID == source.OwnerID) {
 				return trackingResult(port, row)
 			}
 		}
@@ -565,15 +606,4 @@ func (s *Service) SyncSourcesOnce(ctx context.Context) error {
 	}
 	s.signal()
 	return nil
-}
-
-func (s *Service) ListSourceCollections(ctx context.Context, p Principal, platform, ownerID string) (apierrors.ListResult, error) {
-	if err := authorize(p, true); err != nil {
-		return apierrors.EmptyList(), err
-	}
-	if s.options.CollectionReader == nil {
-		return apierrors.EmptyList(), serviceError(apierrors.ProviderUnavailable, "No public collection reader is configured", "configure_public_listing_reader")
-	}
-	rows, err := s.options.CollectionReader.ListCollections(ctx, platform, ownerID)
-	return listResult(rows), mapError(err, "")
 }
