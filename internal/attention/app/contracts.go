@@ -543,6 +543,7 @@ type AttentionTx interface {
 // Tracking stores public metadata only. A binding never imports every item,
 // grants credentials, or permits model processing outside a selected project.
 type TrackingSource struct {
+	AccessMode    string                  `json:"access_mode"`
 	ID            string                  `json:"id"`
 	Version       int                     `json:"version"`
 	Platform      string                  `json:"platform"`
@@ -600,6 +601,7 @@ type TrackingSourceResult struct {
 }
 type BindTrackingSourceCommand struct {
 	CommandMeta
+	AccessMode string `json:"access_mode,omitempty"`
 	Platform   string `json:"platform"`
 	SourceKind string `json:"source_kind"`
 	ExternalID string `json:"external_id"`

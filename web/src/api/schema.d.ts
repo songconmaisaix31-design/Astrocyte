@@ -1,5 +1,65 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/github-repositories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read public repository cache
+         * @description Human cached GET only; no network, code checkout, credential access, model processing or Agent launch.
+         */
+        get: operations["listGitHubRepositories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/github-repositories/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sync explicitly named public GitHub metadata
+         * @description Anonymous fixed-program metadata retrieval capped at 100 repositories. No clone or README/body extraction; only explicit human input and CSRF. Account/private scope remains pending.
+         */
+        post: operations["syncGitHubRepositories"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/github-repositories/{id}/placement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Place repository in top-level development space
+         * @description Human selects an existing ProjectSpace; fixed program clones into its managed root and records actual HEAD. Repeated placement reuses the clone. Default A only; B/C, control, model and each action remain independently human approved. No Mission or Agent autostart.
+         */
+        post: operations["placeGitHubRepository"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/local-projects/{id}/sessions/probe": {
         parameters: {
             query?: never;
@@ -3084,6 +3144,11 @@ export interface components {
             error: components["schemas"]["ServiceErrorV1"] | null;
         };
         TrackingSourceV1: {
+            /**
+             * @description Omitted legacy input means public; browser_selected requires explicit human selected owner and folder identity and configured browser bridge.
+             * @enum {string}
+             */
+            access_mode?: "public" | "browser_selected";
             id: string;
             version: number;
             /** @enum {string} */
@@ -3129,6 +3194,11 @@ export interface components {
             next_cursor: string | null;
         };
         BindTrackingSourceRequestV1: {
+            /**
+             * @description Omitted legacy input means public; browser_selected requires explicit human selected owner and folder identity and configured browser bridge.
+             * @enum {string}
+             */
+            access_mode?: "public" | "browser_selected";
             /** @constant */
             schema_version: 1;
             request_id: string;
@@ -3499,6 +3569,165 @@ export interface components {
             request_id: string;
             expected_version: number;
         };
+        GitHubMetadataV1: {
+            github_id: number;
+            full_name: string;
+            html_url: string;
+            clone_url: string;
+            description: string;
+            default_branch: string;
+            language: string;
+            stars: number;
+            archived: boolean;
+            fork: boolean;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: date-time */
+            pushed_at: string;
+        };
+        /**
+         * @description Anonymous public metadata and durable managed-clone observations. Empty root/head/project_id before explicit human placement; unknown or failed clone effects are never inferred successful. No grants, sessions or model permissions are created.
+         * @example {
+         *       "id": "github-1",
+         *       "revision": 1,
+         *       "metadata_revision": 1,
+         *       "metadata": {
+         *         "github_id": 1,
+         *         "full_name": "example/repository",
+         *         "html_url": "https://github.com/example/repository",
+         *         "clone_url": "https://github.com/example/repository.git",
+         *         "description": "Contract fixture only",
+         *         "default_branch": "main",
+         *         "language": "Go",
+         *         "stars": 0,
+         *         "archived": false,
+         *         "fork": false,
+         *         "updated_at": "2026-10-10T00:00:00Z",
+         *         "pushed_at": "2026-10-10T00:00:00Z"
+         *       },
+         *       "sync_status": "synced",
+         *       "synced_at": "2026-10-10T00:00:00Z",
+         *       "space_id": "",
+         *       "project_id": "",
+         *       "clone_status": "not_cloned",
+         *       "root": "",
+         *       "head": "",
+         *       "clone_attempts": 0,
+         *       "last_error": ""
+         *     }
+         */
+        GitHubRepositoryV1: {
+            id: string;
+            revision: number;
+            metadata_revision: number;
+            metadata: components["schemas"]["GitHubMetadataV1"];
+            sync_status: string;
+            /** Format: date-time */
+            synced_at: string;
+            space_id: string;
+            project_id: string;
+            clone_status: string;
+            root: string;
+            head: string;
+            clone_attempts: number;
+            last_error: string;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "items": [
+         *         {
+         *           "id": "github-1",
+         *           "revision": 1,
+         *           "metadata_revision": 1,
+         *           "metadata": {
+         *             "github_id": 1,
+         *             "full_name": "example/repository",
+         *             "html_url": "https://github.com/example/repository",
+         *             "clone_url": "https://github.com/example/repository.git",
+         *             "description": "Contract fixture only",
+         *             "default_branch": "main",
+         *             "language": "Go",
+         *             "stars": 0,
+         *             "archived": false,
+         *             "fork": false,
+         *             "updated_at": "2026-10-10T00:00:00Z",
+         *             "pushed_at": "2026-10-10T00:00:00Z"
+         *           },
+         *           "sync_status": "synced",
+         *           "synced_at": "2026-10-10T00:00:00Z",
+         *           "space_id": "",
+         *           "project_id": "",
+         *           "clone_status": "not_cloned",
+         *           "root": "",
+         *           "head": "",
+         *           "clone_attempts": 0,
+         *           "last_error": ""
+         *         }
+         *       ],
+         *       "next_cursor": null
+         *     }
+         */
+        GitHubRepositoryListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["GitHubRepositoryV1"][];
+            next_cursor: string | null;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "repository": {
+         *         "id": "github-1",
+         *         "revision": 1,
+         *         "metadata_revision": 1,
+         *         "metadata": {
+         *           "github_id": 1,
+         *           "full_name": "example/repository",
+         *           "html_url": "https://github.com/example/repository",
+         *           "clone_url": "https://github.com/example/repository.git",
+         *           "description": "Contract fixture only",
+         *           "default_branch": "main",
+         *           "language": "Go",
+         *           "stars": 0,
+         *           "archived": false,
+         *           "fork": false,
+         *           "updated_at": "2026-10-10T00:00:00Z",
+         *           "pushed_at": "2026-10-10T00:00:00Z"
+         *         },
+         *         "sync_status": "synced",
+         *         "synced_at": "2026-10-10T00:00:00Z",
+         *         "space_id": "",
+         *         "project_id": "",
+         *         "clone_status": "not_cloned",
+         *         "root": "",
+         *         "head": "",
+         *         "clone_attempts": 0,
+         *         "last_error": ""
+         *       }
+         *     }
+         */
+        GitHubRepositoryResultV1: {
+            /** @constant */
+            schema_version: 1;
+            repository: components["schemas"]["GitHubRepositoryV1"];
+        };
+        SyncGitHubRepositoriesRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @description Explicit public GitHub account, owner/repository or https://github.com URL. No credential or private scope. */
+            input: string;
+        };
+        PlaceGitHubRepositoryRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @description Existing top-level development ProjectSpace selected by the human; expected_version is the cached repository revision. */
+            space_id: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -3508,6 +3737,271 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listGitHubRepositories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Durable cached observations; no automatic permission expansion */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitHubRepositoryListV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    syncGitHubRepositories: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncGitHubRepositoriesRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Durable cached observations; no automatic permission expansion */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitHubRepositoryListV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    placeGitHubRepository: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlaceGitHubRepositoryRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Durable cached observations; no automatic permission expansion */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GitHubRepositoryResultV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Structured error; never replay unknown effects automatically */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     probeNativeCLI: {
         parameters: {
             query?: never;
