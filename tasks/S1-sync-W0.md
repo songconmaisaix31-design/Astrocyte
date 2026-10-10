@@ -2,9 +2,9 @@
 
 Task `task_8bcdaec3c1db` / Dispatch `ctx_6390663d09e5`。实际客户端 Orca Codex 0.162.0 / GPT-6.1-Sol high fast（主控核实屏幕）；工作树/分支 `s1-sync-contract-1010`。
 
-## 当前集成检查点（最终稳定验证待 W3 交付）
+## 当前集成检查点（首次稳定 check RED，等待 W2 领域返修）
 
-已推送集成源码 `1073e81dcd8c0b33131e411cb7bb58332b198f17`，与 `origin/s1-sync-contract-1010` 一致；普通合入 W1 REPORT `123be4b8b64a770e5dc9667146d946cc228addd0`（SOURCE `38f4f4dff0e9884c77daf1c0ca333cd96d93f1e5`）、W2 REPORT `35928231e987503edec03de7942ea02edaef65a8`（SOURCE `57b4f7b639d197273b59b4495e66bc9775ad0b7b`）和 W3 初版 SOURCE `90148a34b5f9584fd2172820292a995451492f6c`。W3 最终源码、真实应用浏览器验收及本树稳定 check/build 尚未完成，不将初版源码或局部检查当最终验收。
+普通合入 W1 REPORT `123be4b8b64a770e5dc9667146d946cc228addd0`（SOURCE `38f4f4dff0e9884c77daf1c0ca333cd96d93f1e5`）、W2 REPORT `35928231e987503edec03de7942ea02edaef65a8`（SOURCE `57b4f7b639d197273b59b4495e66bc9775ad0b7b`）和 W3 最终 REPORT `a7981c8fe1a603bf8fee81ec7617205ea12144ed`（SOURCE `fd787319a4c1e8d9c328f3a8db87b2f8e14d06ff`，生产 UI `79c01d1fa00ff62d90a724260acb41f930289c87`）。初次稳定 check SOURCE `c334574123e2e0ed6333195ff515576628d729fa` 已推送；Go/vet/mod/deps PASS 后架构检查 RED，W2 原 owner 已由主控重新派发 `ctx_95c21bdb8b72` 做最小领域返修，不放宽检查规则。本树稳定 check/build 尚未最终通过。
 
 W0 完成共享 GitHub 列表/公开元数据同步/人工 placement 契约、human session + CSRF HTTP 路由、009 仓库存储迁移、010 来源 owner/access_mode 身份迁移和 011 选择目录缓存迁移；OpenAPI、生成 TS、typed API 与测试 helper 保持一致。人工 placement 只验证既有顶层 ProjectSpace，再接 W2 固定受管 clone；普通元数据同步不创建代码目录、项目或 Mission。源目录 GET 只读缓存；显式人类 POST discovery 才调用 W1 选择范围读取器。Scoped Agent 无权管理全局连接、选择或 placement，项目控制、模型和动作许可不因克隆扩大。
 
@@ -16,12 +16,14 @@ W0 完成共享 GitHub 列表/公开元数据同步/人工 placement 契约、hu
 | `go test -mod=readonly ./internal/adapters/httpapi ./cmd/server ./tests/s1` | PASS：真实 HTTP 权限/CSRF/Caller、缓存 GET 无同步、SQLite 旧数据/版本/FK 保留及新身份约束；后续入口和配置受影响 cmd tests 另行 PASS |
 | `node scripts/check-s1-project-api.mjs`（装配阶段临时真实 API） | PASS：A-B-A/固定引用/权限撤销和冷启动；GitHub 空缓存、元数据无代码目录、非法输入及 Agent/CSRF 拒绝。contract_local，无个人浏览器/模型/媒体；最终领域变化后的稳定验证待办 |
 | `pnpm --dir web typecheck`（`9f914c2` helper 修复阶段） | PASS，仅当时源码；W3 初版 UI 合入后的最终类型与浏览器返修归其 owner，不外推最终全套 |
+| `GOFLAGS=-p=1 pnpm check`，SOURCE `c334574123e2e0ed6333195ff515576628d729fa`，清除进程本地全部 ASTROCYTE 配置/opt-in | **FAIL/exit1**：gofmt、Go vet/test、mod verify、依赖 PASS；架构发现 `internal/workspace/app` 直接导入 `log/slog`/调用全局 Warn。首日志 `%TEMP%/astrocyte-W0-repository-check-first-20261010.log` 保留；其余契约/API/TS/lint/unit/diff 和 build 在该首次场均 NOT_RUN，不能算通过 |
+| W3 原库应用续验，SOURCE `fd787319` | **2 PASS/50.8秒/exit0**：前场已经一次 GitHub metadata/人工 placement/实际 clone，续验保持 clone_attempts1、原 root/HEAD、A-only，冷启动/重复返回同记录；同抖音求职3条绑定、标题重复去重、固定配置无 env override 冷启动，0正文/模型/资料/Mission/native。W3 是获准应用 API owner，W0 未自行重做 |
 
 本轮首失败保留：新 schemas 曾误追加到 securitySchemes，生成解析 FAIL，修正块位置后独立 PASS；首次入口误用不存在的 store constructor 导致 cmd build FAIL，改为已有 DB 实现后独立 PASS；首次 diff 检查 EOF 空行 FAIL，后续普通提交修复。一次早期手工展开 SHA 的交接文本错误已即时向全部接收者发 exact correction，未据错误 SHA 合并。W2 首次匿名 REST403、W1 首次越界桥检查/SQL audit/无新读取的 HTTP harness 首败、W3 浏览器首轮 RED 由各 owner 保留，成功复验是另一条证据。旧 UNKNOWN 不重发，旧 AT01–04 沿用，不重复 paid/media。
 
 后续 W3 SOURCE `79c01d1fa00ff62d90a724260acb41f930289c87` 普通 merge `8ec608f27a03ddcafdcd1cec04c5b9a0754f6272` 已推送。首完整浏览器结果 `144 PASS / 16 FAIL / 18 SKIP`、27.9 分钟保留，目标复验不改写它。W3 抖音应用首读 discovery/cache 实际均 HTTP200；共享 `tests/s1/contracts.mjs` 错将 query 纳入 OpenAPI path 查找而使验收在绑定前 FAIL，W0 改为仅以 URL pathname 找 operation，原实际请求 query 与完整响应 schema 校验保留。独立离线定向检查 PASS：带查询和无查询均校验，非法 item_count 与未文档路由仍拒绝；W0 未重读个人浏览器，W3 沿原所属库续验。
 
-剩余：等待 W3 固定源码的默认浏览器回归返修、真实 GitHub metadata→人工纳入→clone 和 selected Douyin 的应用 API/普通重启验收，再执行本树一次串行稳定 check/build。首 GitHub 账号/private 范围仍未决定，仅匿名公开手工输入；GitHub 账号列表仅有界一页，HTML 降级未知字段仍未知；Douyin 只支持获准选定且已完整挂载目录，未连接/未挂载/长列表不能猜测分页。完整 S1、main 合入、远端 CI 与人工接受不由本 worker 宣称。
+剩余：等待 W2 最小领域边界修复的 exact pushed SHA，普通合入后串行最终 check/build。W3 首默认整套 `144 PASS /16 FAIL /18 SKIP` 与后续30功能定向 PASS、4最终默认截图 PASS、2实际续验 PASS 分别保留；未把目标绿结果改成完整新源码 E2E 全绿。首 GitHub 账号/private 范围仍未决定，仅匿名公开手工输入；GitHub 账号列表仅有界一页，HTML 降级未知字段仍未知。Douyin 只支持获准选定且已完整挂载目录的当前 DOM 快照，桥不独立刷新平台页，新收藏尚未挂载不能保证被观察；后续刷新方式仍待用户，不开新标签或扩大权限。未连接/未挂载/长列表不能猜测分页；仅验自有 API 进程冷 stop/start，机器整体重启 NOT_RUN。完整 S1、main 合入、远端 CI 与人工接受不由本 worker 宣称。
 
 ## 早期共享契约阶段（保留当时结果）
 
