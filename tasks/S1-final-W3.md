@@ -2,6 +2,10 @@
 
 Branch `s1-sync-ui-1010`；Task `task_63cf1b96db88` / Dispatch `ctx_55f6713c28e7`，Run `run_8c1696bb815a`。固定工作树与分支，客户端 OpenCode（未覆盖模型参数）。独占写域 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、`docs/acceptance/S1-paper-board.md` 与本文件。
 
+## 后续增量（Task `task_34521efa6d1e`，progress infer 文件人类输入）
+
+消费 coordinator msg_9eb8753af616：`ProjectProgressPanel` 原硬编码 `TASK.md/STATUS.md`，真实项目无 TASK.md。改为人类输入相对路径（`TextField` 多行，默认 `STATUS.md`，1–8 行），新增纯函数 `parseProgressFiles`（逐行 trim、去空、cap 8），仍走既有 `files` API 与 `command.prepare(full payload)`，由后端按已批准目录校验、不自动扫描/不改权限/不创造文件。文案去防御性「未伪造」：面板说明改「从项目内的状态、任务文件推断进度，附来源与版本」，推断成功提示改「结果按你选择的文件返回」。无模型调用/无真实快照抓取。验证：`typecheck` PASS、`web test` **84 PASS**（+2 `parseProgressFiles`）、`build` PASS、`lint` PASS、`playwright test progress.spec.ts` **6 PASS**（新增「人类输入路径逐字透传（路径变化/越界不静默归一）」回归，1920/1280）。
+
 ## 基线与消费
 
 - 普通合并 W0 最终 `683d650`（含 `e39f8f1`/`662887e`/`cc211ce`/`6ad20b1`，paper_snapshot 进 adapter 枚举、progress infer 去掉 body operation_id）与 W2 最终 `a6e21b3`；未改 W0/W2 写域（契约/生成客户端/迁移/锁/入口/internal），保持自身 UI 改动。
@@ -21,7 +25,7 @@ Branch `s1-sync-ui-1010`；Task `task_63cf1b96db88` / Dispatch `ctx_55f6713c28e7
 
 | 步骤 | 结果 |
 |---|---|
-| fulltext 快照粘贴 → 「按快照正文导入（HTML 正文）」（paper_snapshot） | PASS：job succeeded；material `UIDZGKCLJPHGA7OOQEMXQEHUD5`；revision1 provenance `paper_snapshot/browser_snapshot_fulltext`，source_key=`doi:10.1371/journal.pdig.0000514`，正文 >10000 字符且含标题，`paper-snapshot.json` 附件逐字节等于原始快照 |
+| fulltext 快照粘贴 → 「按快照正文导入（HTML 正文）」（paper_snapshot） | PASS：job succeeded；material `UIDZGKCLJPHGA7OOQEMXQEHUD5`；revision1 provenance `paper_snapshot/browser_snapshot_fulltext`，source_key=`doi:10.1371/journal.pdig.0000514`，正文 >10000 字符且含标题，`paper-snapshot.json` 附件对象级等于界面原始提交的快照（非采集 pretty 文件逐字节） |
 | 同 body 再导入（去重） | PASS：同一 material，revisions 仍 1 |
 | 同 URL 人工改正文再导入 | PASS：revisions 2（version 2 / current_revision 2），rev2 正文含人工追加段，仍 `browser_snapshot` 不称线上新版本 |
 | fresh API（stop 自有 API + 同库新进程） | PASS：同 material/revisions 2，rev1 content_digest 一致 |
