@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
@@ -129,7 +130,7 @@ func ReadProjectFiles(ctx context.Context, p domain.LocalProject, paths []string
 			return nil, scopeError("context file output exceeds bound")
 		}
 		remaining -= len(data)
-		result = append(result, domain.ContextFile{Path: filepath.ToSlash(rel), Text: string(data)})
+		result = append(result, domain.ContextFile{Path: filepath.ToSlash(rel), Text: string(data), Version: fmt.Sprintf("mtime:%d;size:%d", info.ModTime().UnixNano(), info.Size())})
 	}
 	return result, nil
 }
