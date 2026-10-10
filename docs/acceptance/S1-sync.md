@@ -1,5 +1,17 @@
 # S1 账号同步与本地 Agent 验收
 
+## 最新限定真实验收（2026-10-10）
+
+W3应用 SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0`，分支 `s1-sync-ui-1010` 已push。原4pmMWO库 `ASTROCYTE_TEST_REAL_S1_ACCEPTANCE=1`、两项 `ASTROCYTE_S1_REUSE_{OWNED_TEMP,APPROVED_ROOT}` 均指 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO`，`pnpm --dir web exec playwright test s1-real-acceptance.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-real-reference-picker-fix`：**1 PASS，测试1.5分钟/整场1.7分钟、exit0**。
+
+限定AT01–04通过：选定论文/视频各content→topic两轮实际Codex0.162.0/gpt-6.1-sol记录、固定来源与前轮；普通新表单receipt复用与真实2501v1→v2→v1 head保持；最后视频主题真实本地发布失败后保存Result、冷重启、人类retry完成attempt2且同payload/native计数/start.checked_at不变；三次获准Agent全文读取不改变人类heat，自批准403/revoke200；候选later/deferred无reject、重启资料active、无Mission。跨资料技术关系保留人工待查。旧paper UNKNOWN原样未重发，费用/原效果未知。
+
+原库/objects保留。原Playwright JSON body与两尺寸截图在 `web/test-results/s1-real-reference-picker-fix/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/`，文件为actual-public-scope-results、actual-local-publication-failure、actual-job-states、actual-retained-store-path及actual-selected-materials-{1280,1920}；实际正文、四轮provenance、failed-before-retry及成功终态均可只读。命令日志 `web/test-results/s1-real-reference-picker-fix-command.log`。截图已目视无横溢；15173/18787/64046/64047关闭、所属进程退出，W3已释放独占live槽。
+
+本轮最终静态 typecheck/lint/Vitest58/build/diff PASS。独立公开README原生流程SOURCE0d2319e的1PASS保持，最终停后输出/范围失效/packet折叠返修仅静态检查，未追加paid native验证。
+
+**完整S1仍不通过**：Bili所选UID uploads公开挑战、favorites真实空，非空账号metadata建议及人工选择未验；论文是既有真实JSON而非本次arXiv URL获取；个人项目根、第二模型CLI未验，自动派发措辞待用户。未更换来源、无fixtures fallback，未追加模型/媒体/超限跨源尝试。下列阶段历史首RED/UNKNOWN与旧NOT_RUN保留；最新限定PASS不覆盖它们，也不替代主控最终整套检查或人类接受。
+
 ## 2026-10-10 用户决定后续作
 
 最新内容续验 SOURCE `6ca6b0746512fff5d5177aea8589b983c9850332`：原4pmMWO库真实浏览器1 FAIL约1.4分钟。论文新术语内容 `ZMZQELUBTBFXZYW2WZF2GSGXL2` receipt复用，视频内容 `BFFPW2H3YKNZUJBBJS5H2G4NE6` 实际成功，均attempt1/unknownfalse；未重复成功模型。人工form相对定位器30秒失败，manual/topic/retry/Agent/later尚未完成。原trace/error-context/截图与日志保留于 `web/test-results/s1-real-optional-prior-fix/` 和同名command.log，原UNKNOWN保持未知。

@@ -1,5 +1,29 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 最终交接（2026-10-10，限定真实验收）
+
+分支 `s1-sync-ui-1010`，最终应用 SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0` 已push；W0组装 `df9ebc1626250691d571aa0814849f1457cb3d27` 普通合入，未改backend/contracts/generated/entry/Swarm/Mission。现有Attention/Workspace实现公共来源人工绑定、建议先于正文选择、真实项目权限/原生控制、未知与有限恢复；候选表单可明确选择不同资料的真实沉淀，原生输出/历史/预览按获准范围失效。
+
+真实选定资料验收：`ASTROCYTE_TEST_REAL_S1_ACCEPTANCE=1`，`ASTROCYTE_S1_REUSE_OWNED_TEMP=ASTROCYTE_S1_REUSE_APPROVED_ROOT=C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO`，执行 `pnpm --dir web exec playwright test s1-real-acceptance.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-real-reference-picker-fix`，**1 PASS（测试1.5分钟/整场1.7分钟），exit0**。
+
+| 实际路径 | 结果及边界 |
+|---|---|
+| AT01 选定论文/视频各两轮 | 四条独立实际模型记录，content→topic明确前轮与固定输入，无Mission；论文使用既有真实JSON，不代表新URL获取；跨资料关系为人工明确待查 |
+| AT02 普通复用、版本及恢复 | 新表单同输入复用receipt、不新增工作；2501v1→v2→v1保持head2；旧视频A不改刷新后的B；最后video topic真实本地发布失败后保存Result、冷重启、人工retry，同Result完成attempt2，不调用第二模型 |
+| AT03 获准Agent读取 | 人类grant200，独立身份三次context200、两份正文逐字核对，人类计数/行为不变，各Agent计数+3，自批准403、人类revoke200 |
+| AT04 later | 实际候选ready_for_review→deferred，仅later无reject，再重启候选一致且资料active |
+| 原生实际路径 | SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` 独立公开README1 PASS：同线程start/resume/send共3短turn、实际观察/会话记录/人类stop确认。最终展示小修只静态验证，无额外paid turn |
+
+实际Codex CLI `0.162.0` / model `gpt-6.1-sol`，四条新成功整理的job分别 `ZMZQELUBTBFXZYW2WZF2GSGXL2`、`BFFPW2H3YKNZUJBBJS5H2G4NE6`、`RSA45N23SBB72BVNW65ERWX53E`、`X3WNRYW2KOSLRRUD3B75CU7F6L`。前三attempt1，最后attempt2；最后首次failed/unknownfalse的实际paidResult与恢复后payload相同、native计数及冷start.checked_at未变。旧 `4GQ7GKDXHZIND7CAB7GIZU3W4V` failed/unknowntrue/Result:null 原样，不重发，不作为前轮，原费用/调用效果未知。已成功模型与媒体不重复。真实对象路径故障在明确自有4pmMWO根内，原objects恢复。
+
+原Playwright附件body原样保留于 `web/test-results/s1-real-reference-picker-fix/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/`：`actual-public-scope-results.json`、`actual-local-publication-failure.json`、`actual-job-states.json`、`actual-retained-store-path.json`、`actual-selected-materials-{1280,1920}.png`。两尺寸同真实状态截图已目视，无横向溢出；完整日志 `web/test-results/s1-real-reference-picker-fix-command.log`。原SQLite/objects保留供主控只读，不另造证据基础设施。此前所有首RED/UNKNOWN各有独立原output，不改写。
+
+最终应用静态检查 `pnpm --dir web typecheck` / `lint` / `test`（58项）/ `build` / `git diff --check` PASS；最后只测试选择器修改另跑typecheck/diff PASS。一次附加只读审计误查询SQLite不存在kind列，读取PRAGMA并按data JSON核对后得到实际5项模型job（4成功/1UNKNOWN）；不是业务或浏览器重跑。4pmMWO五条no-modelprobe为owned/stopped/stop_confirmedtrue/nativeID空，独立paid原生三turn在另一个pznwxr库；两者不得合并为模型调用计数。
+
+真实剩余：所选BiliUID `3494358764489275` 上传412/-352挑战、公开收藏code0/count0，非空清单建议及人工选择仍NOT_RUN；未换UID或假装非空。Douyin自链接需登录时PUBLICONLY要求可公开URL；其他平台占位。新arXiv URL、本人的项目根、第二模型CLI及跨源超128KiB输入未验证，自动派发措辞仍待用户。完整S1不宣称通过；主控最终整套检查/集成/用户接受由主控执行。
+
+最后场服务已正常退出；15173/18787/64046/64047无监听，精确4pmMWO server无残留，本场开始后codex无残留，已向root明确释放唯一真实槽。后续不再paid/model/media/native操作；以下为阶段历史，不能把旧NOT_RUN或首FAIL覆盖成新PASS。
+
 ## 用户决定后续作（2026-10-10）
 
 当前 Dispatch `ctx_bf18050e3ee7`，Task `task_bb04bd91e57a`，固定分支/写域不变。普通合入主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，未 reset/rebase/force/clean；QUESTIONS 顶部覆盖历史 pending。实际客户端仍为 Orca Codex，本轮未另选模型。
