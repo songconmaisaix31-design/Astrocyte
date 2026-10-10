@@ -26,7 +26,7 @@ func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, erro
 		if !filepath.IsAbs(root) {
 			return nil, errors.New("absolute registered root required")
 		}
-		args = []string{"--no-optional-locks", "--no-pager", "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.hooksPath=", "-C", root}
+		args = []string{"--no-optional-locks", "--no-pager", "--work-tree", root, "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.hooksPath=", "-C", root}
 		switch kind {
 		case "git_head":
 			args = append(args, "rev-parse", "--verify", "HEAD")
