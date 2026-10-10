@@ -1,6 +1,6 @@
 # S1 同步 W2：本地项目与原生会话续作
 
-2026-10-10 核心源码 `d5ee4a11826a4f654562a19c8f8ac41009d04e5f`，分支 `s1-local-agents-1010`，已 push；本报告另包含后续流式增量返修，其精确 SOURCE/REPORT SHA 由 Orca Handoff 提供。完整 context 实现起点 `3637de70a74b2c3e143a2bacfea6c37286e83d12`。先普通合入指定 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，并普通消费 W0 公共端口/迁移；未 reset/rebase/clean/force。开发客户端仍为 Orca Codex，协调者明确提供的开发模型为 `gpt-6.1-sol`。下方库存旧报告保留为历史阶段，旧待答结论不代表当前授权。
+2026-10-10 当前 W2 runtime SOURCE `a7973245cff47c684e7501dcf7f3d66a787306c7`，分支 `s1-local-agents-1010`，已 push；包含核心 `d5ee4a1`及流式增量返修，最终 REPORT SHA 另由 Orca Handoff 提供。完整 context 实现起点 `3637de70a74b2c3e143a2bacfea6c37286e83d12`。先普通合入指定 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，并普通消费 W0 公共端口/迁移；未 reset/rebase/clean/force。开发客户端仍为 Orca Codex，协调者明确提供的开发模型为 `gpt-6.1-sol`。下方库存旧报告保留为历史阶段，旧待答结论不代表当前授权。
 
 ## 当前完成及所有权
 
@@ -36,11 +36,13 @@
 
 W3独立实测 SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b`：保留首UI错误URL matcher FAIL6分钟，随后沿用原SQLite/同一native ID的有界续验1 PASS29.3秒，总start/resume/send三turn。真实active GET/context200包含原user_text README和assistant marker，resume200同native ID/native mode、第三send200新输出、STOP200确认；W2只读其明确提供的`web/test-results/s1-native-original-session/.../actual-native-receipts.json`核对。这验证Codex完整历史的真实API路径，不等于Pi新断言或跨session handoff。W3首paper模型job `4GQ7GKDXHZIND7CAB7GIZU3W4V` 约18秒delivery_unknown独立保留，底层phase未存入DB/trace、Result=null，不重放、不从README成功推导论文成功，也不将765字节离线缺陷当作已证明的原失败原因。
 
+后续资料实测冻结 SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0`、W3 REPORT `56e9c85634156a1d3945ef59d8599b6e374c8482`：协调者确认资料AT四项与流式修复后四次真实Codex模型整理通过，model `gpt-6.1-sol`/CLI0.162.0。四个独立job为 `ZMZQELUBTBFXZYW2WZF2GSGXL2`、`BFFPW2H3YKNZUJBBJS5H2G4NE6`、`RSA45N23SBB72BVNW65ERWX53E`、`X3WNRYW2KOSLRRUD3B75CU7F6L`；W2只读指定原资料库核对四项succeeded/unknown=false，旧`4GQ...`仍UNKNOWN。最后一项本地publication失败后沿原已保存Result恢复，attempts2不代表第二次模型调用；W3原附件`web/test-results/s1-real-reference-picker-fix/.../actual-public-scope-results.json`和`actual-local-publication-failure.json`保留结果与恢复证据。此为限定资料流程的真实接入，不是完整客户端接入或科学研究成果；默认E2E/最终集成结算仍由主控负责。
+
 保留首次 RED：W0未到位前 Caller 参数编译不匹配，合入真实端口后 PASS；Codex thread/start sandbox enum首次 `-32600`（文档与安装schema差异），按本机公开生成 schema 修正 `read-only` 后 PASS；Pi冷启动version5秒超时，有限15秒probe后握手 PASS；Claude包入口首次缺少旧 cli.js，按公开 npm wrapper 改用实际 bin/claude.exe后 PASS。首次 Codex completed 后 interrupt `-32600` 与正向 owned exit分开记录，已改为仅 running 时 interrupt。开发中两次局部编译错误修正后重测通过。W3/W0登记history_roots=null首RED由各 owner保留，W2新旧DTO修复不改写历史。
 
 ## 当前限制与未执行
 
-真实个人项目/历史根尚未提供；只用非私有临时项目，不声称实际用户历史接入。未执行跨会话 context_handoff 的真实模型验收；同一原生 ID resume不是该证据。Pi模型当前认证拒绝；OpenCode/Grok/Kimi/Qwen/Cursor native driver未实现/验收，所有安装不推断原生支持。Claude generic selected-text 路径因协议在 paid turn前无法新观察当前model而明确 EvidenceMissing；workspace直接运行已验证，不能用旧 cache假装当前配置相同。原生usage/cost尚未投影，保持 null。
+真实个人项目/历史根尚未提供；只用非私有临时项目，不声称实际用户历史接入。未执行跨会话 context_handoff 的真实模型验收；同一原生 ID resume不是该证据。Pi模型当前认证拒绝；OpenCode/Grok/Kimi/Qwen/Cursor native driver未实现/验收，所有安装不推断原生支持。Claude workspace已真实两轮/同UUID恢复，但generic selected-text在paid turn前缺当前model观测而明确EvidenceMissing，自动选择/显式per-project模型许可待用户决定；不能用旧cache假装当前配置。自动派发/自动启动关闭，Agent不能自授权限或代替human审批。原生usage/cost尚未投影，保持 null。
 
 选定材料只读工具关闭；CLI进程仍可自行读取其现有配置/认证，宿主不读凭据，协作模式无 OS读隔离保证。未运行旧sandbox setup、用户ACL/firewall、seat安装或全局SDK迁移；未写用户私有项目。Linux仅build。UI/API/SQLite浏览器验收归W0/W3，W2不冒充已执行；需协调者最后集成验收。真实单槽已明确归还，未再调用native/model/media/browser；未提交 worker_done，等待 root 判断原始范围和真实阻塞。
 
