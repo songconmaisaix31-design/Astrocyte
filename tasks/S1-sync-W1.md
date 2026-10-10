@@ -129,3 +129,11 @@ W0实际API第一套12PASS/2FAIL中，changed supplied export新job的失败断�
 Root另指出官方arxiv Reader的arxiv:baseID与现有summarize_json paper导出的HTML URL key分裂资料。本轨仅actual kind=paper+既有NormalizeArxivID接受的官方论文URL归一到相同arxiv:baseID；summarize/manual既有导出两路适用，video/其他域名/无效ID不折叠。原始固定版本URL、真实导出内容/附件和existing_*_export/manual provenance原样保存，不声明官方fresh fetch或相同bytes。未迁移/重写已存在历史重复材料，也未改共享契约。
 
 测试覆盖现代/旧arxiv ID、官方多URL版本、非paper及其他host不误并。跨adapter→Service→实际SQLite/objects→真close/reopen测试验证官方A与不同exportB同一Material/新revision2、exact B新表单job复用、旧A digest复用revision1但B head不回退、restart后唯一material及原JSON附件保留。HTTP为明确contract_local，不是真实arxiv重新抓取。该测试首次编译误用Job.Revision，随后查询误写materials表失败；按现有MaterialRevision字段/attention_materials表更正后单独PASS，首失败保留。Global status回归PASS。全Go test/vet/build、架构/diff检查PASS；实际fresh模型/媒体/browser仍由root安排。
+
+## 导入专用2501.12948两版真实原件交接（2026-10-10）
+
+Root要求AT02使用用户已授权IMPORT/version verification的2501.12948v1/v2，不授权模型。仅沿tasks/S1-plan末尾明确保留的目录查询：`C:/Users/DW/AppData/Local/Temp/astrocyte-s1-OHU8NF/data/state.sqlite`以mode=ro查历史material `JFKF5J6VWD43TN4W3LO4SVRD77`；r1/r2为同arxiv:2501.12948，原provenance是arxiv+summarize/2501.12948v1或v2;summarize0.21.8/official_atom_pdf_and_html_text，对应官方HTML。没有全盘/个人history搜索，没有修改历史库或文件。
+
+原件根 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-OHU8NF/data/objects/` 下：v1原summarize JSON文件`159560bf4f2e4f2f82d4a1a03facd615d8a923345864d6cf30514a8249d237c1`（124424bytes、59375字符/59654UTF8bytes正文、input/extracted.url=https://arxiv.org/html/2501.12948v1）；v2文件`75a089219c3dbeeb5ccef83ee8166ec63c4f956d9ff6e34fb8386f624584aae8`（390015bytes、190458字符/191455UTF8bytes正文、对应v2HTML URL）。两原正文现时直接比较不同，summary/llm均null；可将exact原JSON直接粘贴现有summarize导出+kindpaper，source_locator用各自HTML版本地址。新导出provenance仍existing_json_export，不假称本轮官方下载；W1阶段7归一材料身份，differentbytes可新revision。无需手改body、制作fixture或复制整个数据库。v2超过128KiB原生输入，但这里只导入，不能模型处理这两论文。
+
+root/W3已收到上述exact路径；原正文对象r1=`041548e2951f314ede1bfd128bbd477c86765021fec0feba0e482606c15abed5`、r2=`a65e3235482675bc6d13cae1b7e6b324db2690dbebe2f6b44f465781355daeb9`含官方Reader包装，和原JSON extracted.content形式不同，不混称同bytes。本交接不启动真实服务、browser或模型；root预告的已返回模型Result后真实对象发布失败场景保持待W3首RED，未预先改领域行为。
