@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workdomain "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -51,6 +52,32 @@ func TestSelectedTextRequestsPassActualNativeBoundsWithoutLaunching(t *testing.T
 	_, err = NewListingRecommender(processor, 30*time.Minute).Recommend(ctx, app.ListingRecommendationInput{Caller: caller, ProjectID: "project", CLI: "codex", Items: []app.SourceItem{{SourceID: "source", ExternalID: "id", Revision: 1, Metadata: app.ListingMetadata{Title: "fixed public metadata"}}}})
 	if !errors.Is(err, context.Canceled) {
 		t.Fatal("recommendation did not pass actual native bounds before cancellation", err)
+	}
+}
+
+func TestOversizeAssembledPromptFailsKnownBeforeSelectedProcess(t *testing.T) {
+	for _, mode := range []string{"distillation", "recommendation"} {
+		t.Run(mode, func(t *testing.T) {
+			ctx := context.Background()
+			processor := &selectedProcessorStub{t: t, output: `{}`}
+			caller := app.Principal{ID: "real-caller", Kind: "human"}
+			// Character count alone fits; the actual UTF-8 prompt does not.
+			body := "metadata only title " + strings.Repeat("字", 44*1024)
+			var err error
+			if mode == "distillation" {
+				d, resolveErr := NewSelectedTextFactory(processor, 30*time.Minute).Resolve(ctx, caller, "project", "selected-cli")
+				if resolveErr != nil {
+					t.Fatal(resolveErr)
+				}
+				_, err = d.Distill(ctx, app.DistillationInput{Stage: "summary", Inputs: []app.SourceSnapshot{{Ref: app.SourceRef{MaterialID: "material", Revision: 1}, Text: body}}})
+			} else {
+				_, err = NewListingRecommender(processor, 30*time.Minute).Recommend(ctx, app.ListingRecommendationInput{Caller: caller, ProjectID: "project", CLI: "selected-cli", Items: []app.SourceItem{{SourceID: "source", ExternalID: "id", Revision: 1, Metadata: app.ListingMetadata{Title: "metadata only title", Description: body}}}})
+			}
+			var service *apierrors.ServiceError
+			if !errors.As(err, &service) || service.Code != apierrors.ValidationFailed || service.RequiredAction != "review_selected_text_size" || processor.calls != 0 {
+				t.Fatalf("oversize prompt must be a known preflight failure with0 native calls: calls=%d err=%v", processor.calls, err)
+			}
+		})
 	}
 }
 
