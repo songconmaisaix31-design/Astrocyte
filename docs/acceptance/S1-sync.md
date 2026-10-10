@@ -1,5 +1,15 @@
 # S1 账号同步与本地 Agent 验收
 
+## 本轮真实非空收藏与 Orca 登记项目（2026-10-10）
+
+当前用户已允许读取 Orca 登记的本地项目，B站原 UID 公开收藏真实返回默认夹452项和小夹2项；下文0条/根未授权是历史，不能当作当前结论。GitHub同步范围、抖音公开身份仍待答，自动Agent派发保持关闭。
+
+W3 SOURCE `7a338f0685033cc5e80236adb7e40ea15167a78b` 真实metadata浏览器 **1 PASS / 2.7分钟 / exit0**：原默认夹最大100行、99 unique、原BV在列，重复绑定同Source、SQLite/冷重启无新版本，未获建议不能选正文，无模型/媒体。SOURCE `0765481203411852bc66cce26b4af385d78efc54` 真实单条建议→人工选择 **1 PASS / 3.2分钟 / exit0**：唯一新建议 `2MRD654JKJZEH75TIYLA4I5RG7` / attempt1，正文复用原 `26MPWE7S3S4FLEUE62BZLKC54T`，其他98条无推荐/入库，原UNKNOWN/原正文/CAS/关注不变，无Mission，重启可查。两场精确复用自有4pmMWO库，summarize关闭。
+
+后续SOURCE `6db8735` 不同新请求键实测200、同原建议job、owned native目录前后7项相同，原作业与正文断言和两尺寸检查已执行；整场在重启/关闭Windows退出竞态 **1 FAIL / 1.5分钟 / exit1**，保留trace的`actual-selected-source-before-restart`与清理错误，不标整个续验PASS。SOURCE `a0abb36` 项目首场 **1 FAIL / 2.8分钟 / exit1**：缓存GET、54候选/16限制partial、人工登记/defaultA通过，refresh52秒超HTTP写30秒使浏览器502；后续权限/冷重启NOT_RUN。W0已修120秒总体读取/150秒HTTP写期限，W3 SOURCE `15dee41` 沿原1lHfyS库续验中。
+
+现有Attention/Workspace局部已消费真实缓存发现API，按实际目录/Git/Orca活动显示候选，由人选择关联空间登记；默认A、B/C/模型/动作独立，没有自动授权、自动入库或伪原生恢复。SourceReview已选择勾选、真实入库提示与建议来源折叠修正；静态新测试误类型首FAIL保留，修正生成`ContentV1`后TS/build PASS，Vitest58 PASS。最后静态/适用回归/所有owned进程退出还槽仍待完成。详细准确SHA、命令、原件路径见 [W3当前报告](../../tasks/S1-sync-W3.md)。
+
 ## 默认权限定向返修（2026-10-10）
 
 主控SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` 整套152 PASS / 2 FAIL / 8 SKIP、exit1，两个首败为 `s1.spec.ts:223` 的旧全局关闭文案，原两尺寸trace/error-context保留。W3只修改原用例按当前项目许可检查，SOURCE `bf3b5e7408245f12874830595c40e5a3a3471761` 已push；默认空项目、未知model/config、selected-project-cli动作提示、availablefalse/allowedkeys空、disabled、零模型POST、SQLite无新沉淀job与humanheat0均保留。
