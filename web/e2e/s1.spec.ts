@@ -127,7 +127,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     await page.goto(`${server.webURL}/attention`);
     const main = page.getByRole('main');
     await main.locator('summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
-    const domainForm = main.locator('details').filter({ hasText: '新建资料域' });
+    const domainForm = main.locator('details').filter({ hasText: '新建资料域' }).last();
     await domainForm.locator('summary').click();
     await domainForm.getByLabel('域名称', { exact: true }).fill('contract_local 浏览器资料域');
     await domainForm.getByLabel('域说明', { exact: true }).fill('人工纳入；原文仍保留');
@@ -145,7 +145,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect((await classifyResponse).status()).toBe(200);
     await expect.poll(async () => (await api.get(`/materials/${id}`)).material.domain_ids).toEqual([domainID]);
     await dialog.getByRole('button', { name: '关闭', exact: true }).click();
-    const spaceForm = main.locator('details').filter({ hasText: '创建项目顶层空间' });
+    const spaceForm = main.locator('details').filter({ hasText: '创建项目顶层空间' }).last();
     await spaceForm.locator('summary').click();
     await spaceForm.getByLabel('空间名称', { exact: true }).fill('contract_local 浏览器空间');
     const spaceResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/project-spaces') && response.request().method() === 'POST');
@@ -216,7 +216,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     await expect(main.getByText('已保存配置 v2 · 停用', { exact: true })).toBeVisible();
     await expect(main.getByRole('checkbox', { name: '启用综合排序', exact: true })).not.toBeChecked();
     for (const [label, value] of fields) await expect(main.getByLabel(label, { exact: true })).toHaveValue(value);
-    const history = main.locator('details').filter({ hasText: '排序配置版本历史' });
+    const history = main.locator('details').filter({ hasText: '排序配置版本历史' }).last();
     await history.locator('summary').click();
     await expect(history).toContainText('v1 · 启用');
     await expect(history).toContainText('v2 · 停用');

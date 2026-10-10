@@ -61,8 +61,8 @@ test('real metadata recommendation precedes human selection and reuses the origi
     expect((await probeHTTP.json() as S['NativeSessionResultV1']).session.stop_confirmed).toBe(true);
     await page.goto(`${server.webURL}/attention`);
     await page.getByRole('button', { name: /查看来源更新/ }).click();
-    await page.getByLabel('查看公开来源', { exact: true }).selectOption(source!.id);
-    const review = page.getByRole('region', { name: '公开来源更新清单' });
+    await page.getByLabel('查看来源', { exact: true }).selectOption(source!.id);
+    const review = page.getByRole('region', { name: '来源更新清单' });
     await review.getByLabel('建议使用的项目许可', { exact: true }).selectOption(project!.id);
     const row = review.locator('li').filter({ has: page.locator('a[href*="BV1PReT6EEqR"]') });
     await expect(row).toHaveCount(1);
@@ -160,7 +160,7 @@ test('real metadata recommendation precedes human selection and reuses the origi
     expect((await read<S['MissionListV1']>('/missions')).items).toEqual([]);
     await page.reload();
     await page.getByRole('button', { name: /查看来源更新/ }).click();
-    await page.getByLabel('查看公开来源', { exact: true }).selectOption(source!.id);
+    await page.getByLabel('查看来源', { exact: true }).selectOption(source!.id);
     await expect(row.getByRole('button', { name: '查看已入库资料', exact: true })).toBeVisible();
     await testInfo.attach('actual-selected-source-after-restart', { body: JSON.stringify(restarted, null, 2), contentType: 'application/json' });
   } catch (error) {

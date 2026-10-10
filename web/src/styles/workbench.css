@@ -99,3 +99,7 @@
 .ac-workbench .ac-folder-choices { display:grid; gap:14px; }
 .ac-workbench .ac-folder-choices button { display:flex; align-items:center; gap:12px; text-align:left; }
 @media (max-width:760px) { .ac-workbench .ac-library-actions { gap:18px; } .ac-workbench .ac-library-actions h2 { font-size:20px; } .ac-workbench .ac-inline-flows>span { width:100%; } }
+.ac-workbench .ac-live-grid { display:block; }
+.ac-workbench .ac-page-hints { margin-top:28px; border-top:1px solid var(--ac-line); }
+.ac-workbench .ac-page-hints>.ac-right-rail { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+@media (max-width:760px) { .ac-workbench .ac-page-hints>.ac-right-rail { grid-template-columns:1fr; } }

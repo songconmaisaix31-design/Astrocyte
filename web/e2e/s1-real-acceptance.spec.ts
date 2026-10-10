@@ -159,6 +159,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
 
     // Human approval explicitly pins both actual objects, independently of model approval.
     await page.goto(`${server.webURL}/attention`);
+    await page.locator('main summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
     await page.getByLabel('当前项目顶层空间', { exact: true }).selectOption(spaceID);
     const refs = page.getByRole('region', { name: '空间资料引用', exact: true });
     const approvedRefs = (await read<S['ProjectSpaceResultV1']>(`/project-spaces/${spaceID}`)).space.material_refs;
@@ -213,6 +214,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
         await server.restart();
         api = await humanAPI(server.apiURL);
         await page.goto(`${server.webURL}/attention`);
+        await page.getByRole('button', { name: '查看处理队列', exact: true }).click();
         await page.getByRole('button', { name: '刷新队列', exact: true }).click();
         const row = page.locator('li').filter({ has: page.locator('strong').filter({ hasText: receipt.job_id }) });
         await expect(row).toContainText('可以重试');

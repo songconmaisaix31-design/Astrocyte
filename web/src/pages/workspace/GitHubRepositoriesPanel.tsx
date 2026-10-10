@@ -60,10 +60,10 @@ function RepositoryFacts({ repository: repo }: { repository: Repository }) {
 function PlacementForm({ repository: repo, spaces, disabled, onPlaced }: { repository: Repository; spaces: ReturnType<typeof useProjectSpaces>; disabled: boolean; onPlaced: () => void }) {
   const [spaceID, setSpaceID] = useState(repo.space_id);
   const command = useCommand(disabled || spaces.loading || spaces.stale || !spaces.data);
-  const supported = ['not_placed', 'failed', 'interrupted'].includes(repo.clone_status);
+  const supported = ['not_placed', 'failed', 'interrupted', 'cloning'].includes(repo.clone_status);
   return <form className={formStyles.form} onSubmit={event => { event.preventDefault(); if (!supported || !spaceID) return; const request = command.prepare({ expected_version: repo.revision, space_id: spaceID }); void command.run(() => githubRepositoriesApi.place(repo.id, request.body, request.key), onPlaced, '已保存纳入结果；请核对实际目录、HEAD 与克隆状态'); }}>
     <QueryState state={spaces}>{data => <SelectField label={`为 ${repo.metadata.full_name} 选择开发空间`} value={spaceID} onChange={setSpaceID} disabled={command.pending || !!repo.space_id} options={[{ value: '', label: '选择一个项目顶层空间…' }, ...data.items.map(space => ({ value: space.id, label: space.title }))]} />}</QueryState>
     <p className={styles.note}>纳入后才获取代码。项目保持 A 默认，B/C、模型和动作许可分别设置；不会启动 Agent 或任务。</p><CommandState {...command} />
-    <button className="ac-button" type="submit" disabled={disabled || command.pending || !supported || !spaceID || spaces.loading || spaces.stale || !spaces.data}>{['ready'].includes(repo.clone_status) ? '已纳入并克隆' : repo.clone_status === 'unknown' ? '结果未知，请先核对原操作' : ['failed', 'interrupted'].includes(repo.clone_status) ? '人工重试此空间的克隆' : '纳入所选空间并克隆代码'}</button>
+    <button className="ac-button" type="submit" disabled={disabled || command.pending || !supported || !spaceID || spaces.loading || spaces.stale || !spaces.data}>{repo.clone_status === 'ready' ? '已纳入并克隆' : repo.clone_status === 'unknown' ? '结果未知，请先核对原操作' : repo.clone_status === 'cloning' ? '核对并恢复此空间克隆' : ['failed', 'interrupted'].includes(repo.clone_status) ? '人工重试此空间的克隆' : '纳入所选空间并克隆代码'}</button>
   </form>;
 }
