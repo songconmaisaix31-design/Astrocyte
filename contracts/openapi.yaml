@@ -42,6 +42,90 @@ tags:
   - name: local-agents
     description: Cached local CLI readiness and native capability observations
 paths:
+  /local-projects/{id}/sessions/probe:
+    post:
+      operationId: probeNativeCLI
+      summary: Verify chosen native CLI connection
+      description: "Human explicitly verifies one registered native adapter in the
+        approved project: initialize a bounded empty native session, confirm owned
+        stop, and cache actual observations. No model turn or automatic dispatch;
+        unknown stays unknown until observed."
+      tags:
+        - projects
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoverNativeSessionsRequestV1"
+      responses:
+        "200":
+          description: Current scoped service result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NativeSessionResultV1"
+        "400":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable error; unknown effects are not replayed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /source-collections:
     get:
       operationId: listSourceCollections
@@ -6543,7 +6627,8 @@ components:
     LocalAgentV1:
       type: object
       additionalProperties: false
-      description: CLI installation identity, independent of any private native session, project or Mission.
+      description: CLI installation identity, independent of any private native
+        session, project or Mission.
       properties:
         id:
           type: string
@@ -6553,7 +6638,9 @@ components:
           type: string
           minLength: 1
         version:
-          type: [string, "null"]
+          type:
+            - string
+            - "null"
           description: Observed version only; null if not observed.
         installed:
           $ref: "#/components/schemas/AgentObservationV1"
@@ -6581,24 +6668,77 @@ components:
               $ref: "#/components/schemas/NativeCapabilityObservationV1"
             reconcile:
               $ref: "#/components/schemas/NativeCapabilityObservationV1"
-          required: [discover, read_context, start, resume, send, stop, observe, reconcile]
-      required: [id, display_name, version, installed, configured, startable, capabilities]
+          required:
+            - discover
+            - read_context
+            - start
+            - resume
+            - send
+            - stop
+            - observe
+            - reconcile
+        native_adapter_registered:
+          type: boolean
+          description: Backend registry implements this CLI protocol. This is independent
+            of installed/configured/startable and every observed native capability;
+            a human may request explicit verification.
+      required:
+        - id
+        - display_name
+        - version
+        - installed
+        - configured
+        - startable
+        - capabilities
       examples:
         - id: example-cli
           display_name: Example CLI (schema example only)
           version: null
-          installed: {status: unknown, reason: cli_not_probed, checked_at: null}
-          configured: {status: unknown, reason: configuration_not_inspected, checked_at: null}
-          startable: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+          installed:
+            status: unknown
+            reason: cli_not_probed
+            checked_at: null
+          configured:
+            status: unknown
+            reason: configuration_not_inspected
+            checked_at: null
+          startable:
+            status: unknown
+            reason: native_runtime_not_tested
+            checked_at: null
           capabilities:
-            discover: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
-            read_context: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
-            start: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
-            resume: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
-            send: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
-            stop: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
-            observe: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
-            reconcile: {status: unknown, reason: native_runtime_not_tested, checked_at: null}
+            discover:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
+            read_context:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
+            start:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
+            resume:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
+            send:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
+            stop:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
+            observe:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
+            reconcile:
+              status: unknown
+              reason: native_runtime_not_tested
+              checked_at: null
     LocalAgentListV1:
       type: object
       additionalProperties: false
@@ -9992,6 +10132,8 @@ components:
           type: string
         text:
           type: string
+        expanded:
+          type: boolean
       required:
         - reference
         - title
