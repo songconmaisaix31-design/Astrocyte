@@ -81,3 +81,11 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## Full S1 首轮真实浏览器 RED 与原库续验准备
+
+SOURCE `393676ebc5241c1db56c721caa776e248d98dc19`，主控单槽 `ASTROCYTE_TEST_REAL_S1_ACCEPTANCE=1 pnpm --dir web exec playwright test s1-real-acceptance.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-real-first`：1 FAIL、exit1，trace 约229.1秒。论文既有真实JSON、视频既有正文与一次明确视频URL刷新三个实际作业均 succeeded/attempt1/delivery_unknown=false；SQLite 沉淀0、原生会话0，未调用模型。失败是历史CRLF被浏览器textarea规范为LF，测试却要求原始字节相等；原export不改，修正核对实际人类输入文本，不改变版本内容。
+
+保留 `web/test-results/s1-real-first/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/` 原截图/error-context/trace。原库与objects在 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO`，真实视频刷新作业 `26MPWE7S3S4FLEUE62BZLKC54T` 已完成。主控要求复用这个明确自有临时目录，后续普通表单复用该结果，无第二次媒体获取；即使成功也保存同库供主控只读验收，API/Vite正常关闭。
+
+续验准备同时改为模型按实际Job.deadline_at、最多30分钟等待终态，整体测试预算容纳四次有界模型期限；不修改业务时限/模型/费用，不提前关闭仍running服务。材料标题可缺失，测试按实际UI来源locator显示核对。实际native记录读取加入后续测试，取同一活跃Codex线程真实上下文，不新增付费turn。人类停止 owned 会话独立于撤销后的模型/动作许可及能力缓存，由服务核对停止结果；其余输入门槛保持。新增native测试DTO首次误写NativeEventListV1导致typecheck FAIL，按生成契约NativeContextListV1修复后typecheck、lint、定向3文件9项单测、diff PASS。续验尚未运行，完整S1仍未通过。
+

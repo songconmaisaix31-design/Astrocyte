@@ -88,6 +88,14 @@ test('human observes, stops, resumes the same actual native session and sends on
     await settledOutput(0);
     await observeUI();
     await expect(row).toContainText('Astrocyte-W3-public-native');
+    const reading = page.waitForResponse(r => r.url().endsWith(`/sessions/${session.id}/context`) && r.request().method() === 'GET');
+    await row.getByRole('button', { name: '读取此会话的实际记录', exact: true }).click();
+    const actualContext = await reading;
+    expect(actualContext.status()).toBe(200);
+    const history = await actualContext.json() as S['NativeContextListV1'];
+    results.push(history);
+    expect(history.items.some(event => event.kind === 'user_text' && event.text.includes('README原文'))).toBe(true);
+    expect(history.items.filter(event => event.kind === 'text').map(event => event.text).join('')).toContain('Astrocyte-W3-public-native');
     async function stopUI() {
       const stopping = page.waitForResponse(r => r.url().endsWith(`/sessions/${session.id}/stop`) && r.request().method() === 'POST');
       await row.getByRole('button', { name: /^(验证并)?停止原生会话$/ }).click();
