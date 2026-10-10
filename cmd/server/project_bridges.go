@@ -45,6 +45,17 @@ type selectedTextBridge struct {
 	processor workspaceapp.TextProcessor
 }
 
+func (b *selectedTextBridge) ProjectSpaceID(ctx context.Context, p attentionapp.Principal, projectID, cli string) (string, error) {
+	if b.projects == nil {
+		return "", apierrors.NewUnsupported("project_model_processor")
+	}
+	project, err := b.projects.CheckProjectModel(ctx, domain.Caller{ID: p.ID, Kind: p.Kind, ProjectID: projectID}, projectID, cli)
+	if err != nil {
+		return "", err
+	}
+	return project.SpaceID, nil
+}
+
 func (b *selectedTextBridge) ConfigurationID(ctx context.Context, p attentionapp.Principal, projectID, cli string) (string, error) {
 	if b.projects == nil || b.processor == nil {
 		return "", apierrors.NewUnsupported("project_model_processor")
