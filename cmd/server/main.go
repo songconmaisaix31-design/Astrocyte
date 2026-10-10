@@ -24,6 +24,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -55,6 +56,10 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	sourceReader, err := resolveSourceReader(importRoots)
+	if err != nil {
+		return err
+	}
+	listingPython, err := resolveListingPython()
 	if err != nil {
 		return err
 	}
@@ -113,7 +118,8 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("open objects: %w", err)
 	}
-	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys})
+	listingReader := importers.NewPublicListingReader(listingPython)
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys, ListingReader: listingReader, CollectionReader: listingReader})
 	// Discover only public CLI version/help once at startup. Total bounded time
 	// keeps existing readiness checks responsive; GET reads the resulting cache.
 	// No configuration, private sessions, projects or native operations are read.
@@ -130,6 +136,7 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
+		Tracking:      attention,
 		Attention:     attention,
 		Foundation:    foundation.NewAttentionService(schemaVersion),
 		Materials:     attention,
