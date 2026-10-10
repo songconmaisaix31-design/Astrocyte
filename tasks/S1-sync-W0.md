@@ -2,11 +2,13 @@
 
 ## 2026-10-10 决定后继续开发（当前，未完成）
 
-当前交接：可编译业务 SOURCE `6a33c9b74059bbd6eb233e630c48e0994d44809e`；后续普通合入 W2 `1c07a49` 和 W1 `522da89` 仅测试/报告，分支 HEAD `9a5b2c62bfd82727fc020cf589d0a16c90d812dc`。已装配真实公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。完整离线 check/build 在 `dfd3949` PASS（14 API / 54前端），后续业务改动分别通过受影响 Go tests/vet/build 和 TS/lint；不扩展为真实模型或总体验收结论。
+当前交接：可合入主控的组装 SOURCE `df9ebc1626250691d571aa0814849f1457cb3d27` 已推送，普通消费 W1 `63e3ae0`、W2 `8703ad4` 与 W3 `07bd294`。已装配真实公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。W0 完整离线 check/build 在 `dfd3949` PASS（14 API / 54前端）；主控独立在 `9f8ec362c36a0fd88af05a4d28af7ec6342c774b` check/build PASS（14 API / 55前端 / 19包 / 232示例）。后续新增业务改动仅分别通过受影响 Go tests/vet/build 和 TS/lint，尚不宣称最新整集合或完整 S1 验收。
 
-W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真实 API/SQLite/objects 和明确根测试。保存结果后的冷启动恢复沿现有 `Resolve` + `ProjectSpaceID` 权限检查；`9564bca` 一度新增的未使用可选端口已由普通 `552a544` 删除，保留历史，不要求第二实现路径。新处理仍检查当前 CLI 配置，旧 UNKNOWN 不重放。W3 真源浏览器首败 CRLF/LF matcher 与保留库由主控追踪，不覆盖为成功；首轮0 paid，实际视频正文和论文原文已由主控独立核对，后续模型/原生/完整 AT 待现场结果。
+W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真实 API/SQLite/objects 和明确根测试。保存结果后的冷启动恢复沿现有 `Resolve` + `ProjectSpaceID` 权限检查；`9564bca` 一度新增的未使用可选端口已由普通 `552a544` 删除，保留历史，不要求第二实现路径。新处理仍检查当前 CLI 配置，旧 UNKNOWN 不重放。W3 真源浏览器首败 CRLF/LF matcher 与保留库由主控追踪，不覆盖为成功；首轮0 paid，实际视频正文和论文原文已由主控独立核对。旧论文 `4GQ7GKDXHZIND7CAB7GIZU3W4V` 实际模型 UNKNOWN 保留，不推断费用、结果或根因；主控明确授权原库四个新问题目标，由 W3 独占现场槽执行，W0 仅组装准备，当前尚无新目标验收回执。
 
-剩余真实限制：公开账号上游挑战/限流、无实际公开收藏条目、Douyin公开身份与匿名 transport、个人根和自动 Agent 控制限度仍未完成；selected prompt 保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Codex/Pi新完整历史扩展实测仍 NOT_RUN。人类停止 UI 在撤销模型许可后的门控与后端不符，已返 W3 最小修复；最终独立检查、现场返修和总控接收完成前本 worker 不结算完整 S1。
+剩余真实限制：公开账号上游挑战/限流、无实际公开收藏条目、Douyin公开身份与匿名 transport、个人根和自动 Agent 控制限度仍未完成；selected prompt 保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Pi新完整历史扩展实测仍 NOT_RUN。W3 在 SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` 对同一原 Codex 会话续验1 PASS：实际 resume/send、活跃原上下文读取与 human stop_confirmed=true，总共三短turn；这不是全部CLI/个人项目或论文整理通过。人类停止 UI 原门控由代码审阅发现并返 W3，在 `3660b0b` 修复（本项未由 W0 执行真实浏览器首败）；W0 TS/lint、nativePermission 3项、jobPresentation 4项目标检查 PASS，没有重复完整套件或使用现场槽；最终独立检查、现场返修和总控接收完成前本 worker 不结算完整 S1。
+
+最新领域修复均返原 owner，再 ordinary exact merge：W1 `f1a44b2` 对新 `attention.job_failed` 事件保存有界映射的原始 ServiceError cause，公开 job.Error 仍诚实 UNKNOWN，旧事件不补写，不保存原生正文或秘密。W2 `a797324` 离线重现同一消息1000中文token-delta在765字节即被256事件误伤；只在相同消息/turn生命周期合并连续文本，保持128KiB实际文本/256逻辑事件上限、跨控制边界分离与真实溢出拒绝。这是独立已知缺陷修复，不能证明旧论文实际 UNKNOWN 根因。W0 受影响 attention/app/sqlite 与 agents/sqlite/cmd Go tests、vet 和 server build 分别 PASS；组装 W3 `07bd294` 后 typecheck/lint/diff PASS，没有新增现场或付费调用。
 
 Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 实际 provider `codex`、model `gpt-6.1-sol`；W0 单独拥有契约、HTTP、入口、迁移及集成写域，其他领域返修由原 owner 完成。第一步 `git fetch origin` PASS，普通合入准确主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，合并 `8d69854`。用户事实源为 QUESTIONS 顶部；公开抖音身份、个人项目根和自动 Agent 派发限度仍待用户，不由实现推导授权。
 

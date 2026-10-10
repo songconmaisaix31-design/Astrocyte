@@ -37,6 +37,8 @@ type nativeProcess struct {
 	model, provider       string
 	modelObservedAt       time.Time
 	cli                   string
+	textMessage           string
+	textBuffer            strings.Builder
 	next                  int
 }
 
@@ -286,6 +288,11 @@ func (p *nativeProcess) failOutput() {
 }
 
 func (p *nativeProcess) addEvent(kind, text string) {
+	p.textMessage = ""
+	p.textBuffer.Reset()
+	if p.truncated {
+		return
+	}
 	if len(p.events) >= 256 || p.bytes+len(text) > 128*1024 {
 		p.truncated = true
 		p.status = "blocked"
@@ -297,10 +304,41 @@ func (p *nativeProcess) addEvent(kind, text string) {
 	p.events = append(p.events, domain.NativeEvent{Sequence: p.sequence, Kind: kind, Text: text})
 }
 
+// Coalesce only adjacent deltas belonging to the same native message. Control
+// and message boundaries reset textMessage; retained text still shares the
+// original byte bound and each distinct event shares the original event bound.
+func (p *nativeProcess) addTextDelta(message, text string) {
+	if p.truncated || text == "" {
+		return
+	}
+	last := len(p.events) - 1
+	if message != "" && p.textMessage == message && last >= 0 && p.events[last].Kind == "text" && p.bytes+len(text) <= 128*1024 {
+		p.textBuffer.WriteString(text)
+		p.events[last].Text = p.textBuffer.String()
+		p.bytes += len(text)
+		return
+	}
+	p.addEvent("text", text)
+	if !p.truncated {
+		p.textMessage = message
+		if message != "" {
+			p.textBuffer.WriteString(text)
+		}
+	}
+}
+
 func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMessage) {
+	if p.truncated {
+		return
+	}
+	if (method != "" && method != "item/agentMessage/delta") || (typ != "" && typ != "message_update") {
+		p.textMessage = ""
+	}
 	var params struct {
-		Delta string `json:"delta"`
-		Turn  struct {
+		Delta  string `json:"delta"`
+		ItemID string `json:"itemId"`
+		TurnID string `json:"turnId"`
+		Turn   struct {
 			ID     string `json:"id"`
 			Status string `json:"status"`
 		} `json:"turn"`
@@ -308,7 +346,11 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	_ = json.Unmarshal(r["params"], &params)
 	switch method {
 	case "item/agentMessage/delta":
-		p.addEvent("text", params.Delta)
+		message := ""
+		if params.ItemID != "" {
+			message = params.TurnID + ":" + params.ItemID
+		}
+		p.addTextDelta(message, params.Delta)
 	case "turn/started":
 		p.status = "running"
 		p.turnID = params.Turn.ID
@@ -335,7 +377,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		}
 		_ = json.Unmarshal(r["assistantMessageEvent"], &e)
 		if e.Type == "text_delta" {
-			p.addEvent("text", e.Delta)
+			// Pi emits message_start/message_end around each message; either
+			// boundary above ends this contiguous delta group.
+			p.addTextDelta("pi-message", e.Delta)
 		}
 	case "message_end":
 		var m struct {

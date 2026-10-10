@@ -568,13 +568,15 @@ func (s *Service) failJob(claim Job, cause error, unknown bool) error {
 		job.Version++
 		job.UpdatedAt = s.options.Clock()
 		job.DeliveryUnknown = unknown
+		// Keep the adapter's finite service cause in the existing event even
+		// when the public job must conservatively report a generic unknown.
+		originalError := *mapError(cause, "").(*apierrors.ServiceError)
 		if unknown {
 			job.Error = mapError(domain.ErrUnknown, "").(*apierrors.ServiceError)
 		} else {
-			mapped := *mapError(cause, "").(*apierrors.ServiceError)
+			mapped := originalError
 			job.Error = &mapped
 		}
-		originalError := *job.Error
 		if !unknown && job.Error.Retryable && (job.Attempts >= job.MaxAttempts || !s.options.Clock().Before(job.DeadlineAt)) {
 			job.Error.Retryable = false
 			job.Error.Message += "; bounded retry budget exhausted"

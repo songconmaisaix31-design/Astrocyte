@@ -20,6 +20,7 @@ const videoURL = 'https://www.bilibili.com/video/BV1PReT6EEqR/';
 test('real selected paper/video, scoped model rounds, ordinary reuse, authorized Agent reads and later persistence', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_REAL_S1_ACCEPTANCE !== '1', 'Requires coordinator-assigned live/model/media/native slot.');
   test.setTimeout(8_100_000);
+  page.setDefaultTimeout(30_000);
   const rawPaper = await readFile(paperExport, 'utf8');
   const savedPaper = JSON.parse(rawPaper) as { extracted: { url: string; content: string } };
   expect(savedPaper.extracted.url).toBe(paperURL);
@@ -41,6 +42,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
   const modelRecords: S['DistillationV1'][] = [];
   let completed = false;
   async function read<T>(path: string): Promise<T> { return (await api.get(path)) as T; }
+  const originalUnknowns = (await read<S['JobListV1']>('/jobs')).items.filter(job => job.delivery_unknown);
   async function waitModelJob(id: string, expected: 'succeeded' | 'failed') {
     const job = await read<S['JobV1']>(`/jobs/${id}`);
     return waitJob(api, id, expected, Math.max(1000, Math.min(1_800_000, Date.parse(job.deadline_at) - Date.now()) + 1000));
@@ -121,25 +123,32 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
 
     await page.goto(`${server.webURL}/workspace`);
     const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
-    await panel.getByText('登记项目 / 发现子项目', { exact: true }).click();
-    await panel.getByLabel('新项目顶层空间名称', { exact: true }).fill('真实公开资料范围');
-    await panel.getByRole('button', { name: '创建空间用于此项目', exact: true }).click();
-    await expect(panel.getByLabel('关联项目顶层空间', { exact: true })).not.toHaveValue('');
-    const spaceID = await panel.getByLabel('关联项目顶层空间', { exact: true }).inputValue();
-    await panel.getByLabel('项目名称', { exact: true }).fill('真实公开资料项目');
-    await panel.getByLabel('项目绝对目录', { exact: true }).fill(projectRoot);
-    const registering = page.waitForResponse(r => r.url().endsWith('/local-projects') && r.request().method() === 'POST');
-    await panel.getByRole('button', { name: '登记此项目', exact: true }).click();
-    const registered = await registering;
-    expect(registered.status()).toBe(200);
-    const project = (await registered.json() as S['LocalProjectResultV1']).project;
+    let registeredProject = reusePath ? (await read<S['LocalProjectListV1']>('/local-projects')).items.find(item => resolve(item.root) === resolve(projectRoot)) : undefined;
+    if (!registeredProject) {
+      await panel.getByText('登记项目 / 发现子项目', { exact: true }).click();
+      await panel.getByLabel('新项目顶层空间名称', { exact: true }).fill('真实公开资料范围');
+      await panel.getByRole('button', { name: '创建空间用于此项目', exact: true }).click();
+      await expect(panel.getByLabel('关联项目顶层空间', { exact: true })).not.toHaveValue('');
+      await panel.getByLabel('项目名称', { exact: true }).fill('真实公开资料项目');
+      await panel.getByLabel('项目绝对目录', { exact: true }).fill(projectRoot);
+      const registering = page.waitForResponse(r => r.url().endsWith('/local-projects') && r.request().method() === 'POST');
+      await panel.getByRole('button', { name: '登记此项目', exact: true }).click();
+      const registered = await registering;
+      expect(registered.status()).toBe(200);
+      registeredProject = (await registered.json() as S['LocalProjectResultV1']).project;
+    }
+    const project = registeredProject;
+    const spaceID = project.space_id;
+    if (reusePath) await panel.getByRole('button', { name: /真实公开资料项目.*查看项目与权限/ }).click();
     const manage = panel.getByRole('region', { name: '已登记项目管理' });
-    await manage.getByText('项目小权限与模型处理许可', { exact: true }).click();
-    await manage.getByLabel('此项目允许模型处理的 CLI', { exact: true }).selectOption('codex');
-    for (const action of ['启动', '停止']) await manage.getByRole('checkbox', { name: action, exact: true }).check();
-    const saving = page.waitForResponse(r => r.url().endsWith(`/local-projects/${project.id}/settings`) && r.request().method() === 'PUT');
-    await manage.getByRole('button', { name: '保存此项目许可', exact: true }).click();
-    expect((await saving).status()).toBe(200);
+    if (project.settings.external_model_cli !== 'codex') {
+      await manage.getByText('项目小权限与模型处理许可', { exact: true }).click();
+      await manage.getByLabel('此项目允许模型处理的 CLI', { exact: true }).selectOption('codex');
+      for (const action of ['启动', '停止']) await manage.getByRole('checkbox', { name: action, exact: true }).check();
+      const saving = page.waitForResponse(r => r.url().endsWith(`/local-projects/${project.id}/settings`) && r.request().method() === 'PUT');
+      await manage.getByRole('button', { name: '保存此项目许可', exact: true }).click();
+      expect((await saving).status()).toBe(200);
+    }
     const native = manage.getByRole('region', { name: '项目原生 Agent 操作' });
     await native.getByLabel('项目操作客户端', { exact: true }).selectOption('codex');
     const probing = page.waitForResponse(r => r.url().endsWith('/sessions/probe') && r.request().method() === 'POST');
@@ -152,12 +161,15 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     await page.goto(`${server.webURL}/attention`);
     await page.getByLabel('当前项目顶层空间', { exact: true }).selectOption(spaceID);
     const refs = page.getByRole('region', { name: '空间资料引用', exact: true });
+    const approvedRefs = (await read<S['ProjectSpaceResultV1']>(`/project-spaces/${spaceID}`)).space.material_refs;
     for (const [material, revision] of [[paper.detail.material, 1], [video.detail.material, head]] as const) {
-      await refs.getByLabel('@ 资料', { exact: true }).selectOption(material.id);
-      await refs.getByLabel('@ 固定内容版本', { exact: true }).selectOption(String(revision));
-      const reference = page.waitForResponse(r => r.url().endsWith(`/project-spaces/${spaceID}/references`) && r.request().method() === 'POST');
-      await refs.getByRole('button', { name: '@ 引用文件', exact: true }).click();
-      expect((await reference).status()).toBe(200);
+      if (!approvedRefs.some(ref => ref.material_id === material.id && ref.revision === revision)) {
+        await refs.getByLabel('@ 资料', { exact: true }).selectOption(material.id);
+        await refs.getByLabel('@ 固定内容版本', { exact: true }).selectOption(String(revision));
+        const reference = page.waitForResponse(r => r.url().endsWith(`/project-spaces/${spaceID}/references`) && r.request().method() === 'POST');
+        await refs.getByRole('button', { name: '@ 引用文件', exact: true }).click();
+        expect((await reference).status()).toBe(200);
+      }
       await expect(refs.getByRole('button', { name: `移除引用 · ${material.title || material.id}`, exact: true })).toBeVisible();
     }
     async function modelRound(materialID: string, stage: 'content' | 'topic' | 'project', question: string, prior: string[] = [], recoverPublication = false) {
@@ -173,7 +185,9 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       const response = await queued;
       expect(response.status()).toBe(202);
       const receipt = await response.json() as S['ImportJobV1'];
-      if (recoverPublication) {
+      const queuedJob = await read<S['JobV1']>(`/jobs/${receipt.job_id}`);
+      expect(queuedJob.delivery_unknown, 'An earlier unknown operation must never be replayed').not.toBe(true);
+      if (recoverPublication && queuedJob.status !== 'succeeded') {
         await expect.poll(async () => (await read<S['JobV1']>(`/jobs/${receipt.job_id}`)).external_started, { timeout: 30_000, intervals: [50] }).toBe(true);
         // Only this helper's explicitly owned temporary paths may be moved.
         const objectRoot = resolve(server.dataDir, 'objects');
@@ -237,7 +251,8 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       }
       return record!;
     }
-    const contentQuestion = '仅依据固定论文正文列出核心方法与明确局限，保留待查问题；不要调用工具，全部文字限制1000中文字以内。';
+    // A separately authorized new objective; never replay the earlier UNKNOWN.
+    const contentQuestion = '梳理论文关键术语及正文定义依据，缺失定义标待查，不重做旧核心方法/局限作业。仅依据本次完整固定正文，不调用工具，全部文字限制1000中文字以内。';
     const content = await modelRound(paper.detail.material.id, 'content', contentQuestion);
     const videoContent = await modelRound(video.detail.material.id, 'content', '仅依据所选视频实际字幕提炼内容与尚待验证的主张，不补造时间或成果；全部文字限制1000中文字以内。');
     const paperDialog = await openMaterial(paper.detail.material.id);
@@ -255,7 +270,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const bridge = (await bridgeResponse.json() as S['DistillationResultV1']).distillation;
     expect(bridge.provenance.mode).toBe('manual');
     await paperDialog.getByRole('button', { name: '关闭', exact: true }).click();
-    const topic = await modelRound(paper.detail.material.id, 'topic', '仅依据当前固定论文正文和前轮内容记录，整理主题与明确待查问题；其他资料尚未交付，不推断关联或已完成研究；全部文字1000中文字以内。', [content.id]);
+    const topic = await modelRound(paper.detail.material.id, 'topic', '仅依据当前固定论文正文和本轮术语/定义记录，延续整理主题及明确待查问题；旧未知作业不作为前轮，其他资料未交付，不推断关联或研究成果；全部文字1000中文字以内。', [content.id]);
     const videoTopic = await modelRound(video.detail.material.id, 'topic', '延续当前所选视频固定正文和前轮内容，整理主题与待查问题；其他资料未交付，不编造跨资料关联或研究成果。不要启动任务，全部文字1000中文字以内。', [videoContent.id], true);
     expect(videoTopic.input_refs.every(ref => ref.material_id === video.detail.material.id && ref.revision === head)).toBe(true);
     const candidateDialog = await openMaterial(paper.detail.material.id);
@@ -323,13 +338,14 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     for (const material of [paper.detail.material, video.detail.material]) expect((await read<S['MaterialDetailV1']>(`/materials/${material.id}`)).material.lifecycle).toBe('active');
     expect((await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/1/content`)).text).toBe(videoInput);
     expect((await read<S['MissionListV1']>('/missions')).items).toEqual([]);
+    for (const original of originalUnknowns) expect(await read<S['JobV1']>(`/jobs/${original.job_id}`)).toEqual(original);
     await page.goto(`${server.webURL}/attention`);
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({ path: testInfo.outputPath(`actual-selected-materials-${width}.png`), fullPage: true });
     }
-    await testInfo.attach('actual-public-scope-results', { body: JSON.stringify({ paperOriginal: paperExport, videoOriginal: videoExport, paper: afterReads[0], video: afterReads[1], modelRecords, candidate: reviewed, sourceVersionChanged: head > 1, limits: ['Paper reused genuine existing JSON export; no fresh arXiv URL retrieval.'] }, null, 2), contentType: 'application/json' });
+    await testInfo.attach('actual-public-scope-results', { body: JSON.stringify({ paperOriginal: paperExport, videoOriginal: videoExport, paper: afterReads[0], video: afterReads[1], modelRecords, candidate: reviewed, originalUnknowns, videoStoredRevisionChanged: head > 1, actualExtraPaperRevisions: [versionA.detail.material.id, 1, 2], limits: ['Paper reused genuine existing JSON export; no fresh arXiv URL retrieval.', 'Video export textarea normalizes CRLF; stored revision change does not establish an upstream video-content change.'] }, null, 2), contentType: 'application/json' });
     completed = true;
   } finally {
     await testInfo.attach('actual-job-states', { body: JSON.stringify(jobs, null, 2), contentType: 'application/json' });
