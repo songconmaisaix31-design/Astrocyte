@@ -33,8 +33,8 @@ type LocalProjectRepository interface {
 // References are consumed from Attention through an entrypoint bridge. Neither
 // app imports the other. Access and active space membership are checked per call.
 type ProjectReferences interface {
-	ReadSelected(context.Context, string, domain.FixedReference) (domain.ContextMaterial, error)
-	Linked(context.Context, string, domain.FixedReference) ([]domain.FixedReference, error)
+	ReadSelected(context.Context, domain.Caller, string, domain.FixedReference) (domain.ContextMaterial, error)
+	Linked(context.Context, domain.Caller, string, domain.FixedReference) ([]domain.FixedReference, error)
 }
 type NativeAdapter interface {
 	ID() string
@@ -58,6 +58,9 @@ type ProjectFiles interface {
 	ReadProjectFiles(context.Context, domain.LocalProject, []string) ([]domain.ContextFile, error)
 	DiscoverProjects(context.Context, string) ([]domain.ProjectCandidate, error)
 }
+type TextProcessor interface {
+	ProcessSelectedText(context.Context, domain.TextRequest) (domain.TextResult, error)
+}
 
 // LocalProjects is separate from the S0 project projection so old consumers do
 // not mistake a native project root for an execution/environment identity.
@@ -68,6 +71,7 @@ type LocalProjects interface {
 	SetProjectSettings(context.Context, domain.Caller, string, domain.SettingsCommand) (domain.LocalProject, error)
 	GrantProjectAgent(context.Context, domain.Caller, string, domain.ProjectGrant) (domain.ProjectGrant, error)
 	RevokeProjectAgent(context.Context, domain.Caller, string, string) (domain.ProjectGrant, error)
+	IssueProjectAgentToken(context.Context, domain.Caller, string, string) (domain.AgentToken, error)
 	ReadProjectContext(context.Context, domain.Caller, string, domain.ContextRequest) (domain.ContextPacket, error)
 	ListNativeSessions(context.Context, domain.Caller, string) ([]domain.NativeSession, error)
 	StartNativeSession(context.Context, domain.Caller, string, domain.NativeCommand) (domain.NativeSession, error)

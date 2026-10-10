@@ -663,3 +663,23 @@ type ListingRecommender interface {
 	ConfigurationID(context.Context, string, string) (string, error)
 	Recommend(context.Context, ListingRecommendationInput) (map[string]SourceRecommendation, error)
 }
+type SourceCollection struct {
+	ExternalID string `json:"external_id"`
+	OwnerID    string `json:"owner_id"`
+	Title      string `json:"title"`
+	Locator    string `json:"locator"`
+	ItemCount  *int   `json:"item_count"`
+}
+type SourceCollectionService interface {
+	ListSourceCollections(context.Context, Principal, string, string) (apierrors.ListResult, error)
+}
+type PublicCollectionReader interface {
+	ListCollections(context.Context, string, string) ([]SourceCollection, error)
+}
+
+// Called only after Workspace authorizes a project operation. Membership and
+// fixed-version linked access remain checked in Attention on every read.
+type AttentionProjectReferences interface {
+	ReadProjectReference(context.Context, Principal, string, SourceRef, bool) (SourceSnapshot, error)
+	LinkedProjectReferences(context.Context, Principal, string, SourceRef) ([]SourceRef, error)
+}
