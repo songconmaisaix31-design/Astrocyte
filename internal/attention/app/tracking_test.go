@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 	"time"
@@ -272,5 +273,70 @@ func TestBoundedPrefixDoesNotMarkUnobservedOlderCacheStale(t *testing.T) {
 		if item.Stale {
 			t.Fatal("unobserved older cached row claimed stale", item.ExternalID)
 		}
+	}
+}
+
+func TestSavedFinalListingPageCompletesWithoutReader(t *testing.T) {
+	ctx := context.Background()
+	s, repo, _ := fixture(t)
+	r := bindFixture(t, s)
+	queued, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("saved-final-page", r.Source.Version)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	job := repo.state.Jobs[queued.Jobs[0].JobID]
+	job.Payload, err = json.Marshal(syncListingPayload{SourceID: r.Source.ID, Limit: 100, Count: 1, Seen: []string{"one"}, Done: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	repo.state.Jobs[job.JobID] = job
+	repo.state.SourceItems = map[string]SourceItem{r.Source.ID + ":one": {SourceID: r.Source.ID, ExternalID: "one", Revision: 1, Metadata: metadataItem("one"), Stale: true}}
+	s.options.ListingReader = nil
+	if _, err = s.ProcessNextJob(ctx); err != nil {
+		t.Fatal(err)
+	}
+	r, err = s.GetTrackingSource(ctx, human, r.Source.ID)
+	job, _ = s.GetJob(ctx, human, job.JobID)
+	if err != nil || job.Status != "succeeded" || r.Source.LastSuccessAt == nil || len(r.Items) != 1 || r.Items[0].Stale {
+		t.Fatal("durable final page was discarded or fetched again", job, r, err)
+	}
+}
+
+func TestStartupResumesCurrentFailureButNotSupersededFailure(t *testing.T) {
+	for _, superseded := range []bool{false, true} {
+		t.Run(fmt.Sprint(superseded), func(t *testing.T) {
+			ctx := context.Background()
+			s, repo, _ := fixture(t)
+			r := bindFixture(t, s)
+			queued, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("old-failed-sync", r.Source.Version)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			old := repo.state.Jobs[queued.Jobs[0].JobID]
+			old.Status, old.Attempts = "failed", 1
+			old.Error = retryableInterruption()
+			repo.state.Jobs[old.JobID] = old
+			source := repo.state.TrackingSources[r.Source.ID]
+			source.Status = "failed"
+			repo.state.TrackingSources[source.ID] = source
+			if superseded {
+				newer := old
+				newer.JobID, newer.Status = "newer-completed-sync", "succeeded"
+				newer.CreatedAt = old.CreatedAt.Add(time.Second)
+				newer.Error = nil
+				repo.state.Jobs[newer.JobID] = newer
+			}
+			before := len(repo.state.Jobs)
+			if err = s.SyncSourcesOnce(ctx); err != nil {
+				t.Fatal(err)
+			}
+			expected := before
+			if superseded {
+				expected++
+			}
+			if len(repo.state.Jobs) != expected || repo.state.Jobs[old.JobID].Status != "failed" {
+				t.Fatal("startup replayed old failure or suppressed the current sync", len(repo.state.Jobs), expected)
+			}
+		})
 	}
 }

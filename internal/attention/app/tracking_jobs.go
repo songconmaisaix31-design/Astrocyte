@@ -56,7 +56,7 @@ func (s *Service) processSourceSync(ctx context.Context, claim Job) error {
 	if json.Unmarshal(claim.Payload, &payload) != nil {
 		return s.failJob(claim, domain.ErrInvalid, false)
 	}
-	if s.options.ListingReader == nil {
+	if s.options.ListingReader == nil && !payload.Done {
 		return s.failTrackingJob(claim, payload.SourceID, serviceError(apierrors.ProviderUnavailable, "No public listing reader is configured", "configure_public_listing_reader"), false)
 	}
 	workCtx, cleanup, err := s.trackingWork(ctx, &claim)
