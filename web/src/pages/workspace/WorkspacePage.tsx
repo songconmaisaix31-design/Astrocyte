@@ -15,6 +15,7 @@ import { Icon } from '../../components/DesignIcons';
 import styles from './WorkspacePage.module.css';
 import { LocalProjectsPanel } from './LocalProjectsPanel';
 import { LocalAgentsPanel } from './LocalAgentsPanel';
+import { ManagedProjectsPanel } from './ManagedProjectsPanel';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -62,7 +63,7 @@ export function WorkspacePage({ fixture, query }: Props) {
 
       <div className={styles.grid}>
         {!projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
-        <LocalProjectsPanel projects={projects} sessions={fixture ? fixtureSessions : sess.data?.items ?? []} projectState={proj} sessionState={sess} fixture={fixture} query={query} onSelect={project => setSelected({ kind: 'project', data: project })} />
+        {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <ManagedProjectsPanel agents={agents} query={query} />}
         <LocalAgentsPanel state={agents} fixture={fixture} />
 
         {/* ── Proposals ── */}
