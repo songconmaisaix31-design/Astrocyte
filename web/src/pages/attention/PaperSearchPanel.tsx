@@ -55,7 +55,7 @@ export function PaperSearchPanel({ fixture, onImported }: { fixture: boolean; on
     {hasSearched && (state.data || fixture) && result && (
       <>
         {result.warnings && result.warnings.length > 0 && <details><summary>检索说明</summary>{result.warnings.map((warning, index) => <p key={index}>{warning}</p>)}</details>}
-        {!hits.length && <p role="status">本次检索没有返回可展示的论文；不视为“无结果”。可更换关键词或稍后重试。</p>}
+        {!hits.length && <p role="status">没有找到相关论文，试试其他关键词。</p>}
         {hits.length > 0 && <ul className={styles.timeline}>{hits.map(hit => {
           const selectable = canSelectPaper(hit);
           const checked = selected.includes(paperSearchKey(hit));

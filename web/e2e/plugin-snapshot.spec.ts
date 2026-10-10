@@ -78,6 +78,27 @@ test.describe('插件快照复核导入（真实）', () => {
     await expect(panel(page).getByText(/无绕过/)).toBeVisible();
     await expect(panel(page).getByRole('button', { name: /导入/ })).not.toBeVisible();
   });
+
+  test('a body change on the same URL issues a new idempotency key instead of 409', async ({ page }) => {
+    const keys: string[] = [];
+    await page.route('**/api/v1/materials/imports', route => {
+      keys.push((route.request().headers()['idempotency-key'] ?? '').toLowerCase());
+      return route.fulfill({ status: 202, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, job_id: 'job-x', status: 'queued' }) });
+    });
+    await page.goto('/attention');
+    await page.waitForLoadState('networkidle');
+    await openPanel(page);
+    const snap = (body: string) => JSON.stringify({ schema_version: 1, source_url: 'https://journals.plos.org/p', host_family: 'plos', title: '正文变化论文', content_state: 'readable_fulltext', text: body });
+    await panel(page).getByLabel('粘贴插件快照 JSON', { exact: true }).fill(snap('正文A'));
+    await panel(page).getByRole('button', { name: '复核快照', exact: true }).click();
+    await panel(page).getByRole('button', { name: '按快照正文导入（HTML 正文）', exact: true }).click();
+    await expect(panel(page).getByLabel('粘贴插件快照 JSON', { exact: true })).toHaveValue('');
+    await panel(page).getByLabel('粘贴插件快照 JSON', { exact: true }).fill(snap('正文B'));
+    await panel(page).getByRole('button', { name: '复核快照', exact: true }).click();
+    await panel(page).getByRole('button', { name: '按快照正文导入（HTML 正文）', exact: true }).click();
+    await expect.poll(() => keys.length).toBe(2);
+    expect(keys[0]).not.toBe(keys[1]);
+  });
 });
 
 test.describe('插件快照复核导入（移动布局）', () => {

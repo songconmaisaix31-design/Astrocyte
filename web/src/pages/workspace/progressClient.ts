@@ -65,8 +65,8 @@ export async function getProjectProgress(id: string, signal?: AbortSignal): Prom
   return { schema_version: 1, progress: mapProgress((body?.progress && typeof body.progress === 'object' ? body.progress : {}) as RawProgress) };
 }
 
-/** Human-session infer trigger; the caller-owned operation identity is never replayed. */
-export async function inferProjectProgress(id: string, key: string, operationId: string, files: string[], signal?: AbortSignal): Promise<ProjectProgressResult> {
+/** Human-session infer trigger; the caller-supplied Idempotency-Key is the operation identity. */
+export async function inferProjectProgress(id: string, key: string, files: string[], signal?: AbortSignal): Promise<ProjectProgressResult> {
   const sessionResponse = await fetch('/api/v1/auth/session', { credentials: 'same-origin', signal });
   if (!sessionResponse.ok) throw new ProgressUnavailable(sessionResponse.status);
   const session = (await sessionResponse.json().catch(() => undefined)) as { csrf_token?: string } | undefined;
@@ -75,7 +75,7 @@ export async function inferProjectProgress(id: string, key: string, operationId:
     credentials: 'same-origin',
     signal,
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key, 'X-CSRF-Token': session?.csrf_token ?? '' },
-    body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 1, operation_id: operationId, files }),
+    body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 1, files }),
   });
   if (!response.ok) throw new ProgressUnavailable(response.status);
   const body = (await response.json().catch(() => undefined)) as { progress?: unknown } | undefined;

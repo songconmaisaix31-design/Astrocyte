@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * Project progress panel: reads the cached human-authored or model-inferred
  * progress and lets the human trigger one inference through the published W0
  * progress routes. The routes are mocked with the exact ProjectProgressResultV1
- * shape so the UI wiring (GET + POST infer with operation_id + files) is
+ * shape so the UI wiring (GET + POST infer with Idempotency-Key + files) is
  * verified without a real processor run.
  */
 
@@ -23,7 +23,6 @@ test('reads progress evidence and triggers an explicit inference', async ({ page
     const request = route.request().postDataJSON();
     expect(request.schema_version).toBe(1);
     expect(request.files).toEqual(['TASK.md', 'STATUS.md']);
-    expect(request.operation_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, progress: { project_id: 'proj1', status: '开发中', source: 'agent_inferred', evidence: [], observed_at: '2026-10-10T00:00:00Z', revision: 1 } }) });
   });
 
