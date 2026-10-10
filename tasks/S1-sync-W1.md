@@ -4,16 +4,18 @@
 
 分支/工作树 `s1-sync-attention-1010`；当前业务 SOURCE `f1a44b269fc2d10a78ab3b64f3b765f3eaca5332`。以下是已实现范围；后文按时间保留原阶段记录、首败及当时限制，不能把历史“尚未接线”当作当前状态，也不能把本地检查当作真实 S1 验收。
 
+Root/W3 于 2026-10-10 08:46 UTC 交接真实集成续验 SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0` 的 AT01–04 PASS，root 已独立复核同库；该 SOURCE 包含上述 W1 业务提交。四个新模型目标成功、共五条沉淀；视频已保存 Result 经真实本地 OS 发布失败、冷重启和人工 retry（attempts2）恢复，无重复模型调用；机器读取3次、人工读取不增加 Agent heat，later 保留。此为 root/W3 的实际任务与浏览器证据，区别于本轨 contract_local 检查；原 UNKNOWN 未重放，非空账号全链未通过。Root 默认 E2E 此时仍在进行，最终交接尚未接纳。
+
 - Attention/Storage 已接应用和 SQLite：候选需同一固定资料版本的实际沉淀，满足来源/用途/下一步，并有关联主题/项目或明确开放问题；旧版本反馈不能替代当前版本。普通 URL 新表单复用既有 job，人工显式 refresh 才重新提取；固定导出换正文可新建 revision，A→B→A 复用旧 A 并保留 B head。官方 arXiv 论文导出的身份与现有 arXiv 导入归一，原件及 provenance 保留。
 - 公开账号绑定区分真实平台身份、uploads/favorites、多账号与显式收藏夹；沿用上游 yt-dlp 的 B站公开 UID 列表薄桥及官方收藏夹接口。同步最多消费 100 条提供方元数据，持久保存 cursor/计数/部分缓存/失败；挑战不是空列表，失效行不导致整页失败。启动只排一次有界 metadata sync，无定时器；推荐使用选定已许可项目/CLI，先保存实际建议，人工选择后才排选中正文的既有 summarize 导入，不自动全量入库。
 - 固定版本空间读取及 C 一跳关联受当前范围/权限约束；人工读取不增加 Agent heat。已知安全失败使用既有 job 的有界重试、期限及实际失败事件；旧 UNKNOWN 不自动重放。已返回并持久保存的 Result 遇到本地对象发布故障时，保留 OS 原因、提示修复存储并人工重试，不自动消耗修复等待期的次数；真 SQLite 重启后使用同一 Result，选定 CLI 的配置观察冷缓存也无需再调用模型，撤销许可/空间变化/引用移除仍拒绝发布。
 - 通用选定 CLI 适配器通过现有 consumer port，实际新处理仍核验配置与权限；无虚构评分或 mock 反馈。组装完整 UTF-8 输入及输出各限 128KiB，超限明确已知失败、不截断；处理限时沿用有界 job，视频上限 30 分钟。全局状态不会仅因装配了工厂就声称 CLI 可用。跨来源扩大输入上限的决定仍待主控/用户，当前未放宽。
 
-阶段 9 SOURCE `3afcf802feec38ebfd11e690ee40ea6b6a7de2b9` 已实际通过 `go test ./...`、`go vet ./...`、`go build ./...`、`node scripts/check-architecture.mjs`、`git diff --check`；当前阶段 10 日志修复另通过针对性 UNKNOWN/已知失败回归、`go test ./internal/attention/app ./internal/adapters/sqlite`、`go vet ./internal/attention/app`、`go build ./...` 与 diff 检查，没有将旧全套结果改称新全套复验。测试包含 contract_local、实际 SQLite/对象文件故障恢复及原生接口参数边界，不作为付费模型、账号同步或浏览器验收。本轨业务未作新的媒体/模型调用；根前端检查、真实模型/媒体与 AT01–04 浏览器验收仍由 W0/W3 集成和 root 唯一 live 时隙安排，当前等候其现场结果及原轨返修。
+阶段 9 SOURCE `3afcf802feec38ebfd11e690ee40ea6b6a7de2b9` 已实际通过 `go test ./...`、`go vet ./...`、`go build ./...`、`node scripts/check-architecture.mjs`、`git diff --check`；当前阶段 10 日志修复另通过针对性 UNKNOWN/已知失败回归、`go test ./internal/attention/app ./internal/adapters/sqlite`、`go vet ./internal/attention/app`、`go build ./...` 与 diff 检查，没有将旧全套结果改称新全套复验。测试包含 contract_local、实际 SQLite/对象文件故障恢复及原生接口参数边界，不作为付费模型、账号同步或浏览器验收。本轨未作新的媒体/模型调用；真实模型/媒体与浏览器由 root 唯一 live 时隙安排，当前等候默认 E2E、账号链及 root 最终接纳，现场领域问题仍由原 Worker 返修。
 
-阶段 10 仅修复新 `attention.job_failed.cause` 丢失原适配器服务错误说明的问题：公开 job.Error/UNKNOWN/禁止重试不变，旧事件不补写/改写，不写入来源正文或凭据。W3 当前首次真实选定项目 job `4GQ7GKDXHZIND7CAB7GIZU3W4V` 的 UNKNOWN/Result:null 已按其自有数据库只读确认，不能套已保存 Result 的恢复；原生原因由 W2 只读诊断，不能凭 18 秒或 external_started 推导模型已接受。
+阶段 10 仅修复新 `attention.job_failed.cause` 丢失原适配器服务错误说明的问题：公开 job.Error/UNKNOWN/禁止重试不变，旧事件不补写/改写，不写入来源正文或凭据。W3 保留的首个真实选定项目 job `4GQ7GKDXHZIND7CAB7GIZU3W4V` 的旧 UNKNOWN/Result:null 已按其自有数据库只读确认，不能套已保存 Result 的恢复；不能凭 18 秒或 external_started 推导模型已接受，新目标成功不改写这个旧未知。
 
-真实外部限制：指定 B站 UID `3494358764489275` 的公开 uploads 实测 HTTP412 / 上游 code -352 challenge，公开收藏夹目录实测 code0/count0/listnull；尚无该账号非空列表成功证据。Douyin `/user/self?showTab=favorite_collection` 需要登录，没有实际可用的公开 profile 列表 transport；未读取 cookies 或绕过挑战。已交接的真实历史视频/论文导出只能按已有导出 provenance 使用，不是本轮新官方下载/媒体提取；额外 `2501.12948v1/v2` 原件仅获导入/版本检查授权，不能调用模型。原 UNKNOWN、首败与未知效果保留；本轨不宣称全 S1 或真实账号验收完成。
+真实外部限制：指定 B站 UID `3494358764489275` 的公开 uploads 实测 HTTP412 / 上游 code -352 challenge，公开收藏夹目录实测 code0/count0/listnull；尚无该账号非空列表成功证据。Douyin `/user/self?showTab=favorite_collection` 需要登录，仍待真实公开身份且没有实际可用的公开 profile 列表 transport；未读取 cookies 或绕过挑战。Root 报告 arXiv URL 获取受当前 fake-IP/DNS 环境限制；使用真实历史 summarize 论文导出时保留 existing_json_export 等实际 provenance，不冒充本轮官方下载。本轨交接的历史视频导出同样不能冒充新媒体提取；额外 `2501.12948v1/v2` 原件仅获导入/版本检查授权，不能调用模型。原 UNKNOWN、首败与未知效果保留；本轨不宣称全 S1 或真实账号验收完成。
 
 共享 contracts/migrations/HTTP/入口由 W0 独占，native CLI/权限桥由 W2 负责，UI/真实浏览器由 W3 负责；当前继续使用现有 ProjectSpaceID 的 scope-only 恢复路径，不增加第二套 optional port 或恢复接口。源码已按 root 许可补阶段 10 最小诊断修复，现场领域问题返回本 Worker 修复，最终接纳由 root 决定。
 
