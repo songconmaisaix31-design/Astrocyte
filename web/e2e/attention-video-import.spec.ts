@@ -162,7 +162,7 @@ test('selected public video URL imports through the real service without an expo
       return completed?.status;
     }, { timeout: jobTimeout, intervals: [2000] }).toMatch(/succeeded|failed|cancelled/);
     await page.getByRole('button', { name: '刷新队列', exact: true }).click();
-    await expect(row).toContainText(completed!.status === 'succeeded' ? '已完成' : '失败');
+    await expect(row).toContainText(completed!.status === 'succeeded' ? '已完成' : '需要你处理');
     await page.screenshot({ path: testInfo.outputPath('video-import-real.png'), fullPage: true });
     await testInfo.attach('actual-video-job', { body: JSON.stringify(completed, null, 2), contentType: 'application/json' });
     expect(completed!.status, JSON.stringify(completed!.error)).toBe('succeeded');
