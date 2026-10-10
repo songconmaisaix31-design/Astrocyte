@@ -7,7 +7,8 @@ import { QueryState } from '../../components/QueryState';
 import { CommandState } from '../../components/CommandState';
 import { SectionCard } from '../../components/SectionCard';
 import { StatusBadge } from '../../components/StatusBadge';
-import { formatDateTime, importStatusLabel } from '../../utils/format';
+import { formatDateTime } from '../../utils/format';
+import { jobPresentation } from './jobPresentation';
 import styles from './AttentionPage.module.css';
 
 type Job = components['schemas']['JobV1'];
@@ -44,18 +45,15 @@ function JobRow({ job, onChanged, onMaterial, disabled }: { job: Job; onChanged:
     const timer = window.setTimeout(() => setNow(Date.now()), Math.max(0, Math.min(2147483647, Date.parse(job.deadline_at) - Date.now() + 1)));
     return () => window.clearTimeout(timer);
   }, [job.deadline_at]);
-  const active = job.status === 'queued' || job.status === 'running';
-  const retryable = job.status === 'failed' && !job.delivery_unknown && !!job.error?.retryable && job.attempts < job.max_attempts && Date.parse(job.deadline_at) > now;
+  const presentation = jobPresentation(job, now);
+  const { active, retryable, unknown } = presentation;
   return <li>
-    <div className={styles.itemHeader}><strong>{job.kind === 'import' ? '正文导入' : job.kind === 'distillation' ? '资料整理' : job.kind} · {job.job_id}</strong><StatusBadge value={job.status} label={importStatusLabel(job.status)} /></div>
-    {job.kind === 'import' && job.status === 'succeeded' && <p className={styles.note}>已完成导入；模型整理请查看资料详情中的独立记录。</p>}
+    <div className={styles.itemHeader}><strong>{job.kind === 'import' ? '正文导入' : job.kind === 'distillation' ? '资料整理' : job.kind === 'source_sync' ? '标题清单同步' : job.kind === 'source_recommendation' ? '标题建议' : '资料处理'} · {job.job_id}</strong><StatusBadge value={unknown || job.status === 'failed' ? 'unknown' : job.status} label={presentation.label} /></div>
+    {job.kind === 'import' && job.status === 'succeeded' && !unknown && <p className={styles.note}>已完成导入；模型整理请查看资料详情中的独立记录。</p>}
     <p className={styles.note}>尝试 {job.attempts}/{job.max_attempts} · 更新 {formatDateTime(job.updated_at)} · 截止 {formatDateTime(job.deadline_at)}</p>
-    {job.error && <p role="alert">{job.error.message} · {job.error.required_action === 'configure_public_source_network'
-      ? '所选公开来源被本机 DNS 或代理网络配置阻断。请检查该来源的真实 DNS 解析与代理配置，修复后再明确重试。'
-      : job.error.required_action === 'install_pinned_summarize_and_configure_local_media_tools'
-        ? '当前缺少获取视频正文所需的本地工具。请完成项目媒体依赖安装后再明确重试，也可提供已有 summarize 导出。'
-        : job.error.required_action}（请求 {job.error.request_id}）</p>}
-    {job.delivery_unknown && <p role="alert">外部结果未知，需要先核对；自动重试已禁用。</p>}
+    {presentation.message && <p role="status">{presentation.message}</p>}
+    {presentation.limit && <p className={styles.note}>{presentation.limit}</p>}
+    {job.error && <details><summary>处理详情</summary><p>{job.error.message}</p><p>服务记录：{job.error.code} · {job.error.required_action} · 请求 {job.error.request_id}</p></details>}
     {job.cancel_requested && <p role="status">取消已请求，等待服务确认。</p>}
     {job.distillation_id && <p>已保存沉淀记录 · {job.distillation_id}</p>}
     <div className={styles.actions}>

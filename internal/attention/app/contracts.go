@@ -108,6 +108,7 @@ type MaterialDetail struct {
 }
 type ImportMaterialCommand struct {
 	CommandMeta
+	Refresh          bool     `json:"refresh,omitempty"`
 	SourceLocator    string   `json:"source_locator"`
 	SourceKey        string   `json:"source_key"`
 	Kind             string   `json:"kind"`
@@ -399,6 +400,8 @@ type DistillerStatusProvider interface {
 }
 type RequestDistillationCommand struct {
 	CommandMeta
+	ProjectID            string      `json:"project_id,omitempty"`
+	CLI                  string      `json:"cli,omitempty"`
 	PriorDistillationIDs []string    `json:"prior_distillation_ids,omitempty"`
 	InputRefs            []SourceRef `json:"input_refs"`
 	Stage                string      `json:"stage"`
@@ -535,4 +538,178 @@ type AttentionTx interface {
 	ListProjectSpaces() ([]ProjectSpace, error)
 	LoadProjectSpace(string) (ProjectSpace, error)
 	SaveProjectSpace(ProjectSpace, int) error
+}
+
+// Tracking stores public metadata only. A binding never imports every item,
+// grants credentials, or permits model processing outside a selected project.
+type TrackingSource struct {
+	ID            string                  `json:"id"`
+	Version       int                     `json:"version"`
+	Platform      string                  `json:"platform"`
+	SourceKind    string                  `json:"source_kind"`
+	ExternalID    string                  `json:"external_id"`
+	OwnerID       string                  `json:"owner_id"`
+	Locator       string                  `json:"locator"`
+	Title         string                  `json:"title"`
+	Status        string                  `json:"status"`
+	LastSuccessAt *time.Time              `json:"last_success_at"`
+	LastError     *apierrors.ServiceError `json:"last_error"`
+	NextCursor    *string                 `json:"next_cursor"`
+	HasMore       bool                    `json:"has_more"`
+	Warnings      []string                `json:"warnings"`
+}
+type ListingMetadata struct {
+	ExternalID        string `json:"external_id"`
+	Locator           string `json:"locator"`
+	Title             string `json:"title"`
+	Description       string `json:"description"`
+	Author            string `json:"author"`
+	Cover             string `json:"cover"`
+	PublishedAt       int64  `json:"published_at"`
+	ProviderStatus    *int   `json:"provider_status"`
+	UnavailableReason string `json:"unavailable_reason"`
+}
+type SourceRecommendation struct {
+	Status           string                  `json:"status"`
+	Text             string                  `json:"text"`
+	Reason           string                  `json:"reason"`
+	MetadataRevision int                     `json:"metadata_revision"`
+	Provenance       Provenance              `json:"provenance"`
+	ConfigurationID  string                  `json:"configuration_id"`
+	Error            *apierrors.ServiceError `json:"error"`
+}
+type SourceItem struct {
+	SourceID       string                `json:"source_id"`
+	ExternalID     string                `json:"external_id"`
+	Revision       int                   `json:"revision"`
+	Metadata       ListingMetadata       `json:"metadata"`
+	Stale          bool                  `json:"stale"`
+	Selected       bool                  `json:"selected"`
+	ImportJobID    *string               `json:"import_job_id"`
+	MaterialID     *string               `json:"material_id"`
+	Recommendation *SourceRecommendation `json:"recommendation"`
+}
+type TrackingSourceResult struct {
+	SchemaVersion int               `json:"schema_version"`
+	Source        TrackingSource    `json:"source"`
+	Items         []SourceItem      `json:"items"`
+	NextCursor    *string           `json:"next_cursor"`
+	HasMore       bool              `json:"has_more"`
+	Warnings      []string          `json:"warnings"`
+	Jobs          []ImportJobResult `json:"jobs"`
+}
+type BindTrackingSourceCommand struct {
+	CommandMeta
+	Platform   string `json:"platform"`
+	SourceKind string `json:"source_kind"`
+	ExternalID string `json:"external_id"`
+	OwnerID    string `json:"owner_id"`
+	Locator    string `json:"locator"`
+	Title      string `json:"title"`
+}
+type SyncTrackingSourceCommand struct {
+	CommandMeta
+	Limit  int    `json:"limit,omitempty"`
+	Cursor string `json:"cursor,omitempty"`
+}
+type SourceItemSelection struct {
+	ExternalID string `json:"external_id"`
+	Revision   int    `json:"revision"`
+}
+type RecommendSourceItemsCommand struct {
+	CommandMeta
+	ProjectID string                `json:"project_id"`
+	CLI       string                `json:"cli"`
+	Items     []SourceItemSelection `json:"items"`
+}
+type SelectSourceItemsCommand struct {
+	CommandMeta
+	Items            []SourceItemSelection `json:"items"`
+	CollectionReason *string               `json:"collection_reason,omitempty"`
+}
+type TrackingService interface {
+	ListTrackingSources(context.Context, Principal) (apierrors.ListResult, error)
+	BindTrackingSource(context.Context, Principal, BindTrackingSourceCommand) (TrackingSourceResult, error)
+	GetTrackingSource(context.Context, Principal, string) (TrackingSourceResult, error)
+	SyncTrackingSource(context.Context, Principal, string, SyncTrackingSourceCommand) (TrackingSourceResult, error)
+	RecommendSourceItems(context.Context, Principal, string, RecommendSourceItemsCommand) (TrackingSourceResult, error)
+	SelectSourceItems(context.Context, Principal, string, SelectSourceItemsCommand) (TrackingSourceResult, error)
+}
+
+// TrackingTx is optional so pre-tracking repository implementations remain valid.
+type TrackingTx interface {
+	AttentionTx
+	ListTrackingSources() ([]TrackingSource, error)
+	LoadTrackingSource(string) (TrackingSource, error)
+	SaveTrackingSource(TrackingSource, int) error
+	ListSourceItems(string) ([]SourceItem, error)
+	SaveSourceItem(SourceItem) error
+}
+type ListingPage struct {
+	Observed   int
+	Items      []ListingMetadata
+	NextCursor *string
+	HasMore    bool
+	Warnings   []string
+}
+type PublicListingReader interface {
+	ReadPage(context.Context, TrackingSource, string, int) (ListingPage, error)
+}
+type ListingRecommendationInput struct {
+	Caller      Principal
+	ProjectID   string
+	CLI         string
+	JobID       string
+	OperationID string
+	Items       []SourceItem
+}
+type ListingRecommender interface {
+	ConfigurationID(context.Context, Principal, string, string) (string, error)
+	Recommend(context.Context, ListingRecommendationInput) (map[string]SourceRecommendation, error)
+}
+type SourceCollection struct {
+	ExternalID string `json:"external_id"`
+	OwnerID    string `json:"owner_id"`
+	Title      string `json:"title"`
+	Locator    string `json:"locator"`
+	ItemCount  *int   `json:"item_count"`
+}
+type SourceCollectionService interface {
+	ListSourceCollections(context.Context, Principal, string, string) (apierrors.ListResult, error)
+}
+type PublicCollectionReader interface {
+	ListCollections(context.Context, string, string) ([]SourceCollection, error)
+}
+
+// Called only after Workspace authorizes a project operation. Membership and
+// fixed-version linked access remain checked in Attention on every read.
+type AttentionProjectReferences interface {
+	ReadProjectReference(context.Context, Principal, string, SourceRef, bool) (SourceSnapshot, error)
+	LinkedProjectReferences(context.Context, Principal, string, SourceRef) ([]SourceRef, error)
+}
+type SelectedTextRequest struct {
+	JobID           string
+	OperationID     string
+	ProjectID       string
+	CLI             string
+	Prompt          string
+	DeadlineSeconds int
+	OutputLimit     int
+}
+type SelectedTextResult struct {
+	Text     string
+	NativeID string
+	Version  string
+	Model    *string
+}
+
+// The composition bridge rechecks project model consent on config and processing.
+// It never changes provider or converts denied scope into a fallback CLI.
+type SelectedTextProcessor interface {
+	ProjectSpaceID(context.Context, Principal, string, string) (string, error)
+	ConfigurationID(context.Context, Principal, string, string) (string, error)
+	ProcessSelectedText(context.Context, Principal, SelectedTextRequest) (SelectedTextResult, error)
+}
+type ProjectDistillerFactory interface {
+	Resolve(context.Context, Principal, string, string) (Distiller, error)
 }

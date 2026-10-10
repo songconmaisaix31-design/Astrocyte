@@ -1,6 +1,33 @@
 # 本地 Agent 与工具清点
 
-## 2026-10-10 W2 新鲜探测（当前）
+## 2026-10-10 W2 原生续作（当前，源码d5ee4a1）
+
+用户现已要求全套本地操作，人类选择固定项目/CLI并分别授权 A/B/C；旧“仅库存、待答”章节保留为历史证据。实现与验证见 [W2 当前报告](../../tasks/S1-sync-W2.md)。全部原生 CLI 仅协作限制、关闭工具，不保证进程不能读其自有全局配置；宿主不读取认证文件或自动接管既有会话。
+
+| CLI | 已实现原生控制 | 独立真实结果 | 未验证/拒绝 |
+|---|---|---|---|
+| Codex0.162.0 | app-server JSON-RPC initialize/thread start+resume/turn send+interrupt/events/owned stop；完整context用thread/read校验ID/cwd后分页thread/items/list | 非推理握手与两真实公开marker turns，同原nativeID恢复且owned exit确认；实际gpt-6.1-sol/openai；完整context分页仅离线协议检查 | 用户历史根未给；外部session占用交接/reconcile未做；完整context安装协议验收NOT_RUN，停止进程不隐式重启 |
+| Claude2.1.238 | 原生stream-json SDK控制initialize/interrupt、指定UUID start/同UUID resume、user消息、assistant/result事件、owned stop | 非推理握手与两真实公开marker turns、同UUID恢复、owned exit确认；实际qwen3.7-max/provider端点未核实 | 外部历史schema及pre-paid当前model观测缺失，generic selected-text明确EvidenceMissing；不将workspace成功扩展成distillation验收 |
+| Pi1.0.1 | RPC get_state/prompt/abort/clear_queue、原sessionFile resume、events、owned stop | 非推理握手通过；真实首turn definite失败，单次授权诊断authentication_rejected、stop确认 | 原生real resume尚未执行，模型失败不得算PASS；不迁移认证、不重试 |
+| OpenCode/Grok/Kimi/Qwen/Cursor | 固定安装库存 | 仅version/help证据 | registry无已验证driver，native API明确unsupported，能力不因安装而提升；不声称官方协议不存在 |
+
+协议/公开成熟接口调查仅用于实现路线，不能替代安装版本与task-live：
+
+- [Codex app-server官方文档](https://learn.chatgpt.com/docs/app-server)及[原生源码](https://github.com/openai/codex/tree/main/codex-rs/app-server)：复用JSON-RPC线程、turn、审批和事件；安装CLI公开生成schema确认thread `sandbox=read-only`，turn policy `type=readOnly`，两者不要混用。
+- [Claude官方CLI参考](https://code.claude.com/docs/en/cli-reference)、[官方stream模式](https://code.claude.com/docs/en/agent-sdk/streaming-vs-single-mode)、[官方SDK query实现](https://github.com/anthropics/claude-agent-sdk-python/blob/main/src/claude_agent_sdk/_internal/query.py)：复用stream-json控制请求关联、SDK initialize、deny tool、原UUIDresume；仅调用现有native包，不安装seat或读取CLI认证。
+- [Pi官方RPC/Session文档](https://github.com/earendil-works/pi/tree/main/packages/coding-agent/docs)：对照本机公开包rpc.md/session-format.md复用get_state/prompt/abort/sessionFile；所有read/command、extensions、skills/templates关闭。
+- [OpenCode官方server接口](https://opencode.ai/docs/server/)具有session create/message/prompt_async/abort和SSE；这是后续真实driver候选，尚未实现，本轮不连接任意现有server、不调用provider/auth或全局project/session清点。
+- [coder/agentapi](https://github.com/coder/agentapi)的HTTP消息、状态、SSE展示了协作控制方式，但terminal稳定状态不能证明原生session ID恢复或OS隔离；未部署包装服务。[Happy](https://github.com/slopus/happy)和[Happy providers案例](https://github.com/slopus/happy-agent/blob/main/packages/happy-providers/EXAMPLES.md)用于参考原生session/中断接口，不另建远程同步、scheduler、Attempt/Manifest或证明系统。
+
+Context packet是controller选择范围的固定版本封装，不是完整原生history；external_observed packet的created_at只是发现范围封装时间，native未知updated_at为null。正向stop需拥有的进程树退出，单个abort响应/kill请求不能冒充StopConfirmed；UNKNOWN投递不重放。Codex完整context需initialize协商experimentalApi，方法不支持时返回unsupported。确认未启动的resume失败保留原owned/nativeID及停止事实，仅新操作回执failed；不是旧会话unstarted。此前真实turn/resume结果不覆盖后加的完整context断言，新增原生断言及跨session context_handoff仍NOT_RUN。当前所有真实slot已归还，个人项目/历史根待人类提供。
+
+### OpenCode1.18.35 精确范围阻塞（零native/model启动）
+
+本机公开npm wrapper/package确认native `bin/opencode.exe`、版本1.18.35；未查私有设置。按同版本官方源核实：[Config合并](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/config/config.ts)对instructions拼接数组，runtime `[]`无法清除继承输入；[Instruction系统读取](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/session/instruction.ts)仍读取globalFiles与已配置绝对/远程instructions；[MCP初始化](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/mcp/index.ts)对合并后enabled连接，无观察到pure全局抑制。不能仅凭tools deny把这些输入/连接称为selected-context范围。
+
+[Plugin源](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/plugin/index.ts)的OPENCODE_PURE抑制外部插件，内置native认证插件保留；[Provider.defaultModel](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/provider/provider.ts)采用cfg.model或native recent state/default推导，/config/providers的排序目录default并非唯一当前model证据。/config返回完整配置可能带敏感provider options，本轮未请求，不打印或保存配置。root说明普通native runtime cache/dependency初始化属正常CLI授权；真正未解决的是未选择instructions/MCP范围与可信model元数据。保持unimplemented/unknown，未制造PTY包装或改全局配置；第二generic backend决定由root向人类确认。
+
+## 2026-10-10 W2 库存探测（先前阶段）
 
 基线 `20437708e43201e352d6c6926902e1363fd2ad3e`；开发工作树 `s1-local-agents-1010`。本轮只对明确 CLI 名称做 PATH 查找、固定 `--version` / `--help`，并读取安装包内公开协议文档；没有私有会话发现、配置/认证文件读取、整盘扫描、登录、模型请求、媒体转换或既有会话控制。`installed=available` 表示 PATH 入口存在，版本/帮助启动成功也不证明模型调用可用。
 

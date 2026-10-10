@@ -1,5 +1,35 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 用户决定后续作（2026-10-10）
+
+当前 Dispatch `ctx_bf18050e3ee7`，Task `task_bb04bd91e57a`，固定分支/写域不变。普通合入主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，未 reset/rebase/force/clean；QUESTIONS 顶部覆盖历史 pending。实际客户端仍为 Orca Codex，本轮未另选模型。
+
+先实现现有作业恢复显示：次数与截止期均来自持久作业，恢复入口同时检查两项；未知外部结果（delivery_unknown 标志或错误码）禁重发、不显示已完成。有限次数/时限耗尽给“暂未完成”及下一步，原始错误保留在可展开处理详情。提交错误区保留中文服务动作和原输入，响应丢失要求先核对原记录，不自动重发。候选表单说明固定版本的主题关联或明确待查问题门槛；酝酿中候选提供补充关联/问题的路径，最终状态由 W1 决定。
+
+`pnpm --dir web typecheck`、`pnpm --dir web lint`、`pnpm --dir web test`（49/49）、`pnpm --dir web build`、`git diff --check` PASS；安全性单测覆盖 unknown 优先级、次数/截止边界、网络响应未知和实际中文动作提示。浏览器/live 未执行，未占测试槽。W0 generated API 尚待发布，已给 W0/W1/W2 交接 UI 所需字段和行为，不自行新增 DTO 或 HTTP。账号真实非空选择、项目注册/权限/原生操作、AT01–04 与重启验收仍需后续完成；不将此阶段检查替代整任务验收。
+
+### 真实项目首轮失败与恢复
+
+真实项目浏览器 SOURCE `9009259b8121849a660f9738b532b7a8e9b4fb96`，主控单槽 `pnpm --dir web exec playwright test s1-projects.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-project-first`：1 FAIL，14.8 秒，exit1。实际创建空间与登记项目成功，登记 HTTP200 返回 `history_roots:null` 后 UI 遍历崩溃；B/C 保存、文件上下文和重启尚未执行。首败截图、error-context 与 trace 保留在该 output 子目录，未调用原生控制/模型/媒体。API/Vite/浏览器命令退出后相关端口无监听。
+
+前端兼容缺失历史映射，显示未提供且禁止历史发现；此兼容不授权任何根。W2 修复实际 DTO 空映射/切片，已分别交接 W0/W2；首次 RED 保留，后续定向复验单独输出，不替代历史失败或全任务验收。
+
+修复 SOURCE `711a3cde30830496d7b0cc832f45068e798db8da` 已 push，同命令输出 `test-results/s1-project-null-fix`：1 PASS，25.9 秒，exit0。真实 UI 创建空间、手动登记临时公开根、独立 B 开/C 关、保存明确 README 路径、预览实际文本、SQLite 设置比对和 API 重启持久化均通过，原生会话计数为 0。相同实际状态 resize1280/1920 截图已目视，无横向溢出；服务退出后15173/18787/55302/55303无监听，无相关 node/server，已明确向主控释放唯一 live 槽。个人根和原生/model/media 仍未测试。
+
+根据主控冷未知操作复核，已登记驱动与已观察支持分别处理：准确项目 CLI 与动作许可下，人类可明确首次验证 unknown 的 start/resume/send/observe，unsupported 仍禁用。未知结果/待定操作禁止 send/resume；只允许控制 owned 匹配会话。人类 stop 独立命令不受上下文读取失败或能力缓存过期阻塞，仍需动作许可且服务最终核对停止；无自动派发或 paid 探测。静态首次检查因新增单测误写 observed_at 而 typecheck FAIL，改为契约 checked_at 后 typecheck/build 和三项权限门槛单测 PASS；lint PASS。原生正向浏览器未执行，不把单测当原生接续证据。
+
+### 已发布客户端上的实际表单
+
+后续 ready 应用源 `5ef9fb126d1f63c2bd0418022b9e6d312a38fdb6` 已 push，普通合入 W0 `609b7e6b2dd4023959bbcb9248cf02fc10bfa46b`。既有 summarize 导出可明确选择真实论文类型，保留既有 JSON provenance，不冒充本轮 arXiv URL 获取。所选项目处理许可与全局 legacy available/processor 分开：固定 refs 与 exact CLI 许可满足时可明确提交，由服务核实真实配置；未选项目的 legacy 门槛保持。nullable 历史更新时间来自新生成 client，未观察的历史时间不推断为上下文捕获日期。此阶段 typecheck/lint/build、Vitest54/54、diff PASS。
+
+主控已分配下一唯一 live 槽，fullS1 真实代码准备完成但尚未运行：原选公开论文/视频各内容+主题两轮、v1/v2真实额外论文只导入、普通新表单复用、实际保存 Result 后本地发布故障恢复、人工 @ 授权 Agent 读取不加人类关注、later 保留与重启。首次静态类型因历史 DTO 别名与可选标题处理 FAIL，改用当前生成类型后 PASS。代码审阅发现普通 OS 发布错误 Retryable=false 会阻断 knownResult 恢复，交 W1 修复；W0 提供既有 helper 失败保留原 DB/objects 选项后再执行。原生后续计划最多三次短 turn，仅临时公开 README、工具空许可、C关闭，同 nativeID 接续/一次send/实际observe+stop；未执行，不能声明已通过。
+
+普通合入 W0 typed client `b47a3fc63e5ff07b825ecb672454ed5005743650`，再合 `2e5ef61982bbb55278ea9fe566b5cda72d9df27e`（公开收藏列表、历史根、身份临时凭据）。Attention 现可绑定多个公开创作者/收藏夹，所选 B站 UID 默认填入但不自动绑定；抖音 self 显示公开 URL 请求并禁提交。清单重载为 GET，标题同步为明确确认的 POST100，人工正文选择须实际反馈成功且元数据版本相同；running/unknown 不重发。收藏列表由实际 API 返回供人选择，不自动绑定所有列表。普通单资料导入默认复用，刷新正文需明确勾选。
+
+共同工作区局部接入真实 /local-projects，与 S0 projection 分开：手动绝对根、所选目录发现子项目、明确登记/关联空间；项目 A 默认，B/C 独立，准确 CLI 模型处理许可、动作授权与显式历史根；人类可授予/撤销项目身份并按需生成临时 token（仅页面内存、不日志、不 storage）。只交付所选固定资料与 B 文件，原生 start/resume/send/stop/observe 和真正新会话交接分别呈现。未知能力暂禁用；W0 将发布实际 registered adapter 字段后加入明确验证入口，不能由 installed 推导支持。外部历史只观察，不冒充可控制会话。
+
+本阶段首次 typecheck/build 因新单测 provenance.model=null 与契约 string? 不符 FAIL（TS2322），保留为首败；修正为未提供 model 后两命令 PASS。lint PASS、Vitest51/51 PASS、diff PASS。仍未占浏览器槽或调用模型、媒体、原生控制；实际 HTTP 组装与 W2 验证尚在推进，不把编译表单当作 live 验收。
+
 2026-10-10；基线 `20437708e43201e352d6c6926902e1363fd2ad3e`；分支 `s1-sync-ui-1010`。本机 Orca 原生 Codex，主控通过 worker-read 确认实际模型 `gpt-6.1-sol`。写域为 web/src（排除 api 与 pages/swarm）、web/e2e、本报告与 docs/acceptance/S1-sync.md。
 
 ## 阶段一
@@ -51,3 +81,10 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## Full S1 首轮真实浏览器 RED 与原库续验准备
+
+SOURCE `393676ebc5241c1db56c721caa776e248d98dc19`，主控单槽 `ASTROCYTE_TEST_REAL_S1_ACCEPTANCE=1 pnpm --dir web exec playwright test s1-real-acceptance.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-real-first`：1 FAIL、exit1，trace 约229.1秒。论文既有真实JSON、视频既有正文与一次明确视频URL刷新三个实际作业均 succeeded/attempt1/delivery_unknown=false；SQLite 沉淀0、原生会话0，未调用模型。失败是历史CRLF被浏览器textarea规范为LF，测试却要求原始字节相等；原export不改，修正核对实际人类输入文本，不改变版本内容。
+
+保留 `web/test-results/s1-real-first/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/` 原截图/error-context/trace。原库与objects在 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO`，真实视频刷新作业 `26MPWE7S3S4FLEUE62BZLKC54T` 已完成。主控要求复用这个明确自有临时目录，后续普通表单复用该结果，无第二次媒体获取；即使成功也保存同库供主控只读验收，API/Vite正常关闭。
+
+续验准备同时改为模型按实际Job.deadline_at、最多30分钟等待终态，整体测试预算容纳四次有界模型期限；不修改业务时限/模型/费用，不提前关闭仍running服务。材料标题可缺失，测试按实际UI来源locator显示核对。实际native记录读取加入后续测试，取同一活跃Codex线程真实上下文，不新增付费turn。人类停止 owned 会话独立于撤销后的模型/动作许可及能力缓存，由服务核对停止结果；其余输入门槛保持。新增native测试DTO首次误写NativeEventListV1导致typecheck FAIL，按生成契约NativeContextListV1修复后typecheck、lint、定向3文件9项单测、diff PASS。续验尚未运行，完整S1仍未通过。

@@ -14,6 +14,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
 
 // Reader accepts existing exports. Local files are disabled unless explicit
@@ -113,7 +114,7 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 			kind = "video"
 		}
 		spans := exportSpans(e)
-		source = app.ImportedSource{SourceKey: canonicalWebKey(e.URL), SourceLocator: e.URL, Kind: kind, Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: spans, Provenance: app.Provenance{Processor: "summarize", Version: "0.21.8-format", Mode: mode, Source: e.URL}, Attachments: []app.SourceAttachment{{Name: name, MediaType: mediaType, Data: raw, SourceLocator: e.URL}}}
+		source = app.ImportedSource{SourceKey: exportSourceKey(e.URL, kind), SourceLocator: e.URL, Kind: kind, Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: spans, Provenance: app.Provenance{Processor: "summarize", Version: "0.21.8-format", Mode: mode, Source: e.URL}, Attachments: []app.SourceAttachment{{Name: name, MediaType: mediaType, Data: raw, SourceLocator: e.URL}}}
 	case "manual":
 		raw, err := r.exportBytes(cmd)
 		if err != nil {
@@ -122,7 +123,7 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		if err = validateWebURL(cmd.SourceLocator); err != nil {
 			return source, sourceError(err)
 		}
-		source = app.ImportedSource{SourceKey: canonicalWebKey(cmd.SourceLocator), SourceLocator: cmd.SourceLocator, Kind: cmd.Kind, Title: cmd.Title, Text: string(raw), SourceSpans: append([]string{}, cmd.SourceSpans...), Provenance: app.Provenance{Processor: "manual", Version: "1", Mode: "manual", Source: cmd.SourceLocator}}
+		source = app.ImportedSource{SourceKey: exportSourceKey(cmd.SourceLocator, cmd.Kind), SourceLocator: cmd.SourceLocator, Kind: cmd.Kind, Title: cmd.Title, Text: string(raw), SourceSpans: append([]string{}, cmd.SourceSpans...), Provenance: app.Provenance{Processor: "manual", Version: "1", Mode: "manual", Source: cmd.SourceLocator}}
 	default:
 		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_or_existing_summarize_export"}
 	}
@@ -197,45 +198,18 @@ func (r *Reader) exportBytes(cmd app.ImportMaterialCommand) ([]byte, error) {
 	return os.ReadFile(resolved)
 }
 
-func canonicalWebKey(raw string) string {
-	u, err := url.Parse(raw)
-	if err != nil {
-		return raw
-	}
-	u.Fragment = ""
-	host := strings.ToLower(u.Hostname())
-	if host == "bilibili.com" || host == "www.bilibili.com" || host == "m.bilibili.com" {
-		if strings.HasPrefix(u.Path, "/video/") {
-			// Tracking parameters do not identify new source content. Keep all
-			// other parameters, especially multipart page p, in source identity.
-			q := u.Query()
-			q.Del("spm_id_from")
-			q.Del("spm")
-			if q.Get("p") == "1" {
-				q.Del("p")
-			}
-			u.Scheme = "https"
-			u.Host = "www.bilibili.com"
-			u.Path = strings.TrimRight(u.Path, "/") + "/"
-			u.RawQuery = q.Encode()
-			return u.String()
+func canonicalWebKey(raw string) string { return domain.CanonicalWebKey(raw) }
+
+// Official paper locators retain their exact original version/URL in the
+// export and provenance, while sharing the existing arXiv material identity.
+// Neither video URLs, arbitrary domains nor invalid paper IDs are collapsed.
+func exportSourceKey(locator, kind string) string {
+	if kind == "paper" {
+		if id, err := NormalizeArxivID(locator); err == nil {
+			return "arxiv:" + revisionSuffix.ReplaceAllString(id, "")
 		}
 	}
-	if host == "youtu.be" {
-		return "youtube:" + strings.Trim(u.Path, "/")
-	}
-	if host == "youtube.com" || host == "www.youtube.com" || host == "m.youtube.com" {
-		if id := u.Query().Get("v"); id != "" {
-			return "youtube:" + id
-		}
-		for _, prefix := range []string{"/shorts/", "/embed/"} {
-			if strings.HasPrefix(u.Path, prefix) {
-				return "youtube:" + strings.TrimPrefix(u.Path, prefix)
-			}
-		}
-	}
-	u.Host = strings.ToLower(u.Host)
-	return u.String()
+	return canonicalWebKey(locator)
 }
 
 func invalid(message string) *apierrors.ServiceError {

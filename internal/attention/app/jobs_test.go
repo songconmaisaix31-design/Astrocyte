@@ -44,6 +44,9 @@ func TestReadOnlyFailureExplicitRetryCeilingAndStableOperation(t *testing.T) {
 	if job.Attempts != 2 {
 		t.Fatal("attempt count lost")
 	}
+	if job.Error.Retryable || job.Error.RequiredAction != "review_source_or_configuration_before_new_work" {
+		t.Fatal("exhaustion still invited invisible retry")
+	}
 }
 
 func TestRecoveryReadOnlyVsUnknownModelAndDeadline(t *testing.T) {
@@ -273,6 +276,7 @@ func TestCanonicalContractKindsAndMutableSourceRefresh(t *testing.T) {
 	text = "changed remote content"
 	mu.Unlock()
 	c.CommandMeta = meta("remote-again", 1)
+	c.Refresh = true
 	response, err = s2.ImportMaterial(context.Background(), human, c)
 	if err != nil || response.JobID == first.JobID {
 		t.Fatal("mutable remote was never reread")

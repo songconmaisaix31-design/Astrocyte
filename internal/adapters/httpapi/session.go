@@ -12,6 +12,7 @@ import (
 	"time"
 
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
 const principalKey contextKey = "principal"
@@ -26,14 +27,16 @@ type localSession struct {
 	Expires time.Time
 }
 type sessionGuard struct {
-	mu         sync.Mutex
-	sessions   map[string]localSession
-	agentToken string
-	origins    map[string]bool
+	mu           sync.Mutex
+	sessions     map[string]localSession
+	agentToken   string
+	origins      map[string]bool
+	scopedTokens workspaceapp.ScopedAgentTokens
 }
 
 func newSessionGuard(cfg Config) *sessionGuard {
 	g := &sessionGuard{sessions: map[string]localSession{}, agentToken: cfg.AgentToken, origins: map[string]bool{}}
+	g.scopedTokens, _ = cfg.Services.LocalProjects.(workspaceapp.ScopedAgentTokens)
 	for _, origin := range cfg.AllowedOrigins {
 		g.origins[origin] = true
 	}
@@ -99,6 +102,17 @@ func (g *sessionGuard) middleware(next http.Handler) http.Handler {
 		}
 		p := attentionapp.Principal{}
 		if authorization := r.Header.Get("Authorization"); authorization != "" {
+			if g.scopedTokens != nil && strings.HasPrefix(authorization, "Bearer ") {
+				caller, err := g.scopedTokens.AuthenticateAgentToken(r.Context(), strings.TrimPrefix(authorization, "Bearer "))
+				if err == nil && caller.Kind == "agent" && caller.ID != "" && caller.ProjectID != "" && scopedAgentRoute(r, caller.ProjectID) {
+					ctx := context.WithValue(r.Context(), workspaceCallerKey, caller)
+					ctx = withPrincipal(ctx, attentionapp.Principal{ID: caller.ID, Kind: "agent"})
+					next.ServeHTTP(w, r.WithContext(ctx))
+					return
+				}
+				writeRejectionError(w, r, http.StatusForbidden, "Agent credential requires a current human project grant and permitted operation")
+				return
+			}
 			if g.agentToken == "" || !strings.HasPrefix(authorization, "Bearer ") || subtle.ConstantTimeCompare([]byte(strings.TrimPrefix(authorization, "Bearer ")), []byte(g.agentToken)) != 1 {
 				writeRejectionError(w, r, http.StatusForbidden, "invalid Agent credential")
 				return
@@ -134,4 +148,30 @@ func (g *sessionGuard) middleware(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r.WithContext(withPrincipal(r.Context(), p)))
 	})
+}
+
+// Only resource-scoped reads/control reach Workspace. Its service reloads the
+// action grant on every operation. Settings, grants and token issuance stay human.
+func scopedAgentRoute(r *http.Request, projectID string) bool {
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) < 5 || parts[0] != "api" || parts[1] != "v1" || parts[2] != "local-projects" || parts[3] != projectID {
+		return false
+	}
+	if len(parts) == 5 {
+		return (parts[4] == "context" && r.Method == http.MethodPost) || (parts[4] == "sessions" && (r.Method == http.MethodGet || r.Method == http.MethodPost))
+	}
+	if len(parts) == 6 && parts[4] == "sessions" && parts[5] == "discover" {
+		return r.Method == http.MethodPost
+	}
+	if len(parts) != 7 || parts[4] != "sessions" || parts[5] == "" {
+		return false
+	}
+	switch parts[6] {
+	case "resume", "send", "stop":
+		return r.Method == http.MethodPost
+	case "observe", "context":
+		return r.Method == http.MethodGet
+	default:
+		return false
+	}
 }

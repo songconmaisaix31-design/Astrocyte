@@ -162,14 +162,14 @@ test('selected public video URL imports through the real service without an expo
       return completed?.status;
     }, { timeout: jobTimeout, intervals: [2000] }).toMatch(/succeeded|failed|cancelled/);
     await page.getByRole('button', { name: '刷新队列', exact: true }).click();
-    await expect(row).toContainText(completed!.status === 'succeeded' ? '已完成' : '失败');
+    await expect(row).toContainText(completed!.status === 'succeeded' ? '已完成' : '需要你处理');
     await page.screenshot({ path: testInfo.outputPath('video-import-real.png'), fullPage: true });
     await testInfo.attach('actual-video-job', { body: JSON.stringify(completed, null, 2), contentType: 'application/json' });
     expect(completed!.status, JSON.stringify(completed!.error)).toBe('succeeded');
     await row.getByRole('button', { name: '查看作业资料' }).click();
     const detail = page.getByRole('dialog', { name: '素材详情' });
     await expect(detail).toContainText('已保存可读文本');
-    await expect(detail).toContainText('尚无此版本的 Codex 内容整理结果');
+    await expect(detail).toContainText('尚无此版本的模型内容整理结果');
     await expect(detail.getByText('固定来源', { exact: true }).locator('..')).toContainText(videoURL.replace(/\/$/, ''));
     const original = detail.getByText('保存的原文 / 提取文本', { exact: true }).locator('..').locator('pre');
     await expect(original).not.toHaveText('');

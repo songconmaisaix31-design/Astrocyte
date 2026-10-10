@@ -87,6 +87,7 @@ func (s *Service) buildOpportunity(tx AttentionTx, c OpportunityCommand, id stri
 	if err != nil {
 		return Opportunity{}, err
 	}
+	associatedOrQuestion := false
 	for _, distillationID := range c.DistillationIDs {
 		found := false
 		for _, d := range all {
@@ -98,13 +99,57 @@ func (s *Service) buildOpportunity(tx AttentionTx, c OpportunityCommand, id stri
 				if err := validateSourceRefs(tx, d.InputRefs); err != nil {
 					return Opportunity{}, err
 				}
+				// A linked successful record must concern this candidate's evidence.
+				// A source/use/next-step alone does not complete theme association.
+				if overlapsEvidence(d.InputRefs, c.EvidenceRefs) && hasAssociationOrQuestion(d) {
+					associatedOrQuestion = true
+				}
 			}
 		}
 		if !found {
 			return Opportunity{}, apierrors.NewNotFound("distillation", distillationID)
 		}
 	}
+	if state == "ready_for_review" && !associatedOrQuestion {
+		state = "incubating"
+	}
 	return Opportunity{ID: id, Version: version, Revision: revision, State: state, Title: c.Title, EvidenceRefs: nonNil(normalizeRefs(c.EvidenceRefs)), GoalRefs: nonNil(c.GoalRefs), Dimensions: c.Dimensions, NextStep: c.NextStep, MissingEvidence: nonNil(c.MissingEvidence), Purpose: c.Purpose, DistillationIDs: nonNil(c.DistillationIDs), CreatedAt: s.options.Clock()}, nil
+}
+
+func overlapsEvidence(inputs, evidence []SourceRef) bool {
+	for _, input := range inputs {
+		for _, ref := range evidence {
+			if input.MaterialID == ref.MaterialID && input.Revision == ref.Revision {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func hasAssociationOrQuestion(d Distillation) bool {
+	for _, question := range d.PendingQuestions {
+		if strings.TrimSpace(question) != "" {
+			return true
+		}
+	}
+	if d.NextQuestion != nil && strings.TrimSpace(*d.NextQuestion) != "" {
+		return true
+	}
+	if d.Stage != "topic" && d.Stage != "project" {
+		return false
+	}
+	if len(d.RelatedRefs) > 0 {
+		return true
+	}
+	for _, values := range [][]string{d.RelatedIdeas, d.Conflicts, d.GoalRefs, d.ExistingAssets} {
+		for _, value := range values {
+			if strings.TrimSpace(value) != "" {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (s *Service) CreateOpportunity(ctx context.Context, p Principal, c OpportunityCommand) (OpportunityDetail, error) {

@@ -23,7 +23,9 @@ import (
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -55,6 +57,10 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	sourceReader, err := resolveSourceReader(importRoots)
+	if err != nil {
+		return err
+	}
+	listingPython, err := resolveListingPython()
 	if err != nil {
 		return err
 	}
@@ -113,7 +119,41 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("open objects: %w", err)
 	}
-	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys})
+	listingReader := importers.NewPublicListingReader(listingPython)
+	nativeRoot, err := filepath.Abs(filepath.Join(dataDir, "native-sessions"))
+	if err != nil {
+		return fmt.Errorf("resolve native state directory: %w", err)
+	}
+	registry := agents.NewRegistry(nativeRoot)
+	projectReferences := &projectReferenceBridge{}
+	localProjects := workspaceapp.NewLocalProjectService(db, projectReferences, agents.ProjectFiles{}, registry)
+	textProcessor := &selectedTextBridge{projects: localProjects, processor: registry}
+	processingTimeout := min(time.Duration(jobSeconds)*time.Second, 30*time.Minute)
+	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{
+		WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second,
+		AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys,
+		ListingReader: listingReader, CollectionReader: listingReader,
+		ListingRecommender: distillers.NewListingRecommender(textProcessor, processingTimeout),
+		ProjectDistillers:  distillers.NewSelectedTextFactory(textProcessor, processingTimeout),
+	})
+	projectReferences.attention = attention
+	// This defer also covers a later startup error. It runs before the existing
+	// db.Close defer; absence on a later restart never counts as a confirmed exit.
+	nativeShutdownDone := false
+	shutdownNative := func() error {
+		if nativeShutdownDone {
+			return nil
+		}
+		nativeShutdownDone = true
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		return localProjects.Shutdown(shutdownCtx)
+	}
+	defer func() {
+		if err := shutdownNative(); err != nil {
+			logger.Error("native shutdown incomplete; unconfirmed state retained", "error", err)
+		}
+	}()
 	// Discover only public CLI version/help once at startup. Total bounded time
 	// keeps existing readiness checks responsive; GET reads the resulting cache.
 	// No configuration, private sessions, projects or native operations are read.
@@ -130,12 +170,14 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
+		Tracking:      attention,
+		LocalProjects: localProjects,
 		Attention:     attention,
 		Foundation:    foundation.NewAttentionService(schemaVersion),
 		Materials:     attention,
 		Opportunities: attention,
 		Projects:      workspaceapp.NewProjectService(),
-		LocalAgents:   workspaceapp.NewLocalAgentService(inventory),
+		LocalAgents:   workspaceapp.NewLocalAgentService(inventory, registry),
 		Proposals:     workspaceapp.NewProposalService(),
 		Sessions:      workspaceapp.NewSessionService(),
 		Missions:      swarmapp.NewMissionService(),
@@ -217,6 +259,9 @@ func run(logger *slog.Logger) error {
 	}
 	if shutdownErr != nil {
 		return fmt.Errorf("shutdown: %w", shutdownErr)
+	}
+	if err := shutdownNative(); err != nil {
+		return fmt.Errorf("native shutdown: %w", err)
 	}
 
 	logger.Info("server stopped")

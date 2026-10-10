@@ -17,53 +17,93 @@ import (
 
 func (s *Service) ImportMaterial(ctx context.Context, p Principal, c ImportMaterialCommand) (ImportJobResult, error) {
 	result, err := command(s, ctx, p, c.CommandMeta, "ImportMaterial", c, func(tx AttentionTx) (ImportJobResult, error) {
-		if c.ExpectedVersion != 1 || strings.TrimSpace(c.SourceLocator) == "" || !slices.Contains([]string{"paper", "video", "text", "file"}, c.Kind) {
-			return ImportJobResult{}, domain.ErrInvalid
-		}
-		// A supplied export or official arXiv version is a fixed snapshot.
-		// Unversioned remote URLs and local files can change, so a new command
-		// must reread them. Its receipt prevents duplicate delivery; the
-		// canonical source key and actual digest prevent duplicate revisions.
-		refresh := ""
-		source, adapter := c.SourceLocator, c.Adapter
-		if c.ExportText == "" {
-			if version := fixedArxivVersion(c); version != "" {
-				source, adapter = "https://arxiv.org/abs/"+version, "arxiv"
-			} else {
-				refresh = c.IdempotencyKey
-			}
-		}
-		identity := struct{ Source, Key, Kind, Adapter, Text, File, Digest, Refresh string }{source, c.SourceKey, c.Kind, adapter, c.ExportText, c.LocalFileRef, c.ContentDigest, refresh}
-		bytes, _ := json.Marshal(identity)
-		dedupeKey := digestBytes(bytes)
-		old, err := tx.FindJobByDedupeKey(dedupeKey)
-		if err == nil {
-			// Whether reimporting an older immutable digest restores the default
-			// head is an unanswered user decision. Reuse the recorded result
-			// without inventing a head-restoration policy here.
-			return ImportJobResult{SchemaVersion: 1, JobID: old.JobID, Status: old.Status}, nil
-		}
-		if !isMissing(err) {
-			return ImportJobResult{}, err
-		}
-		payload, err := json.Marshal(c)
-		if err != nil {
-			return ImportJobResult{}, err
-		}
-		now := s.options.Clock()
-		job := Job{SchemaVersion: 1, JobID: rand.Text(), Status: "queued", Kind: "import", Version: 1, DedupeKey: dedupeKey, OperationID: rand.Text(), MaxAttempts: s.options.MaxAttempts, CreatedAt: now, UpdatedAt: now, DeadlineAt: now.Add(s.options.JobTimeout), Payload: payload, Caller: p}
-		if err = tx.SaveJob(job, 0); err != nil {
-			return ImportJobResult{}, err
-		}
-		if err = s.event(tx, "job_queued", job.JobID, job.Version, c.CommandMeta, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID}); err != nil {
-			return ImportJobResult{}, err
-		}
-		return ImportJobResult{SchemaVersion: 1, JobID: job.JobID, Status: job.Status}, nil
+		return s.enqueueImport(tx, p, c)
 	})
 	if err == nil {
 		s.signal()
 	}
 	return result, err
+}
+
+// enqueueImport also lets human selection link a job and metadata atomically.
+func (s *Service) enqueueImport(tx AttentionTx, p Principal, c ImportMaterialCommand) (ImportJobResult, error) {
+	if c.ExpectedVersion != 1 || strings.TrimSpace(c.SourceLocator) == "" || !slices.Contains([]string{"paper", "video", "text", "file"}, c.Kind) {
+		return ImportJobResult{}, domain.ErrInvalid
+	}
+	// Ordinary forms reuse the source result; only explicit human refresh
+	// schedules extraction again. Supplied exports remain fixed input bytes.
+	refresh := ""
+	source, adapter := c.SourceLocator, c.Adapter
+	if c.ExportText == "" {
+		if version := fixedArxivVersion(c); version != "" {
+			source, adapter = "https://arxiv.org/abs/"+version, "arxiv"
+		}
+	}
+	if c.Kind == "video" {
+		source = domain.CanonicalWebKey(source)
+	}
+	if c.Refresh {
+		refresh = c.IdempotencyKey
+	}
+	if !c.Refresh && c.ExportText == "" {
+		// Existing pre-refresh-policy jobs are retained and reusable. Prefer
+		// the latest extraction (including explicit refresh), never rerun an
+		// old failure/UNKNOWN by disguising it as a new form.
+		jobs, err := tx.ListJobs()
+		if err != nil {
+			return ImportJobResult{}, err
+		}
+		var latest *Job
+		for _, job := range jobs {
+			if job.Kind != "import" {
+				continue
+			}
+			var old ImportMaterialCommand
+			if json.Unmarshal(job.Payload, &old) != nil {
+				continue
+			}
+			oldSource, oldAdapter := old.SourceLocator, old.Adapter
+			if version := fixedArxivVersion(old); version != "" {
+				oldSource, oldAdapter = "https://arxiv.org/abs/"+version, "arxiv"
+			}
+			if old.Kind == "video" {
+				oldSource = domain.CanonicalWebKey(oldSource)
+			}
+			if old.ExportText == "" && oldSource == source && oldAdapter == adapter && old.Kind == c.Kind && old.LocalFileRef == c.LocalFileRef && old.ContentDigest == c.ContentDigest && old.SourceKey == c.SourceKey {
+				if latest == nil || job.CreatedAt.After(latest.CreatedAt) || (job.CreatedAt.Equal(latest.CreatedAt) && job.UpdatedAt.After(latest.UpdatedAt)) {
+					copy := job
+					latest = &copy
+				}
+			}
+		}
+		if latest != nil {
+			return ImportJobResult{SchemaVersion: 1, JobID: latest.JobID, Status: latest.Status}, nil
+		}
+	}
+	identity := struct{ Source, Key, Kind, Adapter, Text, File, Digest, Refresh string }{source, c.SourceKey, c.Kind, adapter, c.ExportText, c.LocalFileRef, c.ContentDigest, refresh}
+	bytes, _ := json.Marshal(identity)
+	dedupeKey := digestBytes(bytes)
+	old, err := tx.FindJobByDedupeKey(dedupeKey)
+	if err == nil {
+		// A -> B -> A reuses A's receipt and keeps B as the current head.
+		return ImportJobResult{SchemaVersion: 1, JobID: old.JobID, Status: old.Status}, nil
+	}
+	if !isMissing(err) {
+		return ImportJobResult{}, err
+	}
+	payload, err := json.Marshal(c)
+	if err != nil {
+		return ImportJobResult{}, err
+	}
+	now := s.options.Clock()
+	job := Job{SchemaVersion: 1, JobID: rand.Text(), Status: "queued", Kind: "import", Version: 1, DedupeKey: dedupeKey, OperationID: rand.Text(), MaxAttempts: s.options.MaxAttempts, CreatedAt: now, UpdatedAt: now, DeadlineAt: now.Add(s.options.JobTimeout), Payload: payload, Caller: p}
+	if err = tx.SaveJob(job, 0); err != nil {
+		return ImportJobResult{}, err
+	}
+	if err = s.event(tx, "job_queued", job.JobID, job.Version, c.CommandMeta, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID}); err != nil {
+		return ImportJobResult{}, err
+	}
+	return ImportJobResult{SchemaVersion: 1, JobID: job.JobID, Status: job.Status}, nil
 }
 
 var fixedArxivID = regexp.MustCompile(`^(?:[0-9]{4}\.[0-9]{4,5}|[a-z][a-z0-9.-]*(?:\.[A-Z]{2})?/[0-9]{7})v[1-9][0-9]*$`)
@@ -120,9 +160,15 @@ func jobRules(j Job) domain.JobRules {
 	// SourceReader only downloads sources or parses existing exports. Ordinary
 	// imports have no paid/effectful action to reconcile. Other job kinds retain
 	// the conservative external-start recovery rule for future model adapters.
-	external := j.ExternalStarted && j.Kind != "import"
+	external := j.ExternalStarted && j.Kind != "import" && j.Kind != "source_sync"
 	if j.Kind == "distillation" {
 		var payload automaticPayload
+		if json.Unmarshal(j.Payload, &payload) == nil && payload.Result != nil {
+			external = false
+		}
+	}
+	if j.Kind == "source_recommendation" {
+		var payload recommendationPayload
 		if json.Unmarshal(j.Payload, &payload) == nil && payload.Result != nil {
 			external = false
 		}
@@ -156,6 +202,25 @@ func (s *Service) RetryJob(ctx context.Context, p Principal, id string, m Comman
 		// Preserve the original deadline, attempts, payload and operation identity.
 		if err = tx.SaveJob(job, m.ExpectedVersion); err != nil {
 			return Job{}, err
+		}
+		if id := trackingJobSource(job); id != "" {
+			port, err := trackingPort(tx)
+			if err != nil {
+				return Job{}, err
+			}
+			source, err := port.LoadTrackingSource(id)
+			if err != nil {
+				return Job{}, err
+			}
+			old := source.Version
+			source.Version++
+			source.Status = "syncing"
+			if job.Kind == "source_recommendation" {
+				source.Status = "recommending"
+			}
+			if err = port.SaveTrackingSource(source, old); err != nil {
+				return Job{}, err
+			}
 		}
 		if err = s.event(tx, "job_retried", id, job.Version, m, map[string]any{"job_id": id, "operation_id": job.OperationID}); err != nil {
 			return Job{}, err
@@ -236,9 +301,12 @@ func (s *Service) RecoverJobs(ctx context.Context) error {
 			if job.DeliveryUnknown {
 				job.Error = mapError(domain.ErrUnknown, "").(*apierrors.ServiceError)
 			} else {
-				job.Error = serviceError(apierrors.ProviderUnavailable, "Local worker was interrupted", "retry_job")
+				job.Error = retryableInterruption()
 			}
 			if err = tx.SaveJob(job, old); err != nil {
+				return err
+			}
+			if err = s.recoverTrackingState(tx, job); err != nil {
 				return err
 			}
 			if err = s.event(tx, "job_recovered", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown}); err != nil {
@@ -267,6 +335,11 @@ func (s *Service) Run(ctx context.Context) error {
 	if err := s.RecoverJobs(ctx); err != nil {
 		return err
 	}
+	if s.options.ListingReader != nil {
+		if err := s.SyncSourcesOnce(ctx); err != nil {
+			return err
+		}
+	}
 	workerCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	errorsFound := make(chan error, s.options.WorkerConcurrency)
@@ -279,6 +352,13 @@ func (s *Service) Run(ctx context.Context) error {
 			defer ticker.Stop()
 			for {
 				if workerCtx.Err() != nil {
+					return
+				}
+				if err := s.retrySafeJobs(workerCtx); err != nil {
+					if workerCtx.Err() == nil {
+						errorsFound <- err
+						cancel()
+					}
 					return
 				}
 				worked, err := s.ProcessNextJob(workerCtx)
@@ -358,6 +438,12 @@ func (s *Service) ProcessNextJob(ctx context.Context) (bool, error) {
 	}
 	if claimed.Kind == "distillation" {
 		return true, s.processAutomatic(ctx, claimed)
+	}
+	if claimed.Kind == "source_sync" {
+		return true, s.processSourceSync(ctx, claimed)
+	}
+	if claimed.Kind == "source_recommendation" {
+		return true, s.processSourceRecommendation(ctx, claimed)
 	}
 	var c ImportMaterialCommand
 	if err = json.Unmarshal(claimed.Payload, &c); err != nil {
@@ -485,12 +571,23 @@ func (s *Service) failJob(claim Job, cause error, unknown bool) error {
 		if unknown {
 			job.Error = mapError(domain.ErrUnknown, "").(*apierrors.ServiceError)
 		} else {
-			job.Error = mapError(cause, "").(*apierrors.ServiceError)
+			mapped := *mapError(cause, "").(*apierrors.ServiceError)
+			job.Error = &mapped
+		}
+		originalError := *job.Error
+		if !unknown && job.Error.Retryable && (job.Attempts >= job.MaxAttempts || !s.options.Clock().Before(job.DeadlineAt)) {
+			job.Error.Retryable = false
+			job.Error.Message += "; bounded retry budget exhausted"
+			job.Error.RequiredAction = "review_source_or_configuration_before_new_work"
 		}
 		if err = tx.SaveJob(job, old); err != nil {
 			return err
 		}
-		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown})
+		event := map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown, "attempts": job.Attempts, "error": job.Error, "cause": originalError}
+		if failure, ok := cause.(interface{ FailureDetail() string }); ok {
+			event["cause_detail"] = failure.FailureDetail()
+		}
+		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, event)
 	}), "")
 }
 

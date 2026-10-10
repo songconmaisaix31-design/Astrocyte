@@ -1,5 +1,39 @@
 # S1 同步 / 本地 Agent：W0 契约与集成
 
+## 2026-10-10 决定后继续开发（当前，未完成）
+
+当前交接：可编译业务 SOURCE `6a33c9b74059bbd6eb233e630c48e0994d44809e`；后续普通合入 W2 `1c07a49` 和 W1 `522da89` 仅测试/报告，分支 HEAD `9a5b2c62bfd82727fc020cf589d0a16c90d812dc`。已装配真实公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。完整离线 check/build 在 `dfd3949` PASS（14 API / 54前端），后续业务改动分别通过受影响 Go tests/vet/build 和 TS/lint；不扩展为真实模型或总体验收结论。
+
+W0 本次零付费模型、零媒体提取、零浏览器操作，仅临时真实 API/SQLite/objects 和明确根测试。保存结果后的冷启动恢复沿现有 `Resolve` + `ProjectSpaceID` 权限检查；`9564bca` 一度新增的未使用可选端口已由普通 `552a544` 删除，保留历史，不要求第二实现路径。新处理仍检查当前 CLI 配置，旧 UNKNOWN 不重放。W3 真源浏览器首败 CRLF/LF matcher 与保留库由主控追踪，不覆盖为成功；首轮0 paid，实际视频正文和论文原文已由主控独立核对，后续模型/原生/完整 AT 待现场结果。
+
+剩余真实限制：公开账号上游挑战/限流、无实际公开收藏条目、Douyin公开身份与匿名 transport、个人根和自动 Agent 控制限度仍未完成；selected prompt 保持128KiB，不擅自扩大。Claude完整原历史 UnsupportedCapability，Codex/Pi新完整历史扩展实测仍 NOT_RUN。人类停止 UI 在撤销模型许可后的门控与后端不符，已返 W3 最小修复；最终独立检查、现场返修和总控接收完成前本 worker 不结算完整 S1。
+
+Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 实际 provider `codex`、model `gpt-6.1-sol`；W0 单独拥有契约、HTTP、入口、迁移及集成写域，其他领域返修由原 owner 完成。第一步 `git fetch origin` PASS，普通合入准确主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，合并 `8d69854`。用户事实源为 QUESTIONS 顶部；公开抖音身份、个人项目根和自动 Agent 派发限度仍待用户，不由实现推导授权。
+
+已推送早期消费契约 `1a6915e6a6da0820572afa6eb3e7ee12d9f4599b`（来源绑定/清单/推荐/人工选择、项目/原生端口、006/007迁移），类型客户端 `b47a3fc63e5ff07b825ecb672454ed5005743650`，共享身份与 HTTP 路由 `66d2791c07238977033ba575eaf4fde0bd53633f`。普通消费 W2 DTO `022585c` 与 `6981b90`；不是源码拷贝、reset、rebase 或历史改写。007 在供 owner 首次测试前补 version 列实现设置 CAS；不增加定时器、Mission 或新调度系统。
+
+当前新增 API `/tracking-sources`、`/source-collections`、`/local-projects`；固定版本、公开元数据、分页未完成和未知推荐字段显式表达。人类设置/授权/令牌签发独立于项目作用域 Agent 操作；transport 注入实际 Caller，项目令牌每次认证查当前 grant，原未 scoped 的 AgentToken 不扩大权限。资料消费端口要求 Attention 每次核对当前空间固定版本引用，扩展只在 C 明确开启后读当前根的直接关联，保持真实 Agent ID、只记机器使用。
+
+本阶段首败保留：首次 `pnpm generate` / `pnpm check:contracts` FAIL（三个新 schema 引用名写错）；修正为既有 `ServiceErrorV1` / `ImportJobV1` 后 PASS。首次 `pnpm --dir web typecheck` FAIL（OpenAPI default 让 refresh 生成为必填），去 default 保留 Go 默认 false 后另行 PASS。增量 schema 作者临时脚本第一次匹配未锚定行首导致 YAML indentation FAIL，修正匹配并重新生成作者自己未提交的追加块后 PASS；临时作者脚本已移除，未提交生成框架。
+
+装配阶段已普通合入 W1 `bbf00590e5c4049077f3ef460d2d96f33585d562`、W2 `ba40c787391c268c92d78f0c57ac93e0e05b8d95` 和缓存观察 `b0645f1e6fa1b0da66a89cd072eef686cd519cce`、W3 `7a636a93de21e3a87f1320e7500afacff2dbc4a9`。原生服务、项目资料消费、清单、generic 项目 CLI 蒸馏与推荐使用既有 SQLite/queue/registry；CLI 显式 probe 更新缓存，GET 不探测。入口所选 CLI 期限取作业期限、上限30分钟；保留 legacy opt-in。W0 `866b124b11033aa0f96945daa915b356e25a72c8` 发布缓存装配和文档。
+
+消费 W1 `345886a8a841396fdeab69cdc1e62e99791d0965` 修复128KiB边界、已完成分页缓存及当前关联根检查。`node scripts/check-s1-project-api.mjs` 首次 FAIL：真实 API/临时 SQLite 先通过 A→B→A 仍保留 B head、A固定对象读取，再遇 `POST /local-projects` HTTP200 的 settings.history_roots=null 违反契约；返 W2，临时进程/目录关闭清理完成。没有付费模型/媒体/原生控制或浏览器。新 schema 后 `pnpm --dir web typecheck` 首次 FAIL：已合入 W3 cooperative mode 两处与 owner native|context_handoff 不符，返 W3；契约检查和232示例本次 PASS，不能当作前端通过。
+
+后续普通合入 W2 `e839fba807f770c13e52c0607b6d920f6bc21e6b`、W3 `711a3cde30830496d7b0cc832f45068e798db8da`，`node scripts/check-s1-project-api.mjs` 目标重测 PASS/exit0：真实 HTTP、SQLite、objects、临时明确项目根，核对 A-B-A、固定引用、人类/Agent使用分离、默认目录拒绝、人类授权、人类独占变更、服务重启后令牌仍受当前 grant、移除空间引用和撤销 grant 后立即403。临时资源退出并清理；这是 contract_local 整合证据，没有真实科研/模型/媒体/原生进程。模式修复后的前端 typecheck PASS。总控新增 W0 独占 `tests/s1/acceptance.test.mjs`，只调整明确刷新输入和增强普通复用/B head断言，其他测试文件未改。
+
+现有 `pnpm test:s1` 第一次集合结果12 PASS/2 FAIL（14项，25秒，临时服务清理）：一项 W0 新增断言错误地将显式 fixed export 的不同正文等同普通空正文导入并要求同一 job；领域已有 export 固定字节语义，移除该越界断言，保留原 A-B-A receipt/headB和明确刷新检查。另一项 `/distillations/processor` available=true仅来自 factory 注册、没有项目选择/配置/外部许可，返 W1 要求保留未知、project selection action。源日志 `%TEMP%/astrocyte-W0-s1-first.log` 留存（只有临时合成数据，无令牌），后续成功另记，不覆盖首败。
+
+最终应用阶段源 `dfd394916c52087094628dee4905ab582426664a`：普通消费 W1 `220f43c`（状态未知、paper identity、prompt128KiB preflight）、W2 `5491fd3`（旧DTO规范化、历史时间null、有界并发/原生输出、当前B/C授权）、W3 `5ef9fb1`（项目许可门控、原有paper导入）。首次完整 `pnpm check` PASS/exit0：gofmt/vet/Go tests/mod verify/依赖/19包架构、232示例与生成漂移、真实API contract_local 14/14、TS/lint、前端54/54；既有 EventV1 警告保留。`pnpm build` PASS/exit0。此前14项集合12/2首败和目标刷新1 PASS仍保留。当前未完成真实公共元数据/付费模型/媒体/原生/浏览器总控验收，不从本次离线成功推出完整S1。
+
+总控 ask 明确新增 W0 独占 `tests/s1/server.mjs` / `server.d.mts`：既有 helper 的 `close({preserveData:true})` 停止所属服务、保留原 SQLite/objects；`reuseOwnedTemporary:{path,ownedRoot}` 必须为显式绝对原目录和总控认可的原所属根，核对 canonical containment、既有普通数据库/对象目录/原binary，不按名称前缀推定所有权或扫描。复用默认保留（含启动失败），新目录默认行为未变；不增加 runner/manifest/proof。目标 smoke 实际保留关闭→新handle复用原库 PASS，资料版本/objects/撤销的token未变，成功后仅清理该脚本自己创建且复核的根。日志 `%TEMP%/astrocyte-W0-helper-first.log`。
+
+后续普通消费 W2 `3637de7` / `5219421` 有界原生原历史读取和 protocol negotiation、token issue/revoke 顺序回归；W1 `baf1240` 已保存 Result 的本地发布修复。新 Go 改动分别执行受影响 agents/sqlite/workspace/cmd 和 attention/distillers/sqlite/cmd 的 `go test -mod=readonly -p 1`、`go vet -mod=readonly -p 1`、server build PASS；没有重跑付费原生/媒体。helper 清理捕获原 canonical ownedRoot，避免清理时重解析替换根；实际保留复用目标重测 PASS（`astrocyte-W0-helper-canonical-retest.log`）。W2 最后新增的真实原历史读取仍 NOT_RUN；Claude 原完整历史返回明确 UnsupportedCapability，不从接续/observe 推断完整读取。
+
+`go test -mod=readonly -p 1 ./...` 和 `go vet -mod=readonly -p 1 ./...` 在 `2dfc1ba` PASS（应用模型/媒体 opt-in 关闭）。架构检查首次 FAIL：既有规则把 app/domain 的纯 `net/url` 解析误归为 I/O；仅豁免 `net/url`、保持 `net` 和其余 `net/*` 限制后 `pnpm check:architecture` PASS（19包）。这是后续独立修正结果。最新入口装配 `go test -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi ./internal/adapters/distillers` PASS。总控发现 W1 generic 输出限额2MiB与 W2 registry128KiB不一致，已返 W1；W3 浏览器发现 settings.history_roots=null，已返 W2。本轮这些领域返修未完成，不据此宣称完整 S1。
+
+最新阶段验证：`pnpm check:contracts` PASS（232既有示例、生成漂移一致，既有 EventV1 警告）；`go test -p 1 ./internal/adapters/httpapi ./cmd/server` PASS；`pnpm --dir web typecheck` PASS；`git diff --check` PASS。新增 contract_local transport 测试覆盖实际 Caller 注入、项目 mismatch、Agent 无权设置/授权/令牌签发、即时 revoke 拒绝、CSRF 和正文伪造身份拒绝；不当作真实 Agent/媒体/完整 S1 验收。本轮 W0 尚未运行媒体、应用模型或浏览器；等待主控 slot、各域 owner 完成和独立最后验收。
+
 2026-10-10；工作树 `s1-sync-contract-1010`，分支 `s1-sync-contract-1010`，基线 `2043770`（已 push）。客户端为当前原生 Codex，实际模型由总控 worker-read projection 独立核实为 `gpt-6.1-sol`；本终端不读取私有会话或凭据来核实。写域沿主计划；W1/W2/W3 的领域实现只通过普通 exact `--no-ff` 合并接入，缺陷退原 owner。
 
 ## 已有接口盘点

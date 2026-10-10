@@ -1,6 +1,6 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { lstat, mkdtemp, realpath, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve, sep } from 'node:path';
+import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { createServer } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
 import { DatabaseSync } from 'node:sqlite';
@@ -30,9 +30,33 @@ async function ready(url, child) {
   throw new Error(`Server readiness timed out: ${url}`);
 }
 
+function inside(path, directory) {
+  const rel = relative(directory, path);
+  return rel === '' || (!rel.startsWith(`..${sep}`) && rel !== '..' && !isAbsolute(rel));
+}
+
+async function existingOwnedTemporary(choice) {
+  // The caller must name the original helper directory and the exact root
+  // approved by the controller. A filename prefix never establishes ownership.
+  if (!choice || typeof choice.path !== 'string' || typeof choice.ownedRoot !== 'string' || !isAbsolute(choice.path) || !isAbsolute(choice.ownedRoot)) throw new Error('Reuse requires explicit absolute original path and approved ownedRoot');
+  const approved = await realpath(choice.ownedRoot);
+  const chosen = await realpath(choice.path);
+  const tempRoot = await realpath(tmpdir());
+  if (!inside(approved, tempRoot) || approved === tempRoot || !inside(chosen, approved)) throw new Error('Original helper directory must stay within the explicitly approved temporary root');
+  for (const [path, directory] of [[chosen, true], [join(chosen, 'data'), true], [join(chosen, 'data', 'state.sqlite'), false], [join(chosen, 'data', 'objects'), true], [join(chosen, process.platform === 'win32' ? 'server.exe' : 'server'), false]]) {
+    const info = await lstat(path);
+    if (info.isSymbolicLink() || (directory ? !info.isDirectory() : !info.isFile()) || !inside(await realpath(path), approved)) throw new Error('Original helper store must be an existing ordinary SQLite/objects directory within its approved root');
+  }
+  return { temporary: chosen, ownedRoot: approved };
+}
+
 /** Existing Go server and optional Vite, isolated from the Playwright/S0 service. */
-export async function startS1Server({ browser = false, env: extraEnv = {} } = {}) {
-  const temporary = await mkdtemp(join(tmpdir(), 'astrocyte-s1-'));
+export async function startS1Server({ browser = false, env: extraEnv = {}, reuseOwnedTemporary } = {}) {
+  const original = reuseOwnedTemporary ? await existingOwnedTemporary(reuseOwnedTemporary) : null;
+  const temporary = original?.temporary ?? await mkdtemp(join(tmpdir(), 'astrocyte-s1-'));
+  // Capture the approved canonical root once. Re-resolving that root during
+  // cleanup could follow a subsequently replaced directory to another store.
+  const ownedRoot = original?.ownedRoot ?? await realpath(temporary);
   const dataDir = join(temporary, 'data');
   const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
   const apiPort = await freePort();
@@ -46,18 +70,23 @@ export async function startS1Server({ browser = false, env: extraEnv = {} } = {}
   const env = { ...baseEnv, ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false', ASTROCYTE_ENABLE_SUMMARIZE: 'false', ASTROCYTE_SUMMARIZE_CLI: '', ...suppliedEnv, ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(apiPort), ASTROCYTE_WEB_PORT: String(webPort) };
   let apiChild;
   let webChild;
+  let disposed = false;
 
   async function startAPI() {
     apiChild = start(executable, [], { env, detached: process.platform !== 'win32' });
     await ready(`${apiURL}/api/v1/health`, apiChild);
   }
-  async function close() {
+  async function close({ preserveData = Boolean(original) } = {}) {
+    if (disposed) return;
     // stop accepts only child handles created here; a stopped child is ignored.
     const results = await Promise.allSettled([webChild, apiChild].filter(Boolean).map(stop));
     const failures = results.filter(result => result.status === 'rejected');
     if (failures.length) throw new AggregateError(failures.map(result => result.reason), `S1 server cleanup failed; retained ${temporary}`);
-    if (!resolve(temporary).startsWith(resolve(tmpdir()) + sep)) throw new Error('Unsafe S1 cleanup path');
+    if (preserveData) return;
+    const target = await realpath(temporary);
+    if (!inside(target, ownedRoot) || !resolve(target).startsWith(resolve(await realpath(tmpdir())) + sep)) throw new Error('Unsafe S1 cleanup path');
     await rm(temporary, { recursive: true, force: true });
+    disposed = true;
   }
   try {
     await run(await findGo(), ['build', '-mod=readonly', '-o', executable, './cmd/server'], { cwd: root });
