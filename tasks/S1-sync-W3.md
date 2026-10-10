@@ -81,6 +81,14 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## 原生同一会话续验：实际浏览器 PASS，首败独立保留
+
+SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` 已push，精确原自有目录/session复用：`ASTROCYTE_TEST_REAL_NATIVE_UI=1`、`ASTROCYTE_NATIVE_REUSE_OWNED_TEMP=ASTROCYTE_NATIVE_REUSE_APPROVED_ROOT=C:/Users/DW/AppData/Local/Temp/astrocyte-s1-pznwxr`、`ASTROCYTE_NATIVE_REUSE_SESSION_ID=daadea80-df3a-46f1-9e20-6777586911a2`，执行 `pnpm --dir web exec playwright test s1-native-project.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-native-original-session`：1 PASS，测试29.3秒/整场56.3秒、exit0。
+
+实际UI第二resume200且同NativeID/非context_handoff，观察actual marker，活跃真实GETcontext200返回先前与本轮user/assistant记录，第三send200并观察新输出，humanSTOP200/stop_confirmedtrue。SQLite只有1owned/native会话，start/resume/send操作accepted，最终completed/stop_confirmedtrue/pending空，资料0。没有第四turn，没有追加媒体或个人目录读取。1280/1920同实际状态截图已目视，表单与动作可换行，无横向溢出；完整记录仅在明确读取的详情展开。保留原pznwxr库供主控只读，15173/18787/53022/53023无监听、所属node/server/本场codex进程退出。
+
+实际附件来自既有Playwright报告body，原样另存 `web/test-results/s1-native-original-session/s1-native-project-human-ob-be65c-nd-sends-one-scoped-message-chromium-1920/actual-native-receipts.json`（8份真实receipt），命令日志 `web/test-results/s1-native-original-session-command.log`，同目录 `actual-native-{1280,1920}.png`。首场trace收口代码摘录读到了已准备的续验test，原错误matcher必须以SOURCE6382900 Git blob为准；原网络事件/trace未改写，首FAIL不改成PASS。此PASS仅独立公开README的原生流程，论文模型UNKNOWN、完整AT01–04、真实非空公开来源人工选择仍未完成；不能外推全部CLI或个人项目范围。
+
 ## 原生首轮：真实 start 已返回，测试 response matcher 首败
 
 SOURCE `6382900b787421f8628f331797c9194862833f1c`，`ASTROCYTE_TEST_REAL_NATIVE_UI=1 pnpm --dir web exec playwright test s1-native-project.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-native-first`：1 FAIL、6.0分钟、exit1。实际UI start POST `/local-projects/{id}/sessions` 200，但测试误等待 `/sessions/start`，直至原360秒预算耗尽；未重做start。首turn实际API观察completed、输出公开README marker，活跃sameID真实GETcontext200返回原user_text与assistant marker，人类STOP200/stop_confirmedtrue。上述实际API诊断不同于浏览器完整流程PASS；context/resume/send的浏览器验收尚待续验。
