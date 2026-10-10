@@ -138,7 +138,12 @@ test('real metadata recommendation precedes human selection and reuses the origi
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       await row.scrollIntoViewIfNeeded();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      try {
+        await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), { timeout: 5000 }).toBe(true);
+      } catch (error) {
+        await testInfo.attach('actual-layout-overflow', { body: JSON.stringify(await page.evaluate(() => ({ width: innerWidth, scroll_width: document.documentElement.scrollWidth, offenders: [...document.querySelectorAll('main *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).slice(0, 12).map(element => ({ tag: element.tagName, class: element.className, width: element.getBoundingClientRect().width, right: element.getBoundingClientRect().right })) })), null, 2), contentType: 'application/json' });
+        throw error;
+      }
       await page.screenshot({ path: testInfo.outputPath(`actual-selected-collection-${width}.png`) });
     }
     await testInfo.attach('actual-selected-source-before-restart', { body: JSON.stringify(final, null, 2), contentType: 'application/json' });
