@@ -14,6 +14,7 @@ test('actual project overview and human records persist across refresh and owned
   const reusePath = process.env.ASTROCYTE_BOARD_REUSE_OWNED_TEMP;
   const ownedRoot = process.env.ASTROCYTE_BOARD_REUSE_APPROVED_ROOT;
   if (reusePath) expect(ownedRoot && resolve(ownedRoot) === resolve(reusePath)).toBeTruthy();
+  const startupAt = Date.now();
   const server = await startS1Server({ browser: true, apiPort: 18787, webPort: 15173, ...(reusePath ? { reuseOwnedTemporary: { path: reusePath, ownedRoot: ownedRoot! } } : {}) });
   let api = await humanAPI(server.apiURL);
   let snapshot: S['RegisteredProjectSnapshotV1'];
@@ -23,7 +24,7 @@ test('actual project overview and human records persist across refresh and owned
   let primaryError: unknown;
   console.log(JSON.stringify({ scope: 'task_live_project_board', directory: server.temporary, api: server.apiURL, web: server.webURL }));
   try {
-    await expect.poll(async () => { snapshot = await read(); return snapshot.observed_at && snapshot.board?.length ? snapshot.status : 'unknown'; }, { timeout: 130_000 }).toMatch(/complete|partial/);
+    await expect.poll(async () => { snapshot = await read(); return snapshot.observed_at && Date.parse(snapshot.observed_at) >= startupAt && snapshot.board?.length ? snapshot.status : 'unknown'; }, { timeout: 130_000 }).toMatch(/complete|partial/);
     snapshot = await read();
     expect(snapshot.board!.length).toBeGreaterThan(0);
     await writeFile(testInfo.outputPath('actual-snapshot.json'), JSON.stringify(snapshot, null, 2));
@@ -40,7 +41,7 @@ test('actual project overview and human records persist across refresh and owned
       await page.setViewportSize({ width, height: width === 390 ? 844 : 1080 });
       await expect(board.getByRole('button', { name: '同步最近改动', exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-board-${width}.png`), fullPage: true, animations: 'disabled' });
+      await page.screenshot({ path: testInfo.outputPath(`actual-board-${width}.png`), fullPage: false, animations: 'disabled' });
     }
     if (process.env.ASTROCYTE_BOARD_PREVIEW_ONLY === '1') return;
     for (const layout of ['平铺', '按平台', '按分组', '时间线']) {
@@ -56,7 +57,7 @@ test('actual project overview and human records persist across refresh and owned
     const grantsBefore = server.query('SELECT COUNT(*) AS count FROM local_agent_grants');
     const projectsBefore = server.query('SELECT data FROM local_agent_projects ORDER BY id');
     const jobsBefore = server.query('SELECT COUNT(*) AS count FROM attention_jobs');
-    const card = board.getByRole('button', { name: `查看项目 ${selected.name}`, exact: true });
+    const card = board.locator(`button[data-project-id="${selected.id}"]`);
     await card.focus();
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: `项目 · ${selected.name}`, exact: true });
@@ -78,6 +79,7 @@ test('actual project overview and human records persist across refresh and owned
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
     await expect(card).toBeFocused();
+    await board.locator('summary').filter({ hasText: /^更多筛选/ }).click();
     await board.getByLabel('分组', { exact: true }).selectOption(group);
     await board.getByLabel('继续意愿', { exact: true }).selectOption('想继续做');
     await board.getByLabel('搜索项目', { exact: true }).fill('复核项目来源');
@@ -106,6 +108,7 @@ test('actual project overview and human records persist across refresh and owned
     expect(server.query('SELECT data,revision FROM local_project_metadata WHERE project_id=?', selected.id)).toEqual(archivedRaw);
     await page.reload();
     await expect(board.getByLabel('项目统计')).toBeVisible();
+    await board.locator('summary').filter({ hasText: /^更多筛选/ }).click();
     await board.getByLabel('归档', { exact: true }).selectOption('archived');
     await card.click();
     await expect(dialog.getByLabel('备注 / 下一步', { exact: true })).toHaveValue(notes);

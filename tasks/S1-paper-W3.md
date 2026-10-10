@@ -15,3 +15,6 @@
 - 初次展示层 TypeScript 与 lint PASS。第一次接入真实调用方后 TypeScript RED：Windows 大小写相近的 `ProjectBoardView.tsx` / `projectBoardView.ts` 导致模块解析冲突；改用明确不同文件名 `projectBoardPresentation.ts`，后续定向重验单列，保留此次 RED。
 - 已普通消费 W0 `f9cdec80265f55efbfbdf6a9380ed684e46eee2d` 生成 API。W2明确 human intent 为自由文本，界面改为自由填写、三种可选中文建议，按实际文本筛选；没有固化完成阶段或进度推断。
 - 真实浏览器槽、接口发布时间与产品问题回复已向协调者交接；等待时继续独立授权工作。
+- W0端口 helper 的声明初次缺 `apiPort/webPort`，TypeScript RED 已退唯一 owner，`bbe512699d3e54d04ecd3280d8490f604dc1cd9c` 修正后定向 typecheck PASS。W0/W2 created_at 与活动分离已消费；后端最新原生元数据来源 `c177dc92a35c5e15c5c3fd8e7507dfbfb045e4d6` 与对应生成契约 `c6639f8dd61458da793f333da2eeedb35e20cf4b` 均普通合入。
+- 首实际布局预览 PASS（21.1秒）：原隔离库 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-7wY4sg`，API18787/Vite15173，54目录/14项目为中间观察，不当作最终覆盖。主控已看1920/1280/390截图，要求更明显项目卡和简化手机筛选；返修后的viewport预览 PASS（1.3分钟）。仅安全GET、无人工字段写入/模型/媒体/克隆。
+- 当前主入口支持自由人工意愿、真实来源统计、四视图、主筛选与明确更多筛选；卡片已增加独立表面和打开入口，权限/原生操作为次级可达。61项前端单测及前端生产构建此前 PASS；最终实际字段写入、刷新、冷重启与宽度/键盘正在验证。
