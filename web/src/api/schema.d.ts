@@ -324,6 +324,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/local-projects/registered/{project_id}/metadata": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Save human notes, review, grouping and archive state
+         * @description Human session and CSRF only. The revision is the expected manual metadata revision (zero before the first save). Observations and refresh never replace these fields. This command grants no project access, model consent or Agent control and accepts no inferred progress.
+         */
+        put: operations["setRegisteredProjectMetadata"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/local-projects": {
         parameters: {
             query?: never;
@@ -3549,6 +3569,9 @@ export interface components {
             last_activity_at: string | null;
         };
         RegisteredProjectV1: {
+            /** @description Stable aggregate project identity; grants no authority. */
+            project_key?: string;
+            contributors?: components["schemas"]["ProjectContributorV1"][];
             root: string;
             name: string;
             repo_id: string;
@@ -3573,6 +3596,8 @@ export interface components {
          *     }
          */
         RegisteredProjectSnapshotV1: {
+            board?: components["schemas"]["ProjectSummaryV1"][];
+            sources?: components["schemas"]["ProjectSourceObservationV1"][];
             /** @enum {string} */
             status: "unknown" | "complete" | "partial" | "stale";
             /** Format: date-time */
@@ -3590,6 +3615,77 @@ export interface components {
             schema_version: 1;
             request_id: string;
             expected_version: number;
+        };
+        ProjectContributorV1: {
+            cli: string;
+            source: string;
+            root: string;
+            /** @description Observed native identity only, never a control permission. */
+            session_id: string;
+            /** Format: date-time */
+            observed_at: string | null;
+            /** Format: date-time */
+            activity_at: string | null;
+        };
+        ProjectSourceObservationV1: {
+            cli: string;
+            source: string;
+            status: string;
+            reason: string;
+            entries_examined: number;
+            matched_headers: number;
+        };
+        ProjectHumanMetadataV1: {
+            notes: string;
+            review: string;
+            group: string;
+            intent: string;
+            archived: boolean;
+            revision: number;
+            /** Format: date-time */
+            updated_at: string | null;
+        };
+        ProjectSummaryV1: {
+            id: string;
+            name: string;
+            roots: string[];
+            observations: components["schemas"]["RegisteredProjectV1"][];
+            contributors: components["schemas"]["ProjectContributorV1"][];
+            /** Format: date-time */
+            last_activity_at: string | null;
+            limitations: string[];
+            human: components["schemas"]["ProjectHumanMetadataV1"];
+        };
+        ProjectSummaryResultV1: {
+            /** @constant */
+            schema_version: 1;
+            project: components["schemas"]["ProjectSummaryV1"];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "manual-note",
+         *       "expected_version": 1,
+         *       "notes": "Human-owned notes",
+         *       "review": "",
+         *       "group": "",
+         *       "intent": "",
+         *       "archived": false,
+         *       "revision": 0
+         *     }
+         */
+        SetRegisteredProjectMetadataRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            notes: string;
+            review: string;
+            group: string;
+            intent: string;
+            archived: boolean;
+            /** @description Expected human metadata revision; zero means no prior annotation. */
+            revision: number;
         };
         GitHubMetadataV1: {
             /** @enum {string} */
@@ -5244,6 +5340,89 @@ export interface operations {
             };
             /** @description Discovery source unavailable */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setRegisteredProjectMetadata: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetRegisteredProjectMetadataRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Updated project summary with durable human metadata */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectSummaryResultV1"];
+                };
+            };
+            /** @description Invalid command or unsupported fields */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human session and CSRF required; Agent credentials rejected */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Project is absent from the cached registered observations */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Manual metadata revision changed; reload before saving */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Persistence failed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Metadata service is not assembled */
+            501: {
                 headers: {
                     [name: string]: unknown;
                 };
