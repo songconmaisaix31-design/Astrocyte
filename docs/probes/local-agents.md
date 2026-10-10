@@ -1,5 +1,16 @@
 # 本地 Agent 与工具清点
 
+## 2026-10-10 OpenCode 1.18.35 正式接口复核（serve/config/permissions + 本机版本源码）
+
+本机 npm 原生 `bin/opencode.exe` 仍为 `1.18.35`，`--version`/`--help` 均 exit 0。按用户要求重查官方 [Server](https://docs.opencode.ai/docs/server/)、[Config](https://docs.opencode.ai/docs/config/)、[Permissions](https://docs.opencode.ai/docs/permissions/) 与同版本源码（`v1.18.35` 的 `config.ts`、`session/instruction.ts`、`mcp/index.ts`）。结论未变，且本次补充了可执行侧的证据：
+
+- **正式原生接口存在**：`opencode serve --hostname 127.0.0.1 --port <N>` 起一个 headless HTTP 服务，暴露 OpenAPI 3.1（`/doc`）；会话 `POST/GET /session[/:id]`、`POST /session/:id/message`（含 `noReply`/`system`/`tools` 字段）、`/prompt_async`、`/abort`、`/permissions/:permissionID`（对权限请求回 `response`）与 `/instance/dispose`。可用 `OPENCODE_SERVER_PASSWORD`/`OPENCODE_SERVER_USERNAME` 做 loopback HTTP Basic Auth，属“HTTP loopback owned server + auth + provided prompt”的可行协议面。
+- **deny-by-default 工具可达成**：`permission` 配置（`v1.1.1` 起合并旧 `tools` 布尔），且 `Flag.OPENCODE_PERMISSION` 用 `mergeDeep` 按进程注入权限规则；不传 `--auto`，并对每个权限请求回 `deny` 即可把 read/edit/bash/webfetch/mcp 等全部拦下。这是按进程环境变量，不是覆盖用户配置。
+- **无法安全关闭全局 instructions**：`config.ts` 的 `mergeConfigConcatArrays` 对 `instructions` 做**数组拼接 + Set 去重**，晚到的 `instructions: []` 不会清掉已继承项；`instruction.ts` 的 `globalFiles` 恒加载 `~/.config/opencode/AGENTS.md` 与 `~/.claude/CLAUDE.md`（仅 `disableClaudeCodePrompt` 关后者，AGENTS.md 无开关），并按 `findUp` 自动读项目 `AGENTS.md/CLAUDE.md/CONTEXT.md`，再叠加拼接后的 `config.instructions`。`OPENCODE_DISABLE_PROJECT_CONFIG` 只关项目层发现，不关全局。
+- **无法全局关闭 MCP**：`mcp/index.ts` 遍历合并后的 `cfg.mcp`，对每个 `enabled !== false` 的条目立即 `create`/`connect`（stdio spawn 或远程 HTTP/SSE），无观察到 pure 级全局抑制；按 key 设 `enabled:false` 需知道并覆盖用户所有 key，而覆盖用户配置被禁止。
+
+因此 OpenCode 1.18.35 的 selected-context 边界（只交付获准正文、不泄漏全局指令、不连接用户 MCP）**仍不能在不覆盖用户 CLI 配置的前提下成立**：仅凭 tools/permission deny 不能把仍在加载的全局 instructions 与已连接的 MCP 称为 selected-context 范围。原生适配对 OpenCode 保持 `unsupported`，安装/版本/help 仍分别记录为 `installed`/`version_help_passed`；不制造 PTY/daemon 包装、不改全局配置、不读取 provider 认证。若后续版本提供干净的 instructions/MCP 抑制开关，即可沿上述 HTTP 服务协议落地原生 driver。不把“正式接口存在”冒充“已接入”。
+
 ## 2026-10-10 项目汇总、会话元数据与独立人工记录
 
 本轮已授权本地项目/历史识别。沿 `RegisteredProjects`：Orca 公共登记根/工作树 + Codex、Pi、Claude 的明确原生元数据目录；CLI 安装、配置和执行权限仍独立。新增 CLI 元数据指出的目录只核 canonical 绝对路径及 `.git`/`go.mod`/`package.json`/`pyproject.toml`/`Cargo.toml`/`CMakeLists.txt` 的文件标记，不读取内容、不递归搜索父目录，不登记执行项目。排除重定向路径、home 根、系统安装目录及凭据/原生状态目录。
