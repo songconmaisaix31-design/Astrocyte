@@ -11,6 +11,18 @@
 
 ## 本轮实施与验证
 
-进行中：先与W2确认最小人工元数据/项目聚合契约，发布012迁移；再生成客户端、运输边界与真实API/临时SQLite/冷启动检查。W1提供论文上游/插件选项；主控决定后才发布依赖端口。最终集成仍等待W1/W2/W3精确SOURCE/REPORT。
+已发布 `f9cdec80265f55efbfbdf6a9380ed684e46eee2d`：看板/来源/贡献者、人工notes/review/group/intent/archived/revision/updated_at契约、生成API与012迁移。`pnpm generate`、`pnpm check:contracts` PASS，237示例；旧EventV1未使用警告保持。
+
+普通合入W2领域前置 `35edf6b2aff980ed69e8d8998908cf99f9aa9dc5`，再发布 `7374f40a7f54d2a8427c84209c6909b86e0d0253`：独立metadata repository/service端口与严格人类HTTP命令。已有发现接口可独立工作；未接元数据领域时明确501。请求的revision是人工字段CAS版本（初始0），共用expected_version仍>=1；不接收updated_at、actor、progress或权限字段。
+
+`go test -mod=readonly ./internal/adapters/httpapi ./internal/workspace/domain` PASS。运输定向验证无会话、过期会话、缺CSRF、Agent bearer、外站Origin以及伪造时间/身份/进度/权限不会进入领域；这仅证明运输边界，不替代实际存储。
+
+进行中：`tests/s1/project-board.test.mjs` 以显式opt-in运行本机真实登记来源、真实API、临时SQLite、刷新/冷启动与CAS，不植入模拟看板资料。领域/存储仍等待W2交付；最后等待W1/W2/W3精确SOURCE/REPORT普通合并及check/build/browser。
+
+## 插件路线研究（选项，未决定）
+
+[Chrome activeTab官方说明](https://developer.chrome.com/docs/extensions/develop/concepts/activeTab)明确：用户调用后当前标签临时授权，离开该来源/关闭标签后失效；不是全站读取许可。[官方消息机制](https://developer.chrome.com/docs/extensions/develop/concepts/messaging)提供应用页面向扩展的externally_connectable通路，需显式匹配应用地址、验证发送者和严格消息；content script内容按不可信输入处理。
+
+现有服务只接受HTTP(S)同源/明确允许Origin与Strict人类cookie+CSRF，chrome-extension直接跨源请求不属于该身份。可选路线为应用同源人工审阅后提交，或主控确认后的资源范围配对+当前权限复核/撤销；未选择或写入任何配对、宽CORS接口。[summarize公开上游](https://github.com/steipete/summarize)有可选daemon，当前已锁0.25.1不因上游main变化升级或安装daemon；W1研究对应锁定源码/许可。
 
 首失败、UNKNOWN与未执行项将保留在本报告，不以局部修后通过替代初始记录或整体完成。
