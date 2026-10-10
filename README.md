@@ -71,6 +71,18 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 
 ## HTTP v1 与 fixture 边界
 
+项目总览使用 `/local-projects/registered` 的持久化观察缓存，汇总同项目目录和有来源的客户端关联；历史活动、贡献者和Git提交不表示当前运行、进度或完成。人类通过 `/local-projects/registered/{project_id}/metadata` 保存备注、复盘、分组、意图与归档，刷新不覆盖人工字段。修改必须带人类会话、CSRF及当前人工 `revision`（初始0）；并发修改冲突后先重新读取。发现、备注和归档均不改变项目空间、模型许可或Agent授权。未决定的进度推断、论文搜索和插件读取保持待定。
+
+所选资料处理的完整模型输入上限是512KiB UTF-8字节，包含指令、版本引用和输出结构要求；超限拒绝，正文不静默截断。输出与原生历史保持原有独立上限。扩容不扩大资料根、项目根、模型许可或外发范围。
+
+实际项目总览检查使用独立临时SQLite及随机loopback端口，需要本机已有登记项目；不读取个人Chrome，不调用模型/媒体。保留SQLite原件和首失败，不把空发现或默认跳过当通过：
+
+```powershell
+$env:ASTROCYTE_TEST_PROJECT_BOARD = '1'
+node --test tests/s1/project-board.test.mjs
+Remove-Item Env:ASTROCYTE_TEST_PROJECT_BOARD
+```
+
 S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/SameSiteStrict 会话；写入同时携带返回的 `csrf_token`（`X-CSRF-Token`）和稳定的 `Idempotency-Key`。正文不能设置 actor 或权限。服务重启后重新建立会话，调用者 ID 保持稳定，原幂等回执继续可用。`createAttentionApi` 与 [S1 类型助手](web/src/api/s1.ts) 保留原命令身份，不自动重发失败或未知命令。旧 `ASTROCYTE_AGENT_TOKEN` 不授予资料权限；人类通过项目 grant 和 `POST /local-projects/{id}/agent-token` 签发短期项目凭据，返回值只提供一次，不进入日志或浏览器持久存储。凭据只进入对应项目的上下文/原生操作，不能建立人类会话、改变设置、授权或签发令牌；每次操作查当前授权，撤销后立即拒绝新操作。此边界不提供同机操作系统进程隔离。
 
 `GET /api/v1/local-agents` 通过同一人类会话读取缓存的 CLI 清单。服务启动时仅查 PATH，并在总计 10 秒、单条命令 5 秒内运行固定 version/help；未完成的探测保持未知，刷新网页不执行 CLI。安装、配置、可启动及八项原生能力 `discover/read_context/start/resume/send/stop/observe/reconcile` 分别报告；版本/help 成功不表示模型可用。`native_adapter_registered` 仅表示后端实现了该客户端的接入协议，人类可以在已许可项目中显式 `POST /local-projects/{id}/sessions/probe` 验证空会话和停止，实际观测才更新能力。GET 和网页重载不探测、不调用模型、不推导授权；未组装能力返回 501。

@@ -11217,7 +11217,7 @@ components:
     ProjectContributorV1:
       type: object
       additionalProperties: false
-      required: [cli, source, root, session_id, observed_at, activity_at]
+      required: [cli, source, root, session_id, observed_at, created_at, activity_at]
       properties:
         cli:
           type: string
@@ -11231,9 +11231,14 @@ components:
         observed_at:
           type: [string, "null"]
           format: date-time
+        created_at:
+          type: [string, "null"]
+          format: date-time
+          description: Native header creation time; never current activity or progress.
         activity_at:
           type: [string, "null"]
           format: date-time
+          description: An actual latest activity observation, otherwise null. Native creation headers do not establish activity.
     ProjectSourceObservationV1:
       type: object
       additionalProperties: false
@@ -11330,12 +11335,16 @@ components:
           minimum: 1
         notes:
           type: string
+          description: Human text, at most 65536 UTF-8 bytes.
         review:
           type: string
+          description: Human text, at most 65536 UTF-8 bytes.
         group:
           type: string
+          description: Human group label, at most 200 UTF-8 bytes.
         intent:
           type: string
+          description: Human intent text, at most 4096 UTF-8 bytes.
         archived:
           type: boolean
         revision:
