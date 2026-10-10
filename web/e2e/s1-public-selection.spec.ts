@@ -2,6 +2,8 @@
 import { test, expect } from '@playwright/test';
 import process from 'node:process';
 import { resolve, join } from 'node:path';
+import { readdir } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import { humanAPI, waitJob } from '../../tests/s1/api.mjs';
 import type { components } from '../src/api/schema';
@@ -87,6 +89,25 @@ test('real metadata recommendation precedes human selection and reuses the origi
     expect(recommendedItem.recommendation?.status).toBe('succeeded');
     expect(recommendedItem.recommendation?.metadata_revision).toBe(recommendedItem.revision);
     expect(recommendedItem.recommendation?.text.trim()).toBeTruthy();
+    if (process.env.ASTROCYTE_TEST_RECOMMENDATION_REUSE === '1') {
+      const existing = server.query("SELECT id, data, payload FROM attention_jobs WHERE json_extract(data,'$.kind')='source_recommendation'").find(record => {
+        const payload = JSON.parse(String(record.payload)) as { SourceID: string; Input: { ProjectID: string; CLI: string } };
+        return payload.SourceID === source!.id && payload.Input.ProjectID === project!.id && payload.Input.CLI === 'codex';
+      });
+      expect(existing).toBeTruthy();
+      const nativeBefore = (await readdir(join(server.dataDir, 'native-sessions'))).sort();
+      const sessionCount = server.query('SELECT COUNT(*) AS count FROM local_agent_sessions')[0].count;
+      const key = randomUUID();
+      const duplicateHTTP = await fetch(`${server.apiURL}/api/v1/tracking-sources/${source!.id}/recommend`, { method: 'POST', headers: { Cookie: api.cookie, Origin: server.apiURL, 'Content-Type': 'application/json', 'X-CSRF-Token': api.session.csrf_token, 'Idempotency-Key': key }, body: JSON.stringify({ schema_version: 1, expected_version: listing.source.version, request_id: key, project_id: project!.id, cli: 'codex', items: [{ external_id: recommendedItem.external_id, revision: recommendedItem.revision }] }) });
+      const duplicate = await duplicateHTTP.json() as S['TrackingSourceResultV1'];
+      await testInfo.attach('actual-new-key-recommendation-reuse', { body: JSON.stringify({ status: duplicateHTTP.status, result: duplicate, native_before: nativeBefore, native_after: (await readdir(join(server.dataDir, 'native-sessions'))).sort() }, null, 2), contentType: 'application/json' });
+      expect(duplicateHTTP.status).toBe(200);
+      expect(duplicate.jobs).toHaveLength(1);
+      expect(duplicate.jobs[0].job_id).toBe(String(existing!.id));
+      expect(server.query('SELECT id, data, payload FROM attention_jobs WHERE id=?', String(existing!.id))).toEqual([existing]);
+      expect((await readdir(join(server.dataDir, 'native-sessions'))).sort()).toEqual(nativeBefore);
+      expect(server.query('SELECT COUNT(*) AS count FROM local_agent_sessions')[0].count).toBe(sessionCount);
+    }
     await review.getByRole('button', { name: '重载已保存清单', exact: true }).click();
     await expect(row).toContainText(recommendedItem.recommendation!.text);
     if (!recommendedItem.selected) {
