@@ -13,11 +13,14 @@
 .metrics dd { margin: 0 0 4px; font-size: 26px; line-height: 1.2; font-weight: 600; color: #25382c; }
 .metrics dt { font-size: 12px; color: #6c776e; }
 .note { margin: 0; color: #68746d; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
-.filters { display: grid; gap: 12px; padding: 16px; border: 1px solid #e5eae4; border-radius: 16px; background: #fbfcfa; }
+.filters { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 12px; border: 1px solid #e5eae4; border-radius: 16px; background: #fbfcfa; }
+.filters > .controls { grid-column: 1 / -1; }
+.advanced { min-width: 0; }
+.advanced[open], .advanced[open] ~ .result { grid-column: 1 / -1; }
 .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
-.controls label { min-width: 0; display: grid; gap: 8px; font-size: 12px; color: #68746d; }
+.controls label { min-width: 0; display: grid; gap: 6px; font-size: 12px; color: #68746d; }
 .controls select, .controls input { width: 100%; min-width: 0; border: 1px solid #dce3da; border-radius: 8px; background: white; color: #28352c; padding: 10px; font: inherit; }
-.result { border-top: 1px solid #e6ebe5; padding-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: #68746d; }
+.result { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: #68746d; }
 .cards { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .cards li { min-width: 0; }
 .board .card { text-align: left; display: flex; flex-direction: column; gap: 12px; width: 100%; height: 100%; min-height: 260px; padding: 24px; border: 1px solid #dfe6dc; border-radius: 16px; color: #344238; background: #fcfdfb; font: inherit; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
@@ -38,6 +41,7 @@
 .timeline .card { min-height: 0; }
 .empty { margin: 0; padding: 24px; border: 1px dashed #dce3da; border-radius: 12px; font-size: 13px; line-height: 1.8; }
 .filters .advanced > summary { color: #68746d; padding: 4px 0; margin: 0; font-size: 12px; }
+.viewbar > [role="group"] { padding: 0; }
 @media (max-width: 1100px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) { .cards { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 560px) { .metrics { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 12px; } .metrics dd { font-size: 22px; } .metrics dt { font-size: 10px; } .metrics > div { min-width: 0; } .filters, .board .card { padding: 16px; } .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } .controls label:first-child { grid-column: 1 / -1; } }

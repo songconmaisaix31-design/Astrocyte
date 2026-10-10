@@ -44,6 +44,8 @@ test('actual project overview and human records persist across refresh and owned
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       const firstCard = await board.getByRole('button', { name: /^查看项目 / }).first().boundingBox();
       console.log(JSON.stringify({ viewport: width, first_project: firstCard, viewport_height: page.viewportSize()?.height }));
+      expect(firstCard).not.toBeNull();
+      if (width >= 1280) expect(firstCard!.y + 80).toBeLessThan(page.viewportSize()!.height);
       await page.screenshot({ path: testInfo.outputPath(`actual-board-${width}.png`), fullPage: false, animations: 'disabled' });
     }
     if (process.env.ASTROCYTE_BOARD_PREVIEW_ONLY === '1') return;

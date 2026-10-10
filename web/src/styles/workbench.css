@@ -105,6 +105,7 @@
 .ac-workbench .ac-board-header h1 { font-size:28px; }
 .ac-workbench .ac-board-header p { margin-top:6px; }
 .ac-workbench .ac-board-tabs { margin-bottom:16px; height:44px; }
+.ac-workbench .ac-board-tabs + [role="tabpanel"] > section { padding:20px; }
 .ac-workbench .ac-page-hints { margin-top:28px; border-top:1px solid var(--ac-line); }
 .ac-workbench .ac-page-hints>.ac-right-rail { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
 @media (max-width:760px) { .ac-workbench .ac-page-hints>.ac-right-rail { grid-template-columns:1fr; } }
