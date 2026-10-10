@@ -96,6 +96,16 @@ func TestRegisteredDiscoveryFailureIsExplicitAndNoFallback(t *testing.T) {
 	}
 }
 
+func TestRegisteredMissingMainStillAllowsExplicitLocalWorktree(t *testing.T) {
+	missing := filepath.Join(t.TempDir(), "removed-checkout")
+	worktree := t.TempDir()
+	s := registeredFixture(t, []map[string]any{{"id": "repo1", "path": missing}}, []map[string]any{{"repoId": "repo1", "hostId": "local", "path": worktree}})
+	result, err := s.DiscoverRegistered(context.Background())
+	if err != nil || result.Status != "partial" || len(result.Failures) != 1 || len(result.Projects) != 1 || result.Projects[0].Root != worktree || result.Projects[0].ParentRoot != missing || result.Projects[0].Source != "git_worktree" {
+		t.Fatalf("registered worktree lost %+v %v", result, err)
+	}
+}
+
 func TestRegisteredDiscoveryGitFailureRetainsUnknowns(t *testing.T) {
 	root := t.TempDir()
 	if err := os.Mkdir(filepath.Join(root, ".git"), 0700); err != nil {

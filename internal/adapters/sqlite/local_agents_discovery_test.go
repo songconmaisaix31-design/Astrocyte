@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -103,5 +104,65 @@ func TestRegisteredSourceUnavailableBeforeFirstObservation(t *testing.T) {
 	got, err := service.RefreshRegisteredProjects(context.Background(), domain.Caller{Kind: "human", ID: "h"})
 	if err != nil || got.Status != "unknown" || got.ObservedAt != nil || len(got.Projects) != 0 || len(got.Failures) != 1 {
 		t.Fatalf("unobserved %+v %v", got, err)
+	}
+}
+
+type blockedRegisteredSource struct {
+	started chan struct{}
+	release chan struct{}
+	calls   atomic.Int32
+}
+
+func (s *blockedRegisteredSource) DiscoverRegistered(ctx context.Context) (domain.ProjectDiscoverySnapshot, error) {
+	s.calls.Add(1)
+	close(s.started)
+	select {
+	case <-s.release:
+	case <-ctx.Done():
+		return domain.ProjectDiscoverySnapshot{}, ctx.Err()
+	}
+	stamp := time.Now().UTC()
+	return domain.ProjectDiscoverySnapshot{Status: "complete", ObservedAt: &stamp, Projects: []domain.RegisteredProject{}, Failures: []domain.ProjectDiscoveryFailure{}}, nil
+}
+
+func TestRegisteredRefreshWaitCancellationDoesNotBlockShutdown(t *testing.T) {
+	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
+	source := &blockedRegisteredSource{started: make(chan struct{}), release: make(chan struct{})}
+	defer close(source.release)
+	service := workspace.NewLocalProjectService(db, nil, nil, nil)
+	service.ConfigureRegisteredDiscovery(db, source)
+	human := domain.Caller{Kind: "human", ID: "h"}
+	firstCtx, firstCancel := context.WithCancel(context.Background())
+	defer firstCancel()
+	firstDone := make(chan error, 1)
+	go func() { _, err := service.RefreshRegisteredProjects(firstCtx, human); firstDone <- err }()
+	select {
+	case <-source.started:
+	case <-time.After(3 * time.Second):
+		t.Fatal("first source did not start")
+	}
+	waitingCtx, cancel := context.WithCancel(context.Background())
+	waitDone := make(chan error, 1)
+	go func() { _, err := service.RefreshRegisteredProjects(waitingCtx, human); waitDone <- err }()
+	cancel()
+	select {
+	case err := <-waitDone:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("wait result %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("cancelled refresh waited behind active source")
+	}
+	if source.calls.Load() != 1 {
+		t.Fatal("cancelled waiter started another discovery")
+	}
+	firstCancel()
+	select {
+	case err := <-firstDone:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("first result %v", err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("active cancelled discovery did not exit")
 	}
 }

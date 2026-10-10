@@ -115,6 +115,12 @@ func (s *RegisteredProjects) DiscoverRegistered(ctx context.Context) (domain.Pro
 			fail(repo.Path, "registration_id_invalid")
 			continue
 		}
+		// A removed main checkout does not invalidate an independently registered
+		// local worktree. Retain association metadata, but never scan a guessed
+		// replacement parent or infer a cwd fallback.
+		if filepath.IsAbs(repo.Path) && filepath.Dir(filepath.Clean(repo.Path)) != filepath.Clean(repo.Path) {
+			byRepo[repo.ID] = filepath.Clean(repo.Path)
+		}
 		if !add(repo.Path, repo.Name, repo.ID, "orca_registered", "") {
 			continue
 		}
