@@ -443,6 +443,9 @@ func (s *Service) completeAutomatic(ctx context.Context, claim Job, payload auto
 	}
 	outputRef, err := s.objects.Publish(ctx, []byte(output.OutputText))
 	if err != nil {
+		if payload.Result != nil {
+			return s.failJob(claim, &savedResultPublicationFailure{cause: err}, false)
+		}
 		return s.failJob(claim, err, false)
 	}
 	if err = s.finishAutomatic(ctx, claim, payload, output, outputRef); err != nil {
@@ -452,6 +455,17 @@ func (s *Service) completeAutomatic(ctx context.Context, claim Job, payload auto
 		return s.failJob(claim, err, false)
 	}
 	return nil
+}
+
+// This is reachable only after Result was committed, so repairing local
+// publication and retrying cannot repeat a provider call. Native uncertainty
+// and the result-persistence gap keep their existing conservative treatment.
+type savedResultPublicationFailure struct{ cause error }
+
+func (e *savedResultPublicationFailure) Error() string         { return e.cause.Error() }
+func (e *savedResultPublicationFailure) FailureDetail() string { return e.cause.Error() }
+func (e *savedResultPublicationFailure) Unwrap() error {
+	return &apierrors.ServiceError{Code: apierrors.InternalError, Message: "处理结果已保存，但资料存储失败。修复存储后重试会复用已保存结果，不会重新调用模型。", Retryable: true, RequiredAction: "repair_storage_then_retry_cached_result"}
 }
 
 func automaticOutcomeUnknown(err error) bool {

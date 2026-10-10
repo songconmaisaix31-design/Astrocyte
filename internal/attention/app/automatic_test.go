@@ -341,3 +341,46 @@ func TestAutomaticUnknownRecoveryAndExplicitBoundedRetry(t *testing.T) {
 	_, err = s.RetryJob(ctx, human, job.JobID, meta("retry-limit", job.Version))
 	errorCode(t, err, apierrors.ValidationFailed)
 }
+
+type failedPublicationStore struct{ *memoryObjects }
+
+func (s failedPublicationStore) Publish(context.Context, []byte) (string, error) {
+	return "", errors.New("contract-local storage obstruction")
+}
+
+func TestCachedResultPublicationWaitsForRepairAndRetainsRetryCeiling(t *testing.T) {
+	s, _, objects, material, processor := automaticFixture(t)
+	s.options.MaxAttempts = 2
+	original := processor.call
+	processor.call = func(ctx context.Context, input DistillationInput) (DistillationOutput, error) {
+		output, err := original(ctx, input)
+		s.objects = failedPublicationStore{objects}
+		return output, err
+	}
+	ctx := context.Background()
+	job := runAutomatic(t, s, autoCommand(material, "cached-publication"))
+	if job.Error == nil || !job.Error.Retryable || job.DeliveryUnknown {
+		t.Fatal("known cached-result failure unavailable for repair", job)
+	}
+	now := s.options.Clock()
+	s.options.Clock = func() time.Time { return now.Add(3 * time.Second) }
+	if err := s.retrySafeJobs(ctx); err != nil {
+		t.Fatal(err)
+	}
+	stillFailed, _ := s.GetJob(ctx, human, job.JobID)
+	if stillFailed.Version != job.Version || stillFailed.Status != "failed" {
+		t.Fatal("storage repair action exhausted automatic attempts before repair", stillFailed)
+	}
+	if _, err := s.RetryJob(ctx, human, job.JobID, meta("explicit-cached-retry", job.Version)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.ProcessNextJob(ctx); err != nil {
+		t.Fatal(err)
+	}
+	final, _ := s.GetJob(ctx, human, job.JobID)
+	if final.Attempts != 2 || final.Error == nil || final.Error.Retryable || processor.calls != 1 || final.OperationID != job.OperationID || !final.DeadlineAt.Equal(job.DeadlineAt) {
+		t.Fatal("known result failure lost bounded attempts or resent processor", final, processor.calls)
+	}
+	_, err := s.RetryJob(ctx, human, job.JobID, meta("cached-budget-exhausted", final.Version))
+	errorCode(t, err, apierrors.ValidationFailed)
+}
