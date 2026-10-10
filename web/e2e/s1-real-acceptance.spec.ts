@@ -238,7 +238,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       expect(record!.provenance.mode).toBe('selected_project_fixed_text');
       expect(record!.provenance.processor).toBe('codex');
       expect(record!.output_text.length).toBeGreaterThan(20);
-      expect(record!.prior_distillation_ids).toEqual([...prior].sort());
+      expect(record!.prior_distillation_ids ?? []).toEqual([...prior].sort());
       modelRecords.push(record!);
       // A new request identity with the same fixed input/question reuses the receipt.
       if (!recoverPublication) {
