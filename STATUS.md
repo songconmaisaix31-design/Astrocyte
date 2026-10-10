@@ -1,5 +1,19 @@
 # Astrocyte 当前状态
 
+## 仓库、浏览器与交互重设计正在验收（2026-10-10 20:07）
+
+本轮用户明确了 GitHub 信息先同步、人工纳入蜂群顶层空间才克隆代码，并授权安装浏览器插件。当前计划见 [四轨计划](tasks/S1-repository-browser-design-plan.md)。主控分支仍为 `s1/attention-materials-20261009`，只维护计划、决定、验收与提交；业务正由原四个互斥工作树组装，尚未更新个人预览或标记整体 S1 完成。
+
+官方 Chrome Web Store 的 OpenCLI 1.0.24 已安装，CLI 1.8.8 `doctor` 实际确认扩展已连接；当前抖音收藏页已绑定 `astrocyte-douyin`，W1 单一个人浏览器所有者。首次整页 state 带出隐藏的无关侧栏文字，已报告并停止使用整页检查；后续固定表达式只投影已批准账号/收藏节点。应用没有保存该无关文字；主控只读检查实际新 SQLite，只有一个选定来源、3个选定视频元数据和两个成功 source_sync，资料/沉淀/候选均0。
+
+W1 SOURCE `38f4f4dff0e9884c77daf1c0ca333cd96d93f1e5` / REPORT `123be4b8b64a770e5dc9667146d946cc228addd0` 已push：实际求职夹3条、重复同步版本不变、SQLite关闭重开一致、零媒体/模型；启动及人工同步不重发旧UNKNOWN。当前只支持已完整挂载的选定夹，长列表不假装完成。W2 SOURCE `57b4f7b639d197273b59b4495e66bc9775ad0b7b` / REPORT `35928231e987503edec03de7942ea02edaef65a8` 已push：实际公开 `steipete/summarize` REST信息先同步，人工纳入后clone，HEAD `560197cd4b580554cccf648744c592e867b43bb5`、冷启动/重复/发布后恢复通过，A默认且B/C/model/control/actions不自动许可。首403与后续REST成功分别保留。两轨领域交付已接纳，未替代页面验收。
+
+W0 已发布实际HTTP/入口组装 `156e35903ef09d721a61a766c122a3031a73b51b`，普通重启已批准配置 `ec87f843a1251bd4399986684446a4b29a840452`：只读取当前应用数据目录中明确的 `selected-browser.json`，不扫描浏览器或凭据；W0仍负责唯一契约、009–011迁移、生成客户端、锁和最终普通集成。W3 SOURCE `90148a34b5f9584fd2172820292a995451492f6c` 已push，三页留白与层次、官方图标、资料优先任务流和正常读取→选择入口已实现；178项默认浏览器首轮正在执行，已发现旧定位与新布局不匹配，不能标整套通过。实际 GitHub/抖音页面操作、服务进程重启及仓库恢复入口仍在验收。
+
+个人预览仍运行前轮 `fd6938c` 应用，原B站99+2元数据保持。升级前一致性备份 `%APPDATA%/astrocyte/backups/pre-s1-repository-browser-20261010-195945/state.sqlite` 已建立，integrity ok。新抖音实际验证目录为 `%LOCALAPPDATA%/Temp/astrocyte-W1-selected-ctx_54629f75a8e9-second`，仓库验证为 `astrocyte-github-public-1406932187`；不灌个人库。W1/W2本轮succeeded回执只接纳所属新领域范围、仍保留资源待总验收；W0/W3继续开发。原AT01–04及原生同ID接续通过结果沿用，不重做付费媒体来证明它们。首批个人GitHub范围、私有访问、新arXiv DNS、第二自动整理CLI与输入容量仍待用户；Pi认证/OpenCode能力限制及其他社交平台占位保持。
+
+## 以下为前轮历史
+
 ## 本轮实际交付与主控验收（2026-10-10 19:00）
 
 主控分支 `s1/attention-materials-20261009`。应用组装 SOURCE `fd6938c5473eeb90fa5f0f1776cb9fc743f0ef4b`，主控普通合并 `3decf3e7b91a91951bddaf94d8134ae9cf27126d`；随后 `c5a0ff6b2dd7b9cb1546386064342e9f68012ee6` 只合三份最终报告。主控没有修改业务代码，沿原四条互斥工作树交付；OpenAPI、008迁移、入口、锁和生成客户端仍由 W0 单一所有者维护。实际开发客户端为 Orca Codex / gpt-6.1-sol。

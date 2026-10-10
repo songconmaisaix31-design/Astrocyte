@@ -1,5 +1,15 @@
 # Astrocyte 主控交接
 
+## 当前接管入口（2026-10-10 20:07，四轨续作中）
+
+先读 [STATUS当前验收](STATUS.md)、[当前四轨计划](tasks/S1-repository-browser-design-plan.md) 与 [用户决定](docs/QUESTIONS.md)。用户已决定 GitHub 信息先同步、纳入蜂群空间才克隆，并授权浏览器插件；过去关于这两项的待答描述仅为历史。官方 OpenCLI扩展1.0.24/CLI1.8.8已经连接，选定抖音收藏页绑定`astrocyte-douyin`；W1持有个人Chrome、W3仅使用隔离应用浏览器经固定适配读取已批准求职夹。禁止再次整页state；首次越界读已报告，实际应用只存3条选定元数据。
+
+W1领域 SOURCE `38f4f4d`、W2领域 SOURCE `57b4f7b`及其报告均push并接纳，实际SQLite重复/重启及公开仓库clone/恢复已通过；W0普通集成，拥有契约/009–011迁移/入口/依赖/生成客户端，`ec87f84`提供应用目录已批准配置重启恢复。W3源码`90148a3`正跑默认178项首轮回归，旧定位失败待同Worker返修；实际两条新页面链路与进程重启仍待验。主控只文档/Git/验收，不写业务代码。四个当前Dispatch和原工作树见计划，W1/W2已回执但尚未release，W0/W3活跃；不要重复创建编辑者。
+
+个人预览仍为前轮源`fd6938c`，5173/8787；升级前备份`%APPDATA%/astrocyte/backups/pre-s1-repository-browser-20261010-195945/state.sqlite`完整性通过。等最终组装和适用检查通过后主控普通合并、独立验收、复制非凭据选定配置并升级个人预览；进程停止前重核所属/时间。新真实验证库和待答限制见STATUS；整体S1不标完整完成，首败与UNKNOWN保留，不重发已成功付费媒体/模型。
+
+## 以下为前轮历史
+
 ## 当前接管入口（2026-10-10 19:00）
 
 先读 [STATUS当前验收](STATUS.md)、[用户决定](docs/QUESTIONS.md) 和 [固定四轨](tasks/S1-sync-local-agent-plan.md)。主控分支 `s1/attention-materials-20261009`，应用SOURCE `fd6938c5473eeb90fa5f0f1776cb9fc743f0ef4b` 已普通合为 `3decf3e7b91a91951bddaf94d8134ae9cf27126d`；`c5a0ff6b2dd7b9cb1546386064342e9f68012ee6` 仅合报告。主控独立check/build PASS，默认浏览器154 PASS/16 SKIP/4.6分钟/exit0；默认模型/媒体关闭，独立真实证据不混算。
