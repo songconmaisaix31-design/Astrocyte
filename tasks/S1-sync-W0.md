@@ -18,6 +18,10 @@ Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 
 
 现有 `pnpm test:s1` 第一次集合结果12 PASS/2 FAIL（14项，25秒，临时服务清理）：一项 W0 新增断言错误地将显式 fixed export 的不同正文等同普通空正文导入并要求同一 job；领域已有 export 固定字节语义，移除该越界断言，保留原 A-B-A receipt/headB和明确刷新检查。另一项 `/distillations/processor` available=true仅来自 factory 注册、没有项目选择/配置/外部许可，返 W1 要求保留未知、project selection action。源日志 `%TEMP%/astrocyte-W0-s1-first.log` 留存（只有临时合成数据，无令牌），后续成功另记，不覆盖首败。
 
+最终应用阶段源 `dfd394916c52087094628dee4905ab582426664a`：普通消费 W1 `220f43c`（状态未知、paper identity、prompt128KiB preflight）、W2 `5491fd3`（旧DTO规范化、历史时间null、有界并发/原生输出、当前B/C授权）、W3 `5ef9fb1`（项目许可门控、原有paper导入）。首次完整 `pnpm check` PASS/exit0：gofmt/vet/Go tests/mod verify/依赖/19包架构、232示例与生成漂移、真实API contract_local 14/14、TS/lint、前端54/54；既有 EventV1 警告保留。`pnpm build` PASS/exit0。此前14项集合12/2首败和目标刷新1 PASS仍保留。当前未完成真实公共元数据/付费模型/媒体/原生/浏览器总控验收，不从本次离线成功推出完整S1。
+
+总控 ask 明确新增 W0 独占 `tests/s1/server.mjs` / `server.d.mts`：既有 helper 的 `close({preserveData:true})` 停止所属服务、保留原 SQLite/objects；`reuseOwnedTemporary:{path,ownedRoot}` 必须为显式绝对原目录和总控认可的原所属根，核对 canonical containment、既有普通数据库/对象目录/原binary，不按名称前缀推定所有权或扫描。复用默认保留（含启动失败），新目录默认行为未变；不增加 runner/manifest/proof。目标 smoke 实际保留关闭→新handle复用原库 PASS，资料版本/objects/撤销的token未变，成功后仅清理该脚本自己创建且复核的根。日志 `%TEMP%/astrocyte-W0-helper-first.log`。
+
 `go test -mod=readonly -p 1 ./...` 和 `go vet -mod=readonly -p 1 ./...` 在 `2dfc1ba` PASS（应用模型/媒体 opt-in 关闭）。架构检查首次 FAIL：既有规则把 app/domain 的纯 `net/url` 解析误归为 I/O；仅豁免 `net/url`、保持 `net` 和其余 `net/*` 限制后 `pnpm check:architecture` PASS（19包）。这是后续独立修正结果。最新入口装配 `go test -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi ./internal/adapters/distillers` PASS。总控发现 W1 generic 输出限额2MiB与 W2 registry128KiB不一致，已返 W1；W3 浏览器发现 settings.history_roots=null，已返 W2。本轮这些领域返修未完成，不据此宣称完整 S1。
 
 最新阶段验证：`pnpm check:contracts` PASS（232既有示例、生成漂移一致，既有 EventV1 警告）；`go test -p 1 ./internal/adapters/httpapi ./cmd/server` PASS；`pnpm --dir web typecheck` PASS；`git diff --check` PASS。新增 contract_local transport 测试覆盖实际 Caller 注入、项目 mismatch、Agent 无权设置/授权/令牌签发、即时 revoke 拒绝、CSRF 和正文伪造身份拒绝；不当作真实 Agent/媒体/完整 S1 验收。本轮 W0 尚未运行媒体、应用模型或浏览器；等待主控 slot、各域 owner 完成和独立最后验收。

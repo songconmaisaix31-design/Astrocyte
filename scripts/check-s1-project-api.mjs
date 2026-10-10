@@ -9,8 +9,9 @@ import { command, humanAPI, importMaterial } from '../tests/s1/api.mjs';
 import { paperImport, paperText, changedPaperText } from '../tests/s1/fixtures.mjs';
 import { validateResponse } from '../tests/s1/contracts.mjs';
 
-const server = await startS1Server();
+let server = await startS1Server();
 let stage = 'bootstrap';
+let preserveOnExit = false;
 try {
   let api = await humanAPI(server.apiURL);
   assert.deepEqual((await api.get('/tracking-sources')).items, []);
@@ -76,10 +77,21 @@ try {
   stage = 'immediate project grant revocation';
   await api.write(`/local-projects/${project.id}/grants/revoke`, { agent_id: 'w0-contract-agent' });
   assert.equal((await agentRequest(`/local-projects/${project.id}/context`, { references: [], files: [] })).status, 403);
-  console.log('PASS contract_local real API: A-B-A, fixed objects, scoped Agent usage, human-only settings, restart, membership and grant revocation');
+  stage = 'preserve original store and explicitly reuse its owned directory';
+  preserveOnExit = true;
+  const original = server.temporary;
+  await server.close({ preserveData: true });
+  server = await startS1Server({ reuseOwnedTemporary: { path: original, ownedRoot: original } });
+  api = await humanAPI(server.apiURL);
+  assert.equal((await api.get(`/materials/${material.id}`)).material.current_revision, 2);
+  assert.equal((await api.get(`/materials/${material.id}/revisions/1/content`)).text, paperText);
+  assert.equal((await agentRequest(`/local-projects/${project.id}/context`, { references: [], files: [] })).status, 403);
+  assert.equal(server.query('SELECT COUNT(*) AS n FROM attention_material_revisions WHERE material_id=?', material.id)[0].n, 2);
+  preserveOnExit = false; // This script created and verified this exact root.
+  console.log('PASS contract_local real API: A-B-A, fixed objects, scoped Agent usage, human-only settings, restart, membership/grant revocation, preserved-store reuse');
 } catch (error) {
   console.error(`FAIL contract_local real API at ${stage}`);
   throw error;
 } finally {
-  await server.close();
+  await server.close({ preserveData: preserveOnExit });
 }
