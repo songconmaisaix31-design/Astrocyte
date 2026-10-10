@@ -8,9 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
@@ -36,7 +39,42 @@ func (d *localReturnedResult) Distill(context.Context, app.DistillationInput) (a
 	return app.DistillationOutput{OutputText: "Contract-local returned result", Provenance: app.Provenance{Processor: "local-test", Version: "1", Mode: "contract_local"}}, nil
 }
 
+type cachedProjectText struct {
+	result             *localReturnedResult
+	spaceID            string
+	unknown, revoked   bool
+	configurationCalls int
+}
+
+func (p *cachedProjectText) ProjectSpaceID(context.Context, app.Principal, string, string) (string, error) {
+	if p.revoked {
+		return "", &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "contract-local project model permission revoked"}
+	}
+	return p.spaceID, nil
+}
+func (p *cachedProjectText) ConfigurationID(context.Context, app.Principal, string, string) (string, error) {
+	p.configurationCalls++
+	if p.unknown {
+		return "", &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "native configuration unknown after restart"}
+	}
+	return "contract-local-selected-config", nil
+}
+func (p *cachedProjectText) ProcessSelectedText(ctx context.Context, _ app.Principal, _ app.SelectedTextRequest) (app.SelectedTextResult, error) {
+	output, err := p.result.Distill(ctx, app.DistillationInput{})
+	if err != nil {
+		return app.SelectedTextResult{}, err
+	}
+	raw, err := json.Marshal(map[string]any{"output_text": output.OutputText, "next_question": nil, "related_refs": []app.SourceRef{}, "related_ideas": []string{}, "conflicts": []string{}, "pending_questions": []string{}, "goal_refs": []string{}, "existing_assets": []string{}, "expected_improvement": "", "minimum_artifact": "", "missing_evidence": []string{}, "candidate_suggestion": nil})
+	return app.SelectedTextResult{Text: string(raw), Version: "contract-local-selected-version"}, err
+}
+
 func TestReturnedResultRealOSPublicationFailureCanRetryAfterRestartWithoutProcessor(t *testing.T) {
+	for _, mode := range []string{"legacy", "native_unknown", "revoked", "space_changed", "reference_removed"} {
+		t.Run(mode, func(t *testing.T) { returnedResultOSRecovery(t, mode) })
+	}
+}
+
+func returnedResultOSRecovery(t *testing.T, mode string) {
 	ctx := context.Background()
 	dir := t.TempDir()
 	dbPath, objectRoot := filepath.Join(dir, "state.sqlite"), filepath.Join(dir, "objects")
@@ -49,6 +87,11 @@ func TestReturnedResultRealOSPublicationFailureCanRetryAfterRestartWithoutProces
 	reader.Arxiv.Client = &http.Client{Transport: paperExportTransport{}}
 	d := &localReturnedResult{t: t, objectRoot: objectRoot, saved: filepath.Join(dir, "preserved-objects")}
 	options := app.ServiceOptions{Distiller: d, AllowedProcessingSourceKeys: []string{"arxiv:2504.16054"}}
+	selected := &cachedProjectText{result: d}
+	if mode != "legacy" {
+		options.Distiller = nil
+		options.ProjectDistillers = distillers.NewSelectedTextFactory(selected, time.Minute)
+	}
 	s := app.NewAttentionService(NewAttentionRepository(db), reader, store, options)
 	human := app.Principal{ID: "cached-result-test", Kind: "human"}
 	meta := func(key string, version int) app.CommandMeta {
@@ -65,7 +108,22 @@ func TestReturnedResultRealOSPublicationFailureCanRetryAfterRestartWithoutProces
 	if source.MaterialID == nil {
 		t.Fatal("source import failed", source)
 	}
-	queued, err := s.RequestDistillation(ctx, human, app.RequestDistillationCommand{CommandMeta: meta("process", 1), Stage: "content", ProcessingConfig: "contract-local", InputRefs: []app.SourceRef{{MaterialID: *source.MaterialID, Revision: 1, Locator: "https://arxiv.org/abs/2504.16054v1"}}})
+	command := app.RequestDistillationCommand{CommandMeta: meta("process", 1), Stage: "content", ProcessingConfig: "contract-local", InputRefs: []app.SourceRef{{MaterialID: *source.MaterialID, Revision: 1, Locator: "https://arxiv.org/abs/2504.16054v1"}}}
+	spaceVersion := 0
+	if mode != "legacy" {
+		space, err := s.CreateProjectSpace(ctx, human, app.ProjectSpaceCommand{CommandMeta: meta("project-space", 1), Title: "Contract-local selected project"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		space, err = s.ReferenceMaterial(ctx, human, space.Space.ID, app.ReferenceMaterialCommand{CommandMeta: meta("project-source", space.Space.Version), MaterialID: *source.MaterialID, Revision: 1})
+		if err != nil {
+			t.Fatal(err)
+		}
+		selected.spaceID, spaceVersion = space.Space.ID, space.Space.Version
+		command.ProjectID, command.CLI = "selected-project", "selected-cli"
+		command.ProcessingConfig = ""
+	}
+	queued, err := s.RequestDistillation(ctx, human, command)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +160,19 @@ func TestReturnedResultRealOSPublicationFailureCanRetryAfterRestartWithoutProces
 	}
 	db = openAttentionDB(t, dbPath)
 	options.Distiller = nil // Result must survive a real restart without native availability.
+	selected.unknown, selected.configurationCalls = true, 0
+	if mode == "revoked" {
+		selected.revoked = true
+	}
+	if mode == "space_changed" {
+		selected.spaceID = "changed-project-space"
+	}
 	s = app.NewAttentionService(NewAttentionRepository(db), reader, store, options)
+	if mode == "reference_removed" {
+		if _, err = s.RemoveMaterialReference(ctx, human, selected.spaceID, app.RemoveMaterialReferenceCommand{CommandMeta: meta("remove-scope", spaceVersion), MaterialID: *source.MaterialID}); err != nil {
+			t.Fatal(err)
+		}
+	}
 	if _, err = s.RetryJob(ctx, human, failed.JobID, meta("retry-after-repair", failed.Version)); err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +180,28 @@ func TestReturnedResultRealOSPublicationFailureCanRetryAfterRestartWithoutProces
 		t.Fatal(err)
 	}
 	done, _ := s.GetJob(ctx, human, failed.JobID)
+	if selected.configurationCalls != 0 || d.calls != 1 {
+		t.Fatal("cached selected result observed native config or resent processor", selected.configurationCalls, d.calls)
+	}
+	if mode == "revoked" || mode == "space_changed" || mode == "reference_removed" {
+		if done.Status != "failed" || done.Error == nil || done.Error.Code != apierrors.ScopeDenied || done.DistillationID != nil || done.DeliveryUnknown {
+			t.Fatal("revoked/changed fixed project scope allowed cached publication", done)
+		}
+		return
+	}
 	if done.Status != "succeeded" || done.DistillationID == nil || done.OperationID != operation || !done.DeadlineAt.Equal(deadline) || done.Attempts != 2 || d.calls != 1 {
 		t.Fatal("repair lost result/budget/operation or resent processor", done, d.calls)
+	}
+	if mode == "native_unknown" {
+		command.CommandMeta = meta("fresh-model-after-restart", 1)
+		command.Question = "New processing after cold restart"
+		fresh, err := s.RequestDistillation(ctx, human, command)
+		if err != nil {
+			t.Fatal(err)
+		}
+		freshJob, _ := s.GetJob(ctx, human, fresh.JobID)
+		if freshJob.Status != "failed" || freshJob.Error == nil || freshJob.Error.Code != apierrors.EvidenceMissing || d.calls != 1 || selected.configurationCalls != 1 {
+			t.Fatal("fresh processing bypassed native configuration check", freshJob, d.calls, selected.configurationCalls)
+		}
 	}
 }

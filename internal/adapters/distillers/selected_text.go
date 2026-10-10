@@ -49,7 +49,10 @@ func (f *SelectedTextFactory) Resolve(ctx context.Context, p app.Principal, proj
 	if f.processor == nil || p.ID == "" || p.Kind != "human" || projectID == "" || cli == "" {
 		return nil, denied("a trusted human caller, permitted project and selected CLI are required")
 	}
-	if _, err := f.processor.ConfigurationID(ctx, p, projectID, cli); err != nil {
+	// Resolve validates approval/scope only. Fresh processing independently
+	// checks ConfigurationID; a durable result can be saved with cold native
+	// observations after restart without starting another native operation.
+	if _, err := f.processor.ProjectSpaceID(ctx, p, projectID, cli); err != nil {
 		return nil, err
 	}
 	return &selectedDistiller{factory: f, caller: p, projectID: projectID, cli: cli}, nil
