@@ -98,7 +98,7 @@ func (r *DouyinBrowser) ReadPage(ctx context.Context, source app.TrackingSource,
 	if err := r.validateOwner(source.OwnerID); err != nil {
 		return app.ListingPage{}, err
 	}
-	if source.Platform != "douyin" || source.SourceKind != "favorites" || !slices.Contains(r.FolderIDs, source.ExternalID) {
+	if source.Platform != "douyin" || source.AccessMode != "browser_selected" || source.SourceKind != "favorites" || !slices.Contains(r.FolderIDs, source.ExternalID) {
 		return app.ListingPage{}, browserScopeDenied("Only explicitly selected Douyin favorite folders may be synchronized")
 	}
 	if limit < 1 || limit > 100 || (cursor != "" && !browserDouyinCursor.MatchString(cursor)) {

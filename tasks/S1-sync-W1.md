@@ -1,6 +1,21 @@
-# S1 sync W1 — 公开列表调查与独立同步规则
+# S1 sync W1 — 选定浏览器与公开列表同步
 
-## 继续阶段 13：选定抖音浏览器收藏夹（2026-10-10，开发中）
+## 当前交付：选定求职收藏夹后端（2026-10-10，阶段15）
+
+分支/工作树 `s1-sync-attention-1010`；业务 SOURCE **`38f4f4dff0e9884c77daf1c0ca333cd96d93f1e5`**，已push，包含阶段13 `2993ad0` 与阶段14 `3268943`。先普通合入主控计划 `6e84a92`，再普通消费 W0 `fde698d` / `2d4f759` 的契约与010/011迁移；没有reset/rebase/force，也没有编辑共享契约、入口、迁移、UI、原AT01–04或队友写域。实际客户端按主控回执为 Codex 0.162.0 / GPT-6.1-Sol high fast。
+
+- 已交付限定浏览器元数据桥、显式目录发现与SQLite缓存、真实身份/版本去重、目录GET无执行、默认公开与显式browser_selected分离，以及UNKNOWN同步不重发。`owner_id=self`只查宿主配置，不扫描账号；人工discover回传稳定owner/folder，只有该已发现收藏夹可绑定，当前账号变化拒绝新读取。固定同步不调用Agent，人工推荐/勾选后的正文链继续复用原有实现，没有新增Mission或框架。
+- 实际限定抖音会话 `astrocyte-douyin` / profile `terpzafx`，已选求职folder `7694962768730068771`。独立第二场真实桥→Service→SQLite **PASS**（测试12.44秒/Go包22.486秒）：3条真实标题/简介，两个source_sync均attempts1，repeat所有metadata revision1且无重复，真正SQLite close/reopen逐字段一致；catalog固定身份保留，材料/沉淀/候选/非同步作业均0。只返回选定元数据，无媒体/模型/评论/认证字段；并非应用页面或OS进程重启验收。
+- 现有startup hook仍一次、默认100观察上限；最新UNKNOWN补丁拒绝同source的启动同步和换新request key重发，原job JSON不变。定向 `TestUnknownSourceRead|TestStartupResumes` PASS（包4.123秒），初次测试误用了不存在的helper名而编译FAIL，已改用既有errorCode。最终 `go test ./...` PASS；`go vet ./...`、`go build ./...`、`node scripts/check-architecture.mjs`（19包）与`git diff --check` PASS。默认Go套件跳过显式外部live测试，不能把该绿结果称为浏览器/付费调用通过。
+- 当前bridge只接受提供方确认完整、数量一致的已加载选定收藏夹，分块最多100；不调用页面加载回调、猜签名API或跨文件夹抓取。未完整加载的收藏夹明确EvidenceMissing并保留旧缓存；不宣称任意账号/大夹主动分页已支持。未连接、换账号、未打开选定夹与UNKNOWN均保留真实限制，错误不伪装成功空列表。科研0只是原页面目录观察，没有读取其正文或宣称其列表实测完成。
+
+原件：`C:/Users/DW/AppData/Local/Temp/astrocyte-W1-selected-ctx_54629f75a8e9-second/` 内实际SQLite、catalog及repeat/restart JSON；`...-second.log`。同目录 `selected-browser-config.json` 仅含node_path=`C:/Program Files/nodejs/node.exe`、cli_main=`C:/Users/DW/AppData/Roaming/npm/node_modules/@jackwener/opencli/dist/src/main.js`、profile/session、已验证owner和folder_ids，已交root/W0，root负责验收后持久化及个人预览备份/升级。本轨未改个人库或integration目录。
+
+首个整页state越界输出事实、首场实际metadata SQL审计FAIL与DB/log均保留，具体见阶段14；不复制侧栏私密文本。后续固定产品表达式和实际SQLite只保存所选元数据。原B站99+2、旧AT01–04和旧模型UNKNOWN均沿用，没有重跑付费/媒体。另在root提出消除重复验收前，本轨已经启动重复HTTP harness；其遗漏Foundation配置导致health panic，尚未进入任何新浏览器读取。收到root纠正后终止、删除仅本轨新增且未提交的测试文件，原`...-api.log`保留为停止的harness失败，确认该测试Go进程已退出；没有业务HTTP改动，不把它当作应用失败或通过。
+
+**跨轨剩余操作：**W0组装宿主配置/能力/入口；W3独占真实应用discover→人工选夹→绑定→metadata sync/repeat/cache与OS进程冷重启/界面验收，root已授权该隔离场景，不调用推荐模型/媒体。本轨Service/SQLite与领域检查不替代它。root明确要求结束重复HTTP验收，只完成本轨领域修复与报告；应用返修仍交原owner。bound Chrome未关闭或解绑，按root指令继续供应用固定读取，W3不直接操作个人Chrome；需要新的个人标签操作先通过root协调。
+
+## 继续阶段 13：选定抖音浏览器收藏夹（2026-10-10，历史开发记录）
 
 本轮按主控完整互斥写域计划先普通合入 `6e84a92acadc7633c8d905ade246818b265df550`，保留原历史。主控实际核实本终端客户端 Codex 0.162.0 / GPT-6.1-Sol high fast；没有启动额外 Worker。主控负责 Chrome 插件安装，尚未显式交接浏览器，本轨没有读取个人 Chrome、Cookie、历史或其他标签。
 
@@ -10,7 +25,19 @@
 
 `go test ./internal/adapters/importers ./internal/attention/app ./internal/adapters/sqlite` PASS（3.849s / cached / 6.160s），属于 contract_local 与真实 SQLite 回归，不是实际浏览器验收。W0 已接受 `access_mode=public/browser_selected`、稳定 owner-aware identity 和目录 GET 只读缓存，正在独占发布 contracts/迁移与 POST discover；W1 负责消费、缓存与后续同轨返修。原 B站99+2观察、原 AT01–04和旧 UNKNOWN 不重跑或改写。
 
-## 当前交接（2026-10-10，继续阶段 12 后）
+### 阶段14：实际限定桥与缓存目录（继续中）
+
+普通消费 W0 `fde698dfe924f0509f391228fd47cda7234d84f8` 和 `2d4f759e0ebf517fa3ffd55020c26d57c23b6415` 的 AccessMode、owner-aware identity、010/011迁移和人工 POST discover。旧 AccessMode 缺值读作 public；身份不可变；浏览器 binding 必须使用显式已发现的同账号/文件夹缓存，URL tracking 参数不造成新绑定。目录 GET 只读 SQLite，尚未发现返回 EvidenceMissing；`owner_id=self` 仅使用主控配置的本地 accessor 解析，缓存与回执保留真实 owner ID。人工 discover 在外部读取前查原回执，不持有 SQLite 写锁调用浏览器；失败保留原缓存。Agent不能触发发现，目录动作不产生资料、模型或媒体工作。
+
+主控于11:32 UTC明确交接 profile `terpzafx` / bound session `astrocyte-douyin`。**第一条 OpenCLI state 返回整页并包含隐藏的非授权侧栏文本，超出所选收藏夹范围**；已立即停止整页state/extract/networkdump并向主控 escalation，主控确认保留错误事实，不复制私密内容。本报告不保存该输出。后续只针对选定DOM节点读取，稳定账号 `MS4wLjABAAAAA9cYVtOn_y6ULxB6xOkam6HvqsfhxDjBbXju2jnbkEJEoUtWCuO0fTbGpPLy5Fdt`、当前求职收藏夹 `7694962768730068771`、active true/count3已核实。
+
+具体 `NewOpenCLISelectedFolderBridge(nodePath,cliMainPath,profile,session)` 只通过绝对 native Node 与 OpenCLI 主入口执行固定嵌入表达式；页面输入不能提供代码/命令。只读 user-info secUid、collection-navigation 指定ID的名称/数量、user-detail中匹配同folderID的scroll-list元数据；不读取全局store、Cookie、历史、私信或其他标签，不调用会修改页面state的fetchMoreData。不返回下载、评论、模型或原始认证字段，外部stderr/表达式不写公开错误。当前完整已加载列表支持有界100与精确字符串ID；部分/未加载完列表返回EvidenceMissing，不把未知分页伪造为完成。主动分页的固定只读API仍待实际观察，这是当前功能限制。
+
+消费后 `go test ./internal/adapters/importers ./internal/attention/app ./internal/adapters/sqlite` PASS（9.492s/4.917s/19.556s）。`TestSelectedCatalogExplicitDiscoveryCacheRestartAndBindingScope` 实际SQLite/cache GET不执行桥、POST回执复用、绑定alias复用、未发现拒绝、断开后缓存保留、冷重启和Agent拒绝 PASS（测试0.29s/包8.659s）。首次 opt-in `TestSelectedDouyinBrowserLiveSyncRepeatColdRestart` 已实际通过当前folder3条读取、两次sync无重复/无revision变化、SQLite close/reopen逐字段一致，最后零额外作业审计测试误查不存在kind列，整场FAIL（12.06s/包20.596s）。首场DB和仅选定元数据保留 `%LOCALAPPDATA%/Temp/astrocyte-W1-selected-ctx_54629f75a8e9-first/`，日志同名first.log；已修正按既有JSON data.kind读取，独立复验待执行，不改写首FAIL。
+
+W0负责持久非凭据主控配置/入口组装，W3负责最终真实API/新UI/进程重启验收；本阶段未做应用正文/模型请求，旧UNKNOWN不重放。Chrome未关闭/解绑，仍由本轨限定持有，后续现场使用需要主控协调。
+
+## 历史交接（2026-10-10，继续阶段 12 后）
 
 分支/工作树 `s1-sync-attention-1010`；当前业务 SOURCE `90c9e0419f6ef5e9b808fbd9fff6f6b734970ffe`，已push（真实metadata验证 `8c7292c`、失效行修复 `e1061eb` 均包含）。以下是已实现范围；后文按时间保留原阶段记录、首败及当时限制，不能把历史“尚未接线”当作当前状态，也不能把本地检查当作真实 S1 验收。
 

@@ -26,7 +26,7 @@ var browserSelectionName = regexp.MustCompile(`^[A-Za-z0-9_-]{1,100}$`)
 var browserOwnerID = regexp.MustCompile(`^[A-Za-z0-9_-]{8,200}$`)
 var browserFolderID = regexp.MustCompile(`^[0-9]{1,30}$`)
 
-func resolveSelectedBrowserConfig() (*selectedBrowserConfig, error) {
+func resolveSelectedBrowserConfig(dataDir string) (*selectedBrowserConfig, error) {
 	c := selectedBrowserConfig{
 		NodePath: os.Getenv("ASTROCYTE_DOUYIN_OPENCLI_NODE"), CLIMain: os.Getenv("ASTROCYTE_DOUYIN_OPENCLI_MAIN"),
 		Profile: os.Getenv("ASTROCYTE_DOUYIN_OPENCLI_PROFILE"), Session: os.Getenv("ASTROCYTE_DOUYIN_OPENCLI_SESSION"),
@@ -36,7 +36,18 @@ func resolveSelectedBrowserConfig() (*selectedBrowserConfig, error) {
 	file := os.Getenv("ASTROCYTE_DOUYIN_CONFIG")
 	hasEnv := c.NodePath != "" || c.CLIMain != "" || c.Profile != "" || c.Session != "" || c.OwnerID != "" || folders != ""
 	if file == "" && !hasEnv {
-		return nil, nil
+		// One known application-owned selection file, never a profile/credential
+		// search. Root installs the human-approved selection after acceptance.
+		var err error
+		file, err = filepath.Abs(filepath.Join(dataDir, "selected-browser.json"))
+		if err != nil {
+			return nil, fmt.Errorf("resolve application browser selection: %w", err)
+		}
+		if _, err := os.Stat(file); os.IsNotExist(err) {
+			return nil, nil
+		} else if err != nil {
+			return nil, fmt.Errorf("read application browser selection: %w", err)
+		}
 	}
 	if file != "" {
 		if hasEnv || !filepath.IsAbs(file) {
