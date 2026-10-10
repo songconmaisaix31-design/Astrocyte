@@ -23,8 +23,7 @@ export function AutomaticDistillationForm({ input, sourceKey, records, disabled,
   const selected = records.filter(record => priorIDs.includes(record.id));
   const inputRefs = [...new Map([input, ...selected.flatMap(record => [...record.input_refs, ...record.related_refs])].map(ref => [sourceIdentity(ref), ref])).values()];
   const projectAllowed = !!project?.settings.external_model_cli && !projects.loading && !projects.stale && !!projectSpace.data && !projectSpace.loading && !projectSpace.stale && inputRefs.every(ref => projectSpace.data!.space.material_refs.some(allowed => allowed.material_id === ref.material_id && allowed.revision === ref.revision));
-  const projectProcessor = state.data?.processor === 'selected-project-cli' && (state.data.available || state.data.required_action === 'select_permitted_project_cli');
-  const blocked = disabled || state.loading || state.stale || !state.data || (projectID ? !projectAllowed || !projectProcessor : !state.data.available || !state.data.configuration_id || !state.data.allowed_source_keys.includes(sourceKey));
+  const blocked = disabled || state.loading || state.stale || !state.data || (projectID ? !projectAllowed : !state.data.available || !state.data.configuration_id || !state.data.allowed_source_keys.includes(sourceKey));
   const command = useCommand(blocked);
   return <section className={styles.record} aria-label="自动沉淀">
     <h4>自动沉淀 · 独立作业</h4>
