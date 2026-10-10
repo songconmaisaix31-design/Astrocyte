@@ -89,6 +89,8 @@ SOURCE `d72142be3b5797716a34dbb211ead219d263ed64` 已push，普通含checked W0 
 
 ## 两项实际内容成功，人工表单定位首败及后续准备
 
+SOURCE `fa32f7dc153676f50af45c1208583ea5636ba2cb`、同库 `--output=test-results/s1-real-form-locator-fix`：1 FAIL约1.1分钟，manual前三字段成功，引用select的getByLabel精确匹配超时。原快照实际combobox名称“添加关联资料”与video选项均存在；HTML包裹label包含options文本，改用实际combobox accessible name。两条content成功复用，manual及两topic仍未提交，新增模型0；原trace/error-context/截图与command.log保留。修正仅测试选择器，不改业务表单或正文。
+
 SOURCE `6ca6b0746512fff5d5177aea8589b983c9850332`，同4pmMWO原库、`--output=test-results/s1-real-optional-prior-fix`：1 FAIL，约1.4分钟。论文新术语内容作业 `ZMZQELUBTBFXZYW2WZF2GSGXL2` 普通receipt复用，无第二次模型调用；视频内容作业 `BFFPW2H3YKNZUJBBJS5H2G4NE6` 实际 succeeded/attempt1/unknownfalse，两条实际模型记录已保存。人工表单的相对has定位器错误地在form内再次找dialog，30秒失败；人工记录和两项topic尚未提交，旧UNKNOWN不改写。
 
 原trace/error-context/截图在 `web/test-results/s1-real-optional-prior-fix/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/`，命令日志 `web/test-results/s1-real-optional-prior-fix-command.log`，原库保留，所属API/Vite正常退出。后续修正manual/candidate相对定位器，按真实handler核对manual200/candidate201/review201；候选形成复用既有全沉淀查询，以便明确选择不同资料的真实记录，加载/失败不得假装空记录。默认未知维度留空并保留unknown原因，不编造评估。
