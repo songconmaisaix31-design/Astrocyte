@@ -158,7 +158,7 @@ func DiscoverProjects(ctx context.Context, chosenRoot string) ([]domain.ProjectC
 		}
 		rel, _ := filepath.Rel(root, path)
 		if e.IsDir() {
-			if path != root && (secretComponent(e.Name()) || strings.Count(rel, string(filepath.Separator)) >= 3) {
+			if path != root && (secretComponent(e.Name()) || strings.HasPrefix(e.Name(), ".") || e.Name() == "dist" || e.Name() == "build" || e.Name() == "vendor" || strings.Count(rel, string(filepath.Separator)) >= 3) {
 				return filepath.SkipDir
 			}
 			for _, marker := range []string{".git", "go.mod", "package.json", "pyproject.toml", "Cargo.toml"} {

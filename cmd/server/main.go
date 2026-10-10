@@ -32,6 +32,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
+	workspacedomain "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
@@ -127,6 +128,7 @@ func run(logger *slog.Logger) error {
 	registry := agents.NewRegistry(nativeRoot)
 	projectReferences := &projectReferenceBridge{}
 	localProjects := workspaceapp.NewLocalProjectService(db, projectReferences, agents.ProjectFiles{}, registry)
+	localProjects.ConfigureRegisteredDiscovery(db, agents.NewRegisteredProjects())
 	textProcessor := &selectedTextBridge{projects: localProjects, processor: registry}
 	processingTimeout := min(time.Duration(jobSeconds)*time.Second, 30*time.Minute)
 	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{
@@ -170,17 +172,18 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
-		Tracking:      attention,
-		LocalProjects: localProjects,
-		Attention:     attention,
-		Foundation:    foundation.NewAttentionService(schemaVersion),
-		Materials:     attention,
-		Opportunities: attention,
-		Projects:      workspaceapp.NewProjectService(),
-		LocalAgents:   workspaceapp.NewLocalAgentService(inventory, registry),
-		Proposals:     workspaceapp.NewProposalService(),
-		Sessions:      workspaceapp.NewSessionService(),
-		Missions:      swarmapp.NewMissionService(),
+		Tracking:           attention,
+		LocalProjects:      localProjects,
+		RegisteredProjects: localProjects,
+		Attention:          attention,
+		Foundation:         foundation.NewAttentionService(schemaVersion),
+		Materials:          attention,
+		Opportunities:      attention,
+		Projects:           workspaceapp.NewProjectService(),
+		LocalAgents:        workspaceapp.NewLocalAgentService(inventory, registry),
+		Proposals:          workspaceapp.NewProposalService(),
+		Sessions:           workspaceapp.NewSessionService(),
+		Missions:           swarmapp.NewMissionService(),
 	}
 	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
 		services.Automatic = automatic
@@ -221,6 +224,21 @@ func run(logger *slog.Logger) error {
 	defer cancelWorkers()
 	workerErrors := make(chan error, 1)
 	go func() { workerErrors <- attention.Run(workerCtx) }()
+	// One fixed discovery run per service start. Health remains responsive while
+	// the bounded source observes registered roots; GET serves the durable cache.
+	// This startup identity only collects observations and never grants control.
+	discoveryDone := make(chan struct{})
+	go func() {
+		defer close(discoveryDone)
+		snapshot, err := localProjects.RefreshRegisteredProjects(workerCtx, workspacedomain.Caller{Kind: "human", ID: "local-startup"})
+		if err != nil {
+			if workerCtx.Err() == nil {
+				logger.Warn("registered project discovery failed; prior cache retained")
+			}
+			return
+		}
+		logger.Info("registered project observations cached", "status", snapshot.Status, "projects", len(snapshot.Projects), "failures", len(snapshot.Failures))
+	}()
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -251,6 +269,9 @@ func run(logger *slog.Logger) error {
 
 	shutdownErr := srv.Shutdown(shutdownCtx)
 	cancelWorkers()
+	// The discovery adapter honors cancellation. Do not close SQLite while its
+	// startup collector can still publish an observation.
+	<-discoveryDone
 	if !workersStopped {
 		// Adapters honor context; wait until checkpoints are persisted before closing DB.
 		if err := <-workerErrors; err != nil && runError == nil {

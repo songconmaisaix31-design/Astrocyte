@@ -204,6 +204,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/local-projects/registered": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cached registered project observations
+         * @description Human-only cached SQLite observations. GET never scans roots, invokes Git or starts a CLI. Candidates must be manually bound to an Attention space; discovery grants no context, model or control permission.
+         */
+        get: operations["listRegisteredProjects"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/registered/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh observations of Orca registered project roots
+         * @description Explicit human action runs bounded fixed discovery over actual registered roots and associated worktrees. It runs no project scripts, installs no dependencies, and never launches an Agent. Source failures retain old observations with stale status.
+         */
+        post: operations["refreshRegisteredProjects"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/local-projects": {
         parameters: {
             query?: never;
@@ -3398,6 +3438,67 @@ export interface components {
             /** Format: date-time */
             finished_at: string | null;
         };
+        RegisteredProjectGitV1: {
+            /** @enum {string} */
+            status: "known" | "unknown" | "unavailable";
+            reason: string;
+            branch: string | null;
+            head: string | null;
+            /** Format: date-time */
+            last_commit_at: string | null;
+            dirty: boolean | null;
+        };
+        RegisteredProjectActivityV1: {
+            /** @enum {string} */
+            status: "known" | "unknown" | "unavailable";
+            source: string;
+            created_with_cli: string | null;
+            /** Format: date-time */
+            last_activity_at: string | null;
+        };
+        RegisteredProjectV1: {
+            root: string;
+            name: string;
+            repo_id: string;
+            /** @enum {string} */
+            source: "orca_registered" | "subproject" | "git_worktree";
+            parent_root: string;
+            git: components["schemas"]["RegisteredProjectGitV1"];
+            activity: components["schemas"]["RegisteredProjectActivityV1"];
+            limitations: string[];
+        };
+        RegisteredProjectDiscoveryFailureV1: {
+            root: string;
+            reason: string;
+        };
+        /**
+         * @description Cached observations grant no permissions. Stale results retain the previous observation time and identify the current discovery failures.
+         * @example {
+         *       "status": "unknown",
+         *       "observed_at": null,
+         *       "projects": [],
+         *       "failures": []
+         *     }
+         */
+        RegisteredProjectSnapshotV1: {
+            /** @enum {string} */
+            status: "unknown" | "complete" | "partial" | "stale";
+            /** Format: date-time */
+            observed_at: string | null;
+            projects: components["schemas"]["RegisteredProjectV1"][];
+            failures: components["schemas"]["RegisteredProjectDiscoveryFailureV1"][];
+        };
+        RegisteredProjectDiscoveryResultV1: {
+            /** @constant */
+            schema_version: 1;
+            snapshot: components["schemas"]["RegisteredProjectSnapshotV1"];
+        };
+        RefreshRegisteredProjectsRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -4379,6 +4480,143 @@ export interface operations {
                 };
             };
             /** @description Actionable structured error; no automatic replay of unknown effects */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRegisteredProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Persisted observations with explicit unknown, partial or stale status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisteredProjectDiscoveryResultV1"];
+                };
+            };
+            /** @description Invalid command */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human session or CSRF required; Agent credentials rejected */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Cache persistence failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Discovery service is not assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Discovery source unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    refreshRegisteredProjects: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshRegisteredProjectsRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted observations with explicit unknown, partial or stale status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisteredProjectDiscoveryResultV1"];
+                };
+            };
+            /** @description Invalid command */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human session or CSRF required; Agent credentials rejected */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Cache persistence failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Discovery service is not assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Discovery source unavailable */
             503: {
                 headers: {
                     [name: string]: unknown;
