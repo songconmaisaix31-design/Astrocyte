@@ -361,11 +361,8 @@ func (s *localProjectService) nativePermission(ctx context.Context, c domain.Cal
 	return err
 }
 func (s *localProjectService) checkPacket(ctx context.Context, c domain.Caller, p domain.LocalProject, packet domain.ContextPacket) error {
-	if p.Settings.Revision != packet.SettingsRevision {
-		return projectError(apierrors.ApprovalRevoked, "native context settings have been revoked or changed")
-	}
 	for _, material := range packet.Materials {
-		if _, err := s.refs.ReadSelected(ctx, c, p.SpaceID, material.Reference, material.Expanded); err != nil {
+		if _, err := s.refs.ReadSelected(ctx, c, p.SpaceID, material.Reference, material.Expanded && p.Settings.ExpandReferences); err != nil {
 			return err
 		}
 	}
@@ -441,7 +438,7 @@ func (s *localProjectService) StartNativeSession(ctx context.Context, c domain.C
 	}
 	active := 0
 	for _, v := range sessions {
-		if !v.StopConfirmed {
+		if v.Ownership == "owned" && !v.StopConfirmed {
 			active++
 		}
 	}
@@ -508,6 +505,9 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 	}
 	if !session.StopConfirmed || session.NativeID == "" || session.PendingOperation != "" {
 		return session, projectError(apierrors.DeliveryUnknown, "native resume requires positively confirmed stop and settled delivery")
+	}
+	if err := s.checkPacket(ctx, c, p, session.ContextPacket); err != nil {
+		return session, err
 	}
 	packet, err := s.ReadProjectContext(ctx, c, projectID, cmd.Context)
 	if err != nil {
@@ -680,6 +680,11 @@ func (s *localProjectService) ReadNativeContext(ctx context.Context, c domain.Ca
 	p, session, a, err := s.session(ctx, c, projectID, sessionID, "read_context")
 	if err != nil {
 		return nil, err
+	}
+	if session.Ownership == "owned" {
+		if err := s.checkPacket(ctx, c, p, session.ContextPacket); err != nil {
+			return nil, err
+		}
 	}
 	if session.Ownership == "external_observed" && (p.Settings.HistoryRoots[session.CLI] == "" || p.Settings.Revision != session.ContextPacket.SettingsRevision) {
 		return nil, projectError(apierrors.ApprovalRevoked, "native history scope changed; rediscover under current permissions")
