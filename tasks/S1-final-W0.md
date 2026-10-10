@@ -5,6 +5,7 @@
 ## 基线与合并
 
 - 沿 `s1-sync-contract-1010` 普通合并（保留 owner 历史，未 squash/rebase/reset/force）：W1 精确 SOURCE+REPORT 合一 `0b189e5f`（paper_snapshot 离线摄取适配器 + IPv6 SSRF 收紧）、W2 精确 SOURCE `d8a2562`（进度 domain 收敛 + OpenCode loopback driver + durable publication）、W3 SOURCE `3206111` + REPORT `6111fd1`（UI 对齐 source_key/content_state/pdf_urls + paper_snapshot）。
+- 最终续合并：W2 精确 SOURCE `a6e21b3`（session permission 严格 trailing `*/deny` 不跳过后置 specific-allow + 进度缓存 GET 缺省补齐授权 projectID，`37a7fa3`）、W1 精确 SOURCE `93d3c82` + REPORT `1ec6530`（精确 DOI/arXiv 标识路由到 registry 单条查询，只 metadata/reader 修复无契约改，`019db1e`）。
 
 ## 契约单一发布（W0 唯一 owner）
 
@@ -28,15 +29,19 @@
 | `GOFLAGS=-p=1 pnpm check` | PASS/exit0：gofmt/vet/mod、19 包架构、依赖、进程退出、Go 全测试、14 项 S1 acceptance、241 契约例、TS/lint、82 前端单测、diff |
 | `GOFLAGS=-p=1 pnpm build` | PASS/exit0：Go 程序 + Vite 生产构建（101 模块） |
 
+### 一次实际 Codex 进度推断（获准真实操作，`125697f`）
+
+`node tests/s1/progress-infer-live.mjs`：在隔离验收库注册真实 Astrocyte 工作树（`root=CWD`），设置 `allow_directory + allowed_subdirs=["tasks"] + external_model_cli="codex"`，探针 `sessions/probe{cli:codex}` 观察 Codex 原生配置，提交一次 `POST .../progress/infer`（`Idempotency-Key` 为 UUID 操作身份，`files=["tasks/S1-final-W2.md"]`）。真实模型结果：`source=agent_inferred`、`model=gpt-6.1-sol`、`native_id=01a1270a-0483-7bb2-9bfa-b7f7367142ea`、`status=开发收尾，待功能补齐与集成验收`、证据 `tasks/S1-final-W2.md`（mtime+size 版本）、`observed_at` 真实、`cost=null` 未知未伪造；冷 API 重启后 freshAPI 重查一致、Mission=0。advisory 非 human-approved，仅这一次，未重发旧模型/UNKNOWN。
+
 未重发旧 AT 成功媒体/模型与 UNKNOWN、未启用 paid/media、未读个人 Chrome/5173/8787、未安装插件、未改 host/DNS。真实 `paper_url`/`paper_pdf` 公网下载 vertical 仍被本机 fakeIP 阻断（公网校验正确拒绝），不标在线抓取成功。
 
 ## 给 owner 的 Handoff（已发 root `msg_e487a5379557`）
 
-- **W3**（阻塞）：`web/src/pages/workspace/progressClient.ts` + `ProjectProgressPanel.tsx` 仍在 infer body 送 `operation_id` 并维护独立 `operationId` ref；收敛 domain 用 `DisallowUnknownFields` 拒绝，浏览器 infer 流会 403/400。W3 owner 需删除 body `operation_id`，改用 `command.prepare` 生成的 `Idempotency-Key`（已是 UUID）作为操作身份。paper search/plugin snapshot UI 已对齐，无需再改。
-- **W2**：`d8a2562` 已普通合并；cross_handoff 最终 REPORT 仍待 owner 写出，进度 domain 错误退 owner。
+- **W3**（续接 `ctx_55f6713c28e7`，进行中）：`web/src/pages/workspace/progressClient.ts` + `ProjectProgressPanel.tsx` 仍在 infer body 送 `operation_id` 并维护独立 `operationId` ref；收敛 domain 用 `DisallowUnknownFields` 拒绝，浏览器 infer 流会 403/400。W3 owner 需删除 body `operation_id`，改用 `command.prepare` 生成的 `Idempotency-Key`（已是 UUID）作为操作身份，并修同 URL 更新 409 + PDF source_key。paper search/plugin snapshot UI 已对齐，无需再改。W3 由自有 `startS1Server({browser:true})` 做实际 UI + 快照并保留库。
+- **W2**：`d8a2562` + 最终 `a6e21b3` 已普通合并并 release；进度 domain 错误退 owner。
 
 ## 剩余限制与未执行
 
-- 真实进度 Agentinfer（一次必要，需已配置 Codex model，OpenCode textProcessor 仍 unsupported）未执行，等 root 明确授权后沿已准项目 TASK/STATUS 文件一次 UUID infer。
-- 三尺寸键盘/浏览器 search+已选快照批量端到端 e2e 属 W3（受 operation_id 阻塞）；W2 最终 REPORT 后由本轨做最后胶水与受影响 checks/build 一次。
+- 三尺寸键盘/浏览器 search+已选快照批量端到端 e2e 属 W3（受其 operation_id 返修阻塞，W3 自行真实浏览器闭环）；W3 最终 SOURCE/REPORT 发布后由本轨做最后胶水合并与受影响 checks/build 一次。
+- 真实进度 Agentinfer 已完成一次（见上表）；OpenCode textProcessor 仍 unsupported、不静默 switch provider。
 - CLI 完整覆盖、长期记忆共享、公开源代理策略用户未答，未代选、未默认权限。未合 main/远程 CI、未升级个人预览；个人库备份已 root 完成 `%APPDATA%/astrocyte/backups/pre-s1-paper-cli-20261011-013712/`。
