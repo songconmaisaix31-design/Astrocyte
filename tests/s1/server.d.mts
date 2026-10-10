@@ -3,7 +3,8 @@ export interface S1Server {
   webURL: string;
   dataDir: string;
   temporary: string;
-  close(options?: { preserveData?: boolean }): Promise<void>;
+  /** Pass the original error being rethrown from a finally; cleanup failures remain on stderr and error.cleanupError. */
+  close(options?: { preserveData?: boolean; primaryError?: unknown }): Promise<void>;
   restart(): Promise<void>;
   query(sql: string, ...parameters: (string | number)[]): Record<string, string | number | null>[];
 }

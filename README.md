@@ -77,7 +77,9 @@ S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/
 
 `/tracking-sources` 绑定多个公开发布账号或明确公开收藏夹，`/source-collections` 查询指定账号的公开收藏夹。先同步标题/简介，再给 Agent 建议，最后由人选择固定元数据 revision、排队 summarize 正文导入。启动服务时沿持久化队列同步一次，默认最多观察100条，没有定时器或全量自动入库。普通导入复用既有提取；只有明确 `refresh: true` 才重新获取，同来源旧 A 回执不把新 B 当前版本回退。B站公开列表被挑战/限流时保留失败及旧清单，不能当空同步成功；抖音 `/user/self?showTab=favorite_collection` 依赖登录，本轮公开范围不读取 cookie 或登录身份，仍需有效公开来源和支持的匿名 transport。其他平台保持待接入。
 
-`/local-projects` 只登记人类明确选择的项目绝对路径和对应 Attention 空间；项目发现限于明确选择的父根，历史读取另外登记 `history_roots` 的客户端目录并核对项目身份。默认 A 仅主动纳入的固定资料版本；B 允许明确项目子目录，C 允许当前纳入资料的一跳引用展开，均由人打开。查询不增加人类关注，作用域 Agent 读取只记机器使用。模型许可 `external_model_cli` 按项目配置、只用精确选择的 CLI 当前配置，不自行换提供方；本机 CLI 不表示模型在本机。原生接续保留原 session ID，新上下文交接明确显示 `context_handoff`，外部历史观察不获得进程控制权。调用和会话期限有界，未知动作不重放；退出服务先停止所属原生进程并保存确认状态，再关闭数据库。自动 Agent 派发仍不启用，个人根、公开抖音身份与自动控制限度仍待用户，完整验收见 [本轮计划](tasks/S1-sync-local-agent-plan.md)。
+`/local-projects` 只登记人类明确选择的项目绝对路径和对应 Attention 空间；显式父根发现保留，历史读取另外登记 `history_roots` 的客户端目录并核对项目身份。默认 A 仅主动纳入的固定资料版本；B 允许明确项目子目录，C 允许当前纳入资料的一跳引用展开，均由人打开。查询不增加人类关注，作用域 Agent 读取只记机器使用。模型许可 `external_model_cli` 按项目配置、只用精确选择的 CLI 当前配置，不自行换提供方；本机 CLI 不表示模型在本机。原生接续保留原 session ID，新上下文交接明确显示 `context_handoff`，外部历史观察不获得进程控制权。调用和会话期限有界，未知动作不重放；退出服务先停止所属原生进程并保存确认状态，再关闭数据库。自动 Agent 派发仍不启用，公开抖音身份与自动控制限度仍待用户，完整验收见 [本轮计划](tasks/S1-sync-local-agent-plan.md)。
+
+用户授权的登记项目发现通过 `GET /local-projects/registered` 查询 SQLite 缓存，GET 不执行命令。服务每次启动由固定程序在后台采集一次 Orca 实际登记根、关联 worktree、有限子项目及 Git 元数据；人类可通过 `POST /local-projects/registered/refresh` 显式刷新。来源不可用时保留旧观测和时间、标为 `stale`，部分不可用标为 `partial`，未知 Git/活动字段保持可空；Orca 创建客户端和活动时间不表示 Agent 当前正在运行。发现不自动创建项目/Attention 空间、开放 B/C、授权模型或启动 Agent；人类选取候选后沿原登记入口关联空间。Git 读取禁用 fsmonitor、hooks、未跟踪文件遍历和子模块操作，不执行项目脚本或安装依赖。停止服务取消并等待所属采集，再关闭数据库。
 
 S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
 

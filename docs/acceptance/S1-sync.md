@@ -1,5 +1,23 @@
 # S1 账号同步与本地 Agent 验收
 
+## 本轮真实非空收藏与 Orca 登记项目（2026-10-10）
+
+W3最终应用/测试 SOURCE `66e05ca180cd2adee412199348dd3867841dc507`，分支 `s1-sync-ui-1010` 已push；报告提交仅改文档，精确REPORT SHA随交接消息提供。当前用户已允许读取 Orca 登记的本地项目，B站原 UID 公开收藏真实返回默认夹452项和小夹2项；下文0条/根未授权是历史，不能当作当前结论。GitHub同步范围、抖音公开身份仍待答，自动Agent派发保持关闭。
+
+W3 SOURCE `7a338f0685033cc5e80236adb7e40ea15167a78b` 真实metadata浏览器 **1 PASS / 2.7分钟 / exit0**：原默认夹最大100行、99 unique、原BV在列，重复绑定同Source、SQLite/冷重启无新版本，未获建议不能选正文，无模型/媒体。SOURCE `0765481203411852bc66cce26b4af385d78efc54` 真实单条建议→人工选择 **1 PASS / 3.2分钟 / exit0**：唯一新建议 `2MRD654JKJZEH75TIYLA4I5RG7` / attempt1，正文复用原 `26MPWE7S3S4FLEUE62BZLKC54T`，其他98条无推荐/入库，原UNKNOWN/原正文/CAS/关注不变，无Mission，重启可查。两场精确复用自有4pmMWO库，summarize关闭。
+
+后续SOURCE `6db8735` 不同新请求键实测200、同原建议job、owned native目录前后7项相同，原作业与正文断言和两尺寸检查已执行；整场在重启/关闭Windows退出竞态 **1 FAIL / 1.5分钟 / exit1**，保留trace的`actual-selected-source-before-restart`与清理错误。SOURCE `a0abb36` 项目首场 **1 FAIL / 2.8分钟 / exit1**：缓存GET、54候选/16限制partial、人工登记/defaultA通过，refresh52秒超HTTP写30秒使浏览器502；后续权限/冷重启NOT_RUN。首RED均不改写。
+
+W0服务120秒总体读取/150秒HTTP写期限组装 `38f8a4b` 后，W3 SOURCE `15dee411f8d3cc067d51a000356e6ba5412192ce`、原1lHfyS精确复用，`ASTROCYTE_TEST_REGISTERED_PROJECTS=1` 的 `s1-registered-projects.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-registered-projects-deadline-fix`：**1 PASS / 4.0分钟 / exit0**。54候选/16读取限制partial、GET只读、人工登记defaultA、refresh200；人类B只允许实际README，C/model关闭；独立Agent正向README200、其他文件/会话发现/自批准/跨实际项目403，人类撤销后403，冷重启实际权限不变，无job/native。
+
+W0退出修复 `02177b9` 后，W3 SOURCE `a3675f1a6473d0c70681c5591555dc99d409bec9` 原4pmMWO、selection和recommendation_reuse选项，`s1-public-selection.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-public-selection-stop-fix`：**1 PASS / 2.6分钟 / exit0**。不同请求键同原建议job、native目录不新增、原正文与jobs/CAS不变，真正API冷启动和helper关闭通过；已选择勾选/实际入库可查、建议来源默认折叠，两尺寸可读。不新增paid或媒体，UNKNOWN不重发。
+
+最终SOURCE66e，原4pmMWO、public_collection选项，`s1-public-collection.spec.ts --grep 'unavailable video' --project=chromium-1920 --workers=1 --output=test-results/s1-public-unavailable`：**1 PASS / 19.1秒 / exit0**。同UID小夹2项的status9失效条目真实保留，locator空、中文动作提示、无链接/无建议/禁选；两条都未入库，原非同步作业不变，不下载长70p视频。实际Douyin self表单要求可公开URL、禁绑定、零POST，无伪空同步。
+
+现有Attention/Workspace局部已消费真实缓存发现API，按实际目录/Git/Orca活动显示候选，由人选择关联空间登记；默认A、B/C/模型/动作独立，没有自动授权、自动入库或伪原生恢复。SOURCE66e最终typecheck/lint/Vitest58/build/diff均exit0；静态误类型首FAIL仍保留。1280/1920真实截图已目视无横溢。15173/18787/56255/56256/50666/50667/52015/52016/56069/56071无监听，精确两owned store的server及本worktree Vite无残留，已明确向root释放唯一live槽。详细准确SHA、完整pnpm命令/选项、原库/日志/截图见 [W3当前报告](../../tasks/S1-sync-W3.md)。
+
+完整S1不由此局部交付推导：GitHub首仓/同步语义与Douyin可公开身份待用户，其他平台占位和其他CLI各项unknown/unsupported保持；实际目录partial16项不变，旧paper UNKNOWN成本/效果未知，新arXiv URL获取未验。原AT01–04和原生三turn独立证据不重跑、不覆盖首RED；W0最终普通合入、root准确组装源完整默认回归及人工接受仍由相应主控完成。
+
 ## 默认权限定向返修（2026-10-10）
 
 主控SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` 整套152 PASS / 2 FAIL / 8 SKIP、exit1，两个首败为 `s1.spec.ts:223` 的旧全局关闭文案，原两尺寸trace/error-context保留。W3只修改原用例按当前项目许可检查，SOURCE `bf3b5e7408245f12874830595c40e5a3a3471761` 已push；默认空项目、未知model/config、selected-project-cli动作提示、availablefalse/allowedkeys空、disabled、零模型POST、SQLite无新沉淀job与humanheat0均保留。

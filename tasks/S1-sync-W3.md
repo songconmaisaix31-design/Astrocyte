@@ -1,5 +1,29 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 本轮公开收藏与 Orca 项目续验（2026-10-10，Dispatch ctx_0c1c1e070200）
+
+最终应用/测试 SOURCE `66e05ca180cd2adee412199348dd3867841dc507`，分支 `s1-sync-ui-1010` 已 push。本机 Orca Codex / gpt-6.1-sol，写域仅 Attention/Workspace 局部 UI、原 E2E 和本报告/验收文档。用户当前已允许读取 Orca 登记的本地项目；旧“个人根未许可”和公开夹0条均仅为下文历史。GitHub 同步语义及抖音可分享的公开身份仍待答，其他平台保持待接入，自动派发不启用。报告提交只改这两份文档，不改变上述 SOURCE，精确 REPORT SHA 随交接消息提供。
+
+代码阶段 `7a338f0685033cc5e80236adb7e40ea15167a78b`：普通合入 W0 `4a6a5a0` 契约和 W1 `e1061eb`，接入缓存目录候选、真实 Git/活动和人工选择登记；候选不会自动变为 Astrocyte 项目，B/C、模型和动作许可保持独立。收藏夹所属账号从已输入创作者 UID 带入，新增单条标题简介建议，不发送其他条目；失效内容有可操作中文提示并禁用建议/正文。后续 `0ff5c25b7615f97744ef8b04dac2881175a324b8` 只修选择态、已入库提示和折叠建议来源，未改生产 CSS、Swarm、Mission 或公共契约。
+
+当前真实结果：
+
+- SOURCE `7a338f0`，`ASTROCYTE_TEST_PUBLIC_COLLECTION=1`，两项 `ASTROCYTE_S1_REUSE_{OWNED_TEMP,APPROVED_ROOT}` 精确指向原自有 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO`；`pnpm --dir web exec playwright test s1-public-collection.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-public-metadata-first`：**1 PASS，2.7分钟，exit0**。实际默认夹 `2356677875`，读取上限100行、99条去重内容，原BV在其中；新表单绑定同Source，启动同步/冷重启不增标题版本。SQLite 原资料/版本/非同步作业/原生记录逐字不变，正文选择在无建议时禁用，无新模型或媒体。
+- SOURCE `0765481203411852bc66cce26b4af385d78efc54`，`ASTROCYTE_TEST_PUBLIC_SELECTION=1` 和上述原库选项，`pnpm --dir web exec playwright test s1-public-selection.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-public-selection-first`：**1 PASS，3.2分钟，exit0**。唯一新 metadata 作业 `2MRD654JKJZEH75TIYLA4I5RG7` 成功/attempt1；只给原 BV1PReT6EEqR 冻结标题简介建议，再人类勾选，复用原 URL 作业 `26MPWE7S3S4FLEUE62BZLKC54T`，summarize 全程关闭，没有重复下载/转录。未选98条无推荐/入库，原UNKNOWN/资料/正文版本/CAS不变，冷重启后可查，无Mission。仅另做显式无模型连接探测，不追加原生付费turn。
+- SOURCE `6db87358f9ff36f3b13d947db53e2fddf35df2d9`（普通合 W1 `90c9e04`），同库 `ASTROCYTE_TEST_RECOMMENDATION_REUSE=1` 续验 **1 FAIL，1.5分钟，exit1**。实际不同新请求键 HTTP200 返回同 `2MRD...`，已执行原作业/正文/CAS、两尺寸检查，owned native-sessions 目录前后7项相同。原 trace 有 `actual-selected-source-before-restart` 附件，随后 restart/cleanup 的 Windows queued-exit 竞态报告 PID47784 不存在，覆盖首错误；此整场不标 PASS。API56069/Vite56071 原监听随后已消失。此前按最后宽度断言猜测横溢不成立，已撤回，未据此改生产 CSS。
+- SOURCE `a0abb369ba5bdb774c49e2dd3138bb4ee402d43f`（普通合 W0 `c55ca97`），实际项目首轮 **1 FAIL，2.8分钟，exit1**：54条真实候选/16个读取限制为 partial，纯GET不写缓存、Astrocyte人工登记/defaultA均完成；显式refresh耗时约52秒，后端日志200但30秒WriteTimeout使浏览器收到502，后续B/Agent/重启 NOT_RUN。首库 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-1lHfyS` 与 trace/log保留。
+- SOURCE `15dee411f8d3cc067d51a000356e6ba5412192ce`（普通合 W0 `38f8a4b8548f2bd02d464926beb606ae17ea9448`，服务总读取120秒/HTTP写150秒），`ASTROCYTE_TEST_REGISTERED_PROJECTS=1`，两项 `ASTROCYTE_PROJECT_REUSE_{OWNED_TEMP,APPROVED_ROOT}` 精确指向上述1lHfyS；`pnpm --dir web exec playwright test s1-registered-projects.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-registered-projects-deadline-fix`：**1 PASS，4.0分钟，exit0**。实际54候选/16限制仍为partial，不冒充全量；缓存GET只读，刷新浏览器200约50秒。沿首库人工Astrocyte登记/defaultA，之后人类B仅开README/C及模型关闭；实际文件200且逐字匹配，独立Agent读README200，AGENTS/会话发现/自批准/跨另一个实际项目均403，人类撤销后同token403。权限原SQLite行在冷启动后不变，没有作业或原生会话，不生成临时凭据日志。
+- SOURCE `a3675f1a6473d0c70681c5591555dc99d409bec9`（普通合 W0退出修复 `02177b96e8df8eff2e3655fb72d98f8dda1f7046`），原4pmMWO和上述selection/reuse选项；`pnpm --dir web exec playwright test s1-public-selection.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-public-selection-stop-fix`：**1 PASS，2.6分钟，exit0**。实际不同请求键返回原 `2MRD...`、native目录不新增，原作业/正文/CAS不变，原26MPWE正文在冷启动后逐字可查；实际勾选和已入库提示、默认折叠建议来源、1280/1920无横溢及helper关闭通过。原推荐成功直接复用，无新paid turn；显式探测不调用模型，原UNKNOWN不重发。
+- SOURCE `66e05ca180cd2adee412199348dd3867841dc507`，原4pmMWO/public collection选项；`pnpm --dir web exec playwright test s1-public-collection.spec.ts --grep 'unavailable video' --project=chromium-1920 --workers=1 --output=test-results/s1-public-unavailable`：**1 PASS，19.1秒，exit0**。同一UID小夹 `3501892975` 实际两条，provider_status9视频有unavailable_reason、空locator，UI中文要求核对平台/选择其他内容，无假链接，建议/勾选禁用。两条均未获建议/选择/入库，原非同步jobs不变，不下载长70p视频。另在实际表单输入Douyin self登录收藏地址，明确请求可公开URL、绑定禁用且零POST；没有伪空同步。
+
+全部日志和真实 body/截图/trace 位于上述 `web/test-results/<output>/` 和同名 `-command.log`。原两个测试库保留供主控只读，不灌个人库。API模型调用的首成功不代表后续完整场次通过。
+
+最终SOURCE66e的 `pnpm --dir web typecheck`、`pnpm --dir web lint`、`pnpm --dir web test`（8文件/58项）、`pnpm --dir web build`（83模块）和 `git diff --check` 均exit0。静态首FAIL保留：新增测试误写生成类型 `ContentResultV1`，build/TS报不存在；已改实际 `ContentV1`。W0唯一helper/process owner修退出竞态，W3只消费primaryError参数保留首错，不新建runner或证明框架；现有默认权限和完整浏览器回归由root在最终准确组装源独立运行，W3未重复整套。
+
+本轮三组真实截图的1280/1920状态已目视，原建议内容、失效条目和真实候选目录可读、无横向溢出。最后15173/18787/56255/56256/50666/50667/52015/52016/56069/56071无监听，精确4pmMWO/1lHfyS server及本worktree Vite无残留，已向root明确释放唯一live槽。只保留原两库/objects/trace，不清理历史原件。原 AT01–04 和原生三turn证据保持，下文历史不改写；本轮不追加这些已成功付费工作。
+
+真实剩余限制：公开读取仍可能受平台风控，目录发现真实partial16项保留原因，不保证全部登记目录可读；GitHub同步语义/首仓及Douyin公开身份待用户，其他平台明确占位，不启用自动派发；其他CLI配置/可启动/八项原生能力仍逐项未知或未支持，不能用Codex已验路径推导。旧paper UNKNOWN费用/效果未知。完整S1/新arXiv URL获取/主控最终组装整套检查及人工接受不由本轮W3声明完成，W0负责最后普通合入。
+
 ## 默认项目权限回归返修（2026-10-10，Dispatch ctx_fcd597cd1864）
 
 主控仅派返修原 `web/e2e/s1.spec.ts:223` 默认自动整理用例，不重跑真实资料/model/media/native。root首套 SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` 为152 PASS / 2 FAIL / 8 SKIP、5.7分钟、exit1；两个失败都是旧“自动处理未启用”文案断言，真实页面现按所选项目CLI许可判断。主控原两尺寸error-context/trace保留在 `C:/Users/DW/orca/Astrocyte/web/test-results/s1-S1-contract-local-with--1d9fa-m-never-submits-a-model-job-chromium-{1280,1920}/`，不改写成完整通过。
