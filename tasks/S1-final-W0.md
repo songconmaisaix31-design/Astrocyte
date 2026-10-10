@@ -6,6 +6,7 @@
 
 - 沿 `s1-sync-contract-1010` 普通合并（保留 owner 历史，未 squash/rebase/reset/force）：W1 精确 SOURCE+REPORT 合一 `0b189e5f`（paper_snapshot 离线摄取适配器 + IPv6 SSRF 收紧）、W2 精确 SOURCE `d8a2562`（进度 domain 收敛 + OpenCode loopback driver + durable publication）、W3 SOURCE `3206111` + REPORT `6111fd1`（UI 对齐 source_key/content_state/pdf_urls + paper_snapshot）。
 - 最终续合并：W2 精确 SOURCE `a6e21b3`（session permission 严格 trailing `*/deny` 不跳过后置 specific-allow + 进度缓存 GET 缺省补齐授权 projectID，`37a7fa3`）、W1 精确 SOURCE `93d3c82` + REPORT `1ec6530`（精确 DOI/arXiv 标识路由到 registry 单条查询，只 metadata/reader 修复无契约改，`019db1e`）、W3 精确 SOURCE `e66b51e` + REPORT `b5518de`（infer 删 body operation_id 改 Idempotency-Key、去 adapter cast、percent 按 source 呈现、真实 paper_snapshot 浏览器 spec，`3be6d13`）。
+- 收尾续合并：W1 文档返修 `f1b5c70` + `82c233e`（`extensions/paper/README` 对齐 paper_snapshot 零网络复核导入路径，无代码/模型）、W3 路径输入返修 `1f8bdb1` + `d8c759e`（ProjectProgressPanel 人类输入 1–8 相对路径默认 STATUS.md，超限不静默截断并禁用，最终合并 `0049637`）。
 
 ## 契约单一发布（W0 唯一 owner）
 
@@ -42,6 +43,6 @@
 
 ## 剩余限制与未执行
 
-- W3 三尺寸键盘/浏览器 search+已选快照批量端到端 e2e 由其自有 `startS1Server({browser:true})` 真实浏览器闭环完成并保留库；本轨已做最后胶水合并与受影响 `check`/`build` 一次（均 PASS）。最终 root 独立验收。
-- 真实进度 Agentinfer 已完成一次（见上表）；OpenCode textProcessor 仍 unsupported、不静默 switch provider。
-- CLI 完整覆盖、长期记忆共享、公开源代理策略用户未答，未代选、未默认权限。未合 main/远程 CI、未升级个人预览；个人库备份已 root 完成 `%APPDATA%/astrocyte/backups/pre-s1-paper-cli-20261011-013712/`。
+- W3 三尺寸键盘/浏览器 search+已选快照批量端到端 e2e 由其自有 `startS1Server({browser:true})` 真实浏览器闭环完成并保留库；本轨已做最后胶水合并与受影响 `check`/`build`（均 PASS，83 前端单测）。最终 root 独立验收；root 已合 `671c478` 为 `6bbc133` 并独立只读验 `Efcm6F` 真实进度与 `HgzEDq` 两版/两 job/4 对象。
+- 真实进度 Agentinfer 已完成一次（retained store `%TEMP%/astrocyte-s1-Efcm6F`，供 root 只读核查）；OpenCode textProcessor 仍 unsupported、不静默 switch provider。
+- CLI 完整覆盖、记忆隔离、公开下载 proxy、Agent search 权限四项用户决策未答，未代选、未默认权限。未合 main/远程 CI、未升级个人预览（个人库备份已 root 完成 `%APPDATA%/astrocyte/backups/pre-s1-paper-cli-20261011-013712/`）。
