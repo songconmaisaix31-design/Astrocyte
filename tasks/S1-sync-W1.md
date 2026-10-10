@@ -73,3 +73,15 @@ W0 公共 ABI/006 普通合入；普通新表单复用已有来源作业（包�
 首次更新语义后的 app 测试 FAIL：旧 FixedArxivBoundary/MutableImport/CanonicalContract 测试仍要求新表单自动重新提取。按用户已确认普通复用+显式刷新调整其意图后，`go test ./internal/attention/app ./internal/adapters/importers ./internal/attention/domain ./internal/adapters/sqlite` PASS（0.461s/1.164s/cached/1.720s）。PowerShell glob 直接传给 gofmt 首次报 CreateFile，改显式路径后通过；不是业务失败。
 
 真实指定 UID 3494358764489275 公开只读：锁定 yt-dlp2026.08.19 flat-list exited1 HTTP412，stdout null；薄 Python bridge 复用相同版本 BilibiliSpaceVideoIE 的原生 WBI/指纹/网络函数，单页 rawvlist 返回 code -352 验证失败。首失败保持；未换登录、读取 cookie、绕过挑战或下载未选媒体。公开收藏夹目录实际 code0/count0/listnull：仅公开目录为空，不证明上传列表成功。桥限单页30条/60秒/4MiB输出，严格 pin；测试保留精确 aid/UID、owner匹配、标题简介与不可用行。上游参考仍为 yt-dlp/extractor/bilibili.py；不新建 signing/downloader。
+
+## 继续阶段 3（2026-10-10）
+
+实现 W0 发布的 TrackingService/SourceCollectionService、SQLite006 CRUD/CAS：官方公开身份归一、多账号/显式收藏夹、metadata revision 与正文 revision 分离、逐页持久化 job payload 游标/上限、失败 partial cache + stale、成功/缺项中立保留、推荐与人工选取固定元数据版本。推荐需选项目+CLI，真实 caller 进入消费端口，不默认替换供应方。选取前必须当前 metadata recommendation succeeded；选取只建立现有 summarize_url import job/receipt，outbox 保存所选完整元数据/推荐依据。没有自动入库、Mission、定时或自启。
+
+Service.Run 启动时一次元数据同步（system startup 队列，不伪装人类操作）。既有 job MaxAttempts/deadline/operation 保持，已知 retryable 安全失败由原队列有限重试，持久 UpdatedAt 控制间隔；每次真实失败 error/attempts 保留 outbox，旧 UNKNOWN 不自动重排。只读 source_sync 中断可恢复原 payload；返回的模型结果先保存 payload，再发布推荐。未知原生开始保持 UNKNOWN。
+
+AttentionProjectReferences 已实现：W2 授权后 trusted agent caller 才可读 selected space 的固定版本；可选 C 只展开来自当前纳入根的成功沉淀 RelatedRefs 一跳，拒绝撤销/不在范围/其他 revision，读取前后都重新查成员。Agent use 只增加机器计数，不加人类关注。普通全库 Agent API 仍拒绝。
+
+有意测试通过：应用3项（来源identity/100 metadata+推荐门槛+人工选取/部分缓存安全resume+UNKNOWN不重放）；固定旧版本连续3次 scoped Agent 读保持 human heat；真实SQLite停止/重开保持部分缓存、描述、revision、失败与游标，恢复只读第2页、operation/deadline不重置、materials0。SQLite测试首次最后查询误用 event_type 列 FAIL，查实际 schema 后改 type，独立重跑 PASS，首次失败保留。
+
+`go test ./...` PASS；`go build ./...` PASS（本轮未运行模型/媒体/真实UI）。原公开来源 412/-352/公开folder0 仍有效限制。原 generic selected CLI 推荐/自动沉淀 factory 待下一具体阶段；实际100 provider rows（包括缺ID跳过行）的消费端口 Observed 字段已请 W0 添加，并准备调整 native page size 避免最后页多抓 metadata，不声称当前已通过该细节。W0 入口/HTTP/OpenAPI 与 W2 native 功能仍由原轨集成。

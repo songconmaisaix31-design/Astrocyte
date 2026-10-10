@@ -116,7 +116,9 @@ func (b *PublicBilibili) get(ctx context.Context, address string) ([]byte, error
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, discoveryUnavailable(fmt.Sprintf("Bilibili public metadata HTTP %d", resp.StatusCode), "check_public_source_access")
+		err := discoveryUnavailable(fmt.Sprintf("Bilibili public metadata HTTP %d", resp.StatusCode), "check_public_source_access")
+		err.Retryable = resp.StatusCode == 429 || resp.StatusCode >= 500
+		return nil, err
 	}
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, (4<<20)+1))
 	if err != nil {

@@ -160,9 +160,15 @@ func jobRules(j Job) domain.JobRules {
 	// SourceReader only downloads sources or parses existing exports. Ordinary
 	// imports have no paid/effectful action to reconcile. Other job kinds retain
 	// the conservative external-start recovery rule for future model adapters.
-	external := j.ExternalStarted && j.Kind != "import"
+	external := j.ExternalStarted && j.Kind != "import" && j.Kind != "source_sync"
 	if j.Kind == "distillation" {
 		var payload automaticPayload
+		if json.Unmarshal(j.Payload, &payload) == nil && payload.Result != nil {
+			external = false
+		}
+	}
+	if j.Kind == "source_recommendation" {
+		var payload recommendationPayload
 		if json.Unmarshal(j.Payload, &payload) == nil && payload.Result != nil {
 			external = false
 		}
@@ -196,6 +202,25 @@ func (s *Service) RetryJob(ctx context.Context, p Principal, id string, m Comman
 		// Preserve the original deadline, attempts, payload and operation identity.
 		if err = tx.SaveJob(job, m.ExpectedVersion); err != nil {
 			return Job{}, err
+		}
+		if id := trackingJobSource(job); id != "" {
+			port, err := trackingPort(tx)
+			if err != nil {
+				return Job{}, err
+			}
+			source, err := port.LoadTrackingSource(id)
+			if err != nil {
+				return Job{}, err
+			}
+			old := source.Version
+			source.Version++
+			source.Status = "syncing"
+			if job.Kind == "source_recommendation" {
+				source.Status = "recommending"
+			}
+			if err = port.SaveTrackingSource(source, old); err != nil {
+				return Job{}, err
+			}
 		}
 		if err = s.event(tx, "job_retried", id, job.Version, m, map[string]any{"job_id": id, "operation_id": job.OperationID}); err != nil {
 			return Job{}, err
@@ -276,9 +301,12 @@ func (s *Service) RecoverJobs(ctx context.Context) error {
 			if job.DeliveryUnknown {
 				job.Error = mapError(domain.ErrUnknown, "").(*apierrors.ServiceError)
 			} else {
-				job.Error = serviceError(apierrors.ProviderUnavailable, "Local worker was interrupted", "retry_job")
+				job.Error = retryableInterruption()
 			}
 			if err = tx.SaveJob(job, old); err != nil {
+				return err
+			}
+			if err = s.recoverTrackingState(tx, job); err != nil {
 				return err
 			}
 			if err = s.event(tx, "job_recovered", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown}); err != nil {
@@ -307,6 +335,11 @@ func (s *Service) Run(ctx context.Context) error {
 	if err := s.RecoverJobs(ctx); err != nil {
 		return err
 	}
+	if s.options.ListingReader != nil {
+		if err := s.SyncSourcesOnce(ctx); err != nil {
+			return err
+		}
+	}
 	workerCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	errorsFound := make(chan error, s.options.WorkerConcurrency)
@@ -319,6 +352,13 @@ func (s *Service) Run(ctx context.Context) error {
 			defer ticker.Stop()
 			for {
 				if workerCtx.Err() != nil {
+					return
+				}
+				if err := s.retrySafeJobs(workerCtx); err != nil {
+					if workerCtx.Err() == nil {
+						errorsFound <- err
+						cancel()
+					}
 					return
 				}
 				worked, err := s.ProcessNextJob(workerCtx)
@@ -398,6 +438,12 @@ func (s *Service) ProcessNextJob(ctx context.Context) (bool, error) {
 	}
 	if claimed.Kind == "distillation" {
 		return true, s.processAutomatic(ctx, claimed)
+	}
+	if claimed.Kind == "source_sync" {
+		return true, s.processSourceSync(ctx, claimed)
+	}
+	if claimed.Kind == "source_recommendation" {
+		return true, s.processSourceRecommendation(ctx, claimed)
 	}
 	var c ImportMaterialCommand
 	if err = json.Unmarshal(claimed.Payload, &c); err != nil {
@@ -530,7 +576,7 @@ func (s *Service) failJob(claim Job, cause error, unknown bool) error {
 		if err = tx.SaveJob(job, old); err != nil {
 			return err
 		}
-		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown})
+		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown, "attempts": job.Attempts, "error": job.Error})
 	}), "")
 }
 
