@@ -12,7 +12,10 @@ test('approved selected Douyin folder is chosen, saved, deduplicated and retaine
   test.setTimeout(240_000);
   const approved = process.env.ASTROCYTE_S1_SELECTED_BROWSER_CONFIG;
   if (!approved) throw new Error('Name the exact root-approved noncredential browser config artifact');
-  const server = await startS1Server({ browser: true });
+  const reusedPath = process.env.ASTROCYTE_SELECTED_REUSE_OWNED_TEMP;
+  const approvedRoot = process.env.ASTROCYTE_SELECTED_REUSE_APPROVED_ROOT;
+  if (!!reusedPath !== !!approvedRoot) throw new Error('Continuation requires both exact original helper path and its approved owned root');
+  const server = await startS1Server({ browser: true, ...(reusedPath && approvedRoot ? { reuseOwnedTemporary: { path: reusedPath, ownedRoot: approvedRoot } } : {}) });
   let primaryError: unknown;
   try {
     await copyFile(approved, join(server.dataDir, 'selected-browser.json'));

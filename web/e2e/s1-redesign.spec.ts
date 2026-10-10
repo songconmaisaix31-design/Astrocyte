@@ -9,13 +9,15 @@ for (const narrow of [false, true]) {
       await page.goto(`/${path}`);
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
       await expect(page.getByRole('alert').filter({ hasText: '示例数据模式' })).toHaveCount(0);
+      await expect(page.getByRole('status', { name: path === 'attention' ? '暂无素材' : path === 'workspace' ? '暂无本地项目' : '暂无开发空间', exact: true })).toBeVisible();
+      await page.waitForLoadState('networkidle');
       await page.screenshot({ path: testInfo.outputPath(`${path}-initial-${page.viewportSize()?.width}.png`), fullPage: true, animations: 'disabled' });
       if (path === 'attention') {
         await expect(page.getByRole('status', { name: '暂无素材', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: '账号与更新清单', exact: true })).not.toBeVisible();
         await page.getByRole('button', { name: /查看来源更新/ }).click();
         await expect(page.getByRole('heading', { name: '账号与更新清单', exact: true })).toBeVisible();
-        await expect(page.getByRole('status', { name: '尚未绑定公开来源', exact: true })).toBeVisible();
+        await expect(page.getByRole('status', { name: '尚未绑定来源', exact: true })).toBeVisible();
         await page.locator('summary').filter({ hasText: /^查看来源更新$/ }).click();
         await page.getByRole('button', { name: /查看处理队列/ }).click();
         await expect(page.getByRole('heading', { name: '导入与沉淀队列', exact: true })).toBeVisible();
