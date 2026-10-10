@@ -627,7 +627,7 @@ export interface paths {
         put?: never;
         /**
          * infer project progress from approved TASK/STATUS files
-         * @description Triggers a model inference over approved fixed TASK/STATUS files only. A verified operation identity is persisted before the model turn so a retry cannot silently re-charge; unknown delivery is never replayed. Evidence carries source, version and freshness and never reads credentials, unapproved files or grants project control. A server without the progress service returns 501.
+         * @description Triggers a model inference over approved fixed TASK/STATUS files only. The caller-supplied Idempotency-Key header is the verified operation identity, persisted before the model turn so a retry cannot silently re-charge; unknown delivery is never replayed. Evidence carries source, version and freshness and never reads credentials, unapproved files or grants project control. A server without the progress service returns 501.
          */
         post: operations["inferProjectProgress"];
         delete?: never;
@@ -4055,7 +4055,6 @@ export interface components {
          *       "schema_version": 1,
          *       "request_id": "example-request",
          *       "expected_version": 1,
-         *       "operation_id": "00000000-0000-0000-0000-000000000000",
          *       "files": [
          *         "TASK.md",
          *         "STATUS.md"
@@ -4067,8 +4066,6 @@ export interface components {
             schema_version: 1;
             request_id: string;
             expected_version: number;
-            /** Format: uuid */
-            operation_id: string;
             files: string[];
         };
     };
