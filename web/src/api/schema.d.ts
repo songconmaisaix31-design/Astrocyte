@@ -3640,7 +3640,15 @@ export interface components {
             source: string;
             status: string;
             reason: string;
+            /** @description Filesystem entries examined within the bounded known source. */
             entries_examined: number;
+            /** @description Native metadata headers examined; not a session or project total. */
+            headers_examined?: number;
+            /** @description Distinct validated project roots identified in this source. */
+            matched_roots?: number;
+            /** @description Retained samples after per-root/client bounds; not total sessions. */
+            retained_associations?: number;
+            /** @description Unique valid metadata matches; distinct from retained samples. */
             matched_headers: number;
         };
         ProjectHumanMetadataV1: {

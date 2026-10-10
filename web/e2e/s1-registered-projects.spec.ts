@@ -22,6 +22,7 @@ test('actual Orca discovery remains a read-only candidate list until human regis
   let primaryError: unknown;
   try {
     await page.goto(`${server.webURL}/workspace`);
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
     await page.locator('summary').filter({ hasText: /^从 Orca 登记目录选择项目$/ }).click();
     const discovery = page.getByRole('region', { name: 'Orca 登记目录发现' });
     let actual = await read<S['RegisteredProjectDiscoveryResultV1']>('/local-projects/registered');
@@ -144,6 +145,7 @@ test('actual Orca discovery remains a read-only candidate list until human regis
     expect(server.query('SELECT COUNT(*) AS count FROM attention_jobs')[0].count).toBe(0);
     expect((await read<S['MissionListV1']>('/missions')).items).toEqual([]);
     await page.reload();
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
     await expect(discovery.getByRole('button', { name: '已登记此目录', exact: true })).toHaveCount(2);
   } catch (error) {
     primaryError = error;

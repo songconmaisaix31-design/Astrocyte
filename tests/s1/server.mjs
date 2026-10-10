@@ -70,7 +70,7 @@ export async function startS1Server({ browser = false, env: extraEnv = {}, reuse
   const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
   const apiURL = `http://127.0.0.1:${apiPort}`;
   const webURL = `http://127.0.0.1:${webPort}`;
-  const suppliedEnv = typeof extraEnv === 'function' ? extraEnv({ dataDir, temporary }) : extraEnv;
+  const suppliedEnv = typeof extraEnv === 'function' ? await extraEnv({ dataDir, temporary }) : extraEnv;
   // Do not inherit a user's active private import roots, Agent scope, fixture mode,
   // ranking settings, or paid processor enablement into repeatable CI.
   const baseEnv = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.toUpperCase().startsWith('ASTROCYTE_')));

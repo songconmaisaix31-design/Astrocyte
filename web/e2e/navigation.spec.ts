@@ -85,6 +85,7 @@ test.describe('Empty API states', () => {
 
   test('共同工作区 shows settled empty headings', async ({ page }) => {
     await page.goto('/workspace');
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
     await page.waitForLoadState('networkidle');
     await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible({ timeout: 10000 });
     await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();

@@ -11255,9 +11255,23 @@ components:
         entries_examined:
           type: integer
           minimum: 0
+          description: Filesystem entries examined within the bounded known source.
+        headers_examined:
+          type: integer
+          minimum: 0
+          description: Native metadata headers examined; not a session or project total.
+        matched_roots:
+          type: integer
+          minimum: 0
+          description: Distinct validated project roots identified in this source.
+        retained_associations:
+          type: integer
+          minimum: 0
+          description: Retained samples after per-root/client bounds; not total sessions.
         matched_headers:
           type: integer
           minimum: 0
+          description: Unique valid metadata matches; distinct from retained samples.
     ProjectHumanMetadataV1:
       type: object
       additionalProperties: false
