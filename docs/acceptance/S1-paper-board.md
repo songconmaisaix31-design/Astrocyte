@@ -5,7 +5,7 @@
 - **论文检索**：`GET /api/v1/papers/search?q=&provider=&limit=`（W0 契约），返回 `PaperSearchHitV1`（`source_key/provider/title/authors/year/venue/arxiv_id/doi/locator/abstract/content_state/pdf_urls`），不再有 `site`/`id`/`source_type`/`availability`/`already_imported`。检索只返回公开元数据（`content_state=abstract_only`）；原文可得性在勾选入库后由作业确定。勾选纯人工、可取消、批量入库由人显式提交且不全量。
 - **批量入库**：逐条走既有 `POST /materials/imports`（`ImportMaterialRequestV1`，`kind=paper`，`adapter=arxiv|paper_url`，`source_key` 去重、新 revision），**每项用 `crypto.randomUUID()` 幂等键**（不再自建 FNV Hash），后端 source_key/内容去重负责重复工作；`Promise.allSettled` 只确认「提交被接受」而非「入库成功」，失败汇总为单一可操作错误，成功作业在处理队列可查；不新增 scheduler/cache 或双轨 `/papers/import`。
 - **插件快照复核**：消费 W1 `paper_snapshot` adapter（`export_text`=整份已复核快照 JSON，`source_locator`=来源 URL，服务按 DOI/arXiv/URL 重新推导 `source_key`，不做网络抓取）；`pdf_urls` 映射到 `paper_pdf` adapter（SSRF 安全公开 PDF 抓取，非 arxiv-only）。人类明确选择「HTML 正文 / 公共 PDF」，快照正文保留不再让 `paper_url` 重新抓网页；摘要/截断/付费墙不当正文，无个人浏览器自动读取。
-- **项目进度**：消费 W0 `ProjectProgressV1`（`status/summary/percent/source/evidence[]/native_id/model/observed_at/warning/revision`，`source`/`observed_at` 可空，无 `operations`/`pending_operation` 内部泄漏），`ProgressEvidenceV1`（`source_path/kind/version/excerpt`，无 `freshness`）。`status=unknown` 呈现「未知」，`percent` 按 source 显示「人工记录 / Agent 估计 / 未知」，绝不伪造、不把模型百分比冒充人工输入。UI 接 `GET /local-projects/{id}/progress` 与 `POST .../progress/infer`（Idempotency-Key 即操作身份 + `files:[TASK.md,STATUS.md]`，无 body `operation_id`）。
+- **项目进度**：消费 W0 `ProjectProgressV1`（`status/summary/percent/source/evidence[]/native_id/model/observed_at/warning/revision`，`source`/`observed_at` 可空，无 `operations`/`pending_operation` 内部泄漏），`ProgressEvidenceV1`（`source_path/kind/version/excerpt`，无 `freshness`）。`status=unknown` 呈现「未知」，`percent` 按 source 显示「人工记录 / Agent 估计 / 未知」，绝不伪造、不把模型百分比冒充人工输入。UI 接 `GET /local-projects/{id}/progress` 与 `POST .../progress/infer`（Idempotency-Key 即操作身份 + `files` 为**人类输入的相对路径**，默认 `STATUS.md`、1–8 行，受后端已批准目录校验；无 body `operation_id`）。
 - CLI 原生操作沿用现有 `ManagedProjectsPanel`/`NativeProjectPanel`（start/read/resume/send/stop/observe/context_handoff），权限判断 `nativePermission.ts` 不变，不以看板即自动授权。CLI 完整覆盖与记忆隔离/全局/仅规划仍 PENDING（用户未答），未代选、未建 UI 伪工具。
 
 ## 分支与源码
@@ -32,7 +32,7 @@
 | 定向 `eslint`（新增/改动文件） | PASS/exit0 |
 | `pnpm --dir web build` | PASS/exit0（101 模块） |
 | `playwright test paper-search.spec.ts plugin-snapshot.spec.ts progress.spec.ts`（1920/1280） | **28 PASS**：检索 GET 契约载荷渲染、示例检索选择/取消 0 写、501 诚实「检索未完成」、移动 390 无横溢；插件快照正文保留+`paper_snapshot`、非 arxiv `paper_pdf`、付费墙无绕过、**同 URL 正文变化产生新幂等键（无 409）回归**；进度 GET/POST infer 带 Idempotency-Key+`files` + 未知不伪造百分比 |
-| `playwright test --config e2e/paper-snapshot.config.ts`（`ASTROCYTE_TEST_PAPER_SNAPSHOT=1`，真实浏览器闭环） | **1 PASS**：真实 fulltext 快照粘贴→`paper_snapshot` 正文入库（revision1 browser_snapshot_fulltext，source_key=doi，正文>10000 字符，`paper-snapshot.json` 附件逐字节相等）→ 同 body 去重（revisions 仍 1）→ 同 URL 改正文生成 revision2 → fresh API 后 content_digest 一致 → 1920/1280/390 无横溢 + 键盘 Enter 开/关 |
+| `playwright test --config e2e/paper-snapshot.config.ts`（`ASTROCYTE_TEST_PAPER_SNAPSHOT=1`，真实浏览器闭环） | **1 PASS**：真实 fulltext 快照粘贴→`paper_snapshot` 正文入库（revision1 browser_snapshot_fulltext，source_key=doi，正文>10000 字符，`paper-snapshot.json` 附件对象级等于界面原始提交的快照）→ 同 body 去重（revisions 仍 1）→ 同 URL 改正文生成 revision2 → fresh API 后 content_digest 一致 → 1920/1280/390 无横溢 + 键盘 Enter 开/关 |
 
 ## 未完成与真实限制
 

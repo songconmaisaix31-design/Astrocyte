@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { hasProgress, progressKindLabel, progressSourceLabel, progressSourceSummary, progressStatusLabel, type ProjectProgress } from './progressPresentation';
+import { hasProgress, parseProgressFiles, progressKindLabel, progressSourceLabel, progressSourceSummary, progressStatusLabel, type ProjectProgress } from './progressPresentation';
 
 const progress = (overrides: Partial<ProjectProgress> = {}): ProjectProgress => ({
   project_id: 'p1', status: 'unknown', evidence: [], revision: 0,
@@ -43,4 +43,14 @@ it('labels evidence kinds without guessing', () => {
   expect(progressKindLabel('status')).toBe('状态文件');
   expect(progressKindLabel('project_file')).toBe('项目文件');
   expect(progressKindLabel('other')).toBe('other');
+});
+
+it('parses human-entered relative paths without silent truncation', () => {
+  expect(parseProgressFiles('STATUS.md')).toEqual(['STATUS.md']);
+  expect(parseProgressFiles('STATUS.md\nTASK.md')).toEqual(['STATUS.md', 'TASK.md']);
+  expect(parseProgressFiles('  docs/plan.md \n\n STATUS.md \r\n')).toEqual(['docs/plan.md', 'STATUS.md']);
+  expect(parseProgressFiles('')).toEqual([]);
+  expect(parseProgressFiles('\n  \n')).toEqual([]);
+  const many = Array.from({ length: 12 }, (_, i) => `file${i}.md`).join('\n');
+  expect(parseProgressFiles(many)).toHaveLength(12);
 });
