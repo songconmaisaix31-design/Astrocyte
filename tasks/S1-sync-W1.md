@@ -147,3 +147,11 @@ W3代码复核发现cached Result后普通OS Publish错误映射InternalError/Re
 Root另确认存储修复必须先发生，因此此action不进入自动循环耗尽次数；其它known safe retries保持原机制。人工Retry仍受原MaxAttempts/deadline限制，不重置operation/payload/预算。回归恢复原目录、真close/reopen SQLite且processor=nil后，原job人工retry成功、attempts2、operation/deadline不变、calls仍1。应用测试验证等待修复不自动重排、重复本地失败耗尽2次后禁重试、processor始终只调用一次；未知禁重放既有测试继续通过。事件查询首次用未加attention前缀的type无行，按实际事件名更正后PASS；该测试错误保留，不改事件或历史来迎合断言。
 
 `go test ./...`、`go vet ./...`、`go build ./...`、架构/diff检查PASS。本轮没有paid/media/browser调用；实际新模型返回后页面故障/恢复由W3继续，不能将本地processor+真实OS/SQLite覆盖写成已通过付费/浏览器验收。
+
+## 继续阶段 9：选定项目冷缓存下保存已返回结果（2026-10-10）
+
+Root复核指出阶段8真实OS/SQLite测试仅走legacy，实际SelectedTextFactory.Resolve此前预先ConfigurationID，selected project_id/cli在API重启native缓存unknown时仍不能保存Result。按root明确指令，Resolve改为只验证trusted human/caller和现有ProjectSpaceID（组装桥检查项目范围/外发CLI许可，不检查native配置或启动CLI）；新请求/新处理仍沿应用已有独立ConfigurationID检查。应用cached分支原resolve/checkScope流程不变，没有增加可选接口、共享fields或entry。
+
+真实SelectedTextFactory+project_id/cli选定固定空间、contract_local权限/text port+实际SQLite/objects的OS故障测试扩展为legacy、native_unknown、revoked、space_changed、reference_removed。返回Result后恢复目录并真正close/reopen SQLite，配置标unknown、配置观察计数归零：selected native_unknown可完成原Result、配置观察0/processing仍1；撤销许可/改变项目空间/移除固定引用三者都ScopeDenied、无沉淀发布，配置观察0/processing1，UNKNOWN没有误改。native_unknown恢复后另一个新processing请求仍以EvidenceMissing失败且仅观察ConfigurationID1次，不调用处理器。全部场景PASS；此证明实际工厂和持久恢复，不把受控权限/text port说成真实付费native/完整API验收。
+
+`go test ./...`、`go vet ./...`、`go build ./...`、架构/diff检查PASS。阶段8已accepted的legacy测试仍独立保留；本轮无网络/media/model/browser调用，W0/W3继续实际已返回付费Result的故障/恢复验收。
