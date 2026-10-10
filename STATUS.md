@@ -1,5 +1,27 @@
 # Astrocyte 当前状态
 
+## 论文、OpenCode 与进度收尾已集成（2026-10-11 02:46）
+
+主控源码 `abf4c8c797c724a84e604df2041d915392b597a7`，分支 `s1/attention-materials-20261009`；普通合并 W0 最终 REPORT `3e7a6e0243bb67b3175d5c7be95b67981dcd8c67`，保留所有 owner 历史。最后 W1 SOURCE/REPORT 合一 `3cc2bc5efd73c3f2272912ae4910cc9fa7b578e7` 修复真实页面中 Crossref 摘要直接显示 JATS 标记的问题。
+
+已交付公开论文元数据检索与 DOI/arXiv 精确查找、人类勾选批量导入、通用 HTML/PDF 适配器、独立 MV3 论文插件及快照复核入库；快照正文更新产生来源版本，同内容去重。OpenCode 正式原生会话驱动支持显式发送/读取、同 ID 恢复、选定上下文交接与所属停止；会话权限末项强制全拒绝并复核。项目进度可由人选择 1–8 个获准相对路径（默认 STATUS.md）推断，显示来源/文件版本/时间/模型，不把 Agent 估计当成人类批准。蜂群 skill/MCP 和 Claude-mem 式记忆设计见 `docs/architecture/swarm-tools-memory.md`；长期记忆实现仍待可见范围决定。
+
+验收分开记录：
+
+- 主控在主体源码 `31ed0763ad917ceefc7fc9cddb7d458840155076` 独立 `GOFLAGS=-p=1 pnpm check` PASS：Go/vet/依赖/架构、14 项实际 loopback API 验收、241 个契约例、生成类型一致、83 前端单测、lint/diff。14 项采用本地契约输入，不替代此前真实媒体 AT01–04。既有 EventV1 未使用警告保留。
+- 最后元数据小修在 `abf4c8c` 独立 Go importer test/vet 和 `pnpm build` PASS；真实页面精确 DOI 返回正确单条论文，摘要 2089 字符、无 JATS 标记。未重跑无关业务或已成功模型/旧 UNKNOWN。
+- W3 真实公开 PLOS 快照→浏览器复核→作业→两版正文→SQLite/objects→新 API 进程查询 PASS；同正文重复提交不新增作业。第二版是人工修订快照，非出版方线上新版本。root 独立 query_only 检查留存 `astrocyte-s1-HgzEDq`：1 资料、2 版本、2 成功作业、4 对象摘要匹配。
+- 一次真实 Codex 推断读取获准真实工作树文件 `tasks/S1-final-W2.md`，模型 gpt-6.1-sol、native_id `01a1270a-0483-7bb2-9bfa-b7f7367142ea`，新 API 重查一致、Mission=0、费用未知；root 只读核查留存 `astrocyte-s1-Efcm6F` 结果和一条操作收据。OpenCode 14.86 秒原生交接结果沿 W2 报告，权限收尾为独立契约测试，不冒充 OS 沙箱或全部客户端覆盖。
+- root 个人真实 API 页面检索、勾选/取消、键盘和 1920/1280/390 无横溢/pageerror PASS，未提交正文入库；源码仍默认真实 API。浏览器整体历史首次 RED 未覆盖，最后定向复验不称全套 E2E 重跑绿色。
+
+个人预览已恢复 [资料沉淀](http://127.0.0.1:5173/attention)。一致备份 `pre-s1-paper-cli-20261011-013712/state.sqlite` integrity ok；个人库已迁移 013、integrity ok、104 条来源保持，资料/进度记录仍 0，没有灌入验收库。两次必要启动各同步一次元数据，当前 14 作业中 12 成功、2 失败：失败均为选定抖音 OpenCLI 会话不可用，需重连；原收藏记录保留。注册项目观察仍 partial（111 路径、43 次观察失败），未知不当作完整覆盖。
+
+当前 preview exec22953，父32920/API36208/Vite38680，分别 02:45:03/07 创建；API程序 `astrocyte-dev-igFcHW/server.exe`。旧 exec35810 已中断、监听释放；停止新服务前核对实际所属/PID/创建时间。全局自动 Codex 关闭，summarize 启用；不自动启动 Agent 或扩大浏览器范围。截图 `%TEMP%/astrocyte-root-final-paper-{1920,1280,390}-20261011.png`，摘要修复后 `%TEMP%/astrocyte-root-final-readable-abstract-20261011.png`。
+
+剩余关键决定见 QUESTIONS 顶部：CLI 完整覆盖范围、长期记忆项目隔离/个人全局、公开正文下载代理/DNS 策略、Agent search 权限。ACL/PMLR/CVF 现场 DNS 仍为 198.18.0.98/6/7，在线正文/PDF 被公网校验拒绝；未改 host/DNS 或放行 fake-IP。长期记忆未落地、OpenCode textProcessor 仍 unsupported、其他平台仍占位，整体新增 S1 范围未完成。独立论文插件 dist 已构建，个人 Chrome 未安装；隔离加载/提取和实际浏览器粘贴入库已验，真实工具栏 popup/剪贴板点击尚需人工确认。未合 main、未执行远程 CI。
+
+本轮有效开发/返修/集成 Task 均已结算并 release；新 Worker 全部 OpenCode。旧 runtime 三个 release_unknown 原记录保持，不推断旧 handle 已退出，不使用旧 PID 操作当前进程。源码、决定和失败详见 `tasks/S1-final-paper-cli-memory-plan.md` 及四轨报告。
+
 ## 继续开发与真实链路返修（2026-10-11 01:35）
 
 原四工作树、分支、独占写域用 OpenCode 持续开发，当前 Dispatch 见 [收尾计划](tasks/S1-final-paper-cli-memory-plan.md)。W0 已发布搜索/进度组装里程碑 `d89daa1`；W1 SOURCE `91b5757` / REPORT `2d315c2` 已完成生产 PDF 提取适配器和实际隔离 Chromium 插件加载（PLOS 正文/ACL 摘要＋PDF候选），真实已下载 ACL PDF 抽取143428字符。公网下载仍被本机 Clash fakeIP DNS 198.18 地址校验阻断，用户代理范围决定未答，未修改 host DNS 或默认放宽；这不算在线下载入库成功。W3 SOURCE `82a15e5` 的模拟接口形状测试通过，但主控联查发现前后端路由不一致、插件正文被丢弃后重新抓取，已沿原 owner 返修为真实接口、PDF 选择及快照正文入库。W2 正修同原生ID接续、模型字段解析、权限覆盖和推断结果持久恢复；真实 OpenCode 完整会话回路仍待验。CLI 覆盖与记忆共享范围未答；用户要求记忆实现，不可用仅规划替代。整体 S1 未完成，根分支暂未消费新增业务源码；最终真实 API、浏览器与冷进程持久化通过后普通合并、备份恢复个人预览并 push。

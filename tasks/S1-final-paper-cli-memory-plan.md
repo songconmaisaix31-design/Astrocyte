@@ -1,5 +1,7 @@
 # S1 论文、CLI、进度与记忆收尾
 
+2026-10-11 02:46 当前终点：W1 摘要返修 Task `task_a71ca0eb8d92` / Dispatch `ctx_aacba085f078` SOURCE/REPORT `3cc2bc5efd73c3f2272912ae4910cc9fa7b578e7` 已接受release；W0 最后集成 Task `task_3956359ecf55` / Dispatch `ctx_edbdcad4d4a8` REPORT `3e7a6e0243bb67b3175d5c7be95b67981dcd8c67` 已接受release。root普通合为 `abf4c8c797c724a84e604df2041d915392b597a7`，独立 Go importer test/vet、生产build与真实UI摘要复验 PASS（2089字符，无JATS）。主体源码31ed076的全check通过，最后只复验受影响路径。个人preview exec22953/父32920/API36208/Vite38680已替换exec35810，02:45创建、`astrocyte-dev-igFcHW/server.exe`；013/integrity/104来源保持，当前作业12成功/2失败，失败均因选定抖音会话不可用，需要重连；不复制验收库、不重发成功模型/旧UNKNOWN。现场ACL/PMLR/CVF DNS仍198.18.0.98/6/7，代理/DNS方案四项待答之一。最后状态与人工操作见STATUS顶部，新增S1范围未整体完成。
+
 2026-10-11 02:37 主控普通合 W0 最后 REPORT `d2d5285f7b0fb980ee767fcf92405c0674dd64f2` 为 `31ed0763ad917ceefc7fc9cddb7d458840155076`，独立 `GOFLAGS=-p=1 pnpm check` PASS（Go/vet、14 API acceptance、241契约、生成类型一致、83前端单测），`pnpm build` PASS，MV3 dist 构建 PASS。个人 preview exec35810 已启动，API22852/Vite10652 均父17872、02:35创建，API程序 `astrocyte-dev-2SFIQj/server.exe`；迁移013存在、integrity ok、104来源保持，资料/进度0，启动一次元数据同步 jobs8→11。前端真实精确DOI检索、明确勾选/取消、summary键盘、1920/1280/390无横溢/pageerror PASS，无浏览器POST/模型；首检查脚本的pnpm包路径及迁移列名写错未执行业务写入，纠正后的上述定向检查为独立结果。截图 `%TEMP%/astrocyte-root-final-paper-{1920,1280,390}-20261011.png`。
 
 最终视觉检查发现实际 Crossref 摘要仍显示 `<jats:p>` 标记，属于用户阅读问题；原 W1 论文 owner 新最小 Task 仅 scholar.go / scholar_test.go / 原报告修安全纯文本呈现，不加依赖/模型/权限。其余最终 Worker 均已结算release，个人预览保留31ed076直至此小改集成检查；四项待用户决定仍保持未决定，整体新增范围未宣布完成。

@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 最新接续入口（2026-10-11 02:46）
+
+先读 STATUS 最新段、`tasks/S1-final-paper-cli-memory-plan.md`、QUESTIONS 顶部。主控源码 `abf4c8c797c724a84e604df2041d915392b597a7` 已普通消费 W0 REPORT `3e7a6e0243bb67b3175d5c7be95b67981dcd8c67`；论文检索/精确标识、MV3 快照复核/版本/去重、OpenCode 原生协议、获准文件进度推断及最后摘要可读性修复已集成，主控综合检查与最后受影响检查/构建通过。真实快照、Codex 推断及独立只读库验见 STATUS；不要重复成功模型或旧 UNKNOWN。
+
+四项用户决策仍待答：完整 CLI 覆盖、记忆共享范围、在线正文代理策略、Agent search 权限；记忆只完成设计，不能降为仅规划或宣称 S1 全部完成。在线论文下载仍受 fake-IP 校验拒绝。选定抖音 OpenCLI 会话当前不可用，个人 104 条元数据保留，需要重连明确选定会话，不自动导航、刷新无关标签或扩大读取。独立论文插件位于 `extensions/paper/dist`，README 已给人工加载和快照复核路径，个人 Chrome 尚未安装。
+
+新 personal preview exec22953/API36208/Vite38680/父32920，02:45 创建、`astrocyte-dev-igFcHW/server.exe`；API8787健康后 Vite5173 已启动，013迁移和原库完整性通过。停止前重核，不能按下文历史 PID 操作。原一致备份013之前库保持。所有最新有效 Worker 已结算release；原 Run `run_8c1696bb815a`、root consumer `term_ab71d476-33a6-42ec-b5dd-5bb9ac628055` 的历史 runtime 未清理资源仍按原 unknown 记录，不冒充完全释放。下一项关键决定回答后沿原 owner/worktree/branch 新 Task 接续，入口/契约/迁移/锁仍 W0 单一 owner，root 仅计划/决定/验收/最终 Git。
+
 ## 当前恢复入口（2026-10-11 01:04）
 
 先读 STATUS 顶部和 `tasks/S1-final-paper-cli-memory-plan.md` 的恢复记录。Orca runtime 为 `90510c9d-1184-4e26-8291-3b372b161199`，root `term_ab71d476-33a6-42ec-b5dd-5bb9ac628055` 已重新绑定原 Run；四轨原写域不变，新的原生 OpenCode Task/Dispatch 均已派发。旧W1/W2报告只接受为部分基线，OpenCode native/记忆未完成；W0原未提交契约与W3原未提交插件UI保持。不要使用下文旧终端/PID停止进程；原个人5173/8787本次恢复检查无监听。既有成功媒体模型和UNKNOWN不重发，root仍仅计划/决定/验收/最终提交；功能范围未答不代选。最终普通合精确owner报告、适用检查、真实浏览器与SQLite/objects、新API进程验证后备份升级并push。
