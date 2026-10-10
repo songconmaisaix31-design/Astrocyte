@@ -1,5 +1,13 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 用户决定后续作（2026-10-10）
+
+当前 Dispatch `ctx_bf18050e3ee7`，Task `task_bb04bd91e57a`，固定分支/写域不变。普通合入主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，未 reset/rebase/force/clean；QUESTIONS 顶部覆盖历史 pending。实际客户端仍为 Orca Codex，本轮未另选模型。
+
+先实现现有作业恢复显示：次数与截止期均来自持久作业，恢复入口同时检查两项；未知外部结果（delivery_unknown 标志或错误码）禁重发、不显示已完成。有限次数/时限耗尽给“暂未完成”及下一步，原始错误保留在可展开处理详情。提交错误区保留中文服务动作和原输入，响应丢失要求先核对原记录，不自动重发。候选表单说明固定版本的主题关联或明确待查问题门槛；酝酿中候选提供补充关联/问题的路径，最终状态由 W1 决定。
+
+`pnpm --dir web typecheck`、`pnpm --dir web lint`、`pnpm --dir web test`（49/49）、`pnpm --dir web build`、`git diff --check` PASS；安全性单测覆盖 unknown 优先级、次数/截止边界、网络响应未知和实际中文动作提示。浏览器/live 未执行，未占测试槽。W0 generated API 尚待发布，已给 W0/W1/W2 交接 UI 所需字段和行为，不自行新增 DTO 或 HTTP。账号真实非空选择、项目注册/权限/原生操作、AT01–04 与重启验收仍需后续完成；不将此阶段检查替代整任务验收。
+
 2026-10-10；基线 `20437708e43201e352d6c6926902e1363fd2ad3e`；分支 `s1-sync-ui-1010`。本机 Orca 原生 Codex，主控通过 worker-read 确认实际模型 `gpt-6.1-sol`。写域为 web/src（排除 api 与 pages/swarm）、web/e2e、本报告与 docs/acceptance/S1-sync.md。
 
 ## 阶段一

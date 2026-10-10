@@ -27,7 +27,7 @@ export function OpportunityForm({ initial, suggestion, suggestionRecordID, mater
     <h4>{initial ? '编辑候选版本' : '形成候选'}</h4>
     {suggestion && <p className={styles.note}>从实际处理器记录 {suggestionRecordID} 载入建议；你可修订后明确保存，未自动生成任务。</p>}
     {initial && initial.version !== expectedVersion && <p role="note">候选已更新，当前输入保留。请关闭并重新展开编辑载入最新版本，避免覆盖其他修改。</p>}
-    <p className={styles.note}>候选保留依据、用途、下一步与缺失信息。服务决定候选状态；保存和采用反馈均不会批准任务。</p>
+    <p className={styles.note}>候选保留依据、用途与下一步，并引用固定版本的主题关联或明确待查问题，才可进入待审阅。条件不足仍可保存为酝酿中；服务核对记录与来源版本。保存和采用反馈均不会批准任务。</p>
     <fieldset disabled={disabled || command.pending || (!!initial && !initial.version)}><legend>候选内容</legend>
       <TextField label="候选标题" value={title} onChange={setTitle} required />
       <TextField label="候选用途 / 为什么值得做" value={purpose} onChange={setPurpose} multiline required />
