@@ -17,10 +17,10 @@
 
 新增 per-project 进度记录，来源区分 `human` 与 `agent_inferred`，含 stage、可选 percent、依据 refs（读到的固定文件 path+version）、native_id/model 与 `observed_at` 新鲜度。
 
-- `internal/workspace/domain/progress.go`：`ProjectProgress`、`ProgressBasis`、`ProgressInput`、`ProgressCommand` 与 stage/percent 校验。
-- `internal/workspace/app/progress.go`：`ProjectProgressRepository` 与 `ProjectProgressService`（Get/Set/Infer）。Get 只读持久缓存、不启动 Agent；Set 仅人类且校验 stage/percent；Infer 仅人类发起，要求项目 `ExternalModelCLI` 同意 + adapter 存在，经既有 `ProjectFiles.ReadProjectFiles` 读固定文件（范围 B 有界，≤8 文件），经既有 `TextProcessor.ProcessSelectedText`（selectedtext native + 512KiB 边界）产出结构化 `{"stage","percent"}`，解析失败返回 `evidence_missing`，不伪造成功。依据 refs 来自实际读到的文件，不从模型输出取信。
-- `internal/adapters/sqlite/local_agents_progress.go`：`LoadProjectProgress`/`SaveProjectProgress`，与 project metadata 相同的 revision CAS；缺失项目返回零值，不伪造 stage；不创建 grant/project/session。
-- 测试：`app/progress_test.go`（人/Agent/匿名写入拒绝、超界 stage/percent、模型同意前置、依据 refs、缓存 GET 不启动 processor、Agent 读需 grant 且撤销后拒绝、非法模型输出拒绝）；`sqlite/local_agents_progress_test.go`（round-trip + CAS + 不触碰 projects/grants）。
+- `internal/workspace/domain/progress.go`：`ProjectProgress`（status/summary/percent/source/evidence/native_id/model/observed_at/warning/revision）、`ProgressEvidence`（source_path/kind/version/excerpt）、`ProgressOperation`（可对账操作回执）、`ProgressInput`、`ProgressCommand`（含 `OperationID`）与 status/percent 校验。
+- `internal/workspace/app/progress.go`：`ProjectProgressRepository` 与 `ProjectProgressService`（Get/Set/Infer）。Get 只读持久缓存、不启动 Agent；Set 仅人类且校验 status/summary/percent；Infer 仅人类发起，要求项目 `ExternalModelCLI` 同意 + adapter 存在，经既有 `ProjectFiles.ReadProjectFiles` 读固定文件（范围 B 有界，1–8 文件），经既有 `TextProcessor.ProcessSelectedText`（selectedtext native + 512KiB 边界）产出结构化 `{"status","percent"}`，解析失败返回 `evidence_missing`。**幂等/可对账**：Infer 在付费 turn 前持久化 `pending` 操作回执（`Operations` map + revision CAS），同 operation ID 重试命中 `accepted` 直接复用、`failed` 要求新 ID、`pending/unknown` 拒绝重放；模型 turn 前后各复核一次 project/model 许可 revision，中途撤销则落 `unknown` 不发布；definite 拒绝落 `failed`、未知投递落 `unknown`，均不自动重送。依据 evidence 来自实际读到的文件（path/kind/version），不从模型输出取信。
+- `internal/adapters/sqlite/local_agents_progress.go`：`LoadProjectProgress`/`SaveProjectProgress`，与 project metadata 相同的 revision CAS；缺失项目返回零值，不伪造 status；不创建 grant/project/session。
+- 测试：`app/progress_test.go`（人/Agent/匿名写入拒绝、超界 status/percent、模型同意前置、evidence 依据、缓存 GET 不启动 processor、Agent 读需 grant 且撤销后拒绝、非法模型输出拒绝、同 operation ID 幂等不重付、unknown 回执持久化且不重放、中途撤销不发布）；`sqlite/local_agents_progress_test.go`（round-trip + CAS + 不触碰 projects/grants）。
 
 进度的人类阶段 vs Agent 推断两者并存且来源可区分，不据活动推完成、不自授予权限；HTTP/迁移/契约由 W0 唯一 owner 落（见 §5 Handoff）。
 
@@ -40,8 +40,10 @@
 
 ## 5. Handoff 提议（交 W0/ROOT，非本轨落地）
 
-- **迁移 `013_project_progress`**：`CREATE TABLE local_project_progress (project_id TEXT PRIMARY KEY, data TEXT NOT NULL, revision INTEGER NOT NULL CHECK (revision >= 1));` + `UPDATE foundation_schema SET version = <next> WHERE context='workspace';` + `INSERT OR IGNORE INTO _migrations(id) VALUES ('013_project_progress');`（沿用 `012_project_metadata` 模式）。
-- **HTTP/契约**：`GET /projects/{id}/progress`（缓存读，human 或带 `read_context` grant 的 Agent）、`PUT /projects/{id}/progress`（human 写 stage/percent）、`POST /projects/{id}/progress/infer`（human 发起，body `{files:[...]}`，返回 202 或同步结果）；OpenAPI 契约与生成类型由 W0 落。
+采纳 W0 契约提议并据 root 返修增补：**收敛共享 DTO 已在 domain 层落地**（`ProgressEvidence`、`ProjectProgress{status,summary,percent,source,evidence[],native_id,model,observed_at,warning,revision}`、`ProgressOperation`），W0 的 `ProgressService{GetProjectProgress,InferProjectProgress}` 直接引用 domain 类型即可；相较 W0 提议增补了 `percent`、`source`（human/agent_inferred）与 `Operations`（幂等回执），并把 `inferred`/`inferred_at`/`processor` 映射为 `source`/`observed_at`/`model`。root 要求的“复用操作身份/持久化结构/重试语义”已由 `OperationID` + `Operations` 回执 + revision CAS 实现（付费 turn 前落 pending，同 ID 幂等，unknown 不重放）。
+
+- **迁移 `013_project_progress`**：`CREATE TABLE local_project_progress (project_id TEXT PRIMARY KEY, data TEXT NOT NULL, revision INTEGER NOT NULL CHECK (revision >= 1));` + `UPDATE foundation_schema SET version = 6 WHERE context='workspace';` + `INSERT OR IGNORE INTO _migrations(id) VALUES ('013_project_progress');`（沿用 `012_project_metadata` 模式，W0 落）。
+- **HTTP/契约**（W0 落）：`GET /api/v1/local-projects/{id}/progress`（缓存读，human 或带 `read_context` grant 的 Agent）、`PUT .../progress`（human 写 status/summary/percent）、`POST .../progress/infer`（human 发起，body `{operation_id, files:[...]}`，同步或 202）；OpenAPI 契约与生成类型由 W0 落。
 - **组装**：`cmd/server` 注入 `NewProjectProgressService(projects, progressRepo, files, processor, registry)`，`TextProcessor` 复用现有 `agents.Registry`。
 
 ## 6. 剩余限制
