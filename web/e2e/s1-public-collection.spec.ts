@@ -155,6 +155,14 @@ test('real public collection keeps the unavailable video visible and prevents re
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({ path: testInfo.outputPath(`actual-unavailable-content-${width}.png`) });
     }
+    const selfBindings: string[] = [];
+    page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/tracking-sources')) selfBindings.push(request.url()); });
+    await accounts.getByLabel('来源平台', { exact: true }).selectOption('douyin');
+    await accounts.getByLabel('公开收藏夹 ID', { exact: true }).fill('self');
+    await accounts.getByLabel('公开主页 / 收藏夹链接', { exact: true }).fill('https://www.douyin.com/user/self?showTab=favorite_collection');
+    await expect(accounts).toContainText('此 self 收藏地址需要登录。请提供可公开访问的抖音主页或公开收藏夹链接');
+    await expect(accounts.getByRole('button', { name: '绑定公开来源', exact: true })).toBeDisabled();
+    expect(selfBindings).toEqual([]);
   } catch (error) {
     primaryError = error;
     await testInfo.attach('actual-primary-error', { body: error instanceof Error ? error.stack ?? error.message : String(error), contentType: 'text/plain' });
