@@ -59,3 +59,9 @@
 - 未答：公开/登录绑定和实际 URL、标题简介建议或字幕优先、用户选取顺序、普通视频复用/刷新；因此尚未发布 sync/source/item/selection API、SQLite schema、抖音授权组件或默认同步频率。主流其他平台 registry 占位待 W0 公共定义，不伪造连接。
 
 本阶段源码 SHA 在 commit/push 后通过 Orca handoff 报给主控。账号同步+人工入库及完整 S1 仍未完成；必须继续沿本轨返修与接线，不能把本阶段适配器调查结算为整个任务 succeeded。
+
+## 继续阶段 1（2026-10-10）
+
+普通合并主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，本轮已回答的决定以 QUESTIONS 顶部为准。候选来源、用途、下一步齐全时，还必须有针对相同资料固定版本的成功沉淀记录提供主题关联或明确待查问题，才进入 ready_for_review；仅正文摘要、无关联记录或旧版本问题仍 incubating。保留原候选历史，没有创建 Mission。
+
+`go test ./internal/attention/app ./internal/attention/domain` PASS（0.546s / cached）。新增候选门槛测试覆盖缺关联、仅摘要、明确问题正向和旧版本问题不满足新版本。真实模型/媒体/浏览器本轮未执行；等待主控时隙。同步持久化与 selected CLI 消费端口草案已发 W0，共享契约/迁移仍由 W0 唯一写入。
