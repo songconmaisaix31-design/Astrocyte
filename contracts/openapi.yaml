@@ -42,6 +42,85 @@ tags:
   - name: local-agents
     description: Cached local CLI readiness and native capability observations
 paths:
+  /source-collections/discover:
+    post:
+      operationId: discoverSourceCollections
+      summary: Discover explicitly selected source collections
+      description: Human CSRF command invokes a bounded public provider or an
+        explicitly configured selected browser folder bridge and caches metadata.
+        Failure preserves prior catalog; GET only reads cache. No binding, full
+        body extraction, model call, credentials or automatic selection.
+      tags:
+        - materials
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiscoverSourceCollectionsRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceCollectionListV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /github-repositories:
     get:
       operationId: listGitHubRepositories
@@ -357,8 +436,8 @@ paths:
     get:
       operationId: listSourceCollections
       summary: list Source Collections
-      description: Public favorite folders for one explicit owner, metadata only; no
-        auto binding or cookies.
+      description: Cached favorite folder metadata for one explicit owner; GET never
+        invokes a browser, CLI or provider. Explicit human POST discovery refreshes this cache.
       tags:
         - materials
       x-s1-supported: true
@@ -10781,6 +10860,9 @@ components:
       type: object
       additionalProperties: false
       properties:
+        access_mode:
+          type: string
+          enum: [public, browser_selected]
         external_id:
           type: string
         owner_id:
@@ -11297,6 +11379,41 @@ components:
         - request_id
         - expected_version
         - space_id
+    DiscoverSourceCollectionsRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        platform:
+          type: string
+          enum:
+            - bilibili
+            - douyin
+        owner_id:
+          type: string
+          minLength: 1
+        access_mode:
+          type: string
+          enum:
+            - public
+            - browser_selected
+          description: Omitted legacy input means public; browser_selected requires
+            explicit human selected owner and folder identity and configured browser
+            bridge.
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - platform
+        - owner_id
   securitySchemes:
     HumanSession:
       type: apiKey
@@ -11309,4 +11426,3 @@ components:
       description: Project-scoped credential issued by a human. Current grants are
         rechecked per operation; settings and approval remain human-only. Legacy
         unscoped Agent credentials confer no protected data access.
-

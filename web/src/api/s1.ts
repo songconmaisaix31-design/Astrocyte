@@ -14,6 +14,7 @@ async function headers(key: string) {
 }
 // Writes keep the caller's operation identity and never replay failed/unknown effects.
 export const trackingApi = {
+	 discoverCollections: async (body: components['schemas']['DiscoverSourceCollectionsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/source-collections/discover', { body, params: { header: await headers(key) }, ...options })),
 	listCollections: (platform: string, owner_id: string, options?: Options) => unwrap(api.GET('/source-collections', { params: { query: { platform, owner_id } }, ...options })),
   listSources: (options?: Options) => unwrap(api.GET('/tracking-sources', options)),
   getSource: (id: string, options?: Options) => unwrap(api.GET('/tracking-sources/{id}', { params: { path: { id } }, ...options })),
