@@ -1,5 +1,7 @@
 # S1 论文、CLI、进度与记忆收尾
 
+23:03 W3 首次 OpenCode 在读取计划后退出，无业务改动，未结算完成。执行主机核验其专属 pwsh 59940 启动目录为 UI 工作树且没有子 OpenCode，原终端只读 `$PID` 返回 59940 和 PowerShell 提示符；依据这一实际退出事实停止旧 Dispatch `ctx_15e81ca1f271`，同 Task/Worktree/Branch 用 OpenCode 重试为 `ctx_cc2d02cac1ac`，新终端 `term_488b1577-e950-4f29-a5d0-948262c849eb`。旧失败保留；没有并行第二编辑者，其他三轨未停止。新 Worker 已实际读取任务，TUI 为 DeepSeek V4 Pro。
+
 22:42 四轨已在原工作树启动新Orca Run `run_8c1696bb815a`：W0 Task task_3097e734e4d0 / Dispatch ctx_5cc390be9fb4；W1 task_ff677991837d / ctx_b97954c9d788；W2 task_11167b05140a / ctx_fda75109968c；W3 task_88f06e405600 / ctx_15e81ca1f271。launch.effective.agent全部opencode，模型参数未覆盖；已从实际TUI观察DeepSeek V4 Pro/DeepSeek，turn-start自动协议unsupported但terminal显示活动，不据缺少协议证明重发输入。原本机个人preview73199保持，CLI完整覆盖和记忆范围两项新问题待答。
 
 基线 `d9acb43d4d617034f0865f7c8b7ecea377162058`，主控分支 `s1/attention-materials-20261009`。用户确认论文搜索＋正文提取、项目授权范围内批量读取、有依据的Agent进度推断、新Worker全部OpenCode、完成S1；新增蜂群工具层规划与Claude-mem式长期记忆。复用Go/React/SQLite/OpenAPI、summarize0.25.1、四原工作树和权限入口，主控不写业务代码。CLI覆盖验收与记忆存储/可见范围已问待答；不因此停下独立论文/插件、OpenCode协议、进度与工具规划。
