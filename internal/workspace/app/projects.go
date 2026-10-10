@@ -439,6 +439,12 @@ func (s *localProjectService) StartNativeSession(ctx context.Context, c domain.C
 		if existing.ProjectID != id || existing.CLI != cmd.CLI {
 			return session, projectError(apierrors.ScopeDenied, "operation identity belongs to a different native request")
 		}
+		if receipt, ok := existing.Operations[op]; ok && receipt.Status != "accepted" {
+			if receipt.Status == "failed" {
+				return existing, projectError(apierrors.VersionConflict, "original native start failed; use a new explicit operation identity")
+			}
+			return existing, projectError(apierrors.DeliveryUnknown, "original native start remains pending or unknown; do not replay")
+		}
 		return existing, nil
 	} else {
 		var service *apierrors.ServiceError
@@ -493,8 +499,10 @@ func (s *localProjectService) StartNativeSession(ctx context.Context, c domain.C
 func (s *localProjectService) finishNative(ctx context.Context, session domain.NativeSession, op string, operationErr error) (domain.NativeSession, error) {
 	session.LastOperationID = op
 	session.UpdatedAt = time.Now().UTC()
+	var prelaunch *domain.NativePrelaunchFailure
+	knownUnstarted := operationErr != nil && errors.As(operationErr, &prelaunch) && session.StopConfirmed
 	if operationErr != nil {
-		if session.StopConfirmed && session.Ownership == "unstarted" {
+		if knownUnstarted {
 			session.Status = "failed"
 			session.PendingOperation = ""
 		} else {
@@ -508,7 +516,7 @@ func (s *localProjectService) finishNative(ctx context.Context, session domain.N
 		now := time.Now().UTC()
 		receipt.FinishedAt = &now
 		if operationErr != nil {
-			if session.Status == "failed" && session.Ownership == "unstarted" && session.StopConfirmed {
+			if knownUnstarted {
 				receipt.Status = "failed"
 			} else {
 				receipt.Status = "unknown"
@@ -545,6 +553,9 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 	}
 	if session.LastOperationID == op {
 		if receipt, ok := session.Operations[op]; ok && receipt.Status != "accepted" {
+			if receipt.Status == "failed" {
+				return session, projectError(apierrors.VersionConflict, "original native resume failed; use a new explicit operation identity")
+			}
 			return session, projectError(apierrors.DeliveryUnknown, "original native resume was not accepted; inspect its receipt")
 		}
 		return session, nil

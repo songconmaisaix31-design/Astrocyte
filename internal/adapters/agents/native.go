@@ -299,7 +299,10 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 	case n.slots <- struct{}{}:
 	default:
 		s.Ownership, s.Status, s.StopConfirmed = "unstarted", "failed", true
-		return s, nativeError(apierrors.BudgetExhausted, "controller native concurrency limit is four")
+		if resume {
+			s.Ownership = r.Session.Ownership
+		}
+		return s, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.BudgetExhausted, "controller native concurrency limit is four")}
 	}
 	p, err := n.launch(ctx, r, resume)
 	if err != nil {
@@ -311,6 +314,10 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			s.Ownership = "unstarted"
 			s.StopConfirmed = true
 			s.Status = "failed"
+			if resume {
+				s.Ownership = r.Session.Ownership
+			}
+			return s, &domain.NativePrelaunchFailure{Cause: err}
 		}
 		return s, err
 	}
