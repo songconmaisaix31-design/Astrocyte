@@ -1,5 +1,17 @@
 # S1 收尾 W1：论文检索、正文提取与独立 MV3 插件
 
+## 续五：Crossref JATS 摘要转安全纯文本（本轮）
+
+Branch `s1-sync-attention-1010`。原论文 owner 真实 DOI 搜索 `10.1371/journal.pdig.0000514` 时，摘要直接显示 `<jats:p>…</jats:p>` 与 `&amp;` 实体，影响人类阅读。本续在 `importers/scholar.go` 的 Crossref metadata reader 把已知 JATS/XML 摘要转成安全纯文本，写域不变，仅本文件 + `scholar.go`/`scholar_test.go`。
+
+- 新增 `plainAbstract`：剥离 `<[^>]+>` 元素标签（含 `jats:` 前缀/自闭合）、用已有 `html.UnescapeString`（标准库，复用 github.go 同款实体解码）还原字符引用与命名实体、合并因去标签引入的多余空白；无 `<` 的纯文本仅 trim+实体解码，行为不变。
+- `crossrefHit` 的 `Abstract` 由 `strings.TrimSpace` 改为 `plainAbstract`，同时覆盖关键词搜索与 `GET /works/{doi}` 精确路由两条路径（共用同一 choke point）。
+- 后端产出永远纯文本，前端无需 `dangerouslySetInnerHTML`/HTML 清洗；不新增依赖/框架/重抓网页/模型，不动其它 domain/接口/锁/权限。
+
+验证：新增 `TestCrossrefJATSAbstractPlainText` 用真实摘要（`<jats:p>` + `&amp;`）回归，断言无标签残留、`&amp;` 解码为 `&`、正文前缀完好；`go test ./internal/adapters/importers/`、`go vet ./internal/adapters/importers/`、`go build ./...`、`gofmt -l` 全 PASS/clean。
+
+---
+
 ## 续四：README 与实际实现对齐返修（本轮）
 
 Branch `s1-sync-attention-1010`。root 已构建当前 MV3 `extensions/paper/dist`，但 `extensions/paper/README.md` 仍留三处旧表述——`text` 仅 display-only、authoritative import 走 `paper_url` 联网重取、应用侧 transport 刻意未接线。实际实现已落地人类复核的 `paper_snapshot` 零网络入库（存原提交 JSON + 正文/版本，provenance 明确 browser_snapshot、非 publisher 在线原件）。本续只改 `extensions/paper/README.md` 与本文件，写域不变，不改代码/接口/锁/权限，不重跑模型/抓网页/造测试。

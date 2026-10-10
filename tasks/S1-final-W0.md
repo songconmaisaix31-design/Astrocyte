@@ -1,5 +1,31 @@
 # S1 论文、CLI、进度与记忆收尾 W0（最终集成续）
 
+## 最后集成：Crossref JATS 摘要转安全纯文本（本轮，Dispatch `ctx_edbdcad4d4a8` / Task `task_3956359ecf55`）
+
+W1 收尾续五 source+report 合一 `3cc2bc5efd73c3f2272912ae4910cc9fa7b578e7` 已由 root 验收（真实 UI 搜索 DOI `10.1371/journal.pdig.0000514` 摘要直接显示 `<jats:p>` 与 `&amp;`）。本轨普通 exact merge 该 SHA 到 `d2d5285`，最终合并提交 `7deee37b6824876b2d78f37fbaa9d9c6cd0d15e4`；未 squash/rebase/force，不改领域代码，写域仅本文件。
+
+- 业务差异仅 `internal/adapters/importers/scholar.go`（新增 `plainAbstract`：剥 `<[^>]+>` JATS 标签、`html.UnescapeString` 解码实体、合并多余空白；`crossrefHit` 的 `Abstract` 由 `strings.TrimSpace` 改走 `plainAbstract`，关键词搜索与 `GET /works/{doi}` 精确路由共用同一 choke point）、`scholar_test.go`（`TestCrossrefJATSAbstractPlainText` 真实摘要回归）与 `tasks/S1-final-W1.md`（续五文档）；无契约/迁移/锁/入口/权限/模型/网络变更。
+
+验证（只跑受影响 Go importer 与生产 build，未重复其它域/浏览器/paid/UNKNOWN）：
+
+| 验证 | 结果 |
+|---|---|
+| `go test ./internal/adapters/importers/` | PASS（`TestCrossrefJATSAbstractPlainText` 单跑 PASS） |
+| `go vet ./internal/adapters/importers/` | PASS/exit0 |
+| `go build ./...` | PASS/exit0 |
+| `gofmt ./internal/adapters/importers/` | clean（无改动） |
+
+最终业务源末次 SHA：`3cc2bc5efd73c3f2272912ae4910cc9fa7b578e7`；root 最终主体 `31ed076` 的全 `pnpm check`/`build` 已 PASS，本轨不重复。
+
+### 剩余限制与交接
+
+- 四项用户决策仍 pending：CLI 完整覆盖、记忆隔离（项目隔离还是仅规划）、公开下载 proxy（arXiv DNS 例外）、Agent search 权限；未代选、未默认权限、未合 main/远程 CI。
+- 个人 preview `exec35810`/API `22852`/Vite `10652` 均 02:35 创建，保持运行，未停止、未升级。
+- 抖音当前已选 OpenCLI session 已断开，原 104 条元数据保留；仅记录环境需重连，未触碰其它浏览器页。
+- root 之后的独立受影响核验 + preview restart + final commit 由 root 执行，本轨到此 worker_done。
+
+---
+
 当前 Dispatch `ctx_601d4fe7909f` / Task `task_7c7a06d13948`；开发 Worker OpenCode / `deepseek/deepseek-v4-pro`。独占共享契约、HTTP、入口、迁移 013+、生成 API、脚本、根依赖与所有锁；领域业务退原 owner。承接上一轮契约里程碑（`e39f8f1` 单一权威 GET/DTO 已接受），本轮完成 paper_snapshot 摄取、W2/W3 最终 SOURCE/REPORT 普通合并、进度契约收敛与真实联合链验收。
 
 ## 基线与合并
