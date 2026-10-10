@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { navigate, useRoute } from '../../router';
 import { useMaterials, useOpportunities } from '../../hooks/useReadApi';
 import { useDomains } from '../../hooks/useAttention';
@@ -12,6 +12,7 @@ import { lifecycleLabel, importStatusLabel, opportunityStateLabel, materialKindL
 import { PageFrame, IntroCard, RailSummary } from '../../components/PageFrame';
 import { matchesQuery } from '../../utils/search';
 import { MaterialCover } from '../../components/MaterialCover';
+import { BrandIcon } from '../../components/BrandIcon';
 import { Icon } from '../../components/DesignIcons';
 import { ImportForm } from './ImportForm';
 import { useImportDraft } from './useImportDraft';
@@ -35,6 +36,10 @@ export function AttentionPage({ fixture, query }: { fixture: boolean; query: str
   const [selectedMatId, setSelectedMatId] = useState<string | null>(null);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
   const [importing, setImporting] = useState(false);
+  const sourcesPanel = useRef<HTMLDetailsElement>(null);
+  const jobsPanel = useRef<HTMLDetailsElement>(null);
+  const settingsPanel = useRef<HTMLDetailsElement>(null);
+  const openFlow = (panel: HTMLDetailsElement | null) => { if (panel) { panel.open = true; panel.scrollIntoView({ behavior: 'smooth', block: 'start' }); panel.querySelector<HTMLElement>('summary')?.focus(); } };
   const importDraft = useImportDraft(fixture);
   const [queueToken, setQueueToken] = useState(0);
   const [detailToken, setDetailToken] = useState(0);
@@ -55,25 +60,30 @@ export function AttentionPage({ fixture, query }: { fixture: boolean; query: str
   </>}>
     {!fixture && (mat.stale || opp.stale) && <div className={styles.stale} role="alert">数据可能已过期（刷新失败），显示的是上次成功加载的数据。<button className="ac-button secondary compact" type="button" onClick={refreshCollections}>重试</button></div>}
     <div className={styles.grid}>
-      <SectionCard title="" tabs={['overview']}><IntroCard section="attention" onAdd={fixture ? undefined : () => setImporting(true)} /></SectionCard>
-      <AccountsPanel fixture={fixture} onChanged={() => { refreshCollections(); setQueueToken(value => value + 1); }} onMaterial={id => { setSelectedMat(null); setSelectedMatId(id); }} />
-      <JobsPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} onMaterial={id => {
-        setSelectedMat(null); setSelectedMatId(id);
-      }} />
+      <SectionCard title="" tabs={['overview']}>
+        {fixture ? <IntroCard section="attention" /> : <div className="ac-library-actions"><div><h2>把值得继续的线索留在这里。</h2><p>导入一份资料，或从来源更新里挑选。</p></div><button type="button" className="ac-button" onClick={() => setImporting(true)}><Icon name="plus" size={17} />添加资料</button></div>}
+        <div className="ac-inline-flows"><button type="button" className="ac-button secondary" onClick={() => openFlow(sourcesPanel.current)}><BrandIcon name="bilibili" size={22} /><BrandIcon name="douyin" size={22} />查看来源更新</button><button type="button" className="ac-button secondary" onClick={() => openFlow(jobsPanel.current)}><Icon name="layers" size={19} />查看处理队列</button><span>同步清单 → 获取建议 → 人工选择</span></div>
+      </SectionCard>
       <SectionCard tabs={['overview']} title="素材" count={materials.length}>
         <div className="ac-filter-row" role="group" aria-label="素材类型">{(['all', 'paper', 'video', 'text', 'file'] as const).map(value => <button key={value} type="button" className={kind === value ? 'active' : ''} aria-pressed={kind === value} onClick={() => setKind(value)}>{value === 'all' ? '全部资料' : materialKindLabel(value)}</button>)}</div>
         {!fixture && <div className={styles.form}><SelectField label="资料域筛选" value={domain} onChange={setDomain} disabled={domains.loading || domains.stale || !!domains.error} options={[{ value: 'all', label: '所有域' }, { value: 'unclassified', label: '未分类' }, ...(domains.data?.items ?? []).map(item => ({ value: item.id, label: item.title }))]} /></div>}
         {!fixture && mat.loading && !mat.data ? <div className={styles.loadingRow} role="status">加载中…</div> : !fixture && mat.error && !mat.data ? <ErrorState message={mat.error} onRetry={mat.retry} /> : !materials.length && !query && kind === 'all' && domain === 'all' ? <EmptyState icon="📄" title="暂无素材" description="导入文献后，素材将在此显示" /> : <MaterialList items={materials} onSelect={setSelectedMat} />}
       </SectionCard>
-      <SectionCard tabs={['overview', 'opportunities']} title="机会" count={opportunities.length}>
+      <SectionCard tabs={opportunities.length || opp.error ? ['overview', 'opportunities'] : ['opportunities']} title="机会" count={opportunities.length}>
         {!fixture && opp.loading && !opp.data ? <div className={styles.loadingRow} role="status">加载中…</div> : !fixture && opp.error && !opp.data ? <ErrorState message={opp.error} onRetry={opp.retry} /> : !opportunities.length && !query ? <EmptyState icon="💡" title="暂无机会" description="从资料详情形成候选；自动候选生成尚未配置" /> : <OpportunityList items={opportunities} onSelect={selectOpportunity} />}
       </SectionCard>
       <SectionCard title="我的收藏" tabs={['saved']} padded>
         {fixture ? <><EmptyState title="收藏尚未接入" description="固定样本没有真实收藏状态；不能从采集或使用次数推断收藏。" /><button className="ac-button disabled" type="button" disabled>收藏操作尚未启用</button></> : mat.loading && !mat.data ? <p role="status">加载中…</p> : mat.error && !mat.data ? <ErrorState message={mat.error} onRetry={mat.retry} /> : saved.length ? <MaterialList items={saved} onSelect={setSelectedMat} /> : <EmptyState title="暂无收藏" description="在资料详情中固定到收藏。仅显示服务明确返回的固定项。" />}
       </SectionCard>
-      <DomainsPanel state={domains} fixture={fixture} />
-      <RankingPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} />
-      <SpacesPanel fixture={fixture} materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
+      <SectionCard title="来源与整理" tabs={['overview']}><div className="ac-progressive-flows">
+        <details ref={sourcesPanel}><summary>查看来源更新</summary><AccountsPanel fixture={fixture} onChanged={() => { refreshCollections(); setQueueToken(value => value + 1); }} onMaterial={id => { setSelectedMat(null); setSelectedMatId(id); }} /></details>
+        <details ref={jobsPanel}><summary>查看处理队列</summary><JobsPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} onMaterial={id => { setSelectedMat(null); setSelectedMatId(id); }} /></details>
+        <details ref={settingsPanel}><summary>管理资料域、排序与空间引用</summary><div className={styles.grid}>
+          <DomainsPanel state={domains} fixture={fixture} />
+          <RankingPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} />
+          <SpacesPanel fixture={fixture} materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
+        </div></details>
+      </div></SectionCard>
     </div>
     {(importing || route.query.get('import') === '1') && <DetailPanel title="添加资料" onClose={handleClose}><ImportForm fixture={fixture} draft={importDraft} onImported={() => { refreshCollections(); setQueueToken(value => value + 1); }} /></DetailPanel>}
     {(selectedMat || selectedMatId) && <DetailPanel title="素材详情" onClose={handleClose} disabledActions={fixture ? ['继续沉淀', '以后再看'] : []} showDisabledNotice disabledNoticeText={fixture ? '示例模式：所有写操作尚未启用，请退出示例模式使用真实 API' : '资料准入和任务执行尚未实现，保存不会创建 Mission'}><MaterialWorkspace key={selectedMat?.id ?? selectedMatId!} id={selectedMat?.id ?? selectedMatId!} item={selectedMat ?? undefined} fixture={fixture} refreshToken={detailToken} materials={allMaterials} domains={domains} onChanged={refreshCollections} onQueued={() => { refreshCollections(); setQueueToken(value => value + 1); }} onOpportunity={selectOpportunity} /></DetailPanel>}

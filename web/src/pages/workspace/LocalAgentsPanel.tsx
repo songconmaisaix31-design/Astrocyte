@@ -1,3 +1,4 @@
+import { BrandIcon } from '../../components/BrandIcon';
 import type { components } from '../../api/schema';
 import type { ReadApiState } from '../../hooks/useReadApi';
 import { QueryState } from '../../components/QueryState';
@@ -42,7 +43,7 @@ export function LocalAgentsPanel({ state, fixture }: { state: ReadApiState<compo
       ]} />
       {data.next_cursor && <p className={styles.note}>还有未加载客户端，统计仅覆盖本页。</p>}
       <ul className={styles.agents}>{data.items.map(agent => <li key={agent.id}>
-        <div className={styles.heading}><h3>{agent.display_name}</h3><span>版本 · {agent.version ?? '未提供'}</span></div>
+        <div className={styles.heading}><h3 className="ac-brand-heading"><BrandIcon name={agent.id} />{agent.display_name}</h3><span>版本 · {agent.version ?? '未提供'}</span></div>
         <p className={styles.note}>原生适配器 · {agent.native_adapter_registered === true ? '服务已登记，能力仍须逐项验证' : agent.native_adapter_registered === false ? '服务未登记' : '尚未提供登记信息'}</p>
         <dl className={styles.readiness}>{([['installed', '安装'], ['configured', '配置'], ['startable', '可启动']] as const).map(([key, label]) => <div key={key}><dt>{label}</dt><dd><ObservationValue observation={agent[key]} /></dd></div>)}</dl>
         <details><summary>原生能力 · {Object.values(agent.capabilities).filter(observation => observation.status === 'supported').length}/8 已支持</summary>

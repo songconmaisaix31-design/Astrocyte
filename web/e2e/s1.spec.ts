@@ -23,6 +23,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect((await materialsResponse).status()).toBe(200);
     await expect(page.getByRole('heading', { name: '资料沉淀', exact: true })).toBeVisible();
     await expect(page.getByText('暂无素材', { exact: true })).toBeVisible();
+    await page.getByRole('tab', { name: '研究机会', exact: true }).click();
     await expect(page.getByText('暂无机会', { exact: true })).toBeVisible();
     await expect(page.getByRole('alert').filter({ hasText: '示例数据模式' })).toHaveCount(0);
     expect((await api.get('/materials')).items).toHaveLength(0);
@@ -125,7 +126,8 @@ test.describe('S1 contract_local with real API and persistence', () => {
     const id = imported.detail.material.id;
     await page.goto(`${server.webURL}/attention`);
     const main = page.getByRole('main');
-    const domainForm = main.locator('details').filter({ hasText: '新建资料域' });
+    await main.locator('summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
+    const domainForm = main.locator('details').filter({ hasText: '新建资料域' }).last();
     await domainForm.locator('summary').click();
     await domainForm.getByLabel('域名称', { exact: true }).fill('contract_local 浏览器资料域');
     await domainForm.getByLabel('域说明', { exact: true }).fill('人工纳入；原文仍保留');
@@ -143,7 +145,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect((await classifyResponse).status()).toBe(200);
     await expect.poll(async () => (await api.get(`/materials/${id}`)).material.domain_ids).toEqual([domainID]);
     await dialog.getByRole('button', { name: '关闭', exact: true }).click();
-    const spaceForm = main.locator('details').filter({ hasText: '创建项目顶层空间' });
+    const spaceForm = main.locator('details').filter({ hasText: '创建项目顶层空间' }).last();
     await spaceForm.locator('summary').click();
     await spaceForm.getByLabel('空间名称', { exact: true }).fill('contract_local 浏览器空间');
     const spaceResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/project-spaces') && response.request().method() === 'POST');
@@ -174,6 +176,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect((await removeResponse).status()).toBe(200);
     await expect.poll(async () => (await api.get(`/project-spaces/${spaceID}`)).space.material_refs).toEqual([]);
     await page.reload();
+    await main.locator('summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
     await main.getByLabel('当前项目顶层空间', { exact: true }).selectOption(spaceID);
     await expect(references.getByRole('button', { name: /^移除引用/ })).toHaveCount(0);
     expect((await api.get(`/materials/${id}`)).material.domain_ids).toEqual([domainID]);
@@ -185,6 +188,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
   test('human ranking settings begin empty, preserve versions and survive reload without inventing unknown scores', async ({ page }, testInfo) => {
     await page.goto(`${server.webURL}/attention`);
     const main = page.getByRole('main');
+    await main.locator('summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
     await expect(main.getByText('尚未配置综合排序，权重留空', { exact: true })).toBeVisible();
     const fields = [['目标进展权重', '4'], ['当前兴趣权重', '3'], ['项目改善权重', '2'], ['创新性权重', '1']] as const;
     for (const [label, value] of fields) {
@@ -208,10 +212,11 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect(saved.versions.map(profile => profile.version)).toEqual([1, 2]);
     expect(saved.versions[0].enabled).toBe(true);
     await page.reload();
+    await main.locator('summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
     await expect(main.getByText('已保存配置 v2 · 停用', { exact: true })).toBeVisible();
     await expect(main.getByRole('checkbox', { name: '启用综合排序', exact: true })).not.toBeChecked();
     for (const [label, value] of fields) await expect(main.getByLabel(label, { exact: true })).toHaveValue(value);
-    const history = main.locator('details').filter({ hasText: '排序配置版本历史' });
+    const history = main.locator('details').filter({ hasText: '排序配置版本历史' }).last();
     await history.locator('summary').click();
     await expect(history).toContainText('v1 · 启用');
     await expect(history).toContainText('v2 · 停用');

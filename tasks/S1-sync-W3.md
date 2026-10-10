@@ -1,5 +1,50 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 仓库、浏览器收藏与整页重设计（2026-10-10，ctx_109ed3ce3f60）
+
+最终应用/测试 SOURCE **`fd787319a4c1e8d9c328f3a8db87b2f8e14d06ff`**，分支/worktree `s1-sync-ui-1010` 已push。实际客户端按主控屏幕回执为本机 Orca Codex / GPT-6.1-Sol high fast。先普通合入root基线 `6e84a92`，随后普通消费W0契约与最终assembled `1073e81dcd8c0b33131e411cb7bb58332b198f17`、查询路由校验修复 `c36028ae1c99eefad7f935f4453adff52918041f`；不reset/rebase/force。生产UI最后改动 `79c01d1fa00ff62d90a724260acb41f930289c87`，其后 `65910ce`/`fd78731`仅自有测试/普通集成。报告提交仅改本文件和验收文档，REPORT准确SHA随交接回执提供。
+
+本轨write_paths为`web/src/`除`api/`、`web/public/`、`web/e2e/`、本文件、`docs/acceptance/S1-sync.md`；互斥边界与执行顺序见[总计划](S1-repository-browser-design-plan.md)。W0独占契约/客户端/入口/锁/迁移/共享test helper，W1独占限定浏览器收藏适配，W2独占仓库/克隆领域。主控持有唯一应用浏览器槽许可及个人Chrome；本轨只使用Playwright隔离应用浏览器与已获准固定API，不驱动个人Chrome，不扫描凭据/未选收藏。
+
+交付：三页导航与布局整体重设计，真实默认数据、错误/未知和原功能路径保持；更高资料/项目卡、留白、官方本地图标、来源/队列/分类/排序/引用渐进展开、客户端核查抽屉、真实概览默认折叠在唯一footer之前。主控两轮1280/390反馈已落实：首屏大hero/三高入口卡改紧凑导入与来源/队列入口，资料列表更早；空机会/会话移入对应tab、旧空任务记录次要折叠，默认营销rail取消；fixture仍显式标记示意并独立保留预览。顶层开发ProjectSpace位于蜂群空间顶部，Mission执行仍不支持，不自动派发。
+
+GitHub通过公开手动账号/仓库输入同步元数据，代码只在人类主动选择已有顶层空间纳入时clone；实际状态not_placed/cloning/ready/failed/interrupted/unknown分别显示，未知字段优先于0/false/zero-time。cloning支持人主动核对原空间恢复，ready/UNKNOWN禁用，无自动重发；首次账号和私有范围仍未决定，不读凭据。一次账号最多100个公开仓库，next_cursor=null不代表账号全量。A默认、B/C/控制/模型/动作许可相互独立，没有Agent或Mission自启动。
+
+来源正常绑定优先公开URL固定解析；选定已登录抖音使用“读取已连接浏览器的选定收藏夹→选择→绑定”，POST discover owner=self仅交已配置宿主解析，再用返回稳定owner/folder绑定。原始ID仅高级fallback，不以显示名/self替代稳定身份；公开与browser_selected独立，未连接/挑战/未许可保留实际错误。目录GET只读缓存；正常界面采用用户选定范围用语。
+
+设计依据已读[Apple HIG Layout原文](https://developer.apple.com/tutorials/data/design/human-interface-guidelines/layout.json)、[GitHub Logo](https://brand.github.com/foundations/logo)、[OpenAI Brand](https://openai.com/brand/)；采用层次/对齐/分组/渐进披露与适应尺寸，未声称符合全部原生Apple规范。原始官方资产、来源URL/实际下载URL/MIME/字节/失败在`web/public/brands/provenance.json`，图像magic与SVG脚本检查、真实浏览器解码均完成，无第三方logo包。Codex用OpenAI开发者站官方父品牌标志，cursor-agent用Cursor、微信公众号/视频号用微信官方父品牌；不声称独立产品图标。Grok官方403保留通用图标，不能冒充自绘官方logo。
+
+验证与首失败（所有后续绿证据独立于首RED）：
+
+| 检查 | SOURCE / 命令 | 结果与边界 |
+| --- | --- | --- |
+| Web静态 | 生产SOURCE79：`pnpm --dir web typecheck`、`lint`、`test`、`build`；测试修改后659/fd的TS/lint再检查 | PASS；8文件58单测、87模块构建。W0最终组装check/build由其在准确稳定source独立执行。 |
+| 首默认完整E2E | SOURCE90148a3；`pnpm --dir web exec playwright test --workers=1 --output=test-results/s1-redesign-regression-first`，GitHub live关闭，paid/media opt-in未启用 | **144 PASS /16 FAIL /18 SKIP，27.9分钟，exit1**。移动机会/拓扑tab、父子section/details多匹配，1920仍loading和库存逐格查询耗尽30秒；全首trace/log保留。 |
+| 定向原功能返修 | SOURCE79；8文件加grep `ranking waits\|Three-page navigation\|page shortcuts\|topology/list\|local overview\|real local inventory\|human classification and @\|human ranking settings\|redesigned task flows\|browser folder selection\|persisted cloning`，workers1，output `s1-redesign-affected-fix` | **30 PASS /4 FAIL，5.5分钟，exit1**。原16场失败覆盖的功能均PASS，80能力名称/状态/原因断言和0writes保留；仅新截图用例漏改旧空状态文案，四首FAIL保留。 |
+| 最终默认截图/交互 | SOURCE65910ce；`s1-redesign.spec.ts`在8场live-final-first中 | **4 PASS**；1920/1280/390三页、真实API200、已settle的0数据、渐进开关/库存抽屉、官方本地图像解码、无横溢、0写。 |
+| 首真实应用场 | SOURCE659；`s1-github-placement.spec.ts s1-selected-browser.spec.ts s1-redesign.spec.ts`加grep与两个live opt-in；output `s1-redesign-live-final-first` | 整场 **4 PASS /2 FAIL /2 SKIP，3.7分钟，exit1**。GitHub元数据/人工创建空间/clone200、真实root/HEAD/A-only已过，之后expanded卡旧定位等180秒FAIL，duplicate/restart NOT_RUN。Douyin discover200/求职count3/缓存GET200已过，共享validator保留查询字符串导致schema lookup FAIL，绑定之后NOT_RUN。 |
+| 同原库真实续验 | SOURCEfd78731；`pnpm --dir web exec playwright test s1-github-placement.spec.ts s1-selected-browser.spec.ts --project=chromium-1920 --workers=1 --grep 'actual public repository\|approved selected Douyin' --output=test-results/s1-redesign-live-continuation` | **2 PASS /50.8秒 /exit0**。GitHub18.6秒为已ready同库后半链续验，无再次同步或clone；Douyin22.5秒为同catalog库正常选夹/绑定/metadata sync/repeat/cache/进程冷重启。不是把首场改写全绿。 |
+
+首截图定位标题“持久化处理队列”误写仍保留`test-results/s1-redesign-first`的4FAIL，修后`s1-redesign-selectors-fixed`4PASS/2.5分钟；当时未装配GitHub constructor的真实501不算仓库验收。前端optional access_mode首TS FAIL按旧public显式fallback修复；HumanAPI无write/typed read的首TS FAIL由W0唯一声明owner修复，find undefined在本轨显式guard。
+
+库存trace显示HTTP3.37秒、最后Cursor断言只剩624毫秒，未见错误状态持续5秒；在对话框内批量比较每客户端8项名称/状态/原因，保留每值与刷新0writes，不增加timeout，1920定向19.9秒PASS，1280亦PASS。来源校验首FAIL由W0 c36028a只正规化URL pathname做schema lookup，实际查询参数和完整响应断言不变，没有新harness。
+
+真实结果与续验参数：
+
+- `ASTROCYTE_TEST_GITHUB_REPOSITORY=1`，`ASTROCYTE_GITHUB_REUSE_{OWNED_TEMP,APPROVED_ROOT}`均精确指向**`C:/Users/DW/AppData/Local/Temp/astrocyte-s1-Vv5NhC`**。同一`octocat/Hello-World`，metadata先于clone、人工创建并纳入原空间，真实HEAD **`7fd1a60b01f91b314f59955a4e4d4e80d8edf11d`**与Git/SQLite一致；clone_attempts始终1，UIready禁用、不同新请求的重复placement返回逐字段同record。B/C/控制/模型/动作均关闭，Windows helper自有进程stop/start后repo一致，0jobs/0Mission/0native sessions。首场的人工同步和clone实测保留，续验不再调用GitHub同步/克隆。
+- `ASTROCYTE_TEST_SELECTED_BROWSER=1`，`ASTROCYTE_SELECTED_REUSE_{OWNED_TEMP,APPROVED_ROOT}`均精确指向**`C:/Users/DW/AppData/Local/Temp/astrocyte-s1-QvR3ni`**。`ASTROCYTE_S1_SELECTED_BROWSER_CONFIG`只指root指定`C:/Users/DW/AppData/Local/Temp/astrocyte-W1-selected-ctx_54629f75a8e9-second/selected-browser-config.json`；测试把该noncredential选择配置复制到该库data/selected-browser.json，再无配置env override冷启动。人正常读取→选择实际“求职”3条→绑定→标题sync/repeat，cached GET同目录，3条metadata revision均1；之后进程冷启动同source/身份/条目保留。SQLite只读末审计3个source_sync succeeded/attempt1（两次显式同步+一次startup）、0资料/0原生会话；推荐null、selected=false、正文job/material均null、0Mission。API重启短暂ECONNREFUSED读日志保留，恢复后显示实际保存状态，没有自动写重发。
+
+所有command.log/首失败trace、局部JSON附件与截图位于`web/test-results/<上表output>/`；这些本地原件不上传个人元数据至仓库。原real AT01–04、媒体与模型UNKNOWN保留，本轮没有付费/媒体/native turn；default合同/fixture测试不冒充task_live。
+
+最终截图相对`web/test-results/`：
+
+- 默认：`s1-redesign-live-final-first/s1-redesign-redesigned-tas-028b5-es-and-local-assets-desktop-chromium-{1920,1280}/{attention,workspace,swarm}-initial-{1920,1280}.png`；同output的`s1-redesign-redesigned-tas-4a187-tes-and-local-assets-narrow-chromium-1920/{attention,workspace,swarm}-initial-390.png`。每种宽度三页均实际截图，已目视attention390/workspace1280。
+- 实际GitHub：`s1-redesign-live-continuation/s1-github-placement-actual-539c5--clone-and-cold-persistence-chromium-1920/github-placed-{1920,1280,390}.png`。
+- 实际选定抖音：`s1-redesign-live-continuation/s1-selected-browser-approv-8f888-retained-after-cold-restart-chromium-1920/selected-douyin-{1920,1280,390}.png`。两种实际390已目视，无横溢；宽窄保持同一功能，没有假连接或示例fallback。
+
+限制/未执行：首次GitHub账号/私有范围仍待用户，不自动授权；只验了一个手动公开仓库，不宣称账号全量。限定抖音桥仅验证已完整加载、数量可核对的所选求职夹，不宣称任意大夹/账号主动分页。其他平台仍待接入、原生能力未知按事实显示，Mission执行不支持。原真实论文/视频/模型本轮未重放，整套最终新SOURCE E2E未再运行；首完整套件exit1与定向返修/真实续验绿结果分别报告。机器整体重启未做，仅自有API进程冷stop/start。个人Chrome/个人库升级、最终主控合并/发布及最终用户接纳归root，W3未执行。遗留自有两测试库与原件保留，测试helper都按自有child handle关闭，无任意PID杀进程。
+
+
 ## 本轮公开收藏与 Orca 项目续验（2026-10-10，Dispatch ctx_0c1c1e070200）
 
 最终应用/测试 SOURCE `66e05ca180cd2adee412199348dd3867841dc507`，分支 `s1-sync-ui-1010` 已 push。本机 Orca Codex / gpt-6.1-sol，写域仅 Attention/Workspace 局部 UI、原 E2E 和本报告/验收文档。用户当前已允许读取 Orca 登记的本地项目；旧“个人根未许可”和公开夹0条均仅为下文历史。GitHub 同步语义及抖音可分享的公开身份仍待答，其他平台保持待接入，自动派发不启用。报告提交只改这两份文档，不改变上述 SOURCE，精确 REPORT SHA 随交接消息提供。

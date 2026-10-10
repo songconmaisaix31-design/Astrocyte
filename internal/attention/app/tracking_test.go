@@ -352,3 +352,34 @@ func TestStartupResumesCurrentFailureButNotSupersededFailure(t *testing.T) {
 		})
 	}
 }
+
+func TestUnknownSourceReadIsNotResentByStartupOrNewRequestKey(t *testing.T) {
+	ctx := context.Background()
+	s, repo, _ := fixture(t)
+	source := bindFixture(t, s)
+	s.options.ListingReader = listingFunc(func(context.Context, TrackingSource, string, int) (ListingPage, error) {
+		return ListingPage{}, serviceError(apierrors.DeliveryUnknown, "contract_local lost browser read result", "inspect_browser_read_outcome")
+	})
+	queued, err := s.SyncTrackingSource(ctx, human, source.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("first-unknown-read", source.Source.Version)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.ProcessNextJob(ctx); err != nil {
+		t.Fatal(err)
+	}
+	old := repo.state.Jobs[queued.Jobs[0].JobID]
+	data, _ := json.Marshal(old)
+	current, err := s.GetTrackingSource(ctx, human, source.Source.ID)
+	if err != nil || !old.DeliveryUnknown || current.Source.LastError == nil || current.Source.LastError.Code != apierrors.DeliveryUnknown {
+		t.Fatal("unknown result lost", old, current, err)
+	}
+	if err = s.SyncSourcesOnce(ctx); err != nil || len(repo.state.Jobs) != 1 {
+		t.Fatal("startup resent unknown read", err, len(repo.state.Jobs))
+	}
+	_, err = s.SyncTrackingSource(ctx, human, source.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("new-key-unknown-read", current.Source.Version)})
+	errorCode(t, err, apierrors.DeliveryUnknown)
+	after, _ := json.Marshal(repo.state.Jobs[old.JobID])
+	if string(data) != string(after) || len(repo.state.Jobs) != 1 {
+		t.Fatal("new key rewrote/resent unknown observation")
+	}
+}

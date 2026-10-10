@@ -1,6 +1,6 @@
 :root {
   /* ── Color palette ── */
-  --color-bg:             #ffffff;
+  --color-bg:             #f5f7f6;
   --color-bg-subtle:      #f7f9f7;
   --color-bg-muted:       #f1f4f1;
   --color-surface:        #ffffff;
@@ -10,7 +10,7 @@
 
   --color-text:           #202b28;
   --color-text-secondary: #617565;
-  --color-text-muted:     #7c8782;
+  --color-text-muted:     #68746d;
   --color-text-disabled:  #adb5bd;
 
   --color-accent:         #259666;

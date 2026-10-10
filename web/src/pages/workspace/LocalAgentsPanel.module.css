@@ -1,6 +1,6 @@
 .note { font-size: 12px; color: var(--color-text-secondary); line-height: 1.8; margin-bottom: 14px; }
-.agents { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
-.agents > li { border: 1px solid #e5e2d8; border-radius: 10px; background: #fff; padding: 18px; min-width: 0; }
+.agents { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-top: 18px; }
+.agents > li { border: 1px solid #e5e2d8; border-radius: 18px; background: #fff; padding: 24px; min-width: 0; }
 .heading { display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; justify-content: space-between; }
 .heading h3 { font-size: 15px; }
 .heading span { font-size: 11px; color: var(--color-text-secondary); }

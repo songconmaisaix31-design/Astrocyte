@@ -14,6 +14,7 @@ async function headers(key: string) {
 }
 // Writes keep the caller's operation identity and never replay failed/unknown effects.
 export const trackingApi = {
+	 discoverCollections: async (body: components['schemas']['DiscoverSourceCollectionsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/source-collections/discover', { body, params: { header: await headers(key) }, ...options })),
 	listCollections: (platform: string, owner_id: string, options?: Options) => unwrap(api.GET('/source-collections', { params: { query: { platform, owner_id } }, ...options })),
   listSources: (options?: Options) => unwrap(api.GET('/tracking-sources', options)),
   getSource: (id: string, options?: Options) => unwrap(api.GET('/tracking-sources/{id}', { params: { path: { id } }, ...options })),
@@ -42,4 +43,10 @@ export const localProjectsApi = {
   sendMessage: async (id: string, session_id: string, body: components['schemas']['NativeMessageRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/sessions/{session_id}/send', { body, params: { path: { id, session_id }, header: await headers(key) }, ...options })),
   stopSession: async (id: string, session_id: string, body: components['schemas']['JobCommandV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/sessions/{session_id}/stop', { body, params: { path: { id, session_id }, header: await headers(key) }, ...options })),
   observeSession: (id: string, session_id: string, options?: Options) => unwrap(api.GET('/local-projects/{id}/sessions/{session_id}/observe', { params: { path: { id, session_id } }, ...options })),
+};
+
+export const githubRepositoriesApi = {
+  list: (options?: Options) => unwrap(api.GET('/github-repositories', options)),
+  sync: async (body: components['schemas']['SyncGitHubRepositoriesRequestV1'], key: string, options?: Options) => unwrap(api.POST('/github-repositories/sync', { body, params: { header: await headers(key) }, ...options })),
+  place: async (id: string, body: components['schemas']['PlaceGitHubRepositoryRequestV1'], key: string, options?: Options) => unwrap(api.POST('/github-repositories/{id}/placement', { body, params: { path: { id }, header: await headers(key) }, ...options })),
 };

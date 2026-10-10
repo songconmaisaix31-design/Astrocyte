@@ -1,5 +1,17 @@
 # 本地 Agent 与工具清点
 
+## 2026-10-10 公开 GitHub 元数据与人工蜂群纳入
+
+本轮用户已确认“先信息、人工纳入顶层蜂群空间才克隆”。复用 Go HTTP、SQLite、`LocalProject` 与既有 `ProjectSpace` 桥；`GET /github-repositories` 只查缓存，人工同步接受公开账号名、`owner/repo` 或 `https://github.com/...`。按 [GitHub Repository REST API](https://docs.github.com/en/rest/repos/repos) 匿名查询，账号仅第一页最多100项，不声称完整账号库存；不读认证、不查私有仓库、不在元数据阶段创建代码目录。固定稳定 GitHub ID 去重，观察 revision 与 metadata_revision 分开，失败保留旧数据/时间并标 stale。
+
+仓库输入遇到明确匿名限流（403 且 `X-RateLimit-Remaining: 0`）时，至多再读取同一官方公开仓库 HTML 页。必须同时核验稳定 repository_id、repository_nwo 与 repository_public=true，DOM变化/缺证据保持失败；账号、认证403和重定向不走回退。`metadata_source` 区分 `github_rest`、`github_public_html`、`unknown`；HTML未观察的 description/default_branch/language/stars/archived/updated_at/pushed_at 在 `unknown_fields` 明确列出，不能把0/false/零时间显示为真实事实。REST缺失/null字段同样显式未知，必须给出private=false证明；没有 provenance 的旧缓存不默认变成 REST。
+
+人工+CSRF placement 经入口桥校验已存在的人选顶层空间后，固定程序执行 [Git clone](https://git-scm.com/docs/git-clone) 的 shallow/single-branch/no-tags/no-recurse-submodules/empty-template，仅 canonical public HTTPS；不执行源码、hooks、脚本、LFS、子模块或推送，不用凭据 helper。继承 Git/SSH 重定向清除，global/system Git config 禁用，HOME指向自有临时目录。应用管理根内新 staging，Windows MoveFile/Linux RENAME_NOREPLACE 原子发布，任何已有目标都不覆盖；已有完整 checkout 仅核本地 origin/HEAD，拒绝 config include/外部存储/符号链接。其他平台原子发布明确不可用，不静默降级覆盖。
+
+实际 root/HEAD 持久化后才登记 A 默认的 LocalProject；B/C、模型、control/actions/grants 仍独立，人类重复 placement 不改权限、不启动 Agent/Mission。clone最长90秒、整场120秒含排队、最多3次人工尝试；GET/冷启动不自动重试 cloning/interrupted，人工明确恢复可复用已发布 checkout。失败 staging保留，未覆盖或递归删除；耗尽后需人工检查。没有 pull/update 或修改既有代码目录。
+
+本轮实际匿名 REST→SQLite→clone→冷重启/重复纳入 PASS，公开上游 `steipete/summarize` 的实际ID1118209243、HEAD `560197cd4b580554cccf648744c592e867b43bb5`。首403、单独Git验证与后续REST200分别保留；HTML回退的目标测试不冒充真实REST场。详细命令、原始日志和限制见 [W2 当前报告](../../tasks/S1-sync-W2.md)。下文“GitHub尚未实现”为前轮历史。
+
 ## 2026-10-10 登记项目发现与 GitHub 调查
 
 最新授权见 QUESTIONS 顶部：可读本地项目，先消费 `orca repo list --json` 的登记根与 `orca worktree list --limit 256 --json` 的本机登记工作树。固定程序只读取公开登记元数据和选定根的目录标记；不调用模型，不读取 Orca 私有库、认证原件、客户端历史正文或含认证的 remote。不把登记许可扩成 Agent B/C、写入、启动或外发许可。缺失根记录失败；主根缺失不抹掉独立登记且可访问的本机工作树，不搜索替代目录。GET 只读持久化缓存，冷重启可查；整个来源失联时保留旧时间和数据，状态 `stale`。

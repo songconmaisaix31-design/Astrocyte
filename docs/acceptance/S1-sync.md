@@ -1,5 +1,23 @@
 # S1 账号同步与本地 Agent 验收
 
+## 仓库、已选浏览器收藏与UI重设计（2026-10-10）
+
+W3最终应用/测试SOURCE **`fd787319a4c1e8d9c328f3a8db87b2f8e14d06ff`**，分支`s1-sync-ui-1010`已push；REPORT只改文档、精确SHA随回执提供。普通合入基线6e84a92、W0 assembled1073e81与唯一共享validator修复c36028a，保持历史/写域。完整任务流、资产出处、准确命令/参数/截图与首FAIL见 [W3记录](../../tasks/S1-sync-W3.md)。生产UI最后79c01d1，随后仅测试和普通接口集成；W0/root在准确组装源独立最终check/build与接纳。
+
+三页/nav/留白卡片/官方本地图标重设计；紧凑主入口、来源/队列/设置渐进展开，空机会/会话与旧空任务次要展示、真实概览默认折叠且单footer。GitHub公开手动元数据先行，人工纳入顶层开发空间后才clone；cloning只人主动核对原空间，ready/UNKNOWN不重发。Douyin普通UI read→choose→bind所选登录收藏夹，原始身份在高级fallback，不读凭据/其他收藏。A默认、B/C/控制/模型/动作独立，无Mission/autolaunch。
+
+保留的验证历史：
+
+- SOURCE901首默认完整E2E **144 PASS /16 FAIL /18 SKIP，27.9分钟，exit1**，目录`s1-redesign-regression-first`与同名-command.log保留；移动tab/父子嵌套locator及库存查找耗尽30秒均保留。SOURCE79定向原功能 **30 PASS /4 FAIL，5.5分钟，exit1**，原16功能FAIL覆盖全部PASS，新四FAIL仅截图空状态文案漏改，目录`s1-redesign-affected-fix`保留。库存80能力值/理由、刷新0write未弱化断言或加timeout。
+- SOURCE659在`s1-redesign-live-final-first`中默认三页1920/1280/390截图/互动 **4 PASS**，真实API200/settled0数据、本地图像解码/无横溢/0写。整8场 **4 PASS /2 FAIL /2 SKIP，3.7分钟，exit1**：GitHub人工元数据/空间/clone/root/HEAD/A-only已过，之后expanded卡测试定位180秒FAIL；Douyin actual discover/目录cached GET200、求职count3已过，共享查询路由schema lookup FAIL，绑定之后NOT_RUN。
+- SOURCEfd78731原两个自有库续验 **2 PASS /50.8秒 /exit0**：GitHub只继续已ready同Vv5NhC库的UI禁用/不同新请求重复placement/冷启动，不再次sync/clone，clone_attempts1、HEAD`7fd1a60b01f91b314f59955a4e4d4e80d8edf11d`与实际Git一致、独立许可均关闭、0jobs/0Mission/0native sessions。Douyin同QvR3ni库实际read→choose求职→bind→sync/repeat/cache/无env配置冷启动，3条metadata均revision1、3个source_sync succeeded/attempt1、0资料/0原生会话、推荐/正文null及selected=false、0Mission。配置仅从root指定noncredential原件复制到精确appdata/selected-browser.json；个人Chrome始终root所有，本轨只隔离应用/API。目录`s1-redesign-live-continuation`与同名-command.log保留。
+- Webtypecheck/lint/58unit/build PASS（生产79、测试后TS/lint），87模块；首截图标题4FAIL/修后4PASS及所有首TS FAIL也保留，后绿不改写历史。本轮没有重复paid/media/native turn、没有重发旧UNKNOWN，原real AT01–04仍沿用下文历史。
+
+实际最终截图：`web/test-results/s1-redesign-live-final-first/s1-redesign-redesigned-tas-028b5-es-and-local-assets-desktop-chromium-{1920,1280}/{attention,workspace,swarm}-initial-WIDTH.png`和同output窄屏4a187目录三页390；真实库在`s1-redesign-live-continuation/s1-github-placement-actual-539c5--clone-and-cold-persistence-chromium-1920/github-placed-WIDTH.png`与`s1-selected-browser-approv-8f888-retained-after-cold-restart-chromium-1920/selected-douyin-WIDTH.png`，WIDTH为1920/1280/390。已目视默认390/1280及两真实390，root目视/接纳仍独立。
+
+剩余：首GitHub账号/private范围未决定，账号最多单次100不冒充全量；仅一个公开验收仓库与已完整加载的选定求职夹，不宣称任意大夹分页/整个账号完成。Grok官方403保留通用图标；Codex/微信使用已说明的官方父品牌，其他平台仍待接入、原生未知保持未知、Mission不支持。最终新SOURCE完整E2E未再跑，首全套exit1、定向功能绿和真实续验绿分别报告；仅自有API进程冷重启，机器重启未做。个人预览/库升级、最终主控集成/发布与用户接纳由root，本轨未执行；自有两测试库和首失败保留。
+
+
 ## 本轮真实非空收藏与 Orca 登记项目（2026-10-10）
 
 W3最终应用/测试 SOURCE `66e05ca180cd2adee412199348dd3867841dc507`，分支 `s1-sync-ui-1010` 已push；报告提交仅改文档，精确REPORT SHA随交接消息提供。当前用户已允许读取 Orca 登记的本地项目，B站原 UID 公开收藏真实返回默认夹452项和小夹2项；下文0条/根未授权是历史，不能当作当前结论。GitHub同步范围、抖音公开身份仍待答，自动Agent派发保持关闭。

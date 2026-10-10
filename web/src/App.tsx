@@ -8,6 +8,7 @@ import { WorkspacePage } from './pages/workspace/WorkspacePage';
 import { SwarmPage } from './pages/swarm/SwarmPage';
 import { isFixtureMode } from './fixtures';
 import './styles/preview.css';
+import './styles/workbench.css';
 
 export function App() {
   const route = useRoute();

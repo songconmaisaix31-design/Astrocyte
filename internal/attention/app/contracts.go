@@ -543,6 +543,7 @@ type AttentionTx interface {
 // Tracking stores public metadata only. A binding never imports every item,
 // grants credentials, or permits model processing outside a selected project.
 type TrackingSource struct {
+	AccessMode    string                  `json:"access_mode"`
 	ID            string                  `json:"id"`
 	Version       int                     `json:"version"`
 	Platform      string                  `json:"platform"`
@@ -600,6 +601,7 @@ type TrackingSourceResult struct {
 }
 type BindTrackingSourceCommand struct {
 	CommandMeta
+	AccessMode string `json:"access_mode,omitempty"`
 	Platform   string `json:"platform"`
 	SourceKind string `json:"source_kind"`
 	ExternalID string `json:"external_id"`
@@ -668,6 +670,7 @@ type ListingRecommender interface {
 	Recommend(context.Context, ListingRecommendationInput) (map[string]SourceRecommendation, error)
 }
 type SourceCollection struct {
+	AccessMode string `json:"access_mode"`
 	ExternalID string `json:"external_id"`
 	OwnerID    string `json:"owner_id"`
 	Title      string `json:"title"`
@@ -676,6 +679,25 @@ type SourceCollection struct {
 }
 type SourceCollectionService interface {
 	ListSourceCollections(context.Context, Principal, string, string) (apierrors.ListResult, error)
+}
+
+type DiscoverSourceCollectionsCommand struct {
+	CommandMeta
+	Platform   string `json:"platform"`
+	OwnerID    string `json:"owner_id"`
+	AccessMode string `json:"access_mode,omitempty"`
+}
+
+// Explicit human discovery may invoke a provider/browser; the GET service only
+// reads saved catalog observations. Failure must preserve the previous cache.
+type SourceCollectionDiscoveryService interface {
+	DiscoverSourceCollections(context.Context, Principal, DiscoverSourceCollectionsCommand) (apierrors.ListResult, error)
+}
+
+type CatalogTx interface {
+	AttentionTx
+	LoadSourceCatalog(string, string, string) ([]SourceCollection, error)
+	SaveSourceCatalog(string, string, string, []SourceCollection) error
 }
 type PublicCollectionReader interface {
 	ListCollections(context.Context, string, string) ([]SourceCollection, error)

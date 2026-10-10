@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import type { components } from '../src/api/schema';
 
 test('local overview keeps real empty facts explicit at both sizes', async ({ page }) => {
+  const projectsResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/local-projects'));
   await page.goto('/workspace');
+  expect((await projectsResponse).status()).toBe(200);
   await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible();
   const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
   await expect(panel).toContainText('未提供');
@@ -39,7 +41,8 @@ test('real local inventory displays saved independent observations and refreshes
   const payload = await response.json() as components['schemas']['LocalAgentListV1'];
   await testInfo.attach('local-agents-response', { body: JSON.stringify(payload, null, 2), contentType: 'application/json' });
   console.log('Local inventory:', JSON.stringify({ clients: payload.items.length, installed: payload.items.filter(agent => agent.installed.status === 'available').length, configured: payload.items.filter(agent => agent.configured.status === 'available').length, startable: payload.items.filter(agent => agent.startable.status === 'available').length }));
-  const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本机 Agent 清单', exact: true }) }).first();
+  await page.getByRole('button', { name: '检查本机 Agent 清单', exact: true }).click();
+  const panel = page.getByRole('dialog', { name: '检查本机 Agent', exact: true }).locator('section').filter({ has: page.getByRole('heading', { name: '本机 Agent 清单', exact: true }) }).first();
   await expect(panel.locator('li')).toHaveCount(payload.items.length);
   for (const agent of payload.items) {
     const card = panel.locator('li').filter({ has: page.getByRole('heading', { name: agent.display_name, exact: true }) });
@@ -51,16 +54,12 @@ test('real local inventory displays saved independent observations and refreshes
     }
     const native = card.locator('details').filter({ has: page.locator('summary').filter({ hasText: /^原生能力/ }) }).first();
     await native.locator(':scope > summary').click();
-    await expect(native.locator('dl > div')).toHaveCount(8);
     const names = { discover: '发现会话', read_context: '读取上下文', start: '启动', resume: '原生接续', send: '发送输入', stop: '停止', observe: '观察状态', reconcile: '核对结果' };
     const labels = { supported: '已支持', unsupported: '不支持', unknown: '未知' };
-    for (const key of Object.keys(names) as (keyof typeof names)[]) {
-      const observation = agent.capabilities[key];
-      const row = native.locator('dl > div').filter({ has: page.getByText(names[key], { exact: true }) });
-      await expect(row.locator('dd > strong')).toHaveText(labels[observation.status]);
-    }
-    const nativeReasons = await native.locator('dd > small[title]').evaluateAll(elements => elements.map(element => element.getAttribute('title')));
-    for (const observation of Object.values(agent.capabilities)) expect(nativeReasons).toContain(observation.reason);
+    // Compare every displayed capability in one DOM read, avoiding eighty
+    // repeated nested role searches while retaining labels, states and reasons.
+    const expected = (Object.keys(names) as (keyof typeof names)[]).map(key => ({ label: names[key], status: labels[agent.capabilities[key].status], reason: agent.capabilities[key].reason }));
+    await expect.poll(() => native.locator('dl > div').evaluateAll(elements => elements.map(element => ({ label: element.querySelector('dt')?.textContent, status: element.querySelector('dd > strong')?.textContent, reason: element.querySelector('dd > small[title]')?.getAttribute('title') })))).toEqual(expected);
   }
   const refresh = page.waitForResponse(response => response.url().endsWith('/api/v1/local-agents'));
   await panel.getByRole('button', { name: '刷新清单', exact: true }).click();

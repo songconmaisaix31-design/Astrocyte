@@ -15,6 +15,11 @@ if (process.argv.includes('--ephemeral')) {
   // Ordinary browser checks must not inherit opt-in model/external extraction.
   env.ASTROCYTE_ENABLE_CODEX_DISTILLATION = 'false';
   env.ASTROCYTE_ENABLE_SUMMARIZE = 'false';
+  // Default browser acceptance never inherits the human's selected Chrome
+  // bridge. Live collection acceptance supplies its scope through the S1 helper.
+  for (const name of Object.keys(env)) {
+    if (name.toUpperCase().startsWith('ASTROCYTE_DOUYIN_')) delete env[name];
+  }
 }
 env = await summarizeEnvironment(env);
 const children = [];
