@@ -52,6 +52,12 @@ type NativeRegistry interface {
 	Adapter(string) (NativeAdapter, error)
 	List() []string
 }
+type ProjectFiles interface {
+	CanonicalRoot(string) (string, error)
+	ValidateProjectPath(string, string) (string, error)
+	ReadProjectFiles(context.Context, domain.LocalProject, []string) ([]domain.ContextFile, error)
+	DiscoverProjects(context.Context, string) ([]domain.ProjectCandidate, error)
+}
 
 // LocalProjects is separate from the S0 project projection so old consumers do
 // not mistake a native project root for an execution/environment identity.
