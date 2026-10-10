@@ -81,3 +81,24 @@ func (b *selectedTextBridge) ProcessSelectedText(ctx context.Context, p attentio
 
 var _ workspaceapp.ProjectReferences = (*projectReferenceBridge)(nil)
 var _ attentionapp.SelectedTextProcessor = (*selectedTextBridge)(nil)
+
+type repositorySpaceBridge struct {
+	attention interface {
+		GetProjectSpace(context.Context, attentionapp.Principal, string) (attentionapp.ProjectSpaceResult, error)
+	}
+}
+
+// Existing ProjectSpaces are the human's top-level development spaces. This
+// bridge only checks existence/access; it never creates spaces or grants.
+func (b *repositorySpaceBridge) ValidateRepositorySpace(ctx context.Context, c domain.Caller, spaceID string) error {
+	if c.Kind != "human" || c.ID == "" {
+		return &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "repository placement requires the human's selected top-level space", RequiredAction: "human_select_repository_space"}
+	}
+	if b.attention == nil {
+		return apierrors.NewUnsupported("repository_space_placement")
+	}
+	_, err := b.attention.GetProjectSpace(ctx, attentionapp.Principal{ID: c.ID, Kind: c.Kind}, spaceID)
+	return err
+}
+
+var _ workspaceapp.RepositorySpaces = (*repositorySpaceBridge)(nil)
