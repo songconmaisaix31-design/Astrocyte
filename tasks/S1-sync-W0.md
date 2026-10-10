@@ -12,6 +12,8 @@ Dispatch `ctx_97dad80a2fca` / Task `task_0125179c53eb`，Orca worker projection 
 
 装配阶段已普通合入 W1 `bbf00590e5c4049077f3ef460d2d96f33585d562`、W2 `ba40c787391c268c92d78f0c57ac93e0e05b8d95` 和缓存观察 `b0645f1e6fa1b0da66a89cd072eef686cd519cce`、W3 `7a636a93de21e3a87f1320e7500afacff2dbc4a9`。原生服务、项目资料消费、清单、generic 项目 CLI 蒸馏与推荐使用既有 SQLite/queue/registry；CLI 显式 probe 更新缓存，GET 不探测。入口所选 CLI 期限取作业期限、上限30分钟；保留 legacy opt-in。W0 `866b124b11033aa0f96945daa915b356e25a72c8` 发布缓存装配和文档。
 
+消费 W1 `345886a8a841396fdeab69cdc1e62e99791d0965` 修复128KiB边界、已完成分页缓存及当前关联根检查。`node scripts/check-s1-project-api.mjs` 首次 FAIL：真实 API/临时 SQLite 先通过 A→B→A 仍保留 B head、A固定对象读取，再遇 `POST /local-projects` HTTP200 的 settings.history_roots=null 违反契约；返 W2，临时进程/目录关闭清理完成。没有付费模型/媒体/原生控制或浏览器。新 schema 后 `pnpm --dir web typecheck` 首次 FAIL：已合入 W3 cooperative mode 两处与 owner native|context_handoff 不符，返 W3；契约检查和232示例本次 PASS，不能当作前端通过。
+
 `go test -mod=readonly -p 1 ./...` 和 `go vet -mod=readonly -p 1 ./...` 在 `2dfc1ba` PASS（应用模型/媒体 opt-in 关闭）。架构检查首次 FAIL：既有规则把 app/domain 的纯 `net/url` 解析误归为 I/O；仅豁免 `net/url`、保持 `net` 和其余 `net/*` 限制后 `pnpm check:architecture` PASS（19包）。这是后续独立修正结果。最新入口装配 `go test -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi ./internal/adapters/distillers` PASS。总控发现 W1 generic 输出限额2MiB与 W2 registry128KiB不一致，已返 W1；W3 浏览器发现 settings.history_roots=null，已返 W2。本轮这些领域返修未完成，不据此宣称完整 S1。
 
 最新阶段验证：`pnpm check:contracts` PASS（232既有示例、生成漂移一致，既有 EventV1 警告）；`go test -p 1 ./internal/adapters/httpapi ./cmd/server` PASS；`pnpm --dir web typecheck` PASS；`git diff --check` PASS。新增 contract_local transport 测试覆盖实际 Caller 注入、项目 mismatch、Agent 无权设置/授权/令牌签发、即时 revoke 拒绝、CSRF 和正文伪造身份拒绝；不当作真实 Agent/媒体/完整 S1 验收。本轮 W0 尚未运行媒体、应用模型或浏览器；等待主控 slot、各域 owner 完成和独立最后验收。
