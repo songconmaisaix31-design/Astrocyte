@@ -76,6 +76,19 @@ type RegisteredProjectRepository interface {
 	SaveRegisteredProjectDiscovery(context.Context, domain.ProjectDiscoverySnapshot) error
 }
 
+// Human annotations are stored independently from replaceable observations.
+// expectedRevision is zero for a new annotation; saves use compare-and-swap.
+type RegisteredProjectMetadataRepository interface {
+	LoadProjectMetadata(context.Context, string) (domain.ProjectHumanMetadata, error)
+	SaveProjectMetadata(context.Context, string, domain.ProjectHumanMetadata, int) error
+}
+
+// Kept separate so a discovery-only adapter cannot imply annotation support.
+// The caller is established by the human session, never by command JSON.
+type RegisteredProjectMetadata interface {
+	SetRegisteredProjectMetadata(context.Context, domain.Caller, string, domain.ProjectHumanMetadata) (domain.ProjectSummary, error)
+}
+
 // Separate from project control so unsupported discovery remains explicit.
 // Refresh is human-only; neither operation registers a space or changes grants.
 type RegisteredProjects interface {
