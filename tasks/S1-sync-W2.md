@@ -1,6 +1,6 @@
 # S1 同步 W2：本地项目与原生会话续作
 
-2026-10-10 当前开发源码 `d5ee4a11826a4f654562a19c8f8ac41009d04e5f`，分支 `s1-local-agents-1010`，已 push；完整 context 实现起点 `3637de70a74b2c3e143a2bacfea6c37286e83d12`，报告提交 SHA 另由 Orca Handoff 提供。先普通合入指定 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，并普通消费 W0 公共端口/迁移；未 reset/rebase/clean/force。开发客户端仍为 Orca Codex，协调者明确提供的开发模型为 `gpt-6.1-sol`。下方库存旧报告保留为历史阶段，旧待答结论不代表当前授权。
+2026-10-10 核心源码 `d5ee4a11826a4f654562a19c8f8ac41009d04e5f`，分支 `s1-local-agents-1010`，已 push；本报告另包含后续流式增量返修，其精确 SOURCE/REPORT SHA 由 Orca Handoff 提供。完整 context 实现起点 `3637de70a74b2c3e143a2bacfea6c37286e83d12`。先普通合入指定 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，并普通消费 W0 公共端口/迁移；未 reset/rebase/clean/force。开发客户端仍为 Orca Codex，协调者明确提供的开发模型为 `gpt-6.1-sol`。下方库存旧报告保留为历史阶段，旧待答结论不代表当前授权。
 
 ## 当前完成及所有权
 
@@ -31,6 +31,10 @@
 最新源码 `d5ee4a1` 的 `go test ./...`、`go build ./...`及`git diff --check` PASS；新增未启动resume连续重试保留原所有权测试PASS。表中原生握手及真实turn结果是较早版本的独立证据；`5599350`增加的Codex/Pi完整context和恢复后原用户marker断言尚未执行，不能从此前PASS推导新增断言通过。
 
 新增 `go test ./internal/adapters/sqlite -run '^TestLocalContextHandoffRequiresStoppedSameProjectAndSurvivesRestart$' -count=1 -v` PASS：未确认/失败stop与跨项目来源均拒绝且未调用新start；显式合法handoff使用新controller session而非resume，SQLite真正关闭重开后保留mode/source ID/固定引用、不存正文。native为离线fixture，这仍不是实际CLI跨会话验收。
+
+流式首次 RED 单独保留：`TestNativeStreamingSmallDeltasPreserveFullMessageAndComplete` 模拟1000个同一Codex消息的中文字增量，旧实现仅765字节时已blocked/truncated、256事件。修复仅合并连续同一消息的text delta（Codex item/turn身份，Pi消息边界），Observe仍供完整累计文字；控制/消息边界不合并，原128KiB/256事件上限不提高，真正超限仍取消且不能被后续completed改成成功。针对Codex/Pi增量、消息边界、快照稳定、字节/控制超限与short-write UNKNOWN回归PASS；返修后`go test ./...`、`go build ./...`、`go vet ./internal/adapters/agents`及`git diff --check` PASS，未发模型。
+
+W3独立实测 SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b`：保留首UI错误URL matcher FAIL6分钟，随后沿用原SQLite/同一native ID的有界续验1 PASS29.3秒，总start/resume/send三turn。真实active GET/context200包含原user_text README和assistant marker，resume200同native ID/native mode、第三send200新输出、STOP200确认；W2只读其明确提供的`web/test-results/s1-native-original-session/.../actual-native-receipts.json`核对。这验证Codex完整历史的真实API路径，不等于Pi新断言或跨session handoff。W3首paper模型job `4GQ7GKDXHZIND7CAB7GIZU3W4V` 约18秒delivery_unknown独立保留，底层phase未存入DB/trace、Result=null，不重放、不从README成功推导论文成功，也不将765字节离线缺陷当作已证明的原失败原因。
 
 保留首次 RED：W0未到位前 Caller 参数编译不匹配，合入真实端口后 PASS；Codex thread/start sandbox enum首次 `-32600`（文档与安装schema差异），按本机公开生成 schema 修正 `read-only` 后 PASS；Pi冷启动version5秒超时，有限15秒probe后握手 PASS；Claude包入口首次缺少旧 cli.js，按公开 npm wrapper 改用实际 bin/claude.exe后 PASS。首次 Codex completed 后 interrupt `-32600` 与正向 owned exit分开记录，已改为仅 running 时 interrupt。开发中两次局部编译错误修正后重测通过。W3/W0登记history_roots=null首RED由各 owner保留，W2新旧DTO修复不改写历史。
 

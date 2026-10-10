@@ -21,6 +21,8 @@
 
 Context packet是controller选择范围的固定版本封装，不是完整原生history；external_observed packet的created_at只是发现范围封装时间，native未知updated_at为null。正向stop需拥有的进程树退出，单个abort响应/kill请求不能冒充StopConfirmed；UNKNOWN投递不重放。Codex完整context需initialize协商experimentalApi，方法不支持时返回unsupported。确认未启动的resume失败保留原owned/nativeID及停止事实，仅新操作回执failed；不是旧会话unstarted。此前真实turn/resume结果不覆盖后加的完整context断言，新增原生断言及跨session context_handoff仍NOT_RUN。当前所有真实slot已归还，个人项目/历史根待人类提供。
 
+后续W3独立 SOURCE `0d2319e`复用原会话的真实API验收：active完整context200同时含原user_text/assistant marker、same-ID resume/第三send/positive stop通过，保留首次错误URL matcher RED；不外推Pi或跨session handoff。首paper selected-text job约18秒UNKNOWN、Result=null，实际原因未保留，禁止重放。协调者随后指出流式delta计数缺陷，离线1000个小delta首次RED在765字节触及256事件；现只合并同一消息连续增量，不跨控制/消息边界，原128KiB与256事件上限仍强制。返修及针对回归通过、未新发模型，精确提交见W2 Handoff；不能把这个离线缺陷改写为首paper已确定原因。
+
 ### OpenCode1.18.35 精确范围阻塞（零native/model启动）
 
 本机公开npm wrapper/package确认native `bin/opencode.exe`、版本1.18.35；未查私有设置。按同版本官方源核实：[Config合并](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/config/config.ts)对instructions拼接数组，runtime `[]`无法清除继承输入；[Instruction系统读取](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/session/instruction.ts)仍读取globalFiles与已配置绝对/远程instructions；[MCP初始化](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/mcp/index.ts)对合并后enabled连接，无观察到pure全局抑制。不能仅凭tools deny把这些输入/连接称为selected-context范围。
