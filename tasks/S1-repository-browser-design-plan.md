@@ -22,3 +22,5 @@ W2 新增真实公开 GitHub 元数据、人工纳入、clone、冷启动和重�
 验收：真实 API → SQLite/对象存储 → 重启可查询；GitHub 信息同步没有代码目录，纳入蜂群空间有真实 clone/HEAD，重复纳入不重复克隆，不启动 Agent 或创建 Mission；收藏元数据同步不调用模型，推荐后用户选择才入库；原 AT01–04 保持回归，旧未知模型作业不重放。核心适用测试/check/build 和真实浏览器通过后才接受功能；原首个失败保留，新修复结果单独记录。原论文 DNS 例外、第二自动整理 CLI 与输入容量问题仍未答，不据插件许可扩大。
 
 20:49 收尾：W3 SOURCE `fd787319a4c1e8d9c328f3a8db87b2f8e14d06ff` / REPORT `a7981c8fe1a603bf8fee81ec7617205ea12144ed` 已push并接纳；首整套144 PASS/16 FAIL/18 SKIP保留，后续30项受影响功能、4项最终默认截图和2项实际GitHub/抖音同库重启续验分别PASS，不声明整套重跑成功。W1/W3已release，工作树与原件保留。W0最终稳定check首败为W2应用层直接slog日志越界，Go/vet/mod/deps已PASS、后续与build未跑；已沿原W2终端/工作树派最小返修 `ctx_95c21bdb8b72`（新Task `task_d66e43df9595`），只保留错误诊断并修边界，不放宽架构检查，不重复真实克隆/模型/浏览器。原W2结算清理责任转移新Dispatch；W0等待原owner推送后普通合入并最终复验。
+
+20:59 结算：W2最小返修0cd2c97/3ff9e61普通集成，最终SOURCE `682f46eac0633e3593cdceb7996df24957fe06af` / REPORT `1f864de0bb0bad348dd7d2fda860a924b7206cd4`；主控普通合并028bcc6，独立pnpm check/build PASS，个人预览已更新且界面完成求职3条同步200。原99+2保留，个人库104元数据/0正文模型原生，详情见STATUS。全部本轮Dispatch已结算release，工作树保留；刷新策略仍待用户，不扩大范围或新增调度框架。

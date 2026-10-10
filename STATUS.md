@@ -1,16 +1,22 @@
 # Astrocyte 当前状态
 
-## 仓库、浏览器与交互重设计正在验收（2026-10-10 20:07）
+## 本轮交付与主控验收（2026-10-10 20:59）
 
-本轮用户明确了 GitHub 信息先同步、人工纳入蜂群顶层空间才克隆代码，并授权安装浏览器插件。当前计划见 [四轨计划](tasks/S1-repository-browser-design-plan.md)。主控分支仍为 `s1/attention-materials-20261009`，只维护计划、决定、验收与提交；业务正由原四个互斥工作树组装，尚未更新个人预览或标记整体 S1 完成。
+主控分支 `s1/attention-materials-20261009`。最终应用 SOURCE `682f46eac0633e3593cdceb7996df24957fe06af`、W0 REPORT `1f864de0bb0bad348dd7d2fda860a924b7206cd4` 已push，主控普通合并 `028bcc6c34ecb4c35f255838e8e1f150cfab0326`，没有写业务代码。原四轨固定工作树与互斥写域保持，OpenAPI、009–011迁移、入口、锁和生成类型由W0单一所有者组装。实际客户端 Orca Codex0.162.0 / GPT-6.1-Sol high fast。
 
-官方 Chrome Web Store 的 OpenCLI 1.0.24 已安装，CLI 1.8.8 `doctor` 实际确认扩展已连接；当前抖音收藏页已绑定 `astrocyte-douyin`，W1 单一个人浏览器所有者。首次整页 state 带出隐藏的无关侧栏文字，已报告并停止使用整页检查；后续固定表达式只投影已批准账号/收藏节点。应用没有保存该无关文字；主控只读检查实际新 SQLite，只有一个选定来源、3个选定视频元数据和两个成功 source_sync，资料/沉淀/候选均0。
+官方 Chrome Web Store OpenCLI1.0.24已安装，CLI1.8.8 doctor确认扩展连接；已登录抖音页绑定 `astrocyte-douyin`。固定适配只读取已批准账号、求职夹 `7694962768730068771` 的元数据；配置 `%APPDATA%/astrocyte/selected-browser.json` 不含凭据，普通重启沿用，不扫描Chrome或凭据。首次整页检查带出无关隐藏侧栏文字的错误已报告；后续停止整页检查，应用库未保存该文字。插件连接不等于其他标签、私信、全部收藏或任意Agent访问授权。
 
-W1 SOURCE `38f4f4dff0e9884c77daf1c0ca333cd96d93f1e5` / REPORT `123be4b8b64a770e5dc9667146d946cc228addd0` 已push：实际求职夹3条、重复同步版本不变、SQLite关闭重开一致、零媒体/模型；启动及人工同步不重发旧UNKNOWN。当前只支持已完整挂载的选定夹，长列表不假装完成。W2 SOURCE `57b4f7b639d197273b59b4495e66bc9775ad0b7b` / REPORT `35928231e987503edec03de7942ea02edaef65a8` 已push：实际公开 `steipete/summarize` REST信息先同步，人工纳入后clone，HEAD `560197cd4b580554cccf648744c592e867b43bb5`、冷启动/重复/发布后恢复通过，A默认且B/C/model/control/actions不自动许可。首403与后续REST成功分别保留。两轨领域交付已接纳，未替代页面验收。
+本轮已实现：人类读取已连接收藏→选夹绑定→固定程序同步标题→项目许可下获取建议→人类选正文；保留summarize与既有版本/去重/重试。公开GitHub仓库或账号信息可同步缓存，不下载代码；人类选择既有蜂群顶层空间才受管克隆，持久化root/HEAD/status；重复纳入、冷重启与明确失败恢复，默认A且B/C/model/control/actions独立。三页整体重设计增加留白、层次、任务入口与折叠高级设置，官方品牌资产来源可查，其他平台占位不伪装接通。
 
-W0 已发布实际HTTP/入口组装 `156e35903ef09d721a61a766c122a3031a73b51b`，普通重启已批准配置 `ec87f843a1251bd4399986684446a4b29a840452`：只读取当前应用数据目录中明确的 `selected-browser.json`，不扫描浏览器或凭据；W0仍负责唯一契约、009–011迁移、生成客户端、锁和最终普通集成。W3 SOURCE `90148a34b5f9584fd2172820292a995451492f6c` 已push，三页留白与层次、官方图标、资料优先任务流和正常读取→选择入口已实现；178项默认浏览器首轮正在执行，已发现旧定位与新布局不匹配，不能标整套通过。实际 GitHub/抖音页面操作、服务进程重启及仓库恢复入口仍在验收。
+主控独立 `GOFLAGS=-p=1 pnpm check` / `pnpm build` 在合并源均 **PASS/exit0**：Go/vet/mod/deps、原19包架构、2项自有进程退出、236契约例/生成一致、14真实临时API检查、TS/lint、58前端单测、diff；Go与Vite87模块构建成功。应用opt-in及测试开关均在检查进程清除，未调用个人Chrome/付费媒体。日志 `%TEMP%/astrocyte-root-repository-{check,build}-20261010.log`。W0首稳定check架构FAIL原件保留，W2新Dispatch `ctx_95c21bdb8b72` 最小修复应用层slog并保留原clone cause、安全HTTP封装和持久化失败，SOURCE `0cd2c97b6f3b3b372649ff5045b1f58bb4dfa486` / REPORT `3ff9e61fb59d2ffda88560ad619801b36a843fca`，未放宽规则或重复实际clone。
 
-个人预览仍运行前轮 `fd6938c` 应用，原B站99+2元数据保持。升级前一致性备份 `%APPDATA%/astrocyte/backups/pre-s1-repository-browser-20261010-195945/state.sqlite` 已建立，integrity ok。新抖音实际验证目录为 `%LOCALAPPDATA%/Temp/astrocyte-W1-selected-ctx_54629f75a8e9-second`，仓库验证为 `astrocyte-github-public-1406932187`；不灌个人库。W1/W2本轮succeeded回执只接纳所属新领域范围、仍保留资源待总验收；W0/W3继续开发。原AT01–04及原生同ID接续通过结果沿用，不重做付费媒体来证明它们。首批个人GitHub范围、私有访问、新arXiv DNS、第二自动整理CLI与输入容量仍待用户；Pi认证/OpenCode能力限制及其他社交平台占位保持。
+浏览器首整套 **144 PASS/16 FAIL/18 SKIP** 原件保持；修复后分别 **30受影响功能PASS、4最终默认界面PASS、2实际同库链路PASS/50.8秒**，没有最终整套重跑成功声明。W3 SOURCE `fd787319a4c1e8d9c328f3a8db87b2f8e14d06ff` / REPORT `a7981c8fe1a603bf8fee81ec7617205ea12144ed`。真实GitHub `octocat/Hello-World` 元数据先同步，人工placement后clone；重复与OS进程重启同目录/HEAD `7fd1a60b01f91b314f59955a4e4d4e80d8edf11d`、attempt1、A-only、0Mission/native。抖音求职3条、重复revision1、完整非凭据配置冷启动无env覆盖，0正文/模型/资料/native。主控独立只读两库核验一致；原库 `%LOCALAPPDATA%/Temp/astrocyte-s1-{Vv5NhC,QvR3ni}` 留存，未灌个人库。原AT01–04和Codex/Claude同原生ID接续结果沿用，没有重复成功付费媒体或旧UNKNOWN。
+
+个人预览已升级：[资料与收藏](http://127.0.0.1:5173/attention)、[本地与仓库](http://127.0.0.1:5173/workspace)、[蜂群空间](http://127.0.0.1:5173/swarm)。一致性备份 `%APPDATA%/astrocyte/backups/pre-s1-repository-browser-20261010-195945/state.sqlite` 保留，个人库009–011迁移完成/integrity ok。主控实际UI读取/选求职/绑定/同步均200，1920/1280/390的所属场次检查保留；本次个人1280/390无异常或横溢，三页截图 `%TEMP%/astrocyte-root-selected-attention-{1280,390}-20261010.png` 与 `astrocyte-root-redesign-{workspace,swarm}-1280-20261010.png`。原B站99+2及新抖音3共104条元数据、3来源/5成功source_sync，资料/沉淀/候选/模型/原生/个人GitHub记录均0；summarize启用、全局自动Codex关闭、项目许可独立。没有替用户挑视频正文或选个人仓库。
+
+新预览父63908/API60868/Vite79220，创建20:58:25/28/33，程序目录 `astrocyte-dev-AOCTmg`，exec session58426；有意留给用户使用。停止前重核所属/时间/监听，不依历史PID。四轨及W2返修均结算succeeded于各自本轮范围并release，分支/工作树/原件保留，Run无待回收终端；主控最终文档与分支push，未合main或执行远程CI。
+
+剩余真实限制：抖音当前仅完整挂载的选定夹DOM快照，长列表/分页未实现，持续新增收藏的专用标签或刷新策略已问待答，不能声称后台自动获取最新内容；首批个人GitHub账号/私有范围待答，公开账号实际非空验收未跑。B站创作者接口挑战、其他社交平台占位；新arXiv URL代理DNS例外、第二自动整理CLI及输入容量待答，Pi认证/OpenCode能力限制保留。跨原生会话真正交接未验收，自动Agent派发未启用。S1四项资料核心AT已通过，扩展全平台/全本地客户端与持续更新不声明全部完成。
 
 ## 以下为前轮历史
 
