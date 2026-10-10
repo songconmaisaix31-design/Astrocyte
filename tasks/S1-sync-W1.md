@@ -10,6 +10,18 @@
 
 `go test ./internal/adapters/importers ./internal/attention/app ./internal/adapters/sqlite` PASS（3.849s / cached / 6.160s），属于 contract_local 与真实 SQLite 回归，不是实际浏览器验收。W0 已接受 `access_mode=public/browser_selected`、稳定 owner-aware identity 和目录 GET 只读缓存，正在独占发布 contracts/迁移与 POST discover；W1 负责消费、缓存与后续同轨返修。原 B站99+2观察、原 AT01–04和旧 UNKNOWN 不重跑或改写。
 
+### 阶段14：实际限定桥与缓存目录（继续中）
+
+普通消费 W0 `fde698dfe924f0509f391228fd47cda7234d84f8` 和 `2d4f759e0ebf517fa3ffd55020c26d57c23b6415` 的 AccessMode、owner-aware identity、010/011迁移和人工 POST discover。旧 AccessMode 缺值读作 public；身份不可变；浏览器 binding 必须使用显式已发现的同账号/文件夹缓存，URL tracking 参数不造成新绑定。目录 GET 只读 SQLite，尚未发现返回 EvidenceMissing；`owner_id=self` 仅使用主控配置的本地 accessor 解析，缓存与回执保留真实 owner ID。人工 discover 在外部读取前查原回执，不持有 SQLite 写锁调用浏览器；失败保留原缓存。Agent不能触发发现，目录动作不产生资料、模型或媒体工作。
+
+主控于11:32 UTC明确交接 profile `terpzafx` / bound session `astrocyte-douyin`。**第一条 OpenCLI state 返回整页并包含隐藏的非授权侧栏文本，超出所选收藏夹范围**；已立即停止整页state/extract/networkdump并向主控 escalation，主控确认保留错误事实，不复制私密内容。本报告不保存该输出。后续只针对选定DOM节点读取，稳定账号 `MS4wLjABAAAAA9cYVtOn_y6ULxB6xOkam6HvqsfhxDjBbXju2jnbkEJEoUtWCuO0fTbGpPLy5Fdt`、当前求职收藏夹 `7694962768730068771`、active true/count3已核实。
+
+具体 `NewOpenCLISelectedFolderBridge(nodePath,cliMainPath,profile,session)` 只通过绝对 native Node 与 OpenCLI 主入口执行固定嵌入表达式；页面输入不能提供代码/命令。只读 user-info secUid、collection-navigation 指定ID的名称/数量、user-detail中匹配同folderID的scroll-list元数据；不读取全局store、Cookie、历史、私信或其他标签，不调用会修改页面state的fetchMoreData。不返回下载、评论、模型或原始认证字段，外部stderr/表达式不写公开错误。当前完整已加载列表支持有界100与精确字符串ID；部分/未加载完列表返回EvidenceMissing，不把未知分页伪造为完成。主动分页的固定只读API仍待实际观察，这是当前功能限制。
+
+消费后 `go test ./internal/adapters/importers ./internal/attention/app ./internal/adapters/sqlite` PASS（9.492s/4.917s/19.556s）。`TestSelectedCatalogExplicitDiscoveryCacheRestartAndBindingScope` 实际SQLite/cache GET不执行桥、POST回执复用、绑定alias复用、未发现拒绝、断开后缓存保留、冷重启和Agent拒绝 PASS（测试0.29s/包8.659s）。首次 opt-in `TestSelectedDouyinBrowserLiveSyncRepeatColdRestart` 已实际通过当前folder3条读取、两次sync无重复/无revision变化、SQLite close/reopen逐字段一致，最后零额外作业审计测试误查不存在kind列，整场FAIL（12.06s/包20.596s）。首场DB和仅选定元数据保留 `%LOCALAPPDATA%/Temp/astrocyte-W1-selected-ctx_54629f75a8e9-first/`，日志同名first.log；已修正按既有JSON data.kind读取，独立复验待执行，不改写首FAIL。
+
+W0负责持久非凭据主控配置/入口组装，W3负责最终真实API/新UI/进程重启验收；本阶段未做应用正文/模型请求，旧UNKNOWN不重放。Chrome未关闭/解绑，仍由本轨限定持有，后续现场使用需要主控协调。
+
 ## 当前交接（2026-10-10，继续阶段 12 后）
 
 分支/工作树 `s1-sync-attention-1010`；当前业务 SOURCE `90c9e0419f6ef5e9b808fbd9fff6f6b734970ffe`，已push（真实metadata验证 `8c7292c`、失效行修复 `e1061eb` 均包含）。以下是已实现范围；后文按时间保留原阶段记录、首败及当时限制，不能把历史“尚未接线”当作当前状态，也不能把本地检查当作真实 S1 验收。
