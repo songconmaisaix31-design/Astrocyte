@@ -120,6 +120,29 @@ func run(logger *slog.Logger) error {
 	}
 	listingReader := importers.NewPublicListingReader(listingPython)
 	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{WorkerConcurrency: concurrency, MaxAttempts: maxAttempts, JobTimeout: time.Duration(jobSeconds) * time.Second, AttentionHalfLife: halfLife, AttentionWeights: weights, Distiller: distiller, AllowedProcessingSourceKeys: processingSourceKeys, ListingReader: listingReader, CollectionReader: listingReader})
+	nativeRoot, err := filepath.Abs(filepath.Join(dataDir, "native-sessions"))
+	if err != nil {
+		return fmt.Errorf("resolve native state directory: %w", err)
+	}
+	registry := agents.NewRegistry(nativeRoot)
+	localProjects := workspaceapp.NewLocalProjectService(db, &projectReferenceBridge{attention: attention}, agents.ProjectFiles{}, registry)
+	// This defer also covers a later startup error. It runs before the existing
+	// db.Close defer; absence on a later restart never counts as a confirmed exit.
+	nativeShutdownDone := false
+	shutdownNative := func() error {
+		if nativeShutdownDone {
+			return nil
+		}
+		nativeShutdownDone = true
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		return localProjects.Shutdown(shutdownCtx)
+	}
+	defer func() {
+		if err := shutdownNative(); err != nil {
+			logger.Error("native shutdown incomplete; unconfirmed state retained", "error", err)
+		}
+	}()
 	// Discover only public CLI version/help once at startup. Total bounded time
 	// keeps existing readiness checks responsive; GET reads the resulting cache.
 	// No configuration, private sessions, projects or native operations are read.
@@ -137,6 +160,7 @@ func run(logger *slog.Logger) error {
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
 		Tracking:      attention,
+		LocalProjects: localProjects,
 		Attention:     attention,
 		Foundation:    foundation.NewAttentionService(schemaVersion),
 		Materials:     attention,
@@ -224,6 +248,9 @@ func run(logger *slog.Logger) error {
 	}
 	if shutdownErr != nil {
 		return fmt.Errorf("shutdown: %w", shutdownErr)
+	}
+	if err := shutdownNative(); err != nil {
+		return fmt.Errorf("native shutdown: %w", err)
 	}
 
 	logger.Info("server stopped")

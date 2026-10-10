@@ -10142,6 +10142,9 @@ components:
       type: object
       additionalProperties: false
       properties:
+        version:
+          type: string
+          description: Actual fixed file snapshot version returned by the project reader.
         path:
           type: string
         text:
@@ -10229,6 +10232,12 @@ components:
       type: object
       additionalProperties: false
       properties:
+        operations:
+          anyOf:
+            - type: object
+              additionalProperties:
+                $ref: "#/components/schemas/NativeOperationV1"
+            - type: "null"
         id:
           type: string
         project_id:
@@ -10383,7 +10392,7 @@ components:
         mode:
           type: string
           enum:
-            - cooperative
+            - native
             - context_handoff
         source_session_id:
           type: string
@@ -10543,6 +10552,21 @@ components:
         - schema_version
         - items
         - next_cursor
+    NativeOperationV1:
+      type: object
+      additionalProperties: false
+      properties:
+        action:
+          type: string
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: [string, "null"]
+          format: date-time
+      required: [action, status, created_at, finished_at]
   securitySchemes:
     HumanSession:
       type: apiKey
