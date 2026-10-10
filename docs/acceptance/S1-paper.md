@@ -1,5 +1,31 @@
 # S1 收尾 W1：论文检索、正文提取与独立 MV3 插件（续）
 
+## 续三：检索精确 ID 路由（DOI / arXiv ID）
+
+2026-10-11。root 独立真实 `GET /api/v1/papers/search?q=10.1371%2Fjournal.pdig.0000514&provider=crossref&limit=3` 返回 3 条，但首条是 `Algorithm1:PDIG`（DOI `10.7717/peerj-cs.3663/table-101`）——原因是 `scholar.crossref` 把完整 DOI 当 `query` 关键词。UI 承诺输入 DOI/arxivID，默认 Crossref 也同样把 arXiv 编号当关键词。本续在 `internal/adapters/importers/scholar.go` 加**精确 ID 路由**，不改公开 DTO/HTTP/迁移/锁/入口，不新增框架/代理 DNS 例外，不读个人资料/不调模型；正文/PDF/paper_snapshot 提取不动。
+
+- **完整 DOI / doi.org URL**：`parseDOIQuery` 复用 `normalizeDOIRaw`，识别裸 DOI、`doi:` 前缀、`doi.org`/`dx.doi.org` URL（含 `http(s)`），要求完整 `10.<注册商>/<后缀>`（`10.1234` 这种不完整片段不路由）。命中后走 Crossref 官方 `GET /works/{doi}`（`url.PathEscape` 单条查找，参考 `api.crossref.org/swagger-ui` 当前接口）。**404 保持明确 `not_found`（HTTP 404），绝不退化成不相关关键词**。
+- **合法 arXiv 编号/URL（含版本）**：复用 `NormalizeArxivID`（严格 regex，含 `vN` 版本），走 arXiv API `id_list` 精确版本（参考 info.arxiv.org user-manual 的 id_list 章节：base 返回最新版，`vN` 返回精确版本）。请求版本与返回不符、或 0/≠1 条，均显式 `not_found`。
+- **默认 UI/provider crossref 亦按精确 ID 路由**：精确 ID 判定先于 provider 关键词搜索，与所选 provider 无关（DOI→Crossref、arXiv→id_list）；普通标题/作者仍走既有 provider 关键词（crossref `query=`/europepmc/arxiv `all:`）。
+- 单条命中沿用既有 `abstract_only`、`SourceKey`（`doi:`/`arxiv:`）与 `PDFURLs`，无需契约字段变更；`getStatus` 分离 HTTP 状态使 404 与临时失败可区分。
+
+### 验证
+
+- 协议回归（无网络，RoundTripper 断言端点）：`TestParseDOIQuery`、`TestScholarExactDOIRouting`（路径 `/works/10.1371%2Fjournal.pdig.0000514`）、`TestScholarUnknownDOIExplicitNotFound`（404→NotFound）、`TestScholarExactArxivRouting`（`id_list=2504.16054v2`）、`TestScholarExactArxivVersionMismatch`、`TestScholarKeywordQueryUsesProviderSearch` 均 PASS。
+- 真实元数据验证（各一次，无正文/付费）：`TestScholarExactIDLive` —— Crossref DOI `10.1371/journal.pdig.0000514` → 单条，标题「Frameworks for procurement…」，year 2024；arXiv `2504.16054` → 单条 `2504.16054v1`，标题「$π_{0.5}$: a Vision-Language-Action Model…」。
+- `go test ./internal/adapters/importers ./internal/attention/...` PASS；`go build ./...`、`go vet`、`gofmt` PASS；`node --test paper-dom.test.mjs` 7 PASS。
+
+### 给 W0 / W3 的 handoff（不改契约）
+
+- **W0 `ctx_601d4fe7909f`**：无契约/DTO/HTTP/迁移改动；`not_found` 已由 `httpapi/attention.go` 映射 HTTP 404，无需变更。检索 HTTP 入口沿用 `PaperSearchCommand{Query,Limit,Site}`。
+- **W3 `ctx_55f6713c28e7`**：搜索框输入 DOI/arxivID 现已精确命中，UI 无需改字段；建议对未知 DOI 的 404 在搜索面板给明确「未找到该 DOI」提示（而非空结果/不相关命中）。
+
+网络阻断（aclanthology/mlr.press/thecvf 解析 198.18.x.x）与本机 fakeIP DNS 限制保持，未新增例外；以下续二及此前交付为历史。
+
+---
+
+# S1 收尾 W1：论文检索、正文提取与独立 MV3 插件（续）
+
 2026-10-11。本轨（`s1-sync-attention-1010`）续 11791ce，按 `tasks/S1-final-paper-cli-memory-plan.md` 与主控返修完成 SSRF 网络边界修正、`paper_pdf` 公共 PDF 正文适配器，并实际隔离 Chrome 加载插件取得真实公开页快照；本续再补 `paper_snapshot` 插件快照离线入库（无联网、无 model）与 `isPublicIP` IPv6 文档/丢弃段收尾。开发客户端 OpenCode / DeepSeek V4 Pro。检索/当前页/批量已确认，CLI 全覆盖与记忆范围仍 PENDING；公开论文 host 的 DNS/fakeIP 例外已向 root 提问待答，未代选。
 
 ## 续二：`paper_snapshot` 插件快照离线入库 + IPv6 SSRF 收尾
