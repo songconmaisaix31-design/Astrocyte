@@ -80,10 +80,11 @@ export function paperDOM(document, locator, Readability) {
   const fullBody = hasIntro && hasBody && readable.length > 1000;
   // A login/institution widget is not an access barrier when public body text
   // is already readable. Hidden scripts/nav never establish a restriction.
-  const restricted = !fullBody && /\b(?:purchase this article|access through your institution|sign in to access|subscribe to access|checking your browser|verify you are human)\b/i.test(visible || readable);
-  const state = fullBody ? 'readable_fulltext' : restricted ? 'restricted' : abstract ? 'metadata_only' : readable ? 'readable_unverified' : 'metadata_only';
+  const paywall = !fullBody && /\b(?:purchase this article|subscribe to access)\b/i.test(visible || readable);
+  const restricted = !fullBody && !paywall && /\b(?:access through your institution|sign in to access|checking your browser|verify you are human)\b/i.test(visible || readable);
+  const state = fullBody ? 'readable_fulltext' : paywall ? 'paywall' : restricted ? 'restricted' : 'abstract_only';
   const text = state === 'readable_fulltext' ? readable : '';
-  const warning = state === 'readable_fulltext' ? '' : restricted ? 'Access restriction detected; no entitlement bypass' : 'Readable full-paper structure not established; title/abstract remain metadata';
+  const warning = state === 'readable_fulltext' ? '' : (paywall || restricted) ? 'Access restriction detected; no entitlement bypass' : 'Readable full-paper structure not established; title/abstract remain metadata';
   return { schema_version: 1, source_url: locator, host_family: paperHostFamily(url.hostname), source_key: sourceKey,
     title: String(title).trim(), abstract: String(abstract).trim(), authors, doi, arxiv_id: arxiv,
     observed_version: arxiv.match(/v[1-9]\d*$/)?.[0] || first('citation_publication_date', 'dc.date') || '',

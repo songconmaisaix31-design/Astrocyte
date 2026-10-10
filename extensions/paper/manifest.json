@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Astrocyte Paper",
+  "version": "0.1.0",
+  "description": "Extract a scholarly paper's metadata and, where the page openly publishes it, public full text from the current page for explicit, human-reviewed import into Astrocyte. Reads only the human-clicked current tab, stores no credentials, and imports nothing without your selection.",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardWrite"
+  ],
+  "action": {
+    "default_title": "Astrocyte Paper: extract current page",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

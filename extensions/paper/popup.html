@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astrocyte Paper</title>
+    <style>
+      :root { color-scheme: light; }
+      body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; width: 380px; margin: 0; padding: 14px; color: #1c2b1c; background: #f7faf4; }
+      h1 { font-size: 15px; margin: 0 0 2px; }
+      .sub { font-size: 11px; color: #5b6b5b; margin: 0 0 12px; }
+      button { font: inherit; }
+      .primary { width: 100%; padding: 9px 12px; border: 0; border-radius: 8px; background: #1f7a3d; color: #fff; font-weight: 600; cursor: pointer; }
+      .primary:disabled { background: #9db8a4; cursor: default; }
+      .secondary { margin-top: 8px; width: 100%; padding: 8px 12px; border: 1px solid #cfe0cf; border-radius: 8px; background: #fff; color: #1c2b1c; cursor: pointer; }
+      .state { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+      .state.readable_fulltext { background: #d9f2df; color: #15682e; }
+      .state.abstract_only { background: #fdf0d5; color: #8a6200; }
+      .state.paywall, .state.restricted { background: #fbe3e3; color: #9b1f1f; }
+      .card { background: #fff; border: 1px solid #e3ece3; border-radius: 8px; padding: 10px; margin-top: 10px; }
+      .label { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: #789078; }
+      .title { font-size: 14px; font-weight: 600; margin: 4px 0 6px; }
+      .abstract { font-size: 12px; line-height: 1.45; color: #33443a; max-height: 160px; overflow: auto; white-space: pre-wrap; }
+      .meta { font-size: 11px; color: #5b6b5b; margin: 3px 0; word-break: break-all; }
+      .warn { font-size: 11px; color: #9b1f1f; margin-top: 6px; }
+      .hint { font-size: 11px; color: #789078; margin-top: 10px; line-height: 1.4; }
+      .error { font-size: 12px; color: #9b1f1f; margin-top: 8px; }
+      a { color: #1f7a3d; word-break: break-all; }
+      pre { display: none; }
+    </style>
+  </head>
+  <body>
+    <h1>Astrocyte Paper</h1>
+    <p class="sub">仅读取当前页；不会读取其他标签、保存凭据，也不会在你选择之前入库。</p>
+    <button id="extract" class="primary" type="button">读取当前页并提取</button>
+    <div id="result"></div>
+    <p class="hint" id="hint"></p>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -32,6 +32,7 @@ type ServiceOptions struct {
 	ListingReader               PublicListingReader
 	CollectionReader            PublicCollectionReader
 	ListingRecommender          ListingRecommender
+	ScholarSearcher             PaperSearcher
 	AllowedProcessingSourceKeys []string
 	Clock                       func() time.Time
 }
