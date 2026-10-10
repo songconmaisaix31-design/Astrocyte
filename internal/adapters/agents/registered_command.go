@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -18,9 +19,9 @@ func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, erro
 	tool, args, limit := "git", []string{}, 64*1024
 	switch kind {
 	case "orca_repos":
-		tool, args, limit = "orca", []string{"repo", "list", "--json"}, 2*1024*1024
+		tool, args, limit = registeredOrcaCommand(), []string{"repo", "list", "--json"}, 2*1024*1024
 	case "orca_worktrees":
-		tool, args, limit = "orca", []string{"worktree", "list", "--limit", "256", "--json"}, 2*1024*1024
+		tool, args, limit = registeredOrcaCommand(), []string{"worktree", "list", "--limit", "256", "--json"}, 2*1024*1024
 	case "git_head", "git_branch", "git_time", "git_status":
 		if !filepath.IsAbs(root) {
 			return nil, errors.New("absolute registered root required")
@@ -60,6 +61,21 @@ func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, erro
 	}
 	cmd.Env = append(cmd.Env, "GIT_OPTIONAL_LOCKS=0", "GIT_TERMINAL_PROMPT=0", "GIT_PAGER=cat")
 	return runRegisteredRead(ctx, cmd, limit)
+}
+
+func registeredOrcaCommand() string {
+	// Entrypoint environment only; no HTTP caller can supply a binary or args.
+	// Linux's unrelated GNOME `orca` must never be launched as an IDE source.
+	if configured := os.Getenv("ORCA_CLI_COMMAND"); configured != "" {
+		return configured
+	}
+	if os.Getenv("ORCA_DEV_REPO_ROOT") != "" {
+		return "orca-dev"
+	}
+	if runtime.GOOS == "linux" {
+		return "orca-ide"
+	}
+	return "orca"
 }
 
 type discoveryOutput struct {
