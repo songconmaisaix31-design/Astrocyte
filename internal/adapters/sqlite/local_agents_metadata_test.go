@@ -111,14 +111,26 @@ func TestActualRegisteredBoardSQLite(t *testing.T) {
 	if err != nil || len(snapshot.Board) == 0 {
 		t.Fatalf("actual refresh %+v %v", snapshot, err)
 	}
-	contributors, duplicateGroups := 0, 0
+	contributors, duplicateGroups, multipleClients, standalone := 0, 0, 0, 0
 	for _, p := range snapshot.Board {
+		clients := map[string]bool{}
+		for _, c := range p.Contributors {
+			clients[c.CLI] = true
+		}
+		if len(clients) > 1 {
+			multipleClients++
+		}
 		contributors += len(p.Contributors)
 		if len(p.Roots) > 1 {
 			duplicateGroups++
 		}
 	}
-	t.Logf("actual status=%s roots=%d board=%d groups_with_multiple_roots=%d historical_contributors=%d", snapshot.Status, len(snapshot.Projects), len(snapshot.Board), duplicateGroups, contributors)
+	for _, p := range snapshot.Projects {
+		if p.Source == "native_project_metadata" {
+			standalone++
+		}
+	}
+	t.Logf("actual status=%s roots=%d board=%d groups_with_multiple_roots=%d historical_contributors=%d multiple_client_groups=%d standalone_metadata_roots=%d", snapshot.Status, len(snapshot.Projects), len(snapshot.Board), duplicateGroups, contributors, multipleClients, standalone)
 	for _, s := range snapshot.Sources {
 		t.Logf("scope source=%s cli=%s status=%s reason=%s examined=%d matched=%d", s.Source, s.CLI, s.Status, s.Reason, s.EntriesExamined, s.MatchedHeaders)
 	}
