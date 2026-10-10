@@ -81,6 +81,12 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## 主控明确的新整理目标（尚未执行）
+
+主控确认原生路径已接受，继续保留旧论文 `4GQ7GKDXHZIND7CAB7GIZU3W4V` UNKNOWN，不换UUID同题重发。下一阶段新paper content目标为“梳理论文关键术语及正文定义依据，缺失定义标待查，不重做旧核心方法/局限作业”，只用完整固定正文；topic只延续新术语定义记录，旧UNKNOWN不作前轮；原视频content/topic沿原授权，各资料两轮，最多4个新成功目标，遇任何新UNKNOWN即停止诊断。W2报告离线复现连续token-delta计数误伤并修复，但这不是旧paper实际根因证明；待W0普通组装发布exactSOURCE后开始。
+
+测试准备复用4pmMWO原DB/objects、已登记project/space/refs，无重复空间/@引用或媒体。模型作业默认普通receipt复用，已成功的发布恢复job不再故障注入；既有成功结果保留。首次新准备typecheck因ProjectSpaceDetailV1误名FAIL，使用生成ProjectSpaceResultV1后typecheck/lint/diff PASS；一次格式化命令PowerShell解析失败未执行静态检查，后用字面here-string完成，不当作PASS。新付费整理尚未执行，论文模型/AT01–04/完整S1仍未通过。
+
 ## 原生同一会话续验：实际浏览器 PASS，首败独立保留
 
 SOURCE `0d2319e74c93937d1383df06972a59f88f88f79b` 已push，精确原自有目录/session复用：`ASTROCYTE_TEST_REAL_NATIVE_UI=1`、`ASTROCYTE_NATIVE_REUSE_OWNED_TEMP=ASTROCYTE_NATIVE_REUSE_APPROVED_ROOT=C:/Users/DW/AppData/Local/Temp/astrocyte-s1-pznwxr`、`ASTROCYTE_NATIVE_REUSE_SESSION_ID=daadea80-df3a-46f1-9e20-6777586911a2`，执行 `pnpm --dir web exec playwright test s1-native-project.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-native-original-session`：1 PASS，测试29.3秒/整场56.3秒、exit0。
