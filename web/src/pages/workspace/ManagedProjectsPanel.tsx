@@ -13,6 +13,7 @@ import { SelectField, TextField } from '../attention/FormControls';
 import { ProjectSettingsForm } from './ProjectSettingsForm';
 import { NativeProjectPanel } from './NativeProjectPanel';
 import { ProjectAgentAccess } from './ProjectAgentAccess';
+import { ProjectProgressPanel } from './ProjectProgressPanel';
 import { RegisteredProjectsPanel } from './RegisteredProjectsPanel';
 import { matchesQuery } from '../../utils/search';
 import styles from './LocalProjectsPanel.module.css';
@@ -49,6 +50,6 @@ export function ManagedProjectsPanel({ agents, query, initialRoot = '', initialN
       <QueryState state={spaces}>{data => <SelectField label="关联项目顶层空间" value={spaceID} onChange={setSpaceID} options={[{ value: '', label: '选择空间…' }, ...data.items.map(space => ({ value: space.id, label: space.title }))]} />}</QueryState>
     </fieldset><button className="ac-button" type="submit" disabled={command.pending || projects.loading || projects.stale || !projects.data || spaces.loading || spaces.stale || !spaces.data || !spaceID}>登记此项目</button></form>
       <form className={formStyles.form} onSubmit={event => { event.preventDefault(); const request = command.prepare({ expected_version: 1, title: spaceTitle.trim() }); void command.run(() => attentionApi.createProjectSpace(request.body, request.key), result => { spaces.retry(); setSpaceID(result.space.id); setSpaceTitle(''); }, '已创建项目顶层空间，可将资料主动 @ 纳入'); }}><TextField label="新项目顶层空间名称" value={spaceTitle} onChange={setSpaceTitle} required disabled={command.pending} /><button className="ac-button secondary compact" type="submit" disabled={command.pending || projects.loading || projects.stale || !projects.data}>创建空间用于此项目</button></form><CommandState {...command} /></details>
-    {selected && <section className={formStyles.record} aria-label="已登记项目管理"><h3>{selected.name}</h3><p className={styles.path}>{selected.root}</p><ProjectSettingsForm key={selected.id} project={selected} agents={agents} disabled={projects.loading || projects.stale} onChanged={projects.retry} /><ProjectAgentAccess key={`access:${selected.id}`} project={selected} disabled={projects.loading || projects.stale} /><NativeProjectPanel key={`native:${selected.id}`} project={selected} agents={agents} disabled={projects.loading || projects.stale} /></section>}
+    {selected && <section className={formStyles.record} aria-label="已登记项目管理"><h3>{selected.name}</h3><p className={styles.path}>{selected.root}</p><ProjectSettingsForm key={selected.id} project={selected} agents={agents} disabled={projects.loading || projects.stale} onChanged={projects.retry} /><ProjectAgentAccess key={`access:${selected.id}`} project={selected} disabled={projects.loading || projects.stale} /><NativeProjectPanel key={`native:${selected.id}`} project={selected} agents={agents} disabled={projects.loading || projects.stale} /><ProjectProgressPanel key={`progress:${selected.id}`} project={selected} disabled={projects.loading || projects.stale} /></section>}
   </SectionCard>;
 }

@@ -1,37 +1,36 @@
 import { expect, it } from 'vitest';
-import {
-  hasInference, progressPercentLabel, progressSourceSummary, progressStageLabel,
-  type ProgressInference,
-} from './progressPresentation';
+import { hasInference, progressKindLabel, progressSourceSummary, progressStatusLabel, type ProjectProgress } from './progressPresentation';
 
-const inference = (overrides: Partial<ProgressInference> = {}): ProgressInference => ({
-  stage: '已实现论文检索入口', percent: null, source_refs: [{ path: 'tasks/S1-final-W3.md', line: 12 }],
-  freshness: { observed_at: '2026-10-10T22:00:00Z', source: 'TASK/STATUS 推断' },
+const progress = (overrides: Partial<ProjectProgress> = {}): ProjectProgress => ({
+  project_id: 'p1', status: 'unknown', inferred: false,
   ...overrides,
 });
 
-it('never fabricates a percentage for unknown progress', () => {
-  expect(progressPercentLabel(null)).toBe('未知');
-  expect(progressPercentLabel(undefined as unknown as null)).toBe('未知');
-  expect(progressPercentLabel(0)).toBe('0%');
-  expect(progressPercentLabel(62.4)).toBe('62%');
-  expect(progressPercentLabel(140)).toBe('100%');
-  expect(progressPercentLabel(-5)).toBe('0%');
+it('presents unknown/absent status as 未知, never a fabricated number', () => {
+  expect(progressStatusLabel('unknown')).toBe('未知');
+  expect(progressStatusLabel(null)).toBe('未知');
+  expect(progressStatusLabel(undefined)).toBe('未知');
+  expect(progressStatusLabel('开发中')).toBe('开发中');
 });
 
-it('summarises source references with line numbers when present', () => {
+it('summarizes evidence source files with version', () => {
+  expect(progressSourceSummary(undefined)).toBe('无依据来源');
   expect(progressSourceSummary([])).toBe('无依据来源');
-  expect(progressSourceSummary([{ path: 'tasks/S1-final-W3.md' }])).toBe('tasks/S1-final-W3.md');
-  expect(progressSourceSummary([{ path: 'a.md', line: 3 }, { path: 'b.md' }])).toBe('a.md:3、b.md');
+  expect(progressSourceSummary([
+    { source_path: 'tasks/S1.md', kind: 'task', version: 'abc123', freshness: '2026-10-10' },
+    { source_path: 'STATUS.md', kind: 'status', version: '', freshness: '2026-10-10' },
+  ])).toBe('tasks/S1.md:abc123、STATUS.md');
 });
 
-it('detects whether any inference is present', () => {
-  expect(hasInference(inference())).toBe(true);
-  expect(hasInference(inference({ stage: null, percent: null, source_refs: [] }))).toBe(false);
-  expect(hasInference(inference({ stage: null, percent: 42, source_refs: [] }))).toBe(true);
+it('detects inference only from actual evidence', () => {
+  expect(hasInference(progress())).toBe(false);
+  expect(hasInference(progress({ inferred: true }))).toBe(true);
+  expect(hasInference(progress({ summary: '有进展' }))).toBe(true);
+  expect(hasInference(progress({ evidence: [{ source_path: 'tasks/S1.md', kind: 'task', version: 'v', freshness: 'now' }] }))).toBe(true);
 });
 
-it('labels a missing stage as unknown without guessing', () => {
-  expect(progressStageLabel('已实现')).toBe('已实现');
-  expect(progressStageLabel(null)).toBe('未知');
+it('labels evidence kinds without guessing', () => {
+  expect(progressKindLabel('task')).toBe('任务文件');
+  expect(progressKindLabel('status')).toBe('状态文件');
+  expect(progressKindLabel('other')).toBe('other');
 });
