@@ -132,7 +132,7 @@ func TestActualRegisteredBoardSQLite(t *testing.T) {
 	}
 	t.Logf("actual status=%s roots=%d board=%d groups_with_multiple_roots=%d historical_contributors=%d multiple_client_groups=%d standalone_metadata_roots=%d", snapshot.Status, len(snapshot.Projects), len(snapshot.Board), duplicateGroups, contributors, multipleClients, standalone)
 	for _, s := range snapshot.Sources {
-		t.Logf("scope source=%s cli=%s status=%s reason=%s examined=%d matched=%d", s.Source, s.CLI, s.Status, s.Reason, s.EntriesExamined, s.MatchedHeaders)
+		t.Logf("scope source=%s cli=%s status=%s reason=%s entries=%d headers_examined=%d matched_headers=%d matched_roots=%d retained_samples=%d", s.Source, s.CLI, s.Status, s.Reason, s.EntriesExamined, s.HeadersExamined, s.MatchedHeaders, s.MatchedRoots, s.RetainedAssociations)
 	}
 	for _, f := range snapshot.Failures {
 		t.Logf("partial root=%s reason=%s", f.Root, f.Reason)

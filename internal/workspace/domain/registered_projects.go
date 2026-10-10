@@ -62,12 +62,15 @@ type ProjectContributor struct {
 }
 
 type ProjectSourceObservation struct {
-	CLI             string `json:"cli"`
-	Source          string `json:"source"`
-	Status          string `json:"status"`
-	Reason          string `json:"reason"`
-	EntriesExamined int    `json:"entries_examined"`
-	MatchedHeaders  int    `json:"matched_headers"`
+	CLI                  string `json:"cli"`
+	Source               string `json:"source"`
+	Status               string `json:"status"`
+	Reason               string `json:"reason"`
+	EntriesExamined      int    `json:"entries_examined"`
+	MatchedHeaders       int    `json:"matched_headers"`
+	HeadersExamined      int    `json:"headers_examined"`
+	MatchedRoots         int    `json:"matched_roots"`
+	RetainedAssociations int    `json:"retained_associations"`
 }
 
 type ProjectHumanMetadata struct {

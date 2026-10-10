@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -94,7 +95,14 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	if actualConfig != expectedConfig {
 		return result, nativeError(apierrors.ContextStale, "native model configuration changed; refresh before processing")
 	}
-	if _, err := n.Send(ctx, s, packetPrompt(s.ContextPacket, input.Prompt)); err != nil {
+	wirePrompt := packetPrompt(s.ContextPacket, input.Prompt)
+	if len(wirePrompt) > 512*1024 {
+		return result, nativeError(apierrors.ValidationFailed, "final selected text input exceeds512KiB")
+	}
+	// Public size metrics only. No prompt, project path, provider identity,
+	// credentials or conversation content enters diagnostics.
+	slog.Info("selected_text_input", "input_bytes", len(wirePrompt), "input_limit_bytes", 512*1024, "output_limit_bytes", limit)
+	if _, err := n.Send(ctx, s, wirePrompt); err != nil {
 		return result, err
 	}
 	ticker := time.NewTicker(100 * time.Millisecond)
