@@ -81,6 +81,12 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## 原生首轮：真实 start 已返回，测试 response matcher 首败
+
+SOURCE `6382900b787421f8628f331797c9194862833f1c`，`ASTROCYTE_TEST_REAL_NATIVE_UI=1 pnpm --dir web exec playwright test s1-native-project.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-native-first`：1 FAIL、6.0分钟、exit1。实际UI start POST `/local-projects/{id}/sessions` 200，但测试误等待 `/sessions/start`，直至原360秒预算耗尽；未重做start。首turn实际API观察completed、输出公开README marker，活跃sameID真实GETcontext200返回原user_text与assistant marker，人类STOP200/stop_confirmedtrue。上述实际API诊断不同于浏览器完整流程PASS；context/resume/send的浏览器验收尚待续验。
+
+原库 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-pznwxr`，project `e30891f8-ad2d-459a-b399-05d0bbf7357b`，session `daadea80-df3a-46f1-9e20-6777586911a2`，nativeID `01a124d5-5910-7c10-b937-dcbcba7ebc14` 保留。完整实际命令日志 `web/test-results/s1-native-first-command.log`；原trace/error-context/截图 `web/test-results/s1-native-first/s1-native-project-human-ob-be65c-nd-sends-one-scoped-message-chromium-1920/`。续验只复用这条已确认停止会话，明确resume第二turn和send第三turn，总量包含原首start，不新增第四turn或读取个人根。续验准备typecheck首次闭包project可选性FAIL，固定已登记ID后typecheck/lint/diff PASS；响应匹配用actual generated API端点、页面等待30秒，结果unknown禁止继续输入。
+
 ## Full S1 原库续验：实际首模型 UNKNOWN
 
 SOURCE `3660b0bace59fa21e1056bd29f4d0187b1da996a` 已push，同源原库 `4pmMWO`、`--output=test-results/s1-real-newline-fix`：1 FAIL，42.1秒、exit1。三个既有imports receipt复用且无第二次媒体获取；真实额外论文2501v1/v2导入成功，A→B→A保持v2当前head且旧A复用原receipt；textarea实际LF核对通过。首论文模型作业 `4GQ7GKDXHZIND7CAB7GIZU3W4V` / operation `34XJQPMRWDLX5O3CPJCBN7M6PJ` 于15:58:05.704创建、15:58:23.589为failed/delivery_unknown=true/external_started=true/attempt1，30分钟deadline未到；约18秒原生过程后未知结果，不是测试提前timeout，费用/结果不能推断。

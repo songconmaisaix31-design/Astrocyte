@@ -2,6 +2,8 @@
 
 ## 2026-10-10 用户决定后续作
 
+独立原生首轮 SOURCE `6382900b787421f8628f331797c9194862833f1c`：1 FAIL/6.0分钟，测试response matcher误写路径；真实UI start200、API观察首turn completed、同活跃线程context200及human stop确认。原自有库/命令日志/trace保留，后续仅sameID第二resume/第三send，不重复start或加第四turn；完整原生浏览器流程未通过，API实际结果不替代浏览器完整验收，论文UNKNOWN独立保留。
+
 原库续验 SOURCE `3660b0bace59fa21e1056bd29f4d0187b1da996a`：1 FAIL、42.1秒。历史正文LF核对、普通receipt复用与真实2501v1/v2 A→B→A保持当前head通过；首论文模型约18秒后返回delivery_unknown，未到30分钟deadline，Result:null/实际沉淀0。旧未知作业不重发，原库/trace保留，W1/W2只读诊断；AT01–04模型/热度/later/恢复以及完整S1仍未通过。独立公开README原生流程获主控继续授权，尚未运行。
 
 Full S1 首轮 SOURCE `393676ebc5241c1db56c721caa776e248d98dc19` 真实浏览器1 FAIL（约229.1秒、exit1）：三次实际导入成功后，历史CRLF与浏览器textarea LF规范断言不符，尚无模型沉淀或原生会话。原export、objects、SQLite与原trace保留；续验仅复用同库和已完成视频结果，不重新获取媒体。此首败不改写为通过，AT01–04/原生/非空公开来源选择仍待真实后续验收，详见 tasks/S1-sync-W3.md。

@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { test, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import process from 'node:process';
 import type { components } from '../src/api/schema';
@@ -15,10 +15,15 @@ type S = components['schemas'];
 test('human observes, stops, resumes the same actual native session and sends one scoped message', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_REAL_NATIVE_UI !== '1', 'Requires separately declared coordinator-assigned native slot.');
   test.setTimeout(360_000);
-  const server = await startS1Server({ browser: true });
+  page.setDefaultTimeout(30_000);
+  const reusePath = process.env.ASTROCYTE_NATIVE_REUSE_OWNED_TEMP;
+  const ownedRoot = process.env.ASTROCYTE_NATIVE_REUSE_APPROVED_ROOT;
+  const reuseSessionID = process.env.ASTROCYTE_NATIVE_REUSE_SESSION_ID;
+  if (reusePath && (!ownedRoot || !reuseSessionID)) throw new Error('Native continuation requires the exact approved owned root and original session ID.');
+  const server = await startS1Server({ browser: true, ...(reusePath ? { reuseOwnedTemporary: { path: reusePath, ownedRoot: ownedRoot! } } : {}) });
   const api = await humanAPI(server.apiURL);
   const root = join(server.temporary, 'approved-native-public-project');
-  await mkdir(root);
+  await mkdir(root, { recursive: true });
   await writeFile(join(root, 'README.md'), 'The approved public project marker is Astrocyte-W3-public-native.\n');
   const results: unknown[] = [];
   let completed = false;
@@ -26,41 +31,67 @@ test('human observes, stops, resumes the same actual native session and sends on
   try {
     await page.goto(`${server.webURL}/workspace`);
     const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
-    await panel.getByText('登记项目 / 发现子项目', { exact: true }).click();
-    await panel.getByLabel('新项目顶层空间名称', { exact: true }).fill('原生公开文件空间');
-    await panel.getByRole('button', { name: '创建空间用于此项目', exact: true }).click();
-    await expect(panel.getByLabel('关联项目顶层空间', { exact: true })).not.toHaveValue('');
-    await panel.getByLabel('项目名称', { exact: true }).fill('原生公开文件项目');
-    await panel.getByLabel('项目绝对目录', { exact: true }).fill(root);
-    const registering = page.waitForResponse(r => r.url().endsWith('/local-projects') && r.request().method() === 'POST');
-    await panel.getByRole('button', { name: '登记此项目', exact: true }).click();
-    const registered = await registering;
-    expect(registered.status()).toBe(200);
-    const project = (await registered.json() as S['LocalProjectResultV1']).project;
+    let project = reusePath ? (await api.get('/local-projects') as S['LocalProjectListV1']).items.find(item => resolve(item.root) === resolve(root)) : undefined;
+    if (reusePath && !project) throw new Error('The exact retained public project must already be registered.');
+    if (!project) {
+      await panel.getByText('登记项目 / 发现子项目', { exact: true }).click();
+      await panel.getByLabel('新项目顶层空间名称', { exact: true }).fill('原生公开文件空间');
+      await panel.getByRole('button', { name: '创建空间用于此项目', exact: true }).click();
+      await expect(panel.getByLabel('关联项目顶层空间', { exact: true })).not.toHaveValue('');
+      await panel.getByLabel('项目名称', { exact: true }).fill('原生公开文件项目');
+      await panel.getByLabel('项目绝对目录', { exact: true }).fill(root);
+      const registering = page.waitForResponse(r => r.url().endsWith('/local-projects') && r.request().method() === 'POST');
+      await panel.getByRole('button', { name: '登记此项目', exact: true }).click();
+      const registered = await registering;
+      expect(registered.status()).toBe(200);
+      project = (await registered.json() as S['LocalProjectResultV1']).project;
+    }
     projectID = project.id;
+    const registeredProjectID = project.id;
+    if (reusePath) await panel.getByRole('button', { name: /原生公开文件项目.*查看项目与权限/ }).click();
     const manage = panel.getByRole('region', { name: '已登记项目管理' });
-    await manage.getByText('项目小权限与模型处理许可', { exact: true }).click();
-    await manage.getByRole('checkbox', { name: 'B：允许读取明确目录 / 文件' }).check();
-    await manage.getByLabel('允许的项目子目录 / 文件（每行一项）', { exact: true }).fill('README.md');
-    await expect(manage.getByRole('checkbox', { name: 'C：允许展开获准资料的引用' })).not.toBeChecked();
-    await manage.getByLabel('此项目允许模型处理的 CLI', { exact: true }).selectOption('codex');
-    for (const action of ['读取上下文', '启动', '停止', '原生接续', '发送输入', '观察与日志']) await manage.getByRole('checkbox', { name: action, exact: true }).check();
-    const saving = page.waitForResponse(r => r.url().endsWith(`/local-projects/${project.id}/settings`) && r.request().method() === 'PUT');
-    await manage.getByRole('button', { name: '保存此项目许可', exact: true }).click();
-    const saved = await saving;
-    expect(saved.status()).toBe(200);
-    const settings = (await saved.json() as S['LocalProjectResultV1']).project.settings;
-    expect(settings.allowed_tools).toEqual([]);
-    expect(settings.allow_agent_control).toBe(false);
+    if (!reusePath) {
+      await manage.getByText('项目小权限与模型处理许可', { exact: true }).click();
+      await manage.getByRole('checkbox', { name: 'B：允许读取明确目录 / 文件' }).check();
+      await manage.getByLabel('允许的项目子目录 / 文件（每行一项）', { exact: true }).fill('README.md');
+      await expect(manage.getByRole('checkbox', { name: 'C：允许展开获准资料的引用' })).not.toBeChecked();
+      await manage.getByLabel('此项目允许模型处理的 CLI', { exact: true }).selectOption('codex');
+      for (const action of ['读取上下文', '启动', '停止', '原生接续', '发送输入', '观察与日志']) await manage.getByRole('checkbox', { name: action, exact: true }).check();
+      const saving = page.waitForResponse(r => r.url().endsWith(`/local-projects/${project.id}/settings`) && r.request().method() === 'PUT');
+      await manage.getByRole('button', { name: '保存此项目许可', exact: true }).click();
+      const saved = await saving;
+      expect(saved.status()).toBe(200);
+      const settings = (await saved.json() as S['LocalProjectResultV1']).project.settings;
+      expect(settings.allowed_tools).toEqual([]);
+      expect(settings.allow_agent_control).toBe(false);
+    }
     const native = manage.getByRole('region', { name: '项目原生 Agent 操作' });
     await native.getByLabel('项目操作客户端', { exact: true }).selectOption('codex');
     await native.getByLabel('本次读取的获准文件（每行一项）', { exact: true }).fill('README.md');
     await native.getByLabel('给 Agent 的本次消息', { exact: true }).fill('只根据已交付README原文返回公开项目marker，不使用工具或其他资料，回答仅一行。');
-    const starting = page.waitForResponse(r => r.url().endsWith('/sessions/start') && r.request().method() === 'POST');
-    await native.getByRole('button', { name: /^(验证并)?启动获准原生会话$/ }).click();
-    const started = await starting;
-    expect(started.status()).toBe(200);
-    const session = (await started.json() as S['NativeSessionResultV1']).session;
+    let session: S['NativeSessionV1'];
+    if (reusePath) {
+      const original = (await api.get(`/local-projects/${project.id}/sessions`) as S['NativeSessionListV1']).items.find(item => item.id === reuseSessionID);
+      expect(original?.ownership).toBe('owned');
+      expect(original?.stop_confirmed).toBe(true);
+      expect(original?.pending_operation).toBe('');
+      expect(['unknown', 'blocked', 'interrupted']).not.toContain(original?.status);
+      const originalRow = native.locator('li').filter({ hasText: `原生 ID ${original!.native_id}` });
+      const continuing = page.waitForResponse(r => r.url().endsWith(`/sessions/${original!.id}/resume`) && r.request().method() === 'POST');
+      await originalRow.getByRole('button', { name: /^(验证并)?原生接续$/ }).click();
+      const continued = await continuing;
+      expect(continued.status()).toBe(200);
+      session = (await continued.json() as S['NativeSessionResultV1']).session;
+      expect(session.id).toBe(original!.id);
+      expect(session.native_id).toBe(original!.native_id);
+      expect(session.mode).not.toBe('context_handoff');
+    } else {
+      const starting = page.waitForResponse(r => r.url().endsWith(`/local-projects/${project.id}/sessions`) && r.request().method() === 'POST');
+      await native.getByRole('button', { name: /^(验证并)?启动获准原生会话$/ }).click();
+      const started = await starting;
+      expect(started.status()).toBe(200);
+      session = (await started.json() as S['NativeSessionResultV1']).session;
+    }
     expect(session.ownership).toBe('owned');
     expect(session.native_id).toBeTruthy();
     results.push(session);
@@ -78,7 +109,7 @@ test('human observes, stops, resumes the same actual native session and sends on
     async function settledOutput(minimumEvents: number) {
       let observation: S['NativeObservationV1'] | undefined;
       await expect.poll(async () => {
-        observation = (await api.get(`/local-projects/${project.id}/sessions/${session.id}/observe`) as S['NativeObservationResultV1']).observation;
+        observation = (await api.get(`/local-projects/${registeredProjectID}/sessions/${session.id}/observe`) as S['NativeObservationResultV1']).observation;
         if (['unknown', 'blocked', 'interrupted'].includes(observation.status)) throw new Error(`Actual native outcome ${observation.status}; no resend allowed`);
         return observation.status === 'completed' && observation.events.length > minimumEvents && observation.events.filter(event => event.kind === 'text').map(event => event.text).join('').includes('Astrocyte-W3-public-native');
       }, { timeout: 120_000, intervals: [500] }).toBe(true);
@@ -106,17 +137,19 @@ test('human observes, stops, resumes the same actual native session and sends on
       results.push(result);
       await expect(row).toContainText('原执行停止 已确认');
     }
-    await stopUI();
-    await native.getByLabel('给 Agent 的本次消息', { exact: true }).fill('原生接续：请沿用此前已交付的同一README，再返回同一marker一行，不使用工具。');
-    const resuming = page.waitForResponse(r => r.url().endsWith(`/sessions/${session.id}/resume`) && r.request().method() === 'POST');
-    await row.getByRole('button', { name: /^(验证并)?原生接续$/ }).click();
-    const resumedResponse = await resuming;
-    expect(resumedResponse.status()).toBe(200);
-    const resumed = (await resumedResponse.json() as S['NativeSessionResultV1']).session;
-    expect(resumed.id).toBe(session.id);
-    expect(resumed.native_id).toBe(session.native_id);
-    expect(resumed.mode).not.toBe('context_handoff');
-    results.push(resumed);
+    if (!reusePath) {
+      await stopUI();
+      await native.getByLabel('给 Agent 的本次消息', { exact: true }).fill('原生接续：请沿用此前已交付的同一README，再返回同一marker一行，不使用工具。');
+      const resuming = page.waitForResponse(r => r.url().endsWith(`/sessions/${session.id}/resume`) && r.request().method() === 'POST');
+      await row.getByRole('button', { name: /^(验证并)?原生接续$/ }).click();
+      const resumedResponse = await resuming;
+      expect(resumedResponse.status()).toBe(200);
+      const resumed = (await resumedResponse.json() as S['NativeSessionResultV1']).session;
+      expect(resumed.id).toBe(session.id);
+      expect(resumed.native_id).toBe(session.native_id);
+      expect(resumed.mode).not.toBe('context_handoff');
+      results.push(resumed);
+    }
     const second = await settledOutput(0);
     await observeUI();
     await native.getByLabel('给 Agent 的本次消息', { exact: true }).fill('明确第三次输入：只返回同一已交付README的marker，不使用工具或读取其他文件。');
