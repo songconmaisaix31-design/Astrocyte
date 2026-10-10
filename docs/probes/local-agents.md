@@ -1,6 +1,6 @@
 # 本地 Agent 与工具清点
 
-## 2026-10-10 W2 原生续作（当前，源码5491fd3）
+## 2026-10-10 W2 原生续作（当前，源码d5ee4a1）
 
 用户现已要求全套本地操作，人类选择固定项目/CLI并分别授权 A/B/C；旧“仅库存、待答”章节保留为历史证据。实现与验证见 [W2 当前报告](../../tasks/S1-sync-W2.md)。全部原生 CLI 仅协作限制、关闭工具，不保证进程不能读其自有全局配置；宿主不读取认证文件或自动接管既有会话。
 
@@ -19,7 +19,7 @@
 - [OpenCode官方server接口](https://opencode.ai/docs/server/)具有session create/message/prompt_async/abort和SSE；这是后续真实driver候选，尚未实现，本轮不连接任意现有server、不调用provider/auth或全局project/session清点。
 - [coder/agentapi](https://github.com/coder/agentapi)的HTTP消息、状态、SSE展示了协作控制方式，但terminal稳定状态不能证明原生session ID恢复或OS隔离；未部署包装服务。[Happy](https://github.com/slopus/happy)和[Happy providers案例](https://github.com/slopus/happy-agent/blob/main/packages/happy-providers/EXAMPLES.md)用于参考原生session/中断接口，不另建远程同步、scheduler、Attempt/Manifest或证明系统。
 
-Context packet是controller选择范围的固定版本封装，不是完整原生history；external_observed packet的created_at只是发现范围封装时间，native未知updated_at为null。正向stop需拥有的进程树退出，单个abort响应/kill请求不能冒充StopConfirmed；UNKNOWN投递不重放。实际跨session context_handoff仍NOT_RUN。当前所有真实slot已归还，个人项目/历史根待人类提供。
+Context packet是controller选择范围的固定版本封装，不是完整原生history；external_observed packet的created_at只是发现范围封装时间，native未知updated_at为null。正向stop需拥有的进程树退出，单个abort响应/kill请求不能冒充StopConfirmed；UNKNOWN投递不重放。Codex完整context需initialize协商experimentalApi，方法不支持时返回unsupported。确认未启动的resume失败保留原owned/nativeID及停止事实，仅新操作回执failed；不是旧会话unstarted。此前真实turn/resume结果不覆盖后加的完整context断言，新增原生断言及跨session context_handoff仍NOT_RUN。当前所有真实slot已归还，个人项目/历史根待人类提供。
 
 ### OpenCode1.18.35 精确范围阻塞（零native/model启动）
 
