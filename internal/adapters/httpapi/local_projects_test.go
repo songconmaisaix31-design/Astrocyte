@@ -49,6 +49,7 @@ func TestScopedAgentTransportHumanRoutesAndCurrentRevoke(t *testing.T) {
 		{"POST", "/api/v1/local-projects/project-A/grants"},
 		{"POST", "/api/v1/local-projects/project-A/grants/revoke"},
 		{"POST", "/api/v1/local-projects/project-A/agent-token"},
+		{"POST", "/api/v1/local-projects/project-A/sessions/probe"},
 		{"GET", "/api/v1/local-projects"},
 		{"GET", "/api/v1/materials"},
 		{"GET", "/api/v1/auth/session"},

@@ -400,6 +400,8 @@ type DistillerStatusProvider interface {
 }
 type RequestDistillationCommand struct {
 	CommandMeta
+	ProjectID            string      `json:"project_id,omitempty"`
+	CLI                  string      `json:"cli,omitempty"`
 	PriorDistillationIDs []string    `json:"prior_distillation_ids,omitempty"`
 	InputRefs            []SourceRef `json:"input_refs"`
 	Stage                string      `json:"stage"`
@@ -644,6 +646,7 @@ type TrackingTx interface {
 	SaveSourceItem(SourceItem) error
 }
 type ListingPage struct {
+	Observed   int
 	Items      []ListingMetadata
 	NextCursor *string
 	HasMore    bool
@@ -653,6 +656,7 @@ type PublicListingReader interface {
 	ReadPage(context.Context, TrackingSource, string, int) (ListingPage, error)
 }
 type ListingRecommendationInput struct {
+	Caller      Principal
 	ProjectID   string
 	CLI         string
 	JobID       string
@@ -660,7 +664,7 @@ type ListingRecommendationInput struct {
 	Items       []SourceItem
 }
 type ListingRecommender interface {
-	ConfigurationID(context.Context, string, string) (string, error)
+	ConfigurationID(context.Context, Principal, string, string) (string, error)
 	Recommend(context.Context, ListingRecommendationInput) (map[string]SourceRecommendation, error)
 }
 type SourceCollection struct {
@@ -682,4 +686,30 @@ type PublicCollectionReader interface {
 type AttentionProjectReferences interface {
 	ReadProjectReference(context.Context, Principal, string, SourceRef, bool) (SourceSnapshot, error)
 	LinkedProjectReferences(context.Context, Principal, string, SourceRef) ([]SourceRef, error)
+}
+type SelectedTextRequest struct {
+	JobID           string
+	OperationID     string
+	ProjectID       string
+	CLI             string
+	Prompt          string
+	DeadlineSeconds int
+	OutputLimit     int
+}
+type SelectedTextResult struct {
+	Text     string
+	NativeID string
+	Version  string
+	Model    *string
+}
+
+// The composition bridge rechecks project model consent on config and processing.
+// It never changes provider or converts denied scope into a fallback CLI.
+type SelectedTextProcessor interface {
+	ProjectSpaceID(context.Context, Principal, string, string) (string, error)
+	ConfigurationID(context.Context, Principal, string, string) (string, error)
+	ProcessSelectedText(context.Context, Principal, SelectedTextRequest) (SelectedTextResult, error)
+}
+type ProjectDistillerFactory interface {
+	Resolve(context.Context, Principal, string, string) (Distiller, error)
 }

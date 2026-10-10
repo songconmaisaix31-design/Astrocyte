@@ -13,6 +13,12 @@ type InventoryProvider interface {
 	Snapshot(ctx context.Context) ([]domain.LocalAgent, error)
 }
 
+// Returns cached actual registry observations; querying never starts a CLI.
+// Installation remains supplied independently by the PATH inventory.
+type NativeRegistryObservations interface {
+	SnapshotNative(context.Context) ([]domain.LocalAgent, error)
+}
+
 // LocalAgentInventory is a human-readable installation/capability query, not
 // permission to start or resume an Agent or access its private native state.
 type LocalAgentInventory interface {
@@ -66,6 +72,9 @@ type TextProcessor interface {
 // LocalProjects is separate from the S0 project projection so old consumers do
 // not mistake a native project root for an execution/environment identity.
 type LocalProjects interface {
+	ProbeNativeCLI(context.Context, domain.Caller, string, string) (domain.NativeSession, error)
+	CheckProjectModel(context.Context, domain.Caller, string, string) (domain.LocalProject, error)
+	Shutdown(context.Context) error
 	ListProjects(context.Context, domain.Caller) ([]domain.LocalProject, error)
 	DiscoverProjects(context.Context, domain.Caller, string) ([]domain.ProjectCandidate, error)
 	RegisterProject(context.Context, domain.Caller, domain.RegisterProjectCommand) (domain.LocalProject, error)
