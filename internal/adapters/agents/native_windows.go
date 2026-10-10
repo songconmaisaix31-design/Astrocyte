@@ -41,7 +41,7 @@ func startOwnedNative(cmd *exec.Cmd) (func(), error) {
 		_ = cmd.Process.Kill()
 		_ = cmd.Wait()
 		cleanup()
-		return nil, err
+		return nil, &nativeOwnershipError{cause: err}
 	}
 	return cleanup, nil
 }

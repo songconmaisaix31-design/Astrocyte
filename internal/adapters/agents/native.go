@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,7 +25,7 @@ type Registry struct {
 // transcript search root or an arbitrarily supplied HTTP directory.
 func NewRegistry(stateRoot string) *Registry {
 	r := &Registry{adapters: map[string]*Native{}}
-	for _, id := range []string{"codex", "pi"} {
+	for _, id := range []string{"codex", "pi", "claude"} {
 		r.adapters[id] = &Native{id: id, stateRoot: stateRoot, processes: map[string]*nativeProcess{}, capabilities: domain.UnknownNativeCapabilities()}
 	}
 	return r
@@ -37,7 +38,7 @@ func (r *Registry) Adapter(id string) (app.NativeAdapter, error) {
 	}
 	return adapter, nil
 }
-func (r *Registry) List() []string { return []string{"codex", "pi"} }
+func (r *Registry) List() []string { return []string{"codex", "pi", "claude"} }
 
 // Cached native observations only. Installation belongs to the PATH inventory.
 func (r *Registry) SnapshotNative(ctx context.Context) ([]domain.LocalAgent, error) {
@@ -119,10 +120,34 @@ func (n *Native) get(s domain.NativeSession) (*nativeProcess, error) {
 	n.mu.Lock()
 	p, ok := n.processes[s.ID]
 	n.mu.Unlock()
-	if !ok || p.nativeID != s.NativeID {
+	if !ok {
+		return nil, nativeError(apierrors.DeliveryUnknown, "native process ownership is not established in this service instance")
+	}
+	p.mu.Lock()
+	identityMatches := p.nativeID == s.NativeID
+	p.mu.Unlock()
+	if !identityMatches {
 		return nil, nativeError(apierrors.DeliveryUnknown, "native process ownership is not established in this service instance")
 	}
 	return p, nil
+}
+
+func (n *Native) processConfiguration(p *nativeProcess) string {
+	p.mu.Lock()
+	model, provider := p.model, p.provider
+	p.mu.Unlock()
+	if model == "" || provider == "" {
+		return ""
+	}
+	return fmt.Sprintf("cli:%s;version:%s;model:%s;provider:%s;policy:selected-text-tools-disabled-v1", n.id, n.Version(), model, provider)
+}
+
+func (n *Native) refreshConfiguration(p *nativeProcess) {
+	if config := n.processConfiguration(p); config != "" {
+		n.mu.Lock()
+		n.configID, n.configAt = config, time.Now()
+		n.mu.Unlock()
+	}
 }
 
 func (n *Native) ReadContext(ctx context.Context, s domain.NativeSession) ([]domain.NativeEvent, error) {
@@ -202,6 +227,16 @@ func (n *Native) launch(r domain.NativeRequest, resume bool) (*nativeProcess, er
 		for _, feature := range codexDisabledFeatures {
 			args = append(args, "--disable", feature)
 		}
+	} else if n.id == "claude" {
+		if len(r.Project.Settings.AllowedTools) > 0 {
+			return nil, nativeError(apierrors.UnsupportedCapability, "Claude file tools are not mediated by the project scope adapter")
+		}
+		args = []string{"-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose", "--safe-mode", "--tools=", "--disallowedTools", "mcp__*", "--strict-mcp-config", "--mcp-config", `{"mcpServers":{}}`, "--max-turns", "2"}
+		if resume {
+			args = append(args, "--resume="+r.Session.NativeID)
+		} else {
+			args = append(args, "--session-id="+r.SessionID)
+		}
 	} else {
 		args = []string{"--mode", "rpc", "--session-dir", dir, "--no-tools", "--no-extensions", "--no-skills", "--no-prompt-templates"}
 		// The native read tool is not an OS sandbox. Until per-tool filesystem
@@ -254,6 +289,14 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 	}
 	p, err := n.launch(r, resume)
 	if err != nil {
+		var uncertain *nativeOwnershipError
+		if !errors.As(err, &uncertain) {
+			// launch did not create a native session process. A definitely
+			// rejected request is distinct from delivered/unknown protocol IO.
+			s.Ownership = "unstarted"
+			s.StopConfirmed = true
+			s.Status = "failed"
+		}
 		return s, err
 	}
 	fail := func(err error) (domain.NativeSession, error) {
@@ -291,8 +334,20 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		if result.Thread.ID == "" || (resume && result.Thread.ID != r.Session.NativeID) || filepath.Clean(result.Thread.Cwd) != filepath.Clean(r.Project.Root) {
 			return fail(nativeError(apierrors.ScopeDenied, "native thread identity or project differs"))
 		}
+		p.mu.Lock()
 		p.nativeID = result.Thread.ID
 		p.model, p.provider = result.Model, result.ModelProvider
+		p.mu.Unlock()
+	} else if n.id == "claude" {
+		if _, err := p.call(ctx, "initialize", map[string]any{"hooks": map[string]any{}, "agents": map[string]any{}}, false); err != nil {
+			return fail(err)
+		}
+		p.mu.Lock()
+		p.nativeID = r.SessionID
+		if resume {
+			p.nativeID = r.Session.NativeID
+		}
+		p.mu.Unlock()
 	} else {
 		response, err := p.call(ctx, "get_state", map[string]any{}, true)
 		if err != nil {
@@ -310,17 +365,16 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		if state.SessionFile == "" || !inside(filepath.Join(n.stateRoot, r.Project.ID, n.id), state.SessionFile) || (resume && state.SessionFile != r.Session.NativeID) {
 			return fail(nativeError(apierrors.ScopeDenied, "native Pi session identity differs or is unavailable"))
 		}
+		p.mu.Lock()
 		p.nativeID = state.SessionFile
 		p.model, p.provider = state.Model.ID, state.Model.Provider
+		p.mu.Unlock()
 	}
+	p.mu.Lock()
 	s.NativeID = p.nativeID
+	p.mu.Unlock()
 	s.Version = n.Version()
-	if p.model != "" && p.provider != "" {
-		n.mu.Lock()
-		n.configID = fmt.Sprintf("cli:%s;version:%s;model:%s;provider:%s;policy:selected-text-tools-disabled-v1", n.id, n.version, p.model, p.provider)
-		n.configAt = time.Now()
-		n.mu.Unlock()
-	}
+	n.refreshConfiguration(p)
 	s.Status = "idle"
 	s.UpdatedAt = time.Now().UTC()
 	n.mu.Lock()
@@ -367,6 +421,10 @@ func (n *Native) Send(ctx context.Context, s domain.NativeSession, message strin
 		p.mu.Lock()
 		p.turnID = result.Turn.ID
 		p.mu.Unlock()
+	} else if n.id == "claude" {
+		if err := p.write(map[string]any{"type": "user", "session_id": s.NativeID, "message": map[string]any{"role": "user", "content": message}, "parent_tool_use_id": nil}); err != nil {
+			return p.observe(), nativeError(apierrors.DeliveryUnknown, "Claude user-message delivery is unknown")
+		}
 	} else {
 		if _, err := p.call(ctx, "prompt", map[string]any{"message": message}, true); err != nil {
 			return p.observe(), err
@@ -386,12 +444,15 @@ func (n *Native) Stop(ctx context.Context, s domain.NativeSession) (domain.Nativ
 	turn := p.turnID
 	p.mu.Unlock()
 	short, cancel := context.WithTimeout(ctx, time.Second)
-	if n.id == "codex" && turn != "" {
+	if n.id == "codex" && turn != "" && p.observe().Status == "running" {
 		_, _ = p.call(short, "turn/interrupt", map[string]any{"threadId": s.NativeID, "turnId": turn}, false)
 	}
 	if n.id == "pi" {
 		_, _ = p.call(short, "clear_queue", map[string]any{}, true)
 		_, _ = p.call(short, "abort", map[string]any{}, true)
+	}
+	if n.id == "claude" && p.observe().Status == "running" {
+		_, _ = p.call(short, "interrupt", map[string]any{}, false)
 	}
 	cancel()
 	err = p.stop(ctx)
@@ -410,7 +471,11 @@ func (n *Native) Observe(ctx context.Context, s domain.NativeSession) (domain.Na
 		return domain.NativeObservation{Status: "unknown"}, err
 	}
 	n.observed("observe")
-	return p.observe(), nil
+	obs := p.observe()
+	if obs.Status == "completed" {
+		n.refreshConfiguration(p)
+	}
+	return obs, nil
 }
 
 type ProjectFiles struct{}
