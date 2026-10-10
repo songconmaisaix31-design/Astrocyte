@@ -124,17 +124,32 @@ func paperSource(snapshot PaperSnapshot, html []byte) (app.ImportedSource, error
 // PDF/landing URLs (e.g. 2024.acl-long.1, P19-1001, D19-1001).
 var aclAnthologyID = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
 
+// aclAnthologySourceKey derives the shared ACL Anthology DOI identity from a
+// landing or PDF URL when one is present. The identifier is embedded in the
+// URL path, so both the landing page and its PDF collapse to one source key
+// without fabricating a DOI for any other host. The returned bool reports
+// whether the URL actually was an ACL Anthology page.
+func aclAnthologySourceKey(rawURL string) (string, bool) {
+	u, err := url.Parse(rawURL)
+	if err != nil || (u.Hostname() != "aclanthology.org" && u.Hostname() != "www.aclanthology.org") {
+		return "", false
+	}
+	// Both the landing page (/2024.acl-long.1/) and its PDF
+	// (/2024.acl-long.1.pdf) embed the same identifier in the path.
+	id := strings.TrimSuffix(strings.Trim(u.Path, "/"), ".pdf")
+	if id == "" || strings.Contains(id, "/") || !aclAnthologyID.MatchString(id) {
+		return "", false
+	}
+	return "doi:10.18653/v1/" + id, true
+}
+
 // paperPDFSourceKey derives a stable material identity from a public PDF URL.
 // The ACL Anthology embeds its identifier and thus its DOI in the URL, so the
 // landing page and PDF share one source key; other sites fall back to the
 // canonical URL. A PDF link is never presented as full text itself.
 func paperPDFSourceKey(pdfURL string) string {
-	u, err := url.Parse(pdfURL)
-	if err == nil && (u.Hostname() == "aclanthology.org" || u.Hostname() == "www.aclanthology.org") {
-		id := strings.TrimSuffix(strings.TrimPrefix(u.Path, "/"), ".pdf")
-		if id != "" && !strings.Contains(id, "/") && aclAnthologyID.MatchString(id) {
-			return "doi:10.18653/v1/" + id
-		}
+	if key, ok := aclAnthologySourceKey(pdfURL); ok {
+		return key
 	}
 	return canonicalWebKey(pdfURL)
 }

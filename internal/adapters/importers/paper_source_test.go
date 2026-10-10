@@ -95,6 +95,14 @@ func TestIsPublicIP(t *testing.T) {
 		{"::ffff:192.168.1.1", false},
 		{"2606:4700:4700::1111", true},
 		{"2001:4860:4860::8888", true},
+		{"2a00:1450:4001::", true},
+		// Documentation prefix 2001:db8::/32 and discard-only 100::/64 are not
+		// globally routable, but ordinary global unicast IPv6 stays accepted.
+		{"2001:db8::1", false},
+		{"2001:db8:0:0:0:0:0:1", false},
+		{"2001:db8:ffff:ffff:ffff:ffff:ffff:ffff", false},
+		{"100::", false},
+		{"100::1", false},
 	}
 	for _, c := range cases {
 		if got := isPublicIP(net.ParseIP(c.addr)); got != c.want {
