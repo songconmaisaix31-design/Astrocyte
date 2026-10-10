@@ -1,44 +1,50 @@
-# S1 论文检索、进度与前端 DTO 交接（本轮 W3）
+# S1 论文检索、进度与前端 DTO 交接（本轮 W3，已对齐 W0 发布契约）
 
-本轮（`run_8c1696bb815a`，W3）延续已验看板布局，为三项已确认能力补齐前端垂直片：论文检索入口（检索 → 元数据/原文可得状态 → 勾选 → 批量入库 → 继续沉淀）、Agent 进度依据展示（TASK/STATUS 来源/阶段/新鲜度，未知不伪造百分比）。CLI 原生操作沿用现有 `ManagedProjectsPanel`/`NativeProjectPanel`（start/read/resume/send/stop/observe/context_handoff），不以看板即自动授权。记忆与工具层按待答决定仅作规划，不默认全局、不建 UI 伪工具。
+本轮（`run_8c1696bb815a`，W3）延续已验看板布局，为三项已确认能力补齐前端垂直片，并对齐 W0 已发布的真实契约（`b8dfe67`）与 W1 真实扩展输出，替换此前本地猜测的假 DTO：
+
+- **论文检索**：`POST /api/v1/paper/search`（W0 契约 + W1 服务），返回 `PaperMetadataV1`（`site/source_key/doi/arxiv_id/title/authors/abstract/published_at/locator/content_state/license/warning`）。检索只返回公开元数据（`content_state=abstract_only`）；原文可得性在勾选入库后由作业确定，失败在处理队列可查。勾选纯人工、可取消、批量入库由人显式提交且不全量。
+- **插件快照复核**：对齐 W1 MV3 扩展真实输出 `source_url/content_state/host_family/source_key/doi/arxiv_id/observed_version/pdf_urls/warning/truncated/provenance`。arXiv 走 `arxiv` adapter，其余公开 HTTPS 页面走 W1 已可用的 `paper_url` adapter（不再仅 arxiv）；付费墙/受限无绕过。快照摘要永不当作正文。
+- **项目进度**：对齐 W0 `ProjectProgressV1`（`status/summary/evidence[]/inferred/inferred_at/processor/model/warning`），`ProgressEvidenceV1`（`source_path/kind/version/freshness/excerpt`）。契约无百分比字段，`status=unknown` 呈现「未知」，绝不伪造数字。UI 已接真实 `GET /local-projects/{id}/progress` 与 `POST .../progress/infer`（`progressClient.ts` + `ProjectProgressPanel.tsx`，挂入 `ManagedProjectsPanel`）。
+- CLI 原生操作沿用现有 `ManagedProjectsPanel`/`NativeProjectPanel`（start/read/resume/send/stop/observe/context_handoff），权限判断 `nativePermission.ts` 不变，不以看板即自动授权。记忆与工具层按待答决定仅作规划，不默认全局、不建 UI 伪工具。
 
 ## 分支与源码
 
 - 分支 `s1-sync-ui-1010`，普通合入 ROOT 精确基线 `8277667`（随后快进至 `origin/s1/attention-materials-20261009`，保留原 owner 历史，无 squash/rebase/reset/force）。
 - 本轮 UI/测试源码为一次精确提交（SOURCE），REPORT 为随后仅更新 `docs/acceptance/S1-paper-board.md` 与本任务报告的提交，精确 SHA 通过 Orca 交接。
-- 独占写域遵守 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、本文件与 `tasks/S1-final-W3.md`；未改契约、生成客户端、迁移、锁或入口。
+- 独占写域遵守 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、本文件与 `tasks/S1-final-W3.md`；未改契约、生成客户端、迁移、锁或入口（`web/src/api/` 由 W0 单一 owner 生成 `searchPapers`/`getProjectProgress`/`inferProjectProgress` 包装后替换本地 seam）。
 
-## 完成内容
+## DTO 交接（供 W0 集成阶段替换本地 seam）
 
-Attention 新增清晰「检索论文」入口（顶部流程条与「来源与整理」折叠面板）。检索面板展示每条结果的标题/作者/年份/来源与**原文可得状态**（原文可得 / 仅元数据 / 受限 / 可得性未知），受限项给出受限说明，已入库项显示「查看已入库资料」且不可重复勾选；未知可得性项不可勾选、提示等待重试。勾选为纯人工、可随时「取消全部勾选」，批量入库由人显式提交，不自动全量。真实模式只走真实 API：未连接/501/未知/失败以明确文案与重试呈现，绝不用样本冒充；示例模式标注固定样本并禁止写入。
+前端已按 W0 发布契约的形状实现本地视图（`paperSearch.ts` 的 `PaperMetadata`/`PaperSearchResult` 精确镜像 `PaperMetadataV1`/`PaperSearchResultV1`；`progressPresentation.ts` 的 `ProjectProgress`/`ProgressEvidence` 精确镜像 `ProjectProgressV1`/`ProgressEvidenceV1`），并直接消费真实路由。W0 生成客户端后只需：
 
-进度展示层为纯函数（`progressPresentation.ts`）：百分比为 `null` 时呈现「未知」，绝不伪造数字；阶段与 TASK/STATUS 来源引用、新鲜度并列展示，无依据时呈现「未知」。CLI 原生操作继续由既有面板承载，权限判断（`nativePermission.ts`）不变，看板不据发现授予操作许可。
-
-## DTO 交接（供 W0/W1/W2 消费，接口命名/版本由 W0 单一决定）
-
-UI 已按以下本地视图形状实现并可直接消费，请 W0/W1/W2 发布对应契约后，W3 集成阶段替换 `paperSearchClient.ts`/`progressPresentation.ts` 的本地形状为生成类型（不需要改 UI 结构）：
-
-1. **论文检索（W0 契约 + W1 服务）**：`GET /papers/search?q=&cursor=&limit=` → `{ query, items:[{ id, title, authors[], year, venue, source_type, arxiv_id, doi, locator, abstract, availability:{ status: full_text|metadata_only|restricted|unknown, detail }, already_imported, import_material_id }], next_cursor, has_more, warnings[] }`。
-2. **论文批量入库（W0 契约 + W1 服务，人类 CSRF + 幂等）**：`POST /papers/import` → `{ job_id }`，body `{ items:[{ id, source_type }], collection_reason }`；继续沉淀复用既有 `POST /distillations/jobs`。
-3. **进度依据（W2 服务）**：`GET /local-projects/{id}/progress` → `{ stage, percent(null=未知), source_refs:[{ path, line? }], freshness:{ observed_at, source } }`；percent 为 null 时前端必须呈现「未知」。
-4. **原生 reconcile（W2，对应 SPEC 17.3「外部动作结果未知按原 operation 对账」）**：`POST /local-projects/{id}/sessions/{session_id}/reconcile`，用于未知外部动作对账，不自动重发。
-5. **记忆（W2，待答决定后）**：列表/搜索 → 时间线 → 详情/按项目 scoped 配置/遗忘；本轮未建 UI、未默认全局或原对话采集。
+1. **论文检索**：`POST /api/v1/paper/search`（body `PaperSearchRequestV1`，header `Idempotency-Key`+`X-CSRF-Token`）→ `PaperSearchResultV1`。前端 `paperSearchClient.searchPapers` 已按此调用；W0 可替换为 `attentionApi.searchPapers(...)`。
+2. **论文入库**：沿用既有 `POST /materials/imports`（`ImportMaterialRequestV1`，kind=paper，`adapter` 按站点 `arxiv` 或 **`paper_url`**，`source_key` 去重、新 revision）。**待 W0 将 `paper_url` 加入 `ImportMaterialRequestV1.adapter` 枚举**（W1 后端已实现 `case "paper_url"`，但契约枚举未含；前端 `paperSearchClient.ts`/`PluginSnapshotReview.tsx` 在单一 seam 处 cast，集成时请 W0 确认）。
+3. **进度依据**：`GET /api/v1/local-projects/{id}/progress` → `ProjectProgressResultV1`；`POST .../progress/infer`（body `InferProgressRequestV1`）→ 同。前端 `progressClient.getProjectProgress`/`inferProjectProgress` 已按此调用；W0 可替换为 `localProjectsApi.*`。
+4. **记忆（W2，待答决定后）**：列表/搜索 → 时间线 → 详情/按项目 scoped 配置/遗忘；本轮未建 UI、未默认全局或原对话采集。
 
 ## 验证
 
 | 验证 | 结果 |
 |---|---|
 | `pnpm --dir web typecheck` | PASS/exit0 |
-| `pnpm --dir web test` | 72 PASS（新增论文检索 7 例 + 进度 4 例；既有 61 例保持） |
+| `pnpm --dir web test` | 77 PASS（论文检索 6 例 + 插件快照 6 例 + 进度 4 例；既有其余保持） |
 | 定向 `eslint`（新增/改动文件） | PASS/exit0 |
-| `pnpm --dir web build` | PASS/exit0（96 模块） |
-| `playwright test paper-search.spec.ts`（1920/1280） | **8 PASS**：示例模式结果/可得状态/受限说明/选择/取消且 0 写请求；未知与已入库不可勾选；真实 501 呈现「检索未完成」且无样本冒充 |
+| `pnpm --dir web build` | PASS/exit0（101 模块） |
+| `playwright test paper-search.spec.ts plugin-snapshot.spec.ts progress.spec.ts`（1920/1280） | **24 PASS**：示例检索元数据/选择/取消且 0 写请求；真实 501 呈现「检索未完成」；真实 `PaperSearchResultV1` 载荷渲染并 POST 检索；插件快照按 `source_url`/`content_state` 解析、arXiv→arxiv、非 arXiv→paper_url、付费墙无绕过；进度 GET/POST infer 对接 + 未知不伪造数字；移动 390 无横溢 |
+| `playwright test navigation.spec.ts`（回归） | 104 PASS |
+
+## 首失败保留
+
+1. 本轮之前未提交的插件快照 e2e 首场 **6 FAIL**：fixture 模式表单被误隐藏（textarea 不渲染致 `.fill` 超时）且 `getByText` 命中 textarea 与标题多条（严格模式冲突）。改为表单两种模式均渲染、断言用 `getByRole('heading')` 后通过；原 RED 不覆盖为通过。
+2. 进度 e2e 首场 **2 FAIL**：`getByText(/tasks\/S1\.md/)` 命中「依据来源」与 `<h5>` 两条。改为 `getByRole('heading')` 后通过。
+3. `importAdapterFor` 原实现对非法 URL 直接 `new URL` 抛错，已改为安全解析；补单测锁定。
 
 ## 未完成与真实限制
 
-- 检索/批量入库/进度/记忆的真实端点尚未由 W0/W1/W2 发布：UI 已就绪并按真实 API 语义诚实呈现「未连接/失败」，但真实检索、批量入库、进度读取的端到端仍待 W0/W1/W2 契约落地后集成。
+- 检索/入库/进度的真实后端尚未由 W0 统一组装：本轮 UI 已对齐真实契约并直接消费真实路由，但端到端真实检索→入库→SQLite/objects→新 API 进程的闭环待 W0 合并 W1/W2 后端后联合验收（本轮 e2e 以真实契约形状 mock 验证 UI 对接，未伪造真实结果）。
+- `paper_url` 尚未进入 W0 契约 `adapter` 枚举，需 W0 集成时确认（见上 DTO 交接第 2 条）。
 - CLI 完整覆盖范围与记忆隔离/全局/仅规划两项仍 PENDING，未代选，未建对应 UI。
-- 未运行个人 5173/8787、未安装插件、未读取个人 Chrome、未合 main/远程 CI；三尺寸（1920/1280/390）真实数据截图待端到端契约落地后由 W0/root 复核（本轮 e2e 覆盖 1920/1280，390 属移动布局，见下文既有看板验收）。
+- 未运行个人 5173/8787、未安装插件、未读取个人 Chrome、未合 main/远程 CI；真实数据三尺寸截图待端到端契约落地后由 W0/root 复核。
 
 ---
 
