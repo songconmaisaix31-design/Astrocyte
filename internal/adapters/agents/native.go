@@ -25,8 +25,9 @@ type Registry struct {
 // transcript search root or an arbitrarily supplied HTTP directory.
 func NewRegistry(stateRoot string) *Registry {
 	r := &Registry{adapters: map[string]*Native{}}
+	slots := make(chan struct{}, 4)
 	for _, id := range []string{"codex", "pi", "claude"} {
-		r.adapters[id] = &Native{id: id, stateRoot: stateRoot, processes: map[string]*nativeProcess{}, capabilities: domain.UnknownNativeCapabilities()}
+		r.adapters[id] = &Native{id: id, stateRoot: stateRoot, slots: slots, processes: map[string]*nativeProcess{}, capabilities: domain.UnknownNativeCapabilities()}
 	}
 	return r
 }
@@ -76,6 +77,7 @@ type Native struct {
 	version       string
 	configID      string
 	configAt      time.Time
+	slots         chan struct{}
 }
 
 func (n *Native) ID() string { return n.id }
@@ -144,8 +146,11 @@ func (n *Native) processConfiguration(p *nativeProcess) string {
 
 func (n *Native) refreshConfiguration(p *nativeProcess) {
 	if config := n.processConfiguration(p); config != "" {
+		p.mu.Lock()
+		observedAt := p.modelObservedAt
+		p.mu.Unlock()
 		n.mu.Lock()
-		n.configID, n.configAt = config, time.Now()
+		n.configID, n.configAt = config, observedAt
 		n.mu.Unlock()
 	}
 }
@@ -171,8 +176,8 @@ func (n *Native) ReadContext(ctx context.Context, s domain.NativeSession) ([]dom
 
 var codexDisabledFeatures = []string{"shell_tool", "unified_exec", "plugins", "apps", "browser_use", "browser_use_external", "browser_use_full_cdp_access", "computer_use", "view_image", "image_generation", "multi_agent", "multi_agent_v2", "memories", "hooks", "code_mode", "code_mode_host", "skill_search", "tool_suggest", "workspace_dependencies", "realtime_conversation", "remote_plugin", "remote_models", "in_app_browser", "in_app_local_automation", "sleep_tool"}
 
-func (n *Native) launch(r domain.NativeRequest, resume bool) (*nativeProcess, error) {
-	probeCtx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+func (n *Native) launch(ctx context.Context, r domain.NativeRequest, resume bool) (*nativeProcess, error) {
+	probeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	probe, err := installedCommand(n.id, []string{"--version"})
 	if err != nil {
@@ -287,8 +292,15 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 	if ok && !existing.observe().StopConfirmed {
 		return s, nativeError(apierrors.VersionConflict, "owned session is still running")
 	}
-	p, err := n.launch(r, resume)
+	select {
+	case n.slots <- struct{}{}:
+	default:
+		s.Ownership, s.Status, s.StopConfirmed = "unstarted", "failed", true
+		return s, nativeError(apierrors.BudgetExhausted, "controller native concurrency limit is four")
+	}
+	p, err := n.launch(ctx, r, resume)
 	if err != nil {
+		<-n.slots
 		var uncertain *nativeOwnershipError
 		if !errors.As(err, &uncertain) {
 			// launch did not create a native session process. A definitely
@@ -299,8 +311,25 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		}
 		return s, err
 	}
+	go func() { <-p.done; <-n.slots }()
+	// Keep the actual process reachable even if initialization or its stop is
+	// uncertain. Never lose a still-owned process on a failed handshake.
+	n.mu.Lock()
+	if len(n.processes) >= 256 {
+		for id, old := range n.processes {
+			if id != s.ID && old.observe().StopConfirmed {
+				delete(n.processes, id)
+				break
+			}
+		}
+	}
+	n.processes[s.ID] = p
+	n.mu.Unlock()
 	fail := func(err error) (domain.NativeSession, error) {
 		_ = p.stop(context.Background())
+		p.mu.Lock()
+		s.NativeID = p.nativeID
+		p.mu.Unlock()
 		s.Status = "unknown"
 		s.StopConfirmed = p.observe().StopConfirmed
 		return s, err
@@ -337,6 +366,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		p.mu.Lock()
 		p.nativeID = result.Thread.ID
 		p.model, p.provider = result.Model, result.ModelProvider
+		p.modelObservedAt = time.Now()
 		p.mu.Unlock()
 	} else if n.id == "claude" {
 		if _, err := p.call(ctx, "initialize", map[string]any{"hooks": map[string]any{}, "agents": map[string]any{}}, false); err != nil {
@@ -368,6 +398,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		p.mu.Lock()
 		p.nativeID = state.SessionFile
 		p.model, p.provider = state.Model.ID, state.Model.Provider
+		p.modelObservedAt = time.Now()
 		p.mu.Unlock()
 	}
 	p.mu.Lock()
@@ -377,9 +408,6 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 	n.refreshConfiguration(p)
 	s.Status = "idle"
 	s.UpdatedAt = time.Now().UTC()
-	n.mu.Lock()
-	n.processes[s.ID] = p
-	n.mu.Unlock()
 	if resume {
 		n.observed("resume")
 	} else {
@@ -396,6 +424,9 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 }
 
 func (n *Native) Send(ctx context.Context, s domain.NativeSession, message string) (domain.NativeObservation, error) {
+	if err := ctx.Err(); err != nil {
+		return domain.NativeObservation{}, err
+	}
 	p, err := n.get(s)
 	if err != nil {
 		return domain.NativeObservation{}, err

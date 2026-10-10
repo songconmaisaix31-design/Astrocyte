@@ -186,6 +186,8 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 	return p, errors.Join(stopErrors...)
 }
 func (s *localProjectService) GrantProjectAgent(ctx context.Context, c domain.Caller, id string, g domain.ProjectGrant) (domain.ProjectGrant, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if err := human(c); err != nil {
 		return g, err
 	}
@@ -233,6 +235,8 @@ func (s *localProjectService) RevokeProjectAgent(ctx context.Context, c domain.C
 	return g, errors.Join(stopErrors...)
 }
 func (s *localProjectService) IssueProjectAgentToken(ctx context.Context, c domain.Caller, id, agentID string) (domain.AgentToken, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	var result domain.AgentToken
 	if err := human(c); err != nil {
 		return result, err
@@ -276,6 +280,12 @@ func (s *localProjectService) AuthenticateAgentToken(ctx context.Context, token 
 }
 
 func (s *localProjectService) ReadProjectContext(ctx context.Context, c domain.Caller, id string, request domain.ContextRequest) (domain.ContextPacket, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.readProjectContext(ctx, c, id, request)
+}
+
+func (s *localProjectService) readProjectContext(ctx context.Context, c domain.Caller, id string, request domain.ContextRequest) (domain.ContextPacket, error) {
 	var packet domain.ContextPacket
 	p, err := s.authorize(ctx, c, id, "read_context")
 	if err != nil {
@@ -379,7 +389,13 @@ func (s *localProjectService) nativePermission(ctx context.Context, c domain.Cal
 	return err
 }
 func (s *localProjectService) checkPacket(ctx context.Context, c domain.Caller, p domain.LocalProject, packet domain.ContextPacket) error {
+	if len(packet.Materials) > 0 && s.refs == nil {
+		return projectError(apierrors.UnsupportedCapability, "project reference reader is not connected")
+	}
 	for _, material := range packet.Materials {
+		if material.Expanded && !p.Settings.ExpandReferences {
+			return projectError(apierrors.ApprovalRevoked, "expanded reference context is revoked")
+		}
 		if _, err := s.refs.ReadSelected(ctx, c, p.SpaceID, material.Reference, material.Expanded && p.Settings.ExpandReferences); err != nil {
 			return err
 		}
@@ -442,7 +458,7 @@ func (s *localProjectService) StartNativeSession(ctx context.Context, c domain.C
 			return session, projectError(apierrors.DeliveryUnknown, "source session stop is unconfirmed")
 		}
 	}
-	packet, err := s.ReadProjectContext(ctx, c, id, cmd.Context)
+	packet, err := s.readProjectContext(ctx, c, id, cmd.Context)
 	if err != nil {
 		return session, err
 	}
@@ -548,7 +564,7 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 			return session, projectError(apierrors.BudgetExhausted, "project native concurrency limit is one")
 		}
 	}
-	packet, err := s.ReadProjectContext(ctx, c, projectID, cmd.Context)
+	packet, err := s.readProjectContext(ctx, c, projectID, cmd.Context)
 	if err != nil {
 		return session, err
 	}
@@ -728,6 +744,8 @@ func (s *localProjectService) DiscoverNativeSessions(ctx context.Context, c doma
 	return items, nil
 }
 func (s *localProjectService) ReadNativeContext(ctx context.Context, c domain.Caller, projectID, sessionID string) ([]domain.NativeEvent, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	p, session, a, err := s.session(ctx, c, projectID, sessionID, "read_context")
 	if err != nil {
 		return nil, err

@@ -48,24 +48,23 @@ func (r *Registry) ConfigurationID(ctx context.Context, cli string) (string, err
 	return n.configID, nil
 }
 
-func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextRequest) (domain.TextResult, error) {
-	var result domain.TextResult
+func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextRequest) (result domain.TextResult, resultErr error) {
 	if strings.TrimSpace(input.Prompt) == "" || len(input.Prompt) > 128*1024 {
-		return result, nativeError(apierrors.BudgetExhausted, "selected text input is empty or exceeds 128 KiB")
+		return result, nativeError(apierrors.ValidationFailed, "selected text input is empty or exceeds 128 KiB")
 	}
 	seconds := input.DeadlineSeconds
 	if seconds == 0 {
 		seconds = 180
 	}
 	if seconds < 1 || seconds > 1800 {
-		return result, nativeError(apierrors.BudgetExhausted, "selected text deadline is outside 1 to 1800 seconds")
+		return result, nativeError(apierrors.ValidationFailed, "selected text deadline is outside 1 to 1800 seconds")
 	}
 	limit := input.OutputLimit
 	if limit == 0 {
 		limit = 64 * 1024
 	}
 	if limit < 1 || limit > 128*1024 {
-		return result, nativeError(apierrors.BudgetExhausted, "selected text output limit is invalid")
+		return result, nativeError(apierrors.ValidationFailed, "selected text output limit is invalid")
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(seconds)*time.Second)
 	defer cancel()
@@ -77,7 +76,12 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	if err != nil {
 		return result, err
 	}
-	defer func() { _, _ = n.Stop(context.Background(), s) }()
+	defer func() {
+		obs, err := n.Stop(context.Background(), s)
+		if err != nil || !obs.StopConfirmed {
+			resultErr = nativeError(apierrors.DeliveryUnknown, "selected-text owned process stop remains unconfirmed")
+		}
+	}()
 	p, err := n.get(s)
 	if err != nil {
 		return result, err

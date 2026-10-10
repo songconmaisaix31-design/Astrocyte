@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Caller is supplied by the authenticated transport, never decoded from a body.
 type Caller struct {
@@ -122,6 +125,20 @@ type NativeSession struct {
 	UpdatedAt        time.Time                  `json:"updated_at"`
 	// Cooperative CLI tools do not provide an OS read-isolation guarantee.
 	Limitations []string `json:"limitations"`
+}
+
+// MarshalJSON preserves unknown historical time as null, without changing
+// SQLite decoding of old rows or fabricating a native history timestamp.
+func (s NativeSession) MarshalJSON() ([]byte, error) {
+	type nativeSessionJSON NativeSession
+	var updated *time.Time
+	if !s.UpdatedAt.IsZero() {
+		updated = &s.UpdatedAt
+	}
+	return json.Marshal(struct {
+		nativeSessionJSON
+		UpdatedAt *time.Time `json:"updated_at"`
+	}{nativeSessionJSON: nativeSessionJSON(s), UpdatedAt: updated})
 }
 
 // Bounded native-command receipts live in the existing session row. They are

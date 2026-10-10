@@ -13,6 +13,22 @@ import (
 
 var _ app.LocalProjectRepository = (*DB)(nil)
 
+func normalizeLocalProject(p domain.LocalProject) domain.LocalProject {
+	if p.Settings.HistoryRoots == nil {
+		p.Settings.HistoryRoots = map[string]string{}
+	}
+	if p.Settings.AllowedSubdirs == nil {
+		p.Settings.AllowedSubdirs = []string{}
+	}
+	if p.Settings.AllowedActions == nil {
+		p.Settings.AllowedActions = []string{}
+	}
+	if p.Settings.AllowedTools == nil {
+		p.Settings.AllowedTools = []string{}
+	}
+	return p
+}
+
 func (db *DB) ListProjects(ctx context.Context) ([]domain.LocalProject, error) {
 	rows, err := db.conn.QueryContext(ctx, "SELECT data FROM local_agent_projects ORDER BY id")
 	if err != nil {
@@ -29,7 +45,7 @@ func (db *DB) ListProjects(ctx context.Context) ([]domain.LocalProject, error) {
 		if err := json.Unmarshal([]byte(data), &p); err != nil {
 			return nil, err
 		}
-		result = append(result, p)
+		result = append(result, normalizeLocalProject(p))
 	}
 	return result, rows.Err()
 }
@@ -44,9 +60,10 @@ func (db *DB) LoadProject(ctx context.Context, id string) (domain.LocalProject, 
 		return p, err
 	}
 	err = json.Unmarshal([]byte(data), &p)
-	return p, err
+	return normalizeLocalProject(p), err
 }
 func (db *DB) SaveProject(ctx context.Context, p domain.LocalProject, expected int) error {
+	p = normalizeLocalProject(p)
 	data, err := json.Marshal(p)
 	if err != nil {
 		return err

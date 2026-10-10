@@ -114,6 +114,10 @@ func TestStartupDeadlinePublishesOnlyCompletedChecks(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
+	if os.Getenv("ASTROCYTE_NATIVE_PROCESS_TEST_HELPER") != "" {
+		nativeProcessTestHelper()
+		os.Exit(0)
+	}
 	if os.Getenv("ASTROCYTE_CLI_PROBE_TEST_CHILD") == "1" {
 		if len(os.Args) == 2 && os.Args[1] == "--version" {
 			fmt.Println("native-test 1.2.3")
