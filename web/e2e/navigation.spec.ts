@@ -75,6 +75,51 @@ test.describe('Three-page navigation', () => {
 
 // ── 2. Real empty API states (settled — no 加载中) ──
 
+test.describe('Sidebar material import', () => {
+  for (const path of ['/workspace', '/swarm']) {
+    test(`${path} opens the existing import dialog when imports are available`, async ({ page }) => {
+      const writes: string[] = [];
+      page.on('request', request => {
+        if (request.url().includes('/api/v1/') && !['GET', 'HEAD'].includes(request.method())) writes.push(request.url());
+      });
+      await page.goto(`${path}?tab=overview`);
+      const add = page.locator('.ac-sidebar').getByRole('button', { name: '添加资料', exact: true });
+      await expect(add).toBeEnabled();
+      await add.click();
+      await expect(page).toHaveURL(/\/attention\?import=1$/);
+      const dialog = page.getByRole('dialog', { name: '添加资料', exact: true });
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByLabel('导入方式', { exact: true })).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+      await expect(page).toHaveURL(/\/attention$/);
+      expect(writes).toEqual([]);
+    });
+
+    test(`${path} keeps fixture import disabled`, async ({ page }) => {
+      await page.goto(`${path}?fixture=1`);
+      await expect(page.locator('.ac-sidebar').getByRole('button', { name: '添加资料 · 未启用', exact: true })).toBeDisabled();
+      await expect(page.getByRole('dialog', { name: '添加资料', exact: true })).not.toBeVisible();
+    });
+
+    for (const capability of ['disabled', 'unknown'] as const) {
+      test(`${path} keeps import disabled when capability is ${capability}`, async ({ page }) => {
+        await page.route('**/api/v1/foundation', async route => {
+          if (capability === 'unknown') { await route.abort(); return; }
+          const response = await route.fetch();
+          const body = await response.json();
+          await route.fulfill({ response, json: { ...body, capabilities: { ...body.capabilities, imports: false } } });
+        });
+        await page.goto(path);
+        const capabilities = page.getByRole('group', { name: '系统能力' });
+        await capabilities.locator('summary').click();
+        await expect(capabilities).toContainText(capability === 'unknown' ? '无法获取' : '导入 · 未启用');
+        await expect(page.locator('.ac-sidebar').getByRole('button', { name: '添加资料 · 未启用', exact: true })).toBeDisabled();
+      });
+    }
+  }
+});
+
 test.describe('Empty API states', () => {
   test('资料沉淀 shows settled empty headings after queries resolve', async ({ page }) => {
     await page.goto('/attention');
