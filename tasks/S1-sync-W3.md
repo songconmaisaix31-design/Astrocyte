@@ -14,6 +14,10 @@
 
 前端兼容缺失历史映射，显示未提供且禁止历史发现；此兼容不授权任何根。W2 修复实际 DTO 空映射/切片，已分别交接 W0/W2；首次 RED 保留，后续定向复验单独输出，不替代历史失败或全任务验收。
 
+修复 SOURCE `711a3cde30830496d7b0cc832f45068e798db8da` 已 push，同命令输出 `test-results/s1-project-null-fix`：1 PASS，25.9 秒，exit0。真实 UI 创建空间、手动登记临时公开根、独立 B 开/C 关、保存明确 README 路径、预览实际文本、SQLite 设置比对和 API 重启持久化均通过，原生会话计数为 0。相同实际状态 resize1280/1920 截图已目视，无横向溢出；服务退出后15173/18787/55302/55303无监听，无相关 node/server，已明确向主控释放唯一 live 槽。个人根和原生/model/media 仍未测试。
+
+根据主控冷未知操作复核，已登记驱动与已观察支持分别处理：准确项目 CLI 与动作许可下，人类可明确首次验证 unknown 的 start/resume/send/observe，unsupported 仍禁用。未知结果/待定操作禁止 send/resume；只允许控制 owned 匹配会话。人类 stop 独立命令不受上下文读取失败或能力缓存过期阻塞，仍需动作许可且服务最终核对停止；无自动派发或 paid 探测。静态首次检查因新增单测误写 observed_at 而 typecheck FAIL，改为契约 checked_at 后 typecheck/build 和三项权限门槛单测 PASS；lint PASS。原生正向浏览器未执行，不把单测当原生接续证据。
+
 ### 已发布客户端上的实际表单
 
 普通合入 W0 typed client `b47a3fc63e5ff07b825ecb672454ed5005743650`，再合 `2e5ef61982bbb55278ea9fe566b5cda72d9df27e`（公开收藏列表、历史根、身份临时凭据）。Attention 现可绑定多个公开创作者/收藏夹，所选 B站 UID 默认填入但不自动绑定；抖音 self 显示公开 URL 请求并禁提交。清单重载为 GET，标题同步为明确确认的 POST100，人工正文选择须实际反馈成功且元数据版本相同；running/unknown 不重发。收藏列表由实际 API 返回供人选择，不自动绑定所有列表。普通单资料导入默认复用，刷新正文需明确勾选。
