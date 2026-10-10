@@ -524,7 +524,7 @@ test.describe('API failure and retry', () => {
       await expect(section.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible({ timeout: 10000 });
     }
     await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
-    const artifacts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^产物\(/ }) });
+    const artifacts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^产物引用\(/ }) });
     await expect(artifacts.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible({ timeout: 10000 });
     // No fixture data should appear
     await expect(page.locator('text=示例运行中任务')).not.toBeVisible();
