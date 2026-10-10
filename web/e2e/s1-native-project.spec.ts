@@ -129,7 +129,7 @@ test('human observes, stops, resumes the same actual native session and sends on
     }
     completed = true;
   } finally {
-    if (!completed && projectID) {
+    try { if (!completed && projectID) {
       const actual = await api.get(`/local-projects/${projectID}/sessions`) as S['NativeSessionListV1'];
       for (const session of actual.items.filter(item => item.ownership === 'owned' && !item.stop_confirmed)) {
         // Explicit human cleanup stop, never model resend or history takeover.
@@ -137,7 +137,7 @@ test('human observes, stops, resumes the same actual native session and sends on
         const response = await fetch(`${server.apiURL}/api/v1/local-projects/${projectID}/sessions/${session.id}/stop`, { method: 'POST', headers: { Cookie: api.cookie, Origin: server.apiURL, 'Content-Type': 'application/json', 'X-CSRF-Token': api.session.csrf_token, 'Idempotency-Key': key }, body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 2 }) });
         results.push({ cleanupStopStatus: response.status, receipt: await response.json() as unknown });
       }
-    }
+    } } catch (error) { results.push({ cleanupStopError: error instanceof Error ? error.message : String(error), stopConfirmed: false }); }
     await testInfo.attach('actual-native-receipts', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
     if (!completed) await testInfo.attach('actual-retained-store-path', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir }, null, 2), contentType: 'application/json' });
     await server.close({ preserveData: !completed });

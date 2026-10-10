@@ -29,4 +29,9 @@ describe('persisted job recovery', () => {
     expect(jobPresentation(job, now).message).toContain('修复后再明确重试');
     expect(jobPresentation(job, now).message).not.toContain('upstream stack');
   });
+  it('explains saved-result storage recovery while unknown still blocks retry', () => {
+    const cached = { ...job, kind: 'distillation', error: { ...job.error!, code: 'internal_error' as const, required_action: 'repair_storage_then_retry_cached_result' } };
+    expect(jobPresentation(cached, now)).toMatchObject({ retryable: true, message: expect.stringContaining('不再次调用模型') });
+    expect(jobPresentation({ ...cached, delivery_unknown: true }, now)).toMatchObject({ retryable: false, message: expect.stringContaining('停止自动重发') });
+  });
 });
