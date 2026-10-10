@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -340,6 +341,53 @@ func TestAutomaticUnknownRecoveryAndExplicitBoundedRetry(t *testing.T) {
 	job, _ = s.GetJob(ctx, human, job.JobID)
 	_, err = s.RetryJob(ctx, human, job.JobID, meta("retry-limit", job.Version))
 	errorCode(t, err, apierrors.ValidationFailed)
+}
+
+func TestAutomaticUnknownKeepsOriginalServiceCauseWithoutReplay(t *testing.T) {
+	s, r, _, m, d := automaticFixture(t)
+	ctx := context.Background()
+	// An older unknown event remains immutable; only this failure is appended.
+	old := OutboxEvent{ID: "prior-unknown", Type: "attention.job_failed", AggregateID: "prior-operation", Payload: []byte(`{"delivery_unknown":true,"cause":{"code":"delivery_unknown","message":"The original operation has an unknown outcome"}}`)}
+	r.state.Events = append(r.state.Events, old)
+	cause := serviceError(apierrors.DeliveryUnknown, "native turn/start reply deadline exceeded", "reconcile_native_turn")
+	d.call = func(context.Context, DistillationInput) (DistillationOutput, error) {
+		return DistillationOutput{}, cause
+	}
+	job := runAutomatic(t, s, autoCommand(m, "unknown-original-cause"))
+	if job.Status != "failed" || !job.DeliveryUnknown || !job.ExternalStarted || job.Error == nil || job.Error.Code != apierrors.DeliveryUnknown || job.Error.Retryable || job.Error.Message != "The original operation has an unknown outcome" || job.Error.RequiredAction != "reconcile_original_operation" {
+		t.Fatalf("public unknown behavior changed: %+v", job)
+	}
+	var saved struct {
+		Cause apierrors.ServiceError `json:"cause"`
+		Error apierrors.ServiceError `json:"error"`
+	}
+	found := false
+	for _, event := range r.state.Events {
+		if event.ID == old.ID && string(event.Payload) != string(old.Payload) {
+			t.Fatal("historical unknown event was rewritten")
+		}
+		if event.Type == "attention.job_failed" && event.AggregateID == job.JobID {
+			if err := json.Unmarshal(event.Payload, &saved); err != nil {
+				t.Fatal(err)
+			}
+			found = true
+		}
+	}
+	if !found || saved.Cause.Code != cause.Code || saved.Cause.Message != cause.Message || saved.Cause.RequiredAction != cause.RequiredAction || saved.Error.Message != job.Error.Message {
+		t.Fatalf("original finite service cause lost: %+v", saved)
+	}
+	_, err := s.RetryJob(ctx, human, job.JobID, meta("unknown-cause-retry", job.Version))
+	errorCode(t, err, apierrors.DeliveryUnknown)
+	if err = s.RecoverJobs(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.ProcessNextJob(ctx); err != nil {
+		t.Fatal(err)
+	}
+	after, err := s.GetJob(ctx, human, job.JobID)
+	if err != nil || after.Status != "failed" || !after.DeliveryUnknown || after.Attempts != 1 || after.OperationID != job.OperationID || !after.DeadlineAt.Equal(job.DeadlineAt) || string(after.Payload) != string(job.Payload) || d.calls != 1 || len(r.state.Distillations) != 0 {
+		t.Fatal("failure logging changed unknown state or replayed processing", after, err, d.calls)
+	}
 }
 
 type failedPublicationStore struct{ *memoryObjects }
