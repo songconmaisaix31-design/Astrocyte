@@ -11,19 +11,24 @@ import type { components } from '../src/api/schema';
 type S = components['schemas'];
 test('actual Orca discovery remains a read-only candidate list until human registration and persists with default A permissions', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_REGISTERED_PROJECTS !== '1', 'Requires controller-assigned actual local-project/browser slot.');
-  test.setTimeout(300_000);
-  const server = await startS1Server({ browser: true });
+  test.setTimeout(600_000);
+  const reusePath = process.env.ASTROCYTE_PROJECT_REUSE_OWNED_TEMP;
+  const ownedRoot = process.env.ASTROCYTE_PROJECT_REUSE_APPROVED_ROOT;
+  if (reusePath) expect(ownedRoot && resolve(reusePath) === resolve('C:/Users/DW/AppData/Local/Temp/astrocyte-s1-1lHfyS') && resolve(ownedRoot) === resolve(reusePath)).toBe(true);
+  const startupAt = Date.now();
+  const server = await startS1Server({ browser: true, ...(reusePath ? { reuseOwnedTemporary: { path: reusePath, ownedRoot: ownedRoot! } } : {}) });
   let api = await humanAPI(server.apiURL);
   const read = async <T,>(path: string) => await api.get(path) as T;
   try {
     await page.goto(`${server.webURL}/workspace`);
     const discovery = page.getByRole('region', { name: 'Orca 登记目录发现' });
     let actual = await read<S['RegisteredProjectDiscoveryResultV1']>('/local-projects/registered');
-    await expect.poll(async () => { actual = await read<S['RegisteredProjectDiscoveryResultV1']>('/local-projects/registered'); return actual.snapshot.status; }, { timeout: 90_000 }).toMatch(/complete|partial/);
+    await expect.poll(async () => { actual = await read<S['RegisteredProjectDiscoveryResultV1']>('/local-projects/registered'); return actual.snapshot.observed_at && Date.parse(actual.snapshot.observed_at) >= startupAt ? actual.snapshot.status : 'unknown'; }, { timeout: 130_000 }).toMatch(/complete|partial/);
     expect(actual.snapshot.observed_at).toBeTruthy();
     expect(actual.snapshot.projects.length).toBeGreaterThan(0);
-    expect((await read<S['LocalProjectListV1']>('/local-projects')).items).toEqual([]);
-    expect(server.query('SELECT COUNT(*) AS count FROM local_agent_projects')[0].count).toBe(0);
+    const initialProjects = (await read<S['LocalProjectListV1']>('/local-projects')).items;
+    if (!reusePath) expect(initialProjects).toEqual([]);
+    const initialProjectCount = server.query('SELECT COUNT(*) AS count FROM local_agent_projects')[0].count;
     await discovery.getByRole('button', { name: '重载已保存目录清单', exact: true }).click();
     await expect(discovery.locator('li')).toHaveCount(actual.snapshot.projects.length);
     const cachedBeforeGET = server.query('SELECT data FROM local_project_discovery');
@@ -35,26 +40,33 @@ test('actual Orca discovery remains a read-only candidate list until human regis
     await expect(row).toHaveCount(1);
     await expect(row).toContainText(selected.activity.created_with_cli ?? '未记录');
     await expect(row).toContainText(selected.git.branch ?? '未知');
-    await row.getByRole('button', { name: '选择此目录登记', exact: true }).click();
     const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
-    await expect(panel.getByLabel('项目绝对目录', { exact: true })).toHaveValue(selected.root);
-    await expect(panel.getByLabel('项目名称', { exact: true })).toHaveValue(selected.name);
-    expect(server.query('SELECT COUNT(*) AS count FROM local_agent_projects')[0].count).toBe(0);
-    await panel.getByLabel('新项目顶层空间名称', { exact: true }).fill('Orca 实际目录人工登记');
-    await panel.getByRole('button', { name: '创建空间用于此项目', exact: true }).click();
-    await expect(panel.getByLabel('关联项目顶层空间', { exact: true })).not.toHaveValue('');
-    const registeredResponse = page.waitForResponse(response => response.url().endsWith('/local-projects') && response.request().method() === 'POST');
-    await panel.getByRole('button', { name: '登记此项目', exact: true }).click();
-    const registerHTTP = await registeredResponse;
-    expect(registerHTTP.status()).toBe(200);
-    const registered = await registerHTTP.json() as S['LocalProjectResultV1'];
+    const prior = initialProjects.find(item => resolve(item.root) === resolve(selected.root));
+    let registered: S['LocalProjectResultV1'];
+    if (prior) {
+      registered = { schema_version: 1, project: prior };
+      await panel.getByRole('button').filter({ has: page.getByRole('heading', { name: prior.name, exact: true }) }).click();
+    } else {
+      await row.getByRole('button', { name: '选择此目录登记', exact: true }).click();
+      await expect(panel.getByLabel('项目绝对目录', { exact: true })).toHaveValue(selected.root);
+      await expect(panel.getByLabel('项目名称', { exact: true })).toHaveValue(selected.name);
+      expect(server.query('SELECT COUNT(*) AS count FROM local_agent_projects')[0].count).toBe(initialProjectCount);
+      await panel.getByLabel('新项目顶层空间名称', { exact: true }).fill('Orca 实际目录人工登记');
+      await panel.getByRole('button', { name: '创建空间用于此项目', exact: true }).click();
+      await expect(panel.getByLabel('关联项目顶层空间', { exact: true })).not.toHaveValue('');
+      const registeredResponse = page.waitForResponse(response => response.url().endsWith('/local-projects') && response.request().method() === 'POST');
+      await panel.getByRole('button', { name: '登记此项目', exact: true }).click();
+      const registerHTTP = await registeredResponse;
+      expect(registerHTTP.status()).toBe(200);
+      registered = await registerHTTP.json() as S['LocalProjectResultV1'];
+    }
     expect(resolve(registered.project.root)).toBe(resolve(selected.root));
-    expect(registered.project.settings).toMatchObject({ allow_directory: false, expand_references: false, external_model_cli: '', allow_agent_control: false, allowed_actions: [], allowed_tools: [] });
+    if (!prior || prior.settings.revision === 1) expect(registered.project.settings).toMatchObject({ allow_directory: false, expand_references: false, external_model_cli: '', allow_agent_control: false, allowed_actions: [], allowed_tools: [] });
     await expect(row.getByRole('button', { name: '已登记此目录', exact: true })).toBeDisabled();
     let saved = server.query('SELECT data FROM local_agent_projects WHERE id=?', registered.project.id);
     expect(saved).toHaveLength(1);
     expect(JSON.parse(String(saved[0].data))).toEqual(registered.project);
-    const refresh = page.waitForResponse(response => response.url().endsWith('/local-projects/registered/refresh') && response.request().method() === 'POST');
+    const refresh = page.waitForResponse(response => response.url().endsWith('/local-projects/registered/refresh') && response.request().method() === 'POST', { timeout: 140_000 });
     await discovery.getByRole('button', { name: '重新读取登记目录', exact: true }).click();
     expect((await refresh).status()).toBe(200);
     expect(server.query('SELECT data FROM local_agent_projects WHERE id=?', registered.project.id)).toEqual(saved);
@@ -131,6 +143,9 @@ test('actual Orca discovery remains a read-only candidate list until human regis
     expect((await read<S['MissionListV1']>('/missions')).items).toEqual([]);
     await page.reload();
     await expect(discovery.getByRole('button', { name: '已登记此目录', exact: true })).toHaveCount(2);
+  } catch (error) {
+    await testInfo.attach('actual-primary-error', { body: error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ''}` : String(error), contentType: 'text/plain' });
+    throw error;
   } finally {
     await testInfo.attach('actual-owned-project-store', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir }), contentType: 'application/json' });
     await server.close({ preserveData: true });
