@@ -10219,6 +10219,7 @@ components:
         created_at:
           type: string
           format: date-time
+          description: Time the controller captured this permission scope packet. In observed_history mode this is not a native historical message or session timestamp.
       required:
         - id
         - schema_version

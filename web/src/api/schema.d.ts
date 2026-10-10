@@ -3263,7 +3263,10 @@ export interface components {
             mode: string;
             materials: components["schemas"]["LocalContextMaterialV1"][];
             files: components["schemas"]["LocalContextFileV1"][];
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Time the controller captured this permission scope packet. In observed_history mode this is not a native historical message or session timestamp.
+             */
             created_at: string;
         };
         NativeSessionV1: {

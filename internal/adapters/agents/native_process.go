@@ -34,6 +34,7 @@ type nativeProcess struct {
 	status, turnID        string
 	nativeID, sessionPath string
 	model, provider       string
+	modelObservedAt       time.Time
 	cli                   string
 	next                  int
 }
@@ -164,6 +165,9 @@ func (p *nativeProcess) write(v any) error {
 }
 
 func (p *nativeProcess) call(ctx context.Context, method string, params map[string]any, pi bool) (map[string]json.RawMessage, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	p.mu.Lock()
@@ -307,6 +311,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		p.addEvent("turn_started", "")
 	case "turn/completed":
 		p.status = params.Turn.Status
+		p.modelObservedAt = time.Now()
 		p.addEvent("turn_"+params.Turn.Status, "")
 	}
 	switch typ {
@@ -316,6 +321,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	case "agent_settled":
 		if p.status != "failed" {
 			p.status = "completed"
+			p.modelObservedAt = time.Now()
 		}
 		p.addEvent("turn_completed", "")
 	case "message_update":
@@ -354,6 +360,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			p.nativeID = sessionID
 			p.model = model
 			p.provider = "configured_cli_transport"
+			p.modelObservedAt = time.Now()
 			p.addEvent("native_session_initialized", "")
 		}
 	case "assistant":
@@ -379,6 +386,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			p.addEvent("turn_failed", "")
 		} else {
 			p.status = "completed"
+			p.modelObservedAt = time.Now()
 			p.addEvent("turn_completed", "")
 		}
 	}
