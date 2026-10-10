@@ -40,6 +40,8 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
+	Tracking       attentionapp.TrackingService
+	LocalProjects  workspaceapp.LocalProjects
 	RankingProfile attentionapp.RankingProfileService
 	Automatic      attentionapp.AutomaticDistillationService
 	Attention      attentionapp.AttentionService
@@ -83,6 +85,8 @@ func NewServer(cfg Config) *Server {
 
 	// Single-resource reads
 	mux.HandleFunc("GET /api/v1/missions/{id}", h.handleGetMission)
+	h.registerTracking(mux)
+	h.registerLocalProjects(mux)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {
@@ -118,7 +122,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil {
+	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.Tracking != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)
