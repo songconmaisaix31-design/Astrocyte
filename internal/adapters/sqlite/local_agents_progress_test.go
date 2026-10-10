@@ -24,17 +24,17 @@ func TestProgressStorageRoundTripAndCAS(t *testing.T) {
 	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
 	ensureProgressTable(t, db)
 
-	if got, err := db.LoadProjectProgress(ctx, "missing"); err != nil || got.Stage != "" || got.Revision != 0 {
+	if got, err := db.LoadProjectProgress(ctx, "missing"); err != nil || got.Status != "" || got.Revision != 0 {
 		t.Fatalf("absent project should be zero value, got %+v %v", got, err)
 	}
 
 	percent := 50
-	record := domain.ProjectProgress{ProjectID: "p1", Stage: "in_progress", Percent: &percent, Source: "agent_inferred", Basis: []domain.ProgressBasis{{Path: "TASK.md", Version: "v1"}}, NativeID: "nid", ObservedAt: time.Now().UTC(), Revision: 1}
+	record := domain.ProjectProgress{SchemaVersion: 1, ProjectID: "p1", Status: "in_progress", Percent: &percent, Source: "agent_inferred", Evidence: []domain.ProgressEvidence{{SourcePath: "TASK.md", Kind: "task", Version: "v1"}}, NativeID: "nid", ObservedAt: time.Now().UTC(), Revision: 1, Operations: map[string]domain.ProgressOperation{"op1": {Action: "infer", Status: "accepted", CreatedAt: time.Now().UTC()}}}
 	if err := db.SaveProjectProgress(ctx, record, 0); err != nil {
 		t.Fatal(err)
 	}
 	loaded, err := db.LoadProjectProgress(ctx, "p1")
-	if err != nil || loaded.Stage != "in_progress" || loaded.Source != "agent_inferred" || loaded.Revision != 1 || loaded.NativeID != "nid" || len(loaded.Basis) != 1 {
+	if err != nil || loaded.Status != "in_progress" || loaded.Source != "agent_inferred" || loaded.Revision != 1 || loaded.NativeID != "nid" || len(loaded.Evidence) != 1 || loaded.Operations["op1"].Status != "accepted" {
 		t.Fatalf("round trip %+v %v", loaded, err)
 	}
 
@@ -42,11 +42,11 @@ func TestProgressStorageRoundTripAndCAS(t *testing.T) {
 		t.Fatal("stale insert accepted")
 	}
 	record.Revision = 2
-	record.Stage = "review"
+	record.Status = "review"
 	if err := db.SaveProjectProgress(ctx, record, 1); err != nil {
 		t.Fatal(err)
 	}
-	if loaded, err := db.LoadProjectProgress(ctx, "p1"); err != nil || loaded.Stage != "review" || loaded.Revision != 2 {
+	if loaded, err := db.LoadProjectProgress(ctx, "p1"); err != nil || loaded.Status != "review" || loaded.Revision != 2 {
 		t.Fatalf("update %+v %v", loaded, err)
 	}
 	// Progress storage must not create grants, projects or sessions.

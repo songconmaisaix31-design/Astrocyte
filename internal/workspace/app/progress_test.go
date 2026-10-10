@@ -45,12 +45,16 @@ func (p *progressProjects) SaveSession(context.Context, domain.NativeSession) er
 
 type progressStore struct {
 	records map[string]domain.ProjectProgress
+	fail    bool
 }
 
 func (s *progressStore) LoadProjectProgress(_ context.Context, id string) (domain.ProjectProgress, error) {
 	return s.records[id], nil
 }
 func (s *progressStore) SaveProjectProgress(_ context.Context, p domain.ProjectProgress, expected int) error {
+	if s.fail {
+		return errors.New("storage unavailable")
+	}
 	if p.Revision != expected+1 {
 		return &apierrors.ServiceError{Code: apierrors.VersionConflict}
 	}
@@ -105,31 +109,35 @@ func newProgressService() (*projectProgressService, *progressProjects, *progress
 	return NewProjectProgressService(projects, store, progressFiles{files: []domain.ContextFile{{Path: "TASK.md", Version: "v1", Text: "stage: implement feature"}}}, processor, progressRegistry{}), projects, store, processor
 }
 
+func consentProject() domain.LocalProject {
+	return domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 1, ExternalModelCLI: "codex"}}
+}
+
 func TestProgressHumanSetAndCacheRead(t *testing.T) {
 	ctx := context.Background()
 	human := domain.Caller{Kind: "human", ID: "h"}
 	service, projects, store, processor := newProgressService()
-	projects.projects["p1"] = domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 1}}
+	projects.projects["p1"] = consentProject()
 
 	percent := 40
 	for _, caller := range []domain.Caller{{}, {Kind: "agent", ID: "a", ProjectID: "p1"}} {
-		if _, err := service.SetProjectProgress(ctx, caller, "p1", domain.ProgressInput{Stage: "in_progress", Percent: &percent}); err == nil {
+		if _, err := service.SetProjectProgress(ctx, caller, "p1", domain.ProgressInput{Status: "in_progress", Percent: &percent}); err == nil {
 			t.Fatal("non-human progress write accepted")
 		}
 	}
-	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Stage: strings.Repeat("x", 201)}); err == nil {
-		t.Fatal("oversized stage accepted")
+	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: strings.Repeat("x", 201)}); err == nil {
+		t.Fatal("oversized status accepted")
 	}
 	bad := 101
-	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Stage: "ok", Percent: &bad}); err == nil {
+	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: "ok", Percent: &bad}); err == nil {
 		t.Fatal("out-of-range percent accepted")
 	}
-	record, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Stage: "in_progress", Percent: &percent})
+	record, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: "in_progress", Percent: &percent})
 	if err != nil || record.Source != "human" || record.Revision != 1 || record.Percent == nil || *record.Percent != 40 {
 		t.Fatalf("human set %+v %v", record, err)
 	}
 	got, err := service.GetProjectProgress(ctx, human, "p1")
-	if err != nil || got.Stage != "in_progress" || got.Source != "human" {
+	if err != nil || got.Status != "in_progress" || got.Source != "human" {
 		t.Fatalf("cached read %+v %v", got, err)
 	}
 	if processor.calls != 0 {
@@ -140,55 +148,117 @@ func TestProgressHumanSetAndCacheRead(t *testing.T) {
 	}
 }
 
-func TestProgressInferRequiresConsentAndRecordsBasis(t *testing.T) {
+func TestProgressInferRecordsEvidenceAndIsIdempotent(t *testing.T) {
 	ctx := context.Background()
 	human := domain.Caller{Kind: "human", ID: "h"}
-	service, projects, store, processor := newProgressService()
-	projects.projects["p1"] = domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 1}}
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
-		t.Fatal("inference accepted without model consent")
-	}
-	projects.projects["p1"] = domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 1, ExternalModelCLI: "codex"}}
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{Files: []string{}}); err == nil {
-		t.Fatal("inference accepted empty files")
+	service, projects, _, processor := newProgressService()
+	projects.projects["p1"] = consentProject()
+
+	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: "not-a-uuid", Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("inference accepted a non-UUID operation identity")
 	}
 	model := "gpt-test"
-	processor.result = domain.TextResult{Text: `{"stage":"review","percent":75}`, NativeID: "nid", Model: &model}
-	record, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
-	if err != nil || record.Source != "agent_inferred" || record.Stage != "review" || record.Percent == nil || *record.Percent != 75 || record.NativeID != "nid" {
+	processor.result = domain.TextResult{Text: `{"status":"review","percent":75}`, NativeID: "nid", Model: &model}
+	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+	record, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}})
+	if err != nil || record.Source != "agent_inferred" || record.Status != "review" || record.Percent == nil || *record.Percent != 75 || record.NativeID != "nid" {
 		t.Fatalf("inferred record %+v %v", record, err)
 	}
-	if len(record.Basis) != 1 || record.Basis[0].Path != "TASK.md" || record.Basis[0].Version != "v1" {
-		t.Fatalf("basis not recorded from observed files %+v", record.Basis)
+	if len(record.Evidence) != 1 || record.Evidence[0].SourcePath != "TASK.md" || record.Evidence[0].Version != "v1" || record.Evidence[0].Kind != "task" {
+		t.Fatalf("evidence not recorded from observed files %+v", record.Evidence)
 	}
-	if processor.calls != 1 {
-		t.Fatalf("expected one processor call, got %d", processor.calls)
+	calls := processor.calls
+	again, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}})
+	if err != nil || again.Status != "review" || processor.calls != calls {
+		t.Fatalf("same operation identity re-inferred: %+v %v calls %d->%d", again, err, calls, processor.calls)
 	}
-	if _, err := service.InferProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
+	if _, err := service.InferProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1", domain.ProgressCommand{OperationID: "6ba7b810-9dad-11d1-80b4-00c04fd430c9", Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("Agent-initiated inference accepted")
 	}
-	_ = store
 }
 
 func TestProgressInferRejectsInvalidModelOutput(t *testing.T) {
 	ctx := context.Background()
 	human := domain.Caller{Kind: "human", ID: "h"}
-	service, projects, _, processor := newProgressService()
-	projects.projects["p1"] = domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 1, ExternalModelCLI: "codex"}}
+	service, projects, store, processor := newProgressService()
+	projects.projects["p1"] = consentProject()
 	processor.result = domain.TextResult{Text: `not json at all`, NativeID: "nid"}
-	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
+	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("invalid model output accepted")
 	} else if e, ok := err.(*apierrors.ServiceError); !ok || e.Code != apierrors.EvidenceMissing {
 		t.Fatalf("wrong rejection %v", err)
 	}
+	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("failed operation identity replayed")
+	}
+	if _, err := store.LoadProjectProgress(ctx, "p1"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestProgressInferPersistsPendingReceiptBeforeModel(t *testing.T) {
+	ctx := context.Background()
+	human := domain.Caller{Kind: "human", ID: "h"}
+	service, projects, store, processor := newProgressService()
+	projects.projects["p1"] = consentProject()
+	processor.err = &apierrors.ServiceError{Code: apierrors.DeliveryUnknown, Message: "native delivery unknown"}
+	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("unknown delivery accepted")
+	}
+	record, _ := store.LoadProjectProgress(ctx, "p1")
+	if record.Operations[op].Status != "unknown" {
+		t.Fatalf("unknown receipt not persisted %+v", record.Operations)
+	}
+	processor.err = nil
+	processor.result = domain.TextResult{Text: `{"status":"done"}`}
+	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("unknown operation identity replayed after clearing error")
+	}
+}
+
+func TestProgressInferRechecksConsentBeforePublication(t *testing.T) {
+	ctx := context.Background()
+	human := domain.Caller{Kind: "human", ID: "h"}
+	projects := &progressProjects{projects: map[string]domain.LocalProject{}, grants: map[string]domain.ProjectGrant{}}
+	store := &progressStore{records: map[string]domain.ProjectProgress{}}
+	projects.projects["p1"] = consentProject()
+	model := "gpt-test"
+	// The processor revokes consent mid-flight, simulating a concurrent settings
+	// change while the paid turn runs. The publication re-check must discard the
+	// result rather than publish a stale inferred status.
+	processor := &progressProcessor{result: domain.TextResult{Text: `{"status":"review"}`, NativeID: "nid", Model: &model}}
+	service := NewProjectProgressService(projects, store, progressFiles{files: []domain.ContextFile{{Path: "TASK.md", Version: "v1", Text: "x"}}}, &revokingProcessor{next: processor, projects: projects}, progressRegistry{})
+	op := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+	if _, err := service.InferProjectProgress(ctx, human, "p1", domain.ProgressCommand{OperationID: op, Files: []string{"TASK.md"}}); err == nil {
+		t.Fatal("consent change mid-flight published a result")
+	}
+	record, _ := store.LoadProjectProgress(ctx, "p1")
+	if record.Source == "agent_inferred" || record.Operations[op].Status != "unknown" {
+		t.Fatalf("revoked inference published %+v", record)
+	}
+}
+
+type revokingProcessor struct {
+	next     *progressProcessor
+	projects *progressProjects
+}
+
+func (p *revokingProcessor) ConfigurationID(context.Context, string) (string, error) {
+	return "cfg", nil
+}
+func (p *revokingProcessor) ProcessSelectedText(ctx context.Context, r domain.TextRequest) (domain.TextResult, error) {
+	p.projects.projects["p1"] = domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 2, ExternalModelCLI: "codex"}}
+	return p.next.ProcessSelectedText(ctx, r)
 }
 
 func TestProgressAgentReadUsesGrant(t *testing.T) {
 	ctx := context.Background()
 	human := domain.Caller{Kind: "human", ID: "h"}
 	service, projects, _, _ := newProgressService()
-	projects.projects["p1"] = domain.LocalProject{ID: "p1", Root: "r", Settings: domain.ProjectSettings{Revision: 1}}
-	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Stage: "planning"}); err != nil {
+	projects.projects["p1"] = consentProject()
+	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: "planning"}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := service.GetProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1"); err == nil {
