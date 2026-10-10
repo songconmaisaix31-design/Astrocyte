@@ -223,6 +223,16 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 					seen[id] = true
 					if perRoot[rootKey(result.Projects[index].Root)] >= 4 {
 						partial("per_root_session_sample_bound")
+						reason := "native_session_sample_bound:" + source.cli
+						found := false
+						for _, old := range result.Projects[index].Limitations {
+							if old == reason {
+								found = true
+							}
+						}
+						if !found {
+							result.Projects[index].Limitations = append(result.Projects[index].Limitations, reason)
+						}
 						continue
 					}
 					if obs.RetainedAssociations >= 256 {
