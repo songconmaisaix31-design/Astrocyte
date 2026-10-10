@@ -10,6 +10,14 @@ Dispatch `ctx_fc6ef89f102b` / Task `task_0125179c53eb`；实际 Orca projection 
 
 本Dispatch目前仅完成基线与接口盘点，未执行新增运行时验证；既有AT与原失败仍见下面历史报告，不能当本轮新增链路通过。W0不重复旧付费模型、媒体或浏览器验收，等待主控槽和三轨增量。
 
+### 增量契约发布
+
+已普通消费 W2 DTO `58e800baacbe68a16d543732e8022adf7d4bc0f4`，并在交叉草案后由双方确认最终唯一 ABI：`RegisteredProjectSource.DiscoverRegistered`、`RegisteredProjectRepository.LoadRegisteredProjectDiscovery/SaveRegisteredProjectDiscovery`、独立 `RegisteredProjects.ListRegisteredProjects/RefreshRegisteredProjects`；组装调用由 W2 实现 `ConfigureRegisteredDiscovery(repo,source)`。008 只保存一个 `local_project_discovery` 行（固定 key `registered`），Workspace schema 升至3；不会创建项目、空间或授权。
+
+HTTP `GET /local-projects/registered` 只读取持久化缓存；`POST /local-projects/registered/refresh` 为人类会话+CSRF显式动作，无任意root输入；Agent scoped路由不开放它。快照 status 为 unknown/complete/partial/stale，Git/活动未知字段可空，活动仅记录实际Orca创建CLI/活动时间，不推断当前运行。来源不可用的旧观测时间必须由W2保持。OpenAPI及生成TS/typed helper已发布，运行时组装等待W2 source/service/repository，当前未组装返回501。
+
+本阶段 `pnpm generate`、`pnpm check:contracts` PASS/exit0（233示例、生成漂移一致、既有EventV1 warning）；新增HTTP边界测试和Go构建检查进行中。此前SQLite/migrations包测试PASS，不以该结果替代尚未消费的新发现repository/冷重启验收。
+
 ## 2026-10-10 最终受限交接（整体 S1 未完成，待主控接纳）
 
 最终应用整合 SOURCE `3f056d59e67ea1fcc186251c70260675e18f81d2` 已推送；普通消费 W1 REPORT `626831a8cb73030f26c8cfbce814fb43bfc4d397`、W2 REPORT `4a0b76a342f78ce2df59914813d48179415ef711`、W3 REPORT `8493ac8db9cb86c30eafdcab87bc5ec1dbee8680`（含真实AT最终报告 `56e9c85`）。相对主控默认 E2E SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f`，应用运行时代码相同，仅既有 `web/e2e/s1.spec.ts` 一旧用例断言修复与报告不同；尚未消费的主控 STATUS/QUESTIONS/计划未由W0修改。已装配公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。最后 W0 提交只改本报告，准确 REPORT SHA 由交接回执给出。

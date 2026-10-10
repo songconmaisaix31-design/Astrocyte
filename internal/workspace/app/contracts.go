@@ -64,6 +64,24 @@ type ProjectFiles interface {
 	ReadProjectFiles(context.Context, domain.LocalProject, []string) ([]domain.ContextFile, error)
 	DiscoverProjects(context.Context, string) ([]domain.ProjectCandidate, error)
 }
+
+// RegisteredProjectSource observes only registered roots through fixed programs.
+// It never grants project access or starts an Agent. HTTP GET uses the repository.
+type RegisteredProjectSource interface {
+	DiscoverRegistered(context.Context) (domain.ProjectDiscoverySnapshot, error)
+}
+
+type RegisteredProjectRepository interface {
+	LoadRegisteredProjectDiscovery(context.Context) (domain.ProjectDiscoverySnapshot, error)
+	SaveRegisteredProjectDiscovery(context.Context, domain.ProjectDiscoverySnapshot) error
+}
+
+// Separate from project control so unsupported discovery remains explicit.
+// Refresh is human-only; neither operation registers a space or changes grants.
+type RegisteredProjects interface {
+	ListRegisteredProjects(context.Context, domain.Caller) (domain.ProjectDiscoverySnapshot, error)
+	RefreshRegisteredProjects(context.Context, domain.Caller) (domain.ProjectDiscoverySnapshot, error)
+}
 type TextProcessor interface {
 	ConfigurationID(context.Context, string) (string, error)
 	ProcessSelectedText(context.Context, domain.TextRequest) (domain.TextResult, error)

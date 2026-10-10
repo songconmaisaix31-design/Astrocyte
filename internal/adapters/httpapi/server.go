@@ -40,19 +40,20 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
-	Tracking       attentionapp.TrackingService
-	LocalProjects  workspaceapp.LocalProjects
-	RankingProfile attentionapp.RankingProfileService
-	Automatic      attentionapp.AutomaticDistillationService
-	Attention      attentionapp.AttentionService
-	Foundation     foundation.Service
-	Materials      attentionapp.MaterialService
-	Opportunities  attentionapp.OpportunityService
-	Projects       workspaceapp.ProjectService
-	LocalAgents    workspaceapp.LocalAgentInventory
-	Proposals      workspaceapp.ProposalService
-	Sessions       workspaceapp.SessionService
-	Missions       swarmapp.MissionService
+	Tracking           attentionapp.TrackingService
+	LocalProjects      workspaceapp.LocalProjects
+	RegisteredProjects workspaceapp.RegisteredProjects
+	RankingProfile     attentionapp.RankingProfileService
+	Automatic          attentionapp.AutomaticDistillationService
+	Attention          attentionapp.AttentionService
+	Foundation         foundation.Service
+	Materials          attentionapp.MaterialService
+	Opportunities      attentionapp.OpportunityService
+	Projects           workspaceapp.ProjectService
+	LocalAgents        workspaceapp.LocalAgentInventory
+	Proposals          workspaceapp.ProposalService
+	Sessions           workspaceapp.SessionService
+	Missions           swarmapp.MissionService
 }
 
 // NewServer creates a new HTTP server with the given configuration.
@@ -87,6 +88,7 @@ func NewServer(cfg Config) *Server {
 	mux.HandleFunc("GET /api/v1/missions/{id}", h.handleGetMission)
 	h.registerTracking(mux)
 	h.registerLocalProjects(mux)
+	h.registerRegisteredProjects(mux)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {
@@ -122,7 +124,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.Tracking != nil {
+	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)

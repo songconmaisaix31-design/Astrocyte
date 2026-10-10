@@ -889,6 +889,121 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
+  /local-projects/registered:
+    get:
+      operationId: listRegisteredProjects
+      summary: Read cached registered project observations
+      description: Human-only cached SQLite observations. GET never scans roots,
+        invokes Git or starts a CLI. Candidates must be manually bound to an
+        Attention space; discovery grants no context, model or control permission.
+      tags: [projects]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      responses:
+        "200":
+          description: Persisted observations with explicit unknown, partial or stale status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisteredProjectDiscoveryResultV1"
+        "400":
+          description: Invalid command
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human session or CSRF required; Agent credentials rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Cache persistence failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Discovery service is not assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Discovery source unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+
+  /local-projects/registered/refresh:
+    post:
+      operationId: refreshRegisteredProjects
+      summary: Refresh observations of Orca registered project roots
+      description: Explicit human action runs bounded fixed discovery over actual
+        registered roots and associated worktrees. It runs no project scripts,
+        installs no dependencies, and never launches an Agent. Source failures
+        retain old observations with stale status.
+      tags: [projects]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRegisteredProjectsRequestV1"
+      responses:
+        "200":
+          description: Persisted observations with explicit unknown, partial or stale status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisteredProjectDiscoveryResultV1"
+        "400":
+          description: Invalid command
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human session or CSRF required; Agent credentials rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Cache persistence failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Discovery service is not assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "503":
+          description: Discovery source unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /local-projects:
     get:
       operationId: listLocalProjects
@@ -10572,6 +10687,123 @@ components:
           type: [string, "null"]
           format: date-time
       required: [action, status, created_at, finished_at]
+    RegisteredProjectGitV1:
+      type: object
+      additionalProperties: false
+      required: [status, reason, branch, head, last_commit_at, dirty]
+      properties:
+        status:
+          type: string
+          enum: [known, unknown, unavailable]
+        reason:
+          type: string
+        branch:
+          type: [string, "null"]
+        head:
+          type: [string, "null"]
+        last_commit_at:
+          type: [string, "null"]
+          format: date-time
+        dirty:
+          type: [boolean, "null"]
+    RegisteredProjectActivityV1:
+      type: object
+      additionalProperties: false
+      required: [status, source, created_with_cli, last_activity_at]
+      properties:
+        status:
+          type: string
+          enum: [known, unknown, unavailable]
+        source:
+          type: string
+        created_with_cli:
+          type: [string, "null"]
+        last_activity_at:
+          type: [string, "null"]
+          format: date-time
+    RegisteredProjectV1:
+      type: object
+      additionalProperties: false
+      required: [root, name, repo_id, source, parent_root, git, activity, limitations]
+      properties:
+        root:
+          type: string
+        name:
+          type: string
+        repo_id:
+          type: string
+        source:
+          type: string
+          enum: [orca_registered, subproject, git_worktree]
+        parent_root:
+          type: string
+        git:
+          $ref: "#/components/schemas/RegisteredProjectGitV1"
+        activity:
+          $ref: "#/components/schemas/RegisteredProjectActivityV1"
+        limitations:
+          type: array
+          items:
+            type: string
+    RegisteredProjectDiscoveryFailureV1:
+      type: object
+      additionalProperties: false
+      required: [root, reason]
+      properties:
+        root:
+          type: string
+        reason:
+          type: string
+    RegisteredProjectSnapshotV1:
+      type: object
+      additionalProperties: false
+      description: Cached observations grant no permissions. Stale results retain the
+        previous observation time and identify the current discovery failures.
+      required: [status, observed_at, projects, failures]
+      properties:
+        status:
+          type: string
+          enum: [unknown, complete, partial, stale]
+        observed_at:
+          type: [string, "null"]
+          format: date-time
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegisteredProjectV1"
+        failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegisteredProjectDiscoveryFailureV1"
+      examples:
+        - status: unknown
+          observed_at: null
+          projects: []
+          failures: []
+    RegisteredProjectDiscoveryResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, snapshot]
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        snapshot:
+          $ref: "#/components/schemas/RegisteredProjectSnapshotV1"
+    RefreshRegisteredProjectsRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request_id, expected_version]
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
   securitySchemes:
     HumanSession:
       type: apiKey
