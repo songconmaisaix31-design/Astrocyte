@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	_ "modernc.org/sqlite"
 )
@@ -58,7 +59,7 @@ func verifyCombinedPrompt(t *testing.T, inputs []app.SourceSnapshot) {
 			t.Fatal("source text/digest/ref truncated or changed", i)
 		}
 	}
-	t.Logf("complete caller prompt=%d UTF-8 bytes; native envelope preflight PASS; output=%d; no model call", len(request.Prompt), request.OutputLimit)
+	t.Logf("complete caller prompt=%d UTF-8 bytes; complete native wire=%d UTF-8 bytes; envelope preflight PASS; output=%d; no model call", len(request.Prompt), agents.SelectedTextPromptBytes(request.Prompt), request.OutputLimit)
 }
 
 func TestCombinedPromptPreservesCompleteSelectedText(t *testing.T) {
