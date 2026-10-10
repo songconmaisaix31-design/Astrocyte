@@ -1,7 +1,8 @@
 -- Human registered projects, per-operation grants and native observations.
--- The settings revision is stored in data and checked by the repository CAS.
+-- Settings revision is indexed for the repository optimistic CAS.
 CREATE TABLE local_agent_projects (
     id TEXT PRIMARY KEY,
+    version INTEGER NOT NULL CHECK(version > 0),
     data TEXT NOT NULL
 );
 CREATE TABLE local_agent_grants (
