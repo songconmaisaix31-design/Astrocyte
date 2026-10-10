@@ -1310,6 +1310,84 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
+  /local-projects/registered/{project_id}/metadata:
+    put:
+      operationId: setRegisteredProjectMetadata
+      summary: Save human notes, review, grouping and archive state
+      description: Human session and CSRF only. The revision is the expected
+        manual metadata revision (zero before the first save). Observations and
+        refresh never replace these fields. This command grants no project access,
+        model consent or Agent control and accepts no inferred progress.
+      tags: [projects]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetRegisteredProjectMetadataRequestV1"
+      responses:
+        "200":
+          description: Updated project summary with durable human metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectSummaryResultV1"
+        "400":
+          description: Invalid command or unsupported fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human session and CSRF required; Agent credentials rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Project is absent from the cached registered observations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Manual metadata revision changed; reload before saving
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Persistence failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Metadata service is not assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /local-projects:
     get:
       operationId: listLocalProjects
@@ -11043,6 +11121,13 @@ components:
       additionalProperties: false
       required: [root, name, repo_id, source, parent_root, git, activity, limitations]
       properties:
+        project_key:
+          type: string
+          description: Stable aggregate project identity; grants no authority.
+        contributors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectContributorV1"
         root:
           type: string
         name:
@@ -11078,6 +11163,14 @@ components:
         previous observation time and identify the current discovery failures.
       required: [status, observed_at, projects, failures]
       properties:
+        board:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectSummaryV1"
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectSourceObservationV1"
         status:
           type: string
           enum: [unknown, complete, partial, stale]
@@ -11121,6 +11214,144 @@ components:
         expected_version:
           type: integer
           minimum: 1
+    ProjectContributorV1:
+      type: object
+      additionalProperties: false
+      required: [cli, source, root, session_id, observed_at, activity_at]
+      properties:
+        cli:
+          type: string
+        source:
+          type: string
+        root:
+          type: string
+        session_id:
+          type: string
+          description: Observed native identity only, never a control permission.
+        observed_at:
+          type: [string, "null"]
+          format: date-time
+        activity_at:
+          type: [string, "null"]
+          format: date-time
+    ProjectSourceObservationV1:
+      type: object
+      additionalProperties: false
+      required: [cli, source, status, reason, entries_examined, matched_headers]
+      properties:
+        cli:
+          type: string
+        source:
+          type: string
+        status:
+          type: string
+        reason:
+          type: string
+        entries_examined:
+          type: integer
+          minimum: 0
+        matched_headers:
+          type: integer
+          minimum: 0
+    ProjectHumanMetadataV1:
+      type: object
+      additionalProperties: false
+      required: [notes, review, group, intent, archived, revision, updated_at]
+      properties:
+        notes:
+          type: string
+        review:
+          type: string
+        group:
+          type: string
+        intent:
+          type: string
+        archived:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 0
+        updated_at:
+          type: [string, "null"]
+          format: date-time
+    ProjectSummaryV1:
+      type: object
+      additionalProperties: false
+      required: [id, name, roots, observations, contributors, last_activity_at, limitations, human]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        roots:
+          type: array
+          items:
+            type: string
+        observations:
+          type: array
+          items:
+            $ref: "#/components/schemas/RegisteredProjectV1"
+        contributors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectContributorV1"
+        last_activity_at:
+          type: [string, "null"]
+          format: date-time
+        limitations:
+          type: array
+          items:
+            type: string
+        human:
+          $ref: "#/components/schemas/ProjectHumanMetadataV1"
+    ProjectSummaryResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, project]
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        project:
+          $ref: "#/components/schemas/ProjectSummaryV1"
+    SetRegisteredProjectMetadataRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request_id, expected_version, notes, review, group, intent, archived, revision]
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        notes:
+          type: string
+        review:
+          type: string
+        group:
+          type: string
+        intent:
+          type: string
+        archived:
+          type: boolean
+        revision:
+          type: integer
+          minimum: 0
+          description: Expected human metadata revision; zero means no prior annotation.
+      examples:
+        - schema_version: 1
+          request_id: manual-note
+          expected_version: 1
+          notes: Human-owned notes
+          review: ""
+          group: ""
+          intent: ""
+          archived: false
+          revision: 0
     GitHubMetadataV1:
       type: object
       additionalProperties: false
