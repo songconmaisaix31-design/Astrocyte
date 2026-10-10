@@ -2,6 +2,8 @@
 
 ## 2026-10-10 用户决定后续作
 
+原库续验 SOURCE `3660b0bace59fa21e1056bd29f4d0187b1da996a`：1 FAIL、42.1秒。历史正文LF核对、普通receipt复用与真实2501v1/v2 A→B→A保持当前head通过；首论文模型约18秒后返回delivery_unknown，未到30分钟deadline，Result:null/实际沉淀0。旧未知作业不重发，原库/trace保留，W1/W2只读诊断；AT01–04模型/热度/later/恢复以及完整S1仍未通过。独立公开README原生流程获主控继续授权，尚未运行。
+
 Full S1 首轮 SOURCE `393676ebc5241c1db56c721caa776e248d98dc19` 真实浏览器1 FAIL（约229.1秒、exit1）：三次实际导入成功后，历史CRLF与浏览器textarea LF规范断言不符，尚无模型沉淀或原生会话。原export、objects、SQLite与原trace保留；续验仅复用同库和已完成视频结果，不重新获取媒体。此首败不改写为通过，AT01–04/原生/非空公开来源选择仍待真实后续验收，详见 tasks/S1-sync-W3.md。
 
 真实项目 SOURCE `9009259b8121849a660f9738b532b7a8e9b4fb96` 首轮 1 FAIL：登记200后 history_roots:null 引发前端崩溃，原 trace 保留。修复 SOURCE `711a3cde30830496d7b0cc832f45068e798db8da`，`pnpm --dir web exec playwright test s1-projects.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-project-null-fix` 为 1 PASS，25.9秒、exit0：手动根登记、A默认、B/C独立、唯一获准README真实读取、SQLite比对、API重启保持设置均通过，同一状态1280/1920截图保留。无原生/model/media调用，个人根未定；退出后所属端口/进程已关闭并释放槽。此结果仅覆盖项目权限流程，非账号同步、原生接续或完整AT01–04。

@@ -81,6 +81,12 @@ W0 真实组装源 `86502c63765c19a086770d8646030791ca6c39da` 已发布并普通
 最终为**部分交付**：公共概览/筛选/项目卡与实际本机安装清单已实现并验证；默认真实API、UNKNOWN、未支持操作与无样本回退保持。原任务不能记成功：账号绑定方式、清单反馈/正文顺序、授权本地操作/读取根待用户，真实账号/清单/人工勾选入库及重启、真实项目活动/交接、AT01–04尚未完成；旧UNKNOWN未重发。主控已指示本Dispatch按outcome failed/partial收口，同分支/写域保留供后续确认后续作。
 
 交W0普通合并最终报告后，由主控独立最终check/build/E2E。W3不重复已过广泛回归、不调用模型/媒体/原生控制、不使用个人库。当前应用源只比阶段二增加启动脚本修复，最终报告提交只改本报告与acceptance；分支已push，无待提交文件。
+## Full S1 原库续验：实际首模型 UNKNOWN
+
+SOURCE `3660b0bace59fa21e1056bd29f4d0187b1da996a` 已push，同源原库 `4pmMWO`、`--output=test-results/s1-real-newline-fix`：1 FAIL，42.1秒、exit1。三个既有imports receipt复用且无第二次媒体获取；真实额外论文2501v1/v2导入成功，A→B→A保持v2当前head且旧A复用原receipt；textarea实际LF核对通过。首论文模型作业 `4GQ7GKDXHZIND7CAB7GIZU3W4V` / operation `34XJQPMRWDLX5O3CPJCBN7M6PJ` 于15:58:05.704创建、15:58:23.589为failed/delivery_unknown=true/external_started=true/attempt1，30分钟deadline未到；约18秒原生过程后未知结果，不是测试提前timeout，费用/结果不能推断。
+
+只读同库Result:null、distillations0，唯一local_agent_sessions为no-modelprobe（owned/stopped/stop_confirmed=true），不是模型作业。attention_outbox原cause与error均generic delivery_unknown，未保存更细method/reason。原trace/error-context/截图在 `web/test-results/s1-real-newline-fix/s1-real-acceptance-real-se-9a0d3-reads-and-later-persistence-chromium-1920/`，原objects/库保留。API/Vite及所属CLI进程均退出、15173/18787/59244/59245无监听；W1/W2获指定路径只读诊断，旧job不换UUID或同题重发。根主控允许在原独占槽继续独立公开README原生最多3短turn，实际read_context无新增turn；新材料模型作业须待主控明确新问题选择，完整AT01–04未通过。
+
 ## Full S1 首轮真实浏览器 RED 与原库续验准备
 
 SOURCE `393676ebc5241c1db56c721caa776e248d98dc19`，主控单槽 `ASTROCYTE_TEST_REAL_S1_ACCEPTANCE=1 pnpm --dir web exec playwright test s1-real-acceptance.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-real-first`：1 FAIL、exit1，trace 约229.1秒。论文既有真实JSON、视频既有正文与一次明确视频URL刷新三个实际作业均 succeeded/attempt1/delivery_unknown=false；SQLite 沉淀0、原生会话0，未调用模型。失败是历史CRLF被浏览器textarea规范为LF，测试却要求原始字节相等；原export不改，修正核对实际人类输入文本，不改变版本内容。

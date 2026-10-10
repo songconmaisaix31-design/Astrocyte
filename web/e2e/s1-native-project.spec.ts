@@ -147,7 +147,7 @@ test('human observes, stops, resumes the same actual native session and sends on
       }
     } } catch (error) { results.push({ cleanupStopError: error instanceof Error ? error.message : String(error), stopConfirmed: false }); }
     await testInfo.attach('actual-native-receipts', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
-    if (!completed) await testInfo.attach('actual-retained-store-path', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir }, null, 2), contentType: 'application/json' });
-    await server.close({ preserveData: !completed });
+    await testInfo.attach('actual-retained-store-path', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir, completed }, null, 2), contentType: 'application/json' });
+    await server.close({ preserveData: true });
   }
 });
