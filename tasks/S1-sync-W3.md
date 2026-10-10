@@ -20,6 +20,10 @@
 
 ### 已发布客户端上的实际表单
 
+后续 ready 应用源 `5ef9fb126d1f63c2bd0418022b9e6d312a38fdb6` 已 push，普通合入 W0 `609b7e6b2dd4023959bbcb9248cf02fc10bfa46b`。既有 summarize 导出可明确选择真实论文类型，保留既有 JSON provenance，不冒充本轮 arXiv URL 获取。所选项目处理许可与全局 legacy available/processor 分开：固定 refs 与 exact CLI 许可满足时可明确提交，由服务核实真实配置；未选项目的 legacy 门槛保持。nullable 历史更新时间来自新生成 client，未观察的历史时间不推断为上下文捕获日期。此阶段 typecheck/lint/build、Vitest54/54、diff PASS。
+
+主控已分配下一唯一 live 槽，fullS1 真实代码准备完成但尚未运行：原选公开论文/视频各内容+主题两轮、v1/v2真实额外论文只导入、普通新表单复用、实际保存 Result 后本地发布故障恢复、人工 @ 授权 Agent 读取不加人类关注、later 保留与重启。首次静态类型因历史 DTO 别名与可选标题处理 FAIL，改用当前生成类型后 PASS。代码审阅发现普通 OS 发布错误 Retryable=false 会阻断 knownResult 恢复，交 W1 修复；W0 提供既有 helper 失败保留原 DB/objects 选项后再执行。原生后续计划最多三次短 turn，仅临时公开 README、工具空许可、C关闭，同 nativeID 接续/一次send/实际observe+stop；未执行，不能声明已通过。
+
 普通合入 W0 typed client `b47a3fc63e5ff07b825ecb672454ed5005743650`，再合 `2e5ef61982bbb55278ea9fe566b5cda72d9df27e`（公开收藏列表、历史根、身份临时凭据）。Attention 现可绑定多个公开创作者/收藏夹，所选 B站 UID 默认填入但不自动绑定；抖音 self 显示公开 URL 请求并禁提交。清单重载为 GET，标题同步为明确确认的 POST100，人工正文选择须实际反馈成功且元数据版本相同；running/unknown 不重发。收藏列表由实际 API 返回供人选择，不自动绑定所有列表。普通单资料导入默认复用，刷新正文需明确勾选。
 
 共同工作区局部接入真实 /local-projects，与 S0 projection 分开：手动绝对根、所选目录发现子项目、明确登记/关联空间；项目 A 默认，B/C 独立，准确 CLI 模型处理许可、动作授权与显式历史根；人类可授予/撤销项目身份并按需生成临时 token（仅页面内存、不日志、不 storage）。只交付所选固定资料与 B 文件，原生 start/resume/send/stop/observe 和真正新会话交接分别呈现。未知能力暂禁用；W0 将发布实际 registered adapter 字段后加入明确验证入口，不能由 installed 推导支持。外部历史只观察，不冒充可控制会话。

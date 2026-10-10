@@ -16,7 +16,7 @@ type Project = components['schemas']['LocalProjectV1'];
 type Packet = components['schemas']['LocalContextPacketV1'];
 type Observation = components['schemas']['NativeObservationV1'];
 type Capability = keyof components['schemas']['LocalAgentV1']['capabilities'];
-const statuses: Record<string, string> = { running: '正在处理', idle: '等待输入', stopped: '已停止', interrupted: '已中断，需核对', unknown: '结果未知，需核对', blocked: '暂不能继续', observed: '仅观察历史', starting: '正在启动' };
+const statuses: Record<string, string> = { running: '正在处理', idle: '等待输入', completed: '本轮已返回，等待输入', stopped: '已停止', interrupted: '已中断，需核对', unknown: '结果未知，需核对', blocked: '暂不能继续', observed: '仅观察历史', starting: '正在启动', failed: '本轮暂未完成，请核对' };
 
 export function NativeProjectPanel({ project, agents, disabled }: { project: Project; agents: ReadApiState<components['schemas']['LocalAgentListV1']>; disabled: boolean }) {
   const space = useProjectSpace(project.space_id);
@@ -63,6 +63,7 @@ export function NativeProjectPanel({ project, agents, disabled }: { project: Pro
       const changedScope = !session.context_packet || session.context_packet.settings_revision !== project.settings.revision;
       return <li key={session.id}><h4>{session.cli} · {statuses[session.status] ?? '状态需核对'}</h4><p>模式 · {session.mode === 'context_handoff' ? '新会话上下文交接' : session.mode === 'observed' ? '历史只读观察' : '原生会话'} · 原生 ID {session.native_id || '尚未返回'}</p><p className={styles.note}>服务更新 · {formatDateTime(session.updated_at)} · 原执行停止 {session.stop_confirmed ? '已确认' : '未确认'}</p>
         {unknown && <p role="status">此会话结果或停止状态需核对，暂停继续输入与自动重发。</p>}{changedScope && <p role="status">项目权限已变更，请核对原上下文；原会话继续输入受新权限限制。</p>}
+        {session.ownership === 'unstarted' && <p role="status">服务确认本次未启动进程。请处理客户端条件后明确新建会话。</p>}
         {session.limitations.length > 0 && <details><summary>此客户端的操作限制</summary>{session.limitations.map((limit, index) => <p key={index}>{limit}</p>)}</details>}
         <div className={styles.actions}>
           <button className="ac-button secondary compact" type="button" disabled={blocked || session.cli !== cli} onClick={() => { void command.run(() => localProjectsApi.readNativeContext(project.id, session.id), result => setHistory(result.items), '已读取服务允许返回的真实会话记录'); }}>读取此会话的实际记录</button>
@@ -72,8 +73,14 @@ export function NativeProjectPanel({ project, agents, disabled }: { project: Pro
           <button className="ac-button secondary compact" type="button" disabled={blocked || !owns || unknown || !session.stop_confirmed || !session.native_id || !approved('resume') || !message.trim() || !deadlineValid} onClick={() => { const request = command.prepare(nativeBody()); void command.run(() => localProjectsApi.resumeSession(project.id, session.id, request.body, request.key), () => { agents.retry(); sessions.retry(); }, '已请求原会话接续；不支持时不会创建新会话替代'); }}>{actionLabel('resume', '原生接续', '验证并原生接续')}</button>
           <button className="ac-button secondary compact" type="button" disabled={blocked || session.ownership !== 'owned' || unknown || !session.stop_confirmed || !approved('start') || !message.trim() || !deadlineValid || (!references.length && !context.files.length)} onClick={() => { const request = command.prepare({ ...nativeBody(), mode: 'context_handoff' as const, source_session_id: session.id }); void command.run(() => localProjectsApi.startSession(project.id, request.body, request.key), () => sessions.retry(), '已请求独立新会话的上下文交接；原会话保持停止，不表示原生接续'); }}>新会话上下文交接</button>
         </div>
-        {observation?.id === session.id && <details open><summary>实际会话输出</summary><p>状态 · {statuses[observation.value.status] ?? '需核对'}；停止 · {observation.value.stop_confirmed ? '已确认' : '未确认'}</p>{observation.value.events.map(event => <pre key={`${event.sequence}:${event.kind}`}>{event.text}</pre>)}{!observation.value.events.length && <p>服务本次未返回输出。</p>}{observation.value.output_truncated && <p>输出已截断，仅展示服务返回的部分。</p>}</details>}
+        {observation?.id === session.id && <details open><summary>实际会话输出</summary><p>状态 · {statuses[observation.value.status] ?? '需核对'}；停止 · {observation.value.stop_confirmed ? '已确认' : '未确认'}</p><NativeOutput events={observation.value.events} />{!observation.value.events.length && <p>服务本次未返回输出。</p>}{observation.value.output_truncated && <p>输出已截断，仅展示服务返回的部分。</p>}</details>}
       </li>;
     })}</ul>}</QueryState>{history && <details open><summary>本次读取的会话记录</summary>{history.length ? history.map(event => <pre key={`${event.sequence}:${event.kind}`}>{event.text}</pre>) : <p>本次未返回记录，不能推导原会话为空。</p>}</details>}<CommandState {...command} /><CommandState {...stopCommand} />
   </section>;
+}
+
+function NativeOutput({ events }: { events: components['schemas']['NativeEventV1'][] }) {
+  const text = events.filter(event => event.kind === 'text').map(event => event.text).join('');
+  const details = events.filter(event => event.kind !== 'text' && event.text);
+  return <>{text && <pre>{text}</pre>}{details.length > 0 && <details><summary>会话日志详情</summary>{details.map(event => <pre key={`${event.sequence}:${event.kind}`}>{event.text}</pre>)}</details>}</>;
 }
