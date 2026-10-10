@@ -13,8 +13,7 @@ export function Nav({ currentPath, fixture, open, onNavigate }: { currentPath: s
   const foundation = useFoundation();
   const projects = useProjects();
   const caps = foundation.data?.capabilities;
-  const attentionPage = currentPath.startsWith('/attention') || currentPath === '/';
-  const canImport = attentionPage && !fixture && !!caps?.imports && !foundation.stale;
+  const canImport = !fixture && !!caps?.imports && !foundation.stale;
   const projectItems = fixture ? fixtureProjects : projects.data?.items ?? [];
   const go = (path: string) => { const query = new URLSearchParams(window.location.search); query.delete('tab'); navigate(`${path}${query.size ? `?${query}` : ''}`); onNavigate(); };
   return <aside className={`ac-sidebar ${open ? 'open' : ''}`}>
