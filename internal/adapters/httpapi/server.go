@@ -55,6 +55,8 @@ type Services struct {
 	Proposals          workspaceapp.ProposalService
 	Sessions           workspaceapp.SessionService
 	Missions           swarmapp.MissionService
+	PaperSearch        attentionapp.PaperSearchService
+	Progress           workspaceapp.ProgressService
 }
 
 // NewServer creates a new HTTP server with the given configuration.
@@ -91,6 +93,8 @@ func NewServer(cfg Config) *Server {
 	h.registerLocalProjects(mux)
 	h.registerRegisteredProjects(mux)
 	h.registerRepositories(mux)
+	h.registerPaperSearch(mux)
+	h.registerProgress(mux)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {
@@ -126,7 +130,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil {
+	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)

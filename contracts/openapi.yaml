@@ -2417,6 +2417,190 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
+  /paper/search:
+    post:
+      operationId: searchPapers
+      summary: search public academic papers
+      description: >-
+        Public metadata search only. It performs no import, no full-text
+        extraction and no model call. A human selects a result and imports it
+        through the existing ImportMaterial path (kind=paper, adapter per site,
+        source_key dedup, new revision). Paywalled or login-restricted content is
+        reported, never bypassed. A server without the search service returns 501.
+      tags: [materials]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaperSearchRequestV1"
+      responses:
+        "200":
+          description: Ephemeral metadata results; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaperSearchResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/progress:
+    get:
+      operationId: getProjectProgress
+      summary: read cached model-inferred project progress
+      description: >-
+        Cached model-inferred progress read from approved fixed TASK/STATUS files
+        only. It is never authoritative project state, a grant or a human
+        approval; evidence carries source, version and freshness. A server without
+        the progress service returns 501, not an empty success.
+      tags: [projects]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectProgressResultV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+  /local-projects/{id}/progress/infer:
+    post:
+      operationId: inferProjectProgress
+      summary: infer project progress from approved TASK/STATUS files
+      description: >-
+        Triggers a model inference over approved fixed TASK/STATUS files only.
+        It attaches source, version and freshness evidence and never reads
+        credentials, unapproved files or grants project control. A server without
+        the progress service returns 501.
+      tags: [projects]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InferProgressRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectProgressResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /local-agents:
     get:
       operationId: listLocalAgents
@@ -11678,6 +11862,194 @@ components:
         - expected_version
         - platform
         - owner_id
+    PaperMetadataV1:
+      type: object
+      additionalProperties: false
+      properties:
+        site:
+          type: string
+        source_key:
+          type: string
+        doi:
+          type: string
+        arxiv_id:
+          type: string
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        abstract:
+          type: string
+        published_at:
+          type: string
+        locator:
+          type: string
+        content_state:
+          type: string
+          enum:
+            - readable_fulltext
+            - abstract_only
+            - paywall
+            - restricted
+        license:
+          type: string
+        warning:
+          type: string
+      required:
+        - site
+        - source_key
+        - title
+        - locator
+        - content_state
+    PaperSearchRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        query:
+          type: string
+          minLength: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        site:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - query
+      examples:
+        - schema_version: 1
+          request_id: example-request
+          expected_version: 1
+          query: attention is all you need
+    PaperSearchResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaperMetadataV1"
+        warnings:
+          type: array
+          items:
+            type: string
+      required:
+        - schema_version
+        - items
+      examples:
+        - schema_version: 1
+          items: []
+          warnings: []
+    ProgressEvidenceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        source_path:
+          type: string
+        kind:
+          type: string
+        version:
+          type: string
+        freshness:
+          type: string
+        excerpt:
+          type: string
+      required:
+        - source_path
+        - kind
+        - version
+        - freshness
+    ProjectProgressV1:
+      type: object
+      additionalProperties: false
+      properties:
+        project_id:
+          type: string
+        status:
+          type: string
+        summary:
+          type: string
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgressEvidenceV1"
+        inferred:
+          type: boolean
+        inferred_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
+        processor:
+          type: string
+        model:
+          anyOf:
+            - type: string
+            - type: "null"
+        warning:
+          type: string
+      required:
+        - project_id
+        - status
+        - inferred
+    ProjectProgressResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        progress:
+          $ref: "#/components/schemas/ProjectProgressV1"
+      required:
+        - schema_version
+        - progress
+      examples:
+        - schema_version: 1
+          progress:
+            project_id: project-example
+            status: unknown
+            inferred: false
+    InferProgressRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        cli:
+          type: string
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+      examples:
+        - schema_version: 1
+          request_id: example-request
+          expected_version: 1
   securitySchemes:
     HumanSession:
       type: apiKey
