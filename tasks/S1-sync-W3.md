@@ -1,5 +1,15 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 默认项目权限回归返修（2026-10-10，Dispatch ctx_fcd597cd1864）
+
+主控仅派返修原 `web/e2e/s1.spec.ts:223` 默认自动整理用例，不重跑真实资料/model/media/native。root首套 SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` 为152 PASS / 2 FAIL / 8 SKIP、5.7分钟、exit1；两个失败都是旧“自动处理未启用”文案断言，真实页面现按所选项目CLI许可判断。主控原两尺寸error-context/trace保留在 `C:/Users/DW/orca/Astrocyte/web/test-results/s1-S1-contract-local-with--1d9fa-m-never-submits-a-model-job-chromium-{1280,1920}/`，不改写成完整通过。
+
+修复 SOURCE `bf3b5e7408245f12874830595c40e5a3a3471761` 已push：检查请选择已许可项目与客户端的可操作提示、空项目选择、模型/配置未知、真实selected-project-cli及select_permitted_project_cli；保留availablefalse/configidnull/modelnull/allowed_source_keys空、问题/提交禁用、零模型POST、SQLite沉淀job计数不变、人类关注0。仅更新测试断言，业务/契约/权限不变，没有删权限测试或降低门槛。
+
+`pnpm --dir web typecheck`、`git diff --check` PASS。收到root独占browser槽后，清ASTROCYTE_TEST_*，执行 `pnpm --dir web exec playwright test s1.spec.ts --grep 'default automatic processing' --workers=1 --output=test-results/s1-default-project-permission-fix`：**2 PASS，32.1秒、exit0**（1920/1280）。完整日志 `web/test-results/s1-default-project-permission-fix-command.log`；contract_local合成输入沿真实API/SQLite，本场无page.route mock、无实际模型调用。结束后15173/18787/64836/64837/65454/65455无监听，helper正常关闭、唯一槽已向root释放；不再重跑整套或付费验证，主控最终集成/全套结果单独记录。
+
+下面的真实AT应用SOURCE、原生三turn及首RED/UNKNOWN都是历史独立证据；本次测试修复不改变它们，公开非空选择、新arXiv URL、个人根、其他模型CLI与自动派发限制仍保留，完整S1仍不宣称通过。
+
 ## 最终交接（2026-10-10，限定真实验收）
 
 分支 `s1-sync-ui-1010`，最终应用 SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0` 已push；W0组装 `df9ebc1626250691d571aa0814849f1457cb3d27` 普通合入，未改backend/contracts/generated/entry/Swarm/Mission。现有Attention/Workspace实现公共来源人工绑定、建议先于正文选择、真实项目权限/原生控制、未知与有限恢复；候选表单可明确选择不同资料的真实沉淀，原生输出/历史/预览按获准范围失效。

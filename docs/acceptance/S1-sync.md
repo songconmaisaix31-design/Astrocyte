@@ -1,5 +1,11 @@
 # S1 账号同步与本地 Agent 验收
 
+## 默认权限定向返修（2026-10-10）
+
+主控SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f` 整套152 PASS / 2 FAIL / 8 SKIP、exit1，两个首败为 `s1.spec.ts:223` 的旧全局关闭文案，原两尺寸trace/error-context保留。W3只修改原用例按当前项目许可检查，SOURCE `bf3b5e7408245f12874830595c40e5a3a3471761` 已push；默认空项目、未知model/config、selected-project-cli动作提示、availablefalse/allowedkeys空、disabled、零模型POST、SQLite无新沉淀job与humanheat0均保留。
+
+清ASTROCYTE_TEST_*后主控分配唯一槽，`pnpm --dir web exec playwright test s1.spec.ts --grep 'default automatic processing' --workers=1 --output=test-results/s1-default-project-permission-fix`：两尺寸 **2 PASS，32.1秒、exit0**；typecheck/diff PASS。日志 `web/test-results/s1-default-project-permission-fix-command.log`，contract_local输入使用真实API/SQLite，不是公开资料/model验收；无新增paid/media/native。15173/18787及两场64836/64837/65454/65455已关闭并释放槽。局部复验不改主控首整套FAIL，不冒称完整默认套件或完整S1已通过，其他真实验收与限制沿下文保留。
+
 ## 最新限定真实验收（2026-10-10）
 
 W3应用 SOURCE `cd721692122c5e8f7820e34f25181058dd648cf0`，分支 `s1-sync-ui-1010` 已push。原4pmMWO库 `ASTROCYTE_TEST_REAL_S1_ACCEPTANCE=1`、两项 `ASTROCYTE_S1_REUSE_{OWNED_TEMP,APPROVED_ROOT}` 均指 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO`，`pnpm --dir web exec playwright test s1-real-acceptance.spec.ts --project=chromium-1920 --workers=1 --output=test-results/s1-real-reference-picker-fix`：**1 PASS，测试1.5分钟/整场1.7分钟、exit0**。
