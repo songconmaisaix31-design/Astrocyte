@@ -65,3 +65,11 @@
 普通合并主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，本轮已回答的决定以 QUESTIONS 顶部为准。候选来源、用途、下一步齐全时，还必须有针对相同资料固定版本的成功沉淀记录提供主题关联或明确待查问题，才进入 ready_for_review；仅正文摘要、无关联记录或旧版本问题仍 incubating。保留原候选历史，没有创建 Mission。
 
 `go test ./internal/attention/app ./internal/attention/domain` PASS（0.546s / cached）。新增候选门槛测试覆盖缺关联、仅摘要、明确问题正向和旧版本问题不满足新版本。真实模型/媒体/浏览器本轮未执行；等待主控时隙。同步持久化与 selected CLI 消费端口草案已发 W0，共享契约/迁移仍由 W0 唯一写入。
+
+## 继续阶段 2（2026-10-10）
+
+W0 公共 ABI/006 普通合入；普通新表单复用已有来源作业（包括历史旧规则作业），只有 refresh=true 显式刷新才再次提取，失败/UNKNOWN 不因换表单伪装成新调用。固定论文别名继续复用；视频 canonical source 共用领域函数，B站 tracking/p=1 别名复用，p=2 保持独立。显式 A→B→A 提取回到旧 digest 后复用旧 A revision，B head 不回退。
+
+首次更新语义后的 app 测试 FAIL：旧 FixedArxivBoundary/MutableImport/CanonicalContract 测试仍要求新表单自动重新提取。按用户已确认普通复用+显式刷新调整其意图后，`go test ./internal/attention/app ./internal/adapters/importers ./internal/attention/domain ./internal/adapters/sqlite` PASS（0.461s/1.164s/cached/1.720s）。PowerShell glob 直接传给 gofmt 首次报 CreateFile，改显式路径后通过；不是业务失败。
+
+真实指定 UID 3494358764489275 公开只读：锁定 yt-dlp2026.08.19 flat-list exited1 HTTP412，stdout null；薄 Python bridge 复用相同版本 BilibiliSpaceVideoIE 的原生 WBI/指纹/网络函数，单页 rawvlist 返回 code -352 验证失败。首失败保持；未换登录、读取 cookie、绕过挑战或下载未选媒体。公开收藏夹目录实际 code0/count0/listnull：仅公开目录为空，不证明上传列表成功。桥限单页30条/60秒/4MiB输出，严格 pin；测试保留精确 aid/UID、owner匹配、标题简介与不可用行。上游参考仍为 yt-dlp/extractor/bilibili.py；不新建 signing/downloader。

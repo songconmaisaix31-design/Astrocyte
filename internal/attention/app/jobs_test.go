@@ -273,6 +273,7 @@ func TestCanonicalContractKindsAndMutableSourceRefresh(t *testing.T) {
 	text = "changed remote content"
 	mu.Unlock()
 	c.CommandMeta = meta("remote-again", 1)
+	c.Refresh = true
 	response, err = s2.ImportMaterial(context.Background(), human, c)
 	if err != nil || response.JobID == first.JobID {
 		t.Fatal("mutable remote was never reread")
