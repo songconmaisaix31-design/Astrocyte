@@ -30,6 +30,8 @@
 
 最新源码 `d5ee4a1` 的 `go test ./...`、`go build ./...`及`git diff --check` PASS；新增未启动resume连续重试保留原所有权测试PASS。表中原生握手及真实turn结果是较早版本的独立证据；`5599350`增加的Codex/Pi完整context和恢复后原用户marker断言尚未执行，不能从此前PASS推导新增断言通过。
 
+新增 `go test ./internal/adapters/sqlite -run '^TestLocalContextHandoffRequiresStoppedSameProjectAndSurvivesRestart$' -count=1 -v` PASS：未确认/失败stop与跨项目来源均拒绝且未调用新start；显式合法handoff使用新controller session而非resume，SQLite真正关闭重开后保留mode/source ID/固定引用、不存正文。native为离线fixture，这仍不是实际CLI跨会话验收。
+
 保留首次 RED：W0未到位前 Caller 参数编译不匹配，合入真实端口后 PASS；Codex thread/start sandbox enum首次 `-32600`（文档与安装schema差异），按本机公开生成 schema 修正 `read-only` 后 PASS；Pi冷启动version5秒超时，有限15秒probe后握手 PASS；Claude包入口首次缺少旧 cli.js，按公开 npm wrapper 改用实际 bin/claude.exe后 PASS。首次 Codex completed 后 interrupt `-32600` 与正向 owned exit分开记录，已改为仅 running 时 interrupt。开发中两次局部编译错误修正后重测通过。W3/W0登记history_roots=null首RED由各 owner保留，W2新旧DTO修复不改写历史。
 
 ## 当前限制与未执行
