@@ -131,6 +131,12 @@ type NativeSession struct {
 // SQLite decoding of old rows or fabricating a native history timestamp.
 func (s NativeSession) MarshalJSON() ([]byte, error) {
 	type nativeSessionJSON NativeSession
+	if s.Operations == nil {
+		s.Operations = map[string]NativeOperation{}
+	}
+	if s.Limitations == nil {
+		s.Limitations = []string{}
+	}
 	var updated *time.Time
 	if !s.UpdatedAt.IsZero() {
 		updated = &s.UpdatedAt
@@ -149,6 +155,13 @@ type NativeOperation struct {
 	CreatedAt  time.Time  `json:"created_at"`
 	FinishedAt *time.Time `json:"finished_at"`
 }
+
+// NativePrelaunchFailure is raised only when no new native process/session
+// operation was started. It never relabels an uncertain protocol delivery.
+type NativePrelaunchFailure struct{ Cause error }
+
+func (e *NativePrelaunchFailure) Error() string { return e.Cause.Error() }
+func (e *NativePrelaunchFailure) Unwrap() error { return e.Cause }
 
 type NativeEvent struct {
 	Sequence int    `json:"sequence"`
