@@ -56,7 +56,7 @@ type Services struct {
 	Sessions           workspaceapp.SessionService
 	Missions           swarmapp.MissionService
 	PaperSearch        attentionapp.PaperSearchService
-	Progress           workspaceapp.ProgressService
+	Progress           workspaceapp.ProjectProgressService
 }
 
 // NewServer creates a new HTTP server with the given configuration.

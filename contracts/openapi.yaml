@@ -2417,8 +2417,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
-  /paper/search:
-    post:
+  /papers/search:
+    get:
       operationId: searchPapers
       summary: search public academic papers
       description: >-
@@ -2432,22 +2432,29 @@ paths:
       security:
         - HumanSession: []
       parameters:
-        - name: Idempotency-Key
-          in: header
+        - name: q
+          in: query
           required: true
           schema:
             type: string
-        - name: X-CSRF-Token
-          in: header
-          required: true
+            minLength: 1
+        - name: provider
+          in: query
+          required: false
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PaperSearchRequestV1"
+            enum:
+              - crossref
+              - europepmc
+              - arxiv
+          description: Provider defaults to crossref when omitted.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
       responses:
         "200":
           description: Ephemeral metadata results; unknown and failure states remain explicit
@@ -2479,15 +2486,77 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
+  /papers/import:
+    post:
+      operationId: importPapers
+      summary: import human-selected papers
+      description: >-
+        Human-session batch import of explicitly selected search hits. Each hit
+        routes through the existing ImportMaterial path (kind=paper) with job and
+        source_key dedup; unknown effects are never automatically replayed. The
+        request Idempotency-Key is caller-owned and sent exactly once. A server
+        without the batch import domain returns 501, never a silent success.
+      tags: [materials]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaperImportRequestV1"
+      responses:
+        "200":
+          description: Import accepted; job identity returned for later polling
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaperImportResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /local-projects/{id}/progress:
     get:
       operationId: getProjectProgress
-      summary: read cached model-inferred project progress
+      summary: read cached project progress
       description: >-
-        Cached model-inferred progress read from approved fixed TASK/STATUS files
-        only. It is never authoritative project state, a grant or a human
-        approval; evidence carries source, version and freshness. A server without
-        the progress service returns 501, not an empty success.
+        Cached human-authored or model-inferred project stage read from approved
+        fixed TASK/STATUS files only. It is never authoritative project state, a
+        grant or a human approval; evidence carries source, version and freshness.
+        A server without the progress service returns 501, not an empty success.
       tags: [projects]
       x-s1-supported: true
       security:
@@ -2529,15 +2598,87 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorV1"
+    put:
+      operationId: setProjectProgress
+      summary: set human-authored project progress
+      description: >-
+        Human-authored project stage, summary and optional 0..100 percent. It is
+        an advisory observation and never grants or expands project permission. A
+        server without the progress service returns 501.
+      tags: [projects]
+      x-s1-supported: true
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetProgressRequestV1"
+      responses:
+        "200":
+          description: Current service result; unknown and failure states remain explicit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectProgressResultV1"
+        "400":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Actionable structured error; no automatic replay of unknown effects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
   /local-projects/{id}/progress/infer:
     post:
       operationId: inferProjectProgress
       summary: infer project progress from approved TASK/STATUS files
       description: >-
-        Triggers a model inference over approved fixed TASK/STATUS files only.
-        It attaches source, version and freshness evidence and never reads
-        credentials, unapproved files or grants project control. A server without
-        the progress service returns 501.
+        Triggers a model inference over approved fixed TASK/STATUS files only. A
+        verified operation identity is persisted before the model turn so a retry
+        cannot silently re-charge; unknown delivery is never replayed. Evidence
+        carries source, version and freshness and never reads credentials,
+        unapproved files or grants project control. A server without the progress
+        service returns 501.
       tags: [projects]
       x-s1-supported: true
       security:
@@ -11862,48 +12003,33 @@ components:
         - expected_version
         - platform
         - owner_id
-    PaperMetadataV1:
+    PaperAvailabilityV1:
       type: object
       additionalProperties: false
       properties:
-        site:
-          type: string
-        source_key:
-          type: string
-        doi:
-          type: string
-        arxiv_id:
-          type: string
-        title:
-          type: string
-        authors:
-          type: array
-          items:
-            type: string
-        abstract:
-          type: string
-        published_at:
-          type: string
-        locator:
-          type: string
-        content_state:
+        status:
           type: string
           enum:
-            - readable_fulltext
-            - abstract_only
-            - paywall
+            - full_text
+            - metadata_only
             - restricted
-        license:
-          type: string
-        warning:
+            - unknown
+        detail:
           type: string
       required:
-        - site
-        - source_key
-        - title
-        - locator
-        - content_state
-    PaperSearchRequestV1:
+        - status
+    PaperImportItemV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        source_type:
+          type: string
+      required:
+        - id
+    PaperImportRequestV1:
       type: object
       additionalProperties: false
       properties:
@@ -11916,25 +12042,77 @@ components:
         expected_version:
           type: integer
           minimum: 1
-        query:
-          type: string
-          minLength: 1
-        limit:
-          type: integer
-          minimum: 1
-          maximum: 100
-        site:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/PaperImportItemV1"
+        collection_reason:
           type: string
       required:
         - schema_version
         - request_id
         - expected_version
-        - query
+        - items
       examples:
         - schema_version: 1
           request_id: example-request
           expected_version: 1
-          query: attention is all you need
+          items:
+            - id: "10.7717/peerj-cs.3829"
+              source_type: crossref
+          collection_reason: selected research paper
+    PaperImportResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        job_id:
+          type: string
+      required:
+        - job_id
+    PaperSearchHitV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        year:
+          type: integer
+        venue:
+          type: string
+        source_type:
+          type: string
+        arxiv_id:
+          type: string
+        doi:
+          type: string
+        locator:
+          type: string
+        abstract:
+          type: string
+        availability:
+          $ref: "#/components/schemas/PaperAvailabilityV1"
+        already_imported:
+          type: boolean
+        import_material_id:
+          anyOf:
+            - type: string
+            - type: "null"
+      required:
+        - id
+        - title
+        - authors
+        - year
+        - source_type
+        - locator
+        - availability
+        - already_imported
     PaperSearchResultV1:
       type: object
       additionalProperties: false
@@ -11942,20 +12120,35 @@ components:
         schema_version:
           type: integer
           const: 1
+        query:
+          type: string
         items:
           type: array
           items:
-            $ref: "#/components/schemas/PaperMetadataV1"
+            $ref: "#/components/schemas/PaperSearchHitV1"
+        next_cursor:
+          anyOf:
+            - type: string
+            - type: "null"
+        has_more:
+          type: boolean
         warnings:
           type: array
           items:
             type: string
       required:
         - schema_version
+        - query
         - items
+        - next_cursor
+        - has_more
+        - warnings
       examples:
         - schema_version: 1
+          query: attention is all you need
           items: []
+          next_cursor: null
+          has_more: false
           warnings: []
     ProgressEvidenceV1:
       type: object
@@ -11967,48 +12160,90 @@ components:
           type: string
         version:
           type: string
-        freshness:
-          type: string
         excerpt:
           type: string
       required:
         - source_path
         - kind
         - version
-        - freshness
+    ProgressOperationV1:
+      type: object
+      additionalProperties: false
+      properties:
+        action:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - accepted
+            - failed
+            - unknown
+        created_at:
+          type: string
+          format: date-time
+        finished_at:
+          anyOf:
+            - type: string
+              format: date-time
+            - type: "null"
+      required:
+        - action
+        - status
+        - created_at
     ProjectProgressV1:
       type: object
       additionalProperties: false
       properties:
+        schema_version:
+          type: integer
         project_id:
           type: string
         status:
           type: string
         summary:
           type: string
+        percent:
+          anyOf:
+            - type: integer
+              minimum: 0
+              maximum: 100
+            - type: "null"
+        source:
+          type: string
+          enum:
+            - human
+            - agent_inferred
         evidence:
           type: array
           items:
             $ref: "#/components/schemas/ProgressEvidenceV1"
-        inferred:
-          type: boolean
-        inferred_at:
-          anyOf:
-            - type: string
-              format: date-time
-            - type: "null"
-        processor:
+        native_id:
           type: string
         model:
           anyOf:
             - type: string
             - type: "null"
+        observed_at:
+          type: string
+          format: date-time
         warning:
           type: string
+        revision:
+          type: integer
+        pending_operation:
+          type: string
+        operations:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ProgressOperationV1"
       required:
         - project_id
         - status
-        - inferred
+        - source
+        - evidence
+        - observed_at
+        - revision
     ProjectProgressResultV1:
       type: object
       additionalProperties: false
@@ -12026,7 +12261,43 @@ components:
           progress:
             project_id: project-example
             status: unknown
-            inferred: false
+            source: human
+            evidence: []
+            observed_at: "2026-10-11T00:00:00Z"
+            revision: 0
+    SetProgressRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+        summary:
+          type: string
+        percent:
+          anyOf:
+            - type: integer
+              minimum: 0
+              maximum: 100
+            - type: "null"
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - status
+      examples:
+        - schema_version: 1
+          request_id: example-request
+          expected_version: 1
+          status: in progress
     InferProgressRequestV1:
       type: object
       additionalProperties: false
@@ -12040,16 +12311,29 @@ components:
         expected_version:
           type: integer
           minimum: 1
-        cli:
+        operation_id:
           type: string
+          format: uuid
+        files:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            type: string
       required:
         - schema_version
         - request_id
         - expected_version
+        - operation_id
+        - files
       examples:
         - schema_version: 1
           request_id: example-request
           expected_version: 1
+          operation_id: 00000000-0000-0000-0000-000000000000
+          files:
+            - TASK.md
+            - STATUS.md
   securitySchemes:
     HumanSession:
       type: apiKey

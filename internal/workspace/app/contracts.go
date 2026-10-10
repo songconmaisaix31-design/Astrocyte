@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -156,41 +155,4 @@ type GitHubRepositories interface {
 	ListGitHubRepositories(context.Context, domain.Caller) ([]domain.GitHubRepository, error)
 	SyncGitHubRepositories(context.Context, domain.Caller, domain.RepositorySyncCommand) ([]domain.GitHubRepository, error)
 	PlaceGitHubRepository(context.Context, domain.Caller, string, domain.RepositoryPlacementCommand) (domain.GitHubRepository, error)
-}
-
-// ProgressEvidence ties one inferred progress fact back to its approved source
-// file version and freshness, so a model inference is never presented as an
-// authoritative or human-approved stage.
-type ProgressEvidence struct {
-	SourcePath string `json:"source_path"`
-	Kind       string `json:"kind"`
-	Version    string `json:"version"`
-	Freshness  string `json:"freshness"`
-	Excerpt    string `json:"excerpt,omitempty"`
-}
-
-// ProjectProgress is a model-inferred observation read only from approved fixed
-// TASK/STATUS files. It is not project state, a grant or a human approval. The
-// HTTP envelope supplies schema_version, matching the workspace DTO convention.
-type ProjectProgress struct {
-	ProjectID  string             `json:"project_id"`
-	Status     string             `json:"status"`
-	Summary    string             `json:"summary,omitempty"`
-	Evidence   []ProgressEvidence `json:"evidence,omitempty"`
-	Inferred   bool               `json:"inferred"`
-	InferredAt *time.Time         `json:"inferred_at,omitempty"`
-	Processor  string             `json:"processor,omitempty"`
-	Model      *string            `json:"model,omitempty"`
-	Warning    string             `json:"warning,omitempty"`
-}
-
-type InferProgressCommand struct {
-	CLI string `json:"cli,omitempty"`
-}
-
-// ProgressService reads and triggers model-inferred progress. It never scans
-// unapproved files, reads credentials or grants project control.
-type ProgressService interface {
-	GetProjectProgress(context.Context, domain.Caller, string) (ProjectProgress, error)
-	InferProjectProgress(context.Context, domain.Caller, string, InferProgressCommand) (ProjectProgress, error)
 }
