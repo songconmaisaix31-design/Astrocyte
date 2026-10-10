@@ -43,10 +43,18 @@ type Native struct {
 	id, stateRoot string
 	processes     map[string]*nativeProcess
 	capabilities  map[string]domain.CapabilityObservation
+	version       string
 }
 
-func (n *Native) ID() string      { return n.id }
-func (n *Native) Version() string { return "native_version_not_observed" }
+func (n *Native) ID() string { return n.id }
+func (n *Native) Version() string {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+	if n.version == "" {
+		return "native_version_not_observed"
+	}
+	return n.version
+}
 func (n *Native) Capabilities() map[string]domain.CapabilityObservation {
 	n.mu.Lock()
 	defer n.mu.Unlock()
@@ -108,6 +116,38 @@ func (n *Native) ReadContext(ctx context.Context, s domain.NativeSession) ([]dom
 var codexDisabledFeatures = []string{"shell_tool", "unified_exec", "plugins", "apps", "browser_use", "browser_use_external", "browser_use_full_cdp_access", "computer_use", "view_image", "image_generation", "multi_agent", "multi_agent_v2", "memories", "hooks", "code_mode", "code_mode_host", "skill_search", "tool_suggest", "workspace_dependencies", "realtime_conversation", "remote_plugin", "remote_models", "in_app_browser", "in_app_local_automation", "sleep_tool"}
 
 func (n *Native) launch(r domain.NativeRequest, resume bool) (*nativeProcess, error) {
+	probeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	probe, err := installedCommand(n.id, []string{"--version"})
+	if err != nil {
+		return nil, err
+	}
+	probeOutput := &boundedOutput{}
+	probe.Stdout = probeOutput
+	probe.Stderr = probeOutput
+	cleanup, err := startOwnedNative(probe)
+	if err != nil {
+		return nil, err
+	}
+	probeDone := make(chan error, 1)
+	go func() { probeDone <- probe.Wait(); cleanup() }()
+	select {
+	case err := <-probeDone:
+		if err != nil {
+			return nil, nativeError(apierrors.ProviderUnavailable, "native version probe failed")
+		}
+	case <-probeCtx.Done():
+		_ = probe.Cancel()
+		<-probeDone
+		return nil, nativeError(apierrors.ProviderUnavailable, "native version probe timed out")
+	}
+	version := versionPattern.FindString(string(probeOutput.bytes))
+	if version == "" {
+		return nil, nativeError(apierrors.EvidenceMissing, "native version was not reported")
+	}
+	n.mu.Lock()
+	n.version = version
+	n.mu.Unlock()
 	seconds := r.Command.DeadlineSeconds
 	if seconds == 0 {
 		seconds = 180
@@ -209,7 +249,9 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			return fail(err)
 		}
 		var result struct {
-			Thread struct {
+			Model         string `json:"model"`
+			ModelProvider string `json:"modelProvider"`
+			Thread        struct {
 				ID  string `json:"id"`
 				Cwd string `json:"cwd"`
 			} `json:"thread"`
@@ -219,12 +261,17 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			return fail(nativeError(apierrors.ScopeDenied, "native thread identity or project differs"))
 		}
 		p.nativeID = result.Thread.ID
+		p.model, p.provider = result.Model, result.ModelProvider
 	} else {
 		response, err := p.call(ctx, "get_state", map[string]any{}, true)
 		if err != nil {
 			return fail(err)
 		}
 		var state struct {
+			Model struct {
+				ID       string `json:"id"`
+				Provider string `json:"provider"`
+			} `json:"model"`
 			SessionFile string `json:"sessionFile"`
 			SessionID   string `json:"sessionId"`
 		}
@@ -233,8 +280,10 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			return fail(nativeError(apierrors.ScopeDenied, "native Pi session identity differs or is unavailable"))
 		}
 		p.nativeID = state.SessionFile
+		p.model, p.provider = state.Model.ID, state.Model.Provider
 	}
 	s.NativeID = p.nativeID
+	s.Version = n.Version()
 	s.Status = "idle"
 	s.UpdatedAt = time.Now().UTC()
 	n.mu.Lock()

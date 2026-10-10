@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -32,6 +33,7 @@ type nativeProcess struct {
 	truncated             bool
 	status, turnID        string
 	nativeID, sessionPath string
+	model, provider       string
 	next                  int
 }
 
@@ -100,11 +102,20 @@ func launchNative(id string, args []string, root string, lifetime time.Duration)
 	}
 	go p.read(out)
 	go func() {
-		_ = cmd.Wait()
+		waitErr := cmd.Wait()
 		cleanup()
 		cancel()
 		p.mu.Lock()
-		if p.status != "completed" && p.status != "failed" {
+		if waitErr != nil && p.status != "blocked" && p.status != "completed" {
+			p.status = "failed"
+			exit := -1
+			var nativeExit *exec.ExitError
+			if errors.As(waitErr, &nativeExit) {
+				exit = nativeExit.ExitCode()
+			}
+			p.addEvent("process_exit", fmt.Sprintf("exit_code:%d", exit))
+			slog.Warn("owned native process exited", "cli", id, "exit_code", exit)
+		} else if p.status != "completed" && p.status != "failed" && p.status != "blocked" {
 			p.status = "stopped"
 		}
 		p.mu.Unlock()
@@ -157,6 +168,11 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 	select {
 	case response := <-ch:
 		if _, ok := response["error"]; ok {
+			var failure struct {
+				Code int `json:"code"`
+			}
+			_ = json.Unmarshal(response["error"], &failure)
+			slog.Warn("native protocol rejected operation", "method", method, "protocol_code", failure.Code)
 			return nil, nativeError(apierrors.ProviderUnavailable, "native protocol rejected the operation")
 		}
 		if raw, ok := response["success"]; ok && string(raw) != "true" {
@@ -164,6 +180,7 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 		}
 		return response, nil
 	case <-ctx.Done():
+		slog.Warn("native delivery unresolved", "method", method, "reason", "reply_deadline")
 		return nil, nativeError(apierrors.DeliveryUnknown, "native reply deadline elapsed; do not replay automatically")
 	case <-p.done:
 		return nil, nativeError(apierrors.DeliveryUnknown, "native process exited before reply")

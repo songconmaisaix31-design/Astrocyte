@@ -53,6 +53,7 @@ type FixedReference struct {
 // ContextMaterial contains a fixed source version; the reference port must check
 // project membership and material access on every call, including linked nodes.
 type ContextMaterial struct {
+	Expanded  bool           `json:"expanded"`
 	Reference FixedReference `json:"reference"`
 	Title     string         `json:"title"`
 	Text      string         `json:"text"`

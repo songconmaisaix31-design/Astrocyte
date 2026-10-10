@@ -283,7 +283,7 @@ func (s *localProjectService) ReadProjectContext(ctx context.Context, c domain.C
 		if s.refs == nil {
 			return projectError(apierrors.UnsupportedCapability, "project reference reader is not connected")
 		}
-		material, err := s.refs.ReadSelected(ctx, c, p.SpaceID, ref)
+		material, err := s.refs.ReadSelected(ctx, c, p.SpaceID, ref, depth > 0)
 		if err != nil {
 			return err
 		}
@@ -295,8 +295,9 @@ func (s *localProjectService) ReadProjectContext(ctx context.Context, c domain.C
 			return projectError(apierrors.BudgetExhausted, "context output exceeds 128 KiB")
 		}
 		visited[ref] = true
+		material.Expanded = depth > 0
 		packet.Materials = append(packet.Materials, material)
-		if p.Settings.ExpandReferences {
+		if p.Settings.ExpandReferences && depth == 0 {
 			links, err := s.refs.Linked(ctx, c, p.SpaceID, ref)
 			if err != nil {
 				return err
@@ -364,7 +365,7 @@ func (s *localProjectService) checkPacket(ctx context.Context, c domain.Caller, 
 		return projectError(apierrors.ApprovalRevoked, "native context settings have been revoked or changed")
 	}
 	for _, material := range packet.Materials {
-		if _, err := s.refs.ReadSelected(ctx, c, p.SpaceID, material.Reference); err != nil {
+		if _, err := s.refs.ReadSelected(ctx, c, p.SpaceID, material.Reference, material.Expanded); err != nil {
 			return err
 		}
 	}
@@ -565,6 +566,31 @@ func (s *localProjectService) stopOwned(ctx context.Context, session domain.Nati
 		return saveErr
 	}
 	return err
+}
+
+// Shutdown persists positive owned exits before the entrypoint closes SQLite.
+// A stale row from an unclean restart remains unconfirmed; absence is no proof.
+func (s *localProjectService) Shutdown(ctx context.Context) error {
+	projects, err := s.repo.ListProjects(ctx)
+	if err != nil {
+		return err
+	}
+	var failures []error
+	for _, project := range projects {
+		sessions, err := s.repo.ListSessions(ctx, project.ID)
+		if err != nil {
+			failures = append(failures, err)
+			continue
+		}
+		for _, session := range sessions {
+			if session.Ownership == "owned" && !session.StopConfirmed {
+				if err := s.stopOwned(ctx, session); err != nil {
+					failures = append(failures, err)
+				}
+			}
+		}
+	}
+	return errors.Join(failures...)
 }
 
 func (s *localProjectService) DiscoverNativeSessions(ctx context.Context, c domain.Caller, id, cli string) ([]domain.NativeSession, error) {
