@@ -160,13 +160,16 @@ func scopedAgentRoute(r *http.Request, projectID string) bool {
 	if len(parts) == 5 {
 		return (parts[4] == "context" && r.Method == http.MethodPost) || (parts[4] == "sessions" && (r.Method == http.MethodGet || r.Method == http.MethodPost))
 	}
+	if len(parts) == 6 && parts[4] == "sessions" && parts[5] == "discover" {
+		return r.Method == http.MethodPost
+	}
 	if len(parts) != 7 || parts[4] != "sessions" || parts[5] == "" {
 		return false
 	}
 	switch parts[6] {
 	case "resume", "send", "stop":
 		return r.Method == http.MethodPost
-	case "observe":
+	case "observe", "context":
 		return r.Method == http.MethodGet
 	default:
 		return false

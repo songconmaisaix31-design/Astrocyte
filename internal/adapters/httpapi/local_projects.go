@@ -61,6 +61,10 @@ type localMessageCommand struct {
 	attentionapp.CommandMeta
 	Message string `json:"message"`
 }
+type localDiscoverSessionCommand struct {
+	attentionapp.CommandMeta
+	CLI string `json:"cli"`
+}
 
 func (h *handler) registerLocalProjects(mux *http.ServeMux) {
 	s := h.services.LocalProjects
@@ -69,6 +73,7 @@ func (h *handler) registerLocalProjects(mux *http.ServeMux) {
 			"GET /api/v1/local-projects", "POST /api/v1/local-projects", "POST /api/v1/local-projects/discover",
 			"PUT /api/v1/local-projects/{id}/settings", "POST /api/v1/local-projects/{id}/grants", "POST /api/v1/local-projects/{id}/grants/revoke", "POST /api/v1/local-projects/{id}/agent-token",
 			"POST /api/v1/local-projects/{id}/context", "GET /api/v1/local-projects/{id}/sessions", "POST /api/v1/local-projects/{id}/sessions",
+			"POST /api/v1/local-projects/{id}/sessions/discover", "GET /api/v1/local-projects/{id}/sessions/{session_id}/context",
 			"POST /api/v1/local-projects/{id}/sessions/{session_id}/resume", "POST /api/v1/local-projects/{id}/sessions/{session_id}/send", "POST /api/v1/local-projects/{id}/sessions/{session_id}/stop", "GET /api/v1/local-projects/{id}/sessions/{session_id}/observe",
 		} {
 			mux.HandleFunc(route, h.notImplemented("local_project_control"))
@@ -109,6 +114,14 @@ func (h *handler) registerLocalProjects(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/local-projects/{id}/sessions", func(w http.ResponseWriter, r *http.Request) {
 		sessions, err := s.ListNativeSessions(r.Context(), localCaller(r), r.PathValue("id"))
 		h.attentionResult(w, r, http.StatusOK, localList(sessions), err)
+	})
+	mux.HandleFunc("POST /api/v1/local-projects/{id}/sessions/discover", commandHandler(h, func(c *localDiscoverSessionCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c localDiscoverSessionCommand) (any, error) {
+		p, err := s.DiscoverNativeSessions(r.Context(), localCaller(r), r.PathValue("id"), c.CLI)
+		return localList(p), err
+	}))
+	mux.HandleFunc("GET /api/v1/local-projects/{id}/sessions/{session_id}/context", func(w http.ResponseWriter, r *http.Request) {
+		p, err := s.ReadNativeContext(r.Context(), localCaller(r), r.PathValue("id"), r.PathValue("session_id"))
+		h.attentionResult(w, r, http.StatusOK, localList(p), err)
 	})
 	mux.HandleFunc("POST /api/v1/local-projects/{id}/sessions", commandHandler(h, func(c *localNativeCommand) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c localNativeCommand) (any, error) {
 		c.NativeCommand.OperationID = c.IdempotencyKey

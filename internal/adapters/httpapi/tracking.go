@@ -7,6 +7,15 @@ import (
 )
 
 func (h *handler) registerTracking(mux *http.ServeMux) {
+	mux.HandleFunc("GET /api/v1/source-collections", func(w http.ResponseWriter, r *http.Request) {
+		s, ok := h.services.Tracking.(attentionapp.SourceCollectionService)
+		if !ok {
+			h.notImplemented("public_source_collections")(w, r)
+			return
+		}
+		result, err := s.ListSourceCollections(r.Context(), principal(r), r.URL.Query().Get("platform"), r.URL.Query().Get("owner_id"))
+		h.attentionResult(w, r, http.StatusOK, result, err)
+	})
 	if h.services.Tracking == nil {
 		for _, route := range []string{"GET /api/v1/tracking-sources", "POST /api/v1/tracking-sources", "GET /api/v1/tracking-sources/{id}", "POST /api/v1/tracking-sources/{id}/sync", "POST /api/v1/tracking-sources/{id}/recommend", "POST /api/v1/tracking-sources/{id}/select"} {
 			mux.HandleFunc(route, h.notImplemented("public_source_tracking"))

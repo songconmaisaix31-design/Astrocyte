@@ -33,7 +33,7 @@ type LocalProjectRepository interface {
 // References are consumed from Attention through an entrypoint bridge. Neither
 // app imports the other. Access and active space membership are checked per call.
 type ProjectReferences interface {
-	ReadSelected(context.Context, domain.Caller, string, domain.FixedReference) (domain.ContextMaterial, error)
+	ReadSelected(context.Context, domain.Caller, string, domain.FixedReference, bool) (domain.ContextMaterial, error)
 	Linked(context.Context, domain.Caller, string, domain.FixedReference) ([]domain.FixedReference, error)
 }
 type NativeAdapter interface {
@@ -59,6 +59,7 @@ type ProjectFiles interface {
 	DiscoverProjects(context.Context, string) ([]domain.ProjectCandidate, error)
 }
 type TextProcessor interface {
+	ConfigurationID(context.Context, string) (string, error)
 	ProcessSelectedText(context.Context, domain.TextRequest) (domain.TextResult, error)
 }
 
@@ -74,6 +75,8 @@ type LocalProjects interface {
 	IssueProjectAgentToken(context.Context, domain.Caller, string, string) (domain.AgentToken, error)
 	ReadProjectContext(context.Context, domain.Caller, string, domain.ContextRequest) (domain.ContextPacket, error)
 	ListNativeSessions(context.Context, domain.Caller, string) ([]domain.NativeSession, error)
+	DiscoverNativeSessions(context.Context, domain.Caller, string, string) ([]domain.NativeSession, error)
+	ReadNativeContext(context.Context, domain.Caller, string, string) ([]domain.NativeEvent, error)
 	StartNativeSession(context.Context, domain.Caller, string, domain.NativeCommand) (domain.NativeSession, error)
 	ResumeNativeSession(context.Context, domain.Caller, string, string, domain.NativeCommand) (domain.NativeSession, error)
 	SendNativeMessage(context.Context, domain.Caller, string, string, string) (domain.NativeObservation, error)

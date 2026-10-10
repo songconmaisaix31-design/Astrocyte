@@ -14,6 +14,7 @@ async function headers(key: string) {
 }
 // Writes keep the caller's operation identity and never replay failed/unknown effects.
 export const trackingApi = {
+	listCollections: (platform: string, owner_id: string, options?: Options) => unwrap(api.GET('/source-collections', { params: { query: { platform, owner_id } }, ...options })),
   listSources: (options?: Options) => unwrap(api.GET('/tracking-sources', options)),
   getSource: (id: string, options?: Options) => unwrap(api.GET('/tracking-sources/{id}', { params: { path: { id } }, ...options })),
   bindSource: async (body: components['schemas']['BindTrackingSourceRequestV1'], key: string, options?: Options) => unwrap(api.POST('/tracking-sources', { body, params: { header: await headers(key) }, ...options })),
@@ -22,6 +23,9 @@ export const trackingApi = {
   selectItems: async (id: string, body: components['schemas']['SelectSourceItemsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/tracking-sources/{id}/select', { body, params: { path: { id }, header: await headers(key) }, ...options })),
 };
 export const localProjectsApi = {
+	issueAgentToken: async (id: string, body: components['schemas']['IssueProjectAgentTokenRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/agent-token', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+	discoverSessions: async (id: string, body: components['schemas']['DiscoverNativeSessionsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/{id}/sessions/discover', { body, params: { path: { id }, header: await headers(key) }, ...options })),
+	readNativeContext: (id: string, session_id: string, options?: Options) => unwrap(api.GET('/local-projects/{id}/sessions/{session_id}/context', { params: { path: { id, session_id } }, ...options })),
   listProjects: (options?: Options) => unwrap(api.GET('/local-projects', options)),
   registerProject: async (body: components['schemas']['RegisterLocalProjectRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects', { body, params: { header: await headers(key) }, ...options })),
   discoverProjects: async (body: components['schemas']['DiscoverLocalProjectsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/local-projects/discover', { body, params: { header: await headers(key) }, ...options })),
