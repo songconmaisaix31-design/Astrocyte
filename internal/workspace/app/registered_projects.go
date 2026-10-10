@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -32,6 +33,10 @@ func (s *localProjectService) RefreshRegisteredProjects(ctx context.Context, c d
 	if s.discoveryRepo == nil || s.discoverySource == nil {
 		return domain.ProjectDiscoverySnapshot{}, projectError(apierrors.UnsupportedCapability, "registered project discovery is not connected")
 	}
+	// One request budget includes waiting for another refresh. The source's
+	// own deadline alone would otherwise allow an unbounded queue wait.
+	ctx, cancel := context.WithTimeout(ctx, 120*time.Second)
+	defer cancel()
 	// Serialize refreshes without locking native session/settings operations.
 	select {
 	case s.discoveryGate <- struct{}{}:
