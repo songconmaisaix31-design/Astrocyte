@@ -3576,7 +3576,7 @@ export interface components {
             name: string;
             repo_id: string;
             /** @enum {string} */
-            source: "orca_registered" | "subproject" | "git_worktree";
+            source: "orca_registered" | "subproject" | "git_worktree" | "native_project_metadata";
             parent_root: string;
             git: components["schemas"]["RegisteredProjectGitV1"];
             activity: components["schemas"]["RegisteredProjectActivityV1"];
