@@ -35,7 +35,7 @@ func (s *Service) GetDistillerStatus(ctx context.Context, p Principal) (Distille
 	if s.options.Distiller == nil {
 		if s.options.ProjectDistillers != nil {
 			status.Processor = "selected-project-cli"
-			status.Available = true
+			status.Available = false
 			status.Reason = "Select a project and CLI with explicit model-processing permission; availability is checked for that selection"
 			status.RequiredAction = "select_permitted_project_cli"
 			return status, nil

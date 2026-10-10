@@ -121,3 +121,11 @@ Root接受阶段5 owner implementation交接，未接受全S1/账号；明确保
 Root批准在两条selected适配器完整组装后按UTF-8实际bytes检查128KiB，超限返回已有ValidationFailed/review_selected_text_size；不截断、不分块、不调用ProcessSelectedText。Registry保留独立原生防御。首次新增回归RED：自动/推荐都实际进入processor stub1次并返回下游格式错误；修复后相同多字节正文（字符数未超上限但UTF-8超限）两模式均known preflight failure/0processcalls。启动后BudgetExhausted/DeliveryUnknown的保守分类没有改变，原UNKNOWN没有重放。
 
 真实历史0.25.1 CLI page-only原件通过既有opt-in TestBilibiliPageOnlyIsNotVideoEvidence核验：PASS，明确evidence_missing，未运行媒体或网络。普通 `go test ./...`、`go vet ./...`、`go build ./...`、架构/diff检查仍PASS；不作为新模型任务live验收。
+
+## 继续阶段 7：真实能力投影与跨适配论文身份（2026-10-10）
+
+W0实际API第一套12PASS/2FAIL中，changed supplied export新job的失败断言由W0确认是错把fixed inputbytes当作普通URL复用，原失败保留后由W0移除过约束；本轨确认新bytes可形成新job/revision。另一项真实缺陷是注册ProjectDistillers即global available=true：本轨改false，保留selected-project-cli与select_permitted_project_cli说明，未选项目/客户端/许可/配置不声明连接可用；实际选定POST仍独立验证。
+
+Root另指出官方arxiv Reader的arxiv:baseID与现有summarize_json paper导出的HTML URL key分裂资料。本轨仅actual kind=paper+既有NormalizeArxivID接受的官方论文URL归一到相同arxiv:baseID；summarize/manual既有导出两路适用，video/其他域名/无效ID不折叠。原始固定版本URL、真实导出内容/附件和existing_*_export/manual provenance原样保存，不声明官方fresh fetch或相同bytes。未迁移/重写已存在历史重复材料，也未改共享契约。
+
+测试覆盖现代/旧arxiv ID、官方多URL版本、非paper及其他host不误并。跨adapter→Service→实际SQLite/objects→真close/reopen测试验证官方A与不同exportB同一Material/新revision2、exact B新表单job复用、旧A digest复用revision1但B head不回退、restart后唯一material及原JSON附件保留。HTTP为明确contract_local，不是真实arxiv重新抓取。该测试首次编译误用Job.Revision，随后查询误写materials表失败；按现有MaterialRevision字段/attention_materials表更正后单独PASS，首失败保留。Global status回归PASS。全Go test/vet/build、架构/diff检查PASS；实际fresh模型/媒体/browser仍由root安排。

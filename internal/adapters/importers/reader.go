@@ -114,7 +114,7 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 			kind = "video"
 		}
 		spans := exportSpans(e)
-		source = app.ImportedSource{SourceKey: canonicalWebKey(e.URL), SourceLocator: e.URL, Kind: kind, Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: spans, Provenance: app.Provenance{Processor: "summarize", Version: "0.21.8-format", Mode: mode, Source: e.URL}, Attachments: []app.SourceAttachment{{Name: name, MediaType: mediaType, Data: raw, SourceLocator: e.URL}}}
+		source = app.ImportedSource{SourceKey: exportSourceKey(e.URL, kind), SourceLocator: e.URL, Kind: kind, Title: e.Title, Text: e.Text, Summary: e.Summary, SourceSpans: spans, Provenance: app.Provenance{Processor: "summarize", Version: "0.21.8-format", Mode: mode, Source: e.URL}, Attachments: []app.SourceAttachment{{Name: name, MediaType: mediaType, Data: raw, SourceLocator: e.URL}}}
 	case "manual":
 		raw, err := r.exportBytes(cmd)
 		if err != nil {
@@ -123,7 +123,7 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		if err = validateWebURL(cmd.SourceLocator); err != nil {
 			return source, sourceError(err)
 		}
-		source = app.ImportedSource{SourceKey: canonicalWebKey(cmd.SourceLocator), SourceLocator: cmd.SourceLocator, Kind: cmd.Kind, Title: cmd.Title, Text: string(raw), SourceSpans: append([]string{}, cmd.SourceSpans...), Provenance: app.Provenance{Processor: "manual", Version: "1", Mode: "manual", Source: cmd.SourceLocator}}
+		source = app.ImportedSource{SourceKey: exportSourceKey(cmd.SourceLocator, cmd.Kind), SourceLocator: cmd.SourceLocator, Kind: cmd.Kind, Title: cmd.Title, Text: string(raw), SourceSpans: append([]string{}, cmd.SourceSpans...), Provenance: app.Provenance{Processor: "manual", Version: "1", Mode: "manual", Source: cmd.SourceLocator}}
 	default:
 		return source, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "source adapter unavailable", RequiredAction: "use_arxiv_or_existing_summarize_export"}
 	}
@@ -199,6 +199,18 @@ func (r *Reader) exportBytes(cmd app.ImportMaterialCommand) ([]byte, error) {
 }
 
 func canonicalWebKey(raw string) string { return domain.CanonicalWebKey(raw) }
+
+// Official paper locators retain their exact original version/URL in the
+// export and provenance, while sharing the existing arXiv material identity.
+// Neither video URLs, arbitrary domains nor invalid paper IDs are collapsed.
+func exportSourceKey(locator, kind string) string {
+	if kind == "paper" {
+		if id, err := NormalizeArxivID(locator); err == nil {
+			return "arxiv:" + revisionSuffix.ReplaceAllString(id, "")
+		}
+	}
+	return canonicalWebKey(locator)
+}
 
 func invalid(message string) *apierrors.ServiceError {
 	return &apierrors.ServiceError{Code: apierrors.ValidationFailed, Message: message, RequiredAction: "correct_source_input"}
