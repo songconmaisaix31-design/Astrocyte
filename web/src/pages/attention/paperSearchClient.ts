@@ -1,13 +1,23 @@
 /**
  * Paper search client seam.
  *
- * The generated endpoint type does not exist yet (W0 owns `web/src/api/` and the
- * OpenAPI contract). This module calls the proposed `GET /papers/search` route
- * directly with a typed local shape; it never fabricates results and surfaces
- * every failure (404/501/network) as an explicit, retryable error so the panel
- * renders an honest "unavailable" state until the endpoint is wired.
+ * W0 published `GET /api/v1/papers/search?q=&provider=&limit=` returning
+ * `PaperSearchResultV1` (contracts/openapi.yaml, converged at `e39f8f1`); the
+ * generated `attentionApi.searchPapers` wrapper is added by W0 during final
+ * integration because `web/src/api/` is W0-owned. Until then this module calls
+ * the published route directly with the exact wire shape and never fabricates
+ * results. Every failure (404/501/network) surfaces as an explicit, retryable
+ * error.
+ *
+ * Selection is imported per-item through the existing ImportMaterial path
+ * (kind=paper, adapter arxiv|paper_url, source_key dedup, new revision) with a
+ * stable idempotency key per item so a retry reuses the same job. A settled
+ * submission only proves the job was accepted, never that it succeeded; jobs
+ * stay queryable in the existing processing queue.
  */
-import type { PaperSearchHit, PaperSearchResult } from './paperSearch';
+import { attentionApi } from '../../api/client';
+import type { components } from '../../api/schema';
+import { paperImportAdapter, type PaperImportAdapter, type PaperContentState, type PaperSearchHit, type PaperSearchResult } from './paperSearch';
 
 export const PAPER_SEARCH_PATH = '/api/v1/papers/search';
 
@@ -18,49 +28,59 @@ export class PaperSearchUnavailable extends Error {
   }
 }
 
-interface RawHit {
-  id?: unknown; title?: unknown; authors?: unknown; year?: unknown; venue?: unknown;
-  source_type?: unknown; arxiv_id?: unknown; doi?: unknown; locator?: unknown;
-  abstract?: unknown; availability?: unknown; already_imported?: unknown; import_material_id?: unknown;
-}
-
 function asString(value: unknown): string | null {
   return typeof value === 'string' ? value : null;
 }
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 }
+const contentStates: PaperContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted', 'unknown'];
+function asContentState(value: unknown): PaperContentState {
+  return (contentStates as unknown[]).includes(value) ? (value as PaperContentState) : 'abstract_only';
+}
+
+interface RawHit {
+  source_key?: unknown; provider?: unknown; title?: unknown; authors?: unknown; year?: unknown;
+  venue?: unknown; arxiv_id?: unknown; doi?: unknown; locator?: unknown;
+  abstract?: unknown; content_state?: unknown; pdf_urls?: unknown;
+}
 
 function mapHit(raw: RawHit): PaperSearchHit {
-  const availability = (raw.availability && typeof raw.availability === 'object' ? raw.availability : {}) as { status?: unknown; detail?: unknown };
-  const status = availability.status;
   return {
-    id: asString(raw.id) ?? '',
+    source_key: asString(raw.source_key) ?? '',
+    provider: asString(raw.provider) ?? 'unknown',
     title: asString(raw.title) ?? '标题未提供',
     authors: asStringArray(raw.authors),
-    year: typeof raw.year === 'number' ? raw.year : null,
-    venue: asString(raw.venue),
-    source_type: asString(raw.source_type) ?? 'unknown',
-    arxiv_id: asString(raw.arxiv_id),
-    doi: asString(raw.doi),
+    year: typeof raw.year === 'number' ? raw.year : 0,
+    venue: asString(raw.venue) ?? undefined,
+    arxiv_id: asString(raw.arxiv_id) ?? undefined,
+    doi: asString(raw.doi) ?? undefined,
     locator: asString(raw.locator) ?? '',
-    abstract: asString(raw.abstract),
-    availability: {
-      status: status === 'full_text' || status === 'metadata_only' || status === 'restricted' || status === 'unknown' ? status : 'unknown',
-      detail: asString(availability.detail),
-    },
-    already_imported: raw.already_imported === true,
-    import_material_id: asString(raw.import_material_id),
+    abstract: asString(raw.abstract) ?? undefined,
+    content_state: asContentState(raw.content_state),
+    pdf_urls: asStringArray(raw.pdf_urls),
   };
+}
+
+/** Deterministic idempotency key so a retry of the same operation reuses it. */
+function stableKey(parts: string[]): string {
+  const joined = parts.join('\u0000');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < joined.length; i++) {
+    h ^= joined.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return `paper-${(h >>> 0).toString(16)}`;
 }
 
 export async function searchPapers(query: string, signal?: AbortSignal): Promise<PaperSearchResult> {
   const params = new URLSearchParams({ q: query });
-  const response = await fetch(`${PAPER_SEARCH_PATH}?${params}`, { credentials: 'same-origin', signal });
+  const response = await fetch(`${PAPER_SEARCH_PATH}?${params.toString()}`, { credentials: 'same-origin', signal });
   if (!response.ok) throw new PaperSearchUnavailable(response.status);
-  const body = (await response.json().catch(() => undefined)) as { query?: unknown; items?: unknown; next_cursor?: unknown; has_more?: unknown; warnings?: unknown } | undefined;
+  const body = (await response.json().catch(() => undefined)) as { schema_version?: unknown; query?: unknown; items?: unknown; next_cursor?: unknown; has_more?: unknown; warnings?: unknown } | undefined;
   const items = Array.isArray(body?.items) ? (body.items as RawHit[]).map(mapHit) : [];
   return {
+    schema_version: 1,
     query: asString(body?.query) ?? query,
     items,
     next_cursor: asString(body?.next_cursor),
@@ -69,30 +89,52 @@ export async function searchPapers(query: string, signal?: AbortSignal): Promise
   };
 }
 
-/** Proposed batch import route; write never replays on failure (idempotency key is caller-owned). */
-export const PAPER_IMPORT_PATH = '/api/v1/papers/import';
+/**
+ * `paper_snapshot` is W1's adapter not yet named in the generated
+ * `ImportMaterialRequestV1.adapter` enum; it is cast at this single seam for
+ * W0 to confirm during final integration. `arxiv`/`paper_url`/`paper_pdf` are
+ * already in the generated enum.
+ */
+const toImportAdapter = (adapter: PaperImportAdapter): components['schemas']['ImportMaterialRequestV1']['adapter'] =>
+  adapter as components['schemas']['ImportMaterialRequestV1']['adapter'];
 
-export interface PaperImportResult {
-  job_id: string;
+/**
+ * A selected hit is imported through the existing ImportMaterial path with a
+ * stable idempotency key (adapter + canonical source_key + locator). The same
+ * selection retried later reuses the job; source_key dedup keeps a duplicate
+ * revision from being created.
+ */
+export async function importPaperHit(hit: PaperSearchHit, reason: string | null) {
+  const adapter = paperImportAdapter(hit);
+  const key = stableKey(['import', adapter, hit.source_key, hit.locator]);
+  return attentionApi.importMaterial({
+    schema_version: 1,
+    request_id: key,
+    expected_version: 1,
+    adapter: toImportAdapter(adapter),
+    source_locator: hit.locator,
+    source_key: hit.source_key,
+    kind: 'paper',
+    content_digest: '',
+    collection_reason: reason,
+    title: hit.title,
+    refresh: false,
+  }, key);
 }
 
 /**
- * Human-session batch import. Bootstraps the same-origin session for CSRF and
- * sends the caller's idempotency key exactly once. Any non-2xx (including a not
- * yet implemented 404/501) is surfaced verbatim so the panel never claims the
- * import succeeded.
+ * Human-session batch import: one ImportMaterial job per selected hit, each with
+ * its own stable idempotency key. Every selection is attempted; a settled
+ * submission only means the job was accepted (not that it succeeded). Failures
+ * are surfaced as a single actionable error, and accepted jobs remain queryable
+ * in the existing processing queue. Never imports an unselected hit.
  */
-export async function importPapers(body: unknown, key: string, signal?: AbortSignal): Promise<PaperImportResult> {
-  const sessionResponse = await fetch('/api/v1/auth/session', { credentials: 'same-origin', signal });
-  if (!sessionResponse.ok) throw new Error('本地会话不可用，无法提交批量入库');
-  const session = (await sessionResponse.json().catch(() => undefined)) as { csrf_token?: string } | undefined;
-  const response = await fetch(PAPER_IMPORT_PATH, {
-    method: 'POST',
-    credentials: 'same-origin',
-    signal,
-    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key, 'X-CSRF-Token': session?.csrf_token ?? '' },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) throw new PaperSearchUnavailable(response.status);
-  return (await response.json().catch(() => undefined)) as PaperImportResult;
+export async function importPaperBatch(hits: PaperSearchHit[], reason: string | null): Promise<void> {
+  const settled = await Promise.allSettled(hits.map(hit => importPaperHit(hit, reason)));
+  const rejected = settled.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
+  if (!rejected.length) return;
+  const accepted = settled.length - rejected.length;
+  const first = rejected[0].reason;
+  const detail = first instanceof Error ? first.message : String(first);
+  throw new Error(accepted ? `已提交 ${accepted} 条入库作业，${rejected.length} 条提交失败（详情见处理队列）：${detail}` : `批量入库提交失败（详情见处理队列）：${detail}`);
 }

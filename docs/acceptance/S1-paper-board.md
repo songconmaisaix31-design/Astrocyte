@@ -1,44 +1,44 @@
-# S1 论文检索、进度与前端 DTO 交接（本轮 W3）
+# S1 论文检索、进度与前端 DTO 交接（本轮 W3，已消费 W0/W1 最终单一权威契约）
 
-本轮（`run_8c1696bb815a`，W3）延续已验看板布局，为三项已确认能力补齐前端垂直片：论文检索入口（检索 → 元数据/原文可得状态 → 勾选 → 批量入库 → 继续沉淀）、Agent 进度依据展示（TASK/STATUS 来源/阶段/新鲜度，未知不伪造百分比）。CLI 原生操作沿用现有 `ManagedProjectsPanel`/`NativeProjectPanel`（start/read/resume/send/stop/observe/context_handoff），不以看板即自动授权。记忆与工具层按待答决定仅作规划，不默认全局、不建 UI 伪工具。
+本轮（`run_8c1696bb815a`，W3，新 Dispatch）消费 W0 **`e39f8f1`**（单一权威 paper/progress GET DTO）与 W1 **`0b189e5`**（`paper_snapshot` 离线摄取 adapter），替换上一 Worker 对齐 `b8dfe67`/`d89daa1` 的过期假 DTO，不再 mock 自想 DTO 或旧 `id/source_type/availability` 双轨：
+
+- **论文检索**：`GET /api/v1/papers/search?q=&provider=&limit=`（W0 契约），返回 `PaperSearchHitV1`（`source_key/provider/title/authors/year/venue/arxiv_id/doi/locator/abstract/content_state/pdf_urls`），不再有 `site`/`id`/`source_type`/`availability`/`already_imported`。检索只返回公开元数据（`content_state=abstract_only`）；原文可得性在勾选入库后由作业确定。勾选纯人工、可取消、批量入库由人显式提交且不全量。
+- **批量入库**：逐条走既有 `POST /materials/imports`（`ImportMaterialRequestV1`，`kind=paper`，`adapter=arxiv|paper_url`，`source_key` 去重、新 revision），**每项用确定性幂等键**（adapter+source_key+locator），`Promise.allSettled` 只确认「提交被接受」而非「入库成功」，失败汇总为单一可操作错误，成功作业在处理队列可查；不新增 scheduler/cache 或双轨 `/papers/import`。
+- **插件快照复核**：消费 W1 `paper_snapshot` adapter（`export_text`=整份已复核快照 JSON，`source_locator`=来源 URL，服务按 DOI/arXiv/URL 重新推导 `source_key`，不做网络抓取）；`pdf_urls` 映射到 `paper_pdf` adapter（SSRF 安全公开 PDF 抓取，非 arxiv-only）。人类明确选择「HTML 正文 / 公共 PDF」，快照正文保留不再让 `paper_url` 重新抓网页；摘要/截断/付费墙不当正文，无个人浏览器自动读取。
+- **项目进度**：消费 W0 `ProjectProgressV1`（`status/summary/percent/source/evidence[]/native_id/model/observed_at/warning/revision`，`source`/`observed_at` 可空，无 `operations`/`pending_operation` 内部泄漏），`ProgressEvidenceV1`（`source_path/kind/version/excerpt`，无 `freshness`）。`status=unknown` 呈现「未知」，`percent` 仅人工记录、绝不伪造。UI 接 `GET /local-projects/{id}/progress` 与 `POST .../progress/infer`（`operation_id`(uuid)+`files:[TASK.md,STATUS.md]`）。
+- CLI 原生操作沿用现有 `ManagedProjectsPanel`/`NativeProjectPanel`（start/read/resume/send/stop/observe/context_handoff），权限判断 `nativePermission.ts` 不变，不以看板即自动授权。CLI 完整覆盖与记忆隔离/全局/仅规划仍 PENDING（用户未答），未代选、未建 UI 伪工具。
 
 ## 分支与源码
 
-- 分支 `s1-sync-ui-1010`，普通合入 ROOT 精确基线 `8277667`（随后快进至 `origin/s1/attention-materials-20261009`，保留原 owner 历史，无 squash/rebase/reset/force）。
+- 分支 `s1-sync-ui-1010`，普通合入 ROOT 精确基线，保留原 owner 历史，无 squash/rebase/reset/force。
 - 本轮 UI/测试源码为一次精确提交（SOURCE），REPORT 为随后仅更新 `docs/acceptance/S1-paper-board.md` 与本任务报告的提交，精确 SHA 通过 Orca 交接。
-- 独占写域遵守 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、本文件与 `tasks/S1-final-W3.md`；未改契约、生成客户端、迁移、锁或入口。
+- 独占写域遵守 `web/src/`（除 `api/`）、`web/public/`、`web/e2e/`、本文件与 `tasks/S1-final-W3.md`；未改契约、生成客户端、迁移、锁或入口（`web/src/api/` 由 W0 单一 owner 生成 `searchPapers`/`getProjectProgress`/`setProjectProgress`/`inferProjectProgress` 包装后替换本地 seam）。
 
-## 完成内容
+## DTO 交接（供 W0 集成阶段替换本地 seam）
 
-Attention 新增清晰「检索论文」入口（顶部流程条与「来源与整理」折叠面板）。检索面板展示每条结果的标题/作者/年份/来源与**原文可得状态**（原文可得 / 仅元数据 / 受限 / 可得性未知），受限项给出受限说明，已入库项显示「查看已入库资料」且不可重复勾选；未知可得性项不可勾选、提示等待重试。勾选为纯人工、可随时「取消全部勾选」，批量入库由人显式提交，不自动全量。真实模式只走真实 API：未连接/501/未知/失败以明确文案与重试呈现，绝不用样本冒充；示例模式标注固定样本并禁止写入。
+前端已按 W0 `e39f8f1` 契约形状实现本地视图（`paperSearch.ts` 的 `PaperSearchHit`/`PaperSearchResult` 精确镜像 `PaperSearchHitV1`/`PaperSearchResultV1`；`progressPresentation.ts` 的 `ProjectProgress`/`ProgressEvidence` 精确镜像 `ProjectProgressV1`/`ProgressEvidenceV1`），并直接消费真实路由。W0 生成客户端后只需：
 
-进度展示层为纯函数（`progressPresentation.ts`）：百分比为 `null` 时呈现「未知」，绝不伪造数字；阶段与 TASK/STATUS 来源引用、新鲜度并列展示，无依据时呈现「未知」。CLI 原生操作继续由既有面板承载，权限判断（`nativePermission.ts`）不变，看板不据发现授予操作许可。
-
-## DTO 交接（供 W0/W1/W2 消费，接口命名/版本由 W0 单一决定）
-
-UI 已按以下本地视图形状实现并可直接消费，请 W0/W1/W2 发布对应契约后，W3 集成阶段替换 `paperSearchClient.ts`/`progressPresentation.ts` 的本地形状为生成类型（不需要改 UI 结构）：
-
-1. **论文检索（W0 契约 + W1 服务）**：`GET /papers/search?q=&cursor=&limit=` → `{ query, items:[{ id, title, authors[], year, venue, source_type, arxiv_id, doi, locator, abstract, availability:{ status: full_text|metadata_only|restricted|unknown, detail }, already_imported, import_material_id }], next_cursor, has_more, warnings[] }`。
-2. **论文批量入库（W0 契约 + W1 服务，人类 CSRF + 幂等）**：`POST /papers/import` → `{ job_id }`，body `{ items:[{ id, source_type }], collection_reason }`；继续沉淀复用既有 `POST /distillations/jobs`。
-3. **进度依据（W2 服务）**：`GET /local-projects/{id}/progress` → `{ stage, percent(null=未知), source_refs:[{ path, line? }], freshness:{ observed_at, source } }`；percent 为 null 时前端必须呈现「未知」。
-4. **原生 reconcile（W2，对应 SPEC 17.3「外部动作结果未知按原 operation 对账」）**：`POST /local-projects/{id}/sessions/{session_id}/reconcile`，用于未知外部动作对账，不自动重发。
-5. **记忆（W2，待答决定后）**：列表/搜索 → 时间线 → 详情/按项目 scoped 配置/遗忘；本轮未建 UI、未默认全局或原对话采集。
+1. **论文检索**：`GET /api/v1/papers/search`（query `q`/`provider`/`limit`）→ `PaperSearchResultV1`。前端 `paperSearchClient.searchPapers` 已按此调用；W0 可替换为 `attentionApi.searchPapers(...)`。
+2. **论文入库**：沿用既有 `POST /materials/imports`（`ImportMaterialRequestV1`，`kind=paper`，`adapter` 按站点 `arxiv` 或 `paper_url`，`source_key`=hit.source_key 去重、新 revision）。`paper_url`/`paper_pdf` 已进 W0 `e39f8f1` 枚举；**`paper_snapshot` 仍在 W1 `0b189e5` reader 但未进契约枚举**，前端 `PluginSnapshotReview.tsx` 在单一 seam 处 cast，集成时请 W0 将 `paper_snapshot` 加入 `ImportMaterialRequestV1.adapter` 枚举。
+3. **进度依据**：`GET /api/v1/local-projects/{id}/progress` → `ProjectProgressResultV1`；`POST .../progress/infer`（body `InferProgressRequestV1`{`operation_id`,`files`}）→ 同。前端 `progressClient.getProjectProgress`/`inferProjectProgress` 已按此调用；W0 可替换为 `localProjectsApi.*`。
+4. **记忆（W2，待答决定后）**：列表/搜索 → 时间线 → 详情/按项目 scoped 配置/遗忘；本轮未建 UI、未默认全局或原对话采集。
 
 ## 验证
 
 | 验证 | 结果 |
 |---|---|
 | `pnpm --dir web typecheck` | PASS/exit0 |
-| `pnpm --dir web test` | 72 PASS（新增论文检索 7 例 + 进度 4 例；既有 61 例保持） |
+| `pnpm --dir web test` | 82 PASS（论文检索 6 + 插件快照 10 + 进度 5；既有其余保持） |
 | 定向 `eslint`（新增/改动文件） | PASS/exit0 |
-| `pnpm --dir web build` | PASS/exit0（96 模块） |
-| `playwright test paper-search.spec.ts`（1920/1280） | **8 PASS**：示例模式结果/可得状态/受限说明/选择/取消且 0 写请求；未知与已入库不可勾选；真实 501 呈现「检索未完成」且无样本冒充 |
+| `pnpm --dir web build` | PASS/exit0（101 模块） |
+| `playwright test paper-search.spec.ts plugin-snapshot.spec.ts progress.spec.ts`（1920/1280） | **26 PASS**：检索 GET 契约载荷渲染、示例检索选择/取消 0 写、501 诚实「检索未完成」、移动 390 无横溢；插件快照正文保留+`paper_snapshot`、非 arxiv `paper_pdf`、付费墙无绕过；进度 GET/POST infer 带 `operation_id`/`files` + 未知不伪造百分比 |
 
 ## 未完成与真实限制
 
-- 检索/批量入库/进度/记忆的真实端点尚未由 W0/W1/W2 发布：UI 已就绪并按真实 API 语义诚实呈现「未连接/失败」，但真实检索、批量入库、进度读取的端到端仍待 W0/W1/W2 契约落地后集成。
-- CLI 完整覆盖范围与记忆隔离/全局/仅规划两项仍 PENDING，未代选，未建对应 UI。
-- 未运行个人 5173/8787、未安装插件、未读取个人 Chrome、未合 main/远程 CI；三尺寸（1920/1280/390）真实数据截图待端到端契约落地后由 W0/root 复核（本轮 e2e 覆盖 1920/1280，390 属移动布局，见下文既有看板验收）。
+- **真实端到端闭环待 W0 组装**：本轮 UI 已对齐最终契约并直接消费真实路由，但「真实检索→勾选→逐条 ImportMaterial→SQLite/objects→新 API 进程去重→三尺寸/keyboard/空/未知错误/撤销边界」的真实闭环需 W0 合并 W1/W2 后端组装后联合验收；本轮 e2e 以真实契约形状 mock 验证 UI 对接，**不冒充真实入库**。
+- `paper_snapshot` 未进 W0 契约 `adapter` 枚举，需 W0 集成时确认（见上 DTO 交接第 2 条）。
+- CLI 完整覆盖范围与记忆隔离/全局/仅规划两项仍 PENDING，未代选、未建对应 UI。
+- 未运行个人 5173/8787、未安装插件、未读取个人 Chrome、未合 main/远程 CI；真实数据三尺寸截图待端到端契约落地后由 W0/root 复核。
 
 ---
 

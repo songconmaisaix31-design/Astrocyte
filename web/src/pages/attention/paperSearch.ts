@@ -1,35 +1,38 @@
 /**
  * Paper search presentation model (pure, no I/O).
  *
- * The paper search endpoint and its generated DTO are owned by W0/W1 and are
- * not yet present in `web/src/api/schema.d.ts`. Until then the UI consumes the
- * local view shape below; the panel maps the real endpoint onto it once W0
- * publishes the generated client. No fixture or guessed value is ever
- * presented as a real search result.
+ * The local shapes below mirror W0's published `PaperSearchResultV1` /
+ * `PaperSearchHitV1` contract (contracts/openapi.yaml, owned by W0, converged at
+ * `e39f8f1`). Search is ephemeral public metadata only: `GET /api/v1/papers/search`
+ * returns hits keyed by a canonical `source_key`, a `provider` index, a raw
+ * `content_state` and candidate `pdf_urls`. Full-text availability is only
+ * resolved when the human selects a hit and imports it through the existing
+ * ImportMaterial path (adapter per site, source_key dedup, new revision). No
+ * fixture or guessed value is ever presented as a real result.
  */
 
-export type PaperAvailability = 'full_text' | 'metadata_only' | 'restricted' | 'unknown';
+/** Raw availability vocabulary; metadata indexes always report `abstract_only`. */
+export type PaperContentState = 'readable_fulltext' | 'abstract_only' | 'paywall' | 'restricted' | 'unknown';
 
-/** Local view shape for one search hit; mirrors the proposed W0/W1 DTO. */
+/** Local view shape mirroring W0 `PaperSearchHitV1`. */
 export interface PaperSearchHit {
-  /** Stable source identity (arXiv/DOI-derived); used as the selection key. */
-  id: string;
+  source_key: string;
+  provider: string;
   title: string;
   authors: string[];
-  year: number | null;
-  venue: string | null;
-  source_type: string;
-  arxiv_id: string | null;
-  doi: string | null;
+  year: number;
+  venue?: string;
+  arxiv_id?: string;
+  doi?: string;
   locator: string;
-  abstract: string | null;
-  availability: { status: PaperAvailability; detail: string | null };
-  /** Already stored as a material; cannot be re-imported from this list. */
-  already_imported: boolean;
-  import_material_id: string | null;
+  abstract?: string;
+  content_state: PaperContentState;
+  pdf_urls: string[];
 }
 
+/** Local view shape mirroring W0 `PaperSearchResultV1`. */
 export interface PaperSearchResult {
+  schema_version: 1;
   query: string;
   items: PaperSearchHit[];
   next_cursor: string | null;
@@ -37,53 +40,68 @@ export interface PaperSearchResult {
   warnings: string[];
 }
 
-export const paperAvailabilityLabel = (status: PaperAvailability): string => {
-  switch (status) {
-    case 'full_text': return '原文可得';
-    case 'metadata_only': return '仅元数据';
+export const paperContentStateLabel = (state: PaperContentState): string => {
+  switch (state) {
+    case 'readable_fulltext': return '原文可得';
+    case 'abstract_only': return '仅摘要/元数据';
+    case 'paywall': return '付费墙';
     case 'restricted': return '受限';
     case 'unknown': return '可得性未知';
   }
 };
 
-export const paperSearchKey = (hit: PaperSearchHit): string => hit.id;
+/** Canonical key of a hit is its contract `source_key`; fall back to locator. */
+export const paperSearchKey = (hit: PaperSearchHit): string => hit.source_key || hit.locator;
 
 /**
- * A hit can be picked for import only when it is not already stored and its
- * availability is not unknown. Restricted and metadata-only hits remain
- * selectable so the human can see the restriction note and decide; the server
- * is the authority on what a restricted hit actually imports.
+ * Import adapters the existing ImportMaterial entry can consume. `paper_url`
+ * (HTML landing-page extraction) and `paper_pdf` (SSRF-safe public PDF fetch,
+ * not arxiv-only) are in W0's generated adapter enum; `paper_snapshot` (raw
+ * browser-extracted text) is W1's adapter, cast at the import seam until W0
+ * adds it to the enum.
+ */
+export type PaperImportAdapter = 'arxiv' | 'paper_url' | 'paper_pdf' | 'paper_snapshot';
+
+function isArxiv(hit: PaperSearchHit): boolean {
+  return !!hit.arxiv_id || hit.provider === 'arxiv' || /(^|\.)arxiv\.org$/i.test(hit.locator || '');
+}
+
+/** Default import adapter for a search hit; non-arXiv sites use `paper_url` HTML extraction. */
+export function paperImportAdapter(hit: PaperSearchHit): PaperImportAdapter {
+  return isArxiv(hit) ? 'arxiv' : 'paper_url';
+}
+
+/**
+ * A search hit is selectable unless its content state is paywall/restricted.
+ * `abstract_only` and `unknown` stay selectable: the import job resolves real
+ * availability and the source_key dedup keeps a retry from creating a
+ * duplicate. Nothing is auto-selected.
  */
 export function canSelectPaper(hit: PaperSearchHit): boolean {
-  return !hit.already_imported && hit.availability.status !== 'unknown';
+  return hit.content_state !== 'paywall' && hit.content_state !== 'restricted';
 }
 
 /** Explicit, human-only selection. Never selects a hit automatically. */
 export function togglePaper(selected: string[], hit: PaperSearchHit): string[] {
-  return selected.includes(hit.id) ? selected.filter(id => id !== hit.id) : [...selected, hit.id];
+  return selected.includes(paperSearchKey(hit)) ? selected.filter(id => id !== paperSearchKey(hit)) : [...selected, paperSearchKey(hit)];
 }
 
 export function clearPaperSelection(): string[] {
   return [];
 }
 
-/** Hits the human has actually picked and that remain eligible. */
+/** Hits the human has actually picked. */
 export function pickedPapers(hits: PaperSearchHit[], selected: string[]): PaperSearchHit[] {
-  return hits.filter(hit => selected.includes(hit.id) && canSelectPaper(hit));
+  return hits.filter(hit => selected.includes(paperSearchKey(hit)));
 }
 
-/** Eligible hits that are not yet picked; used to avoid "import everything" silently. */
+/** All selectable hits. */
 export function eligiblePapers(hits: PaperSearchHit[]): PaperSearchHit[] {
   return hits.filter(canSelectPaper);
 }
 
-/** True when the human picked every currently eligible hit. */
+/** True when the human picked every currently selectable hit. */
 export function isAllEligiblePicked(hits: PaperSearchHit[], selected: string[]): boolean {
   const eligible = eligiblePapers(hits);
   return eligible.length > 0 && pickedPapers(hits, selected).length === eligible.length;
-}
-
-/** First unavailable (unknown) hit, if any; shown so the human can wait/retry. */
-export function firstUnknownHit(hits: PaperSearchHit[]): PaperSearchHit | undefined {
-  return hits.find(hit => hit.availability.status === 'unknown');
 }
