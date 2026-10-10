@@ -11,7 +11,7 @@ import { formatDateTime } from '../../utils/format';
 import styles from './LocalProjectsPanel.module.css';
 
 type Candidate = components['schemas']['RegisteredProjectV1'];
-const sourceLabels = { orca_registered: 'Orca 登记目录', subproject: '目录内子项目', git_worktree: 'Git 工作树' };
+const sourceLabels = { orca_registered: 'Orca 登记目录', subproject: '目录内子项目', git_worktree: 'Git 工作树', native_project_metadata: '客户端项目记录' };
 const snapshotLabels = { unknown: '尚未取得目录清单', complete: '已读取登记范围', partial: '部分目录暂不可读', stale: '本次读取未完成，保留上次清单' };
 
 export function RegisteredProjectsPanel({ query, registeredRoots, onSelect }: { query: string; registeredRoots: string[]; onSelect: (candidate: Candidate) => void }) {

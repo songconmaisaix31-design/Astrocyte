@@ -3,11 +3,11 @@ import { TextField } from '../attention/FormControls';
 import formStyles from '../attention/AttentionPage.module.css';
 
 export interface ProjectHumanFields { notes: string; review: string; group: string; intent: string; archived: boolean; revision: number }
-export function ProjectHumanForm({ human, disabled, onSave }: { human: ProjectHumanFields; disabled: boolean; onSave: (fields: ProjectHumanFields) => void }) {
+export function ProjectHumanForm({ human, disabled, onSave }: { human: ProjectHumanFields; disabled: boolean; onSave: (fields: ProjectHumanFields, acceptSaved: (saved: ProjectHumanFields) => void) => void }) {
   const [draft, setDraft] = useState(human);
   const suggestionsID = useId();
-  const changed = draft.revision !== human.revision;
-  return <form className={formStyles.form} onSubmit={event => { event.preventDefault(); onSave(draft); }}>
+  const changed = draft.revision < human.revision;
+  return <form className={formStyles.form} onSubmit={event => { event.preventDefault(); onSave(draft, setDraft); }}>
     <p className={formStyles.note}>记录你希望继续的方向；实际活动与完成度单独显示。归档可恢复，不删除目录、资料或会话。</p>
     {changed && <div role="status">记录已有更新，当前输入保留。<button className="ac-button secondary compact" type="button" onClick={() => setDraft(human)}>载入最新人工记录</button></div>}
     <fieldset disabled={disabled || changed}><legend>下一步与人工记录</legend>
