@@ -83,7 +83,19 @@ func (s *projectProgressService) GetProjectProgress(ctx context.Context, c domai
 	if _, err := s.progressProject(ctx, c, projectID, "read_context"); err != nil {
 		return domain.ProjectProgress{}, err
 	}
-	return s.progress.LoadProjectProgress(ctx, projectID)
+	record, err := s.progress.LoadProjectProgress(ctx, projectID)
+	if err != nil {
+		return record, err
+	}
+	// An absent project yields the zero record; fill the already-authorized
+	// project identity so the transport never returns an empty project_id.
+	// Status/source stay empty, revision stays zero, and nothing is written or
+	// modeled — this is identity fill, not a fabricated stage.
+	if record.ProjectID == "" {
+		record.SchemaVersion = 1
+		record.ProjectID = projectID
+	}
+	return record, nil
 }
 
 func (s *projectProgressService) SetProjectProgress(ctx context.Context, c domain.Caller, projectID string, input domain.ProgressInput) (domain.ProjectProgress, error) {

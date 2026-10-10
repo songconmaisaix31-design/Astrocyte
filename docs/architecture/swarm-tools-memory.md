@@ -56,6 +56,6 @@
 
 ## 3. 当前落地状态与下一步
 
-- 本轮 W2 交付：OpenCode 1.18.35 loopback Basic-auth 会话驱动（`internal/adapters/agents/opencode.go`，配置隔离 + deny-by-default，见 [local-agents.md](../probes/local-agents.md)）；获准 Agent 进度四项返修（settle 返回 typed error、Set 保留 Operations、accepted retry 返回原始快照、成功结果先 durable 再 publish 且 CAS 冲突重试不重跑模型）及 `ProgressCommand` 与 W0 对齐（files + header operation identity）；本工具层与记忆规划。
-- 待 W0：发布 `013_project_progress` 迁移、`ProjectProgressService` 的 HTTP 入口与 OpenAPI 契约，并最终集成三轨；`ProgressCommand` 的操作身份来自传输层 `Idempotency-Key` header（`Caller.OperationID`），body 仅 `files`。
-- 待用户：记忆存储/可见范围、CLI 完整覆盖范围；未答复不冻结接口、不自动采集、不降低验收。答复后由原 owner（W2 或其继任）按 §2.2 落地：项目隔离则新增 workspace 项目记忆表 + 服务并复用既有 SQLite FTS5，或仅规划。
+- 本轮 W2 交付：OpenCode 1.18.35 loopback Basic-auth 会话驱动（`internal/adapters/agents/opencode.go`，配置隔离 + `OPENCODE_PERMISSION` 最终 overlay + session 级 deny ruleset 与发消息前 fail-closed 复核）；获准 Agent 进度四项返修（settle 返回 typed error、Set 保留 Operations、accepted retry 返回原始快照、成功结果先 durable 再 publish 且 CAS 冲突重试不重跑模型）及 `ProgressCommand` 与 W0 对齐（files + header operation identity）。
+- W0 已落地：`013_project_progress` 迁移与 `ProjectProgressService` 的 HTTP/OpenAPI 契约；`ProgressCommand` 的操作身份来自传输层 `Idempotency-Key` header（`Caller.OperationID`），body 仅 `files`。
+- 待用户：记忆存储/可见范围、CLI 完整覆盖范围；未答复不冻结接口、不自动采集、不降低验收。答复后由原 owner（W2 或其继任）按 §2.2 落地：项目隔离则新增 workspace 项目记忆表 + 服务并复用既有 SQLite FTS5，个人全局则先明确可见范围与授权模型。

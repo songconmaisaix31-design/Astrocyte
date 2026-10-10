@@ -139,6 +139,30 @@ func progressHuman(op string) domain.Caller {
 
 const opA = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
+func TestProgressCacheGetFillsAuthorizedProjectIdentity(t *testing.T) {
+	ctx := context.Background()
+	human := domain.Caller{Kind: "human", ID: "h"}
+	service, projects, store, processor := newProgressService()
+	projects.projects["p1"] = consentProject()
+
+	got, err := service.GetProjectProgress(ctx, human, "p1")
+	if err != nil {
+		t.Fatalf("absent cache read %v", err)
+	}
+	if got.SchemaVersion != 1 || got.ProjectID != "p1" {
+		t.Fatalf("absent read lost the authorized project identity %+v", got)
+	}
+	if got.Status != "" || got.Source != "" || got.Revision != 0 || got.ObservedAt != (time.Time{}) {
+		t.Fatalf("absent read fabricated a stage %+v", got)
+	}
+	if processor.calls != 0 {
+		t.Fatal("absent cache read triggered a model turn")
+	}
+	if len(store.records) != 0 {
+		t.Fatal("absent cache read wrote a progress row")
+	}
+}
+
 func TestProgressHumanSetAndCacheRead(t *testing.T) {
 	ctx := context.Background()
 	human := domain.Caller{Kind: "human", ID: "h"}

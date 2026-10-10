@@ -24,7 +24,7 @@
 - **accepted retry 返回原始快照**：`ProgressOperation` 增 `Result *ProgressResult` 不可变快照；accepted 重试 `restoreAccepted` 从快照还原，而非返回被后续人类写覆盖的 live 字段。
 - **成功结果先 durable 再 publish（两步持久化，非仅循环冒充恢复）**：模型成功且合法输出后，先 `persistComputed` 把结果独立写入 `computed` 收据（durable），再 `publishAccepted` 复核 `result.SettingsRevision` 与模型许可后落 `accepted` + live 字段。进程在 response 后/保存前死亡，或 publish 一直冲突时，同 operation 的 `computed` retry 只重新 publish 已持久结果、不重跑模型；许可 revision 变更则落 `unknown` 丢弃结果。存储真失败无 result 时保持 `unknown` 且不重发。无新框架/新 Attempt。
 
-**W0 对齐**：`ProgressCommand` 仅 `{files}`，操作身份来自传输层 `Idempotency-Key` header（`Caller.OperationID`，`json:"-"`），与 `NativeCommand` 一致；迁移 `013_project_progress` 仍由 W0 唯一 owner。
+**W0 对齐**：`ProgressCommand` 仅 `{files}`，操作身份来自传输层 `Idempotency-Key` header（`Caller.OperationID`，`json:"-"`），与 `NativeCommand` 一致；迁移 `013_project_progress` 仍由 W0 唯一 owner。**无进度缓存 GET 补身份**：`GetProjectProgress` 对 absent 项目填 `SchemaVersion=1` + 已授权 `ProjectID`，status/source 保持空、revision 0，不写库、不触发模型，非伪造业务数据。
 
 测试：`app/progress_test.go` 更新为 header 身份，新增回归（Set 保留收据 + accepted retry 返回原始、computed 结果在 publish 失败/冲突后重试恢复且不重跑模型、发布失败不报成功）；`sqlite/local_agents_progress_test.go` 不变仍通过。
 
