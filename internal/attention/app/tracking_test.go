@@ -156,6 +156,15 @@ func TestMetadataCapRecommendationGateAndHumanSelection(t *testing.T) {
 	if modelCalls != 1 || bodyCalls != 0 || len(repo.state.Materials) != 0 {
 		t.Fatal("recommendation downloaded body")
 	}
+	_, err = s.RecommendSourceItems(ctx, human, r.Source.ID, RecommendSourceItemsCommand{CommandMeta: meta("recommend-new-key", r.Source.Version), ProjectID: "permitted-project", CLI: "selected-cli", Items: selection})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.ProcessNextJob(ctx)
+	if modelCalls != 1 {
+		t.Fatal("new form key repeated identical metadata/configuration processing", modelCalls)
+	}
+	r, _ = s.GetTrackingSource(ctx, human, r.Source.ID)
 	selected, err := s.SelectSourceItems(ctx, human, r.Source.ID, SelectSourceItemsCommand{CommandMeta: meta("select", r.Source.Version), Items: selection})
 	if err != nil || len(selected.Jobs) != 1 {
 		t.Fatal("human selection did not queue import", err)
@@ -234,6 +243,9 @@ func TestPartialCacheKnownFailureResumeAndImmutableUnknown(t *testing.T) {
 		t.Fatal("old unknown mutated or replayed")
 	}
 	_, err = s.RetryJob(ctx, human, unknown.JobID, meta("no-replay", unknown.Version))
+	errorCode(t, err, apierrors.DeliveryUnknown)
+	r, _ = s.GetTrackingSource(ctx, human, r.Source.ID)
+	_, err = s.RecommendSourceItems(ctx, human, r.Source.ID, RecommendSourceItemsCommand{CommandMeta: meta("unknown-new-key", r.Source.Version), ProjectID: "project", CLI: "cli", Items: []SourceItemSelection{{"one", 1}}})
 	errorCode(t, err, apierrors.DeliveryUnknown)
 }
 

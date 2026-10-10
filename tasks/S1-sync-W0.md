@@ -1,5 +1,37 @@
 # S1 同步 / 本地 Agent：W0 契约与集成
 
+## 当前继续 Dispatch：公开收藏夹与已登记项目（2026-10-10）
+
+Dispatch `ctx_fc6ef89f102b` / Task `task_0125179c53eb`；实际 Orca projection provider `codex`、model `gpt-6.1-sol`。首步 `git fetch origin` 成功，按协调者最新指令 ordinary `--no-ff` 合入主控 `41f3fab`，merge `c10038d70a55bae54709959ff9bb4413ec63c33c`；保留全部原阶段与首次失败历史。
+
+已读取 AGENTS、HANDOFF、STATUS、当前计划/QUESTIONS 与 SPEC S1/§8/§17。用户新授权允许读取本地项目，先使用 Orca 已登记项目根和子项目；固定程序负责发现与同步，读取许可不扩大写入、执行或模型外发。GitHub 同步方式/范围、抖音公开身份、第二模型和输入上限仍不代用户决定。
+
+现有共享契约已经含公开来源绑定/元数据/推荐/人工选择、默认100条/启动同步、明确刷新、项目A/B/C权限、项目模型许可、作用域凭据和原生操作；迁移006/007继续复用。W0已向W1/W2/W3发送增量端口协调：W1先复用追踪接口，W2先提交Orca登记项目发现消费端口/DTO，W3沿共享API消费；未答GitHub不发布新增写入口。最终消费三轨 exact source 后仅补契约/路由/组装/类型胶水，领域失败退原owner。
+
+本Dispatch目前仅完成基线与接口盘点，未执行新增运行时验证；既有AT与原失败仍见下面历史报告，不能当本轮新增链路通过。W0不重复旧付费模型、媒体或浏览器验收，等待主控槽和三轨增量。
+
+### 增量契约发布
+
+已普通消费 W2 DTO `58e800baacbe68a16d543732e8022adf7d4bc0f4`，并在交叉草案后由双方确认最终唯一 ABI：`RegisteredProjectSource.DiscoverRegistered`、`RegisteredProjectRepository.LoadRegisteredProjectDiscovery/SaveRegisteredProjectDiscovery`、独立 `RegisteredProjects.ListRegisteredProjects/RefreshRegisteredProjects`；组装调用由 W2 实现 `ConfigureRegisteredDiscovery(repo,source)`。008 只保存一个 `local_project_discovery` 行（固定 key `registered`），Workspace schema 升至3；不会创建项目、空间或授权。
+
+HTTP `GET /local-projects/registered` 只读取持久化缓存；`POST /local-projects/registered/refresh` 为人类会话+CSRF显式动作，无任意root输入；Agent scoped路由不开放它。快照 status 为 unknown/complete/partial/stale，Git/活动未知字段可空，活动仅记录实际Orca创建CLI/活动时间，不推断当前运行。来源不可用的旧观测时间必须由W2保持。OpenAPI及生成TS/typed helper已发布，运行时组装等待W2 source/service/repository，当前未组装返回501。
+
+本阶段 `pnpm generate`、`pnpm check:contracts` PASS/exit0（233示例、生成漂移一致、既有EventV1 warning）；新增HTTP边界测试和Go构建检查进行中。此前SQLite/migrations包测试PASS，不以该结果替代尚未消费的新发现repository/冷重启验收。
+
+共享ABI SOURCE `4a6a5a0d4dc3624942ddd9657d0b72278250a457` 已push并发送三轨/主控；`go test -mod=readonly -p 1 ./internal/adapters/httpapi ./cmd/server` 和 `pnpm --dir web typecheck` 均PASS。随后新增已有有效project token也不能读/刷新全局发现的两项拒绝断言，目标 `go test -mod=readonly -p 1 ./internal/adapters/httpapi -run 'TestScopedAgentTransportHumanRoutesAndCurrentRevoke|TestRegisteredProjectsHumanCacheReadAndExplicitRefresh' -count=1` PASS。
+
+W1 SOURCE `e1061eba28aec014e3f0742434fd8c42ce256697` ordinary exact merge `2830ecb` 已push：收藏失效行保留身份/状态、空locator与不可用原因，缺失或上游零可选统计不伪造可用数。合并后 `go test -mod=readonly -p 1 ./internal/adapters/importers ./internal/attention/app` PASS。W1当前真实两个公开收藏夹的新观察见原负责人报告，与历史count0分开；W0没有重复公共请求、付费推荐或正文提取。
+
+### 运行时普通集成
+
+普通精确消费 W2 SOURCE `2364ce42f8f6fcaff1de35ad72354f6ef04b5874`：独立source/service/repository，GET纯持久化缓存、冷重启可查与失败stale；实际只读发现原件和限度由W2报告。W0仅调用 `ConfigureRegisteredDiscovery(db,agents.NewRegisteredProjects())` 并注入HTTP，启动在既有workerCtx下固定后台采集一次，不阻塞health/Vite，退出取消并等待采集后关闭SQLite。没有定时器、Agent自动派发或新调度组件。
+
+代码审阅发现同时refresh等待普通mutex无法响应取消的停服风险，已退W2原owner补最小锁等待与目标回归；当前不是已验完整停服。入口及受影响Go检查进行中，真实HTTP/UI验收仍待W3槽，W0未重复W2实际项目探测。
+
+入口SOURCE `fc65e028fd6c6ee50dcc1af24967f5c359baaef6` 已push；`go test -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi ./internal/adapters/sqlite ./internal/workspace/app` 和 `go vet -mod=readonly -p 1 ./cmd/server ./internal/adapters/httpapi` PASS。随后ordinary消费W2 `6906f0c043f5f04e313c0201909a05fa31c606c0`（含`d8f7edb`缺主根时保留明确登记worktree）修复取消等待，整合SOURCE `c55ca977d906c52b360d4192012668468c2e72a5` 已push并交W3；合并后 `go test -mod=readonly -p 1 ./internal/adapters/sqlite ./cmd/server -run 'TestRegistered|TestResolve|TestRun' -count=1` PASS，含SQLite冷重启/stale/人类权限与并发取消目标。
+
+继续ordinary消费W2 SOURCE `bf4ef25a6d5e915c45ed92c9574d0831799ff8e7` / REPORT `e30ae4f1e105d7db8a849cc1b7d0ca6762c783d0`，再消费 `8fce45d0df71568b7eba9ada37d3dc6b775a975a`：按公开CLI规则解析Orca IDE程序、固定Git工作根，避免继承配置重定向实际观察目录。后者由原owner临时Git目标回归PASS；其两场个人登记项目真实只读结果仍归原SOURCE，不为新参数重复现场。W1推荐去重/UNKNOWN门控返修与W3真实收藏夹/项目续验尚待，整体未完成。
+
 ## 2026-10-10 最终受限交接（整体 S1 未完成，待主控接纳）
 
 最终应用整合 SOURCE `3f056d59e67ea1fcc186251c70260675e18f81d2` 已推送；普通消费 W1 REPORT `626831a8cb73030f26c8cfbce814fb43bfc4d397`、W2 REPORT `4a0b76a342f78ce2df59914813d48179415ef711`、W3 REPORT `8493ac8db9cb86c30eafdcab87bc5ec1dbee8680`（含真实AT最终报告 `56e9c85`）。相对主控默认 E2E SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f`，应用运行时代码相同，仅既有 `web/e2e/s1.spec.ts` 一旧用例断言修复与报告不同；尚未消费的主控 STATUS/QUESTIONS/计划未由W0修改。已装配公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。最后 W0 提交只改本报告，准确 REPORT SHA 由交接回执给出。

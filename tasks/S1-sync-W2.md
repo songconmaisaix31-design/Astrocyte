@@ -1,5 +1,34 @@
 # S1 同步 W2：本地项目与原生会话续作
 
+## 本轮登记项目续作（2026-10-10）
+
+当前 W2 runtime SOURCE `8746e38176cbd984c859ca01f5fe1fc4aaf75fe8`，沿 `s1-local-agents-1010` 原轨，已 push；新增实现 `2364ce4`、缺失主检出保留关联工作树 `d8f7edb`、取消等待修复 `6906f0c`，`bf4ef25`补沿公开CLI规则选IDE二进制（env指定/开发orca-dev/Linux默认orca-ide，拒绝shell wrapper，不启动Linux同名屏幕阅读器），`8fce45d`固定Git工作树根以拒绝repo config的目录重定向，`8746e38`给整个刷新请求（含排队）120秒总期限。先普通合入主控 `41f3fab`，再消费 W0 精确公共契约/单迁移 `4a6a5a0d4dc3624942ddd9657d0b72278250a457`；没有 reset/clean/rebase/force 或跨写域业务编辑。客户端 Orca Codex / `gpt-6.1-sol`，本轮无应用模型、native turn、媒体或浏览器调用。
+
+- 消费真实 Orca 登记根/关联本机工作树，并在已登记根内有界发现子项目；固定程序观察分支、HEAD、提交时间、tracked-only dirty 和 Orca 活动/创建客户端。GET 只缓存，启动一次/人工刷新由 W0 入口组装；原生会话历史不是活动元数据，创建 CLI 不代表当前进程。
+- 独立持久化观察缓存，不自动创建项目空间、B/C、Agent grant、模型或执行许可；控制仍需既有人工登记及逐请求授权。整个来源失联时旧数据/旧 `observed_at` 保留并 `stale`；首次失联为 `unknown`，不是假空成功。缺根、Git未知、目录/输出上限保留 `partial` 与具体有限原因。
+- Git argv 固定并关闭 fsmonitor/hooks/signature/submodule/untracked 扫描，清除继承的 `GIT_*` 重定向/trace，optional locks关闭；不读取 remote URL/认证原件，不 fetch/pull/clone，拒绝 shell包装和任意命令输入。10秒/命令、120秒/场、256候选，每登记根深度3/2000项；复用 owned进程关闭与取消。发现不读取正文或执行文档命令。
+- W0复核发现普通Mutex等待会阻塞停服采集任务；原owner补可取消的单刷新gate，等待和active采集取消均能及时退出，不新增调度。W0负责停止等待该一次采集退出后再关DB及HTTP/契约；W3负责真页面/API验收。
+
+| 本轮实际验证 | 结果 |
+|---|---|
+| `go test ./...`（`2364ce4`） | PASS；默认原生/模型opt-in仍跳过，不将历史原生实测扩为新证据 |
+| `go test ./internal/adapters/agents ./internal/workspace/... ./internal/adapters/sqlite`、`go build ./...`（工作树含 `d8f7edb`） | PASS |
+| `go vet ./internal/adapters/agents ./internal/workspace/... ./internal/adapters/sqlite`、`git diff --check` | PASS（返修前阶段检查，最终变更另验） |
+| `go test ./internal/adapters/agents -run '^TestRegistered' -count=1 -v` | 范围/去重/未知/私有隐藏目录过滤、固定命令拒绝、owned输出与超时、真实临时Git+fsmonitor sentinel PASS；本场live opt-in SKIP |
+| `go test ./internal/adapters/sqlite -run '^TestRegistered' -count=1 -v` | 真SQLite关闭重开、失败后stale旧时间、首次unknown、GET不执行、human/Agent身份和发现不扩大权限 PASS |
+| `go test ./internal/adapters/sqlite -run '^TestRegisteredRefreshWaitCancellationDoesNotBlockShutdown$' -count=1 -v` | PASS0.19秒；占位时取消waiter及active采集，source调用一次 |
+| `go test ./...`、`go build ./...`、`go vet ./internal/adapters/agents ./internal/workspace/... ./internal/adapters/sqlite`（`6906f0c`） | 最终取消返修后 PASS；不是浏览器或应用模型检查 |
+| `go test ./internal/adapters/agents -run '^TestRegistered' -count=1`、`go build ./...`、`GOOS=linux go build ./internal/adapters/agents ./internal/workspace/...`（`bf4ef25`） | PASS；Linux仅交叉编译，不称本机Orca来源实测 |
+| `go test ./internal/adapters/agents -run '^TestRegisteredGitReadIgnoresInheritedRepositoryAndFSMonitor$' -count=1 -v`（`8fce45d`） | PASS4.68秒：故意core.worktree指向另一临时目录，仍只观察登记root，fsmonitor不执行且继承GIT_DIR不起作用；Orca短交接曾误填3.71秒量级，此处保留准确实测值 |
+| `go test ./internal/adapters/sqlite -run '^TestRegistered' -count=1 -v`、`go build ./...`（`8746e38`） | PASS；总期限含排队，原3项冷重启/stale/取消目标测试通过，未重新扫描或调用模型 |
+| `ASTROCYTE_TEST_REGISTERED_PROJECTS=1 go test ./internal/adapters/agents -run '^TestRegisteredProjectsLiveReadOnly$' -count=1 -v` | 两独立真实只读场63.30秒/63.59秒，均 `partial`：21登记根中7可读+7子项目+40本机工作树=54，45Git known、47Orca activity known；14根不可用、2Git unknown明确保留 |
+
+首次 RED 单独保留：owned输出上限测试发现嵌入 `bytes.Buffer` 的 `ReaderFrom` 绕过 `Write` 上限，130000bytes返回成功；改为命名buffer后同一超限/取消测试另行 PASS，不把首次失败改写。其他根不可用/Git未知是实际来源限制，不是通过测试后被消除。
+
+W3后续实际发现刷新52秒后后端200/Vite502，W2等待中独立只读复核也指出HTTP默认WriteTimeout30秒与63秒source不匹配，均不改写成通过。HTTP owner W0交接 `fdb66f8`已将响应期限匹配有界采集并映射超时为可操作503；W2 `8746e38`将整体120秒放在服务层，W0消费后去掉重复route期限。原W3失败与真正复测结论由原owner保留，本Worker未运行浏览器或把后端200当作浏览器成功。
+
+GitHub仅完成官方 Git/仓库/README/commits/条件请求与权限能力调查，见 [探测记录](../docs/probes/local-agents.md)；同步信息或clone/update、首批范围/私有权限仍待用户回答，没有冻结新写入口或获取账号token。旧native/Pi/OpenCode限制保留；未运行用户ACL/sandbox setup、防火墙、凭据迁移或付费重复轮次。主控完整浏览器/实际API组装/最终check、main与远端CI均未由本Worker执行；未发送worker_done，等待主控验收或确认真实阻塞。
+
 2026-10-10 当前 W2 runtime SOURCE `a7973245cff47c684e7501dcf7f3d66a787306c7`，分支 `s1-local-agents-1010`，已 push；包含核心 `d5ee4a1`及流式增量返修，最终 REPORT SHA 另由 Orca Handoff 提供。完整 context 实现起点 `3637de70a74b2c3e143a2bacfea6c37286e83d12`。先普通合入指定 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，并普通消费 W0 公共端口/迁移；未 reset/rebase/clean/force。开发客户端仍为 Orca Codex，协调者明确提供的开发模型为 `gpt-6.1-sol`。下方库存旧报告保留为历史阶段，旧待答结论不代表当前授权。
 
 ## 当前完成及所有权

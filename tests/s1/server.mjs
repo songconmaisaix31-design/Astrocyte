@@ -76,17 +76,27 @@ export async function startS1Server({ browser = false, env: extraEnv = {}, reuse
     apiChild = start(executable, [], { env, detached: process.platform !== 'win32' });
     await ready(`${apiURL}/api/v1/health`, apiChild);
   }
-  async function close({ preserveData = Boolean(original) } = {}) {
+  async function close({ preserveData = Boolean(original), primaryError } = {}) {
     if (disposed) return;
-    // stop accepts only child handles created here; a stopped child is ignored.
-    const results = await Promise.allSettled([webChild, apiChild].filter(Boolean).map(stop));
-    const failures = results.filter(result => result.status === 'rejected');
-    if (failures.length) throw new AggregateError(failures.map(result => result.reason), `S1 server cleanup failed; retained ${temporary}`);
-    if (preserveData) return;
-    const target = await realpath(temporary);
-    if (!inside(target, ownedRoot) || !resolve(target).startsWith(resolve(await realpath(tmpdir())) + sep)) throw new Error('Unsafe S1 cleanup path');
-    await rm(temporary, { recursive: true, force: true });
-    disposed = true;
+    try {
+      // stop accepts only child handles created here; a stopped child is ignored.
+      const results = await Promise.allSettled([webChild, apiChild].filter(Boolean).map(stop));
+      const failures = results.filter(result => result.status === 'rejected');
+      if (failures.length) throw new AggregateError(failures.map(result => result.reason), `S1 server cleanup failed; retained ${temporary}`);
+      if (preserveData) return;
+      const target = await realpath(temporary);
+      if (!inside(target, ownedRoot) || !resolve(target).startsWith(resolve(await realpath(tmpdir())) + sep)) throw new Error('Unsafe S1 cleanup path');
+      await rm(temporary, { recursive: true, force: true });
+      disposed = true;
+    } catch (cleanupError) {
+      if (primaryError === undefined) throw cleanupError;
+      // The caller is already rethrowing its first failure. Preserve both errors
+      // and the directory instead of replacing that assertion from a finally.
+      console.error('S1 cleanup failed; original error retained and data preserved:', cleanupError);
+      if (primaryError !== null && (typeof primaryError === 'object' || typeof primaryError === 'function')) {
+        try { Object.defineProperty(primaryError, 'cleanupError', { value: cleanupError, configurable: true }); } catch { /* stderr still preserves the cleanup failure */ }
+      }
+    }
   }
   try {
     await run(await findGo(), ['build', '-mod=readonly', '-o', executable, './cmd/server'], { cwd: root });
@@ -96,7 +106,7 @@ export async function startS1Server({ browser = false, env: extraEnv = {}, reuse
       await ready(webURL, webChild);
     }
   } catch (error) {
-    await close();
+    await close({ primaryError: error });
     throw error;
   }
   return {

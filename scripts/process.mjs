@@ -69,18 +69,26 @@ export async function checkGofmt(go) {
 /** Stop only children created by this invocation, including their tool subprocesses. */
 export async function stop(child) {
   if (!child.pid || child.exitCode !== null || child.signalCode !== null) return;
-  const exited = new Promise(resolve => child.once('exit', resolve));
+  // Dispatch any queued exit before using this invocation's child PID. Windows
+  // taskkill is synchronous, so exitCode cannot update while it is running.
+  await new Promise(resolve => setImmediate(resolve));
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  let onExit;
+  const exited = new Promise(resolve => { onExit = resolve; child.once('exit', onExit); });
+  let shutdownError;
   if (process.platform === 'win32') {
     const result = spawnSync('taskkill.exe', ['/pid', String(child.pid), '/T', '/F'], { encoding: 'utf8', windowsHide: true });
-    if (result.status !== 0 && child.exitCode === null) throw new Error(`Child shutdown failed: ${result.stderr || result.stdout}`);
+    if (result.status !== 0) shutdownError = new Error(`Child shutdown failed: ${result.stderr || result.stdout || result.error}`);
   } else {
     // Long-lived children are launched as process group leaders on POSIX.
     try { process.kill(-child.pid, 'SIGTERM'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
   }
   let timer;
   try {
-    await Promise.race([exited, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`Child ${child.pid} did not exit`)), 5000); })]);
-  } finally { clearTimeout(timer); }
+    // A nonzero taskkill result is harmless only after this owned child's exit
+    // event confirms termination. A still-live/unconfirmed child remains failure.
+    await Promise.race([exited, new Promise((_, reject) => { timer = setTimeout(() => reject(shutdownError ?? new Error(`Child ${child.pid} did not exit`)), 5000); })]);
+  } finally { clearTimeout(timer); child.removeListener('exit', onExit); }
 }
 
 export async function requireFile(relative) {

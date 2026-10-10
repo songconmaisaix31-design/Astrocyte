@@ -18,15 +18,18 @@ import (
 )
 
 type localProjectService struct {
-	mu       sync.Mutex
-	repo     LocalProjectRepository
-	refs     ProjectReferences
-	files    ProjectFiles
-	registry NativeRegistry
+	mu              sync.Mutex
+	discoveryGate   chan struct{}
+	discoveryRepo   RegisteredProjectRepository
+	discoverySource RegisteredProjectSource
+	repo            LocalProjectRepository
+	refs            ProjectReferences
+	files           ProjectFiles
+	registry        NativeRegistry
 }
 
 func NewLocalProjectService(repo LocalProjectRepository, refs ProjectReferences, files ProjectFiles, registry NativeRegistry) *localProjectService {
-	return &localProjectService{repo: repo, refs: refs, files: files, registry: registry}
+	return &localProjectService{repo: repo, refs: refs, files: files, registry: registry, discoveryGate: make(chan struct{}, 1)}
 }
 
 func projectError(code apierrors.Code, message string) error {
