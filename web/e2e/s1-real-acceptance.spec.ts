@@ -42,6 +42,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
   const modelRecords: S['DistillationV1'][] = [];
   let completed = false;
   async function read<T>(path: string): Promise<T> { return (await api.get(path)) as T; }
+  const originalUnknowns = (await read<S['JobListV1']>('/jobs')).items.filter(job => job.delivery_unknown);
   async function waitModelJob(id: string, expected: 'succeeded' | 'failed') {
     const job = await read<S['JobV1']>(`/jobs/${id}`);
     return waitJob(api, id, expected, Math.max(1000, Math.min(1_800_000, Date.parse(job.deadline_at) - Date.now()) + 1000));
@@ -337,13 +338,14 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     for (const material of [paper.detail.material, video.detail.material]) expect((await read<S['MaterialDetailV1']>(`/materials/${material.id}`)).material.lifecycle).toBe('active');
     expect((await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/1/content`)).text).toBe(videoInput);
     expect((await read<S['MissionListV1']>('/missions')).items).toEqual([]);
+    for (const original of originalUnknowns) expect(await read<S['JobV1']>(`/jobs/${original.job_id}`)).toEqual(original);
     await page.goto(`${server.webURL}/attention`);
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({ path: testInfo.outputPath(`actual-selected-materials-${width}.png`), fullPage: true });
     }
-    await testInfo.attach('actual-public-scope-results', { body: JSON.stringify({ paperOriginal: paperExport, videoOriginal: videoExport, paper: afterReads[0], video: afterReads[1], modelRecords, candidate: reviewed, sourceVersionChanged: head > 1, limits: ['Paper reused genuine existing JSON export; no fresh arXiv URL retrieval.'] }, null, 2), contentType: 'application/json' });
+    await testInfo.attach('actual-public-scope-results', { body: JSON.stringify({ paperOriginal: paperExport, videoOriginal: videoExport, paper: afterReads[0], video: afterReads[1], modelRecords, candidate: reviewed, originalUnknowns, videoStoredRevisionChanged: head > 1, actualExtraPaperRevisions: [versionA.detail.material.id, 1, 2], limits: ['Paper reused genuine existing JSON export; no fresh arXiv URL retrieval.', 'Video export textarea normalizes CRLF; stored revision change does not establish an upstream video-content change.'] }, null, 2), contentType: 'application/json' });
     completed = true;
   } finally {
     await testInfo.attach('actual-job-states', { body: JSON.stringify(jobs, null, 2), contentType: 'application/json' });
