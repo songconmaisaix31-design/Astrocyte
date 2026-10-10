@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Project progress panel: reads the cached model-inferred progress and lets the
- * human trigger one inference through the published W0 progress routes. The
- * routes are mocked with the exact ProjectProgressResultV1 shape so the UI wiring
- * (GET + POST infer) is verified without a real processor run.
+ * Project progress panel: reads the cached human-authored or model-inferred
+ * progress and lets the human trigger one inference through the published W0
+ * progress routes. The routes are mocked with the exact ProjectProgressResultV1
+ * shape so the UI wiring (GET + POST infer with operation_id + files) is
+ * verified without a real processor run.
  */
 
 const project = {
@@ -15,13 +16,15 @@ const project = {
 
 test('reads progress evidence and triggers an explicit inference', async ({ page }) => {
   await page.route(/\/api\/v1\/local-projects$/, route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, items: [project], next_cursor: null }) }));
-  await page.route(/\/api\/v1\/local-projects\/[^/]+\/progress$/, route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, progress: { project_id: 'proj1', status: '开发中', summary: '已完成契约对接', evidence: [{ source_path: 'tasks/S1.md', kind: 'task', version: 'abc123', freshness: '2026-10-10', excerpt: '契约已发布' }], inferred: true, inferred_at: '2026-10-10T00:00:00Z', processor: 'codex', model: null, warning: null } }) }));
+  await page.route(/\/api\/v1\/local-projects\/[^/]+\/progress$/, route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, progress: { project_id: 'proj1', status: '开发中', summary: '已完成契约对接', source: 'agent_inferred', evidence: [{ source_path: 'tasks/S1.md', kind: 'task', version: 'abc123', excerpt: '契约已发布' }], observed_at: '2026-10-10T00:00:00Z', revision: 1 } }) }));
   let inferred = false;
   await page.route(/\/api\/v1\/local-projects\/[^/]+\/progress\/infer$/, route => {
     inferred = true;
     const request = route.request().postDataJSON();
     expect(request.schema_version).toBe(1);
-    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, progress: { project_id: 'proj1', status: '开发中', inferred: true } }) });
+    expect(request.files).toEqual(['TASK.md', 'STATUS.md']);
+    expect(request.operation_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, progress: { project_id: 'proj1', status: '开发中', source: 'agent_inferred', evidence: [], observed_at: '2026-10-10T00:00:00Z', revision: 1 } }) });
   });
 
   await page.goto('/workspace');
@@ -39,7 +42,7 @@ test('reads progress evidence and triggers an explicit inference', async ({ page
 
 test('presents unknown progress honestly without a fabricated number', async ({ page }) => {
   await page.route(/\/api\/v1\/local-projects$/, route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, items: [project], next_cursor: null }) }));
-  await page.route(/\/api\/v1\/local-projects\/[^/]+\/progress$/, route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, progress: { project_id: 'proj1', status: 'unknown', inferred: false } }) }));
+  await page.route(/\/api\/v1\/local-projects\/[^/]+\/progress$/, route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, progress: { project_id: 'proj1', status: 'unknown', source: null, evidence: [], observed_at: null, revision: 0 } }) }));
 
   await page.goto('/workspace');
   await page.waitForLoadState('networkidle');
@@ -48,5 +51,5 @@ test('presents unknown progress honestly without a fabricated number', async ({ 
   const progress = page.locator('section[aria-label="项目进度推断"]');
   await expect(progress).toBeVisible();
   await expect(progress.getByText(/状态 · 未知/)).toBeVisible();
-  await expect(progress.getByText(/尚无进度推断/)).toBeVisible();
+  await expect(progress.getByText(/尚无进度记录/)).toBeVisible();
 });

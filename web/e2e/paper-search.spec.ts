@@ -4,7 +4,8 @@ import { test, expect, type Page } from '@playwright/test';
  * Paper search entry in Attention: clear entry → metadata + availability note →
  * checkbox → batch import (never full-auto). Fixture mode demonstrates the
  * interaction; real mode must surface an honest unavailable/error state and
- * never fabricate results.
+ * never fabricate results. Real search is a GET /papers/search returning hits
+ * with source_key/provider/content_state/pdf_urls.
  */
 
 const panel = (page: Page) => page.locator('section[aria-label="论文检索"]');
@@ -44,7 +45,7 @@ test.describe('论文检索（示例）', () => {
 
 test.describe('论文检索（真实不可用）', () => {
   test('surfaces an honest unavailable state instead of fake results', async ({ page }) => {
-    await page.route('**/api/v1/paper/search**', route => route.fulfill({ status: 501, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, error: { code: 'unsupported_capability', message: 'Not implemented', request_id: 'r', retryable: false, required_action: '论文检索尚未接入' } }) }));
+    await page.route('**/api/v1/papers/search**', route => route.fulfill({ status: 501, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, error: { code: 'unsupported_capability', message: 'Not implemented', request_id: 'r', retryable: false, required_action: '论文检索尚未接入' } }) }));
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');
     await openSearch(page);
@@ -56,14 +57,12 @@ test.describe('论文检索（真实不可用）', () => {
 });
 
 test.describe('论文检索（真实契约对接）', () => {
-  test('renders a real PaperSearchResultV1 payload and posts the search', async ({ page }) => {
+  test('renders a real PaperSearchResultV1 payload and GETs the search', async ({ page }) => {
     let searched = false;
-    await page.route('**/api/v1/paper/search**', route => {
+    await page.route('**/api/v1/papers/search**', route => {
       searched = true;
-      const request = route.request().postDataJSON();
-      expect(request.query).toBe('transformer');
-      expect(request.schema_version).toBe(1);
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, items: [{ site: 'arxiv', source_key: 'arxiv:2504.16054', arxiv_id: '2504.16054', title: 'Attention 论文', authors: ['甲'], abstract: '摘要', published_at: '2024-01-01', locator: 'https://arxiv.org/abs/2504.16054', content_state: 'abstract_only' }], warnings: [] }) });
+      expect(route.request().url()).toContain('q=transformer');
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, query: 'transformer', items: [{ source_key: 'arxiv:2504.16054', provider: 'arxiv', title: 'Attention 论文', authors: ['甲'], year: 2024, arxiv_id: '2504.16054', abstract: '摘要', locator: 'https://arxiv.org/abs/2504.16054', content_state: 'abstract_only', pdf_urls: [] }], next_cursor: null, has_more: false, warnings: [] }) });
     });
     await page.goto('/attention');
     await page.waitForLoadState('networkidle');

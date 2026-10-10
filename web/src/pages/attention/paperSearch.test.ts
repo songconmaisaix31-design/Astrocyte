@@ -2,13 +2,13 @@ import { expect, it } from 'vitest';
 import {
   canSelectPaper, clearPaperSelection, eligiblePapers, isAllEligiblePicked,
   paperContentStateLabel, paperImportAdapter, paperSearchKey, pickedPapers, togglePaper,
-  type PaperMetadata,
+  type PaperSearchHit,
 } from './paperSearch';
 
-const hit = (overrides: Partial<PaperMetadata> = {}): PaperMetadata => ({
-  site: 'arxiv', source_key: 'arxiv:2504.16054', arxiv_id: '2504.16054', title: '示例论文标题',
-  authors: ['甲', '乙'], abstract: '摘要文字', published_at: '2024-01-01',
-  locator: 'https://arxiv.org/abs/2504.16054', content_state: 'abstract_only',
+const hit = (overrides: Partial<PaperSearchHit> = {}): PaperSearchHit => ({
+  source_key: 'arxiv:2504.16054', provider: 'arxiv', title: '示例论文标题', authors: ['甲', '乙'],
+  year: 2024, arxiv_id: '2504.16054', abstract: '摘要文字', locator: 'https://arxiv.org/abs/2504.16054',
+  content_state: 'abstract_only', pdf_urls: [],
   ...overrides,
 });
 
@@ -17,6 +17,7 @@ it('maps content states to readable labels', () => {
   expect(paperContentStateLabel('abstract_only')).toBe('仅摘要/元数据');
   expect(paperContentStateLabel('paywall')).toBe('付费墙');
   expect(paperContentStateLabel('restricted')).toBe('受限');
+  expect(paperContentStateLabel('unknown')).toBe('可得性未知');
 });
 
 it('keys a hit by its canonical source key, falling back to locator', () => {
@@ -26,13 +27,14 @@ it('keys a hit by its canonical source key, falling back to locator', () => {
 
 it('routes import to arxiv only for arXiv identity, paper_url otherwise', () => {
   expect(paperImportAdapter(hit())).toBe('arxiv');
-  expect(paperImportAdapter(hit({ arxiv_id: undefined, site: 'crossref', doi: '10.1/x' }))).toBe('paper_url');
-  expect(paperImportAdapter(hit({ arxiv_id: undefined, site: 'unknown', locator: 'https://journals.plos.org/x' }))).toBe('paper_url');
+  expect(paperImportAdapter(hit({ arxiv_id: undefined, provider: 'crossref', doi: '10.1/x' }))).toBe('paper_url');
+  expect(paperImportAdapter(hit({ arxiv_id: undefined, provider: 'unknown', locator: 'https://journals.plos.org/x' }))).toBe('paper_url');
 });
 
-it('treats metadata hits as selectable; restricted states stay non-selectable', () => {
+it('treats metadata hits as selectable; restricted/paywall stay non-selectable', () => {
   expect(canSelectPaper(hit())).toBe(true);
   expect(canSelectPaper(hit({ content_state: 'readable_fulltext' }))).toBe(true);
+  expect(canSelectPaper(hit({ content_state: 'unknown' }))).toBe(true);
   expect(canSelectPaper(hit({ content_state: 'paywall' }))).toBe(false);
   expect(canSelectPaper(hit({ content_state: 'restricted' }))).toBe(false);
 });

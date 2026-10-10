@@ -1,38 +1,43 @@
 /**
  * Paper search presentation model (pure, no I/O).
  *
- * The local shape below mirrors W0's published `PaperMetadataV1`/`PaperSearchResultV1`
- * contract (see contracts/openapi.yaml, owned by W0). Search is ephemeral public
- * metadata only: providers are metadata indexes, so every hit arrives with
- * `content_state === "abstract_only"` and full-text availability is only resolved
- * when the human selects a hit and imports it through the existing ImportMaterial
- * path (adapter per site, source_key dedup, new revision). No fixture or guessed
- * value is ever presented as a real search result.
+ * The local shapes below mirror W0's published `PaperSearchResultV1` /
+ * `PaperSearchHitV1` contract (contracts/openapi.yaml, owned by W0, converged at
+ * `e39f8f1`). Search is ephemeral public metadata only: `GET /api/v1/papers/search`
+ * returns hits keyed by a canonical `source_key`, a `provider` index, a raw
+ * `content_state` and candidate `pdf_urls`. Full-text availability is only
+ * resolved when the human selects a hit and imports it through the existing
+ * ImportMaterial path (adapter per site, source_key dedup, new revision). No
+ * fixture or guessed value is ever presented as a real result.
  */
 
-export type PaperContentState = 'readable_fulltext' | 'abstract_only' | 'paywall' | 'restricted';
+/** Raw availability vocabulary; metadata indexes always report `abstract_only`. */
+export type PaperContentState = 'readable_fulltext' | 'abstract_only' | 'paywall' | 'restricted' | 'unknown';
 
-/** Local view shape mirroring W0 `PaperMetadataV1`. */
-export interface PaperMetadata {
-  site: string;
+/** Local view shape mirroring W0 `PaperSearchHitV1`. */
+export interface PaperSearchHit {
   source_key: string;
-  doi?: string;
-  arxiv_id?: string;
+  provider: string;
   title: string;
-  authors?: string[];
-  abstract?: string;
-  published_at?: string;
+  authors: string[];
+  year: number;
+  venue?: string;
+  arxiv_id?: string;
+  doi?: string;
   locator: string;
+  abstract?: string;
   content_state: PaperContentState;
-  license?: string;
-  warning?: string;
+  pdf_urls: string[];
 }
 
 /** Local view shape mirroring W0 `PaperSearchResultV1`. */
 export interface PaperSearchResult {
   schema_version: 1;
-  items: PaperMetadata[];
-  warnings?: string[];
+  query: string;
+  items: PaperSearchHit[];
+  next_cursor: string | null;
+  has_more: boolean;
+  warnings: string[];
 }
 
 export const paperContentStateLabel = (state: PaperContentState): string => {
@@ -41,30 +46,43 @@ export const paperContentStateLabel = (state: PaperContentState): string => {
     case 'abstract_only': return '仅摘要/元数据';
     case 'paywall': return '付费墙';
     case 'restricted': return '受限';
+    case 'unknown': return '可得性未知';
   }
 };
 
-export const paperSearchKey = (hit: PaperMetadata): string => hit.source_key || hit.locator;
+/** Canonical key of a hit is its contract `source_key`; fall back to locator. */
+export const paperSearchKey = (hit: PaperSearchHit): string => hit.source_key || hit.locator;
 
-/** Import adapter for a hit; non-arXiv sites use W1's `paper_url` body extraction. */
-export type PaperImportAdapter = 'arxiv' | 'paper_url';
-export function paperImportAdapter(hit: PaperMetadata): PaperImportAdapter {
-  return hit.arxiv_id || hit.site === 'arxiv' ? 'arxiv' : 'paper_url';
+/**
+ * Import adapters the existing ImportMaterial entry can consume. `paper_url`
+ * (HTML landing-page extraction) and `paper_pdf` (SSRF-safe public PDF fetch,
+ * not arxiv-only) are in W0's generated adapter enum; `paper_snapshot` (raw
+ * browser-extracted text) is W1's adapter, cast at the import seam until W0
+ * adds it to the enum.
+ */
+export type PaperImportAdapter = 'arxiv' | 'paper_url' | 'paper_pdf' | 'paper_snapshot';
+
+function isArxiv(hit: PaperSearchHit): boolean {
+  return !!hit.arxiv_id || hit.provider === 'arxiv' || /(^|\.)arxiv\.org$/i.test(hit.locator || '');
+}
+
+/** Default import adapter for a search hit; non-arXiv sites use `paper_url` HTML extraction. */
+export function paperImportAdapter(hit: PaperSearchHit): PaperImportAdapter {
+  return isArxiv(hit) ? 'arxiv' : 'paper_url';
 }
 
 /**
  * A search hit is selectable unless its content state is paywall/restricted.
- * W1's search providers are metadata indexes and always return abstract_only, so
- * this is effectively always true today; the check stays defensive for any
- * future provider that reports a restricted state. The human explicitly picks
- * each hit; nothing is auto-selected.
+ * `abstract_only` and `unknown` stay selectable: the import job resolves real
+ * availability and the source_key dedup keeps a retry from creating a
+ * duplicate. Nothing is auto-selected.
  */
-export function canSelectPaper(hit: PaperMetadata): boolean {
-  return hit.content_state === 'readable_fulltext' || hit.content_state === 'abstract_only';
+export function canSelectPaper(hit: PaperSearchHit): boolean {
+  return hit.content_state !== 'paywall' && hit.content_state !== 'restricted';
 }
 
 /** Explicit, human-only selection. Never selects a hit automatically. */
-export function togglePaper(selected: string[], hit: PaperMetadata): string[] {
+export function togglePaper(selected: string[], hit: PaperSearchHit): string[] {
   return selected.includes(paperSearchKey(hit)) ? selected.filter(id => id !== paperSearchKey(hit)) : [...selected, paperSearchKey(hit)];
 }
 
@@ -73,17 +91,17 @@ export function clearPaperSelection(): string[] {
 }
 
 /** Hits the human has actually picked. */
-export function pickedPapers(hits: PaperMetadata[], selected: string[]): PaperMetadata[] {
+export function pickedPapers(hits: PaperSearchHit[], selected: string[]): PaperSearchHit[] {
   return hits.filter(hit => selected.includes(paperSearchKey(hit)));
 }
 
 /** All selectable hits. */
-export function eligiblePapers(hits: PaperMetadata[]): PaperMetadata[] {
+export function eligiblePapers(hits: PaperSearchHit[]): PaperSearchHit[] {
   return hits.filter(canSelectPaper);
 }
 
 /** True when the human picked every currently selectable hit. */
-export function isAllEligiblePicked(hits: PaperMetadata[], selected: string[]): boolean {
+export function isAllEligiblePicked(hits: PaperSearchHit[], selected: string[]): boolean {
   const eligible = eligiblePapers(hits);
   return eligible.length > 0 && pickedPapers(hits, selected).length === eligible.length;
 }

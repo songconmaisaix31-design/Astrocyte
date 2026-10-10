@@ -2,16 +2,27 @@
  * Plugin snapshot paste-review presentation (pure, no I/O).
  *
  * W1's MV3 extension copies a paper-page JSON snapshot (see extensions/paper/
- * extract.js) to the clipboard. Its shape is: `source_url`, `host_family`,
+ * extract.js and W1 `PaperSnapshot`). Its shape is: `source_url`, `host_family`,
  * `source_key`, `title`, `abstract`, `authors`, `doi`, `arxiv_id`,
  * `observed_version`, `pdf_urls`, `content_state`, `text`, `warning`,
- * `truncated`, `provenance`. The human pastes it into this same-origin review;
- * the app only reads metadata and the canonical locator. The snapshot (or its
- * abstract) is NEVER trusted as the full body — the service re-extracts the body
- * from the locator on import.
+ * `truncated`, `provenance`.
+ *
+ * Unlike an earlier revision, the raw `text` (the browser-extracted full body)
+ * is PRESERVED: a readable full-text snapshot is imported through the minimal
+ * `paper_snapshot` ImportMaterial entry carrying the whole reviewed snapshot
+ * JSON as `export_text`, so the service does NOT re-fetch the page and never
+ * trusts the snapshot's self-reported source key (it re-derives it from the
+ * observed DOI/arXiv/URL identity). A `pdf_urls` entry imports through the
+ * `paper_pdf` adapter (SSRF-safe public PDF fetch, not arxiv-only). The human
+ * is offered an explicit HTML-fulltext vs public-PDF choice; the abstract, a
+ * truncated body and a paywall are never treated as full text, and no personal
+ * browser or history is read automatically.
  */
 
-import type { PaperContentState, PaperImportAdapter } from './paperSearch';
+export type SnapshotContentState = 'readable_fulltext' | 'abstract_only' | 'paywall' | 'restricted';
+
+/** Import adapters the existing ImportMaterial entry can consume. */
+export type SnapshotImportAdapter = 'arxiv' | 'paper_pdf' | 'paper_snapshot';
 
 export interface PluginSnapshotReview {
   source_url: string;
@@ -24,16 +35,27 @@ export interface PluginSnapshotReview {
   abstract: string | null;
   observed_version: string | null;
   pdf_urls: string[];
-  content_state: PaperContentState;
+  content_state: SnapshotContentState;
+  text: string | null;
   warning: string | null;
   truncated: boolean;
+}
+
+/** One human-selectable import path for a reviewed snapshot. */
+export interface SnapshotImportOption {
+  adapter: SnapshotImportAdapter;
+  /** What the existing ImportMaterial entry receives as source_locator. */
+  source_locator: string;
+  /** Raw reviewed snapshot JSON for paper_snapshot; null for PDF/arxiv. */
+  export_text: string | null;
+  label: string;
 }
 
 interface RawSnapshot {
   source_url?: unknown; host_family?: unknown; source_key?: unknown; title?: unknown;
   authors?: unknown; doi?: unknown; arxiv_id?: unknown; abstract?: unknown;
   observed_version?: unknown; pdf_urls?: unknown; content_state?: unknown;
-  warning?: unknown; truncated?: unknown;
+  text?: unknown; warning?: unknown; truncated?: unknown;
 }
 
 function asString(value: unknown): string | null {
@@ -42,9 +64,9 @@ function asString(value: unknown): string | null {
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
 }
-const contentStates: PaperContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted'];
-function asContentState(value: unknown): PaperContentState {
-  return (contentStates as unknown[]).includes(value) ? (value as PaperContentState) : 'abstract_only';
+const contentStates: SnapshotContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted'];
+function asContentState(value: unknown): SnapshotContentState {
+  return (contentStates as unknown[]).includes(value) ? (value as SnapshotContentState) : 'abstract_only';
 }
 
 /** Parse a pasted snapshot. Throws with a readable message on invalid input. */
@@ -66,32 +88,66 @@ export function parsePluginSnapshot(text: string): PluginSnapshotReview {
     observed_version: asString(snapshot.observed_version),
     pdf_urls: asStringArray(snapshot.pdf_urls),
     content_state: asContentState(snapshot.content_state),
+    text: asString(snapshot.text),
     warning: asString(snapshot.warning),
     truncated: snapshot.truncated === true,
   };
 }
 
-function locatorHostname(locator: string): string | null {
-  try { return new URL(locator).hostname; } catch { return null; }
+function isArxiv(review: PluginSnapshotReview): boolean {
+  if (review.host_family === 'arxiv' || review.arxiv_id) return true;
+  try { return /(^|\.)arxiv\.org$/i.test(new URL(review.source_url).hostname); } catch { return false; }
+}
+
+/** Human label for a snapshot content state (domain vocabulary). */
+export function snapshotContentStateLabel(state: SnapshotContentState): string {
+  switch (state) {
+    case 'readable_fulltext': return '原文可得';
+    case 'abstract_only': return '仅摘要/元数据';
+    case 'paywall': return '付费墙';
+    case 'restricted': return '受限';
+  }
+}
+
+/** A body is usable as full text only when full-text, untruncated and non-empty. */
+function hasFullText(review: PluginSnapshotReview): boolean {
+  return review.content_state === 'readable_fulltext' && !review.truncated && !!review.text;
+}
+
+/** Restricted/paywalled content never yields an importable full text. */
+function isRestricted(review: PluginSnapshotReview): boolean {
+  return review.content_state === 'paywall' || review.content_state === 'restricted';
 }
 
 /**
- * Which existing import adapter can consume this snapshot. arXiv snapshots use
- * the `arxiv` adapter (official Atom/PDF); every other public HTTPS page uses
- * W1's `paper_url` body-extraction adapter. Returns null only for an unrecognized
- * source so the UI can honestly gate it.
+ * The human-selectable import paths for a reviewed snapshot: the preserved
+ * HTML full body (`paper_snapshot`, no re-fetch, whole snapshot JSON as
+ * `export_text`) and/or each public PDF (`paper_pdf`, SSRF-safe fetch, not
+ * arxiv-only). An arxiv snapshot with neither falls back to the official
+ * `arxiv` adapter. A paywall/restricted snapshot yields nothing (no bypass),
+ * and an abstract-only snapshot without a PDF is not full text, so it yields
+ * nothing either. `rawJson` is the exact reviewed snapshot JSON.
  */
-export function importAdapterFor(review: PluginSnapshotReview): PaperImportAdapter | null {
-  if (review.host_family === 'arxiv' || review.arxiv_id) return 'arxiv';
-  const hostname = locatorHostname(review.source_url);
-  if (hostname && /(^|\.)arxiv\.org$/i.test(hostname)) return 'arxiv';
-  return 'paper_url';
+export function snapshotImportOptions(review: PluginSnapshotReview, rawJson: string): SnapshotImportOption[] {
+  const options: SnapshotImportOption[] = [];
+  if (hasFullText(review)) {
+    options.push({ adapter: 'paper_snapshot', source_locator: review.source_url, export_text: rawJson, label: '按快照正文导入（HTML 正文）' });
+  }
+  if (!isRestricted(review)) {
+    for (const pdf of review.pdf_urls) {
+      options.push({ adapter: 'paper_pdf', source_locator: pdf, export_text: null, label: '按公共 PDF 导入' });
+    }
+  }
+  if (!options.length && isArxiv(review) && !isRestricted(review)) {
+    options.push({ adapter: 'arxiv', source_locator: review.source_url, export_text: null, label: '按 arXiv 官方导入' });
+  }
+  return options;
 }
 
-/** A snapshot whose page is paywalled/restricted cannot be imported without bypass. */
-export function canImportSnapshot(review: PluginSnapshotReview): boolean {
-  return review.content_state === 'readable_fulltext' || review.content_state === 'abstract_only';
+/** Whether at least one non-bypassing import path exists for this snapshot. */
+export function canImportSnapshot(review: PluginSnapshotReview, rawJson: string): boolean {
+  return snapshotImportOptions(review, rawJson).length > 0;
 }
 
-/** Always-true caveat: the snapshot/abstract is never treated as the body. */
-export const snapshotCaveat = '插件快照（含摘要）不是正文。导入时由服务按来源重新获取正文与版本，快照仅用于人工复核与选择。';
+/** Caveat: the abstract/truncated/paywall is never treated as the body. */
+export const snapshotCaveat = '插件快照（含摘要）不是正文；只有快照携带的完整正文或公共 PDF 才能入库，正文由你复核后写入，服务不会重新抓取网页或读取你的浏览器。';

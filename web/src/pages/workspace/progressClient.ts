@@ -1,14 +1,15 @@
 /**
  * Project progress client seam.
  *
- * W0 published `GET /api/v1/local-projects/{id}/progress` and
- * `POST /api/v1/local-projects/{id}/progress/infer` (contracts/openapi.yaml); the
- * generated `localProjectsApi.getProjectProgress`/`inferProjectProgress` wrappers
- * are added by W0 during final integration because `web/src/api/` is W0-owned.
- * Until then this module calls the published routes directly with the exact
- * `ProjectProgressResultV1` shape and never fabricates a status.
+ * W0 published `GET/PUT /api/v1/local-projects/{id}/progress` and
+ * `POST /api/v1/local-projects/{id}/progress/infer` (contracts/openapi.yaml,
+ * converged at `e39f8f1`); the generated `localProjectsApi.getProjectProgress`/
+ * `setProjectProgress`/`inferProjectProgress` wrappers are added by W0 during
+ * final integration because `web/src/api/` is W0-owned. Until then this module
+ * calls the published routes directly with the exact wire shape and never
+ * fabricates a status or a percent.
  */
-import type { ProjectProgress, ProjectProgressResult } from './progressPresentation';
+import type { ProgressEvidence, ProjectProgress, ProjectProgressResult } from './progressPresentation';
 
 export const PROGRESS_PATH = '/api/v1/local-projects';
 
@@ -24,33 +25,36 @@ function asString(value: unknown): string | null {
 }
 
 interface RawEvidence {
-  source_path?: unknown; kind?: unknown; version?: unknown; freshness?: unknown; excerpt?: unknown;
+  source_path?: unknown; kind?: unknown; version?: unknown; excerpt?: unknown;
 }
 interface RawProgress {
-  project_id?: unknown; status?: unknown; summary?: unknown; evidence?: unknown;
-  inferred?: unknown; inferred_at?: unknown; processor?: unknown; model?: unknown; warning?: unknown;
+  project_id?: unknown; status?: unknown; summary?: unknown; percent?: unknown; source?: unknown;
+  evidence?: unknown; native_id?: unknown; model?: unknown; observed_at?: unknown;
+  warning?: unknown; revision?: unknown;
 }
 
 function mapProgress(raw: RawProgress): ProjectProgress {
-  const evidence = Array.isArray(raw.evidence)
+  const evidence: ProgressEvidence[] = Array.isArray(raw.evidence)
     ? (raw.evidence as RawEvidence[]).map(item => ({
       source_path: asString(item.source_path) ?? '',
       kind: asString(item.kind) ?? '',
       version: asString(item.version) ?? '',
-      freshness: asString(item.freshness) ?? '',
       excerpt: asString(item.excerpt) ?? undefined,
     }))
-    : undefined;
+    : [];
+  const source = asString(raw.source);
   return {
     project_id: asString(raw.project_id) ?? '',
-    status: asString(raw.status) ?? 'unknown',
+    status: asString(raw.status) || 'unknown',
     summary: asString(raw.summary) ?? undefined,
+    percent: typeof raw.percent === 'number' ? raw.percent : null,
+    source: source === 'human' || source === 'agent_inferred' ? source : null,
     evidence,
-    inferred: raw.inferred === true,
-    inferred_at: asString(raw.inferred_at) ?? undefined,
-    processor: asString(raw.processor) ?? undefined,
-    model: asString(raw.model) ?? undefined,
+    native_id: asString(raw.native_id) ?? undefined,
+    model: asString(raw.model) ?? null,
+    observed_at: asString(raw.observed_at) ?? null,
     warning: asString(raw.warning) ?? undefined,
+    revision: typeof raw.revision === 'number' ? raw.revision : 0,
   };
 }
 
@@ -61,8 +65,8 @@ export async function getProjectProgress(id: string, signal?: AbortSignal): Prom
   return { schema_version: 1, progress: mapProgress((body?.progress && typeof body.progress === 'object' ? body.progress : {}) as RawProgress) };
 }
 
-/** Human-session infer trigger; the operation identity is caller-owned and never replayed. */
-export async function inferProjectProgress(id: string, key: string, signal?: AbortSignal): Promise<ProjectProgressResult> {
+/** Human-session infer trigger; the caller-owned operation identity is never replayed. */
+export async function inferProjectProgress(id: string, key: string, operationId: string, files: string[], signal?: AbortSignal): Promise<ProjectProgressResult> {
   const sessionResponse = await fetch('/api/v1/auth/session', { credentials: 'same-origin', signal });
   if (!sessionResponse.ok) throw new ProgressUnavailable(sessionResponse.status);
   const session = (await sessionResponse.json().catch(() => undefined)) as { csrf_token?: string } | undefined;
@@ -71,7 +75,7 @@ export async function inferProjectProgress(id: string, key: string, signal?: Abo
     credentials: 'same-origin',
     signal,
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key, 'X-CSRF-Token': session?.csrf_token ?? '' },
-    body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 1 }),
+    body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 1, operation_id: operationId, files }),
   });
   if (!response.ok) throw new ProgressUnavailable(response.status);
   const body = (await response.json().catch(() => undefined)) as { progress?: unknown } | undefined;

@@ -1,18 +1,25 @@
 /**
  * Paper search client seam.
  *
- * W0 published `POST /api/v1/paper/search` (see contracts/openapi.yaml); the
+ * W0 published `GET /api/v1/papers/search?q=&provider=&limit=` returning
+ * `PaperSearchResultV1` (contracts/openapi.yaml, converged at `e39f8f1`); the
  * generated `attentionApi.searchPapers` wrapper is added by W0 during final
  * integration because `web/src/api/` is W0-owned. Until then this module calls
- * the published route directly with the exact request/response shapes of W0's
- * `PaperSearchRequestV1`/`PaperSearchResultV1` and never fabricates results.
- * Every failure (404/501/network) surfaces as an explicit, retryable error.
+ * the published route directly with the exact wire shape and never fabricates
+ * results. Every failure (404/501/network) surfaces as an explicit, retryable
+ * error.
+ *
+ * Selection is imported per-item through the existing ImportMaterial path
+ * (kind=paper, adapter arxiv|paper_url, source_key dedup, new revision) with a
+ * stable idempotency key per item so a retry reuses the same job. A settled
+ * submission only proves the job was accepted, never that it succeeded; jobs
+ * stay queryable in the existing processing queue.
  */
 import { attentionApi } from '../../api/client';
 import type { components } from '../../api/schema';
-import { paperImportAdapter, type PaperContentState, type PaperImportAdapter, type PaperMetadata, type PaperSearchResult } from './paperSearch';
+import { paperImportAdapter, type PaperImportAdapter, type PaperContentState, type PaperSearchHit, type PaperSearchResult } from './paperSearch';
 
-export const PAPER_SEARCH_PATH = '/api/v1/paper/search';
+export const PAPER_SEARCH_PATH = '/api/v1/papers/search';
 
 export class PaperSearchUnavailable extends Error {
   constructor(readonly status: number) {
@@ -27,77 +34,84 @@ function asString(value: unknown): string | null {
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 }
-const contentStates: PaperContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted'];
+const contentStates: PaperContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted', 'unknown'];
 function asContentState(value: unknown): PaperContentState {
   return (contentStates as unknown[]).includes(value) ? (value as PaperContentState) : 'abstract_only';
 }
 
 interface RawHit {
-  site?: unknown; source_key?: unknown; doi?: unknown; arxiv_id?: unknown; title?: unknown;
-  authors?: unknown; abstract?: unknown; published_at?: unknown; locator?: unknown;
-  content_state?: unknown; license?: unknown; warning?: unknown;
+  source_key?: unknown; provider?: unknown; title?: unknown; authors?: unknown; year?: unknown;
+  venue?: unknown; arxiv_id?: unknown; doi?: unknown; locator?: unknown;
+  abstract?: unknown; content_state?: unknown; pdf_urls?: unknown;
 }
 
-function mapHit(raw: RawHit): PaperMetadata {
+function mapHit(raw: RawHit): PaperSearchHit {
   return {
-    site: asString(raw.site) ?? 'unknown',
-    source_key: asString(raw.source_key) ?? asString(raw.locator) ?? '',
-    doi: asString(raw.doi) ?? undefined,
-    arxiv_id: asString(raw.arxiv_id) ?? undefined,
+    source_key: asString(raw.source_key) ?? '',
+    provider: asString(raw.provider) ?? 'unknown',
     title: asString(raw.title) ?? '标题未提供',
     authors: asStringArray(raw.authors),
-    abstract: asString(raw.abstract) ?? undefined,
-    published_at: asString(raw.published_at) ?? undefined,
+    year: typeof raw.year === 'number' ? raw.year : 0,
+    venue: asString(raw.venue) ?? undefined,
+    arxiv_id: asString(raw.arxiv_id) ?? undefined,
+    doi: asString(raw.doi) ?? undefined,
     locator: asString(raw.locator) ?? '',
+    abstract: asString(raw.abstract) ?? undefined,
     content_state: asContentState(raw.content_state),
-    license: asString(raw.license) ?? undefined,
-    warning: asString(raw.warning) ?? undefined,
+    pdf_urls: asStringArray(raw.pdf_urls),
   };
 }
 
-/** Deterministic idempotency key so a retry of the same query reuses it. */
-function stableKey(query: string): string {
+/** Deterministic idempotency key so a retry of the same operation reuses it. */
+function stableKey(parts: string[]): string {
+  const joined = parts.join('\u0000');
   let h = 0x811c9dc5;
-  for (let i = 0; i < query.length; i++) {
-    h ^= query.charCodeAt(i);
+  for (let i = 0; i < joined.length; i++) {
+    h ^= joined.charCodeAt(i);
     h = Math.imul(h, 0x01000193);
   }
-  return `paper-search-${(h >>> 0).toString(16)}`;
+  return `paper-${(h >>> 0).toString(16)}`;
 }
 
 export async function searchPapers(query: string, signal?: AbortSignal): Promise<PaperSearchResult> {
-  const key = stableKey(query);
-  const sessionResponse = await fetch('/api/v1/auth/session', { credentials: 'same-origin', signal });
-  if (!sessionResponse.ok) throw new PaperSearchUnavailable(sessionResponse.status);
-  const session = (await sessionResponse.json().catch(() => undefined)) as { csrf_token?: string } | undefined;
-  const response = await fetch(PAPER_SEARCH_PATH, {
-    method: 'POST',
-    credentials: 'same-origin',
-    signal,
-    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key, 'X-CSRF-Token': session?.csrf_token ?? '' },
-    body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 1, query }),
-  });
+  const params = new URLSearchParams({ q: query });
+  const response = await fetch(`${PAPER_SEARCH_PATH}?${params.toString()}`, { credentials: 'same-origin', signal });
   if (!response.ok) throw new PaperSearchUnavailable(response.status);
-  const body = (await response.json().catch(() => undefined)) as { schema_version?: unknown; items?: unknown; warnings?: unknown } | undefined;
+  const body = (await response.json().catch(() => undefined)) as { schema_version?: unknown; query?: unknown; items?: unknown; next_cursor?: unknown; has_more?: unknown; warnings?: unknown } | undefined;
   const items = Array.isArray(body?.items) ? (body.items as RawHit[]).map(mapHit) : [];
-  return { schema_version: 1, items, warnings: asStringArray(body?.warnings) };
+  return {
+    schema_version: 1,
+    query: asString(body?.query) ?? query,
+    items,
+    next_cursor: asString(body?.next_cursor),
+    has_more: body?.has_more === true,
+    warnings: asStringArray(body?.warnings),
+  };
 }
 
 /**
- * A selected hit is imported through the existing ImportMaterial path (owned by
- * W0). `paper_url` is W1's real body-extraction adapter; it is not yet in W0's
- * generated adapter enum, so it is cast at this single seam for W0 to confirm
- * during final integration.
+ * `paper_snapshot` is W1's adapter not yet named in the generated
+ * `ImportMaterialRequestV1.adapter` enum; it is cast at this single seam for
+ * W0 to confirm during final integration. `arxiv`/`paper_url`/`paper_pdf` are
+ * already in the generated enum.
  */
 const toImportAdapter = (adapter: PaperImportAdapter): components['schemas']['ImportMaterialRequestV1']['adapter'] =>
   adapter as components['schemas']['ImportMaterialRequestV1']['adapter'];
 
-export async function importPaperHit(hit: PaperMetadata, reason: string | null, key: string) {
+/**
+ * A selected hit is imported through the existing ImportMaterial path with a
+ * stable idempotency key (adapter + canonical source_key + locator). The same
+ * selection retried later reuses the job; source_key dedup keeps a duplicate
+ * revision from being created.
+ */
+export async function importPaperHit(hit: PaperSearchHit, reason: string | null) {
+  const adapter = paperImportAdapter(hit);
+  const key = stableKey(['import', adapter, hit.source_key, hit.locator]);
   return attentionApi.importMaterial({
     schema_version: 1,
     request_id: key,
     expected_version: 1,
-    adapter: toImportAdapter(paperImportAdapter(hit)),
+    adapter: toImportAdapter(adapter),
     source_locator: hit.locator,
     source_key: hit.source_key,
     kind: 'paper',
@@ -110,16 +124,17 @@ export async function importPaperHit(hit: PaperMetadata, reason: string | null, 
 
 /**
  * Human-session batch import: one ImportMaterial job per selected hit, each with
- * its own idempotency key. Every import is attempted; failures are surfaced as a
- * single actionable error and the successful jobs remain queryable in the job
- * queue. Never imports an unselected hit.
+ * its own stable idempotency key. Every selection is attempted; a settled
+ * submission only means the job was accepted (not that it succeeded). Failures
+ * are surfaced as a single actionable error, and accepted jobs remain queryable
+ * in the existing processing queue. Never imports an unselected hit.
  */
-export async function importPaperBatch(hits: PaperMetadata[], reason: string | null): Promise<void> {
-  const settled = await Promise.allSettled(hits.map(hit => importPaperHit(hit, reason, crypto.randomUUID())));
+export async function importPaperBatch(hits: PaperSearchHit[], reason: string | null): Promise<void> {
+  const settled = await Promise.allSettled(hits.map(hit => importPaperHit(hit, reason)));
   const rejected = settled.filter((result): result is PromiseRejectedResult => result.status === 'rejected');
   if (!rejected.length) return;
-  const ok = settled.length - rejected.length;
+  const accepted = settled.length - rejected.length;
   const first = rejected[0].reason;
   const detail = first instanceof Error ? first.message : String(first);
-  throw new Error(ok ? `已提交 ${ok} 条，${rejected.length} 条入库失败（详情见处理队列）：${detail}` : `批量入库失败（详情见处理队列）：${detail}`);
+  throw new Error(accepted ? `已提交 ${accepted} 条入库作业，${rejected.length} 条提交失败（详情见处理队列）：${detail}` : `批量入库提交失败（详情见处理队列）：${detail}`);
 }
