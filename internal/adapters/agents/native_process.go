@@ -201,6 +201,9 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 			}
 			_ = json.Unmarshal(response["error"], &failure)
 			slog.Warn("native protocol rejected operation", "method", method, "protocol_code", failure.Code, "reason", protocolReason(failure.Message))
+			if failure.Code == -32601 {
+				return nil, nativeError(apierrors.UnsupportedCapability, "installed native protocol or thread store does not support this method")
+			}
 			return nil, nativeError(apierrors.ProviderUnavailable, "native protocol rejected the operation")
 		}
 		if raw, ok := response["success"]; ok && string(raw) != "true" {
