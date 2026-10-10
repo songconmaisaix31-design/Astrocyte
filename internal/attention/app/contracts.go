@@ -713,3 +713,11 @@ type SelectedTextProcessor interface {
 type ProjectDistillerFactory interface {
 	Resolve(context.Context, Principal, string, string) (Distiller, error)
 }
+
+// ProjectDistillationScope rechecks current caller/project/CLI permission and
+// Attention space for an already persisted delivered result. It must not
+// require native configuration, start a process, or repeat a model call.
+// Optional for legacy/custom factories; the selected-project factory supplies it.
+type ProjectDistillationScope interface {
+	ProjectSpaceID(context.Context, Principal, string, string) (string, error)
+}
