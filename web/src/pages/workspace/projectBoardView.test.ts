@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boardSections, filterBoardProjects, initialBoardFilters, type BoardProject } from './projectBoardView';
+import { boardSections, filterBoardProjects, initialBoardFilters, type BoardProject } from './projectBoardPresentation';
 
 const base: BoardProject = { id: 'same-repo', name: '共同项目', folders: ['C:/project', 'C:/worktree'], clients: ['codex', 'claude'], sources: ['orca_registered', 'codex_index'], activityAt: '2026-10-10T10:00:00Z', activitySource: 'native session metadata', activityStatus: 'recorded', intent: 'continuing', group: '研究', notes: '下一步检查结果', review: '', archived: false };
 describe('source-backed project board presentation', () => {

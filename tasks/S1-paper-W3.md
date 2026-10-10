@@ -12,5 +12,6 @@
 ## 当前检查
 
 - 可复用看板展示层：定向 Vitest 3 PASS，验证多客户端卡不重复、实际活动不推导意愿、未知时间排序、来源筛选、归档可恢复且不修改输入。
-- 初次 TypeScript 构建 PASS；完整 lint 执行中。尚未接到真实看板契约，不将展示层测试当实际项目验收。
+- 初次展示层 TypeScript 与 lint PASS。第一次接入真实调用方后 TypeScript RED：Windows 大小写相近的 `ProjectBoardView.tsx` / `projectBoardView.ts` 导致模块解析冲突；改用明确不同文件名 `projectBoardPresentation.ts`，后续定向重验单列，保留此次 RED。
+- 已普通消费 W0 `f9cdec80265f55efbfbdf6a9380ed684e46eee2d` 生成 API。W2明确 human intent 为自由文本，界面改为自由填写、三种可选中文建议，按实际文本筛选；没有固化完成阶段或进度推断。
 - 真实浏览器槽、接口发布时间与产品问题回复已向协调者交接；等待时继续独立授权工作。

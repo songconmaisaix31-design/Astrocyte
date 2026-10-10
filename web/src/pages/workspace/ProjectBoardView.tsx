@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BrandIcon } from '../../components/BrandIcon';
 import { FilterChips } from '../../components/CollectionOverview';
 import { formatDateTime } from '../../utils/format';
-import { boardSections, filterBoardProjects, initialBoardFilters, intentLabels, type BoardFilters, type BoardProject } from './projectBoardView';
+import { boardSections, filterBoardProjects, initialBoardFilters, humanIntentLabel, type BoardFilters, type BoardProject } from './projectBoardPresentation';
 import styles from './ProjectBoard.module.css';
 
 export function ProjectBoardView({ items, query, complete, onSelect }: { items: BoardProject[]; query: string; complete: boolean; onSelect: (item: BoardProject) => void }) {
@@ -20,9 +20,9 @@ export function ProjectBoardView({ items, query, complete, onSelect }: { items: 
     <p className={styles.note}>{complete ? '计数来自当前已保存清单。' : '当前清单不完整，计数仅包含已返回记录。'}文件夹与客户端分别去重；活动时间不表示项目完成度。</p>
     <FilterChips label="看的方式" value={view} onChange={setView} options={[{ value: 'flat', label: '平铺' }, { value: 'platform', label: '按平台' }, { value: 'group', label: '按分组' }, { value: 'timeline', label: '时间线' }]} />
     <div className={styles.filters}>
-      <FilterChips label="继续意愿" value={filters.intent} onChange={value => filter('intent', value)} options={[{ value: 'all', label: '全部' }, ...Object.entries(intentLabels).map(([value, label]) => ({ value, label }))]} />
       <div className={styles.controls}>
         <label>搜索项目<input type="search" value={filters.search} placeholder="名称、目录或笔记" onChange={event => filter('search', event.target.value)} /></label>
+        <label>继续意愿<select value={filters.intent} onChange={event => filter('intent', event.target.value)}><option value="all">全部意愿</option>{unique(items.map(item => item.intent).filter(Boolean)).map(value => <option key={value}>{value}</option>)}<option value="__unset">尚未标记</option></select></label>
         <label>客户端<select value={filters.client} onChange={event => filter('client', event.target.value)}><option value="all">全部客户端</option>{clients.map(value => <option key={value}>{value}</option>)}<option value="unknown">客户端未知</option></select></label>
         <label>分组<select value={filters.group} onChange={event => filter('group', event.target.value)}><option value="all">全部分组</option>{unique(items.map(item => item.group).filter(Boolean)).map(value => <option key={value}>{value}</option>)}<option value="unknown">未分组</option></select></label>
         <label>来源<select value={filters.source} onChange={event => filter('source', event.target.value)}><option value="all">全部来源</option>{unique(items.flatMap(item => item.sources)).map(value => <option key={value}>{value}</option>)}</select></label>
@@ -43,7 +43,7 @@ export function ProjectBoardView({ items, query, complete, onSelect }: { items: 
           <code className={styles.path}>{item.folders[0] ?? '目录未提供'}{item.folders.length > 1 ? ` · 另 ${item.folders.length - 1} 个目录` : ''}</code>
           <p>最近记录活动 · {item.activityAt ? formatDateTime(item.activityAt) : '未知'}</p>
           <small>{item.activitySource || '活动来源未提供'}</small>
-          <div className={styles.cardFooter}><span>{intentLabels[item.intent] ?? '尚未标记'} · {item.group || '未分组'}</span><span>查看 / 继续 →</span></div>
+          <div className={styles.cardFooter}><span>{humanIntentLabel(item.intent)} · {item.group || '未分组'}</span><span>查看 / 继续 →</span></div>
         </button>
       </li>)}</ul>
     </section>)}

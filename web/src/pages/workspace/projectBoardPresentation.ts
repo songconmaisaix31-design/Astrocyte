@@ -15,7 +15,7 @@ export interface BoardProject {
   archived: boolean;
 }
 
-export const intentLabels: Record<string, string> = { continuing: '想继续做', on_hold: '暂时搁置', finished: '已经收尾', unknown: '尚未标记' };
+export const humanIntentLabel = (intent: string) => intent.trim() || '尚未标记';
 export interface BoardFilters { client: string; intent: string; group: string; source: string; status: string; archive: string; search: string; sort: string }
 export const initialBoardFilters: BoardFilters = { client: 'all', intent: 'all', group: 'all', source: 'all', status: 'all', archive: 'active', search: '', sort: 'activity' };
 
@@ -23,7 +23,7 @@ export function filterBoardProjects(items: BoardProject[], filters: BoardFilters
   const query = filters.search.trim().toLocaleLowerCase();
   return items.filter(item =>
     (filters.client === 'all' || (filters.client === 'unknown' ? !item.clients.length : item.clients.includes(filters.client))) &&
-    (filters.intent === 'all' || item.intent === filters.intent) &&
+    (filters.intent === 'all' || (filters.intent === '__unset' ? !item.intent.trim() : item.intent === filters.intent)) &&
     (filters.group === 'all' || (filters.group === 'unknown' ? !item.group : item.group === filters.group)) &&
     (filters.source === 'all' || item.sources.includes(filters.source)) &&
     (filters.status === 'all' || item.activityStatus === filters.status) &&
