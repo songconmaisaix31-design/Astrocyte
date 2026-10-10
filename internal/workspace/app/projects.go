@@ -18,11 +18,14 @@ import (
 )
 
 type localProjectService struct {
-	mu       sync.Mutex
-	repo     LocalProjectRepository
-	refs     ProjectReferences
-	files    ProjectFiles
-	registry NativeRegistry
+	mu              sync.Mutex
+	discoveryMu     sync.Mutex
+	discoveryRepo   RegisteredProjectRepository
+	discoverySource RegisteredProjectSource
+	repo            LocalProjectRepository
+	refs            ProjectReferences
+	files           ProjectFiles
+	registry        NativeRegistry
 }
 
 func NewLocalProjectService(repo LocalProjectRepository, refs ProjectReferences, files ProjectFiles, registry NativeRegistry) *localProjectService {
