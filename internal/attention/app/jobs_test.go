@@ -44,6 +44,9 @@ func TestReadOnlyFailureExplicitRetryCeilingAndStableOperation(t *testing.T) {
 	if job.Attempts != 2 {
 		t.Fatal("attempt count lost")
 	}
+	if job.Error.Retryable || job.Error.RequiredAction != "review_source_or_configuration_before_new_work" {
+		t.Fatal("exhaustion still invited invisible retry")
+	}
 }
 
 func TestRecoveryReadOnlyVsUnknownModelAndDeadline(t *testing.T) {

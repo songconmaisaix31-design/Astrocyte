@@ -71,8 +71,8 @@ func NewCodex(options CodexOptions) (*Codex, error) {
 			return nil, denied("processor allowlist contains an empty source key")
 		}
 	}
-	if options.Timeout <= 0 {
-		options.Timeout = 3 * time.Minute
+	if options.Timeout <= 0 || options.Timeout > 30*time.Minute {
+		options.Timeout = 30 * time.Minute
 	}
 	options.AllowedSourceKeys = append([]string(nil), options.AllowedSourceKeys...)
 	return &Codex{options: options}, nil
