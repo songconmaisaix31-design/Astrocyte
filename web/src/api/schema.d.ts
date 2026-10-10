@@ -2020,11 +2020,8 @@ export interface components {
          *     }
          */
         ImportMaterialRequestV1: {
-            /**
-             * @description Ordinary import reuses the existing extraction; only explicit human refresh obtains new content.
-             * @default false
-             */
-            refresh: boolean;
+            /** @description Ordinary import reuses the existing extraction; only explicit human refresh obtains new content. */
+            refresh?: boolean;
             /** @constant */
             schema_version: 1;
             request_id: string;

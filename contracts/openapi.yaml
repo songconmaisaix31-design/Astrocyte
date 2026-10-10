@@ -7230,7 +7230,6 @@ components:
       properties:
         refresh:
           type: boolean
-          default: false
           description: Ordinary import reuses the existing extraction; only explicit human refresh obtains new content.
         schema_version:
           type: integer
