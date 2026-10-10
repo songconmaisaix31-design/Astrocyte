@@ -25,11 +25,12 @@ type selectedDistiller struct {
 }
 
 // Matches the bounded native text port used by every selected CLI client.
-const selectedTextLimit = 128 * 1024
+const selectedPromptLimit = 512 * 1024
+const selectedOutputLimit = 128 * 1024
 
 func selectedPromptPreflight(prompt string) error {
-	if len(prompt) > selectedTextLimit {
-		return &apierrors.ServiceError{Code: apierrors.ValidationFailed, Message: "Selected text with its processing instructions exceeds the native128KiB input limit; no model call was started", RequiredAction: "review_selected_text_size"}
+	if len(prompt) > selectedPromptLimit {
+		return &apierrors.ServiceError{Code: apierrors.ValidationFailed, Message: "Selected text with its processing instructions exceeds the native 512KiB UTF-8 input limit; no model call was started", RequiredAction: "review_selected_text_size"}
 	}
 	return nil
 }
@@ -87,7 +88,7 @@ func (d *selectedDistiller) Distill(ctx context.Context, input app.DistillationI
 	}
 	ctx, cancel := context.WithTimeout(ctx, d.factory.timeout)
 	defer cancel()
-	result, err := d.factory.processor.ProcessSelectedText(ctx, d.caller, app.SelectedTextRequest{ProjectID: d.projectID, CLI: d.cli, JobID: input.JobID, OperationID: input.OperationID, Prompt: prompt, DeadlineSeconds: requestDeadline(ctx, d.factory.timeout), OutputLimit: selectedTextLimit})
+	result, err := d.factory.processor.ProcessSelectedText(ctx, d.caller, app.SelectedTextRequest{ProjectID: d.projectID, CLI: d.cli, JobID: input.JobID, OperationID: input.OperationID, Prompt: prompt, DeadlineSeconds: requestDeadline(ctx, d.factory.timeout), OutputLimit: selectedOutputLimit})
 	if err != nil {
 		return app.DistillationOutput{}, err
 	}
@@ -147,7 +148,7 @@ func (r *ListingRecommender) Recommend(ctx context.Context, input app.ListingRec
 	}
 	ctx, cancel := context.WithTimeout(ctx, r.timeout)
 	defer cancel()
-	result, err := r.processor.ProcessSelectedText(ctx, input.Caller, app.SelectedTextRequest{ProjectID: input.ProjectID, CLI: input.CLI, JobID: input.JobID, OperationID: input.OperationID, Prompt: prompt, DeadlineSeconds: requestDeadline(ctx, r.timeout), OutputLimit: selectedTextLimit})
+	result, err := r.processor.ProcessSelectedText(ctx, input.Caller, app.SelectedTextRequest{ProjectID: input.ProjectID, CLI: input.CLI, JobID: input.JobID, OperationID: input.OperationID, Prompt: prompt, DeadlineSeconds: requestDeadline(ctx, r.timeout), OutputLimit: selectedOutputLimit})
 	if err != nil {
 		return nil, err
 	}

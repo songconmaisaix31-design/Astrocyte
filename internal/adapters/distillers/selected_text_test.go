@@ -19,6 +19,23 @@ type selectedProcessorStub struct {
 	calls  int
 }
 
+func TestPromptUTF8ExactCapacityAndOutputIndependent(t *testing.T) {
+	for _, n := range []int{128 * 1024, 512*1024 - 1, 512 * 1024} {
+		if err := selectedPromptPreflight(strings.Repeat("a", n)); err != nil {
+			t.Fatalf("%d-byte prompt rejected: %v", n, err)
+		}
+	}
+	if err := selectedPromptPreflight(strings.Repeat("a", 512*1024+1)); err == nil {
+		t.Fatal("over-limit prompt accepted")
+	}
+	if err := selectedPromptPreflight(strings.Repeat("字", 175*1024)); err == nil {
+		t.Fatal("UTF-8 bytes were counted as characters")
+	}
+	if _, err := decodeOutput([]byte(strings.Repeat(" ", 128*1024+1)), nil); err == nil {
+		t.Fatal("input expansion also expanded output")
+	}
+}
+
 // Cross-adapter test bridge only: application consent is fixed locally, but
 // engineering request bounds are checked by the actual W2 Registry. A cancelled
 // context stops before configuration observation, directories or native calls.
@@ -62,7 +79,7 @@ func TestOversizeAssembledPromptFailsKnownBeforeSelectedProcess(t *testing.T) {
 			processor := &selectedProcessorStub{t: t, output: `{}`}
 			caller := app.Principal{ID: "real-caller", Kind: "human"}
 			// Character count alone fits; the actual UTF-8 prompt does not.
-			body := "metadata only title " + strings.Repeat("字", 44*1024)
+			body := "metadata only title " + strings.Repeat("字", 176*1024)
 			var err error
 			if mode == "distillation" {
 				d, resolveErr := NewSelectedTextFactory(processor, 30*time.Minute).Resolve(ctx, caller, "project", "selected-cli")
