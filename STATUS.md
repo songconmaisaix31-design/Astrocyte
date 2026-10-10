@@ -2,13 +2,15 @@
 
 ## S1 资料核心真实验收通过（2026-10-10）
 
-当前主控业务组装 `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f`，分支 `s1/attention-materials-20261009`。主控 `574a466` 的独立 `pnpm check` / `pnpm build` PASS：Go/vet/mod、19包边界、232契约例/生成一致、14项真实API合成输入、58项前端、TS/lint/diff。后续候选跨资料与撤回预览变化在 `8185729` 单独 lint、58前端和生产前端构建 PASS；`5333249` 只再合入真实验收selector及报告。最终默认 `pnpm test:e2e --workers=1` 正在运行，外部应用 opt-in 全部关闭。
+当前主控代码组装 `3e3ee8cc5c51233935d8665f3a411371169c7ff7`，分支 `s1/attention-materials-20261009`。主控 `574a466` 的独立 `pnpm check` / `pnpm build` PASS：Go/vet/mod、19包边界、232契约例/生成一致、14项真实API合成输入、58项前端、TS/lint/diff。后续候选跨资料与撤回预览变化在 `8185729` 单独 lint、58前端和生产前端构建 PASS。主控 `5333249` 默认 `pnpm test:e2e --workers=1` **152 PASS/2 FAIL/8 SKIP、5.7分钟、exit1**：两失败均为旧全局授权提示断言，实际未授权输入/提交禁用、无模型调用。原W3仅修既有测试 `bf3b5e7408245f12874830595c40e5a3a3471761`，清应用opt-in后 `s1.spec.ts --grep 'default automatic processing' --workers=1` 两尺寸 **2 PASS/32.1秒、exit0**，完整权限/零作业/零关注断言保留；主控独立读diff和实际日志、普通合入。首场失败与8项默认跳过不改写为通过，没有重复整套或付费链路。
 
 W3 实际续验源 `cd721692122c5e8f7820e34f25181058dd648cf0`：**1 PASS，测试1.5分钟/整场1.7分钟、exit0**。指定论文真实既有导出和视频现网 URL 成功入库，各完成 content→topic 实际模型多轮；真实2501.12948v1/v2 A→B→A保留当前B，普通视频重复导入与相同整理目标复用回执。最后视频 topic 模型结果保存后遭真实OS发布失败，修复原 objects、冷重启并在页面人工重试成功，attempts2、缓存结果和原生会话数量/配置观察时间不变，无第二模型调用。机器身份三次实际读取，Agent使用+3而人类关注及人类行为不变；候选 ready→later/deferred，重启后原资料仍active、无拒绝反馈、无Mission。
 
 主控独立只读同一 `astrocyte-s1-4pmMWO` SQLite：四个新模型作业成功、五条实际沉淀、来源固定版本与前轮关联、原未知作业 `4GQ7GKDXHZIND7CAB7GIZU3W4V` attempts1/UNKNOWN/无Result保持，候选只有later；已目视1280/1920实际截图。首次换行、字段断言和表单locator失败分别保留，不改写为成功；已完成媒体/模型结果在续验中复用。原生浏览器 `0d2319e` 的1 PASS/三短turn和同一原生ID保留，未额外付费重跑。实际库/objects/原始日志/trace均保留，W3已确认所属进程与端口退出并释放现场槽。
 
-本轮范围限制：真实非空账号选择尚未通过，B站匿名接口受阻/本次公开收藏列表0条，抖音self待公开身份；arXiv新URL假IP未调整，实际论文用真导出。第二自动整理CLI、个人项目/历史根、自动控制限度和双源输入容量待用户，详见QUESTIONS。账号/来源与本地接入的整体任务不能因资料AT通过而记为全部完成。个人SQLite升级前备份已完成，资料/作业0，测试数据未进入个人库；当前尚未重新启动个人预览。
+本轮范围限制：真实非空账号选择尚未通过，B站匿名接口受阻/本次公开收藏列表0条，抖音self待公开身份；arXiv新URL假IP未调整，实际论文用真导出。第二自动整理CLI、个人项目/历史根、自动控制限度和双源输入容量待用户，详见QUESTIONS。账号/来源与本地接入的整体任务不能因资料AT通过而记为全部完成。
+
+最新个人预览16:54启动到上述代码源：API8787/网页5173就绪；summarize启用、全局Codex自动处理关闭，项目模型许可独立。原SQLite升级前备份 `%APPDATA%/astrocyte/backups/pre-s1-sync-20261010-1640/state.sqlite` 已完成；升级后材料/作业/绑定/项目均0，验收数据未进入个人库。主控实际Workspace/Attention各1280/1920检查无页面错误/横溢，Workspace两尺寸目视真实10客户端/8安装、配置/启动未核实、项目空状态；截图 `%LOCALAPPDATA%/Temp/astrocyte-root-final-{workspace,attention}-{1280,1920}.png`。当前API PID65640/Vite64488、父66740，创建16:54:19/16:54:23，程序目录 `astrocyte-dev-ihu3YC`；停止前重新核对所属和监听，不能依赖此历史PID。
 
 ## 用户决定后恢复开发过程（历史）
 
