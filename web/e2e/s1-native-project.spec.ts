@@ -30,6 +30,7 @@ test('human observes, stops, resumes the same actual native session and sends on
   let projectID: string | undefined;
   try {
     await page.goto(`${server.webURL}/workspace`);
+    await page.getByRole('button', { name: '接入项目', exact: true }).click();
     const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
     let project = reusePath ? (await api.get('/local-projects') as S['LocalProjectListV1']).items.find(item => resolve(item.root) === resolve(root)) : undefined;
     if (reusePath && !project) throw new Error('The exact retained public project must already be registered.');

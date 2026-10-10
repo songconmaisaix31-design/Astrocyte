@@ -6,7 +6,7 @@ import { ActiveTab } from './activeTab';
 export type Section = 'attention' | 'workspace' | 'swarm';
 const tabs = {
   attention: [{ id: 'overview', label: '资料与线索' }, { id: 'opportunities', label: '研究机会' }, { id: 'saved', label: '我的收藏' }],
-  workspace: [{ id: 'overview', label: '研究空间' }, { id: 'sessions', label: 'Agent 会话' }, { id: 'proposals', label: '提案与批准' }],
+  workspace: [{ id: 'overview', label: '项目总览' }, { id: 'sessions', label: 'Agent 会话' }, { id: 'proposals', label: '提案与批准' }],
   swarm: [{ id: 'overview', label: '协作现场' }, { id: 'timeline', label: '任务时间线' }, { id: 'artifacts', label: '成果与继承' }],
 };
 
