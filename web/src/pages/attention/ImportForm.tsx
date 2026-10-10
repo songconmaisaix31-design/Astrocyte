@@ -5,10 +5,10 @@ import { TextField, SelectField } from './FormControls';
 import styles from './AttentionPage.module.css';
 
 export function ImportForm({ fixture, draft, onImported }: { fixture: boolean; draft: ReturnType<typeof useImportDraft>; onImported: (jobId: string) => void }) {
-  const { adapter, setAdapter, locator, setLocator, reason, setReason, title, setTitle, exportText, setExportText, refresh, setRefresh, fileError, setFileError, reading, setReading, command } = draft;
+  const { adapter, setAdapter, locator, setLocator, reason, setReason, title, setTitle, exportText, setExportText, exportKind, setExportKind, refresh, setRefresh, fileError, setFileError, reading, setReading, command } = draft;
   return <form className={styles.form} onSubmit={event => {
     event.preventDefault();
-    const request = command.prepare({ expected_version: 1, adapter, source_locator: locator.trim(), source_key: '', content_digest: '', kind: adapter === 'arxiv' ? 'paper' as const : 'video' as const, collection_reason: reason.trim() || null, title: title.trim(), refresh, ...(adapter === 'summarize' ? { export_text: exportText } : {}) });
+    const request = command.prepare({ expected_version: 1, adapter, source_locator: locator.trim(), source_key: '', content_digest: '', kind: adapter === 'arxiv' ? 'paper' as const : adapter === 'summarize' ? exportKind : 'video' as const, collection_reason: reason.trim() || null, title: title.trim(), refresh, ...(adapter === 'summarize' ? { export_text: exportText } : {}) });
     void command.run(() => attentionApi.importMaterial(request.body, request.key), result => onImported(result.job_id), '已提交正文导入；在持久化队列查看实际进度，可关闭表单继续查看');
   }}>
     <p className={styles.note}>导入保存正文与来源版本。首次模型整理需在资料详情中明确提交；导入成功不表示已完成整理。</p>
@@ -16,7 +16,8 @@ export function ImportForm({ fixture, draft, onImported }: { fixture: boolean; d
     <fieldset disabled={fixture || command.pending || reading}>
       <legend>导入来源</legend>
       <SelectField label="导入方式" value={adapter} onChange={value => setAdapter(value as typeof adapter)} options={[{ value: 'arxiv', label: 'arXiv 论文' }, { value: 'summarize_url', label: '视频链接 · summarize 获取正文' }, { value: 'summarize', label: 'summarize 既有导出' }]} />
-      <TextField label={adapter === 'arxiv' ? 'arXiv 来源' : adapter === 'summarize_url' ? '视频链接' : '视频原始来源'} value={locator} onChange={setLocator} required type={adapter === 'summarize_url' ? 'url' : 'text'} hint={adapter === 'arxiv' ? '输入 arXiv 论文 ID 或公开链接。后端获取真实内容，错误会保留在导入队列。' : adapter === 'summarize_url' ? '填写公开视频 URL。后台用 summarize 获取正文或字幕，无需自行制作导出；缺字幕或需要登录时会说明下一步。' : '填写导出对应的真实视频 URL；已有摘要若无字幕位置，将明确显示未提供。'} />
+      {adapter === 'summarize' && <SelectField label="既有导出资料类型" value={exportKind} onChange={value => setExportKind(value as typeof exportKind)} options={[{ value: 'video', label: '视频' }, { value: 'paper', label: '论文' }]} />}
+      <TextField label={adapter === 'arxiv' ? 'arXiv 来源' : adapter === 'summarize_url' ? '视频链接' : exportKind === 'paper' ? '论文原始来源' : '视频原始来源'} value={locator} onChange={setLocator} required type={adapter === 'summarize_url' ? 'url' : 'text'} hint={adapter === 'arxiv' ? '输入 arXiv 论文 ID 或公开链接。后端获取真实内容，错误会保留在导入队列。' : adapter === 'summarize_url' ? '填写公开视频 URL。后台用 summarize 获取正文或字幕，无需自行制作导出；缺字幕或需要登录时会说明下一步。' : exportKind === 'paper' ? '填写真实论文来源 URL。保存既有导出及其来源，不表示本次重新从 arXiv 获取。' : '填写导出对应的真实视频 URL；已有摘要若无字幕位置，将明确显示未提供。'} />
       <TextField label="标题（可选）" value={title} onChange={setTitle} hint="获取内容时保留来源标题；纯文本导出可使用此标题。" />
       <TextField label="收藏理由（可选）" value={reason} onChange={setReason} multiline hint="留空会显示未提供，不补写为你的观点。导入后可以固定到收藏。" />
       <label><input type="checkbox" style={{ width: 'auto' }} checked={refresh} onChange={event => setRefresh(event.target.checked)} /> 明确刷新来源，重新获取正文</label>
