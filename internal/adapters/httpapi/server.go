@@ -143,8 +143,11 @@ func NewServer(cfg Config) *Server {
 			Handler:           stack,
 			ReadHeaderTimeout: 10 * time.Second,
 			ReadTimeout:       30 * time.Second,
-			WriteTimeout:      30 * time.Second,
-			IdleTimeout:       60 * time.Second,
+			// Registered discovery has a two-minute request deadline, including
+			// waiting for an in-progress startup collection. Allow its result to
+			// reach the browser instead of expiring the socket after 30 seconds.
+			WriteTimeout: 150 * time.Second,
+			IdleTimeout:  60 * time.Second,
 		},
 		logger: cfg.Logger,
 	}
