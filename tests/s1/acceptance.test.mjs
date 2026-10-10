@@ -77,7 +77,11 @@ test('AT02: changed source keeps immutable old/new content; unchanged distillati
   assert.equal(repeated.reused, true);
   assert.equal(repeated.distillation.id, original.distillation.id);
   assert.equal(repeated.distillation.output_text, original.distillation.output_text);
-  const second = await importMaterial(api, paperImport(locator, changedPaperText));
+  // Changed input alone does not authorize replacement. Ordinary import reuses A.
+  const ordinary = await importMaterial(api, paperImport(locator, changedPaperText));
+  assert.equal(ordinary.job.job_id, first.job.job_id);
+  assert.equal(ordinary.detail.material.current_revision, 1);
+  const second = await importMaterial(api, { ...paperImport(locator, changedPaperText), refresh: true });
   assert.equal(second.detail.material.id, first.detail.material.id);
   assert.equal(second.detail.material.current_revision, 2);
   assert.deepEqual(second.detail.revisions[0], initialRevision);
@@ -91,18 +95,18 @@ test('AT02: changed source keeps immutable old/new content; unchanged distillati
     const revision = JSON.parse(row.data);
     assert.equal(await readFile(join(server.dataDir, 'objects', revision.object_ref), 'utf8'), row.revision === 1 ? paperText : changedPaperText);
   }
-  // A -> B -> A reuses immutable A. Whether a new import changes the default head is user-pending.
+  // A -> B -> A reuses immutable A and preserves B as the current head (user 7A).
   const restored = await importMaterial(api, paperImport(locator));
   assert.equal(restored.detail.material.id, first.detail.material.id);
   assert.equal(restored.job.job_id, first.job.job_id);
   assert.equal(restored.job.material_revision, 1);
   assert.equal(restored.detail.revisions.length, 2);
+  assert.equal(restored.detail.material.current_revision, 2);
   assert.equal((await api.get(`/materials/${first.detail.material.id}/revisions/1/content`)).text, paperText);
   assert.equal((await api.get(`/materials/${first.detail.material.id}/revisions/2/content`)).text, changedPaperText);
   const restoredRecord = await api.write('/distillations', body);
   assert.equal(restoredRecord.reused, true);
   assert.equal(restoredRecord.distillation.id, original.distillation.id);
-  console.log(`A-B-A default head observed r${restored.detail.material.current_revision}; user choice remains pending`);
 });
 
 test('AT02: YouTube URL aliases deduplicate real adapter input; legacy summary never invents timestamps', async () => {
@@ -152,7 +156,7 @@ test('page-only video diagnostic fails honestly and creates no Material', async 
 
 test('AT03: Agent without material authorization is denied; human refresh never heats and explicit reread does', async () => {
   const imported = await importMaterial(api, paperImport('https://example.invalid/contract-local/attention'));
-  await importMaterial(api, paperImport('https://example.invalid/contract-local/attention', changedPaperText));
+  await importMaterial(api, { ...paperImport('https://example.invalid/contract-local/attention', changedPaperText), refresh: true });
   const id = imported.detail.material.id;
   const baseline = await api.get(`/materials/${id}`);
   for (let index = 0; index < 4; index++) {
@@ -388,7 +392,7 @@ test('human domains and @ references pin the original revision without copying o
   assert.equal(referenced.data.space.material_refs[0].material_id, material.id);
   assert.equal(referenced.data.space.material_refs[0].revision, 1);
   const afterHumanActions = await api.get(`/materials/${material.id}`);
-  await importMaterial(api, paperImport(material.source_locator, changedPaperText));
+  await importMaterial(api, { ...paperImport(material.source_locator, changedPaperText), refresh: true });
   const updated = await api.get(`/materials/${material.id}`);
   assert.deepEqual(updated.material.domain_ids, [domain.id], '@ must retain the original classification');
   assert.deepEqual(updated.revisions[0], originalRevision);
