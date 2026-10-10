@@ -21,6 +21,16 @@ func TestScopedAgentReadsFixedOldVersionWithoutHumanHeat(t *testing.T) {
 	}
 	b := importFixture(t, s, "reference-b", "B")
 	before, _ := s.GetMaterial(ctx, human, a.Material.ID)
+	for i := 0; i < 2; i++ {
+		snapshot, err := s.ReadProjectReference(ctx, human, space.Space.ID, SourceRef{MaterialID: a.Material.ID, Revision: 1}, false)
+		if err != nil || snapshot.Text != "A" {
+			t.Fatal("human scoped A context failed", err)
+		}
+	}
+	humanRead, _ := s.GetMaterial(ctx, human, a.Material.ID)
+	if humanRead.Material.AgentUsageCount != before.Material.AgentUsageCount || humanRead.Material.HumanUsageCount != before.Material.HumanUsageCount || humanRead.Material.AttentionScore != before.Material.AttentionScore {
+		t.Fatal("plain human context query counted heat or impersonated agent")
+	}
 	agent := Principal{Kind: "agent", ID: "scoped-agent"}
 	for i := 0; i < 3; i++ {
 		snapshot, err := s.ReadProjectReference(ctx, agent, space.Space.ID, SourceRef{MaterialID: a.Material.ID, Revision: 1}, false)

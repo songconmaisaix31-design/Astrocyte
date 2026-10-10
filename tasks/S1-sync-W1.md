@@ -85,3 +85,17 @@ AttentionProjectReferences 已实现：W2 授权后 trusted agent caller 才可�
 有意测试通过：应用3项（来源identity/100 metadata+推荐门槛+人工选取/部分缓存安全resume+UNKNOWN不重放）；固定旧版本连续3次 scoped Agent 读保持 human heat；真实SQLite停止/重开保持部分缓存、描述、revision、失败与游标，恢复只读第2页、operation/deadline不重置、materials0。SQLite测试首次最后查询误用 event_type 列 FAIL，查实际 schema 后改 type，独立重跑 PASS，首次失败保留。
 
 `go test ./...` PASS；`go build ./...` PASS（本轮未运行模型/媒体/真实UI）。原公开来源 412/-352/公开folder0 仍有效限制。原 generic selected CLI 推荐/自动沉淀 factory 待下一具体阶段；实际100 provider rows（包括缺ID跳过行）的消费端口 Observed 字段已请 W0 添加，并准备调整 native page size 避免最后页多抓 metadata，不声称当前已通过该细节。W0 入口/HTTP/OpenAPI 与 W2 native 功能仍由原轨集成。
+
+## 继续阶段 4（2026-10-10）
+
+通用 selected CLI 推荐/自动沉淀适配完成：SelectedTextFactory/ListingRecommender 只消费 W0 SelectedTextProcessor，不跨应用依赖；real caller/project/CLI 每次 config/process 由组装桥校验模型许可。自动请求保存 ProjectID/CLI、实际配置与 SpaceID，读取 objects 前检查相同固定版本已纳入选定空间；撤销或空间改变不退回 legacy Codex。只有明确不选 project/CLI 的既有获准公共来源路保留原规则。选定项目可传空 processing_config，实际原生 config 由后端冻结；不猜模型名或评分。
+
+推荐仅传选定公开 metadata，严格要求每个真实 ID 一条 text/reason，不接受编造 ID、score字段或尾随内容。自动输出复用已有 schema/引用校验；实际 CLI provenance 来自 text result，未知 model 保持空。新处理默认最高1800秒且服从已有 job context，legacy NewCodex 默认也改为1800秒，原 UNKNOWN 不重发。
+
+actual100 cap：PublicListingReader 用剩余上限选择 native ps/pn，最后10条请求为 pn10/ps10，对 skipped missing-ID 行仍计 Observed；resume cursor 基于真实位置，API不会抓120条仅显示100。HTTP transport contract_local 测试实测请求总100行（含1条跳过ID），显示99条，5请求；上传末页10条解析测试PASS，没有再次真实网络探测挑战。
+
+W0 发现 human A scope 空洞后本轨修正：trusted human/agent 都保留自身 identity 读固定 scope；普通human context查询无 implicitheat/机器使用，agent才计机器读。测试覆盖human连续2次、agent连续3次旧版本。Root另发现 bounded prefix 误标未观察缓存 stale，本轨修正为 only initialcursor empty AND !hasMore 时标缺项；针对 first100+explicitolder10+freshprefix100 的110缓存测试PASS。首发现记录保留。
+
+app project factory测试覆盖未纳入拒绝、纳入后选定body处理、撤销模型许可无fallback；adapter推荐测试保留实际caller/配置/版本与未知模型、拒绝额外评分/ID/尾随。上述为 contract_local，没有模型/媒体/浏览器调用。`go test ./...`、`go vet ./...`、`go build ./...`、`git diff --check` 全部PASS。
+
+本轮账户 live 仍未通过：给定UID公开uploads412/-352、公开收藏夹目录0，Douyin self不属公开来源且无公开profile transport。新论文DNS/rootlive时隙待主控；不改宿主代理，不用样本代替真实内容。全S1 AT01–04和当前模型/浏览器正向不能由上述本地测试宣称完成，Worker继续跟随root验收与原轨返修。

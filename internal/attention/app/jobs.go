@@ -571,12 +571,19 @@ func (s *Service) failJob(claim Job, cause error, unknown bool) error {
 		if unknown {
 			job.Error = mapError(domain.ErrUnknown, "").(*apierrors.ServiceError)
 		} else {
-			job.Error = mapError(cause, "").(*apierrors.ServiceError)
+			mapped := *mapError(cause, "").(*apierrors.ServiceError)
+			job.Error = &mapped
+		}
+		originalError := *job.Error
+		if !unknown && job.Error.Retryable && (job.Attempts >= job.MaxAttempts || !s.options.Clock().Before(job.DeadlineAt)) {
+			job.Error.Retryable = false
+			job.Error.Message += "; bounded retry budget exhausted"
+			job.Error.RequiredAction = "review_source_or_configuration_before_new_work"
 		}
 		if err = tx.SaveJob(job, old); err != nil {
 			return err
 		}
-		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown, "attempts": job.Attempts, "error": job.Error})
+		return s.event(tx, "job_failed", job.JobID, job.Version, CommandMeta{}, map[string]any{"job_id": job.JobID, "operation_id": job.OperationID, "delivery_unknown": job.DeliveryUnknown, "attempts": job.Attempts, "error": job.Error, "cause": originalError})
 	}), "")
 }
 

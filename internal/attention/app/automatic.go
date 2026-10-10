@@ -24,6 +24,7 @@ type automaticPayload struct {
 	EffectiveConfig string
 	ReuseKey        string
 	Result          *DistillationOutput
+	SpaceID         string
 }
 
 func (s *Service) GetDistillerStatus(ctx context.Context, p Principal) (DistillerStatus, error) {
@@ -32,6 +33,13 @@ func (s *Service) GetDistillerStatus(ctx context.Context, p Principal) (Distille
 		return status, err
 	}
 	if s.options.Distiller == nil {
+		if s.options.ProjectDistillers != nil {
+			status.Processor = "selected-project-cli"
+			status.Available = true
+			status.Reason = "Select a project and CLI with explicit model-processing permission; availability is checked for that selection"
+			status.RequiredAction = "select_permitted_project_cli"
+			return status, nil
+		}
 		status.Reason = "Automatic processor is not configured"
 		status.RequiredAction = "configure_distiller"
 		return status, nil
@@ -79,16 +87,20 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 	if err != nil || found {
 		return prior, err
 	}
-	if c.ExpectedVersion != 1 || len(c.InputRefs) == 0 || !slices.Contains([]string{"content", "topic", "project"}, c.Stage) || strings.TrimSpace(c.ProcessingConfig) == "" {
+	if c.ExpectedVersion != 1 || len(c.InputRefs) == 0 || !slices.Contains([]string{"content", "topic", "project"}, c.Stage) || (strings.TrimSpace(c.ProcessingConfig) == "" && c.ProjectID == "") {
 		return ImportJobResult{}, mapError(domain.ErrInvalid, c.RequestID)
 	}
 	// Configuration discovery performs no paid call and holds no SQL transaction.
 	config := "unconfigured"
 	var unavailable error
-	if s.options.Distiller == nil {
+	processor, spaceID, resolveError := s.resolveDistiller(ctx, p, c)
+	if resolveError != nil {
+		return ImportJobResult{}, mapError(resolveError, c.RequestID)
+	}
+	if processor == nil {
 		unavailable = serviceError(apierrors.ProviderUnavailable, "Automatic processor is not configured", "configure_distiller")
 	} else {
-		config, unavailable = s.options.Distiller.ConfigurationID(ctx)
+		config, unavailable = processor.ConfigurationID(ctx)
 		if unavailable == nil && strings.TrimSpace(config) == "" {
 			unavailable = serviceError(apierrors.ProviderUnavailable, "Processor configuration is unavailable", "configure_distiller")
 		}
@@ -97,6 +109,9 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 		}
 	}
 	effectiveBytes, _ := json.Marshal(struct{ CallerConfig, ProcessorConfig string }{c.ProcessingConfig, config})
+	if c.ProjectID != "" {
+		effectiveBytes, _ = json.Marshal(struct{ CallerConfig, ProcessorConfig, ProjectID, CLI, SpaceID string }{c.ProcessingConfig, config, c.ProjectID, c.CLI, spaceID})
+	}
 	effective := "automatic:" + string(effectiveBytes)
 	identity, _ := json.Marshal(struct {
 		Inputs                  []SourceRef
@@ -105,7 +120,7 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 	}{c.InputRefs, c.PriorDistillationIDs, c.Stage, effective, c.Question})
 	reuseKey := "automatic:" + digestBytes(identity)
 	result, err := command(s, ctx, p, c.CommandMeta, "RequestDistillation", c, func(tx AttentionTx) (ImportJobResult, error) {
-		snapshots, _, err := s.automaticInputs(tx, c)
+		snapshots, _, err := s.automaticInputs(tx, c, spaceID)
 		if err != nil {
 			return ImportJobResult{}, err
 		}
@@ -116,7 +131,7 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 		if !isMissing(err) {
 			return ImportJobResult{}, err
 		}
-		payload, err := json.Marshal(automaticPayload{Command: c, Snapshots: snapshots, ProcessorConfig: config, EffectiveConfig: effective, ReuseKey: reuseKey})
+		payload, err := json.Marshal(automaticPayload{Command: c, Snapshots: snapshots, ProcessorConfig: config, EffectiveConfig: effective, ReuseKey: reuseKey, SpaceID: spaceID})
 		if err != nil {
 			return ImportJobResult{}, err
 		}
@@ -148,7 +163,7 @@ func (s *Service) RequestDistillation(ctx context.Context, p Principal, c Reques
 
 // Source keys are explicit composition settings for the two public examples;
 // neither domain membership, a URL nor an Agent bearer grants this permission.
-func (s *Service) automaticInputs(tx AttentionTx, c RequestDistillationCommand) ([]SourceSnapshot, []Distillation, error) {
+func (s *Service) automaticInputs(tx AttentionTx, c RequestDistillationCommand, spaceID string) ([]SourceSnapshot, []Distillation, error) {
 	if err := validateSourceRefs(tx, c.InputRefs); err != nil {
 		return nil, nil, err
 	}
@@ -165,7 +180,14 @@ func (s *Service) automaticInputs(tx AttentionTx, c RequestDistillationCommand) 
 				break
 			}
 		}
-		if !slices.Contains(s.options.AllowedProcessingSourceKeys, version.SourceKey) || !slices.Contains([]string{"arxiv", "summarize", "arxiv+summarize"}, version.Provenance.Processor) {
+		if c.ProjectID != "" {
+			if spaceID == "" {
+				return nil, nil, serviceError(apierrors.ScopeDenied, "Selected project has no Attention space", "include_fixed_project_materials")
+			}
+			if err := projectReferenceAllowed(tx, spaceID, ref, false); err != nil {
+				return nil, nil, err
+			}
+		} else if !slices.Contains(s.options.AllowedProcessingSourceKeys, version.SourceKey) || !slices.Contains([]string{"arxiv", "summarize", "arxiv+summarize"}, version.Provenance.Processor) {
 			return nil, nil, serviceError(apierrors.ScopeDenied, "Source version was not authorized for public automatic processing", "choose_authorized_public_source")
 		}
 		snapshots = append(snapshots, SourceSnapshot{Ref: ref, SourceKey: version.SourceKey, Title: row.Material.Title, Summary: version.Summary, ContentDigest: version.ContentDigest, Provenance: version.Provenance})
@@ -226,7 +248,7 @@ func (s *Service) processAutomatic(ctx context.Context, claim Job) error {
 	if err := json.Unmarshal(claim.Payload, &payload); err != nil {
 		return s.failJob(claim, domain.ErrInvalid, false)
 	}
-	if s.objects == nil || (s.options.Distiller == nil && payload.Result == nil) {
+	if s.objects == nil {
 		return s.failJob(claim, serviceError(apierrors.ProviderUnavailable, "Automatic processor or object store is not configured", "configure_distiller"), false)
 	}
 	workCtx, cancel := context.WithTimeout(ctx, claim.DeadlineAt.Sub(s.options.Clock()))
@@ -243,11 +265,30 @@ func (s *Service) processAutomatic(ctx context.Context, claim Job) error {
 		s.activeMu.Unlock()
 	}()
 	if payload.Result != nil {
+		if payload.Command.ProjectID != "" {
+			_, spaceID, err := s.resolveDistiller(workCtx, claim.Caller, payload.Command)
+			if err != nil {
+				return s.failJob(claim, err, false)
+			}
+			if spaceID != payload.SpaceID {
+				return s.failJob(claim, serviceError(apierrors.ScopeDenied, "Selected project's Attention space changed", "request_current_project_distillation"), false)
+			}
+		}
 		// Explicit retry after a local publication/storage failure reuses the
 		// actual delivered result, never resending the paid processor call.
 		return s.completeAutomatic(workCtx, claim, payload, *payload.Result)
 	}
-	currentConfig, err := s.options.Distiller.ConfigurationID(workCtx)
+	processor, spaceID, err := s.resolveDistiller(workCtx, claim.Caller, payload.Command)
+	if err != nil {
+		return s.failJob(claim, err, false)
+	}
+	if processor == nil {
+		return s.failJob(claim, serviceError(apierrors.ProviderUnavailable, "Selected processor is unavailable", "configure_project_cli"), false)
+	}
+	if spaceID != payload.SpaceID {
+		return s.failJob(claim, serviceError(apierrors.ScopeDenied, "Selected project's Attention space changed", "request_current_project_distillation"), false)
+	}
+	currentConfig, err := processor.ConfigurationID(workCtx)
 	if err != nil {
 		return s.failJob(claim, err, false)
 	}
@@ -259,7 +300,7 @@ func (s *Service) processAutomatic(ctx context.Context, claim Job) error {
 	refs := []string{}
 	err = s.repo.WithTx(workCtx, func(tx AttentionTx) error {
 		var err error
-		snapshots, prior, err = s.automaticInputs(tx, payload.Command)
+		snapshots, prior, err = s.automaticInputs(tx, payload.Command, payload.SpaceID)
 		if err != nil {
 			return err
 		}
@@ -309,7 +350,7 @@ func (s *Service) processAutomatic(ctx context.Context, claim Job) error {
 		if job.Version != claim.Version || job.Status != "running" || job.CancelRequested {
 			return domain.ErrVersion
 		}
-		if _, _, err = s.automaticInputs(tx, payload.Command); err != nil {
+		if _, _, err = s.automaticInputs(tx, payload.Command, payload.SpaceID); err != nil {
 			return err
 		}
 		used := map[string]bool{}
@@ -341,7 +382,7 @@ func (s *Service) processAutomatic(ctx context.Context, claim Job) error {
 		}
 		return s.failJob(claim, err, false)
 	}
-	output, err := s.options.Distiller.Distill(workCtx, DistillationInput{JobID: claim.JobID, OperationID: claim.OperationID, Inputs: snapshots, PriorDistillations: prior, Stage: payload.Command.Stage, ProcessingConfig: payload.EffectiveConfig, Question: payload.Command.Question})
+	output, err := processor.Distill(workCtx, DistillationInput{JobID: claim.JobID, OperationID: claim.OperationID, Inputs: snapshots, PriorDistillations: prior, Stage: payload.Command.Stage, ProcessingConfig: payload.EffectiveConfig, Question: payload.Command.Question})
 	if err != nil {
 		return s.failJob(claim, err, automaticOutcomeUnknown(err))
 	}
@@ -393,7 +434,10 @@ func (s *Service) completeAutomatic(ctx context.Context, claim Job, payload auto
 	if err := validateAutomaticOutput(payload.Command, output); err != nil {
 		return s.failJob(claim, err, false)
 	}
-	err := s.repo.WithTx(ctx, func(tx AttentionTx) error { _, _, err := s.automaticInputs(tx, payload.Command); return err })
+	err := s.repo.WithTx(ctx, func(tx AttentionTx) error {
+		_, _, err := s.automaticInputs(tx, payload.Command, payload.SpaceID)
+		return err
+	})
 	if err != nil {
 		return s.failJob(claim, err, false)
 	}
@@ -454,7 +498,7 @@ func (s *Service) finishAutomatic(ctx context.Context, claim Job, p automaticPay
 		if job.Status != "running" || job.Version != claim.Version || job.CancelRequested {
 			return domain.ErrVersion
 		}
-		if _, _, err = s.automaticInputs(tx, p.Command); err != nil {
+		if _, _, err = s.automaticInputs(tx, p.Command, p.SpaceID); err != nil {
 			return err
 		}
 		if err = validateSourceRefs(tx, o.RelatedRefs); err != nil {

@@ -31,6 +31,7 @@ type DiscoveryPage struct {
 	HasMore    bool
 	NextCursor string
 	Warnings   []string
+	Observed   int
 }
 
 type PublicBilibili struct{ Client *http.Client }
@@ -83,10 +84,13 @@ func (b *PublicBilibili) Collections(ctx context.Context, ownerID string) ([]Dis
 // Page fetches metadata only. Pagination is explicit, so a caller cannot silently
 // claim a complete sync from one page or trigger full-collection media extraction.
 func (b *PublicBilibili) Page(ctx context.Context, folderID string, page int) (DiscoveryPage, error) {
-	if !decimalID.MatchString(folderID) || page < 1 || page > 100000 {
+	return b.PageSize(ctx, folderID, page, 20)
+}
+func (b *PublicBilibili) PageSize(ctx context.Context, folderID string, page, size int) (DiscoveryPage, error) {
+	if !decimalID.MatchString(folderID) || page < 1 || page > 2000000 || size < 1 || size > 20 {
 		return DiscoveryPage{}, invalid("a favorite-folder ID and positive bounded page are required")
 	}
-	raw, err := b.get(ctx, fmt.Sprintf("https://api.bilibili.com/x/v3/fav/resource/list?media_id=%s&pn=%d&ps=20", folderID, page))
+	raw, err := b.get(ctx, fmt.Sprintf("https://api.bilibili.com/x/v3/fav/resource/list?media_id=%s&pn=%d&ps=%d", folderID, page, size))
 	if err != nil {
 		return DiscoveryPage{}, err
 	}
@@ -218,7 +222,7 @@ func parseBilibiliFavorites(raw []byte, folderID string, page int) (DiscoveryPag
 	if json.Unmarshal(value.Medias, &medias) != nil || (*value.HasMore && len(medias) == 0) {
 		return DiscoveryPage{}, discoveryUnavailable("Bilibili favorite entries or pagination are malformed", "inspect_source_response")
 	}
-	result := DiscoveryPage{Title: value.Info.Title, Items: []DiscoveredVideo{}, HasMore: *value.HasMore, Warnings: []string{}}
+	result := DiscoveryPage{Title: value.Info.Title, Items: []DiscoveredVideo{}, HasMore: *value.HasMore, Warnings: []string{}, Observed: len(medias)}
 	for _, entry := range medias {
 		identity := entry.BVID
 		if decimalID.MatchString(entry.ID.String()) {

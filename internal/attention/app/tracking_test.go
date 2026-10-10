@@ -235,3 +235,42 @@ func TestPartialCacheKnownFailureResumeAndImmutableUnknown(t *testing.T) {
 	_, err = s.RetryJob(ctx, human, unknown.JobID, meta("no-replay", unknown.Version))
 	errorCode(t, err, apierrors.DeliveryUnknown)
 }
+
+func TestBoundedPrefixDoesNotMarkUnobservedOlderCacheStale(t *testing.T) {
+	ctx := context.Background()
+	s, _, _ := fixture(t)
+	r := bindFixture(t, s)
+	s.options.ListingReader = listingFunc(func(_ context.Context, _ TrackingSource, cursor string, _ int) (ListingPage, error) {
+		start, end := 0, 100
+		if cursor == "older" {
+			start, end = 100, 110
+		}
+		items := []ListingMetadata{}
+		for i := start; i < end; i++ {
+			items = append(items, metadataItem(fmt.Sprint(i)))
+		}
+		if cursor == "older" {
+			return ListingPage{Items: items}, nil
+		}
+		next := "older"
+		return ListingPage{Items: items, HasMore: true, NextCursor: &next}, nil
+	})
+	for i, cursor := range []string{"", "older", ""} {
+		_, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta(fmt.Sprintf("prefix-%d", i), r.Source.Version), Cursor: cursor})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err = s.ProcessNextJob(ctx); err != nil {
+			t.Fatal(err)
+		}
+		r, _ = s.GetTrackingSource(ctx, human, r.Source.ID)
+	}
+	if len(r.Items) != 110 || !r.HasMore {
+		t.Fatal("prefix observation lost cache/window", r.Source, len(r.Items))
+	}
+	for _, item := range r.Items {
+		if item.Stale {
+			t.Fatal("unobserved older cached row claimed stale", item.ExternalID)
+		}
+	}
+}

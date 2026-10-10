@@ -69,12 +69,8 @@ func (s *Service) retrySafeJobs(ctx context.Context) error {
 			if job.Kind != "import" && job.Kind != "source_sync" && job.Kind != "distillation" && job.Kind != "source_recommendation" {
 				continue
 			}
-			rules := jobRules(job)
-			// An undurable native model start is not a known safe failure even if
-			// a future adapter accidentally labels its error retryable.
-			if rules.ExternalStarted {
-				continue
-			}
+			// Only a classified known failure can reach here. A lost native
+			// outcome has DeliveryUnknown and is excluded above.
 			if job.Attempts >= job.MaxAttempts || !now.Before(job.DeadlineAt) {
 				continue
 			}
