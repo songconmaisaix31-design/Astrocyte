@@ -1,5 +1,19 @@
 # Astrocyte 主控交接
 
+## 当前交付与下一步（2026-10-10）
+
+先读 [STATUS 顶部](STATUS.md)、[用户决定](docs/QUESTIONS.md) 和 [四轨计划](tasks/S1-sync-local-agent-plan.md)。主控分支 `s1/attention-materials-20261009`，当前代码组装 `3e3ee8cc5c51233935d8665f3a411371169c7ff7`；四轨沿原工作树普通合并，主控没有写业务代码。check/build通过；主控默认浏览器首场152 PASS/2 FAIL/8 SKIP，两个旧授权提示断言已由原W3修复，单独两尺寸复验2 PASS/32.1秒。首场失败保留，没有宣称整套重跑变绿。
+
+S1 资料核心的 AT01–04 已通过真实浏览器续验，源码 `cd721692122c5e8f7820e34f25181058dd648cf0`，1 PASS、测试1.5分钟/整场1.7分钟。指定论文真实既有 JSON 与指定视频现网 URL、固定版本和两轮实际模型整理、候选依据/下一步/延期、授权 Agent 三次读取不增人类关注，以及保存模型结果后真实发布失败、冷重启、人工重试不重复模型均通过。主控只读核对同库四个模型作业成功、五条沉淀、候选 deferred/later 和对象原文，并目视1280/1920截图。旧未知作业保留、未重发；额外论文2501.12948v1/v2只用于真实版本验证。
+
+账号/公开收藏夹绑定、启动一次同步100条、元数据建议后人工选择、单视频 summarize、项目登记/A默认BC可选/按项目选择 CLI 与身份授权已组装。本机 Codex 原生 start/resume/send/read_context/observe/stop 已完成真实浏览器；Claude 实际两轮和同一原生 ID 接续通过，Pi 认证失败。已安装不等于已配置或可用。自动派发仍关闭，个人目录和历史根尚未提供。
+
+真实非空账号批量选择尚未验收：指定 B站 UID 匿名投稿412/-352、收藏列表0条；抖音 self 地址需要公开身份，不能读取登录凭据代替。arXiv 新 URL 当前假IP阻断，论文使用真实既有导出。第二自动整理 CLI 的配置选择、双源完整模型输入容量及自动 Agent 控制限度待用户，详见 QUESTIONS；不据此扩大权限或改变输入上限。
+
+实际资料库 `%LOCALAPPDATA%/Temp/astrocyte-s1-4pmMWO`、原生库 `astrocyte-s1-pznwxr` 和 W3 原始 Playwright 结果保留，所属验收进程已退出。个人库升级前备份 `%APPDATA%/astrocyte/backups/pre-s1-sync-20261010-1640/state.sqlite`，原资料/作业均0，未灌入验收数据。最新预览已在16:54启动：[资料沉淀](http://127.0.0.1:5173/attention)、[本地项目](http://127.0.0.1:5173/workspace)，summarize启用、全局自动模型处理关闭，按项目许可操作。最终进程与检查见 STATUS 顶部，下文旧 PID 不可复用。
+
+## 前轮公共部分与历史交接
+
 当前轮次：2026-10-10 账号同步、本地 Agent 接入与完整 S1；先读 [STATUS 顶部](STATUS.md)、[四轨计划](tasks/S1-sync-local-agent-plan.md)、[待答决定](docs/QUESTIONS.md)。公共列表适配、缓存 CLI 清单/保护 API、局部参考图界面已合入集成轨，主控 check/build PASS、完整浏览器152 PASS/4 SKIP。账号绑定/同步入库、项目原生操作与完整 AT01–04 尚未完成，不能沿前轮单视频成功或公共部分绿标记 S1 完成。
 
 四轨固定工作树/分支 `s1-sync-contract-1010`、`s1-sync-attention-1010`、`s1-local-agents-1010`、`s1-sync-ui-1010`，本机 Orca Codex / gpt-6.1-sol。W0 是契约/入口/迁移/依赖及集成唯一 owner；W1/W2/W3 原任务未完成结算，工作树与已push源码保留。用户答复后沿原轨、原写域重新分派，不另建框架，不扫描用户目录或推导权限，不重发旧 UNKNOWN。
