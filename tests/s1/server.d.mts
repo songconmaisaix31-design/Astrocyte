@@ -15,5 +15,5 @@ export function startS1Server(options?: {
   webPort?: number;
   /** Exact previously created helper directory and controller-approved owned root. No discovery. Reused stores default to preservation. */
   reuseOwnedTemporary?: { path: string; ownedRoot: string };
-  env?: Record<string, string> | ((paths: { dataDir: string; temporary: string }) => Record<string, string>);
+  env?: Record<string, string> | ((paths: { dataDir: string; temporary: string }) => Record<string, string> | Promise<Record<string, string>>);
 }): Promise<S1Server>;
