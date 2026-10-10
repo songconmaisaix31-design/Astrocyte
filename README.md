@@ -71,9 +71,13 @@ PLAYWRIGHT_SKIP_BROWSER_GC=1 pnpm --dir web exec playwright install chromium
 
 ## HTTP v1 与 fixture 边界
 
-S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/SameSiteStrict 会话；写入同时携带返回的 `csrf_token`（`X-CSRF-Token`）和稳定的 `Idempotency-Key`。正文不能设置 actor 或权限。服务重启后重新建立会话，调用者 ID 保持稳定，原幂等回执继续可用。`createAttentionApi` 提供生成类型的写入助手；连接失败保留原幂等键，不自动重发命令。可选 `ASTROCYTE_AGENT_TOKEN` 只标识 Bearer 身份，不授予全库读取权限，不能建立人类会话或写入；用户资料勾选/规则授权契约待定期间，Agent 资料与派生记录读取全部返回 403。此凭据边界不提供同机操作系统进程隔离。
+S1 的本地浏览器读取先通过 `GET /api/v1/auth/session` 建立 HttpOnly/SameSiteStrict 会话；写入同时携带返回的 `csrf_token`（`X-CSRF-Token`）和稳定的 `Idempotency-Key`。正文不能设置 actor 或权限。服务重启后重新建立会话，调用者 ID 保持稳定，原幂等回执继续可用。`createAttentionApi` 与 [S1 类型助手](web/src/api/s1.ts) 保留原命令身份，不自动重发失败或未知命令。旧 `ASTROCYTE_AGENT_TOKEN` 不授予资料权限；人类通过项目 grant 和 `POST /local-projects/{id}/agent-token` 签发短期项目凭据，返回值只提供一次，不进入日志或浏览器持久存储。凭据只进入对应项目的上下文/原生操作，不能建立人类会话、改变设置、授权或签发令牌；每次操作查当前授权，撤销后立即拒绝新操作。此边界不提供同机操作系统进程隔离。
 
-`GET /api/v1/local-agents` 通过同一人类会话读取缓存的 CLI 发现结果。服务启动时仅查 PATH，并在总计 10 秒、单条命令 5 秒内运行固定 version/help；未完成的探测保持未知，刷新网页不再执行 CLI。安装、配置、可启动分别报告；八项原生能力 `discover/read_context/start/resume/send/stop/observe/reconcile` 为 `supported/unsupported/unknown`，版本/帮助成功不表示登录已配置、模型可用或原生接续成功。发现不读取私有会话、凭据或项目目录，也不授予 Agent 资料读取/原生控制权限；未组装发现服务明确返回 501。当前账号绑定、列表推荐/人工选取顺序、项目读取根和原生操作范围仍等待用户决定，见 [本轮计划](tasks/S1-sync-local-agent-plan.md)。
+`GET /api/v1/local-agents` 通过同一人类会话读取缓存的 CLI 清单。服务启动时仅查 PATH，并在总计 10 秒、单条命令 5 秒内运行固定 version/help；未完成的探测保持未知，刷新网页不执行 CLI。安装、配置、可启动及八项原生能力 `discover/read_context/start/resume/send/stop/observe/reconcile` 分别报告；版本/help 成功不表示模型可用。`native_adapter_registered` 仅表示后端实现了该客户端的接入协议，人类可以在已许可项目中显式 `POST /local-projects/{id}/sessions/probe` 验证空会话和停止，实际观测才更新能力。GET 和网页重载不探测、不调用模型、不推导授权；未组装能力返回 501。
+
+`/tracking-sources` 绑定多个公开发布账号或明确公开收藏夹，`/source-collections` 查询指定账号的公开收藏夹。先同步标题/简介，再给 Agent 建议，最后由人选择固定元数据 revision、排队 summarize 正文导入。启动服务时沿持久化队列同步一次，默认最多观察100条，没有定时器或全量自动入库。普通导入复用既有提取；只有明确 `refresh: true` 才重新获取，同来源旧 A 回执不把新 B 当前版本回退。B站公开列表被挑战/限流时保留失败及旧清单，不能当空同步成功；抖音 `/user/self?showTab=favorite_collection` 依赖登录，本轮公开范围不读取 cookie 或登录身份，仍需有效公开来源和支持的匿名 transport。其他平台保持待接入。
+
+`/local-projects` 只登记人类明确选择的项目绝对路径和对应 Attention 空间；项目发现限于明确选择的父根，历史读取另外登记 `history_roots` 的客户端目录并核对项目身份。默认 A 仅主动纳入的固定资料版本；B 允许明确项目子目录，C 允许当前纳入资料的一跳引用展开，均由人打开。查询不增加人类关注，作用域 Agent 读取只记机器使用。模型许可 `external_model_cli` 按项目配置、只用精确选择的 CLI 当前配置，不自行换提供方；本机 CLI 不表示模型在本机。原生接续保留原 session ID，新上下文交接明确显示 `context_handoff`，外部历史观察不获得进程控制权。调用和会话期限有界，未知动作不重放；退出服务先停止所属原生进程并保存确认状态，再关闭数据库。自动 Agent 派发仍不启用，个人根、公开抖音身份与自动控制限度仍待用户，完整验收见 [本轮计划](tasks/S1-sync-local-agent-plan.md)。
 
 S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分隔符（Windows 分号、Linux 冒号）列出可读资料目录，默认为空，拒绝本地文件读取。网页可直接上传/粘贴既有 summarize JSON/Markdown；导入器保留真实工具版本和来源，缺字幕或片段时不补造时间戳。arXiv 保存固定版本 PDF 和来源元数据，摘要不标为全文提取；资料版本的受控附件端点提供原始字节下载。`source_key` 和 `content_digest` 传空字符串表示由后端根据真实来源计算，非空值由适配器核验。
 
@@ -82,6 +86,8 @@ S1 配置由入口显式读取：`ASTROCYTE_IMPORT_ROOTS` 使用平台路径分�
 公开视频链接使用现有 `POST /materials/imports`，`adapter=summarize_url`、`kind=video`，不传 `export_text` / `local_file_ref`，`source_key` / `content_digest` 传空字符串由后端核验。`summarize`、`summarize_json`、`summarize_markdown` 继续导入既有输出，`arxiv` 继续固定版本论文全文。提取保存真实原输出；字幕、转写与位置缺失不补造，网页文字不等于视频内容。提取成功不表示 Codex 首次整理成功；模型仍由独立显式授权入口控制。
 
 本地音轨回退的启动配置使用绝对路径：`ASTROCYTE_YT_DLP_PATH` 为 yt-dlp 可执行文件；`ASTROCYTE_FFMPEG_PATH` 为 ffmpeg（同目录需要 ffprobe）；`ASTROCYTE_WHISPER_BINARY` 为 whisper.cpp CLI，`ASTROCYTE_WHISPER_MODEL` 为其本地模型。提取进程只传这些指定工具，隔离 HOME/配置目录，不继承提供商、cookie 或浏览器认证。缺工具时只使用实际上游能取得的公开字幕，失败明确返回缺证据/依赖错误，不自动调用云端转写。CPU 转写受现有 `ASTROCYTE_JOB_TIMEOUT_SECONDS` 限制；安装文件、版本命令成功和所选视频转写成功需分别核实。扩展/daemon 与登录浏览器权限仍待用户回答。
+
+公开发布清单的 `ASTROCYTE_LISTING_PYTHON` 指向已锁定 yt-dlp 环境中的 Python 绝对路径；`pnpm dev/start` 自动选择现有媒体环境的 `Scripts/python.exe`。不会回退全局 Python、自动安装依赖或扫描项目历史；缺环境的发布同步保留配置错误，公开收藏夹 HTTP 查询仍可使用。当前不做 summarize 浏览器扩展，不接受登录采集或凭据读取。
 
 Windows x64 可运行 `pwsh -NoProfile -File scripts/install-media.ps1`（需要已安装 Python >=3.10；`-PythonExecutable` 可指定其绝对路径）。脚本读取依赖清单中的固定 yt-dlp、ffmpeg/ffprobe、whisper.cpp release 和固定上游 revision 的多语言 base 模型，安装至 `%LOCALAPPDATA%/Astrocyte/media`；`pnpm dev/start` 自动发现其中实际存在的工具。`ASTROCYTE_MEDIA_DIR` 或安装参数 `-MediaRoot` 可改为专用绝对目录，单项路径覆盖优先。安装仅使用版本目录/venv，不更新全局 CLI 或 Python 包。Linux/macOS 目前需自行安装对应上游工具并配置单项路径，Windows安装脚本不适用。
 

@@ -21,13 +21,14 @@ type CapabilityObservation struct {
 // LocalAgent is installation inventory, not a discovered or bound session.
 // Executable paths and private native state never enter this transport value.
 type LocalAgent struct {
-	ID           string                           `json:"id"`
-	DisplayName  string                           `json:"display_name"`
-	Version      *string                          `json:"version"`
-	Installed    Observation                      `json:"installed"`
-	Configured   Observation                      `json:"configured"`
-	Startable    Observation                      `json:"startable"`
-	Capabilities map[string]CapabilityObservation `json:"capabilities"`
+	NativeAdapterRegistered bool                             `json:"native_adapter_registered"`
+	ID                      string                           `json:"id"`
+	DisplayName             string                           `json:"display_name"`
+	Version                 *string                          `json:"version"`
+	Installed               Observation                      `json:"installed"`
+	Configured              Observation                      `json:"configured"`
+	Startable               Observation                      `json:"startable"`
+	Capabilities            map[string]CapabilityObservation `json:"capabilities"`
 }
 
 // UnknownNativeCapabilities returns a fresh map so callers cannot mutate

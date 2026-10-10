@@ -1,5 +1,21 @@
 # S1 同步与本地 Agent 前端 W3
 
+## 用户决定后续作（2026-10-10）
+
+当前 Dispatch `ctx_bf18050e3ee7`，Task `task_bb04bd91e57a`，固定分支/写域不变。普通合入主控 `ca7ba6e80ab256a33465c5bdd959400375569a0e`，未 reset/rebase/force/clean；QUESTIONS 顶部覆盖历史 pending。实际客户端仍为 Orca Codex，本轮未另选模型。
+
+先实现现有作业恢复显示：次数与截止期均来自持久作业，恢复入口同时检查两项；未知外部结果（delivery_unknown 标志或错误码）禁重发、不显示已完成。有限次数/时限耗尽给“暂未完成”及下一步，原始错误保留在可展开处理详情。提交错误区保留中文服务动作和原输入，响应丢失要求先核对原记录，不自动重发。候选表单说明固定版本的主题关联或明确待查问题门槛；酝酿中候选提供补充关联/问题的路径，最终状态由 W1 决定。
+
+`pnpm --dir web typecheck`、`pnpm --dir web lint`、`pnpm --dir web test`（49/49）、`pnpm --dir web build`、`git diff --check` PASS；安全性单测覆盖 unknown 优先级、次数/截止边界、网络响应未知和实际中文动作提示。浏览器/live 未执行，未占测试槽。W0 generated API 尚待发布，已给 W0/W1/W2 交接 UI 所需字段和行为，不自行新增 DTO 或 HTTP。账号真实非空选择、项目注册/权限/原生操作、AT01–04 与重启验收仍需后续完成；不将此阶段检查替代整任务验收。
+
+### 已发布客户端上的实际表单
+
+普通合入 W0 typed client `b47a3fc63e5ff07b825ecb672454ed5005743650`，再合 `2e5ef61982bbb55278ea9fe566b5cda72d9df27e`（公开收藏列表、历史根、身份临时凭据）。Attention 现可绑定多个公开创作者/收藏夹，所选 B站 UID 默认填入但不自动绑定；抖音 self 显示公开 URL 请求并禁提交。清单重载为 GET，标题同步为明确确认的 POST100，人工正文选择须实际反馈成功且元数据版本相同；running/unknown 不重发。收藏列表由实际 API 返回供人选择，不自动绑定所有列表。普通单资料导入默认复用，刷新正文需明确勾选。
+
+共同工作区局部接入真实 /local-projects，与 S0 projection 分开：手动绝对根、所选目录发现子项目、明确登记/关联空间；项目 A 默认，B/C 独立，准确 CLI 模型处理许可、动作授权与显式历史根；人类可授予/撤销项目身份并按需生成临时 token（仅页面内存、不日志、不 storage）。只交付所选固定资料与 B 文件，原生 start/resume/send/stop/observe 和真正新会话交接分别呈现。未知能力暂禁用；W0 将发布实际 registered adapter 字段后加入明确验证入口，不能由 installed 推导支持。外部历史只观察，不冒充可控制会话。
+
+本阶段首次 typecheck/build 因新单测 provenance.model=null 与契约 string? 不符 FAIL（TS2322），保留为首败；修正为未提供 model 后两命令 PASS。lint PASS、Vitest51/51 PASS、diff PASS。仍未占浏览器槽或调用模型、媒体、原生控制；实际 HTTP 组装与 W2 验证尚在推进，不把编译表单当作 live 验收。
+
 2026-10-10；基线 `20437708e43201e352d6c6926902e1363fd2ad3e`；分支 `s1-sync-ui-1010`。本机 Orca 原生 Codex，主控通过 worker-read 确认实际模型 `gpt-6.1-sol`。写域为 web/src（排除 api 与 pages/swarm）、web/e2e、本报告与 docs/acceptance/S1-sync.md。
 
 ## 阶段一

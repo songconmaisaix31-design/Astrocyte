@@ -29,6 +29,7 @@ export async function summarizeEnvironment(env = process.env) {
     const pins = JSON.parse(await readFile(join(root, 'dependencies.lock.json'), 'utf8')).external_media;
     for (const [key, relative] of [
       ['ASTROCYTE_YT_DLP_PATH', join(pins.yt_dlp.directory, pins.yt_dlp.executable)],
+      ['ASTROCYTE_LISTING_PYTHON', join(pins.yt_dlp.directory, 'Scripts', 'python.exe')],
       ['ASTROCYTE_FFMPEG_PATH', join(pins.ffmpeg.directory, pins.ffmpeg.executable)],
       ['ASTROCYTE_WHISPER_BINARY', join(pins.whisper.directory, pins.whisper.executable)],
       ['ASTROCYTE_WHISPER_MODEL', pins.model.file],

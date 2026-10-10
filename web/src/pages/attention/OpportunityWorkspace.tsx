@@ -30,6 +30,7 @@ function OpportunityBody({ detail, materials, distillations, disabled, onChanged
   const snapshot = detail.revisions.find(entry => entry.revision === version);
   return <>
     <OpportunitySummary item={item} />
+    {item.state === 'incubating' && <p className={styles.note}>候选仍在酝酿中。请核对依据、用途与下一步，并在对应来源版本的沉淀中补充主题关联或明确待查问题，再编辑候选引用该记录。</p>}
     <p className={styles.note}>“以后再做”保留资料与候选，不当作拒绝。采用反馈只记录人工判断；准入、批准和任务执行属于后续切片。</p>
     {!item.version && <p role="alert">服务未提供候选元数据版本，写操作禁用。</p>}
     <button className="ac-button secondary compact" type="button" disabled={disabled || !item.version} onClick={() => setEditing(!editing)}>编辑候选</button>

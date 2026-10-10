@@ -21,6 +21,42 @@ import (
 // budget. Reader and Service share the existing bounded runtime setting.
 const defaultJobTimeoutSeconds = 1800
 
+// Only the explicitly configured or pinned project yt-dlp environment is used.
+// No generic Python PATH fallback, history search or dependency install occurs.
+func resolveListingPython() (string, error) {
+	if configured := os.Getenv("ASTROCYTE_LISTING_PYTHON"); configured != "" {
+		info, err := os.Stat(configured)
+		if !filepath.IsAbs(configured) || err != nil || !info.Mode().IsRegular() {
+			return "", fmt.Errorf("ASTROCYTE_LISTING_PYTHON must be an existing absolute file")
+		}
+		return configured, nil
+	}
+	var candidate string
+	if ytDlp := os.Getenv("ASTROCYTE_YT_DLP_PATH"); filepath.IsAbs(ytDlp) {
+		candidate = filepath.Join(filepath.Dir(ytDlp), "python.exe")
+	}
+	if candidate == "" {
+		mediaRoot := os.Getenv("ASTROCYTE_MEDIA_DIR")
+		if mediaRoot == "" && os.Getenv("LOCALAPPDATA") != "" {
+			mediaRoot = filepath.Join(os.Getenv("LOCALAPPDATA"), "Astrocyte", "media")
+		}
+		if mediaRoot != "" {
+			if !filepath.IsAbs(mediaRoot) {
+				return "", fmt.Errorf("ASTROCYTE_MEDIA_DIR must be absolute")
+			}
+			candidate = filepath.Join(mediaRoot, "yt-dlp-2026.08.19", "Scripts", "python.exe")
+		}
+	}
+	if candidate != "" {
+		if info, err := os.Stat(candidate); err == nil && info.Mode().IsRegular() {
+			return candidate, nil
+		}
+	}
+	// Favorites can still use the public HTTP adapter. Upload jobs retain a
+	// truthful configuration error until the known Python environment is present.
+	return "", nil
+}
+
 // The source scope is startup-owned and has no implicit public/private defaults.
 // An ordinary test or dev invocation never starts model processing unless opted in.
 func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distiller, []string, error) {

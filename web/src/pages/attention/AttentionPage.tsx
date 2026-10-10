@@ -56,7 +56,7 @@ export function AttentionPage({ fixture, query }: { fixture: boolean; query: str
     {!fixture && (mat.stale || opp.stale) && <div className={styles.stale} role="alert">数据可能已过期（刷新失败），显示的是上次成功加载的数据。<button className="ac-button secondary compact" type="button" onClick={refreshCollections}>重试</button></div>}
     <div className={styles.grid}>
       <SectionCard title="" tabs={['overview']}><IntroCard section="attention" onAdd={fixture ? undefined : () => setImporting(true)} /></SectionCard>
-      <AccountsPanel fixture={fixture} />
+      <AccountsPanel fixture={fixture} onChanged={() => { refreshCollections(); setQueueToken(value => value + 1); }} onMaterial={id => { setSelectedMat(null); setSelectedMatId(id); }} />
       <JobsPanel fixture={fixture} refreshToken={queueToken} onChanged={refreshCollections} onMaterial={id => {
         setSelectedMat(null); setSelectedMatId(id);
       }} />
