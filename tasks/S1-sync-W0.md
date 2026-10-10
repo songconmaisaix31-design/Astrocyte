@@ -22,6 +22,12 @@ HTTP `GET /local-projects/registered` 只读取持久化缓存；`POST /local-pr
 
 W1 SOURCE `e1061eba28aec014e3f0742434fd8c42ce256697` ordinary exact merge `2830ecb` 已push：收藏失效行保留身份/状态、空locator与不可用原因，缺失或上游零可选统计不伪造可用数。合并后 `go test -mod=readonly -p 1 ./internal/adapters/importers ./internal/attention/app` PASS。W1当前真实两个公开收藏夹的新观察见原负责人报告，与历史count0分开；W0没有重复公共请求、付费推荐或正文提取。
 
+### 运行时普通集成
+
+普通精确消费 W2 SOURCE `2364ce42f8f6fcaff1de35ad72354f6ef04b5874`：独立source/service/repository，GET纯持久化缓存、冷重启可查与失败stale；实际只读发现原件和限度由W2报告。W0仅调用 `ConfigureRegisteredDiscovery(db,agents.NewRegisteredProjects())` 并注入HTTP，启动在既有workerCtx下固定后台采集一次，不阻塞health/Vite，退出取消并等待采集后关闭SQLite。没有定时器、Agent自动派发或新调度组件。
+
+代码审阅发现同时refresh等待普通mutex无法响应取消的停服风险，已退W2原owner补最小锁等待与目标回归；当前不是已验完整停服。入口及受影响Go检查进行中，真实HTTP/UI验收仍待W3槽，W0未重复W2实际项目探测。
+
 ## 2026-10-10 最终受限交接（整体 S1 未完成，待主控接纳）
 
 最终应用整合 SOURCE `3f056d59e67ea1fcc186251c70260675e18f81d2` 已推送；普通消费 W1 REPORT `626831a8cb73030f26c8cfbce814fb43bfc4d397`、W2 REPORT `4a0b76a342f78ce2df59914813d48179415ef711`、W3 REPORT `8493ac8db9cb86c30eafdcab87bc5ec1dbee8680`（含真实AT最终报告 `56e9c85`）。相对主控默认 E2E SOURCE `5333249f0ec4f2d0bd2db420d5b7dee49d2de48f`，应用运行时代码相同，仅既有 `web/e2e/s1.spec.ts` 一旧用例断言修复与报告不同；尚未消费的主控 STATUS/QUESTIONS/计划未由W0修改。已装配公开追踪/人工选择、项目设置/作用域凭据/原生接口、跨上下文消费和项目 CLI 整理、006/007迁移、缓存观察与未知状态；候选没有创建 Mission。最后 W0 提交只改本报告，准确 REPORT SHA 由交接回执给出。
