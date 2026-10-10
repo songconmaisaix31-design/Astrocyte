@@ -34,6 +34,24 @@ import (
 // (Configured=unknown, no model readiness claimed).
 const opencodeDenyPermission = `{"*":"deny","read":"deny","edit":"deny","bash":"deny","glob":"deny","grep":"deny","webfetch":"deny","websearch":"deny","task":"deny","skill":"deny","lsp":"deny","question":"deny","external_directory":"deny","doom_loop":"deny"}`
 
+// opencodePermissionRule is the session permission ruleset entry from the
+// official 1.18.35 v2 SDK: SessionCreateData/SessionUpdateData accept
+// permission: PermissionRuleset where each rule is {permission, pattern, action}.
+type opencodePermissionRule struct {
+	Permission string `json:"permission"`
+	Pattern    string `json:"pattern"`
+	Action     string `json:"action"`
+}
+
+// opencodeSessionDenyPermission is written into the POST /session body. The
+// prompt/tools/processor paths merge the session ruleset AFTER the agent
+// permission (Permission.merge(agent.permission, session.permission ?? [])) and
+// evaluate with findLast, so this last deny rule overrides any agent-specific
+// allow inherited from config or managed/well-known sources. A single wildcard
+// rule is sufficient here because findLast is order-based, unlike the config
+// OPENCODE_PERMISSION deep-merge that needs per-key denies.
+var opencodeSessionDenyPermission = []opencodePermissionRule{{Permission: "*", Pattern: "*", Action: "deny"}}
+
 // opencodeNative drives `opencode serve` over loopback HTTP with Basic auth.
 // It is a distinct session driver from the stdio JSON-RPC Native adapter: the
 // protocol, process lifecycle and event decoding differ, while the ownership,
@@ -243,6 +261,11 @@ func (n *opencodeNative) start(ctx context.Context, r domain.NativeRequest, resu
 		if err != nil {
 			return fail(err)
 		}
+		// Fail-closed before any message: confirm the session really carries the
+		// deny-all permission ruleset so an inherited agent allow cannot survive.
+		if err := p.verifySession(ctx, sessionID); err != nil {
+			return fail(err)
+		}
 	}
 	p.mu.Lock()
 	p.nativeID = sessionID
@@ -402,10 +425,11 @@ func (p *opencodeProcess) do(ctx context.Context, method, path string, body any)
 	return data, resp.StatusCode, nil
 }
 
-// createSession POSTs /session and returns the server-assigned session ID,
-// which is the opaque native identity reused for resume and read.
+// createSession POSTs /session with the deny-all permission ruleset and returns
+// the server-assigned session ID, which is the opaque native identity reused for
+// resume and read.
 func (p *opencodeProcess) createSession(ctx context.Context, title string) (string, error) {
-	data, status, err := p.do(ctx, http.MethodPost, "/session", map[string]string{"title": title})
+	data, status, err := p.do(ctx, http.MethodPost, "/session", map[string]any{"title": title, "permission": opencodeSessionDenyPermission})
 	if err != nil {
 		return "", nativeError(apierrors.DeliveryUnknown, "OpenCode session create delivery is unknown")
 	}
@@ -422,7 +446,9 @@ func (p *opencodeProcess) createSession(ctx context.Context, title string) (stri
 }
 
 // verifySession loads an existing session by its opaque native ID so a resume
-// continues the same session rather than silently creating a new one.
+// continues the same session rather than silently creating a new one, and
+// fail-closes unless the session carries the deny-all permission ruleset. If the
+// server dropped or overrode the deny rule, no message is ever sent.
 func (p *opencodeProcess) verifySession(ctx context.Context, sessionID string) error {
 	data, status, err := p.do(ctx, http.MethodGet, "/session/"+sessionID, nil)
 	if err != nil {
@@ -435,10 +461,23 @@ func (p *opencodeProcess) verifySession(ctx context.Context, sessionID string) e
 		return nativeError(apierrors.ProviderUnavailable, "OpenCode server rejected the session resume")
 	}
 	var session struct {
-		ID string `json:"id"`
+		ID         string                   `json:"id"`
+		Permission []opencodePermissionRule `json:"permission"`
 	}
 	if json.Unmarshal(data, &session) != nil || session.ID != sessionID {
 		return nativeError(apierrors.ScopeDenied, "native session identity differs")
+	}
+	// The controller creates a session with exactly one deny-all rule, so the
+	// echoed permission array must be non-empty and end with the exact wildcard
+	// deny. A trailing rule (e.g. a specific read allow) would win under the
+	// server's last-match evaluation and is rejected; this check does not
+	// simulate the permission algorithm, it only asserts the owned trailing rule.
+	if len(session.Permission) == 0 {
+		return nativeError(apierrors.ScopeDenied, "session permission is empty; refusing to send")
+	}
+	last := session.Permission[len(session.Permission)-1]
+	if last.Permission != "*" || last.Pattern != "*" || last.Action != "deny" {
+		return nativeError(apierrors.ScopeDenied, "session deny-by-default permission is not effective; refusing to send")
 	}
 	return nil
 }
