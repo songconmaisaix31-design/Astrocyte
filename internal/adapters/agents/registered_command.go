@@ -22,12 +22,14 @@ func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, erro
 		tool, args, limit = registeredOrcaCommand(), []string{"repo", "list", "--json"}, 2*1024*1024
 	case "orca_worktrees":
 		tool, args, limit = registeredOrcaCommand(), []string{"worktree", "list", "--limit", "256", "--json"}, 2*1024*1024
-	case "git_head", "git_branch", "git_time", "git_status":
+	case "git_head", "git_branch", "git_time", "git_status", "git_common_dir":
 		if !filepath.IsAbs(root) {
 			return nil, errors.New("absolute registered root required")
 		}
 		args = []string{"--no-optional-locks", "--no-pager", "--work-tree", root, "-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "-c", "core.hooksPath=", "-C", root}
 		switch kind {
+		case "git_common_dir":
+			args = append(args, "rev-parse", "--path-format=absolute", "--git-common-dir")
 		case "git_head":
 			args = append(args, "rev-parse", "--verify", "HEAD")
 		case "git_branch":

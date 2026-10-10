@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
@@ -49,8 +50,8 @@ func (r *Registry) ConfigurationID(ctx context.Context, cli string) (string, err
 }
 
 func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextRequest) (result domain.TextResult, resultErr error) {
-	if strings.TrimSpace(input.Prompt) == "" || len(input.Prompt) > 128*1024 {
-		return result, nativeError(apierrors.ValidationFailed, "selected text input is empty or exceeds 128 KiB")
+	if err := ValidateSelectedTextPrompt(input.Prompt); err != nil {
+		return result, err
 	}
 	seconds := input.DeadlineSeconds
 	if seconds == 0 {
@@ -138,4 +139,14 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 		case <-ticker.C:
 		}
 	}
+}
+
+// Validate the final UTF-8 wire prompt, including the fixed authority instruction
+// and context envelope, before configuration checks or any native launch.
+func ValidateSelectedTextPrompt(prompt string) error {
+	packet := domain.ContextPacket{SchemaVersion: 1, ProjectID: "00000000-0000-0000-0000-000000000000", Mode: "selected_text"}
+	if !utf8.ValidString(prompt) || strings.TrimSpace(prompt) == "" || len(packetPrompt(packet, prompt)) > 512*1024 {
+		return nativeError(apierrors.ValidationFailed, "selected text input including fixed instruction/context exceeds 512 KiB or is invalid UTF-8")
+	}
+	return nil
 }

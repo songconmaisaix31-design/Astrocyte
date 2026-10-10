@@ -1,0 +1,197 @@
+package agents
+
+import (
+	"bufio"
+	"context"
+	"encoding/json"
+	"errors"
+	"io"
+	"os"
+	"path/filepath"
+	"regexp"
+	"time"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
+)
+
+type projectMetadataSource struct {
+	cli, root string
+	depth     int
+}
+
+func knownProjectMetadataSources() []projectMetadataSource {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil
+	}
+	codexHome := os.Getenv("CODEX_HOME")
+	if codexHome == "" {
+		codexHome = filepath.Join(home, ".codex")
+	}
+	piHome := os.Getenv("PI_CODING_AGENT_DIR")
+	if piHome == "" {
+		piHome = filepath.Join(home, ".pi", "agent")
+	}
+	return []projectMetadataSource{{"codex", filepath.Join(codexHome, "sessions"), 3}, {"pi", filepath.Join(piHome, "sessions"), 1}}
+}
+
+// No database, credentials, messages, summaries, tools or filename-derived
+// completion data. Only a bounded first record is decoded into these fields.
+func readProjectHeader(path, cli string) (id, cwd string, stamp *time.Time, err error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", "", nil, err
+	}
+	defer f.Close()
+	line, err := bufio.NewReaderSize(io.LimitReader(f, 64*1024+1), 64*1024+1).ReadBytes('\n')
+	if (err != nil && err != io.EOF) || len(line) > 64*1024 {
+		return "", "", nil, errors.New("header_unavailable_or_over_bound")
+	}
+	var header struct {
+		Type      string `json:"type"`
+		ID        string `json:"id"`
+		Cwd       string `json:"cwd"`
+		Timestamp string `json:"timestamp"`
+		Payload   struct {
+			ID        string `json:"id"`
+			Cwd       string `json:"cwd"`
+			Timestamp string `json:"timestamp"`
+		} `json:"payload"`
+	}
+	if json.Unmarshal(line, &header) != nil {
+		return "", "", nil, errors.New("header_invalid")
+	}
+	value := header.Timestamp
+	if cli == "codex" && header.Type == "session_meta" {
+		id, cwd = header.Payload.ID, header.Payload.Cwd
+		if header.Payload.Timestamp != "" {
+			value = header.Payload.Timestamp
+		}
+	} else if cli == "pi" && header.Type == "session" {
+		id, cwd = header.ID, header.Cwd
+	} else {
+		return "", "", nil, errors.New("header_type_unverified")
+	}
+	if !regexp.MustCompile(`^[a-zA-Z0-9._-]{1,100}$`).MatchString(id) || !filepath.IsAbs(cwd) {
+		return "", "", nil, errors.New("header_identity_invalid")
+	}
+	if t, e := time.Parse(time.RFC3339Nano, value); e == nil && !t.After(time.Now().Add(time.Minute)) {
+		utc := t.UTC()
+		stamp = &utc
+	}
+	return id, cwd, stamp, nil
+}
+
+func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result *domain.ProjectDiscoverySnapshot) {
+	byRoot := map[string]int{}
+	for i, p := range result.Projects {
+		byRoot[rootKey(p.Root)] = i
+		result.Projects[i].Contributors = []domain.ProjectContributor{}
+	}
+	available := map[string]bool{}
+	for _, source := range s.metadataSources() {
+		available[source.cli] = true
+		obs := domain.ProjectSourceObservation{CLI: source.cli, Source: "native_session_header", Status: "known", Reason: "bounded_headers_only_registered_roots"}
+		partial := func(reason string) { obs.Status = "partial"; obs.Reason = reason }
+		if !filepath.IsAbs(source.root) {
+			obs.Status = "unknown"
+			obs.Reason = "absolute_known_source_required"
+			result.Sources = append(result.Sources, obs)
+			continue
+		}
+		// Exclude redirected native-state roots, including symlinked ancestors.
+		resolved, err := filepath.EvalSymlinks(source.root)
+		if err != nil || rootKey(resolved) != rootKey(source.root) {
+			obs.Status = "unknown"
+			obs.Reason = "known_source_unavailable_or_redirected"
+			result.Sources = append(result.Sources, obs)
+			continue
+		}
+		seen := map[string]bool{}
+		var walk func(string, int) error
+		walk = func(dir string, depth int) error {
+			if err := ctx.Err(); err != nil {
+				return err
+			}
+			f, err := os.Open(dir)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			for {
+				entries, e := f.ReadDir(32)
+				for _, entry := range entries {
+					if err := ctx.Err(); err != nil {
+						return err
+					}
+					obs.EntriesExamined++
+					if obs.EntriesExamined > 2048 {
+						return errors.New("entry_bound")
+					}
+					path := filepath.Join(dir, entry.Name())
+					if entry.Type()&os.ModeSymlink != 0 {
+						partial("redirected_entries_excluded")
+						continue
+					}
+					if entry.IsDir() {
+						// Codex's date layout only; Pi's immediate encoded-cwd dirs.
+						if depth >= source.depth {
+							partial("depth_bound")
+							continue
+						}
+						if source.cli == "codex" && !regexp.MustCompile(`^[0-9]{2,4}$`).MatchString(entry.Name()) {
+							continue
+						}
+						if err := walk(path, depth+1); err != nil {
+							return err
+						}
+						continue
+					}
+					if filepath.Ext(entry.Name()) != ".jsonl" || !entry.Type().IsRegular() {
+						continue
+					}
+					id, cwd, stamp, err := readProjectHeader(path, source.cli)
+					if err != nil {
+						partial("unverified_or_over_bound_headers_excluded")
+						continue
+					}
+					index, ok := byRoot[rootKey(cwd)]
+					if !ok {
+						continue
+					} // Header outside approved Orca roots is never followed.
+					if seen[id] {
+						continue
+					}
+					if obs.MatchedHeaders >= 256 {
+						return errors.New("header_bound")
+					}
+					seen[id] = true
+					obs.MatchedHeaders++
+					result.Projects[index].Contributors = append(result.Projects[index].Contributors, domain.ProjectContributor{CLI: source.cli, Source: "native_session_header", Root: result.Projects[index].Root, SessionID: id, ObservedAt: result.ObservedAt, ActivityAt: stamp})
+				}
+				if e == io.EOF {
+					return nil
+				}
+				if e != nil {
+					return e
+				}
+			}
+		}
+		if err := walk(source.root, 0); err != nil {
+			partial("known_source_incomplete_or_bound_reached")
+		}
+		result.Sources = append(result.Sources, obs)
+	}
+	for _, def := range definitions {
+		if !available[def.id] {
+			result.Sources = append(result.Sources, domain.ProjectSourceObservation{CLI: def.id, Source: "native_project_metadata", Status: "unknown", Reason: "no_reliable_metadata_only_adapter"})
+		}
+	}
+	for _, obs := range result.Sources {
+		if obs.Status != "known" {
+			result.Status = "partial"
+		}
+	}
+	// An empty supported source means no matched headers were observed, never
+	// that its CLI is absent, idle, configured or finished.
+}
