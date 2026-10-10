@@ -40,7 +40,7 @@
 | `go vet ./internal/adapters/agents/` | PASS |
 | `go test ./internal/workspace/... ./internal/adapters/agents/ ./internal/adapters/sqlite/`（`GOFLAGS=-p=1`） | PASS，含 app 进度回归、agents OpenCode 协议/隔离 env/快照、sqlite 进度 CAS |
 | `git diff --check` | PASS |
-| `ASTROCYTE_TEST_OPENCODE_LIVE=1 go test ./internal/adapters/agents -run TestOpencodeLiveSessionChain` | **PASS，两轮各约 14s**：真实 `opencode serve` 隔离启动、真实付费 turn 回显 selected marker、read_context 双向、`model=deepseek-flash provider=deepseek` 真实解析、同 nativeID resume 保持原 ID、跨会话 handoff 新 ID、owned stop 正向退出 |
+| `ASTROCYTE_TEST_OPENCODE_LIVE=1 go test ./internal/adapters/agents -run TestOpencodeLiveSessionChain` | **PASS，~12s**：真实 `opencode serve` 隔离启动、显式 `Send` 正向 turn、`ReadContext` 双向、`model=deepseek-flash provider=deepseek` 真实解析、同 nativeID resume 保持原 ID、owned stop 正向退出、**跨会话 context_handoff**（新 nativeID + 携带原 selected context marker 并被新会话引用） |
 
 真实 `opencode serve` 会话链已由原 owner 运行通过；中间一轮旧 `waitHealth` 阻塞 180s（客户端超时）的首次失败保留，已改每请求 3s/整体 20s 有界超时。旧成功媒体/模型与 UNKNOWN 不重发。
 

@@ -12,9 +12,10 @@ import (
 )
 
 // TestOpencodeLiveSessionChain runs a real `opencode serve` session chain: start
-// with a real paid turn, read context, resume the same native ID, stop, then a
-// cross-session handoff that must produce a different native ID. It is gated so
-// normal CI never launches the CLI or charges a model turn.
+// (idle), explicit send with a real paid turn, read context, resume the same
+// native ID, stop, then a cross-session context handoff that must produce a new
+// native ID while carrying the original selected context. It is gated so normal
+// CI never launches the CLI or charges a model turn.
 func TestOpencodeLiveSessionChain(t *testing.T) {
 	if os.Getenv("ASTROCYTE_TEST_OPENCODE_LIVE") != "1" {
 		t.Skip("real OpenCode serve session chain requires the sole paid slot")
@@ -28,21 +29,34 @@ func TestOpencodeLiveSessionChain(t *testing.T) {
 	defer cancel()
 	project := domain.LocalProject{ID: uuid.NewString(), Root: t.TempDir(), Settings: domain.ProjectSettings{Revision: 1}}
 	marker := "PUBLIC_MARKER_" + strings.ReplaceAll(uuid.NewString(), "-", "")
+	native := adapter.(*opencodeNative)
 
-	start := func(message string) domain.NativeSession {
+	newSession := func() domain.NativeSession {
 		t.Helper()
 		sid := uuid.NewString()
 		s, err := adapter.Start(ctx, domain.NativeRequest{
 			SessionID: sid,
 			Project:   project,
 			Session:   domain.NativeSession{ID: sid, ProjectID: project.ID},
-			Command:   domain.NativeCommand{DeadlineSeconds: 180, Message: message},
+			Command:   domain.NativeCommand{DeadlineSeconds: 180},
 			Packet:    domain.ContextPacket{SchemaVersion: 1, ProjectID: project.ID, Mode: "selected_context"},
 		})
 		if err != nil {
 			t.Fatalf("open code start: %v", err)
 		}
+		if s.NativeID == "" {
+			t.Fatal("open code start did not report a native identity")
+		}
 		return s
+	}
+	text := func(obs domain.NativeObservation) string {
+		var b strings.Builder
+		for _, e := range obs.Events {
+			if e.Kind == "text" {
+				b.WriteString(e.Text)
+			}
+		}
+		return b.String()
 	}
 	wait := func(s domain.NativeSession) domain.NativeObservation {
 		t.Helper()
@@ -51,7 +65,7 @@ func TestOpencodeLiveSessionChain(t *testing.T) {
 		for {
 			obs, err := adapter.Observe(ctx, s)
 			if err != nil {
-				t.Fatal(err)
+				t.Fatalf("observe: %v", err)
 			}
 			if obs.Status == "failed" || obs.Status == "blocked" || obs.OutputTruncated {
 				t.Fatalf("native turn: %+v", obs)
@@ -66,26 +80,16 @@ func TestOpencodeLiveSessionChain(t *testing.T) {
 			}
 		}
 	}
-	text := func(obs domain.NativeObservation) string {
-		var b strings.Builder
-		for _, e := range obs.Events {
-			if e.Kind == "text" {
-				b.WriteString(e.Text)
-			}
-		}
-		return b.String()
-	}
 
-	// 1. Start with a real turn; verify the selected marker is echoed.
-	s1 := start("Reply with exactly the word " + marker + " and nothing else.")
-	if s1.NativeID == "" {
-		t.Fatal("open code start did not report a native identity")
+	// 1. Start (idle, no message) then an explicit Send positive turn.
+	s1 := newSession()
+	sendObs, err := adapter.Send(ctx, s1, "Reply with exactly the word "+marker+" and nothing else.")
+	if err != nil || sendObs.Status != "completed" {
+		t.Fatalf("explicit send: %+v %v", sendObs, err)
 	}
-	obs1 := wait(s1)
-	if !strings.Contains(text(obs1), marker) {
-		t.Fatalf("native output omitted the selected marker: %q", text(obs1))
+	if !strings.Contains(text(sendObs), marker) {
+		t.Fatalf("explicit send output omitted the selected marker: %q", text(sendObs))
 	}
-	native := adapter.(*opencodeNative)
 	native.mu.Lock()
 	proc := native.processes[s1.ID]
 	native.mu.Unlock()
@@ -96,7 +100,7 @@ func TestOpencodeLiveSessionChain(t *testing.T) {
 		t.Fatalf("model/provider not observed from the native reply schema: model=%q provider=%q", model, provider)
 	}
 
-	// 2. Read context; verify both the user marker and the assistant reply are present.
+	// 2. Read context: both the user marker and the assistant reply are present.
 	history, err := adapter.ReadContext(ctx, s1)
 	if err != nil {
 		t.Fatal(err)
@@ -114,14 +118,13 @@ func TestOpencodeLiveSessionChain(t *testing.T) {
 		t.Fatalf("read context missing user/assistant marker: %+v", history)
 	}
 
-	// 3. Stop and resume the same native ID; a second real turn must continue it.
+	// 3. Stop and resume the same native ID; a second real turn continues it.
 	stopObs, err := adapter.Stop(ctx, s1)
 	if err != nil || !stopObs.StopConfirmed {
 		t.Fatalf("open code stop: %+v %v", stopObs, err)
 	}
 	s1.StopConfirmed = true
 	s1.Status = "stopped"
-	marker2 := "PUBLIC_MARKER_" + strings.ReplaceAll(uuid.NewString(), "-", "")
 	resumed, err := adapter.Resume(ctx, domain.NativeRequest{
 		SessionID: s1.ID,
 		Project:   project,
@@ -135,22 +138,41 @@ func TestOpencodeLiveSessionChain(t *testing.T) {
 	if resumed.NativeID != s1.NativeID {
 		t.Fatalf("resume changed the native identity: %q -> %q", s1.NativeID, resumed.NativeID)
 	}
-	obs2 := wait(resumed)
-	_ = marker2
-	if !strings.Contains(text(obs2), marker) {
-		t.Fatalf("resumed turn lost the original context marker: %q", text(obs2))
+	resumeObs := wait(resumed)
+	if !strings.Contains(text(resumeObs), marker) {
+		t.Fatalf("resumed turn lost the original context marker: %q", text(resumeObs))
 	}
 	if _, err := adapter.Stop(ctx, resumed); err != nil {
 		t.Fatal(err)
 	}
 
-	// 4. Cross-session handoff: a new start must produce a different native ID.
-	s2 := start("Reply with exactly the word OK and nothing else.")
+	// 4. Cross-session context handoff: a new session gets a new native ID but
+	// carries the original selected context and must reference it, not just echo
+	// a fresh marker.
+	handoffPacket := domain.ContextPacket{
+		SchemaVersion: 1, ProjectID: project.ID, Mode: "context_handoff",
+		Materials: []domain.ContextMaterial{{Reference: domain.FixedReference{MaterialID: "handoff-marker", Revision: 1}, Title: "prior-selected-context", Text: marker}},
+	}
+	s2id := uuid.NewString()
+	s2, err := adapter.Start(ctx, domain.NativeRequest{
+		SessionID: s2id,
+		Project:   project,
+		Session:   domain.NativeSession{ID: s2id, ProjectID: project.ID},
+		Command:   domain.NativeCommand{DeadlineSeconds: 180, Message: "The prior selected context contained a public marker. Reply with exactly that marker word only."},
+		Packet:    handoffPacket,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	if s2.NativeID == "" || s2.NativeID == s1.NativeID {
 		t.Fatalf("cross-session handoff reused the source native identity: %q", s2.NativeID)
+	}
+	handoffObs := wait(s2)
+	if !strings.Contains(text(handoffObs), marker) {
+		t.Fatalf("handoff session did not reference the carried context marker: %q", text(handoffObs))
 	}
 	if _, err := adapter.Stop(ctx, s2); err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("opencode live: version=%s model=%s provider=%s start_native_id=%s resume_same_id=true handoff_new_id=%s", s1.Version, model, provider, s1.NativeID, s2.NativeID)
+	t.Logf("opencode live: version=%s model=%s provider=%s start_native_id=%s send=true read=true resume_same_id=true handoff_new_id=%s handoff_context=true", s1.Version, model, provider, s1.NativeID, s2.NativeID)
 }

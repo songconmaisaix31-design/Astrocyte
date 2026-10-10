@@ -11,7 +11,7 @@
 
 已交付 `internal/adapters/agents/opencode.go`：`opencodeNative` 独立会话驱动（与 stdio `*Native` 并列注册），owned subprocess + Job Object 正向退出、未知投递不重放、**同 nativeID 恢复**（resume 经 `GET /session/:id` 加载原 SID 续发，不新建会话）与**新 nativeID 交接**分开；模型按真实 `AssistantMessage` 的 `modelID`/`providerID` 解析；`Registry` 现 `List()` 为 `codex/pi/claude/opencode`。httptest 假 server 覆盖 create/send/read/verify 协议与 Basic auth、modelID/providerID、隔离 env、`permission:deny` 配置与注册快照。
 
-**真实 `opencode serve` 会话链已运行通过**（`ASTROCYTE_TEST_OPENCODE_LIVE=1`，`opencode_live_test.go`）：`opencode serve --hostname 127.0.0.1 --port <N> --pure` 隔离启动，真实付费 turn 回显 selected marker，read_context 含 user/assistant 双向，`model=deepseek-flash provider=deepseek` 从真实 reply 解析，同 nativeID resume 保持原 ID、跨会话 handoff 产生新 ID，owned stop 正向退出；两轮独立 run 各约 14s 通过。首次失败保留：中间一轮旧 `waitHealth` 阻塞 180s（客户端超时）导致 serve 启动竞态，已改为每请求 3s/整体 20s 有界超时，非改写为成功。旧成功媒体/模型与 UNKNOWN 不重发。selected-text/distillation 路径仍依赖 `*Native` 的模型观测（`Configured=unknown`），不冒充模型就绪。
+**真实 `opencode serve` 会话链已运行通过**（`ASTROCYTE_TEST_OPENCODE_LIVE=1`，`opencode_live_test.go`）：`opencode serve --hostname 127.0.0.1 --port <N> --pure` 隔离启动；显式 `Send` 正向 turn 回显 selected marker；`read_context` 含 user/assistant 双向；`model=deepseek-flash provider=deepseek` 从真实 reply 解析；同 nativeID resume 保持原 ID；owned stop 正向退出；**跨会话 context_handoff**：新 nativeID + 携带原 selected context marker 并被新会话引用（非仅新建会话）。首次失败保留：一轮旧 `waitHealth` 阻塞 180s（客户端超时）导致 serve 启动竞态，已改为每请求 3s/整体 20s 有界超时，非改写为成功。旧成功媒体/模型与 UNKNOWN 不重发。selected-text/distillation 路径仍依赖 `*Native` 的模型观测（`Configured=unknown`），不冒充模型就绪。
 
 ## 2026-10-10 OpenCode 1.18.35 正式接口复核（serve/config/permissions + 本机版本源码）——结论已被上节更正
 
