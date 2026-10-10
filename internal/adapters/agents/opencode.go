@@ -467,10 +467,13 @@ func (p *opencodeProcess) verifySession(ctx context.Context, sessionID string) e
 	if json.Unmarshal(data, &session) != nil || session.ID != sessionID {
 		return nativeError(apierrors.ScopeDenied, "native session identity differs")
 	}
+	// Mirror the findLast evaluation order: the effective wildcard fallback is
+	// the last permission="*" pattern="*" rule. A non-global pattern or a later
+	// allow must not be mistaken for deny-by-default.
 	denyAll := false
 	for _, rule := range session.Permission {
-		if rule.Permission == "*" && rule.Action == "deny" {
-			denyAll = true
+		if rule.Permission == "*" && rule.Pattern == "*" {
+			denyAll = rule.Action == "deny"
 		}
 	}
 	if !denyAll {

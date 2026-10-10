@@ -113,6 +113,20 @@ func opencodeTestServer(t *testing.T, username, password string) *httptest.Serve
 		}
 		_, _ = w.Write([]byte(`{"id":"sess-nodeny"}`))
 	})
+	mux.HandleFunc("/session/sess-narrow", func(w http.ResponseWriter, r *http.Request) {
+		if !auth(r) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		_, _ = w.Write([]byte(`{"id":"sess-narrow","permission":[{"permission":"*","pattern":"specific","action":"deny"}]}`))
+	})
+	mux.HandleFunc("/session/sess-late-allow", func(w http.ResponseWriter, r *http.Request) {
+		if !auth(r) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		_, _ = w.Write([]byte(`{"id":"sess-late-allow","permission":[{"permission":"*","pattern":"*","action":"deny"},{"permission":"*","pattern":"*","action":"allow"}]}`))
+	})
 	mux.HandleFunc("/session/sess-1/message", func(w http.ResponseWriter, r *http.Request) {
 		if !auth(r) {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -187,17 +201,17 @@ func TestOpencodeSessionLifecycleOverHTTP(t *testing.T) {
 }
 
 // The session create body must carry the deny-all permission ruleset; a session
-// whose effective permission lacks it is fail-closed before any message is sent.
+// whose effective wildcard fallback is not the last deny is fail-closed before
+// any message is sent.
 func TestOpencodeSessionDenyPermissionFailClosed(t *testing.T) {
 	server := opencodeTestServer(t, "user", "pass")
 	defer server.Close()
 	p := newTestOpencodeProcess(server, "user", "pass")
-	if err := p.verifySession(context.Background(), "sess-nodeny"); err == nil {
-		t.Fatal("deny permission absent but verify passed")
-	}
-	var service *apierrors.ServiceError
-	if !errors.As(p.verifySession(context.Background(), "sess-nodeny"), &service) || service.Code != apierrors.ScopeDenied {
-		t.Fatal("missing deny permission is not a scope denial")
+	for _, id := range []string{"sess-nodeny", "sess-narrow", "sess-late-allow"} {
+		var service *apierrors.ServiceError
+		if !errors.As(p.verifySession(context.Background(), id), &service) || service.Code != apierrors.ScopeDenied {
+			t.Fatalf("session %s without an effective last deny-all rule verified as safe: %v", id, service)
+		}
 	}
 }
 
