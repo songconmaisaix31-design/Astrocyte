@@ -192,3 +192,19 @@ Root 明确许可原写域最小日志修复：failJob 先从原 cause 映射复
 小夹一行是70p长视频BV11t411C7Lk，另一行BV15NQrYGEuA明确title已失效视频/attr9但仍保留BV。现解析器忽略attr导致错误可选，新增回归首RED实际输出该行Locator非空/ProviderStatus nil/UnavailableReason空。最小修复复用已有provider_status字段保留attr，非零状态留清单/计入observed但不生成可导入URL并给unavailable_reason；0保持可选、缺字段保持nil、未知非零状态保守不可用，不让坏行使整页失败。语义参考[上游开源资源列表](https://github.com/bilibili-plugins/bilibili-api-collect/blob/master/docs/fav/list.md)中的medias.attr（0正常、9UP删除、1其他删除），与本轮匿名原件一致；没有变更transport或读取cookie。
 
 `go test ./internal/adapters/importers -run 'TestFavoriteAvailability|TestStaleCollectionEntry|TestPublicListingBounds' -count=1` 修复后PASS；`git diff --check` PASS。主控把browser/model槽交W3，默认夹只推荐并人工选择原BV、复用既有正文；本轨继续纯metadata100cap/SQLite/重复sync核查，没有模型/媒体调用，真实选择入库正向仍等W3，不处理小夹长视频或失效视频。
+
+阶段11功能源 `e1061eba28aec014e3f0742434fd8c42ce256697` 已push并交W0/W3。随后真实匿名PublicListingReader→应用Service→独立SQLite的 opt-in `TestPublicFavoritesLiveSyncReuseAndRestart` 首场失败：测试误约束100唯一行，上游每轮实际观察100行、分页缺行补位有重叠，所以保存99个唯一条目；实际job succeeded/has_moretrue/cursor6，业务上限和去重正确。首场DB及12份原响应保留 `.../sync-first/`，未覆盖。改测试按真实observations上限、唯一条目去重以及未变metadata revision检查，独立新目录 `.../sync-second/` 两轮都provider_rows100/items99/cursor6/has_moretrue，原指定BV为revision1可读；两种官方folder URL绑定同一source ID、不产生重复绑定，未变metadata不升revision。真正close/reopen后完整source/items逐字段一致；materials/distillations/opportunities为0、无建议/选取/import状态。**PASS**，测试2.79秒/Go包11.841秒，exit0。原响应24份、真实DB与 `actual-source-after-repeat.json` 留sync-second，原 `live-sync-second.log` 留父目录。没有fixture/provider mock，也没有浏览器或模型/媒体调用。
+
+仅在主控指定的 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO/data/state.sqlite` mode=ro查看固定import jobs：真实URL原receipt `26MPWE7S3S4FLEUE62BZLKC54T` succeeded/summarize_url/video，canonical URL是BV1PReT6EEqR，无source_key/content_digest/local_file_ref，原Refreshtrue。现有普通enqueueImport忽略old.Refresh并复用latest同URL/adapter输入，source selection同样summarize_url/空key/digest，因此可直接复用，不需新媒体。原旧summarize导出单独存在；没有改库、重发UNKNOWN或用导出来冒充本次URL提取。初次只读脚本误从data读payload报KeyError，改用现有独立payload列后成功；该诊断失败不是业务处理失败。
+
+当前含opt-in真实验证源码：`go test ./...`、`go vet ./...`、`go build ./...`、`node scripts/check-architecture.mjs`（19包）和 `git diff --check` 均PASS；默认Go全套跳过外部live测试，以上真实HTTP/SQLite单独明确执行并记录。浏览器实际推荐/人工选择/旧正文复用与冷重启仍由W3唯一槽验收，不能把本轨纯metadata PASS代替它。Douyin self公开身份与匿名transport仍未取得，上传挑战历史不变，旧UNKNOWN与首失败保留。
+
+阶段11真实metadata验证源码/报告 `8c7292c407526903f956d903ec0bcfd0f028f7f3` 已push。仅原独立验证库只读查作业也确认两个source_sync/succeeded、sources1/items99，无媒体/模型作业。
+
+## 继续阶段 12：推荐 API 固定输入复用与 UNKNOWN 防绕过（2026-10-10）
+
+主控实际源码复核发现RecommendSourceItems仅按新幂等键排工作，UI禁重做不能保护API。新增应用回归首RED：相同metadata/project/CLI换新key使processor calls2，UNKNOWN换新key返回nil。沿已有事务、ListJobs/payload与digest增加固定输入匹配：source ID、trusted human身份、project/CLI、当前configuration、选中条目的完整metadata/revision；选取顺序排序，不把pending/success建议、selected/importjob、request/operation等临时状态当作新输入。直接扫描原payload兼容已经queued/succeeded/UNKNOWN的旧key，没有迁移/新表/调度系统。
+
+同输入成功/queued/known failure返回原job与原固定结果，避免新key重设budget/operation；相同UNKNOWN明确DeliveryUnknown拒绝，并保留原记录。不同metadata/revision/config/project/CLI/human独立工作。每次请求仍先沿配置端口检查现时项目权限，撤权不因缓存成功跳过。Source级active作业仍阻止不同工作并发；重复同queued工作复用。完成结果仅投影原匹配结果供本次响应，不把另一个项目的建议称为本次结果，也不重写旧job/payload。未改共享契约、入口或UI。
+
+应用两原RED回归修复后PASS。`TestRecommendationSemanticReuseSQLiteRestartAndScope` 使用contract_local权限/处理端口+实际SQLite/close/reopen：pending新key反序选取同job、成功冷重启两新key处理器保持calls1；UNKNOWN冷重启两新key都DeliveryUnknown/calls1，原jobdata/payload逐字节不变；撤权ScopeDenied。成功组随后逐项改变config/project/CLI/human/metadata(title+rev2)，各只新增一次正确处理、最终calls6，原完成job不变，材料0。不是付费/native或browser验收，没有执行额外模型/媒体。`go test ./...`、`go vet ./...`、`go build ./...`、19包架构和diff检查PASS；测试日志简化后独立SQLite场景另复验，不重复真实HTTP或付费链路。等待W0普通合入、W3在唯一现场实际推荐后新key复用断言与主控最终接纳。

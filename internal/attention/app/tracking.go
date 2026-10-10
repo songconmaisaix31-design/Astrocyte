@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
@@ -193,6 +194,52 @@ type recommendationPayload struct {
 	Result        map[string]SourceRecommendation
 }
 
+// Only fixed input and trusted processing scope identify paid work. Transient
+// recommendation/selection/job state and request keys cannot justify a new call.
+func recommendationInputKey(payload recommendationPayload) string {
+	items := make([]SourceItem, 0, len(payload.Input.Items))
+	for _, item := range payload.Input.Items {
+		items = append(items, SourceItem{SourceID: item.SourceID, ExternalID: item.ExternalID, Revision: item.Revision, Metadata: item.Metadata})
+	}
+	slices.SortFunc(items, func(a, b SourceItem) int { return strings.Compare(a.ExternalID, b.ExternalID) })
+	fixed := recommendationPayload{SourceID: payload.SourceID, Configuration: payload.Configuration, Input: ListingRecommendationInput{Caller: payload.Input.Caller, ProjectID: payload.Input.ProjectID, CLI: payload.Input.CLI, Items: items}}
+	data, _ := json.Marshal(fixed)
+	return digestBytes(data)
+}
+
+func findRecommendationWork(tx AttentionTx, wanted recommendationPayload) (*Job, *recommendationPayload, error) {
+	jobs, err := tx.ListJobs()
+	if err != nil {
+		return nil, nil, err
+	}
+	key := recommendationInputKey(wanted)
+	var found *Job
+	var cached *recommendationPayload
+	for _, job := range jobs {
+		if job.Kind != "source_recommendation" || job.Caller != wanted.Input.Caller {
+			continue
+		}
+		var payload recommendationPayload
+		if json.Unmarshal(job.Payload, &payload) != nil {
+			continue
+		}
+		payload.Input.Caller = job.Caller
+		if recommendationInputKey(payload) != key {
+			continue
+		}
+		// Scan persisted payloads as well as current keys so existing pre-policy
+		// jobs (including old UNKNOWN) remain authoritative after an upgrade.
+		if job.DeliveryUnknown || (job.Error != nil && job.Error.Code == apierrors.DeliveryUnknown) {
+			return nil, nil, domain.ErrUnknown
+		}
+		if found == nil || job.CreatedAt.After(found.CreatedAt) {
+			copy := job
+			found, cached = &copy, &payload
+		}
+	}
+	return found, cached, nil
+}
+
 func (s *Service) queueTrackingJob(tx AttentionTx, p Principal, m CommandMeta, kind string, payload any) (Job, error) {
 	encoded, err := json.Marshal(payload)
 	if err != nil {
@@ -317,7 +364,7 @@ func (s *Service) RecommendSourceItems(ctx context.Context, p Principal, id stri
 		if source.Version != c.ExpectedVersion {
 			return TrackingSourceResult{}, domain.ErrVersion
 		}
-		if source.Status == "syncing" || source.Status == "recommending" {
+		if source.Status == "syncing" {
 			return TrackingSourceResult{}, domain.ErrVersion
 		}
 		items, err := port.ListSourceItems(id)
@@ -336,7 +383,27 @@ func (s *Service) RecommendSourceItems(ctx context.Context, p Principal, id stri
 		if err != nil {
 			return TrackingSourceResult{}, err
 		}
-		job, err := s.queueTrackingJob(tx, p, c.CommandMeta, "source_recommendation", recommendationPayload{SourceID: id, Configuration: configuration, Input: ListingRecommendationInput{Caller: p, ProjectID: c.ProjectID, CLI: c.CLI, Items: chosen}})
+		payload := recommendationPayload{SourceID: id, Configuration: configuration, Input: ListingRecommendationInput{Caller: p, ProjectID: c.ProjectID, CLI: c.CLI, Items: chosen}}
+		oldJob, cached, err := findRecommendationWork(tx, payload)
+		if err != nil {
+			return TrackingSourceResult{}, err
+		}
+		if oldJob != nil {
+			result, err := trackingResult(port, source)
+			result.Jobs = []ImportJobResult{{SchemaVersion: 1, JobID: oldJob.JobID, Status: oldJob.Status}}
+			if oldJob.Status == "succeeded" {
+				for i := range result.Items {
+					if recommendation, ok := cached.Result[result.Items[i].ExternalID]; ok && recommendation.MetadataRevision == result.Items[i].Revision {
+						result.Items[i].Recommendation = &recommendation
+					}
+				}
+			}
+			return result, err
+		}
+		if source.Status == "recommending" {
+			return TrackingSourceResult{}, domain.ErrVersion
+		}
+		job, err := s.queueTrackingJob(tx, p, c.CommandMeta, "source_recommendation", payload)
 		if err != nil {
 			return TrackingSourceResult{}, err
 		}
