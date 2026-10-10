@@ -214,6 +214,7 @@ func parseBilibiliFavorites(raw []byte, folderID string, page int) (DiscoveryPag
 		Intro string      `json:"intro"`
 		Cover string      `json:"cover"`
 		Type  int         `json:"type"`
+		Attr  *int        `json:"attr"`
 		Pub   int64       `json:"pubtime"`
 		Upper struct {
 			Name string `json:"name"`
@@ -228,9 +229,13 @@ func parseBilibiliFavorites(raw []byte, folderID string, page int) (DiscoveryPag
 		if decimalID.MatchString(entry.ID.String()) {
 			identity = fmt.Sprintf("%d:%s", entry.Type, entry.ID.String())
 		}
-		item := DiscoveredVideo{ExternalID: identity, Title: entry.Title, Description: entry.Intro, Author: entry.Upper.Name, Cover: entry.Cover, PublishedAt: entry.Pub}
+		item := DiscoveredVideo{ExternalID: identity, Title: entry.Title, Description: entry.Intro, Author: entry.Upper.Name, Cover: entry.Cover, PublishedAt: entry.Pub, ProviderStatus: entry.Attr}
 		if entry.Type != 2 {
 			item.UnavailableReason = "unsupported Bilibili collection entry type"
+		} else if entry.Attr != nil && *entry.Attr != 0 {
+			// Favorite metadata keeps the BVID even after provider removal.
+			// Preserve its status and identity without enabling body import.
+			item.UnavailableReason = fmt.Sprintf("Bilibili collection video is unavailable (provider attr %d)", *entry.Attr)
 		} else if !biliVideoID.MatchString(entry.BVID) {
 			item.UnavailableReason = "Bilibili collection entry has no readable video URL"
 		} else {
