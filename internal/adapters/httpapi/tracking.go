@@ -3,10 +3,20 @@ package httpapi
 import (
 	"net/http"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 func (h *handler) registerTracking(mux *http.ServeMux) {
+	mux.HandleFunc("POST /api/v1/source-collections/discover", commandHandler(h, func(c *attentionapp.DiscoverSourceCollectionsCommand) *attentionapp.CommandMeta {
+		return &c.CommandMeta
+	}, http.StatusOK, func(r *http.Request, c attentionapp.DiscoverSourceCollectionsCommand) (any, error) {
+		s, ok := h.services.Tracking.(attentionapp.SourceCollectionDiscoveryService)
+		if !ok {
+			return nil, apierrors.NewUnsupported("source_collection_discovery")
+		}
+		return s.DiscoverSourceCollections(r.Context(), principal(r), c)
+	}))
 	mux.HandleFunc("GET /api/v1/source-collections", func(w http.ResponseWriter, r *http.Request) {
 		s, ok := h.services.Tracking.(attentionapp.SourceCollectionService)
 		if !ok {
