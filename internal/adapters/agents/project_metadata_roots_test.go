@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -46,5 +47,35 @@ func TestNativeMetadataIdentifiesStandaloneProjectWithoutReadGrant(t *testing.T)
 	}
 	if _, err := metadataProjectRoot(secret); err == nil {
 		t.Fatal("native config root accepted")
+	}
+}
+
+func TestNativeMetadataSessionSampleDoesNotHideLaterProjectRoots(t *testing.T) {
+	history, first, later := t.TempDir(), t.TempDir(), t.TempDir()
+	for _, root := range []string{first, later} {
+		if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte("not decoded"), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := 0; i < 12; i++ {
+		cwd := first
+		if i == 11 {
+			cwd = later
+		}
+		data, _ := json.Marshal(map[string]any{"type": "session_meta", "payload": map[string]any{"id": fmt.Sprintf("sample-%d", i), "cwd": cwd}})
+		if err := os.WriteFile(filepath.Join(history, fmt.Sprintf("%02d.jsonl", i)), append(data, '\n'), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	s := &RegisteredProjects{metadataSources: func() []projectMetadataSource { return []projectMetadataSource{{"codex", history, 3}} }}
+	snapshot := domain.ProjectDiscoverySnapshot{Status: "complete"}
+	s.observeProjectMetadata(context.Background(), &snapshot)
+	if len(snapshot.Projects) != 2 || snapshot.Sources[0].MatchedHeaders != 12 || snapshot.Sources[0].HeadersExamined != 12 || snapshot.Sources[0].MatchedRoots != 2 || snapshot.Sources[0].RetainedAssociations != 5 || snapshot.Sources[0].Status != "partial" {
+		t.Fatalf("session sampling hid roots %+v", snapshot)
+	}
+	for _, p := range snapshot.Projects {
+		if len(p.Contributors) > 4 {
+			t.Fatal("perroot samples exceed bound")
+		}
 	}
 }
