@@ -19,6 +19,7 @@ test('actual Orca discovery remains a read-only candidate list until human regis
   const server = await startS1Server({ browser: true, ...(reusePath ? { reuseOwnedTemporary: { path: reusePath, ownedRoot: ownedRoot! } } : {}) });
   let api = await humanAPI(server.apiURL);
   const read = async <T,>(path: string) => await api.get(path) as T;
+  let primaryError: unknown;
   try {
     await page.goto(`${server.webURL}/workspace`);
     const discovery = page.getByRole('region', { name: 'Orca 登记目录发现' });
@@ -144,10 +145,11 @@ test('actual Orca discovery remains a read-only candidate list until human regis
     await page.reload();
     await expect(discovery.getByRole('button', { name: '已登记此目录', exact: true })).toHaveCount(2);
   } catch (error) {
+    primaryError = error;
     await testInfo.attach('actual-primary-error', { body: error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ''}` : String(error), contentType: 'text/plain' });
     throw error;
   } finally {
     await testInfo.attach('actual-owned-project-store', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir }), contentType: 'application/json' });
-    await server.close({ preserveData: true });
+    await server.close({ preserveData: true, primaryError });
   }
 });

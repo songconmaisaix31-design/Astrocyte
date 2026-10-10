@@ -23,6 +23,7 @@ test('real metadata recommendation precedes human selection and reuses the origi
   let api = await humanAPI(server.apiURL);
   const read = async <T,>(endpoint: string) => await api.get(endpoint) as T;
   let recommendationID: string | undefined;
+  let primaryError: unknown;
   try {
     const original = await read<S['JobV1']>(`/jobs/${originalURLJob}`);
     expect(original.status).toBe('succeeded');
@@ -161,11 +162,12 @@ test('real metadata recommendation precedes human selection and reuses the origi
     await expect(row.getByRole('button', { name: '查看已入库资料', exact: true })).toBeVisible();
     await testInfo.attach('actual-selected-source-after-restart', { body: JSON.stringify(restarted, null, 2), contentType: 'application/json' });
   } catch (error) {
+    primaryError = error;
     await testInfo.attach('actual-primary-error', { body: error instanceof Error ? `${error.name}: ${error.message}\n${error.stack ?? ''}` : String(error), contentType: 'text/plain' });
     throw error;
   } finally {
     try {
       if (recommendationID) await testInfo.attach('actual-final-recommendation', { body: JSON.stringify(await read<S['JobV1']>(`/jobs/${recommendationID}`), null, 2), contentType: 'application/json' });
-    } finally { await server.close({ preserveData: true }); }
+    } finally { await server.close({ preserveData: true, primaryError }); }
   }
 });
