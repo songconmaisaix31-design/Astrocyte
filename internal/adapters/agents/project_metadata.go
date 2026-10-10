@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -130,7 +131,7 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 	available := map[string]bool{}
 	for _, source := range s.metadataSources() {
 		available[source.cli] = true
-		obs := domain.ProjectSourceObservation{CLI: source.cli, Source: "native_session_header", Status: "known", Reason: "bounded_headers_only_registered_roots"}
+		obs := domain.ProjectSourceObservation{CLI: source.cli, Source: "native_session_header", Status: "known", Reason: "bounded_headers_and_fixed_project_root_markers_only"}
 		partial := func(reason string) { obs.Status = "partial"; obs.Reason = reason }
 		if !filepath.IsAbs(source.root) {
 			obs.Status = "unknown"
@@ -194,12 +195,25 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 						partial("unverified_or_over_bound_headers_excluded")
 						continue
 					}
-					index, ok := byRoot[rootKey(cwd)]
-					if !ok {
-						continue
-					} // Header outside approved Orca roots is never followed.
 					if seen[id] {
 						continue
+					}
+					index, ok := byRoot[rootKey(cwd)]
+					if !ok {
+						// The user also approved project roots directly identified
+						// by native metadata. Inspect only this exact cwd's fixed
+						// marker stat; never walk its parent or read source files.
+						canonical, e := metadataProjectRoot(cwd)
+						if e != nil {
+							partial("unavailable_redirected_or_nonproject_cwd_excluded")
+							continue
+						}
+						if len(result.Projects) >= 256 {
+							return errors.New("project_bound")
+						}
+						index = len(result.Projects)
+						byRoot[rootKey(canonical)] = index
+						result.Projects = append(result.Projects, domain.RegisteredProject{Root: canonical, Name: filepath.Base(canonical), Source: "native_project_metadata", Git: domain.ProjectGitObservation{Status: "unknown", Reason: "not_observed"}, Activity: domain.ProjectActivityObservation{Status: "unknown", Source: "native_session_header"}, Contributors: []domain.ProjectContributor{}, Limitations: []string{"native_header_identified_root_fixed_marker_only", "initial_metadata_timestamp_is_not_latest_activity", "observation_only_no_context_or_execution_permission"}})
 					}
 					if obs.MatchedHeaders >= 256 {
 						return errors.New("header_bound")
@@ -233,4 +247,31 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 	}
 	// An empty supported source means no matched headers were observed, never
 	// that its CLI is absent, idle, configured or finished.
+}
+
+func metadataProjectRoot(cwd string) (string, error) {
+	canonical, err := CanonicalRoot(cwd)
+	if err != nil || rootKey(canonical) != rootKey(cwd) {
+		return "", errors.New("metadata_root_unavailable_or_redirected")
+	}
+	home, _ := os.UserHomeDir()
+	if home != "" && rootKey(canonical) == rootKey(home) {
+		return "", errors.New("home_root_excluded")
+	}
+	for _, part := range strings.FieldsFunc(canonical, func(c rune) bool { return c == '/' || c == '\\' }) {
+		if secretComponent(part) {
+			return "", errors.New("native_or_secret_root_excluded")
+		}
+	}
+	for _, key := range []string{"SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData"} {
+		if system := os.Getenv(key); system != "" && inside(system, canonical) {
+			return "", errors.New("system_root_excluded")
+		}
+	}
+	for _, marker := range []string{".git", "go.mod", "package.json", "pyproject.toml", "Cargo.toml", "CMakeLists.txt"} {
+		if info, e := os.Lstat(filepath.Join(canonical, marker)); e == nil && info.Mode()&os.ModeSymlink == 0 && ((marker == ".git" && (info.IsDir() || info.Mode().IsRegular())) || (marker != ".git" && info.Mode().IsRegular())) {
+			return canonical, nil
+		}
+	}
+	return "", errors.New("cwd_has_no_fixed_project_marker")
 }

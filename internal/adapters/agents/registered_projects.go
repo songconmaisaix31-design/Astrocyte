@@ -186,6 +186,9 @@ func (s *RegisteredProjects) DiscoverRegistered(ctx context.Context) (domain.Pro
 			}
 		}
 	}
+	if s.metadataSources != nil {
+		s.observeProjectMetadata(ctx, &result)
+	}
 	for i := range result.Projects {
 		if ctx.Err() != nil {
 			fail(result.Projects[i].Root, "discovery_deadline")
@@ -204,9 +207,6 @@ func (s *RegisteredProjects) DiscoverRegistered(ctx context.Context) (domain.Pro
 		if result.Projects[i].Git.Status == "unknown" {
 			fail(result.Projects[i].Root, "git_observation_incomplete")
 		}
-	}
-	if s.metadataSources != nil {
-		s.observeProjectMetadata(ctx, &result)
 	}
 	result.Board = domain.AggregateProjects(result.Projects)
 	sort.Slice(result.Projects, func(i, j int) bool { return rootKey(result.Projects[i].Root) < rootKey(result.Projects[j].Root) })
