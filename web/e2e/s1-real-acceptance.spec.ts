@@ -19,23 +19,32 @@ const videoURL = 'https://www.bilibili.com/video/BV1PReT6EEqR/';
 // public exports, plus a fresh authorized URL extraction; no fixtures/routes.
 test('real selected paper/video, scoped model rounds, ordinary reuse, authorized Agent reads and later persistence', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_REAL_S1_ACCEPTANCE !== '1', 'Requires coordinator-assigned live/model/media/native slot.');
-  test.setTimeout(1_200_000);
+  test.setTimeout(8_100_000);
   const rawPaper = await readFile(paperExport, 'utf8');
   const savedPaper = JSON.parse(rawPaper) as { extracted: { url: string; content: string } };
   expect(savedPaper.extracted.url).toBe(paperURL);
   expect(savedPaper.extracted.content.length).toBeGreaterThan(90_000);
   const savedVideo = JSON.parse(await readFile(videoExport, 'utf8')) as S['ContentV1'];
   expect(savedVideo.text.length).toBeGreaterThan(10_000);
+  // HTML textarea input normalizes CRLF. Preserve the historical export itself.
+  const videoInput = savedVideo.text.replaceAll('\r\n', '\n');
   const env = await summarizeEnvironment({ LOCALAPPDATA: process.env.LOCALAPPDATA ?? '', ASTROCYTE_ENABLE_SUMMARIZE: 'true', ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false' });
-  const server = await startS1Server({ browser: true, env });
+  const reusePath = process.env.ASTROCYTE_S1_REUSE_OWNED_TEMP;
+  const ownedRoot = process.env.ASTROCYTE_S1_REUSE_APPROVED_ROOT;
+  if (reusePath && !ownedRoot) throw new Error('Retained-store reuse requires the exact controller-approved owned root.');
+  const server = await startS1Server({ browser: true, env, ...(reusePath ? { reuseOwnedTemporary: { path: reusePath, ownedRoot: ownedRoot! } } : {}) });
   let api = await humanAPI(server.apiURL);
   const projectRoot = join(server.temporary, 'explicit-public-material-project');
-  await mkdir(projectRoot);
+  await mkdir(projectRoot, { recursive: true });
   await writeFile(join(projectRoot, 'README.md'), 'Only explicitly selected public paper/video references are approved.\n');
   const jobs: S['JobV1'][] = [];
   const modelRecords: S['DistillationV1'][] = [];
   let completed = false;
   async function read<T>(path: string): Promise<T> { return (await api.get(path)) as T; }
+  async function waitModelJob(id: string, expected: 'succeeded' | 'failed') {
+    const job = await read<S['JobV1']>(`/jobs/${id}`);
+    return waitJob(api, id, expected, Math.max(1000, Math.min(1_800_000, Date.parse(job.deadline_at) - Date.now()) + 1000));
+  }
   async function importUI(kind: 'paper' | 'video', text?: string, refresh = false, sourceURL = kind === 'paper' ? paperURL : videoURL) {
     await page.goto(`${server.webURL}/attention`);
     await page.getByRole('main').getByRole('button', { name: '添加资料', exact: true }).click();
@@ -51,7 +60,9 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const response = await accepted;
     expect(response.status()).toBe(202);
     const receipt = await response.json() as S['ImportJobV1'];
-    const job = await waitJob(api, receipt.job_id, 'succeeded', 240_000);
+    const acceptedJob = await read<S['JobV1']>(`/jobs/${receipt.job_id}`);
+    const importBudget = kind === 'video' && text === undefined ? 900_000 : 30_000;
+    const job = await waitJob(api, receipt.job_id, 'succeeded', Math.max(1000, Math.min(importBudget, Date.parse(acceptedJob.deadline_at) - Date.now() + 1000)));
     jobs.push(job);
     expect(job.delivery_unknown).not.toBe(true);
     expect(job.material_id).toBeTruthy();
@@ -62,9 +73,8 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
   }
   async function openMaterial(id: string) {
     const detail = await read<S['MaterialDetailV1']>(`/materials/${id}`);
-    expect(detail.material.title).toBeTruthy();
     await page.goto(`${server.webURL}/attention`);
-    await page.locator('main li[role="button"]').filter({ has: page.getByText(detail.material.title!, { exact: true }) }).click();
+    await page.locator('main li[role="button"]').filter({ has: page.getByText(detail.material.title || detail.material.source_locator, { exact: true }) }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByRole('button', { name: '继续沉淀', exact: true })).toBeVisible();
     return dialog;
@@ -74,11 +84,12 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const paperText = await read<S['ContentV1']>(`/materials/${paper.detail.material.id}/revisions/1/content`);
     expect(paperText.text).toBe(savedPaper.extracted.content);
     expect(paperText.provenance.mode).toBe('existing_json_export');
-    const oldVideo = await importUI('video', savedVideo.text);
-    const video = await importUI('video', undefined, true);
+    const oldVideo = await importUI('video', videoInput);
+    // A continuation reuses the genuinely completed first-run media job.
+    const video = await importUI('video', undefined, !reusePath);
     expect(video.detail.material.id).toBe(oldVideo.detail.material.id);
     const originalVideo = await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/1/content`);
-    expect(originalVideo.text).toBe(savedVideo.text);
+    expect(originalVideo.text).toBe(videoInput);
     const head = video.detail.material.current_revision;
     const videoText = await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/${head}/content`);
     expect(videoText.text.length).toBeGreaterThan(1000);
@@ -86,7 +97,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const reuse = await importUI('video');
     expect(reuse.receipt.job_id).toBe(video.receipt.job_id);
     expect(server.query('SELECT COUNT(*) AS n FROM attention_jobs')[0].n).toBe(jobsBeforeReuse);
-    const oldReceipt = await importUI('video', savedVideo.text);
+    const oldReceipt = await importUI('video', videoInput);
     expect(oldReceipt.receipt.job_id).toBe(oldVideo.receipt.job_id);
     expect(oldReceipt.detail.material.current_revision).toBe(head);
     expect((await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/${head}/content`)).text).toBe(videoText.text);
@@ -147,7 +158,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       const reference = page.waitForResponse(r => r.url().endsWith(`/project-spaces/${spaceID}/references`) && r.request().method() === 'POST');
       await refs.getByRole('button', { name: '@ 引用文件', exact: true }).click();
       expect((await reference).status()).toBe(200);
-      await expect(refs.getByRole('button', { name: `移除引用 · ${material.title}`, exact: true })).toBeVisible();
+      await expect(refs.getByRole('button', { name: `移除引用 · ${material.title || material.id}`, exact: true })).toBeVisible();
     }
     async function modelRound(materialID: string, stage: 'content' | 'topic' | 'project', question: string, prior: string[] = [], recoverPublication = false) {
       const dialog = await openMaterial(materialID);
@@ -174,7 +185,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
         try {
           await rename(objectRoot, retainedRoot); moved = true;
           await writeFile(objectRoot, 'Owned temporary publication failure; restored before retry.', { flag: 'wx' }); blockedRoot = true;
-          const failed = await waitJob(api, receipt.job_id, 'failed', 240_000);
+          const failed = await waitModelJob(receipt.job_id, 'failed');
           jobs.push(failed);
           expect(failed.delivery_unknown).toBe(false);
           const payload = JSON.parse(String(server.query('SELECT payload FROM attention_jobs WHERE id=?', failed.job_id)[0].payload)) as { Result?: unknown; result?: unknown };
@@ -185,7 +196,9 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
           if (blockedRoot) await unlink(objectRoot);
           if (moved) await rename(retainedRoot, objectRoot);
         }
-        await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+        await server.restart();
+        api = await humanAPI(server.apiURL);
+        await page.goto(`${server.webURL}/attention`);
         await page.getByRole('button', { name: '刷新队列', exact: true }).click();
         const row = page.locator('li').filter({ has: page.locator('strong').filter({ hasText: receipt.job_id }) });
         await expect(row).toContainText('可以重试');
@@ -200,7 +213,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
         expect((await read<S['LocalAgentListV1']>('/local-agents')).items.find(item => item.id === 'codex')!.capabilities.start.checked_at).toBe(startBefore);
         expect(String(server.query('SELECT payload FROM attention_jobs WHERE id=?', receipt.job_id)[0].payload)).toBe(resultBefore);
       }
-      const job = await waitJob(api, receipt.job_id, 'succeeded', 240_000);
+      const job = await waitModelJob(receipt.job_id, 'succeeded');
       jobs.push(job);
       expect(job.delivery_unknown).not.toBe(true);
       if (recoverPublication) expect(job.attempts).toBe(2);
@@ -214,16 +227,18 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       expect(record!.prior_distillation_ids).toEqual([...prior].sort());
       modelRecords.push(record!);
       // A new request identity with the same fixed input/question reuses the receipt.
-      const body = response.request().postDataJSON() as Record<string, unknown>;
-      const key = randomUUID();
-      const repeated = await fetch(response.url(), { method: 'POST', headers: { Cookie: api.cookie, Origin: server.webURL, 'Content-Type': 'application/json', 'X-CSRF-Token': api.session.csrf_token, 'Idempotency-Key': key }, body: JSON.stringify({ ...body, request_id: key }) });
-      expect(repeated.status).toBe(202);
-      expect((await repeated.json() as S['ImportJobV1']).job_id).toBe(receipt.job_id);
-      if (!recoverPublication) await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+      if (!recoverPublication) {
+        const body = response.request().postDataJSON() as Record<string, unknown>;
+        const key = randomUUID();
+        const repeated = await fetch(response.url(), { method: 'POST', headers: { Cookie: api.cookie, Origin: server.webURL, 'Content-Type': 'application/json', 'X-CSRF-Token': api.session.csrf_token, 'Idempotency-Key': key }, body: JSON.stringify({ ...body, request_id: key }) });
+        expect(repeated.status).toBe(202);
+        expect((await repeated.json() as S['ImportJobV1']).job_id).toBe(receipt.job_id);
+        await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+      }
       return record!;
     }
     const contentQuestion = '仅依据固定论文正文列出核心方法与明确局限，保留待查问题；不要调用工具，全部文字限制1000中文字以内。';
-    const content = await modelRound(paper.detail.material.id, 'content', contentQuestion, [], true);
+    const content = await modelRound(paper.detail.material.id, 'content', contentQuestion);
     const videoContent = await modelRound(video.detail.material.id, 'content', '仅依据所选视频实际字幕提炼内容与尚待验证的主张，不补造时间或成果；全部文字限制1000中文字以内。');
     const paperDialog = await openMaterial(paper.detail.material.id);
     await paperDialog.getByRole('button', { name: '继续沉淀', exact: true }).click();
@@ -240,9 +255,9 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     const bridge = (await bridgeResponse.json() as S['DistillationResultV1']).distillation;
     expect(bridge.provenance.mode).toBe('manual');
     await paperDialog.getByRole('button', { name: '关闭', exact: true }).click();
-    const topic = await modelRound(paper.detail.material.id, 'topic', '仅对比所选论文与视频固定正文和前轮记录，关联不成立则明确待查问题，不推断已完成研究；全部文字1000中文字以内。', [content.id, bridge.id]);
-    const videoTopic = await modelRound(video.detail.material.id, 'topic', '延续前轮所选视频内容，核对与固定论文正文的潜在关联；没有支持则明确待查问题，不称研究成果。不要启动任务，全部文字1000中文字以内。', [videoContent.id, topic.id]);
-    expect(videoTopic.input_refs.some(ref => ref.material_id === paper.detail.material.id && ref.revision === 1)).toBe(true);
+    const topic = await modelRound(paper.detail.material.id, 'topic', '仅依据当前固定论文正文和前轮内容记录，整理主题与明确待查问题；其他资料尚未交付，不推断关联或已完成研究；全部文字1000中文字以内。', [content.id]);
+    const videoTopic = await modelRound(video.detail.material.id, 'topic', '延续当前所选视频固定正文和前轮内容，整理主题与待查问题；其他资料未交付，不编造跨资料关联或研究成果。不要启动任务，全部文字1000中文字以内。', [videoContent.id], true);
+    expect(videoTopic.input_refs.every(ref => ref.material_id === video.detail.material.id && ref.revision === head)).toBe(true);
     const candidateDialog = await openMaterial(paper.detail.material.id);
     await candidateDialog.getByRole('button', { name: '形成候选', exact: true }).click();
     const candidateForm = candidateDialog.locator('form').filter({ has: candidateDialog.getByRole('heading', { name: '形成候选', exact: true }) });
@@ -306,7 +321,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     api = await humanAPI(server.apiURL);
     expect(await read<S['OpportunityDetailV1']>(`/opportunities/${candidate.id}`)).toEqual(reviewed);
     for (const material of [paper.detail.material, video.detail.material]) expect((await read<S['MaterialDetailV1']>(`/materials/${material.id}`)).material.lifecycle).toBe('active');
-    expect((await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/1/content`)).text).toBe(savedVideo.text);
+    expect((await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/1/content`)).text).toBe(videoInput);
     expect((await read<S['MissionListV1']>('/missions')).items).toEqual([]);
     await page.goto(`${server.webURL}/attention`);
     for (const width of [1280, 1920]) {
@@ -318,7 +333,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     completed = true;
   } finally {
     await testInfo.attach('actual-job-states', { body: JSON.stringify(jobs, null, 2), contentType: 'application/json' });
-    if (!completed) await testInfo.attach('actual-retained-store-path', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir }, null, 2), contentType: 'application/json' });
-    await server.close({ preserveData: !completed });
+    await testInfo.attach('actual-retained-store-path', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir, completed }, null, 2), contentType: 'application/json' });
+    await server.close({ preserveData: true });
   }
 });

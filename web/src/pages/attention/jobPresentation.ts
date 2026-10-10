@@ -4,6 +4,7 @@ type Job = components['schemas']['JobV1'];
 const actions: Record<string, string> = {
   configure_public_source_network: '所选公开来源被本机 DNS 或代理网络配置阻断。请检查该来源的真实 DNS 解析与代理配置，修复后再明确重试。',
   install_pinned_summarize_and_configure_local_media_tools: '当前缺少获取视频正文所需的本地工具。请完成项目媒体依赖安装后再明确重试，也可提供已有 summarize 导出。',
+  repair_storage_then_retry_cached_result: '模型结果已保存，本地写入尚未完成。请修复资料存储目录后重试原作业；服务会复用已保存结果，不再次调用模型。',
 };
 
 /** Display persisted outcomes; never infer completion or retry unknown delivery. */
