@@ -197,10 +197,33 @@ func canonicalRoot(root string) (string, error) {
 		return "", err
 	}
 	clean := filepath.Clean(abs)
+	// A naming alias is permitted, but a root or ancestor redirect is not.
+	// Check before expanding Windows 8.3 names so aliases cannot hide links.
+	for path := clean; ; path = filepath.Dir(path) {
+		info, err := os.Lstat(path)
+		if err != nil {
+			return "", err
+		}
+		if rootRedirect(info) {
+			return "", errors.New("root must not cross a symlink")
+		}
+		if filepath.Dir(path) == path {
+			break
+		}
+	}
+	named, err := expandRootNames(clean)
+	if err != nil {
+		return "", err
+	}
 	resolved, err := filepath.EvalSymlinks(clean)
-	if err != nil || !strings.EqualFold(resolved, clean) {
+	if err != nil {
+		return "", err
+	}
+	resolved, err = expandRootNames(resolved)
+	if err != nil || !strings.EqualFold(resolved, named) {
 		return "", errors.New("root must not cross a symlink")
 	}
+	// Preserve the exact approved root spelling and work identity.
 	return clean, nil
 }
 

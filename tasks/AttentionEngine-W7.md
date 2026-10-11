@@ -1,5 +1,24 @@
 # Attention Engine W7 · 本地作品聚合（AI 作品寻回册）+ 链1事件源
 
+## Windows CI 定向返修（2026-10-11，本轮新 Dispatch）
+
+任务 `task_46b94cb91958` / `ctx_fe6ac3090f92`，继续原 Codex --yolo Worker，不创建 Agent。唯一写域 `internal/adapters/worksscan/**` 与本报告；W0 同时独占 agents 返修。本轨先普通合入 root 最终树 `0e49301734549a02b9b1b9078aaef96fd6422742`，merge `82aa0d01a6c0039f42cbfe23de03a21ca7cd80e7`，没有 cherry-pick/squash/force。SOURCE `38c5bdeeb5fcec7b2f0a3097ef3730ab1a30d9c4` 已 push 至 `songconmaisaix31-design/attention-engine-w7-works`。
+
+第一远程 RED 原件 `C:/Users/DW/AppData/Local/Temp/astrocyte-ci-38150022874-first-failed.log` 未改：Windows CI38150022874 的 os.TempDir 返回 `C:\Users\RUNNER~1\...`，EvalSymlinks 展开为 runneradmin，旧 EqualFold 比较把名称别名误判为 symlink；scanner 返回 root_unavailable，marker 测试下标 panic，下游 HTTP/Works 聚合失败。自有合成 TempDir 通过 Windows GetShortPathName API 实际获得 `TESTSC~1/APPROV~1`，修复前根+祖先短名和仅祖先短名两场均同样 RED，不伪造短名或改 TEMP 掩盖。
+
+修复：Windows GetLongPathName 展开目录条目名称作比较；root/每级 ancestor 先 Lstat，拒绝 ModeSymlink 及 Windows reparse point，再独立 EvalSymlinks 校验。保留输入已批准 root 拼写/WorkIdentity，不把它替换为父目录或其他路径；不以 SameFile 单独准入。marker 测试读取 works[0] 前断言 works/failures，失败输出原原因。maxRoots=256（HTTP 既有 roots≤64）、maxDepth=8、maxFiles=10000、marker≤64KiB、私密/依赖目录排除及 HTTP 登记授权均未改变。
+
+额外保留本地 junction 首 RED：当前 Go 将真实 junction 根暴露为 ModeIrregular，ModeSymlink/EvalSymlinks 组合会错误接受它；实际 junction 祖先先被拒绝。新增 Windows reparse 属性检查后根/祖先/短名祖先全部拒绝。测试中 SameFile 明确证实 junction 与 target 为同一对象，但生产代码不以此接受重定向。此发现已向 root Handoff 给 W0 agents owner，未改其文件。
+
+| 本轮命令（GOFLAGS=-p=1，GOMAXPROCS=2） | 结果与范围 |
+|---|---|
+| `go test -count=1 -v ./internal/adapters/worksscan` | 9 个顶层 PASS，2 SKIP；真实 8.3 两子例、真实 junction 三子例均 PASS；保留 depth、node_modules 排除和 marker 测试 |
+| `go test -count=1 ./internal/adapters/httpapi ./internal/workspace/... ./internal/adapters/sqlite ./tests/attention-engine -run 'Works\|W7WorksAggregationAcrossRestart'` | 五包 PASS；既有真实 SQLite/HTTP human+CSRF/登记根边界、请求重放、restart 与 W7 临时目录聚合；没有跑批准的实际作品根 opt-in |
+| `GOOS=linux GOARCH=amd64 go test -c ./internal/adapters/worksscan -o C:/Users/DW/AppData/Local/Temp/astrocyte-w7-ci-scanner-linux.test` | PASS，仅跨平台编译，未执行 Linux 二进制 |
+| `gofmt` 所改 Go 文件；`git diff --check` / staged check | PASS |
+
+真实限制：本机无 os.Symlink 创建权限，root/ancestor 普通 symlink 两项 SKIP，不能称该两项实际运行通过；unprivileged 真实 junction 的 root/ancestor/短名重定向则已执行通过。真实 8.3 已执行，没有短名 NOT_RUN；其他文件系统不生成短名时测试明确 NOT_RUN/SKIP。远程 CI 首次失败仍 RED，新最终树 CI 与最终合入由 root 验证，本轨未启动/重跑远程 CI、全套检查、UI 写入、媒体、真实作品扫描或私人 native 记录。下文上一 Dispatch 的实际五能力/链1报告为历史有效证据，本轮仅解决上述 CI 路径兼容故障，不宣称整套 CI 已绿。
+
 ## 当前返修状态（2026-10-11）
 
 **W7 本轨验收通过**：ea942c4 的旧交付仅领域、存储、本地服务和 fixture；返修已完成真实五能力 UI、实际登记根有界扫描、持久化 HTTP 命令、重启、三尺寸键盘以及链1原始 pending observation 验收。普通消费 W0 P2 `5d356370c4157e74d96388afd098d5fea14dc799` 和最终 startup `396aec1d6bee777dd380ff06fc5d821d0f7f5b3f`，依赖 owner 接线，未修改共享 HTTP/契约/迁移/generated/cmd。当前 Dispatch task_355d5b638062 / ctx_cf173bcd2418，实际客户端 Codex（当前已启动的 --yolo 会话），不新建 Agent。根节点独占协调；本 Worker 保留原写域。以下早期 NOT_RUN/NOT_DONE/RED 是当时记录，保留原始失败；最终证据见下文“最终链1阶段”。本结论不表示整个 Attention Engine 或用户主观视觉验收完成。
