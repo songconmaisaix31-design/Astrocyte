@@ -3,7 +3,7 @@
 - 轨道分支：`songconmaisaix31-design/attention-engine-w5-experience`
 - 事实源：任务书 `tabbit-code (2).md` §3/§4.3/§4.5/§7/§8 M5；主计划 `tasks/AttentionEngine-plan.md` W5 行
 - 独占写域：`internal/attention/domain/experience*.go`、`internal/attention/app/experience_*.go`、`internal/adapters/sqlite/experience_store*.go`、`tests/attention-engine/M5-experience*`、本文件
-- 状态：原 owner 在 `61497e7` 接续；纯规则基线通过，Wave B 等待协调者发布 M0 精确 SHA。app/service/store 与 SQLite 验收尚未实现，M5 未通过。
+- 状态：已消费 M0 `47f47f3`；app/store 和 4 个 SQLite 经验验收通过。原始输入为 contract_local fixtures，W1 生产 EventReader、失败事件自动接线及真实会话证据尚待消费；整体 M5 未通过。
 
 ## 1. 目标（§4.3 Experience）
 
@@ -101,12 +101,13 @@ Wave A（已完成，`domain/experience.go` + `domain/experience_test.go`，纯�
 - [x] 失败来源分类：`CaptureEligible`（仅 `agent_task`+`failed`；`job_failed`/`import`/`distillation` 不被伪装成 agent_task 失败）
 - [x] 单包验证：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain/` PASS
 
-Wave B（待 M0 契约 SHA 发布后编码）：
-- [ ] fetch + merge 集成分支取 M0 契约类型（Experience schema / EventRef / Event）
-- [ ] `app/experience_*.go`：CaptureFailure / ApproveExperience / ShareExperience / ListExperiences + 服务接口（人工关口按 Principal.Kind）
-- [ ] `adapters/sqlite/experience_store*.go`：仓库 + Tx 接口 + 迁移表读写（迁移 `014+` 由 W0 负责，跨轨 Handoff）
-- [ ] `tests/attention-engine/M5-experience*`：三组验收测试（失败候选捕获 / 晋级关口 / 作用域分享），含 SQLite 持久化 + 冷重启
-- [ ] 串行验收通过后 commit + push，发 worker_done succeeded
+Wave B：
+- [x] 普通 merge W0 精确 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，复用 domain Experience / EventRef / app StoredEvent、StoredExperience 和 `014/015` 迁移。
+- [x] `app/experience_service.go`：CaptureFailure / CaptureFailures / 人工 approve、demote、share / approved-only GetExperiences / 原始证据解析。
+- [x] `adapters/sqlite/experience_store.go`：复用 EngineRepository 的 BEGIN IMMEDIATE；原始事件唯一键捕获幂等、乐观版本、审计原子写入。
+- [x] `tests/attention-engine/M5-experience*`：4 个 contract_local 源事件的真实 SQLite 验收，含冷连接重开、跨连接并发捕获、项目范围与人工审计。
+- [ ] 消费 W1 生产 EventReader 的精确 SOURCE，与事件入口接线自动捕获并验证真实失败来源；无原始会话批准时保留 NOT_RUN，不用 fixtures 替代。
+- [ ] 最终验收通过后提交报告、push，发送一次 worker_done。
 
 ## 9. 阶段收束记录（2026-10-11）
 
@@ -126,3 +127,15 @@ Wave B（待 M0 契约 SHA 发布后编码）：
 - 失败 outcome 的归一化字段、规则结构化输入、受信项目上下文等待协调者与共享 owner 确认；不据未提交文件冻结接口。收到精确 SHA 后普通合并，完成 SQLite 捕获、重启、幂等、人工关口和检索范围验收。
 - 协调者已确认：M0 尚无可消费稳定 SHA，继续等待；项目身份来自应用 Principal/启动绑定，不能从 Event.Scope 自授；失败 outcome 只取明确原始元数据。依赖等待不发送 worker_done。
 - 等待期间新增 `StructureFailure` 纯规则：pattern 为已观察到的 `agent_task`，verdict 为 `condition`，condition 为 `outcome=failed`；不把单次失败推出为 avoid 建议，不读原对话文本。导入/蒸馏/未知效果拒绝进入此规则。`GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./internal/attention/domain/` PASS；仍未替代 SQLite 验收。
+
+## 11. SQLite 核心阶段与接线 Handoff（2026-10-11）
+
+- 实际客户端/模型：Codex / gpt-6.1-sol（协调者运行态确认）；当前 YOLO 模式，不启动其他 Agent。
+- 服务构造：`sqlite.NewExperienceRepository(db)` 与 `app.NewExperienceService(repo, EventReader, ExperienceOptions{ProjectID: trustedStartupProject, Clock: clock})`。绑定必须由受信应用配置提供，不能从事件/请求正文初始化；事件 Scope 仅用于核对该绑定。
+- W0/W1 自动捕获接线：已持久化原始事件后调用 `CaptureFailure(ctx,eventID)`；重启补消费用 `CaptureFailures(ctx,from,to)`。服务重读原始 StoredEvent，pending/unknown/non-agent_task/import/distillation/job_failed 不捕获；原始 EventRef 只引用事件，未复制私人对话进入 Experience。
+- W6 读侧：`GetExperiences(ctx,Principal,projectID,pattern)` 返回 approved 且本项目持有/人工分享的 `[]StoredExperience`；请求 projectID 必须等于可信绑定。Agent 不可读取本项目 quarantine；人类可通过 `GetExperience` 审阅本项目候选。分享接收项目无法审批、降级或再分享源项目经验。
+- 人工动作：`ApproveExperience` / `DemoteExperience` / `ShareExperience` 实现 M0 `ExperienceGovernanceService`，命令要求 schema=1、RequestID、ExpectedVersion；版本冲突和非法迁移不修改记录。共享后降回 quarantine 会立即隐藏检索，保留原分享和动作审计。
+- 首次 app/sqlite 编译检查 RED：误用了不存在的 `newID`，已改为现有栈 `crypto/rand.Text`；定向复验通过，原 RED 不覆盖。早期定向 app/sqlite 输出 `[no tests to run]` 仅证明编译，不算行为验收。
+- 实际验收：`GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./tests/attention-engine -run TestM5Experience -v` 4 PASS；四个输入来源明确为 contract_local fixtures，存储和重启使用真实 modernc SQLite。
+- 适用检查：`go test -count=1 ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./tests/attention-engine` 四包 PASS；同四包 `go vet` PASS；`go build ./cmd/...` PASS；`git diff --check` PASS。均设置 `GOFLAGS=-p=1 GOMAXPROCS=2`。
+- 仍待：W1 生产 EventReader/明确来源语义和自动失败捕获接线；W0 HTTP/cmd 人类入口组装；W6 真正 SQLite+stdio 消费与完整 explain_focus。此阶段不宣称真实会话或整体 M5 完成。

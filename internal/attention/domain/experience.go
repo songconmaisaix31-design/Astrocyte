@@ -7,16 +7,16 @@ import (
 
 // Experience verdict vocabulary (§4.3).
 const (
-	VerdictAvoid     = "avoid"
-	VerdictPrefer    = "prefer"
-	VerdictCondition = "condition"
+	VerdictAvoid     = ExperienceVerdictAvoid
+	VerdictPrefer    = ExperienceVerdictPrefer
+	VerdictCondition = ExperienceVerdictCondition
 )
 
 // Experience status vocabulary (§4.3). Candidates are born quarantined and only
 // reach approved through the human gate.
 const (
-	StatusQuarantine = "quarantine"
-	StatusApproved   = "approved"
+	StatusQuarantine = ExperienceStatusQuarantine
+	StatusApproved   = ExperienceStatusApproved
 )
 
 // Promotion actions for the quarantine↔approved gate. The human gate itself is
@@ -29,7 +29,7 @@ const (
 
 // Agent-task event kind and execution outcome vocabulary (§4.1, §8 M5).
 const (
-	KindAgentTask    = "agent_task"
+	KindAgentTask    = EventKindAgentTask
 	OutcomeFailed    = "failed"
 	OutcomeSucceeded = "succeeded"
 )
