@@ -2,6 +2,13 @@
 
 事实源：任务书 §4.4 / §5.6 / §8 M4。基线 `attention-engine/v1-20261011`，实际分支 `songconmaisaix31-design/attention-engine-w4-knowledge`。
 
+## 阶段状态（交接 Codex --yolo）
+
+- **已完成**：两级存储纯规则（`domain/knowledge.go`：`KnowledgeStatus`/`ConfirmKnowledge`/`ReferencableKnowledge`/`CrystallizedVersion`/`AppendCrystallized`/`KnowledgeVisible`）+ 检索纯函数（`domain/retrieval.go`：`RetrievalScore`/`RankRetrieval`，λr 必传、无冻结默认）+ 验收脚手架 `tests/attention-engine/M4_retrieval_test.go`。commit `ab7d381`、`7294260` 已 push。
+- **未完成 / NOT_RUN**：`app/knowledge_*.go`、`adapters/sqlite/{knowledge_store,vec}*.go`、端到端 `M4_*_test.go`（fluid 重写/crystallized 只追加/confirmed 引用/跨项目过滤+分享审计）。全部依赖 M0。
+- **FAIL / UNKNOWN**：无本轨失败；M0 契约/迁移/sqlite-vec 结论状态 UNKNOWN（集成分支 `77712f3` 仍 docs-only，W0 分支未 push）。
+- **下一步接口要求**：见下方 Handoff——`domain.KnowledgeStatus` 引用、`knowledge_*` 四张表 DDL、W0 存储基础（Open/ExecMigration/事务助手）、sqlite-vec 结论。M0 SHA 发布后实现 store/app/vec。
+
 ## 范围与分层
 
 - 链2 末端：Sleep 巩固 → Knowledge Graph → 用户确认 → Project Workspace。
