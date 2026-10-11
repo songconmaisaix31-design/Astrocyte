@@ -41,6 +41,9 @@ tags:
     description: events HTTP v1 contract
   - name: local-agents
     description: Cached local CLI readiness and native capability observations
+  - name: attention-engine
+    description: Cognitive-core engine manual gates (knowledge confirm, experience
+      approve, conflict adjudication)
 paths:
   /source-collections/discover:
     post:
@@ -7182,6 +7185,233 @@ paths:
       security:
         - HumanSession: []
         - AgentBearer: []
+  /knowledge/{id}/confirm:
+    post:
+      operationId: confirmKnowledge
+      summary: Confirm a KnowledgeEntry for workspace reference
+      description: Human gate that moves a KnowledgeEntry from inbox to confirmed so
+        a Project Workspace may reference it. M0 returns 501; the assembled gate
+        (W4 store) performs exactly one status transition and no model call.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: KnowledgeEntry identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key; never automatic retry
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmKnowledgeRequestV1"
+      responses:
+        "200": &gateSuccess
+          description: Confirmed entry (future DTO only in M0)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmKnowledgeResultV1"
+              example:
+                schema_version: 1
+                entry:
+                  id: k-1
+                  topic: attention-engine
+                  fluid: evolving summary
+                  crystallized:
+                    fact: "true"
+                  sources:
+                    - event_id: e-1
+                      ts: 1700000000000
+                  status: confirmed
+        "400": &gateErr400
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403": &gateErr403
+          description: Scope or user-control access denied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404": &gateErr404
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409": &gateErr409
+          description: Resource version or status changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500": &gateErr500
+          description: Unexpected service failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501": &gateErr501
+          description: Capability is not implemented in M0
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Capability is not implemented in M0
+                  request_id: example-request
+                  retryable: false
+                  required_action: Read the current capabilities; choose an implemented
+                    operation
+      security:
+        - HumanSession: []
+  /experiences/{id}/approve:
+    post:
+      operationId: approveExperience
+      summary: Approve a quarantined Experience
+      description: Human gate that moves an Experience from quarantine to approved so
+        it becomes retrievable. M0 returns 501; the assembled gate (W5 store)
+        performs exactly one status transition and no model call.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Experience identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key; never automatic retry
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveExperienceRequestV1"
+      responses:
+        "200":
+          <<: *gateSuccess
+          description: Approved experience (future DTO only in M0)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApproveExperienceResultV1"
+              example:
+                schema_version: 1
+                experience:
+                  id: x-1
+                  pattern: centralized scheduler
+                  verdict: avoid
+                  condition: ">100 agents"
+                  evidence:
+                    - event_id: e-9
+                      ts: 1700000000000
+                  status: approved
+        "400": *gateErr400
+        "403": *gateErr403
+        "404": *gateErr404
+        "409": *gateErr409
+        "500": *gateErr500
+        "501": *gateErr501
+      security:
+        - HumanSession: []
+  /conflicts/{id}/adjudications:
+    post:
+      operationId: adjudicateConflict
+      summary: Record the human decision on a pending Conflict
+      description: Human gate that records a decision on a pending Conflict. M0
+        returns 501; the assembled gate (W2 store) applies the decision value and
+        never merges evidence automatically.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Conflict identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key; never automatic retry
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdjudicateConflictRequestV1"
+      responses:
+        "200":
+          <<: *gateSuccess
+          description: Adjudicated conflict (future DTO only in M0)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdjudicateConflictResultV1"
+              example:
+                schema_version: 1
+                conflict:
+                  id: c-1
+                  topic: scheduler
+                  kind: knowledge_entry
+                  left_ref: k-1
+                  right_ref: k-2
+                  detail: contradictory capacity facts
+                  status: resolved_merge
+        "400": *gateErr400
+        "403": *gateErr403
+        "404": *gateErr404
+        "409": *gateErr409
+        "500": *gateErr500
+        "501": *gateErr501
+      security:
+        - HumanSession: []
 components:
   schemas:
     ErrorV1:
@@ -12197,6 +12427,220 @@ components:
           files:
             - TASK.md
             - STATUS.md
+    EventRefV1:
+      type: object
+      additionalProperties: false
+      properties:
+        event_id:
+          type: string
+        ts:
+          type: integer
+      required:
+        - event_id
+        - ts
+      examples:
+        - event_id: e-1
+          ts: 1700000000000
+    KnowledgeEntryV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        topic:
+          type: string
+        fluid:
+          type: string
+        crystallized:
+          type: object
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventRefV1"
+        status:
+          type: string
+          enum:
+            - inbox
+            - confirmed
+      required:
+        - id
+        - topic
+        - fluid
+        - crystallized
+        - sources
+        - status
+    ExperienceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        pattern:
+          type: string
+        verdict:
+          type: string
+          enum:
+            - avoid
+            - prefer
+            - condition
+        condition:
+          type: string
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventRefV1"
+        status:
+          type: string
+          enum:
+            - quarantine
+            - approved
+      required:
+        - id
+        - pattern
+        - verdict
+        - condition
+        - evidence
+        - status
+    ConflictV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        topic:
+          type: string
+        kind:
+          type: string
+          enum:
+            - attention_node
+            - knowledge_entry
+        left_ref:
+          type: string
+        right_ref:
+          type: string
+        detail:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - resolved_keep_left
+            - resolved_keep_right
+            - resolved_merge
+            - dismissed
+      required:
+        - id
+        - topic
+        - kind
+        - left_ref
+        - right_ref
+        - detail
+        - status
+    ConfirmKnowledgeRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+      examples:
+        - schema_version: 1
+          request_id: example-request
+          expected_version: 1
+    ApproveExperienceRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+      examples:
+        - schema_version: 1
+          request_id: example-request
+          expected_version: 1
+    AdjudicateConflictRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+        expected_version:
+          type: integer
+          minimum: 1
+        decision:
+          type: string
+          enum:
+            - keep_left
+            - keep_right
+            - merge
+            - dismiss
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - decision
+      examples:
+        - schema_version: 1
+          request_id: example-request
+          expected_version: 1
+          decision: merge
+    ConfirmKnowledgeResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        entry:
+          $ref: "#/components/schemas/KnowledgeEntryV1"
+      required:
+        - schema_version
+        - entry
+    ApproveExperienceResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        experience:
+          $ref: "#/components/schemas/ExperienceV1"
+      required:
+        - schema_version
+        - experience
+    AdjudicateConflictResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        conflict:
+          $ref: "#/components/schemas/ConflictV1"
+      required:
+        - schema_version
+        - conflict
   securitySchemes:
     HumanSession:
       type: apiKey
