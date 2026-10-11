@@ -2,6 +2,8 @@
 
 ## 当前波次：v2.1
 
+04:33 原W0的v2.1隐私源码6e7de7e、报告b728f23已结算。追加fixture-only写域：`tests/attention-engine/M5-mcp_delivery_test.go`、`tests/attention-engine/M5-mcp_test.go`、`tests/attention-engine/M5-mcp_sqlite_test.go`及原`tasks/M6-W0.md`。root独立M5首RED保存于evidence/root-v21/m5-first-red.log；旧测试要求wire raw/origin_key，与新exposure契约冲突。原owner在同一工作树/分支修正投影期待，保留真实提交、event_id对账、重启、本地raw、全部权重和权限断言，禁止修改生产代码/共享helper/其他测试。运行所有MCP测试及真实100隐私审计，提交推送后交原集成owner普通合。Orca重启后root新终端term_4766555e-2c8c-4b7b-807c-2cd31fa43fa5绑定原Run，旧终端不复用；恢复固定逻辑owner，不另开并行写者。
+
 事实源[M6 v2.1](M6-validation-v2.1.md)覆盖下文历史口径。W1保持原固定写域，完成全量认知工具盘点/映射/header、git固定1893、200非认知随机抽检、显式参数接入，再准备全N单事件/30Sleep回放；V0三指标通过前不正式回放。W0本波唯一写域`internal/adapters/mcp/**`、`tests/validation/privacy/**`、`tasks/M6-W0.md`，禁止改SQLite/store/migrations/任何app/domain。原raw侧表授权撤销，schema零豁免。两轨先同步root本波文档commit，开发测试报告由同ownercommit+push，随后唯一原集成owner普通合与薄胶水；root独立验收/push。W2未启动，EXPERIMENT草案暂归root。
 
 W1输出N/完整率/误标率的分母先按原生结构声明，不以当前mapper成功筛分母，不将housekeeping/token_count/用户或思考行计成认知。工具wrapper只用确定性可观察语义，不运行历史命令/JS，不把未观察的编辑/深读/成功补为事实。raw全量与抽样均只在既有本地证据根，聚合可读；原100和旧泄漏首RED不覆盖。强度与权重、λ_r单位先核对既有字段，零引擎改动；跨写域必需路径先报root登记。
