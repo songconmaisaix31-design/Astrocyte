@@ -40,24 +40,28 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
-	GitHubRepositories workspaceapp.GitHubRepositories
-	Tracking           attentionapp.TrackingService
-	LocalProjects      workspaceapp.LocalProjects
-	RegisteredProjects workspaceapp.RegisteredProjects
-	RankingProfile     attentionapp.RankingProfileService
-	Automatic          attentionapp.AutomaticDistillationService
-	Attention          attentionapp.AttentionService
-	Foundation         foundation.Service
-	Materials          attentionapp.MaterialService
-	Opportunities      attentionapp.OpportunityService
-	Projects           workspaceapp.ProjectService
-	LocalAgents        workspaceapp.LocalAgentInventory
-	Proposals          workspaceapp.ProposalService
-	Sessions           workspaceapp.SessionService
-	Missions           swarmapp.MissionService
-	PaperSearch        attentionapp.PaperSearchService
-	Progress           workspaceapp.ProjectProgressService
-	Gates              attentionapp.EngineGates
+	GitHubRepositories   workspaceapp.GitHubRepositories
+	Tracking             attentionapp.TrackingService
+	LocalProjects        workspaceapp.LocalProjects
+	RegisteredProjects   workspaceapp.RegisteredProjects
+	RankingProfile       attentionapp.RankingProfileService
+	Automatic            attentionapp.AutomaticDistillationService
+	Attention            attentionapp.AttentionService
+	Foundation           foundation.Service
+	Materials            attentionapp.MaterialService
+	Opportunities        attentionapp.OpportunityService
+	Projects             workspaceapp.ProjectService
+	LocalAgents          workspaceapp.LocalAgentInventory
+	Proposals            workspaceapp.ProposalService
+	Sessions             workspaceapp.SessionService
+	Missions             swarmapp.MissionService
+	PaperSearch          attentionapp.PaperSearchService
+	Progress             workspaceapp.ProjectProgressService
+	Gates                attentionapp.EngineGates
+	KnowledgeGovernance  attentionapp.KnowledgeGovernanceService
+	ExperienceGovernance attentionapp.ExperienceGovernanceService
+	ConflictGate         attentionapp.ConflictGateService
+	Works                workspaceapp.Works
 }
 
 // NewServer creates a new HTTP server with the given configuration.
@@ -97,6 +101,7 @@ func NewServer(cfg Config) *Server {
 	h.registerPaperSearch(mux)
 	h.registerProgress(mux)
 	h.registerEngineGates(mux)
+	h.registerWorks(mux)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {
