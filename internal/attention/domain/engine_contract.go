@@ -149,13 +149,18 @@ type KnowledgeEntry struct {
 	Fluid        string          `json:"fluid"`
 	Crystallized json.RawMessage `json:"crystallized"`
 	Sources      []EventRef      `json:"sources"`
-	Status       string          `json:"status"` // inbox | confirmed
+	Status       KnowledgeStatus `json:"status"`
 }
 
-// KnowledgeEntry statuses (§4.4): only confirmed is referenceable by a workspace.
+// KnowledgeStatus is the admission state of a KnowledgeEntry (§4.4). Only
+// confirmed is referenceable by a Project Workspace. This is the single source
+// for the knowledge status vocabulary; W4's wave-A knowledge.go must drop its
+// duplicate KnowledgeStatus/KnowledgeInbox/KnowledgeConfirmed and use these.
+type KnowledgeStatus string
+
 const (
-	KnowledgeStatusInbox     = "inbox"
-	KnowledgeStatusConfirmed = "confirmed"
+	KnowledgeInbox     KnowledgeStatus = "inbox"
+	KnowledgeConfirmed KnowledgeStatus = "confirmed"
 )
 
 // EvidenceRef is Evidence, the view of an Event (§4.5). No independent object

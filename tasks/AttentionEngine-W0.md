@@ -39,7 +39,26 @@ Task `task_0544bbb70579` / Dispatch `ctx_64948eee5483`；开发 Worker OpenCode 
 - **W2**：`engine_store`/`conflict` 实现 `AdjudicateConflict`（pending→resolved_*）。
 - 三个关口端点当前 501；集成轨（波 B/C）组装 `httpapi.Services.Gates` 后即启用，无需再改 openapi 契约（契约已锁定）。
 
-## 剩余限制
+## 枚举单一来源（协调预审，避免同名重复定义）
 
-- 关口端点仅在 `Services.Gates` 组装后返回 200；M0 内返回 501 是诚实状态（未写 W4/W5/W2 store）。
-- 未合 main/未跑远程 CI；本轨分支 `songconmaisaix31-design/attention-engine-w0-core` 待 push。
+本轨 `engine_contract.go` 是 §4 类型与值域词汇的单一 owner。与已提交波 A 域文件的冲突及裁决（集成轨按此收敛，各轨 drop 重复、引用本契约）：
+
+- **W4 `domain/knowledge.go`**：本轨已采纳其 `KnowledgeStatus` 类型 + `KnowledgeInbox`/`KnowledgeConfirmed`（`KnowledgeEntry.Status KnowledgeStatus`）。W4 波 A 文件须删除同名 `KnowledgeStatus`/`KnowledgeInbox`/`KnowledgeConfirmed` 重复定义，仅保留 `ConfirmKnowledge`/`ReferencableKnowledge`/`AppendCrystallized`/`KnowledgeVisible` 函数与 `CrystallizedVersion`（版本接口，本轨未重复定义）。
+- **W5 `domain/experience.go`**：其 `VerdictAvoid/VerdictPrefer/VerdictCondition`、`StatusQuarantine/StatusApproved`、`KindAgentTask/OutcomeFailed/OutcomeSucceeded` 与本轨 `ExperienceVerdict*`/`ExperienceStatus*`/`EventKindAgentTask` 语义重复。集成时以本轨 `domain.Experience`（verdict/status）与 `domain.Event`（kind）词汇为单一来源，W5 删除重复 value 常量（或反向改名，二选一，勿并存）。
+- **W2 `domain/{conflict,dynamics,lifecycle,topic,antimatthew}.go`**：仅函数与阈值常量（`MergeRelatednessThreshold=0.8`、`MomentumThreshold=0.15`、`ColdArchiveInactivityDays=90`），无类型与本轨 `Conflict`/`AttentionNode`/`Signal` 冲突；`Conflict` 结构体以本轨 `domain.Conflict` 为源。
+- **W3 `domain/sleep.go`**：`EventTopic`/`Cluster`/`NodeDecision` 等为 sleep 流水线内部类型，与本轨 §4 类型无冲突。
+
+## 预审接口要求（本轨未完成，列为下一步；Codex 接续时落实）
+
+1. **StoredEventID**：`Event`（§4 原始形状）无 id；稳定 `event_id` 由存储层（`attention_engine_events.id`）分配，`EvidenceRef`/`EventRef` 经 `GetEvent` 回溯原始 `raw`。本轨未建独立 Evidence 表（正确），但应用/存储包装的 `GetEvent(id)→Event` 接口与稳定 id 生成（内容寻址或单调 id）待定义。
+2. **TS 单位**：`ts`/`last_active` 均为毫秒；W2 动力学 `Δt` 天换算须用 `86400000`，勿按秒。已通知 W2。
+3. **updated_at / 生命周期**：`AttentionNode.last_active` 保持 §4"最后行为"语义不变；独立"状态更新时间戳/生命周期状态"（避免重复衰减与冷归档丢失）在应用/存储包装另加字段，勿改 `last_active` 原义。
+4. **project_id / 分享审计**：§4 的 `KnowledgeEntry`/`Experience` 未含 project；默认项目隔离 + 显式跨项目分享（带审计）在应用/存储包装保留 `project_id` 与分享审计字段。`migrations/014` 表未加 `project_id` 列，接续时在对应 store 的 `data` JSON 或加列承载；MCP scope 来自受信启动配置，不信任请求 project 参数。
+5. **topic 待归类**：原始事件未带显式主题时 `topic` 保持空/待归类，由 sleep 规则生成，不凭空编标签。
+
+## 剩余限制 / 未完成清单
+
+- **已完成**：§4 契约类型 + 引擎接口 + 三个人工关口接口、迁移 014、存储基础 `engine_common.go`、HTTP 关口路由（501 未组装）、watcher 映射 fixture 测试、spike 结论。SHA `1b3b2ef5a4fd2b96a947da43de81ffdd9b878f24`。
+- **未完成（Handoff）**：`GetEvent(id)` 稳定 id 包装接口；`project_id`+分享审计落库；`updated_at`/生命周期字段；§4 与 W4/W5 波 A 枚举最终改名合并（见上节）；三个关口 store（W4/W5/W2）。
+- **FAIL/UNKNOWN**：无 FAIL；sqlite-vec 为已裁决"砍"（非 UNKNOWN，证据见上）。关口端点 501 为 M0 诚实未组装状态，非失败。
+- 未合 main/未跑远程 CI；本轨分支 `songconmaisaix31-design/attention-engine-w0-core` 已 push `1b3b2ef`。

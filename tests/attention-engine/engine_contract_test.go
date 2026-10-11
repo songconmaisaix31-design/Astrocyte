@@ -127,7 +127,7 @@ func TestKnowledgeEntryJSONShape(t *testing.T) {
 		Fluid:        "evolving summary",
 		Crystallized: json.RawMessage(`{"fact":"true","at":"2026-10-11"}`),
 		Sources:      []domain.EventRef{{EventID: "e-1", TS: 1}},
-		Status:       domain.KnowledgeStatusInbox,
+		Status:       domain.KnowledgeInbox,
 	}
 	m := roundTrip(t, k)
 	if m["status"] != "inbox" || m["fluid"] != "evolving summary" {
