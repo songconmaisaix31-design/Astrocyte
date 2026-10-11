@@ -3,7 +3,7 @@
 - 轨道分支：`songconmaisaix31-design/attention-engine-w5-experience`
 - 事实源：任务书 `tabbit-code (2).md` §3/§4.3/§4.5/§7/§8 M5；主计划 `tasks/AttentionEngine-plan.md` W5 行
 - 独占写域：`internal/attention/domain/experience*.go`、`internal/attention/app/experience_*.go`、`internal/adapters/sqlite/experience_store*.go`、`tests/attention-engine/M5-experience*`、本文件
-- 状态：Wave A（勘察 + 里程碑设计 + 纯本轨经验模式规则已实现并单测通过；app/service/store 待 M0 契约 SHA 发布后编码）
+- 状态：Wave A 阶段已收束（partial）——勘察 + 里程碑设计 + 纯本轨经验模式规则已实现并单测通过；app/service/store 与验收测试未实现，待 M0 契约 SHA 发布后在下一阶段（codex --yolo）继续。
 
 ## 1. 目标（§4.3 Experience）
 
@@ -107,3 +107,11 @@ Wave B（待 M0 契约 SHA 发布后编码）：
 - [ ] `adapters/sqlite/experience_store*.go`：仓库 + Tx 接口 + 迁移表读写（迁移 `014+` 由 W0 负责，跨轨 Handoff）
 - [ ] `tests/attention-engine/M5-experience*`：三组验收测试（失败候选捕获 / 晋级关口 / 作用域分享），含 SQLite 持久化 + 冷重启
 - [ ] 串行验收通过后 commit + push，发 worker_done succeeded
+
+## 9. 阶段收束记录（2026-10-11）
+
+真实 partial 状态（本轮交付，commit `fe4f8c6`）：
+- 已交付并验证：`internal/attention/domain/experience.go` 纯规则 + `experience_test.go` 单测（`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain/` PASS）；`tasks/AttentionEngine-W5.md` 设计与 Handoff。
+- 未交付（真实剩余）：`app/experience_*.go` 服务层、`adapters/sqlite/experience_store*.go` 存储层、`tests/attention-engine/M5-experience*` 验收测试（含 SQLite 持久化 + 冷重启）。M5 未通过，不算完成。
+
+下一步（新阶段，切 codex --yolo 后接续）：M0 契约 SHA 发布后 fetch+merge 集成分支，实现 app/store/验收测试，完成「失败事件候选 + approved + project scope + 人工分享 SQLite 持久化及冷重启」串行验收，再 worker_done succeeded。
