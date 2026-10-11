@@ -62,6 +62,16 @@ W7 确认 OriginKey 中原 At/revision 的真实语义，重复已接受请求�
 Works sink + typed error 发布在精确 `d618b0bfe6d70b49fad2d43b1cf1b497ffc6a1c4`，已通过 orchestration 交接 W0/W7。
 root 已启用同一 W6 终端的新 Dispatch `ctx_7f6b4a0be462`，typed-error 精确源码和签名已送达；未启动新 Agent。
 
+## P2/W7 合并后的受影响范围复验
+
+当前发布 `3afc664b8aad6da25ccd17c97207bc001f7af83b`。
+五包复验：events/domain/app/tests-attention-engine PASS；sqlite FAIL。
+新首 RED `TestWorksRequestReceiptsPersistAndPreventUnknownReplay`，`works_store_requests_test.go:52`：
+production migration017 已创建 works_requests，W7 测试随后再 CREATE 同名表导致 table already exists。
+此测试基线在 W7 旧 migrations016 下通过；冲突是实际 P2+W7 依赖组合，已交 owner 修复，不改其写域。
+M1 局部 8 PASS / 1 SKIP（真实元数据未重跑）；受影响四包 `go build` PASS。
+不把局部绿或构建绿写成当前五包全绿；等待精确 owner 测试修复 SHA 后定向复验。
+
 ## 当前有效映射边界
 
 - 每条源记录保留原载荷；映射未知的记录留 adapter pending，不能创建 core `unknown` kind 或流入 Dynamics。
