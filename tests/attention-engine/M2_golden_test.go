@@ -1,53 +1,95 @@
 package attentionengine_test
 
 import (
+	_ "embed"
+	"encoding/json"
 	"math"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
 
-// TestM2GoldenThirtyDayStream replays a deterministic 30-day event stream and
-// compares A(t)/M(t) per point against hand-recomputed golden values produced
-// by an independent reference computation, not by the code under test. The
-// scenario exercises decay, signal accumulation, the attention ceiling (days
-// 3, 5, 12, 15), the anti-Matthew floor (day 20 onward), and momentum smoothing.
+// M2_golden_stream.json is the 30-day fake recomputation stream: deterministic
+// input (Unix-ms timestamps, per-day weighted signal sum and confidence delta)
+// plus per-step A/M/confidence output. The output was produced by an
+// independent Python reference computation, not by the Go code under test, so
+// the root can re-verify it with a separate JS formula.
+//
+//go:embed M2_golden_stream.json
+var goldenStream []byte
+
+type goldenDoc struct {
+	Lambda float64 `json:"lambda"`
+	Alpha  float64 `json:"alpha"`
+	Floor  float64 `json:"floor"`
+	Ceiling float64 `json:"ceiling"`
+	DayMs  int64   `json:"day_ms"`
+	Initial struct {
+		Attention  float64 `json:"attention"`
+		Momentum   float64 `json:"momentum"`
+		Confidence float64 `json:"confidence"`
+	} `json:"initial"`
+	Input []struct {
+		TsMs            int64   `json:"ts_ms"`
+		SignalSum       float64 `json:"signal_sum"`
+		ConfidenceDelta float64 `json:"confidence_delta"`
+	} `json:"input"`
+	Output []struct {
+		TsMs       int64   `json:"ts_ms"`
+		Attention  float64 `json:"attention"`
+		Momentum   float64 `json:"momentum"`
+		Confidence float64 `json:"confidence"`
+	} `json:"output"`
+}
+
+// TestM2GoldenThirtyDayStream replays the deterministic 30-day stream through
+// the production domain functions and compares A(t)/M(t)/confidence per point
+// against the independent golden output. The scenario exercises decay, signal
+// accumulation, the attention ceiling (days 3, 5, 12, 15), the anti-Matthew
+// floor (day 20 onward), momentum smoothing, and confidence (success +0.1 on
+// day 12, failure -0.1 on day 18, which never enters attention).
 func TestM2GoldenThirtyDayStream(t *testing.T) {
-	const lambda = 0.1
-	signalSum := map[int]float64{
-		0: 0.6, 3: 0.6, 5: 1.0, 9: 0.3, 10: 0.3, 12: 0.8, 15: 1.5, 20: -0.8,
+	var doc goldenDoc
+	if err := json.Unmarshal(goldenStream, &doc); err != nil {
+		t.Fatalf("decode golden stream: %v", err)
 	}
-	expectedA := []float64{
-		0.6, 0.5429024508215757, 0.49123845184678905, 1.0, 0.9048374180359595,
-		1.0, 0.9048374180359595, 0.8187307530779817, 0.7408182206817177,
-		0.9703200460356391, 1.0, 0.9048374180359595, 1.0, 0.9048374180359595,
-		0.8187307530779817, 1.0, 0.9048374180359595, 0.8187307530779817,
-		0.7408182206817177, 0.6703200460356391, 0.05, 0.05, 0.05, 0.05, 0.05,
-		0.05, 0.05, 0.05, 0.05, 0.05,
+	if doc.Alpha != domain.MomentumAlpha || doc.Floor != domain.AttentionFloor || doc.Ceiling != domain.AttentionCeiling {
+		t.Fatalf("golden constants drifted from domain: alpha=%v floor=%v ceiling=%v",
+			doc.Alpha, doc.Floor, doc.Ceiling)
 	}
-	expectedM := []float64{
-		0.42, 0.08603171557510303, -0.010355284609819767, 0.3530264983243017,
-		0.03929414212246218, 0.07840205001156698, -0.04309319237135824,
-		-0.07320262318199193, -0.0764995596319824, 0.13770140985815033,
-		0.06208639073249769, -0.047987890155079024, 0.05221744032830462,
-		-0.05094857527633695, -0.07555923805348555, 0.10422070142936714,
-		-0.03534759694601819, -0.07087894455438992, -0.07580245604370181,
-		-0.07208945906536551, -0.455850869944557, -0.1367552609833671,
-		-0.04102657829501013, -0.012307973488503038, -0.003692392046550911,
-		-0.0011077176139652734, -0.000332315284189582, -9.969458525687459e-05,
-		-2.9908375577062376e-05, -8.972512673118713e-06,
+	if doc.DayMs != 86400000 {
+		t.Fatalf("golden day_ms = %d, want 86400000", doc.DayMs)
+	}
+	if len(doc.Input) != 30 || len(doc.Output) != 30 {
+		t.Fatalf("golden stream must be 30 days, got input=%d output=%d", len(doc.Input), len(doc.Output))
 	}
 
-	attention, momentum := 0.0, 0.0
-	for day := 0; day < 30; day++ {
-		newA := domain.UpdateAttention(attention, lambda, 1.0, signalSum[day])
+	attention := doc.Initial.Attention
+	momentum := doc.Initial.Momentum
+	confidence := doc.Initial.Confidence
+	dayMs := float64(doc.DayMs)
+
+	for i, in := range doc.Input {
+		dt := 1.0
+		if i > 0 {
+			dt = float64(in.TsMs-doc.Input[i-1].TsMs) / dayMs
+		}
+		newA := domain.UpdateAttention(attention, doc.Lambda, dt, in.SignalSum)
 		newM := domain.UpdateMomentum(momentum, attention, newA)
-		if math.Abs(newA-expectedA[day]) > 1e-12 {
-			t.Fatalf("day %d: A = %.16f, want %.16f", day, newA, expectedA[day])
+		newC := domain.UpdateConfidence(confidence, in.ConfidenceDelta)
+		want := doc.Output[i]
+		if in.TsMs != want.TsMs {
+			t.Fatalf("day %d: output ts_ms mismatch", i)
 		}
-		if math.Abs(newM-expectedM[day]) > 1e-12 {
-			t.Fatalf("day %d: M = %.16f, want %.16f", day, newM, expectedM[day])
+		if math.Abs(newA-want.Attention) > 1e-12 {
+			t.Fatalf("day %d: A = %.16f, want %.16f", i, newA, want.Attention)
 		}
-		attention, momentum = newA, newM
+		if math.Abs(newM-want.Momentum) > 1e-12 {
+			t.Fatalf("day %d: M = %.16f, want %.16f", i, newM, want.Momentum)
+		}
+		if math.Abs(newC-want.Confidence) > 1e-12 {
+			t.Fatalf("day %d: C = %.16f, want %.16f", i, newC, want.Confidence)
+		}
+		attention, momentum, confidence = newA, newM, newC
 	}
 }
