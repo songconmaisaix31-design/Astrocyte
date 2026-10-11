@@ -13,7 +13,7 @@ async function headers(key: string) {
   const session = await unwrap(api.GET('/auth/session'));
   return { 'Idempotency-Key': key, 'X-CSRF-Token': session.csrf_token };
 }
-const command = (key: string) => ({ schema_version: 1 as const, request_id: key, expected_version: 1 });
+const command = (key: string) => ({ schema_version: 1 as const, request_id: key, expected_version: 1 as const });
 
 // Each human submit has one operation identity. A failed or uncertain write is
 // never automatically retried; reads continue through the existing session client.
