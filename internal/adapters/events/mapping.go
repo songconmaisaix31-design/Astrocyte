@@ -78,7 +78,7 @@ func MapNativeRecord(source, origin, project string, raw json.RawMessage, receiv
 	if err != nil {
 		return app.StoredEvent{}, err
 	}
-	if o.cwd != "" && o.cwd != project {
+	if o.cwd != "" && !sameReplayProject(o.cwd, project) {
 		return app.StoredEvent{}, fmt.Errorf("native record leaves approved project")
 	}
 	o.cwd = project

@@ -32,16 +32,17 @@ func readNativeFile(ctx context.Context, source, root, path, project string, lim
 	if err != nil {
 		return nil, false, err
 	}
-	rel, err := filepath.Rel(r, p)
+	r, err = unredirectedReplayPath(r)
+	if err != nil {
+		return nil, false, err
+	}
+	selected, err := unredirectedReplayPath(p)
+	if err != nil {
+		return nil, false, err
+	}
+	rel, err := filepath.Rel(r, selected)
 	if err != nil || rel == ".." || filepath.IsAbs(rel) || len(rel) > 3 && rel[:3] == ".."+string(filepath.Separator) {
 		return nil, false, fmt.Errorf("replay file leaves selected root")
-	}
-	// Reject links both at the root and along the selected file path.
-	for _, candidate := range []string{r, p} {
-		resolved, e := filepath.EvalSymlinks(candidate)
-		if e != nil || filepath.Clean(resolved) != filepath.Clean(candidate) {
-			return nil, false, fmt.Errorf("replay file uses symbolic links")
-		}
 	}
 	f, err := os.Open(p)
 	if err != nil {
@@ -73,7 +74,7 @@ func readNative(ctx context.Context, source, project string, r io.Reader, limit 
 			return nil, false, fmt.Errorf("replay record %d: %w", len(lines)+1, err)
 		}
 		if len(lines) == 0 {
-			if o.session == "" || project == "" || filepath.Clean(o.cwd) != filepath.Clean(project) {
+			if o.session == "" || project == "" || !sameReplayProject(o.cwd, project) {
 				return nil, false, fmt.Errorf("replay header does not identify approved project and session")
 			}
 			session = o.session
