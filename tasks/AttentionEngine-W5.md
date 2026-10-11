@@ -3,7 +3,7 @@
 - 轨道分支：`songconmaisaix31-design/attention-engine-w5-experience`
 - 事实源：任务书 `tabbit-code (2).md` §3/§4.3/§4.5/§7/§8 M5；主计划 `tasks/AttentionEngine-plan.md` W5 行
 - 独占写域：`internal/attention/domain/experience*.go`、`internal/attention/app/experience_*.go`、`internal/adapters/sqlite/experience_store*.go`、`tests/attention-engine/M5-experience*`、本文件
-- 状态：已消费 M0 `47f47f3` 与 W1 `6730531`；经验生产服务/SQLite/自动捕获接线、原子人工收据与 8 个 SQLite 经验验收通过。原始输入为 contract_local fixtures，W0/W6 外部入口复验待回传；真实 native 失败回放 NOT_RUN，整体 M5 未完成。
+- 状态：限定 W5 实现与实际本地集成已验收，主控已确认结算。SOURCE `b43d2a4cddd8a3f4a367676f9baaa6d3f3414ade` 已 push；8 个 SQLite 经验用例通过，W0 HTTP 与 W6 stdio 复验已回传。原始输入为 contract_local fixtures，真实 native 失败回放 NOT_RUN，整体 M5 未完成。
 
 ## 1. 目标（§4.3 Experience）
 
@@ -107,7 +107,7 @@ Wave B：
 - [x] `adapters/sqlite/experience_store.go`：复用 EngineRepository 的 BEGIN IMMEDIATE；原始事件唯一键捕获幂等、乐观版本、审计原子写入。
 - [x] `tests/attention-engine/M5-experience*`：8 个 contract_local 源事件的真实 SQLite 验收，含冷连接重开、跨连接并发捕获、项目范围、人工审计及不可变命令结果回放。
 - [x] 消费 W1 精确 `e9bb380` / `6730531` 生产 EventReader 与提交后自动失败捕获 hook；实际服务入口和重启回放通过。真实 native 源权限未答，仍为独立 NOT_RUN，不用 fixtures 替代。
-- [ ] 最终验收通过后提交报告、push，发送一次 worker_done。
+- [x] 本轨限定范围验收通过，主控确认结算；最终报告提交 push 后发送一次 worker_done succeeded，整体 M5 与 native 回放另记。
 
 ## 9. 阶段收束记录（2026-10-11）
 
@@ -150,3 +150,13 @@ Wave B：
 - 最终本轨定向验证：`GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./tests/attention-engine -run TestM5Experience -v` 8 PASS，包括自动入口/捕获中断保留 ID、审批/分享/降级冷重启历史结果回放、审计一次及 unknown 待核对。
 - 受影响四包整包 `go test -count=1`、同四包 `go vet`、`go build -o <本次临时目录> ./cmd/...`、`git diff --check` PASS；没有跑媒体模型或读取未授权 native 原对话。此前首次 newID 编译 RED 保留为独立历史。
 - 协调者确认：本轨实现与真实 SQLite 核心可通过明确 contract_local 生产服务输入验收；原始 native 失败 task_live 回放由用户权限单独阻塞，不能据此称整体 M5/M1 已通过。当前保留活跃，等待 W0 HTTP 重复命令与 W6 stdio 集成复验；领域返修仍由本轨负责。
+
+## 13. 最终限定范围交付（2026-10-11）
+
+- 分支：`songconmaisaix31-design/attention-engine-w5-experience`；源码 SOURCE `b43d2a4cddd8a3f4a367676f9baaa6d3f3414ade`。阶段 `ecf3549` / `fdaaa70` / `d8e7333` / `b43d2a4` 均已 push；M0 与 W1 精确依赖均普通合并，无重写历史。
+- 完成：仅明确失败 agent_task 的 quarantine 候选，规则结构 pattern/condition/evidence；证据指向并解析原始持久 Event，不复制私人对话形成模式。生产 W1 post-commit 自动捕获与原 ID 重放、SQLite 重启/幂等、可信项目 approved 检索、人类 approve/demote/share 和同事务审计/结果收据已实现。
+- W5 自身检查：`GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./tests/attention-engine -run TestM5Experience -v` 8 PASS；四包 domain/app/sqlite/attention-engine 整包 test、vet、cmd build、diff 检查 PASS。首次 newID 编译 RED 与 d8e 缺人工结果回放的 partial 保留，后续修复为独立证据。
+- W6 owner 回传 SOURCE `2314b6036f3b57788398adb420e8d8e283f639cb`：真实 stdin/stdout 与冷进程验收 PASS，包含实际 W1/W5 hook 故障、capture_pending 原 ID 返回、冷进程补捕获一条 quarantine、重复补消费不变和原始行/字节不变。采用明确可信 contract_local 失败输入；公开 MCP 自称 failed 仍为 unknown。此项为 owner 回传，本轨未重复运行 stdio。
+- 主控转交 W0 SOURCE `271d18cc4d7853bd1a9bc96875b8875733889837`：实际 cmd/server factory + W5 + SQLite + HTTP session/CSRF approve/share 验收 PASS；不同 trace/RequestID 同 header key、冷重启返回原结果，changed ExpectedVersion 409，foreign/Agent/缺 CSRF 403。审批/分享审计各一次、目标 share 一条、最终 version=3；无 W5 领域返修。此项为 W0/主控回传，本轨未重复运行 HTTP。
+- 主控已明确允许按 bounded W5 实现及实际本地集成结算 succeeded；不据本轨结果宣称整体 M5 完成。
+- 剩余限制与未执行：模式仅描述观察到的任务种类和明确失败条件，不从私人语义生成泛化建议；真实 native 失败 task_live 回放 NOT_RUN（原始 source scope 权限待答），完整 M1/M5/M6、最终总体集成与远程 CI 由主控继续。未启动其他 Agent，未改 S1 分支族或个人运行库，未新增产品前端。
