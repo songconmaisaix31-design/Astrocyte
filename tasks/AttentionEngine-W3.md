@@ -7,11 +7,11 @@
 
 当前工作树/分支保持 `attention-engine-w3-sleep` /
 `songconmaisaix31-design/attention-engine-w3-sleep`，接续起点 `5399e31`。
-本次实际客户端 Orca Codex，模型由当前客户端配置提供，未自行覆盖。
+本次实际客户端 Orca Codex / gpt-6.1-sol / YOLO（主控 runtime 通知确认），未自行覆盖。
 
 - 原 `3f6cc6f` 已取消多 topic 自动合并，本次保留该规则；关联持续 >0.8 且证据重叠的真正合并只消费 W2 生命周期判定。
 - 修正去噪只认出边的问题：既有节点指向当日单事件主题的入边也算关联；空邻居和自指不算关联。聚类和去噪采用同一 topic 空白归一化口径。
-- 双指标的关键事实按去重集合计数；重复事实不增加召回率或事实数。存储缩减保留既有 [0,1] 口径，输入字节数原样返回，增长可从 before/after 识别；后续以实际压缩表示的序列化字节衡量，不冒充 SQLite 文件总量减少。
+- 双指标的关键事实按去重集合计数；重复事实不增加召回率或事实数。按主控预审修正，存储缩减为 `(before-after)/before`，增长返回负数，不再夹到 [0,1]；原始字节计数保留。`RetentionMeasurable` / `StorageMeasurable` 显示可计算性，空 before 事实不再返回 vacuous 1，数值 0 且不可计算。后续以实际持久表示的序列化字节衡量，不冒充 SQLite 文件总量减少。
 - 新增 `tests/attention-engine/M3-golden.json`，由 `TestConsolidateGoldenInputIsOrderIndependent` 实际读取并验证决策和双指标，仅为 `contract_local` 合成输入；不属于实际 Event→图→Knowledge→人工裁决全流程证据。
 
 首轮定向测试：`TestConsolidateKeepsInboundRelatedTopic` **FAIL**（入边关联丢失）；
@@ -37,6 +37,11 @@ git diff --check
 主控已明确回复：当前无稳定 M0 SHA，保持完整 M3 进行中；SHA 发布后主动通知并由
 W1/W2/W4 提供接口。波 A 源码 `881f7fd5411f6655f3a46599fd45d17de7d96cc6` 已 push，
 后续仅补金标准数据的实际读取；定向 `go test ./internal/attention/domain -run TestConsolidateGoldenInputIsOrderIndependent -count=1 -v` **PASS**。
+
+预审补充首次 RED：`TestStorageReductionPreservesGrowth` 输入 100→200 时预期 -1，旧代码实得 0。
+修正后 `go test ./internal/attention/domain -run 'Retention|Storage|ComputeMetrics|ConsolidateGolden' -count=1 -v`
+**PASS（5 项）**，domain `go vet` 与 `git diff --check` **PASS**。
+该结果仍是纯函数测试；100/70 只用于合成金标准，完整流水线必须观测实际 before/after 表示字节。
 
 ## 交接（阶段结果 partial，后续 Codex --yolo 承接原写域与 worktree）
 

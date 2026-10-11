@@ -203,7 +203,7 @@ func (garbageInterpreter) Explain(Cluster) (ClusterExplanation, error) {
 }
 
 func TestRetentionPrecisionMeasuresRecall(t *testing.T) {
-	if got := RetentionPrecision(nil, nil); got != 1 {
+	if got := RetentionPrecision(nil, nil); got != 0 {
 		t.Fatalf("empty before = %f", got)
 	}
 	if got := RetentionPrecision([]string{"a", "b"}, []string{"a", "b"}); got != 1 {
@@ -217,22 +217,22 @@ func TestRetentionPrecisionMeasuresRecall(t *testing.T) {
 	}
 }
 
-func TestStorageReductionClampsToUnit(t *testing.T) {
+func TestStorageReductionPreservesGrowth(t *testing.T) {
 	if got := StorageReduction(0, 0); got != 0 {
 		t.Fatalf("zero before = %f", got)
 	}
 	if got := StorageReduction(-1, -1); got != 0 {
 		t.Fatalf("negative before = %f", got)
 	}
-	if got := StorageReduction(100, 200); got != 0 {
+	if got := StorageReduction(100, 200); got != -1 {
 		t.Fatalf("growth = %f", got)
 	}
 	got := StorageReduction(100, 40)
 	if math.Abs(got-0.6) > 1e-9 {
 		t.Fatalf("reduction = %f", got)
 	}
-	if got := StorageReduction(100, -5); got != 1 {
-		t.Fatalf("negative after clamp = %f", got)
+	if got := StorageReduction(100, -5); got != 0 {
+		t.Fatalf("invalid byte count = %f", got)
 	}
 }
 
@@ -246,5 +246,12 @@ func TestComputeMetricsAssemblesBothIndicators(t *testing.T) {
 	}
 	if math.Abs(m.StorageReduction-0.3) > 1e-9 {
 		t.Fatalf("storage: %+v", m)
+	}
+	if !m.RetentionMeasurable || !m.StorageMeasurable {
+		t.Fatalf("nonempty observations should be measurable: %+v", m)
+	}
+	empty := ComputeMetrics(nil, nil, 0, 0)
+	if empty.RetentionMeasurable || empty.StorageMeasurable || empty.BeforeFacts != 0 || empty.RetentionPrecision != 0 {
+		t.Fatalf("empty input presented as observed retention: %+v", empty)
 	}
 }
