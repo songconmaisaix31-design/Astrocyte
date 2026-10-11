@@ -66,6 +66,21 @@
 
 验收测试（波 B，`tests/attention-engine/M3*`）会以 nil interpreter 跑完整 pipeline 断言决策不变。
 
+## 验收示例（波 B 断 LLM 回归的金标准输入）
+
+给定某日事件与邻接 `related = {paper-reading: [agent-swarm]}`：
+
+| topic | 事件数 | 邻接 | 结果 |
+|---|---|---|---|
+| agent-swarm | 3 | — | 集群 {agent-swarm, paper-reading}，`NodeCreate(agent-swarm)` |
+| paper-reading | 1 | agent-swarm | 同集群，`NodeCreate(paper-reading)`，不合并 |
+| one-off-noise | 1 | 无 | 去噪丢弃，不生成节点 |
+
+- 决策：2 个 `NodeCreate`（agent-swarm、paper-reading），**无合并**；关联保留供 W2 判定。
+- 断 LLM 一致性：`Consolidate` 无 interpreter 参与，决策与上表逐点一致。
+- 双指标示例：before facts {a,b} → after facts {a}，保留精度 0.5；beforeBytes 100 → afterBytes 70，
+  存储缩减比 0.3（`ComputeMetrics` 已覆盖）。
+
 ## 波 B 待办（依赖 M0/W1/W2/W4 契约类型）
 
 1. `app/sleep_*.go` 编排：从 event store 读当日 Event → `Consolidate`（cluster/denoise/resolve）
