@@ -23,8 +23,10 @@ func (mcpUnavailableExperienceRepository) WithExperienceTx(context.Context, func
 }
 
 type mcpDeliveryFixtureRecorder struct {
-	service *app.EventService
-	mode    string
+	service  *app.EventService
+	mode     string
+	events   *sqlite.EventRepository
+	dynamics *app.DynamicsEngine
 }
 
 func (r mcpDeliveryFixtureRecorder) Record(ctx context.Context, records []app.StoredEvent) ([]app.StoredEvent, error) {
@@ -39,6 +41,15 @@ func (r mcpDeliveryFixtureRecorder) Record(ctx context.Context, records []app.St
 			Event:       &domain.Event{Source: domain.EventSourceCodex, Kind: domain.EventKindAgentTask, Scope: "project-a", Session: "m5-trusted-fixture", TS: mcpFixtureNow, Topic: "delivery-fixture", Raw: raw}})
 	}
 	rows, err := r.service.Record(ctx, records)
+	if r.dynamics != nil && err == nil {
+		signals, dynamicsErr := r.events.ListSignals(ctx, 0, mcpFixtureNow+1)
+		if dynamicsErr == nil {
+			_, dynamicsErr = r.dynamics.ApplySignals(ctx, records[0].Event.Topic, signals, mcpFixtureNow)
+		}
+		if dynamicsErr != nil {
+			return rows, &app.MCPDynamicsPendingError{Cause: dynamicsErr}
+		}
+	}
 	if r.mode == "unknown" && err == nil {
 		// Simulate losing the acknowledgement after an actual SQLite commit.
 		return nil, errors.New("contract_local injected acknowledgement lost")
@@ -46,17 +57,69 @@ func (r mcpDeliveryFixtureRecorder) Record(ctx context.Context, records []app.St
 	return rows, err
 }
 
-func mcpProcessRecorder(events *sqlite.EventRepository, experiences *app.ExperienceService, mode string) app.MCPEventRecorder {
+func mcpProcessRecorder(db *sqlite.DB, events *sqlite.EventRepository, experiences *app.ExperienceService, mode string) app.MCPEventRecorder {
 	callback := experiences.CaptureCommittedFailure
 	if mode == "capture" {
 		failing := app.NewExperienceService(mcpUnavailableExperienceRepository{}, events, app.ExperienceOptions{ProjectID: "project-a", Clock: mcpFixtureClock})
 		callback = failing.CaptureCommittedFailure
 	}
 	service := app.NewEventService(events, .01, callback)
+	if mode == "dynamics" {
+		options := app.DynamicsOptions{Decay: mcpPtr(.1), InitialConfidence: mcpPtr(.5), ConfidenceDropThreshold: mcpPtr(.05)}
+		return mcpDeliveryFixtureRecorder{service: service, mode: mode, events: events, dynamics: app.NewDynamicsEngine(sqlite.NewDynamicsRepository(db), options)}
+	}
 	if mode != "" {
 		return mcpDeliveryFixtureRecorder{service: service, mode: mode}
 	}
 	return service
+}
+
+func TestMCPRealStdioDynamicsPendingKeepsReceipt(t *testing.T) {
+	t.Run("unborn_topic", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "dynamics.sqlite")
+		db := mcpOpen(t, path)
+		db.Close()
+		responses := mcpSubprocess(t, path, "agent", mcpCall(2, "report_event", `{"event":{"ts":1770681600000,"kind":"commit","topic":"unborn-topic"}}`), "ASTROCYTE_M5_MCP_DELIVERY_FIXTURE=dynamics")
+		result := responses[1]["result"].(map[string]any)
+		var text map[string]any
+		if err := json.Unmarshal([]byte(toolText(t, responses[1])), &text); err != nil {
+			t.Fatal(err)
+		}
+		if result["isError"] != true || text["accepted"] != true || text["delivery_state"] != "committed" || text["dynamics_pending"] != true || text["capture_pending"] != false || text["event_id"] == nil || !reflect.DeepEqual(text, result["structuredContent"]) {
+			t.Fatalf("committed dynamics-pending result lost: %v", result)
+		}
+		if !strings.Contains(text["error"].(string), "dynamics pending") {
+			t.Fatal("pending phase absent from error text")
+		}
+		db = mcpOpen(t, path)
+		var nodes int
+		if err := db.Conn().QueryRow("SELECT COUNT(*) FROM attention_engine_nodes").Scan(&nodes); err != nil {
+			t.Fatal(err)
+		}
+		if nodes != 0 {
+			t.Fatal("report implicitly created a topic")
+		}
+		repo := sqlite.NewEventRepository(db)
+		before, err := repo.GetEvent(context.Background(), text["event_id"].(string))
+		if err != nil || before.OriginKey != text["origin_key"] {
+			t.Fatalf("committed original receipt unavailable: %v", err)
+		}
+		signals, err := repo.ListSignals(context.Background(), 0, mcpFixtureNow+1)
+		if err != nil || len(signals) != 1 || signals[0].EventID != before.ID {
+			t.Fatalf("original signal unavailable: %v %v", signals, err)
+		}
+		db.Close()
+		restarted := mcpSubprocess(t, path, "agent", mcpCall(2, "get_attention_state", `{}`))
+		if got := mcpDecoded[app.GetAttentionStateResult](t, restarted[1]); len(got.Topics) != 0 {
+			t.Fatal("restart implicitly birthed a topic")
+		}
+		db = mcpOpen(t, path)
+		defer db.Close()
+		after, err := sqlite.NewEventRepository(db).ListEvents(context.Background(), 0, mcpFixtureNow+1)
+		if err != nil || len(after) != 1 || !reflect.DeepEqual(before, after[0]) {
+			t.Fatalf("restart changed/replayed receipt: %v %v", after, err)
+		}
+	})
 }
 
 func TestMCPRealStdioPostcommitDeliveryAndRestart(t *testing.T) {

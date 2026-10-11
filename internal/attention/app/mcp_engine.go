@@ -26,6 +26,17 @@ type MCPEventRecorder interface {
 
 type MCPBackendOptions struct{ Clock func() time.Time }
 
+// MCPDynamicsPendingError marks a recorder's known post-commit dynamics failure.
+// The recorder must return the original committed rows alongside this error;
+// missing topic birth or runtime policy never warrants replaying the receipt.
+type MCPDynamicsPendingError struct{ Cause error }
+
+func (e *MCPDynamicsPendingError) Error() string {
+	return fmt.Sprintf("receipts committed; dynamics pending: %v", e.Cause)
+}
+
+func (e *MCPDynamicsPendingError) Unwrap() error { return e.Cause }
+
 type engineMCPBackend struct {
 	binding     MCPBinding
 	attention   MCPAttentionReader
@@ -142,6 +153,8 @@ func (b *engineMCPBackend) record(ctx context.Context, observation Observation, 
 			}
 		}
 	}
+	var dynamics *MCPDynamicsPendingError
+	delivery.DynamicsPending = errors.As(err, &dynamics)
 	if delivery.EventID == "" && err == nil {
 		err = fmt.Errorf("event use case did not return the persisted receipt for this origin")
 	}
