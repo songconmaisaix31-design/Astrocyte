@@ -17,59 +17,8 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
-// These source receipts are contract_local fixtures; storage, restart and
-// governance use the real SQLite adapter. W1 supplies the production EventReader.
-type experienceSQLReader struct{ db *sqlite.DB }
-
-func (r experienceSQLReader) GetEvent(ctx context.Context, id string) (app.StoredEvent, error) {
-	var record app.StoredEvent
-	var data, observation, mapping string
-	err := r.db.Conn().QueryRowContext(ctx, `SELECT id,origin_key,received_at,data,observation,mapping_status,raw_bytes
-		FROM attention_engine_events WHERE id=?`, id).
-		Scan(&record.ID, &record.OriginKey, &record.ReceivedAt, &data, &observation, &mapping, &record.RawBytes)
-	if err != nil {
-		return record, err
-	}
-	if err = json.Unmarshal([]byte(observation), &record.Observation); err != nil {
-		return record, err
-	}
-	if mapping == "mapped" {
-		record.Event = &domain.Event{}
-		err = json.Unmarshal([]byte(data), record.Event)
-	}
-	return record, err
-}
-
-func (r experienceSQLReader) ListEvents(ctx context.Context, from, to int64) ([]app.StoredEvent, error) {
-	rows, err := r.db.Conn().QueryContext(ctx, `SELECT id FROM attention_engine_events WHERE ts>=? AND ts<=? ORDER BY id`, from, to)
-	if err != nil {
-		return nil, err
-	}
-	ids := []string{}
-	for rows.Next() {
-		var id string
-		if err = rows.Scan(&id); err != nil {
-			rows.Close()
-			return nil, err
-		}
-		ids = append(ids, id)
-	}
-	err = rows.Err()
-	rows.Close()
-	if err != nil {
-		return nil, err
-	}
-	result := []app.StoredEvent{}
-	for _, id := range ids {
-		event, err := r.GetEvent(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, event)
-	}
-	return result, nil
-}
-
+// Source receipts are contract_local fixtures; event reads and experience
+// behavior now use the production W1/W5 SQLite repositories.
 func experienceDB(t *testing.T, path string) *sqlite.DB {
 	t.Helper()
 	db, err := sqlite.Open(path)
@@ -84,7 +33,7 @@ func experienceDB(t *testing.T, path string) *sqlite.DB {
 }
 
 func experienceService(db *sqlite.DB, project string) *app.ExperienceService {
-	return app.NewExperienceService(sqlite.NewExperienceRepository(db), experienceSQLReader{db}, app.ExperienceOptions{
+	return app.NewExperienceService(sqlite.NewExperienceRepository(db), sqlite.NewEventRepository(db), app.ExperienceOptions{
 		ProjectID: project, Clock: func() time.Time { return time.UnixMilli(1800000001000) },
 	})
 }
