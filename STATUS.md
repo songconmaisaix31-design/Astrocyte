@@ -18,6 +18,8 @@ EXPERIMENT.md预注册必须写明：本验证期发现机制仅覆盖unassigned
 
 01:15 owner定向EX-01 3 PASS，原M2 7 PASS/1子进程入口SKIP，domain Sleep7 PASS。旧M3/Sleep CLI首RED：依赖tagged出生的节点未出现，两个知识fixture未预播种导致空知识/panic。为落实EX-01新预期，W0补充唯一测试写域`tests/attention-engine/M3_pipeline_test.go`、`cmd/sleep/main_test.go`：已有主题fixture显式预播种，tagged出生场景改断言0出生；保持原持久化、metrics、rollback、知识冲突和人工关口断言。不改M2、不改任何其他生产函数。结果是owner定向验证，尚未合入或root整树验收。
 
+01:18 原M6合成周fixture首RED：原来依赖Sleep给tagged research/implementation出生，禁生后State空，M6_week_test.go:194索引panic。W0补充仅`tests/attention-engine/M6_week_test.go` fixture写域：通过既有human SeedTopic显式播种两个既定主题；原λ=.1、confidence=.5、success=.05/drop=.2全部不变，独立公式/排序/原始字节/重启/七次每日幂等断言保留。原首错保存，不能以此合成周替代V1真实回放或V4前瞻。
+
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
 当前：两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接。现有Sleep跳过无topic事件、允许从带topic事件出生；用户已以EX-01批准上述两处接缝，其他引擎仍冻结。schema豁免当前无。
