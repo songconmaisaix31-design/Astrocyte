@@ -6,6 +6,8 @@ root `0e49301734549a02b9b1b9078aaef96fd6422742` 已普通合最终集成REPORT0d
 
 原W0新task_18154894914d/ctx_84bdbc33a991只写agents/**及自己报告，原W7新task_46b94cb91958/ctx_fe6ac3090f92只写worksscan/**及自己报告，沿Codex--yolo原终端/工作树/分支，两轨已观察开始。不要改目录授权或读真实私人记录；等SOURCE/REPORT精确提交和定向验证，交原final-integration终端新Task普通合并，root最终复验/push/核实自动CI。原其余Dispatch已结算，不给旧ctx投递；外部终端只是retained idle，没有关闭归档。用户待答和真实七日验收见QUESTIONS，不自行选择。
 
+23:31 更新：两返修已settled succeeded，W0 SOURCE425d965/REPORT19d1c7b、W7 SOURCE38c5bde/REPORTd014038；原final-integration新Task task_51df762ea493/ctx_7d52252e725c 实际开始精确普通合并/定向回归。root业务代码暂仍0e493，待此轨结算后合入并最终复验。真实8.3与junction拒绝已执行，普通symlink创建privilege无保持NOT_RUN，不据此扩大原生权限。
+
 ## 最新入口：修复后 M6 通过，等待波 C（2026-10-11 23:06）
 
 root HEAD文档49e6e93，业务仍P2。先读STATUS顶部及基线M6首RED/修复后独立复算。W4修复abff94d/report11899c9与W3投影61a196b/report39cb8fe均已结算，新Dispatch不可继续发领域返修。W0原ctx_b16e623a7b11仍活跃，M6 source f4bf025已push，root实际JSON非零推荐与图A匹配且独立公式误差0；当前全check/build待完成。W0正式Sleep363fcca单日实际CLI/重启与同factory七日合成分别通过；保持显式策略，不增历史产品回放。全轨结算后仅派1个final integration Codex--yolo Agent独立worktree普通合精确owner最终报告，再由root最终检查/构建/适用E2E/push。元数据读取/参数/知识语义未答及真实七日科学验证仍显式未完成。

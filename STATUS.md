@@ -6,6 +6,8 @@
 
 限定修复沿原 Codex --yolo / gpt-6.1-sol 两个互斥 owner：W0 `task_18154894914d` / `ctx_84bdbc33a991` 仅 agents 路径授权/元数据/登记比较；W7 `task_46b94cb91958` / `ctx_fe6ac3090f92` 仅 worksscan 比较。均已实际观察 turn start，工作树和分支保留；不得放宽符号链接、私有目录和登记授权边界。完成后同一集成 Agent 普通合精确提交，root 复验及最终 push/核实自动 CI。M1真实会话权限、产品参数/知识策略、官方MCP客户端、真实七日对照仍未完成，整体产品不宣称完成。
 
+23:31 两返修均succeeded：W0 SOURCE425d965/REPORT19d1c7b、W7 SOURCE38c5bde/REPORTd014038已push，原件首RED保留，真实8.3/私有短名拒绝/junction拒绝PASS，普通Windows symlink权限缺失仍NOT_RUN。原集成终端在原工作树/分支新Task `task_51df762ea493` / Dispatch `ctx_7d52252e725c` 已实际开始，只普通合两精确报告和定向回归，不重跑真实媒体/UI写入；root稍后对新树完整check/build及远程CI独立验收。
+
 ## 波 C 单轨集成（2026-10-11 23:12）
 
 全部原轨与限定返修已结算。W0最终 SOURCE `f4bf025` / REPORT `5c1aa0d` 已push，完整check/build PASS（275契约例/API14/前端90，三个可执行文件+web），root未把owner结果当自身整場。唯一集成 Codex--yolo已在新隔离 `attention-engine-final-integration` worktree/同名自动分支启动，Task `task_9c5f23440239` / Dispatch `ctx_7eb57b08004b`，只普通合精确最终报告和必要薄胶水；root不写业务代码，之后负责交付分支完整check/build/E2E/push。已结算外部终端保留idle、未关闭归档；M1真实metadata权限阻塞/未决定产品策略/官方客户端/真实七日对照仍保持。root业务尚P2，不宣称最终集成完成。
