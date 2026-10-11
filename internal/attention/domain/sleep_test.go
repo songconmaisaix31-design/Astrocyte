@@ -63,20 +63,28 @@ func TestDenoiseDropsSingleIsolatedSignal(t *testing.T) {
 	}
 }
 
-func TestResolveClustersDecidesFromShapeAlone(t *testing.T) {
+// Adjacent topics in one cluster stay distinct concepts; the sleep cycle never
+// auto-merges existing topics (merge is a W2 lifecycle decision, §5.4).
+func TestResolveClustersCreatesPerTopicAndNeverMerges(t *testing.T) {
 	clusters := []Cluster{
 		{Topics: []string{"agent-swarm"}, Events: 2},
 		{Topics: []string{"a", "b"}, Events: 4},
 	}
 	decisions := ResolveClusters(clusters)
-	if len(decisions) != 2 {
-		t.Fatalf("got %d decisions", len(decisions))
+	if len(decisions) != 3 {
+		t.Fatalf("got %d decisions: %+v", len(decisions), decisions)
 	}
-	if decisions[0].Kind != NodeCreate {
-		t.Fatalf("single topic not create: %+v", decisions[0])
+	for _, d := range decisions {
+		if d.Kind != NodeCreate {
+			t.Fatalf("non-create decision: %+v", d)
+		}
 	}
-	if decisions[1].Kind != NodeMerge {
-		t.Fatalf("multi topic not merge: %+v", decisions[1])
+	topics := map[string]bool{}
+	for _, d := range decisions {
+		topics[d.Topic] = true
+	}
+	if !topics["agent-swarm"] || !topics["a"] || !topics["b"] {
+		t.Fatalf("missing topic in decisions: %+v", decisions)
 	}
 }
 
@@ -94,11 +102,27 @@ func TestInterpreterOutputNeverChangesDecisions(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, d := range decisions {
-		for _, topic := range d.Topics {
-			if topic == exp.Label {
-				t.Fatalf("interpreter label entered a decision: %+v", d)
-			}
+		if d.Topic == exp.Label {
+			t.Fatalf("interpreter label entered a decision: %+v", d)
 		}
+	}
+}
+
+// Consolidate is the seam 波 B wraps with the interpreter; running it with the
+// LLM disconnected (no interpreter involved at all) yields the same decisions.
+func TestConsolidateRunsDeterministicallyWithoutInterpreter(t *testing.T) {
+	events := []EventTopic{
+		{EventID: "e1", Topic: "agent-swarm"},
+		{EventID: "e2", Topic: "agent-swarm"},
+		{EventID: "e3", Topic: "one-off-noise"},
+	}
+	related := map[string][]string{}
+	got := Consolidate(events, related)
+	if len(got.Clusters) != 1 || got.Clusters[0].Topics[0] != "agent-swarm" {
+		t.Fatalf("denoise leaked noise: %+v", got.Clusters)
+	}
+	if len(got.Decisions) != 1 || got.Decisions[0].Topic != "agent-swarm" {
+		t.Fatalf("decisions wrong: %+v", got.Decisions)
 	}
 }
 

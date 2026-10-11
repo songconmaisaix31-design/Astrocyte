@@ -116,30 +116,45 @@ func isolated(c Cluster, related map[string][]string) bool {
 type NodeDecisionKind int
 
 const (
-	NodeCreate NodeDecisionKind = iota // promote cluster to a new concept
-	NodeMerge                          // fold cluster topics into one concept
+	NodeCreate NodeDecisionKind = iota // promote a topic to a concept candidate
 )
 
 // NodeDecision is a storage decision owned by deterministic rules, never by an
-// interpreter.
+// interpreter. It concerns exactly one topic.
 type NodeDecision struct {
-	Kind   NodeDecisionKind
-	Topics []string
+	Kind  NodeDecisionKind
+	Topic string
 }
 
-// ResolveClusters maps clusters to node decisions from cluster shape alone.
-// Multi-topic clusters merge; single-topic clusters create. The interpreter is
-// not a parameter, so its output can never change a decision.
+// ResolveClusters emits one NodeCreate per topic in each surviving cluster.
+// Adjacent topics in a multi-topic cluster are related but never auto-merged:
+// merging two existing topics is a W2 lifecycle decision (association strength
+// sustained above 0.8 plus overlapping evidence, §5.4), so the association is
+// retained instead. The interpreter is not a parameter, so its output can
+// never change a decision.
 func ResolveClusters(clusters []Cluster) []NodeDecision {
 	decisions := make([]NodeDecision, 0, len(clusters))
 	for _, c := range clusters {
-		kind := NodeCreate
-		if len(c.Topics) > 1 {
-			kind = NodeMerge
+		for _, topic := range c.Topics {
+			decisions = append(decisions, NodeDecision{Kind: NodeCreate, Topic: topic})
 		}
-		decisions = append(decisions, NodeDecision{Kind: kind, Topics: slices.Clone(c.Topics)})
 	}
 	return decisions
+}
+
+// Consolidation is the deterministic concept stage of one sleep pass.
+type Consolidation struct {
+	Clusters  []Cluster      // surviving (post-denoise) clusters
+	Decisions []NodeDecision // one create per topic
+}
+
+// Consolidate runs cluster -> denoise -> resolve. It takes no interpreter, so
+// its decisions are identical with the LLM disconnected; the interpreter only
+// decorates Clusters with explanations elsewhere.
+func Consolidate(events []EventTopic, related map[string][]string) Consolidation {
+	clusters := ClusterTopics(events, related)
+	clusters = Denoise(clusters, related)
+	return Consolidation{Clusters: clusters, Decisions: ResolveClusters(clusters)}
 }
 
 // ClusterExplanation is the interpreter's only output: a name and a note.
