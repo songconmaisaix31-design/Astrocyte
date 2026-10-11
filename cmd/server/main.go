@@ -24,6 +24,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
@@ -199,9 +200,10 @@ func run(logger *slog.Logger) error {
 		Missions:             swarmapp.NewMissionService(),
 		PaperSearch:          attention,
 		Progress:             workspaceapp.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry),
-		Works:                workspaceapp.NewWorksService(db, worksscan.NewScanner(), worksscan.Delivery{}, nil, workspaceapp.WorksServiceOptions{}),
+		Works:                workspaceapp.NewWorksService(db, worksscan.NewScanner(), worksscan.Delivery{}, events.NewWorksEventSink(attentionapp.NewPendingEventService(sqlite.NewEventRepository(db)), nil), workspaceapp.WorksServiceOptions{}),
 		KnowledgeGovernance:  attentionapp.NewKnowledgeService(sqlite.NewKnowledgeRepository(sqlite.NewEngineRepository(db)), attentionapp.KnowledgeServiceOptions{}),
 		ExperienceGovernance: &experienceHTTPBridge{db: db, events: sqlite.NewEventRepository(db), projects: localProjects, registered: localProjects},
+		ConflictGate:         attentionapp.NewDynamicsEngine(sqlite.NewDynamicsRepository(db), attentionapp.DynamicsOptions{}),
 	}
 	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
 		services.Automatic = automatic
