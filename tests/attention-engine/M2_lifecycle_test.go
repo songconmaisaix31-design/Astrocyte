@@ -283,6 +283,21 @@ func TestM2SleepAttachAtomicAndConflictHumanGate(t *testing.T) {
 	if err != nil || len(list[0].Actions) != 1 {
 		t.Fatal("human action audit was duplicated", err)
 	}
+	// An unknown receipt outcome must stop replay, never repeat adjudication.
+	cmd.Decision = app.ConflictDecisionKeepLeft
+	_, err = db.Conn().Exec("UPDATE attention_receipts SET result='null' WHERE caller=? AND command=? AND key=?", "human:"+m2human.ID, "engine.adjudicate_conflict:"+list[0].Conflict.ID, cmd.IdempotencyKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = engine.AdjudicateConflict(ctx, m2human, list[0].Conflict.ID, cmd)
+	var unknown *apierrors.ServiceError
+	if !errors.As(err, &unknown) || unknown.Code != apierrors.DeliveryUnknown {
+		t.Fatal("unknown receipt outcome retried adjudication", err)
+	}
+	list, err = engine.Conflicts(ctx)
+	if err != nil || len(list[0].Actions) != 1 {
+		t.Fatal("unknown replay changed human audit", err)
+	}
 	if _, err = engine.ReportFactConflict(ctx, "old", a.EventID, b.EventID, "contradicted crystallized fact", ts+2); err != nil {
 		t.Fatal(err)
 	}

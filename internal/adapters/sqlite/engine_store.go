@@ -57,11 +57,6 @@ func (t *dynamicsReadTx) QueryRow(q string, args ...any) *sql.Row {
 
 type dynamicsTx struct{ t EngineTx }
 
-type dynamicsConflictData struct {
-	domain.Conflict
-	DecisionReceipts map[string]app.DynamicsDecisionReceipt `json:"decision_receipts,omitempty"`
-}
-
 func dynamicsMissing(err error, kind, id string) error {
 	if errors.Is(err, sql.ErrNoRows) {
 		return apierrors.NewNotFound(kind, id)
@@ -176,11 +171,9 @@ func (t *dynamicsTx) GetConflict(id string) (app.DynamicsConflict, error) {
 	if err != nil {
 		return c, dynamicsMissing(err, "conflict", id)
 	}
-	var saved dynamicsConflictData
-	if err = json.Unmarshal([]byte(data), &saved); err != nil {
+	if err = json.Unmarshal([]byte(data), &c.Conflict); err != nil {
 		return c, err
 	}
-	c.Conflict, c.DecisionReceipts = saved.Conflict, saved.DecisionReceipts
 	rows, err := t.t.Query("SELECT action,actor_id,actor_kind,ts,request_id,version FROM attention_engine_conflict_actions WHERE conflict_id=? ORDER BY version", id)
 	if err != nil {
 		return c, err
@@ -228,7 +221,7 @@ func (t *dynamicsTx) ListConflicts() ([]app.DynamicsConflict, error) {
 }
 
 func (t *dynamicsTx) SaveConflict(c app.DynamicsConflict) error {
-	data, err := json.Marshal(dynamicsConflictData{Conflict: c.Conflict, DecisionReceipts: c.DecisionReceipts})
+	data, err := json.Marshal(c.Conflict)
 	if err != nil {
 		return err
 	}
@@ -241,4 +234,30 @@ func (t *dynamicsTx) SaveConflict(c app.DynamicsConflict) error {
 func (t *dynamicsTx) AddConflictAction(id string, a app.ActionAudit) error {
 	_, err := t.t.Exec("INSERT INTO attention_engine_conflict_actions(conflict_id,action,actor_id,actor_kind,ts,request_id,version) VALUES(?,?,?,?,?,?,?)", id, a.Action, a.ActorID, a.ActorKind, a.TS, a.RequestID, a.Version)
 	return err
+}
+
+func (t *dynamicsTx) LoadDecisionReceipt(actor, operation, key string) (app.Receipt, error) {
+	var receipt app.Receipt
+	var result string
+	err := t.t.QueryRow("SELECT digest,result FROM attention_receipts WHERE caller=? AND command=? AND key=?", actor, operation, key).Scan(&receipt.Digest, &result)
+	receipt.Result = json.RawMessage(result)
+	return receipt, dynamicsMissing(err, "receipt", key)
+}
+
+func (t *dynamicsTx) SaveDecisionReceipt(actor, operation, key string, receipt app.Receipt) error {
+	if !json.Valid(receipt.Result) {
+		return fmt.Errorf("receipt must contain a complete result")
+	}
+	_, err := t.t.Exec("INSERT INTO attention_receipts(caller,command,key,digest,result) VALUES(?,?,?,?,?) ON CONFLICT(caller,command,key) DO NOTHING", actor, operation, key, receipt.Digest, string(receipt.Result))
+	if err != nil {
+		return err
+	}
+	stored, err := t.LoadDecisionReceipt(actor, operation, key)
+	if err != nil {
+		return err
+	}
+	if stored.Digest != receipt.Digest || string(stored.Result) != string(receipt.Result) {
+		return conflict("idempotency key binds a different decision or result")
+	}
+	return nil
 }

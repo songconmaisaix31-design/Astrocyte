@@ -24,20 +24,15 @@ type DynamicsTx interface {
 	ListConflicts() ([]DynamicsConflict, error)
 	SaveConflict(DynamicsConflict) error
 	AddConflictAction(string, ActionAudit) error
+	LoadDecisionReceipt(string, string, string) (Receipt, error)
+	SaveDecisionReceipt(string, string, string, Receipt) error
 }
 
 type DynamicsConflict struct {
-	Conflict         domain.Conflict                    `json:"conflict"`
-	CreatedAt        int64                              `json:"created_at"`
-	Version          int                                `json:"version"`
-	Actions          []ActionAudit                      `json:"actions"`
-	DecisionReceipts map[string]DynamicsDecisionReceipt `json:"decision_receipts,omitempty"`
-}
-
-type DynamicsDecisionReceipt struct {
-	Decision        string         `json:"decision"`
-	ExpectedVersion int            `json:"expected_version"`
-	Result          ConflictResult `json:"result"`
+	Conflict  domain.Conflict `json:"conflict"`
+	CreatedAt int64           `json:"created_at"`
+	Version   int             `json:"version"`
+	Actions   []ActionAudit   `json:"actions"`
 }
 
 type AppliedDynamicsSignal struct {
