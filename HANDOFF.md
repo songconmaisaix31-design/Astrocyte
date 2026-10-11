@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## M6 v2 验证期入口（2026-10-12）
+
+交付分支 `validation/v1-20261012`，基线为工程期最终 `6b2b91086d87e2173122c3c9f53a36332acffff2`，冻结令读STATUS顶部，任务源 [v2.0](tasks/M6-validation-v2.md)，固定写域与身份读 [计划](tasks/M6-validation-plan.md)。继续Codex --yolo；root不写业务代码。Run `run_d09ff3f95ebc`，coordinator `term_1adf40a6-ef79-4efa-b602-7b55173624e6`，W1诊断Dispatch ctx_4dcb09dc9350、W0 RED复现Dispatch ctx_155c592defd9 已实际开始。先收100条真实样本诊断，原样本保留再复验，禁止先修映射再掩盖首错。
+
+本轮用户明确授权最近30天两客户端原生载荷与两仓git log本地验证，旧metadata未答范围已在此范围内被覆盖，旧首RED/failed不改。raw不外发/不入Git，不动个人库。样本与审计证据在工作树外astrocyte-validation/v1-20261012；当前没有schema豁免、不改任何引擎逻辑。新发现的derived同值审计口径、运行参数待用户答复；Sleep无topic跳过与unassigned出生的实现冲突待实际诊断方案。不宣称V0已通过，不抢跑V1，不锁定V3，不把回放充当前瞻。
+
 ## 最终交付入口：双平台 CI 已通过（2026-10-12）
 
 分支 `attention-engine/v1-20261011`；源码/测试验收HEAD `100f00cb6945c96a7f3bd3f100f7ff65efc61197`，最终普通代码/测试合并 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1`。[CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) completed/success：Ubuntu/Windows完整check/build/defaultE2E均PASS，各226 PASS / 30 SKIP，Linux race PASS（Windows按条件SKIP）。当前收尾只改STATUS、HANDOFF、计划和验收四个Markdown，以skip ci提交；验收来源仍是100f00c，代码/测试/配置完全相同。先前RED原件保留。

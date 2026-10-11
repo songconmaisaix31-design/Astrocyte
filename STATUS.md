@@ -6,7 +6,9 @@
 
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
-当前：基线干净、两原生目录存在；100条诊断启动前，V0–V4均NOT_RUN。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接，避免双份漂移。现有Sleep跳过无topic事件、允许从带topic事件出生；与“新主题只能从unassigned”及引擎冻结存在实现冲突，先诊断并报告，不偷偷改引擎。schema豁免当前无。
+当前：基线干净、两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接，避免双份漂移。现有Sleep跳过无topic事件、允许从带topic事件出生；与“新主题只能从unassigned”及引擎冻结存在实现冲突，先诊断并报告，不偷偷改引擎。schema豁免当前无。
+
+00:57已实际启动两个Codex --yolo独立写域，Run `run_d09ff3f95ebc`：W1 `task_112759e787a6` / `ctx_4dcb09dc9350` 诊断真实50+50并保存原样本；W0 `task_90ac7f1ae958` / `ctx_155c592defd9` 合成canary复现全MCP/store边界，先提schema接缝方案。二者turn_started均observed，尚不改生产映射/schema/引擎。已向用户集中询问raw任意值与derived同值的审计口径、未指定的验证运行参数；未答的依赖不推进，诊断和独立复现继续。
 
 ## 本轮最终双平台 CI 通过（2026-10-12）
 
