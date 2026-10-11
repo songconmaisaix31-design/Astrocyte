@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## Codex 接替主控（2026-10-11 21:41）
+
+用户明确要求接替原终端开始任务。原 OpenCode 主控已中断；Run `run_19a0b1268e5a` 已绑定 Codex `term_1adf40a6-ef79-4efa-b602-7b55173624e6`，consumer_generation=2。原八轨 Task/Dispatch 和工作树不变，实际 Worker 分支为 `songconmaisaix31-design/attention-engine-wN-*`。
+
+实查八轨全部停在用户任务书读取权限弹窗，尚无业务提交；原 ready/input_accepted 只表示注入接受。已逐轨放行本次任务书读取并投递恢复指令。继续 W0 M0 → 独立验收 → 普通合入 → W1–W6 编码；其他轨并行完成波 A。不以历史 S1 通过替代本轮认知内核验收。
+
 ## 认知内核 Attention Engine 开工（2026-10-11）
 
 任务书 `tabbit-code (2).md`（v1.1 认知内核，三条链 M0–M6）；集成分支 `attention-engine/v1-20261011` 自基线 `dab8fea` 拉取，s1 分支族只读不改。按互斥写域解耦八轨（W0 契约/迁移/HTTP/集成，W1 事件流，W2 动力学引擎，W3 Sleep，W4 Knowledge，W5 Experience，W6 MCP，W7 本地作品聚合）+ 末尾 1 集成 Agent；并发无上限，全 OpenCode Worker。root 只调度与验收。主计划 `tasks/AttentionEngine-plan.md`；本轮关键决定与偏差见该计划及 QUESTIONS 顶部。Run `run_19a0b1268e5a`，八轨已派发（全 OpenCode，state=ready）：
