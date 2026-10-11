@@ -73,6 +73,8 @@ M1 局部 8 PASS / 1 SKIP（真实元数据未重跑）；受影响四包 `go bu
 不把局部绿或构建绿写成当前五包全绿；等待精确 owner 测试修复 SHA 后定向复验。
 随后普通合入 owner 精确 `a3eab2c6d0df026e056a5a873a0d63bf58282688`：仅调整 W7 接口验收使用实际 production migration，未改领域行为。
 原 receipt fixture 定向 `-count=1` PASS；首 duplicate-DDL RED 保持。后续受影响五包是否全绿另记，不由该定向通过推断。
+在该修复之后重新执行受影响五包，全部 PASS；受影响 domain/app/events/sqlite 构建 PASS，发布 `f3460ef785cdea0ecaf443628b82f573d05b9155`。
+此后无扩大源读取、无再次跑确认空的真实 cache；real 两客户端回放仍保持首次 RED/授权待答。
 
 ## 未决定参数下的 pending-only 入口
 
