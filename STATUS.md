@@ -14,7 +14,9 @@
 
 EXPERIMENT.md预注册必须写明：本验证期发现机制仅覆盖unassigned出生，分裂禁用；回放自主发现的未播种topic（如McPet/MorphBench）按真实产物记录为V1加号证据，不预填示例为结果。原始值与derived同值审计口径、正式运行参数仍待答，EX-01只解决Sleep限界，不代替这两项裁决。
 
-01:12 两owner确认无等效配置：SleepOptions仅Clock/ProjectFacts/Interpreter；ListEvents已读所有存储行，Run和domain.ClusterTopics均排除空topic。W1只能给出固定种子assignment，unassigned仍无候选；现有Interpreter提交后只解释，无主题写入。EX-01不能凭空补出发现机制。限定实现先在Run保留无标行为unassigned_pending（原event_id/已观察时间，不伪标签），缺节点的tagged簇记录tagged_birth_disabled_v0_2，不调用birth。去噪/fluid/边/merge调用不改；无标真实出生暂BLOCKED，不用0出生冒称该项PASS。新增候选发现策略或未接线测试回调不纳入本次豁免。
+01:12 两owner确认无等效配置：SleepOptions仅Clock/ProjectFacts/Interpreter；ListEvents已读所有存储行，Run和domain.ClusterTopics均排除空topic。W1只能给出固定种子assignment，unassigned仍无候选；现有Interpreter提交后只解释，无主题写入。EX-01不能凭空补出发现机制。限定实现先在Run保留Mapped+Topic空行为unassigned_pending、Event=nil行为mapping_pending（原event_id/已观察时间，bucket未知不猜，不伪标签），缺节点的tagged簇记录tagged_birth_disabled_v0_2，不调用birth。去噪/fluid/边/merge调用不改；真实桶provider及无标出生暂BLOCKED，不用0出生冒称该项PASS。新增候选发现策略或未接线测试回调不纳入本次豁免。
+
+01:15 owner定向EX-01 3 PASS，原M2 7 PASS/1子进程入口SKIP，domain Sleep7 PASS。旧M3/Sleep CLI首RED：依赖tagged出生的节点未出现，两个知识fixture未预播种导致空知识/panic。为落实EX-01新预期，W0补充唯一测试写域`tests/attention-engine/M3_pipeline_test.go`、`cmd/sleep/main_test.go`：已有主题fixture显式预播种，tagged出生场景改断言0出生；保持原持久化、metrics、rollback、知识冲突和人工关口断言。不改M2、不改任何其他生产函数。结果是owner定向验证，尚未合入或root整树验收。
 
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
