@@ -28,6 +28,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -198,6 +199,7 @@ func run(logger *slog.Logger) error {
 		Missions:           swarmapp.NewMissionService(),
 		PaperSearch:        attention,
 		Progress:           workspaceapp.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry),
+		Works:              workspaceapp.NewWorksService(db, worksscan.NewScanner(), worksscan.Delivery{}, nil, workspaceapp.WorksServiceOptions{}),
 	}
 	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
 		services.Automatic = automatic

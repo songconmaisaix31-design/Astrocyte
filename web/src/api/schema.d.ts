@@ -1644,6 +1644,286 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/knowledge/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read project-scoped knowledge
+         * @description Human-session cached read with persisted project visibility checks; never starts discovery.
+         */
+        get: operations["readEngineknowledge"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/knowledge/{id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Human shares knowledge
+         * @description Human-session command with CSRF, caller-scoped idempotency and version checks. Service implementation owns persisted mutation and audit.
+         */
+        post: operations["sharesEngineknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/knowledge/{id}/demote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Human demote knowledge
+         * @description Human-session command with CSRF, caller-scoped idempotency and version checks. Service implementation owns persisted mutation and audit.
+         */
+        post: operations["demoteEngineknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/experiences/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read project-scoped experiences
+         * @description Human-session cached read with persisted project visibility checks; never starts discovery.
+         */
+        get: operations["readEngineexperiences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/experiences/{id}/shares": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Human shares experiences
+         * @description Human-session command with CSRF, caller-scoped idempotency and version checks. Service implementation owns persisted mutation and audit.
+         */
+        post: operations["sharesEngineexperiences"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/experiences/{id}/demote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Human demote experiences
+         * @description Human-session command with CSRF, caller-scoped idempotency and version checks. Service implementation owns persisted mutation and audit.
+         */
+        post: operations["demoteEngineexperiences"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/knowledge/{id}/references": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reference confirmed knowledge
+         * @description Human-session command with CSRF, caller-scoped idempotency and version checks. Service implementation owns persisted mutation and audit.
+         */
+        post: operations["referenceEngineKnowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/works": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listWorks
+         * @description Read the persisted Works album without filesystem access.
+         */
+        get: operations["listWorks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/works/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * refreshWorks
+         * @description Scan only registered approved metadata roots; omitted roots use the cached registered roots. Supplied roots cannot extend that boundary.
+         */
+        post: operations["refreshWorks"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/works/delivery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * importWorksDelivery
+         * @description Human-session Works command with CSRF, idempotency and independent metadata revision.
+         */
+        post: operations["importWorksDelivery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/works/{work_id}/attitude": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * setWorkAttitude
+         * @description Human-session Works command with CSRF, idempotency and independent metadata revision.
+         */
+        put: operations["setWorkAttitude"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/works/{work_id}/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * setWorkGroup
+         * @description Human-session Works command with CSRF, idempotency and independent metadata revision.
+         */
+        put: operations["setWorkGroup"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/works/{work_id}/handoff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * setWorkHandoff
+         * @description Human-session Works command with CSRF, idempotency and independent metadata revision.
+         */
+        put: operations["setWorkHandoff"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/works/{work_id}/hidden": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * setWorkHidden
+         * @description Human-session Works command with CSRF, idempotency and independent metadata revision.
+         */
+        put: operations["setWorkHidden"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4172,7 +4452,8 @@ export interface components {
          * @example {
          *       "schema_version": 1,
          *       "request_id": "example-request",
-         *       "expected_version": 1
+         *       "expected_version": 1,
+         *       "owner_project": "fixture-project"
          *     }
          */
         ConfirmKnowledgeRequestV1: {
@@ -4180,12 +4461,14 @@ export interface components {
             schema_version: 1;
             request_id: string;
             expected_version: number;
+            owner_project: string;
         };
         /**
          * @example {
          *       "schema_version": 1,
          *       "request_id": "example-request",
-         *       "expected_version": 1
+         *       "expected_version": 1,
+         *       "owner_project": "fixture-project"
          *     }
          */
         ApproveExperienceRequestV1: {
@@ -4193,6 +4476,7 @@ export interface components {
             schema_version: 1;
             request_id: string;
             expected_version: number;
+            owner_project: string;
         };
         /**
          * @example {
@@ -4214,16 +4498,296 @@ export interface components {
             /** @constant */
             schema_version: 1;
             entry: components["schemas"]["KnowledgeEntryV1"];
+            version: number;
+            owner_project: string;
         };
         ApproveExperienceResultV1: {
             /** @constant */
             schema_version: 1;
             experience: components["schemas"]["ExperienceV1"];
+            version: number;
+            owner_project: string;
         };
         AdjudicateConflictResultV1: {
             /** @constant */
             schema_version: 1;
             conflict: components["schemas"]["ConflictV1"];
+            version: number;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "owner_project": "fixture-project",
+         *       "target_project": "fixture-other"
+         *     }
+         */
+        ShareMemoryRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            owner_project: string;
+            target_project: string;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "owner_project": "fixture-project"
+         *     }
+         */
+        DemoteMemoryRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            owner_project: string;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "project_id": "fixture-project"
+         *     }
+         */
+        ReferenceKnowledgeRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            project_id: string;
+        };
+        MemoryShareAuditV1: {
+            owner_project: string;
+            target_project: string;
+            actor_id: string;
+            /** @constant */
+            actor_kind: "human";
+            ts: number;
+            request_id: string;
+        };
+        MemoryActionAuditV1: {
+            action: string;
+            actor_id: string;
+            /** @constant */
+            actor_kind: "human";
+            ts: number;
+            request_id: string;
+            version: number;
+        };
+        KnowledgeVersionV1: {
+            version: number;
+            content: unknown;
+            recorded_at: number;
+        };
+        StoredKnowledgeV1: {
+            entry: components["schemas"]["KnowledgeEntryV1"];
+            owner_project: string;
+            version: number;
+            created_at: number;
+            updated_at: number;
+            crystallized_versions: components["schemas"]["KnowledgeVersionV1"][];
+            shares: components["schemas"]["MemoryShareAuditV1"][];
+            actions: components["schemas"]["MemoryActionAuditV1"][];
+        };
+        StoredExperienceV1: {
+            experience: components["schemas"]["ExperienceV1"];
+            owner_project: string;
+            origin_event_id: string;
+            version: number;
+            created_at: number;
+            updated_at: number;
+            shares: components["schemas"]["MemoryShareAuditV1"][];
+            actions: components["schemas"]["MemoryActionAuditV1"][];
+        };
+        KnowledgeReadResultV1: {
+            /** @constant */
+            schema_version: 1;
+            knowledge: components["schemas"]["StoredKnowledgeV1"];
+        };
+        ExperienceReadResultV1: {
+            /** @constant */
+            schema_version: 1;
+            experience: components["schemas"]["StoredExperienceV1"];
+        };
+        WorkFileFactV1: {
+            source_path: string;
+            /** Format: date-time */
+            mtime: string | null;
+            file_count: number;
+            verified: boolean;
+            reason?: string;
+        };
+        WorkHandoffV1: {
+            content: string;
+            /** Format: date-time */
+            updated_at: string | null;
+            /** @enum {string} */
+            source: "" | "human" | "generated";
+        };
+        WorkV1: {
+            id: string;
+            platform: string;
+            name: string;
+            root: string;
+            /** @enum {string} */
+            kind: "folder" | "file";
+            /** @enum {string} */
+            source: "scan" | "json" | "registered";
+            /** @enum {string} */
+            attitude: "" | "continue" | "park" | "done";
+            group: string;
+            hidden: boolean;
+            handoff: components["schemas"]["WorkHandoffV1"];
+            files: components["schemas"]["WorkFileFactV1"];
+            /** Format: date-time */
+            updated_at: string | null;
+            revision: number;
+        };
+        WorkDiscoveryFailureV1: {
+            root: string;
+            reason: string;
+        };
+        WorkPlatformStatV1: {
+            platform: string;
+            works: number;
+            folders: number;
+            handed_over: number;
+            recent: number;
+        };
+        WorksSnapshotV1: {
+            works: components["schemas"]["WorkV1"][];
+            platforms: components["schemas"]["WorkPlatformStatV1"][];
+            /** @enum {string} */
+            status: "unknown" | "complete" | "partial" | "stale";
+            /** Format: date-time */
+            observed_at: string | null;
+            failures: components["schemas"]["WorkDiscoveryFailureV1"][];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "snapshot": {
+         *         "works": [],
+         *         "platforms": [],
+         *         "status": "unknown",
+         *         "observed_at": null,
+         *         "failures": []
+         *       }
+         *     }
+         */
+        WorksSnapshotResultV1: {
+            /** @constant */
+            schema_version: 1;
+            snapshot: components["schemas"]["WorksSnapshotV1"];
+        };
+        WorkResultV1: {
+            /** @constant */
+            schema_version: 1;
+            work: components["schemas"]["WorkV1"];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "roots": []
+         *     }
+         */
+        WorksRefreshRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            roots?: string[];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "content": "{\"works\":[]}"
+         *     }
+         */
+        WorksDeliveryRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            content: string;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "expected_revision": 0,
+         *       "attitude": "continue"
+         *     }
+         */
+        WorkAttitudeRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            expected_revision: number;
+            /** @enum {string} */
+            attitude: "continue" | "park" | "done";
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "expected_revision": 0,
+         *       "group": "research"
+         *     }
+         */
+        WorkGroupRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            expected_revision: number;
+            group: string;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "expected_revision": 0,
+         *       "content": "fixture handoff"
+         *     }
+         */
+        WorkHandoffRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            expected_revision: number;
+            content: string;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "fixture-request",
+         *       "expected_version": 1,
+         *       "expected_revision": 0,
+         *       "hidden": true
+         *     }
+         */
+        WorkHiddenRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            expected_revision: number;
+            hidden: boolean;
         };
     };
     responses: never;
@@ -13056,7 +13620,9 @@ export interface operations {
                      *           }
                      *         ],
                      *         "status": "confirmed"
-                     *       }
+                     *       },
+                     *       "version": 2,
+                     *       "owner_project": "fixture-project"
                      *     }
                      */
                     "application/json": components["schemas"]["ConfirmKnowledgeResultV1"];
@@ -13172,7 +13738,9 @@ export interface operations {
                      *           }
                      *         ],
                      *         "status": "approved"
-                     *       }
+                     *       },
+                     *       "version": 2,
+                     *       "owner_project": "fixture-project"
                      *     }
                      */
                     "application/json": components["schemas"]["ApproveExperienceResultV1"];
@@ -13284,7 +13852,8 @@ export interface operations {
                      *         "right_ref": "k-2",
                      *         "detail": "contradictory capacity facts",
                      *         "status": "resolved_merge"
-                     *       }
+                     *       },
+                     *       "version": 2
                      *     }
                      */
                     "application/json": components["schemas"]["AdjudicateConflictResultV1"];
@@ -13350,6 +13919,1348 @@ export interface operations {
                      *         "request_id": "example-request",
                      *         "retryable": false,
                      *         "required_action": "Read the current capabilities; choose an implemented operation"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    readEngineknowledge: {
+        parameters: {
+            query: {
+                /** @description Project scope for persisted visibility filtering */
+                project_id: string;
+            };
+            header?: never;
+            path: {
+                /** @description Stored resource identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KnowledgeReadResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    sharesEngineknowledge: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShareMemoryRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmKnowledgeResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    demoteEngineknowledge: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoteMemoryRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmKnowledgeResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    readEngineexperiences: {
+        parameters: {
+            query: {
+                /** @description Project scope for persisted visibility filtering */
+                project_id: string;
+            };
+            header?: never;
+            path: {
+                /** @description Stored resource identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperienceReadResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    sharesEngineexperiences: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShareMemoryRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApproveExperienceResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    demoteEngineexperiences: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DemoteMemoryRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApproveExperienceResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    referenceEngineKnowledge: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReferenceKnowledgeRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmKnowledgeResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listWorks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorksSnapshotResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    refreshWorks: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorksRefreshRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorksSnapshotResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    importWorksDelivery: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorksDeliveryRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorksSnapshotResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setWorkAttitude: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                work_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkAttitudeRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setWorkGroup: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                work_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkGroupRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setWorkHandoff: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                work_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkHandoffRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    setWorkHidden: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Stored resource identifier */
+                work_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkHiddenRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Human authority or scope required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Version conflict or uncertain delivery */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Service has not been assembled */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Service has not been assembled",
+                     *         "request_id": "fixture-request",
+                     *         "retryable": false,
+                     *         "required_action": "configure_supported_service"
                      *       }
                      *     }
                      */
