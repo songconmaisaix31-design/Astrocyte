@@ -1,6 +1,6 @@
 # Astrocyte 当前状态
 
-## Codex --yolo 八轨接续（2026-10-11 22:22）
+## Codex --yolo 八轨接续（2026-10-11 22:38）
 
 用户更新后八轨均由 `codex --yolo` / gpt-6.1-sol 实际接续，原工作树和自动分支不变。当前有效 Task/Dispatch：
 
@@ -12,14 +12,18 @@
 | W3 Sleep | task_e5487ee2214c | ctx_1bd42ececb41 |
 | W4 Knowledge | task_da85be3296c1 | ctx_062b79f07e46 |
 | W5 Experience | task_01d6c1323a06 | ctx_64ccc9c2ca1a |
-| W6 MCP | task_4ed820f6c5e1 | ctx_e01b5a2aabf0 |
+| W6 MCP 原 owner 返修 | task_cac2fa66a283 | ctx_7f6b4a0be462 |
 | W7 作品聚合 | task_355d5b638062 | ctx_cf173bcd2418 |
 
 原 OpenCode 阶段报告按 partial 处理；W6 已证实 Agent 退出但未结算，原 Dispatch 按 stop 后 retry，代码 `daa3f6d` 保留。其余旧轨已归档关闭；W5 原终端因 user_takeover 由运行时保留、已结算 idle。旧表和旧 Dispatch 仅作历史，不再派发。
 
 W0 持久化基础 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已普通合入并 push，集成 SHA `2268f4920973128068f46a182dfddfb040a1dbc2`。root 对该精确集成源复验 M0 harness、attention domain/app、SQLite、HTTP 五包 PASS。migration015 保留原始事件 bytes/观测、节点独立 updated_at、项目隔离/人工分享审计/版本及 Sleep 日记录；sqlite-vec 按任务红线 CUT。各轨已消费正式依赖进入应用/持久化开发。W0 继续 P2 HTTP/OpenAPI、作品迁移与入口；人工关口未组装时仍501。M2纯公式30点独立复算误差0；各轨纯逻辑/协议/fixture局部通过不能替代完整验收。
 
-root 基线三次整场 FAIL 及定向恢复见 [基线记录](docs/acceptance/AttentionEngine-baseline.md)。W0 在47f报告 check/build PASS，root 尚未重新取得整场 PASS。本机固定个人缓存中 Astrocyte 项目存在但 native contributors=[]，W1所选真实回放首场RED保留。原始会话元数据范围、工程默认参数、知识新增固化版本再确认与检索时间基准已问用户，未答不冻结。W7 稳定 Go 阶段 `0e38f94fa516f5b9f8ec4f48f6f76fbad425e5e1` 已授权 W0 普通消费以编译 HTTP/入口；W7 请求持久去重/事件发送失败由原 owner 修正，真实 UI 等 P2 精确端点发布。下一步：各轨真实应用/持久化验收 → 集成/M6与最终check/build/push。
+P2 SOURCE `5d356370c4157e74d96388afd098d5fea14dc799` 普通合入并 push 为 `05d853605256e6540d9ef43f63eeb6530b7fe0a9`。root 五包定向测试及该精确源单场 `pnpm check` PASS：Go/vet、21包架构、275契约例/生成漂移、S1 API14、TS/lint、Vitest13文件/90项。前三场基线 FAIL 保留见 [基线记录](docs/acceptance/AttentionEngine-baseline.md)，build/E2E尚未root复验。W7真实UI已接七端点，隔离浏览器/持久化验收进行中；W0后续已发布独立知识巩固时间/只读事务/认证测试harness，原轨继续消费与返修，未作为最终集成验收。
+
+W6 原阶段 SOURCE `e057f100cab38e80b7a081c6f5a3639d023e2f63` / REPORT `062ea130eda94d3ce3411d956167fadd7efdc03e` 已结算，五stdio子进程/SQLite重启是实际执行、输入为合成contract_local；新Task复用原终端/写域修 W1已提交原事件但经验捕获失败时的ID/可见pending传递，禁止新OriginKey盲重放。首次注入停在composer，检查后仅bareEnter恢复，未重复派发。W2首seed A=0已原owner改floor.05；W4实际query_only下BEGIN IMMEDIATE首RED归W0补WithReadTx；W5人工命令原CAS无结果receipt已原owner补原子收据回放。实际初次失败与定向绿分别保留。
+
+本机固定个人缓存中 Astrocyte 项目存在但 native contributors=[]，W1所选真实回放首场RED保留。原始会话元数据范围、工程默认参数、知识新增固化版本再确认与检索时间基准已问用户，未答不冻结。下一步：各轨真实应用/持久化验收 → 集成/M6与最终check/build/push；整体M1–M6/W7未完成。
 
 ## Codex 接替主控（2026-10-11 21:41）
 

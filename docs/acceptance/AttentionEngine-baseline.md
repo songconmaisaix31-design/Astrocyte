@@ -25,3 +25,9 @@ W2 `acb4561` 的 30 天 fixture，由 root 以独立 Node 公式重算：30 点 
 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 普通合入集成 `2268f4920973128068f46a182dfddfb040a1dbc2`，root 运行 `GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./tests/attention-engine ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi`，五包 PASS（M0 harness 0.887s、SQLite 4.958s、HTTP 0.565s）。范围为 schema/迁移/持久化基础和既有 HTTP，未组装人工关口仍501，其他轨应用未合，不宣称完整 M1–M6/W7。
 
 W0 独立报告47f的 `pnpm check`/`pnpm build` PASS（Node堆512、Go单并发）；不是root整场复验。旧 Windows paging failure 原始完整stderr文件未留存，仅已知错误片段保留，不补造日志路径。
+
+## P2 组装基础复验（2026-10-11 22:30）
+
+SOURCE `5d356370c4157e74d96388afd098d5fea14dc799` 普通合入并 push 为 `05d853605256e6540d9ef43f63eeb6530b7fe0a9`（含已授权 W7 稳定 Go 阶段）。root 五包 `go test -count=1` PASS：M0/W7 harness、httpapi、sqlite、workspace/app、worksscan。实际 HTTP 用生产 Works 服务/SQLite及合成临时目录输入验证边界与重启；请求生命周期/sink/真实 UI 仍待后续 owner 阶段。
+
+该精确集成源 root `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` 单场 PASS：Go 格式/vet/全包测试、依赖、21包架构、275契约示例与生成漂移、S1 API14/14、TS/lint、Vitest13文件/90测试、diff。完整输出 `%TEMP%/astrocyte-root-p2-check-20261011-2227.log`。前三场失败保持，不改写历史；此场不覆盖尚未合入的动力学/Memory/MCP/Sleep实际服务，也不算完整M1–M6/W7完成。P2本轮root build/E2E尚未执行。

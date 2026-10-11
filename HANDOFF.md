@@ -1,6 +1,8 @@
 # Astrocyte 主控交接
 
-## 当前入口：Codex --yolo 八轨（2026-10-11 22:22）
+## 当前入口：Codex --yolo 八轨（2026-10-11 22:38）
+
+最新集成 `05d853605256e6540d9ef43f63eeb6530b7fe0a9` 已普通消费 W0 P2 `5d35637` 并 push，root 单场check PASS（275契约例、API14、前端90项）；build/E2E未复验，新领域各轨应用仍待最终集成。W6原任务结算后以 `task_cac2fa66a283` / `ctx_7f6b4a0be462` 复用原Codex--yolo终端修postcommit原事件ID/pending回流，旧ctx_e01不再收信。W0后续只读事务/独立consolidated_at/Handler及session guard已发布依赖，原owner继续实际HTTP/SQLite/restart，不可沿早期纯/fixture记录宣称完整里程碑。其余当前Task见STATUS。最后完整M1真实两客户端仍待用户原始元数据范围，默认参数/知识语义仍未决定。
 
 用户要求后续 `codex --yolo`，已实际启动八轨 Codex / gpt-6.1-sol，沿原工作树/分支/互斥写域继续。Run仍 `run_19a0b1268e5a`，coordinator仍 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`。有效 Task/Dispatch 见 STATUS 最新表，旧 OpenCode IDs 不再使用。正式 M0 P1 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已普通合入集成 `2268f4920973128068f46a182dfddfb040a1dbc2` 并 push，root 精确源五包 PASS；各轨已解锁真实应用/SQLite。W0 正 P2 HTTP/OpenAPI/作品迁移/入口；已授权普通消费 W7 稳定 Go SHA `0e38f94fa516f5b9f8ec4f48f6f76fbad425e5e1`，只作编译依赖，不算W7验收。W7原owner修请求去重和事件sink错误，真实UI等P2端点。别消费未发布改动，也别把501/fixture/纯规则声明完整里程碑完成。参数、原始元数据范围、知识版本再确认/检索时间基准等待用户。root独占计划/状态/决定/验收/最终Git；业务返修归现有owner。
 
