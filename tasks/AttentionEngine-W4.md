@@ -1,8 +1,33 @@
 # AttentionEngine W4 · Knowledge 两级存储与检索（M4）
 
-事实源：用户任务书 `tabbit-code (2).md` §4.4 / §5.6 / §8 M4；分支 `songconmaisaix31-design/attention-engine-w4-knowledge`。本次 Dispatch `task_da85be3296c1` / `ctx_062b79f07e46`，协调者确认客户端/模型为 Codex / gpt-6.1-sol。
+事实源：用户任务书 `tabbit-code (2).md` §4.4 / §5.6 / §8 M4；分支 `songconmaisaix31-design/attention-engine-w4-knowledge`。客户端/模型为 Codex / gpt-6.1-sol。原 M4 Dispatch `task_da85be3296c1` / `ctx_062b79f07e46`；本次限定返修 Dispatch `task_43f6f1eb9aa2` / `ctx_f9762428c69e`。
 
-## 当前结果（2026-10-11 22:43 +08:00）
+## 当前限定返修结果（2026-10-11）
+
+已修复实际 M6 推荐读取 W2/W3 节点包装时静默得到零注意力的问题；SOURCE `abff94dbb8b614e4489e467e9095935fd0815ba9` 已 push，交给 W0 Dispatch `ctx_b16e623a7b11`（消息 `msg_a59f8646dad0`）加强 M6 非零/输入一致性断言并复跑。此结果是 W4 生产保存路径与检索的限定返修验收，不是 M6 全链路重新通过声明。
+
+- 原始集成 RED 文件保持原样：`C:\Users\DW\AppData\Local\Temp\astrocyte-M6-W0-20261011\M6-week-result.json`。`final.state` 的 implementation A=0.9552011491162884、research A=0.33674673723047327，但两项 `recommendations.inputs.Attention=0`、score=0；当时全零字母序不能证明推荐正确。
+- 根因：W2 `SaveNode` 实际序列化 `app.StoredAttentionNode`（node/history/version 等），W3 共享事务复用同一保存实现；W4 直接反序列化为 flat `domain.AttentionNode`，JSON 忽略未知字段且不报错。现在先读包装内 Node，再按 W2 兼容方式支持旧 flat 数据。未改 W2、共享契约、迁移、HTTP 或 cmd。
+- 普通精确消费 W2 final `2c148c1034ec28b5d787309f1320198706d97e4a` 与 W3 SOURCE `684292a6d8ff97a3e1b09c3a8398de51ccea1cfb`；新增 `TestM4ProductionNodeRetrievalAfterRestart` 分别调用 W2 `WithDynamicsTx/SaveNode` 与 W3 `WithSleepTx/SaveNode`，没有用手工 flat INSERT 替代生产保存。
+- 首次回归 RED 留存：`C:\Users\DW\AppData\Local\Temp\astrocyte-M4-node-wrapper-first-red-20261011.log`。两个子例实际返回 `{ID:z-exact Relevance:1 Attention:0 AccessBoost:3 AgeSeconds:8}`，预期 Attention=.6；修复后相同子例 PASS。旧 flat 数据测试保留且 PASS。
+- 关闭并重开真实 SQLite 后，query_only 下读出精确主题 A=.6、邻接主题 A=.9/relevance=.25；全部 Inputs 与独立已知值逐字段核对，再复算 score=relevance×exp(-lambda×age)×A×boost 且要求非零。lambda=0 时 z-exact 胜过字母序靠前的 a-neighbor，lambda=1.5 时赢家切换；空主题查询也核对两个真实 A。前后完整节点 data（含 history）及 attention/momentum/confidence/last_active/updated_at/lifecycle/version 一致。
+
+验证环境仍为 `GOFLAGS=-p=1 GOMAXPROCS=2`：
+
+| 命令 | 此次结果 |
+|---|---|
+| `go test -count=1 ./tests/attention-engine -run TestM4ProductionNodeRetrievalAfterRestart -v -timeout 90s`（修复前） | RED，W2Dynamics/W3Sleep 均 A=0 vs .6，1.117s |
+| `go test -count=1 ./tests/attention-engine -run TestM4 -v -timeout 90s`（修复后，保留库） | PASS，11个顶层例及2个生产保存子例，1.556s |
+| `go test -count=1 ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi -timeout 90s` | 此次4包全部 PASS；domain .331s / app .399s / sqlite 5.398s / httpapi .987s，原交付记录的首次 RED 保留 |
+| `go vet ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/attention-engine` | PASS，exit0 |
+| `go build ./internal/attention/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./cmd/server` | PASS，exit0 |
+| `git diff --check` | PASS |
+
+新的真实 SQLite/检索因子材料位于 `C:\Users\DW\AppData\Local\Temp\astrocyte-M4-node-wrapper-green-20261011`；生产包装子例在 `TestM4ProductionNodeRetrievalAfterRestart/W2Dynamics` 与 `.../W3Sleep`，各有 `knowledge.sqlite` 和 `retrieval.json`，JSON 包含 producer、查询、返回因子/得分及前后 SQL 节点快照。沿用原 M4 的显式留存入口，不覆盖旧 RED 或原验收库。
+
+W0 后续需普通消费上述 SOURCE，检查 M6 recommendation 的 A 等于 final.state 相同 topic 的 A，再以独立 relevance、年龄、显式 lambda 与 audited human reference boost 复算非零得分，不能只检查有返回或排序稳定。本轨不修改 M6、个人预览、真实采集 metadata；LambdaR/age/reconfirmation 产品默认仍未决定，sqlite-vec 仍 CUT，受控 fixture 不是个人真实认知流或人工验收。
+
+## 原 M4 交付记录（2026-10-11 22:43 +08:00）
 
 M4 的 10 个实际验收例 PASS；SQLite 全包首次 RED 保留。已普通消费原 W7 owner 精确修复 `a3eab2c6d0df026e056a5a873a0d63bf58282688`，对应失败例定向复验 PASS；没有宣称 SQLite 全包重新跑绿。
 
