@@ -1,10 +1,26 @@
 # Astrocyte 当前状态
 
+## 自动 CI 下一层 M1 路径首错（2026-10-11 23:40）
+
+已push `ebe9a758b05d73363cc8630c187208c41253321d`，CI38152009091 Windows check仍FAIL：agents/worksscan及其余Go包已PASS，仅 `TestM1NativeFormatFixtureReplayAccounting` 报 `count=0 partial=false err=replay file uses symbolic links`，是events/native_reader.go另一处短长路径比较；Ubuntu此树check/race/build已PASS，E2E运行。完整Windows job日志 `%TEMP%/astrocyte-ci-38152009091-windows-first.log` 保留，不覆盖第一38150022874。
+
+原W1新限定Task `task_153a01e3d7ee` / Dispatch `ctx_d533ec61be20` 实际开始，Codex--yolo原工作树/分支，唯一events/**、M1测试和自己报告；不改原真实M1 failed任务、不扩大私人metadata范围、不放宽符号链接/登记根/读量边界。此fixture修复后沿原集成Agent/root复验；本机此前最终check/build PASS不等于新远程通过，整体产品未完成。
+
+## 本轮最终树已合入、本机通过（2026-10-11 23:36）
+
+交付分支 `attention-engine/v1-20261011`；最终业务普通合并 `15c4d8b0886450619d4bc279d0770d2f958beeb4` 消费 Windows 返修集成REPORT `9919d801609a204f122cdee8691bb01d9f3692da`，所有八轨最终报告及两份路径返修SOURCE/REPORT均保留普通祖先。实现认知事件/动力学/Sleep、项目隔离知识与经验/人工关口、五MCP stdio工具、Works五能力与原始事件源；M6合成七日推荐首错已原owner修复并独立复算。所有开发/返修使用原 Codex --yolo 工作树/分支，所有Dispatch已结算，外部终端 retained idle。
+
+root 对此业务树完整 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` / `pnpm build` EXIT0：Go/27包边界/275契约/实际API14/前端90，API/MCP/Sleep三二进制+web。Windows真实8.3同目录、secret alias和junction拒绝实际通过，普通Windows symlink本机privilege不足仍NOT_RUN/SKIP。此前业务树0e493默认E2E226 PASS/30 SKIP，UI源未改；未重复真实目录写入/媒体/native。新树push自动CI由root核实，远程结果尚待；第一次Windows失败原件保留，不能提前称远程通过。
+
+真实剩余：M1所选真实CC/Codex回放首RED/0 eligible，原始元数据范围未答；工程参数、固化新版本确认和检索年龄策略未答，测试值不是默认；sqlite-vec依任务红线CUT，当前topic_keyword退化不是向量检索。官方MCP客户端互通/native task_live、七日用户科学对照、合main与个人预览升级均未执行。整体产品未宣称完成；详细命令/日志/首次失败见 [本轮验收](docs/acceptance/AttentionEngine-baseline.md) 和 [集成交接](tasks/AttentionEngine-integration.md)。
+
 ## 最终树本机通过，Windows CI 返修（2026-10-11 23:25）
 
 唯一集成 Agent 已结算，REPORT `0dc31fea65584b312aebae34a5ec757ac8ecc1c3` 普通合入 root `0e49301734549a02b9b1b9078aaef96fd6422742`，八个 owner 最终报告均为祖先。root 在此精确树完整 `pnpm check`、`pnpm build` PASS（Go/275契约/API14/前端90、三可执行文件+web），默认浏览器回归23:27完成226 PASS / 30 SKIP，opt-in live未重复执行。日志见基线记录。自动 CI 每次 push 触发：root `7c199aa` 的 run38150373657 Ubuntu全流程PASS、Windows在check FAIL，不是最终0e493的远程结果。Windows短路径RUNNER~1展开到runneradmin后，合法同目录被误判为越界/重定向；第一次失败日志保留。
 
 限定修复沿原 Codex --yolo / gpt-6.1-sol 两个互斥 owner：W0 `task_18154894914d` / `ctx_84bdbc33a991` 仅 agents 路径授权/元数据/登记比较；W7 `task_46b94cb91958` / `ctx_fe6ac3090f92` 仅 worksscan 比较。均已实际观察 turn start，工作树和分支保留；不得放宽符号链接、私有目录和登记授权边界。完成后同一集成 Agent 普通合精确提交，root 复验及最终 push/核实自动 CI。M1真实会话权限、产品参数/知识策略、官方MCP客户端、真实七日对照仍未完成，整体产品不宣称完成。
+
+23:31 两返修均succeeded：W0 SOURCE425d965/REPORT19d1c7b、W7 SOURCE38c5bde/REPORTd014038已push，原件首RED保留，真实8.3/私有短名拒绝/junction拒绝PASS，普通Windows symlink权限缺失仍NOT_RUN。原集成终端在原工作树/分支新Task `task_51df762ea493` / Dispatch `ctx_7d52252e725c` 已实际开始，只普通合两精确报告和定向回归，不重跑真实媒体/UI写入；root稍后对新树完整check/build及远程CI独立验收。
 
 ## 波 C 单轨集成（2026-10-11 23:12）
 
