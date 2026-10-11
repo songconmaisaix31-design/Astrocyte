@@ -50,6 +50,7 @@ func RewriteKnowledgeFluidTx(tx KnowledgeTx, u KnowledgeFluidUpdate) (StoredKnow
 		v.Entry.Sources = []domain.EventRef{}
 	}
 	v.Version, v.UpdatedAt = u.ExpectedVersion+1, u.TS
+	v.ConsolidatedAt = &u.TS
 	return v, tx.SaveKnowledge(v, u.ExpectedVersion)
 }
 

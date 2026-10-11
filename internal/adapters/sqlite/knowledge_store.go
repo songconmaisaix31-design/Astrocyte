@@ -20,8 +20,14 @@ func NewKnowledgeRepository(base *EngineRepository) *KnowledgeRepository {
 
 var _ app.KnowledgeRepository = (*KnowledgeRepository)(nil)
 
+func (r *KnowledgeRepository) KnowledgeRelevanceMode() string { return KnowledgeRelevanceMode }
+
 func (r *KnowledgeRepository) WithKnowledgeTx(ctx context.Context, fn func(app.KnowledgeTx) error) error {
 	return r.base.WithTx(ctx, func(tx EngineTx) error { return fn(BindKnowledgeTx(tx)) })
+}
+
+func (r *KnowledgeRepository) WithKnowledgeReadTx(ctx context.Context, fn func(app.KnowledgeTx) error) error {
+	return r.base.WithReadTx(ctx, func(tx EngineTx) error { return fn(BindKnowledgeTx(tx)) })
 }
 
 func BindKnowledgeTx(tx EngineTx) app.KnowledgeTx { return &knowledgeTx{tx: tx} }
@@ -31,8 +37,9 @@ type knowledgeTx struct{ tx EngineTx }
 func (t *knowledgeTx) LoadKnowledge(id string) (app.StoredKnowledge, error) {
 	v := app.StoredKnowledge{CrystallizedVersions: []app.KnowledgeVersion{}, Shares: []app.ShareAudit{}, Actions: []app.ActionAudit{}}
 	var data string
-	err := t.tx.QueryRow(`SELECT data,owner_project,version,created_at,updated_at FROM attention_engine_knowledge WHERE id=?`, id).
-		Scan(&data, &v.OwnerProject, &v.Version, &v.CreatedAt, &v.UpdatedAt)
+	var consolidated sql.NullInt64
+	err := t.tx.QueryRow(`SELECT data,owner_project,version,created_at,updated_at,consolidated_at FROM attention_engine_knowledge WHERE id=?`, id).
+		Scan(&data, &v.OwnerProject, &v.Version, &v.CreatedAt, &v.UpdatedAt, &consolidated)
 	if errors.Is(err, sql.ErrNoRows) {
 		return v, apierrors.NewNotFound("knowledge", id)
 	}
@@ -44,6 +51,9 @@ func (t *knowledgeTx) LoadKnowledge(id string) (app.StoredKnowledge, error) {
 	}
 	if bytes.Equal(v.Entry.Crystallized, []byte("null")) {
 		v.Entry.Crystallized = nil
+	}
+	if consolidated.Valid {
+		v.ConsolidatedAt = &consolidated.Int64
 	}
 	rows, err := t.tx.Query(`SELECT version,content,recorded_at FROM attention_engine_knowledge_versions WHERE entry_id=? ORDER BY version`, id)
 	if err != nil {
@@ -97,7 +107,7 @@ func (t *knowledgeTx) LoadKnowledge(id string) (app.StoredKnowledge, error) {
 }
 
 func (t *knowledgeTx) ListKnowledge(project string, confirmedOnly bool) ([]app.StoredKnowledge, error) {
-	query := `SELECT k.id FROM attention_engine_knowledge k WHERE k.owner_project!='' AND (k.owner_project=? OR EXISTS(SELECT 1 FROM attention_engine_knowledge_shares s WHERE s.entry_id=k.id AND s.target_project=?))`
+	query := `SELECT k.id FROM attention_engine_knowledge k WHERE k.owner_project!='' AND (k.owner_project=? OR EXISTS(SELECT 1 FROM attention_engine_knowledge_shares s WHERE s.entry_id=k.id AND s.owner_project=k.owner_project AND s.actor_kind='human' AND s.target_project=?))`
 	if confirmedOnly {
 		query += ` AND k.status='confirmed'`
 	}
@@ -174,12 +184,12 @@ func (t *knowledgeTx) SaveKnowledge(v app.StoredKnowledge, expected int) error {
 		return err
 	}
 	if expected == 0 {
-		_, err = t.tx.Exec(`INSERT INTO attention_engine_knowledge(id,topic,status,data,owner_project,version,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)`,
-			v.Entry.ID, v.Entry.Topic, v.Entry.Status, string(data), v.OwnerProject, v.Version, v.CreatedAt, v.UpdatedAt)
+		_, err = t.tx.Exec(`INSERT INTO attention_engine_knowledge(id,topic,status,data,owner_project,version,created_at,updated_at,consolidated_at) VALUES(?,?,?,?,?,?,?,?,?)`,
+			v.Entry.ID, v.Entry.Topic, v.Entry.Status, string(data), v.OwnerProject, v.Version, v.CreatedAt, v.UpdatedAt, v.ConsolidatedAt)
 	} else {
 		var result sql.Result
-		result, err = t.tx.Exec(`UPDATE attention_engine_knowledge SET topic=?,status=?,data=?,version=?,updated_at=? WHERE id=? AND version=?`,
-			v.Entry.Topic, v.Entry.Status, string(data), v.Version, v.UpdatedAt, v.Entry.ID, expected)
+		result, err = t.tx.Exec(`UPDATE attention_engine_knowledge SET topic=?,status=?,data=?,version=?,updated_at=?,consolidated_at=? WHERE id=? AND version=?`,
+			v.Entry.Topic, v.Entry.Status, string(data), v.Version, v.UpdatedAt, v.ConsolidatedAt, v.Entry.ID, expected)
 		if err == nil {
 			var count int64
 			count, err = result.RowsAffected()
@@ -209,6 +219,11 @@ func (t *knowledgeTx) AddKnowledgeAction(id string, v app.ActionAudit) error {
 	return storageError(err)
 }
 
+func (t *knowledgeTx) AddKnowledgeReference(id, project string, version int, crystallized *int, audit app.ActionAudit) error {
+	_, err := t.tx.Exec(`INSERT INTO attention_engine_knowledge_references(entry_id,project_id,knowledge_version,crystallized_version,actor_id,actor_kind,ts,request_id) VALUES(?,?,?,?,?,?,?,?)`, id, project, version, crystallized, audit.ActorID, audit.ActorKind, audit.TS, audit.RequestID)
+	return storageError(err)
+}
+
 func (t *knowledgeTx) KnowledgeAttention(topic string) (domain.AttentionNode, error) {
 	var v domain.AttentionNode
 	var data string
@@ -220,6 +235,15 @@ func (t *knowledgeTx) KnowledgeAttention(topic string) (domain.AttentionNode, er
 		err = json.Unmarshal([]byte(data), &v)
 	}
 	return v, err
+}
+
+func (t *knowledgeTx) KnowledgeConsolidatedAt(id string) (int64, error) {
+	var at sql.NullInt64
+	err := t.tx.QueryRow(`SELECT consolidated_at FROM attention_engine_knowledge WHERE id=?`, id).Scan(&at)
+	if err == nil && (!at.Valid || at.Int64 <= 0) {
+		return 0, domain.ErrEvidence
+	}
+	return at.Int64, err
 }
 
 func (t *knowledgeTx) KnowledgeSource(id string) (app.StoredEvent, error) {

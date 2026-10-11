@@ -32,6 +32,16 @@
 - 尚未完整 M4：追加固化版本、持久化工作区引用行和真实检索整合待实现。原 action 表缺引用项目/固定版本，已 Handoff W0 请求共享引用表迁移；当前 reference 成功只证明关口与 action，不能算实际工作区固定引用。
 - 协调者已将重新确认策略和检索年龄起点作为用户未答项：实现将保留显式配置；fixture 可显式选策略，不当作产品默认验收。
 
+### 波 B 第二阶段（共享依赖已消费到 `d09dc046f2a504bb2238d3182e14995f60013fda`）
+
+- 实际固化版本追加、两种显式重新确认策略、真实 reference 行与固定固化版本、created_at/last_consolidation 两种显式年龄起点、配置 λr 和审计 reference boost、topic/关键词退化 relevance 已实现。
+- 迁移017/018 与共享 `WithReadTx` / `Server.Handler` 来自 W0 精确 SHA 普通合并；`consolidated_at` 仅 fluid/crystallized 写更新，人工 confirm/share/reference 保持它。旧 NULL 不伪造回填。
+- SQLite 新连接重查两版内容/时间戳、fluid 第二次值与第一版固定引用；直接 UPDATE/DELETE 旧版本和修改引用被 append-only trigger 拒绝。
+- 固定注意力/实际持久化候选排序独立复算，创建/巩固两种年龄选择各自复算；query_only 下检索 PASS，SQL attention/data/更新时间/version 前后不变。CUT 模式随结果明确返回，不称真向量相似度。
+- 第二阶段新增 RED：原 `BEGIN IMMEDIATE` 在 query_only 库被拒；消费 W0 deferred read transaction 后同定向例 PASS。HTTP 独立 governance-only 装配 session bootstrap 为404，guard 省略治理服务已交 W0，HTTP 全例尚未绿。
+- `go test -count=1 ./tests/attention-engine -run 'TestM4(Persistent|Fluid|Human|Crystallized|Explicit|Retrieval)'` PASS（9例，排除尚阻塞的HTTP例）；四包 vet/diff-check PASS。不称完整 M4 已通过。
+- `GetKnowledge(ctx,p,id,project)` 已与 W0 HTTP 命名接口统一，修正初阶段同 string 参数顺序歧义。缺失策略、年龄起点或 λr 时明确拒绝，不冻结产品默认；两种 fixture 策略不等于用户已选择。
+
 - **已完成**：两级存储纯规则（`domain/knowledge.go`：`KnowledgeStatus`/`ConfirmKnowledge`/`ReferencableKnowledge`/`CrystallizedVersion`/`AppendCrystallized`/`KnowledgeVisible`）+ 检索纯函数（`domain/retrieval.go`：`RetrievalScore`/`RankRetrieval`，λr 必传、无冻结默认）+ 验收脚手架 `tests/attention-engine/M4_retrieval_test.go`。commit `ab7d381`、`7294260` 已 push。
 - **未完成 / NOT_RUN**：`app/knowledge_*.go`、`adapters/sqlite/{knowledge_store,vec}*.go`、端到端 `M4_*_test.go`（fluid 重写/crystallized 只追加/confirmed 引用/跨项目过滤+分享审计）。全部依赖 M0。
 - **FAIL / UNKNOWN**：无本轨失败；M0 契约/迁移/sqlite-vec 结论状态 UNKNOWN（集成分支 `77712f3` 仍 docs-only，W0 分支未 push）。
