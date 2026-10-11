@@ -1,10 +1,6 @@
 // Sleep metrics (M3 acceptance: both metrics measurable, no target threshold).
 package domain
 
-import (
-	"slices"
-)
-
 // SleepMetrics is the nightly consolidation's measurable output.
 type SleepMetrics struct {
 	RetentionPrecision float64 // recall of pre-consolidation key facts
@@ -20,8 +16,8 @@ func ComputeMetrics(beforeFacts, afterFacts []string, beforeBytes, afterBytes in
 	return SleepMetrics{
 		RetentionPrecision: RetentionPrecision(beforeFacts, afterFacts),
 		StorageReduction:   StorageReduction(beforeBytes, afterBytes),
-		BeforeFacts:        len(beforeFacts),
-		AfterFacts:         len(afterFacts),
+		BeforeFacts:        len(sleepFactSet(beforeFacts)),
+		AfterFacts:         len(sleepFactSet(afterFacts)),
 		BeforeBytes:        beforeBytes,
 		AfterBytes:         afterBytes,
 	}
@@ -31,16 +27,25 @@ func ComputeMetrics(beforeFacts, afterFacts []string, beforeBytes, afterBytes in
 // consolidation: facts surviving in after over facts present in before. An
 // empty before yields 1 (nothing was there to lose).
 func RetentionPrecision(before, after []string) float64 {
-	if len(before) == 0 {
+	beforeSet, afterSet := sleepFactSet(before), sleepFactSet(after)
+	if len(beforeSet) == 0 {
 		return 1
 	}
 	survivors := 0
-	for _, f := range before {
-		if slices.Contains(after, f) {
+	for f := range beforeSet {
+		if _, ok := afterSet[f]; ok {
 			survivors++
 		}
 	}
-	return float64(survivors) / float64(len(before))
+	return float64(survivors) / float64(len(beforeSet))
+}
+
+func sleepFactSet(facts []string) map[string]struct{} {
+	set := make(map[string]struct{}, len(facts))
+	for _, fact := range facts {
+		set[fact] = struct{}{}
+	}
+	return set
 }
 
 // StorageReduction is the fraction of bytes removed, in [0,1]. A non-positive

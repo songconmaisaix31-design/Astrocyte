@@ -54,10 +54,12 @@ func ClusterTopics(events []EventTopic, related map[string][]string) []Cluster {
 	}
 
 	for t, neighbors := range related {
+		t = strings.TrimSpace(t)
 		if _, ok := parent[t]; !ok {
 			continue
 		}
 		for _, n := range neighbors {
+			n = strings.TrimSpace(n)
 			if _, ok := parent[n]; !ok {
 				continue
 			}
@@ -103,9 +105,18 @@ func isolated(c Cluster, related map[string][]string) bool {
 	if c.Events != 1 {
 		return false
 	}
-	for _, t := range c.Topics {
-		if len(related[t]) > 0 {
-			return false
+	for from, neighbors := range related {
+		from = strings.TrimSpace(from)
+		for _, to := range neighbors {
+			to = strings.TrimSpace(to)
+			if from == "" || to == "" || from == to {
+				continue
+			}
+			for _, topic := range c.Topics {
+				if topic == from || topic == to {
+					return false
+				}
+			}
 		}
 	}
 	return true

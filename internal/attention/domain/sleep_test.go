@@ -2,8 +2,58 @@ package domain
 
 import (
 	"math"
+	"reflect"
 	"testing"
 )
+
+func TestConsolidateKeepsInboundRelatedTopic(t *testing.T) {
+	// The graph neighbor has no event today; its incoming edge still means
+	// this signal is related, rather than an isolated one-off.
+	events := []EventTopic{{EventID: "e1", Topic: "new-topic"}}
+	got := Consolidate(events, map[string][]string{"existing-topic": {"new-topic"}})
+	if len(got.Decisions) != 1 || got.Decisions[0].Topic != "new-topic" {
+		t.Fatalf("incoming association was lost: %+v", got)
+	}
+	for _, neighbors := range []map[string][]string{
+		{"new-topic": {"new-topic"}}, {"new-topic": {" "}},
+	} {
+		if got := Consolidate(events, neighbors); len(got.Decisions) != 0 {
+			t.Fatalf("non-edge promoted isolated signal: %+v", got)
+		}
+	}
+}
+
+func TestConsolidateGoldenInputIsOrderIndependent(t *testing.T) {
+	events := []EventTopic{
+		{EventID: "e1", Topic: "agent-swarm"},
+		{EventID: "e2", Topic: "agent-swarm"},
+		{EventID: "e3", Topic: "agent-swarm"},
+		{EventID: "e4", Topic: "paper-reading"},
+		{EventID: "e5", Topic: "one-off-noise"},
+	}
+	want := Consolidation{
+		Clusters:  []Cluster{{Topics: []string{"agent-swarm", "paper-reading"}, Events: 4}},
+		Decisions: []NodeDecision{{Kind: NodeCreate, Topic: "agent-swarm"}, {Kind: NodeCreate, Topic: "paper-reading"}},
+	}
+	for i := range events {
+		rotated := append(append([]EventTopic{}, events[i:]...), events[:i]...)
+		for _, related := range []map[string][]string{
+			{"paper-reading": {"agent-swarm"}},
+			{"agent-swarm": {"paper-reading"}},
+		} {
+			if got := Consolidate(rotated, related); !reflect.DeepEqual(got, want) {
+				t.Fatalf("golden decisions changed: %+v", got)
+			}
+		}
+	}
+}
+
+func TestComputeMetricsCountsDistinctKeyFacts(t *testing.T) {
+	m := ComputeMetrics([]string{"a", "a", "b"}, []string{"a", "a", "c"}, 100, 70)
+	if m.BeforeFacts != 2 || m.AfterFacts != 2 || m.RetentionPrecision != 0.5 {
+		t.Fatalf("repeated fact changed set recall: %+v", m)
+	}
+}
 
 func TestClusterTopicsGroupsByNeighborhoodAndAdjacency(t *testing.T) {
 	events := []EventTopic{
@@ -13,7 +63,7 @@ func TestClusterTopicsGroupsByNeighborhoodAndAdjacency(t *testing.T) {
 		{EventID: "e4", Topic: "video-summarize"},
 	}
 	related := map[string][]string{
-		"paper-reading": {"agent-swarm"}, // adjacent → same cluster
+		"paper-reading":   {"agent-swarm"}, // adjacent → same cluster
 		"video-summarize": nil,
 	}
 

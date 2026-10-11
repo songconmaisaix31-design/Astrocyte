@@ -3,6 +3,37 @@
 事实源：任务书 §6、§5.4/§5.5、§4.4；主计划 `tasks/AttentionEngine-plan.md` W3 行。
 基线分支 `attention-engine/v1-20261011`（当前 `77712f3`，仅计划/派发/恢复记录，M0 契约类型仍未并入）。
 
+## 2026-10-11 Codex 接续：波 A 修正，M3 仍未完成
+
+当前工作树/分支保持 `attention-engine-w3-sleep` /
+`songconmaisaix31-design/attention-engine-w3-sleep`，接续起点 `5399e31`。
+本次实际客户端 Orca Codex，模型由当前客户端配置提供，未自行覆盖。
+
+- 原 `3f6cc6f` 已取消多 topic 自动合并，本次保留该规则；关联持续 >0.8 且证据重叠的真正合并只消费 W2 生命周期判定。
+- 修正去噪只认出边的问题：既有节点指向当日单事件主题的入边也算关联；空邻居和自指不算关联。聚类和去噪采用同一 topic 空白归一化口径。
+- 双指标的关键事实按去重集合计数；重复事实不增加召回率或事实数。存储缩减保留既有 [0,1] 口径，输入字节数原样返回，增长可从 before/after 识别；后续以实际压缩表示的序列化字节衡量，不冒充 SQLite 文件总量减少。
+- 新增 `tests/attention-engine/M3-golden.json`，仅为 `contract_local` 合成输入；不属于实际 Event→图→Knowledge→人工裁决全流程证据。
+
+首轮定向测试：`TestConsolidateKeepsInboundRelatedTopic` **FAIL**（入边关联丢失）；
+`TestComputeMetricsCountsDistinctKeyFacts` **FAIL**（预期 0.5、实得 0.6667）；
+`TestConsolidateGoldenInputIsOrderIndependent` **PASS**。修正后的 domain 包 test/vet/build 均 **PASS**。
+新增测试共 3 项，Sleep 核心共 12 项；单包执行，未执行全量检查。
+
+命令（环境 `GOFLAGS=-p=1`、`GOMAXPROCS=2`）：
+
+```powershell
+go test ./internal/attention/domain -count=1
+go vet ./internal/attention/domain
+go build ./internal/attention/domain
+git diff --check
+```
+
+波 B **待依赖**：主控尚未发布 M0 精确 SHA。已向主控请求日周期/冲突表、
+共享接口、W1 当日 Event 读取、W2 生命周期及 Conflict、W4 fluid 写入 Handoff；
+公共契约/迁移/HTTP/固定日周期入口仍归 W0。尚未写 app/store，
+每日一次、事务失败回滚、冷启动一致及 LLM 开关全流程一致均 **NOT_RUN**。
+阶段使用 `status/merge_ready`，不发送最终 `worker_done`。
+
 ## 交接（阶段结果 partial，后续 Codex --yolo 承接原写域与 worktree）
 
 阶段结果：**partial**。波 A 确定性核心已交付并验证；完整 M3（app/store 编排、每日持久化、
