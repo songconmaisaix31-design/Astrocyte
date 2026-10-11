@@ -10,6 +10,16 @@
 
 00:57已实际启动两个Codex --yolo独立写域，Run `run_d09ff3f95ebc`：W1 `task_112759e787a6` / `ctx_4dcb09dc9350` 诊断真实50+50并保存原样本；W0 `task_90ac7f1ae958` / `ctx_155c592defd9` 合成canary复现全MCP/store边界，先提schema接缝方案。二者turn_started均observed，尚不改生产映射/schema/引擎。已向用户集中询问raw任意值与derived同值的审计口径、未指定的验证运行参数；未答的依赖不推进，诊断和独立复现继续。
 
+### 100条真实诊断首RED（2026-10-12 00:58，30分钟内）
+
+root读取工作树外 `diagnosis-w1/stages-first.json`、`inventory.json`、`sampling-policy.json` 独立核对聚合结果：Claude50/Codex50，原生adapter/JSON解析100 PASS；Claude mapped3（edit_file2/search1），unknown-kind47；Codex mapped0/unknown-kind50。仅3条可在诊断显式strength=1下归一化信号，但topic全空，默认nil strength还会拒绝这些mapped记录；真正当前eligible为0/100。metadata授权不是这100条直接adapter失败层（100通过）；Claude另1条header不完整，Codex直接MapNativeRecord的49条session为空，需接入层继承文件header。未把仅保留/unknown/unassigned计作认知eligible。
+
+固定抽样在看映射前声明：按ts/文件序/行号排序，50个等记录数时间分层，每层优先已使用最少的session、再邻近中点；包含header和其他类型，不挑成功工具。原100条 `sample-first.jsonl` 441979 bytes保留在本机、不进入Git/终端；derived manifest仅序号/ts/source/文件行号索引。第一次读取不完整结果另存stages-incomplete-read，不覆盖首完整RED。诊断源码SHA/测试数待原owner提交报告，当前不是V0全链验收。
+
+真实窗口固定 `[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)`：Claude7文件/7 session、2197窗口记录；Codex1714文件全部可读，28窗口session/31642窗口记录，共33839记录、9日期，parse error0。Claude有10-01/09/10；Codex有09-12/13/30、10-01/02/09/10；09-14至09-29无观测，不把缺档当用户未活动。Claude subagents实际0，Codex flat legacy实际0，不能造对应真实样本。全库存储eligible数量还未知，≥10000未验收。先kind/header确定性接缝，再种子/unassigned；引擎仍只读，正式V1不启动。
+
+W0第一合成RED：现有SQLite通用事件读携raw，explain_focus可泄漏明文/base64；五工具backend错误及两种已提交回执错误均可回显raw。先保留复现，原owner研究raw独立表/derived投影/MCP白名单，schema当前仍未豁免，原引擎RawBytes验证和Sleep.Raw投影约束需具体方案，不能暗改冻结令。
+
 ## 本轮最终双平台 CI 通过（2026-10-12）
 
 交付分支 `attention-engine/v1-20261011`。源码和测试验收提交 `100f00cb6945c96a7f3bd3f100f7ff65efc61197` 的 [CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) 已 completed/success：Ubuntu24.04 与 Windows2025 的完整 `pnpm check`、`pnpm build`、`pnpm test:e2e` 均 PASS；两平台默认浏览器各226 PASS / 30 SKIP（2.7m / 5.2m），Linux `go test -mod=readonly -race ./...` PASS，Windows race 按工作流条件 SKIP。Windows 先前路径及两视口首RED保留，后续绿色不改写历史。完整日志与精确SHA见基线记录。
