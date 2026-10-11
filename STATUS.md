@@ -2,7 +2,7 @@
 
 ## 最终树本机通过，Windows CI 返修（2026-10-11 23:25）
 
-唯一集成 Agent 已结算，REPORT `0dc31fea65584b312aebae34a5ec757ac8ecc1c3` 普通合入 root `0e49301734549a02b9b1b9078aaef96fd6422742`，八个 owner 最终报告均为祖先。root 在此精确树完整 `pnpm check`、`pnpm build` PASS（Go/275契约/API14/前端90、三可执行文件+web），浏览器回归仍运行。日志见基线记录。自动 CI 每次 push 触发：root `7c199aa` 的 run38150373657 Ubuntu全流程PASS、Windows在check FAIL，不是最终0e493的远程结果。Windows短路径RUNNER~1展开到runneradmin后，合法同目录被误判为越界/重定向；第一次失败日志保留。
+唯一集成 Agent 已结算，REPORT `0dc31fea65584b312aebae34a5ec757ac8ecc1c3` 普通合入 root `0e49301734549a02b9b1b9078aaef96fd6422742`，八个 owner 最终报告均为祖先。root 在此精确树完整 `pnpm check`、`pnpm build` PASS（Go/275契约/API14/前端90、三可执行文件+web），默认浏览器回归23:27完成226 PASS / 30 SKIP，opt-in live未重复执行。日志见基线记录。自动 CI 每次 push 触发：root `7c199aa` 的 run38150373657 Ubuntu全流程PASS、Windows在check FAIL，不是最终0e493的远程结果。Windows短路径RUNNER~1展开到runneradmin后，合法同目录被误判为越界/重定向；第一次失败日志保留。
 
 限定修复沿原 Codex --yolo / gpt-6.1-sol 两个互斥 owner：W0 `task_18154894914d` / `ctx_84bdbc33a991` 仅 agents 路径授权/元数据/登记比较；W7 `task_46b94cb91958` / `ctx_fe6ac3090f92` 仅 worksscan 比较。均已实际观察 turn start，工作树和分支保留；不得放宽符号链接、私有目录和登记授权边界。完成后同一集成 Agent 普通合精确提交，root 复验及最终 push/核实自动 CI。M1真实会话权限、产品参数/知识策略、官方MCP客户端、真实七日对照仍未完成，整体产品不宣称完成。
 

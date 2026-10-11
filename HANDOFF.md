@@ -2,7 +2,7 @@
 
 ## 当前入口：本机通过，Windows短路径返修（2026-10-11 23:25）
 
-root `0e49301734549a02b9b1b9078aaef96fd6422742` 已普通合最终集成REPORT0dc31fe（八轨精确最终报告均祖先），主控完整check/build PASS，默认浏览器回归正在session64606。自动CI实际每次push都跑；此前root7c199aa的38150373657是UbuntuPASS/WindowsFAIL，不能称远程未跑或最终树已绿。真实短/长文件名同目录被误判redirected/outside scope，原件 `%TEMP%/astrocyte-ci-38150022874-first-failed.log`。
+root `0e49301734549a02b9b1b9078aaef96fd6422742` 已普通合最终集成REPORT0dc31fe（八轨精确最终报告均祖先），主控完整check/build PASS，默认浏览器回归23:27结束226 PASS / 30 SKIP，session64606已EXIT0。自动CI实际每次push都跑；此前root7c199aa的38150373657是UbuntuPASS/WindowsFAIL，不能称远程未跑或最终树已绿。真实短/长文件名同目录被误判redirected/outside scope，原件 `%TEMP%/astrocyte-ci-38150022874-first-failed.log`。
 
 原W0新task_18154894914d/ctx_84bdbc33a991只写agents/**及自己报告，原W7新task_46b94cb91958/ctx_fe6ac3090f92只写worksscan/**及自己报告，沿Codex--yolo原终端/工作树/分支，两轨已观察开始。不要改目录授权或读真实私人记录；等SOURCE/REPORT精确提交和定向验证，交原final-integration终端新Task普通合并，root最终复验/push/核实自动CI。原其余Dispatch已结算，不给旧ctx投递；外部终端只是retained idle，没有关闭归档。用户待答和真实七日验收见QUESTIONS，不自行选择。
 
