@@ -1,5 +1,13 @@
 # Astrocyte 当前状态
 
+## 最新交付树本机通过（2026-10-11 23:52）
+
+交付分支 `attention-engine/v1-20261011`，最终业务普通合并 `56c879a1a7d6b023f7124d29dde69b4b44cc7605` 消费W1路径返修集成REPORT `e935fba0758beb33471c89ca11038a06f32eee89`；八轨报告与W0/W7/W1三份路径返修报告均为精确普通祖先。全部开发/返修/唯一集成使用Codex--yolo并已结算，外部终端retained idle。认知三条链、五MCP操作、Sleep CLI、项目隔离知识/经验及人工关口、Works五能力和链1事件源已组装；真实M1验收仍未通过，不宣称完整产品完成。
+
+root 新树完整 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` / `pnpm build` EXIT0：Go/27包架构/275契约/实际API14/前端90，API/MCP/Sleep三可执行文件和web。三包真实8.3名称与junction/secret/越界拒绝定向验证通过；本机普通Windows symlink创建仍权限不足NOT_RUN/SKIP。原0e493默认E2E226 PASS/30 SKIP且UI未改变；旧ebe9a758的CI38152009091 Ubuntu全PASS、Windows仅M1 fixture失败，原件保持。最终组合push自动CI尚待，结果另记。
+
+剩余真实限制：原M1个人缓存0 eligible/首RED与CC/Codex原始元数据授权未答；工程默认、固化新版本再确认、检索年龄策略未答；sqlite-vec按任务红线CUT，当前topic_keyword降级。官方MCP客户端互通/native task_live、真实七日用户对照、合main、个人预览升级未执行；没有重发paid/UNKNOWN、没有复制验收库。详情见 [本轮验收](docs/acceptance/AttentionEngine-baseline.md)、[集成交接](tasks/AttentionEngine-integration.md)、[用户待答](docs/QUESTIONS.md)。
+
 ## 自动 CI 下一层 M1 路径首错（2026-10-11 23:40）
 
 已push `ebe9a758b05d73363cc8630c187208c41253321d`，CI38152009091 Windows check仍FAIL：agents/worksscan及其余Go包已PASS，仅 `TestM1NativeFormatFixtureReplayAccounting` 报 `count=0 partial=false err=replay file uses symbolic links`，是events/native_reader.go另一处短长路径比较；Ubuntu此树check/race/build已PASS，E2E运行。完整Windows job日志 `%TEMP%/astrocyte-ci-38152009091-windows-first.log` 保留，不覆盖第一38150022874。

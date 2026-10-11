@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 最新交付入口（2026-10-11 23:52）
+
+先读STATUS顶部。交付分支attention-engine/v1-20261011，最终业务普通合并 `56c879a1a7d6b023f7124d29dde69b4b44cc7605` 已消费W1修复集成REPORTe935fba；八轨报告与三组路径返修均普通祖先。root对此树完整check/build EXIT0，原0e493默认E2E226 PASS/30 SKIP，UI未变；最终组合push自动CI结果尚待，旧Windows首RED不覆盖。所有Dispatch已settled、外部终端retained idle，继续Codex--yolo；新领域问题按原owner/工作树新Task，无需重建整组。
+
+保留真实M1旧task_13ac51983837 failed与元数据待授权，fixture路径修复成功不改变它；若用户答范围，沿此原Task retry。工程参数/知识语义未答不代选，sqlite-vec CUT，官方MCP/native live及真实七日用户对照未执行。没有合main或升级个人预览，没有把验收库拷入个人库。后续仅待新的自动CI结果与用户/人工事项。
+
 ## 当前入口：W1 fixture 路径返修（2026-10-11 23:40）
 
 最新push ebe9a758；CI38152009091 Windows仍FAIL，仅M1原生格式fixture路径比较短/长名误判symlink，旧agents/scanner问题已PASS；日志 `%TEMP%/astrocyte-ci-38152009091-windows-first.log`。Ubuntucheck/race/build PASS，E2E运行。原W1新task_153a01e3d7ee/ctx_d533ec61be20沿Codex--yolo原工作树/分支只改events/**、M1测试和报告，修selected-file合法8.3别名，保留真实redirect/范围/读量拒绝。不是旧真实M1 task retry，权限未答/旧0eligible RED保持。等原owner精确SOURCE/REPORT/settled，再派同一集成Agent新Task普通合/root最终复验/push；不得从fixture绿冒称真实M1完成。

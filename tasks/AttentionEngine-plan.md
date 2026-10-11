@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-11 23:52 W1限定集成Task `task_2a875959ca15` / `ctx_bd2dcbcb9f37` 已succeeded，SOURCE `5dfa4cb0cda4467f09f77c7c3b62304a1c938caa` / REPORT `e935fba0758beb33471c89ca11038a06f32eee89` 已push并root普通合为 `56c879a1a7d6b023f7124d29dde69b4b44cc7605`。root新树完整check/build EXIT0，八轨+三路径返修报告普通祖先复核通过。所有Dispatch结算，Windows真实8.3/junction拒绝已测、普通symlink privilege无保持NOT_RUN，用户真实M1/参数/知识政策仍待答。最终组合push自动CI，结果另记；不重复真实媒体/私源/整组编排。
+
 2026-10-11 23:47 W1限定fixture路径修复已succeeded：SOURCE `8de573ac5e1dff4ad703fe7fded7ec70c111130a` / REPORT `9ef5f6667ce6067d39a3012435e8b35526e19568` 已push；真实14别名、7junction拒绝与原M1 fixture定向通过；旧真实M1任务failed/待授权保持。原集成终端再接新Task，沿同一worktree/branch，write_paths仅原集成报告和必要薄胶水，普通合root文档基线60f8a27及W1精确REPORT；只定向events/M1，不重复M6/Works真实写入/全UI，领域问题仍退W1，root对新树最终check/build/push/自动CI。
 
 2026-10-11 23:40 最终push `ebe9a758b05d73363cc8630c187208c41253321d` 自动CI38152009091暴露下一层Windows RED：agents/worksscan已PASS，仅 `TestM1NativeFormatFixtureReplayAccounting` 在 `events/native_reader.go` 将合法短/长名称当symbolic links。Windows job完整日志保留 `%TEMP%/astrocyte-ci-38152009091-windows-first.log`；Ubuntu已过check/race/build，E2E运行。原W1仅接单轨fixture/实现返修新Task，沿原终端/工作树/分支、Codex--yolo，独占 `internal/adapters/events/**`、`tests/attention-engine/M1*` 和自己的报告，禁止修改其他两路径owner/共享helper/合同；不读取真实私人native，不将旧真实M1失败/待授权任务改成成功。短路径名称准入与真实symlink/junction/祖先拒绝分别验证，limit/raw/event/权重保持；commit+push后同一集成Agent普通合/root复验。无新产品策略或跨adapter重构。
