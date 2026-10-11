@@ -4,6 +4,24 @@
 
 ### 当前裁决：v2.1（2026-10-12）
 
+### v2.1 本轮已合入并独立复验，V0仍RED（2026-10-12 05:04）
+
+交付分支`validation/v1-20261012`，源码验收提交`245d3f8a2d766ee8695daeae1de87469537fff96`，已push。普通合入唯一集成REPORT `ffc7c0df8418918b85682269dc398080c5d00d08`，W1 SOURCE cadd33af/REPORT3020bfd7、W0隐私SOURCE6e7de7e/M5 SOURCEb69ec6f/REPORT88268a0均为普通祖先。当前两开发与集成Dispatch均accepted succeeded；外部终端retained，工作树和历史保留，实际Codex --yolo/GPT-6.1-Sol high fast。
+
+| V0指标 | root独立结果 | 裁定 |
+|---|---|---|
+| 30天预声明人口认知kind且topic非空 | 1971/6016=32.76%；N=Claude369+Codex3754+冻结git1893 | RED，门槛95% |
+| 随机非认知行误标 | 0/200，固定原抽样未重抽 | PASS |
+| 原100真实raw的五MCP全路径审计 | 按事件去重raw_unique1101字符串、2100生产响应、0泄漏；100子例PASS | PASS，real_raw_contract_local |
+
+root独立人口输出`root-v21/population-independent.json`与W1最终验收JSON相同；组合树W1接入源码逐文件无差异，结果适用于本交付树。mapped2014/unknown4002/unassigned3497，全部6016在冻结本地人口中留存；这不代表6016已进入正式引擎库。原100诊断首RED及各修复首RED不覆盖。真实raw审计使用实际原始载荷和生产MCP.Serve，另外显式合成100个信号只用于贯通接口；原生样本mapped4/topic3/unmapped96/associationIncomplete1，不把这些接口结果宣称真实认知入库、回放或task_live。
+
+root完整`pnpm check` EXIT0：Go/vet/module校验、架构/依赖、275契约示例/生成客户端、真实API14 PASS、前端13文件90 PASS、diff检查；`pnpm build` EXIT0，server/MCP/Sleep三Go程序及React/Vite完成。独立`ASTROCYTE_V21_REAL100_AUDIT=1 go test -mod=readonly ./tests/validation/privacy -run '^TestReal100V21ProductionExposure$' -count=1 -v` EXIT0/15.865s，上表原100审计计数。Python8 PASS及canonical生成校验通过。集成组合树七包122顶层PASS/12 SKIP/0 FAIL，原M2 7 PASS/1 helper SKIP、M5 6 PASS/1 helper SKIP、EX-01 3 PASS；SKIP不计为隐私或live验收。相对bc594de再次核对app/domain/migrations/contracts/UI/依赖全部零差异。
+
+独立新日志位于既定外部证据根`root-v21/`；[本次CI38174450112](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38174450112)对应精确源码245d3f8，当前两平台check/build已通过，浏览器阶段尚在运行（Windows此时安装浏览器），Linux race PASS。最终CI结论另记，不能用旧bc594de CI冒称本轮通过。
+
+V0归一化未通过，正式V1全N入库/30次模拟Sleep/真实M2复算/焦点轨迹及人工50条权重检查均NOT_RUN；V2–V4与七天三臂/终局报告未执行，EXPERIMENT仍草案未锁SHA。手工主题范围、未识别工具人口以及参数字段/单位/boost缺口待裁决，见QUESTIONS最新条目；不缩分母、不伪标签、不改冻结引擎、不为历史吻合调参。N≥5000只满足盘点数量线，不满足V1入库或科学验收。
+
 04:50 W0限定M5 fixture SOURCE `b69ec6fffc109bf1ed8242a59699511aca967060`、REPORT `88268a05a756f108f76422e1279e734851e4c324`已push/结算，只有授权三测试与own报告，生产/helper/schema不变。worker最终M5 6 top/9 leaf PASS、helper1 SKIP；MCP/privacy/CLI 13/11/1 PASS、privacy6 opt-in SKIP不计审计；原Canary17叶PASS，原100/1101字符串/2100响应零泄漏PASS。首RED和中间3 FAIL保留在外部privacy-v21-m5-w0。现交唯一原集成owner普通合W1/W0精确REPORT；root独立整体和隐私复验尚未执行，V0完整率仍RED、V1仍NOT_RUN。
 
 04:41 root在W1源码cadd33af的实际生产mapper上独立全人口复验EXIT0，输出既定外部证据根`root-v21/population-independent.json`，与worker验收JSON一致：N6016=Claude369+Codex3754+git1893；kind/topic1971（32.76%，RED），mapped2014/unknown4002/unassigned3497；随机200非认知误标0、adapter/association拒绝均0。Python接入8 PASS，canonical kind map生成校验PASS。第一命令输出目录缺失而拒绝创建，未写结果；创建外部目录后复验，未覆盖任何证据。M5首RED绝对路径为既定外部根`evidence/root-v21/m5-first-red.log`，此前相对路径不指仓库内部。新返修task_87a15d7b1d17/ctx_063dce91ac7a，Codex --yolo/GPT-6.1-Sol high fast实际开始；Orca首次turn_start_unobserved保留，屏幕确认任务仍在composer后仅Enter，随后fresh agent_status证明working，不重发任务。

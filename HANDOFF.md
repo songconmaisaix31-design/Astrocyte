@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v2.1（2026-10-12）
 
+05:04 本轮源码/测试已普通合并、独立复验并push，验收SOURCE `245d3f8a2d766ee8695daeae1de87469537fff96`；唯一集成REPORT ffc7c0df及W1/W0所有SOURCE/REPORT普通祖先保留。root完整pnpm check/build PASS，真实100 raw审计1101字符串/2100生产MCP响应零泄漏PASS；人口N6016、kind/topic1971=32.76% RED、随机200误标0。当前Dispatch全部结算，外部终端retained；CI38174450112仍浏览器阶段，最终状态以STATUS后续记录为准。先读STATUS当前指标表和QUESTIONS现有实码缺口，V0未过，不启动正式V1/V2–V4、不锁EXPERIMENT或伪造终局报告。原RED和所有raw只在既定外部证据根，个人运行库未升级。
+
 04:44 继续从validation/v1-20261012的root当前文档与STATUS读状态。原Run仍为run_d09ff3f95ebc，Orca重启后coordinator已绑定term_4766555e-2c8c-4b7b-807c-2cd31fa43fa5；旧终端句柄不可复用。W1 REPORT3020bfd7已push，root独立生产mapper人口结果N6016、kind/topic1971（32.76% RED）、随机非认知200误标0。W0 SOURCE6e7de7e/REPORTb728f23已结算，worker原100/1101字符串/2100MCP响应零泄漏；当前唯一W0 fixture返修ctx_063dce91ac7a只改三份M5测试及自己的报告，保持同worktree/branch，Codex --yolo实际GPT-6.1-Sol high fast。旧raw/origin_key期待首RED保存外部证据根，root须在唯一原集成owner普通合后独立check/build和原100审计。当前V0归一化未达95%，V1–V4未启动，协议未锁SHA；手工主题范围、强度字段绑定、播种confidence和λ_r单位/boost缺口的实码问题见QUESTIONS最新条目，用户未答，不据此改冻结引擎。
 
 先读STATUS顶部和[tasks/M6-validation-v2.1.md](tasks/M6-validation-v2.1.md)。本补丁覆盖旧100行eligible口径、raw同值疑问、参数待答、自动无标出生要求；旧首RED留存，schema零豁免/store raw不变，无自动发现。正式参数已裁决，不再询问。沿原W1全量认知盘点+1893捕获git，原W0仅exposure投影/raw_unique含错误审计，复用原Codex --yolo工作树/分支，完成后同一集成owner普通合。新V0三指标通过再按ts单事件回放全N/30Sleep；N≥5000达数量目标。不把默认CI或合成测试当新V0/V1，EXPERIMENT仍草案未锁SHA。下文v2记录为历史。
