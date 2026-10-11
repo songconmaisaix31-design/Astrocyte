@@ -38,8 +38,22 @@ func CanonicalRoot(root string) (string, error) {
 }
 
 func inside(root, path string) bool {
-	rel, err := filepath.Rel(root, path)
+	rel, err := filepath.Rel(pathSpelling(root), pathSpelling(path))
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel)
+}
+
+// Windows junctions may be ModeIrregular rather than ModeSymlink and a final
+// junction may be left unchanged by EvalSymlinks. Check attributes as well,
+// including every ancestor, before treating native metadata as unredirected.
+func hasRedirectedAncestor(path string) bool {
+	for current := filepath.Clean(path); ; current = filepath.Dir(current) {
+		if pathIsRedirect(current) {
+			return true
+		}
+		if filepath.Dir(current) == current {
+			return false
+		}
+	}
 }
 
 func secretComponent(name string) bool {
@@ -59,7 +73,14 @@ func ValidateProjectPath(root, relative string) (string, error) {
 	if !inside(root, joined) {
 		return "", scopeError("path leaves the approved project")
 	}
-	current := root
+	// Check expanded component names too: a short alias for .codex or
+	// credentials.json must not bypass the existing secret exclusions.
+	joined = pathSpelling(joined)
+	clean, err := filepath.Rel(pathSpelling(root), joined)
+	if err != nil {
+		return "", scopeError("path leaves the approved project")
+	}
+	current := pathSpelling(root)
 	for _, part := range strings.Split(clean, string(filepath.Separator)) {
 		if part == "." {
 			continue
@@ -69,7 +90,7 @@ func ValidateProjectPath(root, relative string) (string, error) {
 		}
 		current = filepath.Join(current, part)
 		info, err := os.Lstat(current)
-		if err != nil || info.Mode()&os.ModeSymlink != 0 {
+		if err != nil || info.Mode()&os.ModeSymlink != 0 || pathIsRedirect(current) {
 			return "", scopeError("path is unavailable or contains a symlink")
 		}
 	}

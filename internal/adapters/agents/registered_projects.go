@@ -44,7 +44,7 @@ func emptyRegisteredSnapshot() domain.ProjectDiscoverySnapshot {
 }
 
 func rootKey(root string) string {
-	root = filepath.Clean(root)
+	root = pathSpelling(root)
 	if runtime.GOOS == "windows" {
 		return strings.ToLower(root)
 	}

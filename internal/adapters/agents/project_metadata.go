@@ -141,7 +141,7 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 		}
 		// Exclude redirected native-state roots, including symlinked ancestors.
 		resolved, err := filepath.EvalSymlinks(source.root)
-		if err != nil || rootKey(resolved) != rootKey(source.root) {
+		if err != nil || hasRedirectedAncestor(source.root) || rootKey(resolved) != rootKey(source.root) {
 			obs.Status = "unknown"
 			obs.Reason = "known_source_unavailable_or_redirected"
 			result.Sources = append(result.Sources, obs)
@@ -272,7 +272,7 @@ func (s *RegisteredProjects) observeProjectMetadata(ctx context.Context, result 
 
 func metadataProjectRoot(cwd string) (string, error) {
 	canonical, err := CanonicalRoot(cwd)
-	if err != nil || rootKey(canonical) != rootKey(cwd) {
+	if err != nil || hasRedirectedAncestor(cwd) || rootKey(canonical) != rootKey(cwd) {
 		return "", errors.New("metadata_root_unavailable_or_redirected")
 	}
 	home, _ := os.UserHomeDir()

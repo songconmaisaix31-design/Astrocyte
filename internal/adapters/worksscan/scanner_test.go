@@ -48,9 +48,12 @@ func TestScannerReadsMarkerPlatform(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := NewScanner()
-	works, _, err := s.ScanWorks(context.Background(), []string{root})
+	works, failures, err := s.ScanWorks(context.Background(), []string{root})
 	if err != nil {
 		t.Fatal(err)
+	}
+	if len(works) != 1 || len(failures) != 0 {
+		t.Fatalf("marker root was not observed: works=%+v failures=%+v", works, failures)
 	}
 	if works[0].Platform != "lingxi" || works[0].Name != "作品A" {
 		t.Fatalf("marker not applied: %+v", works[0])
@@ -151,5 +154,21 @@ func TestScannerRejectsSymlinkRoot(t *testing.T) {
 	}
 	if len(works) != 0 || len(failures) != 1 {
 		t.Fatalf("symlink must not expand approved root: %+v %+v", works, failures)
+	}
+}
+
+func TestScannerRejectsSymlinkAncestor(t *testing.T) {
+	target := t.TempDir()
+	root := filepath.Join(target, "approved-child")
+	if err := os.Mkdir(root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(t.TempDir(), "redirect")
+	if err := os.Symlink(target, link); err != nil {
+		t.Skipf("symlink privilege unavailable: %v", err)
+	}
+	works, failures, err := NewScanner().ScanWorks(context.Background(), []string{filepath.Join(link, "approved-child")})
+	if err != nil || len(works) != 0 || len(failures) != 1 || failures[0].Reason != "root_unavailable" {
+		t.Fatalf("ancestor symlink must not expand approved root: works=%+v failures=%+v error=%v", works, failures, err)
 	}
 }

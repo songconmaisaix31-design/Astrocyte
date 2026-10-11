@@ -1,5 +1,28 @@
 # Attention Engine W0 · M0 契约锁定 · 迁移 · 存储基础 · HTTP 关口
 
+## Windows CI 限定返修（2026-10-11，新 Dispatch）
+
+Task `task_18154894914d` / Dispatch `ctx_84bdbc33a991`；原 W0 Codex --yolo 接续，无新 Agent。分支 `songconmaisaix31-design/attention-engine-w0-core`，先普通 fast-forward merge root 精确最终树 `0e49301734549a02b9b1b9078aaef96fd6422742`，SOURCE `425d965f82bb3d8b573604476134d466838be416` 已 commit+push。此次只改 `internal/adapters/agents/**` 与本报告；root 合入带来的其他 owner 文件没有再修改。
+
+首 RED 保留：真实 Windows CI `38150022874` 日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-ci-38150022874-first-failed.log` 未改。runner 的 TEMP 使用 `RUNNER~1`，`EvalSymlinks` 输出长名 `runneradmin`，原字符串比较误拒绝同一授权目录：native header 源被标成 redirected、批准文件 scope_denied、registered root/parent 断言不匹配；scanner/Works 的相关失败另归 W7。本机新真实 8.3 fixture 首场也 RED（`real 8.3 alias is treated as a different approved directory`、header unavailable），后续 junction 首场 RED（末级 junction 被 Go 保留为 irregular、metadata 源进入扫描）；以下 GREEN 是返修复验，不覆盖首错。
+
+- agents 包内增加 Windows `GetLongPathName` 拼写展开与非 Windows 原行为 helper；rootKey、inside、显式 history 项目匹配共用同目录比较。缺失 checkout 只展开现存祖先，缺失 suffix 仍为注册关联元数据，不猜测替代根或授予读取。此 API 的长名称/失败语义参见 [Microsoft 文档](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getlongpathnamew)。
+- 未将 `EvalSymlinks` 解析结果当成原路径名称：metadata 源和项目 cwd 仍拒绝 root/祖先重定向，Windows 另检查 reparse 属性，覆盖 Go 末级 junction 未解析的情形。批准相对路径逐组件检查仍在；短名称 `.codex` / `credentials.json` 先展开再执行原 secret 限制，真实 `CODEX~1` / `CREDEN~1.JSO` 拒绝通过。绝对路径、越界、其他未批准子目录、输出预算、默认拒绝与撤销行为保持。
+- 原三个测试的 root/parent 断言改为同目录 key 比较，仍检验数量、来源、缺失 main 失败、状态和未授权目录。新增 Windows 测试通过实际 `GetShortPathName` 获取 fixture 的 8.3 名称，不修改 TEMP、不造假别名；无可用别名时明确 `NOT_RUN`。仅合成既有形状的临时 metadata header 和目录，不读取私人真实记录或扩大 metadata 权限。
+
+所有 Go 命令串行使用 `GOFLAGS=-p=1`、`GOMAXPROCS=2`：
+
+| 命令 / 范围 | 结果 |
+|---|---|
+| `go test ./internal/adapters/agents -run '^(TestWindowsActualShortPathScopes\|TestWindowsRedirectedPathsRemainDenied\|TestNativeMetadataIdentifiesStandaloneProjectWithoutReadGrant\|TestNativeMetadataSessionSampleDoesNotHideLaterProjectRoots\|TestProjectMetadataHeaderOnlyScopeDuplicateAndUnknown\|TestProjectScopeDefaultDenyAndDirectoryGranularity\|TestRegisteredDiscoveryScopesDedupAndMetadata\|TestRegisteredMissingMainStillAllowsExplicitLocalWorktree\|TestProjectSymlinkEscapeAndOutputBound\|TestHistoryDiscoveryRequiresChosenRootAndFiltersBeforeBody)$' -count=1 -v` | PASS：六个 CI 指定测试、真实 8.3 的 scope/源/cwd/重复/缺失 parent、secret alias、真实 junction root 与祖先拒绝、history 选择及 traversal/output bound 均执行；日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-W0-ci-38150022874-targeted.log` |
+| `go test ./internal/adapters/agents -count=1` | PASS，3.761s；live opt-in 测试按原规则不执行，不是私人 native 验收 |
+| `go vet ./internal/adapters/agents` | PASS |
+| `GOOS=linux go test -c -o C:/Users/DW/AppData/Local/Temp/astrocyte-W0-agents-linux.test ./internal/adapters/agents` | PASS，仅 Linux 编译，未运行 Linux 测试 |
+| 对修改的 agents Go 文件执行 `gofmt -w`，`git diff --check` | PASS |
+| `git merge-base --is-ancestor 0e49301734549a02b9b1b9078aaef96fd6422742 HEAD` | EXIT0，保持精确 root 普通历史 |
+
+真实限制/未执行：本机创建真正 symlink 缺 Windows privilege，该分支明确 **NOT_RUN**；实际无需该权限的 junction 已创建并验证拒绝。原 symlink 用例保留，需有权限的 CI/Linux 环境执行；真实 8.3 本机已执行通过，不是 NOT_RUN。远端 CI 复跑、scanner/Works 返修集成、全量 check/build/UI/media 不在本次执行，交由原 W7 与原集成 Agent/root；本地 agents GREEN 不宣称 CI 或整体交付 GREEN。原未答产品/私人 native 权限仍未决定。
+
 ## 当前 Codex W0 shared/M6 交付（2026-10-11）
 
 Task `task_168bacd9d56d` / Dispatch `ctx_b16e623a7b11`；当前 Orca Codex（codex --yolo），未启动其他 Agent，精确模型标识未由本会话接口提供。分支 `songconmaisaix31-design/attention-engine-w0-core`；共享基础 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，正式 HTTP/MCP/Works startup `396aec1d6bee777dd380ff06fc5d821d0f7f5b3f`，单日 Sleep/Windows 检查 `363fcca1d515b6c373a8aba285e5ded4605727d5`，强化 M6 SOURCE `f4bf0257b3f2e93e2ce67197bfbb0764a68332a3`。各阶段均 commit+push，原 owner 代码通过授权的精确普通 merge 消费；下文旧波 A 状态保留为历史，不代表当前缺少服务组装。
