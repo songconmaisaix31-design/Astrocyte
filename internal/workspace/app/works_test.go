@@ -256,3 +256,39 @@ func TestWorksEventsDoNotInventHumanAttention(t *testing.T) {
 		}
 	}
 }
+
+func TestWorksScanVerifiesExistingDeliveryWithoutInventingPlatform(t *testing.T) {
+	repo := newFakeWorksRepo()
+	root := "C:\\w\\delivered"
+	delivered := domain.Work{ID: domain.WorkIdentity("codex", root), Platform: "codex", Root: root, Name: "human title", Kind: domain.WorkKindFolder, Source: domain.WorkSourceJSON}
+	repo.snapshot = domain.WorksSnapshot{Works: []domain.Work{delivered}}
+	repo.metadata[delivered.ID] = domain.WorkHumanMetadata{Attitude: domain.AttitudePark, Handoff: domain.WorkHandoff{Content: "manual guide", Source: domain.HandoffSourceHuman}, Revision: 1}
+	scan := &fakeScanSource{works: []domain.Work{scanWork("unknown", "folder name", root)}}
+	service := NewWorksService(repo, scan, nil, nil, WorksServiceOptions{})
+	snapshot, err := service.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{Roots: []string{root}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(snapshot.Works) != 1 {
+		t.Fatalf("verification invented another platform work: %+v", snapshot.Works)
+	}
+	got := snapshot.Works[0]
+	if got.ID != delivered.ID || got.Platform != "codex" || got.Source != domain.WorkSourceJSON || got.Name != delivered.Name || !got.Files.Verified || got.Attitude != domain.AttitudePark || got.Handoff.Content != "manual guide" || got.Revision != 1 {
+		t.Fatalf("scan lost provenance/metadata: %+v", got)
+	}
+}
+
+func TestWorksFailedRootNoLongerClaimsCurrentVerification(t *testing.T) {
+	repo := newFakeWorksRepo()
+	root := "C:\\w\\unavailable"
+	repo.snapshot = domain.WorksSnapshot{Works: []domain.Work{scanWork("codex", "app", root)}}
+	scan := &fakeScanSource{failures: []domain.WorkDiscoveryFailure{{Root: root, Reason: "root_unavailable"}}}
+	service := NewWorksService(repo, scan, nil, nil, WorksServiceOptions{})
+	snapshot, err := service.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{Roots: []string{root}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if snapshot.Status != "partial" || len(snapshot.Works) != 1 || snapshot.Works[0].Files.Verified || snapshot.Works[0].Files.Reason != "root_unavailable" {
+		t.Fatalf("failed observation masquerades as verified: %+v", snapshot)
+	}
+}

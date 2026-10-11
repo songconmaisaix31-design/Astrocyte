@@ -3,6 +3,9 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
 	"unicode/utf8"
 
@@ -160,6 +163,7 @@ func (s *worksService) RefreshWorks(ctx context.Context, c domain.Caller, cmd Wo
 		}
 		return s.withMetadata(ctx, old)
 	}
+	works = retainAttributedWorks(old.Works, works)
 	snapshot := s.mergeObservations(old, works, failures)
 	if err := s.repo.SaveWorksSnapshot(ctx, snapshot); err != nil {
 		return snapshot, err
@@ -230,6 +234,20 @@ func (s *worksService) mergeObservations(old domain.WorksSnapshot, works []domai
 		}
 		byID[work.ID] = work
 	}
+	for id, work := range byID {
+		for _, failure := range failures {
+			left, right := filepath.Clean(work.Root), filepath.Clean(failure.Root)
+			same := left == right
+			if runtime.GOOS == "windows" {
+				same = strings.EqualFold(left, right)
+			}
+			if same {
+				work.Files.Verified = false
+				work.Files.Reason = failure.Reason
+				byID[id] = work
+			}
+		}
+	}
 	for _, work := range works {
 		if _, ok := byID[work.ID]; !ok {
 			order = append(order, work.ID)
@@ -254,6 +272,35 @@ func statusForFailures(failures []domain.WorkDiscoveryFailure) string {
 		return "complete"
 	}
 	return "partial"
+}
+
+// A scan with no platform marker verifies existing attributed cards at this
+// root. It does not invent a second work or overwrite delivery attribution.
+func retainAttributedWorks(cached, scanned []domain.Work) []domain.Work {
+	result := []domain.Work{}
+	for _, observation := range scanned {
+		matched := false
+		if observation.Platform == "unknown" {
+			for _, work := range cached {
+				left, right := filepath.Clean(work.Root), filepath.Clean(observation.Root)
+				same := left == right
+				if runtime.GOOS == "windows" {
+					same = strings.EqualFold(left, right)
+				}
+				if !same {
+					continue
+				}
+				work.Files = observation.Files
+				work.Kind = observation.Kind
+				result = append(result, work)
+				matched = true
+			}
+		}
+		if !matched {
+			result = append(result, observation)
+		}
+	}
+	return result
 }
 
 // withMetadata overlays durable human annotations and recomputes statistics.

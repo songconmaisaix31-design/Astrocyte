@@ -1,4 +1,4 @@
-package attentionengine_test
+package attention_engine_test
 
 import (
 	"context"
