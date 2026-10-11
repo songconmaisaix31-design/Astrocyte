@@ -6,6 +6,8 @@
 
 原W1新限定Task `task_153a01e3d7ee` / Dispatch `ctx_d533ec61be20` 实际开始，Codex--yolo原工作树/分支，唯一events/**、M1测试和自己报告；不改原真实M1 failed任务、不扩大私人metadata范围、不放宽符号链接/登记根/读量边界。此fixture修复后沿原集成Agent/root复验；本机此前最终check/build PASS不等于新远程通过，整体产品未完成。
 
+23:47 W1限定修复已succeeded并push SOURCE8de573a/REPORT9ef5f66，14真实别名/7junction拒绝与M1本地9PASS1SKIP，旧真实M1失败仍保持。唯一原集成Agent新Task `task_2a875959ca15` / Dispatch `ctx_bd2dcbcb9f37` 实际开始普通合root60f8a27及W1精确REPORT，仅events/M1定向后交root新树最终复验/push。CI38152009091已结束：Ubuntu全流程PASS、Windows上述唯一M1 fixture FAIL；不是新W1修复后的CI结果。
+
 ## 本轮最终树已合入、本机通过（2026-10-11 23:36）
 
 交付分支 `attention-engine/v1-20261011`；最终业务普通合并 `15c4d8b0886450619d4bc279d0770d2f958beeb4` 消费 Windows 返修集成REPORT `9919d801609a204f122cdee8691bb01d9f3692da`，所有八轨最终报告及两份路径返修SOURCE/REPORT均保留普通祖先。实现认知事件/动力学/Sleep、项目隔离知识与经验/人工关口、五MCP stdio工具、Works五能力与原始事件源；M6合成七日推荐首错已原owner修复并独立复算。所有开发/返修使用原 Codex --yolo 工作树/分支，所有Dispatch已结算，外部终端 retained idle。

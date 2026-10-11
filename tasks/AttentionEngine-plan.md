@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-11 23:47 W1限定fixture路径修复已succeeded：SOURCE `8de573ac5e1dff4ad703fe7fded7ec70c111130a` / REPORT `9ef5f6667ce6067d39a3012435e8b35526e19568` 已push；真实14别名、7junction拒绝与原M1 fixture定向通过；旧真实M1任务failed/待授权保持。原集成终端再接新Task，沿同一worktree/branch，write_paths仅原集成报告和必要薄胶水，普通合root文档基线60f8a27及W1精确REPORT；只定向events/M1，不重复M6/Works真实写入/全UI，领域问题仍退W1，root对新树最终check/build/push/自动CI。
+
 2026-10-11 23:40 最终push `ebe9a758b05d73363cc8630c187208c41253321d` 自动CI38152009091暴露下一层Windows RED：agents/worksscan已PASS，仅 `TestM1NativeFormatFixtureReplayAccounting` 在 `events/native_reader.go` 将合法短/长名称当symbolic links。Windows job完整日志保留 `%TEMP%/astrocyte-ci-38152009091-windows-first.log`；Ubuntu已过check/race/build，E2E运行。原W1仅接单轨fixture/实现返修新Task，沿原终端/工作树/分支、Codex--yolo，独占 `internal/adapters/events/**`、`tests/attention-engine/M1*` 和自己的报告，禁止修改其他两路径owner/共享helper/合同；不读取真实私人native，不将旧真实M1失败/待授权任务改成成功。短路径名称准入与真实symlink/junction/祖先拒绝分别验证，limit/raw/event/权重保持；commit+push后同一集成Agent普通合/root复验。无新产品策略或跨adapter重构。
 
 2026-10-11 23:36 最终路径集成 `task_51df762ea493` / `ctx_7d52252e725c` 已succeeded，SOURCE `be12d66c9c78340f1ba1e68e4243a38df4b9a129` / REPORT `9919d801609a204f122cdee8691bb01d9f3692da` 已push并普通合入root `15c4d8b0886450619d4bc279d0770d2f958beeb4`。root新树完整check/build EXIT0，原0e493默认E2E226/30局部历史仍独立；下一步最终push自动CI。八轨/限定返修/集成都结算，外部终端retained，不删工作树/历史。用户未答与真实科学验收仍不冒称完成。

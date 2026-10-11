@@ -4,6 +4,8 @@
 
 最新push ebe9a758；CI38152009091 Windows仍FAIL，仅M1原生格式fixture路径比较短/长名误判symlink，旧agents/scanner问题已PASS；日志 `%TEMP%/astrocyte-ci-38152009091-windows-first.log`。Ubuntucheck/race/build PASS，E2E运行。原W1新task_153a01e3d7ee/ctx_d533ec61be20沿Codex--yolo原工作树/分支只改events/**、M1测试和报告，修selected-file合法8.3别名，保留真实redirect/范围/读量拒绝。不是旧真实M1 task retry，权限未答/旧0eligible RED保持。等原owner精确SOURCE/REPORT/settled，再派同一集成Agent新Task普通合/root最终复验/push；不得从fixture绿冒称真实M1完成。
 
+23:47 W1新限定Task已succeeded，SOURCE8de573a/REPORT9ef5f66已push；旧真实M1仍failed。原集成Agent新task_2a875959ca15/ctx_bd2dcbcb9f37 已实际开始限定普通合并及M1/events复验；root最终check/build/push/CI稍后。旧CI38152009091 Ubuntu全PASS、Windows上述唯一M1 fixture FAIL，不以旧场代替新修复结果。
+
 ## 当前交付入口（2026-10-11 23:36）
 
 先读STATUS最新段和基线记录。最终业务普通合并 `15c4d8b0886450619d4bc279d0770d2f958beeb4` 已消费REPORT9919d80与W0/W7路径返修，root对此树完整check/build EXIT0；此前默认E2E226 PASS/30 SKIP属于0e493，UI源未变。全部开发/限定返修/唯一集成任务已settled，终端只是retained idle；若新领域返修，用原owner原工作树新Task，禁止给旧ctx发送。交付分支attention-engine/v1-20261011将push触发两平台CI，当前远程结果待核实，不覆盖第一次Windows首RED。
