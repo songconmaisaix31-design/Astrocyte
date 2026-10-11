@@ -4,7 +4,7 @@
 
 ## 2026-10-11 Codex 接续：stdio 边界阶段，M5 尚未完成
 
-SOURCE `a57d67c77fd44513dbef3611bbb091dea3378937`，协议阶段 SOURCE `058a67baff3748933415ab14103e0171e838ffc6`，均已 push。实际客户端 Codex / GPT-6，未使用子 Agent；`GOFLAGS=-p=1`、`GOMAXPROCS=2`。
+SOURCE `a57d67c77fd44513dbef3611bbb091dea3378937`，协议阶段 SOURCE `058a67baff3748933415ab14103e0171e838ffc6`，均已 push。客户端 Codex，主控 runtime 记录 `gpt-6.1-sol/YOLO`，未使用子 Agent；`GOFLAGS=-p=1`、`GOMAXPROCS=2`。
 
 - 接管原 `daa3f6d`，它的 `memoryBackend` 和 `os.Pipe` 只算接口局部证据，不证明领域、持久化或实际 MCP 子进程完成。
 - 初始化验证 `protocolVersion`、`capabilities`、`clientInfo`，支持 2024-11-05 / 2025-03-26 / 2025-06-18 / 2025-11-25 协商；初始化前工具调用拒绝。参数错误返回 JSON-RPC -32602，业务拒绝返回工具 `isError`。
@@ -12,7 +12,7 @@ SOURCE `a57d67c77fd44513dbef3611bbb091dea3378937`，协议阶段 SOURCE `058a67b
 - `get_experiences` 未传 scope 仍使用启动项目，显式外项目 scope 拒绝；`report_event({event:{...}})` 强制 `source=mcp`、scope/session=启动绑定，拒绝外项目和 `user_approve` / `user_veto`。raw 只保留审计，不赋予批准、提权或成功闭环语义。
 - `veto({topic|task,reason})` 必须二选一，普通 Agent 调用拒绝；人类回流具体落库仍待 M0/W1/W2 接线。
 
-验证（2026-10-11 22:21 +08，局部范围）：
+验证（2026-10-11 22:12–22:13 +08，局部范围）：
 
 ```powershell
 $env:GOFLAGS='-p=1'; $env:GOMAXPROCS='2'
