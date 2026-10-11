@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## Windows 浏览器规范路径断言返修（2026-10-12 00:09）
+
+root已push92a2ded，CI38153179867：Ubuntu check/race/build/E2E全PASS（226PASS/30SKIP）；Windows check/build PASS，E2E224PASS/2FAIL/30SKIP。两个FAIL均s1-projects.spec.ts:33同一登记场景的两视口，API返回正确长名称runneradmin，断言仍期待输入RUNNER~1短字串；生产CanonicalRoot原本返回规范目录，不能改业务迎合断言。首次失败日志 `%TEMP%/astrocyte-ci-38153179867-e2e-first-failed.log` 与Ubuntu完整日志保留，不覆盖先前Go/M1首RED。
+
+原W0新 `task_e337d98251d3` / `ctx_87396a08fb27` 已实际开始，沿Codex--yolo原终端/工作树/分支，只改该E2E spec及自己的报告；用Node独立filesystem realpath核对同目录、保留用户POST原样路径/实际SQLite/B-C许可/获准README/重启/不开模型，真实8.3 fixture复现后两视口定向验证。不改业务或TEMP、不松断言。此测试修复后由原集成Agent/root定向复验与最终push/CI；当前整套Windows不能称通过，真实M1/用户策略仍待答。
+
 ## 最新交付树本机通过（2026-10-11 23:52）
 
 交付分支 `attention-engine/v1-20261011`，最终业务普通合并 `56c879a1a7d6b023f7124d29dde69b4b44cc7605` 消费W1路径返修集成REPORT `e935fba0758beb33471c89ca11038a06f32eee89`；八轨报告与W0/W7/W1三份路径返修报告均为精确普通祖先。全部开发/返修/唯一集成使用Codex--yolo并已结算，外部终端retained idle。认知三条链、五MCP操作、Sleep CLI、项目隔离知识/经验及人工关口、Works五能力和链1事件源已组装；真实M1验收仍未通过，不宣称完整产品完成。
