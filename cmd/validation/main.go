@@ -310,7 +310,19 @@ func main() {
 	output := flag.String("output", "", "new derived stage-count JSON file")
 	contextPath := flag.String("associations", "", "separate local observed file association context")
 	gitInput := flag.String("git-input", "", "local actual git log input, separate from frozen100")
+	populationDir := flag.String("population-dir", "", "frozen full structural tool population and independent negatives")
 	flag.Parse()
+	if *populationDir != "" {
+		if *input != "" || *contextPath != "" || *gitInput == "" || *output == "" {
+			fmt.Fprintln(os.Stderr, "population requires frozen git and output only")
+			os.Exit(2)
+		}
+		if err := runPopulation(*populationDir, *gitInput, *output); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	if (*input == "" && *gitInput == "") || (*input != "" && *gitInput != "") || *output == "" {
 		fmt.Fprintln(os.Stderr, "input and output required")
 		os.Exit(2)

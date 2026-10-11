@@ -21,8 +21,9 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
-// Deliberately RED acceptance probes are opt-in until the schema exception and
-// content-versus-authorized-derived policy are decided. Only synthetic data.
+// Historical V0 isolation probes retain their original semantics and opt-in.
+// v2.1 preserves store raw columns and audits MCP exposure in separate tests;
+// it supersedes the former schema-exception/shared-value proposal. Synthetic only.
 const contentCanary = "FIXTURE_PRIVATE_CONTENT_W0_8f392a"
 const factCanary = "FIXTURE_PRIVATE_FACT_W0_0c128b"
 const scope = "fixture-project-w0"

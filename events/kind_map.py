@@ -11,6 +11,7 @@ RULES = (
     ("tool", "WebFetch", "search"),
     ("tool", "web.run", "search"),
     ("tool", "ReadPaper", "read_paper"),
+    ("wrapper", "exec", "unknown"),
     ("shell_search", "Bash", "search"),
     ("shell_search", "exec_command", "search"),
     ("shell_search", "shell_command", "search"),
