@@ -42,10 +42,16 @@ func TestMCPServerProcess(t *testing.T) {
 		kind := os.Getenv("ASTROCYTE_M5_MCP_KIND")
 		binding := app.MCPBinding{Principal: app.Principal{ID: "m5-" + kind, Kind: kind}, Scope: "project-a", Session: "m5-stdio", CanVeto: kind == "human"}
 		events := sqlite.NewEventRepository(db)
+		experiences := app.NewExperienceService(sqlite.NewExperienceRepository(db), events, app.ExperienceOptions{ProjectID: binding.Scope, Clock: mcpFixtureClock})
+		recorder := mcpProcessRecorder(events, experiences, os.Getenv("ASTROCYTE_M5_MCP_DELIVERY_FIXTURE"))
+		if os.Getenv("ASTROCYTE_M5_MCP_RECOVER") == "1" {
+			if _, err := experiences.CaptureFailures(context.Background(), 0, mcpFixtureNow+1); err != nil {
+				return err
+			}
+		}
 		backend, err := app.NewEngineMCPBackend(binding,
 			app.NewDynamicsEngine(sqlite.NewDynamicsRepository(db), app.DynamicsOptions{}),
-			app.NewExperienceService(sqlite.NewExperienceRepository(db), events, app.ExperienceOptions{ProjectID: binding.Scope, Clock: mcpFixtureClock}),
-			app.NewEventService(events, .01), app.MCPBackendOptions{Clock: mcpFixtureClock})
+			experiences, recorder, app.MCPBackendOptions{Clock: mcpFixtureClock})
 		if err != nil {
 			return err
 		}
@@ -62,12 +68,13 @@ func TestMCPServerProcess(t *testing.T) {
 	os.Exit(0)
 }
 
-func mcpSubprocess(t *testing.T, path, kind, script string) []map[string]any {
+func mcpSubprocess(t *testing.T, path, kind, script string, fixtureEnv ...string) []map[string]any {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	command := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestMCPServerProcess$")
 	command.Env = append(os.Environ(), "ASTROCYTE_M5_MCP_HELPER=1", "ASTROCYTE_M5_MCP_DB="+path, "ASTROCYTE_M5_MCP_KIND="+kind)
+	command.Env = append(command.Env, fixtureEnv...)
 	command.Stdin = bytes.NewBufferString(req(1, "initialize", "") + "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n" + script)
 	var output, stderr bytes.Buffer
 	command.Stdout, command.Stderr = &output, &stderr
@@ -229,7 +236,7 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 		if row == nil {
 			t.Fatal("failure produced no candidate")
 		}
-		if _, err := service.ApproveExperience(ctx, human, row.Experience.ID, app.ApproveExperienceCommand{CommandMeta: app.CommandMeta{SchemaVersion: 1, RequestID: "approve-" + row.Experience.ID, ExpectedVersion: 1}, OwnerProject: row.OwnerProject}); err != nil {
+		if _, err := service.ApproveExperience(ctx, human, row.Experience.ID, app.ApproveExperienceCommand{CommandMeta: app.CommandMeta{SchemaVersion: 1, RequestID: "approve-" + row.Experience.ID, IdempotencyKey: "approve-" + row.Experience.ID, ExpectedVersion: 1}, OwnerProject: row.OwnerProject}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -258,7 +265,7 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 		} // quarantine must never appear via MCP
 		approve(service, candidate)
 		if i == 1 {
-			if _, err := service.ShareExperience(ctx, human, candidate.Experience.ID, app.ShareMemoryCommand{CommandMeta: app.CommandMeta{SchemaVersion: 1, RequestID: "share-b-a", ExpectedVersion: 2}, OwnerProject: "project-b", TargetProject: "project-a"}); err != nil {
+			if _, err := service.ShareExperience(ctx, human, candidate.Experience.ID, app.ShareMemoryCommand{CommandMeta: app.CommandMeta{SchemaVersion: 1, RequestID: "share-b-a", IdempotencyKey: "share-b-a", ExpectedVersion: 2}, OwnerProject: "project-b", TargetProject: "project-a"}); err != nil {
 				t.Fatal(err)
 			}
 		}

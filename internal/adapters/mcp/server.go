@@ -168,6 +168,19 @@ func (s *Server) call(id json.RawMessage, ctx context.Context, params json.RawMe
 		if errors.As(err, &invalid) {
 			return errorResponse(id, codeInvalidParams, invalid.Error())
 		}
+		if delivery, ok := result.(interface{ MCPDeliveryState() string }); ok && delivery.MCPDeliveryState() != "" {
+			// Text is authoritative for clients that discard structuredContent
+			// when isError is true. Never drop a committed receipt on this path.
+			payload, marshalErr := json.Marshal(result)
+			var receipt map[string]any
+			if marshalErr == nil && json.Unmarshal(payload, &receipt) == nil && receipt != nil {
+				receipt["error"] = err.Error()
+				payload, marshalErr = json.Marshal(receipt)
+				if marshalErr == nil {
+					return okResponse(id, toolResult{Content: []contentItem{{Type: "text", Text: string(payload)}}, IsError: true, StructuredContent: receipt})
+				}
+			}
+		}
 		return okResponse(id, toolResultError(err))
 	}
 	text, err := json.Marshal(result)
@@ -183,8 +196,9 @@ type contentItem struct {
 }
 
 type toolResult struct {
-	Content []contentItem `json:"content"`
-	IsError bool          `json:"isError"`
+	Content           []contentItem  `json:"content"`
+	IsError           bool           `json:"isError"`
+	StructuredContent map[string]any `json:"structuredContent,omitempty"`
 }
 
 func toolResultText(text string) toolResult {

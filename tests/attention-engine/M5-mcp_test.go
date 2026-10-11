@@ -53,7 +53,7 @@ func (b *memoryBackend) GetExperiences(_ context.Context, in app.GetExperiencesI
 
 func (b *memoryBackend) ReportEvent(_ context.Context, in app.ReportEventInput) (app.ReportEventResult, error) {
 	b.events = append(b.events, in)
-	return app.ReportEventResult{Accepted: true, EventID: fmt.Sprintf("evt-%d", len(b.events))}, nil
+	return app.ReportEventResult{Accepted: true, MCPReceiptDelivery: app.MCPReceiptDelivery{EventID: fmt.Sprintf("evt-%d", len(b.events))}}, nil
 }
 
 func (b *memoryBackend) Veto(_ context.Context, in app.VetoInput) (app.VetoResult, error) {
