@@ -16,6 +16,8 @@
 
 后续扫描纠正：无标记平台的扫描更新同根已有投递作品文件事实，保留明确投递平台、名称、来源和人工元数据，避免重复未知卡；根读取失败使缓存文件事实未核实并显示原因。定向 Works app 验证 PASS。上述改动不改变已发布 Go 公共 API；ca0c255 可供 W0 接线编译，最终精确源另行报告。
 
+已普通合入正式 M0 source `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，merge `b19bcd7` 已 push。合后定向首 RED：新共享 harness 用 attention_engine_test，而旧 W7 为 attentionengine_test；仅本轨 w7_works_test.go 改为共享 package 名，随后 `go test -count=1 ./tests/attention-engine -run TestW7` PASS。同轮 domain/app/scanner/sqlite 定向 PASS、typecheck PASS。HTTP Works P2 SHA 仍待 W0，不扩展全仓检查。
+
 ## 1. 交付内容（五能力 + 事件源）
 
 | 能力 | 落点 |
