@@ -93,11 +93,10 @@ func (b *engineMCPBackend) ReportEvent(ctx context.Context, in ReportEventInput)
 }
 
 func (b *engineMCPBackend) Veto(ctx context.Context, in VetoInput) (VetoResult, error) {
-	if in.Task != "" {
-		return VetoResult{}, fmt.Errorf("task veto is unsupported without a persisted task-to-topic resolver")
-	}
-	if _, err := b.attention.ExplainFocus(ctx, in.Topic); err != nil {
-		return VetoResult{}, err
+	if in.Topic != "" {
+		if _, err := b.attention.ExplainFocus(ctx, in.Topic); err != nil {
+			return VetoResult{}, err
+		}
 	}
 	raw, err := json.Marshal(struct {
 		VetoInput
@@ -109,9 +108,12 @@ func (b *engineMCPBackend) Veto(ctx context.Context, in VetoInput) (VetoResult, 
 	}
 	now := b.clock().UnixMilli()
 	observation := Observation{Source: domain.EventSourceManual, SourceKind: domain.EventKindUserVeto, Session: b.binding.Session, Scope: b.binding.Scope, TS: now, Provenance: "mcp_human:" + b.binding.Principal.ID}
-	event := &domain.Event{Source: domain.EventSourceManual, Session: b.binding.Session, Scope: b.binding.Scope, TS: now, Kind: domain.EventKindUserVeto, Topic: in.Topic, Raw: raw}
+	var event *domain.Event
+	if in.Topic != "" {
+		event = &domain.Event{Source: domain.EventSourceManual, Session: b.binding.Session, Scope: b.binding.Scope, TS: now, Kind: domain.EventKindUserVeto, Topic: in.Topic, Raw: raw}
+	}
 	id, err := b.record(ctx, observation, event, raw)
-	return VetoResult{Acknowledged: err == nil, Target: in.Topic, EventID: id}, err
+	return VetoResult{Acknowledged: err == nil, Target: in.Topic + in.Task, EventID: id, Pending: event == nil}, err
 }
 
 func (b *engineMCPBackend) record(ctx context.Context, observation Observation, event *domain.Event, raw []byte) (string, error) {

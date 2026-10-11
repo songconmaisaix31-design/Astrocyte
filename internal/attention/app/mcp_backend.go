@@ -74,4 +74,5 @@ type VetoResult struct {
 	Acknowledged bool   `json:"acknowledged"`
 	Target       string `json:"target"`
 	EventID      string `json:"event_id"`
+	Pending      bool   `json:"pending"`
 }
