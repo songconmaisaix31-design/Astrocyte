@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"encoding/json"
 	"math"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -24,27 +26,45 @@ func TestConsolidateKeepsInboundRelatedTopic(t *testing.T) {
 }
 
 func TestConsolidateGoldenInputIsOrderIndependent(t *testing.T) {
-	events := []EventTopic{
-		{EventID: "e1", Topic: "agent-swarm"},
-		{EventID: "e2", Topic: "agent-swarm"},
-		{EventID: "e3", Topic: "agent-swarm"},
-		{EventID: "e4", Topic: "paper-reading"},
-		{EventID: "e5", Topic: "one-off-noise"},
+	data, err := os.ReadFile("../../../tests/attention-engine/M3-golden.json")
+	if err != nil {
+		t.Fatal(err)
 	}
+	var sample struct {
+		Events         []EventTopic        `json:"events"`
+		Related        map[string][]string `json:"related"`
+		ExpectedTopics []string            `json:"expected_topics"`
+		BeforeFacts    []string            `json:"before_facts"`
+		AfterFacts     []string            `json:"after_facts"`
+		BeforeBytes    int64               `json:"before_bytes"`
+		AfterBytes     int64               `json:"after_bytes"`
+		Retention      float64             `json:"expected_retention_precision"`
+		Reduction      float64             `json:"expected_storage_reduction"`
+	}
+	if err := json.Unmarshal(data, &sample); err != nil {
+		t.Fatal(err)
+	}
+	events := sample.Events
 	want := Consolidation{
-		Clusters:  []Cluster{{Topics: []string{"agent-swarm", "paper-reading"}, Events: 4}},
-		Decisions: []NodeDecision{{Kind: NodeCreate, Topic: "agent-swarm"}, {Kind: NodeCreate, Topic: "paper-reading"}},
+		Clusters: []Cluster{{Topics: sample.ExpectedTopics, Events: 4}},
+	}
+	for _, topic := range sample.ExpectedTopics {
+		want.Decisions = append(want.Decisions, NodeDecision{Kind: NodeCreate, Topic: topic})
 	}
 	for i := range events {
 		rotated := append(append([]EventTopic{}, events[i:]...), events[:i]...)
 		for _, related := range []map[string][]string{
-			{"paper-reading": {"agent-swarm"}},
+			sample.Related,
 			{"agent-swarm": {"paper-reading"}},
 		} {
 			if got := Consolidate(rotated, related); !reflect.DeepEqual(got, want) {
 				t.Fatalf("golden decisions changed: %+v", got)
 			}
 		}
+	}
+	m := ComputeMetrics(sample.BeforeFacts, sample.AfterFacts, sample.BeforeBytes, sample.AfterBytes)
+	if m.RetentionPrecision != sample.Retention || math.Abs(m.StorageReduction-sample.Reduction) > 1e-9 {
+		t.Fatalf("golden metrics changed: %+v", m)
 	}
 }
 

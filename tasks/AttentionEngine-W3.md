@@ -12,7 +12,7 @@
 - 原 `3f6cc6f` 已取消多 topic 自动合并，本次保留该规则；关联持续 >0.8 且证据重叠的真正合并只消费 W2 生命周期判定。
 - 修正去噪只认出边的问题：既有节点指向当日单事件主题的入边也算关联；空邻居和自指不算关联。聚类和去噪采用同一 topic 空白归一化口径。
 - 双指标的关键事实按去重集合计数；重复事实不增加召回率或事实数。存储缩减保留既有 [0,1] 口径，输入字节数原样返回，增长可从 before/after 识别；后续以实际压缩表示的序列化字节衡量，不冒充 SQLite 文件总量减少。
-- 新增 `tests/attention-engine/M3-golden.json`，仅为 `contract_local` 合成输入；不属于实际 Event→图→Knowledge→人工裁决全流程证据。
+- 新增 `tests/attention-engine/M3-golden.json`，由 `TestConsolidateGoldenInputIsOrderIndependent` 实际读取并验证决策和双指标，仅为 `contract_local` 合成输入；不属于实际 Event→图→Knowledge→人工裁决全流程证据。
 
 首轮定向测试：`TestConsolidateKeepsInboundRelatedTopic` **FAIL**（入边关联丢失）；
 `TestComputeMetricsCountsDistinctKeyFacts` **FAIL**（预期 0.5、实得 0.6667）；
@@ -33,6 +33,10 @@ git diff --check
 公共契约/迁移/HTTP/固定日周期入口仍归 W0。尚未写 app/store，
 每日一次、事务失败回滚、冷启动一致及 LLM 开关全流程一致均 **NOT_RUN**。
 阶段使用 `status/merge_ready`，不发送最终 `worker_done`。
+
+主控已明确回复：当前无稳定 M0 SHA，保持完整 M3 进行中；SHA 发布后主动通知并由
+W1/W2/W4 提供接口。波 A 源码 `881f7fd5411f6655f3a46599fd45d17de7d96cc6` 已 push，
+后续仅补金标准数据的实际读取；定向 `go test ./internal/attention/domain -run TestConsolidateGoldenInputIsOrderIndependent -count=1 -v` **PASS**。
 
 ## 交接（阶段结果 partial，后续 Codex --yolo 承接原写域与 worktree）
 
