@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BrandIcon } from '../../components/BrandIcon';
 import { FilterChips } from '../../components/CollectionOverview';
 import { SectionCard } from '../../components/SectionCard';
@@ -10,15 +10,78 @@ import {
   type WorksFilters, type WorksSnapshot, type WorksWork,
 } from './worksAlbumPresentation';
 import styles from './WorksAlbum.module.css';
+import { ApiError } from '../../api/client';
+import { localProjectsApi } from '../../api/s1';
+import { worksAlbumApi } from './worksAlbumApi';
+import { WorksMetadataForm, WorksDeliveryForm, WorksScanForm, type WorksMetadataEdit } from './WorksCommandForms';
 
-/**
- * Works album ("AI 作品寻回册"). Presentation and view/filter/sort state are
- * client-side; the durable scan/import/attitude/handoff commands are W0-owned
- * HTTP endpoints. Until those land the real mode renders an honest empty state
- * and the fixture path demos all five capabilities.
- */
 export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boolean; query: string; onClearQuery: () => void }) {
-  const snapshot: WorksSnapshot = fixture ? fixtureWorksSnapshot() : { works: [], platforms: [], status: 'unknown', observed_at: null, failures: [] };
+  const [cached, setCached] = useState<WorksSnapshot>({ works: [], platforms: [], status: 'unknown', observed_at: null, failures: [] });
+  const snapshot = fixture ? fixtureWorksSnapshot() : cached;
+  const [loading, setLoading] = useState(!fixture);
+  const [busy, setBusy] = useState(false);
+  const [uncertain, setUncertain] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [modal, setModal] = useState<'' | 'scan' | 'delivery'>('');
+  const [roots, setRoots] = useState<string[]>([]);
+  const [rootsLoading, setRootsLoading] = useState(false);
+  const inFlight = useRef(false);
+  useEffect(() => {
+    if (fixture) return;
+    const controller = new AbortController();
+    void worksAlbumApi.list(controller.signal).then(result => setCached(result.snapshot)).catch(cause => {
+      if (!controller.signal.aborted) setError(`作品清单读取失败：${cause instanceof Error ? cause.message : '未知错误'}`);
+    }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [fixture]);
+  const readCache = async () => {
+    setLoading(true);
+    try { setCached((await worksAlbumApi.list()).snapshot); setError(''); setNotice('已重新读取保存结果'); setUncertain(false); }
+    catch (cause) { setError(`作品清单读取失败：${cause instanceof Error ? cause.message : '未知错误'}`); }
+    finally { setLoading(false); }
+  };
+  const perform = async (action: (confirmed: () => void) => Promise<WorksSnapshot>, message: string) => {
+    if (fixture || inFlight.current || uncertain) return;
+    inFlight.current = true;
+    setBusy(true); setError(''); setNotice('');
+    let confirmed = false;
+    try { setCached(await action(() => { confirmed = true; })); setNotice(message); }
+    catch (cause) {
+      const unknown = !confirmed && (!(cause instanceof ApiError) || ['delivery_unknown', 'internal_error'].includes(cause.code));
+      if (unknown) setUncertain(true);
+      setError(`${confirmed ? '命令已保存，列表读取失败' : unknown ? '请求结果未知，先重新读取保存结果；不会自动重试' : '请求未完成'}：${cause instanceof Error ? cause.message : '未知错误'}`);
+    } finally { inFlight.current = false; setBusy(false); }
+  };
+  const loadRoots = async () => {
+    const result = await localProjectsApi.listRegisteredProjects();
+    if (!result.snapshot.observed_at || result.snapshot.status === 'unknown') throw new Error('登记项目观察尚未知，请等待登记项目发现完成后重新读取');
+    return [...new Set(result.snapshot.projects.map(project => project.root))];
+  };
+  const openScan = async () => {
+    setModal('scan'); setSelectedID(''); setRootsLoading(true);
+    try { setRoots(await loadRoots()); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : '登记项目读取失败'); }
+    finally { setRootsLoading(false); }
+  };
+  const scan = (selectedRoots: string[]) => perform(async () => (await worksAlbumApi.refresh(selectedRoots, crypto.randomUUID())).snapshot, '已保存文件观察');
+  const sync = async () => {
+    try {
+      const approved = await loadRoots();
+      const rootKey = (root: string) => root[1] === ':' ? root.split(String.fromCharCode(92)).join('/').toLowerCase() : root;
+      const albumRoots = new Set(snapshot.works.map(work => rootKey(work.root)));
+      const selectedRoots = approved.filter(root => albumRoots.has(rootKey(root)));
+      if (!selectedRoots.length) { await openScan(); return; }
+      await scan(selectedRoots);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : '登记项目读取失败'); }
+  };
+  const save = (item: WorksWork, edit: WorksMetadataEdit) => perform(async confirmed => {
+    const result = await worksAlbumApi.edit(item, edit, crypto.randomUUID());
+    confirmed();
+    setCached(previous => ({ ...previous, works: previous.works.map(work => work.id === result.work.id ? result.work : work) }));
+    return (await worksAlbumApi.list()).snapshot;
+  }, '人工记录已保存');
+  const disabled = fixture || busy || loading || uncertain;
   const [filters, setFilters] = useState<WorksFilters>(initialWorksFilters);
   const [selectedID, setSelectedID] = useState('');
   const countsKnown = snapshot.observed_at !== null && snapshot.status !== 'unknown';
@@ -31,17 +94,22 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
   const groups = unique(snapshot.works.map(work => work.group));
 
   return <SectionCard title="" tabs={['overview']} padded>
-    <div className={styles.board}>
+    <div className={styles.board} role="region" aria-label="作品寻回册">
       <div className={styles.heading}><h2 className="sr-only">作品寻回册</h2><div className={styles.actions}>
-        <button type="button" className="ac-button compact" disabled={!fixture}>同步最近改动</button>
-        <button type="button" className="ac-button secondary compact" disabled={!fixture}>扫描导入项目</button>
-        <button type="button" className="ac-button secondary compact" disabled={!fixture}>AI 投递 JSON</button>
+        <button type="button" className="ac-button compact" disabled={disabled} onClick={() => { void sync(); }}>同步最近改动</button>
+        <button type="button" className="ac-button secondary compact" disabled={disabled} onClick={() => { void openScan(); }}>扫描导入项目</button>
+        <button type="button" className="ac-button secondary compact" disabled={disabled} onClick={() => { setSelectedID(''); setModal('delivery'); }}>AI 投递 JSON</button>
       </div></div>
+      {!fixture && <div className={styles.actions}><button type="button" className="ac-text-button" disabled={busy || loading} onClick={() => { void readCache(); }}>重新读取保存结果</button>{loading && <span role="status">正在读取已保存作品…</span>}</div>}
+      {error && <p role="alert" className={styles.empty}>{error}</p>}
+      {notice && <p role="status" className={styles.note}>{notice}</p>}
+      {fixture && <p className={styles.note}>示例作品，仅展示；扫描与保存使用真实页面。</p>}
+      {snapshot.failures.length > 0 && <ul aria-label="未完整观察目录" className={styles.note}>{snapshot.failures.map((failure, index) => <li key={`${failure.root}-${index}`}>{failure.root || '扫描来源'} · {failure.reason}</li>)}</ul>}
       <dl className={styles.metrics} aria-label="作品统计">
         {[{ label: '作品', value: snapshot.works.length }, { label: '文件夹', value: snapshot.works.filter(work => work.kind === 'folder').length }, { label: '接力过', value: snapshot.works.filter(work => work.handoff.content.trim()).length }, { label: '最近在动', value: snapshot.platforms.reduce((sum, stat) => sum + stat.recent, 0) }].map(metric => <div key={metric.label}><dd>{!countsKnown || (metric.label === '最近在动' && !recentKnown) ? '未知' : metric.value}</dd><dt>{metric.label}</dt></div>)}
       </dl>
       {snapshot.platforms.length > 0 && <ul className={styles.platforms} aria-label="平台统计">{snapshot.platforms.map(stat => <li key={stat.platform}><b><BrandIcon name={stat.platform} size={18} />{platformLabel(stat.platform)}</b><span>{stat.works} 作品 · {stat.folders} 文件夹</span><span>{stat.handed_over} 接力过 · {snapshot.works.filter(work => work.platform === stat.platform).every(work => work.files.verified && work.files.mtime !== null) ? stat.recent : '未知'} 最近在动</span></li>)}</ul>}
-      <div className={styles.viewbar}><FilterChips label="看的方式" value={filters.view} onChange={value => filter('view', value)} options={[{ value: 'flat', label: '平铺' }, { value: 'platform', label: '按平台' }, { value: 'group', label: '按分组' }, { value: 'timeline', label: '时间线' }]} /><p className={styles.note}>{snapshot.status === 'complete' ? '当前已保存清单' : snapshot.status === 'partial' ? '部分目录暂不可读 · 仅统计已返回作品' : '尚无已保存的作品观察 · 数量未知'}{query ? ` · 页面搜索：${query}` : ''}</p></div>
+      <div className={styles.viewbar}><FilterChips label="看的方式" value={filters.view} onChange={value => filter('view', value)} options={[{ value: 'flat', label: '平铺' }, { value: 'platform', label: '按平台' }, { value: 'group', label: '按分组' }, { value: 'timeline', label: '时间线' }]} /><p className={styles.note}>{snapshot.status === 'complete' ? '当前已保存清单' : snapshot.status === 'partial' ? '部分目录暂不可读 · 仅统计已返回作品' : snapshot.status === 'stale' ? '上次已保存观察 · 当前刷新未完成' : '尚无已保存的作品观察 · 数量未知'}{query ? ` · 页面搜索：${query}` : ''}</p></div>
       <div className={styles.filters}>
         <div className={styles.controls}>
           <label>搜索作品<input aria-label="搜索作品" type="search" value={filters.search || query} placeholder="名称、平台、目录或交接手册" onChange={event => filter('search', event.target.value)} /></label>
@@ -52,11 +120,11 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
         </div>
         <div className={styles.result}><span>{countsKnown ? `共 ${visible.length} 个已保存作品` : '作品数量未知'}</span><label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={filters.includeHidden} onChange={event => filter('includeHidden', event.target.checked)} />显示已隐藏</label><button type="button" className="ac-text-button" onClick={() => { setFilters(initialWorksFilters); onClearQuery(); }}>清除筛选</button></div>
       </div>
-      {!snapshot.works.length && <p role="status" className={styles.empty}>{fixture ? '没有作品。' : '尚无已保存的作品观察。扫描仅限已批准的登记项目，当前 API 接入待完成。'}</p>}
+      {!snapshot.works.length && <p role="status" className={styles.empty}>{fixture ? '没有作品。' : '尚无已保存的作品观察。可扫描已批准的登记项目，或保存 JSON 投递线索。'}</p>}
       {worksSections(visible, filters.view).map(section => <section key={section.label} aria-label={section.label}>
         {filters.view !== 'flat' && <h3 className={styles.groupTitle}>{section.label} <span>{section.works.length}</span></h3>}
         <ul className={`${styles.cards} ${filters.view === 'timeline' ? styles.timeline : ''}`}>{section.works.map(work => <li key={work.id}>
-          <button type="button" data-work-id={work.id} className={styles.card} onClick={() => setSelectedID(work.id)} aria-label={`查看作品 ${work.name}`}>
+          <button type="button" data-work-id={work.id} className={styles.card} onClick={() => { setModal(''); setSelectedID(work.id); }} aria-label={`查看作品 ${work.name}`}>
             <div className={styles.cardHeader}><h3>{work.name}</h3>{work.hidden && <span className={styles.tag}>已隐藏</span>}</div>
             <div><span className={`${styles.badge} ${work.files.verified ? '' : styles.unverified}`}>{fileVerifiedLabel(work.files)}</span></div>
             <div className={styles.clients}><span><BrandIcon name={work.platform} size={18} />{platformLabel(work.platform)}</span></div>
@@ -68,7 +136,11 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
         </li>)}</ul>
       </section>)}
     </div>
-    {selected && <DetailPanel title={`作品 · ${selected.name}`} onClose={() => setSelectedID('')}><WorksDetail item={selected} fixture={fixture} /></DetailPanel>}
+    {modal && <DetailPanel title={modal === 'scan' ? '扫描导入项目' : 'AI 投递 JSON'} onClose={() => setModal('')}>
+      {error && <><p role="alert" className={styles.empty}>{error}</p><button type="button" className="ac-text-button" disabled={busy || loading} onClick={() => { void readCache(); }}>重新读取保存结果</button></>}{notice && <p role="status">{notice}</p>}
+      {modal === 'scan' ? <>{rootsLoading && <p role="status">正在读取登记项目…</p>}<WorksScanForm roots={roots} busy={disabled || rootsLoading} submit={scan} /><button type="button" className="ac-text-button" disabled={busy || rootsLoading} onClick={() => { void openScan(); }}>重新读取登记项目</button></> : <WorksDeliveryForm busy={disabled} submit={content => perform(async () => (await worksAlbumApi.delivery(content, crypto.randomUUID())).snapshot, 'JSON 投递已保存，文件仍待核实')} />}
+    </DetailPanel>}
+    {selected && <DetailPanel title={`作品 · ${selected.name}`} onClose={() => setSelectedID('')}><WorksDetail item={selected} fixture={fixture} />{!fixture && <WorksMetadataForm key={selected.id} item={selected} busy={disabled} save={edit => save(selected, edit)} />}{error && <><p role="alert" className={styles.empty}>{error}</p><button type="button" className="ac-text-button" disabled={busy || loading} onClick={() => { void readCache(); }}>重新读取保存结果</button></>}{notice && <p role="status">{notice}</p>}</DetailPanel>}
   </SectionCard>;
 }
 
@@ -76,11 +148,11 @@ function WorksDetail({ item, fixture }: { item: WorksWork; fixture: boolean }) {
   return <>
     <Field label="平台"><BrandIcon name={item.platform} size={18} />{platformLabel(item.platform)}</Field>
     <Field label="来源路径"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)', overflowWrap: 'anywhere' }}>{item.files.source_path || '未提供'}</code></Field>
-    <Field label="文件核实"><span className={`${styles.badge} ${item.files.verified ? '' : styles.unverified}`}>{fileVerifiedLabel(item.files)}</span>{item.files.verified ? ` · 最近改动 ${item.files.mtime ? formatDateTime(item.files.mtime) : '未知'} · ${item.files.file_count} 个文件` : ''}</Field>
+    <Field label="文件核实"><span className={`${styles.badge} ${item.files.verified ? '' : styles.unverified}`}>{fileVerifiedLabel(item.files)}</span>{item.files.verified ? ` · 最近改动 ${item.files.mtime ? formatDateTime(item.files.mtime) : '未知'} · ${item.files.file_count} 个文件` : ' · 文件数量未知'}</Field>
     <Field label="态度">{attitudeLabel(item.attitude)}</Field>
     <Field label="分组">{item.group || <span style={{ color: 'var(--color-muted)' }}>未分组</span>}</Field>
     <Field label="交接手册">{item.handoff.content || '尚无交接手册'}</Field>
     <Field label="手册来源">{item.handoff.content ? handoffSourceLabel(item.handoff.source) + (item.handoff.updated_at ? ` · 更新时间 ${formatDateTime(item.handoff.updated_at)}` : '') : '—'}</Field>
-    {fixture && <p className={styles.note}>保存态度、分组、交接手册与隐藏状态由 W0 端点持久化；当前为示例展示。</p>}
+    {fixture && <p className={styles.note}>当前为示例展示。真实页面可保存态度、分组、交接手册与隐藏状态。</p>}
   </>;
 }

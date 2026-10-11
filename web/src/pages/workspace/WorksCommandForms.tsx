@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { attitudeOptions, type WorksWork } from './worksAlbumPresentation';
+import { attitudeOptions, type WorksAttitude, type WorksWork } from './worksAlbumPresentation';
 import styles from './WorksAlbum.module.css';
 
 export type WorksMetadataEdit =
-  | { kind: 'attitude'; value: string }
+  | { kind: 'attitude'; value: WorksAttitude }
   | { kind: 'group'; value: string }
   | { kind: 'handoff'; value: string }
   | { kind: 'hidden'; value: boolean };
@@ -19,7 +19,7 @@ export function WorksMetadataForm({ item, busy, save }: {
   const [group, setGroup] = useState(item.group);
   const [handoff, setHandoff] = useState(item.handoff.content);
   return <div className={styles.commandForms}>
-    <form onSubmit={event => { event.preventDefault(); void save({ kind: 'attitude', value: attitude }); }}>
+    <form onSubmit={event => { event.preventDefault(); if (attitude) void save({ kind: 'attitude', value: attitude }); }}>
       <label>记录态度<select value={attitude} onChange={event => setAttitude(event.target.value as WorksWork['attitude'])} disabled={busy} required>
         <option value="" disabled>请选择态度</option>{attitudeOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select></label>
