@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-11 22:00 用户更新：后续统一 `codex --yolo`，覆盖此前 OpenCode 客户端决定。已核 Codex CLI 0.162.0 接受该参数；按轨先提交当前阶段、结算并归档旧 Worker，再于原工作树启动 Codex，写域及 Git 历史保留。W1–W5 已接续为 Codex / gpt-6.1-sol（实际 runtime projection），M0/W6/W7 正在收束交接。W5 旧终端由运行时标记 user_takeover，未强制关闭，已结算 idle。
+
 用户要求 Codex 接替原 OpenCode 主控。原主控终端 `term_462ee860-933e-43d7-94cb-491d01617fcf` 已中断；原 Run `run_19a0b1268e5a` 绑定到 Codex `term_1adf40a6-ef79-4efa-b602-7b55173624e6`（consumer_generation=2）。八轨原 Task/Dispatch/工作树保留。八个 Worker 均卡在读取用户指定任务书的权限弹窗，单次读取已放行；此前 ready/input_accepted 不代表开发已开始。
 
 实际 Worker 分支使用 Orca 自动名称 `songconmaisaix31-design/attention-engine-w0-core`、`-w1-events`、`-w2-engine`、`-w3-sleep`、`-w4-knowledge`、`-w5-experience`、`-w6-mcp`、`-w7-works`。下表 `attention-engine/wN-*` 为原计划名称，消费提交时以实际分支和 owner 发布的精确 SHA 为准，不重建分支。
