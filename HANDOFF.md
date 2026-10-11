@@ -1,8 +1,20 @@
 # Astrocyte 主控交接
 
+## 当前入口：规范root浏览器断言返修（2026-10-12 00:09）
+
+最新push92a2ded；CI38153179867 Ubuntu全PASS/226浏览器PASS30SKIP，Windowscheck/build PASS但E2E224/2/30，两失败仅s1-projects.spec.ts:33把输入短名RUNNER~1与返回规范长名runneradmin当字串相等。原W0新task_e337d98251d3/ctx_87396a08fb27实际工作，唯一web/e2e/s1-projects.spec.ts与自己报告，以Node独立realpath验证、assert请求原样/SQLite规范root/重启/B-C/获准文件，不改业务/其他spec/共享helper。等待原ownerSource/Report/settled后交同一集成Agent新Task普通合；root定向复验/push最终CI，无业务改动不重复build或真实媒体/私源。首次完整E2E失败log在TEMP已保留，先前“只剩CI”是当时状态，现Windows尚未整套通过。
+
+## 最新交付入口（2026-10-11 23:52）
+
+先读STATUS顶部。交付分支attention-engine/v1-20261011，最终业务普通合并 `56c879a1a7d6b023f7124d29dde69b4b44cc7605` 已消费W1修复集成REPORTe935fba；八轨报告与三组路径返修均普通祖先。root对此树完整check/build EXIT0，原0e493默认E2E226 PASS/30 SKIP，UI未变；最终组合push自动CI结果尚待，旧Windows首RED不覆盖。所有Dispatch已settled、外部终端retained idle，继续Codex--yolo；新领域问题按原owner/工作树新Task，无需重建整组。
+
+保留真实M1旧task_13ac51983837 failed与元数据待授权，fixture路径修复成功不改变它；若用户答范围，沿此原Task retry。工程参数/知识语义未答不代选，sqlite-vec CUT，官方MCP/native live及真实七日用户对照未执行。没有合main或升级个人预览，没有把验收库拷入个人库。后续仅待新的自动CI结果与用户/人工事项。
+
 ## 当前入口：W1 fixture 路径返修（2026-10-11 23:40）
 
 最新push ebe9a758；CI38152009091 Windows仍FAIL，仅M1原生格式fixture路径比较短/长名误判symlink，旧agents/scanner问题已PASS；日志 `%TEMP%/astrocyte-ci-38152009091-windows-first.log`。Ubuntucheck/race/build PASS，E2E运行。原W1新task_153a01e3d7ee/ctx_d533ec61be20沿Codex--yolo原工作树/分支只改events/**、M1测试和报告，修selected-file合法8.3别名，保留真实redirect/范围/读量拒绝。不是旧真实M1 task retry，权限未答/旧0eligible RED保持。等原owner精确SOURCE/REPORT/settled，再派同一集成Agent新Task普通合/root最终复验/push；不得从fixture绿冒称真实M1完成。
+
+23:47 W1新限定Task已succeeded，SOURCE8de573a/REPORT9ef5f66已push；旧真实M1仍failed。原集成Agent新task_2a875959ca15/ctx_bd2dcbcb9f37 已实际开始限定普通合并及M1/events复验；root最终check/build/push/CI稍后。旧CI38152009091 Ubuntu全PASS、Windows上述唯一M1 fixture FAIL，不以旧场代替新修复结果。
 
 ## 当前交付入口（2026-10-11 23:36）
 

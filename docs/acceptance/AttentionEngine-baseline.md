@@ -77,3 +77,15 @@ W0 `425d965` / REPORT19d1c7b、W7 `38c5bde` / REPORTd014038由原唯一集成Age
 root此树独立串行 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` EXIT0（Go全包/格式/vet、依赖、27包边界、275契约+生成漂移、实际API14、TS/lint/Vitest90、diff）；随后 `pnpm build` 同环境 EXIT0，实际三可执行文件+web。日志 `%TEMP%/astrocyte-root-windows-final-check-20261011-2334.log`、`astrocyte-root-windows-final-build-20261011-2335.log`。没有重复真实UI/媒体/native；原defaultE2E226/30仍属于旧0e493，后续远程CI新树结果另记，当前不提前报告通过。
 
 23:40 push `ebe9a758b05d73363cc8630c187208c41253321d` 自动CI38152009091：Windows已通过agents/worksscan及其余Go包，但新合入的M1 fixture 首RED `TestM1NativeFormatFixtureReplayAccounting`（M1_native_replay_test.go:38）count0/partialfalse/error="replay file uses symbolic links"。events/native_reader.go的EvalSymlinks与原字符串仍误判RUNNER~1别名；不是原真实M1 metadata授权阻塞，也不能因本机长目录checkPASS而忽略。本机之前FIRST RED及真实0eligible保持。完整已完成Windows job log通过GitHub job日志API只读保存 `%TEMP%/astrocyte-ci-38152009091-windows-first.log`，最初run整体未结束导致普通log-failed请求不可用的消息另存 `astrocyte-ci-38152009091-log-request-before-completion.txt`（不是失败stderr）。Ubuntu此树check/race/build PASS，E2E仍运行，整体run不能称通过。原W1新限定fixture路径Task，禁止私源扩权，修后定向和新树CI另记。
+
+## W1 fixture 返修后最终 root 检查（2026-10-11 23:52）
+
+旧CI38152009091最终Ubuntu全流程PASS、Windows上述M1 fixture唯一Go失败，结论属于ebe9a758。原W1限定修复SOURCE `8de573ac5e1dff4ad703fe7fded7ec70c111130a` / REPORT `9ef5f6667ce6067d39a3012435e8b35526e19568` 已push并succeeded：14实际8.3/case别名、7真实junction拒绝、outside-root/错项目拒绝通过，M1 9PASS/1metadataSKIP；普通Windows symlink三子例缺privilege仍NOT_RUN/SKIP。原真实M1 task failed/0eligible/待授权不变。原唯一集成Agent SOURCE `5dfa4cb0cda4467f09f77c7c3b62304a1c938caa` / REPORT `e935fba0758beb33471c89ca11038a06f32eee89` 普通消费并定向events/M1 PASS，仅Linux compile-only，不称Linux执行。
+
+root普通合REPORT为 `56c879a1a7d6b023f7124d29dde69b4b44cc7605`，再次核对八轨最终报告+三组路径返修报告全部普通祖先。root此精确业务树独立完整 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` EXIT0（Go/格式/vet/依赖/27包边界/275契约+生成漂移/实际API14/TS/lint/Vitest90/diff），随后 `pnpm build` 同环境 EXIT0，实际三二进制+web。日志 `%TEMP%/astrocyte-root-M1-final-check-20261011-2349.log`、`astrocyte-root-M1-final-build-20261011-2351.log`。原默认E2E226/30仍属0e493、UI未变；没有重复真实媒体/私人native/作品写入，新组合push后自动CI另记，当前不提前宣称通过。
+
+## 最终组合远程 Windows E2E 首错（2026-10-12 00:09）
+
+push92a2ded59921608f5b6e718531128c4586dc1aee的CI38153179867完整结束：Ubuntu全check/race/build/E2E PASS（226PASS/30SKIP，3.9m），完整原件 `%TEMP%/astrocyte-ci-38153179867-ubuntu-pass.log`；Windows check/build PASS，E2E224PASS/2FAIL/30SKIP（5.4m）。两失败只s1-projects.spec.ts:33的1920/1280，expect(project.root).toBe(projectRoot)把短输入RUNNER~1与生产CanonicalRoot既有EvalSymlinks长输出runneradmin错当不同目录；assert在B/C/上下文/重启之前中止，这两例后续阶段NOT_RUN。此前本机长名称下全套226PASS不覆盖此真实短名称首错，Ubuntu也不能冲掉Windows失败。
+
+失败step完整原件 `%TEMP%/astrocyte-ci-38153179867-e2e-first-failed.log` 保留；第一次job日志读取EOF另存windows-log-request-EOF.txt，不充作失败stderr，进行中的blob未就绪404也仅log请求状态。原W0沿独占单spec+报告新Task，用独立Node realpath及真实8.3 owned fixture核对规范目录、保留POST输入原样/SQLite/重启/许可与文本断言，禁止改生产语义、TEMP或mock掩盖。只做两视口定向和type/lint，后续原集成/root消费与最终自动CI另记，不重复无改动的业务build或真实媒体/native。

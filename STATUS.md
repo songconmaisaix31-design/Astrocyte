@@ -1,10 +1,26 @@
 # Astrocyte 当前状态
 
+## Windows 浏览器规范路径断言返修（2026-10-12 00:09）
+
+root已push92a2ded，CI38153179867：Ubuntu check/race/build/E2E全PASS（226PASS/30SKIP）；Windows check/build PASS，E2E224PASS/2FAIL/30SKIP。两个FAIL均s1-projects.spec.ts:33同一登记场景的两视口，API返回正确长名称runneradmin，断言仍期待输入RUNNER~1短字串；生产CanonicalRoot原本返回规范目录，不能改业务迎合断言。首次失败日志 `%TEMP%/astrocyte-ci-38153179867-e2e-first-failed.log` 与Ubuntu完整日志保留，不覆盖先前Go/M1首RED。
+
+原W0新 `task_e337d98251d3` / `ctx_87396a08fb27` 已实际开始，沿Codex--yolo原终端/工作树/分支，只改该E2E spec及自己的报告；用Node独立filesystem realpath核对同目录、保留用户POST原样路径/实际SQLite/B-C许可/获准README/重启/不开模型，真实8.3 fixture复现后两视口定向验证。不改业务或TEMP、不松断言。此测试修复后由原集成Agent/root定向复验与最终push/CI；当前整套Windows不能称通过，真实M1/用户策略仍待答。
+
+## 最新交付树本机通过（2026-10-11 23:52）
+
+交付分支 `attention-engine/v1-20261011`，最终业务普通合并 `56c879a1a7d6b023f7124d29dde69b4b44cc7605` 消费W1路径返修集成REPORT `e935fba0758beb33471c89ca11038a06f32eee89`；八轨报告与W0/W7/W1三份路径返修报告均为精确普通祖先。全部开发/返修/唯一集成使用Codex--yolo并已结算，外部终端retained idle。认知三条链、五MCP操作、Sleep CLI、项目隔离知识/经验及人工关口、Works五能力和链1事件源已组装；真实M1验收仍未通过，不宣称完整产品完成。
+
+root 新树完整 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` / `pnpm build` EXIT0：Go/27包架构/275契约/实际API14/前端90，API/MCP/Sleep三可执行文件和web。三包真实8.3名称与junction/secret/越界拒绝定向验证通过；本机普通Windows symlink创建仍权限不足NOT_RUN/SKIP。原0e493默认E2E226 PASS/30 SKIP且UI未改变；旧ebe9a758的CI38152009091 Ubuntu全PASS、Windows仅M1 fixture失败，原件保持。最终组合push自动CI尚待，结果另记。
+
+剩余真实限制：原M1个人缓存0 eligible/首RED与CC/Codex原始元数据授权未答；工程默认、固化新版本再确认、检索年龄策略未答；sqlite-vec按任务红线CUT，当前topic_keyword降级。官方MCP客户端互通/native task_live、真实七日用户对照、合main、个人预览升级未执行；没有重发paid/UNKNOWN、没有复制验收库。详情见 [本轮验收](docs/acceptance/AttentionEngine-baseline.md)、[集成交接](tasks/AttentionEngine-integration.md)、[用户待答](docs/QUESTIONS.md)。
+
 ## 自动 CI 下一层 M1 路径首错（2026-10-11 23:40）
 
 已push `ebe9a758b05d73363cc8630c187208c41253321d`，CI38152009091 Windows check仍FAIL：agents/worksscan及其余Go包已PASS，仅 `TestM1NativeFormatFixtureReplayAccounting` 报 `count=0 partial=false err=replay file uses symbolic links`，是events/native_reader.go另一处短长路径比较；Ubuntu此树check/race/build已PASS，E2E运行。完整Windows job日志 `%TEMP%/astrocyte-ci-38152009091-windows-first.log` 保留，不覆盖第一38150022874。
 
 原W1新限定Task `task_153a01e3d7ee` / Dispatch `ctx_d533ec61be20` 实际开始，Codex--yolo原工作树/分支，唯一events/**、M1测试和自己报告；不改原真实M1 failed任务、不扩大私人metadata范围、不放宽符号链接/登记根/读量边界。此fixture修复后沿原集成Agent/root复验；本机此前最终check/build PASS不等于新远程通过，整体产品未完成。
+
+23:47 W1限定修复已succeeded并push SOURCE8de573a/REPORT9ef5f66，14真实别名/7junction拒绝与M1本地9PASS1SKIP，旧真实M1失败仍保持。唯一原集成Agent新Task `task_2a875959ca15` / Dispatch `ctx_bd2dcbcb9f37` 实际开始普通合root60f8a27及W1精确REPORT，仅events/M1定向后交root新树最终复验/push。CI38152009091已结束：Ubuntu全流程PASS、Windows上述唯一M1 fixture FAIL；不是新W1修复后的CI结果。
 
 ## 本轮最终树已合入、本机通过（2026-10-11 23:36）
 
