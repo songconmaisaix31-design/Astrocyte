@@ -9,6 +9,12 @@
 
 实际 Worker 分支使用 Orca 自动名称 `songconmaisaix31-design/attention-engine-w0-core`、`-w1-events`、`-w2-engine`、`-w3-sleep`、`-w4-knowledge`、`-w5-experience`、`-w6-mcp`、`-w7-works`。下表 `attention-engine/wN-*` 为原计划名称，消费提交时以实际分支和 owner 发布的精确 SHA 为准，不重建分支。
 
+W2/W5 原 Task 提前以设计交付结束：`8a4db07` / `22fef44` 只算波 A 文档，M2/M5 尚未实现。原终端已复用为 W2 `task_1efa13b6e981` / `ctx_ad864daccaa9`、W5 `task_57f40b160754` / `ctx_3f9743f7e989`，原已结算 Dispatch 不再使用。
+
+写域补充：所有 `*_contract*.go` 归 W0，W1 event/signal 与 W2 engine 通配符明确排除契约文件。阶段设计交付用 status/merge_ready，业务验收完成后才 worker_done。Go 编译使用进程环境 `GOFLAGS=-p=1 GOMAXPROCS=2`，不修改宿主分页设置。
+
+参数待答：衰减 λ、信号强度、主题密度/分裂及 confidence 冲突阈值的工程初值已一次集中询问，未答时只实现参数化内核，不冻结默认值。α=0.3、A_floor=0.05、θ=0.15、合并关联>0.8、90 天冷归档沿任务书。momentum 不额外改写 A(t) 公式。
+
 ## 北极星（一切裁决）
 核心算法是持续演化的个人认知模型：观察行为→注意力；注意力→组织知识；经验→提升 Agent 能力。每行代码须能回答"这行代码让 'Astrocyte 如何知道什么值得关注' 更可回答了吗"。
 
