@@ -24,6 +24,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
@@ -184,22 +185,25 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
-		GitHubRepositories: workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
-		Tracking:           attention,
-		LocalProjects:      localProjects,
-		RegisteredProjects: localProjects,
-		Attention:          attention,
-		Foundation:         foundation.NewAttentionService(schemaVersion),
-		Materials:          attention,
-		Opportunities:      attention,
-		Projects:           workspaceapp.NewProjectService(),
-		LocalAgents:        workspaceapp.NewLocalAgentService(inventory, registry),
-		Proposals:          workspaceapp.NewProposalService(),
-		Sessions:           workspaceapp.NewSessionService(),
-		Missions:           swarmapp.NewMissionService(),
-		PaperSearch:        attention,
-		Progress:           workspaceapp.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry),
-		Works:              workspaceapp.NewWorksService(db, worksscan.NewScanner(), worksscan.Delivery{}, nil, workspaceapp.WorksServiceOptions{}),
+		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
+		Tracking:             attention,
+		LocalProjects:        localProjects,
+		RegisteredProjects:   localProjects,
+		Attention:            attention,
+		Foundation:           foundation.NewAttentionService(schemaVersion),
+		Materials:            attention,
+		Opportunities:        attention,
+		Projects:             workspaceapp.NewProjectService(),
+		LocalAgents:          workspaceapp.NewLocalAgentService(inventory, registry),
+		Proposals:            workspaceapp.NewProposalService(),
+		Sessions:             workspaceapp.NewSessionService(),
+		Missions:             swarmapp.NewMissionService(),
+		PaperSearch:          attention,
+		Progress:             workspaceapp.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry),
+		Works:                workspaceapp.NewWorksService(db, worksscan.NewScanner(), worksscan.Delivery{}, events.NewWorksEventSink(attentionapp.NewPendingEventService(sqlite.NewEventRepository(db)), nil), workspaceapp.WorksServiceOptions{}),
+		KnowledgeGovernance:  attentionapp.NewKnowledgeService(sqlite.NewKnowledgeRepository(sqlite.NewEngineRepository(db)), attentionapp.KnowledgeServiceOptions{}),
+		ExperienceGovernance: &experienceHTTPBridge{db: db, events: sqlite.NewEventRepository(db), projects: localProjects, registered: localProjects},
+		ConflictGate:         attentionapp.NewDynamicsEngine(sqlite.NewDynamicsRepository(db), attentionapp.DynamicsOptions{}),
 	}
 	if automatic, ok := any(attention).(attentionapp.AutomaticDistillationService); ok {
 		services.Automatic = automatic

@@ -113,7 +113,11 @@ func NewWorksService(repo WorksRepository, scan WorksScanSource, delivery WorksD
 }
 
 func workError(code apierrors.Code, message string) error {
-	return &apierrors.ServiceError{Code: code, Message: message, RequiredAction: "review_works_album_input"}
+	action := "review_works_album_input"
+	if code == apierrors.DeliveryUnknown {
+		action = "reload_works_without_replay"
+	}
+	return &apierrors.ServiceError{Code: code, Message: message, RequiredAction: action}
 }
 
 // ListWorks is a pure cache read: it never scans or emits. Statistics are
@@ -130,6 +134,10 @@ func (s *worksService) ListWorks(ctx context.Context, c domain.Caller) (domain.W
 }
 
 func (s *worksService) RefreshWorks(ctx context.Context, c domain.Caller, cmd WorksRefreshCommand) (domain.WorksSnapshot, error) {
+	return worksRequest(ctx, s, c, "RefreshWorks", cmd, func() (domain.WorksSnapshot, error) { return s.refreshWorks(ctx, c, cmd) })
+}
+
+func (s *worksService) refreshWorks(ctx context.Context, c domain.Caller, cmd WorksRefreshCommand) (domain.WorksSnapshot, error) {
 	if err := human(c); err != nil {
 		return domain.WorksSnapshot{}, err
 	}
@@ -168,11 +176,17 @@ func (s *worksService) RefreshWorks(ctx context.Context, c domain.Caller, cmd Wo
 	if err := s.repo.SaveWorksSnapshot(ctx, snapshot); err != nil {
 		return snapshot, err
 	}
-	s.emit(ctx, domain.WorksSnapshot{Works: works}, domain.WorkEventSynced)
+	if err := s.emit(ctx, domain.WorksSnapshot{Works: works}, domain.WorkEventSynced); err != nil {
+		return snapshot, err
+	}
 	return s.withMetadata(ctx, snapshot)
 }
 
 func (s *worksService) ImportWorksDelivery(ctx context.Context, c domain.Caller, cmd WorksDeliveryCommand) (domain.WorksSnapshot, error) {
+	return worksRequest(ctx, s, c, "ImportWorksDelivery", string(cmd.Content), func() (domain.WorksSnapshot, error) { return s.importWorksDelivery(ctx, c, cmd) })
+}
+
+func (s *worksService) importWorksDelivery(ctx context.Context, c domain.Caller, cmd WorksDeliveryCommand) (domain.WorksSnapshot, error) {
 	if err := human(c); err != nil {
 		return domain.WorksSnapshot{}, err
 	}
@@ -194,21 +208,28 @@ func (s *worksService) ImportWorksDelivery(ctx context.Context, c domain.Caller,
 	if err := s.repo.SaveWorksSnapshot(ctx, snapshot); err != nil {
 		return snapshot, err
 	}
-	s.seedDeliveryMetadata(ctx, works)
-	s.emit(ctx, domain.WorksSnapshot{Works: works}, domain.WorkEventImported)
+	if err := s.seedDeliveryMetadata(ctx, works); err != nil {
+		return snapshot, workError(apierrors.DeliveryUnknown, "works observation saved but delivery metadata outcome is unknown; reload without replay")
+	}
+	if err := s.emit(ctx, domain.WorksSnapshot{Works: works}, domain.WorkEventImported); err != nil {
+		return snapshot, err
+	}
 	return s.withMetadata(ctx, snapshot)
 }
 
 // seedDeliveryMetadata captures AI-delivered hints (attitude, group, handoff) as
 // initial metadata only when no human metadata exists yet. A human override is
 // never overwritten, and a delivered handoff is marked generated.
-func (s *worksService) seedDeliveryMetadata(ctx context.Context, works []domain.Work) {
+func (s *worksService) seedDeliveryMetadata(ctx context.Context, works []domain.Work) error {
 	for _, work := range works {
 		if work.Attitude == "" && work.Group == "" && work.Handoff.Content == "" {
 			continue
 		}
 		existing, err := s.repo.LoadWorkMetadata(ctx, work.ID)
-		if err != nil || existing.Revision > 0 {
+		if err != nil {
+			return err
+		}
+		if existing.Revision > 0 {
 			continue
 		}
 		stamp := s.clock().UTC()
@@ -217,9 +238,10 @@ func (s *worksService) seedDeliveryMetadata(ctx context.Context, works []domain.
 			metadata.Handoff = domain.WorkHandoff{Content: work.Handoff.Content, UpdatedAt: &stamp, Source: domain.HandoffSourceGenerated}
 		}
 		if err := s.repo.SaveWorkMetadata(ctx, work.ID, metadata, 0); err != nil {
-			continue
+			return err
 		}
 	}
+	return nil
 }
 
 // mergeObservations replaces observations for the same identity while keeping
@@ -355,11 +377,20 @@ func (s *worksService) saveMetadata(ctx context.Context, c domain.Caller, id str
 		return domain.Work{}, err
 	}
 	next.Apply(&work)
-	s.emitWork(ctx, work, eventKind)
+	if err := s.emitWork(ctx, work, eventKind); err != nil {
+		return work, err
+	}
 	return work, nil
 }
 
 func (s *worksService) SetWorkAttitude(ctx context.Context, c domain.Caller, id string, cmd WorkAttitudeCommand) (domain.Work, error) {
+	return worksRequest(ctx, s, c, "SetWorkAttitude", struct {
+		ID      string
+		Command WorkAttitudeCommand
+	}{id, cmd}, func() (domain.Work, error) { return s.setWorkAttitude(ctx, c, id, cmd) })
+}
+
+func (s *worksService) setWorkAttitude(ctx context.Context, c domain.Caller, id string, cmd WorkAttitudeCommand) (domain.Work, error) {
 	if err := human(c); err != nil {
 		return domain.Work{}, err
 	}
@@ -373,6 +404,13 @@ func (s *worksService) SetWorkAttitude(ctx context.Context, c domain.Caller, id 
 }
 
 func (s *worksService) SetWorkGroup(ctx context.Context, c domain.Caller, id string, cmd WorkGroupCommand) (domain.Work, error) {
+	return worksRequest(ctx, s, c, "SetWorkGroup", struct {
+		ID      string
+		Command WorkGroupCommand
+	}{id, cmd}, func() (domain.Work, error) { return s.setWorkGroup(ctx, c, id, cmd) })
+}
+
+func (s *worksService) setWorkGroup(ctx context.Context, c domain.Caller, id string, cmd WorkGroupCommand) (domain.Work, error) {
 	if err := human(c); err != nil {
 		return domain.Work{}, err
 	}
@@ -386,6 +424,13 @@ func (s *worksService) SetWorkGroup(ctx context.Context, c domain.Caller, id str
 }
 
 func (s *worksService) SetWorkHandoff(ctx context.Context, c domain.Caller, id string, cmd WorkHandoffCommand) (domain.Work, error) {
+	return worksRequest(ctx, s, c, "SetWorkHandoff", struct {
+		ID      string
+		Command WorkHandoffCommand
+	}{id, cmd}, func() (domain.Work, error) { return s.setWorkHandoff(ctx, c, id, cmd) })
+}
+
+func (s *worksService) setWorkHandoff(ctx context.Context, c domain.Caller, id string, cmd WorkHandoffCommand) (domain.Work, error) {
 	if err := human(c); err != nil {
 		return domain.Work{}, err
 	}
@@ -400,6 +445,13 @@ func (s *worksService) SetWorkHandoff(ctx context.Context, c domain.Caller, id s
 }
 
 func (s *worksService) SetWorkHidden(ctx context.Context, c domain.Caller, id string, cmd WorkHiddenCommand) (domain.Work, error) {
+	return worksRequest(ctx, s, c, "SetWorkHidden", struct {
+		ID      string
+		Command WorkHiddenCommand
+	}{id, cmd}, func() (domain.Work, error) { return s.setWorkHidden(ctx, c, id, cmd) })
+}
+
+func (s *worksService) setWorkHidden(ctx context.Context, c domain.Caller, id string, cmd WorkHiddenCommand) (domain.Work, error) {
 	if err := human(c); err != nil {
 		return domain.Work{}, err
 	}
@@ -409,15 +461,18 @@ func (s *worksService) SetWorkHidden(ctx context.Context, c domain.Caller, id st
 	}, domain.WorkEventHidden)
 }
 
-func (s *worksService) emit(ctx context.Context, snapshot domain.WorksSnapshot, kind string) {
+func (s *worksService) emit(ctx context.Context, snapshot domain.WorksSnapshot, kind string) error {
 	for _, work := range snapshot.Works {
-		s.emitWork(ctx, work, kind)
+		if err := s.emitWork(ctx, work, kind); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (s *worksService) emitWork(ctx context.Context, work domain.Work, kind string) {
+func (s *worksService) emitWork(ctx context.Context, work domain.Work, kind string) error {
 	if s.events == nil {
-		return
+		return nil
 	}
 	payload, _ := json.Marshal(work)
 	event := domain.WorkEvent{
@@ -427,5 +482,8 @@ func (s *worksService) emitWork(ctx context.Context, work domain.Work, kind stri
 	if kind == domain.WorkEventSynced || kind == domain.WorkEventVerified {
 		event.Source = domain.WorkEventSourceMachine
 	}
-	_ = s.events.EmitWorkEvent(ctx, event)
+	if err := s.events.EmitWorkEvent(ctx, event); err != nil {
+		return workError(apierrors.DeliveryUnknown, "work saved but event delivery outcome is unknown; reload without replay")
+	}
+	return nil
 }
