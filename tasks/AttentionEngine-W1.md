@@ -5,6 +5,21 @@
 当前 Task `task_13ac51983837` / Dispatch `ctx_62837e7857f0`；客户端 Codex，沿启动配置执行，没有启动其他 Agent。
 协调者确认运行配置为 Codex / gpt-6.1-sol / YOLO。
 
+## 本 Dispatch 最终交接（2026-10-11 22:46，Asia/Shanghai）
+
+root 在外部权限边界明确要求收束为 `worker_done outcome=failed`，不是成功验收或实现回滚。
+业务 SOURCE `f3460ef785cdea0ecaf443628b82f573d05b9155`；报告之前 HEAD `b51c036fb1033cbeb637a848031459cf33d60869`；本报告提交也会 push。
+已完成：Event→Signal 固定权重、未知观测 pending、原 raw BLOB 与稳定回执 ID、SQLite 原子/冷重开/重复回放、既有 S1 应用真实事件路径、
+提交后 W5 capture + typed committed IDs、W3 同事务读侧、W6 入账/错误 Handoff、pending-only WorksEventSink。
+受影响五包测试及构建 PASS；M1 本地 9 PASS / 1 SKIP，§5.2 11 条权重样本全对。
+所用命令 `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/adapters/events ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./tests/attention-engine`，
+构建 `go build ./internal/adapters/events ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite`；未执行 Node/浏览器/外部模型请求。
+真实选定缓存第一次 RED：两客户端 eligible metadata 均 0；root 另行确认该 exact 项目 contributors 为空、cacheStatus=partial；没有扩大读取或重跑已确认空场。
+真实两客户端工具轨迹回放 NOT_DONE，精确原始元数据范围/样本待用户答复；private message/prompt/file body/credential 读取未执行。
+M1 总体未验收，产品强度仍未决定；已有 map constructor 只接受显式 scale，pending-only ctor 不指定 scale。
+后续由 root 在用户回答后沿原 owner/worktree 新 Dispatch 接续真实样本验收；不从局部绿推断整体 Attention Engine/M1 完成。
+W0 最终应用组装、root 综合验收/合并仍归协调者与原 owner，本轨没有跨域修改。
+
 ## 当前状态（2026-10-11）
 
 M1 NOT_DONE；独立解析阶段已 push `bd33fdaf2810ce07a378b2b4d6e133af89d79c16`。
@@ -71,6 +86,10 @@ production migration017 已创建 works_requests，W7 测试随后再 CREATE 同
 此测试基线在 W7 旧 migrations016 下通过；冲突是实际 P2+W7 依赖组合，已交 owner 修复，不改其写域。
 M1 局部 8 PASS / 1 SKIP（真实元数据未重跑）；受影响四包 `go build` PASS。
 不把局部绿或构建绿写成当前五包全绿；等待精确 owner 测试修复 SHA 后定向复验。
+随后普通合入 owner 精确 `a3eab2c6d0df026e056a5a873a0d63bf58282688`：仅调整 W7 接口验收使用实际 production migration，未改领域行为。
+原 receipt fixture 定向 `-count=1` PASS；首 duplicate-DDL RED 保持。后续受影响五包是否全绿另记，不由该定向通过推断。
+在该修复之后重新执行受影响五包，全部 PASS；受影响 domain/app/events/sqlite 构建 PASS，发布 `f3460ef785cdea0ecaf443628b82f573d05b9155`。
+此后无扩大源读取、无再次跑确认空的真实 cache；real 两客户端回放仍保持首次 RED/授权待答。
 
 ## 未决定参数下的 pending-only 入口
 
@@ -80,6 +99,7 @@ root 指定作品源不能为未答参数猜 strength/NaN。
 W0 作品接线可用 `events.NewWorksEventSink(app.NewPendingEventService(sqlite.NewEventRepository(db)),clock)`。
 `TestM1PendingRecorderDoesNotChooseSignalScale` 和以真实 pending-only service 运行的 Works 正常/失败、capture 四项 targeted PASS。
 这条入口保存事实，不选择产品默认，也不把 pending 降为最终验收。
+缓存元数据 source key 包含原 observed_at 区分真实缓存 refresh 与同条 replay；source TS 仍为 header created_at，不把 refresh 当 session activity。
 
 ## 当前有效映射边界
 
