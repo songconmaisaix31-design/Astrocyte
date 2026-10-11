@@ -28,6 +28,9 @@ type Server struct {
 	logger     *slog.Logger
 }
 
+// Handler exposes the actual transport chain for owner integration tests.
+func (s *Server) Handler() http.Handler { return s.httpServer.Handler }
+
 // Config holds server configuration.
 type Config struct {
 	AgentToken     string

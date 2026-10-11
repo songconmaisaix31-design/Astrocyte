@@ -14317,7 +14317,7 @@ components:
           minLength: 1
         expected_version:
           type: integer
-          minimum: 1
+          const: 1
         roots:
           type: array
           maxItems: 64
@@ -14343,7 +14343,7 @@ components:
           minLength: 1
         expected_version:
           type: integer
-          minimum: 1
+          const: 1
         content:
           type: string
           minLength: 1
@@ -14370,7 +14370,7 @@ components:
           minLength: 1
         expected_version:
           type: integer
-          minimum: 1
+          const: 1
         expected_revision:
           type: integer
           minimum: 0
@@ -14404,7 +14404,7 @@ components:
           minLength: 1
         expected_version:
           type: integer
-          minimum: 1
+          const: 1
         expected_revision:
           type: integer
           minimum: 0
@@ -14435,7 +14435,7 @@ components:
           minLength: 1
         expected_version:
           type: integer
-          minimum: 1
+          const: 1
         expected_revision:
           type: integer
           minimum: 0
@@ -14466,7 +14466,7 @@ components:
           minLength: 1
         expected_version:
           type: integer
-          minimum: 1
+          const: 1
         expected_revision:
           type: integer
           minimum: 0
@@ -14496,3 +14496,4 @@ components:
       description: Project-scoped credential issued by a human. Current grants are
         rechecked per operation; settings and approval remain human-only. Legacy
         unscoped Agent credentials confer no protected data access.
+

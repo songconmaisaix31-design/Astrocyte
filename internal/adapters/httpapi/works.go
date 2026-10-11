@@ -40,6 +40,16 @@ type workHiddenRequest struct {
 	Hidden *bool `json:"hidden"`
 }
 
+func worksCommandHandler[T any](h *handler, meta func(*T) *attentionapp.CommandMeta, status int, call func(*http.Request, T) (any, error)) http.HandlerFunc {
+	return commandHandler(h, meta, status, func(r *http.Request, c T) (any, error) {
+		m := meta(&c)
+		if m.ExpectedVersion != 1 || m.RequestID != m.IdempotencyKey {
+			return nil, invalid("Works expected_version must be 1 and request_id must equal Idempotency-Key")
+		}
+		return call(r, c)
+	})
+}
+
 func workRevision(c workMetadataRequest) (int, error) {
 	if c.ExpectedRevision == nil || *c.ExpectedRevision < 0 {
 		return 0, invalid("expected_revision must be a non-negative integer")
@@ -111,7 +121,7 @@ func (h *handler) registerWorks(mux *http.ServeMux) {
 		result, err := h.services.Works.ListWorks(r.Context(), localCaller(r))
 		h.attentionResult(w, r, http.StatusOK, localEnvelope("snapshot", result), err)
 	})
-	mux.HandleFunc("POST /api/v1/works/refresh", commandHandler(h, func(c *worksRefreshRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c worksRefreshRequest) (any, error) {
+	mux.HandleFunc("POST /api/v1/works/refresh", worksCommandHandler(h, func(c *worksRefreshRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c worksRefreshRequest) (any, error) {
 		if h.services.Works == nil {
 			return nil, apierrors.NewUnsupported("works_refresh")
 		}
@@ -122,7 +132,7 @@ func (h *handler) registerWorks(mux *http.ServeMux) {
 		snapshot, err := h.services.Works.RefreshWorks(r.Context(), localCaller(r), workspaceapp.WorksRefreshCommand{Roots: roots})
 		return localEnvelope("snapshot", snapshot), err
 	}))
-	mux.HandleFunc("POST /api/v1/works/delivery", commandHandler(h, func(c *worksDeliveryRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c worksDeliveryRequest) (any, error) {
+	mux.HandleFunc("POST /api/v1/works/delivery", worksCommandHandler(h, func(c *worksDeliveryRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c worksDeliveryRequest) (any, error) {
 		if h.services.Works == nil {
 			return nil, apierrors.NewUnsupported("works_delivery")
 		}
@@ -132,7 +142,7 @@ func (h *handler) registerWorks(mux *http.ServeMux) {
 		snapshot, err := h.services.Works.ImportWorksDelivery(r.Context(), localCaller(r), workspaceapp.WorksDeliveryCommand{Content: []byte(c.Content)})
 		return localEnvelope("snapshot", snapshot), err
 	}))
-	mux.HandleFunc("PUT /api/v1/works/{work_id}/attitude", commandHandler(h, func(c *workAttitudeRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workAttitudeRequest) (any, error) {
+	mux.HandleFunc("PUT /api/v1/works/{work_id}/attitude", worksCommandHandler(h, func(c *workAttitudeRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workAttitudeRequest) (any, error) {
 		if h.services.Works == nil {
 			return nil, apierrors.NewUnsupported("works_attitude")
 		}
@@ -143,7 +153,7 @@ func (h *handler) registerWorks(mux *http.ServeMux) {
 		work, err := h.services.Works.SetWorkAttitude(r.Context(), localCaller(r), r.PathValue("work_id"), workspaceapp.WorkAttitudeCommand{ExpectedRevision: revision, Attitude: c.Attitude})
 		return localEnvelope("work", work), err
 	}))
-	mux.HandleFunc("PUT /api/v1/works/{work_id}/group", commandHandler(h, func(c *workGroupRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workGroupRequest) (any, error) {
+	mux.HandleFunc("PUT /api/v1/works/{work_id}/group", worksCommandHandler(h, func(c *workGroupRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workGroupRequest) (any, error) {
 		if h.services.Works == nil {
 			return nil, apierrors.NewUnsupported("works_group")
 		}
@@ -157,7 +167,7 @@ func (h *handler) registerWorks(mux *http.ServeMux) {
 		work, err := h.services.Works.SetWorkGroup(r.Context(), localCaller(r), r.PathValue("work_id"), workspaceapp.WorkGroupCommand{ExpectedRevision: revision, Group: *c.Group})
 		return localEnvelope("work", work), err
 	}))
-	mux.HandleFunc("PUT /api/v1/works/{work_id}/handoff", commandHandler(h, func(c *workHandoffRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workHandoffRequest) (any, error) {
+	mux.HandleFunc("PUT /api/v1/works/{work_id}/handoff", worksCommandHandler(h, func(c *workHandoffRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workHandoffRequest) (any, error) {
 		if h.services.Works == nil {
 			return nil, apierrors.NewUnsupported("works_handoff")
 		}
@@ -171,7 +181,7 @@ func (h *handler) registerWorks(mux *http.ServeMux) {
 		work, err := h.services.Works.SetWorkHandoff(r.Context(), localCaller(r), r.PathValue("work_id"), workspaceapp.WorkHandoffCommand{ExpectedRevision: revision, Content: *c.Content})
 		return localEnvelope("work", work), err
 	}))
-	mux.HandleFunc("PUT /api/v1/works/{work_id}/hidden", commandHandler(h, func(c *workHiddenRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workHiddenRequest) (any, error) {
+	mux.HandleFunc("PUT /api/v1/works/{work_id}/hidden", worksCommandHandler(h, func(c *workHiddenRequest) *attentionapp.CommandMeta { return &c.CommandMeta }, http.StatusOK, func(r *http.Request, c workHiddenRequest) (any, error) {
 		if h.services.Works == nil {
 			return nil, apierrors.NewUnsupported("works_hidden")
 		}

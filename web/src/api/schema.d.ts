@@ -4703,7 +4703,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             roots?: string[];
         };
         /**
@@ -4718,7 +4719,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             content: string;
         };
         /**
@@ -4734,7 +4736,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             /** @enum {string} */
             attitude: "continue" | "park" | "done";
@@ -4752,7 +4755,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             group: string;
         };
@@ -4769,7 +4773,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             content: string;
         };
@@ -4786,7 +4791,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             hidden: boolean;
         };
