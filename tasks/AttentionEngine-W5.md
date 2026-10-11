@@ -3,7 +3,7 @@
 - 轨道分支：`songconmaisaix31-design/attention-engine-w5-experience`
 - 事实源：任务书 `tabbit-code (2).md` §3/§4.3/§4.5/§7/§8 M5；主计划 `tasks/AttentionEngine-plan.md` W5 行
 - 独占写域：`internal/attention/domain/experience*.go`、`internal/attention/app/experience_*.go`、`internal/adapters/sqlite/experience_store*.go`、`tests/attention-engine/M5-experience*`、本文件
-- 状态：已消费 M0 `47f47f3`；app/store 和 4 个 SQLite 经验验收通过。原始输入为 contract_local fixtures，W1 生产 EventReader、失败事件自动接线及真实会话证据尚待消费；整体 M5 未通过。
+- 状态：已消费 M0 `47f47f3` 与 W1 `6730531`；经验生产服务/SQLite/自动捕获接线、原子人工收据与 8 个 SQLite 经验验收通过。原始输入为 contract_local fixtures，W0/W6 外部入口复验待回传；真实 native 失败回放 NOT_RUN，整体 M5 未完成。
 
 ## 1. 目标（§4.3 Experience）
 
@@ -105,8 +105,8 @@ Wave B：
 - [x] 普通 merge W0 精确 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，复用 domain Experience / EventRef / app StoredEvent、StoredExperience 和 `014/015` 迁移。
 - [x] `app/experience_service.go`：CaptureFailure / CaptureFailures / 人工 approve、demote、share / approved-only GetExperiences / 原始证据解析。
 - [x] `adapters/sqlite/experience_store.go`：复用 EngineRepository 的 BEGIN IMMEDIATE；原始事件唯一键捕获幂等、乐观版本、审计原子写入。
-- [x] `tests/attention-engine/M5-experience*`：4 个 contract_local 源事件的真实 SQLite 验收，含冷连接重开、跨连接并发捕获、项目范围与人工审计。
-- [ ] 消费 W1 生产 EventReader 的精确 SOURCE，与事件入口接线自动捕获并验证真实失败来源；无原始会话批准时保留 NOT_RUN，不用 fixtures 替代。
+- [x] `tests/attention-engine/M5-experience*`：8 个 contract_local 源事件的真实 SQLite 验收，含冷连接重开、跨连接并发捕获、项目范围、人工审计及不可变命令结果回放。
+- [x] 消费 W1 精确 `e9bb380` / `6730531` 生产 EventReader 与提交后自动失败捕获 hook；实际服务入口和重启回放通过。真实 native 源权限未答，仍为独立 NOT_RUN，不用 fixtures 替代。
 - [ ] 最终验收通过后提交报告、push，发送一次 worker_done。
 
 ## 9. 阶段收束记录（2026-10-11）
@@ -139,3 +139,14 @@ Wave B：
 - 实际验收：`GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./tests/attention-engine -run TestM5Experience -v` 4 PASS；四个输入来源明确为 contract_local fixtures，存储和重启使用真实 modernc SQLite。
 - 适用检查：`go test -count=1 ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./tests/attention-engine` 四包 PASS；同四包 `go vet` PASS；`go build ./cmd/...` PASS；`git diff --check` PASS。均设置 `GOFLAGS=-p=1 GOMAXPROCS=2`。
 - 仍待：W1 生产 EventReader/明确来源语义和自动失败捕获接线；W0 HTTP/cmd 人类入口组装；W6 真正 SQLite+stdio 消费与完整 explain_focus。此阶段不宣称真实会话或整体 M5 完成。
+
+## 12. 自动入口与命令收据返修（2026-10-11）
+
+- 普通消费 W1 `e9bb3809eadcbf48cf017b6e09ae0ef4112b1a90`、`673053186a12377c3a1dded4c0b987daa63f2dd5`；上述 §11 对 W1 的等待已解除。输入原始字节、Observation 与失败状态由生产 EventRepository 读取，不再使用测试读取双。
+- W1 正式自动接线：`app.NewEventService(eventRepo, selectedStrength, experience.CaptureCommittedFailure)`；该 callback 在 receipt/signal 提交之后重读原 ID。W5 支持明确 `failed` / `failure`，不从 native operation accepted、header、工具报错或私人消息推断任务闭环。
+- 项目入口薄方法：`experience.RecordEvents(ctx,eventService,receipts)` 先核对可信绑定，再提交事件和捕获候选。捕获失败保留 W1 返回的已提交事件 ID + error；只通过原 ID 显式核对/重放，`CaptureFailures(ctx,from,to)` 可重启补消费。没有自动重新执行 Agent 任务。
+- W0 实际 HTTP 审查发现 d8e 阶段人工命令缺结果回放，原版本仅 CAS + actions 为 partial。按 owner Handoff 复用现有 `attention_receipts`，操作名隔离为 `Experience/{action}/{project}`；收据、聚合头、分享和动作审计同 EngineTx 提交，不修改 S1 命令或迁移。
+- actor + project + operation + IdempotencyKey 绑定输入；复用既有 CommandMeta 校验与 semanticDigest（RequestID 是跟踪字段，不改变语义）。已接受同输入先于 CAS 回放不可变完整结果，改输入返回 version_conflict；新请求仍先检查当前版本。unknown/incomplete 收据只返回 DeliveryUnknown，不自动重做人工动作。
+- 最终本轨定向验证：`GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./tests/attention-engine -run TestM5Experience -v` 8 PASS，包括自动入口/捕获中断保留 ID、审批/分享/降级冷重启历史结果回放、审计一次及 unknown 待核对。
+- 受影响四包整包 `go test -count=1`、同四包 `go vet`、`go build -o <本次临时目录> ./cmd/...`、`git diff --check` PASS；没有跑媒体模型或读取未授权 native 原对话。此前首次 newID 编译 RED 保留为独立历史。
+- 协调者确认：本轨实现与真实 SQLite 核心可通过明确 contract_local 生产服务输入验收；原始 native 失败 task_live 回放由用户权限单独阻塞，不能据此称整体 M5/M1 已通过。当前保留活跃，等待 W0 HTTP 重复命令与 W6 stdio 集成复验；领域返修仍由本轨负责。

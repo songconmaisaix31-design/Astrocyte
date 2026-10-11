@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"crypto/rand"
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -22,6 +23,8 @@ type ExperienceTx interface {
 	SaveExperience(StoredExperience, int) error
 	AppendExperienceShare(string, ShareAudit) error
 	AppendExperienceAction(string, ActionAudit) error
+	LoadExperienceReceipt(caller, command, key string) (Receipt, error)
+	SaveExperienceReceipt(caller, command, key string, receipt Receipt) error
 }
 
 // ProjectID is bound by trusted application setup, never an event or tool body.
@@ -231,10 +234,36 @@ func (s *ExperienceService) govern(ctx context.Context, p Principal, id, project
 	if err := s.project(project); err != nil {
 		return result, err
 	}
-	if cmd.SchemaVersion != 1 || strings.TrimSpace(cmd.RequestID) == "" || cmd.ExpectedVersion < 1 {
-		return result, serviceError(apierrors.ValidationFailed, "Experience command needs schema, request and expected version", "correct_command")
+	if err := validateMeta(cmd); err != nil {
+		return result, err
 	}
-	err := s.repo.WithExperienceTx(ctx, func(tx ExperienceTx) error {
+	digest, err := semanticDigest(struct {
+		CommandMeta
+		ExperienceID  string `json:"experience_id"`
+		OwnerProject  string `json:"owner_project"`
+		TargetProject string `json:"target_project"`
+	}{CommandMeta: cmd, ExperienceID: id, OwnerProject: project, TargetProject: target})
+	if err != nil {
+		return result, err
+	}
+	caller, operation := p.Kind+":"+p.ID, "Experience/"+action+"/"+project
+	err = s.repo.WithExperienceTx(ctx, func(tx ExperienceTx) error {
+		receipt, err := tx.LoadExperienceReceipt(caller, operation, cmd.IdempotencyKey)
+		if err == nil {
+			if receipt.Digest != digest {
+				return serviceError(apierrors.VersionConflict, "Idempotency key binds different experience input", "use_new_idempotency_key")
+			}
+			if err := json.Unmarshal(receipt.Result, &result); err != nil {
+				return err
+			}
+			if result.SchemaVersion != 1 || result.Experience.ID != id || result.OwnerProject != project || result.Version < 2 || !domain.ValidStatus(result.Experience.Status) {
+				return serviceError(apierrors.DeliveryUnknown, "Experience receipt lacks an accepted complete result", "reconcile_original_command")
+			}
+			return nil
+		}
+		if !isMissing(err) {
+			return err
+		}
 		record, err := tx.LoadExperience(id)
 		if err != nil {
 			return err
@@ -278,7 +307,11 @@ func (s *ExperienceService) govern(ctx context.Context, p Principal, id, project
 			return err
 		}
 		result = ExperienceResult{SchemaVersion: 1, Experience: record.Experience, OwnerProject: project, Version: record.Version}
-		return nil
+		bytes, err := json.Marshal(result)
+		if err != nil {
+			return err
+		}
+		return tx.SaveExperienceReceipt(caller, operation, cmd.IdempotencyKey, Receipt{Digest: digest, Result: bytes})
 	})
 	return result, err
 }
