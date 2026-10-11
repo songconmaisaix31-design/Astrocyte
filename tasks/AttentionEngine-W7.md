@@ -2,7 +2,7 @@
 
 ## 当前返修状态（2026-10-11）
 
-**W7 NOT_DONE**：ea942c4 的旧交付仅领域、存储、本地服务和 fixture，真实界面仍待 W0 API 契约发布精确 SHA。当前 Dispatch task_355d5b638062 / ctx_cf173bcd2418，实际客户端 Codex（当前已启动的 --yolo 会话），不新建 Agent。根节点独占协调；本 Worker 保留原写域。
+**W7 本轨验收通过**：ea942c4 的旧交付仅领域、存储、本地服务和 fixture；返修已完成真实五能力 UI、实际登记根有界扫描、持久化 HTTP 命令、重启、三尺寸键盘以及链1原始 pending observation 验收。普通消费 W0 P2 `5d356370c4157e74d96388afd098d5fea14dc799` 和最终 startup `396aec1d6bee777dd380ff06fc5d821d0f7f5b3f`，依赖 owner 接线，未修改共享 HTTP/契约/迁移/generated/cmd。当前 Dispatch task_355d5b638062 / ctx_cf173bcd2418，实际客户端 Codex（当前已启动的 --yolo 会话），不新建 Agent。根节点独占协调；本 Worker 保留原写域。以下早期 NOT_RUN/NOT_DONE/RED 是当时记录，保留原始失败；最终证据见下文“最终链1阶段”。本结论不表示整个 Attention Engine 或用户主观视觉验收完成。
 
 第一阶段纠正：未知缓存的数量显示未知；未核实作品的文件数与最近活动显示未知；未知扫描平台使用 unknown，不推断客户端；扫描最多 8 层/10000 文件，截断/读取失败明确未完整核实，不跟随 root symlink。WorkEvent topic 未知保持空，sync/verify 来源 machine，分组使用 work_group_set，导入/同步仅发本次涉及作品。
 
@@ -18,6 +18,36 @@
 
 已普通合入正式 M0 source `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，merge `b19bcd7` 已 push。合后定向首 RED：新共享 harness 用 attention_engine_test，而旧 W7 为 attentionengine_test；仅本轨 w7_works_test.go 改为共享 package 名，随后 `go test -count=1 ./tests/attention-engine -run TestW7` PASS。同轮 domain/app/scanner/sqlite 定向 PASS、typecheck PASS。HTTP Works P2 SHA 仍待 W0，不扩展全仓检查。
 
+主控/W0 已确认新增请求去重在本轨范围，migration016 的 works_requests 字段已对齐。复用 Caller.OperationID（由 HTTP Idempotency-Key 给定）；独立 WorksRequestRepository 原子 reserve pending 后才做效果，相同已接受输入返回原结果，输入不同 version_conflict，pending/unknown 不重放。metadata canonical input 含 work id、expected_revision 和业务值；JSON 投递保留原 content；操作无 key 的旧内部调用只用于 local-only 服务测试，不代表 HTTP。
+
+事件 sink 失败现在显式 delivery_unknown（本地作品/metadata 可能已保存），元数据播种读写错误不再静默继续。SQLite 定向 TestWorksRequestReceiptsPersistAndPreventUnknownReplay PASS：实际 reserve/result 持久化、重复请求只发一次事件、CAS 重复返回原 revision、sink 未知效果不重发、pending/accepted/unknown 真数据库关闭后再打开均不重放。五包 Works/W7/Scanner/Delivery `-count=1` PASS。当前仍为 contract_local DDL，不等于 W0 migration016 或真实 HTTP 验收。
+
+## 真实界面阶段（2026-10-11 22:36–22:42）
+
+`WorksAlbumPanel` 使用真实 GET/POST/PUT 与 generated Work/WorksSnapshot 类型；HTTP/CSRF/会话复用既有 api 客户端。每次人工提交单一 UUID 同时作为 request_id/Idempotency-Key，不重试命令；独立 expected_revision CAS；失败留草稿，结果未知时先读缓存。fixture 只展示且扫描/保存禁用。新 owns `worksAlbumApi.ts`/`WorksCommandForms.tsx`，无共享客户端或 S1 写域修改。
+
+- 真实批准根：当前 W7 工作树；首次有界扫描和同步只发这个登记根，实际 557 文件、platform=unknown。JSON 提交为明确新线索，不读 unregistered-clue 路径，files.verified=false，数量/最近活动未知。
+- `ASTROCYTE_TEST_W7_LIVE=1 ... playwright test --config e2e/works-live.config.ts`：1 PASS / 1.5m；8 真实命令（扫描、态度、分组、手册、隐藏、取消隐藏、JSON、同步），会话+CSRF+同 UUID；SQLite 全部 accepted，input/result typeof blob。人工 revision5、手册 human 与生成投递手册 generated 分开；越界根/缺 CSRF 均403且数据库不变；API 真停止/重启后相册原字节、metadata 和浏览器重读一致。
+- 首场 viewport/键盘 DOM PASS，但页面截图误落相邻面板，不声称截图视觉通过。原件保存在 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-aijSTJ/first-browser-evidence`，真实数据库同目录 data/state.sqlite，所属 API/Vite 已关闭。
+- 复用原 owned 临时库，仅 GET、0 Works 写请求的 `ASTROCYTE_TEST_W7_VIEWS=1 ... --grep 'saved actual works'`：1 PASS / 10.6s；1920/1280/390、Enter/Tab/Escape/焦点返回、无横向溢出/页面错误。局部作品/详情截图已逐张查看，原件保存在同库 `read-only-views-evidence`；截图整段截取包含浮动页头叠加，不冒充用户主观视觉验收。
+- fixture/mock 分开：`playwright test e2e/works-album.spec.ts --workers=1` 16 PASS / 29.8s（原 fixture14 + unknown 写失败草稿/读缓存2），不计真实入库。
+- `pnpm --dir web typecheck`、所改 TS/TSX/spec/config 局部 ESLint、`pnpm --dir web build` PASS，Node512；真实 Go receipt 在 canonical migration016 的定向 restart 测试 PASS。
+
+W1/W4 合后 receipt harness 首 RED（重复 CREATE works_requests）已保留；本轨即时 `a3eab2c6d0df026e056a5a873a0d63bf58282688` 移除 CREATE、仅使用实际 W0 migration016，定向 PASS 并广播 owner。W1 原 sink-error RED 在消费 `b166848` 后两项定向 GREEN 已报告，保留旧源 RED。W1 pending-only sink source `b73bf6575621ea0c46fcf63df9bf01fe2726f900` 已交 W0，待 W0 发布启动 assembly 精确源后，复用真实库验证原始 observation 落库、topic-empty/pending/noSignals 与重启；当前 nil sink 的真实 UI 场不是链1已接线证据。
+
+## 最终链1阶段（2026-10-11 22:47 起）
+
+W0 最终启动 `396aec1d6bee777dd380ff06fc5d821d0f7f5b3f` 普通 merge 为 `07c580a95fe4a67bce05e0e34c5b294bba656939`：实际 startup 将 Works 交给 W1 `NewWorksEventSink(NewPendingEventService(sqlite.NewEventRepository(db)), nil)`。复用原成功 owned SQLite 库，不重跑首场八命令来凑事件数；仅新增一个人工分组与一个批准根机器同步，其余为 GET/已接受请求相同 key 重放。
+
+- `ASTROCYTE_TEST_W7_SOURCE=1 ASTROCYTE_W7_REUSE_OWNED_TEMP=... playwright test --config e2e/works-live.config.ts --grep 'same owned works API'` PASS（`.last-run.json` passed，成功生成独立证据）。新增恰好两条 Works raw BLOB：人工 `manual/work_group_set` 和机器 `machine/work_synced`，均 `mapping_status=pending`、topic 空、Event data 为 null；不把 platform 当 topic，也不把 raw kind 当闭集 Event.Kind。
+- 两次 accepted 人工 key 重放（重启前/后）均200且事件集合不变。API 真停止/重启后相册、人工 metadata、receipt input/result 与 raw observation 字节一致；Signal 数一直0、节点集合仍空，机器更新没有增加注意力。人工 metadata revision6；同步真实文件数657，与先前557是不同 checkout 时点的实际值，不冻结或补造计数。
+- 原始证据保存在 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-aijSTJ/final-chain1-evidence/actual-works-chain1-evidence.json`；只含本次 Works 自有事件，不读取其他会话正文。此库和三轮独立证据均保留；所属服务关闭。
+- 最终 source 合后类型首 RED：新版生成类型要求 expected_version 字面量1，旧 helper 推断 number；新增 raw BLOB 测试遇到既有 harness 声明不包含 Uint8Array。仅本轨修复 `1 as const` 和显式运行时 BLOB 检查；保留此 RED，后续 targeted GREEN 单列。Go 定向五包 Works/W7/Scanner/Delivery PASS，`go build ./...` PASS；Vitest 展示7 PASS。
+
+精确命令环境统一 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512`。仅新增 source/只读浏览器检查，首场 nil-sink 和 fixture/mock 证据保持分开；没有自动重试未知写，也没有改 shared owner 文件。
+
+类型修正后 `pnpm --dir web typecheck`、所改 TS/TSX/spec/config 的局部 ESLint、`pnpm --dir web build` 全 PASS（106 modules）。同库最终 `ASTROCYTE_TEST_W7_VIEWS=1 ... --grep 'saved actual works'` 1 PASS / 12.2s：1920/1280/390、Enter/Tab/Escape/焦点返回、0 Works 写请求、0 页面错误、无横向溢出、相册和 metadata 不变；额外实际解码两条 retained raw BLOB，均 pending/topic-empty。最终截图与只读报告存于 owned 临时目录 `final-read-only-views-evidence`。这轮只读结果是最终 source 的独立 GREEN，没有重发链1人工/机器命令。
+
 ## 1. 交付内容（五能力 + 事件源）
 
 | 能力 | 落点 |
@@ -28,7 +58,7 @@
 | ④ 态度与视图 | `Attitude{continue|park|done}` + 平铺/按平台/按分组/时间线 + 隐藏 + 排序（`FilterWorks`/`SortWorks`） |
 | ⑤ 扫描导入与同步 | `worksscan.Scanner.ScanWorks`（有界）、`worksscan.Delivery.ParseDelivery`（AI 投递 JSON）、`RefreshWorks` 同步最近改动 |
 
-事件源：`app.WorksService` 经 `WorksEventSink` 发 `domain.WorkEvent{work_id,kind,source,scope,topic,at,payload}`；kind 词汇 `work_imported|work_attitude_set|work_handoff_set|work_hidden|work_synced|work_verified`。SQLite `works_album` 持久化可替换观察、`works_metadata` 持久化人工元数据（态度/分组/隐藏/手册，revision CAS），冷重启一致。
+事件源：`app.WorksService` 经 `WorksEventSink` 发 `domain.WorkEvent{work_id,kind,source,scope,topic,at,payload}`；kind 词汇 `work_imported|work_attitude_set|work_group_set|work_handoff_set|work_hidden|work_synced|work_verified`。SQLite `works_album` 持久化可替换观察、`works_metadata` 持久化人工元数据（态度/分组/隐藏/手册，revision CAS），冷重启一致。`works_requests` 保存 caller+command+key 的 pending/accepted/unknown/rejected 收据，未知效果不重复执行。
 
 新增文件：
 
@@ -45,7 +75,7 @@ PATH 实测安装：codex、claude、opencode、pi、grok、kimi、qwen、cursor
 
 ## 3. 端点契约（W0 Handoff，落 `contracts/openapi.yaml` + `internal/adapters/httpapi/` + `cmd/server/main.go`）
 
-人类会话 + CSRF，写操作带 `Idempotency-Key`。DTO 字段与 `domain.Work`/`WorksSnapshot` 对齐。
+W0 P2 已发布七端点与生成类型；人类会话 + CSRF，写操作带 `schema_version=1/request_id/expected_version=1` 与 `Idempotency-Key`。metadata 的 expected_revision 独立；DTO 字段与 domain.Work/WorksSnapshot 对齐。
 
 | 方法与路径 | 用途 |
 |---|---|
@@ -57,7 +87,7 @@ PATH 实测安装：codex、claude、opencode、pi、grok、kimi、qwen、cursor
 | `PUT /works/{work_id}/handoff` | body `WorkHandoffRequestV1{expected_revision,content}`（≤64KiB，utf8） |
 | `PUT /works/{work_id}/hidden` | body `WorkHiddenRequestV1{expected_revision,hidden}` |
 
-迁移 `014_works.sql`（W0 owner）：
+实际迁移 `016_works_album.sql`（W0 owner；含 works_requests）：
 
 ```sql
 CREATE TABLE works_album (
@@ -94,13 +124,14 @@ W7 保留原始 WorkEvent 词汇，W1 独占闭集 Event.Kind 的合法转换。
 | work_handoff_set | manual | 保存人工手册，不是闭集 manual kind，也不是 agent_task |
 | work_synced/work_verified | machine | 系统观察，禁止增加人类注意力；不能转成 manual 关注信号 |
 
-Payload 为作品活动记录，Scope 为作品根；生成手册不推断 agent_task 成功。默认空 topic 的认知处理和未知事件归 W1，不在 W7 冻结策略。现有 sink 错误仍未传递给客户端；链1落库可靠性须 W1/W0 接线后联合核验，不能沿 sink collector 测试声称完成。
+Payload 为作品活动记录，Scope 为作品根；生成手册不推断 agent_task 成功。默认空 topic 的认知处理和未知事件归 W1，不在 W7 冻结策略。sink 错误已显式返回 delivery_unknown；最终实际 W1/W0 接线和重启已核验 raw pending 落库，不能沿 sink collector 测试推断认知映射或 Signal 完成。
 
 ## 5. 依赖与剩余限制
 
-- **M0 Event 契约未就绪**：`origin/attention-engine/v1-20261011` 仍为派发记录 `94c6b5d`，各 worker 分支停在 `4d200df`。主控通知后 `git fetch origin && git merge origin/attention-engine/v1-20261011` 再接入 Event 类型；当前事件经 `WorksEventSink` 端口 + §4 映射表，不影响五能力本身。
-- 端点/迁移/HTTP/主程序接线全部 W0 owner，W7 未改 `contracts/openapi.yaml`、`internal/adapters/httpapi/`、`migrations/`、`cmd/`。前端 `WorksAlbumPanel` 真机数据待端点接入后切换（当前 fixture 演示 + 真机空态）。
-- 有界扫描仅 `worksscan` 给定根；不整盘扫描、不读凭据/私密正文；JSON 投递不读路径。默认扫描根（登记项目根）的接线属 W0（`RegisteredProjects` 复用）。
+- 正式 M0 `47f47f3`、P2 `5d35637`、最终 startup `396aec1` 已普通消费；W0 仍唯一 owner：契约、HTTP、generated 客户端、migration016、主程序。实际 assembly 已验证，本轨未自行改 cmd。
+- W1 owns 原始事件归一化，topic 未明确保持 pending，不发 Signals；machine sync/verify 不增人类关注。用户待定 signal scale/真实会话/算法参数不在 W7 代选。
+- 有界项目 metadata 扫描，不覆盖整盘、私密正文、凭据；最多64 roots、8层、10000 files，截断/读取失败显示 unknown/partial，不跟随 symlink 根。默认/请求根均由 W0 可信登记缓存验证。
+- 真实浏览器与模型/执行/跨平台全文无关；人工态度不等于测试通过，生成手册不等于 Agent 任务成功。整体验收和个人预览升级归 root，未运行远程 CI/未合 main。
 
 ## 6. 验证
 

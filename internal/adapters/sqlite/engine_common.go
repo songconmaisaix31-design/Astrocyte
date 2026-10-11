@@ -25,16 +25,26 @@ func (r *EngineRepository) Conn() *sql.DB { return r.db.conn }
 // WithTx runs fn in one serialized transaction. Do not call external providers
 // or objects inside the callback.
 func (r *EngineRepository) WithTx(ctx context.Context, fn func(EngineTx) error) error {
+	return r.withTransaction(ctx, "BEGIN IMMEDIATE", fn)
+}
+
+// WithReadTx takes a consistent deferred snapshot without claiming a writer
+// lock, including when SQLite query_only is enabled for retrieval acceptance.
+func (r *EngineRepository) WithReadTx(ctx context.Context, fn func(EngineTx) error) error {
+	return r.withTransaction(ctx, "BEGIN", fn)
+}
+
+func (r *EngineRepository) withTransaction(ctx context.Context, begin string, fn func(EngineTx) error) error {
 	conn, err := r.db.conn.Conn(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
-	if _, err = conn.ExecContext(ctx, "BEGIN IMMEDIATE"); err != nil {
+	if _, err = conn.ExecContext(ctx, begin); err != nil {
 		return err
 	}
 	defer conn.ExecContext(context.Background(), "ROLLBACK")
-	if err = fn(&engineTx{ctx: ctx, conn: conn}); err != nil {
+	if err = fn(&engineTx{ctx: ctx, conn: conn, readOnly: begin == "BEGIN"}); err != nil {
 		return err
 	}
 	_, err = conn.ExecContext(ctx, "COMMIT")
@@ -43,8 +53,9 @@ func (r *EngineRepository) WithTx(ctx context.Context, fn func(EngineTx) error) 
 
 // engineTx is the transaction handle passed to WithTx callbacks.
 type engineTx struct {
-	ctx  context.Context
-	conn *sql.Conn
+	ctx      context.Context
+	conn     *sql.Conn
+	readOnly bool
 }
 
 // EngineTx is the shared transaction contract every engine store embeds. The
@@ -57,6 +68,9 @@ type EngineTx interface {
 }
 
 func (t *engineTx) Exec(query string, args ...any) (sql.Result, error) {
+	if t.readOnly {
+		return nil, errors.New("engine read transaction cannot execute mutations")
+	}
 	return t.conn.ExecContext(t.ctx, query, args...)
 }
 func (t *engineTx) Query(query string, args ...any) (*sql.Rows, error) {

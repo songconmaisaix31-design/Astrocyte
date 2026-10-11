@@ -78,6 +78,7 @@ type StoredKnowledge struct {
 	Version              int                   `json:"version"`
 	CreatedAt            int64                 `json:"created_at"`
 	UpdatedAt            int64                 `json:"updated_at"`
+	ConsolidatedAt       *int64                `json:"consolidated_at"`
 	CrystallizedVersions []KnowledgeVersion    `json:"crystallized_versions"`
 	Shares               []ShareAudit          `json:"shares"`
 	Actions              []ActionAudit         `json:"actions"`
@@ -107,10 +108,13 @@ type EngineSleepRun struct {
 }
 
 type EngineSleepMetrics struct {
-	KeyFactsBefore     int     `json:"key_facts_before"`
-	KeyFactsRetained   int     `json:"key_facts_retained"`
-	BytesBefore        int64   `json:"bytes_before"`
-	BytesAfter         int64   `json:"bytes_after"`
-	RetentionPrecision float64 `json:"retention_precision"`
-	StorageReduction   float64 `json:"storage_reduction"`
+	RetentionMeasurable bool    `json:"retention_measurable"`
+	StorageMeasurable   bool    `json:"storage_measurable"`
+	Representation      string  `json:"representation"`
+	KeyFactsBefore      int     `json:"key_facts_before"`
+	KeyFactsRetained    int     `json:"key_facts_retained"`
+	BytesBefore         int64   `json:"bytes_before"`
+	BytesAfter          int64   `json:"bytes_after"`
+	RetentionPrecision  float64 `json:"retention_precision"`
+	StorageReduction    float64 `json:"storage_reduction"`
 }

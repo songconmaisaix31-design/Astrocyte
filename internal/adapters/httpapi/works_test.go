@@ -6,16 +6,39 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
+	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
+
+func worksHTTPRequest(s *Server, method, path, body string, cookie *http.Cookie, csrf, bearer, origin string) *httptest.ResponseRecorder {
+	r := httptest.NewRequest(method, path, strings.NewReader(body))
+	r.Host = "127.0.0.1:8787"
+	r.Header.Set("Content-Type", "application/json")
+	var meta struct {
+		RequestID string `json:"request_id"`
+	}
+	_ = json.Unmarshal([]byte(body), &meta)
+	r.Header.Set("Idempotency-Key", meta.RequestID)
+	if cookie != nil {
+		r.AddCookie(cookie)
+	}
+	r.Header.Set("X-CSRF-Token", csrf)
+	r.Header.Set("Authorization", bearer)
+	r.Header.Set("Origin", origin)
+	w := httptest.NewRecorder()
+	s.httpServer.Handler.ServeHTTP(w, r)
+	return w
+}
 
 type worksRegisteredRoots struct {
 	root      string
@@ -59,7 +82,7 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 		}
 		return string(b)
 	}
-	read := attentionRequest(s, "GET", "/api/v1/works", "", cookie, "", "", "")
+	read := worksHTTPRequest(s, "GET", "/api/v1/works", "", cookie, "", "", "")
 	if read.Code != 200 || roots.refreshes != 0 {
 		t.Fatalf("cache GET: %d %s", read.Code, read.Body.String())
 	}
@@ -77,16 +100,16 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 		cookie       *http.Cookie
 		csrf, bearer string
 	}{{nil, csrf, ""}, {cookie, "", ""}, {cookie, csrf, "Bearer test-agent"}} {
-		w := attentionRequest(s, "POST", "/api/v1/works/refresh", body, denied.cookie, denied.csrf, denied.bearer, "")
+		w := worksHTTPRequest(s, "POST", "/api/v1/works/refresh", body, denied.cookie, denied.csrf, denied.bearer, "")
 		if w.Code != 403 {
 			t.Fatalf("auth accepted: %d", w.Code)
 		}
 	}
-	w := attentionRequest(s, "POST", "/api/v1/works/refresh", command("outside", map[string]any{"roots": []string{filepath.Dir(root)}}), cookie, csrf, "", "")
+	w := worksHTTPRequest(s, "POST", "/api/v1/works/refresh", command("outside", map[string]any{"roots": []string{filepath.Dir(root)}}), cookie, csrf, "", "")
 	if w.Code != 403 {
 		t.Fatalf("expanded root: %d %s", w.Code, w.Body.String())
 	}
-	w = attentionRequest(s, "POST", "/api/v1/works/refresh", command("default", map[string]any{}), cookie, csrf, "", "")
+	w = worksHTTPRequest(s, "POST", "/api/v1/works/refresh", command("default", map[string]any{}), cookie, csrf, "", "")
 	if w.Code != 200 {
 		t.Fatalf("default refresh: %d %s", w.Code, w.Body.String())
 	}
@@ -98,14 +121,27 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	}
 	id := snapshot.Snapshot.Works[0].ID
 	revision := snapshot.Snapshot.Works[0].Revision
+	if err = os.WriteFile(filepath.Join(root, "new-observation.txt"), []byte("later fixture"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	defaultReply := w.Body.String()
+	w = worksHTTPRequest(s, "POST", "/api/v1/works/refresh", command("default", map[string]any{}), cookie, csrf, "", "")
+	if w.Code != 200 || w.Body.String() != defaultReply {
+		t.Fatalf("refresh replay changed result: %d %s", w.Code, w.Body.String())
+	}
 	for _, cmd := range []struct {
 		path, field string
 		value       any
 	}{{"attitude", "attitude", "continue"}, {"group", "group", "research"}, {"handoff", "content", "human handoff"}, {"hidden", "hidden", true}} {
 		body := command(cmd.path, map[string]any{"expected_revision": revision, cmd.field: cmd.value})
-		w = attentionRequest(s, "PUT", "/api/v1/works/"+id+"/"+cmd.path, body, cookie, csrf, "", "")
+		w = worksHTTPRequest(s, "PUT", "/api/v1/works/"+id+"/"+cmd.path, body, cookie, csrf, "", "")
 		if w.Code != 200 {
 			t.Fatalf("%s: %d %s", cmd.path, w.Code, w.Body.String())
+		}
+		accepted := w.Body.String()
+		w = worksHTTPRequest(s, "PUT", "/api/v1/works/"+id+"/"+cmd.path, body, cookie, csrf, "", "")
+		if w.Code != 200 || w.Body.String() != accepted {
+			t.Fatalf("metadata replay: %d %s", w.Code, w.Body.String())
 		}
 		var result struct {
 			Work domain.Work `json:"work"`
@@ -115,8 +151,12 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 		}
 		revision = result.Work.Revision
 	}
+	w = worksHTTPRequest(s, "PUT", "/api/v1/works/"+id+"/attitude", command("attitude", map[string]any{"expected_revision": 0, "attitude": "park"}), cookie, csrf, "", "")
+	if w.Code != 409 {
+		t.Fatalf("different input reused receipt: %d %s", w.Code, w.Body.String())
+	}
 	delivery, _ := json.Marshal(map[string]any{"works": []map[string]any{{"name": "Delivered work", "platform": "codex", "path": filepath.Join(root, "never-read"), "kind": "folder"}}})
-	w = attentionRequest(s, "POST", "/api/v1/works/delivery", command("delivery", map[string]any{"content": string(delivery)}), cookie, csrf, "", "")
+	w = worksHTTPRequest(s, "POST", "/api/v1/works/delivery", command("delivery", map[string]any{"content": string(delivery)}), cookie, csrf, "", "")
 	if w.Code != 200 {
 		t.Fatalf("delivery: %d %s", w.Code, w.Body.String())
 	}
@@ -131,8 +171,12 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	s = makeServer()
-	cookie, _ = bootstrapSession(t, s)
-	w = attentionRequest(s, "GET", "/api/v1/works", "", cookie, "", "", "")
+	cookie, csrf = bootstrapSession(t, s)
+	w = worksHTTPRequest(s, "POST", "/api/v1/works/refresh", command("default", map[string]any{}), cookie, csrf, "", "")
+	if w.Code != 200 || w.Body.String() != defaultReply {
+		t.Fatalf("restart receipt replay: %d %s", w.Code, w.Body.String())
+	}
+	w = worksHTTPRequest(s, "GET", "/api/v1/works", "", cookie, "", "", "")
 	if w.Code != 200 {
 		t.Fatal(w.Body.String())
 	}
@@ -152,5 +196,35 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	}
 	if roots.refreshes != 0 {
 		t.Fatal("HTTP GET/refresh unexpectedly started registered discovery")
+	}
+}
+
+func TestEngineIndependentServicesActivateSessionGuard(t *testing.T) {
+	db, err := sqlite.Open(filepath.Join(t.TempDir(), "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if err = db.RunMigrations(context.Background(), migrations.FS); err != nil {
+		t.Fatal(err)
+	}
+	for _, services := range []Services{
+		{KnowledgeGovernance: attentionapp.NewKnowledgeService(sqlite.NewKnowledgeRepository(sqlite.NewEngineRepository(db)), attentionapp.KnowledgeServiceOptions{})},
+		{ExperienceGovernance: attentionapp.NewExperienceService(sqlite.NewExperienceRepository(db), sqlite.NewEventRepository(db), attentionapp.ExperienceOptions{ProjectID: "project-a"})},
+		{Works: workspaceapp.NewWorksService(db, nil, worksscan.Delivery{}, nil, workspaceapp.WorksServiceOptions{})},
+	} {
+		s := NewServer(Config{Services: services, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
+		w := attentionRequest(s, "GET", "/api/v1/works", "", nil, "", "", "")
+		if w.Code != 403 {
+			t.Fatalf("standalone service bypassed auth: %d", w.Code)
+		}
+		cookie, csrf := bootstrapSession(t, s)
+		if cookie == nil || csrf == "" {
+			t.Fatal("standalone service has no session")
+		}
+		w = attentionRequest(s, "POST", "/api/v1/knowledge/missing/confirm", `{"schema_version":1,"request_id":"confirm","expected_version":1,"owner_project":"project-a"}`, cookie, "", "", "")
+		if w.Code != 403 {
+			t.Fatalf("standalone service bypassed CSRF: %d", w.Code)
+		}
 	}
 }
