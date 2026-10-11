@@ -21,7 +21,7 @@ type EventRepository interface {
 
 type EventService struct {
 	repo           EventRepository
-	strength       float64
+	strength       *float64
 	failureCapture []func(context.Context, string) error
 }
 
@@ -39,8 +39,12 @@ func (e *EventCapturePendingError) Unwrap() error { return e.Cause }
 
 // strength has no product default; callers must provide the selected scale.
 func NewEventService(repo EventRepository, strength float64, failureCapture ...func(context.Context, string) error) *EventService {
-	return &EventService{repo: repo, strength: strength, failureCapture: failureCapture}
+	return &EventService{repo: repo, strength: &strength, failureCapture: failureCapture}
 }
+
+// NewPendingEventService records source observations while the scale remains
+// undecided. Mapped events are rejected; no default strength is assigned.
+func NewPendingEventService(repo EventRepository) *EventService { return &EventService{repo: repo} }
 
 func (s *EventService) Record(ctx context.Context, records []StoredEvent) ([]StoredEvent, error) {
 	result := make([]StoredEvent, 0, len(records))
@@ -51,7 +55,10 @@ func (s *EventService) Record(ctx context.Context, records []StoredEvent) ([]Sto
 				return err
 			}
 			if record.Event != nil {
-				signal, err := domain.NormalizeSignal(record.ID, *record.Event, record.Observation.Outcome, record.Observation.Depth, s.strength)
+				if s.strength == nil {
+					return fmt.Errorf("mapped event ingestion requires explicitly configured signal strength")
+				}
+				signal, err := domain.NormalizeSignal(record.ID, *record.Event, record.Observation.Outcome, record.Observation.Depth, *s.strength)
 				if err != nil {
 					return err
 				}
