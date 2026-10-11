@@ -3,7 +3,7 @@
 - 轨道分支：`songconmaisaix31-design/attention-engine-w5-experience`
 - 事实源：任务书 `tabbit-code (2).md` §3/§4.3/§4.5/§7/§8 M5；主计划 `tasks/AttentionEngine-plan.md` W5 行
 - 独占写域：`internal/attention/domain/experience*.go`、`internal/attention/app/experience_*.go`、`internal/adapters/sqlite/experience_store*.go`、`tests/attention-engine/M5-experience*`、本文件
-- 状态：Wave A 阶段已收束（partial）——勘察 + 里程碑设计 + 纯本轨经验模式规则已实现并单测通过；app/service/store 与验收测试未实现，待 M0 契约 SHA 发布后在下一阶段（codex --yolo）继续。
+- 状态：原 owner 在 `61497e7` 接续；纯规则基线通过，Wave B 等待协调者发布 M0 精确 SHA。app/service/store 与 SQLite 验收尚未实现，M5 未通过。
 
 ## 1. 目标（§4.3 Experience）
 
@@ -37,7 +37,7 @@ Experience {
 - 契约类型集中在 `contracts.go`（带 `json` tag 的 DTO + 命令结构）。
 - 服务走 `AttentionService` 接口 + `Repository`/`AttentionTx` 回调事务。
 - 事件：`OutboxEvent{ID,Type,AggregateID,AggregateVersion,OccurredAt,CorrelationID,CausationID,Payload}`，经 `AttentionTx.AppendEvent` 落 `attention_outbox` 表。
-- 已有失败事件 `attention.job_failed`，payload `{job_id, operation_id, delivery_unknown, attempts, error, cause, cause_detail}`（`jobs.go:592`）。这是「agent_task 失败轨迹」的现成原始证据。
+- 已有失败事件 `attention.job_failed`，payload `{job_id, operation_id, delivery_unknown, attempts, error, cause, cause_detail}`（`jobs.go:592`）。这是导入/蒸馏作业证据，不能直接映射成 `agent_task` 或触发经验捕获。原交接将其称为 agent_task 失败轨迹的判断已纠正。
 
 ### 2.3 存储层 `internal/adapters/sqlite/`
 - `AttentionRepository` + `attentionTx` 实现 `app.AttentionTx`；`BEGIN IMMEDIATE` 串行化；JSON-in-TEXT 列；`saveHead` 做乐观版本写入；`listJSON`/`load` 通用读写。
@@ -115,3 +115,12 @@ Wave B（待 M0 契约 SHA 发布后编码）：
 - 未交付（真实剩余）：`app/experience_*.go` 服务层、`adapters/sqlite/experience_store*.go` 存储层、`tests/attention-engine/M5-experience*` 验收测试（含 SQLite 持久化 + 冷重启）。M5 未通过，不算完成。
 
 下一步（新阶段，切 codex --yolo 后接续）：M0 契约 SHA 发布后 fetch+merge 集成分支，实现 app/store/验收测试，完成「失败事件候选 + approved + project scope + 人工分享 SQLite 持久化及冷重启」串行验收，再 worker_done succeeded。
+
+## 10. Wave B 接续与依赖 Handoff（2026-10-11）
+
+- 实际客户端：Codex，当前派发 task `task_01d6c1323a06` / dispatch `ctx_64ccc9c2ca1a`；不启动并发 Agent。
+- 基线 `61497e7d0b83a7a1c2f54e402e6b9b06d57dd79f`，工作树干净；`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain/` PASS（cached）。这是纯规则基线，不是持久化验收。
+- 捕获只接受实际持久化 `agent_task` 且明确失败的事件；导入、蒸馏、未知执行效果和私人原对话不能生成失败模式。证据引用原始 Event，不创建单独证据对象。
+- 只读 W0 schema 观察：当前 `attention_engine_experiences` 无 project scope / 原始事件去重字段，尚无跨项目分享审计表。已通过 Orca Handoff 请求 W0 提供 owner project、原始 event 外键与幂等键、人工分享 who/when/where 持久化结构；迁移仍只由 W0 修改。
+- 人工 approve/demote 与跨项目分享经受信 human 身份；Agent 检索仅返回其受信项目可见的 approved 经验。W0 HTTP 和 W6 MCP 接线通过 Handoff，不在本轨越界修改。
+- 失败 outcome 的归一化字段、规则结构化输入、受信项目上下文等待协调者与共享 owner 确认；不据未提交文件冻结接口。收到精确 SHA 后普通合并，完成 SQLite 捕获、重启、幂等、人工关口和检索范围验收。
