@@ -5,9 +5,13 @@
 
 ## 状态（2026-10-11）
 
-波 A 完成：只读勘察 + 里程碑设计 + 验收脚手架设计。编码阻塞于 M0 契约类型未发布
-（集成分支 `attention-engine/v1-20261011` 当前仅文档，W0 分支仍在基线）。主控发 merge_ready
-后执行 `git fetch origin && git merge origin/attention-engine/v1-20261011` 再开码（波 B）。
+波 A 已落码：纯数学状态更新 + 参数化函数 + 30 天 golden 数据（不依赖 M0 类型，不自建共享
+Event/Node/Store）。域文件 `dynamics/antimatthew/lifecycle/topic/conflict` 已实现，单测与
+`tests/attention-engine/M2_golden_test.go` 通过（GOFLAGS=-p=1 GOMAXPROCS=2）。
+
+波 B 阻塞于 M0 契约类型未发布：app 层 `engine_*.go`（get_attention_state/explain_focus）与
+`engine_store*.go` 依赖 M0 的 Event/Signal/AttentionNode/EvidenceRef 类型。主控发 merge_ready
+后执行 `git fetch origin && git merge origin/attention-engine/v1-20261011` 再开码。
 
 ## 目标与验收（任务书原文，不降级）
 
