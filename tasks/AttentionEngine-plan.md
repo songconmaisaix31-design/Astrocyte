@@ -5,9 +5,23 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-11 23:12 波 C：原八轨及W3/W4/W6限定返修全部结算；W1真实metadata回放因权限范围未答failed，其本地实现可合但M1真实验收未通过，其余限定实现succeeded。W0最终 SOURCE `f4bf0257b3f2e93e2ce67197bfbb0764a68332a3` / REPORT `5c1aa0dc41358db29c3cc12c9a250f19b7fc69b0` 完整check/build PASS。唯一集成轨：Codex--yolo / gpt-6.1-sol，worktree `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、branch `songconmaisaix31-design/attention-engine-final-integration`、Task `task_9c5f23440239` / Dispatch `ctx_7eb57b08004b` / terminal `term_28cadb7a-4147-4dec-9f7a-87ecc545576d`。基线 root `dd62ec9`；write_paths仅 `tasks/AttentionEngine-integration.md` 及必要路由/导入/配置/类型薄胶水，领域返修退原owner。普通合精确最终报告，定向M6和diff复验；root随后完整check/build/适用E2E及最终push。首次注入turn_start_unobserved，检查后仅bareEnter，已实际观察开始阅读/工作，未重新派发或重复整条prompt。
+
+2026-10-11 22:00 用户更新：后续统一 `codex --yolo`，覆盖此前 OpenCode 客户端决定。已核 Codex CLI 0.162.0 接受该参数；按轨先提交当前阶段、结算并归档旧 Worker，再于原工作树启动 Codex，写域及 Git 历史保留。八轨已实际接续为 Codex / gpt-6.1-sol（实际 runtime projection），有效 Task/Dispatch 见 STATUS 最新表。W5 旧终端由运行时标记 user_takeover，未强制关闭，已结算 idle。
+
+2026-10-11 22:22 正式 P1 基础 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已 root 普通合入 `2268f4920973128068f46a182dfddfb040a1dbc2`、精确源五包复验 PASS 并 push，波 B 已解锁。W0 P2 消费 W7 已发布稳定 Go 阶段 `0e38f94fa516f5b9f8ec4f48f6f76fbad425e5e1` 作 HTTP/cmd 编译依赖；不作最终集成验收。领域缺口继续原轨返修，最终集成仍在全部轨 settle 后。sqlite-vec CUT，relevance 使用显式可复算退化，不能称向量检索已验。
+
 用户要求 Codex 接替原 OpenCode 主控。原主控终端 `term_462ee860-933e-43d7-94cb-491d01617fcf` 已中断；原 Run `run_19a0b1268e5a` 绑定到 Codex `term_1adf40a6-ef79-4efa-b602-7b55173624e6`（consumer_generation=2）。八轨原 Task/Dispatch/工作树保留。八个 Worker 均卡在读取用户指定任务书的权限弹窗，单次读取已放行；此前 ready/input_accepted 不代表开发已开始。
 
 实际 Worker 分支使用 Orca 自动名称 `songconmaisaix31-design/attention-engine-w0-core`、`-w1-events`、`-w2-engine`、`-w3-sleep`、`-w4-knowledge`、`-w5-experience`、`-w6-mcp`、`-w7-works`。下表 `attention-engine/wN-*` 为原计划名称，消费提交时以实际分支和 owner 发布的精确 SHA 为准，不重建分支。
+
+W2/W5 原 Task 提前以设计交付结束：`8a4db07` / `22fef44` 只算波 A 文档，M2/M5 尚未实现。原终端已复用为 W2 `task_1efa13b6e981` / `ctx_ad864daccaa9`、W5 `task_57f40b160754` / `ctx_3f9743f7e989`，原已结算 Dispatch 不再使用。
+
+W3/W4 原 Task 亦仅交付波 A 核心：`c3e8395` / `ab7d381`。原终端已复用为 W3 `task_e5487ee2214c` / `ctx_91c890736e4a`、W4 `task_da85be3296c1` / `ctx_8ae58c0f5840`。W3 `3f6cc6f` 已修正多主题误自动合并；W2 `acb4561` 已通过纯公式复算；上述均不等于存储、应用层或完整里程碑交付。当前共同依赖 M0 精确提交。
+
+写域补充：所有 `*_contract*.go` 归 W0，W1 event/signal 与 W2 engine 通配符明确排除契约文件。阶段设计交付用 status/merge_ready，业务验收完成后才 worker_done。Go 编译使用进程环境 `GOFLAGS=-p=1 GOMAXPROCS=2`，不修改宿主分页设置。
+
+参数待答：衰减 λ、信号强度、主题密度/分裂及 confidence 冲突阈值的工程初值已一次集中询问，未答时只实现参数化内核，不冻结默认值。α=0.3、A_floor=0.05、θ=0.15、合并关联>0.8、90 天冷归档沿任务书。momentum 不额外改写 A(t) 公式。
 
 ## 北极星（一切裁决）
 核心算法是持续演化的个人认知模型：观察行为→注意力；注意力→组织知识；经验→提升 Agent 能力。每行代码须能回答"这行代码让 'Astrocyte 如何知道什么值得关注' 更可回答了吗"。
@@ -33,7 +47,7 @@
 4. 记忆可见范围：Experience/KnowledgeEntry 默认**项目隔离** + 人工显式跨项目分享（带审计）；Attention Graph 本体个人级。
 5. 新增 W7 本地作品聚合轨（"AI 作品寻回册"级别，设计参考无源码）：平台聚合与统计 / 作品卡片与文件核实 / 交接手册 / 态度与视图 / 扫描导入与同步，并作为链1真实事件源。
 
-## 轨道与互斥写域（1 Agent + 1 Worktree + 1 Branch，全 OpenCode）
+## 轨道与互斥写域（1 Agent + 1 Worktree + 1 Branch，已切到 Codex --yolo）
 | 轨 | 分支 | 独占 write_paths | 里程碑 |
 |---|---|---|---|
 | W0 契约·迁移·HTTP·存储基础·集成 | attention-engine/w0-core | `contracts/`、`web/src/api/`、`migrations/014+`、M0 契约文件（`internal/attention/domain/engine_contract.go`、`internal/attention/app/engine_contract.go`、`*_contract*.go`：Event/Signal+权重表/AttentionNode/Experience/KnowledgeEntry/Evidence/引擎接口）、`internal/adapters/httpapi/`、`internal/adapters/sqlite/` 共享基础设施（连接/迁移执行/`engine_common*.go`）、`cmd/`、`go.mod`/`go.sum`、`scripts/`、`tests/attention-engine/` 共享 harness | M0 + 存储基础 + HTTP 关口 + 最终集成 + M6 |

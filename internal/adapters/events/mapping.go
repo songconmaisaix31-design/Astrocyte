@@ -51,7 +51,10 @@ func MapCachedMetadata(raw json.RawMessage, receivedAt int64) (app.StoredEvent, 
 	if err != nil {
 		return app.StoredEvent{}, err
 	}
-	return receipt("s1:session:"+source+":"+o.cwd+":"+o.session, source, "native_session_header", "s1:local_project_discovery:registered", raw, o, receivedAt), nil
+	// A refreshed cache is a new metadata observation, not new session activity.
+	// Its original observed_at distinguishes receipts without changing source TS.
+	origin := "s1:session:" + source + ":" + o.cwd + ":" + o.session + ":observed:" + str(object(raw), "observed_at")
+	return receipt(origin, source, "native_session_header", "s1:local_project_discovery:registered", raw, o, receivedAt), nil
 }
 
 // ReplayNativeFile requires the exact separately authorized file and root.

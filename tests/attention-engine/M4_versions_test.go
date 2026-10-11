@@ -3,7 +3,6 @@ package attention_engine_test
 import (
 	"context"
 	"encoding/json"
-	"path/filepath"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -12,7 +11,7 @@ import (
 
 func TestM4CrystallizedVersionsAndPinnedReferencesAfterRestart(t *testing.T) {
 	ctx := context.Background()
-	path := filepath.Join(t.TempDir(), "knowledge.sqlite")
+	path := m4Path(t)
 	db, _, service := openM4(t, path)
 	defer func() { db.Close() }()
 	source := seedM4Source(t, db, "source", "p1")
@@ -98,7 +97,7 @@ func TestM4CrystallizedVersionsAndPinnedReferencesAfterRestart(t *testing.T) {
 
 func TestM4ExplicitReconfirmationPolicyAndFluidPreservation(t *testing.T) {
 	ctx := context.Background()
-	db, _, service := openM4(t, filepath.Join(t.TempDir(), "knowledge.sqlite"))
+	db, _, service := openM4(t, m4Path(t))
 	defer db.Close()
 	source := seedM4Source(t, db, "source", "p1")
 	if _, err := service.RewriteFluid(ctx, app.KnowledgeFluidUpdate{ID: "k", OwnerProject: "p1", Topic: "agents", Fluid: "first", Sources: []domain.EventRef{source}, TS: 2000}); err != nil {

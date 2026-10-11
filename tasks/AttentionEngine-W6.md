@@ -2,6 +2,44 @@
 
 实际分支：`songconmaisaix31-design/attention-engine-w6-mcp`。写域：`internal/adapters/mcp/**`、`internal/attention/app/mcp_*.go`、`tests/attention-engine/M5-mcp*`、本文件。
 
+## 2026-10-11：提交后 capture 错误回执修复（当前最新）
+
+最新 SOURCE `1f185a494ef05203977b33b3ff5816bbb033d75c` 已 commit + push；初始 capture 修复 SOURCE `2314b6036f3b57788398adb420e8d8e283f639cb`、其报告 `a65b493` 均保留在普通历史中。本次最终 REPORT SHA 为最新 SOURCE 后紧邻的文档提交（准确 SHA 随 Orca worker_done 投递）。普通精确合并 W1 `673053186a12377c3a1dded4c0b987daa63f2dd5`、后续 typed error `d618b0bfe6d70b49fad2d43b1cf1b497ffc6a1c4`，W5 `b43d2a4cddd8a3f4a367676f9baaa6d3f3414ade`，以及 W2 生命周期/seed floor 修正 `aa4a64e194d7710d3cd39badb71bcc6803d7108d`。外轨文件变更仅来自这些依赖的普通 merge；本轨代码修改仍严格限于上述写域。
+
+原问题：W1 已提交 receipt/signal 后捕获经验失败，会返回持久 rows + error；原 MCP 后端遇到 error 丢掉 rows/稳定 ID，transport 又只输出 error 文本，使调用者可能误判原写入不存在。现在按本次生成的 origin_key 匹配自身 receipt，保留 event_id 与全部 receipt_ids；通过 `errors.As` 消费 W1 `EventCapturePendingError`，不匹配错误字符串。
+
+- 已知提交：`delivery_state="committed"`、`accepted=true` 或 `acknowledged=true` 表示原 receipt 已提交；typed error 同时返回 `capture_pending=true`、`isError=true`，绝不将回执提交当成 capture 已完成。
+- 未取得持久回执：`delivery_state="delivery_unknown"`，保留 origin_key，省略 accepted/acknowledged/event_id，避免无 ID 的 `accepted=false` 暗示原写入不存在。error/recovery 明确要求核对原 origin/receipt，禁止换新 origin 盲重发；后端不自动重试。
+- 错误结果的 JSON 在 `content[0].text` 中包含上述全部字段及 error/recovery，并复制到 structuredContent。客户端即使在 isError 时丢弃 structuredContent，也能从错误正文取得稳定 ID/未知状态。
+- 主控追加的 dynamics 待处理要求已修复：本轨导出 `app.MCPDynamicsPendingError{Cause error}`（Error/Unwrap），供 W0 recorder 在原 receipt 提交后，signal 读取/ApplySignals/缺少配置时返回 **原 rows + typed error**。后端独立标记 `dynamics_pending=true`，不误称 capture_pending；稳定 ID/正文/原 origin 的保留规则相同。W6 不隐式调用动力学或自动 birth。
+- 外部 MCP observation outcome 继续为 unknown，raw 自称 failed/success 不成为可信结果；task veto 继续 pending receipt，任务→主题关联未知，无假主题/停止任务行为。
+
+新增 `M5-mcp_delivery_test.go` 的 4 子例（report_event/veto × capture/unknown）启动 **8 个独立 stdio 子进程**，实际 SQLite 迁移/W1 Record/W5 CaptureCommittedFailure/CaptureFailures，无 memoryBackend。capture 子例通过测试专用 recorder 追加一条明确的独立 `contract_local` 可信合成失败，真实 W1 批次提交后实际 W5 callback 在经验事务边界注入不可用；不从公网 Agent raw 提升可信 outcome。独立父进程仅解析错误 content 文本即可看到原 MCP receipt ID、两条 typed receipt IDs、capture_pending，随后重开数据库确认原写入；冷 stdio 进程通过健康 W5 catchup 恢复恰好 1 条 quarantine 候选，其 Evidence/OriginEventID 指向独立可信失败，MCP approved-only 查询仍为空。再次 catchup 不复制候选，原 receipt/raw/Observation 完全不变。unknown 子例在实际提交后丢失 ack，正文仅承认 delivery_unknown；冷进程核对原 origin 对应唯一持久 receipt，没有新 origin/重写/虚构失败候选。
+
+追加 `TestMCPRealStdioDynamicsPendingKeepsReceipt/unborn_topic` 启动 **2 个独立 stdio 进程**：实际 W1/SQLite 提交 commit receipt/signal，实际 W2 对未 birth 主题 ApplySignals 返回错误；测试专用 recorder 保留 rows 并包装正式 typed seam，客户端正文保留 committed ID 与 dynamics_pending，capture_pending=false。冷进程读注意力仍无主题，数据库中原单条 receipt/signal 不变，无自动创建/重发。此用例不声明未确定参数的全部分支或生产 cmd 已验证。
+
+原 `M5-mcp_sqlite_test.go` **5 个独立进程、全部五操作**验收继续 PASS（32→34 完整解释、2 条项目范围 approved 经验、原 raw BLOB、边界拒绝与冷启动），helper 现使用实际 W5 postcommit callback。新旧三项真实 stdio 验收总计 15 次独立进程；所有输入均 `contract_local` 合成数据，不声明 native/task_live。
+
+验证命令（`GOFLAGS=-p=1`、`GOMAXPROCS=2`）及结果：
+
+```powershell
+go test ./tests/attention-engine -run 'MCPRealStdioPostcommit' -count=1 -v
+# PASS：4 子例，8 个实际 stdio 进程。
+go test ./tests/attention-engine -run 'MCP|Experience|M1CommittedFailure' -count=1 -v
+# PASS：16 顶层 PASS / 1 helper SKIP；capture/unknown/dynamics 与原五操作真实 stdio 均通过。
+go test ./internal/adapters/mcp ./internal/attention/app -count=1
+# 两包 PASS（adapter 全量运行，未套过滤条件）。
+go vet ./internal/attention/app ./internal/adapters/mcp ./tests/attention-engine
+go build ./...
+node scripts/check-architecture.mjs
+git diff --check
+# 全部 exit 0；23 包架构边界通过。
+```
+
+本阶段首 RED 保留：定向回归的旧五进程测试在治理 approve fixture 报 `validation_failed: Command metadata is incomplete`（新增 IdempotencyKey 契约）；本轨只为 approve/share 测试命令补齐独立稳定 key，随后相同定向套件 PASS，未降低生产校验。首次合并执行的 adapter 命令误用了只匹配 MCP/Experience 名字的过滤器，得到 `[no tests to run]`，不算 adapter 验收；随后如上单独全量 adapter/app PASS。历史首失败与原成功记录保留在下文。
+
+W0 Handoff 已投递精确 SOURCE/constructor：`NewEngineMCPBackend` 签名不变，event recorder 使用 `NewEventService(events, explicitStrength, experiences.CaptureCommittedFailure)`（或保留 rows+error 的可信项目入口），startup principal/scope/session 与人类 veto 门保持原要求。本轨不写 cmd/HTTP/迁移/契约。**生产命令实际启动、本机 MCP Agent/官方 client 互操作、真实可信 Agent 失败以及 task_live 仍未执行**；W0 消费最终后端与生产接线验收独立于本阶段合成 stdio 检查。真实业务参数/批准提权不由本轨冻结或暴露，M2 全部算法验收/M6 与整体项目完成仍由主控分别判断。
+
 ## 2026-10-11 22:28 +08：W6 接口与真实 stdio/SQLite 局部验收完成
 
 SOURCE `e057f100cab38e80b7a081c6f5a3639d023e2f63` 已 push；真实薄后端 `0ac5d3a`，task pending 修正 `ae252c6`。精确普通消费 M0 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`、W2 `e1222e75048c6cb83222c2307be874e6ae38126a`、W5 `d8e73334cb75c46a8c38460f4764cfe950ce603e`、W1 `e9bb3809eadcbf48cf017b6e09ae0ef4112b1a90`，未修改其他 owner 文件。

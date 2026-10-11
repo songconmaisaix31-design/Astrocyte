@@ -1,5 +1,61 @@
 # Astrocyte 当前状态
 
+## 波 C 单轨集成（2026-10-11 23:12）
+
+全部原轨与限定返修已结算。W0最终 SOURCE `f4bf025` / REPORT `5c1aa0d` 已push，完整check/build PASS（275契约例/API14/前端90，三个可执行文件+web），root未把owner结果当自身整場。唯一集成 Codex--yolo已在新隔离 `attention-engine-final-integration` worktree/同名自动分支启动，Task `task_9c5f23440239` / Dispatch `ctx_7eb57b08004b`，只普通合精确最终报告和必要薄胶水；root不写业务代码，之后负责交付分支完整check/build/E2E/push。已结算外部终端保留idle、未关闭归档；M1真实metadata权限阻塞/未决定产品策略/官方客户端/真实七日对照仍保持。root业务尚P2，不宣称最终集成完成。
+
+## M6 修复复算通过，等待最终装配（2026-10-11 23:06）
+
+W4 原owner修复 SOURCE `abff94d` / REPORT `11899c9`、W3投影 SOURCE `61a196b` / REPORT `39cb8fe` 已push并结算。W0 M6 SOURCE `f4bf025` 已发布；root独立重算实际报告，两项推荐的A等于图A、分数非零、公式误差0，七场指标复算一致，合成焦点前四天research→后三天implementation。首次全零排序错误原件未改。正式Sleep SOURCE `363fcca` 的built CLI单日/重启与同factory合成七日分别验收，没有产品历史回放/默认参数选择。W0 正完成全check/build，其他domain轨idle；全轨结算后派一个集成Agent、root最终check/build/适用E2E/push。root业务集成仍P2，不能将本段定向成功称整体交付。真实M1元数据回放与真实七日用户对比仍未完成。
+
+## M6 实际推荐首错与原 owner 返修（2026-10-11 22:59）
+
+root 独立读取 W0 实际七日输出发现：图中 A>0，推荐 inputs.Attention/score 却全为0，排序是字母序，原 M6 排序断言不足。W4 直接把 nodes.data 解成 AttentionNode，而 W2 正式存的是 StoredAttentionNode 包装；这是实际集成 RED，不因先前 flat fixture 可复算而通过。首输出保留 `%TEMP%/astrocyte-M6-W0-20261011/M6-week-first-zero-attention.json`，W0另保留 `M6-first-zero-ranking.json`。
+
+原 W4 已在同Codex--yolo/worktree/branch接新限定 Task `task_43f6f1eb9aa2` / `ctx_f9762428c69e` 修正式节点读取/关联相关度；W0增强M6断言匹配实际图A并独立复算非零得分。原 W3 另有小接口 Task `task_5536142bb5f5` / `ctx_4fb5ea6b3ab5` 提供显式选择的 raw.facts 字面投影函数给正式 Sleep CLI，不定产品默认。其原完整M3 SOURCE `684292a` / REPORT `d940024` 已push。W5 REPORT `737a4b0`、W7最终 `d4dbc8b` 已succeeded结算。W0共享入口继续，最终集成尚未开始。
+
+## 原 owner 收束与最终装配（2026-10-11 22:51）
+
+集成分支仍 `attention-engine/v1-20261011`，业务集成源仍 P2 `05d8536`，后续领域发布尚未最终合入。八轨保持 Codex --yolo / gpt-6.1-sol；下表为当前结算事实，不以已发布代码替代整体验收。
+
+| 轨 | 当前事实 |
+|---|---|
+| W0 | 组装 SOURCE `271d18c` 已发布，人工经验 HTTP 重复/冷重启和实际 MCP pending PASS；Sleep/M6及完整检查继续 |
+| W1 | SOURCE `f3460ef` / REPORT `360730c` 已 push；本地9 PASS/1 SKIP。原真实CC/Codex回放0 eligible，元数据范围未答，原Task以外部阻塞 failed结算 |
+| W2 | SOURCE `2c148c1` 已 push并 succeeded结算；root 对实际应用30点公式/留存SQLite独立核对 PASS |
+| W3 | 实际 Sleep 日流水线/共享事务/冷进程验证及最终发布进行中 |
+| W4 | SOURCE `82e4340` / REPORT `a6f5c67` 已 push并 succeeded结算；root 独立排序复算/只读节点/固化历史与固定引用核对 PASS |
+| W5 | SOURCE `b43d2a4` 本地8项PASS；W0已回传实际重复HTTP PASS，原owner整理最终报告 |
+| W6 | 返修 SOURCE `1f185a4` / REPORT `a1ee679` 已 push并 succeeded结算；已提交ID及capture/dynamics/unknown状态区别，禁止无主题自动出生 |
+| W7 | SOURCE `9fe5788` 真实 typed UI 已发布；留存真实作品目录/浏览器/SQLite重启及生产pending事件sink接入 PASS，最终报告继续 |
+
+已结算外部终端的 worker-release 返回 retained/external_terminal/processAction=none，未宣称关闭或归档。W0后续完整检查首次 ENAMETOOLONG，批次修正后第二场固定summarize版本探测超时；定向探测2.718秒PASS，完整check尚未重新通过。详见 [基线与独立核对](docs/acceptance/AttentionEngine-baseline.md)。原生会话范围、工程参数、知识再确认/时间基准仍待用户，最终M1真实验收及真实七日对比尚未完成。
+
+## Codex --yolo 八轨接续（2026-10-11 22:38）
+
+用户更新后八轨均由 `codex --yolo` / gpt-6.1-sol 实际接续，原工作树和自动分支不变。当前有效 Task/Dispatch：
+
+| 轨 | Task | Dispatch |
+|---|---|---|
+| W0 契约、迁移、共享入口 | task_168bacd9d56d | ctx_b16e623a7b11 |
+| W1 事件流 | task_13ac51983837 | ctx_62837e7857f0 |
+| W2 动力学 | task_aa68996b9e24 | ctx_952de5921ed4 |
+| W3 Sleep | task_e5487ee2214c | ctx_1bd42ececb41 |
+| W4 Knowledge | task_da85be3296c1 | ctx_062b79f07e46 |
+| W5 Experience | task_01d6c1323a06 | ctx_64ccc9c2ca1a |
+| W6 MCP 原 owner 返修 | task_cac2fa66a283 | ctx_7f6b4a0be462 |
+| W7 作品聚合 | task_355d5b638062 | ctx_cf173bcd2418 |
+
+原 OpenCode 阶段报告按 partial 处理；W6 已证实 Agent 退出但未结算，原 Dispatch 按 stop 后 retry，代码 `daa3f6d` 保留。其余旧轨已归档关闭；W5 原终端因 user_takeover 由运行时保留、已结算 idle。旧表和旧 Dispatch 仅作历史，不再派发。
+
+W0 持久化基础 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已普通合入并 push，集成 SHA `2268f4920973128068f46a182dfddfb040a1dbc2`。root 对该精确集成源复验 M0 harness、attention domain/app、SQLite、HTTP 五包 PASS。migration015 保留原始事件 bytes/观测、节点独立 updated_at、项目隔离/人工分享审计/版本及 Sleep 日记录；sqlite-vec 按任务红线 CUT。各轨已消费正式依赖进入应用/持久化开发。W0 继续 P2 HTTP/OpenAPI、作品迁移与入口；人工关口未组装时仍501。M2纯公式30点独立复算误差0；各轨纯逻辑/协议/fixture局部通过不能替代完整验收。
+
+P2 SOURCE `5d356370c4157e74d96388afd098d5fea14dc799` 普通合入并 push 为 `05d853605256e6540d9ef43f63eeb6530b7fe0a9`。root 五包定向测试及该精确源单场 `pnpm check` PASS：Go/vet、21包架构、275契约例/生成漂移、S1 API14、TS/lint、Vitest13文件/90项。前三场基线 FAIL 保留见 [基线记录](docs/acceptance/AttentionEngine-baseline.md)，build/E2E尚未root复验。W7真实UI已接七端点，隔离浏览器/持久化验收进行中；W0后续已发布独立知识巩固时间/只读事务/认证测试harness，原轨继续消费与返修，未作为最终集成验收。
+
+W6 原阶段 SOURCE `e057f100cab38e80b7a081c6f5a3639d023e2f63` / REPORT `062ea130eda94d3ce3411d956167fadd7efdc03e` 已结算，五stdio子进程/SQLite重启是实际执行、输入为合成contract_local；新Task复用原终端/写域修 W1已提交原事件但经验捕获失败时的ID/可见pending传递，禁止新OriginKey盲重放。首次注入停在composer，检查后仅bareEnter恢复，未重复派发。W2首seed A=0已原owner改floor.05；W4实际query_only下BEGIN IMMEDIATE首RED归W0补WithReadTx；W5人工命令原CAS无结果receipt已原owner补原子收据回放。实际初次失败与定向绿分别保留。
+
+本机固定个人缓存中 Astrocyte 项目存在但 native contributors=[]，W1所选真实回放首场RED保留。原始会话元数据范围、工程默认参数、知识新增固化版本再确认与检索时间基准已问用户，未答不冻结。下一步：各轨真实应用/持久化验收 → 集成/M6与最终check/build/push；整体M1–M6/W7未完成。
+
 ## Codex 接替主控（2026-10-11 21:41）
 
 用户明确要求接替原终端开始任务。原 OpenCode 主控已中断；Run `run_19a0b1268e5a` 已绑定 Codex `term_1adf40a6-ef79-4efa-b602-7b55173624e6`，consumer_generation=2。原八轨 Task/Dispatch 和工作树不变，实际 Worker 分支为 `songconmaisaix31-design/attention-engine-wN-*`。

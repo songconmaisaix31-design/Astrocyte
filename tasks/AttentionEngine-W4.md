@@ -1,141 +1,98 @@
-# AttentionEngine W4 · Knowledge 两级存储 + 检索重排（M4）
+# AttentionEngine W4 · Knowledge 两级存储与检索（M4）
 
-事实源：任务书 §4.4 / §5.6 / §8 M4。基线 `attention-engine/v1-20261011`，实际分支 `songconmaisaix31-design/attention-engine-w4-knowledge`。
+事实源：用户任务书 `tabbit-code (2).md` §4.4 / §5.6 / §8 M4；分支 `songconmaisaix31-design/attention-engine-w4-knowledge`。客户端/模型为 Codex / gpt-6.1-sol。原 M4 Dispatch `task_da85be3296c1` / `ctx_062b79f07e46`；本次限定返修 Dispatch `task_43f6f1eb9aa2` / `ctx_f9762428c69e`。
 
-## 阶段状态（交接 Codex --yolo）
+## 当前限定返修结果（2026-10-11）
 
-### Codex 接续检查（2026-10-11）
+已修复实际 M6 推荐读取 W2/W3 节点包装时静默得到零注意力的问题；SOURCE `abff94dbb8b614e4489e467e9095935fd0815ba9` 已 push，交给 W0 Dispatch `ctx_b16e623a7b11`（消息 `msg_a59f8646dad0`）加强 M6 非零/输入一致性断言并复跑。此结果是 W4 生产保存路径与检索的限定返修验收，不是 M6 全链路重新通过声明。
 
-- 当前 Dispatch：`task_da85be3296c1` / `ctx_062b79f07e46`；客户端 Codex，模型以运行配置为准，未从客户端名称推断。
-- 基线 `13a80ef`：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain/ ./tests/attention-engine/` 与同两包 `go vet` PASS，仅为纯逻辑证据。
-- 独立修正：追加固化快照时复制所有 JSON 字节，调用方与返回值修改不能改变既有版本；补充两组显式 λr 下独立复算、排序变化与固定注意力验证。
-- 修正后 `go test -count=1`、同两包 `go vet`、`git diff --check` PASS；SQLite 重启/引用关口/人工分享审计仍 NOT_RUN。
-- 已通知协调者发布精确 M0 SHA、公共存储基础与 sqlite-vec spike 决策；发布前不实现依赖 M0 的 app/store，也不自建迁移或公共类型。
-- 协调者回复：M0 尚未发布完整稳定 SHA，scope/version/share audit 需求已转 W0；sqlite-vec 结论待 owner 报告，不将未知当作真相似度。
-- 独立阶段源码 `47a8950d475b612c0cc0e4e5e03ed2ef32131124` 已 push；既有 `go test ./internal/attention/app ./internal/adapters/sqlite` 与 `go build ./...` PASS（同限流环境），不包含新增 M4 持久化路径。
+- 原始集成 RED 文件保持原样：`C:\Users\DW\AppData\Local\Temp\astrocyte-M6-W0-20261011\M6-week-result.json`。`final.state` 的 implementation A=0.9552011491162884、research A=0.33674673723047327，但两项 `recommendations.inputs.Attention=0`、score=0；当时全零字母序不能证明推荐正确。
+- 根因：W2 `SaveNode` 实际序列化 `app.StoredAttentionNode`（node/history/version 等），W3 共享事务复用同一保存实现；W4 直接反序列化为 flat `domain.AttentionNode`，JSON 忽略未知字段且不报错。现在先读包装内 Node，再按 W2 兼容方式支持旧 flat 数据。未改 W2、共享契约、迁移、HTTP 或 cmd。
+- 普通精确消费 W2 final `2c148c1034ec28b5d787309f1320198706d97e4a` 与 W3 SOURCE `684292a6d8ff97a3e1b09c3a8398de51ccea1cfb`；新增 `TestM4ProductionNodeRetrievalAfterRestart` 分别调用 W2 `WithDynamicsTx/SaveNode` 与 W3 `WithSleepTx/SaveNode`，没有用手工 flat INSERT 替代生产保存。
+- 首次回归 RED 留存：`C:\Users\DW\AppData\Local\Temp\astrocyte-M4-node-wrapper-first-red-20261011.log`。两个子例实际返回 `{ID:z-exact Relevance:1 Attention:0 AccessBoost:3 AgeSeconds:8}`，预期 Attention=.6；修复后相同子例 PASS。旧 flat 数据测试保留且 PASS。
+- 关闭并重开真实 SQLite 后，query_only 下读出精确主题 A=.6、邻接主题 A=.9/relevance=.25；全部 Inputs 与独立已知值逐字段核对，再复算 score=relevance×exp(-lambda×age)×A×boost 且要求非零。lambda=0 时 z-exact 胜过字母序靠前的 a-neighbor，lambda=1.5 时赢家切换；空主题查询也核对两个真实 A。前后完整节点 data（含 history）及 attention/momentum/confidence/last_active/updated_at/lifecycle/version 一致。
 
-### 待 M0 后实际验收顺序
+验证环境仍为 `GOFLAGS=-p=1 GOMAXPROCS=2`：
 
-1. 在临时文件 SQLite 经正式迁移建立库，调用真实 knowledge application/store 创建 inbox 条目和来源引用；从另一项目读不到，inbox 引用被拒。
-2. 同一条目两次 sleep 写入：fluid 只保留第二次，crystallized 两版内容与各自时间戳都存在；关闭连接、重新 Open，query_only 直接核查正式表，不以内存返回值替代。
-3. 人工 confirm 后可固定引用；Agent confirm/share 被拒；拥有项目人工显式分享后目标项目可读，第三项目仍不可读，并核对审计中的 actor、源/目标项目、entry 与时间。
-4. 给定固定注意力表、查询时间和显式 λr，从落库候选读取 relevance、age、boost 并逐项独立重算排序；查询前后直接比对 attention 状态与关联记录不变。
-5. 真相似度或退化 relevance 只采用 W0 正式 spike 结论；共享 HTTP/cmd 接线与迁移修正请求提交 W0 Handoff，不越写域。
+| 命令 | 此次结果 |
+|---|---|
+| `go test -count=1 ./tests/attention-engine -run TestM4ProductionNodeRetrievalAfterRestart -v -timeout 90s`（修复前） | RED，W2Dynamics/W3Sleep 均 A=0 vs .6，1.117s |
+| `go test -count=1 ./tests/attention-engine -run TestM4 -v -timeout 90s`（修复后，保留库） | PASS，11个顶层例及2个生产保存子例，1.556s |
+| `go test -count=1 ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi -timeout 90s` | 此次4包全部 PASS；domain .331s / app .399s / sqlite 5.398s / httpapi .987s，原交付记录的首次 RED 保留 |
+| `go vet ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/attention-engine` | PASS，exit0 |
+| `go build ./internal/attention/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./cmd/server` | PASS，exit0 |
+| `git diff --check` | PASS |
 
-### 波 B 第一阶段（M0 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已普通合并）
+新的真实 SQLite/检索因子材料位于 `C:\Users\DW\AppData\Local\Temp\astrocyte-M4-node-wrapper-green-20261011`；生产包装子例在 `TestM4ProductionNodeRetrievalAfterRestart/W2Dynamics` 与 `.../W3Sleep`，各有 `knowledge.sqlite` 和 `retrieval.json`，JSON 包含 producer、查询、返回因子/得分及前后 SQL 节点快照。沿用原 M4 的显式留存入口，不覆盖旧 RED 或原验收库。
 
-- 实际客户端/模型由协调者确认：Codex / `gpt-6.1-sol`。删除本轨重复 Knowledge 状态枚举，统一消费 M0 契约。
-- 新增真实 `KnowledgeRepository` / `BindKnowledgeTx`，复用 W0 `EngineRepository.WithTx`；`RewriteKnowledgeFluidTx` 可加入 Sleep 已有事务，校验原始来源 scope/时间/字节，不改变固化历史和确认状态。
-- `KnowledgeService` 实现已发布治理接口：人工 confirm/demote/share/reference 关口、版本检查、项目可见性和审计；既有 `attention_receipts` 以 `Knowledge.*` 命令命名空间保存完整幂等结果。
-- 第一轮 M4 真实路径 RED：空 `crystallized` JSON null 被误判为版本冲突；确认 action INSERT 7 列配 8 个占位符。分别归一化 null 和修正占位符后，定向 `go test -count=1 ./tests/attention-engine -run TestM4` PASS（5 例）、三包 vet 与 diff-check PASS。
-- 实际文件 SQLite 关闭/重新 Open/只读 query_only：fluid 仅保留第二次、事务失败回滚、单行持久；人工确认、Agent 拒绝、分享审计、第三项目隔离、demote 后引用拒绝已测。
-- 尚未完整 M4：追加固化版本、持久化工作区引用行和真实检索整合待实现。原 action 表缺引用项目/固定版本，已 Handoff W0 请求共享引用表迁移；当前 reference 成功只证明关口与 action，不能算实际工作区固定引用。
-- 协调者已将重新确认策略和检索年龄起点作为用户未答项：实现将保留显式配置；fixture 可显式选策略，不当作产品默认验收。
+W0 后续需普通消费上述 SOURCE，检查 M6 recommendation 的 A 等于 final.state 相同 topic 的 A，再以独立 relevance、年龄、显式 lambda 与 audited human reference boost 复算非零得分，不能只检查有返回或排序稳定。本轨不修改 M6、个人预览、真实采集 metadata；LambdaR/age/reconfirmation 产品默认仍未决定，sqlite-vec 仍 CUT，受控 fixture 不是个人真实认知流或人工验收。
 
-### 波 B 第二阶段（共享依赖已消费到 `d09dc046f2a504bb2238d3182e14995f60013fda`）
+## 原 M4 交付记录（2026-10-11 22:43 +08:00）
 
-- 实际固化版本追加、两种显式重新确认策略、真实 reference 行与固定固化版本、created_at/last_consolidation 两种显式年龄起点、配置 λr 和审计 reference boost、topic/关键词退化 relevance 已实现。
-- 迁移017/018 与共享 `WithReadTx` / `Server.Handler` 来自 W0 精确 SHA 普通合并；`consolidated_at` 仅 fluid/crystallized 写更新，人工 confirm/share/reference 保持它。旧 NULL 不伪造回填。
-- SQLite 新连接重查两版内容/时间戳、fluid 第二次值与第一版固定引用；直接 UPDATE/DELETE 旧版本和修改引用被 append-only trigger 拒绝。
-- 固定注意力/实际持久化候选排序独立复算，创建/巩固两种年龄选择各自复算；query_only 下检索 PASS，SQL attention/data/更新时间/version 前后不变。CUT 模式随结果明确返回，不称真向量相似度。
-- 第二阶段新增 RED：原 `BEGIN IMMEDIATE` 在 query_only 库被拒；消费 W0 deferred read transaction 后同定向例 PASS。HTTP 独立 governance-only 装配 session bootstrap 为404，guard 省略治理服务已交 W0，HTTP 全例尚未绿。
-- `go test -count=1 ./tests/attention-engine -run 'TestM4(Persistent|Fluid|Human|Crystallized|Explicit|Retrieval)'` PASS（9例，排除尚阻塞的HTTP例）；四包 vet/diff-check PASS。不称完整 M4 已通过。
-- `GetKnowledge(ctx,p,id,project)` 已与 W0 HTTP 命名接口统一，修正初阶段同 string 参数顺序歧义。缺失策略、年龄起点或 λr 时明确拒绝，不冻结产品默认；两种 fixture 策略不等于用户已选择。
+M4 的 10 个实际验收例 PASS；SQLite 全包首次 RED 保留。已普通消费原 W7 owner 精确修复 `a3eab2c6d0df026e056a5a873a0d63bf58282688`，对应失败例定向复验 PASS；没有宣称 SQLite 全包重新跑绿。
 
-- **已完成**：两级存储纯规则（`domain/knowledge.go`：`KnowledgeStatus`/`ConfirmKnowledge`/`ReferencableKnowledge`/`CrystallizedVersion`/`AppendCrystallized`/`KnowledgeVisible`）+ 检索纯函数（`domain/retrieval.go`：`RetrievalScore`/`RankRetrieval`，λr 必传、无冻结默认）+ 验收脚手架 `tests/attention-engine/M4_retrieval_test.go`。commit `ab7d381`、`7294260` 已 push。
-- **未完成 / NOT_RUN**：`app/knowledge_*.go`、`adapters/sqlite/{knowledge_store,vec}*.go`、端到端 `M4_*_test.go`（fluid 重写/crystallized 只追加/confirmed 引用/跨项目过滤+分享审计）。全部依赖 M0。
-- **FAIL / UNKNOWN**：无本轨失败；M0 契约/迁移/sqlite-vec 结论状态 UNKNOWN（集成分支 `77712f3` 仍 docs-only，W0 分支未 push）。
-- **下一步接口要求**：见下方 Handoff——`domain.KnowledgeStatus` 引用、`knowledge_*` 四张表 DDL、W0 存储基础（Open/ExecMigration/事务助手）、sqlite-vec 结论。M0 SHA 发布后实现 store/app/vec。
+- 最终 SOURCE：`82e4340e50943d355ecd81a2a47d65b7e3929f5a` 已 push；实现阶段 `73ba73b29ce3694dce7624a942fb26bff887c2eb` / `74ff62d95d9c44a95144eb08793762c9e41cb3e1` 已 push。
+- 验证组合：本轨实现 + W0 `875980708d11cdf3ab392eb8ee3c386aa2617866` + W7 `a3eab2c6d0df026e056a5a873a0d63bf58282688`，全部普通合并；最后增加协调者要求的验收库保留入口。
+- 共享契约、迁移017/018、只读事务、HTTP治理与会话 guard 均由 W0 发布精确 SHA 后普通合并；本轨未修改公共契约/迁移/HTTP/cmd。
 
-## 范围与分层
+## 完成内容
 
-- 链2 末端：Sleep 巩固 → Knowledge Graph → 用户确认 → Project Workspace。
-- 本轨交付：`KnowledgeEntry` 两级存储语义 + 检索侧重排（§5.6）。KnowledgeEntry 结构体属 W0 契约（`*_contract*.go`），本轨只写 `domain/{knowledge,retrieval}*.go` 内的纯规则与 `app/knowledge_*.go`、`adapters/sqlite/{knowledge_store,vec}*.go` 的落库/检索。
+- 实际 `KnowledgeService` / `KnowledgeRepository` 复用 Go + modernc SQLite 和 `EngineRepository`，提供来源校验、fluid 重写、固化版本追加及人工治理。
+- fluid 是单行当前摘要，覆盖后关闭连接、重新 Open，再以 SQLite query_only 直接核对第二次值；同事务失败会回滚。
+- crystallized 是独立不可变时间戳版本表；新事实追加两版并保留原版字节，直接 UPDATE/DELETE 被正式 append-only trigger 拒绝。最新指针与旧历史都可重启重查。
+- confirm/demote/share/reference 使用受信 Principal、CommandMeta、乐观版本和真实审计；既有 `attention_receipts` 按 `Knowledge.*` 命名空间保存完整重试结果。新的 tracing request ID 不重复写入。
+- 默认项目隔离，只有数据库中匹配 owner/target 的人工分享才扩大范围；第三项目仍拒绝。Agent 无授予项目范围时拒绝，人工确认/分享操作拒绝 Agent。
+- confirmed 才可引用；正式 reference 行记录项目、知识版本、固定 crystallized 版本与 human actor。后续追加第二版后，已引用第一版的行保持不变。
+- 检索读取正式 SQLite confirmed 候选、固定注意力、内容年龄和 audited reference boost，在 deferred read snapshot 中重排；query_only 测试证明没有注意力写入，data/attention/updated_at/version 前后相同。
+- W0 sqlite-vec spike 已 CUT：采用 topic 精确命中/持久化邻接/literal 关键词回退，结果明确携带 `sqlite_vec_cut:topic_keyword`，没有新的向量引擎或真相似度宣称。
 
-## 两级存储语义（§4.4）
+## 配置保持显式
 
-- **fluid**：流动摘要，即时推理用，随时被 sleep 重写。单值、可覆盖、无历史。
-- **crystallized**：固化快照，结构化事实，**只追加带时间戳版本**。事实演化历史不丢（Zep 时序图简化）。落库为独立版本表，`crystallized` 字段指向最新版本。
-- **status**：`inbox → confirmed`。`confirmed` 才可被 Project Workspace 引用。确认是人工关口动作，`ConfirmKnowledge` 幂等，其余状态拒绝。
-- **可见性**：默认项目隔离，`KnowledgeVisible` 判定 owner == project 或显式 `knowledge_shares` 命中；人工跨项目分享带审计。
+重新确认策略与年龄起点由协调者询问用户，尚未选择产品默认。
 
-## 检索侧重排（§5.6，与状态更新严格分离）
+- `KnowledgeCrystallizedUpdate.Policy` 必须显式选择 `KnowledgeReconfirmVersion` 或 `KnowledgeKeepConfirmation`；缺失会拒绝。fluid-only 重写保留既有确认状态和固化历史。
+- `KnowledgeQuery.AgeBasis` 必须显式选择 `KnowledgeAgeCreated` 或 `KnowledgeAgeConsolidated`；两种路径各自独立复算通过。
+- `KnowledgeQuery.LambdaR` 为必传指针，单位 seconds^-1，nil 不执行检索，显式零可用，无默认 λr。`ReferenceBoost` 是调用方显式给出的 audited reference 增益，零保持基准 1。
+- `consolidated_at` 只在 fluid/crystallized 写入时更新，人工动作仅更新 `updated_at`；旧 NULL 保持未知，不能从确认/分享时间伪造内容时间。
 
-`score = relevance × e^(-λr·Δt) × A(topic) × access_boost`
+## 验证命令与结果
 
-- `relevance`：sqlite-vec 相似度（W0 spike 定接入/退化）。
-- `A(topic)`：条目挂靠主题当前注意力强度，纯读不写。
-- `λr`：检索独立衰减，与状态更新 `λ` 无关；**可配置参数，无冻结默认值**（调用方显式传入）。
-- `access_boost`：人工使用/提及/项目复用信号，基准 1.0。
+环境统一 `GOFLAGS=-p=1 GOMAXPROCS=2`。
 
-本轨已落纯函数（`domain/retrieval.go`）：`RetrievalScore`（纯公式）、`RankRetrieval`（可复算、稳定排序、ID 决胜）。检索任何路径不写 `A(t)`；`A(t)` 演化只归 W2。
+| 命令 | 实际结果 |
+|---|---|
+| `go test -count=1 ./tests/attention-engine -run TestM4 -timeout 90s` | PASS，10例，1.428s；按协调者要求保留库后同10例 PASS，1.505s；包含 production HTTP handler + 真实 SQLite + 冷重启 |
+| `go test -count=1 ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi` | domain/app/httpapi PASS；sqlite RED：W7 `TestWorksRequestReceiptsPersistAndPreventUnknownReplay` 重复 CREATE `works_requests` |
+| `go test -count=1 ./internal/adapters/sqlite -run TestWorksRequestReceiptsPersistAndPreventUnknownReplay` | 消费原 owner `a3eab2c` 后定向 PASS，1.191s；不是全包重跑 |
+| `go vet ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/attention-engine` | PASS，独立命令 exit0 |
+| `go build ./internal/attention/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./cmd/server` | PASS，独立命令 exit0 |
+| `git diff --check` | PASS |
 
-## 波 A 已交付（不依赖 M0 类型）
+输入是 contract_local 的受控事件/注意力/策略 fixture；数据库、真实 HTTP 会话/CSRF/服务/网络请求与重启是实际本地执行。没有把受控输入称为真实个人认知流、用户人工验收、M2 动力学或 M6 全链路验收。
 
-- `internal/attention/domain/retrieval.go`：`RetrievalScore`、`RankRetrieval`、`RetrievalCandidate`、`RetrievalRanking`（λr 为必传参数，无默认常量）。
-- `internal/attention/domain/knowledge.go`：`KnowledgeStatus`、`ConfirmKnowledge`、`ReferencableKnowledge`、`CrystallizedVersion`、`AppendCrystallized`、`KnowledgeVisible`。
-- 测试 `retrieval_test.go` / `knowledge_test.go`：公式复算、排序可复算、候选不可变、追加不覆盖、时间戳单调拒绝、隔离可见性。
-- 验收脚手架 `tests/attention-engine/M4_retrieval_test.go`：固定注意力下排序独立复算（手工重算公式逐项核对）、检索不写回注意力。
+## 保留首次失败及修复
 
-验证：`go test ./internal/attention/domain/ ./tests/attention-engine/` PASS；`go vet` 两包 exit 0（GOFLAGS=-p=1 GOMAXPROCS=2）。
+1. 真实 fluid 重启/confirm 测试首次 RED：JSON null 被当成固化历史内容，随后发现 action INSERT 7 列用了8占位符。归一化 null、修正 SQL 后定向 PASS。
+2. 持久化检索在 query_only 下首次 RED：共享 BEGIN IMMEDIATE 被 SQLite 拒绝。W0 发布 deferred `WithReadTx` 后同例 PASS。
+3. standalone KnowledgeGovernance HTTP 首次 RED：session bootstrap404。W0 guard 补治理服务后真实 HTTP/session/CSRF/governance/restart 全例 PASS。
+4. 最终受影响 SQLite 包首次 RED：W7 测试重复 CREATE 正式迁移表。未改非写域测试；原 owner `a3eab2c` 修复后单例 PASS，前述定向绿色不替代此历史失败。
 
-## Handoff → W0（M0 契约/迁移/存储基础）
+## 协调者可独立只读核查的留存库
 
-1. **KnowledgeEntry 状态类型**：本轨已定义 `domain.KnowledgeStatus`（`inbox|confirmed`）。建议 `KnowledgeEntry.Status` 直接引用该类型，避免重复枚举。
-2. **crystallized 落库不是单 JSON 列**：需迁移一张只追加版本表，`KnowledgeEntry.crystallized` 指向最新版本。请求 schema（DDL 提案，W0 写入 014+ 迁移）：
+`ASTROCYTE_M4_ARTIFACT_DIR` 只在明确设置为新绝对目录时保留验收材料，存在同名数据库会拒绝覆盖；正常测试仍使用临时库。此次根目录：
 
-```sql
-CREATE TABLE knowledge_entry (
-    id            TEXT PRIMARY KEY,
-    topic         TEXT NOT NULL,
-    fluid         TEXT NOT NULL DEFAULT '',      -- 可 UPDATE，sleep 覆盖
-    status        TEXT NOT NULL DEFAULT 'inbox', -- inbox | confirmed
-    owner_project TEXT NOT NULL DEFAULT '',      -- '' = 个人作用域
-    created_at    INTEGER NOT NULL
-);
+`C:\Users\DW\AppData\Local\Temp\astrocyte-m4-6b799aaebe6c468896492f068d317ad6`
 
-CREATE TABLE knowledge_crystallized (            -- 只 INSERT，不 UPDATE/DELETE
-    entry_id    TEXT NOT NULL REFERENCES knowledge_entry(id),
-    version     INTEGER NOT NULL,
-    content     TEXT NOT NULL,                   -- JSON
-    recorded_at INTEGER NOT NULL,
-    PRIMARY KEY (entry_id, version)
-);
+- `TestM4PersistentRetrievalRecomputedAndAttentionUnchanged/knowledge.sqlite` 与 `retrieval.json`：实际 confirmed 候选、未确认和跨项目排除样本、两个固定 attention 节点、审计 reference；JSON包含查询 λr/age/now/boost、返回候选因子/得分及前后 attention SQL 字符串。
+- 独立重算输入：Now=10000ms，created_at 年龄，ReferenceBoost=2；a 的 relevance=1、A=.6、boost=3、age=8s；b 的邻接 relevance=.25、A=.9、boost=1、age=6s。λr=0 时 a 首位，λr=1.5 时 b 首位。均为显式受控参数，不是产品默认。
+- `TestM4CrystallizedVersionsAndPinnedReferencesAfterRestart/knowledge.sqlite`：两版 `{"fact":"one"}`/`{"fact":"two"}`，时间3000/7000ms，fluid=second；pin-first 固定 knowledge_version=3 / crystallized_version=1。
+- `TestM4ActualHTTPGovernanceAndColdStore/knowledge.sqlite`：实际 localhost HTTP 的 local-human 审计、p1→p2 分享、p2 reference，重启后核查。
+- 其余4个 M4 存储例也各留 `knowledge.sqlite`，未复制到个人库；读取时请在新连接开启 query_only。
 
-CREATE TABLE knowledge_sources (                 -- EvidenceRef 视图 §4.5
-    entry_id      TEXT NOT NULL REFERENCES knowledge_entry(id),
-    event_id      TEXT NOT NULL,
-    weight_at_use REAL NOT NULL,
-    ts            INTEGER NOT NULL
-);
+## 集成 Handoff 与真实剩余限制
 
-CREATE TABLE knowledge_shares (                  -- 人工跨项目分享，审计
-    entry_id  TEXT NOT NULL REFERENCES knowledge_entry(id),
-    project   TEXT NOT NULL,
-    shared_at INTEGER NOT NULL,
-    PRIMARY KEY (entry_id, project)
-);
-```
-
-3. **Store 接口**：本轨 `knowledge_store*.go` 需要 W0 的连接/迁移执行/`engine_common*.go` 共享基础设施（Open/ExecMigration/事务助手）。本轨将实现的接口形状（签名按 W0 类型对齐后落地）：
-
-```go
-type KnowledgeStore interface {
-    // fluid 覆盖（可重写），crystallized 追加（不可变），confirm（inbox→confirmed），
-    // 隔离可见列表，人工分享审计，检索候选装配（relevance + A + boost + age）。
-}
-```
-
-4. **sqlite-vec**：`relevance` 由 W0 spike 决定接入或砍。接不上则本轨退化 `relevance` 为确定性标量（topic 精确命中 / 仅 recency+access），重排公式不变，退化在报告记录。
-5. **依赖顺序**：本轨 store/app/vec 全部依赖 M0 发布（契约类型 + 迁移 + 存储基础 + sqlite-vec 结论）。M0 SHA 发布前只做纯函数与独立验证，不造 placeholder Store 或 public 类型。
-
-## 波 B（M0 合入后）
-
-- `app/knowledge_*.go`：confirm 端点胶水、confirm 前禁止引用、跨项目分享入口（人工关口）。
-- `adapters/sqlite/knowledge_store*.go`：fluid 覆盖 / crystallized 追加 / 确认 / 隔离可见列表 / 分享审计，全部只经 W0 存储基础。
-- `adapters/sqlite/vec*.go`：sqlite-vec 相似度（或退化标量）→ `relevance`。
-- `tests/attention-engine/M4_*_test.go` 补齐：端到端验收——fluid 可重写、crystallized 只追加（SQLite 只读核查）、confirmed 才可引用、跨项目过滤与分享审计。
-
-## 验收（M4）
-
-同一注意力状态下检索排序可复算；fluid 可重写、crystallized 只追加（SQLite 只读核查）；confirmed 才可被 Project Workspace 引用；跨项目过滤 + 人工分享审计。
+- W0：组装 `app.NewKnowledgeService(sqlite.NewKnowledgeRepository(engineBase), options)` 到 `httpapi.Services.KnowledgeGovernance`。`GetKnowledge(ctx,p,id,project)` 与公共命名接口一致；主程序接线仍由 W0 owner 完成，单独实际 HTTP 装配已验。
+- W3：`sqlite.BindKnowledgeTx(existing EngineTx)` -> `app.KnowledgeTx`；`app.RewriteKnowledgeFluidTx(tx, KnowledgeFluidUpdate)` 加入既有 Sleep 事务，不另开事务。`ListKnowledge(owner,false)` 包含分享项，写入前必须筛选 `StoredKnowledge.OwnerProject == owner`。需要正式迁移018才有独立内容时间。
+- 本轨没有 raw-to-fluid 关键事实提取约定；W3 确定性 FactProjector 与不可测指标显式标记由 W3 负责，EventID 召回不能冒充事实召回。矛盾待裁决保持原知识，由 W2/W3 Conflict owner 处理。
+- 推荐消费端通过 `RetrieveKnowledge` 使用真实读侧；λr/年龄/版本策略仍需调用方明确配置，产品默认待用户决定。
+- 主控综合 check/build、M6、个人预览升级、main 合入与远程 CI 不属于本轨已执行结果；产品默认待答保持显式。W4 可按本报告的真实 M4 验收结果结算，主控仍需独立只读复算和普通集成。

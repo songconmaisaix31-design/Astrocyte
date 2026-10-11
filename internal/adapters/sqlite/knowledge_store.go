@@ -232,7 +232,14 @@ func (t *knowledgeTx) KnowledgeAttention(topic string) (domain.AttentionNode, er
 		return v, apierrors.NewNotFound("attention_node", topic)
 	}
 	if err == nil {
-		err = json.Unmarshal([]byte(data), &v)
+		// W2 SaveNode (also composed into W3 Sleep) persists the node with
+		// dynamics history in StoredAttentionNode. Match its legacy flat fallback.
+		var stored app.StoredAttentionNode
+		err = json.Unmarshal([]byte(data), &stored)
+		v = stored.Node
+		if err == nil && v.ID == "" {
+			err = json.Unmarshal([]byte(data), &v)
+		}
 	}
 	return v, err
 }

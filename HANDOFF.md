@@ -1,5 +1,21 @@
 # Astrocyte 主控交接
 
+## 最新入口：修复后 M6 通过，等待波 C（2026-10-11 23:06）
+
+root HEAD文档49e6e93，业务仍P2。先读STATUS顶部及基线M6首RED/修复后独立复算。W4修复abff94d/report11899c9与W3投影61a196b/report39cb8fe均已结算，新Dispatch不可继续发领域返修。W0原ctx_b16e623a7b11仍活跃，M6 source f4bf025已push，root实际JSON非零推荐与图A匹配且独立公式误差0；当前全check/build待完成。W0正式Sleep363fcca单日实际CLI/重启与同factory七日合成分别通过；保持显式策略，不增历史产品回放。全轨结算后仅派1个final integration Codex--yolo Agent独立worktree普通合精确owner最终报告，再由root最终检查/构建/适用E2E/push。元数据读取/参数/知识语义未答及真实七日科学验证仍显式未完成。
+
+## 最新入口：原 owner 收束（2026-10-11 22:51）
+
+先读 STATUS 最新表及基线独立核对。八轨实际 Codex --yolo，Run/root不变。W2/W4/W6返修已 succeeded，W1因原真实CC/Codex元数据范围未答 failed结算（本地实现已push），其外部终端 retained idle，不代表进程关闭/归档。W5已获实际W0 HTTP重复/重启PASS反馈待最终报告；W3发布实际Sleep待W0消费；W7实际作品UI及同留存库事件sink/重启PASS待最终报告。源精确SHA见STATUS，未结算轨沿原Dispatch，已结算owner有新领域返修需新Task，W1权限回答后原Task retry。
+
+root业务集成仍P2 `05d8536`，尚未把上述发布合成最终绿色。W0 `271d18c` 实际MCP pending/HTTP人工重复检查通过；整场check第一次Windows绝对argv ENAMETOOLONG、第二次summarize版本探测超时保持，单独探测PASS仅为定向恢复。等待W3后原W0完成M6；各轨结算后派一个集成Agent ordinary exact merges，领域问题退回原owner，root最终check/build/适用E2E/push。禁止私人原始源、旧UNKNOWN重发、默认参数猜测和Agent自动创建主题；真实七日用户对比仍人工未执行。
+
+## 当前入口：Codex --yolo 八轨（2026-10-11 22:38）
+
+最新集成 `05d853605256e6540d9ef43f63eeb6530b7fe0a9` 已普通消费 W0 P2 `5d35637` 并 push，root 单场check PASS（275契约例、API14、前端90项）；build/E2E未复验，新领域各轨应用仍待最终集成。W6原任务结算后以 `task_cac2fa66a283` / `ctx_7f6b4a0be462` 复用原Codex--yolo终端修postcommit原事件ID/pending回流，旧ctx_e01不再收信。W0后续只读事务/独立consolidated_at/Handler及session guard已发布依赖，原owner继续实际HTTP/SQLite/restart，不可沿早期纯/fixture记录宣称完整里程碑。其余当前Task见STATUS。最后完整M1真实两客户端仍待用户原始元数据范围，默认参数/知识语义仍未决定。
+
+用户要求后续 `codex --yolo`，已实际启动八轨 Codex / gpt-6.1-sol，沿原工作树/分支/互斥写域继续。Run仍 `run_19a0b1268e5a`，coordinator仍 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`。有效 Task/Dispatch 见 STATUS 最新表，旧 OpenCode IDs 不再使用。正式 M0 P1 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已普通合入集成 `2268f4920973128068f46a182dfddfb040a1dbc2` 并 push，root 精确源五包 PASS；各轨已解锁真实应用/SQLite。W0 正 P2 HTTP/OpenAPI/作品迁移/入口；已授权普通消费 W7 稳定 Go SHA `0e38f94fa516f5b9f8ec4f48f6f76fbad425e5e1`，只作编译依赖，不算W7验收。W7原owner修请求去重和事件sink错误，真实UI等P2端点。别消费未发布改动，也别把501/fixture/纯规则声明完整里程碑完成。参数、原始元数据范围、知识版本再确认/检索时间基准等待用户。root独占计划/状态/决定/验收/最终Git；业务返修归现有owner。
+
 ## Codex 主控接续（2026-10-11 21:41）
 
 原主控已中断，用户要求 Codex 直接接替。Run `run_19a0b1268e5a` 当前 coordinator 为 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`；原八轨 Task/Dispatch/工作树保持。八轨任务书读取弹窗已单次放行，恢复指令已投递。实际分支 `songconmaisaix31-design/attention-engine-wN-*`，不是计划表原名称。先读 STATUS 最新段和 AttentionEngine-plan，继续验收 W0 M0，不向旧主控发送继续，不重启原 Worker。

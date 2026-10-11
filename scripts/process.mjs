@@ -1,7 +1,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { access, readFile, readdir } from 'node:fs/promises';
 import { constants } from 'node:fs';
-import { delimiter, join } from 'node:path';
+import { delimiter, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
@@ -60,9 +60,14 @@ export async function checkGofmt(go) {
   const files = await goFiles();
   if (!files.length) throw new Error('No Go files; W1 backend is pending');
   const executable = join(go, '..', process.platform === 'win32' ? 'gofmt.exe' : 'gofmt');
-  const result = spawnSync(executable, ['-l', ...files], { cwd: root, encoding: 'utf8', windowsHide: true });
-  if (result.error) throw result.error;
-  if (result.status !== 0 || result.stdout.trim()) throw new Error(`gofmt check failed:\n${result.stdout}${result.stderr}`);
+  // Bounded relative-path batches stay below Windows' command-line limit as
+  // the repository grows, while checking every discovered file in order.
+  for (let offset = 0; offset < files.length; offset += 40) {
+    const batch = files.slice(offset, offset + 40).map(file => relative(root, file));
+    const result = spawnSync(executable, ['-l', ...batch], { cwd: root, encoding: 'utf8', windowsHide: true });
+    if (result.error) throw result.error;
+    if (result.status !== 0 || result.stdout.trim()) throw new Error(`gofmt check failed:\n${result.stdout}${result.stderr}`);
+  }
   console.log('gofmt: all Go files formatted');
 }
 

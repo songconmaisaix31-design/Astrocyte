@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"math"
-	"path/filepath"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -13,7 +12,7 @@ import (
 
 func TestM4ExplicitAgeBasisDoesNotUseHumanGovernanceTime(t *testing.T) {
 	ctx := context.Background()
-	db, _, service := openM4(t, filepath.Join(t.TempDir(), "knowledge.sqlite"))
+	db, _, service := openM4(t, m4Path(t))
 	defer db.Close()
 	source := seedM4Source(t, db, "source", "p1")
 	u := app.KnowledgeFluidUpdate{ID: "k", OwnerProject: "p1", Topic: "agents", Fluid: "first", Sources: []domain.EventRef{source}, TS: 2000}
