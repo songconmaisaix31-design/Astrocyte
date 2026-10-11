@@ -47,14 +47,15 @@ type GetExperiencesResult struct {
 // ReportEventInput mirrors the unified Event contract (task book §4.1) as the
 // MCP wire shape for external agents reporting an event.
 type ReportEventInput struct {
-	Source  string          `json:"source"`
-	Session string          `json:"session"`
-	TS      int64           `json:"ts"`
-	Kind    string          `json:"kind"`
-	Tokens  *int            `json:"tokens,omitempty"`
-	Scope   string          `json:"scope"`
-	Topic   string          `json:"topic"`
-	Raw     json.RawMessage `json:"raw,omitempty"`
+	Source          string          `json:"source"`
+	Session         string          `json:"session"`
+	TS              int64           `json:"ts"`
+	Kind            string          `json:"kind"`
+	Tokens          *int            `json:"tokens,omitempty"`
+	Scope           string          `json:"scope"`
+	Topic           string          `json:"topic"`
+	Raw             json.RawMessage `json:"raw,omitempty"`
+	OriginalPayload json.RawMessage `json:"-"`
 }
 
 type ReportEventResult struct {

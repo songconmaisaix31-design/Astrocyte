@@ -93,7 +93,7 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 					"tokens":  map[string]any{"type": "integer"},
 					"scope":   map[string]any{"type": "string"},
 					"topic":   map[string]any{"type": "string"},
-					"raw":     map[string]any{"type": "object"},
+					"raw":     map[string]any{},
 				},
 				"required": []string{"ts", "kind"},
 			}},
@@ -101,12 +101,19 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 		},
 		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
 			var request struct {
-				Event app.ReportEventInput `json:"event"`
+				Event json.RawMessage `json:"event"`
 			}
 			if err := decodeArguments(args, &request); err != nil {
 				return nil, err
 			}
-			in := request.Event
+			var in app.ReportEventInput
+			if len(bytes.TrimSpace(request.Event)) == 0 || bytes.TrimSpace(request.Event)[0] != '{' {
+				return nil, &InvalidParamsError{"event must be an object"}
+			}
+			if err := decodeArguments(request.Event, &in); err != nil {
+				return nil, err
+			}
+			in.OriginalPayload = append(json.RawMessage(nil), request.Event...)
 			if in.Kind == "" || in.TS <= 0 || (in.Tokens != nil && *in.Tokens < 0) {
 				return nil, &InvalidParamsError{"event requires positive ts, kind and nonnegative tokens"}
 			}
