@@ -4,6 +4,12 @@
 
 ## 2026-10-11 Codex 接续：stdio 边界阶段，M5 尚未完成
 
+M0 放行后已普通 merge 精确 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`。共享 DTO 阶段 SOURCE `d9cbdd15ae79a69818ab65e39427d4220c3d8e19` 已 push：`ExplainFocusResult=FocusExplanation`、`EvidenceItem=ExplanationSignal`、`RelatedTopic=RelatedNode`、`ExperienceItem=StoredExperience`；权重路径、原始 receipt/raw bytes、confidence-only、关联时间/Agent、经验事件引用与时间戳全部保留。`ReportEventInput.Tokens` 为 `*int`，缺失仍为未知。
+
+首失败保留：消费 M0 后 `go test ./internal/adapters/mcp ./tests/attention-engine -run MCP -count=1` build FAIL，原因是 W6 的测试函数 `roundTrip` 与 M0 `engine_contract_test.go` 同名；只在本轨改为 `mcpRoundTrip`，并让管道读写并行，完整解释返回不等待输出缓冲区清空才读取。随后两包 `go test -count=1`、相应 vet、MCP/app build、21 包架构、diff 全部 exit 0；未知 token 补断言后 `go test ./tests/attention-engine -run MCP -count=1` PASS。它们仍是 transport/test-backend 证据，不是 W2/W5 实际应用与 SQLite 验收。
+
+已向 W1/W2/W5 原 owner 投递读写接口 Handoff，等待实际应用签名/精确 SOURCE；backend DTO mapping 由本轨 `app/mcp_*.go` 完成，W0 只做 cmd startup 及依赖注入，禁止交叉写域。
+
 主控复核修正 SOURCE `8a496786885f4181263863f270485f13c00ee303`：`report_event` 接受空/缺失 topic，保留待归类观测，不要求伪造标签；2026-10-11 22:16 +08 受影响 MCP/M5 两包重测 PASS、diff 检查 exit 0。后续将调用 W1 observation/pending 机制；当前仍未接真实入库。
 
 SOURCE `a57d67c77fd44513dbef3611bbb091dea3378937`，协议阶段 SOURCE `058a67baff3748933415ab14103e0171e838ffc6`，均已 push。客户端 Codex，主控 runtime 记录 `gpt-6.1-sol/YOLO`，未使用子 Agent；`GOFLAGS=-p=1`、`GOMAXPROCS=2`。
@@ -40,7 +46,7 @@ server, err := mcp.NewAstrocyteServer(backend, binding)
 // 检查 err 后：server.Serve(ctx, os.Stdin, os.Stdout)
 ```
 
-`cmd/`、锁文件、迁移仍仅 W0 可写；stdout 仅协议，错误写 stderr；不要从工具入参/客户端 capabilities 推断 principal、项目或人类授权。需 W0/M0 统一 StoredEvent / metadata 与事件入口，W2 排序/解释接口，W5 approved/scope 检索接口；主控通知稳定 SHA 后普通 fetch+merge，再完成真实 backend 和 stdio+SQLite/重启验收。task veto 需通过真实任务引用确定 topic，unknown task 不凭空创建主题。
+`cmd/`、锁文件、迁移仍仅 W0 可写；stdout 仅协议，错误写 stderr；不要从工具入参/客户端 capabilities 推断 principal、项目或人类授权。M0 StoredEvent / metadata 已消费，W1 真实入口、W2 排序/解释、W5 approved/scope 应用仍待发布；继续普通 fetch+merge 后完成真实 backend 和 stdio+SQLite/重启验收。task veto 需通过真实任务引用确定 topic，unknown task 不凭空创建主题；没有实际解析则显式 unsupported。
 
 协议参考：[MCP stdio](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)、[MCP lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle)、[MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)。以下波 A 描述保留为历史，最新 API 和权限语义以上文为准。
 
