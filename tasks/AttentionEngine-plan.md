@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-12 00:16 W0单spec返修succeeded，SOURCE `28459de60c1726a6a5119562900d73348309a615` / REPORT `49023fc044c2ebcbbffdcc582d2f95c6f22fd78d` 已push，真实8.3输入两视口最终2PASS、scoped TS/eslint/diff通过，原CI/本机两视口首RED和中间测试调用错误保留；生产源码零修改。沿唯一原集成Agent/树/分支新Task普通合root文档基线df9471a与W0精确REPORT，仅定向单spec/类型/静态检查后push报告，写域仍只有集成报告/必要薄胶水，不重复M6/业务build/全suite；root普通合并后单spec复验并最终push自动CI，不能以2定向绿称Windows全套绿。
+
 2026-10-12 00:09 CI38153179867（root92a2ded）Ubuntu完整PASS，Windowscheck/build PASS但浏览器224PASS/2FAIL/30SKIP：只 `web/e2e/s1-projects.spec.ts:33` 在1920/1280两视口把API规范root长名与输入RUNNER~1短名作字串相等。首E2E日志 `%TEMP%/astrocyte-ci-38153179867-e2e-first-failed.log` 保留，Ubuntu完整原件也留存；一次job日志获取EOF单独文件，不充作stderr。CanonicalRoot原来就返回EvalSymlinks规范目录，不能改变生产语义来适配测试。原W0沿同终端/树/分支单轨限定测试返修，只写 `web/e2e/s1-projects.spec.ts` 和自己报告：以Node独立realpath核对实际同目录，assert用户POST仍原样短路径、返回/SQLite/重启为规范目录，保留B/C授权上下文和不开模型。真实8.3 owned fixture复现，不能放宽assert/改TEMP隐藏；不改业务/helper/合同/其他spec，不重跑私源/媒体/paid。两视口定向browser+type/lint后commit+push，原集成Agent普通合，root定向复验和最终自动CI；现有源码check/build保持，不做无代码变化的重复构建。
 
 2026-10-11 23:52 W1限定集成Task `task_2a875959ca15` / `ctx_bd2dcbcb9f37` 已succeeded，SOURCE `5dfa4cb0cda4467f09f77c7c3b62304a1c938caa` / REPORT `e935fba0758beb33471c89ca11038a06f32eee89` 已push并root普通合为 `56c879a1a7d6b023f7124d29dde69b4b44cc7605`。root新树完整check/build EXIT0，八轨+三路径返修报告普通祖先复核通过。所有Dispatch结算，Windows真实8.3/junction拒绝已测、普通symlink privilege无保持NOT_RUN，用户真实M1/参数/知识政策仍待答。最终组合push自动CI，结果另记；不重复真实媒体/私源/整组编排。
