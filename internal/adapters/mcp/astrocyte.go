@@ -95,7 +95,7 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 					"topic":   map[string]any{"type": "string"},
 					"raw":     map[string]any{"type": "object"},
 				},
-				"required": []string{"ts", "kind", "topic"},
+				"required": []string{"ts", "kind"},
 			}},
 			"required": []string{"event"},
 		},
@@ -107,8 +107,8 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 				return nil, err
 			}
 			in := request.Event
-			if in.Kind == "" || in.Topic == "" || in.TS <= 0 || in.Tokens < 0 {
-				return nil, &InvalidParamsError{"event requires positive ts, kind, topic and nonnegative tokens"}
+			if in.Kind == "" || in.TS <= 0 || in.Tokens < 0 {
+				return nil, &InvalidParamsError{"event requires positive ts, kind and nonnegative tokens"}
 			}
 			return backend.ReportEvent(ctx, in)
 		},
