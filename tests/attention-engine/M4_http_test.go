@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -19,7 +18,7 @@ import (
 
 func TestM4ActualHTTPGovernanceAndColdStore(t *testing.T) {
 	ctx := context.Background()
-	path := filepath.Join(t.TempDir(), "knowledge.sqlite")
+	path := m4Path(t)
 	db, _, service := openM4(t, path)
 	defer func() { db.Close() }()
 	source := seedM4Source(t, db, "source", "p1")
