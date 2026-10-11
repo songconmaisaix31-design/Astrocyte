@@ -1,5 +1,13 @@
 # Astrocyte 当前状态
 
+## 本轮最终双平台 CI 通过（2026-10-12）
+
+交付分支 `attention-engine/v1-20261011`。源码和测试验收提交 `100f00cb6945c96a7f3bd3f100f7ff65efc61197` 的 [CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) 已 completed/success：Ubuntu24.04 与 Windows2025 的完整 `pnpm check`、`pnpm build`、`pnpm test:e2e` 均 PASS；两平台默认浏览器各226 PASS / 30 SKIP（2.7m / 5.2m），Linux `go test -mod=readonly -race ./...` PASS，Windows race 按工作流条件 SKIP。Windows 先前路径及两视口首RED保留，后续绿色不改写历史。完整日志与精确SHA见基线记录。
+
+三条认知链、五MCP操作、Sleep CLI、项目隔离知识/经验人工关口和Works五能力已实现并装配；八轨、限定返修和唯一集成均以 Codex --yolo 完成提交/推送，所有Dispatch已结算，工作树和普通Git历史保留。收尾提交只更新四份Markdown验收/交接文件，以 `[skip ci]` 避免重跑相同源码；上述CI属于100f00c，不冒称文档提交重新执行测试。
+
+整体产品与真实科学验收尚未完成：真实M1所选缓存0 eligible/首RED及metadata授权范围未答，工程默认和知识策略待答，sqlite-vec CUT并降级topic_keyword；官方MCP客户端/native task_live和真实七日用户对照未执行。未合main，未显式升级或验收个人运行实例；待用户决定后沿原owner继续。详情见 [验收基线](docs/acceptance/AttentionEngine-baseline.md) 和 [待答事项](docs/QUESTIONS.md)。
+
 ## 最后单 spec 修正已合入并复验（2026-10-12 00:22）
 
 交付分支attention-engine/v1-20261011，普通合并 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1` 消费限定集成REPORT `f726e1879aacff088ccf0f91a21fb5dbeaec74e4`，W0 SOURCE28459de/REPORT49023fc及原八轨/三组路径修复均普通祖先。集成两视口2PASS，root对此精确树独立 `pnpm --dir web exec playwright test e2e/s1-projects.spec.ts --workers=1` EXIT0/2PASS/51.8s，真实短输入、原样POST、独立Node规范目录、SQLite/reload与B/C/获准文件断言通过；spec scoped tsc/eslint/diff EXIT0。唯一测试文件和报告变化，已复核cmd/internal/contracts/migrations/scripts/web/src/依赖与92a2ded完全一致，不重复无变更业务构建。所有Dispatch已结算，外部终端retained idle。

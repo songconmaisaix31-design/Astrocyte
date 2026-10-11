@@ -95,3 +95,18 @@ push92a2ded59921608f5b6e718531128c4586dc1aee的CI38153179867完整结束：Ubunt
 W0 SOURCE `28459de60c1726a6a5119562900d73348309a615` / REPORT `49023fc044c2ebcbbffdcc582d2f95c6f22fd78d` 已push+succeeded，真实短名原断言两RED日志/trace另保留。改为POST前Node独立realpath期望，POST输入字串原样、API/SQLite/重启页面真实GET为规范root，原B/C/获准README/模型native禁用/零session断言保持。最终W0两例2PASS37.8s、scoped TS/eslint/diff通过；中间新增直接API GET403及类型/调用错误沿owner报告保留。唯一原集成SOURCE `7f45830a4f0f807ce17f95e257174a8adf62efac` / REPORT `f726e1879aacff088ccf0f91a21fb5dbeaec74e4` 普通合精确报告并两例2PASS40.2s，零业务/glue修改。
 
 root普通合REPORT为 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1`，独立 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm --dir web exec playwright test e2e/s1-projects.spec.ts --workers=1` EXIT0/2PASS/51.8s；两个真实8.3输入均执行，完整许可/实际SQLite/coldrestart检查通过。日志 `%TEMP%/astrocyte-root-project-spec-final-20261012-0020.log`。单入口 `tsc --ignoreConfig --noEmit --target ES2023 --module ESNext --moduleResolution Bundler --types node --skipLibCheck --allowJs e2e/s1-projects.spec.ts`、单spec eslint、git diff --check EXIT0。已核对cmd/internal/contracts/migrations/scripts/web/src/go.mod/go.sum/package.json/锁与92a2ded完全一致，本次没有再跑业务build/Go/M6或真实媒体/native；已有root业务check/build保持，2PASS仅定向，最终自动CI新树结果另记。
+
+## 最终源码与测试的双平台完整 CI（2026-10-12）
+
+root push `100f00cb6945c96a7f3bd3f100f7ff65efc61197` 自动触发 [CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602)，整体 completed/success。最终代码/测试普通合并为 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1`；W0单spec SOURCE28459de/REPORT49023fc、集成SOURCE7f45830/REPORTf726e187及此前八轨/三路径返修精确普通历史保留。
+
+| 平台 | `pnpm check` | `go test -mod=readonly -race ./...` | `pnpm build` | `pnpm test:e2e` |
+|---|---|---|---|---|
+| Ubuntu24.04 / job114516748131 | PASS（前端13文件/90测试及其余完整检查） | PASS | PASS，API/MCP/Sleep三程序+web | 226 PASS / 30 SKIP，2.7m |
+| Windows2025 / job114516747555 | PASS（前端13文件/90测试及其余完整检查） | SKIP，工作流Linux条件 | PASS，API/MCP/Sleep三程序+web | 226 PASS / 30 SKIP，5.2m |
+
+两平台此次默认suite均完整成功，Windows先前两个s1-projects两视口失败也在完整suite通过；30个SKIP沿opt-in设计，不冒称真实媒体/native已执行。Linux此轮为真实runner执行，区别于owner的compile-only。远程job日志在完整run结束后保存为 `%TEMP%/astrocyte-ci-38155238602-ubuntu-pass.log`、`astrocyte-ci-38155238602-windows-pass.log`；精确head/job/step状态留存 `astrocyte-ci-38155238602-final-status.json`。首次Ubuntu日志API请求失败及整场运行中普通log不可用的输出分别保留 `astrocyte-ci-38155238602-ubuntu-log-request-first.txt`、`astrocyte-ci-38155238602-ubuntu-log-request-in-progress.txt`，它们只是证据获取状态，不充作业务测试失败或完整日志。
+
+本轮最后收尾只更新STATUS、HANDOFF、AttentionEngine-plan和本验收四份Markdown，使用commit消息 `[skip ci]` 避免无源码变化的重复整套回归。上述完整CI的验收HEAD准确为100f00c；最后文档提交本身未重跑CI。root用 `git diff --name-only 100f00cb6945c96a7f3bd3f100f7ff65efc61197 HEAD` 核对只含这四文件，并核对push后origin分支与HEAD一致及工作区干净。
+
+历史第一次依赖/堆/检查/M6排序/Windows路径/E2E首RED均保持；此次绿是修复后的独立证据。真实M1旧缓存0eligible/failed及metadata授权未答、工程默认/知识策略待答、sqlite-vec CUT/topic_keyword、官方MCP/native task_live与真实七日用户对照仍未完成。没有合main或显式升级/验收个人运行实例，整体产品与科学验收不宣称完成。

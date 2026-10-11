@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-12 最终双平台CI已结束：`100f00cb6945c96a7f3bd3f100f7ff65efc61197` 的 [run38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) completed/success，Ubuntu和Windows完整check/build/defaultE2E均PASS，各226 PASS / 30 SKIP（2.7m/5.2m），Linux race PASS，Windows race按条件SKIP。全部开发/返修/唯一集成使用Codex --yolo，精确报告普通合入，Dispatch已结算并保留外部终端/worktree。主控只更新四个Markdown收尾并commit+push，以skip ci避免相同源重复构建；该文档提交的代码/测试/配置与验收HEAD完全相同，具体命令/log/SHA见基线。历史首RED与本轮绿分别保留。真实M1/用户未答策略、sqlite-vec CUT、官方native task_live和真实七日人类对照仍未完成，未合main或显式升级个人实例；本轮实现装配与默认回归通过不等于完整产品验收。
+
 2026-10-12 00:22 单spec限定集成 `task_d1bc72ed20a0` / `ctx_4744d3b64314` 已succeeded，SOURCE `7f45830a4f0f807ce17f95e257174a8adf62efac` / REPORT `f726e1879aacff088ccf0f91a21fb5dbeaec74e4` 已push并root普通合为 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1`。root独立两视口2PASS/51.8s和scoped TS/eslint/diff通过；生产代码/依赖与92a2完全相同，check/build沿用精确业务源已有通过结果，不重复无变更构建。所有Dispatch结算、原树保留retained idle，最终push自动CI结果另记；真实M1/用户策略和科学验收仍未完成。
 
 2026-10-12 00:16 W0单spec返修succeeded，SOURCE `28459de60c1726a6a5119562900d73348309a615` / REPORT `49023fc044c2ebcbbffdcc582d2f95c6f22fd78d` 已push，真实8.3输入两视口最终2PASS、scoped TS/eslint/diff通过，原CI/本机两视口首RED和中间测试调用错误保留；生产源码零修改。沿唯一原集成Agent/树/分支新Task普通合root文档基线df9471a与W0精确REPORT，仅定向单spec/类型/静态检查后push报告，写域仍只有集成报告/必要薄胶水，不重复M6/业务build/全suite；root普通合并后单spec复验并最终push自动CI，不能以2定向绿称Windows全套绿。

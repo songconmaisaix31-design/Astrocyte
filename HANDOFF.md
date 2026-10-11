@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 最终交付入口：双平台 CI 已通过（2026-10-12）
+
+分支 `attention-engine/v1-20261011`；源码/测试验收HEAD `100f00cb6945c96a7f3bd3f100f7ff65efc61197`，最终普通代码/测试合并 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1`。[CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) completed/success：Ubuntu/Windows完整check/build/defaultE2E均PASS，各226 PASS / 30 SKIP，Linux race PASS（Windows按条件SKIP）。当前收尾只改STATUS、HANDOFF、计划和验收四个Markdown，以skip ci提交；验收来源仍是100f00c，代码/测试/配置完全相同。先前RED原件保留。
+
+八轨与返修/唯一集成已结算，原外部终端retained idle，普通历史及工作树保留，后续继续Codex --yolo。真实M1旧Task仍failed/待metadata授权，不因fixture/默认CI绿而改成功；用户答范围后才沿原W1任务retry。工程参数/知识政策未答、sqlite-vec CUT、官方客户端/native task_live、真实七日人工对照仍未完成，未合main或显式升级/验收个人运行实例。下一步由用户决定这些范围，新增领域问题沿原owner处理；本轮不再有等待中的自动CI。
+
 ## 最新交付入口（2026-10-12 00:22）
 
 分支attention-engine/v1-20261011，普通合958109d7消费单spec集成REPORTf726e187（SOURCE7f45830），所有owner精确报告普通历史保留。root单spec两视口2PASS/51.8s，真实8.3输入、POST原样、Node独立canonicalRoot/SQLite/reload/B-C/获准README均执行，scoped TS/lint/diff PASS。业务源码与92a2ded全相同，原root56c879a check/build及92a2两平台check/build结果保持；旧Windows全suite224/2/30保留，本次最终push自动CI尚待，定向绿不冒称全套。全部Dispatch结算，外部终端retained idle，不关闭/删树。
