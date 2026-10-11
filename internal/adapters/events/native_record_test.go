@@ -15,8 +15,8 @@ func TestNativeObservationPreservesUnknowns(t *testing.T) {
 		t.Fatalf("observation: %+v, %v", o, err)
 	}
 	o, err = nativeRecord("codex", []byte(`{"type":"response_item","payload":{"type":"function_call","name":"exec_command","arguments":"{\"cmd\":\"git commit -m done\"}"}}`))
-	if err != nil || o.kind != "commit" {
-		t.Fatalf("explicit commit: %+v, %v", o, err)
+	if err != nil || o.kind != "unknown" {
+		t.Fatalf("commit command is not committed history: %+v, %v", o, err)
 	}
 	o, err = nativeRecord("claude_code", []byte(`{"type":"assistant","message":{"usage":{"input_tokens":3,"output_tokens":4},"content":[{"type":"tool_use","name":"Edit"},{"type":"tool_use","name":"Grep"}]}}`))
 	if err != nil || o.kind != "unknown" || o.tokens == nil || *o.tokens != 7 {
