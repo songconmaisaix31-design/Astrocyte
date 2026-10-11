@@ -1,5 +1,31 @@
 # Attention Engine 最终集成交接
 
+## 当前交接：Windows 路径限定返修集成
+
+Task `task_51df762ea493` / Dispatch `ctx_7d52252e725c`；沿原 `codex --yolo`、隔离工作树和 `songconmaisaix31-design/attention-engine-final-integration` 分支。此次只消费两位 owner 已发布的路径返修并运行指定验证，无领域或薄胶水修改；本文件为唯一自主写入。
+
+依次普通 `git merge --no-ff` root 文档基线 `df8c97cd8cc10950889fb7fbf981ff5ea0db241e`、W0 REPORT `19d1c7bef221cbb5225e4319f69b50fa46c83d4f`、W7 REPORT `d0140384e9f0e15783081d7dc4eb22f284b215de`，三次均无冲突。集成 SOURCE `be12d66c9c78340f1ba1e68e4243a38df4b9a129` 已单独 commit+push；随后文档 REPORT 的准确 SHA 随 worker_done 交 root。无 cherry-pick、squash、force 或历史删除。
+
+W0 SOURCE `425d965f82bb3d8b573604476134d466838be416`、W7 SOURCE `38c5bdeeb5fcec7b2f0a3097ef3730ab1a30d9c4`，以及上述两个 REPORT 和 root 基线均通过 `git merge-base --is-ancestor <SHA> HEAD` / exit0。相对 root 文档基线的差异只在 `internal/adapters/agents/**`、`internal/adapters/worksscan/**` 和两位 owner 报告；没有改目录授权、公共契约、UI 或其他领域。
+
+| 本集成任务实际命令 | 结果 |
+|---|---|
+| `GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 -v ./internal/adapters/agents ./internal/adapters/worksscan` | PASS / exit0；agents 46 顶层 PASS / 6 opt-in SKIP，5.117s；worksscan 9 顶层 PASS / 2 symlink SKIP，0.354s |
+| `GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 -v ./internal/adapters/httpapi ./internal/workspace/... ./internal/adapters/sqlite ./tests/attention-engine -run 'Works\|W7WorksAggregationAcrossRestart'` | 五包 PASS / exit0；15 顶层 PASS / 0 SKIP；HTTP human/CSRF/登记根、SQLite accepted/unknown 收据重放及 restart、W7 合成临时目录聚合和 pending sink 检查均执行 |
+| `git diff --check`、精确祖先与变更路径检查 | PASS / exit0 |
+
+本轮真实 Windows 文件系统 fixture 已获得 8.3 名称并通过根/祖先同目录兼容、bounded metadata/登记和 `CODEX~1` / `CREDEN~1.JSO` secret alias 拒绝；实际 junction 根、祖先、短名祖先均拒绝。fixture 使用测试自有临时目录与合成 header，不读取真实私人来源。
+
+普通 Windows symlink 创建缺 privilege：agents 日志明确 `NOT_RUN`，相应父用例继续执行 junction/有界读取；scanner 两个普通 symlink 测试为 SKIP。不能从父用例 PASS 声称该 symlink 分支已执行。六项 agents live opt-in 保持关闭（CLI probe、native model/handshake、OpenCode live、真实登记根、实际 GitHub clone）；批准真实 W7 根 opt-in 未开启。
+
+原始输出独占目录 `C:/Users/DW/AppData/Local/Temp/astrocyte-attention-windows-integration-task_51df762ea493`：`agents-worksscan.log`、`works-integration.log`、两个 `*-exit.txt`、`source-changed-paths.txt`、`diff-check.log` 均保留。首次 CI RED `C:/Users/DW/AppData/Local/Temp/astrocyte-ci-38150022874-first-failed.log` 与 owner 本机 alias/junction 首 RED 沿 [W0 报告](AttentionEngine-W0.md) / [W7 报告](AttentionEngine-W7.md) 保留，本轮 GREEN 不覆盖原失败。
+
+root 已在先前精确树 `0e49301734549a02b9b1b9078aaef96fd6422742` 完整 check/build PASS、默认 E2E 226 PASS / 30 SKIP；这是原树 root 证据。本轮没有重复 M6、UI、媒体、native、真实作品扫描或全量 check/build；新集成树最终检查及 push 后自动 CI 结果由 root 独立核实，不能提前称新树完整验收或 Windows CI 通过。自动 CI 已有执行及首错记录，下文上一任务“本任务未执行远端 CI”仅描述当时集成 Agent 的操作。
+
+真实 M1 metadata 读取范围、工程参数和知识策略仍未答，不代定；sqlite-vec CUT、官方客户端/task_live/真实七日科学验证边界保持。下一步 root 普通合入本 REPORT，完成新树最终检查与自动 CI 核实。
+
+## 历史交接：原八轨最终集成
+
 本次限定集成已完成；整体产品与真实七日科学验证未完成。Task `task_9c5f23440239` / Dispatch `ctx_7eb57b08004b`，实际客户端 `codex --yolo`。隔离工作树 `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`，分支 `songconmaisaix31-design/attention-engine-final-integration`。
 
 ## 精确集成源
