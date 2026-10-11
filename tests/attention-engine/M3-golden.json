@@ -1,0 +1,20 @@
+{
+  "evidence_kind": "contract_local",
+  "day": "2026-10-11",
+  "events": [
+    {"EventID": "e1", "Topic": "agent-swarm"},
+    {"EventID": "e2", "Topic": "agent-swarm"},
+    {"EventID": "e3", "Topic": "agent-swarm"},
+    {"EventID": "e4", "Topic": "paper-reading"},
+    {"EventID": "e5", "Topic": "one-off-noise"}
+  ],
+  "related": {"paper-reading": ["agent-swarm"]},
+  "expected_topics": ["agent-swarm", "paper-reading"],
+  "expected_merge_count": 0,
+  "before_facts": ["a", "a", "b"],
+  "after_facts": ["a", "a", "c"],
+  "before_bytes": 100,
+  "after_bytes": 70,
+  "expected_retention_precision": 0.5,
+  "expected_storage_reduction": 0.3
+}
