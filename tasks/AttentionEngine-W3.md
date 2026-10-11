@@ -1,5 +1,107 @@
 # Attention Engine W3 · Sleep Consolidation 流水线（M3）
 
+## 最新结果（2026-10-11 22:48 Asia/Shanghai）：W3 实现及适用验收 PASS
+
+原工作树和分支保持；实际客户端 Orca Codex / gpt-6.1-sol / YOLO。
+范围为 W3 拥有的完整 app/store 流水线。验收输入为 **contract_local 合成事件**，
+经实际 W1 Record、W2 Dynamics、W4 Knowledge、正式迁移与文件 SQLite 执行；
+冷启动使用新的 Go 测试进程，未触碰个人库。不是七天真实使用或全产品验收。
+
+### 实现与接口 Handoff
+
+- 固定日周期入口：`app.NewSleepService(sqlite.NewSleepRepository(db), dynamicsEngine, SleepOptions).Run(ctx, day)`。
+  `day.Location()` 明确当日时区；调用方保持同一个个人时区，日期键为 `YYYY-MM-DD`。
+  读取午夜至 `min(次日午夜-1ms, 本次Clock)` 的已存事件/信号，不建设调度器。
+- 全链同一个 `BEGIN IMMEDIATE`：检查已完成日周期 → mapped 当日 Event → topic 邻接聚类 → 去噪
+  → W2 birth/已存 Signal 应用/关联更新 → W4 fluid 更新 → W2 生命周期/重浮现 → pending 冲突队列
+  → 四张 Sleep 表与 metrics 一起提交。中途失败完整回滚；再次运行或冷进程读取原 receipt。
+- `SleepTx` 复用 `NewEventTx`、`NewDynamicsTx`、`BindKnowledgeTx`、`NewSleepRunTx`。
+  W3 不直接写 Event/Signal/图/Knowledge/Conflict 表，不开嵌套事务。
+- 既有节点的信号由 W2 `h.Applied` 去重；新节点用最早本主题证据时间创建，再应用真实当日 Signal。
+  最晚真实事件决定 LastActive，不用 Sleep 的执行时间冒充用户活动。
+- 同簇相关 topic 保持独立；新主题使用同 scope 的邻接簇支持，节点只挂本 topic 证据。
+  真合并调用 W2 `ObserveAssociationInTx`，每个已有关联 pair 日周期一次，不在 W3 判定阈值。
+  合并参数未配置时保存 `association_pending / merge_policy_undecided`，不代选持续时长。
+- Knowledge 按 Event scope 隔离；共享检索结果先检查 OwnerProject，不写其他项目的共享条目。
+  通过 W4 `RewriteKnowledgeFluidTx` 更新 fluid/sources/consolidated_at；保留 confirmed、crystallized、版本及审计。
+  同 key 字面声明冲突时保留原 fluid，W2 pending Conflict + Sleep 候选持有两侧声明/原始引用，交人类裁决。
+- `SleepFactProjector` 是显式确定性源格式规则，无产品默认。测试仅解析 `raw.facts` 的字面 key/value；
+  未配置或没有关键事实时显示不可计算，不把 EventID 留存冒充事实召回。不推断普通文本的事实或真假。
+- LLM 解释器只在事务提交后接收复制的 cluster topic 视图，返回解释/错误给调用者，不落库、不反馈决策。
+  每日 replay 不重调解释器。无模型请求发生，LLM 开关测试使用本地恶意解释器。
+
+### 可测指标及计量范围
+
+保留精度按去重的 `(owner_project, topic, literal key, literal value)` 召回；
+保留集包括当前 Knowledge 及隔离候选中的字面声明，不代表声明已被证实或人工批准。
+`RetentionMeasurable` / `StorageMeasurable`、原始计数与 `Representation` 全部持久化。
+
+字节来自实际 raw BLOB 长度与 Knowledge `data` 的 UTF-8 字节长度（SQLite `CAST AS BLOB`），
+加上实际持久化的本周期候选 JSON。计量为：mapped 原始载荷 + 涉及 Knowledge 工作表示 →
+涉及 Knowledge 工作表示 + 本周期候选；原始 Event 保留，排除图、审计副本与 SQLite 页。
+该值不代表整个 SQLite 文件缩小。缩减率 `(before-after)/before` 可为负，无达标线。
+
+最后实测（合成输入，真实持久化字节，独立 SQL 核对）：
+
+| 例 | 关键事实 before/retained | 召回 | UTF-8 字节 before/after | 缩减率 |
+|---|---|---|---|---|
+| 重复事实 + 一次孤立噪声 | 2 / 1 | 0.5 | 4465 / 592 | 0.867413 |
+| 冲突保留原 confirmed 快照并隔离新声明 | 2 / 2 | 1.0 | 实际读取 | 不表示批准 |
+| 紧凑输入生成工作表示 | 1 / 1 | 1.0 | 38 / 584 | -14.368421 |
+| 空日 | 0 / 0 | 不可计算 | 0 / 0 | 不可计算 |
+
+### 验证与首次失败
+
+环境均为 `GOFLAGS=-p=1`、`GOMAXPROCS=2`，串行单包检查。
+
+| 命令 | 结果 |
+|---|---|
+| `go test ./tests/attention-engine -run '^TestM3' -count=1 -v` | **9 PASS**；顶层 child helper **1 SKIP**，在两项父测试派生的新进程中实际执行 PASS |
+| domain 核心定向测试（下方命令） | **12 PASS** |
+| `go vet ./internal/attention/app` | PASS |
+| `go vet ./internal/adapters/sqlite` | PASS |
+| `go build ./internal/attention/app` | PASS |
+| `go build ./internal/adapters/sqlite` | PASS |
+| `git diff --check` | PASS |
+
+```powershell
+go test ./internal/attention/domain -run 'Cluster|Denoise|Resolve|Retention|Storage|ComputeMetrics|Interpreter|Consolidate' -count=1 -v
+```
+
+覆盖：当日边界/pending 无 Signal；新主题 A=.17、日末 M=.01638（显式测试政策 decay=0、strength=.2）；
+真实 LastActive；孤立去噪；单事件邻接 birth 与不复制邻居证据；强关联无重叠不合并；
+未决定合并政策显式 pending；图/fluid/日记录原子回滚；每日 replay；
+新进程图/fluid/候选/metrics/pending Conflict 一致；Agent 裁决拒绝与人工 action 持久化；
+LLM off 与恶意解释器的 run/node/knowledge 持久化 JSON 逐字一致；增长与空分母可见。
+
+首次 RED 保留，不用后续定向 PASS 覆盖：
+
+1. 波 A 入边去噪丢失、重复事实误计召回；修正见 `881f7fd`。
+2. 增长 100→200 被夹到 0；修正见 `a203c5f`。
+3. 初始 M3 fixture 缺 Observation.Provenance / pending SourceKind，测试尚未进入 Sleep；同时出现 TempDir cleanup 文件占用。
+   补全来源字段与关闭连接后不再出现，未放宽存储验证。
+4. 真实 `aa4a64e` 新主题 birth 把 UpdatedAt 设成日末，导致 `New signal predates persisted updated_at`。
+   W2 `23bc4d7` 修正最早 own TS；正式消费后此路径通过。
+5. 初始手算 M=.0546 漏了日末零增量步，应再乘 alpha=.3，最终 .01638；仅修测试参考值。
+6. W4 新 API 的 GetKnowledge 参数顺序为 `(id, project)`；初始测试旧顺序产生 not_found，改调用后通过。
+
+### 精确依赖、边界及下一步
+
+普通合并的关键依赖：M0 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`；
+shared metrics `6973c171c0e05ea4b432bc3a62a3ac172abeb910`；
+W1 `e9bb3809eadcbf48cf017b6e09ae0ef4112b1a90`；
+W2 final `2c148c1034ec28b5d787309f1320198706d97e4a`（含 chronology `23bc4d7`）；
+W4 final `82e4340e50943d355ecd81a2a47d65b7e3929f5a`（含 018 ConsolidatedAt）；
+W7 harness fix `a3eab2c6d0df026e056a5a873a0d63bf58282688`。未经发布的原 working changes 未消费。
+
+W0 负责把上述构造器接入现有固定入口、实际 HTTP 人工关口和最终集成；W3 不改公共契约/迁移/HTTP/cmd。
+参数（strength/decay/初始 confidence、merge 持续定义等）及事实投影的产品选择仍未决定，测试参数不是产品默认。
+晚到且早于既有 UpdatedAt 的新 Signal 由 W2 显式拒绝，raw 原件保留，不改时间或静默重放。
+缺失原始冲突引用保存 `conflict_pending_evidence` 候选，不伪造完整 Conflict 证据。
+未跑主控全仓检查/最终可执行程序构建、真实生产事件、真实 LLM、人工交互或七天科学对比；这些不由本轨 PASS 推导。
+
+## 以下为阶段历史，当前结论以上文为准
+
 事实源：任务书 §6、§5.4/§5.5、§4.4；主计划 `tasks/AttentionEngine-plan.md` W3 行。
 基线分支 `attention-engine/v1-20261011`（当前 `77712f3`，仅计划/派发/恢复记录，M0 契约类型仍未并入）。
 
