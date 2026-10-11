@@ -2,7 +2,39 @@
 
 实际分支：`songconmaisaix31-design/attention-engine-w6-mcp`。写域：`internal/adapters/mcp/**`、`internal/attention/app/mcp_*.go`、`tests/attention-engine/M5-mcp*`、本文件。
 
-## 2026-10-11 Codex 接续：stdio 边界阶段，M5 尚未完成
+## 2026-10-11 22:28 +08：W6 接口与真实 stdio/SQLite 局部验收完成
+
+SOURCE `e057f100cab38e80b7a081c6f5a3639d023e2f63` 已 push；真实薄后端 `0ac5d3a`，task pending 修正 `ae252c6`。精确普通消费 M0 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`、W2 `e1222e75048c6cb83222c2307be874e6ae38126a`、W5 `d8e73334cb75c46a8c38460f4764cfe950ce603e`、W1 `e9bb3809eadcbf48cf017b6e09ae0ef4112b1a90`，未修改其他 owner 文件。
+
+交付：stdio 五操作、完整解释共享 DTO、approved/项目范围经验读侧、未验证 Agent 上报、人类 topic/task 否决 receipt。全部通过 `app.NewEngineMCPBackend` 调用原 W1/W2/W5 服务，不 import persistence 到 MCP transport，不实现调度。
+
+`tests/attention-engine/M5-mcp_sqlite_test.go` 启动 **5 次独立 stdio 子进程**，子进程打开真实 SQLite 并组装原 W1/W2/W5 应用，无 mockBackend；输入为 `contract_local` 合成数据，不是本机真人 Agent 会话或 `task_live`：
+
+- 真迁移 + W1 Record 生成 receipt/Signal，W2 实际 ApplySignals 形成注意力；解释保留 18 篇论文、12 次编辑、1 次标记、1 次失败的 32 条原事件/时间/strength/weight/elapsed decay/confidence-only、2 项目/2 Agent、1 条带时间戳关联。关联在测试中通过实际 repository 明确种入，不声明 lifecycle 算法验收。
+- W5 实际失败捕获与人类 approve/share：stdio 返回本项目 approved + 人工共享 approved 共 2 条，排除 quarantine 与未共享外项目；工具传外 scope 拒绝。
+- 两次独立进程读结果完全一致，node/experience/event 快照未改变；未知 focus 读不新增主题。
+- report_event 原 nested JSON 字节与 SQLite BLOB 完全一致；source/session/scope 为启动绑定，未知 tokens=nil，raw 声称 success/human 不改变 observation outcome=unknown、不产生成功信号；未归类 topic 保存 pending 且不生成 signal。
+- 人类 topic veto 保存 manual/user_veto 与 -0.8 信号；**task veto 保存 pending receipt，返回 `pending=true`，无可信任务→主题关联时不生成主题/信号，不执行或停止任务**。普通 Agent veto / human-kind 上报 / 外项目写入拒绝，持久状态未改变。
+- 明确在 MCP 外经 W2 消费 commit/veto 两条持久信号，再冷进程解释返回 34 条原事件与否决权重；MCP 本身不隐式调用动力学更新，也不建后台任务。
+
+实际验证命令（`GOFLAGS=-p=1`、`GOMAXPROCS=2`）：
+
+```powershell
+go test ./internal/adapters/mcp -count=1 -v
+go test ./tests/attention-engine -run 'MCP|Experience' -count=1 -v
+go vet ./internal/attention/app ./internal/adapters/mcp ./tests/attention-engine
+go build ./internal/attention/app ./internal/adapters/mcp
+node scripts/check-architecture.mjs
+git diff --check
+```
+
+全部 exit 0。MCP adapter 12 顶层 PASS（版本协商 5 子例）；MCP/Experience 选定套件 9 顶层 PASS / 1 SKIP，SKIP 仅辅助子进程入口，实际子进程由真实验收测试执行；22 包架构通过。W6 自有验收 4 顶层 PASS，其中真实 SQLite/stdio 1 条、测试后端 3 条，分别记录，不混为 4 条真实后端。
+
+首失败保留：共享测试函数名冲突见历史段；真实 stdio harness 首运行 `no such column: history`（history 存在 data JSON 内），修正查询后第二次 `sql: database is closed`（重开后旧 repository），本轨修正连接绑定，随后相同真实验收与以上选定套件通过。未修改迁移、放宽断言或重复真实媒体/模型请求。
+
+剩余接线：W0/集成 owner 在 `cmd/` 组装相同 startup binding、显式业务 policy/strength、原 W1/W2/W5；本轨已通过 Orca 投递精确 constructor Handoff。**生产命令启动、官方 MCP SDK/client 或本机 Agent 互操作未执行**；没有调用模型、私人源扫描、真实会话或个人数据库。合成验收用 strength=.01、decay=.1、initial confidence=.5、confidence-drop threshold=.05 只是显式 fixture 值，不冻结待用户决定的产品参数。M5 Experience 自动捕获接线、完整 M2/M6 与整体项目验收仍属主控/原 owner。
+
+## 历史阶段记录（以下不覆盖最新结果）
 
 薄后端 SOURCE `0ac5d3a700c3090d4bb532d1fc763539de804326` 已 push，消费三个 owner 公布的签名：
 
