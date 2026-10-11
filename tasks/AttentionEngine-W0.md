@@ -1,5 +1,19 @@
 # Attention Engine W0 · M0 契约锁定 · 迁移 · 存储基础 · HTTP 关口
 
+## 当前 Codex W0 shared/M6 交付（2026-10-11）
+
+Task `task_168bacd9d56d` / Dispatch `ctx_b16e623a7b11`；当前 Orca Codex（codex --yolo），未启动其他 Agent，精确模型标识未由本会话接口提供。分支 `songconmaisaix31-design/attention-engine-w0-core`；共享基础 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，正式 HTTP/MCP/Works startup `396aec1d6bee777dd380ff06fc5d821d0f7f5b3f`，单日 Sleep/Windows 检查 `363fcca1d515b6c373a8aba285e5ded4605727d5`，强化 M6 SOURCE `f4bf0257b3f2e93e2ce67197bfbb0764a68332a3`。各阶段均 commit+push，原 owner 代码通过授权的精确普通 merge 消费；下文旧波 A 状态保留为历史，不代表当前缺少服务组装。
+
+- 完成共享持久化契约/迁移015–018、稳定原始 Event/幂等 origin/精确 BLOB、Signal 防重、独立节点更新时间与生命周期、项目记忆及人工审计、版本只追加、Sleep 日周期/指标/候选/冲突；没有独立 Evidence 表或证明系统。
+- 正式 HTTP 组装三个原 owner 人工关口、分享/降级/引用/读取，以及七个 Works 端点和 registered-root 缓存边界；真实原 W1 Works sink 只写 pending/noSignals。独立 stdio MCP 绑定可信启动身份/项目/会话，原始已提交 ID 和 capture_pending/dynamics_pending 分开保留。
+- `pnpm check` 最终 EXIT0：gofmt、Go vet/全 Go 测试、modverify、依赖、27 包架构、进程清理2项、275 OpenAPI examples/生成漂移、真实 S1 API14项、TypeScript/ESLint、Vitest13文件90项、diff检查均通过。Redocly 保留 EventV1 未使用组件 warning1。使用 GOFLAGS=-p=1、GOMAXPROCS=2、Node heap512；前面 paging/ENAMETOOLONG/版本探测超时及首次零推荐失败不被此次 PASS 覆盖。
+- `pnpm build` 最终 PASS，产物 `dist/astrocyte.exe`、`dist/astrocyte-mcp.exe`、`dist/astrocyte-sleep.exe` 和 web。实际构建 MCP 子进程/SQLite/重启、实际 HTTP 幂等审计/重启、实际单日 Sleep 命令/日幂等/两种显式事实投影均通过；M6 通过共享正式 factory 注入合成时钟，未新增历史 CLI 回放参数。
+- M6 强化验收与 root 独立复算 PASS：七天焦点 research→implementation，30 原始观察/7 日周期/1 冲突/1 人工批准经验；implementation A=.9552011491162884、score1.0480013210594767，research A=.33674673723047327、score.3350055591708292，均读取真实图并独立计算非零分数。精确 BLOB、新进程冷重启、人工确认/分享/引用、只追加版本、失败仅降 confidence、query_only 推荐均验证。最新报告 `C:/Users/DW/AppData/Local/Temp/astrocyte-M6-W0-20261011/M6-week-result.json`；first-zero 原件单独保留。
+
+真实剩余限制：M1 私人 metadata 范围未答、真实 native replay 未执行；官方 MCP client/native Agent 互操作、七日真实用户比较、远端 CI、最终全轨集成/main merge 未在本任务执行。引擎参数、检索年龄/衰减、版本确认策略的产品默认仍未决定，测试显式配置不替用户选值；sqlite-vec 依既定 spike CUT。最终跨轨集成、root 复验及最终 Git 由协调者后续执行；本任务不宣称整体产品或真实七日验证完成。
+
+## 历史波 A 与阶段记录
+
 Task `task_0544bbb70579` / Dispatch `ctx_64948eee5483`；开发 Worker OpenCode / `deepseek/deepseek-v4-pro`。独占契约、迁移 014+、引擎接口、HTTP、入口与依赖锁；跨轨只 Handoff，不写各域 `*_store.go`。基线 `4d200df`（`attention-engine/v1-20261011` 的 plan 提交），集成分支上的 `94c6b5d`/`0e14c7d` 为 root 文档提交，非本轨写域。
 
 ## 交付内容
