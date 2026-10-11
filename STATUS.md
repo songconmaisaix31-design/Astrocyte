@@ -14,9 +14,11 @@
 
 EXPERIMENT.md预注册必须写明：本验证期发现机制仅覆盖unassigned出生，分裂禁用；回放自主发现的未播种topic（如McPet/MorphBench）按真实产物记录为V1加号证据，不预填示例为结果。原始值与derived同值审计口径、正式运行参数仍待答，EX-01只解决Sleep限界，不代替这两项裁决。
 
+01:12 两owner确认无等效配置：SleepOptions仅Clock/ProjectFacts/Interpreter；ListEvents已读所有存储行，Run和domain.ClusterTopics均排除空topic。W1只能给出固定种子assignment，unassigned仍无候选；现有Interpreter提交后只解释，无主题写入。EX-01不能凭空补出发现机制。限定实现先在Run保留无标行为unassigned_pending（原event_id/已观察时间，不伪标签），缺节点的tagged簇记录tagged_birth_disabled_v0_2，不调用birth。去噪/fluid/边/merge调用不改；无标真实出生暂BLOCKED，不用0出生冒称该项PASS。新增候选发现策略或未接线测试回调不纳入本次豁免。
+
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
-当前：基线干净、两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接，避免双份漂移。现有Sleep跳过无topic事件、允许从带topic事件出生；与“新主题只能从unassigned”及引擎冻结存在实现冲突，先诊断并报告，不偷偷改引擎。schema豁免当前无。
+当前：两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接。现有Sleep跳过无topic事件、允许从带topic事件出生；用户已以EX-01批准上述两处接缝，其他引擎仍冻结。schema豁免当前无。
 
 00:57已实际启动两个Codex --yolo独立写域，Run `run_d09ff3f95ebc`：W1 `task_112759e787a6` / `ctx_4dcb09dc9350` 诊断真实50+50并保存原样本；W0 `task_90ac7f1ae958` / `ctx_155c592defd9` 合成canary复现全MCP/store边界，先提schema接缝方案。二者turn_started均observed，尚不改生产映射/schema/引擎。已向用户集中询问raw任意值与derived同值的审计口径、未指定的验证运行参数；未答的依赖不推进，诊断和独立复现继续。
 
@@ -26,9 +28,11 @@ root读取工作树外 `diagnosis-w1/stages-first.json`、`inventory.json`、`sa
 
 固定抽样在看映射前声明：按ts/文件序/行号排序，50个等记录数时间分层，每层优先已使用最少的session、再邻近中点；包含header和其他类型，不挑成功工具。原100条 `sample-first.jsonl` 441979 bytes保留在本机、不进入Git/终端；derived manifest仅序号/ts/source/文件行号索引。第一次读取不完整结果另存stages-incomplete-read，不覆盖首完整RED。诊断源码SHA/测试数待原owner提交报告，当前不是V0全链验收。
 
-真实窗口固定 `[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)`：Claude7文件/7 session、2197窗口记录；Codex1714文件全部可读，28窗口session/31642窗口记录，共33839记录，parse error0。最初owner状态误报9日期；01:00更正并经root核对联合日期去重为7：09-12/13/30、10-01/02/09/10，其余23日无观测，不把缺档当用户未活动。Claude subagents实际0，Codex flat legacy实际0，不能造对应真实样本。全库存储eligible数量还未知，≥10000未验收。先kind/header确定性接缝，再种子/unassigned；引擎仍只读，正式V1不启动。
+真实窗口固定 `[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)`：Claude7文件/7 session、2197窗口记录；Codex1714文件全部可读，28窗口session/31642窗口记录，共33839记录，parse error0。最初owner状态误报9日期；01:00更正并经root核对联合日期去重为7：09-12/13/30、10-01/02/09/10，其余23日无观测，不把缺档当用户未活动。Claude subagents实际0，Codex flat legacy实际0，不能造对应真实样本。全库存储eligible数量还未知，≥10000未验收。先kind/header确定性接缝，再种子/unassigned；除EX-01外引擎只读，正式V1不启动。
 
 W0第一合成RED：现有SQLite通用事件读携raw，explain_focus可泄漏明文/base64；五工具backend错误及两种已提交回执错误均可回显raw。先保留复现，原owner研究raw独立表/derived投影/MCP白名单，schema当前仍未豁免，原引擎RawBytes验证和Sleep.Raw投影约束需具体方案，不能暗改冻结令。
+
+01:11 EX-01原W0续派 `task_d8923cb8e988` / `ctx_d89f4167f263`，Codex --yolo turn_start observed；仅Sleep输入和出生门禁、对应合成干跑及M2，先检查配置并报告输入契约。W1接入续派 `task_5c8afebac5c9` / `ctx_9000e7343fa3`：最初启动观察outcome_unknown，原prompt提交后收到实际工作状态，未重复派任务。两轨源码/测试尚未合入交付分支。
 
 ## 本轮最终双平台 CI 通过（2026-10-12）
 
