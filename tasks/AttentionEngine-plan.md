@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-11 23:12 波 C：原八轨及W3/W4/W6限定返修全部结算；W1真实metadata回放因权限范围未答failed，其本地实现可合但M1真实验收未通过，其余限定实现succeeded。W0最终 SOURCE `f4bf0257b3f2e93e2ce67197bfbb0764a68332a3` / REPORT `5c1aa0dc41358db29c3cc12c9a250f19b7fc69b0` 完整check/build PASS。唯一集成轨：Codex--yolo / gpt-6.1-sol，worktree `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、branch `songconmaisaix31-design/attention-engine-final-integration`、Task `task_9c5f23440239` / Dispatch `ctx_7eb57b08004b` / terminal `term_28cadb7a-4147-4dec-9f7a-87ecc545576d`。基线 root `dd62ec9`；write_paths仅 `tasks/AttentionEngine-integration.md` 及必要路由/导入/配置/类型薄胶水，领域返修退原owner。普通合精确最终报告，定向M6和diff复验；root随后完整check/build/适用E2E及最终push。首次注入turn_start_unobserved，检查后仅bareEnter，已实际观察开始阅读/工作，未重新派发或重复整条prompt。
+
 2026-10-11 22:00 用户更新：后续统一 `codex --yolo`，覆盖此前 OpenCode 客户端决定。已核 Codex CLI 0.162.0 接受该参数；按轨先提交当前阶段、结算并归档旧 Worker，再于原工作树启动 Codex，写域及 Git 历史保留。八轨已实际接续为 Codex / gpt-6.1-sol（实际 runtime projection），有效 Task/Dispatch 见 STATUS 最新表。W5 旧终端由运行时标记 user_takeover，未强制关闭，已结算 idle。
 
 2026-10-11 22:22 正式 P1 基础 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已 root 普通合入 `2268f4920973128068f46a182dfddfb040a1dbc2`、精确源五包复验 PASS 并 push，波 B 已解锁。W0 P2 消费 W7 已发布稳定 Go 阶段 `0e38f94fa516f5b9f8ec4f48f6f76fbad425e5e1` 作 HTTP/cmd 编译依赖；不作最终集成验收。领域缺口继续原轨返修，最终集成仍在全部轨 settle 后。sqlite-vec CUT，relevance 使用显式可复算退化，不能称向量检索已验。

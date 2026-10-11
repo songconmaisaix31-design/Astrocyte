@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## 波 C 单轨集成（2026-10-11 23:12）
+
+全部原轨与限定返修已结算。W0最终 SOURCE `f4bf025` / REPORT `5c1aa0d` 已push，完整check/build PASS（275契约例/API14/前端90，三个可执行文件+web），root未把owner结果当自身整場。唯一集成 Codex--yolo已在新隔离 `attention-engine-final-integration` worktree/同名自动分支启动，Task `task_9c5f23440239` / Dispatch `ctx_7eb57b08004b`，只普通合精确最终报告和必要薄胶水；root不写业务代码，之后负责交付分支完整check/build/E2E/push。已结算外部终端保留idle、未关闭归档；M1真实metadata权限阻塞/未决定产品策略/官方客户端/真实七日对照仍保持。root业务尚P2，不宣称最终集成完成。
+
 ## M6 修复复算通过，等待最终装配（2026-10-11 23:06）
 
 W4 原owner修复 SOURCE `abff94d` / REPORT `11899c9`、W3投影 SOURCE `61a196b` / REPORT `39cb8fe` 已push并结算。W0 M6 SOURCE `f4bf025` 已发布；root独立重算实际报告，两项推荐的A等于图A、分数非零、公式误差0，七场指标复算一致，合成焦点前四天research→后三天implementation。首次全零排序错误原件未改。正式Sleep SOURCE `363fcca` 的built CLI单日/重启与同factory合成七日分别验收，没有产品历史回放/默认参数选择。W0 正完成全check/build，其他domain轨idle；全轨结算后派一个集成Agent、root最终check/build/适用E2E/push。root业务集成仍P2，不能将本段定向成功称整体交付。真实M1元数据回放与真实七日用户对比仍未完成。
