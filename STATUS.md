@@ -2,6 +2,42 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
+### 当前裁决：v2.1（2026-10-12）
+
+04:50 W0限定M5 fixture SOURCE `b69ec6fffc109bf1ed8242a59699511aca967060`、REPORT `88268a05a756f108f76422e1279e734851e4c324`已push/结算，只有授权三测试与own报告，生产/helper/schema不变。worker最终M5 6 top/9 leaf PASS、helper1 SKIP；MCP/privacy/CLI 13/11/1 PASS、privacy6 opt-in SKIP不计审计；原Canary17叶PASS，原100/1101字符串/2100响应零泄漏PASS。首RED和中间3 FAIL保留在外部privacy-v21-m5-w0。现交唯一原集成owner普通合W1/W0精确REPORT；root独立整体和隐私复验尚未执行，V0完整率仍RED、V1仍NOT_RUN。
+
+04:41 root在W1源码cadd33af的实际生产mapper上独立全人口复验EXIT0，输出既定外部证据根`root-v21/population-independent.json`，与worker验收JSON一致：N6016=Claude369+Codex3754+git1893；kind/topic1971（32.76%，RED），mapped2014/unknown4002/unassigned3497；随机200非认知误标0、adapter/association拒绝均0。Python接入8 PASS，canonical kind map生成校验PASS。第一命令输出目录缺失而拒绝创建，未写结果；创建外部目录后复验，未覆盖任何证据。M5首RED绝对路径为既定外部根`evidence/root-v21/m5-first-red.log`，此前相对路径不指仓库内部。新返修task_87a15d7b1d17/ctx_063dce91ac7a，Codex --yolo/GPT-6.1-Sol high fast实际开始；Orca首次turn_start_unobserved保留，屏幕确认任务仍在composer后仅Enter，随后fresh agent_status证明working，不重发任务。
+
+04:33 W0 SOURCE `6e7de7e340606f6f13fad79f00a814b455daed72` / REPORT `b728f23fcbd955b2b2514b62a60676da22b94db2`已push并结算。worker原100真实raw审计1101字符串/2100生产MCP响应、零泄漏；仅real_raw_contract_local，root集成后独立复验尚未执行。root旧M5回归首RED：两个delivery测试失败，原始日志evidence/root-v21/m5-first-red.log保留。追加原W0三份M5 fixture写域，修正raw/origin_key/event包装旧期待，保留真实持久化/提交未知/重启/权重证据；不改生产或schema。V0归一化1971/6016=32.76%仍RED，V1不启动。
+
+事实源：[v2.1补丁](tasks/M6-validation-v2.1.md)，优先于下文v2.0/EX-01历史记录。schema零改动、零豁免，原store raw列不变；不实施019/raw侧表。exposure序列化前仅投影{event_id,kind,topic,tokens,scope,ts}；审计raw_unique非derived字符串值长度≥8，含五工具/explain_focus全部成功及错误路径。
+
+旧100行eligible≥90%指标废止，属于规格修正；原0/100和raw审计5 FAIL/4 PASS属于真实首RED，原件保留，不改成成功。新V0：两客户端全量认知工具事件+已捕获1893 commits归一化kind/topic完整率≥95%，随机200非认知行误标0，raw_unique泄漏0。先盘点真实N，V1全N入库，N≥5000达数量目标；不足如实报告，禁止注水。窗口固定[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)。
+
+参数冻结V1–V4：λ=.1、α=.3、A_floor=.05、momentum门限=.15；深度1.0/常规.6/轻度.3/正向1.5/负向-.8/成功.8/失败-.1；λ_r=.05，access_boost初始1.0/每次+.1/上限2.0/24h冷却。现有domain A_floor/α/momentum常量已核对一致；λ/λ_r沿现有显式参数绑定，强度/权重字段与时间单位核对后记录，不改公式或调参。
+
+v0.1无自动发现：主题来源仅固定种子+git派生+SeedTopic手工播种。unassigned留存计数并进入Sleep，不出生；tagged分裂继续禁用到v0.2。已合EX-01输入/pending/禁生接缝沿用，正向出生/provider不再是验收或阻塞。EXPERIMENT为未锁SHA草案，已按规格修正同步，无实验失效。其余引擎/数学/权重/去噪/fluid/crystallized/merge冻结不变。
+
+本轮沿原W1/W0固定Codex --yolo写域：W1全量盘点/工具接入/无标计数/参数绑定；W0仅MCP投影与raw_unique审计。原store/schema写授权撤销。root只文档决策/独立验收/最终Git；待两轨完成交同一集成owner普通合，V0三指标过后才正式V1。当前新指标NOT_RUN，无新阶段源码/测试数或SHA可登记。
+
+02:04 文档裁决commit `ce2373267f59de75b26bf0f2327867dcf83a7a15`已push。原两Codex --yolo终端均观察到turn_started：W1 `task_5919d711bc0c/ctx_ec348bef556e`；W0 `task_20bf728215ee/ctx_e3124d8cce8c`。W1预声明分母：Claude assistant每tool_use block、Codex response_item每function_call/custom_tool_call，按source+observed session+native tool/call ID去重，无ID才用原文件/行/block；所有unknown/wrapper保留于N，再加冻结1893 git。非工具行独立结构筛选、Random seed20261012抽200，不按mapper成功倒选。
+
+实码差异已集中询问，其他独立工作继续：Signal.Strength是非负s，Weight是有符号w，引擎s×w；建议接入有效strength=w、核心s=1避免重复乘权重，待用户确认字段绑定。SeedTopic需initial_confidence但v2.1未指定（旧M6验证.5）；KnowledgeQuery.LambdaR单位秒⁻¹，补丁.05未指明时间单位；RetrieveKnowledge的human引用boost只有累加，无cap/24h回退。已问精确播种值/单位及boost缺口是否冻结记录留v0.2，不改引擎、不默定。上述是现有实现差异，不重问已裁决常量或自动出生。
+
+02:06 W0报告并收窄实际wire接缝：ExplainFocus evidence.original投影六字段，外层attention/信号权重/related指标保留；report/veto删除嵌有raw session的origin_key，保留event_id/receipt_ids/提交与pending状态，恢复提示改为固定event_id对账、不以新origin重提。veto task-only不回显原task，derived topic仍可返回。get_experiences保留既有人类批准的独立结构化derived能力，原始事件载荷和无关会话/请求/actor元数据不得穿出。追加W0旧fixture唯一写域cmd/mcp/main_test.go，原:113要求返回RawBytes与新裁决冲突，先记录原RED，再改投影与零泄漏断言；不改CLI生产/app/contracts/schema。
+
+02:07 全量结构盘点完成，root独立读安全inventory/manifest核对N=6016：Claude tool_use 369、Codex function_call451+custom_tool_call3303=3754、原冻结真实git1893（Morph887/Astro1006）。零工具ID重复、session/scope缺失0、观察冲突0。认知全量N≥5000数量线已达，不等于V0归一化或V1入库完成。非工具人口29716，固定随机seed20261012抽200（Claude14/Codex186），独立于mapper与文本。产物本地v21-w1；新完整率/误标/raw_unique测试尚NOT_RUN，原100与旧RED不改。
+
+02:08 新完整率首次RED：kind/topic非空1971/6016=32.76%（git1893/edit74/search4），unknown4045、unassigned3497；生产MapAssociatedNativeRecord路径，normalizable及signal eligible以显式probe s=1为1971，不冒充正式参数绑定。独立200非工具误标0、association拒绝0。原件v21-w1/stages-first.json，root已读核对。继续修复可确定的Codex包装工具同构映射，保留N6016与unknown；不因首次RED缩小分母、泛化所有exec为认知或注水。新raw_unique尚NOT_RUN，V0未过，V1未运行。
+
+02:19 W1 bounded实现已settled/succeeded并push，SOURCE `cadd33af594eee8f7d246bb9ba2b292241dfdca2`、REPORT `3020bfd7a47e1b83f765ab3c1ad0437841746af6`，root核对祖先/远程报告SHA。owner定向Go54 PASS/3 Windows条件SKIP、Python8 PASS，生成check/diff PASS；此结果不等于V0验收。原终端释放后external retained idle，不删树。生产direct/file/full工具块共用canonical映射，增加确定性literal wrapper识别、Claude多块入口，未知复杂/非认知语义保留。git primary沿仓来源；附加固定关键词metadata真实Agent Swarm1/MCP39，未额外复制commit或给多topic写信号，关联消费仍未持久化，不冒称能力已兑现。
+
+最终同6016：mapped2014（commit1893/edit115/search6）、kind/topic1971=32.76%，unknown4002；3497 unassigned全部Codex且固定种子scope范围外，新增43认知wrapper全部无标。2519观察assigned只给出主题覆盖上限41.87%，不能作完整率分子。unknown原因：直接工具612/Bash非单搜索130/wrapper3260（嵌套未支持或非认知2520、控制343、callback176、literal166、非await48、动态参数7）。200负样本误标0。已问用户获准手工topic→scope/关键词，或明确认知范围修订；裁决前保持人口和无标，不自动发现/强塞。原100新复验mapped4/unknown96/候选3/正式eligible0，新Codex edit无标，原100与首RED不覆写。
+
+W0补充首RED：native-style Claude source经core RelatedAgents穿出explain_focus，已仅在exposure删除related_agents，core审计/主题/权重保留；全量每新增report/veto raw行均审计。旧fixture失误与真实来源泄漏首次日志分别保留。原100 raw_unique生产响应审计当前运行，明确real_raw_contract_local：原native receipt字节保留、隔离合成认知receipt仅使真实raw可走五工具/错误路径，不改真实归一化计数或冒充task_live/V1。待定参数和V0完整率仍阻止正式V1。
+
+02:21 原100首次真实载荷审计RED：100实际原载荷、1101 raw_unique字符串、2100生产MCP.Serve响应（五工具成功/backend/decode，report/veto capture/dynamics/unknown，共21组合）。唯一event001 explain success碰撞：raw_unique值与固定字段名evidence[].original同名，长度8；没有原载荷正文或字节序列化，严格字符串断言仍判RED，原real100-first.log与分类诊断保留。root选择修复实现而不放宽审计：MCP exposure DTO包装改evidence[].event，内部app.Original/SQL/OpenAPI不改，六字段和外层证据权重不变，相关测试同步。字段键与值仍全部逐字符串审计，不排除协议键、不改原100。owner重测后才登记raw_unique验收，当前仍未计PASS。
+
 任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
 
 ### EX-01：P0 unassigned消费契约限定修复（用户2026-10-12裁决）
@@ -23,6 +59,18 @@ EXPERIMENT.md预注册必须写明：本验证期发现机制仅覆盖unassigned
 01:22 EX-01 SOURCE `2947454ff697fb759b32a0d62aea8c8fccf04b4d` / REPORT `9f654e6fa122064626b1edcec3bf1af34df0e79a` 已push，原owner bounded succeeded，正向无标出生仍BLOCKED。最终生产函数仅`SleepService.Run`，五个源码/测试文件；共享辅助/公式/权重/去噪/fluid/crystallized/merge/M2未改。owner适用三包71 PASS/6 SKIP（M2 7/1、M3 10/1、M6 1/1、EX01 3 PASS、built Sleep CLI 1 PASS），domain Sleep另7 PASS。明确回滚对象commit：`2947454ff697fb759b32a0d62aea8c8fccf04b4d`；普通回滚命令`git revert 2947454ff697fb759b32a0d62aea8c8fccf04b4d`，未执行、没有虚构已产生的rollback SHA。旧各首RED保留。本次不是V0完整通过。
 
 [EXPERIMENT.md](docs/EXPERIMENT.md)已补入EX-01发现范围和split禁用，为root按用户裁决整理的协议草案，交未来W2继续；V1未过，不锁SHA、不启动day 0。实现缺少正向发现/provider写明于草案，不把McPet/MorphBench示例当结果。两开发Dispatch均结算，下一步唯一原集成owner普通合精确REPORT，root整树check/build与同100独立复测。
+
+### P0限定修复已合入并本机验收（2026-10-12 01:32）
+
+交付`validation/v1-20261012`，源码验收SHA `bc594de6c0eb3b6c8c10d1140c30627b2e46d6b2`，普通合唯一集成REPORT `17d77c443d44ec260d86de7322292874eff30059`；W1/W0精确SOURCE/REPORT均普通祖先，无业务胶水、无schema/MCP改动。冻结域独立`git diff --exit-code` PASS：domain、其他app、M2、SQLite/MCP/migrations/contracts与工程基线完全一致，生产引擎仅Run两处接缝。SplitTopic保留原定义、生产调用0处，验证Sleep不从tagged出生。全部本期Dispatch已completed，外部终端retained idle，原工程分支/工作树保留。
+
+root对该树独立`GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` / `pnpm build` EXIT0：完整Go/vet/modules、架构30包、275契约样例、实际API14/前端90 PASS，API/MCP/Sleep三二进制+web构建。先前commentary沿旧工程记录说27包，经实际本次日志更正为30。日志`evidence/root-p0/check-first.log`、`build-first.log`在本地证据根。原M2未改且随整包重跑，owner/集成定向M2 7 PASS/1 helper SKIP；EX01三个生产SQLite合成干跑PASS，正向无标出生不计PASS。默认check的privacy opt-in未开启，不冒称raw审计通过；原5 FAIL/4 PASS仍RED。
+
+root同一原100+本地observed association独立`go run ./cmd/validation --input .../sample-first.jsonl --associations .../associations-p0-local.json --output .../stages-root-p0-integrated.json` EXIT0，与owner最终安全聚合逐字一致：retained100/mapped3/unknown97/topic候选3/正式eligible0。生成`--check` PASS、Python ingest 5 PASS、祖先/diff PASS。未再次扫描原目录、未换样本、未读raw到终端/外发模型。≥90%仍不通过。
+
+源码已push；[CI38159885208](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38159885208) 针对bc594de正在Ubuntu/Windows运行，结果未到，不用旧工程CI替代。V0剩余：raw三层/019/exposure仍未实施，字面同值审计口径与正式参数待答；真实无标候选来源/provider缺失，已询问应复用的既有规则/实现，未经裁决不新增发现能力。V1–V4与50权重人工抽检/焦点确认/原因评分/预测对账NOT_RUN；协议未锁、无终局报告。未执行main合并、个人实例升级或回滚。
+
+01:43 [CI38159885208](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38159885208) completed/success，精确源码`bc594de6c0eb3b6c8c10d1140c30627b2e46d6b2`：Ubuntu24.04与Windows2025完整`pnpm check`/`pnpm build`/默认`pnpm test:e2e` PASS，两平台分别226 PASS/30 SKIP（3.1m/4.9m），Linux`go test -mod=readonly -race ./...` PASS，Windows race按工作流条件SKIP。完整已完成job日志本地`evidence/root-p0/ci-ubuntu.log`、`ci-windows.log`；原合成/真实首RED保持。后续提交只更新交接/状态Markdown，源码和测试与bc594de一致，以skip ci避免重复同一树。上述CI是代码回归，不是V0隐私/≥90%或真实科学验收；无标正向出生、raw三层及正式参数的阻塞不变。交付分支已push，工作树干净，本期所有Dispatch结算，三外部Codex终端retained idle。
 
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 

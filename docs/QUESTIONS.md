@@ -1,10 +1,23 @@
 # 用户决定与待定项
 
+## M6 v2.1 已裁决（2026-10-12）
+
+### 现有代码与冻结参数的绑定缺口（04:37，已集中询问，未答）
+
+- `Signal.Strength`为非负强度s，`Weight`为带符号w，贡献为s×w；接入有效strength=权重表值需绑定核心s=1、w=表值，避免平方或负强度。等待该字段绑定确认，不重问权重表。
+- `SeedTopic.InitialConfidence`为必填，补丁没有数值；旧M6 fixture使用.5，尚未获准成为正式初值。
+- `KnowledgeQuery.LambdaR`实码单位秒⁻¹，冻结λ_r=.05的时间单位待确认；现有引用boost没有上限2/24h冷却，是否记录缺口延至v0.2待答，不改冻结引擎。
+- 全量N=6016中3497条Codex无标，固定种子范围的topic覆盖上限2519/6016=41.87%；需要用户给出手工topic→scope/关键词，或明确修订认知人口范围。不能按mapper成功缩分母、硬塞主题或恢复自动出生。以上阻塞V0归一化及正式V1；隐私修复和独立复验继续。
+
+此前M6三项待答由[v2.1](../tasks/M6-validation-v2.1.md)全部解决：raw_unique排除derived投影同值、仅长度≥8非derived值审计；正式运行参数按STATUS顶部冻结；v0.1无自动无标出生，候选provider不再要求。schema零豁免、store raw列不变。旧100行≥90%废止，新验收是全量认知事件kind/topic完整率≥95%、随机200非认知行误标0、raw_unique泄漏0。旧问题/RED下文保留为历史，不再作为当前阻塞。
+
 ## M6 v2 验证期（2026-10-12）
 
 任务书已裁决并覆盖旧metadata范围待答：允许最近30天 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log真实载荷，raw仅本机审计，derived用于引擎/检索，MCP exposure无raw。不推导模型外发或其他来源授权。工程权重及核心逻辑冻结；七天三臂/最强B/评分权/成功线沿v2，不再讨论。
 
 新增实际冲突集中问：任意raw字段值零出现与derived重用ts/scope/kind字面冲突，是否允许derived白名单同值但禁止所有raw正文及非白名单值；v2未指定运行参数，是否固定上一轮M6显式参数为验证参数（不是产品默认），锁后不调。这两项未回答。Sleep限界已由用户EX-01裁决：仅桶读取与unassigned来源出生门禁，tagged仍更新/merge但不出生（分裂禁用到v0.2），数学/权重/去噪/fluid/追加不变；优先配置，无法收窄则上报。EX-01细节见STATUS，不再询问该已裁决项。
+
+01:25完成限定修复后确认另一具体缺口：现有ClusterTopics需非空topic，unassigned没有候选标签/provider，Interpreter只能提交后解释。已询问可复用的候选生成实现/规则路径；没有回答前真实正向unassigned出生BLOCKED，不增发现机制或以伪候选测试通过。tagged禁生、pending引用保留及既有更新/merge已测试并合入，未重新询问EX-01许可。
 
 ## 认知内核 Attention Engine（2026-10-11，本轮）
 

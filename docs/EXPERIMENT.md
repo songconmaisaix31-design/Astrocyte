@@ -1,14 +1,14 @@
 # Astrocyte M6 前瞻实验协议
 
-状态：预注册草案。V1尚未通过；题库、评分表和工具链尚未交付，未锁定SHA，未开始day 0。事实源：[M6 v2.0](../tasks/M6-validation-v2.md)、[EX-01裁决](../tasks/M6-EX01-decision.md)。
+状态：预注册草案。V1尚未通过；题库、评分表和工具链尚未交付，未锁定SHA，未开始day 0。事实源：[M6 v2.0](../tasks/M6-validation-v2.md)、[v2.1补丁](../tasks/M6-validation-v2.1.md)。
 
-## EX-01：主题发现范围
+## v2.1：主题来源与发现冻结
 
-本验证期主题发现机制仅覆盖unassigned出生；分裂禁用。从已标事件出生的分裂机制推迟v0.2。tagged事件继续参与去噪、fluid概念更新和merge。
+主题来源=固定五种子+git派生+SeedTopic手工播种。v0.1无自动发现，无标出生与已标分裂均冻结至v0.2。tagged事件继续参与去噪、fluid概念更新和merge；unassigned桶留存、计数、参与Sleep输入，不产生主题。
 
-回放中从unassigned自主发现的未播种主题如实记录，作为V1加号证据。McPet、MorphBench只是用户给出的例子，不预填为已发现主题。
+修正原因：V0阶段规格修正，协议尚未锁SHA，合法记录。此声明取代EX-01无标自主出生及其V1加号证据条款，旧首RED保留。固定参数见[STATUS](../STATUS.md)和v2.1，不为历史吻合调参。
 
-当前实现：tagged出生已禁用，无标输入保留pending引用；真实unassigned候选来源/消费provider缺失，正向出生尚未接通。不得以0出生或测试提供候选标签宣称该项通过。实施范围与回滚对象记在[STATUS](../STATUS.md)。
+现有EX-01接线保留输入/pending与禁生门禁，不新增候选provider。实施范围与原回滚对象记在STATUS。
 
 ## 已裁决实验设计
 
