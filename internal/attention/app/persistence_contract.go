@@ -107,10 +107,13 @@ type EngineSleepRun struct {
 }
 
 type EngineSleepMetrics struct {
-	KeyFactsBefore     int     `json:"key_facts_before"`
-	KeyFactsRetained   int     `json:"key_facts_retained"`
-	BytesBefore        int64   `json:"bytes_before"`
-	BytesAfter         int64   `json:"bytes_after"`
-	RetentionPrecision float64 `json:"retention_precision"`
-	StorageReduction   float64 `json:"storage_reduction"`
+	RetentionMeasurable bool    `json:"retention_measurable"`
+	StorageMeasurable   bool    `json:"storage_measurable"`
+	Representation      string  `json:"representation"`
+	KeyFactsBefore      int     `json:"key_facts_before"`
+	KeyFactsRetained    int     `json:"key_facts_retained"`
+	BytesBefore         int64   `json:"bytes_before"`
+	BytesAfter          int64   `json:"bytes_after"`
+	RetentionPrecision  float64 `json:"retention_precision"`
+	StorageReduction    float64 `json:"storage_reduction"`
 }
