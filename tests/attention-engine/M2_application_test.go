@@ -3,6 +3,7 @@ package attention_engine_test
 import (
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -23,6 +24,9 @@ func m2options() app.DynamicsOptions {
 }
 
 var m2human = app.Principal{ID: "m2-human", Kind: "human"}
+
+//go:embed M2_application_golden.json
+var applicationGolden []byte
 
 func m2open(t *testing.T, path string) (*sqlite.DB, *app.DynamicsEngine) {
 	t.Helper()
@@ -83,12 +87,15 @@ func TestM2ApplicationThirtyDaySQLiteReplay(t *testing.T) {
 	db, engine := m2open(t, path)
 	defer func() { db.Close() }()
 	var doc goldenDoc
-	if err := json.Unmarshal(goldenStream, &doc); err != nil {
+	if err := json.Unmarshal(applicationGolden, &doc); err != nil {
 		t.Fatal(err)
 	}
 	initial, err := engine.SeedTopic(ctx, m2human, "Agent Swarm", doc.Input[0].TsMs-doc.DayMs)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if initial.Attention != domain.AttentionFloor {
+		t.Fatal("manual seed persisted below floor")
 	}
 	type step struct {
 		TS      int64                   `json:"ts"`
@@ -196,7 +203,7 @@ func TestM2FailureBatchEvidenceAndAtomicRollback(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if n.Attention != .6 || math.Abs(n.Momentum-.42) > 1e-12 {
+	if math.Abs(n.Attention-.65) > 1e-12 || math.Abs(n.Momentum-.42) > 1e-12 {
 		t.Fatal("batch did not sum one step or counted duplicate")
 	}
 	failure := m2signal(t, db, "focus", "fail", ts, domain.SignalFeedbackFailure, 1)

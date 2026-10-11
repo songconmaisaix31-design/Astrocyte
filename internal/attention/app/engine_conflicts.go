@@ -16,32 +16,39 @@ func (e *DynamicsEngine) Conflicts(ctx context.Context) ([]DynamicsConflict, err
 func (e *DynamicsEngine) ReportFactConflict(ctx context.Context, topic, leftEvent, rightEvent, detail string, now int64) (DynamicsConflict, error) {
 	var c DynamicsConflict
 	err := e.store.WithDynamicsTx(ctx, func(tx DynamicsTx) error {
-		if _, err := tx.GetNode(topic); err != nil {
-			return err
-		}
-		for _, id := range []string{leftEvent, rightEvent} {
-			r, err := tx.GetEvent(id)
-			if err != nil {
-				return err
-			}
-			if r.Event == nil {
-				return dynamicsInvalid("Conflict requires mapped evidence")
-			}
-		}
-		list, err := tx.ListConflicts()
-		if err != nil {
-			return err
-		}
-		for _, old := range list {
-			if old.Conflict.Topic == topic && old.Conflict.LeftRef == leftEvent && old.Conflict.RightRef == rightEvent && old.Conflict.Detail == detail {
-				c = old
-				return nil
-			}
-		}
-		c = DynamicsConflict{Conflict: domain.Conflict{ID: dynamicsID(), Topic: topic, Kind: domain.ConflictKindKnowledge, LeftRef: leftEvent, RightRef: rightEvent, Detail: detail, Status: domain.ConflictStatusPending}, CreatedAt: now, Version: 1}
-		return tx.SaveConflict(c)
+		var err error
+		c, err = e.ReportFactConflictInTx(tx, topic, leftEvent, rightEvent, detail, now)
+		return err
 	})
 	return c, err
+}
+
+func (e *DynamicsEngine) ReportFactConflictInTx(tx DynamicsTx, topic, leftEvent, rightEvent, detail string, now int64) (DynamicsConflict, error) {
+	var c DynamicsConflict
+	if _, err := tx.GetNode(topic); err != nil {
+		return c, err
+	}
+	for _, id := range []string{leftEvent, rightEvent} {
+		r, err := tx.GetEvent(id)
+		if err != nil {
+			return c, err
+		}
+		if r.Event == nil {
+			return c, dynamicsInvalid("Conflict requires mapped evidence")
+		}
+	}
+	list, err := tx.ListConflicts()
+	if err != nil {
+		return c, err
+	}
+	for _, old := range list {
+		if old.Conflict.Topic == topic && old.Conflict.LeftRef == leftEvent && old.Conflict.RightRef == rightEvent && old.Conflict.Detail == detail {
+			c = old
+			return c, nil
+		}
+	}
+	c = DynamicsConflict{Conflict: domain.Conflict{ID: dynamicsID(), Topic: topic, Kind: domain.ConflictKindKnowledge, LeftRef: leftEvent, RightRef: rightEvent, Detail: detail, Status: domain.ConflictStatusPending}, CreatedAt: now, Version: 1}
+	return c, tx.SaveConflict(c)
 }
 
 func (e *DynamicsEngine) AdjudicateConflict(ctx context.Context, p Principal, id string, cmd AdjudicateConflictCommand) (ConflictResult, error) {
