@@ -20,6 +20,10 @@ EXPERIMENT.md预注册必须写明：本验证期发现机制仅覆盖unassigned
 
 01:18 原M6合成周fixture首RED：原来依赖Sleep给tagged research/implementation出生，禁生后State空，M6_week_test.go:194索引panic。W0补充仅`tests/attention-engine/M6_week_test.go` fixture写域：通过既有human SeedTopic显式播种两个既定主题；原λ=.1、confidence=.5、success=.05/drop=.2全部不变，独立公式/排序/原始字节/重启/七次每日幂等断言保留。原首错保存，不能以此合成周替代V1真实回放或V4前瞻。
 
+01:22 EX-01 SOURCE `2947454ff697fb759b32a0d62aea8c8fccf04b4d` / REPORT `9f654e6fa122064626b1edcec3bf1af34df0e79a` 已push，原owner bounded succeeded，正向无标出生仍BLOCKED。最终生产函数仅`SleepService.Run`，五个源码/测试文件；共享辅助/公式/权重/去噪/fluid/crystallized/merge/M2未改。owner适用三包71 PASS/6 SKIP（M2 7/1、M3 10/1、M6 1/1、EX01 3 PASS、built Sleep CLI 1 PASS），domain Sleep另7 PASS。明确回滚对象commit：`2947454ff697fb759b32a0d62aea8c8fccf04b4d`；普通回滚命令`git revert 2947454ff697fb759b32a0d62aea8c8fccf04b4d`，未执行、没有虚构已产生的rollback SHA。旧各首RED保留。本次不是V0完整通过。
+
+[EXPERIMENT.md](docs/EXPERIMENT.md)已补入EX-01发现范围和split禁用，为root按用户裁决整理的协议草案，交未来W2继续；V1未过，不锁SHA、不启动day 0。实现缺少正向发现/provider写明于草案，不把McPet/MorphBench示例当结果。两开发Dispatch均结算，下一步唯一原集成owner普通合精确REPORT，root整树check/build与同100独立复测。
+
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
 当前：两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接。现有Sleep跳过无topic事件、允许从带topic事件出生；用户已以EX-01批准上述两处接缝，其他引擎仍冻结。schema豁免当前无。
@@ -37,6 +41,10 @@ root读取工作树外 `diagnosis-w1/stages-first.json`、`inventory.json`、`sa
 W0第一合成RED：现有SQLite通用事件读携raw，explain_focus可泄漏明文/base64；五工具backend错误及两种已提交回执错误均可回显raw。先保留复现，原owner研究raw独立表/derived投影/MCP白名单，schema当前仍未豁免，原引擎RawBytes验证和Sleep.Raw投影约束需具体方案，不能暗改冻结令。
 
 01:11 EX-01原W0续派 `task_d8923cb8e988` / `ctx_d89f4167f263`，Codex --yolo turn_start observed；仅Sleep输入和出生门禁、对应合成干跑及M2，先检查配置并报告输入契约。W1接入续派 `task_5c8afebac5c9` / `ctx_9000e7343fa3`：最初启动观察outcome_unknown，原prompt提交后收到实际工作状态，未重复派任务。两轨源码/测试尚未合入交付分支。
+
+01:17 W1接入SOURCE `902b3b1f204d5197ed9850126a53d88293ba5068` / REPORT `a227ca5298d6d7b69ad58708493b310969ef2963` 已push并succeeded，外部终端retained idle。唯一canonical Python规则生成Go生产表，补observed header关联、固定五主题匹配与真正git-log commit adapter；未改SQLite/MCP/引擎。root已读安全聚合：同100 retained100/mapped3/unknown97，3条现在通过topic/association候选门槛，正式参数未定且未跑引擎，eligible仍0；scope分类assigned52/unassigned48不是认知eligible。owner Go48 PASS/3 Windows fixture SKIP、Python5 PASS、生成漂移检查PASS；首六个路径子测试RED保留。V0≥90%仍未达，未靠泛消息加权或换分母。
+
+真正git历史另捕获Morphogenesis `ea41409a2af20cf3b34ec26eb5b64092319b2eb1` 887条、Astrocyte `bc39e5a7cec354944184e5c42029028c042576f9` 1006条，两仓1893个唯一commit；命令调用不算已提交事实。与native共35732个已盘点带ts输入、20个日期（不是eligible count或入库），10日仍无这批捕获源记录。raw subject/log bytes仅本地，未混入原100分母；≥10000、30Sleep、真实焦点迁移及用户确认仍NOT_RUN。W0限定修复仍在原owner回归，单集成待其结算。
 
 ## 本轮最终双平台 CI 通过（2026-10-12）
 
