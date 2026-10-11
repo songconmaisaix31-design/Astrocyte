@@ -1,8 +1,67 @@
 # AttentionEngine-W1 · 事件流与归一化（M1）
 
+## 限定 CI 路径修复交接（Task task_153a01e3d7ee / Dispatch ctx_d533ec61be20）
+
+本次只处理 CI38152009091 的公开 native-format fixture 路径问题，原真实 M1 Task
+`task_13ac51983837` 的 failed / 原 metadata 首 RED / 两客户端真实回放 NOT_DONE 保持。
+普通快进合入指定 root `ebe9a758b05d73363cc8630c187208c41253321d`；
+SOURCE `8de573ac5e1dff4ad703fe7fded7ec70c111130a` 已 push。
+REPORT 为随后独立文档提交，精确 SHA 由本次 worker_done 回执给出；没有把 REPORT 当 SOURCE。
+分支 `songconmaisaix31-design/attention-engine-w1-events`，实际客户端为原 Codex --yolo，未启动额外 Agent。
+
+### 首失败与复现
+
+- 原 CI 首日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-ci-38152009091-windows-first.log` 保持原件：
+  `TestM1NativeFormatFixtureReplayAccounting` 在第 38 行失败，count=0、partial=false、
+  `replay file uses symbolic links`。Windows RUNNER~1 的 8.3 名称展开被当成链接。
+- 改码前执行 `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run '^TestM1NativeFormatFixtureReplayAccounting$' -count=1 -v`：
+  本机普通长名称 TEMP 下 PASS，未修改 TEMP；日志 `astrocyte-w1-native-baseline.log`。
+- 改码前增加真实 `GetShortPathName` fixture，再执行
+  `go test ./internal/adapters/events -run '^TestNativeReplayWindowsShortPathAliases$' -count=1 -v`：
+  两客户端 12 个原始案例全部 RED（短根/短文件/祖先、项目/header 别名和大小写）；
+  首日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-w1-shortpath-first-red.log` 保留，未覆盖。
+  后续另加 short-root-and-file 案例，最终为 14 个案例。
+
+### 修复与边界
+
+仅修改 events 包：Windows `GetLongPathName` 展开真实目录项名称后再判断 selected-root containment；
+每个 root/file/ancestor 先逐级 `Lstat` 并独立读取 Windows reparse 属性，拒绝 junction 和 symlink。
+随后比较 `EvalSymlinks` 与名称展开结果，未用 `SameFile` 作为授权依据；测试中的 SameFile
+只确认 owned junction 指向实际 target，以证明“同对象”不能放行真实重定向。
+project header 和独立 selected-record adapter 可匹配合法短长/大小写名称，保留调用者原 approved scope；
+junction header 与实际 target 不匹配，outside-root / 错项目继续拒绝。
+
+1 MiB / 128 条上限、原始 raw 字节、pending、未知 tokens/outcome/depth/topic 与权重不变；
+14 个别名案例逐一核对 raw/pending/unknowns，并用 limit=1 核对 partial 与原 header。
+未跨 adapter 引入 helper，未修改 agents/worksscan/domain/app/合同或其他 owner 文件。
+这些是 owned public fixture 验证，不是读取真实 Claude/Codex 私人会话。
+
+### 最终检查与真实限制
+
+所有 Go 命令均设置 `GOFLAGS=-p=1 GOMAXPROCS=2`，退出码均 0：
+
+- `go test ./internal/adapters/events -count=1 -v`：包 PASS；14 个真实 8.3/case 别名案例、
+  7 个真实 owned junction 拒绝案例、2 个 outside-root/错项目案例 PASS。
+  普通 symlink root/ancestor/file 的 3 个案例因 Windows privilege 缺失为 **NOT_RUN / SKIP**；未声称通过。
+- `go test ./tests/attention-engine -run '^TestM1' -count=1 -v`：9 PASS / 1 SKIP；
+  metadata opt-in 未配置、未执行任何私人库读取，fixture accounting、既有 S1 输出、权重和持久化仍 PASS。
+- `GOOS=linux GOARCH=amd64 go test -c ./internal/adapters/events -o C:/Users/DW/AppData/Local/Temp/astrocyte-w1-events-linux.test`：compile-only PASS。
+- `GOOS=linux GOARCH=amd64 go test -c ./tests/attention-engine -o C:/Users/DW/AppData/Local/Temp/astrocyte-w1-M1-linux.test`：compile-only PASS；不是 Linux runtime 验收。
+- `gofmt`、`git diff --cached --check` PASS；没有 Node/全 UI/媒体/付费/native 操作。
+
+最终 Windows 日志分别为 `C:/Users/DW/AppData/Local/Temp/astrocyte-w1-events-final.log` 和
+`C:/Users/DW/AppData/Local/Temp/astrocyte-w1-M1-fixture-final.log`；路径边界定向日志
+`C:/Users/DW/AppData/Local/Temp/astrocyte-w1-path-boundaries.log` 保留。
+普通 symlink 仍需有权限环境实际执行；Linux 此次只编译。
+root 交原集成 Agent 普通消费精确 SOURCE/REPORT 后做最后检查和自动 CI，本轨未自行重跑远程 CI。
+旧真实 M1 metadata 范围/授权未答，没有重跑旧 0-eligible cache，也没有读取 private transcript。
+本次限定任务完成不表示真实 M1 或 Attention Engine 整体通过。
+
+## 原真实 M1 任务交接记录
+
 事实源：`C:/Users/DW/Downloads/tabbit-code (2).md` §4.1/§4.5/§5.2/§8 M1。
 分支：`songconmaisaix31-design/attention-engine-w1-events`，基线 `dab8fea`。
-当前 Task `task_13ac51983837` / Dispatch `ctx_62837e7857f0`；客户端 Codex，沿启动配置执行，没有启动其他 Agent。
+原 Task `task_13ac51983837` / Dispatch `ctx_62837e7857f0`；客户端 Codex，沿启动配置执行，没有启动其他 Agent。
 协调者确认运行配置为 Codex / gpt-6.1-sol / YOLO。
 
 ## 本 Dispatch 最终交接（2026-10-11 22:46，Asia/Shanghai）
