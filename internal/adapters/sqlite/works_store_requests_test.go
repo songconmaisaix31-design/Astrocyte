@@ -47,10 +47,7 @@ func TestWorksRequestReceiptsPersistAndPreventUnknownReplay(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.sqlite")
 	db := openAttentionDB(t, path)
 	ensureWorksTables(t, db)
-	// Contract-local DDL until the W0-owned migration016 is published.
-	if _, err := db.Conn().Exec("CREATE TABLE works_requests(caller_id TEXT NOT NULL,command TEXT NOT NULL,request_key TEXT NOT NULL,input BLOB NOT NULL,status TEXT NOT NULL,result BLOB,error BLOB,PRIMARY KEY(caller_id,command,request_key))"); err != nil {
-		t.Fatal(err)
-	}
+	// openAttentionDB applies the canonical W0 migration016. Do not redefine it.
 	root := t.TempDir()
 	if err := os.WriteFile(filepath.Join(root, "main.go"), []byte("metadata-only"), 0o644); err != nil {
 		t.Fatal(err)
