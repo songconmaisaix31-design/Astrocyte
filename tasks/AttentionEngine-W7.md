@@ -18,6 +18,10 @@
 
 已普通合入正式 M0 source `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，merge `b19bcd7` 已 push。合后定向首 RED：新共享 harness 用 attention_engine_test，而旧 W7 为 attentionengine_test；仅本轨 w7_works_test.go 改为共享 package 名，随后 `go test -count=1 ./tests/attention-engine -run TestW7` PASS。同轮 domain/app/scanner/sqlite 定向 PASS、typecheck PASS。HTTP Works P2 SHA 仍待 W0，不扩展全仓检查。
 
+主控/W0 已确认新增请求去重在本轨范围，migration016 的 works_requests 字段已对齐。复用 Caller.OperationID（由 HTTP Idempotency-Key 给定）；独立 WorksRequestRepository 原子 reserve pending 后才做效果，相同已接受输入返回原结果，输入不同 version_conflict，pending/unknown 不重放。metadata canonical input 含 work id、expected_revision 和业务值；JSON 投递保留原 content；操作无 key 的旧内部调用只用于 local-only 服务测试，不代表 HTTP。
+
+事件 sink 失败现在显式 delivery_unknown（本地作品/metadata 可能已保存），元数据播种读写错误不再静默继续。SQLite 定向 TestWorksRequestReceiptsPersistAndPreventUnknownReplay PASS：实际 reserve/result 持久化、重复请求只发一次事件、CAS 重复返回原 revision、sink 未知效果不重发、pending/accepted/unknown 真数据库关闭后再打开均不重放。五包 Works/W7/Scanner/Delivery `-count=1` PASS。当前仍为 contract_local DDL，不等于 W0 migration016 或真实 HTTP 验收。
+
 ## 1. 交付内容（五能力 + 事件源）
 
 | 能力 | 落点 |
@@ -94,7 +98,7 @@ W7 保留原始 WorkEvent 词汇，W1 独占闭集 Event.Kind 的合法转换。
 | work_handoff_set | manual | 保存人工手册，不是闭集 manual kind，也不是 agent_task |
 | work_synced/work_verified | machine | 系统观察，禁止增加人类注意力；不能转成 manual 关注信号 |
 
-Payload 为作品活动记录，Scope 为作品根；生成手册不推断 agent_task 成功。默认空 topic 的认知处理和未知事件归 W1，不在 W7 冻结策略。现有 sink 错误仍未传递给客户端；链1落库可靠性须 W1/W0 接线后联合核验，不能沿 sink collector 测试声称完成。
+Payload 为作品活动记录，Scope 为作品根；生成手册不推断 agent_task 成功。默认空 topic 的认知处理和未知事件归 W1，不在 W7 冻结策略。sink 错误已显式返回 delivery_unknown；链1落库可靠性仍须 W1/W0 接线后联合核验，不能沿 sink collector 测试声称完成。
 
 ## 5. 依赖与剩余限制
 

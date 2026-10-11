@@ -78,6 +78,7 @@ type StoredKnowledge struct {
 	Version              int                   `json:"version"`
 	CreatedAt            int64                 `json:"created_at"`
 	UpdatedAt            int64                 `json:"updated_at"`
+	ConsolidatedAt       *int64                `json:"consolidated_at"`
 	CrystallizedVersions []KnowledgeVersion    `json:"crystallized_versions"`
 	Shares               []ShareAudit          `json:"shares"`
 	Actions              []ActionAudit         `json:"actions"`
