@@ -5,6 +5,16 @@
 
 ## 状态（2026-10-11）
 
+### M2 持久化接续（当前 Dispatch）
+
+- 接续基线 `3ed950250172d2efcf73a171e29e149e1a4916ea`，工作树干净；客户端 Codex（用户已应用 `codex --yolo`），不启动并发 Agent。
+- 只读检查 W0 尚未发布的 M0 草稿；未复制或消费草稿类型。等待协调者给出精确可消费 SHA。
+- M0 Handoff：`updated_at` 与 `last_active` 必须独立持久化；解释需原始 Event、强度、有效贡献/失败 confidence 路径和带时间戳的关联。生命周期及持续合并观察可在 W2 节点 JSON 内保存，迁移/共享类型仍由 W0 决定。
+- 实现次序：消费获准 M0 → 事务内幂等 ApplySignals/读侧 → 持久化生命周期与冲突 → 30 天实际应用回放/冷重启 → commit + push。
+- 验收保留现有独立 golden；额外回放必须运行生产 app + 实际 SQLite，输出逐点实际 A/M/confidence/updated_at/last_active 供 root 第二实现复算。读侧前后库状态相同；失败任务只给 confidence 负贡献；归档不删，重浮现从 floor 唤醒。
+- 参数 λ、初始 confidence、成功 confidence 增量、分裂/密度/confidence 阈值、持续合并时长未被用户锁定，必须由显式配置输入；下文旧 A1/A4/A5 不作为运行默认值。
+- 基线验证：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain ./tests/attention-engine` PASS（缓存）；仅纯规则证据，非 M2 完成。
+
 波 A 已落码：纯数学状态更新 + 参数化函数 + 30 天 golden 数据（不依赖 M0 类型，不自建共享
 Event/Node/Store）。域文件 `dynamics/antimatthew/lifecycle/topic/conflict` 已实现，单测与
 `tests/attention-engine/M2_golden_test.go` 通过（GOFLAGS=-p=1 GOMAXPROCS=2）。HEAD `acb4561`。
