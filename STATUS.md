@@ -4,6 +4,16 @@
 
 任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
 
+### EX-01：P0 unassigned消费契约限定修复（用户2026-10-12裁决）
+
+允许且仅允许：Sleep输入选择改为tagged ∪ unassigned；cluster→birth仅unassigned来源簇可创建主题，tagged来源簇继续去噪/fluid概念更新/merge，不创建主题。从已标事件出生是事实上的分裂机制，本验证期禁用，推迟v0.2。先检查已有配置，能配置则零代码；不能配置才做限定接缝。不触碰A(t)/M(t)公式、固定权重、λ、去噪规则、fluid写入和crystallized追加。
+
+当前路径清单（修改前基线6b2b910）：`SleepService.Run`读`SleepTx.ListEvents`后按Event/topic过滤并构建byTopic/views；不存在topic时经`sleepBirthSupport`→`DynamicsEngine.ConsolidateTopicInTx`→`seedInTx`出生，已存在topic仍调用ConsolidateTopicInTx追加证据。相关边追加也调用ConsolidateTopicInTx；merge走`SleepService.observeSleepAssociations`→`ObserveAssociationInTx`独立路径。出生与已存在概念更新共享ConsolidateTopicInTx，不能在该共享函数加全局禁止或提前return整个cluster；仅收窄Run的not-found出生分支，保留已存在主题、相关边和association调用。无法收窄则停止上报，不扩大豁免。
+
+触及函数拟定：`SleepService.Run`中的输入选择/不存在主题的birth门禁；存储输入选择若确需变化，owner先报精确函数后补入本清单。`sleepBirthSupport`、`ConsolidateTopicInTx`、`observeSleepAssociations`及全部数学/去噪/fluid函数保持不改。测试：真实生产Sleep路径合成tagged-only→0新主题；unassigned流→新主题所有出生证据只来自unassigned；混合流验证tagged不借unassigned邻居旁路出生，并证明现有topic更新/merge仍可达；M2套件重跑。SOURCE/测试结果/精确回滚commit待owner完成后登记，当前未实施；禁止补造SHA。
+
+EXPERIMENT.md预注册必须写明：本验证期发现机制仅覆盖unassigned出生，分裂禁用；回放自主发现的未播种topic（如McPet/MorphBench）按真实产物记录为V1加号证据，不预填示例为结果。原始值与derived同值审计口径、正式运行参数仍待答，EX-01只解决Sleep限界，不代替这两项裁决。
+
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
 当前：基线干净、两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接，避免双份漂移。现有Sleep跳过无topic事件、允许从带topic事件出生；与“新主题只能从unassigned”及引擎冻结存在实现冲突，先诊断并报告，不偷偷改引擎。schema豁免当前无。
@@ -16,7 +26,7 @@ root读取工作树外 `diagnosis-w1/stages-first.json`、`inventory.json`、`sa
 
 固定抽样在看映射前声明：按ts/文件序/行号排序，50个等记录数时间分层，每层优先已使用最少的session、再邻近中点；包含header和其他类型，不挑成功工具。原100条 `sample-first.jsonl` 441979 bytes保留在本机、不进入Git/终端；derived manifest仅序号/ts/source/文件行号索引。第一次读取不完整结果另存stages-incomplete-read，不覆盖首完整RED。诊断源码SHA/测试数待原owner提交报告，当前不是V0全链验收。
 
-真实窗口固定 `[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)`：Claude7文件/7 session、2197窗口记录；Codex1714文件全部可读，28窗口session/31642窗口记录，共33839记录、9日期，parse error0。Claude有10-01/09/10；Codex有09-12/13/30、10-01/02/09/10；09-14至09-29无观测，不把缺档当用户未活动。Claude subagents实际0，Codex flat legacy实际0，不能造对应真实样本。全库存储eligible数量还未知，≥10000未验收。先kind/header确定性接缝，再种子/unassigned；引擎仍只读，正式V1不启动。
+真实窗口固定 `[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)`：Claude7文件/7 session、2197窗口记录；Codex1714文件全部可读，28窗口session/31642窗口记录，共33839记录，parse error0。最初owner状态误报9日期；01:00更正并经root核对联合日期去重为7：09-12/13/30、10-01/02/09/10，其余23日无观测，不把缺档当用户未活动。Claude subagents实际0，Codex flat legacy实际0，不能造对应真实样本。全库存储eligible数量还未知，≥10000未验收。先kind/header确定性接缝，再种子/unassigned；引擎仍只读，正式V1不启动。
 
 W0第一合成RED：现有SQLite通用事件读携raw，explain_focus可泄漏明文/base64；五工具backend错误及两种已提交回执错误均可回显raw。先保留复现，原owner研究raw独立表/derived投影/MCP白名单，schema当前仍未豁免，原引擎RawBytes验证和Sleep.Raw投影约束需具体方案，不能暗改冻结令。
 

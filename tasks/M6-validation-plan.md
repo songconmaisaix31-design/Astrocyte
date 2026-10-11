@@ -8,7 +8,7 @@
 | W0 RED边界与证据展示 | terminal `term_94d760ff-7468-4e9e-b42c-44acfd4cbdb8`；worktree `C:/Users/DW/orca/workspaces/Astrocyte/validation-v1-boundary`；branch `songconmaisaix31-design/validation-v1-boundary` | `internal/adapters/sqlite/event_store*.go`、`internal/adapters/sqlite/validation*.go`、`internal/adapters/mcp/**`、`migrations/019_*`、`tests/validation/privacy/**`、`web/src/pages/validation/**`、`web/src/router.ts`、`web/src/App.tsx`、`web/package.json`、`pnpm-lock.yaml`、`tasks/M6-W0.md` | 先复现raw泄漏/接口与store边界，schema豁免由root逐条登记后才实施；V0 RED独立审计；V1后explain_focus和一张轨迹图 |
 | W2 实验工具与协议 | validation-v1-experiment；V1产物后启动 | `scripts/experiment/**`、`tests/validation/experiment/**`、`docs/EXPERIMENT.md`、`docs/EXPERIMENT_REPORT.md`、`docs/experiment/**`、`tasks/M6-W2.md` | V1分布确定题库，三臂收集/确定性事实审计/独立评分表/预测D+3，V3锁SHA，真实七日与末题D+3完成才V4 |
 
-`internal/attention/{domain,app}`全部只读；其他业务路径全部只读。跨轨只交Handoff；共享合约/入口若必需，由root登记唯一owner有限扩展写域，不互改。V0两个写域先并行诊断/边界复现，映射与种子实施顺序由诊断结果决定。各阶段结束普通commit+push并记录精确SHA/时间/测试数。最终单集成Agent只合精确报告与薄胶水，root独立验收/push。
+`internal/attention/{domain,app}`默认全部只读；EX-01唯一例外归W0：`internal/attention/app/sleep_service.go`仅Run输入选择/不存在topic出生门禁，`tests/validation/sleep/**`及`tasks/M6-EX01.md`。先查配置、报告最小类型/函数接缝后实施，数学/权重/去噪/fluid/crystallized/共享ConsolidateTopicInTx/merge保持原样。W1不得触及EX-01写域；unassigned标记与消费Handoff由两owner协调，禁止伪标签绕门禁。其他业务路径全部只读。跨轨只交Handoff；共享合约/入口若必需，由root登记唯一owner有限扩展写域，不互改。V0两个写域先并行诊断/边界复现，映射与种子实施顺序由诊断结果决定。各阶段结束普通commit+push并记录精确SHA/时间/测试数。最终单集成Agent只合精确报告与薄胶水，root独立验收/push。
 
 本地证据放工作树外 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/`，raw不进Git/远程/终端正文，机器输出只含聚合或derived。未达数量、空源、未知权重和失败都记录；禁止复制/重复事件、靠挑样实现90%、把30天回放冒称七天前瞻。V1用户人工确认和原因评分只能等用户；预测要真实未来行为。
 

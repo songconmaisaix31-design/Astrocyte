@@ -4,7 +4,7 @@
 
 任务书已裁决并覆盖旧metadata范围待答：允许最近30天 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log真实载荷，raw仅本机审计，derived用于引擎/检索，MCP exposure无raw。不推导模型外发或其他来源授权。工程权重及核心逻辑冻结；七天三臂/最强B/评分权/成功线沿v2，不再讨论。
 
-新增实际冲突集中问：任意raw字段值零出现与derived重用ts/scope/kind字面冲突，是否允许derived白名单同值但禁止所有raw正文及非白名单值；v2未指定运行参数，是否固定上一轮M6显式参数为验证参数（不是产品默认），锁后不调。未回答。Sleep当前跳过无topic事件、可由带topic事件出生，与新主题仅unassigned出生及引擎零修改冲突，待诊断提出具体方案。
+新增实际冲突集中问：任意raw字段值零出现与derived重用ts/scope/kind字面冲突，是否允许derived白名单同值但禁止所有raw正文及非白名单值；v2未指定运行参数，是否固定上一轮M6显式参数为验证参数（不是产品默认），锁后不调。这两项未回答。Sleep限界已由用户EX-01裁决：仅桶读取与unassigned来源出生门禁，tagged仍更新/merge但不出生（分裂禁用到v0.2），数学/权重/去噪/fluid/追加不变；优先配置，无法收窄则上报。EX-01细节见STATUS，不再询问该已裁决项。
 
 ## 认知内核 Attention Engine（2026-10-11，本轮）
 
