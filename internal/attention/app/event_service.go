@@ -25,6 +25,18 @@ type EventService struct {
 	failureCapture []func(context.Context, string) error
 }
 
+// EventCapturePendingError reports a known commit with unfinished capture.
+// Callers retain these IDs and reconcile them instead of resending new origins.
+type EventCapturePendingError struct {
+	ReceiptIDs []string
+	Cause      error
+}
+
+func (e *EventCapturePendingError) Error() string {
+	return fmt.Sprintf("receipts committed; failure capture pending: %v", e.Cause)
+}
+func (e *EventCapturePendingError) Unwrap() error { return e.Cause }
+
 // strength has no product default; callers must provide the selected scale.
 func NewEventService(repo EventRepository, strength float64, failureCapture ...func(context.Context, string) error) *EventService {
 	return &EventService{repo: repo, strength: strength, failureCapture: failureCapture}
@@ -64,7 +76,11 @@ func (s *EventService) Record(ctx context.Context, records []StoredEvent) ([]Sto
 		}
 		for _, capture := range s.failureCapture {
 			if err := capture(ctx, record.ID); err != nil {
-				return result, fmt.Errorf("receipts committed; failure capture pending: %w", err)
+				ids := make([]string, 0, len(result))
+				for _, receipt := range result {
+					ids = append(ids, receipt.ID)
+				}
+				return result, &EventCapturePendingError{ReceiptIDs: ids, Cause: err}
 			}
 		}
 	}
