@@ -56,16 +56,16 @@ func TestRegisteredDiscoveryScopesDedupAndMetadata(t *testing.T) {
 		t.Fatalf("result=%+v err=%v", result, err)
 	}
 	for _, p := range result.Projects {
-		if p.Root == root {
+		if rootKey(p.Root) == rootKey(root) {
 			if p.Source != "orca_registered" || p.Activity.Status != "known" || p.Activity.CreatedWithCLI == nil || *p.Activity.CreatedWithCLI != "codex" || !p.Activity.LastActivityAt.Equal(now) {
 				t.Fatalf("bad metadata %+v", p)
 			}
-		} else if p.Root == worktree {
-			if p.Source != "git_worktree" || p.ParentRoot != root || p.Activity.LastActivityAt != nil {
+		} else if rootKey(p.Root) == rootKey(worktree) {
+			if p.Source != "git_worktree" || rootKey(p.ParentRoot) != rootKey(root) || p.Activity.LastActivityAt != nil {
 				t.Fatalf("bad worktree %+v", p)
 			}
-		} else if p.Root == child {
-			if p.Source != "subproject" || p.ParentRoot != root || p.Activity.Status != "unknown" {
+		} else if rootKey(p.Root) == rootKey(child) {
+			if p.Source != "subproject" || rootKey(p.ParentRoot) != rootKey(root) || p.Activity.Status != "unknown" {
 				t.Fatalf("bad child %+v", p)
 			}
 		} else {
@@ -101,7 +101,7 @@ func TestRegisteredMissingMainStillAllowsExplicitLocalWorktree(t *testing.T) {
 	worktree := t.TempDir()
 	s := registeredFixture(t, []map[string]any{{"id": "repo1", "path": missing}}, []map[string]any{{"repoId": "repo1", "hostId": "local", "path": worktree}})
 	result, err := s.DiscoverRegistered(context.Background())
-	if err != nil || result.Status != "partial" || len(result.Failures) != 1 || len(result.Projects) != 1 || result.Projects[0].Root != worktree || result.Projects[0].ParentRoot != missing || result.Projects[0].Source != "git_worktree" {
+	if err != nil || result.Status != "partial" || len(result.Failures) != 1 || len(result.Projects) != 1 || rootKey(result.Projects[0].Root) != rootKey(worktree) || rootKey(result.Projects[0].ParentRoot) != rootKey(missing) || result.Projects[0].Source != "git_worktree" {
 		t.Fatalf("registered worktree lost %+v %v", result, err)
 	}
 }

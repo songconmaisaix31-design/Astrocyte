@@ -95,7 +95,7 @@ func discoverHistory(ctx context.Context, cli string, p domain.LocalProject) ([]
 		} else if record.Type != "session" {
 			return nil
 		}
-		if id == "" || filepath.Clean(cwd) != filepath.Clean(p.Root) {
+		if id == "" || rootKey(cwd) != rootKey(p.Root) {
 			return nil
 		}
 		if len(result) >= 100 {
@@ -125,7 +125,7 @@ func readHistory(ctx context.Context, s domain.NativeSession) ([]domain.NativeEv
 	// Generic project path validation excludes all native-state dirs; here the
 	// history root is separately human approved, still reject symlinks/escapes.
 	resolved, err := filepath.EvalSymlinks(r.path)
-	if err != nil || resolved != r.path || !inside(r.root, resolved) || rel == ".." {
+	if err != nil || rootKey(resolved) != rootKey(r.path) || !inside(r.root, resolved) || rel == ".." {
 		return nil, scopeError("history path leaves registered scope")
 	}
 	info, err := os.Stat(resolved)
