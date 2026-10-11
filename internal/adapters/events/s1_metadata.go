@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 // ReadCachedProjectMetadata consumes S1's existing metadata-only cache for one
@@ -14,13 +16,18 @@ func ReadCachedProjectMetadata(ctx context.Context, db *sql.DB, projectRoot stri
 	if !filepath.IsAbs(projectRoot) || limit < 1 || limit > maxReplayRecords {
 		return nil, false, fmt.Errorf("absolute approved project root and limit 1..128 required")
 	}
+	rootExpr, root := "json_extract(p.value, '$.root')", filepath.Clean(projectRoot)
+	if runtime.GOOS == "windows" {
+		rootExpr = `lower(replace(json_extract(p.value, '$.root'), '\', '/'))`
+		root = strings.ToLower(filepath.ToSlash(root))
+	}
 	rows, err := db.QueryContext(ctx, `SELECT c.value
 		FROM local_project_discovery d, json_each(d.data, '$.projects') p,
 		json_each(p.value, '$.contributors') c
-		WHERE d.id='registered' AND lower(json_extract(p.value, '$.root'))=lower(?)
+		WHERE d.id='registered' AND `+rootExpr+`=?
 		AND json_extract(c.value, '$.source')='native_session_header'
 		AND json_extract(c.value, '$.cli') IN ('claude','codex')
-		ORDER BY json_extract(c.value, '$.cli'), json_extract(c.value, '$.session_id') LIMIT ?`, filepath.Clean(projectRoot), limit+1)
+		ORDER BY json_extract(c.value, '$.cli'), json_extract(c.value, '$.session_id') LIMIT ?`, root, limit+1)
 	if err != nil {
 		return nil, false, err
 	}

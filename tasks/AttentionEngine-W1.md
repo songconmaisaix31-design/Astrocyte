@@ -3,6 +3,7 @@
 事实源：`C:/Users/DW/Downloads/tabbit-code (2).md` §4.1/§4.5/§5.2/§8 M1。
 分支：`songconmaisaix31-design/attention-engine-w1-events`，基线 `dab8fea`。
 当前 Task `task_13ac51983837` / Dispatch `ctx_62837e7857f0`；客户端 Codex，沿启动配置执行，没有启动其他 Agent。
+协调者确认运行配置为 Codex / gpt-6.1-sol / YOLO。
 
 ## 当前状态（2026-10-11）
 
@@ -63,8 +64,11 @@ M0 仍等待协调者精确稳定 SHA；W0 未提交代码只读，不复制或�
 
 - `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/adapters/events` PASS，3 项：未知语义、逐条原字节与有界回放、s1 job/deferred 不造 Agent 结果。
 - 后续独立 source 阶段同命令 PASS，5 项；新增缓存项目范围/截断和 outbox 原 payload 字节/分页收据对账。
+- `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run TestM1ExistingS1ActionOutputPath -v` PASS：既有 s1 Service.UpdateMaterial→事务 outbox→新读侧→SQLite 冷重开，ID/envelope/payload 字节一致；新 Engine Event/Signal 段仍待 P1。
 - `ASTROCYTE_M1_METADATA_DB=C:/Users/DW/AppData/Roaming/astrocyte/state.sqlite ASTROCYTE_M1_PROJECT_ROOT=C:\Users\DW\orca\Astrocyte GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run TestM1CachedNativeMetadataLive -v` 首次 FAIL：claude=0/codex=0，partial=false。
 - 该失败只表示精确选定缓存/项目没有可用来源，不表示本机总会话为 0；原库只读，不重新发现或扩大范围。
+- root 另行只读确认该项目缓存存在、contributors 为空、cacheStatus=partial；初次输出 partial=false 只描述本次 record-bound 没有截断，不代表全局缓存完整。
+- Windows 范围键现在规范 slash/case；Unix 仍按路径大小写精确比较。不重跑已确认空场。
 - contract_local 已验证独立解析；真实 Event→Signal 与 SQLite 冷重启、幂等回放验收尚 NOT_RUN。
 - M1 不宣称完成；等待不是 worker_done。
 

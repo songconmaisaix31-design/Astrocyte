@@ -24,7 +24,7 @@ func TestS1MetadataSelectedProjectAndReplayBounds(t *testing.T) {
 		return map[string]any{"cli": cli, "source": "native_session_header", "root": project, "session_id": session, "created_at": "2026-10-10T00:00:00Z", "activity_at": nil}
 	}
 	raw, _ := json.Marshal(map[string]any{"projects": []any{
-		map[string]any{"root": root, "contributors": []any{contributor("claude", "claude-a", root), contributor("codex", "codex-a", root)}},
+		map[string]any{"root": filepath.ToSlash(root), "contributors": []any{contributor("claude", "claude-a", root), contributor("codex", "codex-a", root)}},
 		map[string]any{"root": other, "contributors": []any{contributor("codex", "not-authorized", other)}},
 	}})
 	if _, err = db.Exec(`INSERT INTO local_project_discovery VALUES('registered', ?)`, string(raw)); err != nil {
