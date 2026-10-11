@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## M6 实际推荐首错与原 owner 返修（2026-10-11 22:59）
+
+root 独立读取 W0 实际七日输出发现：图中 A>0，推荐 inputs.Attention/score 却全为0，排序是字母序，原 M6 排序断言不足。W4 直接把 nodes.data 解成 AttentionNode，而 W2 正式存的是 StoredAttentionNode 包装；这是实际集成 RED，不因先前 flat fixture 可复算而通过。首输出保留 `%TEMP%/astrocyte-M6-W0-20261011/M6-week-first-zero-attention.json`，W0另保留 `M6-first-zero-ranking.json`。
+
+原 W4 已在同Codex--yolo/worktree/branch接新限定 Task `task_43f6f1eb9aa2` / `ctx_f9762428c69e` 修正式节点读取/关联相关度；W0增强M6断言匹配实际图A并独立复算非零得分。原 W3 另有小接口 Task `task_5536142bb5f5` / `ctx_4fb5ea6b3ab5` 提供显式选择的 raw.facts 字面投影函数给正式 Sleep CLI，不定产品默认。其原完整M3 SOURCE `684292a` / REPORT `d940024` 已push。W5 REPORT `737a4b0`、W7最终 `d4dbc8b` 已succeeded结算。W0共享入口继续，最终集成尚未开始。
+
 ## 原 owner 收束与最终装配（2026-10-11 22:51）
 
 集成分支仍 `attention-engine/v1-20261011`，业务集成源仍 P2 `05d8536`，后续领域发布尚未最终合入。八轨保持 Codex --yolo / gpt-6.1-sol；下表为当前结算事实，不以已发布代码替代整体验收。

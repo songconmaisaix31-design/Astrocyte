@@ -47,3 +47,11 @@ root Node SQLite readOnly + query_only 核对两份留存库 integrity=ok；排�
 ## 后续 owner 集成检查限制（2026-10-11 22:51）
 
 W0 组装源 `271d18cc4d7853bd1a9bc96875b8875733889837` 的实际人工经验 HTTP 重复/冷重启与已提交 MCP 动力学 pending 定向 PASS，尚未 root 最终合入。其完整检查首次在 gofmt 的320条绝对路径 Windows argv 触发 ENAMETOOLONG，原 owner 正补有界相对路径批次；第二场通过 Go/vet/测试/modverify 后 summarize 固定0.25.1版本探测 ETIMEDOUT，后续阶段 NOT_RUN。同命令单独测量2.718秒并 PASS，原60秒超时未改；环境争用只是假设，不能合成完整整场绿色。
+
+## M6 推荐输入首次实际集成 RED（2026-10-11 22:57）
+
+root 独立读取 W0 实际 `%TEMP%/astrocyte-M6-W0-20261011/M6-week-result.json`：七日焦点 research→implementation，但最终两推荐的 inputs.Attention=0/score=0，顺序恰为字母序。此前 W0 测试只有顺序断言并报告PASS；主控不接受该推荐结论。根因是 W4 KnowledgeAttention 按topic查询后解码为 flat domain.AttentionNode，实际 W2 SaveNode 存储 app.StoredAttentionNode 的 nested node，解码无报错但注意力/关联为空。不是 id/topic 查询条件错误；root 首假设已被实际 SQL 排除。
+
+root 保存原270812字节输出为 `M6-week-first-zero-attention.json`（未覆盖既有文件），W0另保存 `M6-first-zero-ranking.json`。原owner W4新限定Task修wrapper/legacy-flat读取并覆盖实际W2节点+query_only回归；W0加强 inputs.Attention=实际图A、非零得分、独立公式复算。旧M4 flat fixture数学核对保持局部PASS，不替代本次正式写入格式的实际跨轨验收。
+
+root另只读核对W7最终留存 `%TEMP%/astrocyte-s1-aijSTJ/data/state.sqlite` integrity=ok，两条pending/raw BLOB分别manual分组与machine同步，字节/observation与独立artifact完全一致，Signal和节点0；10条works receipt均accepted且input/result为BLOB。最终三尺寸报告writes/errors均空。看过390截图，作品/未知状态/手册区可辨认；浮动页头在长截图中叠加保持原限制，不宣称用户主观视觉验收。
