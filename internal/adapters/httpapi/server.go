@@ -28,6 +28,9 @@ type Server struct {
 	logger     *slog.Logger
 }
 
+// Handler exposes the actual transport chain for owner integration tests.
+func (s *Server) Handler() http.Handler { return s.httpServer.Handler }
+
 // Config holds server configuration.
 type Config struct {
 	AgentToken     string
@@ -137,7 +140,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil {
+	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil || cfg.Services.KnowledgeGovernance != nil || cfg.Services.ExperienceGovernance != nil || cfg.Services.ConflictGate != nil || cfg.Services.Works != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)

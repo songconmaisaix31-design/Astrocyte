@@ -1,0 +1,5306 @@
+{
+  "evidence_class": "synthetic_application_sqlite",
+  "db_restart_days": [
+    10,
+    20
+  ],
+  "process_restart": true,
+  "initial": {
+    "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+    "topic": "Agent Swarm",
+    "attention": 0.05,
+    "momentum": 0,
+    "confidence": 0.5,
+    "decay": 0.1,
+    "evidence": [],
+    "related_projects": [],
+    "related_agents": [],
+    "related_topics": {},
+    "last_active": 1767139200000,
+    "emotional_weight": 0
+  },
+  "steps": [
+    {
+      "ts": 1767225600000,
+      "signals": [
+        {
+          "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+          "topic": "Agent Swarm",
+          "class": "implicit_regular",
+          "strength": 1,
+          "weight": 0.6,
+          "ts": 1767225600000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.645241870901798,
+          "momentum": 0.41666930963125853,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767225600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767225600000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 0.645241870901798,
+          "applied": {
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 2
+      }
+    },
+    {
+      "ts": 1767312000000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.5838389884754748,
+          "momentum": 0.08201877519095131,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767225600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767312000000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 0.645241870901798,
+          "applied": {
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 3
+      }
+    },
+    {
+      "ts": 1767398400000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.528279362880875,
+          "momentum": -0.014286105358934473,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767225600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767398400000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 0.645241870901798,
+          "applied": {
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 4
+      }
+    },
+    {
+      "ts": 1767484800000,
+      "signals": [
+        {
+          "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+          "topic": "Agent Swarm",
+          "class": "implicit_regular",
+          "strength": 1,
+          "weight": 0.6,
+          "ts": 1767484800000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 1,
+          "momentum": 0.3259186143757071,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767484800000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767484800000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 5
+      }
+    },
+    {
+      "ts": 1767571200000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.9048374180359595,
+          "momentum": 0.0311617769378838,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767484800000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767571200000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 6
+      }
+    },
+    {
+      "ts": 1767657600000,
+      "signals": [
+        {
+          "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+          "topic": "Agent Swarm",
+          "class": "implicit_depth",
+          "strength": 1,
+          "weight": 1,
+          "ts": 1767657600000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 1,
+          "momentum": 0.07596234045619348,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767657600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767657600000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 7
+      }
+    },
+    {
+      "ts": 1767744000000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.9048374180359595,
+          "momentum": -0.043825105237970285,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767657600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767744000000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 8
+      }
+    },
+    {
+      "ts": 1767830400000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.8187307530779817,
+          "momentum": -0.07342219704197554,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767657600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767830400000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 9
+      }
+    },
+    {
+      "ts": 1767916800000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.7408182206817177,
+          "momentum": -0.07656543178997749,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1767657600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1767916800000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 10
+      }
+    },
+    {
+      "ts": 1768003200000,
+      "signals": [
+        {
+          "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+          "topic": "Agent Swarm",
+          "class": "implicit_light",
+          "strength": 1,
+          "weight": 0.3,
+          "ts": 1768003200000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.9703200460356391,
+          "momentum": 0.1376816482107518,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768003200000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1768003200000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 11
+      }
+    },
+    {
+      "ts": 1768089600000,
+      "signals": [
+        {
+          "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+          "topic": "Agent Swarm",
+          "class": "implicit_light",
+          "strength": 1,
+          "weight": 0.3,
+          "ts": 1768089600000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 1,
+          "momentum": 0.062080462238278136,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768089600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1768089600000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 12
+      }
+    },
+    {
+      "ts": 1768176000000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.9048374180359595,
+          "momentum": -0.047989668703344895,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768089600000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1768176000000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 13
+      }
+    },
+    {
+      "ts": 1768262400000,
+      "signals": [
+        {
+          "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+          "topic": "Agent Swarm",
+          "class": "feedback_success",
+          "strength": 1,
+          "weight": 0.8,
+          "ts": 1768262400000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 1,
+          "momentum": 0.052216906763824865,
+          "confidence": 0.6,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768262400000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1768262400000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 14
+      }
+    },
+    {
+      "ts": 1768348800000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.9048374180359595,
+          "momentum": -0.050948735345680875,
+          "confidence": 0.6,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768262400000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1768348800000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 15
+      }
+    },
+    {
+      "ts": 1768435200000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.8187307530779817,
+          "momentum": -0.07555928607428872,
+          "confidence": 0.6,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768262400000,
+          "emotional_weight": 0
+        },
+        "updated_at": 1768435200000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 16
+      }
+    },
+    {
+      "ts": 1768521600000,
+      "signals": [
+        {
+          "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+          "topic": "Agent Swarm",
+          "class": "explicit_positive",
+          "strength": 1,
+          "weight": 1.5,
+          "ts": 1768521600000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 1,
+          "momentum": 0.10422068702312619,
+          "confidence": 0.6,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768521600000,
+          "emotional_weight": 1.5
+        },
+        "updated_at": 1768521600000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 17
+      }
+    },
+    {
+      "ts": 1768608000000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.9048374180359595,
+          "momentum": -0.03534760126789048,
+          "confidence": 0.6,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768521600000,
+          "emotional_weight": 1.5
+        },
+        "updated_at": 1768608000000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 18
+      }
+    },
+    {
+      "ts": 1768694400000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.8187307530779817,
+          "momentum": -0.0708789458509516,
+          "confidence": 0.6,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768521600000,
+          "emotional_weight": 1.5
+        },
+        "updated_at": 1768694400000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 19
+      }
+    },
+    {
+      "ts": 1768780800000,
+      "signals": [
+        {
+          "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+          "topic": "Agent Swarm",
+          "class": "feedback_failure",
+          "strength": 1,
+          "weight": -0.1,
+          "ts": 1768780800000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.7408182206817177,
+          "momentum": -0.0758024564326703,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768780800000,
+          "emotional_weight": 1.5
+        },
+        "updated_at": 1768780800000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 20
+      }
+    },
+    {
+      "ts": 1768867200000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.6703200460356391,
+          "momentum": -0.07208945918205607,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768780800000,
+          "emotional_weight": 1.5
+        },
+        "updated_at": 1768867200000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 21
+      }
+    },
+    {
+      "ts": 1768953600000,
+      "signals": [
+        {
+          "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+          "topic": "Agent Swarm",
+          "class": "explicit_negative",
+          "strength": 1,
+          "weight": -0.8,
+          "ts": 1768953600000
+        }
+      ],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.45585086997956414,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1768953600000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 22
+      }
+    },
+    {
+      "ts": 1769040000000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.13675526099386923,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769040000000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 23
+      }
+    },
+    {
+      "ts": 1769126400000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.04102657829816077,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769126400000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 24
+      }
+    },
+    {
+      "ts": 1769212800000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.01230797348944823,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769212800000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 25
+      }
+    },
+    {
+      "ts": 1769299200000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.0036923920468344687,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769299200000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 26
+      }
+    },
+    {
+      "ts": 1769385600000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.0011077176140503406,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769385600000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 27
+      }
+    },
+    {
+      "ts": 1769472000000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.00033231528421510216,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769472000000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 28
+      }
+    },
+    {
+      "ts": 1769558400000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.00009969458526453064,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769558400000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 29
+      }
+    },
+    {
+      "ts": 1769644800000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.00002990837557935919,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769644800000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 30
+      }
+    },
+    {
+      "ts": 1769731200000,
+      "signals": [],
+      "state": {
+        "node": {
+          "id": "NJGXVG6XA7XDQJ6LUGCSRM4EI4",
+          "topic": "Agent Swarm",
+          "attention": 0.05,
+          "momentum": -0.000008972512673807757,
+          "confidence": 0.5,
+          "decay": 0.1,
+          "evidence": [
+            {
+              "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+              "weight_at_use": 0.6,
+              "ts": 1767225600000
+            },
+            {
+              "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+              "weight_at_use": 0.6,
+              "ts": 1767484800000
+            },
+            {
+              "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+              "weight_at_use": 1,
+              "ts": 1767657600000
+            },
+            {
+              "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+              "weight_at_use": 0.3,
+              "ts": 1768003200000
+            },
+            {
+              "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+              "weight_at_use": 0.3,
+              "ts": 1768089600000
+            },
+            {
+              "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+              "weight_at_use": 0.8,
+              "ts": 1768262400000
+            },
+            {
+              "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+              "weight_at_use": 1.5,
+              "ts": 1768521600000
+            },
+            {
+              "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+              "weight_at_use": -0.1,
+              "ts": 1768780800000
+            },
+            {
+              "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+              "weight_at_use": -0.8,
+              "ts": 1768953600000
+            }
+          ],
+          "related_projects": [
+            "m2-project"
+          ],
+          "related_agents": [
+            "codex"
+          ],
+          "related_topics": {},
+          "last_active": 1768953600000,
+          "emotional_weight": 0.7
+        },
+        "updated_at": 1769731200000,
+        "lifecycle": "active",
+        "history": {
+          "max_attention": 1,
+          "applied": {
+            "\"4LPQ4IZKLEEPODDEVV5NCBCPBW\"/\"Agent Swarm\"/\"feedback_failure\"": {
+              "signal": {
+                "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+                "topic": "Agent Swarm",
+                "class": "feedback_failure",
+                "strength": 1,
+                "weight": -0.1,
+                "ts": 1768780800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0,
+              "confidence_contribution": -0.1
+            },
+            "\"FN3VFNSXCU66KEP7Q52ZK6NNBH\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767484800000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            },
+            "\"FZHBXTSYL6DI3QC3UDNCI4LTTW\"/\"Agent Swarm\"/\"feedback_success\"": {
+              "signal": {
+                "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+                "topic": "Agent Swarm",
+                "class": "feedback_success",
+                "strength": 1,
+                "weight": 0.8,
+                "ts": 1768262400000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.8,
+              "confidence_contribution": 0.1
+            },
+            "\"GLTUM5ILZ5G62N5SIPF2I7XF22\"/\"Agent Swarm\"/\"implicit_depth\"": {
+              "signal": {
+                "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+                "topic": "Agent Swarm",
+                "class": "implicit_depth",
+                "strength": 1,
+                "weight": 1,
+                "ts": 1767657600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1,
+              "confidence_contribution": 0
+            },
+            "\"HCIETXGHLKE6IRQO62FNNGV77W\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768003200000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"R77OWJCO3BWWN72TCPJBX63RGY\"/\"Agent Swarm\"/\"explicit_positive\"": {
+              "signal": {
+                "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+                "topic": "Agent Swarm",
+                "class": "explicit_positive",
+                "strength": 1,
+                "weight": 1.5,
+                "ts": 1768521600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 1.5,
+              "confidence_contribution": 0
+            },
+            "\"U6ZYEHDX2GRQ5TQAMORDU2SI6Q\"/\"Agent Swarm\"/\"explicit_negative\"": {
+              "signal": {
+                "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+                "topic": "Agent Swarm",
+                "class": "explicit_negative",
+                "strength": 1,
+                "weight": -0.8,
+                "ts": 1768953600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": -0.8,
+              "confidence_contribution": 0
+            },
+            "\"UC5B4BHTKO3DMMQIH5D2EK53IT\"/\"Agent Swarm\"/\"implicit_light\"": {
+              "signal": {
+                "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+                "topic": "Agent Swarm",
+                "class": "implicit_light",
+                "strength": 1,
+                "weight": 0.3,
+                "ts": 1768089600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.3,
+              "confidence_contribution": 0
+            },
+            "\"YL42P4KRJH3ZODAUTLTA26YGBA\"/\"Agent Swarm\"/\"implicit_regular\"": {
+              "signal": {
+                "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+                "topic": "Agent Swarm",
+                "class": "implicit_regular",
+                "strength": 1,
+                "weight": 0.6,
+                "ts": 1767225600000
+              },
+              "elapsed_days": 1,
+              "decay": 0.1,
+              "decay_factor": 0.9048374180359595,
+              "attention_contribution": 0.6,
+              "confidence_contribution": 0
+            }
+          },
+          "associations": {},
+          "related_at": {},
+          "transitions": [
+            {
+              "kind": "manual_seed",
+              "ts": 1767139200000
+            }
+          ]
+        },
+        "version": 31
+      }
+    }
+  ],
+  "explanation": {
+    "topic": "Agent Swarm",
+    "attention": 0.05,
+    "momentum": -0.000008972512673807757,
+    "evidence": [
+      {
+        "original": {
+          "id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+          "origin_key": "m2-day-00",
+          "received_at": 1767225600000,
+          "observation": {
+            "source": "codex",
+            "source_kind": "edit_file",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1767225600000,
+            "tokens": null,
+            "outcome": "unknown",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "codex",
+            "session": "m2-synthetic",
+            "ts": 1767225600000,
+            "kind": "edit_file",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-00",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMDAiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "YL42P4KRJH3ZODAUTLTA26YGBA",
+        "kind": "edit_file",
+        "class": "implicit_regular",
+        "weight": 0.6,
+        "ts": 1767225600000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 0.6,
+        "confidence_contribution": 0,
+        "confidence_only": false
+      },
+      {
+        "original": {
+          "id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+          "origin_key": "m2-day-03",
+          "received_at": 1767484800000,
+          "observation": {
+            "source": "codex",
+            "source_kind": "edit_file",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1767484800000,
+            "tokens": null,
+            "outcome": "unknown",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "codex",
+            "session": "m2-synthetic",
+            "ts": 1767484800000,
+            "kind": "edit_file",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-03",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMDMiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "FN3VFNSXCU66KEP7Q52ZK6NNBH",
+        "kind": "edit_file",
+        "class": "implicit_regular",
+        "weight": 0.6,
+        "ts": 1767484800000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 0.6,
+        "confidence_contribution": 0,
+        "confidence_only": false
+      },
+      {
+        "original": {
+          "id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+          "origin_key": "m2-day-05",
+          "received_at": 1767657600000,
+          "observation": {
+            "source": "codex",
+            "source_kind": "read_paper",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1767657600000,
+            "tokens": null,
+            "outcome": "unknown",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "codex",
+            "session": "m2-synthetic",
+            "ts": 1767657600000,
+            "kind": "read_paper",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-05",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMDUiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "GLTUM5ILZ5G62N5SIPF2I7XF22",
+        "kind": "read_paper",
+        "class": "implicit_depth",
+        "weight": 1,
+        "ts": 1767657600000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 1,
+        "confidence_contribution": 0,
+        "confidence_only": false
+      },
+      {
+        "original": {
+          "id": "HCIETXGHLKE6IRQO62FNNGV77W",
+          "origin_key": "m2-day-09",
+          "received_at": 1768003200000,
+          "observation": {
+            "source": "codex",
+            "source_kind": "bookmark",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1768003200000,
+            "tokens": null,
+            "outcome": "unknown",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "codex",
+            "session": "m2-synthetic",
+            "ts": 1768003200000,
+            "kind": "bookmark",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-09",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMDkiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "HCIETXGHLKE6IRQO62FNNGV77W",
+        "kind": "bookmark",
+        "class": "implicit_light",
+        "weight": 0.3,
+        "ts": 1768003200000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 0.3,
+        "confidence_contribution": 0,
+        "confidence_only": false
+      },
+      {
+        "original": {
+          "id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+          "origin_key": "m2-day-10",
+          "received_at": 1768089600000,
+          "observation": {
+            "source": "codex",
+            "source_kind": "bookmark",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1768089600000,
+            "tokens": null,
+            "outcome": "unknown",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "codex",
+            "session": "m2-synthetic",
+            "ts": 1768089600000,
+            "kind": "bookmark",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-10",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMTAiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "UC5B4BHTKO3DMMQIH5D2EK53IT",
+        "kind": "bookmark",
+        "class": "implicit_light",
+        "weight": 0.3,
+        "ts": 1768089600000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 0.3,
+        "confidence_contribution": 0,
+        "confidence_only": false
+      },
+      {
+        "original": {
+          "id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+          "origin_key": "m2-day-12",
+          "received_at": 1768262400000,
+          "observation": {
+            "source": "codex",
+            "source_kind": "agent_task",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1768262400000,
+            "tokens": null,
+            "outcome": "success",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "codex",
+            "session": "m2-synthetic",
+            "ts": 1768262400000,
+            "kind": "agent_task",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-12",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMTIiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "FZHBXTSYL6DI3QC3UDNCI4LTTW",
+        "kind": "agent_task",
+        "class": "feedback_success",
+        "weight": 0.8,
+        "ts": 1768262400000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 0.8,
+        "confidence_contribution": 0.1,
+        "confidence_only": false
+      },
+      {
+        "original": {
+          "id": "R77OWJCO3BWWN72TCPJBX63RGY",
+          "origin_key": "m2-day-15",
+          "received_at": 1768521600000,
+          "observation": {
+            "source": "manual",
+            "source_kind": "user_approve",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1768521600000,
+            "tokens": null,
+            "outcome": "unknown",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "manual",
+            "session": "m2-synthetic",
+            "ts": 1768521600000,
+            "kind": "user_approve",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-15",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMTUiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "R77OWJCO3BWWN72TCPJBX63RGY",
+        "kind": "user_approve",
+        "class": "explicit_positive",
+        "weight": 1.5,
+        "ts": 1768521600000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 1.5,
+        "confidence_contribution": 0,
+        "confidence_only": false
+      },
+      {
+        "original": {
+          "id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+          "origin_key": "m2-day-18",
+          "received_at": 1768780800000,
+          "observation": {
+            "source": "codex",
+            "source_kind": "agent_task",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1768780800000,
+            "tokens": null,
+            "outcome": "failure",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "codex",
+            "session": "m2-synthetic",
+            "ts": 1768780800000,
+            "kind": "agent_task",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-18",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMTgiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "4LPQ4IZKLEEPODDEVV5NCBCPBW",
+        "kind": "agent_task",
+        "class": "feedback_failure",
+        "weight": -0.1,
+        "ts": 1768780800000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": 0,
+        "confidence_contribution": -0.1,
+        "confidence_only": true
+      },
+      {
+        "original": {
+          "id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+          "origin_key": "m2-day-20",
+          "received_at": 1768953600000,
+          "observation": {
+            "source": "manual",
+            "source_kind": "user_veto",
+            "session": "m2-synthetic",
+            "scope": "m2-project",
+            "ts": 1768953600000,
+            "tokens": null,
+            "outcome": "unknown",
+            "depth": "deep",
+            "provenance": "M2 synthetic application acceptance"
+          },
+          "event": {
+            "source": "manual",
+            "session": "m2-synthetic",
+            "ts": 1768953600000,
+            "kind": "user_veto",
+            "tokens": 0,
+            "scope": "m2-project",
+            "topic": "Agent Swarm",
+            "raw": {
+              "fixture_event": "m2-day-20",
+              "depth": "long"
+            }
+          },
+          "raw_bytes": "eyAiZml4dHVyZV9ldmVudCI6ICJtMi1kYXktMjAiLCAiZGVwdGgiOiAibG9uZyIgfQo="
+        },
+        "event_id": "U6ZYEHDX2GRQ5TQAMORDU2SI6Q",
+        "kind": "user_veto",
+        "class": "explicit_negative",
+        "weight": -0.8,
+        "ts": 1768953600000,
+        "strength": 1,
+        "elapsed_days": 1,
+        "decay": 0.1,
+        "decay_factor": 0.9048374180359595,
+        "attention_contribution": -0.8,
+        "confidence_contribution": 0,
+        "confidence_only": false
+      }
+    ],
+    "related": [],
+    "related_projects": [
+      "m2-project"
+    ],
+    "related_agents": [
+      "codex"
+    ],
+    "updated_at": 1769731200000
+  }
+}

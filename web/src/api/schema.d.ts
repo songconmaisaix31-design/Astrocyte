@@ -4590,6 +4590,7 @@ export interface components {
             version: number;
             created_at: number;
             updated_at: number;
+            consolidated_at: number | null;
             crystallized_versions: components["schemas"]["KnowledgeVersionV1"][];
             shares: components["schemas"]["MemoryShareAuditV1"][];
             actions: components["schemas"]["MemoryActionAuditV1"][];
@@ -4702,7 +4703,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             roots?: string[];
         };
         /**
@@ -4717,7 +4719,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             content: string;
         };
         /**
@@ -4733,7 +4736,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             /** @enum {string} */
             attitude: "continue" | "park" | "done";
@@ -4751,7 +4755,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             group: string;
         };
@@ -4768,7 +4773,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             content: string;
         };
@@ -4785,7 +4791,8 @@ export interface components {
             /** @constant */
             schema_version: 1;
             request_id: string;
-            expected_version: number;
+            /** @constant */
+            expected_version: 1;
             expected_revision: number;
             hidden: boolean;
         };

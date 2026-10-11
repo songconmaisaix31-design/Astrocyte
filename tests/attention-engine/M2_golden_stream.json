@@ -1,0 +1,346 @@
+{
+  "lambda": 0.1,
+  "alpha": 0.3,
+  "floor": 0.05,
+  "ceiling": 1.0,
+  "day_ms": 86400000,
+  "initial": {
+    "attention": 0.0,
+    "momentum": 0.0,
+    "confidence": 0.5
+  },
+  "input": [
+    {
+      "ts_ms": 1767225600000,
+      "signal_sum": 0.6,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767312000000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767398400000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767484800000,
+      "signal_sum": 0.6,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767571200000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767657600000,
+      "signal_sum": 1.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767744000000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767830400000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1767916800000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768003200000,
+      "signal_sum": 0.3,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768089600000,
+      "signal_sum": 0.3,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768176000000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768262400000,
+      "signal_sum": 0.8,
+      "confidence_delta": 0.1
+    },
+    {
+      "ts_ms": 1768348800000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768435200000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768521600000,
+      "signal_sum": 1.5,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768608000000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768694400000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768780800000,
+      "signal_sum": 0.0,
+      "confidence_delta": -0.1
+    },
+    {
+      "ts_ms": 1768867200000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1768953600000,
+      "signal_sum": -0.8,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769040000000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769126400000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769212800000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769299200000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769385600000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769472000000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769558400000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769644800000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    },
+    {
+      "ts_ms": 1769731200000,
+      "signal_sum": 0.0,
+      "confidence_delta": 0.0
+    }
+  ],
+  "output": [
+    {
+      "ts_ms": 1767225600000,
+      "attention": 0.6,
+      "momentum": 0.42,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767312000000,
+      "attention": 0.5429024508215757,
+      "momentum": 0.08603171557510303,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767398400000,
+      "attention": 0.49123845184678905,
+      "momentum": -0.010355284609819767,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767484800000,
+      "attention": 1.0,
+      "momentum": 0.3530264983243017,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767571200000,
+      "attention": 0.9048374180359595,
+      "momentum": 0.03929414212246218,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767657600000,
+      "attention": 1.0,
+      "momentum": 0.07840205001156698,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767744000000,
+      "attention": 0.9048374180359595,
+      "momentum": -0.04309319237135824,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767830400000,
+      "attention": 0.8187307530779817,
+      "momentum": -0.07320262318199193,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1767916800000,
+      "attention": 0.7408182206817177,
+      "momentum": -0.0764995596319824,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1768003200000,
+      "attention": 0.9703200460356391,
+      "momentum": 0.13770140985815033,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1768089600000,
+      "attention": 1.0,
+      "momentum": 0.06208639073249769,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1768176000000,
+      "attention": 0.9048374180359595,
+      "momentum": -0.047987890155079024,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1768262400000,
+      "attention": 1.0,
+      "momentum": 0.05221744032830462,
+      "confidence": 0.6
+    },
+    {
+      "ts_ms": 1768348800000,
+      "attention": 0.9048374180359595,
+      "momentum": -0.05094857527633695,
+      "confidence": 0.6
+    },
+    {
+      "ts_ms": 1768435200000,
+      "attention": 0.8187307530779817,
+      "momentum": -0.07555923805348555,
+      "confidence": 0.6
+    },
+    {
+      "ts_ms": 1768521600000,
+      "attention": 1.0,
+      "momentum": 0.10422070142936714,
+      "confidence": 0.6
+    },
+    {
+      "ts_ms": 1768608000000,
+      "attention": 0.9048374180359595,
+      "momentum": -0.03534759694601819,
+      "confidence": 0.6
+    },
+    {
+      "ts_ms": 1768694400000,
+      "attention": 0.8187307530779817,
+      "momentum": -0.07087894455438992,
+      "confidence": 0.6
+    },
+    {
+      "ts_ms": 1768780800000,
+      "attention": 0.7408182206817177,
+      "momentum": -0.07580245604370181,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1768867200000,
+      "attention": 0.6703200460356391,
+      "momentum": -0.07208945906536551,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1768953600000,
+      "attention": 0.05,
+      "momentum": -0.455850869944557,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769040000000,
+      "attention": 0.05,
+      "momentum": -0.1367552609833671,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769126400000,
+      "attention": 0.05,
+      "momentum": -0.04102657829501013,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769212800000,
+      "attention": 0.05,
+      "momentum": -0.012307973488503038,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769299200000,
+      "attention": 0.05,
+      "momentum": -0.003692392046550911,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769385600000,
+      "attention": 0.05,
+      "momentum": -0.0011077176139652734,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769472000000,
+      "attention": 0.05,
+      "momentum": -0.000332315284189582,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769558400000,
+      "attention": 0.05,
+      "momentum": -9.969458525687459e-05,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769644800000,
+      "attention": 0.05,
+      "momentum": -2.9908375577062376e-05,
+      "confidence": 0.5
+    },
+    {
+      "ts_ms": 1769731200000,
+      "attention": 0.05,
+      "momentum": -8.972512673118713e-06,
+      "confidence": 0.5
+    }
+  ]
+}

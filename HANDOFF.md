@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## Codex 主控接续（2026-10-11 21:41）
+
+原主控已中断，用户要求 Codex 直接接替。Run `run_19a0b1268e5a` 当前 coordinator 为 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`；原八轨 Task/Dispatch/工作树保持。八轨任务书读取弹窗已单次放行，恢复指令已投递。实际分支 `songconmaisaix31-design/attention-engine-wN-*`，不是计划表原名称。先读 STATUS 最新段和 AttentionEngine-plan，继续验收 W0 M0，不向旧主控发送继续，不重启原 Worker。
+
 ## 认知内核 Attention Engine 交接（2026-10-11）
 
 本轮目标：按任务书 `tabbit-code (2).md` 开发认知内核三条链（M0–M6），在现有 `internal/attention` 内演进，s1 分支族不改。集成分支 `attention-engine/v1-20261011`（自 `dab8fea`）。八轨互斥写域 + 1 集成 Agent，全 OpenCode，并发无上限，root 只调度/验收/最终 Git。主计划 `tasks/AttentionEngine-plan.md`，决定见 `docs/QUESTIONS.md` 顶部，偏差在计划末尾。下一入口：M0 契约验收 → 合入集成分支 → 通知 W1–W6 开码。
