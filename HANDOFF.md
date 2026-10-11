@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 认知内核 Attention Engine 交接（2026-10-11）
+
+本轮目标：按任务书 `tabbit-code (2).md` 开发认知内核三条链（M0–M6），在现有 `internal/attention` 内演进，s1 分支族不改。集成分支 `attention-engine/v1-20261011`（自 `dab8fea`）。八轨互斥写域 + 1 集成 Agent，全 OpenCode，并发无上限，root 只调度/验收/最终 Git。主计划 `tasks/AttentionEngine-plan.md`，决定见 `docs/QUESTIONS.md` 顶部，偏差在计划末尾。下一入口：M0 契约验收 → 合入集成分支 → 通知 W1–W6 开码。
+
 ## 最新接续入口（2026-10-11 02:46）
 
 先读 STATUS 最新段、`tasks/S1-final-paper-cli-memory-plan.md`、QUESTIONS 顶部。主控源码 `abf4c8c797c724a84e604df2041d915392b597a7` 已普通消费 W0 REPORT `3e7a6e0243bb67b3175d5c7be95b67981dcd8c67`；论文检索/精确标识、MV3 快照复核/版本/去重、OpenCode 原生协议、获准文件进度推断及最后摘要可读性修复已集成，主控综合检查与最后受影响检查/构建通过。真实快照、Codex 推断及独立只读库验见 STATUS；不要重复成功模型或旧 UNKNOWN。
