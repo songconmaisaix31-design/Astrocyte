@@ -1584,6 +1584,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/knowledge/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm a KnowledgeEntry for workspace reference
+         * @description Human gate that moves a KnowledgeEntry from inbox to confirmed so a Project Workspace may reference it. M0 returns 501; the assembled gate (W4 store) performs exactly one status transition and no model call.
+         */
+        post: operations["confirmKnowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/experiences/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a quarantined Experience
+         * @description Human gate that moves an Experience from quarantine to approved so it becomes retrievable. M0 returns 501; the assembled gate (W5 store) performs exactly one status transition and no model call.
+         */
+        post: operations["approveExperience"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conflicts/{id}/adjudications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record the human decision on a pending Conflict
+         * @description Human gate that records a decision on a pending Conflict. M0 returns 501; the assembled gate (W2 store) applies the decision value and never merges evidence automatically.
+         */
+        post: operations["adjudicateConflict"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -4067,6 +4127,103 @@ export interface components {
             request_id: string;
             expected_version: number;
             files: string[];
+        };
+        /**
+         * @example {
+         *       "event_id": "e-1",
+         *       "ts": 1700000000000
+         *     }
+         */
+        EventRefV1: {
+            event_id: string;
+            ts: number;
+        };
+        KnowledgeEntryV1: {
+            id: string;
+            topic: string;
+            fluid: string;
+            crystallized: Record<string, never>;
+            sources: components["schemas"]["EventRefV1"][];
+            /** @enum {string} */
+            status: "inbox" | "confirmed";
+        };
+        ExperienceV1: {
+            id: string;
+            pattern: string;
+            /** @enum {string} */
+            verdict: "avoid" | "prefer" | "condition";
+            condition: string;
+            evidence: components["schemas"]["EventRefV1"][];
+            /** @enum {string} */
+            status: "quarantine" | "approved";
+        };
+        ConflictV1: {
+            id: string;
+            topic: string;
+            /** @enum {string} */
+            kind: "attention_node" | "knowledge_entry";
+            left_ref: string;
+            right_ref: string;
+            detail: string;
+            /** @enum {string} */
+            status: "pending" | "resolved_keep_left" | "resolved_keep_right" | "resolved_merge" | "dismissed";
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "example-request",
+         *       "expected_version": 1
+         *     }
+         */
+        ConfirmKnowledgeRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "example-request",
+         *       "expected_version": 1
+         *     }
+         */
+        ApproveExperienceRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "request_id": "example-request",
+         *       "expected_version": 1,
+         *       "decision": "merge"
+         *     }
+         */
+        AdjudicateConflictRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            /** @enum {string} */
+            decision: "keep_left" | "keep_right" | "merge" | "dismiss";
+        };
+        ConfirmKnowledgeResultV1: {
+            /** @constant */
+            schema_version: 1;
+            entry: components["schemas"]["KnowledgeEntryV1"];
+        };
+        ApproveExperienceResultV1: {
+            /** @constant */
+            schema_version: 1;
+            experience: components["schemas"]["ExperienceV1"];
+        };
+        AdjudicateConflictResultV1: {
+            /** @constant */
+            schema_version: 1;
+            conflict: components["schemas"]["ConflictV1"];
         };
     };
     responses: never;
@@ -12850,6 +13007,352 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    confirmKnowledge: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key; never automatic retry */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description KnowledgeEntry identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmKnowledgeRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Confirmed entry (future DTO only in M0) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "entry": {
+                     *         "id": "k-1",
+                     *         "topic": "attention-engine",
+                     *         "fluid": "evolving summary",
+                     *         "crystallized": {
+                     *           "fact": "true"
+                     *         },
+                     *         "sources": [
+                     *           {
+                     *             "event_id": "e-1",
+                     *             "ts": 1700000000000
+                     *           }
+                     *         ],
+                     *         "status": "confirmed"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ConfirmKnowledgeResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Scope or user-control access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource version or status changed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Unexpected service failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Capability is not implemented in M0 */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Capability is not implemented in M0",
+                     *         "request_id": "example-request",
+                     *         "retryable": false,
+                     *         "required_action": "Read the current capabilities; choose an implemented operation"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    approveExperience: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key; never automatic retry */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Experience identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveExperienceRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Approved experience (future DTO only in M0) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "experience": {
+                     *         "id": "x-1",
+                     *         "pattern": "centralized scheduler",
+                     *         "verdict": "avoid",
+                     *         "condition": ">100 agents",
+                     *         "evidence": [
+                     *           {
+                     *             "event_id": "e-9",
+                     *             "ts": 1700000000000
+                     *           }
+                     *         ],
+                     *         "status": "approved"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ApproveExperienceResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Scope or user-control access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource version or status changed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Unexpected service failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Capability is not implemented in M0 */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Capability is not implemented in M0",
+                     *         "request_id": "example-request",
+                     *         "retryable": false,
+                     *         "required_action": "Read the current capabilities; choose an implemented operation"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    adjudicateConflict: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped command deduplication key; never automatic retry */
+                "Idempotency-Key": string;
+                /** @description Session-bound CSRF token */
+                "X-CSRF-Token": string;
+            };
+            path: {
+                /** @description Conflict identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjudicateConflictRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Adjudicated conflict (future DTO only in M0) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "conflict": {
+                     *         "id": "c-1",
+                     *         "topic": "scheduler",
+                     *         "kind": "knowledge_entry",
+                     *         "left_ref": "k-1",
+                     *         "right_ref": "k-2",
+                     *         "detail": "contradictory capacity facts",
+                     *         "status": "resolved_merge"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdjudicateConflictResultV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Scope or user-control access denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Resource version or status changed */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Unexpected service failure */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Capability is not implemented in M0 */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "schema_version": 1,
+                     *       "error": {
+                     *         "code": "unsupported_capability",
+                     *         "message": "Capability is not implemented in M0",
+                     *         "request_id": "example-request",
+                     *         "retryable": false,
+                     *         "required_action": "Read the current capabilities; choose an implemented operation"
+                     *       }
+                     *     }
+                     */
                     "application/json": components["schemas"]["ErrorV1"];
                 };
             };
