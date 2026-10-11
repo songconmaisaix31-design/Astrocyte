@@ -3,7 +3,6 @@ package events
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -55,8 +54,18 @@ func nativeRecord(source string, raw []byte) (nativeObservation, error) {
 				o.ts = millis(p["timestamp"])
 			}
 		}
-		if str(v, "type") == "response_item" && str(p, "type") == "function_call" {
-			o.kind = toolKind(str(p, "name"), p["arguments"])
+		if str(v, "type") == "response_item" && (str(p, "type") == "function_call" || str(p, "type") == "custom_tool_call") {
+			arguments := p["arguments"]
+			if len(arguments) == 0 {
+				arguments = p["input"]
+			}
+			o.kind = toolKind(str(p, "name"), arguments)
+		}
+		if str(v, "type") == "response_item" && str(p, "type") == "message" && str(p, "role") == "assistant" {
+			o.kind = assistantKind(messageText(p["content"]))
+		}
+		if str(v, "type") == "event_msg" && str(p, "type") == "agent_message" {
+			o.kind = assistantKind(str(p, "message"))
 		}
 		if str(v, "type") == "event_msg" && str(p, "type") == "token_count" {
 			u := object(object(p["info"])["last_token_usage"])
@@ -78,6 +87,9 @@ func nativeRecord(source string, raw []byte) (nativeObservation, error) {
 				o.kind = k
 			}
 		}
+		if len(kinds) == 0 && str(v, "type") == "assistant" {
+			o.kind = assistantKind(messageText(m["content"]))
+		}
 	} else {
 		return o, fmt.Errorf("unsupported native source")
 	}
@@ -97,33 +109,4 @@ func tokenTotal(u map[string]json.RawMessage) *int {
 	}
 	total = input + output
 	return &total
-}
-
-func toolKind(name string, raw json.RawMessage) string {
-	switch name {
-	case "Edit", "Write", "MultiEdit", "apply_patch":
-		return "edit_file"
-	case "Grep", "Glob", "WebSearch", "WebFetch", "web.run":
-		return "search"
-	case "ReadPaper":
-		return "read_paper"
-	case "Bash", "exec_command", "shell_command":
-		v := object(raw)
-		if v == nil {
-			var s string
-			if json.Unmarshal(raw, &s) == nil {
-				v = object([]byte(s))
-			}
-		}
-		cmd := str(v, "command")
-		if cmd == "" {
-			cmd = str(v, "cmd")
-		}
-		fields := strings.Fields(cmd)
-		// Only a single explicit git commit command is observed as a commit.
-		if len(fields) >= 2 && fields[0] == "git" && fields[1] == "commit" && !strings.ContainsAny(cmd, ";|&\n") {
-			return "commit"
-		}
-	}
-	return "unknown"
 }

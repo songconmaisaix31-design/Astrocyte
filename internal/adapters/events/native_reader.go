@@ -60,7 +60,7 @@ func readNative(ctx context.Context, source, project string, r io.Reader, limit 
 	scan := bufio.NewScanner(r)
 	scan.Buffer(make([]byte, 4096), maxReplayBytes)
 	lines := []nativeLine{}
-	session := ""
+	association := NativeAssociation{}
 	for scan.Scan() {
 		if err := ctx.Err(); err != nil {
 			return nil, false, err
@@ -77,12 +77,12 @@ func readNative(ctx context.Context, source, project string, r io.Reader, limit 
 			if o.session == "" || project == "" || !sameReplayProject(o.cwd, project) {
 				return nil, false, fmt.Errorf("replay header does not identify approved project and session")
 			}
-			session = o.session
 		}
-		if o.session != "" && o.session != session {
-			return nil, false, fmt.Errorf("replay session changed")
+		association, err = ObserveNativeAssociation(source, project, association, raw)
+		if err != nil {
+			return nil, false, err
 		}
-		o.session, o.cwd = session, project
+		o.session, o.cwd = association.Session, project
 		lines = append(lines, nativeLine{line: len(lines) + 1, raw: raw, observation: o})
 	}
 	if err := scan.Err(); err != nil {

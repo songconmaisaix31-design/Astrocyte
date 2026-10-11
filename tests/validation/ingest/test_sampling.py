@@ -11,6 +11,14 @@ SPEC.loader.exec_module(native)
 
 
 class SamplingTests(unittest.TestCase):
+    def test_canonical_table_has_no_independent_go_rules_or_shell_commit(self):
+        generator_path = MODULE.parent / "generate_kind_map.py"
+        spec = importlib.util.spec_from_file_location("generate_kind_map", generator_path)
+        generator = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(generator)
+        self.assertEqual(generator.OUTPUT.read_text(encoding="utf-8"), generator.generate())
+        self.assertNotIn('"shell_commit"', generator.generate())
+
     def test_kind_blind_deterministic_time_and_session_coverage(self):
         rows = [(i, i // 10, i % 10 + 1, i // 10, "fixture", True) for i in range(1000)]
         selected = native.select(rows)

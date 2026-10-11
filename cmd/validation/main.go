@@ -14,11 +14,12 @@ import (
 )
 
 type sample struct {
-	Source         string `json:"source"`
-	Ordinal        int    `json:"ordinal"`
-	Project        string `json:"project"`
-	HeaderComplete bool   `json:"header_complete"`
-	RawBase64      string `json:"raw_base64"`
+	Source         string                    `json:"source"`
+	Ordinal        int                       `json:"ordinal"`
+	Project        string                    `json:"project"`
+	HeaderComplete bool                      `json:"header_complete"`
+	RawBase64      string                    `json:"raw_base64"`
+	Association    *events.NativeAssociation `json:"-"`
 }
 
 type diagnosis struct {
@@ -26,6 +27,7 @@ type diagnosis struct {
 	Kinds        map[string]int `json:"mapped_kinds"`
 	NativeTypes  map[string]int `json:"native_types"`
 	RecordShapes map[string]int `json:"record_shapes"`
+	Topics       map[string]int `json:"seed_topics"`
 }
 
 func schemaTag(value string, allowed ...string) string {
@@ -88,12 +90,25 @@ func diagnose(v sample, d *diagnosis) {
 	if !v.HeaderComplete {
 		d.Counts["header_authorization_missing"]++
 	}
-	row, err := events.MapNativeRecord(v.Source, fmt.Sprintf("diagnosis:%s:%d", v.Source, v.Ordinal), v.Project, raw, 0)
+	association := events.NativeAssociation{}
+	if v.Association != nil {
+		association = *v.Association
+	}
+	row, err := events.MapAssociatedNativeRecord(v.Source, fmt.Sprintf("diagnosis:%s:%d", v.Source, v.Ordinal), v.Project, raw, 0, association)
 	if err != nil {
 		d.Counts["adapter_project_or_source_rejected"]++
 		return
 	}
 	d.Counts["adapter_pass"]++
+	assignment := events.ClassifyNativeReceipt(row)
+	d.Counts["retained_local_raw"]++
+	d.Counts["classification_"+assignment.Bucket]++
+	if assignment.Topic != "" {
+		if d.Topics == nil {
+			d.Topics = map[string]int{}
+		}
+		d.Topics[assignment.Topic]++
+	}
 	if row.Observation.Depth == "unknown" {
 		d.Counts["unknown_depth"]++
 	}
@@ -134,10 +149,107 @@ func diagnose(v sample, d *diagnosis) {
 		return
 	}
 	d.Counts["topic_gate_pass"]++
+	if row.Observation.Session == "" || row.Observation.Scope == "" {
+		d.Counts["association_gate_blocked"]++
+		return
+	}
+	d.Counts["cognitive_signal_candidate_with_probe_strength"]++
 	d.Counts["nil_dynamics_configuration_blocked"]++
 }
 
 func run(input, output string) error {
+	return runAssociated(input, output, "")
+}
+
+func runGit(input, output string) error {
+	f, err := os.Open(input)
+	if err != nil {
+		return fmt.Errorf("open local git input failed")
+	}
+	defer f.Close()
+	d := &diagnosis{Counts: map[string]int{"eligible_current_configuration": 0}, Kinds: map[string]int{}, Topics: map[string]int{}}
+	seen := map[string]bool{}
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(make([]byte, 4096), 1024*1024)
+	for scanner.Scan() {
+		var v struct {
+			Project string          `json:"project"`
+			Record  json.RawMessage `json:"record"`
+		}
+		if json.Unmarshal(scanner.Bytes(), &v) != nil {
+			return fmt.Errorf("invalid git input envelope")
+		}
+		row, err := events.MapGitLogRecord(v.Project, v.Record, 0)
+		if err != nil {
+			return fmt.Errorf("git mapping rejected")
+		}
+		if seen[row.OriginKey] {
+			d.Counts["duplicate_commit_id"]++
+			continue
+		}
+		seen[row.OriginKey] = true
+		d.Counts["retained_local_raw"]++
+		d.Counts["mapped_event"]++
+		d.Kinds[row.Event.Kind]++
+		if row.Event.Topic != "" {
+			d.Counts["classification_assigned"]++
+			d.Topics[row.Event.Topic]++
+		} else {
+			d.Counts["classification_unassigned"]++
+		}
+		signal, err := domain.NormalizeSignal(row.OriginKey, *row.Event, row.Observation.Outcome, row.Observation.Depth, 1)
+		if err != nil {
+			return fmt.Errorf("git normalization failed")
+		}
+		if signal != nil {
+			d.Counts["normalizable_with_probe_strength"]++
+			if signal.Topic != "" {
+				d.Counts["cognitive_signal_candidate_with_probe_strength"]++
+			}
+		}
+	}
+	if scanner.Err() != nil {
+		return fmt.Errorf("read local git input failed")
+	}
+	b, err := json.MarshalIndent(d, "", "  ")
+	if err != nil {
+		return err
+	}
+	fout, err := os.OpenFile(output, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	if err != nil {
+		return fmt.Errorf("create derived git output failed")
+	}
+	defer fout.Close()
+	if _, err = fout.Write(b); err != nil {
+		return fmt.Errorf("write derived git output failed")
+	}
+	fmt.Println(string(b))
+	return nil
+}
+
+func runAssociated(input, output, contextPath string) error {
+	contexts := map[string]events.NativeAssociation{}
+	if contextPath != "" {
+		b, err := os.ReadFile(contextPath)
+		if err != nil {
+			return fmt.Errorf("read observed association context failed")
+		}
+		var values []struct {
+			Source  string `json:"source"`
+			Ordinal int    `json:"ordinal"`
+			events.NativeAssociation
+		}
+		if json.Unmarshal(b, &values) != nil || len(values) != 100 {
+			return fmt.Errorf("incomplete association context")
+		}
+		for _, v := range values {
+			key := fmt.Sprintf("%s:%d", v.Source, v.Ordinal)
+			if _, exists := contexts[key]; exists {
+				return fmt.Errorf("duplicate association context")
+			}
+			contexts[key] = v.NativeAssociation
+		}
+	}
 	f, err := os.Open(input)
 	if err != nil {
 		return fmt.Errorf("open frozen input failed")
@@ -157,6 +269,13 @@ func run(input, output string) error {
 			return fmt.Errorf("invalid or duplicate sample ordinal")
 		}
 		seen[key] = true
+		if contextPath != "" {
+			association, ok := contexts[key]
+			if !ok {
+				return fmt.Errorf("missing association context")
+			}
+			v.Association = &association
+		}
 		d := all[v.Source]
 		if d == nil {
 			d = &diagnosis{Counts: map[string]int{"eligible_current_configuration": 0}, Kinds: map[string]int{}}
@@ -189,12 +308,25 @@ func run(input, output string) error {
 func main() {
 	input := flag.String("input", "", "frozen local sample-first.jsonl")
 	output := flag.String("output", "", "new derived stage-count JSON file")
+	contextPath := flag.String("associations", "", "separate local observed file association context")
+	gitInput := flag.String("git-input", "", "local actual git log input, separate from frozen100")
 	flag.Parse()
-	if *input == "" || *output == "" {
+	if (*input == "" && *gitInput == "") || (*input != "" && *gitInput != "") || *output == "" {
 		fmt.Fprintln(os.Stderr, "input and output required")
 		os.Exit(2)
 	}
-	if err := run(*input, *output); err != nil {
+	if *gitInput != "" {
+		if *contextPath != "" {
+			fmt.Fprintln(os.Stderr, "git input cannot use native associations")
+			os.Exit(2)
+		}
+		if err := runGit(*gitInput, *output); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
+	if err := runAssociated(*input, *output, *contextPath); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
