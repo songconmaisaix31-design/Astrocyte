@@ -17,6 +17,35 @@ type SleepFact struct {
 // Nil means fact recall is unknown, rather than recall of event identifiers.
 type SleepFactProjector func(json.RawMessage) ([]SleepFact, error)
 
+// LiteralSleepFactsMap projects the explicitly selected facts-map-v1 format:
+// {"facts":{"key":"literal value"}}. It never infers claims from other fields.
+// Nil input, missing/null facts, and null values supply no known facts. Invalid
+// JSON or non-string values return an error. Keys and values remain literal;
+// blank keys are excluded and the result is sorted by key, then value.
+// Assign this function to SleepOptions.ProjectFacts only through an explicit
+// opt-in; Sleep has no default source format or fact projection.
+func LiteralSleepFactsMap(raw json.RawMessage) ([]SleepFact, error) {
+	if len(raw) == 0 {
+		return nil, nil
+	}
+	var body struct {
+		Facts map[string]*string `json:"facts"`
+	}
+	if err := json.Unmarshal(raw, &body); err != nil {
+		return nil, err
+	}
+	var facts []SleepFact
+	for key, value := range body.Facts {
+		if value != nil {
+			facts = append(facts, SleepFact{Key: key, Value: *value})
+		}
+	}
+	if len(facts) == 0 {
+		return nil, nil
+	}
+	return uniqueSleepFacts(facts), nil
+}
+
 type sleepFluid struct {
 	Format         string         `json:"format"`
 	Facts          []SleepFact    `json:"facts"`

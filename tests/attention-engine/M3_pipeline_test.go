@@ -34,20 +34,6 @@ func m3Open(t *testing.T, path string) *sqlite.DB {
 	return db
 }
 
-func m3Project(raw json.RawMessage) ([]app.SleepFact, error) {
-	var body struct {
-		Facts map[string]string `json:"facts"`
-	}
-	if err := json.Unmarshal(raw, &body); err != nil {
-		return nil, err
-	}
-	facts := []app.SleepFact{}
-	for key, value := range body.Facts {
-		facts = append(facts, app.SleepFact{Key: key, Value: value})
-	}
-	return facts, nil
-}
-
 func m3Engine(db *sqlite.DB, now time.Time) *app.DynamicsEngine {
 	decay, confidence := 0.0, 0.5
 	duration, observations := int64(86400000), 2
@@ -55,7 +41,7 @@ func m3Engine(db *sqlite.DB, now time.Time) *app.DynamicsEngine {
 }
 
 func m3Service(db *sqlite.DB, now time.Time, interpreter domain.ClusterInterpreter) *app.SleepService {
-	return app.NewSleepService(sqlite.NewSleepRepository(db), m3Engine(db, now), app.SleepOptions{Clock: func() time.Time { return now }, ProjectFacts: m3Project, Interpreter: interpreter})
+	return app.NewSleepService(sqlite.NewSleepRepository(db), m3Engine(db, now), app.SleepOptions{Clock: func() time.Time { return now }, ProjectFacts: app.LiteralSleepFactsMap, Interpreter: interpreter})
 }
 
 func m3Record(t *testing.T, db *sqlite.DB, key, topic, project string, ts time.Time, facts map[string]string) app.StoredEvent {
@@ -246,7 +232,7 @@ func TestM3PipelineRollsBackGraphFluidAndDailyReceipt(t *testing.T) {
 	db := m3Open(t, filepath.Join(t.TempDir(), "rollback.sqlite"))
 	m3Record(t, db, "a", "fresh", "project-a", day.Add(9*time.Hour), map[string]string{"method": "same"})
 	m3Record(t, db, "b", "fresh", "project-a", day.Add(10*time.Hour), map[string]string{"method": "same"})
-	s := app.NewSleepService(m3FailRepository{sqlite.NewSleepRepository(db)}, m3Engine(db, now), app.SleepOptions{Clock: func() time.Time { return now }, ProjectFacts: m3Project})
+	s := app.NewSleepService(m3FailRepository{sqlite.NewSleepRepository(db)}, m3Engine(db, now), app.SleepOptions{Clock: func() time.Time { return now }, ProjectFacts: app.LiteralSleepFactsMap})
 	if _, err := s.Run(ctx, day); err == nil || !strings.Contains(err.Error(), "deliberate transaction abort") {
 		t.Fatalf("expected final write failure: %v", err)
 	}
@@ -569,7 +555,7 @@ func TestM3UndecidedMergePolicyPersistsPendingAssociation(t *testing.T) {
 	}
 	decay, confidence := 0.0, 0.5
 	unconfigured := app.NewDynamicsEngine(sqlite.NewDynamicsRepository(db), app.DynamicsOptions{Decay: &decay, InitialConfidence: &confidence})
-	service := app.NewSleepService(sqlite.NewSleepRepository(db), unconfigured, app.SleepOptions{Clock: func() time.Time { return now }, ProjectFacts: m3Project})
+	service := app.NewSleepService(sqlite.NewSleepRepository(db), unconfigured, app.SleepOptions{Clock: func() time.Time { return now }, ProjectFacts: app.LiteralSleepFactsMap})
 	result, err := service.Run(ctx, day)
 	if err != nil {
 		t.Fatal(err)
