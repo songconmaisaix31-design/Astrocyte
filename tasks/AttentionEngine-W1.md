@@ -10,6 +10,8 @@ M1 NOT_DONE；独立解析阶段已 push `bd33fdaf2810ce07a378b2b4d6e133af89d79c
 该阶段落 `internal/adapters/events/native_record.go`、`native_reader.go`、`s1_record.go`，
 仅适配器内部观测解析，不定义跨轨共享 Event/Signal，不消费未发布 M0。
 新增单项目 S1 缓存元数据读侧 `s1_metadata.go`，不启动 discovery、不读消息正文。
+新增 canonical outbox 读侧 `s1_reader.go`：每页最多 128 条，稳定 ID 游标，完整 envelope 字段和原 payload 字节；不修改 s1 回执。
+有界 snapshot 分页以 ID 排序，不把游标当增量时间水位；下一次完整回放从空游标开始并靠 event_id 去重。
 
 M0 仍等待协调者精确稳定 SHA；W0 未提交代码只读，不复制或合并。
 旧波 A 映射文档有错，本文件已重写；旧 SHA `1321b23`、`05065f3` 保留于普通 Git 历史，不能作为实现规格。
@@ -60,6 +62,7 @@ M0 仍等待协调者精确稳定 SHA；W0 未提交代码只读，不复制或�
 ## 验证与首失败
 
 - `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/adapters/events` PASS，3 项：未知语义、逐条原字节与有界回放、s1 job/deferred 不造 Agent 结果。
+- 后续独立 source 阶段同命令 PASS，5 项；新增缓存项目范围/截断和 outbox 原 payload 字节/分页收据对账。
 - `ASTROCYTE_M1_METADATA_DB=C:/Users/DW/AppData/Roaming/astrocyte/state.sqlite ASTROCYTE_M1_PROJECT_ROOT=C:\Users\DW\orca\Astrocyte GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run TestM1CachedNativeMetadataLive -v` 首次 FAIL：claude=0/codex=0，partial=false。
 - 该失败只表示精确选定缓存/项目没有可用来源，不表示本机总会话为 0；原库只读，不重新发现或扩大范围。
 - contract_local 已验证独立解析；真实 Event→Signal 与 SQLite 冷重启、幂等回放验收尚 NOT_RUN。
