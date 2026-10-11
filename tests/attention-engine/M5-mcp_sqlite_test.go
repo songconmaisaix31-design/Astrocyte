@@ -43,7 +43,7 @@ func TestMCPServerProcess(t *testing.T) {
 		binding := app.MCPBinding{Principal: app.Principal{ID: "m5-" + kind, Kind: kind}, Scope: "project-a", Session: "m5-stdio", CanVeto: kind == "human"}
 		events := sqlite.NewEventRepository(db)
 		experiences := app.NewExperienceService(sqlite.NewExperienceRepository(db), events, app.ExperienceOptions{ProjectID: binding.Scope, Clock: mcpFixtureClock})
-		recorder := mcpProcessRecorder(events, experiences, os.Getenv("ASTROCYTE_M5_MCP_DELIVERY_FIXTURE"))
+		recorder := mcpProcessRecorder(db, events, experiences, os.Getenv("ASTROCYTE_M5_MCP_DELIVERY_FIXTURE"))
 		if os.Getenv("ASTROCYTE_M5_MCP_RECOVER") == "1" {
 			if _, err := experiences.CaptureFailures(context.Background(), 0, mcpFixtureNow+1); err != nil {
 				return err
