@@ -4590,6 +4590,7 @@ export interface components {
             version: number;
             created_at: number;
             updated_at: number;
+            consolidated_at: number | null;
             crystallized_versions: components["schemas"]["KnowledgeVersionV1"][];
             shares: components["schemas"]["MemoryShareAuditV1"][];
             actions: components["schemas"]["MemoryActionAuditV1"][];

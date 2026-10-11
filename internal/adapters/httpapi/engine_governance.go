@@ -17,7 +17,7 @@ func (h *handler) registerEngineGovernance(mux *http.ServeMux) {
 		} else if h.services.KnowledgeGovernance == nil {
 			err = apierrors.NewUnsupported("knowledge_read")
 		} else {
-			entry, e := h.services.KnowledgeGovernance.GetKnowledge(r.Context(), principal(r), r.PathValue("id"), project)
+			entry, e := h.services.KnowledgeGovernance.GetKnowledge(r.Context(), principal(r), project, r.PathValue("id"))
 			result = localEnvelope("knowledge", entry)
 			err = e
 		}

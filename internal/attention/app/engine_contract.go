@@ -136,7 +136,7 @@ type KnowledgeGovernanceService interface {
 	KnowledgeGateService
 	ShareKnowledge(context.Context, Principal, string, ShareMemoryCommand) (KnowledgeEntryResult, error)
 	DemoteKnowledge(context.Context, Principal, string, DemoteMemoryCommand) (KnowledgeEntryResult, error)
-	GetKnowledge(context.Context, Principal, string, string) (StoredKnowledge, error)
+	GetKnowledge(ctx context.Context, p Principal, project, id string) (StoredKnowledge, error)
 	ReferenceKnowledge(context.Context, Principal, string, ReferenceKnowledgeCommand) (KnowledgeEntryResult, error)
 }
 

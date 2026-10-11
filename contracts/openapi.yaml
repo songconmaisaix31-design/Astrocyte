@@ -14022,6 +14022,8 @@ components:
         created_at: &a19
           type: integer
         updated_at: *a19
+        consolidated_at:
+          type: [integer, "null"]
         crystallized_versions:
           type: array
           items:
@@ -14041,6 +14043,7 @@ components:
         - created_at
         - updated_at
         - crystallized_versions
+        - consolidated_at
         - shares
         - actions
     StoredExperienceV1:
