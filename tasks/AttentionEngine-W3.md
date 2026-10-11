@@ -3,13 +3,38 @@
 事实源：任务书 §6、§5.4/§5.5、§4.4；主计划 `tasks/AttentionEngine-plan.md` W3 行。
 基线分支 `attention-engine/v1-20261011`（当前 `77712f3`，仅计划/派发/恢复记录，M0 契约类型仍未并入）。
 
-## 阶段状态（本次 dispatch 波 A）
+## 交接（阶段结果 partial，后续 Codex --yolo 承接原写域与 worktree）
 
-- 波 A 已交付并验证（见下）；阶段状态 `merge_ready`，等 M0 精确 SHA 后接 `app/sleep_*.go` 与
-  `sleep_store*.go`（波 B）。本阶段不提前 worker_done。
-- 预审修正：`ResolveClusters` 多 topic 直接 `NodeMerge` 违反 §5.4 —— 邻接同簇只说明相关，
-  不得自动合并既有 topic。真正合并须关联持续 >0.8 且证据重叠，由 W2 生命周期规则判定；
-  未达条件保留关联。已改：多 topic 集群拆为逐 topic `NodeCreate`，不产生合并决策。
+阶段结果：**partial**。波 A 确定性核心已交付并验证；完整 M3（app/store 编排、每日持久化、
+断 LLM 全流程验收）未完成，不冒充完整 M 已完成。
+
+### 已完成
+- `internal/attention/domain/sleep.go`：`EventTopic`、`Cluster`、`ClusterTopics`（union-find topic
+  邻接聚类）、`Denoise`（孤立信号去噪）、`NodeDecision`/`ResolveClusters`（逐 topic `NodeCreate`，
+  多 topic 不合并）、`Consolidate`（cluster→denoise→resolve 确定性入口）、
+  `ClusterInterpreter`/`ClusterExplanation`（LLM 只解释）、`ConflictCandidate`。
+- `internal/attention/domain/sleep_metrics.go`：双指标 `RetentionPrecision`/`StorageReduction`/`ComputeMetrics`。
+- 修正预审缺陷：多 topic 不再自动 `NodeMerge`（合并归 W2 §5.4 生命周期规则）。
+- 测试 9 项全绿（`GOFLAGS=-p=1 GOMAXPROCS=2` 下 `go test`/`go vet`/`go build` 均 PASS）。
+- 验收金标准示例已写入本文档（§验收示例）。
+
+### 未完成（依赖 M0/W1/W2/W4 契约类型，未开展）
+- `internal/attention/app/sleep_*.go` 编排（当日 Event→Consolidate→图更新 + KnowledgeEntry fluid 更新）。
+- `internal/adapters/sqlite/sleep_store*.go`（每日一次持久化 + 冷启动一致；迁移 014+ 属 W0）。
+- `tests/attention-engine/M3*` 验收脚手架（断 LLM 跑 pipeline、双指标、冲突记录、无 LLM 决策入库）。
+
+### FAIL 或 UNKNOWN
+- 无 FAIL。
+- UNKNOWN：M0 契约类型（Event/Signal/AttentionNode/KnowledgeEntry/Evidence/Conflict/引擎接口）的
+  精确 SHA 与未完成清单尚未由 W0 发布；`tests/attention-engine/` 共享 harness 尚未存在。
+- 并行 `go test ./...` 触发本机 Windows 内存 panic（已知，`-p=1` 可过），与本次改动无关。
+
+### 下一步接口要求（给后续 Codex / 各轨）
+- **W0**：发布 M0 契约/迁移精确 SHA + `tests/attention-engine/` 共享 harness + 冲突裁决 HTTP 关口。
+- **W1**：Event 类型与当日事件读取入口（`EventTopic` 视图映射来源）。
+- **W2**：AttentionNode（`related_topics` 作聚类邻接输入）、Conflict 记录生成（§5.5）、§5.4 合并规则。
+- **W4**：KnowledgeEntry fluid 重写 / crystallized 追加的写入口。
+- **波 B 接续**：app 编排以 `domain.Consolidate` 为唯一确定性入口；interpreter 只装饰解释、不改决策。
 
 ## 目标与验收
 
