@@ -1,6 +1,46 @@
 # W6 · MCP 认知接口（M5 接口侧）
 
-分支：`attention-engine/w6-mcp`。写域：`internal/adapters/mcp/**`、`internal/attention/app/mcp_*.go`、`tests/attention-engine/M5-mcp*`、本文件。
+实际分支：`songconmaisaix31-design/attention-engine-w6-mcp`。写域：`internal/adapters/mcp/**`、`internal/attention/app/mcp_*.go`、`tests/attention-engine/M5-mcp*`、本文件。
+
+## 2026-10-11 Codex 接续：stdio 边界阶段，M5 尚未完成
+
+SOURCE `a57d67c77fd44513dbef3611bbb091dea3378937`，协议阶段 SOURCE `058a67baff3748933415ab14103e0171e838ffc6`，均已 push。实际客户端 Codex / GPT-6，未使用子 Agent；`GOFLAGS=-p=1`、`GOMAXPROCS=2`。
+
+- 接管原 `daa3f6d`，它的 `memoryBackend` 和 `os.Pipe` 只算接口局部证据，不证明领域、持久化或实际 MCP 子进程完成。
+- 初始化验证 `protocolVersion`、`capabilities`、`clientInfo`，支持 2024-11-05 / 2025-03-26 / 2025-06-18 / 2025-11-25 协商；初始化前工具调用拒绝。参数错误返回 JSON-RPC -32602，业务拒绝返回工具 `isError`。
+- 启动必须绑定既有 `app.Principal`、项目 `Scope`、`Session`；`CanVeto` 只在受信人类启动通道开启。工具参数和 `raw` 不授予权限。
+- `get_experiences` 未传 scope 仍使用启动项目，显式外项目 scope 拒绝；`report_event({event:{...}})` 强制 `source=mcp`、scope/session=启动绑定，拒绝外项目和 `user_approve` / `user_veto`。raw 只保留审计，不赋予批准、提权或成功闭环语义。
+- `veto({topic|task,reason})` 必须二选一，普通 Agent 调用拒绝；人类回流具体落库仍待 M0/W1/W2 接线。
+
+验证（2026-10-11 22:21 +08，局部范围）：
+
+```powershell
+$env:GOFLAGS='-p=1'; $env:GOMAXPROCS='2'
+go test ./internal/adapters/mcp ./tests/attention-engine -count=1 -v
+go vet ./internal/adapters/mcp ./tests/attention-engine
+go build ./internal/adapters/mcp ./internal/attention/app
+node scripts/check-architecture.mjs
+git diff --check
+```
+
+全部 exit 0；MCP 12 顶层测试 + M5 3 顶层测试 PASS，版本协商含 5 子例；21 包架构通过。测试后端证据不能替代 `approved` 真查询、完整解释权重路径、真实子进程 stdio 或 SQLite 冷重启。
+
+W0 Handoff（已通过 Orca 投递）：
+
+```go
+binding := app.MCPBinding{
+    Principal: app.Principal{ID: trustedID, Kind: trustedKind},
+    Scope: trustedProject, Session: trustedSession,
+    CanVeto: trustedHumanChannel,
+}
+// W6 将在 M0/W2/W5 发布后提供真实 backend 构造器。
+server, err := mcp.NewAstrocyteServer(backend, binding)
+// 检查 err 后：server.Serve(ctx, os.Stdin, os.Stdout)
+```
+
+`cmd/`、锁文件、迁移仍仅 W0 可写；stdout 仅协议，错误写 stderr；不要从工具入参/客户端 capabilities 推断 principal、项目或人类授权。需 W0/M0 统一 StoredEvent / metadata 与事件入口，W2 排序/解释接口，W5 approved/scope 检索接口；主控通知稳定 SHA 后普通 fetch+merge，再完成真实 backend 和 stdio+SQLite/重启验收。task veto 需通过真实任务引用确定 topic，unknown task 不凭空创建主题。
+
+协议参考：[MCP stdio](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports)、[MCP lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle)、[MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)。以下波 A 描述保留为历史，最新 API 和权限语义以上文为准。
 
 ## 里程碑与验收（任务书 §7 / §8 M5）
 
