@@ -27,10 +27,17 @@ type DynamicsTx interface {
 }
 
 type DynamicsConflict struct {
-	Conflict  domain.Conflict `json:"conflict"`
-	CreatedAt int64           `json:"created_at"`
-	Version   int             `json:"version"`
-	Actions   []ActionAudit   `json:"actions"`
+	Conflict         domain.Conflict                    `json:"conflict"`
+	CreatedAt        int64                              `json:"created_at"`
+	Version          int                                `json:"version"`
+	Actions          []ActionAudit                      `json:"actions"`
+	DecisionReceipts map[string]DynamicsDecisionReceipt `json:"decision_receipts,omitempty"`
+}
+
+type DynamicsDecisionReceipt struct {
+	Decision        string         `json:"decision"`
+	ExpectedVersion int            `json:"expected_version"`
+	Result          ConflictResult `json:"result"`
 }
 
 type AppliedDynamicsSignal struct {

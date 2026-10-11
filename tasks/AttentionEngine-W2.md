@@ -3,6 +3,19 @@
 事实源：任务书 `tabbit-code (2).md` §5.1–5.5、§8 M2；`tasks/AttentionEngine-plan.md` W2 行。
 分支：`songconmaisaix31-design/attention-engine-w2-engine`，基线 `dab8fea`。
 
+## 当前可复验交付（2026-10-11，待 root 第二实现复算）
+
+已普通消费获准的 M0 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 与 W1 `e9bb3809eadcbf48cf017b6e09ae0ef4112b1a90`，保留原历史。W2 app/store/lifecycle/解释读侧已实现；参数未答保持 `DynamicsOptions` 显式输入。新分裂数值分配 `SplitState` 也没有产品默认：验收明确配置继承父状态；合并仅按任务书令历史 A=max，其余 survivor 的独立 confidence/momentum/λ 不自动校准。
+
+- 实际产物：[M2_application_state.json](../tests/attention-engine/M2_application_state.json)，来自生产 W1 EventService→Signal→W2→SQLite 30 天伪造流，含初始 floor A、30 步实际持久状态及原始事件完整解释，标记 `synthetic_application_sqlite`。
+- day 10/20 均关闭库，另起本测试二进制的独立 Go 进程真实重载/解释/同时间推进，逐字检查节点 data 未改变；随后父进程再开库并重放。不是 OS/HTTP 重启，不是七天真实使用。
+- 留存本次验收库：`C:\Users\DW\AppData\Local\Temp\astrocyte-m2-01d52594-7909-4630-9aad-ad4f67212631.sqlite`；没有复制到个人应用库。可用 `ASTROCYTE_M2_DB=<不存在的新路径>` 和 `ASTROCYTE_M2_OUTPUT=<JSON路径>` 重新生成独立样本。
+- 定向命令 `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run '^TestM2' -count=1 -v`：7 PASS / 1 SKIP，12.315s；唯一 SKIP 是 `TestM2ProcessReload` 单独入口，父测试实际调用两次并检查退出成功，不当作未跑或额外主用例。
+- `go test ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./tests/attention-engine -count=1` PASS；`go vet` 同四包 PASS；`go build ./cmd/server` PASS；`git diff --check` PASS。仅相关 Go 范围，不是前端/全产品/远程 CI 验收。
+- 补充修复：sleep birth updated_at=本主题最早事件，last_active=本主题最新事件，之后本日已存信号正常应用一次；human Conflict 裁决按幂等 key 返回原结果、换 request ID 不重复审计、换 decision 明确拒绝；RawBytes 从真实 W1 BLOB 读取并保持字节。
+
+真实剩余边界：root 独立应用输出复算待回执；HTTP/cmd 组装归 W0、MCP 归 W6、atomic daily 使用与关联观测触发归 W3；未决 λ/信号强度/初始与成功 confidence/阈值/合并持续时长/分裂分配不能从验收配置推为用户选择。新鲜信号早于已推进 updated_at 会显式拒绝（原始记录仍保留），需调用方按时间回放或另行决定重算策略；旧已用信号重放可返回持久状态。注意力图个人级，密度/新 sleep cluster 诞生按真实 scope 核实，Knowledge/Experience 共享权限不由本轨推导。
+
 ## 状态（2026-10-11）
 
 ### M2 持久化接续（当前 Dispatch）

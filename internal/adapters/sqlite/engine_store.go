@@ -57,6 +57,11 @@ func (t *dynamicsReadTx) QueryRow(q string, args ...any) *sql.Row {
 
 type dynamicsTx struct{ t EngineTx }
 
+type dynamicsConflictData struct {
+	domain.Conflict
+	DecisionReceipts map[string]app.DynamicsDecisionReceipt `json:"decision_receipts,omitempty"`
+}
+
 func dynamicsMissing(err error, kind, id string) error {
 	if errors.Is(err, sql.ErrNoRows) {
 		return apierrors.NewNotFound(kind, id)
@@ -146,6 +151,9 @@ func (t *dynamicsTx) GetEvent(id string) (app.StoredEvent, error) {
 			return e, err
 		}
 		e.Event = &core
+		if e.RawBytes != nil {
+			e.Event.Raw = append(json.RawMessage(nil), e.RawBytes...)
+		}
 	}
 	return e, nil
 }
@@ -168,9 +176,11 @@ func (t *dynamicsTx) GetConflict(id string) (app.DynamicsConflict, error) {
 	if err != nil {
 		return c, dynamicsMissing(err, "conflict", id)
 	}
-	if err = json.Unmarshal([]byte(data), &c.Conflict); err != nil {
+	var saved dynamicsConflictData
+	if err = json.Unmarshal([]byte(data), &saved); err != nil {
 		return c, err
 	}
+	c.Conflict, c.DecisionReceipts = saved.Conflict, saved.DecisionReceipts
 	rows, err := t.t.Query("SELECT action,actor_id,actor_kind,ts,request_id,version FROM attention_engine_conflict_actions WHERE conflict_id=? ORDER BY version", id)
 	if err != nil {
 		return c, err
@@ -218,7 +228,7 @@ func (t *dynamicsTx) ListConflicts() ([]app.DynamicsConflict, error) {
 }
 
 func (t *dynamicsTx) SaveConflict(c app.DynamicsConflict) error {
-	data, err := json.Marshal(c.Conflict)
+	data, err := json.Marshal(dynamicsConflictData{Conflict: c.Conflict, DecisionReceipts: c.DecisionReceipts})
 	if err != nil {
 		return err
 	}
