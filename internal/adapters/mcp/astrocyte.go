@@ -49,7 +49,8 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 			if in.Topic == "" {
 				return nil, &InvalidParamsError{"topic is required"}
 			}
-			return backend.ExplainFocus(ctx, in)
+			result, err := backend.ExplainFocus(ctx, in)
+			return exposeExplanation(result), err
 		},
 	})
 
@@ -73,7 +74,8 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 			if in.Pattern == "" {
 				return nil, &InvalidParamsError{"pattern is required"}
 			}
-			return backend.GetExperiences(ctx, in)
+			result, err := backend.GetExperiences(ctx, in)
+			return exposeExperiences(result), err
 		},
 	})
 
@@ -117,7 +119,8 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 			if in.Kind == "" || in.TS <= 0 || (in.Tokens != nil && *in.Tokens < 0) {
 				return nil, &InvalidParamsError{"event requires positive ts, kind and nonnegative tokens"}
 			}
-			return backend.ReportEvent(ctx, in)
+			result, err := backend.ReportEvent(ctx, in)
+			return exposedReport{Accepted: result.Accepted, exposedDelivery: exposeDelivery(result.MCPReceiptDelivery)}, err
 		},
 	})
 
@@ -142,7 +145,12 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 			if (in.Topic == "") == (in.Task == "") {
 				return nil, &InvalidParamsError{"exactly one topic or task is required"}
 			}
-			return backend.Veto(ctx, in)
+			result, err := backend.Veto(ctx, in)
+			target := result.Target
+			if in.Task != "" {
+				target = ""
+			}
+			return exposedVeto{Acknowledged: result.Acknowledged, Target: target, Pending: result.Pending, exposedDelivery: exposeDelivery(result.MCPReceiptDelivery)}, err
 		},
 	})
 
@@ -153,7 +161,7 @@ func decodeArguments(args json.RawMessage, value any) error {
 	d := json.NewDecoder(bytes.NewReader(args))
 	d.DisallowUnknownFields()
 	if err := d.Decode(value); err != nil {
-		return &InvalidParamsError{err.Error()}
+		return &InvalidParamsError{"Invalid tool arguments"}
 	}
 	return nil
 }
