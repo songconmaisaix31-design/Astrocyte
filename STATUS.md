@@ -2,6 +2,18 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
+### 当前裁决：v2.1（2026-10-12）
+
+事实源：[v2.1补丁](tasks/M6-validation-v2.1.md)，优先于下文v2.0/EX-01历史记录。schema零改动、零豁免，原store raw列不变；不实施019/raw侧表。exposure序列化前仅投影{event_id,kind,topic,tokens,scope,ts}；审计raw_unique非derived字符串值长度≥8，含五工具/explain_focus全部成功及错误路径。
+
+旧100行eligible≥90%指标废止，属于规格修正；原0/100和raw审计5 FAIL/4 PASS属于真实首RED，原件保留，不改成成功。新V0：两客户端全量认知工具事件+已捕获1893 commits归一化kind/topic完整率≥95%，随机200非认知行误标0，raw_unique泄漏0。先盘点真实N，V1全N入库，N≥5000达数量目标；不足如实报告，禁止注水。窗口固定[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)。
+
+参数冻结V1–V4：λ=.1、α=.3、A_floor=.05、momentum门限=.15；深度1.0/常规.6/轻度.3/正向1.5/负向-.8/成功.8/失败-.1；λ_r=.05，access_boost初始1.0/每次+.1/上限2.0/24h冷却。现有domain A_floor/α/momentum常量已核对一致；λ/λ_r沿现有显式参数绑定，强度/权重字段与时间单位核对后记录，不改公式或调参。
+
+v0.1无自动发现：主题来源仅固定种子+git派生+SeedTopic手工播种。unassigned留存计数并进入Sleep，不出生；tagged分裂继续禁用到v0.2。已合EX-01输入/pending/禁生接缝沿用，正向出生/provider不再是验收或阻塞。EXPERIMENT为未锁SHA草案，已按规格修正同步，无实验失效。其余引擎/数学/权重/去噪/fluid/crystallized/merge冻结不变。
+
+本轮沿原W1/W0固定Codex --yolo写域：W1全量盘点/工具接入/无标计数/参数绑定；W0仅MCP投影与raw_unique审计。原store/schema写授权撤销。root只文档决策/独立验收/最终Git；待两轨完成交同一集成owner普通合，V0三指标过后才正式V1。当前新指标NOT_RUN，无新阶段源码/测试数或SHA可登记。
+
 任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
 
 ### EX-01：P0 unassigned消费契约限定修复（用户2026-10-12裁决）

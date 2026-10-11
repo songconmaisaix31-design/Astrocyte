@@ -1,5 +1,9 @@
 # 用户决定与待定项
 
+## M6 v2.1 已裁决（2026-10-12）
+
+此前M6三项待答由[v2.1](../tasks/M6-validation-v2.1.md)全部解决：raw_unique排除derived投影同值、仅长度≥8非derived值审计；正式运行参数按STATUS顶部冻结；v0.1无自动无标出生，候选provider不再要求。schema零豁免、store raw列不变。旧100行≥90%废止，新验收是全量认知事件kind/topic完整率≥95%、随机200非认知行误标0、raw_unique泄漏0。旧问题/RED下文保留为历史，不再作为当前阻塞。
+
 ## M6 v2 验证期（2026-10-12）
 
 任务书已裁决并覆盖旧metadata范围待答：允许最近30天 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log真实载荷，raw仅本机审计，derived用于引擎/检索，MCP exposure无raw。不推导模型外发或其他来源授权。工程权重及核心逻辑冻结；七天三臂/最强B/评分权/成功线沿v2，不再讨论。

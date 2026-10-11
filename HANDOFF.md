@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 当前入口：M6 v2.1（2026-10-12）
+
+先读STATUS顶部和[tasks/M6-validation-v2.1.md](tasks/M6-validation-v2.1.md)。本补丁覆盖旧100行eligible口径、raw同值疑问、参数待答、自动无标出生要求；旧首RED留存，schema零豁免/store raw不变，无自动发现。正式参数已裁决，不再询问。沿原W1全量认知盘点+1893捕获git，原W0仅exposure投影/raw_unique含错误审计，复用原Codex --yolo工作树/分支，完成后同一集成owner普通合。新V0三指标通过再按ts单事件回放全N/30Sleep；N≥5000达数量目标。不把默认CI或合成测试当新V0/V1，EXPERIMENT仍草案未锁SHA。下文v2记录为历史。
+
 ## M6 v2 验证期入口（2026-10-12）
 
 交付分支 `validation/v1-20261012`，工程基线 `6b2b91086d87e2173122c3c9f53a36332acffff2`，本次源码验收HEAD `bc594de6c0eb3b6c8c10d1140c30627b2e46d6b2`。冻结令和EX-01读STATUS顶部，任务源 [v2.0](tasks/M6-validation-v2.md)，固定写域/实际身份读 [计划](tasks/M6-validation-plan.md)，本期集成见[M6交接](tasks/M6-integration.md)。继续Codex --yolo；root只计划/状态/决策/验收/最终Git。Run `run_d09ff3f95ebc`，coordinator `term_1adf40a6-ef79-4efa-b602-7b55173624e6`；本期两开发轨/唯一集成及原诊断Dispatch全部completed，外部终端retained idle，原工程分支和工作树保留。

@@ -1,5 +1,11 @@
 # M6 验证期执行计划
 
+## 当前波次：v2.1
+
+事实源[M6 v2.1](M6-validation-v2.1.md)覆盖下文历史口径。W1保持原固定写域，完成全量认知工具盘点/映射/header、git固定1893、200非认知随机抽检、显式参数接入，再准备全N单事件/30Sleep回放；V0三指标通过前不正式回放。W0本波唯一写域`internal/adapters/mcp/**`、`tests/validation/privacy/**`、`tasks/M6-W0.md`，禁止改SQLite/store/migrations/任何app/domain。原raw侧表授权撤销，schema零豁免。两轨先同步root本波文档commit，开发测试报告由同ownercommit+push，随后唯一原集成owner普通合与薄胶水；root独立验收/push。W2未启动，EXPERIMENT草案暂归root。
+
+W1输出N/完整率/误标率的分母先按原生结构声明，不以当前mapper成功筛分母，不将housekeeping/token_count/用户或思考行计成认知。工具wrapper只用确定性可观察语义，不运行历史命令/JS，不把未观察的编辑/深读/成功补为事实。raw全量与抽样均只在既有本地证据根，聚合可读；原100和旧泄漏首RED不覆盖。强度与权重、λ_r单位先核对既有字段，零引擎改动；跨写域必需路径先报root登记。
+
 事实源：[用户任务书v2.0](M6-validation-v2.md)。基线 `6b2b91086d87e2173122c3c9f53a36332acffff2`，交付 `validation/v1-20261012`。所有开发用Codex --yolo，模型沿客户端配置，观察启动后记录实际值。root只计划/状态/决策/验收/最终Git；领域开发由固定owner提交推送，普通合并，保留原工作树。
 
 | 轨 | 固定Agent/Worktree/Branch | write_paths | 交付与顺序 |
