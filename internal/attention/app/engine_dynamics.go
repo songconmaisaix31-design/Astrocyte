@@ -76,7 +76,7 @@ func (e *DynamicsEngine) seedInTx(tx DynamicsTx, topic string, now int64, kind s
 	if !dynamicsNotFound(err) {
 		return n, err
 	}
-	n = StoredAttentionNode{Node: domain.AttentionNode{ID: dynamicsID(), Topic: topic, Decay: *e.options.Decay, Confidence: *e.options.InitialConfidence, Evidence: []domain.EvidenceRef{}, RelatedProjects: []string{}, RelatedAgents: []string{}, RelatedTopics: map[string]float64{}, LastActive: now}, UpdatedAt: now, Lifecycle: "born"}
+	n = StoredAttentionNode{Node: domain.AttentionNode{ID: dynamicsID(), Topic: topic, Attention: domain.AttentionFloor, Decay: *e.options.Decay, Confidence: *e.options.InitialConfidence, Evidence: []domain.EvidenceRef{}, RelatedProjects: []string{}, RelatedAgents: []string{}, RelatedTopics: map[string]float64{}, LastActive: now}, UpdatedAt: now, Lifecycle: "born"}
 	h, _ := readDynamicsHistory(n)
 	h.Transitions = append(h.Transitions, TopicTransition{Kind: kind, TS: now})
 	err = saveDynamicsNode(tx, &n, h)
@@ -275,15 +275,12 @@ func (e *DynamicsEngine) confidenceConflict(tx DynamicsTx, n StoredAttentionNode
 		return nil
 	}
 	right := signals[len(signals)-1]
-	left := ""
+	left := n.Node.ID
 	for _, r := range n.Node.Evidence {
-		if r.TS < right.TS {
+		if !slices.ContainsFunc(signals, func(s domain.Signal) bool { return s.EventID == r.EventID }) {
 			left = r.EventID
 		}
 	}
-	if left == "" {
-		return nil
-	} // No earlier evidence exists to contradict.
 	detail := fmt.Sprintf("confidence_drop: previous=%g current=%g threshold=%g ts=%d", previous, n.Node.Confidence, *e.options.ConfidenceDropThreshold, right.TS)
 	return tx.SaveConflict(DynamicsConflict{Conflict: domain.Conflict{ID: dynamicsID(), Topic: n.Node.Topic, Kind: domain.ConflictKindAttentionNode, LeftRef: left, RightRef: right.EventID, Detail: detail, Status: domain.ConflictStatusPending}, CreatedAt: right.TS, Version: 1})
 }
