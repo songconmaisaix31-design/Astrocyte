@@ -34,6 +34,8 @@ root同一原100+本地observed association独立`go run ./cmd/validation --inpu
 
 源码已push；[CI38159885208](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38159885208) 针对bc594de正在Ubuntu/Windows运行，结果未到，不用旧工程CI替代。V0剩余：raw三层/019/exposure仍未实施，字面同值审计口径与正式参数待答；真实无标候选来源/provider缺失，已询问应复用的既有规则/实现，未经裁决不新增发现能力。V1–V4与50权重人工抽检/焦点确认/原因评分/预测对账NOT_RUN；协议未锁、无终局报告。未执行main合并、个人实例升级或回滚。
 
+01:43 [CI38159885208](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38159885208) completed/success，精确源码`bc594de6c0eb3b6c8c10d1140c30627b2e46d6b2`：Ubuntu24.04与Windows2025完整`pnpm check`/`pnpm build`/默认`pnpm test:e2e` PASS，两平台分别226 PASS/30 SKIP（3.1m/4.9m），Linux`go test -mod=readonly -race ./...` PASS，Windows race按工作流条件SKIP。完整已完成job日志本地`evidence/root-p0/ci-ubuntu.log`、`ci-windows.log`；原合成/真实首RED保持。后续提交只更新交接/状态Markdown，源码和测试与bc594de一致，以skip ci避免重复同一树。上述CI是代码回归，不是V0隐私/≥90%或真实科学验收；无标正向出生、raw三层及正式参数的阻塞不变。交付分支已push，工作树干净，本期所有Dispatch结算，三外部Codex终端retained idle。
+
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
 当前：两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接。现有Sleep跳过无topic事件、允许从带topic事件出生；用户已以EX-01批准上述两处接缝，其他引擎仍冻结。schema豁免当前无。
