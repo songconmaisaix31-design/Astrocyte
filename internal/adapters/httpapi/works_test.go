@@ -14,6 +14,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
+	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
@@ -195,5 +196,35 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	}
 	if roots.refreshes != 0 {
 		t.Fatal("HTTP GET/refresh unexpectedly started registered discovery")
+	}
+}
+
+func TestEngineIndependentServicesActivateSessionGuard(t *testing.T) {
+	db, err := sqlite.Open(filepath.Join(t.TempDir(), "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if err = db.RunMigrations(context.Background(), migrations.FS); err != nil {
+		t.Fatal(err)
+	}
+	for _, services := range []Services{
+		{KnowledgeGovernance: attentionapp.NewKnowledgeService(sqlite.NewKnowledgeRepository(sqlite.NewEngineRepository(db)), attentionapp.KnowledgeServiceOptions{})},
+		{ExperienceGovernance: attentionapp.NewExperienceService(sqlite.NewExperienceRepository(db), sqlite.NewEventRepository(db), attentionapp.ExperienceOptions{ProjectID: "project-a"})},
+		{Works: workspaceapp.NewWorksService(db, nil, worksscan.Delivery{}, nil, workspaceapp.WorksServiceOptions{})},
+	} {
+		s := NewServer(Config{Services: services, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
+		w := attentionRequest(s, "GET", "/api/v1/works", "", nil, "", "", "")
+		if w.Code != 403 {
+			t.Fatalf("standalone service bypassed auth: %d", w.Code)
+		}
+		cookie, csrf := bootstrapSession(t, s)
+		if cookie == nil || csrf == "" {
+			t.Fatal("standalone service has no session")
+		}
+		w = attentionRequest(s, "POST", "/api/v1/knowledge/missing/confirm", `{"schema_version":1,"request_id":"confirm","expected_version":1,"owner_project":"project-a"}`, cookie, "", "", "")
+		if w.Code != 403 {
+			t.Fatalf("standalone service bypassed CSRF: %d", w.Code)
+		}
 	}
 }
