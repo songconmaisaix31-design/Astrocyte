@@ -6,6 +6,8 @@
 
 新增实际冲突集中问：任意raw字段值零出现与derived重用ts/scope/kind字面冲突，是否允许derived白名单同值但禁止所有raw正文及非白名单值；v2未指定运行参数，是否固定上一轮M6显式参数为验证参数（不是产品默认），锁后不调。这两项未回答。Sleep限界已由用户EX-01裁决：仅桶读取与unassigned来源出生门禁，tagged仍更新/merge但不出生（分裂禁用到v0.2），数学/权重/去噪/fluid/追加不变；优先配置，无法收窄则上报。EX-01细节见STATUS，不再询问该已裁决项。
 
+01:25完成限定修复后确认另一具体缺口：现有ClusterTopics需非空topic，unassigned没有候选标签/provider，Interpreter只能提交后解释。已询问可复用的候选生成实现/规则路径；没有回答前真实正向unassigned出生BLOCKED，不增发现机制或以伪候选测试通过。tagged禁生、pending引用保留及既有更新/merge已测试并合入，未重新询问EX-01许可。
+
 ## 认知内核 Attention Engine（2026-10-11，本轮）
 
 2026-10-11 22:00 用户明确“后续用codex --yolo模式工作”，覆盖本轮及旧 S1 的新增 OpenCode Worker 决定。原 Worker 当前阶段先提交交接；续派使用 `codex --yolo`，不并发占用同一写域。

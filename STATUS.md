@@ -24,6 +24,16 @@ EXPERIMENT.md预注册必须写明：本验证期发现机制仅覆盖unassigned
 
 [EXPERIMENT.md](docs/EXPERIMENT.md)已补入EX-01发现范围和split禁用，为root按用户裁决整理的协议草案，交未来W2继续；V1未过，不锁SHA、不启动day 0。实现缺少正向发现/provider写明于草案，不把McPet/MorphBench示例当结果。两开发Dispatch均结算，下一步唯一原集成owner普通合精确REPORT，root整树check/build与同100独立复测。
 
+### P0限定修复已合入并本机验收（2026-10-12 01:32）
+
+交付`validation/v1-20261012`，源码验收SHA `bc594de6c0eb3b6c8c10d1140c30627b2e46d6b2`，普通合唯一集成REPORT `17d77c443d44ec260d86de7322292874eff30059`；W1/W0精确SOURCE/REPORT均普通祖先，无业务胶水、无schema/MCP改动。冻结域独立`git diff --exit-code` PASS：domain、其他app、M2、SQLite/MCP/migrations/contracts与工程基线完全一致，生产引擎仅Run两处接缝。SplitTopic保留原定义、生产调用0处，验证Sleep不从tagged出生。全部本期Dispatch已completed，外部终端retained idle，原工程分支/工作树保留。
+
+root对该树独立`GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` / `pnpm build` EXIT0：完整Go/vet/modules、架构30包、275契约样例、实际API14/前端90 PASS，API/MCP/Sleep三二进制+web构建。先前commentary沿旧工程记录说27包，经实际本次日志更正为30。日志`evidence/root-p0/check-first.log`、`build-first.log`在本地证据根。原M2未改且随整包重跑，owner/集成定向M2 7 PASS/1 helper SKIP；EX01三个生产SQLite合成干跑PASS，正向无标出生不计PASS。默认check的privacy opt-in未开启，不冒称raw审计通过；原5 FAIL/4 PASS仍RED。
+
+root同一原100+本地observed association独立`go run ./cmd/validation --input .../sample-first.jsonl --associations .../associations-p0-local.json --output .../stages-root-p0-integrated.json` EXIT0，与owner最终安全聚合逐字一致：retained100/mapped3/unknown97/topic候选3/正式eligible0。生成`--check` PASS、Python ingest 5 PASS、祖先/diff PASS。未再次扫描原目录、未换样本、未读raw到终端/外发模型。≥90%仍不通过。
+
+源码已push；[CI38159885208](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38159885208) 针对bc594de正在Ubuntu/Windows运行，结果未到，不用旧工程CI替代。V0剩余：raw三层/019/exposure仍未实施，字面同值审计口径与正式参数待答；真实无标候选来源/provider缺失，已询问应复用的既有规则/实现，未经裁决不新增发现能力。V1–V4与50权重人工抽检/焦点确认/原因评分/预测对账NOT_RUN；协议未锁、无终局报告。未执行main合并、个人实例升级或回滚。
+
 授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
 
 当前：两原生目录存在；V0–V4未通过。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接。现有Sleep跳过无topic事件、允许从带topic事件出生；用户已以EX-01批准上述两处接缝，其他引擎仍冻结。schema豁免当前无。

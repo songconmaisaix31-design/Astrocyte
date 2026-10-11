@@ -2,9 +2,11 @@
 
 ## M6 v2 验证期入口（2026-10-12）
 
-交付分支 `validation/v1-20261012`，基线为工程期最终 `6b2b91086d87e2173122c3c9f53a36332acffff2`，冻结令读STATUS顶部，任务源 [v2.0](tasks/M6-validation-v2.md)，固定写域与身份读 [计划](tasks/M6-validation-plan.md)。继续Codex --yolo；root不写业务代码。Run `run_d09ff3f95ebc`，coordinator `term_1adf40a6-ef79-4efa-b602-7b55173624e6`，W1诊断Dispatch ctx_4dcb09dc9350、W0 RED复现Dispatch ctx_155c592defd9 已实际开始。先收100条真实样本诊断，原样本保留再复验，禁止先修映射再掩盖首错。
+交付分支 `validation/v1-20261012`，工程基线 `6b2b91086d87e2173122c3c9f53a36332acffff2`，本次源码验收HEAD `bc594de6c0eb3b6c8c10d1140c30627b2e46d6b2`。冻结令和EX-01读STATUS顶部，任务源 [v2.0](tasks/M6-validation-v2.md)，固定写域/实际身份读 [计划](tasks/M6-validation-plan.md)，本期集成见[M6交接](tasks/M6-integration.md)。继续Codex --yolo；root只计划/状态/决策/验收/最终Git。Run `run_d09ff3f95ebc`，coordinator `term_1adf40a6-ef79-4efa-b602-7b55173624e6`；本期两开发轨/唯一集成及原诊断Dispatch全部completed，外部终端retained idle，原工程分支和工作树保留。
 
-本轮用户明确授权最近30天两客户端原生载荷与两仓git log本地验证，旧metadata未答范围已在此范围内被覆盖，旧首RED/failed不改。raw不外发/不入Git，不动个人库。样本与审计证据在工作树外astrocyte-validation/v1-20261012；当前没有schema豁免、不改任何引擎逻辑。新发现的derived同值审计口径、运行参数待用户答复；Sleep无topic跳过与unassigned出生的实现冲突待实际诊断方案。不宣称V0已通过，不抢跑V1，不锁定V3，不把回放充当前瞻。
+已合kind映射/固定五种子匹配/observed association/git-log adapter和EX-01的Run两处限定接缝：tagged禁生、pending保留，既有更新/去噪/fluid/merge不改。root完整pnpm check/build PASS，原M2随整包绿；同原100独立复测保留100/映射3/unknown97/候选3/正式eligible0，首RED不覆盖。源码已push，新双平台CI38159885208结果待核实，不能用下文旧工程CI替代。EX-01 rollback对象2947454，未执行。EXPERIMENT已补声明但仍草案、未锁SHA。
+
+本轮明确授权最近30天两客户端原生载荷与两仓git log本地验证，覆盖旧metadata范围未答，旧failed不改；raw不外发/不入Git，不动个人库。外部证据根`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012`。没有schema豁免实施，raw三层/MCP白名单方案尚未落地，审计5 FAIL/4 PASS仍RED。derived同值审计口径与正式运行参数待答；现有unassigned无候选label/provider，正向出生BLOCKED，已询问可复用规则/实现，不新增发现能力。V0未通过，V1–V4/人工抽检及确认/真实三臂未执行，不能抢跑或生成终局报告。
 
 ## 最终交付入口：双平台 CI 已通过（2026-10-12）
 
