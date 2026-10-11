@@ -62,3 +62,17 @@ Task `task_0544bbb70579` / Dispatch `ctx_64948eee5483`；开发 Worker OpenCode 
 - **未完成（Handoff）**：`GetEvent(id)` 稳定 id 包装接口；`project_id`+分享审计落库；`updated_at`/生命周期字段；§4 与 W4/W5 波 A 枚举最终改名合并（见上节）；三个关口 store（W4/W5/W2）。
 - **FAIL/UNKNOWN**：无 FAIL；sqlite-vec 为已裁决"砍"（非 UNKNOWN，证据见上）。关口端点 501 为 M0 诚实未组装状态，非失败。
 - 未合 main/未跑远程 CI；本轨分支 `songconmaisaix31-design/attention-engine-w0-core` 已 push `1b3b2ef`。
+
+## Codex PRIORITY1 persistent foundation (2026-10-11)
+
+Client: current Orca Codex session; no other Agent launched. Baseline `b6a5794a4bf6ed282b60cace4bf81d779383df87`.
+
+- `app/persistence_contract.go` preserves task-book domain shapes through `StoredEvent`/`Observation`, `StoredAttentionNode`, `StoredKnowledge`, `StoredExperience`, share/action audit and daily sleep wrappers. `EventReader.GetEvent` resolves original receipt identity; pending Event is nil; unknown tokens remain nil; exact source bytes live in `raw_bytes` BLOB, not JSON serialization.
+- Migration015 adds origin-key uniqueness, replay signal uniqueness `(event_id,topic,class)`, rejection of pending observation signals, separate node `updated_at`/`last_active`, lifecycle/version, project-owned knowledge/experience, append-only timestamped knowledge versions, human share/action rows, origin-event uniqueness, sleep daily run/metrics/candidate/conflict rows.
+- Upgrade from migration014 leaves missing legacy origin/raw/project fields unknown; app owners must reject empty owner scope rather than expose it globally. Existing node updated_at initializes from last_active only during migration.
+- Shared governance signatures require Principal, project filtering, CommandMeta idempotency/version. W4/W5 own implementations and must validate human authority, persisted ownership/shares and source references; W2 owns conflict/engine. W4 deletes duplicate KnowledgeStatus enums and references W0 definitions.
+- Exported FocusExplanation includes original StoredEvent, strength/weight, elapsed days/decay factor, separate attention/confidence contribution, confidence-only flag and project/agent/topic relationships.
+- Removed old fixture claims: correlation_id is not native session; aggregate/material/external ID is not project scope; source human/read are not core enum values; stop_confirmed is not task success; publication time is not selection time. Remaining watcher fixture tests only receipt unknown preservation; production source mapping and live replay remain W1 responsibility.
+- sqlite-vec CUT follows original spike and pure-Go stack; no embedding/vector implementation added.
+
+Focused verification: `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine ./internal/adapters/sqlite ./internal/adapters/httpapi` PASS (actual migration upgrade/restart/constraints; business app integration not yet assembled). Broad check/build pending in this stage. HTTP three gates remain 501 unsupported until actual owner implementations are assembled; W7 endpoints/CLI/M6 are subsequent work, not completed by M0.

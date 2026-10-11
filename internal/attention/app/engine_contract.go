@@ -28,51 +28,69 @@ type Engine interface {
 // FocusExplanation is the evidence chain behind one topic's attention
 // (§7 explain_focus). An unexplainable attention output does not exist.
 type FocusExplanation struct {
-	Topic     string              `json:"topic"`
-	Attention float64             `json:"attention"`
-	Momentum  float64             `json:"momentum"`
-	Evidence  []ExplanationSignal `json:"evidence"`
-	Related   []RelatedNode       `json:"related"`
+	Topic           string              `json:"topic"`
+	Attention       float64             `json:"attention"`
+	Momentum        float64             `json:"momentum"`
+	Evidence        []ExplanationSignal `json:"evidence"`
+	Related         []RelatedNode       `json:"related"`
+	RelatedProjects []string            `json:"related_projects"`
+	RelatedAgents   []string            `json:"related_agents"`
+	UpdatedAt       int64               `json:"updated_at"`
 }
 
 // ExplanationSignal is one weighted signal in a focus explanation, timestamped
 // so the chain is auditable end to end.
 type ExplanationSignal struct {
-	EventID string             `json:"event_id"`
-	Kind    string             `json:"kind"`
-	Class   domain.SignalClass `json:"class"`
-	Weight  float64            `json:"weight"`
-	TS      int64              `json:"ts"`
+	Original               StoredEvent        `json:"original"`
+	EventID                string             `json:"event_id"`
+	Kind                   string             `json:"kind"`
+	Class                  domain.SignalClass `json:"class"`
+	Weight                 float64            `json:"weight"`
+	TS                     int64              `json:"ts"`
+	Strength               float64            `json:"strength"`
+	ElapsedDays            float64            `json:"elapsed_days"`
+	Decay                  float64            `json:"decay"`
+	DecayFactor            float64            `json:"decay_factor"`
+	AttentionContribution  float64            `json:"attention_contribution"`
+	ConfidenceContribution float64            `json:"confidence_contribution"`
+	ConfidenceOnly         bool               `json:"confidence_only"`
 }
 
 // RelatedNode is an adjacent topic and its association strength.
 type RelatedNode struct {
 	Topic    string  `json:"topic"`
 	Strength float64 `json:"strength"`
+	TS       int64   `json:"ts"`
 }
 
 // ConfirmKnowledgeCommand confirms a KnowledgeEntry (inbox → confirmed) so a
 // Project Workspace may reference it (§4.4). Only the human gate may do this.
 type ConfirmKnowledgeCommand struct {
 	CommandMeta
+	OwnerProject string `json:"owner_project"`
 }
 
 // KnowledgeEntryResult returns the confirmed entry.
 type KnowledgeEntryResult struct {
 	SchemaVersion int                   `json:"schema_version"`
 	Entry         domain.KnowledgeEntry `json:"entry"`
+	OwnerProject  string                `json:"owner_project"`
+	Version       int                   `json:"version"`
 }
 
 // ApproveExperienceCommand approves an Experience (quarantine → approved) so it
 // becomes retrievable (§4.3). Only the human gate may do this.
 type ApproveExperienceCommand struct {
 	CommandMeta
+	OwnerProject string `json:"owner_project"`
 }
 
 // ExperienceResult returns the approved experience.
 type ExperienceResult struct {
 	SchemaVersion int               `json:"schema_version"`
 	Experience    domain.Experience `json:"experience"`
+	OwnerProject  string            `json:"owner_project"`
+	Version       int               `json:"version"`
 }
 
 // Conflict decision values (§5.5): keep the left/right evidence, merge, or dismiss.
@@ -94,6 +112,40 @@ type AdjudicateConflictCommand struct {
 type ConflictResult struct {
 	SchemaVersion int             `json:"schema_version"`
 	Conflict      domain.Conflict `json:"conflict"`
+	Version       int             `json:"version"`
+}
+
+type ShareMemoryCommand struct {
+	CommandMeta
+	OwnerProject  string `json:"owner_project"`
+	TargetProject string `json:"target_project"`
+}
+
+type DemoteMemoryCommand struct {
+	CommandMeta
+	OwnerProject string `json:"owner_project"`
+}
+
+type ReferenceKnowledgeCommand struct {
+	CommandMeta
+	ProjectID string `json:"project_id"`
+}
+
+// Scope is checked against persisted owner/share rows and trusted Principal.
+type KnowledgeGovernanceService interface {
+	KnowledgeGateService
+	ShareKnowledge(context.Context, Principal, string, ShareMemoryCommand) (KnowledgeEntryResult, error)
+	DemoteKnowledge(context.Context, Principal, string, DemoteMemoryCommand) (KnowledgeEntryResult, error)
+	GetKnowledge(context.Context, Principal, string, string) (StoredKnowledge, error)
+	ReferenceKnowledge(context.Context, Principal, string, ReferenceKnowledgeCommand) (KnowledgeEntryResult, error)
+}
+
+type ExperienceGovernanceService interface {
+	ExperienceGateService
+	ShareExperience(context.Context, Principal, string, ShareMemoryCommand) (ExperienceResult, error)
+	DemoteExperience(context.Context, Principal, string, DemoteMemoryCommand) (ExperienceResult, error)
+	GetExperience(context.Context, Principal, string, string) (StoredExperience, error)
+	GetExperiences(context.Context, Principal, string, string) ([]StoredExperience, error)
 }
 
 // KnowledgeGateService is the human gate for knowledge confirmation.

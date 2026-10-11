@@ -55,8 +55,8 @@ func TestMigration014BumpsAttentionVersion(t *testing.T) {
 	if err := db.Conn().QueryRowContext(ctx, "SELECT version FROM foundation_schema WHERE context='attention'").Scan(&version); err != nil {
 		t.Fatalf("attention schema version: %v", err)
 	}
-	if version != 7 {
-		t.Errorf("attention schema version = %d, want 7", version)
+	if version != 8 {
+		t.Errorf("attention schema version = %d, want 8", version)
 	}
 }
 
