@@ -4,6 +4,8 @@
 
 ### 当前裁决：v2.1（2026-10-12）
 
+04:33 W0 SOURCE `6e7de7e340606f6f13fad79f00a814b455daed72` / REPORT `b728f23fcbd955b2b2514b62a60676da22b94db2`已push并结算。worker原100真实raw审计1101字符串/2100生产MCP响应、零泄漏；仅real_raw_contract_local，root集成后独立复验尚未执行。root旧M5回归首RED：两个delivery测试失败，原始日志evidence/root-v21/m5-first-red.log保留。追加原W0三份M5 fixture写域，修正raw/origin_key/event包装旧期待，保留真实持久化/提交未知/重启/权重证据；不改生产或schema。V0归一化1971/6016=32.76%仍RED，V1不启动。
+
 事实源：[v2.1补丁](tasks/M6-validation-v2.1.md)，优先于下文v2.0/EX-01历史记录。schema零改动、零豁免，原store raw列不变；不实施019/raw侧表。exposure序列化前仅投影{event_id,kind,topic,tokens,scope,ts}；审计raw_unique非derived字符串值长度≥8，含五工具/explain_focus全部成功及错误路径。
 
 旧100行eligible≥90%指标废止，属于规格修正；原0/100和raw审计5 FAIL/4 PASS属于真实首RED，原件保留，不改成成功。新V0：两客户端全量认知工具事件+已捕获1893 commits归一化kind/topic完整率≥95%，随机200非认知行误标0，raw_unique泄漏0。先盘点真实N，V1全N入库，N≥5000达数量目标；不足如实报告，禁止注水。窗口固定[2026-09-12T00:00:00+08:00,2026-10-12T00:00:00+08:00)。
@@ -13,6 +15,24 @@
 v0.1无自动发现：主题来源仅固定种子+git派生+SeedTopic手工播种。unassigned留存计数并进入Sleep，不出生；tagged分裂继续禁用到v0.2。已合EX-01输入/pending/禁生接缝沿用，正向出生/provider不再是验收或阻塞。EXPERIMENT为未锁SHA草案，已按规格修正同步，无实验失效。其余引擎/数学/权重/去噪/fluid/crystallized/merge冻结不变。
 
 本轮沿原W1/W0固定Codex --yolo写域：W1全量盘点/工具接入/无标计数/参数绑定；W0仅MCP投影与raw_unique审计。原store/schema写授权撤销。root只文档决策/独立验收/最终Git；待两轨完成交同一集成owner普通合，V0三指标过后才正式V1。当前新指标NOT_RUN，无新阶段源码/测试数或SHA可登记。
+
+02:04 文档裁决commit `ce2373267f59de75b26bf0f2327867dcf83a7a15`已push。原两Codex --yolo终端均观察到turn_started：W1 `task_5919d711bc0c/ctx_ec348bef556e`；W0 `task_20bf728215ee/ctx_e3124d8cce8c`。W1预声明分母：Claude assistant每tool_use block、Codex response_item每function_call/custom_tool_call，按source+observed session+native tool/call ID去重，无ID才用原文件/行/block；所有unknown/wrapper保留于N，再加冻结1893 git。非工具行独立结构筛选、Random seed20261012抽200，不按mapper成功倒选。
+
+实码差异已集中询问，其他独立工作继续：Signal.Strength是非负s，Weight是有符号w，引擎s×w；建议接入有效strength=w、核心s=1避免重复乘权重，待用户确认字段绑定。SeedTopic需initial_confidence但v2.1未指定（旧M6验证.5）；KnowledgeQuery.LambdaR单位秒⁻¹，补丁.05未指明时间单位；RetrieveKnowledge的human引用boost只有累加，无cap/24h回退。已问精确播种值/单位及boost缺口是否冻结记录留v0.2，不改引擎、不默定。上述是现有实现差异，不重问已裁决常量或自动出生。
+
+02:06 W0报告并收窄实际wire接缝：ExplainFocus evidence.original投影六字段，外层attention/信号权重/related指标保留；report/veto删除嵌有raw session的origin_key，保留event_id/receipt_ids/提交与pending状态，恢复提示改为固定event_id对账、不以新origin重提。veto task-only不回显原task，derived topic仍可返回。get_experiences保留既有人类批准的独立结构化derived能力，原始事件载荷和无关会话/请求/actor元数据不得穿出。追加W0旧fixture唯一写域cmd/mcp/main_test.go，原:113要求返回RawBytes与新裁决冲突，先记录原RED，再改投影与零泄漏断言；不改CLI生产/app/contracts/schema。
+
+02:07 全量结构盘点完成，root独立读安全inventory/manifest核对N=6016：Claude tool_use 369、Codex function_call451+custom_tool_call3303=3754、原冻结真实git1893（Morph887/Astro1006）。零工具ID重复、session/scope缺失0、观察冲突0。认知全量N≥5000数量线已达，不等于V0归一化或V1入库完成。非工具人口29716，固定随机seed20261012抽200（Claude14/Codex186），独立于mapper与文本。产物本地v21-w1；新完整率/误标/raw_unique测试尚NOT_RUN，原100与旧RED不改。
+
+02:08 新完整率首次RED：kind/topic非空1971/6016=32.76%（git1893/edit74/search4），unknown4045、unassigned3497；生产MapAssociatedNativeRecord路径，normalizable及signal eligible以显式probe s=1为1971，不冒充正式参数绑定。独立200非工具误标0、association拒绝0。原件v21-w1/stages-first.json，root已读核对。继续修复可确定的Codex包装工具同构映射，保留N6016与unknown；不因首次RED缩小分母、泛化所有exec为认知或注水。新raw_unique尚NOT_RUN，V0未过，V1未运行。
+
+02:19 W1 bounded实现已settled/succeeded并push，SOURCE `cadd33af594eee8f7d246bb9ba2b292241dfdca2`、REPORT `3020bfd7a47e1b83f765ab3c1ad0437841746af6`，root核对祖先/远程报告SHA。owner定向Go54 PASS/3 Windows条件SKIP、Python8 PASS，生成check/diff PASS；此结果不等于V0验收。原终端释放后external retained idle，不删树。生产direct/file/full工具块共用canonical映射，增加确定性literal wrapper识别、Claude多块入口，未知复杂/非认知语义保留。git primary沿仓来源；附加固定关键词metadata真实Agent Swarm1/MCP39，未额外复制commit或给多topic写信号，关联消费仍未持久化，不冒称能力已兑现。
+
+最终同6016：mapped2014（commit1893/edit115/search6）、kind/topic1971=32.76%，unknown4002；3497 unassigned全部Codex且固定种子scope范围外，新增43认知wrapper全部无标。2519观察assigned只给出主题覆盖上限41.87%，不能作完整率分子。unknown原因：直接工具612/Bash非单搜索130/wrapper3260（嵌套未支持或非认知2520、控制343、callback176、literal166、非await48、动态参数7）。200负样本误标0。已问用户获准手工topic→scope/关键词，或明确认知范围修订；裁决前保持人口和无标，不自动发现/强塞。原100新复验mapped4/unknown96/候选3/正式eligible0，新Codex edit无标，原100与首RED不覆写。
+
+W0补充首RED：native-style Claude source经core RelatedAgents穿出explain_focus，已仅在exposure删除related_agents，core审计/主题/权重保留；全量每新增report/veto raw行均审计。旧fixture失误与真实来源泄漏首次日志分别保留。原100 raw_unique生产响应审计当前运行，明确real_raw_contract_local：原native receipt字节保留、隔离合成认知receipt仅使真实raw可走五工具/错误路径，不改真实归一化计数或冒充task_live/V1。待定参数和V0完整率仍阻止正式V1。
+
+02:21 原100首次真实载荷审计RED：100实际原载荷、1101 raw_unique字符串、2100生产MCP.Serve响应（五工具成功/backend/decode，report/veto capture/dynamics/unknown，共21组合）。唯一event001 explain success碰撞：raw_unique值与固定字段名evidence[].original同名，长度8；没有原载荷正文或字节序列化，严格字符串断言仍判RED，原real100-first.log与分类诊断保留。root选择修复实现而不放宽审计：MCP exposure DTO包装改evidence[].event，内部app.Original/SQL/OpenAPI不改，六字段和外层证据权重不变，相关测试同步。字段键与值仍全部逐字符串审计，不排除协议键、不改原100。owner重测后才登记raw_unique验收，当前仍未计PASS。
 
 任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
 
