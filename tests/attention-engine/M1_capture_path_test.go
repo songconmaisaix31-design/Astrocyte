@@ -49,6 +49,10 @@ func TestM1CommittedFailureCaptureUsesOriginalReceipt(t *testing.T) {
 	if err == nil || len(result) != 1 {
 		t.Fatal("post-commit capture error obscured committed receipt")
 	}
+	var pending *app.EventCapturePendingError
+	if !errors.As(err, &pending) || len(pending.ReceiptIDs) != 1 || pending.ReceiptIDs[0] != result[0].ID {
+		t.Fatal("capture-pending outcome lost typed receipt identity")
+	}
 	if _, err = repo.GetEvent(ctx, result[0].ID); err != nil {
 		t.Fatal("post-commit failure rolled back original evidence")
 	}

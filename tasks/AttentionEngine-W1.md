@@ -39,6 +39,25 @@ M1 项目验收 4 PASS / 1 SKIP（真实元数据 opt-in）；source 独立检�
 后续两客户端格式 fixture→实际 EventService/store 的有界/原字节/ID/权重对账 PASS；这是 contract_local，不是真实来源。
 后续提交后 W5 实际 repo 捕获、同 ID 重放候选不重复、capture 错误保留原回执 PASS；这是显式失败 fixture，不是原生执行失败。
 
+## 作品源与提交后错误接线阶段
+
+按 root 授权普通合入精确 P2 `5d356370c4157e74d96388afd098d5fea14dc799` 作为编译依赖，没有修改 W7/W0 写域。
+`events.NewWorksEventSink(eventService,clock)` 实现既有 `workspaceapp.WorksEventSink`；
+原 WorkEvent envelope 与 Payload 原字节入 RawBytes，SourceKind/Source/Scope/At 保留；TS=At.UnixMilli。
+源 key 为 work_id + kind + 原 at + 已观测 revision，不创建新计数/任务语义。
+Works 原词表尚未映射为核心行为，全部 pending；尤其未知 topic 的 human metadata 和 machine sync/verify 没有 Signal。
+已向 W7 请求确认稳定源 identity/time/revision 语义；W0 负责 ctor 组装。
+
+`app.EventCapturePendingError` 携带 ReceiptIDs/Cause/Unwrap：写入已经提交，捕获还没完成。
+Record 保留 rows+error，调用者不能丢弃 ID 或返回无原写入的 Accepted:false；已交接 W0/root。
+向旧 W6 Dispatch 的消息被拒（已 completed），没有假称送达；root 已收到需 fresh Dispatch 接续的纠正。
+
+`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run 'TestM1Works|TestM1CommittedFailure' -v`：
+2 PASS / 1 FAIL。提交后捕获 typed IDs 和 Works 正常 Service→新 store→冷重开 PASS。
+首 RED `TestM1WorksSavedButSinkFailureIsExplicit`：关闭事件库、保留作品库开放，SetWorkGroup 保存 metadata 后隐去 sink 错误返回成功。
+原因在 W7 既有 saveMetadata/RefreshWorks 忽略 emit 错误；已经发 owner Handoff，不跨域修复、不重放未知动作。
+首 RED 保留，等待 W7 精确修复 SHA；不能把正常路径通过当全部来源验收。
+
 ## 当前有效映射边界
 
 - 每条源记录保留原载荷；映射未知的记录留 adapter pending，不能创建 core `unknown` kind 或流入 Dynamics。
