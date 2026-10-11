@@ -133,4 +133,16 @@ UPDATE attention_engine_nodes SET updated_at=200 WHERE id='node';`)
 	if err = db.Conn().QueryRowContext(ctx, `SELECT project_id,knowledge_version,crystallized_version FROM attention_engine_knowledge_references WHERE entry_id='k' AND request_id='reference-1'`).Scan(&project, &knowledgeVersion, &crystallizedVersion); err != nil || project != "project-b" || knowledgeVersion != 2 || crystallizedVersion != 2 {
 		t.Fatalf("reference restart: %s %d %d %v", project, knowledgeVersion, crystallizedVersion, err)
 	}
+	if _, err = db.Conn().ExecContext(ctx, "PRAGMA query_only=ON"); err != nil {
+		t.Fatal(err)
+	}
+	err = sqlite.NewEngineRepository(db).WithReadTx(ctx, func(tx sqlite.EngineTx) error {
+		if _, err := tx.Exec("DELETE FROM attention_engine_nodes"); err == nil {
+			t.Fatal("read transaction accepted mutation")
+		}
+		return tx.QueryRow(`SELECT last_active FROM attention_engine_nodes WHERE id='node'`).Scan(&active)
+	})
+	if err != nil || active != 42 {
+		t.Fatalf("query_only read snapshot: %d %v", active, err)
+	}
 }
