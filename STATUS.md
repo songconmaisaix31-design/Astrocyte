@@ -1,5 +1,13 @@
 # Astrocyte 当前状态
 
+## 验证期冻结令（2026-10-12，V0–V4 全程生效）
+
+任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
+
+授权更新：本轮可读取 `~/.claude/projects/`（含subagents）、`~/.codex/sessions/`新旧布局及Morphogenesis/Astrocyte git log的最近30天真实载荷，仅本地raw审计；此前metadata范围未答不再阻塞这个明确范围。旧首RED保留，不因此改写旧任务结果。工程参数和知识策略未由v2指定，不能暗定默认或调参追求历史吻合。诊断先取两客户端各50条、按过滤层记数，不预选成功记录。
+
+当前：基线干净、两原生目录存在；100条诊断启动前，V0–V4均NOT_RUN。偏差：主栈Go/React，映射文件指定Python；现有前端未安装ECharts；项目只有根STATUS，没有docs/STATUS。阶段SHA/时间/测试数记录于根STATUS，docs/STATUS作为同一入口链接，避免双份漂移。现有Sleep跳过无topic事件、允许从带topic事件出生；与“新主题只能从unassigned”及引擎冻结存在实现冲突，先诊断并报告，不偷偷改引擎。schema豁免当前无。
+
 ## 本轮最终双平台 CI 通过（2026-10-12）
 
 交付分支 `attention-engine/v1-20261011`。源码和测试验收提交 `100f00cb6945c96a7f3bd3f100f7ff65efc61197` 的 [CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) 已 completed/success：Ubuntu24.04 与 Windows2025 的完整 `pnpm check`、`pnpm build`、`pnpm test:e2e` 均 PASS；两平台默认浏览器各226 PASS / 30 SKIP（2.7m / 5.2m），Linux `go test -mod=readonly -race ./...` PASS，Windows race 按工作流条件 SKIP。Windows 先前路径及两视口首RED保留，后续绿色不改写历史。完整日志与精确SHA见基线记录。
