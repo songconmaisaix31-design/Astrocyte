@@ -1,6 +1,28 @@
 # Attention Engine 最终集成交接
 
-## 当前交接：Windows 路径限定返修集成
+## 当前交接：W1 native-format fixture 路径返修集成
+
+Task `task_2a875959ca15` / Dispatch `ctx_bd2dcbcb9f37`；沿原唯一 `codex --yolo` 集成 Agent、工作树和 `songconmaisaix31-design/attention-engine-final-integration` 分支。普通 `git merge --no-ff` 依次合 root 文档基线 `60f8a27b85279d954551a1cf60a54d4c4c57468a` 与 W1 REPORT `9ef5f6667ce6067d39a3012435e8b35526e19568`，均无冲突；零业务或薄胶水改动，唯一自主写入为本报告。
+
+集成 SOURCE `5dfa4cb0cda4467f09f77c7c3b62304a1c938caa` 已独立 commit+push，文档 REPORT 随后独立 commit+push，准确 SHA 随 worker_done 交 root。W1 SOURCE `8de573ac5e1dff4ad703fe7fded7ec70c111130a`、上述 W1 REPORT 和 root 基线均为普通祖先，逐项 `git merge-base --is-ancestor` exit0。相对 root 基线差异仅 `internal/adapters/events/**` 与 `tasks/AttentionEngine-W1.md`；未改其他 owner 文件，没有 force/squash/cherry-pick。
+
+| 本任务实际命令（`GOFLAGS=-p=1 GOMAXPROCS=2`） | 结果 |
+|---|---|
+| `go test -count=1 -v ./internal/adapters/events` | PASS / exit0，0.632s；14 个真实 8.3/case 别名子例、7 个真实 owned junction 拒绝子例及 outside-root/错项目两子例均实际执行；普通 symlink 的 root/ancestor/file 三子例 NOT_RUN / SKIP |
+| `go test -count=1 -v ./tests/attention-engine -run '^TestM1'` | 9 顶层 PASS / 1 metadata opt-in SKIP，exit0，1.499s；包含 CI 首错原 fixture accounting、S1 真实应用输出路径、固定权重、原字节与持久化重启/幂等检查 |
+| `GOOS=linux GOARCH=amd64 go test -c -o <owned-temp>/events-linux.test ./internal/adapters/events` | 编译 PASS / exit0，未执行 Linux 二进制 |
+| `GOOS=linux GOARCH=amd64 go test -c -o <owned-temp>/attention-engine-linux.test ./tests/attention-engine` | 编译 PASS / exit0，未执行 Linux 二进制或 M6 |
+| `git diff --check`、精确祖先与变更路径检查 | PASS / exit0 |
+
+测试保留原 scope 拼写、原始 raw/pending/unknowns、1 MiB/128 条限额；14 个短名案例来自测试自有临时文件系统的实际 GetShortPathName，不改 TEMP 或读取私人数据。普通 symlink 缺 Windows privilege，父测试 PASS 不代表三个 SKIP 子例已执行；真实 junction root/file/ancestor/短名/header 拒绝已执行。`ASTROCYTE_M1_METADATA_DB` 与 `ASTROCYTE_M1_PROJECT_ROOT` 未配置，没有重跑旧 0-eligible cache 或读取个人库。
+
+本任务原件目录 `C:/Users/DW/AppData/Local/Temp/astrocyte-attention-M1-path-integration-task_2a875959ca15`，保留 `events.log`、`M1-fixture.log`、Windows 测试退出码、两个 Linux 编译日志/退出码/二进制、`source-changed-paths.txt` 与 `diff-check.log`。Linux 编译无 stdout/stderr，两份日志为空且退出码单独为 0。
+
+原 CI `38152009091` 的 root `ebe9a758b05d73363cc8630c187208c41253321d` Ubuntu 完整 check/race/build/E2E PASS 属协调者已核实的旧树结果；Windows 在 M1 fixture count=0 / `replay file uses symbolic links` 的首错日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-ci-38152009091-windows-first.log` 保持。此前 agents/scanner 路径修复已通过该 Windows job，本次仅消费 W1 原 owner 的第三组返修；W1 12 别名首 RED `astrocyte-w1-shortpath-first-red.log` 与另两组路径修复首错各沿原 owner 报告保存，不覆盖为 GREEN。
+
+原真实 M1 `task_13ac51983837` failed/两客户端回放 NOT_DONE/metadata 范围待授权保持；本次 fixture 返修 succeeded 不表示真实 M1 通过。工程默认与知识策略未答不代选；无私人源、paid/native/media、全量 check/build、M6、UI 或 Works 真实写入。root 下一步普通合本 REPORT，在新树独立完成最终 check/build 并核实自动 CI；本集成 Agent 未提前声明新树完整验收或 Windows CI 通过。
+
+## 历史交接：agents/worksscan Windows 路径限定返修集成
 
 Task `task_51df762ea493` / Dispatch `ctx_7d52252e725c`；沿原 `codex --yolo`、隔离工作树和 `songconmaisaix31-design/attention-engine-final-integration` 分支。此次只消费两位 owner 已发布的路径返修并运行指定验证，无领域或薄胶水修改；本文件为唯一自主写入。
 
