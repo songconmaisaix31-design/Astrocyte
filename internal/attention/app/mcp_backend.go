@@ -1,0 +1,78 @@
+package app
+
+import (
+	"context"
+	"encoding/json"
+)
+
+// MCPBackend connects the five cognitive tools to application use cases.
+type MCPBackend interface {
+	GetAttentionState(context.Context) (GetAttentionStateResult, error)
+	ExplainFocus(context.Context, ExplainFocusInput) (ExplainFocusResult, error)
+	GetExperiences(context.Context, GetExperiencesInput) (GetExperiencesResult, error)
+	ReportEvent(context.Context, ReportEventInput) (ReportEventResult, error)
+	Veto(context.Context, VetoInput) (VetoResult, error)
+}
+
+// FocusItem is one ranked entry of the current attention state.
+type FocusItem struct {
+	Topic     string  `json:"topic"`
+	Attention float64 `json:"attention"`
+	Momentum  float64 `json:"momentum"`
+}
+
+type GetAttentionStateResult struct {
+	Topics []FocusItem `json:"topics"`
+}
+
+type ExplainFocusInput struct {
+	Topic string `json:"topic"`
+}
+
+type EvidenceItem = ExplanationSignal
+type RelatedTopic = RelatedNode
+type ExplainFocusResult = FocusExplanation
+
+type GetExperiencesInput struct {
+	Pattern string `json:"pattern"`
+	Scope   string `json:"scope,omitempty"`
+}
+
+type ExperienceItem = StoredExperience
+
+type GetExperiencesResult struct {
+	Experiences []ExperienceItem `json:"experiences"`
+}
+
+// ReportEventInput mirrors the unified Event contract (task book §4.1) as the
+// MCP wire shape for external agents reporting an event.
+type ReportEventInput struct {
+	Source          string          `json:"source"`
+	Session         string          `json:"session"`
+	TS              int64           `json:"ts"`
+	Kind            string          `json:"kind"`
+	Tokens          *int            `json:"tokens,omitempty"`
+	Scope           string          `json:"scope"`
+	Topic           string          `json:"topic"`
+	Raw             json.RawMessage `json:"raw,omitempty"`
+	OriginalPayload json.RawMessage `json:"-"`
+}
+
+type ReportEventResult struct {
+	Accepted bool   `json:"accepted"`
+	EventID  string `json:"event_id"`
+}
+
+// VetoInput carries a user veto of a topic or a task.
+type VetoInput struct {
+	Topic  string `json:"topic,omitempty"`
+	Task   string `json:"task,omitempty"`
+	Reason string `json:"reason,omitempty"`
+}
+
+type VetoResult struct {
+	Acknowledged bool   `json:"acknowledged"`
+	Target       string `json:"target"`
+	EventID      string `json:"event_id"`
+	Pending      bool   `json:"pending"`
+}

@@ -3,6 +3,12 @@
 事实源：[tabbit-code (2).md](../../../Downloads/tabbit-code%20(2).md)（Astrocyte Attention Engine 开发任务书 v1.1 · 认知内核）。
 基线：`dab8fea`，集成分支 `attention-engine/v1-20261011`；s1 分支族只读不改。本轮目标 M0–M6（三条链全部），按互斥写域解耦、无并发上限并行。
 
+## 主控接管（2026-10-11 21:41）
+
+用户要求 Codex 接替原 OpenCode 主控。原主控终端 `term_462ee860-933e-43d7-94cb-491d01617fcf` 已中断；原 Run `run_19a0b1268e5a` 绑定到 Codex `term_1adf40a6-ef79-4efa-b602-7b55173624e6`（consumer_generation=2）。八轨原 Task/Dispatch/工作树保留。八个 Worker 均卡在读取用户指定任务书的权限弹窗，单次读取已放行；此前 ready/input_accepted 不代表开发已开始。
+
+实际 Worker 分支使用 Orca 自动名称 `songconmaisaix31-design/attention-engine-w0-core`、`-w1-events`、`-w2-engine`、`-w3-sleep`、`-w4-knowledge`、`-w5-experience`、`-w6-mcp`、`-w7-works`。下表 `attention-engine/wN-*` 为原计划名称，消费提交时以实际分支和 owner 发布的精确 SHA 为准，不重建分支。
+
 ## 北极星（一切裁决）
 核心算法是持续演化的个人认知模型：观察行为→注意力；注意力→组织知识；经验→提升 Agent 能力。每行代码须能回答"这行代码让 'Astrocyte 如何知道什么值得关注' 更可回答了吗"。
 
