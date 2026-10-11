@@ -33,6 +33,11 @@ func toolKind(name string, raw json.RawMessage) string {
 			continue
 		}
 		switch rule.selector {
+		case "wrapper":
+			var code string
+			if json.Unmarshal(raw, &code) == nil {
+				return wrapperKind(code)
+			}
 		case "tool":
 			return rule.kind
 		case "shell_search":
