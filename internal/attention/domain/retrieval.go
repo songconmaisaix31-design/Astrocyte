@@ -6,11 +6,6 @@ import (
 	"slices"
 )
 
-// DefaultRetrievalLambdaR is the initial per-second recency decay for retrieval
-// ranking (§5.6). It is independent of the state-update decay λ and is
-// calibrated per milestone like the signal weight table.
-const DefaultRetrievalLambdaR = 1.0 / (7 * 24 * 3600)
-
 // RetrievalCandidate is the minimal input the retrieval ranker reads. It is
 // deliberately narrower than KnowledgeEntry: retrieval consumes relevance,
 // attention, access boost and age, and never touches fluid/crystallized content

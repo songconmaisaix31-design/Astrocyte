@@ -5,8 +5,12 @@ import (
 	"testing"
 )
 
+// testLambdaR is a fixed local value; λr is configurable and has no frozen
+// production default.
+const testLambdaR = 1.0 / (7 * 24 * 3600)
+
 func TestRetrievalScoreMatchesFormula(t *testing.T) {
-	lambdaR := DefaultRetrievalLambdaR
+	lambdaR := testLambdaR
 	cases := []struct {
 		name string
 		c    RetrievalCandidate
@@ -47,8 +51,8 @@ func TestRankRetrievalIsRecomputableAndDeterministic(t *testing.T) {
 		{ID: "c", Relevance: 0.9, Attention: 0.5, AccessBoost: 1, AgeSeconds: 10000},
 		{ID: "d", Relevance: 0.9, Attention: 0.5, AccessBoost: 1, AgeSeconds: 100},
 	}
-	first := RankRetrieval(candidates, DefaultRetrievalLambdaR)
-	second := RankRetrieval(candidates, DefaultRetrievalLambdaR)
+	first := RankRetrieval(candidates, testLambdaR)
+	second := RankRetrieval(candidates, testLambdaR)
 	if len(first) != len(second) {
 		t.Fatal("length mismatch")
 	}
@@ -74,7 +78,7 @@ func TestRetrievalDoesNotMutateCandidates(t *testing.T) {
 		{ID: "b", Relevance: 0.7, Attention: 0.5, AccessBoost: 3, AgeSeconds: 100},
 	}
 	before := append([]RetrievalCandidate(nil), candidates...)
-	RankRetrieval(candidates, DefaultRetrievalLambdaR)
+	RankRetrieval(candidates, testLambdaR)
 	for i := range candidates {
 		if candidates[i] != before[i] {
 			t.Fatalf("candidate %d mutated: %+v", i, candidates[i])
