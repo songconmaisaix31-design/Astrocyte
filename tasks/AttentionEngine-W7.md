@@ -14,6 +14,8 @@
 
 阶段 SOURCE `bbb1268` 已 push；独立 fixture Playwright `e2e/works-album.spec.ts --workers=1` 使用隔离端口 15247/18847，14 PASS / 24.9s（两项目重复包含 1920/1280/390 与键盘），不计为真实 API 验收。共享依赖依主控 follow-up 仍 pending；不消费 partial b6a5794 作为完整 M0。未接线的 `WorksCommandForms.tsx` 仅准备有界登记根选择与人工元数据/JSON 表单，无传输契约猜测。新库缓存明确 status=unknown、observed_at=null。
 
+后续扫描纠正：无标记平台的扫描更新同根已有投递作品文件事实，保留明确投递平台、名称、来源和人工元数据，避免重复未知卡；根读取失败使缓存文件事实未核实并显示原因。定向 Works app 验证 PASS。上述改动不改变已发布 Go 公共 API；ca0c255 可供 W0 接线编译，最终精确源另行报告。
+
 ## 1. 交付内容（五能力 + 事件源）
 
 | 能力 | 落点 |
