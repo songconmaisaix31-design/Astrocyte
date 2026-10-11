@@ -56,7 +56,11 @@ Record 保留 rows+error，调用者不能丢弃 ID 或返回无原写入的 Acc
 2 PASS / 1 FAIL。提交后捕获 typed IDs 和 Works 正常 Service→新 store→冷重开 PASS。
 首 RED `TestM1WorksSavedButSinkFailureIsExplicit`：关闭事件库、保留作品库开放，SetWorkGroup 保存 metadata 后隐去 sink 错误返回成功。
 原因在 W7 既有 saveMetadata/RefreshWorks 忽略 emit 错误；已经发 owner Handoff，不跨域修复、不重放未知动作。
-首 RED 保留，等待 W7 精确修复 SHA；不能把正常路径通过当全部来源验收。
+首 RED 保留。随后 root/owner 放行并普通合入修复 `b1668480bed5c153e24a946ce1912f50d8ded4e5`，没有改 W7 文件。
+同一 targeted 命令后续 3 PASS：capture typed IDs、Works happy、Works sink-failure 传播；绿色复验不覆盖首次 RED。
+W7 确认 OriginKey 中原 At/revision 的真实语义，重复已接受请求不重新 emit；来源不推断 topic。
+Works sink + typed error 发布在精确 `d618b0bfe6d70b49fad2d43b1cf1b497ffc6a1c4`，已通过 orchestration 交接 W0/W7。
+root 已启用同一 W6 终端的新 Dispatch `ctx_7f6b4a0be462`，typed-error 精确源码和签名已送达；未启动新 Agent。
 
 ## 当前有效映射边界
 
