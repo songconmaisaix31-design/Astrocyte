@@ -71,6 +71,8 @@ production migration017 已创建 works_requests，W7 测试随后再 CREATE 同
 此测试基线在 W7 旧 migrations016 下通过；冲突是实际 P2+W7 依赖组合，已交 owner 修复，不改其写域。
 M1 局部 8 PASS / 1 SKIP（真实元数据未重跑）；受影响四包 `go build` PASS。
 不把局部绿或构建绿写成当前五包全绿；等待精确 owner 测试修复 SHA 后定向复验。
+随后普通合入 owner 精确 `a3eab2c6d0df026e056a5a873a0d63bf58282688`：仅调整 W7 接口验收使用实际 production migration，未改领域行为。
+原 receipt fixture 定向 `-count=1` PASS；首 duplicate-DDL RED 保持。后续受影响五包是否全绿另记，不由该定向通过推断。
 
 ## 未决定参数下的 pending-only 入口
 
@@ -80,6 +82,7 @@ root 指定作品源不能为未答参数猜 strength/NaN。
 W0 作品接线可用 `events.NewWorksEventSink(app.NewPendingEventService(sqlite.NewEventRepository(db)),clock)`。
 `TestM1PendingRecorderDoesNotChooseSignalScale` 和以真实 pending-only service 运行的 Works 正常/失败、capture 四项 targeted PASS。
 这条入口保存事实，不选择产品默认，也不把 pending 降为最终验收。
+缓存元数据 source key 包含原 observed_at 区分真实缓存 refresh 与同条 replay；source TS 仍为 header created_at，不把 refresh 当 session activity。
 
 ## 当前有效映射边界
 
