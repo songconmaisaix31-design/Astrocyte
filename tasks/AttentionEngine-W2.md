@@ -7,6 +7,11 @@
 
 ### M2 持久化接续（当前 Dispatch）
 
+- 正式 M0 source `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已由 root 放行并普通合并。本轨采用其 `StoredAttentionNode`/`StoredEvent`/解释包装与 migration 015，不消费 W0 草稿。
+- app/store 第一阶段落码：`NewDynamicsEngine`、`NewDynamicsRepository`、`NewDynamicsTx`，事务内 ApplySignals + read-only AttentionState/AttentionNode/ExplainFocus + pending Conflict/人工裁决。参数 nil 保持未决定并明确返回配置错误。
+- `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run '^TestM2' -count=1` PASS：原纯 golden、真实 app+SQLite 30 天逐点回放（day 10/20 关闭/重开库）、去重/读取不写节点/失败只降 confidence/整批回滚。输入是任务书规定的伪造流，非真实会话。
+- 首次编译 RED：误用不存在的 `newID`，改为复用既有 `crypto/rand.Text` 后编译与上述测试 PASS。生命周期集成仍在开发，尚未 M2 完成。
+
 - 接续基线 `3ed950250172d2efcf73a171e29e149e1a4916ea`，工作树干净；客户端 Codex（用户已应用 `codex --yolo`），不启动并发 Agent。
 - 只读检查 W0 尚未发布的 M0 草稿；未复制或消费草稿类型。等待协调者给出精确可消费 SHA。
 - M0 Handoff：`updated_at` 与 `last_active` 必须独立持久化；解释需原始 Event、强度、有效贡献/失败 confidence 路径和带时间戳的关联。生命周期及持续合并观察可在 W2 节点 JSON 内保存，迁移/共享类型仍由 W0 决定。

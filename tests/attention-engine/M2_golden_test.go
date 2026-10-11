@@ -1,4 +1,4 @@
-package attentionengine_test
+package attention_engine_test
 
 import (
 	_ "embed"
@@ -19,11 +19,11 @@ import (
 var goldenStream []byte
 
 type goldenDoc struct {
-	Lambda float64 `json:"lambda"`
-	Alpha  float64 `json:"alpha"`
-	Floor  float64 `json:"floor"`
+	Lambda  float64 `json:"lambda"`
+	Alpha   float64 `json:"alpha"`
+	Floor   float64 `json:"floor"`
 	Ceiling float64 `json:"ceiling"`
-	DayMs  int64   `json:"day_ms"`
+	DayMs   int64   `json:"day_ms"`
 	Initial struct {
 		Attention  float64 `json:"attention"`
 		Momentum   float64 `json:"momentum"`
