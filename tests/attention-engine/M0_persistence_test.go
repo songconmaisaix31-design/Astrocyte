@@ -72,6 +72,7 @@ INSERT INTO attention_engine_knowledge(id,topic,status,data,owner_project) VALUE
 INSERT INTO attention_engine_knowledge_versions VALUES('k',1,'{"fact":1}',100);
 INSERT INTO attention_engine_knowledge_versions VALUES('k',2,'{"fact":2}',200);
 INSERT INTO attention_engine_knowledge_shares VALUES('k','project-a','project-b','local-user','human',200,'share-1');
+INSERT INTO attention_engine_knowledge_references VALUES('k','project-b',2,2,'local-user','human',200,'reference-1');
 INSERT INTO attention_engine_experiences(id,pattern,verdict,status,data,owner_project,origin_event_id) VALUES('e','p','avoid','quarantine','{}','project-a','legacy');
 INSERT INTO attention_engine_sleep_runs VALUES('sleep','2026-10-11',100,200,'{}');
 INSERT INTO attention_engine_sleep_metrics VALUES('sleep',2,1,100,50,.5,.5);
@@ -85,6 +86,9 @@ UPDATE attention_engine_nodes SET updated_at=200 WHERE id='node';`)
 	reject(`INSERT INTO attention_engine_signals(event_id,topic,class,weight,ts,data) VALUES('legacy','t','implicit_light',.3,42,'{}')`)
 	reject(`UPDATE attention_engine_knowledge_versions SET content='{}' WHERE entry_id='k'`)
 	reject(`DELETE FROM attention_engine_knowledge_versions WHERE entry_id='k'`)
+	reject(`UPDATE attention_engine_knowledge_references SET project_id='project-c' WHERE entry_id='k'`)
+	reject(`DELETE FROM attention_engine_knowledge_references WHERE entry_id='k'`)
+	reject(`INSERT INTO attention_engine_knowledge_references VALUES('k','project-b',2,99,'local-user','human',200,'missing-version')`)
 	reject(`INSERT INTO attention_engine_knowledge_shares VALUES('k','project-a','project-c','agent','agent',200,'share-2')`)
 	reject(`INSERT INTO attention_engine_experiences(id,pattern,verdict,status,data,owner_project,origin_event_id) VALUES('e2','p','avoid','quarantine','{}','project-a','legacy')`)
 	reject(`INSERT INTO attention_engine_sleep_runs VALUES('sleep2','2026-10-11',100,200,'{}')`)
@@ -123,5 +127,10 @@ UPDATE attention_engine_nodes SET updated_at=200 WHERE id='node';`)
 	}
 	if versions != 2 || shares != 1 || metrics != 1 || candidates != 1 || conflicts != 1 {
 		t.Fatalf("restart rows: %d %d %d %d %d", versions, shares, metrics, candidates, conflicts)
+	}
+	var project string
+	var knowledgeVersion, crystallizedVersion int
+	if err = db.Conn().QueryRowContext(ctx, `SELECT project_id,knowledge_version,crystallized_version FROM attention_engine_knowledge_references WHERE entry_id='k' AND request_id='reference-1'`).Scan(&project, &knowledgeVersion, &crystallizedVersion); err != nil || project != "project-b" || knowledgeVersion != 2 || crystallizedVersion != 2 {
+		t.Fatalf("reference restart: %s %d %d %v", project, knowledgeVersion, crystallizedVersion, err)
 	}
 }
