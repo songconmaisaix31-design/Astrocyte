@@ -27,7 +27,7 @@ func TestNativeMetadataIdentifiesStandaloneProjectWithoutReadGrant(t *testing.T)
 	s := &RegisteredProjects{metadataSources: func() []projectMetadataSource { return []projectMetadataSource{{"codex", history, 3}} }}
 	snapshot := domain.ProjectDiscoverySnapshot{Status: "complete", ObservedAt: &stamp, Projects: []domain.RegisteredProject{}}
 	s.observeProjectMetadata(context.Background(), &snapshot)
-	if len(snapshot.Projects) != 1 || snapshot.Projects[0].Root != root || snapshot.Projects[0].Source != "native_project_metadata" || len(snapshot.Projects[0].Contributors) != 1 || snapshot.Projects[0].RepoID != "" {
+	if len(snapshot.Projects) != 1 || rootKey(snapshot.Projects[0].Root) != rootKey(root) || snapshot.Projects[0].Source != "native_project_metadata" || len(snapshot.Projects[0].Contributors) != 1 || snapshot.Projects[0].RepoID != "" {
 		t.Fatalf("metadata root discovery %+v", snapshot)
 	}
 	if _, err := metadataProjectRoot(nonproject); err == nil {
