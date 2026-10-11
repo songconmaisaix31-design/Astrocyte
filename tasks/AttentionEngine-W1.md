@@ -5,6 +5,21 @@
 当前 Task `task_13ac51983837` / Dispatch `ctx_62837e7857f0`；客户端 Codex，沿启动配置执行，没有启动其他 Agent。
 协调者确认运行配置为 Codex / gpt-6.1-sol / YOLO。
 
+## 本 Dispatch 最终交接（2026-10-11 22:46，Asia/Shanghai）
+
+root 在外部权限边界明确要求收束为 `worker_done outcome=failed`，不是成功验收或实现回滚。
+业务 SOURCE `f3460ef785cdea0ecaf443628b82f573d05b9155`；报告之前 HEAD `b51c036fb1033cbeb637a848031459cf33d60869`；本报告提交也会 push。
+已完成：Event→Signal 固定权重、未知观测 pending、原 raw BLOB 与稳定回执 ID、SQLite 原子/冷重开/重复回放、既有 S1 应用真实事件路径、
+提交后 W5 capture + typed committed IDs、W3 同事务读侧、W6 入账/错误 Handoff、pending-only WorksEventSink。
+受影响五包测试及构建 PASS；M1 本地 9 PASS / 1 SKIP，§5.2 11 条权重样本全对。
+所用命令 `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/adapters/events ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./tests/attention-engine`，
+构建 `go build ./internal/adapters/events ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite`；未执行 Node/浏览器/外部模型请求。
+真实选定缓存第一次 RED：两客户端 eligible metadata 均 0；root 另行确认该 exact 项目 contributors 为空、cacheStatus=partial；没有扩大读取或重跑已确认空场。
+真实两客户端工具轨迹回放 NOT_DONE，精确原始元数据范围/样本待用户答复；private message/prompt/file body/credential 读取未执行。
+M1 总体未验收，产品强度仍未决定；已有 map constructor 只接受显式 scale，pending-only ctor 不指定 scale。
+后续由 root 在用户回答后沿原 owner/worktree 新 Dispatch 接续真实样本验收；不从局部绿推断整体 Attention Engine/M1 完成。
+W0 最终应用组装、root 综合验收/合并仍归协调者与原 owner，本轨没有跨域修改。
+
 ## 当前状态（2026-10-11）
 
 M1 NOT_DONE；独立解析阶段已 push `bd33fdaf2810ce07a378b2b4d6e133af89d79c16`。
