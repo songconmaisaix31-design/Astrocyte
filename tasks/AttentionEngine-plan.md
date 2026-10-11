@@ -11,6 +11,8 @@
 
 W2/W5 原 Task 提前以设计交付结束：`8a4db07` / `22fef44` 只算波 A 文档，M2/M5 尚未实现。原终端已复用为 W2 `task_1efa13b6e981` / `ctx_ad864daccaa9`、W5 `task_57f40b160754` / `ctx_3f9743f7e989`，原已结算 Dispatch 不再使用。
 
+W3/W4 原 Task 亦仅交付波 A 核心：`c3e8395` / `ab7d381`。原终端已复用为 W3 `task_e5487ee2214c` / `ctx_91c890736e4a`、W4 `task_da85be3296c1` / `ctx_8ae58c0f5840`。W3 `3f6cc6f` 已修正多主题误自动合并；W2 `acb4561` 已通过纯公式复算；上述均不等于存储、应用层或完整里程碑交付。当前共同依赖 M0 精确提交。
+
 写域补充：所有 `*_contract*.go` 归 W0，W1 event/signal 与 W2 engine 通配符明确排除契约文件。阶段设计交付用 status/merge_ready，业务验收完成后才 worker_done。Go 编译使用进程环境 `GOFLAGS=-p=1 GOMAXPROCS=2`，不修改宿主分页设置。
 
 参数待答：衰减 λ、信号强度、主题密度/分裂及 confidence 冲突阈值的工程初值已一次集中询问，未答时只实现参数化内核，不冻结默认值。α=0.3、A_floor=0.05、θ=0.15、合并关联>0.8、90 天冷归档沿任务书。momentum 不额外改写 A(t) 公式。
