@@ -69,6 +69,14 @@ func (e *DynamicsEngine) AdjudicateConflict(ctx context.Context, p Principal, id
 		if err != nil {
 			return err
 		}
+		key := p.Kind + ":" + p.ID + ":" + cmd.IdempotencyKey
+		if receipt, ok := c.DecisionReceipts[key]; ok {
+			if receipt.Decision != cmd.Decision || receipt.ExpectedVersion != cmd.ExpectedVersion {
+				return serviceError(apierrors.VersionConflict, "Conflict idempotency key binds a different decision", "use_new_idempotency_key")
+			}
+			result = receipt.Result
+			return nil
+		}
 		for _, a := range c.Actions {
 			if a.RequestID == cmd.RequestID {
 				if a.Action != cmd.Decision || a.ActorID != p.ID {
@@ -86,6 +94,11 @@ func (e *DynamicsEngine) AdjudicateConflict(ctx context.Context, p Principal, id
 		}
 		c.Conflict.Status = status
 		c.Version++
+		result = ConflictResult{SchemaVersion: 1, Conflict: c.Conflict, Version: c.Version}
+		if c.DecisionReceipts == nil {
+			c.DecisionReceipts = map[string]DynamicsDecisionReceipt{}
+		}
+		c.DecisionReceipts[key] = DynamicsDecisionReceipt{Decision: cmd.Decision, ExpectedVersion: cmd.ExpectedVersion, Result: result}
 		if err = tx.SaveConflict(c); err != nil {
 			return err
 		}

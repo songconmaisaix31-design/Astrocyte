@@ -22,6 +22,7 @@ type DynamicsOptions struct {
 	ConfidenceDropThreshold *float64
 	DensityThreshold        *float64
 	SplitThreshold          *float64
+	SplitState              func(domain.AttentionNode, int) domain.AttentionNode
 	MergeDurationMS         *int64
 	MergeObservations       *int
 	Clock                   func() time.Time
@@ -233,7 +234,7 @@ func (e *DynamicsEngine) ApplySignalsInTx(tx DynamicsTx, topic string, signals [
 			n.Node.Momentum = domain.UpdateMomentum(n.Node.Momentum, prevA, n.Node.Attention)
 		}
 		n.Node.Confidence = domain.UpdateConfidence(prevC, confidenceDelta)
-		if err = e.confidenceConflict(tx, n, h, prevC, fresh[i:end]); err != nil {
+		if err = e.confidenceConflict(tx, n, prevC, fresh[i:end]); err != nil {
 			return n.Node, err
 		}
 		n.UpdatedAt = fresh[i].TS
@@ -263,7 +264,7 @@ func (e *DynamicsEngine) ApplySignalsInTx(tx DynamicsTx, topic string, signals [
 	return n.Node, nil
 }
 
-func (e *DynamicsEngine) confidenceConflict(tx DynamicsTx, n StoredAttentionNode, h DynamicsHistory, previous float64, signals []domain.Signal) error {
+func (e *DynamicsEngine) confidenceConflict(tx DynamicsTx, n StoredAttentionNode, previous float64, signals []domain.Signal) error {
 	delta := n.Node.Confidence - previous
 	if delta >= 0 {
 		return nil
@@ -275,6 +276,11 @@ func (e *DynamicsEngine) confidenceConflict(tx DynamicsTx, n StoredAttentionNode
 		return nil
 	}
 	right := signals[len(signals)-1]
+	for _, s := range signals {
+		if s.Class == domain.SignalFeedbackFailure {
+			right = s
+		}
+	}
 	left := n.Node.ID
 	for _, r := range n.Node.Evidence {
 		if !slices.ContainsFunc(signals, func(s domain.Signal) bool { return s.EventID == r.EventID }) {
