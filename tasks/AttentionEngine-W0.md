@@ -1,5 +1,28 @@
 # Attention Engine W0 · M0 契约锁定 · 迁移 · 存储基础 · HTTP 关口
 
+## 单 spec Windows E2E 限定返修（2026-10-12，新 Dispatch）
+
+Task `task_e337d98251d3` / Dispatch `ctx_87396a08fb27`；原 Codex --yolo 终端/工作树/分支 `songconmaisaix31-design/attention-engine-w0-core`，无新 Agent。先普通 fast-forward merge root `92a2ded59921608f5b6e718531128c4586dc1aee`，本次 SOURCE `28459de60c1726a6a5119562900d73348309a615` 已 commit+push。唯一修改 `web/e2e/s1-projects.spec.ts` 与本报告，生产 CanonicalRoot、agents、UI、shared helper、契约、其他 spec 均未改。
+
+首 RED：真实 CI38153179867 Windows E2E 224 PASS / 2 FAIL / 30 SKIP，两错都是原 spec 把输入 RUNNER~1 路径当成 API 应返回的长名，原件 `C:/Users/DW/AppData/Local/Temp/astrocyte-ci-38153179867-e2e-first-failed.log` 保持。本机先仅加实际短名输入、保留原断言，1920/1280 两视口均 RED：输入 `ASFC06~1/APPROV~1`、`ASCE2A~1/APPROV~1`，响应分别为实际长路径。首场日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-W0-s1-projects-8dot3-first-red.log`、两个 trace/screenshot/error-context 副本目录 `C:/Users/DW/AppData/Local/Temp/astrocyte-W0-s1-projects-first-red-20261012` 保留，后续 GREEN 不覆盖。
+
+修复使用 Node `fs.promises.realpath` 在 POST 前独立取得 owned fixture 的规范目录；POST body.root 严格等于用户所选字符串原样，登记/保存许可响应、SQLite 实存 JSON root、重启后页面真实 GET root 严格等于独立规范路径，SQLite 原行重启前后完全相同。保留默认拒绝、B 与 C 独立保存、仅批准 README 的一份实际正文、引用为空、模型 CLI disabled、原生启动 disabled、0 native sessions 及双宽度布局截图原断言。
+
+测试内最小 Windows helper 只对该 owned 临时项目执行只读 `cmd /d /v:off /c for %I ... %~sI`，`spawnSync` 隐藏窗口/禁 AutoRun 与延迟展开、拒绝插入 CMD 元字符并设超时；别名再经独立 realpath 核实同目录后才作为 UI 输入。没有修改 TEMP、伪造别名、依赖新增、page.route/mock 或个人记录读取；无可用短名时局部 `NOT_RUN` annotation/log，但整条原功能验收继续用普通目录。本机最终两视口真实别名均已执行，并非 NOT_RUN。
+
+串行环境 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512`：
+
+| 命令 | 最终结果 |
+|---|---|
+| `pnpm --dir web exec playwright test e2e/s1-projects.spec.ts --workers=1` | **2 PASS / 0 FAIL / 0 SKIP，37.8s**；Chromium1920/1280，实际 API/SQLite/重启，日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-W0-s1-projects-8dot3-final.log` |
+| `pnpm --dir web exec tsc --ignoreConfig --noEmit --target ES2023 --module ESNext --moduleResolution Bundler --types node --skipLibCheck --allowJs e2e/s1-projects.spec.ts` | PASS，仅该 E2E 入口与导入类型 |
+| `pnpm --dir web exec eslint e2e/s1-projects.spec.ts`、`git diff --check` | PASS |
+| `git merge-base --is-ancestor 92a2ded59921608f5b6e718531128c4586dc1aee HEAD` | EXIT0，普通精确祖先 |
+
+返修中间错误亦保留：新增重启后直接跨端口 page.request GET 得403（`astrocyte-W0-s1-projects-8dot3-fixed.log`），最终改成页面原认证流程实际 reload GET，而非改服务端权限；该版本先2 PASS（`astrocyte-W0-s1-projects-8dot3-browser-fixed.log`）。单文件 tsc 首调用 TS5112 需 `--ignoreConfig`，随后 TS2769 表明 execFileSync 类型没有 windowsVerbatimArguments，改用支持该选项的 spawnSync 后类型与最终两例重跑通过；首次 CMD probe 默认 argv quoting 的 ENOENT 也通过 verbatim argv 修正，未用失败的输出造别名。
+
+真实剩余/未执行：此 **2 PASS 仅是单 spec 两视口**，不是全 E2E、远端新 CI 或整体 M1 通过；原集成 Agent/root 普通 consume 精确报告、定向复验/push 自动 CI 尚待。本次没有重跑其他 spec、媒体/paid/live/private/全 suite，也没有私人预览升级或合 main；本机无短名 fallback 分支未触发，Linux 使用原普通目录分支尚未本机执行。用户原 metadata 范围、默认参数及知识策略仍未答，不因此冻结或扩大权限。
+
 ## Windows CI 限定返修（2026-10-11，新 Dispatch）
 
 Task `task_18154894914d` / Dispatch `ctx_84bdbc33a991`；原 W0 Codex --yolo 接续，无新 Agent。分支 `songconmaisaix31-design/attention-engine-w0-core`，先普通 fast-forward merge root 精确最终树 `0e49301734549a02b9b1b9078aaef96fd6422742`，SOURCE `425d965f82bb3d8b573604476134d466838be416` 已 commit+push。此次只改 `internal/adapters/agents/**` 与本报告；root 合入带来的其他 owner 文件没有再修改。
