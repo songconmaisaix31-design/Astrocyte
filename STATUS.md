@@ -1,6 +1,6 @@
 # Astrocyte 当前状态
 
-## Codex --yolo 八轨接续（2026-10-11 22:13）
+## Codex --yolo 八轨接续（2026-10-11 22:22）
 
 用户更新后八轨均由 `codex --yolo` / gpt-6.1-sol 实际接续，原工作树和自动分支不变。当前有效 Task/Dispatch：
 
@@ -17,9 +17,9 @@
 
 原 OpenCode 阶段报告按 partial 处理；W6 已证实 Agent 退出但未结算，原 Dispatch 按 stop 后 retry，代码 `daa3f6d` 保留。其余旧轨已归档关闭；W5 原终端因 user_takeover 由运行时保留、已结算 idle。旧表和旧 Dispatch 仅作历史，不再派发。
 
-W0 已发布 `b6a5794a4bf6ed282b60cace4bf81d779383df87` 基础契约/014迁移/未组装501关口；完整 M0 尚缺事件稳定receipt与rawbytes/观测包装、节点updated_at、项目隔离/分享审计/版本与sleep持久化，Codex W0 优先补 migration015 并发布精确 SHA 后解锁其他轨。M2纯公式30点独立复算误差0；各轨纯逻辑/协议/fixture局部通过不能替代存储和完整验收。
+W0 持久化基础 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已普通合入并 push，集成 SHA `2268f4920973128068f46a182dfddfb040a1dbc2`。root 对该精确集成源复验 M0 harness、attention domain/app、SQLite、HTTP 五包 PASS。migration015 保留原始事件 bytes/观测、节点独立 updated_at、项目隔离/人工分享审计/版本及 Sleep 日记录；sqlite-vec 按任务红线 CUT。各轨已消费正式依赖进入应用/持久化开发。W0 继续 P2 HTTP/OpenAPI、作品迁移与入口；人工关口未组装时仍501。M2纯公式30点独立复算误差0；各轨纯逻辑/协议/fixture局部通过不能替代完整验收。
 
-root 基线三次整场 FAIL 及定向恢复见 [基线记录](docs/acceptance/AttentionEngine-baseline.md)。本机固定个人缓存中 Astrocyte 项目存在但 native contributors=[]，W1所选真实回放首场RED保留。原始会话元数据范围和工程默认参数已问用户，未答不扩大范围或冻结默认。下一步：W0共享基础精确SHA → root复验普通合入 → 各轨真实应用/持久化验收 → 集成/M6与最终check/build/push。
+root 基线三次整场 FAIL 及定向恢复见 [基线记录](docs/acceptance/AttentionEngine-baseline.md)。W0 在47f报告 check/build PASS，root 尚未重新取得整场 PASS。本机固定个人缓存中 Astrocyte 项目存在但 native contributors=[]，W1所选真实回放首场RED保留。原始会话元数据范围、工程默认参数、知识新增固化版本再确认与检索时间基准已问用户，未答不冻结。W7 稳定 Go 阶段 `0e38f94fa516f5b9f8ec4f48f6f76fbad425e5e1` 已授权 W0 普通消费以编译 HTTP/入口；W7 请求持久去重/事件发送失败由原 owner 修正，真实 UI 等 P2 精确端点发布。下一步：各轨真实应用/持久化验收 → 集成/M6与最终check/build/push。
 
 ## Codex 接替主控（2026-10-11 21:41）
 

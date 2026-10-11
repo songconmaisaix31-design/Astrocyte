@@ -1,8 +1,8 @@
 # Astrocyte 主控交接
 
-## 当前入口：Codex --yolo 八轨（2026-10-11 22:13）
+## 当前入口：Codex --yolo 八轨（2026-10-11 22:22）
 
-用户要求后续 `codex --yolo`，已实际启动八轨 Codex / gpt-6.1-sol，沿原工作树/分支/互斥写域继续。Run仍 `run_19a0b1268e5a`，coordinator仍 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`。有效 Task/Dispatch 见 STATUS 最新表，旧 OpenCode IDs 不再使用。W0 `b6a5794` 只是部分共享基础，Codex W0 正补齐持久化包装及015迁移后发布正式依赖；别消费未发布改动，也别把501/fixture/纯规则声明完整里程碑完成。参数和原始元数据读取范围等待用户，未答项保持未决定。root独占计划/状态/决定/验收/最终Git；业务返修归现有owner。
+用户要求后续 `codex --yolo`，已实际启动八轨 Codex / gpt-6.1-sol，沿原工作树/分支/互斥写域继续。Run仍 `run_19a0b1268e5a`，coordinator仍 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`。有效 Task/Dispatch 见 STATUS 最新表，旧 OpenCode IDs 不再使用。正式 M0 P1 SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 已普通合入集成 `2268f4920973128068f46a182dfddfb040a1dbc2` 并 push，root 精确源五包 PASS；各轨已解锁真实应用/SQLite。W0 正 P2 HTTP/OpenAPI/作品迁移/入口；已授权普通消费 W7 稳定 Go SHA `0e38f94fa516f5b9f8ec4f48f6f76fbad425e5e1`，只作编译依赖，不算W7验收。W7原owner修请求去重和事件sink错误，真实UI等P2端点。别消费未发布改动，也别把501/fixture/纯规则声明完整里程碑完成。参数、原始元数据范围、知识版本再确认/检索时间基准等待用户。root独占计划/状态/决定/验收/最终Git；业务返修归现有owner。
 
 ## Codex 主控接续（2026-10-11 21:41）
 

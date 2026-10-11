@@ -19,3 +19,9 @@ root 使用 Node SQLite `readOnly:true` 核验固定个人库 `C:/Users/DW/AppDa
 ## 波 A 独立检查（2026-10-11 21:58）
 
 W2 `acb4561` 的 30 天 fixture，由 root 以独立 Node 公式重算：30 点 A/M/confidence 最大绝对误差为 0，10 点触底、5 点触顶。相同工作树执行 `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain ./tests/attention-engine` PASS。该 fixture 使用显式 λ=0.1，仅验证纯数学；尚未覆盖事件持久化、重复消费、主题生命周期及冷重启，M2 未完整通过。fixture 的原始一次性生成使用 Python（Worker 如实记录）；用户在 QUESTIONS 后续已允许 Python，不新增 Python 项目依赖或默认验收步骤。
+
+## M0 P1 依赖复验（2026-10-11 22:17）
+
+SOURCE `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0` 普通合入集成 `2268f4920973128068f46a182dfddfb040a1dbc2`，root 运行 `GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./tests/attention-engine ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi`，五包 PASS（M0 harness 0.887s、SQLite 4.958s、HTTP 0.565s）。范围为 schema/迁移/持久化基础和既有 HTTP，未组装人工关口仍501，其他轨应用未合，不宣称完整 M1–M6/W7。
+
+W0 独立报告47f的 `pnpm check`/`pnpm build` PASS（Node堆512、Go单并发）；不是root整场复验。旧 Windows paging failure 原始完整stderr文件未留存，仅已知错误片段保留，不补造日志路径。
