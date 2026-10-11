@@ -7,11 +7,26 @@
 
 波 A 已落码：纯数学状态更新 + 参数化函数 + 30 天 golden 数据（不依赖 M0 类型，不自建共享
 Event/Node/Store）。域文件 `dynamics/antimatthew/lifecycle/topic/conflict` 已实现，单测与
-`tests/attention-engine/M2_golden_test.go` 通过（GOFLAGS=-p=1 GOMAXPROCS=2）。
+`tests/attention-engine/M2_golden_test.go` 通过（GOFLAGS=-p=1 GOMAXPROCS=2）。HEAD `acb4561`。
 
-波 B 阻塞于 M0 契约类型未发布：app 层 `engine_*.go`（get_attention_state/explain_focus）与
-`engine_store*.go` 依赖 M0 的 Event/Signal/AttentionNode/EvidenceRef 类型。主控发 merge_ready
-后执行 `git fetch origin && git merge origin/attention-engine/v1-20261011` 再开码。
+### 真实 partial（截至本次 settle）
+
+- 已交付：§5.1 A(t)/M(t)/confidence 纯函数、§5.3 A_floor/θ/种子化重浮现、§5.4 生命周期
+  状态机（归档/唤醒/合并/分裂/密度诞生）、§5.5 confidence 骤降冲突判定；固定常量按任务书
+  （α=.3、floor=.05、θ=.15、合并>.8、90 天归档），λ/分裂/密度/confidence 阈值保持参数化未冻结。
+- 已交付：30 天 golden 复算流 `tests/attention-engine/M2_golden_stream.json`（Unix 毫秒 ts +
+  逐步 A/M/confidence，独立 Python 参照生成，非被测公式），`M2_golden_test.go` 用生产域函数
+  逐点回放断言；root 可用独立 JS 公式复算。
+- 未完成：波 B（app 读侧 `engine_*.go` 的 get_attention_state/explain_focus、`engine_store*.go`
+  持久化）阻塞于 M0 契约类型（Event/Signal/AttentionNode/EvidenceRef/引擎接口）未发布。
+
+### 下一步
+
+1. 主控发 M0 merge_ready 后，`git fetch origin && git merge origin/attention-engine/v1-20261011`
+   取得契约类型，再开波 B：引擎接口实现 + app 读侧证据链组装 + engine_store 持久化。
+2. 波 B 衰减推进用 `updated_at`（独立于行为时间 `last_active`），ts 为 Unix 毫秒、Δt=ms/86400000。
+3. 后续开发按用户要求切换 `codex --yolo`；参数问题（λ/强度/分裂/密度/confidence 阈值）待答，
+   保持显式配置输入不冻结默认值。
 
 ## 目标与验收（任务书原文，不降级）
 
