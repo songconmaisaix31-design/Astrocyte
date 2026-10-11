@@ -30,6 +30,8 @@ v0.1无自动发现：主题来源仅固定种子+git派生+SeedTopic手工播�
 
 W0补充首RED：native-style Claude source经core RelatedAgents穿出explain_focus，已仅在exposure删除related_agents，core审计/主题/权重保留；全量每新增report/veto raw行均审计。旧fixture失误与真实来源泄漏首次日志分别保留。原100 raw_unique生产响应审计当前运行，明确real_raw_contract_local：原native receipt字节保留、隔离合成认知receipt仅使真实raw可走五工具/错误路径，不改真实归一化计数或冒充task_live/V1。待定参数和V0完整率仍阻止正式V1。
 
+02:21 原100首次真实载荷审计RED：100实际原载荷、1101 raw_unique字符串、2100生产MCP.Serve响应（五工具成功/backend/decode，report/veto capture/dynamics/unknown，共21组合）。唯一event001 explain success碰撞：raw_unique值与固定字段名evidence[].original同名，长度8；没有原载荷正文或字节序列化，严格字符串断言仍判RED，原real100-first.log与分类诊断保留。root选择修复实现而不放宽审计：MCP exposure DTO包装改evidence[].event，内部app.Original/SQL/OpenAPI不改，六字段和外层证据权重不变，相关测试同步。字段键与值仍全部逐字符串审计，不排除协议键、不改原100。owner重测后才登记raw_unique验收，当前仍未计PASS。
+
 任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
 
 ### EX-01：P0 unassigned消费契约限定修复（用户2026-10-12裁决）
