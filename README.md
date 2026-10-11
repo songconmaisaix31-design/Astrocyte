@@ -4,6 +4,29 @@
 
 三页界面采用用户提供的 `Astrocyte-preview.html` 设计，迁入现有 React 应用。顶部搜索筛选当前页已加载数据；资料类型筛选、标签页历史与键盘切换、详情抽屉可操作。默认读取真实 API，`?fixture=1` 才进入显式示例模式。Attention 的 S1 接入见 [公共契约](tasks/S1-contract.md)；批准、接续与执行仍属后续切片。研究路线、固定动态与拓扑示例仅用于设计展示，不代表真实会话或实验结果。
 
+## Attention Engine 与作品册
+
+认知内核在现有 Go/SQLite 内提供 Event/Signal、注意力演化、每日 Sleep、知识两层存储、失败经验和 MCP 五操作。知识确认/降级/分享/项目引用、经验批准/降级/分享与冲突裁决通过 [OpenAPI](contracts/openapi.yaml) 的人类会话/CSRF 接口执行；S1 作业执行与认知记忆审批分别使用各自接口。知识和经验按项目隔离，跨项目访问须人工显式分享。
+
+Workspace 的作品册读取真实持久化缓存，提供平台/分组/时间视图、态度、人工交接手册、隐藏、扫描和 JSON 投递。扫描只接受已登记批准根，读取目录名/stat/count/mtime，有界遍历；未知平台、未核实文件和不完整发现保持可见。机器同步和缺少认知 topic 的作品活动保存原始 pending observation，不生成关注 Signal。JSON 投递的路径只是线索，不自动获得扫描权限。
+
+`pnpm build` 生成 `dist/astrocyte`、`dist/astrocyte-mcp`、`dist/astrocyte-sleep`（Windows 带 `.exe`）及 `web/dist`。MCP 为 stdio 服务，五个工具为 `astrocyte.get_attention_state`、`astrocyte.explain_focus`、`astrocyte.get_experiences`、`astrocyte.report_event`、`astrocyte.veto`；项目/会话/身份在启动时绑定。启动参数：
+
+| 参数 | 要求 |
+|---|---|
+| `--data-dir` | 显式指定与 API 相同的 SQLite 数据目录；省略时用系统配置目录下 astrocyte，CLI 不读取 `ASTROCYTE_DATA_DIR` |
+| `--project --session --principal-id --principal-kind` | 明确可信启动身份；kind 为 agent 或 human，工具参数不改变授权 |
+| `--signal-strength` | 必须提供已确认的非负数值，无产品默认 |
+| `--decay --initial-confidence` | 动力学配置；decay 单位为每天，缺失时对应写入可能保留 dynamics_pending |
+| `--success-confidence-delta --confidence-drop-threshold` | 可选显式策略，无产品默认 |
+| `--human-veto` | 仅人类启动通道可启用；未解析的 task veto 保存 pending，不表示任务已停止 |
+
+已提交事件的 `capture_pending` 与 `dynamics_pending` 分别说明经验捕获或图更新待处理；`delivery_unknown` 保留不确定效果。读取原回执和状态后再处理，不能用新 OriginKey 盲重放。
+
+Sleep 命令每次执行一个明确日期，无任务调度器或模型调用。必须提供 `--day YYYY-MM-DD`、`--timezone`、`--decay`、`--initial-confidence` 和 `--fact-projection none|facts-map-v1`；另可提供 `--data-dir` 及成功/冲突策略参数。`none` 保持关键事实召回不可计算；`facts-map-v1` 只解析明确已知格式的字面 `raw.facts` 字符串。当天回执、图、fluid、候选与指标一起提交；相同日周期返回原结果。字节缩减指标计量工作表示，原始事件保留，不表示 SQLite 文件缩小。迟到且早于已有图时间的新 Signal 显式拒绝，不能通过修改时间静默回放。
+
+工程参数、原生会话读取范围、知识新增固化版本再确认与检索时间基准仍见 [待决定项](docs/QUESTIONS.md)。sqlite-vec 已按任务红线 CUT，检索实际使用 topic/keyword 与已观察关联的显式可复算相关度。M2 三十日和 M6 七日均为合成验收；真实 CC/Codex 回放及真实连续七日用户对比不能从这些结果推断，当前进展见 [STATUS](STATUS.md) 和 [独立验收记录](docs/acceptance/AttentionEngine-baseline.md)。
+
 ## 环境
 
 - Node **24.16.0**、pnpm **11.27.0**、Go **1.27.2**。直接依赖使用精确版本，完整锁定见 `pnpm-lock.yaml`、`go.mod`、`go.sum`；清单见 [dependencies.lock.json](dependencies.lock.json)。
