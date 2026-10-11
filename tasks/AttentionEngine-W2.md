@@ -11,6 +11,10 @@
 - app/store 第一阶段落码：`NewDynamicsEngine`、`NewDynamicsRepository`、`NewDynamicsTx`，事务内 ApplySignals + read-only AttentionState/AttentionNode/ExplainFocus + pending Conflict/人工裁决。参数 nil 保持未决定并明确返回配置错误。
 - `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run '^TestM2' -count=1` PASS：原纯 golden、真实 app+SQLite 30 天逐点回放（day 10/20 关闭/重开库）、去重/读取不写节点/失败只降 confidence/整批回滚。输入是任务书规定的伪造流，非真实会话。
 - 首次编译 RED：误用不存在的 `newID`，改为复用既有 `crypto/rand.Text` 后编译与上述测试 PASS。生命周期集成仍在开发，尚未 M2 完成。
+- root 审查发现 seed 持久化 A=0 违反 floor；已修为固定 `AttentionFloor=.05`，manual/density/sleep birth 都使用 floor。原 Python 零初值纯 golden 不变；新增独立 Node 参照 `M2_reference.mjs`/`M2_application_golden.json` 专门验证 floor 初值实际应用流，不把旧初值作为产品规则。
+- 生命周期第二阶段：密度诞生校验同 scope/时间窗/唯一事件；分裂完整划分证据并保留父节点；关联与真实证据重叠跨持久观测后才合并，取历史最大 A；90 天 cold 不删除，种子 RNG 抽 3 个触底非 rising 节点，cold 唤醒 A=floor、不伪造 last_active。
+- W3 组合接口：`sqlite.NewDynamicsTx(EngineTx)`；`ConsolidateTopicInTx(tx,topic,refs,related,now,support ...domain.EventRef)` 只挂本主题证据，邻接支持单独验证、不复制；`AdvanceLifecycleInTx`、`ResurfaceInTx`、`ObserveAssociationInTx`、`ReportFactConflictInTx`。既有节点 consolidation 不改 A/M/updated_at。
+- `go test ./tests/attention-engine -run '^TestM2' -count=1` PASS（6 个 M2 测试）：实际生命周期持久化/重启/完整证据划分/中断与重放合并/历史最大 A/90 天归档/3 个重浮现/同事务回滚/agent 拒绝与 human 审计/confidence 与事实冲突不覆盖。独立 root 应用输出复算与 W1 实际存储消费仍待后续。
 
 - 接续基线 `3ed950250172d2efcf73a171e29e149e1a4916ea`，工作树干净；客户端 Codex（用户已应用 `codex --yolo`），不启动并发 Agent。
 - 只读检查 W0 尚未发布的 M0 草稿；未复制或消费草稿类型。等待协调者给出精确可消费 SHA。
