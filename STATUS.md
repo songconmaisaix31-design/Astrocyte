@@ -20,6 +20,16 @@ v0.1无自动发现：主题来源仅固定种子+git派生+SeedTopic手工播�
 
 02:06 W0报告并收窄实际wire接缝：ExplainFocus evidence.original投影六字段，外层attention/信号权重/related指标保留；report/veto删除嵌有raw session的origin_key，保留event_id/receipt_ids/提交与pending状态，恢复提示改为固定event_id对账、不以新origin重提。veto task-only不回显原task，derived topic仍可返回。get_experiences保留既有人类批准的独立结构化derived能力，原始事件载荷和无关会话/请求/actor元数据不得穿出。追加W0旧fixture唯一写域cmd/mcp/main_test.go，原:113要求返回RawBytes与新裁决冲突，先记录原RED，再改投影与零泄漏断言；不改CLI生产/app/contracts/schema。
 
+02:07 全量结构盘点完成，root独立读安全inventory/manifest核对N=6016：Claude tool_use 369、Codex function_call451+custom_tool_call3303=3754、原冻结真实git1893（Morph887/Astro1006）。零工具ID重复、session/scope缺失0、观察冲突0。认知全量N≥5000数量线已达，不等于V0归一化或V1入库完成。非工具人口29716，固定随机seed20261012抽200（Claude14/Codex186），独立于mapper与文本。产物本地v21-w1；新完整率/误标/raw_unique测试尚NOT_RUN，原100与旧RED不改。
+
+02:08 新完整率首次RED：kind/topic非空1971/6016=32.76%（git1893/edit74/search4），unknown4045、unassigned3497；生产MapAssociatedNativeRecord路径，normalizable及signal eligible以显式probe s=1为1971，不冒充正式参数绑定。独立200非工具误标0、association拒绝0。原件v21-w1/stages-first.json，root已读核对。继续修复可确定的Codex包装工具同构映射，保留N6016与unknown；不因首次RED缩小分母、泛化所有exec为认知或注水。新raw_unique尚NOT_RUN，V0未过，V1未运行。
+
+02:19 W1 bounded实现已settled/succeeded并push，SOURCE `cadd33af594eee8f7d246bb9ba2b292241dfdca2`、REPORT `3020bfd7a47e1b83f765ab3c1ad0437841746af6`，root核对祖先/远程报告SHA。owner定向Go54 PASS/3 Windows条件SKIP、Python8 PASS，生成check/diff PASS；此结果不等于V0验收。原终端释放后external retained idle，不删树。生产direct/file/full工具块共用canonical映射，增加确定性literal wrapper识别、Claude多块入口，未知复杂/非认知语义保留。git primary沿仓来源；附加固定关键词metadata真实Agent Swarm1/MCP39，未额外复制commit或给多topic写信号，关联消费仍未持久化，不冒称能力已兑现。
+
+最终同6016：mapped2014（commit1893/edit115/search6）、kind/topic1971=32.76%，unknown4002；3497 unassigned全部Codex且固定种子scope范围外，新增43认知wrapper全部无标。2519观察assigned只给出主题覆盖上限41.87%，不能作完整率分子。unknown原因：直接工具612/Bash非单搜索130/wrapper3260（嵌套未支持或非认知2520、控制343、callback176、literal166、非await48、动态参数7）。200负样本误标0。已问用户获准手工topic→scope/关键词，或明确认知范围修订；裁决前保持人口和无标，不自动发现/强塞。原100新复验mapped4/unknown96/候选3/正式eligible0，新Codex edit无标，原100与首RED不覆写。
+
+W0补充首RED：native-style Claude source经core RelatedAgents穿出explain_focus，已仅在exposure删除related_agents，core审计/主题/权重保留；全量每新增report/veto raw行均审计。旧fixture失误与真实来源泄漏首次日志分别保留。原100 raw_unique生产响应审计当前运行，明确real_raw_contract_local：原native receipt字节保留、隔离合成认知receipt仅使真实raw可走五工具/错误路径，不改真实归一化计数或冒充task_live/V1。待定参数和V0完整率仍阻止正式V1。
+
 任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
 
 ### EX-01：P0 unassigned消费契约限定修复（用户2026-10-12裁决）
