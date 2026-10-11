@@ -4,18 +4,21 @@
 
 ## 2026-10-11：提交后 capture 错误回执修复（当前最新）
 
-SOURCE `2314b6036f3b57788398adb420e8d8e283f639cb` 已 commit + push；本报告的 REPORT SHA 为该 SOURCE 后紧邻的文档提交（准确 SHA 随 Orca worker_done 投递）。普通精确合并 W1 `673053186a12377c3a1dded4c0b987daa63f2dd5`、后续 typed error `d618b0bfe6d70b49fad2d43b1cf1b497ffc6a1c4`，W5 `b43d2a4cddd8a3f4a367676f9baaa6d3f3414ade`，以及 W2 生命周期/seed floor 修正 `aa4a64e194d7710d3cd39badb71bcc6803d7108d`。外轨文件变更仅来自这些依赖的普通 merge；本轨代码修改仍严格限于上述写域。
+最新 SOURCE `1f185a494ef05203977b33b3ff5816bbb033d75c` 已 commit + push；初始 capture 修复 SOURCE `2314b6036f3b57788398adb420e8d8e283f639cb`、其报告 `a65b493` 均保留在普通历史中。本次最终 REPORT SHA 为最新 SOURCE 后紧邻的文档提交（准确 SHA 随 Orca worker_done 投递）。普通精确合并 W1 `673053186a12377c3a1dded4c0b987daa63f2dd5`、后续 typed error `d618b0bfe6d70b49fad2d43b1cf1b497ffc6a1c4`，W5 `b43d2a4cddd8a3f4a367676f9baaa6d3f3414ade`，以及 W2 生命周期/seed floor 修正 `aa4a64e194d7710d3cd39badb71bcc6803d7108d`。外轨文件变更仅来自这些依赖的普通 merge；本轨代码修改仍严格限于上述写域。
 
 原问题：W1 已提交 receipt/signal 后捕获经验失败，会返回持久 rows + error；原 MCP 后端遇到 error 丢掉 rows/稳定 ID，transport 又只输出 error 文本，使调用者可能误判原写入不存在。现在按本次生成的 origin_key 匹配自身 receipt，保留 event_id 与全部 receipt_ids；通过 `errors.As` 消费 W1 `EventCapturePendingError`，不匹配错误字符串。
 
 - 已知提交：`delivery_state="committed"`、`accepted=true` 或 `acknowledged=true` 表示原 receipt 已提交；typed error 同时返回 `capture_pending=true`、`isError=true`，绝不将回执提交当成 capture 已完成。
 - 未取得持久回执：`delivery_state="delivery_unknown"`，保留 origin_key，省略 accepted/acknowledged/event_id，避免无 ID 的 `accepted=false` 暗示原写入不存在。error/recovery 明确要求核对原 origin/receipt，禁止换新 origin 盲重发；后端不自动重试。
 - 错误结果的 JSON 在 `content[0].text` 中包含上述全部字段及 error/recovery，并复制到 structuredContent。客户端即使在 isError 时丢弃 structuredContent，也能从错误正文取得稳定 ID/未知状态。
+- 主控追加的 dynamics 待处理要求已修复：本轨导出 `app.MCPDynamicsPendingError{Cause error}`（Error/Unwrap），供 W0 recorder 在原 receipt 提交后，signal 读取/ApplySignals/缺少配置时返回 **原 rows + typed error**。后端独立标记 `dynamics_pending=true`，不误称 capture_pending；稳定 ID/正文/原 origin 的保留规则相同。W6 不隐式调用动力学或自动 birth。
 - 外部 MCP observation outcome 继续为 unknown，raw 自称 failed/success 不成为可信结果；task veto 继续 pending receipt，任务→主题关联未知，无假主题/停止任务行为。
 
 新增 `M5-mcp_delivery_test.go` 的 4 子例（report_event/veto × capture/unknown）启动 **8 个独立 stdio 子进程**，实际 SQLite 迁移/W1 Record/W5 CaptureCommittedFailure/CaptureFailures，无 memoryBackend。capture 子例通过测试专用 recorder 追加一条明确的独立 `contract_local` 可信合成失败，真实 W1 批次提交后实际 W5 callback 在经验事务边界注入不可用；不从公网 Agent raw 提升可信 outcome。独立父进程仅解析错误 content 文本即可看到原 MCP receipt ID、两条 typed receipt IDs、capture_pending，随后重开数据库确认原写入；冷 stdio 进程通过健康 W5 catchup 恢复恰好 1 条 quarantine 候选，其 Evidence/OriginEventID 指向独立可信失败，MCP approved-only 查询仍为空。再次 catchup 不复制候选，原 receipt/raw/Observation 完全不变。unknown 子例在实际提交后丢失 ack，正文仅承认 delivery_unknown；冷进程核对原 origin 对应唯一持久 receipt，没有新 origin/重写/虚构失败候选。
 
-原 `M5-mcp_sqlite_test.go` **5 个独立进程、全部五操作**验收继续 PASS（32→34 完整解释、2 条项目范围 approved 经验、原 raw BLOB、边界拒绝与冷启动），helper 现使用实际 W5 postcommit callback。新旧两项真实 stdio 验收总计 13 次独立进程；所有输入均 `contract_local` 合成数据，不声明 native/task_live。
+追加 `TestMCPRealStdioDynamicsPendingKeepsReceipt/unborn_topic` 启动 **2 个独立 stdio 进程**：实际 W1/SQLite 提交 commit receipt/signal，实际 W2 对未 birth 主题 ApplySignals 返回错误；测试专用 recorder 保留 rows 并包装正式 typed seam，客户端正文保留 committed ID 与 dynamics_pending，capture_pending=false。冷进程读注意力仍无主题，数据库中原单条 receipt/signal 不变，无自动创建/重发。此用例不声明未确定参数的全部分支或生产 cmd 已验证。
+
+原 `M5-mcp_sqlite_test.go` **5 个独立进程、全部五操作**验收继续 PASS（32→34 完整解释、2 条项目范围 approved 经验、原 raw BLOB、边界拒绝与冷启动），helper 现使用实际 W5 postcommit callback。新旧三项真实 stdio 验收总计 15 次独立进程；所有输入均 `contract_local` 合成数据，不声明 native/task_live。
 
 验证命令（`GOFLAGS=-p=1`、`GOMAXPROCS=2`）及结果：
 
@@ -23,7 +26,7 @@ SOURCE `2314b6036f3b57788398adb420e8d8e283f639cb` 已 commit + push；本报告�
 go test ./tests/attention-engine -run 'MCPRealStdioPostcommit' -count=1 -v
 # PASS：4 子例，8 个实际 stdio 进程。
 go test ./tests/attention-engine -run 'MCP|Experience|M1CommittedFailure' -count=1 -v
-# PASS：15 顶层 PASS / 1 helper SKIP；新旧真实 stdio 均通过。
+# PASS：16 顶层 PASS / 1 helper SKIP；capture/unknown/dynamics 与原五操作真实 stdio 均通过。
 go test ./internal/adapters/mcp ./internal/attention/app -count=1
 # 两包 PASS（adapter 全量运行，未套过滤条件）。
 go vet ./internal/attention/app ./internal/adapters/mcp ./tests/attention-engine
