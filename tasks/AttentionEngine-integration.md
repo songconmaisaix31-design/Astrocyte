@@ -1,6 +1,27 @@
 # Attention Engine 最终集成交接
 
-## 当前交接：W1 native-format fixture 路径返修集成
+## 当前交接：单 spec 规范项目目录断言返修集成（2026-10-12）
+
+Task `task_d1bc72ed20a0` / Dispatch `ctx_4744d3b64314`；原唯一 `codex --yolo` 集成 Agent、隔离工作树和 `songconmaisaix31-design/attention-engine-final-integration` 分支不变。依次普通 `git merge --no-ff` root 文档基线 `df9471ab975ba583ef2f017c8d78cdbc2e8f4900` 与 W0 REPORT `49023fc044c2ebcbbffdcc582d2f95c6f22fd78d`，无冲突；集成 SOURCE `7f45830a4f0f807ce17f95e257174a8adf62efac` 已独立 commit+push，随后文档 REPORT 的准确 SHA 随 worker_done 交 root。
+
+W0 SOURCE `28459de60c1726a6a5119562900d73348309a615`、W0 REPORT 和 root 基线均通过精确普通祖先检查 / exit0。相对 root 基线只有 `web/e2e/s1-projects.spec.ts`（44+/6-）与 W0 报告；生产源码没有变化，没有薄胶水需求。本 Agent 唯一自主写入为本文件，没有修改 spec、领域、授权、CanonicalRoot 或其他 owner 文件；无 force/squash/cherry-pick。
+
+| 本集成任务实际命令 | 结果 |
+|---|---|
+| `pnpm --dir web exec playwright test e2e/s1-projects.spec.ts --workers=1 --output C:/Users/DW/AppData/Local/Temp/astrocyte-attention-project-spec-integration-task_d1bc72ed20a0/browser-output` | 2 PASS / 0 FAIL / 0 SKIP，40.2s，exit0；Chromium1920/1280，两个真实 Windows 8.3 输入均执行 |
+| `pnpm --dir web exec tsc --ignoreConfig --noEmit --target ES2023 --module ESNext --moduleResolution Bundler --types node --skipLibCheck --allowJs e2e/s1-projects.spec.ts` | PASS / exit0，仅该入口与导入类型 |
+| `pnpm --dir web exec eslint e2e/s1-projects.spec.ts`、`git diff --check` | PASS / exit0 |
+| 精确 SOURCE/REPORT 祖先与差异路径核实 | PASS / exit0 |
+
+执行环境 `GOFLAGS=-p=1`、`GOMAXPROCS=2`、`NODE_OPTIONS=--max-old-space-size=512`。两个用例实际短名分别为 `AS990B~1/APPROV~1`、`AS5B99~1/APPROV~1`；Node realpath 在 POST 前独立得到规范目录。通过原样 POST root、登记/许可响应规范 root、SQLite data.root 与完整行重启前后相等、页面认证流程 reload GET 规范 root、B/C 独立、仅获准 README 正文、引用为空、模型/原生 disabled 及 0 native sessions 的既有断言。没有改生产语义迁就断言，没有修改 TEMP 或伪造短名；本机没有触发短名不可用 fallback。
+
+独占原件目录 `C:/Users/DW/AppData/Local/Temp/astrocyte-attention-project-spec-integration-task_d1bc72ed20a0`：`s1-projects.log` 与退出码、scoped tsc/eslint 日志与退出码、`diff-check.log`、`source-changed-paths.txt`、`browser-output/.last-run.json`（passed）和四张项目截图、`playwright-html/` 报告均保留。tsc/eslint 无 stdout/stderr，对应日志为空、退出码0。测试使用既有 startS1Server 自有临时数据库、临时端口与新 API 进程；原 helper 完成清理，本轮未另保留 SQLite 副本。harness 必需的临时 Go 可执行文件构建不作为全量 pnpm build 验收。
+
+原 CI `38153179867` / SOURCE `92a2ded59921608f5b6e718531128c4586dc1aee` Ubuntu 全部 PASS / 默认 E2E226 PASS30 SKIP，Windows check/build PASS / E2E224 PASS2 FAIL30 SKIP，属协调者已核实的原树结果。首失败日志 `C:/Users/DW/AppData/Local/Temp/astrocyte-ci-38153179867-e2e-first-failed.log` 不改；W0 实际短名首 RED、重启 GET403、CMD quoting 与 tsc 调用/类型中间错误均沿 [W0 报告](AttentionEngine-W0.md) 保留，本轮定向 GREEN 不覆盖它们。
+
+本次仅该 spec 两视口及 scoped TS 检查，没有重复全 check/build/M6/全 E2E、Linux compile-only、Works 真实写入、paid/native/media 或原 M1 0-eligible/private replay。普通 Windows symlink 权限限制沿既有 NOT_RUN，原真实 M1 failed/未授权与用户 metadata/默认参数/知识策略未答保持。root 下一步普通合本 REPORT、单 spec 独立复验并最终 push/核实自动 CI；不能提前称新树全套 Windows GREEN 或真实 M1 已通过。
+
+## 历史交接：W1 native-format fixture 路径返修集成
 
 Task `task_2a875959ca15` / Dispatch `ctx_bd2dcbcb9f37`；沿原唯一 `codex --yolo` 集成 Agent、工作树和 `songconmaisaix31-design/attention-engine-final-integration` 分支。普通 `git merge --no-ff` 依次合 root 文档基线 `60f8a27b85279d954551a1cf60a54d4c4c57468a` 与 W1 REPORT `9ef5f6667ce6067d39a3012435e8b35526e19568`，均无冲突；零业务或薄胶水改动，唯一自主写入为本报告。
 
