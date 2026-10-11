@@ -14,8 +14,26 @@ M1 NOT_DONE；独立解析阶段已 push `bd33fdaf2810ce07a378b2b4d6e133af89d79c
 新增 canonical outbox 读侧 `s1_reader.go`：每页最多 128 条，稳定 ID 游标，完整 envelope 字段和原 payload 字节；不修改 s1 回执。
 有界 snapshot 分页以 ID 排序，不把游标当增量时间水位；下一次完整回放从空游标开始并靠 event_id 去重。
 
-M0 仍等待协调者精确稳定 SHA；W0 未提交代码只读，不复制或合并。
+M0 已由 root 放行，并普通合入精确 source `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`；此前未提交代码只读，没有复制。
 旧波 A 映射文档有错，本文件已重写；旧 SHA `1321b23`、`05065f3` 保留于普通 Git 历史，不能作为实现规格。
+
+## M1 业务实现阶段（2026-10-11）
+
+- `domain.NormalizeSignal(eventID,event,outcome,depth,strength)` 按 §5.2 硬编码归一化；未知 outcome/depth 不产生对应信号；failure/failed 只标 feedback_failure/confidence-only。
+- `app.NewEventService(repo,strength).Record(ctx,[]StoredEvent)` 统一事务入账；显式强度，不按 tokens 缩放，不冻结产品默认。
+- `sqlite.NewEventRepository(db)` 存储 Event/Observation/pending 与 Signal，OriginKey 唯一，ID 首次生成后持久；原字节 raw_bytes BLOB 同行保存。
+- source 重放不能覆写 raw/observation；Signal 重放不能改 weight/strength；失败批次回滚 Event 和 Signal。
+- `events.MapS1Outbox/MapCachedMetadata/MapNativeRecord/ReplayNativeFile` 消费共享 StoredEvent，不定义第二事件/证据表。
+- `EventReader.GetEvent/ListEvents` 和 `ListSignals(ctx,fromMS,untilMS)` 提供读侧；`sqlite.NewEventTx(EngineTx).ListEvents/ListSignals(fromMS,untilMS)` 复用调用者事务，范围为 inclusive。
+- Event.Tokens 是 §4 必需 int 投影；真实已知性一律看 Observation.Tokens，nil 明确未知，不能把投影占位 0 当实际 token 计数。
+- topic 不从工具文本猜测；pending 元数据没有 Event，也没有 Signal；映射行为可留下空 topic 待后续已观测关联。
+
+业务阶段本地验证：五包 `go test ./internal/adapters/events ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite ./tests/attention-engine` PASS；
+M1 项目验收 4 PASS / 1 SKIP（真实元数据 opt-in）；source 独立检查 5 PASS。
+§5.2 11 条样本权重全对；SQLite 重启后的 ID/原字节/未知字段/Signal 一致、重放不重复；同事务读侧可消费；pending SQL 触发器不准 Signal。
+`go build ./internal/adapters/events ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite` PASS。
+均以 `GOFLAGS=-p=1 GOMAXPROCS=2` 执行；没有 Node 操作。
+这些通过不覆盖未获授权的真实两客户端工具轨迹。首次 real cache RED 保持，M1 整体仍 NOT_DONE，继续等待真实样本范围。
 
 ## 当前有效映射边界
 
@@ -51,7 +69,7 @@ M0 仍等待协调者精确稳定 SHA；W0 未提交代码只读，不复制或�
 权重不在线学习。强度产品初值尚未决定；保持显式参数，测试 fixture 可显式传 1，不冻结默认、不按 tokens 缩放。
 缺少 outcome/depth 的 observation 不推断对应信号。共享 Signal 失败路径由 feedback_failure 分类承载，仅供 confidence。
 
-## M0 Handoff（已发协调者，等待 W0 统一）
+## M0 Handoff（已由 47f47f3 统一，历史需求）
 
 1. 稳定发布 SHA 与 Event/Signal 最终代码。
 2. §4 Event 字段保持原规格；另统一 adapter observation wrapper：稳定 receipt/event_id、源 kind、可空 token、unknown outcome/depth、可选映射 Event。
@@ -69,7 +87,7 @@ M0 仍等待协调者精确稳定 SHA；W0 未提交代码只读，不复制或�
 - 该失败只表示精确选定缓存/项目没有可用来源，不表示本机总会话为 0；原库只读，不重新发现或扩大范围。
 - root 另行只读确认该项目缓存存在、contributors 为空、cacheStatus=partial；初次输出 partial=false 只描述本次 record-bound 没有截断，不代表全局缓存完整。
 - Windows 范围键现在规范 slash/case；Unix 仍按路径大小写精确比较。不重跑已确认空场。
-- contract_local 已验证独立解析；真实 Event→Signal 与 SQLite 冷重启、幂等回放验收尚 NOT_RUN。
+- contract_local 已验证 Event→Signal 与 SQLite 冷重启、幂等回放、既有 s1 应用完整事件路径；task_live 真实两客户端工具回放仍待授权/来源。
 - M1 不宣称完成；等待不是 worker_done。
 
 ## 后续验收

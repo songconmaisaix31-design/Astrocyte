@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"math"
 	"path/filepath"
 	"testing"
 	"time"
@@ -67,6 +68,15 @@ func TestM1ExistingS1ActionOutputPath(t *testing.T) {
 	if envelope.ID == "" || envelope.Type != "attention.material_updated" || envelope.OccurredAt.UnixMilli() != now.UnixMilli() || !bytes.Contains(envelope.Payload, []byte(`"pinned":true`)) {
 		t.Fatal("S1 action receipt lost")
 	}
+	mapped, err := events.MapS1Outbox(records[0], now.UnixMilli())
+	if err != nil {
+		t.Fatal(err)
+	}
+	receipts, err := app.NewEventService(sqlite.NewEventRepository(db), 1).Record(ctx, []app.StoredEvent{mapped})
+	if err != nil || len(receipts) != 1 || receipts[0].Event == nil || receipts[0].Event.Kind != "user_approve" || receipts[0].Observation.Tokens != nil || receipts[0].Event.Topic != "" {
+		t.Fatalf("real S1 normalized receipt path: %v", err)
+	}
+	stableID := receipts[0].ID
 	if err = db.Close(); err != nil {
 		t.Fatal(err)
 	}
@@ -77,5 +87,13 @@ func TestM1ExistingS1ActionOutputPath(t *testing.T) {
 	replayed, partial, err := events.ReadS1Outbox(ctx, db.Conn(), "", 128)
 	if err != nil || partial || len(replayed) != 1 || !bytes.Equal(records[0], replayed[0]) {
 		t.Fatal("S1 source bytes changed after restart")
+	}
+	receipts, err = app.NewEventService(sqlite.NewEventRepository(db), 1).Record(ctx, []app.StoredEvent{mapped})
+	if err != nil || len(receipts) != 1 || receipts[0].ID != stableID || !bytes.Equal(receipts[0].RawBytes, records[0]) {
+		t.Fatal("S1 stable event receipt replay changed")
+	}
+	signals, err := sqlite.NewEventRepository(db).ListSignals(ctx, 0, math.MaxInt64)
+	if err != nil || len(signals) != 1 || signals[0].EventID != stableID || signals[0].Weight != 1.5 || signals[0].Strength != 1 || signals[0].Topic != "" {
+		t.Fatal("S1 action was not consumed through real Event/Signal path")
 	}
 }
