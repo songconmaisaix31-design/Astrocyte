@@ -37,7 +37,7 @@ func (r *EventRecorder) Record(ctx context.Context, records []app.StoredEvent) (
 	}
 	signals, err := r.Repository.ListSignals(ctx, from, until)
 	if err != nil {
-		return rows, pending(rows, fmt.Errorf("signal update pending: %w", err))
+		return rows, &app.MCPDynamicsPendingError{Cause: fmt.Errorf("signal update pending: %w", err)}
 	}
 	byTopic := map[string][]domain.Signal{}
 	for _, signal := range signals {
@@ -54,16 +54,8 @@ func (r *EventRecorder) Record(ctx context.Context, records []app.StoredEvent) (
 		batch := byTopic[topic]
 		now := batch[len(batch)-1].TS
 		if _, err = r.Engine.ApplySignals(ctx, topic, batch, now); err != nil {
-			return rows, pending(rows, fmt.Errorf("attention update pending: %w", err))
+			return rows, &app.MCPDynamicsPendingError{Cause: fmt.Errorf("attention update pending: %w", err)}
 		}
 	}
 	return rows, nil
-}
-
-func pending(rows []app.StoredEvent, cause error) error {
-	ids := make([]string, 0, len(rows))
-	for _, row := range rows {
-		ids = append(ids, row.ID)
-	}
-	return &app.EventCapturePendingError{ReceiptIDs: ids, Cause: cause}
 }

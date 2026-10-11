@@ -170,7 +170,7 @@ func TestBuiltCommandStdioPersistence(t *testing.T) {
 		t.Fatal(err)
 	}
 	var delivery app.ReportEventResult
-	if len(pendingWire.Result.Content) != 1 || json.Unmarshal([]byte(pendingWire.Result.Content[0].Text), &delivery) != nil || !pendingWire.Result.IsError || !delivery.Accepted || delivery.EventID == "" || !delivery.CapturePending || delivery.DeliveryState != "committed" {
+	if len(pendingWire.Result.Content) != 1 || json.Unmarshal([]byte(pendingWire.Result.Content[0].Text), &delivery) != nil || !pendingWire.Result.IsError || !delivery.Accepted || delivery.EventID == "" || delivery.CapturePending || !delivery.DynamicsPending || delivery.DeliveryState != "committed" {
 		t.Fatalf("lost pending receipt: %s", unseeded[1])
 	}
 	db, err = sqlite.Open(filepath.Join(data, "state.sqlite"))
