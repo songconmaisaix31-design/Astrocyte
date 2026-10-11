@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 当前入口：Codex --yolo 八轨（2026-10-11 22:13）
+
+用户要求后续 `codex --yolo`，已实际启动八轨 Codex / gpt-6.1-sol，沿原工作树/分支/互斥写域继续。Run仍 `run_19a0b1268e5a`，coordinator仍 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`。有效 Task/Dispatch 见 STATUS 最新表，旧 OpenCode IDs 不再使用。W0 `b6a5794` 只是部分共享基础，Codex W0 正补齐持久化包装及015迁移后发布正式依赖；别消费未发布改动，也别把501/fixture/纯规则声明完整里程碑完成。参数和原始元数据读取范围等待用户，未答项保持未决定。root独占计划/状态/决定/验收/最终Git；业务返修归现有owner。
+
 ## Codex 主控接续（2026-10-11 21:41）
 
 原主控已中断，用户要求 Codex 直接接替。Run `run_19a0b1268e5a` 当前 coordinator 为 `term_1adf40a6-ef79-4efa-b602-7b55173624e6`；原八轨 Task/Dispatch/工作树保持。八轨任务书读取弹窗已单次放行，恢复指令已投递。实际分支 `songconmaisaix31-design/attention-engine-wN-*`，不是计划表原名称。先读 STATUS 最新段和 AttentionEngine-plan，继续验收 W0 M0，不向旧主控发送继续，不重启原 Worker。

@@ -10,6 +10,10 @@ W0 恢复时默认并行 `go build ./...` 遇到 Windows paging file too small�
 
 第三场 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=256 pnpm check`：Go/vet、依赖、架构、契约及 S1 API 14/14 PASS；TypeScript 因 256 MB 堆上限 exit134 FAIL，后续 lint/Vitest 未运行。在 `web` 工作目录以 512 MB 堆单独执行 `node node_modules/typescript/bin/tsc -b` PASS；整场第三次失败仍保留。
 
+后续单独执行 `NODE_OPTIONS=--max-old-space-size=512 pnpm --dir web lint` PASS；同堆限制 `pnpm --dir web exec vitest run --maxWorkers=1` 12 文件 / 83 测试 PASS。root 尚无完整单场 `pnpm check` PASS；这些组件复验不合成一场新绿记录。
+
+root 使用 Node SQLite `readOnly:true` 核验固定个人库 `C:/Users/DW/AppData/Roaming/astrocyte/state.sqlite`：缓存 partial，严格匹配 Astrocyte 根存在，native contributors=[]。确认 W1 所选缓存回放 0 eligible 是真实结果，未扩大原始会话读取或修改个人库。
+
 本次读取 W7 猜测的参考图路径 `C:/Users/DW/Downloads/个人作品蜂群接入后.png` 失败（文件不存在）。已要求复用现有看板及任务明确的五能力，不能声称对该图完成精确复刻。
 
 ## 波 A 独立检查（2026-10-11 21:58）

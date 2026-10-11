@@ -1,5 +1,26 @@
 # Astrocyte 当前状态
 
+## Codex --yolo 八轨接续（2026-10-11 22:13）
+
+用户更新后八轨均由 `codex --yolo` / gpt-6.1-sol 实际接续，原工作树和自动分支不变。当前有效 Task/Dispatch：
+
+| 轨 | Task | Dispatch |
+|---|---|---|
+| W0 契约、迁移、共享入口 | task_168bacd9d56d | ctx_b16e623a7b11 |
+| W1 事件流 | task_13ac51983837 | ctx_62837e7857f0 |
+| W2 动力学 | task_aa68996b9e24 | ctx_952de5921ed4 |
+| W3 Sleep | task_e5487ee2214c | ctx_1bd42ececb41 |
+| W4 Knowledge | task_da85be3296c1 | ctx_062b79f07e46 |
+| W5 Experience | task_01d6c1323a06 | ctx_64ccc9c2ca1a |
+| W6 MCP | task_4ed820f6c5e1 | ctx_e01b5a2aabf0 |
+| W7 作品聚合 | task_355d5b638062 | ctx_cf173bcd2418 |
+
+原 OpenCode 阶段报告按 partial 处理；W6 已证实 Agent 退出但未结算，原 Dispatch 按 stop 后 retry，代码 `daa3f6d` 保留。其余旧轨已归档关闭；W5 原终端因 user_takeover 由运行时保留、已结算 idle。旧表和旧 Dispatch 仅作历史，不再派发。
+
+W0 已发布 `b6a5794a4bf6ed282b60cace4bf81d779383df87` 基础契约/014迁移/未组装501关口；完整 M0 尚缺事件稳定receipt与rawbytes/观测包装、节点updated_at、项目隔离/分享审计/版本与sleep持久化，Codex W0 优先补 migration015 并发布精确 SHA 后解锁其他轨。M2纯公式30点独立复算误差0；各轨纯逻辑/协议/fixture局部通过不能替代存储和完整验收。
+
+root 基线三次整场 FAIL 及定向恢复见 [基线记录](docs/acceptance/AttentionEngine-baseline.md)。本机固定个人缓存中 Astrocyte 项目存在但 native contributors=[]，W1所选真实回放首场RED保留。原始会话元数据范围和工程默认参数已问用户，未答不扩大范围或冻结默认。下一步：W0共享基础精确SHA → root复验普通合入 → 各轨真实应用/持久化验收 → 集成/M6与最终check/build/push。
+
 ## Codex 接替主控（2026-10-11 21:41）
 
 用户明确要求接替原终端开始任务。原 OpenCode 主控已中断；Run `run_19a0b1268e5a` 已绑定 Codex `term_1adf40a6-ef79-4efa-b602-7b55173624e6`，consumer_generation=2。原八轨 Task/Dispatch 和工作树不变，实际 Worker 分支为 `songconmaisaix31-design/attention-engine-wN-*`。

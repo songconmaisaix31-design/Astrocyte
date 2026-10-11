@@ -43,7 +43,7 @@ W3/W4 原 Task 亦仅交付波 A 核心：`c3e8395` / `ab7d381`。原终端已�
 4. 记忆可见范围：Experience/KnowledgeEntry 默认**项目隔离** + 人工显式跨项目分享（带审计）；Attention Graph 本体个人级。
 5. 新增 W7 本地作品聚合轨（"AI 作品寻回册"级别，设计参考无源码）：平台聚合与统计 / 作品卡片与文件核实 / 交接手册 / 态度与视图 / 扫描导入与同步，并作为链1真实事件源。
 
-## 轨道与互斥写域（1 Agent + 1 Worktree + 1 Branch，全 OpenCode）
+## 轨道与互斥写域（1 Agent + 1 Worktree + 1 Branch，已切到 Codex --yolo）
 | 轨 | 分支 | 独占 write_paths | 里程碑 |
 |---|---|---|---|
 | W0 契约·迁移·HTTP·存储基础·集成 | attention-engine/w0-core | `contracts/`、`web/src/api/`、`migrations/014+`、M0 契约文件（`internal/attention/domain/engine_contract.go`、`internal/attention/app/engine_contract.go`、`*_contract*.go`：Event/Signal+权重表/AttentionNode/Experience/KnowledgeEntry/Evidence/引擎接口）、`internal/adapters/httpapi/`、`internal/adapters/sqlite/` 共享基础设施（连接/迁移执行/`engine_common*.go`）、`cmd/`、`go.mod`/`go.sum`、`scripts/`、`tests/attention-engine/` 共享 harness | M0 + 存储基础 + HTTP 关口 + 最终集成 + M6 |
