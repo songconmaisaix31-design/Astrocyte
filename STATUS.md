@@ -2,7 +2,20 @@
 
 ## 认知内核 Attention Engine 开工（2026-10-11）
 
-任务书 `tabbit-code (2).md`（v1.1 认知内核，三条链 M0–M6）；集成分支 `attention-engine/v1-20261011` 自基线 `dab8fea` 拉取，s1 分支族只读不改。按互斥写域解耦八轨（W0 契约/迁移/HTTP/集成，W1 事件流，W2 动力学引擎，W3 Sleep，W4 Knowledge，W5 Experience，W6 MCP，W7 本地作品聚合）+ 末尾 1 集成 Agent；并发无上限，全 OpenCode Worker。root 只调度与验收。主计划 `tasks/AttentionEngine-plan.md`；本轮关键决定与偏差见该计划及 QUESTIONS 顶部。尚未派发 Worker、无业务改动。
+任务书 `tabbit-code (2).md`（v1.1 认知内核，三条链 M0–M6）；集成分支 `attention-engine/v1-20261011` 自基线 `dab8fea` 拉取，s1 分支族只读不改。按互斥写域解耦八轨（W0 契约/迁移/HTTP/集成，W1 事件流，W2 动力学引擎，W3 Sleep，W4 Knowledge，W5 Experience，W6 MCP，W7 本地作品聚合）+ 末尾 1 集成 Agent；并发无上限，全 OpenCode Worker。root 只调度与验收。主计划 `tasks/AttentionEngine-plan.md`；本轮关键决定与偏差见该计划及 QUESTIONS 顶部。Run `run_19a0b1268e5a`，八轨已派发（全 OpenCode，state=ready）：
+
+| 轨 | 分支 | Task | Dispatch |
+|---|---|---|---|
+| W0 契约·迁移·HTTP·集成 | attention-engine/w0-core | task_0544bbb70579 | ctx_64948eee5483 |
+| W1 事件流 | attention-engine/w1-events | task_39005f434eb7 | ctx_8f5400fa1cad |
+| W2 动力学引擎 | attention-engine/w2-engine | task_596a21ea1542 | ctx_36d5bd080cfc |
+| W3 Sleep | attention-engine/w3-sleep | task_ce1dee8a6e0c | ctx_0de9c4cbea32 |
+| W4 Knowledge | attention-engine/w4-knowledge | task_0ac73e8d6abf | ctx_9940afcbc5d0 |
+| W5 Experience | attention-engine/w5-experience | task_8e7b86f690bf | ctx_f3159368db30 |
+| W6 MCP | attention-engine/w6-mcp | task_4ed820f6c5e1 | ctx_3cd01326c916 |
+| W7 本地作品聚合 | attention-engine/w7-works | task_fb31bc1f432e | ctx_6cd1faaecc04 |
+
+下一门：W0 M0 契约验收 → 普通合入集成分支 → 通知 W1–W6 开码。
 
 ## 论文、OpenCode 与进度收尾已集成（2026-10-11 02:46）
 
