@@ -3,7 +3,7 @@
 - 轨道分支：`songconmaisaix31-design/attention-engine-w5-experience`
 - 事实源：任务书 `tabbit-code (2).md` §3/§4.3/§4.5/§7/§8 M5；主计划 `tasks/AttentionEngine-plan.md` W5 行
 - 独占写域：`internal/attention/domain/experience*.go`、`internal/attention/app/experience_*.go`、`internal/adapters/sqlite/experience_store*.go`、`tests/attention-engine/M5-experience*`、本文件
-- 状态：Wave A（勘察 + 里程碑设计 + 验收脚手架已完成，业务代码待 M0 契约发布后编码）
+- 状态：Wave A（勘察 + 里程碑设计 + 纯本轨经验模式规则已实现并单测通过；app/service/store 待 M0 契约 SHA 发布后编码）
 
 ## 1. 目标（§4.3 Experience）
 
@@ -92,11 +92,18 @@ Experience {
 - `M5-experience_scope_test.go`：默认隔离 + 分享后可见 + 分享审计字段断言。
 - 依赖 W0 共享 harness 与 M0 契约类型；验收由 root 独立复验。
 
-## 8. Wave B 编码清单
+## 8. Wave A 已实现 / Wave B 编码清单
 
-- [ ] fetch + merge `origin/attention-engine/v1-20261011` 取 M0 契约类型
-- [ ] `domain/experience.go`：枚举 + 校验 + 晋级/作用域纯规则
-- [ ] `app/experience_*.go`：CaptureFailure / ApproveExperience / ShareExperience / ListExperiences + 服务接口
-- [ ] `adapters/sqlite/experience_store*.go`：仓库 + Tx 接口 + 迁移表读写
-- [ ] `tests/attention-engine/M5-experience*`：三组验收测试
-- [ ] `go test ./...` + `pnpm check` 通过后 commit + push，发 worker_done
+Wave A（已完成，`domain/experience.go` + `domain/experience_test.go`，纯规则不依赖 M0 共享类型）：
+- [x] 枚举 + 校验：`ValidVerdict`/`ValidStatus`/`ValidateCapture`（pattern/verdict/condition/evidence）
+- [x] 晋级纯规则：`Promote`（quarantine↔approved，仅 approve/demote 合法）
+- [x] 作用域 + 分享审计：`ScopedForProject`（默认隔离）/`ShareRecord` + `ValidateShare`（谁/何时/到哪）
+- [x] 失败来源分类：`CaptureEligible`（仅 `agent_task`+`failed`；`job_failed`/`import`/`distillation` 不被伪装成 agent_task 失败）
+- [x] 单包验证：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain/` PASS
+
+Wave B（待 M0 契约 SHA 发布后编码）：
+- [ ] fetch + merge 集成分支取 M0 契约类型（Experience schema / EventRef / Event）
+- [ ] `app/experience_*.go`：CaptureFailure / ApproveExperience / ShareExperience / ListExperiences + 服务接口（人工关口按 Principal.Kind）
+- [ ] `adapters/sqlite/experience_store*.go`：仓库 + Tx 接口 + 迁移表读写（迁移 `014+` 由 W0 负责，跨轨 Handoff）
+- [ ] `tests/attention-engine/M5-experience*`：三组验收测试（失败候选捕获 / 晋级关口 / 作用域分享），含 SQLite 持久化 + 冷重启
+- [ ] 串行验收通过后 commit + push，发 worker_done succeeded
