@@ -11,6 +11,22 @@ Claude Code/Codex 会话回放格式勘察。编码阻塞于 M0 契约类型未�
 merge_ready 后执行 `git fetch origin && git merge origin/attention-engine/v1-20261011`
 再开码（波 B）。
 
+### 阶段收束（partial，2026-10-11）
+
+主控通知用户将切换 `codex --yolo`，本 Task/Dispatch 按当前真实状态收束并 settle，
+不再等待 M0 开展新阶段。
+
+- 已完成（真实）：六类事件源只读勘察、§二无损映射表、§三归一化设计 + §5.2 权重表、
+  Claude Code/Codex JSONL 格式勘察、§五验收脚手架设计、M0 契约 Handoff 需求（§四）。
+- 未完成（真实 partial）：M1 编码未开工（Event→Signal 归一化、权重表落码、event_store
+  持久化、真实会话回放），全部阻塞于 M0 契约类型（Event/Signal/迁移/引擎接口）未发布，
+  无任何一行 M1 业务代码产出，仅文档。
+- 下一步（接续入口）：M0 契约合入 `attention-engine/v1-20261011` 后，沿本分支/worktree/
+  写域新建 Task/Dispatch，执行 `git fetch origin && git merge origin/attention-engine/v1-20261011`，
+  按 §三/§五 开码：`internal/attention/domain/{event,signal}*.go`、
+  `internal/attention/app/{event,signal}*.go`、`internal/adapters/events/**`、
+  `internal/adapters/sqlite/event_store*.go`、`tests/attention-engine/M1*`。
+
 ## 目标与验收（任务书原文，不降级）
 
 - §4.1 Event（source/session/ts/kind/tokens/scope/topic/raw）作为归一化目标；现有
