@@ -19,11 +19,13 @@ import styles from './WorksAlbum.module.css';
  */
 export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boolean; query: string; onClearQuery: () => void }) {
   const snapshot: WorksSnapshot = fixture ? fixtureWorksSnapshot() : { works: [], platforms: [], status: 'unknown', observed_at: null, failures: [] };
-  const [filters, setFilters] = useState<WorksFilters>({ ...initialWorksFilters, search: query });
+  const [filters, setFilters] = useState<WorksFilters>(initialWorksFilters);
   const [selectedID, setSelectedID] = useState('');
+  const countsKnown = snapshot.observed_at !== null && snapshot.status !== 'unknown';
+  const recentKnown = countsKnown && snapshot.works.every(work => work.files.verified && work.files.mtime !== null);
   const filter = (key: keyof WorksFilters, value: string | boolean) => setFilters(previous => ({ ...previous, [key]: value }));
   const unique = (values: string[]) => [...new Set(values.filter(Boolean))].sort();
-  const visible = filterWorks(snapshot.works, filters);
+  const visible = filterWorks(snapshot.works, { ...filters, search: filters.search || query });
   const selected = snapshot.works.find(work => work.id === selectedID);
   const platforms = unique(snapshot.works.map(work => work.platform));
   const groups = unique(snapshot.works.map(work => work.group));
@@ -36,21 +38,21 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
         <button type="button" className="ac-button secondary compact" disabled={!fixture}>AI 投递 JSON</button>
       </div></div>
       <dl className={styles.metrics} aria-label="作品统计">
-        {[{ label: '作品', value: snapshot.works.length }, { label: '文件夹', value: snapshot.works.filter(work => work.kind === 'folder').length }, { label: '接力过', value: snapshot.works.filter(work => work.handoff.content.trim()).length }, { label: '最近在动', value: snapshot.platforms.reduce((sum, stat) => sum + stat.recent, 0) }].map(metric => <div key={metric.label}><dd>{metric.value}</dd><dt>{metric.label}</dt></div>)}
+        {[{ label: '作品', value: snapshot.works.length }, { label: '文件夹', value: snapshot.works.filter(work => work.kind === 'folder').length }, { label: '接力过', value: snapshot.works.filter(work => work.handoff.content.trim()).length }, { label: '最近在动', value: snapshot.platforms.reduce((sum, stat) => sum + stat.recent, 0) }].map(metric => <div key={metric.label}><dd>{!countsKnown || (metric.label === '最近在动' && !recentKnown) ? '未知' : metric.value}</dd><dt>{metric.label}</dt></div>)}
       </dl>
-      {snapshot.platforms.length > 0 && <ul className={styles.platforms} aria-label="平台统计">{snapshot.platforms.map(stat => <li key={stat.platform}><b><BrandIcon name={stat.platform} size={18} />{platformLabel(stat.platform)}</b><span>{stat.works} 作品 · {stat.folders} 文件夹</span><span>{stat.handed_over} 接力过 · {stat.recent} 最近在动</span></li>)}</ul>}
-      <div className={styles.viewbar}><FilterChips label="看的方式" value={filters.view} onChange={value => filter('view', value)} options={[{ value: 'flat', label: '平铺' }, { value: 'platform', label: '按平台' }, { value: 'group', label: '按分组' }, { value: 'timeline', label: '时间线' }]} /><p className={styles.note}>{snapshot.status === 'complete' ? '当前已保存清单' : snapshot.status === 'partial' ? '部分目录暂不可读 · 仅统计已返回作品' : '作品寻回册数据端点尚未接入'}{query ? ` · 页面搜索：${query}` : ''}</p></div>
+      {snapshot.platforms.length > 0 && <ul className={styles.platforms} aria-label="平台统计">{snapshot.platforms.map(stat => <li key={stat.platform}><b><BrandIcon name={stat.platform} size={18} />{platformLabel(stat.platform)}</b><span>{stat.works} 作品 · {stat.folders} 文件夹</span><span>{stat.handed_over} 接力过 · {snapshot.works.filter(work => work.platform === stat.platform).every(work => work.files.verified && work.files.mtime !== null) ? stat.recent : '未知'} 最近在动</span></li>)}</ul>}
+      <div className={styles.viewbar}><FilterChips label="看的方式" value={filters.view} onChange={value => filter('view', value)} options={[{ value: 'flat', label: '平铺' }, { value: 'platform', label: '按平台' }, { value: 'group', label: '按分组' }, { value: 'timeline', label: '时间线' }]} /><p className={styles.note}>{snapshot.status === 'complete' ? '当前已保存清单' : snapshot.status === 'partial' ? '部分目录暂不可读 · 仅统计已返回作品' : '尚无已保存的作品观察 · 数量未知'}{query ? ` · 页面搜索：${query}` : ''}</p></div>
       <div className={styles.filters}>
         <div className={styles.controls}>
-          <label>搜索作品<input aria-label="搜索作品" type="search" value={filters.search} placeholder="名称、平台、目录或交接手册" onChange={event => filter('search', event.target.value)} /></label>
+          <label>搜索作品<input aria-label="搜索作品" type="search" value={filters.search || query} placeholder="名称、平台、目录或交接手册" onChange={event => filter('search', event.target.value)} /></label>
           <label>平台<select aria-label="平台" value={filters.platform} onChange={event => filter('platform', event.target.value)}><option value="all">全部平台</option>{platforms.map(value => <option key={value} value={value}>{platformLabel(value)}</option>)}</select></label>
           <label>分组<select aria-label="分组" value={filters.group} onChange={event => filter('group', event.target.value)}><option value="all">全部分组</option>{groups.map(value => <option key={value} value={value}>{value}</option>)}<option value="">未分组</option></select></label>
           <label>态度<select aria-label="态度" value={filters.attitude} onChange={event => filter('attitude', event.target.value)}><option value="all">全部态度</option>{attitudeOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}<option value="">尚未标记</option></select></label>
           <label>排序<select aria-label="排序" value={filters.sort} onChange={event => filter('sort', event.target.value)}><option value="recent">最近改动</option><option value="updated">最近更新</option><option value="name">作品名称</option></select></label>
         </div>
-        <div className={styles.result}><span>共 {visible.length} 个作品</span><label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={filters.includeHidden} onChange={event => filter('includeHidden', event.target.checked)} />显示已隐藏</label><button type="button" className="ac-text-button" onClick={() => { setFilters(initialWorksFilters); onClearQuery(); }}>清除筛选</button></div>
+        <div className={styles.result}><span>{countsKnown ? `共 ${visible.length} 个已保存作品` : '作品数量未知'}</span><label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={filters.includeHidden} onChange={event => filter('includeHidden', event.target.checked)} />显示已隐藏</label><button type="button" className="ac-text-button" onClick={() => { setFilters(initialWorksFilters); onClearQuery(); }}>清除筛选</button></div>
       </div>
-      {!snapshot.works.length && <p role="status" className={styles.empty}>{fixture ? '没有作品。' : '作品寻回册尚未接入扫描与导入端点，聚合、卡片、交接手册、态度与视图会在端点接通后展示。'}</p>}
+      {!snapshot.works.length && <p role="status" className={styles.empty}>{fixture ? '没有作品。' : '尚无已保存的作品观察。扫描仅限已批准的登记项目，当前 API 接入待完成。'}</p>}
       {worksSections(visible, filters.view).map(section => <section key={section.label} aria-label={section.label}>
         {filters.view !== 'flat' && <h3 className={styles.groupTitle}>{section.label} <span>{section.works.length}</span></h3>}
         <ul className={`${styles.cards} ${filters.view === 'timeline' ? styles.timeline : ''}`}>{section.works.map(work => <li key={work.id}>
@@ -59,8 +61,8 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
             <div><span className={`${styles.badge} ${work.files.verified ? '' : styles.unverified}`}>{fileVerifiedLabel(work.files)}</span></div>
             <div className={styles.clients}><span><BrandIcon name={work.platform} size={18} />{platformLabel(work.platform)}</span></div>
             <p className={styles.handoff}>{work.handoff.content || '尚无交接手册'}</p>
-            <code className={styles.path}>{work.files.source_path || '路径未提供'}{work.files.file_count ? ` · ${work.files.file_count} 个文件` : ''}</code>
-            <small>最近改动 · {work.files.mtime ? formatDateTime(work.files.mtime) : '未知'}</small>
+            <code className={styles.path}>{work.files.source_path || '路径未提供'}{work.files.verified ? ` · ${work.files.file_count} 个文件` : ' · 文件数量未知'}</code>
+            <small>最近改动 · {work.files.verified && work.files.mtime ? formatDateTime(work.files.mtime) : '未知'}</small>
             <div className={styles.cardFooter}><span>{attitudeLabel(work.attitude)} · {work.group || '未分组'}</span><span>查看详情 →</span></div>
           </button>
         </li>)}</ul>

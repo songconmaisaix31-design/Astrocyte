@@ -64,9 +64,9 @@ export const attitudeOptions: { value: WorksAttitude; label: string }[] = [
 
 export const attitudeLabel = (attitude: string) => attitudeLabels[attitude as WorksAttitude] ?? '尚未标记';
 
-export const platformLabel = (platform: string) => platform || '平台未知';
+export const platformLabel = (platform: string) => platform && platform !== 'unknown' ? platform : '平台未知';
 
-export const handoffSourceLabel = (source: string) => (source === 'generated' ? 'AI 生成' : '人工编写');
+export const handoffSourceLabel = (source: string) => (source === 'generated' ? 'AI 生成' : source === 'human' ? '人工编写' : '来源未知');
 
 export interface WorksFilters {
   view: 'flat' | 'platform' | 'group' | 'timeline';
@@ -103,7 +103,7 @@ export function filterWorks(items: WorksWork[], filters: WorksFilters) {
 export function worksSections(items: WorksWork[], view: WorksFilters['view']) {
   const groups = new Map<string, WorksWork[]>();
   for (const item of items) {
-    const label = view === 'platform' ? item.platform || '平台未知'
+    const label = view === 'platform' ? platformLabel(item.platform)
       : view === 'group' ? item.group || '未分组'
       : view === 'timeline' ? item.files.mtime?.slice(0, 10) || '活动时间未知'
       : '全部作品';

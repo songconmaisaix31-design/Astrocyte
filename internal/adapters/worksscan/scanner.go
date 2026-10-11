@@ -21,6 +21,7 @@ const (
 	markerFileName = ".astrocyte-works.json"
 	maxRoots       = 256
 	maxFiles       = 10000
+	maxDepth       = 8
 	maxMarkerBytes = 64 * 1024
 )
 
@@ -41,7 +42,7 @@ type marker struct {
 
 // ScanWorks observes each root as a work folder (or single file) and verifies
 // its file facts. A root may carry a marker manifest naming the work and its
-// platform; without one the platform stays "manual". Errors are per root so a
+// platform; without one the platform stays "unknown". Errors are per root so a
 // partial scan is reported, never hidden behind a single failure.
 func (s *Scanner) ScanWorks(ctx context.Context, roots []string) ([]domain.Work, []domain.WorkDiscoveryFailure, error) {
 	if len(roots) > maxRoots {
@@ -58,7 +59,7 @@ func (s *Scanner) ScanWorks(ctx context.Context, roots []string) ([]domain.Work,
 			failures = append(failures, domain.WorkDiscoveryFailure{Root: root, Reason: "root_unavailable"})
 			continue
 		}
-		info, err := os.Stat(canonical)
+		info, err := os.Lstat(canonical)
 		if err != nil {
 			failures = append(failures, domain.WorkDiscoveryFailure{Root: canonical, Reason: "stat_failed"})
 			continue
@@ -69,6 +70,9 @@ func (s *Scanner) ScanWorks(ctx context.Context, roots []string) ([]domain.Work,
 		}
 		work := s.observe(ctx, canonical, info)
 		works = append(works, work)
+		if !work.Files.Verified {
+			failures = append(failures, domain.WorkDiscoveryFailure{Root: canonical, Reason: work.Files.Reason})
+		}
 	}
 	return works, failures, nil
 }
@@ -79,7 +83,7 @@ func (s *Scanner) observe(ctx context.Context, root string, info os.FileInfo) do
 		kind = domain.WorkKindFile
 	}
 	name := filepath.Base(root)
-	platform := "manual"
+	platform := "unknown"
 	if m, ok := readMarker(root); ok {
 		if domain.ValidWorkName(m.Name) && m.Name != "" {
 			name = m.Name
@@ -89,9 +93,10 @@ func (s *Scanner) observe(ctx context.Context, root string, info os.FileInfo) do
 		}
 	}
 	mtime := info.ModTime().UTC()
-	fileCount := 0
+	fileCount := 1
+	reason := ""
 	if info.IsDir() {
-		mtime, fileCount = walkFiles(ctx, root, info.ModTime())
+		mtime, fileCount, reason = walkFiles(ctx, root, info.ModTime())
 	}
 	return domain.Work{
 		ID:       domain.WorkIdentity(platform, root),
@@ -104,7 +109,8 @@ func (s *Scanner) observe(ctx context.Context, root string, info os.FileInfo) do
 			SourcePath: root,
 			Mtime:      &mtime,
 			FileCount:  fileCount,
-			Verified:   true,
+			Verified:   reason == "",
+			Reason:     reason,
 		},
 	}
 }
@@ -112,17 +118,28 @@ func (s *Scanner) observe(ctx context.Context, root string, info os.FileInfo) do
 // walkFiles counts regular files and returns the newest mtime, bounded by depth
 // and file count. Hidden, VCS and dependency directories are skipped so the
 // walk never strays into credentials or vendored content.
-func walkFiles(ctx context.Context, root string, fallback time.Time) (time.Time, int) {
+func walkFiles(ctx context.Context, root string, fallback time.Time) (time.Time, int, string) {
 	newest := fallback
 	count := 0
+	reason := ""
 	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || ctx.Err() != nil {
+		if ctx.Err() != nil {
+			reason = "scan_cancelled"
+			return fs.SkipAll
+		}
+		if err != nil {
+			reason = "files_partially_unreadable"
 			return nil
 		}
 		if d.IsDir() {
 			if path != root {
 				name := d.Name()
 				if name == ".git" || name == "node_modules" || name == "vendor" || name == ".venv" || (strings.HasPrefix(name, ".") && name != ".") {
+					return filepath.SkipDir
+				}
+				rel, _ := filepath.Rel(root, path)
+				if len(strings.Split(rel, string(filepath.Separator))) > maxDepth {
+					reason = "scan_depth_limit"
 					return filepath.SkipDir
 				}
 			}
@@ -133,10 +150,15 @@ func walkFiles(ctx context.Context, root string, fallback time.Time) (time.Time,
 		}
 		info, err := d.Info()
 		if err != nil {
+			reason = "files_partially_unreadable"
+			return nil
+		}
+		if !info.Mode().IsRegular() {
 			return nil
 		}
 		count++
 		if count > maxFiles {
+			reason = "scan_file_limit"
 			return fs.SkipAll
 		}
 		if info.ModTime().After(newest) {
@@ -147,7 +169,7 @@ func walkFiles(ctx context.Context, root string, fallback time.Time) (time.Time,
 	if count > maxFiles {
 		count = maxFiles
 	}
-	return newest.UTC(), count
+	return newest.UTC(), count, reason
 }
 
 // readMarker reads a bounded manifest naming the work and platform. It reads
@@ -175,6 +197,10 @@ func canonicalRoot(root string) (string, error) {
 		return "", err
 	}
 	clean := filepath.Clean(abs)
+	resolved, err := filepath.EvalSymlinks(clean)
+	if err != nil || !strings.EqualFold(resolved, clean) {
+		return "", errors.New("root must not cross a symlink")
+	}
 	return clean, nil
 }
 

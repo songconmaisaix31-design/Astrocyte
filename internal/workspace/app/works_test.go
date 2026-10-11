@@ -212,3 +212,47 @@ func TestSetWorkMetadataRevisionConflict(t *testing.T) {
 		t.Fatal("stale revision must conflict")
 	}
 }
+
+func TestWorksEventsDoNotInventHumanAttention(t *testing.T) {
+	repo := newFakeWorksRepo()
+	scan := &fakeScanSource{works: []domain.Work{scanWork("codex", "app", "C:\\w\\app")}}
+	sink := &fakeEventSink{}
+	delivery := &fakeDeliverySource{works: []domain.Work{scanWork("claude", "other", "C:\\w\\other")}}
+	s := NewWorksService(repo, scan, delivery, sink, WorksServiceOptions{Clock: fixedClock()})
+	ctx := context.Background()
+	if _, err := s.RefreshWorks(ctx, humanCaller(), WorksRefreshCommand{}); err != nil {
+		t.Fatal(err)
+	}
+	if len(sink.events) != 1 || sink.events[0].Source != domain.WorkEventSourceMachine || sink.events[0].Topic != "" {
+		t.Fatalf("refresh must be machine observation with unknown topic: %+v", sink.events)
+	}
+	sink.events = nil
+	if _, err := s.ListWorks(ctx, humanCaller()); err != nil {
+		t.Fatal(err)
+	}
+	if len(sink.events) != 0 {
+		t.Fatal("GET must not emit events")
+	}
+	if _, err := s.ImportWorksDelivery(ctx, humanCaller(), WorksDeliveryCommand{Content: []byte(`{"works":[]}`)}); err != nil {
+		t.Fatal(err)
+	}
+	if len(sink.events) != 1 || sink.events[0].WorkID != delivery.works[0].ID {
+		t.Fatalf("import must not emit unrelated cached works: %+v", sink.events)
+	}
+	sink.events = nil
+	work, err := s.SetWorkGroup(ctx, humanCaller(), scan.works[0].ID, WorkGroupCommand{Group: "research"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sink.events) != 1 || sink.events[0].Kind != domain.WorkEventGroupSet {
+		t.Fatalf("group must not become attitude approval: %+v", sink.events)
+	}
+	if _, err := s.SetWorkHandoff(ctx, humanCaller(), work.ID, WorkHandoffCommand{ExpectedRevision: work.Revision, Content: "human guide"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, event := range sink.events {
+		if event.Topic != "" {
+			t.Fatalf("platform is not a cognitive topic: %+v", event)
+		}
+	}
+}

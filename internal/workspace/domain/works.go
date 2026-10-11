@@ -251,8 +251,8 @@ func updatedAt(work Work) time.Time {
 
 // WorkEvent is the raw works-activity event emitted to the chain-1 event
 // source. W1 normalizes it into the unified Event (§4.1): Source carries the
-// actor (manual|mcp), Kind carries the activity, Scope the work root, Topic a
-// platform-derived seed, and Payload the audit body. Tokens are absent here
+// actor (manual|machine), Kind carries the activity, Scope the work root, Topic an
+// explicitly known cognitive topic (empty when unknown), and Payload the audit body. Tokens are absent here
 // because works activities are not token-metered.
 type WorkEvent struct {
 	WorkID  string          `json:"work_id"`
@@ -269,6 +269,7 @@ type WorkEvent struct {
 const (
 	WorkEventImported    = "work_imported"
 	WorkEventAttitudeSet = "work_attitude_set"
+	WorkEventGroupSet    = "work_group_set"
 	WorkEventHandoffSet  = "work_handoff_set"
 	WorkEventHidden      = "work_hidden"
 	WorkEventVerified    = "work_verified"
@@ -277,6 +278,9 @@ const (
 
 // WorkEventSource is the chain-1 event source label for works activity.
 const WorkEventSourceManual = "manual"
+
+// Machine observations carry no human-attention implication.
+const WorkEventSourceMachine = "machine"
 
 // WorkHumanMetadata holds the durable human annotations for one work. It is
 // stored independently from the replaceable scan observation, so a refresh or

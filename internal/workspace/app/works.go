@@ -164,7 +164,7 @@ func (s *worksService) RefreshWorks(ctx context.Context, c domain.Caller, cmd Wo
 	if err := s.repo.SaveWorksSnapshot(ctx, snapshot); err != nil {
 		return snapshot, err
 	}
-	s.emit(ctx, snapshot, domain.WorkEventSynced)
+	s.emit(ctx, domain.WorksSnapshot{Works: works}, domain.WorkEventSynced)
 	return s.withMetadata(ctx, snapshot)
 }
 
@@ -191,7 +191,7 @@ func (s *worksService) ImportWorksDelivery(ctx context.Context, c domain.Caller,
 		return snapshot, err
 	}
 	s.seedDeliveryMetadata(ctx, works)
-	s.emit(ctx, snapshot, domain.WorkEventImported)
+	s.emit(ctx, domain.WorksSnapshot{Works: works}, domain.WorkEventImported)
 	return s.withMetadata(ctx, snapshot)
 }
 
@@ -335,7 +335,7 @@ func (s *worksService) SetWorkGroup(ctx context.Context, c domain.Caller, id str
 	return s.saveMetadata(ctx, c, id, cmd.ExpectedRevision, func(m domain.WorkHumanMetadata) domain.WorkHumanMetadata {
 		m.Group = cmd.Group
 		return m
-	}, domain.WorkEventAttitudeSet)
+	}, domain.WorkEventGroupSet)
 }
 
 func (s *worksService) SetWorkHandoff(ctx context.Context, c domain.Caller, id string, cmd WorkHandoffCommand) (domain.Work, error) {
@@ -375,7 +375,10 @@ func (s *worksService) emitWork(ctx context.Context, work domain.Work, kind stri
 	payload, _ := json.Marshal(work)
 	event := domain.WorkEvent{
 		WorkID: work.ID, Kind: kind, Source: domain.WorkEventSourceManual,
-		Scope: work.Root, Topic: work.Platform, At: s.clock().UTC(), Payload: payload,
+		Scope: work.Root, At: s.clock().UTC(), Payload: payload,
+	}
+	if kind == domain.WorkEventSynced || kind == domain.WorkEventVerified {
+		event.Source = domain.WorkEventSourceMachine
 	}
 	_ = s.events.EmitWorkEvent(ctx, event)
 }

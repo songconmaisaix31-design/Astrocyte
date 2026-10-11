@@ -1,5 +1,15 @@
 # Attention Engine W7 · 本地作品聚合（AI 作品寻回册）+ 链1事件源
 
+## 当前返修状态（2026-10-11）
+
+**W7 NOT_DONE**：ea942c4 的旧交付仅领域、存储、本地服务和 fixture，真实界面仍待 W0 API 契约发布精确 SHA。当前 Dispatch task_355d5b638062 / ctx_cf173bcd2418，实际客户端 Codex（当前已启动的 --yolo 会话），不新建 Agent。根节点独占协调；本 Worker 保留原写域。
+
+第一阶段纠正：未知缓存的数量显示未知；未核实作品的文件数与最近活动显示未知；未知扫描平台使用 unknown，不推断客户端；扫描最多 8 层/10000 文件，截断/读取失败明确未完整核实，不跟随 root symlink。WorkEvent topic 未知保持空，sync/verify 来源 machine，分组使用 work_group_set，导入/同步仅发本次涉及作品。
+
+主控通过 msg ask 答复批准当前工作树 `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-w7-works` 为 metadata-only 根。`ASTROCYTE_TEST_W7_APPROVED_ROOT` 定向 Go 验收实际读目录名/stat/mtime/count，538 文件、unknown 平台、verified=true、0 failures；这是实际扫描证据，**不等于真实 HTTP/浏览器/链1验收**。可信登记根解析、HTTP 鉴权/CSRF、schema/迁移/启动仍属 W0，EventSink 归 W1；未发布前不冻结传输契约或私自接线。
+
+首类型检查 RED（展示 helper 替换误用了变量），修正后 typecheck PASS；首局部 ESLint RED（effect 同步 setState），改为派生搜索后局部 ESLint PASS。Go `-p=1` / GOMAXPROCS=2 定向 Works/W7/Scanner/Delivery PASS；Vitest 展示 7 PASS；`pnpm --dir web build` PASS；`git diff --check` PASS。Node 限制 512MiB。真实 API UI 命令、SQLite HTTP 后重启复核和三尺寸键盘仍 NOT_RUN。
+
 分支 `songconmaisaix31-design/attention-engine-w7-works`，基线 `4d200df`（未 merge `origin/attention-engine/v1-20261011`，M0 契约未就绪，见 §5）。写域仅本任务所列，不改既有文件；端点/迁移/HTTP/主程序接线按 `AttentionEngine-plan.md` 交 W0 统一落。
 
 ## 1. 交付内容（五能力 + 事件源）
@@ -65,19 +75,20 @@ services.Works = worksService
 
 `worksEventSink` 指向链1事件落库（见 §4）；`RegisteredProjects` 已可作为 `RefreshWorks` 默认扫描根来源（W0 把 `localProjects` 的登记根传入 `WorksRefreshRequestV1.roots`，或接一个 `WorksRoots` 提供者）。HTTP 层只解析/校验 DTO，鉴权沿 `HumanSession` + CSRF。
 
-## 4. 链1事件源映射（W1 Handoff，`WorkEvent` → §4.1 `Event`）
+## 4. 链1事件源映射（纠正后 W1 Handoff）
 
-| WorkEvent.kind | §4.1 kind | source |
+W7 保留原始 WorkEvent 词汇，W1 独占闭集 Event.Kind 的合法转换。没有认知 topic 的事件保留空 topic，不能使用 platform 代替。
+
+| 原始 kind | actor/source | W1 边界 |
 |---|---|---|
-| `work_imported` | `collect` | manual |
-| `work_attitude_set`(continue/done) | `user_approve` | manual |
-| `work_attitude_set`(park) | `bookmark` | manual |
-| `work_hidden` | `user_veto` | manual |
-| `work_handoff_set` | `agent_task`(generated) / `manual`(human) | 按 `handoff.source` |
-| `work_synced` | 系统刷新，机器信号（不增人类关注） | 建议丢弃或零权 |
-| `work_verified` | 文件核实（机器） | 建议零权 |
+| work_imported | manual（人提交 JSON） | collect；仅本次导入项，生成文本不表示任务成功 |
+| work_attitude_set | manual | 显式态度可按 user_approve/bookmark 规则映射 |
+| work_group_set | manual | 分组元数据，不表示态度审批 |
+| work_hidden | manual | 隐藏/取消隐藏需按实际 hidden 值区分，不统一 user_veto |
+| work_handoff_set | manual | 保存人工手册，不是闭集 manual kind，也不是 agent_task |
+| work_synced/work_verified | machine | 系统观察，禁止增加人类注意力；不能转成 manual 关注信号 |
 
-`WorkEvent.scope`=作品根，`topic`=platform 种子（睡眠聚类细化），`payload`=工作 JSON（审计）。`tokens` 无（作品活动非 token 计费），W1 归一化时置 0/缺省。事件落库（`event_store`）由 W1 接 `WorksEventSink` 实现；W7 只定义端口与载荷。
+Payload 为作品活动记录，Scope 为作品根；生成手册不推断 agent_task 成功。默认空 topic 的认知处理和未知事件归 W1，不在 W7 冻结策略。现有 sink 错误仍未传递给客户端；链1落库可靠性须 W1/W0 接线后联合核验，不能沿 sink collector 测试声称完成。
 
 ## 5. 依赖与剩余限制
 

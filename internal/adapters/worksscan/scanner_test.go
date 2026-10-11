@@ -36,8 +36,8 @@ func TestScannerVerifiesFolderFacts(t *testing.T) {
 	if work.Files.Mtime == nil {
 		t.Fatal("folder mtime must be observed")
 	}
-	if work.Platform != "manual" {
-		t.Fatalf("default platform must be manual, got %q", work.Platform)
+	if work.Platform != "unknown" {
+		t.Fatalf("default platform must be unknown, got %q", work.Platform)
 	}
 }
 
@@ -115,5 +115,41 @@ func TestParseDeliveryHonorsContext(t *testing.T) {
 	cancel()
 	if _, err := ParseDelivery(ctx, []byte(`{"works":[]}`)); err == nil {
 		t.Fatal("cancelled context must error")
+	}
+}
+
+func TestScannerReportsDepthBoundAsUnverified(t *testing.T) {
+	root := t.TempDir()
+	nested := root
+	for i := 0; i <= maxDepth; i++ {
+		nested = filepath.Join(nested, "nested")
+	}
+	if err := os.MkdirAll(nested, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(nested, "beyond.go"), []byte("private body is never read"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	works, failures, err := NewScanner().ScanWorks(context.Background(), []string{root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(works) != 1 || works[0].Files.Verified || works[0].Files.Reason != "scan_depth_limit" || len(failures) != 1 {
+		t.Fatalf("bounded scan must disclose unknown count: %+v %+v", works, failures)
+	}
+}
+
+func TestScannerRejectsSymlinkRoot(t *testing.T) {
+	root := t.TempDir()
+	link := filepath.Join(t.TempDir(), "link")
+	if err := os.Symlink(root, link); err != nil {
+		t.Skipf("symlink privilege unavailable: %v", err)
+	}
+	works, failures, err := NewScanner().ScanWorks(context.Background(), []string{link})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(works) != 0 || len(failures) != 1 {
+		t.Fatalf("symlink must not expand approved root: %+v %+v", works, failures)
 	}
 }

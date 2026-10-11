@@ -131,11 +131,11 @@ func TestW7WorksAggregationAcrossRestart(t *testing.T) {
 	kinds := map[string]bool{}
 	for _, event := range sink.events {
 		kinds[event.Kind] = true
-		if event.Scope == "" || event.Topic == "" || event.Source != domain.WorkEventSourceManual {
+		if event.Scope == "" || event.Topic != "" || (event.Source != domain.WorkEventSourceManual && event.Source != domain.WorkEventSourceMachine) {
 			t.Fatalf("event missing normalization fields: %+v", event)
 		}
 	}
-	for _, kind := range []string{domain.WorkEventSynced, domain.WorkEventImported, domain.WorkEventAttitudeSet, domain.WorkEventHandoffSet, domain.WorkEventHidden} {
+	for _, kind := range []string{domain.WorkEventSynced, domain.WorkEventImported, domain.WorkEventAttitudeSet, domain.WorkEventHandoffSet, domain.WorkEventHidden, domain.WorkEventGroupSet} {
 		if !kinds[kind] {
 			t.Fatalf("missing %s event", kind)
 		}
@@ -177,4 +177,25 @@ func TestW7WorksAggregationAcrossRestart(t *testing.T) {
 	if !lingxiHidden {
 		t.Fatal("cold restart lost hidden flag")
 	}
+}
+
+func TestW7ApprovedLocalMetadataObservation(t *testing.T) {
+	root := os.Getenv("ASTROCYTE_TEST_W7_APPROVED_ROOT")
+	if root == "" {
+		t.Skip("requires explicitly approved metadata-only root")
+	}
+	works, failures, err := worksscan.NewScanner().ScanWorks(context.Background(), []string{root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(works) != 1 {
+		t.Fatalf("approved root not observed: %+v", failures)
+	}
+	if works[0].Root != filepath.Clean(root) || works[0].Files.SourcePath != filepath.Clean(root) {
+		t.Fatalf("observation escaped root: %+v", works[0])
+	}
+	if works[0].Files.Mtime == nil {
+		t.Fatal("actual stat time absent")
+	}
+	t.Logf("actual bounded root metadata: platform=%s verified=%v observed_files=%d reason=%s failures=%d", works[0].Platform, works[0].Files.Verified, works[0].Files.FileCount, works[0].Files.Reason, len(failures))
 }
