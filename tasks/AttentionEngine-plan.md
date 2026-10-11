@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-12 00:22 单spec限定集成 `task_d1bc72ed20a0` / `ctx_4744d3b64314` 已succeeded，SOURCE `7f45830a4f0f807ce17f95e257174a8adf62efac` / REPORT `f726e1879aacff088ccf0f91a21fb5dbeaec74e4` 已push并root普通合为 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1`。root独立两视口2PASS/51.8s和scoped TS/eslint/diff通过；生产代码/依赖与92a2完全相同，check/build沿用精确业务源已有通过结果，不重复无变更构建。所有Dispatch结算、原树保留retained idle，最终push自动CI结果另记；真实M1/用户策略和科学验收仍未完成。
+
 2026-10-12 00:16 W0单spec返修succeeded，SOURCE `28459de60c1726a6a5119562900d73348309a615` / REPORT `49023fc044c2ebcbbffdcc582d2f95c6f22fd78d` 已push，真实8.3输入两视口最终2PASS、scoped TS/eslint/diff通过，原CI/本机两视口首RED和中间测试调用错误保留；生产源码零修改。沿唯一原集成Agent/树/分支新Task普通合root文档基线df9471a与W0精确REPORT，仅定向单spec/类型/静态检查后push报告，写域仍只有集成报告/必要薄胶水，不重复M6/业务build/全suite；root普通合并后单spec复验并最终push自动CI，不能以2定向绿称Windows全套绿。
 
 2026-10-12 00:09 CI38153179867（root92a2ded）Ubuntu完整PASS，Windowscheck/build PASS但浏览器224PASS/2FAIL/30SKIP：只 `web/e2e/s1-projects.spec.ts:33` 在1920/1280两视口把API规范root长名与输入RUNNER~1短名作字串相等。首E2E日志 `%TEMP%/astrocyte-ci-38153179867-e2e-first-failed.log` 保留，Ubuntu完整原件也留存；一次job日志获取EOF单独文件，不充作stderr。CanonicalRoot原来就返回EvalSymlinks规范目录，不能改变生产语义来适配测试。原W0沿同终端/树/分支单轨限定测试返修，只写 `web/e2e/s1-projects.spec.ts` 和自己报告：以Node独立realpath核对实际同目录，assert用户POST仍原样短路径、返回/SQLite/重启为规范目录，保留B/C授权上下文和不开模型。真实8.3 owned fixture复现，不能放宽assert/改TEMP隐藏；不改业务/helper/合同/其他spec，不重跑私源/媒体/paid。两视口定向browser+type/lint后commit+push，原集成Agent普通合，root定向复验和最终自动CI；现有源码check/build保持，不做无代码变化的重复构建。

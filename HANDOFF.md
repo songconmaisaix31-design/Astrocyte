@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 最新交付入口（2026-10-12 00:22）
+
+分支attention-engine/v1-20261011，普通合958109d7消费单spec集成REPORTf726e187（SOURCE7f45830），所有owner精确报告普通历史保留。root单spec两视口2PASS/51.8s，真实8.3输入、POST原样、Node独立canonicalRoot/SQLite/reload/B-C/获准README均执行，scoped TS/lint/diff PASS。业务源码与92a2ded全相同，原root56c879a check/build及92a2两平台check/build结果保持；旧Windows全suite224/2/30保留，本次最终push自动CI尚待，定向绿不冒称全套。全部Dispatch结算，外部终端retained idle，不关闭/删树。
+
+原真实M1旧Task仍failed/待metadata授权，本轮fixture和test路径修复均不改变该状态；后续用户答范围才沿W1原Task retry。工程默认/知识策略未答、sqlite-vec CUT、官方客户端/native task_live与真实七日人类对照未执行；没有合main/升级个人运行实例/复制验收库。先读STATUS最新段与基线，继续Codex--yolo，新增领域问题交原owner新Task。
+
 ## 当前入口：规范root浏览器断言返修（2026-10-12 00:09）
 
 最新push92a2ded；CI38153179867 Ubuntu全PASS/226浏览器PASS30SKIP，Windowscheck/build PASS但E2E224/2/30，两失败仅s1-projects.spec.ts:33把输入短名RUNNER~1与返回规范长名runneradmin当字串相等。原W0新task_e337d98251d3/ctx_87396a08fb27实际工作，唯一web/e2e/s1-projects.spec.ts与自己报告，以Node独立realpath验证、assert请求原样/SQLite规范root/重启/B-C/获准文件，不改业务/其他spec/共享helper。等待原ownerSource/Report/settled后交同一集成Agent新Task普通合；root定向复验/push最终CI，无业务改动不重复build或真实媒体/私源。首次完整E2E失败log在TEMP已保留，先前“只剩CI”是当时状态，现Windows尚未整套通过。

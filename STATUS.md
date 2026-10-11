@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 最后单 spec 修正已合入并复验（2026-10-12 00:22）
+
+交付分支attention-engine/v1-20261011，普通合并 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1` 消费限定集成REPORT `f726e1879aacff088ccf0f91a21fb5dbeaec74e4`，W0 SOURCE28459de/REPORT49023fc及原八轨/三组路径修复均普通祖先。集成两视口2PASS，root对此精确树独立 `pnpm --dir web exec playwright test e2e/s1-projects.spec.ts --workers=1` EXIT0/2PASS/51.8s，真实短输入、原样POST、独立Node规范目录、SQLite/reload与B/C/获准文件断言通过；spec scoped tsc/eslint/diff EXIT0。唯一测试文件和报告变化，已复核cmd/internal/contracts/migrations/scripts/web/src/依赖与92a2ded完全一致，不重复无变更业务构建。所有Dispatch已结算，外部终端retained idle。
+
+业务源56c879a的root完整check/build PASS，92a2ded自动CI两平台check/build PASS且Ubuntu全suite226/30，原Windows224/2/30首RED保持；本次最终push后的完整CI结果另记，不能用定向2PASS冒称全suite绿。真实M1回放与用户metadata/工程默认/知识策略仍待答，sqlite-vec CUT，官方MCP/native live/真实七日对照/main合并/个人运行实例升级未执行。详见基线验收和集成交接。
+
 ## Windows 浏览器规范路径断言返修（2026-10-12 00:09）
 
 root已push92a2ded，CI38153179867：Ubuntu check/race/build/E2E全PASS（226PASS/30SKIP）；Windows check/build PASS，E2E224PASS/2FAIL/30SKIP。两个FAIL均s1-projects.spec.ts:33同一登记场景的两视口，API返回正确长名称runneradmin，断言仍期待输入RUNNER~1短字串；生产CanonicalRoot原本返回规范目录，不能改业务迎合断言。首次失败日志 `%TEMP%/astrocyte-ci-38153179867-e2e-first-failed.log` 与Ubuntu完整日志保留，不覆盖先前Go/M1首RED。
