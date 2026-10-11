@@ -107,7 +107,7 @@ func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server
 				return nil, err
 			}
 			in := request.Event
-			if in.Kind == "" || in.TS <= 0 || in.Tokens < 0 {
+			if in.Kind == "" || in.TS <= 0 || (in.Tokens != nil && *in.Tokens < 0) {
 				return nil, &InvalidParamsError{"event requires positive ts, kind and nonnegative tokens"}
 			}
 			return backend.ReportEvent(ctx, in)

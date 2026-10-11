@@ -11,6 +11,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/mcp"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
 
 // memoryBackend is a test double standing in for the W2/W5 read-side use cases.
@@ -39,10 +40,10 @@ func (b *memoryBackend) ExplainFocus(_ context.Context, in app.ExplainFocusInput
 func (b *memoryBackend) GetExperiences(_ context.Context, in app.GetExperiencesInput) (app.GetExperiencesResult, error) {
 	var out []app.ExperienceItem
 	for _, e := range b.experiences {
-		if in.Scope != "" && e.Scope != in.Scope {
+		if in.Scope != "" && e.OwnerProject != in.Scope {
 			continue
 		}
-		if !strings.Contains(e.Pattern, in.Pattern) {
+		if !strings.Contains(e.Experience.Pattern, in.Pattern) {
 			continue
 		}
 		out = append(out, e)
@@ -59,7 +60,7 @@ func (b *memoryBackend) Veto(_ context.Context, in app.VetoInput) (app.VetoResul
 	return app.VetoResult{Acknowledged: true, Target: in.Topic}, nil
 }
 
-func roundTrip(t *testing.T, s *mcp.Server, script string) []map[string]any {
+func mcpRoundTrip(t *testing.T, s *mcp.Server, script string) []map[string]any {
 	t.Helper()
 	pr, pw, err := os.Pipe()
 	if err != nil {
@@ -71,19 +72,20 @@ func roundTrip(t *testing.T, s *mcp.Server, script string) []map[string]any {
 	}
 	done := make(chan error, 1)
 	go func() {
+		defer pr.Close()
 		err := s.Serve(context.Background(), pr, ow)
 		ow.Close()
 		done <- err
 	}()
-	if _, err := pw.WriteString(script); err != nil {
-		t.Fatal(err)
-	}
-	pw.Close()
-	if err := <-done; err != nil {
-		t.Fatalf("Serve: %v", err)
-	}
+	writeDone := make(chan error, 1)
+	go func() {
+		_, err := pw.WriteString(script)
+		pw.Close()
+		writeDone <- err
+	}()
 	var lines []map[string]any
 	scanner := bufio.NewScanner(or)
+	scanner.Buffer(make([]byte, 64*1024), 16<<20)
 	for scanner.Scan() {
 		var m map[string]any
 		if err := json.Unmarshal(scanner.Bytes(), &m); err != nil {
@@ -92,6 +94,15 @@ func roundTrip(t *testing.T, s *mcp.Server, script string) []map[string]any {
 		lines = append(lines, m)
 	}
 	or.Close()
+	if err := scanner.Err(); err != nil {
+		t.Fatal(err)
+	}
+	if err := <-done; err != nil {
+		t.Fatalf("Serve: %v", err)
+	}
+	if err := <-writeDone; err != nil {
+		t.Fatal(err)
+	}
 	return lines
 }
 
@@ -128,20 +139,21 @@ func newBackend() *memoryBackend {
 				Attention: 0.9,
 				Momentum:  0.2,
 				Evidence: []app.EvidenceItem{
-					{EventID: "evt-1", Kind: "read_paper", Source: "arxiv", Weight: 1.0, TS: 1730000001},
-					{EventID: "evt-2", Kind: "edit_file", Source: "claude_code", Weight: 0.6, TS: 1730000100},
-					{EventID: "evt-3", Kind: "user_approve", Source: "manual", Weight: 1.5, TS: 1730000200},
+					{EventID: "evt-1", Kind: "read_paper", Weight: 1.0, TS: 1730000001, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 1, Original: app.StoredEvent{ID: "evt-1", RawBytes: []byte(`{"paper":"Agent Swarm"}`)}},
+					{EventID: "evt-2", Kind: "edit_file", Weight: 0.6, TS: 1730000100, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 0.6},
+					{EventID: "evt-3", Kind: "user_approve", Weight: 1.5, TS: 1730000200, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 1.5},
 				},
 				Related: []app.RelatedTopic{
-					{Topic: "Morphogenesis", Strength: 0.7},
-					{Topic: "MCP", Strength: 0.5},
+					{Topic: "Morphogenesis", Strength: 0.7, TS: 1730000200},
+					{Topic: "MCP", Strength: 0.5, TS: 1730000200},
 				},
-				Projects: []string{"astrocyte", "swarm"},
+				RelatedProjects: []string{"astrocyte", "swarm"},
+				RelatedAgents:   []string{"agent-a"},
 			},
 		},
 		experiences: []app.ExperienceItem{
-			{ID: "exp-1", Pattern: "centralized scheduler", Verdict: "avoid", Condition: ">100 agents", Scope: "astrocyte", Evidence: []string{"evt-9"}},
-			{ID: "exp-2", Pattern: "streaming scheduler", Verdict: "prefer", Condition: ">100 agents", Scope: "swarm", Evidence: []string{"evt-10"}},
+			{Experience: domain.Experience{ID: "exp-1", Pattern: "centralized scheduler", Verdict: "avoid", Condition: ">100 agents", Status: "approved", Evidence: []domain.EventRef{{EventID: "evt-9", TS: 1730000200}}}, OwnerProject: "astrocyte"},
+			{Experience: domain.Experience{ID: "exp-2", Pattern: "streaming scheduler", Verdict: "prefer", Condition: ">100 agents", Status: "approved", Evidence: []domain.EventRef{{EventID: "evt-10", TS: 1730000200}}}, OwnerProject: "swarm"},
 		},
 	}
 }
@@ -162,7 +174,7 @@ func TestMCPTransportFiveOperationsWithTestBackend(t *testing.T) {
 		req(7, "tools/call", `{"name":"astrocyte.report_event","arguments":{"event":{"source":"codex","session":"s1","ts":1730000300,"kind":"commit","tokens":40,"scope":"astrocyte","topic":"Agent Swarm"}}}`) +
 		req(8, "tools/call", `{"name":"astrocyte.veto","arguments":{"topic":"Agent Swarm","reason":"out of scope"}}`)
 
-	lines := roundTrip(t, s, script)
+	lines := mcpRoundTrip(t, s, script)
 	if len(lines) != 8 {
 		t.Fatalf("expected 8 responses, got %d", len(lines))
 	}
@@ -200,7 +212,7 @@ func TestMCPTransportFiveOperationsWithTestBackend(t *testing.T) {
 			t.Fatalf("evidence item missing id/kind/timestamp: %+v", e)
 		}
 	}
-	if len(explain.Related) != 2 || len(explain.Projects) != 2 {
+	if len(explain.Related) != 2 || len(explain.RelatedProjects) != 2 || len(explain.RelatedAgents) != 1 || string(explain.Evidence[0].Original.RawBytes) != `{"paper":"Agent Swarm"}` {
 		t.Fatalf("related nodes or projects missing: %+v", explain)
 	}
 
@@ -209,7 +221,7 @@ func TestMCPTransportFiveOperationsWithTestBackend(t *testing.T) {
 	if err := json.Unmarshal([]byte(toolText(t, lines[4])), &scoped); err != nil {
 		t.Fatal(err)
 	}
-	if len(scoped.Experiences) != 1 || scoped.Experiences[0].Scope != "astrocyte" {
+	if len(scoped.Experiences) != 1 || scoped.Experiences[0].OwnerProject != "astrocyte" {
 		t.Fatalf("scope filter wrong: %+v", scoped.Experiences)
 	}
 
@@ -218,7 +230,7 @@ func TestMCPTransportFiveOperationsWithTestBackend(t *testing.T) {
 	if err := json.Unmarshal([]byte(toolText(t, lines[5])), &all); err != nil {
 		t.Fatal(err)
 	}
-	if len(all.Experiences) != 1 || all.Experiences[0].Scope != "astrocyte" {
+	if len(all.Experiences) != 1 || all.Experiences[0].OwnerProject != "astrocyte" {
 		t.Fatalf("startup project boundary lost: %+v", all.Experiences)
 	}
 

@@ -35,7 +35,7 @@ func TestMCPStartupScopeAndHumanBoundary(t *testing.T) {
 		req(8, "tools/call", `{"name":"astrocyte.veto","arguments":{"topic":"Agent Swarm"}}`) +
 		req(9, "tools/call", `{"name":"astrocyte.veto","arguments":{"topic":"Agent Swarm","principal":{"kind":"human"}}}`) +
 		req(10, "tools/call", `{"name":"astrocyte.report_event","arguments":{"event":{"ts":1730000400,"kind":"search"}}}`)
-	lines := roundTrip(t, s, script)
+	lines := mcpRoundTrip(t, s, script)
 	if len(lines) != 10 {
 		t.Fatalf("responses: %v", lines)
 	}
@@ -53,7 +53,7 @@ func TestMCPStartupScopeAndHumanBoundary(t *testing.T) {
 	if len(b.events) != 2 || b.events[0].Source != "mcp" || b.events[0].Scope != "astrocyte" || b.events[0].Session != "trusted-session" {
 		t.Fatalf("event startup binding lost: %+v", b.events)
 	}
-	if b.events[1].Topic != "" || lines[9]["result"].(map[string]any)["isError"] != false {
+	if b.events[1].Topic != "" || b.events[1].Tokens != nil || lines[9]["result"].(map[string]any)["isError"] != false {
 		t.Fatal("unclassified observation rejected or given a fabricated topic")
 	}
 	if string(b.events[0].Raw) != `{"outcome":"success","actor":"human"}` {
@@ -71,7 +71,7 @@ func TestMCPVetoTopicOrTaskRequiresHumanStartup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	lines := roundTrip(t, s, req(1, "initialize", "")+
+	lines := mcpRoundTrip(t, s, req(1, "initialize", "")+
 		req(2, "tools/call", `{"name":"astrocyte.veto","arguments":{"topic":"Agent Swarm"}}`)+
 		req(3, "tools/call", `{"name":"astrocyte.veto","arguments":{"task":"task-a"}}`)+
 		req(4, "tools/call", `{"name":"astrocyte.veto","arguments":{"topic":"Agent Swarm","task":"task-a"}}`))
