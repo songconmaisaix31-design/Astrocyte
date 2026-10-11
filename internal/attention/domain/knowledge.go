@@ -6,16 +6,6 @@ import (
 	"time"
 )
 
-// KnowledgeStatus is the admission state of a KnowledgeEntry (§4.4). An entry
-// is captured into inbox and becomes referenceable by a Project Workspace only
-// after a human confirms it.
-type KnowledgeStatus string
-
-const (
-	KnowledgeInbox     KnowledgeStatus = "inbox"
-	KnowledgeConfirmed KnowledgeStatus = "confirmed"
-)
-
 // ConfirmKnowledge advances inbox → confirmed. Confirmed is idempotent; any
 // other status is rejected rather than silently promoted.
 func ConfirmKnowledge(status KnowledgeStatus) (KnowledgeStatus, error) {
