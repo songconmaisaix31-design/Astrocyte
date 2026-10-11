@@ -76,3 +76,9 @@ Client: current Orca Codex session; no other Agent launched. Baseline `b6a5794a4
 - sqlite-vec CUT follows original spike and pure-Go stack; no embedding/vector implementation added.
 
 Focused verification: `GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine ./internal/adapters/sqlite ./internal/adapters/httpapi` PASS (actual migration upgrade/restart/constraints; business app integration not yet assembled). Broad check/build pending in this stage. HTTP three gates remain 501 unsupported until actual owner implementations are assembled; W7 endpoints/CLI/M6 are subsequent work, not completed by M0.
+
+PRIORITY1 source committed+pushed `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`; root consumed integration `2268f4920973128068f46a182dfddfb040a1dbc2`. `pnpm check` PASS (all Go/vet, 14 S1 acceptance, 251 contract examples/drift, TS/lint, 83 frontend tests); `pnpm build` PASS under GOFLAGS=-p=1/GOMAXPROCS=2/Node heap512.
+
+Preserved first failure: original W0 Dispatch `ctx_64948eee5483`, terminal `term_398bda4c`, default-parallel `go build ./...` on Windows observed `paging file too small`; root baseline document retains the observation. Full original stderr was not archived, so exact temporary paths/error lines remain unavailable. Later serial PASS is separate evidence and does not erase the first failure.
+
+PRIORITY2 contract stage: governance get/share/demote/reference routes and strict project/version DTOs; seven Works endpoint schemas/generated types. `pnpm check:contracts` PASS, 275 examples, generated drift PASS. `go test ./internal/adapters/httpapi` PASS. Actual services remain optional/unsupported until owner assembly. Root authorized exact ordinary W7 dependency merge `ca0c255b94ee4374cad9fa610b895d6f87d7dabf`; this is compile-time source consumption, not W7 acceptance.

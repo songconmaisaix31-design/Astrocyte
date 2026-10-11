@@ -7189,8 +7189,8 @@ paths:
     post:
       operationId: confirmKnowledge
       summary: Confirm a KnowledgeEntry for workspace reference
-      description: Human gate that moves a KnowledgeEntry from inbox to confirmed so
-        a Project Workspace may reference it. M0 returns 501; the assembled gate
+      description: Human gate that moves a KnowledgeEntry from inbox to confirmed so a
+        Project Workspace may reference it. M0 returns 501; the assembled gate
         (W4 store) performs exactly one status transition and no model call.
       tags:
         - attention-engine
@@ -7240,6 +7240,8 @@ paths:
                     - event_id: e-1
                       ts: 1700000000000
                   status: confirmed
+                version: 2
+                owner_project: fixture-project
         "400": &gateErr400
           description: Invalid request
           content:
@@ -7283,8 +7285,7 @@ paths:
                   message: Capability is not implemented in M0
                   request_id: example-request
                   retryable: false
-                  required_action: Read the current capabilities; choose an implemented
-                    operation
+                  required_action: Read the current capabilities; choose an implemented operation
       security:
         - HumanSession: []
   /experiences/{id}/approve:
@@ -7342,6 +7343,8 @@ paths:
                     - event_id: e-9
                       ts: 1700000000000
                   status: approved
+                version: 2
+                owner_project: fixture-project
         "400": *gateErr400
         "403": *gateErr403
         "404": *gateErr404
@@ -7355,8 +7358,8 @@ paths:
       operationId: adjudicateConflict
       summary: Record the human decision on a pending Conflict
       description: Human gate that records a decision on a pending Conflict. M0
-        returns 501; the assembled gate (W2 store) applies the decision value and
-        never merges evidence automatically.
+        returns 501; the assembled gate (W2 store) applies the decision value
+        and never merges evidence automatically.
       tags:
         - attention-engine
       x-s0-supported: false
@@ -7404,6 +7407,7 @@ paths:
                   right_ref: k-2
                   detail: contradictory capacity facts
                   status: resolved_merge
+                version: 2
         "400": *gateErr400
         "403": *gateErr403
         "404": *gateErr404
@@ -7412,6 +7416,1203 @@ paths:
         "501": *gateErr501
       security:
         - HumanSession: []
+  /knowledge/{id}:
+    get:
+      operationId: readEngineknowledge
+      summary: Read project-scoped knowledge
+      description: Human-session cached read with persisted project visibility checks;
+        never starts discovery.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: project_id
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Project scope for persisted visibility filtering
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeReadResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /knowledge/{id}/shares:
+    post:
+      operationId: sharesEngineknowledge
+      summary: Human shares knowledge
+      description: Human-session command with CSRF, caller-scoped idempotency and
+        version checks. Service implementation owns persisted mutation and
+        audit.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareMemoryRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmKnowledgeResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /knowledge/{id}/demote:
+    post:
+      operationId: demoteEngineknowledge
+      summary: Human demote knowledge
+      description: Human-session command with CSRF, caller-scoped idempotency and
+        version checks. Service implementation owns persisted mutation and
+        audit.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DemoteMemoryRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmKnowledgeResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /experiences/{id}:
+    get:
+      operationId: readEngineexperiences
+      summary: Read project-scoped experiences
+      description: Human-session cached read with persisted project visibility checks;
+        never starts discovery.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: project_id
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Project scope for persisted visibility filtering
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperienceReadResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /experiences/{id}/shares:
+    post:
+      operationId: sharesEngineexperiences
+      summary: Human shares experiences
+      description: Human-session command with CSRF, caller-scoped idempotency and
+        version checks. Service implementation owns persisted mutation and
+        audit.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShareMemoryRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApproveExperienceResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /experiences/{id}/demote:
+    post:
+      operationId: demoteEngineexperiences
+      summary: Human demote experiences
+      description: Human-session command with CSRF, caller-scoped idempotency and
+        version checks. Service implementation owns persisted mutation and
+        audit.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DemoteMemoryRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApproveExperienceResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /knowledge/{id}/references:
+    post:
+      operationId: referenceEngineKnowledge
+      summary: Reference confirmed knowledge
+      description: Human-session command with CSRF, caller-scoped idempotency and
+        version checks. Service implementation owns persisted mutation and
+        audit.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReferenceKnowledgeRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConfirmKnowledgeResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /works:
+    get:
+      operationId: listWorks
+      summary: listWorks
+      description: Read the persisted Works album without filesystem access.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters: []
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorksSnapshotResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /works/refresh:
+    post:
+      operationId: refreshWorks
+      summary: refreshWorks
+      description: Scan only registered approved metadata roots; omitted roots use the
+        cached registered roots. Supplied roots cannot extend that boundary.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorksRefreshRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorksSnapshotResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /works/delivery:
+    post:
+      operationId: importWorksDelivery
+      summary: importWorksDelivery
+      description: Human-session Works command with CSRF, idempotency and independent
+        metadata revision.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorksDeliveryRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorksSnapshotResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /works/{work_id}/attitude:
+    put:
+      operationId: setWorkAttitude
+      summary: setWorkAttitude
+      description: Human-session Works command with CSRF, idempotency and independent
+        metadata revision.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: work_id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkAttitudeRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /works/{work_id}/group:
+    put:
+      operationId: setWorkGroup
+      summary: setWorkGroup
+      description: Human-session Works command with CSRF, idempotency and independent
+        metadata revision.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: work_id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkGroupRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /works/{work_id}/handoff:
+    put:
+      operationId: setWorkHandoff
+      summary: setWorkHandoff
+      description: Human-session Works command with CSRF, idempotency and independent
+        metadata revision.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: work_id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkHandoffRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
+  /works/{work_id}/hidden:
+    put:
+      operationId: setWorkHidden
+      summary: setWorkHidden
+      description: Human-session Works command with CSRF, idempotency and independent
+        metadata revision.
+      tags:
+        - attention-engine
+      x-s0-supported: false
+      security:
+        - HumanSession: []
+      parameters:
+        - name: work_id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Stored resource identifier
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Caller-scoped command deduplication key
+        - name: X-CSRF-Token
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 1
+          description: Session-bound CSRF token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkHiddenRequestV1"
+      responses:
+        "200":
+          description: Persisted result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkResultV1"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "403":
+          description: Human authority or scope required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "404":
+          description: Resource not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "409":
+          description: Version conflict or uncertain delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "500":
+          description: Service error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+        "501":
+          description: Service has not been assembled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorV1"
+              example:
+                schema_version: 1
+                error:
+                  code: unsupported_capability
+                  message: Service has not been assembled
+                  request_id: fixture-request
+                  retryable: false
+                  required_action: configure_supported_service
 components:
   schemas:
     ErrorV1:
@@ -12548,14 +13749,19 @@ components:
         expected_version:
           type: integer
           minimum: 1
+        owner_project:
+          type: string
+          minLength: 1
       required:
         - schema_version
         - request_id
         - expected_version
+        - owner_project
       examples:
         - schema_version: 1
           request_id: example-request
           expected_version: 1
+          owner_project: fixture-project
     ApproveExperienceRequestV1:
       type: object
       additionalProperties: false
@@ -12568,14 +13774,19 @@ components:
         expected_version:
           type: integer
           minimum: 1
+        owner_project:
+          type: string
+          minLength: 1
       required:
         - schema_version
         - request_id
         - expected_version
+        - owner_project
       examples:
         - schema_version: 1
           request_id: example-request
           expected_version: 1
+          owner_project: fixture-project
     AdjudicateConflictRequestV1:
       type: object
       additionalProperties: false
@@ -12614,9 +13825,17 @@ components:
           const: 1
         entry:
           $ref: "#/components/schemas/KnowledgeEntryV1"
+        version:
+          type: integer
+          minimum: 1
+        owner_project:
+          type: string
+          minLength: 1
       required:
         - schema_version
         - entry
+        - version
+        - owner_project
     ApproveExperienceResultV1:
       type: object
       additionalProperties: false
@@ -12626,9 +13845,17 @@ components:
           const: 1
         experience:
           $ref: "#/components/schemas/ExperienceV1"
+        version:
+          type: integer
+          minimum: 1
+        owner_project:
+          type: string
+          minLength: 1
       required:
         - schema_version
         - experience
+        - version
+        - owner_project
     AdjudicateConflictResultV1:
       type: object
       additionalProperties: false
@@ -12638,9 +13865,623 @@ components:
           const: 1
         conflict:
           $ref: "#/components/schemas/ConflictV1"
+        version:
+          type: integer
+          minimum: 1
       required:
         - schema_version
         - conflict
+        - version
+    ShareMemoryRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a19
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        owner_project: *a19
+        target_project: *a19
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - owner_project
+        - target_project
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          owner_project: fixture-project
+          target_project: fixture-other
+    DemoteMemoryRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a19
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        owner_project: *a19
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - owner_project
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          owner_project: fixture-project
+    ReferenceKnowledgeRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a19
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        project_id: *a19
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - project_id
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          project_id: fixture-project
+    MemoryShareAuditV1:
+      type: object
+      additionalProperties: false
+      properties:
+        owner_project: &a19
+          type: string
+          minLength: 1
+        target_project: *a19
+        actor_id: *a19
+        actor_kind:
+          type: string
+          const: human
+        ts:
+          type: integer
+        request_id:
+          type: string
+      required:
+        - owner_project
+        - target_project
+        - actor_id
+        - actor_kind
+        - ts
+        - request_id
+    MemoryActionAuditV1:
+      type: object
+      additionalProperties: false
+      properties:
+        action: &a19
+          type: string
+        actor_id:
+          type: string
+          minLength: 1
+        actor_kind:
+          type: string
+          const: human
+        ts: &a20
+          type: integer
+        request_id: *a19
+        version: *a20
+      required:
+        - action
+        - actor_id
+        - actor_kind
+        - ts
+        - request_id
+        - version
+    KnowledgeVersionV1:
+      type: object
+      additionalProperties: false
+      properties:
+        version:
+          type: integer
+          minimum: 1
+        content: {}
+        recorded_at:
+          type: integer
+      required:
+        - version
+        - content
+        - recorded_at
+    StoredKnowledgeV1:
+      type: object
+      additionalProperties: false
+      properties:
+        entry:
+          $ref: "#/components/schemas/KnowledgeEntryV1"
+        owner_project:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        created_at: &a19
+          type: integer
+        updated_at: *a19
+        crystallized_versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/KnowledgeVersionV1"
+        shares:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemoryShareAuditV1"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemoryActionAuditV1"
+      required:
+        - entry
+        - owner_project
+        - version
+        - created_at
+        - updated_at
+        - crystallized_versions
+        - shares
+        - actions
+    StoredExperienceV1:
+      type: object
+      additionalProperties: false
+      properties:
+        experience:
+          $ref: "#/components/schemas/ExperienceV1"
+        owner_project: &a19
+          type: string
+          minLength: 1
+        origin_event_id: *a19
+        version:
+          type: integer
+          minimum: 1
+        created_at: &a20
+          type: integer
+        updated_at: *a20
+        shares:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemoryShareAuditV1"
+        actions:
+          type: array
+          items:
+            $ref: "#/components/schemas/MemoryActionAuditV1"
+      required:
+        - experience
+        - owner_project
+        - origin_event_id
+        - version
+        - created_at
+        - updated_at
+        - shares
+        - actions
+    KnowledgeReadResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        knowledge:
+          $ref: "#/components/schemas/StoredKnowledgeV1"
+      required:
+        - schema_version
+        - knowledge
+    ExperienceReadResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        experience:
+          $ref: "#/components/schemas/StoredExperienceV1"
+      required:
+        - schema_version
+        - experience
+    WorkFileFactV1:
+      type: object
+      additionalProperties: false
+      properties:
+        source_path: &a19
+          type: string
+        mtime:
+          type:
+            - string
+            - "null"
+          format: date-time
+        file_count:
+          type: integer
+          minimum: 0
+        verified:
+          type: boolean
+        reason: *a19
+      required:
+        - source_path
+        - mtime
+        - file_count
+        - verified
+    WorkHandoffV1:
+      type: object
+      additionalProperties: false
+      properties:
+        content:
+          type: string
+        updated_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        source:
+          type: string
+          enum:
+            - ""
+            - human
+            - generated
+      required:
+        - content
+        - updated_at
+        - source
+    WorkV1:
+      type: object
+      additionalProperties: false
+      properties:
+        id: &a19
+          type: string
+          minLength: 1
+        platform: *a19
+        name: *a19
+        root: *a19
+        kind:
+          type: string
+          enum:
+            - folder
+            - file
+        source:
+          type: string
+          enum:
+            - scan
+            - json
+            - registered
+        attitude:
+          type: string
+          enum:
+            - ""
+            - continue
+            - park
+            - done
+        group:
+          type: string
+        hidden:
+          type: boolean
+        handoff:
+          $ref: "#/components/schemas/WorkHandoffV1"
+        files:
+          $ref: "#/components/schemas/WorkFileFactV1"
+        updated_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        revision:
+          type: integer
+          minimum: 0
+      required:
+        - id
+        - platform
+        - name
+        - root
+        - kind
+        - source
+        - attitude
+        - group
+        - hidden
+        - handoff
+        - files
+        - updated_at
+        - revision
+    WorkDiscoveryFailureV1:
+      type: object
+      additionalProperties: false
+      properties:
+        root: &a19
+          type: string
+        reason: *a19
+      required:
+        - root
+        - reason
+    WorkPlatformStatV1:
+      type: object
+      additionalProperties: false
+      properties:
+        platform:
+          type: string
+          minLength: 1
+        works:
+          type: integer
+          minimum: 0
+        folders:
+          type: integer
+          minimum: 0
+        handed_over:
+          type: integer
+          minimum: 0
+        recent:
+          type: integer
+          minimum: 0
+      required:
+        - platform
+        - works
+        - folders
+        - handed_over
+        - recent
+    WorksSnapshotV1:
+      type: object
+      additionalProperties: false
+      properties:
+        works:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkV1"
+        platforms:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkPlatformStatV1"
+        status:
+          type: string
+          enum:
+            - unknown
+            - available
+            - partial
+            - stale
+            - empty
+        observed_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+        failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkDiscoveryFailureV1"
+      required:
+        - works
+        - platforms
+        - status
+        - observed_at
+        - failures
+    WorksSnapshotResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        snapshot:
+          $ref: "#/components/schemas/WorksSnapshotV1"
+      required:
+        - schema_version
+        - snapshot
+      examples:
+        - schema_version: 1
+          snapshot:
+            works: []
+            platforms: []
+            status: unknown
+            observed_at: null
+            failures: []
+    WorkResultV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        work:
+          $ref: "#/components/schemas/WorkV1"
+      required:
+        - schema_version
+        - work
+    WorksRefreshRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id: &a19
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        roots:
+          type: array
+          maxItems: 64
+          items: *a19
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          roots: []
+    WorksDeliveryRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        content:
+          type: string
+          minLength: 1
+          maxLength: 1048576
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - content
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          content: '{"works":[]}'
+    WorkAttitudeRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        expected_revision:
+          type: integer
+          minimum: 0
+        attitude:
+          type: string
+          enum:
+            - continue
+            - park
+            - done
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - expected_revision
+        - attitude
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          expected_revision: 0
+          attitude: continue
+    WorkGroupRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        expected_revision:
+          type: integer
+          minimum: 0
+        group:
+          type: string
+          maxLength: 200
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - expected_revision
+        - group
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          expected_revision: 0
+          group: research
+    WorkHandoffRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        expected_revision:
+          type: integer
+          minimum: 0
+        content:
+          type: string
+          maxLength: 65536
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - expected_revision
+        - content
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          expected_revision: 0
+          content: fixture handoff
+    WorkHiddenRequestV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schema_version:
+          type: integer
+          const: 1
+        request_id:
+          type: string
+          minLength: 1
+        expected_version:
+          type: integer
+          minimum: 1
+        expected_revision:
+          type: integer
+          minimum: 0
+        hidden:
+          type: boolean
+      required:
+        - schema_version
+        - request_id
+        - expected_version
+        - expected_revision
+        - hidden
+      examples:
+        - schema_version: 1
+          request_id: fixture-request
+          expected_version: 1
+          expected_revision: 0
+          hidden: true
   securitySchemes:
     HumanSession:
       type: apiKey
