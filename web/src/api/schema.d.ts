@@ -4663,7 +4663,7 @@ export interface components {
             works: components["schemas"]["WorkV1"][];
             platforms: components["schemas"]["WorkPlatformStatV1"][];
             /** @enum {string} */
-            status: "unknown" | "available" | "partial" | "stale" | "empty";
+            status: "unknown" | "complete" | "partial" | "stale";
             /** Format: date-time */
             observed_at: string | null;
             failures: components["schemas"]["WorkDiscoveryFailureV1"][];

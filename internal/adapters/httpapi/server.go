@@ -61,6 +61,7 @@ type Services struct {
 	KnowledgeGovernance  attentionapp.KnowledgeGovernanceService
 	ExperienceGovernance attentionapp.ExperienceGovernanceService
 	ConflictGate         attentionapp.ConflictGateService
+	Works                workspaceapp.Works
 }
 
 // NewServer creates a new HTTP server with the given configuration.
@@ -100,6 +101,7 @@ func NewServer(cfg Config) *Server {
 	h.registerPaperSearch(mux)
 	h.registerProgress(mux)
 	h.registerEngineGates(mux)
+	h.registerWorks(mux)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {

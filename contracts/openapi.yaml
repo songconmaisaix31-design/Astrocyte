@@ -14252,10 +14252,9 @@ components:
           type: string
           enum:
             - unknown
-            - available
+            - complete
             - partial
             - stale
-            - empty
         observed_at:
           type:
             - string
