@@ -18,7 +18,7 @@ root独立人口输出`root-v21/population-independent.json`与W1最终验收JSO
 
 root完整`pnpm check` EXIT0：Go/vet/module校验、架构/依赖、275契约示例/生成客户端、真实API14 PASS、前端13文件90 PASS、diff检查；`pnpm build` EXIT0，server/MCP/Sleep三Go程序及React/Vite完成。独立`ASTROCYTE_V21_REAL100_AUDIT=1 go test -mod=readonly ./tests/validation/privacy -run '^TestReal100V21ProductionExposure$' -count=1 -v` EXIT0/15.865s，上表原100审计计数。Python8 PASS及canonical生成校验通过。集成组合树七包122顶层PASS/12 SKIP/0 FAIL，原M2 7 PASS/1 helper SKIP、M5 6 PASS/1 helper SKIP、EX-01 3 PASS；SKIP不计为隐私或live验收。相对bc594de再次核对app/domain/migrations/contracts/UI/依赖全部零差异。
 
-独立新日志位于既定外部证据根`root-v21/`；[本次CI38174450112](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38174450112)对应精确源码245d3f8，当前两平台check/build已通过，浏览器阶段尚在运行（Windows此时安装浏览器），Linux race PASS。最终CI结论另记，不能用旧bc594de CI冒称本轮通过。
+独立新日志位于既定外部证据根`root-v21/`。05:10核实[本次CI38174450112](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38174450112)对精确源码`245d3f8a2d766ee8695daeae1de87469537fff96` completed/success：Ubuntu24.04及Windows2025完整check/build/defaultE2E均PASS，各226 PASS/30 SKIP（3.8m/4.9m），Linux race PASS，Windows race按条件SKIP。两份完整job日志及ci-final.json已存外部root-v21，不覆盖旧CI/RED。后续仅STATUS/HANDOFF记录变化，以skip ci提交；源码、测试和配置与本CI提交一致，不重跑相同业务或冒充文档HEAD重新验收。
 
 V0归一化未通过，正式V1全N入库/30次模拟Sleep/真实M2复算/焦点轨迹及人工50条权重检查均NOT_RUN；V2–V4与七天三臂/终局报告未执行，EXPERIMENT仍草案未锁SHA。手工主题范围、未识别工具人口以及参数字段/单位/boost缺口待裁决，见QUESTIONS最新条目；不缩分母、不伪标签、不改冻结引擎、不为历史吻合调参。N≥5000只满足盘点数量线，不满足V1入库或科学验收。
 
