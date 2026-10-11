@@ -1,5 +1,22 @@
 # Astrocyte 当前状态
 
+## 原 owner 收束与最终装配（2026-10-11 22:51）
+
+集成分支仍 `attention-engine/v1-20261011`，业务集成源仍 P2 `05d8536`，后续领域发布尚未最终合入。八轨保持 Codex --yolo / gpt-6.1-sol；下表为当前结算事实，不以已发布代码替代整体验收。
+
+| 轨 | 当前事实 |
+|---|---|
+| W0 | 组装 SOURCE `271d18c` 已发布，人工经验 HTTP 重复/冷重启和实际 MCP pending PASS；Sleep/M6及完整检查继续 |
+| W1 | SOURCE `f3460ef` / REPORT `360730c` 已 push；本地9 PASS/1 SKIP。原真实CC/Codex回放0 eligible，元数据范围未答，原Task以外部阻塞 failed结算 |
+| W2 | SOURCE `2c148c1` 已 push并 succeeded结算；root 对实际应用30点公式/留存SQLite独立核对 PASS |
+| W3 | 实际 Sleep 日流水线/共享事务/冷进程验证及最终发布进行中 |
+| W4 | SOURCE `82e4340` / REPORT `a6f5c67` 已 push并 succeeded结算；root 独立排序复算/只读节点/固化历史与固定引用核对 PASS |
+| W5 | SOURCE `b43d2a4` 本地8项PASS；W0已回传实际重复HTTP PASS，原owner整理最终报告 |
+| W6 | 返修 SOURCE `1f185a4` / REPORT `a1ee679` 已 push并 succeeded结算；已提交ID及capture/dynamics/unknown状态区别，禁止无主题自动出生 |
+| W7 | SOURCE `9fe5788` 真实 typed UI 已发布；留存真实作品目录/浏览器/SQLite重启及生产pending事件sink接入 PASS，最终报告继续 |
+
+已结算外部终端的 worker-release 返回 retained/external_terminal/processAction=none，未宣称关闭或归档。W0后续完整检查首次 ENAMETOOLONG，批次修正后第二场固定summarize版本探测超时；定向探测2.718秒PASS，完整check尚未重新通过。详见 [基线与独立核对](docs/acceptance/AttentionEngine-baseline.md)。原生会话范围、工程参数、知识再确认/时间基准仍待用户，最终M1真实验收及真实七日对比尚未完成。
+
 ## Codex --yolo 八轨接续（2026-10-11 22:38）
 
 用户更新后八轨均由 `codex --yolo` / gpt-6.1-sol 实际接续，原工作树和自动分支不变。当前有效 Task/Dispatch：

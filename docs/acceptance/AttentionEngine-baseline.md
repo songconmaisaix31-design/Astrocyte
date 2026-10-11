@@ -31,3 +31,19 @@ W0 独立报告47f的 `pnpm check`/`pnpm build` PASS（Node堆512、Go单并发�
 SOURCE `5d356370c4157e74d96388afd098d5fea14dc799` 普通合入并 push 为 `05d853605256e6540d9ef43f63eeb6530b7fe0a9`（含已授权 W7 稳定 Go 阶段）。root 五包 `go test -count=1` PASS：M0/W7 harness、httpapi、sqlite、workspace/app、worksscan。实际 HTTP 用生产 Works 服务/SQLite及合成临时目录输入验证边界与重启；请求生命周期/sink/真实 UI 仍待后续 owner 阶段。
 
 该精确集成源 root `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` 单场 PASS：Go 格式/vet/全包测试、依赖、21包架构、275契约示例与生成漂移、S1 API14/14、TS/lint、Vitest13文件/90测试、diff。完整输出 `%TEMP%/astrocyte-root-p2-check-20261011-2227.log`。前三场失败保持，不改写历史；此场不覆盖尚未合入的动力学/Memory/MCP/Sleep实际服务，也不算完整M1–M6/W7完成。P2本轮root build/E2E尚未执行。
+
+## M2 实际应用逐点复算（2026-10-11 22:39）
+
+W2 SOURCE `23bc4d718776bd8d47b8f6d4d022f1030ad3794c` 的 `M2_application_state.json` 使用 W1事件/Signal、实际SQLite和两次子进程重载（第10/20天）。root 以独立 Node 公式从 initial + signals 重算全部30点，未调用 Worker 的 `M2_reference.mjs`：A、momentum、confidence最大绝对误差均0，updated_at/last_active逐点一致，10点floor、5点ceiling。初始A=.05/C=.5/M=0、lambda=.1/day、成功confidence增量=.1均为该合成流显式参数，不是产品默认。
+
+root NodeSQLite readOnly + PRAGMA query_only=ON 核对留存 `%TEMP%/astrocyte-m2-01d52594-7909-4630-9aad-ad4f67212631.sqlite`，integrity_check=ok，9事件/9信号/1节点；全部Signal及原始BLOB存在、最终StoredAttentionNode JSON与artifact逐字段一致。最终A=.05、M=-.000008972512673807757、C=.5，updated_at=1769731200000、last_active=1768953600000。这是任务书M2合成应用验收，不是真实30天行为。W2最终 `2c148c1034ec28b5d787309f1320198706d97e4a` 再补已有receipt复用和Sleep出生时间顺序；HTTP/MCP/Sleep集成验收仍独立。
+
+## M4 独立排序与留存库核对（2026-10-11 22:51）
+
+W4 SOURCE `82e4340e50943d355ecd81a2a47d65b7e3929f5a` / REPORT `a6f5c6708f77cf360990b2e613e9a5dda907e325` 已结算。root 从 `%TEMP%/astrocyte-m4-6b799aaebe6c468896492f068d317ad6` 的实际 retrieval.json 独立 Node 重算 relevance × exp(-lambdaR × ageSeconds) × Attention × AccessBoost，两场四个得分最大绝对误差0。lambdaR=0 排序 a,b（1.8/.225），lambdaR=1.5 排序 b,a（.000027767205919502902/.000011059582235990778）；返回项仅 p1 confirmed，年龄由明确 created_at 推导。这些参数为合成验收输入，不决定产品时间基准或默认值。
+
+root Node SQLite readOnly + query_only 核对两份留存库 integrity=ok；排序库的节点 JSON/A/updated_at/version 与检索前后 artifact 完全一致。版本库保留内容 one/two 的两条不可变固化记录；human 引用仍固定 crystallized_version=1 / knowledge_version=3，当前知识 version=6，不随新版本漂移。该检查不读取个人源、不写库；sqlite-vec CUT 后实际模式为 topic_keyword，不宣称向量相似度或线上检索质量。
+
+## 后续 owner 集成检查限制（2026-10-11 22:51）
+
+W0 组装源 `271d18cc4d7853bd1a9bc96875b8875733889837` 的实际人工经验 HTTP 重复/冷重启与已提交 MCP 动力学 pending 定向 PASS，尚未 root 最终合入。其完整检查首次在 gofmt 的320条绝对路径 Windows argv 触发 ENAMETOOLONG，原 owner 正补有界相对路径批次；第二场通过 Go/vet/测试/modverify 后 summarize 固定0.25.1版本探测 ETIMEDOUT，后续阶段 NOT_RUN。同命令单独测量2.718秒并 PASS，原60秒超时未改；环境争用只是假设，不能合成完整整场绿色。

@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 最新入口：原 owner 收束（2026-10-11 22:51）
+
+先读 STATUS 最新表及基线独立核对。八轨实际 Codex --yolo，Run/root不变。W2/W4/W6返修已 succeeded，W1因原真实CC/Codex元数据范围未答 failed结算（本地实现已push），其外部终端 retained idle，不代表进程关闭/归档。W5已获实际W0 HTTP重复/重启PASS反馈待最终报告；W3发布实际Sleep待W0消费；W7实际作品UI及同留存库事件sink/重启PASS待最终报告。源精确SHA见STATUS，未结算轨沿原Dispatch，已结算owner有新领域返修需新Task，W1权限回答后原Task retry。
+
+root业务集成仍P2 `05d8536`，尚未把上述发布合成最终绿色。W0 `271d18c` 实际MCP pending/HTTP人工重复检查通过；整场check第一次Windows绝对argv ENAMETOOLONG、第二次summarize版本探测超时保持，单独探测PASS仅为定向恢复。等待W3后原W0完成M6；各轨结算后派一个集成Agent ordinary exact merges，领域问题退回原owner，root最终check/build/适用E2E/push。禁止私人原始源、旧UNKNOWN重发、默认参数猜测和Agent自动创建主题；真实七日用户对比仍人工未执行。
+
 ## 当前入口：Codex --yolo 八轨（2026-10-11 22:38）
 
 最新集成 `05d853605256e6540d9ef43f63eeb6530b7fe0a9` 已普通消费 W0 P2 `5d35637` 并 push，root 单场check PASS（275契约例、API14、前端90项）；build/E2E未复验，新领域各轨应用仍待最终集成。W6原任务结算后以 `task_cac2fa66a283` / `ctx_7f6b4a0be462` 复用原Codex--yolo终端修postcommit原事件ID/pending回流，旧ctx_e01不再收信。W0后续只读事务/独立consolidated_at/Handler及session guard已发布依赖，原owner继续实际HTTP/SQLite/restart，不可沿早期纯/fixture记录宣称完整里程碑。其余当前Task见STATUS。最后完整M1真实两客户端仍待用户原始元数据范围，默认参数/知识语义仍未决定。
