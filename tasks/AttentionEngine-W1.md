@@ -3,6 +3,22 @@
 事实源：任务书 `tabbit-code (2).md` §4.1/§4.5/§5.2/§8 M1；`tasks/AttentionEngine-plan.md` W1 行。
 分支：`songconmaisaix31-design/attention-engine-w1-events`，基线 `dab8fea`。
 
+## Codex 接续状态（2026-10-11，当前优先于下方波 A 草案）
+
+当前 Task `task_13ac51983837` / Dispatch `ctx_62837e7857f0`；客户端 Codex，沿启动配置执行，没有启动其他 Agent。
+已落独立解析层：`internal/adapters/events/native_record.go`、`native_reader.go`、`s1_record.go`。
+原生文件只读明确选定路径，项目/session 头匹配，拒绝符号链接和越界，最多 128 条/1MiB，返回截断状态。
+原记录逐条保留字节；工具语义含混、token 不报告、普通读取深度、完成结果、topic 都保留 unknown。
+普通 `Read` 不当长时阅读；未知工具不回退 `agent_task`；多种工具混在同一记录不猜单一行为。
+s1 导入/沉淀作业不当 agent_task；原生 start/send 的 accepted 回执不当成功闭环；later 不当 veto。
+所有源时间为 Unix 毫秒；correlation_id 不当 native session；缺少 project_id 不猜项目 scope。
+
+验证：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/adapters/events` PASS（3 项）。
+当前独立解析检查属于 contract_local，不是 M1 真实回放验收。真实原生样本尚 NOT_RUN，M1 仍 NOT_DONE。
+协调者 Handoff：稳定 M0 SHA；Event.ID、nullable tokens、显式 outcome/depth/unknown kind；Signal 失败只降 confidence；
+signal 去重键；raw 原字节存储（避免 encoding/json 压缩 RawMessage）；确认 s_i=1 和明确回放来源范围。
+不合并 W0 未提交文件、不自定义跨轨共享类型。待稳定 SHA 与回放来源答复后继续。
+
 ## 状态（2026-10-11）
 
 波 A 完成：只读事件源勘察 + 无损映射表 + Event→Signal 归一化设计 + §5.2 权重表 +
