@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"math"
-	"path/filepath"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -13,10 +12,14 @@ import (
 
 func TestM4PersistentRetrievalRecomputedAndAttentionUnchanged(t *testing.T) {
 	ctx := context.Background()
-	path := filepath.Join(t.TempDir(), "knowledge.sqlite")
+	path := m4Path(t)
 	db, _, service := openM4(t, path)
 	defer func() { db.Close() }()
 	human := app.Principal{ID: "human", Kind: "human"}
+	evidence := []struct {
+		Query   app.KnowledgeQuery
+		Matches []app.KnowledgeMatch
+	}{}
 	for _, fixture := range []struct {
 		id, topic, project string
 		at                 int64
@@ -76,6 +79,10 @@ func TestM4PersistentRetrievalRecomputedAndAttentionUnchanged(t *testing.T) {
 		if len(matches) != 2 || matches[0].Knowledge.Entry.ID != fixture.winner {
 			t.Fatalf("lambda=%g scoped rank: %+v", lambda, matches)
 		}
+		evidence = append(evidence, struct {
+			Query   app.KnowledgeQuery
+			Matches []app.KnowledgeMatch
+		}{Query: q, Matches: matches})
 		manual := map[string]float64{"a": 1 * math.Exp(-lambda*8) * 0.6 * 3, "b": 0.25 * math.Exp(-lambda*6) * 0.9 * 1}
 		for _, match := range matches {
 			if math.Abs(match.Score-manual[match.Knowledge.Entry.ID]) > 1e-12 {
@@ -93,4 +100,9 @@ func TestM4PersistentRetrievalRecomputedAndAttentionUnchanged(t *testing.T) {
 	if before != after {
 		t.Fatalf("retrieval changed attention SQLite state:\nbefore=%s\nafter=%s", before, after)
 	}
+	m4Evidence(t, path, struct {
+		AttentionBefore string
+		AttentionAfter  string
+		Runs            any
+	}{before, after, evidence})
 }

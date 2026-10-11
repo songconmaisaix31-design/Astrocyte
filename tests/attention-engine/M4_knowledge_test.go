@@ -3,6 +3,7 @@ package attention_engine_test
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -12,6 +13,40 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
+
+func m4Path(t *testing.T) string {
+	t.Helper()
+	root := os.Getenv("ASTROCYTE_M4_ARTIFACT_DIR")
+	if root == "" {
+		return filepath.Join(t.TempDir(), "knowledge.sqlite")
+	}
+	if !filepath.IsAbs(root) {
+		t.Fatal("M4 artifact directory must be absolute")
+	}
+	dir := filepath.Join(root, t.Name())
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(dir, "knowledge.sqlite")
+	if _, err := os.Stat(path); err == nil {
+		t.Fatal("M4 artifact database already exists; select a fresh artifact directory")
+	}
+	return path
+}
+
+func m4Evidence(t *testing.T, path string, value any) {
+	t.Helper()
+	if os.Getenv("ASTROCYTE_M4_ARTIFACT_DIR") == "" {
+		return
+	}
+	data, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(filepath.Join(filepath.Dir(path), "retrieval.json"), data, 0600); err != nil {
+		t.Fatal(err)
+	}
+}
 
 type m4Repository struct {
 	app.KnowledgeRepository
@@ -59,7 +94,7 @@ func m4Meta(version int, request string) app.CommandMeta {
 
 func TestM4FluidRestartAndSharedTransaction(t *testing.T) {
 	ctx := context.Background()
-	path := filepath.Join(t.TempDir(), "knowledge.sqlite")
+	path := m4Path(t)
 	db, base, service := openM4(t, path)
 	defer func() { db.Close() }()
 	source := seedM4Source(t, db, "source", "p1")
@@ -106,7 +141,7 @@ func TestM4FluidRestartAndSharedTransaction(t *testing.T) {
 
 func TestM4HumanConfirmationScopeAndShareAudit(t *testing.T) {
 	ctx := context.Background()
-	db, _, service := openM4(t, filepath.Join(t.TempDir(), "knowledge.sqlite"))
+	db, _, service := openM4(t, m4Path(t))
 	defer db.Close()
 	source := seedM4Source(t, db, "source", "p1")
 	if _, err := service.RewriteFluid(ctx, app.KnowledgeFluidUpdate{ID: "k", OwnerProject: "p1", Topic: "agents", Fluid: "summary", Sources: []domain.EventRef{source}, TS: 2000}); err != nil {
