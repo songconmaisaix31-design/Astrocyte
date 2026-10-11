@@ -21,6 +21,8 @@ M0 已由 root 放行，并普通合入精确 source `47f47f38d7ec0c5c3cbf30a757
 
 - `domain.NormalizeSignal(eventID,event,outcome,depth,strength)` 按 §5.2 硬编码归一化；未知 outcome/depth 不产生对应信号；failure/failed 只标 feedback_failure/confidence-only。
 - `app.NewEventService(repo,strength).Record(ctx,[]StoredEvent)` 统一事务入账；显式强度，不按 tokens 缩放，不冻结产品默认。
+- 可选第三参 `func(context.Context,eventID string) error` 在提交后捕获明确 agent_task failure/failed；原始回执先提交，capture 错误返回已提交 IDs + error，不回滚或隐去证据。
+- 已按 root 授权普通合入 W5 精确 `d8e73334cb75c46a8c38460f4764cfe950ce603e` 作为编译依赖；没有修改 W5 写域。
 - `sqlite.NewEventRepository(db)` 存储 Event/Observation/pending 与 Signal，OriginKey 唯一，ID 首次生成后持久；原字节 raw_bytes BLOB 同行保存。
 - source 重放不能覆写 raw/observation；Signal 重放不能改 weight/strength；失败批次回滚 Event 和 Signal。
 - `events.MapS1Outbox/MapCachedMetadata/MapNativeRecord/ReplayNativeFile` 消费共享 StoredEvent，不定义第二事件/证据表。
@@ -34,6 +36,8 @@ M1 项目验收 4 PASS / 1 SKIP（真实元数据 opt-in）；source 独立检�
 `go build ./internal/adapters/events ./internal/attention/domain ./internal/attention/app ./internal/adapters/sqlite` PASS。
 均以 `GOFLAGS=-p=1 GOMAXPROCS=2` 执行；没有 Node 操作。
 这些通过不覆盖未获授权的真实两客户端工具轨迹。首次 real cache RED 保持，M1 整体仍 NOT_DONE，继续等待真实样本范围。
+后续两客户端格式 fixture→实际 EventService/store 的有界/原字节/ID/权重对账 PASS；这是 contract_local，不是真实来源。
+后续提交后 W5 实际 repo 捕获、同 ID 重放候选不重复、capture 错误保留原回执 PASS；这是显式失败 fixture，不是原生执行失败。
 
 ## 当前有效映射边界
 

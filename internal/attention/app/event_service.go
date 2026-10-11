@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
@@ -19,13 +20,14 @@ type EventRepository interface {
 }
 
 type EventService struct {
-	repo     EventRepository
-	strength float64
+	repo           EventRepository
+	strength       float64
+	failureCapture []func(context.Context, string) error
 }
 
 // strength has no product default; callers must provide the selected scale.
-func NewEventService(repo EventRepository, strength float64) *EventService {
-	return &EventService{repo: repo, strength: strength}
+func NewEventService(repo EventRepository, strength float64, failureCapture ...func(context.Context, string) error) *EventService {
+	return &EventService{repo: repo, strength: strength, failureCapture: failureCapture}
 }
 
 func (s *EventService) Record(ctx context.Context, records []StoredEvent) ([]StoredEvent, error) {
@@ -53,6 +55,18 @@ func (s *EventService) Record(ctx context.Context, records []StoredEvent) ([]Sto
 	})
 	if err != nil {
 		return nil, err
+	}
+	// Capture uses the committed ID and a separately project-bound service.
+	// A capture failure cannot roll back or obscure the original receipt.
+	for _, record := range result {
+		if record.Event == nil || record.Event.Kind != domain.EventKindAgentTask || (record.Observation.Outcome != "failure" && record.Observation.Outcome != "failed") {
+			continue
+		}
+		for _, capture := range s.failureCapture {
+			if err := capture(ctx, record.ID); err != nil {
+				return result, fmt.Errorf("receipts committed; failure capture pending: %w", err)
+			}
+		}
 	}
 	return result, nil
 }
