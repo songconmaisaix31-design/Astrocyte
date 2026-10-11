@@ -12,6 +12,8 @@
 
 分支 `songconmaisaix31-design/attention-engine-w7-works`，基线 `4d200df`（未 merge `origin/attention-engine/v1-20261011`，M0 契约未就绪，见 §5）。写域仅本任务所列，不改既有文件；端点/迁移/HTTP/主程序接线按 `AttentionEngine-plan.md` 交 W0 统一落。
 
+阶段 SOURCE `bbb1268` 已 push；独立 fixture Playwright `e2e/works-album.spec.ts --workers=1` 使用隔离端口 15247/18847，14 PASS / 24.9s（两项目重复包含 1920/1280/390 与键盘），不计为真实 API 验收。共享依赖依主控 follow-up 仍 pending；不消费 partial b6a5794 作为完整 M0。未接线的 `WorksCommandForms.tsx` 仅准备有界登记根选择与人工元数据/JSON 表单，无传输契约猜测。新库缓存明确 status=unknown、observed_at=null。
+
 ## 1. 交付内容（五能力 + 事件源）
 
 | 能力 | 落点 |

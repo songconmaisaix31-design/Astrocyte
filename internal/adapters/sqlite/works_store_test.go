@@ -29,7 +29,7 @@ func TestWorksSnapshotRoundTrip(t *testing.T) {
 	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
 	ensureWorksTables(t, db)
 
-	if got, err := db.LoadWorksSnapshot(ctx); err != nil || len(got.Works) != 0 || got.Status != "" {
+	if got, err := db.LoadWorksSnapshot(ctx); err != nil || len(got.Works) != 0 || got.Status != "unknown" || got.ObservedAt != nil {
 		t.Fatalf("fresh album should be empty, got %+v %v", got, err)
 	}
 

@@ -20,7 +20,7 @@ const (
 // LoadWorksSnapshot returns an empty album for a fresh database so a cache GET
 // never invents a work. It performs no scan or filesystem access.
 func (db *DB) LoadWorksSnapshot(ctx context.Context) (domain.WorksSnapshot, error) {
-	snapshot := domain.WorksSnapshot{Works: []domain.Work{}, Failures: []domain.WorkDiscoveryFailure{}}
+	snapshot := domain.WorksSnapshot{Works: []domain.Work{}, Platforms: []domain.PlatformStat{}, Status: "unknown", Failures: []domain.WorkDiscoveryFailure{}}
 	var data string
 	err := db.conn.QueryRowContext(ctx, "SELECT data FROM works_album WHERE key=?", worksAlbumKey).Scan(&data)
 	if errors.Is(err, sql.ErrNoRows) {
