@@ -5,6 +5,8 @@
 
 ## 主控接管（2026-10-11 21:41）
 
+2026-10-11 23:36 最终路径集成 `task_51df762ea493` / `ctx_7d52252e725c` 已succeeded，SOURCE `be12d66c9c78340f1ba1e68e4243a38df4b9a129` / REPORT `9919d801609a204f122cdee8691bb01d9f3692da` 已push并普通合入root `15c4d8b0886450619d4bc279d0770d2f958beeb4`。root新树完整check/build EXIT0，原0e493默认E2E226/30局部历史仍独立；下一步最终push自动CI。八轨/限定返修/集成都结算，外部终端retained，不删工作树/历史。用户未答与真实科学验收仍不冒称完成。
+
 2026-10-11 23:31 两条路径返修已succeeded结算并push：W0 SOURCE `425d965f82bb3d8b573604476134d466838be416` / REPORT `19d1c7bef221cbb5225e4319f69b50fa46c83d4f`，W7 SOURCE `38c5bdeeb5fcec7b2f0a3097ef3730ab1a30d9c4` / REPORT `d0140384e9f0e15783081d7dc4eb22f284b215de`。真实8.3与真实junction拒绝通过，Windows普通symlink privilege缺失保持NOT_RUN/SKIP；原先CI/本机alias/junction首RED保留。仍只用原final-integration Agent/工作树/分支，接新Task普通合root文档基线 `df8c97c` 及两份精确REPORT，write_paths原集成报告及必要薄胶水；领域再发现退原owner。定向两个包与既有HTTP/Works回归后commit+push，不重复M6/全套UI/真实媒体；root最终完整check/build及自动CI独立执行。
 
 2026-10-11 23:25 Windows CI 限定返修：最终普通合并 `0e49301734549a02b9b1b9078aaef96fd6422742` 的 root `pnpm check` / `pnpm build` 已 PASS，默认浏览器回归运行中。已观察自动 CI `38150022874`（root `dd62ec9`）及 `38150373657`（root `7c199aa`）Windows FAIL / Ubuntu PASS；首次完整失败日志保留 `%TEMP%/astrocyte-ci-38150022874-first-failed.log`。原因是 Windows `RUNNER~1` 短路径经 EvalSymlinks 展开成 runneradmin，合法同目录被判 redirected / outside scope。追加两条互斥限定返修轨，沿用原 Codex --yolo / gpt-6.1-sol：W0 原终端/工作树/分支独占 `internal/adapters/agents/**` 与自己的报告，修授权目录、注册项目及既有元数据路径比较；W7 原终端/工作树/分支独占 `internal/adapters/worksscan/**` 与自己的报告，修作品扫描路径比较。不得互改、不增共享调度或证明设施、不放宽符号链接/遍历/私有目录禁读边界，不读取个人原生记录。使用公开 fixture 和短路径实测，保留未具备实际 8.3 路径时的 NOT_RUN；定向回归、commit + push 后交同一集成 Agent 普通合并，root 完整检查后 push 并核实新的自动 CI。旧远程结论仅属于其精确 SHA，不能冒充最终树的结果。

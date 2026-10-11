@@ -1,5 +1,13 @@
 # Astrocyte 当前状态
 
+## 本轮最终树已合入、本机通过（2026-10-11 23:36）
+
+交付分支 `attention-engine/v1-20261011`；最终业务普通合并 `15c4d8b0886450619d4bc279d0770d2f958beeb4` 消费 Windows 返修集成REPORT `9919d801609a204f122cdee8691bb01d9f3692da`，所有八轨最终报告及两份路径返修SOURCE/REPORT均保留普通祖先。实现认知事件/动力学/Sleep、项目隔离知识与经验/人工关口、五MCP stdio工具、Works五能力与原始事件源；M6合成七日推荐首错已原owner修复并独立复算。所有开发/返修使用原 Codex --yolo 工作树/分支，所有Dispatch已结算，外部终端 retained idle。
+
+root 对此业务树完整 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` / `pnpm build` EXIT0：Go/27包边界/275契约/实际API14/前端90，API/MCP/Sleep三二进制+web。Windows真实8.3同目录、secret alias和junction拒绝实际通过，普通Windows symlink本机privilege不足仍NOT_RUN/SKIP。此前业务树0e493默认E2E226 PASS/30 SKIP，UI源未改；未重复真实目录写入/媒体/native。新树push自动CI由root核实，远程结果尚待；第一次Windows失败原件保留，不能提前称远程通过。
+
+真实剩余：M1所选真实CC/Codex回放首RED/0 eligible，原始元数据范围未答；工程参数、固化新版本确认和检索年龄策略未答，测试值不是默认；sqlite-vec依任务红线CUT，当前topic_keyword退化不是向量检索。官方MCP客户端互通/native task_live、七日用户科学对照、合main与个人预览升级均未执行。整体产品未宣称完成；详细命令/日志/首次失败见 [本轮验收](docs/acceptance/AttentionEngine-baseline.md) 和 [集成交接](tasks/AttentionEngine-integration.md)。
+
 ## 最终树本机通过，Windows CI 返修（2026-10-11 23:25）
 
 唯一集成 Agent 已结算，REPORT `0dc31fea65584b312aebae34a5ec757ac8ecc1c3` 普通合入 root `0e49301734549a02b9b1b9078aaef96fd6422742`，八个 owner 最终报告均为祖先。root 在此精确树完整 `pnpm check`、`pnpm build` PASS（Go/275契约/API14/前端90、三可执行文件+web），默认浏览器回归23:27完成226 PASS / 30 SKIP，opt-in live未重复执行。日志见基线记录。自动 CI 每次 push 触发：root `7c199aa` 的 run38150373657 Ubuntu全流程PASS、Windows在check FAIL，不是最终0e493的远程结果。Windows短路径RUNNER~1展开到runneradmin后，合法同目录被误判为越界/重定向；第一次失败日志保留。

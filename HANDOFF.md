@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 当前交付入口（2026-10-11 23:36）
+
+先读STATUS最新段和基线记录。最终业务普通合并 `15c4d8b0886450619d4bc279d0770d2f958beeb4` 已消费REPORT9919d80与W0/W7路径返修，root对此树完整check/build EXIT0；此前默认E2E226 PASS/30 SKIP属于0e493，UI源未变。全部开发/限定返修/唯一集成任务已settled，终端只是retained idle；若新领域返修，用原owner原工作树新Task，禁止给旧ctx发送。交付分支attention-engine/v1-20261011将push触发两平台CI，当前远程结果待核实，不覆盖第一次Windows首RED。
+
+认知模块和Works五能力已组装，真实M1权限、工程参数、知识策略仍待用户，不选默认、不扩大私人读取。官方MCP/native live及真实七日用户对照未执行；sqlite-vec CUT。没有合main或升级个人预览，没有把临时验收库复制给用户。后续用户答权限时原W1 failed Task沿retry接续；其余已settled领域任务用新Task。使用Codex--yolo，root只计划/决策/独立验收/最终Git。
+
 ## 当前入口：本机通过，Windows短路径返修（2026-10-11 23:25）
 
 root `0e49301734549a02b9b1b9078aaef96fd6422742` 已普通合最终集成REPORT0dc31fe（八轨精确最终报告均祖先），主控完整check/build PASS，默认浏览器回归23:27结束226 PASS / 30 SKIP，session64606已EXIT0。自动CI实际每次push都跑；此前root7c199aa的38150373657是UbuntuPASS/WindowsFAIL，不能称远程未跑或最终树已绿。真实短/长文件名同目录被误判redirected/outside scope，原件 `%TEMP%/astrocyte-ci-38150022874-first-failed.log`。
