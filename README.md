@@ -69,7 +69,7 @@ pnpm check:contracts   # 校验规格、示例与生成漂移
 pnpm check             # gofmt、vet、Go 测试、导入边界、TS、ESLint、Vitest
 # 浏览器安装命令与共享开发机的保护设置见下文。
 pnpm test:e2e          # 1920×1080 与 1280×720，独立数据与端口
-pnpm build             # dist/astrocyte[.exe] 与 web/dist
+pnpm build             # dist/astrocyte、astrocyte-mcp、astrocyte-sleep[.exe] 与 web/dist
 pnpm start             # 构建后启动本地服务，ASTROCYTE_WEB_DIR 指向 web/dist
 ```
 

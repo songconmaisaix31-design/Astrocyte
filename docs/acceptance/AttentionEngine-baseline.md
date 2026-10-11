@@ -55,3 +55,9 @@ root 独立读取 W0 实际 `%TEMP%/astrocyte-M6-W0-20261011/M6-week-result.json
 root 保存原270812字节输出为 `M6-week-first-zero-attention.json`（未覆盖既有文件），W0另保存 `M6-first-zero-ranking.json`。原owner W4新限定Task修wrapper/legacy-flat读取并覆盖实际W2节点+query_only回归；W0加强 inputs.Attention=实际图A、非零得分、独立公式复算。旧M4 flat fixture数学核对保持局部PASS，不替代本次正式写入格式的实际跨轨验收。
 
 root另只读核对W7最终留存 `%TEMP%/astrocyte-s1-aijSTJ/data/state.sqlite` integrity=ok，两条pending/raw BLOB分别manual分组与machine同步，字节/observation与独立artifact完全一致，Signal和节点0；10条works receipt均accepted且input/result为BLOB。最终三尺寸报告writes/errors均空。看过390截图，作品/未知状态/手册区可辨认；浮动页头在长截图中叠加保持原限制，不宣称用户主观视觉验收。
+
+## M6 修复后独立复算（2026-10-11 23:03）
+
+原 W4 SOURCE `abff94dbb8b614e4489e467e9095935fd0815ba9` 正确解码 StoredAttentionNode 并兼容旧flat，实际W2保存及W3 Sleep保存路径回归/query_only通过，REPORT `11899c92dd4687f319fb084bfad7218662545df3` 已push并结算。W0 M6 SOURCE `f4bf0257b3f2e93e2ce67197bfbb0764a68332a3` 增强真实图A匹配/非零推荐/独立公式断言；root 独立读取修复后实际JSON，score复算最大误差0：implementation A=.9552011491162884、boost1.1、age259200.002s，score=1.0480013210594767；research A=.33674673723047327、boost1、age518400.002s，score=.3350055591708292，排序按真实分数。七场召回与字节缩减均从原计数复算一致；前四天research、后三天implementation；30条观察与1条approved经验。原全零推荐文件未改变。
+
+W0 正式 Sleep SOURCE `363fcca1d515b6c373a8aba285e5ded4605727d5` 使用原W3/W2装配：实际built CLI单日运行和冷重启/同日回执、显式none与facts-map-v1已定向PASS。W3 projector SOURCE `61a196ba3e3c24606a72d6fecb40427281a23ae5` / REPORT `39cb8fec12b5fedcdc82578d9b678c3857688d72` 已push并结算。M6七日使用同一正式factory及显式合成Clock，CLI只验单日真实进程；不新增产品历史回放参数，不把七日合成时钟称真实用户时间。最后完整check/build/root最终合入复验仍独立待执行。

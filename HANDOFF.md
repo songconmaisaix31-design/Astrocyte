@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 最新入口：修复后 M6 通过，等待波 C（2026-10-11 23:06）
+
+root HEAD文档49e6e93，业务仍P2。先读STATUS顶部及基线M6首RED/修复后独立复算。W4修复abff94d/report11899c9与W3投影61a196b/report39cb8fe均已结算，新Dispatch不可继续发领域返修。W0原ctx_b16e623a7b11仍活跃，M6 source f4bf025已push，root实际JSON非零推荐与图A匹配且独立公式误差0；当前全check/build待完成。W0正式Sleep363fcca单日实际CLI/重启与同factory七日合成分别通过；保持显式策略，不增历史产品回放。全轨结算后仅派1个final integration Codex--yolo Agent独立worktree普通合精确owner最终报告，再由root最终检查/构建/适用E2E/push。元数据读取/参数/知识语义未答及真实七日科学验证仍显式未完成。
+
 ## 最新入口：原 owner 收束（2026-10-11 22:51）
 
 先读 STATUS 最新表及基线独立核对。八轨实际 Codex --yolo，Run/root不变。W2/W4/W6返修已 succeeded，W1因原真实CC/Codex元数据范围未答 failed结算（本地实现已push），其外部终端 retained idle，不代表进程关闭/归档。W5已获实际W0 HTTP重复/重启PASS反馈待最终报告；W3发布实际Sleep待W0消费；W7实际作品UI及同留存库事件sink/重启PASS待最终报告。源精确SHA见STATUS，未结算轨沿原Dispatch，已结算owner有新领域返修需新Task，W1权限回答后原Task retry。
