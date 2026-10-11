@@ -14,6 +14,17 @@
 - 验收保留现有独立 golden；额外回放必须运行生产 app + 实际 SQLite，输出逐点实际 A/M/confidence/updated_at/last_active 供 root 第二实现复算。读侧前后库状态相同；失败任务只给 confidence 负贡献；归档不删，重浮现从 floor 唤醒。
 - 参数 λ、初始 confidence、成功 confidence 增量、分裂/密度/confidence 阈值、持续合并时长未被用户锁定，必须由显式配置输入；下文旧 A1/A4/A5 不作为运行默认值。
 - 基线验证：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain ./tests/attention-engine` PASS（缓存）；仅纯规则证据，非 M2 完成。
+- 协调者回复：明确等待 M0 稳定 SHA；可继续自足生命周期参数化与 app 接口草案，不消费未提交类型，不重复询问等待条件。
+- 自足持续合并规则 `ObserveMerge`：连续强关联且重叠、满足显式配置的时长与观测数才许可合并；相同观测时间不累计，中断清空。`go test ./internal/attention/domain -run TestSustainedMerge -count=1` PASS；尚无 SQLite 合并证据。
+
+#### 待 M0 发布的 app/store 实现草案（不冻结共享接口）
+
+1. Store 使用 W0 `EngineRepository.WithTx` 串行化读改写；节点 JSON 展平共享字段并保存 W2 生命周期、历史 A 最大值、已使用信号与关联观测。证据去重和节点更新同事务，不新增自研调度或完成证明。
+2. `ApplySignals` 消费可追溯已落库 Event/Signal，按时间分组求和，一组更新一次 M；空批只推进尚未应用的时间区间。新增过期信号明确拒绝，已应用信号重放不重复贡献。`last_active` 只随真实行为更新，空批与重启不刷新活动时间。
+3. `AttentionState` / `AttentionNode` / `ExplainFocus` 仅查询持久状态；读取不推进衰减。解释返回每条事件/信号的时间、权重、强度及失败任务的 confidence 路径；关联来自持久化项目/Agent/节点事实。
+4. 手动种子校验 human principal；同 scope 密度诞生按显式阈值、两簇分裂保留证据与关联；持续合并取历史 attention 最大，源节点保留；archive 不删除、重浮现仅抽取触底非 rising 候选、抽中 cold 从 floor 唤醒。
+5. confidence 骤降或事实矛盾新增 pending Conflict；裁决只通过 human principal，不自动覆盖冲突证据。
+6. 实际 SQLite 验收使用任务书授权的伪造事件流。应用回放、查询、关闭/重新打开库、重放/闲置推进输出单独保存，与真实会话 M1、HTTP 人工关口和全产品验收分开。
 
 波 A 已落码：纯数学状态更新 + 参数化函数 + 30 天 golden 数据（不依赖 M0 类型，不自建共享
 Event/Node/Store）。域文件 `dynamics/antimatthew/lifecycle/topic/conflict` 已实现，单测与
