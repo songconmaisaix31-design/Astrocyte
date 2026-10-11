@@ -1,6 +1,7 @@
 package mcp
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 
@@ -16,8 +17,11 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 	s.RegisterTool(Tool{
 		Name:        "astrocyte.get_attention_state",
 		Description: "Return the current focus ranking as (topic, attention, momentum), ordered by attention.",
-		InputSchema: map[string]any{"type": "object", "properties": map[string]any{}},
-		Handler: func(ctx context.Context, _ json.RawMessage) (any, error) {
+		InputSchema: map[string]any{"type": "object", "properties": map[string]any{}, "additionalProperties": false},
+		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
+			if err := decodeArguments(args, &struct{}{}); err != nil {
+				return nil, err
+			}
 			return backend.GetAttentionState(ctx)
 		},
 	})
@@ -26,7 +30,8 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		Name:        "astrocyte.explain_focus",
 		Description: "Explain why a topic holds its current attention: evidence events, weight path and related nodes, each with a timestamp.",
 		InputSchema: map[string]any{
-			"type": "object",
+			"type":                 "object",
+			"additionalProperties": false,
 			"properties": map[string]any{
 				"topic": map[string]any{"type": "string"},
 			},
@@ -34,8 +39,11 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		},
 		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
 			var in app.ExplainFocusInput
-			if err := json.Unmarshal(args, &in); err != nil {
+			if err := decodeArguments(args, &in); err != nil {
 				return nil, err
+			}
+			if in.Topic == "" {
+				return nil, &InvalidParamsError{"topic is required"}
 			}
 			return backend.ExplainFocus(ctx, in)
 		},
@@ -45,7 +53,8 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		Name:        "astrocyte.get_experiences",
 		Description: "Retrieve approved experiences matching a pattern, optionally filtered to a project scope.",
 		InputSchema: map[string]any{
-			"type": "object",
+			"type":                 "object",
+			"additionalProperties": false,
 			"properties": map[string]any{
 				"pattern": map[string]any{"type": "string"},
 				"scope":   map[string]any{"type": "string"},
@@ -54,8 +63,11 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		},
 		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
 			var in app.GetExperiencesInput
-			if err := json.Unmarshal(args, &in); err != nil {
+			if err := decodeArguments(args, &in); err != nil {
 				return nil, err
+			}
+			if in.Pattern == "" {
+				return nil, &InvalidParamsError{"pattern is required"}
 			}
 			return backend.GetExperiences(ctx, in)
 		},
@@ -65,7 +77,8 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		Name:        "astrocyte.report_event",
 		Description: "Report an event observed by an external agent into the attention signal stream.",
 		InputSchema: map[string]any{
-			"type": "object",
+			"type":                 "object",
+			"additionalProperties": false,
 			"properties": map[string]any{
 				"source":  map[string]any{"type": "string"},
 				"session": map[string]any{"type": "string"},
@@ -80,8 +93,11 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		},
 		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
 			var in app.ReportEventInput
-			if err := json.Unmarshal(args, &in); err != nil {
+			if err := decodeArguments(args, &in); err != nil {
 				return nil, err
+			}
+			if in.Session == "" || in.Kind == "" || in.Scope == "" || in.Topic == "" || in.TS <= 0 || in.Tokens < 0 {
+				return nil, &InvalidParamsError{"event requires session, positive ts, kind, scope, topic and nonnegative tokens"}
 			}
 			return backend.ReportEvent(ctx, in)
 		},
@@ -91,7 +107,8 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		Name:        "astrocyte.veto",
 		Description: "Reflect a user veto of a topic or task back into the attention model.",
 		InputSchema: map[string]any{
-			"type": "object",
+			"type":                 "object",
+			"additionalProperties": false,
 			"properties": map[string]any{
 				"target": map[string]any{"type": "string"},
 				"reason": map[string]any{"type": "string"},
@@ -100,12 +117,24 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		},
 		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
 			var in app.VetoInput
-			if err := json.Unmarshal(args, &in); err != nil {
+			if err := decodeArguments(args, &in); err != nil {
 				return nil, err
+			}
+			if in.Target == "" {
+				return nil, &InvalidParamsError{"target is required"}
 			}
 			return backend.Veto(ctx, in)
 		},
 	})
 
 	return s
+}
+
+func decodeArguments(args json.RawMessage, value any) error {
+	d := json.NewDecoder(bytes.NewReader(args))
+	d.DisallowUnknownFields()
+	if err := d.Decode(value); err != nil {
+		return &InvalidParamsError{err.Error()}
+	}
+	return nil
 }

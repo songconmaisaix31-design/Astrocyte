@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -12,6 +13,9 @@ import (
 // input and returns every decoded response line.
 func serveLines(t *testing.T, s *Server, input string) []map[string]any {
 	t.Helper()
+	if !strings.Contains(input, `"method":"initialize"`) {
+		input = reqLine(0, "initialize", "") + "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n" + input
+	}
 	pr, pw, err := os.Pipe()
 	if err != nil {
 		t.Fatal(err)
@@ -46,12 +50,18 @@ func serveLines(t *testing.T, s *Server, input string) []map[string]any {
 		t.Fatal(err)
 	}
 	or.Close()
+	if len(lines) > 0 && lines[0]["id"] == float64(0) {
+		lines = lines[1:]
+	}
 	return lines
 }
 
 func reqLine(id int, method string, params string) string {
 	if params == "" {
 		params = "{}"
+		if method == "initialize" {
+			params = `{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1"}}`
+		}
 	}
 	return "{\"jsonrpc\":\"2.0\",\"id\":" + jsonInt(id) + ",\"method\":\"" + method + "\",\"params\":" + params + "}\n"
 }

@@ -42,5 +42,20 @@ func errorResponse(id json.RawMessage, code int, message string) *response {
 }
 
 func isNotification(id json.RawMessage) bool {
-	return len(id) == 0 || string(id) == "null"
+	return len(id) == 0
+}
+
+func validID(id json.RawMessage) bool {
+	if len(id) == 0 {
+		return true
+	}
+	var value any
+	if json.Unmarshal(id, &value) != nil {
+		return false
+	}
+	switch value.(type) {
+	case string, float64:
+		return true
+	}
+	return false
 }

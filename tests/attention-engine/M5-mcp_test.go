@@ -98,6 +98,9 @@ func roundTrip(t *testing.T, s *mcp.Server, script string) []map[string]any {
 func req(id int, method, params string) string {
 	if params == "" {
 		params = "{}"
+		if method == "initialize" {
+			params = `{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1"}}`
+		}
 	}
 	return fmt.Sprintf("{\"jsonrpc\":\"2.0\",\"id\":%d,\"method\":%q,\"params\":%s}\n", id, method, params)
 }

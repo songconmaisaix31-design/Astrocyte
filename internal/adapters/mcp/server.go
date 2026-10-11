@@ -5,11 +5,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 )
 
 const (
-	protocolVersion = "2024-11-05"
+	protocolVersion = "2025-11-25"
 	maxMessageBytes = 16 << 20
 )
 
@@ -37,12 +38,16 @@ func (s *Server) Serve(ctx context.Context, in io.Reader, out io.Writer) error {
 	scanner := bufio.NewScanner(in)
 	scanner.Buffer(make([]byte, 0, 64*1024), maxMessageBytes)
 	w := bufio.NewWriter(out)
+	initialized := false
 	for scanner.Scan() {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
 		line := scanner.Bytes()
 		if len(bytes.TrimSpace(line)) == 0 {
 			continue
 		}
-		resp := s.handle(ctx, line)
+		resp := s.handle(ctx, line, &initialized)
 		if resp == nil {
 			continue
 		}
@@ -63,31 +68,60 @@ func (s *Server) Serve(ctx context.Context, in io.Reader, out io.Writer) error {
 	return scanner.Err()
 }
 
-func (s *Server) handle(ctx context.Context, line []byte) *response {
+func (s *Server) handle(ctx context.Context, line []byte, initialized *bool) *response {
+	if !json.Valid(line) {
+		return errorResponse(nil, codeParseError, "Parse error")
+	}
 	var req request
 	if err := json.Unmarshal(line, &req); err != nil {
-		return errorResponse(nil, codeParseError, "Parse error")
+		return errorResponse(nil, codeInvalidRequest, "Invalid request")
+	}
+	if req.JSONRPC != "2.0" || req.Method == "" || !validID(req.ID) {
+		return errorResponse(nil, codeInvalidRequest, "Invalid request")
 	}
 	if isNotification(req.ID) {
 		return nil
 	}
 	switch req.Method {
 	case "initialize":
-		return okResponse(req.ID, s.initializeResult())
+		var params struct {
+			ProtocolVersion string                     `json:"protocolVersion"`
+			Capabilities    map[string]json.RawMessage `json:"capabilities"`
+			ClientInfo      struct {
+				Name    string `json:"name"`
+				Version string `json:"version"`
+			} `json:"clientInfo"`
+		}
+		if *initialized || json.Unmarshal(req.Params, &params) != nil || params.ProtocolVersion == "" || params.Capabilities == nil || params.ClientInfo.Name == "" || params.ClientInfo.Version == "" {
+			return errorResponse(req.ID, codeInvalidParams, "Invalid initialize params")
+		}
+		version := protocolVersion
+		switch params.ProtocolVersion {
+		case "2024-11-05", "2025-03-26", "2025-06-18", protocolVersion:
+			version = params.ProtocolVersion
+		}
+		*initialized = true
+		return okResponse(req.ID, s.initializeResult(version))
 	case "ping":
 		return okResponse(req.ID, map[string]any{})
 	case "tools/list":
+		if !*initialized {
+			return errorResponse(req.ID, codeInvalidRequest, "Initialize first")
+		}
 		return okResponse(req.ID, map[string]any{"tools": s.toolList()})
 	case "tools/call":
+		if !*initialized {
+			return errorResponse(req.ID, codeInvalidRequest, "Initialize first")
+		}
 		return s.call(req.ID, ctx, req.Params)
 	default:
 		return errorResponse(req.ID, codeMethodNotFound, "Method not found: "+req.Method)
 	}
 }
 
-func (s *Server) initializeResult() map[string]any {
+func (s *Server) initializeResult(version string) map[string]any {
 	return map[string]any{
-		"protocolVersion": protocolVersion,
+		"protocolVersion": version,
 		"capabilities":    map[string]any{"tools": map[string]any{}},
 		"serverInfo":      map[string]any{"name": s.name, "version": s.version},
 	}
@@ -117,12 +151,23 @@ func (s *Server) call(id json.RawMessage, ctx context.Context, params json.RawMe
 	if err := json.Unmarshal(params, &p); err != nil {
 		return errorResponse(id, codeInvalidParams, "Invalid params: "+err.Error())
 	}
+	if len(p.Arguments) == 0 {
+		p.Arguments = json.RawMessage(`{}`)
+	}
+	p.Arguments = bytes.TrimSpace(p.Arguments)
+	if len(p.Arguments) == 0 || p.Arguments[0] != '{' {
+		return errorResponse(id, codeInvalidParams, "Arguments must be an object")
+	}
 	t, ok := s.byName[p.Name]
 	if !ok {
 		return errorResponse(id, codeInvalidParams, "Unknown tool: "+p.Name)
 	}
 	result, err := t.Handler(ctx, p.Arguments)
 	if err != nil {
+		var invalid *InvalidParamsError
+		if errors.As(err, &invalid) {
+			return errorResponse(id, codeInvalidParams, invalid.Error())
+		}
 		return okResponse(id, toolResultError(err))
 	}
 	text, err := json.Marshal(result)
