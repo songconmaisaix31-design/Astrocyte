@@ -63,6 +63,24 @@ func TestCaptureRequiresPatternConditionAndEvidence(t *testing.T) {
 	}
 }
 
+func TestFailureStructureRecordsObservationWithoutAvoidAdvice(t *testing.T) {
+	pattern, verdict, condition, err := StructureFailure(KindAgentTask, OutcomeFailed)
+	if err != nil || pattern != KindAgentTask || verdict != VerdictCondition || condition != "outcome=failed" {
+		t.Fatalf("failure observation: %q %q %q %v", pattern, verdict, condition, err)
+	}
+	if err := ValidateCapture(pattern, verdict, condition, 1); err != nil {
+		t.Fatal(err)
+	}
+	for _, kind := range []string{"import", "distillation", "job_failed"} {
+		if _, _, _, err := StructureFailure(kind, OutcomeFailed); !errors.Is(err, ErrInvalid) {
+			t.Fatalf("non-task %q structured as experience", kind)
+		}
+	}
+	if _, _, _, err := StructureFailure(KindAgentTask, "unknown"); !errors.Is(err, ErrInvalid) {
+		t.Fatal("unknown effect structured as failed task")
+	}
+}
+
 func TestPromotionRequiresHumanGateTransitions(t *testing.T) {
 	approved, err := Promote(StatusQuarantine, ActionApprove)
 	if err != nil || approved != StatusApproved {

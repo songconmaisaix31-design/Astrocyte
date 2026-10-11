@@ -29,9 +29,9 @@ const (
 
 // Agent-task event kind and execution outcome vocabulary (§4.1, §8 M5).
 const (
-	KindAgentTask     = "agent_task"
-	OutcomeFailed     = "failed"
-	OutcomeSucceeded  = "succeeded"
+	KindAgentTask    = "agent_task"
+	OutcomeFailed    = "failed"
+	OutcomeSucceeded = "succeeded"
 )
 
 func ValidVerdict(v string) bool {
@@ -48,6 +48,16 @@ func ValidStatus(s string) bool {
 // source-type semantics are preserved.
 func CaptureEligible(kind, outcome string) bool {
 	return kind == KindAgentTask && outcome == OutcomeFailed
+}
+
+// StructureFailure records the observed failure without inferring a general
+// recommendation from a task's private conversation. The candidate remains a
+// condition for human review, not an automatic avoid verdict.
+func StructureFailure(kind, outcome string) (pattern, verdict, condition string, err error) {
+	if !CaptureEligible(kind, outcome) {
+		return "", "", "", ErrInvalid
+	}
+	return kind, VerdictCondition, "outcome=" + outcome, nil
 }
 
 // ValidateCapture validates a candidate's core fields (§4.3/§4.5). A verdict of

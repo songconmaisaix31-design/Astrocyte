@@ -124,3 +124,5 @@ Wave B（待 M0 契约 SHA 发布后编码）：
 - 只读 W0 schema 观察：当前 `attention_engine_experiences` 无 project scope / 原始事件去重字段，尚无跨项目分享审计表。已通过 Orca Handoff 请求 W0 提供 owner project、原始 event 外键与幂等键、人工分享 who/when/where 持久化结构；迁移仍只由 W0 修改。
 - 人工 approve/demote 与跨项目分享经受信 human 身份；Agent 检索仅返回其受信项目可见的 approved 经验。W0 HTTP 和 W6 MCP 接线通过 Handoff，不在本轨越界修改。
 - 失败 outcome 的归一化字段、规则结构化输入、受信项目上下文等待协调者与共享 owner 确认；不据未提交文件冻结接口。收到精确 SHA 后普通合并，完成 SQLite 捕获、重启、幂等、人工关口和检索范围验收。
+- 协调者已确认：M0 尚无可消费稳定 SHA，继续等待；项目身份来自应用 Principal/启动绑定，不能从 Event.Scope 自授；失败 outcome 只取明确原始元数据。依赖等待不发送 worker_done。
+- 等待期间新增 `StructureFailure` 纯规则：pattern 为已观察到的 `agent_task`，verdict 为 `condition`，condition 为 `outcome=failed`；不把单次失败推出为 avoid 建议，不读原对话文本。导入/蒸馏/未知效果拒绝进入此规则。`GOFLAGS=-p=1 GOMAXPROCS=2 go test -count=1 ./internal/attention/domain/` PASS；仍未替代 SQLite 验收。
