@@ -4,6 +4,8 @@
 
 ### 当前裁决：v2.1（2026-10-12）
 
+04:50 W0限定M5 fixture SOURCE `b69ec6fffc109bf1ed8242a59699511aca967060`、REPORT `88268a05a756f108f76422e1279e734851e4c324`已push/结算，只有授权三测试与own报告，生产/helper/schema不变。worker最终M5 6 top/9 leaf PASS、helper1 SKIP；MCP/privacy/CLI 13/11/1 PASS、privacy6 opt-in SKIP不计审计；原Canary17叶PASS，原100/1101字符串/2100响应零泄漏PASS。首RED和中间3 FAIL保留在外部privacy-v21-m5-w0。现交唯一原集成owner普通合W1/W0精确REPORT；root独立整体和隐私复验尚未执行，V0完整率仍RED、V1仍NOT_RUN。
+
 04:41 root在W1源码cadd33af的实际生产mapper上独立全人口复验EXIT0，输出既定外部证据根`root-v21/population-independent.json`，与worker验收JSON一致：N6016=Claude369+Codex3754+git1893；kind/topic1971（32.76%，RED），mapped2014/unknown4002/unassigned3497；随机200非认知误标0、adapter/association拒绝均0。Python接入8 PASS，canonical kind map生成校验PASS。第一命令输出目录缺失而拒绝创建，未写结果；创建外部目录后复验，未覆盖任何证据。M5首RED绝对路径为既定外部根`evidence/root-v21/m5-first-red.log`，此前相对路径不指仓库内部。新返修task_87a15d7b1d17/ctx_063dce91ac7a，Codex --yolo/GPT-6.1-Sol high fast实际开始；Orca首次turn_start_unobserved保留，屏幕确认任务仍在composer后仅Enter，随后fresh agent_status证明working，不重发任务。
 
 04:33 W0 SOURCE `6e7de7e340606f6f13fad79f00a814b455daed72` / REPORT `b728f23fcbd955b2b2514b62a60676da22b94db2`已push并结算。worker原100真实raw审计1101字符串/2100生产MCP响应、零泄漏；仅real_raw_contract_local，root集成后独立复验尚未执行。root旧M5回归首RED：两个delivery测试失败，原始日志evidence/root-v21/m5-first-red.log保留。追加原W0三份M5 fixture写域，修正raw/origin_key/event包装旧期待，保留真实持久化/提交未知/重启/权重证据；不改生产或schema。V0归一化1971/6016=32.76%仍RED，V1不启动。
