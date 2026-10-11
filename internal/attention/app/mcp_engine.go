@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -88,8 +89,8 @@ func (b *engineMCPBackend) ReportEvent(ctx context.Context, in ReportEventInput)
 		}
 		event = &domain.Event{Source: domain.EventSourceMCP, Session: b.binding.Session, TS: in.TS, Kind: in.Kind, Tokens: tokens, Scope: b.binding.Scope, Topic: in.Topic, Raw: in.Raw}
 	}
-	id, err := b.record(ctx, observation, event, raw)
-	return ReportEventResult{Accepted: err == nil, EventID: id}, err
+	delivery, err := b.record(ctx, observation, event, raw)
+	return ReportEventResult{Accepted: delivery.EventID != "", MCPReceiptDelivery: delivery}, err
 }
 
 func (b *engineMCPBackend) Veto(ctx context.Context, in VetoInput) (VetoResult, error) {
@@ -112,17 +113,40 @@ func (b *engineMCPBackend) Veto(ctx context.Context, in VetoInput) (VetoResult, 
 	if in.Topic != "" {
 		event = &domain.Event{Source: domain.EventSourceManual, Session: b.binding.Session, Scope: b.binding.Scope, TS: now, Kind: domain.EventKindUserVeto, Topic: in.Topic, Raw: raw}
 	}
-	id, err := b.record(ctx, observation, event, raw)
-	return VetoResult{Acknowledged: err == nil, Target: in.Topic + in.Task, EventID: id, Pending: event == nil}, err
+	delivery, err := b.record(ctx, observation, event, raw)
+	return VetoResult{Acknowledged: delivery.EventID != "", Target: in.Topic + in.Task, MCPReceiptDelivery: delivery, Pending: event == nil}, err
 }
 
-func (b *engineMCPBackend) record(ctx context.Context, observation Observation, event *domain.Event, raw []byte) (string, error) {
-	rows, err := b.events.Record(ctx, []StoredEvent{{OriginKey: "mcp:" + b.binding.Session + ":" + rand.Text(), ReceivedAt: b.clock().UnixMilli(), Observation: observation, Event: event, RawBytes: raw}})
+func (b *engineMCPBackend) record(ctx context.Context, observation Observation, event *domain.Event, raw []byte) (MCPReceiptDelivery, error) {
+	delivery := MCPReceiptDelivery{OriginKey: "mcp:" + b.binding.Session + ":" + rand.Text(), DeliveryState: "delivery_unknown"}
+	rows, err := b.events.Record(ctx, []StoredEvent{{OriginKey: delivery.OriginKey, ReceivedAt: b.clock().UnixMilli(), Observation: observation, Event: event, RawBytes: raw}})
+	for _, row := range rows {
+		if row.ID != "" {
+			delivery.ReceiptIDs = append(delivery.ReceiptIDs, row.ID)
+			if row.OriginKey == delivery.OriginKey {
+				delivery.EventID = row.ID
+				delivery.DeliveryState = "committed"
+			}
+		}
+	}
+	var pending *EventCapturePendingError
+	if errors.As(err, &pending) {
+		delivery.CapturePending = true
+		for _, id := range pending.ReceiptIDs {
+			found := false
+			for _, known := range delivery.ReceiptIDs {
+				found = found || known == id
+			}
+			if id != "" && !found {
+				delivery.ReceiptIDs = append(delivery.ReceiptIDs, id)
+			}
+		}
+	}
+	if delivery.EventID == "" && err == nil {
+		err = fmt.Errorf("event use case did not return the persisted receipt for this origin")
+	}
 	if err != nil {
-		return "", err
+		delivery.Recovery = "reconcile original origin_key and receipt_ids; do not resubmit with a new origin key"
 	}
-	if len(rows) != 1 || rows[0].ID == "" {
-		return "", fmt.Errorf("event use case did not return a persisted receipt")
-	}
-	return rows[0].ID, nil
+	return delivery, err
 }

@@ -59,9 +59,23 @@ type ReportEventInput struct {
 }
 
 type ReportEventResult struct {
-	Accepted bool   `json:"accepted"`
-	EventID  string `json:"event_id"`
+	Accepted bool `json:"accepted,omitempty"`
+	MCPReceiptDelivery
 }
+
+// MCPReceiptDelivery preserves acknowledgement uncertainty without implying
+// that an errored operation did not commit. Reconcile the origin/receipt;
+// submitting a fresh origin can duplicate the original write.
+type MCPReceiptDelivery struct {
+	EventID        string   `json:"event_id,omitempty"`
+	OriginKey      string   `json:"origin_key,omitempty"`
+	DeliveryState  string   `json:"delivery_state,omitempty"`
+	CapturePending bool     `json:"capture_pending"`
+	ReceiptIDs     []string `json:"receipt_ids,omitempty"`
+	Recovery       string   `json:"recovery,omitempty"`
+}
+
+func (d MCPReceiptDelivery) MCPDeliveryState() string { return d.DeliveryState }
 
 // VetoInput carries a user veto of a topic or a task.
 type VetoInput struct {
@@ -71,8 +85,8 @@ type VetoInput struct {
 }
 
 type VetoResult struct {
-	Acknowledged bool   `json:"acknowledged"`
+	Acknowledged bool   `json:"acknowledged,omitempty"`
 	Target       string `json:"target"`
-	EventID      string `json:"event_id"`
 	Pending      bool   `json:"pending"`
+	MCPReceiptDelivery
 }
