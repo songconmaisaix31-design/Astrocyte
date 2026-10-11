@@ -72,6 +72,15 @@ production migration017 已创建 works_requests，W7 测试随后再 CREATE 同
 M1 局部 8 PASS / 1 SKIP（真实元数据未重跑）；受影响四包 `go build` PASS。
 不把局部绿或构建绿写成当前五包全绿；等待精确 owner 测试修复 SHA 后定向复验。
 
+## 未决定参数下的 pending-only 入口
+
+root 指定作品源不能为未答参数猜 strength/NaN。
+新增 `app.NewPendingEventService(repo)`：strength 为 nil；只接收 pending 回执，mapped 输入显式报错且事务回滚。
+已有 `NewEventService(repo,explicitStrength,optionalCapture)` 签名保持兼容；已配置时才归一化。
+W0 作品接线可用 `events.NewWorksEventSink(app.NewPendingEventService(sqlite.NewEventRepository(db)),clock)`。
+`TestM1PendingRecorderDoesNotChooseSignalScale` 和以真实 pending-only service 运行的 Works 正常/失败、capture 四项 targeted PASS。
+这条入口保存事实，不选择产品默认，也不把 pending 降为最终验收。
+
 ## 当前有效映射边界
 
 - 每条源记录保留原载荷；映射未知的记录留 adapter pending，不能创建 core `unknown` kind 或流入 Dynamics。

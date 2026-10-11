@@ -28,7 +28,7 @@ func TestM1WorksServiceUsesPendingReceiptsWithoutInventedAttention(t *testing.T)
 		t.Fatal(err)
 	}
 	now := time.UnixMilli(1791590400123)
-	sink := events.NewWorksEventSink(attentionapp.NewEventService(sqlite.NewEventRepository(db), 1), func() time.Time { return now })
+	sink := events.NewWorksEventSink(attentionapp.NewPendingEventService(sqlite.NewEventRepository(db)), func() time.Time { return now })
 	work := workspacedomain.Work{ID: "selected-fixture-work", Platform: "codex", Root: t.TempDir(), Name: "selected fixture", Kind: "folder"}
 	if err = db.SaveWorksSnapshot(ctx, workspacedomain.WorksSnapshot{Works: []workspacedomain.Work{work}}); err != nil {
 		t.Fatal(err)
