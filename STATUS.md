@@ -14,6 +14,12 @@ v0.1无自动发现：主题来源仅固定种子+git派生+SeedTopic手工播�
 
 本轮沿原W1/W0固定Codex --yolo写域：W1全量盘点/工具接入/无标计数/参数绑定；W0仅MCP投影与raw_unique审计。原store/schema写授权撤销。root只文档决策/独立验收/最终Git；待两轨完成交同一集成owner普通合，V0三指标过后才正式V1。当前新指标NOT_RUN，无新阶段源码/测试数或SHA可登记。
 
+02:04 文档裁决commit `ce2373267f59de75b26bf0f2327867dcf83a7a15`已push。原两Codex --yolo终端均观察到turn_started：W1 `task_5919d711bc0c/ctx_ec348bef556e`；W0 `task_20bf728215ee/ctx_e3124d8cce8c`。W1预声明分母：Claude assistant每tool_use block、Codex response_item每function_call/custom_tool_call，按source+observed session+native tool/call ID去重，无ID才用原文件/行/block；所有unknown/wrapper保留于N，再加冻结1893 git。非工具行独立结构筛选、Random seed20261012抽200，不按mapper成功倒选。
+
+实码差异已集中询问，其他独立工作继续：Signal.Strength是非负s，Weight是有符号w，引擎s×w；建议接入有效strength=w、核心s=1避免重复乘权重，待用户确认字段绑定。SeedTopic需initial_confidence但v2.1未指定（旧M6验证.5）；KnowledgeQuery.LambdaR单位秒⁻¹，补丁.05未指明时间单位；RetrieveKnowledge的human引用boost只有累加，无cap/24h回退。已问精确播种值/单位及boost缺口是否冻结记录留v0.2，不改引擎、不默定。上述是现有实现差异，不重问已裁决常量或自动出生。
+
+02:06 W0报告并收窄实际wire接缝：ExplainFocus evidence.original投影六字段，外层attention/信号权重/related指标保留；report/veto删除嵌有raw session的origin_key，保留event_id/receipt_ids/提交与pending状态，恢复提示改为固定event_id对账、不以新origin重提。veto task-only不回显原task，derived topic仍可返回。get_experiences保留既有人类批准的独立结构化derived能力，原始事件载荷和无关会话/请求/actor元数据不得穿出。追加W0旧fixture唯一写域cmd/mcp/main_test.go，原:113要求返回RawBytes与新裁决冲突，先记录原RED，再改投影与零泄漏断言；不改CLI生产/app/contracts/schema。
+
 任务：[M6验证期 v2.0](tasks/M6-validation-v2.md)。交付分支 `validation/v1-20261012` 从 `attention-engine/v1-20261011` / `6b2b91086d87e2173122c3c9f53a36332acffff2` 分出。M0–M5保持现状，不新增认知能力、不改引擎逻辑、不训练模型、不调权重，不接Morphogenesis接口；P2仅允许一张轨迹展示图。schema冻结，只有P0接缝修复可逐项记录豁免；其他schema修改不得合入。bug修复必须带复现测试。本冻结令优先于下文工程期记录，后续会话继续执行。
 
 ### EX-01：P0 unassigned消费契约限定修复（用户2026-10-12裁决）

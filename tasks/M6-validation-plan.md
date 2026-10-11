@@ -6,6 +6,8 @@
 
 W1输出N/完整率/误标率的分母先按原生结构声明，不以当前mapper成功筛分母，不将housekeeping/token_count/用户或思考行计成认知。工具wrapper只用确定性可观察语义，不运行历史命令/JS，不把未观察的编辑/深读/成功补为事实。raw全量与抽样均只在既有本地证据根，聚合可读；原100和旧泄漏首RED不覆盖。强度与权重、λ_r单位先核对既有字段，零引擎改动；跨写域必需路径先报root登记。
 
+W0追加唯一旧fixture写域`cmd/mcp/main_test.go`：原断言要求ExplainFocus.Original.RawBytes，按v2.1改为六字段事件投影及raw_unique零泄漏；先保留旧断言首RED，不改CLI生产代码或其他业务文件。wire事件六字段投影保留外层attention/证据信号/相关节点指标；receipt删除含raw session的origin_key，用event_id/receipt_ids及固定恢复文案保留已提交对账语义；task-only veto不回显原task，topic为derived可保留。get_experiences既有人工批准的结构化内容属于独立derived契约，保留能力；原始事件/source载荷与无关request/session/actor元数据不得随嵌套序列化穿出，审计覆盖真实生产及canary各五工具路径。
+
 事实源：[用户任务书v2.0](M6-validation-v2.md)。基线 `6b2b91086d87e2173122c3c9f53a36332acffff2`，交付 `validation/v1-20261012`。所有开发用Codex --yolo，模型沿客户端配置，观察启动后记录实际值。root只计划/状态/决策/验收/最终Git；领域开发由固定owner提交推送，普通合并，保留原工作树。
 
 | 轨 | 固定Agent/Worktree/Branch | write_paths | 交付与顺序 |
