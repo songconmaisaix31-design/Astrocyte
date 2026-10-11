@@ -24,6 +24,8 @@ type DynamicsTx interface {
 	ListConflicts() ([]DynamicsConflict, error)
 	SaveConflict(DynamicsConflict) error
 	AddConflictAction(string, ActionAudit) error
+	LoadDecisionReceipt(string, string, string) (Receipt, error)
+	SaveDecisionReceipt(string, string, string, Receipt) error
 }
 
 type DynamicsConflict struct {

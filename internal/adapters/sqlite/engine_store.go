@@ -146,6 +146,9 @@ func (t *dynamicsTx) GetEvent(id string) (app.StoredEvent, error) {
 			return e, err
 		}
 		e.Event = &core
+		if e.RawBytes != nil {
+			e.Event.Raw = append(json.RawMessage(nil), e.RawBytes...)
+		}
 	}
 	return e, nil
 }
@@ -231,4 +234,30 @@ func (t *dynamicsTx) SaveConflict(c app.DynamicsConflict) error {
 func (t *dynamicsTx) AddConflictAction(id string, a app.ActionAudit) error {
 	_, err := t.t.Exec("INSERT INTO attention_engine_conflict_actions(conflict_id,action,actor_id,actor_kind,ts,request_id,version) VALUES(?,?,?,?,?,?,?)", id, a.Action, a.ActorID, a.ActorKind, a.TS, a.RequestID, a.Version)
 	return err
+}
+
+func (t *dynamicsTx) LoadDecisionReceipt(actor, operation, key string) (app.Receipt, error) {
+	var receipt app.Receipt
+	var result string
+	err := t.t.QueryRow("SELECT digest,result FROM attention_receipts WHERE caller=? AND command=? AND key=?", actor, operation, key).Scan(&receipt.Digest, &result)
+	receipt.Result = json.RawMessage(result)
+	return receipt, dynamicsMissing(err, "receipt", key)
+}
+
+func (t *dynamicsTx) SaveDecisionReceipt(actor, operation, key string, receipt app.Receipt) error {
+	if !json.Valid(receipt.Result) {
+		return fmt.Errorf("receipt must contain a complete result")
+	}
+	_, err := t.t.Exec("INSERT INTO attention_receipts(caller,command,key,digest,result) VALUES(?,?,?,?,?) ON CONFLICT(caller,command,key) DO NOTHING", actor, operation, key, receipt.Digest, string(receipt.Result))
+	if err != nil {
+		return err
+	}
+	stored, err := t.LoadDecisionReceipt(actor, operation, key)
+	if err != nil {
+		return err
+	}
+	if stored.Digest != receipt.Digest || string(stored.Result) != string(receipt.Result) {
+		return conflict("idempotency key binds a different decision or result")
+	}
+	return nil
 }

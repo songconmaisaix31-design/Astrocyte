@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -20,7 +22,7 @@ import (
 
 func m2ptr[T any](v T) *T { return &v }
 func m2options() app.DynamicsOptions {
-	return app.DynamicsOptions{Decay: m2ptr(.1), InitialConfidence: m2ptr(.5), SuccessConfidenceDelta: m2ptr(.1), ConfidenceDropThreshold: m2ptr(.05), DensityThreshold: m2ptr(1.0), SplitThreshold: m2ptr(.3), MergeDurationMS: m2ptr(int64(86400000)), MergeObservations: m2ptr(2), Clock: func() time.Time { return time.UnixMilli(1767225600000) }}
+	return app.DynamicsOptions{Decay: m2ptr(.1), InitialConfidence: m2ptr(.5), SuccessConfidenceDelta: m2ptr(.1), ConfidenceDropThreshold: m2ptr(.05), DensityThreshold: m2ptr(1.0), SplitThreshold: m2ptr(.3), SplitState: func(parent domain.AttentionNode, _ int) domain.AttentionNode { return parent }, MergeDurationMS: m2ptr(int64(86400000)), MergeObservations: m2ptr(2), Clock: func() time.Time { return time.UnixMilli(1767225600000) }}
 }
 
 var m2human = app.Principal{ID: "m2-human", Kind: "human"}
@@ -42,34 +44,41 @@ func m2open(t *testing.T, path string) (*sqlite.DB, *app.DynamicsEngine) {
 }
 
 // The M2 task book prescribes fake inputs. These rows retain original bytes and
-// use the real migration, repository and application, without an M1 mock store.
+// use the real W1 receipt/normalisation service, migration, repository and app.
 func m2signal(t *testing.T, db *sqlite.DB, topic, id string, ts int64, class domain.SignalClass, strength float64) domain.Signal {
 	t.Helper()
 	kind := map[domain.SignalClass]string{domain.SignalImplicitRegular: domain.EventKindEditFile, domain.SignalImplicitDepth: domain.EventKindReadPaper, domain.SignalImplicitLight: domain.EventKindBookmark, domain.SignalExplicitPositive: domain.EventKindUserApprove, domain.SignalExplicitNegative: domain.EventKindUserVeto, domain.SignalFeedbackSuccess: domain.EventKindAgentTask, domain.SignalFeedbackFailure: domain.EventKindAgentTask}[class]
 	raw := []byte(fmt.Sprintf("{ \"fixture_event\": %q, \"depth\": \"long\" }\n", id))
 	event := domain.Event{Source: domain.EventSourceCodex, Session: "m2-synthetic", TS: ts, Kind: kind, Scope: "m2-project", Topic: topic, Raw: raw}
-	data, err := json.Marshal(event)
+	outcome := "unknown"
+	if class == domain.SignalFeedbackSuccess {
+		outcome = "success"
+	}
+	if class == domain.SignalFeedbackFailure {
+		outcome = "failure"
+	}
+	if class == domain.SignalExplicitPositive || class == domain.SignalExplicitNegative {
+		event.Source = domain.EventSourceManual
+	}
+	repo := sqlite.NewEventRepository(db)
+	records, err := app.NewEventService(repo, strength).Record(context.Background(), []app.StoredEvent{{OriginKey: id, ReceivedAt: ts, Event: &event, RawBytes: raw, Observation: app.Observation{Source: event.Source, SourceKind: kind, Session: event.Session, Scope: event.Scope, TS: ts, Outcome: outcome, Depth: "deep", Provenance: "M2 synthetic application acceptance"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
-	obs, err := json.Marshal(app.Observation{Source: event.Source, SourceKind: kind, Session: event.Session, Scope: event.Scope, TS: ts, Provenance: "M2 synthetic application acceptance"})
+	list, err := repo.ListSignals(context.Background(), ts, ts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = db.Conn().Exec(`INSERT INTO attention_engine_events(id,source,ts,kind,topic,data,origin_key,received_at,raw_bytes,observation,mapping_status) VALUES(?,?,?,?,?,?,?,?,?,?,'mapped')`, id, event.Source, ts, kind, topic, string(data), id, ts, raw, string(obs))
-	if err != nil {
-		t.Fatal(err)
+	for _, s := range list {
+		if s.EventID == records[0].ID {
+			if s.Class != class {
+				t.Fatal("unexpected W1 signal class", s.Class)
+			}
+			return s
+		}
 	}
-	s := domain.Signal{EventID: id, Topic: topic, Class: class, Strength: strength, Weight: domain.SignalWeight(class), TS: ts}
-	data, err = json.Marshal(s)
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = db.Conn().Exec("INSERT INTO attention_engine_signals(event_id,topic,class,weight,ts,data) VALUES(?,?,?,?,?,?)", id, topic, class, s.Weight, ts, string(data))
-	if err != nil {
-		t.Fatal(err)
-	}
-	return s
+	t.Fatal("W1 did not persist the normalized signal")
+	return domain.Signal{}
 }
 
 func m2nodeBytes(t *testing.T, db *sqlite.DB, topic string) []byte {
@@ -84,6 +93,12 @@ func m2nodeBytes(t *testing.T, db *sqlite.DB, topic string) []byte {
 func TestM2ApplicationThirtyDaySQLiteReplay(t *testing.T) {
 	ctx := context.Background()
 	path := filepath.Join(t.TempDir(), "state.sqlite")
+	if retained := os.Getenv("ASTROCYTE_M2_DB"); retained != "" {
+		if _, err := os.Stat(retained); !os.IsNotExist(err) {
+			t.Fatal("retained M2 database must be a fresh path")
+		}
+		path = retained
+	}
 	db, engine := m2open(t, path)
 	defer func() { db.Close() }()
 	var doc goldenDoc
@@ -148,6 +163,11 @@ func TestM2ApplicationThirtyDaySQLiteReplay(t *testing.T) {
 			if err = db.Close(); err != nil {
 				t.Fatal(err)
 			}
+			cmd := exec.Command(os.Args[0], "-test.run=^TestM2ProcessReload$", "-test.v")
+			cmd.Env = append(os.Environ(), "ASTROCYTE_M2_RELOAD_PATH="+path, "ASTROCYTE_M2_RELOAD_TIME="+strconv.FormatInt(in.TsMs, 10))
+			if out, err := cmd.CombinedOutput(); err != nil {
+				t.Fatalf("new process reload: %v\n%s", err, out)
+			}
 			db, engine = m2open(t, path)
 			if _, err = engine.ApplySignals(ctx, n.Topic, signals, in.TsMs); err != nil {
 				t.Fatal(err)
@@ -174,18 +194,43 @@ func TestM2ApplicationThirtyDaySQLiteReplay(t *testing.T) {
 	}
 	if output := os.Getenv("ASTROCYTE_M2_OUTPUT"); output != "" {
 		b, err := json.MarshalIndent(struct {
-			EvidenceClass string               `json:"evidence_class"`
-			DBRestartDays []int                `json:"db_restart_days"`
-			Initial       domain.AttentionNode `json:"initial"`
-			Steps         []step               `json:"steps"`
-			Explanation   app.FocusExplanation `json:"explanation"`
-		}{"synthetic_application_sqlite", []int{10, 20}, initial, steps, explanation}, "", "  ")
+			EvidenceClass  string               `json:"evidence_class"`
+			DBRestartDays  []int                `json:"db_restart_days"`
+			ProcessRestart bool                 `json:"process_restart"`
+			Initial        domain.AttentionNode `json:"initial"`
+			Steps          []step               `json:"steps"`
+			Explanation    app.FocusExplanation `json:"explanation"`
+		}{"synthetic_application_sqlite", []int{10, 20}, true, initial, steps, explanation}, "", "  ")
 		if err != nil {
 			t.Fatal(err)
 		}
 		if err = os.WriteFile(output, append(b, '\n'), 0600); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+// Launched by the acceptance test as a new Go process against the closed DB.
+func TestM2ProcessReload(t *testing.T) {
+	path := os.Getenv("ASTROCYTE_M2_RELOAD_PATH")
+	if path == "" {
+		t.Skip("child-process entry used by the 30-day acceptance")
+	}
+	now, err := strconv.ParseInt(os.Getenv("ASTROCYTE_M2_RELOAD_TIME"), 10, 64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, engine := m2open(t, path)
+	defer db.Close()
+	before := m2nodeBytes(t, db, "Agent Swarm")
+	if _, err = engine.ExplainFocus(context.Background(), "Agent Swarm"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = engine.ApplySignals(context.Background(), "Agent Swarm", nil, now); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(before, m2nodeBytes(t, db, "Agent Swarm")) {
+		t.Fatal("cold process applied idle decay twice")
 	}
 }
 

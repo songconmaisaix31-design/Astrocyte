@@ -107,11 +107,12 @@ func (e *DynamicsEngine) ConsolidateTopicInTx(tx DynamicsTx, topic string, refs 
 				return n, dynamicsInvalid("Sleep birth evidence crosses project scopes")
 			}
 		}
-		n, err = e.seedInTx(tx, topic, now, "sleep_birth")
+		n, err = e.seedInTx(tx, topic, verified[0].TS, "sleep_birth")
 		if err != nil {
 			return n, err
 		}
 		n.Node.Attention = domain.AttentionFloor
+		n.Node.LastActive = verified[len(verified)-1].TS
 	} else if err != nil {
 		return n, err
 	}
@@ -258,6 +259,9 @@ func (e *DynamicsEngine) SplitTopic(ctx context.Context, parent string, children
 		if e.options.SplitThreshold == nil || !dynamicsFinite(*e.options.SplitThreshold) {
 			return dynamicsPolicy("split threshold")
 		}
+		if e.options.SplitState == nil {
+			return dynamicsPolicy("split child numeric state")
+		}
 		if !dynamicsFinite(correlation) || !domain.ShouldSplit(correlation, *e.options.SplitThreshold) || children[0] == "" || children[1] == "" || children[0] == children[1] || children[0] == parent || children[1] == parent {
 			return dynamicsInvalid("Split requires two distinct clusters below the configured correlation threshold")
 		}
@@ -308,6 +312,11 @@ func (e *DynamicsEngine) SplitTopic(ctx context.Context, parent string, children
 		}
 		for i, topic := range children {
 			child := cloneDynamicsNode(n)
+			state := e.options.SplitState(cloneDynamicsNode(n).Node, i)
+			if !dynamicsFinite(state.Attention) || state.Attention < domain.AttentionFloor || state.Attention > domain.AttentionCeiling || !dynamicsFinite(state.Momentum) || !dynamicsFinite(state.Confidence) || state.Confidence < 0 || state.Confidence > 1 || !dynamicsFinite(state.Decay) || state.Decay < 0 {
+				return dynamicsInvalid("Configured split state violates attention/confidence/decay bounds")
+			}
+			child.Node.Attention, child.Node.Momentum, child.Node.Confidence, child.Node.Decay = state.Attention, state.Momentum, state.Confidence, state.Decay
 			child.Node.ID = dynamicsID()
 			child.Node.Topic = topic
 			child.Lifecycle = "active"
@@ -412,8 +421,8 @@ func (e *DynamicsEngine) ObserveAssociationInTx(tx DynamicsTx, left, right strin
 	bh.RelatedAt[left] = now
 	if ready {
 		a.Node.Attention = domain.MergeAttention(ah.MaxAttention, bh.MaxAttention)
-		a.Node.Momentum = domain.MergeAttention(a.Node.Momentum, b.Node.Momentum)
-		a.Node.Confidence = domain.MergeAttention(a.Node.Confidence, b.Node.Confidence)
+		// §5.4 specifies only historical A=max. Preserve the survivor's
+		// orthogonal confidence, momentum and per-topic decay.
 		a.Node.LastActive = max(a.Node.LastActive, b.Node.LastActive)
 		a.UpdatedAt = now
 		a.Lifecycle = "active"

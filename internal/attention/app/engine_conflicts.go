@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
@@ -64,19 +65,28 @@ func (e *DynamicsEngine) AdjudicateConflict(ctx context.Context, p Principal, id
 		return ConflictResult{}, dynamicsInvalid("Unknown conflict decision")
 	}
 	var result ConflictResult
-	err := e.store.WithDynamicsTx(ctx, func(tx DynamicsTx) error {
+	digest, err := semanticDigest(cmd)
+	if err != nil {
+		return result, err
+	}
+	err = e.store.WithDynamicsTx(ctx, func(tx DynamicsTx) error {
+		actor, operation := p.Kind+":"+p.ID, "engine.adjudicate_conflict:"+id
+		receipt, err := tx.LoadDecisionReceipt(actor, operation, cmd.IdempotencyKey)
+		if err == nil {
+			if receipt.Digest != digest {
+				return serviceError(apierrors.VersionConflict, "Conflict idempotency key binds a different decision", "use_new_idempotency_key")
+			}
+			if json.Unmarshal(receipt.Result, &result) != nil || result.SchemaVersion != 1 || result.Conflict.ID != id || result.Version < 1 {
+				return serviceError(apierrors.DeliveryUnknown, "Conflict receipt outcome is unknown", "reconcile_original_operation")
+			}
+			return nil
+		}
+		if !dynamicsNotFound(err) {
+			return err
+		}
 		c, err := tx.GetConflict(id)
 		if err != nil {
 			return err
-		}
-		for _, a := range c.Actions {
-			if a.RequestID == cmd.RequestID {
-				if a.Action != cmd.Decision || a.ActorID != p.ID {
-					return dynamicsInvalid("Conflict decision request changed")
-				}
-				result = ConflictResult{SchemaVersion: 1, Conflict: c.Conflict, Version: c.Version}
-				return nil
-			}
 		}
 		if c.Version != cmd.ExpectedVersion {
 			return serviceError(apierrors.VersionConflict, "Conflict version changed", "reload_and_retry")
@@ -86,6 +96,7 @@ func (e *DynamicsEngine) AdjudicateConflict(ctx context.Context, p Principal, id
 		}
 		c.Conflict.Status = status
 		c.Version++
+		result = ConflictResult{SchemaVersion: 1, Conflict: c.Conflict, Version: c.Version}
 		if err = tx.SaveConflict(c); err != nil {
 			return err
 		}
@@ -94,7 +105,11 @@ func (e *DynamicsEngine) AdjudicateConflict(ctx context.Context, p Principal, id
 			return err
 		}
 		result = ConflictResult{SchemaVersion: 1, Conflict: c.Conflict, Version: c.Version}
-		return nil
+		data, err := json.Marshal(result)
+		if err != nil {
+			return err
+		}
+		return tx.SaveDecisionReceipt(actor, operation, cmd.IdempotencyKey, Receipt{Digest: digest, Result: data})
 	})
 	return result, err
 }

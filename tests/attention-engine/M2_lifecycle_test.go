@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"math"
 	"math/rand/v2"
 	"path/filepath"
 	"testing"
@@ -270,9 +271,32 @@ func TestM2SleepAttachAtomicAndConflictHumanGate(t *testing.T) {
 	if _, err = engine.AdjudicateConflict(ctx, m2human, list[0].Conflict.ID, cmd); err != nil {
 		t.Fatal("human request replay", err)
 	}
+	cmd.RequestID = "retry-new-request"
+	if _, err = engine.AdjudicateConflict(ctx, m2human, list[0].Conflict.ID, cmd); err != nil {
+		t.Fatal("idempotency retry with new request id", err)
+	}
+	cmd.Decision = app.ConflictDecisionKeepRight
+	if _, err = engine.AdjudicateConflict(ctx, m2human, list[0].Conflict.ID, cmd); err == nil {
+		t.Fatal("changed decision reused idempotency key")
+	}
 	list, err = engine.Conflicts(ctx)
 	if err != nil || len(list[0].Actions) != 1 {
 		t.Fatal("human action audit was duplicated", err)
+	}
+	// An unknown receipt outcome must stop replay, never repeat adjudication.
+	cmd.Decision = app.ConflictDecisionKeepLeft
+	_, err = db.Conn().Exec("UPDATE attention_receipts SET result='null' WHERE caller=? AND command=? AND key=?", "human:"+m2human.ID, "engine.adjudicate_conflict:"+list[0].Conflict.ID, cmd.IdempotencyKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = engine.AdjudicateConflict(ctx, m2human, list[0].Conflict.ID, cmd)
+	var unknown *apierrors.ServiceError
+	if !errors.As(err, &unknown) || unknown.Code != apierrors.DeliveryUnknown {
+		t.Fatal("unknown receipt outcome retried adjudication", err)
+	}
+	list, err = engine.Conflicts(ctx)
+	if err != nil || len(list[0].Actions) != 1 {
+		t.Fatal("unknown replay changed human audit", err)
 	}
 	if _, err = engine.ReportFactConflict(ctx, "old", a.EventID, b.EventID, "contradicted crystallized fact", ts+2); err != nil {
 		t.Fatal(err)
@@ -283,5 +307,44 @@ func TestM2SleepAttachAtomicAndConflictHumanGate(t *testing.T) {
 	list, err = engine.Conflicts(ctx)
 	if err != nil || len(list) != 2 {
 		t.Fatal("fact conflict replay duplicated or overwrote earlier conflict", err)
+	}
+}
+
+func TestM2SleepBirthAppliesPersistedDaySignalsOnce(t *testing.T) {
+	ctx := context.Background()
+	db, engine := m2open(t, filepath.Join(t.TempDir(), "state.sqlite"))
+	defer db.Close()
+	const day = int64(86400000)
+	const ts = int64(1767225600000)
+	a := m2signal(t, db, "new-sleep-topic", "new-topic-first", ts, domain.SignalImplicitRegular, 1)
+	b := m2signal(t, db, "new-sleep-topic", "new-topic-last", ts+day/2, domain.SignalImplicitRegular, 1)
+	repo := sqlite.NewDynamicsRepository(db)
+	err := repo.WithDynamicsTx(ctx, func(tx app.DynamicsTx) error {
+		born, err := engine.ConsolidateTopicInTx(tx, "new-sleep-topic", []domain.EvidenceRef{{EventID: a.EventID}, {EventID: b.EventID}}, nil, ts+day)
+		if err != nil {
+			return err
+		}
+		if born.Node.Attention != domain.AttentionFloor || born.UpdatedAt != ts || born.Node.LastActive != b.TS {
+			t.Fatal("sleep seed time or floor wrong")
+		}
+		_, err = engine.ApplySignalsInTx(tx, "new-sleep-topic", []domain.Signal{a, b}, ts+day)
+		return err
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := engine.StoredNode(ctx, "new-sleep-topic")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if math.Abs(n.Node.Attention-math.Exp(-.1*.5)) > 1e-12 || n.UpdatedAt != ts+day || n.Node.LastActive != b.TS {
+		t.Fatal("sleep birth signals skipped or timestamps rewritten")
+	}
+	before := m2nodeBytes(t, db, "new-sleep-topic")
+	if _, err = engine.ApplySignals(ctx, "new-sleep-topic", []domain.Signal{a, b}, ts+day); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(before, m2nodeBytes(t, db, "new-sleep-topic")) {
+		t.Fatal("sleep signal replay applied twice")
 	}
 }
