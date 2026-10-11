@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 自动 CI 下一层 M1 路径首错（2026-10-11 23:40）
+
+已push `ebe9a758b05d73363cc8630c187208c41253321d`，CI38152009091 Windows check仍FAIL：agents/worksscan及其余Go包已PASS，仅 `TestM1NativeFormatFixtureReplayAccounting` 报 `count=0 partial=false err=replay file uses symbolic links`，是events/native_reader.go另一处短长路径比较；Ubuntu此树check/race/build已PASS，E2E运行。完整Windows job日志 `%TEMP%/astrocyte-ci-38152009091-windows-first.log` 保留，不覆盖第一38150022874。
+
+原W1新限定Task `task_153a01e3d7ee` / Dispatch `ctx_d533ec61be20` 实际开始，Codex--yolo原工作树/分支，唯一events/**、M1测试和自己报告；不改原真实M1 failed任务、不扩大私人metadata范围、不放宽符号链接/登记根/读量边界。此fixture修复后沿原集成Agent/root复验；本机此前最终check/build PASS不等于新远程通过，整体产品未完成。
+
 ## 本轮最终树已合入、本机通过（2026-10-11 23:36）
 
 交付分支 `attention-engine/v1-20261011`；最终业务普通合并 `15c4d8b0886450619d4bc279d0770d2f958beeb4` 消费 Windows 返修集成REPORT `9919d801609a204f122cdee8691bb01d9f3692da`，所有八轨最终报告及两份路径返修SOURCE/REPORT均保留普通祖先。实现认知事件/动力学/Sleep、项目隔离知识与经验/人工关口、五MCP stdio工具、Works五能力与原始事件源；M6合成七日推荐首错已原owner修复并独立复算。所有开发/返修使用原 Codex --yolo 工作树/分支，所有Dispatch已结算，外部终端 retained idle。
