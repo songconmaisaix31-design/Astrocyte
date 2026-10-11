@@ -61,3 +61,11 @@ root另只读核对W7最终留存 `%TEMP%/astrocyte-s1-aijSTJ/data/state.sqlite`
 原 W4 SOURCE `abff94dbb8b614e4489e467e9095935fd0815ba9` 正确解码 StoredAttentionNode 并兼容旧flat，实际W2保存及W3 Sleep保存路径回归/query_only通过，REPORT `11899c92dd4687f319fb084bfad7218662545df3` 已push并结算。W0 M6 SOURCE `f4bf0257b3f2e93e2ce67197bfbb0764a68332a3` 增强真实图A匹配/非零推荐/独立公式断言；root 独立读取修复后实际JSON，score复算最大误差0：implementation A=.9552011491162884、boost1.1、age259200.002s，score=1.0480013210594767；research A=.33674673723047327、boost1、age518400.002s，score=.3350055591708292，排序按真实分数。七场召回与字节缩减均从原计数复算一致；前四天research、后三天implementation；30条观察与1条approved经验。原全零推荐文件未改变。
 
 W0 正式 Sleep SOURCE `363fcca1d515b6c373a8aba285e5ded4605727d5` 使用原W3/W2装配：实际built CLI单日运行和冷重启/同日回执、显式none与facts-map-v1已定向PASS。W3 projector SOURCE `61a196ba3e3c24606a72d6fecb40427281a23ae5` / REPORT `39cb8fec12b5fedcdc82578d9b678c3857688d72` 已push并结算。M6七日使用同一正式factory及显式合成Clock，CLI只验单日真实进程；不新增产品历史回放参数，不把七日合成时钟称真实用户时间。最后完整check/build/root最终合入复验仍独立待执行。
+
+## 最终集成树完整检查与远程短路径首错（2026-10-11 23:25）
+
+root 普通合最终REPORT `0dc31fea65584b312aebae34a5ec757ac8ecc1c3` 为 `0e49301734549a02b9b1b9078aaef96fd6422742`，重新核对八轨最终报告均祖先。该树 root 独立 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` EXIT0：Go格式/vet/全包、依赖、27包边界、275契约/生成漂移、实际API14、TS/lint/Vitest90、diff通过；`pnpm build` 同环境 EXIT0，实际API/MCP/Sleep三二进制及web通过。日志 `%TEMP%/astrocyte-root-final-check-20261011-2316.log`、`astrocyte-root-final-build-20261011-2318.log`。此前首次RED不改写。该树默认E2E独立运行中，尚无最终结论。
+
+实际读取 `.github/workflows/check.yml` 确认push/PR自动触发，未手动调用不等于远程NOT_RUN。CI38150022874（dd62ec9）及38150373657（7c199aa）Ubuntu check/race/build/E2E PASS；Windows check FAIL、后续race/build/E2E SKIP。第一完整失败log固定保留 `%TEMP%/astrocyte-ci-38150022874-first-failed.log`：os.TempDir的 `C:/Users/RUNNER~1/...` 与EvalSymlinks的 `C:/Users/runneradmin/...` 属同目录不同Windows名称，scanner严格EqualFold、agents rootKey/inside误拒绝，scanner marker测试零行下标触发panic，实际HTTP/W7受同根因影响。不是0e493远程结果，不以Ubuntu绿色冲掉Windows首RED。原W0/W7已接限定互斥返修，不放宽真实symlink/私有目录/授权边界；修后定向与最终树复验分别记录。
+
+23:27 root 在同一 `0e493` 业务树的 `pnpm --dir web exec playwright test --workers=1` 单场 EXIT0：226 PASS / 30 SKIP（6.7分钟），日志 `%TEMP%/astrocyte-root-final-e2e-20261011-2319.log`。默认suite包含fixture/mock及合成实际API回归；opt-in真实视频/私人Agent/真实作品浏览器场景按设计SKIP，不因这场通过称task_live已重复执行。W7此前一次真实目录/保存/事件链/重启证据单独保留。本机最终树check/build/defaultE2E三场均独立通过；新Windows路径改动尚未合入，本结论不提前覆盖返修代码。
