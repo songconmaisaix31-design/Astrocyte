@@ -168,3 +168,26 @@ func (t *experienceTx) AppendExperienceAction(id string, audit app.ActionAudit) 
 		id, audit.Action, audit.ActorID, audit.ActorKind, audit.TS, audit.RequestID, audit.Version)
 	return storageError(err)
 }
+
+// Experience commands reuse the existing receipt table in the same EngineTx
+// as their head and audit writes. Operation names isolate them from S1 commands.
+func (t *experienceTx) LoadExperienceReceipt(caller, command, key string) (app.Receipt, error) {
+	var receipt app.Receipt
+	var result string
+	err := t.QueryRow(`SELECT digest,result FROM attention_receipts WHERE caller=? AND command=? AND key=?`, caller, command, key).
+		Scan(&receipt.Digest, &result)
+	if errors.Is(err, sql.ErrNoRows) {
+		return receipt, apierrors.NewNotFound("receipt", key)
+	}
+	receipt.Result = json.RawMessage(result)
+	return receipt, err
+}
+
+func (t *experienceTx) SaveExperienceReceipt(caller, command, key string, receipt app.Receipt) error {
+	if !json.Valid(receipt.Result) {
+		return errors.New("experience receipt must contain a complete JSON result")
+	}
+	_, err := t.Exec(`INSERT INTO attention_receipts(caller,command,key,digest,result) VALUES(?,?,?,?,?)`,
+		caller, command, key, receipt.Digest, string(receipt.Result))
+	return storageError(err)
+}

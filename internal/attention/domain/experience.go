@@ -47,7 +47,7 @@ func ValidStatus(s string) bool {
 // failures keep their own kind and are never relabeled as agent_task, so their
 // source-type semantics are preserved.
 func CaptureEligible(kind, outcome string) bool {
-	return kind == KindAgentTask && outcome == OutcomeFailed
+	return kind == KindAgentTask && (outcome == OutcomeFailed || outcome == "failure")
 }
 
 // StructureFailure records the observed failure without inferring a general
