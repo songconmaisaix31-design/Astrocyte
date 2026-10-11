@@ -2,6 +2,9 @@
 
 ## 最新结果（2026-10-11 22:48 Asia/Shanghai）：W3 实现及适用验收 PASS
 
+SOURCE：`684292a6d8ff97a3e1b09c3a8398de51ccea1cfb`（已 push）。
+分支：`songconmaisaix31-design/attention-engine-w3-sleep`。
+
 原工作树和分支保持；实际客户端 Orca Codex / gpt-6.1-sol / YOLO。
 范围为 W3 拥有的完整 app/store 流水线。验收输入为 **contract_local 合成事件**，
 经实际 W1 Record、W2 Dynamics、W4 Knowledge、正式迁移与文件 SQLite 执行；
