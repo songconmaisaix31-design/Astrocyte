@@ -11,6 +11,16 @@
 - 独立修正：追加固化快照时复制所有 JSON 字节，调用方与返回值修改不能改变既有版本；补充两组显式 λr 下独立复算、排序变化与固定注意力验证。
 - 修正后 `go test -count=1`、同两包 `go vet`、`git diff --check` PASS；SQLite 重启/引用关口/人工分享审计仍 NOT_RUN。
 - 已通知协调者发布精确 M0 SHA、公共存储基础与 sqlite-vec spike 决策；发布前不实现依赖 M0 的 app/store，也不自建迁移或公共类型。
+- 协调者回复：M0 尚未发布完整稳定 SHA，scope/version/share audit 需求已转 W0；sqlite-vec 结论待 owner 报告，不将未知当作真相似度。
+- 独立阶段源码 `47a8950d475b612c0cc0e4e5e03ed2ef32131124` 已 push；既有 `go test ./internal/attention/app ./internal/adapters/sqlite` 与 `go build ./...` PASS（同限流环境），不包含新增 M4 持久化路径。
+
+### 待 M0 后实际验收顺序
+
+1. 在临时文件 SQLite 经正式迁移建立库，调用真实 knowledge application/store 创建 inbox 条目和来源引用；从另一项目读不到，inbox 引用被拒。
+2. 同一条目两次 sleep 写入：fluid 只保留第二次，crystallized 两版内容与各自时间戳都存在；关闭连接、重新 Open，query_only 直接核查正式表，不以内存返回值替代。
+3. 人工 confirm 后可固定引用；Agent confirm/share 被拒；拥有项目人工显式分享后目标项目可读，第三项目仍不可读，并核对审计中的 actor、源/目标项目、entry 与时间。
+4. 给定固定注意力表、查询时间和显式 λr，从落库候选读取 relevance、age、boost 并逐项独立重算排序；查询前后直接比对 attention 状态与关联记录不变。
+5. 真相似度或退化 relevance 只采用 W0 正式 spike 结论；共享 HTTP/cmd 接线与迁移修正请求提交 W0 Handoff，不越写域。
 
 - **已完成**：两级存储纯规则（`domain/knowledge.go`：`KnowledgeStatus`/`ConfirmKnowledge`/`ReferencableKnowledge`/`CrystallizedVersion`/`AppendCrystallized`/`KnowledgeVisible`）+ 检索纯函数（`domain/retrieval.go`：`RetrievalScore`/`RankRetrieval`，λr 必传、无冻结默认）+ 验收脚手架 `tests/attention-engine/M4_retrieval_test.go`。commit `ab7d381`、`7294260` 已 push。
 - **未完成 / NOT_RUN**：`app/knowledge_*.go`、`adapters/sqlite/{knowledge_store,vec}*.go`、端到端 `M4_*_test.go`（fluid 重写/crystallized 只追加/confirmed 引用/跨项目过滤+分享审计）。全部依赖 M0。
