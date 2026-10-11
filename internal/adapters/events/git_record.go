@@ -34,7 +34,31 @@ func MapGitLogRecord(project string, raw json.RawMessage, receivedAt int64) (app
 	o := nativeObservation{cwd: project, ts: v.TS, kind: kind, outcome: "unknown", depth: "unknown"}
 	row := receipt("git:"+strings.ToLower(v.Commit), domain.EventSourceManual, "git_commit", "git:authorized_log", raw, o, receivedAt)
 	if row.Event != nil {
-		row.Event.Topic = MatchSeedTopic(project, v.Subject).Topic
+		row.Event.Topic = ClassifyGitTopics(project, v.Subject).PrimaryTopic
 	}
 	return row, nil
+}
+
+type GitTopicAssignment struct {
+	PrimaryTopic  string   `json:"primary_topic"`
+	KeywordTopics []string `json:"keyword_topics"`
+}
+
+// Additional fixed seed matches are metadata for the consumer handoff. They
+// neither duplicate the commit event nor create a graph topic.
+func ClassifyGitTopics(project, subject string) GitTopicAssignment {
+	result := GitTopicAssignment{PrimaryTopic: MatchSeedTopic(project, subject).Topic, KeywordTopics: []string{}}
+	words := normalizedWords(subject)
+	for _, rule := range nativeTopicRules {
+		if rule.topic == result.PrimaryTopic {
+			continue
+		}
+		for _, keyword := range rule.keywords {
+			if strings.Contains(words, normalizedWords(keyword)) {
+				result.KeywordTopics = append(result.KeywordTopics, rule.topic)
+				break
+			}
+		}
+	}
+	return result
 }
