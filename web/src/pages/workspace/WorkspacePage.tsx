@@ -18,6 +18,7 @@ import { LocalProjectsPanel } from './LocalProjectsPanel';
 import { LocalAgentsPanel } from './LocalAgentsPanel';
 import { ManagedProjectsPanel } from './ManagedProjectsPanel';
 import { ProjectBoardPanel } from './ProjectBoardPanel';
+import { WorksAlbumPanel } from './WorksAlbumPanel';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -72,6 +73,7 @@ export function WorkspacePage({ fixture, query, onClearQuery }: Props) {
             <div className={styles.grid}>
         {fixture && !projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
         {!fixture && <ProjectBoardPanel query={query} onClearQuery={onClearQuery} refreshToken={boardRefresh} onManage={(root, name) => { setManaged(previous => ({ root, name, token: previous.token + 1 })); if (manageRef.current) manageRef.current.open = true; requestAnimationFrame(() => { manageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); manageRef.current?.querySelector('summary')?.focus(); }); }} />}
+        <WorksAlbumPanel fixture={fixture} query={query} onClearQuery={onClearQuery} />
         {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <details ref={manageRef} className="ac-secondary-records"><summary>项目接入、权限与原生操作</summary><ManagedProjectsPanel key={managed.token} initialRoot={managed.root} initialName={managed.name} agents={agents} query={query} /></details>}
         <GitHubRepositoriesPanel fixture={fixture} query={query} />
         <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
