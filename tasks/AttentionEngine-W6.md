@@ -4,6 +4,17 @@
 
 ## 2026-10-11 Codex 接续：stdio 边界阶段，M5 尚未完成
 
+薄后端 SOURCE `0ac5d3a700c3090d4bb532d1fc763539de804326` 已 push，消费三个 owner 公布的签名：
+
+```go
+app.NewEngineMCPBackend(binding, attention, experiences, events, app.MCPBackendOptions{})
+// attention: AttentionState(ctx) / ExplainFocus(ctx, topic) — W2
+// experiences: GetExperiences(ctx, Principal, project, pattern) — W5
+// events: Record(ctx, []StoredEvent) ([]StoredEvent, error) — W1
+```
+
+report 保存收到的 nested event 原始 JSON 为 `RawBytes`（含被覆盖前 source/session 供审计），Observation 强制启动项目/session/source=mcp/provenance=mcp_unverified:actor，outcome/depth=unknown；raw 标签不参与推断，空 topic 生成 `Event=nil` pending。人类 veto 对已有 topic 生成 manual/user_veto receipt；task 因无持久解析显式 unsupported，不虚构 topic。W1 Record 负责 receipt+signals 原子保存，W2 流消费更新不在 MCP 内重写。22:22 +08 两包 test、app/MCP vet+build、架构检查通过；真实 W1/W2/W5 实现仍待 SOURCE，未运行实际 SQLite 后端或进程重启。
+
 M0 放行后已普通 merge 精确 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`。共享 DTO 阶段 SOURCE `d9cbdd15ae79a69818ab65e39427d4220c3d8e19` 已 push：`ExplainFocusResult=FocusExplanation`、`EvidenceItem=ExplanationSignal`、`RelatedTopic=RelatedNode`、`ExperienceItem=StoredExperience`；权重路径、原始 receipt/raw bytes、confidence-only、关联时间/Agent、经验事件引用与时间戳全部保留。`ReportEventInput.Tokens` 为 `*int`，缺失仍为未知。
 
 首失败保留：消费 M0 后 `go test ./internal/adapters/mcp ./tests/attention-engine -run MCP -count=1` build FAIL，原因是 W6 的测试函数 `roundTrip` 与 M0 `engine_contract_test.go` 同名；只在本轨改为 `mcpRoundTrip`，并让管道读写并行，完整解释返回不等待输出缓冲区清空才读取。随后两包 `go test -count=1`、相应 vet、MCP/app build、21 包架构、diff 全部 exit 0；未知 token 补断言后 `go test ./tests/attention-engine -run MCP -count=1` PASS。它们仍是 transport/test-backend 证据，不是 W2/W5 实际应用与 SQLite 验收。
