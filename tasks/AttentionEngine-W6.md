@@ -4,6 +4,8 @@
 
 ## 2026-10-11 Codex 接续：stdio 边界阶段，M5 尚未完成
 
+主控复核修正 SOURCE `8a496786885f4181263863f270485f13c00ee303`：`report_event` 接受空/缺失 topic，保留待归类观测，不要求伪造标签；2026-10-11 22:16 +08 受影响 MCP/M5 两包重测 PASS、diff 检查 exit 0。后续将调用 W1 observation/pending 机制；当前仍未接真实入库。
+
 SOURCE `a57d67c77fd44513dbef3611bbb091dea3378937`，协议阶段 SOURCE `058a67baff3748933415ab14103e0171e838ffc6`，均已 push。客户端 Codex，主控 runtime 记录 `gpt-6.1-sol/YOLO`，未使用子 Agent；`GOFLAGS=-p=1`、`GOMAXPROCS=2`。
 
 - 接管原 `daa3f6d`，它的 `memoryBackend` 和 `os.Pipe` 只算接口局部证据，不证明领域、持久化或实际 MCP 子进程完成。
