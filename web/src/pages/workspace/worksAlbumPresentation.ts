@@ -1,54 +1,11 @@
-/** Presentation-only works album types and pure helpers. The transport DTO is
- * supplied by the backend once W0 lands the endpoint; these mirror it so the
- * panel and its unit tests compile before the generated client exists. */
+import type { components } from '../../api/schema';
 
 export type WorksAttitude = 'continue' | 'park' | 'done';
-
-export interface WorksHandoff {
-  content: string;
-  updated_at: string | null;
-  source: string;
-}
-
-export interface WorksFileFact {
-  source_path: string;
-  mtime: string | null;
-  file_count: number;
-  verified: boolean;
-  reason?: string;
-}
-
-export interface WorksWork {
-  id: string;
-  platform: string;
-  name: string;
-  root: string;
-  kind: string;
-  source: string;
-  attitude: WorksAttitude | '';
-  group: string;
-  hidden: boolean;
-  handoff: WorksHandoff;
-  files: WorksFileFact;
-  updated_at: string | null;
-  revision: number;
-}
-
-export interface WorksPlatformStat {
-  platform: string;
-  works: number;
-  folders: number;
-  handed_over: number;
-  recent: number;
-}
-
-export interface WorksSnapshot {
-  works: WorksWork[];
-  platforms: WorksPlatformStat[];
-  status: string;
-  observed_at: string | null;
-  failures: { root: string; reason: string }[];
-}
+export type WorksHandoff = components['schemas']['WorkHandoffV1'];
+export type WorksFileFact = components['schemas']['WorkFileFactV1'];
+export type WorksWork = components['schemas']['WorkV1'];
+export type WorksPlatformStat = components['schemas']['WorkPlatformStatV1'];
+export type WorksSnapshot = components['schemas']['WorksSnapshotV1'];
 
 export const attitudeLabels: Record<WorksAttitude, string> = {
   continue: '想继续做',

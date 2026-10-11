@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { fixtureWorksSnapshot } from '../src/pages/workspace/worksAlbumPresentation';
 
 /**
  * W7 works album ("AI 作品寻回册") e2e. The durable scan/import/attitude/handoff
@@ -12,6 +13,31 @@ const sizes = [
   { width: 1280, height: 720 },
   { width: 390, height: 844 },
 ];
+
+test.describe('Works command failure contract-local mock evidence', () => {
+  test('unknown write preserves draft, blocks replay and permits a cache read', async ({ page }) => {
+    const snapshot = fixtureWorksSnapshot();
+    let writes = 0;
+    await page.route('**/api/v1/works', route => route.fulfill({ json: { schema_version: 1, snapshot } }));
+    await page.route('**/api/v1/works/work-a/handoff', async route => {
+      writes++;
+      await route.fulfill({ status: 500, json: { schema_version: 1, error: { code: 'delivery_unknown', message: 'mock unknown delivery', request_id: 'mock-error', retryable: false, required_action: 'reload_works_without_replay' } } });
+    });
+    await page.goto('/workspace');
+    const album = page.getByRole('region', { name: '作品寻回册', exact: true });
+    await album.getByRole('button', { name: '查看作品 个人知识库', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('编辑交接手册').fill('保留这份未确认草稿');
+    await dialog.getByRole('button', { name: '保存交接手册', exact: true }).click();
+    await expect(dialog.getByRole('alert')).toContainText('请求结果未知');
+    await expect(dialog.getByLabel('编辑交接手册')).toHaveValue('保留这份未确认草稿');
+    await expect(dialog.getByRole('button', { name: '保存交接手册', exact: true })).toBeDisabled();
+    await dialog.getByRole('button', { name: '重新读取保存结果', exact: true }).click();
+    await expect(dialog.getByRole('status')).toContainText('已重新读取保存结果');
+    await expect(dialog.getByLabel('编辑交接手册')).toHaveValue('保留这份未确认草稿');
+    expect(writes).toBe(1);
+  });
+});
 
 test.describe('Works album fixture', () => {
   test('renders platform stats and verified work cards', async ({ page }) => {
