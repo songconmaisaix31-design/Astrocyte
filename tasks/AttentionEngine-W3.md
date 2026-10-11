@@ -1,5 +1,45 @@
 # Attention Engine W3 · Sleep Consolidation 流水线（M3）
 
+## 最新补丁（2026-10-11 22:58 Asia/Shanghai）：显式字面事实投影 seam PASS
+
+本 Task `task_5536142bb5f5` / Dispatch `ctx_4fb5ea6b3ab5` 仅交付正式 CLI 可复用的 owner 投影函数。
+SOURCE：`61a196ba3e3c24606a72d6fecb40427281a23ae5`（已 push）。
+分支仍为 `songconmaisaix31-design/attention-engine-w3-sleep`；原 SOURCE `684292a` / REPORT `d940024` 的流水线交付保持。
+实际客户端 Orca Codex / gpt-6.1-sol / YOLO，未启动其他 Agent。
+
+与 W0 `ctx_b16e623a7b11` 已确认准确接口：
+
+```go
+func LiteralSleepFactsMap(raw json.RawMessage) ([]SleepFact, error)
+// 仅调用方显式选择 facts-map-v1 时：
+options.ProjectFacts = app.LiteralSleepFactsMap
+```
+
+- 从已有 `m3Project` 的 `raw.facts` 字面字符串 key/value 语义提取为 app 可导出函数，
+  原 M3 测试均直接调用新函数，删除测试重复实现。
+- 示例输入 `{"facts":{"method":"邻接聚类"}}`；保留 key/value 的原始字符和空字符串值，
+  复用既有去重/空 key 过滤，按 key/value 稳定排序；不解释正文、不判断真假、不调用 LLM。
+- nil/空 raw、JSON null、缺失/null/空 facts 无已知事实；null value 忽略并保留未知，
+  防止 `map[string]string` 的 JSON null 被转为空字符串声明。数字/布尔/对象等非字符串值及畸形 JSON 报错。
+- 未赋 `SleepOptions.ProjectFacts` 仍为 nil，未选择产品默认或更改原始 Event。
+  无已知事实时原 metrics 的 `RetentionMeasurable=false` 语义保持；不将未知解释为事实正确率。
+- W0 自有 cmd/sleep 显式 `--fact-projection none|facts-map-v1` 装配；W3 未编辑 cmd、公共契约、迁移、HTTP 或 store。
+
+本次定向检查均 `GOFLAGS=-p=1`、`GOMAXPROCS=2`，单包串行：
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test ./tests/attention-engine -run '^TestM3' -count=1 -v` | **10 顶层 PASS**；新增投影 **13 子例 PASS**；child helper 顶层 **1 SKIP**，两父测试派生冷进程实际执行通过 |
+| `go vet ./internal/attention/app` | PASS |
+| `go build ./internal/attention/app` | PASS |
+| `git diff --check` | PASS |
+
+新增子例覆盖缺失格式/未知/null、字面空值/空白/Unicode、确定排序、原始字节不变及非字符串格式失败。
+本次适用检查首次运行即 PASS，无新增 RED；旧流水线首次 RED 按下文保留。
+原实测 working representation 仍为 4465→592 / recall=.5，增长例 38→584 / reduction=-14.368421，未改指标或达标线。
+这些是 contract_local 合成事件经实际 SQLite 的适用检查，未执行正式 CLI 七日调用、W4 最新 SQL 修复、
+全仓检查、真实媒体/私人源/模型或真实七天人工使用；W0/主控负责其拥有的集成与最终验收。
+
 ## 最新结果（2026-10-11 22:48 Asia/Shanghai）：W3 实现及适用验收 PASS
 
 SOURCE：`684292a6d8ff97a3e1b09c3a8398de51ccea1cfb`（已 push）。
