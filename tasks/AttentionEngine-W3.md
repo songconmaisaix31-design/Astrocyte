@@ -3,6 +3,22 @@
 事实源：任务书 §6、§5.4/§5.5、§4.4；主计划 `tasks/AttentionEngine-plan.md` W3 行。
 基线分支 `attention-engine/v1-20261011`（当前 `77712f3`，仅计划/派发/恢复记录，M0 契约类型仍未并入）。
 
+## 波 B 进行中：已消费 M0，日周期存储可用
+
+- 正式消费 W0 `47f47f38d7ec0c5c3cbf30a757ed2c23e8c774f0`，普通合并为本轨
+  `c861b747d6f2dfe6d07b4e5878f2128c5c8e38ce`；不消费未放行的 partial 基线。
+- `sqlite.NewSleepRunTx(EngineTx)` 提供 `LoadSleepRun(day)` 与 `SaveSleepRun(run)`，
+  复用已有 `BEGIN IMMEDIATE`，只写 migration 015 的 Sleep 四表，不开嵌套事务。
+- `TestM3DailyRunStoreRollbackAndReopen` **PASS**：缺失 Conflict 引用使整笔回滚，
+  daily UNIQUE 拒绝重复，关闭重开后 run/candidate/metrics 一致，负缩减值保存。
+  该测试的 100→200 是存储类型测试值，不是实际流水线压缩观测。
+- W1/W2/W4 已收到同事务读写 Handoff：当日 mapped Event/Signal；既有图/seed/lifecycle/
+  pending Conflict；按项目隔离的 Knowledge fluid 更新且保留 crystallized/状态。
+
+命令：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./tests/attention-engine -run TestM3DailyRunStoreRollbackAndReopen -count=1 -v`。
+当前完整 M3 **未完成**：app 编排、实际表示字节与事实召回、LLM 开关结果一致以及完整图/fluid/冲突
+冷启动回归还未执行；入口/HTTP 人工关口归 W0，当前共享 HTTP 仍为 501。
+
 ## 2026-10-11 Codex 接续：波 A 修正，M3 仍未完成
 
 当前工作树/分支保持 `attention-engine-w3-sleep` /
