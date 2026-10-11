@@ -11,7 +11,11 @@ import (
 // NewAstrocyteServer wires the five cognitive-interface tools (task book §7)
 // to a backend. The backend owns all attention/experience data flow; this
 // server only decodes arguments, calls the backend and shapes MCP results.
-func NewAstrocyteServer(backend app.MCPBackend) *Server {
+func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server, error) {
+	backend, err := app.BindMCPBackend(backend, binding)
+	if err != nil {
+		return nil, err
+	}
 	s := NewServer("astrocyte", "0.1.0")
 
 	s.RegisterTool(Tool{
@@ -51,7 +55,7 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 
 	s.RegisterTool(Tool{
 		Name:        "astrocyte.get_experiences",
-		Description: "Retrieve approved experiences matching a pattern, optionally filtered to a project scope.",
+		Description: "Retrieve approved experiences matching a pattern within the startup-bound project scope.",
 		InputSchema: map[string]any{
 			"type":                 "object",
 			"additionalProperties": false,
@@ -79,25 +83,32 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 		InputSchema: map[string]any{
 			"type":                 "object",
 			"additionalProperties": false,
-			"properties": map[string]any{
-				"source":  map[string]any{"type": "string"},
-				"session": map[string]any{"type": "string"},
-				"ts":      map[string]any{"type": "integer"},
-				"kind":    map[string]any{"type": "string"},
-				"tokens":  map[string]any{"type": "integer"},
-				"scope":   map[string]any{"type": "string"},
-				"topic":   map[string]any{"type": "string"},
-				"raw":     map[string]any{"type": "object"},
-			},
-			"required": []string{"source", "session", "ts", "kind", "scope", "topic"},
+			"properties": map[string]any{"event": map[string]any{
+				"type": "object", "additionalProperties": false,
+				"properties": map[string]any{
+					"source":  map[string]any{"type": "string"},
+					"session": map[string]any{"type": "string"},
+					"ts":      map[string]any{"type": "integer"},
+					"kind":    map[string]any{"type": "string"},
+					"tokens":  map[string]any{"type": "integer"},
+					"scope":   map[string]any{"type": "string"},
+					"topic":   map[string]any{"type": "string"},
+					"raw":     map[string]any{"type": "object"},
+				},
+				"required": []string{"ts", "kind", "topic"},
+			}},
+			"required": []string{"event"},
 		},
 		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
-			var in app.ReportEventInput
-			if err := decodeArguments(args, &in); err != nil {
+			var request struct {
+				Event app.ReportEventInput `json:"event"`
+			}
+			if err := decodeArguments(args, &request); err != nil {
 				return nil, err
 			}
-			if in.Session == "" || in.Kind == "" || in.Scope == "" || in.Topic == "" || in.TS <= 0 || in.Tokens < 0 {
-				return nil, &InvalidParamsError{"event requires session, positive ts, kind, scope, topic and nonnegative tokens"}
+			in := request.Event
+			if in.Kind == "" || in.Topic == "" || in.TS <= 0 || in.Tokens < 0 {
+				return nil, &InvalidParamsError{"event requires positive ts, kind, topic and nonnegative tokens"}
 			}
 			return backend.ReportEvent(ctx, in)
 		},
@@ -110,24 +121,25 @@ func NewAstrocyteServer(backend app.MCPBackend) *Server {
 			"type":                 "object",
 			"additionalProperties": false,
 			"properties": map[string]any{
-				"target": map[string]any{"type": "string"},
+				"topic":  map[string]any{"type": "string"},
+				"task":   map[string]any{"type": "string"},
 				"reason": map[string]any{"type": "string"},
 			},
-			"required": []string{"target"},
+			"oneOf": []any{map[string]any{"required": []string{"topic"}, "not": map[string]any{"required": []string{"task"}}}, map[string]any{"required": []string{"task"}, "not": map[string]any{"required": []string{"topic"}}}},
 		},
 		Handler: func(ctx context.Context, args json.RawMessage) (any, error) {
 			var in app.VetoInput
 			if err := decodeArguments(args, &in); err != nil {
 				return nil, err
 			}
-			if in.Target == "" {
-				return nil, &InvalidParamsError{"target is required"}
+			if (in.Topic == "") == (in.Task == "") {
+				return nil, &InvalidParamsError{"exactly one topic or task is required"}
 			}
 			return backend.Veto(ctx, in)
 		},
 	})
 
-	return s
+	return s, nil
 }
 
 func decodeArguments(args json.RawMessage, value any) error {

@@ -56,7 +56,7 @@ func (b *memoryBackend) ReportEvent(_ context.Context, in app.ReportEventInput) 
 }
 
 func (b *memoryBackend) Veto(_ context.Context, in app.VetoInput) (app.VetoResult, error) {
-	return app.VetoResult{Acknowledged: true, Target: in.Target}, nil
+	return app.VetoResult{Acknowledged: true, Target: in.Topic}, nil
 }
 
 func roundTrip(t *testing.T, s *mcp.Server, script string) []map[string]any {
@@ -146,9 +146,12 @@ func newBackend() *memoryBackend {
 	}
 }
 
-func TestMCPFiveOperationsOverStdio(t *testing.T) {
+func TestMCPTransportFiveOperationsWithTestBackend(t *testing.T) {
 	b := newBackend()
-	s := mcp.NewAstrocyteServer(b)
+	s, err := mcp.NewAstrocyteServer(b, app.MCPBinding{Principal: app.Principal{ID: "test-human", Kind: "human"}, Scope: "astrocyte", Session: "s1", CanVeto: true})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	script := req(1, "initialize", "") +
 		req(2, "tools/list", "") +
@@ -156,8 +159,8 @@ func TestMCPFiveOperationsOverStdio(t *testing.T) {
 		req(4, "tools/call", `{"name":"astrocyte.explain_focus","arguments":{"topic":"Agent Swarm"}}`) +
 		req(5, "tools/call", `{"name":"astrocyte.get_experiences","arguments":{"pattern":"scheduler","scope":"astrocyte"}}`) +
 		req(6, "tools/call", `{"name":"astrocyte.get_experiences","arguments":{"pattern":"scheduler"}}`) +
-		req(7, "tools/call", `{"name":"astrocyte.report_event","arguments":{"source":"codex","session":"s1","ts":1730000300,"kind":"commit","tokens":40,"scope":"astrocyte","topic":"Agent Swarm"}}`) +
-		req(8, "tools/call", `{"name":"astrocyte.veto","arguments":{"target":"Agent Swarm","reason":"out of scope"}}`)
+		req(7, "tools/call", `{"name":"astrocyte.report_event","arguments":{"event":{"source":"codex","session":"s1","ts":1730000300,"kind":"commit","tokens":40,"scope":"astrocyte","topic":"Agent Swarm"}}}`) +
+		req(8, "tools/call", `{"name":"astrocyte.veto","arguments":{"topic":"Agent Swarm","reason":"out of scope"}}`)
 
 	lines := roundTrip(t, s, script)
 	if len(lines) != 8 {
@@ -210,13 +213,13 @@ func TestMCPFiveOperationsOverStdio(t *testing.T) {
 		t.Fatalf("scope filter wrong: %+v", scoped.Experiences)
 	}
 
-	// get_experiences without a scope returns every matching pattern.
+	// Omitting scope retains the startup project boundary.
 	var all app.GetExperiencesResult
 	if err := json.Unmarshal([]byte(toolText(t, lines[5])), &all); err != nil {
 		t.Fatal(err)
 	}
-	if len(all.Experiences) != 2 {
-		t.Fatalf("expected 2 experiences across scopes, got %d", len(all.Experiences))
+	if len(all.Experiences) != 1 || all.Experiences[0].Scope != "astrocyte" {
+		t.Fatalf("startup project boundary lost: %+v", all.Experiences)
 	}
 
 	// report_event is accepted with an id.

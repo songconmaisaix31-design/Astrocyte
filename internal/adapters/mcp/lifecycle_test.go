@@ -22,7 +22,7 @@ func TestLifecycleAndVersionNegotiation(t *testing.T) {
 		})
 	}
 	var output strings.Builder
-	err := NewAstrocyteServer(stubBackend{}).Serve(context.Background(), strings.NewReader(reqLine(1, "tools/call", `{"name":"astrocyte.get_attention_state","arguments":{}}`)), &output)
+	err := testAstrocyteServer(t).Serve(context.Background(), strings.NewReader(reqLine(1, "tools/call", `{"name":"astrocyte.get_attention_state","arguments":{}}`)), &output)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func TestLifecycleAndVersionNegotiation(t *testing.T) {
 
 func TestInvalidToolParameters(t *testing.T) {
 	for _, args := range []string{`{}`, `{"topic":""}`, `{"topic":"valid","scope":"foreign"}`, `{"topic":1}`, `null`} {
-		lines := serveLines(t, NewAstrocyteServer(stubBackend{}), reqLine(1, "tools/call", `{"name":"astrocyte.explain_focus","arguments":`+args+`}`))
+		lines := serveLines(t, testAstrocyteServer(t), reqLine(1, "tools/call", `{"name":"astrocyte.explain_focus","arguments":`+args+`}`))
 		if lines[0]["error"] == nil || lines[0]["error"].(map[string]any)["code"] != float64(codeInvalidParams) {
 			t.Fatalf("invalid arguments accepted: %s: %v", args, lines)
 		}

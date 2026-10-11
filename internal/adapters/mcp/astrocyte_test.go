@@ -10,6 +10,15 @@ import (
 
 type stubBackend struct{}
 
+func testAstrocyteServer(t *testing.T) *Server {
+	t.Helper()
+	s, err := NewAstrocyteServer(stubBackend{}, app.MCPBinding{Principal: app.Principal{ID: "test-agent", Kind: "agent"}, Scope: "astrocyte", Session: "test"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return s
+}
+
 func (stubBackend) GetAttentionState(context.Context) (app.GetAttentionStateResult, error) {
 	return app.GetAttentionStateResult{Topics: []app.FocusItem{{Topic: "Agent Swarm", Attention: 0.8, Momentum: 0.1}}}, nil
 }
@@ -27,7 +36,7 @@ func (stubBackend) Veto(context.Context, app.VetoInput) (app.VetoResult, error) 
 }
 
 func TestAstrocyteRegistersFiveTools(t *testing.T) {
-	s := NewAstrocyteServer(stubBackend{})
+	s := testAstrocyteServer(t)
 	input := reqLine(1, "tools/list", "")
 	lines := serveLines(t, s, input)
 	tools := lines[0]["result"].(map[string]any)["tools"].([]any)
@@ -52,7 +61,7 @@ func TestAstrocyteRegistersFiveTools(t *testing.T) {
 }
 
 func TestAstrocyteDispatchGetAttentionState(t *testing.T) {
-	s := NewAstrocyteServer(stubBackend{})
+	s := testAstrocyteServer(t)
 	input := reqLine(1, "tools/call", `{"name":"astrocyte.get_attention_state","arguments":{}}`)
 	lines := serveLines(t, s, input)
 	result := lines[0]["result"].(map[string]any)

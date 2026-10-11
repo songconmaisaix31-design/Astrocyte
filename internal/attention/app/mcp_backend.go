@@ -98,11 +98,13 @@ type ReportEventResult struct {
 
 // VetoInput carries a user veto of a topic or a task.
 type VetoInput struct {
-	Target string `json:"target"`
+	Topic  string `json:"topic,omitempty"`
+	Task   string `json:"task,omitempty"`
 	Reason string `json:"reason,omitempty"`
 }
 
 type VetoResult struct {
 	Acknowledged bool   `json:"acknowledged"`
 	Target       string `json:"target"`
+	EventID      string `json:"event_id"`
 }
