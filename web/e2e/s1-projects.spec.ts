@@ -1,21 +1,51 @@
 /// <reference types="node" />
-import { test, expect } from '@playwright/test';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { test, expect, type TestInfo } from '@playwright/test';
+import { spawnSync } from 'node:child_process';
+import { mkdir, realpath, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import type { components } from '../src/api/schema';
+
+// Read only the short name of this test's owned temporary project. No TEMP
+// override, alias fabrication, private metadata, or production normalization.
+async function windowsFixtureInput(root: string, testInfo: TestInfo): Promise<string> {
+  if (process.platform !== 'win32') return root;
+  const unavailable = (reason: string) => {
+    const description = `Windows 8.3 fixture NOT_RUN: ${reason}; ordinary project acceptance continues`;
+    testInfo.annotations.push({ type: 'NOT_RUN', description });
+    console.info(description);
+    return root;
+  };
+  // CMD metacharacters are never interpolated, even inside quotes. AutoRun and
+  // delayed expansion are disabled; this command only queries an existing name.
+  if (/["%!^&|<>]/.test(root) || [...root].some(char => char.charCodeAt(0) < 32)) return unavailable('fixture path cannot be safely quoted for CMD');
+  const query = spawnSync('cmd.exe', ['/d', '/v:off', '/c', `for %I in ("${root}") do @echo %~sI`], {
+    encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: true, timeout: 5000,
+  });
+  if (query.error || query.status !== 0) return unavailable('short-name query unavailable');
+  const short = query.stdout.trim();
+  const canonical = await realpath(root);
+  if (!short || short.toLowerCase() === canonical.toLowerCase()) return unavailable('filesystem has no usable short name');
+  expect(await realpath(short)).toBe(canonical);
+  console.info(`Actual Windows 8.3 project input: ${short}`);
+  return short;
+}
 
 // Actual temporary project/API/SQLite operations, no synthetic sessions or page.route.
 // This tests project registration/scoping; public-material AT03 is separate.
 test('human registers a specified project, independently saves B/C, reads only approved files and persists across restart', async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   const server = await startS1Server({ browser: true });
-  const projectRoot = join(server.temporary, 'approved-public-project');
+  const fixtureRoot = join(server.temporary, 'approved-public-project');
   const filename = 'README.md';
   const text = 'Astrocyte temporary public project for approved-context UI verification.\n';
-  await mkdir(projectRoot);
-  await writeFile(join(projectRoot, filename), text);
+  await mkdir(fixtureRoot);
+  await writeFile(join(fixtureRoot, filename), text);
   try {
+    const projectRoot = await windowsFixtureInput(fixtureRoot, testInfo);
+    // Independent filesystem expectation, established before the POST. The UI
+    // sends the chosen spelling; the API/store persist the canonical directory.
+    const canonicalRoot = await realpath(fixtureRoot);
     await page.goto(`${server.webURL}/workspace`);
     await page.getByRole('button', { name: '接入项目', exact: true }).click();
     const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
@@ -29,8 +59,9 @@ test('human registers a specified project, independently saves B/C, reads only a
     await panel.getByRole('button', { name: '登记此项目', exact: true }).click();
     const registered = await registerResponse;
     expect(registered.status()).toBe(200);
+    expect((registered.request().postDataJSON() as { root: string }).root).toBe(projectRoot);
     const receipt = await registered.json() as components['schemas']['LocalProjectResultV1'];
-    expect(receipt.project.root).toBe(projectRoot);
+    expect(receipt.project.root).toBe(canonicalRoot);
     expect(receipt.project.settings).toMatchObject({ allow_directory: false, expand_references: false, external_model_cli: '', allow_agent_control: false });
     await expect(panel.getByRole('heading', { name: '临时公开项目', exact: true }).last()).toBeVisible();
     const manage = panel.getByRole('region', { name: '已登记项目管理' });
@@ -47,6 +78,7 @@ test('human registers a specified project, independently saves B/C, reads only a
     const settings = await settingsResponse;
     expect(settings.status()).toBe(200);
     const saved = await settings.json() as components['schemas']['LocalProjectResultV1'];
+    expect(saved.project.root).toBe(canonicalRoot);
     expect(saved.project.settings).toMatchObject({ allow_directory: true, expand_references: false, allowed_subdirs: [filename], allow_agent_control: false });
     const native = manage.getByRole('region', { name: '项目原生 Agent 操作' });
     await native.getByLabel('本次读取的获准文件（每行一项）', { exact: true }).fill(filename);
@@ -64,10 +96,16 @@ test('human registers a specified project, independently saves B/C, reads only a
     const before = server.query('SELECT data FROM local_agent_projects WHERE id=?', receipt.project.id);
     expect(before).toHaveLength(1);
     const stored = JSON.parse(String(before[0].data)) as components['schemas']['LocalProjectV1'];
+    expect(stored.root).toBe(canonicalRoot);
     expect(stored.settings).toEqual(saved.project.settings);
     await testInfo.attach('actual-project-settings', { body: JSON.stringify(saved.project, null, 2), contentType: 'application/json' });
     await server.restart();
+    const reloadResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/local-projects') && response.request().method() === 'GET');
     await page.reload();
+    const restarted = await reloadResponse;
+    expect(restarted.status()).toBe(200);
+    const projects = await restarted.json() as components['schemas']['LocalProjectListV1'];
+    expect(projects.items.find(project => project.id === receipt.project.id)?.root).toBe(canonicalRoot);
     await page.getByRole('button', { name: '接入项目', exact: true }).click();
     await panel.getByRole('button', { name: /临时公开项目.*查看项目与权限/ }).click();
     await manage.getByText('项目小权限与模型处理许可', { exact: true }).click();
