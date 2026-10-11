@@ -4,6 +4,14 @@
 
 ## 阶段状态（交接 Codex --yolo）
 
+### Codex 接续检查（2026-10-11）
+
+- 当前 Dispatch：`task_da85be3296c1` / `ctx_062b79f07e46`；客户端 Codex，模型以运行配置为准，未从客户端名称推断。
+- 基线 `13a80ef`：`GOFLAGS=-p=1 GOMAXPROCS=2 go test ./internal/attention/domain/ ./tests/attention-engine/` 与同两包 `go vet` PASS，仅为纯逻辑证据。
+- 独立修正：追加固化快照时复制所有 JSON 字节，调用方与返回值修改不能改变既有版本；补充两组显式 λr 下独立复算、排序变化与固定注意力验证。
+- 修正后 `go test -count=1`、同两包 `go vet`、`git diff --check` PASS；SQLite 重启/引用关口/人工分享审计仍 NOT_RUN。
+- 已通知协调者发布精确 M0 SHA、公共存储基础与 sqlite-vec spike 决策；发布前不实现依赖 M0 的 app/store，也不自建迁移或公共类型。
+
 - **已完成**：两级存储纯规则（`domain/knowledge.go`：`KnowledgeStatus`/`ConfirmKnowledge`/`ReferencableKnowledge`/`CrystallizedVersion`/`AppendCrystallized`/`KnowledgeVisible`）+ 检索纯函数（`domain/retrieval.go`：`RetrievalScore`/`RankRetrieval`，λr 必传、无冻结默认）+ 验收脚手架 `tests/attention-engine/M4_retrieval_test.go`。commit `ab7d381`、`7294260` 已 push。
 - **未完成 / NOT_RUN**：`app/knowledge_*.go`、`adapters/sqlite/{knowledge_store,vec}*.go`、端到端 `M4_*_test.go`（fluid 重写/crystallized 只追加/confirmed 引用/跨项目过滤+分享审计）。全部依赖 M0。
 - **FAIL / UNKNOWN**：无本轨失败；M0 契约/迁移/sqlite-vec 结论状态 UNKNOWN（集成分支 `77712f3` 仍 docs-only，W0 分支未 push）。

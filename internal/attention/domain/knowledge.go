@@ -54,8 +54,10 @@ func AppendCrystallized(history []CrystallizedVersion, content json.RawMessage, 
 		return nil, ErrVersion
 	}
 	out := make([]CrystallizedVersion, len(history)+1)
-	copy(out, history)
-	out[len(history)] = CrystallizedVersion{Content: content, RecordedAt: at}
+	for i, version := range history {
+		out[i] = CrystallizedVersion{Content: slices.Clone(version.Content), RecordedAt: version.RecordedAt}
+	}
+	out[len(history)] = CrystallizedVersion{Content: slices.Clone(content), RecordedAt: at}
 	return out, nil
 }
 

@@ -60,6 +60,26 @@ func TestAppendCrystallizedRejectsNonMonotonicTimestamp(t *testing.T) {
 	}
 }
 
+func TestAppendCrystallizedOwnsSnapshotBytes(t *testing.T) {
+	first := json.RawMessage(`{"fact":"a"}`)
+	history, err := AppendCrystallized(nil, first, time.Unix(100, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	first[9] = 'x'
+	if string(history[0].Content) != `{"fact":"a"}` {
+		t.Fatal("caller mutation changed the stored snapshot")
+	}
+	second, err := AppendCrystallized(history, json.RawMessage(`{"fact":"b"}`), time.Unix(200, 0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	second[0].Content[9] = 'y'
+	if string(history[0].Content) != `{"fact":"a"}` {
+		t.Fatal("returned history mutation changed an earlier snapshot")
+	}
+}
+
 func TestKnowledgeVisible(t *testing.T) {
 	if !KnowledgeVisible("p1", nil, "p1") {
 		t.Fatal("owner must see own entry")

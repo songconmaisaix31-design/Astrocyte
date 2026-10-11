@@ -71,6 +71,34 @@ func TestM4RetrievalNeverUpdatesAttention(t *testing.T) {
 	}
 }
 
+func TestM4RetrievalLambdaRIsAnIndependentQueryParameter(t *testing.T) {
+	candidates := []domain.RetrievalCandidate{
+		{ID: "old", Relevance: 1, Attention: 0.8, AccessBoost: 2, AgeSeconds: 86400},
+		{ID: "fresh", Relevance: 1, Attention: 0.4, AccessBoost: 1, AgeSeconds: 0},
+	}
+	for _, tc := range []struct {
+		lambda float64
+		winner string
+	}{
+		{lambda: 0, winner: "old"},
+		{lambda: 2.0 / 86400, winner: "fresh"},
+	} {
+		ranked := domain.RankRetrieval(candidates, tc.lambda)
+		if ranked[0].ID != tc.winner {
+			t.Fatalf("lambda=%g: winner=%s, want %s", tc.lambda, ranked[0].ID, tc.winner)
+		}
+		want := map[string]float64{"old": 1.6 * math.Exp(-tc.lambda*86400), "fresh": 0.4}
+		for _, result := range ranked {
+			if math.Abs(result.Score-want[result.ID]) > 1e-12 {
+				t.Fatalf("lambda=%g: score for %s=%g, want %g", tc.lambda, result.ID, result.Score, want[result.ID])
+			}
+		}
+	}
+	if candidates[0].Attention != 0.8 || candidates[1].Attention != 0.4 {
+		t.Fatal("query parameter changed attention")
+	}
+}
+
 func idsOf(rank []domain.RetrievalRanking) []string {
 	out := make([]string, len(rank))
 	for i, r := range rank {
