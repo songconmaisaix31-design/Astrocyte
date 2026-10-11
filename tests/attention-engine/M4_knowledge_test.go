@@ -87,7 +87,7 @@ func TestM4FluidRestartAndSharedTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 	db, _, service = openM4(t, path)
-	got, err := service.GetKnowledge(ctx, app.Principal{ID: "human", Kind: "human"}, "p1", "k")
+	got, err := service.GetKnowledge(ctx, app.Principal{ID: "human", Kind: "human"}, "k", "p1")
 	if err != nil || got.Entry.Fluid != "second" || got.Version != 2 {
 		t.Fatalf("restart: %+v %v", got, err)
 	}
@@ -116,7 +116,7 @@ func TestM4HumanConfirmationScopeAndShareAudit(t *testing.T) {
 	if _, err := service.ReferenceKnowledge(ctx, human, "k", app.ReferenceKnowledgeCommand{CommandMeta: m4Meta(1, "before-confirm"), ProjectID: "p1"}); err == nil {
 		t.Fatal("inbox was referenceable")
 	}
-	if _, err := service.GetKnowledge(ctx, human, "p2", "k"); err == nil {
+	if _, err := service.GetKnowledge(ctx, human, "k", "p2"); err == nil {
 		t.Fatal("cross-project entry visible without share")
 	}
 	confirm := app.ConfirmKnowledgeCommand{CommandMeta: m4Meta(1, "confirm"), OwnerProject: "p1"}
@@ -130,6 +130,10 @@ func TestM4HumanConfirmationScopeAndShareAudit(t *testing.T) {
 	if again, err := service.ConfirmKnowledge(ctx, human, "k", confirm); err != nil || again.Version != confirmed.Version {
 		t.Fatalf("idempotent confirm: %+v %v", again, err)
 	}
+	confirm.RequestID = "confirm-retry-trace"
+	if again, err := service.ConfirmKnowledge(ctx, human, "k", confirm); err != nil || again.Version != confirmed.Version {
+		t.Fatalf("new tracing ID changed semantic retry: %+v %v", again, err)
+	}
 	share := app.ShareMemoryCommand{CommandMeta: m4Meta(2, "share"), OwnerProject: "p1", TargetProject: "p2"}
 	if _, err := service.ShareKnowledge(ctx, agent, "k", share); err == nil {
 		t.Fatal("Agent sharing accepted")
@@ -137,7 +141,7 @@ func TestM4HumanConfirmationScopeAndShareAudit(t *testing.T) {
 	if _, err := service.ShareKnowledge(ctx, human, "k", share); err != nil {
 		t.Fatal(err)
 	}
-	got, err := service.GetKnowledge(ctx, human, "p2", "k")
+	got, err := service.GetKnowledge(ctx, human, "k", "p2")
 	if err != nil || len(got.Shares) != 1 {
 		t.Fatalf("explicit share: %+v %v", got, err)
 	}
@@ -145,7 +149,7 @@ func TestM4HumanConfirmationScopeAndShareAudit(t *testing.T) {
 	if audit.ActorID != "human" || audit.ActorKind != "human" || audit.OwnerProject != "p1" || audit.TargetProject != "p2" || audit.TS != 5000 || audit.RequestID != "share" {
 		t.Fatalf("share audit: %+v", audit)
 	}
-	if _, err = service.GetKnowledge(ctx, human, "p3", "k"); err == nil {
+	if _, err = service.GetKnowledge(ctx, human, "k", "p3"); err == nil {
 		t.Fatal("sharing widened unrelated project")
 	}
 	if _, err = service.ReferenceKnowledge(ctx, human, "k", app.ReferenceKnowledgeCommand{CommandMeta: m4Meta(3, "reference"), ProjectID: "p2"}); err != nil {

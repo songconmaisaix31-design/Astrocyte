@@ -56,12 +56,12 @@ func knowledgeVisible(v StoredKnowledge, project string) bool {
 	return domain.KnowledgeVisible(v.OwnerProject, shared, project)
 }
 
-func (s *KnowledgeService) GetKnowledge(ctx context.Context, p Principal, project, id string) (StoredKnowledge, error) {
+func (s *KnowledgeService) GetKnowledge(ctx context.Context, p Principal, id, project string) (StoredKnowledge, error) {
 	var result StoredKnowledge
 	if err := s.projectAccess(ctx, p, project); err != nil {
 		return result, err
 	}
-	err := s.repo.WithKnowledgeTx(ctx, func(tx KnowledgeTx) error {
+	err := s.repo.WithKnowledgeReadTx(ctx, func(tx KnowledgeTx) error {
 		var err error
 		result, err = tx.LoadKnowledge(id)
 		if err == nil && (!knowledgeVisible(result, project) || (p.Kind == "agent" && !domain.ReferencableKnowledge(result.Entry.Status))) {
@@ -90,10 +90,19 @@ func (s *KnowledgeService) action(ctx context.Context, p Principal, id, project,
 	if err := validateMeta(meta); err != nil {
 		return result, mapError(err, meta.RequestID)
 	}
-	digest, err := semanticDigest(struct {
-		ID    string
-		Input any
-	}{id, input})
+	data, err := json.Marshal(input)
+	if err != nil {
+		return result, err
+	}
+	var semanticInput map[string]json.RawMessage
+	if err = json.Unmarshal(data, &semanticInput); err != nil {
+		return result, err
+	}
+	semanticInput["knowledge_id"], err = json.Marshal(id)
+	if err != nil {
+		return result, err
+	}
+	digest, err := semanticDigest(semanticInput)
 	if err != nil {
 		return result, err
 	}
@@ -173,10 +182,15 @@ func (s *KnowledgeService) ShareKnowledge(ctx context.Context, p Principal, id s
 }
 
 func (s *KnowledgeService) ReferenceKnowledge(ctx context.Context, p Principal, id string, c ReferenceKnowledgeCommand) (KnowledgeEntryResult, error) {
-	return s.action(ctx, p, id, c.ProjectID, "reference", c.CommandMeta, c, func(_ KnowledgeTx, v *StoredKnowledge) error {
+	return s.action(ctx, p, id, c.ProjectID, "reference", c.CommandMeta, c, func(tx KnowledgeTx, v *StoredKnowledge) error {
 		if !domain.ReferencableKnowledge(v.Entry.Status) {
 			return serviceError(apierrors.ApprovalRequired, "Knowledge must be confirmed before a project reference", "confirm_knowledge")
 		}
-		return nil
+		var crystallized *int
+		if len(v.CrystallizedVersions) > 0 {
+			latest := v.CrystallizedVersions[len(v.CrystallizedVersions)-1].Version
+			crystallized = &latest
+		}
+		return tx.AddKnowledgeReference(id, c.ProjectID, v.Version, crystallized, ActionAudit{Action: "reference", ActorID: p.ID, ActorKind: p.Kind, TS: s.options.Clock().UnixMilli(), RequestID: c.RequestID, Version: v.Version})
 	})
 }
