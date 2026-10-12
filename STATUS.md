@@ -4,6 +4,10 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+02:54 原W2已在同工作树继续Task task_1dc790d8c190 / Dispatch ctx_01c785994541，Codex --yolo。首启动input_accepted/turn_start_unobserved保留；screen确认6799字符原任务仍composer后只补一次Enter，随后明确live/working，无重派。窄scope授权复现42 PASS；唯一真实全人口B首调用在4.854573秒被native turn/start校验拒绝：input_too_large/code-32602、max_chars1048576、actual_chars1505850。stdin1632692字节写全并关闭，1003原消息与既有候选全等，仅thread.started、无turn.completed/usage/回答；root独证b-authorized-first-independent-safe.json。首unknown回执保留，追加not_sent_to_model对账，不把它写成1800秒推理timeout。官方0.162源码累计所有input text字符，多块不能解限；正在原实验域调查同模型/端点/隔离配置的官方上下文通道，禁止剪裁/摘要/多轮预读/读凭据绕路。强B/共同预算/协议锁/day0仍未过。
+
+root以既有生产CLI首次创建独立`v4-w1/formal-20261013-first`，10-12闭日bridge完成250事件（Morph42/Astro119/McPet89）、1生产Sleep、累计3105事件/信号和31Sleep，late/source_errors/normalization_failed均0，完整day-state.sqlite。phase=bridge，protocol/day0空，不计七日；原V1R SHA279ffd不变。root独证formal-bridge-20261012-independent-002-safe.json：六节点A/M/C及所有标量精确等于已验prelock；按origin_key匹配独立库新生成250内部event_id后，全部节点JSON全等。首次跨库直接比较内部ID的错误期待/RED原件保留，差异只来自独立插入身份，不是动力学失败。授权记录仅本机root-v4-start/b-raw-user-authorization-20261013.json，不扩大到产品或其他臂。
+
 **RAW定向豁免已获用户裁决（2026-10-13）。** 仅外部harness的V4 B臂最近七天完整聊天上下文可送锁定gpt-6.1-sol配置；实验结束失效。B输入/响应本机存证、实验后封存，不入Astrocyte事件库、不经MCP/API暴露。A维持derived零raw，C仅题目及三臂共同配置，Astrocyte运行时暴露面不变。该裁决覆盖下方「豁免待答」历史；不是通用raw外发授权。执行单tasks/M6-V4-raw-exemption.md，原W2登记协议并执行必要的真实满预算B启动门禁，root独验后唯一原集成消费；仍未锁SHA/day0。
 
 **02:30 本轮启动工具已普通集成；A本地无损验收PASS，新源码双平台CI SUCCESS；真实满预算B未发送，协议UNLOCKED、day0/V4 NOT_RUN。** 主分支`validation/v1-20261012`组合SOURCE `18085f4d30ce6f095249274e20ad245a42de4fa5`（02:21:32+08）普通合唯一原集成REPORT `82eaf6d70f3e4d62f535361ade1e3e63fb563ec6`，集成SOURCE `ccdf9bdca87afd4c1697ca69bc75388c26a96333`及W2 SOURCE5e1822b/REPORT3c758a0均保留为普通祖先。零冲突、零胶水；引擎/schema/参数/权重/mapper/UI相对1bbd055零diff。两本轮owner均accepted succeeded、release external_terminal/retained，原工作树和终端保留。

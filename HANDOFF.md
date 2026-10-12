@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+02:54 本轮原W2 task1dc790d8/ctx01c78599已live续作，窄scope42测试PASS；获授权后真实完整B首调用被native累计1048576字符上限拒绝，实际1505850字符，4.854573秒/无usage/无模型答。root独证stdin1003人口完整、确定性前置拒绝，首unknown保留追加NOT_SENT，不盲重试；同模型官方上下文接缝调查归原W2。root独立正式库10-12 bridge250事件/1Sleep完成，六节点标量及origin匹配后全JSON与已验prelock全等；独立库内部ID不要求相同。具体源/证据读STATUS最新，协议与day0仍未锁，不能用公共探针替强B。
+
 用户2026-10-13已准予V4 B臂raw定向豁免：仅最近七天聊天、仅锁定gpt-6.1-sol路由、仅外部对照harness，实验结束失效；B输入/响应本机封存，不进产品库/MCP。A/C与产品接口零raw保持。下一步原W2按tasks/M6-V4-raw-exemption.md登记协议、收窄旧ABC笼统授权字符串并执行一次真实满预算B门禁；root只验收/状态/最终锁，唯一原集成普通合。下方豁免待答为历史，不重新索取同意。
 
 02:30 最新组合SOURCE18085f4d已普通合唯一原集成REPORT82eaf6d7，W2 SOURCE5e1822b/REPORT3c758a0及集成SOURCEccdf9bdc全保留；两owner已accepted succeeded/release retained，当前无需等待worker。root整仓check/build首次EXIT0，独立Python79 PASS，冻结域零diff。新CI38289430526精确5e1822b双平台check/build/E2E SUCCESS，Linux race PASS/Windows条件SKIP；主组合业务/配置/协议/测试与此源码全等，仅交接Markdown不同。收尾只更新root文档并skip ci普通push，不借旧CI替代新源码。完整SHA/时间/日志见STATUS顶部。
