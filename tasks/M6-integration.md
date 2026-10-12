@@ -1,4 +1,59 @@
-# M6 V2/V3 工具链与 live 接缝最终集成交接（2026-10-13）
+# M6 V4 启动工具组合树集成交接（2026-10-13）
+
+**当前授权的工具交付、精确普通合并及适用组合树验证完成；V1/V1R已用户PASS关账，V2完整2006证据技术PASS。用户已确定分层A、ABC统一gpt-6.1-sol及1800秒时限；真实B首件PRIVATE_EGRESS_BLOCKED / not_sent /0调用，定向raw豁免未答，强B/正式预算/day0 NOT_RUN，协议仍UNLOCKED。** 本轮不等待新CI或豁免答复交付，不代用户授权、不锁SHA、不启动模型/正式采集或七日结果。下方未定模型/A及旧状态是历史，不能重新询问已给定案。
+
+Task `task_70b3fc50b899` / Dispatch `ctx_aa81de04b929`，Run `run_d09ff3f95ebc`。沿唯一原集成owner/worktree `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、branch `songconmaisaix31-design/validation-v1-integration`、terminal `term_2b81572f-6ce6-407e-8835-acaaef4d4acf`，起始HEAD `dde3f349d1cb3d7e41519dc609319a49e203151b` 且工作树干净。原Codex `--yolo`，实测 `codex-cli 0.162.0` / screen **GPT-6.1-Sol high fast**，未改客户端配置或新增Agent。沿本机orca-cli/orchestration技能只处理当前Dispatch。
+
+先读HANDOFF/STATUS、[执行单](M6-V4-integration.md)、[W2最终报告](M6-W2.md)。唯一自主修改本文件，零冲突/零胶水，无领域Handoff需要；EXPERIMENT和业务工具仅授权merge消费，未自主修改，不覆盖任何owner字段或未知pycache。
+
+## 精确普通合并与发布
+
+`git fetch origin` EXIT0；按指定顺序两次 `git merge --no-ff`，保留全部普通历史，无force/rebase/squash/cherry-pick：
+
+| 输入 | 精确SHA / 本次merge / +08时间 |
+|---|---|
+| root文档 | `ff4ec4148c19773bd77784a413ca16e3b818a11b` → `2de36dec0c3348c562fb475bab0fae78f338ca82`，02:17:59 |
+| W2最终REPORT | `3c758a035361876a390e6eda4afc329059bd008e` → **SOURCE `ccdf9bdca87afd4c1697ca69bc75388c26a96333`**，02:18:09 |
+| W2业务SOURCE | `5e1822bdf9118060586d0f18896f4fdba0095ad0`，普通祖先EXIT0 |
+
+组合SOURCE于 **2026-10-13T02:19:25.415+08:00** 普通push，`git ls-remote`确认原分支远端精确同SHA。本文件随后单独REPORT commit+push，精确SHA/时间通过当前Dispatch唯一worker_done回root；merge/REPORT带 `[skip ci]`，root负责独立整仓check/build、最终分支普通合/push和CI跟踪。
+
+W2本轮 **13个源码/协议/测试路径** 与5e SOURCE逐文件零diff，`tasks/M6-W2.md`与3c最终REPORT零diff。原W0/W1/W2全部指定SOURCE/REPORT及本轨历史REPORT均普通祖先EXIT0。冻结基线 **`1bbd0553620475ba0403481c349216f875e4a464`**：全部internal、events、migrations/contracts/schema、web/UI、现有MCP/Sleep/runtime入口、Go/Node依赖与锁零diff；参数/权重/mapper未动。全部变更仅授权实验工具/协议/测试和root/owner文档；没有薄胶水或自主业务改动。
+
+## 组合树实际检查
+
+Windows/PowerShell，子进程清除继承 `ASTROCYTE_*`，synthetic统一标准TEMP/TMP `C:/Users/DW/AppData/Local/Temp`；Python `PYTHONDONTWRITEBYTECODE=1`，Go `GOFLAGS=-p=1` / `GOMAXPROCS=2`。仅fixture/contract与适用生产stdio/SQLite回归，无私源opt-in/模型请求/真实replay。
+
+| 精确命令 | 实际结果 / +08时间 |
+|---|---|
+| `python -m unittest discover -s tests/validation/evidence -p 'test_*.py' -v` | **19PASS /EXIT0**，02:18:33.847–02:18:34.084（unittest .052s） |
+| `python -m unittest discover -s tests/validation/ingest -p 'test_*.py' -v` | **19PASS /EXIT0**，02:18:34.099–02:18:36.607（unittest .681s） |
+| `python -m unittest discover -s tests/validation/experiment -p 'test_*.py' -v` | **41PASS /EXIT0**，02:18:36.609–02:18:39.718（unittest 2.672s） |
+| `python scripts/validation/generate_kind_map.py --check` | EXIT0，canonical Go表一致 |
+| `go test -mod=readonly ./cmd/validation ./internal/adapters/mcp ./cmd/mcp ./tests/validation/privacy ./tests/validation/sleep ./tests/attention-engine -count=1 -json` | **122顶层PASS /12条件SKIP /0 FAIL /EXIT0**，02:18:34.294–02:19:00.941 |
+| 13 SOURCE/REPORT路径、frozen diff、普通祖先、`git diff --check` | 全部EXIT0，REPORT提交前再查 |
+
+Python合计 **79PASS**；native/SSE完整stdin/终止/usage/隐私拒绝由mock Python子进程或loopback fixture检查，没有真实推理。Go六包分别cmd/validation **27/0**、MCP adapter **13/0**、cmd/mcp **1/0**、privacy默认 **11/6**、EX-01 **3/0**、attention-engine **67/6**（PASS/SKIP），elapsed为6.558/.328/2.489/3.745/.890/7.112秒。原M2 **7PASS/1ProcessReload helper SKIP**、M5 MCP **6PASS/1ServerProcess helper SKIP**、M5 experience **8PASS**、EX-01 **3PASS**、Live/Bootstrap **11PASS**；child由父测试实际运行，两个live metadata和六个privacy opt-in保持SKIP，不称真实私源或全隐私边界PASS。
+
+本轮所有测试首次EXIT0，无新测试RED；W2 35/39/41阶段RED、公开CONFIG_REJECTED_BEFORE_MODEL_IO/not_sent、真实B隐私首件、旧Qwen600秒Timeout/delivery_unknown、旧Windows CI RED和全部旧capture/replay/failed/unknown保留。未重跑原库/raw审计、私聊人口、模型、历史回放或全仓pnpm check/build。
+
+## 已有实证与剩余门槛分列
+
+仅阅读本机安全派生结果，不读私聊正文/raw/原SQLite：root `root-v4-start/layered-a-independent-002-safe.json` 独立核对三项目全6状态/头/聚合/全部2006有序引用，kind×日15/5/2组、权重误差0、11956 raw_unique/7611 distinct泄漏0、原SHA不变；A材料UTF-8 **27931/33353/1927字节**。这是本地分层材料接受，正式预算/模型接受仍PENDING。
+
+root `b-full-independent-001-safe.json`：**1003完整原消息全等/全部装载/0未装**，四题payload字节1632638/1632511/1632617/1632601（native共同前缀各75字节），无删原文、private_egress=false、model_budget_accepted=false。W2 `b-native-privacy-first/result-safe.json`：reason payload1632617/native stdin1632692字节、1800秒配置，**PRIVATE_EGRESS_BLOCKED/not_sent/model_calls0/strong_b_accepted=false**。不是运行1800秒失败，也不是强B烟测已通过；用户定向raw外发豁免未答，不能生成APPROVED记录或启动外部推理。
+
+W2已有三次公开gpt完整探针（14.1967/12.1142/11.5038秒，actual usage8416/40、8418/42、8428/42），第三stdin180字节完整写入；完整输出/usage是公开配置实证，不能替代真实满预算B。CLI未提供server echo/provider wire/exact preflight tokenizer如实保留，process bytes/agent_message时间不当TTFT；不添加不可执行计数占位。用户模型/A已经决定，待的是具体路由授权、真实强B/统一正式预算及root接受。root精确5e独立41PASS日志已读，仅代表工具验收。
+
+CI分列：派发及W2最终报告中的新 **CI38289430526精确5e SOURCE** 快照为 **in_progress/PENDING**，本集成没有重新查询或等待；旧 **CI38283687781精确c61c841d3cf70fc4add5e6768cdaa11d47dd4d32双平台SUCCESS** 只归旧源码。旧精确4fbea9的Windows E2E **225PASS/30SKIP/1FAIL**（navigation侧栏30秒timeout）首日志 `root-v2/w1-ci-4fbea9-first-red.log` 不改绿；旧本机定向PASS与后续旧c61完整CI结果分开，新5e最终结果由root跟踪，不借旧CI替新结论。
+
+全部新日志独占于 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-integration/task_70b3fc50b899-ctx_aa81de04b929/`：两merge、祖先/frozen/13路径/报告/changed paths/diff、三Python首日志和exit/起止、Go首JSONL/包计数/skips/selected tests、kind_map、SOURCE/REPORT push/remote。日志只含安全测试/聚合输出，raw/subject/私聊仍LOCAL，原证据与未知pycache未触碰。
+
+root后续独立整仓check/build、最终普通合/push及新CI；真实豁免答复后由同W2执行一次full B门禁烟测、root独立接受路由/完整输入/actual usage/统一预算/live，再由权威流程锁协议和登记真实day0。当前强B/正式预算/day0 NOT_RUN、正式ABC/人评/成熟预测0；132历史残余/849无标/零信号主题保留。本集成未锁SHA、启动模型或正式采集、造未来/用户评分/科学胜负、合main、升级个人实例或部署。
+
+---
+
+# M6 V2/V3 工具链与 live 接缝最终集成交接（2026-10-13，历史）
 
 **V1/V1R 用户已终审PASS并关账；V2三主题完整2006条证据技术交付与root独立验收PASS；V3工具技术交付PASS，协议仍UNLOCKED；正式V4未开始。** 本次精确普通合并、组合树适用测试及SOURCE发布完成，零冲突、零胶水。模型和输入表示尚未由用户决定，不锁协议、不登记day0、不把技术交付当科学结果。下方人验PENDING与旧状态均是历史记录，保留首RED/failed/unknown，不重开V1确认。
 

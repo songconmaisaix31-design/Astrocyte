@@ -4,6 +4,32 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+**RAW定向豁免已获用户裁决（2026-10-13）。** 仅外部harness的V4 B臂最近七天完整聊天上下文可送锁定gpt-6.1-sol配置；实验结束失效。B输入/响应本机存证、实验后封存，不入Astrocyte事件库、不经MCP/API暴露。A维持derived零raw，C仅题目及三臂共同配置，Astrocyte运行时暴露面不变。该裁决覆盖下方「豁免待答」历史；不是通用raw外发授权。执行单tasks/M6-V4-raw-exemption.md，原W2登记协议并执行必要的真实满预算B启动门禁，root独验后唯一原集成消费；仍未锁SHA/day0。
+
+**02:30 本轮启动工具已普通集成；A本地无损验收PASS，新源码双平台CI SUCCESS；真实满预算B未发送，协议UNLOCKED、day0/V4 NOT_RUN。** 主分支`validation/v1-20261012`组合SOURCE `18085f4d30ce6f095249274e20ad245a42de4fa5`（02:21:32+08）普通合唯一原集成REPORT `82eaf6d70f3e4d62f535361ade1e3e63fb563ec6`，集成SOURCE `ccdf9bdca87afd4c1697ca69bc75388c26a96333`及W2 SOURCE5e1822b/REPORT3c758a0均保留为普通祖先。零冲突、零胶水；引擎/schema/参数/权重/mapper/UI相对1bbd055零diff。两本轮owner均accepted succeeded、release external_terminal/retained，原工作树和终端保留。
+
+root精确组合SOURCE首次`pnpm check`、`pnpm build`均EXIT0，含Go全包/vet/依赖/架构/合约/API14、前端13文件90测试及生成/diff检查；独立`python -m unittest discover -s tests/validation/{evidence,ingest,experiment} -p 'test_*.py' -v`逐目录运行19+19+41=79 PASS。原集成适用Go122顶层PASS/12条件SKIP，含M2/EX-01/M5；不把条件SKIP记为真实采集通过。首日志保留于本机`root-v4-start/final-combination-{check,build}-first.log`及`final-{evidence,ingest,experiment}-python-first.log`。
+
+02:29 root复核[新CI38289430526](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38289430526)：精确W2 SOURCE `5e1822bdf9118060586d0f18896f4fdba0095ad0` completed/success，Ubuntu24.04与Windows2025 check/build/E2E均SUCCESS；Linux race PASS，Windows race按条件SKIP。主组合的业务代码、配置、协议、测试与该SOURCE全等，仅五份root/集成交接Markdown不同。最后收尾仅改root状态/交接/执行单，提交skip ci，不冒称最终文档HEAD另跑CI。旧Windows首RED、旧600秒Timeout/delivery_unknown及各次首次失败原件继续保留。
+
+A已激活为全量排序状态、数值头、kind×日统计、全部引用及approved经验；独立SQL误差0，2006引用全可回溯，raw泄漏0，三材料27931/33353/1927 UTF-8字节。B七日1003条原消息逐物理行核对全等，四题均完整装载；最大native输入1632713字节。上述是本地材料验收，正式共同byte ceiling仍待真实满预算B及actual usage验收。新1800秒总期限/流式已接线；原600秒非流式请求未收到应答或usage，真实provider首字节未观测，不能倒推成已证明的首字节或总推理超时。公开native探针first_process/first_agent_message与真实provider首token分列。
+
+真实路由为官方CLI认证的ChatGPT外部推理。原v2.0§1.4 raw本地条款未撤销；root已提出一次仅V4启动验收与七日B臂全文的定向豁免问题，用户尚未答。实际私聊模型调用0/not_sent，未代写授权，未盲重试。EXPERIMENT已纳入本裁决及历史修正/观察，仍未锁SHA；获真实豁免后沿原W2执行一次满预算B、root确认共同预算再锁定。七日实际答案/人评及末尾D+3均未执行，不填终局报告。
+
+**02:16 W2本轮工程交付accepted succeeded；实际强B/day0仍BLOCKED/NOT_RUN。** SOURCE5e1822bdf9118060586d0f18896f4fdba0095ad0（02:13:07+08）与最终REPORT3c758a035361876a390e6eda4afc329059bd008e（02:15:45+08）均已push，普通祖先/远端已核；13源码/协议/测试变化只在原实验写域，引擎/schema/参数/权重/mapper/UI未改。root独立精确SOURCE `python -m unittest discover -s tests/validation/experiment -p 'test_*.py' -v` 41PASS/2.735秒/EXIT0，另真实loopback SSE定向1PASS；这不是真实gpt长推理验收。W2 release为external_terminal/retained/processAction none。
+
+root独立全1003条B逐12原JSONL physical行核对content/role/phase/ts一致，四题payload每题全部1003按时间排序、零删减、JSON字节1632638/1632511/1632617/1632601，证据root-v4-start/b-full-independent-001-safe.json。native共同75字节前缀另计，最大1632713。正式统一byte ceiling仍未接受，不能把观测长度当冻结预算。实际新启动CLI隐私首RED为PRIVATE_EGRESS_BLOCKED/not_sent/model_calls0，原件v4-w2/b-native-privacy-first保留；未把NOT_SENT写成推理timeout。
+
+root已提出一次用户定向V4 B原文外部处理豁免，原raw本地条款仍在、尚未收到答复；没有代写APPROVED，不以等待作同意。公开同配置证据为官方CLI0.162.0/注册gpt alias/隔离argv与真实完整usage；server echo/preflight精确tokenizer未提供如实记，不另增永远不可通过的echo条件。未来真实全人口完整stdin/无compact和tools/actual usage满足已核预算/≤1800完整应答供root验收，不用近似编码做边缘剪裁。
+
+唯一原集成本轮Task task_70b3fc50b899 / Dispatch ctx_aa81de04b929，固定terminal2b81572f/worktree/branch/Codex --yolo；按tasks/M6-V4-integration.md普通合rootff4ec414与W2最终REPORT。首启动input_accepted/turn_start_unobserved保留，screen确认5849字符原任务仍composer后仅补一次Enter，不重派。新SOURCE[CI38289430526](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38289430526)精确5e1822b当前in_progress/PENDING，由root跟踪；不借下方旧c61 SUCCESS替代。
+
+原W2已复用：Task task_c50d122beaa6 / Dispatch ctx_8524cbe64ddc / 原terminal70b809cd，普通合root2194e4d后继续独占实验写域。首次worker-start记录turn_start_unobserved/input_accepted；screen确认5591字符原任务仍在composer，root仅补一次Enter，随后worker-read明确live/working，无重派。旧unknown回执保留。
+
+root独立A局部验收PASS：事前query_only SQL预期baseline-sql-expectation-001.json与实际三材料逐项比较，全6节点状态排序/数值头/关联/approved经验全等，kind×日分组15/5/2、整数总权重误差0，887/1096/23条event_id完整且原序回溯。全2855原件11956 raw_unique/7611 distinct在材料与真实MCP wire/decoded结果中泄漏0；UTF-8材料27931/33353/1927字节，原库SHA279ffd仍一致。证据root-v4-start/layered-a-independent-002-safe.json。001-read-error为root读证据envelope少取material键的KeyError，未执行产品断言，原件保留。此PASS只覆盖本地分层材料，正式字节预算与模型门禁待实际路由验收。
+
+真实公开native探针完成14.1967秒，usage input8416/output40，完整输出与stream一致；first_process_byte4.9152秒、first_agent_message_event10.5779秒，不冒称远端首token。实际路由为CLI持有认证的OpenAI外部推理，未发送私聊；response model echo与exact tokenizer未由该输出提供。新鲜本机目录default272000/max872000/effective95%，公开1050000声明不作为实际支持验收。B真实满预算未执行；原raw本地令与外部B原文处理边界尚需具体裁决。全部证据v4-w2/public-native-second，首探针失败保留；协议与day0仍未锁。
+
 用户已决定A分层全量表示、ABC统一gpt-6.1-sol、B时限1800秒；替代下方历史「模型/表示待答」。执行单见[tasks/M6-V4-start.md](tasks/M6-V4-start.md)。原W2独占实现与协议，root独立验收，唯一原集成owner普通合；不重开V1，不改冻结域。协议仍UNLOCKED，day0未开始；A激活/复算、真实满预算B、CI、协议终稿、全文SHA五门禁逐条通过后锁定。
 
 新组合[CI38283687781](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38283687781)现已completed/success，精确SOURCE c61c841d3cf70fc4add5e6768cdaa11d47dd4d32，两job check(ubuntu-24.04)/check(windows-2025)均SUCCESS。1bbd055仅文档变更；旧CI38279757301 Windows首RED与本机定向1PASS保留，不以新结论覆盖历史。后续实现变更另确认其CI。
