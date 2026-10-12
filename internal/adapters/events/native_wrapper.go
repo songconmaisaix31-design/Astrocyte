@@ -210,6 +210,18 @@ func wrapperAnalysis(code string) (string, string) {
 			return "unknown", "dynamic_arguments"
 		}
 		name := tokens[i+2].value
+		// Preserve the legacy single-parent wrapper recognizer. New v22 child
+		// mapping handles compound commands at the semantic boundary instead.
+		if name == "exec_command" || name == "Bash" || name == "shell_command" {
+			v := objectMustLiteral(argument)
+			cmd := str(v, "cmd")
+			if cmd == "" {
+				cmd = str(v, "command")
+			}
+			if strings.ContainsAny(cmd, ";|&\n\r") {
+				return "unknown", "nested_tool_unsupported_or_non_cognitive"
+			}
+		}
 		if name == "exec" {
 			return "unknown", "recursive_wrapper"
 		}
@@ -231,4 +243,9 @@ func wrapperAnalysis(code string) (string, string) {
 		return "unknown", "no_static_tool_call"
 	}
 	return kind, "recognized"
+}
+
+func objectMustLiteral(value any) map[string]json.RawMessage {
+	b, _ := json.Marshal(value)
+	return object(b)
 }

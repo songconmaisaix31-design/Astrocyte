@@ -311,7 +311,20 @@ func main() {
 	contextPath := flag.String("associations", "", "separate local observed file association context")
 	gitInput := flag.String("git-input", "", "local actual git log input, separate from frozen100")
 	populationDir := flag.String("population-dir", "", "frozen full structural tool population and independent negatives")
+	semanticOut := flag.String("semantic-out", "", "exclusive new directory for v22 semantic audit; no replay")
+	semanticPolicy := flag.String("semantic-policy", "events/semantic_policy_v22.json", "versioned preregistered semantic policy")
 	flag.Parse()
+	if *semanticOut != "" {
+		if *populationDir == "" || *gitInput == "" || *output != "" || *input != "" || *contextPath != "" {
+			fmt.Fprintln(os.Stderr, "semantic audit requires only frozen population, Git and new output directory")
+			os.Exit(2)
+		}
+		if err := runSemantic(*populationDir, *gitInput, *semanticOut, *semanticPolicy); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	if *populationDir != "" {
 		if *input != "" || *contextPath != "" || *gitInput == "" || *output == "" {
 			fmt.Fprintln(os.Stderr, "population requires frozen git and output only")
