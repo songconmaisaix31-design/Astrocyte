@@ -4,6 +4,12 @@
 
 ### 当前裁决：v2.2（2026-10-12）
 
+16:45 V1技术产物已完成，待普通集成与root最终Git；W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4`已push。真实首次replay-001 16:37:10–16:38:07，精确SOURCE又独占replay-002不覆盖首件；2832生产Recorder单事件调用/2832信号，849无标事件与信号全部BLOB留存并Sleep pending，1893唯一commit，六种子、30生产Sleep含10空日。160对等ts仍按稳定semantic ID逐条处理。owner独立M2比较2169点（1983事件+180日末+6seed）误差0；root另从V0源预先生成literal math期望，对两个真实回放的2163更新点、逐条source顺序/六字段投影及30日排名独立比较，A/M/C最大误差0。root对replay-002 SQLite只读计数及50样本实际receipt/raw核验PASS；不调用生产公式生成expected。
+
+真实焦点：09-12–09-21无成功认知事件、种子全floor并列，不作为研究焦点；09-22–10-08 Morphogenesis第一；10-09–10-11 Astrocyte第一/Morphogenesis第二。10-08当日Astro仍floor，包含08日的前二比例3/4，严格08日后3/3；不调参。Agent Swarm实际信号0，A=.05，后续P2不能补假链。人工焦点确认与固定seed2026101201的50权重样本（32commit/11edit/7search）已分别发用户，均PENDING，机查s1/w.6为50/50不是人工正确率。安全轨迹图/人工表在root-v22，50原文只在本机LOCAL审计文件，不出机器。完整V1人验未批准，EXPERIMENT未锁SHA，V2/V3仅执行单准备、V4未运行。
+
+新首RED：owner首次编译map索引取地址及等ts测试误将1秒种子衰减当0，均修复并保留原日志；root首比较误读omitempty零input_events导致KeyError、首次权重表误读s/w字段为strength/weight，均为审计脚本字段假设，修正后独立重跑PASS，非生产失败。原件在v1-w1/root-v22，不覆写。完整精确源码检查/构建、SOURCE/REPORT及集成测试由owner报告与root后续最终验收单列。
+
 16:28 正式V1实际开工：原W1 worktree/branch，恢复终端 `term_44ba6601-f575-4731-a0bd-ff18438b1a4c`，Task `task_2ff9000b73ed` / Dispatch `ctx_2ec270cb9205`，实际Codex0.162.0 `--yolo` / GPT-6.1-Sol high fast。首次派发input accepted但turn_start_unobserved，屏幕确认任务仍在composer后仅补Enter，未复制任务/另建Dispatch；随后观察到实际读HANDOFF/STATUS及Working。保留首outcome_unknown，不用ready推断已回放；当前V1实现/测试/本机真实回放进行中，源码/产物/独立验收尚未完成。root当前Run绑定恢复为 `term_9af1a58e-0a3f-45f5-99cc-4b46bedc948d` / consumer_generation4。
 
 **16:25 主控批准V0（v2.2）**。实际源码验收SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`：归一化2832/2964=95.5466% PASS，原200非认知误标0 PASS，原100/1101 raw_unique字符串/2100生产MCP响应泄漏0 PASS。独立全量及八桶160源核对已完成，132真实剩余结构失败保留；主题1983/2832=70.0212%仅报告，849无标成功留存。完整 `pnpm check` EXIT0：Go22测试包/8无测试包，vet/gofmt/modules/架构/依赖通过，OpenAPI275示例、S1 14/14、前端90/90及类型/lint/diff通过；`pnpm build` EXIT0，三个Go程序及React/Vite构建通过。新外部原件 `root-v22/check-retest-libuv.log`、`build-first.log`、`real100-first.log`、`population-independent/`，均不覆写旧证据。
