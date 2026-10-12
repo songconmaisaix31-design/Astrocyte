@@ -1,4 +1,30 @@
-# V3 本机操作与数据契约
+# V4 手动操作与数据契约（未锁）
+
+2026-10-13定案优先：ABC固定gpt-6.1-sol，正式A为全量状态排序、完整explain_focus数值头、kind×自然日整数聚合、全部event_id引用和approved经验。开发终端不是实验响应模型证明。当前raw本地令仍有效，用户定向例外待答；没有例外时private native进程启动前失败并保存not_sent。全部新证据写入外部 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/` 独占新目录，旧v3-w2不覆盖。stdout只派生数字与状态，源码/报告不得含raw。
+
+从仓库根执行下列实际入口（参数路径必须是外部既有根内真实文件、新输出不得已存在）：
+
+```text
+python scripts/experiment/experiment.py v4-a-smoke --binary C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/astrocyte-mcp.exe --out C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/layered-a-cli-first
+python scripts/experiment/experiment.py v4-public-probe --out C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/public-native-cli-first
+python scripts/experiment/experiment.py v4-prepare-b --day 2026-10-12 --selection C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v3-w2/native-selection-first.json --out C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/b-preparation-new
+python scripts/experiment/experiment.py v4-b-smoke --candidate C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/b-full-population-local.json --out C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/b-native-privacy-first
+python -m unittest discover -s tests/validation/experiment -v
+```
+
+前两条已实测，最后B命令首轮EXIT1、PRIVATE_EGRESS_BLOCKED/not_sent/0模型调用，原回执保留；上述已存在输出不能重跑覆盖。prepare-b入口复用原selection/loader与题库，读取只读真实库当日事件，保存全部原content及四题完整prompt；1003人口先前构造和root独立逐物理行审计已通过，并非该命令运行的伪证据。每次新烟测选不同新目录，unknown请求不因新目录而盲重试。
+
+仅有明确用户定向例外后，由root释放外部授权记录路径，B命令加 `--authorization`。文件必须含authority=user、status=APPROVED、model=gpt-6.1-sol、scope=`V4 ABC selected A derived and full seven-day Claude/Codex B`、endpoint_boundary=`native OpenAI Responses provider; external provider inference, CLI-owned existing authentication`和真实decision_reference。W2不代用户生成APPROVED。隐私block仅not_sent，真正已启动错误/超时保留unknown_no_auto_retry。启动B一次完整回答和usage即使通过，也只是门禁烟测，不计正式七日。
+
+原生CLI隔离配置沿用released文本processor：固定空cwd、ignore-user-config/rules、schema、禁tools/apps/skills/MCP/子Agent；请求gpt-6.1-sol/high/priority、provider默认采样、872000候选context、禁止compact、request/stream retries0、总1800秒。所有ABC同一通用answer_json schema与75字节前缀，差别仅材料。完整stdin已写入和关闭另记回执，不能冒称provider wire验证。JSONL first_process_byte与first_agent_message_event分列，不是provider首字节/首token；真正远端SSE timing尚未暴露。
+
+全量B1003条优先顺序与整条原content保持；由于CLI不暴露精确preflight tokenizer，仅支持**全人口输入+完整终止实际usage**，不支持边界选条。全部人口fit时是最大B，不padding。若全量超过实际context/输出reserve则失败，不能裁剪为272K或换模型。统一UTF8 ceiling须root真实预算验收后填规范；它计入完整JSON和共同75字节前缀，目前null，禁止任意降低。最大片段JSON1632638、native stdin1632713字节仅是观测，不是已冻结上限。actual input/output usage、完整流式终止、full stdin、no compact/no tools分别记录；模型echo/tokenizer极限/硬输出cap未露出，不自动标ACCEPTED。
+
+lock按backend验收：local HTTP要求local_runtime_verified；native external要求external_runtime_verified和真实用户授权，不填假local_runtime。另需actual_identity_verified、full_population_usage_verified、native_request_input_complete_verified、同一UTF8 ceiling、strong_b/budget_smoke/production_live与root reviewed及正式v4-w1根。当前所有正式门禁仍未过，lock不执行、day0不填；最终规范须由W2在root验收后填实际值并commit/push，再由唯一原集成owner普通合，root权威记录全文SHA/day0。
+
+下面保留V3操作历史；涉及Qwen候选和本地only接受条件不是V4模型选择或外发授权。run-day、人评、judge、预测成熟和summary规则继续适用；推理seed在native未暴露，只有题库seed固定。V4 run-day实际调用分层A和native full population，错误/输入/答案仍本机JSONL；任何锁后协议字节变化INVALID。
+
+# V3 历史本机操作与数据契约
 
 全部命令从仓库根执行。开发客户端是 Codex `--yolo` / GPT-6.1-Sol high fast；它不接收聊天原文，也不是 ABC 实验模型。候选模型部署、fixture、历史真实 MCP、前瞻模型回答分别记账。
 

@@ -7,7 +7,7 @@ from pathlib import Path
 import sqlite3
 
 ZONE = timezone(timedelta(hours=8))
-PRIVATE_ROOT = Path('C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v3-w2')
+PRIVATE_ROOT = Path('C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2')
 EVIDENCE_ROOT = PRIVATE_ROOT.parent
 BASELINE = Path('C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v1r-w1/replay-002/state.sqlite')
 REPO = Path(__file__).resolve().parents[2]
