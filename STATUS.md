@@ -4,6 +4,12 @@
 
 ### 当前裁决：v2.2（2026-10-12）
 
+**16:25 主控批准V0（v2.2）**。实际源码验收SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`：归一化2832/2964=95.5466% PASS，原200非认知误标0 PASS，原100/1101 raw_unique字符串/2100生产MCP响应泄漏0 PASS。独立全量及八桶160源核对已完成，132真实剩余结构失败保留；主题1983/2832=70.0212%仅报告，849无标成功留存。完整 `pnpm check` EXIT0：Go22测试包/8无测试包，vet/gofmt/modules/架构/依赖通过，OpenAPI275示例、S1 14/14、前端90/90及类型/lint/diff通过；`pnpm build` EXIT0，三个Go程序及React/Vite构建通过。新外部原件 `root-v22/check-retest-libuv.log`、`build-first.log`、`real100-first.log`、`population-independent/`，均不覆写旧证据。
+
+整仓首次中断没有退出码；首次完整重跑在Redocly校验结束发生Node24.16.0/libuv `UV_HANDLE_CLOSING`退出3221226505，记录为RED (`check-resume.log`, exit1)。同命令定向复测EXIT0，未改源码/依赖，再完整重跑check EXIT0；不得将首RED改写。验收后[CI38222142954](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38222142954)对精确SOURCE35f508b双平台check/build/default E2E completed/success；Linux race通过，Windows race条件跳过。文档HEAD与该SOURCE业务源码/测试/配置相同，不把CI归到后续未测源码。
+
+正式V1现已放行，执行 [逐事件回放任务](tasks/M6-V1-replay.md)，仍由原W1/原worktree/branch，Codex --yolo。参数绑定回滚对象 `0b42bb97157b0b324c2aaa55c4badc08a488ed7b`，未执行回滚；唯一app触及 `KnowledgeService.RetrieveKnowledge`、同文件 `knowledgeReferenceBoost`，A/M/λ/权重/去噪/fluid/crystallized/EX-01/schema保持不变。V1实际运行回执和验收另记，未完成前不宣称30日回放PASS。用户焦点确认/50权重人工核对、V2–V4及EXPERIMENT锁SHA仍PENDING；原诊断0/100与全部旧口径RED不改写。
+
 16:21 root普通合并SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`已push，消费集成REPORT `2524e9e48b23aa6f0ee4b6277a55539009d669dc`（组合SOURCE `b4b5a388539a2428432cfa94133378dd9cf0d53a`）。集成owner实际184顶层Go PASS/12条件SKIP、Python8 PASS、M2 7 PASS/1 helper SKIP、EX-01 3 PASS；完整报告见tasks/M6-integration.md。16:04 Orca重启后该Dispatch `ctx_3083dbc2d717`被标failed/terminal_missing，完成回执未送达；已推送的精确源码/报告/外部测试日志独立核对后消费，保留运行时失败，不改写为accepted worker_done。后续接管使用现存工作树，旧终端不视为live。
 
 root对最终组合树新独占 `root-v22/population-independent/` 全量重跑EXIT0：6016父/8914语义单位；2832/2964=95.5466%，132结构失败留分母，非结构失败0；5950非认知单列，原200误标0，1983有topic/849无标，覆盖70.0212%。八桶各20再次从冻结源独立校验原始字节、ts、工具名及s/w，160/160一致，问题0。原100生产隐私独立重跑EXIT0：1101逐事件raw_unique字符串/2100实际MCP.Serve响应严格违规0；仍标real_raw_contract_local，不代表自然task_live。原始100及所有RED不覆写。冻结domain/SQLite/schema/contracts/web/runtime/其他app差异0，唯一app变化仍限定RetrieveKnowledge/knowledgeReferenceBoost。
