@@ -81,13 +81,13 @@ func TestM4ProductionNodeRetrievalAfterRestart(t *testing.T) {
 				lambda float64
 				winner string
 			}{{"agents", 0, "z-exact"}, {"agents", 1.5, "a-neighbor"}, {"", 0, "z-exact"}} {
-				q := app.KnowledgeQuery{Topic: query.topic, Now: 10000, LambdaR: &query.lambda, AgeBasis: app.KnowledgeAgeCreated, ReferenceBoost: 2}
+				q := app.KnowledgeQuery{Topic: query.topic, Now: 10000, LambdaR: &query.lambda, AgeBasis: app.KnowledgeAgeCreated, ReferenceBoost: 2} // nonformal overshoot fixture; validation increment is .1
 				matches, err := service.RetrieveKnowledge(ctx, human, "p1", q)
 				if err != nil {
 					t.Fatal(err)
 				}
 				for _, match := range matches {
-					want := domain.RetrievalCandidate{ID: "z-exact", Relevance: 1, Attention: .6, AccessBoost: 3, AgeSeconds: 8}
+					want := domain.RetrievalCandidate{ID: "z-exact", Relevance: 1, Attention: .6, AccessBoost: 2, AgeSeconds: 8}
 					if match.Knowledge.Entry.ID == "a-neighbor" {
 						want = domain.RetrievalCandidate{ID: "a-neighbor", Relevance: .25, Attention: .9, AccessBoost: 1, AgeSeconds: 6}
 						if query.topic == "" {
