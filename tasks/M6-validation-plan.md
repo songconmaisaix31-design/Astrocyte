@@ -14,6 +14,8 @@ V1代码仍由W1：生产EventRecorder单事件路径、显式事件时钟、全
 
 root静态确认M4旧单次ReferenceBoost=2期待3与cap2冲突，W1追加仅`tests/attention-engine/M4_persistent_retrieval_test.go`与`M4_production_node_test.go`机械更新cap输入/独立乘积期待，先保留首RED；其他断言和参数不变，正式仍每次+.1。
 
+当前W1 `task_9811e1a0ba62/ctx_db0a6079c956`，终端`term_a8f99f9a-0a9b-4b5e-8c83-ffaeb3a0c3a7`，首次turn_started已观察。root预运行规则审查：统计单位为原生/内层工具调用；同一Bash/exec多个search段只一份事件贡献，分段另报；未知留失败。规则修订版本后全量跑，不按结果调分类。root抽样和V0仍未执行。
+
 ## 当前波次：v2.1
 
 04:50 W1 REPORT `3020bfd7a47e1b83f765ab3c1ad0437841746af6`、W0最终REPORT `88268a05a756f108f76422e1279e734851e4c324`均push且accepted worker_done。唯一原集成owner在同工作树`attention-engine-final-integration`/同分支`validation-v1-integration`恢复Codex --yolo终端`term_413891f3-04af-4fc0-bc60-bb42efa19820`，先普通合root当前文档，再普通合这两个精确REPORT，保留各SOURCE/REPORT普通祖先；报告唯一写域`tasks/M6-integration.md`。只必要薄胶水，领域问题退原owner；禁止正式V1/改schema/app/domain/调参。运行changed packages、M2/EX-01/M5、Python/生成映射及真实100审计，SOURCE+REPORT分别commit/push；root随后独立全check/build/隐私审计并最终push。

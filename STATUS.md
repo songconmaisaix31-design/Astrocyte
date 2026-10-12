@@ -14,6 +14,10 @@ root已静态确认两旧M4 fixture单次引用显式ReferenceBoost=2，期待Ac
 
 W1沿原固定worktree/branch完成语义版本化、2520混合桶剥离、612工具名分布、每桶20样本、仓根归属及参数绑定；root抽查后独立新V0验收。过线才启动V1，全部kind成功含unassigned逐事件入库，按真实ts/间隔、30次Sleep及真实M2复算。N≥5000与topic完整率门槛废止。无自动发现/分裂，schema零豁免，除已授权EX-01与本条boost参数绑定外app/domain冻结。EXPERIMENT未锁，V2–V4未开始。新证据独立放既有外部根`v22-w1/`、`root-v22/`，不覆盖v2.1。
 
+14:44 v2.2文档SOURCE `aa8f522935d16e728311dd865bb89b980301dab7`及M4限定写域文档`6c71cad`已push；原W1新终端`term_a8f99f9a-0a9b-4b5e-8c83-ffaeb3a0c3a7`，`task_9811e1a0ba62/ctx_db0a6079c956`首次即observed turn_started，实际Codex --yolo/GPT-6.1-Sol high fast，同工作树/分支普通合root文档。实现与测试进行中，尚无新验收SOURCE/PASS。
+
+14:47 root只读仓根预查原4123工具单元：17唯一cwd；8个可解析common-dir（Astro310/Morph316），其余9个3497单元（8路径已不存在、1存在但无Git仓）。不猜仓归属，kind成功仍可无标接入。独立直接Read39个均无arxiv/pdf目标标记，归普通文件Read。14:51 root预运行审查要求语义统计单位为原生或wrapper内层工具调用：同一Bash/exec中多个search命令段只产生一个search事件/贡献，分段仅供归类和另报计数；不复制事件。W1规则版本修订后必须全量跑，动态不可解析仍留失败，不以修规则掩盖既有RED。
+
 ### 当前裁决：v2.1（2026-10-12）
 
 ### v2.1 本轮已合入并独立复验，V0仍RED（2026-10-12 05:04）
