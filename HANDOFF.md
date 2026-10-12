@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 当前入口：M6 v2.2（2026-10-12）
+
+先读STATUS顶部、[v2.2裁决](tasks/M6-validation-v2.2.md)和[固定写域计划](tasks/M6-validation-plan.md)。全部工具认知人口及N≥5000门槛废止；6016及原RED保留。新人口按预声明语义，动态不可解析留分母失败，topic只报告；≥95% kind/s绑定、误标0、泄漏0才开正式V1。字段/单位/confidence/boost及仓根/McPet范围已裁决，不重问。W1同worktree/branch、Codex --yolo，追加RetrieveKnowledge限定boost写域，schema/domain不改。root抽查每桶20条后原集成owner普通合，独立验收/push。新V0/V1尚NOT_RUN，EXPERIMENT仍未锁SHA。
+
 ## 当前入口：M6 v2.1（2026-10-12）
 
 05:10 本轮源码/测试已普通合并、独立复验并push，验收SOURCE `245d3f8a2d766ee8695daeae1de87469537fff96`；唯一集成REPORT ffc7c0df及W1/W0所有SOURCE/REPORT普通祖先保留。root完整pnpm check/build PASS，真实100 raw审计1101字符串/2100生产MCP响应零泄漏PASS；人口N6016、kind/topic1971=32.76% RED、随机200误标0。[CI38174450112](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38174450112)对该SOURCE两平台check/build/defaultE2E全部PASS，各226 PASS/30 SKIP（3.8m/4.9m），Linux race PASS、Windows按条件SKIP。收尾仅STATUS/HANDOFF记录变化，源码/测试/配置一致，不能把CI归给未重跑的文档HEAD。当前九个Dispatch全部结算，外部终端retained，原工作树/分支保留。先读STATUS当前指标表和QUESTIONS现有实码缺口，V0未过，不启动正式V1/V2–V4、不锁EXPERIMENT或伪造终局报告。原RED和所有raw只在既定外部证据根，个人运行库未升级。

@@ -1,5 +1,17 @@
 # M6 验证期执行计划
 
+## 当前波次：v2.2
+
+事实源[M6 v2.2](M6-validation-v2.2.md)。root只文档/调度/抽查/独立验收/最终Git。固定W1工作树`validation-v1-ingest`、分支`songconmaisaix31-design/validation-v1-ingest`，恢复同逻辑owner的Codex --yolo；原W1/W0/集成九Dispatch已结算，不重复派旧任务。先普通合本裁决文档HEAD，按原互斥写域修复；其他轨本波不同时写。
+
+| owner | 当前write_paths | 门禁与产物 |
+|---|---|---|
+| W1 | `events/**`、`internal/adapters/events/**`、`cmd/validation/**`、`scripts/validation/**`、`tests/validation/ingest/**`、`tasks/M6-W1.md`；限定扩展`internal/attention/app/knowledge_retrieval.go`仅RetrieveKnowledge及同文件boost helper | 先版本化语义规则，再全6016复盘；612名分布、2520内层解析、各语义桶20样本；git common-dir/remote归属、McPet；s=1/w、confidence=.5、λ_r日换秒、boost cap/24h复现测试；SOURCE/REPORT各commit+push |
+| root | STATUS/HANDOFF/任务计划/QUESTIONS/未锁EXPERIMENT | 实际抽查各桶20，规则修订全量重跑；独立新V0三指标；保留历史RED；过线通知原W1正式V1 |
+| 原集成owner | 原integration worktree/branch及`tasks/M6-integration.md` | 普通合精确root/W1 REPORT，薄胶水；领域问题退W1；M2/EX-01/M5与changed packages检查，root最终check/build/push |
+
+V1代码仍由W1：生产EventRecorder单事件路径、显式事件时钟、全部kind成功含unassigned留存、30模拟日Sleep、JSON序列/top5/权重50抽样/真实M2复算。若生产入口配置接缝必须新增写路径，先交精确Handoff由root登记；不改数学/权重/λ/去噪/fluid/crystallized/merge。原N≥5000无效。V2/V3后续依赖不变，七天真实实验不可由回放替代。证据新目录v22-w1/root-v22，不覆盖旧全量6016、原100、200及泄漏RED；raw不上Git/远程/正文终端。
+
 ## 当前波次：v2.1
 
 04:50 W1 REPORT `3020bfd7a47e1b83f765ab3c1ad0437841746af6`、W0最终REPORT `88268a05a756f108f76422e1279e734851e4c324`均push且accepted worker_done。唯一原集成owner在同工作树`attention-engine-final-integration`/同分支`validation-v1-integration`恢复Codex --yolo终端`term_413891f3-04af-4fc0-bc60-bb42efa19820`，先普通合root当前文档，再普通合这两个精确REPORT，保留各SOURCE/REPORT普通祖先；报告唯一写域`tasks/M6-integration.md`。只必要薄胶水，领域问题退原owner；禁止正式V1/改schema/app/domain/调参。运行changed packages、M2/EX-01/M5、Python/生成映射及真实100审计，SOURCE+REPORT分别commit/push；root随后独立全check/build/隐私审计并最终push。

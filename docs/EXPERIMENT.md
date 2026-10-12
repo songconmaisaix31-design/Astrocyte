@@ -1,5 +1,13 @@
 # Astrocyte M6 前瞻实验协议
 
+## v2.2 预注册草案修正（2026-10-12）
+
+协议未锁SHA，day 0未开始。第二次V0规格修正：认知人口按工具语义预声明，结构不可解析留分母失败；kind成功含unassigned接入，topic只报告覆盖率，N≥5000废止。6016全量与旧RED并行保留，不改历史结果。
+
+主题来源=原五种子+McPet种子+git派生+SeedTopic手工播种；逐唯一cwd以git common-dir/remote识别Astrocyte及Morphogenesis全部worktree、maimai-monster→McPet。InitialConfidence统一.5。无自动无标出生、无已标分裂，冻结至v0.2；unassigned留桶计数参与Sleep。commit附加关键词沿原实现，不新增association规则。
+
+冻结绑定：Signal s=1/w=按kind冻结表值；λ_r=.05/86400秒⁻¹；boost初始1、访问+.1、上限2、24h无访问回退1；A/M/λ/权重不变。新V0过线后真实ts逐事件回放、30次模拟日及真实M2复算；V1分布与人工锚点验收后才补齐题库、评分表、工具链并锁完整SHA。本修正发生在锁定前，属于合法规格记录。
+
 状态：预注册草案。V1尚未通过；题库、评分表和工具链尚未交付，未锁定SHA，未开始day 0。事实源：[M6 v2.0](../tasks/M6-validation-v2.md)、[v2.1补丁](../tasks/M6-validation-v2.1.md)。
 
 ## v2.1：主题来源与发现冻结

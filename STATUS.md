@@ -2,6 +2,16 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
+### 当前裁决：v2.2（2026-10-12）
+
+事实源：[v2.2](tasks/M6-validation-v2.2.md)。第二次规格修正废止全部工具调用均为认知人口；6016全量计数、1971/6016旧RED及首100诊断全部保留为历史。新V0按预声明工具语义归类，结构不可解析留分母计失败；成功kind及s=1/w=冻结表值完整率≥95%，topic仅报告覆盖率，无标kind成功计接入成功。误标0/200与raw_unique泄漏0保留并复验。新指标尚NOT_RUN，不将旧分母改写为新PASS。
+
+冻结绑定已裁决：所有种子InitialConfidence=.5；Signal s=1、w按kind；λ_r=.05/86400秒⁻¹；boost初始1/每访问+.1/cap2/24h无访问回退1。λ=.1、α=.3、A_floor=.05、momentum=.15及完整权重表沿v2.1，不调参。git仓根remote/common-dir归属覆盖全部Astrocyte/Morphogenesis worktree，新增maimai-monster仓McPet种子。原参数与主题待答已解决，不再阻塞。
+
+W1限定写域扩展：`internal/attention/app/knowledge_retrieval.go`仅`KnowledgeService.RetrieveKnowledge`及必要同文件纯计算helper的boost cap/24h冷却；`tests/validation/ingest/**`增加真实服务/既有持久化动作时间戳复现测试。已有human reference审计含TS，读路径保持只读，不增表、不修改领域公式。若必须触及其他函数/文件，先报路径与必要性，root登记后才写。SOURCE/精确触及函数/测试数/回滚commit完成后记录，不预填。
+
+W1沿原固定worktree/branch完成语义版本化、2520混合桶剥离、612工具名分布、每桶20样本、仓根归属及参数绑定；root抽查后独立新V0验收。过线才启动V1，全部kind成功含unassigned逐事件入库，按真实ts/间隔、30次Sleep及真实M2复算。N≥5000与topic完整率门槛废止。无自动发现/分裂，schema零豁免，除已授权EX-01与本条boost参数绑定外app/domain冻结。EXPERIMENT未锁，V2–V4未开始。新证据独立放既有外部根`v22-w1/`、`root-v22/`，不覆盖v2.1。
+
 ### 当前裁决：v2.1（2026-10-12）
 
 ### v2.1 本轮已合入并独立复验，V0仍RED（2026-10-12 05:04）
