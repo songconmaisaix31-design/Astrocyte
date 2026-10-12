@@ -2,7 +2,9 @@
 
 ## 当前入口：M6 v2.2（2026-10-12）
 
-先读STATUS顶部、[v2.2裁决](tasks/M6-validation-v2.2.md)和[固定写域计划](tasks/M6-validation-plan.md)。全部工具认知人口及N≥5000门槛废止；6016及原RED保留。新人口按预声明语义，动态不可解析留分母失败，topic只报告；≥95% kind/s绑定、误标0、泄漏0才开正式V1。字段/单位/confidence/boost及仓根/McPet范围已裁决，不重问。W1同worktree/branch、Codex --yolo，追加RetrieveKnowledge限定boost写域，schema/domain不改。root抽查每桶20条后原集成owner普通合，独立验收/push。新V0/V1尚NOT_RUN，EXPERIMENT仍未锁SHA。
+16:25 root批准新V0，源码SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`已push：独立2832/2964=95.5466%、误标0/200、raw1101字符串/2100生产响应泄漏0，八桶160源核对问题0；root完整check/build及精确SOURCE双平台CI38222142954通过。一次本机Redocly退出时Node/libuv RED已保留，定向和完整重跑通过，源码依赖未改。132结构失败保留；主题覆盖70.0212%，849无标需全部入库。消费I报告2524e9e，I完成回执因Orca重启未达，Dispatch保持failed/terminal_missing，不能冒称accepted worker_done。正式V1放行，沿原W1工作树/分支按[tasks/M6-V1-replay.md](tasks/M6-V1-replay.md)执行；root只文档/调度/独立验收/最终Git，源码/权重/参数冻结。实际V1运行及用户焦点/50权重核对另验，不把V0当V1或真实七天实验，EXPERIMENT未锁SHA。下方入口为此前历史。
+
+先读STATUS顶部、[v2.2裁决](tasks/M6-validation-v2.2.md)和[固定写域计划](tasks/M6-validation-plan.md)。全部工具认知人口及N≥5000门槛废止；6016及原RED保留。新人口按预声明语义，动态不可解析留分母失败，topic只报告；≥95% kind/s绑定、误标0、泄漏0才开正式V1。字段/单位/confidence/boost及仓根/McPet范围已裁决，不重问。W1同worktree/branch、Codex --yolo，追加RetrieveKnowledge限定boost写域，schema/domain不改。最终SOURCE c0f6936/REPORT2b8137d已push，数值2832/2964=95.5466%，132结构失败保留；root最终每桶20及全部22新解析调用/50候选命令已独立核对。待原集成owner普通合与root整树check/build/原100 raw_unique/全人口复测，再批准V0。正式V1仍NOT_RUN，EXPERIMENT未锁SHA。
 
 ## 当前入口：M6 v2.1（2026-10-12）
 

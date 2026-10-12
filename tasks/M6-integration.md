@@ -1,4 +1,80 @@
-# M6 v2.1 完整组合树集成交接
+# M6 v2.2 普通集成与限定验证交接
+
+2026-10-12；actual Task `task_63080055d561` / Dispatch `ctx_3083dbc2d717`，Run `run_d09ff3f95ebc`。原唯一集成owner、工作树 `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、分支 `songconmaisaix31-design/validation-v1-integration`，本轮起始 `ffc7c0df8418918b85682269dc398080c5d00d08`。沿既有Codex `--yolo`，Orca terminal show实际preview **GPT-6.1-Sol high fast**；未新建Agent/worktree或更换模型。
+
+指定普通合并及适用检查已完成；**自写业务胶水为0，唯一自主修改为本报告**。本任务不自批完整V0，不启动正式V1。业务事实沿 [v2.2裁决](M6-validation-v2.2.md) 和root最新HANDOFF/STATUS，下方v2.1/P0及所有首RED原件保留。原参数/主题待答已由v2.2裁决，不能沿下方历史继续报未答；6016全部工具人口及N≥5000/topic门槛已废止，规格修正与旧实现RED分别保留。
+
+## 精确普通历史与源码发布
+
+开始时工作树clean且分支匹配，依次普通 `git merge --no-ff`，无冲突：
+
+| 精确输入 | 普通merge SHA / commit时间（+08:00） |
+|---|---|
+| root文档 `14daa596c48236e954c9d5677ad51b3cd7ad4366` | `9404ee6b26f163575063d99227975d93d1eaf906` / 15:56:42 |
+| W1 REPORT `2b8137de8974c26d2da67c7319421ffe08a3d954` | **SOURCE `b4b5a388539a2428432cfa94133378dd9cf0d53a`** / 15:56:43 |
+
+测试前完整组合树已存在；上述两精确输入及W1 business SOURCE `0b42bb97157b0b324c2aaa55c4badc08a488ed7b`、UTF8 SOURCE `867118002daa6d0c3897e6085b4de82f265d301a`、final SOURCE `c0f6936f2751cd22f0bc5f63c68211a37caa2436` 均经 `git merge-base --is-ancestor <SHA> HEAD` EXIT0。未force/squash/rebase/cherry-pick或删除未知文件，既有SOURCE/REPORT普通祖先完整。
+
+全部适用测试EXIT0后，SOURCE于 **15:58:59.047 +08:00** 普通push，`git ls-remote`核实远端为精确 `b4b5a388539a2428432cfa94133378dd9cf0d53a`。报告随后独立REPORT commit/push，精确SHA/时间经本Dispatch完成消息回root；合并与报告使用 `[skip ci]`，最终Git/CI归root独立验收。
+
+## 对原root基线的冻结域实际diff
+
+固定比较基线 **`4538be918ec34eda573ccbbbd687ba41f8954d1b`**。`git diff --exit-code` 核实 domain、SQLite/store、migrations、contracts、web、Go/Node依赖与锁、全部其他app及EX-01生产Sleep/测试均原样，EXIT0，schema零豁免。
+
+唯一app差异为 `internal/attention/app/knowledge_retrieval.go`：`KnowledgeService.RetrieveKnowledge`调用同文件新增纯计算 `knowledgeReferenceBoost`，复用已有human reference `ActionAudit.TS`，排序复制时间序列、cap2、24h无访问回退1，读路径不新增持久化写入；import新增sort供helper使用。M4两fixture实际diff只加非正式超限输入说明并将独立乘积/AccessBoost期待3→2，**原ReferenceBoost=2输入不变**；正式绑定+.1，无领域公式/权重/λ/Sleep接缝变化。diff原件在外部日志，详细业务实现归 [W1报告](M6-W1.md)；集成owner无业务或测试期待返修。
+
+## 组合树适用验证
+
+Windows / PowerShell；`GOFLAGS=-p=1`、`GOMAXPROCS=2`、`-mod=readonly`、Python `PYTHONDONTWRITEBYTECODE=1`。Go测试进程先清继承 `ASTROCYTE_*`，显式设置本机 `ASTROCYTE_V22_COOKED_LOCAL=C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/root-v22/v227-sample-shell-LOCAL.json` 与 `ASTROCYTE_V22_FROZEN_LOCAL=C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v21-w1/tool-records-local.jsonl`，检查两文件存在后执行。没有运行全人口diagnostic/replay，也没有并行pnpm/frontend生成。
+
+```powershell
+go test -mod=readonly -count=1 -json ./cmd/validation ./internal/adapters/events ./internal/attention/app ./tests/attention-engine ./tests/validation/sleep ./tests/validation/privacy ./internal/adapters/mcp
+python -m unittest discover -s tests/validation/ingest -p 'test_*.py' -v
+python scripts/validation/generate_kind_map.py --check
+go vet -mod=readonly ./cmd/validation ./internal/adapters/events ./internal/attention/app ./tests/attention-engine ./tests/validation/sleep ./tests/validation/privacy ./internal/adapters/mcp
+git diff --check
+```
+
+Go开始/结束 **15:57:17.669–15:57:47.138 +08:00**，七包EXIT0，**184顶层PASS / 0 FAIL / 12 SKIP**；含中间节点及子例317 PASS/15 SKIP，不称为317独立测试。
+
+| 包 | 顶层PASS / FAIL / SKIP | 包elapsed |
+|---|---:|---:|
+| cmd/validation | 10 / 0 / 0 | .945s |
+| events | 31 / 0 / 0（含子例58 PASS/3 SKIP） | 2.146s |
+| attention/app | 49 / 0 / 0 | .671s |
+| attention-engine | 67 / 0 / 6 | 7.131s |
+| validation/sleep | 3 / 0 / 0 | 1.120s |
+| privacy默认 | 11 / 0 / 6 | 3.716s |
+| MCP adapter | 13 / 0 / 0 | .314s |
+
+| 要求分列的回归 | 顶层PASS / FAIL / SKIP |
+|---|---:|
+| 原M2 | 7 / 0 / 1 helper入口 |
+| M5 MCP | 6 / 0 / 1 helper入口 |
+| EX-01 | 3 / 0 / 0 |
+| M4（含两原超限fixture） | 11 / 0 / 0 |
+
+`TestLocalV22CookedCommandByteParity` **实际PASS/.99s**，核对5对真实源/独立cooked字节及原生AST桥；`TestNativeShellSyntaxBridgePreservesUTF8`实际PASS，默认无本机输入SKIP不能代表此结果。固定解析器只消费stdin数据并ParseInput，不执行历史JS/命令，raw与命令全文不打印。参数生产测试通过既有SQLite/restart/query_only核对六种子confidence=.5、s=1/w冻结表、λ_r=.05/86400秒⁻¹及初始1/+.1/cap2/24h回退1。
+
+引擎六顶层SKIP为两个live metadata与四个child helper入口，child通过父测试实际运行；events三symlink子例因Windows权限条件未执行。privacy默认六opt-in SKIP不算审计PASS，本轮实际独立执行下方real100，未另跑旧SQLite opt-in或旧四canary。Python **8 PASS / 0 FAIL，.133s**；generator `--check` EXIT0；适用七包vet EXIT0；diff check EXIT0。Python/vet开始/结束 **15:57:17.886–15:57:26.147 +08:00**。
+
+## 原100 raw_unique实际生产审计
+
+独立进程清继承 `ASTROCYTE_*` 后显式 `ASTROCYTE_V21_REAL100_AUDIT=1`，执行 `go test -mod=readonly ./tests/validation/privacy -run '^TestReal100V21ProductionExposure$' -count=1 -v`，结束清除opt-in。开始/结束 **15:58:13.626–15:58:26.511 +08:00**，EXIT0，测试11.53s/包12.014s，**1顶层/100 event-case PASS、0 FAIL/0 SKIP**。
+
+原Codex50/Claude50、**1,101逐事件去重raw_unique字符串**、**2,100实际生产MCP.Serve响应**严格违规0。分布：success500/backend error500/decoder error500、report/veto capture200/dynamics200/unknown delivery200。actual native probe accept100/kind mapped4/topic assigned3/unmapped96/association incomplete1；另100个 **`real_raw_contract_local`** 合成信号只为原raw穿越真实SQLite/五工具/ExplainFocus错误路径提供本机审计，不改变真实semantic population，不代表native eligible、task_live、自然失败、正式V1或完整V0。原字节只读、原RED不覆盖，没有替换冻结100或自制响应绕过生产Serve。
+
+## 外部原件与后续边界
+
+本Task独占新目录（创建前确认不存在）：`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/integration-v22/task_63080055d561-ctx_3083dbc2d717/`。含两merge日志、base/start/ancestor、changed-paths/frozen-domain-diff/knowledge-retrieval.diff/m4-fixtures.diff、`go-targeted.jsonl`、counts/skips/selected/local-bridge计数、Python/generator/vet日志、`real100-audit.log`、全部exit/起止时间及SOURCE/REPORT push/remote记录。所有新测试日志只落该外部目录；raw/参数全文不stdout、不Git/远端，未移动/覆盖任何旧RED或原始载荷，未改个人库。
+
+沿root已完成独立源join和桶审查引用，不重复全人口：**原6016父 / 8914语义单位；2832/2964=95.5466%数值门槛；132结构失败保留；5950非认知；原200误标0；topic1983/2832=70.0212%，849无标**。每桶20共160源定位和新增22 nonsearch调用/50候选命令由root独立核对。topic只报告，无标kind成功保留；结构失败不挪出分母。数值门槛与本次审计/单元回归不自批完整V0。
+
+**root仍需新独占全人口、完整pnpm check/build、独立隐私及最终Git/CI，三指标独立通过并明确批准后才开V1**。本任务未执行正式入库/逐ts回放/30Sleep/真实人口M2复算/A(t)/焦点人工确认；EXPERIMENT未锁，V2–V4/真实七日前瞻、官方客户端/native task_live、部署/个人实例升级/main合并/rollback均未执行。旧failed/first RED/delivery_unknown保持，未编造人工确认。本轮未发现需要集成业务胶水或退W1的失败。
+
+---
+
+# M6 v2.1 完整组合树集成交接（历史保留）
 
 2026-10-12；Task `task_60592bb5f8de` / Dispatch `ctx_50eb89deca8f`，Run `run_d09ff3f95ebc`。原唯一集成 owner、原工作树 `attention-engine-final-integration`、分支 `songconmaisaix31-design/validation-v1-integration`，基线 `17d77c443d44ec260d86de7322292874eff30059`。沿原 Codex `--yolo`，实际 Orca terminal show preview 为 **GPT-6.1-Sol high fast**；未另开 Agent或更换模型。
 

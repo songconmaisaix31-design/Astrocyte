@@ -2,6 +2,8 @@
 
 ## 当前波次：v2.2
 
+16:25 新V0已由root批准（完整记录在STATUS顶部），正式V1沿原W1启动，唯一业务write_paths见[M6-V1-replay.md](M6-V1-replay.md)；本轮boost/M4不再开放修改。Orca运行时重启丢失旧终端，原工作树/分支保持，恢复同逻辑owner使用Codex --yolo，实际Task/Dispatch启动后记录。集成回执未达保持failed，不重复实现或重建开发轨。V1后交同一集成工作树普通合；V2/V3准备另派互斥写域，协议锁必须晚于V1。
+
 事实源[M6 v2.2](M6-validation-v2.2.md)。root只文档/调度/抽查/独立验收/最终Git。固定W1工作树`validation-v1-ingest`、分支`songconmaisaix31-design/validation-v1-ingest`，恢复同逻辑owner的Codex --yolo；原W1/W0/集成九Dispatch已结算，不重复派旧任务。先普通合本裁决文档HEAD，按原互斥写域修复；其他轨本波不同时写。
 
 | owner | 当前write_paths | 门禁与产物 |
@@ -13,6 +15,8 @@
 V1代码仍由W1：生产EventRecorder单事件路径、显式事件时钟、全部kind成功含unassigned留存、30模拟日Sleep、JSON序列/top5/权重50抽样/真实M2复算。若生产入口配置接缝必须新增写路径，先交精确Handoff由root登记；不改数学/权重/λ/去噪/fluid/crystallized/merge。原N≥5000无效。V2/V3后续依赖不变，七天真实实验不可由回放替代。证据新目录v22-w1/root-v22，不覆盖旧全量6016、原100、200及泄漏RED；raw不上Git/远程/正文终端。
 
 root静态确认M4旧单次ReferenceBoost=2期待3与cap2冲突，W1追加仅`tests/attention-engine/M4_persistent_retrieval_test.go`与`M4_production_node_test.go`机械更新cap输入/独立乘积期待，先保留首RED；其他断言和参数不变，正式仍每次+.1。
+
+当前W1 `task_9811e1a0ba62/ctx_db0a6079c956`，终端`term_a8f99f9a-0a9b-4b5e-8c83-ffaeb3a0c3a7`，首次turn_started已观察。root预运行规则审查：统计单位为原生/内层工具调用；同一Bash/exec多个search段只一份事件贡献，分段另报；未知留失败。规则修订版本后全量跑，不按结果调分类。root抽样和V0仍未执行。
 
 ## 当前波次：v2.1
 
