@@ -1,0 +1,61 @@
+# McPet — V2 真实库 MCP 证据
+
+导出源码 SHA：`93030768b10549542546178a006507615cdd8ba8`；精确 root 基线：`fbad72cf5257aebabe171af67098d41c3739c6d6`。
+回放源码：`7d57e06eaeaa1ddc8ddf132af47840acf8f777cc`；历史回放库：`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v1r-w1/replay-002/state.sqlite`。
+截止 ts：`1791734399999`（2026-10-11T15:59:59.999+00:00）；节点 updated_at：`1791734399999`。
+
+数据来自该库备份副本的生产 `cmd/mcp` stdio 调用；没有新回放、Sleep、信号或时间推进。
+`get_attention_state` 与 `explain_focus` 的 A/M 已互相核对；接口均无 confidence 字段。
+
+| 指标 | 值 | 来源 |
+| --- | ---: | --- |
+| attention | 0.9999918993383661 | 生产 MCP |
+| momentum | -5.670462241965372e-06 | 生产 MCP |
+| confidence | 0.5 | 原库 query_only 只读节点值；不是 MCP 返回 |
+| 全部证据 | 23 | 生产 explain_focus |
+| 关联节点 | 0 | 生产 explain_focus |
+
+## 分 kind 计数
+
+| kind | 数量 |
+| --- | ---: |
+| commit | 23 |
+
+## 全部证据（ts/event_id 排序）
+
+w 为生产 explanation 的 weight；未重算、未补信号。event_id 在原库对应非空原始 BLOB，完整本地回溯索引仅 LOCAL。
+
+| ts (毫秒) | UTC | kind | w | event_id |
+| ---: | --- | --- | ---: | --- |
+| 1791643374000 | 2026-10-10T14:42:54.000+00:00 | commit | 0.6 | W3SVWWJ26AYSEN4IOWLMJEVBS3 |
+| 1791650018000 | 2026-10-10T16:33:38.000+00:00 | commit | 0.6 | D27BNU3TOAQQZPLE3YKDQ4IOFO |
+| 1791651920000 | 2026-10-10T17:05:20.000+00:00 | commit | 0.6 | NANIXF77ZC3TH4AMKGG6R3E2LV |
+| 1791652131000 | 2026-10-10T17:08:51.000+00:00 | commit | 0.6 | WMX3F6MJ67ZJZ6NPMEKDVST5I7 |
+| 1791718616000 | 2026-10-11T11:36:56.000+00:00 | commit | 0.6 | JDIP7VST666YYWZL274QEOOPRV |
+| 1791719444000 | 2026-10-11T11:50:44.000+00:00 | commit | 0.6 | QQEHBKCMZFHYHFOGCUYWXD357E |
+| 1791729873000 | 2026-10-11T14:44:33.000+00:00 | commit | 0.6 | L6H6UWF6EIX2ZZBH55KTCLOPAL |
+| 1791731865000 | 2026-10-11T15:17:45.000+00:00 | commit | 0.6 | QLK7WYFYE3UFVO6KL2HMR2OUK2 |
+| 1791732190000 | 2026-10-11T15:23:10.000+00:00 | commit | 0.6 | PDNRJ3XVU3AT36ULFN4P4GNTMV |
+| 1791732408000 | 2026-10-11T15:26:48.000+00:00 | commit | 0.6 | XVTV3IPECYNMNJM57PXHZN4FR6 |
+| 1791732595000 | 2026-10-11T15:29:55.000+00:00 | commit | 0.6 | F7P6DUZLBMTHYNRW7WTLYSYP6L |
+| 1791732883000 | 2026-10-11T15:34:43.000+00:00 | commit | 0.6 | ATILYUKPFHHK2NUOHBXRG2CCFC |
+| 1791733032000 | 2026-10-11T15:37:12.000+00:00 | commit | 0.6 | UAN2GV4PAYXPEWEHKMVH6S4L2U |
+| 1791733071000 | 2026-10-11T15:37:51.000+00:00 | commit | 0.6 | OMA4CBXIOB6DWGC5QDXEHZDYQL |
+| 1791733117000 | 2026-10-11T15:38:37.000+00:00 | commit | 0.6 | JVCTKTSYOV5BX7IIN25S6TDDEJ |
+| 1791733257000 | 2026-10-11T15:40:57.000+00:00 | commit | 0.6 | SKB6AVVWUX3GL3TEKVXRGH3BK5 |
+| 1791733405000 | 2026-10-11T15:43:25.000+00:00 | commit | 0.6 | Q22GTRC675IWDYBFGNVJQWUK33 |
+| 1791733705000 | 2026-10-11T15:48:25.000+00:00 | commit | 0.6 | DLOZ6LYOSP5EJM4XWKQ5SJR3XA |
+| 1791733883000 | 2026-10-11T15:51:23.000+00:00 | commit | 0.6 | 625OI3HR7AHK63SSQURJGLJ6OF |
+| 1791733985000 | 2026-10-11T15:53:05.000+00:00 | commit | 0.6 | VJFZTYX3YXP3X3WOZI4G6POELY |
+| 1791733986000 | 2026-10-11T15:53:06.000+00:00 | commit | 0.6 | PW3MY3D2HYORZ3AAIYVUYRKVOJ |
+| 1791733988000 | 2026-10-11T15:53:08.000+00:00 | commit | 0.6 | RMLX5IXCQEYISTRFQ5KEYNEW6M |
+| 1791734393000 | 2026-10-11T15:59:53.000+00:00 | commit | 0.6 | YM7TQZYI3QWPVEHYNNIB6ACX3E |
+
+## 关联节点与强度
+
+关联节点：0；不推断或补关联。
+
+关联项目（接口已有 derived 字段）：C:\Users\DW\orca\mcpet。
+
+Agent Swarm / Agent Memory / MCP 的生产证据与信号均为 0；保持原零信号，不借用本主题证据。
+本资产是历史真实库证据链；没有执行 V3/V4、协议锁定或未来七日实验。

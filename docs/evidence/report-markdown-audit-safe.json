@@ -1,0 +1,19 @@
+{
+  "events": 2855,
+  "raw_unique_strings_per_event": 11956,
+  "raw_unique_distinct_strings": 7611,
+  "raw_unique_distinct_and_full_blob_base64": 10390,
+  "zero_raw_unique_events": 0,
+  "responses": 18,
+  "markdowns": 5,
+  "violations": 0,
+  "collision_indexes": [],
+  "source_sha": "93030768b10549542546178a006507615cdd8ba8",
+  "markdown_paths": [
+    "docs/evidence/astrocyte-attention-engine.md",
+    "docs/evidence/mcpet.md",
+    "docs/evidence/morphogenesis.md",
+    "docs/evidence/README.md",
+    "tasks/M6-W0.md"
+  ]
+}
