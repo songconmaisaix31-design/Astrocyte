@@ -2,6 +2,12 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
+### 2026-10-13 V2独立验收与V3参数待定
+
+W0 SOURCE `93030768b10549542546178a006507615cdd8ba8`已push；完整Markdown候选Morph887/Astro1096/McPet23，共2006条、关联均0。root独立Python19 PASS；精确SOURCE生产重跑18响应含10错误、2855原始BLOB/11956逐事件raw_unique/7611不同字符串，wire及三Markdown零泄漏，原库/副本全表与原SHA不变。另按导出前SQL期望逐行比对event_id/ts/kind/w及A/M/C全等，不调用owner校验函数。证据本机`root-v2/production-independent/run-v7adi6ty`和`evidence-literal-independent-001.json`；正式REPORT/唯一普通集成未消费前，不登记最终分支V2完成。
+
+V3真实推理核查：31.3 GiB RAM、RTX5060 Laptop 8151 MiB VRAM；PATH无ollama/lms/llama-server，四个限定loopback候选端口均不可用。W2继续工具与已授权本地Qwen3-32B量化候选部署，实际模型/tokenizer/context/速度尚未验收。三臂共用模型未由用户指定，root已询本机32B或更高本地算力路线；未回答保持未决定，不锁模型/预算或day0。锁前公平性复核已退W2：事实题评自然项目/工作类型，不以A专有event_id或引擎精确计数计胜负；B读取滚动七日所有授权会话全文，按实际预算最大装载，已选消息按时间正序，不摘要/截单条。
+
 ### 当前裁决：v3.0（2026-10-12）
 
 **2026-10-13 用户终审通过，V1（含V1R）关账。** 验收基线`3e1f6dae0608639adcb8c501079d45c4eae7bcdb`。用户确认三锚点吻合：Morphogenesis九月第一焦点，Astrocyte10-09跃升前二，McPet10-10起活跃，灰区与规划期一致。权重终审PASS：机检50/50、2186复算点误差0，人工kind/绑定/时间戳交叉全部通过，McPet主样本覆盖确认；双平台源码CI、M2/隐私审计已通过。不再保留人验为当前PENDING。
