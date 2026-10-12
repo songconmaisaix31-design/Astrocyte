@@ -8,7 +8,7 @@ import re
 from inputs import SEED, SYSTEM, TEMPLATES
 from evaluation import JUDGE_SYSTEM, PROJECT_ALIASES, KIND_ALIASES
 from local_store import EVIDENCE_ROOT, ZONE, unredirected, write_new
-from native_model import authorized
+from native_model import authorized, envelope_contract
 
 
 def rules(path):
@@ -21,6 +21,8 @@ def rules(path):
         raise ValueError('protocol/template implementation differs')
     if config.get('project_aliases') != PROJECT_ALIASES or config.get('kind_aliases') != KIND_ALIASES or config.get('prediction_k') != 3 or config.get('fact_metric') != 'set_precision_recall_f1' or config.get('prediction_metric') != 'per_topic_binary_precision_recall_exact_order':
         raise ValueError('protocol/scoring implementation differs')
+    if config['model'].get('backend') == 'native_codex' and config.get('native_input_envelope') != envelope_contract():
+        raise ValueError('protocol/native full input envelope differs')
     return config
 
 
@@ -43,6 +45,8 @@ def lock_protocol(protocol, output, route, reviewed, root):
     if budget.get('backend') == 'native_codex':
         if budget.get('model') != 'gpt-6.1-sol' or config.get('a_representation') != 'layered-A-v4-full-state-header-kind-day-all-event-refs-approved':
             raise ValueError('V4 fixed model/layered A differs')
+        if budget.get('input_transport') != 'model_context_split' or route.get('input_transport') != budget['input_transport'] or route.get('input_utf8_bytes_limit') != budget.get('input_utf8_bytes_limit'):
+            raise ValueError('UNLOCKED: actual full input transport/shared byte route differs')
         if not budget.get('actual_identity_verified') or not route.get('full_population_usage_verified') or not route.get('native_request_input_complete_verified') or type(budget.get('input_utf8_bytes_limit')) is not int:
             raise ValueError('UNLOCKED: actual V4 identity/usage/output/UTF8 budget acceptance pending')
     # W2 prepares this tool. Only root invokes after integration and actual route acceptance.

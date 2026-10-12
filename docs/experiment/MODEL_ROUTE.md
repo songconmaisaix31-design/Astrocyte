@@ -1,3 +1,23 @@
+# V4 B定向豁免、完整长应答与实际边界
+
+用户2026-10-13真实批准B-only最近七日完整聊天送固定gpt-6.1-sol；唯一root记录scope精确 `V4 B full seven-day Claude/Codex chat context only`，B收集结束失效。A derived/C仅问题不借授权，产品事件库/MCP/API仍禁B原文或响应。旧ABC扩大scope、无授权和不同endpoint均拒绝；root记录未改。
+
+正式候选是既有Windows native codex-cli0.162.0，high/priority、OpenAI Responses/既有ChatGPT认证、context872000、output reserve4096、总1800秒/request-stream retries0/no compact/no tools、固定空cwd及ignore-user-config/rules。不读取凭据、不走app-server继承配置。开发终端型号与实验身份分开；native模型echo、provider wire及精确preflight tokenizer未提供，actual请求配置/完整终止/usage可独立审查。
+
+输入接缝锁前修正史：首全B stdin写全1632692字节，native累计字符cap1048576/actual1505850前置拒绝、4.854573秒、模型0/无usage，首unknown保留后追加not_sent。[官方0.162 protocol常量](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/protocol/src/user_input.rs#L10)与[累计检查](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/app-server/src/request_processors/turn_processor.rs#L514)确认拆多个text仍总量受限。官方源码clone首checkout因无关TUI Windows长路径RED保留，所需文件完整、binary未改。
+
+root准许[model_instructions_file初始上下文](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/core/src/config/mod.rs#L4011)：单文件112万字节dense与低token spaces均Bad Request/无usage；1382字节短控制与801349字节spaces控制完整通过。不推定精确provider cap。root再准许两个官方上下文通道：完整compact JSON前900000 UTF8字节（退到完整codepoint）置初始文件、其余全部置stdin，然后同题。两个fragment逐字原序拼接恢复原messages，内容/类型/顺序不变，无压缩编码/裁剪/摘要/多轮预读。ABC外层SYSTEM/固定框/schema/splitalgo相同，只材料不同；judge外层JUDGE_SYSTEM及匿名完成回答，不附聊天。
+
+公开同量dense双通道完整通过：1121534总字节、input164531/output41、15.779590秒、首尾public标记正确。随后唯一实际模型B全1003/未装0、原packet1632617、初始900603+stdin733053=总1633656字节；actual input491479/cached3072/output495(reasoning202)、28.859787秒。首process0.426338/首agent_message24.429915秒，非provider TTFT；完整stdin关闭、turn.completed、最终output与流全等、no compact/no tools，input+4096≤872000/output≤4096。
+
+首次parent schema RED因harness额外要求explanation字符串，题目explanation:...未规定该限制；修复为非空str或dict，原结构化解释完整保留。同一封存响应离线重验PASS、新模型调用0，原FAILED/unknown不覆盖；v4-w2/b-native-context-split-first/{native/result-safe.json,recheck-001-safe.json}。该次只是启动门禁，不是day0答案或原因真值。
+
+两条真实pre-turn item.error已按官方源码分类为初始化Warning（exec JSONL将Warning转item.completed(error)，status仍Running）：skip_host_skill_discovery开发期提示、code-mode host禁用后fail closed提示；与四个公开成功控制逐字全等，不是model/context/metadata/认证错误。精确白名单仅这两条且只允许turn.started之前；未知item.error、请求开始后error、top-level error/turn.failed/compact或任何工具item失败。原提示与root首严格白名单RED保留，未suppression或重发。安全分类证据v4-w2/pre-turn-warning-classification-first-safe.json。
+
+ABC共同字节上界（root已独立接受）由实际通道导出：900000+共同SYSTEM/框603+4*1048576=5094907；不把今日1.63M人口观测当未来低限制。三臂四题全包字节构造在split-all-arms-budget-first-safe.json：B最大1633702、A最大37448、C最大1698，仅构造验证不是A/C推理。root msg_108213fb5c73已独立接受实际预算/身份，W2已填写终稿字段；新SOURCE CI、最终普通集成/工具验收/root锁仍待完成，day0/SHA空。
+
+下方保留02:15及V3历史，旧权限待答与stdin75前缀被本轮真实裁决/双通道替代，旧失败不删。SOURCE5e的CI38289430526已root独验双平台SUCCESS；本轮新源码CI另列。
+
 # V4 实际路由与预算核查（未接受）
 
 用户2026-10-13决定ABC统一gpt-6.1-sol、高reasoning、priority，使用分层A。原Qwen/本地only候选是历史，不再重问该选择。开发Codex --yolo继承模型保持gpt-6.1-sol、没有子Agent；这一型号与实验响应身份分开。
@@ -35,3 +55,6 @@ full B首隐私RED在v4-w2/b-native-privacy-first/result-safe.json：完整1003/
 实际tokenizer预算首轮RED：系统/题目/模板基础171 token，输出预留4096，prompt上限126976。A三工具完整历史快照证据221700 token，超上限94724；B七日1003完整消息471591 token，不能全部同时装入131072。原始输入和计数仅在v3-w2/token-budget-first-local.json，本机可公开的数值在token-budget-first-safe.json。完整A当前不可执行，不能删证据、改问句或伪装成功；已向root提交确定性无损表示与更大受支持本地容量两种审查方向。B继续按既定完整单条、最大装载规则测真实推理，保留未加载条数和预算原因。
 
 实际B装载数量、回答/失败状态在M6-W2报告登记。当前没有权威模型选择/协议锁/day0，不能把下载、context配置或短公开prompt推理当全文最强B成立。
+
+
+最终未锁route草案：v4-w2/route-draft-native-split-first-safe.json，status=DRAFT；root已接受实际gpt-6.1-sol/872000/4096/5094907/完整B/正式生产bridge边界。provider echo/wire/精确tokenizer仍false，不宣称完整极限context已验；SOURCE CI/最终集成仍待root核实。EXPERIMENT实际规范已据Handoff独占填写，W2没有实际lock、day0、七日答案或终局报告。

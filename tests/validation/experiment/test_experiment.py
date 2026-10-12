@@ -18,8 +18,10 @@ sys.path.insert(0, str(REPO / 'scripts/experiment'))
 from evaluation import audit_fact, blind_pack, judge_messages, prediction, reason_sheet, summarize, validate_user_score, valid_judge
 from inputs import SYSTEM, questions, messages, load_native, pack_b, select_native_files, prompt_bytes
 from a_material import project as layered_a
-from native_model import NativeCodexModel, arguments as native_arguments, process as native_process, input_bytes
-from startup import b_smoke
+from native_model import NativeCodexModel, arguments as native_arguments, process as native_process, input_bytes, authorized, B_SCOPE, ENDPOINT_BOUNDARY, input_rejection, context_envelope, context_bytes, CONTEXT_PREFIX, CONTEXT_SUFFIX, split_envelope, SPLIT_INSTRUCTIONS, PART1_PREFIX, PART1_SUFFIX, PART2_PREFIX, PART2_SUFFIX
+from startup import b_smoke, validate_reason_answer
+from native_model import ANSWER_PREFIX
+from native_model import startup_notices
 from local_store import ZONE, append_row, bounds, complete_day, events, private_path, readonly_db, rows, write_new
 from protocol import check_lock, digest, lock_protocol, rules
 from runner import run_day, run_judge, snapshot
@@ -102,6 +104,26 @@ class Fixtures(unittest.TestCase):
         selection = self.root / 'selection.json'
         write_new(selection, result, self.root)
         return selection
+
+    def test_native_judge_explicit_purpose_exact_anonymous_answers_only(self):
+        p,lock,_=self.config_lock('2026-10-12');q=questions('2026-10-12',[],PRIOR)[2]
+        answers={a:{'explanation':'anonymous fixture '+a} for a in 'ABC'}
+        pack,_=blind_pack(q,answers);expected=judge_messages(pack)
+        client=NativeCodexModel({})
+        rating={'winner':'X','scores':{a:[1,1,1] for a in 'XYZ'},'rationale':'independent fixture'}
+        for folder,corrupt in ((self.root/'judge',False),(self.root/'corrupt',True)):
+            folder.mkdir();append_row(folder/'questions.jsonl',q,self.root)
+            for arm,answer in answers.items():append_row(folder/'answers.jsonl',{'question_id':q['question_id'],'arm':arm,'status':'OK','answer':answer},self.root)
+            write_new(folder/'judge-input.json',{'question_id':q['question_id'],'messages':expected+([{'role':'user','content':'unapproved private context fixture'}] if corrupt else [])},self.root)
+            with patch.object(client,'answer',return_value=(rating,{'fixture_only':True})) as send:
+                if corrupt:
+                    with self.assertRaisesRegex(ValueError,'anonymous'):run_judge(folder,client,p,lock,self.root)
+                    send.assert_not_called()
+                else:
+                    run_judge(folder,client,p,lock,self.root)
+                    self.assertEqual('anonymous_judge_answers',client.data_scope)
+                    self.assertEqual(expected,send.call_args.args[0])
+                    self.assertEqual('OK',rows(folder/'judge-scores.jsonl')[-1]['status'])
 
     def test_four_same_questions_cover_dimensions_natural_facts(self):
         qs = questions('2026-10-11', [event('McPet', bounds('2026-10-11')[0])], PRIOR)
@@ -338,6 +360,24 @@ class Fixtures(unittest.TestCase):
         with self.assertRaises(FileExistsError):
             run_day(day,db,selection,[coverage],p,lock,'fixture.exe',out,self.root)
 
+    def test_full_channel_overflow_archives_inputs_without_model_io_or_stale_usage(self):
+        day=(datetime.now(ZONE).date()-timedelta(days=1)).isoformat()
+        p,lock,route=self.config_lock(day)
+        db=self.root/'day-state.sqlite';db_fixture(db,[event('McPet',bounds(day)[0])])
+        selection=self.selected_fixture(day);out=self.root/'overflow-day'
+        coverage=coverage_fixture(day)
+        coverage.update(phase='formal',protocol_sha256=digest(p),day0=day,snapshot_file='day-state.sqlite')
+        client=NativeCodexModel(rules(p)['model']);client.last_response={'usage':'stale fixture'}
+        identity={k:route[k] for k in ('model','context_tokens','model_path','chat_template','endpoint')}
+        with patch('runner.model_client',return_value=client),patch.object(client,'identity',return_value=identity),patch.object(client,'answer') as send,patch('runner.input_bytes',side_effect=ValueError('full packet channel overflow fixture')),patch('runner.context_bytes',side_effect=ValueError('full packet channel overflow fixture')),patch('runner.a_memory',return_value=({'tools':'fixture'},{'status':'OK'})),patch('runner.verified_material',return_value=({'layered':'fixture'},{})):
+            run_day(day,db,selection,[coverage],p,lock,'fixture.exe',out,self.root)
+            send.assert_not_called()
+        inputs=rows(out/'inputs.jsonl')
+        self.assertEqual(12,len(inputs));self.assertTrue(all(r['messages'] for r in inputs))
+        self.assertTrue(all(r['delivery']=='not_sent' for r in inputs))
+        failed=[r for r in rows(out/'answers.jsonl') if r['status']=='FAILED']
+        self.assertEqual(12,len(failed));self.assertTrue(all(r['last_response_local'] is None for r in failed))
+
     def test_runner_rejects_prelock_and_wrong_protocol_snapshot(self):
         day=(datetime.now(ZONE).date()-timedelta(days=1)).isoformat()
         p,lock,_=self.config_lock(day)
@@ -435,6 +475,141 @@ class LosslessCandidateTests(unittest.TestCase):
 
 
 class V4Contracts(unittest.TestCase):
+    def test_only_exact_pre_turn_official_warnings_are_classified(self):
+        warnings=['Under-development features enabled: skip_host_skill_discovery. Under-development features are incomplete and may behave unpredictably. To suppress this warning, set `suppress_unstable_features_warning = true` in fixture/config.toml.',
+                  'Code Mode is unavailable because code-mode host is disabled. Code mode will fail closed; enable `features.code_mode_host` and install `codex-code-mode-host`.']
+        events=[{'type':'item.completed','item':{'type':'error','message':m}} for m in warnings]
+        self.assertEqual(['host_skill_discovery_disabled_warning','code_mode_host_disabled_fail_closed_warning'],startup_notices(events+[{'type':'turn.started'},{'type':'turn.completed'}]))
+        for invalid in ([{'type':'turn.started'}]+events,
+                        [{'type':'item.completed','item':{'type':'error','message':'unclassified network fixture'}}],
+                        [{'type':'error'}],[{'type':'turn.failed'}],[{'type':'context.compacted'}],
+                        [{'type':'item.completed','item':{'type':'file_change'}}]):
+            with self.assertRaises(ValueError):startup_notices(invalid)
+
+    def test_reason_template_accepts_structured_explanation_without_rewriting(self):
+        for explanation in ('fixture prose', {'observations': ['fixture'], 'inference': [], 'missing': []}):
+            answer={'explanation':explanation,'evidence_event_ids':[],'unknowns':[]}
+            original=json.dumps(answer)
+            validate_reason_answer(answer)
+            self.assertEqual(original,json.dumps(answer))
+        for explanation in (None,True,1,[],{},''):
+            with self.assertRaisesRegex(ValueError,'schema'):
+                validate_reason_answer({'explanation':explanation,'evidence_event_ids':[],'unknowns':[]})
+
+    def test_native_protocol_binds_complete_split_frames(self):
+        with tempfile.TemporaryDirectory(prefix='v4-envelope-contract-') as temp:
+            p=Path(temp)/'protocol.md'
+            text=(REPO/'docs/EXPERIMENT.md').read_text(encoding='utf-8')
+            p.write_text(text,encoding='utf-8');rules(p)
+            p.write_text(text.replace('"split_bytes": 900000','"split_bytes": 899999'),encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'envelope'):rules(p)
+
+    def test_native_lock_rejects_stale_transport_and_unreviewed_draft(self):
+        protocol=REPO/'docs/EXPERIMENT.md';budget=rules(protocol)['model']
+        route={'input_transport':'stdin','input_utf8_bytes_limit':5094907}
+        with tempfile.TemporaryDirectory(prefix='v4-route-contract-') as temp:
+            out=Path(temp)/'never-written-lock.json'
+            with self.assertRaisesRegex(ValueError,'transport'):
+                lock_protocol(protocol,out,route,True,Path(temp))
+            route.update(input_transport='model_context_split',full_population_usage_verified=True,native_request_input_complete_verified=True,status='DRAFT')
+            with self.assertRaisesRegex(ValueError,'UNLOCKED'):
+                lock_protocol(protocol,out,route,True,Path(temp))
+            self.assertFalse(out.exists())
+
+    def test_split_complete_unicode_packet_empty_second_and_overflow_rejection(self):
+        q=questions('2026-10-12',[],PRIOR)[2]
+        original=messages(q,[native(bounds('2026-10-12')[0],'完整🙂'*120000)])
+        first,second=split_envelope(original)
+        head=first[len(SYSTEM+SPLIT_INSTRUCTIONS+PART1_PREFIX):-len(PART1_SUFFIX)]
+        tail=second[len(PART2_PREFIX):second.index(PART2_SUFFIX)]
+        self.assertEqual(json.dumps(original,ensure_ascii=False,separators=(',',':')),head+tail)
+        self.assertEqual(original,json.loads(head+tail))
+        self.assertLess(len(first.encode('utf-8')),1048576)
+        self.assertLess(len(second),1048576)
+        self.assertEqual(len(first.encode('utf-8'))+len(second.encode('utf-8')),context_bytes(original,'model_context_split'))
+        a,c=split_envelope(messages(q,None))
+        self.assertTrue(c.startswith(PART2_PREFIX+PART2_SUFFIX))
+        self.assertTrue(c.endswith(q['prompt']))
+        with self.assertRaisesRegex(ValueError,'never truncate'):
+            split_envelope(messages(q,[native(1,'x'*2100000)]))
+
+    def test_context_file_complete_roundtrip_and_shared_total_bytes(self):
+        q=questions('2026-10-12',[],PRIOR)[2]
+        original=messages(q,[native(bounds('2026-10-12')[0],['完整🙂',{'v':[True,1,1.0,None]}])])
+        initial,turn=context_envelope(original)
+        recovered=json.loads(initial[len(CONTEXT_PREFIX):-len(CONTEXT_SUFFIX)])
+        self.assertEqual(json.dumps(original,ensure_ascii=False),json.dumps(recovered,ensure_ascii=False))
+        self.assertTrue(turn.endswith(q['prompt']))
+        self.assertEqual(len(initial.encode('utf-8'))+len(turn.encode('utf-8')),context_bytes(original))
+        for arm_memory in ({'derived':'fixture'},None):
+            initial_other,turn_other=context_envelope(messages(q,arm_memory))
+            self.assertEqual(turn,turn_other)
+            self.assertTrue(initial_other.startswith(CONTEXT_PREFIX))
+        q=questions('2026-10-12',[],PRIOR)[2]
+        pack,_=blind_pack(q,{a:{'explanation':'fixture '+a} for a in 'ABC'})
+        judge=judge_messages(pack)
+        judge_initial,_=context_envelope(judge)
+        self.assertTrue(judge_initial.startswith(judge[0]['content']))
+        self.assertNotEqual(judge[0]['content'],SYSTEM)
+        args=native_arguments(Path('local'),872000,'model_instructions_file')
+        self.assertTrue(any(a.startswith('model_instructions_file=') for a in args))
+        self.assertIn('--ignore-user-config',args);self.assertIn('--ignore-rules',args)
+
+    def test_full_b_narrow_scope_complete_fixture_and_out_of_window_rejection(self):
+        with tempfile.TemporaryDirectory(prefix='v4-narrow-B-contract-') as temp:
+            root=Path(temp);qs=questions('2026-10-12',[],PRIOR);population=[native(bounds('2026-10-12')[0]+1,'整条🙂')]
+            candidate={'native':population,'questions':qs,'messages_by_question':[messages(q,population) for q in qs]}
+            source=root/'candidate.json';source.write_text(json.dumps(candidate),encoding='utf-8')
+            auth=root/'auth.json';auth.write_text(json.dumps({'authority':'user','status':'APPROVED','model':'gpt-6.1-sol','scope':B_SCOPE,'endpoint_boundary':ENDPOINT_BOUNDARY,'decision_reference':'fixture'}),encoding='utf-8')
+            reply={'answer_json':json.dumps({'explanation':'fixture','evidence_event_ids':[],'unknowns':[]})}
+            response={'usage':{'input_tokens':200,'output_tokens':20},'total_seconds':1,'stdin_input_complete':True,'stdin_utf8_bytes':1,'initial_context_utf8_bytes':100,'initial_context_file_full_input_verified':True,'actual_response_complete':True,'streamed_output_matches':True,'no_tools':True,'no_compact':True,'first_process_byte_seconds':.1,'first_agent_message_event_seconds':.9}
+            with patch('startup.local_input',side_effect=lambda p:Path(p)),patch('native_model.local_input',side_effect=lambda p:Path(p)),patch('startup.private_path',side_effect=lambda p:Path(p)),patch('startup.write_new',side_effect=lambda p,v:write_new(p,v,root)),patch('startup.append_row',side_effect=lambda p,v:append_row(p,v,root)),patch('startup.process',return_value=(reply,response)) as send:
+                result=b_smoke(source,root/'complete',auth,input_transport='model_instructions_file')
+                self.assertEqual(1,result['loaded']);self.assertEqual(0,result['unloaded'])
+                self.assertEqual(messages(qs[2],population),send.call_args.args[0])
+                self.assertEqual(auth,send.call_args.kwargs['authorization'])
+                self.assertEqual('model_instructions_file',send.call_args.kwargs['input_transport'])
+                candidate['native'][0]['ts']=0;source.write_text(json.dumps(candidate),encoding='utf-8')
+                send.reset_mock()
+                with self.assertRaisesRegex(ValueError,'outside'):b_smoke(source,root/'outside',auth)
+                send.assert_not_called()
+
+    def test_a_c_and_judge_do_not_borrow_b_raw_authorization(self):
+        client=NativeCodexModel({'context_tokens':872000,'egress_authorization':'B-only-file'})
+        response={'usage':{'input_tokens':100,'output_tokens':10},'total_seconds':1}
+        with patch.object(client,'identity'),patch('native_model.process',return_value=({'answer_json':'{}'},response)) as send:
+            for scope in ('derived_A','no_memory_C','anonymous_judge_answers'):
+                client.data_scope=scope;client.answer([],4096,1)
+                self.assertEqual(scope,send.call_args.kwargs['data_scope'])
+                self.assertIsNone(send.call_args.kwargs['authorization'])
+            client.data_scope='raw_B';client.answer([],4096,1)
+            self.assertEqual('B-only-file',send.call_args.kwargs['authorization'])
+
+    def test_native_structured_input_rejection_is_numeric_not_unknown_network(self):
+        text='Error: turn/start: turn/start failed: Input exceeds the maximum length of 1048576 characters. (code -32602), data: {"input_error_code":"input_too_large","max_chars":1048576,"actual_chars":1505850}\n'
+        value=input_rejection(text)
+        self.assertEqual(('not_sent',0,1505850),(value['delivery'],value['model_calls'],value['actual_chars']))
+        self.assertIsNone(input_rejection(text.replace('input_too_large','network_unknown')))
+        self.assertIsNone(input_rejection('private or unrelated diagnostic fixture'))
+    def test_b_only_user_scope_rejects_old_abc_and_missing_authorization(self):
+        with tempfile.TemporaryDirectory(prefix='v4-scope-contract-') as temp:
+            source=Path(temp)/'auth.json'
+            row={'authority':'user','status':'APPROVED','model':'gpt-6.1-sol','scope':B_SCOPE,
+                 'endpoint_boundary':ENDPOINT_BOUNDARY,'decision_reference':'fixture user decision'}
+            source.write_text(json.dumps(row),encoding='utf-8')
+            with patch('native_model.local_input',side_effect=lambda p:Path(p)):
+                self.assertTrue(authorized(source))
+                source.write_text(json.dumps({**row,'scope':'V4 ABC selected A derived and full seven-day Claude/Codex B'}),encoding='utf-8')
+                self.assertFalse(authorized(source))
+                self.assertFalse(authorized(None))
+                source.write_text(json.dumps({**row,'endpoint_boundary':'another endpoint'}),encoding='utf-8')
+                self.assertFalse(authorized(source))
+            client=NativeCodexModel({'model':'gpt-6.1-sol','actual_identity_verified':True})
+            with patch.object(client,'identity'),patch('native_model.process') as send:
+                with self.assertRaisesRegex(ValueError,'explicit arm'):
+                    client.answer([],4096,1)
+                send.assert_not_called()
+
     def test_native_real_fixture_full_stdin_output_usage_and_missing_termination(self):
         with tempfile.TemporaryDirectory(prefix='v4-native-contract-') as temp:
             root=Path(temp)
@@ -452,6 +627,7 @@ class V4Contracts(unittest.TestCase):
                 self.assertEqual({'ready':True},json.loads(answer['answer_json']))
                 self.assertTrue(report['stdin_input_complete'])
                 self.assertEqual(input_bytes(prompt),report['stdin_utf8_bytes'])
+                self.assertEqual((root/'complete/stdin-local.txt').read_bytes(),(ANSWER_PREFIX+json.dumps(prompt,ensure_ascii=False,separators=(',',':'))).encode('utf-8'))
                 self.assertFalse(report['provider_input_wire_verified'])
                 self.assertFalse(report['first_token_time_verified'])
                 with patch('native_model.arguments',return_value=[sys.executable,'-c','import sys; sys.stdin.buffer.read()']):
@@ -463,7 +639,7 @@ class V4Contracts(unittest.TestCase):
 
     def test_full_b_privacy_block_has_complete_input_and_not_sent_receipt(self):
         with tempfile.TemporaryDirectory(prefix='v4-b-contract-') as temp:
-            root=Path(temp);qs=questions('2026-10-12',[],PRIOR);population=[native(1,'完整🙂'*20)]
+            root=Path(temp);qs=questions('2026-10-12',[],PRIOR);population=[native(bounds('2026-10-12')[0]+1,'完整🙂'*20)]
             source=root/'candidate.json';source.write_text(json.dumps({'native':population,'questions':qs,'messages_by_question':[messages(q,population) for q in qs]}),encoding='utf-8')
             with patch('startup.local_input',side_effect=lambda p:Path(p)),patch('startup.private_path',side_effect=lambda p:Path(p)),patch('startup.write_new',side_effect=lambda p,v:write_new(p,v,root)),patch('startup.append_row',side_effect=lambda p,v:append_row(p,v,root)),patch('startup.process') as send:
                 with self.assertRaisesRegex(ValueError,'PRIVATE_EGRESS_BLOCKED'):
