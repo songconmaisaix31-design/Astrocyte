@@ -10,6 +10,8 @@
 
 用户明确放行V2/V3并行。固定两互斥轨：原W0边界工作树三主题MCP证据链；新W2实验工作树题集/ABC收集/评分/预测/协议。各自SOURCE/REPORT commit+push，唯一原集成owner普通合，root独立验收后锁完整EXPERIMENT SHA；锁定日为day0，不提前填写日期。引擎/schema/参数/权重/UI冻结继续，未锁前V4未开始。
 
+2026-10-13 两轨已观察input_accepted/turn_started，均Codex --yolo。W0原boundary工作树：terminal `term_3ad2c840-55b3-45e3-bab1-4179b50e4203`、Task `task_24ab709a8d95`、Dispatch `ctx_8b90194c61b1`；W2新experiment工作树：terminal `term_70b809cd-7908-43e1-8742-fe34fb94c6a4`、Task `task_14df5210ae74`、Dispatch `ctx_f313af6642f5`，基线fbad72cf。EXPERIMENT独占写权已交W2，root不再共写。实码偏差：两个MCP读接口均无confidence，执行单原描述错误；批准导出层只读同一真实库持久节点confidence并注明来源，证据/A/M仍生产MCP，共享接口与引擎零改。完整资产与工具验收尚未完成，协议未锁。
+
 **23:22 V1R技术交付完成，V1用户终审PENDING。** 最终组合SOURCE `eba5c055a13f7b92a5aef3d430bb600360be714a`普通合精确集成REPORT `3694bf38e4323e96ae6687539474be0fb7c8c216`，包含W1 SOURCE7d57/REPORTa954全部普通祖先；零胶水、冻结引擎/schema/参数/权重/UI/语义表差异0。root整仓`pnpm check`、`pnpm build`均EXIT0（Go全包/vet、275契约、API14、前端90、生成/diff），日志`root-v3/final-combination-*-first.log`；root定向Go7/Python17与真实M2/SQLite/50样本独立结果保留。当前源码与精确7d57所有业务/测试/配置一致，收尾仅文档，不再重复检查。
 
 新[CI38267896603](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38267896603)对**精确W1 SOURCE7d57e06**已completed/success：Windows/Linux check/build/default E2E均PASS，各226PASS/30条件SKIP（5.2m/3.9m），Linux race PASS/Windows条件SKIP。CI不归给未跑远端CI的组合SHA或旧12cc；组合源码一致性与root本地检查另列。
