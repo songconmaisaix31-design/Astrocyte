@@ -4,6 +4,10 @@
 
 ### 当前裁决：v3.0（2026-10-12）
 
+23:12 W1正式交付SOURCE `7d57e06eaeaa1ddc8ddf132af47840acf8f777cc`（23:07:07+08）、REPORT `a954905c584256c055306b8c5fd1011de8a1f078`（23:10:25+08），均push且accepted worker_done；原准备和失败祖先保留。最终`v1r-w1/replay-002`为精确SOURCE独占运行，root再次从先行独立源参考复核2855事件/信号、1916唯一commit、30Sleep、2186非seed更新点误差0、六字段投影/源顺序/receipt集合，50机查50/50（含McPet1，专项0）。完整源覆盖、三线PNG/SVG和人工表均已产出，用户正确率PENDING。root定向Go7 PASS（含5个本机McPet worktree）、Python17 PASS；`root-v3/actual-002-*`与`source7d57-*`保留。冻结目录相对12cc差异0，W1 REPORT仅报告变化，remote精确一致。
+
+W1已结算，release回执external_terminal/retained/processAction none；工作树、原pycache和源码保留。原集成owner恢复Codex --yolo终端 `term_2b81572f-6ce6-407e-8835-acaaef4d4acf`，将在本轮root文档基线后普通合精确REPORTa954；主控最终组合树check/build、源码CI及用户终审另验。V1技术PASS不代人验；V2执行单已备，EXPERIMENT未锁、V4未开。
+
 23:05 首个真实V1R已产出`v1r-w1/replay-001`。固定McPet HEAD `5bcb2e53384c92a2e96504eb3631caf93325a19f`窗口23commit（10-10:1、10-11:22）；root独立全HEAD选窗核对ID/ts/本地subject/base64一致，原源不变，原19cwd无McPet，native转归0。2855成功/2987认知分母=95.5809%，主题2006/2855=70.2627%，849无标；1916唯一commit。root先从独立源生成literal参考，再核对真实生产2855单事件/信号、30Sleep/10空日、2186非seed更新点A/M/C误差0，全部origin/kind/topic/ts及每日receipt集合匹配。50机查50/50（32commit/12edit/6search，其中McPet1），专项0，人工正确率PENDING。证据`root-v3/actual-001-*`；完整raw样本仅LOCAL。
 
 首次真实入口因capture窗口JSON浮点毫秒不能直接读为Go int64失败，`v1r-w1/resume-replay-first.log`保留；capture-001原件未改，读取仅严格兼容同一固定整数边界，后续producer写整数。故障复现测试、精确SOURCE正式产物、组合树check/build及用户三线/权重终审仍待完成。首轮真实回放PASS不提前替代完整V1关账。原唯一集成后续执行单`tasks/M6-V1R-integration.md`已准备，未派。

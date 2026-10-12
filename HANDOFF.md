@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+23:12 W1真实V1R已完成并结算：SOURCE7d57e06/REPORTa954905已push，最终v1r-w1/replay-002，新增McPet23、总2855、849无标、30Sleep；root独立2186更新点误差0、SQLite全源匹配、50机查通过（McPet1，专项0）。新三线/覆盖/50人工表在该目录，用户终审PENDING。rootGo7/Python17通过，冻结目录零差异。W1外部终端retained，唯一原集成工作树恢复终端2b81572f/Codex --yolo，下一步普通合本轮root及a954，再root最终check/build/push；不重抓源、不覆盖首次回放、不锁实验。下方NOT_RUN/源询问为历史。
+
 23:00 W1已实际继续：同Task71ba19824f32，新Dispatch5c8ea77f6659/终端0e24b1b6，Codex --yolo / GPT-6.1-Sol high fast。owner已读5152cc7并普通合root源纠错，开始mcpet公共别名和正式捕获。原Dispatch失败和retry-of preflight拒绝保留，Task ready状态按CLI恢复为无retry-of启动，同写域没有第二worker。root下一步核对新增源事实与独立M2，不再询McPet路径；V1用户终审、协议锁及七日实验仍待后续实绩。
 
 22:55继续执行真实V1R。v3.0已有McPet采集授权，root已核实本机唯一Orca McPet登记根/remote/README名称；实际路径C:/Users/DW/orca/mcpet、remote https://github.com/songconmaisaix31-design/mcpet。maimai-monster记为实码偏差，不把此前未答的额外路径询问继续当权限门禁；这是root执行判断纠错，不伪称用户路径确认。先读更新M6-V1R-replay.md，公共repositoryTopic仅追加mcpet，其他冻结不动。Orca重启原W1 Dispatch8dc失败terminal_missing，已推Source5657/Report4fc及工作树保留；root新term_f327ea80-4929-4421-b064-bf386a16ec63绑定原Run generation5，同Task retry恢复同owner真实补源/回放。原失败/首次V1/所有RED保留，完整V1人验仍PENDING，不锁实验。
