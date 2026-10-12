@@ -1,6 +1,14 @@
 # M6 验证期执行计划
 
-## 当前波次：v3.0 V1R
+当前波次已转为2026-10-13 V4启动定案，见[M6-V4-start.md](M6-V4-start.md)。用户已决定分层A/gpt-6.1-sol/1800秒；新CI精确c61c841双平台SUCCESS。原W2实现，root独立验收和门禁，随后唯一原集成；协议未锁，真实七日未开始。下方待选模型/表示为历史。
+
+## 当前波次：V2/V3工具已集成，协议未锁
+
+2026-10-13 01:22：V2三主题完整2006证据PASS，V3工具技术PASS，V4未开；组合SOURCEc61c841已push，root完整check/build EXIT0，组合Python73/Go122适用PASS，冻结域零diff。三个领域owner和唯一原集成owner均已结算并release retained。模型+输入表示仍待用户定案，原JSON A预算RED/B首实际满预算请求600秒timeout保留；无损列候选未激活、不锁SHA/day0。后续仍复用原W2和唯一集成写域，按STATUS最新门槛执行，不重复V1人验或重写首失败。
+
+W2实查live生产入口缺失，限定追加原W1接缝轨，范围见`M6-V4-live.md`；与W0/W2路径互斥。复用原W1工作树/分支/终端，仅必要接入CLI/脚本/测试，不重开V1，不改语义/引擎/schema/参数。集成仅在各原owner交付后执行。
+
+2026-10-13 并行已启动：W0原boundary/terminal3ad2c840/Task24ab709a8d95/Dispatch8b90194c61b1；W2新experiment/terminal70b809cd/Task14df5210ae74/Dispatchf313af6642f5。两者Codex --yolo且turn_started已观察；EXPERIMENT写权归W2。confidence实码偏差裁决见STATUS与V2执行单，仅导出只读持久节点，不改接口。
 
 2026-10-13 V1用户终审PASS/关账，基线3e1f6dae。当前并行波次V2/V3：W0复用validation-v1-boundary及原分支，仅MCP必要边界修复/scripts/evidence/tests/validation/evidence/docs/evidence/tasks/M6-W0.md；W2新validation-v1-experiment及固定分支，仅scripts/experiment/tests/validation/experiment/docs/EXPERIMENT.md/docs/EXPERIMENT_REPORT.md/docs/experiment/tasks/M6-W2.md。两轨不共写，root只STATUS/HANDOFF/任务计划；EXPERIMENT在派发后交W2。生产live胶水若必需先W2→W1 Handoff，W1限定原cmd/validation/events接入域，不动冻结引擎/schema。完成后唯一原集成owner普通合、root独立验收、锁SHA/day0/真实七日；模型/预算/路由如有实缺口先产具体可审查构造，不弱化B。
 
