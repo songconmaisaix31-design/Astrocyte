@@ -26,6 +26,12 @@ W1沿原固定worktree/branch完成语义版本化、2520混合桶剥离、612�
 
 接入层获准复用本机PowerShell Parser.ParseInput：固定解析器程序、历史cmd仅stdin数据，不拼进-Command/argv、不执行；只消费静态CommandAst语义及真实动态/语法失败。原简单路径仍复用，结构失败再解析。root中间抽样已完成，最终版本与V0仍未确认；修解析/规则版本化后全量重跑并重新抽查。schema/动力学冻结不变。
 
+15:30 v22.7候选SOURCE `0b42bb97157b0b324c2aaa55c4badc08a488ed7b`已由W1 push，预声明`3fba333`先于全量运行。原6016父单位保留，展开8914语义单位；认知分母3055、成功2830=92.635%，225结构失败、非结构映射失败0；5859非认知另计，误标0/200。成功中1983有topic、847无标，覆盖70.071%，不作为完整率条件。该候选仍RED，V1不启动，SOURCE提交不是验收通过。v22.4/v22.5等中间RED独立保留。
+
+root最终候选抽查八桶各20：160/160源定位、工具名及真实ts一致，60认知样本s=1/w=.6。独立审计首版遗漏clock工具的控制归类，修正另存，原件保留；不是生产误标。13个搜索shell调用经独立AST含18个搜索命令段但仍只13次贡献；19个非认知shell均无搜索。一条常量拼接shell继续核对。抽样中五条报告dynamic_shell_structure的字面命令经独立TypeScript字面值提取及本机PowerShell7.6.6 Parser.ParseInput却语法有效，已交W1比对解码/解析器输入；未确认根因前不得称其真实不可解析。审计件仅在`root-v22/v227-*`，历史命令未执行、原文LOCAL本机留存。
+
+W1参数生产测试已通过：六种子confidence=.5、s=1/w固定表、λ_r日换秒、boost初始/+ .1/cap2/24h冷却及持久化审计重启/只读。两M4保留原ReferenceBoost=2超限输入，仅结果3→2，定向4 PASS；M2适用7 PASS/独立helper入口1 SKIP、EX-01三项PASS。当前这些是owner定向测试，最终root整树check/build/raw审计仍待普通集成。函数范围仍仅RetrieveKnowledge及同文件knowledgeReferenceBoost，回滚对象候选SOURCE 0b42bb9；未执行回滚，schema/domain/动力学不改。
+
 ### 当前裁决：v2.1（2026-10-12）
 
 ### v2.1 本轮已合入并独立复验，V0仍RED（2026-10-12 05:04）
