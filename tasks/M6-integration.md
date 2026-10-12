@@ -1,4 +1,70 @@
-# M6 V1R 补源组合树集成交接（2026-10-12）
+# M6 V2/V3 工具链与 live 接缝最终集成交接（2026-10-13）
+
+**V1/V1R 用户已终审PASS并关账；V2三主题完整2006条证据技术交付与root独立验收PASS；V3工具技术交付PASS，协议仍UNLOCKED；正式V4未开始。** 本次精确普通合并、组合树适用测试及SOURCE发布完成，零冲突、零胶水。模型和输入表示尚未由用户决定，不锁协议、不登记day0、不把技术交付当科学结果。下方人验PENDING与旧状态均是历史记录，保留首RED/failed/unknown，不重开V1确认。
+
+Task `task_d4cbcd8dcac4` / Dispatch `ctx_4398e64a6464`，Run `run_d09ff3f95ebc`。原唯一集成owner/worktree `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`，branch `songconmaisaix31-design/validation-v1-integration`；起始HEAD `3694bf38e4323e96ae6687539474be0fb7c8c216`，工作树干净。沿原Codex `--yolo`，实际 `codex-cli 0.162.0` / terminal screen **GPT-6.1-Sol high fast**，配置未改、未新增Agent；沿本机orca-cli/orchestration技能在新Dispatch检查/交付。
+
+已读HANDOFF/STATUS、[执行单](M6-V23-integration.md)与三owner最终报告：[W0](M6-W0.md)、[W1](M6-W1.md)、[W2](M6-W2.md)。唯一自主修改为本文件；EXPERIMENT与所有领域文件仅通过授权merge消费，无ours/theirs覆盖、跨域修改或业务修补。
+
+## 精确普通历史及SOURCE
+
+先 `git fetch origin` EXIT0，再按指定顺序 `git merge --no-ff`，四次零冲突。无force/rebase/squash/cherry-pick，所有精确SOURCE/REPORT祖先检查EXIT0：
+
+| 输入 | 精确SHA | 本次merge / +08时间 |
+|---|---|---|
+| root文档 | `0438177e9aa1bd135edc4f960343d412f9594cf1` | `4315f4ef51238d2f251f5ca21542c6f2bf09a5cb` / 01:13:42 |
+| W0最终REPORT | `d7044ee1c77ae7fc9980181795b21d203a35de12` | `033d2eaf4af453da8eea1aa16b469413dde16891` / 01:13:59 |
+| W1最终REPORT | `101ee708fa835c25a733a82257855749748be180` | `e0e8c936193935d7a0802cbd45dccc32df231a5c` / 01:13:59 |
+| W2最终REPORT | `670f6ce535f4b8178fa956fdd726085687f0b67d` | **SOURCE `7d979440b6748418b9c1b41c0a4bfe54e2c99d3b`** / 01:13:59 |
+
+普通祖先包含W0 SOURCE `93030768b10549542546178a006507615cdd8ba8`、W1 SOURCE `4fbea9d7a32ed7b7f0e0eaf382cd7dc9fe7091a8`、W2最终修复SOURCE `4a179cef4735ee6bfa1dc87e0bc4624774f16fc0`；原准备/首错及旧报告均留在普通历史中。组合SOURCE于 **2026-10-13T01:15:40.257+08:00** 普通push，`git ls-remote`确认本分支远端同SHA；本文件随后单独REPORT commit+push，精确SHA/时间由当前Dispatch唯一worker_done交root。merge和报告标 `[skip ci]`；root后续普通合本REPORT、独立整仓check/build与最终push/新源码CI，不借旧源码CI填本轮通过。
+
+W0 2个源码/测试、W1 6个源码/测试、W2 20个实现/协议/测试路径逐文件与各精确SOURCE零差异；三个报告及W0 `docs/evidence`完整资产逐文件与各最终REPORT零差异。冻结基线 **`3e1f6dae0608639adcb8c501079d45c4eae7bcdb`**：全部internal（含app/domain/runtime/store/schema/公共mapper）、events、migrations/contracts、web/UI、现有MCP/Sleep/runtime入口、Go/Node依赖与锁均零diff；参数、权重、kind语义不变。全部变化清单仅授权live/导出/实验工具、对应测试/资产与文档；EXPERIMENT与W2 SOURCE完全一致，没有自主激活候选或写锁。
+
+## 组合树实际验证
+
+Windows/PowerShell，标准TEMP/TMP `C:/Users/DW/AppData/Local/Temp`；清除每个子进程继承 `ASTROCYTE_*`，Python `PYTHONDONTWRITEBYTECODE=1`，Go `GOFLAGS=-p=1` / `GOMAXPROCS=2`。全部首次EXIT0，无本轮新增测试RED；条件SKIP单列，未开启真实私源/旧库opt-in。
+
+| 精确命令 | 结果 / +08起止时间 |
+|---|---|
+| `python -m unittest discover -s tests/validation/evidence -p 'test_*.py' -v` | **19PASS /EXIT0**，01:14:27.678–01:14:27.960（unittest .049s） |
+| `python -m unittest discover -s tests/validation/ingest -p 'test_*.py' -v` | **19PASS /EXIT0**，01:14:27.975–01:14:30.907（unittest 1.044s） |
+| `python -m unittest discover -s tests/validation/experiment -p 'test_*.py' -v` | **35PASS /EXIT0**，01:14:30.910–01:14:32.122（unittest .754s），含缺judge不FINAL回归 |
+| `python scripts/validation/generate_kind_map.py --check` | EXIT0，canonical Go表一致 |
+| `go test -mod=readonly ./cmd/validation ./internal/adapters/mcp ./cmd/mcp ./tests/validation/privacy ./tests/validation/sleep ./tests/attention-engine -count=1 -json` | **122顶层PASS /12条件SKIP /0 FAIL /EXIT0**，01:14:27.455–01:15:19.750 |
+| SOURCE/REPORT逐文件diff、冻结diff、祖先检查、`git diff --check` | 全部EXIT0，报告提交前再次检查 |
+
+六Go包分别 cmd/validation **27/0**、MCP adapter **13/0**、cmd/mcp **1/0**、privacy默认 **11/6**、EX-01 **3/0**、attention-engine **67/6**（PASS/SKIP）；包elapsed为2.997/.310/2.590/3.673/.890/7.126秒。包含Live/Bootstrap **11PASS**、M2 **7PASS/1ProcessReload helper SKIP**、M5 MCP **6PASS/1ServerProcess helper SKIP**、M5 experience **8PASS**、EX-01 **3PASS**。四个child helper由父测试实际运行，两个live metadata和六个privacy opt-in保持SKIP，默认绿不替真实私源/全隐私验收。
+
+这是fixture/contract及适用生产stdio/SQLite回归；没有重扫原native目录、重采git、重跑历史回放或调用模型。没有重复全仓pnpm check/build；该范围明确由root最后执行。
+
+## 已有actual与independent安全结果
+
+仅读以下本机safe派生结果与已发布资产，不读取原raw/原库/私目录：
+
+- **V2完整技术PASS**：root `evidence-literal-independent-001.json` 独立逐行核对2006条（Morph887/Astro1096/McPet23）及A/M/C、ts/kind/w/event_id/顺序全等；18实际生产响应及完整Markdown零泄漏，2855原始事件、11956逐事件raw_unique/7611不同值，源库不变。W0 `docs/evidence/audit-safe.json` / `report-markdown-audit-safe.json` 与三主题完整资产已合入；confidence标明SQLite只读来源，三主题关联均0，三个零信号主题不补证据。本集成没有重新执行真实导出或原库审计。
+- **live prelock接缝PASS**：root `live-production-independent-001-safe.json` 与 `live-snapshot-idempotence-independent-001-safe.json`：真实新增250git（Morph42/Astro119/McPet89），3105事件/3105信号/6节点/31Sleep，849无标不变，250 singleton回执/绑定/时序一致、最终6节点A/M/C误差0；再次同250为duplicates/新贡献0/Sleep未重跑，日快照全表等值、原库不变。256为独立参考点数量，不冒称逐生产中间节点都比对过；两获准native根本日认知0不能外推全域无活动。prelock不是formal/day0或七日V4。
+- **V3工具与输入独立PASS，路由/锁分列**：root `lossless-independent-001-safe.json` 独立还原三主题完整有序字段与2855事件投影；`b-content-independent-001-safe.json` 证明已装38条原content/role/phase/ts完整、时间升序、1003=38+965、余6tokens。root精确4a179ce `v3-judge-independent-final.log` 独立35PASS；缺失/失败/非法judge不FINAL修复已精确合入，用户原因裁决权、固定分母未改。实际24次MCP tools/call为23成功/1意图错误，真实正式ABC答案/用户评分/成熟预测仍0。
+
+## 已观察远端CI RED（root新Handoff）
+
+root在本Dispatch检查点 `msg_074b815017a5` 独立观察精确W1 SOURCE `4fbea9d7a32ed7b7f0e0eaf382cd7dc9fe7091a8` 的CI **38279757301**：Linux check/race/build/full E2E success；Windows check/build success，但默认E2E **225PASS /30SKIP /1FAIL**，`navigation.spec.ts:106` Sidebar material import /swarm capability-disabled 的summary locator.click发生30秒timeout。首RED完整日志 `root-v2/w1-ci-4fbea9-first-red.log` 保留。它不是本轮live cmd/Go/Python失败；web相对3e零diff也不能证明flaky或将远端RED填绿。本集成没有UI/test写权，未改UI/测试、偷skip或retry；root随后最终整仓check/build及必要定向复核另验，本报告不声称当前完整CI通过。
+
+初次REPORT `e9ce5e42fb6d98dd54ff6a43ba57a5c9ee3e8c3a` 于01:17:01+08提交、01:17:05+08普通push后，按该新Handoff追加本节为独立普通REPORT补充commit/push；不amend/覆盖原报告历史，组合SOURCE仍7d979440。最终REPORT精确SHA和时间经当前Dispatch唯一worker_done回传。
+
+## 首RED及真实剩余
+
+首RED全部保留：W0 Windows SQLite未close清理错误及扩大报告审计同词碰撞；W1 fixture编译/路径比较/SQLite关闭错误和实际capture001 Codex行超过64MiB（0写入/Sleep not_run），原78,038,714-byte行不改，修复接缝后prelock成功；W2首次23tests/4errors和129b640缺7份judge却FINAL，root首RED与W2复现34tests/1failure均留外部原件，4a179ce修复后本轮35PASS。保留所有旧capture/replay、原132结构残余/849无标、failed/unknown，不因合并绿覆盖首次证据。
+
+**A原JSON实际221700 tokens超过126976 prompt上限（context131072/output4096）仍RED**；完整无损候选72890、往返精确，仍未激活，长A理解验收NOT_RUN，体积fit不证明未来增长fit。**B1003全文预算471591，最大完整消息装载38条/965未装，实际126970 tokens；首600秒长请求Timeout/CLI EXIT1、delivery_unknown/no_auto_retry，无答案/usage，不重试、未接受实际强B路由。** 短公共请求成功不替代强B；owned服务已核对后停止，模型文件/首输入/日志保留，本集成未重启。用户模型+表示未答，保持未决定；协议UNLOCKED、day0不存在，正式V4未开始。
+
+本轮所有新日志独占于 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v23-integration/task_d4cbcd8dcac4-ctx_4398e64a6464/`：四merge/时间、逐owner SOURCE/REPORT/资产/祖先/frozen检查、三Python首日志/exit/起止、Go首JSONL/包计数/skips/selected tests、kind_map、diff、SOURCE及REPORT push/remote。raw/subjects/native内容仅原本机LOCAL，未stdout/Git/网络，原证据/owner未知pycache未触碰。
+
+root下一步独立整仓check/build与最终分支普通合/push/新CI；用户决定模型+输入表示后，同W2落实正式规范、实际长A及强B路由/预算验收、root再权威登记协议全文SHA与实际day0。之后才运行七个真实日、独立双评、事实/用户评分及D+3，最后三天预测须全部成熟才能终局。本集成未锁协议、启动模型/正式采集、生成未来/人评/科学胜负、合main、升级个人实例或部署。
+
+---
+
+# M6 V1R 补源组合树集成交接（2026-10-12，历史）
 
 **指定精确普通合并、组合树适用回归及SOURCE普通push完成；零胶水。V1R技术结果沿W1真实产物与root独立复核，用户轨迹/50权重终审仍PENDING，不能关账V1、锁EXPERIMENT或启动七日V4。** 本节之后历史记录与所有首RED/unknown/failed保留。
 
