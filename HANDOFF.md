@@ -2,7 +2,7 @@
 
 ## 当前入口：M6 v2.2（2026-10-12）
 
-先读STATUS顶部、[v2.2裁决](tasks/M6-validation-v2.2.md)和[固定写域计划](tasks/M6-validation-plan.md)。全部工具认知人口及N≥5000门槛废止；6016及原RED保留。新人口按预声明语义，动态不可解析留分母失败，topic只报告；≥95% kind/s绑定、误标0、泄漏0才开正式V1。字段/单位/confidence/boost及仓根/McPet范围已裁决，不重问。W1同worktree/branch、Codex --yolo，追加RetrieveKnowledge限定boost写域，schema/domain不改。root抽查每桶20条后原集成owner普通合，独立验收/push。新V0/V1尚NOT_RUN，EXPERIMENT仍未锁SHA。
+先读STATUS顶部、[v2.2裁决](tasks/M6-validation-v2.2.md)和[固定写域计划](tasks/M6-validation-plan.md)。全部工具认知人口及N≥5000门槛废止；6016及原RED保留。新人口按预声明语义，动态不可解析留分母失败，topic只报告；≥95% kind/s绑定、误标0、泄漏0才开正式V1。字段/单位/confidence/boost及仓根/McPet范围已裁决，不重问。W1同worktree/branch、Codex --yolo，追加RetrieveKnowledge限定boost写域，schema/domain不改。最终SOURCE c0f6936/REPORT2b8137d已push，数值2832/2964=95.5466%，132结构失败保留；root最终每桶20及全部22新解析调用/50候选命令已独立核对。待原集成owner普通合与root整树check/build/原100 raw_unique/全人口复测，再批准V0。正式V1仍NOT_RUN，EXPERIMENT未锁SHA。
 
 ## 当前入口：M6 v2.1（2026-10-12）
 

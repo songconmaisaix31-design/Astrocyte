@@ -4,7 +4,7 @@
 
 ### 当前裁决：v2.2（2026-10-12）
 
-事实源：[v2.2](tasks/M6-validation-v2.2.md)。第二次规格修正废止全部工具调用均为认知人口；6016全量计数、1971/6016旧RED及首100诊断全部保留为历史。新V0按预声明工具语义归类，结构不可解析留分母计失败；成功kind及s=1/w=冻结表值完整率≥95%，topic仅报告覆盖率，无标kind成功计接入成功。误标0/200与raw_unique泄漏0保留并复验。新指标尚NOT_RUN，不将旧分母改写为新PASS。
+事实源：[v2.2](tasks/M6-validation-v2.2.md)。第二次规格修正废止全部工具调用均为认知人口；6016全量计数、1971/6016旧RED及首100诊断全部保留为历史。新V0按预声明工具语义归类，结构不可解析留分母计失败；成功kind及s=1/w=冻结表值完整率≥95%，topic仅报告覆盖率，无标kind成功计接入成功。误标0/200与raw_unique泄漏0保留并复验。当前V0见下方最终候选及独立验收记录，不将旧分母改写为新PASS。
 
 冻结绑定已裁决：所有种子InitialConfidence=.5；Signal s=1、w按kind；λ_r=.05/86400秒⁻¹；boost初始1/每访问+.1/cap2/24h无访问回退1。λ=.1、α=.3、A_floor=.05、momentum=.15及完整权重表沿v2.1，不调参。git仓根remote/common-dir归属覆盖全部Astrocyte/Morphogenesis worktree，新增maimai-monster仓McPet种子。原参数与主题待答已解决，不再阻塞。
 
@@ -39,6 +39,12 @@ root同时独立核对全部3303父wrapper：3302语法有效，唯一1160未闭
 15:40 UTF8修复v22.8预声明`9ecf777`后全量2832/2986=94.8426%仍RED，结构154；原8914语义/6016父单位不变，5928非认知另计，200误标0。旧71个解析桥假失败被正确解析，含新增2个search；不能把先前候选RED改写成采集密度或规格错误。owner66 PASS/3条件SKIP，最终尚未集成。
 
 root进一步只读AST核对旧118动态参数候选：53位于闭合字面数组for-of、3位于await来源for-of、62无for-of；另28条件/循环调用依赖await结果。已要求W1对真实闭合数组沿现有有限literal语法做统一解析，不挑样过线。保持既定每词法内层toolcall一次贡献，禁止按迭代数猜测或增量灌入；所有候选绑定参数可确定且归同语义kind/bucket才映射，候选分歧/数组写入/运行结果/条件及函数body仍失败。扩展先预声明新版本再全量重跑，纯静态数据解析不执行历史JS，不改认知分类、权重、引擎或schema。安全形状件`root-v22/v227-unresolved-loop-shapes-first.json`，消息曾将53误加await3报56，已更正，原JSON不变。
+
+15:54 W1最终候选SOURCE `c0f6936f2751cd22f0bc5f63c68211a37caa2436`（15:50）与REPORT `2b8137de8974c26d2da67c7319421ffe08a3d954`均已push；基础SOURCE0b42bb9、UTF8 SOURCE8671180与全部规则/RED普通历史保留。最终`v22-w1/retest-v229-upstream-final`：原6016父→8914语义单位；2832成功/2964认知分母=95.5466%，132结构失败、非结构失败0；5950非认知另计、原200误标0。有标1983、无标849、覆盖70.0212%。数值门槛通过，正式V0仍待组合树三指标/整仓检查，V1未启动。
+
+root已对最终八桶各20，共160条独立源join：原始字节/工具名/ts全部一致、认知样本s1/w.6；11个shell search调用含14搜索段但只11贡献，20非认知shell无搜索。另对本次全部22个新解析非认知调用，独立TypeScript有限字面参数绑定产出50候选命令，原生PS AST全部语法有效/无动态命令/无搜索，确认从分母移出依据是语义而非mapper结果；原候选审计及root有限语法未展开的中间记录保留，最终无该限制。证据`root-v22/v229-final-*`、`v229-statement-resolved-*`、`v229-resolved-native-proof-first.json`；raw仅LOCAL。
+
+source门禁额外复现：无brace外层if及数组对象字面括号曾清除上游unsafe，owner保存两份首RED后修复；最终定向68 PASS/3旧条件SKIP，所有外层条件/function/await来源/候选分歧/mutation仍失败。闭合数组53形态统一处理：22完成，余31含真实控制/未闭合参数；无迭代数扩充、无规模阈值、无历史执行。唯一app参数函数仍RetrieveKnowledge/knowledgeReferenceBoost，schema/domain/A/M/权重/λ及EX-01原接缝均保持。回滚对象为三个业务SOURCE（0b42bb9、8671180、c0f6936），未执行；原集成owner下一步普通合root文档与W1 REPORT，root最终独立check/build/raw/全人口复测通过后才通知V1。
 
 ### 当前裁决：v2.1（2026-10-12）
 
