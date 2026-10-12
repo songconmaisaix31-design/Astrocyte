@@ -1,4 +1,44 @@
-# M6 V4 B窄授权与完整输入组合树集成交接（2026-10-13）
+# M6 V4 Windows CI 串行资源修复交接（2026-10-13）
+
+**新精确 SOURCE `4727f7a02a9b0fdfa1f12917f388d08da1c5ed84` 已普通 push；root 于 04:12:35+08 通知 CI38300750305 精确对应该 SOURCE，Windows/Ubuntu 两个完整 job 均 completed/SUCCESS。** 本轮仅把 Windows 原完整 E2E 改为一个 worker，Linux 原入口保持；这是本次精确 CI 实证通过，不宣称资源错误永不复现。本机首轮原全套串行诊断按 root 后续明确指示停止，实际 **PARTIAL：149 PASS /17 SKIP /0 已完成项失败 /90 未完成，退出码1**，不能写成本机全量 PASS。旧两次完整 Windows RED 和原截图/trace 保留。
+
+V1/V1R 用户已 PASS/关账、V2 完整2006证据技术 PASS；V3/V4 工具交付与正式七日结果分列。完整1003消息 B 启动门禁和既有模型/预算接受保持，本轮没有模型调用、重发 B、锁协议、填 day0 或启用日程；最终普通合并、协议权威锁及日程由 root 负责。
+
+Task `task_9d3daebf8137` / Dispatch `ctx_b0e22d7e32da` / Run `run_d09ff3f95ebc`。复用原 worktree `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、branch `songconmaisaix31-design/validation-v1-integration`、terminal `term_2b81572f-6ce6-407e-8835-acaaef4d4acf`。沿原 Codex `--yolo`、`codex-cli 0.162.0`，实际预览 **GPT-6.1-Sol high fast**；没有新 Agent/轨/模型。先读 HANDOFF/STATUS 最新03:51、[CI修复执行单](M6-V4-ci-repair.md)和公开 CI 安全诊断；自主写域只有 `.github/workflows/check.yml` 与本文件，root 计划/STATUS/HANDOFF 仅合入未改。
+
+## 普通历史与精确 SOURCE
+
+起始 HEAD `84ec96a4fa6ae54530b209a463d74f39d4190356`；`git fetch origin` EXIT0，随后 `git merge --no-ff 3944af5dae45a61378f31d97f9d48d97d733fbbe`，得到 `21f365fe6bfbfd718bf7ca49df89388d593c49ee`，零冲突。root、W2 SOURCE `eb0218913268618952207be1d89070bcfd2ebe73` / REPORT `fe7fa53a56501cf5450649cce4b960b16f204d4a` 及此前普通祖先完整保留，无 force/rebase/squash/cherry-pick。
+
+SOURCE 独立 commit **`4727f7a02a9b0fdfa1f12917f388d08da1c5ed84`**，**2026-10-13T03:54:31+08:00**，标题 `ci: run Windows full Playwright suite with one worker`，没有 skip-ci；于 **03:54:35.883+08:00** 普通 push，`git ls-remote` 精确核对原分支同 SHA，立即通知 root 跟踪新 CI。REPORT 随后单独普通 commit/push，SHA 和时间通过当前 Dispatch 唯一 worker_done 交付。
+
+源码相对 root3944 只有 workflow 三行增加：Windows 条件执行 `pnpm --dir web exec playwright test --workers=1`，非 Windows 条件保留 `pnpm test:e2e`。没有改变 256 项、两 viewports、任何断言、原30秒 timeout、retries0、数据/fixture/WebServer 或原适用条件 SKIP。没有镜像配置 unit 测试、业务或实验胶水。
+
+## 本轮实际验证与 root 精确 CI
+
+Windows/PowerShell；独立测试子进程清除继承 `ASTROCYTE_*`，`CI=1`、`GOFLAGS=-p=1`、`GOMAXPROCS=2`，标准 TEMP/TMP `C:/Users/DW/AppData/Local/Temp`。测试和 HTML 输出指向下面仓库外独占目录，只有合成/契约诊断，无原 B 聊天/答案/流。
+
+| 命令或证据 | 实际结果 |
+|---|---|
+| `git diff --check`；`git diff --exit-code 3944af5dae45a61378f31d97f9d48d97d733fbbe HEAD -- . ':(exclude).github/workflows/check.yml'`（SOURCE 阶段） | EXIT0，只改允许的 workflow |
+| 冻结域对 `1bbd0553620475ba0403481c349216f875e4a464`、实验源码对 eb021891、root/W2 普通祖先核对 | EXIT0；引擎/events/schema/contracts/参数/权重/mapper/UI/依赖不变，EXPERIMENT/runner/模型/ABC/预算/协议不变 |
+| `pnpm --dir web exec playwright test --workers=1 --output C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-integration/task_9d3daebf8137-ctx_b0e22d7e32da/test-results-first` | 首轮确认 `Running 256 tests using 1 worker`；03:54:40.313–04:14:20.798+08，**PARTIAL 149 PASS /17 SKIP /0 completed FAIL /90 未完成，EXIT1（主动中止）** |
+| 旧失败用例在上述首轮中的原断言 | 1920 paper-search.spec.ts:60 及两视口 navigation.spec.ts:106 都 PASS；1280 paper-search 尚未执行；日志 ERR_NO_BUFFER_SPACE 计数0，仅是本机已完成范围 |
+| root 当前 Dispatch 消息 `msg_1b1cfae98596`，04:12:35+08，独立 live `gh` 查询 | **CI38300750305 /精确4727f7a /completed SUCCESS；Windows 和 Ubuntu 完整 job 均 SUCCESS**，原 Windows 全套一个 worker通过；具体 job PASS/SKIP 计数以 root 远端 job 日志为准，不从本机 PARTIAL 补齐 |
+
+root 在精确双平台全量 CI 通过后明确将本机继续运行归为重复诊断，要求停止自己所属测试、保留 PARTIAL 并立即交 REPORT。确认唯一带本轮外部 output 路径的 Playwright CLI PID41856 与其9个后代后，`taskkill /PID 41856 /T /F`；其返回255，其中一个 Chromium 子进程报告无法终止，其余成功，后续同一记录树全部10个 PID 均已退出。原测试 wrapper EXIT1 如实留存；这是按指令主动中止，不记作测试断言 RED 或完整 PASS。不停止 Agent/其他进程、不补跑、不加重试、不继续调配置。没有重复整仓 check/build、Python/Go 或模型调用；root 精确新 CI 及原独立 check/build 负责最终验收。
+
+## 原始 RED 与剩余边界
+
+旧 CI38297147723 /精确 eb021891：两个完整 Windows job 各 **225 PASS /30 SKIP /1 FAIL**。第一 paper-search React runtime 空白页，trace `ERR_NO_BUFFER_SPACE`；第二 navigation.spec.ts:106 `/workspace` page.goto 同资源错误且 paper-search 已通过。两次 RED、首截图和 trace 保留；root 本机 paper-search1280 定向1 PASS/9.9秒仅诊断。新精确4727双平台 CI 与旧 eb 两次 RED、新本机 PARTIAL 分列，不借旧5e/c61绿色或定向用例替新 CI。
+
+本轮日志独占于 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-integration/task_9d3daebf8137-ctx_b0e22d7e32da/`：普通 merge/SOURCE commit/push/remote、SOURCE-only/frozen/experiment diff、原公开 CI 安全摘录、`e2e-full-serial-first.log`、起止/EXIT与`e2e-full-serial-partial-counts.json`、原失败用例已执行范围、所属进程树/停止日志及 REPORT 检查。旧公开 CI 日志仍为 `root-v4-start/source-eb0218-ci-first-red.log` 和 `source-eb0218-ci-attempt-002-red.log`；全部历史 RED/unknown/回放原件及未知 pycache 保留。原聊天/答案/流没有 stdout/Git/再发送。
+
+**当前范围的薄 CI 执行修复交付完成，root 已独立确认新精确 CI；剩余 root 普通合最终 REPORT、最终权威协议锁/day0/启用禁用日程及后续真实七日操作。** 本 worker 不修改 EXPERIMENT/业务算法/评分、预算或授权，不锁 SHA、不填 day0、不造七日结果、不合 main 或升级个人实例。下方历史 CI PENDING/授权待答仅保留当时快照，不覆盖本轮已完成的新 CI 与用户既有裁决。
+
+---
+
+# M6 V4 B窄授权与完整输入组合树集成交接（2026-10-13，历史）
 
 **本轮精确普通合并、适用组合树验证与SOURCE普通push完成，零冲突/零胶水。用户B-only RAW窄豁免已批准，root已接受一次真实完整1003消息B及ABC共同模型/预算；协议仍UNLOCKED、day0未开始，新精确SOURCE CI状态PENDING，由root继续跟踪与最终锁定。** V1/V1R已用户PASS关账、V2完整2006证据技术PASS；下面授权/模型/预算待答或B BLOCKED是历史，不重新索取已经完成的裁决。工程门禁不等于七日科学结果。
 
