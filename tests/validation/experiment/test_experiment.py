@@ -15,7 +15,7 @@ from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / 'scripts/experiment'))
-from evaluation import audit_fact, blind_pack, judge_messages, prediction, reason_sheet, summarize, validate_user_score
+from evaluation import audit_fact, blind_pack, judge_messages, prediction, reason_sheet, summarize, validate_user_score, valid_judge
 from inputs import SYSTEM, questions, messages, load_native, pack_b, select_native_files
 from local_store import ZONE, append_row, bounds, complete_day, events, private_path, readonly_db, rows, write_new
 from protocol import check_lock, digest, lock_protocol, rules
@@ -365,7 +365,7 @@ class Fixtures(unittest.TestCase):
         self.assertFalse(result['llm_judge_has_ground_truth_authority'])
 
     def test_summary_success_line_five_of_seven_user_wins_fact_noninferiority(self):
-        qs,ans,facts,users,preds,mappings=[],[],[],[],[],{}
+        qs,ans,facts,users,preds,mappings,judges=[],[],[],[],[],{},[]
         for i in range(7):
             day=(datetime(2026,10,1).date()+timedelta(days=i)).isoformat()
             daily=questions(day,[],PRIOR);qs.extend(daily)
@@ -374,20 +374,42 @@ class Fixtures(unittest.TestCase):
             for q in daily[:2]:
                 for arm in 'ABC':facts.append({'question_id':q['question_id'],'arm':arm,'score':0.8})
             qid=daily[2]['question_id']
-            mappings[qid]={'ab_pair':{'P':'A','Q':'B'}}
+            mappings[qid]={'ab_pair':{'P':'A','Q':'B'},'three_arm':{'X':'A','Y':'B','Z':'C'}}
+            judges.append({'question_id':qid,'authority':'llm_judge','status':'OK',
+                           'answer':{'winner':'Y','scores':{l:[0,1,2] for l in 'XYZ'},'rationale':'independent fixture'}})
             users.append({'question_id':qid,'authority':'user','winner':'X','ab_preference':'P' if i<5 else 'tie',
                           'rated_at':'fixture date','rationale':'user fixture','scores':{l:[2,1,1] for l in 'XYZ'},'ab_scores':{l:[2,1,1] for l in 'PQ'}})
             for arm in 'ABC':preds.append({'question_id':daily[3]['question_id'],'arm':arm,'status':'SCORED','score':1})
         mature=datetime(2026,10,11,tzinfo=ZONE)
         result=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',mature)
+        self.assertEqual('PROVISIONAL',result['status']);self.assertIsNone(result['final_success'])
+        self.assertFalse(result['judge_ratings_complete'])
+        result=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',mature,judge_scores=judges)
         self.assertEqual('FINAL',result['status']);self.assertTrue(result['final_success'])
+        self.assertEqual(7,result['user_judge_disagreements']);self.assertEqual(7,result['judge_three_arm_winners']['B'])
+        self.assertEqual(7,result['user_three_arm_winners']['A']);self.assertEqual(5,result['user_ab_preferences']['A'])
+        self.assertEqual([0,1,2],result['judge_rubric_mean']['A'])
+        self.assertEqual(7,len(result['judge_raw_numbers_and_references']))
+        no_human=summarize(qs,ans,facts,[],preds,mappings,'2026-10-01',mature,judge_scores=judges)
+        self.assertEqual('PROVISIONAL',no_human['status']);self.assertEqual(7,no_human['judge_three_arm_winners']['B'])
+        for replacement in ({**judges[-1],'status':'FAILED'},
+                            {**judges[-1],'answer':{'winner':'Y','scores':{l:[None,1,2] for l in 'XYZ'},'rationale':'invalid'}}):
+            partial=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',mature,judge_scores=judges+[replacement])
+            self.assertEqual('PROVISIONAL',partial['status']);self.assertIsNone(partial['final_success'])
         self.assertEqual(5/7,result['reason_A_win_rate'])
         for f in facts:
             if f['arm']=='B':f['score']=1
-        result=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',mature)
+        result=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',mature,judge_scores=judges)
         self.assertFalse(result['final_success']);self.assertLess(result['fact_A_minus_B'],0)
-        result=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',datetime(2026,10,8,tzinfo=ZONE))
+        result=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',datetime(2026,10,8,tzinfo=ZONE),judge_scores=judges)
         self.assertEqual('PROVISIONAL',result['status']);self.assertIsNone(result['final_success'])
+
+    def test_judge_requires_independent_numeric_ok_receipt(self):
+        row={'status':'OK','authority':'llm_judge','answer':{'winner':'X','scores':{l:[0,1,2] for l in 'XYZ'},'rationale':'fixture'}}
+        self.assertTrue(valid_judge(row))
+        self.assertFalse(valid_judge({**row,'authority':'user'}))
+        self.assertFalse(valid_judge({**row,'status':'STARTED'}))
+        self.assertFalse(valid_judge({**row,'answer':{**row['answer'],'scores':{l:[True,1,2] for l in 'XYZ'}}}))
 
 
 class LosslessCandidateTests(unittest.TestCase):

@@ -42,4 +42,4 @@ answers.jsonl、inputs.jsonl、mcp-receipts.jsonl、receipts.jsonl、questions.j
 
 `score-predictions --day-dir <该日目录> --db <live库> --coverage <截至真实今天的coverage> --lock <权威lock>` 未过 D+3 自然日末或未来三天采集/Sleep 缺失均 PENDING。到期重检查追加新行，原 PENDING 保留。种子floor、unassigned及无真实事件节点不进入活跃榜。
 
-`summary --day-dirs <实际七日目录...> --lock <权威lock> --out <新聚合文件>` 不生成或补齐答案。第七日只给真实成熟 provisional；末三日 D+3 全到期后才 FINAL，按固定 28 题/84 答及人评 7 题检查完整性。失败不删除，不缩分母，不填终局 Markdown。终局报告格式见 [REPORT_TEMPLATE.md](REPORT_TEMPLATE.md)。
+`summary --day-dirs <实际七日目录...> --lock <权威lock> --out <新聚合文件>` 不生成或补齐答案。第七日只给真实成熟 provisional；末三日 D+3 全到期后才 FINAL，按固定28题/84答、人评7题及独立judge7份OK/合法数值回执检查完整性。缺失/失败judge保持PROVISIONAL；judge偏好不改变用户成功线。按匿名映射还原用户三臂和AB胜率、独立judge三臂/均分/分歧数，并输出三维派生原始数字与本机JSONL引用。失败不删除，不缩分母，不填终局 Markdown。终局报告格式见 [REPORT_TEMPLATE.md](REPORT_TEMPLATE.md)。

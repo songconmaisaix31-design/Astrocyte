@@ -136,6 +136,7 @@ def execute(a):
                           'system_reserve': 2048, 'question_reserve': 2048, 'template_reserve': 1024}
                 prompt, loading = pack_b(q, native, client.count, budget)
                 write_new(out / 'b-input-local.json', {'messages': prompt, 'loading': loading})
+                append_row(out / 'model-local.jsonl', {'status': 'B_STARTED', 'at': datetime.now(ZONE).isoformat(), 'loading': loading})
                 answer, response = client.answer(prompt, 4096, q['seed'])
                 append_row(out / 'model-local.jsonl', {'status': 'B_SMOKE_OK', 'answer': answer, 'response_local': response, 'loading': loading})
                 result.update(status='B_SMOKE_OK', model_calls=2, actual_full_budget_inference=True,
@@ -145,7 +146,8 @@ def execute(a):
             return result
         except Exception as error:
             append_row(out / 'model-local.jsonl', {'status': 'FAILED', 'error_type': type(error).__name__, 'error_local': str(error),
-                                                'http_error_local': client.last_error, 'last_response_local': client.last_response})
+                                                'http_error_local': client.last_error, 'last_response_local': client.last_response,
+                                                'delivery': 'unknown_no_auto_retry', 'at': datetime.now(ZONE).isoformat()})
             raise
     if a.command == 'lock':
         record = lock_protocol(a.protocol, a.out, read_private(a.route), a.root_reviewed, PRIVATE_ROOT)
@@ -173,7 +175,7 @@ def execute(a):
         return {'status': 'MATURITY_CHECK_RECORDED'}
     if a.command == 'summary':
         locked = check_lock(a.protocol, private_path(a.lock))
-        collected = {name: [] for name in ('questions', 'answers', 'fact-scores', 'user-scores', 'prediction-scores')}
+        collected = {name: [] for name in ('questions', 'answers', 'fact-scores', 'user-scores', 'prediction-scores', 'judge-scores')}
         mappings = {}
         for folder in a.day_dirs:
             p = private_path(folder)
@@ -188,7 +190,8 @@ def execute(a):
             if file.exists():
                 mappings.update(read_private(file))
         result = summarize(collected['questions'], collected['answers'], collected['fact-scores'],
-                           collected['user-scores'], collected['prediction-scores'], mappings, locked['day0'])
+                           collected['user-scores'], collected['prediction-scores'], mappings, locked['day0'],
+                           judge_scores=collected['judge-scores'])
         write_new(a.out, result)
         return result
 

@@ -185,6 +185,8 @@ LLM judge有独立提示、输入、表和本地调用，仅匿名题目与回�
 
 固定28题/84臂回答、每臂14事实分母、7道原因AB用户偏好。平局或B偏好不计A胜。原因A胜B≥2/3且事实A平均F1≥B才达首次科学验证成功线；缺臂/漏题/漏人评不缩分母。科学失败同样归档并可完成真实实验，各维度/差距/错误分别保留。
 
+七份独立LLM judge回执也必须落库并为OK/合法0–2数值评分，缺失/失败/无效保留PROVISIONAL，不能FINAL。此为双评收集完整性门禁，judge偏好或分数不改变用户成功线。汇总按匿名映射还原用户三臂/AB胜率、judge三臂/数值均分、用户与judge分歧数，列原因原始评分数组和事实/预测原始派生数字的question_id/arm/本机JSONL引用；三种事实/用户/未来裁决权保持独立。
+
 第七日只输出真实已成熟PROVISIONAL，末三日预测PENDING；最后题D+3全部真实成熟且覆盖完整才FINAL与EXPERIMENT_REPORT。当前仅交[空报告格式](experiment/REPORT_TEMPLATE.md)，不建伪终局报告，不预写七天答案。fixture、历史MCP、候选模型smoke与工程检查不冒称科学成功。
 
 W1两客户端/三仓live经原公共mapper、单事件Recorder、原时钟、稳定ID幂等及每日生产Sleep。固定源只读backup延续独立live库；prelock smoke和正式day0分目录。W1正式phase=formal、protocol_sha256/day0必须等于root权威锁；prelock/bridge不作正式回答或预测真值。每日成功capture由W1只读backup为day-state.sqlite，W2使用不可变日末快照，拒绝推进中的live库和未来污染。完整窗口/selection/capture/Sleep/无迟到错误均验收；具体契约见操作文档。W2不造调度/Attempt/Manifest/证明系统，用手动日命令或既有系统/Orca定时；问答/评分/错误只在本机JSONL，无产品表。
