@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+03:51 新eb021891 CI两个完整Windows attempt均资源错误（第二次workspace导航直接ERR_NO_BUFFER_SPACE），原件保留。root限定原集成owner仅Windows CI worker2→1薄配置候选，全部256项/断言/超时/retries=0不变，Linux/业务/实验全不动；执行单M6-V4-ci-repair.md。先本机全套与新精确CI，再root锁SHA/day0/日程启用，当前仍未锁/disabled；不要再盲重试旧run或重发完整B。主组合fb3及rootcheck/build绿保持。
+
 03:38 主组合SOURCEfb3ab575已普通合最终W2/唯一集成REPORT并push，root整仓check/build首次PASS，Python53独立/组合91、Go122适用PASS，冻结域零diff。新精确eb021891 CI38297147723 attempt1 Windows225PASS/30SKIP/1FAIL：论文检索页React资源ERR_NO_BUFFER_SPACE、空白页、按钮30秒timeout；首日志/截图/trace已本机保留，正在同SOURCE全Windows job attempt2，不以定向或旧CI替代。两owner已结算/release retained；协议未锁/day0未开始、Orca内置automation仍禁用。全门禁通过后root锁SHA/真实日期并启用既有日计划；不要重新询B授权/模型或重发强B。
 
 03:20 真实1003消息B完整启动答及root独验PASS：28.859787秒/input491479/output495，完整双通道原序可复原，无工具/compact。root已接受gpt-6.1-sol实际配置身份及ABC共同context872000/output4096/byte5094907；原输入拒绝、schema误判首RED及两feature warnings原件保留，同封存响应复核、无重发。原W2收到最终Handoff正在终稿SOURCE/新CI/REPORT；唯一原集成普通合与rootcheck/build后才锁全文SHA/day0。正式live根v4-w1/formal-20261013-first已生产bridge250事件/1Sleep，不计七日。当前具体证据/剩余读STATUS顶部，禁止用下方历史「豁免待答」「强B未过」重新询问或覆盖实际验收。

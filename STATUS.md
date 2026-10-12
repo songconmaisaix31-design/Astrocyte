@@ -4,6 +4,8 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+03:51 CI38297147723 attempt2仍首失败全量225PASS/30SKIP/1FAIL，这次navigation.spec.ts:106 `/workspace` page.goto直接net::ERR_NO_BUFFER_SPACE；attempt1失败的paper-search本轮通过，两个结果均保留。原套件实际默认2workers；root限定原集成owner仅`.github/workflows/check.yml` Windows E2E加workers=1，Linux不动，256项/两viewport/断言/timeout/retries=0不变。执行单tasks/M6-V4-ci-repair.md。是CI执行资源修复候选，不改UI/实验/引擎，不宣布修复通过；全Windows串行与新精确SOURCE CI后再锁。日程仍disabled，day0未开始；不再无诊断重试旧run。
+
 03:38 原W2 SOURCE `eb0218913268618952207be1d89070bcfd2ebe73` / REPORT `fe7fa53a56501cf5450649cce4b960b16f204d4a` 已push并accepted succeeded/release retained。原唯一集成Task57086b33405f/Dispatchc3b8532f9071，SOURCE `2f64f04452ab26b769209d74f7b13fbb49b4dc93` / REPORT `84ec96a4fa6ae54530b209a463d74f39d4190356` 已普通合、零冲突/胶水、报告已push且结算/release retained。主组合SOURCE `fb3ab57569db4bfa4a62cc5bfe99b3370f563092`（03:30:24+08）已push，九路径与eb021891全等，冻结域零diff；root独立53 PASS，集成Python91与Go122顶层PASS/12条件SKIP；root最终整仓check/build首次EXIT0。日志root-v4-start/raw-scope-final-combination-{check,build}-first.log，原domain/RED/unknown全保留。
 
 新精确[CI38297147723](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38297147723) attempt1首RED：Ubuntu全SUCCESS，Windows check/build SUCCESS、E2E225PASS/30SKIP/1FAIL。paper-search.spec.ts:60 chromium-1280等待检索论文按钮30秒timeout；截图空白，trace唯一console error=net::ERR_NO_BUFFER_SPACE，失败资源react_jsx-dev-runtime.js，页面未挂载。UI/测试/CI配置与已绿5e1822b全等。原日志、截图、trace及source-eb0218-ci-first-red-trace-safe.json保留；native artifact下载EOF后官方只读HTTP取得原件，不改内容。已对同精确SOURCE启动完整失败Windows job attempt2，不改模型/上下文、UI、断言或超时；定向本机结果不替代全量CI。协议仍UNLOCKED/day0未开始，内置automation f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b保持disabled；全门禁通过后root才锁定并启用。
