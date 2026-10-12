@@ -4,6 +4,14 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+**02:16 W2本轮工程交付accepted succeeded；实际强B/day0仍BLOCKED/NOT_RUN。** SOURCE5e1822bdf9118060586d0f18896f4fdba0095ad0（02:13:07+08）与最终REPORT3c758a035361876a390e6eda4afc329059bd008e（02:15:45+08）均已push，普通祖先/远端已核；13源码/协议/测试变化只在原实验写域，引擎/schema/参数/权重/mapper/UI未改。root独立精确SOURCE `python -m unittest discover -s tests/validation/experiment -p 'test_*.py' -v` 41PASS/2.735秒/EXIT0，另真实loopback SSE定向1PASS；这不是真实gpt长推理验收。W2 release为external_terminal/retained/processAction none。
+
+root独立全1003条B逐12原JSONL physical行核对content/role/phase/ts一致，四题payload每题全部1003按时间排序、零删减、JSON字节1632638/1632511/1632617/1632601，证据root-v4-start/b-full-independent-001-safe.json。native共同75字节前缀另计，最大1632713。正式统一byte ceiling仍未接受，不能把观测长度当冻结预算。实际新启动CLI隐私首RED为PRIVATE_EGRESS_BLOCKED/not_sent/model_calls0，原件v4-w2/b-native-privacy-first保留；未把NOT_SENT写成推理timeout。
+
+root已提出一次用户定向V4 B原文外部处理豁免，原raw本地条款仍在、尚未收到答复；没有代写APPROVED，不以等待作同意。公开同配置证据为官方CLI0.162.0/注册gpt alias/隔离argv与真实完整usage；server echo/preflight精确tokenizer未提供如实记，不另增永远不可通过的echo条件。未来真实全人口完整stdin/无compact和tools/actual usage满足已核预算/≤1800完整应答供root验收，不用近似编码做边缘剪裁。
+
+唯一原集成本轮Task task_70b3fc50b899 / Dispatch ctx_aa81de04b929，固定terminal2b81572f/worktree/branch/Codex --yolo；按tasks/M6-V4-integration.md普通合rootff4ec414与W2最终REPORT。首启动input_accepted/turn_start_unobserved保留，screen确认5849字符原任务仍composer后仅补一次Enter，不重派。新SOURCE[CI38289430526](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38289430526)精确5e1822b当前in_progress/PENDING，由root跟踪；不借下方旧c61 SUCCESS替代。
+
 原W2已复用：Task task_c50d122beaa6 / Dispatch ctx_8524cbe64ddc / 原terminal70b809cd，普通合root2194e4d后继续独占实验写域。首次worker-start记录turn_start_unobserved/input_accepted；screen确认5591字符原任务仍在composer，root仅补一次Enter，随后worker-read明确live/working，无重派。旧unknown回执保留。
 
 root独立A局部验收PASS：事前query_only SQL预期baseline-sql-expectation-001.json与实际三材料逐项比较，全6节点状态排序/数值头/关联/approved经验全等，kind×日分组15/5/2、整数总权重误差0，887/1096/23条event_id完整且原序回溯。全2855原件11956 raw_unique/7611 distinct在材料与真实MCP wire/decoded结果中泄漏0；UTF-8材料27931/33353/1927字节，原库SHA279ffd仍一致。证据root-v4-start/layered-a-independent-002-safe.json。001-read-error为root读证据envelope少取material键的KeyError，未执行产品断言，原件保留。此PASS只覆盖本地分层材料，正式字节预算与模型门禁待实际路由验收。

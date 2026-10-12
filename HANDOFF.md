@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+02:16 原W2本轮工程交付SOURCE5e1822b/最终REPORT3c758a0已push并accepted succeeded/release retained，分层A已正式接线，ABC配置gpt-6.1-sol/native同空cwd、1800秒/无compact/无工具。root精确41测试PASS，三主题SQL/全部2006引用/raw0及1003条B原全文四prompt独验全等。实际B首隐私NOT_SENT/0调用保留；原raw本地令的V4定向外部处理豁免问题用户尚未答，没有强B推理、统一正式byte预算或day0。唯一原集成Task70b3fc50/Dispatchaa81de04正在普通合rootff4ec/W2最终REPORT；新5e CI38289430526仍PENDING，root最终check/build与push随后执行。只读首失败与精确证据见STATUS顶部；不重问已定模型/A。
+
 2026-10-13用户V4启动定案：A全状态排序+explain_focus数值头/kind×日聚合/全部event_id+approved经验；ABC同gpt-6.1-sol同预算，B1800秒。执行单tasks/M6-V4-start.md；原W2继续同写域，root验收，原唯一集成owner普通合。新CI38283687781精确c61c841双平台SUCCESS，旧首RED保留。模型/表示已经决定，不再询问；实际路由、A激活、满预算B和协议终稿仍需验收，当前未锁SHA/day0。
 
 2026-10-13 01:22：V1/V1R用户已PASS关账；V2三主题2006条完整证据资产已普通集成，见`docs/evidence/README.md`；V3工具技术交付PASS，EXPERIMENT仍UNLOCKED，V4未开始。最终组合SOURCE `c61c841d3cf70fc4add5e6768cdaa11d47dd4d32`已push，root完整check/build首次EXIT0、组合Python73/Go122适用PASS，冻结业务域零diff；所有原owner/唯一集成Dispatch已succeeded/release retained，原分支/工作树/RED/unknown保留。具体SHA、日志、独立实证、当前CI限制读STATUS顶部。
