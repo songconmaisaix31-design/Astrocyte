@@ -1,4 +1,72 @@
-# M6 V1 真实回放组合树集成交接
+# M6 V1R 补源组合树集成交接（2026-10-12）
+
+**指定精确普通合并、组合树适用回归及SOURCE普通push完成；零胶水。V1R技术结果沿W1真实产物与root独立复核，用户轨迹/50权重终审仍PENDING，不能关账V1、锁EXPERIMENT或启动七日V4。** 本节之后历史记录与所有首RED/unknown/failed保留。
+
+Task `task_31bc0b619679` / Dispatch `ctx_533a8a00f455`，Run `run_d09ff3f95ebc`。原唯一集成owner、worktree `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、branch `songconmaisaix31-design/validation-v1-integration`，起始HEAD `06173e427975ff3642b7f2705534a951c0803f81` 且工作树干净。沿派发Codex `--yolo`，实际 `codex-cli 0.162.0`；本终端screen预览为 **GPT-6.1-Sol high fast**，模型配置未改、未新增Agent。使用本机 `orca-cli` / `orchestration` 技能处理指定Dispatch检查和回执。
+
+事实源：[V1R集成执行单](M6-V1R-integration.md)、[补源任务](M6-V1R-replay.md)、HANDOFF/STATUS及[W1报告](M6-W1.md)。自主修改仅本文件；root文档及W1源码/报告只通过授权merge消费。没有触碰W1未知pycache，没有重抓或重放真实源。
+
+## 精确普通合并与发布
+
+先 `git fetch origin` EXIT0，再依次普通 `git merge --no-ff`，两次零冲突；无force/squash/rebase/cherry-pick，全部SOURCE/REPORT祖先保留：
+
+| 输入 | 精确SHA / 合并结果 |
+|---|---|
+| root文档 | `d350ae6625f7a8476b9f1afce4decb1ff264a5c5` → merge `9fa8f5e16f5cee6314056694adb1d547b0239931`，23:14:19+08:00 |
+| W1 REPORT | `a954905c584256c055306b8c5fd1011de8a1f078` → merge/SOURCE `298e1cff4613bb8afca0154de4d22dba2b201e76`，23:14:31+08:00 |
+| W1正式业务SOURCE | `7d57e06eaeaa1ddc8ddf132af47840acf8f777cc`，普通祖先EXIT0 |
+| 旧V1 / W1准备SOURCE / REPORT | `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` / `5657b9c37d1227f782043a8d7ba92607b457e3ca` / `4fc016614b948f4c6f39d2ab5ca628d6850d4f10`，均祖先EXIT0 |
+
+组合SOURCE **`298e1cff4613bb8afca0154de4d22dba2b201e76`** 在测试EXIT0后于 **23:17:00.746+08:00** 普通push；`git ls-remote`确认远端同SHA。本文件随后单独REPORT commit+push，精确REPORT SHA/时间由当前Dispatch唯一worker_done回传。两merge/报告带 `[skip ci]`，root负责最终组合树完整check/build、最终push与新SOURCE远端CI；**旧12cc CI38226630789只属于旧源码，不能算本轮CI**。
+
+## 源码一致性与冻结边界
+
+12个W1变化源码/测试路径逐文件 `git diff --exit-code 7d57e06 HEAD -- <paths>` 零差异；组合树相对W1 SOURCE只多root/owner Markdown，没有业务差异。相对12cc全部变化清单只含上述W1接入/验证路径及文档；`internal/attention`（全部app/domain）、runtime/store、migrations/contracts/schema、web/UI、Go/Node依赖与锁、canonical kind/语义表及生成表零差异。A/M/去噪/fluid/crystallized、参数、权重、EX-01策略未改。冻结diff、源一致性、祖先与 `git diff --check` 均EXIT0；无需领域Handoff或跨域修补。
+
+## 组合树实际检查
+
+Windows / PowerShell，Go `-mod=readonly`、`GOFLAGS=-p=1` / `GOMAXPROCS=2`，Python `PYTHONDONTWRITEBYTECODE=1`；每个测试进程先清除继承 `ASTROCYTE_*`。synthetic测试明确使用标准 `C:/Users/DW/AppData/Local/Temp`，真实opt-in独立进程/限定测试名，raw100 TEMP只在外部本任务独占子目录。
+
+```powershell
+go test -mod=readonly ./cmd/validation ./internal/adapters/events ./internal/adapters/mcp ./cmd/mcp ./tests/validation/privacy ./tests/validation/sleep ./tests/attention-engine -count=1 -json
+python -m unittest discover -s tests/validation/ingest -p 'test_*.py' -v
+python scripts/validation/generate_kind_map.py --check
+go vet -mod=readonly ./cmd/validation ./internal/adapters/events ./internal/adapters/mcp ./cmd/mcp ./tests/validation/privacy ./tests/validation/sleep ./tests/attention-engine
+```
+
+Go **23:15:24.222–23:15:51.262+08:00 / EXIT0：142顶层PASS /14顶层SKIP /0 FAIL**，另3个Windows symlink子例缺权限SKIP，不称PASS。
+
+| 包 | 顶层PASS / SKIP | 包elapsed |
+|---|---:|---:|
+| cmd/validation | 16 / 0 | 1.311s |
+| events | 31 / 2 | 2.434s |
+| MCP adapter | 13 / 0 | .378s |
+| cmd/mcp（实际CLI） | 1 / 0 | 2.747s |
+| privacy默认 | 11 / 6 | 3.681s |
+| EX-01 | 3 / 0 | .949s |
+| attention-engine | 67 / 6 | 6.728s |
+
+原M2 **7PASS /1ProcessReload helper SKIP**，EX-01 **3PASS**；M5 MCP生产stdio/SQLite/重启等 **6PASS /1ServerProcess helper SKIP**，M5 experience另8PASS。child helper由父测试实际调用；两个live metadata、events本机命令字节检查与六个默认隐私opt-in跳过保持明示，不能视为全边界验收。
+
+Python **23:15:24.750–23:15:25.632+08:00 /17PASS /0 FAIL**（unittest .559s）；kind_map `--check` EXIT0。vet **23:15:23.692–23:15:28.071+08:00 /EXIT0**，diff EXIT0。
+
+独立 `ASTROCYTE_V1R_LOCAL_SOURCE=1 go test -mod=readonly ./internal/adapters/events -run '^TestV1RLocalMcPetCommonDirAndExistingWorktrees$' -count=1 -json`：**23:16:05.375–23:16:07.519+08:00 /1PASS /0 SKIP /EXIT0**，只核对获准McPet全部5个现存worktree真实common-dir身份，无git-log捕获。
+
+独立 `ASTROCYTE_V21_REAL100_AUDIT=1 go test -mod=readonly ./tests/validation/privacy -run '^TestReal100V21ProductionExposure$' -count=1 -json`：**23:16:05.921–23:16:19.523+08:00 /1顶层及100 event-case PASS /0 SKIP /EXIT0**；原Codex50/Claude50、1101逐事件去重raw_unique字符串、2100实际生产MCP success及错误响应，泄漏0。native probe mapped4/topic3/unknown96/association incomplete1；100合成contract_local信号只检本地生产曝光，不是native eligibility/task_live或全人口隐私通过。raw完整本地保留，不stdout/Git/网络。
+
+## 真实V1R证据与首RED
+
+本集成仅读取root安全独立结果 `root-v3/actual-002-production-independent.json` / `actual-002-sqlite-weights-independent-safe.json`：精确W1 SOURCE运行 `v1r-w1/replay-002`，**2855真实单事件/信号、1916唯一git、McPet新增23/native转入0、849无标、6seed、30生产Sleep含10空日**；root先行literal参考 **2186非seed更新点A/M/C最大误差0**，全部source顺序/origin/kind/topic/ts及每日receipt集合一致。SQLite2855 raw BLOB；固定50机器绑定50/50（32commit/12edit/6search、McPet1，专项0）。机查不替人工正确率，三线/覆盖/人工表在W1原独占目录，不复制raw或另运行回放。
+
+本轮适用测试首次全部EXIT0，无新测试RED。保留W1真实首RED `resume-replay-first.log`（capture-001浮点毫秒不能读Go int64；原capture未改，严格兼容固定整数边界后重跑通过）、准备阶段CommonDir字串误判/TEMP污染、原人口/旧回放/首RED与failed/delivery_unknown。W1 `resume-raw100.log`错误测试名/no tests to run不计PASS，实际final审计另记；本轮精确测试名实际100子例执行。一次Orca terminal read误传 `--lines` 被CLI拒绝，改用帮助规定的 `--screen --limit`取得实际模型预览，属操作错误，不改业务或测试结论。
+
+全部新日志独占于 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v1r-integration/task_31bc0b619679-ctx_533a8a00f455/`：两merge、changed paths/frozen/source/ancestor/diff、Go JSONL/counts/skips/selected tests、Python/kind_map/vet、local身份/raw100及各命令exit/起止、SOURCE/REPORT push/remote记录。真实raw仅LOCAL，原证据从未覆写。
+
+真实限制仍为132结构失败、849无标、10空日、Agent Swarm/Agent Memory/MCP零信号，无自动发现/分裂或新增认知能力。**用户V1轨迹/50权重人工终审PENDING；完整V1未关账，EXPERIMENT未锁、V2–V4未启动。** root后续完整check/build/最终push及新源码CI另验；本任务未执行整仓check/build/浏览器E2E、另捕获/回放/全人口重扫、paid调用、main合并、个人实例升级或部署。不将旧源码CI、合成回归或本地MCP审计升级成新源码CI/人验/七日科学完成。
+
+---
+
+# M6 V1 真实回放组合树集成交接（历史）
 
 2026-10-12；Task `task_0fff678cdbb0` / Dispatch `ctx_ffc79455aad8`，Run `run_d09ff3f95ebc`。原唯一集成owner继续工作树 `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、分支 `songconmaisaix31-design/validation-v1-integration`，基线 `2524e9e48b23aa6f0ee4b6277a55539009d669dc`，客户端沿派发Codex `--yolo`。未启动其他Agent或变更模型；唯一自主修改为本报告，业务胶水为0。
 
