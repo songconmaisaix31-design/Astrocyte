@@ -32,6 +32,10 @@ root最终候选抽查八桶各20：160/160源定位、工具名及真实ts一�
 
 W1参数生产测试已通过：六种子confidence=.5、s=1/w固定表、λ_r日换秒、boost初始/+ .1/cap2/24h冷却及持久化审计重启/只读。两M4保留原ReferenceBoost=2超限输入，仅结果3→2，定向4 PASS；M2适用7 PASS/独立helper入口1 SKIP、EX-01三项PASS。当前这些是owner定向测试，最终root整树check/build/raw审计仍待普通集成。函数范围仍仅RetrieveKnowledge及同文件knowledgeReferenceBoost，回滚对象候选SOURCE 0b42bb9；未执行回滚，schema/domain/动力学不改。
 
+15:35 root复现并纠正上一项候选归因：Go与独立TypeScript cooked字节一致，差异在固定PowerShell解析器的stdin。host7.6.6直接ParseInput无错误；相同UTF8 JSON经过默认InputEncoding=gb2312的pwsh7.6.6或powershell5.1，均误报TerminatorExpectedAtEndOfString。固定Console.InputEncoding/OutputEncoding=UTF8后，同一输入错误0。证据`root-v22/v227-stdin-codepage-first.json`，原输入/首RED保留，未执行历史命令。已退W1补非ASCII脱敏复现、修固定解析器编码并版本化全量重跑；225候选结构失败不能视作全部真实不可解析。
+
+root同时独立核对全部3303父wrapper：3302语法有效，唯一1160未闭合模板当前0认知子/1失败；该整父门禁已验证。一条剩余noncognitive shell常量拼接及有限引号替换独立展开后native AST搜索0，最终候选20条非认知shell均无搜索；source160定位/工具/ts全一致。此为候选源码审查，不替代编码修复后新全量及最终V0。
+
 ### 当前裁决：v2.1（2026-10-12）
 
 ### v2.1 本轮已合入并独立复验，V0仍RED（2026-10-12 05:04）
