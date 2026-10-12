@@ -12,7 +12,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
-const SemanticPolicyVersion = "v22.7"
+const SemanticPolicyVersion = "v22.8"
 
 // SemanticTool contains safe structural fields only. Arguments never leave this
 // adapter. Category is decided from tool semantics before kind mapping.

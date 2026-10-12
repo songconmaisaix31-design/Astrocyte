@@ -140,6 +140,17 @@ func TestLiteralObjectPropertiesRequireUnmutatedBindings(t *testing.T) {
 	}
 }
 
+func TestNativeShellSyntaxBridgePreservesUTF8(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("native Windows syntax bridge not available; lexical grammar tested separately")
+	}
+	// Synthetic Unicode command name; ParseInput inspects it but never executes.
+	result, available := parseShellAST("脱敏命令 -Value '引用中'")
+	if !available || result.ParseErrors != 0 || len(result.Commands) != 1 || result.Commands[0].Head != "脱敏命令" {
+		t.Fatal("syntax bridge corrupted UTF8 stdin")
+	}
+}
+
 func TestObservedRepositoryIdentityDoesNotGuessWorktreeSpelling(t *testing.T) {
 	for _, c := range []struct{ value, want string }{{"C:/repo/Astrocyte/.git", "Astrocyte/Attention Engine"}, {"Astrocyte", "Astrocyte/Attention Engine"}, {"https://github.com/owner/maimai-monster.git", "McPet"}, {"git@github.com:owner/Morphogenesis.git", "Morphogenesis"}, {"attention-engine-w4", ""}} {
 		if got := repositoryTopic(repositoryIdentity(c.value)); got != c.want {

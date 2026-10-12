@@ -15,6 +15,8 @@ import (
 // A single fixed parser reads JSON data. Parser.ParseInput constructs syntax
 // trees and cannot execute supplied commands. stdout is structural JSON only.
 const shellASTProgram = `$ErrorActionPreference='Stop'
+[Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false)
+[Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
 while ($null -ne ($line=[Console]::In.ReadLine())) {
  try {
   $request=ConvertFrom-Json -InputObject $line
