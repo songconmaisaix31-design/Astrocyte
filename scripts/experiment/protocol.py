@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 
 from inputs import SEED, SYSTEM, TEMPLATES
-from evaluation import JUDGE_SYSTEM
+from evaluation import JUDGE_SYSTEM, PROJECT_ALIASES, KIND_ALIASES
 from local_store import EVIDENCE_ROOT, ZONE, unredirected, write_new
 
 
@@ -18,6 +18,8 @@ def rules(path):
     config = json.loads(match.group(1))
     if config['seed'] != SEED or config['system_prompt'] != SYSTEM or config['question_templates'] != [list(t) for t in TEMPLATES] or config['judge_system_prompt'] != JUDGE_SYSTEM:
         raise ValueError('protocol/template implementation differs')
+    if config.get('project_aliases') != PROJECT_ALIASES or config.get('kind_aliases') != KIND_ALIASES or config.get('prediction_k') != 3 or config.get('fact_metric') != 'set_precision_recall_f1' or config.get('prediction_metric') != 'per_topic_binary_precision_recall_exact_order':
+        raise ValueError('protocol/scoring implementation differs')
     return config
 
 
@@ -45,8 +47,9 @@ def lock_protocol(protocol, output, route, reviewed, root):
         raise ValueError('protocol route differs from accepted actual identity')
     if not route.get('local_runtime_verified') or not route.get('strong_b_accepted') or not route.get('budget_smoke_passed') or not route.get('production_live_accepted'):
         raise ValueError('actual local route/B budget/live acceptance pending')
-    formal = Path(route.get('formal_live_root', '')).absolute()
-    if not route.get('formal_live_root') or not formal.is_relative_to((EVIDENCE_ROOT / 'v4-w1').absolute()) or not unredirected(formal) or 'prelock' in str(formal).lower():
+    original = Path(route.get('formal_live_root', '')).absolute()
+    formal = original.resolve()
+    if not route.get('formal_live_root') or not formal.is_relative_to((EVIDENCE_ROOT / 'v4-w1').resolve()) or not unredirected(original) or 'prelock' in str(formal).lower():
         raise ValueError('root-owned separate formal live directory required')
     day0 = datetime.now(ZONE).date().isoformat()
     record = {'authority': 'root', 'reviewed': True, 'protocol_sha256': digest(protocol),

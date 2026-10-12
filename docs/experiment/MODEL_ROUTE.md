@@ -14,4 +14,8 @@
 
 当前实际native七日清点（截至2026-10-12，10-06至10-13半开）：授权Claude根7个JSONL，Codex根1714个；Claude user321/assistant619，Codex user32/assistant31，原content JSON字符711583/502845。全根kind-blind inventory与loader交叉一致、缺失0，窗口无event_msg user_message/agent_message-only形状；没有按正文相同去重真实消息，也未扩读其他root。总1003完整消息明显需要实际tokenizer计数与预算装载，字符数不是token数。原文只LOCAL。
 
-实际运行与时间、context、prompt tokens、B装载数量、回答/失败状态随后在M6-W2报告登记。当前没有权威模型选择/协议锁/day0，不能把下载、context配置或短公开prompt推理当全文最强B成立。
+2026-10-13候选实测：官方32B GGUF下载1817.559秒、runtime下载4.699秒，大小与官方SHA均核对通过。显式Vulkan1、14层GPU offload、131072 context、单slot、Q4 KV、YaRN scale4/original32768，禁context shift；实际models/props/template及公开JSON短问答通过，tokenizer计数与completion usage一致。该结果是候选烟测，不是最强B验收。
+
+实际tokenizer预算首轮RED：系统/题目/模板基础171 token，输出预留4096，prompt上限126976。A三工具完整历史快照证据221700 token，超上限94724；B七日1003完整消息471591 token，不能全部同时装入131072。原始输入和计数仅在v3-w2/token-budget-first-local.json，本机可公开的数值在token-budget-first-safe.json。完整A当前不可执行，不能删证据、改问句或伪装成功；已向root提交确定性无损表示与更大受支持本地容量两种审查方向。B继续按既定完整单条、最大装载规则测真实推理，保留未加载条数和预算原因。
+
+实际B装载数量、回答/失败状态在M6-W2报告登记。当前没有权威模型选择/协议锁/day0，不能把下载、context配置或短公开prompt推理当全文最强B成立。

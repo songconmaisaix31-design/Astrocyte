@@ -8,16 +8,20 @@ import sqlite3
 import sys
 import tempfile
 import unittest
+import io
+from contextlib import redirect_stderr
+from types import SimpleNamespace
 from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / 'scripts/experiment'))
 from evaluation import audit_fact, blind_pack, judge_messages, prediction, reason_sheet, summarize, validate_user_score
 from inputs import SYSTEM, questions, messages, load_native, pack_b, select_native_files
-from local_store import ZONE, bounds, complete_day, events, private_path, readonly_db, rows, write_new
+from local_store import ZONE, append_row, bounds, complete_day, events, private_path, readonly_db, rows, write_new
 from protocol import check_lock, digest, lock_protocol, rules
 from runner import run_day, run_judge, snapshot
 from transport import LocalModel, mcp_call
+from lossless_candidate import canonical, decode, encode
 
 
 PRIOR = {'Morphogenesis': 887, 'Astrocyte/Attention Engine': 1096, 'McPet': 23}
@@ -55,8 +59,11 @@ class Fixtures(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='astro-v3-contract-')
         self.root = Path(self.temp.name)
+        self.roots_patch = patch('inputs.AUTHORIZED_ROOTS', {s: str(self.root / s) for s in ('claude_code', 'codex')})
+        self.roots_patch.start()
 
     def tearDown(self):
+        self.roots_patch.stop()
         self.temp.cleanup()
 
     def config_lock(self, day0):
@@ -178,6 +185,13 @@ class Fixtures(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'coverage'):
             load_native(selection,*bounds('2026-10-11'))
 
+    def test_native_selected_root_cannot_expand_authorization(self):
+        selection=self.selected_fixture('2026-10-11')
+        data=json.loads(selection.read_text());data[0]['root']=str(self.root)
+        selection.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError,'authorization'):
+            load_native(selection,*bounds('2026-10-11'))
+
     def test_readonly_event_database_write_denied_and_snapshot_preserves(self):
         db=self.root/'source.sqlite';db_fixture(db,[event('McPet',1)])
         before=hashlib.sha256(db.read_bytes()).hexdigest()
@@ -189,6 +203,7 @@ class Fixtures(unittest.TestCase):
 
     def test_private_output_escape_and_repo_rejected(self):
         with self.assertRaises(ValueError):private_path(self.root.parent/'outside.json',self.root)
+        with self.assertRaises(ValueError):private_path(self.root/'sub/../../outside.json',self.root)
         with self.assertRaises(ValueError):private_path(REPO/'raw.json',REPO)
         write_new(self.root/'first.json',{'safe':1},self.root)
         with self.assertRaises(FileExistsError):write_new(self.root/'first.json',{},self.root)
@@ -202,6 +217,15 @@ class Fixtures(unittest.TestCase):
         self.assertEqual('root',check_lock(p,lock)['authority'])
         p.write_text(p.read_text(encoding='utf-8')+'\nchange',encoding='utf-8')
         with self.assertRaisesRegex(ValueError,'INVALID'):check_lock(p,lock)
+
+    def test_cli_invalid_receipt_persisted_without_private_error_stdout(self):
+        import experiment
+        stderr=io.StringIO()
+        with patch('experiment.args',return_value=SimpleNamespace(command='run-day')), patch('experiment.execute',side_effect=ValueError('INVALID: private fixture detail')), patch('experiment.PRIVATE_ROOT',self.root), patch('experiment.append_row',side_effect=lambda p,r:append_row(p,r,self.root)), redirect_stderr(stderr):
+            self.assertEqual(1,experiment.main())
+        self.assertEqual('INVALID',json.loads(stderr.getvalue())['status'])
+        self.assertNotIn('private fixture detail',stderr.getvalue())
+        self.assertIn('private fixture detail',rows(self.root/'cli-failures-local.jsonl')[0]['error_local'])
 
     def test_actual_route_identity_required_for_root_lock(self):
         p,_,route=self.config_lock('2026-10-11')
@@ -291,22 +315,36 @@ class Fixtures(unittest.TestCase):
     def test_runner_all_arm_failures_persist_no_placeholder_answers(self):
         today=datetime.now(ZONE).date();day=(today-timedelta(days=1)).isoformat()
         p,lock,route=self.config_lock(day)
-        db=self.root/'live.sqlite';db_fixture(db,[event('McPet',bounds(day)[0])])
+        db=self.root/'day-state.sqlite';db_fixture(db,[event('McPet',bounds(day)[0])])
         selection=self.selected_fixture(day)
         out=self.root/'day'
+        coverage=coverage_fixture(day)
+        coverage.update(phase='formal',protocol_sha256=digest(p),day0=day,snapshot_file='day-state.sqlite')
         class FakeModel:
             def __init__(self,*args):pass
             def identity(self):return {k:route[k] for k in ('model','context_tokens','model_path','chat_template','endpoint')}
             def count(self,m):return 10
             def answer(self,*args):raise TimeoutError('fixture model unavailable')
         with patch('runner.LocalModel',FakeModel),patch('runner.a_memory',return_value=({'tools':'fixture'}, {'status':'OK'})):
-            run_day(day,db,selection,[coverage_fixture(day)],p,lock,'fixture.exe',out,self.root)
+            run_day(day,db,selection,[coverage],p,lock,'fixture.exe',out,self.root)
         failed=[r for r in rows(out/'answers.jsonl') if r['status']=='FAILED']
         self.assertEqual(12,len(failed));self.assertTrue(all('answer' not in r for r in failed))
         self.assertTrue(all(r['delivery']=='unknown_no_auto_retry' for r in failed))
         self.assertEqual(12,len(rows(out/'inputs.jsonl')))
         with self.assertRaises(FileExistsError):
-            run_day(day,db,selection,[coverage_fixture(day)],p,lock,'fixture.exe',out,self.root)
+            run_day(day,db,selection,[coverage],p,lock,'fixture.exe',out,self.root)
+
+    def test_runner_rejects_prelock_and_wrong_protocol_snapshot(self):
+        day=(datetime.now(ZONE).date()-timedelta(days=1)).isoformat()
+        p,lock,_=self.config_lock(day)
+        db=self.root/'day-state.sqlite';db_fixture(db,[])
+        coverage=coverage_fixture(day)
+        coverage.update(phase='prelock',protocol_sha256=digest(p),day0=day,snapshot_file='day-state.sqlite')
+        with self.assertRaisesRegex(ValueError,'formal'):
+            run_day(day,db,'not-read',[coverage],p,lock,'not-called',self.root/'out',self.root)
+        coverage['phase']='formal';coverage['protocol_sha256']='0'*64
+        with self.assertRaisesRegex(ValueError,'formal'):
+            run_day(day,db,'not-read',[coverage],p,lock,'not-called',self.root/'out',self.root)
 
     def test_complete_capture_rejects_partial_windows_late_unknown(self):
         row=coverage_fixture('2026-10-11');self.assertTrue(complete_day(row,'2026-10-11'))
@@ -350,6 +388,24 @@ class Fixtures(unittest.TestCase):
         self.assertFalse(result['final_success']);self.assertLess(result['fact_A_minus_B'],0)
         result=summarize(qs,ans,facts,users,preds,mappings,'2026-10-01',datetime(2026,10,8,tzinfo=ZONE))
         self.assertEqual('PROVISIONAL',result['status']);self.assertIsNone(result['final_success'])
+
+
+class LosslessCandidateTests(unittest.TestCase):
+    def test_full_nested_rows_scalar_types_and_order_survive(self):
+        original = {'evidence': [{'event': {'id': f'e{i}', 'ts': i, 'kind': 'commit'},
+                                  'event_id': f'e{i}', 'ts': i, 'zero': 0 if i % 2 else 0.0,
+                                  'boolean': False, 'none': None, 'related': []} for i in range(40)],
+                    'experiences': [{'content': ['完整文本', {'nested': [True, 1, 1.0]}]}],
+                    'related': [{'b': 2, 'a': 1}, {'a': 1, 'b': 2}]}
+        encoded = encode(original)
+        self.assertEqual(canonical(original), canonical(decode(encoded)))
+        columns = encoded['object'][0][1]['table']['columns']
+        self.assertTrue(any('same_as' in c for c in columns))
+        self.assertTrue(any('constant' in c for c in columns))
+        self.assertTrue(any('dictionary' in c for c in columns))
+
+    def test_candidate_is_absent_from_formal_collector(self):
+        self.assertNotIn('lossless_candidate', (REPO / 'scripts/experiment/runner.py').read_text(encoding='utf-8'))
 
 
 if __name__=='__main__':unittest.main()

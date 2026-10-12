@@ -162,13 +162,13 @@ def execute(a):
         run_judge(a.day_dir, client, a.protocol, private_path(a.lock))
         return {'status': 'INDEPENDENT_JUDGE_RECORDED'}
     if a.command == 'score-predictions':
-        check_lock(a.protocol, private_path(a.lock))
+        locked = check_lock(a.protocol, private_path(a.lock))
         p = private_path(a.day_dir)
         question = next(q for q in rows(p / 'questions.jsonl') if q['dimension'] == 'prediction')
         latest = {(r['question_id'], r['arm']): r for r in rows(p / 'answers.jsonl')}
         for arm in 'ABC':
             answer = latest.get((question['question_id'], arm), {})
-            score = prediction(question, answer.get('answer', {}), local_input(a.db), rows(local_input(a.coverage)))
+            score = prediction(question, answer.get('answer', {}), local_input(a.db), rows(local_input(a.coverage)), locked=locked)
             append_row(p / 'prediction-scores.jsonl', {'question_id': question['question_id'], 'arm': arm, **score})
         return {'status': 'MATURITY_CHECK_RECORDED'}
     if a.command == 'summary':
@@ -177,6 +177,9 @@ def execute(a):
         mappings = {}
         for folder in a.day_dirs:
             p = private_path(folder)
+            receipt = rows(p / 'receipts.jsonl')[0]
+            if receipt.get('evidence') != 'prospective' or receipt.get('protocol_sha256') != locked['protocol_sha256'] or receipt.get('day0') != locked['day0']:
+                raise ValueError('summary cannot consume prelock or another protocol day')
             for name in collected:
                 file = p / (name + '.jsonl')
                 if file.exists():
@@ -197,7 +200,10 @@ def main():
         print(json.dumps(result, ensure_ascii=False))
     except Exception as error:
         # Never print private HTTP body, path, prompt or exception string.
-        print(json.dumps({'status': 'FAILED', 'error_type': type(error).__name__, 'command': a.command}), file=sys.stderr)
+        status = 'INVALID' if str(error).startswith('INVALID:') else 'FAILED'
+        append_row(PRIVATE_ROOT / 'cli-failures-local.jsonl', {'status': status, 'command': a.command,
+                   'error_type': type(error).__name__, 'error_local': str(error), 'at': datetime.now(ZONE).isoformat()})
+        print(json.dumps({'status': status, 'error_type': type(error).__name__, 'command': a.command}), file=sys.stderr)
         return 1
     return 0
 

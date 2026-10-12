@@ -41,8 +41,8 @@ def day_inputs(day, db, selection, baseline_topics):
 def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIVATE_ROOT):
     locked = check_lock(protocol, lock)
     config = rules(protocol)
-    formal_root = Path(locked['route'].get('formal_live_root', '')).absolute()
-    if not locked['route'].get('formal_live_root') or not Path(db).absolute().is_relative_to(formal_root):
+    formal_root = Path(locked['route'].get('formal_live_root', '')).resolve()
+    if not locked['route'].get('formal_live_root') or not Path(db).resolve().is_relative_to(formal_root):
         raise ValueError('prelock/history database cannot serve formal run-day')
     start_day = datetime.fromisoformat(locked['day0']).date()
     chosen = datetime.fromisoformat(day).date()
@@ -53,10 +53,15 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
     selected_coverage = [r for r in coverage if r['day'] == day]
     if not selected_coverage or not complete_day(selected_coverage[-1], day):
         raise ValueError('real production capture/Sleep coverage missing')
+    daily = selected_coverage[-1]
+    if daily.get('phase') != 'formal' or daily.get('protocol_sha256') != locked['protocol_sha256'] or daily.get('day0') != locked['day0']:
+        raise ValueError('formal capture must bind authoritative protocol/day0')
+    if daily.get('snapshot_file') != 'day-state.sqlite' or Path(db).name != 'day-state.sqlite':
+        raise ValueError('immutable production day-end snapshot required')
     out = private_path(out, root)
     out.mkdir(parents=True, exist_ok=False)  # unknown execution requires reconciliation, no retry
     append_row(out / 'receipts.jsonl', {'day': day, 'status': 'STARTED', 'evidence': 'prospective',
-                                      'protocol_sha256': locked['protocol_sha256'], 'started_at': now.isoformat()}, root)
+                                      'protocol_sha256': locked['protocol_sha256'], 'day0': locked['day0'], 'started_at': now.isoformat()}, root)
     try:
         copy = snapshot(db, out / 'mcp-view/state.sqlite', root)
         _, end = bounds(day)
@@ -87,6 +92,7 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
                 base = {'day': day, 'question_id': q['question_id'], 'dimension': q['dimension'], 'arm': arm,
                         'question': q['prompt'], 'model': budget['model'], 'context_tokens': budget['context_tokens'],
                         'status': 'STARTED', 'evidence': 'prospective', 'seed': q['seed']}
+                base.update(protocol_sha256=locked['protocol_sha256'], day0=locked['day0'])
                 append_row(out / 'answers.jsonl', base, root)
                 try:
                     check_lock(protocol, lock)

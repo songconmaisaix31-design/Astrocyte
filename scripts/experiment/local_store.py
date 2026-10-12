@@ -18,16 +18,18 @@ def unredirected(path):
 
 
 def private_path(path, root=PRIVATE_ROOT):
-    p, r = Path(path).absolute(), Path(root).absolute()
-    if not unredirected(p) or not unredirected(r) or not p.is_relative_to(r) or p.is_relative_to(REPO):
+    original, original_root = Path(path).absolute(), Path(root).absolute()
+    p, r = original.resolve(), original_root.resolve()
+    if not unredirected(original) or not unredirected(original_root) or not p.is_relative_to(r) or p.is_relative_to(REPO):
         raise ValueError('local evidence path rejected')
     return p
 
 
 def local_input(path):
     """Explicit W1/W2 evidence file reads allowed; writes remain W2-exclusive."""
-    p = Path(path).absolute()
-    if not p.is_relative_to(EVIDENCE_ROOT.absolute()) or not unredirected(p) or not p.is_file():
+    original = Path(path).absolute()
+    p = original.resolve()
+    if not p.is_relative_to(EVIDENCE_ROOT.resolve()) or not unredirected(original) or not p.is_file():
         raise ValueError('external local evidence input rejected')
     return p
 

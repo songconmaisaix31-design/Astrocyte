@@ -78,7 +78,7 @@ def reason_sheet(question, answers):
     return sheet, {'three_arm': mapping, 'ab_pair': pair_mapping}
 
 
-def prediction(question, answer, db, coverage, now=None):
+def prediction(question, answer, db, coverage, now=None, locked=None):
     if question['dimension'] != 'prediction':
         raise ValueError('prediction question required')
     day = datetime.fromisoformat(question['day']).date()
@@ -89,6 +89,10 @@ def prediction(question, answer, db, coverage, now=None):
         return {'status': 'PENDING', 'reason': 'D+3_not_finished', 'due_at_ms': due, 'authority': 'future_events'}
     latest_coverage = {r['day']: r for r in coverage}
     complete = {d for d, r in latest_coverage.items() if complete_day(r, d)}
+    if locked is not None:
+        complete = {d for d in complete if latest_coverage[d].get('phase') == 'formal'
+                    and latest_coverage[d].get('protocol_sha256') == locked['protocol_sha256']
+                    and latest_coverage[d].get('day0') == locked['day0']}
     if not set(future) <= complete:
         return {'status': 'PENDING', 'reason': 'future_capture_or_sleep_incomplete', 'due_at_ms': due, 'authority': 'future_events'}
     start, _ = bounds(future[0])
