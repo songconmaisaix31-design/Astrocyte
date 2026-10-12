@@ -4,6 +4,12 @@
 
 ### 当前裁决：v2.2（2026-10-12）
 
+**16:57 最终交付：V0 PASS；V1技术回放PASS，人验PENDING。** 最终普通源码合并 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` 已push到 `validation/v1-20261012`，消费W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4` / REPORT `b4243e41fd66d730f27db15e47fd85e6006ad92c`，同一集成owner SOURCE `4d5665cbc058001c04466beb2590ee7796de78c5` / REPORT `06173e427975ff3642b7f2705534a951c0803f81` 均为普通祖先。五个业务文件与67cc8f6精确一致；相比V0 SOURCE35f508b，全部internal/app/domain/SQLite/schema/runtime/contracts/web/参数零变化。root在最终组合树完整pnpm check/build EXIT0（22 Go测试包/8无测试包、接口275、S1 14、前端90），Python13 PASS、生成表/diff检查PASS；新日志 `root-v22/v1-final-*`。新[CI38226630789](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38226630789)只对应源码12cc4dd，目前running，不借旧V0 CI冒称新源码已绿。
+
+V1最终真实产物 `v1-w1/replay-002/`：2832实际事件/信号（含849 unassigned）/1893唯一commit/六种子/30生产Sleep（10空日）；每调用仅一事件、真实ts间隔，稳定semantic ID处理160等ts相邻对。root预先独立从V0源构建期望，最终2163更新点A/M/C误差0，另含6seed共2169点由owner独立复算亦0；每日Sleep signal_ids与当日实际receipt集合严格相等、无重复。真实SQLite只读复核2832 raw BLOB、849无标event/signal、Sleep30，样本50机器参数绑定50/50。原M2/EX-01重跑PASS，不代表人验或自然task_live。
+
+W1 `task_2ff9000b73ed/ctx_2ec270cb9205` 与集成 `task_0fff678cdbb0/ctx_ffc79455aad8` 已accepted worker_done/succeeded；初次启动的turn_start_unobserved原件保留，两者均在确认composer未提交后只补Enter继续原Dispatch，未重派。两原外部终端retained，processAction none，工作树/分支保留。集成适用52顶层Go PASS/2条件SKIP（另3Windows symlink子例SKIP）、Python13 PASS、vet/生成/diff PASS；附加审计误将独立REPORT文件要求与SOURCE零差异的首RED保留，分别核对业务/报告后PASS，未改业务或验收期待。root已发两项人工问题：焦点锚点吻合与50样本人工正确率，尚未收到答复；未按超时推定通过，V1完整人验仍PENDING，正式V2/V3/V4未开、EXPERIMENT未锁、未伪造终局报告。原首RED/6016计数/旧failed/回执unknown保留，未合main、升级个人实例或复制验收库。
+
 16:45 V1技术产物已完成，待普通集成与root最终Git；W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4`已push。真实首次replay-001 16:37:10–16:38:07，精确SOURCE又独占replay-002不覆盖首件；2832生产Recorder单事件调用/2832信号，849无标事件与信号全部BLOB留存并Sleep pending，1893唯一commit，六种子、30生产Sleep含10空日。160对等ts仍按稳定semantic ID逐条处理。owner独立M2比较2169点（1983事件+180日末+6seed）误差0；root另从V0源预先生成literal math期望，对两个真实回放的2163更新点、逐条source顺序/六字段投影及30日排名独立比较，A/M/C最大误差0。root对replay-002 SQLite只读计数及50样本实际receipt/raw核验PASS；不调用生产公式生成expected。
 
 真实焦点：09-12–09-21无成功认知事件、种子全floor并列，不作为研究焦点；09-22–10-08 Morphogenesis第一；10-09–10-11 Astrocyte第一/Morphogenesis第二。10-08当日Astro仍floor，包含08日的前二比例3/4，严格08日后3/3；不调参。Agent Swarm实际信号0，A=.05，后续P2不能补假链。人工焦点确认与固定seed2026101201的50权重样本（32commit/11edit/7search）已分别发用户，均PENDING，机查s1/w.6为50/50不是人工正确率。安全轨迹图/人工表在root-v22，50原文只在本机LOCAL审计文件，不出机器。完整V1人验未批准，EXPERIMENT未锁SHA，V2/V3仅执行单准备、V4未运行。
