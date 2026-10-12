@@ -4,6 +4,8 @@
 
 ### 当前裁决：v2.2（2026-10-12）
 
+16:28 正式V1实际开工：原W1 worktree/branch，恢复终端 `term_44ba6601-f575-4731-a0bd-ff18438b1a4c`，Task `task_2ff9000b73ed` / Dispatch `ctx_2ec270cb9205`，实际Codex0.162.0 `--yolo` / GPT-6.1-Sol high fast。首次派发input accepted但turn_start_unobserved，屏幕确认任务仍在composer后仅补Enter，未复制任务/另建Dispatch；随后观察到实际读HANDOFF/STATUS及Working。保留首outcome_unknown，不用ready推断已回放；当前V1实现/测试/本机真实回放进行中，源码/产物/独立验收尚未完成。root当前Run绑定恢复为 `term_9af1a58e-0a3f-45f5-99cc-4b46bedc948d` / consumer_generation4。
+
 **16:25 主控批准V0（v2.2）**。实际源码验收SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`：归一化2832/2964=95.5466% PASS，原200非认知误标0 PASS，原100/1101 raw_unique字符串/2100生产MCP响应泄漏0 PASS。独立全量及八桶160源核对已完成，132真实剩余结构失败保留；主题1983/2832=70.0212%仅报告，849无标成功留存。完整 `pnpm check` EXIT0：Go22测试包/8无测试包，vet/gofmt/modules/架构/依赖通过，OpenAPI275示例、S1 14/14、前端90/90及类型/lint/diff通过；`pnpm build` EXIT0，三个Go程序及React/Vite构建通过。新外部原件 `root-v22/check-retest-libuv.log`、`build-first.log`、`real100-first.log`、`population-independent/`，均不覆写旧证据。
 
 整仓首次中断没有退出码；首次完整重跑在Redocly校验结束发生Node24.16.0/libuv `UV_HANDLE_CLOSING`退出3221226505，记录为RED (`check-resume.log`, exit1)。同命令定向复测EXIT0，未改源码/依赖，再完整重跑check EXIT0；不得将首RED改写。验收后[CI38222142954](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38222142954)对精确SOURCE35f508b双平台check/build/default E2E completed/success；Linux race通过，Windows race条件跳过。文档HEAD与该SOURCE业务源码/测试/配置相同，不把CI归到后续未测源码。
