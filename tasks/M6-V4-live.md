@@ -8,4 +8,6 @@ live独立state.sqlite，可由冻结V1R只读SQLite backup初始化一次以延
 
 W2边界：live库只读消费，安全coverage JSONL至少day/window_start/window_end/capture_complete/client及git计数/认知成功/无标/结构失败/真实Sleep回执；实际事件ID及ts单列安全回执。协议用既有本地文件，不建设调度/Attempt/Manifest/证明系统。具体字段/命令尽早Handoff W2并稳定，禁止跨写实验工具或协议。真实native payload只在本机新独占`v4-w1/`，不进Git/stdout/云模型。
 
+2026-10-13 root批准W2具体Handoff：`--live-phase prelock|bridge|formal`默认prelock，formal显式传已锁protocol_sha256/day0，W2按权威EXPERIMENT锁核对；每成功capture只读backup为独占`day-state.sqlite`，供截止D日末的不可变视图。snapshot/回执失败capture_complete=false并保留已提交IDs，不接受D+1事件/Sleep污染。当前未锁，不能formal；所有字段只在CLI/本地文件，不是schema豁免。
+
 必要复现测试覆盖公共mapper继承与窗口、跨源排序、稳定ID重复摄入无双贡献、空日Sleep、错误/未知回执；限定真实源prelock验证单列，不当正式七日。SOURCE/REPORT分别commit+push，报告精确SHA/时间/测试与真实缺口；唯一原集成owner后续普通合。root验收完整工具/模型/协议后才锁SHA/day0，当前不开始正式V4。

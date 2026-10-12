@@ -4,6 +4,12 @@
 
 ### 2026-10-13 V2独立验收与V3参数待定
 
+V2原owner已accepted worker_done/succeeded并完成外部worker-release（retained/processAction none）；REPORT `d7044ee1c77ae7fc9980181795b21d203a35de12`已push，root验证SOURCE930307普通祖先和remote一致。三资产及README/报告合计5Markdown最终审计0；旧报告同词扩大审计首RED保留，当前报告仅重述该字面，旧Git原件未改。唯一集成待W1/W2最终交付后执行。
+
+live首次prelock capture001因真实Codex大行触发64MiB scanner限制，capture_complete=false/0写入/Sleep not_run原件保留；原W1改接缝读取并附复现测试后，capture002真实250单事件+1生产Sleep完成。root在新效果前独立枚举固定三HEAD窗口（Morph42/Astro119/McPet89），从原V1R节点生成字面公式参考；随后只读核对3105事件/3105信号/6节点/31Sleep，250唯一回执及s1/w.6/真实ts全部一致，A/M/C最大误差0，849无标与原V1R SHA不变。证据`root-v2/live-production-independent-001-safe.json`；这是prelock入口验收，不是day0或七日数据。W1首源码045f75f已push，最终补日末独占只读backup及phase接缝后另发精确SOURCE/REPORT。批准prelock/bridge/formal默认prelock，formal显式传已锁protocol_sha256/day0由W2核对；快照/回执失败不能标完整。无新schema/引擎/调度/证明系统。
+
+W2当前26契约测试PASS（首23项4错误保留修复），真实三MCP工具PASS/模型调用0；七日kind-blind原生人口与实际全文loader一致：1003消息、1214428 content JSON字符、缺口0。题库/两份数值评分表/逐topic预测对账公平性锁前修正由原owner完成，用户模型选择与真实预算验收仍待，协议UNLOCKED。
+
 W0 SOURCE `93030768b10549542546178a006507615cdd8ba8`已push；完整Markdown候选Morph887/Astro1096/McPet23，共2006条、关联均0。root独立Python19 PASS；精确SOURCE生产重跑18响应含10错误、2855原始BLOB/11956逐事件raw_unique/7611不同字符串，wire及三Markdown零泄漏，原库/副本全表与原SHA不变。另按导出前SQL期望逐行比对event_id/ts/kind/w及A/M/C全等，不调用owner校验函数。证据本机`root-v2/production-independent/run-v7adi6ty`和`evidence-literal-independent-001.json`；正式REPORT/唯一普通集成未消费前，不登记最终分支V2完成。
 
 V3真实推理核查：31.3 GiB RAM、RTX5060 Laptop 8151 MiB VRAM；PATH无ollama/lms/llama-server，四个限定loopback候选端口均不可用。W2继续工具与已授权本地Qwen3-32B量化候选部署，实际模型/tokenizer/context/速度尚未验收。三臂共用模型未由用户指定，root已询本机32B或更高本地算力路线；未回答保持未决定，不锁模型/预算或day0。锁前公平性复核已退W2：事实题评自然项目/工作类型，不以A专有event_id或引擎精确计数计胜负；B读取滚动七日所有授权会话全文，按实际预算最大装载，已选消息按时间正序，不摘要/截单条。
