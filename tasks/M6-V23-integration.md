@@ -6,7 +6,7 @@
 |---|---|---|
 | W0 V2 | SOURCE93030768b10549542546178a006507615cdd8ba8；REPORTd7044ee1c77ae7fc9980181795b21d203a35de12 | 三主题完整2006条Markdown；生产MCP/原库回溯与零泄漏已独立PASS |
 | W1 live | SOURCE4fbea9d7a32ed7b7f0e0eaf382cd7dc9fe7091a8；REPORT101ee708fa835c25a733a82257855749748be180 | 两native根/三git仓闭日、singleton生产Record/Sleep、只读日快照、phase边界；prelock250新事件/重复零贡献已独立PASS |
-| W2 V3 | SOURCE4a179cef4735ee6bfa1dc87e0bc4624774f16fc0；REPORT8e092164d4761fffda1ea68419ab374dd45d10b0；生命周期结算后才启动集成 | 题集/ABC全文预算/事实审计/独立双评分/未来预测/协议检查；无损A候选未激活、模型未定、EXPERIMENT未锁、day0不存在 |
+| W2 V3 | SOURCE4a179cef4735ee6bfa1dc87e0bc4624774f16fc0；最终REPORT670f6ce535f4b8178fa956fdd726085687f0b67d（8e092为追加root验收前报告）；accepted worker_done/succeeded | 题集/ABC全文预算/事实审计/独立双评分/未来预测/协议检查；无损A候选未激活、模型未定、EXPERIMENT未锁、day0不存在 |
 
 固定集成工作树`C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、分支`songconmaisaix31-design/validation-v1-integration`、原Codex --yolo terminal `term_2b81572f-6ce6-407e-8835-acaaef4d4acf`。先读HANDOFF/STATUS和本单，普通合root最新精确文档SHA，再按表合三个精确REPORT。所有SOURCE、REPORT及首RED普通祖先保留，零force/rebase/squash，最终SOURCE/REPORT各普通commit+push。
 
