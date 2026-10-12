@@ -1,8 +1,9 @@
 {
-  "version": "v22.4",
+  "version": "v22.5",
   "pre_run_revision": "v22.1 committed 8a34686 before any full run; root corrected shell contribution unit and paper-target Read semantics before first full run.",
   "v223_revision": "After first v22.2 RED: repair literal grammar for regex/template/numeric JS and shell here-data; classify explicit goal/mail/thread controls as noncognitive and explicitly named mail search as search, by tool semantics, not mapper success. Full frozen input rerun; original outputs unchanged.",
   "v224_revision": "v22.3 remaining literal grammar failures repaired by a finite data-expression parser: immutable literal const binding, scalar template substitution, string concatenation, literal array join, literal JSON.stringify only, never arbitrary JS evaluation. Windows shell input parsed using the existing PowerShell Parser.ParseInput syntax-tree API; historical command is JSON stdin data, never executed. Extract static CommandAst heads; dynamic invocation, Invoke-Expression/eval and syntax errors remain failed. Scope of units and seed unchanged; full frozen population rerun.",
+  "v225_revision": "Add closed literal string replacement (literal text or quote/backslash/newline regex only) and constant folding for single-parameter expression-only quote helpers through that same finite data grammar; no arbitrary function body, control flow or JS execution. For shell data normalization, accept original Parser.ParseInput syntax tree when original is valid and normalized input is invalid. Parsing repairs only; all categories, units and parameters unchanged; full frozen input rerun.",
   "declared_before_full_run": true,
   "sample_seed": 2026101222,
   "sample_method": "Sort by stable event_id within each semantic bucket, then uniform sample without replacement, 20 or all if smaller; same seed reset per sorted bucket.",
