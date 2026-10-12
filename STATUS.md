@@ -4,6 +4,12 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+原W2已复用：Task task_c50d122beaa6 / Dispatch ctx_8524cbe64ddc / 原terminal70b809cd，普通合root2194e4d后继续独占实验写域。首次worker-start记录turn_start_unobserved/input_accepted；screen确认5591字符原任务仍在composer，root仅补一次Enter，随后worker-read明确live/working，无重派。旧unknown回执保留。
+
+root独立A局部验收PASS：事前query_only SQL预期baseline-sql-expectation-001.json与实际三材料逐项比较，全6节点状态排序/数值头/关联/approved经验全等，kind×日分组15/5/2、整数总权重误差0，887/1096/23条event_id完整且原序回溯。全2855原件11956 raw_unique/7611 distinct在材料与真实MCP wire/decoded结果中泄漏0；UTF-8材料27931/33353/1927字节，原库SHA279ffd仍一致。证据root-v4-start/layered-a-independent-002-safe.json。001-read-error为root读证据envelope少取material键的KeyError，未执行产品断言，原件保留。此PASS只覆盖本地分层材料，正式字节预算与模型门禁待实际路由验收。
+
+真实公开native探针完成14.1967秒，usage input8416/output40，完整输出与stream一致；first_process_byte4.9152秒、first_agent_message_event10.5779秒，不冒称远端首token。实际路由为CLI持有认证的OpenAI外部推理，未发送私聊；response model echo与exact tokenizer未由该输出提供。新鲜本机目录default272000/max872000/effective95%，公开1050000声明不作为实际支持验收。B真实满预算未执行；原raw本地令与外部B原文处理边界尚需具体裁决。全部证据v4-w2/public-native-second，首探针失败保留；协议与day0仍未锁。
+
 用户已决定A分层全量表示、ABC统一gpt-6.1-sol、B时限1800秒；替代下方历史「模型/表示待答」。执行单见[tasks/M6-V4-start.md](tasks/M6-V4-start.md)。原W2独占实现与协议，root独立验收，唯一原集成owner普通合；不重开V1，不改冻结域。协议仍UNLOCKED，day0未开始；A激活/复算、真实满预算B、CI、协议终稿、全文SHA五门禁逐条通过后锁定。
 
 新组合[CI38283687781](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38283687781)现已completed/success，精确SOURCE c61c841d3cf70fc4add5e6768cdaa11d47dd4d32，两job check(ubuntu-24.04)/check(windows-2025)均SUCCESS。1bbd055仅文档变更；旧CI38279757301 Windows首RED与本机定向1PASS保留，不以新结论覆盖历史。后续实现变更另确认其CI。
