@@ -201,7 +201,7 @@ func TestClosedForOfRejectsAmbiguityMutationAndRuntimeControl(t *testing.T) {
 }
 
 func TestObservedRepositoryIdentityDoesNotGuessWorktreeSpelling(t *testing.T) {
-	for _, c := range []struct{ value, want string }{{"C:/repo/Astrocyte/.git", "Astrocyte/Attention Engine"}, {"Astrocyte", "Astrocyte/Attention Engine"}, {"https://github.com/owner/maimai-monster.git", "McPet"}, {"git@github.com:owner/Morphogenesis.git", "Morphogenesis"}, {"attention-engine-w4", ""}} {
+	for _, c := range []struct{ value, want string }{{"C:/repo/Astrocyte/.git", "Astrocyte/Attention Engine"}, {"Astrocyte", "Astrocyte/Attention Engine"}, {"https://github.com/owner/maimai-monster.git", "McPet"}, {"https://github.com/songconmaisaix31-design/mcpet", "McPet"}, {"git@github.com:owner/Morphogenesis.git", "Morphogenesis"}, {"attention-engine-w4", ""}} {
 		if got := repositoryTopic(repositoryIdentity(c.value)); got != c.want {
 			t.Fatalf("repository identity got %s", got)
 		}

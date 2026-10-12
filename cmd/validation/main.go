@@ -314,7 +314,20 @@ func main() {
 	semanticOut := flag.String("semantic-out", "", "exclusive new directory for v22 semantic audit; no replay")
 	semanticPolicy := flag.String("semantic-policy", "events/semantic_policy_v22.json", "versioned preregistered semantic policy")
 	replayOut := flag.String("replay-out", "", "exclusive external v1-w1 directory for authorized production replay")
+	v1rOut := flag.String("v1r-out", "", "exclusive new v1r-w1 run directory")
+	v1rSource := flag.String("v1r-source", "", "separately confirmed fixed McPet capture directory under v1r-w1")
 	flag.Parse()
+	if *v1rOut != "" || *v1rSource != "" {
+		if *v1rOut == "" || *v1rSource == "" || *replayOut != "" || *semanticOut != "" || *input != "" || *output != "" || *contextPath != "" {
+			fmt.Fprintln(os.Stderr, "V1R requires frozen population/Git, confirmed source and new exclusive output only")
+			os.Exit(2)
+		}
+		if err := runV1R(*populationDir, *gitInput, *v1rSource, *v1rOut); err != nil {
+			fmt.Fprintln(os.Stderr, "V1R failed; inspect exclusively local evidence")
+			os.Exit(1)
+		}
+		return
+	}
 	if *replayOut != "" {
 		if *semanticOut != "" || *input != "" || *output != "" || *contextPath != "" {
 			fmt.Fprintln(os.Stderr, "replay accepts only frozen population, Git and exclusive output")

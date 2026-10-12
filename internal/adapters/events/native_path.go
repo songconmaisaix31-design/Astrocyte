@@ -6,6 +6,13 @@ import (
 	"path/filepath"
 )
 
+// ValidateLocalReplayPath reuses the existing component/reparse/8.3 checks at
+// command entrypoints. The caller still restricts which roots are authorized.
+func ValidateLocalReplayPath(path string) error {
+	_, err := unredirectedReplayPath(path)
+	return err
+}
+
 // Check every selected path component independently of name expansion. This
 // also rejects redirects within the approved root, not only outside escapes.
 func unredirectedReplayPath(path string) (string, error) {
