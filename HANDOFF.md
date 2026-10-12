@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+2026-10-13 04:22 root已实际锁V3，day0=10-13，EXPERIMENT全文SHA256=`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，权威外部锁v4-w2/locked-protocol-20261013-first.json。正文UNLOCKED是锁前不可改快照，锁后以此条/STATUS/外部锁为准，不再编辑或重锁。CI SOURCE4727f7a新run38300750305双平台完整SUCCESS（各226PASS/30条件SKIP），只Windows worker2→1；REPORT9f69b06已普通合root组合d749ecb并push，冻结业务/协议全等，原owner已结算/release retained。旧两RED和本机PARTIAL149PASS/17SKIP/90未完成保留，不另重跑模型/测试。内置automation f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b已启用，首10-14 00:20；严格按M6-V4-daily-operation处理昨日，正式根formal-20261013-first，不重新init；七日实际答/用户表/末D+3仍待真实日期，末尾10-23完成并禁用。原B豁免已授权、不重新问；用户原因评分不可代填。下方未锁/disabled/PENDING为历史。
+
 03:51 新eb021891 CI两个完整Windows attempt均资源错误（第二次workspace导航直接ERR_NO_BUFFER_SPACE），原件保留。root限定原集成owner仅Windows CI worker2→1薄配置候选，全部256项/断言/超时/retries=0不变，Linux/业务/实验全不动；执行单M6-V4-ci-repair.md。先本机全套与新精确CI，再root锁SHA/day0/日程启用，当前仍未锁/disabled；不要再盲重试旧run或重发完整B。主组合fb3及rootcheck/build绿保持。
 
 03:38 主组合SOURCEfb3ab575已普通合最终W2/唯一集成REPORT并push，root整仓check/build首次PASS，Python53独立/组合91、Go122适用PASS，冻结域零diff。新精确eb021891 CI38297147723 attempt1 Windows225PASS/30SKIP/1FAIL：论文检索页React资源ERR_NO_BUFFER_SPACE、空白页、按钮30秒timeout；首日志/截图/trace已本机保留，正在同SOURCE全Windows job attempt2，不以定向或旧CI替代。两owner已结算/release retained；协议未锁/day0未开始、Orca内置automation仍禁用。全门禁通过后root锁SHA/真实日期并启用既有日计划；不要重新询B授权/模型或重发强B。

@@ -1,5 +1,7 @@
 # V4 日运行计划（root 执行；2026-10-13）
 
+实际权威锁已于2026-10-13T04:22:31.789146+08:00完成：day0=2026-10-13，全文SHA256=`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`。锁路径仍为v4-w2/locked-protocol-20261013-first.json；正式live根formal-20261013-first，旧10-12 bridge不是实验日。内置automation f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b已enabled，首10-14 00:20，Asia/Shanghai cron `20 0 14-23 10 *`。只核对已有锁，不重锁；正文UNLOCKED为锁前快照，以权威锁验SHA。最后实际D9闭日处理10-23后禁用。日答、人评、预测均待实际执行。
+
 使用 Orca 内置 automation 接续已有 CLI，不新增调度器、Agent 开发轨或业务代码。仅 root 文档写域可修改；领域故障 Handoff 原 owner。权威锁预定为外部 v4-w2/locked-protocol-20261013-first.json，实际 lock 成功前不得采正式日或请求三臂。
 
 ## 每次启动的门禁

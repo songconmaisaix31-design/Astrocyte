@@ -4,6 +4,16 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+**2026-10-13T04:22:31.789146+08:00：V3权威锁完成，V4 day0=2026-10-13。** EXPERIMENT.md 全文件 SHA-256=`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，外部唯一锁 `v4-w2/locked-protocol-20261013-first.json` 的 authority=root/reviewed=true 与文件字节已独立核对。预注册正文保留锁前UNLOCKED快照，实际锁以本条及外部锁为准；锁后不编辑正文或重新hash掩盖变更。B-only RAW例外、全部历史修正与观察已入锁前终稿；A/产品接口derived零raw、C仅共同题目维持。
+
+CI薄配置 SOURCE `4727f7a02a9b0fdfa1f12917f388d08da1c5ed84`（03:54:31+08）与独立 REPORT `9f69b06b164b675036cbe7dfb55e0d582d9c9bf4`（04:17:21+08）均普通push；root普通合为组合 SOURCE `d749ecb54015520e92847cad31b14a0bdabf2f34`（04:21:57+08）并push。仅Windows全套E2E workers=1，Linux原入口不变；全部256项、两viewport、断言、timeout及retries=0不变。业务/协议/测试与已验fb3/eb021891全等，workflow与精确4727f7a全等；引擎/schema/参数/权重/mapper/UI相对1bbd055零diff。原唯一集成task9d3daebf8137/ctxb0e22d7e32da已accepted succeeded/release external_terminal retained，原历史、工作树与证据保留。
+
+新精确[CI38300750305](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38300750305) completed/success：Windows2025和Ubuntu24.04各全套226PASS/30条件SKIP，Windows1worker/7.7分钟，Linux2workers/3.2分钟；check/build均SUCCESS，Linux race PASS、Windows按条件SKIP。root首次完整pnpm check/build PASS；独立experiment Python53 PASS，组合Python91 PASS，适用Go122顶层PASS/12条件SKIP。最终仅CI三行与交接文档变化，不重复无新增问题的已绿检查。实际新CI元数据与日志 `root-v4-start/source-4727f7-ci-first-green-{safe.json,log}`；旧eb021891两个225PASS/30SKIP/1FAIL的RED、trace原件保留。本机重复全套按root指令停止所属测试进程，PARTIAL149PASS/17SKIP/90未完成、主动中止EXIT1，不计完整PASS。
+
+真实完整B门禁已PASS：1003原消息、28.859787秒、input491479/output495、完整双通道1633656 UTF-8字节；仅启动验收，不计正式七日。A聚合误差0、2006引用可回溯、raw0保持；ABC固定gpt-6.1-sol/high/priority/context872000/output reserve4096/共同byte5094907/model_context_split。未观测provider model echo/wire/exact tokenizer仍false。root接受路由 `v4-w2/route-root-accepted-20261013-first-safe.json` 明确新CI/组合源码/原正式live根，原DRAFT及首次失败不覆盖。
+
+Orca内置automation `f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b` 已enabled=true；Asia/Shanghai cron `20 0 14-23 10 *`，首运行2026-10-14T00:20:00+08:00。固定正式根 `v4-w1/formal-20261013-first`，既有10-12 bridge250事件/1Sleep不计七日，禁止重新init。10-13至19七个实际闭日三臂；10-20至22仅继续真实采集与成熟预测，末D+3于10-23闭日运行完成；届时禁用日程。机器及Orca需运行；未执行的日程、漏日和unknown不伪补。七日84原答、7独立judge、7用户原因评分及全部成熟预测尚未产生；实际用户评分按每日本机表独立提交，不代填，终局报告尚未写。执行读 `tasks/M6-V4-daily-operation.md`。
+
 03:51 CI38297147723 attempt2仍首失败全量225PASS/30SKIP/1FAIL，这次navigation.spec.ts:106 `/workspace` page.goto直接net::ERR_NO_BUFFER_SPACE；attempt1失败的paper-search本轮通过，两个结果均保留。原套件实际默认2workers；root限定原集成owner仅`.github/workflows/check.yml` Windows E2E加workers=1，Linux不动，256项/两viewport/断言/timeout/retries=0不变。执行单tasks/M6-V4-ci-repair.md。是CI执行资源修复候选，不改UI/实验/引擎，不宣布修复通过；全Windows串行与新精确SOURCE CI后再锁。日程仍disabled，day0未开始；不再无诊断重试旧run。
 
 03:38 原W2 SOURCE `eb0218913268618952207be1d89070bcfd2ebe73` / REPORT `fe7fa53a56501cf5450649cce4b960b16f204d4a` 已push并accepted succeeded/release retained。原唯一集成Task57086b33405f/Dispatchc3b8532f9071，SOURCE `2f64f04452ab26b769209d74f7b13fbb49b4dc93` / REPORT `84ec96a4fa6ae54530b209a463d74f39d4190356` 已普通合、零冲突/胶水、报告已push且结算/release retained。主组合SOURCE `fb3ab57569db4bfa4a62cc5bfe99b3370f563092`（03:30:24+08）已push，九路径与eb021891全等，冻结域零diff；root独立53 PASS，集成Python91与Go122顶层PASS/12条件SKIP；root最终整仓check/build首次EXIT0。日志root-v4-start/raw-scope-final-combination-{check,build}-first.log，原domain/RED/unknown全保留。
