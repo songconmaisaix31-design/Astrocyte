@@ -1,6 +1,10 @@
 # Astrocyte 主控交接
 
-## 当前入口：M6 v2.2（2026-10-12）
+## 当前入口：M6 v3.0（2026-10-12）
+
+先读STATUS顶层及`tasks/M6-validation-v3.md`/`tasks/M6-V1R-replay.md`。用户补授权McPet仓git，先W1 V1R补源与原会话仓根重分类→root独立复核→用户轨迹/权重终审关账→V2三主题证据资产→V3协议锁→七日V4。McPet本机mcpet与任务maimai-monster身份差异已询问，候选源未确认前不采raw。旧SOURCE12cc/CI38226630789及replay-001/002保留，不能当V1R完成。V1人验PENDING，不代填；引擎/schema/参数/权重冻结，旧P2新增UI撤销。root只文档/协调/独立验收/最终Git，复用原W1和唯一原集成Codex --yolo工作树。
+
+## 历史入口：M6 v2.2（2026-10-12）
 
 17:09最新：源码12cc4ddf3e0a65e18be3bb3bf67f09652d928e46的双平台CI38226630789 completed/success，check/build/default E2E全部PASS，各226PASS/30条件SKIP，Linux race PASS/Windows条件SKIP；root本地完整check/build/Python13及真实回放独立复算均通过。收尾仅文档，不重称源码CI。V0 PASS、V1技术PASS，人验焦点/50权重仍PENDING，正式V2–V4未开、EXPERIMENT未锁；两项人工问题已发，未收到答复不按超时填通过。两当前Dispatch已结算，原工作树/分支/外部终端保留、个人实例/main未动。先读STATUS顶层及真实本机replay-002，收到人验再继续；保留原RED/unknown/旧failed。下方为历史阶段。
 

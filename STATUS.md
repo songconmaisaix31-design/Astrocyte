@@ -2,7 +2,11 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
-### 当前裁决：v2.2（2026-10-12）
+### 当前裁决：v3.0（2026-10-12）
+
+用户授权McPet窗口git log，执行[V1R补源任务](tasks/M6-V1R-replay.md)及[v3.0事实源](tasks/M6-validation-v3.md)。引擎/schema/参数/权重冻结不变，仅W1接入源/仓根与验证产物扩展；首次V1、6016及全部RED保留。当前实际仓`C:/Users/DW/orca/mcpet`/remote mcpet与任务文字maimai-monster存在身份差异，已向用户确认路径；未答前候选源采集PENDING。原冻结会话cwd无McPet，转入数按实际重算，不预设849下降。V1人验尚未确认，新轨迹与权重表在V1R后送审；协议未锁、V4未开。V2改为三主题真实库Markdown资产，不新增UI，旧React/ECharts扩展执行单撤销。七日末未到期D+3预测列PENDING，真实到期后才能终局统计。
+
+### 历史裁决：v2.2（2026-10-12）
 
 **17:09 双平台CI最终通过。** [CI38226630789](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38226630789)对精确源码 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` completed/success：Ubuntu/Windows check、build、default E2E全部PASS，各226 PASS/30条件SKIP（3.2m/5.1m）；Linux race PASS，Windows race条件SKIP。完整原件 `root-v22/v1-ci-final.log`。收尾仅STATUS/HANDOFF/计划文档，业务源码/测试/配置与该SOURCE一致；文档HEAD不冒充新源码CI。V0 PASS、V1技术PASS；焦点人工确认与50权重人工正确数仍PENDING，正式V2/V3/V4未开，EXPERIMENT未锁SHA，不宣称已证明优于普通Agent Memory。两当前owner已结算、终端/工作树保留；下一步以两项真实人工结果继续验收，所有原RED/unknown/旧failed不改写。
 
