@@ -4,6 +4,10 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+03:20 真实满人口B启动门禁及root独立复核PASS，尚未锁协议/day0。官方CLI0.162.0两个原生输入通道保留全部1003消息：初始文件900603字节、stdin733053字节，完整compact JSON原序可复原、完整写入关闭，实际input491479/output495（reasoning202）、28.859787秒，一次turn.completed，无工具/compact。原始响应仅本机harness。原stdin字符限拒绝和首次unknown/NOT_SENT保留；完整B首次parent验收误要求explanation:str，原题未声明类型，修复非空str或dict后同封存应答离线PASS、未重发。两条pre-turn error类型项经官方源码及四公开成功控制确认为初始化feature warning；未知或turn后error仍拒绝。root严格旧白名单首RED保留。
+
+root接受模型实际配置身份与共同ABC预算：gpt-6.1-sol/high/priority、context872000、输出预留4096、model_context_split；共同字节上限5094907来自900000+框603+4×1048576原生输入上界，未以当前人口大小削弱未来B。B四题最大1633702，三主题A最大31714/37448/3826；A原SQL聚合误差0、2006引用回溯/raw0保持。provider wire model echo/精确preflight tokenizer不可观测如实记，actual usage核验替代近似边界剪裁。证据root-v4-start/b-full-completion-budget-independent-002-safe.json、v4-w2/pre-turn-warning-classification-first-safe.json。原W2已收到最终身份/预算/正式live根验收Handoff，下一步终稿SOURCE+新精确CI+REPORT、唯一原集成、root最终check/build后锁SHA；旧5e CI不替新源码。正式库bridge10-12不是七日数据。
+
 02:54 原W2已在同工作树继续Task task_1dc790d8c190 / Dispatch ctx_01c785994541，Codex --yolo。首启动input_accepted/turn_start_unobserved保留；screen确认6799字符原任务仍composer后只补一次Enter，随后明确live/working，无重派。窄scope授权复现42 PASS；唯一真实全人口B首调用在4.854573秒被native turn/start校验拒绝：input_too_large/code-32602、max_chars1048576、actual_chars1505850。stdin1632692字节写全并关闭，1003原消息与既有候选全等，仅thread.started、无turn.completed/usage/回答；root独证b-authorized-first-independent-safe.json。首unknown回执保留，追加not_sent_to_model对账，不把它写成1800秒推理timeout。官方0.162源码累计所有input text字符，多块不能解限；正在原实验域调查同模型/端点/隔离配置的官方上下文通道，禁止剪裁/摘要/多轮预读/读凭据绕路。强B/共同预算/协议锁/day0仍未过。
 
 root以既有生产CLI首次创建独立`v4-w1/formal-20261013-first`，10-12闭日bridge完成250事件（Morph42/Astro119/McPet89）、1生产Sleep、累计3105事件/信号和31Sleep，late/source_errors/normalization_failed均0，完整day-state.sqlite。phase=bridge，protocol/day0空，不计七日；原V1R SHA279ffd不变。root独证formal-bridge-20261012-independent-002-safe.json：六节点A/M/C及所有标量精确等于已验prelock；按origin_key匹配独立库新生成250内部event_id后，全部节点JSON全等。首次跨库直接比较内部ID的错误期待/RED原件保留，差异只来自独立插入身份，不是动力学失败。授权记录仅本机root-v4-start/b-raw-user-authorization-20261013.json，不扩大到产品或其他臂。

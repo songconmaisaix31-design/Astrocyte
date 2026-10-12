@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+03:20 真实1003消息B完整启动答及root独验PASS：28.859787秒/input491479/output495，完整双通道原序可复原，无工具/compact。root已接受gpt-6.1-sol实际配置身份及ABC共同context872000/output4096/byte5094907；原输入拒绝、schema误判首RED及两feature warnings原件保留，同封存响应复核、无重发。原W2收到最终Handoff正在终稿SOURCE/新CI/REPORT；唯一原集成普通合与rootcheck/build后才锁全文SHA/day0。正式live根v4-w1/formal-20261013-first已生产bridge250事件/1Sleep，不计七日。当前具体证据/剩余读STATUS顶部，禁止用下方历史「豁免待答」「强B未过」重新询问或覆盖实际验收。
+
 02:54 本轮原W2 task1dc790d8/ctx01c78599已live续作，窄scope42测试PASS；获授权后真实完整B首调用被native累计1048576字符上限拒绝，实际1505850字符，4.854573秒/无usage/无模型答。root独证stdin1003人口完整、确定性前置拒绝，首unknown保留追加NOT_SENT，不盲重试；同模型官方上下文接缝调查归原W2。root独立正式库10-12 bridge250事件/1Sleep完成，六节点标量及origin匹配后全JSON与已验prelock全等；独立库内部ID不要求相同。具体源/证据读STATUS最新，协议与day0仍未锁，不能用公共探针替强B。
 
 用户2026-10-13已准予V4 B臂raw定向豁免：仅最近七天聊天、仅锁定gpt-6.1-sol路由、仅外部对照harness，实验结束失效；B输入/响应本机封存，不进产品库/MCP。A/C与产品接口零raw保持。下一步原W2按tasks/M6-V4-raw-exemption.md登记协议、收窄旧ABC笼统授权字符串并执行一次真实满预算B门禁；root只验收/状态/最终锁，唯一原集成普通合。下方豁免待答为历史，不重新索取同意。
