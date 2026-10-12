@@ -98,7 +98,10 @@ func v1Window() time.Time {
 }
 
 func loadV1Inputs(nativePath, gitPath string) ([]replayInput, map[string]int, error) {
-	mapper := events.NewNativeSemanticMapper()
+	return loadV1InputsWithMapper(nativePath, gitPath, events.NewNativeSemanticMapper())
+}
+
+func loadV1InputsWithMapper(nativePath, gitPath string, mapper *events.NativeSemanticMapper) ([]replayInput, map[string]int, error) {
 	counts := map[string]int{}
 	var rows []app.StoredEvent
 	seen := map[string]bool{}
