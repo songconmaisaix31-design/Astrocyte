@@ -1,5 +1,7 @@
 # V4 启动门禁执行单（2026-10-13）
 
+02:30执行登记：本轮W2与唯一原集成均accepted succeeded/release retained；主组合SOURCE18085f4d，root check/build首次EXIT0、独立Python79 PASS、冻结域零diff。新CI38289430526精确5e1822b双平台SUCCESS，组合业务/协议/配置/测试全等。A激活及本地SQL/引用/raw审计PASS；实际B未发送、正式共同byte预算未验收、协议未锁、day0未开。下一步仅等待原raw本地条款的V4定向外部处理豁免答复，获答后仍沿原W2，不新建轨。最终证据与精确SHA见STATUS顶部。
+
 事实源：用户2026-10-13「V4启动前定案」，覆盖1bbd055之后未决定的模型与A表示。V1/V1R不重开；冻结引擎、schema、参数、权重、mapper、UI。旧Qwen600秒timeout/delivery_unknown与旧Windows首RED保留。原协议UNLOCKED，五项门禁全部通过后root才记录全文SHA和实际day0。
 
 ## 固定写域与顺序

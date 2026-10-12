@@ -1,5 +1,7 @@
 # V4启动工具集成交接（2026-10-13）
 
+02:30集成已结算：原Task70b3fc50/Dispatchaa81de04 accepted succeeded/release retained，SOURCEccdf9bdca87afd4c1697ca69bc75388c26a96333、REPORT82eaf6d70f3e4d62f535361ade1e3e63fb563ec6已push，零冲突/胶水。root普通合为SOURCE18085f4d30ce6f095249274e20ad245a42de4fa5，独立Python79、整仓check/build均PASS；与W2 SOURCE5e1822b业务/配置/协议/测试全等。新CI38289430526双平台SUCCESS，旧首RED保留；下方in_progress为派发时历史。真实强B/共同预算/锁SHA/day0仍未过门禁，用户raw定向豁免问题待答，不能把工具交付写成V4启动。
+
 V1/V1R已用户关账。当前交付为分层A、统一gpt-6.1-sol配置与1800秒真实流式接缝；真实强B受原raw本地令阻塞，用户定向豁免问题待答，协议UNLOCKED/day0未开始。不得用公开短探针、fixture、全量本地构造替代真实满预算B验收。
 
 复用唯一原集成owner：attention-engine-final-integration / songconmaisaix31-design/validation-v1-integration / term_2b81572f-6ce6-407e-8835-acaaef4d4acf。Codex --yolo，未新增Agent。唯一报告write_path tasks/M6-integration.md；必要薄胶水先报告精确路径，领域问题退原W2。

@@ -2,6 +2,10 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+02:30 最新组合SOURCE18085f4d已普通合唯一原集成REPORT82eaf6d7，W2 SOURCE5e1822b/REPORT3c758a0及集成SOURCEccdf9bdc全保留；两owner已accepted succeeded/release retained，当前无需等待worker。root整仓check/build首次EXIT0，独立Python79 PASS，冻结域零diff。新CI38289430526精确5e1822b双平台check/build/E2E SUCCESS，Linux race PASS/Windows条件SKIP；主组合业务/配置/协议/测试与此源码全等，仅交接Markdown不同。收尾只更新root文档并skip ci普通push，不借旧CI替代新源码。完整SHA/时间/日志见STATUS顶部。
+
+A分层材料已正式激活，本地SQL误差0/2006引用回溯/raw0；B1003原消息四题全量一致。真实强B仍NOT_SENT/0调用：原raw本地条款与ChatGPT外部处理冲突，用户定向豁免问题尚未答。模型gpt-6.1-sol/A表示/1800秒已定，不重新询问。协议UNLOCKED、共同正式byte预算未接受、day0及七日未开始；收到真实豁免后复用原W2启动一次完整B验收，再root确认预算与全文SHA。保持历史600秒delivery_unknown、Windows首RED和原回放，不预填七日/人评/末D+3。
+
 02:16 原W2本轮工程交付SOURCE5e1822b/最终REPORT3c758a0已push并accepted succeeded/release retained，分层A已正式接线，ABC配置gpt-6.1-sol/native同空cwd、1800秒/无compact/无工具。root精确41测试PASS，三主题SQL/全部2006引用/raw0及1003条B原全文四prompt独验全等。实际B首隐私NOT_SENT/0调用保留；原raw本地令的V4定向外部处理豁免问题用户尚未答，没有强B推理、统一正式byte预算或day0。唯一原集成Task70b3fc50/Dispatchaa81de04正在普通合rootff4ec/W2最终REPORT；新5e CI38289430526仍PENDING，root最终check/build与push随后执行。只读首失败与精确证据见STATUS顶部；不重问已定模型/A。
 
 2026-10-13用户V4启动定案：A全状态排序+explain_focus数值头/kind×日聚合/全部event_id+approved经验；ABC同gpt-6.1-sol同预算，B1800秒。执行单tasks/M6-V4-start.md；原W2继续同写域，root验收，原唯一集成owner普通合。新CI38283687781精确c61c841双平台SUCCESS，旧首RED保留。模型/表示已经决定，不再询问；实际路由、A激活、满预算B和协议终稿仍需验收，当前未锁SHA/day0。

@@ -4,6 +4,16 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+**02:30 本轮启动工具已普通集成；A本地无损验收PASS，新源码双平台CI SUCCESS；真实满预算B未发送，协议UNLOCKED、day0/V4 NOT_RUN。** 主分支`validation/v1-20261012`组合SOURCE `18085f4d30ce6f095249274e20ad245a42de4fa5`（02:21:32+08）普通合唯一原集成REPORT `82eaf6d70f3e4d62f535361ade1e3e63fb563ec6`，集成SOURCE `ccdf9bdca87afd4c1697ca69bc75388c26a96333`及W2 SOURCE5e1822b/REPORT3c758a0均保留为普通祖先。零冲突、零胶水；引擎/schema/参数/权重/mapper/UI相对1bbd055零diff。两本轮owner均accepted succeeded、release external_terminal/retained，原工作树和终端保留。
+
+root精确组合SOURCE首次`pnpm check`、`pnpm build`均EXIT0，含Go全包/vet/依赖/架构/合约/API14、前端13文件90测试及生成/diff检查；独立`python -m unittest discover -s tests/validation/{evidence,ingest,experiment} -p 'test_*.py' -v`逐目录运行19+19+41=79 PASS。原集成适用Go122顶层PASS/12条件SKIP，含M2/EX-01/M5；不把条件SKIP记为真实采集通过。首日志保留于本机`root-v4-start/final-combination-{check,build}-first.log`及`final-{evidence,ingest,experiment}-python-first.log`。
+
+02:29 root复核[新CI38289430526](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38289430526)：精确W2 SOURCE `5e1822bdf9118060586d0f18896f4fdba0095ad0` completed/success，Ubuntu24.04与Windows2025 check/build/E2E均SUCCESS；Linux race PASS，Windows race按条件SKIP。主组合的业务代码、配置、协议、测试与该SOURCE全等，仅五份root/集成交接Markdown不同。最后收尾仅改root状态/交接/执行单，提交skip ci，不冒称最终文档HEAD另跑CI。旧Windows首RED、旧600秒Timeout/delivery_unknown及各次首次失败原件继续保留。
+
+A已激活为全量排序状态、数值头、kind×日统计、全部引用及approved经验；独立SQL误差0，2006引用全可回溯，raw泄漏0，三材料27931/33353/1927 UTF-8字节。B七日1003条原消息逐物理行核对全等，四题均完整装载；最大native输入1632713字节。上述是本地材料验收，正式共同byte ceiling仍待真实满预算B及actual usage验收。新1800秒总期限/流式已接线；原600秒非流式请求未收到应答或usage，真实provider首字节未观测，不能倒推成已证明的首字节或总推理超时。公开native探针first_process/first_agent_message与真实provider首token分列。
+
+真实路由为官方CLI认证的ChatGPT外部推理。原v2.0§1.4 raw本地条款未撤销；root已提出一次仅V4启动验收与七日B臂全文的定向豁免问题，用户尚未答。实际私聊模型调用0/not_sent，未代写授权，未盲重试。EXPERIMENT已纳入本裁决及历史修正/观察，仍未锁SHA；获真实豁免后沿原W2执行一次满预算B、root确认共同预算再锁定。七日实际答案/人评及末尾D+3均未执行，不填终局报告。
+
 **02:16 W2本轮工程交付accepted succeeded；实际强B/day0仍BLOCKED/NOT_RUN。** SOURCE5e1822bdf9118060586d0f18896f4fdba0095ad0（02:13:07+08）与最终REPORT3c758a035361876a390e6eda4afc329059bd008e（02:15:45+08）均已push，普通祖先/远端已核；13源码/协议/测试变化只在原实验写域，引擎/schema/参数/权重/mapper/UI未改。root独立精确SOURCE `python -m unittest discover -s tests/validation/experiment -p 'test_*.py' -v` 41PASS/2.735秒/EXIT0，另真实loopback SSE定向1PASS；这不是真实gpt长推理验收。W2 release为external_terminal/retained/processAction none。
 
 root独立全1003条B逐12原JSONL physical行核对content/role/phase/ts一致，四题payload每题全部1003按时间排序、零删减、JSON字节1632638/1632511/1632617/1632601，证据root-v4-start/b-full-independent-001-safe.json。native共同75字节前缀另计，最大1632713。正式统一byte ceiling仍未接受，不能把观测长度当冻结预算。实际新启动CLI隐私首RED为PRIVATE_EGRESS_BLOCKED/not_sent/model_calls0，原件v4-w2/b-native-privacy-first保留；未把NOT_SENT写成推理timeout。
