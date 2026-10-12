@@ -1,6 +1,16 @@
 # Astrocyte 主控交接
 
-## 当前入口：M6 v2.2（2026-10-12）
+## 当前入口：M6 v3.0（2026-10-12）
+
+先读STATUS顶层及`tasks/M6-validation-v3.md`/`tasks/M6-V1R-replay.md`。用户补授权McPet仓git，先W1 V1R补源与原会话仓根重分类→root独立复核→用户轨迹/权重终审关账→V2三主题证据资产→V3协议锁→七日V4。McPet本机mcpet与任务maimai-monster身份差异已询问，候选源未确认前不采raw。旧SOURCE12cc/CI38226630789及replay-001/002保留，不能当V1R完成。V1人验PENDING，不代填；引擎/schema/参数/权重冻结，旧P2新增UI撤销。root只文档/协调/独立验收/最终Git，复用原W1和唯一原集成Codex --yolo工作树。
+
+## 历史入口：M6 v2.2（2026-10-12）
+
+17:09最新：源码12cc4ddf3e0a65e18be3bb3bf67f09652d928e46的双平台CI38226630789 completed/success，check/build/default E2E全部PASS，各226PASS/30条件SKIP，Linux race PASS/Windows条件SKIP；root本地完整check/build/Python13及真实回放独立复算均通过。收尾仅文档，不重称源码CI。V0 PASS、V1技术PASS，人验焦点/50权重仍PENDING，正式V2–V4未开、EXPERIMENT未锁；两项人工问题已发，未收到答复不按超时填通过。两当前Dispatch已结算，原工作树/分支/外部终端保留、个人实例/main未动。先读STATUS顶层及真实本机replay-002，收到人验再继续；保留原RED/unknown/旧failed。下方为历史阶段。
+
+16:57交付源码 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` 已push，root完整check/build与Python13均通过；普通消费W1 REPORTb4243e4及同一集成REPORT06173e4，当前两个Dispatch已succeeded并retained外部终端/工作树。V0 PASS、V1技术PASS：最终replay-002真实2832单事件/信号、849无标、30Sleep含10空日、2163更新点主控独立误差0、每日signal_ids精确匹配receipt集合。最新CI38226630789对源码12cc4dd正在运行，不借旧CI填绿。人验焦点/50权重两项问题已发、仍PENDING；下一步收到真实结果再决定完整V1验收与正式P2/P3，V2执行单已备但未派，EXPERIMENT未锁、V4未开。Agent Swarm零信号/A=.05不能补假证据；所有旧RED和failed/unknown保留，个人实例/main未动。详见STATUS顶部；下方为此前历史。
+
+16:45 V1已产出两次真实2832逐事件/30生产Sleep回放；SOURCE67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4已push，待同一集成owner普通合与root最终Git。主控从V0源预先生成独立期望，对2163更新点/30日排名核对A/M/C误差0，SQLite事件/信号2832、无标849、Sleep30、raw全BLOB只读复查通过；owner2169点另含6seed亦0误差。焦点从09-22至10-08 Morph第一，10-09至11 Astro第一；前10天空日种子并列不能当焦点。用户焦点确认/50权重人工核对仍PENDING，机查50/50不替代人验；不锁EXPERIMENT或启动正式V2/V3/V4。原首RED与回执unknown保留。下方为先前阶段记录。
 
 16:25 root批准新V0，源码SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`已push：独立2832/2964=95.5466%、误标0/200、raw1101字符串/2100生产响应泄漏0，八桶160源核对问题0；root完整check/build及精确SOURCE双平台CI38222142954通过。一次本机Redocly退出时Node/libuv RED已保留，定向和完整重跑通过，源码依赖未改。132结构失败保留；主题覆盖70.0212%，849无标需全部入库。消费I报告2524e9e，I完成回执因Orca重启未达，Dispatch保持failed/terminal_missing，不能冒称accepted worker_done。正式V1放行，沿原W1工作树/分支按[tasks/M6-V1-replay.md](tasks/M6-V1-replay.md)执行；root只文档/调度/独立验收/最终Git，源码/权重/参数冻结。实际V1运行及用户焦点/50权重核对另验，不把V0当V1或真实七天实验，EXPERIMENT未锁SHA。下方入口为此前历史。
 

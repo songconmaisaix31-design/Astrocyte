@@ -1,6 +1,12 @@
 # M6 验证期执行计划
 
-## 当前波次：v2.2
+## 当前波次：v3.0 V1R
+
+事实源`M6-validation-v3.md`，本轮先单轨W1复用原工作树/分支/终端，业务write_paths仅`M6-V1R-replay.md`所列；不再开放app boost、M4或UI。root维护文档/路径裁决/独立复核/最终Git，原唯一集成owner消费精确SOURCE/REPORT普通合。用户确认真实McPet根后才捕获新增源；原冻结两仓/会话不重抓，首次V1不覆盖。V1R新版三线/覆盖/50权重完成后用户终审关账，再沿原MCP owner产三主题Markdown，不新增UI；新W2工具链/协议按后续互斥写域派发，锁定必须晚于V1人验。原V1 SOURCE/双平台CI是历史证据，新增源码另验。
+
+## 历史波次：v2.2
+
+17:09收尾：W1 `task_2ff9000b73ed/ctx_2ec270cb9205`、同一集成 `task_0fff678cdbb0/ctx_ffc79455aad8`已succeeded，原终端/worktree/branch retained。交付源码12cc4dd、本地check/build/Python13、独立2832逐事件/30Sleep/2163更新点误差0及双平台CI38226630789全部通过；226默认E2E PASS/30条件SKIP各平台。V0 PASS、V1技术PASS但焦点/50权重人验PENDING，正式V2/V3/V4不抢跑，EXPERIMENT未锁SHA；V2执行单已备，下一步收到人验后沿原owner继续。首RED/旧failed/unknown及原6016全量均保留。
 
 16:25 新V0已由root批准（完整记录在STATUS顶部），正式V1沿原W1启动，唯一业务write_paths见[M6-V1-replay.md](M6-V1-replay.md)；本轮boost/M4不再开放修改。Orca运行时重启丢失旧终端，原工作树/分支保持，恢复同逻辑owner使用Codex --yolo，实际Task/Dispatch启动后记录。集成回执未达保持failed，不重复实现或重建开发轨。V1后交同一集成工作树普通合；V2/V3准备另派互斥写域，协议锁必须晚于V1。
 

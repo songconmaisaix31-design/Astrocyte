@@ -1,4 +1,68 @@
-# M6 v2.2 普通集成与限定验证交接
+# M6 V1 真实回放组合树集成交接
+
+2026-10-12；Task `task_0fff678cdbb0` / Dispatch `ctx_ffc79455aad8`，Run `run_d09ff3f95ebc`。原唯一集成owner继续工作树 `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、分支 `songconmaisaix31-design/validation-v1-integration`，基线 `2524e9e48b23aa6f0ee4b6277a55539009d669dc`，客户端沿派发Codex `--yolo`。未启动其他Agent或变更模型；唯一自主修改为本报告，业务胶水为0。
+
+指定普通合并、适用组合树回归及SOURCE发布已完成。root已批准V0，本轮真实V1回放与独立M2为技术PASS；**用户焦点确认与50权重人工核对保持PENDING，V1完整人验未批准，EXPERIMENT未锁，V2/V3/V4未启动**。事实源为 [V1任务](M6-V1-replay.md)、最新HANDOFF/STATUS及 [W1报告](M6-W1.md)。本任务不重复抓源、真实全回放或未变化的raw100审计，不以合成fixture替代人验。
+
+旧Dispatch `ctx_3083dbc2d717` 因Orca重启为 **failed/terminal_missing**，已发布报告 `2524e9e48b23aa6f0ee4b6277a55539009d669dc` 和原测试证据保留；下方原报告仅是已完成工作的历史记录，不是accepted worker_done。本Task只使用新Dispatch回执，不追补旧假回执；所有首RED、unknown及原始载荷保持。
+
+## 精确普通历史与SOURCE发布
+
+开始时 `git status --porcelain=v1` 为空、分支匹配。两次 `git merge --no-ff` 均无冲突，未force/squash/rebase/cherry-pick或覆盖队友贡献：
+
+| 精确输入 | 普通merge SHA / commit时间（+08:00） |
+|---|---|
+| root `7b739334d2e53d228e10fe3fd1223461078b0e1b` | `613606ec1933286c51ca707c92a2a4d41519b302` / 16:50:01 |
+| W1 REPORT `b4243e41fd66d730f27db15e47fd85e6006ad92c` | **组合SOURCE `4d5665cbc058001c04466beb2590ee7796de78c5`** / 16:50:01 |
+
+两精确输入、W1业务SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4` 及原报告2524e9e逐一 `git merge-base --is-ancestor <SHA> HEAD` EXIT0。相对root合并613606ec，W1恰好六个变化文件：`cmd/validation/main.go`、`cmd/validation/replay.go`、`cmd/validation/replay_test.go`、`scripts/validation/verify_v1.py`、`tests/validation/ingest/test_v1_reference.py`、`tasks/M6-W1.md`，全部位于W1写域。
+
+相对本Task基线2524e9e，`git diff --exit-code` 核对全部app/domain、SQLite、attentionruntime、migrations/schema、contracts、web、Go/Node依赖和锁均零差异，EXIT0。其他变化为经授权普通merge消费的root任务/状态文档；集成owner未修改业务、参数或期待。
+
+全部下列检查EXIT0后，组合SOURCE于 **16:51:50.227 +08:00** 普通push；`git ls-remote origin refs/heads/songconmaisaix31-design/validation-v1-integration` 确认精确 `4d5665cbc058001c04466beb2590ee7796de78c5`。本报告随后单独REPORT commit/push，精确SHA和时间通过本Dispatch worker_done提供。合并与报告使用 `[skip ci]`，root随后独立最终check/build/push/CI，不将旧CI归到新SOURCE。
+
+## 本Task组合树实际验证
+
+Windows / PowerShell；测试进程清除继承 `ASTROCYTE_*`，`GOFLAGS=-p=1`、`GOMAXPROCS=2`、Go `-mod=readonly`，`PYTHONDONTWRITEBYTECODE=1`。未开启真实源/隐私opt-in、未读个人实例、未并行执行pnpm或前端生成。
+
+```powershell
+go test -mod=readonly ./cmd/validation ./internal/adapters/events -count=1 -json
+go test -mod=readonly ./tests/attention-engine -run '^TestM2' -count=1 -json
+go test -mod=readonly ./tests/validation/sleep -count=1 -json
+python -m unittest discover -s tests/validation/ingest -p 'test_*.py' -v
+python scripts/validation/generate_kind_map.py --check
+go vet -mod=readonly ./cmd/validation ./internal/adapters/events ./tests/attention-engine ./tests/validation/sleep
+git diff --check
+```
+
+Go开始/结束 **16:50:51.698–16:51:11.846 +08:00**，三命令均EXIT0，共 **52顶层PASS / 0 FAIL / 2顶层SKIP**；包含子例81 PASS/5 SKIP，不称为81独立测试。
+
+| 检查 | 顶层PASS / FAIL / SKIP |
+|---|---:|
+| cmd/validation（含两项生产V1测试） | 12 / 0 / 0 |
+| events | 30 / 0 / 1 opt-in；含子例57 PASS/4 SKIP |
+| 原M2 | 7 / 0 / 1 helper入口 |
+| EX-01（validation/sleep） | 3 / 0 / 0；含子例5 PASS |
+
+`TestV1ProductionSingleEventEmptyTopicClockAndThirtySleeps`、`TestV1RejectsDuplicateOutOfWindowAndOverwritingEvidence` 实际PASS：生产Recorder逐事件、无标持久化、真实30日Sleep/时钟及独立Python参考检查执行。它们是合成生产路径回归，不重复真实2832人口回放，也不证明人工焦点或权重验收。
+
+events顶层SKIP为 `TestLocalV22CookedCommandByteParity` 本机真实源opt-in未开启；另三symlink子例因Windows权限条件SKIP。原M2 `TestM2ProcessReload` 是child helper独立入口SKIP，父测试实际执行进程重启；不将SKIP算PASS或本轮真实字节审计。Python开始/结束 **16:50:50.749–16:50:53.039 +08:00**，**13 PASS / 0 FAIL，.440s**，canonical map `--check` EXIT0。适用vet **16:51:18.610–16:51:19.750 +08:00** EXIT0；diff与冻结域检查EXIT0。
+
+## 已完成真实证据的引用与限制
+
+以下沿本轮最新root独立验收和W1报告引用，**不是本Task重新执行**：W1精确SOURCE67cc8f6的外部 `v1-w1/replay-002/` 有2832次单事件Record、2832信号、849无标、1893唯一commit、30生产Sleep含10空日，raw全BLOB留存。W1独立2169状态点含6seed；root从事前冻结V0源生成独立期望，对2163更新点及30日排名比较A/M/C误差0，并只读核对SQLite与机器权重样本50/50。原首回放和所有编译/断言/审计脚本首RED保持，不改expected或参数救验收。
+
+模型焦点重建为09-22至10-08 Morphogenesis第一、10-09至10-11 Astrocyte第一；前10个空日全种子floor并列，不推断人类焦点。10-08包含当日前二3/4，严格当日后3/3。用户焦点确认与固定seed2026101201的50权重人工核对均 **PENDING**，机器50/50不是人工正确率。未配置facts/解释器，不补事实、不调用模型；Agent Swarm实际信号0，不补假链。
+
+本Task所有新原件独占外部目录：`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/integration-v1/task_0fff678cdbb0-ctx_ffc79455aad8/`，创建前核对不存在。含两merge日志、base/start/祖先、全变更与W1六文件清单、冻结域diff、三份Go JSONL/counts/skips、Python/generator/vet/diff日志、exit与起止时间、SOURCE/REPORT push/remote记录。raw、历史命令全文和数据库不stdout、不Git、不网络；不覆盖旧原件、不动个人库。
+
+提交前附加身份核对首RED保留为 `w1-source-parity.log`：集成脚本误将W1报告文件与业务SOURCE67cc8f6一起要求零差异，而报告本来在独立REPORT b4243e4更新。随后分别比较五个业务文件对精确SOURCE、W1报告对精确REPORT，两个 `git diff --exit-code` 均EXIT0，原日志不覆写；这是核对脚本口径错误，不是业务/回归失败，没有修改任何SOURCE、REPORT或验收期待。
+
+root后续独立整仓check/build和最终Git/CI；本Task未执行整仓pnpm、未重跑raw100/全人口/真实V1、浏览器E2E、官方客户端native task_live、人验、EXPERIMENT锁定、V2/V3/V4/七日真实三臂、main合并、部署、个人实例升级或rollback。组合树适用检查没有发现需薄胶水或退原W1的问题；本轮交付不代表完整V1人验或终局科学验收。
+
+---
+
+# M6 v2.2 普通集成与限定验证交接（历史保留）
 
 2026-10-12；actual Task `task_63080055d561` / Dispatch `ctx_3083dbc2d717`，Run `run_d09ff3f95ebc`。原唯一集成owner、工作树 `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、分支 `songconmaisaix31-design/validation-v1-integration`，本轮起始 `ffc7c0df8418918b85682269dc398080c5d00d08`。沿既有Codex `--yolo`，Orca terminal show实际preview **GPT-6.1-Sol high fast**；未新建Agent/worktree或更换模型。
 

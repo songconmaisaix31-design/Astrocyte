@@ -2,7 +2,27 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
-### 当前裁决：v2.2（2026-10-12）
+### 当前裁决：v3.0（2026-10-12）
+
+用户授权McPet窗口git log，执行[V1R补源任务](tasks/M6-V1R-replay.md)及[v3.0事实源](tasks/M6-validation-v3.md)。引擎/schema/参数/权重冻结不变，仅W1接入源/仓根与验证产物扩展；首次V1、6016及全部RED保留。当前实际仓`C:/Users/DW/orca/mcpet`/remote mcpet与任务文字maimai-monster存在身份差异，已向用户确认路径；未答前候选源采集PENDING。原冻结会话cwd无McPet，转入数按实际重算，不预设849下降。V1人验尚未确认，新轨迹与权重表在V1R后送审；协议未锁、V4未开。V2改为三主题真实库Markdown资产，不新增UI，旧React/ECharts扩展执行单撤销。七日末未到期D+3预测列PENDING，真实到期后才能终局统计。
+
+### 历史裁决：v2.2（2026-10-12）
+
+**17:09 双平台CI最终通过。** [CI38226630789](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38226630789)对精确源码 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` completed/success：Ubuntu/Windows check、build、default E2E全部PASS，各226 PASS/30条件SKIP（3.2m/5.1m）；Linux race PASS，Windows race条件SKIP。完整原件 `root-v22/v1-ci-final.log`。收尾仅STATUS/HANDOFF/计划文档，业务源码/测试/配置与该SOURCE一致；文档HEAD不冒充新源码CI。V0 PASS、V1技术PASS；焦点人工确认与50权重人工正确数仍PENDING，正式V2/V3/V4未开，EXPERIMENT未锁SHA，不宣称已证明优于普通Agent Memory。两当前owner已结算、终端/工作树保留；下一步以两项真实人工结果继续验收，所有原RED/unknown/旧failed不改写。
+
+**16:57 最终交付：V0 PASS；V1技术回放PASS，人验PENDING。** 最终普通源码合并 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` 已push到 `validation/v1-20261012`，消费W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4` / REPORT `b4243e41fd66d730f27db15e47fd85e6006ad92c`，同一集成owner SOURCE `4d5665cbc058001c04466beb2590ee7796de78c5` / REPORT `06173e427975ff3642b7f2705534a951c0803f81` 均为普通祖先。五个业务文件与67cc8f6精确一致；相比V0 SOURCE35f508b，全部internal/app/domain/SQLite/schema/runtime/contracts/web/参数零变化。root在最终组合树完整pnpm check/build EXIT0（22 Go测试包/8无测试包、接口275、S1 14、前端90），Python13 PASS、生成表/diff检查PASS；新日志 `root-v22/v1-final-*`。新[CI38226630789](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38226630789)只对应源码12cc4dd，目前running，不借旧V0 CI冒称新源码已绿。
+
+V1最终真实产物 `v1-w1/replay-002/`：2832实际事件/信号（含849 unassigned）/1893唯一commit/六种子/30生产Sleep（10空日）；每调用仅一事件、真实ts间隔，稳定semantic ID处理160等ts相邻对。root预先独立从V0源构建期望，最终2163更新点A/M/C误差0，另含6seed共2169点由owner独立复算亦0；每日Sleep signal_ids与当日实际receipt集合严格相等、无重复。真实SQLite只读复核2832 raw BLOB、849无标event/signal、Sleep30，样本50机器参数绑定50/50。原M2/EX-01重跑PASS，不代表人验或自然task_live。
+
+W1 `task_2ff9000b73ed/ctx_2ec270cb9205` 与集成 `task_0fff678cdbb0/ctx_ffc79455aad8` 已accepted worker_done/succeeded；初次启动的turn_start_unobserved原件保留，两者均在确认composer未提交后只补Enter继续原Dispatch，未重派。两原外部终端retained，processAction none，工作树/分支保留。集成适用52顶层Go PASS/2条件SKIP（另3Windows symlink子例SKIP）、Python13 PASS、vet/生成/diff PASS；附加审计误将独立REPORT文件要求与SOURCE零差异的首RED保留，分别核对业务/报告后PASS，未改业务或验收期待。root已发两项人工问题：焦点锚点吻合与50样本人工正确率，尚未收到答复；未按超时推定通过，V1完整人验仍PENDING，正式V2/V3/V4未开、EXPERIMENT未锁、未伪造终局报告。原首RED/6016计数/旧failed/回执unknown保留，未合main、升级个人实例或复制验收库。
+
+16:45 V1技术产物已完成，待普通集成与root最终Git；W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4`已push。真实首次replay-001 16:37:10–16:38:07，精确SOURCE又独占replay-002不覆盖首件；2832生产Recorder单事件调用/2832信号，849无标事件与信号全部BLOB留存并Sleep pending，1893唯一commit，六种子、30生产Sleep含10空日。160对等ts仍按稳定semantic ID逐条处理。owner独立M2比较2169点（1983事件+180日末+6seed）误差0；root另从V0源预先生成literal math期望，对两个真实回放的2163更新点、逐条source顺序/六字段投影及30日排名独立比较，A/M/C最大误差0。root对replay-002 SQLite只读计数及50样本实际receipt/raw核验PASS；不调用生产公式生成expected。
+
+真实焦点：09-12–09-21无成功认知事件、种子全floor并列，不作为研究焦点；09-22–10-08 Morphogenesis第一；10-09–10-11 Astrocyte第一/Morphogenesis第二。10-08当日Astro仍floor，包含08日的前二比例3/4，严格08日后3/3；不调参。Agent Swarm实际信号0，A=.05，后续P2不能补假链。人工焦点确认与固定seed2026101201的50权重样本（32commit/11edit/7search）已分别发用户，均PENDING，机查s1/w.6为50/50不是人工正确率。安全轨迹图/人工表在root-v22，50原文只在本机LOCAL审计文件，不出机器。完整V1人验未批准，EXPERIMENT未锁SHA，V2/V3仅执行单准备、V4未运行。
+
+新首RED：owner首次编译map索引取地址及等ts测试误将1秒种子衰减当0，均修复并保留原日志；root首比较误读omitempty零input_events导致KeyError、首次权重表误读s/w字段为strength/weight，均为审计脚本字段假设，修正后独立重跑PASS，非生产失败。原件在v1-w1/root-v22，不覆写。完整精确源码检查/构建、SOURCE/REPORT及集成测试由owner报告与root后续最终验收单列。
+
+16:28 正式V1实际开工：原W1 worktree/branch，恢复终端 `term_44ba6601-f575-4731-a0bd-ff18438b1a4c`，Task `task_2ff9000b73ed` / Dispatch `ctx_2ec270cb9205`，实际Codex0.162.0 `--yolo` / GPT-6.1-Sol high fast。首次派发input accepted但turn_start_unobserved，屏幕确认任务仍在composer后仅补Enter，未复制任务/另建Dispatch；随后观察到实际读HANDOFF/STATUS及Working。保留首outcome_unknown，不用ready推断已回放；当前V1实现/测试/本机真实回放进行中，源码/产物/独立验收尚未完成。root当前Run绑定恢复为 `term_9af1a58e-0a3f-45f5-99cc-4b46bedc948d` / consumer_generation4。
 
 **16:25 主控批准V0（v2.2）**。实际源码验收SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`：归一化2832/2964=95.5466% PASS，原200非认知误标0 PASS，原100/1101 raw_unique字符串/2100生产MCP响应泄漏0 PASS。独立全量及八桶160源核对已完成，132真实剩余结构失败保留；主题1983/2832=70.0212%仅报告，849无标成功留存。完整 `pnpm check` EXIT0：Go22测试包/8无测试包，vet/gofmt/modules/架构/依赖通过，OpenAPI275示例、S1 14/14、前端90/90及类型/lint/diff通过；`pnpm build` EXIT0，三个Go程序及React/Vite构建通过。新外部原件 `root-v22/check-retest-libuv.log`、`build-first.log`、`real100-first.log`、`population-independent/`，均不覆写旧证据。
 
