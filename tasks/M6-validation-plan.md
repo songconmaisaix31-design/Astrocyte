@@ -1,6 +1,8 @@
 # M6 验证期执行计划
 
-## 当前波次：v3.0 V2/V3与live接缝
+## 当前波次：V2/V3工具已集成，协议未锁
+
+2026-10-13 01:22：V2三主题完整2006证据PASS，V3工具技术PASS，V4未开；组合SOURCEc61c841已push，root完整check/build EXIT0，组合Python73/Go122适用PASS，冻结域零diff。三个领域owner和唯一原集成owner均已结算并release retained。模型+输入表示仍待用户定案，原JSON A预算RED/B首实际满预算请求600秒timeout保留；无损列候选未激活、不锁SHA/day0。后续仍复用原W2和唯一集成写域，按STATUS最新门槛执行，不重复V1人验或重写首失败。
 
 W2实查live生产入口缺失，限定追加原W1接缝轨，范围见`M6-V4-live.md`；与W0/W2路径互斥。复用原W1工作树/分支/终端，仅必要接入CLI/脚本/测试，不重开V1，不改语义/引擎/schema/参数。集成仅在各原owner交付后执行。
 

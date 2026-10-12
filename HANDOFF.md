@@ -2,6 +2,12 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+2026-10-13 01:22：V1/V1R用户已PASS关账；V2三主题2006条完整证据资产已普通集成，见`docs/evidence/README.md`；V3工具技术交付PASS，EXPERIMENT仍UNLOCKED，V4未开始。最终组合SOURCE `c61c841d3cf70fc4add5e6768cdaa11d47dd4d32`已push，root完整check/build首次EXIT0、组合Python73/Go122适用PASS，冻结业务域零diff；所有原owner/唯一集成Dispatch已succeeded/release retained，原分支/工作树/RED/unknown保留。具体SHA、日志、独立实证、当前CI限制读STATUS顶部。
+
+当前下一步为真实模型+输入表示选择，不重开V1或新增代码能力。原JSON A221700 tokens超过126976上限；可读无损列候选72890，完整往返/原字段/顺序全等但未激活、长A未跑。B1003完整消息最大装载38条126970，首600秒推理Timeout/delivery_unknown，模型PID已核对停止、文件/原输入保留；未接受强B路由，不盲重试。用户模型/表示问题未答，按用户AGENTS关键节点须先问，不能自行定案/锁协议/起day0。原W2固定experimental工作树/分支/terminal70b809cd承担后续领域修订，root不共写EXPERIMENT或runner；其他owner原终端保留。
+
+新组合CI未出结论；精确4fbea9的旧Windows E2E一例30秒侧栏点击超时原RED保留、Linux全套绿/Windows check-build绿，本机最终源码定向同例1PASS不等于远端全绿。新CI与首RED分开，不能借V1基线双平台绿冒充当前。正式锁后用既有live CLI独立formal库与只读日快照，bridge闭日后接续formal；七日/用户评分/末D+3需要真实时间，不预填报告。
+
 2026-10-13：用户已真实终审PASS并关账V1/V1R，基线3e1f6dae；轨迹三锚点/灰区和50样本kind/绑定/ts人工交叉通过，McPet主样本确认。下方人验PENDING为历史，不能重新索取已给的确认。原回放与132认可残余/849无标/零信号三主题保留。现在并行原W0 V2三主题完整Markdown证据与新W2 V3实验工具链，固定互斥写域见执行单/计划；root只状态/决策/独立验收/最终Git，EXPERIMENT草案在W2派发后由W2独占。实现与真实执行路由验收后锁SHA并day0，不伪造未来七日或提前锁不完整协议。
 
 23:22 V1R已完成并普通集成：组合SOURCEeba5c055，W1 SOURCE7d57/REPORTa954、集成SOURCE298e/REPORT3694均保留；root完整check/build、独立Go7/Python17、2855逐事件/30Sleep/2186更新点误差0、SQLite与50机查通过，精确7d57双平台CI38267896603成功（各226PASS/30条件SKIP）。完整记录读STATUS顶部。新三线/覆盖/50人工表在v1r-w1/replay-002，用户轨迹/权重终审仍PENDING。下一步接收两项真实人工结果，V1关账后沿原MCP owner V2三主题资产，再新W2工具链/锁协议/七日V4；不要再询McPet源路径、重抓原冻结源或把机查当人验。当前两Dispatch已结算、外部终端retained，主控term_f327/Run generation5，源/首失败/原工作树不动。

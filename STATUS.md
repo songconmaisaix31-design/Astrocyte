@@ -4,6 +4,14 @@
 
 ### 2026-10-13 V2独立验收与V3参数待定
 
+**01:22 V2交付PASS；V3工具技术PASS/协议UNLOCKED；V4 NOT_RUN。** 最终组合SOURCE `c61c841d3cf70fc4add5e6768cdaa11d47dd4d32`已普通push到`validation/v1-20261012`，普通合唯一集成最终REPORT `dde3f349d1cb3d7e41519dc609319a49e203151b`；集成SOURCE7d979及三个owner最终SOURCE/REPORT全部普通祖先保留。零冲突、零胶水；root逐写域核对W0/W1/W2实现、协议、资产与原交付全等，冻结引擎/schema/参数/权重/mapper/UI diff为0。四个Dispatch均accepted succeeded并release external_terminal/retained，无待回收worker。
+
+root最终`pnpm check`、`pnpm build`均首次EXIT0：Go全包/vet/依赖/架构/合约/API14/前端90及生成/diff通过，日志`root-v2/final-combination-{check,build}-first.log`；组合适用Python73（19+19+35）及Go122顶层PASS/12条件SKIP含M2/EX-01/隐私，原opt-in和child-helper SKIP不冒称真实重扫。root独立三主题2006 evidence/全2855源投影回溯与raw零泄漏、真实prelock250事件/6节点literal零误差/重复0贡献/日快照全表等值、无损完整字段与B原全文核对证据均保留。V1关账/历史回放原件不改；V2资产见`docs/evidence/README.md`。
+
+远端首RED单列：精确W1 SOURCE4fbea9的[CI38279757301](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38279757301) Linux check/race/build/E2E通过，Windows check/build通过，E2E225PASS/30SKIP/1FAIL（`/swarm keeps import disabled when capability is disabled`，summary click30秒timeout）。原日志`root-v2/w1-ci-4fbea9-first-red.log`保留；root最终C61源码同一用例本机1920定向复核1PASS/14.6s，日志`e2e-target-first.log`，不是全浏览器/远端CI通过，UI与断言零改。新组合CI结论PENDING，不借旧CI或定向复测覆盖首RED。
+
+下一步只解真实模型门槛：用户模型+原JSON/无损列选择待答，A原JSON221700>126976预算RED，无损列候选72890未激活/长A NOT_RUN；B最大完整装载126970首600秒Timeout/delivery_unknown未重试，强B路由未接受。按用户AGENTS关键节点先确认要求，不默选模型/表示、不锁SHA或填day0。用户定案后原W2同owner补正式规范/collector及真实长A/强B验收，再唯一集成/root全文SHA锁定。独立formal库从原只读backup初始化，以生产bridge补锁前闭日，再formal day0逐日接续，prelock不得计正式答案/预测真值。七日28题/84臂答案、用户7原因评分、独立judge及末D+3全部真实成熟后才能产出终局`EXPERIMENT_REPORT.md`。
+
 唯一原集成owner现Task `task_d4cbcd8dcac4` / Dispatch `ctx_4398e64a6464`，同原terminal/worktree/branch、Codex --yolo/GPT-6.1-Sol high fast。首次启动回执input_accepted但turn_start_unobserved；只读screen确认原任务仍在composer后补一次Enter，无重派/新Dispatch，随后worker-read取得live/working正证。原unknown回执保留，按更新集成单消费root0438177与三最终REPORT；最终整仓check/build由root执行。
 
 01:11 W2 accepted worker_done/succeeded最终报告SHA为 `670f6ce535f4b8178fa956fdd726085687f0b67d`（01:10:35+08），8e092为追加root最终独立35PASS前报告，两者普通历史保留。最终SOURCE4a179ce不变、remote/普通祖先已核对；release retained/external_terminal/processAction none。W0/W1/W2均已结算，放行唯一原集成owner按更新执行单普通合，不锁协议、不运行正式实验。
