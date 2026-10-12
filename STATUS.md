@@ -4,6 +4,10 @@
 
 ### 当前裁决：v3.0（2026-10-12）
 
+23:05 首个真实V1R已产出`v1r-w1/replay-001`。固定McPet HEAD `5bcb2e53384c92a2e96504eb3631caf93325a19f`窗口23commit（10-10:1、10-11:22）；root独立全HEAD选窗核对ID/ts/本地subject/base64一致，原源不变，原19cwd无McPet，native转归0。2855成功/2987认知分母=95.5809%，主题2006/2855=70.2627%，849无标；1916唯一commit。root先从独立源生成literal参考，再核对真实生产2855单事件/信号、30Sleep/10空日、2186非seed更新点A/M/C误差0，全部origin/kind/topic/ts及每日receipt集合匹配。50机查50/50（32commit/12edit/6search，其中McPet1），专项0，人工正确率PENDING。证据`root-v3/actual-001-*`；完整raw样本仅LOCAL。
+
+首次真实入口因capture窗口JSON浮点毫秒不能直接读为Go int64失败，`v1r-w1/resume-replay-first.log`保留；capture-001原件未改，读取仅严格兼容同一固定整数边界，后续producer写整数。故障复现测试、精确SOURCE正式产物、组合树check/build及用户三线/权重终审仍待完成。首轮真实回放PASS不提前替代完整V1关账。原唯一集成后续执行单`tasks/M6-V1R-integration.md`已准备，未派。
+
 23:00 已恢复正式V1R：同Task `task_71ba19824f32`、同W1工作树/分支，终端 `term_0e24b1b6-ccf2-46c7-8346-bd3c2cf28045`，新Dispatch `ctx_5c8ea77f6659`，Codex --yolo / GPT-6.1-Sol high fast，input_accepted/turn_started已观察。原Dispatch失败保留；首次带retry-of启动因Task已自动恢复ready而被task_not_startable拒绝，按nextSteps核对原Dispatch/worker后，不带retry-of启动同Task成功，没有重复Task或执行拒绝请求。root源裁决5152cc7已送达，新owner已普通合入并开始公共mcpet别名与正式固定HEAD捕获。源授权门槛已撤销；实际新增数量、30Sleep及新版复算待运行结果，不以准备测试替代。
 
 22:55 root纠正执行错误：v3.0已明确授权McPet补源，实际Orca登记根/remote/README产品名均为`C:/Users/DW/orca/mcpet`、`https://github.com/songconmaisaix31-design/mcpet`、McPet；maimai-monster是任务文字与实码名称差异，按规格“实际代码为准并记录偏差”处理。此前另询源路径并阻塞已授权工作是root误设门禁，撤销，不称用户新答过路径或按超时默认批准。沿现有授权捕获实际McPet根，公共仓根仅追加mcpet身份，原语义/关键词/权重/参数不变，raw仍本机。下方PENDING源记录保留为历史错误，不继续阻塞V1R。
