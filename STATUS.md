@@ -4,6 +4,26 @@
 
 ### 当前裁决：v2.2（2026-10-12）
 
+16:45 V1技术产物已完成，待普通集成与root最终Git；W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4`已push。真实首次replay-001 16:37:10–16:38:07，精确SOURCE又独占replay-002不覆盖首件；2832生产Recorder单事件调用/2832信号，849无标事件与信号全部BLOB留存并Sleep pending，1893唯一commit，六种子、30生产Sleep含10空日。160对等ts仍按稳定semantic ID逐条处理。owner独立M2比较2169点（1983事件+180日末+6seed）误差0；root另从V0源预先生成literal math期望，对两个真实回放的2163更新点、逐条source顺序/六字段投影及30日排名独立比较，A/M/C最大误差0。root对replay-002 SQLite只读计数及50样本实际receipt/raw核验PASS；不调用生产公式生成expected。
+
+真实焦点：09-12–09-21无成功认知事件、种子全floor并列，不作为研究焦点；09-22–10-08 Morphogenesis第一；10-09–10-11 Astrocyte第一/Morphogenesis第二。10-08当日Astro仍floor，包含08日的前二比例3/4，严格08日后3/3；不调参。Agent Swarm实际信号0，A=.05，后续P2不能补假链。人工焦点确认与固定seed2026101201的50权重样本（32commit/11edit/7search）已分别发用户，均PENDING，机查s1/w.6为50/50不是人工正确率。安全轨迹图/人工表在root-v22，50原文只在本机LOCAL审计文件，不出机器。完整V1人验未批准，EXPERIMENT未锁SHA，V2/V3仅执行单准备、V4未运行。
+
+新首RED：owner首次编译map索引取地址及等ts测试误将1秒种子衰减当0，均修复并保留原日志；root首比较误读omitempty零input_events导致KeyError、首次权重表误读s/w字段为strength/weight，均为审计脚本字段假设，修正后独立重跑PASS，非生产失败。原件在v1-w1/root-v22，不覆写。完整精确源码检查/构建、SOURCE/REPORT及集成测试由owner报告与root后续最终验收单列。
+
+16:28 正式V1实际开工：原W1 worktree/branch，恢复终端 `term_44ba6601-f575-4731-a0bd-ff18438b1a4c`，Task `task_2ff9000b73ed` / Dispatch `ctx_2ec270cb9205`，实际Codex0.162.0 `--yolo` / GPT-6.1-Sol high fast。首次派发input accepted但turn_start_unobserved，屏幕确认任务仍在composer后仅补Enter，未复制任务/另建Dispatch；随后观察到实际读HANDOFF/STATUS及Working。保留首outcome_unknown，不用ready推断已回放；当前V1实现/测试/本机真实回放进行中，源码/产物/独立验收尚未完成。root当前Run绑定恢复为 `term_9af1a58e-0a3f-45f5-99cc-4b46bedc948d` / consumer_generation4。
+
+**16:25 主控批准V0（v2.2）**。实际源码验收SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`：归一化2832/2964=95.5466% PASS，原200非认知误标0 PASS，原100/1101 raw_unique字符串/2100生产MCP响应泄漏0 PASS。独立全量及八桶160源核对已完成，132真实剩余结构失败保留；主题1983/2832=70.0212%仅报告，849无标成功留存。完整 `pnpm check` EXIT0：Go22测试包/8无测试包，vet/gofmt/modules/架构/依赖通过，OpenAPI275示例、S1 14/14、前端90/90及类型/lint/diff通过；`pnpm build` EXIT0，三个Go程序及React/Vite构建通过。新外部原件 `root-v22/check-retest-libuv.log`、`build-first.log`、`real100-first.log`、`population-independent/`，均不覆写旧证据。
+
+整仓首次中断没有退出码；首次完整重跑在Redocly校验结束发生Node24.16.0/libuv `UV_HANDLE_CLOSING`退出3221226505，记录为RED (`check-resume.log`, exit1)。同命令定向复测EXIT0，未改源码/依赖，再完整重跑check EXIT0；不得将首RED改写。验收后[CI38222142954](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38222142954)对精确SOURCE35f508b双平台check/build/default E2E completed/success；Linux race通过，Windows race条件跳过。文档HEAD与该SOURCE业务源码/测试/配置相同，不把CI归到后续未测源码。
+
+正式V1现已放行，执行 [逐事件回放任务](tasks/M6-V1-replay.md)，仍由原W1/原worktree/branch，Codex --yolo。参数绑定回滚对象 `0b42bb97157b0b324c2aaa55c4badc08a488ed7b`，未执行回滚；唯一app触及 `KnowledgeService.RetrieveKnowledge`、同文件 `knowledgeReferenceBoost`，A/M/λ/权重/去噪/fluid/crystallized/EX-01/schema保持不变。V1实际运行回执和验收另记，未完成前不宣称30日回放PASS。用户焦点确认/50权重人工核对、V2–V4及EXPERIMENT锁SHA仍PENDING；原诊断0/100与全部旧口径RED不改写。
+
+16:21 root普通合并SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`已push，消费集成REPORT `2524e9e48b23aa6f0ee4b6277a55539009d669dc`（组合SOURCE `b4b5a388539a2428432cfa94133378dd9cf0d53a`）。集成owner实际184顶层Go PASS/12条件SKIP、Python8 PASS、M2 7 PASS/1 helper SKIP、EX-01 3 PASS；完整报告见tasks/M6-integration.md。16:04 Orca重启后该Dispatch `ctx_3083dbc2d717`被标failed/terminal_missing，完成回执未送达；已推送的精确源码/报告/外部测试日志独立核对后消费，保留运行时失败，不改写为accepted worker_done。后续接管使用现存工作树，旧终端不视为live。
+
+root对最终组合树新独占 `root-v22/population-independent/` 全量重跑EXIT0：6016父/8914语义单位；2832/2964=95.5466%，132结构失败留分母，非结构失败0；5950非认知单列，原200误标0，1983有topic/849无标，覆盖70.0212%。八桶各20再次从冻结源独立校验原始字节、ts、工具名及s/w，160/160一致，问题0。原100生产隐私独立重跑EXIT0：1101逐事件raw_unique字符串/2100实际MCP.Serve响应严格违规0；仍标real_raw_contract_local，不代表自然task_live。原始100及所有RED不覆写。冻结domain/SQLite/schema/contracts/web/runtime/其他app差异0，唯一app变化仍限定RetrieveKnowledge/knowledgeReferenceBoost。
+
+整仓首次check在接续中中断、无exit，首日志保留；新 `root-v22/check-resume.log`重跑，当前Go全包已通过，余项及build未结束，**尚不批准完整V0，不启动V1**。[V1执行单](tasks/M6-V1-replay.md)已备好，待整仓门禁通过再沿W1启动；正式回放/人工焦点确认/50权重核对/EXPERIMENT锁SHA/V2–V4均未完成。本条后续完整验收记录覆盖当前运行态，不覆盖首RED。
+
 事实源：[v2.2](tasks/M6-validation-v2.2.md)。第二次规格修正废止全部工具调用均为认知人口；6016全量计数、1971/6016旧RED及首100诊断全部保留为历史。新V0按预声明工具语义归类，结构不可解析留分母计失败；成功kind及s=1/w=冻结表值完整率≥95%，topic仅报告覆盖率，无标kind成功计接入成功。误标0/200与raw_unique泄漏0保留并复验。当前V0见下方最终候选及独立验收记录，不将旧分母改写为新PASS。
 
 冻结绑定已裁决：所有种子InitialConfidence=.5；Signal s=1、w按kind；λ_r=.05/86400秒⁻¹；boost初始1/每访问+.1/cap2/24h无访问回退1。λ=.1、α=.3、A_floor=.05、momentum=.15及完整权重表沿v2.1，不调参。git仓根remote/common-dir归属覆盖全部Astrocyte/Morphogenesis worktree，新增maimai-monster仓McPet种子。原参数与主题待答已解决，不再阻塞。
