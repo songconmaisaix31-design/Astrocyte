@@ -15,6 +15,21 @@ spec.loader.exec_module(bootstrap)
 
 
 class V4BackupTests(unittest.TestCase):
+    def test_day_snapshot_stays_immutable_when_live_source_advances(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "live.sqlite"
+            snapshot = Path(temporary) / "day-state.sqlite"
+            with closing(sqlite3.connect(source)) as connection:
+                connection.execute("CREATE TABLE synthetic(value INTEGER)")
+                connection.execute("INSERT INTO synthetic VALUES(7)")
+                connection.commit()
+            bootstrap.backup(source, snapshot)
+            with closing(sqlite3.connect(source)) as connection:
+                connection.execute("UPDATE synthetic SET value=8")
+                connection.commit()
+            with closing(sqlite3.connect(snapshot)) as connection:
+                self.assertEqual(connection.execute("SELECT value FROM synthetic").fetchone()[0], 7)
+
     def test_sqlite_backup_preserves_original_bytes_and_rejects_wrong_checksum(self):
         with tempfile.TemporaryDirectory() as temporary:
             source = Path(temporary) / "source.sqlite"

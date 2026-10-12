@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -27,10 +28,11 @@ const v4Root = v1EvidenceRoot + "/v4-w1"
 var liveZone = time.FixedZone("Asia/Shanghai", 8*3600)
 
 type liveConfig struct {
-	State, Out  string
-	Native, Git map[string]string
-	Start, End  time.Time
-	Init        bool
+	State, Out               string
+	Phase, ProtocolSHA, Day0 string
+	Native, Git              map[string]string
+	Start, End               time.Time
+	Init                     bool
 }
 
 type liveCoverage struct {
@@ -58,6 +60,10 @@ type liveCoverage struct {
 	ReceiptIDs          []string                  `json:"receipt_ids"`
 	SemanticPolicy      string                    `json:"semantic_policy"`
 	Experiment          string                    `json:"experiment"`
+	Phase               string                    `json:"phase"`
+	ProtocolSHA         string                    `json:"protocol_sha256"`
+	Day0                string                    `json:"day0"`
+	SnapshotFile        string                    `json:"snapshot_file"`
 }
 
 func runLiveCLI(arguments []string) error {
@@ -73,6 +79,9 @@ func runLiveCLI(arguments []string) error {
 	astro := f.String("live-astro-root", "", "authorized Git root")
 	mcpet := f.String("live-mcpet-root", "", "authorized Git root")
 	init := f.Bool("live-init", false, "one-time fixed V1R read-only SQLite backup")
+	phase := f.String("live-phase", "prelock", "prelock, bridge, or formal; formal lock checked by W2")
+	protocol := f.String("live-protocol-sha", "", "root-declared locked EXPERIMENT SHA256 for formal only")
+	day0 := f.String("live-day0", "", "root-declared lock day YYYY-MM-DD for formal only")
 	if f.Parse(arguments) != nil || f.NArg() != 0 {
 		return fmt.Errorf("invalid live arguments")
 	}
@@ -81,7 +90,7 @@ func runLiveCLI(arguments []string) error {
 	if e != nil || g != nil {
 		return fmt.Errorf("explicit live window required")
 	}
-	config := liveConfig{State: *state, Out: *out, Start: a, End: b, Init: *init, Native: map[string]string{"claude_code": *claude, "codex": *codex}, Git: map[string]string{"Morphogenesis": *morph, "Astrocyte/Attention Engine": *astro, "McPet": *mcpet}}
+	config := liveConfig{State: *state, Out: *out, Start: a, End: b, Init: *init, Phase: *phase, ProtocolSHA: *protocol, Day0: *day0, Native: map[string]string{"claude_code": *claude, "codex": *codex}, Git: map[string]string{"Morphogenesis": *morph, "Astrocyte/Attention Engine": *astro, "McPet": *mcpet}}
 	if err := validateLiveConfig(config, time.Now()); err != nil {
 		return err
 	}
@@ -89,11 +98,34 @@ func runLiveCLI(arguments []string) error {
 }
 
 func validateLiveConfig(c liveConfig, now time.Time) error {
+	if err := validateLivePhase(c); err != nil {
+		return err
+	}
 	_, a := c.Start.Zone()
 	_, b := c.End.Zone()
 	if a != 8*3600 || b != 8*3600 || c.Start.Hour() != 0 || c.Start.Minute() != 0 || c.Start.Second() != 0 || c.Start.Nanosecond() != 0 || !c.End.Equal(c.Start.AddDate(0, 0, 1)) || c.End.After(now) || c.Start.Before(v1Window().AddDate(0, 0, 30)) {
 		return fmt.Errorf("require one closed +08 day after frozen history")
 	}
+	return validateLiveRoots(c)
+}
+
+func validateLivePhase(c liveConfig) error {
+	if c.Phase != "prelock" && c.Phase != "bridge" && c.Phase != "formal" {
+		return fmt.Errorf("explicit supported phase required")
+	}
+	if c.Phase == "formal" {
+		locked, err := time.ParseInLocation(time.DateOnly, c.Day0, liveZone)
+		sha, e := hex.DecodeString(c.ProtocolSHA)
+		if err != nil || e != nil || len(sha) != 32 || c.Start.Before(locked) || !c.Start.Before(locked.AddDate(0, 0, 10)) {
+			return fmt.Errorf("formal requires explicit root lock SHA/day0 and day0..day9 collection; W2 verifies authority")
+		}
+	} else if c.ProtocolSHA != "" || c.Day0 != "" {
+		return fmt.Errorf("nonformal capture cannot claim protocol lock")
+	}
+	return nil
+}
+
+func validateLiveRoots(c liveConfig) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
@@ -163,19 +195,30 @@ func runLive(ctx context.Context, c liveConfig) (resultErr error) {
 		}
 	}()
 	coverage := liveCoverage{Day: c.Start.Format(time.DateOnly), WindowStart: c.Start.UnixMilli(), WindowEnd: c.End.UnixMilli(), SleepStatus: "not_run", Status: "failed", ReceiptIDs: []string{}, SemanticPolicy: events.SemanticPolicyVersion, Experiment: "live_entry_only; lock/day0 owned by root"}
+	coverage.Phase, coverage.ProtocolSHA, coverage.Day0 = c.Phase, c.ProtocolSHA, c.Day0
+	coverage.Experiment = c.Phase
 	coverageFile, err := os.OpenFile(filepath.Join(c.Out, "coverage-safe.jsonl"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
 	defer coverageFile.Close()
 	defer func() {
-		if err := json.NewEncoder(coverageFile).Encode(coverage); err != nil {
-			release = false
-			resultErr = fmt.Errorf("safe coverage delivery unknown")
+		err := json.NewEncoder(coverageFile).Encode(coverage)
+		if err == nil {
+			err = coverageFile.Sync()
 		}
-		if err := coverageFile.Sync(); err != nil {
+		if err != nil {
 			release = false
 			resultErr = fmt.Errorf("safe coverage delivery unknown")
+			coverage.CaptureComplete = false
+			coverage.Status = "delivery_unknown"
+			// Best-effort invalidate this new capture's incomplete publication.
+			// The retained writer lock is the durable reconciliation boundary.
+			if _, e := coverageFile.Seek(0, 0); e == nil {
+				_ = coverageFile.Truncate(0)
+				_ = json.NewEncoder(coverageFile).Encode(coverage)
+				_ = coverageFile.Sync()
+			}
 		}
 	}()
 	capture, err := captureLive(ctx, c, c.Out)
@@ -183,7 +226,7 @@ func runLive(ctx context.Context, c liveConfig) (resultErr error) {
 	coverage.StructureFailed, coverage.Noncognitive, coverage.CaptureDuplicates, coverage.SourceErrors = capture.StructureFailed, capture.Noncognitive, capture.Duplicates, capture.Errors
 	coverage.NormalizationFailed = capture.NormalizationFailed
 	coverage.SelectionComplete = capture.Errors == 0
-	if err != nil || capture.Errors != 0 {
+	if err != nil || capture.Errors != 0 || capture.NormalizationFailed != 0 {
 		release = true
 		return fmt.Errorf("incomplete authorized source capture")
 	}
@@ -212,10 +255,47 @@ func runLive(ctx context.Context, c liveConfig) (resultErr error) {
 	if err = receiptFile.Sync(); err != nil {
 		coverage.Status = "delivery_unknown"
 		coverage.CaptureComplete = false
+		coverage.ReceiptIDs = liveDayReceiptIDs(ctx, db, c)
+		_ = writeExclusive(filepath.Join(c.Out, "failure-safe.json"), map[string]any{"status": coverage.Status, "receipt_ids": coverage.ReceiptIDs, "sleep_receipt_id": coverage.SleepReceiptID, "receipt_export": "delivery_unknown"})
+		return err
+	}
+	coverage, err = finalizeLiveSnapshot(ctx, db, c, coverage, func() error {
+		return exec.CommandContext(ctx, "python", "scripts/validation/bootstrap_v4.py", "--snapshot-state", c.State, "--out", filepath.Join(c.Out, "day-state.sqlite")).Run()
+	})
+	if err != nil {
 		return err
 	}
 	release = true
 	return nil
+}
+
+func liveDayReceiptIDs(ctx context.Context, db *sqlite.DB, c liveConfig) []string {
+	result := []string{}
+	ids, err := db.Conn().QueryContext(ctx, "SELECT id FROM attention_engine_events WHERE ts>=? AND ts<? ORDER BY ts,id", c.Start.UnixMilli(), c.End.UnixMilli())
+	if err != nil {
+		return result
+	}
+	defer ids.Close()
+	for ids.Next() {
+		var id string
+		if ids.Scan(&id) == nil {
+			result = append(result, id)
+		}
+	}
+	return result
+}
+
+func finalizeLiveSnapshot(ctx context.Context, db *sqlite.DB, c liveConfig, coverage liveCoverage, backup func() error) (liveCoverage, error) {
+	coverage.CaptureComplete = false
+	if backup() != nil {
+		coverage.Status = "delivery_unknown"
+		coverage.ReceiptIDs = liveDayReceiptIDs(ctx, db, c)
+		_ = writeExclusive(filepath.Join(c.Out, "failure-safe.json"), map[string]any{"status": coverage.Status, "receipt_ids": coverage.ReceiptIDs, "sleep_receipt_id": coverage.SleepReceiptID, "snapshot": "delivery_unknown", "retry": "reconcile before retry"})
+		return coverage, fmt.Errorf("committed day snapshot delivery unknown")
+	}
+	coverage.SnapshotFile = "day-state.sqlite"
+	coverage.CaptureComplete = true
+	return coverage, nil
 }
 
 type liveRecorder interface {
@@ -265,6 +345,10 @@ func executeLive(ctx context.Context, db *sqlite.DB, rows []app.StoredEvent, c l
 	day, err := time.ParseInLocation(time.DateOnly, lastDay.String, liveZone)
 	if err != nil {
 		return coverage, err
+	}
+	if day.After(c.Start) {
+		coverage.Late++
+		return coverage, fmt.Errorf("state advanced beyond requested day; use original immutable day snapshot")
 	}
 	var existingSleepID string
 	err = db.Conn().QueryRowContext(ctx, "SELECT id FROM attention_engine_sleep_runs WHERE day=?", coverage.Day).Scan(&existingSleepID)
@@ -326,7 +410,16 @@ func executeLive(ctx context.Context, db *sqlite.DB, rows []app.StoredEvent, c l
 		}
 		selected = append(selected, row)
 	}
-	if coverage.SourceErrors > 0 || coverage.Late > 0 {
+	for _, row := range selected {
+		if row.Event != nil {
+			signal, err := events.NormalizeValidationSignal(row)
+			if err != nil || signal == nil {
+				coverage.NormalizationFailed++
+				_ = receipts.Encode(map[string]any{"ts": row.Observation.TS, "status": "normalization_failed"})
+			}
+		}
+	}
+	if coverage.SourceErrors > 0 || coverage.Late > 0 || coverage.NormalizationFailed > 0 {
 		return coverage, fmt.Errorf("late or conflicting event requires explicit reconciliation")
 	}
 	for _, row := range selected {

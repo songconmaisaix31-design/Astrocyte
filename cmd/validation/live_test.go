@@ -227,6 +227,7 @@ func TestLiveNativeHeaderWindowsLayoutsAndCompleteChatSelection(t *testing.T) {
 func TestLiveAuthorizationAndClosedWindowRejectInvalidArgs(t *testing.T) {
 	home, _ := os.UserHomeDir()
 	c, _ := liveDay()
+	c.Phase = "prelock"
 	c.State = filepath.Join(v4Root, "prelock-fixture/state.sqlite")
 	c.Out = filepath.Join(filepath.Dir(c.State), "capture-new")
 	c.Native = map[string]string{"claude_code": filepath.Join(home, ".claude/projects"), "codex": filepath.Join(home, ".codex/sessions")}
@@ -313,10 +314,72 @@ func TestLivePublicUnknownDepthDoesNotBecomeSuccessfulSignal(t *testing.T) {
 	result, err := executeLive(context.Background(), db, []app.StoredEvent{row}, c, coverage, clock, recorder, sleep, json.NewEncoder(&safe))
 	var signals int
 	_ = db.Conn().QueryRow("SELECT COUNT(*) FROM attention_engine_signals").Scan(&signals)
-	if err != nil || result.CognitiveSuccess != 0 || signals != 0 || !strings.Contains(safe.String(), "normalization_pending") {
+	if err == nil || result.CaptureComplete || result.NormalizationFailed != 1 || result.Recorded != 0 || result.CognitiveSuccess != 0 || signals != 0 || !strings.Contains(safe.String(), "normalization_failed") {
 		t.Fatal("unknown depth silently gained signal or success")
 	}
 	if got := liveTimestamp(json.RawMessage(`{"timestamp":null,"type":"session_meta","payload":{"timestamp":"2026-10-12T00:00:00+08:00"}}`)); got != c.Start.UnixMilli() {
 		t.Fatal("public header timestamp fallback lost")
+	}
+}
+
+func TestLiveFormalPhaseRequiresDeclaredLockAndPrelockCannotClaimIt(t *testing.T) {
+	c, _ := liveDay()
+	for _, phase := range []string{"prelock", "bridge"} {
+		c.Phase = phase
+		if validateLivePhase(c) != nil {
+			t.Fatal("nonformal capture rejected")
+		}
+	}
+	c.Phase = "formal"
+	if validateLivePhase(c) == nil {
+		t.Fatal("formal accepted without declared lock")
+	}
+	c.ProtocolSHA = strings.Repeat("a", 64)
+	c.Day0 = c.Start.Format(time.DateOnly)
+	if validateLivePhase(c) != nil {
+		t.Fatal("root-declared formal fields rejected")
+	}
+	c.Phase = "prelock"
+	if validateLivePhase(c) == nil {
+		t.Fatal("prelock claimed experiment lock")
+	}
+	c.Phase = "formal"
+	c.Start = c.Start.AddDate(0, 0, 9)
+	if validateLivePhase(c) != nil {
+		t.Fatal("last D+3 prediction maturity collection rejected")
+	}
+	c.Start = c.Start.AddDate(0, 0, 1)
+	if validateLivePhase(c) == nil {
+		t.Fatal("formal accepted out-of-experiment day")
+	}
+}
+
+func TestLiveSnapshotFailureRetainsCommittedIDsAndNoCompletedCoverage(t *testing.T) {
+	db, _, clock, recorder, sleep := liveFixtureState(t)
+	c, coverage := liveDay()
+	c.Out = t.TempDir()
+	var safe bytes.Buffer
+	actual, err := executeLive(context.Background(), db, []app.StoredEvent{replayFixture("snapshot-commit", "McPet", c.Start.UnixMilli()+1000).Row}, c, coverage, clock, recorder, sleep, json.NewEncoder(&safe))
+	if err != nil {
+		t.Fatal(err)
+	}
+	failed, err := finalizeLiveSnapshot(context.Background(), db, c, actual, func() error { return errors.New("PRIVATE_RAW_SENTINEL backup error") })
+	if err == nil || failed.CaptureComplete || failed.Status != "delivery_unknown" || len(failed.ReceiptIDs) != 1 || failed.SleepReceiptID == "" {
+		t.Fatal("committed IDs lost on snapshot failure")
+	}
+	var receipt map[string]any
+	readReplayJSON(t, filepath.Join(c.Out, "failure-safe.json"), &receipt)
+	// Advancing a real next day makes the old mutable model invalid for a new
+	// old-day snapshot; the previous immutable snapshot remains the consumer.
+	next := c
+	next.Start = c.End
+	next.End = next.Start.AddDate(0, 0, 1)
+	nextCoverage := coverage
+	nextCoverage.Day = next.Start.Format(time.DateOnly)
+	if _, err = executeLive(context.Background(), db, nil, next, nextCoverage, clock, recorder, sleep, json.NewEncoder(&safe)); err != nil {
+		t.Fatal(err)
+	}
+	if result, err := executeLive(context.Background(), db, nil, c, coverage, clock, recorder, sleep, json.NewEncoder(&safe)); err == nil || result.CaptureComplete || result.Late != 1 {
+		t.Fatal("D+1 model served as old-day state")
 	}
 }
