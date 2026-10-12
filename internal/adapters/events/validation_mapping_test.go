@@ -41,7 +41,7 @@ func TestCanonicalNativeKindsAndUnknownSemantics(t *testing.T) {
 
 func TestSeedMatchingPriorityAndUnassigned(t *testing.T) {
 	labels := SeedTopics()
-	if len(labels) != 5 {
+	if len(labels) != 6 || labels[5] != "McPet" {
 		t.Fatal("fixed seed count changed")
 	}
 	labels[0] = "mutated"
