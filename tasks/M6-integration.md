@@ -46,6 +46,12 @@ Windows/PowerShell，标准TEMP/TMP `C:/Users/DW/AppData/Local/Temp`；清除每
 - **live prelock接缝PASS**：root `live-production-independent-001-safe.json` 与 `live-snapshot-idempotence-independent-001-safe.json`：真实新增250git（Morph42/Astro119/McPet89），3105事件/3105信号/6节点/31Sleep，849无标不变，250 singleton回执/绑定/时序一致、最终6节点A/M/C误差0；再次同250为duplicates/新贡献0/Sleep未重跑，日快照全表等值、原库不变。256为独立参考点数量，不冒称逐生产中间节点都比对过；两获准native根本日认知0不能外推全域无活动。prelock不是formal/day0或七日V4。
 - **V3工具与输入独立PASS，路由/锁分列**：root `lossless-independent-001-safe.json` 独立还原三主题完整有序字段与2855事件投影；`b-content-independent-001-safe.json` 证明已装38条原content/role/phase/ts完整、时间升序、1003=38+965、余6tokens。root精确4a179ce `v3-judge-independent-final.log` 独立35PASS；缺失/失败/非法judge不FINAL修复已精确合入，用户原因裁决权、固定分母未改。实际24次MCP tools/call为23成功/1意图错误，真实正式ABC答案/用户评分/成熟预测仍0。
 
+## 已观察远端CI RED（root新Handoff）
+
+root在本Dispatch检查点 `msg_074b815017a5` 独立观察精确W1 SOURCE `4fbea9d7a32ed7b7f0e0eaf382cd7dc9fe7091a8` 的CI **38279757301**：Linux check/race/build/full E2E success；Windows check/build success，但默认E2E **225PASS /30SKIP /1FAIL**，`navigation.spec.ts:106` Sidebar material import /swarm capability-disabled 的summary locator.click发生30秒timeout。首RED完整日志 `root-v2/w1-ci-4fbea9-first-red.log` 保留。它不是本轮live cmd/Go/Python失败；web相对3e零diff也不能证明flaky或将远端RED填绿。本集成没有UI/test写权，未改UI/测试、偷skip或retry；root随后最终整仓check/build及必要定向复核另验，本报告不声称当前完整CI通过。
+
+初次REPORT `e9ce5e42fb6d98dd54ff6a43ba57a5c9ee3e8c3a` 于01:17:01+08提交、01:17:05+08普通push后，按该新Handoff追加本节为独立普通REPORT补充commit/push；不amend/覆盖原报告历史，组合SOURCE仍7d979440。最终REPORT精确SHA和时间经当前Dispatch唯一worker_done回传。
+
 ## 首RED及真实剩余
 
 首RED全部保留：W0 Windows SQLite未close清理错误及扩大报告审计同词碰撞；W1 fixture编译/路径比较/SQLite关闭错误和实际capture001 Codex行超过64MiB（0写入/Sleep not_run），原78,038,714-byte行不改，修复接缝后prelock成功；W2首次23tests/4errors和129b640缺7份judge却FINAL，root首RED与W2复现34tests/1failure均留外部原件，4a179ce修复后本轮35PASS。保留所有旧capture/replay、原132结构残余/849无标、failed/unknown，不因合并绿覆盖首次证据。
