@@ -4,6 +4,8 @@
 
 ### 2026-10-13 V4启动定案已接收
 
+**RAW定向豁免已获用户裁决（2026-10-13）。** 仅外部harness的V4 B臂最近七天完整聊天上下文可送锁定gpt-6.1-sol配置；实验结束失效。B输入/响应本机存证、实验后封存，不入Astrocyte事件库、不经MCP/API暴露。A维持derived零raw，C仅题目及三臂共同配置，Astrocyte运行时暴露面不变。该裁决覆盖下方「豁免待答」历史；不是通用raw外发授权。执行单tasks/M6-V4-raw-exemption.md，原W2登记协议并执行必要的真实满预算B启动门禁，root独验后唯一原集成消费；仍未锁SHA/day0。
+
 **02:30 本轮启动工具已普通集成；A本地无损验收PASS，新源码双平台CI SUCCESS；真实满预算B未发送，协议UNLOCKED、day0/V4 NOT_RUN。** 主分支`validation/v1-20261012`组合SOURCE `18085f4d30ce6f095249274e20ad245a42de4fa5`（02:21:32+08）普通合唯一原集成REPORT `82eaf6d70f3e4d62f535361ade1e3e63fb563ec6`，集成SOURCE `ccdf9bdca87afd4c1697ca69bc75388c26a96333`及W2 SOURCE5e1822b/REPORT3c758a0均保留为普通祖先。零冲突、零胶水；引擎/schema/参数/权重/mapper/UI相对1bbd055零diff。两本轮owner均accepted succeeded、release external_terminal/retained，原工作树和终端保留。
 
 root精确组合SOURCE首次`pnpm check`、`pnpm build`均EXIT0，含Go全包/vet/依赖/架构/合约/API14、前端13文件90测试及生成/diff检查；独立`python -m unittest discover -s tests/validation/{evidence,ingest,experiment} -p 'test_*.py' -v`逐目录运行19+19+41=79 PASS。原集成适用Go122顶层PASS/12条件SKIP，含M2/EX-01/M5；不把条件SKIP记为真实采集通过。首日志保留于本机`root-v4-start/final-combination-{check,build}-first.log`及`final-{evidence,ingest,experiment}-python-first.log`。

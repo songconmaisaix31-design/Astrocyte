@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+用户2026-10-13已准予V4 B臂raw定向豁免：仅最近七天聊天、仅锁定gpt-6.1-sol路由、仅外部对照harness，实验结束失效；B输入/响应本机封存，不进产品库/MCP。A/C与产品接口零raw保持。下一步原W2按tasks/M6-V4-raw-exemption.md登记协议、收窄旧ABC笼统授权字符串并执行一次真实满预算B门禁；root只验收/状态/最终锁，唯一原集成普通合。下方豁免待答为历史，不重新索取同意。
+
 02:30 最新组合SOURCE18085f4d已普通合唯一原集成REPORT82eaf6d7，W2 SOURCE5e1822b/REPORT3c758a0及集成SOURCEccdf9bdc全保留；两owner已accepted succeeded/release retained，当前无需等待worker。root整仓check/build首次EXIT0，独立Python79 PASS，冻结域零diff。新CI38289430526精确5e1822b双平台check/build/E2E SUCCESS，Linux race PASS/Windows条件SKIP；主组合业务/配置/协议/测试与此源码全等，仅交接Markdown不同。收尾只更新root文档并skip ci普通push，不借旧CI替代新源码。完整SHA/时间/日志见STATUS顶部。
 
 A分层材料已正式激活，本地SQL误差0/2006引用回溯/raw0；B1003原消息四题全量一致。真实强B仍NOT_SENT/0调用：原raw本地条款与ChatGPT外部处理冲突，用户定向豁免问题尚未答。模型gpt-6.1-sol/A表示/1800秒已定，不重新询问。协议UNLOCKED、共同正式byte预算未接受、day0及七日未开始；收到真实豁免后复用原W2启动一次完整B验收，再root确认预算与全文SHA。保持历史600秒delivery_unknown、Windows首RED和原回放，不预填七日/人评/末D+3。
