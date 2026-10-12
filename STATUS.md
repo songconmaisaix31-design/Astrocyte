@@ -4,6 +4,8 @@
 
 ### 2026-10-13 V2独立验收与V3参数待定
 
+root独立逆解码与原物理行核对PASS：三主题工具全部字段/类型/顺序和2855事件投影精确还原；B38已装消息完整原content/role/phase/ts全等，呈现时间正序，965预算未装原因保留。证据`root-v2/lossless-independent-001-safe.json`、`b-content-independent-001-safe.json`。独立实码复现精确SOURCE129b640：7份judge全缺却FINAL/成功true，首RED `judge-missing-first-red-safe.json`保留，已退原W2修复双评完整门禁，不改裁决权。唯一集成单`tasks/M6-V23-integration.md`；领域最终REPORT全到后才启动，模型+表示未决定仍UNLOCKED。
+
 01:03 W1 live接缝最终SOURCE `4fbea9d7a32ed7b7f0e0eaf382cd7dc9fe7091a8` / REPORT `101ee708fa835c25a733a82257855749748be180`已push，普通祖先和remote一致；accepted worker_done/succeeded，release retained/external_terminal/processAction none。root独立Go11/Python19、250真实事件绑定/顺序、6最终节点literal复算误差0及日快照全持久表等值通过。256是生成参考点数，不冒称全部生产中间节点已逐点比对。待唯一集成，不重扫已验历史。
 
 本机候选真实部署：官方Qwen3-32B-GGUF revision `938a7432affaec9157f883a87164e2646ae17555`、Q4_K_M 19762149024 bytes，官方SHA核验通过；llama.cpp b11574 Vulkan运行器SHA通过，仅127.0.0.1:18080，实际context131072、slot1、14 NVIDIA GPU layers。短公共JSON及模板/tokenizer/usage核对PASS，长上下文能力尚未通过。实际prompt上限126976（输出4096）；Astro完整三工具A需221700，原JSON预算RED保留；B七日1003完整消息需471591，最新优先整条最大装载38条/未装载965，prompt126970，长推理待结果。
