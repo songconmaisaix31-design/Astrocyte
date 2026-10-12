@@ -2,6 +2,8 @@
 
 ## 当前波次：v3.0 V1R
 
+22:22固定W1已完成独立准备：SOURCE5657b9c原分支已push、root未合；ownercheck/build/Go46/Python16与原人口/raw审计通过，rootGo4/Python16独立通过。当前Task71ba19824f32/Dispatch8dc6b111c5f5源身份问题待用户答，保持in_progress，候选McPet alias/真实捕获/V1R运行NOT_RUN。本轮仅root文档提交推送，不宣称新增源码CI或真实验收；后续回原owner/同Dispatch，不重复建轨或把等待判成功失败。原W1 REPORT待准备记录，V1R整体尚未结束。新W2执行单`M6-V3-experiment.md`已备但未派，EXPERIMENT草案暂仍root拥有。
+
 事实源`M6-validation-v3.md`，本轮先单轨W1复用原工作树/分支/终端，业务write_paths仅`M6-V1R-replay.md`所列；不再开放app boost、M4或UI。root维护文档/路径裁决/独立复核/最终Git，原唯一集成owner消费精确SOURCE/REPORT普通合。用户确认真实McPet根后才捕获新增源；原冻结两仓/会话不重抓，首次V1不覆盖。V1R新版三线/覆盖/50权重完成后用户终审关账，再沿原MCP owner产三主题Markdown，不新增UI；新W2工具链/协议按后续互斥写域派发，锁定必须晚于V1人验。原V1 SOURCE/双平台CI是历史证据，新增源码另验。
 
 ## 历史波次：v2.2

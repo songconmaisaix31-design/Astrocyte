@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+22:22 checkpoint：root最终分支当前仅v3文档，W1候选SOURCE5657b9c已push但未合入；owner完整check/build及Go46/Python16/旧人口与原100 raw回归通过，root新增Go4/Python16独立通过。不是V1R实际完成。源名maimai-monster与本机C:/Users/DW/orca/mcpet/remote mcpet差异仍待用户路径回复；`task_71ba19824f32/ctx_8dc6b111c5f5`保持in_progress且source ask `msg_421ee8e406cd`待答，不能另派重复worker或伪结算。用户答后回复同问题并在同owner补实际身份项/捕获/30Sleep/新版M2及三线/权重，再原集成普通合/root复核/用户终审。未答前实际源、新回放和新版人工表均NOT_RUN，REPORT准备状态尚待W1。首RED原件在v1r-w1，root独立在root-v3。未开V2/V3/V4，不锁协议。
+
 先读STATUS顶层及`tasks/M6-validation-v3.md`/`tasks/M6-V1R-replay.md`。用户补授权McPet仓git，先W1 V1R补源与原会话仓根重分类→root独立复核→用户轨迹/权重终审关账→V2三主题证据资产→V3协议锁→七日V4。McPet本机mcpet与任务maimai-monster身份差异已询问，候选源未确认前不采raw。旧SOURCE12cc/CI38226630789及replay-001/002保留，不能当V1R完成。V1人验PENDING，不代填；引擎/schema/参数/权重冻结，旧P2新增UI撤销。root只文档/协调/独立验收/最终Git，复用原W1和唯一原集成Codex --yolo工作树。
 
 ## 历史入口：M6 v2.2（2026-10-12）
