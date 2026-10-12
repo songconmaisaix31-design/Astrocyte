@@ -6,7 +6,7 @@
 
 ## 源确认与最小改动
 
-本机Orca登记McPet为`C:/Users/DW/orca/mcpet`，remote `github.com/songconmaisaix31-design/mcpet`，与用户文字maimai-monster不同。root已询问实际授权根。收到root明确答复前只做现有代码/冻结源盘点和限定实现准备，不捕获候选仓raw/git subjects，不将候选别名当已批准。确认后在授权根读git common-dir/remote/HEAD，固定捕获HEAD，只采该HEAD可达且commit ts在30天窗口的实际事实。源安全aggregate可以共享；subject/raw只落新本机目录。仓根规则仅追加已确认McPet身份；不凭路径子串归属。
+授权依据为v3.0明确纳入McPet git源。root已核实实际仓`C:/Users/DW/orca/mcpet`、remote `https://github.com/songconmaisaix31-design/mcpet`，Orca登记与README产品名McPet一致；任务文字maimai-monster按实码偏差记录，原路径询问是root误设门禁，不构成新授权需求。允许采集这个已识别McPet仓；在公共repositoryTopic中最小追加实际身份mcpet，保留maimai-monster原条，不修改kind/关键词/关联规则。以此根读取git common-dir/remote/HEAD，固定捕获HEAD，只采该HEAD可达且commit ts在30天窗口的实际事实。源安全aggregate可以共享；subject/raw只落新本机目录，不凭路径子串归属。confirmation_reference记录v3.0原授权与root实码身份核验，不伪称用户另答过路径。
 
 原冻结`v21-w1/tool-records-local.jsonl`4123父行及`diagnosis-w1/p0-git/git-log-local.jsonl`1893commit不重抓、不改写。原19cwd观测中没有McPet，按新版规则全量重跑给实际scope重归类变化；不补会话或把普通文件名硬当scope。原6016/8914/2832/849历史计数保持。认知语义规则版本v22.9、s/w、所有参数完全不变；仅记录仓根来源规则扩展版本。McPet git事实与旧两仓合并并去重，新增数和会话转入数分开报告，排除Bash commit双计数。
 

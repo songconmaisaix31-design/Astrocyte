@@ -4,6 +4,10 @@
 
 ### 当前裁决：v3.0（2026-10-12）
 
+22:55 root纠正执行错误：v3.0已明确授权McPet补源，实际Orca登记根/remote/README产品名均为`C:/Users/DW/orca/mcpet`、`https://github.com/songconmaisaix31-design/mcpet`、McPet；maimai-monster是任务文字与实码名称差异，按规格“实际代码为准并记录偏差”处理。此前另询源路径并阻塞已授权工作是root误设门禁，撤销，不称用户新答过路径或按超时默认批准。沿现有授权捕获实际McPet根，公共仓根仅追加mcpet身份，原语义/关键词/权重/参数不变，raw仍本机。下方PENDING源记录保留为历史错误，不继续阻塞V1R。
+
+Orca重启至runtime6ab8fbad后，原ctx_8dc6b111c5f5被标failed/terminal_missing，保留此失败，不改为worker_done成功；已推SOURCE5657/REPORT4fc及工作树独立确认仍在。当前root恢复term_f327ea80-4929-4421-b064-bf386a16ec63、原Run generation5。下一步同Task按retry-of恢复原逻辑W1/Codex --yolo，执行真实补源/30Sleep/新M2/三线及人工表，不重做无变化准备测试。完整V1用户轨迹/权重关账仍PENDING，V3未锁、V4未开。
+
 准备REPORT（commit时间2026-10-12T22:23:36+08:00）`4fc016614b948f4c6f39d2ab5ca628d6850d4f10`已由root核对源码祖先、仅`tasks/M6-W1.md`报告差异及remote精确一致，状态消息msg_611d48b28471已处理。候选SOURCE5657b9c及准备check/build记录不变；REPORT不表示V1R整体完成。Task/Dispatch仍in_progress，源问题msg_421ee8e406cd待用户实际根答复，未worker_done、未释放或重复派发、未合候选源码。真实补源/新回放/人验/V2–V4仍按前述状态。
 
 22:22 V1R准备阶段checkpoint：W1候选SOURCE`5657b9c37d1227f782043a8d7ba92607b457e3ca`已push原`validation-v1-ingest`分支，尚未普通合入最终验证分支，非真实V1R验收SHA。限定入口/源捕获/三线安全导出/固定50及McPet专项10抽样代码就绪；公共mapper不分叉，候选mcpet仓根别名尚未添加。root独立新增Go4 PASS、Python16 PASS，SOURCE与remote精确一致；相对12cc引擎/SQLite/schema/runtime/UI/kind语义/权重表差异0。
