@@ -4,6 +4,12 @@
 
 ### 2026-10-13 V2独立验收与V3参数待定
 
+01:03 W1 live接缝最终SOURCE `4fbea9d7a32ed7b7f0e0eaf382cd7dc9fe7091a8` / REPORT `101ee708fa835c25a733a82257855749748be180`已push，普通祖先和remote一致；accepted worker_done/succeeded，release retained/external_terminal/processAction none。root独立Go11/Python19、250真实事件绑定/顺序、6最终节点literal复算误差0及日快照全持久表等值通过。256是生成参考点数，不冒称全部生产中间节点已逐点比对。待唯一集成，不重扫已验历史。
+
+本机候选真实部署：官方Qwen3-32B-GGUF revision `938a7432affaec9157f883a87164e2646ae17555`、Q4_K_M 19762149024 bytes，官方SHA核验通过；llama.cpp b11574 Vulkan运行器SHA通过，仅127.0.0.1:18080，实际context131072、slot1、14 NVIDIA GPU layers。短公共JSON及模板/tokenizer/usage核对PASS，长上下文能力尚未通过。实际prompt上限126976（输出4096）；Astro完整三工具A需221700，原JSON预算RED保留；B七日1003完整消息需471591，最新优先整条最大装载38条/未装载965，prompt126970，长推理待结果。
+
+W2提供未激活无损列候选：三主题完整字段/标量/事件顺序往返全等，Morph173620→62735/Astro221700→72890/McPet5002→2944实际tokens；全部2855事件派生投影含849无标精确还原，原库SHA不变，模型回答0。正式collector仍原JSON，候选仅锁前审查。root新增独立Python34 PASS，日志`root-v2/v3-tests-independent-second.log`；实际往返与契约证据分列。root已向用户提交模型+输入表示选择，未回答保持未决定，不激活、不锁、不填day0。W2完成当前工具链SOURCE/REPORT后再交唯一集成；需要续作仍由同owner处理。
+
 V2原owner已accepted worker_done/succeeded并完成外部worker-release（retained/processAction none）；REPORT `d7044ee1c77ae7fc9980181795b21d203a35de12`已push，root验证SOURCE930307普通祖先和remote一致。三资产及README/报告合计5Markdown最终审计0；旧报告同词扩大审计首RED保留，当前报告仅重述该字面，旧Git原件未改。唯一集成待W1/W2最终交付后执行。
 
 live首次prelock capture001因真实Codex大行触发64MiB scanner限制，capture_complete=false/0写入/Sleep not_run原件保留；原W1改接缝读取并附复现测试后，capture002真实250单事件+1生产Sleep完成。root在新效果前独立枚举固定三HEAD窗口（Morph42/Astro119/McPet89），从原V1R节点生成字面公式参考；随后只读核对3105事件/3105信号/6节点/31Sleep，250唯一回执及s1/w.6/真实ts全部一致，A/M/C最大误差0，849无标与原V1R SHA不变。证据`root-v2/live-production-independent-001-safe.json`；这是prelock入口验收，不是day0或七日数据。W1首源码045f75f已push，最终补日末独占只读backup及phase接缝后另发精确SOURCE/REPORT。批准prelock/bridge/formal默认prelock，formal显式传已锁protocol_sha256/day0由W2核对；快照/回执失败不能标完整。无新schema/引擎/调度/证明系统。
