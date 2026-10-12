@@ -1,6 +1,6 @@
-# V4 手动操作与数据契约（未锁）
+# V4 B窄豁免操作与数据契约（未锁；完整B门禁已完成）
 
-2026-10-13定案优先：ABC固定gpt-6.1-sol，正式A为全量状态排序、完整explain_focus数值头、kind×自然日整数聚合、全部event_id引用和approved经验。开发终端不是实验响应模型证明。当前raw本地令仍有效，用户定向例外待答；没有例外时private native进程启动前失败并保存not_sent。全部新证据写入外部 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/` 独占新目录，旧v3-w2不覆盖。stdout只派生数字与状态，源码/报告不得含raw。
+2026-10-13定案优先：ABC固定gpt-6.1-sol，正式A为全量状态排序、完整explain_focus数值头、kind×自然日整数聚合、全部event_id引用和approved经验。开发终端不是实验响应模型证明。用户B窄例外已批准；无B专用授权或旧ABC宽scope仍启动前拒绝not_sent。A derived/C无记忆不借豁免，judge显式匿名评分用途并从完成的paired answers重建校验。全部新证据写入外部 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/` 独占新目录，旧v3-w2不覆盖。stdout只派生数字与状态，源码/报告不得含raw。
 
 从仓库根执行下列实际入口（参数路径必须是外部既有根内真实文件、新输出不得已存在）：
 
@@ -14,13 +14,21 @@ python -m unittest discover -s tests/validation/experiment -v
 
 前两条已实测，最后B命令首轮EXIT1、PRIVATE_EGRESS_BLOCKED/not_sent/0模型调用，原回执保留；上述已存在输出不能重跑覆盖。prepare-b入口复用原selection/loader与题库，读取只读真实库当日事件，保存全部原content及四题完整prompt；1003人口先前构造和root独立逐物理行审计已通过，并非该命令运行的伪证据。每次新烟测选不同新目录，unknown请求不因新目录而盲重试。
 
-仅有明确用户定向例外后，由root释放外部授权记录路径，B命令加 `--authorization`。文件必须含authority=user、status=APPROVED、model=gpt-6.1-sol、scope=`V4 ABC selected A derived and full seven-day Claude/Codex B`、endpoint_boundary=`native OpenAI Responses provider; external provider inference, CLI-owned existing authentication`和真实decision_reference。W2不代用户生成APPROVED。隐私block仅not_sent，真正已启动错误/超时保留unknown_no_auto_retry。启动B一次完整回答和usage即使通过，也只是门禁烟测，不计正式七日。
+root已按真实裁决释放外部root-v4-start/b-raw-user-authorization-20261013.json，B命令加 `--authorization`。文件必须含authority=user、status=APPROVED、model=gpt-6.1-sol、scope=`V4 B full seven-day Claude/Codex chat context only`、endpoint_boundary=`native OpenAI Responses provider; external provider inference, CLI-owned existing authentication`和真实decision_reference。W2不改root记录、不代用户生成APPROVED；B收集结束即失效，B输入/响应只本机harness封存，禁止进入Astrocyte库/MCP/API。隐私block仅not_sent，真正已启动错误/超时保留unknown_no_auto_retry。启动B一次完整回答和usage即使通过，也只是门禁烟测，不计正式七日。
 
-原生CLI隔离配置沿用released文本processor：固定空cwd、ignore-user-config/rules、schema、禁tools/apps/skills/MCP/子Agent；请求gpt-6.1-sol/high/priority、provider默认采样、872000候选context、禁止compact、request/stream retries0、总1800秒。所有ABC同一通用answer_json schema与75字节前缀，差别仅材料。完整stdin已写入和关闭另记回执，不能冒称provider wire验证。JSONL first_process_byte与first_agent_message_event分列，不是provider首字节/首token；真正远端SSE timing尚未暴露。
+原生CLI隔离配置：固定空cwd、ignore-user-config/rules、schema、禁tools/apps/skills/MCP/子Agent；请求gpt-6.1-sol/high/priority、provider默认采样、872000 context、禁止compact、request/stream retries0、总1800秒。三臂同SYSTEM/固定双通道数据框/完整JSON包/末片段后同题/通用answer_json schema；judge同配置但独立JUDGE_SYSTEM。model_context_split前900000 UTF8字节退到完整codepoint置model_instructions_file，余下全文置stdin；逐字重组，不能截断/编码压缩/摘要或多轮读入。所有可控初始文件+stdin字节共计；原native stdin共同75字节前缀仅历史。
 
-全量B1003条优先顺序与整条原content保持；由于CLI不暴露精确preflight tokenizer，仅支持**全人口输入+完整终止实际usage**，不支持边界选条。全部人口fit时是最大B，不padding。若全量超过实际context/输出reserve则失败，不能裁剪为272K或换模型。统一UTF8 ceiling须root真实预算验收后填规范；它计入完整JSON和共同75字节前缀，目前null，禁止任意降低。最大片段JSON1632638、native stdin1632713字节仅是观测，不是已冻结上限。actual input/output usage、完整流式终止、full stdin、no compact/no tools分别记录；模型echo/tokenizer极限/硬输出cap未露出，不自动标ACCEPTED。
+原生只支持**全人口输入+完整终止实际usage**，不支持近似tokenizer边缘选条。全人口fit即最大B，不padding；不fit整臂失败。后续请求归档实际stdin-local.txt、原messages、initial-context-local.txt、argv、schema、stdout/stderr、流事件时间和完整output。JSONL first_process_byte与first_agent_message_event非provider TTFT，model echo/provider wire/精确tokenizer/输出硬cap未露出；实际usage后验input+4096≤872000、output≤4096，总elapsed≤1800，失败保留完整证据、unknown不自动重试。
 
-lock按backend验收：local HTTP要求local_runtime_verified；native external要求external_runtime_verified和真实用户授权，不填假local_runtime。另需actual_identity_verified、full_population_usage_verified、native_request_input_complete_verified、同一UTF8 ceiling、strong_b/budget_smoke/production_live与root reviewed及正式v4-w1根。当前所有正式门禁仍未过，lock不执行、day0不填；最终规范须由W2在root验收后填实际值并commit/push，再由唯一原集成owner普通合，root权威记录全文SHA/day0。
+本轮唯一实际B已完成，命令（输出已存在，禁止再执行覆盖）：
+
+```text
+python scripts/experiment/experiment.py v4-b-smoke --input-transport model_context_split --candidate C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/b-full-population-local.json --authorization C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/root-v4-start/b-raw-user-authorization-20261013.json --out C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/b-native-context-split-first
+```
+
+1003全部/0未装，总1633656字节、input491479/output495(reasoning202)、28.859787秒、完整stdin/终止/usage/no compact/tools。parent首schema RED保留（题目允许结构化explanation，startup错误要求str），同一原答离线重验recheck-001-safe.json PASS，新增请求0；不是重新调用。该次stdin额外归档仅配置重构stdin-reconstructed-local.txt，明确非原始wire捕获，原写入关闭回执仍在。
+
+root msg_108213fb5c73已独立接受共同byte ceiling，W2终稿登记：固定初始上界900603，加turn/start每scalar最多4UTF8×1048576，导出5094907，不以今日人口观测人为压低未来预算。正式route草案只供root审查，不代写ACCEPTED，不实际lock；root另验新SOURCE CI、普通最终集成与工具后才权威锁SHA/day0。native lock要求外部runtime实证+B窄授权、actual identity/full_population_usage/native complete input/byte ceiling/strongB/budget/live与root reviewed，formal_live_root沿v4-w1原生产目录。
 
 下面保留V3操作历史；涉及Qwen候选和本地only接受条件不是V4模型选择或外发授权。run-day、人评、judge、预测成熟和summary规则继续适用；推理seed在native未暴露，只有题库seed固定。V4 run-day实际调用分层A和native full population，错误/输入/答案仍本机JSONL；任何锁后协议字节变化INVALID。
 
@@ -69,3 +77,17 @@ answers.jsonl、inputs.jsonl、mcp-receipts.jsonl、receipts.jsonl、questions.j
 `score-predictions --day-dir <该日目录> --db <live库> --coverage <截至真实今天的coverage> --lock <权威lock>` 未过 D+3 自然日末或未来三天采集/Sleep 缺失均 PENDING。到期重检查追加新行，原 PENDING 保留。种子floor、unassigned及无真实事件节点不进入活跃榜。
 
 `summary --day-dirs <实际七日目录...> --lock <权威lock> --out <新聚合文件>` 不生成或补齐答案。第七日只给真实成熟 provisional；末三日 D+3 全到期后才 FINAL，按固定28题/84答、人评7题及独立judge7份OK/合法数值回执检查完整性。缺失/失败judge保持PROVISIONAL；judge偏好不改变用户成功线。按匿名映射还原用户三臂和AB胜率、独立judge三臂/均分/分歧数，并输出三维派生原始数字与本机JSONL引用。失败不删除，不缩分母，不填终局 Markdown。终局报告格式见 [REPORT_TEMPLATE.md](REPORT_TEMPLATE.md)。
+
+## 本次真实scope及初始context修复证据
+
+旧授权已严格收窄为B-only，root记录未改。真实唯一authorized stdin调用b-native-authorized-first全1003消息/1632692字节完整写入关闭，native turn/start在model IO前拒绝：code -32602/input_too_large、max_chars1048576、actual_chars1505850，4.854573秒，无usage。首unknown保留，独立诊断后追加not_sent而非盲重试；result-safe.json只派生字段。官方0.162累计检查连多text项也不能绕过，官方源码commit c1382380de69521303b416720a52f42d51af6248。
+
+root明确允许官方exec model_instructions_file初始context接缝；保留ignore-user-config/rules与既有认证、短stdin同题、全原messages JSON可逐字/类型/顺序恢复，预算计文件与stdin总UTF8，禁tools/no compact。app-server缺ignore-user-config且空mcp_servers不会清继承，因此不使用它发private。context候选命令 `v4-public-context-probe --out <外部新目录>` 与短控制 `--public-filler-repetitions 4`，私人B仅在长公开探针与root验收通过后可使用 `v4-b-smoke --input-transport model_instructions_file --authorization <root记录> ...`；不能因该参数存在就当路由已通过。
+
+公开long public-native-context-first：initial1121119+stdin235=1121354字节，12.055640秒，turn.started后固定Bad Request/turn.failed，无完整终止/usage，原unknown保留；small-control-first：initial1147+stdin235=1382字节，12.048045秒/input4493/output65，完整终止与首尾public标记正确，no tools/no compact。长输入原因边界未暴露，不把small通过写成full B、872000 context或正式byte ceiling通过。新raw例外与模板候选均在未锁时预注册，day0不填。
+
+
+两条真实pre-turn item.error已按官方源码分类为初始化Warning（exec JSONL将Warning转item.completed(error)，status仍Running）：skip_host_skill_discovery开发期提示、code-mode host禁用后fail closed提示；与四个公开成功控制逐字全等，不是model/context/metadata/认证错误。精确白名单仅这两条且只允许turn.started之前；未知item.error、请求开始后error、top-level error/turn.failed/compact或任何工具item失败。原提示与root首严格白名单RED保留，未suppression或重发。安全分类证据v4-w2/pre-turn-warning-classification-first-safe.json。
+
+
+最终未锁route草案：v4-w2/route-draft-native-split-first-safe.json，status=DRAFT；root已接受实际gpt-6.1-sol/872000/4096/5094907/完整B/正式生产bridge边界。provider echo/wire/精确tokenizer仍false，不宣称完整极限context已验；SOURCE CI/最终集成仍待root核实。EXPERIMENT实际规范已据Handoff独占填写，W2没有实际lock、day0、七日答案或终局报告。

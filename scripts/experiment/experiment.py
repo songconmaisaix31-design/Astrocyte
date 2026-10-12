@@ -12,7 +12,7 @@ from local_store import BASELINE, PRIVATE_ROOT, ZONE, append_row, bounds, distri
 from protocol import check_lock, lock_protocol, rules
 from runner import import_user, mcp_command, run_day, run_judge, snapshot, model_client
 from transport import LocalModel, a_memory, probe
-from startup import a_smoke, b_smoke, prepare_b, public_probe
+from startup import a_smoke, b_smoke, prepare_b, public_probe, public_context_probe
 
 
 def read_private(path):
@@ -32,9 +32,15 @@ def args():
     p.add_argument('--out', required=True)
     p = sub.add_parser('v4-public-probe')
     p.add_argument('--out', required=True)
+    p = sub.add_parser('v4-public-context-probe')
+    p.add_argument('--out', required=True)
+    p.add_argument('--public-filler-repetitions', type=int, default=160000)
+    p.add_argument('--public-pattern', choices=('public', 'spaces'), default='public')
+    p.add_argument('--input-transport', choices=('model_instructions_file','model_context_split'), default='model_instructions_file')
     p = sub.add_parser('v4-b-smoke')
     p.add_argument('--candidate', required=True)
     p.add_argument('--authorization')
+    p.add_argument('--input-transport', choices=('stdin', 'model_instructions_file','model_context_split'), default='stdin')
     p.add_argument('--out', required=True)
     p = sub.add_parser('baseline')
     p.add_argument('--out', required=True)
@@ -98,8 +104,10 @@ def execute(a):
         return prepare_b(a.day, a.selection, a.db, a.out)
     if a.command == 'v4-public-probe':
         return public_probe(a.out)
+    if a.command == 'v4-public-context-probe':
+        return public_context_probe(a.out, a.public_filler_repetitions, a.public_pattern, a.input_transport)
     if a.command == 'v4-b-smoke':
-        return b_smoke(a.candidate, a.out, a.authorization)
+        return b_smoke(a.candidate, a.out, a.authorization, input_transport=a.input_transport)
     if a.command == 'baseline':
         report = {'evidence': 'real_readonly_V1R', **distribution(BASELINE)}
         write_new(a.out, report)
