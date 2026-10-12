@@ -15,7 +15,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 class LocalModel:
-    def __init__(self, endpoint, model, context_tokens, timeout=600):
+    def __init__(self, endpoint, model, context_tokens, timeout=1800):
         parsed = urllib.parse.urlsplit(endpoint)
         try:
             local = ipaddress.ip_address(parsed.hostname or '').is_loopback
@@ -65,9 +65,9 @@ class LocalModel:
         expected = self.count(messages)
         if expected + output_tokens > self.context_tokens:
             raise ValueError('prompt plus output exceed context')
-        result = self.request('/v1/chat/completions', {'model': self.model, 'messages': messages,
+        result = self.completion_stream({'model': self.model, 'messages': messages,
                               'max_tokens': output_tokens, 'temperature': 0, 'seed': seed,
-                              'stream': False, 'cache_prompt': False,
+                              'stream': True, 'stream_options': {'include_usage': True}, 'cache_prompt': False,
                               'chat_template_kwargs': {'enable_thinking': False},
                               'response_format': {'type': 'json_object'}})
         if result.get('model') != self.model:
@@ -81,6 +81,72 @@ class LocalModel:
         if not isinstance(answer, dict):
             raise ValueError('answer object required')
         return answer, result
+
+    def completion_stream(self, payload):
+        """Actual provider bytes/deltas/termination, bounded idle and total elapsed."""
+        start = time.monotonic()
+        self.stream_receipt = {'first_provider_byte_seconds': None, 'first_model_delta_seconds': None,
+                               'timeout_seconds': self.timeout, 'complete': False}
+        self.last_response = None
+        request = urllib.request.Request(self.endpoint + '/v1/chat/completions',
+                   data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
+                   headers={'Content-Type': 'application/json', 'Accept': 'text/event-stream'})
+        text, usage, finish, done = [], None, None, False
+        buffer = b''
+        try:
+            with self.opener.open(request, timeout=self.timeout) as response:
+                if 'text/event-stream' not in response.headers.get('Content-Type', ''):
+                    raise ValueError('provider did not return actual SSE stream')
+                while True:
+                    if response.fp is None:
+                        break
+                    remaining = self.timeout - (time.monotonic() - start)
+                    if remaining <= 0:
+                        raise TimeoutError('total inference timeout')
+                    response.fp.raw._sock.settimeout(remaining)
+                    chunk = response.read1(4096)
+                    elapsed = time.monotonic() - start
+                    if elapsed > self.timeout:
+                        raise TimeoutError('total inference timeout')
+                    if not chunk:
+                        break
+                    if self.stream_receipt['first_provider_byte_seconds'] is None:
+                        self.stream_receipt['first_provider_byte_seconds'] = elapsed
+                    buffer += chunk
+                    while b'\n' in buffer:
+                        line, buffer = buffer.split(b'\n', 1)
+                        line = line.rstrip(b'\r')
+                        if not line.startswith(b'data:'):
+                            continue
+                        value = line[5:].strip()
+                        if value == b'[DONE]':
+                            done = True
+                            continue
+                        frame = json.loads(value)
+                        self.last_response = frame
+                        if frame.get('error') or frame.get('model') != self.model:
+                            raise ValueError('provider streaming model/error changed')
+                        if frame.get('usage') is not None:
+                            usage = frame['usage']
+                        for choice in frame.get('choices', []):
+                            content = choice.get('delta', {}).get('content')
+                            if content:
+                                if self.stream_receipt['first_model_delta_seconds'] is None:
+                                    self.stream_receipt['first_model_delta_seconds'] = elapsed
+                                text.append(content)
+                            if choice.get('finish_reason') is not None:
+                                finish = choice['finish_reason']
+                if buffer.strip() or not done or finish != 'stop' or usage is None:
+                    raise ValueError('provider stream incomplete or missing usage')
+            self.stream_receipt.update(total_seconds=time.monotonic() - start, complete=True)
+            return {'model': self.model, 'usage': usage,
+                    'choices': [{'finish_reason': finish, 'message': {'content': ''.join(text)}}],
+                    'stream_receipt': self.stream_receipt}
+        except urllib.error.HTTPError as error:
+            self.last_error = {'http_status': error.code, 'body_local': error.read().decode('utf-8', errors='replace')}
+            raise
+        finally:
+            self.stream_receipt['total_seconds'] = time.monotonic() - start
 
 
 def probe(endpoints):

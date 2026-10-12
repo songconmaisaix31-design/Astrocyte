@@ -7,10 +7,18 @@ import sqlite3
 import subprocess
 
 from evaluation import audit_fact, blind_pack, judge_messages, reason_sheet, validate_user_score
-from inputs import messages, load_native, pack_b, questions
+from inputs import messages, load_native, pack_b, questions, prompt_bytes
+from a_material import verified_material
+from native_model import NativeCodexModel, input_bytes
 from local_store import PRIVATE_ROOT, REPO, ZONE, append_row, bounds, complete_day, distribution, events, private_path, readonly_db, rows, write_new
 from protocol import check_lock, rules
 from transport import LocalModel, a_memory
+
+
+def model_client(budget):
+    if budget.get('backend') == 'native_codex':
+        return NativeCodexModel(budget)
+    return LocalModel(budget['endpoint'], budget['model'], budget['context_tokens'], timeout=1800)
 
 
 def snapshot(source, target, root=PRIVATE_ROOT):
@@ -76,7 +84,7 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
         for q in qs:
             append_row(out / 'questions.jsonl', q, root)
         budget = config['model']
-        client = LocalModel(budget['endpoint'], budget['model'], budget['context_tokens'])
+        client = model_client(budget)
         client.expected_identity = locked['route']
         identity = client.identity()
         if any(identity[k] != locked['route'][k] for k in identity):
@@ -101,17 +109,33 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
                         append_row(out / 'mcp-receipts.jsonl', {'question_id': q['question_id'], **receipt}, root)
                         if memory is None:
                             raise ValueError('real MCP A failed')
-                        prompt = messages(q, memory)
-                        info = {'prompt_tokens': client.count(prompt), 'loaded': 3, 'unloaded': 0}
+                        material, material_audit = verified_material(memory, copy)
+                        prompt = messages(q, material)
+                        info = {'prompt_tokens': None if isinstance(client, NativeCodexModel) else client.count(prompt), 'loaded': 3, 'unloaded': 0, 'material_audit': material_audit}
                     elif arm == 'B':
-                        prompt, info = pack_b(q, native, client.count, budget)
+                        if isinstance(client, NativeCodexModel):
+                            chronological = sorted(native, key=lambda r: (r['ts'], r['source'], r['file'].casefold(), r['line']))
+                            prompt = messages(q, chronological)
+                            info = {'available': len(native), 'loaded': len(native), 'unloaded': 0,
+                                    'prompt_tokens': None, 'count_status': 'native_preflight_unavailable; whole_population_only; actual_usage_required',
+                                    'boundary_selection_available': False}
+                        else:
+                            prompt, info = pack_b(q, native, client.count, budget)
                     else:
                         prompt, info = messages(q, None), {'loaded': 0, 'unloaded': 0}
-                        info['prompt_tokens'] = client.count(prompt)
+                        info['prompt_tokens'] = None if isinstance(client, NativeCodexModel) else client.count(prompt)
+                    info['prompt_utf8_bytes'] = prompt_bytes(prompt)
+                    info['native_stdin_utf8_bytes'] = input_bytes(prompt) if isinstance(client, NativeCodexModel) else info['prompt_utf8_bytes']
+                    info['input_utf8_bytes_limit'] = budget.get('input_utf8_bytes_limit')
                     # Inputs durable before any model I/O, including errors and delivery uncertainty.
                     append_row(out / 'inputs.jsonl', {**base, 'messages': prompt, 'loading': info,
                                                      'budget': budget, 'identity': identity}, root)
+                    if type(budget.get('input_utf8_bytes_limit')) is not int or info['native_stdin_utf8_bytes'] > budget['input_utf8_bytes_limit']:
+                        raise ValueError('same ABC UTF8 byte ceiling not verified or exceeded')
                     answer, response = client.answer(prompt, budget['output_reserve'], q['seed'])
+                    if isinstance(client, NativeCodexModel):
+                        info['prompt_tokens'] = response['usage']['input_tokens']
+                        info['count_status'] = 'actual_native_completed_usage'
                     append_row(out / 'answers.jsonl', {**base, 'status': 'OK', 'answer': answer,
                                                       'response_local': response, 'loading': info}, root)
                     answers[arm] = answer
@@ -122,6 +146,7 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
                     append_row(out / 'answers.jsonl', {**base, 'status': 'FAILED', 'error_type': type(error).__name__,
                                                       'error_local': str(error), 'delivery': 'unknown_no_auto_retry',
                                                       'http_error_local': getattr(client, 'last_error', None),
+                                                      'stream_receipt': getattr(client, 'stream_receipt', None),
                                                       'last_response_local': getattr(client, 'last_response', None)}, root)
             if q['dimension'] == 'reason':
                 sheet, mapping = reason_sheet(q, answers)

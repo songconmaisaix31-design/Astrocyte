@@ -16,7 +16,10 @@ from unittest.mock import patch
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / 'scripts/experiment'))
 from evaluation import audit_fact, blind_pack, judge_messages, prediction, reason_sheet, summarize, validate_user_score, valid_judge
-from inputs import SYSTEM, questions, messages, load_native, pack_b, select_native_files
+from inputs import SYSTEM, questions, messages, load_native, pack_b, select_native_files, prompt_bytes
+from a_material import project as layered_a
+from native_model import NativeCodexModel, arguments as native_arguments, process as native_process, input_bytes
+from startup import b_smoke
 from local_store import ZONE, append_row, bounds, complete_day, events, private_path, readonly_db, rows, write_new
 from protocol import check_lock, digest, lock_protocol, rules
 from runner import run_day, run_judge, snapshot
@@ -71,7 +74,8 @@ class Fixtures(unittest.TestCase):
         text = (REPO / 'docs/EXPERIMENT.md').read_text(encoding='utf-8')
         config = rules(REPO / 'docs/EXPERIMENT.md')
         model = {'identity': 'fixture_only', 'model': 'fixture32b', 'context_tokens': 100000,
-                 'model_path': '/fixture.gguf', 'chat_template': 'fixture-template', 'endpoint': 'http://127.0.0.1:18080'}
+                 'model_path': '/fixture.gguf', 'chat_template': 'fixture-template', 'endpoint': 'http://127.0.0.1:18080',
+                 'backend':'fixture_loopback','input_utf8_bytes_limit':1000000}
         config['model'].update(model)
         import re
         text = re.sub(r'(<!-- experiment-rules -->\s*```json\s*).*?(\s*```)',
@@ -306,10 +310,10 @@ class Fixtures(unittest.TestCase):
     def test_model_response_usage_truncation_and_identity_fail(self):
         client=LocalModel('http://127.0.0.1:18080','fixture',32768)
         response={'model':'fixture','usage':{'prompt_tokens':8},'choices':[{'finish_reason':'stop','message':{'content':'{"ok":true}'}}]}
-        with patch.object(client,'identity'),patch.object(client,'count',return_value=10),patch.object(client,'request',return_value=response):
+        with patch.object(client,'identity'),patch.object(client,'count',return_value=10),patch.object(client,'completion_stream',return_value=response):
             with self.assertRaisesRegex(ValueError,'usage'):client.answer([],100,1)
         response['usage']['prompt_tokens']=10;response['choices'][0]['finish_reason']='length'
-        with patch.object(client,'identity'),patch.object(client,'count',return_value=10),patch.object(client,'request',return_value=response):
+        with patch.object(client,'identity'),patch.object(client,'count',return_value=10),patch.object(client,'completion_stream',return_value=response):
             with self.assertRaisesRegex(ValueError,'incomplete'):client.answer([],100,1)
 
     def test_runner_all_arm_failures_persist_no_placeholder_answers(self):
@@ -321,11 +325,11 @@ class Fixtures(unittest.TestCase):
         coverage=coverage_fixture(day)
         coverage.update(phase='formal',protocol_sha256=digest(p),day0=day,snapshot_file='day-state.sqlite')
         class FakeModel:
-            def __init__(self,*args):pass
+            def __init__(self,*args,**kwargs):pass
             def identity(self):return {k:route[k] for k in ('model','context_tokens','model_path','chat_template','endpoint')}
             def count(self,m):return 10
             def answer(self,*args):raise TimeoutError('fixture model unavailable')
-        with patch('runner.LocalModel',FakeModel),patch('runner.a_memory',return_value=({'tools':'fixture'}, {'status':'OK'})):
+        with patch('runner.LocalModel',FakeModel),patch('runner.a_memory',return_value=({'tools':'fixture'}, {'status':'OK'})),patch('runner.verified_material',return_value=({'layered':'fixture'},{'evidence':'fixture'})):
             run_day(day,db,selection,[coverage],p,lock,'fixture.exe',out,self.root)
         failed=[r for r in rows(out/'answers.jsonl') if r['status']=='FAILED']
         self.assertEqual(12,len(failed));self.assertTrue(all('answer' not in r for r in failed))
@@ -428,6 +432,112 @@ class LosslessCandidateTests(unittest.TestCase):
 
     def test_candidate_is_absent_from_formal_collector(self):
         self.assertNotIn('lossless_candidate', (REPO / 'scripts/experiment/runner.py').read_text(encoding='utf-8'))
+
+
+class V4Contracts(unittest.TestCase):
+    def test_native_real_fixture_full_stdin_output_usage_and_missing_termination(self):
+        with tempfile.TemporaryDirectory(prefix='v4-native-contract-') as temp:
+            root=Path(temp)
+            prompt=messages(questions('2026-10-12',[],PRIOR)[2],[native(1,'完整🙂'*200)])
+            def fixture_arguments(out,context):
+                code=('import sys,json,pathlib; payload=sys.stdin.buffer.read(); '
+                      'answer={"answer_json":"{\\"ready\\":true}"}; '
+                      'pathlib.Path(sys.argv[1]).write_text(json.dumps(answer),encoding="utf-8"); '
+                      'print(json.dumps({"type":"item.completed","item":{"type":"agent_message","text":json.dumps(answer)}})); '
+                      'print(json.dumps({"type":"turn.completed","usage":{"input_tokens":123,"output_tokens":7}}))')
+                return [sys.executable,'-c',code,str(out/'output.json')]
+            schema={'type':'object','properties':{'answer_json':{'type':'string'}}}
+            with patch('native_model.PRIVATE_ROOT',root),patch('native_model.private_path',side_effect=lambda p:Path(p)),patch('native_model.write_new',side_effect=lambda p,v:write_new(p,v,root)),patch('native_model.append_row',side_effect=lambda p,v:append_row(p,v,root)),patch('native_model.arguments',side_effect=fixture_arguments):
+                answer,report=native_process(prompt,root/'complete',872000,schema,private=False)
+                self.assertEqual({'ready':True},json.loads(answer['answer_json']))
+                self.assertTrue(report['stdin_input_complete'])
+                self.assertEqual(input_bytes(prompt),report['stdin_utf8_bytes'])
+                self.assertFalse(report['provider_input_wire_verified'])
+                self.assertFalse(report['first_token_time_verified'])
+                with patch('native_model.arguments',return_value=[sys.executable,'-c','import sys; sys.stdin.buffer.read()']):
+                    with self.assertRaisesRegex(ValueError,'termination'):
+                        native_process(prompt,root/'missing',872000,schema,private=False)
+                failure=rows(root/'missing/receipts-local.jsonl')[-1]
+                self.assertEqual('unknown_no_auto_retry',failure['delivery'])
+                self.assertEqual(input_bytes(prompt),failure['stdin_receipt']['written_bytes'])
+
+    def test_full_b_privacy_block_has_complete_input_and_not_sent_receipt(self):
+        with tempfile.TemporaryDirectory(prefix='v4-b-contract-') as temp:
+            root=Path(temp);qs=questions('2026-10-12',[],PRIOR);population=[native(1,'完整🙂'*20)]
+            source=root/'candidate.json';source.write_text(json.dumps({'native':population,'questions':qs,'messages_by_question':[messages(q,population) for q in qs]}),encoding='utf-8')
+            with patch('startup.local_input',side_effect=lambda p:Path(p)),patch('startup.private_path',side_effect=lambda p:Path(p)),patch('startup.write_new',side_effect=lambda p,v:write_new(p,v,root)),patch('startup.append_row',side_effect=lambda p,v:append_row(p,v,root)),patch('startup.process') as send:
+                with self.assertRaisesRegex(ValueError,'PRIVATE_EGRESS_BLOCKED'):
+                    b_smoke(source,root/'blocked')
+                send.assert_not_called()
+                report=rows(root/'blocked/receipts-local.jsonl')[0]
+                self.assertEqual(('not_sent',0,1,0),(report['delivery'],report['model_calls'],report['loaded'],report['unloaded']))
+                self.assertEqual(input_bytes(messages(qs[2],population)),report['native_stdin_utf8_bytes'])
+
+    def test_layered_full_state_day_boundary_refs_and_no_weak_weight_rounding(self):
+        ts=bounds('2026-10-12')[0]
+        memory={'astrocyte.get_attention_state':{'topics':[{'topic':'A','attention':1,'momentum':0},{'topic':'Floor','attention':.05,'momentum':0}]},
+                'astrocyte.explain_focus':{'topic':'A','attention':1,'momentum':0,'updated_at':ts,'related':[],'related_projects':[],
+                    'evidence':[{'event_id':'before','kind':'commit','weight':.6,'ts':ts-1},{'event_id':'now','kind':'commit','weight':.6,'ts':ts}]},
+                'astrocyte.get_experiences':{'experiences':[]}}
+        material=layered_a(memory)
+        self.assertEqual(memory['astrocyte.get_attention_state']['topics'],material['attention_state'])
+        self.assertEqual(['before','now'],material['event_id_references'])
+        self.assertEqual(['2026-10-11','2026-10-12'],[r['day'] for r in material['kind_day_aggregate']])
+        self.assertEqual([6,6],[r['sum_weight_tenths'] for r in material['kind_day_aggregate']])
+        self.assertNotIn('evidence',material['explanation_header'])
+        memory['astrocyte.explain_focus']['evidence'][0]['weight']=.65
+        with self.assertRaisesRegex(ValueError,'one-decimal'):layered_a(memory)
+        memory['astrocyte.explain_focus']['evidence'][0]['weight']=.6
+        memory['astrocyte.get_experiences']['experiences']=[{'experience':{'status':'quarantine'}}]
+        with self.assertRaisesRegex(ValueError,'nonapproved'):layered_a(memory)
+
+    def test_b_shared_byte_ceiling_preserves_whole_message(self):
+        q=questions('2026-10-12',[],PRIOR)[2]
+        row=native(1,'完整🙂'*300)
+        budget={'context_tokens':100000,'output_reserve':4096,'system_reserve':2048,'question_reserve':2048,'template_reserve':1024,
+                'input_utf8_bytes_limit':prompt_bytes(messages(q,[]))+20}
+        packed,info=pack_b(q,[row],lambda _:10,budget)
+        self.assertEqual(0,info['loaded']);self.assertEqual(1,info['unloaded'])
+        self.assertEqual('whole_message_exceeds_shared_byte_budget',info['unloaded_reasons'][0]['reason'])
+        self.assertEqual(messages(q,[]),packed)
+
+    def test_native_private_egress_and_exact_tokenizer_fail_closed(self):
+        client=NativeCodexModel({'model':'gpt-6.1-sol'})
+        with self.assertRaisesRegex(ValueError,'identity'):client.identity()
+        with self.assertRaisesRegex(ValueError,'tokenizer'):client.count(messages(questions('2026-10-12',[],PRIOR)[0],None))
+        with patch('native_model.subprocess.Popen') as launch:
+            with self.assertRaisesRegex(ValueError,'PRIVATE_EGRESS_BLOCKED'):
+                native_process([],Path('not-created'),872000,{'type':'object'})
+            launch.assert_not_called()
+        one=native_arguments(Path('one'),872000);two=native_arguments(Path('two'),872000)
+        self.assertEqual(one[one.index('-C')+1],two[two.index('-C')+1])
+        self.assertIn('request_max_retries=0',next(v for v in one if v.startswith('model_providers.')))
+
+    def test_real_loopback_sse_complete_usage_and_delta_timing(self):
+        from http.server import BaseHTTPRequestHandler,HTTPServer
+        import threading
+        chunks=[{'model':'fixture','choices':[{'delta':{'content':'{"ok":'},'finish_reason':None}]},
+                {'model':'fixture','choices':[{'delta':{'content':'true}'},'finish_reason':'stop'}]},
+                {'model':'fixture','choices':[],'usage':{'prompt_tokens':10,'completion_tokens':3}}]
+        class Handler(BaseHTTPRequestHandler):
+            body=(b''.join(b'data: '+json.dumps(c).encode()+b'\n\n' for c in chunks)+b'data: [DONE]\n\n')
+            def log_message(self,*args):pass
+            def do_POST(self):
+                self.rfile.read(int(self.headers['Content-Length']))
+                self.send_response(200);self.send_header('Content-Type','text/event-stream');self.send_header('Content-Length',str(len(self.body)));self.end_headers()
+                self.wfile.write(self.body)
+        server=HTTPServer(('127.0.0.1',0),Handler)
+        thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
+        try:
+            client=LocalModel('http://127.0.0.1:'+str(server.server_port),'fixture',32768)
+            with patch.object(client,'identity'),patch.object(client,'count',return_value=10):
+                answer,result=client.answer([],100,1)
+                self.assertEqual({'ok':True},answer);self.assertTrue(result['stream_receipt']['complete'])
+                self.assertIsNotNone(result['stream_receipt']['first_model_delta_seconds'])
+                Handler.body=Handler.body.replace(b'data: [DONE]\n\n',b'')
+                with self.assertRaisesRegex(ValueError,'incomplete'):client.answer([],100,1)
+        finally:
+            server.shutdown();server.server_close();thread.join()
 
 
 if __name__=='__main__':unittest.main()
