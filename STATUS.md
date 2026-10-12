@@ -4,6 +4,12 @@
 
 ### 当前裁决：v2.2（2026-10-12）
 
+16:21 root普通合并SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`已push，消费集成REPORT `2524e9e48b23aa6f0ee4b6277a55539009d669dc`（组合SOURCE `b4b5a388539a2428432cfa94133378dd9cf0d53a`）。集成owner实际184顶层Go PASS/12条件SKIP、Python8 PASS、M2 7 PASS/1 helper SKIP、EX-01 3 PASS；完整报告见tasks/M6-integration.md。16:04 Orca重启后该Dispatch `ctx_3083dbc2d717`被标failed/terminal_missing，完成回执未送达；已推送的精确源码/报告/外部测试日志独立核对后消费，保留运行时失败，不改写为accepted worker_done。后续接管使用现存工作树，旧终端不视为live。
+
+root对最终组合树新独占 `root-v22/population-independent/` 全量重跑EXIT0：6016父/8914语义单位；2832/2964=95.5466%，132结构失败留分母，非结构失败0；5950非认知单列，原200误标0，1983有topic/849无标，覆盖70.0212%。八桶各20再次从冻结源独立校验原始字节、ts、工具名及s/w，160/160一致，问题0。原100生产隐私独立重跑EXIT0：1101逐事件raw_unique字符串/2100实际MCP.Serve响应严格违规0；仍标real_raw_contract_local，不代表自然task_live。原始100及所有RED不覆写。冻结domain/SQLite/schema/contracts/web/runtime/其他app差异0，唯一app变化仍限定RetrieveKnowledge/knowledgeReferenceBoost。
+
+整仓首次check在接续中中断、无exit，首日志保留；新 `root-v22/check-resume.log`重跑，当前Go全包已通过，余项及build未结束，**尚不批准完整V0，不启动V1**。[V1执行单](tasks/M6-V1-replay.md)已备好，待整仓门禁通过再沿W1启动；正式回放/人工焦点确认/50权重核对/EXPERIMENT锁SHA/V2–V4均未完成。本条后续完整验收记录覆盖当前运行态，不覆盖首RED。
+
 事实源：[v2.2](tasks/M6-validation-v2.2.md)。第二次规格修正废止全部工具调用均为认知人口；6016全量计数、1971/6016旧RED及首100诊断全部保留为历史。新V0按预声明工具语义归类，结构不可解析留分母计失败；成功kind及s=1/w=冻结表值完整率≥95%，topic仅报告覆盖率，无标kind成功计接入成功。误标0/200与raw_unique泄漏0保留并复验。当前V0见下方最终候选及独立验收记录，不将旧分母改写为新PASS。
 
 冻结绑定已裁决：所有种子InitialConfidence=.5；Signal s=1、w按kind；λ_r=.05/86400秒⁻¹；boost初始1/每访问+.1/cap2/24h无访问回退1。λ=.1、α=.3、A_floor=.05、momentum=.15及完整权重表沿v2.1，不调参。git仓根remote/common-dir归属覆盖全部Astrocyte/Morphogenesis worktree，新增maimai-monster仓McPet种子。原参数与主题待答已解决，不再阻塞。
