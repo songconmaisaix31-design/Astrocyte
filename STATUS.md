@@ -4,6 +4,8 @@
 
 ### 当前裁决：v3.0（2026-10-12）
 
+准备REPORT（commit时间2026-10-12T22:23:36+08:00）`4fc016614b948f4c6f39d2ab5ca628d6850d4f10`已由root核对源码祖先、仅`tasks/M6-W1.md`报告差异及remote精确一致，状态消息msg_611d48b28471已处理。候选SOURCE5657b9c及准备check/build记录不变；REPORT不表示V1R整体完成。Task/Dispatch仍in_progress，源问题msg_421ee8e406cd待用户实际根答复，未worker_done、未释放或重复派发、未合候选源码。真实补源/新回放/人验/V2–V4仍按前述状态。
+
 22:22 V1R准备阶段checkpoint：W1候选SOURCE`5657b9c37d1227f782043a8d7ba92607b457e3ca`已push原`validation-v1-ingest`分支，尚未普通合入最终验证分支，非真实V1R验收SHA。限定入口/源捕获/三线安全导出/固定50及McPet专项10抽样代码就绪；公共mapper不分叉，候选mcpet仓根别名尚未添加。root独立新增Go4 PASS、Python16 PASS，SOURCE与remote精确一致；相对12cc引擎/SQLite/schema/runtime/UI/kind语义/权重表差异0。
 
 owner完整check恢复标准TEMP后EXIT0/build EXIT0，定向Go46顶层PASS/1本地opt-in及3Windows子例SKIP，Python16 PASS，M2 7 PASS/1 helper SKIP、EX-01 3 PASS；旧冻结全量2832/2964=95.5466%、200误标0、原100/1101 raw_unique/2100生产响应泄漏0。全部为准备与旧源回归，不替新版真实库。日志`v1r-w1/preparation-*`；root独立日志`root-v3/preparation-*-independent-first.log`。两首RED保留：worktree同公共目录以字串比较失败，改os.SameFile后PASS；完整check将TEMP放在astrocyte-validation祖先触发旧scope关键词夹具，恢复标准TEMP并隔离真实opt-in后定向与完整PASS，未改M1 fixture或生产种子语义。
