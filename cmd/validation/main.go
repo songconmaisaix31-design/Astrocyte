@@ -1,4 +1,4 @@
-// Command validation diagnoses frozen local native samples without persistence.
+// Command validation audits and replays explicitly selected frozen local inputs.
 package main
 
 import (
@@ -313,7 +313,19 @@ func main() {
 	populationDir := flag.String("population-dir", "", "frozen full structural tool population and independent negatives")
 	semanticOut := flag.String("semantic-out", "", "exclusive new directory for v22 semantic audit; no replay")
 	semanticPolicy := flag.String("semantic-policy", "events/semantic_policy_v22.json", "versioned preregistered semantic policy")
+	replayOut := flag.String("replay-out", "", "exclusive external v1-w1 directory for authorized production replay")
 	flag.Parse()
+	if *replayOut != "" {
+		if *semanticOut != "" || *input != "" || *output != "" || *contextPath != "" {
+			fmt.Fprintln(os.Stderr, "replay accepts only frozen population, Git and exclusive output")
+			os.Exit(2)
+		}
+		if err := runV1(*populationDir, *gitInput, *replayOut); err != nil {
+			fmt.Fprintln(os.Stderr, "V1 replay failed; inspect exclusively local evidence")
+			os.Exit(1)
+		}
+		return
+	}
 	if *semanticOut != "" {
 		if *populationDir == "" || *gitInput == "" || *output != "" || *input != "" || *contextPath != "" {
 			fmt.Fprintln(os.Stderr, "semantic audit requires only frozen population, Git and new output directory")
