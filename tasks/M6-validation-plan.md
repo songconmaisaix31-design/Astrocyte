@@ -12,6 +12,8 @@
 
 V1代码仍由W1：生产EventRecorder单事件路径、显式事件时钟、全部kind成功含unassigned留存、30模拟日Sleep、JSON序列/top5/权重50抽样/真实M2复算。若生产入口配置接缝必须新增写路径，先交精确Handoff由root登记；不改数学/权重/λ/去噪/fluid/crystallized/merge。原N≥5000无效。V2/V3后续依赖不变，七天真实实验不可由回放替代。证据新目录v22-w1/root-v22，不覆盖旧全量6016、原100、200及泄漏RED；raw不上Git/远程/正文终端。
 
+root静态确认M4旧单次ReferenceBoost=2期待3与cap2冲突，W1追加仅`tests/attention-engine/M4_persistent_retrieval_test.go`与`M4_production_node_test.go`机械更新cap输入/独立乘积期待，先保留首RED；其他断言和参数不变，正式仍每次+.1。
+
 ## 当前波次：v2.1
 
 04:50 W1 REPORT `3020bfd7a47e1b83f765ab3c1ad0437841746af6`、W0最终REPORT `88268a05a756f108f76422e1279e734851e4c324`均push且accepted worker_done。唯一原集成owner在同工作树`attention-engine-final-integration`/同分支`validation-v1-integration`恢复Codex --yolo终端`term_413891f3-04af-4fc0-bc60-bb42efa19820`，先普通合root当前文档，再普通合这两个精确REPORT，保留各SOURCE/REPORT普通祖先；报告唯一写域`tasks/M6-integration.md`。只必要薄胶水，领域问题退原owner；禁止正式V1/改schema/app/domain/调参。运行changed packages、M2/EX-01/M5、Python/生成映射及真实100审计，SOURCE+REPORT分别commit/push；root随后独立全check/build/隐私审计并最终push。

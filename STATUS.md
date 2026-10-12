@@ -10,6 +10,8 @@
 
 W1限定写域扩展：`internal/attention/app/knowledge_retrieval.go`仅`KnowledgeService.RetrieveKnowledge`及必要同文件纯计算helper的boost cap/24h冷却；`tests/validation/ingest/**`增加真实服务/既有持久化动作时间戳复现测试。已有human reference审计含TS，读路径保持只读，不增表、不修改领域公式。若必须触及其他函数/文件，先报路径与必要性，root登记后才写。SOURCE/精确触及函数/测试数/回滚commit完成后记录，不预填。
 
+root已静态确认两旧M4 fixture单次引用显式ReferenceBoost=2，期待AccessBoost=3，与新cap2冲突。追加原W1唯一测试写域`tests/attention-engine/M4_persistent_retrieval_test.go`、`tests/attention-engine/M4_production_node_test.go`：先运行保留首RED，再仅按cap2修正boost输入与独立乘积期待；λ/ranking/只读PRAGMA/真实节点与重启/attention未变断言全部保留。正式验证仍+.1，旧配置示例不能成为正式参数或绕过cap/冷却。
+
 W1沿原固定worktree/branch完成语义版本化、2520混合桶剥离、612工具名分布、每桶20样本、仓根归属及参数绑定；root抽查后独立新V0验收。过线才启动V1，全部kind成功含unassigned逐事件入库，按真实ts/间隔、30次Sleep及真实M2复算。N≥5000与topic完整率门槛废止。无自动发现/分裂，schema零豁免，除已授权EX-01与本条boost参数绑定外app/domain冻结。EXPERIMENT未锁，V2–V4未开始。新证据独立放既有外部根`v22-w1/`、`root-v22/`，不覆盖v2.1。
 
 ### 当前裁决：v2.1（2026-10-12）
