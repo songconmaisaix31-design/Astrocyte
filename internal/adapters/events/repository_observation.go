@@ -36,7 +36,7 @@ func repositoryTopic(identity string) string {
 		return "Astrocyte/Attention Engine"
 	case "morphogenesis":
 		return "Morphogenesis"
-	case "maimai-monster":
+	case "maimai-monster", "mcpet":
 		return "McPet"
 	}
 	return ""
@@ -96,6 +96,10 @@ func ObserveRepository(cwd string) RepositoryObservation {
 type NativeSemanticMapper struct {
 	repositories map[string]RepositoryObservation
 }
+
+// Repository policy is separate from frozen v22.9 kind grammar. The confirmed
+// identity table is shared by the default production mapper and replay.
+const V1RRepositoryPolicyVersion = "v3.0-confirmed-mcpet-1"
 
 func NewNativeSemanticMapper() *NativeSemanticMapper {
 	return &NativeSemanticMapper{repositories: map[string]RepositoryObservation{}}

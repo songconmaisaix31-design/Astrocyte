@@ -1,0 +1,48 @@
+import importlib.util
+from pathlib import Path
+import sys
+import unittest
+from unittest.mock import patch
+import tempfile
+
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "scripts/validation"))
+spec = importlib.util.spec_from_file_location("inventory_mcpet", ROOT / "scripts/validation/inventory_mcpet.py")
+capture = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(capture)
+
+
+class McPetCaptureTests(unittest.TestCase):
+    def test_capture_serializes_exact_integer_millisecond_window(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary).absolute()
+            root, evidence = base / "mcpet", base / "evidence"
+            root.mkdir()
+            evidence.mkdir()
+            remote = "https://github.com/songconmaisaix31-design/mcpet"
+            replies = [str(root).encode(), remote.encode(), b".git", b"a" * 40, b""]
+            with patch.object(capture, "CANDIDATE_ROOT", root), patch.object(capture, "V1R_ROOT", evidence), patch.object(capture, "unredirected", return_value=True), patch.object(capture, "git", side_effect=replies), patch("builtins.print"):
+                capture.capture(root, remote, "synthetic authorized reference", evidence / "new-source")
+            import json
+            metadata = json.loads((evidence / "new-source/source-local.json").read_text())
+            self.assertIs(type(metadata["window_start"]), int)
+            self.assertIs(type(metadata["window_end_exclusive"]), int)
+            self.assertEqual(metadata["window_start"], capture.START)
+            self.assertEqual(metadata["window_end_exclusive"], capture.END)
+
+    def test_committer_time_window_exact_and_duplicate_excluded(self):
+        start, end = int(capture.START), int(capture.END)
+        lines = []
+        for i, timestamp in [(1, start - 1000), (2, start), (3, end - 1000), (4, end), (2, start)]:
+            lines.append(f"{i:040x}\0{timestamp // 1000}\0synthetic subject".encode())
+        rows = capture.selected_records("synthetic-root", b"\n".join(lines))
+        self.assertEqual([row["record"]["ts"] for row in rows], [start, end - 1000])
+        self.assertEqual(len({row["record"]["commit"] for row in rows}), 2)
+
+    def test_source_or_output_outside_bounds_rejected_before_git(self):
+        with self.assertRaises(ValueError):
+            capture.capture("C:/personal", "https://github.com/fixture/private", "", "C:/personal/output")
+
+
+if __name__ == "__main__":
+    unittest.main()
