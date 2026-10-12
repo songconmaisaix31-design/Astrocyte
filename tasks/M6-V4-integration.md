@@ -1,5 +1,15 @@
 # V4启动工具集成交接（2026-10-13）
 
+## 本轮B窄授权与原生完整输入集成（03:23）
+
+用户B-only豁免已批准，真实1003消息B完整应答及root独验PASS，28.859787秒/input491479/output495，无工具/compact。root已接受同模型身份与ABC共同872000/4096/5094907预算；W2最新SOURCE `eb0218913268618952207be1d89070bcfd2ebe73` 已push，root独立53测试PASS。新精确CI38297147723尚在执行，root跟踪，集成不锁SHA/day0。
+
+复用上述唯一原集成owner/terminal/worktree/Codex --yolo。读取root本次Dispatch指定HEAD和W2最终REPORT精确SHA；普通merge --no-ff两者，禁止另起集成owner。W2最终REPORT尚未到时不得猜SHA。只写tasks/M6-integration.md，领域修复退原W2；无需胶水则零业务改动。原模型/协议/流程选择已由用户和root验收，不再询问或调整。
+
+逐路径核对本輪9个W2源码/协议/测试路径与eb021891全等：docs/EXPERIMENT.md、docs/experiment/{MODEL_ROUTE,OPERATIONS}.md、scripts/experiment/{experiment,native_model,protocol,runner,startup}.py、tests/validation/experiment/test_experiment.py。报告以最终REPORT为准。引擎/schema/参数/权重/mapper/UI相对1bbd055零diff；所有原SOURCE/REPORT、首RED/unknown、回放原件保留。集成适用Python91=19证据+19接入+53实验，M2/EX-01/M5沿既有Go命令；root随后最终整仓check/build。
+
+SOURCE/REPORT分别commit+push，worker_done给精确SHA/时间/测试数/结果/真实限制。CI状态可PENDING，不借旧5e绿替新eb0218；最终锁定与正式日流程由root执行。正式live根v4-w1/formal-20261013-first已bridge10-12，禁止当七日数据；raw只留本机，不复制到工作树/Git/stdout。下方02:30与权限待答为历史。
+
 02:30集成已结算：原Task70b3fc50/Dispatchaa81de04 accepted succeeded/release retained，SOURCEccdf9bdca87afd4c1697ca69bc75388c26a96333、REPORT82eaf6d70f3e4d62f535361ade1e3e63fb563ec6已push，零冲突/胶水。root普通合为SOURCE18085f4d30ce6f095249274e20ad245a42de4fa5，独立Python79、整仓check/build均PASS；与W2 SOURCE5e1822b业务/配置/协议/测试全等。新CI38289430526双平台SUCCESS，旧首RED保留；下方in_progress为派发时历史。真实强B/共同预算/锁SHA/day0仍未过门禁，用户raw定向豁免问题待答，不能把工具交付写成V4启动。
 
 V1/V1R已用户关账。当前交付为分层A、统一gpt-6.1-sol配置与1800秒真实流式接缝；真实强B受原raw本地令阻塞，用户定向豁免问题待答，协议UNLOCKED/day0未开始。不得用公开短探针、fixture、全量本地构造替代真实满预算B验收。
