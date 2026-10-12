@@ -1,4 +1,61 @@
-# M6 V4 启动工具组合树集成交接（2026-10-13）
+# M6 V4 B窄授权与完整输入组合树集成交接（2026-10-13）
+
+**本轮精确普通合并、适用组合树验证与SOURCE普通push完成，零冲突/零胶水。用户B-only RAW窄豁免已批准，root已接受一次真实完整1003消息B及ABC共同模型/预算；协议仍UNLOCKED、day0未开始，新精确SOURCE CI状态PENDING，由root继续跟踪与最终锁定。** V1/V1R已用户PASS关账、V2完整2006证据技术PASS；下面授权/模型/预算待答或B BLOCKED是历史，不重新索取已经完成的裁决。工程门禁不等于七日科学结果。
+
+Task `task_57086b33405f` / Dispatch `ctx_c3b8532f9071`，Run `run_d09ff3f95ebc`。沿唯一原集成owner/worktree `C:/Users/DW/orca/workspaces/Astrocyte/attention-engine-final-integration`、branch `songconmaisaix31-design/validation-v1-integration`、terminal `term_2b81572f-6ce6-407e-8835-acaaef4d4acf`，起始HEAD `82eaf6d70f3e4d62f535361ade1e3e63fb563ec6`，工作树干净。原Codex `--yolo`，`codex-cli 0.162.0` / 实际screen **GPT-6.1-Sol high fast**，配置未改、未新增Agent；沿本机orca-cli/orchestration技能仅处理本Dispatch。
+
+先读HANDOFF/STATUS、[集成执行单03:23段](M6-V4-integration.md)、[W2最终报告](M6-W2.md)及[root日运行计划](M6-V4-daily-operation.md)。唯一自主写入本文件；原日程由root创建且禁用，文档只合不改。本轮不修改EXPERIMENT/runner/mapper/engine/schema/参数/权重/UI/领域报告，不运行私聊模型、授权写入、锁协议或填day0。
+
+## 精确普通历史与远端
+
+先 `git fetch origin` EXIT0，将root短SHA解析为 **`6b95d844205f2cc07254f5cfdb353a995edd0f0c`**。`git ls-remote`确认该SHA等于远端 `validation/v1-20261012`，W2最终REPORT等于远端原experiment分支；再依次 `git merge --no-ff`，无force/rebase/squash/cherry-pick或覆盖队友贡献：
+
+| 输入 | 精确SHA / 本次merge / +08时间 |
+|---|---|
+| root文档 | `6b95d844205f2cc07254f5cfdb353a995edd0f0c` → `974c6476b531066a3a848722e7db0ccd40e01f05`，03:27:02 |
+| W2最终REPORT | `fe7fa53a56501cf5450649cce4b960b16f204d4a` → **SOURCE `2f64f04452ab26b769209d74f7b13fbb49b4dc93`**，03:27:12 |
+| W2业务SOURCE | `eb0218913268618952207be1d89070bcfd2ebe73`，普通祖先EXIT0 |
+
+root/W2新SOURCE/REPORT、上一轮5e/3c、本轨82e及原W0/W1/W2所有指定交付均为普通祖先EXIT0。组合SOURCE于 **2026-10-13T03:28:26.414+08:00** 普通push；`git ls-remote`确认原集成分支远端同SHA。报告随后单独REPORT commit+push，精确SHA/+08时间由当前Dispatch唯一worker_done回root；merge/REPORT标 `[skip ci]`，root随后独立整仓check/build、最终分支普通合/push及新CI跟踪。
+
+本轮9路径 `docs/EXPERIMENT.md`、`docs/experiment/{MODEL_ROUTE,OPERATIONS}.md`、`scripts/experiment/{experiment,native_model,protocol,runner,startup}.py`、`tests/validation/experiment/test_experiment.py` 逐文件与eb021891零diff；W2报告与fe7fa53零diff，root日运行文档与6b95d84零diff。冻结基线 `1bbd0553620475ba0403481c349216f875e4a464`：全部internal/events/migrations/contracts/schema/web/UI、现有MCP/Sleep/runtime入口、Go/Node依赖与锁零diff，参数/权重/公共mapper不变；变化只含授权实验工具/协议/测试及文档，无薄胶水或领域修补。
+
+## 实际组合树命令与结果
+
+Windows/PowerShell；每个子进程先清除继承 `ASTROCYTE_*`；标准TEMP/TMP `C:/Users/DW/AppData/Local/Temp`，Python `PYTHONDONTWRITEBYTECODE=1`，Go `GOFLAGS=-p=1` / `GOMAXPROCS=2`。仅fixture/contract和适用生产stdio/SQLite回归，无私源opt-in、模型或历史replay。
+
+| 精确命令 | 实际结果 / +08起止 |
+|---|---|
+| `python -m unittest discover -s tests/validation/evidence -p 'test_*.py' -v` | **19PASS /EXIT0**，03:27:38.827–03:27:39.082（unittest .050s） |
+| `python -m unittest discover -s tests/validation/ingest -p 'test_*.py' -v` | **19PASS /EXIT0**，03:27:39.098–03:27:41.542（unittest .657s） |
+| `python -m unittest discover -s tests/validation/experiment -p 'test_*.py' -v` | **53PASS /EXIT0**，03:27:41.544–03:27:45.142（unittest 3.288s） |
+| `python scripts/validation/generate_kind_map.py --check` | EXIT0，canonical Go表一致 |
+| `go test -mod=readonly ./cmd/validation ./internal/adapters/mcp ./cmd/mcp ./tests/validation/privacy ./tests/validation/sleep ./tests/attention-engine -count=1 -json` | **122顶层PASS /12条件SKIP /0 FAIL /EXIT0**，03:27:38.588–03:28:05.453 |
+| 九路径/报告/冻结diff、精确普通祖先、`git diff --check` | 全部EXIT0，报告提交前再查 |
+
+Python共 **91PASS**。六Go包PASS/SKIP为cmd/validation **27/0**、MCP adapter **13/0**、cmd/mcp **1/0**、privacy默认 **11/6**、EX-01 **3/0**、attention-engine **67/6**；elapsed为6.739/.356/2.654/3.752/.898/6.798秒。原M2 **7PASS/1ProcessReload helper SKIP**、M5 MCP **6PASS/1ServerProcess helper SKIP**、M5 experience **8PASS**、EX-01 **3PASS**、Live/Bootstrap **11PASS**；child由父测试执行，两个live metadata及六privacy opt-in保持SKIP，不升级为真实私源/全隐私验收。本轮全部首次EXIT0，没有新测试RED，未重跑整仓pnpm check/build。
+
+## 已接受的真实B与协议边界
+
+只读root安全派生结果 `root-v4-start/b-full-completion-budget-independent-002-safe.json`，未打开原聊天/答案/流：**ROOT_FULL_B_COMPLETION_AND_BUDGET_PASS_NOT_DAY0**，1003完整原消息全人口/0未装，双通道初始900603+stdin733053=1633656 UTF-8字节，逐字可重组、stdin完整关闭，一次turn.completed/输出一致、no tools/compact；**28.859787秒、input491479（cached3072）、output495（reasoning202）**。这是已完成的一次必要启动门禁，不是本集成重发或正式七日答案；离线schema recheck没有增加模型调用。
+
+root接受ABC实际配置身份 **gpt-6.1-sol/high/priority、context872000/output reserve4096、model_context_split及共同字节上限5094907**。上限来自900000+共同框603+1048576 Unicode scalar×4字节原生通道边界，不以当前163万观测削弱未来B；四题B最大1633702，三项目A最大31714/37448/3826。实际usage与完整终止验收不冒称872000极限推理、provider wire model echo或精确preflight tokenizer；后两者不可观测如实记录，provider硬输出cap未暴露不假称已设置。无模型/预算再决策或近似裁剪。
+
+用户RAW豁免仅外部harness的V4 B最近七天完整聊天、必要启动门禁及七日B用途，收集结束失效；输入/响应本机封存，不进入Astrocyte库/MCP/API/Git/stdout。A继续derived零raw、C只有题目，judge仅重建完成答案而不附原聊天/用户分数，各自用途不借B授权。本集成不读/复制授权正文、凭据或原始流，不创建APPROVED记录或发模型请求。root精确eb021891独立53PASS日志已读；当前route仍DRAFT，source_ci_accepted/final_integration_accepted快照字段由root后续权威处理，不共写W2域。
+
+## 首RED、CI与后续root工作
+
+W2及root所有首次RED/unknown保留：旧B隐私not_sent、原Qwen600秒Timeout/delivery_unknown、授权后stdin input_too_large/code-32602（真实前置拒绝，非1800秒推理超时）、公开context Bad Request、完整B首次helper要求explanation:str的额外假设（预注册允许非空str/dict，同封存应答离线PASS，未重发）；两条pre-turn官方feature warning分类与严格首白名单RED保留，未知/turn后error仍拒绝。原旧Windows CI首RED、人口修正、132认可残余/849无标/零信号主题、capture/replay原件与旧Dispatch失败不覆盖。
+
+新 **CI38297147723精确eb021891 SOURCE** 按派发/W2报告快照 **in_progress/PENDING**，root正在跟踪；本任务未重新查询或等待，不借旧 **CI38289430526精确5e双平台SUCCESS**、旧c61双平台SUCCESS或本机91测试给新源码填CI绿。旧4fbea9 Windows E2E225PASS/30SKIP/1FAIL及首日志仍独立保留。完整原生B接受、Python/Go本机组合回归、新远端CI分别记载。
+
+全部新日志独占于 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-integration/task_57086b33405f-ctx_c3b8532f9071/`：root完整SHA/input远端、两merge、9路径/报告/root日计划/冻结/祖先/diff、三Python首日志及exit/起止、Go首JSONL/counts/skips/selected tests、kind_map、SOURCE/REPORT push/remote；只有安全计数/路径/合成验证输出。原raw/聊天/答案/流均只在本机harness，原证据和owner未知pycache未触碰。
+
+**剩余root最终整仓check/build、新精确CI和组合树验收、权威协议全文SHA锁定与真实day0；正式七日尚未开始。** root已创建禁用的Orca内置日程，日运行计划只合入未改，不启用日程。正式live根 `v4-w1/formal-20261013-first` 已bridge10-12，仅250新事件/1Sleep，不算七日数据。锁后由既有流程逐真实闭日运行四题ABC、独立人评/judge/事实审计及D+3；第七日只能PROVISIONAL，末三日预测成熟且84答案/7人评/7judge/全部预测齐全才FINAL。本集成不锁SHA、填day0、采正式日/请求臂/评分、造未来或科学胜负、建调度器、合main、升级个人实例或部署。
+
+---
+
+# M6 V4 启动工具组合树集成交接（2026-10-13，历史）
 
 **当前授权的工具交付、精确普通合并及适用组合树验证完成；V1/V1R已用户PASS关账，V2完整2006证据技术PASS。用户已确定分层A、ABC统一gpt-6.1-sol及1800秒时限；真实B首件PRIVATE_EGRESS_BLOCKED / not_sent /0调用，定向raw豁免未答，强B/正式预算/day0 NOT_RUN，协议仍UNLOCKED。** 本轮不等待新CI或豁免答复交付，不代用户授权、不锁SHA、不启动模型/正式采集或七日结果。下方未定模型/A及旧状态是历史，不能重新询问已给定案。
 
