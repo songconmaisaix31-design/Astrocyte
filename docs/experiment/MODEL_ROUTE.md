@@ -1,4 +1,20 @@
-# V3 实际本机路由与容量核查
+# V4 实际路由与预算核查（未接受）
+
+用户2026-10-13决定ABC统一gpt-6.1-sol、高reasoning、priority，使用分层A。原Qwen/本地only候选是历史，不再重问该选择。开发Codex --yolo继承模型保持gpt-6.1-sol、没有子Agent；这一型号与实验响应身份分开。
+
+实际处理器为既有Windows native codex-cli 0.162.0，沿用released distiller隔离参数且强制同一空working directory、通用answer_json schema和75字节输入前缀。metadata account/read仅记录type=chatgpt，未读或输出任何credentials；原生默认边界推断为 `https://chatgpt.com/backend-api/codex/responses`，是外部推理，**不是本地模型或response endpoint echo**。运行器默认auth自行处理、重试0、无私有代理/密钥环境变量扩展。没有用户定向raw授权就不会启动私人请求。具体授权接口见OPERATIONS，root已经向用户提问，未答不能猜批准。
+
+[OpenAI官方gpt-6.1-sol资料](https://developers.openai.com/api/docs/models/gpt-6.1-sol)声明1050000 context和128000最大输出；本机两个已知Codex模型catalog刷新后仍为default272000/max872000/effective95%。二者分列，不把官方极限当当前账户已接受。公开请求使用872000配置，不削弱B到272000，但短请求也不能证明真正872000长输入成立。tiktoken0.13.0不认识该精确模型；没有猜o200k等编码，没有外发私人tokenizer探针，没有不存在的count命令。当前原生只能全人口输入、完整完成后核查实际usage，边界选条尚不可用。
+
+公开原生真实调用：首配置错误（内建provider覆盖非法）保留public-native-first，模型请求未发；改正后public-native-second成功14.196671秒/input8416/output40；固定cwd成功12.114199秒/input8418/output42；最终durable CLI成功11.503839秒/input8428/output42。三次完整output与agent_message匹配、turn.completed actual usage；最后stdin180字节完整写入并关闭。first_process_byte=2.794060秒、first_agent_message_event=7.947629秒，明确不是首token或provider首字节。实际response model echo为空，极限context/精确tokenizer/硬输出cap和统一byte ceiling仍PENDING；配置型号不是身份接受。
+
+全七日[Oct6,Oct13)本机1003消息（Claude321user/619assistant、Codex32user/31assistant）原正文人口未缩小。四题JSON UTF8分别1632638/1632511/1632617/1632601，native共同前缀后各加75字节。root独立按12个真正含窗口消息的原JSONL物理行核对全部content/role/phase/ts及四prompt顺序全等、0删减，root-v4-start/b-full-independent-001-safe.json。这是人口/全文构造验收，不是模型推理或token/byte预算接受。
+
+真实分层A九工具通过：每项目全6状态；Morph887 refs/15组/27931字节，Astro1096 refs/5组/33353字节，McPet23 refs/2组/1927字节，全部approved经验0。SQLite整数聚合误差0、全部引用回溯、2855原事件raw audit0；root独立full_state/header/2006refs审计一致（root-v4-start/layered-a-independent-002-safe.json）。A四题最大完整JSON分别30650/36384/2762字节，均小于全B最小观测1632511；仍要按最终同一预算验收，不截断证据。
+
+full B首隐私RED在v4-w2/b-native-privacy-first/result-safe.json：完整1003/未装0，reason prompt JSON1632617/native stdin1632692字节，PRIVATE_EGRESS_BLOCKED/not_sent/model_calls0；没有私人模型回答、没有实际usage。拟总context872000与输出预留4096、system/question/template预留16384/2048/4096仅是候选策略，实际长输入与全部系统/schema开销待验。原600秒Qwen timeout/unknown保留，不是本次1800秒外部B失败。
+
+# V3 历史本机路由与容量核查
 
 开发客户端：Codex `--yolo`，Orca Dispatch 实际 provider model=gpt-6.1-sol，终端显示 GPT-6.1-Sol high fast。继承模型不变，无子Agent。它不处理raw，不是ABC实验路由。
 

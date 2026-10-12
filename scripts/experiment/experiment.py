@@ -10,8 +10,9 @@ from evaluation import prediction, summarize
 from inputs import load_native, pack_b, questions, select_native_files
 from local_store import BASELINE, PRIVATE_ROOT, ZONE, append_row, bounds, distribution, events, local_input, private_path, rows, write_new
 from protocol import check_lock, lock_protocol, rules
-from runner import import_user, mcp_command, run_day, run_judge, snapshot
+from runner import import_user, mcp_command, run_day, run_judge, snapshot, model_client
 from transport import LocalModel, a_memory, probe
+from startup import a_smoke, b_smoke, prepare_b, public_probe
 
 
 def read_private(path):
@@ -21,6 +22,20 @@ def read_private(path):
 def args():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='command', required=True)
+    p = sub.add_parser('v4-a-smoke')
+    p.add_argument('--binary', required=True)
+    p.add_argument('--out', required=True)
+    p = sub.add_parser('v4-prepare-b')
+    p.add_argument('--day', required=True)
+    p.add_argument('--selection', required=True)
+    p.add_argument('--db', default=str(BASELINE))
+    p.add_argument('--out', required=True)
+    p = sub.add_parser('v4-public-probe')
+    p.add_argument('--out', required=True)
+    p = sub.add_parser('v4-b-smoke')
+    p.add_argument('--candidate', required=True)
+    p.add_argument('--authorization')
+    p.add_argument('--out', required=True)
     p = sub.add_parser('baseline')
     p.add_argument('--out', required=True)
     p = sub.add_parser('probe')
@@ -77,6 +92,14 @@ def args():
 
 
 def execute(a):
+    if a.command == 'v4-a-smoke':
+        return a_smoke(a.binary, a.out)
+    if a.command == 'v4-prepare-b':
+        return prepare_b(a.day, a.selection, a.db, a.out)
+    if a.command == 'v4-public-probe':
+        return public_probe(a.out)
+    if a.command == 'v4-b-smoke':
+        return b_smoke(a.candidate, a.out, a.authorization)
     if a.command == 'baseline':
         report = {'evidence': 'real_readonly_V1R', **distribution(BASELINE)}
         write_new(a.out, report)
@@ -160,7 +183,7 @@ def execute(a):
         return {'status': 'USER_RATING_IMPORTED'}
     if a.command == 'judge':
         budget = rules(a.protocol)['model']
-        client = LocalModel(budget['endpoint'], budget['model'], budget['context_tokens'])
+        client = model_client(budget)
         run_judge(a.day_dir, client, a.protocol, private_path(a.lock))
         return {'status': 'INDEPENDENT_JUDGE_RECORDED'}
     if a.command == 'score-predictions':

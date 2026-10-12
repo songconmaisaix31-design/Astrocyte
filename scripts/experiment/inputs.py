@@ -155,28 +155,37 @@ def messages(question, memory):
     return [{'role': 'system', 'content': SYSTEM}, {'role': 'user', 'content': body}]
 
 
+def prompt_bytes(prompt):
+    return len(json.dumps(prompt, ensure_ascii=False, separators=(',', ':')).encode('utf-8'))
+
+
 def pack_b(question, native, count_tokens, budget):
     """Priority-greedy maximal whole messages, continue after oversized entries."""
-    base = count_tokens(messages(question, None))
+    base = count_tokens(messages(question, []))
     if base > budget['system_reserve'] + budget['question_reserve'] + budget['template_reserve']:
         raise ValueError('fixed system/question/template reserves exceeded')
     limit = budget['context_tokens'] - budget['output_reserve']
+    if budget.get('input_utf8_bytes_limit') is not None and prompt_bytes(messages(question, [])) > budget['input_utf8_bytes_limit']:
+        raise ValueError('shared byte budget cannot hold fixed B envelope')
     def chronological(items):
         return sorted(items, key=lambda r: (r['ts'], r['source'], r['file'].casefold(), r['line']))
     loaded, skipped = [], []
     for row in native:
         candidate = chronological(loaded + [row])
         tokens = count_tokens(messages(question, candidate))
-        if tokens <= limit:
+        size = prompt_bytes(messages(question, candidate))
+        byte_limit = budget.get('input_utf8_bytes_limit')
+        if tokens <= limit and (byte_limit is None or size <= byte_limit):
             loaded.append(row)
         else:
             skipped.append({'source': row['source'], 'file': row['file'], 'line': row['line'],
-                            'ts': row['ts'], 'reason': 'whole_message_exceeds_remaining_budget',
-                            'candidate_prompt_tokens': tokens})
+                            'ts': row['ts'], 'reason': 'whole_message_exceeds_remaining_budget' if tokens > limit else 'whole_message_exceeds_shared_byte_budget',
+                            'candidate_prompt_tokens': tokens, 'candidate_utf8_bytes': size})
     packed = messages(question, chronological(loaded))
     actual = count_tokens(packed)
     return packed, {'available': len(native), 'loaded': len(loaded), 'unloaded': len(skipped),
                     'unloaded_reasons': skipped, 'prompt_tokens': actual, 'base_prompt_tokens': base,
                     'memory_tokens': actual - base, 'prompt_limit': limit,
+                    'prompt_utf8_bytes': prompt_bytes(packed), 'input_utf8_bytes_limit': budget.get('input_utf8_bytes_limit'),
                     'reserves': {k: budget[k] for k in ('system_reserve', 'question_reserve', 'template_reserve', 'output_reserve')},
                     'order': 'select ts desc, source, casefold file, line; skip oversized then continue; present ts asc'}
