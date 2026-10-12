@@ -36,7 +36,7 @@ func repositoryTopic(identity string) string {
 		return "Astrocyte/Attention Engine"
 	case "morphogenesis":
 		return "Morphogenesis"
-	case "maimai-monster":
+	case "maimai-monster", "mcpet":
 		return "McPet"
 	}
 	return ""

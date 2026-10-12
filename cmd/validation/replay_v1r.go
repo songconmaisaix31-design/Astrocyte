@@ -51,15 +51,36 @@ func readMcPetSource(dir string) (mcpetSource, error) {
 		}
 	}
 	b, err := os.ReadFile(filepath.Join(dir, "source-local.json"))
-	if err != nil || json.Unmarshal(b, &source) != nil {
+	if err != nil {
 		return source, fmt.Errorf("missing confirmed local McPet source")
 	}
-	if !equalValidationPath(source.Root, mcpetCandidateRoot) || source.Remote != mcpetCandidateRemote || source.CommonDir == "" || source.ConfirmationReference == "" || len(source.Head) != 40 || source.WindowStart != v1Window().UnixMilli() || source.WindowEnd != v1Window().AddDate(0, 0, 30).UnixMilli() {
-		return source, fmt.Errorf("McPet source outside the fixed confirmation/window")
+	source, err = decodeMcPetSource(b)
+	if err != nil {
+		return source, err
 	}
 	observed := events.ObserveRepository(source.Root)
 	if !equalValidationPath(observed.CommonDir, source.CommonDir) || observed.Remote != source.Remote || !equalValidationPath(observed.Root, source.Root) {
 		return source, fmt.Errorf("confirmed McPet source identity changed")
+	}
+	return source, nil
+}
+
+func decodeMcPetSource(b []byte) (mcpetSource, error) {
+	var source mcpetSource
+	// Python's original capture emitted integral millisecond bounds as JSON
+	// floats. Accept only the exact frozen bounds, preserving the first capture.
+	type sourceAlias mcpetSource
+	metadata := struct {
+		*sourceAlias
+		Start float64 `json:"window_start"`
+		End   float64 `json:"window_end_exclusive"`
+	}{sourceAlias: (*sourceAlias)(&source)}
+	if json.Unmarshal(b, &metadata) != nil || metadata.Start != float64(v1Window().UnixMilli()) || metadata.End != float64(v1Window().AddDate(0, 0, 30).UnixMilli()) {
+		return source, fmt.Errorf("missing confirmed local McPet source")
+	}
+	source.WindowStart, source.WindowEnd = int64(metadata.Start), int64(metadata.End)
+	if !equalValidationPath(source.Root, mcpetCandidateRoot) || source.Remote != mcpetCandidateRemote || source.CommonDir == "" || source.ConfirmationReference == "" || len(source.Head) != 40 || source.WindowStart != v1Window().UnixMilli() || source.WindowEnd != v1Window().AddDate(0, 0, 30).UnixMilli() {
+		return source, fmt.Errorf("McPet source outside the fixed confirmation/window")
 	}
 	return source, nil
 }
@@ -172,6 +193,20 @@ func runV1R(population, originalGit, sourceDir, out string) error {
 	counts["cognitive_denominator"] = counts["mapped"] + counts["unresolved_structure"]
 	metadata := map[string]any{"mode": "V1R", "repository_policy": events.V1RRepositoryPolicyVersion, "semantic_policy": events.SemanticPolicyVersion, "captured_head": source.Head, "captured_commits": source.UniqueCommits, "added_commits": added, "duplicate_commits": duplicates, "frozen_topic_changes": changed, "frozen_unassigned_to_mcpet": moved, "kind_strength_completeness": float64(counts["mapped"]) / float64(counts["cognitive_denominator"]), "human_acceptance": "PENDING"}
 	if err := writeExclusive(filepath.Join(out, "v1r-source-safe.json"), metadata); err != nil {
+		return err
+	}
+	// Export the complete kind-success population before production execution,
+	// so an independent consumer can derive its reference without replay state.
+	var audit []map[string]any
+	for _, input := range inputs {
+		signal, err := events.NormalizeValidationSignal(input.Row)
+		if err != nil || signal == nil {
+			return fmt.Errorf("V1R audit signal binding failed")
+		}
+		e := input.Row.Event
+		audit = append(audit, map[string]any{"event_id": input.StableID, "kind": e.Kind, "topic": e.Topic, "tokens": e.Tokens, "scope": e.Scope, "ts": e.TS, "strength": signal.Strength, "weight": signal.Weight})
+	}
+	if err := writeExclusive(filepath.Join(out, "semantic-audit-safe.json"), audit); err != nil {
 		return err
 	}
 	if err = replayV1Records(inputs, out, counts, started); err != nil {

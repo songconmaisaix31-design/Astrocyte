@@ -66,7 +66,7 @@ def capture(confirmed_root, confirmed_remote, confirmation_reference, out):
             target.write(json.dumps(row, ensure_ascii=False) + "\n")
     source = {"approved_root": str(root), "remote": remote, "common_dir": str(common), "head": head,
               "confirmation_reference": confirmation_reference, "captured_at": datetime.now().astimezone().isoformat(),
-              "window_start": START, "window_end_exclusive": END, "unique_commits": len(rows), "days": dict(sorted(days.items()))}
+              "window_start": int(START), "window_end_exclusive": int(END), "unique_commits": len(rows), "days": dict(sorted(days.items()))}
     with (out / "source-local.json").open("x", encoding="utf-8") as target:
         json.dump(source, target, indent=2)
     print(json.dumps({"source": "confirmed McPet", "head": head, "unique_commits": len(rows), "days": source["days"]}))

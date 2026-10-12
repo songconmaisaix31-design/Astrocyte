@@ -40,6 +40,29 @@ func TestV1RInputBoundsAndOriginalV1Compatibility(t *testing.T) {
 	}
 }
 
+func TestV1RFixedWindowIntegerAndOriginalFloatMetadata(t *testing.T) {
+	source := mcpetSource{Root: mcpetCandidateRoot, Remote: mcpetCandidateRemote, CommonDir: mcpetCandidateRoot + "/.git", Head: strings.Repeat("a", 40), ConfirmationReference: "synthetic authorized reference", WindowStart: v1Window().UnixMilli(), WindowEnd: v1Window().AddDate(0, 0, 30).UnixMilli()}
+	b, err := json.Marshal(source)
+	if err != nil {
+		t.Fatal(err)
+	}
+	integer := string(b)
+	start := fmt.Sprint(source.WindowStart)
+	end := fmt.Sprint(source.WindowEnd)
+	originalFloat := strings.ReplaceAll(strings.ReplaceAll(integer, start, start+".0"), end, end+".0")
+	for _, data := range []string{integer, originalFloat} {
+		got, err := decodeMcPetSource([]byte(data))
+		if err != nil || got.WindowStart != source.WindowStart || got.WindowEnd != source.WindowEnd {
+			t.Fatal("exact frozen bounds rejected")
+		}
+	}
+	for _, data := range []string{strings.ReplaceAll(originalFloat, start+".0", start+".5"), strings.ReplaceAll(integer, end, fmt.Sprint(source.WindowEnd+1)), strings.ReplaceAll(integer, mcpetCandidateRoot, "C:/personal")} {
+		if _, err := decodeMcPetSource([]byte(data)); err == nil {
+			t.Fatal("fixed source/window restriction weakened")
+		}
+	}
+}
+
 func TestV1RFixedSeedMcPetSupplementExcludesPrimary(t *testing.T) {
 	for _, primaryTopic := range []string{"Morphogenesis", "McPet"} {
 		out := t.TempDir()

@@ -2,6 +2,8 @@ import importlib.util
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "scripts/validation"))
@@ -11,6 +13,23 @@ spec.loader.exec_module(capture)
 
 
 class McPetCaptureTests(unittest.TestCase):
+    def test_capture_serializes_exact_integer_millisecond_window(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary).absolute()
+            root, evidence = base / "mcpet", base / "evidence"
+            root.mkdir()
+            evidence.mkdir()
+            remote = "https://github.com/songconmaisaix31-design/mcpet"
+            replies = [str(root).encode(), remote.encode(), b".git", b"a" * 40, b""]
+            with patch.object(capture, "CANDIDATE_ROOT", root), patch.object(capture, "V1R_ROOT", evidence), patch.object(capture, "unredirected", return_value=True), patch.object(capture, "git", side_effect=replies), patch("builtins.print"):
+                capture.capture(root, remote, "synthetic authorized reference", evidence / "new-source")
+            import json
+            metadata = json.loads((evidence / "new-source/source-local.json").read_text())
+            self.assertIs(type(metadata["window_start"]), int)
+            self.assertIs(type(metadata["window_end_exclusive"]), int)
+            self.assertEqual(metadata["window_start"], capture.START)
+            self.assertEqual(metadata["window_end_exclusive"], capture.END)
+
     def test_committer_time_window_exact_and_duplicate_excluded(self):
         start, end = int(capture.START), int(capture.END)
         lines = []
