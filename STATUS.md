@@ -4,6 +4,20 @@
 
 ### 当前裁决：v3.0（2026-10-12）
 
+22:55 root纠正执行错误：v3.0已明确授权McPet补源，实际Orca登记根/remote/README产品名均为`C:/Users/DW/orca/mcpet`、`https://github.com/songconmaisaix31-design/mcpet`、McPet；maimai-monster是任务文字与实码名称差异，按规格“实际代码为准并记录偏差”处理。此前另询源路径并阻塞已授权工作是root误设门禁，撤销，不称用户新答过路径或按超时默认批准。沿现有授权捕获实际McPet根，公共仓根仅追加mcpet身份，原语义/关键词/权重/参数不变，raw仍本机。下方PENDING源记录保留为历史错误，不继续阻塞V1R。
+
+Orca重启至runtime6ab8fbad后，原ctx_8dc6b111c5f5被标failed/terminal_missing，保留此失败，不改为worker_done成功；已推SOURCE5657/REPORT4fc及工作树独立确认仍在。当前root恢复term_f327ea80-4929-4421-b064-bf386a16ec63、原Run generation5。下一步同Task按retry-of恢复原逻辑W1/Codex --yolo，执行真实补源/30Sleep/新M2/三线及人工表，不重做无变化准备测试。完整V1用户轨迹/权重关账仍PENDING，V3未锁、V4未开。
+
+准备REPORT（commit时间2026-10-12T22:23:36+08:00）`4fc016614b948f4c6f39d2ab5ca628d6850d4f10`已由root核对源码祖先、仅`tasks/M6-W1.md`报告差异及remote精确一致，状态消息msg_611d48b28471已处理。候选SOURCE5657b9c及准备check/build记录不变；REPORT不表示V1R整体完成。Task/Dispatch仍in_progress，源问题msg_421ee8e406cd待用户实际根答复，未worker_done、未释放或重复派发、未合候选源码。真实补源/新回放/人验/V2–V4仍按前述状态。
+
+22:22 V1R准备阶段checkpoint：W1候选SOURCE`5657b9c37d1227f782043a8d7ba92607b457e3ca`已push原`validation-v1-ingest`分支，尚未普通合入最终验证分支，非真实V1R验收SHA。限定入口/源捕获/三线安全导出/固定50及McPet专项10抽样代码就绪；公共mapper不分叉，候选mcpet仓根别名尚未添加。root独立新增Go4 PASS、Python16 PASS，SOURCE与remote精确一致；相对12cc引擎/SQLite/schema/runtime/UI/kind语义/权重表差异0。
+
+owner完整check恢复标准TEMP后EXIT0/build EXIT0，定向Go46顶层PASS/1本地opt-in及3Windows子例SKIP，Python16 PASS，M2 7 PASS/1 helper SKIP、EX-01 3 PASS；旧冻结全量2832/2964=95.5466%、200误标0、原100/1101 raw_unique/2100生产响应泄漏0。全部为准备与旧源回归，不替新版真实库。日志`v1r-w1/preparation-*`；root独立日志`root-v3/preparation-*-independent-first.log`。两首RED保留：worktree同公共目录以字串比较失败，改os.SameFile后PASS；完整check将TEMP放在astrocyte-validation祖先触发旧scope关键词夹具，恢复标准TEMP并隔离真实opt-in后定向与完整PASS，未改M1 fixture或生产种子语义。
+
+实际McPet捕获、仓根别名、会话转入数、V1R全量/30Sleep/三线/新50权重/M2全部NOT_RUN。用户路径问题未答；当前`task_71ba19824f32/ctx_8dc6b111c5f5`保持in_progress，源问题`msg_421ee8e406cd`等待，不伪结算成功或失败、不重复启动。REPORT尚待owner准备记录，整体阶段未结束；收到真实源答复沿同Dispatch继续。V1人验未关账、V2/V3执行单已备但未派、协议未锁、真实V4未开。未消费候选源码就不触发新源码CI，原12cc双平台CI仅保留历史范围。
+
+22:07 W1沿原终端`term_44ba6601-f575-4731-a0bd-ff18438b1a4c`启动新`task_71ba19824f32/ctx_8dc6b111c5f5`，ready/input_accepted且turn_start observed，实际GPT-6.1-Sol high fast/Codex --yolo。已普通合root任务基线ba26aa9，准备限定V1R入口/源清单/公共仓根与兼容测试；源身份仍待用户答，未捕获McPet载荷、未真实V1R。root外部`root-v3/`准备独立literal参考及source/order/Sleep核对，使用原回放replay-002作基线验证：2832事件/2163更新点/30Sleep误差0；这是旧V1参考校验，不冒称V1R PASS。V2/V3待派执行单已按v3.0收窄，新W2实际工作树/终端未创建。文档HEADedd8116已push，不称新业务验收SHA。
+
 用户授权McPet窗口git log，执行[V1R补源任务](tasks/M6-V1R-replay.md)及[v3.0事实源](tasks/M6-validation-v3.md)。引擎/schema/参数/权重冻结不变，仅W1接入源/仓根与验证产物扩展；首次V1、6016及全部RED保留。当前实际仓`C:/Users/DW/orca/mcpet`/remote mcpet与任务文字maimai-monster存在身份差异，已向用户确认路径；未答前候选源采集PENDING。原冻结会话cwd无McPet，转入数按实际重算，不预设849下降。V1人验尚未确认，新轨迹与权重表在V1R后送审；协议未锁、V4未开。V2改为三主题真实库Markdown资产，不新增UI，旧React/ECharts扩展执行单撤销。七日末未到期D+3预测列PENDING，真实到期后才能终局统计。
 
 ### 历史裁决：v2.2（2026-10-12）
