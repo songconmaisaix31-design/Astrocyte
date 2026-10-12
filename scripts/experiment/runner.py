@@ -9,7 +9,7 @@ import subprocess
 from evaluation import audit_fact, blind_pack, judge_messages, reason_sheet, validate_user_score
 from inputs import messages, load_native, pack_b, questions, prompt_bytes
 from a_material import verified_material
-from native_model import NativeCodexModel, input_bytes
+from native_model import NativeCodexModel, input_bytes, context_bytes
 from local_store import PRIVATE_ROOT, REPO, ZONE, append_row, bounds, complete_day, distribution, events, private_path, readonly_db, rows, write_new
 from protocol import check_lock, rules
 from transport import LocalModel, a_memory
@@ -103,6 +103,9 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
                 base.update(protocol_sha256=locked['protocol_sha256'], day0=locked['day0'])
                 append_row(out / 'answers.jsonl', base, root)
                 try:
+                    client.last_response = client.last_error = None
+                    if hasattr(client, 'stream_receipt'):
+                        client.stream_receipt = None
                     check_lock(protocol, lock)
                     if arm == 'A':
                         memory, receipt = a_memory(mcp_command(binary, copy.parent, config['project_scope']), q['topic'])
@@ -125,13 +128,22 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
                         prompt, info = messages(q, None), {'loaded': 0, 'unloaded': 0}
                         info['prompt_tokens'] = None if isinstance(client, NativeCodexModel) else client.count(prompt)
                     info['prompt_utf8_bytes'] = prompt_bytes(prompt)
-                    info['native_stdin_utf8_bytes'] = input_bytes(prompt) if isinstance(client, NativeCodexModel) else info['prompt_utf8_bytes']
+                    try:
+                        info['all_input_utf8_bytes'] = (context_bytes(prompt, budget['input_transport']) if budget.get('input_transport') in ('model_instructions_file', 'model_context_split') else input_bytes(prompt)) if isinstance(client, NativeCodexModel) else info['prompt_utf8_bytes']
+                    except ValueError:
+                        # Oversized full packets remain archived, even before I/O.
+                        append_row(out / 'inputs.jsonl', {**base, 'messages': prompt, 'loading': info,
+                                                         'budget': budget, 'identity': identity,
+                                                         'delivery': 'not_sent', 'construction_status': 'full_packet_channel_overflow'}, root)
+                        raise
                     info['input_utf8_bytes_limit'] = budget.get('input_utf8_bytes_limit')
                     # Inputs durable before any model I/O, including errors and delivery uncertainty.
                     append_row(out / 'inputs.jsonl', {**base, 'messages': prompt, 'loading': info,
                                                      'budget': budget, 'identity': identity}, root)
-                    if type(budget.get('input_utf8_bytes_limit')) is not int or info['native_stdin_utf8_bytes'] > budget['input_utf8_bytes_limit']:
+                    if type(budget.get('input_utf8_bytes_limit')) is not int or info['all_input_utf8_bytes'] > budget['input_utf8_bytes_limit']:
                         raise ValueError('same ABC UTF8 byte ceiling not verified or exceeded')
+                    if isinstance(client, NativeCodexModel):
+                        client.data_scope = {'A': 'derived_A', 'B': 'raw_B', 'C': 'no_memory_C'}[arm]
                     answer, response = client.answer(prompt, budget['output_reserve'], q['seed'])
                     if isinstance(client, NativeCodexModel):
                         info['prompt_tokens'] = response['usage']['input_tokens']
@@ -182,6 +194,16 @@ def run_judge(day_dir, client, protocol, lock, root=PRIVATE_ROOT):
     payload = json.loads((p / 'judge-input.json').read_text(encoding='utf-8'))
     append_row(p / 'judge-scores.jsonl', {'question_id': payload['question_id'], 'authority': 'llm_judge', 'status': 'STARTED'}, root)
     try:
+        # Rebuild from the persisted paired answers; never accept arbitrary chat appended to a judge file.
+        question = next(q for q in rows(p / 'questions.jsonl') if q['question_id'] == payload['question_id'] and q['dimension'] == 'reason')
+        latest = {r['arm']: r for r in rows(p / 'answers.jsonl') if r['question_id'] == question['question_id']}
+        if set(latest) != set('ABC') or any(r.get('status') != 'OK' for r in latest.values()):
+            raise ValueError('judge requires three completed paired answers')
+        pack, _ = blind_pack(question, {arm: row['answer'] for arm, row in latest.items()})
+        if payload['messages'] != judge_messages(pack):
+            raise ValueError('judge payload differs from anonymous question/answers only')
+        if isinstance(client, NativeCodexModel):
+            client.data_scope = 'anonymous_judge_answers'
         answer, response = client.answer(payload['messages'], rules(protocol)['model']['output_reserve'], rules(protocol)['seed'])
         if answer.get('winner') not in ('X', 'Y', 'Z', 'tie') or set(answer.get('scores', {})) != set('XYZ') or not answer.get('rationale'):
             raise ValueError('judge rating schema invalid')
