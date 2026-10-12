@@ -4,6 +4,10 @@
 
 ### 2026-10-13 V2独立验收与V3参数待定
 
+W2最终SOURCE `4a179cef4735ee6bfa1dc87e0bc4624774f16fc0`（01:09:11+08）/ REPORT `8e092164d4761fffda1ea68419ab374dd45d10b0`已push；root精确SOURCE独立Python35 PASS（`root-v2/v3-judge-independent-final.log`）。补齐7份独立judge合法数值/真实OK门禁，缺失或失败不FINAL；用户原因裁决权及固定分母未改，三维派生数字/匿名映射/独立评分与分歧可追溯，原首次RED保留。实际24次MCP tools/call为23成功/1意图错误；当前正式答案/人评/成熟预测均0。
+
+B首126970-token实际请求600秒Timeout/CLI EXIT1，未取得回答或usage，`delivery_unknown/no_auto_retry`原件与追加对账均保留。01:08:47+08经核对停止仅本任务PID6516的loopback模型服务，GGUF/全部输入/首日志保留，root只读确认PID已不存在。短公共推理PASS不能替代强B；实际强B路由未通过。A原JSON预算RED、无损候选未激活、用户模型+表示待答，EXPERIMENT仍UNLOCKED，不登记day0，不把当前状态写成V3已锁或V4启动。
+
 root独立逆解码与原物理行核对PASS：三主题工具全部字段/类型/顺序和2855事件投影精确还原；B38已装消息完整原content/role/phase/ts全等，呈现时间正序，965预算未装原因保留。证据`root-v2/lossless-independent-001-safe.json`、`b-content-independent-001-safe.json`。独立实码复现精确SOURCE129b640：7份judge全缺却FINAL/成功true，首RED `judge-missing-first-red-safe.json`保留，已退原W2修复双评完整门禁，不改裁决权。唯一集成单`tasks/M6-V23-integration.md`；领域最终REPORT全到后才启动，模型+表示未决定仍UNLOCKED。
 
 01:03 W1 live接缝最终SOURCE `4fbea9d7a32ed7b7f0e0eaf382cd7dc9fe7091a8` / REPORT `101ee708fa835c25a733a82257855749748be180`已push，普通祖先和remote一致；accepted worker_done/succeeded，release retained/external_terminal/processAction none。root独立Go11/Python19、250真实事件绑定/顺序、6最终节点literal复算误差0及日快照全持久表等值通过。256是生成参考点数，不冒称全部生产中间节点已逐点比对。待唯一集成，不重扫已验历史。
