@@ -1,6 +1,6 @@
 # W0 V2：v3.0 三主题真实库证据资产
 
-依赖V1R root复核及用户终审关账；本执行单尚未派发。复用原W0 `C:/Users/DW/orca/workspaces/Astrocyte/validation-v1-boundary` / `songconmaisaix31-design/validation-v1-boundary`，Codex`--yolo`。本单取代旧ECharts新增UI方案，v3.0只沿用轨迹，不新增UI。
+依赖V1R root复核及用户终审关账；用户2026-10-13已PASS并关账，基线3e1f6dae，本单已放行。复用原W0 `C:/Users/DW/orca/workspaces/Astrocyte/validation-v1-boundary` / `songconmaisaix31-design/validation-v1-boundary`，Codex`--yolo`。本单取代旧ECharts新增UI方案，v3.0只沿用轨迹，不新增UI。
 
 ## 固定写域
 
