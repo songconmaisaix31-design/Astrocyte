@@ -2,7 +2,43 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
-### 当前裁决：v2.2（2026-10-12）
+### 当前裁决：v3.0（2026-10-12）
+
+23:12 W1正式交付SOURCE `7d57e06eaeaa1ddc8ddf132af47840acf8f777cc`（23:07:07+08）、REPORT `a954905c584256c055306b8c5fd1011de8a1f078`（23:10:25+08），均push且accepted worker_done；原准备和失败祖先保留。最终`v1r-w1/replay-002`为精确SOURCE独占运行，root再次从先行独立源参考复核2855事件/信号、1916唯一commit、30Sleep、2186非seed更新点误差0、六字段投影/源顺序/receipt集合，50机查50/50（含McPet1，专项0）。完整源覆盖、三线PNG/SVG和人工表均已产出，用户正确率PENDING。root定向Go7 PASS（含5个本机McPet worktree）、Python17 PASS；`root-v3/actual-002-*`与`source7d57-*`保留。冻结目录相对12cc差异0，W1 REPORT仅报告变化，remote精确一致。
+
+W1已结算，release回执external_terminal/retained/processAction none；工作树、原pycache和源码保留。原集成owner恢复Codex --yolo终端 `term_2b81572f-6ce6-407e-8835-acaaef4d4acf`，将在本轮root文档基线后普通合精确REPORTa954；主控最终组合树check/build、源码CI及用户终审另验。V1技术PASS不代人验；V2执行单已备，EXPERIMENT未锁、V4未开。
+
+23:05 首个真实V1R已产出`v1r-w1/replay-001`。固定McPet HEAD `5bcb2e53384c92a2e96504eb3631caf93325a19f`窗口23commit（10-10:1、10-11:22）；root独立全HEAD选窗核对ID/ts/本地subject/base64一致，原源不变，原19cwd无McPet，native转归0。2855成功/2987认知分母=95.5809%，主题2006/2855=70.2627%，849无标；1916唯一commit。root先从独立源生成literal参考，再核对真实生产2855单事件/信号、30Sleep/10空日、2186非seed更新点A/M/C误差0，全部origin/kind/topic/ts及每日receipt集合匹配。50机查50/50（32commit/12edit/6search，其中McPet1），专项0，人工正确率PENDING。证据`root-v3/actual-001-*`；完整raw样本仅LOCAL。
+
+首次真实入口因capture窗口JSON浮点毫秒不能直接读为Go int64失败，`v1r-w1/resume-replay-first.log`保留；capture-001原件未改，读取仅严格兼容同一固定整数边界，后续producer写整数。故障复现测试、精确SOURCE正式产物、组合树check/build及用户三线/权重终审仍待完成。首轮真实回放PASS不提前替代完整V1关账。原唯一集成后续执行单`tasks/M6-V1R-integration.md`已准备，未派。
+
+23:00 已恢复正式V1R：同Task `task_71ba19824f32`、同W1工作树/分支，终端 `term_0e24b1b6-ccf2-46c7-8346-bd3c2cf28045`，新Dispatch `ctx_5c8ea77f6659`，Codex --yolo / GPT-6.1-Sol high fast，input_accepted/turn_started已观察。原Dispatch失败保留；首次带retry-of启动因Task已自动恢复ready而被task_not_startable拒绝，按nextSteps核对原Dispatch/worker后，不带retry-of启动同Task成功，没有重复Task或执行拒绝请求。root源裁决5152cc7已送达，新owner已普通合入并开始公共mcpet别名与正式固定HEAD捕获。源授权门槛已撤销；实际新增数量、30Sleep及新版复算待运行结果，不以准备测试替代。
+
+22:55 root纠正执行错误：v3.0已明确授权McPet补源，实际Orca登记根/remote/README产品名均为`C:/Users/DW/orca/mcpet`、`https://github.com/songconmaisaix31-design/mcpet`、McPet；maimai-monster是任务文字与实码名称差异，按规格“实际代码为准并记录偏差”处理。此前另询源路径并阻塞已授权工作是root误设门禁，撤销，不称用户新答过路径或按超时默认批准。沿现有授权捕获实际McPet根，公共仓根仅追加mcpet身份，原语义/关键词/权重/参数不变，raw仍本机。下方PENDING源记录保留为历史错误，不继续阻塞V1R。
+
+Orca重启至runtime6ab8fbad后，原ctx_8dc6b111c5f5被标failed/terminal_missing，保留此失败，不改为worker_done成功；已推SOURCE5657/REPORT4fc及工作树独立确认仍在。当前root恢复term_f327ea80-4929-4421-b064-bf386a16ec63、原Run generation5。下一步同Task按retry-of恢复原逻辑W1/Codex --yolo，执行真实补源/30Sleep/新M2/三线及人工表，不重做无变化准备测试。完整V1用户轨迹/权重关账仍PENDING，V3未锁、V4未开。
+
+准备REPORT（commit时间2026-10-12T22:23:36+08:00）`4fc016614b948f4c6f39d2ab5ca628d6850d4f10`已由root核对源码祖先、仅`tasks/M6-W1.md`报告差异及remote精确一致，状态消息msg_611d48b28471已处理。候选SOURCE5657b9c及准备check/build记录不变；REPORT不表示V1R整体完成。Task/Dispatch仍in_progress，源问题msg_421ee8e406cd待用户实际根答复，未worker_done、未释放或重复派发、未合候选源码。真实补源/新回放/人验/V2–V4仍按前述状态。
+
+22:22 V1R准备阶段checkpoint：W1候选SOURCE`5657b9c37d1227f782043a8d7ba92607b457e3ca`已push原`validation-v1-ingest`分支，尚未普通合入最终验证分支，非真实V1R验收SHA。限定入口/源捕获/三线安全导出/固定50及McPet专项10抽样代码就绪；公共mapper不分叉，候选mcpet仓根别名尚未添加。root独立新增Go4 PASS、Python16 PASS，SOURCE与remote精确一致；相对12cc引擎/SQLite/schema/runtime/UI/kind语义/权重表差异0。
+
+owner完整check恢复标准TEMP后EXIT0/build EXIT0，定向Go46顶层PASS/1本地opt-in及3Windows子例SKIP，Python16 PASS，M2 7 PASS/1 helper SKIP、EX-01 3 PASS；旧冻结全量2832/2964=95.5466%、200误标0、原100/1101 raw_unique/2100生产响应泄漏0。全部为准备与旧源回归，不替新版真实库。日志`v1r-w1/preparation-*`；root独立日志`root-v3/preparation-*-independent-first.log`。两首RED保留：worktree同公共目录以字串比较失败，改os.SameFile后PASS；完整check将TEMP放在astrocyte-validation祖先触发旧scope关键词夹具，恢复标准TEMP并隔离真实opt-in后定向与完整PASS，未改M1 fixture或生产种子语义。
+
+实际McPet捕获、仓根别名、会话转入数、V1R全量/30Sleep/三线/新50权重/M2全部NOT_RUN。用户路径问题未答；当前`task_71ba19824f32/ctx_8dc6b111c5f5`保持in_progress，源问题`msg_421ee8e406cd`等待，不伪结算成功或失败、不重复启动。REPORT尚待owner准备记录，整体阶段未结束；收到真实源答复沿同Dispatch继续。V1人验未关账、V2/V3执行单已备但未派、协议未锁、真实V4未开。未消费候选源码就不触发新源码CI，原12cc双平台CI仅保留历史范围。
+
+22:07 W1沿原终端`term_44ba6601-f575-4731-a0bd-ff18438b1a4c`启动新`task_71ba19824f32/ctx_8dc6b111c5f5`，ready/input_accepted且turn_start observed，实际GPT-6.1-Sol high fast/Codex --yolo。已普通合root任务基线ba26aa9，准备限定V1R入口/源清单/公共仓根与兼容测试；源身份仍待用户答，未捕获McPet载荷、未真实V1R。root外部`root-v3/`准备独立literal参考及source/order/Sleep核对，使用原回放replay-002作基线验证：2832事件/2163更新点/30Sleep误差0；这是旧V1参考校验，不冒称V1R PASS。V2/V3待派执行单已按v3.0收窄，新W2实际工作树/终端未创建。文档HEADedd8116已push，不称新业务验收SHA。
+
+用户授权McPet窗口git log，执行[V1R补源任务](tasks/M6-V1R-replay.md)及[v3.0事实源](tasks/M6-validation-v3.md)。引擎/schema/参数/权重冻结不变，仅W1接入源/仓根与验证产物扩展；首次V1、6016及全部RED保留。当前实际仓`C:/Users/DW/orca/mcpet`/remote mcpet与任务文字maimai-monster存在身份差异，已向用户确认路径；未答前候选源采集PENDING。原冻结会话cwd无McPet，转入数按实际重算，不预设849下降。V1人验尚未确认，新轨迹与权重表在V1R后送审；协议未锁、V4未开。V2改为三主题真实库Markdown资产，不新增UI，旧React/ECharts扩展执行单撤销。七日末未到期D+3预测列PENDING，真实到期后才能终局统计。
+
+### 历史裁决：v2.2（2026-10-12）
+
+**17:09 双平台CI最终通过。** [CI38226630789](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38226630789)对精确源码 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` completed/success：Ubuntu/Windows check、build、default E2E全部PASS，各226 PASS/30条件SKIP（3.2m/5.1m）；Linux race PASS，Windows race条件SKIP。完整原件 `root-v22/v1-ci-final.log`。收尾仅STATUS/HANDOFF/计划文档，业务源码/测试/配置与该SOURCE一致；文档HEAD不冒充新源码CI。V0 PASS、V1技术PASS；焦点人工确认与50权重人工正确数仍PENDING，正式V2/V3/V4未开，EXPERIMENT未锁SHA，不宣称已证明优于普通Agent Memory。两当前owner已结算、终端/工作树保留；下一步以两项真实人工结果继续验收，所有原RED/unknown/旧failed不改写。
+
+**16:57 最终交付：V0 PASS；V1技术回放PASS，人验PENDING。** 最终普通源码合并 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` 已push到 `validation/v1-20261012`，消费W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4` / REPORT `b4243e41fd66d730f27db15e47fd85e6006ad92c`，同一集成owner SOURCE `4d5665cbc058001c04466beb2590ee7796de78c5` / REPORT `06173e427975ff3642b7f2705534a951c0803f81` 均为普通祖先。五个业务文件与67cc8f6精确一致；相比V0 SOURCE35f508b，全部internal/app/domain/SQLite/schema/runtime/contracts/web/参数零变化。root在最终组合树完整pnpm check/build EXIT0（22 Go测试包/8无测试包、接口275、S1 14、前端90），Python13 PASS、生成表/diff检查PASS；新日志 `root-v22/v1-final-*`。新[CI38226630789](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38226630789)只对应源码12cc4dd，目前running，不借旧V0 CI冒称新源码已绿。
+
+V1最终真实产物 `v1-w1/replay-002/`：2832实际事件/信号（含849 unassigned）/1893唯一commit/六种子/30生产Sleep（10空日）；每调用仅一事件、真实ts间隔，稳定semantic ID处理160等ts相邻对。root预先独立从V0源构建期望，最终2163更新点A/M/C误差0，另含6seed共2169点由owner独立复算亦0；每日Sleep signal_ids与当日实际receipt集合严格相等、无重复。真实SQLite只读复核2832 raw BLOB、849无标event/signal、Sleep30，样本50机器参数绑定50/50。原M2/EX-01重跑PASS，不代表人验或自然task_live。
+
+W1 `task_2ff9000b73ed/ctx_2ec270cb9205` 与集成 `task_0fff678cdbb0/ctx_ffc79455aad8` 已accepted worker_done/succeeded；初次启动的turn_start_unobserved原件保留，两者均在确认composer未提交后只补Enter继续原Dispatch，未重派。两原外部终端retained，processAction none，工作树/分支保留。集成适用52顶层Go PASS/2条件SKIP（另3Windows symlink子例SKIP）、Python13 PASS、vet/生成/diff PASS；附加审计误将独立REPORT文件要求与SOURCE零差异的首RED保留，分别核对业务/报告后PASS，未改业务或验收期待。root已发两项人工问题：焦点锚点吻合与50样本人工正确率，尚未收到答复；未按超时推定通过，V1完整人验仍PENDING，正式V2/V3/V4未开、EXPERIMENT未锁、未伪造终局报告。原首RED/6016计数/旧failed/回执unknown保留，未合main、升级个人实例或复制验收库。
 
 16:45 V1技术产物已完成，待普通集成与root最终Git；W1 SOURCE `67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4`已push。真实首次replay-001 16:37:10–16:38:07，精确SOURCE又独占replay-002不覆盖首件；2832生产Recorder单事件调用/2832信号，849无标事件与信号全部BLOB留存并Sleep pending，1893唯一commit，六种子、30生产Sleep含10空日。160对等ts仍按稳定semantic ID逐条处理。owner独立M2比较2169点（1983事件+180日末+6seed）误差0；root另从V0源预先生成literal math期望，对两个真实回放的2163更新点、逐条source顺序/六字段投影及30日排名独立比较，A/M/C最大误差0。root对replay-002 SQLite只读计数及50样本实际receipt/raw核验PASS；不调用生产公式生成expected。
 
