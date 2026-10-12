@@ -1,4 +1,4 @@
-// Command validation diagnoses frozen local native samples without persistence.
+// Command validation audits and replays explicitly selected frozen local inputs.
 package main
 
 import (
@@ -310,7 +310,57 @@ func main() {
 	output := flag.String("output", "", "new derived stage-count JSON file")
 	contextPath := flag.String("associations", "", "separate local observed file association context")
 	gitInput := flag.String("git-input", "", "local actual git log input, separate from frozen100")
+	populationDir := flag.String("population-dir", "", "frozen full structural tool population and independent negatives")
+	semanticOut := flag.String("semantic-out", "", "exclusive new directory for v22 semantic audit; no replay")
+	semanticPolicy := flag.String("semantic-policy", "events/semantic_policy_v22.json", "versioned preregistered semantic policy")
+	replayOut := flag.String("replay-out", "", "exclusive external v1-w1 directory for authorized production replay")
+	v1rOut := flag.String("v1r-out", "", "exclusive new v1r-w1 run directory")
+	v1rSource := flag.String("v1r-source", "", "separately confirmed fixed McPet capture directory under v1r-w1")
 	flag.Parse()
+	if *v1rOut != "" || *v1rSource != "" {
+		if *v1rOut == "" || *v1rSource == "" || *replayOut != "" || *semanticOut != "" || *input != "" || *output != "" || *contextPath != "" {
+			fmt.Fprintln(os.Stderr, "V1R requires frozen population/Git, confirmed source and new exclusive output only")
+			os.Exit(2)
+		}
+		if err := runV1R(*populationDir, *gitInput, *v1rSource, *v1rOut); err != nil {
+			fmt.Fprintln(os.Stderr, "V1R failed; inspect exclusively local evidence")
+			os.Exit(1)
+		}
+		return
+	}
+	if *replayOut != "" {
+		if *semanticOut != "" || *input != "" || *output != "" || *contextPath != "" {
+			fmt.Fprintln(os.Stderr, "replay accepts only frozen population, Git and exclusive output")
+			os.Exit(2)
+		}
+		if err := runV1(*populationDir, *gitInput, *replayOut); err != nil {
+			fmt.Fprintln(os.Stderr, "V1 replay failed; inspect exclusively local evidence")
+			os.Exit(1)
+		}
+		return
+	}
+	if *semanticOut != "" {
+		if *populationDir == "" || *gitInput == "" || *output != "" || *input != "" || *contextPath != "" {
+			fmt.Fprintln(os.Stderr, "semantic audit requires only frozen population, Git and new output directory")
+			os.Exit(2)
+		}
+		if err := runSemantic(*populationDir, *gitInput, *semanticOut, *semanticPolicy); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
+	if *populationDir != "" {
+		if *input != "" || *contextPath != "" || *gitInput == "" || *output == "" {
+			fmt.Fprintln(os.Stderr, "population requires frozen git and output only")
+			os.Exit(2)
+		}
+		if err := runPopulation(*populationDir, *gitInput, *output); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
 	if (*input == "" && *gitInput == "") || (*input != "" && *gitInput != "") || *output == "" {
 		fmt.Fprintln(os.Stderr, "input and output required")
 		os.Exit(2)

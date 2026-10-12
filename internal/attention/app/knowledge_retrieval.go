@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"math"
+	"sort"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
@@ -69,12 +70,7 @@ func (s *KnowledgeService) RetrieveKnowledge(ctx context.Context, p Principal, p
 			if at <= 0 || q.Now < at {
 				return domain.ErrInvalid
 			}
-			boost := 1.0
-			for _, action := range entry.Actions {
-				if action.Action == "reference" && action.ActorKind == "human" {
-					boost += q.ReferenceBoost
-				}
-			}
+			boost := knowledgeReferenceBoost(entry.Actions, q.Now, q.ReferenceBoost)
 			candidate := domain.RetrievalCandidate{ID: entry.Entry.ID, Relevance: relevance, Attention: node.Attention, AccessBoost: boost, AgeSeconds: float64(q.Now-at) / 1000}
 			candidates = append(candidates, candidate)
 			matches[candidate.ID] = KnowledgeMatch{Knowledge: entry, Inputs: candidate, AgeAt: at, RelevanceMode: s.repo.KnowledgeRelevanceMode()}
@@ -91,4 +87,30 @@ func (s *KnowledgeService) RetrieveKnowledge(ctx context.Context, p Principal, p
 		result = append(result, match)
 	}
 	return result, nil
+}
+
+// Derive boost from existing human reference audits without persisting state.
+// A gap of at least 24 hours resets accumulated access, including between
+// historical references. Sorting a copied timestamp slice leaves audits intact.
+func knowledgeReferenceBoost(actions []ActionAudit, now int64, increment float64) float64 {
+	const cooldown = int64(24 * 60 * 60 * 1000)
+	var times []int64
+	for _, action := range actions {
+		if action.Action == "reference" && action.ActorKind == "human" && action.TS > 0 && action.TS <= now {
+			times = append(times, action.TS)
+		}
+	}
+	sort.Slice(times, func(i, j int) bool { return times[i] < times[j] })
+	boost, previous := 1.0, int64(0)
+	for _, at := range times {
+		if previous == 0 || at-previous >= cooldown {
+			boost = 1
+		}
+		boost = math.Min(2, boost+increment)
+		previous = at
+	}
+	if previous == 0 || now-previous >= cooldown {
+		return 1
+	}
+	return boost
 }

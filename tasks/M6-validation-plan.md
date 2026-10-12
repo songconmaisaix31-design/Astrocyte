@@ -1,8 +1,42 @@
 # M6 验证期执行计划
 
+## 当前波次：v3.0 V1R
+
+2026-10-13 V1用户终审PASS/关账，基线3e1f6dae。当前并行波次V2/V3：W0复用validation-v1-boundary及原分支，仅MCP必要边界修复/scripts/evidence/tests/validation/evidence/docs/evidence/tasks/M6-W0.md；W2新validation-v1-experiment及固定分支，仅scripts/experiment/tests/validation/experiment/docs/EXPERIMENT.md/docs/EXPERIMENT_REPORT.md/docs/experiment/tasks/M6-W2.md。两轨不共写，root只STATUS/HANDOFF/任务计划；EXPERIMENT在派发后交W2。生产live胶水若必需先W2→W1 Handoff，W1限定原cmd/validation/events接入域，不动冻结引擎/schema。完成后唯一原集成owner普通合、root独立验收、锁SHA/day0/真实七日；模型/预算/路由如有实缺口先产具体可审查构造，不弱化B。
+
+23:22 W1 task71ba/ctx5c8与唯一集成 task31bc/ctx533已succeeded、外部终端retained。精确SOURCE7d57/REPORTa954→集成SOURCE298e/REPORT3694→root普通组合SOURCEeba5；完整rootcheck/build、真实2855/30Sleep/2186点独立误差0、50机查和双平台SOURCE7d57 CI通过。V1R技术结束，下一门禁仅用户新三线与50权重终审，不再阻塞McPet源授权。V2/W2后续执行单已备且尚未派，EXPERIMENT未锁；原写域、冻结和用户关账顺序不变。
+
+23:00 原Task71ba19824f32在原W1工作树恢复为Dispatch5c8ea77f6659，终端0e24b1b6/Codex --yolo，已观察turn_started。源授权按root5152cc7纠错及原v3.0执行，owner已普通合入；root只独立复核/状态，原集成owner待W1正式产物完成再派。旧Dispatch terminal_missing失败与invalid retry-of preflight拒绝保留；没有另建Task、改写失败或新增写域。下方源等待是历史错误状态，不继续执行该门禁。
+
+22:22固定W1已完成独立准备：SOURCE5657b9c原分支已push、root未合；ownercheck/build/Go46/Python16与原人口/raw审计通过，rootGo4/Python16独立通过。当前Task71ba19824f32/Dispatch8dc6b111c5f5源身份问题待用户答，保持in_progress，候选McPet alias/真实捕获/V1R运行NOT_RUN。本轮仅root文档提交推送，不宣称新增源码CI或真实验收；后续回原owner/同Dispatch，不重复建轨或把等待判成功失败。原W1 REPORT待准备记录，V1R整体尚未结束。新W2执行单`M6-V3-experiment.md`已备但未派，EXPERIMENT草案暂仍root拥有。
+
+事实源`M6-validation-v3.md`，本轮先单轨W1复用原工作树/分支/终端，业务write_paths仅`M6-V1R-replay.md`所列；不再开放app boost、M4或UI。root维护文档/路径裁决/独立复核/最终Git，原唯一集成owner消费精确SOURCE/REPORT普通合。用户确认真实McPet根后才捕获新增源；原冻结两仓/会话不重抓，首次V1不覆盖。V1R新版三线/覆盖/50权重完成后用户终审关账，再沿原MCP owner产三主题Markdown，不新增UI；新W2工具链/协议按后续互斥写域派发，锁定必须晚于V1人验。原V1 SOURCE/双平台CI是历史证据，新增源码另验。
+
+## 历史波次：v2.2
+
+17:09收尾：W1 `task_2ff9000b73ed/ctx_2ec270cb9205`、同一集成 `task_0fff678cdbb0/ctx_ffc79455aad8`已succeeded，原终端/worktree/branch retained。交付源码12cc4dd、本地check/build/Python13、独立2832逐事件/30Sleep/2163更新点误差0及双平台CI38226630789全部通过；226默认E2E PASS/30条件SKIP各平台。V0 PASS、V1技术PASS但焦点/50权重人验PENDING，正式V2/V3/V4不抢跑，EXPERIMENT未锁SHA；V2执行单已备，下一步收到人验后沿原owner继续。首RED/旧failed/unknown及原6016全量均保留。
+
+16:25 新V0已由root批准（完整记录在STATUS顶部），正式V1沿原W1启动，唯一业务write_paths见[M6-V1-replay.md](M6-V1-replay.md)；本轮boost/M4不再开放修改。Orca运行时重启丢失旧终端，原工作树/分支保持，恢复同逻辑owner使用Codex --yolo，实际Task/Dispatch启动后记录。集成回执未达保持failed，不重复实现或重建开发轨。V1后交同一集成工作树普通合；V2/V3准备另派互斥写域，协议锁必须晚于V1。
+
+事实源[M6 v2.2](M6-validation-v2.2.md)。root只文档/调度/抽查/独立验收/最终Git。固定W1工作树`validation-v1-ingest`、分支`songconmaisaix31-design/validation-v1-ingest`，恢复同逻辑owner的Codex --yolo；原W1/W0/集成九Dispatch已结算，不重复派旧任务。先普通合本裁决文档HEAD，按原互斥写域修复；其他轨本波不同时写。
+
+| owner | 当前write_paths | 门禁与产物 |
+|---|---|---|
+| W1 | `events/**`、`internal/adapters/events/**`、`cmd/validation/**`、`scripts/validation/**`、`tests/validation/ingest/**`、`tasks/M6-W1.md`；限定扩展`internal/attention/app/knowledge_retrieval.go`仅RetrieveKnowledge及同文件boost helper | 先版本化语义规则，再全6016复盘；612名分布、2520内层解析、各语义桶20样本；git common-dir/remote归属、McPet；s=1/w、confidence=.5、λ_r日换秒、boost cap/24h复现测试；SOURCE/REPORT各commit+push |
+| root | STATUS/HANDOFF/任务计划/QUESTIONS/未锁EXPERIMENT | 实际抽查各桶20，规则修订全量重跑；独立新V0三指标；保留历史RED；过线通知原W1正式V1 |
+| 原集成owner | 原integration worktree/branch及`tasks/M6-integration.md` | 普通合精确root/W1 REPORT，薄胶水；领域问题退W1；M2/EX-01/M5与changed packages检查，root最终check/build/push |
+
+V1代码仍由W1：生产EventRecorder单事件路径、显式事件时钟、全部kind成功含unassigned留存、30模拟日Sleep、JSON序列/top5/权重50抽样/真实M2复算。若生产入口配置接缝必须新增写路径，先交精确Handoff由root登记；不改数学/权重/λ/去噪/fluid/crystallized/merge。原N≥5000无效。V2/V3后续依赖不变，七天真实实验不可由回放替代。证据新目录v22-w1/root-v22，不覆盖旧全量6016、原100、200及泄漏RED；raw不上Git/远程/正文终端。
+
+root静态确认M4旧单次ReferenceBoost=2期待3与cap2冲突，W1追加仅`tests/attention-engine/M4_persistent_retrieval_test.go`与`M4_production_node_test.go`机械更新cap输入/独立乘积期待，先保留首RED；其他断言和参数不变，正式仍每次+.1。
+
+当前W1 `task_9811e1a0ba62/ctx_db0a6079c956`，终端`term_a8f99f9a-0a9b-4b5e-8c83-ffaeb3a0c3a7`，首次turn_started已观察。root预运行规则审查：统计单位为原生/内层工具调用；同一Bash/exec多个search段只一份事件贡献，分段另报；未知留失败。规则修订版本后全量跑，不按结果调分类。root抽样和V0仍未执行。
+
 ## 当前波次：v2.1
 
-04:33 原W0的v2.1隐私源码6e7de7e、报告b728f23已结算。追加fixture-only写域：`tests/attention-engine/M5-mcp_delivery_test.go`、`tests/attention-engine/M5-mcp_test.go`、`tests/attention-engine/M5-mcp_sqlite_test.go`及原`tasks/M6-W0.md`。root独立M5首RED保存于evidence/root-v21/m5-first-red.log；旧测试要求wire raw/origin_key，与新exposure契约冲突。原owner在同一工作树/分支修正投影期待，保留真实提交、event_id对账、重启、本地raw、全部权重和权限断言，禁止修改生产代码/共享helper/其他测试。运行所有MCP测试及真实100隐私审计，提交推送后交原集成owner普通合。Orca重启后root新终端term_4766555e-2c8c-4b7b-807c-2cd31fa43fa5绑定原Run，旧终端不复用；恢复固定逻辑owner，不另开并行写者。
+04:50 W1 REPORT `3020bfd7a47e1b83f765ab3c1ad0437841746af6`、W0最终REPORT `88268a05a756f108f76422e1279e734851e4c324`均push且accepted worker_done。唯一原集成owner在同工作树`attention-engine-final-integration`/同分支`validation-v1-integration`恢复Codex --yolo终端`term_413891f3-04af-4fc0-bc60-bb42efa19820`，先普通合root当前文档，再普通合这两个精确REPORT，保留各SOURCE/REPORT普通祖先；报告唯一写域`tasks/M6-integration.md`。只必要薄胶水，领域问题退原owner；禁止正式V1/改schema/app/domain/调参。运行changed packages、M2/EX-01/M5、Python/生成映射及真实100审计，SOURCE+REPORT分别commit/push；root随后独立全check/build/隐私审计并最终push。
+
+04:33 原W0的v2.1隐私源码6e7de7e、报告b728f23已结算。追加fixture-only写域：`tests/attention-engine/M5-mcp_delivery_test.go`、`tests/attention-engine/M5-mcp_test.go`、`tests/attention-engine/M5-mcp_sqlite_test.go`及原`tasks/M6-W0.md`。root独立M5首RED保存于既定外部证据根的`evidence/root-v21/m5-first-red.log`；旧测试要求wire raw/origin_key，与新exposure契约冲突。原owner在同一工作树/分支修正投影期待，保留真实提交、event_id对账、重启、本地raw、全部权重和权限断言，禁止修改生产代码/共享helper/其他测试。运行所有MCP测试及真实100隐私审计，提交推送后交原集成owner普通合。Orca重启后root新终端term_4766555e-2c8c-4b7b-807c-2cd31fa43fa5绑定原Run，旧终端不复用；恢复固定逻辑owner，不另开并行写者。
 
 事实源[M6 v2.1](M6-validation-v2.1.md)覆盖下文历史口径。W1保持原固定写域，完成全量认知工具盘点/映射/header、git固定1893、200非认知随机抽检、显式参数接入，再准备全N单事件/30Sleep回放；V0三指标通过前不正式回放。W0本波唯一写域`internal/adapters/mcp/**`、`tests/validation/privacy/**`、`tasks/M6-W0.md`，禁止改SQLite/store/migrations/任何app/domain。原raw侧表授权撤销，schema零豁免。两轨先同步root本波文档commit，开发测试报告由同ownercommit+push，随后唯一原集成owner普通合与薄胶水；root独立验收/push。W2未启动，EXPERIMENT草案暂归root。
 

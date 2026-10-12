@@ -11,7 +11,7 @@ import (
 
 func TestNativeObservationPreservesUnknowns(t *testing.T) {
 	o, err := nativeRecord("claude_code", []byte(`{"type":"assistant","sessionId":"s","timestamp":"2026-10-10T00:00:00Z","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"paper.pdf"}}]}}`))
-	if err != nil || o.kind != "unknown" || o.tokens != nil || o.outcome != "unknown" || o.depth != "unknown" || o.ts != 1791590400000 {
+	if err != nil || o.kind != "read_paper" || o.tokens != nil || o.outcome != "unknown" || o.depth != "unknown" || o.ts != 1791590400000 {
 		t.Fatalf("observation: %+v, %v", o, err)
 	}
 	o, err = nativeRecord("codex", []byte(`{"type":"response_item","payload":{"type":"function_call","name":"exec_command","arguments":"{\"cmd\":\"git commit -m done\"}"}}`))

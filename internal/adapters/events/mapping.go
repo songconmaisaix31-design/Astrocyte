@@ -68,6 +68,21 @@ func ReplayNativeFile(ctx context.Context, source, root, path, project string, l
 	for _, line := range lines {
 		kind := str(object(line.raw), "type")
 		origin := "native:" + source + ":" + line.observation.session + ":line:" + strconv.Itoa(line.line)
+		blocks := NativeToolBlocks(source, line.raw)
+		if len(blocks) > 0 {
+			for _, block := range blocks {
+				unitOrigin := origin
+				if len(blocks) > 1 {
+					unitOrigin += ":block:" + strconv.Itoa(block)
+				}
+				row, err := MapNativeToolRecord(source, unitOrigin, project, line.raw, receivedAt, NativeAssociation{Session: line.observation.session, Scope: line.observation.cwd}, block)
+				if err != nil {
+					return nil, partial, err
+				}
+				result = append(result, row)
+			}
+			continue
+		}
 		result = append(result, nativeReceipt(origin, source, kind, "native:selected_file", line.raw, line.observation, receivedAt))
 	}
 	return result, partial, nil

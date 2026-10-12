@@ -78,7 +78,7 @@ func nativeRecord(source string, raw []byte) (nativeObservation, error) {
 		_ = json.Unmarshal(m["content"], &blocks)
 		kinds := map[string]bool{}
 		for _, b := range blocks {
-			if str(b, "type") == "tool_use" {
+			if str(v, "type") == "assistant" && str(b, "type") == "tool_use" {
 				kinds[toolKind(str(b, "name"), b["input"])] = true
 			}
 		}

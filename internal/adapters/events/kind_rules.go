@@ -28,11 +28,19 @@ func canonicalTool(name string) string {
 
 func toolKind(name string, raw json.RawMessage) string {
 	name = canonicalTool(name)
+	if name == "Read" && paperTarget(raw) {
+		return "read_paper"
+	}
 	for _, rule := range nativeKindRules {
 		if rule.value != name {
 			continue
 		}
 		switch rule.selector {
+		case "wrapper":
+			var code string
+			if json.Unmarshal(raw, &code) == nil {
+				return wrapperKind(code)
+			}
 		case "tool":
 			return rule.kind
 		case "shell_search":
@@ -47,11 +55,8 @@ func toolKind(name string, raw json.RawMessage) string {
 			if cmd == "" {
 				cmd = str(v, "cmd")
 			}
-			fields := strings.Fields(cmd)
-			if len(fields) == 0 || strings.ContainsAny(cmd, ";|&\n\r") {
-				continue
-			}
-			if rule.selector == "shell_search" && (fields[0] == "rg" || fields[0] == "grep") {
+			parts := semanticCommands(name, cmd, "0")
+			if len(parts) == 1 && parts[0].Bucket == "cognitive_search" {
 				return rule.kind
 			}
 		}

@@ -1,6 +1,40 @@
 # Astrocyte 主控交接
 
+## 当前入口：M6 v3.0（2026-10-12）
+
+2026-10-13：用户已真实终审PASS并关账V1/V1R，基线3e1f6dae；轨迹三锚点/灰区和50样本kind/绑定/ts人工交叉通过，McPet主样本确认。下方人验PENDING为历史，不能重新索取已给的确认。原回放与132认可残余/849无标/零信号三主题保留。现在并行原W0 V2三主题完整Markdown证据与新W2 V3实验工具链，固定互斥写域见执行单/计划；root只状态/决策/独立验收/最终Git，EXPERIMENT草案在W2派发后由W2独占。实现与真实执行路由验收后锁SHA并day0，不伪造未来七日或提前锁不完整协议。
+
+23:22 V1R已完成并普通集成：组合SOURCEeba5c055，W1 SOURCE7d57/REPORTa954、集成SOURCE298e/REPORT3694均保留；root完整check/build、独立Go7/Python17、2855逐事件/30Sleep/2186更新点误差0、SQLite与50机查通过，精确7d57双平台CI38267896603成功（各226PASS/30条件SKIP）。完整记录读STATUS顶部。新三线/覆盖/50人工表在v1r-w1/replay-002，用户轨迹/权重终审仍PENDING。下一步接收两项真实人工结果，V1关账后沿原MCP owner V2三主题资产，再新W2工具链/锁协议/七日V4；不要再询McPet源路径、重抓原冻结源或把机查当人验。当前两Dispatch已结算、外部终端retained，主控term_f327/Run generation5，源/首失败/原工作树不动。
+
+23:12 W1真实V1R已完成并结算：SOURCE7d57e06/REPORTa954905已push，最终v1r-w1/replay-002，新增McPet23、总2855、849无标、30Sleep；root独立2186更新点误差0、SQLite全源匹配、50机查通过（McPet1，专项0）。新三线/覆盖/50人工表在该目录，用户终审PENDING。rootGo7/Python17通过，冻结目录零差异。W1外部终端retained，唯一原集成工作树恢复终端2b81572f/Codex --yolo，下一步普通合本轮root及a954，再root最终check/build/push；不重抓源、不覆盖首次回放、不锁实验。下方NOT_RUN/源询问为历史。
+
+23:00 W1已实际继续：同Task71ba19824f32，新Dispatch5c8ea77f6659/终端0e24b1b6，Codex --yolo / GPT-6.1-Sol high fast。owner已读5152cc7并普通合root源纠错，开始mcpet公共别名和正式捕获。原Dispatch失败和retry-of preflight拒绝保留，Task ready状态按CLI恢复为无retry-of启动，同写域没有第二worker。root下一步核对新增源事实与独立M2，不再询McPet路径；V1用户终审、协议锁及七日实验仍待后续实绩。
+
+22:55继续执行真实V1R。v3.0已有McPet采集授权，root已核实本机唯一Orca McPet登记根/remote/README名称；实际路径C:/Users/DW/orca/mcpet、remote https://github.com/songconmaisaix31-design/mcpet。maimai-monster记为实码偏差，不把此前未答的额外路径询问继续当权限门禁；这是root执行判断纠错，不伪称用户路径确认。先读更新M6-V1R-replay.md，公共repositoryTopic仅追加mcpet，其他冻结不动。Orca重启原W1 Dispatch8dc失败terminal_missing，已推Source5657/Report4fc及工作树保留；root新term_f327ea80-4929-4421-b064-bf386a16ec63绑定原Run generation5，同Task retry恢复同owner真实补源/回放。原失败/首次V1/所有RED保留，完整V1人验仍PENDING，不锁实验。
+
+已收到并核对W1准备REPORT`4fc016614b948f4c6f39d2ab5ca628d6850d4f10`，commit时间22:23:36+08:00，仅本轨报告文件变化、remote一致，SOURCE5657b9c不变。原Task/Dispatch仍在源身份问题处等待；这次编排通知不是用户路径答复，不启动捕获、不结算任务或释放原终端。此前“REPORT尚待”已被本记录更新，真实V1R及后续仍NOT_RUN。
+
+22:22 checkpoint：root最终分支当前仅v3文档，W1候选SOURCE5657b9c已push但未合入；owner完整check/build及Go46/Python16/旧人口与原100 raw回归通过，root新增Go4/Python16独立通过。不是V1R实际完成。源名maimai-monster与本机C:/Users/DW/orca/mcpet/remote mcpet差异仍待用户路径回复；`task_71ba19824f32/ctx_8dc6b111c5f5`保持in_progress且source ask `msg_421ee8e406cd`待答，不能另派重复worker或伪结算。用户答后回复同问题并在同owner补实际身份项/捕获/30Sleep/新版M2及三线/权重，再原集成普通合/root复核/用户终审。未答前实际源、新回放和新版人工表均NOT_RUN，REPORT准备状态尚待W1。首RED原件在v1r-w1，root独立在root-v3。未开V2/V3/V4，不锁协议。
+
+先读STATUS顶层及`tasks/M6-validation-v3.md`/`tasks/M6-V1R-replay.md`。用户补授权McPet仓git，先W1 V1R补源与原会话仓根重分类→root独立复核→用户轨迹/权重终审关账→V2三主题证据资产→V3协议锁→七日V4。McPet本机mcpet与任务maimai-monster身份差异已询问，候选源未确认前不采raw。旧SOURCE12cc/CI38226630789及replay-001/002保留，不能当V1R完成。V1人验PENDING，不代填；引擎/schema/参数/权重冻结，旧P2新增UI撤销。root只文档/协调/独立验收/最终Git，复用原W1和唯一原集成Codex --yolo工作树。
+
+## 历史入口：M6 v2.2（2026-10-12）
+
+17:09最新：源码12cc4ddf3e0a65e18be3bb3bf67f09652d928e46的双平台CI38226630789 completed/success，check/build/default E2E全部PASS，各226PASS/30条件SKIP，Linux race PASS/Windows条件SKIP；root本地完整check/build/Python13及真实回放独立复算均通过。收尾仅文档，不重称源码CI。V0 PASS、V1技术PASS，人验焦点/50权重仍PENDING，正式V2–V4未开、EXPERIMENT未锁；两项人工问题已发，未收到答复不按超时填通过。两当前Dispatch已结算，原工作树/分支/外部终端保留、个人实例/main未动。先读STATUS顶层及真实本机replay-002，收到人验再继续；保留原RED/unknown/旧failed。下方为历史阶段。
+
+16:57交付源码 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` 已push，root完整check/build与Python13均通过；普通消费W1 REPORTb4243e4及同一集成REPORT06173e4，当前两个Dispatch已succeeded并retained外部终端/工作树。V0 PASS、V1技术PASS：最终replay-002真实2832单事件/信号、849无标、30Sleep含10空日、2163更新点主控独立误差0、每日signal_ids精确匹配receipt集合。最新CI38226630789对源码12cc4dd正在运行，不借旧CI填绿。人验焦点/50权重两项问题已发、仍PENDING；下一步收到真实结果再决定完整V1验收与正式P2/P3，V2执行单已备但未派，EXPERIMENT未锁、V4未开。Agent Swarm零信号/A=.05不能补假证据；所有旧RED和failed/unknown保留，个人实例/main未动。详见STATUS顶部；下方为此前历史。
+
+16:45 V1已产出两次真实2832逐事件/30生产Sleep回放；SOURCE67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4已push，待同一集成owner普通合与root最终Git。主控从V0源预先生成独立期望，对2163更新点/30日排名核对A/M/C误差0，SQLite事件/信号2832、无标849、Sleep30、raw全BLOB只读复查通过；owner2169点另含6seed亦0误差。焦点从09-22至10-08 Morph第一，10-09至11 Astro第一；前10天空日种子并列不能当焦点。用户焦点确认/50权重人工核对仍PENDING，机查50/50不替代人验；不锁EXPERIMENT或启动正式V2/V3/V4。原首RED与回执unknown保留。下方为先前阶段记录。
+
+16:25 root批准新V0，源码SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`已push：独立2832/2964=95.5466%、误标0/200、raw1101字符串/2100生产响应泄漏0，八桶160源核对问题0；root完整check/build及精确SOURCE双平台CI38222142954通过。一次本机Redocly退出时Node/libuv RED已保留，定向和完整重跑通过，源码依赖未改。132结构失败保留；主题覆盖70.0212%，849无标需全部入库。消费I报告2524e9e，I完成回执因Orca重启未达，Dispatch保持failed/terminal_missing，不能冒称accepted worker_done。正式V1放行，沿原W1工作树/分支按[tasks/M6-V1-replay.md](tasks/M6-V1-replay.md)执行；root只文档/调度/独立验收/最终Git，源码/权重/参数冻结。实际V1运行及用户焦点/50权重核对另验，不把V0当V1或真实七天实验，EXPERIMENT未锁SHA。下方入口为此前历史。
+
+先读STATUS顶部、[v2.2裁决](tasks/M6-validation-v2.2.md)和[固定写域计划](tasks/M6-validation-plan.md)。全部工具认知人口及N≥5000门槛废止；6016及原RED保留。新人口按预声明语义，动态不可解析留分母失败，topic只报告；≥95% kind/s绑定、误标0、泄漏0才开正式V1。字段/单位/confidence/boost及仓根/McPet范围已裁决，不重问。W1同worktree/branch、Codex --yolo，追加RetrieveKnowledge限定boost写域，schema/domain不改。最终SOURCE c0f6936/REPORT2b8137d已push，数值2832/2964=95.5466%，132结构失败保留；root最终每桶20及全部22新解析调用/50候选命令已独立核对。待原集成owner普通合与root整树check/build/原100 raw_unique/全人口复测，再批准V0。正式V1仍NOT_RUN，EXPERIMENT未锁SHA。
+
 ## 当前入口：M6 v2.1（2026-10-12）
+
+05:10 本轮源码/测试已普通合并、独立复验并push，验收SOURCE `245d3f8a2d766ee8695daeae1de87469537fff96`；唯一集成REPORT ffc7c0df及W1/W0所有SOURCE/REPORT普通祖先保留。root完整pnpm check/build PASS，真实100 raw审计1101字符串/2100生产MCP响应零泄漏PASS；人口N6016、kind/topic1971=32.76% RED、随机200误标0。[CI38174450112](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38174450112)对该SOURCE两平台check/build/defaultE2E全部PASS，各226 PASS/30 SKIP（3.8m/4.9m），Linux race PASS、Windows按条件SKIP。收尾仅STATUS/HANDOFF记录变化，源码/测试/配置一致，不能把CI归给未重跑的文档HEAD。当前九个Dispatch全部结算，外部终端retained，原工作树/分支保留。先读STATUS当前指标表和QUESTIONS现有实码缺口，V0未过，不启动正式V1/V2–V4、不锁EXPERIMENT或伪造终局报告。原RED和所有raw只在既定外部证据根，个人运行库未升级。
+
+04:44 继续从validation/v1-20261012的root当前文档与STATUS读状态。原Run仍为run_d09ff3f95ebc，Orca重启后coordinator已绑定term_4766555e-2c8c-4b7b-807c-2cd31fa43fa5；旧终端句柄不可复用。W1 REPORT3020bfd7已push，root独立生产mapper人口结果N6016、kind/topic1971（32.76% RED）、随机非认知200误标0。W0 SOURCE6e7de7e/REPORTb728f23已结算，worker原100/1101字符串/2100MCP响应零泄漏；当前唯一W0 fixture返修ctx_063dce91ac7a只改三份M5测试及自己的报告，保持同worktree/branch，Codex --yolo实际GPT-6.1-Sol high fast。旧raw/origin_key期待首RED保存外部证据根，root须在唯一原集成owner普通合后独立check/build和原100审计。当前V0归一化未达95%，V1–V4未启动，协议未锁SHA；手工主题范围、强度字段绑定、播种confidence和λ_r单位/boost缺口的实码问题见QUESTIONS最新条目，用户未答，不据此改冻结引擎。
 
 先读STATUS顶部和[tasks/M6-validation-v2.1.md](tasks/M6-validation-v2.1.md)。本补丁覆盖旧100行eligible口径、raw同值疑问、参数待答、自动无标出生要求；旧首RED留存，schema零豁免/store raw不变，无自动发现。正式参数已裁决，不再询问。沿原W1全量认知盘点+1893捕获git，原W0仅exposure投影/raw_unique含错误审计，复用原Codex --yolo工作树/分支，完成后同一集成owner普通合。新V0三指标通过再按ts单事件回放全N/30Sleep；N≥5000达数量目标。不把默认CI或合成测试当新V0/V1，EXPERIMENT仍草案未锁SHA。下文v2记录为历史。
 
