@@ -1,6 +1,14 @@
 # M6 验证期执行计划
 
-## 当前波次：v3.0 V1R
+## 当前波次：v3.0 V2/V3与live接缝
+
+W2实查live生产入口缺失，限定追加原W1接缝轨，范围见`M6-V4-live.md`；与W0/W2路径互斥。复用原W1工作树/分支/终端，仅必要接入CLI/脚本/测试，不重开V1，不改语义/引擎/schema/参数。集成仅在各原owner交付后执行。
+
+2026-10-13 并行已启动：W0原boundary/terminal3ad2c840/Task24ab709a8d95/Dispatch8b90194c61b1；W2新experiment/terminal70b809cd/Task14df5210ae74/Dispatchf313af6642f5。两者Codex --yolo且turn_started已观察；EXPERIMENT写权归W2。confidence实码偏差裁决见STATUS与V2执行单，仅导出只读持久节点，不改接口。
+
+2026-10-13 V1用户终审PASS/关账，基线3e1f6dae。当前并行波次V2/V3：W0复用validation-v1-boundary及原分支，仅MCP必要边界修复/scripts/evidence/tests/validation/evidence/docs/evidence/tasks/M6-W0.md；W2新validation-v1-experiment及固定分支，仅scripts/experiment/tests/validation/experiment/docs/EXPERIMENT.md/docs/EXPERIMENT_REPORT.md/docs/experiment/tasks/M6-W2.md。两轨不共写，root只STATUS/HANDOFF/任务计划；EXPERIMENT在派发后交W2。生产live胶水若必需先W2→W1 Handoff，W1限定原cmd/validation/events接入域，不动冻结引擎/schema。完成后唯一原集成owner普通合、root独立验收、锁SHA/day0/真实七日；模型/预算/路由如有实缺口先产具体可审查构造，不弱化B。
+
+23:22 W1 task71ba/ctx5c8与唯一集成 task31bc/ctx533已succeeded、外部终端retained。精确SOURCE7d57/REPORTa954→集成SOURCE298e/REPORT3694→root普通组合SOURCEeba5；完整rootcheck/build、真实2855/30Sleep/2186点独立误差0、50机查和双平台SOURCE7d57 CI通过。V1R技术结束，下一门禁仅用户新三线与50权重终审，不再阻塞McPet源授权。V2/W2后续执行单已备且尚未派，EXPERIMENT未锁；原写域、冻结和用户关账顺序不变。
 
 23:00 原Task71ba19824f32在原W1工作树恢复为Dispatch5c8ea77f6659，终端0e24b1b6/Codex --yolo，已观察turn_started。源授权按root5152cc7纠错及原v3.0执行，owner已普通合入；root只独立复核/状态，原集成owner待W1正式产物完成再派。旧Dispatch terminal_missing失败与invalid retry-of preflight拒绝保留；没有另建Task、改写失败或新增写域。下方源等待是历史错误状态，不继续执行该门禁。
 
