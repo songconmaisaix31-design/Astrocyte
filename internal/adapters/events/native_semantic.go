@@ -12,7 +12,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
-const SemanticPolicyVersion = "v22.8"
+const SemanticPolicyVersion = "v22.9"
 
 // SemanticTool contains safe structural fields only. Arguments never leave this
 // adapter. Category is decided from tool semantics before kind mapping.
@@ -549,6 +549,11 @@ func semanticWrapper(code, path string, depth int) []SemanticTool {
 		return []SemanticTool{{Path: path, Tool: "exec", Bucket: "unresolved_structure", Reason: "unsupported_js_structure", Structure: "wrapper"}}
 	}
 	bindings := staticBindings(tokens)
+	loops := closedLoops(tokens, bindings)
+	closedFor := map[int]bool{}
+	for _, loop := range loops {
+		closedFor[loop.start] = true
+	}
 	var result []SemanticTool
 	unresolved := func(p, reason string) {
 		result = append(result, SemanticTool{Path: p, Tool: "exec", Bucket: "unresolved_structure", Reason: reason, Structure: "wrapper"})
@@ -563,6 +568,7 @@ func semanticWrapper(code, path string, depth int) []SemanticTool {
 	// Braced control/function bodies are recorded rather than executed. Ordinary
 	// result callbacks are harmless unless a tool invocation is inside them.
 	var contexts []bool
+	upstreamUnsafeFor := map[int]bool{}
 	pendingUnsafe := false
 	ordinal := 0
 	for i := 0; i < len(tokens); i++ {
@@ -572,7 +578,10 @@ func semanticWrapper(code, path string, depth int) []SemanticTool {
 		}
 		switch t.value {
 		case "if", "for", "foreach", "while", "switch", "function":
-			pendingUnsafe = true
+			if closedFor[i] && pendingUnsafe {
+				upstreamUnsafeFor[i] = true
+			}
+			pendingUnsafe = pendingUnsafe || !closedFor[i]
 		case "=":
 			if i+1 < len(tokens) && tokens[i+1].value == ">" {
 				pendingUnsafe = true
@@ -614,6 +623,28 @@ func semanticWrapper(code, path string, depth int) []SemanticTool {
 			if !tokens[j].literal && (tokens[j].value == "?" || tokens[j].value == "&" || tokens[j].value == "|") {
 				unsafe = true
 			}
+		}
+		inClosedLoop := false
+		for _, loop := range loops {
+			if i >= loop.body && i < loop.end {
+				inClosedLoop = true
+				if !unsafe && !upstreamUnsafeFor[loop.start] {
+					if children, end, ok := loopSemanticCall(tokens, i+4, loop, tokens[i+2].value, p, depth); ok {
+						result = append(result, children...)
+						i = end
+					} else {
+						unresolved(p, "closed_loop_candidate_unresolved_or_disagreement")
+						result[len(result)-1].Tool = tokens[i+2].value
+					}
+				} else {
+					unresolved(p, "conditional_or_function_call")
+					result[len(result)-1].Tool = tokens[i+2].value
+				}
+				break
+			}
+		}
+		if inClosedLoop {
+			continue
 		}
 		argument, end, ok := staticArgument(tokens, i+4, bindings)
 		if !ok || end >= len(tokens) || tokens[end].value != ")" {

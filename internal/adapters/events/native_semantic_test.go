@@ -151,6 +151,55 @@ func TestNativeShellSyntaxBridgePreservesUTF8(t *testing.T) {
 	}
 }
 
+func TestClosedForOfCandidatesAgreeWithoutDuplicatingEvents(t *testing.T) {
+	for i, code := range []string{
+		`for(const cmd of ['rg first','rg second']){await tools.exec_command({cmd});}`,
+		`for(const [cmd,workdir] of [['rg first','/fixture/a'],['rg second','/fixture/b']]){await tools.exec_command({cmd,workdir});}`,
+		`const commands=['go test ./...','git status'];for(const cmd of commands){text(await tools.exec_command({cmd}));}`,
+		`for(const file_path of ['first.pdf','second.pdf']){await tools.Read({file_path});}`,
+		`for(const [cmd,workdir] of [['git status',null],['go test ./...','/fixture']]){await tools.exec_command({cmd,workdir});}`,
+		`for(const [label,cmd] of [['a','rg first'],['b','rg second']]) text(await tools.exec_command({cmd}));`,
+	} {
+		rows, children, err := MapNativeSemanticTools("codex", "parent", "/fixture", semanticFixture("exec", code), 1, NativeAssociation{}, 0)
+		want := "cognitive_search"
+		if i == 2 || i == 4 {
+			want = "noncognitive_shell"
+		}
+		if i == 3 {
+			want = "cognitive_paper"
+		}
+		if err != nil || len(children) != 1 || len(rows) != 1 || children[0].Bucket != want || rows[0].OriginKey != "parent/semantic/0.0" {
+			t.Fatalf("closed loop case %d failed stable one-call semantics: count=%d error=%v", i, len(children), err)
+		}
+		if i < 2 && (rows[0].Event == nil || rows[0].Event.Kind != "search") {
+			t.Fatal("closed search candidates lost mapping")
+		}
+	}
+}
+
+func TestClosedForOfRejectsAmbiguityMutationAndRuntimeControl(t *testing.T) {
+	for i, code := range []string{
+		`for(const cmd of ['rg fixture','git status']){await tools.exec_command({cmd});}`,
+		`for(const cmd of await fetchCommands()){await tools.exec_command({cmd});}`,
+		`for(const cmd of ['rg first','rg second']){if(ready){await tools.exec_command({cmd});}}`,
+		`const commands=['rg fixture'];commands.push(dynamic);for(const cmd of commands){await tools.exec_command({cmd});}`,
+		`for(const pair of [['rg first'],['rg second']]){pair[0]=dynamic;await tools.exec_command({cmd:pair[0]});}`,
+		`for(const cmd of ['rg first','rg second']){const f=()=>tools.exec_command({cmd});}`,
+		`for(const file_path of ['first.pdf','readme.md']){await tools.Read({file_path});}`,
+		`if(ready){for(const cmd of ['rg first','rg second']){await tools.exec_command({cmd});}}`,
+		`for(const cmd of ['rg first','rg second']){await tools.exec_command({cmd:unknown(cmd)});}`,
+		`for(const cmd of ['rg first','rg second']) if(ready) await tools.exec_command({cmd});`,
+		`if(ready) for(const cmd of ['rg first','rg second']){await tools.exec_command({cmd});}`,
+		`function run(){for(const cmd of ['rg first','rg second']){await tools.exec_command({cmd});}}`,
+		`if(ready) for(const config of [{cmd:'rg first'},{cmd:'rg second'}]){await tools.exec_command({cmd:config.cmd});}`,
+	} {
+		children := SemanticTools("codex", semanticFixture("exec", code), 0)
+		if len(children) != 1 || children[0].Bucket != "unresolved_structure" {
+			t.Fatalf("unsafe closed loop case %d promoted a call", i)
+		}
+	}
+}
+
 func TestObservedRepositoryIdentityDoesNotGuessWorktreeSpelling(t *testing.T) {
 	for _, c := range []struct{ value, want string }{{"C:/repo/Astrocyte/.git", "Astrocyte/Attention Engine"}, {"Astrocyte", "Astrocyte/Attention Engine"}, {"https://github.com/owner/maimai-monster.git", "McPet"}, {"git@github.com:owner/Morphogenesis.git", "Morphogenesis"}, {"attention-engine-w4", ""}} {
 		if got := repositoryTopic(repositoryIdentity(c.value)); got != c.want {
