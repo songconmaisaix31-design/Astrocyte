@@ -1,5 +1,7 @@
 # M6 验证期执行计划
 
+当前波次已转为2026-10-13 V4启动定案，见[M6-V4-start.md](M6-V4-start.md)。用户已决定分层A/gpt-6.1-sol/1800秒；新CI精确c61c841双平台SUCCESS。原W2实现，root独立验收和门禁，随后唯一原集成；协议未锁，真实七日未开始。下方待选模型/表示为历史。
+
 ## 当前波次：V2/V3工具已集成，协议未锁
 
 2026-10-13 01:22：V2三主题完整2006证据PASS，V3工具技术PASS，V4未开；组合SOURCEc61c841已push，root完整check/build EXIT0，组合Python73/Go122适用PASS，冻结域零diff。三个领域owner和唯一原集成owner均已结算并release retained。模型+输入表示仍待用户定案，原JSON A预算RED/B首实际满预算请求600秒timeout保留；无损列候选未激活、不锁SHA/day0。后续仍复用原W2和唯一集成写域，按STATUS最新门槛执行，不重复V1人验或重写首失败。

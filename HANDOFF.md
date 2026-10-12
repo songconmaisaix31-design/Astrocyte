@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+2026-10-13用户V4启动定案：A全状态排序+explain_focus数值头/kind×日聚合/全部event_id+approved经验；ABC同gpt-6.1-sol同预算，B1800秒。执行单tasks/M6-V4-start.md；原W2继续同写域，root验收，原唯一集成owner普通合。新CI38283687781精确c61c841双平台SUCCESS，旧首RED保留。模型/表示已经决定，不再询问；实际路由、A激活、满预算B和协议终稿仍需验收，当前未锁SHA/day0。
+
 2026-10-13 01:22：V1/V1R用户已PASS关账；V2三主题2006条完整证据资产已普通集成，见`docs/evidence/README.md`；V3工具技术交付PASS，EXPERIMENT仍UNLOCKED，V4未开始。最终组合SOURCE `c61c841d3cf70fc4add5e6768cdaa11d47dd4d32`已push，root完整check/build首次EXIT0、组合Python73/Go122适用PASS，冻结业务域零diff；所有原owner/唯一集成Dispatch已succeeded/release retained，原分支/工作树/RED/unknown保留。具体SHA、日志、独立实证、当前CI限制读STATUS顶部。
 
 当前下一步为真实模型+输入表示选择，不重开V1或新增代码能力。原JSON A221700 tokens超过126976上限；可读无损列候选72890，完整往返/原字段/顺序全等但未激活、长A未跑。B1003完整消息最大装载38条126970，首600秒推理Timeout/delivery_unknown，模型PID已核对停止、文件/原输入保留；未接受强B路由，不盲重试。用户模型/表示问题未答，按用户AGENTS关键节点须先问，不能自行定案/锁协议/起day0。原W2固定experimental工作树/分支/terminal70b809cd承担后续领域修订，root不共写EXPERIMENT或runner；其他owner原终端保留。

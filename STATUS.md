@@ -2,6 +2,12 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
+### 2026-10-13 V4启动定案已接收
+
+用户已决定A分层全量表示、ABC统一gpt-6.1-sol、B时限1800秒；替代下方历史「模型/表示待答」。执行单见[tasks/M6-V4-start.md](tasks/M6-V4-start.md)。原W2独占实现与协议，root独立验收，唯一原集成owner普通合；不重开V1，不改冻结域。协议仍UNLOCKED，day0未开始；A激活/复算、真实满预算B、CI、协议终稿、全文SHA五门禁逐条通过后锁定。
+
+新组合[CI38283687781](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38283687781)现已completed/success，精确SOURCE c61c841d3cf70fc4add5e6768cdaa11d47dd4d32，两job check(ubuntu-24.04)/check(windows-2025)均SUCCESS。1bbd055仅文档变更；旧CI38279757301 Windows首RED与本机定向1PASS保留，不以新结论覆盖历史。后续实现变更另确认其CI。
+
 ### 2026-10-13 V2独立验收与V3参数待定
 
 **01:22 V2交付PASS；V3工具技术PASS/协议UNLOCKED；V4 NOT_RUN。** 最终组合SOURCE `c61c841d3cf70fc4add5e6768cdaa11d47dd4d32`已普通push到`validation/v1-20261012`，普通合唯一集成最终REPORT `dde3f349d1cb3d7e41519dc609319a49e203151b`；集成SOURCE7d979及三个owner最终SOURCE/REPORT全部普通祖先保留。零冲突、零胶水；root逐写域核对W0/W1/W2实现、协议、资产与原交付全等，冻结引擎/schema/参数/权重/mapper/UI diff为0。四个Dispatch均accepted succeeded并release external_terminal/retained，无待回收worker。
