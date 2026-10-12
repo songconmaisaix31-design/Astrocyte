@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
@@ -306,6 +307,15 @@ func runAssociated(input, output, contextPath string) error {
 }
 
 func main() {
+	for _, argument := range os.Args[1:] {
+		if strings.HasPrefix(argument, "--live-") {
+			if runLiveCLI(os.Args[1:]) != nil {
+				fmt.Fprintln(os.Stderr, "Live capture failed; inspect local safe coverage and reconcile retained receipts before retry")
+				os.Exit(1)
+			}
+			return
+		}
+	}
 	input := flag.String("input", "", "frozen local sample-first.jsonl")
 	output := flag.String("output", "", "new derived stage-count JSON file")
 	contextPath := flag.String("associations", "", "separate local observed file association context")
