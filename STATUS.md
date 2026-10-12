@@ -4,6 +4,8 @@
 
 ### 当前裁决：v3.0（2026-10-12）
 
+22:07 W1沿原终端`term_44ba6601-f575-4731-a0bd-ff18438b1a4c`启动新`task_71ba19824f32/ctx_8dc6b111c5f5`，ready/input_accepted且turn_start observed，实际GPT-6.1-Sol high fast/Codex --yolo。已普通合root任务基线ba26aa9，准备限定V1R入口/源清单/公共仓根与兼容测试；源身份仍待用户答，未捕获McPet载荷、未真实V1R。root外部`root-v3/`准备独立literal参考及source/order/Sleep核对，使用原回放replay-002作基线验证：2832事件/2163更新点/30Sleep误差0；这是旧V1参考校验，不冒称V1R PASS。V2/V3待派执行单已按v3.0收窄，新W2实际工作树/终端未创建。文档HEADedd8116已push，不称新业务验收SHA。
+
 用户授权McPet窗口git log，执行[V1R补源任务](tasks/M6-V1R-replay.md)及[v3.0事实源](tasks/M6-validation-v3.md)。引擎/schema/参数/权重冻结不变，仅W1接入源/仓根与验证产物扩展；首次V1、6016及全部RED保留。当前实际仓`C:/Users/DW/orca/mcpet`/remote mcpet与任务文字maimai-monster存在身份差异，已向用户确认路径；未答前候选源采集PENDING。原冻结会话cwd无McPet，转入数按实际重算，不预设849下降。V1人验尚未确认，新轨迹与权重表在V1R后送审；协议未锁、V4未开。V2改为三主题真实库Markdown资产，不新增UI，旧React/ECharts扩展执行单撤销。七日末未到期D+3预测列PENDING，真实到期后才能终局统计。
 
 ### 历史裁决：v2.2（2026-10-12）
