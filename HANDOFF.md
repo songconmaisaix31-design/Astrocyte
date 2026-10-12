@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+23:22 V1R已完成并普通集成：组合SOURCEeba5c055，W1 SOURCE7d57/REPORTa954、集成SOURCE298e/REPORT3694均保留；root完整check/build、独立Go7/Python17、2855逐事件/30Sleep/2186更新点误差0、SQLite与50机查通过，精确7d57双平台CI38267896603成功（各226PASS/30条件SKIP）。完整记录读STATUS顶部。新三线/覆盖/50人工表在v1r-w1/replay-002，用户轨迹/权重终审仍PENDING。下一步接收两项真实人工结果，V1关账后沿原MCP owner V2三主题资产，再新W2工具链/锁协议/七日V4；不要再询McPet源路径、重抓原冻结源或把机查当人验。当前两Dispatch已结算、外部终端retained，主控term_f327/Run generation5，源/首失败/原工作树不动。
+
 23:12 W1真实V1R已完成并结算：SOURCE7d57e06/REPORTa954905已push，最终v1r-w1/replay-002，新增McPet23、总2855、849无标、30Sleep；root独立2186更新点误差0、SQLite全源匹配、50机查通过（McPet1，专项0）。新三线/覆盖/50人工表在该目录，用户终审PENDING。rootGo7/Python17通过，冻结目录零差异。W1外部终端retained，唯一原集成工作树恢复终端2b81572f/Codex --yolo，下一步普通合本轮root及a954，再root最终check/build/push；不重抓源、不覆盖首次回放、不锁实验。下方NOT_RUN/源询问为历史。
 
 23:00 W1已实际继续：同Task71ba19824f32，新Dispatch5c8ea77f6659/终端0e24b1b6，Codex --yolo / GPT-6.1-Sol high fast。owner已读5152cc7并普通合root源纠错，开始mcpet公共别名和正式捕获。原Dispatch失败和retry-of preflight拒绝保留，Task ready状态按CLI恢复为无retry-of启动，同写域没有第二worker。root下一步核对新增源事实与独立M2，不再询McPet路径；V1用户终审、协议锁及七日实验仍待后续实绩。

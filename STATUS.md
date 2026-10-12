@@ -4,6 +4,16 @@
 
 ### 当前裁决：v3.0（2026-10-12）
 
+**23:22 V1R技术交付完成，V1用户终审PENDING。** 最终组合SOURCE `eba5c055a13f7b92a5aef3d430bb600360be714a`普通合精确集成REPORT `3694bf38e4323e96ae6687539474be0fb7c8c216`，包含W1 SOURCE7d57/REPORTa954全部普通祖先；零胶水、冻结引擎/schema/参数/权重/UI/语义表差异0。root整仓`pnpm check`、`pnpm build`均EXIT0（Go全包/vet、275契约、API14、前端90、生成/diff），日志`root-v3/final-combination-*-first.log`；root定向Go7/Python17与真实M2/SQLite/50样本独立结果保留。当前源码与精确7d57所有业务/测试/配置一致，收尾仅文档，不再重复检查。
+
+新[CI38267896603](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38267896603)对**精确W1 SOURCE7d57e06**已completed/success：Windows/Linux check/build/default E2E均PASS，各226PASS/30条件SKIP（5.2m/3.9m），Linux race PASS/Windows条件SKIP。CI不归给未跑远端CI的组合SHA或旧12cc；组合源码一致性与root本地检查另列。
+
+最终真实库与人审资产在`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v1r-w1/replay-002/`：`three-topic-attention.png`、`coverage-safe.md`、`weights-human-safe.md`。新增McPet23实际commit、会话转入0，总2855/30Sleep/849无标；root预先独立参考2186更新点A/M/C最大误差0，50机查50/50且McPet1。人工原载荷仅本机`root-v3/actual-002-WEIGHTS-RAW-LOCAL.json`，不进入Git或响应。焦点：09-12–21空日并列；09-22–10-08 Morph第一；10-09–11 Astro前二；10-11 McPet第一。10-08 Astro仍floor，如实保留。
+
+用户须给两项终审：轨迹锚点是否符合历史；新50条人工正确数量/错误event_id。机查不能替代该结果；尚未收到，不关账V1。V2三主题证据单、V3工具链单已备但未正式派，EXPERIMENT仍草案未锁SHA，V4未开，未填未来实验报告。真实残余132结构失败、849无标、前三空信号主题保留，不调参、不补信号。两当前Dispatch均accepted worker_done/succeeded，release结果external_terminal/retained/processAction none，原工作树/分支/pycache与首失败完整保留。
+
+本轮Orca恢复操作记录：invalid retry-of在Task已ready时拒绝，按nextSteps检查后同Task无retry-of启动；一次root check从集成cwd推断错误caller而consumer_fenced拒绝，回root并显式--terminal后正常，未改Run绑定或复活旧Dispatch。McPet源原额外询问门槛已纠正，任何历史PENDING源记录不继续生效。未合main、部署或升级个人实例。
+
 23:12 W1正式交付SOURCE `7d57e06eaeaa1ddc8ddf132af47840acf8f777cc`（23:07:07+08）、REPORT `a954905c584256c055306b8c5fd1011de8a1f078`（23:10:25+08），均push且accepted worker_done；原准备和失败祖先保留。最终`v1r-w1/replay-002`为精确SOURCE独占运行，root再次从先行独立源参考复核2855事件/信号、1916唯一commit、30Sleep、2186非seed更新点误差0、六字段投影/源顺序/receipt集合，50机查50/50（含McPet1，专项0）。完整源覆盖、三线PNG/SVG和人工表均已产出，用户正确率PENDING。root定向Go7 PASS（含5个本机McPet worktree）、Python17 PASS；`root-v3/actual-002-*`与`source7d57-*`保留。冻结目录相对12cc差异0，W1 REPORT仅报告变化，remote精确一致。
 
 W1已结算，release回执external_terminal/retained/processAction none；工作树、原pycache和源码保留。原集成owner恢复Codex --yolo终端 `term_2b81572f-6ce6-407e-8835-acaaef4d4acf`，将在本轮root文档基线后普通合精确REPORTa954；主控最终组合树check/build、源码CI及用户终审另验。V1技术PASS不代人验；V2执行单已备，EXPERIMENT未锁、V4未开。

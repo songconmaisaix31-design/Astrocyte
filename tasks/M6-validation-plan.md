@@ -2,6 +2,8 @@
 
 ## 当前波次：v3.0 V1R
 
+23:22 W1 task71ba/ctx5c8与唯一集成 task31bc/ctx533已succeeded、外部终端retained。精确SOURCE7d57/REPORTa954→集成SOURCE298e/REPORT3694→root普通组合SOURCEeba5；完整rootcheck/build、真实2855/30Sleep/2186点独立误差0、50机查和双平台SOURCE7d57 CI通过。V1R技术结束，下一门禁仅用户新三线与50权重终审，不再阻塞McPet源授权。V2/W2后续执行单已备且尚未派，EXPERIMENT未锁；原写域、冻结和用户关账顺序不变。
+
 23:00 原Task71ba19824f32在原W1工作树恢复为Dispatch5c8ea77f6659，终端0e24b1b6/Codex --yolo，已观察turn_started。源授权按root5152cc7纠错及原v3.0执行，owner已普通合入；root只独立复核/状态，原集成owner待W1正式产物完成再派。旧Dispatch terminal_missing失败与invalid retry-of preflight拒绝保留；没有另建Task、改写失败或新增写域。下方源等待是历史错误状态，不继续执行该门禁。
 
 22:22固定W1已完成独立准备：SOURCE5657b9c原分支已push、root未合；ownercheck/build/Go46/Python16与原人口/raw审计通过，rootGo4/Python16独立通过。当前Task71ba19824f32/Dispatch8dc6b111c5f5源身份问题待用户答，保持in_progress，候选McPet alias/真实捕获/V1R运行NOT_RUN。本轮仅root文档提交推送，不宣称新增源码CI或真实验收；后续回原owner/同Dispatch，不重复建轨或把等待判成功失败。原W1 REPORT待准备记录，V1R整体尚未结束。新W2执行单`M6-V3-experiment.md`已备但未派，EXPERIMENT草案暂仍root拥有。
