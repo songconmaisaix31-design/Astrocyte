@@ -99,7 +99,12 @@ func TestRelayConfigurationIsolationAndNoImplicitLiveWindow(t *testing.T) {
 	for _, fixture := range []struct {
 		body  string
 		valid bool
-	}{{`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"capabilities":{},"drive_mode":"terminal"}]`, true}, {`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"drive_mode":"auto"}]`, false}, {`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"drive_mode":"terminal","actor_kind":"human"}]`, false}} {
+	}{{`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"capabilities":{},"drive_mode":"terminal"}]`, true},
+		{`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"drive_mode":"terminal","input_mode":"line"}]`, true},
+		{`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"drive_mode":"terminal","input_mode":"stdin_eof"}]`, true},
+		{`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"drive_mode":"terminal","input_mode":"shell"}]`, false},
+		{`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"drive_mode":"auto"}]`, false},
+		{`[{"name":"fixture-cli","launch_cmd":["fixture-cli"],"drive_mode":"terminal","actor_kind":"human"}]`, false}} {
 		if os.WriteFile(filepath.Join(root, "agents.json"), []byte(fixture.body), 0600) != nil {
 			t.Fatal("test registry write unavailable")
 		}
