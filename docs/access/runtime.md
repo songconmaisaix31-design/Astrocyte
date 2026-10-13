@@ -41,8 +41,8 @@ Windows / PowerShell，Go `-mod=readonly`；实际客户端模型见本报告开
 | ObserveOwned / Shutdown | PASS：只观察已启动任务；即使旧 grant 撤销，shutdown 可 containment stop，保留 stop receipt、退出和未完成 writer 占用 |
 | `node scripts/check-architecture.mjs` | PASS，29 package 导入边界 |
 | `go vet -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/relayworktree` | PASS |
-| `gofmt -l <14-path 中 Go 文件>` / `git diff --check` | PASS |
-| `go build -mod=readonly -o <本机接入 evidence/runtime/runtime-server.exe> ./cmd/server` | PASS；构建产物在工作树外，HTTP 装配由 H-http 独占 |
+| `gofmt -l $relayFiles.FullName` / `git diff --check` | PASS；relayFiles 为本轨 domain/app/sqlite/agents 的 relay*.go 与 relayworktree/*.go |
+| `go build -mod=readonly -o (Join-Path $evidenceDir 'runtime-server.exe') ./cmd/server` | PASS；evidenceDir 为 LOCALAPPDATA/astrocyte-workbench/v0.2-access/evidence/runtime，产物在工作树外，HTTP 装配由 H-http 独占 |
 | race detector | NOT_RUN，本机 CGO_ENABLED=0；跨 store 真实并发互斥测试 PASS 不冒充 `-race` |
 
 首失败仍保留：早期 `3430302` Domain → apierrors 导入违规由主控静态独验发现，`d2cf9d3` 修复；`bcc60c0` 的写连接先于 DB 归属检查及吞掉 sink 错误由主控静态独验指出，`cf11b1a` 修复。公共 CLI 贯穿首轮在 10 秒 ctx 耗尽时报固定 Git 读失败（RED，10.34s）；同一源码单项诊断随后 PASS，未放宽超时；最新完整 suite PASS 不覆盖首 RED。
