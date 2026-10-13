@@ -313,8 +313,8 @@ func (s *relayService) begin(ctx context.Context, c domain.Caller, id, action st
 	err = s.store.Update(ctx, func(st *RelayState) error {
 		if old, ok := st.Receipts[key]; ok {
 			r = old
-			if !bytes.Equal(old.Input, data) {
-				return relayError(apierrors.VersionConflict, "operation identity has different input")
+			if old.TaskID != id || !bytes.Equal(old.Input, data) {
+				return relayError(apierrors.VersionConflict, "operation identity has a different target or input")
 			}
 			return nil
 		}
@@ -559,6 +559,9 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 			terminalID = uuid.NewString()
 		}
 		st.Terminals[terminalID] = domain.RelayTerminal{ID: terminalID, WorktreeID: workspace.ID, Agent: t.Agent, DriveMode: spec.DriveMode, Liveness: domain.RelayUnverifiable, CreatedAt: createdAt}
+		// A released task permits reusing the terminal identity, not its native
+		// conversation. Resume of an unfinished task never takes this path.
+		delete(st.Sessions, terminalID)
 		t.TerminalID = terminalID
 		st.Tasks[id] = t
 		return nil
@@ -586,7 +589,7 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 	}
 	var prelaunch *domain.NativePrelaunchFailure
 	degraded := false
-	if launchErr != nil && mode == "structured" && spec.DriveMode == "both" && errors.As(launchErr, &prelaunch) {
+	if launchErr != nil && mode == "structured" && errors.As(launchErr, &prelaunch) {
 		var known *apierrors.ServiceError
 		if errors.As(prelaunch.Cause, &known) && known.Code == apierrors.UnsupportedCapability && s.terminal != nil {
 			degraded = true
@@ -658,7 +661,9 @@ func (s *relayService) observe(st *RelayState, t *domain.RelayTask, obs RelayObs
 		}
 		terminal.LastSequence = event.Sequence
 		when := event.TS.UTC()
-		terminal.LastEventAt = &when
+		if terminal.LastEventAt == nil || when.After(*terminal.LastEventAt) {
+			terminal.LastEventAt = &when
+		}
 		event.ID = uuid.NewString()
 		event.TaskID = t.ID
 		event.TerminalID = terminal.ID
@@ -776,26 +781,7 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 	case "read":
 		obs, err = driver.Read(ctx, launch)
 		if err == nil && launch.Terminal.DriveMode == "terminal" && s.workspaces != nil {
-			var git string
-			git, err = s.workspaces.Observe(ctx, launch.Workspace)
-			if err == nil && git != launch.Workspace.GitObservation {
-				// Git events have an independent sequence namespace.
-				e := domain.RelayEvent{ID: uuid.NewString(), TaskID: id, TerminalID: launch.Terminal.ID, WorktreeID: launch.Workspace.ID, Agent: launch.Spec.Name, Kind: "git_activity", Source: "git", Topic: "relay:" + id, Scope: launch.Project.ID, TS: s.now()}
-				err = s.store.Update(ctx, func(st *RelayState) error {
-					workspace := st.Workspaces[launch.Workspace.ID]
-					if workspace.GitObservation == git {
-						return nil
-					}
-					workspace.GitObservation = git
-					st.Workspaces[workspace.ID] = workspace
-					st.Events = append(st.Events, e)
-					t := st.Tasks[id]
-					if t.State == domain.RelayAccepted {
-						s.move(st, &t, domain.RelayWorking, "observation:git")
-					}
-					return nil
-				})
-			}
+			err = s.observeGit(ctx, id, launch)
 		}
 	case "stop":
 		obs, err = driver.Stop(ctx, launch)

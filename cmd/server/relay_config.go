@@ -103,6 +103,9 @@ func relayConfiguration() (string, []domain.AgentSpec, time.Duration, error) {
 		if a.Name == "" || seen[a.Name] || len(a.LaunchCmd) == 0 || (a.DriveMode != "structured" && a.DriveMode != "terminal" && a.DriveMode != "both") {
 			return "", nil, 0, errors.New("invalid relay registration data")
 		}
+		if a.InputMode != "" && a.InputMode != "line" && a.InputMode != "stdin_eof" {
+			return "", nil, 0, errors.New("invalid relay registration input mode")
+		}
 		seen[a.Name] = true
 	}
 	return root, agents, window, nil

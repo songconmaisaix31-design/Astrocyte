@@ -145,6 +145,13 @@ func (s *relayService) observeGit(ctx context.Context, id string, launch RelayLa
 		workspace.GitObservation = git
 		st.Workspaces[workspace.ID] = workspace
 		st.Events = append(st.Events, e)
+		terminal := st.Terminals[launch.Terminal.ID]
+		when := e.TS
+		if terminal.LastEventAt == nil || when.After(*terminal.LastEventAt) {
+			terminal.LastEventAt = &when
+		}
+		terminal.Liveness = domain.RelayLiveness(terminal.LastEventAt, terminal.ExitedAt, s.now(), s.options.LivenessWindow)
+		st.Terminals[terminal.ID] = terminal
 		t := st.Tasks[id]
 		if t.State == domain.RelayAccepted {
 			s.move(st, &t, domain.RelayWorking, "observation:git")
