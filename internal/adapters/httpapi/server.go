@@ -111,7 +111,7 @@ func NewServer(cfg Config) *Server {
 	h.registerWorks(mux)
 	h.registerWorkbench(mux)
 	h.registerRelay(mux)
-	mux.HandleFunc("GET /api/v1/relay/session-events", h.handleRelaySessionEvents)
+	mux.HandleFunc("/api/v1/relay/session-events", h.handleRelaySessionEvents)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {

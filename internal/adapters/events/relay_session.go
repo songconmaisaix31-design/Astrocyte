@@ -77,6 +77,10 @@ func sessionBindingID(b RelaySessionBinding) string {
 	return uuid.NewSHA1(uuid.NameSpaceURL, data).String()
 }
 
+// BindingID lets the entrypoint check a cached admission against the current
+// private selection without exporting source identifiers or paths.
+func (b RelaySessionBinding) BindingID() string { return sessionBindingID(b) }
+
 func sessionOrigin(bindingID, fileIdentity string, offset int64) (string, string) {
 	// Correlation IDs (call_id/message.id) can span multiple native records.
 	// Only a selected append-only file position identifies this record.
