@@ -22,8 +22,8 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 | 轨 | 工作树 / 分支 | Task / Dispatch | 客户端模型 |
 |---|---|---|---|
 | R | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | task_f4a5f33cc891 / ctx_fd41ff32f67d | Codex；owner核对面板GPT-6.1-Sol high fast |
-| H | works-relay-http / songconmaisaix31-design/works-relay-http | task_65836fdd6887 / ctx_bcc3677fe29c | Codex；provider模型待owner实证，launch requested/effective model均null |
-| F | works-relay-frontend / songconmaisaix31-design/works-relay-frontend | task_fae5b6564156 / ctx_a7f2a326ff24 | Codex；provider模型待owner实证，launch requested/effective model均null |
+| H | works-relay-http / songconmaisaix31-design/works-relay-http | task_65836fdd6887 / ctx_bcc3677fe29c | Codex；2026-10-14 Orca worker-list provider.model=gpt-6.1-sol |
+| F | works-relay-frontend / songconmaisaix31-design/works-relay-frontend | task_fae5b6564156 / ctx_a7f2a326ff24 | Codex；2026-10-14 Orca worker-list provider.model=gpt-6.1-sol |
 
 三轨固定write_paths见一页计划。早期Go/API Handoff不等于实现完成；后续SOURCE/REPORT、真实换手/terminal-only/Procmon/自动快照及最终部署各自核验。首失败与未知结果保留，仅derived汇总进Git。
 
@@ -32,3 +32,13 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - R接口SOURCE `3430302eea9892f1cb138dc8ee67c41f61a7078a` 已push；root发现Domain跨层依赖并退原owner，修正SOURCE `d2cf9d3c13be32369bfe353ef9907c4aa2e4cf6c` 已push，owner architecture检查PASS。store重载/互斥与真实执行尚待。
 - H API候选SOURCE `f9ab2a5390b09bf4fe23df1c87cf76afb9cb4fb8` 已push；owner lint/287 examples PASS，root核对变动仅契约/examples/本轨报告、diff检查及remote一致。F已普通合候选并使用现有generator；尚无组装功能验收。
 - F D1 SOURCE `f6433c6` / REPORT `9d370e0` 已push；owner typecheck、3项指标测试、双视口新旧album E2E18项PASS，均fixture/mock展示而非真实扫描/派发；首typecheck RED保留。真实换手/terminal-only/Today仍NOT_RUN。
+
+## 跨轨复核与后续修正
+
+- R运行时早期SOURCE `bcc60c0681f92855fd334008b95a7c73a2d7c509`、H路由SOURCE `3e9dc58d4dd89bb352eab9d662c025bd3d9e53d7`、F人工确认SOURCE `9465f3b` 已发布，仍非最终交付。H/F通过普通merge消费接口，未替换历史。
+- Root发现收据成功枚举为 `accepted`，H卡片接力计数却比较 `succeeded`；退原owner。H已修正候选并报告真实HTTP + R服务 + SQLite计数/重载及12项AJV响应验核PASS，待精确修正SOURCE。
+- Root要求接入store在打开SQLite写连接前以只读方式拒绝外域数据库；误置文件和硬链接测试只能使用受控测试库，不能拿V4正式库做破坏性负例。R正在修正，首问题保留，不用事后table检查冒充零写。
+- Root要求sink失败保留原已接受launch收据，并从store公开单独的事件publication状态/计数；未发布不显示已进入认知。人工reconcile仅同ID derived事件接入，不能重跑Agent；Today策略仍待用户决定。
+- Root准许cmd生命周期内cancellable observer只观察人工已启动的owned task，沿现有观察端口；GET仅缓存读，观察不launch/send/resume，不自动重试明确拒绝/未知动作或失败发布。内部采集cadence不决定尚未确认的活性窗口。不新增调度器。
+- Native事件域无原始时间戳；首次新增sequence的观察时间是登记证据，重复缓存及重载不得刷新LastEvent。Git活动只证明变化，不证明完成；未跟踪文件同名内容二次变化尚未完整覆盖，owner记录限制。
+- F新runtime mock E2E首RED为卡片高度导致接力按钮被后续标题遮挡，原owner修布局；既有断言/超时未改。owner报告104项Vitest与typecheck PASS，均不替代真实CLI闭环。
