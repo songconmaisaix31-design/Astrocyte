@@ -570,6 +570,7 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		delete(st.Sessions, terminalID)
 		t.TerminalID = terminalID
 		st.Tasks[id] = t
+		s.attachOwnedSession(st, t, workspace, st.Terminals[terminalID])
 		return nil
 	})
 	if err != nil {
@@ -694,6 +695,7 @@ func (s *relayService) observe(st *RelayState, t *domain.RelayTask, obs RelayObs
 	}
 	terminal.Liveness = domain.RelayLiveness(terminal.LastEventAt, terminal.ExitedAt, s.now(), s.options.LivenessWindow)
 	st.Terminals[terminal.ID] = terminal
+	s.observeOwnedSession(st, *t, terminal, obs)
 }
 
 func (s *relayService) publish(ctx context.Context, id string) error {
@@ -804,6 +806,10 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 			terminal.LastEventAt = nil
 			terminal.LastSequence = 0
 			st.Terminals[terminal.ID] = terminal
+			if bound, ok := st.OwnedSessions[id]; ok {
+				bound.ExitedAt = nil
+				st.OwnedSessions[id] = bound
+			}
 			return nil
 		}); e != nil {
 			return domain.RelayActionResult{}, relayError(apierrors.DeliveryUnknown, "resume state is uncertain; do not replay")

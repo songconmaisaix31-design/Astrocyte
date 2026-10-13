@@ -53,6 +53,7 @@ type RelayState struct {
 	Workspaces        map[string]domain.RelayWorkspace
 	Terminals         map[string]domain.RelayTerminal
 	Sessions          map[string]domain.NativeSession
+	OwnedSessions     map[string]domain.RelayOwnedSession
 	Receipts          map[string]domain.RelayReceipt
 	Transitions       []domain.RelayTransition
 	Events            []domain.RelayEvent
@@ -84,6 +85,7 @@ type RelayLaunch struct {
 
 type RelayObservation struct {
 	Session       domain.NativeSession
+	Archive       *domain.RelaySessionArchive
 	Events        []domain.RelayEvent
 	ExitConfirmed bool
 }
@@ -117,8 +119,21 @@ type RelayOwnedSessionReader interface {
 	ListOwnedRelaySessions(context.Context) ([]domain.RelayOwnedSession, error)
 }
 
+// RelayOwnedArchiveProvider supplies exact positive native metadata. Absence is
+// an explicit coverage gap; callers may not infer roots, filenames or formats.
+type RelayOwnedArchiveProvider interface {
+	OwnedRelayArchive(context.Context, domain.NativeSession) (domain.RelaySessionArchive, error)
+}
+
+// This narrow port reuses the existing ProjectFiles CanonicalRoot operation.
+// The adapter validates only registered roots, never archives or native history.
+type RelayOwnedRoots interface {
+	CanonicalRoot(string) (string, error)
+}
+
 type RelayServiceOptions struct {
-	Agents []domain.AgentSpec
+	Agents     []domain.AgentSpec
+	OwnedRoots RelayOwnedRoots
 	// No implicit 60-second decision. Zero means no configured live window.
 	LivenessWindow time.Duration
 	Clock          func() time.Time
