@@ -392,6 +392,15 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 	}
 	t, exists := st.Tasks[r.TaskID]
 	if exists {
+		// A delivered or uncertain write/resume can reopen the archive. Previous
+		// attachment closure/append-only evidence cannot certify this operation;
+		// only fresh positive metadata in obs may restore either current claim.
+		if (r.Action == "send" || r.Action == "resume") && r.Status != "rejected" {
+			if bound, ok := st.OwnedSessions[t.ID]; ok {
+				bound.ArchiveFinalized, bound.ArchiveAppendOnly = "unknown", "unknown"
+				st.OwnedSessions[t.ID] = bound
+			}
+		}
 		if r.Status == "delivery_unknown" {
 			t.Condition = "delivery_unknown"
 			st.Tasks[t.ID] = t

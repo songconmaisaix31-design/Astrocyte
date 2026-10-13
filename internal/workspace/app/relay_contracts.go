@@ -86,6 +86,7 @@ type RelayLaunch struct {
 type RelayObservation struct {
 	Session       domain.NativeSession
 	Archive       *domain.RelaySessionArchive
+	ArchiveGap    string
 	Events        []domain.RelayEvent
 	ExitConfirmed bool
 }

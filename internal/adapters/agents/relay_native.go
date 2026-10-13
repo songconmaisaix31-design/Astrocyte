@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,7 +66,24 @@ func (d *RelayNativeDriver) withArchive(ctx context.Context, a app.NativeAdapter
 		archive, err := source.OwnedRelayArchive(ctx, obs.Session)
 		if err == nil {
 			obs.Archive = &archive
+		} else {
+			obs.ArchiveGap = "archive_metadata_unavailable"
+			var failure *apierrors.ServiceError
+			if errors.As(err, &failure) {
+				switch failure.Code {
+				case apierrors.UnsupportedCapability:
+					obs.ArchiveGap = "archive_metadata_unsupported"
+				case apierrors.DeliveryUnknown:
+					obs.ArchiveGap = "archive_metadata_unverifiable"
+				case apierrors.ScopeDenied:
+					obs.ArchiveGap = "archive_metadata_identity_unverified"
+				case apierrors.EvidenceMissing:
+					obs.ArchiveGap = "archive_metadata_path_unavailable"
+				}
+			}
 		}
+	} else if obs.Session.Ownership == "owned" {
+		obs.ArchiveGap = "archive_metadata_unsupported"
 	}
 	return obs
 }
