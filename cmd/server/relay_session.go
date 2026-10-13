@@ -52,6 +52,8 @@ func relayCaptureBinding(v domain.RelayOwnedSession) events.RelaySessionBinding 
 
 func sessionPublicGap(code string) string {
 	switch code {
+	case "archive_metadata_unavailable", "archive_metadata_unsupported", "archive_metadata_unverifiable", "archive_metadata_identity_unverified", "archive_metadata_path_unavailable":
+		return code
 	case "", "archive_not_selected", "binding_not_recorded", "permission_denied", "workspace_identity_changed", "workspace_unavailable", "session_ownership_unverified", "session_identity_changed", "archive_identity_changed", "prefix_unverified", "append_only_unverified", "source_not_finalized", "exit_unverified", "capture_pending", "unknown_records", "checkpoint_unavailable", "checkpoint_save_unknown", "admission_unknown", "malformed_json", "closed_incomplete_tail", "session_header_unverifiable", "session_or_cwd_changed", "source_replaced", "source_truncated", "checkpoint_binding_mismatch", "source_changed_during_read", "selection_denied", "capture_cancelled", "header_read_failed", "source_read_failed", "source_identity_unverifiable_or_aliased", "source_open_failed", "source_not_regular", "checkpoint_invalid", "checkpoint_not_line_boundary":
 		return code
 	default:
@@ -202,7 +204,7 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 			}
 			kind := p.Kind
 			switch kind {
-			case "native_session_header", "native_activity", "edit_file", "search", "read_paper", "commit":
+			case "native_session_header", "native_activity", "edit_file", "search", "read_paper", "commit", "message", "agent_message", "user_message", "function_call_output", "custom_tool_call", "custom_tool_call_output", "reasoning", "agent_reasoning", "agent_reasoning_raw_content", "turn_context", "task_started", "turn_started", "task_complete", "turn_complete", "context_compacted", "error", "warning":
 			default:
 				kind = "native_activity"
 			}

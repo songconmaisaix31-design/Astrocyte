@@ -244,22 +244,10 @@ func sessionLine(b RelaySessionBinding, raw []byte) (nativeObservation, bool, bo
 	known := false
 	if b.Format == "codex" {
 		p := object(v["payload"])
-		if cwd := str(p, "cwd"); cwd != "" && !sameReplayProject(cwd, b.WorkspaceRoot) {
+		if cwd := str(p, "cwd"); (kind == "session_meta" || kind == "turn_context") && cwd != "" && !sameReplayProject(cwd, b.WorkspaceRoot) {
 			return o, false, false
 		}
-		switch kind {
-		case "session_meta":
-			o.kind = "native_session_header"
-			known = true
-		case "response_item":
-			known = str(p, "type") == "function_call"
-		case "event_msg":
-			known = str(p, "type") == "token_count"
-			if known {
-				u := object(object(p["info"])["last_token_usage"])
-				o.tokens, known = sessionTokenTotal(u)
-			}
-		}
+		known = sessionCodexEnvelope(kind, p, &o)
 	} else if b.Format == "claude_code" {
 		m := object(v["message"])
 		known = kind == "assistant" || kind == "user" || kind == "system"
