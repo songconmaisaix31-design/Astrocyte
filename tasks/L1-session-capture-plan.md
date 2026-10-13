@@ -19,6 +19,10 @@
 
 原主控已明确采集与组装合为原 H 一轨，不另建 C owner；`relay_session*` 前缀不让出。R/H/F 每轨仍一 Agent、一工作树、一分支，跨域只交 Handoff；只有原主控为 retained owner 建立新的 Task/Dispatch 后才续作，不向已结算的 Dispatch 投递新开发。所有开发、测试、文档和返修留在同一 owner。唯一集成由原主控的集成 owner 普通 no-ff 合精确 SOURCE/REPORT；领域失败退原轨。本会话只写新三份任务 / 协议文档。
 
+2026-10-14 开工回执：原 H 新 Task `task_f215e7452d70` / Dispatch `ctx_2d4b642fbac5`，复用终端 `term_b93b8ad2-cd2c-4f23-8981-1e0a13e0bd15`；`ready / input_accepted / turnStart observed`，实际模型 `gpt-6.1-sol`。首阶段独占仅新 `internal/adapters/events/relay_session*.go`（含测试）与 `docs/access/http.md`，先做公开受控样本下读取 / 身份绑定 / 投影 / 幂等；assembly、HTTP、Today 在接缝及用户决定齐备后由原 owner 续作。活动回执不代表功能完成。
+
+跨线消费：原文与计划从精确文档提交读取；如需在业务线登记三份 Markdown，以同内容新文档提交保留出处，不把整个 validation 父历史合入 workbench。业务 SOURCE/REPORT 则在原 workbench 线普通合并，保持 v1.2 当前 CI 候选不混入新采集代码。
+
 ## v1.3 采集条款与可复用端口
 
 - `RelayState.Sessions` 在独立 relay.sqlite 中按 terminal_id 持久化；不得假设 `ProjectRepository.ListSessions` 可取得 Relay 持有会话。R 通过 Service 提供只读内部绑定，H 不直接写 store。
@@ -45,6 +49,6 @@
 - 原主控既有未决项：CLI 中性工作区读写/执行授权、脏/未跟踪/非 Git 作品范围、活性窗口；先继承其最新裁决，不重复询问已答事项。未答时相关真实验收保持未运行，不能缩减为无工具聊天。
 - Session 绑定/来源、独立库消费权限、未知 Agent 原生格式如仍无法从事实源和已有公开端口确定，集中向用户询问；可先实现不依赖决定的读取/投影/幂等单元。
 - 本会话已集中询问：确认页的中性工作区工具范围、完整原件留存与 Today 派生边界、未提交源作品处理。未回答不激活 `LaunchPolicy` 或 `AllowCommittedGit`，不默选验收范围。
-- 当前状态：精确 SOURCE 与互斥写域已确认，v1.3 增补条款登记后交原主控为 H 新建续作 Task；可先开发不依赖未答项的完整读取 / 投影 / 幂等工程。真实 CLI / Today 完整闭环仍 NOT_RUN。文档准备不是 L1 完成证据。
+- 当前状态：精确 SOURCE 与互斥写域已确认，原 H 的完整读取 / 投影 / 幂等工程续作已观察到开工；SOURCE/REPORT 与适用验证待交付。真实 CLI / Today 完整闭环仍 NOT_RUN。文档准备和开工回执不是 L1 完成证据。
 
 客户端：本会话 Codex，面板实际显示 GPT-6.1-Sol ultra fast；Worker 使用现有配置并登记实际模型，不凭客户端名推断。
