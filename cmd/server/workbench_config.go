@@ -38,6 +38,12 @@ func guardWorkbenchDataDir(dir string) (string, error) {
 	if os.Getenv("ASTROCYTE_WORKBENCH") == "1" && os.Getenv("ASTROCYTE_DATA_DIR") == "" {
 		dir = filepath.Join(workbenchRoot(), "app-state")
 	}
+	return guardWorkbenchExplicitDataDir(dir)
+}
+
+// The relay entrypoint has already selected its isolated data directory. Reuse
+// every protected source/snapshot/identity check without applying v0.1 defaults.
+func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 	resolved, e := workbenchCanonical(dir)
 	if e != nil {
 		return "", errors.New("application data directory unavailable")
