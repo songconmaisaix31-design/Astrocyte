@@ -68,6 +68,9 @@ func publicRelayView(v domain.RelayTaskView) domain.RelayTaskView {
 	if v.Transitions == nil {
 		v.Transitions = []domain.RelayTransition{}
 	}
+	if v.EventPublication.Status == "" {
+		v.EventPublication.Status = "none"
+	}
 	return v
 }
 
@@ -154,7 +157,7 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 		}
 	}
 	if s == nil {
-		for _, route := range []string{"GET /api/v1/relay/agents", "GET /api/v1/relay/projects", "GET /api/v1/relay/tasks", "GET /api/v1/relay/tasks/{id}", "GET /api/v1/relay/tasks/{id}/events", "GET /api/v1/relay/tasks/{id}/receipts", "POST /api/v1/relay/intents", "POST /api/v1/relay/intents/{id}/confirm", "POST /api/v1/relay/tasks/{id}/send", "POST /api/v1/relay/tasks/{id}/read", "POST /api/v1/relay/tasks/{id}/stop", "POST /api/v1/relay/tasks/{id}/resume", "POST /api/v1/relay/tasks/{id}/transition"} {
+		for _, route := range []string{"GET /api/v1/relay/agents", "GET /api/v1/relay/projects", "GET /api/v1/relay/tasks", "GET /api/v1/relay/tasks/{id}", "GET /api/v1/relay/tasks/{id}/events", "GET /api/v1/relay/tasks/{id}/receipts", "POST /api/v1/relay/intents", "POST /api/v1/relay/intents/{id}/confirm", "POST /api/v1/relay/tasks/{id}/send", "POST /api/v1/relay/tasks/{id}/read", "POST /api/v1/relay/tasks/{id}/stop", "POST /api/v1/relay/tasks/{id}/resume", "POST /api/v1/relay/tasks/{id}/transition", "POST /api/v1/relay/tasks/{id}/events/reconcile"} {
 			mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
 				h.relayResult(w, r, nil, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable})
 			})
@@ -273,6 +276,14 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 	}
 	mux.HandleFunc("POST /api/v1/relay/tasks/{id}/transition", relayCommand(h, func(r *http.Request, c workspace.RelayTransitionCommand) (any, error) {
 		v, e := s.Transition(r.Context(), localCaller(r), r.PathValue("id"), c)
+		return relayTaskResult(v), e
+	}))
+	mux.HandleFunc("POST /api/v1/relay/tasks/{id}/events/reconcile", relayCommand(h, func(r *http.Request, _ struct{}) (any, error) {
+		lifecycle, ok := s.(workspace.RelayLifecycle)
+		if !ok {
+			return nil, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
+		}
+		v, e := lifecycle.ReconcileEvents(r.Context(), localCaller(r), r.PathValue("id"))
 		return relayTaskResult(v), e
 	}))
 }

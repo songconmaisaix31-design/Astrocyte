@@ -232,7 +232,11 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	defer closeRelay()
+	defer func() {
+		if closeRelay() != nil {
+			logger.Error("relay shutdown incomplete; unconfirmed state retained")
+		}
+	}()
 
 	// Resolve port — invalid value fails startup.
 	port, err := resolvePort()
@@ -264,6 +268,8 @@ func run(logger *slog.Logger) error {
 	// Graceful shutdown on SIGINT/SIGTERM.
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
 	defer cancelWorkers()
+	stopRelayObserver := startRelayObserver(workerCtx, services.Relay, logger)
+	defer stopRelayObserver()
 	workerErrors := make(chan error, 1)
 	go func() { workerErrors <- attention.Run(workerCtx) }()
 	// One fixed discovery run per service start. Health remains responsive while

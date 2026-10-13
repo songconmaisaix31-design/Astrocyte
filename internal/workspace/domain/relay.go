@@ -115,10 +115,17 @@ type RelayEvent struct {
 }
 
 type RelayTaskView struct {
-	Task        RelayTask         `json:"task"`
-	Terminal    *RelayTerminal    `json:"terminal"`
-	Workspace   *RelayWorkspace   `json:"worktree"`
-	Transitions []RelayTransition `json:"transitions"`
+	Task             RelayTask         `json:"task"`
+	Terminal         *RelayTerminal    `json:"terminal"`
+	Workspace        *RelayWorkspace   `json:"worktree"`
+	Transitions      []RelayTransition `json:"transitions"`
+	EventPublication RelayPublication  `json:"event_publication"`
+}
+
+type RelayPublication struct {
+	Status          string `json:"status"`
+	PendingEvents   int    `json:"pending_events"`
+	PublishedEvents int    `json:"published_events"`
 }
 
 type RelayActionResult struct {

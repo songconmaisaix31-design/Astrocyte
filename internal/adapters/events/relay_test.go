@@ -17,7 +17,12 @@ import (
 )
 
 func TestRelayEventSinkPersistsDerivedPendingObservationsOnly(t *testing.T) {
-	root := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification", "relay-events", uuid.NewString())
+	base := os.Getenv("LOCALAPPDATA")
+	if !filepath.IsAbs(base) {
+		base = t.TempDir()
+		t.Setenv("LOCALAPPDATA", base)
+	}
+	root := filepath.Join(base, "astrocyte-workbench", "v0.2-access", "verification", "relay-events", uuid.NewString())
 	if err := os.MkdirAll(root, 0700); err != nil {
 		t.Fatal("test state directory unavailable")
 	}

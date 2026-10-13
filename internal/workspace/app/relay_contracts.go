@@ -49,15 +49,16 @@ type RelayRuntime interface {
 // Internal storage state is never an HTTP DTO. Update is a single transaction;
 // the callback changes data only and must never launch a process or emit events.
 type RelayState struct {
-	Tasks          map[string]domain.RelayTask
-	Workspaces     map[string]domain.RelayWorkspace
-	Terminals      map[string]domain.RelayTerminal
-	Sessions       map[string]domain.NativeSession
-	Receipts       map[string]domain.RelayReceipt
-	Transitions    []domain.RelayTransition
-	Events         []domain.RelayEvent
-	Published      map[string]bool
-	PendingActions map[string]string
+	Tasks             map[string]domain.RelayTask
+	Workspaces        map[string]domain.RelayWorkspace
+	Terminals         map[string]domain.RelayTerminal
+	Sessions          map[string]domain.NativeSession
+	Receipts          map[string]domain.RelayReceipt
+	Transitions       []domain.RelayTransition
+	Events            []domain.RelayEvent
+	Published         map[string]bool
+	PendingActions    map[string]string
+	PublicationErrors map[string]bool
 }
 
 type RelayStore interface {
@@ -99,6 +100,14 @@ type RelayDriver interface {
 
 type RelayEventSink interface {
 	EmitRelayEvent(context.Context, domain.RelayEvent) error
+}
+
+// Lifecycle observes or contains already-owned processes only. It cannot
+// create an intent, dispatch, resume, or choose a different execution path.
+type RelayLifecycle interface {
+	ObserveOwned(context.Context) error
+	Shutdown(context.Context) error
+	ReconcileEvents(context.Context, domain.Caller, string) (domain.RelayTaskView, error)
 }
 
 type RelayServiceOptions struct {
