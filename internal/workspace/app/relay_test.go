@@ -70,6 +70,7 @@ func (w *relaySpaces) Observe(context.Context, domain.RelayWorkspace) (string, e
 type relayDriver struct {
 	launches, sends, reads, stops atomic.Int32
 	launchErr                     error
+	sendErr                       error
 	enter, release                chan struct{}
 	lastInput                     string
 	silent                        bool
@@ -100,7 +101,60 @@ func (d *relayDriver) Launch(_ context.Context, r app.RelayLaunch) (app.RelayObs
 }
 func (d *relayDriver) Send(_ context.Context, r app.RelayLaunch, _ string) (app.RelayObservation, error) {
 	d.sends.Add(1)
-	return d.observation(r), nil
+	return d.observation(r), d.sendErr
+}
+
+func TestRelaySendUnknownReceiptBlocksFurtherInput(t *testing.T) {
+	f := newRelayFixture(t)
+	ctx := context.Background()
+	id := f.intent()
+	_, e := f.service.ConfirmIntent(ctx, caller(), id, confirm())
+	if e != nil {
+		t.Fatal(e)
+	}
+	f.driver.sendErr = &apierrors.ServiceError{Code: apierrors.DeliveryUnknown, Message: "original send unknown"}
+	op := caller()
+	input := app.RelaySendCommand{Input: "one approved message"}
+	r, e := f.service.Send(ctx, op, id, input)
+	checkCode(t, e, apierrors.DeliveryUnknown)
+	if r.Receipt.Status != "delivery_unknown" {
+		t.Fatal("uncertain send receipt lost")
+	}
+	_, e = f.service.Send(ctx, op, id, input)
+	checkCode(t, e, apierrors.DeliveryUnknown)
+	_, e = f.service.Send(ctx, caller(), id, input)
+	checkCode(t, e, apierrors.VersionConflict)
+	if f.driver.sends.Load() != 1 {
+		t.Fatal("unknown input delivered twice")
+	}
+}
+
+func TestRelayFallbackRequiresExplicitUnstartedUnsupported(t *testing.T) {
+	for _, test := range []struct {
+		name      string
+		launchErr error
+		code      apierrors.Code
+	}{
+		{"provider_rejected", &domain.NativePrelaunchFailure{Cause: &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "not installed"}}, apierrors.ProviderUnavailable},
+		{"unsupported_without_exit_proof", &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "unknown effects"}, apierrors.DeliveryUnknown},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			f := newRelayFixture(t)
+			f.options.Agents[0].DriveMode = "both"
+			f.driver.launchErr = test.launchErr
+			terminal := &relayDriver{now: f.driver.now}
+			f.service = f.assemble(f.store, f.driver, terminal)
+			id := f.intent()
+			r, e := f.service.ConfirmIntent(context.Background(), caller(), id, confirm())
+			checkCode(t, e, test.code)
+			if r.View.Terminal.Liveness == "exited" || r.View.Terminal.ExitedAt != nil {
+				t.Fatal("unstarted launch fabricated main process exit")
+			}
+			if terminal.launches.Load() != 0 {
+				t.Fatal("unsafe fallback started another writer")
+			}
+		})
+	}
 }
 func (d *relayDriver) Read(_ context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	d.reads.Add(1)
