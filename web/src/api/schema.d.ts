@@ -1,5 +1,25 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/relay/session-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read local owned session admissions
+         * @description Existing human session and Origin guard. Rechecks project grant, revision and owned binding on every GET, returns cached/persisted six-field derived events by source timestamp descending. GET never captures, launches or resumes. Snapshot extent is separate from complete native session coverage. No raw/native IDs/paths/commands or cognitive values.
+         */
+        get: operations["listRelaySessionEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/relay/tasks/{id}/events/reconcile": {
         parameters: {
             query?: never;
@@ -2348,6 +2368,72 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        RelaySessionCoverageV1: {
+            /** Format: uuid */
+            task_id: string;
+            /** Format: uuid */
+            terminal_id: string;
+            /** Format: uuid */
+            worktree_id: string;
+            project_id: string;
+            /** @enum {string} */
+            status: "unknown" | "partial" | "complete";
+            gap: string;
+            lines: number;
+            projected: number;
+            duplicates: number;
+            unknown: number;
+            errors: number;
+            unknown_tokens: number;
+            remaining_bytes: number;
+            tail_bytes: number;
+            snapshot_complete: boolean;
+            session_complete: boolean;
+        };
+        /**
+         * @example {
+         *       "events": [
+         *         {
+         *           "event_id": "ae6c15f2-394b-402c-9f53-b75fc2cd0783",
+         *           "kind": "edit_file",
+         *           "topic": "relay:cf1497b0-e092-43c0-80a9-33449bb57a40",
+         *           "tokens": null,
+         *           "scope": "public-project",
+         *           "ts": "2026-10-14T01:00:01Z"
+         *         }
+         *       ],
+         *       "coverage": [
+         *         {
+         *           "task_id": "cf1497b0-e092-43c0-80a9-33449bb57a40",
+         *           "terminal_id": "c48d6c05-3b58-4bdc-8a7b-46a471612a0b",
+         *           "worktree_id": "0623c675-ddb7-4d62-bd02-831f6cb6d51d",
+         *           "project_id": "public-project",
+         *           "status": "partial",
+         *           "gap": "prefix_unverified",
+         *           "lines": 2,
+         *           "projected": 2,
+         *           "duplicates": 0,
+         *           "unknown": 0,
+         *           "errors": 0,
+         *           "unknown_tokens": 2,
+         *           "remaining_bytes": 0,
+         *           "tail_bytes": 0,
+         *           "snapshot_complete": true,
+         *           "session_complete": false
+         *         }
+         *       ],
+         *       "total": 1,
+         *       "page": 1,
+         *       "page_size": 50
+         *     }
+         */
+        RelaySessionEventsV1: {
+            events: components["schemas"]["WorkbenchEventV1"][];
+            coverage: components["schemas"]["RelaySessionCoverageV1"][];
+            total: number;
+            page: number;
+            page_size: number;
+        };
         RelayProjectV1: {
             project_id: string;
             name: string;
@@ -5608,6 +5694,114 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listRelaySessionEvents: {
+        parameters: {
+            query?: {
+                task_id?: string;
+                start?: string;
+                end?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Local pending admissions and explicit coverage, independent of cognitive snapshot values */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "events": [
+                     *         {
+                     *           "event_id": "ae6c15f2-394b-402c-9f53-b75fc2cd0783",
+                     *           "kind": "edit_file",
+                     *           "topic": "relay:cf1497b0-e092-43c0-80a9-33449bb57a40",
+                     *           "tokens": null,
+                     *           "scope": "public-project",
+                     *           "ts": "2026-10-14T01:00:01Z"
+                     *         }
+                     *       ],
+                     *       "coverage": [
+                     *         {
+                     *           "task_id": "cf1497b0-e092-43c0-80a9-33449bb57a40",
+                     *           "terminal_id": "c48d6c05-3b58-4bdc-8a7b-46a471612a0b",
+                     *           "worktree_id": "0623c675-ddb7-4d62-bd02-831f6cb6d51d",
+                     *           "project_id": "public-project",
+                     *           "status": "partial",
+                     *           "gap": "prefix_unverified",
+                     *           "lines": 2,
+                     *           "projected": 2,
+                     *           "duplicates": 0,
+                     *           "unknown": 0,
+                     *           "errors": 0,
+                     *           "unknown_tokens": 2,
+                     *           "remaining_bytes": 0,
+                     *           "tail_bytes": 0,
+                     *           "snapshot_complete": true,
+                     *           "session_complete": false
+                     *         }
+                     *       ],
+                     *       "total": 1,
+                     *       "page": 1,
+                     *       "page_size": 50
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RelaySessionEventsV1"];
+                };
+            };
+            /** @description Guard, invalid query or unavailable read; no Agent action or automatic retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, invalid query or unavailable read; no Agent action or automatic retry */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, invalid query or unavailable read; no Agent action or automatic retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, invalid query or unavailable read; no Agent action or automatic retry */
+            405: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, invalid query or unavailable read; no Agent action or automatic retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     reconcileRelayTaskEvents: {
         parameters: {
             query?: never;
