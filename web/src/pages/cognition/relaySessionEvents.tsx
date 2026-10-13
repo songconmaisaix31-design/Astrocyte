@@ -9,10 +9,11 @@ import '../../styles/relaySession.css';
 
 const statusLabels = { unknown: '未知', partial: '部分覆盖', complete: '完整（服务报告）' };
 function Coverage({ item }: { item: RelaySessionCoverage }) {
+  const disputedComplete = item.status === 'complete' && (relaySessionHasGap(item) || !item.snapshot_complete || !item.session_complete);
   const counts = [['完整行', item.lines], ['已派生', item.projected], ['重复', item.duplicates], ['未知格式', item.unknown], ['错误', item.errors], ['Token 未知', item.unknown_tokens], ['剩余字节', item.remaining_bytes], ['未完成尾部字节', item.tail_bytes]] as const;
   return <article className="relay-session-coverage" aria-label={`会话覆盖 ${item.task_id}`}>
     <p>任务 <code>{item.task_id}</code></p>
-    <p>服务报告覆盖：{statusLabels[item.status]} · {item.status}</p>
+    <p>服务报告覆盖：{disputedComplete ? '完整主张尚未核实' : statusLabels[item.status]} · {item.status}</p>
     <p>当前文件快照：{item.snapshot_complete ? '已读完当前冻结字节范围' : '尚未读完或无法核实'}</p>
     <p>完整会话生命周期：{item.session_complete ? '服务报告已核实' : '尚未核实'}</p>
     <p>缺口：{relaySessionGap(item.gap)}</p>
