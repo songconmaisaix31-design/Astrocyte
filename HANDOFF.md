@@ -1,5 +1,9 @@
 # Astrocyte 主控交接
 
+## 当前入口：Works Relay v1.2 实施（2026-10-14）
+
+业务目标workbench/v0.2-access，validation登记定稿a429a4d；[三轨计划](tasks/Works-Relay-plan.md)、[决策与owner](tasks/Works-Relay-decisions.md)。起点9d78835与验收d46业务全等，精确CI38440379678已独立核实success。Orca Run run_d577f0d3fee1由term_d7f7e173协调，R-runtime ctx_fd41ff32f67d、H-http ctx_bcc3677fe29c、F-ui ctx_a7f2a326ff24均observed启动。三轨互斥，root只文档/独验/最终Git；领域返修原owner，最后唯一集成普通no-ff合。Today实时接缝/作品当前状态及非Git范围/参考图与活性窗已问人待答，独立开发继续。V4正式源/引擎/schema/权重/快照管道零改，v0.1 Procmon和真实两日收尾不阻塞本切片；未验事项不填绿。
+
 ## 最终入口：Workbench 双平台通过（2026-10-14 01:53）
 
 先读STATUS顶部。分支workbench/v0.1-workbench，精确业务d46f9f4，CI38440379678已completed/success：Ubuntu/Windows完整check/build/E2E各238PASS/32SKIP，Linux race PASS。root全check/build和238/32默认E2E、真实live2、双视口与常驻静态十值SQL全部PASS；所有owner/report普通祖先，Worker全结算release，reclaimable=0。访问http://127.0.0.1:17321/cognition/today，当前服务脱离Worker经Windows Start任务常驻。之后仅状态/报告文档变动，业务与d46相等。

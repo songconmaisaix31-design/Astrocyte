@@ -45,7 +45,8 @@ test('actual approved works UI commands persist in SQLite after owned API restar
     await page.goto(`${server.webURL}/workspace`);
     const album = page.getByRole('region', { name: '作品寻回册', exact: true });
     await expect(album.getByRole('button', { name: '扫描导入项目', exact: true })).toBeEnabled();
-    await expect(album.getByLabel('作品统计').locator('dd')).toHaveText(['未知', '未知', '未知', '未知']);
+    await expect(album.getByLabel('作品统计').locator('dd')).toHaveText(['未知', '未知', '未知', '未知', '未知']);
+    await expect(album.getByLabel('作品统计').locator('dt')).toHaveText(['AI 平台', '作品', '文件夹', '接力过', '最近在动']);
     expect(server.query('SELECT COUNT(*) AS n FROM works_album')[0].n).toBe(0);
 
     await album.getByRole('button', { name: '扫描导入项目', exact: true }).click();
