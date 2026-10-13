@@ -1,5 +1,145 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/cognition/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench health
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench today
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchToday"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/focus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench focus
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchFocus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/topics/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench topics/evidence
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchEvidence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench agents
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchAgents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench events
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench filters
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchFilters"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/source-collections/discover": {
         parameters: {
             query?: never;
@@ -1928,6 +2068,120 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "kind": "agent_task",
+         *       "topic": "fixture-topic",
+         *       "tokens": null,
+         *       "scope": "fixture-scope",
+         *       "ts": "2026-10-12T16:00:00Z"
+         *     }
+         */
+        WorkbenchEventV1: {
+            event_id: string;
+            kind: string;
+            topic: string;
+            tokens: number | null;
+            scope: string;
+            /** Format: date-time */
+            ts: string;
+        };
+        WorkbenchTopicV1: {
+            topic: string;
+            attention: number;
+            momentum: number;
+            confidence: number;
+        };
+        WorkbenchCardV1: {
+            topic: string;
+            attention: number;
+            momentum: number;
+            confidence: number;
+            attention_delta: number | null;
+        };
+        /**
+         * @example {
+         *       "status": "ok",
+         *       "snapshot_at": "2026-10-13T08:00:00Z",
+         *       "timezone": "Asia/Shanghai"
+         *     }
+         */
+        WorkbenchHealthV1: {
+            /** @constant */
+            status: "ok";
+            /** Format: date-time */
+            snapshot_at: string;
+            /** @constant */
+            timezone: "Asia/Shanghai";
+        };
+        WorkbenchTodayV1: {
+            /** Format: date */
+            day: string;
+            focus: components["schemas"]["WorkbenchCardV1"][];
+            activity: components["schemas"]["WorkbenchEventV1"][];
+            sleep: {
+                /** Format: date */
+                day: string;
+                /** @enum {string} */
+                status: "not_produced" | "running" | "completed";
+                /** Format: date-time */
+                completed_at: string | null;
+            };
+            daily_counts: {
+                /** Format: date */
+                day: string;
+                count: number;
+            }[];
+            sources: {
+                source: string;
+                count: number;
+            }[];
+        };
+        WorkbenchFocusV1: {
+            topics: components["schemas"]["WorkbenchTopicV1"][];
+            series: {
+                topic: string;
+                points: {
+                    /** Format: date-time */
+                    ts: string;
+                    attention: number;
+                }[];
+            }[];
+        };
+        WorkbenchAgentsV1: {
+            groups: {
+                source: string;
+                today: number;
+                days7: number;
+                days30: number;
+                recent: components["schemas"]["WorkbenchEventV1"][];
+            }[];
+        };
+        WorkbenchEventsV1: {
+            events: components["schemas"]["WorkbenchEventV1"][];
+            total: number;
+            page: number;
+            page_size: number;
+        };
+        WorkbenchEvidenceV1: {
+            topic: string;
+            aggregates: {
+                /** Format: date */
+                day: string;
+                kind: string;
+                count: number;
+            }[];
+            events: components["schemas"]["WorkbenchEventV1"][];
+            total: number;
+            page: number;
+            page_size: number;
+        };
+        WorkbenchFiltersV1: {
+            topics: string[];
+            kinds: string[];
+            sources: string[];
+        };
         /**
          * @example {
          *       "schema_version": 1,
@@ -4805,6 +5059,349 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getWorkbenchHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchHealthV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchToday: {
+        parameters: {
+            query?: {
+                source?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchTodayV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchFocus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchFocusV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchEvidence: {
+        parameters: {
+            query?: {
+                topic?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchEvidenceV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchAgents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchAgentsV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchEvents: {
+        parameters: {
+            query?: {
+                topic?: string;
+                kind?: string;
+                source?: string;
+                start?: string;
+                end?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchEventsV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchFilters: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchFiltersV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     discoverSourceCollections: {
         parameters: {
             query?: never;

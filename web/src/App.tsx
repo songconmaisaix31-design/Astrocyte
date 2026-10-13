@@ -6,13 +6,15 @@ import { Icon, Mark } from './components/DesignIcons';
 import { AttentionPage } from './pages/attention/AttentionPage';
 import { WorkspacePage } from './pages/workspace/WorkspacePage';
 import { SwarmPage } from './pages/swarm/SwarmPage';
+import { CognitionPage } from './pages/cognition/CognitionPage';
 import { isFixtureMode } from './fixtures';
 import './styles/preview.css';
 import './styles/workbench.css';
 
 export function App() {
   const route = useRoute();
-  const fixture = isFixtureMode(route.query);
+  const cognition = route.path.startsWith('/cognition');
+  const fixture = !cognition && isFixtureMode(route.query);
   const [query, setQuery] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
@@ -32,7 +34,7 @@ export function App() {
   const workspaceTab = route.query.get('tab') ?? 'overview';
   const searchName = workspace ? workspaceTab === 'sessions' ? '搜索已加载 Agent 会话' : workspaceTab === 'proposals' ? '搜索已加载提案' : '搜索已加载项目、目录与备注' : '搜索当前页资料、任务或 Agent';
   const searchPlaceholder = workspace ? workspaceTab === 'sessions' ? '搜索客户端、会话或项目 ID…' : workspaceTab === 'proposals' ? '搜索提案标题、目标或 ID…' : '搜索项目、目录或备注…' : '搜索资料、任务，或一个值得继续的问题…';
-  const page = workspace ? <WorkspacePage key={modeKey} {...props} onClearQuery={() => setQuery('')} /> : route.path.startsWith('/swarm') ? <SwarmPage key={modeKey} {...props} /> : <AttentionPage key={modeKey} {...props} />;
+  const page = cognition ? <CognitionPage path={route.path} query={query} /> : workspace ? <WorkspacePage key={modeKey} {...props} onClearQuery={() => setQuery('')} /> : route.path.startsWith('/swarm') ? <SwarmPage key={modeKey} {...props} /> : <AttentionPage key={modeKey} {...props} />;
   return <div className="ac-workbench">
     <a href="#ac-main" className="ac-skip">跳转到内容</a>
     <header className="ac-topbar"><div className="ac-topbar-inner">
