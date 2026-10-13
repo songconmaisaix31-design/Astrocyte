@@ -4,6 +4,12 @@
 
 ### v0.2 冻结期评审（2026-10-13）
 
+**2026-10-13T12:18:10+08:00：用户基于评审2179641裁决R01–R12，规格已并入任务书v1.1，状态SPEC_FINALIZED_IMPLEMENTATION_FROZEN；原待答问题全部关闭。** 任务[正文](tasks/v0.2-discovery-split.md)、[裁决登记](tasks/v0.2-discovery-split-review.md)、[精确写域计划](tasks/v0.2-discovery-split-plan.md)为后续事实源；D0门禁仍是V4末D+3实际完成+冻结解除，人评/对账缺失不启动，不按10-23日期冒称完成。
+
+R01收养零证据seed，ID/confirmed保留、split出身/seed lineage，D5改为收养显影；R02五项derived仅本地，scope项目归属与MCP Event六字段保持，覆盖原“URL exposure扩展”；R03全生命周期累计唯一event_id、排仓根、最深路径优先、关键词频次/字典序；R04新FilterSplit父active/固定Sleep开始快照/出生动作去重；R05原始继承与clamp实际A分存，M不设下界；R06D4双轨；R07Sleep时点A₀=.05/M₀=.15、创始簇零回溯signal；R08仅未来路由回流/抑制同版本/三日连续确认；R09三次连续Sleep merge、继承边排除、原merge实现不改；R10author优先与事件前human回合、不迁移旧事件；R11四URL域/消息及跨工具去重、不自动补Agent Memory；R12阈值/share/origin三旋钮各最多一次，基础七权重表零校准。
+
+R09实码毫秒绑定按明确三次每日观测推导为MergeObservations=3、MergeDurationMS=172800000（第一次至第三次两日跨度）；连续性由Sleep调用侧保证，不能依赖原函数自动识别漏日或虚构强度/交叠复位。第三次连续触发/前两次不触发/漏日及同ts重放回归入v1.1。用户采纳D0–D6展开表已按R01/R02/R06覆盖冲突条款。计划精确文件集合为shared/events/单一机制/M2独参，出生事务只归机制，最终唯一原集成普通合；当前无Agent派发、无实现文件/分支/worktree创建。新增业务测试数0，文档校核PASS：12裁决覆盖、79计划路径互斥（shared28/events26/mechanism18/M2-reference7）、现有路径与本地链接存在、git diff检查及V4冻结SHA未变；V4原协议/日程/业务零改。下方待答文字为2179641历史，不能重问。
+
 用户任务书已登记 [Discovery & Split](tasks/v0.2-discovery-split.md)，实码基线 `bc0d41f6b7ae521e7354b17e80c7895a10039e95`；[实码评审](tasks/v0.2-discovery-split-review.md) 状态REVIEW_PENDING_DECISIONS，D0–D6未开始。只新增/更新root文档，不改引擎/schema/参数/接入/UI/V4日程或锁定协议，不读新增raw。V4继续既有真实七日流程；v0.2开工以末D+3真实完成与冻结解除为条件，10-23日期本身不解除冻结。
 
 12项定稿问题及实码路径已列评审。首要冲突：已存在零信号seed阻挡Agent Swarm/MCP出生；cwd/commit subject不足以提供swarm文件路径与git origin依据；旧Split退役父主题不符合保留余量；继承值可能低于floor；origin折扣与对v0.1分裂前轨迹完全相同不能同时成立。已向用户集中询问seed激活/最小derived特征契约/确定性分流与veto抑制/隔离回放，以及出生floor裁决；未获答复不冻结建议接口或常量。source已有887 Morphogenesis commit已由V2资产核实，MCP39计数尚未机查，不预填发现结果。

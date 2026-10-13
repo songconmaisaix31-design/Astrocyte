@@ -2,6 +2,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+2026-10-13：v0.2 R01–R12全部获用户裁决并入tasks/v0.2-discovery-split.md v1.1，状态SPEC_FINALIZED_IMPLEMENTATION_FROZEN；tasks/v0.2-discovery-split-review.md登记闭环，tasks/v0.2-discovery-split-plan.md给出四轨互斥精确文件，未派发/未建实现与worktree。零证据seed收养ID/confirmed保留；五项derived仅本地不扩MCP六字段；新FilterSplit不退役父；floor clamp+原始继承、双轨D4、发现.05/.15、veto仅未来回流与永久同版本抑制、三连续Sleep merge、author/事件前human origin、论文去重、基础权重不校准均按正文执行。MergeDurationMS单位以三次每日观测两天跨度172800000绑定，Sleep侧管理连续资格，merge实现不改。不重问下方历史待答；V4协议/日程照旧，真实末D+3及人评/对账完成且冻结解除才D0，不能仅到10-23便开工。
+
 2026-10-13 11:57：已接收v0.2 Discovery & Split任务，冻结期只作评审。任务源tasks/v0.2-discovery-split.md、实码差异与12待定项tasks/v0.2-discovery-split-review.md，状态REVIEW_PENDING_DECISIONS，未启动D0。已集中询问实码冲突，不按未答冻结接口；原V4全文SHA/模型/预算/日程不改，V4真实日流程继续。开工条件是末D+3实际完成与冻结解除，不能仅凭10-23日期启动。不要把下方v0.2规划当本期新能力授权或覆盖V1R原回放。
 
 2026-10-13 04:22 root已实际锁V3，day0=10-13，EXPERIMENT全文SHA256=`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，权威外部锁v4-w2/locked-protocol-20261013-first.json。正文UNLOCKED是锁前不可改快照，锁后以此条/STATUS/外部锁为准，不再编辑或重锁。CI SOURCE4727f7a新run38300750305双平台完整SUCCESS（各226PASS/30条件SKIP），只Windows worker2→1；REPORT9f69b06已普通合root组合d749ecb并push，冻结业务/协议全等，原owner已结算/release retained。旧两RED和本机PARTIAL149PASS/17SKIP/90未完成保留，不另重跑模型/测试。内置automation f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b已启用，首10-14 00:20；严格按M6-V4-daily-operation处理昨日，正式根formal-20261013-first，不重新init；七日实际答/用户表/末D+3仍待真实日期，末尾10-23完成并禁用。原B豁免已授权、不重新问；用户原因评分不可代填。下方未锁/disabled/PENDING为历史。

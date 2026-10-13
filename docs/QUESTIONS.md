@@ -1,6 +1,12 @@
 # 用户决定与待定项
 
-## v0.2 冻结期评审待裁决（2026-10-13）
+## v0.2 R01–R12 全部已裁决（2026-10-13）
+
+用户基于2179641逐项裁决，已并入[任务书v1.1](../tasks/v0.2-discovery-split.md)，[裁决表](../tasks/v0.2-discovery-split-review.md)与[精确写域计划](../tasks/v0.2-discovery-split-plan.md)完成收口。以下原评审待答全部关闭，不重问、不据旧文字阻断定稿。当前状态SPEC_FINALIZED_IMPLEMENTATION_FROZEN，D0未开始；V4人评/末D+3真实完成与冻结解除前不实现。
+
+R02明确覆盖原URL exposure提议：五项derived仅本地，MCP Event六字段不变。R01收养种子ID/confirmed保留；R05出生clamp并留原始值；R06双轨复算；R09三次日观测在既有码以3次/172800000ms绑定，Sleep侧排漏日；R10仅author+事件前human；R11四域及消息/跨工具去重；R12七类权重表不校准。无新增用户权限或规格问题待答。
+
+## 原v0.2冻结期问题（2179641历史，已裁决）
 
 原始决定见 [任务书](../tasks/v0.2-discovery-split.md)，实码差异及建议见 [R01–R12](../tasks/v0.2-discovery-split-review.md)。用户已定的统计/生命周期/origin因子/红线不重开；这里只解决任务与实码冲突及缺少的确定性规则。
 
