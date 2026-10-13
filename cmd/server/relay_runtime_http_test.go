@@ -119,7 +119,13 @@ func (c *relayPersistentHTTP) request(method, path, body, key string, status int
 	defer resp.Body.Close()
 	b, e := io.ReadAll(resp.Body)
 	if e != nil || resp.StatusCode != status {
-		c.t.Fatalf("HTTP status=%d expected=%d", resp.StatusCode, status)
+		var safeFailure struct {
+			Error struct {
+				Code string `json:"code"`
+			} `json:"error"`
+		}
+		_ = json.Unmarshal(b, &safeFailure)
+		c.t.Fatalf("HTTP status=%d expected=%d public_code=%s", resp.StatusCode, status, safeFailure.Error.Code)
 	}
 	if strings.Contains(string(b), "PRIVATE_CANARY") {
 		c.t.Fatal("private provider error leaked")
@@ -127,6 +133,8 @@ func (c *relayPersistentHTTP) request(method, path, body, key string, status int
 	if status == 200 && strings.Contains(path, "/relay/") {
 		schema := "RelayTaskResultV1"
 		switch {
+		case path == "/api/v1/relay/agents":
+			schema = "RelayAgentsV1"
 		case strings.HasSuffix(path, "/receipts"):
 			schema = "RelayReceiptsV1"
 		case strings.HasSuffix(path, "/events"):
