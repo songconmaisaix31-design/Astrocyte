@@ -72,6 +72,9 @@ func (s *relayService) observeOwnedSession(st *RelayState, task domain.RelayTask
 			}
 		}
 	}
+	if bound.SourceStatus == "unknown" && obs.ArchiveGap != "" {
+		bound.Gap = obs.ArchiveGap
+	}
 	st.OwnedSessions[task.ID] = bound
 }
 

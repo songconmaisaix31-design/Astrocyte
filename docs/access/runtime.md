@@ -1,5 +1,42 @@
 # Works Relay runtime
 
+## 最新工程交接：v1.3 L1 owned-session 读侧（2026-10-14）
+
+事实源仅用 `git show 913db499233720c369f7f5bf24965d9bc6a8ba54:tasks/L1-session-capture-plan.md` 及其认知栈 §2／§7 读取，未合 validation 父业务。原分支 `songconmaisaix31-design/works-relay-runtime` 普通 no-ff 消费 I 基线 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`；当前 L1 SOURCE `686f104a7550d6dab81604d90e797fe3ace277c7` 已 push，REPORT 单独提交，精确 SHA 通过本 Dispatch 的 Orca Handoff 给主控。相对该 I 基线仅本 R 写域 11 个 Go 路径与本报告变化，未向 v1.2 候选插入 L1 源码。
+
+实际客户端仍为 Codex，`orca terminal show` 核实原 pane 为 `GPT-6.1-Sol high fast`。本 Dispatch `task_3303613a7ff7` / `ctx_98f86f7facfd`，原 owner、terminal、worktree、branch 保持；H 是唯一完整 Session 采集 owner。
+
+早期接口 SOURCE `29a400b725ca301ead31d189b353758c992ecfc0` 提前 push 给 H；后续实现 `b640ad506042df37a6074d68a64d36c20b628eee`、架构修复 `aa8899fdd985671dbf3528d045b455048dfeda9c` 保留为阶段记录，完成源码为上述 `686f104`。Root 的 Orca ask 明确批准在现有 RelayState 中保留每 task 的最小 owned 引用及现有 JSON 私有 wire；不新增表、schema、migration、Attempt 或证明系统，不复制归档原件。
+
+已实现的接缝：
+
+- 独立 `app.RelayOwnedSessionReader.ListOwnedRelaySessions(ctx)`，不扩 RelayRuntime 的 HTTP 接口／fakes。返回内部 `domain.RelayOwnedSession`：绑定 task/terminal/worktree/project/agent、binding_id、实际 drive mode、真实 ExitedAt 与来源状态；WorkspaceRoot／SourceRoot／controller SessionID／NativeID／Ownership／ArchivePath／ArchiveRoot／ArchiveFormat 均 `json:-`。
+- `RelayState.OwnedSessions[task_id]` 由唯一 Service 原事务写。new task 使用新 binding／新 native session，同未完成 task Resume 保留绑定并不重放首输入；同 terminal 新任务删除当前 session 时不删除已退出旧 task 引用。不同 Agent 实码创建不同 terminal，旧 terminal.Agent 不被新 Agent 覆盖。当前 scope／revision／Agent 授权变化时旧 closed 引用仍保留，但读侧返回拒权 gap。
+- 现有独立 relay.sqlite 两表不变，只扩 JSON private wire 持久上述引用和现有 Session.HistoryPath。HistoryPath 本身从未被旧 Native.Start 赋值且不提供 root／format／CWD 授权证据；单独存在仍 unknown，不猜文件名／家目录／PID／Agent 原生格式。旧 v1.2 状态未记录绑定时只读返回 `binding_not_recorded` gap，不在 GET 补数据或制造 UUID。
+- 每次 read 重新核现有 grant、settings revision、observe action 与当前 Agent、source／prepared worktree／terminal／task 对应关系，active 绑定还核当前 controller session 的 ID／NativeID／Ownership／ProjectID／CLI。拒权输出 safe gap，清私有根／归档／原生 ID；不调用 driver／provider、不读 archive、不写 receipt／Store.Update、不更新时间。
+- H 装配 `RelayServiceOptions.OwnedRoots = agents.RelayOwnedRoots{}`。窄口复用既有 `CanonicalRoot` 与 redirect 检查，只验证已登记源根与 neutral 根的目录，归档文件身份／CWD／完整读取仍由 H 校验。无该口安全返回 `workspace_unavailable` gap；不改变 launch policy 或 neutral source 决定。
+- `RelayObservation.Archive` 仅来自 trusted 内部 `RelaySessionArchive`；可选 `app.RelayOwnedArchiveProvider.OwnedRelayArchive(ctx, NativeSession)` 为原生适配提供精确 source。来源 IDs、CWD、absolute Path／Root 包含关系、非空 Format 必须一致；source mismatch 或 ownership 拒绝不被后续 Archive 字段覆盖。默认无 provider 为 unknown；source available 只说明已正选来源，不等于格式支持、事件覆盖完整或 Today 可见。
+- `ArchiveFinalized` 与 `ArchiveAppendOnly` 为独立 unknown／confirmed：只有 trusted source 的正 metadata 才 confirmed，实际 Wait／Stop 的 ExitedAt 不推导归档 flush 或 append-only。新的纯 metadata 证据能在既有 observer 原事务保存，不依赖制造活动事件；不变／相同拒绝证据不重复写状态。
+
+适用验证（Windows / PowerShell、Go `-mod=readonly`）：
+
+| 命令／范围 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/workspace/app -run TestRelayOwned -count=1 -v -timeout=60s` | PASS：真实独立 SQLite 重载、读侧零 Update／receipt／provider 调用、JSON／现有 task transport 无归档或 native 标识泄漏、closed 尾部／快速同 terminal 换 task、新 session、原 Resume 无重派 |
+| `go test -mod=readonly ./internal/workspace/app ./internal/adapters/agents -run 'TestRelayOwned\|TestRelayControlledEOF' -count=1 -timeout=60s` | PASS：拒权与错 binding 在目录口前返回、源／CWD／session／root／format 组合拒绝、来源未知／legacy gap、目录验证、真实公共 EOF process 无 native source 明确 gap |
+| `go test -mod=readonly ./internal/workspace/app -run 'TestRelayOwnedArchiveCannot\|TestRelayOwnedReadChecks\|TestRelayOwnedDifferentAgent' -count=1 -v -timeout=60s` | PASS：错 native ProjectID／CLI 即使 Archive IDs/CWD 匹配仍持久拒绝；当前 controller 后续换 ProjectID／CLI 也拒绝；换 Agent 保留旧 closed 身份但遵守当前权限 |
+| `go test -mod=readonly ./...` | 最新 SOURCE PASS，20 个有测试 package、9 个无测试 package；原环境门控 live tests 不因此成为真实 Agent 验收 |
+| `node scripts/check-architecture.mjs` | PASS，29 package，无 app I/O／跨层导入；首 RED 保留 |
+| `go vet -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents` | PASS |
+| `gofmt -l $relayFormatFiles.FullName`／`git diff --check` | PASS；变量只包含本轨 relay Go 文件 |
+| `go build -mod=readonly -o "$env:LOCALAPPDATA/astrocyte-workbench/v0.2-access/evidence/runtime/l1-runtime-server.exe" ./cmd/server` | PASS，产物在工作树外，未改 H 入口 |
+
+首 RED 不覆盖：L1 最初直接在 app stat root 导致架构拒绝 `internal/workspace/app imports I/O: os`，已移到本 R 新 relay adapter，保留 `l1-first-architecture-red.log` 的首次诊断记录。Root 对 `b640ad5` 静态发现 ownership gap 被 Archive 覆盖的缺陷（Handoff `msg_1d3f33e90e95`）；`686f104` 修复并增加上述组合负例，不能把阶段 fixture PASS 当作该缺陷已不存在。最新自动测试证据为 `l1-ownership-complete-full-go-test.log`；此前 `l1-owned-first-test.log`、`l1-source-gaps-test.log`、`l1-adapter-root-test.log`、`l1-final-ownership-test.log` 均保留在工作树外。所有报告只有 derived 汇总。
+
+真实限制／未执行：当前四个既有 native adapter 均无上述正 archive provider，真实 source 仍 unknown；terminal-only stdout 无 source 正证据为 gap。新格式的 parser／完整行增量／coverage／游标与 Today 消费归 H，R 没有读取模型原件或扩大旧 bounded ReadContext。provider 的正 metadata 是可信主机端口边界，H 仍需读取前核文件 identity／CWD 与格式；目录检查不是防 TOCTOU 的 OS 隔离保证。归档 finalized／append-only 未证实不宣称完整，旧引用被 current scope 撤回时不绕过权限读取尾部。
+
+真实 Native／terminal-only coding、完整 Session→Today、此前未见 CLI 的三分钟演示、模型／自由 tools、dirty／untracked／nonGit source、原件留存、活性窗口、Procmon 与真实两日门保持 NOT_RUN／未决定。仅 public fixtures 的工程接缝 PASS，本轮未修改 V4／validation 工作区、旧 Native 文件、mapper、认知引擎、权重、正式 schema／库或快照管道。v1.2 候选 CI 属独立 I 基线，本轨检查不覆盖或替代它。
+
 事实源：`Works-Relay-v1.2.md`；基线 `6ebf523ad4abf4f80d78ee4207fa30168f299ba6`。独占路径为新 relay 前缀 Go 文件、relayworktree 目录及本报告。实际客户端 Codex；Orca terminal show 核实面板模型 `GPT-6.1-Sol high fast`。
 
 早期接缝：`app.RelayRuntime` 提供 CreateIntent（不启动）与 ConfirmIntent（人类身份、权确认及当前项目 revision 必经），其余 List/Get/Send/Read/Stop/Resume/Transition 都由接入 Service 维护唯一状态。`RelayEventSink.EmitRelayEvent` 只传 derived 活动，H-http 通过现有 EventService 装配，事件 mapper 和认知引擎保持冻结。

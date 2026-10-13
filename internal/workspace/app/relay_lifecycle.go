@@ -156,6 +156,12 @@ func (s *relayService) observationChanged(st RelayState, launch RelayLaunch, obs
 			return true
 		}
 	}
+	if obs.ArchiveGap != "" {
+		bound := st.OwnedSessions[st.Workspaces[launch.Workspace.ID].ActiveTaskID]
+		if bound.SourceStatus == "unknown" && bound.Gap != obs.ArchiveGap {
+			return true
+		}
+	}
 	return git != nil && *git != st.Workspaces[launch.Workspace.ID].GitObservation
 }
 

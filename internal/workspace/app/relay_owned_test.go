@@ -69,6 +69,16 @@ func (a *relayOwnedNativeFixture) OwnedRelayArchive(_ context.Context, s domain.
 	return archive, nil
 }
 
+func (a *relayOwnedNativeFixture) Send(_ context.Context, session domain.NativeSession, input string) (domain.NativeObservation, error) {
+	file, err := os.OpenFile(session.HistoryPath, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return domain.NativeObservation{}, err
+	}
+	_, err = file.WriteString(input + "\n")
+	_ = file.Close()
+	return domain.NativeObservation{Status: "working", Events: []domain.NativeEvent{{Sequence: 2, Kind: "turn_started"}}}, err
+}
+
 type relayOwnedRegistry struct{ adapter *relayOwnedNativeFixture }
 
 type relayOwnedRootCounter struct {
@@ -311,7 +321,7 @@ func TestRelayOwnedMissingOrConflictingSourceIsGapNeverGuessedFromHistory(t *tes
 		t.Fatal(e)
 	}
 	b := findOwned(t, ownedReader(t, f.service), id)
-	if b.SourceStatus != "unknown" || b.ArchivePath != "" || b.Gap != "archive_not_selected" {
+	if b.SourceStatus != "unknown" || b.ArchivePath != "" || b.Gap != "archive_metadata_unavailable" {
 		t.Fatal("HistoryPath alone inferred an authorized archive")
 	}
 	a.selected = true
@@ -501,5 +511,45 @@ func TestRelayOwnedReadChecksCurrentControllerProjectAndCLI(t *testing.T) {
 				t.Fatal("read trusted stale bound identity after current controller mismatch")
 			}
 		})
+	}
+}
+
+func TestRelayOwnedResumeAndAppendInvalidatePreviousArchiveClosure(t *testing.T) {
+	f, a, _, _ := newOwnedFixture(t, true)
+	a.finalized = true
+	a.appendOnly = true
+	ctx := context.Background()
+	id := f.intent()
+	if _, err := f.service.ConfirmIntent(ctx, caller(), id, confirm()); err != nil {
+		t.Fatal(err)
+	}
+	first := findOwned(t, ownedReader(t, f.service), id)
+	if first.ArchiveFinalized != "confirmed" || first.ArchiveAppendOnly != "confirmed" {
+		t.Fatal("positive initial archive evidence missing")
+	}
+	if _, err := f.service.Stop(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	a.finalized, a.appendOnly = false, false
+	if _, err := f.service.Resume(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	resumed := findOwned(t, ownedReader(t, f.service), id)
+	if resumed.BindingID != first.BindingID || resumed.ArchiveFinalized != "unknown" || resumed.ArchiveAppendOnly != "unknown" {
+		t.Fatal("resume reused stale archive finalization/attachment proof")
+	}
+	if _, err := f.service.Send(ctx, caller(), id, app.RelaySendCommand{Input: "public append after resume"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.service.Stop(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	stopped := findOwned(t, ownedReader(t, f.service), id)
+	if stopped.ExitedAt == nil || stopped.ArchiveFinalized != "unknown" || stopped.ArchiveAppendOnly != "unknown" {
+		t.Fatal("append/stop inferred current archive flush")
+	}
+	data, err := os.ReadFile(stopped.ArchivePath)
+	if err != nil || !strings.Contains(string(data), "public append after resume") {
+		t.Fatal("fixture did not actually append after resume")
 	}
 }
