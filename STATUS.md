@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## Workbench 双平台最终结论（2026-10-14 01:53 +08:00）
+
+测试源码 `d46f9f4cf2fd6e13c8362234746105330356c160` 的 [CI38440379678](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38440379678) 已completed/success。Ubuntu24.04与Windows2025完整check/build/defaultE2E均PASS，分别238PASS/32SKIP（4.0m/5.2m）；Linux race PASS，Windows race沿原工作流条件SKIP。root本机check/build PASS、完整默认238PASS/32SKIP、真实双视口live2与独立十值SQL及常驻静态验收PASS。CI日志仅本机verification/ci-38440379678-{ubuntu,windows}.log，精确归属d46；后续HEAD仅报告/状态/交接文档，业务与d46完全相等。
+
+实现已交付并部署于http://127.0.0.1:17321/cognition/today，Windows Start任务独立常驻。全验收保留两项NOT_RUN：管理员Procmon正式DB/WAL/SHM零写监控；10-15/10-16两日00:30真实自动成功。按后端报告执行并补记结果。validation/V4、引擎、schema、参数、main不变，v0.2仍冻结。
+
 ## Workbench 实现与本机验收（2026-10-14 01:51 +08:00）
 
 只读红线：引擎、events/Sleep、迁移、权重、参数及validation/V4零改动。目标分支 `workbench/v0.1-workbench`；测试源码SHA `d46f9f4cf2fd6e13c8362234746105330356c160` 已push，后续集成报告合并 `ecc641f93f4bfe170c5f7bdccb9ca963ba6dc551` 仅文档，与测试业务树完全相等。原attention-engine CI是历史基线，当前新CI见下，不互相替代。未合main，解冻后按裁决与validation一次收敛。

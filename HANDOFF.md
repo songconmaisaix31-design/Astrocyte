@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 最终入口：Workbench 双平台通过（2026-10-14 01:53）
+
+先读STATUS顶部。分支workbench/v0.1-workbench，精确业务d46f9f4，CI38440379678已completed/success：Ubuntu/Windows完整check/build/E2E各238PASS/32SKIP，Linux race PASS。root全check/build和238/32默认E2E、真实live2、双视口与常驻静态十值SQL全部PASS；所有owner/report普通祖先，Worker全结算release，reclaimable=0。访问http://127.0.0.1:17321/cognition/today，当前服务脱离Worker经Windows Start任务常驻。之后仅状态/报告文档变动，业务与d46相等。
+
+剩余管理员Procmon正式DB/WAL/SHM零写与10-15/10-16每日00:30连续两日真实自动验收；详见docs/workbench/backend.md，本机证据在LOCALAPPDATA/astrocyte-workbench/v0.1/verification。验证库、协议、日程、引擎/schema/权重零改，v0.2未启动，未合main；解冻后按裁决一次收敛。旧pending段是历史时点，最终CI结论以上文为准，首RED不覆盖。
+
 ## 当前交付入口：Workbench 本机已部署（2026-10-14 01:51）
 
 分支workbench/v0.1-workbench，root测试源码d46f9f4、报告普通合ecc641f；三轨精确SOURCE/REPORT见STATUS顶部，全部succeeded、push/clean，Worker已release，reclaimable=0。既有web/server只读认知四页在http://127.0.0.1:17321/cognition/today，服务由Windows已注册Start任务独立启动，非Worker子进程。root check/build EXIT0，完整默认E2E238PASS/32SKIP；真实live2、双视口十值与独立SQL、最终静态四页十值均PASS。首RED与中断保持本机原件。
