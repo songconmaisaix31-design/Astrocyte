@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -55,10 +56,34 @@ func relaySafeError(err error) *apierrors.ServiceError {
 	return &apierrors.ServiceError{Code: code, Message: message, RequiredAction: action, Retryable: false}
 }
 
-func publicRelayReceipt(v domain.RelayReceipt) relayReceipt {
+// Only a canonical UUID already readable through the runtime's public task
+// projection can refine the fixed conflict action. Provider text is discarded.
+func (h *handler) relaySafeError(r *http.Request, err error) *apierrors.ServiceError {
+	safe := relaySafeError(err)
+	var service *apierrors.ServiceError
+	if safe.Code != apierrors.VersionConflict || !errors.As(err, &service) || h.services.Relay == nil {
+		return safe
+	}
+	const prefix = "view_existing_task:"
+	if !strings.HasPrefix(service.RequiredAction, prefix) {
+		return safe
+	}
+	id := strings.TrimPrefix(service.RequiredAction, prefix)
+	parsed, e := uuid.Parse(id)
+	if e != nil || parsed == uuid.Nil || parsed.String() != id {
+		return safe
+	}
+	view, e := h.services.Relay.GetTask(r.Context(), localCaller(r), id)
+	if e == nil && view.Task.ID == id {
+		safe.RequiredAction = prefix + id
+	}
+	return safe
+}
+
+func (h *handler) publicRelayReceipt(req *http.Request, v domain.RelayReceipt) relayReceipt {
 	r := relayReceipt{ID: v.ID, TaskID: v.TaskID, OperationID: v.OperationID, Action: v.Action, Operator: v.Operator, Status: v.Status, CreatedAt: v.CreatedAt, FinishedAt: v.FinishedAt}
 	if v.Error != nil {
-		r.Error = relaySafeError(&apierrors.ServiceError{Code: apierrors.Code(v.Error.Code)})
+		r.Error = h.relaySafeError(req, &apierrors.ServiceError{Code: apierrors.Code(v.Error.Code), RequiredAction: v.Error.RequiredAction})
 		r.Error.RequestID = v.OperationID
 	}
 	return r
@@ -92,7 +117,7 @@ func publicRelayEvents(items []domain.RelayEvent) []workbench.Event {
 
 func (h *handler) relayResult(w http.ResponseWriter, r *http.Request, value any, err error) {
 	if err != nil {
-		h.attentionResult(w, r, 0, nil, relaySafeError(err))
+		h.attentionResult(w, r, 0, nil, h.relaySafeError(r, err))
 		return
 	}
 	w.Header().Set("Cache-Control", "no-store")
@@ -137,12 +162,12 @@ func relayTaskResult(v domain.RelayTaskView) any {
 		View          domain.RelayTaskView `json:"view"`
 	}{1, publicRelayView(v)}
 }
-func relayActionResult(v domain.RelayActionResult) any {
+func (h *handler) relayActionResult(r *http.Request, v domain.RelayActionResult) any {
 	return struct {
 		SchemaVersion int                  `json:"schema_version"`
 		View          domain.RelayTaskView `json:"view"`
 		Receipt       relayReceipt         `json:"receipt"`
-	}{1, publicRelayView(v.View), publicRelayReceipt(v.Receipt)}
+	}{1, publicRelayView(v.View), h.publicRelayReceipt(r, v.Receipt)}
 }
 
 func (h *handler) registerRelay(mux *http.ServeMux) {
@@ -242,7 +267,7 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 		v, e := s.ListReceipts(r.Context(), localCaller(r), r.PathValue("id"))
 		out := make([]relayReceipt, 0, len(v))
 		for _, item := range v {
-			out = append(out, publicRelayReceipt(item))
+			out = append(out, h.publicRelayReceipt(r, item))
 		}
 		sort.SliceStable(out, func(i, j int) bool { return out[i].CreatedAt.After(out[j].CreatedAt) })
 		return struct {
@@ -256,11 +281,11 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 	}))
 	mux.HandleFunc("POST /api/v1/relay/intents/{id}/confirm", relayCommand(h, func(r *http.Request, c workspace.RelayConfirmCommand) (any, error) {
 		v, e := s.ConfirmIntent(r.Context(), localCaller(r), r.PathValue("id"), c)
-		return relayActionResult(v), e
+		return h.relayActionResult(r, v), e
 	}))
 	mux.HandleFunc("POST /api/v1/relay/tasks/{id}/send", relayCommand(h, func(r *http.Request, c workspace.RelaySendCommand) (any, error) {
 		v, e := s.Send(r.Context(), localCaller(r), r.PathValue("id"), c)
-		return relayActionResult(v), e
+		return h.relayActionResult(r, v), e
 	}))
 	for _, a := range []struct {
 		name string
@@ -272,7 +297,7 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 	}}, {"resume", func(r *http.Request) (domain.RelayActionResult, error) {
 		return s.Resume(r.Context(), localCaller(r), r.PathValue("id"))
 	}}} {
-		mux.HandleFunc("POST /api/v1/relay/tasks/{id}/"+a.name, relayCommand(h, func(r *http.Request, _ struct{}) (any, error) { v, e := a.call(r); return relayActionResult(v), e }))
+		mux.HandleFunc("POST /api/v1/relay/tasks/{id}/"+a.name, relayCommand(h, func(r *http.Request, _ struct{}) (any, error) { v, e := a.call(r); return h.relayActionResult(r, v), e }))
 	}
 	mux.HandleFunc("POST /api/v1/relay/tasks/{id}/transition", relayCommand(h, func(r *http.Request, c workspace.RelayTransitionCommand) (any, error) {
 		v, e := s.Transition(r.Context(), localCaller(r), r.PathValue("id"), c)

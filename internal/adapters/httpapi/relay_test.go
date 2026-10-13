@@ -210,3 +210,60 @@ func TestRelayRealHTTPPrivacyOrderingAndUnknownNoRetry(t *testing.T) {
 		relayHTTPBody(t, c.request("GET", "/api/v1/relay/tasks/task-a/events", "", headers), 403)
 	}
 }
+
+type relayConflictHTTPSpy struct {
+	relayHTTPSpy
+	knownID string
+	code    apierrors.Code
+	action  string
+}
+
+func (s *relayConflictHTTPSpy) GetTask(_ context.Context, c domain.Caller, id string) (domain.RelayTaskView, error) {
+	if id == s.knownID {
+		if c.Kind != "human" || c.ID != "local-human" {
+			return domain.RelayTaskView{}, &apierrors.ServiceError{Code: apierrors.ScopeDenied}
+		}
+		return domain.RelayTaskView{Task: domain.RelayTask{ID: id}}, nil
+	}
+	return domain.RelayTaskView{}, &apierrors.ServiceError{Code: s.code, Message: "PRIVATE_CANARY", RequiredAction: s.action}
+}
+
+func (s *relayConflictHTTPSpy) ListReceipts(context.Context, domain.Caller, string) ([]domain.RelayReceipt, error) {
+	return []domain.RelayReceipt{{ID: "receipt", TaskID: "source-task", OperationID: uuid.NewString(), Action: "dispatch", Status: "rejected", Error: &domain.RelayReceiptError{Code: string(s.code), Message: "PRIVATE_CANARY", RequiredAction: s.action}}}, nil
+}
+
+func TestRelayRealHTTPConflictActionAllowsOnlyKnownCanonicalTask(t *testing.T) {
+	known, unknown := uuid.NewString(), uuid.NewString()
+	for _, test := range []struct {
+		name, action, want string
+		code               apierrors.Code
+	}{
+		{"known", "view_existing_task:" + known, "view_existing_task:" + known, apierrors.VersionConflict},
+		{"private", "view_existing_task:PRIVATE_CANARY", "refresh_relay_state", apierrors.VersionConflict},
+		{"unknown", "view_existing_task:" + unknown, "refresh_relay_state", apierrors.VersionConflict},
+		{"suffix", "view_existing_task:" + known + "/PRIVATE_CANARY", "refresh_relay_state", apierrors.VersionConflict},
+		{"noncanonical", "view_existing_task:" + strings.ReplaceAll(known, "-", ""), "refresh_relay_state", apierrors.VersionConflict},
+		{"unrelated", "view_existing_task:" + known, "refresh_relay_state", apierrors.ContextStale},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			s := &relayConflictHTTPSpy{knownID: known, code: test.code, action: test.action}
+			c := newRelayHTTPClient(t, s)
+			b := relayHTTPBody(t, c.request("GET", "/api/v1/relay/tasks/source-task", "", nil), 409)
+			var response struct {
+				Error struct {
+					Action string `json:"required_action"`
+				} `json:"error"`
+			}
+			if json.Unmarshal(b, &response) != nil || response.Error.Action != test.want {
+				t.Fatal("unsafe or missing conflict action")
+			}
+			b = relayHTTPBody(t, c.request("GET", "/api/v1/relay/tasks/source-task/receipts", "", nil), 200)
+			var receipts struct {
+				Receipts []relayReceipt `json:"receipts"`
+			}
+			if json.Unmarshal(b, &receipts) != nil || len(receipts.Receipts) != 1 || receipts.Receipts[0].Error.RequiredAction != test.want {
+				t.Fatal("unsafe or missing receipt action")
+			}
+		})
+	}
+}

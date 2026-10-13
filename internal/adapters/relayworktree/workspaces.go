@@ -50,7 +50,7 @@ func (s *Workspaces) Prepare(ctx context.Context, work domain.Work, w domain.Rel
 		return w, err
 	}
 	if w.Prepared {
-		if filepath.Clean(w.Root) != filepath.Clean(path) {
+		if !sameExistingDirectory(w.Root, path) {
 			return w, failure(apierrors.ScopeDenied, "saved workspace is outside owned state")
 		}
 		info, err := os.Lstat(path)
@@ -70,7 +70,7 @@ func (s *Workspaces) Prepare(ctx context.Context, work domain.Work, w domain.Rel
 	if err != nil {
 		return w, failure(apierrors.UnsupportedCapability, "neutral workspace requires an approved Git repository")
 	}
-	if !strings.EqualFold(filepath.Clean(strings.TrimSpace(root)), filepath.Clean(work.Root)) {
+	if !sameExistingDirectory(strings.TrimSpace(root), work.Root) {
 		return w, failure(apierrors.ScopeDenied, "work must match the repository root")
 	}
 	status, err := git(ctx, work.Root, "status", "--porcelain=v1", "-z", "--untracked-files=all", "--ignore-submodules=all")
@@ -108,7 +108,7 @@ func (s *Workspaces) Observe(ctx context.Context, w domain.RelayWorkspace) (stri
 	if err != nil {
 		return "", err
 	}
-	if filepath.Clean(path) != filepath.Clean(w.Root) {
+	if !sameExistingDirectory(path, w.Root) {
 		return "", failure(apierrors.ScopeDenied, "Git observation is outside the neutral workspace")
 	}
 	head, err := git(ctx, w.Root, "rev-parse", "--verify", "HEAD")
@@ -126,6 +126,15 @@ func (s *Workspaces) Observe(ctx context.Context, w domain.RelayWorkspace) (stri
 		return "", err
 	}
 	return head + "\x00" + status + "\x00" + diff, nil
+}
+
+// Git reports canonical Windows spelling while registered/temporary roots may
+// contain real 8.3 aliases. Compare the existing directory's filesystem identity,
+// never a string prefix or a guessed alternative path. Different roots still fail.
+func sameExistingDirectory(a, b string) bool {
+	aInfo, aErr := os.Stat(a)
+	bInfo, bErr := os.Stat(b)
+	return aErr == nil && bErr == nil && aInfo.IsDir() && bInfo.IsDir() && os.SameFile(aInfo, bInfo)
 }
 
 type bounded struct {
