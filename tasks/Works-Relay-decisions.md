@@ -92,3 +92,8 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - 新计划补充workbench独立库方向，替代原Today存储方向的口头讨论；详细完整Session本机原件/六字段derived零raw展示与快照数值并置仍待v1.3明确。工具read/write/execute确认、dirty/untracked/nonGit/single-file范围、活性窗/缺图待答。owned-session采集授权不扩大到其他私有历史，当前生产安全门不自行解除。
 - 独立文档owner已push DOC54f28ab及后续精确 `913db499233720c369f7f5bf24965d9bc6a8ba54`，只三新Markdown；其父validation98a13b包含不同冻结业务，Root/H只精确读取内容与provenance，不将整validation父历史merge到workbench。后次计划明确ReadContext限文本/条数/字节/页数，非完整归档；旧保护不放宽。
 - H原owner新Task `task_f215e7452d70` / Dispatch `ctx_2d4b642fbac5`已ready/input accepted/turnStart observed；当前仅新events/relay_session*.go（含测试）与自身报告。立即推进不依赖未答项的公开fixture解析/owned-binding/覆盖/幂等；最小R只读端口早期Handoff，assembly/HTTP/Today后续逐路径授权，不能因等待工具/来源/原件决策而只留计划。协作者已集中问人并转送后续回答，Root不重复询问。
+- H最小接口Handoff要求task/terminal/worktree/native身份、可信源与selected archive正证据及closed尾部。R同owner新Task task_3303613a7ff7 / Dispatch ctx_98f86f7facfd observed。R实码确认HistoryPath未赋值且旧terminal会话删除会丢尾部，Root已答msg_105ce87d5137允许既有RelayState per-task OwnedSessions及私有JSON wire最小引用、Service原事务唯一写，无新表/schema/migration/raw复制；同taskResume保留binding、新task独立binding、旧closed引用保留。内部Archive默认unknown；每次只读核当前grant/revision/root/identity，拒权safe gap不泄私有源。早期纯接口先SOURCE给H，测试涵盖重启/退出/快速换手/拒权零源读/只读零Update。此为实现必要状态批准，不是未答CLI工具或原件留存的人工授权。
+
+## v1.2 精确最终 CI
+
+- Root独立GitHub API确认最终SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 的CI `38469944551` completed/success，Linux与Windows job均成功。I保存全日志/最终REPORT后结算工程阶段，Root普通合REPORT及最终独验；先前84bb/bdf RED、Root338 RED与obsolete cancelled诊断保留。新L1源码不在该工程候选，不借此CI验收v1.3或真实模型/Today/Procmon/两日。
