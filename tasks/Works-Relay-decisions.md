@@ -8,6 +8,7 @@
 | 持久接入store | root按v1.2状态/动作receipt落库要求准予R在独占relay_store.go建立独立relay.sqlite两表relay_state/relay_receipts；只接入状态，不修改任何既有认知schema/migrations/源/副本 | 只Service写；误配正式/副本路径拒绝、事务CAS与receipt测试由R完成 |
 | 权限 | A/B/C复用既有ProjectSettings/ProjectGrant，只是确认摘要，不建立新授权系统 | 每动作重新核查；人工确认页必经；安装/已配置/能力/可用分别显示 |
 | structured工具限制 | R发现既有原生会话对工具有限制；优先调查已有NativeRequest能力，未支持任务所需工具时按v1.2走terminal并记录degraded_launch | 不改native共享实现，不假称无工具会话完成接力；未知启动不降级成第二写者 |
+| 五统计旧回归 | root据v1.2五指标要求准予F独占修改works-live.spec.ts的初始四未知预期为五未知，增加平台标签核验 | 其余旧断言/超时/skip/执行路径保持，不派额外owner |
 | Today实时接缝 | 已向用户问：现有快照每日发布，是否可追加本地derived实时事件且保留快照数值 / 边界；尚未回答 | H调查事件接入，F先做不依赖此项的UI |
 | 作品当前状态 | 已问获准未提交/未跟踪文件及非Git/单文件作品处理；尚未回答 | R先做无Agent工作区端口与互斥，不暗中缩小验收范围 |
 | 参考图 / 活性窗 | 本轮未附图；已问沿既有视觉及可配置60秒近期窗口；尚未回答 | 不冻结默认窗或新视觉；用户答后同owner落实 |
