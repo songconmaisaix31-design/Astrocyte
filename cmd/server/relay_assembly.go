@@ -48,7 +48,7 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 		_ = store.Close()
 		return nil, errors.New("owned session lifecycle unavailable")
 	}
-	collector := newRelaySessionCollector(owned, events.NewRelaySessionCapture(attention.NewPendingEventService(sqlite.NewEventRepository(db)), nil), relaySessionFileState{root: root})
+	collector := newRelaySessionCollector(owned, events.NewRelaySessionCapture(attention.NewPendingEventService(sqlite.NewEventRepository(db)), nil), relaySessionFileState{root: root}, sqlite.NewAccessSessionReader(db))
 	services.Relay = &relaySessionRuntime{RelayRuntime: runtime, RelayLifecycle: lifecycle, collector: collector}
 	services.RelaySessionEvents = collector
 	return func() error {

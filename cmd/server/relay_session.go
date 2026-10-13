@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"reflect"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	workbench "github.com/songconmaisaix31-design/Astrocyte/internal/workbench/app"
@@ -27,16 +27,17 @@ type relaySessionState interface {
 
 // Entry-point bridge only: no cross-context app import or second runtime writer.
 type relaySessionCollector struct {
-	mu      sync.Mutex
-	owned   workspace.RelayOwnedSessionReader
-	capture *events.RelaySessionCapture
-	state   relaySessionState
-	entries relaySessionCheckpoints
-	blocked string
+	mu         sync.Mutex
+	owned      workspace.RelayOwnedSessionReader
+	capture    *events.RelaySessionCapture
+	state      relaySessionState
+	admissions workbench.SessionAdmissions
+	entries    relaySessionCheckpoints
+	blocked    string
 }
 
-func newRelaySessionCollector(owned workspace.RelayOwnedSessionReader, capture *events.RelaySessionCapture, state relaySessionState) *relaySessionCollector {
-	c := &relaySessionCollector{owned: owned, capture: capture, state: state, entries: relaySessionCheckpoints{}}
+func newRelaySessionCollector(owned workspace.RelayOwnedSessionReader, capture *events.RelaySessionCapture, state relaySessionState, admissions workbench.SessionAdmissions) *relaySessionCollector {
+	c := &relaySessionCollector{owned: owned, capture: capture, state: state, admissions: admissions, entries: relaySessionCheckpoints{}}
 	loaded, err := state.Load()
 	if err != nil {
 		c.blocked = "checkpoint_unavailable"
@@ -80,10 +81,24 @@ func (c *relaySessionCollector) ObserveOwned(ctx context.Context) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		if v.SourceStatus != "available" {
+		if v.Gap == "permission_denied" || v.Gap == "binding_not_recorded" {
 			continue
 		}
-		priorEntry, existed := c.entries[v.TaskID]
+		if v.SourceStatus != "available" {
+			entry := c.entries[v.TaskID]
+			coverage := coverageFor(v)
+			if entry.Cursor.FirstError != "" {
+				coverage = entry.Coverage
+				coverage.Gap = sessionPublicGap(entry.Cursor.FirstError)
+				coverage.SessionComplete = false
+			}
+			entry.Coverage = coverage
+			if c.commitEntry(v.TaskID, entry) != nil {
+				return errors.New("session checkpoint save unknown")
+			}
+			continue
+		}
+		priorEntry := c.entries[v.TaskID]
 		entry := priorEntry
 		if entry.Cursor.Blocked != "" {
 			continue
@@ -120,21 +135,31 @@ func (c *relaySessionCollector) ObserveOwned(ctx context.Context) error {
 		default:
 			entry.Coverage.Status, entry.Coverage.Gap = "complete", ""
 		}
-		c.entries[v.TaskID] = entry
-		// EventService admission precedes this metadata commit. A failed write
-		// blocks this process; restart replays old origins through EventRepository.
-		if c.state.Save(c.entries) != nil {
-			if existed {
-				c.entries[v.TaskID] = priorEntry
-			} else {
-				delete(c.entries, v.TaskID)
-			}
-			c.blocked = "checkpoint_save_unknown"
+		if c.commitEntry(v.TaskID, entry) != nil {
 			return errors.New("session checkpoint save unknown")
 		}
 	}
 	if failed {
 		return errors.New("session coverage incomplete")
+	}
+	return nil
+}
+
+func (c *relaySessionCollector) commitEntry(taskID string, entry relaySessionEntry) error {
+	prior, existed := c.entries[taskID]
+	if existed && reflect.DeepEqual(prior, entry) {
+		return nil
+	}
+	c.entries[taskID] = entry
+	// Admission precedes metadata; silent polls must not create writes.
+	if c.state.Save(c.entries) != nil {
+		if existed {
+			c.entries[taskID] = prior
+		} else {
+			delete(c.entries, taskID)
+		}
+		c.blocked = "checkpoint_save_unknown"
+		return errors.New("session checkpoint save unknown")
 	}
 	return nil
 }
@@ -151,6 +176,7 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	found := false
+	scopes := []workbench.SessionAdmissionScope{}
 	start, end := time.Time{}, time.Time{}
 	if q.Start != "" {
 		start, err = time.Parse(time.RFC3339Nano, q.Start)
@@ -171,7 +197,7 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 		if q.TaskID != "" && q.TaskID != v.TaskID {
 			continue
 		}
-		if v.Gap == "permission_denied" {
+		if v.Gap == "permission_denied" || v.Gap == "binding_not_recorded" {
 			continue
 		}
 		found = true
@@ -193,51 +219,24 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 			coverage.Gap = "capture_pending"
 		}
 		view.Coverage = append(view.Coverage, coverage)
-		if !ok || v.SourceStatus != "available" || v.Ownership != "owned" || entry.Cursor.BindingID != relayCaptureBinding(v).BindingID() {
-			continue
-		}
-		for _, p := range entry.Cursor.Seen {
-			ts, e := time.Parse(time.RFC3339Nano, p.TS)
-			id, idErr := uuid.Parse(p.ID)
-			if e != nil || idErr != nil || id == uuid.Nil || p.Scope != v.ProjectID || p.Topic != "relay:"+v.TaskID || (!start.IsZero() && ts.Before(start)) || (!end.IsZero() && ts.After(end)) {
-				continue
+		if v.SourceStatus != "gap" || (v.DriveMode == "terminal" && v.Gap == "session_ownership_unverified") {
+			nativeID := ""
+			if v.Ownership == "owned" {
+				nativeID = v.SessionID
 			}
-			kind := p.Kind
-			switch kind {
-			case "native_session_header", "native_activity", "edit_file", "search", "read_paper", "commit", "message", "agent_message", "user_message", "function_call_output", "custom_tool_call", "custom_tool_call_output", "reasoning", "agent_reasoning", "agent_reasoning_raw_content", "turn_context", "task_started", "turn_started", "task_complete", "turn_complete", "context_compacted", "error", "warning":
-			default:
-				kind = "native_activity"
-			}
-			var tokens *int64
-			if p.Tokens != nil && *p.Tokens >= 0 {
-				n := int64(*p.Tokens)
-				tokens = &n
-			}
-			view.Events = append(view.Events, workbench.Event{ID: id.String(), Kind: kind, Topic: "relay:" + v.TaskID, Tokens: tokens, Scope: v.ProjectID, TS: ts.UTC().Format(time.RFC3339Nano)})
+			scopes = append(scopes, workbench.SessionAdmissionScope{TaskID: v.TaskID, ProjectID: v.ProjectID, TerminalID: v.TerminalID, NativeSessionID: nativeID})
 		}
 	}
 	if q.TaskID != "" && !found {
 		return view, &apierrors.ServiceError{Code: apierrors.ScopeDenied}
 	}
 	sort.Slice(view.Coverage, func(i, j int) bool { return view.Coverage[i].TaskID < view.Coverage[j].TaskID })
-	sort.Slice(view.Events, func(i, j int) bool {
-		a, _ := time.Parse(time.RFC3339Nano, view.Events[i].TS)
-		b, _ := time.Parse(time.RFC3339Nano, view.Events[j].TS)
-		if a.Equal(b) {
-			return view.Events[i].ID > view.Events[j].ID
-		}
-		return a.After(b)
-	})
-	view.Total = len(view.Events)
-	offset := (q.Page - 1) * q.PageSize
-	if offset >= view.Total {
-		view.Events = []workbench.Event{}
-	} else {
-		last := offset + q.PageSize
-		if last > view.Total {
-			last = view.Total
-		}
-		view.Events = view.Events[offset:last]
+	if c.admissions == nil {
+		return view, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable}
+	}
+	view.Events, view.Total, err = c.admissions.ReadCommittedSessionEvents(ctx, scopes, q)
+	if err != nil {
+		return view, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable}
 	}
 	return view, nil
 }

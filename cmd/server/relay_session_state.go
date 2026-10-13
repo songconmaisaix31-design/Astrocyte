@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type relaySessionFileState struct{ root string }
@@ -56,7 +55,7 @@ func (s relaySessionFileState) Load() (relaySessionCheckpoints, error) {
 		}
 		cursor := entry.Cursor
 		if cursor.Version == 0 {
-			if cursor.Blocked == "" || cursor.Offset != 0 || len(cursor.Seen) != 0 {
+			if cursor.Offset != 0 || len(cursor.Seen) != 0 || cursor.BindingID != "" || cursor.FileIdentity != "" {
 				return nil, errors.New("session state invalid")
 			}
 		} else {
@@ -68,10 +67,9 @@ func (s relaySessionFileState) Load() (relaySessionCheckpoints, error) {
 		if entry.Coverage.Status != "unknown" && entry.Coverage.Status != "partial" && entry.Coverage.Status != "complete" {
 			return nil, errors.New("session state invalid")
 		}
-		for eventID, p := range cursor.Seen {
+		for eventID, seen := range cursor.Seen {
 			parsed, err := uuid.Parse(eventID)
-			_, tsErr := time.Parse(time.RFC3339Nano, p.TS)
-			if err != nil || parsed == uuid.Nil || parsed.String() != eventID || p.ID != eventID || tsErr != nil || p.Topic != "relay:"+key || p.Scope != entry.Coverage.ProjectID || (p.Tokens != nil && *p.Tokens < 0) {
+			if err != nil || parsed == uuid.Nil || parsed.String() != eventID || !seen {
 				return nil, errors.New("session state invalid")
 			}
 		}

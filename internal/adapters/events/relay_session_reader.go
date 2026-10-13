@@ -187,16 +187,11 @@ func ReadRelaySession(ctx context.Context, b RelaySessionBinding, prior RelaySes
 		if p.Tokens == nil {
 			batch.Next.Counts.UnknownTokens++
 		}
-		if old, exists := batch.Next.Seen[id]; exists {
-			left, _ := json.Marshal(old)
-			right, _ := json.Marshal(p)
-			if !bytes.Equal(left, right) {
-				return fail("duplicate_event_conflict")
-			}
+		if batch.Next.Seen[id] {
 			batch.Next.Counts.Duplicates++
 			continue
 		}
-		batch.Next.Seen[id] = p
+		batch.Next.Seen[id] = true
 		batch.Next.Counts.Projected++
 		batch.Items = append(batch.Items, RelaySessionItem{Origin: origin, Projection: p})
 	}
