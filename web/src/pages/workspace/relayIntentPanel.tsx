@@ -5,7 +5,7 @@ import { QueryState } from '../../components/QueryState';
 import { Field } from '../../components/DetailPanel';
 import type { WorksWork } from './worksAlbumPresentation';
 import { useRelayCommand } from './relayCommand';
-import { relayAgentAvailability, relayPermissionOptions, relayProjectMatches, relayReceiptLabel, relayUnresolved } from './relayPresentation';
+import { relayAgentAvailability, relayProjectMatches, relayReceiptLabel, relayUnresolved } from './relayPresentation';
 import { RelayReceipts } from './relayReceipts';
 
 export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWork; existing?: RelayTaskView; onChanged: () => void }) {
@@ -54,7 +54,6 @@ function RelayConfirmation({ view, onChanged }: { view: RelayTaskView; onChanged
   const projects = useReadApi(signal => relayApi.projects(signal), { refreshMs: 5000 });
   const task = useReadApi(signal => relayApi.task(view.task.task_id, signal), { refreshMs: 3000 });
   const receipts = useReadApi(signal => relayApi.receipts(view.task.task_id, signal), { refreshMs: 3000 });
-  const [permission, setPermission] = useState<'A' | 'B' | 'C'>('A');
   const [confirmedRevision, setConfirmedRevision] = useState<number | null>(null);
   const command = useRelayCommand();
   const current = task.data?.view;
@@ -80,9 +79,10 @@ function RelayConfirmation({ view, onChanged }: { view: RelayTaskView; onChanged
     <form onSubmit={event => {
       event.preventDefault();
       if (locked || !checked || !project) return;
-      void command.run(key => relayApi.confirm(view.task.task_id, { permission_confirmed: true, permission_level: permission, project_settings_revision: project.project_settings_revision }, key), () => { task.retry(); receipts.retry(); onChanged(); });
+      void command.run(key => relayApi.confirm(view.task.task_id, { permission_confirmed: true, permission_level: project.permission_level, project_settings_revision: project.project_settings_revision }, key), () => { task.retry(); receipts.retry(); onChanged(); });
     }}><fieldset disabled={!!locked}><legend>此次接力的权限范围</legend>
-      <label>权限级别<select aria-label="权限级别" value={permission} onChange={event => { setPermission(event.target.value as 'A' | 'B' | 'C'); setConfirmedRevision(null); }}>{(project ? relayPermissionOptions(project) : ['A']).map(level => <option key={level} value={level}>{level}</option>)}</select></label>
+      <label>权限级别<input aria-label="权限级别" readOnly value={project?.permission_level || '未获取'} /></label>
+      <p className="relay-note">新项目默认为 A。此处确认现有项目许可摘要；修改 B / C 范围需回到项目设置，由你另行保存。</p>
       <label className="relay-check"><input type="checkbox" checked={checked} onChange={event => setConfirmedRevision(event.target.checked && project ? project.project_settings_revision : null)} />我已核对根目录、资料权限和允许动作，确认请求此 Agent 接力</label>
       <button type="submit" className="ac-button" disabled={!checked}>确认资料权限并请求接力</button>
     </fieldset></form>

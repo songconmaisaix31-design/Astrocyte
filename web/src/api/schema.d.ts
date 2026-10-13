@@ -2423,9 +2423,9 @@ export interface components {
         RelayTransitionV1: {
             task_id: string;
             /** @enum {string} */
-            from: "ready" | "accepted" | "working" | "done";
+            from: "" | "ready" | "accepted" | "working" | "done";
             /** @enum {string} */
-            to: "accepted" | "working" | "done" | "released";
+            to: "ready" | "accepted" | "working" | "done" | "released";
             /** Format: date-time */
             ts: string;
             operator: string;
@@ -2471,7 +2471,7 @@ export interface components {
             action: "intent" | "dispatch" | "send" | "read" | "stop" | "resume" | "transition";
             operator: string;
             /** @enum {string} */
-            status: "pending" | "succeeded" | "failed" | "delivery_unknown";
+            status: "pending" | "accepted" | "rejected" | "delivery_unknown";
             error: components["schemas"]["RelayReceiptErrorV1"] | null;
             /** Format: date-time */
             created_at: string;

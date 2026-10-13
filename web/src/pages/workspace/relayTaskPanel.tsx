@@ -45,7 +45,7 @@ export function RelayTaskPanel({ taskID, onChanged }: { taskID: string; onChange
       <details><summary>服务端持久状态迁移</summary><ol>{data.view.transitions.map((transition, index) => <li key={`${transition.ts}-${index}`}>{transition.from} → {transition.to} · {transition.ts} · {transition.operator}</li>)}</ol>{!data.view.transitions.length && <p>尚无状态迁移记录。</p>}</details>
     </>}</QueryState>
     <QueryState state={projects}>{() => null}</QueryState>
-    <form onSubmit={event => { event.preventDefault(); if (!disabled('send') && !send.uncertain && input.trim()) void send.run(key => relayApi.send(taskID, input, key), result => { if (result.receipt.status === 'succeeded') setInput(''); changed(); }); }}>
+    <form onSubmit={event => { event.preventDefault(); if (!disabled('send') && !send.uncertain && input.trim()) void send.run(key => relayApi.send(taskID, input, key), result => { if (result.receipt.status === 'accepted') setInput(''); changed(); }); }}>
       <label>发送输入<textarea aria-label="发送输入" value={input} onChange={event => setInput(event.target.value)} rows={4} disabled={pending} /></label>
       <div className="relay-card-actions">
         <button type="submit" className="ac-button compact" disabled={!!disabled('send') || send.uncertain || !input.trim()}>发送输入</button>
