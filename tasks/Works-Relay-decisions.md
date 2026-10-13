@@ -66,5 +66,5 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - R最终SOURCE `b19d83635fe10cde9d42642d7444f3771d02f513` / REPORT `4848a98eef45656f30326054f3da8298f61044b1`，原Task已按独立工程阶段succeeded结算。新task的新native session、Git证据单调、structured默认安全降级、可选stdin_eof及无变化观察零Update均有适用回归；完整Go/架构/vet/build PASS。真实Codex/Claude、terminal-only Agent coding和认知闭环未验收。
 - F最终SOURCE `b48a6e5008b4da087a5d19c0a091b487197e7494` / REPORT `fdcf21b25dc3e8c84d2aa39b772a381374b50135`，同owner返修Task已succeeded。安全显示真实互斥task提示，terminal stdin_eof明确禁用发送；6项适用Vitest、16项适用E2E及生成/typecheck/lint/build PASS。E2E包含真实HTTP公开响应回放与mock，不是实际模型启动。
 - R与F由Root明确retained：依据用户“开发、测试、文档和返修由同一个Worker持续完成”，保留同terminal/worktree/branch用于后续领域返修。新工作需新Task/Dispatch，不给已完成Dispatch发送；未结算或静默不能释放。
-- H正在消费R最终精确源码并做组装回归。注册表当前启动时读取，追加条目需重启服务才能显示，不能宣称热更新。独立公开样本应验证同一测试URL重启后列表扩展且调度代码不变。
+- H最终SOURCE `c7c3255d0530b93312bb541a477b9ec47e0afc15` / REPORT `6e211dd3e3d92cecadd6a513f7bb3b41075f661c`已push、clean/remote一致，原Task独立工程阶段succeeded结算并按同一固定owner要求retained。实际TCP/SQLite/受控EOF进程回归、289契约例子、26实际HTTP JSON独立AJV、vet/build/架构PASS。注册表当前启动时读取，追加条目需重启服务才能显示，不能宣称热更新。独立公开样本应验证同一测试URL重启后列表扩展且调度代码不变。
 - 三轨结算后唯一集成Worker从root最新分支创建，普通no-ff合精确REPORT（保留SOURCE祖先）；只允许少量入口/路由/类型/配置胶水及自己的集成报告，领域问题退原owner。先完成可独立的全工程检查，再由Root复验、提交与push；用户待答语义不自行配置，17321已验实例不提前替换。
