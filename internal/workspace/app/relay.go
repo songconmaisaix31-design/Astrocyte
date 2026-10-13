@@ -97,6 +97,25 @@ func (s *relayService) view(st RelayState, id string) (domain.RelayTaskView, err
 		return domain.RelayTaskView{}, apierrors.NewNotFound("relay task", id)
 	}
 	v := domain.RelayTaskView{Task: t, Transitions: []domain.RelayTransition{}}
+	v.EventPublication.Status = "none"
+	for _, e := range st.Events {
+		if e.TaskID == id {
+			if st.Published[e.ID] {
+				v.EventPublication.PublishedEvents++
+			} else {
+				v.EventPublication.PendingEvents++
+			}
+		}
+	}
+	if v.EventPublication.PublishedEvents > 0 {
+		v.EventPublication.Status = "published"
+	}
+	if v.EventPublication.PendingEvents > 0 {
+		v.EventPublication.Status = "pending"
+	}
+	if st.PublicationErrors[id] {
+		v.EventPublication.Status = "error"
+	}
 	if terminal, ok := st.Terminals[t.TerminalID]; ok {
 		terminal.Liveness = domain.RelayLiveness(terminal.LastEventAt, terminal.ExitedAt, s.now(), s.options.LivenessWindow)
 		v.Terminal = &terminal
@@ -317,12 +336,16 @@ func receiptError(r domain.RelayReceipt) error {
 	return relayError(apierrors.DeliveryUnknown, "action is pending or has unknown delivery; do not replay")
 }
 
-func (s *relayService) result(ctx context.Context, c domain.Caller, r domain.RelayReceipt) (domain.RelayActionResult, error) {
+func (s *relayService) result(ctx context.Context, _ domain.Caller, r domain.RelayReceipt) (domain.RelayActionResult, error) {
 	if r.TaskID == "" {
 		r.Input = nil
 		return domain.RelayActionResult{Receipt: r}, nil
 	}
-	v, err := s.GetTask(ctx, c, r.TaskID)
+	st, err := s.store.Snapshot(ctx)
+	if err != nil {
+		return domain.RelayActionResult{}, err
+	}
+	v, err := s.view(st, r.TaskID)
 	r.Input = nil
 	return domain.RelayActionResult{View: v, Receipt: r}, err
 }
@@ -375,13 +398,13 @@ func (s *relayService) finish(ctx context.Context, c domain.Caller, r domain.Rel
 	if err != nil {
 		return domain.RelayActionResult{}, relayError(apierrors.DeliveryUnknown, "effect receipt could not be finalized; reload without replay")
 	}
+	_ = s.publish(context.WithoutCancel(ctx), r.TaskID)
 	result, err := s.result(context.WithoutCancel(ctx), c, r)
 	if err != nil {
 		return result, err
 	}
 	// Events remain durable and pending if the sink is not connected or rejects
 	// them. Never label event publication as task completion.
-	_ = s.publish(context.WithoutCancel(ctx), r.TaskID)
 	return result, receiptError(r)
 }
 
@@ -524,16 +547,18 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		workspace.ActiveTaskID = id
 		st.Workspaces[workspace.ID] = workspace
 		terminalID := ""
+		createdAt := s.now()
 		for _, candidate := range st.Terminals {
 			if candidate.WorktreeID == workspace.ID && candidate.Agent == t.Agent {
 				terminalID = candidate.ID
+				createdAt = candidate.CreatedAt
 				break
 			}
 		}
 		if terminalID == "" {
 			terminalID = uuid.NewString()
 		}
-		st.Terminals[terminalID] = domain.RelayTerminal{ID: terminalID, WorktreeID: workspace.ID, Agent: t.Agent, DriveMode: spec.DriveMode, Liveness: domain.RelayUnverifiable, CreatedAt: s.now()}
+		st.Terminals[terminalID] = domain.RelayTerminal{ID: terminalID, WorktreeID: workspace.ID, Agent: t.Agent, DriveMode: spec.DriveMode, Liveness: domain.RelayUnverifiable, CreatedAt: createdAt}
 		t.TerminalID = terminalID
 		st.Tasks[id] = t
 		return nil
@@ -613,6 +638,9 @@ func (s *relayService) launch(ctx context.Context, c domain.Caller, id, action s
 	if !ok || !w.Prepared || w.ActiveTaskID != t.ID {
 		return RelayLaunch{}, relayError(apierrors.VersionConflict, "task does not own a prepared neutral workspace")
 	}
+	if !sameRelayRoot(w.SourceRoot, p.Root) {
+		return RelayLaunch{}, relayError(apierrors.ScopeDenied, "project root changed from the confirmed workspace source")
+	}
 	terminal, ok := st.Terminals[t.TerminalID]
 	if !ok {
 		return RelayLaunch{}, relayError(apierrors.EvidenceMissing, "task terminal identity is absent")
@@ -666,12 +694,16 @@ func (s *relayService) publish(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+	if st.PublicationErrors[id] {
+		return relayError(apierrors.DeliveryUnknown, "event publication is pending explicit reconciliation")
+	}
 	for _, event := range st.Events {
 		if event.TaskID != id || st.Published[event.ID] {
 			continue
 		}
 		if err = s.events.EmitRelayEvent(ctx, event); err != nil {
-			return err
+			_ = s.store.Update(context.WithoutCancel(ctx), func(current *RelayState) error { current.PublicationErrors[id] = true; return nil })
+			return relayError(apierrors.DeliveryUnknown, "derived event publication could not be verified")
 		}
 		if err = s.store.Update(ctx, func(current *RelayState) error { current.Published[event.ID] = true; return nil }); err != nil {
 			return err
@@ -813,6 +845,14 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 			return v, e
 		}
 		return v, receiptError(r)
+	}
+	view, e := s.GetTask(ctx, c, id)
+	if e == nil {
+		_, e = s.permission(ctx, c, view.Task, "reconcile")
+	}
+	if e != nil {
+		_, finishErr := s.finish(ctx, c, r, RelayObservation{}, e, true)
+		return domain.RelayTaskView{}, finishErr
 	}
 	err = s.store.Update(ctx, func(st *RelayState) error {
 		t, ok := st.Tasks[id]
