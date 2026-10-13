@@ -1,0 +1,32 @@
+# Astrocyte Workbench v0.1 · 修订执行单
+
+事实源：用户2026-10-13只读工作台任务书与分支/结构修订。修订取代独立workbench/frontend工程及独立Go服务方案，旧workbench/v0.1和两轨WIP保留为历史，不合入本目标。
+
+目标分支workbench/v0.1-workbench从attention-engine/v1-20261011建立，实际起点6b2b91086d87e2173122c3c9f53a36332acffff2；该点相对CI绿基线100f00cb6945c96a7f3bd3f100f7ff65efc61197仅四份交接/验收文档变动，业务源码完全一致。既有React/Vite web、server、鉴权、构建与Playwright复用；Nav新增认知一级页，四视图子路由/cognition/today、/cognition/focus、/cognition/agents、/cognition/evidence。
+
+## 一页计划与独占写域
+
+root负责本单、HTTP契约、状态、独立验收和最终Git。复用原两个Codex owner、原独占worktree及terminal；旧WIP先普通commit/push，旧Dispatch以规格替换结算，再同worktree创建基于新起点的开发分支，不rebase/reset/删贡献。两轨完成后一个集成owner普通no-ff合SOURCE/REPORT，只修少量装配胶水，领域失败退原owner。
+
+| 轨 | 精确write_paths | 交付 |
+|---|---|---|
+| backend | 新internal/workbench/app/**；新internal/adapters/sqlite/workbench*.go；新internal/adapters/httpapi/workbench*.go；internal/adapters/httpapi/server.go；cmd/server/main.go及新cmd/server/workbench*.go；scripts/workbench/**；contracts/openapi.yaml及新contracts/examples/workbench*.json；docs/workbench/backend.md | 同server只读SQL端点，六字段投影及隐私/鉴权错误测试，在线快照/本机部署/00:30日程 |
+| frontend | web/src/App.tsx；web/src/components/Nav.tsx；web/src/api/client.ts、schema.ts及新cognition*.ts；新web/src/pages/cognition/**；新web/src/styles/cognition.css；新web/e2e/cognition*.spec.ts；新web/src/**/cognition*.test.ts或tsx；docs/workbench/frontend.md | 复用token/组件/鉴权的四子路由，图表/抽屉/筛选/分页，新spec进原Playwright |
+
+所有现有引擎/events/Sleep/权重/公式/schema migrations零改；不修改web既有spec/Playwright配置或降低断言/timeout。root package/go.mod/go.sum/dependencies.lock不改，当前依赖够用；如遇实际阻塞Handoff。HTTP适配器不引入SQL，SQL只在sqlite适配器；Reader契约类型位于workbench/app。认知HTTP路径/api/v1/cognition/*，走现有loopback/session/origin鉴权与统一错误封装；无第二套认证或前端工程。
+
+## 真实数据与只读红线
+
+唯一快照源：C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w1/formal-20261013-first/state.sqlite。仅在线备份程序可只读此路径；server只挂LOCALAPPDATA/astrocyte-workbench/v0.1内副本，正式源不可被当作server的ASTROCYTE_DATA_DIR或工作台副本。原应用自身写入库使用独立本机app-state目录，不能向正式源或副本运行迁移。工作台Reader mode=ro/query_only，副本原子更换后重开读侧；不对正式DB/WAL/SHM写入。
+
+V1R历史沿已验收外部v1r-w1/replay-002/topic-timeseries-safe.json；docs/demo-data不存在，源偏差记录而不重造演示数据。本机保存快照、配置、PID、日志、bin、已确证状态点，不进Git/MCP；daily00:30在线备份，手动刷新及一条命令启动/常驻沿scripts/workbench。现有程序写入自己的独立app-state不等于工作台写正式库，文件监控审计需按正式DB/WAL/SHM和进程过滤。
+
+输出事件只event_id/kind/topic/tokens/scope/ts。数据库source仅用于过滤及source聚合组标签；其他显示只聚合数。events.data含raw，禁止整个data/observation/raw_bytes序列化；正常/错误/鉴权路径都用固定错误，raw_unique审计。本机源3105事件、31Sleep截至10-12，三源claude_code93/codex846/manual2166。manual存储源含git，不虚构人类/agent比例。今日空活动如实显示。
+
+Focus拼接历史safe A(t)与每次成功快照取得的确证节点标量点，使用状态updated_at/Sleep时点，不拿执行时刻复制当前A、不把贡献当A、不插值、不新增动力学复算。新快照的派生数值历史仅本机保存；按topic+状态ts去重。日环比缺确证前日值用null。
+
+## 验收与收敛
+
+原pnpm check/build通过；新增认知Playwright spec在两viewport运行，四视图真实数据渲染/交互，抽10个UI数值与独立SQL误差0；GET正常/错误raw_unique零泄漏及六字段投影；实际文件系统监控正式库零写。root已下载Microsoft签名Valid的官方portable Procmon64，本机token非管理员，管理员监控当前NOT_RUN；不得用哈希/静态扫描或普通watcher替代完整监控。两日00:30自动成功待实际跨日，两次手动不算。首次RED/NOT_RUN/unknown保留。
+
+开发周期D1快照/Today、D2Focus/Agents、D3Evidence/部署；可在一次会话推进全部实现，时间验收仍按真实日期。validation分支、V4协议/日程/参数/正式库零修改；v0.2仍冻结。解冻后validation与本分支统一向主线收敛，一次合并；当前不向main合并。
