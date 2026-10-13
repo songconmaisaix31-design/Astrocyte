@@ -37,7 +37,20 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 	neutral := relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: false})
 	structured := agents.NewRelayNativeDriver(registry)
 	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{})
-	services.Relay = workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window})
+	runtime := workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window, OwnedRoots: agents.RelayOwnedRoots{}})
+	owned, ok := runtime.(workspace.RelayOwnedSessionReader)
+	if !ok {
+		_ = store.Close()
+		return nil, errors.New("owned session read port unavailable")
+	}
+	lifecycle, ok := runtime.(workspace.RelayLifecycle)
+	if !ok {
+		_ = store.Close()
+		return nil, errors.New("owned session lifecycle unavailable")
+	}
+	collector := newRelaySessionCollector(owned, events.NewRelaySessionCapture(attention.NewPendingEventService(sqlite.NewEventRepository(db)), nil), relaySessionFileState{root: root})
+	services.Relay = &relaySessionRuntime{RelayRuntime: runtime, RelayLifecycle: lifecycle, collector: collector}
+	services.RelaySessionEvents = collector
 	return func() error {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
