@@ -50,3 +50,13 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - F收到实际receipt枚举、exact-root项目匹配、权限摘要与done/released UI接缝，仍原owner修。A/B/C不是新的scope降级接口；新项目默认A，已获准B/C准确展示并确认。
 - 正式认知流缺口与Today展示分别验证：本机pending observation接入不等于normalized event/engine更新或正式快照发布；旁路展示不能冒充完整闭环。H给可复用正式采集方案，不改mapper/引擎/权重。
 - 可独立工程完成后，交唯一集成owner合精确SOURCE/REPORT并验构建和接口。阶段交付不宣称v1.2完成，不降低用户工程验收；未答自由tools、来源、活性窗及Today仍保持门禁。原固定领域owner持续负责返修。
+
+## 后续联调与原owner返修
+
+- F首工程阶段Task `task_fae5b6564156` / Dispatch `ctx_a7f2a326ff24` 已报告succeeded；SOURCE `2cdcf9dc49722c63aad69ee59f54da36bc17c4f2` / REPORT `ab3d8e27d182d2c28e368454fa9e66af6e8272d5` 已push，owner报告generator/typecheck/lint/build、103 Vitest及42项适用E2E PASS。真实公开样本扫描2项PASS（平台codex、1作品、2文件、手册重载），不替真实业务全部作品或Agent验收。Root看过公开样本1920/390截图，五指标及动作可见，无横溢；接力任务服务未启用时如实显示未知。
+- F已由Root立即复用同一已证明terminal/worktree/branch，后续Task `task_12347e40c49f` / Dispatch `ctx_52ef7f772849`；旧Dispatch已inactive，cleanup ownership已转移，禁止向旧mailbox派发。返修仅安全显示互斥现有task提示和适用UI验核。
+- H互斥安全提示SOURCE `7e167026593cd510f2f6e62aa4b3d737531ade64`：仅VersionConflict、canonical非零UUID且同human Caller经runtime公开GetTask确认时保留view_existing_task提示；原receipt及重载一致。任意provider action/path/raw、未知UUID和无关冲突不透传。F消费此源码。
+- Windows目录短名firstCI `38457889686` / `38458172696` RED保留。R SOURCE `af6e76d1083c73b3fb3d28d0e3c915e99ee014cb` 改以真实目录identity比较，H SOURCE `0c21364218eb4dc0ae379a5a66942532e986b460` 普通合入；本机真实8.3 alias及不同目录拒绝PASS。后来remote Go包检查通过至schema漂移处，不是完整CI绿；race/build/E2E尚未跑。
+- Root新增必要审查退R：真实新Git登记事件应计入活性，重复观察不续命、多来源LastEvent不倒退、exited优先；同Agent新task复用terminal_id时应创建新native session，未完成task resume不重派；operation身份必须绑定target task，相同nil/确认输入不能跨task返回另一receipt。修正和测试待精确SOURCE。
+- R仅以本机公开help/version核实真实CLI stdin/EOF/TTY兼容性，未运行自由工具；H据独立能力证据准备初始注册数据，注册不授权、不派发、未知不宣称可用。
+- H核实正式collector为validation的runLiveCLI/captureLive，要求已授权native根、时间窗、cwd/session与真实Git身份；不会消费relay.sqlite或独立pending观察。正式路径覆盖与真实启动证据未核实，认知闭环仍BLOCKED/NOT_RUN，validation代码/mapper/权重不改。
