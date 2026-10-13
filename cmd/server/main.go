@@ -88,7 +88,19 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("resolve data dir: %w", err)
 	}
-	dataDir, err = guardWorkbenchDataDir(dataDir)
+	dataDir, err = resolveRelayDataDir(dataDir)
+	if err != nil {
+		return err
+	}
+	accessEnabled, e := relayEnabled()
+	if e != nil {
+		return e
+	}
+	if accessEnabled {
+		dataDir, err = guardWorkbenchExplicitDataDir(dataDir)
+	} else {
+		dataDir, err = guardWorkbenchDataDir(dataDir)
+	}
 	if err != nil {
 		return err
 	}
@@ -216,6 +228,11 @@ func run(logger *slog.Logger) error {
 	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
 		services.RankingProfile = profile
 	}
+	closeRelay, err := assembleRelay(&services, db, registry)
+	if err != nil {
+		return err
+	}
+	defer closeRelay()
 
 	// Resolve port — invalid value fails startup.
 	port, err := resolvePort()
