@@ -1,8 +1,10 @@
 # Astrocyte 当前状态
 
-## Works Relay v1.2 实施中（2026-10-14）
+## Works Relay v1.2 工程候选检查通过；L1 会话增补进行中（2026-10-14）
 
-最新：Root已普通no-ff合入并push，工程树与最终I SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 全等，H最后报告9238e10已合。I该SOURCE完整隔离pnpm check PASS（113.70s），Root原完整check4252db7 PASS（103.39s）、buildff7c551 PASS（14.45s），最终449bbce深目录与空LOCALAPPDATA EOF定向均PASS；I完整默认E2E268 PASS/38 SKIP，Web保持全等。最终精确CI38469944551待结果，不借b25或Rootff7较早双平台success替代；bdf CI38468510081 Linux测试末尾证据目录首RED由原H最小修复，仅测试目录初始化改动，H原Task工程阶段succeeded并按用户固定owner要求retained。Root338长cwd首失败、原84bb ERR_NO_BUFFER_SPACE及bdf首RED均保留。实际Agent/Today/Procmon/两日仍未验收，17321保持v0.1。
+最新：Root已普通no-ff合入并push，工程树与最终I SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 全等，H最后报告9238e10已合。该SOURCE精确[CI38469944551](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38469944551)整体completed/success：Linux/Windows完整check/build/E2E各268 PASS/38 SKIP（4.9m/9.5m，worker2/1），Linux race PASS。I该SOURCE完整隔离pnpm check PASS（113.70s）；Root4252db7完整check PASS（103.39s）、ff7c551 build PASS（14.45s）、449bbce最终深目录与空LOCALAPPDATA EOF定向均PASS。Root338长cwd首失败、84bb Windows资源首RED、bdf Linux证据目录首RED及obsolete cancelled诊断保留，不能由后次成功覆盖。实际Agent/Today/Procmon/两日仍未验收，17321保持v0.1。
+
+L1新增事实源DOC913db499由独立协作者登记，原H Task task_f215e7452d70 / Dispatch ctx_2d4b642fbac5负责新relay_session采集适配器，原R Task task_3303613a7ff7 / Dispatch ctx_98f86f7facfd负责只读owned绑定，均同原terminal/worktree/branch observed/implementing。未新建采集owner，F仍保留Today。新源码不在上述5dd候选CI中；完整行/尾行/重启/覆盖/幂等公开fixture工程先做，未答工具/源作品/原件留存/活性窗等门禁不动。
 
 目标workbench/v0.2-access；[计划](tasks/Works-Relay-plan.md)、[owner及决策](tasks/Works-Relay-decisions.md)记录精确SOURCE/REPORT与返修。Orca Run run_d577f0d3fee1沿固定owner持续。已有注册表/三值/中性工作区/HTTP权限门与收据/真实扫描总览/任务实时UI工程实现，受控实际进程和HTTP覆盖不替代实际模型工作或认知更新。Today实时接缝、作品当前状态范围、视觉与活性窗口、工具执行权限待答。validation/V4正式库及既有认知schema/引擎/权重/快照管道保持原边界。
 
