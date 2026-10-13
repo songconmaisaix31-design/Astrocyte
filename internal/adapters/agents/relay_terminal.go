@@ -29,14 +29,15 @@ type RelayTerminalDriver struct {
 }
 
 type relayTerminalProcess struct {
-	mu       sync.Mutex
-	writeMu  sync.Mutex
-	cmd      *exec.Cmd
-	stdin    io.WriteCloser
-	done     chan struct{}
-	sequence int
-	lastAt   time.Time
-	exited   bool
+	mu        sync.Mutex
+	writeMu   sync.Mutex
+	cmd       *exec.Cmd
+	stdin     io.WriteCloser
+	inputMode string
+	done      chan struct{}
+	sequence  int
+	lastAt    time.Time
+	exited    bool
 }
 
 var _ app.RelayDriver = (*RelayTerminalDriver)(nil)
@@ -84,6 +85,13 @@ func (d *RelayTerminalDriver) Launch(ctx context.Context, r app.RelayLaunch) (ap
 	if err := ctx.Err(); err != nil {
 		return unstarted(err)
 	}
+	mode := r.Spec.InputMode
+	if mode == "" {
+		mode = "line"
+	}
+	if mode != "line" && mode != "stdin_eof" {
+		return unstarted(nativeError(apierrors.UnsupportedCapability, "registered terminal input mode is not supported"))
+	}
 	if d.options.LaunchPolicy == nil {
 		return unstarted(nativeError(apierrors.UnsupportedCapability, "terminal workspace execution scope is not configured"))
 	}
@@ -111,7 +119,7 @@ func (d *RelayTerminalDriver) Launch(ctx context.Context, r app.RelayLaunch) (ap
 	if err != nil {
 		return unstarted(err)
 	}
-	p := &relayTerminalProcess{cmd: cmd, stdin: stdin, done: make(chan struct{})}
+	p := &relayTerminalProcess{cmd: cmd, stdin: stdin, inputMode: mode, done: make(chan struct{})}
 	cmd.Stdout = p
 	cmd.Stderr = io.Discard
 	d.mu.Lock()
@@ -141,8 +149,8 @@ func (d *RelayTerminalDriver) Launch(ctx context.Context, r app.RelayLaunch) (ap
 		p.mu.Unlock()
 		close(p.done)
 	}()
-	if r.Input != "" {
-		return d.Send(ctx, r, r.Input)
+	if r.Input != "" || mode == "stdin_eof" {
+		return p.submit(ctx, r.Input, mode == "stdin_eof")
 	}
 	return p.observation(), nil
 }
@@ -152,8 +160,18 @@ func (d *RelayTerminalDriver) Send(ctx context.Context, r app.RelayLaunch, input
 	if err != nil {
 		return app.RelayObservation{}, err
 	}
+	// Framing belongs to the owned process, not a mutable later registration.
+	// A one-shot input is already closed and can never receive a second write.
+	if p.inputMode == "stdin_eof" {
+		return p.observation(), nativeError(apierrors.UnsupportedCapability, "stdin EOF mode does not support follow-up input")
+	}
+	return p.submit(ctx, input, false)
+}
+
+func (p *relayTerminalProcess) submit(ctx context.Context, input string, closeInput bool) (app.RelayObservation, error) {
+	var err error
 	if err = ctx.Err(); err != nil {
-		return p.observation(), err
+		return p.observation(), nativeError(apierrors.DeliveryUnknown, "owned terminal input deadline elapsed; do not resend")
 	}
 	if p.observation().ExitConfirmed {
 		return p.observation(), nativeError(apierrors.VersionConflict, "terminal process has exited")
@@ -162,7 +180,16 @@ func (d *RelayTerminalDriver) Send(ctx context.Context, r app.RelayLaunch, input
 	go func() {
 		p.writeMu.Lock()
 		defer p.writeMu.Unlock()
-		_, e := io.WriteString(p.stdin, input+"\n")
+		data := input
+		if !closeInput {
+			data += "\n"
+		}
+		_, e := io.WriteString(p.stdin, data)
+		if closeInput {
+			if closeErr := p.stdin.Close(); e == nil {
+				e = closeErr
+			}
+		}
 		written <- e
 	}()
 	select {

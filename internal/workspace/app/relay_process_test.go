@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,6 +13,8 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/relayworktree"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -19,6 +22,19 @@ import (
 func TestRelayControlledCLIProcess(t *testing.T) {
 	if os.Getenv("ASTROCYTE_RELAY_CONTROLLED_CLI") != "1" {
 		return
+	}
+	if os.Getenv("ASTROCYTE_RELAY_CONTROLLED_EOF") == "1" {
+		input, e := io.ReadAll(os.Stdin)
+		if e != nil {
+			os.Exit(2)
+		}
+		if e = os.WriteFile("public-eof-input.txt", input, 0600); e != nil {
+			os.Exit(3)
+		}
+		_, _ = fmt.Fprintln(os.Stdout, "public input received after EOF")
+		for {
+			time.Sleep(time.Second)
+		}
 	}
 	_, _ = fmt.Fprintln(os.Stdout, "public cli active")
 	// This scenario asserts a currently active process. Keep producing real
@@ -149,5 +165,92 @@ func TestRelayControlledCLIFullStateAndGitObservation(t *testing.T) {
 	v, e = f.service.GetTask(ctx, caller(), id)
 	if e != nil || v.Terminal.Liveness != "exited" || v.Task.Condition != "terminal_exited" || v.Task.State != "working" {
 		t.Fatal("actual process exit silently completed the task")
+	}
+}
+
+func TestRelayControlledEOFFirstInputUnsupportedReceiptAndExplicitExit(t *testing.T) {
+	f := newRelayFixture(t)
+	t.Setenv("ASTROCYTE_RELAY_CONTROLLED_CLI", "1")
+	t.Setenv("ASTROCYTE_RELAY_CONTROLLED_EOF", "1")
+	executable, e := os.Executable()
+	if e != nil {
+		t.Fatal(e)
+	}
+	f.options.Agents = []domain.AgentSpec{{Name: "alpha", DriveMode: "terminal", InputMode: "stdin_eof", LaunchCmd: []string{executable, "-test.run=^TestRelayControlledCLIProcess$"}}}
+	f.options.Clock = time.Now
+	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{LaunchPolicy: func(_ context.Context, r app.RelayLaunch) error {
+		if r.Spec.LaunchCmd[0] != executable {
+			return fmt.Errorf("only public test executable is allowed")
+		}
+		return nil
+	}})
+	f.service = f.assemble(f.store, nil, terminal)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	first := f.intent()
+	r, e := f.service.ConfirmIntent(ctx, caller(), first, confirm())
+	if e != nil || r.Receipt.Status != "accepted" {
+		t.Fatalf("EOF dispatch failed: %v", e)
+	}
+	lifecycle := f.service.(app.RelayLifecycle)
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = lifecycle.Shutdown(cleanup)
+	})
+	want := "HANDOFF_MANUAL:\ncomplete manual\nsecond line\n\nTASK:\nexplicit task"
+	file := filepath.Join(r.View.Workspace.Root, "public-eof-input.txt")
+	deadline := time.Now().Add(3 * time.Second)
+	for time.Now().Before(deadline) {
+		data, e := os.ReadFile(file)
+		if e == nil && string(data) == want {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	data, e := os.ReadFile(file)
+	if e != nil || string(data) != want {
+		t.Fatal("EOF helper did not consume full manual/task before executing")
+	}
+	if _, e = f.service.Read(ctx, caller(), first); e != nil {
+		t.Fatal(e)
+	}
+	counted := &relayCountingStore{RelayStore: f.store}
+	f.service = f.assemble(counted, nil, terminal)
+	for i := 0; i < 8; i++ {
+		if e = f.service.(app.RelayLifecycle).ObserveOwned(ctx); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if counted.updates.Load() != 0 {
+		t.Fatal("real unchanged EOF process rewrote state on background ticks")
+	}
+	op := caller()
+	input := app.RelaySendCommand{Input: "must not resend"}
+	sent, e := f.service.Send(ctx, op, first, input)
+	checkCode(t, e, apierrors.UnsupportedCapability)
+	if sent.Receipt.Status != "rejected" || sent.View.Task.Condition == "delivery_unknown" {
+		t.Fatal("known one-shot limitation incorrectly made delivery unknown")
+	}
+	if e = f.store.Close(); e != nil {
+		t.Fatal(e)
+	}
+	f.store, e = sqlite.OpenRelayStore(f.root)
+	if e != nil {
+		t.Fatal(e)
+	}
+	f.service = f.assemble(f.store, nil, terminal)
+	repeat, e := f.service.Send(ctx, op, first, input)
+	checkCode(t, e, apierrors.UnsupportedCapability)
+	if repeat.Receipt.ID != sent.Receipt.ID || repeat.Receipt.Status != "rejected" {
+		t.Fatal("reloaded first RED was not preserved")
+	}
+	current, e := os.ReadFile(file)
+	if e != nil || string(current) != want {
+		t.Fatal("rejected EOF Send mutated delivered input")
+	}
+	r, e = f.service.Stop(ctx, caller(), first)
+	if e != nil || r.Receipt.Status != "accepted" || r.View.Terminal.Liveness != "exited" || r.View.Task.State == "done" || r.View.Workspace.ActiveTaskID != first {
+		t.Fatal("EOF stop silently completed/released/reassigned task")
 	}
 }

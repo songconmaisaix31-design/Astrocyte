@@ -352,48 +352,9 @@ func (s *relayService) result(ctx context.Context, _ domain.Caller, r domain.Rel
 
 func (s *relayService) finish(ctx context.Context, c domain.Caller, r domain.RelayReceipt, obs RelayObservation, effectErr error, knownUnstarted bool) (domain.RelayActionResult, error) {
 	err := s.store.Update(context.WithoutCancel(ctx), func(st *RelayState) error {
-		current, ok := st.Receipts[r.ID]
-		if !ok || current.Status != "pending" {
-			return relayError(apierrors.VersionConflict, "receipt already finalized")
-		}
-		r = current
-		now := s.now()
-		r.FinishedAt = &now
-		r.Status = "accepted"
-		if effectErr != nil {
-			var known *apierrors.ServiceError
-			if !errors.As(effectErr, &known) {
-				known = relayError(apierrors.DeliveryUnknown, "action delivery could not be verified")
-			}
-			r.Status = "rejected"
-			if known.Code == apierrors.DeliveryUnknown || (!knownUnstarted && r.Action == "dispatch") {
-				r.Status = "delivery_unknown"
-				known = relayError(apierrors.DeliveryUnknown, "launch delivery is unknown; no second writer may be started")
-			}
-			r.Error = &domain.RelayReceiptError{Code: string(known.Code), Message: known.Message, RequiredAction: known.RequiredAction}
-		}
-		t, exists := st.Tasks[r.TaskID]
-		if exists {
-			if r.Status == "delivery_unknown" {
-				t.Condition = "delivery_unknown"
-				st.Tasks[t.ID] = t
-			}
-			if knownUnstarted && r.Status != "delivery_unknown" && r.Action == "dispatch" && st.PendingActions[t.ID] == r.ID {
-				w := st.Workspaces[t.WorktreeID]
-				if w.ActiveTaskID == t.ID {
-					w.ActiveTaskID = ""
-					st.Workspaces[w.ID] = w
-				}
-			}
-			if t.TerminalID != "" {
-				s.observe(st, &t, obs)
-			}
-		}
-		st.Receipts[r.ID] = r
-		if st.PendingActions[r.TaskID] == r.ID {
-			delete(st.PendingActions, r.TaskID)
-		}
-		return nil
+		var err error
+		r, err = s.finalize(st, r, obs, effectErr, knownUnstarted)
+		return err
 	})
 	if err != nil {
 		return domain.RelayActionResult{}, relayError(apierrors.DeliveryUnknown, "effect receipt could not be finalized; reload without replay")
@@ -403,9 +364,54 @@ func (s *relayService) finish(ctx context.Context, c domain.Caller, r domain.Rel
 	if err != nil {
 		return result, err
 	}
-	// Events remain durable and pending if the sink is not connected or rejects
-	// them. Never label event publication as task completion.
 	return result, receiptError(r)
+}
+
+// finalize is data-only and shared by explicit actions and changed background
+// observations. Callers supply the transaction; observation has no process effect.
+func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs RelayObservation, effectErr error, knownUnstarted bool) (domain.RelayReceipt, error) {
+	current, ok := st.Receipts[r.ID]
+	if !ok || current.Status != "pending" {
+		return r, relayError(apierrors.VersionConflict, "receipt already finalized")
+	}
+	r = current
+	now := s.now()
+	r.FinishedAt = &now
+	r.Status = "accepted"
+	if effectErr != nil {
+		var known *apierrors.ServiceError
+		if !errors.As(effectErr, &known) {
+			known = relayError(apierrors.DeliveryUnknown, "action delivery could not be verified")
+		}
+		r.Status = "rejected"
+		if known.Code == apierrors.DeliveryUnknown || (!knownUnstarted && r.Action == "dispatch") {
+			r.Status = "delivery_unknown"
+			known = relayError(apierrors.DeliveryUnknown, "launch delivery is unknown; no second writer may be started")
+		}
+		r.Error = &domain.RelayReceiptError{Code: string(known.Code), Message: known.Message, RequiredAction: known.RequiredAction}
+	}
+	t, exists := st.Tasks[r.TaskID]
+	if exists {
+		if r.Status == "delivery_unknown" {
+			t.Condition = "delivery_unknown"
+			st.Tasks[t.ID] = t
+		}
+		if knownUnstarted && r.Status != "delivery_unknown" && r.Action == "dispatch" && st.PendingActions[t.ID] == r.ID {
+			w := st.Workspaces[t.WorktreeID]
+			if w.ActiveTaskID == t.ID {
+				w.ActiveTaskID = ""
+				st.Workspaces[w.ID] = w
+			}
+		}
+		if t.TerminalID != "" {
+			s.observe(st, &t, obs)
+		}
+	}
+	st.Receipts[r.ID] = r
+	if st.PendingActions[r.TaskID] == r.ID {
+		delete(st.PendingActions, r.TaskID)
+	}
+	return r, nil
 }
 
 func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd RelayIntentCommand) (domain.RelayTaskView, error) {

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,6 +25,24 @@ func TestRelayCLIHelperProcess(t *testing.T) {
 		return
 	}
 	mode := os.Getenv("ASTROCYTE_RELAY_TEST_MODE")
+	if mode == "blocked_input" {
+		for {
+			time.Sleep(time.Second)
+		} // deliberately never consumes stdin
+	}
+	if mode == "eof" {
+		input, e := io.ReadAll(os.Stdin)
+		if e != nil {
+			os.Exit(2)
+		}
+		if e = os.WriteFile("public-eof-input.txt", input, 0600); e != nil {
+			os.Exit(3)
+		}
+		_, _ = fmt.Fprintln(os.Stdout, "public input fully consumed at EOF")
+		for {
+			time.Sleep(time.Second)
+		} // remains owned until explicit Stop
+	}
 	if mode == "exit" {
 		os.Exit(0)
 	}
@@ -171,5 +190,96 @@ func TestRelayTerminalRegistrationDataAndUnknownOwnership(t *testing.T) {
 	}
 	if _, e = d.Resume(ctx, r); e == nil {
 		t.Fatal("unverified terminal resume claimed success")
+	}
+}
+
+func TestRelayTerminalEOFCompleteFirstInputAndNoSecondWrite(t *testing.T) {
+	r := relayTerminalTestLaunch(t, "eof")
+	r.Spec.InputMode = "stdin_eof"
+	r.Input = "HANDOFF_MANUAL:\nfull public manual\nlast manual line\n\nTASK:\npublic explicit task"
+	d := NewRelayTerminalDriver(RelayTerminalOptions{LaunchPolicy: relayTerminalTestPolicy})
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if _, e := d.Launch(ctx, r); e != nil {
+		t.Fatal(e)
+	}
+	t.Cleanup(func() {
+		cleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_, _ = d.Stop(cleanup, r)
+	})
+	waitRelayObservation(t, d, r, func(obs app.RelayObservation) bool { return len(obs.Events) > 0 })
+	path := filepath.Join(r.Workspace.Root, "public-eof-input.txt")
+	data, e := os.ReadFile(path)
+	if e != nil || string(data) != r.Input {
+		t.Fatal("EOF did not deliver exactly one complete first input")
+	}
+	r.Spec.InputMode = "line" // later registration cannot reopen the owned stdin
+	for i := 0; i < 2; i++ {
+		_, e = d.Send(ctx, r, "must never be written")
+		var known *apierrors.ServiceError
+		if !errors.As(e, &known) || known.Code != apierrors.UnsupportedCapability {
+			t.Fatalf("EOF Send must be unsupported: %v", e)
+		}
+	}
+	current, e := os.ReadFile(path)
+	if e != nil || string(current) != string(data) {
+		t.Fatal("follow-up send changed EOF input")
+	}
+	obs, e := d.Stop(ctx, r)
+	if e != nil || !obs.ExitConfirmed {
+		t.Fatal("EOF owned process did not produce a real stop/exit")
+	}
+}
+
+func TestRelayTerminalUnknownInputModeCannotStartAndEOFDoesNotGrantTools(t *testing.T) {
+	r := relayTerminalTestLaunch(t, "eof")
+	d := NewRelayTerminalDriver(RelayTerminalOptions{LaunchPolicy: relayTerminalTestPolicy})
+	r.Spec.InputMode = "unregistered_framing"
+	_, e := d.Launch(context.Background(), r)
+	var pre *domain.NativePrelaunchFailure
+	var known *apierrors.ServiceError
+	if !errors.As(e, &pre) || !errors.As(e, &known) || known.Code != apierrors.UnsupportedCapability || len(d.processes) != 0 {
+		t.Fatal("unknown framing started a process")
+	}
+	r.Spec.InputMode = "stdin_eof"
+	d = NewRelayTerminalDriver(RelayTerminalOptions{})
+	_, e = d.Launch(context.Background(), r)
+	if !errors.As(e, &pre) || len(d.processes) != 0 {
+		t.Fatal("EOF registration bypassed nil tools policy")
+	}
+}
+
+func TestRelayTerminalEOFUnknownWriteNeverLaunchesSecondProcess(t *testing.T) {
+	r := relayTerminalTestLaunch(t, "blocked_input")
+	r.Spec.InputMode = "stdin_eof"
+	r.Input = strings.Repeat("public blocked stdin\n", 1<<16)
+	d := NewRelayTerminalDriver(RelayTerminalOptions{LaunchPolicy: relayTerminalTestPolicy})
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	t.Cleanup(func() {
+		cleanup, stopCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer stopCancel()
+		_, _ = d.Stop(cleanup, r)
+	})
+	_, e := d.Launch(ctx, r)
+	var known *apierrors.ServiceError
+	if !errors.As(e, &known) || known.Code != apierrors.DeliveryUnknown {
+		t.Fatalf("blocked EOF write must remain unknown: %v", e)
+	}
+	cleanup, stopCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer stopCancel()
+	_, e = d.Launch(cleanup, r)
+	var pre *domain.NativePrelaunchFailure
+	if !errors.As(e, &pre) || !errors.As(e, &known) || known.Code != apierrors.VersionConflict || len(d.processes) != 1 {
+		t.Fatal("unknown EOF delivery launched a second writer")
+	}
+	_, e = d.Send(cleanup, r, "do not resend")
+	if !errors.As(e, &known) || known.Code != apierrors.UnsupportedCapability {
+		t.Fatal("EOF unknown delivery permitted a second write")
+	}
+	obs, e := d.Stop(cleanup, r)
+	if e != nil || !obs.ExitConfirmed {
+		t.Fatal("unknown EOF process could not be contained")
 	}
 }
