@@ -101,8 +101,9 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - L1 R早期SOURCE `29a400b725ca301ead31d189b353758c992ecfc0`只两个文件45行契约，remote一致；Root与独立协作者静态复核private字段json:-及只读接口，已准H消费。只是接口，不是授权/重载/完整性PASS，SourceStatus=bound不等于完整覆盖；R/H工程继续，未合Root当前5dd候选。
 # L1续作装配决定（2026-10-14）
 
+- R最终SOURCE62c7d99 / REPORT0b4ec501已核clean/remote/write_paths，Root隔离配置根适用Go复验EXIT0/56.69s。有效worker_done msg_981add1127bf结算仅R工程；原dispatch retained（request6442894f-e16a-41ed-a403-f30d24b89f0a）后ACK，后续领域返修仍同owner新Task，不给旧dispatch发新任务。
+
 - 保留原H唯一Session采集和组装owner，原R负责owned引用/原生provider，原F负责Today派生展示，最终同I集成。H装配、严格只读API、独立EventRepo读取及私有游标范围见计划顶部；游标只管理位置/覆盖，事件库仍是事件权威。技术实现范围不等于CLI执行或原件留存的人工授权。
 - R早期SOURCE7e282225f7e4b7277ed36c9f2f77c64501fa56ed提供Codex owned controller的thread/read metadata-only口，严格ID/CWD/absolute JSONL路径；无turns/list/home扫描/第二app-server。send/resume accepted或delivery_unknown失效旧封存确证，退出不证明flush。其他协议及terminal-only原生目录缺口具体保留，不能统称待用户批准。
 - H早期SOURCE3e22986d7666d33c36bbc16672693ecd77a511dc公开fixture实际HTTP装配已发布；Root源码审查确认Cursor事件ID非DB receipt.ID及available轮询无条件Save，交原H当前Task修复。此为静态发现，不冒称已执行测试RED。常规原生envelope分类由同H续修，未知格式仍计缺口。公开HTTP样本不等于真实CLI采集。
 - F原owner新Task task_33717da2d50e / Dispatch ctx_673d0bdbc496已observed，早期SOURCE38035bcbcc0fb3d7a1114fa484205e7a3faab095发布只读派生区。原快照失败不隐藏独立区域，错误隐藏旧缓存完整主张，mock与实际HTTP公开样本回放分列；新增L1不归旧5dd验收。
-
