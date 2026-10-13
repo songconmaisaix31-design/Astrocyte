@@ -110,6 +110,13 @@ type RelayLifecycle interface {
 	ReconcileEvents(context.Context, domain.Caller, string) (domain.RelayTaskView, error)
 }
 
+// RelayOwnedSessionReader is an internal, read-only collection seam. A reader
+// rechecks permission and binding on every call, cannot start/resume a process,
+// and cannot produce action receipts or fresh activity timestamps.
+type RelayOwnedSessionReader interface {
+	ListOwnedRelaySessions(context.Context) ([]domain.RelayOwnedSession, error)
+}
+
 type RelayServiceOptions struct {
 	Agents []domain.AgentSpec
 	// No implicit 60-second decision. Zero means no configured live window.
