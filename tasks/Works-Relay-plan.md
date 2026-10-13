@@ -26,6 +26,8 @@
 
 权限待答补充：既有A/B/C是材料读取范围，不能代替CLI工具执行权限。当前原生驱动沿用禁止工具行为；用户尚未确认中性工作区read/write/execute执行范围，真实自由CLI候选未激活。无OS沙箱证据不宣称机器隔离。
 
-工程候选：R SOURCE b19d836 / REPORT 4848a98；F SOURCE b48a6e5 / REPORT fdcf21b；H最终组装回归进行中。R/F结算仅独立工程阶段，按用户固定owner要求保留返修。最后唯一集成Worker合精确提交、完整check/build/E2E，再由Root验核；真实CLI/Today/Procmon/自动两日未完成，不降低验收。
+工程候选：R SOURCE b19d836 / REPORT 4848a98；F SOURCE b48a6e5 / REPORT fdcf21b；H SOURCE c7c3255 / REPORT 6e211dd。三轨结算仅独立工程阶段，按用户固定owner要求保留返修。最后唯一集成Worker合精确提交、完整check/build/E2E，再由Root验核；真实CLI/Today/Procmon/自动两日未完成，不降低验收。
+
+唯一集成I从root `8d9de2733713675c975b2920e71e21f07da7dcdc`创建works-relay-integration；Task task_db3080f0a933 / Dispatch ctx_ace29bd7baa1 / terminal term_55146ecc-fe9f-40b4-99c0-31d12b8eb5aa，Codex现有配置，turnStart observed。只写docs/access/integration.md及必要少量main/relay_assembly/httpapi server/App/Nav/现有生成schema胶水，领域返修退原owner。普通no-ff三REPORT无冲突，早期集成SOURCE `84bb3f95fc3bbd2d373a561336578ead706bb4b1`，仍待完整检查。临时同URL真实agents.json追加重启验列表，不dispatch模型；不替换17321，不启用未答门禁。
 
 排期：D1注册/活性/中性工作区/总览，D2接力/实时，D3 E2E/实测/演示/部署。Procmon与00:30真实两日保持各自真实时间验收，v0.1未收尾不阻塞本任务，未发生不预填PASS。

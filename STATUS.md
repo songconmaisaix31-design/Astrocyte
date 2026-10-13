@@ -2,6 +2,8 @@
 
 ## Works Relay v1.2 实施中（2026-10-14）
 
+最新：三轨R b19d836/4848a98、H c7c3255/6e211dd、F b48a6e5/fdcf21b为独立工程SOURCE/REPORT，均push/clean/remote一致，固定owner结算后保留。唯一集成I ctx_ace29bd7baa1已无冲突普通合三REPORT，早期SOURCE 84bb3f9；完整集成CI/E2E/Root验核待执行，业务尚未合Root。公开扫描样本、真实TCP/SQLite及公开受控进程适用测试通过，不替实际Codex→Claude、terminal-only coding、Today正式事件闭环或Procmon/两日。权限工具/来源/活性窗口/Today待答；部署已授权，当前真实验收门未满足。
+
 目标workbench/v0.2-access；[计划](tasks/Works-Relay-plan.md)6ebf523已push；[owner及决策](tasks/Works-Relay-decisions.md)。Orca Run run_d577f0d3fee1三轨均observed启动，R已发最小Go接口提案并调查既有native工具限制，H准备早期契约，F准备寻回册组装。新代码尚未交付/集成或通过验收，v0.1基线CI不替代v0.2。三项用户接缝待答，未答不冻结相关选择；独立模块推进。validation/V4正式库及既有认知schema/引擎/权重/快照管道保持原边界。
 
 ## Workbench 双平台最终结论（2026-10-14 01:53 +08:00）
