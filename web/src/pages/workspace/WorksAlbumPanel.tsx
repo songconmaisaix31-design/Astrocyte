@@ -15,10 +15,17 @@ import { localProjectsApi } from '../../api/s1';
 import { worksAlbumApi } from './worksAlbumApi';
 import { WorksMetadataForm, WorksDeliveryForm, WorksScanForm, type WorksMetadataEdit } from './WorksCommandForms';
 import { relayAlbumMetrics } from './relayAlbumMetrics';
+import { relayApi } from '../../api/relay';
+import { useReadApi } from '../../hooks/useReadApi';
+import { RelayIntentPanel } from './relayIntentPanel';
+import { RelayOverview } from './relayOverview';
 
 export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boolean; query: string; onClearQuery: () => void }) {
   const [cached, setCached] = useState<WorksSnapshot>({ works: [], platforms: [], status: 'unknown', observed_at: null, failures: [] });
   const snapshot = fixture ? fixtureWorksSnapshot() : cached;
+  const relayTasks = useReadApi(signal => relayApi.tasks(signal), { enabled: !fixture, refreshMs: 3000 });
+  const [relayWorkID, setRelayWorkID] = useState('');
+  const relayWork = snapshot.works.find(work => work.id === relayWorkID);
   const [loading, setLoading] = useState(!fixture);
   const [busy, setBusy] = useState(false);
   const [uncertain, setUncertain] = useState(false);
@@ -106,7 +113,7 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
       {fixture && <p className={styles.note}>示例作品，仅展示；扫描与保存使用真实页面。</p>}
       {snapshot.failures.length > 0 && <ul aria-label="未完整观察目录" className={styles.note}>{snapshot.failures.map((failure, index) => <li key={`${failure.root}-${index}`}>{failure.root || '扫描来源'} · {failure.reason}</li>)}</ul>}
       <dl className={`${styles.metrics} relay-metrics`} aria-label="作品统计">
-        {relayAlbumMetrics(snapshot).map(metric => <div key={metric.label}><dd>{metric.value ?? '未知'}</dd><dt>{metric.label}</dt></div>)}
+        {relayAlbumMetrics(snapshot, !relayTasks.stale ? relayTasks.data?.dispatched_work_ids : undefined).map(metric => <div key={metric.label}><dd>{metric.value ?? '未知'}</dd><dt>{metric.label}</dt></div>)}
       </dl>
       <p className={styles.note}>接力过仅统计接入层确认的真实派发；交接手册不代表已派发。</p>
       {snapshot.platforms.length > 0 && <ul className={styles.platforms} aria-label="平台统计">{snapshot.platforms.map(stat => <li key={stat.platform}><b><BrandIcon name={stat.platform} size={18} />{platformLabel(stat.platform)}</b><span>{stat.works} 作品 · {stat.folders} 文件夹</span><span>{stat.handed_over} 有手册 · {snapshot.works.filter(work => work.platform === stat.platform).every(work => work.files.verified && work.files.mtime !== null) ? stat.recent : '未知'} 最近在动</span></li>)}</ul>}
@@ -143,10 +150,13 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
               return (await worksAlbumApi.refresh([root], crypto.randomUUID())).snapshot;
             }, '已保存作品文件观察'); }}>从文件核实</button>
             <button type="button" className="ac-button secondary compact" onClick={() => { setModal(''); setSelectedID(work.id); }}>交接手册</button>
+            <button type="button" className="ac-button compact" disabled={disabled} onClick={() => { setModal(''); setSelectedID(''); setRelayWorkID(work.id); }}>接力</button>
           </div>
         </li>)}</ul>
       </section>)}
     </div>
+    {!fixture && <RelayOverview workNames={Object.fromEntries(snapshot.works.map(work => [work.id, work.name]))} />}
+    {relayWork && <DetailPanel title={`接力 · ${relayWork.name}`} onClose={() => setRelayWorkID('')}><RelayIntentPanel key={relayWork.id} work={relayWork} onChanged={relayTasks.retry} /></DetailPanel>}
     {modal && <DetailPanel title={modal === 'scan' ? '扫描导入项目' : 'AI 投递 JSON'} onClose={() => setModal('')}>
       {error && <><p role="alert" className={styles.empty}>{error}</p><button type="button" className="ac-text-button" disabled={busy || loading} onClick={() => { void readCache(); }}>重新读取保存结果</button></>}{notice && <p role="status">{notice}</p>}
       {modal === 'scan' ? <>{rootsLoading && <p role="status">正在读取登记项目…</p>}<WorksScanForm roots={roots} busy={disabled || rootsLoading} submit={scan} /><button type="button" className="ac-text-button" disabled={busy || rootsLoading} onClick={() => { void openScan(); }}>重新读取登记项目</button></> : <WorksDeliveryForm busy={disabled} submit={content => perform(async () => (await worksAlbumApi.delivery(content, crypto.randomUUID())).snapshot, 'JSON 投递已保存，文件仍待核实')} />}
