@@ -1,5 +1,285 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/relay/tasks/{id}/events/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explicit human reconciliation of the same derived event origins
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset. Does not re-execute Agent or clear original receipts. Published means admitted to isolated app observations, not cognitive normalization or snapshot publication.
+         */
+        post: operations["reconcileRelayTaskEvents"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read current human project permission scope
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayProjects"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayAgents
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayAgents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayTasks
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayTasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["getRelayTask"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayTaskEvents
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayTaskEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayTaskReceipts
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayTaskReceipts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * createRelayIntent
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["createRelayIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/intents/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * confirmRelayIntent
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["confirmRelayIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * sendRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["sendRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * readRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["readRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * stopRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["stopRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * resumeRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["resumeRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * transitionRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["transitionRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/cognition/health": {
         parameters: {
             query?: never;
@@ -2068,6 +2348,275 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        RelayProjectV1: {
+            project_id: string;
+            name: string;
+            root: string;
+            /** @enum {string} */
+            permission_level: "A" | "B" | "C";
+            project_settings_revision: number;
+            allowed_subdirs: string[];
+            allowed_actions: string[];
+            allow_agent_control: boolean;
+            allow_directory: boolean;
+            expand_references: boolean;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "projects": []
+         *     }
+         */
+        RelayProjectsV1: {
+            /** @constant */
+            schema_version: 1;
+            projects: components["schemas"]["RelayProjectV1"][];
+        };
+        /**
+         * @example {
+         *       "name": "fixture-cli",
+         *       "launch_cmd": [
+         *         "fixture-cli"
+         *       ],
+         *       "capabilities": {},
+         *       "drive_mode": "terminal"
+         *     }
+         * @example {
+         *       "name": "fixture-cli",
+         *       "launch_cmd": [
+         *         "fixture-cli"
+         *       ],
+         *       "capabilities": {},
+         *       "drive_mode": "terminal",
+         *       "input_mode": "stdin_eof"
+         *     }
+         */
+        RelayAgentV1: {
+            name: string;
+            launch_cmd: string[];
+            capabilities: {
+                [key: string]: components["schemas"]["NativeCapabilityObservationV1"];
+            };
+            /** @enum {string} */
+            drive_mode: "structured" | "terminal" | "both";
+            /**
+             * @description Optional trusted registration input framing. Omitted means existing line mode. stdin_eof closes stdin after the full first input and does not support later Send. This field does not authorize launch or prove native CLI compatibility.
+             * @enum {string}
+             */
+            input_mode?: "line" | "stdin_eof";
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "agents": [],
+         *       "inventory": []
+         *     }
+         */
+        RelayAgentsV1: {
+            /** @constant */
+            schema_version: 1;
+            agents: components["schemas"]["RelayAgentV1"][];
+            inventory: components["schemas"]["LocalAgentV1"][];
+        };
+        RelayTaskV1: {
+            task_id: string;
+            work_id: string;
+            project_id: string;
+            worktree_id: string;
+            terminal_id: string;
+            agent: string;
+            description: string;
+            /** @enum {string} */
+            state: "ready" | "accepted" | "working" | "done" | "released";
+            condition: string;
+            /** @enum {string} */
+            permission_level: "A" | "B" | "C";
+            project_settings_revision: number;
+            degraded_launch: boolean;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        RelayTerminalV1: {
+            terminal_id: string;
+            worktree_id: string;
+            agent: string;
+            /** @enum {string} */
+            drive_mode: "structured" | "terminal" | "both";
+            /** @enum {string} */
+            liveness: "live" | "unverifiable" | "exited";
+            /** Format: date-time */
+            last_event_at: string | null;
+            /** Format: date-time */
+            exited_at: string | null;
+            last_sequence: number;
+            /** Format: date-time */
+            created_at: string;
+        };
+        RelayWorkspaceV1: {
+            worktree_id: string;
+            project_id: string;
+            root: string;
+            branch: string;
+            prepared: boolean;
+            active_task_id: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        RelayTransitionV1: {
+            task_id: string;
+            /** @enum {string} */
+            from: "" | "ready" | "accepted" | "working" | "done";
+            /** @enum {string} */
+            to: "ready" | "accepted" | "working" | "done" | "released";
+            /** Format: date-time */
+            ts: string;
+            operator: string;
+        };
+        RelayTaskViewV1: {
+            task: components["schemas"]["RelayTaskV1"];
+            terminal: components["schemas"]["RelayTerminalV1"] | null;
+            worktree: components["schemas"]["RelayWorkspaceV1"] | null;
+            transitions: components["schemas"]["RelayTransitionV1"][];
+            event_publication: {
+                /** @enum {string} */
+                status: "none" | "pending" | "published" | "error";
+                pending_events: number;
+                published_events: number;
+            };
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "tasks": [],
+         *       "dispatched_work_ids": []
+         *     }
+         */
+        RelayTasksV1: {
+            /** @constant */
+            schema_version: 1;
+            tasks: components["schemas"]["RelayTaskViewV1"][];
+            dispatched_work_ids: string[];
+        };
+        RelayTaskResultV1: {
+            /** @constant */
+            schema_version: 1;
+            view: components["schemas"]["RelayTaskViewV1"];
+        };
+        RelayReceiptErrorV1: {
+            /** @enum {string} */
+            code: "validation_failed" | "unsupported_capability" | "version_conflict" | "context_stale" | "index_stale" | "scope_denied" | "approval_required" | "approval_revoked" | "lease_lost" | "budget_exhausted" | "provider_unavailable" | "evidence_missing" | "delivery_unknown" | "not_found" | "internal_error";
+            message: string;
+            request_id: string;
+            retryable: boolean;
+            required_action: string;
+        };
+        RelayReceiptV1: {
+            receipt_id: string;
+            task_id: string;
+            /** Format: uuid */
+            operation_id: string;
+            /** @enum {string} */
+            action: "intent" | "dispatch" | "send" | "read" | "stop" | "resume" | "transition" | "observe" | "reconcile_events";
+            operator: string;
+            /** @enum {string} */
+            status: "pending" | "accepted" | "rejected" | "delivery_unknown";
+            error: components["schemas"]["RelayReceiptErrorV1"] | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            finished_at: string | null;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "receipts": []
+         *     }
+         */
+        RelayReceiptsV1: {
+            /** @constant */
+            schema_version: 1;
+            receipts: components["schemas"]["RelayReceiptV1"][];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "events": [
+         *         {
+         *           "event_id": "fixture-relay-event",
+         *           "kind": "edit_file",
+         *           "topic": "fixture-work",
+         *           "tokens": null,
+         *           "scope": "fixture-project",
+         *           "ts": "2026-10-14T00:00:00Z"
+         *         }
+         *       ]
+         *     }
+         */
+        RelayEventsV1: {
+            /** @constant */
+            schema_version: 1;
+            events: components["schemas"]["WorkbenchEventV1"][];
+        };
+        /**
+         * @example {
+         *       "work_id": "fixture-work",
+         *       "project_id": "fixture-project",
+         *       "agent": "fixture-agent",
+         *       "task": "Fixture human task"
+         *     }
+         */
+        RelayIntentRequestV1: {
+            work_id: string;
+            project_id: string;
+            agent: string;
+            task: string;
+        };
+        /**
+         * @example {
+         *       "permission_confirmed": true,
+         *       "permission_level": "A",
+         *       "project_settings_revision": 0
+         *     }
+         */
+        RelayConfirmRequestV1: {
+            /** @constant */
+            permission_confirmed: true;
+            /** @enum {string} */
+            permission_level: "A" | "B" | "C";
+            project_settings_revision: number;
+        };
+        /**
+         * @example {
+         *       "input": "Fixture human input"
+         *     }
+         */
+        RelaySendRequestV1: {
+            input: string;
+        };
+        /** @example {} */
+        RelayEmptyRequestV1: Record<string, never>;
+        /**
+         * @example {
+         *       "from": "working",
+         *       "to": "done",
+         *       "completion_confirmed": true
+         *     }
+         */
+        RelayTransitionRequestV1: {
+            /** @enum {string} */
+            from: "ready" | "accepted" | "working" | "done";
+            /** @enum {string} */
+            to: "accepted" | "working" | "done" | "released";
+            completion_confirmed: boolean;
+        };
+        RelayActionResultV1: {
+            /** @constant */
+            schema_version: 1;
+            view: components["schemas"]["RelayTaskViewV1"];
+            receipt: components["schemas"]["RelayReceiptV1"];
+        };
         /**
          * @example {
          *       "event_id": "fixture-event",
@@ -5059,6 +5608,992 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    reconcileRelayTaskEvents: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayProjectsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayAgents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayAgentsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayTasks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTasksV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getRelayTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayTaskEvents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayEventsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayTaskReceipts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayReceiptsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    createRelayIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayIntentRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    confirmRelayIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayConfirmRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    sendRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelaySendRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    readRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    stopRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    resumeRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    transitionRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayTransitionRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     getWorkbenchHealth: {
         parameters: {
             query?: never;
