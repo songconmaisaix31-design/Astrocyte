@@ -25,4 +25,8 @@ Today：A/M/C焦点卡片及日环比，source过滤倒序活动，昨夜Sleep�
 
 Go适用测试、前端typecheck/build、四路由真实浏览器渲染；固定10条UI数值独立SQL核对；完整正常/错误API零raw审计；实际进程文件系统监控证明正式DB/WAL/SHM零写。一条命令启动及本机后台常驻，真实00:30日程安装。连续两日自动成功只能在实际两次跨日触发后确认，本轮实现/手动运行不得替代。阶段保留清晰commit并push；首次RED与未运行验收保留。
 
-Orca Run run_a75ccac871c9。当前已创建协调worktree并从main建立目标分支，开发轨待派发。v0.2仍冻结；本任务替换当前开发目标，不解除V4冻结。
+Orca Run run_a75ccac871c9。协调worktree为C:/Users/DW/orca/workspaces/Astrocyte/workbench-v01-coordination，目标分支workbench/v0.1已push；开发起点3e0eb3d。v0.2仍冻结；本任务替换当前开发目标，不解除V4冻结。
+
+2026-10-13T15:44+08:00两轨已派发且观察到turn_started，客户端Codex、运行时观测模型gpt-6.1-sol（high fast终端显示，未覆盖用户配置）。backend为task_634f7f0d4702/ctx_e5a552eca098、terminal term_8ea0a8b9-c9c6-4776-aad1-8462a835f645、workbench-v01-backend工作树/branch songconmaisaix31-design/workbench-v01-backend；frontend为task_1ec0884f30a4/ctx_446537d9f0c1、terminal term_d7c95a07-ca3c-48d2-8eb3-5963e5948bda、workbench-v01-frontend工作树/branch songconmaisaix31-design/workbench-v01-frontend。两轨文件集合互斥，无重复owner。
+
+root只读盘点正式源3105事件（claude_code93/codex846/manual2166），31次Sleep截至10-12；节点6个；V1R历史每topic31点。今日10-13尚无正式事件，空活动按事实显示。events.data含raw，禁止整包JSON响应；SQL仅提取tokens/scope与六字段列。manual是存储源分类，不能直接等同人类行为。V4数据采集与七日判分独立，不把本工作台展示当科学验收。
