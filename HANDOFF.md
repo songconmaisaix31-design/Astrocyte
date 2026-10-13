@@ -2,7 +2,7 @@
 
 ## 当前入口：Works Relay v1.2 实施（2026-10-14）
 
-Root已普通no-ff合入并push，工程树与最终I SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 全等，H最后报告9238e10已合；精确CI38469944551整体success：Linux/Windows完整check/build/E2E各268 PASS/38 SKIP，Linux race PASS，Windows保持1worker资源修复。I该SOURCE完整check PASS/113.70s，Root425完整check PASS、ff7 build PASS、449bbce最终两个EOF定向PASS；首RED均保留。I ctx_ace29bd7baa1最终REPORT/结算待完成，不提前settle。新增L1唯一原H ctx_2d4b642fbac5、原R只读端口ctx_98f86f7facfd均implementing，F仍Today，无新采集owner；新源码未纳入5dd CI，待同owner测试/报告与唯一同I后续集成。实际Agent/Today/Procmon/两日未验，工具/来源/活性窗及完整Session投影接缝待定，17321不提前替换，不能宣称v1.2完成。
+Root已普通no-ff合入并push，工程树与最终I SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 全等；I REPORT `0e5ce82898c3d546f711d1e452dadfabb13b5537` 已普通合入，12个精确SOURCE/REPORT祖先、冻结域零diff、clean/remote均核实。精确CI38469944551整体success：Linux/Windows完整check/build/E2E各268 PASS/38 SKIP，Linux race PASS，Windows保持1worker资源修复。I该SOURCE完整check PASS/113.70s，Root425完整check PASS、ff7 build PASS、449bbce最终两个EOF定向PASS；首RED均保留。I ctx_ace29bd7baa1已有效worker_done工程succeeded结算，按用户固定owner持续返修要求retained，后续集成仍同I。新增L1唯一原H ctx_2d4b642fbac5、原R只读端口ctx_98f86f7facfd均implementing，F仍Today，无新采集owner；新源码未纳入5dd CI，待同owner测试/报告与唯一同I后续集成。实际Agent/Today/Procmon/两日未验，工具/来源/活性窗及完整Session投影接缝待定，17321不提前替换，不能宣称v1.2完成。
 
 业务目标workbench/v0.2-access，validation登记定稿a429a4d；[三轨计划](tasks/Works-Relay-plan.md)、[决策与owner](tasks/Works-Relay-decisions.md)。起点9d78835与验收d46业务全等，精确CI38440379678已独立核实success。Orca Run run_d577f0d3fee1由term_d7f7e173协调，R-runtime ctx_fd41ff32f67d、H-http ctx_bcc3677fe29c、F-ui ctx_a7f2a326ff24均observed启动。三轨互斥，root只文档/独验/最终Git；领域返修原owner，最后唯一集成普通no-ff合。Today实时接缝/作品当前状态及非Git范围/参考图与活性窗已问人待答，独立开发继续。V4正式源/引擎/schema/权重/快照管道零改，v0.1 Procmon和真实两日收尾不阻塞本切片；未验事项不填绿。
 

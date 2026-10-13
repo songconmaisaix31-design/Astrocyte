@@ -6,6 +6,8 @@
 
 L1新增事实源DOC913db499由独立协作者登记，原H Task task_f215e7452d70 / Dispatch ctx_2d4b642fbac5负责新relay_session采集适配器，原R Task task_3303613a7ff7 / Dispatch ctx_98f86f7facfd负责只读owned绑定，均同原terminal/worktree/branch observed/implementing。未新建采集owner，F仍保留Today。新源码不在上述5dd候选CI中；完整行/尾行/重启/覆盖/幂等公开fixture工程先做，未答工具/源作品/原件留存/活性窗等门禁不动。
 
+v1.2工程阶段已结算：I SOURCE5dd4b729 / REPORT0e5ce828已push、clean/remote一致，Root普通合REPORT c170b02、12个owner/最终SOURCE/REPORT祖先与冻结域零diff复核PASS，全部非Markdown与精确测试源码全等；主控最终状态报告仅Markdown。I依据用户同owner持续返修要求retained，用于后续L1唯一集成，不以保留终端推断活动或产品验收。受控扫描/实际HTTP/registry追加重启实测见[集成报告](docs/access/integration.md)；实际用户全作品库存与真实CLI认知闭环仍分别未验。
+
 目标workbench/v0.2-access；[计划](tasks/Works-Relay-plan.md)、[owner及决策](tasks/Works-Relay-decisions.md)记录精确SOURCE/REPORT与返修。Orca Run run_d577f0d3fee1沿固定owner持续。已有注册表/三值/中性工作区/HTTP权限门与收据/真实扫描总览/任务实时UI工程实现，受控实际进程和HTTP覆盖不替代实际模型工作或认知更新。Today实时接缝、作品当前状态范围、视觉与活性窗口、工具执行权限待答。validation/V4正式库及既有认知schema/引擎/权重/快照管道保持原边界。
 
 ## Workbench 双平台最终结论（2026-10-14 01:53 +08:00）
