@@ -2,6 +2,14 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
+### v0.2 冻结期评审（2026-10-13）
+
+用户任务书已登记 [Discovery & Split](tasks/v0.2-discovery-split.md)，实码基线 `bc0d41f6b7ae521e7354b17e80c7895a10039e95`；[实码评审](tasks/v0.2-discovery-split-review.md) 状态REVIEW_PENDING_DECISIONS，D0–D6未开始。只新增/更新root文档，不改引擎/schema/参数/接入/UI/V4日程或锁定协议，不读新增raw。V4继续既有真实七日流程；v0.2开工以末D+3真实完成与冻结解除为条件，10-23日期本身不解除冻结。
+
+12项定稿问题及实码路径已列评审。首要冲突：已存在零信号seed阻挡Agent Swarm/MCP出生；cwd/commit subject不足以提供swarm文件路径与git origin依据；旧Split退役父主题不符合保留余量；继承值可能低于floor；origin折扣与对v0.1分裂前轨迹完全相同不能同时成立。已向用户集中询问seed激活/最小derived特征契约/确定性分流与veto抑制/隔离回放，以及出生floor裁决；未获答复不冻结建议接口或常量。source已有887 Morphogenesis commit已由V2资产核实，MCP39计数尚未机查，不预填发现结果。
+
+本轮验证范围：实码只读路径核对、文档链接与git diff检查、业务域零diff及V4全文SHA仍为`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`。新增测试数0，业务/接口未实现，不把评审算D0验收或发现PASS。最终文档commit SHA由Git交付登记，原V4SOURCE/REPORT/首RED全保留。
+
 ### 2026-10-13 V4启动定案已接收
 
 **2026-10-13T04:22:31.789146+08:00：V3权威锁完成，V4 day0=2026-10-13。** EXPERIMENT.md 全文件 SHA-256=`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，外部唯一锁 `v4-w2/locked-protocol-20261013-first.json` 的 authority=root/reviewed=true 与文件字节已独立核对。预注册正文保留锁前UNLOCKED快照，实际锁以本条及外部锁为准；锁后不编辑正文或重新hash掩盖变更。B-only RAW例外、全部历史修正与观察已入锁前终稿；A/产品接口derived零raw、C仅共同题目维持。
