@@ -22,7 +22,8 @@
 ## v1.3 采集条款与可复用端口
 
 - `RelayState.Sessions` 在独立 relay.sqlite 中按 terminal_id 持久化；不得假设 `ProjectRepository.ListSessions` 可取得 Relay 持有会话。R 通过 Service 提供只读内部绑定，H 不直接写 store。
-- 复用 `NativeAdapter.ReadContext / Observe` 和 `RelayLifecycle.ObserveOwned / Shutdown`；GET 只读缓存，生命周期仅观察人工已接受的任务，取消并 join 后关闭存储。不得自动 launch、send、resume 或重新派发。
+- 沿用 `NativeAdapter` 的身份 / 鉴权边界与 `Observe`、`RelayLifecycle.ObserveOwned / Shutdown` 生命周期；GET 只读缓存，生命周期仅观察人工已接受的任务，取消并 join 后关闭存储。不得自动 launch、send、resume 或重新派发。
+- 现有 `ReadContext` 是有条数 / 字节 / 页数上限的 user/assistant 文本投影，不是完整事件归档；不能当 L1 全事件采集，也不能为了采集放宽旧接口。H 在新 `relay_session*` 适配器中实现完整行增量读取，分别记录游标、身份与覆盖缺口；`Observe` 的活动摘要同样不替代完整归档。
 - 新 task 使用新 native session；同未完成 task resume 保留原 session；terminal_id 不绑 PID。terminal-only 需真实原生归档或既有端口的正证据，不凭终端有输出就认定 Session 覆盖完整，不扫描家目录找身份。
 - 原 `internal/adapters/events/relay.go` 到 `NewPendingEventService` 的通道可复用，但 published 只表示本机 admission；另行核对完整 Session 覆盖与 Today 展示，不能偷换为正式认知更新。
 - 采集仅产生事件；现有权重与规范化规则不改，不擅自把未知 native_activity 映射为 edit/commit 或赋固定信号强度。无映射保持未知，完整性统计仍包括它。
