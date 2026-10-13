@@ -6,6 +6,7 @@ import { Icon } from './DesignIcons';
 const items = [
   { path: '/attention', label: '资料沉淀', icon: 'library' },
   { path: '/workspace', label: '共同工作区', icon: 'grid' },
+  { path: '/workspace/works', label: '作品寻回册', icon: 'library' },
   { path: '/swarm', label: '蜂群空间', icon: 'swarm' },
   { path: '/cognition', label: '认知', icon: 'spark' },
 ] as const;
@@ -20,7 +21,10 @@ export function Nav({ currentPath, fixture, open, onNavigate }: { currentPath: s
   const go = (path: string) => { const query = new URLSearchParams(window.location.search); query.delete('tab'); navigate(`${path}${query.size ? `?${query}` : ''}`); onNavigate(); };
   return <aside className={`ac-sidebar ${open ? 'open' : ''}`}>
     <div className="ac-nav-label">我的工作台</div>
-    <nav aria-label="主导航">{items.map(item => <button key={item.path} type="button" className={currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention') ? 'active' : ''} aria-current={currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention') ? 'page' : undefined} onClick={() => go(item.path === '/cognition' ? '/cognition/today' : item.path)}><Icon name={item.icon} /><span>{item.label}</span></button>)}</nav>
+    <nav aria-label="主导航">{items.map(item => {
+      const active = item.path === '/workspace' ? currentPath === '/workspace' || currentPath === '/workspace/' : currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention');
+      return <button key={item.path} type="button" className={active ? 'active' : ''} aria-current={active ? 'page' : undefined} onClick={() => go(item.path === '/cognition' ? '/cognition/today' : item.path)}><Icon name={item.icon} /><span>{item.label}</span></button>;
+    })}</nav>
     {!cognition && <><button type="button" className="ac-new-button" disabled={!canImport} onClick={() => { const query = new URLSearchParams(window.location.search); query.delete('tab'); query.set('import', '1'); navigate(`/attention?${query}`); onNavigate(); }} title={canImport ? '导入 arXiv 或 summarize 既有导出' : '示例模式或服务未提供此写入能力'}><Icon name="plus" size={18} />{canImport ? '添加资料' : '添加资料 · 未启用'}</button>
     <div className="ac-disabled-caption">{canImport ? '保存资料不会启动任务' : '写入操作尚未启用'}</div></>}
     <div className="ac-sidebar-divider" /><div className="ac-nav-label">我的项目{fixture && <span>示例</span>}</div>
