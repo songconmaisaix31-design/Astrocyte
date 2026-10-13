@@ -54,8 +54,8 @@ func TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt(t *testing.T) {
 	// verification/eof-http/UUID scaffold. Windows process cwd has a tighter
 	// bound than file operations; an already-isolated caller must remain usable.
 	fixtureParent := filepath.Dir(evidence)
-	if os.MkdirAll(fixtureParent, 0700) != nil {
-		t.Fatal("isolated EOF parent unavailable")
+	if os.MkdirAll(evidence, 0700) != nil {
+		t.Fatal("isolated EOF evidence directory unavailable")
 	}
 	local, err := os.MkdirTemp(fixtureParent, "")
 	if err != nil {
