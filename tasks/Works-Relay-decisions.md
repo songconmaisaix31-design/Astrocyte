@@ -82,3 +82,11 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - Root SOURCE `4252db7575496b872317b750895ef20f6d414f65` 在完全相同隔离子环境完整pnpm check EXIT0/103.39s；build在 `ff7c5519da47ef995e91ce04c136a4d6881ce018` EXIT0/14.45s，之后产品构建树无变化。install固定锁通过。日志与原件仅LOCALAPPDATA/v0.2-access/verification/root-3387019-20261014，首check和second check分开保留。I独立bdf完整check另EXIT0/115.31s。
 - Root普通合I最终SOURCE为 `ee0bc900be1192e9665b506748e563941bc35f52`，与I `bdfbbdbbd6cbd6567e57ef3ed06ac2b3a860e97a` 和Root425非Markdown全等；均push。资源修复SOURCE b25的CI38466602701双平台success，不能替代随后测试fixture变动后的bdf。Root旧重复CI38465806043/38466554203已cancelled，标为PARTIAL不冒称通过，不取消其他owner运行。
 - bdf最终CI38468510081 Linux首次RED：EOF测试最后relay_eof_http_test.go:193导出公开响应失败，之前HTTP/输入/receipt断言通过。缩短cwd后未显式创建evidence目录，Linux空fallback根缺verification；H同owner新Task `task_c0577095b4cb` / Dispatch `ctx_a01ed6996519` 已observed，独占EOF测试fixture与H报告返修，I不代写领域代码。最终双平台CI待新精确SOURCE，原84bb和bdf首RED不重跑覆盖。
+
+## L1–L4 协作接缝（2026-10-14 用户新增指令）
+
+- 已读取用户提供 `C:/Users/DW/Downloads/tabbit-code (5).md`；独立协作者 term_23fa4b37-e887-4848-8d1e-c52dd88cab52 只登记新认知栈事实源、L1计划、L2协议草案，不接管现有R/H/F/I、root文档或V4。本轮不提前实施L2/L3/L4，不中断I最终CI。
+- 已向核验过的真实handle回复精确可消费SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、报告合并2a4c58c及工程归属；新CI38469944551待结果。I该SOURCE完整隔离check另PASS/113.70s；Root449bbce同深与空LOCALAPPDATA两个EOF定向均PASS。原完整check/build/E2E与首失败各保持原SHA归属。
+- 完整原生Session采集唯一owner继续原H，不释放relay_session前缀给新轨；预留新 `internal/adapters/events/relay_session*.go` 归H，其既有assembly/observer/config/HTTP/contracts不转交。R仍独占运行时/domain/store/agents；若需要Service公开只读owned-session端口，H向R发Handoff，不旁路写store。Today/React仍F。新增v1.3条款与明确互斥路径由协作者登记后，原H同terminal/worktree/branch续作，禁止另建Session采集owner。
+- 当前公开RelayRuntime查询和RelayLifecycle.ObserveOwned只面向既有owned task；内部RelayState.Sessions按terminal_id持久，完整NativeSession不在HTTP TaskView。不能假定ProjectRepository.ListSessions含Relay会话，也不能把native活动摘要sink的published当作完整采集或Today认知闭环。terminal-only没有已证明的完整session目录端口，必须逐Agent核实。
+- 新计划补充workbench独立库方向，替代原Today存储方向的口头讨论；详细完整Session本机原件/六字段derived零raw展示与快照数值并置仍待v1.3明确。工具read/write/execute确认、dirty/untracked/nonGit/single-file范围、活性窗/缺图待答。owned-session采集授权不扩大到其他私有历史，当前生产安全门不自行解除。
