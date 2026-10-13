@@ -162,6 +162,9 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 			return view, &apierrors.ServiceError{Code: apierrors.ValidationFailed}
 		}
 	}
+	if !start.IsZero() && !end.IsZero() && start.After(end) {
+		return view, &apierrors.ServiceError{Code: apierrors.ValidationFailed}
+	}
 	for _, v := range bindings {
 		if q.TaskID != "" && q.TaskID != v.TaskID {
 			continue

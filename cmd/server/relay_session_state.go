@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type relaySessionFileState struct{ root string }
@@ -52,6 +53,27 @@ func (s relaySessionFileState) Load() (relaySessionCheckpoints, error) {
 		id, e := uuid.Parse(key)
 		if e != nil || id == uuid.Nil || id.String() != key || entry.Cursor.Offset < 0 || entry.Coverage.TaskID != key || entry.Cursor.Counts.Lines < 0 || entry.Cursor.Counts.Errors < 0 || entry.Cursor.Counts.Unknown < 0 {
 			return nil, errors.New("session state invalid")
+		}
+		cursor := entry.Cursor
+		if cursor.Version == 0 {
+			if cursor.Blocked == "" || cursor.Offset != 0 || len(cursor.Seen) != 0 {
+				return nil, errors.New("session state invalid")
+			}
+		} else {
+			binding, err := uuid.Parse(cursor.BindingID)
+			if cursor.Version != 1 || err != nil || binding == uuid.Nil || cursor.FileIdentity == "" || cursor.Counts.Projected != int64(len(cursor.Seen)) {
+				return nil, errors.New("session state invalid")
+			}
+		}
+		if entry.Coverage.Status != "unknown" && entry.Coverage.Status != "partial" && entry.Coverage.Status != "complete" {
+			return nil, errors.New("session state invalid")
+		}
+		for eventID, p := range cursor.Seen {
+			parsed, err := uuid.Parse(eventID)
+			_, tsErr := time.Parse(time.RFC3339Nano, p.TS)
+			if err != nil || parsed == uuid.Nil || parsed.String() != eventID || p.ID != eventID || tsErr != nil || p.Topic != "relay:"+key || p.Scope != entry.Coverage.ProjectID || (p.Tokens != nil && *p.Tokens < 0) {
+				return nil, errors.New("session state invalid")
+			}
 		}
 	}
 	return entries, nil

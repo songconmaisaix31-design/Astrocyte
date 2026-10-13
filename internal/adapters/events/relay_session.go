@@ -159,6 +159,9 @@ func (s *RelaySessionCapture) Capture(ctx context.Context, b RelaySessionBinding
 		return result, nil
 	}
 	if err := s.admit(ctx, b, batch.Items); err != nil {
+		if result.Checkpoint.FirstError == "" {
+			result.Checkpoint.FirstError = batch.Next.FirstError
+		}
 		markSessionError(&result.Checkpoint, "admission_unknown", true)
 		result.Pending = true
 		result.AdmissionErrors++

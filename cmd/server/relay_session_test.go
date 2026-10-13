@@ -147,6 +147,12 @@ func TestRelaySessionActualHTTPAdmissionRestartPermissionAndExitTail(t *testing.
 	if view.Events[0].TS < view.Events[1].TS {
 		t.Fatal("source timestamps not descending")
 	}
+	pagedBytes := client.request("GET", "/api/v1/relay/session-events?task_id="+taskID+"&page=2&page_size=1", "", "", 200)
+	var paged workbench.SessionEvents
+	if json.Unmarshal(pagedBytes, &paged) != nil || paged.Total != 2 || len(paged.Events) != 1 || paged.Events[0].ID != view.Events[1].ID {
+		t.Fatal("actual source timestamp pagination failed")
+	}
+	readSamples = append(readSamples, relayContractSample{Schema: "RelaySessionEventsV1", Body: append(json.RawMessage(nil), pagedBytes...)})
 	checkpointPath, _ := state.path()
 	saved, e := os.ReadFile(checkpointPath)
 	if e != nil || strings.Contains(string(saved), "PRIVATE_CANARY") {
@@ -259,6 +265,20 @@ func TestRelaySessionActualHTTPAdmissionRestartPermissionAndExitTail(t *testing.
 	corrupt := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state)
 	if corrupt.blocked != "checkpoint_unavailable" || corrupt.ObserveOwned(ctx) == nil {
 		t.Fatal("corrupt cursor silently reset")
+	}
+	var semantic relaySessionCheckpoints
+	if json.Unmarshal(priorBytes, &semantic) != nil {
+		t.Fatal("public checkpoint decode failed")
+	}
+	badVersion := semantic[taskID]
+	badVersion.Cursor.Version = 99
+	semantic[taskID] = badVersion
+	badJSON, _ := json.Marshal(semantic)
+	if os.WriteFile(checkpointPath, badJSON, 0600) != nil {
+		t.Fatal("public semantic corruption unavailable")
+	}
+	if _, e = state.Load(); e == nil {
+		t.Fatal("unknown checkpoint version accepted before capture")
 	}
 	wrong := relaySessionFileState{root: filepath.Join(root, "snapshots")}
 	if _, e = wrong.Load(); e == nil {
