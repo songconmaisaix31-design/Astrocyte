@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## Works Relay v1.1 修订登记（2026-10-14）
+
+[修订与实码评审](tasks/Works-Relay-v1.1.md) 状态 REVISION_REGISTERED_REVIEW_PENDING；基线 `47e83cfada27b020e61da22679a3fb690c28b898`。本轮单 Agent 文档登记，无业务改动、worker 派发或终端操作。v1.0 原文与实施窗口已询问，等待用户答复；其余已列关键歧义先对照 v1.0，再请求未决项裁决。实现未开始，三值实测 / Codex 接 Claude 同工作树 / 注册扩展 / terminal-only 认知流验收均 NOT_RUN。V4 冻结和锁定协议保持生效，未以本修订解除；文档交付 SHA 与校核结果以本轮 Git 交付为准。
+
+文档校核 PASS：`git diff --check`；Python 文档检查确认21项必备标记、20个本地链接、仅四个Markdown路径和锁定协议SHA不变。业务测试 / 构建本轮未执行；不以文档检查代替 §3 接力功能验收。
+
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
 ### v0.2 冻结期评审（2026-10-13）

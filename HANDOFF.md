@@ -1,5 +1,7 @@
 # Astrocyte 主控交接
 
+2026-10-14：用户 Works Relay v1.1 修订已登记 [tasks/Works-Relay-v1.1.md](tasks/Works-Relay-v1.1.md)，状态 REVISION_REGISTERED_REVIEW_PENDING。完整保留三值终端、单一 store、数据注册 Agent、中性 worktree 换手、人工 intent 与双路径降级及四项增补验收。当前未找到 v1.0，已询问原文与实现窗口；未答不补写剩余条款、不冻结接口、不解除 V4 冻结或启动实现。现有 Works “接力过”仅手册统计，固定 Agent 注册表未达新要求；详见任务内实码基线与待裁决项。业务验收全部 NOT_RUN，本轮只文档。
+
 ## 当前入口：M6 v3.0（2026-10-12）
 
 2026-10-13：v0.2 R01–R12全部获用户裁决并入tasks/v0.2-discovery-split.md v1.1，状态SPEC_FINALIZED_IMPLEMENTATION_FROZEN；tasks/v0.2-discovery-split-review.md登记闭环，tasks/v0.2-discovery-split-plan.md给出四轨互斥精确文件，未派发/未建实现与worktree。零证据seed收养ID/confirmed保留；五项derived仅本地不扩MCP六字段；新FilterSplit不退役父；floor clamp+原始继承、双轨D4、发现.05/.15、veto仅未来回流与永久同版本抑制、三连续Sleep merge、author/事件前human origin、论文去重、基础权重不校准均按正文执行。MergeDurationMS单位以三次每日观测两天跨度172800000绑定，Sleep侧管理连续资格，merge实现不改。不重问下方历史待答；V4协议/日程照旧，真实末D+3及人评/对账完成且冻结解除才D0，不能仅到10-23便开工。
