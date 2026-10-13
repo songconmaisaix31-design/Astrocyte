@@ -124,6 +124,34 @@ function seedProjectedTask(state: Awaited<ReturnType<typeof mockRelay>>, status:
 }
 
 test.describe('relay contract-local mock evidence; not CLI or durable acceptance', () => {
+  for (const drive of ['terminal', 'structured'] as const) {
+    test(`EOF registration with actual ${drive} drive keeps its truthful send capability`, async ({ page }) => {
+      const state = await mockRelay(page);
+      state.spec.input_mode = 'stdin_eof';
+      seedProjectedTask(state);
+      state.views[0].terminal!.drive_mode = drive;
+      await page.goto('/workspace/works');
+      await page.getByRole('button', { name: '查看任务、事件和收据', exact: true }).click();
+      const dialog = page.getByRole('dialog');
+      if (drive === 'terminal') {
+        await expect(dialog).toContainText('首条手册与任务发送后关闭标准输入');
+        await expect(dialog.getByLabel('发送输入', { exact: true })).toBeDisabled();
+        await expect(dialog.getByRole('button', { name: '发送输入', exact: true })).toBeDisabled();
+        await dialog.getByRole('button', { name: '读取会话并留收据', exact: true }).click();
+        await expect(dialog.getByRole('status').filter({ hasText: '读取会话收据' })).toBeVisible();
+        await expect(dialog.getByRole('button', { name: '停止 Agent', exact: true })).toBeEnabled();
+        expect(state.writes.map(item => item.action)).toEqual(['read']);
+      } else {
+        await expect(dialog).not.toContainText('当前终端登记为一次性输入');
+        await dialog.getByLabel('发送输入', { exact: true }).fill('Continue the native structured session');
+        await expect(dialog.getByRole('button', { name: '发送输入', exact: true })).toBeEnabled();
+        await dialog.getByRole('button', { name: '发送输入', exact: true }).click();
+        await expect(dialog.getByRole('status').filter({ hasText: '发送输入收据' })).toBeVisible();
+        expect(state.writes.map(item => item.action)).toEqual(['send']);
+      }
+    });
+  }
+
   for (const [index, stage] of ['initial', 'reopened'].entries()) {
     test(`actual HTTP ${stage} mutex receipt replay offers only manual GET lookup; not live browser acceptance`, async ({ page }) => {
       test.skip(process.env.ASTROCYTE_TEST_RELAY_HTTP_SAMPLES !== '1', 'Requires H-owned public HTTP DTO samples in local access evidence; never loads private transcripts.');

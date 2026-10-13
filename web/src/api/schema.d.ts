@@ -2372,6 +2372,25 @@ export interface components {
             schema_version: 1;
             projects: components["schemas"]["RelayProjectV1"][];
         };
+        /**
+         * @example {
+         *       "name": "fixture-cli",
+         *       "launch_cmd": [
+         *         "fixture-cli"
+         *       ],
+         *       "capabilities": {},
+         *       "drive_mode": "terminal"
+         *     }
+         * @example {
+         *       "name": "fixture-cli",
+         *       "launch_cmd": [
+         *         "fixture-cli"
+         *       ],
+         *       "capabilities": {},
+         *       "drive_mode": "terminal",
+         *       "input_mode": "stdin_eof"
+         *     }
+         */
         RelayAgentV1: {
             name: string;
             launch_cmd: string[];
@@ -2380,6 +2399,11 @@ export interface components {
             };
             /** @enum {string} */
             drive_mode: "structured" | "terminal" | "both";
+            /**
+             * @description Optional trusted registration input framing. Omitted means existing line mode. stdin_eof closes stdin after the full first input and does not support later Send. This field does not authorize launch or prove native CLI compatibility.
+             * @enum {string}
+             */
+            input_mode?: "line" | "stdin_eof";
         };
         /**
          * @example {

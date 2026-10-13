@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { relayProjectMatches, relayUnresolved, relayExistingTaskID } from './relayPresentation';
-import type { RelayProject, RelayReceipt } from '../../api/relay';
+import { relayProjectMatches, relayUnresolved, relayExistingTaskID, relaySingleInput } from './relayPresentation';
+import type { RelayProject, RelayReceipt, RelayTaskView, RelayAgent } from '../../api/relay';
 
 const project: RelayProject = { project_id: 'test', name: 'Public test', root: 'C:/public/test', permission_level: 'C', project_settings_revision: 4, allowed_subdirs: ['README.md'], allowed_actions: ['start'], allow_agent_control: false, allow_directory: false, expand_references: true };
 describe('relay projection safety', () => {
+  it('uses explicit EOF registration only for the actual terminal drive, preserving native structured send', () => {
+    const terminal: NonNullable<RelayTaskView['terminal']> = { terminal_id: 'public-terminal', worktree_id: 'public-worktree', agent: 'public-cli', drive_mode: 'terminal', liveness: 'unverifiable', last_event_at: null, exited_at: null, last_sequence: 0, created_at: '2026-10-14T00:00:00Z' };
+    const agent: RelayAgent = { name: 'public-cli', launch_cmd: ['public-cli'], capabilities: {}, drive_mode: 'terminal', input_mode: 'stdin_eof' };
+    expect(relaySingleInput(terminal, agent)).toBe(true);
+    expect(relaySingleInput({ ...terminal, drive_mode: 'structured' }, agent)).toBe(false);
+    expect(relaySingleInput(terminal, { ...agent, input_mode: 'line' })).toBe(false);
+    expect(relaySingleInput(terminal, { ...agent, input_mode: undefined })).toBe(false);
+    expect(relaySingleInput(null, agent)).toBe(false);
+    expect(relaySingleInput(terminal, undefined)).toBe(false);
+  });
   it('accepts only the canonical nonnil existing-task conflict action, never message text', () => {
     const id = 'ae48c13e-86e4-4899-8c20-a618873ea209';
     const error: NonNullable<RelayReceipt['error']> = { code: 'version_conflict', message: 'Relay state or workspace conflict', required_action: `view_existing_task:${id}`, request_id: 'public-test', retryable: false };

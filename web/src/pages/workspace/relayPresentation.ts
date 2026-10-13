@@ -13,6 +13,10 @@ export function relayExistingTaskID(error: RelayReceipt['error']) {
   return match && match[1] !== '00000000-0000-0000-0000-000000000000' ? match[1] : '';
 }
 
+export function relaySingleInput(terminal: RelayTaskView['terminal'], agent: RelayAgent | undefined) {
+  return terminal?.drive_mode === 'terminal' && agent?.input_mode === 'stdin_eof';
+}
+
 export function relayDisplayState(view: RelayTaskView) {
   if (view.task.condition === 'terminal_exited') return 'terminal_exited · 终端退出，任务未完成';
   return `${relayStateLabel[view.task.state]} · ${view.task.state}${view.task.condition ? ` · ${view.task.condition}` : ''}`;
