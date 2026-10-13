@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"testing"
@@ -8,6 +9,55 @@ import (
 
 	"github.com/google/uuid"
 )
+
+func TestRelayExplicitGuardDoesNotApplyWorkbenchDefaultAndRejectsSnapshotHardlinkBeforeWrite(t *testing.T) {
+	local := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification", "relay-guard", uuid.NewString())
+	if os.MkdirAll(local, 0700) != nil {
+		t.Fatal("test state unavailable")
+	}
+	t.Setenv("LOCALAPPDATA", local)
+	t.Setenv("ASTROCYTE_RELAY", "1")
+	t.Setenv("ASTROCYTE_WORKBENCH", "1")
+	t.Setenv("ASTROCYTE_DATA_DIR", "")
+	p, e := resolveRelayDataDir("unselected")
+	if e != nil {
+		t.Fatal("relay isolation unavailable")
+	}
+	guarded, e := guardWorkbenchExplicitDataDir(p)
+	if e != nil || guarded != p {
+		t.Fatal("relay directory overridden by old default")
+	}
+	old, e := guardWorkbenchDataDir("unselected")
+	if e != nil || old != filepath.Join(workbenchRoot(), "app-state") {
+		t.Fatal("existing Workbench default changed")
+	}
+	copyDir := filepath.Join(workbenchRoot(), "snapshots", "fixture")
+	for _, d := range []string{p, copyDir} {
+		if os.MkdirAll(d, 0700) != nil {
+			t.Fatal("fixture directory unavailable")
+		}
+	}
+	copyFile := filepath.Join(copyDir, "snapshot.sqlite")
+	before := []byte("fixture snapshot bytes")
+	if os.WriteFile(copyFile, before, 0600) != nil || os.Link(copyFile, filepath.Join(p, "state.sqlite")) != nil {
+		t.Fatal("hardlink fixture unavailable")
+	}
+	if _, e = guardWorkbenchExplicitDataDir(p); e == nil {
+		t.Fatal("snapshot alias accepted for migration")
+	}
+	after, e := os.ReadFile(copyFile)
+	if e != nil || !bytes.Equal(before, after) {
+		t.Fatal("rejected alias wrote source bytes")
+	}
+	for _, suffix := range []string{"-wal", "-shm"} {
+		if _, e = os.Stat(copyFile + suffix); !os.IsNotExist(e) {
+			t.Fatal("rejected alias created SQLite sidecar")
+		}
+		if _, e = os.Stat(filepath.Join(p, "state.sqlite") + suffix); !os.IsNotExist(e) {
+			t.Fatal("rejected alias opened writable app DB")
+		}
+	}
+}
 
 func TestRelayConfigurationIsolationAndNoImplicitLiveWindow(t *testing.T) {
 	local := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification", "relay-config", uuid.NewString())

@@ -73,6 +73,7 @@ func publicRelayView(v domain.RelayTaskView) domain.RelayTaskView {
 
 // A closed six-field projection is the only event serialization boundary.
 func publicRelayEvents(items []domain.RelayEvent) []workbench.Event {
+	items = append([]domain.RelayEvent(nil), items...)
 	sort.SliceStable(items, func(i, j int) bool {
 		if items[i].TS.Equal(items[j].TS) {
 			return items[i].ID > items[j].ID
@@ -210,7 +211,7 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 				return nil, e
 			}
 			for _, receipt := range receipts {
-				if receipt.Action == "dispatch" && receipt.Status == "succeeded" && !seen[v[i].Task.WorkID] {
+				if receipt.Action == "dispatch" && receipt.Status == "accepted" && !seen[v[i].Task.WorkID] {
 					ids = append(ids, v[i].Task.WorkID)
 					seen[v[i].Task.WorkID] = true
 				}

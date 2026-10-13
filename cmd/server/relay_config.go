@@ -28,7 +28,12 @@ func relayRoot() (string, error) {
 	if !filepath.IsAbs(local) {
 		return "", errors.New("relay requires absolute LOCALAPPDATA")
 	}
-	return workbenchCanonical(filepath.Join(local, "astrocyte-workbench", "v0.2-access"))
+	expected := filepath.Join(local, "astrocyte-workbench", "v0.2-access")
+	resolved, err := workbenchCanonical(expected)
+	if err != nil || !strings.EqualFold(filepath.Clean(expected), filepath.Clean(resolved)) {
+		return "", errors.New("relay access root must not redirect")
+	}
+	return resolved, nil
 }
 func relayInside(root, path string) bool {
 	rel, err := filepath.Rel(strings.ToLower(root), strings.ToLower(path))
