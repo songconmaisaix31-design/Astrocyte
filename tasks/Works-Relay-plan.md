@@ -33,3 +33,5 @@
 CI资源例外（精确首失败后）：I额外独占 `.github/workflows/check.yml`，只把Windows完整Playwright执行设为workers=1，沿已有4727f7a的两OS条件步骤；Linux原命令不变。首集成CI38463553347 Windows旧s1.spec.ts:178 page.reload报ERR_NO_BUFFER_SPACE，267 PASS/1 FAIL/38 SKIP；本机1worker完整268/38、Linux2workers完整成功，不是领域断言问题。原run保留，不改任何spec、viewport、fixture、timeout、retry、skip或业务；新SOURCE精确CI验证资源修复。
 
 排期：D1注册/活性/中性工作区/总览，D2接力/实时，D3 E2E/实测/演示/部署。Procmon与00:30真实两日保持各自真实时间验收，v0.1未收尾不阻塞本任务，未发生不预填PASS。
+
+工程验核更新：Root已普通合业务并push，4252db7完整check PASS、ff7c551 build PASS，I84bb完整默认E2E268 PASS/38 SKIP。b25双平台CI38466602701成功；后续bdf CI38468510081 Linux仅EOF测试末尾证据目录缺失RED，H同ownerTask task_c0577095b4cb / Dispatch ctx_a01ed6996519返修。允许路径仅cmd/server/relay_eof_http_test.go与自身报告，保持短Windows cwd、全部业务与断言/timeout/skip不变。最终CI及I报告待完成；原首失败均保留，用户门禁和正式验收不降低。

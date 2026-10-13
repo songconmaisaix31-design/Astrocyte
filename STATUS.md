@@ -2,9 +2,9 @@
 
 ## Works Relay v1.2 实施中（2026-10-14）
 
-最新：三轨R b19d836/4848a98、H c7c3255/6e211dd、F b48a6e5/fdcf21b为独立工程SOURCE/REPORT，均push/clean/remote一致，固定owner结算后保留。唯一集成I ctx_ace29bd7baa1已无冲突普通合三REPORT，早期SOURCE 84bb3f9；完整集成CI/E2E/Root验核待执行，业务尚未合Root。公开扫描样本、真实TCP/SQLite及公开受控进程适用测试通过，不替实际Codex→Claude、terminal-only coding、Today正式事件闭环或Procmon/两日。权限工具/来源/活性窗口/Today待答；部署已授权，当前真实验收门未满足。
+最新：三轨已由唯一集成I普通no-ff合入，Root已合业务并push至workbench/v0.2-access，工程树与I SOURCE bdfbbdb相等。Root完整pnpm check在4252db7通过（103.39s），pnpm build在ff7c551通过（14.45s）；I完整默认E2E268 PASS/38 SKIP。修复Windows执行资源后的CI38466602701在b25f43a双平台success，但其后H测试fixture改变，最终bdf CI38468510081 Linux在测试末尾证据目录缺失处RED，不作最终CI通过。H同owner新Task task_c0577095b4cb / Dispatch ctx_a01ed6996519返修，I继续集成。Root首次完整check3387019的Windows长cwd失败、原84bb CI的ERR_NO_BUFFER_SPACE和新Linux首RED均保留，不互相覆盖。实际Codex→Claude、terminal-only coding、Today正式闭环、Procmon及两日仍未验收；用户待答门禁不自行启用，17321保持v0.1。
 
-目标workbench/v0.2-access；[计划](tasks/Works-Relay-plan.md)6ebf523已push；[owner及决策](tasks/Works-Relay-decisions.md)。Orca Run run_d577f0d3fee1三轨均observed启动，R已发最小Go接口提案并调查既有native工具限制，H准备早期契约，F准备寻回册组装。新代码尚未交付/集成或通过验收，v0.1基线CI不替代v0.2。三项用户接缝待答，未答不冻结相关选择；独立模块推进。validation/V4正式库及既有认知schema/引擎/权重/快照管道保持原边界。
+目标workbench/v0.2-access；[计划](tasks/Works-Relay-plan.md)、[owner及决策](tasks/Works-Relay-decisions.md)记录精确SOURCE/REPORT与返修。Orca Run run_d577f0d3fee1沿固定owner持续。已有注册表/三值/中性工作区/HTTP权限门与收据/真实扫描总览/任务实时UI工程实现，受控实际进程和HTTP覆盖不替代实际模型工作或认知更新。Today实时接缝、作品当前状态范围、视觉与活性窗口、工具执行权限待答。validation/V4正式库及既有认知schema/引擎/权重/快照管道保持原边界。
 
 ## Workbench 双平台最终结论（2026-10-14 01:53 +08:00）
 

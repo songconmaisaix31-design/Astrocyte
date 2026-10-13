@@ -75,3 +75,10 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - Root普通合SOURCE为 `3387019f7c349957ef8f4c75d98ecd7fbbe42200`，push已成功，业务与84bb全等；独立check进行中，新的精确CI38465806043进行中。首次push TLS失败后先核远端仍f59c884，再普通push成功，无force。
 - I首完整CI38463553347 exact84bb整体RED：Linux完整成功含race；Windows267 PASS/1 FAIL/38 SKIP，唯一旧s1.spec.ts:178 page.reload的net::ERR_NO_BUFFER_SPACE，执行2 workers。首完整日志留外部且不rerun覆盖。Root授权I只改check.yml的Windows执行资源为1 worker，采用已有4727f7a中最小条件命令；不是引入其validation业务历史，不改旧spec/数据/断言/timeout/retry/skip或Linux执行。新的SOURCE、完整双平台CI和Root最终parity分别核验。
 - Root复核1280公开截图的入场局部显示，后次稳定dialog几何正确、document横向无溢出。第三/第四外部定位检查首RED为nearest-scroll后textarea底缘0.90625px超出严格界限，保留；第五按真实居中滚动测量且不松阈值PASS，未改产品动画/源码/测试。此为验证定位假设，不宣称修了产品缺陷。
+
+## Root完整检查与跨平台fixture返修
+
+- Root首次完整check在SOURCE `3387019f7c349957ef8f4c75d98ecd7fbbe42200` EXIT1/316.50s；仅真实HTTP EOF测试confirm409/delivery_unknown。H同owner受控CreateProcess证明Windows长cwd281启动失败ERROR_DIRECTORY267，短cwd126成功，非EOF关闭竞态。H SOURCE `19c83e39b65e9a0cebc5bad20f7dba3f6c82cd2a` / REPORT `91d27e5a25ce676988ab90ef52bb81d647f324c6`仅缩短独立测试子目录，保留全部断言与5s期限；原Task task_06ea6371c814已succeeded并retained，原未知收据不重跑覆盖。物理Windows长cwd限制未声称产品修复。
+- Root SOURCE `4252db7575496b872317b750895ef20f6d414f65` 在完全相同隔离子环境完整pnpm check EXIT0/103.39s；build在 `ff7c5519da47ef995e91ce04c136a4d6881ce018` EXIT0/14.45s，之后产品构建树无变化。install固定锁通过。日志与原件仅LOCALAPPDATA/v0.2-access/verification/root-3387019-20261014，首check和second check分开保留。I独立bdf完整check另EXIT0/115.31s。
+- Root普通合I最终SOURCE为 `ee0bc900be1192e9665b506748e563941bc35f52`，与I `bdfbbdbbd6cbd6567e57ef3ed06ac2b3a860e97a` 和Root425非Markdown全等；均push。资源修复SOURCE b25的CI38466602701双平台success，不能替代随后测试fixture变动后的bdf。Root旧重复CI38465806043/38466554203已cancelled，标为PARTIAL不冒称通过，不取消其他owner运行。
+- bdf最终CI38468510081 Linux首次RED：EOF测试最后relay_eof_http_test.go:193导出公开响应失败，之前HTTP/输入/receipt断言通过。缩短cwd后未显式创建evidence目录，Linux空fallback根缺verification；H同owner新Task `task_c0577095b4cb` / Dispatch `ctx_a01ed6996519` 已observed，独占EOF测试fixture与H报告返修，I不代写领域代码。最终双平台CI待新精确SOURCE，原84bb和bdf首RED不重跑覆盖。
