@@ -158,13 +158,22 @@ func (d *RelayTerminalDriver) Send(ctx context.Context, r app.RelayLaunch, input
 	if p.observation().ExitConfirmed {
 		return p.observation(), nativeError(apierrors.VersionConflict, "terminal process has exited")
 	}
-	p.writeMu.Lock()
-	defer p.writeMu.Unlock()
-	_, err = io.WriteString(p.stdin, input+"\n")
-	if err != nil {
-		return p.observation(), nativeError(apierrors.DeliveryUnknown, "terminal input delivery is unknown; do not resend")
+	written := make(chan error, 1)
+	go func() {
+		p.writeMu.Lock()
+		defer p.writeMu.Unlock()
+		_, e := io.WriteString(p.stdin, input+"\n")
+		written <- e
+	}()
+	select {
+	case err = <-written:
+		if err != nil {
+			return p.observation(), nativeError(apierrors.DeliveryUnknown, "terminal input delivery is unknown; do not resend")
+		}
+		return p.observation(), nil
+	case <-ctx.Done():
+		return p.observation(), nativeError(apierrors.DeliveryUnknown, "terminal input deadline elapsed; do not resend")
 	}
-	return p.observation(), nil
 }
 
 func (d *RelayTerminalDriver) Read(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {

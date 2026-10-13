@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,6 +61,9 @@ func OpenRelayStore(root string) (*RelayStore, error) {
 		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
 			return nil, errors.New("relay DB must be a regular independent file")
 		}
+		if err = verifyRelayFileReadOnly(path); err != nil {
+			return nil, err
+		}
 	} else if !errors.Is(e, os.ErrNotExist) {
 		return nil, e
 	}
@@ -93,7 +97,53 @@ CREATE TABLE IF NOT EXISTS relay_receipts (id TEXT PRIMARY KEY, data TEXT NOT NU
 	if err != nil {
 		return fail(err)
 	}
+	if _, err = db.conn.Exec("PRAGMA wal_checkpoint(FULL)"); err != nil {
+		return fail(err)
+	}
 	return &RelayStore{db: db}, nil
+}
+
+// Inspect before sqlite.Open can set WAL or any write PRAGMA. Immutable RO
+// avoids WAL/SHM creation even for a foreign database placed as a hard link.
+func verifyRelayFileReadOnly(path string) error {
+	uriPath := filepath.ToSlash(path)
+	if filepath.VolumeName(path) != "" && !strings.HasPrefix(uriPath, "/") {
+		uriPath = "/" + uriPath
+	}
+	u := url.URL{Scheme: "file", Path: uriPath}
+	q := u.Query()
+	q.Set("mode", "ro")
+	q.Set("immutable", "1")
+	q.Set("_pragma", "query_only(1)")
+	u.RawQuery = q.Encode()
+	conn, err := sql.Open("sqlite", u.String())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	rows, err := conn.Query("SELECT name FROM sqlite_master WHERE type='table'")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	count := 0
+	for rows.Next() {
+		var name string
+		if err = rows.Scan(&name); err != nil {
+			return err
+		}
+		if name != "relay_state" && name != "relay_receipts" {
+			return errors.New("existing file is not an exclusive relay store")
+		}
+		count++
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}
+	if count != 2 {
+		return errors.New("existing file lacks the committed relay store identity")
+	}
+	return nil
 }
 
 func (s *RelayStore) Close() error { return s.db.Close() }
@@ -102,7 +152,7 @@ func emptyRelayState() app.RelayState {
 	return app.RelayState{Tasks: map[string]domain.RelayTask{}, Workspaces: map[string]domain.RelayWorkspace{},
 		Terminals: map[string]domain.RelayTerminal{}, Sessions: map[string]domain.NativeSession{},
 		Receipts: map[string]domain.RelayReceipt{}, Transitions: []domain.RelayTransition{},
-		Events: []domain.RelayEvent{}, Published: map[string]bool{}, PendingActions: map[string]string{}}
+		Events: []domain.RelayEvent{}, Published: map[string]bool{}, PendingActions: map[string]string{}, PublicationErrors: map[string]bool{}}
 }
 
 type relayQuerier interface {
@@ -144,6 +194,9 @@ func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error)
 	}
 	if state.PendingActions == nil {
 		state.PendingActions = map[string]string{}
+	}
+	if state.PublicationErrors == nil {
+		state.PublicationErrors = map[string]bool{}
 	}
 	state.Receipts = map[string]domain.RelayReceipt{}
 	rows, err := q.QueryContext(ctx, "SELECT data,input FROM relay_receipts")
