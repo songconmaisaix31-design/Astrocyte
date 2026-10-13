@@ -1,5 +1,31 @@
 # Astrocyte 当前状态
 
+## Workbench 实现与本机验收（2026-10-14 01:51 +08:00）
+
+只读红线：引擎、events/Sleep、迁移、权重、参数及validation/V4零改动。目标分支 `workbench/v0.1-workbench`；测试源码SHA `d46f9f4cf2fd6e13c8362234746105330356c160` 已push，后续集成报告合并 `ecc641f93f4bfe170c5f7bdccb9ca963ba6dc551` 仅文档，与测试业务树完全相等。原attention-engine CI是历史基线，当前新CI见下，不互相替代。未合main，解冻后按裁决与validation一次收敛。
+
+既有web新增认知一级页和今日/焦点/来源/证据四子路由；沿原设计token、组件、session、构建和Playwright。既有server新增七个只读认知GET，事件六字段投影，source仅过滤与聚合标签。在线快照、V1R确证历史拼接、人工刷新、每日00:30和登录任务均落地。没有新前端工程、独立Go工程或引擎逻辑。
+
+| 阶段 | 精确SOURCE | 精确REPORT | 结算 |
+|---|---|---|---|
+| backend | 8635895e40eb022e92a86870861b4d09fd168147 | 51a2102f566718280669eda774d8bb442fb2f1c9 | succeeded，已push/clean |
+| frontend | 8ec40f7633236b80bf12e34aa6468633f96d4072 | ca1bcde736706e1f0ce8a80c6ece65ff2bd9fea1 | succeeded，已push/clean |
+| 唯一集成 | c5da66724d22455fbbf376c2516f91c4bef63d5c | 4adbc3841399f54b68ad65e7f76964d794e9dc5c | succeeded，已push/clean，无胶水 |
+
+全部SOURCE/REPORT均普通no-ff祖先；两轨代码与最终树逐路径相等，REPORT仅各报告文件。三个开发/集成Worker已release并归档，reclaimable=0；旧独立方案与重启中断记录保留，不改成实现通过。
+
+root在d46精确业务树执行 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` 与 `pnpm build` 均EXIT0：全部Go/vet、28包架构、277契约例、14项S1、96项Vitest及TS/lint/漂移检查通过。`pnpm test:e2e --workers=1` 完整默认双视口238PASS/32SKIP，6.8分钟、EXIT0；32项保持既有与新增live的opt-in条件，真实认知live不以默认SKIP冒称执行。
+
+frontend最终适用组合118PASS（认知12+Nav104+真实live2）。root独立SQL复核两视口各10项未舍入数值及可见四位文本均相等，误差0。root另对脱离Worker的最终静态服务实际浏览四路由，再复核10项数值/文本，零pageerror、零非GET认知请求。3105/3105事件六字段逐值与SQL一致，六主题当前A/M/C及所有唯一历史(ts,A)对保留；完全重复历史点去重不改变数值。backend真实50请求/7248非派生raw字符串零命中，隔离模拟副本实际HTTP13请求canary1零泄漏；真实raw_unique人口0，明确NOT_APPLICABLE。
+
+首Vitest、114PASS/2drawer断言RED、Windows URI RED、旧importer/旧check PARTIAL以及root字符串审计误把derived ts/scope算raw的诊断均保留本机原件。修正审计判定不裁剪合法派生字段，不覆盖首结果。原始数据、快照、配置、截图和UI取证JSON均仅LOCALAPPDATA/astrocyte-workbench/v0.1。
+
+本机地址：http://127.0.0.1:17321/cognition/today。集成Worker退出后其直接启动服务随回收结束；root用已注册 `Start-ScheduledTask -TaskName Astrocyte-Workbench-v01-Start` 脱离Worker重启并复核，PID41892于01:43:50启动、01:51仍在，session/四页/十值SQL均通过。config.web指向集成树web/dist；当前snapshot-hxfipcpr、snapshot_at2026-10-13T17:24:01.253839Z保持不变。每日Snapshot下一次2026-10-15 00:30；登录Start已执行Result0，两个任务Ready。
+
+新[CI38440379678](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38440379678)归属源码d46：01:51 Ubuntu完整success，Windows浏览器阶段仍运行，尚不宣称双平台PASS。最终结论追加记录。
+
+全验收仍未完成：管理员Procmon正式DB/WAL/SHM进程级零写监控NOT_RUN；连续两个真实日期00:30自动成功NOT_RUN，待10-15/10-16实际记录。安装Ready、01:24非准点历史、手动刷新、文件hash、只读SQL测试均不替代这两项。管理员操作步骤见[后端报告](docs/workbench/backend.md)。validation仍229de2f，锁协议SHA5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7不变，v0.2未开工。
+
 ## Workbench 修订版续接（2026-10-14 01:22 +08:00）
 
 目标分支 `workbench/v0.1-workbench`，计划/契约见 [执行单](tasks/Workbench-v01.md) 与 [HTTP 契约](tasks/Workbench-api.md)。从 attention-engine/v1-20261011 建立；相对 CI 绿基线100f00cb仅历史文档偏差，复用现有 web/server/鉴权/Playwright。下方 attention-engine CI 是历史基线，不是 Workbench 验收。validation、V4正式库、引擎、迁移与参数零改动；当前不合main，解冻后两分支一次收敛。

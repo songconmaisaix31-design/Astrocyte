@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 当前交付入口：Workbench 本机已部署（2026-10-14 01:51）
+
+分支workbench/v0.1-workbench，root测试源码d46f9f4、报告普通合ecc641f；三轨精确SOURCE/REPORT见STATUS顶部，全部succeeded、push/clean，Worker已release，reclaimable=0。既有web/server只读认知四页在http://127.0.0.1:17321/cognition/today，服务由Windows已注册Start任务独立启动，非Worker子进程。root check/build EXIT0，完整默认E2E238PASS/32SKIP；真实live2、双视口十值与独立SQL、最终静态四页十值均PASS。首RED与中断保持本机原件。
+
+新CI38440379678精确归属d46：Ubuntu已success，Windows仍浏览器阶段，待最终追加结论。目标HEAD后续仅文档，业务与d46相等。剩余全验收为管理员Procmon正式DB/WAL/SHM零写和10-15/10-16两日00:30真实自动结果；执行步骤在docs/workbench/backend.md，不能以人工刷新、Ready或hash替代。所有数据库/配置/原始数据/截图/取证仅LOCALAPPDATA；validation/V4/引擎/schema/参数未改，v0.2仍冻结，main未合，解冻后一次收敛。
+
 ## 当前入口：Workbench 只读认知页（2026-10-14）
 
 先读STATUS顶部与tasks/Workbench-v01.md、Workbench-api.md。交付分支workbench/v0.1-workbench基于attention-engine/v1-20261011，复用现有web/server，不采用已封存独立工程；引擎/schema/validation/V4不动。Orca重启后原两个Task在原工作树续接，backend ctx1f5ae09e7cad、frontend ctxca3e2f3fcf21，均已observed启动；旧中断failed与首RED保留。root只计划/状态/独立验收/最终Git，业务返修归owner。
