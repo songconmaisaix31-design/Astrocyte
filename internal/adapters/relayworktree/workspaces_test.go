@@ -2,6 +2,7 @@ package relayworktree
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
@@ -18,6 +20,19 @@ func testGit(t *testing.T, root string, args ...string) {
 	cmd.Env = append(os.Environ(), "GIT_CONFIG_NOSYSTEM=1", "GIT_CONFIG_GLOBAL="+os.DevNull)
 	if err := cmd.Run(); err != nil {
 		t.Fatalf("public test Git command failed: %v", err)
+	}
+}
+
+func TestNeutralNestedRootRemainsDenied(t *testing.T) {
+	source := cleanRepo(t)
+	nested := filepath.Join(source, "nested")
+	if e := os.Mkdir(nested, 0700); e != nil {
+		t.Fatal(e)
+	}
+	_, e := New(t.TempDir(), Options{AllowCommittedGit: true}).Prepare(context.Background(), domain.Work{Root: nested, Kind: domain.WorkKindFolder}, domain.RelayWorkspace{ID: uuid.NewString()})
+	var denied *apierrors.ServiceError
+	if !errors.As(e, &denied) || denied.Code != apierrors.ScopeDenied {
+		t.Fatal("nested directory admitted as the repository root")
 	}
 }
 func cleanRepo(t *testing.T) string {

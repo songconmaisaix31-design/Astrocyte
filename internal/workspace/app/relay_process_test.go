@@ -21,6 +21,16 @@ func TestRelayControlledCLIProcess(t *testing.T) {
 		return
 	}
 	_, _ = fmt.Fprintln(os.Stdout, "public cli active")
+	// This scenario asserts a currently active process. Keep producing real
+	// public activity while it handles input; a separate process test covers
+	// silence, so slow Git observations cannot turn this fixture into silence.
+	go func() {
+		ticker := time.NewTicker(20 * time.Millisecond)
+		defer ticker.Stop()
+		for range ticker.C {
+			_, _ = fmt.Fprintln(os.Stdout, "public cli active")
+		}
+	}()
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		if scanner.Text() == "__edit__" {
@@ -32,8 +42,6 @@ func TestRelayControlledCLIProcess(t *testing.T) {
 
 func TestRelayControlledCLIFullStateAndGitObservation(t *testing.T) {
 	f := newRelayFixture(t)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	t.Setenv("ASTROCYTE_RELAY_CONTROLLED_CLI", "1")
 	source := t.TempDir()
 	git := func(args ...string) {
@@ -67,6 +75,8 @@ func TestRelayControlledCLIFullStateAndGitObservation(t *testing.T) {
 	}})
 	f.service = app.NewRelayService(f.store, f.works, f.projects, workspaces, nil, terminal, f.sink, f.options)
 	id := f.intent()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	result, e := f.service.ConfirmIntent(ctx, caller(), id, confirm())
 	if e != nil {
 		t.Fatal(e)
