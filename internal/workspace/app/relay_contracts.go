@@ -53,6 +53,7 @@ type RelayState struct {
 	Workspaces        map[string]domain.RelayWorkspace
 	Terminals         map[string]domain.RelayTerminal
 	Sessions          map[string]domain.NativeSession
+	OwnedSessions     map[string]domain.RelayOwnedSession
 	Receipts          map[string]domain.RelayReceipt
 	Transitions       []domain.RelayTransition
 	Events            []domain.RelayEvent
@@ -84,6 +85,7 @@ type RelayLaunch struct {
 
 type RelayObservation struct {
 	Session       domain.NativeSession
+	Archive       *domain.RelaySessionArchive
 	Events        []domain.RelayEvent
 	ExitConfirmed bool
 }
@@ -115,6 +117,12 @@ type RelayLifecycle interface {
 // and cannot produce action receipts or fresh activity timestamps.
 type RelayOwnedSessionReader interface {
 	ListOwnedRelaySessions(context.Context) ([]domain.RelayOwnedSession, error)
+}
+
+// RelayOwnedArchiveProvider supplies exact positive native metadata. Absence is
+// an explicit coverage gap; callers may not infer roots, filenames or formats.
+type RelayOwnedArchiveProvider interface {
+	OwnedRelayArchive(context.Context, domain.NativeSession) (domain.RelaySessionArchive, error)
 }
 
 type RelayServiceOptions struct {
