@@ -57,6 +57,14 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - F已由Root立即复用同一已证明terminal/worktree/branch，后续Task `task_12347e40c49f` / Dispatch `ctx_52ef7f772849`；旧Dispatch已inactive，cleanup ownership已转移，禁止向旧mailbox派发。返修仅安全显示互斥现有task提示和适用UI验核。
 - H互斥安全提示SOURCE `7e167026593cd510f2f6e62aa4b3d737531ade64`：仅VersionConflict、canonical非零UUID且同human Caller经runtime公开GetTask确认时保留view_existing_task提示；原receipt及重载一致。任意provider action/path/raw、未知UUID和无关冲突不透传。F消费此源码。
 - Windows目录短名firstCI `38457889686` / `38458172696` RED保留。R SOURCE `af6e76d1083c73b3fb3d28d0e3c915e99ee014cb` 改以真实目录identity比较，H SOURCE `0c21364218eb4dc0ae379a5a66942532e986b460` 普通合入；本机真实8.3 alias及不同目录拒绝PASS。后来remote Go包检查通过至schema漂移处，不是完整CI绿；race/build/E2E尚未跑。
-- Root新增必要审查退R：真实新Git登记事件应计入活性，重复观察不续命、多来源LastEvent不倒退、exited优先；同Agent新task复用terminal_id时应创建新native session，未完成task resume不重派；operation身份必须绑定target task，相同nil/确认输入不能跨task返回另一receipt。修正和测试待精确SOURCE。
+- Root新增必要审查退R：真实新Git登记事件应计入活性，重复观察不续命、多来源LastEvent不倒退、exited优先；同Agent新task复用terminal_id时应创建新native session，未完成task resume不重派。另要求复核operation与target task绑定：原实现已把TaskID封入输入，Root最初疑点未成立；跨task负例属于验证补充，不记录为原缺陷或首RED。
 - R仅以本机公开help/version核实真实CLI stdin/EOF/TTY兼容性，未运行自由工具；H据独立能力证据准备初始注册数据，注册不授权、不派发、未知不宣称可用。
 - H核实正式collector为validation的runLiveCLI/captureLive，要求已授权native根、时间窗、cwd/session与真实Git身份；不会消费relay.sqlite或独立pending观察。正式路径覆盖与真实启动证据未核实，认知闭环仍BLOCKED/NOT_RUN，validation代码/mapper/权重不改。
+
+## 最终工程候选与集成门
+
+- R最终SOURCE `b19d83635fe10cde9d42642d7444f3771d02f513` / REPORT `4848a98eef45656f30326054f3da8298f61044b1`，原Task已按独立工程阶段succeeded结算。新task的新native session、Git证据单调、structured默认安全降级、可选stdin_eof及无变化观察零Update均有适用回归；完整Go/架构/vet/build PASS。真实Codex/Claude、terminal-only Agent coding和认知闭环未验收。
+- F最终SOURCE `b48a6e5008b4da087a5d19c0a091b487197e7494` / REPORT `fdcf21b25dc3e8c84d2aa39b772a381374b50135`，同owner返修Task已succeeded。安全显示真实互斥task提示，terminal stdin_eof明确禁用发送；6项适用Vitest、16项适用E2E及生成/typecheck/lint/build PASS。E2E包含真实HTTP公开响应回放与mock，不是实际模型启动。
+- R与F由Root明确retained：依据用户“开发、测试、文档和返修由同一个Worker持续完成”，保留同terminal/worktree/branch用于后续领域返修。新工作需新Task/Dispatch，不给已完成Dispatch发送；未结算或静默不能释放。
+- H正在消费R最终精确源码并做组装回归。注册表当前启动时读取，追加条目需重启服务才能显示，不能宣称热更新。独立公开样本应验证同一测试URL重启后列表扩展且调度代码不变。
+- 三轨结算后唯一集成Worker从root最新分支创建，普通no-ff合精确REPORT（保留SOURCE祖先）；只允许少量入口/路由/类型/配置胶水及自己的集成报告，领域问题退原owner。先完成可独立的全工程检查，再由Root复验、提交与push；用户待答语义不自行配置，17321已验实例不提前替换。
