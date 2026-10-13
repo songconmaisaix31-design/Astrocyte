@@ -58,7 +58,7 @@ func (s *relayService) observeOwnedSession(st *RelayState, task domain.RelayTask
 			}
 		}
 	}
-	if obs.Archive != nil && bound.Ownership == "owned" && bound.SessionID != "" && bound.NativeID != "" && bound.Gap != "session_identity_changed" {
+	if obs.Archive != nil && bound.Ownership == "owned" && bound.SessionID != "" && bound.NativeID != "" && bound.Gap != "session_identity_changed" && bound.Gap != "session_ownership_unverified" {
 		if !relayArchiveMatches(*obs.Archive, bound) || bound.ArchivePath != "" && (bound.ArchivePath != obs.Archive.Path || bound.ArchiveRoot != obs.Archive.Root || bound.ArchiveFormat != obs.Archive.Format) {
 			bound.SourceStatus, bound.Gap = "gap", "archive_identity_changed"
 		} else if bound.Gap != "archive_identity_changed" {
@@ -131,7 +131,7 @@ func (s *relayService) ListOwnedRelaySessions(ctx context.Context) ([]domain.Rel
 		// the exact controller session and writer captured by this Service.
 		if bound.ExitedAt == nil {
 			session := st.Sessions[bound.TerminalID]
-			if workspace.ActiveTaskID != task.ID || session.ID != bound.SessionID || session.NativeID != bound.NativeID || session.Ownership != "owned" {
+			if workspace.ActiveTaskID != task.ID || session.ID != bound.SessionID || session.NativeID != bound.NativeID || session.Ownership != "owned" || session.ProjectID != task.ProjectID || session.CLI != task.Agent {
 				result = append(result, relayBindingGap(bound, "session_identity_changed"))
 				continue
 			}
