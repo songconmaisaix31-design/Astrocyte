@@ -34,6 +34,8 @@ export function createRelayApi(client = api) {
     read: async (id: string, key: string) => unwrap(client.POST('/relay/tasks/{id}/read', { body: {}, params: { path: { id }, header: await headers(key) } })),
     stop: async (id: string, key: string) => unwrap(client.POST('/relay/tasks/{id}/stop', { body: {}, params: { path: { id }, header: await headers(key) } })),
     resume: async (id: string, key: string) => unwrap(client.POST('/relay/tasks/{id}/resume', { body: {}, params: { path: { id }, header: await headers(key) } })),
+    transition: async (id: string, body: components['schemas']['RelayTransitionRequestV1'], key: string) => unwrap(client.POST('/relay/tasks/{id}/transition', { body, params: { path: { id }, header: await headers(key) } })),
+    reconcileEvents: async (id: string, key: string) => unwrap(client.POST('/relay/tasks/{id}/events/reconcile', { body: {}, params: { path: { id }, header: await headers(key) } })),
   };
 }
 export const relayApi = createRelayApi();

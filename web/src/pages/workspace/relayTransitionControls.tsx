@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import type { components } from '../../api/schema';
-import type { RelayActionResult, RelayTaskView } from '../../api/relay';
+import type { RelayTaskResult, RelayTaskView } from '../../api/relay';
 import { useRelayCommand } from './relayCommand';
-import { relayReceiptLabel } from './relayPresentation';
 
 export function RelayTransitionControls({ view, disabled, transition, onChanged }: {
   view: RelayTaskView;
   disabled: boolean;
-  transition: (body: components['schemas']['RelayTransitionRequestV1'], key: string) => Promise<RelayActionResult>;
+  transition: (body: components['schemas']['RelayTransitionRequestV1'], key: string) => Promise<RelayTaskResult>;
   onChanged: () => void;
 }) {
   const [confirmedVersion, setConfirmedVersion] = useState('');
-  const command = useRelayCommand();
+  const command = useRelayCommand<RelayTaskResult>();
   const version = `${view.task.state}:${view.task.updated_at}`;
   const checked = confirmedVersion === version;
   const canComplete = view.task.state === 'working';
@@ -32,6 +31,6 @@ export function RelayTransitionControls({ view, disabled, transition, onChanged 
     </fieldset>
     {command.error && <p role="alert">{command.error} · 操作 {command.operationID}</p>}
     {command.uncertain && <p role="alert">迁移结果未知，不重复提交；请只读取服务端状态与收据。</p>}
-    {command.result && <p role="status">状态迁移收据 {command.result.receipt.receipt_id} · {relayReceiptLabel[command.result.receipt.status]}</p>}
+    {command.result && <p role="status">迁移请求已返回 · 请核对服务端当前状态与持久收据。</p>}
   </section>;
 }

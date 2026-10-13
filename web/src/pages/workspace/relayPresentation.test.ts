@@ -5,7 +5,8 @@ import type { RelayProject, RelayReceipt } from '../../api/relay';
 const project: RelayProject = { project_id: 'test', name: 'Public test', root: 'C:/public/test', permission_level: 'C', project_settings_revision: 4, allowed_subdirs: ['README.md'], allowed_actions: ['start'], allow_agent_control: false, allow_directory: false, expand_references: true };
 describe('relay projection safety', () => {
   it('matches an approved project without permitting prefix sibling escapes', () => {
-    expect(relayProjectMatches('C:\\PUBLIC\\test\\child', project)).toBe(true);
+    expect(relayProjectMatches('C:\\PUBLIC\\test', project)).toBe(true);
+    expect(relayProjectMatches('C:\\PUBLIC\\test\\child', project)).toBe(false);
     expect(relayProjectMatches('C:/public/test-secret', project)).toBe(false);
     expect(relayProjectMatches('/tmp/Public', { ...project, root: '/tmp/public' })).toBe(false);
   });

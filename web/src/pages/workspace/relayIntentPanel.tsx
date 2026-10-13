@@ -23,7 +23,7 @@ export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWo
     {view ? <RelayConfirmation key={view.task.task_id} view={view} onChanged={onChanged} /> : <>
       <p>声明意图只保存任务，下一页确认权限后才会启动 Agent。</p>
       {work && <><Field label="作品">{work.name}</Field><Field label="交接手册">{work.handoff.content || '尚无交接手册，请先补充当前状态和下一步。'}</Field></>}
-      <QueryState state={projects}>{() => !compatible.length ? <p role="status">作品尚无匹配的获准项目。请在共同工作区登记并确认项目许可。</p> : null}</QueryState>
+      <QueryState state={projects}>{() => !compatible.length ? <p role="status">作品尚无根目录完全匹配的获准项目。请在共同工作区登记并确认项目许可；当前服务不接受嵌套根目录代替作品根。</p> : null}</QueryState>
       <QueryState state={agents}>{() => null}</QueryState>
       <form onSubmit={event => {
         event.preventDefault();

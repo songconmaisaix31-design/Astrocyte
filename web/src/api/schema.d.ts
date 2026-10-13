@@ -1,5 +1,25 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/relay/tasks/{id}/events/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explicit human reconciliation of the same derived event origins
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset. Does not re-execute Agent or clear original receipts. Published means admitted to isolated app observations, not cognitive normalization or snapshot publication.
+         */
+        post: operations["reconcileRelayTaskEvents"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/relay/projects": {
         parameters: {
             query?: never;
@@ -2435,6 +2455,12 @@ export interface components {
             terminal: components["schemas"]["RelayTerminalV1"] | null;
             worktree: components["schemas"]["RelayWorkspaceV1"] | null;
             transitions: components["schemas"]["RelayTransitionV1"][];
+            event_publication: {
+                /** @enum {string} */
+                status: "none" | "pending" | "published" | "error";
+                pending_events: number;
+                published_events: number;
+            };
         };
         /**
          * @example {
@@ -2468,7 +2494,7 @@ export interface components {
             /** Format: uuid */
             operation_id: string;
             /** @enum {string} */
-            action: "intent" | "dispatch" | "send" | "read" | "stop" | "resume" | "transition";
+            action: "intent" | "dispatch" | "send" | "read" | "stop" | "resume" | "transition" | "observe" | "reconcile_events";
             operator: string;
             /** @enum {string} */
             status: "pending" | "accepted" | "rejected" | "delivery_unknown";
@@ -5558,6 +5584,80 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    reconcileRelayTaskEvents: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     listRelayProjects: {
         parameters: {
             query?: never;
