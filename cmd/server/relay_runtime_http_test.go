@@ -153,8 +153,9 @@ func (c *relayPersistentHTTP) request(method, path, body, key string, status int
 
 func TestRelayPersistentRealHTTPReceiptsMutexAndRestart(t *testing.T) {
 	ctx := context.Background()
-	evidenceRoot := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification")
-	local := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification", "relay-runtime-http", uuid.NewString())
+	testDataBase := relayTestLocalAppData(t)
+	evidenceRoot := filepath.Join(testDataBase, "astrocyte-workbench", "v0.2-access", "verification")
+	local := filepath.Join(testDataBase, "astrocyte-workbench", "v0.2-access", "verification", "relay-runtime-http", uuid.NewString())
 	if os.MkdirAll(local, 0700) != nil {
 		t.Fatal("test state directory unavailable")
 	}

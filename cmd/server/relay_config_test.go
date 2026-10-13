@@ -10,8 +10,20 @@ import (
 	"github.com/google/uuid"
 )
 
+// Linux CI has no LOCALAPPDATA. Give fixture tests an absolute, test-owned
+// application-data root; production still rejects a missing/relative root.
+func relayTestLocalAppData(t *testing.T) string {
+	t.Helper()
+	base := os.Getenv("LOCALAPPDATA")
+	if !filepath.IsAbs(base) {
+		base = t.TempDir()
+		t.Setenv("LOCALAPPDATA", base)
+	}
+	return base
+}
+
 func TestRelayExplicitGuardDoesNotApplyWorkbenchDefaultAndRejectsSnapshotHardlinkBeforeWrite(t *testing.T) {
-	local := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification", "relay-guard", uuid.NewString())
+	local := filepath.Join(relayTestLocalAppData(t), "astrocyte-workbench", "v0.2-access", "verification", "relay-guard", uuid.NewString())
 	if os.MkdirAll(local, 0700) != nil {
 		t.Fatal("test state unavailable")
 	}
@@ -60,7 +72,7 @@ func TestRelayExplicitGuardDoesNotApplyWorkbenchDefaultAndRejectsSnapshotHardlin
 }
 
 func TestRelayConfigurationIsolationAndNoImplicitLiveWindow(t *testing.T) {
-	local := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification", "relay-config", uuid.NewString())
+	local := filepath.Join(relayTestLocalAppData(t), "astrocyte-workbench", "v0.2-access", "verification", "relay-config", uuid.NewString())
 	if os.MkdirAll(local, 0700) != nil {
 		t.Fatal("test local directory unavailable")
 	}
@@ -116,5 +128,14 @@ func TestRelayConfigurationIsolationAndNoImplicitLiveWindow(t *testing.T) {
 	t.Setenv("ASTROCYTE_RELAY", "0")
 	if p, e := resolveRelayDataDir("existing-app"); e != nil || p != "existing-app" {
 		t.Fatal("disabled access changed existing configuration")
+	}
+}
+
+func TestRelayProductionStillRejectsMissingOrRelativeLocalAppData(t *testing.T) {
+	for _, value := range []string{"", "relative-local-app-data"} {
+		t.Setenv("LOCALAPPDATA", value)
+		if _, e := relayRoot(); e == nil {
+			t.Fatal("production accepted implicit or relative application state")
+		}
 	}
 }
