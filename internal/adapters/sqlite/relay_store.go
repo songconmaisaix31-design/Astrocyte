@@ -151,7 +151,8 @@ func (s *RelayStore) Close() error { return s.db.Close() }
 func emptyRelayState() app.RelayState {
 	return app.RelayState{Tasks: map[string]domain.RelayTask{}, Workspaces: map[string]domain.RelayWorkspace{},
 		Terminals: map[string]domain.RelayTerminal{}, Sessions: map[string]domain.NativeSession{},
-		Receipts: map[string]domain.RelayReceipt{}, Transitions: []domain.RelayTransition{},
+		OwnedSessions: map[string]domain.RelayOwnedSession{},
+		Receipts:      map[string]domain.RelayReceipt{}, Transitions: []domain.RelayTransition{},
 		Events: []domain.RelayEvent{}, Published: map[string]bool{}, PendingActions: map[string]string{}, PublicationErrors: map[string]bool{}}
 }
 
@@ -165,8 +166,17 @@ type relayWorkspacePrivate struct {
 	GitObservation string
 }
 type relayStateWire struct {
-	State              app.RelayState
-	WorkspaceInternals map[string]relayWorkspacePrivate
+	State                 app.RelayState
+	WorkspaceInternals    map[string]relayWorkspacePrivate
+	SessionHistoryPaths   map[string]string
+	OwnedSessionInternals map[string]relayOwnedSessionPrivate
+}
+
+// Only the isolated relay state encodes these references. DTO serialization
+// keeps every path/native identifier hidden; no archive contents are copied.
+type relayOwnedSessionPrivate struct {
+	WorkspaceRoot, SourceRoot, SessionID, NativeID, Ownership string
+	ArchivePath, ArchiveRoot, ArchiveFormat                   string
 }
 
 func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error) {
@@ -188,6 +198,20 @@ func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error)
 			w.GitObservation = private.GitObservation
 			state.Workspaces[id] = w
 		}
+		for id, path := range wire.SessionHistoryPaths {
+			session := state.Sessions[id]
+			session.HistoryPath = path
+			state.Sessions[id] = session
+		}
+		for id, private := range wire.OwnedSessionInternals {
+			bound := state.OwnedSessions[id]
+			bound.WorkspaceRoot, bound.SourceRoot, bound.SessionID, bound.NativeID, bound.Ownership = private.WorkspaceRoot, private.SourceRoot, private.SessionID, private.NativeID, private.Ownership
+			bound.ArchivePath, bound.ArchiveRoot, bound.ArchiveFormat = private.ArchivePath, private.ArchiveRoot, private.ArchiveFormat
+			state.OwnedSessions[id] = bound
+		}
+	}
+	if state.OwnedSessions == nil {
+		state.OwnedSessions = map[string]domain.RelayOwnedSession{}
 	}
 	if state.Published == nil {
 		state.Published = map[string]bool{}
@@ -286,6 +310,16 @@ ON CONFLICT(id) DO UPDATE SET data=excluded.data,input=excluded.input`, id, stri
 	}
 	state.Receipts = nil
 	wire := relayStateWire{State: state, WorkspaceInternals: map[string]relayWorkspacePrivate{}}
+	wire.SessionHistoryPaths = map[string]string{}
+	for id, session := range state.Sessions {
+		if session.HistoryPath != "" {
+			wire.SessionHistoryPaths[id] = session.HistoryPath
+		}
+	}
+	wire.OwnedSessionInternals = map[string]relayOwnedSessionPrivate{}
+	for id, bound := range state.OwnedSessions {
+		wire.OwnedSessionInternals[id] = relayOwnedSessionPrivate{WorkspaceRoot: bound.WorkspaceRoot, SourceRoot: bound.SourceRoot, SessionID: bound.SessionID, NativeID: bound.NativeID, Ownership: bound.Ownership, ArchivePath: bound.ArchivePath, ArchiveRoot: bound.ArchiveRoot, ArchiveFormat: bound.ArchiveFormat}
+	}
 	for id, w := range state.Workspaces {
 		wire.WorkspaceInternals[id] = relayWorkspacePrivate{SourceRoot: w.SourceRoot, GitObservation: w.GitObservation}
 	}

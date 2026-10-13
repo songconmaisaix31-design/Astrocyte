@@ -12,7 +12,7 @@
 
 ## 工程交接
 
-分支 `songconmaisaix31-design/works-relay-runtime`；SOURCE `16a506b0ceffa10549e3925c6dca66c1a39f34aa` 已 push。本报告另行 REPORT commit + push，精确 REPORT SHA 在 Orca Handoff 中给出。当前源码相对基线只修改本轨 15 个授权路径，没有既有业务文件、认知 schema、migrations、Go 模块、依赖锁或快照脚本改动。
+分支 `songconmaisaix31-design/works-relay-runtime`；SOURCE `b19d83635fe10cde9d42642d7444f3771d02f513` 已 push。本报告另行 REPORT commit + push，精确 REPORT SHA 在 Orca Handoff 中给出。当前源码相对基线只修改本轨 15 个授权路径，没有既有业务文件、认知 schema、migrations、Go 模块、依赖锁或快照脚本改动。阶段 SOURCE `16a506b0ceffa10549e3925c6dca66c1a39f34aa`／REPORT `99b7f04eb33aee681c8db740c60e71f52f28eaa9` 保留，输入模式早期接口 `556c6f1645778286a171ea02668ed0456cde3a98` 提前供 H-http 装配。
 
 已实现：
 
@@ -22,7 +22,8 @@
 - 每个 dispatch/send/read/stop 动作先持久 receipt，精确 operation/target/input 幂等；首 rejected / delivery_unknown 不覆盖，不自动重发。TaskID 原已封入比较输入，本次补显式 receipt.TaskID 比较与跨任务重载负例，不记作原功能 RED。先 neutral worktree 后挂 Agent，同源工作区最多一个 active task，拒绝重复时提示现有 task。
 - 数据 AgentSpec 与统一 RelayDriver。drive_mode 是默认路径，structured 与 both 均先复用现有 NativeAdapter，不改 native.go；只有明确 NativePrelaunchFailure + unsupported 才可降级 terminal，未知交付不降级。terminal 命令为可信注册 argv，无平台专用 dispatch 分支，默认执行策略未配置时拒绝启动。
 - 首输入保留完整手册与任务。真实 native 事件与 CLI stdout 只保留 derived 活动，丢弃文本；Git HEAD/status/有界 tracked diff 只在独立本机 state 内比较，公开事件不含路径或代码内容。新 Git delta 形成登记事件并更新 LastEventAt；不变轮询不刷新，跨来源时间单调而原生 sequence 独立，真实 exited 优先。Git 与 turn_completed 都不等于 task done。
-- RelayLifecycle.ObserveOwned 只观察已有任务，entrypoint 负责可取消的调用；Shutdown 停止实际 owned process，写 service:shutdown stop receipt 并持久退出。无自动 launch/send/resume。未知进程所有权不靠 PID 推断。
+- RelayLifecycle.ObserveOwned 只观察已有任务，entrypoint 负责可取消的调用；无变化的后台 cache／Git 轮询不创建 receipt、不调用 Store.Update，不写完整状态。真正新证据／退出／首采集错误在一次事务持久；提交前复核 task、session、writer、PendingActions，首错误保留后不自动 probe。页面显式 Read 仍逐 action receipt；Shutdown 停止实际 owned process，写 service:shutdown stop receipt 并持久退出。无自动 launch/send/resume。未知进程所有权不靠 PID 推断。
+- 主控明确批准 optional `AgentSpec.input_mode`，空／line 保持标准持续 stdin，stdin_eof 只在 Launch 写完整首输入并 close。模式固定在 owned process；即使后来的注册改成 line，Send 也明确 unsupported／rejected，Read／Stop 仍有效。未知模式在任何进程启动前拒绝；nil LaunchPolicy 不因 EOF 获得权限。owned stdin deadline 显式 delivery_unknown，不重写或起第二 writer；EOF 退出不推断 done。
 - TaskView.event_publication 明确 none/pending/published/error 与安全计数。sink 失败保留动作 accepted，持久 pending/error；普通后续动作不重发失败 sink，显式人工 ReconcileEvents 才按同一 event origin 复核。
 - 在任何写连接／WAL PRAGMA 前以 mode=ro/immutable=1/query_only 预检既有 relay.sqlite；foreign DB、误置认知 DB 与模拟硬链接先拒绝。正式源／副本未打开、迁移或写入。
 
@@ -42,6 +43,9 @@ Windows / PowerShell，Go `-mod=readonly`；实际客户端模型见本报告开
 | `go test -mod=readonly ./internal/workspace/app -run 'TestRelayKnownUnsupported\|TestRelayFallbackRequires\|TestRelayUnknown' -count=1 -timeout=60s` | PASS：structured 与 both 均安全降级；其他 prelaunch 错误与未知启动不降级 |
 | 实际 Windows 8.3 路径与 nested repository root | PASS：目录以 os.SameFile 判同一根，不依赖短／长名拼写；真实 8.3 test 有别名时不 skip，无别名明确 NOT_RUN；不同与嵌套根拒绝。H-http 独验真实 8.3 PASS；修复后的 remote Windows CI 尚未在本轨验证 |
 | ObserveOwned / Shutdown | PASS：只观察已启动任务；即使旧 grant 撤销，shutdown 可 containment stop，保留 stop receipt、退出和未完成 writer 占用 |
+| `go test -mod=readonly ./internal/workspace/app ./internal/adapters/agents -run 'TestRelayBackground\|TestRelayControlledEOF\|TestRelayTerminal\|TestRelayLifecycle' -count=1 -timeout=60s` | PASS：16 次 silent＋16 次 cached event polls 完整状态／receipt 不增，实际新事件一次 Update；首 capture RED／unknown 不覆盖不重试；pending action 不竞争；真实 EOF process 的 8 次 cache polls 零 Update |
+| `go test -mod=readonly ./internal/adapters/agents -run TestRelayTerminalEOFUnknown -count=1 -v` | PASS：真正不读 stdin 的公共进程、输入 deadline unknown、同 terminal 拒绝第二进程、EOF Send 零 write、真实 owned stop／exit |
+| stdin_eof 公共实进程贯穿 Service／SQLite | PASS：EOF 后才执行，完整手册＋任务逐字保存，Send rejected 首 receipt 重载保持；Stop accepted、exited、未完成 active writer 保留。未调用真实 Codex／Claude |
 | `node scripts/check-architecture.mjs` | PASS，29 package 导入边界 |
 | `go vet -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/relayworktree` | PASS |
 | `gofmt -l $relayFiles.FullName` / `git diff --check` | PASS；relayFiles 为本轨 domain/app/sqlite/agents 的 relay*.go 与 relayworktree/*.go |
@@ -54,7 +58,9 @@ Windows / PowerShell，Go `-mod=readonly`；实际客户端模型见本报告开
 
 `post-review-full-go-test.log` 又记录公共 active helper 仅启动输出一次、在 1 秒窗过期后被测试错误要求 live 的 RED（9.75s）。`16a506b` 将 active 场景改为持续真实输出，静默实进程负例保留，源 Git fixture 准备在操作计时前；真实 Service 的 neutral Prepare 仍在 Confirm 内。未放宽活性窗或 10 秒操作超时；子进程与输出 goroutine 随 owned shutdown／真实退出结束。适用单测与完整 suite PASS，不覆盖该 RED。`native-new-task-session-test.log` 记录新增 recording 测例最初使用固定钟早于 native 桥真实事件而拒绝迁移的测试 fixture RED；该测例改用真实钟后 PASS，未改变生产未来事件拒绝规则。
 
-外部证据目录：`LOCALAPPDATA/astrocyte-workbench/v0.2-access/evidence/runtime`。首 RED：`controlled-cli-runtime-test.log`；单项诊断：`controlled-cli-runtime-diagnostic.log`；最新完整测试：`review-complete-full-go-test.log`；复核负例：`identity-target-git-test.log`；默认路径降级：`default-mode-fallback-test.log`；活跃 fixture：`controlled-cli-active-fixture-test.log`；此前包测试：`first-service-test.log`、`first-process-worktree-test.log`、`scope-publication-lifecycle-test.log`。报告只保留 derived 结果，原日志和 DB 不进 Git。
+EOF 首轮 `terminal-eof-test.log` 为新增测试遗漏两个 import 的编译 RED，补 import 后 `terminal-eof-corrected-test.log` PASS。`eof-unknown-write-test.log` 保留已创建进程在启动耗时后返回原始 context error 的 RED，以及测试过晚注册 cleanup 引起的临时目录清理失败；修为 owned submit 明确 unknown、测试启动前登记 owned Stop cleanup 后 `eof-unknown-write-corrected-test.log` PASS，不放宽 100ms write deadline。父测试进程持有的既有 owned Job 随其退出关闭，后续测例显式 Stop 作为主要 containment；没有按 PID 猜测／终止其他进程。
+
+外部证据目录：`LOCALAPPDATA/astrocyte-workbench/v0.2-access/evidence/runtime`。首 RED：`controlled-cli-runtime-test.log`；单项诊断：`controlled-cli-runtime-diagnostic.log`；最新完整测试：`eof-noop-full-go-test.log`；前阶段完整测试：`review-complete-full-go-test.log`；复核负例：`identity-target-git-test.log`；默认路径降级：`default-mode-fallback-test.log`；活跃 fixture：`controlled-cli-active-fixture-test.log`；EOF 与 noop：`noop-eof-combined-test.log`；此前包测试：`first-service-test.log`、`first-process-worktree-test.log`、`scope-publication-lifecycle-test.log`。报告只保留 derived 结果，原日志和 DB 不进 Git。
 
 ## 公开 CLI 输入接缝调查（只读）
 
@@ -71,7 +77,7 @@ Windows / PowerShell，Go `-mod=readonly`；实际客户端模型见本报告开
 
 前四项 direct version/help 皆 PASS；日志为 `<cli>-direct-version.log`、`<cli>-direct-help.log`，其余公开 help 按 `<cli>-public-<index>.log` 保存工作树外。所有客户端的实际 EOF／TTY／持续 prompt 帧边界仍未知，普通 helper 的 keep-open stdin PASS 不替代真实 CLI。
 
-具体提案已 Handoff 主控，尚未实施：为可信 AgentSpec 增加可选 `input_mode=line|stdin_eof` 数据，空维持 line；拒绝未知模式，不按客户端名写 dispatch 分支。Codex 前缀追加 `exec -` 与 Claude 前缀追加 `--print --input-format text` 是 stdin_eof 候选。Launch 写完整手册＋任务后关闭 stdin；Send 明确 unsupported，Read／Stop 仍有 receipt，Resume unsupported；退出仍不 done、不重派、不起第二进程。先用只在完整输入＋EOF 后执行的公开 helper 证明适配器，真实客户端随后依赖用户工具授权与实测。capability 的 supported 必须来自实际运行，不能用 help 冒充；可选字段是登记输入策略，真实能力依旧 unknown。
+主控已批准并在 SOURCE 实施可信 AgentSpec 可选 `input_mode=line|stdin_eof` 数据，空维持 line；拒绝未知模式，不按客户端名写 dispatch 分支。Codex 前缀追加 `exec -` 与 Claude 前缀追加 `--print --input-format text` 是 stdin_eof 候选。Launch 写完整手册＋任务后关闭 stdin；Send 明确 unsupported，Read／Stop 仍有 receipt，Resume unsupported；退出仍不 done、不重派、不起第二进程。只在完整输入＋EOF 后执行的公开 helper 已证明适配器；真实客户端仍依赖用户工具授权与实测。capability 的 supported 必须来自实际运行，不能用 help 冒充；可选字段是登记输入策略，真实能力依旧 unknown。
 
 如需交互 TTY，现有 Orca `terminal create/send/read/wait/close` 是可复用的 PTY 资源口，不必新增 PTY 库或 scheduler。最小差距：create 使用 shell 文本而非 argv，可信参数需正确编码；neutral worktree 路径能否挂既有 Orca 托管上下文尚未确认；opaque terminal 所有权／真实 exit 须经 RelayStore 保持，raw read 在边界丢弃。只凭 PATH 或终端 pane 存在不能证明这些接缝已实现。
 
@@ -81,6 +87,6 @@ Windows / PowerShell，Go `-mod=readonly`；实际客户端模型见本报告开
 - neutral source 策略默认未配置；测试仅显式批准 clean committed Git 子集。未提交／未跟踪来源、非 Git 单文件范围等待用户；既有 prepared worktree 的 dirty/untracked relay 状态复用保留。
 - 活性窗不设隐含 60 秒值，零表示无 configured live window。CLI 注册数据可以追加但不凭 PATH 宣称 configured/startable；公共 helper 预验不等于真实 Agent 可用性。
 - 同名 untracked 文件内容的第二次变化不被当前 Git status 检测；tracked diff 能观察持续改动。当前事件不声称完整采集全部文件活动，也无模型结果推断。
-- terminal 当前是标准进程 stdin/stdout 管道，不提供 PTY/TUI 提交证明；要求 TTY 的 CLI 未验证，terminal-only 原生 Resume 显式 unsupported。服务进程重启后旧进程所有权不可证时保持 unknown，不接管或重派。
+- terminal 当前是标准进程 stdin/stdout 管道，支持可信 line／stdin_eof framing，不提供 PTY/TUI 提交证明；要求 TTY 的 CLI 未验证，terminal-only 原生 Resume 显式 unsupported。服务进程重启后旧进程所有权不可证时保持 unknown，不接管或重派。后台首采集错误后保留记录并停止自动 probe，人工明确 Read／containment Stop 仍可执行；没有声称长期常驻／恢复门已全验收。
 - Today 的实时本机事件与快照语义仍等用户裁决。H-http 负责 EventService bridge 与 observer/server 生命周期装配；pending event 写入不等于已更新认知状态。
 - 真实 Codex/Claude 原生接力与同 worktree 换手、真实 terminal-only coding、完整 UI/E2E、三分钟单 URL、部署、Procmon 正式零写审计、00:30 两日快照验收均 NOT_RUN，需主控与原 owner 在用户决定后协作。没有向其他渠道发消息或修改 validation 工作区。

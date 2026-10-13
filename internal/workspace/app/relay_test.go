@@ -72,6 +72,7 @@ type relayDriver struct {
 	launches, sends, reads, stops atomic.Int32
 	launchErr                     error
 	sendErr                       error
+	readErr                       error
 	enter, release                chan struct{}
 	lastInput                     string
 	silent                        bool
@@ -241,7 +242,7 @@ func TestRelayFallbackRequiresExplicitUnstartedUnsupported(t *testing.T) {
 }
 func (d *relayDriver) Read(_ context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	d.reads.Add(1)
-	return d.observation(r), nil
+	return d.observation(r), d.readErr
 }
 func (d *relayDriver) Stop(_ context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	d.stops.Add(1)
@@ -351,6 +352,111 @@ func TestRelayLifecycleObservesOnlyOwnedTasksAndShutdownPersistsExit(t *testing.
 	}
 	if !saw {
 		t.Fatal("shutdown missing containment receipt")
+	}
+}
+
+type relayCountingStore struct {
+	app.RelayStore
+	updates atomic.Int32
+}
+
+func (s *relayCountingStore) Update(ctx context.Context, f func(*app.RelayState) error) error {
+	s.updates.Add(1)
+	return s.RelayStore.Update(ctx, f)
+}
+
+func TestRelayBackgroundNoopDoesNotWriteButNewEvidencePersistsOnce(t *testing.T) {
+	f := newRelayFixture(t)
+	f.driver.silent = true
+	store := &relayCountingStore{RelayStore: f.store}
+	f.service = app.NewRelayService(store, f.works, f.projects, f.spaces, f.driver, nil, nil, f.options)
+	ctx := context.Background()
+	id := f.intent()
+	if _, e := f.service.ConfirmIntent(ctx, caller(), id, confirm()); e != nil {
+		t.Fatal(e)
+	}
+	lifecycle := f.service.(app.RelayLifecycle)
+	before, _ := f.store.Snapshot(ctx)
+	wire, _ := json.Marshal(before)
+	store.updates.Store(0)
+	for i := 0; i < 16; i++ {
+		if e := lifecycle.ObserveOwned(ctx); e != nil {
+			t.Fatal(e)
+		}
+	}
+	after, _ := f.store.Snapshot(ctx)
+	wireAfter, _ := json.Marshal(after)
+	if store.updates.Load() != 0 || string(wire) != string(wireAfter) {
+		t.Fatal("silent cache polls created receipts or rewrote state")
+	}
+	f.driver.silent = false
+	if e := lifecycle.ObserveOwned(ctx); e != nil {
+		t.Fatal(e)
+	}
+	after, _ = f.store.Snapshot(ctx)
+	if store.updates.Load() != 1 || len(after.Receipts) != len(before.Receipts)+1 || len(after.Events) != 1 || after.Tasks[id].State != domain.RelayWorking {
+		t.Fatal("new actual evidence was not persisted once")
+	}
+	for i := 0; i < 16; i++ {
+		if e := lifecycle.ObserveOwned(ctx); e != nil {
+			t.Fatal(e)
+		}
+	}
+	if store.updates.Load() != 1 {
+		t.Fatal("cached event was repeatedly persisted")
+	}
+	if e := f.store.Update(ctx, func(st *app.RelayState) error { st.PendingActions[id] = "owned-pending-action"; return nil }); e != nil {
+		t.Fatal(e)
+	}
+	reads := f.driver.reads.Load()
+	if e := lifecycle.ObserveOwned(ctx); e != nil {
+		t.Fatal(e)
+	}
+	after, _ = f.store.Snapshot(ctx)
+	if f.driver.reads.Load() != reads || after.PendingActions[id] != "owned-pending-action" || store.updates.Load() != 1 {
+		t.Fatal("noop tick competed with pending action")
+	}
+}
+
+func TestRelayBackgroundFirstCaptureErrorPersistsAndIsNotRetried(t *testing.T) {
+	for _, failure := range []struct {
+		name string
+		err  error
+		code apierrors.Code
+	}{
+		{"unknown", errors.New("PRIVATE_CAPTURE_ERROR_SENTINEL"), apierrors.DeliveryUnknown},
+		{"rejected", &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "capture unavailable"}, apierrors.UnsupportedCapability},
+	} {
+		t.Run(failure.name, func(t *testing.T) {
+			f := newRelayFixture(t)
+			f.driver.silent = true
+			store := &relayCountingStore{RelayStore: f.store}
+			f.service = app.NewRelayService(store, f.works, f.projects, f.spaces, f.driver, nil, nil, f.options)
+			ctx := context.Background()
+			id := f.intent()
+			if _, e := f.service.ConfirmIntent(ctx, caller(), id, confirm()); e != nil {
+				t.Fatal(e)
+			}
+			store.updates.Store(0)
+			f.driver.readErr = failure.err
+			lifecycle := f.service.(app.RelayLifecycle)
+			checkCode(t, lifecycle.ObserveOwned(ctx), failure.code)
+			before, _ := f.store.Snapshot(ctx)
+			wire, _ := json.Marshal(before)
+			if strings.Contains(string(wire), "PRIVATE_CAPTURE_ERROR_SENTINEL") || store.updates.Load() != 1 {
+				t.Fatal("capture error leaked or did not persist exactly once")
+			}
+			for i := 0; i < 16; i++ {
+				if e := lifecycle.ObserveOwned(ctx); e != nil {
+					t.Fatal(e)
+				}
+			}
+			after, _ := f.store.Snapshot(ctx)
+			wireAfter, _ := json.Marshal(after)
+			if string(wire) != string(wireAfter) || store.updates.Load() != 1 || f.driver.reads.Load() != 1 {
+				t.Fatal("first background RED was retried/replaced")
+			}
+		})
 	}
 }
 

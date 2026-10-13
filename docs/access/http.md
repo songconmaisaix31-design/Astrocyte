@@ -86,7 +86,7 @@ H repair SOURCE `7e167026593cd510f2f6e62aa4b3d737531ade64` preserves the mutex h
 
 ## Initial local registration candidate
 
-No active registration was changed. A four-entry candidate is stored only at `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/registry-candidates/20261014/agents.candidate.json`; all four entries pass AJV `RelayAgentV1` validation. It contains trusted absolute direct argv only, uses existing native-registry names and `drive_mode: structured`, and launches nothing. Root/integration can inspect the candidate before selecting the active `agents.json` for the accepted service. Registration is data, not launch permission or an all-Agents-ready claim.
+No active registration was changed. A four-entry candidate is stored only at `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/registry-candidates/20261014/agents.candidate.json`; all four entries pass AJV `RelayAgentV1` validation. It contains trusted absolute direct argv only, uses existing native-registry names and `drive_mode: structured`, and launches nothing. Root/integration can inspect the candidate before selecting the active `agents.json` for the accepted service. Registration is data, not launch permission or an all-Agents-ready claim. The trusted file is loaded once at server startup: an appended entry requires a safe restart to appear in `ListAgents`; there is no hot reload. I's real JSON append/restart/query/UI extension acceptance remains NOT_RUN here, and a mock list or decoder test cannot establish it.
 
 R's bounded public version/help investigation and H's public entry existence check support these candidates:
 
@@ -104,3 +104,82 @@ The independent inventory already distinguishes PATH installation, private confi
 Terminal-only native candidates remain NOT_RUN: public help did not establish incremental input with an open stdin, EOF submission semantics or TTY compatibility for any real model CLI. OpenCode's JSON format describes output, not an input framing protocol. The terminal pipe helper's successful fixture does not establish these native cases; no PTY was introduced.
 
 Root subsequently approved the optional trusted `AgentSpec.input_mode` field: `line | stdin_eof`, omitted/legacy empty means line. Exact interface SOURCE `556c6f1645778286a171ea02668ed0456cde3a98` uses `omitempty`; H's configuration accepts the two modes and rejects unknown values, while the versioned OpenAPI keeps the field optional and validates both an old four-field entry and an EOF entry. The runtime EOF implementation is still the R owner's work at this contract checkpoint. Intended semantics are one complete initial input followed by closing stdin, normal read/stop and explicit unsupported later Send with no write. This host framing field grants no tool, workspace or launch permission and does not prove real Codex/Claude compatibility. Candidate data remains inactive; root's undecided permission/source/Today/liveness gates are unchanged.
+
+Two optional EOF alternatives are stored only in the same local candidate directory as `terminal-eof.candidate.json`: Codex's trusted direct entry with `exec --json -` and Claude's trusted executable with `--print --input-format text --output-format stream-json --verbose`. Both are explicit terminal/stdin_eof candidates; all runtime capabilities and workspace tools remain unknown and unapproved. They pass AJV as registration data only. Select an alternative for a given name rather than concatenating duplicate names with the structured candidates. Neither active configuration nor a model process was changed.
+
+## Final independent HTTP engineering handoff
+
+Final SOURCE: `c7c3255d0530b93312bb541a477b9ec47e0afc15`, including exact R EOF/noop SOURCE `b19d83635fe10cde9d42642d7444f3771d02f513` and REPORT `4848a98eef45656f30326054f3da8298f61044b1` by ordinary merges. H contract SOURCE `f52a5b84c5e36679c60a7bdbc7605c535dc212cb` was handed to F for the existing generator. H's actual EOF HTTP test SOURCE is `9323154c7b026991fed0ac9fecf0c8167251c8d6`; the final-source merge changes only R's report from that tested source, with identical Go and contract files. Final H REPORT is a separate documentation commit. Root explicitly authorized settlement of this independent engineering phase; complete v1.2 acceptance remains outside that settlement.
+
+Consumed R repairs preserve monotonic maximum event time across native/Git sources, do not refresh unchanged evidence and prioritize real exit. Reusing a released task's terminal ID clears the old native conversation, while original-task Resume does not replay input. `drive_mode` chooses the default path: both structured and both may reach terminal only after a proven zero-start Unsupported result, where the trusted terminal policy is still checked. A missing policy refuses launch. Operation idempotency also compares the target task. Background unchanged observation does not append receipts or update persisted state; fresh evidence/first capture error is recorded, and failed capture requires explicit reconciliation rather than automatic reprobe. Explicit human Read continues to record each receipt.
+
+The real EOF HTTP case uses an actual child executable and stdin/stdout pipes, actual runtime Service, actual isolated SQLite, shared TCP/session/Origin/CSRF and a controlled workspace port. It verifies cached registry `input_mode`, ready intent without launch, human-confirmed complete first manual/task input followed by EOF, safe HTTP 501 Unsupported for subsequent Send, one original rejected receipt for duplicate operation, explicit accepted Read/Stop receipts, raw stdout canary exclusion and real exit distinct from done/released. It is a public helper fixture, not a model CLI or coding demonstration.
+
+Final applicable validation:
+
+| Command/check | Result |
+| --- | --- |
+| `go test -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree ./internal/adapters/httpapi ./cmd/server -count=1` after consuming b19d836 | PASS: all six affected packages. |
+| `go test -mod=readonly ./cmd/server ./internal/adapters/httpapi -count=1` after the new real EOF HTTP test | PASS: entire two packages, including observer, configuration, origin/auth, mutex, receipts, unknown/sink and EOF. |
+| `go test -mod=readonly ./internal/adapters/events -run Relay -count=1` | PASS: six-field pending bridge, stable observation origin and no cognitive signal inference. |
+| `go vet -mod=readonly ./cmd/server ./internal/adapters/httpapi ./internal/workspace/app` | PASS. |
+| `node scripts/check-architecture.mjs` | PASS: 29 packages. |
+| `go build -mod=readonly -o <access-root>/verification/build/astrocyte-relay-http.exe ./cmd/server` | PASS. |
+| OpenAPI lint and `node scripts/validate-examples.mjs` on f52a5b8 contract | PASS: existing unused EventV1 warning, 289 examples. |
+| Independent AJV on actual HTTP and candidate DTOs | PASS: 16 runtime HTTP samples + 10 EOF HTTP samples (including the actual 501 ErrorV1); four structured candidates + two alternative EOF candidates. |
+| `git diff --check` | PASS. |
+
+The EOF HTTP test's first two failures are retained outside Git as `verification/eof-http-first-red.txt` and `eof-http-second-red.txt`. First, its fixture used an arbitrary child path instead of the required LOCALAPPDATA-derived access root and was refused before opening the Relay DB. Second, the recording-only workspace fixture marked Prepared without creating a directory, so the real process could not start and confirmation returned 409. The repaired EOF-specific fixture uses the required root and creates its directory through the Service's workspace port; each rerun uses a new isolated fixture. No production guard was weakened and no original unknown receipt was overwritten or replayed. Later PASS does not replace those failures. The one transient ordinary push rejection at 377b1f5 was followed by read-only remote verification and a successful ordinary push; no force push was used.
+
+The last inspected newer CI `38462618912` on 9323154 was still in progress; earlier 7e16702 CI `38459655342` failed only at F-owned generated schema drift after Go checks on both systems. Complete remote CI is not claimed PASS, and its race/build/E2E remain NOT_RUN until the integrated F-generated client is tested by I/root. Full local Go results at the earlier checkpoint and R's own final full suite remain separately labeled; the table above states H's actual applicable final commands.
+
+Final limitations: no active `agents.json` change, registration hot reload, real native/terminal-only model launch, tool authorization, dirty/non-Git source decision, default liveness window, Today live-append decision, formal collector/normalize/cognition completion, administrator Procmon or two real 00:30 dates. No replacement of the existing 17321 permanent service. I/root still owns same-URL integrated acceptance, real registration extension after safe restart, full UI/build/race/E2E and final deployment; original owners remain responsible for their subsequent fixes.
+
+## Original H owner: Root deep-isolation EOF fixture diagnosis
+
+Task `task_06ea6371c814`, Dispatch `ctx_e1fe34e57251`, same terminal/worktree/branch; no additional worker. Client remains Codex API. Read the local development protocol and this report, plus Root's decisions at `b0280b3`. Scope is the public EOF helper and the specified isolated Root fixture/log; no real Agent, private transcript, credentials or formal database is involved.
+
+Root's independent check on SOURCE `3387019f7c349957ef8f4c75d98ecd7fbbe42200` first failed after 316.5 seconds: only `TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt`, confirmation HTTP 409 / expected 200 / public `delivery_unknown`, test duration 0.13 seconds. The original `root-3387019-20261014/check-first.*` evidence and failed fixture remain retained. This is a distinct later RED, not a replacement of H's earlier stage results. Root's later build PASS does not clear that check failure.
+
+Bounded causal findings:
+
+- Root's valid child environment points LOCALAPPDATA into its deeper isolated directory and all three native discovery variables into its public-empty-cli directory. With `GOFLAGS=-p=1`, `GOMAXPROCS=2`, `NODE_OPTIONS=--max-old-space-size=512`, H reproduced the same target failure in a fresh fixture: EXIT 1, 10.38 seconds overall. The existing compiler cache was pinned separately to avoid recompiling unrelated code; all runtime isolation and resource settings stayed unchanged.
+- Both retained failing fixtures have an existing owned workspace path of length 281, without a first-input proof file. The old H fixture appended `access/verification/eof-http/<UUID>` to the caller's LOCALAPPDATA, then set that as its own LOCALAPPDATA and appended another access-root/worktrees/UUID scaffold. This unnecessary layout inflation came from the test fixture, not Root's external isolation wrapper.
+- An independently compiled public Go test helper, with stdin/stdout redirected and no model entrypoint, could not start in a fresh existing directory of the same length 281: Windows process creation returned native error 267 (`ERROR_DIRECTORY`) before Start succeeded. The same helper started in the length-126 control directory, received complete input followed by EOF, created its proof and exited 0. Only static error class, lengths, status and timing are reported; private diagnostics are never emitted.
+- The evidence locates the failure before EOF submission, rather than a closed-input race or a demonstrated runtime domain defect. The existing conservative `delivery_unknown` mapping and original receipt were not changed. The observed Windows long-CWD process restriction remains a limitation; this is a fixture repair, not a product fix for arbitrary long process paths.
+
+Repair SOURCE `19c83e39b65e9a0cebc5bad20f7dba3f6c82cd2a` changes only `cmd/server/relay_eof_http_test.go`: create unique child appdata with `os.MkdirTemp` directly under the same caller-derived access root. It remains outside Git and global temporary storage. The external Root directory and all native-empty/resource settings, actual HTTP/Service/SQLite/child executable, workspace identity, input and receipt assertions, permissions, operation identity and deadlines are unchanged. No R driver, specification, OpenAPI, workflow or business code changed; no original unknown action was replayed.
+
+| Exact same deep Root environment check | Later result |
+| --- | --- |
+| `go test -mod=readonly ./cmd/server -run '^TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt$' -count=1 -v` | PASS / EXIT 0 / 3.50 seconds; owned CWD length 233 and full first-input proof exists. |
+| `go test -mod=readonly ./cmd/server -count=1 -v` | PASS / EXIT 0 / 19.16 seconds; 23 top-level tests, zero failures, including the original target. |
+| `go vet -mod=readonly ./cmd/server` | PASS / EXIT 0. |
+| `gofmt` / `git diff --check` | PASS. |
+
+Separate evidence stays under `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-eof-root338-diagnosis-20261014`: `exact-root-reproduction-first.log`, `process-controls-derived.json`, `exact-root-after-fixture-fix.log`, `exact-root-entire-cmd-server.log` and `exact-root-cmd-server-vet.log`. The first Root log/result and original failed workspace/store are untouched; fresh case results do not overwrite the original rejected/unknown receipt. Source and this REPORT are separate ordinary commits and pushed, with clean/remote parity verified at handoff.
+
+The exact repair was handed to I/root for an ordinary merge. H did not rerun unrelated full suites, modify I's CI resource configuration or weaken any check. Root still must independently pass complete check/build on the integrated source, and I owns the full dual-platform CI with the generated frontend types and approved Windows resource change. Real native/terminal-only coding, formal cognition, Today, tool/source/liveness policy decisions, administrator Procmon, two real scheduled dates and permanent deployment retain their previous NOT_RUN/undecided outcomes.
+
+## Original H owner: fresh Linux evidence-directory initialization
+
+Task `task_c0577095b4cb`, Dispatch `ctx_a01ed6996519`, same terminal/worktree/branch and two-file write domain. I reported a new first Linux RED in CI `38468510081`, exact SOURCE `bdfbbdbbd6cbd6567e57ef3ed06ac2b3a860e97a`: `TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt` reached the final evidence write and failed with `EOF public response evidence unavailable`. The preceding real HTTP, first-input/EOF, receipt, exit and privacy assertions had passed. That run and Root338's earlier first RED remain separate retained failures; neither original unknown action nor old CI run was retried.
+
+Source inspection confirms the fixture defect: the shortened layout created only `filepath.Dir(evidence)`. On a fresh missing-LOCALAPPDATA fallback, `relayTestLocalAppData` supplies a new test-owned root, so the `verification` child does not exist. Prior Windows validation used an already populated evidence directory and therefore did not expose this initialization dependency. The final `WriteFile` required the child directory that the fixture had stopped creating.
+
+Repair SOURCE `67c7d2a5a205f4df8cc824b8d9c8c20ba60a5821`, pushed early without a skip-CI marker, changes only the initialization call to `os.MkdirAll(evidence, 0700)` and its fixed failure message. This creates both the parent and evidence child. `os.MkdirTemp(fixtureParent, "")`, the short Windows CWD layout, actual HTTP/Service/SQLite/public subprocess, assertions, timeout and skip behavior stay unchanged. No specification, R domain, workflow, API or business code changed. I received the precise source for ordinary integration and a new Linux validation run.
+
+Validation uses the same Root338 deep child LOCALAPPDATA, three public-empty native directories and `GOFLAGS=-p=1`, `GOMAXPROCS=2`, `NODE_OPTIONS=--max-old-space-size=512`; the existing Go compiler cache is pinned before the missing-variable case.
+
+| Command/check | Result |
+| --- | --- |
+| Targeted actual EOF HTTP test, same deep Root environment, `go test -mod=readonly ./cmd/server -run '^TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt$' -count=1 -v` | Windows PASS / EXIT 0 / 3.45 seconds. |
+| Same targeted test with LOCALAPPDATA removed and a fresh fallback root | Windows PASS / EXIT 0 / 3.06 seconds; this is not a native Linux result. |
+| `go test -mod=readonly ./cmd/server -count=1 -v`, same deep Root environment | Windows PASS / EXIT 0 / 3.47 seconds; 23 top-level tests, zero failures. |
+| `go vet -mod=readonly ./cmd/server`, same deep Root environment | PASS / EXIT 0. |
+| `gofmt` / `git diff --check` | PASS. |
+| `wsl -d Ubuntu --exec go version` | Go executable absent; local native Linux regression NOT_RUN, handed to remote validation. |
+
+New results are retained only under `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-eof-linux-evidence-20261014`: `same-deep-root-target.log`, `windows-missing-localappdata-target.log`, `same-deep-root-entire-cmd-server.log` and `same-deep-root-cmd-server-vet.log`. The first attempt to download the whole CI failed because run 38468510081 was still in progress; that access failure is separately retained as `ci-38468510081-log-access-first-failure.txt` and is not represented as the CI failure log. Root/I retain the original Linux job evidence. No logs, database, configuration or raw helper output enter Git or stdout; this report contains only derived findings.
+
+SOURCE and REPORT are separate ordinary commits; REPORT uses `[skip ci]`. Clean/remote equality is verified at delivery. Native Linux success and integrated complete check/build/dual-platform CI remain pending I/root verification. Existing real Agent, Today, permissions/source/liveness policy, formal cognition, Procmon, scheduled dates and deployment gates do not gain a PASS from this fixture initialization repair.
