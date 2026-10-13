@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -75,6 +76,7 @@ type relayDriver struct {
 	lastInput                     string
 	silent                        bool
 	now                           time.Time
+	eventSequence                 int
 }
 
 func (d *relayDriver) observation(r app.RelayLaunch) app.RelayObservation {
@@ -86,7 +88,11 @@ func (d *relayDriver) observation(r app.RelayLaunch) app.RelayObservation {
 	}
 	obs := app.RelayObservation{Session: session}
 	if !d.silent {
-		obs.Events = []domain.RelayEvent{{Sequence: 1, Kind: "turn_started", Source: "native", TS: d.now}}
+		sequence := d.eventSequence
+		if sequence == 0 {
+			sequence = 1
+		}
+		obs.Events = []domain.RelayEvent{{Sequence: sequence, Kind: "turn_started", Source: "native", TS: d.now}}
 	}
 	return obs
 }
@@ -126,6 +132,83 @@ func TestRelaySendUnknownReceiptBlocksFurtherInput(t *testing.T) {
 	checkCode(t, e, apierrors.VersionConflict)
 	if f.driver.sends.Load() != 1 {
 		t.Fatal("unknown input delivered twice")
+	}
+}
+
+func TestRelayOperationCannotChangeTaskAfterReload(t *testing.T) {
+	for _, action := range []string{"confirm", "read", "stop", "resume", "unknown_send", "rejected_confirm"} {
+		t.Run(action, func(t *testing.T) {
+			f := newRelayFixture(t)
+			ctx := context.Background()
+			first, second := f.intent(), f.intent()
+			op := caller()
+			invoke := func(id string) (domain.RelayActionResult, error) {
+				switch action {
+				case "confirm":
+					return f.service.ConfirmIntent(ctx, op, id, confirm())
+				case "rejected_confirm":
+					cmd := confirm()
+					cmd.PermissionConfirmed = false
+					return f.service.ConfirmIntent(ctx, op, id, cmd)
+				case "read":
+					return f.service.Read(ctx, op, id)
+				case "stop":
+					return f.service.Stop(ctx, op, id)
+				case "resume":
+					return f.service.Resume(ctx, op, id)
+				default:
+					return f.service.Send(ctx, op, id, app.RelaySendCommand{Input: "approved input"})
+				}
+			}
+			if action != "confirm" && action != "rejected_confirm" {
+				if _, e := f.service.ConfirmIntent(ctx, caller(), first, confirm()); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if action == "resume" {
+				if _, e := f.service.Stop(ctx, caller(), first); e != nil {
+					t.Fatal(e)
+				}
+			}
+			if action == "unknown_send" {
+				f.driver.sendErr = &apierrors.ServiceError{Code: apierrors.DeliveryUnknown, Message: "first uncertainty"}
+			}
+			original, e := invoke(first)
+			switch action {
+			case "unknown_send":
+				checkCode(t, e, apierrors.DeliveryUnknown)
+			case "rejected_confirm":
+				checkCode(t, e, apierrors.ApprovalRequired)
+			default:
+				if e != nil {
+					t.Fatal(e)
+				}
+			}
+			before, e := f.store.Snapshot(ctx)
+			if e != nil {
+				t.Fatal(e)
+			}
+			stored, _ := json.Marshal(before.Receipts[original.Receipt.ID])
+			launches, sends, reads, stops := f.driver.launches.Load(), f.driver.sends.Load(), f.driver.reads.Load(), f.driver.stops.Load()
+			if e = f.store.Close(); e != nil {
+				t.Fatal(e)
+			}
+			f.store, e = sqlite.OpenRelayStore(f.root)
+			if e != nil {
+				t.Fatal(e)
+			}
+			f.service = f.assemble(f.store, f.driver, nil)
+			_, e = invoke(second)
+			checkCode(t, e, apierrors.VersionConflict)
+			after, e := f.store.Snapshot(ctx)
+			if e != nil {
+				t.Fatal(e)
+			}
+			persisted, _ := json.Marshal(after.Receipts[original.Receipt.ID])
+			if string(stored) != string(persisted) || after.Tasks[second].State != domain.RelayReady || f.driver.launches.Load() != launches || f.driver.sends.Load() != sends || f.driver.reads.Load() != reads || f.driver.stops.Load() != stops {
+				t.Fatal("target change mutated original receipt, target state or process")
+			}
+		})
 	}
 }
 
@@ -537,44 +620,212 @@ func TestRelayUnknownNeverResendsOrDowngrades(t *testing.T) {
 }
 
 func TestRelayKnownUnsupportedCanDegradeAndGitNeverCompletes(t *testing.T) {
+	for _, mode := range []string{"structured", "both"} {
+		t.Run(mode, func(t *testing.T) {
+			f := newRelayFixture(t)
+			ctx := context.Background()
+			f.options.Agents[0].DriveMode = mode
+			f.driver.launchErr = &domain.NativePrelaunchFailure{Cause: &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "no structured tools"}}
+			terminal := &relayDriver{now: f.driver.now, silent: true}
+			f.service = f.assemble(f.store, f.driver, terminal)
+			id := f.intent()
+			r, e := f.service.ConfirmIntent(ctx, caller(), id, confirm())
+			if e != nil {
+				t.Fatal(e)
+			}
+			if !r.View.Task.DegradedLaunch || r.View.Terminal.DriveMode != "terminal" || r.Receipt.Status != "accepted" || r.View.Task.State != "accepted" {
+				t.Fatal("safe degradation misrepresented")
+			}
+			f.spaces.git = "actual new Git observation"
+			r, e = f.service.Read(ctx, caller(), id)
+			if e != nil {
+				t.Fatal(e)
+			}
+			if r.View.Task.State != "working" || r.View.Terminal.Liveness != "live" {
+				t.Fatal("new registered Git event did not establish activity, or became completion")
+			}
+			if f.driver.launches.Load() != 1 || terminal.launches.Load() != 1 {
+				t.Fatal("wrong degradation launch count")
+			}
+			events, e := f.service.ListEvents(ctx, caller(), id)
+			if e != nil || len(events) != 1 || events[0].Kind != "git_activity" {
+				t.Fatal("Git activity did not enter derived event sink")
+			}
+			if len(f.sink.events) != 1 {
+				t.Fatal("Git event sink not called")
+			}
+			_, e = f.service.Transition(ctx, caller(), id, app.RelayTransitionCommand{From: "working", To: "done", CompletionConfirmed: true})
+			if e != nil {
+				t.Fatal(e)
+			}
+			_, e = f.service.Transition(ctx, caller(), id, app.RelayTransitionCommand{From: "done", To: "released"})
+			checkCode(t, e, apierrors.DeliveryUnknown)
+		})
+	}
+}
+
+func TestRelayGitLivenessUsesNewDeltaMonotonicTimeAndExitPriority(t *testing.T) {
 	f := newRelayFixture(t)
 	ctx := context.Background()
-	f.options.Agents[0].DriveMode = "both"
-	f.driver.launchErr = &domain.NativePrelaunchFailure{Cause: &apierrors.ServiceError{Code: apierrors.UnsupportedCapability, Message: "no structured tools"}}
-	terminal := &relayDriver{now: f.driver.now, silent: true}
-	f.service = f.assemble(f.store, f.driver, terminal)
+	tick := f.driver.now
+	base := tick
+	f.options.Clock = func() time.Time { return tick }
+	f.options.Agents[0].DriveMode = "terminal"
+	f.driver.silent = true
+	f.service = f.assemble(f.store, nil, f.driver)
 	id := f.intent()
 	r, e := f.service.ConfirmIntent(ctx, caller(), id, confirm())
 	if e != nil {
 		t.Fatal(e)
 	}
-	if !r.View.Task.DegradedLaunch || r.View.Terminal.DriveMode != "terminal" || r.Receipt.Status != "accepted" || r.View.Task.State != "accepted" {
-		t.Fatal("safe degradation misrepresented")
+	if r.View.Terminal.Liveness != "unverifiable" {
+		t.Fatal("silent CLI guessed live")
 	}
-	f.spaces.git = "actual new Git observation"
+	tick = base.Add(3 * time.Second)
+	f.spaces.git = "new recorded Git delta"
 	r, e = f.service.Read(ctx, caller(), id)
 	if e != nil {
 		t.Fatal(e)
 	}
-	if r.View.Task.State != "working" || r.View.Terminal.Liveness != "unverifiable" {
-		t.Fatal("Git became completion or terminal liveness proof")
+	gitAt := *r.View.Terminal.LastEventAt
+	if r.View.Terminal.Liveness != "live" || !gitAt.Equal(tick) || r.View.Terminal.LastSequence != 0 {
+		t.Fatal("Git event failed live evidence or changed native sequence")
 	}
-	if f.driver.launches.Load() != 1 || terminal.launches.Load() != 1 {
-		t.Fatal("wrong degradation launch count")
-	}
-	events, e := f.service.ListEvents(ctx, caller(), id)
-	if e != nil || len(events) != 1 || events[0].Kind != "git_activity" {
-		t.Fatal("Git activity did not enter derived event sink")
-	}
-	if len(f.sink.events) != 1 {
-		t.Fatal("Git event sink not called")
-	}
-	_, e = f.service.Transition(ctx, caller(), id, app.RelayTransitionCommand{From: "working", To: "done", CompletionConfirmed: true})
+	tick = base.Add(5 * time.Second)
+	r, e = f.service.Read(ctx, caller(), id)
 	if e != nil {
 		t.Fatal(e)
 	}
-	_, e = f.service.Transition(ctx, caller(), id, app.RelayTransitionCommand{From: "done", To: "released"})
-	checkCode(t, e, apierrors.DeliveryUnknown)
+	if r.View.Terminal.Liveness != "unverifiable" || !r.View.Terminal.LastEventAt.Equal(gitAt) {
+		t.Fatal("unchanged Git polling refreshed activity")
+	}
+	f.driver.silent = false
+	f.driver.now = base.Add(time.Second)
+	f.driver.eventSequence = 2
+	r, e = f.service.Read(ctx, caller(), id)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if !r.View.Terminal.LastEventAt.Equal(gitAt) || r.View.Terminal.LastSequence != 2 || r.View.Terminal.Liveness != "unverifiable" {
+		t.Fatal("older source event rolled back or refreshed newer Git time")
+	}
+	tick = base.Add(7 * time.Second)
+	f.spaces.git = "another actual Git delta"
+	r, e = f.service.Read(ctx, caller(), id)
+	if e != nil || r.View.Terminal.Liveness != "live" {
+		t.Fatal("new Git delta not live")
+	}
+	_, e = f.service.Stop(ctx, caller(), id)
+	if e != nil {
+		t.Fatal(e)
+	}
+	tick = base.Add(8 * time.Second)
+	f.spaces.git = "post-exit delta"
+	r, e = f.service.Read(ctx, caller(), id)
+	if e != nil {
+		t.Fatal(e)
+	}
+	if r.View.Terminal.Liveness != "exited" || r.View.Task.State != "working" {
+		t.Fatal("post-exit Git overrode exit evidence or completed task")
+	}
+}
+
+type relayNativeRecording struct {
+	app.NativeAdapter
+	starts, resumes []domain.NativeRequest
+}
+
+func (a *relayNativeRecording) Start(_ context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
+	a.starts = append(a.starts, r)
+	s := r.Session
+	s.ID, s.NativeID, s.Ownership = r.SessionID, uuid.NewString(), "owned"
+	return s, nil
+}
+func (a *relayNativeRecording) Resume(_ context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
+	a.resumes = append(a.resumes, r)
+	s := r.Session
+	s.StopConfirmed = false
+	return s, nil
+}
+func (a *relayNativeRecording) Observe(context.Context, domain.NativeSession) (domain.NativeObservation, error) {
+	return domain.NativeObservation{Status: "working", Events: []domain.NativeEvent{{Sequence: 1, Kind: "turn_started"}}}, nil
+}
+func (a *relayNativeRecording) Stop(context.Context, domain.NativeSession) (domain.NativeObservation, error) {
+	return domain.NativeObservation{Status: "exited", StopConfirmed: true}, nil
+}
+
+type relayRecordingRegistry struct{ adapter *relayNativeRecording }
+
+func (r relayRecordingRegistry) Adapter(string) (app.NativeAdapter, error) { return r.adapter, nil }
+func (r relayRecordingRegistry) List() []string                            { return []string{"alpha"} }
+
+func TestRelaySameAgentNewTaskHasFreshNativeSessionButOriginalResumeDoesNotReplay(t *testing.T) {
+	f := newRelayFixture(t)
+	f.options.Clock = time.Now // the actual native bridge stamps observation time
+	ctx := context.Background()
+	a := &relayNativeRecording{}
+	driver := agents.NewRelayNativeDriver(relayRecordingRegistry{adapter: a})
+	f.service = f.assemble(f.store, driver, nil)
+	first := f.intent()
+	r, e := f.service.ConfirmIntent(ctx, caller(), first, confirm())
+	if e != nil {
+		t.Fatal(e)
+	}
+	terminalID, workspaceID := r.View.Terminal.ID, r.View.Workspace.ID
+	state, e := f.store.Snapshot(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	old := state.Sessions[terminalID]
+	if len(a.starts) != 1 || old.ID == "" || old.NativeID == "" {
+		t.Fatal("native Start did not capture session")
+	}
+	if _, e = f.service.Stop(ctx, caller(), first); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.service.Resume(ctx, caller(), first); e != nil {
+		t.Fatal(e)
+	}
+	if len(a.starts) != 1 || len(a.resumes) != 1 || a.resumes[0].SessionID != old.ID || a.resumes[0].Session.NativeID != old.NativeID || a.resumes[0].Command.Message != "" {
+		t.Fatal("original Resume created a task/session or replayed input")
+	}
+	if _, e = f.service.Stop(ctx, caller(), first); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.service.Transition(ctx, caller(), first, app.RelayTransitionCommand{From: "working", To: "done", CompletionConfirmed: true}); e != nil {
+		t.Fatal(e)
+	}
+	if _, e = f.service.Transition(ctx, caller(), first, app.RelayTransitionCommand{From: "done", To: "released"}); e != nil {
+		t.Fatal(e)
+	}
+	if e = f.store.Close(); e != nil {
+		t.Fatal(e)
+	}
+	f.store, e = sqlite.OpenRelayStore(f.root)
+	if e != nil {
+		t.Fatal(e)
+	}
+	f.service = f.assemble(f.store, driver, nil)
+	second := f.intent()
+	r, e = f.service.ConfirmIntent(ctx, caller(), second, confirm())
+	if e != nil {
+		t.Fatal(e)
+	}
+	if len(a.starts) != 2 || r.View.Terminal.ID != terminalID || r.View.Workspace.ID != workspaceID {
+		t.Fatal("new task did not reuse only durable terminal/workspace identity")
+	}
+	request := a.starts[1]
+	if request.SessionID == "" || request.SessionID == old.ID || request.Session.NativeID != "" || request.Session.StopConfirmed || request.Session.SourceSessionID != "" {
+		t.Fatal("new task Launch reused the released native conversation")
+	}
+	if request.Command.Message != "HANDOFF_MANUAL:\ncomplete manual\nsecond line\n\nTASK:\nexplicit task" {
+		t.Fatal("new native task lost first input")
+	}
+	_, e = f.service.Resume(ctx, caller(), first)
+	checkCode(t, e, apierrors.VersionConflict)
+	if len(a.starts) != 2 || len(a.resumes) != 1 {
+		t.Fatal("released task controlled next native session")
+	}
 }
 
 func TestRelaySameWorkspaceHandoffPreservesFiles(t *testing.T) {
