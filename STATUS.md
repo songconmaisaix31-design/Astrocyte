@@ -12,6 +12,18 @@
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
 
+### 2026-10-14 V4 首日恢复：采集/三臂/机判完成，人评与预测待办
+
+**2026-10-14T03:13:43+08:00：D0（2026-10-13）恢复运行完成。** 原自动run `df055da3-8b4c-4e02-8470-e53d176a59ce` 原定00:20、01:18:12补调度，`skipped_unavailable`/未派发原件保留；本次用户授权手动run `59891a05-a832-4c13-8436-9b597726da8d` 已实际completed。同一automation、提示词、目标、cron、existing/reuse/enabled设置与事前原件逐项全等；next=10-15 00:20。根因定位于Orca 1.4.220启动补调度的界面项目可用性判断：daemon01:18:09.829 ready，派发时state.repos未找到目标即登记skip，rendererReady未等待项目加载；当前同一目标可派发。仓库UUID/GitHub project ID是兼容层不同字段，最初“ID不同即失效”判断撤回。公开CLI探查失败/临时模式切换均保留，最终设置已恢复；未改Orca安装包门禁，后续实际定时运行仍NOT_RUN，机器及Orca须在日程前运行。
+
+原生产live CLI正式采10-13完整自然日，ts逐事件路径、1生产Sleep、day-state.sqlite完成。新增84事件/84信号：Astrocyte65 commits、McPet19 commits、Morphogenesis0；unassigned/结构失败/归一化失败/重复/late/source_errors全0，capture_complete=true。独立SQL核对全部84条s=1/w=.6；正式库与日快照四表标量全等（3189事件/3189信号/6节点/32Sleep）。原V1R SHA仍`279ffd78ad8cf083b1e279fb8c4ed32ae53a662b52d8a0f220f96d98c9816d4e`。
+
+4题/12臂全部OK、6事实机判SCORED、独立judge1 OK；13次实际模型完成，各请求同gpt-6.1-sol/context872000/共同byte5094907、无tools/compact、完整usage及输入，均在1800秒/输出4096预算内。B四次各完整1003消息、未装载0，最长38.419575秒、最大input491488；A四次1280引用全可回溯、6节点、聚合误差0/raw0，approved经验0。用户原因表待填，D+3预测未成熟；首日技术完成不作为七日终局结论，v0.2继续冻结。
+
+源现状单列：授权Codex根1714 JSONL最新修改10-10 21:56、Claude根7 JSONL最新修改10-10 15:12，两根10-13修改文件0；本次原生客户端认知事件0，新信号全来自git。未扩源、未搬运其他账户记录或修改锁定协议。EXPERIMENT全文SHA保持`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，day0保持10-13；相对已验d749ecb业务/协议仅文档变化。本轮新增业务测试0；实际CLI采集/三臂/judge、独立SQL/输入预算/隐私复核PASS；文档diff检查PASS。
+
+外部证据：`root-v4-start/automation-recovery-20261014-{worker-summary,independent-first}-safe.json`与原local回执；capture=`v4-w1/formal-20261013-first/capture-20261013-first`，日答/人评表=`v4-w2/day-20261013-first`。本地审计曾因Python stdin默认gbk误报提示词差异并出现编码错误，改用CLI原UTF-8字节复核全等，未改提示词。流程及剩余见[首日恢复](tasks/M6-V4-first-day-recovery.md)。本记录文档commit SHA由最终Git交付登记，skip/bridge/原RED不覆盖。
+
 ### v0.2 冻结期评审（2026-10-13）
 
 **2026-10-13T12:18:10+08:00：用户基于评审2179641裁决R01–R12，规格已并入任务书v1.1，状态SPEC_FINALIZED_IMPLEMENTATION_FROZEN；原待答问题全部关闭。** 任务[正文](tasks/v0.2-discovery-split.md)、[裁决登记](tasks/v0.2-discovery-split-review.md)、[精确写域计划](tasks/v0.2-discovery-split-plan.md)为后续事实源；D0门禁仍是V4末D+3实际完成+冻结解除，人评/对账缺失不启动，不按10-23日期冒称完成。

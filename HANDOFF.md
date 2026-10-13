@@ -6,6 +6,8 @@
 
 ## 当前入口：M6 v3.0（2026-10-12）
 
+2026-10-14 03:13：用户授权首日恢复已完成。D0=10-13新增84 commits（Astro65/McPet19）、1生产Sleep、正式日快照；4题×3臂12 OK、6事实机判、独立judge OK。A聚合误差0/raw0/1280引用可溯，B各1003完整消息，无重发。原scheduled run df055da3的01:18启动补调度missing-project skip保留；手动run59891a05 completed。同一自动任务原提示词/目标/日程/设置逐项全等，next10-15 00:20。Orca启动rendererReady未等待界面项目加载，skip不是仓库删除；未改安装包门禁，后续真正定时运行待观察。授权两客户端根最新10-10，首日原生事件0，未扩源。根STATUS顶部、tasks/M6-V4-first-day-recovery.md及root-v4-start/automation-recovery-20261014-*-safe.json为证据；人评表v4-w2/day-20261013-first/user-sheet.json待用户独立填写，首个预测于10-17闭日采完10-14..16后成熟。day0/协议SHA不变，不重采本日、不重发已成功模型，不代填人评；v0.2仍冻结。
+
 2026-10-13：v0.2 R01–R12全部获用户裁决并入tasks/v0.2-discovery-split.md v1.1，状态SPEC_FINALIZED_IMPLEMENTATION_FROZEN；tasks/v0.2-discovery-split-review.md登记闭环，tasks/v0.2-discovery-split-plan.md给出四轨互斥精确文件，未派发/未建实现与worktree。零证据seed收养ID/confirmed保留；五项derived仅本地不扩MCP六字段；新FilterSplit不退役父；floor clamp+原始继承、双轨D4、发现.05/.15、veto仅未来回流与永久同版本抑制、三连续Sleep merge、author/事件前human origin、论文去重、基础权重不校准均按正文执行。MergeDurationMS单位以三次每日观测两天跨度172800000绑定，Sleep侧管理连续资格，merge实现不改。不重问下方历史待答；V4协议/日程照旧，真实末D+3及人评/对账完成且冻结解除才D0，不能仅到10-23便开工。
 
 2026-10-13 11:57：已接收v0.2 Discovery & Split任务，冻结期只作评审。任务源tasks/v0.2-discovery-split.md、实码差异与12待定项tasks/v0.2-discovery-split-review.md，状态REVIEW_PENDING_DECISIONS，未启动D0。已集中询问实码冲突，不按未答冻结接口；原V4全文SHA/模型/预算/日程不改，V4真实日流程继续。开工条件是末D+3实际完成与冻结解除，不能仅凭10-23日期启动。不要把下方v0.2规划当本期新能力授权或覆盖V1R原回放。

@@ -1,5 +1,7 @@
 # 验证阶段状态
 
+2026-10-14T03:13:43+08:00：V4 D0（10-13）用户授权手动恢复completed，84 commits（Astro65/McPet19）/1生产Sleep/不可变日快照；4题12臂OK、6事实机判与独立judge完成。A聚合误差0/1280引用可溯/raw0，B各完整1003消息；正式库3189事件/32Sleep，V1R原件与协议SHA不变。原01:18启动补调度的missing-project skip保留；Orca rendererReady未等待项目加载，原配置已核对恢复，下次10-15 00:20定时实跑待观察。授权客户端目录最新10-10，原生事件0，未扩源。人评待用户填写、首个预测10-17闭日成熟、v0.2仍冻结。CLI实跑与独立SQL/预算/隐私检查PASS，新增业务测试0；证据及最终Git SHA见[根STATUS](../STATUS.md)与[首日恢复](../tasks/M6-V4-first-day-recovery.md)。
+
 2026-10-13：v0.2 R01–R12已全裁决并入[任务书v1.1](../tasks/v0.2-discovery-split.md)，评审RESOLVED，四轨[精确写域](../tasks/v0.2-discovery-split-plan.md)已登记；SPEC_FINALIZED_IMPLEMENTATION_FROZEN/D0未开始。纯文档，V4协议SHA/日程/业务不改，末D+3及人评/对账实际完成且冻结解除才开工。下面REVIEW_PENDING为历史，不重问。
 
 2026-10-13：v0.2任务书已作冻结期文档评审，12项实码问题见 [评审](../tasks/v0.2-discovery-split-review.md)，状态REVIEW_PENDING_DECISIONS；未实现D0、未解除V4冻结或修改协议SHA/日程。V4真实七日继续，v0.2等末D+3实际完成后开工。具体待裁决读QUESTIONS最新及根STATUS。
