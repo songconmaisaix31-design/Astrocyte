@@ -1,5 +1,15 @@
 # Astrocyte 当前状态
 
+## Workbench 修订版续接（2026-10-14 01:22 +08:00）
+
+目标分支 `workbench/v0.1-workbench`，计划/契约见 [执行单](tasks/Workbench-v01.md) 与 [HTTP 契约](tasks/Workbench-api.md)。从 attention-engine/v1-20261011 建立；相对 CI 绿基线100f00cb仅历史文档偏差，复用现有 web/server/鉴权/Playwright。下方 attention-engine CI 是历史基线，不是 Workbench 验收。validation、V4正式库、引擎、迁移与参数零改动；当前不合main，解冻后两分支一次收敛。
+
+Orca重启恢复将旧backend ctx607328b4cef6与frontend ctx8e65c15392e9以terminal_missing结算failed，并将原Task恢复ready；原WIP完整保留。root接管同Run run_a75ccac871c9，旧资源按恢复回执release（processAction=none）。首次携retry-of被task_not_startable拒绝：Task已ready；核对Dispatch和Task后按ready启动同Task、同工作树、同分支，无重复编辑者。backend续接ctx1f5ae09e7cad、frontend续接ctxca3e2f3fcf21，两者turn_started实际observed。职责与写域不变；首RED及中断不改写。
+
+已发布契约SOURCE1ef8f751，前端普通合82c29af。旧轨回报typecheck/lint/build与13客户端测试通过；首认知+Nav两视口116项114PASS/2drawer失败，原owner续修。旧backend定向Go/WAL在线备份通过，首次广Go importer 30s超时保留。均尚无最终SOURCE/REPORT，不宣称集成完成。
+
+本机快照snapshot-990zudfs发布于2026-10-13T08:38:14.539859+00:00，3105事件；root独立mode=ro/immutable SQL生成10-14窗口期望值，文件仅LOCALAPPDATA/astrocyte-workbench/v0.1/verification。UI十值核对、最终check/build/E2E待续接完成。00:30自动任务实际安装与运行待核；当前手动快照不算跨日自动验收。连续两日自动与管理员Procmon正式DB/WAL/SHM零写监控均未通过，保持NOT_RUN。
+
 ## 本轮最终双平台 CI 通过（2026-10-12）
 
 交付分支 `attention-engine/v1-20261011`。源码和测试验收提交 `100f00cb6945c96a7f3bd3f100f7ff65efc61197` 的 [CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) 已 completed/success：Ubuntu24.04 与 Windows2025 的完整 `pnpm check`、`pnpm build`、`pnpm test:e2e` 均 PASS；两平台默认浏览器各226 PASS / 30 SKIP（2.7m / 5.2m），Linux `go test -mod=readonly -race ./...` PASS，Windows race 按工作流条件 SKIP。Windows 先前路径及两视口首RED保留，后续绿色不改写历史。完整日志与精确SHA见基线记录。

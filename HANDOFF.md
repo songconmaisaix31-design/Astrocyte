@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 当前入口：Workbench 只读认知页（2026-10-14）
+
+先读STATUS顶部与tasks/Workbench-v01.md、Workbench-api.md。交付分支workbench/v0.1-workbench基于attention-engine/v1-20261011，复用现有web/server，不采用已封存独立工程；引擎/schema/validation/V4不动。Orca重启后原两个Task在原工作树续接，backend ctx1f5ae09e7cad、frontend ctxca3e2f3fcf21，均已observed启动；旧中断failed与首RED保留。root只计划/状态/独立验收/最终Git，业务返修归owner。
+
+等待精确SOURCE/REPORT、测试与push后，派唯一集成owner普通no-ff合两轨，领域问题退owner。root最终check/build、真实四视图十值SQL复核及push；当前未集成。快照与所有真实证据仅LOCALAPPDATA/astrocyte-workbench/v0.1，正式源只在线备份读取。00:30两日自动和管理员文件监控未通过，不以手动两次或静态检查替代。当前不合main，按用户裁决解冻后validation与本分支一次收敛。
+
 ## 最终交付入口：双平台 CI 已通过（2026-10-12）
 
 分支 `attention-engine/v1-20261011`；源码/测试验收HEAD `100f00cb6945c96a7f3bd3f100f7ff65efc61197`，最终普通代码/测试合并 `958109d7df96b7e70bc470ac0ad4f76dd9e3ffa1`。[CI38155238602](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38155238602) completed/success：Ubuntu/Windows完整check/build/defaultE2E均PASS，各226 PASS / 30 SKIP，Linux race PASS（Windows按条件SKIP）。当前收尾只改STATUS、HANDOFF、计划和验收四个Markdown，以skip ci提交；验收来源仍是100f00c，代码/测试/配置完全相同。先前RED原件保留。
