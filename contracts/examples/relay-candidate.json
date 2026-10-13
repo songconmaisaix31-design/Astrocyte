@@ -1,0 +1,27 @@
+{
+  "contract": "Works Relay v1.2 candidate aligned to runtime 3430302",
+  "intent": {
+    "work_id": "fixture-work",
+    "project_id": "fixture-project",
+    "agent": "fixture-agent",
+    "task": "Fixture human task"
+  },
+  "confirm": {
+    "permission_confirmed": true,
+    "permission_level": "A",
+    "project_settings_revision": 0
+  },
+  "events": {
+    "schema_version": 1,
+    "events": [
+      {
+        "event_id": "fixture-relay-event",
+        "kind": "edit_file",
+        "topic": "fixture-work",
+        "tokens": null,
+        "scope": "fixture-project",
+        "ts": "2026-10-14T00:00:00Z"
+      }
+    ]
+  }
+}
