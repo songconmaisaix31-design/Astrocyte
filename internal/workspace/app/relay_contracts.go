@@ -49,13 +49,15 @@ type RelayRuntime interface {
 // Internal storage state is never an HTTP DTO. Update is a single transaction;
 // the callback changes data only and must never launch a process or emit events.
 type RelayState struct {
-	Tasks       map[string]domain.RelayTask
-	Workspaces  map[string]domain.RelayWorkspace
-	Terminals   map[string]domain.RelayTerminal
-	Sessions    map[string]domain.NativeSession
-	Receipts    map[string]domain.RelayReceipt
-	Transitions []domain.RelayTransition
-	Events      []domain.RelayEvent
+	Tasks          map[string]domain.RelayTask
+	Workspaces     map[string]domain.RelayWorkspace
+	Terminals      map[string]domain.RelayTerminal
+	Sessions       map[string]domain.NativeSession
+	Receipts       map[string]domain.RelayReceipt
+	Transitions    []domain.RelayTransition
+	Events         []domain.RelayEvent
+	Published      map[string]bool
+	PendingActions map[string]string
 }
 
 type RelayStore interface {
