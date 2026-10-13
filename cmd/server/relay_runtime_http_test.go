@@ -246,7 +246,31 @@ func TestRelayPersistentRealHTTPReceiptsMutexAndRestart(t *testing.T) {
 	if json.Unmarshal(b, &other) != nil {
 		t.Fatal("second intent unavailable")
 	}
-	client.request("POST", "/api/v1/relay/intents/"+other.View.Task.ID+"/confirm", confirm, "", 409)
+	b = client.request("POST", "/api/v1/relay/intents/"+other.View.Task.ID+"/confirm", confirm, "", 409)
+	var conflict struct {
+		Error struct {
+			RequiredAction string `json:"required_action"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(b, &conflict) != nil || conflict.Error.RequiredAction != "view_existing_task:"+id {
+		t.Fatal("mutex denial did not expose the verified existing public task")
+	}
+	b = client.request("GET", "/api/v1/relay/tasks/"+other.View.Task.ID+"/receipts", "", "", 200)
+	var mutexReceipts struct {
+		Receipts []domain.RelayReceipt `json:"receipts"`
+	}
+	if json.Unmarshal(b, &mutexReceipts) != nil || len(mutexReceipts.Receipts) != 2 {
+		t.Fatal("mutex denial receipt unavailable")
+	}
+	foundConflict := false
+	for _, receipt := range mutexReceipts.Receipts {
+		if receipt.Action == "dispatch" && receipt.Status == "rejected" && receipt.Error != nil && receipt.Error.RequiredAction == "view_existing_task:"+id {
+			foundConflict = true
+		}
+	}
+	if !foundConflict {
+		t.Fatal("saved mutex receipt lost existing public task")
+	}
 	if driver.launches != 1 || neutral.prepared != 1 {
 		t.Fatal("exclusive workspace allowed second writer")
 	}
@@ -318,6 +342,19 @@ func TestRelayPersistentRealHTTPReceiptsMutexAndRestart(t *testing.T) {
 	}
 	if firstRejected != 1 || unknown != 1 || read != 1 || stop != 1 {
 		t.Fatal("first RED/unknown or action receipts not durable exactly once")
+	}
+	b = client.request("GET", "/api/v1/relay/tasks/"+other.View.Task.ID+"/receipts", "", "", 200)
+	if json.Unmarshal(b, &mutexReceipts) != nil {
+		t.Fatal("original mutex receipt unavailable after reopen")
+	}
+	foundConflict = false
+	for _, receipt := range mutexReceipts.Receipts {
+		if receipt.Action == "dispatch" && receipt.Status == "rejected" && receipt.Error != nil && receipt.Error.RequiredAction == "view_existing_task:"+id {
+			foundConflict = true
+		}
+	}
+	if !foundConflict {
+		t.Fatal("original mutex hint lost after reopen")
 	}
 	client.request("POST", "/api/v1/relay/tasks/"+id+"/send", `{"input":"controlled input"}`, sendKey, 409)
 	if driver.sends != 1 {
