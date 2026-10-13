@@ -1,9 +1,13 @@
+/// <reference types="node" />
 import { test, expect, type Page } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { components } from '../src/api/schema';
 import { fixtureWorksSnapshot } from '../src/pages/workspace/worksAlbumPresentation';
 
 type S = components['schemas'];
 const timestamp = '2026-10-14T00:00:00Z';
+const existingTaskID = 'ae48c13e-86e4-4899-8c20-a618873ea209';
 const capability = { status: 'supported' as const, reason: 'contract-local mock only', checked_at: timestamp };
 
 async function mockRelay(page: Page) {
@@ -18,11 +22,13 @@ async function mockRelay(page: Page) {
     receipts: [] as S['RelayReceiptV1'][],
     events: [{ event_id: 'derived-newer', kind: 'edit_file', topic: 'public-work', tokens: null, scope: 'public-project', ts: timestamp }, { event_id: 'derived-older', kind: 'agent_task', topic: 'public-work', tokens: 12, scope: 'public-project', ts: '2026-10-13T23:59:00Z' }] as S['WorkbenchEventV1'][],
     writes: [] as { action: string; body: Record<string, unknown>; key: string }[],
+    reads: [] as string[],
+    conflictAction: `view_existing_task:${existingTaskID}`,
     confirmMode: 'success' as 'success' | 'denied' | 'duplicate' | 'unknown',
     sendMode: 'success' as 'success' | 'unknown',
   };
   const receipt = (action: S['RelayReceiptV1']['action'], key: string, status: S['RelayReceiptV1']['status'] = 'accepted', code?: S['RelayReceiptErrorV1']['code']): S['RelayReceiptV1'] => {
-    const value: S['RelayReceiptV1'] = { receipt_id: `receipt-${action}-${state.receipts.length}`, task_id: state.views.at(-1)?.task.task_id || 'task-public', operation_id: key, action, operator: 'human', status, created_at: timestamp, finished_at: timestamp, error: code ? { code, message: action === 'dispatch' && code === 'version_conflict' ? 'existing active task task-current' : `contract-local ${code}`, request_id: key, retryable: false, required_action: 'read_task_receipts' } : null };
+    const value: S['RelayReceiptV1'] = { receipt_id: `receipt-${action}-${state.receipts.length}`, task_id: state.views.at(-1)?.task.task_id || 'task-public', operation_id: key, action, operator: 'human', status, created_at: timestamp, finished_at: timestamp, error: code ? { code, message: action === 'dispatch' && code === 'version_conflict' ? 'Relay state or workspace conflict' : `contract-local ${code}`, request_id: key, retryable: false, required_action: action === 'dispatch' && code === 'version_conflict' ? state.conflictAction : 'read_task_receipts' } : null };
     state.receipts.push(value);
     return value;
   };
@@ -30,6 +36,7 @@ async function mockRelay(page: Page) {
   await page.route('**/api/v1/relay/**', async route => {
     const request = route.request(), path = new URL(request.url()).pathname.replace('/api/v1/relay/', '');
     if (request.method() === 'GET') {
+      state.reads.push(path);
       const body = path === 'projects' ? { schema_version: 1, projects: [state.project] }
         : path === 'agents' ? { schema_version: 1, agents: [state.spec], inventory: [state.inventory] }
         : path === 'tasks' ? { schema_version: 1, tasks: state.views, dispatched_work_ids: state.receipts.some(item => item.action === 'dispatch' && item.status === 'accepted') ? ['work-a'] : [] }
@@ -58,7 +65,7 @@ async function mockRelay(page: Page) {
       if (state.confirmMode !== 'success') {
         const code = state.confirmMode === 'denied' ? 'scope_denied' : state.confirmMode === 'duplicate' ? 'version_conflict' : 'delivery_unknown';
         const failed = receipt('dispatch', key, code === 'delivery_unknown' ? 'delivery_unknown' : 'rejected', code);
-        await route.fulfill({ status: code === 'scope_denied' ? 403 : code === 'version_conflict' ? 409 : 503, json: { schema_version: 1, error: failed.error } }); return;
+        await route.fulfill({ status: code === 'scope_denied' ? 403 : code === 'version_conflict' ? 409 : 503, json: { schema_version: 1, error: failed.error, raw: 'PRIVATE_PROVIDER_CANARY' } }); return;
       }
       view.task.state = 'accepted'; view.task.terminal_id = 'terminal-stable'; view.task.worktree_id = 'worktree-neutral'; view.task.degraded_launch = true;
       view.terminal = { terminal_id: 'terminal-stable', worktree_id: 'worktree-neutral', agent: view.task.agent, drive_mode: 'terminal', liveness: 'live', last_event_at: timestamp, exited_at: null, last_sequence: 1, created_at: timestamp };
@@ -117,6 +124,34 @@ function seedProjectedTask(state: Awaited<ReturnType<typeof mockRelay>>, status:
 }
 
 test.describe('relay contract-local mock evidence; not CLI or durable acceptance', () => {
+  for (const [index, stage] of ['initial', 'reopened'].entries()) {
+    test(`actual HTTP ${stage} mutex receipt replay offers only manual GET lookup; not live browser acceptance`, async ({ page }) => {
+      test.skip(process.env.ASTROCYTE_TEST_RELAY_HTTP_SAMPLES !== '1', 'Requires H-owned public HTTP DTO samples in local access evidence; never loads private transcripts.');
+      const samples: { schema: string; body: S['RelayReceiptsV1'] }[] = JSON.parse(await readFile(join(process.env.LOCALAPPDATA!, 'astrocyte-workbench/v0.2-access/verification/http-runtime-contract-samples.json'), 'utf8'));
+      const bodies = samples.filter(sample => sample.schema === 'RelayReceiptsV1' && sample.body.receipts.some(receipt => receipt.status === 'rejected' && receipt.error?.required_action.startsWith('view_existing_task:')));
+      expect(bodies).toHaveLength(2);
+      const rejected = bodies[index].body.receipts.find(receipt => receipt.status === 'rejected' && receipt.error?.required_action.startsWith('view_existing_task:'))!;
+      const id = rejected.error!.required_action.slice('view_existing_task:'.length);
+      expect(rejected.error!.message).toBe('Relay state or workspace conflict');
+      const state = await mockRelay(page);
+      seedProjectedTask(state);
+      state.views[0].task.task_id = id;
+      state.views[0].worktree!.active_task_id = id;
+      state.views.push({ ...state.views[0], task: { ...state.views[0].task, task_id: rejected.task_id, state: 'ready', terminal_id: '', worktree_id: '' }, terminal: null, worktree: null });
+      state.receipts = bodies[index].body.receipts;
+      await page.goto('/workspace/works');
+      await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+      const existing = page.getByRole('dialog').getByRole('region', { name: '派发与意图收据', exact: true }).getByRole('region', { name: `已有任务 ${id}`, exact: true });
+      await expect(existing).toContainText(id);
+      expect(state.reads).not.toContain(`tasks/${id}`);
+      await existing.getByRole('button', { name: '只读查看已有任务', exact: true }).click();
+      await expect(existing).toContainText('工作中 · working');
+      expect(state.reads).toContain(`tasks/${id}`);
+      expect(state.writes).toEqual([]);
+      await expect(page.locator('body')).not.toContainText('PRIVATE_CANARY');
+    });
+  }
+
   test('registered CLI, mandatory default A confirmation and permission refusal', async ({ page }) => {
     const state = await mockRelay(page); state.confirmMode = 'denied';
     const dialog = await declareIntent(page);
@@ -136,14 +171,51 @@ test.describe('relay contract-local mock evidence; not CLI or durable acceptance
     expect(state.receipts[1].status).toBe('rejected');
   });
 
-  test('duplicate dispatch reports existing task and does not create another writer', async ({ page }) => {
+  test('duplicate dispatch offers manual read-only existing task from 409 and reloaded receipt without another writer', async ({ page }) => {
     const state = await mockRelay(page); state.confirmMode = 'duplicate';
+    seedProjectedTask(state);
+    state.views[0].task.task_id = existingTaskID;
+    state.views[0].worktree!.active_task_id = existingTaskID;
     const dialog = await declareIntent(page);
     await dialog.getByRole('checkbox').check();
     await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('alert')).toContainText('existing active task task-current');
+    await expect(dialog.getByRole('alert')).toContainText(`view_existing_task:${existingTaskID}`);
+    const existing = dialog.getByRole('region', { name: '派发与意图收据', exact: true }).getByRole('region', { name: `已有任务 ${existingTaskID}`, exact: true });
+    await expect(existing).toContainText(existingTaskID);
+    expect(state.reads).not.toContain(`tasks/${existingTaskID}`);
+    await existing.getByRole('button', { name: '只读查看已有任务', exact: true }).click();
+    await expect(existing).toContainText('工作中 · working');
+    await expect(existing).toContainText(state.spec.name);
+    await expect(existing).toContainText('relay/public');
+    expect(state.reads).toContain(`tasks/${existingTaskID}`);
     expect(state.writes.filter(item => item.action === 'confirm')).toHaveLength(1);
-    expect(state.views[0].terminal).toBeNull();
+    expect(state.views[1].terminal).toBeNull();
+    expect(state.views[1].task.state).toBe('ready');
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+    const reloaded = page.getByRole('dialog').getByRole('region', { name: '派发与意图收据', exact: true }).getByRole('region', { name: `已有任务 ${existingTaskID}`, exact: true });
+    await expect(reloaded).toBeVisible();
+    await reloaded.getByRole('button', { name: '只读查看已有任务', exact: true }).click();
+    await expect(reloaded).toContainText('工作中 · working');
+    expect(state.writes.map(item => item.action)).toEqual(['intent', 'confirm']);
+    expect(state.receipts.at(-1)?.status).toBe('rejected');
+    expect(state.views[0].task.state).toBe('working');
+  });
+
+  test('sanitized generic or unknown-task conflict has no lookup or automatic reconfirm', async ({ page }) => {
+    const state = await mockRelay(page); state.confirmMode = 'duplicate';
+    // H's actual HTTP negative cases return this fixed action for unknown UUIDs,
+    // provider canaries, noncanonical IDs and unrelated conflicts.
+    state.conflictAction = 'refresh_relay_state';
+    const dialog = await declareIntent(page);
+    await dialog.getByRole('checkbox').check();
+    await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
+    await expect(dialog.getByRole('alert')).toContainText('Relay state or workspace conflict');
+    await expect(dialog.getByRole('button', { name: '只读查看已有任务', exact: true })).toHaveCount(0);
+    await dialog.getByRole('button', { name: '读取权限、任务和收据' }).click();
+    expect(state.writes.map(item => item.action)).toEqual(['intent', 'confirm']);
+    expect(state.views[0].task.state).toBe('ready');
+    await expect(page.locator('body')).not.toContainText('PRIVATE_PROVIDER_CANARY');
   });
 
   test('existing independent B and C grants confirm their actual service summary', async ({ page }) => {

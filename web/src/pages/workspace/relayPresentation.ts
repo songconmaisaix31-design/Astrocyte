@@ -6,6 +6,13 @@ export const relayLivenessLabel = { live: '近期活动确证 · live', unverifi
 export const relayActionLabel = { intent: '声明意图', dispatch: '派发', send: '发送输入', read: '读取会话', stop: '停止', resume: '原生恢复', transition: '状态迁移', observe: '服务端观察', reconcile_events: '核对事件接入' };
 export const relayReceiptLabel = { pending: '结果待确认', accepted: '动作已确认', rejected: '被拒绝 · 首 RED 保留', delivery_unknown: '交付未知 · 不重试' };
 
+/** Only the HTTP service's known-task conflict hint can offer a read-only lookup. */
+export function relayExistingTaskID(error: RelayReceipt['error']) {
+  if (error?.code !== 'version_conflict') return '';
+  const match = /^view_existing_task:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.exec(error.required_action);
+  return match && match[1] !== '00000000-0000-0000-0000-000000000000' ? match[1] : '';
+}
+
 export function relayDisplayState(view: RelayTaskView) {
   if (view.task.condition === 'terminal_exited') return 'terminal_exited · 终端退出，任务未完成';
   return `${relayStateLabel[view.task.state]} · ${view.task.state}${view.task.condition ? ` · ${view.task.condition}` : ''}`;

@@ -7,6 +7,7 @@ import type { WorksWork } from './worksAlbumPresentation';
 import { useRelayCommand } from './relayCommand';
 import { relayAgentAvailability, relayProjectMatches, relayReceiptLabel, relayUnresolved } from './relayPresentation';
 import { RelayReceipts } from './relayReceipts';
+import { RelayExistingTask } from './relayExistingTask';
 
 export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWork; existing?: RelayTaskView; onChanged: () => void }) {
   const projects = useReadApi(signal => relayApi.projects(signal));
@@ -45,6 +46,7 @@ export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWo
       </form>
     </>}
     {command.error && <p role="alert">{command.error} · 操作 {command.operationID}</p>}
+    {command.existingTaskID && <RelayExistingTask key={command.existingTaskID} taskID={command.existingTaskID} />}
     {command.uncertain && <p role="alert">意图结果未知，保留草稿；请读取任务与收据核对，不会自动重试。</p>}
     {command.result && <p role="status">意图已保存：{command.result.view.task.task_id} · 启动前仍须确认权限。</p>}
   </div>;
@@ -87,6 +89,7 @@ function RelayConfirmation({ view, onChanged }: { view: RelayTaskView; onChanged
       <button type="submit" className="ac-button" disabled={!checked}>确认资料权限并请求接力</button>
     </fieldset></form>
     {command.error && <p role="alert">{command.error} · 操作 {command.operationID}</p>}
+    {command.existingTaskID && <RelayExistingTask key={command.existingTaskID} taskID={command.existingTaskID} />}
     {command.uncertain && <p role="alert">派发结果未知，禁止重派。只读取任务和收据核对结果。</p>}
     {command.result && <p role="status">派发收据 {command.result.receipt.receipt_id} · {relayReceiptLabel[command.result.receipt.status]}</p>}
     <button type="button" className="ac-button secondary compact" onClick={() => { projects.retry(); task.retry(); receipts.retry(); }}>读取权限、任务和收据</button>
