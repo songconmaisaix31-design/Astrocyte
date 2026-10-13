@@ -42,3 +42,11 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - Root准许cmd生命周期内cancellable observer只观察人工已启动的owned task，沿现有观察端口；GET仅缓存读，观察不launch/send/resume，不自动重试明确拒绝/未知动作或失败发布。内部采集cadence不决定尚未确认的活性窗口。不新增调度器。
 - Native事件域无原始时间戳；首次新增sequence的观察时间是登记证据，重复缓存及重载不得刷新LastEvent。Git活动只证明变化，不证明完成；未跟踪文件同名内容二次变化尚未完整覆盖，owner记录限制。
 - F新runtime mock E2E首RED为卡片高度导致接力按钮被后续标题遮挡，原owner修布局；既有断言/超时未改。owner报告104项Vitest与typecheck PASS，均不替代真实CLI闭环。
+
+## 工程阶段收敛（用户最终验收不变）
+
+- R SOURCE `a3f47921f4627a8b3e48e44c7cabe0d2b021b617` / REPORT `2e8112669deffd9b85017fc81cc665e7863bb030` 已push、clean且remote一致。owner报告20个有测试Go包全套、架构/vet/build PASS；受控真实CLI贯穿Service/SQLite/neutral Git/derived sink，源文件未改。首10秒context超时RED保留，不以单项诊断PASS覆盖。真实Agent和正式认知闭环仍NOT_RUN。
+- H SOURCE `8d353e3381cd620834ee64aea357611267f0d27d` 普通消费R `cf11b1a`；observer和shutdown仅已有task、cancellation join与关闭顺序，14项真实HTTP响应AJV PASS。首CI `38455064422` exact `3e9dc58` 为Linux无LOCALAPPDATA测试fixture失败、Windows生成schema漂移；原run不重跑覆盖。H只修测试根和缺失环境负例，生产路径约束保持，远端新CI结果尚待。
+- F收到实际receipt枚举、exact-root项目匹配、权限摘要与done/released UI接缝，仍原owner修。A/B/C不是新的scope降级接口；新项目默认A，已获准B/C准确展示并确认。
+- 正式认知流缺口与Today展示分别验证：本机pending observation接入不等于normalized event/engine更新或正式快照发布；旁路展示不能冒充完整闭环。H给可复用正式采集方案，不改mapper/引擎/权重。
+- 可独立工程完成后，交唯一集成owner合精确SOURCE/REPORT并验构建和接口。阶段交付不宣称v1.2完成，不降低用户工程验收；未答自由tools、来源、活性窗及Today仍保持门禁。原固定领域owner持续负责返修。
