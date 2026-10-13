@@ -18,20 +18,28 @@ import (
 
 type relayOwnedNativeFixture struct {
 	*relayNativeRecording
-	root          string
-	workspace     string
-	selected      bool
-	wrongIdentity bool
-	badSource     string
-	appendOnly    bool
-	finalized     bool
-	sourceCalls   atomic.Int32
+	root                string
+	workspace           string
+	selected            bool
+	wrongIdentity       bool
+	badSource           string
+	appendOnly          bool
+	wrongSessionProject bool
+	wrongSessionCLI     bool
+	finalized           bool
+	sourceCalls         atomic.Int32
 }
 
 func (a *relayOwnedNativeFixture) Start(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
 	s, err := a.relayNativeRecording.Start(ctx, r)
 	a.workspace = r.Project.Root
 	s.HistoryPath = filepath.Join(a.root, s.ID+".jsonl")
+	if a.wrongSessionProject {
+		s.ProjectID = "foreign-project"
+	}
+	if a.wrongSessionCLI {
+		s.CLI = "foreign-cli"
+	}
 	if err == nil {
 		err = os.WriteFile(s.HistoryPath, []byte("{\"public_fixture\":true}\n"), 0600)
 	}
@@ -395,6 +403,102 @@ func TestRelayOwnedLegacyAndTerminalOnlySourcesStayExplicitGaps(t *testing.T) {
 			afterWire, _ := json.Marshal(after)
 			if string(wire) != string(afterWire) {
 				t.Fatal("read backfilled old binding")
+			}
+		})
+	}
+}
+
+func TestRelayOwnedArchiveCannotOverrideWrongControllerProjectOrCLI(t *testing.T) {
+	for _, reason := range []string{"project", "cli"} {
+		t.Run(reason, func(t *testing.T) {
+			f, a, _, _ := newOwnedFixture(t, true)
+			a.wrongSessionProject = reason == "project"
+			a.wrongSessionCLI = reason == "cli"
+			id := f.intent()
+			if _, err := f.service.ConfirmIntent(context.Background(), caller(), id, confirm()); err != nil {
+				t.Fatal(err)
+			}
+			b := findOwned(t, ownedReader(t, f.service), id)
+			if b.SourceStatus != "gap" || b.ArchivePath != "" || b.SessionID != "" || b.NativeID != "" {
+				t.Fatal("matching Archive IDs/CWD overrode rejected native ownership")
+			}
+			st, err := f.store.Snapshot(context.Background())
+			if err != nil {
+				t.Fatal(err)
+			}
+			stored := st.OwnedSessions[id]
+			if stored.SourceStatus != "gap" || stored.Gap != "session_ownership_unverified" || stored.ArchivePath != "" {
+				t.Fatal("archive source cleared ownership gap in persistent state")
+			}
+		})
+	}
+}
+
+func TestRelayOwnedDifferentAgentHandoffKeepsClosedBindingAndCurrentPermission(t *testing.T) {
+	f, _, _, _ := newOwnedFixture(t, true)
+	ctx := context.Background()
+	first := f.intent()
+	if _, err := f.service.ConfirmIntent(ctx, caller(), first, confirm()); err != nil {
+		t.Fatal(err)
+	}
+	old := findOwned(t, ownedReader(t, f.service), first)
+	if _, err := f.service.Stop(ctx, caller(), first); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.service.Transition(ctx, caller(), first, app.RelayTransitionCommand{From: "working", To: "done", CompletionConfirmed: true}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.service.Transition(ctx, caller(), first, app.RelayTransitionCommand{From: "done", To: "released"}); err != nil {
+		t.Fatal(err)
+	}
+	f.projects.project.Settings.ExternalModelCLI = "beta"
+	second := f.intent()
+	if _, err := f.service.ConfirmIntent(ctx, caller(), second, confirm()); err != nil {
+		t.Fatal(err)
+	}
+	current := findOwned(t, ownedReader(t, f.service), second)
+	if current.TerminalID == old.TerminalID || current.WorktreeID != old.WorktreeID {
+		t.Fatal("different Agent reused old terminal or lost neutral workspace")
+	}
+	state, err := f.store.Snapshot(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tail := state.OwnedSessions[first]
+	if tail.ExitedAt == nil || tail.BindingID != old.BindingID || tail.ArchivePath != old.ArchivePath || state.Terminals[old.TerminalID].Agent != "alpha" {
+		t.Fatal("different Agent overwrote old closed identity")
+	}
+	denied := findOwned(t, ownedReader(t, f.service), first)
+	if denied.Gap != "permission_denied" || denied.ArchivePath != "" {
+		t.Fatal("closed source bypassed current Agent authorization")
+	}
+}
+
+func TestRelayOwnedReadChecksCurrentControllerProjectAndCLI(t *testing.T) {
+	for _, reason := range []string{"project", "cli"} {
+		t.Run(reason, func(t *testing.T) {
+			f, _, _, _ := newOwnedFixture(t, true)
+			ctx := context.Background()
+			id := f.intent()
+			if _, err := f.service.ConfirmIntent(ctx, caller(), id, confirm()); err != nil {
+				t.Fatal(err)
+			}
+			if err := f.store.Update(ctx, func(st *app.RelayState) error {
+				task := st.Tasks[id]
+				session := st.Sessions[task.TerminalID]
+				if reason == "project" {
+					session.ProjectID = "foreign"
+				} else {
+					session.CLI = "foreign"
+				}
+				st.Sessions[task.TerminalID] = session
+				return nil
+			}); err != nil {
+				t.Fatal(err)
+			}
+			b := findOwned(t, ownedReader(t, f.service), id)
+			if b.SourceStatus != "gap" || b.ArchivePath != "" || b.SessionID != "" {
+				t.Fatal("read trusted stale bound identity after current controller mismatch")
 			}
 		})
 	}
