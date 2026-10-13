@@ -225,6 +225,10 @@ func TestRelayControlledEOFFirstInputUnsupportedReceiptAndExplicitExit(t *testin
 	if counted.updates.Load() != 0 {
 		t.Fatal("real unchanged EOF process rewrote state on background ticks")
 	}
+	owned := findOwned(t, ownedReader(t, f.service), first)
+	if owned.SourceStatus != "gap" || owned.ArchivePath != "" || owned.ArchiveRoot != "" || owned.ArchiveFinalized != "unknown" {
+		t.Fatal("terminal stdout incorrectly became a complete native session source")
+	}
 	op := caller()
 	input := app.RelaySendCommand{Input: "must not resend"}
 	sent, e := f.service.Send(ctx, op, first, input)

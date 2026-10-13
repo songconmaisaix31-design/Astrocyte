@@ -22,6 +22,8 @@ type relayOwnedNativeFixture struct {
 	workspace     string
 	selected      bool
 	wrongIdentity bool
+	badSource     string
+	appendOnly    bool
 	finalized     bool
 	sourceCalls   atomic.Int32
 }
@@ -40,14 +42,36 @@ func (a *relayOwnedNativeFixture) OwnedRelayArchive(_ context.Context, s domain.
 	if !a.selected {
 		return domain.RelaySessionArchive{}, os.ErrNotExist
 	}
-	archive := domain.RelaySessionArchive{SessionID: s.ID, NativeID: s.NativeID, WorkspaceRoot: a.workspace, Path: s.HistoryPath, Root: a.root, Format: "public_jsonl", Finalized: a.finalized}
+	archive := domain.RelaySessionArchive{SessionID: s.ID, NativeID: s.NativeID, WorkspaceRoot: a.workspace, Path: s.HistoryPath, Root: a.root, Format: "public_jsonl", Finalized: a.finalized, AppendOnly: a.appendOnly}
 	if a.wrongIdentity {
 		archive.NativeID = "different-native"
+	}
+	switch a.badSource {
+	case "cwd":
+		archive.WorkspaceRoot = a.root
+	case "session":
+		archive.SessionID = "foreign-session"
+	case "outside_root":
+		archive.Root = filepath.Join(a.root, "other-directory")
+	case "relative":
+		archive.Path = "relative-session.jsonl"
+	case "format":
+		archive.Format = ""
 	}
 	return archive, nil
 }
 
 type relayOwnedRegistry struct{ adapter *relayOwnedNativeFixture }
+
+type relayOwnedRootCounter struct {
+	app.RelayOwnedRoots
+	calls atomic.Int32
+}
+
+func (r *relayOwnedRootCounter) CanonicalRoot(root string) (string, error) {
+	r.calls.Add(1)
+	return r.RelayOwnedRoots.CanonicalRoot(root)
+}
 
 func (r relayOwnedRegistry) Adapter(string) (app.NativeAdapter, error) { return r.adapter, nil }
 func (r relayOwnedRegistry) List() []string                            { return []string{"alpha"} }
@@ -78,6 +102,7 @@ func newOwnedFixture(t *testing.T, selected bool) (*relayFixture, *relayOwnedNat
 	t.Helper()
 	f := newRelayFixture(t)
 	f.options.Clock = time.Now
+	f.options.OwnedRoots = agents.RelayOwnedRoots{}
 	a := &relayOwnedNativeFixture{relayNativeRecording: &relayNativeRecording{}, root: t.TempDir(), selected: selected}
 	d := agents.NewRelayNativeDriver(relayOwnedRegistry{adapter: a})
 	c := &relayCountingStore{RelayStore: f.store}
@@ -116,8 +141,20 @@ func TestRelayOwnedReaderReadonlyPrivateAndColdReload(t *testing.T) {
 	}
 	public, _ := json.Marshal(first)
 	for _, private := range []string{first.WorkspaceRoot, first.ArchivePath, first.ArchiveRoot, first.SessionID, first.NativeID} {
-		if strings.Contains(string(public), private) {
+		encoded, _ := json.Marshal(private)
+		if strings.Contains(string(public), string(encoded)) {
 			t.Fatal("private source escaped owned DTO")
+		}
+	}
+	view, err := f.service.GetTask(ctx, caller(), id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	transport, _ := json.Marshal(view)
+	for _, private := range []string{first.ArchivePath, first.ArchiveRoot, first.SessionID, first.NativeID} {
+		encoded, _ := json.Marshal(private)
+		if strings.Contains(string(transport), string(encoded)) {
+			t.Fatal("native source reference entered existing task transport")
 		}
 	}
 	if e := f.store.Close(); e != nil {
@@ -209,7 +246,10 @@ func TestRelayOwnedResumeAndReleasedTailSurviveSameTerminalNewTask(t *testing.T)
 func TestRelayOwnedPermissionsAndWorkspaceChangesHidePrivateSources(t *testing.T) {
 	for _, reason := range []string{"revoked_grant", "expired_grant", "revision", "action", "source", "workspace", "terminal"} {
 		t.Run(reason, func(t *testing.T) {
-			f, a, _, c := newOwnedFixture(t, true)
+			f, a, d, c := newOwnedFixture(t, true)
+			roots := &relayOwnedRootCounter{RelayOwnedRoots: agents.RelayOwnedRoots{}}
+			f.options.OwnedRoots = roots
+			f.service = f.assemble(c, d, nil)
 			ctx := context.Background()
 			id := f.intent()
 			if _, e := f.service.ConfirmIntent(ctx, caller(), id, confirm()); e != nil {
@@ -248,7 +288,7 @@ func TestRelayOwnedPermissionsAndWorkspaceChangesHidePrivateSources(t *testing.T
 			c.updates.Store(0)
 			calls := a.sourceCalls.Load()
 			b := findOwned(t, ownedReader(t, f.service), id)
-			if b.SourceStatus != "gap" || b.Gap == "" || b.WorkspaceRoot != "" || b.ArchivePath != "" || b.ArchiveRoot != "" || b.SessionID != "" || b.NativeID != "" || a.sourceCalls.Load() != calls || c.updates.Load() != 0 {
+			if b.SourceStatus != "gap" || b.Gap == "" || b.WorkspaceRoot != "" || b.ArchivePath != "" || b.ArchiveRoot != "" || b.SessionID != "" || b.NativeID != "" || a.sourceCalls.Load() != calls || c.updates.Load() != 0 || roots.calls.Load() != 0 {
 				t.Fatal("denied binding exposed/read source or wrote state")
 			}
 		})
@@ -276,11 +316,12 @@ func TestRelayOwnedMissingOrConflictingSourceIsGapNeverGuessedFromHistory(t *tes
 		t.Fatal("new positive metadata without a fresh activity event was missed")
 	}
 	a.finalized = true
+	a.appendOnly = true
 	if e := f.service.(app.RelayLifecycle).ObserveOwned(ctx); e != nil {
 		t.Fatal(e)
 	}
 	b = findOwned(t, ownedReader(t, f.service), id)
-	if b.ArchiveFinalized != "confirmed" || b.ExitedAt != nil {
+	if b.ArchiveFinalized != "confirmed" || b.ArchiveAppendOnly != "confirmed" || b.ExitedAt != nil {
 		t.Fatal("explicit finalization evidence depended on process exit")
 	}
 	a.wrongIdentity = true
@@ -297,5 +338,64 @@ func TestRelayOwnedMissingOrConflictingSourceIsGapNeverGuessedFromHistory(t *tes
 	}
 	if c.updates.Load() != updates {
 		t.Fatal("unchanged source conflict rewrote state")
+	}
+}
+
+func TestRelayOwnedPositiveSourceMustMatchExactSessionCWDAndRoot(t *testing.T) {
+	for _, reason := range []string{"cwd", "session", "outside_root", "relative", "format"} {
+		t.Run(reason, func(t *testing.T) {
+			f, a, _, _ := newOwnedFixture(t, true)
+			a.badSource = reason
+			id := f.intent()
+			if _, err := f.service.ConfirmIntent(context.Background(), caller(), id, confirm()); err != nil {
+				t.Fatal(err)
+			}
+			b := findOwned(t, ownedReader(t, f.service), id)
+			if b.SourceStatus != "gap" || b.Gap != "archive_identity_changed" || b.ArchivePath != "" || b.SessionID != "" {
+				t.Fatal("positive source bypassed identity/CWD/root checks")
+			}
+		})
+	}
+}
+
+func TestRelayOwnedLegacyAndTerminalOnlySourcesStayExplicitGaps(t *testing.T) {
+	for _, mode := range []string{"legacy", "terminal"} {
+		t.Run(mode, func(t *testing.T) {
+			f := newRelayFixture(t)
+			ctx := context.Background()
+			if mode == "terminal" {
+				f.options.Agents[0].DriveMode = "terminal"
+				f.service = f.assemble(f.store, nil, f.driver)
+			}
+			id := f.intent()
+			if _, err := f.service.ConfirmIntent(ctx, caller(), id, confirm()); err != nil {
+				t.Fatal(err)
+			}
+			if err := f.store.Update(ctx, func(st *app.RelayState) error {
+				if mode == "legacy" {
+					delete(st.OwnedSessions, id)
+				} else {
+					task := st.Tasks[id]
+					delete(st.Sessions, task.TerminalID)
+					bound := st.OwnedSessions[id]
+					bound.SessionID, bound.NativeID, bound.Ownership = "", "", ""
+					st.OwnedSessions[id] = bound
+				}
+				return nil
+			}); err != nil {
+				t.Fatal(err)
+			}
+			before, _ := f.store.Snapshot(ctx)
+			wire, _ := json.Marshal(before)
+			b := findOwned(t, ownedReader(t, f.service), id)
+			if b.SourceStatus != "gap" || b.ArchivePath != "" || b.BindingID == "" && mode != "legacy" {
+				t.Fatal("legacy/terminal coverage invented native source")
+			}
+			after, _ := f.store.Snapshot(ctx)
+			afterWire, _ := json.Marshal(after)
+			if string(wire) != string(afterWire) {
+				t.Fatal("read backfilled old binding")
+			}
+		})
 	}
 }

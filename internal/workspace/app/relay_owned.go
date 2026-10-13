@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -45,7 +44,10 @@ func (s *relayService) observeOwnedSession(st *RelayState, task domain.RelayTask
 	bound.DriveMode, bound.ExitedAt = terminal.DriveMode, terminal.ExitedAt
 	if obs.Session.ID != "" {
 		session := obs.Session
-		if bound.SessionID != "" && (bound.SessionID != session.ID || bound.NativeID != "" && bound.NativeID != session.NativeID) {
+		if bound.SessionID == "" && (session.Ownership != "owned" || session.NativeID == "") {
+			bound.Ownership = session.Ownership
+			bound.SourceStatus, bound.Gap = "gap", "session_ownership_unverified"
+		} else if bound.SessionID != "" && (bound.SessionID != session.ID || bound.NativeID != "" && bound.NativeID != session.NativeID) {
 			bound.SourceStatus, bound.Gap = "gap", "session_identity_changed"
 		} else {
 			bound.SessionID, bound.NativeID, bound.Ownership = session.ID, session.NativeID, session.Ownership
@@ -83,24 +85,11 @@ func relayBindingGap(bound domain.RelayOwnedSession, reason string) domain.Relay
 
 // Filesystem checks cover only the registered source and neutral root. No
 // archive is opened and no ancestor is enumerated for session discovery.
-func relayExistingRoot(root string) bool {
-	if !filepath.IsAbs(root) {
+func (s *relayService) existingOwnedRoot(root string) bool {
+	if s.options.OwnedRoots == nil {
 		return false
 	}
-	for path := filepath.Clean(root); ; path = filepath.Dir(path) {
-		info, err := os.Lstat(path)
-		if err != nil || !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
-			return false
-		}
-		followed, err := os.Stat(path)
-		if err != nil || !os.SameFile(info, followed) {
-			return false
-		}
-		if filepath.Dir(path) == path {
-			break
-		}
-	}
-	resolved, err := filepath.EvalSymlinks(root)
+	resolved, err := s.options.OwnedRoots.CanonicalRoot(root)
 	return err == nil && sameRelayRoot(resolved, root)
 }
 
@@ -130,7 +119,7 @@ func (s *relayService) ListOwnedRelaySessions(ctx context.Context) ([]domain.Rel
 			result = append(result, relayBindingGap(bound, "workspace_identity_changed"))
 			continue
 		}
-		if !relayExistingRoot(bound.SourceRoot) || !relayExistingRoot(bound.WorkspaceRoot) {
+		if !s.existingOwnedRoot(bound.SourceRoot) || !s.existingOwnedRoot(bound.WorkspaceRoot) {
 			result = append(result, relayBindingGap(bound, "workspace_unavailable"))
 			continue
 		}

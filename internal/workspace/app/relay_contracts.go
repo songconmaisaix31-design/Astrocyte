@@ -125,8 +125,15 @@ type RelayOwnedArchiveProvider interface {
 	OwnedRelayArchive(context.Context, domain.NativeSession) (domain.RelaySessionArchive, error)
 }
 
+// This narrow port reuses the existing ProjectFiles CanonicalRoot operation.
+// The adapter validates only registered roots, never archives or native history.
+type RelayOwnedRoots interface {
+	CanonicalRoot(string) (string, error)
+}
+
 type RelayServiceOptions struct {
-	Agents []domain.AgentSpec
+	Agents     []domain.AgentSpec
+	OwnedRoots RelayOwnedRoots
 	// No implicit 60-second decision. Zero means no configured live window.
 	LivenessWindow time.Duration
 	Clock          func() time.Time
