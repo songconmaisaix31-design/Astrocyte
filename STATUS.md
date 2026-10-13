@@ -2,7 +2,7 @@
 
 ## Works Relay v1.2 实施中（2026-10-14）
 
-最新：三轨已由唯一集成I普通no-ff合入，Root已合业务并push至workbench/v0.2-access，工程树与I SOURCE bdfbbdb相等。Root完整pnpm check在4252db7通过（103.39s），pnpm build在ff7c551通过（14.45s）；I完整默认E2E268 PASS/38 SKIP。修复Windows执行资源后的CI38466602701在b25f43a双平台success，但其后H测试fixture改变，最终bdf CI38468510081 Linux在测试末尾证据目录缺失处RED，不作最终CI通过。H同owner新Task task_c0577095b4cb / Dispatch ctx_a01ed6996519返修，I继续集成。Root首次完整check3387019的Windows长cwd失败、原84bb CI的ERR_NO_BUFFER_SPACE和新Linux首RED均保留，不互相覆盖。实际Codex→Claude、terminal-only coding、Today正式闭环、Procmon及两日仍未验收；用户待答门禁不自行启用，17321保持v0.1。
+最新：Root已普通no-ff合入并push，工程树与最终I SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 全等，H最后报告9238e10已合。I该SOURCE完整隔离pnpm check PASS（113.70s），Root原完整check4252db7 PASS（103.39s）、buildff7c551 PASS（14.45s），最终449bbce深目录与空LOCALAPPDATA EOF定向均PASS；I完整默认E2E268 PASS/38 SKIP，Web保持全等。最终精确CI38469944551待结果，不借b25或Rootff7较早双平台success替代；bdf CI38468510081 Linux测试末尾证据目录首RED由原H最小修复，仅测试目录初始化改动，H原Task工程阶段succeeded并按用户固定owner要求retained。Root338长cwd首失败、原84bb ERR_NO_BUFFER_SPACE及bdf首RED均保留。实际Agent/Today/Procmon/两日仍未验收，17321保持v0.1。
 
 目标workbench/v0.2-access；[计划](tasks/Works-Relay-plan.md)、[owner及决策](tasks/Works-Relay-decisions.md)记录精确SOURCE/REPORT与返修。Orca Run run_d577f0d3fee1沿固定owner持续。已有注册表/三值/中性工作区/HTTP权限门与收据/真实扫描总览/任务实时UI工程实现，受控实际进程和HTTP覆盖不替代实际模型工作或认知更新。Today实时接缝、作品当前状态范围、视觉与活性窗口、工具执行权限待答。validation/V4正式库及既有认知schema/引擎/权重/快照管道保持原边界。
 

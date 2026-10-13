@@ -35,3 +35,5 @@ CI资源例外（精确首失败后）：I额外独占 `.github/workflows/check.
 排期：D1注册/活性/中性工作区/总览，D2接力/实时，D3 E2E/实测/演示/部署。Procmon与00:30真实两日保持各自真实时间验收，v0.1未收尾不阻塞本任务，未发生不预填PASS。
 
 工程验核更新：Root已普通合业务并push，4252db7完整check PASS、ff7c551 build PASS，I84bb完整默认E2E268 PASS/38 SKIP。b25双平台CI38466602701成功；后续bdf CI38468510081 Linux仅EOF测试末尾证据目录缺失RED，H同ownerTask task_c0577095b4cb / Dispatch ctx_a01ed6996519返修。允许路径仅cmd/server/relay_eof_http_test.go与自身报告，保持短Windows cwd、全部业务与断言/timeout/skip不变。最终CI及I报告待完成；原首失败均保留，用户门禁和正式验收不降低。
+
+后次返修已结算：H SOURCE67c7d2a / REPORT9238e10只补显式证据目录，Windows深与空LOCALAPPDATA及23项cmd/server/vet通过；原owner retained。I普通合最终SOURCE5dd4b729并push，完整check113.70s PASS，CI38469944551待结果；Root449bbce独立两个定向均PASS，已合SOURCE祖先及H报告。新L1–L4事实源协作登记由独立文档owner完成，完整Session采集仍原H一轨，不增owner；R运行时与F Today写域保持，具体v1.3写域与零raw派生投影须登记。
