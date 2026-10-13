@@ -378,7 +378,7 @@ func (s *relayService) finish(ctx context.Context, c domain.Caller, r domain.Rel
 				t.Condition = "delivery_unknown"
 				st.Tasks[t.ID] = t
 			}
-			if knownUnstarted && r.Action == "dispatch" && st.PendingActions[t.ID] == r.ID {
+			if knownUnstarted && r.Status != "delivery_unknown" && r.Action == "dispatch" && st.PendingActions[t.ID] == r.ID {
 				w := st.Workspaces[t.WorktreeID]
 				if w.ActiveTaskID == t.ID {
 					w.ActiveTaskID = ""
@@ -577,10 +577,13 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		driver = s.terminal
 		mode = "terminal"
 	}
+	var obs RelayObservation
+	var launchErr error
 	if driver == nil {
-		return reject(relayError(apierrors.UnsupportedCapability, "selected drive path is not connected"))
+		launchErr = &domain.NativePrelaunchFailure{Cause: relayError(apierrors.UnsupportedCapability, "selected drive path is not connected")}
+	} else {
+		obs, launchErr = driver.Launch(ctx, launch)
 	}
-	obs, launchErr := driver.Launch(ctx, launch)
 	var prelaunch *domain.NativePrelaunchFailure
 	degraded := false
 	if launchErr != nil && mode == "structured" && spec.DriveMode == "both" && errors.As(launchErr, &prelaunch) {
@@ -603,12 +606,8 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		if launchErr == nil {
 			s.move(st, &t, domain.RelayAccepted, relayActor(c))
 		}
-		if knownUnstarted {
-			now := s.now()
-			terminal.ExitedAt = &now
-			terminal.Liveness = domain.RelayExited
-			st.Terminals[terminal.ID] = terminal
-		}
+		// A proven unstarted process is not an observed process exit. Its durable
+		// terminal identity remains unverifiable rather than fabricated exited.
 		return nil
 	})
 	if err != nil {
@@ -870,6 +869,9 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 		}
 		if cmd.To == domain.RelayDone && !cmd.CompletionConfirmed {
 			return relayError(apierrors.ApprovalRequired, "human task completion confirmation is required")
+		}
+		if cmd.To == domain.RelayDone {
+			t.Condition = ""
 		}
 		if cmd.To == domain.RelayReleased {
 			terminal, ok := st.Terminals[t.TerminalID]
