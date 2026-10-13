@@ -20,6 +20,9 @@ type AgentSpec struct {
 	LaunchCmd    []string                         `json:"launch_cmd"`
 	Capabilities map[string]CapabilityObservation `json:"capabilities"`
 	DriveMode    string                           `json:"drive_mode"`
+	// InputMode is trusted terminal framing, not a readiness observation or grant.
+	// Empty preserves line mode; stdin_eof is a single first-input submission.
+	InputMode string `json:"input_mode,omitempty"`
 }
 
 // RelayWorkspace exists independently of an Agent. ActiveTaskID includes unknown
