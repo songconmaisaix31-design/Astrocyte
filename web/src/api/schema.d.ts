@@ -2338,6 +2338,8 @@ export interface components {
             allowed_subdirs: string[];
             allowed_actions: string[];
             allow_agent_control: boolean;
+            allow_directory: boolean;
+            expand_references: boolean;
         };
         /**
          * @example {

@@ -6,6 +6,7 @@ import { Field } from '../../components/DetailPanel';
 import type { WorksWork } from './worksAlbumPresentation';
 import { useRelayCommand } from './relayCommand';
 import { relayAgentAvailability, relayPermissionOptions, relayProjectMatches, relayReceiptLabel, relayUnresolved } from './relayPresentation';
+import { RelayReceipts } from './relayReceipts';
 
 export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWork; existing?: RelayTaskView; onChanged: () => void }) {
   const projects = useReadApi(signal => relayApi.projects(signal));
@@ -34,16 +35,16 @@ export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWo
       }}>
         <fieldset disabled={unavailable || command.pending || command.uncertain}>
           <legend>你希望如何接力</legend>
-          <label>获准项目<select value={projectID} onChange={event => setProjectID(event.target.value)} required><option value="">选择项目…</option>{compatible.map(project => <option key={project.project_id} value={project.project_id}>{project.name} · {project.root}</option>)}</select></label>
-          <label>偏好 Agent<select value={agent} onChange={event => setAgent(event.target.value)} required><option value="">选择注册 Agent…</option>{agents.data?.agents.map(spec => <option key={spec.name} value={spec.name}>{spec.name} · {spec.drive_mode}</option>)}</select></label>
+          <label>获准项目<select aria-label="获准项目" value={projectID} onChange={event => setProjectID(event.target.value)} required><option value="">选择项目…</option>{compatible.map(project => <option key={project.project_id} value={project.project_id}>{project.name} · {project.root}</option>)}</select></label>
+          <label>偏好 Agent<select aria-label="偏好 Agent" value={agent} onChange={event => setAgent(event.target.value)} required><option value="">选择注册 Agent…</option>{agents.data?.agents.map(spec => <option key={spec.name} value={spec.name}>{spec.name} · {spec.drive_mode}</option>)}</select></label>
           {agent && agents.data?.agents.filter(spec => spec.name === agent).map(spec => <p className="relay-note" key={spec.name}>{relayAgentAvailability(spec, agents.data!.inventory)}</p>)}
-          <label>任务描述<textarea value={description} onChange={event => setDescription(event.target.value)} rows={5} required /></label>
+          <label>任务描述<textarea aria-label="任务描述" value={description} onChange={event => setDescription(event.target.value)} rows={5} required /></label>
           <p className="relay-note">首条输入由服务端合并交接手册与任务描述。注册、安装和原生能力分别核实。</p>
           <button type="submit" className="ac-button" disabled={!projectID || !agent || !description.trim()}>保存意图并查看权限</button>
         </fieldset>
       </form>
     </>}
-    {command.error && <p role="alert">{command.error}</p>}
+    {command.error && <p role="alert">{command.error} · 操作 {command.operationID}</p>}
     {command.uncertain && <p role="alert">意图结果未知，保留草稿；请读取任务与收据核对，不会自动重试。</p>}
     {command.result && <p role="status">意图已保存：{command.result.view.task.task_id} · 启动前仍须确认权限。</p>}
   </div>;
@@ -68,23 +69,24 @@ function RelayConfirmation({ view, onChanged }: { view: RelayTaskView; onChanged
     <QueryState state={projects}>{() => project ? <>
       <Field label="项目根目录"><code>{project.root}</code></Field>
       <Field label="现有项目权限">{project.permission_level} · 版本 {project.project_settings_revision}</Field>
+      <Field label="B · 明确目录许可">{project.allow_directory ? '已获准' : '未获准'}</Field><Field label="C · 引用展开许可">{project.expand_references ? '已获准' : '未获准'}</Field>
       <Field label="允许目录 / 文件">{project.allowed_subdirs.length ? project.allowed_subdirs.join('、') : '未许可额外目录 / 文件'}</Field>
       <Field label="允许动作">{project.allowed_actions.length ? project.allowed_actions.join('、') : '尚无获准动作'}</Field>
       <p className="relay-note">A：主动纳入的固定版本资料；B：明确获准目录 / 文件；C：展开获准资料引用。B / C 独立，此页沿用项目现有许可。资料许可不授权 CLI 自由工具；中性工作区执行权限尚待用户裁决，由服务端拒绝未获准请求。</p>
     </> : <p role="alert">项目许可无法读取，不能确认启动。</p>}</QueryState>
     <QueryState state={task}>{data => <p>服务端当前状态：{data.view.task.state} · {data.view.task.condition || '无附加状态'}</p>}</QueryState>
-    <QueryState state={receipts}>{() => null}</QueryState>
+    <section aria-label="派发与意图收据"><h3>派发与意图收据</h3><QueryState state={receipts}>{data => <RelayReceipts receipts={data.receipts.filter(receipt => ['intent', 'dispatch'].includes(receipt.action))} />}</QueryState></section>
     {changed && <p role="alert">项目权限已变化，任务的权限版本已过期。请核对项目许可和保存的意图，当前不能启动。</p>}
     <form onSubmit={event => {
       event.preventDefault();
       if (locked || !checked || !project) return;
       void command.run(key => relayApi.confirm(view.task.task_id, { permission_confirmed: true, permission_level: permission, project_settings_revision: project.project_settings_revision }, key), () => { task.retry(); receipts.retry(); onChanged(); });
     }}><fieldset disabled={!!locked}><legend>此次接力的权限范围</legend>
-      <label>权限级别<select value={permission} onChange={event => { setPermission(event.target.value as 'A' | 'B' | 'C'); setConfirmedRevision(null); }}>{(project ? relayPermissionOptions(project) : ['A']).map(level => <option key={level} value={level}>{level}</option>)}</select></label>
+      <label>权限级别<select aria-label="权限级别" value={permission} onChange={event => { setPermission(event.target.value as 'A' | 'B' | 'C'); setConfirmedRevision(null); }}>{(project ? relayPermissionOptions(project) : ['A']).map(level => <option key={level} value={level}>{level}</option>)}</select></label>
       <label className="relay-check"><input type="checkbox" checked={checked} onChange={event => setConfirmedRevision(event.target.checked && project ? project.project_settings_revision : null)} />我已核对根目录、资料权限和允许动作，确认请求此 Agent 接力</label>
       <button type="submit" className="ac-button" disabled={!checked}>确认资料权限并请求接力</button>
     </fieldset></form>
-    {command.error && <p role="alert">{command.error}</p>}
+    {command.error && <p role="alert">{command.error} · 操作 {command.operationID}</p>}
     {command.uncertain && <p role="alert">派发结果未知，禁止重派。只读取任务和收据核对结果。</p>}
     {command.result && <p role="status">派发收据 {command.result.receipt.receipt_id} · {relayReceiptLabel[command.result.receipt.status]}</p>}
     <button type="button" className="ac-button secondary compact" onClick={() => { projects.retry(); task.retry(); receipts.retry(); }}>读取权限、任务和收据</button>

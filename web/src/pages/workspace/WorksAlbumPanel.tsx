@@ -131,7 +131,7 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
       {!snapshot.works.length && <p role="status" className={styles.empty}>{fixture ? '没有作品。' : '尚无已保存的作品观察。可扫描已批准的登记项目，或保存 JSON 投递线索。'}</p>}
       {worksSections(visible, filters.view).map(section => <section key={section.label} aria-label={section.label}>
         {filters.view !== 'flat' && <h3 className={styles.groupTitle}>{section.label} <span>{section.works.length}</span></h3>}
-        <ul className={`${styles.cards} ${filters.view === 'timeline' ? styles.timeline : ''}`}>{section.works.map(work => <li key={work.id}>
+        <ul className={`${styles.cards} ${filters.view === 'timeline' ? styles.timeline : ''}`}>{section.works.map(work => <li key={work.id} className="relay-work-card">
           <button type="button" data-work-id={work.id} className={styles.card} onClick={() => { setModal(''); setSelectedID(work.id); }} aria-label={`查看作品 ${work.name}`}>
             <div className={styles.cardHeader}><h3>{work.name}</h3>{work.hidden && <span className={styles.tag}>已隐藏</span>}</div>
             <div><span className={`${styles.badge} ${work.files.verified ? '' : styles.unverified}`}>{fileVerifiedLabel(work.files)}</span></div>
@@ -144,7 +144,10 @@ export function WorksAlbumPanel({ fixture, query, onClearQuery }: { fixture: boo
           <div className="relay-card-actions" aria-label={`${work.name} 的操作`}>
             <button type="button" className="ac-button secondary compact" disabled={disabled} onClick={() => { void perform(async () => {
               const approved = await loadRoots();
-              const normalized = (root: string) => root.replaceAll('\\', '/').replace(/\/$/, '').toLowerCase();
+              const normalized = (root: string) => {
+                const value = root.replaceAll('\\', '/').replace(/\/$/, '');
+                return /^[a-z]:/i.test(value) ? value.toLowerCase() : value;
+              };
               const root = approved.find(root => normalized(root) === normalized(work.root));
               if (!root) throw new Error('作品根目录尚未批准，请先在项目接入中登记并确认权限');
               return (await worksAlbumApi.refresh([root], crypto.randomUUID())).snapshot;

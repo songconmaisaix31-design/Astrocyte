@@ -9,13 +9,15 @@ export function useRelayCommand<T extends RelayActionResult | RelayTaskResult = 
   const [uncertain, setUncertain] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<T | null>(null);
+  const [operationID, setOperationID] = useState('');
   const busy = useRef(false), mounted = useRef(false), blocked = useRef(false);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const run = async (action: (key: string) => Promise<T>, received: (result: T) => void) => {
     if (busy.current || blocked.current) return;
-    busy.current = true; setPending(true); setError('');
+    const key = crypto.randomUUID();
+    busy.current = true; setPending(true); setError(''); setOperationID(key);
     try {
-      const response = await action(crypto.randomUUID());
+      const response = await action(key);
       if (!mounted.current) return;
       setResult(response);
       if ('receipt' in response) {
@@ -29,5 +31,5 @@ export function useRelayCommand<T extends RelayActionResult | RelayTaskResult = 
       setError(formatError(cause));
     } finally { busy.current = false; if (mounted.current) setPending(false); }
   };
-  return { pending, uncertain, error, result, run };
+  return { pending, uncertain, error, result, operationID, run };
 }

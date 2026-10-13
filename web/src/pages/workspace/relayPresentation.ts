@@ -18,7 +18,10 @@ export function relayElapsed(view: RelayTaskView, now = Date.now()) {
   return `${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒`;
 }
 export function relayPermissionOptions(project: RelayProject) {
-  return [...new Set(['A' as const, project.permission_level])];
+  const options: ('A' | 'B' | 'C')[] = ['A'];
+  if (project.allow_directory) options.push('B');
+  if (project.expand_references) options.push('C');
+  return options;
 }
 export function relayProjectMatches(root: string, project: RelayProject) {
   const normalize = (value: string) => {

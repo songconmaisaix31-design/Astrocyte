@@ -8,6 +8,7 @@ import { navigate } from '../../router';
 import { useRelayCommand } from './relayCommand';
 import { RelayIntentPanel } from './relayIntentPanel';
 import { relayActionLabel, relayDisplayState, relayElapsed, relayLivenessLabel, relayReceiptLabel, relayUnresolved } from './relayPresentation';
+import { RelayReceipts } from './relayReceipts';
 
 export function RelayTaskSummary({ view, workName }: { view: RelayTaskView; workName?: string }) {
   return <div className="relay-task-summary">
@@ -45,18 +46,16 @@ export function RelayTaskPanel({ taskID, onChanged }: { taskID: string; onChange
     </>}</QueryState>
     <QueryState state={projects}>{() => null}</QueryState>
     <form onSubmit={event => { event.preventDefault(); if (!disabled('send') && !send.uncertain && input.trim()) void send.run(key => relayApi.send(taskID, input, key), result => { if (result.receipt.status === 'succeeded') setInput(''); changed(); }); }}>
-      <label>发送输入<textarea value={input} onChange={event => setInput(event.target.value)} rows={4} disabled={pending} /></label>
+      <label>发送输入<textarea aria-label="发送输入" value={input} onChange={event => setInput(event.target.value)} rows={4} disabled={pending} /></label>
       <div className="relay-card-actions">
         <button type="submit" className="ac-button compact" disabled={!!disabled('send') || send.uncertain || !input.trim()}>发送输入</button>
         <button type="button" className="ac-button secondary compact" disabled={!!disabled('read') || read.uncertain} onClick={() => { void read.run(key => relayApi.read(taskID, key), changed); }}>读取会话并留收据</button>
         <button type="button" className="ac-button secondary compact" disabled={!!disabled('stop') || stop.uncertain} onClick={() => { void stop.run(key => relayApi.stop(taskID, key), changed); }}>停止 Agent</button>
       </div>
     </form>
-    {[send, read, stop].map((command, index) => <div key={index}>{command.error && <p role="alert">{command.error}</p>}{command.uncertain && <p role="alert">动作结果未知，保留输入并禁止重复该动作；读取收据核对。</p>}{command.result && <p role="status">{relayActionLabel[command.result.receipt.action]}收据 {command.result.receipt.receipt_id} · {relayReceiptLabel[command.result.receipt.status]}</p>}</div>)}
+    {[send, read, stop].map((command, index) => <div key={index}>{command.error && <p role="alert">{command.error} · 操作 {command.operationID}</p>}{command.uncertain && <p role="alert">动作结果未知，保留输入并禁止重复该动作；读取收据核对。</p>}{command.result && <p role="status">{relayActionLabel[command.result.receipt.action]}收据 {command.result.receipt.receipt_id} · {relayReceiptLabel[command.result.receipt.status]}</p>}</div>)}
     <button type="button" className="ac-button secondary compact" onClick={changed}>只读取任务、事件和收据</button>
-    <section aria-label="任务收据"><h3>动作收据</h3><QueryState state={receipts}>{data => data.receipts.length ? <ul className="relay-receipts">{[...data.receipts].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)).map(receipt => <li key={receipt.receipt_id}>
-      <b>{relayActionLabel[receipt.action]} · {relayReceiptLabel[receipt.status]}</b><code>{receipt.receipt_id} · {receipt.operation_id}</code><small>{receipt.created_at}</small>{receipt.error && <p>{receipt.error.code} · {receipt.error.message} · {receipt.error.required_action}</p>}
-    </li>)}</ul> : <p>尚无收据。</p>}</QueryState></section>
+    <section aria-label="任务收据"><h3>动作收据</h3><QueryState state={receipts}>{data => <RelayReceipts receipts={data.receipts} />}</QueryState></section>
     <section aria-label="任务事件流"><h3>任务事件</h3><p className="relay-note">按时间倒序 · 仅六个派生字段</p><QueryState state={events}>{data => <EventTable events={[...data.events].sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts) || a.event_id.localeCompare(b.event_id))} />}</QueryState></section>
     <button type="button" className="ac-button secondary compact" onClick={() => navigate('/cognition/today')}>在 Today 查看认知活动</button>
   </div>;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { relayProjectMatches, relayUnresolved, relayPermissionOptions } from './relayPresentation';
 import type { RelayProject, RelayReceipt } from '../../api/relay';
 
-const project: RelayProject = { project_id: 'test', name: 'Public test', root: 'C:/public/test', permission_level: 'C', project_settings_revision: 4, allowed_subdirs: ['README.md'], allowed_actions: ['start'], allow_agent_control: false };
+const project: RelayProject = { project_id: 'test', name: 'Public test', root: 'C:/public/test', permission_level: 'C', project_settings_revision: 4, allowed_subdirs: ['README.md'], allowed_actions: ['start'], allow_agent_control: false, allow_directory: false, expand_references: true };
 describe('relay projection safety', () => {
   it('matches an approved project without permitting prefix sibling escapes', () => {
     expect(relayProjectMatches('C:\\PUBLIC\\test\\child', project)).toBe(true);
@@ -11,6 +11,7 @@ describe('relay projection safety', () => {
   });
   it('does not infer B grant from C and keeps default A', () => {
     expect(relayPermissionOptions(project)).toEqual(['A', 'C']);
+    expect(relayPermissionOptions({ ...project, allow_directory: true, expand_references: false })).toEqual(['A', 'B']);
   });
   it('unresolved send blocks send while leaving stop separately reviewable', () => {
     const receipts: RelayReceipt[] = [{ receipt_id: 'unknown', task_id: 'task-test', operation_id: '63d38b74-1655-43eb-98a7-5f1e2d9a4edb', action: 'send', operator: 'human', status: 'delivery_unknown', error: null, created_at: '2026-10-14T00:00:00Z', finished_at: null }];
