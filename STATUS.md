@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## Works Relay v1.2 已定稿并授权开工（2026-10-14）
+
+用户 [自包含任务书](tasks/Works-Relay-v1.2.md) 取代旧版本，v1.0和实施窗口旧问题关闭。目标 workbench/v0.2-access 从 workbench/v0.1-workbench 建立，已核实验收业务 d46f9f4cf2fd6e13c8362234746105330356c160 存在。validation本轮只登记文档；业务实现与最终验收在Workbench线，原V4冻结边界保持。当前建立计划与长期互斥写域轨道；业务验收未开始，不借v0.1绿CI代表v0.2。
+
 ## Works Relay v1.1 修订登记（2026-10-14）
 
 [修订与实码评审](tasks/Works-Relay-v1.1.md) 状态 REVISION_REGISTERED_REVIEW_PENDING；基线 `47e83cfada27b020e61da22679a3fb690c28b898`。本轮单 Agent 文档登记，无业务改动、worker 派发或终端操作。v1.0 原文与实施窗口已询问，等待用户答复；其余已列关键歧义先对照 v1.0，再请求未决项裁决。实现未开始，三值实测 / Codex 接 Claude 同工作树 / 注册扩展 / terminal-only 认知流验收均 NOT_RUN。V4 冻结和锁定协议保持生效，未以本修订解除；文档交付 SHA 与校核结果以本轮 Git 交付为准。

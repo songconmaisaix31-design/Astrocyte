@@ -1,5 +1,7 @@
 # Astrocyte 主控交接
 
+2026-10-14：用户 [Works Relay v1.2 自包含定稿](tasks/Works-Relay-v1.2.md) 取代所有旧版，421a076 的 v1.1 保留评审历史。v1.0 缺失与实现窗口待答已关闭；明确授权从 workbench/v0.1-workbench（验收业务d46f9f4）立即建立 workbench/v0.2-access，实现只在Workbench线。validation仅登记Markdown，不共写V4恢复文件，不触正式库/引擎/schema/权重/快照管道。三分钟真实作品→Agent→Today、三值/换手/数据注册/terminal-only及权限/互斥/receipt验收逐项执行；Procmon和两日快照与v0.1收尾并行，未完成不填PASS。root正在建立独占写域计划和Orca长期轨道。
+
 2026-10-14：用户 Works Relay v1.1 修订已登记 [tasks/Works-Relay-v1.1.md](tasks/Works-Relay-v1.1.md)，状态 REVISION_REGISTERED_REVIEW_PENDING。完整保留三值终端、单一 store、数据注册 Agent、中性 worktree 换手、人工 intent 与双路径降级及四项增补验收。当前未找到 v1.0，已询问原文与实现窗口；未答不补写剩余条款、不冻结接口、不解除 V4 冻结或启动实现。现有 Works “接力过”仅手册统计，固定 Agent 注册表未达新要求；详见任务内实码基线与待裁决项。业务验收全部 NOT_RUN，本轮只文档。
 
 ## 当前入口：M6 v3.0（2026-10-12）
