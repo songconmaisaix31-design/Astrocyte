@@ -5,6 +5,7 @@
 ## 基线与范围
 
 - 原 Works Relay Run：`run_d577f0d3fee1`；目标 `workbench/v0.2-access`。可消费工程 SOURCE 为 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`，原集成分支 `songconmaisaix31-design/works-relay-integration`；REPORT `2a4c58c20bb77f535fb2b3af2901af8d1a627aa4` 与其业务全等。Handoff：`msg_60ab2f9d21ed`。CI 38469944551 在 Handoff 时仍运行，未以旧工程检查替代最终验收。
+- 后续复核：CI 38469944551 在该精确 SOURCE 上双平台 success；原主控完成 v1.2 REPORT 收口并保留同一 I owner。新 L1 工程单独验收，不继承这次 CI 结果。三份新文档已由原主控以同内容提交 `266905ab6217230b915b4bcb380440b050f0190f` 消费到 workbench，出处为文档提交 `5ab50a33954195c9d3938e6cfc2a20e26940139a`。
 - 文档基线：validation `98a13b43e76240436fb17d3246d02507bf959417`。原文登记与本计划、[L2 协议草案](L2-work-experiment-draft.md)在独立文档工作树完成；validation 只入 Markdown。
 - 冻结期业务只在 workbench 线：L1 完整原生 Session 纳入接入层自有采集管道，输出统一派生 Event 到独立 workbench 库，并让 Today 可见。L2 实验和 L3/L4 实施不在本轮启动。
 - “完整”指获准、接入层持有的会话中事件覆盖完整并可对账；不把未采集、截断、未知格式或失败记录排除后宣称完整。不展示原始思考、prompt、工具参数、stdout 或私人路径。
@@ -22,6 +23,8 @@
 2026-10-14 开工回执：原 H 新 Task `task_f215e7452d70` / Dispatch `ctx_2d4b642fbac5`，复用终端 `term_b93b8ad2-cd2c-4f23-8981-1e0a13e0bd15`；`ready / input_accepted / turnStart observed`，实际模型 `gpt-6.1-sol`。首阶段独占仅新 `internal/adapters/events/relay_session*.go`（含测试）与 `docs/access/http.md`，先做公开受控样本下读取 / 身份绑定 / 投影 / 幂等；assembly、HTTP、Today 在接缝及用户决定齐备后由原 owner 续作。活动回执不代表功能完成。
 
 跨线消费：原文与计划从精确文档提交读取；如需在业务线登记三份 Markdown，以同内容新文档提交保留出处，不把整个 validation 父历史合入 workbench。业务 SOURCE/REPORT 则在原 workbench 线普通合并，保持 v1.2 当前 CI 候选不混入新采集代码。
+
+原主控续作 Handoff `msg_fd81e32e5722`：R 在原 agents `relay*` 写域补 metadata-only 的可信归档提供口，核对精确 owned ID / CWD / path；没有正证据的 CLI 分别保留 unknown / unsupported。H 在当前 Task 延续组装，追加自身 `cmd/server/relay_session*`、既有 assembly / observer / HTTP、`internal/workbench/app/relay_session*`、`internal/adapters/sqlite/access_session*` 与最小 contracts / examples 写域；不新增表或迁移，不改 SnapshotReader、认知数值与正式映射。F 仍独占 UI。先以公开受控样本完成工程接缝，未答的真实启动授权不阻断这些开发。
 
 ## v1.3 采集条款与可复用端口
 
@@ -48,6 +51,7 @@
 - 新任务明确要求 workbench 独立库和自动 Session 事件进入 Today；具体读侧接缝交原 H owner，不修改每日正式快照策略。
 - 原主控既有未决项：CLI 中性工作区读写/执行授权、脏/未跟踪/非 Git 作品范围、活性窗口；先继承其最新裁决，不重复询问已答事项。未答时相关真实验收保持未运行，不能缩减为无工具聊天。
 - Session 绑定/来源、独立库消费权限、未知 Agent 原生格式如仍无法从事实源和已有公开端口确定，集中向用户询问；可先实现不依赖决定的读取/投影/幂等单元。
+- 可选 archive 接口与 fixture 测试不等于生产接入：必须核对当前控制器确有提供口实现、能提供实际获准会话归档的正证据。缺实现、缺来源证据与缺用户决定分别登记，不能统称为等待授权。
 - 本会话已集中询问：确认页的中性工作区工具范围、完整原件留存与 Today 派生边界、未提交源作品处理。未回答不激活 `LaunchPolicy` 或 `AllowCommittedGit`，不默选验收范围。
 - 当前状态：精确 SOURCE 与互斥写域已确认，原 H 的完整读取 / 投影 / 幂等工程续作已观察到开工；SOURCE/REPORT 与适用验证待交付。真实 CLI / Today 完整闭环仍 NOT_RUN。文档准备和开工回执不是 L1 完成证据。
 
