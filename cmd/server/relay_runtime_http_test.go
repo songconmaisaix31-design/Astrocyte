@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -44,7 +45,21 @@ func (d *relayControlledDriver) Send(context.Context, workspace.RelayLaunch, str
 	return workspace.RelayObservation{}, &apierrors.ServiceError{Code: apierrors.DeliveryUnknown, Message: "PRIVATE_CANARY"}
 }
 func (d *relayControlledDriver) Read(context.Context, workspace.RelayLaunch) (workspace.RelayObservation, error) {
-	return workspace.RelayObservation{}, nil
+	return workspace.RelayObservation{Events: []domain.RelayEvent{{Kind: "turn_started", Source: "native", Sequence: 1, TS: *d.now}}}, nil
+}
+
+type relayFailureSink struct {
+	delegate workspace.RelayEventSink
+	fail     bool
+	calls    int
+}
+
+func (s *relayFailureSink) EmitRelayEvent(ctx context.Context, v domain.RelayEvent) error {
+	s.calls++
+	if s.fail {
+		return errors.New("PRIVATE_CANARY source error")
+	}
+	return s.delegate.EmitRelayEvent(ctx, v)
 }
 func (d *relayControlledDriver) Stop(context.Context, workspace.RelayLaunch) (workspace.RelayObservation, error) {
 	return workspace.RelayObservation{ExitConfirmed: true}, nil
@@ -118,7 +133,7 @@ func (c *relayPersistentHTTP) request(method, path, body, key string, status int
 			schema = "RelayEventsV1"
 		case path == "/api/v1/relay/tasks":
 			schema = "RelayTasksV1"
-		case method == "POST" && path != "/api/v1/relay/intents" && !strings.HasSuffix(path, "/transition"):
+		case method == "POST" && path != "/api/v1/relay/intents" && !strings.HasSuffix(path, "/transition") && !strings.HasSuffix(path, "/events/reconcile"):
 			schema = "RelayActionResultV1"
 		}
 		c.samples = append(c.samples, relayContractSample{schema, append(json.RawMessage(nil), b...)})
@@ -179,7 +194,7 @@ func TestRelayPersistentRealHTTPReceiptsMutexAndRestart(t *testing.T) {
 	if e != nil {
 		t.Fatal("relay DB unavailable")
 	}
-	sink := events.NewRelayEventSink(attention.NewPendingEventService(sqlite.NewEventRepository(db)), func() time.Time { return now })
+	sink := &relayFailureSink{delegate: events.NewRelayEventSink(attention.NewPendingEventService(sqlite.NewEventRepository(db)), func() time.Time { return now }), fail: true}
 	runtime := workspace.NewRelayService(store, works, db, neutral, driver, nil, sink, options)
 	client := &relayPersistentHTTP{t: t, server: httptest.NewServer(httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Relay: runtime}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}).Handler())}
 	defer func() { client.server.Close(); store.Close() }()
@@ -208,6 +223,10 @@ func TestRelayPersistentRealHTTPReceiptsMutexAndRestart(t *testing.T) {
 		t.Fatal("confirmed runtime state/receipt/live mismatch")
 	}
 	terminalID := accepted.View.Terminal.ID
+	b = client.request("GET", "/api/v1/relay/tasks/"+id, "", "", 200)
+	if json.Unmarshal(b, &ready) != nil || ready.View.EventPublication.Status != "error" || ready.View.EventPublication.PendingEvents != 1 || ready.View.EventPublication.PublishedEvents != 0 || sink.calls != 1 {
+		t.Fatal("sink failure hidden or accepted launch changed")
+	}
 	client.request("POST", "/api/v1/relay/intents/"+id+"/confirm", confirm, key, 200)
 	if driver.launches != 1 {
 		t.Fatal("confirmed dispatch replay launched twice")
@@ -231,9 +250,20 @@ func TestRelayPersistentRealHTTPReceiptsMutexAndRestart(t *testing.T) {
 		t.Fatal("exclusive workspace allowed second writer")
 	}
 	now = now.Add(2 * time.Minute)
+	if runtime.(workspace.RelayLifecycle).ObserveOwned(ctx) != nil {
+		t.Fatal("owned observation unavailable")
+	}
 	b = client.request("GET", "/api/v1/relay/tasks/"+id, "", "", 200)
 	if json.Unmarshal(b, &ready) != nil || ready.View.Terminal.Liveness != "unverifiable" {
 		t.Fatal("silent terminal inferred live or exited")
+	}
+	if ready.View.EventPublication.Status != "error" || sink.calls != 1 {
+		t.Fatal("observer retried failed sink or renewed duplicate event")
+	}
+	sink.fail = false
+	b = client.request("POST", "/api/v1/relay/tasks/"+id+"/events/reconcile", `{}`, "", 200)
+	if json.Unmarshal(b, &ready) != nil || ready.View.EventPublication.Status != "published" || ready.View.EventPublication.PublishedEvents != 1 || ready.View.EventPublication.PendingEvents != 0 || sink.calls != 2 || driver.launches != 1 {
+		t.Fatal("human stable event reconciliation replayed launch or did not publish")
 	}
 	sendKey := uuid.NewString()
 	client.request("POST", "/api/v1/relay/tasks/"+id+"/send", `{"input":"controlled input"}`, sendKey, 409)

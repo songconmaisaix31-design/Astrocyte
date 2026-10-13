@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"path/filepath"
+	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
@@ -36,5 +38,13 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 	structured := agents.NewRelayNativeDriver(registry)
 	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{})
 	services.Relay = workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window})
-	return store.Close, nil
+	return func() error {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		var shutdownErr error
+		if lifecycle, ok := services.Relay.(workspace.RelayLifecycle); ok {
+			shutdownErr = lifecycle.Shutdown(shutdownCtx)
+		}
+		return errors.Join(shutdownErr, store.Close())
+	}, nil
 }
