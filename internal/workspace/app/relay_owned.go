@@ -147,6 +147,11 @@ func (s *relayService) ListOwnedRelaySessions(ctx context.Context) ([]domain.Rel
 		} else if !relayArchiveMatches(domain.RelaySessionArchive{SessionID: bound.SessionID, NativeID: bound.NativeID, WorkspaceRoot: bound.WorkspaceRoot, Path: bound.ArchivePath, Root: bound.ArchiveRoot, Format: bound.ArchiveFormat}, bound) {
 			bound = relayBindingGap(bound, "archive_identity_changed")
 		}
+		// A pending write can already have reopened the original archive before
+		// its effect receipt finalizes. This is a read projection, never a write.
+		if pending, ok := st.Receipts[st.PendingActions[task.ID]]; ok && pending.Status == "pending" && (pending.Action == "send" || pending.Action == "resume") {
+			bound.ArchiveFinalized, bound.ArchiveAppendOnly = "unknown", "unknown"
+		}
 		result = append(result, bound)
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].TaskID < result[j].TaskID })

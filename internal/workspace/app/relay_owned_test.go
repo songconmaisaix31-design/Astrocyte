@@ -26,6 +26,8 @@ type relayOwnedNativeFixture struct {
 	appendOnly          bool
 	wrongSessionProject bool
 	wrongSessionCLI     bool
+	resumeEntered       chan struct{}
+	resumeRelease       chan struct{}
 	finalized           bool
 	sourceCalls         atomic.Int32
 }
@@ -77,6 +79,14 @@ func (a *relayOwnedNativeFixture) Send(_ context.Context, session domain.NativeS
 	_, err = file.WriteString(input + "\n")
 	_ = file.Close()
 	return domain.NativeObservation{Status: "working", Events: []domain.NativeEvent{{Sequence: 2, Kind: "turn_started"}}}, err
+}
+
+func (a *relayOwnedNativeFixture) Resume(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
+	if a.resumeEntered != nil {
+		close(a.resumeEntered)
+		<-a.resumeRelease
+	}
+	return a.relayNativeRecording.Resume(ctx, r)
 }
 
 type relayOwnedRegistry struct{ adapter *relayOwnedNativeFixture }
@@ -551,5 +561,35 @@ func TestRelayOwnedResumeAndAppendInvalidatePreviousArchiveClosure(t *testing.T)
 	data, err := os.ReadFile(stopped.ArchivePath)
 	if err != nil || !strings.Contains(string(data), "public append after resume") {
 		t.Fatal("fixture did not actually append after resume")
+	}
+}
+
+func TestRelayOwnedPendingResumeCannotExposeOldClosureClaim(t *testing.T) {
+	f, a, _, c := newOwnedFixture(t, true)
+	a.finalized = true
+	a.appendOnly = true
+	ctx := context.Background()
+	id := f.intent()
+	if _, err := f.service.ConfirmIntent(ctx, caller(), id, confirm()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.service.Stop(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	a.finalized, a.appendOnly = false, false
+	a.resumeEntered, a.resumeRelease = make(chan struct{}), make(chan struct{})
+	finished := make(chan error, 1)
+	go func() { _, err := f.service.Resume(ctx, caller(), id); finished <- err }()
+	<-a.resumeEntered
+	c.updates.Store(0)
+	bound := findOwned(t, ownedReader(t, f.service), id)
+	if bound.ArchiveFinalized != "unknown" || bound.ArchiveAppendOnly != "unknown" || c.updates.Load() != 0 {
+		close(a.resumeRelease)
+		<-finished
+		t.Fatal("pending resume exposed stale closure or read wrote state")
+	}
+	close(a.resumeRelease)
+	if err := <-finished; err != nil {
+		t.Fatal(err)
 	}
 }
