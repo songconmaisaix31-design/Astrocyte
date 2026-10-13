@@ -1,5 +1,7 @@
 # Astrocyte 主控交接
 
+L1当前：原H task_f215e7452d70 / ctx_2d4b642fbac5持续采集/装配/只读API/独立事件库读取；原R task_3303613a7ff7 / ctx_98f86f7facfd持续owned metadata provider；原F新task_33717da2d50e / ctx_673d0bdbc496持续Today只读派生区。互斥写域与游标技术批准见Works-Relay-plan顶部。早期R7e28222/H3e22986/F38035bc已push供评审，不是最终SOURCE/REPORT；H审计ID与静默写修订仍在原owner。等三轨最终报告后启动原I同terminal/worktree/branch的新Task普通集成，旧ctx_ace29bd7baa1已完成不得继续派任务。保留5dd精确CI与全部首RED、NOT_RUN边界，不重复问人、不重复建采集owner。
+
 ## 当前入口：Works Relay v1.2 实施（2026-10-14）
 
 Root已普通no-ff合入并push，工程树与最终I SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 全等；I REPORT `0e5ce82898c3d546f711d1e452dadfabb13b5537` 已普通合入，12个精确SOURCE/REPORT祖先、冻结域零diff、clean/remote均核实。精确CI38469944551整体success：Linux/Windows完整check/build/E2E各268 PASS/38 SKIP，Linux race PASS，Windows保持1worker资源修复。I该SOURCE完整check PASS/113.70s，Root425完整check PASS、ff7 build PASS、449bbce最终两个EOF定向PASS；首RED均保留。I ctx_ace29bd7baa1已有效worker_done工程succeeded结算，按用户固定owner持续返修要求retained，后续集成仍同I。新增L1唯一原H ctx_2d4b642fbac5、原R只读端口ctx_98f86f7facfd均implementing，F仍Today，无新采集owner；新源码未纳入5dd CI，待同owner测试/报告与唯一同I后续集成。实际Agent/Today/Procmon/两日未验，工具/来源/活性窗及完整Session投影接缝待定，17321不提前替换，不能宣称v1.2完成。

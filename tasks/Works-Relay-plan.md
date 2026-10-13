@@ -1,5 +1,9 @@
 # Works Relay v1.2 一页执行计划
 
+2026-10-14 L1续作写域：仍为原R/H/F及唯一同I，不重复采集owner。H当前task_f215e7452d70额外拥有既有cmd/server/relay_assembly.go、relay_observer.go、relay_config.go，新增cmd/server/relay_session*.go、httpapi/relay_session*.go、workbench/app/relay_session*.go及sqlite/access_session*.go（避开R的relay前缀），原server.go/OpenAPI/relay-session例子和自身报告。装配沿owned lifecycle→SessionCapture→独立既有EventService/EventRepo→六字段只读HTTP，GET不采集；旧SnapshotReader、引擎/mapper/schema/00:30不变。允许原应用状态目录单个原子替换游标JSON，仅位置/绑定UUID/文件身份/派生覆盖元数据；无新表/迁移/raw副本，不借认知状态存游标。事件库仍是事件权威，HTTP ID须可回查已提交receipt，静默无变化不保存游标。
+
+原R task_3303613a7ff7继续owned只读引用与实际原生metadata provider，不读私有Session、不启动第二app-server。原F新Task task_33717da2d50e / Dispatch ctx_673d0bdbc496于同terminal/worktree/branch observed，消费H525d5df只读契约、既有generator并实现Today独立派生面板，原快照数值与来源不变。父CognitionPage的快照only footer留同I最终一行标签胶水；不扩大F写域。早期R7e28222/H3e22986/F38035bc只是可评审SOURCE，非最终集成或旧5dd CI覆盖。真实CLI工具/源作品/原件留存等未答问题仍未答；公开fixture及独立工程不等待这些答案。
+
 事实源：validation 分支 `a429a4d` 的 [v1.2 定稿](C:/Users/DW/orca/Astrocyte/tasks/Works-Relay-v1.2.md)，取代所有旧版；旧评审421a076保留。目标分支 `workbench/v0.2-access`，从 `workbench/v0.1-workbench` 的 `9d78835bc2b00d3ed0fec493e3fa040704754abe` 建立；与用户验收基线 `d46f9f4cf2fd6e13c8362234746105330356c160` 仅 HANDOFF/STATUS/集成报告三项Markdown不同，业务全等。
 
 主控：计划/状态/决策、独立验收、最终Git，不写业务代码。三条长期轨各一个Codex、一个Orca worktree/branch，读取全仓但只能写自己的路径；跨轨Handoff，原owner测试/文档/返修。使用现有客户端配置，记录实际模型，不指定未核实provider。最后一个集成owner普通no-ff合精确SOURCE/REPORT，仅少量装配胶水，领域问题退原轨。
