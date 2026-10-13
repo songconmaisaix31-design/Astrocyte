@@ -1,10 +1,6 @@
 package domain
 
-import (
-	"time"
-
-	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
-)
+import "time"
 
 const (
 	RelayReady        = "ready"
@@ -80,17 +76,24 @@ type RelayTransition struct {
 }
 
 type RelayReceipt struct {
-	ID          string                  `json:"receipt_id"`
-	OperationID string                  `json:"operation_id"`
-	TaskID      string                  `json:"task_id"`
-	Action      string                  `json:"action"`
-	Operator    string                  `json:"operator"`
-	Status      string                  `json:"status"`
-	Error       *apierrors.ServiceError `json:"error"`
-	CreatedAt   time.Time               `json:"created_at"`
-	FinishedAt  *time.Time              `json:"finished_at"`
+	ID          string             `json:"receipt_id"`
+	OperationID string             `json:"operation_id"`
+	TaskID      string             `json:"task_id"`
+	Action      string             `json:"action"`
+	Operator    string             `json:"operator"`
+	Status      string             `json:"status"`
+	Error       *RelayReceiptError `json:"error"`
+	CreatedAt   time.Time          `json:"created_at"`
+	FinishedAt  *time.Time         `json:"finished_at"`
 	// Input is an internal exact idempotency comparison, never a public payload.
 	Input []byte `json:"-"`
+}
+
+// RelayReceiptError is durable evidence; transport maps it to its own ErrorV1.
+type RelayReceiptError struct {
+	Code           string `json:"code"`
+	Message        string `json:"message"`
+	RequiredAction string `json:"required_action"`
 }
 
 // RelayEvent contains derived facts only: no prompts, file names, terminal text,
