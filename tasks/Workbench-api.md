@@ -16,4 +16,4 @@ GET /api/v1/cognition/events?topic=&kind=&source=&start=YYYY-MM-DD&end=YYYY-MM-D
 
 GET /api/v1/cognition/filters → {topics:[string],kinds:[string],sources:[string]}。空query=不过滤；未知合法值返回空集；无副本返回可读固定错误，不回退正式库或fixture。
 
-后端owner负责OpenAPI paths/schema/examples，前端owner消费精确发布契约并生成web/src/api/schema.ts；通过现有createApiClient使用鉴权，不能未认证裸fetch或另建前端。接口适配问题Handoff，不跨写。
+后端owner负责OpenAPI paths/schema/examples，前端owner消费精确发布契约并生成web/src/api/schema.d.ts；通过现有createApiClient使用鉴权，不能未认证裸fetch或另建前端。接口适配问题Handoff，不跨写。

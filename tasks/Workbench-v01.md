@@ -11,7 +11,7 @@ root负责本单、HTTP契约、状态、独立验收和最终Git。复用原两
 | 轨 | 精确write_paths | 交付 |
 |---|---|---|
 | backend | 新internal/workbench/app/**；新internal/adapters/sqlite/workbench*.go；新internal/adapters/httpapi/workbench*.go；internal/adapters/httpapi/server.go；cmd/server/main.go及新cmd/server/workbench*.go；scripts/workbench/**；contracts/openapi.yaml及新contracts/examples/workbench*.json；docs/workbench/backend.md | 同server只读SQL端点，六字段投影及隐私/鉴权错误测试，在线快照/本机部署/00:30日程 |
-| frontend | web/src/App.tsx；web/src/components/Nav.tsx；web/src/api/client.ts、schema.ts及新cognition*.ts；新web/src/pages/cognition/**；新web/src/styles/cognition.css；新web/e2e/cognition*.spec.ts；新web/src/**/cognition*.test.ts或tsx；docs/workbench/frontend.md | 复用token/组件/鉴权的四子路由，图表/抽屉/筛选/分页，新spec进原Playwright |
+| frontend | web/src/App.tsx；web/src/components/Nav.tsx；web/src/api/client.ts、schema.d.ts及新cognition*.ts；新web/src/pages/cognition/**；新web/src/styles/cognition.css；新web/e2e/cognition*.spec.ts；新web/src/**/cognition*.test.ts或tsx；docs/workbench/frontend.md | 复用token/组件/鉴权的四子路由，图表/抽屉/筛选/分页，新spec进原Playwright |
 
 所有现有引擎/events/Sleep/权重/公式/schema migrations零改；不修改web既有spec/Playwright配置或降低断言/timeout。root package/go.mod/go.sum/dependencies.lock不改，当前依赖够用；如遇实际阻塞Handoff。HTTP适配器不引入SQL，SQL只在sqlite适配器；Reader契约类型位于workbench/app。认知HTTP路径/api/v1/cognition/*，走现有loopback/session/origin鉴权与统一错误封装；无第二套认证或前端工程。
 
@@ -30,3 +30,5 @@ Focus拼接历史safe A(t)与每次成功快照取得的确证节点标量点，
 原pnpm check/build通过；新增认知Playwright spec在两viewport运行，四视图真实数据渲染/交互，抽10个UI数值与独立SQL误差0；GET正常/错误raw_unique零泄漏及六字段投影；实际文件系统监控正式库零写。root已下载Microsoft签名Valid的官方portable Procmon64，本机token非管理员，管理员监控当前NOT_RUN；不得用哈希/静态扫描或普通watcher替代完整监控。两日00:30自动成功待实际跨日，两次手动不算。首次RED/NOT_RUN/unknown保留。
 
 开发周期D1快照/Today、D2Focus/Agents、D3Evidence/部署；可在一次会话推进全部实现，时间验收仍按真实日期。validation分支、V4协议/日程/参数/正式库零修改；v0.2仍冻结。解冻后validation与本分支统一向主线收敛，一次合并；当前不向main合并。
+
+2026-10-13T16:22+08:00：旧backend task634f/ctxe5a和frontend task1ec/ctx446已按scope_replaced_by_user失败结算，WIP SOURCE0fa17aa6/REPORT3b123fcd与SOURCEf9477f46/REPORT7335ce54均已push并独立核对clean；不算实现失败或验收通过，不进入新分支。原owner/工作树/终端复用为backend branch workbench/v0.1-backend task8922bfc4a097/ctx607328b4cef6，frontend branch workbench/v0.1-frontend task0e13b2d2c00e/ctx8e65c15392e9。换branch后首次preflight agent_unconfigured拒绝未建立新Task/Dispatch；再次派发输入已接受但turn_start_unobserved原回执保留。实读屏幕确认文本停在composer，各仅一次bare Enter提交，backend已观察Working；不重发任务或启重复owner。实际生成器目标schema.d.ts已校正写域，旧schema.ts计划名不创建。
