@@ -14,6 +14,8 @@
 
 2026-10-14独占补充：F获准修改 `web/e2e/works-live.spec.ts` 的初始未知统计预期，从四个未知改为任务明确要求的五个未知，并核对新增平台指标标签；保留其余原断言、超时、skip与执行路径。此为新五指标行为的精确回归，不降低验收；禁止修改其他旧spec。
 
+2026-10-14组装补充：H独占 `cmd/server/workbench_config.go`，仅抽出既有formal/snapshot/hardlink前置检查为显式目录helper，防relay模式被v0.1默认目录覆盖；旧Workbench默认行为与全部防护保持。新增回归写H已拥有的relay_config_test.go，不修改原workbench测试、快照脚本、Reader或00:30任务。
+
 串行门：R早期Go接口→H组装；H早期OpenAPI→F生成schema；三轨完成→唯一集成→root完整check/build/E2E、真实CLI换手和terminal-only、三值、权限/互斥/持久迁移及receipt→常驻同URL部署。依赖前独立工作立即开工，不为等接口停整轨。
 
 禁止：现有引擎/events mapper/Sleep/认知schema/migrations/权重/正式库与V4日程、`scripts/workbench/**`快照管道、现有依赖锁/Go模块、旧E2E断言/超时/重试配置；不自动派发/定时/链式派发；不新造调度器/Attempt/Manifest/Hash/证明系统。不硬编平台，不以手册统计假称真实接力。

@@ -10,6 +10,7 @@
 | structured工具限制 | R发现既有原生会话对工具有限制；优先调查已有NativeRequest能力，未支持任务所需工具时按v1.2走terminal并记录degraded_launch | 不改native共享实现，不假称无工具会话完成接力；未知启动不降级成第二写者 |
 | workspace执行权限 | root与R实码核对：既有A/B/C只资料，Settings拒绝非空AllowedTools，Codex/Claude/Pi工具禁用。已向人问是否在必经confirm页独立显示确认该中性工作区读写/执行并保持A/B/C原义；未答 | 不以start许可推导CLI自由工具，不改existing projects/native；store/无工具驱动与受控CLI预验继续，真实coding接力NOT_RUN |
 | 五统计旧回归 | root据v1.2五指标要求准予F独占修改works-live.spec.ts的初始四未知预期为五未知，增加平台标签核验 | 其余旧断言/超时/skip/执行路径保持，不派额外owner |
+| DataDir组装 | 已核对旧guard在WORKBENCH=1与DATA_DIR空时回写v0.1默认；root准H独占workbench_config.go抽现有explicit目录guard供relay main复用 | 旧默认与所有正式/副本/硬链接保护不变，新增relay_config回归，不改快照管道 |
 | Today实时接缝 | 已向用户问：现有快照每日发布，是否可追加本地derived实时事件且保留快照数值 / 边界；尚未回答 | H调查事件接入，F先做不依赖此项的UI |
 | 作品当前状态 | 已问获准未提交/未跟踪文件及非Git/单文件作品处理；尚未回答 | R先做无Agent工作区端口与互斥，不暗中缩小验收范围 |
 | 参考图 / 活性窗 | 本轮未附图；已问沿既有视觉及可配置60秒近期窗口；尚未回答 | 不冻结默认窗或新视觉；用户答后同owner落实 |
