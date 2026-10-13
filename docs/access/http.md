@@ -160,3 +160,26 @@ Repair SOURCE `19c83e39b65e9a0cebc5bad20f7dba3f6c82cd2a` changes only `cmd/serve
 Separate evidence stays under `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-eof-root338-diagnosis-20261014`: `exact-root-reproduction-first.log`, `process-controls-derived.json`, `exact-root-after-fixture-fix.log`, `exact-root-entire-cmd-server.log` and `exact-root-cmd-server-vet.log`. The first Root log/result and original failed workspace/store are untouched; fresh case results do not overwrite the original rejected/unknown receipt. Source and this REPORT are separate ordinary commits and pushed, with clean/remote parity verified at handoff.
 
 The exact repair was handed to I/root for an ordinary merge. H did not rerun unrelated full suites, modify I's CI resource configuration or weaken any check. Root still must independently pass complete check/build on the integrated source, and I owns the full dual-platform CI with the generated frontend types and approved Windows resource change. Real native/terminal-only coding, formal cognition, Today, tool/source/liveness policy decisions, administrator Procmon, two real scheduled dates and permanent deployment retain their previous NOT_RUN/undecided outcomes.
+
+## Original H owner: fresh Linux evidence-directory initialization
+
+Task `task_c0577095b4cb`, Dispatch `ctx_a01ed6996519`, same terminal/worktree/branch and two-file write domain. I reported a new first Linux RED in CI `38468510081`, exact SOURCE `bdfbbdbbd6cbd6567e57ef3ed06ac2b3a860e97a`: `TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt` reached the final evidence write and failed with `EOF public response evidence unavailable`. The preceding real HTTP, first-input/EOF, receipt, exit and privacy assertions had passed. That run and Root338's earlier first RED remain separate retained failures; neither original unknown action nor old CI run was retried.
+
+Source inspection confirms the fixture defect: the shortened layout created only `filepath.Dir(evidence)`. On a fresh missing-LOCALAPPDATA fallback, `relayTestLocalAppData` supplies a new test-owned root, so the `verification` child does not exist. Prior Windows validation used an already populated evidence directory and therefore did not expose this initialization dependency. The final `WriteFile` required the child directory that the fixture had stopped creating.
+
+Repair SOURCE `67c7d2a5a205f4df8cc824b8d9c8c20ba60a5821`, pushed early without a skip-CI marker, changes only the initialization call to `os.MkdirAll(evidence, 0700)` and its fixed failure message. This creates both the parent and evidence child. `os.MkdirTemp(fixtureParent, "")`, the short Windows CWD layout, actual HTTP/Service/SQLite/public subprocess, assertions, timeout and skip behavior stay unchanged. No specification, R domain, workflow, API or business code changed. I received the precise source for ordinary integration and a new Linux validation run.
+
+Validation uses the same Root338 deep child LOCALAPPDATA, three public-empty native directories and `GOFLAGS=-p=1`, `GOMAXPROCS=2`, `NODE_OPTIONS=--max-old-space-size=512`; the existing Go compiler cache is pinned before the missing-variable case.
+
+| Command/check | Result |
+| --- | --- |
+| Targeted actual EOF HTTP test, same deep Root environment, `go test -mod=readonly ./cmd/server -run '^TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt$' -count=1 -v` | Windows PASS / EXIT 0 / 3.45 seconds. |
+| Same targeted test with LOCALAPPDATA removed and a fresh fallback root | Windows PASS / EXIT 0 / 3.06 seconds; this is not a native Linux result. |
+| `go test -mod=readonly ./cmd/server -count=1 -v`, same deep Root environment | Windows PASS / EXIT 0 / 3.47 seconds; 23 top-level tests, zero failures. |
+| `go vet -mod=readonly ./cmd/server`, same deep Root environment | PASS / EXIT 0. |
+| `gofmt` / `git diff --check` | PASS. |
+| `wsl -d Ubuntu --exec go version` | Go executable absent; local native Linux regression NOT_RUN, handed to remote validation. |
+
+New results are retained only under `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-eof-linux-evidence-20261014`: `same-deep-root-target.log`, `windows-missing-localappdata-target.log`, `same-deep-root-entire-cmd-server.log` and `same-deep-root-cmd-server-vet.log`. The first attempt to download the whole CI failed because run 38468510081 was still in progress; that access failure is separately retained as `ci-38468510081-log-access-first-failure.txt` and is not represented as the CI failure log. Root/I retain the original Linux job evidence. No logs, database, configuration or raw helper output enter Git or stdout; this report contains only derived findings.
+
+SOURCE and REPORT are separate ordinary commits; REPORT uses `[skip ci]`. Clean/remote equality is verified at delivery. Native Linux success and integrated complete check/build/dual-platform CI remain pending I/root verification. Existing real Agent, Today, permissions/source/liveness policy, formal cognition, Procmon, scheduled dates and deployment gates do not gain a PASS from this fixture initialization repair.
