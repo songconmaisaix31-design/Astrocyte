@@ -50,8 +50,15 @@ func TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt(t *testing.T) {
 	t.Setenv("ASTROCYTE_HTTP_EOF_HELPER", "1")
 	ctx := context.Background()
 	evidence := filepath.Join(relayTestLocalAppData(t), "astrocyte-workbench", "v0.2-access", "verification")
-	local := filepath.Join(evidence, "eof-http", uuid.NewString())
-	if os.MkdirAll(local, 0700) != nil {
+	// Keep this child appdata under the access root without repeating the long
+	// verification/eof-http/UUID scaffold. Windows process cwd has a tighter
+	// bound than file operations; an already-isolated caller must remain usable.
+	fixtureParent := filepath.Dir(evidence)
+	if os.MkdirAll(fixtureParent, 0700) != nil {
+		t.Fatal("isolated EOF parent unavailable")
+	}
+	local, err := os.MkdirTemp(fixtureParent, "")
+	if err != nil {
 		t.Fatal("isolated EOF state unavailable")
 	}
 	t.Setenv("LOCALAPPDATA", local)
