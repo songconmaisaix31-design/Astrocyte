@@ -30,4 +30,6 @@
 
 唯一集成I从root `8d9de2733713675c975b2920e71e21f07da7dcdc`创建works-relay-integration；Task task_db3080f0a933 / Dispatch ctx_ace29bd7baa1 / terminal term_55146ecc-fe9f-40b4-99c0-31d12b8eb5aa，Codex现有配置，turnStart observed。只写docs/access/integration.md及必要少量main/relay_assembly/httpapi server/App/Nav/现有生成schema胶水，领域返修退原owner。普通no-ff三REPORT无冲突，早期集成SOURCE `84bb3f95fc3bbd2d373a561336578ead706bb4b1`，仍待完整检查。临时同URL真实agents.json追加重启验列表，不dispatch模型；不替换17321，不启用未答门禁。
 
+CI资源例外（精确首失败后）：I额外独占 `.github/workflows/check.yml`，只把Windows完整Playwright执行设为workers=1，沿已有4727f7a的两OS条件步骤；Linux原命令不变。首集成CI38463553347 Windows旧s1.spec.ts:178 page.reload报ERR_NO_BUFFER_SPACE，267 PASS/1 FAIL/38 SKIP；本机1worker完整268/38、Linux2workers完整成功，不是领域断言问题。原run保留，不改任何spec、viewport、fixture、timeout、retry、skip或业务；新SOURCE精确CI验证资源修复。
+
 排期：D1注册/活性/中性工作区/总览，D2接力/实时，D3 E2E/实测/演示/部署。Procmon与00:30真实两日保持各自真实时间验收，v0.1未收尾不阻塞本任务，未发生不预填PASS。

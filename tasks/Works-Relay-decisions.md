@@ -68,3 +68,10 @@ Orca运行 `run_d577f0d3fee1`，coordinator `term_d7f7e173-a64c-43fe-981a-dbe571
 - R与F由Root明确retained：依据用户“开发、测试、文档和返修由同一个Worker持续完成”，保留同terminal/worktree/branch用于后续领域返修。新工作需新Task/Dispatch，不给已完成Dispatch发送；未结算或静默不能释放。
 - H最终SOURCE `c7c3255d0530b93312bb541a477b9ec47e0afc15` / REPORT `6e211dd3e3d92cecadd6a513f7bb3b41075f661c`已push、clean/remote一致，原Task独立工程阶段succeeded结算并按同一固定owner要求retained。实际TCP/SQLite/受控EOF进程回归、289契约例子、26实际HTTP JSON独立AJV、vet/build/架构PASS。注册表当前启动时读取，追加条目需重启服务才能显示，不能宣称热更新。独立公开样本应验证同一测试URL重启后列表扩展且调度代码不变。
 - 三轨结算后唯一集成Worker从root最新分支创建，普通no-ff合精确REPORT（保留SOURCE祖先）；只允许少量入口/路由/类型/配置胶水及自己的集成报告，领域问题退原owner。先完成可独立的全工程检查，再由Root复验、提交与push；用户待答语义不自行配置，17321已验实例不提前替换。
+
+## Root合入与CI资源修复
+
+- I SOURCE84bb无业务胶水，完整check/build及默认E2E268 PASS/38 SKIP；6个本次新增opt-in（HTTP回放4、公开scan2）与旧32项区分，不把38SKIP改为全实际用户验收。真实registry追加后同URL重启，main/HTTP/UI1→2且0task/0receipt；初始不存在命令列表试验不作为真实CLI扩展。后次登记真实Node可执行路径，仍不执行或授权模型。
+- Root普通合SOURCE为 `3387019f7c349957ef8f4c75d98ecd7fbbe42200`，push已成功，业务与84bb全等；独立check进行中，新的精确CI38465806043进行中。首次push TLS失败后先核远端仍f59c884，再普通push成功，无force。
+- I首完整CI38463553347 exact84bb整体RED：Linux完整成功含race；Windows267 PASS/1 FAIL/38 SKIP，唯一旧s1.spec.ts:178 page.reload的net::ERR_NO_BUFFER_SPACE，执行2 workers。首完整日志留外部且不rerun覆盖。Root授权I只改check.yml的Windows执行资源为1 worker，采用已有4727f7a中最小条件命令；不是引入其validation业务历史，不改旧spec/数据/断言/timeout/retry/skip或Linux执行。新的SOURCE、完整双平台CI和Root最终parity分别核验。
+- Root复核1280公开截图的入场局部显示，后次稳定dialog几何正确、document横向无溢出。第三/第四外部定位检查首RED为nearest-scroll后textarea底缘0.90625px超出严格界限，保留；第五按真实居中滚动测量且不松阈值PASS，未改产品动画/源码/测试。此为验证定位假设，不宣称修了产品缺陷。
