@@ -4,7 +4,37 @@
 
 ## 发布工具 SOURCE
 
-最新阶段 SOURCE `830faaea4f5e19bdf213079f428dc9e0c6995d2e` 已 push，普通消费 F 修复 `9ccb198fd1af1bd6ceb2d98b25b0531802543983`、Q 最终 SOURCE `1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50` 与 REPORT `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`。包括精确 Git 源码归档、复用生产构建、标准 ZIP、用户启动与手动快照脚本、真实 HTTP/session/CSRF/SQLite/重启验证、生产路径扫描、明确输入的真实认知核查及用户说明。TS2305 修复后的 c54 候选构建通过，但解压私有路径扫描失败，尚未通过最终验收。此前全部普通追加历史保留。
+最新验证工具 SOURCE `1a1c14d6fdd02e7824efb82a618848a1c315dedb` 已普通 push，远端同 SHA；包的精确 SOURCE 为 `15f27f4a8e1e2300b8b1152cfd5b8e5f722db744`。此前普通消费 Q 最终 SOURCE `1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50` / REPORT `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`、B SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` / REPORT `15c738f88822e553eb228c12c0fdc71ad07b7531`、F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292`、H SOURCE `b247dfb12b938739f09acc73e6b7582376951a0c` / REPORT `a8334b79aeb0c3a1b1038d45964d6092dc6cc5de`。包含精确 Git 归档、生产构建、标准 ZIP、启动与手动快照脚本、真实运行验证和用户说明。当前候选构建及运行 124 项检查通过；此前全部普通追加历史和首次失败证据保留。
+
+## 今晚候选包阶段交付
+
+主控传达用户新授权：今晚交付已通过的候选包供试用，阶段 REPORT 完成后结算；今晚停止新增 Relay 注册、派发和模型调用，真实 CLI → 三分钟 Today → L1 验收安排在 2026-10-15。当前阶段完成，不计为唯一集成人员 I 的最终源码验收。明日沿用当前 worktree/branch，收到 I 精确 SOURCE 后同源码重建、重新解压并验证。
+
+实际构建命令，EXIT 0：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Build-Windows.ps1 -Source 15f27f4a8e1e2300b8b1152cfd5b8e5f722db744 -Label cognition-paired
+```
+
+Go 1.27.2、Node 24.16.0、pnpm 11.27.0；Windows amd64、CGO_ENABLED=0，GOFLAGS=-p=1、GOMAXPROCS=2、NODE_OPTIONS=--max-old-space-size=512。冻结锁安装、原 `pnpm build` 和 Q Go 快照程序编译完成。Vite 514.47 kB chunk 大小警告保留。ZIP 共 39 项，四个 Go 程序、生产静态资源、启动与手动快照脚本、README、LICENSE；数据库、日志和凭据名检查为零。
+
+ZIP 绝对路径：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/package-cognition-paired-20261014-231405/Astrocyte-v0.1-windows-x64-15f27f4a8e1e.zip`，**33,768,080 字节**。构建原件 `.verification/package-cognition-paired-20261014-231405/build.log`。
+
+实际完整运行验证命令，Windows PowerShell 5.1，默认隔离端口 17887，EXIT 0：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Verify-Windows.ps1 -Zip 'C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/package-cognition-paired-20261014-231405/Astrocyte-v0.1-windows-x64-15f27f4a8e1e.zip' -RequireCombined -Source 15f27f4a8e1e2300b8b1152cfd5b8e5f722db744 -CognitionSourceSha 1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50 -CognitionSource 'C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/public-cognition-6f63200932f14a10ad4d9fb91c78d749/app-state/state.sqlite' -CognitionHistory 'C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/public-cognition-6f63200932f14a10ad4d9fb91c78d749/local/astrocyte-workbench/v0.1/snapshots/snapshot-892856014/history.json' -CognitionPublicationRoot 'C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/public-cognition-6f63200932f14a10ad4d9fb91c78d749/local/astrocyte-workbench/v0.1' -CognitionSafeDir 'C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/cognition-latest-safe'
+```
+
+124/124 PASS，scope `candidate-package-cognition-runtime`。新目录为 `.verification/verify-20261014-231846/extracted/Astrocyte-v0.1-windows-x64`；空身份目录、系统 PATH 下实际启动，无开发源码或 node_modules 运行依赖。生产私有路径扫描零匹配。真实健康、九个静态页面路径与资源、session bootstrap、无 session/无 CSRF/错误 Origin 的拒绝、实际分类创建 HTTP 201 和读取均通过。未知认知快照实际返回 503；空 Relay 注册、任务、派发和会话事件保持真实空状态。
+
+先对应用自己创建的真实 SQLite 手动发布空认知代 `snapshot-856439225`，再对 Q 公开自产 SQLite 和真实 History 手动发布非空代 `snapshot-1764716540`；两次均由解压包的实际快照程序执行。健康、Today、Focus、Agents、Topics、Evidence、Filters 和 Events 实际 HTTP 读取与同代时间头一致。十项独立 SQL 数值、最高 MCP 排名、两主题每个历史点的时间和 attention、全部 1339 个事件经 14 页逐一核对六字段及字段集合、Astro134 的 20/50 分页均通过。真实进程终止与重启后新 session、原分类和认知数值保留，最终两次 owned listener 均关闭；当前没有保留应用 PID 或活动 URL。
+
+安全结果：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/verify-20261014-231846/result.json` 与同目录 `private-path-scan.json`；原件 `verify.log`、`initial-stdout.log`、`initial-stderr.log`、`restart-stdout.log`、`restart-stderr.log` 均保留在该目录。M-release 已独立核查 result 124 PASS、scan 零匹配与 ZIP 项目数。验收 SQLite 和真实认知输入没有进入 ZIP。
+
+同一完整验证命令首次在 `.verification/verify-20261014-231729/verify.log` EXIT 1：`FAIL: actual SQL10 and nonempty six-field source are complete`。Windows PowerShell 5.1 的 `@(ConvertFrom-Json)` 将 1339 项包装为一项嵌套数组；错误发生在输入校验，应用尚未启动。直接接收标准 JSON 转换结果后，在上述新目录实际通过；修复 SOURCE 为 `1a1c14d6fdd02e7824efb82a618848a1c315dedb`，只改未进入 ZIP 的验证 helper。包仍严格记录 SOURCE 15f；没有为测试修改包、跳过扫描或覆盖首失败。
+
+基本用户运行条件为 Windows x64、Windows PowerShell 5.1 和浏览器，完整解压后执行 `Start-Astrocyte.cmd`。可选 CLI、模型及配置参见 [用户说明](windows.md)。今晚模型调用零；默认浏览器全套、真实原生 Relay/Today/L1、媒体提取仍未验收，I 最终 SOURCE 重建、tag 和 GitHub Releases 发布未执行。root 在全部最终验收后统一发布。独立 SOURCE 与本阶段 REPORT 分别追加 commit 和普通 push。
 
 ## 候选包演练
 
@@ -26,7 +56,7 @@ ZIP：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verificat
 
 证据：`.verification/package-rehearsal-20261014-202942/build.log`、`.verification/verify-20261014-203035/{verify.log,result.json,initial-stdout.log,initial-stderr.log,restart-stdout.log,restart-stderr.log}`。静态 HTTP 检查不包含浏览器渲染；完整默认浏览器与原生控制器验收仍归最终组合验收。
 
-最新验证工具将 `-RequireCombined` 静态路径设置为现有产品的 `/cognition/{today,focus,agents,events}` 和 `/workspace/works`，并增加空 Relay 注册、空任务、零派发、零会话事件与未知覆盖状态的具体断言。候选模式的四个基本 SPA 路径、其余真实运行路径在同一候选 ZIP、另一新目录 `.verification/verify-20261014-203557` 复验 EXIT 0，24 项 PASS；认知和 Relay 新断言仍待最终合并源码运行。此工具变更不改变候选包的三个程序和用户启动脚本。
+da45 阶段验证工具将 `-RequireCombined` 静态路径设置为现有产品的 `/cognition/{today,focus,agents,events}` 和 `/workspace/works`，并增加空 Relay 注册、空任务、零派发、零会话事件与未知覆盖状态的具体断言。候选模式的四个基本 SPA 路径、其余真实运行路径在同一候选 ZIP、另一新目录 `.verification/verify-20261014-203557` 复验 EXIT 0，24 项 PASS。该次仅检查基本候选；组合认知与空 Relay 断言已在今晚 15f 阶段包实际运行通过。此工具变更不改变初始候选包的三个程序和用户启动脚本。
 
 ## 首次失败与修复
 
@@ -42,7 +72,7 @@ ZIP：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verificat
 
 Workbench 原 `scripts/workbench/snapshot.py` 的 main 使用硬编码正式 SOURCE/HISTORY，未纳入本包、未执行。该入口缺口已交 Q owner 补充；Q 早期 SOURCE `8001a76646f5892bc18d8ccb9e5cd065b51425a6` 提供 Go 原生的显式 source/root/history/timeout 命令。初始候选 ZIP 仍未包含该程序；没有快照时的 503 只证明不可用状态如实返回。
 
-最终合并源码、认知公开自产来源、Relay 注册和真实 CLI 输入待唯一集成人员交付。接收其精确 SOURCE 后普通消费、重新构建、新目录解压并实际验证，随后追加独立 REPORT。完整默认 E2E、原生 event_id 闭环、最终发布与人工待定参数尚未因本候选包演练成为通过；正式 V4 数据、协议和日程保持原状态。
+认知公开自产来源已由 Q 交付并完成本阶段候选验证；最终合并 SOURCE 仍待唯一集成人员交付。接收其精确 SOURCE 后普通消费、重新构建、新目录解压并实际验证，随后追加独立 REPORT。完整默认 E2E、原生 event_id 闭环、最终发布与人工待定参数继续保留未完成状态；正式 V4 数据、协议和日程保持原状态。
 
 ## Q 程序与手动包装预验
 
@@ -52,7 +82,7 @@ P 追加 SOURCE `d0fb7ff0bb1e791583cc405f098eb684affce35e` 已 push，增加 `wo
 
 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <自身.verification/q-snapshot-smoke/Publish-WorkbenchSnapshot.ps1> -Source <上述实际SQLite>` 首次失败：Windows PowerShell 5.1 参数默认表达式内的 `PSScriptRoot` 为空，`Join-Path` 报 `ParameterArgumentValidationErrorEmptyStringNotAllowed`。显式 `-DataDir <自身.verification/q-snapshot-smoke/data>` 运行 EXIT 0，真实 generation `snapshot-3747436004`；随后将默认目录计算移到脚本体，省略 `-DataDir` 的相同实际命令 EXIT 0，真实 generation `snapshot-3863927605`。默认目录修复同时用于用户启动脚本，已独立提交并 push 为 `27e65dd80436030b0157edb6f811c83320dda001`。
 
-预验没有调用 Python、模型或正式自动任务，没有构造认知事件。来源为真实应用空认知库；此结果只证明 Go 程序与手动包装可实际执行，不替代最终包、真实认知数值或六字段验收。Q 的公开受控来源和安全期望仍待交付。
+预验没有调用 Python、模型或正式自动任务，没有构造认知事件。来源为真实应用空认知库；此结果只证明 Go 程序与手动包装可实际执行，不替代最终包、真实认知数值或六字段验收。该次预验未使用后来 Q 交付的公开受控来源和安全期望。
 
 用户 CMD 启动入口增加原错误退出码传递：实际 `cmd.exe /d /c 'release\Start-Astrocyte.cmd -Port 0 <NUL'` 返回预期 EXIT 1 与端口范围错误。该负例不启动应用。
 
@@ -76,6 +106,6 @@ F 精确修复已普通消费为 `4fd19d83d94d0d8867864d4352c5d07a54ce9986`，P 
 
 Q 最终 SOURCE/REPORT 已普通消费。Q 明确交付的 latest 输入是独立 `public-cognition-6f63200932f14a10ad4d9fb91c78d749/app-state/state.sqlite`、`local/astrocyte-workbench/v0.1/current.json` 的实际 `snapshot-892856014` 与该代的真实 `history.json`，均位于 Q 自己的 `.verification`。安全期望位于 Q `.verification/cognition-latest-safe`；独立读其 `admission-safe.json` / `sql-expected.json` 与 current 指针，已确认 `after_sleep`、实际 Sleep 1、原代时间一致、SQL10、1339 六字段、最高 MCP20 与分页 Astro134、两主题各3真实历史。没有按含有 final 的旧目录名选择输入，没有读取正式 V4 或用户原会话。
 
-新 P 验证逻辑要求显式传入上述来源、历史、发布根、安全期望目录和完整 package/Q SOURCE。校验 Q 源码祖先、包文件名、当前发布代与 after_sleep，随后实际包快照命令发布、HTTP SQL10、全部事件六字段、最高排序、每个实际历史点、20/50 同主题分页及重启。Windows PowerShell 5.1 parser 通过；此正向逻辑尚未在通过隐私扫描的新包上执行，不能计为通过。
+P 验证逻辑要求显式传入上述来源、历史、发布根、安全期望目录和完整 package/Q SOURCE。校验 Q 源码祖先、包文件名、当前发布代与 after_sleep，随后实际包快照命令发布、HTTP SQL10、全部事件六字段、最高排序、每个实际历史点、20/50 同主题分页及重启。Windows PowerShell 5.1 parser 与 15f 候选包实际正向运行均通过，具体命令和阶段范围记录在本报告的今晚交付段落。
 
 真实 packaged native 正向还需要原 H 的固定公开任务、真实 CLI/自行鉴权、明确窗口、真实 API 注册/授权/确认与每个 event_id 的 SQLite 核查输入。仅准备脚本，P 尚未启动原生模型。R 已明确 SessionDeadlineSeconds 是可信组装参数，当前不属于环境变量，P 没有发明此参数。候选的空 registry / 空会话事件与认知健康不替代实际原生正向；最终仍须唯一 I 的精确 SOURCE 与全部原验收。
