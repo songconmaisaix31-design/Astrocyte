@@ -26,8 +26,8 @@ P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 
 | N 客户端 | `7202f07c9c4122f08d760afa88472fb32852b38e` | `b74b97a44d5a116d090424d78f358fdf520667e2`；非模型阶段通过，最终包原生尚待。 |
 | S 科研审阅 | 文档提交 `7d030fc83120052a8f32ea74c6007ff9be6878ca` | 已释放；作者成绩与本项目实证范围分别登记。 |
 | Python 标准整改 | `a1089f94a13306e3cd250ed8facbb438d6e75a19` | `91e3e59dcfc8024cd2e4955ac72f627e65c18e71`；按根已验范围消费。 |
-| B 当前追加 | `4a6076c402e0b5d31982154a31a905bee6127477` | `7614b27e6084bf843f71a6b95082b91a7ca36ed9`；真实 PDF / 私有类别 / Reader guards 阶段，模块独核远端同 REPORT、SOURCE 祖先、独立文档提交；尚待最终完整默认与实际模型接纳。 |
-| V 当前追加 | `08b3594fe4a3a02d06fead00ee6ead98b9e38bbc` | `a21379e41f700d8f88d6ee1fb4618c08f49abf54`；产品报告时间区间 / HTTP / 冷重启通过，Whisper 实际取消 18.73 秒与重启不续尚待新精确提交。 |
+| B 当前追加 | `072628536d325eedbb6b53ffe9ab8fc31c38beeb` | 独立 REPORT 尚待；产品报告 port0 / 实际API helper / 两布局 / auth-CSRF / SQL / occupied-port拒绝 / 重启阶段通过。前一 `4a6076c402e0b5d31982154a31a905bee6127477` / `7614b27e6084bf843f71a6b95082b91a7ca36ed9` 的远端同值 / 祖先 / 独立文档已核，保持其阶段范围。 |
+| V 当前追加 | `3485d7298bf9fe4e548e81768d81144493345c7d` | `8fc4434d1698c5dc51d84f45fff43fed931c869b`；产品报告普通消费B、PDF MIME、实际启动后取消18.73秒 / owned Go-Node-Whisper退出 / 同库重启不续发通过；default 39.945秒 PASS / 9既有SKIP，Node9PASS / 0SKIP，vet / build通过。小路径报告修订最终HEAD尚待；mid-ASR progress与实际CLI特定分支NOT_RUN，不提升为完整原生验收。 |
 | T 当前追加 | `61a012464a22d60ef421ea1fdaa5541ef65f1f7e` | `ef019bbf86f7a11d1a68e4fe2edf21230f48b5a3`；产品报告真实收藏100 / prefix110 / partial retry / 视频A-B-A阶段通过，Creator 实际不足 / 412 和旧模型 helper 未通过。 |
 | F 最终 | 尚待 M-product 提供最终完整 SHA | 原默认 203PASS / 41FAIL / 32SKIP / 4NOT_RUN 保留，未通过完整门禁；port0消费后适用复验继续。 |
 | R 四语义 / H port0及实际链路 | 尚待 M-relay 最终交付 | R `task_f082d8b36471` / `ctx_aa83ef2b5087`；H port0 `1aadeebaba2330bb8b786989f577415da5208fd5`、测试 `4f45a3ab50e6a2863b940915874374f58e65f1da` / REPORT `4f3efd63c3933a8d6efe6bc6068d70ae3eed2f59`；模块独核远端同 REPORT、祖先与独立报告文件。原 H Task 已合法阶段完成，M-relay 在同终端新 Task 续 v1.4，真实 native / Today 尚待。 |
@@ -39,6 +39,8 @@ P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 
 规格独立 REPORT `d64dc5c6bb933c0ec6b3203d75d9e2df0207765d` 仅修改 Relay 管理文档。M-relay `msg_48cbc0d4f40b` 确认原 H Task / Dispatch 已接收合法 succeeded，后续在实际 idle 同终端创建新任务；当前不向旧 Dispatch 派发。T 独立远端同 `ef019bb`，SOURCE祖先与报告单文件已核；V 的 `a21379e` 来源祖先与报告单文件已核，远端已前进至 `eead5308823804dc744723ad8e27550f91107c5b`，该新提交需 M-product 提供独立报告和接纳范围，不按旧报告验新源码。P/N 原树 clean、HEAD分别为 `7cccea1` / `b74b97a`，尚未启动新 Task。已将 N 原客户端只支持 archive 的范围交 M-relay；最终若选择 native_notifications，由原 N 在自身域补准确验证，不改变原生领域实现。
 
 M-relay `msg_4c82199f5651` 已回传新 H Task `task_3004b636a3ab` / Dispatch `ctx_e1a8ebeeea83`，实际复用原 `term_7a9d814a-d487-4dc3-9708-f6bdc5e1479d`、原树与分支，ready / turnStart observed，旧 `ctx_d7d8c2828fba` 已结算；当前为安全来源 / HTTP准备和后续精确 R 消费，未启动新模型。后续 H 交接使用新 Dispatch。
+
+根 `msg_c46c0e0cc962` 交接的产品实码事实为 S2/S3 核心 Proposal / Mission / WorkItem / Artifact / Context 仍 empty；Relay 与候选包阶段不代表全部 S0–S6 完成。L/S 待用户决定，科研研究仅作为领域参考，不自动扩大发布范围。产品 `msg_b26b601c06b9` 已交当前 B / V 新来源；B 独立报告及 V 最终路径报告修订后再核最终输入。
 
 当前 I / 最终 P / 最终 N 尚未派发；发布、tag、正式 V4 冻结解除、人评代填均未执行。下方保留上一阶段交付记录及首失败证据。
 

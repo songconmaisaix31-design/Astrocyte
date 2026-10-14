@@ -33,3 +33,9 @@
 本模块已接收报告并用 `orca orchestration worker-release --dispatch ctx_7bba9154b03d --json` 官方释放，返回 released / closed_agent_terminal / transcript captured；Delivery `delivery_002e380eb539` 已处理并 ACK。安全状态 `msg_863681e8d215` 已送根。没有采集或调用模型，继续观察原00:20 actual start / skip / failed，不将 scheduled / accepted 计为完成；不另开 operator。
 
 实验实际路由 gpt-6.1-sol/high/priority 沿原锁；provider echo / wire / exact tokenizer 仍未核实。原始数据、模型输入 / 响应和日志仅留原外部证据根，本文只记录派生计数与状态。
+
+## 原00:20定时运行实际投递
+
+上海00:20:13的只读 `automations runs` 尚无今日新记录，enabled与原next保持；该次观察已通知根 `msg_ad6d6bb4a884`，没有推断为启动、跳过或失败。
+
+上海00:21:10再次实际读取，新增 scheduled run `50ee3508-e5bc-4ace-8fae-4c652bea59da` / runNumber3 / status=dispatched；scheduledFor为10-15 00:20，startedAt=00:20:57.623、dispatchedAt=00:20:57.712，沿原terminalSessionId `2e4f716f-024d-4cea-a93e-69adf61f8ce5`，error=null。回执证明原定时运行已创建并投递，采集、Sleep、模型与judge完成仍待实际结果。根通知为 `msg_040cf13ec9f2`；本模块不另派operator、不手动触发或重发unknown，继续只读接收其安全状态。
