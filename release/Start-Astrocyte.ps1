@@ -1,4 +1,4 @@
-param(
+﻿param(
     [ValidateRange(1, 65535)]
     [int]$Port = 8787,
     [string]$DataDir = (Join-Path $PSScriptRoot 'data'),
