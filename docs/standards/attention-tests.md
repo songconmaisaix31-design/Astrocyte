@@ -22,6 +22,8 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 第八阶段 SOURCE `870b6561472a978bb684f4c1c83b8e3fae40911f` 已普通提交并 push，只修改 `tracking_production_test.go` 和 `tests/s1/automatic_test.go`。真实原公开 Creator 的现有可用 metadata 支持推荐前正文选择拒绝、未配置推荐失败及 Agent 拒绝检查，没有重复收藏100验证或将有限目录填成容量通过。实际 HTTP 生产服务验证固定公开项目的未引用资料拒绝、未观察原生配置的明确 failed / nonunknown / ExternalStarted=false，以及撤销模型许可后的新请求拒绝；本机 SQLite 中 session / distillation / opportunity 均零，只有一项真实未配置失败的 distillation 作业。原 S1 unknown 作业种类查询同样使用 SQLite `json_extract(data,'$.kind')`，该模型路径仍 NOT_RUN。
 
+第九阶段 SOURCE `ea8e7e35412e94e10526728fd68c67fffa517469` 已普通提交并 push，新增本目录专用 `admissions_service_test.go`。按模块 `msg_ae8e7fcc175f` 和 SPEC 7.1，使用实际官方固定论文导入、真实对象与 SQLite、明确人工待查问题，经生产 CreateOpportunity 生成 `ready_for_review` 的 revision1 前置；固定引用保存不变，GoalRefs 为空，GoalProgress 与 CompositeScore 保持未知。创建候选只产生一项真实 `attention.opportunity_created` 事件，没有对象发布、准入事件或原生会话；没有 fakeJudge 或伪造事件。本树尚未消费 B 新 AdmitOpportunity / revoke SOURCE，该前置结果不等于准入或 S2 / S3 完整验收。
+
 本测试要求显式绝对路径 `ASTROCYTE_TEST_VIDEO_EXPORT_A` 与 `ASTROCYTE_TEST_VIDEO_EXPORT_B`，没有个人路径源码默认值、fallback 或 skip。此次 A 路径为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/video-original-text.txt`，B 为 `C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first/video-original-text.txt`，均按模块与 V `msg_43e318f2b008` 的精确只读授权消费。production `summarize_markdown` loader 保留已有真实正文；该范围没有宣称 Markdown 自身证明 952 个时间片段，也没有调用新提取 / ASR / 模型 / controller。
 
 经模块允许，普通 `--no-ff` 消费 B 前置 `3384a89aac3be6d5670d756eb2d44263784d0cb8` 的共同 owned execution 接口。后续消费的 `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已包含 selected-text 的 ProjectID / JobID / OperationID / SessionID / NativeID、原 controller `thread/read` 指针、Send 阶段和原件保留代码；本轨只读确认代码存在，尚未运行或验收这条映射。T 没有手工修改生产输入。
@@ -78,6 +80,7 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | 选定项目实际 HTTP 权限首次验证 | RED，9.811s；作业种类查询不符合真实表结构，前置权限断言已执行，首记录保留 | `.verification/s1-selected-permissions-production-first.log` |
 | `go test -mod=readonly ./tests/s1 -run '^TestSelectedProjectMembershipAndRevocationBeforeNativeStart$' -count=1` | EXIT0，9.087s；实际服务构建 / HTTP / session / SQLite / ObjectStore、固定引用和许可撤销，原生配置未观察保持明确失败，无 probe 或 controller 启动 | `.verification/s1-selected-permissions-production-second.log` |
 | `go test -mod=readonly ./internal/attention/app ./tests/s1 -list '^Test'` | EXIT0；第七 / 八阶段当前两包编译清单，未运行模型路径 | `.verification/coverage-stage7.log`、`.verification/coverage-stage8.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestActualFixedPaperReadyCandidateDoesNotAdmitOrExecute$' -count=1`，沿用获准现系统匿名 loopback 代理 | EXIT0，5.246s；真实官方固定论文 / 人工待查问题 / Ready revision1 / 真实创建事件，准入及原生会话零；仅准入前置 | `.verification/admission-ready-prerequisite-first.log` |
 
 ## 仍在执行
 
@@ -98,6 +101,8 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 继续验收需要按上述具体门槛核查已消费 text / bridge 代码的原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，以及可访问的足量公开 Creator。根已裁决 100 预算为实际 metadata，允许跨缺失槽到第 100 条，真实 Observed19 保留，100 即停止、超时及无进展失败继续保持。准确 cursor 已消费，收藏100 / 110缓存 / partial只读半段均有本轨独立实际结果；Creator 原3与三个候选412仍保持原范围失败，未由收藏结果替代。
 
 T 已将实际依赖精确交付 B `ctx_7217777c7bf5`：`msg_602d3cc2641f` 说明 production Import Reader 尚无已找到的真实 DeliveryUnknown 路径，现 OpenCLI unknown 只在选中目录桥接且无本轨用户来源授权；`msg_8a48fc5def0a` 说明 S1 须在同一 Job / operation 的实际 `send_accepted` / TurnID 后取消，当前新 UUID controller 的本机 source 指针消费方式仍需准确衔接。现 `OwnedRelayExecution.EffectiveToolSet` 明确保留 unknown，实际 argv 与 LaunchPolicy 不能单独证明有效工具关闭。T 不扫描 home / 私有历史，不生成新索引或 manifest，不替代 B / R / H 写入域；原 Import / listing unknown 断言和模型成功断言均保留，依赖答复与实际原生门槛尚未满足。
+
+模块新增资料准入测试支持由本 owner 承担，已精确 Handoff B `msg_b487c91d740e` 请求其普通提交并 push 的 AdmitOpportunity / revoke SOURCE 和真实 App command / result / 同事务事件契约。后续验证覆盖人工 Ready 固定 revision、同 Tx 回执 / outbox、旧 revision、撤销及零执行副作用；判断委托与模型仍须实际获准入口，未确定接口和 GoalRef 不自行补充。仅依赖待交付时，本 Task 保持 check --wait 和检查点心跳，继续准确 SOURCE 的组合与返修支持，不按日期暂停或结算任务。
 
 V 的两真实文本导出已支持本轨版本复用验证，完整时间 / 默认提取验收仍归 V 的真实生产路径，不借本轨 Markdown 版本复用结果填其全模块通过。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，本 owner 持续负责同一写入范围、功能验证与最终组合支持。T 没有发送 worker_done 或发布产品。
 
