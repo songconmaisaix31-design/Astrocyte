@@ -30,7 +30,7 @@ F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f5257
 
 | 范围 | 必需验收 | 当前结论与返修 |
 |---|---|---|
-| 资料导入 | 公开论文真实 PDF/官方元数据；视频 summarize 原输出与真实时间定位；来源版本、去重/显式刷新、重启一致，零自动 Mission | B 已报告论文定向 PASS；视频 `BV1PReT6EEqR` 正文 32908 bytes 与重启 PASS，segments/spans 为 0，时间证据未通过 |
+| 资料导入 | 公开论文真实 PDF/官方元数据；视频 summarize 原输出与真实时间定位；来源版本、去重/显式刷新、重启一致，零自动 Mission | B 论文定向 PASS。V 同一公开 `BV1PReT6EEqR` 实际转写、自然两版 32908 / 35807 bytes、952 时间区间、重复复用与 HTTP/SQLite 冷重启 PASS；旧 time0 首缺口保留。B 新私有原件拒绝定向 PASS，V 消费与默认真实来源整改继续 |
 | 人工沉淀 | 固定输入版本，内容/主题/项目关联，待查问题、四维 unknown、later/reject/revise 各自语义、人工与机器关注分开，实际 HTTP/SQLite/UI 重载 | B 反馈定向 PASS；本次完整生产浏览器覆盖仍待 F；缺失证据不补造，不因历史测试通过填本次 PASS |
 | 项目权限 | A 默认、B/C 显式许可、模型处理独立许可、人类会话/token 分离、撤销后拒绝新动作、旧 revision 冲突，真实持久化 | B 真实 token/revoke 定向 PASS；R CreateIntent revision 修复已交精确 SOURCE，H/F 组合实际复验待完成 |
 | 项目进度 | 人工记录与真实获准项目 infer 均可用；依据引用独立核对、HTTP/SQLite/重启；未授权拒绝不能代替成功 | B README 单次 HTTP/SQLite/重启成功保留，证据位于 B `.verification/progress-infer-readme-first.log`；旧原生会话已停止且未保留正选 source/runtime policy，有效工具集合 UNKNOWN，禁止重发补证；F 新生产 UI 验收待完成 |
@@ -70,7 +70,15 @@ F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f5257
 
 根 `msg_0957f72ac9ee` 已确定旧任务目标验收不通过，done 真实收据保留。H 核真实进程退出、task done、pending 0、workspace/terminal 归属后，F 才可按现有条件单次 release 清理并核 SQL 解锁；当前 read 回执为 delivery_unknown，任何释放阻断按原规则保留。根 `msg_dbc826308006` 允许旧 scope 保留期间立即使用独立公开 Git 根、DB、端口、registry 与明确新输入继续正向验证；H/F 先准备完整 DOM 观察与内容核查再注册，不重发旧输入或修改旧状态。根 `msg_8d2dcf0e1841` 允许 T 工程 Creator100 验证改选公开已存在超过 100 条真实视频的发布者，先核来源和实际数量，在独立新目录经生产入口运行；原 UID 仅 3 条首结果保留，正式用户案例和科研效果不因此成立。
 
-根 `msg_0a54edd4a766` 转交用户最新时序：先修改 v1.4 的投递阶段、原生会话归属、输入就绪条件与恢复身份关系，2026-10-15 再进行真实 CLI 端到端、三分钟 Today 和 L1 关账。今晚停止新 Relay / Today 验收窗口，旧任务按既有条件安全收尾，全部首事实保留。M-relay 完整读取 `docs/research/orca-rea-20261014.md` 后负责原生域规格和写域安排，跨 Web 契约交原 F；产品非 Relay、视频、Reader、公开容量和发布候选继续。B/T 当前新 Codex 调用为零，实际 selected-text 验证时序待根明确，接口实现可以继续。
+根 `msg_0a54edd4a766` 转交用户最新时序：先修改 v1.4 的投递阶段、原生会话归属、输入就绪条件与恢复身份关系，2026-10-15 再进行真实 CLI 端到端、三分钟 Today 和 L1 关账。今晚停止新 Relay / Today 验收窗口，旧任务按既有条件安全收尾，全部首事实保留。M-relay 完整读取 `docs/research/orca-rea-20261014.md` 后负责原生域规格和写域安排，跨 Web 契约交原 F；产品非 Relay、视频、Reader、公开容量和发布候选继续。根 `msg_4da181ce8f60` 明确 selected-text 实际模型同样移至明天共用完整身份与目标核查窗口。B 之前已启动的无模型 metadata probe 已实际结束 StopConfirmed，今晚不再新建 controller；T controller / model 均为零，接口实现和编译继续。
+
+V 时间 SOURCE `d48a29b6e1744465666edbfa28be919531ca39a4` / REPORT `4ac1b34edd9c77e045cd3322420576eb1b8a0b27` 已普通 push 并由模块独立核远端一致。模块 `sqlite3 mode=ro` / `query_only` 独立核其实际库：材料 1、版本 2；版本 1 时间区间 0 / 附件 1，版本 2 时间区间 952 / 附件 4，成功作业 2、沉淀 0，原文和模型输出未读取到 stdout。T SOURCE `bee27ca1f710b6b077e51f78d5ec744f24d0ded6` / REPORT `b2751472db826cda478352eadb8ae2df4151ce4b` 的实际 S1 权限拒绝和进程退出预算重启通过；追加视频真实两版 A/B/A、3 次读取 / 3 作业 / 2 版本 / head B 的 SOURCE `aa7257e66bff29140a826afdaab93f36e35958d9` / REPORT `4c7ab86e61f90251ec109d8201477ee150979122` 已 push，Markdown 复用未宣称时间解析。
+
+B 文本映射 SOURCE `5622bfdaec376e23a696cc110a082c72c9d43f3f` / REPORT `9aa17701d97175bcebcd47ddcf5bf698139de06e` 已普通 push / 远端一致，只验证模型前的精确 metadata / PID / 启动策略，Send 后原件窗口与有效工具仍未核。私有原件和 proxy SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` / REPORT `ee4eeb11dfd7c2e598734ab8ea3da6efd837afd4` 普通消费 V 后报告实际 8 次 HTTP 403、6 次其他公开附件 200 且字节一致、952 原生时间原件保留、冷重启通过，零新 ASR。私有类别沿现 MediaType 与不可变 ObjectRef、全部版本身份检查，原 JSON 只在本机对象中保留。V 精确消费该 SOURCE 后继续默认来源与组合验证，完整视频验收仍未结算。
+
+根正式 answer `msg_c41973837acd` 确认既有初次 100 指真实返回材料 metadata 数量，允许在同一已获准公开收藏中按真实上游位置跨缺失槽取第 100 条；Observed 19 保持，达到真实 100 即停止，保留超时与无进展失败。B cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b` / REPORT `580b4a37d0bd3decce491a772fe5ee86fd64d445` 已 push，实际三窗口观察 59 / 下一 cursor 4；T 已获准确消费许可继续其原获准公开收藏 100 条验证。Creator 足量候选三个匿名 HTTP 412，实际数量 UNKNOWN，未盲扫或补造 metadata。
+
+F 受影响 10 项真实浏览器首复验为 9 PASS / 1 FAIL，唯一失败在 Windows Go 端口 49680 bind 拒绝、尚未进入业务断言，原日志与 store 保留；B 已 Handoff 原 H 同一实际 Go listener 原子选择端口及安全地址薄接口，不通过重试、skip 或修改 OS 掩盖。F 正在既有真实 README infer 服务 53863 / Web17346 仅 GET 验证显示，无新 infer / controller / model。旧 Relay 单次释放已由 F/H 报告 SQL 解锁且 Web17343 停止，原目标 FAIL、source FAIL、read unknown 仍保留。今晚包 15f 候选沿总负责人已验范围供试用，不因本模块新候选重复构建旧范围；最终普通集成与适用验证明天继续。
 
 管理 SOURCE `6f1e7fd5b68da69cba3f65f47a4324a00fbd2ece` 已普通 push；独立 `git ls-remote` 核分支同 SHA。变更仅本管理文档；`git diff --check` 无输出，7 个相对文档链接均实际存在。SOURCE 不包含业务实现，业务完整验收仍按上表未完成状态保留，本模块继续管理返修与发布支持。
 
