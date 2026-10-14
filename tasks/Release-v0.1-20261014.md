@@ -10,7 +10,7 @@
 
 ## 长期开发分工
 
-2026-10-14 20:48 用户要求三层执行：总负责人只委派和验收；模块负责人安排模块内开发 Agent 完成功能。现有开发 Agent、工作树、分支与互斥写域继续保留。总负责人不编写业务代码；三位模块负责人只管理模块计划、验收、跨模块 Handoff 和同一开发人员返修，不代写领域代码。
+2026-10-14 用户要求三层执行：总负责人负责委派、加速、停滞排查和验收；模块负责人安排开发 Agent 完成功能。每条开发轨保留固定工作树、分支和互斥写域。开发人员实现、测试和返修，负责人处理依赖、待答问题和任务衔接。沟通只保留推进项目所需的动作、结果、阻塞和下一步。
 
 | 第二层模块负责人 | 固定独立工作树 | 只写模块管理文档 | 第三层开发人员与责任 |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Q 的验证源只来自获准且 Agent 创建的公开 Git 项目或本次实际
 
 ## 21:47 三层协作效率检查
 
-用户追加确认每个模块可自主派发子 Agent，并要求检查开发状态和优化整体协作。总负责人读取六个 Run 的实时 `worker-list --include-remote`，三位模块负责人均 `live / working`；B、F、H、R、P、T 六位开发 / 测试人员也均实际活跃。Q 和 S 已合法完成并精确 release，原源码、报告、分支和归档保留。B / F / R / T 的当前文件修改和最近普通提交分别核实，H 当前树 clean 并在实际验证，P 已构建候选、等待必要修复后完整包验收；活跃或 clean 均不代替功能完成。
+用户确认每个模块可自主派发子 Agent，并要求检查开发状态和优化协作。总负责人读取六个 Run 的 `worker-list --include-remote`，三位模块负责人及 B、F、H、R、P、T 均 `live / working`。Q 和 S 已完成并 release。B / F / R / T 的文件修改和最近提交已核实，H 正在实际验证，P 等待修复输入后继续包验收。
 
 产品模块已将 B 明确停止写入的 14 个 Attention 测试文件交给独立 T：`product-attention-tests-20261014`，`task_5f0a79b6a17a / ctx_8674c456f49f / term_c1d90d02-51be-4443-9afe-ddce0615acb4`。T 只写 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 及独立报告，B 保留其余业务 / helper / 依赖，领域错误交原 owner。原生模块后续 R Task `task_6586f574ed0b` 的当前有效 Dispatch `ctx_1210a540a63b` 已实际开始；原 bootstrap 明确退出后按原 Task retry，失败和未知状态保留，不重复原模型输入。
 
@@ -72,7 +72,7 @@ Q 的验证源只来自获准且 Agent 创建的公开 Git 项目或本次实际
 
 用户更新的执行协议已按当前根 AGENTS.md 核实，并通过普通 Handoff 交三位模块负责人继续应用。总负责人再次核实六个 Run 的公开实时状态：三位模块负责人及 B / F / H / R / P / T / N 七位开发人员均 live / working；Q 与 S 的已完成状态和归档保留。R 先前合法阶段结算后已由原生模块在原工作树 / 分支复用同一终端执行 `task_d480ceaf0e15 / ctx_1f88d9e6f4f4`，当前修改纯人工生命周期授权；原记录的 unknown 不凭新状态覆盖。
 
-发布模块自主安排第三层 N：`release-native-verification-20261014`，`task_bfc0bedf1c26 / ctx_44647082a057 / term_8eef624c-2438-4694-be11-856bde4277e5`，独占 `tests/release-package-native/**` 与 `docs/release-package-native.md`。P 保留 `release/**`、认知和包构建 / 验收，N 准备真实 HTTP / SQL 原生客户端，SOURCE `e97319a86317090e637e82968504887aaa0d65ab` 已在工作树核实。编译通过不代表实际包原生验收；真实模型窗口由原生模块统一安排，H / F 当前窗口与最终 P / N 窗口串行，不重复未知交付。
+发布模块安排第三层 N：`release-native-verification-20261014`，`task_bfc0bedf1c26 / ctx_44647082a057 / term_8eef624c-2438-4694-be11-856bde4277e5`，独占 `tests/release-package-native/**` 与 `docs/release-package-native.md`。P 保留 `release/**`、认知和包构建 / 验收，N 开发实际 HTTP / SQL 原生客户端，SOURCE `e97319a86317090e637e82968504887aaa0d65ab` 已核实。原生模块统一安排模型窗口，H / F 与 P / N 串行执行。
 
 本次文件及提交核查：B 最新 SOURCE `03f92127a74e4d8b49cf5c4bb1010b43349d6d43`，Reader 实际来源 SOURCE / REPORT 为 `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` / `15c738f88822e553eb228c12c0fdc71ad07b7531`；F SOURCE / REPORT 为 `205d2d2ce91091e6add67d637cb65aae33946292` / `386382628b9a9f52576b553797c9eb08b0df93bc`；H 当前配置衔接 SOURCE `24b6390bcad60a2a20b671dcb60725e77eb3a7a4`；R 可移植 owned execution 接口 SOURCE / REPORT 为 `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` / `d8cb13a8b1a392a2105bba9e826daa1364e70caa`；T 阶段 SOURCE / REPORT 为 `03af9854dac57f69fc206d4d647ad0c518b98b20` / `8460ac93eb8d5d485a74ea68a60d8182535d59ce`；P 认知正向脚本 SOURCE / REPORT 为 `830faaea4f5e19bdf213079f428dc9e0c6995d2e` / `7dff2d99e67acca91bc9889036b93d7a99cab3ca`。这些是阶段输入，各分支后续仍会正常提交；整体默认浏览器、完整实际原生生命周期、视频时间定位、全部适用检查与最终 ZIP 尚未通过。
 
