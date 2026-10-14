@@ -22,7 +22,9 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 第八阶段 SOURCE `870b6561472a978bb684f4c1c83b8e3fae40911f` 已普通提交并 push，只修改 `tracking_production_test.go` 和 `tests/s1/automatic_test.go`。真实原公开 Creator 的现有可用 metadata 支持推荐前正文选择拒绝、未配置推荐失败及 Agent 拒绝检查，没有重复收藏100验证或将有限目录填成容量通过。实际 HTTP 生产服务验证固定公开项目的未引用资料拒绝、未观察原生配置的明确 failed / nonunknown / ExternalStarted=false，以及撤销模型许可后的新请求拒绝；本机 SQLite 中 session / distillation / opportunity 均零，只有一项真实未配置失败的 distillation 作业。原 S1 unknown 作业种类查询同样使用 SQLite `json_extract(data,'$.kind')`，该模型路径仍 NOT_RUN。
 
-第九阶段 SOURCE `ea8e7e35412e94e10526728fd68c67fffa517469` 已普通提交并 push，新增本目录专用 `admissions_service_test.go`。按模块 `msg_ae8e7fcc175f` 和 SPEC 7.1，使用实际官方固定论文导入、真实对象与 SQLite、明确人工待查问题，经生产 CreateOpportunity 生成 `ready_for_review` 的 revision1 前置；固定引用保存不变，GoalRefs 为空，GoalProgress 与 CompositeScore 保持未知。创建候选只产生一项真实 `attention.opportunity_created` 事件，没有对象发布、准入事件或原生会话；没有 fakeJudge 或伪造事件。本树尚未消费 B 新 AdmitOpportunity / revoke SOURCE，该前置结果不等于准入或 S2 / S3 完整验收。
+第九阶段 SOURCE `ea8e7e35412e94e10526728fd68c67fffa517469` 已普通提交并 push，新增本目录专用 `admissions_service_test.go`。按模块 `msg_ae8e7fcc175f` 和 SPEC 7.1，使用实际官方固定论文导入、真实对象与 SQLite、明确人工待查问题，经生产 CreateOpportunity 生成 `ready_for_review` 的 revision1 前置；固定引用保存不变，GoalRefs 为空，GoalProgress 与 CompositeScore 保持未知。创建候选只产生一项真实 `attention.opportunity_created` 事件，没有对象发布、准入事件或原生会话；没有 fakeJudge 或伪造事件。该阶段覆盖准入前置；新生产入口的准确消费和实际验证见第十阶段，前置结果不等于准入或 S2 / S3 完整验收。
+
+第十阶段 SOURCE `1d134eff5e4b1f4c1e173f242b8fbe9a6b7952e6` 已普通提交并 push，唯一测试改动为本目录 `admissions_service_test.go`。按 B `msg_d75f623c74d3`，准确 SOURCE `e96f8d78f686f6db0f0a9edb5e15cc57ddb8aa1a` 经普通 `--no-ff` 消费到 `8337780a55cb45c870d14dd207b89a239fd6d7d4`，没有手工修改生产或其他 owner 文件。实际 AdmissionService / AdmissionRepository / admissionbridge.Connect / S2Service 使用同一 SQLite；普通 Agent、无判断授权、真实 incubating 候选、实际新 revision 后旧 revision 和真实 outbox SQL 故障回滚均通过。随后人工准入在实际 S2 consumer 的 authority / 固定来源 guard 失败，原 human PolicyVersion 为空，未补造 policy 或判断；完整事务回滚后 Admission / Proposal 为零，事件 / 回执不变，原 Ready version 保留，八项 execution / session 表为零。人工准入成功后幂等、草稿事件重放、namespace 隔离、撤销、来源撤回和零执行断言已写入，因前置真实失败保持 NOT_RUN。
 
 本测试要求显式绝对路径 `ASTROCYTE_TEST_VIDEO_EXPORT_A` 与 `ASTROCYTE_TEST_VIDEO_EXPORT_B`，没有个人路径源码默认值、fallback 或 skip。此次 A 路径为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/video-original-text.txt`，B 为 `C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first/video-original-text.txt`，均按模块与 V `msg_43e318f2b008` 的精确只读授权消费。production `summarize_markdown` loader 保留已有真实正文；该范围没有宣称 Markdown 自身证明 952 个时间片段，也没有调用新提取 / ASR / 模型 / controller。
 
@@ -81,6 +83,9 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | `go test -mod=readonly ./tests/s1 -run '^TestSelectedProjectMembershipAndRevocationBeforeNativeStart$' -count=1` | EXIT0，9.087s；实际服务构建 / HTTP / session / SQLite / ObjectStore、固定引用和许可撤销，原生配置未观察保持明确失败，无 probe 或 controller 启动 | `.verification/s1-selected-permissions-production-second.log` |
 | `go test -mod=readonly ./internal/attention/app ./tests/s1 -list '^Test'` | EXIT0；第七 / 八阶段当前两包编译清单，未运行模型路径 | `.verification/coverage-stage7.log`、`.verification/coverage-stage8.log` |
 | `go test -mod=readonly ./internal/attention/app -run '^TestActualFixedPaperReadyCandidateDoesNotAdmitOrExecute$' -count=1`，沿用获准现系统匿名 loopback 代理 | EXIT0，5.246s；真实官方固定论文 / 人工待查问题 / Ready revision1 / 真实创建事件，准入及原生会话零；仅准入前置 | `.verification/admission-ready-prerequisite-first.log` |
+| 准入生命周期首次编译 | RED：测试领域引用字段与实际 InputRef.ID 不一致；首记录保留 | `.verification/admission-service-first.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestActualAdmissionServiceAndDraftLifecycle$' -count=1 -v`，沿用获准现系统匿名 loopback 代理 | RED，8.965s；四项拒绝 / 回滚子例 PASS，实际人工 draft consumer 阻断；事务没有留下部分准入、草稿、事件或回执，后续成功路径 NOT_RUN | `.verification/admission-service-second.log`、`.verification/attention-3161444415/state.sqlite` |
+| 同准入定向命令，补充实际错误本机保留 | RED，12.062s；同四项子例 PASS，实际 consumer authority guard 再次阻断，派生 guard 匹配为 true；只写本机原件及指针，不打印原错误 | `.verification/admission-service-third.log`、`.verification/attention-2261260671/admission-consumer-error.json` |
 
 ## 仍在执行
 
@@ -102,7 +107,9 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 
 T 已将实际依赖精确交付 B `ctx_7217777c7bf5`：`msg_602d3cc2641f` 说明 production Import Reader 尚无已找到的真实 DeliveryUnknown 路径，现 OpenCLI unknown 只在选中目录桥接且无本轨用户来源授权；`msg_8a48fc5def0a` 说明 S1 须在同一 Job / operation 的实际 `send_accepted` / TurnID 后取消，当前新 UUID controller 的本机 source 指针消费方式仍需准确衔接。现 `OwnedRelayExecution.EffectiveToolSet` 明确保留 unknown，实际 argv 与 LaunchPolicy 不能单独证明有效工具关闭。T 不扫描 home / 私有历史，不生成新索引或 manifest，不替代 B / R / H 写入域；原 Import / listing unknown 断言和模型成功断言均保留，依赖答复与实际原生门槛尚未满足。
 
-模块新增资料准入测试支持由本 owner 承担，已精确 Handoff B `msg_b487c91d740e` 请求其普通提交并 push 的 AdmitOpportunity / revoke SOURCE 和真实 App command / result / 同事务事件契约。后续验证覆盖人工 Ready 固定 revision、同 Tx 回执 / outbox、旧 revision、撤销及零执行副作用；判断委托与模型仍须实际获准入口，未确定接口和 GoalRef 不自行补充。仅依赖待交付时，本 Task 保持 check --wait 和检查点心跳，继续准确 SOURCE 的组合与返修支持，不按日期暂停或结算任务。
+模块新增资料准入测试支持由本 owner 承担。B 已取得本轨实际 helper 签名和来源环境 `msg_de49a3b81a9a`；其准确生产 SOURCE 已按上述普通消费并独立执行。真实人工 consumer 首失败已精确 Handoff B `msg_98795e92f7b5`，等待原 S2 修复 SOURCE 后由本 owner 执行未完成成功、幂等、撤销与来源生命周期断言；不补造 PolicyVersion / 判断授权或事件、不修改 S2 / B 的生产域。判断委托的正向路径和模型仍须实际获准入口，GoalRef 不自行补充。仅依赖待交付时，本 Task 保持 check --wait 和检查点心跳，继续准确 SOURCE 的组合与返修支持，不按日期暂停或结算任务。
+
+模块 `msg_1c993379cac1` 通知实际 C 盘容量限制，本轨已确认保留所有首失败与当前证据，不重复构建 / 下载 / ASR、不清理其他 owner 或私有资料；必要新字段和核心检查继续执行。当前未发生本轨 NoSpace，若实际发生则按准确 owned 路径和所需容量向模块与 M-release 交付，不以 skip 或删除断言处理资源不足。
 
 V 的两真实文本导出已支持本轨版本复用验证，完整时间 / 默认提取验收仍归 V 的真实生产路径，不借本轨 Markdown 版本复用结果填其全模块通过。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，本 owner 持续负责同一写入范围、功能验证与最终组合支持。T 没有发送 worker_done 或发布产品。
 
