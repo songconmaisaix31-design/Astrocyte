@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 
@@ -15,6 +16,109 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
+
+type observedListing struct {
+	reader    PublicListingReader
+	mu        sync.Mutex
+	cursors   []string
+	interrupt context.CancelFunc
+}
+
+func (r *observedListing) ReadPage(ctx context.Context, source TrackingSource, cursor string, limit int) (ListingPage, error) {
+	r.mu.Lock()
+	r.cursors = append(r.cursors, cursor)
+	if len(r.cursors) == 2 && r.interrupt != nil {
+		r.interrupt()
+	}
+	r.mu.Unlock()
+	return r.reader.ReadPage(ctx, source, cursor, limit)
+}
+
+func TestActualPartialListingFailureRetainsCursorAndBudget(t *testing.T) {
+	ctx := context.Background()
+	reader := publicListing()
+	folders, err := reader.ListCollections(ctx, "bilibili", "3494358764489275")
+	if err != nil {
+		t.Fatal("observe approved actual two-page source")
+	}
+	var chosen *SourceCollection
+	for i := range folders {
+		if folders[i].ItemCount != nil && *folders[i].ItemCount > 2 {
+			chosen = &folders[i]
+			break
+		}
+	}
+	if chosen == nil {
+		t.Fatal("actual two-page source prerequisite unavailable")
+	}
+	position := *chosen.ItemCount - 2
+	cursor := strconv.Itoa(position/20 + 1)
+	if position%20 != 0 {
+		cursor += fmt.Sprintf(":%d", position%20)
+	}
+	_, db, objects := fixture(t)
+	workCtx, interrupt := context.WithCancel(ctx)
+	defer interrupt()
+	observed := &observedListing{reader: reader, interrupt: interrupt}
+	s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{ListingReader: observed, JobTimeout: 3 * time.Minute})
+	r, err := s.BindTrackingSource(ctx, human, BindTrackingSourceCommand{CommandMeta: meta("partial-bind", 1), Platform: "bilibili", SourceKind: "favorites", ExternalID: chosen.ExternalID, OwnerID: "3494358764489275", Locator: chosen.Locator})
+	if err != nil {
+		t.Fatal("bind actual public source")
+	}
+	queued, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("partial-sync", r.Source.Version), Cursor: cursor})
+	if err != nil || len(queued.Jobs) != 1 {
+		t.Fatal("queue actual partial source window")
+	}
+	if _, err = s.ProcessNextJob(workCtx); err != nil {
+		t.Fatal("controlled real context interruption failed")
+	}
+	r, err = s.GetTrackingSource(ctx, human, r.Source.ID)
+	if err != nil {
+		t.Fatal("load actual partial source cache")
+	}
+	job, err := s.GetJob(ctx, human, queued.Jobs[0].JobID)
+	if err != nil || job.Status != "failed" || len(r.Items) != 1 || !r.Items[0].Stale || r.Source.LastSuccessAt != nil || r.Source.LastError == nil || job.Error == nil || !job.Error.Retryable {
+		t.Fatal("interrupted actual first page became empty or successful")
+	}
+	op, deadline := job.OperationID, job.DeadlineAt
+	observed.mu.Lock()
+	observed.interrupt = nil
+	observed.mu.Unlock()
+	// 按实际重试间隔等待，生产 Run 自行恢复同一可安全读取作业。
+	time.Sleep(2 * time.Second)
+	runCtx, stop := context.WithCancel(ctx)
+	defer stop()
+	done := make(chan error, 1)
+	go func() { done <- s.Run(runCtx) }()
+	finish := time.Now().Add(10 * time.Second)
+	for {
+		job, err = s.GetJob(ctx, human, job.JobID)
+		if err != nil {
+			t.Fatal("read actual retried job")
+		}
+		if job.Status == "succeeded" {
+			break
+		}
+		if time.Now().After(finish) {
+			t.Fatal("actual safe retry did not finish saved cursor")
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	stop()
+	if err = <-done; err != nil {
+		t.Fatal("stop actual retry worker")
+	}
+	r, err = s.GetTrackingSource(ctx, human, r.Source.ID)
+	if err != nil {
+		t.Fatal("load actual resumed cache")
+	}
+	observed.mu.Lock()
+	calls := append([]string(nil), observed.cursors...)
+	observed.mu.Unlock()
+	if job.Status != "succeeded" || job.Attempts != 2 || job.OperationID != op || !job.DeadlineAt.Equal(deadline) || len(r.Items) != 2 || r.Items[0].Stale || r.Items[1].Stale || len(calls) != 3 || calls[2] != calls[1] {
+		t.Fatal("actual safe retry lost cursor, cache, operation or budget")
+	}
+}
 
 func publicListing() *importers.PublicListing {
 	python := os.Getenv("ASTROCYTE_LISTING_PYTHON")
@@ -341,5 +445,63 @@ func TestStartupResumesCurrentFailureButNotSupersededFailure(t *testing.T) {
 				t.Fatal("startup replayed obsolete failure or suppressed current sync")
 			}
 		})
+	}
+}
+
+func TestBoundedPrefixDoesNotMarkUnobservedOlderCacheStale(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	reader := publicListing()
+	folders, err := reader.ListCollections(ctx, "bilibili", "3494358764489275")
+	if err != nil {
+		t.Fatal("observe approved actual prefix source")
+	}
+	var chosen *SourceCollection
+	for i := range folders {
+		if folders[i].ItemCount != nil && *folders[i].ItemCount > 110 {
+			chosen = &folders[i]
+			break
+		}
+	}
+	if chosen == nil {
+		t.Fatal("actual public source cannot supply original 110-item cache prerequisite")
+	}
+	_, db, objects := fixture(t)
+	s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{ListingReader: reader, JobTimeout: 3 * time.Minute})
+	r, err := s.BindTrackingSource(ctx, human, BindTrackingSourceCommand{CommandMeta: meta("prefix-bind", 1), Platform: "bilibili", SourceKind: "favorites", ExternalID: chosen.ExternalID, OwnerID: "3494358764489275", Locator: chosen.Locator})
+	if err != nil {
+		t.Fatal("bind observed actual prefix source")
+	}
+	for i := 0; i < 3; i++ {
+		cursor, limit := "", 100
+		if i == 1 {
+			if r.NextCursor == nil || *r.NextCursor == "" {
+				t.Fatal("actual prefix omitted next cursor")
+			}
+			cursor, limit = *r.NextCursor, 10
+		}
+		queued, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta(fmt.Sprintf("prefix-%d", i), r.Source.Version), Cursor: cursor, Limit: limit})
+		if err != nil || len(queued.Jobs) != 1 {
+			t.Fatal("queue actual bounded source window")
+		}
+		if _, err = s.ProcessNextJob(ctx); err != nil {
+			t.Fatal("read actual bounded source window")
+		}
+		job, err := s.GetJob(ctx, human, queued.Jobs[0].JobID)
+		if err != nil || job.Status != "succeeded" {
+			t.Fatal("actual prefix source window did not succeed")
+		}
+		r, err = s.GetTrackingSource(ctx, human, r.Source.ID)
+		if err != nil {
+			t.Fatal("load actual prefix cache")
+		}
+	}
+	if len(r.Items) != 110 || !r.HasMore {
+		t.Fatal("bounded prefix lost original 110-item cache or window state")
+	}
+	for _, item := range r.Items {
+		if item.Stale {
+			t.Fatal("unobserved actual older cache item marked stale")
+		}
 	}
 }
