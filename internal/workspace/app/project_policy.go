@@ -22,7 +22,7 @@ type ProjectActionScope struct {
 func projectActionKnown(action string) bool {
 	return has([]string{
 		"discover", "read_context", "start", "resume", "send", "stop", "observe", "reconcile",
-		"create_mission", "manage_work_items", "claim_work_item", "submit_artifact", "accept_artifact",
+		"create_mission", "manage_work_items", "claim_work_item", "submit_artifact", "accept_artifact", "reject_artifact",
 		"read_swarm", "pause_mission", "cancel_mission", "recover_mission",
 	}, action)
 }
@@ -98,7 +98,7 @@ func AuthorizeProjectActionCaller(project domain.LocalProject, caller domain.Cal
 	if caller.Kind != "agent" || caller.ID == "" || caller.ProjectID != project.ID {
 		return projectError(apierrors.ScopeDenied, "Agent identity is outside the current project")
 	}
-	if has([]string{"create_mission", "accept_artifact", "pause_mission", "cancel_mission", "recover_mission"}, action) {
+	if has([]string{"create_mission", "accept_artifact", "reject_artifact", "pause_mission", "cancel_mission", "recover_mission"}, action) {
 		return projectError(apierrors.ScopeDenied, "protected action requires an authenticated human")
 	}
 	if grant == nil || grant.ProjectID != project.ID || grant.AgentID != caller.ID || now.IsZero() || grant.RevokedAt != nil || (grant.ExpiresAt != nil && !grant.ExpiresAt.After(now)) {

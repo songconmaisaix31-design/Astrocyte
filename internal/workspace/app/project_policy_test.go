@@ -59,11 +59,11 @@ func TestProjectActionCallerExplicitPolicyInputs(t *testing.T) {
 	now := time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)
 	project := domain.LocalProject{ID: "project-input"}
 	caller := domain.Caller{Kind: "agent", ID: "agent-input", ProjectID: project.ID}
-	grant := domain.ProjectGrant{ProjectID: project.ID, AgentID: caller.ID, Actions: []string{"claim_work_item", "accept_artifact"}}
+	grant := domain.ProjectGrant{ProjectID: project.ID, AgentID: caller.ID, Actions: []string{"claim_work_item", "accept_artifact", "reject_artifact"}}
 	if err := app.AuthorizeProjectActionCaller(project, caller, &grant, "claim_work_item", now); err != nil {
 		t.Fatal("explicit Agent permission input was rejected", err)
 	}
-	for _, action := range []string{"create_mission", "accept_artifact", "pause_mission", "cancel_mission", "recover_mission"} {
+	for _, action := range []string{"create_mission", "accept_artifact", "reject_artifact", "pause_mission", "cancel_mission", "recover_mission"} {
 		var service *apierrors.ServiceError
 		if !errors.As(app.AuthorizeProjectActionCaller(project, caller, &grant, action, now), &service) || service.Code != apierrors.ScopeDenied {
 			t.Fatal("Agent input obtained a human-only action")
