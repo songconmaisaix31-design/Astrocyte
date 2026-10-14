@@ -21,11 +21,11 @@
 
 [DownloadRepoZip，component/repo.go:3795](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/component/repo.go#L3795)先检查 read 权限，使用请求 revision 或 default branch；成功解析分支 commit 后，以精确 commit 请求 Git archive，并按 commit 查询/写入包缓存。[resolveRepositoryArchiveCommit:3862](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/component/repo.go#L3862)读取 Git branch 对象的 `Commit.ID`。解析失败时该上游实现记录警告，继续按原 revision 下载。Astrocyte 如要求固定版本，应在解析失败处返回错误，不能复制这一继续执行路径。
 
-[resolveModelVersions，component/evaluation.go:314](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/component/evaluation.go#L314)解析模型版本；[resolveRepoRevision:372](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/component/evaluation.go#L372)获取实际最后 commit，空结果直接失败；模型按 repo ID 和 SHA 区分。数据集的 path/revision/commit 也写入评估请求。此模式能为后续结果关联提供固定输入版本。
+[resolveModelVersions，component/evaluation.go:314](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/component/evaluation.go#L314)解析模型版本；[resolveRepoRevision:372](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/component/evaluation.go#L372)获取实际最后 commit，空结果直接失败；模型按 repo ID 和 SHA 区分。数据集的 path/revision/commit 也写入评估请求。[SubmitEvaluation，builder/deploy/deployer.go:937](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/builder/deploy/deployer.go#L937)向模型下载传递 commit，但数据集下载环境传递的是 `DatasetRevisions`，数据库快照记录 `DatasetCommits`。因此模型执行版本与记录版本有明确关联，数据集仍存在分支移动后执行内容与提交快照不一致的可能。Astrocyte 如要求输入可重复，应核实执行端真正使用的版本。
 
 ## 前端 API 和 REA 调用证据
 
-[useFetchApi.js:44](https://github.com/OpenCSGs/csghub/blob/bbb9bf4b346a199a387090de76fcd6c1fffe98f6/frontend/src/packs/useFetchApi.js#L44)在登录 cookie 存在时等待 `refreshJWT`，从 cookie 获取 bearer token，追加语言头；文件末尾统一使用 `${CSGHUB_SERVER}/api/v1`。REA 输出识别本地 `acceptLanguage` 调用和 401 对 `popupReloginDialog` 的调用；跨未选择依赖和真实 token 轮换保持未知。
+[useFetchApi.js:46](https://github.com/OpenCSGs/csghub/blob/bbb9bf4b346a199a387090de76fcd6c1fffe98f6/frontend/src/packs/useFetchApi.js#L46)在登录 cookie 存在时等待 `refreshJWT`，从 cookie 获取 bearer token，追加语言头；文件末尾统一使用 `${CSGHUB_SERVER}/api/v1`。REA 输出识别本地 `acceptLanguage` 调用和 401 对 `popupReloginDialog` 的调用；跨未选择依赖和真实 token 轮换保持未知。
 
 [csrfFetch.js:1](https://github.com/OpenCSGs/csghub/blob/bbb9bf4b346a199a387090de76fcd6c1fffe98f6/frontend/src/packs/csrfFetch.js#L1)仅把参数传给原生 fetch，没有注入 CSRF token。不能按函数名称推断它提供 CSRF 防护。Astrocyte 现有 HTTP session/origin 检查仍按当前实现与验收要求执行。
 

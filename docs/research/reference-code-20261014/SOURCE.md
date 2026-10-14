@@ -45,4 +45,4 @@ rea trace-application-feature <工作树>/.verification/reference-code-20261014/
 
 ## 交付顺序
 
-第一阶段：[资产、权限与版本代码索引](CSGHUB-ASSETS.md)。后续同一工作树补充 Agent 状态、恢复、研究步骤、评审和经验存储分析。待确认仓库不会阻塞 CSGHub 交付；开发范围由 M-product 和现有任务负责人决定。
+第一阶段：[资产、权限与版本代码索引](CSGHUB-ASSETS.md)，Commit `85c7fcf87e4033a5826fd5af10a36cf2c38f5ee5` 已普通 push 并向 M-product、ROOT 发送 Handoff。第二阶段：[Agent 状态、恢复、研究步骤、评审与经验存储](CSGHUB-RUNTIME-RESEARCH.md)以及 [可执行 Handoff](HANDOFF.md)。待确认仓库不会阻塞 CSGHub 交付；开发范围由 M-product 和现有任务负责人决定。
