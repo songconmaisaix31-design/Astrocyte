@@ -8,10 +8,12 @@ import (
 )
 
 type RelayIntentCommand struct {
-	WorkID    string `json:"work_id"`
-	ProjectID string `json:"project_id"`
-	Agent     string `json:"agent"`
-	Task      string `json:"task"`
+	WorkID                  string `json:"work_id"`
+	ProjectID               string `json:"project_id"`
+	Agent                   string `json:"agent"`
+	Task                    string `json:"task"`
+	HandoffFromTaskID       string `json:"handoff_from_task_id,omitempty"`
+	HandoffContextConfirmed bool   `json:"handoff_context_confirmed,omitempty"`
 }
 
 type RelayConfirmCommand struct {
@@ -49,17 +51,22 @@ type RelayRuntime interface {
 // Internal storage state is never an HTTP DTO. Update is a single transaction;
 // the callback changes data only and must never launch a process or emit events.
 type RelayState struct {
-	Tasks             map[string]domain.RelayTask
-	Workspaces        map[string]domain.RelayWorkspace
-	Terminals         map[string]domain.RelayTerminal
-	Sessions          map[string]domain.NativeSession
-	OwnedSessions     map[string]domain.RelayOwnedSession
-	Receipts          map[string]domain.RelayReceipt
-	Transitions       []domain.RelayTransition
-	Events            []domain.RelayEvent
-	Published         map[string]bool
-	PendingActions    map[string]string
-	PublicationErrors map[string]bool
+	Tasks               map[string]domain.RelayTask
+	Workspaces          map[string]domain.RelayWorkspace
+	Terminals           map[string]domain.RelayTerminal
+	Sessions            map[string]domain.NativeSession
+	OwnedSessions       map[string]domain.RelayOwnedSession
+	Receipts            map[string]domain.RelayReceipt
+	Transitions         []domain.RelayTransition
+	Events              []domain.RelayEvent
+	Published           map[string]bool
+	PendingActions      map[string]string
+	PublicationErrors   map[string]bool
+	RuntimeFacts        []domain.RelayRuntimeFact
+	SessionRelations    []domain.RelaySessionRelation
+	ControllerEvidence  map[string]domain.RelayControllerEvidence `json:"-"`
+	HandoffDeclarations map[string]string
+	ControllerHistory   map[string][]domain.RelayControllerEvidence `json:"-"`
 }
 
 type RelayStore interface {
@@ -75,12 +82,14 @@ type RelayWorkspaces interface {
 }
 
 type RelayLaunch struct {
-	Spec      domain.AgentSpec
-	Project   domain.LocalProject
-	Workspace domain.RelayWorkspace
-	Terminal  domain.RelayTerminal
-	Session   domain.NativeSession
-	Input     string
+	Spec         domain.AgentSpec
+	Project      domain.LocalProject
+	Workspace    domain.RelayWorkspace
+	Terminal     domain.RelayTerminal
+	Session      domain.NativeSession
+	Input        string
+	OperationID  string
+	ControllerID string
 }
 
 type RelayObservation struct {
@@ -90,6 +99,26 @@ type RelayObservation struct {
 	ArchiveGap    string
 	Events        []domain.RelayEvent
 	ExitConfirmed bool
+	Evidence      *domain.RelayControllerEvidence
+}
+
+// 只读取已经持久化的安全事实；不执行控制器观察或就绪探测。
+type RelayRuntimeFactsReader interface {
+	ListRuntimeFacts(context.Context, domain.Caller, string) ([]domain.RelayRuntimeFact, []domain.RelaySessionRelation, error)
+}
+
+// 历史绑定供采集器核已提交事件，不授予当前进程所有权。
+type RelayControllerHistoryReader interface {
+	ListOwnedControllerHistory(context.Context, string) ([]domain.RelayControllerEvidence, error)
+}
+
+type RelayCurrentOwnershipReader interface {
+	GetCurrentOwnership(context.Context, domain.Caller, string) (domain.RelayCurrentOwnership, error)
+}
+
+// 只读原持有对象，不执行 Native.Observe、RPC、启动或恢复。
+type RelayControllerEvidenceReader interface {
+	CurrentControllerEvidence(context.Context, RelayLaunch) (domain.RelayControllerEvidence, error)
 }
 
 // RelayDriver is execution only; it cannot authorize, dispatch a task, persist

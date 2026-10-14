@@ -332,6 +332,22 @@ type relaySessionRuntime struct {
 	collector *relaySessionCollector
 }
 
+func (s *relaySessionRuntime) ListRuntimeFacts(ctx context.Context, caller domain.Caller, id string) ([]domain.RelayRuntimeFact, []domain.RelaySessionRelation, error) {
+	reader, ok := s.RelayRuntime.(workspace.RelayRuntimeFactsReader)
+	if !ok {
+		return nil, nil, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
+	}
+	return reader.ListRuntimeFacts(ctx, caller, id)
+}
+
+func (s *relaySessionRuntime) GetCurrentOwnership(ctx context.Context, caller domain.Caller, id string) (domain.RelayCurrentOwnership, error) {
+	reader, ok := s.RelayRuntime.(workspace.RelayCurrentOwnershipReader)
+	if !ok {
+		return domain.RelayCurrentOwnership{}, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
+	}
+	return reader.GetCurrentOwnership(ctx, caller, id)
+}
+
 func (s *relaySessionRuntime) ObserveOwned(ctx context.Context) error {
 	baseErr := s.RelayLifecycle.ObserveOwned(ctx)
 	if baseErr != nil {

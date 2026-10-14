@@ -1,8 +1,35 @@
 # Works Relay HTTP 与 L1 会话采集
 
-H 分支：`songconmaisaix31-design/works-relay-http`。当前 SOURCE 为 `b6c67e91555522b3d7515d405c4c69a93d0e0bc8`；主装配保护源接线为 `b247dfb12b938739f09acc73e6b7582376951a0c`，真实 SQLite 配置测试为 `78903848199b915a21e95e42f52cbed64c6d606c`。R 的人工完成权限 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 与 REPORT `fae304b80cb3288b9edd08f10500c6e5af7e4210` 已普通合并。旧实际服务运行版本为 `e5714bb868a6519ec70520bca1c0a1b6c4678fb8`。客户端为 Codex API，工作会话没有暴露精确部署模型名称；实际原生控制器为 Codex `0.162.0`，本次 `turn_context.model` 为 `gpt-6.1-sol`。
+H 分支：`songconmaisaix31-design/works-relay-http`。当前非原生依赖 SOURCE 为 `4f45a3ab50e6a2863b940915874374f58e65f1da`，生产 listener 接口为 `1aadeebaba2330bb8b786989f577415da5208fd5`；前阶段原生验证准备 SOURCE 为 `b6c67e91555522b3d7515d405c4c69a93d0e0bc8`。主装配保护源接线为 `b247dfb12b938739f09acc73e6b7582376951a0c`，真实 SQLite 配置测试为 `78903848199b915a21e95e42f52cbed64c6d606c`。R 的人工完成权限 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 与 REPORT `fae304b80cb3288b9edd08f10500c6e5af7e4210` 已普通合并。已关闭旧服务的业务版本为 `e5714bb868a6519ec70520bca1c0a1b6c4678fb8`。客户端为 Codex API，工作会话没有暴露精确部署模型名称；旧实际原生控制器为 Codex `0.162.0`，原 `turn_context.model` 为 `gpt-6.1-sol`。
+
+## 端口 0 与精确配置交接
+
+本轮 Task `task_abf1f8b1e12e` / Dispatch `ctx_d7d8c2828fba` 只完成非原生依赖。`ASTROCYTE_PORT=0` 由 Go 一次调用 `net.Listen("tcp", "127.0.0.1:0")` 原子选择端口，主装配一直持有该 listener，并以实际端口构建 HTTP 服务。`httpapi.Server.Serve(net.Listener)` 直接使用同一个已绑定的 loopback TCP listener，关闭时返回 `http.ErrServerClosed`。无第二次绑定、端口探测后释放、换端口或重启 fallback。
+
+主装配在路由构建完成、listener 已绑定且仍被持有时，向 stdout 编码一行 JSON：`{"type":"http_listening","api_url":"http://127.0.0.1:<actual-port>"}`。仅此安全地址记录进入该流；它表示绑定完成，HTTP 响应 readiness 仍由消费者对该 URL 的真实 health GET 确认。消费者不得把公告先于 Serve 当成 HTTP 已可响应。每次进程启动重新消费其实际公告，正常关闭不补发地址。B 的 `tests/s1/server.mjs` 消费此接口，API 不再通过 Node 先占用、释放再交 Go 重绑；配置的 Web Origin 仍由既有 Origin 白名单处理，API 同源以真实请求地址核对。
+
+`cmd/server/workbench_config.go` 已核对与精确 SOURCE `24b6390bcad60a2a20b671dcb60725e77eb3a7a4` 无 diff，并在 B 复制期间冻结。B ACK SOURCE `4a6076c402e0b5d31982154a31a905bee6127477`：内容逐行一致、实际 SQLite 两项测试和 build / vet 通过，文件写入范围已归还。H 本轮没有修改 B 的 `workbench_config_test.go`、`config.go`、helper 或依赖。listener 三文件向 B 定向交付精确 `1aadeeb` changedblocks 与新 helper；消费者不复制额外 H / Relay 历史。
+
+| 本轮命令或真实检查 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json ./cmd/server -run=^TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown$ -v` | PASS，0.11 秒；真实 Go HTTP、实际 SQLite 迁移和项目读写，无原生会话 |
+| `go build -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json -o dist/http-listener/server.exe ./cmd/server` | PASS；只读 overlay 为 P `579a1cede98b47b08a3126f5d3974da938348929` 的五个精确 Reader 文件 |
+| `go vet -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json ./cmd/server ./internal/adapters/httpapi` | PASS |
+| H 单树 `go build -mod=readonly -p=1 ./cmd/server` | FAIL：旧单参数 Reader 与主装配可变参数接线未组合；没有整体合入 B 分支 |
+| `gofmt -l` 四个本轮 Go 文件、`git diff --check` | PASS |
+| 原子绑定、实际地址公告、同 socket 持有 | PASS，公告实际端口非 0，重复绑定该自有端口立即失败，服务地址保持 |
+| Origin / CSRF | 实际 API bootstrap 与 CSRF 写入 PASS；配置的独立 Web Origin 读写 PASS；未授权 session、端口 0 Origin 和缺 CSRF 均 403，拒绝后 SQLite 项目数仍 0 |
+| 实际 SQLite 与关闭 | 真实项目创建及设置 revision 增加可通过仓储核对；独立 query_only SQL 的 native session 数为 0；正常 Shutdown 后 Serve 返回关闭结果，原地址连接被拒绝 |
+
+本机忽略目录 `dist/http-listener` 保存命令日志与每次独立 `owned-*` SQLite、公开项目目录和 `safe-result.json`。`actual-first.log` 保留首 SQL 表名检查失败；`actual-final.log` 为当前通过结果，不覆盖首失败。测试没有替代 API、driver、会话或模型，没有修改 schema / engine / mapper / weights、V4、日程和 17321。完整默认浏览器与 B helper 的实际组合消费由 B / F 继续验证，本轮通过范围不替代旧 L1 失败或新 v1.4 原生验收。
 
 ## 当前实现
+
+当前 v1.4 验证准备 SOURCE 为 `261fb73921d2a1b929f40bf4d714de5356b9024d`。实际服务测试与归档 / 通知证据检查都消费本次 listener 和 `service-public.json` 保存的真实 URL，通过 `net/url` / `encoding/json` 校验明确 IPv4 loopback、已绑定端口、无凭据或额外 URL 内容；不再以固定端口连接其他服务。实际验证服务使用既有 `Server.Serve(listener)`；`ASTROCYTE_L1_API_PORT=0` 要求显式 `ASTROCYTE_L1_WEB_PORT`，两端口必须独立。公共记录解析拒绝尾随 JSON。
+
+薄配置 SOURCE `a293225afa70db386013f25b6796d3d8361a0891` 使已有受保护目录、应用库、来源与快照的异常身份 IO 立即返回固定安全错误；首次尚未创建的目标保持原初始化语义。快照通过 `os.ReadDir` 枚举实际出版条目，显式源、默认空配置、samefile 和目录保护保持。三项真实 SQLite / 目录 / snapshot hardlink 检查分别 PASS 0.08 秒，精确 Reader overlay vet 与格式检查通过；没有编辑 B 配置测试或读取正式材料。
+
+上述准备通过真实 HTTP / SQLite 的 `TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown`（0.10 秒），精确 P579 Reader overlay build / vet 与格式检查通过。首正常关闭失败保留 `dist/http-listener/v14-address-first-failure.log`，当前通过日志为 `v14-address-second.log`；本次客户端主动释放自己的 idle 连接后正常关闭，没有修改原生状态或重试业务请求。新的实际会话、模型和 Today 窗口尚未启动。R v1.4 精确接口交付前不消费其 WIP、不冻结待答状态机，不把这次验证准备计为语义或 L1 完成。
 
 所有 Relay HTTP 使用既有 Go 服务、loopback、human session、Origin、CSRF 与 ErrorV1。GET 读取已持有任务、派生事件和原收据，不启动 CLI、不发送输入、不恢复会话、不读取原文归档。人工创建 intent 后必须明确确认权限；运行时 Service 是 task、terminal、worktree 与收据的唯一写入者。未知输入交付结果保持 `delivery_unknown`，不能自动重发。
 
