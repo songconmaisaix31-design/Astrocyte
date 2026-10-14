@@ -23,6 +23,10 @@ type RepositoryIndexCommands interface {
 	UpdateRepositoryIndex(context.Context, domain.Caller, domain.RepositoryQuery, string) (domain.RepositoryIndex, error)
 }
 
+type RepositoryMapCommands interface {
+	RefreshRepositoryMap(context.Context, domain.Caller, domain.RepositoryQuery) (domain.RepositoryIndex, error)
+}
+
 type RepositoryProjectReader interface {
 	LoadRepositoryProject(context.Context, string) (domain.LocalProject, error)
 	LoadRepositoryGrant(context.Context, string, string) (domain.ProjectGrant, error)

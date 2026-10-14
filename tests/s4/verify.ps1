@@ -17,5 +17,6 @@ $S4Arguments = @(
     '-script', (Join-Path $RepositoryRoot 'internal/adapters/repositorycontext/codegraph.mjs'),
     '-aoci', (Join-Path $RepositoryRoot 'dist/s4/tools/aoci.exe')
 )
-& go @S4Arguments 2>&1 | Tee-Object -FilePath (Join-Path $EvidenceRoot "$Phase.log")
+$RunLogName = "$Phase-$([DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffffff')).log"
+& go @S4Arguments 2>&1 | Tee-Object -FilePath (Join-Path $EvidenceRoot $RunLogName)
 if ($LASTEXITCODE -ne 0) { throw "S4 verification failed: $Phase" }
