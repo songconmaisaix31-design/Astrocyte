@@ -1,56 +1,52 @@
-/**
- * Non-color status cues: icon + label + color.
- * Ensures accessibility even without color perception.
- * Updated for V1 schema status/state/lifecycle enums.
- */
+/** V1 状态同时使用图标、文字与颜色显示，便于辨认。 */
 
 interface StatusBadgeProps {
-  /** The status/state/lifecycle value */
+  /** 状态或生命周期值。 */
   value: string;
-  /** Label to display (pre-translated) */
+  /** 已翻译的显示标签。 */
   label: string;
 }
 
 const STATUS_ICONS: Record<string, string> = {
-  // Material lifecycle
+  // 资料生命周期。
   active:      '●',
   archived:    '▪',
   withdrawn:   '⊘',
-  // Material import_status
+  // 资料导入状态。
   queued:      '◷',
   running:     '▶',
   succeeded:   '✓',
   failed:      '✗',
   cancelled:   '⊘',
-  // Opportunity state
+  // 机会状态。
   incubating:       '◇',
   ready_for_review: '◷',
   admitted:         '✓',
   deferred:         '⟳',
   rejected:         '✗',
-  // Proposal status
+  // 提案状态。
   draft:       '○',
   in_review:   '◷',
   approved:    '✓',
   declined:    '✗',
   superseded:  '⟳',
-  // Mission status
+  // 任务状态。
   pending:     '◷',
   paused:      '‖',
   blocked:     '⊘',
   completed:   '✓',
-  // WorkItem status
+  // 工作项状态。
   open:            '○',
   claimed:         '◈',
   in_progress:     '▶',
   submitted:       '↑',
   revision_needed: '⟳',
   accepted:        '✓',
-  // Session binding
+  // 会话绑定状态。
   observed:    '👁',
   bound:       '🔗',
   unavailable: '—',
-  // Context state
+  // 上下文状态。
   unknown: '?',
   current: '●',
   stale:   '◌',

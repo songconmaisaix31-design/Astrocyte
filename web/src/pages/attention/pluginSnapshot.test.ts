@@ -7,7 +7,7 @@ it('parses a minimal snapshot and requires a source_url', () => {
   const review = parsePluginSnapshot(JSON.stringify({ source_url: 'https://arxiv.org/abs/2504.16054', title: '标题' }));
   expect(review.source_url).toBe('https://arxiv.org/abs/2504.16054');
   expect(review.title).toBe('标题');
-  expect(review.content_state).toBe('abstract_only');
+  expect(review.content_state).toBe('unknown');
   expect(() => parsePluginSnapshot('{}')).toThrow(/缺少来源链接/);
   expect(() => parsePluginSnapshot('not json')).toThrow(/不是有效的 JSON/);
 });

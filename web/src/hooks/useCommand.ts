@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { commandError } from '../utils/commandError';
 
-/** Commands only run after an explicit action. Never automatically retry writes. */
+/** 命令由明确操作触发；失败后不自动重发。 */
 export function useCommand(disabled = false) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

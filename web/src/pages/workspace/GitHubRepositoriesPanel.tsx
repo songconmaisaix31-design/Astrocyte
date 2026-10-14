@@ -18,16 +18,16 @@ import formStyles from '../attention/AttentionPage.module.css';
 type Repository = components['schemas']['GitHubRepositoryV1'];
 const cloneLabels: Record<string, string> = { not_placed: '仅保存仓库信息', cloning: '正在克隆', ready: '代码已克隆', failed: '克隆失败', interrupted: '克隆中断，等待人工核对', unknown: '克隆结果未知' };
 
-export function GitHubRepositoriesPanel({ fixture, query, placement = false, onChanged }: { fixture: boolean; query: string; placement?: boolean; onChanged?: () => void }) {
-  const repositories = useReadApi(signal => githubRepositoriesApi.list({ signal }), { enabled: !fixture });
-  const spaces = useProjectSpaces(!fixture && placement);
+export function GitHubRepositoriesPanel({ query, placement = false, onChanged }: { query: string; placement?: boolean; onChanged?: () => void }) {
+  const repositories = useReadApi(signal => githubRepositoriesApi.list({ signal }));
+  const spaces = useProjectSpaces(placement);
   const [input, setInput] = useState('');
   const [selected, setSelected] = useState('');
-  const command = useCommand(fixture || repositories.loading || repositories.stale || !repositories.data);
+  const command = useCommand(repositories.loading || repositories.stale || !repositories.data);
   const rows = (repositories.data?.items ?? []).filter(repo => matchesQuery(query, [repo.metadata.full_name, repo.metadata.description, repo.metadata.language]));
   return <SectionCard title={placement ? 'GitHub 仓库纳入开发空间' : 'GitHub 仓库信息'} tabs={['overview']} padded>
     <div className="ac-connect-card"><BrandIcon name="github" size={36} /><div><h3>{placement ? '由你决定何时获取代码' : '先收集仓库信息'}</h3><p>{placement ? '选择一个项目顶层空间，明确纳入后才由固定程序克隆。' : '输入公开账号或仓库；同步信息不会下载代码。'}</p></div></div>
-    {fixture ? <p className={styles.note}>示例模式不查询 GitHub、克隆代码或创建项目。</p> : <>
+    <>
       {!placement && <form className={formStyles.form} onSubmit={event => { event.preventDefault(); const request = command.prepare({ expected_version: 1, input: input.trim() }); void command.run(() => githubRepositoriesApi.sync(request.body, request.key), () => { repositories.retry(); onChanged?.(); }, '已同步公开仓库信息；代码尚未克隆'); }}>
         <TextField label="公开 GitHub 账号或仓库" value={input} onChange={setInput} required hint="填写账号、owner/repository 或 GitHub 公开链接。私有范围尚未决定，不读取凭据。" disabled={command.pending} />
         <div className={formStyles.actions}><button className="ac-button" type="submit" disabled={command.pending || repositories.loading || repositories.stale || !repositories.data || !input.trim()}>同步仓库信息</button><button className="ac-button secondary" type="button" onClick={() => navigate('/swarm')}>去蜂群空间纳入代码</button></div>
@@ -44,7 +44,7 @@ export function GitHubRepositoriesPanel({ fixture, query, placement = false, onC
           {selected === repo.id && <><RepositoryFacts repository={repo} />{placement && <PlacementForm key={`${repo.id}:${repo.revision}`} repository={repo} spaces={spaces} disabled={repositories.loading || repositories.stale || command.pending} onPlaced={() => { repositories.retry(); onChanged?.(); }} />}</>}
         </li>)}</ul>
       </>}</QueryState>
-    </>}
+    </>
   </SectionCard>;
 }
 
@@ -57,7 +57,7 @@ function RepositoryFacts({ repository: repo }: { repository: Repository }) {
   </>;
 }
 
-function PlacementForm({ repository: repo, spaces, disabled, onPlaced }: { repository: Repository; spaces: ReturnType<typeof useProjectSpaces>; disabled: boolean; onPlaced: () => void }) {
+export function PlacementForm({ repository: repo, spaces, disabled, onPlaced }: { repository: Repository; spaces: ReturnType<typeof useProjectSpaces>; disabled: boolean; onPlaced: () => void }) {
   const [spaceID, setSpaceID] = useState(repo.space_id);
   const command = useCommand(disabled || spaces.loading || spaces.stale || !spaces.data);
   const supported = ['not_placed', 'failed', 'interrupted', 'cloning'].includes(repo.clone_status);

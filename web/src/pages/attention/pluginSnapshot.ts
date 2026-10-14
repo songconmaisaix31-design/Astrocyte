@@ -1,27 +1,8 @@
-/**
- * Plugin snapshot paste-review presentation (pure, no I/O).
- *
- * W1's MV3 extension copies a paper-page JSON snapshot (see extensions/paper/
- * extract.js and W1 `PaperSnapshot`). Its shape is: `source_url`, `host_family`,
- * `source_key`, `title`, `abstract`, `authors`, `doi`, `arxiv_id`,
- * `observed_version`, `pdf_urls`, `content_state`, `text`, `warning`,
- * `truncated`, `provenance`.
- *
- * Unlike an earlier revision, the raw `text` (the browser-extracted full body)
- * is PRESERVED: a readable full-text snapshot is imported through the minimal
- * `paper_snapshot` ImportMaterial entry carrying the whole reviewed snapshot
- * JSON as `export_text`, so the service does NOT re-fetch the page and never
- * trusts the snapshot's self-reported source key (it re-derives it from the
- * observed DOI/arXiv/URL identity). A `pdf_urls` entry imports through the
- * `paper_pdf` adapter (SSRF-safe public PDF fetch, not arxiv-only). The human
- * is offered an explicit HTML-fulltext vs public-PDF choice; the abstract, a
- * truncated body and a paywall are never treated as full text, and no personal
- * browser or history is read automatically.
- */
+/** 复核人工粘贴的插件快照；保留完整 JSON 与正文，明确选择 HTML、公共 PDF 或 arXiv 导入。 */
 
-export type SnapshotContentState = 'readable_fulltext' | 'abstract_only' | 'paywall' | 'restricted';
+export type SnapshotContentState = 'readable_fulltext' | 'abstract_only' | 'paywall' | 'restricted' | 'unknown';
 
-/** Import adapters the existing ImportMaterial entry can consume. */
+/** 既有 ImportMaterial 接受的导入器。 */
 export type SnapshotImportAdapter = 'arxiv' | 'paper_pdf' | 'paper_snapshot';
 
 export interface PluginSnapshotReview {
@@ -41,12 +22,12 @@ export interface PluginSnapshotReview {
   truncated: boolean;
 }
 
-/** One human-selectable import path for a reviewed snapshot. */
+/** 人工可选择的快照导入路径。 */
 export interface SnapshotImportOption {
   adapter: SnapshotImportAdapter;
-  /** What the existing ImportMaterial entry receives as source_locator. */
+  /** 传给既有接口的 source_locator。 */
   source_locator: string;
-  /** Raw reviewed snapshot JSON for paper_snapshot; null for PDF/arxiv. */
+  /** paper_snapshot 保留已复核 JSON；PDF 和 arXiv 使用 null。 */
   export_text: string | null;
   label: string;
 }
@@ -64,12 +45,12 @@ function asString(value: unknown): string | null {
 function asStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
 }
-const contentStates: SnapshotContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted'];
+const contentStates: SnapshotContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted', 'unknown'];
 function asContentState(value: unknown): SnapshotContentState {
-  return (contentStates as unknown[]).includes(value) ? (value as SnapshotContentState) : 'abstract_only';
+  return (contentStates as unknown[]).includes(value) ? (value as SnapshotContentState) : 'unknown';
 }
 
-/** Parse a pasted snapshot. Throws with a readable message on invalid input. */
+/** 解析粘贴快照；JSON 无效或缺少来源时立即报告错误。 */
 export function parsePluginSnapshot(text: string): PluginSnapshotReview {
   let raw: unknown;
   try { raw = JSON.parse(text); } catch { throw new Error('无法解析插件快照：不是有效的 JSON。请重新粘贴扩展复制的完整快照。'); }
@@ -96,38 +77,31 @@ export function parsePluginSnapshot(text: string): PluginSnapshotReview {
 
 function isArxiv(review: PluginSnapshotReview): boolean {
   if (review.host_family === 'arxiv' || review.arxiv_id) return true;
-  try { return /(^|\.)arxiv\.org$/i.test(new URL(review.source_url).hostname); } catch { return false; }
+  return URL.canParse(review.source_url) && /(^|\.)arxiv\.org$/i.test(new URL(review.source_url).hostname);
 }
 
-/** Human label for a snapshot content state (domain vocabulary). */
+/** 可得状态缺少观察时保留未知。 */
 export function snapshotContentStateLabel(state: SnapshotContentState): string {
   switch (state) {
     case 'readable_fulltext': return '原文可得';
     case 'abstract_only': return '仅摘要/元数据';
     case 'paywall': return '付费墙';
     case 'restricted': return '受限';
+    case 'unknown': return '可得性未知';
   }
 }
 
-/** A body is usable as full text only when full-text, untruncated and non-empty. */
+/** 仅接受明确可读、完整且未截断的正文。 */
 function hasFullText(review: PluginSnapshotReview): boolean {
   return review.content_state === 'readable_fulltext' && !review.truncated && !!review.text;
 }
 
-/** Restricted/paywalled content never yields an importable full text. */
+/** 付费与受限来源不生成完整正文导入选项。 */
 function isRestricted(review: PluginSnapshotReview): boolean {
   return review.content_state === 'paywall' || review.content_state === 'restricted';
 }
 
-/**
- * The human-selectable import paths for a reviewed snapshot: the preserved
- * HTML full body (`paper_snapshot`, no re-fetch, whole snapshot JSON as
- * `export_text`) and/or each public PDF (`paper_pdf`, SSRF-safe fetch, not
- * arxiv-only). An arxiv snapshot with neither falls back to the official
- * `arxiv` adapter. A paywall/restricted snapshot yields nothing (no bypass),
- * and an abstract-only snapshot without a PDF is not full text, so it yields
- * nothing either. `rawJson` is the exact reviewed snapshot JSON.
- */
+/** 提供人工明确选择的导入器；受限来源不生成选项，完整 JSON 保留为输入。 */
 export function snapshotImportOptions(review: PluginSnapshotReview, rawJson: string): SnapshotImportOption[] {
   const options: SnapshotImportOption[] = [];
   if (hasFullText(review)) {
@@ -144,10 +118,10 @@ export function snapshotImportOptions(review: PluginSnapshotReview, rawJson: str
   return options;
 }
 
-/** Whether at least one non-bypassing import path exists for this snapshot. */
+/** 判断快照是否具有可选择的导入路径。 */
 export function canImportSnapshot(review: PluginSnapshotReview, rawJson: string): boolean {
   return snapshotImportOptions(review, rawJson).length > 0;
 }
 
-/** Caveat: the abstract/truncated/paywall is never treated as the body. */
+/** 摘要、截断正文与付费页面不构成完整正文。 */
 export const snapshotCaveat = '插件快照（含摘要）不是正文；只有快照携带的完整正文或公共 PDF 才能入库，正文由你复核后写入，服务不会重新抓取网页或读取你的浏览器。';
