@@ -236,6 +236,16 @@ SOURCE `dfdd75ed4b245fe462df2ff916728afdae7361cc` 已普通 push，保留现有�
 
 HTTP 新文件提供 `registerAdmissions(mux, service)`，沿用现有严格 JSON、请求元数据、认证主体和错误映射；共享 `server.go` 的 Services 字段与路由调用、`main.go` 的生产装配交 H 原 owner。当前 B 未宣称默认服务已开放准入路由，实际 HTTP 组合和 S2 准入正向仍待完成。S2 消费者、原生控制器和共享装配文件均未由 B 代改。
 
+## S5 共享迁移与成熟 RPC 依赖
+
+SOURCE `b502f5c3dbf0b57f84a937d314df09d94d164f70` 已普通 push。新业务迁移 `024_judgment.sql` 完整采用 S5 SOURCE `48abd1fe134b88cfe8122d2aee5a35090fc6d62b` / REPORT `95871f3f3d77d27136e3f3195742e6290c587b4a` 的 `judgment_results`、`judgment_feedback`、`judgment_policies` 设计、索引及 JSON、角色、固定版本和外键约束；新增 `foundation_schema` 的 judgment 版本 1。迁移 001–018没有修改，该迁移不依赖尚未提交的成功经验来源元数据。
+
+共享 Go 依赖固定 `github.com/sourcegraph/jsonrpc2@v0.2.1`，官方实际 revision `2cc94179e136b565cb9df7d9d0bff9fc06912ac9`，MIT；下载返回的真实 module/GoMod sums 已由文件编辑工具登记，完整 Go module graph 所需 `gorilla/websocket@v1.4.1/go.mod` sum 同样来自实际下载。`go build -mod=readonly github.com/sourcegraph/jsonrpc2`、`go list -mod=readonly -m -json all`、`node scripts/check-dependencies.mjs` 全部 EXIT 0；证据 `.verification/judgment-jsonrpc2-first-build.log`、`.verification/judgment-go-graph-first.json`、`.verification/judgment-dependencies-first.log`。下载首命令参数解析错误保留，修正后的准确下载及 sums 在 `.verification/judgment-jsonrpc2-download-second.log` 和 `.verification/judgment-jsonrpc2-transitive-download.log`。
+
+实际 S5 公共源码安装目录中的 `vscode-jsonrpc@8.2.1`、`onnxruntime-node@1.30.0` 已直接载入，真实 RPC framing API 和 `InferenceSession.create` 存在，runtime 报告 common/node 均为 `1.30.0`；`.verification/judgment-node-actual-import.log`，模型推理 0。完整读取的实际 package/license 元数据登记了官方 Laya SOURCE `432312b36714d8889eba405507b37eda25257d9c` 的 `laya-ts@0.1.0`、固定模型 revision、MIT runtime 及 `adm-zip@0.6.1` MIT、`global-agent@4.1.3` BSD-3-Clause。Laya 使用准确官方源码 build，未登记不存在的 npm 发布包；未改动 S5 安装目录、Python、root package 或 lock。
+
+`go test -mod=readonly ./internal/workspace/app -run TestNativeOperationInvalidIdentityDoesNotLaunch -count=1 -v` 在新建的实际 SQLite 上执行全部当前迁移及生产身份拒绝流程，EXIT 0，1 PASS、0 SKIP，2.583s；`.verification/judgment-migrations-actual-second.log`，自有数据库在 `.verification/native-operation-actual-3851963715/`。该结果证明新迁移可以实际应用，不代表 S5 判断、缓存、反馈、撤销或 HTTP 已验收；这些实际业务检查继续由 S5 原 owner 完成。全部共享依赖和迁移已交付准确 SOURCE，未等待独立报告阻断其消费。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
