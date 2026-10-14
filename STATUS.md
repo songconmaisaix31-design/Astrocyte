@@ -1,5 +1,9 @@
 # Astrocyte 当前状态
 
+## REA 部署与 Orca 调研（2026-10-14）
+
+[调研报告](docs/research/orca-rea-20261014.md)与第 42 版技能已接手：REA 6.5.0 的实际 MCP 207 工具与 `binary_session` 查询成功，Orca 1.4.220 两份静态分析共 18 个 JavaScript 文件解析错误为零，启动恢复 IPC 跟踪 partial。按用户要求，今晚 Codex REA 注册已移除、REA MCP 服务已停止；CLI、技能与分析结果保留，10-23 之后重新注册为陌生代码库任务和 L2 经验来源候选。2026-10-15 按 v1.4 语义规格与修改 → 真实 CLI 端到端 → 三分钟 Today → L1 关账执行。完整 Orca 运行时、main 鉴权和原生二进制分析未执行。
+
 ## 当前开发入口（2026-10-14）
 
 2026-10-14 19:59 网络中断恢复：当前工作为 [新标准整改](tasks/AGENTS-standard-integration.md)，B / F 并行继续。B 原开发人员已沿原 Task 接收新 Dispatch `ctx_5a0a4d492434` 并实际执行；新增 B 已 failed 结算及 release，双方未提交修改与首次失败保留。主控实际终端已核实并重新绑定 Run generation 3。P 最新 SOURCE `a1089f94a13306e3cd250ed8facbb438d6e75a19` / REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端一致；主控 29 项证据 / 25 项安全测试及 36 文件 / 14 冻结 AST 独立复查 PASS。业务整改与组合验收尚未完成，Mission 扩展仍未决定，V4 冻结和日程保持当前约束。
