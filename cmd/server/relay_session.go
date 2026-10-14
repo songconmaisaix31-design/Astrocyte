@@ -221,10 +221,30 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 		view.Coverage = append(view.Coverage, coverage)
 		if v.SourceStatus != "gap" || (v.DriveMode == "terminal" && v.Gap == "session_ownership_unverified") {
 			nativeID := ""
+			nativeBinding := ""
 			if v.Ownership == "owned" {
 				nativeID = v.SessionID
+				if v.SourceStatus == "available" {
+					nativeBinding = relayCaptureBinding(v).BindingID()
+				}
 			}
-			scopes = append(scopes, workbench.SessionAdmissionScope{TaskID: v.TaskID, ProjectID: v.ProjectID, TerminalID: v.TerminalID, NativeSessionID: nativeID})
+			taskReader, ok := c.owned.(interface {
+				ListEvents(context.Context, domain.Caller, string) ([]domain.RelayEvent, error)
+			})
+			if !ok {
+				return view, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable}
+			}
+			committed, e := taskReader.ListEvents(ctx, domain.Caller{Kind: "human", ID: "local-human"}, v.TaskID)
+			if e != nil {
+				return view, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable}
+			}
+			ids := make([]string, 0, len(committed))
+			for _, event := range committed {
+				if event.TaskID == v.TaskID && event.Scope == v.ProjectID && event.TerminalID == v.TerminalID {
+					ids = append(ids, event.ID)
+				}
+			}
+			scopes = append(scopes, workbench.SessionAdmissionScope{TaskID: v.TaskID, ProjectID: v.ProjectID, TerminalID: v.TerminalID, NativeSessionID: nativeID, NativeBindingID: nativeBinding, RelayEventIDs: ids})
 		}
 	}
 	if q.TaskID != "" && !found {

@@ -43,7 +43,10 @@ type SessionEventsReader interface {
 
 // Internal selection from the owned runtime, never decoded from HTTP. The
 // repository returns committed receipt IDs, not parser or cursor event IDs.
-type SessionAdmissionScope struct{ TaskID, ProjectID, TerminalID, NativeSessionID string }
+type SessionAdmissionScope struct {
+	TaskID, ProjectID, TerminalID, NativeSessionID, NativeBindingID string
+	RelayEventIDs                                                   []string
+}
 type SessionAdmissions interface {
 	ReadCommittedSessionEvents(context.Context, []SessionAdmissionScope, SessionEventsQuery) ([]Event, int, error)
 }

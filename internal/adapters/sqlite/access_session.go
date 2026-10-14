@@ -8,12 +8,13 @@ import (
 	"github.com/google/uuid"
 	workbench "github.com/songconmaisaix31-design/Astrocyte/internal/workbench/app"
 	"io"
+	"sort"
 	"strings"
 	"time"
 )
 
-// AccessSessionReader reads committed pending observations in the existing
-// isolated app DB only. It never opens native archives or cognitive snapshots.
+// AccessSessionReader selects only positive owned origins in the isolated app
+// DB before decoding JSON. Unrelated plaintext never enters the projection.
 type AccessSessionReader struct{ db *DB }
 
 func NewAccessSessionReader(db *DB) *AccessSessionReader { return &AccessSessionReader{db: db} }
@@ -27,25 +28,46 @@ func (s *AccessSessionReader) ReadCommittedSessionEvents(ctx context.Context, sc
 	}
 	clauses := []string{}
 	args := []any{}
-	selections := map[string]workbench.SessionAdmissionScope{}
+	exact := map[string]workbench.SessionAdmissionScope{}
+	prefixes := map[string]workbench.SessionAdmissionScope{}
+	exactArgs := []any{}
+	validID := func(value string) bool {
+		id, e := uuid.Parse(value)
+		return e == nil && id != uuid.Nil && id.String() == value
+	}
 	for _, scope := range scopes {
-		task, e := uuid.Parse(scope.TaskID)
-		terminal, terminalErr := uuid.Parse(scope.TerminalID)
-		if e != nil || terminalErr != nil || task == uuid.Nil || terminal == uuid.Nil || task.String() != scope.TaskID || terminal.String() != scope.TerminalID || scope.ProjectID == "" {
+		if !validID(scope.TaskID) || !validID(scope.TerminalID) || scope.ProjectID == "" {
 			return nil, 0, errors.New("session admission scope invalid")
 		}
-		if scope.NativeSessionID != "" {
-			id, e := uuid.Parse(scope.NativeSessionID)
-			if e != nil || id == uuid.Nil || id.String() != scope.NativeSessionID {
+		if scope.NativeBindingID != "" {
+			if !validID(scope.NativeBindingID) || !validID(scope.NativeSessionID) {
 				return nil, 0, errors.New("session admission scope invalid")
 			}
+			prefix := "relay-session:" + scope.NativeBindingID + ":"
+			prefixes[prefix] = scope
+			clauses = append(clauses, "origin_key LIKE ?")
+			args = append(args, prefix+"%")
 		}
-		topic := "relay:" + scope.TaskID
-		selections[topic] = scope
-		clauses = append(clauses, "(json_extract(raw_bytes,'$.topic')=? AND json_extract(observation,'$.scope')=? AND ((origin_key LIKE 'relay:%' AND json_extract(observation,'$.session')=?) OR (origin_key LIKE 'relay-session:%' AND json_extract(observation,'$.session')=?)))")
-		args = append(args, topic, scope.ProjectID, scope.TerminalID, scope.NativeSessionID)
+		for _, id := range scope.RelayEventIDs {
+			if !validID(id) {
+				return nil, 0, errors.New("session admission scope invalid")
+			}
+			origin := "relay:" + id
+			if _, exists := exact[origin]; !exists {
+				exactArgs = append(exactArgs, origin)
+			}
+			exact[origin] = scope
+		}
 	}
-	rows, e := s.db.Conn().QueryContext(ctx, "SELECT id,origin_key,ts,raw_bytes FROM attention_engine_events WHERE mapping_status='pending' AND ("+strings.Join(clauses, " OR ")+") ORDER BY ts DESC,id DESC", args...)
+	if len(exactArgs) > 0 {
+		placeholders := strings.TrimSuffix(strings.Repeat("?,", len(exactArgs)), ",")
+		clauses = append(clauses, "origin_key IN ("+placeholders+")")
+		args = append(args, exactArgs...)
+	}
+	if len(clauses) == 0 {
+		return result, 0, nil
+	}
+	rows, e := s.db.Conn().QueryContext(ctx, "SELECT id,origin_key,ts,raw_bytes,observation FROM attention_engine_events WHERE mapping_status='pending' AND ("+strings.Join(clauses, " OR ")+") ORDER BY ts DESC,id DESC", args...)
 	if e != nil {
 		return nil, 0, errors.New("session admissions unavailable")
 	}
@@ -64,20 +86,36 @@ func (s *AccessSessionReader) ReadCommittedSessionEvents(ctx context.Context, sc
 		}
 	}
 	for rows.Next() {
-		var id, origin string
+		var id, origin, observation string
 		var ts int64
 		var raw []byte
-		if rows.Scan(&id, &origin, &ts, &raw) != nil {
+		if rows.Scan(&id, &origin, &ts, &raw, &observation) != nil {
 			return nil, 0, errors.New("session admission unavailable")
+		}
+		scope, matched := exact[origin]
+		expectedSession := scope.TerminalID
+		if !matched {
+			for prefix, selection := range prefixes {
+				if strings.HasPrefix(origin, prefix) {
+					scope, matched, expectedSession = selection, true, selection.NativeSessionID
+					break
+				}
+			}
+		}
+		if !matched {
+			return nil, 0, errors.New("session admission binding invalid")
+		}
+		var metadata struct {
+			Session string `json:"session"`
+			Scope   string `json:"scope"`
+		}
+		if json.Unmarshal([]byte(observation), &metadata) != nil || metadata.Session != expectedSession || metadata.Scope != scope.ProjectID {
+			return nil, 0, errors.New("session admission metadata invalid")
 		}
 		var p workbench.Event
 		decoder := json.NewDecoder(bytes.NewReader(raw))
 		decoder.DisallowUnknownFields()
-		if decoder.Decode(&p) != nil || decoder.Decode(new(any)) != io.EOF {
-			return nil, 0, errors.New("session admission projection invalid")
-		}
-		scope, matched := selections[p.Topic]
-		if !matched || p.Scope != scope.ProjectID || id == "" || ts <= 0 || (p.Tokens != nil && *p.Tokens < 0) {
+		if decoder.Decode(&p) != nil || decoder.Decode(new(any)) != io.EOF || p.Scope != scope.ProjectID || p.Topic != "relay:"+scope.TaskID || id == "" || ts <= 0 || (p.Tokens != nil && *p.Tokens < 0) {
 			return nil, 0, errors.New("session admission projection invalid")
 		}
 		parsed, parseErr := time.Parse(time.RFC3339Nano, p.TS)
@@ -92,13 +130,23 @@ func (s *AccessSessionReader) ReadCommittedSessionEvents(ctx context.Context, sc
 		default:
 			p.Kind = "native_activity"
 		}
-		p.ID = id // EventRepository's committed receipt, never a cursor-generated ID.
+		p.ID = id
 		p.TS = parsed.UTC().Format(time.RFC3339Nano)
 		result = append(result, p)
 	}
 	if rows.Err() != nil {
 		return nil, 0, errors.New("session admissions unavailable")
 	}
+	// SQLite stores milliseconds; the public source timestamp can retain finer
+	// precision. Resolve that order before applying a page boundary.
+	sort.Slice(result, func(i, j int) bool {
+		a, _ := time.Parse(time.RFC3339Nano, result[i].TS)
+		b, _ := time.Parse(time.RFC3339Nano, result[j].TS)
+		if a.Equal(b) {
+			return result[i].ID > result[j].ID
+		}
+		return a.After(b)
+	})
 	total := len(result)
 	offset := (q.Page - 1) * q.PageSize
 	if offset >= total {
