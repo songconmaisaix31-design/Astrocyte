@@ -1,5 +1,127 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List goals within current project access */
+        get: operations["listWorkspaceGoals"];
+        put?: never;
+        /** Create a human goal with expected_version zero */
+        post: operations["createWorkspaceGoal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/goals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a goal or fixed revision with current project access */
+        get: operations["readWorkspaceGoal"];
+        /** Revise a human goal with expected_version CAS */
+        put: operations["reviseWorkspaceGoal"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/proposals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a proposal or fixed revision with current project access */
+        get: operations["readWorkspaceProposal"];
+        /** Revise content and preserve the prior proposal revision */
+        put: operations["reviseWorkspaceProposal"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/proposals/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Decline an in-review proposal by human command */
+        post: operations["declineWorkspaceProposal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/approvals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an approval with current project access */
+        get: operations["readWorkspaceApproval"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/approvals/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete an active approval by human command */
+        post: operations["completeWorkspaceApproval"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/approvals/{id}/expire": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark an elapsed active approval expired by human command */
+        post: operations["expireWorkspaceApproval"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/relay/tasks/{id}/facts": {
         parameters: {
             query?: never;
@@ -1233,11 +1355,15 @@ export interface paths {
         };
         /**
          * list Proposals
-         * @description S0 implements this read-only operation.
+         * @description Read persisted proposals within current human or scoped Agent project access.
          */
         get: operations["listProposals"];
         put?: never;
-        post?: never;
+        /**
+         * Create a draft proposal with expected_version zero
+         * @description Existing human CSRF or scoped Agent authentication; the application rechecks current project access and fixed input references. No execution is launched.
+         */
+        post: operations["createWorkspaceProposal"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1415,7 +1541,7 @@ export interface paths {
         put?: never;
         /**
          * submit Proposal
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Submit a draft for review after current project and executable-content validation. Human writes require session CSRF; a scoped Agent must retain current project access. No execution starts.
          */
         post: operations["submitProposal"];
         delete?: never;
@@ -1435,7 +1561,7 @@ export interface paths {
         put?: never;
         /**
          * approve Proposal
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Human approval requires expected_version CAS, the fixed expected_revision, current project permission and an expiry within stopping conditions. Proposal, approval, receipt and outbox are written in one actual transaction; approval does not launch execution.
          */
         post: operations["approveProposal"];
         delete?: never;
@@ -1455,7 +1581,7 @@ export interface paths {
         put?: never;
         /**
          * revoke Approval
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Human revocation checks expected_version against the current approval epoch and persists the next epoch and outbox in the same transaction. Later protected actions must recheck the current grant.
          */
         post: operations["revokeApproval"];
         delete?: never;
@@ -2388,6 +2514,12 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        S2GoalListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["S2GoalV1"][];
+            next_cursor: null;
+        };
         RelaySessionCoverageV1: {
             /**
              * @description archive counts complete JSONL lines and byte extents; native_notifications counts public app-server notifications, with zero byte counters. Session completeness is bounded to the selected source protocol; internal events not exposed by it are outside that claim.
@@ -3312,41 +3444,135 @@ export interface components {
             allowed_actions: string[];
             data_egress_rules: string[];
         };
-        /**
-         * @example {
-         *       "id": "fixture-proposal",
-         *       "revision": 1,
-         *       "status": "draft",
-         *       "title": "Fixture only",
-         *       "goal": "Select real case",
-         *       "scope": {
-         *         "project_ids": [],
-         *         "allowed_roots": [],
-         *         "allowed_actions": [],
-         *         "data_egress_rules": []
-         *       },
-         *       "deliverables": [],
-         *       "budget": {
-         *         "calls": null,
-         *         "tokens": null,
-         *         "money": null,
-         *         "currency": null
-         *       },
-         *       "stop_conditions": []
-         *     }
-         */
         ProposalV1: {
             id: string;
             revision: number;
+            version: number;
+            content: components["schemas"]["S2ProposalContentV1"];
+            grant_id?: string;
+            admission_id?: string;
+            opportunity_id?: string;
+            opportunity_revision?: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
             /** @enum {string} */
             status: "draft" | "in_review" | "approved" | "declined" | "superseded";
+        };
+        S2GoalReferenceV1: {
+            id: string;
+            revision: number;
+        };
+        S2ResourceBudgetV1: {
+            calls: number | null;
+            tokens: number | null;
+            money_minor: number | null;
+            /** @description Empty when money_minor is null; otherwise an uppercase three-letter currency. */
+            currency: string;
+        };
+        S2ExecutionScopeV1: {
+            project_id: string;
+            roots: string[] | null;
+            actions: string[] | null;
+            tools: string[] | null;
+            external_targets: string[] | null;
+            max_concurrency: number;
+            settings_revision: number;
+            write_paths: string[] | null;
+        };
+        S2StopConditionsV1: {
+            /** Format: date-time */
+            deadline: string;
+            conditions: string[] | null;
+            max_work_items: number;
+            max_attempts: number;
+            no_progress_seconds: number;
+            max_no_progress_rounds: number;
+        };
+        S2ProposalContentV1: {
             title: string;
-            goal: string;
-            scope: components["schemas"]["ScopeV1"];
-            deliverables: string[];
-            budget: components["schemas"]["BudgetV1"];
-            stop_conditions: string[];
-            candidate_refs?: components["schemas"]["SourceRefV1"][];
+            goal: components["schemas"]["S2GoalReferenceV1"];
+            inputs: components["schemas"]["FixedReferenceV1"][] | null;
+            scope: components["schemas"]["S2ExecutionScopeV1"];
+            budget: components["schemas"]["S2ResourceBudgetV1"];
+            stops: components["schemas"]["S2StopConditionsV1"];
+            deliverables: string[] | null;
+            success_criteria: string[] | null;
+        };
+        S2GoalV1: {
+            id: string;
+            revision: number;
+            project_id: string;
+            title: string;
+            success_criteria: string[];
+            priority: number;
+            /** @enum {string} */
+            status: "active" | "paused" | "completed" | "archived";
+            /** Format: date-time */
+            created_at: string;
+        };
+        S2ApprovalGrantV1: {
+            id: string;
+            proposal_id: string;
+            proposal_revision: number;
+            goal: components["schemas"]["S2GoalReferenceV1"];
+            epoch: number;
+            /** @enum {string} */
+            status: "active" | "revoked" | "expired" | "completed";
+            scope: components["schemas"]["S2ExecutionScopeV1"];
+            budget: components["schemas"]["S2ResourceBudgetV1"];
+            stops: components["schemas"]["S2StopConditionsV1"];
+            approver_id: string;
+            /** Format: date-time */
+            approved_at: string;
+            /** Format: date-time */
+            expires_at: string;
+            /** Format: date-time */
+            changed_at: string;
+            reason?: string;
+        };
+        S2ProposalResultV1: {
+            /** @constant */
+            schema_version: 1;
+            proposal: components["schemas"]["ProposalV1"];
+        };
+        S2GoalResultV1: {
+            /** @constant */
+            schema_version: 1;
+            goal: components["schemas"]["S2GoalV1"];
+        };
+        S2ApprovalResultV1: {
+            /** @constant */
+            schema_version: 1;
+            approval: components["schemas"]["S2ApprovalGrantV1"];
+        };
+        S2ProposalRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            content: components["schemas"]["S2ProposalContentV1"];
+        };
+        S2GoalInputV1: {
+            /** @description Assigned by the service; request value does not select an existing goal. */
+            id?: string;
+            revision?: number;
+            project_id: string;
+            title: string;
+            success_criteria: string[];
+            priority?: number;
+            /** @enum {string} */
+            status: "active" | "paused" | "completed" | "archived";
+            /** Format: date-time */
+            created_at?: string;
+        };
+        S2GoalRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            goal: components["schemas"]["S2GoalInputV1"];
         };
         /**
          * @example {
@@ -3765,37 +3991,12 @@ export interface components {
             request_id: string;
             expected_version: number;
         };
-        /**
-         * @example {
-         *       "schema_version": 1,
-         *       "request_id": "fixture-request",
-         *       "expected_version": 1,
-         *       "scope": {
-         *         "project_ids": [],
-         *         "allowed_roots": [],
-         *         "allowed_actions": [],
-         *         "data_egress_rules": []
-         *       },
-         *       "budget": {
-         *         "calls": null,
-         *         "tokens": null,
-         *         "money": null,
-         *         "currency": null
-         *       },
-         *       "stop_conditions": [
-         *         "Fixture only"
-         *       ],
-         *       "expires_at": "2026-10-09T00:00:00Z"
-         *     }
-         */
         ApproveProposalRequestV1: {
             /** @constant */
             schema_version: 1;
             request_id: string;
             expected_version: number;
-            scope: components["schemas"]["ScopeV1"];
-            budget: components["schemas"]["BudgetV1"];
-            stop_conditions: string[];
+            expected_revision: number;
             /** Format: date-time */
             expires_at: string;
         };
@@ -5770,14 +5971,325 @@ export interface components {
             hidden: boolean;
         };
     };
-    responses: never;
-    parameters: never;
+    responses: {
+        /** @description Invalid command, current permission denial, version conflict or unavailable dependency. No execution retry. */
+        S2CommandError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorV1"];
+            };
+        };
+    };
+    parameters: {
+        S2ID: string;
+        S2Revision: number;
+        /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+        S2Idempotency: string;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listWorkspaceGoals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Goals */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2GoalListV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
+    createWorkspaceGoal: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["S2GoalRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted goal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2GoalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
+    readWorkspaceGoal: {
+        parameters: {
+            query?: {
+                revision?: components["parameters"]["S2Revision"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Goal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2GoalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+        };
+    };
+    reviseWorkspaceGoal: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["S2GoalRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted goal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2GoalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+        };
+    };
+    readWorkspaceProposal: {
+        parameters: {
+            query?: {
+                revision?: components["parameters"]["S2Revision"];
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Proposal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ProposalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+        };
+    };
+    reviseWorkspaceProposal: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["S2ProposalRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted proposal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ProposalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+        };
+    };
+    declineWorkspaceProposal: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitProposalRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted proposal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ProposalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+        };
+    };
+    readWorkspaceApproval: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Approval */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ApprovalResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+        };
+    };
+    completeWorkspaceApproval: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeApprovalRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted approval */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ApprovalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+        };
+    };
+    expireWorkspaceApproval: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeApprovalRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted approval */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ApprovalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+        };
+    };
     listRelayTaskFacts: {
         parameters: {
             query?: never;
@@ -11247,12 +11759,7 @@ export interface operations {
     };
     listProposals: {
         parameters: {
-            query?: {
-                /** @description Opaque continuation cursor */
-                cursor?: string;
-                /** @description Maximum returned items */
-                limit?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -11380,6 +11887,37 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorV1"];
                 };
             };
+        };
+    };
+    createWorkspaceProposal: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["S2ProposalRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted proposal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ProposalResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
         };
     };
     listSessions: {
@@ -12684,20 +13222,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
+            /** @description Persisted proposal */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "id": "fixture-resource",
-                     *       "version": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["VersionResultV1"];
+                    "application/json": components["schemas"]["S2ProposalResultV1"];
                 };
             };
             /** @description Invalid request */
@@ -12843,50 +13374,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "schema_version": 1,
-                 *       "request_id": "fixture-request",
-                 *       "expected_version": 1,
-                 *       "scope": {
-                 *         "project_ids": [],
-                 *         "allowed_roots": [],
-                 *         "allowed_actions": [],
-                 *         "data_egress_rules": []
-                 *       },
-                 *       "budget": {
-                 *         "calls": null,
-                 *         "tokens": null,
-                 *         "money": null,
-                 *         "currency": null
-                 *       },
-                 *       "stop_conditions": [
-                 *         "Fixture only"
-                 *       ],
-                 *       "expires_at": "2026-10-09T00:00:00Z"
-                 *     }
-                 */
                 "application/json": components["schemas"]["ApproveProposalRequestV1"];
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
-            201: {
+            /** @description Persisted approval */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "grant_id": "fixture-grant",
-                     *       "proposal_id": "fixture-proposal",
-                     *       "proposal_revision": 1,
-                     *       "epoch": 1,
-                     *       "status": "active"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ApprovalV1"];
+                    "application/json": components["schemas"]["S2ApprovalResultV1"];
                 };
             };
             /** @description Invalid request */
@@ -13044,23 +13542,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
+            /** @description Persisted approval */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "grant_id": "fixture-grant",
-                     *       "proposal_id": "fixture-proposal",
-                     *       "proposal_revision": 1,
-                     *       "epoch": 1,
-                     *       "status": "active"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ApprovalV1"];
+                    "application/json": components["schemas"]["S2ApprovalResultV1"];
                 };
             };
             /** @description Invalid request */

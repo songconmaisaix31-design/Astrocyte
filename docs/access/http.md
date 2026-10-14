@@ -27,9 +27,19 @@ H 分支：`songconmaisaix31-design/works-relay-http`。当前非原生依赖 SO
 
 当前 v1.4 验证准备 SOURCE 为 `261fb73921d2a1b929f40bf4d714de5356b9024d`。实际服务测试与归档 / 通知证据检查都消费本次 listener 和 `service-public.json` 保存的真实 URL，通过 `net/url` / `encoding/json` 校验明确 IPv4 loopback、已绑定端口、无凭据或额外 URL 内容；不再以固定端口连接其他服务。实际验证服务使用既有 `Server.Serve(listener)`；`ASTROCYTE_L1_API_PORT=0` 要求显式 `ASTROCYTE_L1_WEB_PORT`，两端口必须独立。公共记录解析拒绝尾随 JSON。
 
-薄配置 SOURCE `a293225afa70db386013f25b6796d3d8361a0891` 使已有受保护目录、应用库、来源与快照的异常身份 IO 立即返回固定安全错误；首次尚未创建的目标保持原初始化语义。快照通过 `os.ReadDir` 枚举实际出版条目，显式源、默认空配置、samefile 和目录保护保持。三项真实 SQLite / 目录 / snapshot hardlink 检查分别 PASS 0.08 秒，精确 Reader overlay vet 与格式检查通过；没有编辑 B 配置测试或读取正式材料。
+薄配置 SOURCE `25d843783d65ada98c0c51766a8d5b35b8f5f941` 对已有受保护目录、应用库、来源与快照的异常身份 IO 立即返回固定安全错误；首次尚未创建的目标保持原初始化语义。`os.ReadDir` 枚举出版条目后先核对 canonical 和实际身份，再判定目录；redirected generation 立即拒绝。真实 SQLite / source hardlink 保护与实际 Junction 拒绝通过；symlink 创建在本机因 OS error 1314 失败，其后保护语义未验证。首失败及 Junction 通过分别保留 `dist/http-listener/linked-generations-os.log` 与 `linked-generation-junction.log`，没有修改系统权限或增加 skip。该薄文件已交 B 精确消费，在 B ACK 前保持冻结。
 
-上述准备通过真实 HTTP / SQLite 的 `TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown`（0.10 秒），精确 P579 Reader overlay build / vet 与格式检查通过。首正常关闭失败保留 `dist/http-listener/v14-address-first-failure.log`，当前通过日志为 `v14-address-second.log`；本次客户端主动释放自己的 idle 连接后正常关闭，没有修改原生状态或重试业务请求。新的实际会话、模型和 Today 窗口尚未启动。R v1.4 精确接口交付前不消费其 WIP、不冻结待答状态机，不把这次验证准备计为语义或 L1 完成。
+上述准备通过真实 HTTP / SQLite 的 `TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown`（0.10 秒），精确 P579 Reader overlay build / vet 与格式检查通过。首正常关闭失败保留 `dist/http-listener/v14-address-first-failure.log`，当前通过日志为 `v14-address-second.log`；本次客户端主动释放自己的 idle 连接后正常关闭，没有修改原生状态或重试业务请求。新的实际会话、模型和 Today 窗口尚未启动，working 和无 started 的人工 done 规则保持待答。
+
+安全事实 HTTP SOURCE 为 `074cf55de4f2d87812a87cde77780c67b76c8fe5`，普通消费 R 的 `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` 与 `79d93132967de20fb1fda3d8d74b4edff386178c`。`GET /api/v1/relay/tasks/{id}/facts` 返回闭合 `facts/session_relations/current_ownership`。事实中的 receipt_id 保持原业务字符串身份，逐项核对该任务可读收据；不会改变原收据 ID。历史关系与当前控制器归属独立，后者只读取原 Registry 持有的 controller 缓存并重新检查权限，冷 Registry 或缺原绑定返回 unknown，不执行 RPC、启动、刷新 live 或写入 store。事实类型、来源、状态和原因使用闭合词表，内部 controller/native identity、CWD、原始输入输出不进入响应；会话事件仍为原六字段。
+
+`RelayIntentRequestV1` 明确提供 `handoff_from_task_id` 与 `handoff_context_confirmed`；人明确选择原任务并确认上下文，R 验证同项目 / Work / 原工作区、不同 Agent、已释放和退出且无 pending。声明的 handoff 关系保持 unknown，实际新 session 证据到达后独立追加关系；省略来源保持 ordinary intent，不自动推断上下文交接。
+
+私有通知游标 SOURCE `ae2160a4a1be77314570a83cc149e019f584ba57` 在原来源 UUID 下使用准确 controller / startup operation 区分连接，恢复的新连接从自身序号范围开始，不套用旧序号。旧 checkpoint 保留在本机 history；GET 读取旧已提交 origin 前通过 R 的历史端口重核同原 session、native identity、provider、workspace 和原 operation。缺旧连接字段的记录保留原来源和 unknown，不倒造连接或当前所有权。归档仍按原文件身份和 offset 增量采集，通知完整性和 raw 恢复 gap 保持独立。精确 Reader overlay build / vet 与实际无控制器 HTTP / SQLite 两项组合 PASS；新的真实通知连接、恢复、历史 origin 正向仍 NOT_RUN，代码提交不替代该验收。
+
+当前公开固定 JSON 目标已准备，实际 assistant 核验必须在来源 identityguard 接纳原档后，准确关联本次 dispatch / send operation。R 已供给操作事实与原控制器身份，但当前没有 operation 到实际原 turn_id 的私有对应端口；此缺口已交原 R，时间邻近不用于推断对应。目标核验与合法 done 前检查保持 NOT_RUN，来源被拒绝时保持真实 FAIL，不用通知、复制 JSON 或模型回答摘要代替原档。
+
+`TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission` 使用本次独占公开 Git 项目、生产 Registry / worktree / runtime、真实 Go listener 和 SQLite，在没有控制器启动的情况下生成真实 ready 与拒绝收据。当前 PASS 0.30 秒，HTTP 每个 fact_id 精确对应实际 store，闭合响应字段检查、GET 前后全状态一致、跨 Origin 拒绝、grant 改变后权限拒绝、原生 session / terminal / worktree 为零。首失败保留 `dist/http-listener/facts-http-first.log`，当前为 `facts-http-final.log`；OpenAPI lint、精确 Reader overlay build / vet、格式检查通过。F 独占生成客户端与产品 UI 消费，新真实窗口仍需模块明确授权。
 
 所有 Relay HTTP 使用既有 Go 服务、loopback、human session、Origin、CSRF 与 ErrorV1。GET 读取已持有任务、派生事件和原收据，不启动 CLI、不发送输入、不恢复会话、不读取原文归档。人工创建 intent 后必须明确确认权限；运行时 Service 是 task、terminal、worktree 与收据的唯一写入者。未知输入交付结果保持 `delivery_unknown`，不能自动重发。
 
@@ -91,7 +101,7 @@ H 分支：`songconmaisaix31-design/works-relay-http`。当前非原生依赖 SO
 | 精确发布组合构建 | `go build -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json -o dist/l1-live/reader-overlay/server.exe ./cmd/server` PASS；overlay 为 P `579a1cede98b47b08a3126f5d3974da938348929` 的五个精确 Reader 文件 |
 | 保护源与寿命配置目标测试 | 四项 PASS：真实 SQLite 显式来源、受保护目录、实际 snapshot hardlink、启动寿命边界；原编译首 FAIL 保留本机 `first-test-compile-failure.log` |
 | 新独立服务 17344 | 实际启动和正常关闭 PASS，60.32 秒 / exit 0；真实 GET agents=0、tasks=0，无注册文件、无原生会话文件 |
-| 新 scope 原生 / Today | 用户明确今晚停止；注册、模型派发、浏览器与三分钟验收均 NOT_RUN，明日按新窗口继续 |
+| 新 scope 原生 / Today | 原停止窗口没有注册或派发；当前已授权语义通过后执行，实际注册、模型、浏览器与三分钟验收仍 NOT_RUN，待全部前置条件和模块单窗口授权 |
 
 实际证据检查逐原档 origin 查询 `attention_engine_events` 并通过 `EventRepository.GetEvent` 定位提交 ID，独立比较 HTTP 六字段、分页和 canary 排除；核对重读及持久游标、追加与停止后的真实文件范围。实际 HTTP 权限检查包含无 session、跨 Origin、未授权 bearer 和缺 CSRF；静默 GET 前后事件数量必须一致。模型名称与工具调用数量仅从选定实际文件生成安全聚合。
 
@@ -111,17 +121,17 @@ R 通过实际 Windows 文件名称接口与 `samefile` 核对两个名称，分
 
 完整默认 check/build/E2E、合并前端、Windows ZIP 解压启动和正式发布由对应 owner 与集成验收负责。H 的静态构建和契约检查不能代替实际 Today DOM、完整会话、终端编码或正式部署。
 
-## v1.4 技术差距草案
+## v1.4 采集与状态边界
 
-已全文读取 `docs/research/orca-rea-20261014.md`。以下为交模块的设计输入，四项关键语义、字段名称及旧记录处理由用户确认；本轮没有修改 v1.4 业务或冻结接口。
+已全文读取 `docs/research/orca-rea-20261014.md`，按当前正式 `Works-Relay-v1.4.md` 消费批准的事实和 handoff 接口。下表记录采集层验收边界；working 严格开始证据与无 started 的人工 done 规则仍待用户答案，不从 accepted 推定完成或释放。
 
-| 方向 | 当前 H 接缝与差距 | 待确认的必要安全信息 | 真实验收 |
+| 方向 | 当前 H 接口与采集边界 | 安全事实与关系 | 真实验收 |
 |---|---|---|---|
-| 投递阶段 | `relay_session_codex.go` 可识别带原 turn_id 的开始 / 完成记录；`relay_session_native.go` 保留通知序号。六字段事件不关联某次 input 的 operation，采集层不判定 task working | R 提供某次操作的输入接受、原生回合开始证据和未知状态；原 turn_id 仅在内部关联，公开 task / receipt 用既有 operation_id 和安全状态表达。人工完成保持独立 | 实际原 controller 的接受收据与开始事件逐一关联 SQL ID；无开始证据不从普通活动、Git、stdout 推定开始；未知收据保留占用且不重发 |
-| 原生会话归属 | `RelaySessionBinding` 绑定 task、terminal、session、worktree、project、native ID、format；私有 cursor 绑定该身份及文件位置或通知序号。当前 source 与 gap 已表达 alias FAIL，缺少可持久的原 controller 代次关系 | 内部持久原会话与执行所有者关系及原因；公开沿现有 source、status、gap 和公开 task / terminal 身份表达，未经必要性确认不扩大事件六字段 | 只读本次准确 controller 路径，逐 ID 回查真实事件库；冷重启保持历史绑定且不重建进程所有权，文件身份冲突立即失败、不删未知链接 |
-| 输入就绪 | 注册已有 drive_mode / input_mode；H 仅解析登记并组装 driver，没有 TUI 或 structured 的输入就绪检测端口，CLI 可执行和注册不证明 ready | R 供给输入方式、就绪三值、实际就绪证据原因和观测时间；命令、原生输出及工具参数保持私有。GET 只读缓存 | 实际 installed controller 的初始化 / ready 正证据；stdin 写入、换行或 EOF 不推定回合提交，缺端口分别保留 unknown / unsupported；不制作伪 CLI 或 ready 输出 |
-| 恢复身份关系 | archive cursor 以 BindingID / FileIdentity / Offset 去重，native cursor 以 BindingID / Sequence 去重。通知恢复缺口仍为 `native_resume_raw_events_unavailable`；现有 coverage 没有持久的恢复 / 换 Agent 关系序列 | R 明确同 session 恢复、新 session、换 Agent 与不支持的 fork 关系；H 消费内部原 / 新绑定关系和 replay 范围。公开只使用获准的 opaque 身份与安全关系状态 | 同 task 恢复核原 native ID / CWD，换 Agent 在合法释放后新 session；原输入不重发，旧 cursor 不错误套到新 stream，重复 ID 不新增或刷新 live，恢复缺口保持 partial |
+| 投递阶段 | `events/relay_session_codex.go` 识别带原 turn_id 的开始 / 完成记录；通知保留序号。六字段事件不扩大为 operation DTO，采集层不判定 working | 安全 facts 表达原 operation 的 written / accepted / started / unknown；收据和后到事实各自保持。实际目标尚缺 operation 到原 turn_id 的私有准确对应 | 新窗口未运行；开始规则仍待答。没有开始证据时不从普通活动、Git 或 stdout 推断，未知收据保留占用且不重发 |
+| 原生会话归属 | archive binding 保留原 task / terminal / session / worktree / project / native identity / format 与文件身份、位置；当前 alias FAIL 保留 | R 私有 controller / startup operation 与 history 已准确消费；GET facts 独立返回原 Registry 缓存 current_ownership，历史不授当前归属 | 实际无控制器的 unknown / GET 只读与权限拒绝通过；新有会话正向、冷重启仍 NOT_RUN，原档冲突立即失败、不删未知链接 |
+| 初始化与消费 | 受信任登记保持 drive_mode / input_mode，原 driver 的初始化、session 确认、管道写入 / 关闭与消费 unknown 分项记录 | 闭合 facts 提供来源、原 operation、状态和时间；GET 不探测 ready，不将 input_accepted 或 ownership 推定为可再送输入 / RPC 可用 | 新真实初始化、消费和工具关闭证据仍 NOT_RUN；EOF 与 stdin 写入不推定模型已消费，缺能力具体报告 |
+| 恢复与交接 | 原档以 binding / file identity / offset 去重；通知新连接以原 controller / startup operation 独立 UUID 来源和 sequence 去重，旧 checkpoint 留本机 history | R 提供 new / resume / handoff / unknown 关系，声明与真实 session 确认独立；获准 handoff 字段要求明确来源和人工上下文确认，fork 真实拒绝 | 无新真实窗口；恢复 raw gap 保持 `native_resume_raw_events_unavailable`，session_complete=false，不能用通知验收覆盖 archive FAIL |
 
-归档与通知的完整性分别验收，回合完成不封存整个 Session。明日真实 CLI → 三分钟 Today → L1 最终验收需要新独立 scope、F 提前 ready、实际目标内容在人工 done 前核实和真实禁止工具的启动证据；今晚没有新增该窗口。
+归档与通知的完整性分别验收，回合完成不封存整个 Session。当前获准的真实 CLI → 三分钟 Today → L1 验收需要语义 SOURCE 和实际组合通过、新独立 scope、F observer 先 ready、实际目标内容在人工 done 前核实、真实工具关闭的启动证据以及模块单窗口授权；当前没有启动该窗口。
 
 实际用户作品、自由工具授权、默认活性窗口仍未决定。原生文件的完整前缀、永久追加性与恢复 raw 通知接口不足时，保持具体 unknown/partial。原始 Native 共享源码、mapper、engine、schema/迁移、七类权重及快照流程没有 H 修改。V4 协议、库和运行资料没有读取或修改。管理员 Procmon、两次实际 00:30、正式认知验收和现有 17321 部署均未由本次 H 验收执行。

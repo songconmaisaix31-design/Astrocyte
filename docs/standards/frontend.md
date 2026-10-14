@@ -1,6 +1,6 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前本域 SOURCE `b7709c9694efcc3c031e829abb2f08a120da2735`，窗口准备 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，前序业务 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前本域 SOURCE `fc97cc17945cd496241fe8de36958f5a5df2edfb`，提案入口 SOURCE `b7709c9694efcc3c031e829abb2f08a120da2735`，窗口准备 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，前序业务 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 ## 完成内容
 
@@ -20,6 +20,14 @@ Relay 人工迁移按已确认规则使用 `observe`，事件接入核对使用 
 
 模块已将 `workspace/proposals/**`、`swarm/SwarmPage.tsx` / `SwarmPage.module.css`、`swarm/missions/**` 以及 `e2e/s2-*.spec.ts` / `s3-*.spec.ts` 独占移交 `product-ui-20261015`，Task `task_d0cee5a583bb` / Dispatch `ctx_e6aafcccc10a`。F 已停止写入这些路径，继续负责共享 API / schema / hooks / auth / router / components、WorkspacePage 薄接入、DevelopmentSpacePanel、既有 E2E 与 Relay 唯一实际界面操作；新 UI 的业务返修归该 Owner。
 
+当前阶段普通消费 H `074cf55de4f2d87812a87cde77780c67b76c8fe5` 并通过既有 generator 生成准确类型。原 `relayApi` 增加只读 facts 请求；任务页分开显示动作执行权 / 结果、初始化、会话确认、通道开放 / 写入 / 关闭、输入接受、开始与消费，完整保留事实 ID、操作和原收据字符串、来源、时间、状态与固定原因。人工目标事实显示为声明，历史会话关系与当前控制器归属分别展示；缺少事实保持未知。
+
+Intent 通过真实任务历史选择同项目 / 作品、不同 Agent、原工作区 Prepared 且无 active task、原终端已确认退出的 released 任务，读取实际原收据并拒绝 pending。操作者主动勾选上下文交接；项目、Agent 或来源选择改变后取消确认，普通新意图省略两个可选字段。服务端继续原子重核所有权、许可、版本与交接条件。真实不成对请求 HTTP 400 且任务未创建；新意图没有自动交接声明。正向实际跨 Agent 交接尚未运行。
+
+按 R/H 的准确前置，NativeRead 需要当前原控制器归属确认、未确认退出、无 pending / 自身未知、任务非 released，并由真实 driver 再核权限、原 tuple 和 RPC；当前归属不产生 RPC-ready 证明。Send / Stop 核当前 owned，Send 保留 EOF、done、unknown 与退出限制；人工释放与普通 GET 继续独立规则。working / 无开始信号人工完成规则保持待答。`accepted` 收据显示“动作已接受”，任务状态与开始、消费、人工目标事实分开。非法时间或逆向时间顺序立即抛出错误。
+
+公共 `usePersistentCommand<T>` 复用已验证的浏览器未知锁，Relay 保留原 namespace。命令结果由准确业务响应分类；网络 / 5xx（501 除外）/ delivery_unknown 继续锁定，pending 或 accepted 带错误同样锁定。只有实际返回的原请求身份匹配，才能通过只读收据核查解锁；缺少身份的普通 HTTP 返回不能用于解锁。作用域变更通过组件 key 重新挂载，输入 / 响应原文不进入 sessionStorage。发送在 accepted 带错误时保留正文；新 UI 可直接消费此 SOURCE，S2/S3 具体收据分类仍等待准确契约。
+
 ## 精确源码消费
 
 普通消费 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、B 实际输入 `e05c013a08ccf372bb884dae5eeb3345f92173af`、私有附件 `cc46b9855775adf70bce74242d08ef84ff4f573b`、真实 URL helper `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、R 人工迁移 `d14b08dc50014baf9ee636543564b040112cf3b5`、H Reader 装配 `b247dfb12b938739f09acc73e6b7582376951a0c` 和真实 listener `1aadeebaba2330bb8b786989f577415da5208fd5`。
@@ -30,6 +38,9 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| 当前 facts / shared Hook 的 build（含 typecheck）/ lint / E2E 显式 tsc / generator check | 退出 0 | `.verification/relay-facts-shared-build-source.log`、`relay-facts-shared-lint-source-final.log`、`relay-facts-shared-e2e-typecheck.log`；初次类型 / Hook lint 失败日志保留 |
+| `npx vitest run` 四个 Relay 参数 / 静态显示文件 | 4 文件 19 项 PASS；明确参数输入，不声明原生执行 | `.verification/relay-facts-shared-vitest-source.log` |
+| 原权限 / 版本 / 离线未知锁和新的交接声明 / facts 六用例，两尺寸 | 首 10 PASS / 2 实际 403 FAIL；补全本次项目准确 codex + observe 许可后，facts 两尺寸 2 PASS | `.verification/relay-facts-shared-playwright-first.log`、`relay-facts-permission-playwright-current.log`；HTTP / DOM 逐事实比较、无原生会话和新模型调用 |
 | 提案入口 `npm run typecheck` / `npm run lint` / `npm run build` | 退出 0 | `.verification/proposal-entry-typecheck-first.log`、`proposal-entry-lint-final.log`、`proposal-entry-build-first.log` |
 | 提案入口实际导航 / 空集合 / 权限拒绝 / 人工读取恢复 | 两种窗口 8 PASS，20.6 秒；实际生产 Go / SQLite / HTTP，无新模型调用 | `.verification/proposal-entry-playwright-first.log`；当前新增用例不覆盖原完整默认结果 |
 | 新窗口准备的 `npm run typecheck`、`npm run lint`、五个受影响 E2E 文件显式 `npx tsc --ignoreConfig --noEmit ...` | 退出 0；不声明原生窗口已执行 | `.verification/relay-evidence-e2e-typecheck.log` |
@@ -70,7 +81,7 @@ B 原实际 README 结果为 `agent_inferred`、模型 `gpt-6.1-sol`、原生 ID
 | 剩余范围 | 当前状态 |
 | --- | --- |
 | 原三分钟窗口、目标完成及当前原档身份 | FAIL，历史不改 |
-| 新 v1.4 投递阶段、原生归属、输入 ready、恢复身份与人工上下文交接 | 已收到准确 R `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` / H `074cf55de4f2d87812a87cde77780c67b76c8fe5`，F 继续消费；working 规则仍待决定，不手写字段 |
+| 新 v1.4 投递阶段、原生归属、输入 ready、恢复身份与人工上下文交接 | 准确 H `074cf55`（包含 R 事实与 current ownership）已普通消费及生成，安全事实 UI / 成对声明负向 / 公共未知锁实际通过；正向原生 ready / resume / 跨 Agent handoff 未执行，working 规则仍待决定 |
 | EOF / structured、互斥与 generic 409、未知 send、第二 CLI、publication error | 原完整默认 22 项缺获准真实场景 FAIL，尚未通过 |
 | 新真实 CLI / Today / L1 完整验收 | 用户当前允许继续准备；在语义及根规则满足前未开启新窗口 |
 | 完整默认合并产品最终验收 | 尚未通过，203 / 41 / 32 / 4 保留 |
