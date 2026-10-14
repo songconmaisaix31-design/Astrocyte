@@ -96,7 +96,7 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 
 | 阶段 | 实际检查 | 当前状态 |
 |---|---|---|
-| 语义领域实现 | 唯一执行权与重复操作；独立输入 / 开始 / 人工完成事实；初始化 / 消费分别记录；真实归属和关系拒绝；旧记录 unknown；权限版本与撤销 | IMPLEMENTING，待 R 精确 SOURCE / REPORT |
+| 语义领域实现 | 唯一执行权与重复操作；独立输入 / 开始 / 人工完成事实；初始化 / 消费分别记录；真实归属和关系拒绝；旧记录 unknown；权限版本与撤销 | 独立事实 / 人工handoff拒绝阶段 SOURCE1a4f120已交且实际领域检查PASS；working / done待用户答案，当前所有权安全口增补及完整真实链路待交 |
 | HTTP 与 UI 组合 | 正确生成契约、六字段、安全错误；真实 SQLite / HTTP 与权限；F 展示和操作；port0地址与Origin / CSRF / 关闭 | port0真实SQLite / HTTP / CSRF / 关闭独立通过，B/F实际helper消费继续；v1.4组合 NOT_RUN |
 | 单次真实 CLI | 新公开 scope、准确 owned 控制器、自有 DB、工具关闭、一次明确输入；初始化、接受、开始、结束与人工目标分开；源码通过后执行 | NOT_RUN |
 | 三分钟 Today | F observer 先 ready，无登记基线；H一次真实登记并保存原始起点；每 native event_id 逐 SQLite 核；实际六字段 HTTP 与两尺寸 firstDOM 时间 | 新窗口 NOT_RUN，旧591116 / 591117毫秒 FAIL保留 |
