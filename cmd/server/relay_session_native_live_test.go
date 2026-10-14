@@ -69,7 +69,8 @@ func TestRelaySessionActualNativeNotificationEvidence(t *testing.T) {
 		t.Fatal("实际通知游标未持久化")
 	}
 	checkpoint := *loaded[task.ID].Native
-	if checkpoint.BindingID != owned.BindingID || checkpoint.Sequence != source.LastSequence {
+	connectionBinding, err := relayNativeConnectionBinding(owned.BindingID, owned.ControllerID, owned.StartupOperationID)
+	if err != nil || checkpoint.BindingID != connectionBinding || checkpoint.Sequence != source.LastSequence || loaded[task.ID].NativeControllerID != owned.ControllerID || loaded[task.ID].NativeStartupOperationID != owned.StartupOperationID {
 		t.Fatal("实际通知序号与持久位置不符")
 	}
 	capture := events.NewRelaySessionCapture(attention.NewPendingEventService(repo), nil)

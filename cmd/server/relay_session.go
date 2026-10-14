@@ -16,9 +16,18 @@ import (
 )
 
 type relaySessionEntry struct {
-	Cursor   events.RelaySessionCursor
-	Coverage workbench.SessionCoverage
-	Native   *events.RelaySessionNativeCursor `json:",omitempty"`
+	Cursor                   events.RelaySessionCursor
+	Coverage                 workbench.SessionCoverage
+	Native                   *events.RelaySessionNativeCursor `json:",omitempty"`
+	NativeControllerID       string                           `json:",omitempty"`
+	NativeStartupOperationID string                           `json:",omitempty"`
+	NativeHistory            map[string]relayNativeCheckpoint `json:",omitempty"`
+}
+
+type relayNativeCheckpoint struct {
+	Cursor             events.RelaySessionNativeCursor
+	ControllerID       string
+	StartupOperationID string
 }
 type relaySessionCheckpoints map[string]relaySessionEntry
 type relaySessionState interface {
@@ -54,6 +63,8 @@ func relayCaptureBinding(v domain.RelayOwnedSession) events.RelaySessionBinding 
 
 func sessionPublicGap(code string) string {
 	switch code {
+	case "native_controller_binding_unrecorded":
+		return code
 	case "native_source_not_finalized", "native_prefix_unverified", "native_source_unverifiable", "native_sequence_invalid", "native_sequence_gap", "native_source_error", "invalid_native_record", "source_extent_unsupported", "native_notification_source_not_armed", "native_start_metadata_decode_failed", "native_start_identity_mismatch", "native_notification_method_invalid", "native_notification_params_invalid", "native_notification_cwd_mismatch", "native_notification_identity_unverified", "native_notification_before_start_identity", "native_notification_semantics_unknown", "native_notification_after_close_or_capacity", "native_token_usage_invalid", "native_stream_ended_without_shutdown_ack", "native_resume_raw_events_unavailable", "native_shutdown_ack_unavailable", "native_reader_end_unconfirmed":
 		return code
 	case "archive_metadata_unavailable", "archive_metadata_unsupported", "archive_metadata_unverifiable", "archive_metadata_identity_unverified", "archive_metadata_path_unavailable":
@@ -243,11 +254,12 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 		if nativeSelected {
 			coverage = entry.Coverage
 			coverage.Source = "native_notifications"
-			if entry.Native.BindingID != v.BindingID {
+			currentBinding, bindingErr := relayNativeConnectionBinding(v.BindingID, v.ControllerID, v.StartupOperationID)
+			if bindingErr != nil || entry.Native.BindingID != currentBinding {
 				coverage = coverageFor(v)
 				coverage.Gap = "session_identity_changed"
 			}
-			if native, exists := nativeSources[v.TaskID]; !exists || native.OwnedSession.BindingID != entry.Native.BindingID || native.OwnedSession.Gap == "permission_denied" {
+			if native, exists := nativeSources[v.TaskID]; !exists || relayNativeCaptureBatch(native).BindingID != entry.Native.BindingID || native.OwnedSession.Gap == "permission_denied" {
 				coverage = coverageFor(v)
 				coverage.Gap = "native_source_unverifiable"
 			} else {
@@ -310,6 +322,15 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 				}
 			}
 			scopes = append(scopes, workbench.SessionAdmissionScope{TaskID: v.TaskID, ProjectID: v.ProjectID, TerminalID: v.TerminalID, NativeSessionID: nativeID, NativeBindingID: nativeBinding, RelayEventIDs: ids, NativeNotifications: nativeSelected})
+			if nativeSelected {
+				history, err := c.nativeHistoricalBindings(ctx, v, entry)
+				if err != nil {
+					return view, &apierrors.ServiceError{Code: apierrors.EvidenceMissing}
+				}
+				for _, binding := range history {
+					scopes = append(scopes, workbench.SessionAdmissionScope{TaskID: v.TaskID, ProjectID: v.ProjectID, TerminalID: v.TerminalID, NativeSessionID: nativeID, NativeBindingID: binding, NativeNotifications: true})
+				}
+			}
 		}
 	}
 	if q.TaskID != "" && !found {

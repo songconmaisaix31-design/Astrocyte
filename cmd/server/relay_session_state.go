@@ -54,10 +54,23 @@ func (s relaySessionFileState) Load() (relaySessionCheckpoints, error) {
 			return nil, errors.New("session state invalid")
 		}
 		cursor := entry.Cursor
+		if entry.Native == nil && (entry.NativeControllerID != "" || entry.NativeStartupOperationID != "" || len(entry.NativeHistory) != 0) {
+			return nil, errors.New("native session connection state invalid")
+		}
 		if native := entry.Native; native != nil {
 			id, err := uuid.Parse(native.BindingID)
 			if native.Version != 1 || err != nil || id == uuid.Nil || id.String() != native.BindingID || native.Sequence < 0 || native.Counts.Lines < 0 || native.Counts.Projected < 0 || native.Counts.Unknown < 0 || native.Counts.Errors < 0 || native.Counts.UnknownTokens < 0 || native.Counts.Projected > native.Sequence {
 				return nil, errors.New("native session state invalid")
+			}
+			if !relayNativeCheckpointIdentity(native.BindingID, entry.NativeControllerID, entry.NativeStartupOperationID) {
+				return nil, errors.New("native session connection state invalid")
+			}
+		}
+		for key, checkpoint := range entry.NativeHistory {
+			cursor := checkpoint.Cursor
+			id, err := uuid.Parse(key)
+			if err != nil || id == uuid.Nil || id.String() != key || cursor.BindingID != key || cursor.Version != 1 || cursor.Sequence < 0 || cursor.Counts.Lines < 0 || cursor.Counts.Projected < 0 || cursor.Counts.Unknown < 0 || cursor.Counts.Errors < 0 || cursor.Counts.UnknownTokens < 0 || cursor.Counts.Projected > cursor.Sequence || !relayNativeCheckpointIdentity(key, checkpoint.ControllerID, checkpoint.StartupOperationID) {
+				return nil, errors.New("native historical state invalid")
 			}
 		}
 		if cursor.Version == 0 {
