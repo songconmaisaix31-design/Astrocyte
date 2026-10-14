@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -94,12 +95,20 @@ func TestServerInitializedSnapshot(t *testing.T) {
 		time.Sleep(25 * time.Millisecond)
 	}
 	source := filepath.Join(data, "state.sqlite")
+	sourceBefore, err := os.ReadFile(source)
+	if err != nil {
+		t.Fatal(err)
+	}
 	root := filepath.Join(owned, "snapshots-root")
 	p, err := publish(ctx, source, root, "")
 	if err != nil {
 		t.Fatal(err)
 	}
 	reader := adapter.NewWorkbenchReader(root)
+	sourceAfter, err := os.ReadFile(source)
+	if err != nil || !bytes.Equal(sourceBefore, sourceAfter) {
+		t.Fatal("source main file changed during backup", err)
+	}
 	for _, name := range []string{"health", "today", "focus", "agents", "events", "filters", "topics/evidence"} {
 		if _, err = reader.Read(ctx, name, workbench.Query{}); err != nil {
 			t.Fatalf("%s: %v", name, err)
@@ -134,6 +143,21 @@ func TestServerInitializedSnapshot(t *testing.T) {
 		}
 		if err := os.Remove(alias); err != nil {
 			t.Fatal(err)
+		}
+	})
+	t.Run("directory-alias", func(t *testing.T) {
+		alias := filepath.Join(owned, "linked-root")
+		if err := os.Symlink(root, alias); err != nil {
+			if runtime.GOOS != "windows" {
+				t.Fatal(err)
+			}
+			command := "New-Item -ItemType Junction -Path '" + strings.ReplaceAll(alias, "'", "''") + "' -Target '" + strings.ReplaceAll(root, "'", "''") + "' -ErrorAction Stop"
+			if output, e := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-Command", command).CombinedOutput(); e != nil {
+				t.Fatalf("junction creation: %v %s", e, output)
+			}
+		}
+		if _, err := publish(ctx, source, alias, ""); err == nil {
+			t.Fatal("directory alias accepted")
 		}
 	})
 	t.Run("expired", func(t *testing.T) {
@@ -182,6 +206,21 @@ func TestServerInitializedSnapshot(t *testing.T) {
 		t.Fatal("empty history must stay empty", err)
 	}
 	t.Logf("actual server initialized source, production Reader 7 views, old generation %s", p.Generation)
+	importRoot := filepath.Join(owned, "actual-history-import")
+	if _, err = publish(ctx, source, importRoot, filepath.Join(root, "snapshots", p.Generation, "history.json")); err != nil {
+		t.Fatal("explicit real prior history", err)
+	}
+	var out bytes.Buffer
+	if err = run(ctx, []string{"--source", source, "--root", filepath.Join(owned, "cli-root"), "--timeout", "30s"}, &out, &out); err != nil {
+		t.Fatal(err)
+	}
+	var result struct {
+		Status string `json:"status"`
+		publication
+	}
+	if err = json.Unmarshal(out.Bytes(), &result); err != nil || result.Status != "ok" || result.Generation == "" {
+		t.Fatal("CLI output", err)
+	}
 }
 
 func fmtInt(n int) string { b, _ := json.Marshal(n); return string(b) }
