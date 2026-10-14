@@ -121,7 +121,7 @@ S 的适用验证仅为文档链接/路径、来源版本与内容核查、`git 
 | 来源 | 观察版本与用途 |
 |---|---|
 | M-release `docs/modules/release.md` | 观察 HEAD `0b0b0ce750b70867c959d3327b45e19c9705b6fd`；最新 S0–S6 授权、Q/P/N 阶段范围、最终 I 尚未派发及正式冻结 |
-| M-product `docs/modules/product.md` | 观察 HEAD `1b696fff3b95d8e4a6bb18365efa0977d6c97a67`；B/F/T/V 当前写域与验收。此版仍保留六组旧范围；最新 Task 明确的 S0–S6 授权优先。新功能计划路径已通过 M-release 请求，尚未收到，不据此给新 owner 增列独占文件 |
+| M-product `docs/modules/product.md` | 观察 HEAD `1b696fff3b95d8e4a6bb18365efa0977d6c97a67`；B/F/T/V 当前写域与验收。此版仍保留六组旧范围；最新 Task 明确的 S0–S6 授权优先。M-release 对 `msg_d83eb61f8f1f` 的正式答复确认当前尚无可交付的新 S2/S3 文件/准确 SOURCE，按 SPEC 完成本轮研究，后续由原 owner 补计划差异核查 |
 | M-relay `tasks/Works-Relay-v1.4.md` | 观察 HEAD `8c93a29ffe7df1f8c110634b3dc1b3c4c63062e9`；已读投递事实、归属、就绪、new/resume/fork/handoff 全文；working 与无 started 的人工完成仍待决定 |
 | REA/Orca 既有报告 | `docs/research/orca-rea-20261014.md`，在 M-relay 树读取；复用其 1.4.220 选择范围静态结果，不重读安装包或私人状态，不重新启用 REA MCP |
 | CSGHub 既有研究四文件 | X 树 `docs/research/reference-code-20261014/{SOURCE,CSGHUB-ASSETS,CSGHUB-RUNTIME-RESEARCH,HANDOFF}.md`，观察 HEAD `153b8534a8be46e4ce20c8f77a43c6bca730529e`；复用公开 SHA、许可和 REA 覆盖，并在已有公开副本复核本文采用的权限、事务及 unknown 函数 |
@@ -219,7 +219,7 @@ REA/Orca 报告中的输入接受、回合开始、目标完成、归属和恢�
 
 | 交接事项 | 接收与下一步 |
 |---|---|
-| 新计划准确路径/SOURCE 与安全写域 | `msg_83abd45e4b67` 已送 M-release；其 `msg_4794f63b988d` 确认已请求 M-product，研究按 SPEC 独立继续。未收到准确计划前不代定新 owner 文件集合 |
+| 新计划准确路径/SOURCE 与安全写域 | `msg_83abd45e4b67` 及唯一问题 `msg_d83eb61f8f1f` 已送 M-release；协调端已实际检查 product.md/tasks 并正式答复当前没有可交的新文件，允许本次按 SPEC 完成研究。其已转产品具体缺口，计划到位后原 owner 补差异核查；本文不代定文件集合 |
 | S2/S3 empty 与同名 ContextPacket 的真实覆盖 | `msg_bb9a8a5e146a` 已交 M-release：转新 S2/S3 owner 及原 B/F/R/H，按 §10 实施/验收；零新业务修改 |
 | 论文代码的权限缺省策略与分母 | 同消息明确 generic score 与固定 source anchor 的不同入口；后续独立 L2 评估设计使用自己的真实任务依据，不搬作者合成 fixture/manifest 系统或 0.8 阈值 |
 
@@ -229,6 +229,14 @@ working 严格开始证据、无 started 客户端的人工完成路径、实际
 
 本轮允许写入仅 `docs/release-research.md`。公开 research 检索、arXiv 全文和作者代码副本保留于已忽略 `.verification/`；未把其他树材料、第三方源码、数据库、会话、凭据或研究环境打入提交。原报告的首段与首失败事实保留。
 
-适用检查为：报告本地相对链接/新增固定代码链接对应公开副本及行号、`git diff --check`、相对接管 HEAD 的单文件写域、首段保留、普通 SOURCE/独立 REPORT 提交及 push 后完整远端 SHA。准确 SOURCE 与检查结果在随后独立 REPORT 追加；任何检查未执行不预填 PASS。
+研究 SOURCE 为 `1f617c51abcc2ca1fea3932747ba11ceabb7394e`，已普通提交/push，`git ls-remote origin refs/heads/songconmaisaix31-design/release-research-20261014` 精确同值。本节的输入缺失确认与验证记录是该 SOURCE 之后的独立 REPORT；REPORT 的完整 SHA 由实际提交结果和 worker_done 提供，避免在文件内循环引用尚未产生的自身 SHA。
+
+| 实际检查命令/对象 | 结果与范围 |
+|---|---|
+| `node .verification/verify-report-20261015.mjs` | PASS：使用忽略目录的 `marked@16.4.2` 解析 Markdown；10 个不同本地相对链接存在、16 个新增固定源码链接的 repo/SHA/文件/非空行与公开副本匹配；原报告首段全等；相对接管 HEAD 唯一修改为本文。结果保存在 `.verification/report-check-20261015.json` |
+| `git diff --check 7d030fc83120052a8f32ea74c6007ff9be6878ca` | PASS，无空白错误；SOURCE 为纯追加 123 行、零删除，原报告首事实保留 |
+| `git check-ignore .verification/report-check/package.json .verification/verify-report-20261015.mjs` | PASS，文档检查依赖与脚本均已忽略；业务依赖锁零改动 |
+| 作者公开仓库 `git rev-parse HEAD` / `git ls-remote … HEAD` | PASS，均为 `1fca7d1554865fc3129d9869981c6af770152475`；只读代码/许可，不运行上游测试与 fixture |
+| SOURCE 普通 push / 远端完整 SHA | PASS，分支 `songconmaisaix31-design/release-research-20261014`，上述 SOURCE 精确一致；未 force/rebase/reset |
 
 未执行：产品 Go/前端/浏览器检查与构建、作者测试或实验、真实模型/原生控制器/SQLite/HTTP 验收、正式采集/Sleep/judge、部署和发布。没有读取私人会话/凭据/正式库；实际 approved 数量、正式认知状态和当日科研结果未核，不从规划历史值推断当前值。新功能计划准确来源、ShareMem 官方代码/许可与模型/数据资产分发许可尚未核定；对应实现或分发仍由领域 owner 在使用前完成检查。
