@@ -1,5 +1,7 @@
 # Astrocyte 主控交接
 
+2026-10-14 19:43：恢复网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md)，沿原 Run `run_7b2ce96bcd13` / B、F 原 Task 及独立工作树继续；新 Dispatch 分别 `ctx_e0356fbca4e1`、`ctx_a69aaadfe5b6`，两者 turnStart observed，未提交修改保留。P 最新 REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端，适用独立验证进行中；旧终端释放状态仍 unknown。主控只维护状态、验收及最终 Git；B / F 开发及返修持续归各原轨，完成后交唯一集成人员普通合并。当前正式运行树不接入整改源码；Mission 新业务待定和 V4 冻结保持不变。
+
 2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
 
 Works Relay v1.2 工程 SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已普通集成，CI 38469944551 双平台 success；L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，采集 / HTTP / Today 组合及真实 CLI 闭环尚未最终验收。Workbench v0.1 已部署，Procmon 与两日自动快照仍 NOT_RUN。当前工作树不包含这些 Workbench 业务提交，不能用本树测试代表其验收。

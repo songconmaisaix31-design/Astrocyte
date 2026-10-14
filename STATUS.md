@@ -2,6 +2,8 @@
 
 ## 当前开发入口（2026-10-14）
 
+2026-10-14 19:43 网络中断任务已恢复：当前工作为 [新标准整改](tasks/AGENTS-standard-integration.md)，B / F 沿原 Task、工作树及分支继续并行，启动回执均已观察到 turnStart。P 最新 SOURCE `a1089f94a13306e3cd250ed8facbb438d6e75a19` / REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端一致；主控适用复查进行中。业务整改与组合验收尚未完成，Mission 扩展仍未决定，V4 冻结和日程保持当前约束。
+
 本工作树为 `validation/v1-20261012`，负责 V4 验证与任务登记。Workbench 开发分支为 `workbench/v0.2-access`，当前状态由 [Workbench 状态入口](../workspaces/Astrocyte/works-relay-coordination/STATUS.md) 持续维护；其当前文件需要从对应工作树读取。本文件下方保留任务要求的历史验证记录。
 
 Workbench v0.1 验收业务源码 `d46f9f4cf2fd6e13c8362234746105330356c160` 已部署；管理员 Procmon 零写监控和 10-15/10-16 两次真实自动快照仍 NOT_RUN。Works Relay v1.2 工程源码 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已集成，其 CI 38469944551 在 Linux / Windows 均 success；两平台默认 E2E 各 268 PASS / 38 SKIP。该结果不包含后续 L1 会话采集。

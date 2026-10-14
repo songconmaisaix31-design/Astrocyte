@@ -47,4 +47,12 @@ Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3
 
 ## 当前状态
 
+2026-10-14 网络中断恢复：继续原 Run `run_7b2ce96bcd13`，主控现绑定 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749`（generation 2）。B / F 原终端已失效，原 Dispatch 被运行时登记为 abandoned / failed，Task 恢复为 ready；两工作树未提交修改完整保留。恢复沿用原 Task、工作树、分支及上述互斥 write_paths，只补回原开发人员的执行上下文，不新开同域轨道。B 继续 parser、依赖登记与真实后端验证；F 继续已有前端修改及真实服务验证。两轨完成后，由唯一集成人员普通合并精确 SOURCE / REPORT，执行组合检查并推送独立整改分支。
+
+恢复回执：B 新 Dispatch `ctx_e0356fbca4e1` / 终端 `term_37307630-9a25-480e-b6d4-2bc830dbc3d1`；F 新 Dispatch `ctx_a69aaadfe5b6` / 终端 `term_54201688-6be7-42d0-a42a-15e6ea3b6631`。两回执均 ready / input_accepted / turnStart observed，使用 Orca Codex 现有模型配置。B 已核实当前 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 并保留修改；B / F 均收到主控当前规则、后续授权和跨轨消费要求。P 已结算，但旧终端清理为 `release_unknown`；按回执检查并重试后仍无法证明旧进程状态，未使用批量终端关闭。
+
+P 已完成返修：SOURCE `a1089f94a13306e3cd250ed8facbb438d6e75a19` / REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71`。原 `worker_done` 已被编排接受；报告记载本次 29 项证据测试与 25 项安全测试 PASS、36 文件规范检查及 14 冻结 AST 全等。主控将核对远端、修改路径与适用独立验证，不将该子集计作完整实验验收。Mission 扩展决定仍未收到；V4 / Discovery & Split 冻结、正式数据和日程继续按既有边界处理。
+
+主控已独立核对 P REPORT 远端一致及修改路径在原授权范围；重新执行 `python -m unittest discover -s tests/validation/evidence -v`，29 PASS（16.906 秒），`python tests/validation/experiment/run_safe_tests.py`，25 PASS（0.301 秒），`python tests/validation/experiment/check_python.py 4ec19cddb24068e09597357b0aabc6ecb9420930`，36 文件 / 14 冻结 AST PASS。后续只因新修改、失败或组合疑点追加检查；原完整实验 28 项及真实模型路径仍 NOT_RUN。F 已回执实际终端模型 GPT-6.1-Sol high fast，继续消费 B 精确契约与真实服务，原浏览器首次失败证据保留。
+
 已读取当前交接 / 状态 / 规格 / 规划、原 Workbench 计划及 Orca 编排记录。已核实原 R/H/F/I 轨道存在；本轮未接管或变更其生命周期。规则与入口阶段提交 `4ec19cd` 已 push，链接和 diff 检查 PASS；三条整改轨道已接受任务，源码与组合验收尚未完成。中间结果仅放在各自工作树 `.verification/`；正式原件不读取、不复制、不输出。
