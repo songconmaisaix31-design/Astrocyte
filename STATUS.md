@@ -1,5 +1,15 @@
 # Astrocyte 当前状态
 
+## L1 当前开发（2026-10-14）
+
+用户要求继续 L1，采用根目录当前 AGENTS.md。H Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da` 继续实际 Codex 原生会话、独立 SQLite 与 HTTP 服务验证；F Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335` 继续实际服务到 Today 的 DOM 验证。原工作树、分支和独占文件范围保持，原唯一 I 在领域交付完成后集成。
+
+已推送工程：R SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec501721361e8104a4e6e00781d73656157a4`；H SOURCE `e3b63ab30151c372ae8bc3e6594227513ef8cea6` / REPORT `e12ce161d300c0d043bd8e3dccee87d489737db3`；F SOURCE `a500c417377a4b1404d8d4529dfa322a876810e4` / REPORT `cf0250f7e6106f6c2963e45e5be977093ed337a7`。实际原生会话、注册三分钟演示和组合验收进行中，L1 尚未完成。
+
+主控为 `term_4a28ac76-bd04-4a8b-acb2-b3114ca74ee4`，Run 为 `run_d577f0d3fee1`。当前计划见 [L1 执行计划](C:/Users/DW/orca/workspaces/Astrocyte/cognitive-stack-planning-20261014/tasks/L1-session-capture-plan.md)。正式冻结范围与未裁决权限保持既定边界；v1.2 的 CI 结果仅属于其精确源码。
+
+## 此前验收记录
+
 R L1工程已结算：SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec501721361e8104a4e6e00781d73656157a4` clean、remote同SHA、授权路径及报告独立复核通过；有效worker_done msg_981add1127bf后依据同owner返修要求retained，再ACK。Root在隔离空CLI配置根对该SOURCE owned metadata/实际Driver/Resume与pending closure适用Go复验EXIT0，56.69s（含构建）；协作者另独立适用复验PASS。H/F仍开发，未集成新L1；真实模型/原档、其他原生metadata口、终端原生归档及人工门禁不据此完成。
 
 L1续作更新（2026-10-14）：原R7e28222 metadata-only provider/封存失效修订、原H3e22986实际公开HTTP组装、原F38035bc Today独立六字段区域均已发布早期SOURCE并继续同owner测试/返修。H当前task_f215e7452d70拥有组装/严格读侧及私有位置游标，R task_3303613a7ff7保留provider，F新task_33717da2d50e observed；无第二采集owner。Root已确认并退H修事件ID回查DB receipt及静默不写游标，尚非最终集成。新L1不在下方5dd CI里，真实CLI/原件/人工门禁未答不升绿。

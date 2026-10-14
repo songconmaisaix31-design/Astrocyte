@@ -1,5 +1,17 @@
 # Works Relay v1.2 一页执行计划
 
+## 当前 L1 继续开发（2026-10-14）
+
+执行标准为当前根 [AGENTS.md](C:/Users/DW/orca/Astrocyte/AGENTS.md)。业务目标仍为 `workbench/v0.2-access`；本轮实施和验收见 [L1 计划](C:/Users/DW/orca/workspaces/Astrocyte/cognitive-stack-planning-20261014/tasks/L1-session-capture-plan.md)。主控 `term_4a28ac76-bd04-4a8b-acb2-b3114ca74ee4` 持有原 Run `run_d577f0d3fee1`，负责计划、决策、验收和最终 Git。
+
+原 R 工程 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，运行时问题交回原工作树。H 在 `works-relay-http` / `songconmaisaix31-design/works-relay-http` 继续 Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da`；F 在 `works-relay-frontend` / `songconmaisaix31-design/works-relay-frontend` 继续 Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335`。两轨保持既有独占文件范围；必要 L1 解析依赖的 `go.mod/go.sum` 由 H 独占修改。
+
+H 完成实际原生 Codex 控制器、会话来源、独立数据库与 HTTP 验证，错误立即返回，成熟格式使用库解析。F 连接 H 实际服务，在现有两个 viewport 做 DOM 验证，新增会话测试不使用 mock 或 HTTP 回放。注册数据新增、人工派发与三分钟 Today 可见时间须来自同一实际演示。SOURCE / REPORT 分开提交并 push；原唯一 I 在两轨完成后普通合并精确交付，只处理必要接口衔接。
+
+本轮只使用自己持有的公开项目，原生文件和命令工具保持关闭。实际用户作品、工具执行、原件留存及产品活性窗口的未决项保持未决定。V4 正式材料、协议、引擎、mapper、认知 schema / migration、权重、快照流程及 17321 部署保持既定边界。中间文件放当前目录已忽略的专用目录；最终报告描述正确实现、实际验证结果和真实限制。
+
+## 此前阶段记录
+
 2026-10-14 L1续作写域：仍为原R/H/F及唯一同I，不重复采集owner。H当前task_f215e7452d70额外拥有既有cmd/server/relay_assembly.go、relay_observer.go、relay_config.go，新增cmd/server/relay_session*.go、httpapi/relay_session*.go、workbench/app/relay_session*.go及sqlite/access_session*.go（避开R的relay前缀），原server.go/OpenAPI/relay-session例子和自身报告。装配沿owned lifecycle→SessionCapture→独立既有EventService/EventRepo→六字段只读HTTP，GET不采集；旧SnapshotReader、引擎/mapper/schema/00:30不变。允许原应用状态目录单个原子替换游标JSON，仅位置/绑定UUID/文件身份/派生覆盖元数据；无新表/迁移/raw副本，不借认知状态存游标。事件库仍是事件权威，HTTP ID须可回查已提交receipt，静默无变化不保存游标。
 
 原R task_3303613a7ff7继续owned只读引用与实际原生metadata provider，不读私有Session、不启动第二app-server。原F新Task task_33717da2d50e / Dispatch ctx_673d0bdbc496于同terminal/worktree/branch observed，消费H525d5df只读契约、既有generator并实现Today独立派生面板，原快照数值与来源不变。父CognitionPage的快照only footer留同I最终一行标签胶水；不扩大F写域。早期R7e28222/H3e22986/F38035bc只是可评审SOURCE，非最终集成或旧5dd CI覆盖。真实CLI工具/源作品/原件留存等未答问题仍未答；公开fixture及独立工程不等待这些答案。
