@@ -1,14 +1,20 @@
 import { lstat, mkdir, mkdtemp, realpath } from 'node:fs/promises';
 import { isAbsolute, join, relative, sep } from 'node:path';
 import { createServer } from 'node:net';
+import { createInterface } from 'node:readline';
 import { setTimeout as delay } from 'node:timers/promises';
 import { DatabaseSync } from 'node:sqlite';
 import { findGo, root, run, start, stop, web } from '../../scripts/process.mjs';
 
-async function freePort(requested) {
+function validatePort(requested, allowZero = false) {
+  if (allowZero && requested === 0) return;
   if (requested !== undefined && (!Number.isInteger(requested) || requested < 1 || requested > 65535 || [5173, 8787].includes(requested))) {
     throw new Error('Acceptance port must be an integer from 1 to 65535, separate from personal 5173/8787');
   }
+}
+
+async function freePort(requested) {
+  validatePort(requested);
   const socket = createServer();
   await new Promise((resolve, reject) => {
     socket.once('error', reject);
@@ -17,6 +23,41 @@ async function freePort(requested) {
   const port = socket.address().port;
   await new Promise((resolve, reject) => socket.close(error => error ? reject(error) : resolve()));
   return port;
+}
+
+// 读取实际 Go 进程的一次绑定公告；该公告与 health 响应分别核实。
+async function actualAPIURL(child, expectedPort) {
+  return await new Promise((resolve, reject) => {
+    const lines = createInterface({ input: child.stdout, crlfDelay: Infinity });
+    let settled = false;
+    const timer = setTimeout(() => finish(new Error('Actual Go listener announcement timed out')), 30_000);
+    const onExit = () => finish(new Error('Actual Go listener announcement became unavailable', { cause: new Error('owned server exited before publishing its address') }));
+    const onError = error => finish(error);
+    const onClose = () => { if (!settled) finish(new Error('Actual Go listener announcement became unavailable', { cause: new Error('owned stdout closed before listener announcement') })); };
+    const finish = (error, url) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      child.removeListener('exit', onExit);
+      child.removeListener('error', onError);
+      lines.removeListener('close', onClose);
+      lines.close();
+      child.stdout.resume();
+      if (error) reject(error); else resolve(url);
+    };
+    child.once('exit', onExit);
+    child.once('error', onError);
+    lines.once('close', onClose);
+    lines.on('line', line => {
+      try {
+        const record = JSON.parse(line);
+        const url = new URL(record.api_url);
+        if (record.type !== 'http_listening' || Object.keys(record).length !== 2 || url.protocol !== 'http:' || url.hostname !== '127.0.0.1' || url.username || url.password || url.pathname !== '/' || url.search || url.hash || record.api_url !== url.origin || !Number.isInteger(Number(url.port)) || Number(url.port) < 1 || Number(url.port) > 65535 || (expectedPort && Number(url.port) !== expectedPort)) throw new Error('Actual Go listener announcement has an invalid or mismatched loopback address');
+        finish(undefined, url.origin);
+      } catch (error) { finish(error); }
+    });
+    if (child.exitCode !== null || child.signalCode !== null) onExit();
+  });
 }
 
 async function ready(url, child) {
@@ -59,10 +100,10 @@ async function existingOwnedTemporary(choice, relay) {
 export async function startS1Server({ browser = false, relay = false, env: extraEnv = {}, reuseOwnedTemporary, apiPort: requestedAPIPort, webPort: requestedWebPort } = {}) {
   if (typeof relay !== 'boolean') throw new Error('relay must be an explicit boolean');
   if (!browser && requestedWebPort !== undefined) throw new Error('A web acceptance port requires browser:true');
-  // 创建数据目录和进程前先检查分配端口，已占用的端口立即失败。
-  const apiPort = await freePort(requestedAPIPort);
-  const webPort = browser ? await freePort(requestedWebPort) : apiPort;
-  if (browser && apiPort === webPort) throw new Error('API and Vite acceptance ports must differ');
+  // API 由同一 Go listener 原子绑定；显式错误配置在创建数据之前失败。
+  validatePort(requestedAPIPort, true);
+  const webPort = browser ? await freePort(requestedWebPort) : undefined;
+  if (browser && requestedAPIPort === webPort) throw new Error('API and Vite acceptance ports must differ');
   const verification = join(root, '.verification');
   await mkdir(verification, { recursive: true });
   const original = reuseOwnedTemporary ? await existingOwnedTemporary(reuseOwnedTemporary, relay) : null;
@@ -74,15 +115,15 @@ export async function startS1Server({ browser = false, relay = false, env: extra
   const toolTemporary = join(temporary, 'tool-temp');
   await mkdir(toolTemporary, { recursive: true });
   const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
-  const apiURL = `http://127.0.0.1:${apiPort}`;
-  const webURL = `http://127.0.0.1:${webPort}`;
+  let apiURL;
+  const browserURL = browser ? `http://127.0.0.1:${webPort}` : undefined;
   const suppliedEnv = typeof extraEnv === 'function' ? await extraEnv({ dataDir, temporary }) : extraEnv;
   // 仅接收本次明确传入的产品配置，防止继承私人源范围或模型授权。
   const baseEnv = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.toUpperCase().startsWith('ASTROCYTE_')));
   const env = { ...baseEnv, ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false', ASTROCYTE_ENABLE_SUMMARIZE: 'false', ASTROCYTE_SUMMARIZE_CLI: '', ASTROCYTE_PROJECT_DISCOVERY_ROOTS: JSON.stringify([root]), ...suppliedEnv,
     ...(relay ? { LOCALAPPDATA: localAppData, APPDATA: join(temporary, 'appdata'), HOME: join(temporary, 'profile'), USERPROFILE: join(temporary, 'profile'), ASTROCYTE_RELAY: '1', ASTROCYTE_RELAY_LIVE_SECONDS: '' } : {}),
     TEMP: toolTemporary, TMP: toolTemporary,
-    ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(apiPort), ASTROCYTE_WEB_PORT: String(webPort) };
+    ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(requestedAPIPort ?? 0), ASTROCYTE_WEB_PORT: String(webPort ?? 5173) };
   let apiChild;
   let webChild;
   let disposed = false;
@@ -90,7 +131,10 @@ export async function startS1Server({ browser = false, relay = false, env: extra
   async function startAPI() {
     if (disposed) throw new Error('S1 server has been closed');
     if (apiChild && apiChild.exitCode === null && apiChild.signalCode === null) throw new Error('Owned API process is still running');
-    apiChild = start(executable, [], { env, detached: process.platform !== 'win32' });
+    apiChild = start(executable, [], { env, stdio: ['ignore', 'pipe', 'inherit'], detached: process.platform !== 'win32' });
+    apiURL = await actualAPIURL(apiChild, Number(env.ASTROCYTE_PORT));
+    // 后续明确的重启继续绑定原实际端口，Vite 使用同一准确地址。
+    env.ASTROCYTE_PORT = new URL(apiURL).port;
     await ready(`${apiURL}/api/v1/health`, apiChild);
   }
   async function close({ primaryError } = {}) {
@@ -115,15 +159,17 @@ export async function startS1Server({ browser = false, relay = false, env: extra
     await run(await findGo(), ['build', '-mod=readonly', '-o', executable, './cmd/server'], { cwd: root });
     await startAPI();
     if (browser) {
-      webChild = start(process.execPath, [join(web, 'node_modules/vite/bin/vite.js'), '--host', '127.0.0.1'], { cwd: web, env, detached: process.platform !== 'win32' });
-      await ready(webURL, webChild);
+      webChild = start(process.execPath, [join(web, 'node_modules/vite/bin/vite.js'), '--host', '127.0.0.1', '--strictPort'], { cwd: web, env, detached: process.platform !== 'win32' });
+      await ready(browserURL, webChild);
     }
   } catch (error) {
     await close({ primaryError: error });
     throw error;
   }
   return {
-    apiURL, webURL, dataDir, temporary, localAppData, relayRoot, close,
+    get apiURL() { return apiURL; },
+    get webURL() { return browserURL ?? apiURL; },
+    dataDir, temporary, localAppData, relayRoot, close,
     startAPI,
     async stopAPI() { await stop(apiChild); },
     // 通过本次实际服务进程的退出和新进程启动验证持久化恢复。
