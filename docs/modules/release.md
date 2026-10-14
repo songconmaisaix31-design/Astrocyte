@@ -2,6 +2,8 @@
 
 事实源：[Release v0.1](../../tasks/Release-v0.1-20261014.md)、[AGENTS.md](../../AGENTS.md)、[HANDOFF.md](../../HANDOFF.md)、[STATUS.md](../../STATUS.md)。基线 `dd60de11bca85662f5bb4a5b281cc7b42e6ffd2f`；模块分支 `songconmaisaix31-design/module-release-20261014`。
 
+本 Dispatch 的当前交付范围为今晚候选阶段。总负责人对真实问题 `msg_a12796dc79a7` 回复 `msg_b62e6bd10626`，明确接受已交124PASS候选、P/N阶段交付及清理、最终I与发布的明日交接，要求本阶段合法结算。该阶段已完成；完整产品与最终Release门禁仍保留。2026-10-15在v1.4语义 / 原生 / 默认等门禁完成后，以原模块tree / branch新Task继续唯一I及P最终同源重建。
+
 ## 一页执行计划
 
 总负责人只委派模块负责人并最终验收。M-release 管理 Q / P / S 和唯一 I，只修改本文；功能开发人员不派发第四层。模块 Task `task_fc57d8d54d31` / Dispatch `ctx_376d222c774b` / 终端 `term_5cf00e8f-ad9f-4429-8823-79faa4866c6f`；子 Run `run_ab36c13bc549`。使用 Orca CLI 与 Codex；运行时所见模块、Q / P / S 均为 `gpt-6.1-sol`，未据请求参数推断模型结果。
@@ -9,9 +11,9 @@
 | 长期轨道 | 固定 Agent / 工作树 / 分支 | write_paths | 当前阶段与下一交付 |
 |---|---|---|---|
 | Q 认知快照 | 原 `term_ae3e598d-82b7-4d0a-97b1-830e2e75ba51`；`release-cognition-20261014`；`songconmaisaix31-design/release-cognition-20261014` | `cmd/workbench-snapshot/**`、`tests/release-cognition/**`、`docs/release-cognition.md` | 原 `task_1e8ffb3cbbd9` / `ctx_89ea0fc5b202` 已 completed / succeeded。总负责人已接收合法消息 `msg_f20a0e90d041`，确认 released / captured，源码与报告保留；具体新返修必要时在原工作树 / 分支恢复唯一 owner 新 Task，不向旧 Dispatch 发信。 |
-| P Windows 包 | `term_e67c7493-cef5-439e-9687-3197880820d7`；`release-package-20261014`；`songconmaisaix31-design/release-package-20261014` | `release/**`、`docs/release/**` | 原 `task_76c43934b15c` / `ctx_6d251e04179d` 继续。完成 Q binary / 显式手动快照包装，最终对 I 精确 SOURCE 重建 ZIP 并新目录验收。 |
+| P Windows 包 | 原 `term_e67c7493-cef5-439e-9687-3197880820d7`；`release-package-20261014`；`songconmaisaix31-design/release-package-20261014` | `release/**`、`docs/release/**` | 原 `task_76c43934b15c` / `ctx_6d251e04179d` 今晚候选阶段已合法完成；总负责人明确接收并官方释放终端。15f包 / 1a验证SOURCE / 7cc独立REPORT保留；明日新Task对 I 精确 SOURCE 重建 ZIP 并新目录验收。 |
 | S 科研核验 | `term_131cc610-a2b4-4b1b-8335-b5c4e9d9512a`；`release-research-20261014`；`songconmaisaix31-design/release-research-20261014` | `docs/release-research.md` | 原 `task_c2ab97d9ed86` / `ctx_8df7a990a423` 已 succeeded / completed；总负责人已接受合法 `worker_done` 并确认 released / transcript captured。精确文档作为 I 输入保留，未重派同域人员。 |
-| N 打包服务原生验收 | `term_8eef624c-2438-4694-be11-856bde4277e5`；`release-native-verification-20261014`；`songconmaisaix31-design/release-native-verification-20261014` | `tests/release-package-native/**`、`docs/release-package-native.md` | 子 Run Task `task_bfc0bedf1c26` / Dispatch `ctx_44647082a057`，depth=2。首 turn_start_unobserved 保留，文本核 composer 后仅一次 bare Enter，已核实际 Working / 读命令与接口回执。Codex 0.162.0 / GPT-6.1-Sol high fast；准备真实 HTTP / SQL 客户端，实际 native 等 H 当前窗口结束与准确包输入，不编辑 P 或业务，不派第四层。 |
+| N 打包服务原生验收 | 原 `term_8eef624c-2438-4694-be11-856bde4277e5`；`release-native-verification-20261014`；`songconmaisaix31-design/release-native-verification-20261014` | `tests/release-package-native/**`、`docs/release-package-native.md` | 子 Run Task `task_bfc0bedf1c26` / Dispatch `ctx_44647082a057`，depth=2。按最新时序调整的非模型准备阶段已接收唯一done并官方released / captured，7202SOURCE / b74b独立REPORT保留。Codex 0.162.0 / GPT-6.1-Sol high fast；首启动未知与首次运行失败保留，明日v1.4最终源 / 准确包 / 窗口后新Task续实际native，不向旧Dispatch发任务，不派第四层。 |
 | I 唯一集成 | 领域终稿可验后，独立 release 集成工作树 / 分支 / 第三层 Agent | 必要路由、导入、配置和类型衔接；集成报告 | 尚未派发。普通 `--no-ff` 精确消费各 SOURCE / REPORT 与管理文档，领域失败回原 owner；完整检查后 push SOURCE，交 P 同源重建。 |
 
 原活跃 Dispatch 保持原 Run / 终端 / 工作树 / 分支 / 写域，直接向模块 Dispatch 或子 Run 汇报；原 `worker_done` 仍由其当前 Run 接收。只有总负责人明确接收结算并转交终端，才在子 Run 给同一 owner 创建后续 Task。没有重新绑定总负责人旧 Run。
@@ -99,7 +101,7 @@ F stable SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9
 2. I 普通精确合并、`pnpm check` / `pnpm build` / 完整默认 E2E（workers=1）及适用原生链路；事件库、SQL / API / UI 交叉核查，失败回原 owner。
 3. P 从 I 精确 SOURCE 用标准 Git archive 构建 server / MCP / Sleep / snapshot 与既有 Vite web，保留 license / 必需依赖说明；ZIP 不带开发依赖、数据库、私人配置、日志、secret 或测试原件。
 4. P 在新目录解压，以无开发工具的运行环境实测静态资源、session / CSRF、真实读写 / 重启、非空认知正向与 Relay 原生路径，报告完整 sourceSHA / 路径 / 字节大小 / 验证结果。
-5. 测试修复导致 SOURCE 变化时复验适用影响，再交总负责人最终接受与发布。本文当前状态为模块管理进行中，尚未达到发布完成条件。
+5. 测试修复导致 SOURCE 变化时复验适用影响，再交总负责人最终接受与发布。本派发今晚候选阶段完成；完整发布条件仍未达到，按总负责人明确回复在明日后继新Task继续。
 
 ## 模块文档验证
 
