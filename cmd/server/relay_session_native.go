@@ -37,6 +37,10 @@ func relayNativeCaptureBatch(source domain.RelayNativeSessionBatch) events.Relay
 	binding := relayCaptureBinding(owned)
 	binding.Format, binding.Authorized = owned.Agent, source.SourceStatus == "available" && owned.Gap != "permission_denied"
 	result := events.RelaySessionNativeBatch{Binding: binding, BindingID: owned.BindingID, LastSequence: source.LastSequence, Errors: source.Errors, Unknown: source.Unknown, PrefixComplete: source.PrefixComplete, Finalized: source.Finalized, FirstGap: source.FirstGap, Events: []events.RelaySessionNativeEvent{}}
+	result.BindingID = ""
+	if source.ControllerID == owned.ControllerID && source.StartupOperationID == owned.StartupOperationID {
+		result.BindingID, _ = relayNativeConnectionBinding(owned.BindingID, owned.ControllerID, owned.StartupOperationID)
+	}
 	for _, event := range source.Events {
 		result.Events = append(result.Events, events.RelaySessionNativeEvent{Sequence: event.Sequence, Kind: event.Kind, Tokens: event.Tokens, TS: event.TS})
 	}
@@ -46,15 +50,40 @@ func relayNativeCaptureBatch(source domain.RelayNativeSessionBatch) events.Relay
 func (c *relaySessionCollector) observeNative(ctx context.Context, source domain.RelayNativeSessionBatch) error {
 	owned := source.OwnedSession
 	entry := c.entries[owned.TaskID]
+	batch := relayNativeCaptureBatch(source)
+	if batch.BindingID == "" {
+		entry.Coverage = coverageFor(owned)
+		entry.Coverage.Source, entry.Coverage.Gap = "native_notifications", "native_controller_binding_unrecorded"
+		if err := c.commitEntry(owned.TaskID, entry); err != nil {
+			return err
+		}
+		return errors.New("native controller binding unrecorded")
+	}
 	prior := events.RelaySessionNativeCursor{}
 	if entry.Native != nil {
-		prior = *entry.Native
+		if entry.Native.BindingID == batch.BindingID && entry.NativeControllerID == owned.ControllerID && entry.NativeStartupOperationID == owned.StartupOperationID {
+			prior = *entry.Native
+		} else {
+			history := make(map[string]relayNativeCheckpoint, len(entry.NativeHistory)+1)
+			for key, checkpoint := range entry.NativeHistory {
+				history[key] = checkpoint
+			}
+			history[entry.Native.BindingID] = relayNativeCheckpoint{*entry.Native, entry.NativeControllerID, entry.NativeStartupOperationID}
+			entry.NativeHistory = history
+			if checkpoint, exists := history[batch.BindingID]; exists {
+				if checkpoint.ControllerID != owned.ControllerID || checkpoint.StartupOperationID != owned.StartupOperationID {
+					return errors.New("native historical identity differs")
+				}
+				prior = checkpoint.Cursor
+			}
+		}
 	}
 	if prior.Blocked != "" {
 		return errors.New("native capture blocked")
 	}
-	cursor, captureErr := c.capture.CaptureNative(ctx, relayNativeCaptureBatch(source), prior)
+	cursor, captureErr := c.capture.CaptureNative(ctx, batch, prior)
 	entry.Native = &cursor
+	entry.NativeControllerID, entry.NativeStartupOperationID = owned.ControllerID, owned.StartupOperationID
 	entry.Coverage = coverageFor(owned)
 	entry.Coverage.Source = "native_notifications"
 	entry.Coverage.Lines, entry.Coverage.Projected = source.LastSequence, cursor.Counts.Projected
