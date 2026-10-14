@@ -27,6 +27,22 @@ type point struct {
 	TS        int64   `json:"ts"`
 	Attention float64 `json:"attention"`
 }
+
+func (p *point) UnmarshalJSON(data []byte) error {
+	var input struct {
+		TS        *int64   `json:"ts"`
+		Attention *float64 `json:"attention"`
+	}
+	if err := json.Unmarshal(data, &input); err != nil {
+		return err
+	}
+	if input.TS == nil || input.Attention == nil {
+		return errors.New("observed history fields required")
+	}
+	p.TS, p.Attention = *input.TS, *input.Attention
+	return nil
+}
+
 type history map[string][]point
 
 func main() {
@@ -122,8 +138,11 @@ func inside(path, root string) bool {
 }
 
 // 比较实际文件身份，避免 hardlink 或已有 generation 覆盖来源及其 sidecar。
-func inspectRoot(root string, protected []os.FileInfo) error {
+func inspectRoot(ctx context.Context, root string, protected []os.FileInfo) error {
 	return filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		if e := ctx.Err(); e != nil {
+			return e
+		}
 		if err != nil {
 			return err
 		}
@@ -261,7 +280,7 @@ func publish(ctx context.Context, source, root, externalHistory string) (p publi
 	if err = os.MkdirAll(root, 0700); err != nil {
 		return p, err
 	}
-	if err = inspectRoot(root, protected); err != nil {
+	if err = inspectRoot(ctx, root, protected); err != nil {
 		return p, err
 	}
 	lock, err := os.OpenFile(filepath.Join(root, "snapshot.lock"), os.O_CREATE|os.O_RDWR, 0600)
@@ -362,7 +381,7 @@ func publish(ctx context.Context, source, root, externalHistory string) (p publi
 		return p, err
 	}
 	p = publication{filepath.Base(generation), time.Now().UTC().Format(time.RFC3339Nano)}
-	if err = inspectRoot(root, protected); err != nil {
+	if err = inspectRoot(ctx, root, protected); err != nil {
 		return p, err
 	}
 	if now, e := os.Stat(source); e != nil || !os.SameFile(now, srcInfo) {
