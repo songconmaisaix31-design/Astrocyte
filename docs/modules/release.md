@@ -11,12 +11,13 @@
 | 轨道 | 固定工作树 / 写入范围 | 启动条件与验收 |
 |---|---|---|
 | 日采集只读预检 | 原正式工作树 `C:/Users/DW/orca/Astrocyte`；文件写入范围为空 | 唯一第三层 Task `task_2c8053c4f064` / Dispatch `ctx_7bba9154b03d` 已合法 succeeded / released / transcript captured。实际 projection Codex / gpt-6.1-sol，终端 high fast；锁与全文SHA一致、D1未执行 / 原00:20启用和重复风险已核。详情见今日运行记录。 |
-| D1结果独立只读验收 | 原正式工作树及已有外部根；文件写入范围为空 | 新Task `task_562e59cee9db` / Dispatch `ctx_fee1ce8fd66a` / 终端 `term_653f6e58-e6de-4f88-b8a8-c44be0c950ea`，ready / turn_started / depth2 / 实际Codex gpt-6.1-sol / live。原operator已产生60事件 / Sleep和12OK / judgeOK；逐event_id真实正式库与日快照、coverage窗口 / 去重、实际预算回执 / 人评 / 预测核查继续。禁止任何日流程调用、写入或新输出，公开只报告派生计数。 |
+| D1结果独立只读验收 | 原正式工作树及已有外部根；文件写入范围为空 | Task `task_562e59cee9db` / Dispatch `ctx_fee1ce8fd66a` 已 succeeded / released / transcript captured，实际Codex gpt-6.1-sol / depth2。60个event_id逐一在正式库与日快照核对，12对真实回答与judge回执、覆盖 / 去重 / 预算 / 人评 / 预测状态已核；SOURCE `d895ffcd0f4e58389a570a6c8a9197195b826bdd` / 独立REPORT `5a1a4b0474013de9f39eebb910166e7c5af4b822` 均推送。详情见今日运行记录。 |
 | I 唯一集成 | 待条件完成后创建独立 release 集成工作树 / 分支；只补少量路由、导入、配置、类型和集成报告 | 精确 SOURCE / 独立 REPORT、四项语义、完整默认、实际 native / Today 均通过后才启动。普通 `--no-ff`，领域失败交原 owner；check / build / 完整 workers=1 E2E 与适用链路通过后 push SOURCE 与独立 REPORT。 |
 | P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
 | N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
-| S 新阶段一手科研依据 | 原 `release-research-20261014` / `songconmaisaix31-design/release-research-20261014`；仅 `docs/release-research.md` | 根 `msg_9f7f7d5edc5b` 转最新用户并行授权。原owner已released、原树clean / HEAD `7d030fc83120052a8f32ea74c6007ff9be6878ca`；新Task `task_ec1f2cb096b1` / Dispatch `ctx_980d42612042` / 终端 `term_1f61ef16-79ad-49c8-b804-9f149c4fc544`，ready / turn_started / depth2 / 实际Codex gpt-6.1-sol / live。核前沿一手论文、开源与REA资料、机制限制、S2/S3及L实际代码入口；只研究与领域Handoff，不写业务、不解除冻结、不派第四层。 |
-| S5 判断适配 | 新固定 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015`；准确域见下方 | 根 `msg_4efd7793dc79` 明确交本模块管理，复杂实现用第三层强Codex。B `msg_6f60846f814c` 全域零WIP停写，SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5` / REPORT `1a1c170e33647cd286ddbf3e2776b62251a08a72`，独立核该域零diff；正式V4 / v0.2不变。 |
+| S 新阶段一手科研依据 | 原 `release-research-20261014` / `songconmaisaix31-design/release-research-20261014`；仅 `docs/release-research.md` | Task `task_ec1f2cb096b1` / Dispatch `ctx_980d42612042` 已唯一succeeded / 官方released / captured，SOURCE1f617 / 独立REPORTde9 / 远端一致与文档检查已核；实际Codex gpt-6.1-sol。研究准确来源已交产品和当前S2，未写业务或解冻。 |
+| S5 判断适配 | 新固定 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015`；准确域见下方 | Task `task_1d3e15a66b2a` / Dispatch `ctx_f403dc7813bc` / 终端 `term_5a158698-b0f0-45b6-8453-2903ffb0fa3a`，实际Codex gpt-6.1-sol / working / live，depth2。B全域零WIP停写、基线da794已核；原start_unknown / 未提交paste保留，唯一现有输入单次Enter后01:20实际开始。Jev key待用户受控配置，本地SDK资产及其余实现继续。 |
+| Q 公开工程跨日刷新 | 原 `release-cognition-20261014` / `songconmaisaix31-design/release-cognition-20261014`；`cmd/workbench-snapshot/**`、`tests/release-cognition/**`、`docs/release-cognition.md` | 原owner已released；重新核clean / HEAD `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`，新Task唯一第三层执行者使用Codex / gpt-6.1-sol。仅从获准公开Astrocyte实际Git活动在新隔离工程DB使用原生产Recorder / Sleep / snapshot，提供10月15日Today与实际10月14日闭日Sleep、独立SQL expected及精确source / pub / preSleep。旧原件保留，禁止修改Clock、制造commit或时间、人工填表、模型调用、正式V4补采。 |
 
 P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 和旧资源 released；不向旧 Dispatch 发送新任务。Q 保留已接纳终稿，只有具体领域失败才恢复原 owner。S 按最新明确授权在原互斥报告域继续一手依据审阅。日预检文件写域为空，与本模块两份管理文档互斥；原始输入 / 响应 / 日志只留已有外部证据根，Git、MCP 与 stdout 只记录派生计数。
 
@@ -27,7 +28,7 @@ P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 
 | Q 认知 | `1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50` | `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`；公开真实 SQL / 六字段 / Sleep / history / 同主题分页阶段通过，原 owner 已释放。 |
 | P 构建与验证工具 | `1a1c14d6fdd02e7824efb82a618848a1c315dedb` | `7cccea1d426944ebc3292857ecddaa1c6ef81cdf`；对应 15f 候选 124PASS，完整最终包尚待。 |
 | N 客户端 | `7202f07c9c4122f08d760afa88472fb32852b38e` | `b74b97a44d5a116d090424d78f358fdf520667e2`；非模型阶段通过，最终包原生尚待。 |
-| S 科研审阅 | 文档提交 `7d030fc83120052a8f32ea74c6007ff9be6878ca` | 已释放；作者成绩与本项目实证范围分别登记。 |
+| S 科研审阅 | `1f617c51abcc2ca1fea3932747ba11ceabb7394e` | 独立REPORT `de9ef941adcb550b997b98fa819ba05bcfccfead`；succeeded / released / captured、远端同值 / 祖先 / clean / 唯一研究文件已独核。研究已交当前S2和M-product，作者成绩保持归属作者。 |
 | Python 标准整改 | `a1089f94a13306e3cd250ed8facbb438d6e75a19` | `91e3e59dcfc8024cd2e4955ac72f627e65c18e71`；按根已验范围消费。 |
 | B 当前追加 | `072628536d325eedbb6b53ffe9ab8fc31c38beeb` | 独立 REPORT 尚待；产品报告 port0 / 实际API helper / 两布局 / auth-CSRF / SQL / occupied-port拒绝 / 重启阶段通过。前一 `4a6076c402e0b5d31982154a31a905bee6127477` / `7614b27e6084bf843f71a6b95082b91a7ca36ed9` 的远端同值 / 祖先 / 独立文档已核，保持其阶段范围。 |
 | V 当前追加 | `3485d7298bf9fe4e548e81768d81144493345c7d` | `8fc4434d1698c5dc51d84f45fff43fed931c869b`；产品报告普通消费B、PDF MIME、实际启动后取消18.73秒 / owned Go-Node-Whisper退出 / 同库重启不续发通过；default 39.945秒 PASS / 9既有SKIP，Node9PASS / 0SKIP，vet / build通过。小路径报告修订最终HEAD尚待；mid-ASR progress与实际CLI特定分支NOT_RUN，不提升为完整原生验收。 |
@@ -65,6 +66,10 @@ M-relay `msg_4c82199f5651` 已回传新 H Task `task_3004b636a3ab` / Dispatch `c
 当前唯一 v1.4 规格追加 SOURCE `61977021f7babe86205cd23f1b83c23a6627af6c` 已收到并完整阅读改动：人工 handoff 沿既有 CreateIntent 使用成对显式声明，真实释放 / 退出 / pending / 同 project与worktree / 新Agent归属分别核查；接口消费仍以 R/H 精确功能来源为准。该规格没有决定待答 working / 人工done迁移。B `0726285` 的 H三个临时文件精确消费与域归还已收到 M-relay 独立核查回执 `msg_9236d5af6f15`，不等于 F 默认完整通过。
 
 规格独立 REPORT `8c93a29ffe7df1f8c110634b3dc1b3c4c63062e9` 已收到。H 当前准备 SOURCE `261fb73921d2a1b929f40bf4d714de5356b9024d` / REPORT `e59b59d076fffc67f2bcde935ec638888ecdfee7`，仅四个H Relay测试文件与独立文档；来源 / 通知 / HTTP 客户端从实际持有listener公告获取api_url，原archive单链接与完整性拒绝保持，不计v1.4真实链路通过。S 已完成基线核实并继续一手研究；S2/S3新计划请求 `msg_41660ccc7675` 已给 M-product，准确计划尚待，SPEC已定部分继续。
+
+S5已使用固定HF revision `7b928d828b7b0e022f929d9bd2e44165aa270148` 与官方源码 `432312b36714d8889eba405507b37eda25257d9c` 导出English资产，三次真实CPU torch/ONNX parity通过；multilingual首次导出实际Errno28，原日志与English已验资产保留。2026-10-15 02:04只读空间计数为C盘2,992,832,512 bytes、D盘113,176,240,128 bytes，精确新增资产目录由根协调，唯一owner继续其余权限 / 缓存 / SQLite / feedback实现。内部JSON-RPC2固定成熟库 `sourcegraph/jsonrpc2@v0.2.1` / `vscode-jsonrpc@8.2.1`，官方laya-ts Git子目录构建与依赖锁、三表迁移交唯一B。公开HTTP契约 / 装配交H，S4真实GitSnapshot接缝尚待，不登记AT10未提交改动通过。Jev实际key缺失，仅云调用保持NOT_RUN；普通backend配置不授予私有外发或S1准入权限。
+
+OpenCode Flash实际可用性SOURCE `d895ffcd0f4e58389a570a6c8a9197195b826bdd` / 独立REPORT `6a4a7220f23573b7e7ce30b54c572bb5f06183a1` 已推送并独立核远端。实际 `opencode 1.18.35` / `alibaba-cn/deepseek-v4.1-flash` 单次公开READY调用成功、工具调用0；详细边界与元数据见 [模型记录](opencode-model-20261015.md)。该调用未改变全局模型、auth、MCP或日预算。
 
 当前 I / 最终 P / 最终 N 尚未派发；发布、tag、正式 V4 冻结解除、人评代填均未执行。下方保留上一阶段交付记录及首失败证据。
 
