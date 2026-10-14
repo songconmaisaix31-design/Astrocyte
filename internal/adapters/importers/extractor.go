@@ -157,14 +157,17 @@ type paperPDFResult struct {
 
 // ExtractPDF 使用固定 summarize、uvx 和 markitdown 提取已下载的公开 PDF。
 func (e *SummarizeExtractor) ExtractPDF(ctx context.Context, pdfURL string, pdfBytes []byte) (paperPDFResult, error) {
+	if len(pdfBytes) == 0 || len(pdfBytes) > 64<<20 {
+		return paperPDFResult{}, invalid("paper PDF must contain from 1 byte to 64MiB")
+	}
+	if err := requirePDFContent(pdfBytes); err != nil {
+		return paperPDFResult{}, err
+	}
 	if e.Options.Version != "0.25.1" {
 		return paperPDFResult{}, dependencyError("paper PDF extraction requires summarize 0.25.1")
 	}
 	if e.Options.UVXPath == "" {
 		return paperPDFResult{}, dependencyError("paper PDF extraction requires uvx (markitdown) configured")
-	}
-	if len(pdfBytes) == 0 || len(pdfBytes) > 64<<20 {
-		return paperPDFResult{}, invalid("paper PDF must contain from 1 byte to 64MiB")
 	}
 	ctx, cancel := context.WithTimeout(ctx, e.Options.Timeout)
 	defer cancel()
