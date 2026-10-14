@@ -62,6 +62,30 @@ R继续独占现有领域状态、应用服务、relay store及native/terminal d
 
 ## 身份与分工
 
+### S4 仓库上下文独立适配计划
+
+总负责人 `msg_ee3140e26ec2` 已授权本模块持续管理 S4，原R/H语义开发不停止。已完整读 SPEC第9、15、19章及TASKS P0-06 / P4；S2 `msg_b27c6b3be421` 和B `msg_ebad07a854d3` 已明确以下全部路径零WIP并停止写入，产品 `msg_542777a02fe4` / `msg_4d761815751b` 复核互斥。拟固定第三层唯一S4人员，独立 `works-repository-context-s4-20261015` 工作树 / 分支，起点为B已push SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`，不使用其无关WIP。
+
+| 轨道 | 准确独占写域 | 交付与实际检查 |
+|---|---|---|
+| S4 RepositoryContext | `internal/workspace/domain/repository_context*.go`、`internal/workspace/app/repository_context*.go`、`internal/adapters/repositorycontext/**`、`internal/adapters/sqlite/repository_context*.go`、`tests/s4/**`、`docs/standards/repository-context-s4.md` | RepositoryMap、CodeSearch、ImpactQuery各自端口；真实Git / AOCI / CodeGraph版本、同commit两worktree隔离、未提交变化与index_stale、增量 / 删除 / 重建、授权撤销与预算；准确SOURCE / 独立REPORT普通push |
+
+S2继续独占 `proposal_ports.go` 中的快照消费接口和 `proposal_context.go` 的ProjectContextSnapshot；B保留共享contracts / projects / native_context / deps / migrations / config。S4不创建同名共享Domain类型，不修改S2 service.go。H继续唯一main / server / OpenAPI薄组装，F继续现有共享和Relay界面；需要新增UI路由由产品按明确互斥域安排，不扩大S4后台人员写域。
+
+设计采用既有Go领域和应用服务管理授权、版本及读取预算，三个后端单独提供能力。S2明确拟 `CaptureProjectSnapshot(ctx,caller,projectID,roots)` 与 `ValidateProjectSnapshot(ctx,caller,snapshot)`；ProjectContextSnapshot含真实EnvironmentID / RepoID / WorktreeID / ProjectID / Head / IndexDigest / WorktreeDigest / ObservedAt，根路径只用于内部授权与本机定位。S4收到精确S2 SOURCE后实现该端口；捕获来自真实Git和受批准材料，不接受HTTP自证快照。共享接口未交之前，只在独占文件实现不依赖该字段的实际适配，不消费WIP。
+
+每次查询按当前caller、项目revision / grant、已批准根、用途和预算核准准确快照，再读全局地图、搜索符号和有界展开关系，最后核当前源码并交S2固定上下文包。投影分别按repo / worktree / 真实snapshot / backend-version / generation保存；同Git common-dir或相同HEAD不合并两个工作树。索引构建前后再次核快照，变化则明确stale，原generation不发布为新源码关系。关系附实际相对source_span / evidence_kind / extractor-version；启发式、缺失动态调用和缺测试覆盖单独报告，不产生“没有影响”的肯定结果。
+
+CodeGraph沿本机已核 `1.0.1` 的实际CLI或官方SDK，用真实index / sync / query / callers / impact / affected及版本、改动观察，不替代后端。已读本机CLI help、package.json、SDK类型及官方README；固定tag `v1.0.1` 对应 `a1489f77a6d69538bfe29020b8366ee034f90860`，代码关系和本地全文检索见[官方源码](https://github.com/colbymchenry/codegraph/tree/a1489f77a6d69538bfe29020b8366ee034f90860)。索引实例独占准确worktree；GET不自动写索引，增量更新和重建走显式已授权动作，处理过程失败立即返回，不切换伪造后端。工具telemetry只在本次子进程设置公开支持的关闭变量，不改全局配置。
+
+AOCI固定官方 `v0.1.0-rc20` / `7c59b0718780f5fccb65d9f0a3445b0b98fea177`，获取并核实际Windows工具或该源码构建，只在S4自有获准公开项目调用成熟CLI / MCP。RepositoryMap读取其实际模型作者维护的地图和源绑定，索引未完成或未对上当前源时返回真实缺口，不能由文件名 / AST模板伪造FRAS。[官方README](https://github.com/aoci-spec/aoci-code/blob/v0.1.0-rc20/README.md)明确部分校验读命令会写本机ledger；平台GET只读已观察投影，校验 / 初始化 / 维护为显式动作，不把校验全绿当模型理解或目标完成。AOCI当前[FSL-1.1-MIT许可](https://github.com/aoci-spec/aoci-code/blob/v0.1.0-rc20/LICENSE)含分发条件；本阶段只本机适配和真实验证，是否随最终包分发交总负责人按具体版本接收，不自行嵌入许可未确认资产。
+
+SemanticIndex提出完整本地方案待总负责人决定：TypeScript必要推理适配使用 `@huggingface/transformers` 的Node / ONNX CPU路径，固定 `Xenova/multilingual-e5-small` 的模型 / tokenizer / 配置revision，LanceDB本地成熟向量投影在同一适配进程保存和检索。Go只管理权限、版本、generation及安全检索引用；模型向量与全文不经公开HTTP或stdout输出，结果只返回经授权的引用、相对位置、分数和范围。模型 / SDK / 向量库和Windows运行资产由B单独固定依赖清单。官方方向依据[Transformers.js](https://huggingface.co/docs/transformers.js/v3.8.1/en/index)、[模型原文](https://huggingface.co/Xenova/multilingual-e5-small)、[LanceDB安装文档](https://lancedb.com/docs/installation/)；尚未声称在本机通过。组件未答时不冻结接口 / 默认模型或使用零向量替代；AOCI / CodeGraph / Git隔离的实际开发继续。
+
+向量模型切换只构建独立新generation，完成真实版本和数量核验后再切换；旧向量空间不混用。来源移除或授权撤销立即从可检索结果排除，投影通过原范围清理和重建，原Git及Domain保持业务真相。修改前提供候选写域 / 关系 / 检查建议，修改后核真实diff、原写域和新快照；不增加调度器、Attempt、Manifest、Hash完成证明或自研文件parser。
+
+首个实际验收使用Agent创建的公开Git项目，取同一真实commit的两独立worktree，分别实际建索引；一棵作真实功能修改并运行相应构建，旧索引明确stale，另一棵查询不串结果。对实际添加 / 修改 / 删除执行sync并核符号与关系变化，关闭重开后校验版本，真实破坏自有投影后显式重建；同时通过实际权限拒绝 / 撤销、预算拒绝、缺失后端和来源边界检查。私有全文、credentials、原生路径及模型原答不进HTTP / Git / 包 / stdout；所有首RED / UNKNOWN / NOT_RUN留本机安全指针。未验证的模型、分发和真实跨模块上下文路径分别保留未完成，不把代码关系查询当SemanticIndex通过。
+
 - 总负责人：`term_494acbb9-67a5-4360-82dc-8514ce124990`，顶层 Run `run_973808dd6a2f`。
 - 模块负责人：`term_3413269b-9c86-4a2d-804b-790396bf130a`，Task `task_e8c1d01d67ec` / Dispatch `ctx_e6328a370d56`。
 - 模块子 Run：`run_8bbda1c3974c`，2026-10-14T12:51:14Z 创建，未绑定或夺取总负责人 Run。
