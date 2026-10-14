@@ -13,7 +13,7 @@
 | B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python 和冻结核心；`tests/s1`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理真实视频定位、实际模型/控制器测试、默认 Go 检查、Reader 发布路径与真实进度入口 |
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 唯一 `web/src/**`、`web/e2e/**`、`docs/standards/frontend.md` owner。消费精确公开契约与 B/R/H/Q 实际入口，完成未知状态持久化、全部既有 Web 和稳定源码默认完整 E2E |
 
-1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，读取回执待核实。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
+1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
 2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
 3. 总负责人接收原 worker_done 并交接已核实终端后，才在本子 Run 复用同一终端、工作树和分支创建后续 Task；不重新绑定总负责人 Run，不增加同写域人员。
 4. 所有实际功能与适用检查通过后，向 M-release 提交精确 SOURCE/REPORT 及覆盖证据供唯一 I 普通合并；最终组合 check/build/默认 E2E、ZIP 新目录启动/读写/重启验收继续由原开发人员支持。模块阶段通过不结算本 Task，最终 GitHub Release 由总负责人接受具体结果后发布。
@@ -34,11 +34,19 @@
 
 ## 精确交付与已确认协调
 
-- B 已报告阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb` 已普通 push；前阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434` 保留。本模块首次远端核实遇到 `SSL_ERROR_SYSCALL`，尚未独立确认远端当前 HEAD。
+- B 阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`；后续依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`、真实 Works/进度 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，本模块独立 `git ls-remote` 已核当前远端 REPORT 一致。前阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434` 保留；首次远端核实的 `SSL_ERROR_SYSCALL` 仍保留为首失败。
 - F 已报告 SOURCE `f534298` / REPORT `521ed5bd7f49156163bc8f946931b50b23349a8d` 已 push；typecheck/lint/build/112 Vitest PASS，完整 E2E PARTIAL。普通合并 Workbench 到 `67c5713`、Relay 到 `6f61d87`；新增生产迁移与真实窗口仍进行。
+- F 后续普通合并 SOURCE `9ccb198fd1af1bd6ceb2d98b25b0531802543983` 已由本模块独立核远端一致；包含 H 真实入口与 R revision 修复。F 已报告最新 21 文件/126 纯函数与静态组件断言、typecheck/lint PASS；后续独立 REPORT 与完整默认 E2E 待交。本模块扫描 `web/src`/`web/e2e` 中外部模拟及旧 `fixtureWorksSnapshot` 符号无命中，默认套件仍保留两 viewport、retries=0 与全部 testDir，不等于实际覆盖通过。
 - R 本次权限修复 SOURCE `ce3a519efa5317e642d7488a776b850eebca1093` 已由 M-relay 报告普通 push/远端一致。CreateIntent 保存真实 settings revision/A-B-C；旧 intent 权限变化阻断，替换确认 revision 不能绕过。F 前端比较必须保留，H 正消费并重启固定 API。
-- 总负责人 `msg_ec33426ae20d` 临时授权 B 在 F 工作树只用文件编辑工具处理 H 普通 merge 的 `go.mod` 冲突、只 stage 此文件，F 完成普通 merge；依赖 union 保留双方必要库。开始/结束通知 F，完成后临时写域撤回，`go.sum` 如需变化先 Handoff 本模块核实。
+- 总负责人 `msg_ec33426ae20d` 临时授权 B 在 F 工作树只用文件编辑工具处理 H 普通 merge 的 `go.mod` 冲突、只 stage 此文件，F 完成普通 merge；依赖 union 保留双方必要库。B 已报告完成，`go.mod` 未合并项为空、与 B `2a6f036` 全等；F 自动合并 `go.sum` 仅真实 ndjson 两条 checksum 且同源，B 未修改其他 F 文件，临时跨树写域已撤回。
 - 总负责人 `msg_5c5fa8031f79` 授权原 B 整改 `internal/adapters/sqlite/workbench.go` 的个人正式路径常量。保护检查针对显式配置源与 owned snapshot，保留源只读/immutable/query_only、同文件与 alias 拒绝；默认服务不访问个人正式路径。实际自有 DB、HTTP、alias 和发布 binary 扫描须通过；不修改冻结领域或现有部署。
+- B 基线缺少 Reader，本模块已确认由 B 消费既有 Workbench `5dd4b729` 的普通 `internal/workbench/app/contracts.go`、`internal/adapters/sqlite/workbench.go`、`workbench_test.go` 后整改。H `cmd/server/workbench_config.go` 旧常量引用通过 M-relay Handoff 处理，不共享 Reader 写域，`cmd/server/config.go` 仍由 B 独占。
+- 总负责人要求 README infer 保留实际成功，同时核 controller 启动配置/实际 turn_context、新自产 session、固定公开任务与原生工具关闭；本模块已查生产启动配置含禁用功能和 MCP/skill 隔离，但尚未独立核本次会话实际配置。工具调用为零不单独证明权限关闭，补充实际证据已交 B。
+- P 本次旧 archive `27e65dd80436030b0157edb6f811c83320dda001` 的 build 首 RED 为前端旧导入符号缺失，已交 F 核最新修复。首错误保留，最终 ZIP 与组合 build 须使用终稿精确源码重新验收。
+
+## 模块管理阶段独立 REPORT
+
+管理 SOURCE `6f1e7fd5b68da69cba3f65f47a4324a00fbd2ece` 已普通 push；独立 `git ls-remote` 核分支同 SHA。变更仅本管理文档；`git diff --check` 无输出，7 个相对文档链接均实际存在。SOURCE 不包含业务实现，业务完整验收仍按上表未完成状态保留，本模块继续管理返修与发布支持。
 
 ## 隐私、冻结与剩余限制
 
