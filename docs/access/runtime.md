@@ -2,7 +2,7 @@
 
 ## 2026-10-14 默认真实 Relay 场景支持
 
-本阶段 Task `task_6586f574ed0b` / Dispatch `ctx_1210a540a63b`，原分支 `songconmaisaix31-design/works-relay-runtime`；最终 SOURCE `5c37c261ae1f98fbdab6926415712ef4a5181581` 已普通 push。首 SOURCE `6ed9ae1301dc2e91f0d17a335300697fae3e253f` 与通知参数修复 `055a57a18c732ffbbc55d49c605f65c655b8edea` 均保留普通祖先。REPORT 独立普通提交，精确 SHA 经当前 Dispatch 回传。此前 `d6d4da6` / `07449a6` 没有重写历史。客户端为当前 Codex，未覆盖实际模型设置，没有派第四层人员。
+本阶段 Task `task_6586f574ed0b` / Dispatch `ctx_1210a540a63b`，原分支 `songconmaisaix31-design/works-relay-runtime`；最终 SOURCE `87a54b762aef0c6a175eab1470508e76aa6ace45` 已普通 push。首 SOURCE `6ed9ae1301dc2e91f0d17a335300697fae3e253f`、通知参数修复 `055a57a18c732ffbbc55d49c605f65c655b8edea`、无新增 Skip 的测试返修 `5c37c261ae1f98fbdab6926415712ef4a5181581` 和阶段 REPORT `26925b92a62babce52e96862719eb6f7269bf950` 均保留普通祖先。最终 REPORT 独立普通提交，精确 SHA 经当前 Dispatch 回传。此前 `d6d4da6` / `07449a6` 没有重写历史。客户端为当前 Codex，未覆盖实际模型设置，没有派第四层人员。
 
 H 仍独占 17342 的公开 Git、DB、控制器及服务组装，F 独占 17343 的实际产品 UI / HTTP 操作。本阶段没有 create / confirm / send / stop H/F 的任务，没有另启 CLI / 模型，未读取凭据或私人历史。协调端报告的首注册三分钟 FAIL 和模型调用 0 保持原结论，不重记 `registered_at` / 首 DOM。只运行本机已装 `codex exec --help`、`claude --help`、`pi --help` 的公开选项探测；安装不代表配置、可启动或模型能力通过。
 
@@ -49,6 +49,8 @@ terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{LaunchPoli
 
 `launch_policy=selected_context_tools_disabled_v1` 表示实际 owned 命令使用该固定禁用参数；`effective_tool_set` 始终 unknown。完整有效工具清单仍需 H 只对本次 controller 正选自产来源聚合，不能用 `tool_calls=0`、源码静态 feature 或只读 sandbox 独自证明所有工具关闭。本轮只验证拒绝路径，未将该新证据口声明为已实际执行成功。
 
+首次实际来源错误出现后，新增 `first_protocol_failure` 可选派生字段保留同一进程第一条 RPC method / 数值 protocol_code / 既有白名单 reason / 实际时间。原始 message 不保留，后续失败不覆盖，日志关闭也可由原 owner 的内部证据口核查。错误 reply / success 解码失败、明确 false、reply deadline 或 reply 前进程退出同样给出固定摘要，没有新增重试、fallback、HTTP 或持久证明系统。它不能补回旧二进制没捕获的内容。
+
 旧运行中的二进制没有此新增口，不通过重启新 Registry 反填旧 controller 所有权或新策略。H 对自己的已知 server PID 可读取精确 ParentProcessId 子链，本机保留 CommandLine、输出只含固定禁用项 bool / PID / 时间，再对本次正选 `turn_context` 做安全聚合；不得输出命令全文、全机扫描或重发旧成功补证。R 不代操作 H 当前服务。
 
 B 的旧成功 native ID 只有 ID / model / README mtime / size，不足以正选原档。`Native.get` 只认当前实例内 exact owned session；`ProcessSelectedText` 最后实际 Stop，若已退出且先前没有 capture metadata，`OwnedRelayArchive` 直接 EvidenceMissing，不发新的 thread/read。重启后 map 空保持 DeliveryUnknown，不能从 native ID 建新 ownership / history fallback。该旧证据不足已直接 Handoff B 与 M-product，旧成功 inference 不重复调用。
@@ -78,16 +80,18 @@ F 固定命名为 `ASTROCYTE_TEST_RELAY_<SCENARIO>_<1920或1280>_TASK_ID`，另�
 
 | 命令 | 本阶段结果 |
 |---|---|
-| `go test -mod=readonly ./internal/adapters/agents -run 'TestRelayNativeDeadline\|TestRelayPublicEOFPolicy\|TestRelayOwnedExecution' -count=1 -v -timeout=90s` | 最终三项和真实 PATH 缺入口拒绝子例 PASS，无 Skip；实际已装入口解析 / 目录身份门禁与纯请求拒绝，零 CLI 启动 / 模型调用；日志 `dist/relay-l1/default-policy-final.log` |
-| `go test -mod=readonly ./...` | 最终 PASS，20 个有测试 package / 9 个无测试 package；日志 `dist/relay-l1/default-lifecycle-no-skip-full-go-test.log`，未设置 opt-in 的既有真实 native 测试仍 SKIP |
+| `go test -mod=readonly ./internal/adapters/agents -run 'TestRelayNativeDeadline\|TestRelayPublicEOFPolicy\|TestRelayOwnedExecution\|TestRelayProtocolFirstFailure' -count=1 -v -timeout=90s` | 最终四项和真实 PATH 缺入口拒绝子例 PASS，无 Skip；实际已装入口解析 / 目录身份门禁、纯请求拒绝、首错误保留与 raw canary 不泄漏，零 CLI 启动 / 模型调用；日志 `dist/relay-l1/default-policy-protocol-final.log` |
+| `go test -mod=readonly ./...` | 最终 SOURCE PASS，20 个有测试 package / 9 个无测试 package；日志 `dist/relay-l1/default-protocol-full-go-test.log`，未设置 opt-in 的既有真实 native 测试仍 SKIP |
 | `go vet -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/relayworktree` | EXIT 0 |
-| `go build -mod=readonly -o dist/relay-l1/default-lifecycle-runtime-server.exe ./cmd/server` | EXIT 0，忽略产物，不代 H 当前服务 |
+| `go build -mod=readonly -o dist/relay-l1/default-protocol-runtime-server.exe ./cmd/server` | 最终 SOURCE EXIT 0，忽略产物，不代 H 当前服务 |
 | `node scripts/check-architecture.mjs` / `gofmt` / `git diff --check` | PASS，29 package 边界 |
 | `git -c http.version=HTTP/1.1 push origin songconmaisaix31-design/works-relay-runtime` / `ls-remote` | SOURCE 普通 push 与精确远端核实 PASS；REPORT 独立普通提交 |
 
 没有新的 Go RED；旧 Native / Intent 第一失败日志全部保留。模块审阅首 SOURCE 发现新增 `t.Skip` 违反本轮要求，最终 SOURCE 已普通追加移除，改为实际缺入口时明确检查 ProviderUnavailable / 无可启动命令，并继续全部拒绝检查；额外 PATH 缺入口子例在已装环境也实际运行，没有 return / helper / 假模式跳过。新增测试没有创建 controller / helper process、合成成功协议或伪 lifecycle，实际 H HTTP / F DOM / 两视口默认 suite / 第二 CLI / publication error / ZIP 验收均没有由上述 Go 通过填绿。
 
-模块于 13:37 / 13:38 UTC 交来首次实际 UI task `0c6522bc-b232-4040-8407-745885644791` 的查询：确认 operation `906dd04e-6956-4539-af2b-694d33f286c0` 返回 503，dispatch receipt 是 accepted 并有 provider_unavailable，随后任务 working / terminal_exited，事件 published。该组合沿 `RelayArchiveObservationFailure` 表示原生操作已经接受、之后来源读取出错，不能解释成首输入未交付或重发许可。标准解码失败是 DeliveryUnknown，与这次 provider_unavailable 不同。未启用通知时来源端调用原 controller 的 `thread/read(includeTurns:false)`；已向 H 请求原 service method / protocol code / safe reason / 实际 source mode 和 gap，不读取 H 私有来源或接管其 controller，根因和修复验收仍待 H 原现场证据。新 lifetime 和新证据口不反填这个旧 180 秒进程；该首 503 保持 RED，不以本阶段 Go 通过覆盖。
+模块于 13:37 / 13:38 UTC 交来首次实际 UI task `0c6522bc-b232-4040-8407-745885644791` 的查询：确认 operation `906dd04e-6956-4539-af2b-694d33f286c0` 返回 503，dispatch receipt 是 accepted 并有 provider_unavailable，随后任务 working / terminal_exited，事件 published。该组合沿 `RelayArchiveObservationFailure` 表示原生操作已经接受、之后来源读取出错，不能解释成首输入未交付或重发许可。标准解码失败是 DeliveryUnknown，与这次 provider_unavailable 不同。H 于 13:49:50 UTC 补核原日志：上海 21:33:19 `method=thread/read` / `protocol_code=-32603` / `reason=thread_rejected`，本次实际 mode archive、notifications 未 arm；安全摘要不含具体内部错误 message，不能推断确切上游根因或模型失败。
+
+H 明确报告原任务没有重发，后来原 observer 获得同一 owned source，当前 source available / 实际 exit；本次原档 15 完整行 / 105564 bytes，15 origin→SQL ID 匹配、HTTP 18 event IDs / 分页 / 权限 / GET 只读核查通过，assistant / task_complete 各 1。H 自产安全证据保留在原工作树忽略目录 `dist/l1-live/current-20261014/initial-actual-*.json` / `committed-public.json`；私有正选指针只在其本机 RelayStore，不输出到 Git / HTTP / 包。snapshot complete 只描述当前范围，SessionComplete、prefix、finalized 和 append-only 仍未确证；tool_calls 0 不证明工具关闭。以上是 H 的现场 Handoff，R 没有读取其 raw 或重演该任务。新 lifetime / first failure / PID 口不反填这个旧 180 秒进程；首 503 保持 RED，根因未确证，不以之后来源读取或本阶段 Go 通过覆盖。H 自查 Foundation / 旧 Projects 端口未组装产生的 GET nil panic 属于 H 自身薄组装返修，待 F 释放旧任务后串行修，不归 R 改跨域文件。
 
 接口和 SOURCE 已直接交 H `ctx_312d983772a9`、F `ctx_5bac511ada08`、B `ctx_7217777c7bf5` 与模块父 `ctx_e6328a370d56`。T `ctx_8674c456f49f` 已收到 NewRegistry / TextProcessor / LocalProjectService 真实入口、配置时效和真正 Observe / StopConfirmed / 取消 unknown 的要求，不复用 H DB 或重发 B 成功任务。P / M-release 只消费 H 最终 actualserver 参数及精确集成 SOURCE，R 不改包、不复制 raw 配置或凭据。V4 / schema / engine / mapper / weights / schedule / 17321 冻结不动，archive append-only 和恢复 raw gap 的限制原样保留。
 
