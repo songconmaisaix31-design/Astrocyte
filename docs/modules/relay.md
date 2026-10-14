@@ -11,7 +11,7 @@
 
 | 开发人员 | 固定工作树 / 分支 | 独占写域 | 调度状态 |
 |---|---|---|---|
-| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | 原 `task_a51fab762c01/ctx_b4fcb141ca00` completed/succeeded 且总负责人已接收并精确释放旧终端；唯一后续开发启动被 nested depth 设置阻断，尚无新 Dispatch |
+| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | 原阶段 completed/succeeded 且总负责人接收并精确释放旧终端；后续 `task_b833b3a06c1e/ctx_216bf731aaf8` 已在本模块子 Run 实际启动，ready / turnStart observed |
 | H | `works-relay-http` / `songconmaisaix31-design/works-relay-http` | `internal/adapters/events/relay*.go`、`cmd/server/relay*.go`、`internal/adapters/httpapi/relay*.go`、`internal/workbench/app/relay*.go`、`internal/adapters/sqlite/access_session*.go`、`contracts/openapi.yaml` 与 relay examples、`docs/access/http.md`；必要 `cmd/server/main.go` / `internal/adapters/httpapi/server.go` 组装 | `task_cfb7c9bde07d/ctx_312d983772a9` 沿原 Run 活跃；已发直接 Handoff，要求同时向模块 Dispatch 报告 |
 
 依赖单归 B，H 不修改 `cmd/server/config.go`。F `ctx_5bac511ada08` 是当前实际产品页面唯一操作人；B `ctx_7217777c7bf5` 接收真实公开来源、生产入口及普通库存测试迁移 Handoff。产品模块负责人 `ctx_b1cd2e0a39aa`、集成发布模块负责人 `ctx_376d222c774b` 已由总负责人确认，跨模块依赖直接 Handoff 其精确 Dispatch。
@@ -35,8 +35,12 @@
 - 随后公开 `worker-show ctx_b4fcb141ca00` 返回 completed/succeeded、`projection.liveness=live`、`agentIdentity=codex`、`exactWorker=true`；terminal read 显示 GPT-6.1-Sol high fast 空闲提示。CLI 启动识别与现有进程证据不一致，已向总负责人 escalation 并追加状态，未重试、关闭、释放或另派写入者。
 - 总负责人 2026-10-14T12:54:17Z 报告已对旧 R 精确 `worker-release`：`released/processAction=closed_agent_terminal`、transcript captured；公开 worker-read 同样返回 resource released / liveness exited，原工作树 terminal list 为空。随后已授权在原工作树/分支启动唯一后续 Codex 开发人员，保留全部提交。
 - 按该授权 `worker-start --spec ... --agent codex --run run_8bbda1c3974c` 返回 `nested_worker_depth_exceeded`：深度 2、当前最大深度 1，`effectsApplied=false`，request `a1c9069c-8e54-454e-a175-64ffcfb48e73`。尚无新 Task/Dispatch/Agent；已向总负责人报告需在 Orca Settings → Orchestration 将 Nested worker depth 设置为至少 2，不能用新 Run/低级 dispatch 绕过，也不能由模块负责人代写领域代码。
+- 总负责人 2026-10-14T12:57:50Z 报告通过官方 Settings 的纯文本 accessibility 将 nested depth 改为 2 并读回，未改内部 DB/源码。配置状态改变后正常 `worker-start` 成功：`task_b833b3a06c1e/ctx_216bf731aaf8`、终端 `term_1394f6f0-7f05-486f-b0ee-246a193105a4`，`ready/input_accepted/turnStart=observed`，prompt observation supported，process incarnation `ff19643c-de7a-44ad-b85a-7f69709b68bb`，request `1fbe74a4-7c89-4bc8-9c9f-c4d2ab24630a`。原工作树复用、默认 Codex 配置继承，未指定未经核实模型；第一失败仍保留。
 - H/F 已收到精确 Dispatch Handoff，登记 durable enqueue；尚未把 enqueue 解释为实际开始或接收。
 - F 2026-10-14T12:53:45Z 报告在同 URL 实际两 viewport session200 与空 registry 基线，观察器打印 `F_BROWSER_READY`。其初次 registry 403 竞态原件 `.verification/l1-first-visible-current.log` 保留。H 12:54:45Z 确认注册未开始、模型派发为零、计时未启动，待 R 精确 SOURCE 后正常消费/编译/重启并协调 F 观察窗口。
+- 已向 B 提供现存实际来源文件本机指针 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-runtime/dist/relay-l1/actualpublicsources.json`，只读文件列表确认存在，未读取或输出源内容；生产入口与进度上下文要求由 R/H 持续交接。
+
+模块管理阶段 SOURCE `e404da04f7b10296bed8133589c292766c5398cf` 已普通 push，`git diff --check` 和 `git ls-remote` 精确核对 PASS；该结果仅包含本模块管理文档与派发核查，业务修复和产品验收仍按下面记录进行。
 
 ## 验收记录
 
