@@ -23,6 +23,7 @@ type RelayOwnedExecution struct {
 	EffectiveToolSet     string                `json:"effective_tool_set"`
 	DisabledFeatures     []string              `json:"disabled_features"`
 	FirstProtocolFailure *RelayProtocolFailure `json:"first_protocol_failure,omitempty"`
+	MetadataStatus       string                `json:"process_metadata_status"`
 }
 
 // 只保存第一条固定安全摘要，日志关闭时也不丢失本实例的首 RPC 错误。
@@ -33,12 +34,19 @@ type RelayProtocolFailure struct {
 	ObservedAt time.Time `json:"observed_at"`
 }
 
-func (p *nativeProcess) recordProtocolFailure(method string, code int, reason string) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	if p.firstProtocolFailure == nil {
-		p.firstProtocolFailure = &RelayProtocolFailure{Method: method, Code: code, Reason: reason, ObservedAt: time.Now().UTC()}
-	}
+// 可选补充只由原控制器记录供给；普通 Native 基线缺少该接口时保持未知。
+// 此文件不引用 Relay capture、应用服务、根计划或任何新增进程字段。
+type relayExecutionMetadata struct {
+	ProjectID            string
+	StartedAt            time.Time
+	DeadlineAt           time.Time
+	PermissionPolicy     string
+	FirstProtocolFailure *RelayProtocolFailure
+	WriterShutdown       bool
+}
+
+type relayExecutionMetadataProvider interface {
+	relayExecutionMetadata() relayExecutionMetadata
 }
 
 // 只核已经持有的精确 controller；无 RPC、无模型调用、无历史/文件扫描。
@@ -47,29 +55,44 @@ func (n *Native) OwnedRelayExecution(ctx context.Context, session domain.NativeS
 	if err := ctx.Err(); err != nil {
 		return result, err
 	}
-	if session.ID == "" || session.NativeID == "" || session.ProjectID == "" || session.CLI != n.id || session.Ownership != "owned" {
+	if session.ID == "" || session.NativeID == "" || session.ProjectID == "" {
+		return result, nativeError(apierrors.DeliveryUnknown, "original owned session identity is incomplete")
+	}
+	if session.CLI != n.id || session.Ownership != "owned" {
 		return result, nativeError(apierrors.ScopeDenied, "execution evidence requires the exact owned controller session")
 	}
 	p, err := n.get(session)
 	if err != nil {
 		return result, err
 	}
+	metadata := relayExecutionMetadata{}
+	metadataStatus := "unknown"
+	if provider, ok := any(p).(relayExecutionMetadataProvider); ok {
+		metadata = provider.relayExecutionMetadata()
+		if metadata.ProjectID != session.ProjectID {
+			return result, nativeError(apierrors.ScopeDenied, "owned process project binding differs")
+		}
+		if metadata.StartedAt.IsZero() {
+			return result, nativeError(apierrors.DeliveryUnknown, "owned process start metadata is unavailable")
+		}
+		metadataStatus = "available"
+	}
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.projectID != session.ProjectID || p.cmd == nil || p.cmd.Process == nil || p.startedAt.IsZero() {
-		return result, nativeError(apierrors.ScopeDenied, "owned process identity is unavailable or differs")
+	if p.nativeID != session.NativeID || p.cmd == nil || p.cmd.Process == nil || p.cmd.Process.Pid <= 0 || p.done == nil {
+		return result, nativeError(apierrors.DeliveryUnknown, "original owned process identity is unavailable")
 	}
-	result = RelayOwnedExecution{ProcessID: p.cmd.Process.Pid, StartedAt: p.startedAt, DeadlineAt: p.deadlineAt, CLI: n.id, Version: session.Version, LaunchPolicy: "unknown", PermissionPolicy: "unknown", EffectiveToolSet: "unknown", DisabledFeatures: []string{}}
+	result = RelayOwnedExecution{ProcessID: p.cmd.Process.Pid, StartedAt: metadata.StartedAt, DeadlineAt: metadata.DeadlineAt, CLI: n.id, Version: session.Version, LaunchPolicy: "unknown", PermissionPolicy: "unknown", EffectiveToolSet: "unknown", DisabledFeatures: []string{}, MetadataStatus: metadataStatus}
 	select {
 	case <-p.done:
 		result.ExitConfirmed = true
 	default:
 	}
-	if p.permissionPolicy != "" {
-		result.PermissionPolicy = p.permissionPolicy
+	if metadata.PermissionPolicy != "" {
+		result.PermissionPolicy = metadata.PermissionPolicy
 	}
-	if p.firstProtocolFailure != nil {
-		failure := *p.firstProtocolFailure
+	if metadata.FirstProtocolFailure != nil {
+		failure := *metadata.FirstProtocolFailure
 		result.FirstProtocolFailure = &failure
 	}
 	if n.id == "codex" {
@@ -78,7 +101,7 @@ func (n *Native) OwnedRelayExecution(ctx context.Context, session domain.NativeS
 			args = append(args, "--disable", feature)
 		}
 		// 通知采集使用现有 writer 关闭参数，必须核同一次真实启动策略。
-		if p.relayCapture != nil {
+		if metadata.WriterShutdown {
 			args = append(args, "-c", "thread_unload_delay_secs=0")
 		}
 		cmd, err := installedCommand("codex", args)
