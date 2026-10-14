@@ -2,7 +2,7 @@
 
 事实源为根当前 HANDOFF / STATUS、[原日运行计划](../../tasks/M6-V4-daily-operation.md)与原正式工作树 `docs/experiment/OPERATIONS.md`。负责人 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324`，子 Run `run_aa4e6a119547`；只修改本文与 `release.md`。实际管理客户端为 Orca CLI / Codex，终端读取模型为 GPT-6.1-Sol high fast。
 
-上海日期为 2026-10-15，刚闭合自然日为 2026-10-14，即 day0=10-13 的 D1。用户今日采集究竟是 V4、Today 或两项尚待根答复；L/S 含义同样待答。当前工作仅只读预检，不执行 capture、Sleep、select-native、run-day、judge、import-user 或 score-predictions，不补漏日、不重发 unknown、不改变日程、协议、正式库结构或模型预算。
+上海日期为 2026-10-15，刚闭合自然日为 2026-10-14，即 day0=10-13 的 D1。原V4日采集持续授权，原automation为唯一operator；本模块只读预检、明确未提交输入的单次恢复及结果验收，不执行自己的capture、Sleep、select-native、run-day、judge、import-user或score-predictions。根已转交S0–S6当前系列并行授权，科研与产品功能由各owner推进；working关键规则和额外范围仍保持待答。不补漏日、不重发unknown、不改变日程、协议、正式库结构或模型预算。
 
 ## 一页预检计划
 
@@ -55,3 +55,7 @@
 00:31:21只读确认 `capture-20261014-first` / `day-20261014-first` 均存在，run仍dispatched。随后标准JSON仅选择coverage安全字段：day=2026-10-14、phase=formal、day0=10-13、协议SHA全等；capture_complete / selection_complete均true，Astrocyte46 / McPet14 / Morphogenesis0、cognitive_success60，unassigned / structure_failed / late / source_errors均0、sleep_status=completed。Codex20文件 / 145窗口非工具记录，Claude7文件 / 2660扫描行；来源仍为原授权根，没有扩大源。
 
 00:34:26独立只读解析answers / receipts的状态与计数：9个OK终态、10个STARTED、10个已观察题臂组合、未决STARTED组合1，重复STARTED / 重复终态均0。user-sheet已生成，judge-scores尚不存在；原STARTED随顺序实际完成记录保留。没有输出题目、回答、原始evidence或匿名映射。此时三臂未完成，不执行本模块的新请求或judge，继续接收唯一原operator结果。
+
+00:36:37安全状态已为12个STARTED / 12个OK；随后独立只读核12个题臂组合，未决STARTED组合0、重复STARTED0、重复终态0；日receipt有唯一STARTED / MODEL_VERIFIED / DAY_COLLECTED_CHECK_ARM_STATUSES。judge-scores保留1个STARTED与1个OK；user-sheet存在、user-scores尚不存在、prediction-scores未生成。原run仍dispatched，operator最后安全报告待收到；无需新模型或补填人评。根通知为 `msg_50b53c052ba9`。
+
+下一项为第三层唯一结果只读验收，write_paths为空：逐event_id在实际正式库 / 本日快照定位、单次Sleep与覆盖自然日 / 原锁、12题臂 / 独立judge / 实际预算 / 去重回执及人评 / 预测真实状态。只读成熟SQLite / 标准JSON，原始输入与响应留原根，输出仅派生计数；不得触发任何capture、Sleep、模型、judge、人工评分或预测。此检查与原operator分别拥有读取和执行范围，不构成第二operator。

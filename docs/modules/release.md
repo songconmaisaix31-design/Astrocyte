@@ -11,6 +11,7 @@
 | 轨道 | 固定工作树 / 写入范围 | 启动条件与验收 |
 |---|---|---|
 | 日采集只读预检 | 原正式工作树 `C:/Users/DW/orca/Astrocyte`；文件写入范围为空 | 唯一第三层 Task `task_2c8053c4f064` / Dispatch `ctx_7bba9154b03d` 已合法 succeeded / released / transcript captured。实际 projection Codex / gpt-6.1-sol，终端 high fast；锁与全文SHA一致、D1未执行 / 原00:20启用和重复风险已核。详情见今日运行记录。 |
+| D1结果独立只读验收 | 原正式工作树及已有外部根；文件写入范围为空 | 原唯一operator已实际产生60事件 / Sleep和12OK / judgeOK后，新第三层只读检查逐event_id真实正式库与日快照、coverage完整窗口 / 去重、12题臂与judge / 实际预算回执、用户表待填 / 预测未成熟。禁止capture / Sleep / 模型 / judge调用、任何写入或新输出；公开只报告派生计数及真实限制。 |
 | I 唯一集成 | 待条件完成后创建独立 release 集成工作树 / 分支；只补少量路由、导入、配置、类型和集成报告 | 精确 SOURCE / 独立 REPORT、四项语义、完整默认、实际 native / Today 均通过后才启动。普通 `--no-ff`，领域失败交原 owner；check / build / 完整 workers=1 E2E 与适用链路通过后 push SOURCE 与独立 REPORT。 |
 | P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
 | N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
