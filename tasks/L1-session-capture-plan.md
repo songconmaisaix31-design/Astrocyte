@@ -22,11 +22,11 @@ Run 为 `run_d577f0d3fee1`，当前主控为 `term_4a28ac76-bd04-4a8b-acb2-b3114
 
 | 轨道 | 工作树与分支 | 独占 write_paths / 当前任务 |
 |---|---|---|
-| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`docs/access/runtime.md`；现有交付已结算，运行时问题交回本轨 |
+| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`docs/access/runtime.md`；必要的 `agents/native.go/native_process.go` 可选观察端口同归 R，默认行为保持；Task `task_a51fab762c01` / Dispatch `ctx_1415e8205d75`，继续实际原生控制器与生命周期验证 |
 | H | `works-relay-http` / `songconmaisaix31-design/works-relay-http` | `events/relay_session*.go`、`cmd/server/relay*.go` 与既有组装文件、`httpapi/relay*.go` 与 server、`workbench/app/relay*.go`、`sqlite/access_session*.go`、OpenAPI 与 relay examples、自身 `http.md`；解析依赖需要时独占 `go.mod/go.sum`；Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da` |
 | F | `works-relay-frontend` / `songconmaisaix31-design/works-relay-frontend` | 原 Relay UI 与 API、生成 schema、`TodayView.tsx`、cognition/relay 文件、新 `relay*.spec.ts` 与测试、自身 `frontend.md`；Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335` |
 
-H 当前终端为 `term_6d682528-790c-470d-a203-afe228214f50`，执行目录必须明确指定原 `works-relay-http`；其终端工作区元数据指向根目录。F 终端为 `term_480eeb0d-b66b-4cd4-8a9f-f3eb2750e0d4`。两轨使用现有 Codex 配置，实际模型记录为 `gpt-6.1-sol`。
+R 当前终端为 `term_fa1e374d-7982-4f44-988b-59c6b979f7a5`。H 当前终端为 `term_6d682528-790c-470d-a203-afe228214f50`，执行目录必须明确指定原 `works-relay-http`；其终端工作区元数据指向根目录。F 终端为 `term_480eeb0d-b66b-4cd4-8a9f-f3eb2750e0d4`。使用现有 Codex 配置，实际模型记录为 `gpt-6.1-sol`。
 
 R/H/F 完成后，由原唯一 I 集成人员在 `works-relay-integration` 普通 `--no-ff` 合并精确交付，只处理必要路由、导入、配置、生成类型和 Today 父级来源说明；领域问题交回原轨。开发人员完成开发、测试和报告，SOURCE / REPORT 分开提交并 push。文档从精确提交读取后以同内容登记到业务线；validation 的业务父历史不合入 Workbench。
 
@@ -34,6 +34,7 @@ R/H/F 完成后，由原唯一 I 集成人员在 `works-relay-integration` 普�
 
 - `RelayState.Sessions` 和任务绑定由原唯一 Relay store 管理。R 只读端口逐次核查权限、任务、原生 session 和 CWD；私有归档路径不进入 HTTP。
 - 沿已持有原生控制器取得具体会话归档来源，核实原生 ID、CWD、文件身份和当前读取范围；禁止扫描家目录、其他账户或历史记录寻找会话。
+- Codex 官方 `rust-v0.162.0` 源码提交 `c1382380de69521303b416720a52f42d51af6248` 的归档保留策略会过滤部分原生通知。R 复用已持有控制器补充可选派生事件观察端口，H 消费精确交付；归档覆盖与全会话通知覆盖分别记录。默认 Native 行为保持，业务修改只进入 Workbench。
 - 采集器观察人工已接受的任务，使用库解析成熟格式。错误立即返回，未知语义保持明确状态；未完成尾部不能推进游标。原子游标只保存位置、绑定、文件身份和派生覆盖状态，不保存原文。
 - 事件复用既有独立应用数据库的 EventService / EventRepository。稳定 origin 去重；HTTP `event_id` 必须是实际已提交收据 ID，可直接回查 GetEvent。无变化时不保存游标。
 - GET 只读取现有派生记录和覆盖状态，不启动控制器或采集。生命周期停止先取消并等待观察结束，再关闭存储；未知交付不自动重发。
@@ -43,7 +44,7 @@ R/H/F 完成后，由原唯一 I 集成人员在 `works-relay-integration` 普�
 ## 实际验收
 
 1. 使用实际已安装配置的 Codex、真实独立 SQLite、真实 HTTP 服务及控制器实际产生的归档。验证实际追加、重启去重、退出和停止读取；逐事件比对数据库收据 ID。
-2. 初始测试注册表没有该 CLI，仅增加 `AgentSpec` 数据并正常重启同 URL 服务，经人工派发后记录首次 Today 可见时间。全过程没有人工采集动作或新增平台派发代码。
+2. 初始测试注册表没有该 CLI，仅增加 `AgentSpec` 数据并正常重启同 URL 服务，经人工派发后记录首次 Today 可见的原生 Session 事件 ID 与时间，从注册和派发两个起点计时。通过真实数据库 origin 区分原生 Session 来源与任务级收据 / Git 事件。全过程没有人工采集动作或新增平台派发代码。
 3. F 在两个已有 viewport 连接 H 实际服务做 DOM 检查，验证六字段、时间排序、查询分页、未知 tokens、权限与覆盖缺口；禁止 mock、虚假数据和响应拦截。
 4. 快照可用时比对实际读前与读后值；不可用时验证真实服务的不可用状态以及独立会话区域，不制造快照数值。
 5. 活动事件证明 live，实际进程退出证明 exited，静默或联系缺失为 unverifiable；缓存重读不刷新活动证据。未决定的产品活性窗口保持未决定。
