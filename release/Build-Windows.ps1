@@ -17,7 +17,7 @@ if (Test-Path -LiteralPath $output) { throw 'Output directory already exists.' }
 New-Item -ItemType Directory -Path $output | Out-Null
 Start-Transcript -Path (Join-Path $output 'build.log') | Out-Null
 $priorGo = @{}
-foreach ($name in @('GOOS', 'GOARCH', 'CGO_ENABLED')) { $priorGo[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
+foreach ($name in @('GOOS', 'GOARCH', 'CGO_ENABLED', 'GOFLAGS', 'GOMAXPROCS', 'NODE_OPTIONS')) { $priorGo[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
 try {
     Push-Location $repo
     try {
@@ -31,6 +31,9 @@ try {
     $env:GOOS = 'windows'
     $env:GOARCH = 'amd64'
     $env:CGO_ENABLED = '0'
+    $env:GOFLAGS = '-p=1'
+    $env:GOMAXPROCS = '2'
+    $env:NODE_OPTIONS = '--max-old-space-size=512'
     Push-Location $sourceDir
     try {
         & go version

@@ -42,3 +42,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Verify-Windows
 `-RequireCombined` 检查新目录中的空配置、真实 session/CSRF/SQLite 写读、手动快照及进程重启，结果是阶段运行检查。实际非空认知验证还需明确提供 `-Source`（包完整 SOURCE）、`-CognitionSourceSha`（已消费的认知工具源码）、`-CognitionSource`（获准的真实 SQLite）、`-CognitionHistory`、`-CognitionPublicationRoot` 和 `-CognitionSafeDir`。安全输入目录包含对应实际 Sleep 后状态的 `sql-expected.json`、`events-six-fields.json` 与 `admission-safe.json`；脚本核查当前发布代、十项 SQL 数值、全部六字段事件、排名、实际历史、分页与重启。验收数据只放在自己的验证目录，完整默认浏览器和原生控制器正向验收须分别通过才能发布。
 
 构建复用现有 `pnpm install --frozen-lockfile` 和 `pnpm build`，并编译现有 `cmd/workbench-snapshot`，需要 Git、Go 1.27.2、Node 24.16.0、pnpm 11.27.0 与依赖下载网络。精确源码归档、构建输出、ZIP 和验证数据只写入发布工作树 `.verification`。ZIP 只包含四个 Go 程序、生产静态资源、启动与手动快照脚本、此说明和 LICENSE；不包含数据库、开发依赖、测试原件、日志、私人配置、用户资料或正式自动任务。候选包演练与最终合并源码验收分别记录，发布渠道、tag 和 GitHub Release 由主控在最终验收后处理。
+
+构建进程使用 `GOFLAGS=-p=1`、`GOMAXPROCS=2` 和 `NODE_OPTIONS=--max-old-space-size=512`；退出后恢复原进程配置。这些设置仅限制构建资源，不删减适用检查。
