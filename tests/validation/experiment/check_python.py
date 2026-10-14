@@ -30,7 +30,7 @@ def check(baseline):
             if token.type == tokenize.COMMENT and not any("\u4e00" <= char <= "\u9fff" for char in token.string):
                 raise ValueError("Chinese comment required: " + relative + ":" + str(token.start[0]))
         for node in ast.walk(tree):
-            if isinstance(node, ast.Try) and any(isinstance(child, (ast.Import, ast.ImportFrom)) for statement in node.body for child in ast.walk(statement)):
+            if isinstance(node, ast.Try) and node.handlers and any(isinstance(child, (ast.Import, ast.ImportFrom)) for statement in node.body for child in ast.walk(statement)):
                 raise ValueError("Conditional import rejected: " + relative + ":" + str(node.lineno))
         # 只比较内存中的 AST，不修改文件；全部 docstring 与行号不参与比较。
         if relative.startswith("scripts/experiment/"):
