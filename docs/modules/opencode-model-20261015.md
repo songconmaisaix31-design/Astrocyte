@@ -19,3 +19,9 @@
 本次证明该原CLI精确配置请求实际完成；provider/model来自原生assistant元数据，未独立抓取provider wire或模型服务回声。当前模型可用于后续简单任务，具体任务的工具、写域和验收仍按其独立授权；没有修改全局默认、账号、认证或正式V4实验。
 
 首前置检查把OpenCode正常resolved permission对象当字符串，model IO前实际FAIL、run输出尚不存在、模型请求0。读取实际resolved schema后，使用`permission.*=deny`检查修正；一次实际READY请求随后完成，未重发已开始的请求。继承的1个MCP逐项临时关闭，进程内权限和禁插件变量在finally恢复；没有写入全局配置。原件仅本树忽略目录 `run.jsonl`、`stderr-local.log`、`session-local.json` 与 `export-stderr-local.log`。
+
+## 独立REPORT
+
+本模型可用性SOURCE为 `d895ffcd0f4e58389a570a6c8a9197195b826bdd`，已普通push；本文最后一节是该SOURCE后独立报告，只修改此文档，完整REPORT SHA由实际Git回执提供。D1独立REPORT为 `5a1a4b0474013de9f39eebb910166e7c5af4b822`，范围分别登记，不执行额外模型或日采集。
+
+实际 `opencode --version / --help / models / run --help / --pure debug config`、单次固定 `--pure run -m alibaba-cn/deepseek-v4.1-flash --agent availability_probe --format json`、同次原会话 `export --sanitize` 和标准JSON安全字段核查均通过；最后finish=stop、READY1、error0、工具0、真实模型元数据及usage见上文。`git check-ignore`确认临时目录不入Git，`git diff --check`通过。未安装新模型客户端、修改全局默认/认证、发起第二次probe或启动简单开发任务；后续任务的实际TUI配置与业务检查须由其当前owner核实。
