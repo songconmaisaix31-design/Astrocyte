@@ -17,18 +17,24 @@
 | 轨道 | 固定工作树 / 分支 | 独占 write_paths | 验收 |
 |---|---|---|---|
 | B 后端与导入 | standards-backend / 同名独立分支 | `internal/**`、`cmd/**`、`extensions/**`、`tests/s1/**`、`tests/attention-engine/**`、`scripts/*.mjs`，不含任何 `.py`；`go.mod`、`go.sum`、`dependencies.lock.json` 的必要 parser 依赖；`docs/standards/backend.md` | 实际导入与权限 / 错误路径、适用 Go / Node 测试；冻结引擎 / schema / 权重保持字节不变 |
-| P Python | standards-python / Orca 同名独立分支 | `events/*.py`、`scripts/validation/*.py`、`scripts/evidence/*.py`、`scripts/experiment/*.py`、`internal/adapters/importers/*.py`、`tests/validation/**/*.py`；`docs/standards/python.md` | 文件头部与注释规范、实际 parser / 文件 / SQLite 操作；正式实验脚本只调整注释和 docstring，执行逻辑保持不变 |
+| P Python | standards-python / 同名独立分支 | `events/*.py`、`scripts/validation/*.py`、`scripts/evidence/*.py`、`scripts/experiment/*.py`、`internal/adapters/importers/*.py`、`tests/validation/**/*.py`、`requirements-validation.txt` 的必要 Python 解析依赖；`docs/standards/python.md` | 文件头部与注释规范、实际 parser / 文件 / SQLite 操作；正式实验脚本只调整注释和 docstring，执行逻辑保持不变 |
 | F 前端 | standards-frontend / Orca 同名独立分支 | `web/src/**`、`web/e2e/**`；`docs/standards/frontend.md` | 移除 mock / 伪造 API 响应，保留实际功能与等效断言，使用实际生产 HTTP / 存储完成相关 E2E |
 
 每轨只派发一个 Orca Codex Agent，实际 Task / Dispatch / 工作树 / 分支在收到开工回执后登记。开发、测试、报告及返修均归原轨人员。Go / TS / 依赖 / OpenAPI / 迁移共享变更只提交 Handoff，主控记录后由唯一人员实施。源码轨道完成后另派一个集成 Agent，普通 no-ff 合精确交付并执行组合检查；领域失败退原轨。暂不合 main 或 Workbench 当前开发分支。
 
 共享 Handoff 已处理：开发与 S1 验证的输出目录由 B 改为本树 `.verification/`，失败原件保留；真实服务需要显式限定资料发现根，由 B 在既有配置与组装范围实现并提供早期 SOURCE 给 F。B 已确认 HTML 和 JavaScript 自写 parser；必要的成熟 parser 依赖三文件交 B 单独持有，其余轨道不得修改。用户既有模型调用与获准项目推断授权继续有效：本轮独立技术验证只可使用当前工作树已跟踪资料或明确公开输入，官方 CLI 自行鉴权，不直接读取凭据或私人会话，不启动正式 V4 runner。
 
+P 的非冻结 Git 输出路径保护仍解析 porcelain。该问题继续由原 P 返修：使用成熟 pygit2 仓库 / worktree API，保留所有关联工作树的输出排除，不以仅检查 `.git` 标记缩减布局覆盖。Python 依赖文件只归 P；`dependencies.lock.json` 登记仍只归 B，双方 Handoff。P 已有 SOURCE `55ca989` / REPORT `c592b6a` 保留，下一次源码和报告追加提交。
+
 Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3ad1dddf079e`。三轨工作树均从 `4ec19cddb24068e09597357b0aabc6ecb9420930` 建立，位于 `C:/Users/DW/orca/workspaces/Astrocyte/`；Git 分支分别为 `standards-backend`、`standards-python`、`standards-frontend`。三次回执均 ready / input_accepted / turnStart observed，没有重复派发。
 
 - B：Task `task_7b4e93c1a3c1` / Dispatch `ctx_88275b88b389`，终端 `term_b79cd91c-47fa-47b2-ba09-270fb101a22f`；Codex 0.162.0，终端显示 GPT-6.1-Sol high fast / YOLO。
 - P：Task `task_bfa0d177ae9a` / Dispatch `ctx_f386e3cc44ac`，终端 `term_0bc0e215-a73c-4333-99c0-3208601e2307`；Orca 观测模型 gpt-6.1-sol。
 - F：Task `task_7cbe30017760` / Dispatch `ctx_0b17703feb2c`，终端 `term_63ec6974-000a-4064-b4c9-4eb308f61a3e`；Orca 观测模型 gpt-6.1-sol。
+
+早期交付：B SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 已 push，提供显式发现目录和实际 HTTP / SQLite 验证生命周期，已 Handoff 给 F 普通消费；B 继续 parser 和同类整改。P SOURCE `55ca9893c74fd25b153a0560f52428a322722ebe` / REPORT `c592b6ac8cec5a634f16df3e3c18bd2761499cc3` 已 push，69 项适用验证通过、14 个冻结脚本 AST 独立复核全等。P 新 Task `task_7ea3f8d0332b` / Dispatch `ctx_71b0ea451645` 已在同一终端 / 工作树 / 分支续作 Git 解析返修，未增加第二人员。
+
+真实范围限制：Mission 生产创建接口仍返回 501，原模拟运行态缺少实际来源；已向用户询问是否扩展到真实创建与执行，未答不新增该业务。冻结实验测试中 28 项完整模型 / 外部来源路径尚未执行，原替换与手写 SSE / Markdown parser 的行为整改仍受冻结约束。相关限制不能由适用子集测试填为 PASS。
 
 ## 验收
 
