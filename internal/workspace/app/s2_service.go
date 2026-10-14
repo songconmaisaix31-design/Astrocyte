@@ -206,6 +206,11 @@ func (s *S2Service) WithAuthorizedGrant(ctx context.Context,check domain.GrantCh
 		if err=AuthorizeProjectActionCaller(p,check.Caller,member,check.Action,time.Now().UTC());err!=nil{return err}
 		if err=ValidateProjectActionScope(p,ProjectActionScope{ProjectID:p.ID,SettingsRevision:g.Scope.SettingsRevision,Action:check.Action,Roots:[]string{check.Root},Tools:check.Tools,ExternalTargets:check.ExternalTargets});err!=nil{return err}
 		if err=s.validateProjectRoot(p,check.Root);err!=nil{return err}
+		proposal,err:=tx.LoadProposal(g.ProposalID,g.ProposalRevision);if err!=nil{return err}
+		for _,ref:=range proposal.Content.Inputs{
+			if s.references==nil{return domain.WorkspaceError(apierrors.UnsupportedCapability,"current source permission reader is required")}
+			material,err:=s.references.ReadSelected(tx.Context(),check.Caller,p.SpaceID,ref,false);if err!=nil{return err};if material.Reference!=ref{return domain.WorkspaceError(apierrors.ContextStale,"current source reader changed approved revision")}
+		}
 		return fn(tx.Context(),g)
 	})
 }
