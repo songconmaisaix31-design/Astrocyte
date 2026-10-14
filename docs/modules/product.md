@@ -12,7 +12,7 @@
 |---|---|---|---|
 | B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python、冻结核心与下述 T 的测试文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理真实视频定位、其余实际模型/控制器测试、默认 Go 检查、Reader 发布路径与真实进度入口 |
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 唯一 `web/src/**`、`web/e2e/**`、`docs/standards/frontend.md` owner。消费精确公开契约与 B/R/H/Q 实际入口，完成未知状态持久化、全部既有 Web 和稳定源码默认完整 E2E |
-| T Attention 实际测试 | 计划 `product-attention-tests-20261014` / 同一新分支，以 B 精确 `b470ecd736af261a10e4c4822bdcd3b02d0da454` 创建独立 worktree | 创建后的实际 Task/Dispatch/终端待登记 | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
+| T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014`，独立 worktree 起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454` | `task_5f0a79b6a17a` / `ctx_8674c456f49f` / `term_c1d90d02-51be-4443-9afe-ddce0615acb4`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
 2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
@@ -55,6 +55,8 @@
 ## 模块管理阶段独立 REPORT
 
 管理 SOURCE `6f1e7fd5b68da69cba3f65f47a4324a00fbd2ece` 已普通 push；独立 `git ls-remote` 核分支同 SHA。变更仅本管理文档；`git diff --check` 无输出，7 个相对文档链接均实际存在。SOURCE 不包含业务实现，业务完整验收仍按上表未完成状态保留，本模块继续管理返修与发布支持。
+
+第三轨计划 SOURCE `388cb52` 在启动前已普通 push。`worker-start` 返回 ready/input_accepted/turnStart observed 后，本模块继续核新工作树分支、精确 HEAD 与 clean，并通过公开 worker-show/transcript 确认实际 assistant 已读取 skills 和仓库入口、active/live/working。实际 Orca 客户端为 Codex，公开 projection 模型 `gpt-6.1-sol`；未以请求参数推定模型。B 已收到新 owner 生效与其正式排除域，现三条开发轨互斥；T 的阶段交付及业务测试结果尚未产生。
 
 ## 隐私、冻结与剩余限制
 
