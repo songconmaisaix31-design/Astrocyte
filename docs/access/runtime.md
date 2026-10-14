@@ -1,5 +1,53 @@
 # Works Relay runtime
 
+## 2026-10-14 v1.4 技术建议，等待语义确认
+
+本节按模块 `msg_17d0345e078d` 的范围，只提供现有实现、拟改内容与真实验收条件。已完整读取根 `docs/research/orca-rea-20261014.md`、`tasks/Works-Relay-v1.2.md` 和最新 `tasks/Release-v0.1-20261014.md`。四个方向已经确认，具体字段、迁移规则与就绪协议尚未确认；唯一规格草案由模块在 `docs/modules/relay.md` 维护。本节没有改变业务代码或 HTTP 契约，今晚没有启动新的 CLI、模型或 Today 窗口。
+
+### 投递阶段与执行开始
+
+现有 `RelayReceipt.Status` 持久化 pending / accepted / rejected / delivery_unknown，`RelayTask.State` 持久化 ready / accepted / working / done / released。`relay.go` 的 ConfirmIntent 和 finish 保留原 OperationID、原输入比较及首次错误；输入已经成功、后续归档观察失败时仍保存 accepted。`RelayArchiveObservationFailure` 不允许重发原输入。人工完成继续要求现有 Transition 的 human caller、observe、原 revision / A-B-C、所属检查和 completion_confirmed，释放继续要求真实退出与无 pending。
+
+差距在 `relay.go` 的 observe：每个新 `RelayObservation.Events` 都可使 accepted 进入 working，`relay_lifecycle.go` 的 recordGit 也有同样迁移。`Native.Send` 在发送前设置内部 status=running，这个内部值不证明回合已经开始；Codex `turn/start` 成功响应中的 turn ID 证明请求已被原生端受理，实际 `turn/started` 通知另由 `native_process.go` 记录为 turn_started。Relay 目前保留 kind / sequence，但转换时间使用本机观察时间，事件也未公开关联到触发输入的 receipt / OperationID。完成通知、模型文本、stdout、Git 改动、PID 和近期活动都不能互相替代这些事实。
+
+建议在既有 store 内分别保留输入动作结果、执行开始证据、人工完成记录，不新增调度系统。执行开始的内部事实至少需要原 task / terminal / session 身份、对应动作或明确无法关联、证据种类、来源 sequence 和实际观察时间；关联不明时保留 unknown。Codex 只以同 owned thread 的真实 turn_started 进入已确认开始，Pi 的真实 agent_start 可以记录为该 CLI 的开始证据，不能生成不存在的 Codex turn ID。原线程启动或恢复的握手成功只建立会话，不建立新回合开始。
+
+关键待确认项：working 是否仅表示明确执行开始，以及 terminal-only / Claude 缺少独立开始协议时，如何满足 v1.2 的完整接力与人工完成。当前 Claude 记录 native_session_initialized、text 和 turn_completed，没有独立 turn_started；terminal 只记录 cli_activity 与 Git。若采用明确开始规则，它们应显示输入接受、活动存在、开始 unknown，现有仅 working→done 的合法迁移将不能完成这些任务。必须确认完成门禁与该状态组合的完整规则，再修改代码；不能从 stdout、Git 或 result 倒造 turn_started，也不能自行增加 accepted→done / released。
+
+真实验收应逐项比较动作 receipt、原生开始事件与人工 Transition，验证输入被接受但尚无开始事件时仍不显示已确认开始，Git / stdout 活动不会替代原生开始，回合完成不会自动 done。真实 unknown 保留原动作且不重试。旧 task 的 state、首次错误、registered_at、first DOM 及 Transition 历史全部保留；新增事实字段缺失保持 unknown，不能追溯补成 confirmed。
+
+### 原生会话归属
+
+`relay_owned.go` 的 attachOwnedSession / observeOwnedSession 已绑定 task、terminal、worktree、project、agent、SessionID 和 NativeID；`RelayState.Sessions` 保存原完整 NativeSession。`Native.get` 只接受当前 Native 实例持有的实际进程，公共 `OwnedRelayExecution(ctx, exactSession)` 只读取该原控制器和完整 Start 返回身份。`relay_native_capture.go` 的 bind 校验 provider thread ID / CWD，新会话拒绝 forkedFromId；恢复校验原 thread，并在路径别名出现时核两个正选文件的 os.SameFile。H 的来源文件单链接保护继续生效。
+
+差距在持久绑定与当前进程所有权的表达。重启后 SQLite 仍有会话 binding，Registry 的进程 map 已为空；binding 本身不证明控制器仍持有进程。建议分别表示持久会话身份、当前控制器所有权、来源覆盖。持久 binding 可以用于历史派生查询；实际 Send / Stop / Resume 必须核当前原 controller 与原完整 session，并按原生恢复流程验证结果。缺进程、缺 ID、缺正选来源的字段保持 unknown，不能以 NativeID 重新建立所有权或扫描历史。
+
+HTTP 由 H 提供安全派生状态、明确 gap、不可读路径的关联标识；本机进程与原档证据通过现有内部端口交接。argv、环境、凭据、archive 路径、账户目录、原始输出均不投影到 HTTP。两个硬链接名称属于同一文件，不能计为两个 session 或两次控制器启动；当前 nlink=2 的 guard FAIL 保留，路径类别不能证明链接创建者。
+
+真实验收包括原 exact session 成功读取当前进程证据、错误 project / CLI / session 身份拒绝、服务重启后有 binding 但无 owned process 保持 unknown、正选文件被替换或存在 alias 时来源拒绝，以及每个实际公开 event_id 在对应真实事件库中定位。当前 portable 文件在 B 已消费，后续扩展只能由 R 修改后交精确 SOURCE，不由 B 改 R 逻辑。
+
+### 输入方式与就绪条件
+
+`AgentSpec.InputMode` 现有 line / stdin_eof，`DriveMode` 现有 structured / terminal / both；它们是可信注册信息。`RelayTerminalDriver.Launch` 核实际可执行入口、固定 LaunchPolicy、原公开根、原工作区与 owned process，然后建立 stdin pipe。submit 的成功只证明写入完成；stdin_eof 另证明输入已关闭，后续 send 被明确拒绝。实际进程存在、CLI 已安装与工具关闭策略分别记录，均不证明客户端已经消费输入。terminal 目前没有 PTY、TUI ready 或 bracketed paste 实现。
+
+已有 structured 就绪步骤可以具体登记：Codex 的 initialize 成功、initialized 写入、thread/start 或 thread/resume 返回原身份与 CWD；Claude 控制 initialize 成功，但会话 init 身份在后续真实 system/init 校验；Pi get_state 验证实际 sessionFile 位于自身隔离根并在 resume 保持原文件。协议握手事实与允许下一次输入还须区分；会话已占用、已停止或 blocked 时原 Native.Send 会拒绝。当前未持久化每个握手阶段的安全就绪证据。
+
+建议注册项声明实际支持的 transport / framing / readiness 条件，运行时记录该条件的真实观测结果及时间。当前 EOF Claude 固定入口可声明“pipe 可写并完成 EOF 提交”，开始消费仍 unknown；不声明 TUI ready。需要 TUI / paste 的条目，在存在公开、可验证的就绪协议和实际 PTY 支持前返回 unsupported，不开放自由命令或用延时、进程存活、stdout 关键词推断就绪。新的就绪字段及允许状态需明天确认；不改变已决定的工具权限。
+
+真实验收应分别核未安装、已安装但未启动、握手未成功、就绪、已占用与已退出；EOF 一次提交与后续 send 拒绝使用真实已装且关闭工具的公开固定任务。公开 help 只能确认参数表，不能证明输入就绪或有效工具集合。今晚未执行这些原生窗口。
+
+### 恢复、fork 与换 Agent 的关系
+
+`RelayNativeDriver.Resume` 使用原任务绑定与原完整 session，首 input 清空；`Native.Resume` 要求 StopConfirmed 与原 NativeID，实际 thread/resume 返回 ID / CWD 必须一致。原 terminal_id 不因 PID 变化重新生成，工作区在 released 后可复用；换 Agent 的现有流程是新 intent / task / session，保留同一 worktree。terminal Resume 当前不支持。当前没有持久化完整的会话启动、恢复和换手关系记录，也没有受支持的 fork 动作。
+
+建议在原 RelayState 中增加经真实动作产生的关系记录，不改变原任务、会话身份或历史 receipt。原会话 resume 保持 task / terminal / session / provider identity，记录前后实际控制器执行关联及原 OperationID，恢复本身不重发输入、不宣称新回合开始。新任务与换 Agent 各建立新 task / session 身份，显式关联前任务与同 worktree；关联成立要求前任务已合法 release、无 pending、原工作区所属成立。provider fork 保留为未支持，只有未来获得明确授权并由真实 provider 返回新 ID 与 parent ID 时才能记录；不把 resume 或换 Agent 当成 fork。
+
+需确认的关系字段只建议包含操作种类、源 / 目标的安全身份标识、worktree_id、receipt / OperationID、实际时间及 confirmed / unknown。缺旧字段、重启后丢失进程、缺 parent 返回均保持 unknown；不根据历史时间或类似模型输出补关系。关系持久化复用 RelayStore 的现有 JSON 和事务，不修改冻结 cognition schema / engine / mapper，也不新增 scheduler。H 决定公开 DTO 与契约，F 展示已确认含义，B 只维护普通 JobID / OperationID 到原 exactsession / 来源的映射。
+
+真实验收需比较恢复前后相同原生会话与新 owned process、原 input 未重复、恢复后独立新输入的 receipt，以及 Codex→另一已支持 Agent 的同 worktree 新任务关系。服务重启后的只读历史关系仍在，实际控制器缺失保持 unknown。fork 仍未执行，不能填成功。
+
+本阶段静态核查完成，四项拟改规则没有当作功能通过。2026-10-15 先由根结合模块草案确认关键语义，再由 R/H/F 原负责人实现、测试并在唯一操作窗口完成真实 CLI→三分钟 Today→L1；最终包验收仍依赖组合 SOURCE。本报告源码基线为 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5`，portable SOURCE `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` 保持普通祖先。
+
 ## 2026-10-14 本次归档链接元数据核查
 
 当前 Task `task_d480ceaf0e15` / Dispatch `ctx_1f88d9e6f4f4` 接收最高层授权，只核原 task `0c6522bc-b232-4040-8407-745885644791` 的已获准归档链接元数据。SOURCE 仍为 `d14b08dc50014baf9ee636543564b040112cf3b5`，当前追加只更新独立 REPORT。
