@@ -1,6 +1,6 @@
 # 基础后端与导入整改
 
-本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，接管 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39`，第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434` 均已 push。第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6`。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
+本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，接管 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39`。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
 
 ## 完成内容
 
@@ -16,6 +16,10 @@
 - S1 论文来源移除本地伪造 Atom/PDF 服务，使用真实 arXiv 接口，四种公开别名保持同一固定版本，两个实际版本保留不同原件，未发布版本必须拒绝。
 - HTTP attention 测试使用实际应用、SQLite 与官方论文 PDF；鉴权拒绝时数据库没有作业，正确身份、调用键复用、下载原件 bytes、反馈 201 与无效 revision 400 全部保留断言。HTTP 项目权限测试使用实际注册、签发与撤销 token，观察包装只记录参数并委托生产实现。
 - `startS1Server({ relay: true, browser: true })` 显式采用 `<temporary>/local-appdata/astrocyte-workbench/v0.2-access/app-state`，返回 `localAppData` 与 `relayRoot`；所有目录位于本树 `.verification/`。注册表默认不存在，生产 Relay 按空列表处理。重用原目录时继续传 `relay: true`。该 helper 只准备目录和启动实际源码，本树尚无 Relay 路由，Relay 业务验收由 F/H 在实际组合源码执行。
+- Works 原有十项测试全部改为实际 SQLite、生产 Scanner/Delivery/WorksEventSink 与磁盘资料；保留平台计数、人工字段、版本冲突、投递来源、事件归属、零额外认知 Signal、实际根失效的覆盖，并增加格式错误保留 stale 缓存的测试。
+- 作品标记 JSON 格式、文件类型和遍历异常直接失败。Workspace 保存 stale 缓存后返回原失败，HTTP 不会把失败刷新报告为成功；深度/数量限制仍明确报告未核实。
+- 进度人工输入验证不再创建虚构 TASK/STATUS 或 OS 临时根。实际项目读取授权仅选 `README.md`，Codex inference 使用已有配置且不指定模型；独立 `stat` 核对实际 `mtime;size` 引用，SQLite 与新 HTTP 进程复核同一结果，零 Mission。
+- 根据 H 不可变 `99a250d0b9069ffb32205420f63f82b372de5607` 的实际 NDJSON 使用，依赖源追加 `github.com/olivere/ndjson v1.0.1` 与精确 checksum。保留 B parser 依赖、`x/sys v0.49.0` 与直接 `uuid`，模块和库存验证通过；F 冲突按唯一依赖 owner Handoff，未直接修改 F 工作树。
 
 ## 实际验证
 
@@ -38,18 +42,25 @@
 | `go test -mod=readonly ./internal/adapters/events ./cmd/validation ./tests/attention-engine -count=1` | EXIT 0，typed native 解码与原生格式/语义/回放全部适用检查通过；`.verification/native-typed-first.log` |
 | `node --test tests/s1/server-lifecycle.test.mjs` | EXIT 0，普通与 Relay 目录布局各 1 PASS、0 SKIP，实际 HTTP、session、SQLite、退出/再启动与新 helper 重开通过；`.verification/server-relay-layout-first.log` |
 | 第二阶段 `go vet -mod=readonly ./...` / `go build -mod=readonly ./...` / `node --check tests/s1/server.mjs` | 全部 EXIT 0，`.verification/{vet,build}-second-source.log`；helper syntax EXIT 0 |
+| `go test -mod=readonly ./internal/workspace/app ./internal/adapters/worksscan ./internal/adapters/sqlite -count=1` | EXIT 0，真实 Works 测试、错误传播与既有存储回归通过；`.verification/works-real-first.log` |
+| `node tests/s1/progress-infer-live.mjs` | EXIT 0，一次实际生产 HTTP/Codex/SQLite/重启；实际 native_id `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`，配置模型 `gpt-6.1-sol`，README 26056 bytes，独立引用 `mtime:1791968415369282600;size:26056`；`.verification/progress-infer-readme-first.log` 与 `.verification/astrocyte-s1-opvXPA/` |
+| `node tests/s1/progress-live.mjs` | EXIT 0，实际人工输入、未知初态、重启与无许可 infer 403；`.verification/progress-manual-current.log` 与 `.verification/astrocyte-s1-lxfFRc/` |
+| `go mod verify` / `node scripts/check-dependencies.mjs` | EXIT 0，实际 Relay parser 依赖 union 验证；`.verification/relay-dependency-union-first.log` |
+| 第三阶段 `go vet -mod=readonly ./...` / `go build -mod=readonly ./...` | 全部 EXIT 0，`.verification/{vet,build}-third-source.log` |
+| `go test -mod=readonly ./... -json -count=1`，公开查询开启 | EXIT 1，七项实际公开请求失败，网络 RED 保留；`.verification/go-current-all-third.jsonl`。不以之前定向 PASS 覆盖当前全包结论 |
 
 公开 DOM 来源为 `https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514` 与 `https://aclanthology.org/2024.acl-long.1/`。本报告只给聚合与本机证据指针；原件保留在 `.verification/`。
 
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
-- 本写域仍有外部替代实现：`internal/attention/app/attention_test.go` 的内存 Repository/ObjectStore 与 `automatic_test.go`、`project_distiller_test.go` 的替代模型；`internal/workspace/app/works_test.go` 的替代存储/扫描/交付/事件；HTTP works 的替代注册来源；OpenCode 和注册项目测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite `local_agents*_test.go` 的替代原生控制器与引用读取。
+- 本写域仍有外部替代实现：`internal/attention/app/attention_test.go` 的内存 Repository/ObjectStore 与 `automatic_test.go`、`project_distiller_test.go` 的替代模型；HTTP works 的替代注册来源；OpenCode 和注册项目测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite `local_agents*_test.go` 的替代原生控制器与引用读取。
 - `tests/s1/automatic_test.go` 仍有替代模型错误；`tests/s1/fixtures.mjs`、默认 acceptance 与部分 web E2E 仍依赖虚构纸/视频来源。B 继续整改自身测试与共享输入，web 改动交 F，不能把现有默认套件通过记为真实来源验收。
 - 全写域英文注释清理尚未完成。原生格式 helper 的解码路径及其他同类异常需要继续核查；已增加格式门禁不等于全域零静默解析。
 - 实际 Codex controller / SQLite / HTTP / 自产会话逐 event_id 验证归 R/H，当前 B 没有运行该组合验收。发布完整 E2E、Workbench/Relay 集成与 ZIP 解压验收尚未运行。
+- 当前 arXiv DNS 实际响应 `198.18.0.71`，系统网络配置不在 B 授权写域。完整 Go 检查失败已提交模块负责人；公开 source 与 CLI positive 断言保持，未添加 skip 或伪造响应。
 - Mission 创建仍使用生产 501 状态，未获业务扩展授权。V4、人评、正式库、冻结脚本、引擎、schema、迁移、权重和日程保持原边界。
 
 ## 未执行操作与后续交付
 
-首次 SOURCE push 因 GitHub `SSL_ERROR_SYSCALL` 失败，随后普通 push 已成功；第二阶段首次 push 同样失败，后续状态以实际 Git 结果登记。不 force push。本报告作为独立 REPORT 提交并推送。阶段 SOURCE/REPORT 不结算整轨，后续源码与报告继续追加；最终精确 SHA 和剩余限制由最后一次报告登记。
+部分 SOURCE/REPORT 首次 push 遇到 GitHub `SSL_ERROR_SYSCALL`，原件保留；上述五次交付均已通过后续普通 push，未 force push。本报告作为独立 REPORT 追加提交并推送。阶段 SOURCE/REPORT 不结算整轨，后续源码与报告继续追加；最终精确 SHA 和剩余限制由最后一次报告登记。
