@@ -28,9 +28,9 @@
 | 资料导入 | 公开论文真实 PDF/官方元数据；视频 summarize 原输出与真实时间定位；来源版本、去重/显式刷新、重启一致，零自动 Mission | B 已报告论文定向 PASS；视频 `BV1PReT6EEqR` 正文 32908 bytes 与重启 PASS，segments/spans 为 0，时间证据未通过 |
 | 人工沉淀 | 固定输入版本，内容/主题/项目关联，待查问题、四维 unknown、later/reject/revise 各自语义、人工与机器关注分开，实际 HTTP/SQLite/UI 重载 | B 反馈定向 PASS；本次完整生产浏览器覆盖仍待 F；缺失证据不补造，不因历史测试通过填本次 PASS |
 | 项目权限 | A 默认、B/C 显式许可、模型处理独立许可、人类会话/token 分离、撤销后拒绝新动作、旧 revision 冲突，真实持久化 | B 真实 token/revoke 定向 PASS；R CreateIntent revision 修复已交精确 SOURCE，H/F 组合实际复验待完成 |
-| 项目进度 | 人工记录与真实获准项目 infer 均可用；依据引用独立核对、HTTP/SQLite/重启；未授权拒绝不能代替成功 | B 报告 README 单次生产 Codex infer PASS，证据位于 B `.verification/progress-infer-readme-first.log`；F 消费生产路径与实际 UI 验收待完成 |
-| Workbench Web | Q 本次独立公开生产来源，至少 2 topic、同 topic 超过 20 真实 event 分页、2 实测 history points；独立 SQLexpected 与 UI 一致 | Q 时间阻塞已获总负责人明确历史生产重放裁决；具体快照根/SQLexpected 待 Q 交付，保留历史重放范围标签 |
-| Relay 与 Today Web | 唯一 F 在同 API17342/UI17343 两 viewport 实际 DOM ready 后，H 注册并开始计时；真实 confirm/send/read/stop/release、409/unknown/换 Agent/三值状态及逐 event_id | 原空 registry/session200 基线已报 ready；R 修复后需 H 重编译/重启及 F 新 ready，旧首观察窗口保留，不重新标记成功 |
+| 项目进度 | 人工记录与真实获准项目 infer 均可用；依据引用独立核对、HTTP/SQLite/重启；未授权拒绝不能代替成功 | B README 单次 HTTP/SQLite/重启成功保留，证据位于 B `.verification/progress-infer-readme-first.log`；旧原生会话已停止且未保留正选 source/runtime policy，有效工具集合 UNKNOWN，禁止重发补证；F 新生产 UI 验收待完成 |
+| Workbench Web | Q 本次独立公开生产来源，至少 2 topic、同 topic 超过 20 真实 event 分页、2 实测 history points；独立 SQLexpected 与 UI 一致 | Q 已交公开历史生产重放终稿：1339 实际 origins、2 topic、1 实际 Sleep、3 历史点。F 首次 14 认知 E2E 为 12 PASS/2 过滤请求 FAIL；双 viewport 各 10 独立 SQL、真实 topic134 逐页、六字段与 history 成功保留，过滤缺口退 F |
+| Relay 与 Today Web | 唯一 F 在同 API17342/UI17343 两 viewport 实际 DOM ready 后，H 注册并开始计时；真实 confirm/send/read/stop/release、409/unknown/换 Agent/三值状态及逐 event_id | 原 registered_at `2026-10-14T13:23:34.0366105Z`，三分钟窗口 FAIL 永久保留，不重新登记或修改计时。F 13:35:42 实收固定正文 ACK；首次真实 UI confirm 一次 503，收据 accepted 带 provider_unavailable，实际 task/terminal 后续 exited、publication published；R/H 同次核查，未知不重发，accepted 不提升为模型成功 |
 | 合并产品与发布支持 | 精确源码 `pnpm check`、`pnpm build`、`pnpm test:e2e` 与适用真实路径；Windows x64 ZIP 新目录启动/session bootstrap/读写/重启 | B 默认全 Go 仍 RED 网络 TLS/旧替代实现，F 默认完整 E2E PARTIAL；最终组合与包核心路径 NOT_RUN |
 
 纯函数显示测试可以使用明确参数输入，外部网络/API/模型/控制器替代实现不能计为实际功能验收。不得新增 skip、删除已有成功断言或以静态页代替核心路径。资源限制可使用 `GOFLAGS=-p=1`、`GOMAXPROCS=2`、`NODE_OPTIONS=--max-old-space-size=512` 与 Playwright workers=1；稳定源码再运行完整默认套件。
@@ -49,6 +49,11 @@
 - 总负责人已于 13:13:29 UTC 明确增加 H 单文件 `cmd/server/workbench_config.go` 薄接口衔接写域。B 的 Reader 接口为 `NewWorkbenchReader(root string, protectedSources ...string)`；默认只读已发布快照，显式 source 身份检查在 `sql.Open` 前拒绝同文件/alias。B 三文件源码与自有 SQLite/alias 测试尚未最终提交，H 只消费完成后的精确 SOURCE。
 - 本模块只读核实进度生产装配为 `workspaceapp.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry)`，已直接交 M-relay/H；H 后续报告固定 API 已补既有 Progress。真实 UI 成功仍须 F 运行，不能把构造完成填为进度验收通过。
 - 总负责人要求 README infer 保留实际成功，同时核 controller 启动配置/实际 turn_context、新自产 session、固定公开任务与原生工具关闭；本模块已查生产启动配置含禁用功能和 MCP/skill 隔离，但尚未独立核本次会话实际配置。工具调用为零不单独证明权限关闭，补充实际证据已交 B。
+- R/B 已核旧 README native 会话停止后未留 exact owned session/source pointer，新 Registry 不能重建其所有权；旧调用有效工具集合保持 UNKNOWN。禁止另开 controller 的 thread/read、扫描 home/private history 或重发原调用。R `OwnedRelayExecution` 新接口仅适用于原 Registry 正在持有的 exact owned session，不能反填旧证据；T 新模型路径的 Job/operation/native 身份与运行期证据由 B 普通 text/bridge 域和 R 原生域协作。
+- B Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` / REPORT `96618df9b62ed0018182b5cbc1aa626c5bcb8362` 已报告普通 push；物理 SQLite/ro/alias 检查、build/vet 和测试 binary 常量扫描通过。本模块发现其查询测试人工 INSERT 认知节点、Sleep、事件并手写 history，已退原 B 以 Q 本次真实公开来源整改；机制候选不等于真实查询最终验收。Q 若没有真实 null tokens 样本则维持不足，独立 JSON/SQL 格式规则输入不计为真实来源。
+- B 文本处理 owned root SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a` 已普通 push；生产 `NewRegistry(absNativeStateRoot)` 接口不变，selected-text 临时目录由实际 native state root 持有。T 已获明确授权普通 `--no-ff` 消费此精确前置，不代改 B 生产；未知模型测试等待停止前的精确 source/runtime policy 映射，先推进其余持久化测试。
+- T 阶段 SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` / REPORT `99b6603ca7ce2cb13207c2bde57114b9c5cd47fd` 已普通 push，并独立核远端 REPORT 一致。7 个测试文件使用生产 Service/Reader/SQLite/ObjectStore，9 项定向持久化和 server stage build PASS；原编译 RED、Crossref EOF、SQLite 错误分类 RED 与错误 build 目标保留。14 文件完整轨继续，不能由 9 项定向填全通过。
+- F 已报告自有 Relay 12 项实际 E2E、认知客户端 6 项及其他生产 HTTP 10 项 PASS；SOURCE `4ac3c595a9619b2ac11cb05477a31bccd03d74d9` 曾普通 push TLS 失败，终稿远端与独立 REPORT 待核。完整默认浏览器仍未通过，首次 L1 503 同次只读核查与未知锁边界继续返修。
 - P 本次旧 archive `27e65dd80436030b0157edb6f811c83320dda001` 的 build 首 RED 为前端旧导入符号缺失，已交 F 核最新修复。首错误保留，最终 ZIP 与组合 build 须使用终稿精确源码重新验收。
 - 本模块只读发现 R `native.go` 忽略 JSON 解码错误，已 Handoff 原 R 返修。M-relay 交 SOURCE `d6d4da6ac00a196e6bbcf592cfdc0a2a2731dbe6` / REPORT `07449a65ea3bd2465d207cd8771aceda6fe50a9e` 已普通 push/远端一致，独立 9 个纯 JSON 负例 PASS；缺少 turn ID/status 明确失败、安全 unknown 不重发。H 首次注册前串行消费该精确输入并重启，解析负例不代替实际控制器窗口。
 
@@ -65,3 +70,5 @@
 旧正式 V4、冻结 schema/engine/mapper/权重/日程与 17321 不变；真实用户作品、自由工具、未定 Mission 和活性窗口不扩大。已授权公开固定项目实际模型/HTTP 操作沿当前许可，原生文件/命令工具关闭。Procmon、两次真实自动快照、人评及七日科研结果继续按真实状态记录，不能由 release 可用性验收替代。
 
 当前未执行最终组合核心路径与 ZIP 验收，未自行发布 Release。模块文档适用检查为相对链接存在性和 `git diff --check`；业务检查结论以同源实际运行结果更新。
+
+P 后续候选 ZIP 构建通过，但新目录 privacy scan 在 server binary 发现 3 个匹配并于启动前失败；旧 privacy FAIL 保留。最终必须消费 B Reader 与 H 配置衔接终稿后重验包，当前未解除发布门禁。
