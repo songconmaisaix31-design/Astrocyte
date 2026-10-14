@@ -18,6 +18,16 @@ SOURCE `d6be4017a54797fddaf40f9d18f1acbee951c3eb` 已普通 push，远端 SHA �
 
 已交 S2 补充批准记录的持久查询关联：现有提案读取未提供 Grant ID，重载后需通过真实关联或过滤列表取得有效 Grant 和撤销入口。Goal 创建后可使用实际返回的固定版本，列表需求也已交 S2。未知命令锁的公共复用入口交 F；现有 `useCommand` 不提供跨重开持久锁。
 
+## 工作项与产物字段阶段
+
+SOURCE `78d282550ecbad1f9a305ad289245bb91909017b` 已普通 push，远端 SHA 一致，包含普通 `--no-ff` 消费的 F Workspace 薄接入 SOURCE `b7709c9694efcc3c031e829abb2f08a120da2735`。F 已报告该入口两尺寸导航、空集合、真实 403 与人工恢复共 8 项 PASS，本任务未将其计为完整 S2 验收。
+
+按 S3 SOURCE `b220ab27c4e57d0bfdfaef224a9d03c1ae92366a` 的实际命令提供 `WorkItemFields` 和 `ArtifactFields`：工作项标题、固定输入版本、依赖、允许修改路径、产物 Commit、对象与检查引用、实际改动路径、调用/Token/费用用量；未知费用留空，提交说明保留人工采用步骤。字段实现后的 TypeScript 与 ESLint 检查通过，生产命令尚待准确公共契约绑定。
+
+S2 SOURCE `5d0ba735533f68259b91128dc404c8e4c2f2a535` 已补充 `grant_id` 持久引用和 Context 实码；本域表单同步新增允许修改路径及连续无进展轮数，秒数限制独立保存。F 将提供公共 `usePersistentCommand`，复用未知操作身份持久锁。
+
+本机未提交的 `web/e2e/s2-proposals.spec.ts` 已写入真实 HTTP、实际项目、浏览器创建/修订/批准/撤销及 SQLite/重启断言。新增测试首次 TypeScript 检查失败：4 个 `unknown` 响应访问，等待新 Goal/Proposal/Grant 生成类型后修正；不使用手写公共 DTO 替代生成类型，不计为业务运行结果。测试尚未执行交互，首次编译错误保留于本 Dispatch 的实际命令输出。
+
 ## 实际检查与首次失败
 
 | 命令 | 实际结果 |
