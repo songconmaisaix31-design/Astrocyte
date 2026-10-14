@@ -64,9 +64,21 @@ Q 的验证源只来自获准且 Agent 创建的公开 Git 项目或本次实际
 
 产品模块已将 B 明确停止写入的 14 个 Attention 测试文件交给独立 T：`product-attention-tests-20261014`，`task_5f0a79b6a17a / ctx_8674c456f49f / term_c1d90d02-51be-4443-9afe-ddce0615acb4`。T 只写 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 及独立报告，B 保留其余业务 / helper / 依赖，领域错误交原 owner。原生模块后续 R Task `task_6586f574ed0b` 的当前有效 Dispatch `ctx_1210a540a63b` 已实际开始；原 bootstrap 明确退出后按原 Task retry，失败和未知状态保留，不重复原模型输入。
 
-主要阻塞是旧任务的 `ask` 仍默认送旧总控 Run，模块之间的 Handoff 不能解除这个阻塞；另有共享网络 TLS 间歇失败、必要的共享依赖衔接和源代码未齐时的完整候选构建。优化沿已有 Orca CLI，不增加调度系统：公开 `orchestration ask --help` 已核实支持 `--to run:<id>`，旧 B / F 的日常问题指定产品子 Run `run_dbf1a68bc692`，旧 H 指定原生子 Run `run_8bbda1c3974c`，旧 P 指定发布子 Run `run_ab36c13bc549`。模块负责人在自己的 Run 直接 reply，保留原 Task / Dispatch / from / 权限参数；旧 `worker_done` 仍回原 owning Run，由总负责人处理旧资源交接。新第三层任务的日常问答、验收、返修和终端后续全部归直接模块负责人，不再次等待最高层批准。
+主要阻塞是旧任务的正式 `ask` 仍须由其 owning Run 回复，模块之间的 Handoff 不能解除已进入阻塞的问题；另有共享网络 TLS 间歇失败、必要的共享依赖衔接和源代码未齐时的完整候选构建。旧 B / F / H / P 的日常问题直接以普通 Handoff 发所属模块负责人，由其发送业务指导；确需正式阻塞问答时保留原 owning Run，由总负责人在合法绑定下回复。H 实测跨 Run 的 `ask --to` 被公开 CLI 拒绝，模块在自身 Run 回复旧问题得到 `consumer_fenced`，不能把 help 中存在该参数当成权限已允许。新第三层任务的日常问答、验收、返修和终端后续全部归直接模块负责人；旧 `worker_done` 仍回原 owning Run，由总负责人处理旧资源交接。模块检查点无过滤消费完整 FIFO 并处理 ACK，阻塞 wait 最长 30 秒，包含 question / handoff / status / worker_done。
 
 计时验证先确认公开固定输入、实际服务、参与人员和 DOM 观察均就绪并已真正读取，再开始登记。现原生首登记 `2026-10-14T13:23:34.0366105Z` 对应三分钟验收 FAIL 保留，后续原登记迟到的真实链路不覆盖原失败；accepted + provider_unavailable 需要核实际 receipt / controller / SQLite，不能视为未交付后重发。完整发布构建前由 P 核精确输入包含 B 私人常量移除及路径保护、H 薄构造衔接、F 稳定修复、Q 最新终稿；已知必要输入未齐时继续独占域实现和适用检查，不重复构建旧组合。最终同源完整构建、默认浏览器与 fresh 解压真实验收不降低。
+
+## 22:26 当前执行与架构优化
+
+用户更新的执行协议已按当前根 AGENTS.md 核实，并通过普通 Handoff 交三位模块负责人继续应用。总负责人再次核实六个 Run 的公开实时状态：三位模块负责人及 B / F / H / R / P / T / N 七位开发人员均 live / working；Q 与 S 的已完成状态和归档保留。R 先前合法阶段结算后已由原生模块在原工作树 / 分支复用同一终端执行 `task_d480ceaf0e15 / ctx_1f88d9e6f4f4`，当前修改纯人工生命周期授权；原记录的 unknown 不凭新状态覆盖。
+
+发布模块自主安排第三层 N：`release-native-verification-20261014`，`task_bfc0bedf1c26 / ctx_44647082a057 / term_8eef624c-2438-4694-be11-856bde4277e5`，独占 `tests/release-package-native/**` 与 `docs/release-package-native.md`。P 保留 `release/**`、认知和包构建 / 验收，N 准备真实 HTTP / SQL 原生客户端，SOURCE `e97319a86317090e637e82968504887aaa0d65ab` 已在工作树核实。编译通过不代表实际包原生验收；真实模型窗口由原生模块统一安排，H / F 当前窗口与最终 P / N 窗口串行，不重复未知交付。
+
+本次文件及提交核查：B 最新 SOURCE `03f92127a74e4d8b49cf5c4bb1010b43349d6d43`，Reader 实际来源 SOURCE / REPORT 为 `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` / `15c738f88822e553eb228c12c0fdc71ad07b7531`；F SOURCE / REPORT 为 `205d2d2ce91091e6add67d637cb65aae33946292` / `386382628b9a9f52576b553797c9eb08b0df93bc`；H 当前配置衔接 SOURCE `24b6390bcad60a2a20b671dcb60725e77eb3a7a4`；R 可移植 owned execution 接口 SOURCE / REPORT 为 `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` / `d8cb13a8b1a392a2105bba9e826daa1364e70caa`；T 阶段 SOURCE / REPORT 为 `03af9854dac57f69fc206d4d647ad0c518b98b20` / `8460ac93eb8d5d485a74ea68a60d8182535d59ce`；P 认知正向脚本 SOURCE / REPORT 为 `830faaea4f5e19bdf213079f428dc9e0c6995d2e` / `7dff2d99e67acca91bc9889036b93d7a99cab3ca`。这些是阶段输入，各分支后续仍会正常提交；整体默认浏览器、完整实际原生生命周期、视频时间定位、全部适用检查与最终 ZIP 尚未通过。
+
+跨模块业务接口只由原领域人员处理。R 提供原 Registry 当前持有会话的可移植 owned execution 信息，B 消费精确接口且拒绝无实际证据的身份，T 使用真实生产接口；原已停止且无 source pointer 的会话工具集合保持 UNKNOWN。Reader 归 B、server 薄配置归 H、公开契约归 H、前端与浏览器归 F、依赖归 B，管理者只管理文档。P 当前普通消费 B 出现 `workbench.go`、`workbench_test.go`、`internal/workbench/app/contracts.go` 三个 AA 冲突，已交 M-product / M-release 安排原 B 在安全检查点临时处理这三个文件，P 停止同域编辑并负责普通 merge 提交，处理后撤回临时写域；领域问题持续归原 owner。
+
+旧 H 正式问题 `msg_f4c73bd8170c` 已由总负责人在原 Run 回复 `msg_e9a626b8789f`：原 R 对纯人工 done / released 使用 observe 授权，保留 SettingsRevision / 权限 / 人类 caller / completion_confirmed / 确认进程退出 / 无 pending，实际 publication reconcile 仍需 reconcile。旧 rev2 / task / input / 首注册时标不变；修复后通过实际 HTTP / SQL 合法释放旧任务，再进行下一项获准公开独立来源与明确新输入的必要覆盖，F 为唯一页面操作人员。既有显式 900 秒 native lifetime 不改变三分钟验收要求，原首三分钟 FAIL 保留。总负责人未写业务代码，唯一 I 尚未派发，最终发布条件保持原要求。
 
 ## 20:27 实际派发与进度
 
