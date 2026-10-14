@@ -136,6 +136,18 @@ F 受影响 10 项真实浏览器首复验为 9 PASS / 1 FAIL，唯一失败在 
 
 第三轨计划 SOURCE `388cb52` 在启动前已普通 push。`worker-start` 返回 ready/input_accepted/turnStart observed 后，本模块继续核新工作树分支、精确 HEAD 与 clean，并通过公开 worker-show/transcript 确认实际 assistant 已读取 skills 和仓库入口、active/live/working。实际 Orca 客户端为 Codex，公开 projection 模型 `gpt-6.1-sol`；未以请求参数推定模型。B 已收到新 owner 生效与其正式排除域，现三条开发轨互斥；T 的阶段交付及业务测试结果尚未产生。
 
+## 2026-10-15 第二层产品模块持续验收
+
+S2 原 Dispatch `ctx_f32b6d92119a` 自动恢复连接；总负责人独立核实 HEAD `ea0c4d262c94c049e636aac5e0a9ada9f1914932`，三项 H 域冲突已由原 H 处理，未合并项清除。第一次连接中断保留，未终止、重派或增加同域人员。模块只读检查仍发现人工准入消费要求非空模型 `PolicyVersion`，已交原 S2 按真实 human / delegated_judgment 权限和证据分别核验；B 真实人工准入链路的 `evidence_missing` 保留，禁止生产者填造模型政策。
+
+产品 UI 已报告真实 S2 第三轮两个尺寸 `2 PASS / 1.2min`：实际 Goal 和 Proposal 创建、固定旧 revision 与差异、未知费用、提交审阅、人工批准和撤销、SQL outbox、零原生启动和执行目录、实际 HTTP 服务重启后旧版本及撤销状态均通过。第一次权限配置 `2 FAIL`、第二次实际成功收据后的徽标选择器 `2 FAIL` 原日志、DB 和 trace 保留。源码 `c0726349a5aca66c548364e2d85c9916056530aa` 已由原 owner 普通 push 并核远端；后续截止时间精度、版本冲突、离线 unknown 锁、当前权限恢复的八项实际浏览器检查正在运行，独立 REPORT 待结果。Context、S3、S4、共享完整 TypeScript 及整个核心路径尚未通过。
+
+Swarm 第六阶段 SOURCE `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0` / REPORT `23367b448d28c9780ec84d770548ccf870b4d8dd`，原 owner 已报告普通 push、远端同 SHA 和工作树干净。实际 Usage 的 calls / tokens / money 分项缺证保留 null；有限预算缺证保持占用，无界未知按实际停止证据对账，默认项目并发上限为 2 并支持明确配置。当前工作树根交 S2 实际政策核验，claim / submit 的 Member.Purpose 分开；B 所需同一 Workspace DB 事务复用已有真实 commit / rollback / wrongDB 检查通过。Domain、S2 实际链、HTTP、六个 SQLite / Git / Go 组件、vet / build / 33 包架构定向通过；完整两实际 Agent、原 R/S2/H 端口装配及最终验收仍未通过。
+
+B 已报告 L2 新成功经验适配编译、vet 和架构检查通过，真实 completion port 经实际 Interpreter 形成 quarantine 候选，nil Interpreter 明确拒绝，同 owner / event 去重，安全 business receipt 引用保持独立类型；实际来源装配及模型仍 NOT_RUN，人工批准和实际第二任务引用继续验收。S5 第二 SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 已交唯一依赖及迁移 owner B，实际 Node / 独立 Go RPC 组件通过；默认根依赖缺失的首 RED 保留，独立 ignored module 结果不能填写生产组合通过。
+
+Q 原轨已在 M-release 下启动本次真实跨日公开工程来源更新；按真实 commit 时间完整采集，再执行只包含 14 日事件窗口的实际 Sleep，并发布当前结果与独立 SQL expected。今日 15 日事件与闭日窗口明确区分；原来源和正式 V4 不改，不改 Clock 或补造事件。准确 publication、SOURCE 与 REPORT 产出后交 B/F/T/UI，尚未填写通过。F 已收到本次唯一 CLI 同 URL baseline / auth / observer 的优先检查任务，服务未准备时须给准确 H 地址缺口，保留唯一 UI 操作和原始登记起点。
+
 ## 隐私、冻结与剩余限制
 
 原始来源、认证文件、模型输出、流与错误原件只保留本机专门证据目录，不进 HTTP/Git/包/stdout；文档只写安全派生和本机指针。浏览器未知派发锁仅保存公开操作身份与 unknown 状态，跨组件重开/刷新保留，禁止自动重试。
