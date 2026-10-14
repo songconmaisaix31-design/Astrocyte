@@ -58,6 +58,16 @@ Orca 原嵌套深度为 1，真实第三层派发被 `nested_worker_depth_exceed
 
 Q 的验证源只来自获准且 Agent 创建的公开 Git 项目或本次实际原生事件，不制造提交 / event / 时间 / 数值凑分页。不足的样本明确报告；不读取正式 V4 数据或旧私人回放。快照只备份用户显式选择的源，源与目标分离、源只读、WAL 一致备份、完成后原子发布 current.json；保留历史真实状态并继承既有只读 API 的全部语义。新命令属于现有 Go 项目，必要库调用必须先核官方文档，依赖变更仅 Handoff 给 B。最终适用验证与 release 验收仍归各原人员持续完成。
 
+## 21:47 三层协作效率检查
+
+用户追加确认每个模块可自主派发子 Agent，并要求检查开发状态和优化整体协作。总负责人读取六个 Run 的实时 `worker-list --include-remote`，三位模块负责人均 `live / working`；B、F、H、R、P、T 六位开发 / 测试人员也均实际活跃。Q 和 S 已合法完成并精确 release，原源码、报告、分支和归档保留。B / F / R / T 的当前文件修改和最近普通提交分别核实，H 当前树 clean 并在实际验证，P 已构建候选、等待必要修复后完整包验收；活跃或 clean 均不代替功能完成。
+
+产品模块已将 B 明确停止写入的 14 个 Attention 测试文件交给独立 T：`product-attention-tests-20261014`，`task_5f0a79b6a17a / ctx_8674c456f49f / term_c1d90d02-51be-4443-9afe-ddce0615acb4`。T 只写 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 及独立报告，B 保留其余业务 / helper / 依赖，领域错误交原 owner。原生模块后续 R Task `task_6586f574ed0b` 的当前有效 Dispatch `ctx_1210a540a63b` 已实际开始；原 bootstrap 明确退出后按原 Task retry，失败和未知状态保留，不重复原模型输入。
+
+主要阻塞是旧任务的 `ask` 仍默认送旧总控 Run，模块之间的 Handoff 不能解除这个阻塞；另有共享网络 TLS 间歇失败、必要的共享依赖衔接和源代码未齐时的完整候选构建。优化沿已有 Orca CLI，不增加调度系统：公开 `orchestration ask --help` 已核实支持 `--to run:<id>`，旧 B / F 的日常问题指定产品子 Run `run_dbf1a68bc692`，旧 H 指定原生子 Run `run_8bbda1c3974c`，旧 P 指定发布子 Run `run_ab36c13bc549`。模块负责人在自己的 Run 直接 reply，保留原 Task / Dispatch / from / 权限参数；旧 `worker_done` 仍回原 owning Run，由总负责人处理旧资源交接。新第三层任务的日常问答、验收、返修和终端后续全部归直接模块负责人，不再次等待最高层批准。
+
+计时验证先确认公开固定输入、实际服务、参与人员和 DOM 观察均就绪并已真正读取，再开始登记。现原生首登记 `2026-10-14T13:23:34.0366105Z` 对应三分钟验收 FAIL 保留，后续原登记迟到的真实链路不覆盖原失败；accepted + provider_unavailable 需要核实际 receipt / controller / SQLite，不能视为未交付后重发。完整发布构建前由 P 核精确输入包含 B 私人常量移除及路径保护、H 薄构造衔接、F 稳定修复、Q 最新终稿；已知必要输入未齐时继续独占域实现和适用检查，不重复构建旧组合。最终同源完整构建、默认浏览器与 fresh 解压真实验收不降低。
+
 ## 20:27 实际派发与进度
 
 主控实际句柄 `term_494acbb9-67a5-4360-82dc-8514ce124990`；标准整改 / 发布包沿 `run_7b2ce96bcd13`，Relay 沿原 `run_d577f0d3fee1`。两个 Run 由同一主控在各自绑定后处理邮箱；每次消费须在切换前处理全部消息并 ACK 当前 Delivery，旧 generation 的 Delivery 不再次 ACK。
