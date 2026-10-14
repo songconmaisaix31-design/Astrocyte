@@ -78,7 +78,7 @@ SOURCE `263bc7069682ede35af60426140ee6f744b0d472` 已普通 push，父链含 B �
 
 Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GIT_WORK_TREE` 重定向注册仓库的实际观察。`verify -phase ambient-git` 实际把宿主 index 指向 B 的真实暂存区，A 的 IndexDigest、WorktreeDigest 和 WorktreeID 保持准确，原快照 Validate 仍通过；随后独立 restart 两图查询 PASS。仓库和 worktree 身份计算方式保持现有记录兼容。
 
-环境约束 SOURCE `1a55e1630502642324500c3b64853af882962fa4` 已普通 push；`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`git diff --check` 与上述实际两阶段验收 PASS。尚未改写 HTTP 路由，新增 `httpapi/repository_context*.go` 写域仍待原 owner 互斥交接；HTTP 请求与安全 DTO 建议已通过模块发送 H/B。
+环境约束 SOURCE `1a55e1630502642324500c3b64853af882962fa4` 已普通 push；`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`git diff --check` 与上述实际两阶段验收 PASS。HTTP 处理器与正式互斥交接见下一节。
 
 ## HTTP 业务处理器
 
@@ -99,3 +99,5 @@ Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GI
 成功响应为 `{schema_version:1, repository_context:...}`。IndexStale、ContextStale、BudgetExhausted、VersionConflict 均使用既有 S3 的 HTTP 409，ErrorV1.code 分别保留；未知内部错误只显示固定安全原因。CodeGraph score 是普通排序得分，实际可能大于 1，不能解释为概率；向量能力仍明确缺失。处理器已通过当前真实包 build/vet 和差分检查，实际 HTTP 验证待 H 的准确生产注册及认证薄组装 SOURCE，未使用替代认证或虚假 HTTP。
 
 另已执行 `verify -phase same-project-worktrees`：同一个真实项目 ID 在两个同 HEAD worktree 之间更换注册根，B 的图不会复用 A 的内容；返回 A 时权限 revision 变化要求重新构建，随后准确恢复自己的实现和地图。实际 PASS，原源码/HEAD/暂存区均未修改。
+
+HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确注册函数、五个端口字段和 DTO 已分别交模块负责人、H 与 UI 负责人。`go build -mod=readonly ./internal/adapters/httpapi`、`go vet -mod=readonly ./internal/adapters/httpapi`、`git diff --check` PASS；真实 HTTP/认证/SQLite/重启组合仍 NOT_RUN，等 H 的准确生产薄组装 SOURCE 后由本轨继续验证。没有用编译通过替代实际接口通过。
