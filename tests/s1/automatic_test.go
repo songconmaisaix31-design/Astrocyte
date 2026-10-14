@@ -5,12 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
@@ -45,27 +40,7 @@ func localCommand(version int) app.CommandMeta {
 func TestContractLocalAutomaticUnknownSurvivesSQLiteReopenWithoutRetry(t *testing.T) {
 	ctx := context.Background()
 	p := app.Principal{ID: "contract_local-human", Kind: "human"}
-	fixture := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/api/query" {
-			id := r.URL.Query().Get("id_list")
-			w.Header().Set("Content-Type", "application/atom+xml")
-			fmt.Fprintf(w, `<feed><entry><id>https://arxiv.org/abs/%s</id><title>contract_local paper %s</title><summary>contract_local metadata %s</summary></entry></feed>`, id, id, id)
-			return
-		}
-		if strings.HasPrefix(r.URL.Path, "/pdf/") {
-			w.Header().Set("Content-Type", "application/pdf")
-			fmt.Fprintf(w, "%%PDF-1.7\ncontract_local representative %s\n", r.URL.Path)
-			return
-		}
-		http.NotFound(w, r)
-	}))
-	defer fixture.Close()
-	target, err := url.Parse(fixture.URL)
-	if err != nil {
-		t.Fatal(err)
-	}
 	reader := importers.NewReader(nil)
-	reader.Arxiv.Client = &http.Client{Transport: localArxivTransport{target: target}}
 	dir := t.TempDir()
 	store, err := objects.New(filepath.Join(dir, "objects"))
 	if err != nil {

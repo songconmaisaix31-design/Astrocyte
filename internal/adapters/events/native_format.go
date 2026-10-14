@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math"
+	"strings"
 	"time"
 )
 
@@ -41,16 +43,18 @@ type nativePayload struct {
 	} `json:"info"`
 }
 
+type nativeEnvelope struct {
+	Type      string          `json:"type"`
+	SessionID string          `json:"sessionId"`
+	CWD       string          `json:"cwd"`
+	Timestamp json.RawMessage `json:"timestamp"`
+	Message   *nativeMessage  `json:"message"`
+	Payload   *nativePayload  `json:"payload"`
+}
+
 // 可选字段缺失保持未知；已提供字段的格式错误由 encoding/json 立即返回。
 func validateNativeFormat(raw json.RawMessage) error {
-	var record struct {
-		Type      string          `json:"type"`
-		SessionID string          `json:"sessionId"`
-		CWD       string          `json:"cwd"`
-		Timestamp json.RawMessage `json:"timestamp"`
-		Message   *nativeMessage  `json:"message"`
-		Payload   *nativePayload  `json:"payload"`
-	}
+	var record nativeEnvelope
 	if err := json.Unmarshal(raw, &record); err != nil {
 		return fmt.Errorf("native record format: %w", err)
 	}
@@ -90,28 +94,60 @@ func absentNativeValue(raw json.RawMessage) bool {
 }
 
 func validateNativeTimestamp(raw json.RawMessage) error {
+	_, err := nativeTimestamp(raw)
+	return err
+}
+
+func nativeTimestamp(raw json.RawMessage) (int64, error) {
 	if absentNativeValue(raw) {
-		return nil
+		return 0, nil
 	}
 	var value any
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	decoder.UseNumber()
 	if err := decoder.Decode(&value); err != nil {
-		return fmt.Errorf("native timestamp: %w", err)
+		return 0, fmt.Errorf("native timestamp: %w", err)
 	}
 	switch v := value.(type) {
 	case json.Number:
-		if _, err := v.Int64(); err != nil {
-			return fmt.Errorf("native timestamp: %w", err)
+		n, err := v.Int64()
+		if err != nil {
+			return 0, fmt.Errorf("native timestamp: %w", err)
 		}
+		return n, nil
 	case string:
-		if _, err := time.Parse(time.RFC3339Nano, v); err != nil {
-			return fmt.Errorf("native timestamp: %w", err)
+		timestamp, err := time.Parse(time.RFC3339Nano, v)
+		if err != nil {
+			return 0, fmt.Errorf("native timestamp: %w", err)
 		}
+		return timestamp.UnixMilli(), nil
 	default:
-		return fmt.Errorf("native timestamp requires integer milliseconds or RFC3339 string")
+		return 0, fmt.Errorf("native timestamp requires integer milliseconds or RFC3339 string")
 	}
-	return nil
+}
+
+func nativeContent(raw json.RawMessage) (string, []nativeContentBlock, error) {
+	if absentNativeValue(raw) {
+		return "", nil, nil
+	}
+	var value any
+	if err := json.Unmarshal(raw, &value); err != nil {
+		return "", nil, err
+	}
+	if text, ok := value.(string); ok {
+		return text, nil, nil
+	}
+	var blocks []nativeContentBlock
+	if err := json.Unmarshal(raw, &blocks); err != nil {
+		return "", nil, err
+	}
+	var texts []string
+	for _, block := range blocks {
+		if block.Type == "text" || block.Type == "output_text" || block.Type == "input_text" {
+			texts = append(texts, block.Text)
+		}
+	}
+	return strings.Join(texts, "\n"), blocks, nil
 }
 
 func validateNativeContent(raw json.RawMessage) error {
@@ -148,7 +184,24 @@ func validateNativeUsage(usage *nativeUsage) error {
 			return fmt.Errorf("native token usage must be nonnegative")
 		}
 	}
+	if usage.Total == nil && usage.Input != nil && usage.Output != nil && *usage.Input > math.MaxInt-*usage.Output {
+		return fmt.Errorf("native token usage exceeds integer range")
+	}
 	return nil
+}
+
+func nativeTokenTotal(usage *nativeUsage) *int {
+	if usage == nil {
+		return nil
+	}
+	if usage.Total != nil {
+		return usage.Total
+	}
+	if usage.Input == nil || usage.Output == nil {
+		return nil
+	}
+	total := *usage.Input + *usage.Output
+	return &total
 }
 
 func validateToolObject(raw json.RawMessage) error {

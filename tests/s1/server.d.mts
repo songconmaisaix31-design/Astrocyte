@@ -3,7 +3,9 @@ export interface S1Server {
   webURL: string;
   dataDir: string;
   temporary: string;
-  /** Pass the original error being rethrown from a finally; cleanup failures remain on stderr and error.cleanupError. */
+  localAppData?: string;
+  relayRoot?: string;
+  /** 传入将重新抛出的首个错误；清理失败保留在 stderr 与 cleanupError。 */
   close(options?: { preserveData?: boolean; primaryError?: unknown }): Promise<void>;
   restart(): Promise<void>;
   stopAPI(): Promise<void>;
@@ -12,10 +14,12 @@ export interface S1Server {
 }
 export function startS1Server(options?: {
   browser?: boolean;
-  /** Assigned isolated acceptance ports; personal 5173/8787 are rejected. */
+  /** 显式隔离 Relay 的 LOCALAPPDATA 和 v0.2-access，默认注册表为空。 */
+  relay?: boolean;
+  /** 独立验收端口，拒绝个人 5173/8787。 */
   apiPort?: number;
   webPort?: number;
-  /** Exact previously created helper directory and controller-approved owned root. No discovery. Reused stores default to preservation. */
+  /** 原 helper 精确目录与主控批准的根；重用后继续保留资料。 */
   reuseOwnedTemporary?: { path: string; ownedRoot: string };
   env?: Record<string, string> | ((paths: { dataDir: string; temporary: string }) => Record<string, string> | Promise<Record<string, string>>);
 }): Promise<S1Server>;
