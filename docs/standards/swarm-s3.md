@@ -1,6 +1,32 @@
 # Swarm S3 / S6 实施与实际验证
 
-## 当前阶段
+## 第二阶段当前结果
+
+开发仍为 `task_da9aebf03f83` / `ctx_d4bf65ca06bf`，模块仍为 `task_b0197ca7ebdf` / `ctx_b1cd2e0a39aa`。第二阶段 SOURCE `3b78fd04dbf758e745e9880297ee1c2d6e58bfc2` 已普通 push，远端同值；准确消费共享 policy SOURCE `4725f0b1c6907ddefb3b1e1dac0f49840031db59`、S2 SOURCE `5d0ba735533f68259b91128dc404c8e4c2f2a535` 和 `507be52f4e31759dc8c3765aeea964f1f2efe013`。以下第一阶段记录保留当时结果。
+
+真实 S2 → Swarm 链已通过：Attention 项目空间、真实 LocalProject、Goal、Proposal、人工 ApproveProposal，经两个独立 SQLite 连接并发 CreateMission，得到同一 Mission；同键不同输入冲突、关闭重开后的回执重放与撤销后拒绝启动均通过。未启动原生执行者，没有使用批准 reader 替代实现。首轮因 S2 的零并发限制返回 scope_denied；原 S2 修改允许真实零活跃数后，第二轮发现回调替换 context 导致另取同 DB 连接等待，已终止该次实际测试。Swarm bridge 在相同连接重新附加自身事务 context 后回归通过；两次失败保持原含义。
+
+授权 bridge 现在在公开 Workspace 写事务中查询自身 Swarm 账本，传递实际活跃租约数、当前操作与累计 Used/Reserved/本次资源、可信 Caller、实际工具和外发目标。Claim 和 Submit 需要准确 `binding_id`，同事务消费 S2 的 `WithAuthorizedSessionBindings`，并核对真实成员；未知执行策略拒绝认领。调用和 tokens 使用独立 known 标记，没有完整实际用量证据时不释放占用。原 R 明确当前真实有效工具集合与目标 endpoint 仍 unknown，未以请求关闭配置或零 tool_calls 填为已核实。
+
+`httpapi/swarm_missions.go` 和 `swarm_work_items.go` 提供 `registerSwarmS3(mux, *swarmapp.Service)`，Principal 从 `localCaller` 注入。Domain RuleError 在本域 HTTP 层转换为既有 apierrors，scope/approval 拒绝为 403，version/fence/budget/unknown 为 409。路径与正文 ID 冲突拒绝；外部请求不能写 trusted consumer 的 event_id。
+
+公开路由为 GET missions、missions/{id}、missions/{id}/work-items、missions/{id}/timeline、artifacts/{id}?mission_id=；POST missions、missions/{id}/work-items、missions/{id}/pause、cancel、recover、work-items/{id}/claims、work-items/{id}/artifacts、artifacts/{id}/acceptance，均使用 `/api/v1/` 前缀。Mission 详情返回 schema_version、mission、work_items、leases、artifacts、timeline；时间线仅返回真实 outbox 的 event_id、type、aggregate_id、aggregate_version、occurred_at，不返回原始模型或控制器内容。H 负责主服务路由替换、鉴权规则、OpenAPI 与装配；本阶段没有修改这些共享文件。
+
+`NewSwarmLedger(repo, actualGrantAuthorizer)` 可提供真实账本与批准操作，执行能力缺失时明确返回 unsupported_capability。完整 `NewSwarmService` 需要真实成员、原执行者、成果检查和经验管道。Git/object 实际集成测试已通过；Git diff --check 的结果单独保存，Submit 同时要求实际项目适用检查的 `ApplicableChecksVerified`。缺少真实项目检查时无法进入可采用提交。固定策略 `swarm.fixed.v1` 先筛当前权限、依赖、能力、占用与停止条件，再按相同固定输入匹配排序；策略版本保存在 Lease。
+
+| 第二阶段验证命令 | 实际结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 -count=1` | PASS；固定 LocalPolicy 安全筛选与真实批准/两连接 Mission/幂等/重启/撤销链 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1` | PASS，4 项；新增真实 Git worktree、commit、diff/check 对象正路径及无关仓库/脏工作树/错误对象/遗漏路径拒绝 |
+| `go test ./internal/adapters/httpapi -run '^$'` | PASS；真实领域路由编译，尚未当作实际 HTTP 验收 |
+| `node scripts/check-architecture.mjs` | PASS，33 包；原 S2 Domain 越层首 RED 由其原负责人修复 |
+| `git diff --check` / push / ls-remote | PASS；第二 SOURCE 远端完整 SHA 一致 |
+
+新增首编译失败记录：Recover 的重放检查增加局部 err 后重复声明，编译拒绝；删除该重复声明后通过。第二阶段没有新增 skip、替代原生或外部 API 实现，也没有减少断言。
+
+当前剩余：H 主 HTTP/鉴权实际服务尚未装配验收；真实成员绑定的原 full Start session / 同 Registry / controller / startup 与 input operation resolver 待 R/S2 原负责人闭合；真实有效工具集合、目标与分项 usage 缺证保持 unknown。实际公开小改进项目、获准固定测试/构建由模块向根确认，项目原生自由工具权限保持关闭。实际两 Agent、一次显式交接、人工采用、经验候选真实录入和后任务 approved 经验实际使用均 NOT_RUN。AT07 的真实服务批准、并发唯一 Mission、重启/撤销组件通过；完整 AT08/09/13、S6 实际第二任务、最终组合 check/build 仍未通过，本 Task 继续执行。
+
+## 第一阶段记录
 
 开发 Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`。使用当前 Orca Codex 客户端和会话所配置模型；本阶段未调用外部模型，也未根据客户端名称推断模型。独立分支 `songconmaisaix31-design/product-swarm-20261015`，接管源码 `391c6176145044b099c13a05a926aef2096db170`。
 
