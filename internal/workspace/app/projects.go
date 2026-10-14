@@ -51,7 +51,7 @@ func has(items []string, value string) bool {
 }
 func validActions(items []string) bool {
 	for _, item := range items {
-		if !has([]string{"discover", "read_context", "start", "resume", "send", "stop", "observe", "reconcile"}, item) {
+		if !projectActionKnown(item) {
 			return false
 		}
 	}
