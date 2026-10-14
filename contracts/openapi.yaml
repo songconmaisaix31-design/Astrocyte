@@ -49,6 +49,22 @@ tags:
   - name: relay
     description: Human confirmed Works Relay access layer
 paths:
+  /relay/tasks/{id}/facts:
+    get:
+      operationId: listRelayTaskFacts
+      tags: [relay]
+      summary: Read persisted safe action facts and session relations
+      description: Human session and Origin required. GET reads persisted facts with current project permission; no controller observation, source-file IO, input delivery, receipt write or state transition. Six-field session-events remains unchanged.
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{in: path, name: id, required: true, schema: {type: string, format: uuid}}]
+      responses:
+        '200': {description: Safe facts, content: {application/json: {schema: {$ref: '#/components/schemas/RelayFactsV1'}}}}
+        '400': {description: Invalid request, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
+        '403': {description: Permission denied, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
+        '404': {description: Task unavailable, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
+        '501': {description: Runtime facts capability unavailable, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
+        '503': {description: Evidence or provider unavailable, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
   /relay/session-events: {"get":{"operationId":"listRelaySessionEvents","summary":"Read local owned session admissions","description":"Existing human session and Origin guard. Rechecks project grant, revision and owned binding on every GET, returns cached/persisted six-field derived events by source timestamp descending. GET never captures, launches or resumes. Snapshot extent is separate from complete native session coverage. No raw/native IDs/paths/commands or cognitive values.","tags":["relay"],"x-s1-supported":true,"security":[{"HumanSession":[]}],"parameters":[{"in":"query","name":"task_id","schema":{"type":"string","format":"uuid"}},{"in":"query","name":"start","schema":{"type":"string","format":"date-time"}},{"in":"query","name":"end","schema":{"type":"string","format":"date-time"}},{"in":"query","name":"page","schema":{"type":"integer","minimum":1,"maximum":1000000,"default":1}},{"in":"query","name":"page_size","schema":{"type":"integer","minimum":1,"maximum":100,"default":50}}],"responses":{"200":{"description":"Local pending admissions and explicit coverage, independent of cognitive snapshot values","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RelaySessionEventsV1"},"example":{"events":[{"event_id":"ae6c15f2-394b-402c-9f53-b75fc2cd0783","kind":"edit_file","topic":"relay:cf1497b0-e092-43c0-80a9-33449bb57a40","tokens":null,"scope":"public-project","ts":"2026-10-14T01:00:01Z"}],"coverage":[{"task_id":"cf1497b0-e092-43c0-80a9-33449bb57a40","terminal_id":"c48d6c05-3b58-4bdc-8a7b-46a471612a0b","worktree_id":"0623c675-ddb7-4d62-bd02-831f6cb6d51d","project_id":"public-project","status":"partial","gap":"prefix_unverified","lines":2,"projected":2,"duplicates":0,"unknown":0,"errors":0,"unknown_tokens":2,"remaining_bytes":0,"tail_bytes":0,"snapshot_complete":true,"session_complete":false}],"total":1,"page":1,"page_size":50}}}},"400":{"description":"Guard, invalid query or unavailable read; no Agent action or automatic retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"401":{"description":"Guard, invalid query or unavailable read; no Agent action or automatic retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"403":{"description":"Guard, invalid query or unavailable read; no Agent action or automatic retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"405":{"description":"Guard, invalid query or unavailable read; no Agent action or automatic retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"503":{"description":"Guard, invalid query or unavailable read; no Agent action or automatic retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}}}}}
   /relay/tasks/{id}/events/reconcile: {"post":{"operationId":"reconcileRelayTaskEvents","summary":"Explicit human reconciliation of the same derived event origins","tags":["relay"],"description":"Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset. Does not re-execute Agent or clear original receipts. Published means admitted to isolated app observations, not cognitive normalization or snapshot publication.","x-s1-supported":true,"security":[{"HumanSession":[]}],"responses":{"200":{"description":"Derived relay state","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RelayTaskResultV1"}}}},"400":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"403":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"404":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"409":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"503":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}}},"requestBody":{"required":true,"content":{"application/json":{"schema":{"$ref":"#/components/schemas/RelayEmptyRequestV1"}}}},"parameters":[{"in":"path","name":"id","required":true,"schema":{"type":"string","minLength":1}},{"in":"header","name":"Idempotency-Key","required":true,"schema":{"type":"string","minLength":1}},{"in":"header","name":"X-CSRF-Token","required":true,"schema":{"type":"string","minLength":1}}]}}
   /relay/projects: {"get":{"operationId":"listRelayProjects","summary":"Read current human project permission scope","tags":["relay"],"description":"Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.","x-s1-supported":true,"security":[{"HumanSession":[]}],"responses":{"200":{"description":"Derived relay state","content":{"application/json":{"schema":{"$ref":"#/components/schemas/RelayProjectsV1"}}}},"400":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"403":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"404":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"409":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}},"503":{"description":"Guard, permission, conflict or unavailable result; no launch retry","content":{"application/json":{"schema":{"$ref":"#/components/schemas/ErrorV1"}}}}}}}
@@ -8665,7 +8681,55 @@ components:
     RelayReceiptV1: {"type":"object","additionalProperties":false,"properties":{"receipt_id":{"type":"string","minLength":1},"task_id":{"type":"string","minLength":1},"operation_id":{"type":"string","format":"uuid"},"action":{"type":"string","enum":["intent","dispatch","send","read","stop","resume","transition","observe","reconcile_events"]},"operator":{"type":"string","minLength":1},"status":{"type":"string","enum":["pending","accepted","rejected","delivery_unknown"]},"error":{"anyOf":[{"$ref":"#/components/schemas/RelayReceiptErrorV1"},{"type":"null"}]},"created_at":{"type":"string","format":"date-time"},"finished_at":{"type":["string","null"],"format":"date-time"}},"required":["receipt_id","task_id","operation_id","action","operator","status","error","created_at","finished_at"]}
     RelayReceiptsV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"receipts":{"type":"array","items":{"$ref":"#/components/schemas/RelayReceiptV1"}}},"required":["schema_version","receipts"],"examples":[{"schema_version":1,"receipts":[]}]}
     RelayEventsV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"const":1,"type":"integer"},"events":{"type":"array","items":{"$ref":"#/components/schemas/WorkbenchEventV1"}}},"required":["schema_version","events"],"examples":[{"schema_version":1,"events":[{"event_id":"fixture-relay-event","kind":"edit_file","topic":"fixture-work","tokens":null,"scope":"fixture-project","ts":"2026-10-14T00:00:00Z"}]}]}
-    RelayIntentRequestV1: {"type":"object","additionalProperties":false,"properties":{"work_id":{"type":"string","minLength":1},"project_id":{"type":"string","minLength":1},"agent":{"type":"string","minLength":1},"task":{"type":"string","minLength":1,"maxLength":65536}},"required":["work_id","project_id","agent","task"],"examples":[{"work_id":"fixture-work","project_id":"fixture-project","agent":"fixture-agent","task":"Fixture human task"}]}
+    RelayIntentRequestV1: {"type":"object","additionalProperties":false,"properties":{"work_id":{"type":"string","minLength":1},"project_id":{"type":"string","minLength":1},"agent":{"type":"string","minLength":1},"task":{"type":"string","minLength":1,"maxLength":65536},"handoff_from_task_id":{"type":"string","format":"uuid","description":"Explicit prior released task in the same Work and original workspace. Requires handoff_context_confirmed=true and a different Agent. This declaration does not prove a new native session."},"handoff_context_confirmed":{"type":"boolean","description":"Human confirmation of prior task context. Omitted or false retains ordinary intent semantics when no source task is specified."}},"required":["work_id","project_id","agent","task"]}
+    RelayRuntimeFactV1:
+      type: object
+      additionalProperties: false
+      required: [fact_id, task_id, kind, status, source, sequence, ts]
+      properties:
+        fact_id: {type: string, format: uuid}
+        task_id: {type: string, format: uuid}
+        terminal_id: {type: string, format: uuid}
+        worktree_id: {type: string, format: uuid}
+        receipt_id: {type: string, description: 'Original immutable business receipt identity; not a UUID. Matches a readable receipt of this task.'}
+        operation_id: {type: string, format: uuid}
+        kind: {type: string, enum: [action_claimed, action_result, observation_rejected, handoff_declared, human_target_confirmed, controller_initialized, session_confirmed, input_channel_open, input_written, input_closed, input_accepted, turn_started, input_consumption]}
+        status: {type: string, enum: [confirmed, unknown, pending, accepted, rejected, delivery_unknown]}
+        source: {type: string, enum: [relay_store, human_intent, human_transition, codex_initialize, codex_thread_identity, claude_initialize, claude_system_init, pi_get_state, native_request_pipe, codex_turn_acknowledgement, pi_prompt_acknowledgement, codex_turn_started, pi_agent_start, claude_stream_input, native_protocol, owned_stdin_pipe, stdin_pipe, stdin_eof]}
+        reason: {type: string, enum: [client_consumption_not_acknowledged, operation_not_bound, controller_evidence_rejected, not_found, validation_failed, unsupported_capability, version_conflict, context_stale, index_stale, scope_denied, approval_required, approval_revoked, lease_lost, budget_exhausted, provider_unavailable, evidence_missing, delivery_unknown, internal_error]}
+        sequence: {type: integer, minimum: 0}
+        ts: {type: string, format: date-time}
+    RelaySessionRelationV1:
+      type: object
+      additionalProperties: false
+      required: [task_id, operation_id, kind, status, source, ts]
+      properties:
+        task_id: {type: string, format: uuid}
+        previous_task_id: {type: string, format: uuid}
+        worktree_id: {type: string, format: uuid}
+        terminal_id: {type: string, format: uuid}
+        operation_id: {type: string, format: uuid}
+        kind: {type: string, enum: [new, resume, handoff, unknown]}
+        status: {type: string, enum: [confirmed, unknown]}
+        source: {type: string, enum: [human_intent, controller_session]}
+        ts: {type: string, format: date-time}
+    RelayFactsV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, task_id, facts, session_relations, current_ownership]
+      properties:
+        schema_version: {type: integer, const: 1}
+        task_id: {type: string, format: uuid}
+        facts: {type: array, items: {$ref: '#/components/schemas/RelayRuntimeFactV1'}}
+        session_relations: {type: array, items: {$ref: '#/components/schemas/RelaySessionRelationV1'}}
+        current_ownership:
+          type: object
+          additionalProperties: false
+          required: [status]
+          description: 'Ownership comes only from the original controller object retained by this service, independently of historical facts and liveness. GET performs no RPC or activity refresh. A cold registry returns unknown.'
+          properties:
+            status: {type: string, enum: [confirmed, unknown]}
+            reason: {type: string, enum: [controller_binding_unrecorded, workspace_identity_unverified, controller_metadata_unsupported, controller_not_held]}
     RelayConfirmRequestV1: {"type":"object","additionalProperties":false,"properties":{"permission_confirmed":{"type":"boolean","const":true},"permission_level":{"type":"string","enum":["A","B","C"]},"project_settings_revision":{"type":"integer","minimum":0}},"required":["permission_confirmed","permission_level","project_settings_revision"],"examples":[{"permission_confirmed":true,"permission_level":"A","project_settings_revision":0}]}
     RelaySendRequestV1: {"type":"object","additionalProperties":false,"properties":{"input":{"type":"string","minLength":1,"maxLength":65536}},"required":["input"],"examples":[{"input":"Fixture human input"}]}
     RelayEmptyRequestV1: {"type":"object","additionalProperties":false,"properties":{},"required":[],"examples":[{}]}
