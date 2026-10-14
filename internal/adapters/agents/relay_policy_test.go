@@ -37,7 +37,10 @@ func TestRelayNativeDeadlineRejectsBeforeController(t *testing.T) {
 func TestRelayPublicEOFPolicyRejectsExpandedCommandAndSource(t *testing.T) {
 	spec, err := RelayPublicEOFTerminalSpec()
 	if err != nil {
-		t.Skip("requires an installed Claude entrypoint; no CLI was started")
+		var known *apierrors.ServiceError
+		if !errors.As(err, &known) || known.Code != apierrors.ProviderUnavailable || len(spec.LaunchCmd) != 0 {
+			t.Fatal("unavailable installation was not explicitly rejected without a command")
+		}
 	}
 	root := t.TempDir()
 	policy, err := NewRelayPublicEOFTerminalPolicy(root)
@@ -46,8 +49,17 @@ func TestRelayPublicEOFPolicyRejectsExpandedCommandAndSource(t *testing.T) {
 	}
 	launch := app.RelayLaunch{Spec: spec, Project: domain.LocalProject{Root: root}, Workspace: domain.RelayWorkspace{SourceRoot: root}}
 	// 此处只验证 launch 门禁，不将门禁通过作为原生能力/工具清单证据。
-	if err := policy(context.Background(), launch); err != nil {
-		t.Fatal(err)
+	gateErr := policy(context.Background(), launch)
+	if err == nil {
+		if gateErr != nil {
+			t.Fatal(gateErr)
+		}
+	} else {
+		var known *apierrors.ServiceError
+		if !errors.As(gateErr, &known) || known.Code != apierrors.ProviderUnavailable {
+			t.Fatal("missing installed CLI passed the public launch gate")
+		}
+		// 无 CLI 仍执行下方全部目录/命令/工具拒绝检查，不伪造可启动能力。
 	}
 	for _, change := range []func(*app.RelayLaunch){
 		func(r *app.RelayLaunch) {
@@ -73,6 +85,18 @@ func TestRelayPublicEOFPolicyRejectsExpandedCommandAndSource(t *testing.T) {
 	if !errors.Is(policy(ctx, launch), context.Canceled) {
 		t.Fatal("canceled launch continued to inspect its source")
 	}
+	t.Run("unavailable_cli_is_a_rejection", func(t *testing.T) {
+		// 真实缺失入口的拒绝路径；不放替身可执行文件或启动 helper。
+		t.Setenv("PATH", t.TempDir())
+		unavailable, err := RelayPublicEOFTerminalSpec()
+		var known *apierrors.ServiceError
+		if !errors.As(err, &known) || known.Code != apierrors.ProviderUnavailable || len(unavailable.LaunchCmd) != 0 {
+			t.Fatal("missing CLI produced a launchable registration")
+		}
+		if err := policy(context.Background(), launch); !errors.As(err, &known) || known.Code != apierrors.ProviderUnavailable {
+			t.Fatal("missing CLI was silently allowed by the public policy")
+		}
+	})
 }
 
 func TestRelayOwnedExecutionRejectsUnownedAndMissingController(t *testing.T) {
