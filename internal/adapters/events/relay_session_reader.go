@@ -1,7 +1,6 @@
 package events
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/olivere/ndjson"
 )
 
 func validateSessionSelection(b RelaySessionBinding) error {
@@ -42,15 +42,15 @@ func validateSessionSelection(b RelaySessionBinding) error {
 	}
 	for _, root := range b.ApprovedRoots {
 		if !filepath.IsAbs(root) {
-			continue
+			return sessionFailure("approved_root_invalid")
 		}
 		approved, e := unredirectedReplayPath(root)
 		if e != nil {
-			continue
+			return sessionFailure("approved_root_redirected")
 		}
 		info, e := os.Stat(approved)
 		if e != nil || !info.IsDir() {
-			continue
+			return sessionFailure("approved_root_unavailable")
 		}
 		rel, e := filepath.Rel(approved, selected)
 		if e == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel) {
@@ -72,9 +72,7 @@ func (r sessionContextReader) Read(p []byte) (int, error) {
 	return r.reader.Read(p)
 }
 
-// ReadRelaySession reads only a selected file's frozen byte extent. ReadBytes
-// has no Scanner token ceiling, and no text/record-count limit is substituted
-// for session coverage. A non-newline tail never advances the checkpoint.
+// ReadRelaySession 使用 ndjson 库读取选定文件的固定范围，未完成尾行不推进游标。
 func ReadRelaySession(ctx context.Context, b RelaySessionBinding, prior RelaySessionCursor) (RelaySessionBatch, error) {
 	c := copySessionCursor(prior)
 	batch := RelaySessionBatch{Next: c, Items: []RelaySessionItem{}}
@@ -119,6 +117,9 @@ func ReadRelaySession(ctx context.Context, b RelaySessionBinding, prior RelaySes
 	}
 	batch.Next.FileIdentity = identity
 	batch.SnapshotBytes = info.Size()
+	if info.Size() >= int64(math.MaxInt) {
+		return fail("source_extent_unsupported")
+	}
 	if info.Size() < c.Offset {
 		return fail("source_truncated")
 	}
@@ -128,44 +129,63 @@ func ReadRelaySession(ctx context.Context, b RelaySessionBinding, prior RelaySes
 			return fail("checkpoint_not_line_boundary")
 		}
 	}
-	// Revalidate the first complete identity record even after a serialized restart.
-	headReader := bufio.NewReader(sessionContextReader{ctx, io.NewSectionReader(f, 0, info.Size())})
-	header, headErr := headReader.ReadBytes('\n')
-	if headErr == nil {
+	// 库负责分行，缓冲上限使用文件范围，避免固定行长限制。
+	headReader := ndjson.NewReaderSize(sessionContextReader{ctx, io.NewSectionReader(f, 0, info.Size())}, int(info.Size())+1)
+	if headReader.Next() {
+		header := headReader.Bytes()
+		_, complete, boundaryErr := sessionLineEnd(f, 0, int64(len(header)), info.Size())
+		if boundaryErr != nil {
+			return fail("header_read_failed")
+		}
+		if !complete {
+			batch.TailBytes, batch.Remaining = info.Size(), info.Size()
+			if b.ArchiveFinalized {
+				return fail("closed_incomplete_tail")
+			}
+			return batch, nil
+		}
 		if b.Format == "codex" || b.Format == "claude_code" {
-			if !sessionHeaderMatches(b, header) {
+			matches, decodeErr := sessionHeaderMatches(b, header)
+			if decodeErr != nil {
+				return fail("malformed_json")
+			}
+			if !matches {
 				return fail("session_header_unverifiable")
 			}
 			batch.HeaderVerified = true
 		}
-	} else if headErr != io.EOF {
+	} else if headReader.Err() != nil {
 		return fail("header_read_failed")
 	}
-	reader := bufio.NewReader(sessionContextReader{ctx, io.NewSectionReader(f, c.Offset, info.Size()-c.Offset)})
-	for {
+	reader := ndjson.NewReaderSize(sessionContextReader{ctx, io.NewSectionReader(f, c.Offset, info.Size()-c.Offset)}, int(info.Size())+1)
+	for reader.Next() {
 		if ctx.Err() != nil {
 			return fail("capture_cancelled")
 		}
-		line, e := reader.ReadBytes('\n')
-		if e == io.EOF {
-			batch.TailBytes = int64(len(line))
-			break
-		}
+		line := reader.Bytes()
+		start := batch.Next.Offset
+		end, complete, e := sessionLineEnd(f, start, int64(len(line)), info.Size())
 		if e != nil {
 			return fail("source_read_failed")
 		}
-		start := batch.Next.Offset
-		batch.Next.Offset += int64(len(line))
-		batch.Next.Counts.Lines++
-		if !json.Valid(bytes.TrimSpace(line)) {
-			markSessionError(&batch.Next, "malformed_json", false)
-			continue
+		if !complete {
+			batch.TailBytes = info.Size() - start
+			break
 		}
+		batch.Next.Counts.Lines++
+		var decoded json.RawMessage
+		if reader.Decode(&decoded) != nil {
+			return fail("malformed_json")
+		}
+		batch.Next.Offset = end
 		if !batch.HeaderVerified {
 			batch.Next.Counts.Unknown++
 			continue
 		}
-		observation, known, scopeOK := sessionLine(b, line)
+		observation, known, scopeOK, decodeErr := sessionLine(b, decoded)
+		if decodeErr != nil {
+			return fail("invalid_native_record")
+		}
 		if !scopeOK {
 			return fail("session_or_cwd_changed")
 		}
@@ -187,18 +207,16 @@ func ReadRelaySession(ctx context.Context, b RelaySessionBinding, prior RelaySes
 		if p.Tokens == nil {
 			batch.Next.Counts.UnknownTokens++
 		}
-		if old, exists := batch.Next.Seen[id]; exists {
-			left, _ := json.Marshal(old)
-			right, _ := json.Marshal(p)
-			if !bytes.Equal(left, right) {
-				return fail("duplicate_event_conflict")
-			}
+		if batch.Next.Seen[id] {
 			batch.Next.Counts.Duplicates++
 			continue
 		}
-		batch.Next.Seen[id] = p
+		batch.Next.Seen[id] = true
 		batch.Next.Counts.Projected++
 		batch.Items = append(batch.Items, RelaySessionItem{Origin: origin, Projection: p})
+	}
+	if reader.Err() != nil {
+		return fail("source_read_failed")
 	}
 	batch.Remaining = info.Size() - batch.Next.Offset
 	// Detect shrink/replacement during the read. Appends are left for the next call.
@@ -208,97 +226,189 @@ func ReadRelaySession(ctx context.Context, b RelaySessionBinding, prior RelaySes
 	}
 	batch.SnapshotComplete = batch.HeaderVerified && batch.TailBytes == 0 && after.Size() == info.Size() && batch.Next.Offset == info.Size()
 	if b.ArchiveFinalized && batch.TailBytes != 0 {
-		markSessionError(&batch.Next, "closed_incomplete_tail", true)
+		return fail("closed_incomplete_tail")
 	}
 	batch.SessionComplete = batch.SnapshotComplete && b.ExitConfirmed && b.ArchiveFinalized && b.PrefixComplete && batch.Next.Counts.Unknown == 0 && batch.Next.Counts.Errors == 0 && batch.Next.Blocked == ""
 	return batch, nil
 }
 
-func sessionHeaderMatches(b RelaySessionBinding, raw []byte) bool {
-	if b.Format != "codex" && b.Format != "claude_code" {
-		return false
+func sessionLineEnd(f *os.File, start, length, extent int64) (int64, bool, error) {
+	end := start + length
+	if end == extent {
+		return start, false, nil
 	}
-	o, err := nativeRecord(b.Format, raw)
-	v := object(raw)
-	if b.Format == "codex" && str(v, "type") != "session_meta" {
-		return false
+	var boundary [1]byte
+	if _, err := f.ReadAt(boundary[:], end); err != nil {
+		return start, false, err
 	}
-	return err == nil && sessionMetadataTyped(v) && o.session == b.NativeID && o.cwd != "" && sameReplayProject(o.cwd, b.WorkspaceRoot)
+	if boundary[0] == '\r' {
+		end++
+		if end == extent {
+			return start, false, nil
+		}
+		if _, err := f.ReadAt(boundary[:], end); err != nil {
+			return start, false, err
+		}
+	}
+	if boundary[0] != '\n' {
+		return start, false, sessionFailure("source_boundary_invalid")
+	}
+	return end + 1, true, nil
 }
 
-// Uses only the existing fixture-backed vocabulary, without changing any mapper.
-// Unknown envelopes are counted and never treated as complete format support.
-func sessionLine(b RelaySessionBinding, raw []byte) (nativeObservation, bool, bool) {
-	o, err := nativeRecord(b.Format, raw)
+func sessionHeaderMatches(b RelaySessionBinding, raw []byte) (bool, error) {
+	if b.Format != "codex" && b.Format != "claude_code" {
+		return false, nil
+	}
+	var identity struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal(raw, &identity); err != nil {
+		return false, err
+	}
+	if b.Format == "codex" && identity.Type != "session_meta" {
+		return false, nil
+	}
+	o, _, scopeOK, err := sessionLine(b, raw)
 	if err != nil {
-		return nativeObservation{}, false, false
+		return false, err
 	}
-	if (o.session != "" && o.session != b.NativeID) || (o.cwd != "" && !sameReplayProject(o.cwd, b.WorkspaceRoot)) {
-		return o, false, false
+	return scopeOK && o.session == b.NativeID && o.cwd != "" && sameReplayProject(o.cwd, b.WorkspaceRoot), nil
+}
+
+// 使用类型化解码，未知协议保持未知，类型错误立即返回。
+func sessionLine(b RelaySessionBinding, raw []byte) (nativeObservation, bool, bool, error) {
+	var record struct {
+		Type      string          `json:"type"`
+		Session   string          `json:"sessionId"`
+		CWD       string          `json:"cwd"`
+		Timestamp json.RawMessage `json:"timestamp"`
+		Payload   json.RawMessage `json:"payload"`
+		Message   json.RawMessage `json:"message"`
 	}
-	v := object(raw)
-	kind := str(v, "type")
-	if !sessionMetadataTyped(v) {
-		return o, false, false
+	if err := json.Unmarshal(raw, &record); err != nil {
+		return nativeObservation{}, false, false, err
 	}
+	ts, err := sessionTimestamp(record.Timestamp)
+	if err != nil {
+		return nativeObservation{}, false, false, err
+	}
+	o := nativeObservation{session: record.Session, cwd: record.CWD, kind: "unknown", outcome: "unknown", depth: "unknown", ts: ts}
 	known := false
 	if b.Format == "codex" {
-		p := object(v["payload"])
-		if cwd := str(p, "cwd"); cwd != "" && !sameReplayProject(cwd, b.WorkspaceRoot) {
-			return o, false, false
+		p, e := sessionObject(record.Payload)
+		if e != nil {
+			return o, false, false, e
 		}
-		switch kind {
-		case "session_meta":
-			o.kind = "native_session_header"
-			known = true
-		case "response_item":
-			known = str(p, "type") == "function_call"
-		case "event_msg":
-			known = str(p, "type") == "token_count"
-			if known {
-				u := object(object(p["info"])["last_token_usage"])
-				o.tokens, known = sessionTokenTotal(u)
+		if record.Type == "session_meta" {
+			o.session, err = sessionString(p, "id")
+			if err != nil {
+				return o, false, false, err
+			}
+			o.cwd, err = sessionString(p, "cwd")
+			if err != nil {
+				return o, false, false, err
+			}
+			if o.ts == 0 {
+				o.ts, err = sessionTimestamp(p["timestamp"])
+				if err != nil {
+					return o, false, false, err
+				}
+			}
+		} else if record.Type == "turn_context" {
+			o.cwd, err = sessionString(p, "cwd")
+			if err != nil {
+				return o, false, false, err
 			}
 		}
+		known, err = sessionCodexEnvelope(record.Type, p, &o)
+		if err != nil {
+			return o, false, false, err
+		}
 	} else if b.Format == "claude_code" {
-		m := object(v["message"])
-		known = kind == "assistant" || kind == "user" || kind == "system"
+		m, e := sessionObject(record.Message)
+		if e != nil {
+			return o, false, false, e
+		}
+		known = record.Type == "assistant" || record.Type == "user" || record.Type == "system"
 		if len(m["usage"]) != 0 {
-			var valid bool
-			o.tokens, valid = sessionTokenTotal(object(m["usage"]))
+			u, e := sessionObject(m["usage"])
+			if e != nil {
+				return o, false, false, e
+			}
+			tokens, valid, e := sessionTokenTotal(u)
+			if e != nil {
+				return o, false, false, e
+			}
+			o.tokens = tokens
 			known = known && valid
 		}
 	}
-	if o.tokens != nil && *o.tokens < 0 {
-		o.tokens = nil
-		known = false
+	if (o.session != "" && o.session != b.NativeID) || (o.cwd != "" && !sameReplayProject(o.cwd, b.WorkspaceRoot)) {
+		return o, false, false, nil
 	}
-	return o, known, true
+	return o, known, true, nil
 }
 
-func sessionMetadataTyped(v map[string]json.RawMessage) bool {
-	for _, fields := range []map[string]json.RawMessage{v, object(v["payload"])} {
-		for _, key := range []string{"sessionId", "cwd"} {
-			if value, ok := fields[key]; ok {
-				var s string
-				if json.Unmarshal(value, &s) != nil || s == "" || string(value) == "null" {
-					return false
-				}
-			}
+func sessionObject(raw json.RawMessage) (map[string]json.RawMessage, error) {
+	if len(raw) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+		return nil, nil
+	}
+	var v map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &v); err != nil {
+		return nil, err
+	}
+	return v, nil
+}
+
+func sessionString(v map[string]json.RawMessage, key string) (string, error) {
+	if len(v[key]) == 0 {
+		return "", nil
+	}
+	var s string
+	if err := json.Unmarshal(v[key], &s); err != nil {
+		return "", err
+	}
+	return s, nil
+}
+
+func sessionTimestamp(raw json.RawMessage) (int64, error) {
+	if len(raw) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+		return 0, nil
+	}
+	var v any
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.UseNumber()
+	if err := d.Decode(&v); err != nil {
+		return 0, err
+	}
+	switch value := v.(type) {
+	case string:
+		t, err := time.Parse(time.RFC3339Nano, value)
+		if err != nil {
+			return 0, err
 		}
+		return t.UnixMilli(), nil
+	case json.Number:
+		return value.Int64()
 	}
-	return true
+	return 0, sessionFailure("timestamp_type_invalid")
 }
 
-// Validate every present component, even when a source supplies total_tokens.
-// Missing components are unknown, never inferred from cumulative/cache totals.
-func sessionTokenTotal(u map[string]json.RawMessage) (*int, bool) {
+// 缺少使用量字段保持未知，不使用累计值填补。
+func sessionTokenTotal(u map[string]json.RawMessage) (*int, bool, error) {
 	values := map[string]int{}
 	for _, key := range []string{"total_tokens", "input_tokens", "output_tokens"} {
 		if raw, ok := u[key]; ok {
 			var n int
-			if string(raw) == "null" || json.Unmarshal(raw, &n) != nil || n < 0 {
-				return nil, false
+			if bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+				return nil, false, nil
+			}
+			if err := json.Unmarshal(raw, &n); err != nil {
+				return nil, false, err
+			}
+			if n < 0 {
+				return nil, false, sessionFailure("token_usage_negative")
 			}
 			values[key] = n
 		}
@@ -306,14 +416,14 @@ func sessionTokenTotal(u map[string]json.RawMessage) (*int, bool) {
 	i, inputOK := values["input_tokens"]
 	o, outputOK := values["output_tokens"]
 	if inputOK && outputOK && i > math.MaxInt-o {
-		return nil, false
+		return nil, false, sessionFailure("token_usage_overflow")
 	}
 	if total, ok := values["total_tokens"]; ok {
-		return &total, true
+		return &total, true, nil
 	}
 	if !inputOK || !outputOK {
-		return nil, false
+		return nil, false, nil
 	}
 	total := i + o
-	return &total, true
+	return &total, true, nil
 }

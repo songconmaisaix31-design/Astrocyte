@@ -49,7 +49,7 @@ type RelaySessionCursor struct {
 	FileIdentity string
 	Offset       int64
 	Counts       RelaySessionCounts
-	Seen         map[string]RelaySessionProjection
+	Seen         map[string]bool // opaque position index only; never an event list
 	FirstError   string
 	Blocked      string
 }
@@ -90,13 +90,9 @@ func sessionOrigin(bindingID, fileIdentity string, offset int64) (string, string
 
 func copySessionCursor(v RelaySessionCursor) RelaySessionCursor {
 	out := v
-	out.Seen = make(map[string]RelaySessionProjection, len(v.Seen))
-	for k, p := range v.Seen {
-		if p.Tokens != nil {
-			n := *p.Tokens
-			p.Tokens = &n
-		}
-		out.Seen[k] = p
+	out.Seen = make(map[string]bool, len(v.Seen))
+	for k, seen := range v.Seen {
+		out.Seen[k] = seen
 	}
 	return out
 }
@@ -159,6 +155,9 @@ func (s *RelaySessionCapture) Capture(ctx context.Context, b RelaySessionBinding
 		return result, nil
 	}
 	if err := s.admit(ctx, b, batch.Items); err != nil {
+		if result.Checkpoint.FirstError == "" {
+			result.Checkpoint.FirstError = batch.Next.FirstError
+		}
 		markSessionError(&result.Checkpoint, "admission_unknown", true)
 		result.Pending = true
 		result.AdmissionErrors++

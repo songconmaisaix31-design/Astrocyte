@@ -12,6 +12,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -26,6 +27,8 @@ type relayOwnedNativeFixture struct {
 	appendOnly          bool
 	wrongSessionProject bool
 	wrongSessionCLI     bool
+	resumeEntered       chan struct{}
+	resumeRelease       chan struct{}
 	finalized           bool
 	sourceCalls         atomic.Int32
 }
@@ -48,7 +51,7 @@ func (a *relayOwnedNativeFixture) Start(ctx context.Context, r domain.NativeRequ
 func (a *relayOwnedNativeFixture) OwnedRelayArchive(_ context.Context, s domain.NativeSession) (domain.RelaySessionArchive, error) {
 	a.sourceCalls.Add(1)
 	if !a.selected {
-		return domain.RelaySessionArchive{}, os.ErrNotExist
+		return domain.RelaySessionArchive{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "archive not selected"}
 	}
 	archive := domain.RelaySessionArchive{SessionID: s.ID, NativeID: s.NativeID, WorkspaceRoot: a.workspace, Path: s.HistoryPath, Root: a.root, Format: "public_jsonl", Finalized: a.finalized, AppendOnly: a.appendOnly}
 	if a.wrongIdentity {
@@ -67,6 +70,24 @@ func (a *relayOwnedNativeFixture) OwnedRelayArchive(_ context.Context, s domain.
 		archive.Format = ""
 	}
 	return archive, nil
+}
+
+func (a *relayOwnedNativeFixture) Send(_ context.Context, session domain.NativeSession, input string) (domain.NativeObservation, error) {
+	file, err := os.OpenFile(session.HistoryPath, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return domain.NativeObservation{}, err
+	}
+	_, err = file.WriteString(input + "\n")
+	_ = file.Close()
+	return domain.NativeObservation{Status: "working", Events: []domain.NativeEvent{{Sequence: 2, Kind: "turn_started"}}}, err
+}
+
+func (a *relayOwnedNativeFixture) Resume(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
+	if a.resumeEntered != nil {
+		close(a.resumeEntered)
+		<-a.resumeRelease
+	}
+	return a.relayNativeRecording.Resume(ctx, r)
 }
 
 type relayOwnedRegistry struct{ adapter *relayOwnedNativeFixture }
@@ -311,7 +332,7 @@ func TestRelayOwnedMissingOrConflictingSourceIsGapNeverGuessedFromHistory(t *tes
 		t.Fatal(e)
 	}
 	b := findOwned(t, ownedReader(t, f.service), id)
-	if b.SourceStatus != "unknown" || b.ArchivePath != "" || b.Gap != "archive_not_selected" {
+	if b.SourceStatus != "unknown" || b.ArchivePath != "" || b.Gap != "archive_metadata_path_unavailable" {
 		t.Fatal("HistoryPath alone inferred an authorized archive")
 	}
 	a.selected = true
@@ -501,5 +522,75 @@ func TestRelayOwnedReadChecksCurrentControllerProjectAndCLI(t *testing.T) {
 				t.Fatal("read trusted stale bound identity after current controller mismatch")
 			}
 		})
+	}
+}
+
+func TestRelayOwnedResumeAndAppendInvalidatePreviousArchiveClosure(t *testing.T) {
+	f, a, _, _ := newOwnedFixture(t, true)
+	a.finalized = true
+	a.appendOnly = true
+	ctx := context.Background()
+	id := f.intent()
+	if _, err := f.service.ConfirmIntent(ctx, caller(), id, confirm()); err != nil {
+		t.Fatal(err)
+	}
+	first := findOwned(t, ownedReader(t, f.service), id)
+	if first.ArchiveFinalized != "confirmed" || first.ArchiveAppendOnly != "confirmed" {
+		t.Fatal("positive initial archive evidence missing")
+	}
+	if _, err := f.service.Stop(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	a.finalized, a.appendOnly = false, false
+	if _, err := f.service.Resume(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	resumed := findOwned(t, ownedReader(t, f.service), id)
+	if resumed.BindingID != first.BindingID || resumed.ArchiveFinalized != "unknown" || resumed.ArchiveAppendOnly != "unknown" {
+		t.Fatal("resume reused stale archive finalization/attachment proof")
+	}
+	if _, err := f.service.Send(ctx, caller(), id, app.RelaySendCommand{Input: "public append after resume"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.service.Stop(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	stopped := findOwned(t, ownedReader(t, f.service), id)
+	if stopped.ExitedAt == nil || stopped.ArchiveFinalized != "unknown" || stopped.ArchiveAppendOnly != "unknown" {
+		t.Fatal("append/stop inferred current archive flush")
+	}
+	data, err := os.ReadFile(stopped.ArchivePath)
+	if err != nil || !strings.Contains(string(data), "public append after resume") {
+		t.Fatal("fixture did not actually append after resume")
+	}
+}
+
+func TestRelayOwnedPendingResumeCannotExposeOldClosureClaim(t *testing.T) {
+	f, a, _, c := newOwnedFixture(t, true)
+	a.finalized = true
+	a.appendOnly = true
+	ctx := context.Background()
+	id := f.intent()
+	if _, err := f.service.ConfirmIntent(ctx, caller(), id, confirm()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.service.Stop(ctx, caller(), id); err != nil {
+		t.Fatal(err)
+	}
+	a.finalized, a.appendOnly = false, false
+	a.resumeEntered, a.resumeRelease = make(chan struct{}), make(chan struct{})
+	finished := make(chan error, 1)
+	go func() { _, err := f.service.Resume(ctx, caller(), id); finished <- err }()
+	<-a.resumeEntered
+	c.updates.Store(0)
+	bound := findOwned(t, ownedReader(t, f.service), id)
+	if bound.ArchiveFinalized != "unknown" || bound.ArchiveAppendOnly != "unknown" || c.updates.Load() != 0 {
+		close(a.resumeRelease)
+		<-finished
+		t.Fatal("pending resume exposed stale closure or read wrote state")
+	}
+	close(a.resumeRelease)
+	if err := <-finished; err != nil {
+		t.Fatal(err)
 	}
 }

@@ -92,6 +92,7 @@ type Native struct {
 	configID      string
 	configAt      time.Time
 	slots         chan struct{}
+	relayCaptures map[string]*relayNativeCapture
 }
 
 func (n *Native) ID() string { return n.id }
@@ -278,7 +279,13 @@ func (n *Native) launch(ctx context.Context, r domain.NativeRequest, resume bool
 			args = append(args, "--session", r.Session.NativeID)
 		}
 	}
-	return launchNative(n.id, args, r.Project.Root, time.Duration(seconds)*time.Second)
+	n.mu.Lock()
+	relayCapture := n.relayCaptures[r.SessionID]
+	n.mu.Unlock()
+	if relayCapture != nil {
+		args = append(args, "-c", "thread_unload_delay_secs=0")
+	}
+	return launchNative(n.id, args, r.Project.Root, time.Duration(seconds)*time.Second, relayCapture)
 }
 
 func (n *Native) Start(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
@@ -371,6 +378,13 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			method = "thread/resume"
 			params["threadId"] = r.Session.NativeID
 		}
+		if p.relayCapture != nil {
+			if resume {
+				params["excludeTurns"] = true
+			} else {
+				params["experimentalRawEvents"] = true
+			}
+		}
 		response, err := p.call(ctx, method, params, false)
 		if err != nil {
 			return fail(err)
@@ -386,6 +400,11 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		_ = json.Unmarshal(response["result"], &result)
 		if result.Thread.ID == "" || (resume && result.Thread.ID != r.Session.NativeID) || filepath.Clean(result.Thread.Cwd) != filepath.Clean(r.Project.Root) {
 			return fail(nativeError(apierrors.ScopeDenied, "native thread identity or project differs"))
+		}
+		if p.relayCapture != nil {
+			if err = p.relayCapture.bind(response["result"], r, resume); err != nil {
+				return fail(err)
+			}
 		}
 		p.mu.Lock()
 		p.nativeID = result.Thread.ID

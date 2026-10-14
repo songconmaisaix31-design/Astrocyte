@@ -150,9 +150,18 @@ func (s *relayService) observationChanged(st RelayState, launch RelayLaunch, obs
 	if obs.Session.ID != "" && !reflect.DeepEqual(obs.Session, st.Sessions[t.ID]) {
 		return true
 	}
+	if obs.NativeCapture != nil && !reflect.DeepEqual(obs.NativeCapture, st.OwnedSessions[st.Workspaces[launch.Workspace.ID].ActiveTaskID].NativeCapture) {
+		return true
+	}
 	if obs.Archive != nil {
 		bound := st.OwnedSessions[st.Workspaces[launch.Workspace.ID].ActiveTaskID]
 		if bound.Gap != "session_identity_changed" && bound.Gap != "archive_identity_changed" && (bound.SourceStatus != "available" || bound.ArchivePath != obs.Archive.Path || bound.ArchiveRoot != obs.Archive.Root || bound.ArchiveFormat != obs.Archive.Format || !relayArchiveMatches(*obs.Archive, bound) || obs.Archive.Finalized && bound.ArchiveFinalized != "confirmed" || obs.Archive.AppendOnly && bound.ArchiveAppendOnly != "confirmed") {
+			return true
+		}
+	}
+	if obs.ArchiveGap != "" {
+		bound := st.OwnedSessions[st.Workspaces[launch.Workspace.ID].ActiveTaskID]
+		if bound.SourceStatus == "unknown" && bound.Gap != obs.ArchiveGap {
 			return true
 		}
 	}

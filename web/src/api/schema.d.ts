@@ -2369,6 +2369,11 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         RelaySessionCoverageV1: {
+            /**
+             * @description archive counts complete JSONL lines and byte extents; native_notifications counts public app-server notifications, with zero byte counters. Session completeness is bounded to the selected source protocol; internal events not exposed by it are outside that claim.
+             * @enum {string}
+             */
+            source?: "unknown" | "archive" | "native_notifications";
             /** Format: uuid */
             task_id: string;
             /** Format: uuid */
