@@ -2,6 +2,8 @@
 
 审阅日期：2026-10-14。Owner：S；工作树 `release-research-20261014`；分支 `songconmaisaix31-design/release-research-20261014`；起点 `38fc8ff4d5ae48cd5d1af02ac80b0d5eebeb44a2`。只修改本文，公开中间资料保留在本树已忽略的 `.verification/`。本次没有修改业务、其他 owner 文件、正式协议或日程，没有读取私人凭据、私人会话或正式数据库，没有调用模型、启动实验、使用视觉或派发其他 Agent。
 
+2026-10-15 续审：§1–§6 保留 10-14 首轮授权、观察与首失败事实；当前授权、实现状态和新研究以 §7–§12 为准。用户已明确允许按 SPEC、skills、开源、REA 和前沿论文并行推进 S0–S6。S2/S3 新功能归 M-product 新 owner，Relay v1.4 归原 R/H/F；working 关键规则仍待答，正式 V4/v0.2 冻结保持。本轮仅公开研究与文档检查，没有启动产品、原生控制器、模型或实验。
+
 ## 1. 当前授权与事实来源
 
 主控 mailbox `msg_a04d0bdc9c04`、`msg_a655cb31ec20` 已传达用户新确认：全部功能指资料导入与人工沉淀、项目权限与进度、认知查询与快照、Relay 人工派发、原生会话采集与 Today、Windows release 包。验收完成后通过仓库既有 GitHub Releases 发布已获授权。范围与渠道均已决定；当前任务文件仍有此前集中询问的文字，以这两条最新确认继续。
@@ -109,3 +111,124 @@ L2 锁前仍需用户裁决真实任务与数量、各臂相同模型/工具/预
 S 的适用验证仅为文档链接/路径、来源版本与内容核查、`git diff --check`、唯一写域和 commit/push 后远端一致性。没有运行 Go、前端、浏览器、模型或正式实验验证；B 的 RED、F 的 PARTIAL、H/Q 的未完成与 P 的候选演练范围均保留。
 
 最终发布仍需原 owner 的精确 SOURCE/REPORT、唯一集成人员普通 `--no-ff` 合并、适用 check/build 与完整默认浏览器、实际 Codex→自产来源→SQLite→HTTP→Today、Q 真实认知来源及 Windows 新目录最终 ZIP 验收。成果由主控在这些实际结果成立后发布；S 的文档提交不替代任何功能或科研验收。
+
+## 7. 2026-10-15 当前研究范围与可复查基线
+
+本轮 Task `task_ec1f2cb096b1` / Dispatch `ctx_980d42612042`，实际终端 `term_1f61ef16-79ad-49c8-b804-9f149c4fc544`；协调端为 M-release。本树接管 HEAD `7d030fc83120052a8f32ea74c6007ff9be6878ca`、指定分支、clean 均已核实。实际客户端为 Codex，`orca terminal show --terminal … --json` 显示 `GPT-6.1-Sol high fast`；M-release 消息 `msg_4794f63b988d` 另核 projection `gpt-6.1-sol`、depth 2。本轮未派发第四层。
+
+已读取本树实际 AGENTS、HANDOFF/STATUS 当前入口、SPEC 全文、TASKS、QUESTIONS、L1–L4 和 L2 协议草案、原完整报告，以及下列当前管理与研究材料。下表是只读观察时点，不宣称已合入本树；活动 owner 后续提交由其管理者更新。
+
+| 来源 | 观察版本与用途 |
+|---|---|
+| M-release `docs/modules/release.md` | 观察 HEAD `0b0b0ce750b70867c959d3327b45e19c9705b6fd`；最新 S0–S6 授权、Q/P/N 阶段范围、最终 I 尚未派发及正式冻结 |
+| M-product `docs/modules/product.md` | 观察 HEAD `1b696fff3b95d8e4a6bb18365efa0977d6c97a67`；B/F/T/V 当前写域与验收。此版仍保留六组旧范围；最新 Task 明确的 S0–S6 授权优先。新功能计划路径已通过 M-release 请求，尚未收到，不据此给新 owner 增列独占文件 |
+| M-relay `tasks/Works-Relay-v1.4.md` | 观察 HEAD `8c93a29ffe7df1f8c110634b3dc1b3c4c63062e9`；已读投递事实、归属、就绪、new/resume/fork/handoff 全文；working 与无 started 的人工完成仍待决定 |
+| REA/Orca 既有报告 | `docs/research/orca-rea-20261014.md`，在 M-relay 树读取；复用其 1.4.220 选择范围静态结果，不重读安装包或私人状态，不重新启用 REA MCP |
+| CSGHub 既有研究四文件 | X 树 `docs/research/reference-code-20261014/{SOURCE,CSGHUB-ASSETS,CSGHUB-RUNTIME-RESEARCH,HANDOFF}.md`，观察 HEAD `153b8534a8be46e4ce20c8f77a43c6bca730529e`；复用公开 SHA、许可和 REA 覆盖，并在已有公开副本复核本文采用的权限、事务及 unknown 函数 |
+
+当前代码中，`internal/workspace/app/service.go` 的 `emptyProposalService` 与 `internal/swarm/app/service.go` 的 `emptyMissionService` 仍为空查询；`internal/adapters/httpapi/server.go:116–128` 的准入、批准/撤销、Mission、认领、提交与采用写入口仍返回 501。该事实与当前 Task 提供的 S2/S3 empty 一致。已有项目权限、Relay、选定资料读取和 Experience 服务不能替这些核心用例计完成。
+
+`internal/workspace/domain/projects.go:71` 已有名为 `ContextPacket` 的 selected-context DTO；`app/projects.go:291` 固定读取材料 revision，检查引用与文件权限，`checkPacket:394` 在后续使用时复核访问。此 DTO 尚未具备 SPEC §6.3/§12.5 要求的持久不可变包、批准引用、完整项目快照和 successor 链。新 owner 应复用已有权限与来源读取，完成缺少的业务语义；不能仅因同名类型存在就登记 S2 Context 完成。
+
+## 8. 当前一手论文：方法、实验条件与限制
+
+检索及读取日期均为 **2026-10-15（Asia/Shanghai）**。使用 Firecrawl CLI `1.26.3` 的 research index 按 2026-09-01 至 10-15 查询，另用公开网页搜索定位来源；机制只依据作者 arXiv 正文与附录。两篇完整 HTML 转 Markdown 保存在 `.verification/*-full-20261015.md`；已核方法、主实验、对照、消融、限制及相关附录，不依赖摘要或搜索片段写机制。本轮没有运行作者实验、复算其成绩或调用其 reader/verifier/judge。
+
+### 8.1 记忆使用资格：权限、生命周期与相关性分别检查
+
+来源：[Zi Wang、Xingqiao Wang、Emmanuel Addai、Devika Ambekar、Xiaowei Xu，*The Right Memory in the Wrong Context: Verifying Retrieval Admissibility in Long-Term Agent Memory*，2610.07309v1，2026-10-05](https://arxiv.org/html/2610.07309v1)。方法见 §3，实验见 §4–§5，限制见附录 B，复现范围见附录 N。
+
+作者把每个 memory/query 对的 scope、policy、lifecycle 分别标为成立、不成立、未解决；任一已知违规即可判不可用，信息不足继续保留未解决。namespace 来自可信身份，按身份先限定候选，再做语义排序。当前状态查询和历史变化查询分别处理旧版本；历史检索允许所需旧事实参与，当前权限仍需独立满足。存储、返回检索结果、进入实际 prompt、答案披露分别记录，prompt 暴露本身不证明模型因果使用。
+
+作者实际条件为两个公开来源 RHELM/MemOps，共 3,767 个查询、87 个 namespace groups；top-20 是冻结排序的事后资格重评分。可信 namespace 完整、组内分数不变、必需依据位于自身 namespace 是关键前提。embedding 为固定 Qwen3-Embedding-8B revision、4,096 维、最大 512 tokens、float32、确定 ID 平分顺序。文本 verifier 另用 24 个校准与 72 个分析案例；1,523 个 paired reader 案例与 16 个构造暴露场景分别分析，不能合并分母。
+
+作者报告 top-20 必需依据召回从 0.432 到 0.533；这属于作者数据。reader 的结果属于观察关联，召回也同时改变，不能归因为权限筛选单一因素。构造暴露试验中四个 reader 只有一个相关不可用信息的披露区间排除零。policy 标签的人评一致性弱，RHELM 评估只有七组；硬件记录不足以把候选计算减少换成延迟收益。本文不将这些结果写成本项目准确率、安全认证或阈值。
+
+对当前代码的可实现机制是：在 `ReadProjectContext`、后续持久包分发与 approved 经验检索入口，先按受信任 caller/project、现行授权和显式分享筛选；再核版本、使用目的及适用条件。文本相似不能生成授权；旧包中的批准引用不能越过当前撤销检查。权限未知时沿既有拒绝/待补证据行为处理。论文评估中的 unresolved 与实验臂的保留策略不决定产品 fail-fast 策略，也不决定 Relay working 状态。
+
+### 8.2 经验共享：可复用做法与接收者约束分开
+
+来源：[Jinming Hu、Haodong Zhao、Qi Jia、Die Chen、Tianhang Zhao、Sufeng Duan、Gongshen Liu，*Learning from Others, Acting for You: Cross-User Memory Sharing for LLM Agents*，2609.32511v1，2026-09-26](https://arxiv.org/html/2609.32511v1)。ShareMem 方法见 §3，实验/限制见 §4、伦理说明和附录 A–C。
+
+方法先在用户本地把轨迹和邻近经验归纳为编辑，再由共享管理者依据这些编辑和共享邻居独立处理共享经验。具体个人值被抽象为所需约束的语义位置；执行时从接收用户自己的偏好存储解析具体值。共享编辑由作者 LLM manager 接受，与 Astrocyte 的人工批准含义不同。scope-first 在同一优先组内合并本地/共享候选，用共同条目预算排序；低优先组只填剩余位置。这里的 scope 表示任务适用领域，不能替代 Astrocyte 的项目访问权限。
+
+实际条件：四个 backbone 为 Qwen 3.6-27B、DeepSeek v4-flash、Gemma 4-26B、Gemini 3 Flash，检索使用 BGE-M3 和 BGE-Reranker-v2-M3；作者设经验总条目 K=5、邻居数 5、偏好数 10、每集合候选 25。Mind2Web 使用 20 个模拟用户、252 个任务的已记录网页状态预测，主配置让训练示范与评估网站归不同用户；MemoryCode 使用三个各 20-dialogue 子集，分别 395/413/420 个任务，按 AST/regex 规则评分；两者经验在评估期间固定。VitaBench 2.0 使用 56 用户、771 subtasks，时间顺序交错执行，只从 full-reward 任务在线更新，三次 trial 各自清空经验起点。
+
+作者发现共享收益随本地同领域经验覆盖提高而缩小；近完全覆盖时主增益消失。较差轨迹来源会损害共享效果；active retrieval 消融同时改变信息和交互机会，不能只归因为检索频次。editable 与 append-only 对照还改变了抽取时是否看到旧池，不能据此否定本项目 crystallized 只追加。跨用户偏好误用审计是模型确认的已暴露失败案例，未测漏检，不能当总体泄漏率。VitaBench 的部分 full-context/rewrite 对照优于 ShareMem，说明论文没有证明记忆必胜完整上下文。
+
+当前可借用的设计是：经验描述适用条件、做法、失败条件和所需约束；后任务使用自己的目标、批准范围和资料版本填入具体值。人工批准和跨项目显式分享继续使用已有治理入口。K=5 及模型/embedding 均为作者实验设置，本报告不选为产品默认，不引入共享原始聊天或自动改写已固化知识。
+
+## 9. 真实开源代码入口与复用门禁
+
+### 9.1 新论文作者官方仓库
+
+2610.07309v1 正文直接链接 [作者仓库](https://github.com/ziwang11112/right-memory-wrong-context)。本轮普通 shallow clone、`git rev-parse HEAD` 和公开 `ls-remote HEAD` 同为 `1fca7d1554865fc3129d9869981c6af770152475`，副本只在 `.verification/admissibility-code-20261015/`。已读 README、LICENSE、pyproject、第三方声明、代码到论文映射及下列实际实现。
+
+| 固定代码入口 | 实际机制与复用限制 |
+|---|---|
+| [admissibility.py:16](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/src/verify_agent_memory/admissibility.py#L16) | 三值合取；`:24` 的 lifecycle 函数在 state 或 intent 未知时返回 None，`:33` 分别合并 scope/policy/lifecycle。可参照纯规则职责，不把它接成产品授权后端 |
+| [retrieval.py:467](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/src/verify_agent_memory/retrieval.py#L467)、[route:546](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/src/verify_agent_memory/retrieval.py#L546) | 可信 namespace 相等后才做本地 dense 排序；policy 试验函数保留缺少 decision 的记录，历史意图可保留旧事实。这些是评估臂，不能复制成权限缺失时允许处理的产品规则 |
+| [metrics.py:146](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/src/verify_agent_memory/metrics.py#L146)、[support_controls.py:84](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/src/verify_agent_memory/support_controls.py#L84) | 通用 `score_route` 从 `usable_status=True` 推导 anchors；`score_matched_recall` 则显式接收固定 anchor_ids。若后续独立评估要保证不能因过滤改变标准答案分母，应使用明确固定的依据集合；不直接搬通用函数的分母 |
+| [run_frozen_natural_support_expansion.py:160](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/scripts/run_frozen_natural_support_expansion.py#L160) | 实际自然来源评分入口读取 `query.required_memory_ids`；与通用演示路径分别核查。上游 README 的 quick start 使用 synthetic fixtures，本项目不运行或把该结果记为真实验收 |
+| [analysis/exposure.py:10](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/src/verify_agent_memory/analysis/exposure.py#L10) | 区分暴露和输出，缺任一分组立即失败；函数明确无因果解释。可用来理解未来独立研究的观测单位，不能证明某条 approved 经验已经改善任务 |
+
+根 [LICENSE](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/LICENSE) 为 MIT；[pyproject.toml](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/pyproject.toml) 要求 Python ≥3.11、基础 dependencies 为空，dev/plots 另有 pytest/PyYAML/ruff/matplotlib。无需为借鉴少量纯规则引入其完整研究环境。若实际复制代码，依赖 owner B 核固定版本与通知，发布 owner P 保留适用声明；本轮未复制代码或安装该环境。
+
+[THIRD_PARTY_NOTICES](https://github.com/ziwang11112/right-memory-wrong-context/blob/1fca7d1554865fc3129d9869981c6af770152475/THIRD_PARTY_NOTICES.md) 和 README 明确不分发完整自然语料排序、历史 embeddings 或原 provider 响应，原始 benchmark 材料另有条款。论文人评一致性数字没有对应本轮可独立验证的完整公开人评包，代码映射文档也将其列在 validated release 范围外。上游 hash/manifest/claim 工具只属于其研究材料，本项目不引入完成证明系统。
+
+ShareMem v1 正文与 reproducibility statement 给出方法、协议和 prompts，本轮未绑定作者公开实现仓库、固定 SHA 或代码许可证。其 arXiv 非独占发布许可不自动授予代码或模型资产分发权。因此本文只给出独立实现机制与既有本地入口，不安装同名包、不复制论文 prompts、不声称已有可直接集成库。
+
+### 9.2 复用 REA/CSGHub 的具体结果
+
+CSGHub server 固定 `a67b3024a9553aecf3379c9f6bccfcdada2034f5`，前端固定 `bbb9bf4b346a199a387090de76fcd6c1fffe98f6`。既有 X 已核根 Apache-2.0；本轮复核 server LICENSE 及下面源码。源码静态结论不继承上游服务实测通过。
+
+| 公开真实入口 | 对本项目的具体采用方式与限制 |
+|---|---|
+| [CheckUserRepoPermission，component/repo.go:2334](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/component/repo.go#L2334) | read/write/admin 分别核资源权限，私有拒绝清缓存。可用于审阅 S2 每次动作查现行权限的位置；其 ReBAC/管理员路径不等于 Astrocyte 的人类批准，不直接增设外部授权服务 |
+| [CreateMirrorRepoRecords，mirror_repo.go:91](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/builder/store/database/mirror_repo.go#L91) | 同一事务保存 repository/mirror/task/current task及可选 job。可参照 SPEC 中 Grant/幂等回执/outbox 原子边界；外部 Git、后续权限关系与数据库没有同一原子提交保证。只复用边界思想，不引入其队列或调度 |
+| [reconcileStaleExecutionLease，agent_orchestrator.go:981](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/builder/store/database/agent_orchestrator.go#L981)、[checkSessionExecutionLease:1035](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/builder/store/database/agent_orchestrator.go#L1035) | running 失去心跳后记录 unknown，原 session lease 继续阻止新执行。其容量 hold 到期并不确认旧执行停止；本项目复用 R 既有 operation/store 和真实停止证据，不引入 allocation/generation 新体系或自动恢复 |
+| [memory handler:84](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/api/handler/memory.go#L84) 与 [MemMachine adapter:21](https://github.com/OpenCSGs/csghub-server/blob/a67b3024a9553aecf3379c9f6bccfcdada2034f5/builder/memory/memmachine/adapter.go#L21) | 既有研究已确认它们是输入校验与外部服务适配；scope 字段和已登录不足以证明跨项目授权，未核外部记忆批准。Astrocyte 继续使用自身人工批准/分享端口；不把外部 memory HTTP 写入当成果采用 |
+
+许可/依赖门禁：按根 Apache-2.0 和实际文件声明核保留许可、修改声明与适用 NOTICE；不能推导模型、数据或 EE/saas 控制器许可。上游 go.mod 声明 Go 1.26.0，包含 Bun/pgx、OpenFGA 等依赖；既有报告的公开 CE sandbox/watcher 空实现、外部 MemMachine 与 Temporal/EvalScope 边界均保留。本文不引入这些服务，不把公开代码可读写成完整自治科研平台可运行。
+
+REA/Orca 报告中的输入接受、回合开始、目标完成、归属和恢复关系，已经进入 v1.4 原 owner 规格。本轮不复制安装包代码；该包的静态分析许可不等于公开开源复用许可。autoscientist 准确项目仍待用户决定，不替用户选择同名服务。
+
+## 10. S0–S6 与 L 系列的机制、owner 和具体验收
+
+下表是交给当前领域 owner 的可实施机制与验收要求，依据已授权 SPEC；本轮所有新增业务验收均 **NOT_RUN**。只列已确认的行为，不固定用户尚未决定的接口字段、状态迁移、默认模型或参数。新的 S2/S3 owner 由 M-product 在安全移交后指定；本报告不接管 B/R/H/F 的文件。
+
+| 切片/层 | 已实现基础与当前缺口 | 当前授权内可实施机制及真实代码入口 | 领域 owner 与具体验收 |
+|---|---|---|---|
+| S0/S1 | 基座、导入/版本、人工反馈和项目许可已有实码；完整当前组合仍有失败记录 | 复用 `attention/app/materials.go`、`distillations.go`、`workspace/app/projects.go`；论文候选和经验引用固定来源 revision，不把机器读取当人类关注 | M-product → B/V/T/F；真实公开导入→版本/附件→HTTP/SQLite→重启，旧版本仍可读；AT01–04，零自动 Mission；既有失败不覆盖 |
+| S2 准入→草稿 | admission/proposal 主入口 501 | SPEC §7.1：固定 ready_for_review revision→Admission 与既有 outbox 同事务→幂等草稿；不启动 Agent。`httpapi/server.go:116/120`、`workspace/app/service.go` 为补全位置；CSGHub 事务仅提供实现参照 | M-product 新 S2/S3 owner，B 提供既有存储/依赖，F 消费精确契约；重复同候选版本只一个草稿，撤回/旧 revision 请求失败，进程启动数为零 |
+| S2 批准/撤销 | 项目 grant 与 SettingsRevision 已有；Proposal 的 ApprovalGrant 尚缺 | SPEC §7/§12：受信任 human→固定提案 revision→Grant/幂等回执/outbox 同事务；每次保护动作复查现行授权。`httpapi/session.go` 与 `projects.go:authorize` 复用身份/项目边界，不把 ProjectGrant 直接当 Proposal 批准 | 新 owner + 原 B/F；AT05–07：实际 Agent token 无批准权、旧提案返回 version_conflict、批准后启动前撤销拒绝、重复启动事件同 grant 最多一个 Mission；SQLite/HTTP/重启分别核 |
+| S2/S3 Context | selected_context 已有，持久不可变 successor/批准/项目快照尚缺 | 在现有 `ContextPacket`/`ReadProjectContext` 业务入口实现 SPEC §6.3/§12.5；组包前后核来源/文件变化，保存固定包引用，分发时再核权限。借用 §8.1 的检索与实际输入分别核，不新建审计账本 | 新 owner；原 R/H 核原生交付，F 展示来源与模式；旧 revision 可追溯、变更返回 context_stale、撤销阻断再次分发；两 worktree 不混用；真实原生 resume 与新 session handoff 分别通过 AT09/10 |
+| S3 Mission/WorkItem | emptyMissionService，认领/提交/采用 501 | 补 SPEC 已定账本：有效 Grant→幂等 Mission，WorkItem 条件更新/单调 fence/预算预留同事务；核当前持有者、写域和实际成果再提交；用户采用生成结果回流。延用已有操作/存储，不新增自研调度或 Attempt 管理系统 | 新 owner；原 R 只提供现有执行能力，H/F 按精确接口消费；AT08/13/15：两个真实执行者仅一有效认领，旧 fence 拒绝，重启未知动作不重发，提交与采用分别持久化；来源/成果/检查可回查 |
+| S3/L1 Relay v1.4 | R/H 正在实现，当前链路未完成 | §9.2 与既有 REA 支持输入接受/开始/人工完成分开、归属和未知交付保持；继续现有 `relay.go`、`relay_lifecycle.go`、`relay_store.go`、`relay_session*.go` | M-relay → R/H，F 唯一 UI 操作者；真实 Codex/SQLite/HTTP/自产来源、工具关闭、event_id 逐一定位、同次 firstDOM 三分钟。working/无 started 完成路径待用户答复，不能以论文决定 |
+| S4 | RepositoryMap/CodeSearch/ImpactQuery 为 SPEC 适配方向，本轮无新验收 | 将检索结果绑定实际 repo/worktree/snapshot，权限筛选先于语义检索，旧索引标 index_stale。`internal/adapters/indexing` 是 SPEC 规划路径，本树尚不存在；应由领域 owner 补消费方端口和适配实现。AOCI/CodeGraph 的具体所选版本、许可和执行输入仍需核定 | M-product 指定对应 owner，依赖交 B；真实两 worktree 不串结果、修改未提交源码后返回过期、撤销移出可检索集合；不因论文 namespace 实验宣布索引隔离通过 |
+| S5 | SPEC 已定义 Judgment 契约；本树 `internal/judgment` 只有 `doc.go`，未取得 Jev/Laya 实现、资产或运行结果 | 沿既有目录补用例与适配器，权限/题型/允许后端先检查，拒答、截断或资产缺失保留实际状态。论文生成式 verifier 不替代确定性批准；不把 BGE/Qwen 参数锁成新后端 | M-product 指定判断 owner，B 管依赖；AT11/12：拒答/截断不自动准入，模型/目标/策略变动缓存失效，实际 Laya 资产许可/断网/重启逐项验收；缺资产保持未完成 |
+| S6/L2 功能 | `CaptureFailure`、人工批准/分享、approved-only 检索已有；Relay→候选→批准→后任务消费链缺本次证据 | `experience_ingest.go` 与 `experience_service.go:71/198/229`、`experience_store.go` 复用；只用实际已提交 Event，unknown 不造失败候选；按 ShareMem 分离做法与接收项目当前约束；L2 适配输入先交 owner 审查冻结边界 | 新功能 owner 联原经验域 owner，M-release 路由；真实失败→quarantine、Agent 无批准权、人工批准后第二 Agent 可检索并在实际任务使用；证据逐 event_id 核。未分享项目不可见，批准/撤销版本冲突真实返回；AT16 不以“已检索”替代成果使用 |
+| L2 巩固/研究 | Sleep/Knowledge 已有；经验接入与独立三臂仍为草案/未运行 | `sleep_knowledge.go`、`knowledge_{fluid,crystallized,retrieval}.go` 仅登记入口；保留 fluid/crystallized 各自语义。固定后任务适用机会、输入条目与结果；保留精度/存储缩减分开定义 | 认知原 owner 与根；允许范围内设计可继续，正式认知 schema/engine/权重与 V4/v0.2 不改。独立协议裁决/锁定/实际解冻后才真实实验；人类质量评分、客观检查、真实 usage 与撞坑回溯分别验收 |
+| L3/L4 | 既有规划提供组织/群体命题，当前无本轮实现证据 | §4 已核八类资产连续性、双时标、异构趋同及 scope/预算/审计边界继续作为研究输入；需要将任务适用性与权限分开，不从共现推断协作或因果 | 由根按现有 L 任务指定 owner；本报告只给设计依据。能力板、策略/训练、跨库合并和正式实验仍服从其冻结/未决门禁；不启动共享原始聊天、自动认领或新的控制器 |
+
+具体区分：用户对 S0–S6 系列的新授权允许相关独立产品设计与实现推进；正式 V4/v0.2 的冻结依然有效。L2–L4 涉及冻结核心、并库或实验的部分，须满足原任务门禁。产品功能可以接受真实业务验收，科研效果还需独立实验。论文中的“自动接受编辑”“历史可检索”与“scope优先”均不产生批准、资料外发或扩大工具的权利。
+
+## 11. 已交领域缺口与仍待决定
+
+只向当前 M-release 交接，由其路由 M-product/M-relay 原 owner；没有联系旧 Dispatch、Slack 或 GitHub 消息渠道。
+
+| 交接事项 | 接收与下一步 |
+|---|---|
+| 新计划准确路径/SOURCE 与安全写域 | `msg_83abd45e4b67` 已送 M-release；其 `msg_4794f63b988d` 确认已请求 M-product，研究按 SPEC 独立继续。未收到准确计划前不代定新 owner 文件集合 |
+| S2/S3 empty 与同名 ContextPacket 的真实覆盖 | `msg_bb9a8a5e146a` 已交 M-release：转新 S2/S3 owner 及原 B/F/R/H，按 §10 实施/验收；零新业务修改 |
+| 论文代码的权限缺省策略与分母 | 同消息明确 generic score 与固定 source anchor 的不同入口；后续独立 L2 评估设计使用自己的真实任务依据，不搬作者合成 fixture/manifest 系统或 0.8 阈值 |
+
+working 严格开始证据、无 started 客户端的人工完成路径、实际用户作品与自由工具范围仍未决定。L2 真实任务集合、预算/模型/工具/顺序/污染控制、传统输入外发、人工评分、机会分母、巩固双指标及统计方法继续以原草案待答项为准。本报告不填默认值，不把 V4 B 臂豁免扩给新实验。
+
+## 12. 本轮检查、提交范围与未执行项
+
+本轮允许写入仅 `docs/release-research.md`。公开 research 检索、arXiv 全文和作者代码副本保留于已忽略 `.verification/`；未把其他树材料、第三方源码、数据库、会话、凭据或研究环境打入提交。原报告的首段与首失败事实保留。
+
+适用检查为：报告本地相对链接/新增固定代码链接对应公开副本及行号、`git diff --check`、相对接管 HEAD 的单文件写域、首段保留、普通 SOURCE/独立 REPORT 提交及 push 后完整远端 SHA。准确 SOURCE 与检查结果在随后独立 REPORT 追加；任何检查未执行不预填 PASS。
+
+未执行：产品 Go/前端/浏览器检查与构建、作者测试或实验、真实模型/原生控制器/SQLite/HTTP 验收、正式采集/Sleep/judge、部署和发布。没有读取私人会话/凭据/正式库；实际 approved 数量、正式认知状态和当日科研结果未核，不从规划历史值推断当前值。新功能计划准确来源、ShareMem 官方代码/许可与模型/数据资产分发许可尚未核定；对应实现或分发仍由领域 owner 在使用前完成检查。
