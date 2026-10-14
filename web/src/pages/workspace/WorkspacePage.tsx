@@ -16,6 +16,7 @@ import { LocalAgentsPanel } from './LocalAgentsPanel';
 import { ManagedProjectsPanel } from './ManagedProjectsPanel';
 import { ProjectBoardPanel } from './ProjectBoardPanel';
 import { WorksAlbumPanel } from './WorksAlbumPanel';
+import { ProposalWorkspace } from './proposals/ProposalWorkspace';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -72,18 +73,7 @@ export function WorkspacePage({ query, onClearQuery }: Props) {
         <GitHubRepositoriesPanel query={query} />
         <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
 
-        {/* 提案清单。 */}
-        <SectionCard tabs={['proposals']} title="提案" count={proposals.length}>
-          {prop.loading && !prop.data ? (
-            <div className={styles.loadingRow}>加载中…</div>
-          ) : prop.error && !prop.data ? (
-            <ErrorState message={prop.error} onRetry={prop.retry} />
-          ) : proposals.length === 0 ? (
-            <EmptyState icon="📋" title="暂无提案" description="系统生成提案后将在此显示" />
-          ) : (
-            <ProposalList items={proposals} onSelect={(p) => setSelected({ kind: 'proposal', data: p })} />
-          )}
-        </SectionCard>
+        <ProposalWorkspace query={query} onClearQuery={onClearQuery} refreshToken={boardRefresh} onChanged={prop.retry} />
 
         {/* 会话清单。 */}
         <div className={styles.fullWidth}>

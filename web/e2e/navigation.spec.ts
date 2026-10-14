@@ -78,6 +78,32 @@ test('共同工作区显示实际空项目、提案和会话', async ({ page }) 
   await page.getByRole('tab', { name: '提案与批准', exact: true }).click();
   await expect(page.getByRole('status', { name: '暂无提案' })).toBeVisible();
 });
+test('新提案入口读取实际集合，刷新权限拒绝后人工读取恢复', async ({ page, context }) => {
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (request.method() !== 'GET' && new URL(request.url()).pathname.startsWith('/api/v1/')) writes.push(request.method());
+  });
+  const response = page.waitForResponse(value => new URL(value.url()).pathname === '/api/v1/proposals');
+  await page.goto('/workspace');
+  const initial = await response;
+  expect(initial.status()).toBe(200);
+  expect((await initial.json()).items).toEqual([]);
+  await page.getByRole('tab', { name: '提案与批准', exact: true }).click();
+  const proposals = page.locator('section').filter({ has: page.getByRole('heading', { name: /^提案(?:\(|$)/ }) });
+  await expect(proposals.getByRole('status', { name: '暂无提案', exact: true })).toBeVisible();
+  await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+  const denied = page.waitForResponse(value => new URL(value.url()).pathname === '/api/v1/proposals');
+  await page.getByRole('button', { name: '↻ 刷新', exact: true }).click();
+  expect((await denied).status()).toBe(403);
+  await expect(proposals.getByRole('alert')).toBeVisible();
+  await expect(proposals.getByRole('status', { name: '暂无提案', exact: true })).toHaveCount(0);
+  await context.setExtraHTTPHeaders({});
+  const recovered = page.waitForResponse(value => new URL(value.url()).pathname === '/api/v1/proposals');
+  await proposals.getByRole('button', { name: '重试', exact: true }).click();
+  expect((await recovered).status()).toBe(200);
+  await expect(proposals.getByRole('status', { name: '暂无提案', exact: true })).toBeVisible();
+  expect(writes).toEqual([]);
+});
 test('蜂群空间显示实际空任务、工作项和产物', async ({ page }) => {
   await page.goto('/swarm');
   await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
