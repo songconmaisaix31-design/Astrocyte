@@ -14,6 +14,10 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 第四阶段 SOURCE `bee27ca1f710b6b077e51f78d5ec744f24d0ded6` 已普通提交并 push，唯一业务测试改动为 `tests/s1/automatic_test.go`。删除替代 processor，改用实际构建的 server / HTTP / session bootstrap / SQLite / objects；实际三类权限拒绝和进程终止 / 两秒真实预算 / 同库重启路径已通过。模型未知交付分支保留全部原输入、版本、幂等、payload / caller、无结果 / 无候选 / 无重发断言，仍未执行，也没有把 `ExternalStarted` 提升为原生 Send 证据。
 
+第五阶段 SOURCE `aa7257e66bff29140a826afdaab93f36e35958d9` 已普通提交并 push，只修改 `video_reuse_test.go`。原替代 SourceReader 已移除，使用 V 明确交付的同 BV 两个 immutable 实际文本导出和生产 Reader / SQLite / ObjectStore，保留 alias 首读 1 次、显式 B refresh 与 normal latest 2 次、返回 A 第 3 次读取 / 3 个作业 / 2 个 revision / B head / 旧 A revision1 / 同 material，以及 multipart 单独身份的全部断言。p2 只提交其真实 URL，没有借用 p1 原件；生产 `summarize_url` 对不支持的 multipart 返回实际 validation_failed，零新资料。
+
+本测试要求显式绝对路径 `ASTROCYTE_TEST_VIDEO_EXPORT_A` 与 `ASTROCYTE_TEST_VIDEO_EXPORT_B`，没有个人路径源码默认值、fallback 或 skip。此次 A 路径为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/video-original-text.txt`，B 为 `C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first/video-original-text.txt`，均按模块与 V `msg_43e318f2b008` 的精确只读授权消费。production `summarize_markdown` loader 保留已有真实正文；该范围没有宣称 Markdown 自身证明 952 个时间片段，也没有调用新提取 / ASR / 模型 / controller。
+
 经模块允许，普通 `--no-ff` 消费 B 前置 `3384a89aac3be6d5670d756eb2d44263784d0cb8`；其中只有共同 owned execution 口，text / bridge 的原 registry、作业 / operation、活会话和原档 / Send 映射尚未交付。T 没有手工修改该生产输入。
 
 新增 `http_evidence_test.go` 只委托真实 HTTP Transport，并通过 `io.TeeReader` 将其实际响应原件保存到本机忽略目录；没有替代请求 / 响应、认证 Cookie 或凭据，也没有把原件写入 Git / HTTP / 产品字段。它仅用于定位真实 provider / pagination 问题。
@@ -55,6 +59,8 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | `go test -mod=readonly ./tests/s1 -run '^TestReadOnlyImportHTTPProcessExitPreservesDeadline$' -count=1` | EXIT0，20.021s；实际 running 作业中终止 owned server，实际预算到期后重启，保留 failed / nonunknown、原 operation / deadline / attempts=1、payload / caller；到期重试实际 400 | `.verification/s1-readonly-exit-first.log` |
 | `go test -mod=readonly ./tests/s1 -run 'TestTrackingIdentityMigrationPreservesLegacyItems\|TestPublicArxivAliasesPinOriginalVersion' -count=1` | EXIT0；已有迁移参数范围与官方原件 / 别名 / 已发布版本 / 未发布版本失败，未调用模型 | `.verification/s1-nonmodel-public-first.log` |
 | 相关两包 `-list '^Test'` 与 `go build -mod=readonly -o .verification/astrocyte-stage4.exe ./cmd/server` | EXIT0；编译清单与生产服务构建 | `.verification/coverage-stage4.log`、`.verification/build-stage4.log` |
+| 实际两视频导出首次 A/B/A 验证 | RED：新增 p2 失败断言的预期错误类型与生产拒绝规则不同；A/B/A 原断言已通过，首记录保留 | `.verification/video-reuse-actual-exports-first.log` |
+| 显式 `ASTROCYTE_TEST_VIDEO_EXPORT_A/B` 后，`go test -mod=readonly ./internal/attention/app -run '^TestNormalVideoReuseExplicitRefreshAndABAHead$' -count=1` | EXIT0；实际已有两版导出、alias、refresh、A/B/A、SQLite / objects 与 p2 实际拒绝 | `.verification/video-reuse-actual-exports-explicit.log` |
 
 ## 仍在执行
 
@@ -72,6 +78,8 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 
 根 `msg_4da181ce8f60` 明确 selected-text 原生身份与模型验证延期至明天 v1.4 语义稳定后的共同身份 / 目标核查窗口。今晚保持实际模型、原生 controller 启动均为零；包含该隐式路径的 `go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 保持 NOT_RUN，不新增 skip、不删除 case 或隐藏默认门槛。
 
-继续验收需要 B 的精确 text / bridge SOURCE 及原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，B 的真实分页修复与可访问足量公开 Creator，以及 V 的同源实际 summarize 导出 / 时间证据前置。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，明天由本 owner 继续同一写入范围。T 没有发送 worker_done 或发布产品。
+继续验收需要 B 的精确 text / bridge SOURCE 及原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，B 的真实分页修复与可访问足量公开 Creator。收藏夹累计 99 项后是否允许读取第 101 个请求位置取得第 100 个实际 metadata，当前由模块唯一正式问题等待根裁决，不据未答选择上限解释、造第 20 项或放宽 100 条断言。
+
+V 的两真实文本导出已支持本轨版本复用验证，完整时间 / 默认提取验收仍归 V 的真实生产路径，不借本轨 Markdown 版本复用结果填其全模块通过。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，明天由本 owner 继续同一写入范围。T 没有发送 worker_done 或发布产品。
 
 完整成功、权限拒绝、未知交付、重启和整改后相关全包测试尚未完成；本文件所列定向结果不构成全部产品验收。剩余旧共享 helper / 自动模型 / tracking 外部替代测试仍需整改，目录容量不足及模型证据前置分别记录；未用旧替代测试的 PASS 填成本轨完整通过。
