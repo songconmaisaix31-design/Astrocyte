@@ -118,9 +118,17 @@ S2 精确普通合并为 `20bdbc55850e0a5e9d5297aa9c27d399f8a2e696`，Attention 
 
 按 M/H 明确授权及 H 零 WIP 停写 ACK，B 在 H 工作树仅使用文件编辑工具复制 019 原件并只 stage 该文件。H index blob 与原 da794 文件精确同为 `352ecc0e5e2f12aa52bf3871e7304f15292ba667`，001–018 无 diff；H 的其他 WIP、源码提交、实际服务和数据库没有由 B 操作。临时范围已归还 H，未复制 020 或整段 B 历史。
 
-S4 新增投影迁移 SOURCE `98bb9236c68f45ca4ab4114d46eafba5c90cdedf` 与 S3 人工退回 policy SOURCE `c110201774dd61b8d7e5280526364786c6af4cc2` 已普通 push。`021_repository_context.sql` 只增加所请求安全元数据五列、三字段主键及 workspace 版本 8；S4 实际 generation/CAS/索引语义归其原 owner。`reject_artifact` 逐名加入 validActions 并仅允许人类，Agent 即使持有该动作字符串仍拒绝。新增迁移下实际 SQLite 四路径 EXIT 0，2.069s，policy 两项含 11 子项 EXIT 0，0.906s，`.verification/repository-context-migration-first.log`；定向 vet/full build/gofmt/diff EXIT 0。CodeGraph 1.0.1 官方 registry 元数据已核 MIT 和 Windows 1.0.1 bundle，实际 SDK 及许可证清单仍在核查，尚未据此声明 S4 运行通过。
+S4 新增投影迁移 SOURCE `98bb9236c68f45ca4ab4114d46eafba5c90cdedf` 与 S3 人工退回 policy SOURCE `c110201774dd61b8d7e5280526364786c6af4cc2` 已普通 push。`021_repository_context.sql` 只增加所请求安全元数据五列、三字段主键及 workspace 版本 8；S4 实际 generation/CAS/索引语义归其原 owner。`reject_artifact` 逐名加入 validActions 并仅允许人类，Agent 即使持有该动作字符串仍拒绝。新增迁移下实际 SQLite 四路径 EXIT 0，2.069s，policy 两项含 11 子项 EXIT 0，0.906s，`.verification/repository-context-migration-first.log`；定向 vet/full build/gofmt/diff EXIT 0。CodeGraph 1.0.1 官方元数据和实际 SDK 依赖已按下述结果登记，实际 S4 索引与 MCP 能力继续由原 owner 验证。
 
 当前已向新 UI 与 M 提供实际 GetItem 核实的五个 Reader 环境变量指针：Q main `public-cognition-6f63200932f14a10ad4d9fb91c78d749/local`、Q `cognition-before-sleep-local`，以及 B `reader-actual-public/{empty,closed,native}/local`。这些出版物均为本次公开来源工程派生；本机已跨上海 10-15，旧出版物和闭日 Sleep 执行时间仍为 10-14，默认实际时钟检查的今日来源前提需要当前公开出版物。未改变时钟、断言、正式资料或实验日程；整套 Reader 新一轮验收保持未完成。
+
+依赖 SOURCE `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646` 已普通 push，`go.mod`、`go.sum` 与现有 `dependencies.lock.json` 增加官方 `github.com/modelcontextprotocol/go-sdk v1.6.1` 及其实际运行依赖，现有 x/net/x/sys 版本保持。官方固定版本 go.mod 要求 Go 1.25.0，当前 1.27.2 满足；[固定版本许可](https://github.com/modelcontextprotocol/go-sdk/blob/v1.6.1/LICENSE) 按贡献适用 Apache-2.0/MIT，非规范文档为 CC-BY-4.0，未统一标为单一 MIT。
+
+CodeGraph 顶层和实际 Windows bundle 均为 `1.0.1`，本机 bundled Node 实际 `--version` 为 `v24.16.0`，SDK 要求 `>=20.0.0 <25.0.0`。`lib/package.json` 的十项实际 runtime 版本与许可已经逐一读取并登记；tree-sitter-wasms `0.1.13` 使用 Unlicense，其余九项元数据为 MIT。Node 使用上游 MIT 及[第三方许可](https://github.com/nodejs/node/blob/v24.16.0/LICENSE)。顶层/Windows bundle 许可为 package metadata 的 MIT，顶层没有独立 LICENSE 文件；实际依赖 LICENSE 保留在安装目录。子环境要求 `CODEGRAPH_TELEMETRY=0`、`CODEGRAPH_NO_DOWNLOAD=1`，没有修改 global、root package.json 或 pnpm lock，也没有在 B 启动索引/daemon。实际清单 `.verification/codegraph-actual-dependencies-first.json`；AOCI 完整构建身份等待 S4 原 owner 的准确指针，未自行补造。
+
+`go build -mod=readonly github.com/modelcontextprotocol/go-sdk/mcp`、`go list -mod=readonly -m -json all`、`node scripts/check-dependencies.mjs`、全仓 `go build -mod=readonly ./...` 和 `go vet -mod=readonly ./...` 均 EXIT 0。证据为 `.verification/mcp-go-sdk-build-first.log`、`mcp-go-sdk-module-graph-third.json`、`mcp-sdk-dependency-inventory-first.log` 与 `mcp-sdk-combined-{build,vet}-first.log`。模块全图前两次缺既有 ndjson 传递元数据 checksum 的失败保留，校验值仅从实际官方 Go download 结果通过文件编辑工具追加。SDK 包编译与库存通过不等于 AOCI/CodeGraph 实际查询验收。
+
+按 H 当前路径 freeze 和 M 必要依赖授权，B 又在 H 树仅精确复制并 stage `072628536d325eedbb6b53ffe9ab8fc31c38beeb:tests/s1/server.mjs` 与 `da48a114d91181075bd32b62996beadd9c2c0a25:migrations/020_swarm.sql`，对应 index blob 为 `2bf5614179269c87e3570e79dbbb19a0e086f726`、`298034448fe71fa2d74c8307c20393affaaf4792`，均与不可变原件相等。H 001–018 无 diff，Node --check EXIT 0；H 其他 WIP 没有修改，源码提交、实际 S2 HTTP 与首次失败证据由 H 完成，临时范围已归还。
 
 收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
 
