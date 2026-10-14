@@ -12,7 +12,7 @@ func workspaceCommand[T any](h *handler,meta func(*T)*workspace.WorkspaceCommand
 	return func(w http.ResponseWriter,r *http.Request){
 		body,err:=decodeAttention[T](w,r)
 		if err==nil {m:=meta(&body);m.IdempotencyKey=r.Header.Get("Idempotency-Key");if m.SchemaVersion!=1||m.RequestID==""||m.ExpectedVersion<0||m.IdempotencyKey==""{err=invalid("workspace command requires schema_version, request_id, expected_version and Idempotency-Key")}}
-		var result any;if err==nil{result,err=call(r,body)};h.attentionResult(w,r,http.StatusOK,result,err)
+		var result any;if err==nil{result,err=call(r,body)};h.attentionResult(w,r,http.StatusOK,result,workspace.NormalizeWorkspaceError(err))
 	}
 }
 

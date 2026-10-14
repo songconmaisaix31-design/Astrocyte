@@ -22,6 +22,7 @@ type S2Service struct {
 	snapshots ProjectSnapshotProvider
 	objects ContextObjectStore
 	owned OwnedSessionProvider
+	admissions AdmittedOpportunityReader
 }
 
 func NewS2Service(repo WorkspaceRepository,files ProjectFiles,refs ProjectReferences) *S2Service { return &S2Service{repo:repo,files:files,references:refs} }
@@ -30,6 +31,8 @@ func NewS2Service(repo WorkspaceRepository,files ProjectFiles,refs ProjectRefere
 func (s *S2Service) ConfigureContext(snapshots ProjectSnapshotProvider,objects ContextObjectStore,owned OwnedSessionProvider) {
 	s.snapshots,s.objects,s.owned=snapshots,objects,owned
 }
+
+func (s *S2Service) ConfigureAdmissions(reader AdmittedOpportunityReader) { s.admissions=reader }
 
 func absent(err error) bool {var e *apierrors.ServiceError;return errors.As(err,&e)&&e.Code==apierrors.NotFound}
 
@@ -129,7 +132,7 @@ func (s *S2Service) CreateProposal(ctx context.Context,c domain.Caller,cmd Creat
 	err=s.command(ctx,c,cmd.WorkspaceCommandMeta,"workspace.proposal.create",cmd,&p,func(tx WorkspaceTx)error{
 		if cmd.ExpectedVersion!=0{return domain.WorkspaceError(apierrors.VersionConflict,"new proposal expects zero")}
 		if err:=s.validateContent(ctx,tx,c,cmd.Content,false,inputSettings);err!=nil{return err}
-		now:=time.Now().UTC();p=domain.Proposal{ID:uuid.NewString(),Version:1,Revision:1,Status:domain.ProposalDraft,Content:cmd.Content,CreatedAt:now,UpdatedAt:now};return tx.SaveProposal(p,0)
+		now:=time.Now().UTC();p=domain.Proposal{ID:uuid.NewString(),Version:1,Revision:1,Status:domain.ProposalDraft,Content:cmd.Content,AssignmentStatus:"assigned",CreatedAt:now,UpdatedAt:now};return tx.SaveProposal(p,0)
 	});return
 }
 
@@ -138,10 +141,10 @@ func (s *S2Service) ReviseProposal(ctx context.Context,c domain.Caller,id string
 	if cmd.Content.Scope.SettingsRevision==0{cmd.Content.Scope.SettingsRevision=inputSettings}
 	err=s.command(ctx,c,cmd.WorkspaceCommandMeta,"workspace.proposal.revise",struct{ID string;Command CreateProposalCommand}{id,cmd},&p,func(tx WorkspaceTx)error{
 		old,err:=tx.LoadProposal(id,0);if err!=nil{return err};if old.Version!=cmd.ExpectedVersion{return domain.WorkspaceError(apierrors.VersionConflict,"proposal changed")}
-		if _,err=projectAccess(tx,c,old.Content.Scope.ProjectID);err!=nil{return err};if old.Content.Scope.ProjectID!=cmd.Content.Scope.ProjectID{return domain.WorkspaceError(apierrors.ScopeDenied,"proposal cannot change project")}
+		if old.Content.Scope.ProjectID==""{if err=human(c);err!=nil{return err}}else{if _,err=projectAccess(tx,c,old.Content.Scope.ProjectID);err!=nil{return err};if old.Content.Scope.ProjectID!=cmd.Content.Scope.ProjectID{return domain.WorkspaceError(apierrors.ScopeDenied,"proposal cannot change project")}}
 		if err=s.validateContent(ctx,tx,c,cmd.Content,false,inputSettings);err!=nil{return err}
 		old.Status=domain.ProposalSuperseded;old.Version++;old.UpdatedAt=time.Now().UTC();if err=tx.SaveProposal(old,cmd.ExpectedVersion);err!=nil{return err}
-		p=old;p.Revision++;p.Version++;p.Status=domain.ProposalDraft;p.Content=cmd.Content;p.GrantID="";return tx.SaveProposal(p,old.Version)
+		p=old;p.Revision++;p.Version++;p.Status=domain.ProposalDraft;p.Content=cmd.Content;p.GrantID="";p.AssignmentStatus="assigned";return tx.SaveProposal(p,old.Version)
 	});return
 }
 
@@ -220,7 +223,7 @@ func (s *S2Service) ListGoalsFor(ctx context.Context,c domain.Caller) ([]domain.
 
 func (s *S2Service) ReadProposal(ctx context.Context,c domain.Caller,id string,revision int) (p domain.Proposal,err error) {
 	defer func(){err=NormalizeWorkspaceError(err)}()
-	err=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var err error;p,err=tx.LoadProposal(id,revision);if err!=nil{return err};_,err=projectAccess(tx,c,p.Content.Scope.ProjectID);return err});return
+	err=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var err error;p,err=tx.LoadProposal(id,revision);if err!=nil{return err};if p.Content.Scope.ProjectID==""{return human(c)};_,err=projectAccess(tx,c,p.Content.Scope.ProjectID);return err});return
 }
 
 func (s *S2Service) ReadGoal(ctx context.Context,c domain.Caller,id string,revision int) (g domain.Goal,err error) {
