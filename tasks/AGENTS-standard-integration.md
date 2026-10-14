@@ -22,6 +22,12 @@
 
 每轨只派发一个 Orca Codex Agent，实际 Task / Dispatch / 工作树 / 分支在收到开工回执后登记。开发、测试、报告及返修均归原轨人员。Go / TS / 依赖 / OpenAPI / 迁移共享变更只提交 Handoff，主控记录后由唯一人员实施。源码轨道完成后另派一个集成 Agent，普通 no-ff 合精确交付并执行组合检查；领域失败退原轨。暂不合 main 或 Workbench 当前开发分支。
 
+Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3ad1dddf079e`。三轨工作树均从 `4ec19cddb24068e09597357b0aabc6ecb9420930` 建立，位于 `C:/Users/DW/orca/workspaces/Astrocyte/`；Git 分支分别为 `standards-backend`、`standards-python`、`standards-frontend`。三次回执均 ready / input_accepted / turnStart observed，没有重复派发。
+
+- B：Task `task_7b4e93c1a3c1` / Dispatch `ctx_88275b88b389`，终端 `term_b79cd91c-47fa-47b2-ba09-270fb101a22f`；Codex 0.162.0，终端显示 GPT-6.1-Sol high fast / YOLO。
+- P：Task `task_bfa0d177ae9a` / Dispatch `ctx_f386e3cc44ac`，终端 `term_0bc0e215-a73c-4333-99c0-3208601e2307`；Orca 观测模型 gpt-6.1-sol。
+- F：Task `task_7cbe30017760` / Dispatch `ctx_0b17703feb2c`，终端 `term_63ec6974-000a-4064-b4c9-4eb308f61a3e`；Orca 观测模型 gpt-6.1-sol。
+
 ## 验收
 
 1. 当前规范没有允许 mock 或虚假数据的冲突条款；入口链接指向实际存在的文件。
@@ -31,4 +37,4 @@
 
 ## 当前状态
 
-已读取当前交接 / 状态 / 规格 / 规划、原 Workbench 计划及 Orca 编排记录。已核实原 R/H/F/I 轨道存在；本轮未接管或变更其生命周期。规则和入口链接校核 PASS，源码、组合测试与部署尚未执行。中间结果仅放在各自工作树 `.verification/`；正式原件不读取、不复制、不输出。
+已读取当前交接 / 状态 / 规格 / 规划、原 Workbench 计划及 Orca 编排记录。已核实原 R/H/F/I 轨道存在；本轮未接管或变更其生命周期。规则与入口阶段提交 `4ec19cd` 已 push，链接和 diff 检查 PASS；三条整改轨道已接受任务，源码与组合验收尚未完成。中间结果仅放在各自工作树 `.verification/`；正式原件不读取、不复制、不输出。
