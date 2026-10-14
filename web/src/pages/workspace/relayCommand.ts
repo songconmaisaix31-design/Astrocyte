@@ -9,6 +9,10 @@ export function relayCommandError(cause: unknown) {
   return cause instanceof ApiError ? formatError(cause) : '接力请求结果未知，请只读取任务与收据核对。';
 }
 
+export function relayCommandUncertain(cause: unknown) {
+  return !(cause instanceof ApiError) || cause.status >= 500 && cause.status !== 501 || ['delivery_unknown', 'internal_error'].includes(cause.code);
+}
+
 /** 请求结果未知时保留任务和操作身份，只允许读取核对。 */
 export function useRelayCommand<T extends RelayActionResult | RelayTaskResult = RelayActionResult>(scope: string) {
   const storageKey = `astrocyte:relay:pending:${scope}`;
@@ -29,7 +33,7 @@ export function useRelayCommand<T extends RelayActionResult | RelayTaskResult = 
     busy.current = true; setPending(true); setError(''); setExistingTaskID(''); setOperationID(key);
     try {
       const response = await action(key);
-      const unresolved = 'receipt' in response && ['pending', 'delivery_unknown'].includes(response.receipt.status);
+      const unresolved = 'receipt' in response && (['pending', 'delivery_unknown'].includes(response.receipt.status) || response.receipt.status === 'accepted' && !!response.receipt.error);
       if (!unresolved) window.sessionStorage.removeItem(storageKey);
       if (!mounted.current) return;
       setResult(response);
@@ -40,7 +44,7 @@ export function useRelayCommand<T extends RelayActionResult | RelayTaskResult = 
       }
       received(response);
     } catch (cause) {
-      const unknown = !(cause instanceof ApiError) || ['delivery_unknown', 'internal_error'].includes(cause.code);
+      const unknown = relayCommandUncertain(cause);
       if (!unknown) window.sessionStorage.removeItem(storageKey);
       if (!mounted.current) return;
       if (unknown) { blocked.current = true; setUncertain(true); }
