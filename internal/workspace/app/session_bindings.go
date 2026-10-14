@@ -31,7 +31,9 @@ func (s *S2Service) WithAuthorizedSessionBindings(ctx context.Context,check doma
 		return s.repo.WithWorkspaceTx(txctx,func(tx WorkspaceTx)error{
 			bindings:=make([]domain.SessionBinding,0,len(ids))
 			for _,id:=range ids{
+				if s.owned==nil{return domain.WorkspaceError(apierrors.UnsupportedCapability,"current owned registry facts are required for protected member actions")}
 				b,err:=tx.LoadSessionBinding(id);if err!=nil{return err};if b.Status!="bound"||b.GrantID!=g.ID||b.GrantEpoch!=g.Epoch||b.ProjectID!=g.Scope.ProjectID{return domain.WorkspaceError(apierrors.ApprovalRevoked,"member binding is outside current approval")}
+				facts,err:=s.owned.ReadOwnedSessionFacts(txctx,b.SessionID);if err!=nil{return err};if !facts.Owned||facts.ProjectID!=b.ProjectID||facts.NativeID!=b.NativeSessionID||facts.WorktreeID!=b.WorktreeID||facts.AdapterID!=b.AdapterID{return domain.WorkspaceError(apierrors.EvidenceMissing,"current registry ownership does not match member binding")}
 				member,err:=tx.LoadProjectGrant(b.ProjectID,b.MemberID);if err!=nil{return err};if member.RevokedAt!=nil||member.ExpiresAt!=nil&&!member.ExpiresAt.After(time.Now()){return domain.WorkspaceError(apierrors.ApprovalRevoked,"member project grant is inactive")}
 				if !has(member.Actions,check.Action){return domain.WorkspaceError(apierrors.ScopeDenied,"member action is not authorized")}
 				session,err:=tx.LoadNativeSession(b.SessionID);if err!=nil{return err};if session.NativeID!=b.NativeSessionID||session.ProjectID!=b.ProjectID||session.Ownership!="owned"||session.StopConfirmed{return domain.WorkspaceError(apierrors.EvidenceMissing,"bound native session is no longer current owned")}
