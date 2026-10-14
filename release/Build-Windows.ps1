@@ -23,7 +23,7 @@ try {
     try {
         $resolved = & git rev-parse --verify ($Source + '^{commit}')
         if ($LASTEXITCODE -ne 0 -or $resolved -ne $Source) { throw 'Exact source commit unavailable.' }
-        & git archive --format=zip --output=(Join-Path $output 'source.zip') $Source
+        & git archive --format=zip ('--output=' + (Join-Path $output 'source.zip')) $Source
         if ($LASTEXITCODE -ne 0) { throw 'git archive failed.' }
     } finally { Pop-Location }
     $sourceDir = Join-Path $output 'source'
