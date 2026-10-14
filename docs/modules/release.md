@@ -30,12 +30,16 @@
 | Python 标准整改 SOURCE / REPORT | `a1089f94a13306e3cd250ed8facbb438d6e75a19` / `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` | 总负责人交接：独立 29 + 25 测试、36 文件 / 14 冻结 AST PASS；其余 28 项实验 NOT_RUN 保留。 |
 | Relay 阶段 SOURCE / REPORT | `fbfaa65c2c01094305424ac40d2d39d271eab51b` / `53231b19ddd19a65c5a47c91469a0e34d73cf600` | R 阶段生命周期验证；CreateIntent 需原 owner 修复 SettingsRevision。H 观察 SOURCE `7dd7d1b91128a268c035fcfa49da5f9f8667078d`，实际原生三分钟 / 每 event_id / SQL / HTTP / DOM 验收未完成。 |
 | R SettingsRevision 阶段 SOURCE | `ce3a519efa5317e642d7488a776b850eebca1093` | M-relay 报告普通 push / 独立远端一致。真实业务修复可供 H/F 验证；新增测试仍依赖旧 fake fixture，已退原 R 实际 adapter / SQLite 返修，最终源码未接纳。 |
+| R 权限绑定修复 SOURCE / REPORT | `9719e6970927caee3e0b08d4020708e383881880` / `392bd81e822148cb2a7cb8f7bd7a83699d0f7d44` | M-relay 已独立核远端与普通祖先，移除本次新增 fake driver 后，实际生产 adapter / SQLite / HTTP 拒绝测试及 A/B/C 权限绑定独验 PASS。当前 H/F 原生正向尚未完成，native decode 错误传播仍交原 R，完整模块最终源码待交。 |
+| F 当前 SOURCE | `9ccb198fd1af1bd6ceb2d98b25b0531802543983` | F/M-product 报告远端一致，旧 fixtureWorksSnapshot 导入已完整迁移；同源 typecheck / lint / generated schema check / build、126 纯断言 + 10 真实 HTTP/SQLite 客户端测试 PASS。已交 P 消费；默认全量 E2E / 最新 Sleep 代分页与 H 原生 DOM 仍待。 |
 
 候选包精确路径：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/package-rehearsal-20261014-202942/Astrocyte-v0.1-windows-x64-c7a70be963c4.zip`。该包用于阶段演练，最终 I 同源 ZIP 尚未生成。
 
 模块联络：M-product `ctx_b1cd2e0a39aa`；M-relay `ctx_e6328a370d56` / 子 Run `run_8bbda1c3974c`。双方最终同源交付尚待接收。
 
-Q 本次并发安全聚合已独立读取：实际 writer PID 43216，recorded 32 → 34 时备份，WAL 2,027,072 bytes，总来源 1339；本机证据目录 `.verification/public-cognition-6f63200932f14a10ad4d9fb91c78d749` 属 Q 工作树。未读取该目录 SQLite、原文或日志；完整 SQL expected 10 值仍待 Q 通过严格分页条件后交付。
+Q 本次并发安全聚合已独立读取：实际 writer PID 43216，recorded 32 → 34 时备份，WAL 2,027,072 bytes，总来源 1339；本机证据目录 `.verification/public-cognition-6f63200932f14a10ad4d9fb91c78d749` 属 Q 工作树。未读取该目录 SQLite、原文或日志。
+
+本模块已独立检查 Q `.verification/cognition-after-sleep-safe` 的安全产物：SQL expected 恰有 10 值、覆盖四路由，snapshot_at 与最新 `snapshot-892856014` 的 current.json 一致；1339 行逐一恰有六字段。真实事件计数 Astrocyte/Attention Engine 134、MCP 20、unassigned 1185；两主题各有三个实测历史点。Q 原 admission-safe 仍按最高 A 样本超过 20 的前置假设记录 FAIL，未把该结果填为通过。
 
 ## 实际阻塞与边界
 
@@ -44,6 +48,8 @@ Q 本次并发安全聚合已独立读取：实际 writer PID 43216，recorded 3
 - P 普通合并 HANDOFF.md 首冲突保留。总负责人 `msg_0a8a4dd18ac6` 临时授予本模块该单文件文档冲突域；已用 apply_patch 保留当前 P/Q 消费事实与两线历史并单文件 stage，diff 检查通过且无未合并文件，通知原 P 完成普通 merge。临时域随此处理结束，其他业务文件与 P 未提交修改保持原 owner 管理。
 - Q 发现既有 Reader 的 `WorkbenchFormalSource` 个人路径常量会进入 server binary，Reader open 还会对其执行 stat；本模块只核源码引用，没有读取正式源。总负责人 `msg_e7533f584d40` 已授权 M-product 安排原 B 处理独立发布线的 Reader，保护只用用户显式配置来源 / 实际 owned 快照，保留 ro / immutable / query_only 及路径 alias 安全；默认无个人正式路径访问，正式运行树与冻结域不变。Q/P 不修改 Reader。`-trimpath` 只能除构建路径，最终包须独立扫描此业务常量。
 - Q 的实际 Windows junction 检查首 RED 已保留：EvalSymlinks 未展开 junction。原 Q 正使用核实的 Windows reparse 属性 API 修复并复验；早期 8001 SOURCE 不作为该保护的终稿，后续 SOURCE / REPORT 待接收。
+- 最终认知数据选择已通过正式 ask `msg_e12bbd43f7f5` / reply `msg_ecbf07cfedce` 裁决：继续使用最新 actual Sleep 代，旧 pre-Sleep 保存代只作独立历史视图检查。本模块完整核对 Workbench-v01 / API / integration 规格，没有最高 A 与分页样本必须绑定的要求；原 cognition.spec 的 ordered[0] 属样本前置假设。原 F/Q 可选最新实际超过 20 的同一主题验证两页，严格保留最新排名 / 最高 A / 全部值、两主题轨迹、数量、顺序、六字段、SQL/API/UI 及焦点恢复等覆盖；不改生产数据或排名、不降低分页数量、不新增 skip，首前置 FAIL 保留，修复后真实复验与精确 SOURCE 待交。
+- 已审阅 P 当前 Verify-Windows.ps1：阶段 RequireCombined 覆盖空状态 / 缺快照、session / CSRF、实际基本写入和重启、手动备份空认知表；非空 SQL10 / 六字段与原生 Relay 正向尚未覆盖。已要求 P 在原域补明确输入验证，并和 H 在最终 ZIP 新目录 / 独立端口使用真 packaged server、固定公开任务、CLI 自行鉴权与关闭原生工具的边界完成核心正向；不复制 H 库、配置、会话或凭据进包。H 当前受控窗口尚未注册、模型调用 0，准备参数已交 P，不能填 native PASS。
 - M-relay 首次第三层派发遭 `nested_worker_depth_exceeded` / max1 保留。总负责人消息 `msg_498d887dea6a` 已确认通过官方设置把深度改为 2，并独立 readback Value2；第三层后续任务可派发，开发人员仍禁止派发第四层。唯一 I 及本模块后续 Task 尚未派发。
 - 原始会话、凭据、SQLite、私人来源和测试原件不进入 stdout / 产品 HTTP / Git / 包。默认包启动不读取个人正式来源、不运行快照 / Sleep / 自动日程。
 - 正式 V4、engine / mapper / schema / weights、日程与 17321 保持冻结。ArchiveAppendOnly unknown、PrefixComplete / SessionComplete 不足、恢复 raw gap、首 RED / UNKNOWN / NOT_RUN / partial 按真实范围保留。
