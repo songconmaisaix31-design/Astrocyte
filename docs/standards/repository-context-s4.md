@@ -99,3 +99,7 @@ Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GI
 成功响应为 `{schema_version:1, repository_context:...}`。IndexStale、ContextStale、BudgetExhausted、VersionConflict 均使用既有 S3 的 HTTP 409，ErrorV1.code 分别保留；未知内部错误只显示固定安全原因。CodeGraph score 是普通排序得分，实际可能大于 1，不能解释为概率；向量能力仍明确缺失。处理器已通过当前真实包 build/vet 和差分检查，实际 HTTP 验证待 H 的准确生产注册及认证薄组装 SOURCE，未使用替代认证或虚假 HTTP。
 
 另已执行 `verify -phase same-project-worktrees`：同一个真实项目 ID 在两个同 HEAD worktree 之间更换注册根，B 的图不会复用 A 的内容；返回 A 时权限 revision 变化要求重新构建，随后准确恢复自己的实现和地图。实际 PASS，原源码/HEAD/暂存区均未修改。
+
+HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确注册函数、五个端口字段和 DTO 已分别交模块负责人、H 与 UI 负责人。`go build -mod=readonly ./internal/adapters/httpapi`、`go vet -mod=readonly ./internal/adapters/httpapi`、`git diff --check` PASS；真实 HTTP/认证/SQLite/重启组合仍 NOT_RUN，等 H 的准确生产薄组装 SOURCE 后由本轨继续验证。没有用编译通过替代实际接口通过。
+
+模块独立审读 `msg_1d21efa0bebb` 指出 GET 查询解析应拒绝畸形编码。本轨使用成熟 `net/url.ParseQuery(r.URL.RawQuery)` 并立即拒绝解析错误，避免静默忽略畸形未知参数；HTTP 验收脚本已准备畸形 percent、semicolon、重复标量与未知参数场景，实际执行仍待生产组装，不使用自研 parser。
