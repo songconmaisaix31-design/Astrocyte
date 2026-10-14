@@ -26,7 +26,7 @@ Orca 原嵌套深度为 1，真实第三层派发被 `nested_worker_depth_exceed
 
 跨模块的当前处理：M-product 安排唯一依赖 owner B 仅处理 F 工作树本次 `go.mod` 合并冲突，并由原 F 提交普通 merge；M-release 临时仅处理 P 工作树 `HANDOFF.md` 文档冲突并 stage，原 P 提交普通 merge，临时写域处理后撤回。普通 Workbench Reader 的个人正式路径硬编码归 B 在独立开发线整改，保留只读、immutable、query_only、同文件及路径安全检查，默认不得访问个人正式路径；Q / P 只消费精确交付。共享 GitHub TLS 诊断与恢复归 M-release，不关闭验证、修改全局代理或覆盖公共历史。
 
-认知验证分列：现公开 Git 原件按原提交时间，经已有生产 mapper / EventRecorder / Signal / Dynamics / Sleep 在新独立库重放，初始化主题的重放起点为该主题最早实际提交时间，记录其重放身份；先前真实当前时间 SeedTopic 引发的 Engine 拒绝原件保留，不修改源时间、引擎或显式既定参数。该重放验证实际 SQLite / snapshot / API / UI 查询和分页，不代表当前用户主题创建、真实人评、V4 效果或本次原生控制器完整会话验收。
+认知验证分列：现公开 Git 原件按原提交时间，经已有生产 mapper / EventRecorder / Signal / Dynamics / Sleep 在新独立库重放，初始化主题的重放起点为该主题最早实际提交时间，记录其重放身份。当前时间 SeedTopic 会被历史 Signal 时间 guard 拒绝属于源码检查结论，该场景未运行；实际首 RED 是 Windows junction 路径保护失败，由原 Q 保留证据并返修。不修改源时间、引擎或显式既定参数。该重放验证实际 SQLite / snapshot / API / UI 查询和分页，不代表当前用户主题创建、真实人评、V4 效果或本次原生控制器完整会话验收。
 
 | 轨道 | 固定工作树 / 分支 | 独占 write_paths | 当前结果 |
 |---|---|---|---|
