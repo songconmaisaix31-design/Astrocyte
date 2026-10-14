@@ -5,6 +5,7 @@ web/playwright-report/
 web/test-results/
 coverage/
 .verification/
+.firecrawl/
 __pycache__/
 *.tsbuildinfo
 .env
