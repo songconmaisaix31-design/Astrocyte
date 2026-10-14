@@ -125,12 +125,12 @@ R 通过实际 Windows 文件名称接口与 `samefile` 核对两个名称，分
 
 已全文读取 `docs/research/orca-rea-20261014.md`，按当前正式 `Works-Relay-v1.4.md` 消费批准的事实和 handoff 接口。下表记录采集层验收边界；working 严格开始证据与无 started 的人工 done 规则仍待用户答案，不从 accepted 推定完成或释放。
 
-| 方向 | 当前 H 接缝与差距 | 待确认的必要安全信息 | 真实验收 |
+| 方向 | 当前 H 接口与采集边界 | 安全事实与关系 | 真实验收 |
 |---|---|---|---|
-| 投递阶段 | `relay_session_codex.go` 可识别带原 turn_id 的开始 / 完成记录；`relay_session_native.go` 保留通知序号。六字段事件不关联某次 input 的 operation，采集层不判定 task working | R 提供某次操作的输入接受、原生回合开始证据和未知状态；原 turn_id 仅在内部关联，公开 task / receipt 用既有 operation_id 和安全状态表达。人工完成保持独立 | 实际原 controller 的接受收据与开始事件逐一关联 SQL ID；无开始证据不从普通活动、Git、stdout 推定开始；未知收据保留占用且不重发 |
-| 原生会话归属 | `RelaySessionBinding` 绑定 task、terminal、session、worktree、project、native ID、format；私有 cursor 绑定该身份及文件位置或通知序号。当前 source 与 gap 已表达 alias FAIL，缺少可持久的原 controller 代次关系 | 内部持久原会话与执行所有者关系及原因；公开沿现有 source、status、gap 和公开 task / terminal 身份表达，未经必要性确认不扩大事件六字段 | 只读本次准确 controller 路径，逐 ID 回查真实事件库；冷重启保持历史绑定且不重建进程所有权，文件身份冲突立即失败、不删未知链接 |
-| 输入就绪 | 注册已有 drive_mode / input_mode；H 仅解析登记并组装 driver，没有 TUI 或 structured 的输入就绪检测端口，CLI 可执行和注册不证明 ready | R 供给输入方式、就绪三值、实际就绪证据原因和观测时间；命令、原生输出及工具参数保持私有。GET 只读缓存 | 实际 installed controller 的初始化 / ready 正证据；stdin 写入、换行或 EOF 不推定回合提交，缺端口分别保留 unknown / unsupported；不制作伪 CLI 或 ready 输出 |
-| 恢复身份关系 | archive cursor 以 BindingID / FileIdentity / Offset 去重，native cursor 以 BindingID / Sequence 去重。通知恢复缺口仍为 `native_resume_raw_events_unavailable`；现有 coverage 没有持久的恢复 / 换 Agent 关系序列 | R 明确同 session 恢复、新 session、换 Agent 与不支持的 fork 关系；H 消费内部原 / 新绑定关系和 replay 范围。公开只使用获准的 opaque 身份与安全关系状态 | 同 task 恢复核原 native ID / CWD，换 Agent 在合法释放后新 session；原输入不重发，旧 cursor 不错误套到新 stream，重复 ID 不新增或刷新 live，恢复缺口保持 partial |
+| 投递阶段 | `events/relay_session_codex.go` 识别带原 turn_id 的开始 / 完成记录；通知保留序号。六字段事件不扩大为 operation DTO，采集层不判定 working | 安全 facts 表达原 operation 的 written / accepted / started / unknown；收据和后到事实各自保持。实际目标尚缺 operation 到原 turn_id 的私有准确对应 | 新窗口未运行；开始规则仍待答。没有开始证据时不从普通活动、Git 或 stdout 推断，未知收据保留占用且不重发 |
+| 原生会话归属 | archive binding 保留原 task / terminal / session / worktree / project / native identity / format 与文件身份、位置；当前 alias FAIL 保留 | R 私有 controller / startup operation 与 history 已准确消费；GET facts 独立返回原 Registry 缓存 current_ownership，历史不授当前归属 | 实际无控制器的 unknown / GET 只读与权限拒绝通过；新有会话正向、冷重启仍 NOT_RUN，原档冲突立即失败、不删未知链接 |
+| 初始化与消费 | 受信任登记保持 drive_mode / input_mode，原 driver 的初始化、session 确认、管道写入 / 关闭与消费 unknown 分项记录 | 闭合 facts 提供来源、原 operation、状态和时间；GET 不探测 ready，不将 input_accepted 或 ownership 推定为可再送输入 / RPC 可用 | 新真实初始化、消费和工具关闭证据仍 NOT_RUN；EOF 与 stdin 写入不推定模型已消费，缺能力具体报告 |
+| 恢复与交接 | 原档以 binding / file identity / offset 去重；通知新连接以原 controller / startup operation 独立 UUID 来源和 sequence 去重，旧 checkpoint 留本机 history | R 提供 new / resume / handoff / unknown 关系，声明与真实 session 确认独立；获准 handoff 字段要求明确来源和人工上下文确认，fork 真实拒绝 | 无新真实窗口；恢复 raw gap 保持 `native_resume_raw_events_unavailable`，session_complete=false，不能用通知验收覆盖 archive FAIL |
 
 归档与通知的完整性分别验收，回合完成不封存整个 Session。当前获准的真实 CLI → 三分钟 Today → L1 验收需要语义 SOURCE 和实际组合通过、新独立 scope、F observer 先 ready、实际目标内容在人工 done 前核实、真实工具关闭的启动证据以及模块单窗口授权；当前没有启动该窗口。
 
