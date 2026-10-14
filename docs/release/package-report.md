@@ -4,7 +4,7 @@
 
 ## 发布工具 SOURCE
 
-`c7a70be963c432bb72d0fa355705ce2907821120` 已 push。包括精确 Git 源码归档、复用生产构建、标准 ZIP、用户启动脚本、解压真实 HTTP/session/CSRF/SQLite/重启验证及用户说明。前三个阶段提交 `885cd595f811330590b1270464789d3c8142dcff`、`4e02520a0148c735faacd711e8e7cf57719d814e`、`2d54a7bc8657ffce2502cf90affb580308bc18a7` 保留普通追加历史。
+最新工具 SOURCE `da45adfe72a5b7da721bd16be0a1029f8fa05e66` 已 push。包括精确 Git 源码归档、复用生产构建、标准 ZIP、用户启动脚本、解压真实 HTTP/session/CSRF/SQLite/重启验证及用户说明。阶段提交 `885cd595f811330590b1270464789d3c8142dcff`、`4e02520a0148c735faacd711e8e7cf57719d814e`、`2d54a7bc8657ffce2502cf90affb580308bc18a7`、`c7a70be963c432bb72d0fa355705ce2907821120` 保留普通追加历史。
 
 ## 候选包演练
 
@@ -25,6 +25,8 @@ ZIP：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verificat
 解压验证 EXIT 0，28 项检查通过。新目录 `.verification/verify-20261014-203035/extracted/Astrocyte-v0.1-windows-x64`，空的验收身份目录，系统 PATH 不含 Go/Node/pnpm/Orca/Agent CLI。实际健康 HTTP 200；八个 SPA 路径与两份静态资源 HTTP 200；无 session 的读与无 CSRF 的写 HTTP 403；bootstrap HTTP 200；带实际 cookie/CSRF 的分类创建 HTTP 201、读取 HTTP 200；跨来源写 HTTP 403。应用创建真实独立 SQLite，经两次实际 Windows 进程树启动/终止与新 session bootstrap，重启后的分类 ID 可读取，最终监听均已退出。
 
 证据：`.verification/package-rehearsal-20261014-202942/build.log`、`.verification/verify-20261014-203035/{verify.log,result.json,initial-stdout.log,initial-stderr.log,restart-stdout.log,restart-stderr.log}`。静态 HTTP 检查不包含浏览器渲染；完整默认浏览器与原生控制器验收仍归最终组合验收。
+
+最新验证工具将 `-RequireCombined` 静态路径设置为现有产品的 `/cognition/{today,focus,agents,events}` 和 `/workspace/works`，并增加空 Relay 注册、空任务、零派发、零会话事件与未知覆盖状态的具体断言。候选模式的四个基本 SPA 路径、其余真实运行路径在同一候选 ZIP、另一新目录 `.verification/verify-20261014-203557` 复验 EXIT 0，24 项 PASS；认知和 Relay 新断言仍待最终合并源码运行。此工具变更不改变候选包的三个程序和用户启动脚本。
 
 ## 首次失败与修复
 
