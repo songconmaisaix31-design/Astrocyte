@@ -1,15 +1,17 @@
-package app
+package app_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 func TestExplicitMentionAndProjectReuseReceiptAndHumanOnly(t *testing.T) {
 	ctx := context.Background()
-	s, r, _, m, _ := automaticFixture(t)
+	s, r, _ := fixture(t)
+	m := importFixture(t, s, "manual-source", "Manual action input")
 	mention := RecordUseCommand{CommandMeta: meta("explicit-mention", m.Material.Version), Action: "mention"}
 	first, err := s.RecordUse(ctx, human, m.Material.ID, mention)
 	if err != nil {
@@ -41,13 +43,13 @@ func TestExplicitMentionAndProjectReuseReceiptAndHumanOnly(t *testing.T) {
 	reuse.CommandMeta = meta("agent-project-reuse", second.Version)
 	_, err = s.RecordUse(ctx, agent, m.Material.ID, reuse)
 	errorCode(t, err, apierrors.ScopeDenied)
-	r.failEvent = true
+	restore := refuseOutbox(t, r)
 	reuse.CommandMeta = meta("failed-project-reuse", second.Version)
 	_, err = s.RecordUse(ctx, human, m.Material.ID, reuse)
 	if err == nil {
 		t.Fatal("failed outbox accepted")
 	}
-	r.failEvent = false
+	restore()
 	after, _ := s.GetMaterial(ctx, human, m.Material.ID)
 	if after.Material.Version != second.Version || after.Material.HumanUsageCount != 2 || after.Material.LongTermValue != 1 {
 		t.Fatal("failed/rejected action changed attention")

@@ -1,10 +1,11 @@
-package app
+package app_test
 
 import (
 	"context"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 func TestScopedAgentReadsFixedOldVersionWithoutHumanHeat(t *testing.T) {
@@ -57,8 +58,7 @@ func TestOptionalLinkedScopeIsOneHopAndBoundToActiveFixedRoot(t *testing.T) {
 	s, _, _ := fixture(t)
 	root := importFixture(t, s, "C-root", "root source")
 	c := importCommand("C-target", "related source")
-	c.SourceKey = "related-source"
-	c.SourceLocator = "https://example.test/related"
+	c.SourceLocator = "https://github.com/songconmaisaix31-design/Astrocyte/tree/main/docs"
 	queued, err := s.ImportMaterial(ctx, human, c)
 	if err != nil {
 		t.Fatal(err)
