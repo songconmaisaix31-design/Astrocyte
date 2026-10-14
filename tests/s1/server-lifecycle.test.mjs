@@ -47,3 +47,22 @@ for (const relay of [false, true]) test(`production server keeps owned SQLite af
     assert.deepEqual((await api.get('/materials')).items, []);
   } finally { await server.close(); }
 });
+
+test('actual Go port zero stays bound and Vite uses its observed address through restart', { timeout: 90_000 }, async () => {
+  const server = await startS1Server({ browser: true });
+  try {
+    const actualURL = server.apiURL;
+    assert.notEqual(server.webURL, actualURL);
+    assert.equal((await fetch(`${server.webURL}/`)).status, 200);
+    let api = await humanAPI(server.webURL);
+    assert.deepEqual((await api.get('/materials')).items, []);
+    await assert.rejects(startS1Server({ apiPort: Number(new URL(actualURL).port) }), { message: 'Actual Go listener announcement became unavailable' });
+    await server.restart();
+    assert.equal(server.apiURL, actualURL, 'explicit restart must retain the actual assigned port');
+    api = await humanAPI(server.webURL);
+    const result = await api.write('/works/refresh', { roots: [root] });
+    assert.equal(result.snapshot.works.length, 1);
+    assert.equal(await realpath(result.snapshot.works[0].root), await realpath(root));
+    assert.equal(server.query('PRAGMA integrity_check')[0].integrity_check, 'ok');
+  } finally { await server.close(); }
+});

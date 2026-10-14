@@ -8,6 +8,7 @@ package httpapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -175,6 +176,20 @@ func NewServer(cfg Config) *Server {
 func (s *Server) ListenAndServe() error {
 	s.logger.Info("HTTP server starting", "addr", s.httpServer.Addr)
 	return s.httpServer.ListenAndServe()
+}
+
+// Serve 使用调用者已绑定的同一个 loopback listener，不重新选择或绑定端口。
+// 正常 Shutdown 关闭该 listener，并返回 http.ErrServerClosed。
+func (s *Server) Serve(listener net.Listener) error {
+	if listener == nil {
+		return errors.New("HTTP listener is required")
+	}
+	address, ok := listener.Addr().(*net.TCPAddr)
+	if !ok || !address.IP.IsLoopback() || address.Port < 1 || address.Port > 65535 {
+		return errors.New("HTTP listener must be bound to a loopback TCP address")
+	}
+	s.logger.Info("HTTP server starting", "addr", address.String())
+	return s.httpServer.Serve(listener)
 }
 
 // Shutdown gracefully shuts down the HTTP server.
