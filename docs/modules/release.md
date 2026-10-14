@@ -10,7 +10,7 @@
 
 | 轨道 | 固定工作树 / 写入范围 | 启动条件与验收 |
 |---|---|---|
-| 日采集只读预检 | 原正式工作树 `C:/Users/DW/orca/Astrocyte`；文件写入范围为空 | 唯一第三层 Task `task_2c8053c4f064` / Dispatch `ctx_7bba9154b03d` / 终端 `term_9a994931-084f-46a2-93c7-e436980fcf3c`，ready / turnStart observed / depth2；实际 projection Codex / gpt-6.1-sol，终端 high fast。核真实锁 / 全文 SHA / CLI / 日去重 / 输出与 coverage / 原 automation；不创建输出或执行日流程。 |
+| 日采集只读预检 | 原正式工作树 `C:/Users/DW/orca/Astrocyte`；文件写入范围为空 | 唯一第三层 Task `task_2c8053c4f064` / Dispatch `ctx_7bba9154b03d` 已合法 succeeded / released / transcript captured。实际 projection Codex / gpt-6.1-sol，终端 high fast；锁与全文SHA一致、D1未执行 / 原00:20启用和重复风险已核。详情见今日运行记录。 |
 | I 唯一集成 | 待条件完成后创建独立 release 集成工作树 / 分支；只补少量路由、导入、配置、类型和集成报告 | 精确 SOURCE / 独立 REPORT、四项语义、完整默认、实际 native / Today 均通过后才启动。普通 `--no-ff`，领域失败交原 owner；check / build / 完整 workers=1 E2E 与适用链路通过后 push SOURCE 与独立 REPORT。 |
 | P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
 | N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
@@ -30,11 +30,15 @@ P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 
 | V 当前追加 | `08b3594fe4a3a02d06fead00ee6ead98b9e38bbc` | `a21379e41f700d8f88d6ee1fb4618c08f49abf54`；产品报告时间区间 / HTTP / 冷重启通过，Whisper 实际取消 18.73 秒与重启不续尚待新精确提交。 |
 | T 当前追加 | `61a012464a22d60ef421ea1fdaa5541ef65f1f7e` | `ef019bbf86f7a11d1a68e4fe2edf21230f48b5a3`；产品报告真实收藏100 / prefix110 / partial retry / 视频A-B-A阶段通过，Creator 实际不足 / 412 和旧模型 helper 未通过。 |
 | F 最终 | 尚待 M-product 提供最终完整 SHA | 原默认 203PASS / 41FAIL / 32SKIP / 4NOT_RUN 保留，未通过完整门禁；port0消费后适用复验继续。 |
-| R 四语义 / H port0及实际链路 | 尚待 M-relay 最终交付 | R `task_f082d8b36471` / `ctx_aa83ef2b5087`，H `task_abf1f8b1e12e` / `ctx_d7d8c2828fba`；H `1aadeeb` 为阶段来源，不提升为最终 native / Today 通过。 |
+| R 四语义 / H port0及实际链路 | 尚待 M-relay 最终交付 | R `task_f082d8b36471` / `ctx_aa83ef2b5087`；H port0 `1aadeebaba2330bb8b786989f577415da5208fd5`、测试 `4f45a3ab50e6a2863b940915874374f58e65f1da` / REPORT `4f3efd63c3933a8d6efe6bc6068d70ae3eed2f59`；模块独核远端同 REPORT、祖先与独立报告文件。原 H Task 已合法阶段完成，M-relay 在同终端新 Task 续 v1.4，真实 native / Today 尚待。 |
 
-候选包 SOURCE `15f27f4a8e1e2300b8b1152cfd5b8e5f722db744`、33,768,080 bytes、124PASS 保持原验证范围；B / V 追加及 H port0 不在该包。最终 I 消费清单以各模块后来接纳的完整 SHA 和独立 REPORT 更新；阶段候选不会自动成为最终输入。M-relay 联络 `msg_a19ea95c69ad` 和 M-product 联络 `msg_da12f3a65d98` 已由 Orca 重定向到各自实际读取的子 Run，当前等待回执。
+候选包 SOURCE `15f27f4a8e1e2300b8b1152cfd5b8e5f722db744`、33,768,080 bytes、124PASS 保持原验证范围；B / V 追加及 H port0 不在该包。最终 I 消费清单以各模块后来接纳的完整 SHA 和独立 REPORT 更新；阶段候选不会自动成为最终输入。M-relay 联络 `msg_a19ea95c69ad` 和 M-product 联络 `msg_da12f3a65d98` 已由 Orca 重定向到各自实际读取的子 Run，双方回执已收到。
 
 已处理实际 FIFO 回执：M-relay `msg_c7d9b9c2575c`、M-product `msg_31e1518ea604`、唯一规格交接 `msg_9fdb8cf6255c`、根持续 V4 授权 `msg_3bfcb58d722e`；Delivery `delivery_f8799ae5fafc` 已处理并 ACK。完整读取 v1.4 唯一规格 SOURCE `297d00420f4478dd24805a9ad70ced47fb5b711f`，模块独核两文件提交和远端同值；working 严格开始证据与无 started 人工完成仍待用户决定。原00:20 automation持续授权，采集范围未答不暂停它；新的操作仅只读预检。首次 worker-start 缺少 sender 被入口拒绝，未创建资源；补实际 `--from` 后唯一预检成功，未创建重复执行者。
+
+规格独立 REPORT `d64dc5c6bb933c0ec6b3203d75d9e2df0207765d` 仅修改 Relay 管理文档。M-relay `msg_48cbc0d4f40b` 确认原 H Task / Dispatch 已接收合法 succeeded，后续在实际 idle 同终端创建新任务；当前不向旧 Dispatch 派发。T 独立远端同 `ef019bb`，SOURCE祖先与报告单文件已核；V 的 `a21379e` 来源祖先与报告单文件已核，远端已前进至 `eead5308823804dc744723ad8e27550f91107c5b`，该新提交需 M-product 提供独立报告和接纳范围，不按旧报告验新源码。P/N 原树 clean、HEAD分别为 `7cccea1` / `b74b97a`，尚未启动新 Task。已将 N 原客户端只支持 archive 的范围交 M-relay；最终若选择 native_notifications，由原 N 在自身域补准确验证，不改变原生领域实现。
+
+M-relay `msg_4c82199f5651` 已回传新 H Task `task_3004b636a3ab` / Dispatch `ctx_e1a8ebeeea83`，实际复用原 `term_7a9d814a-d487-4dc3-9708-f6bdc5e1479d`、原树与分支，ready / turnStart observed，旧 `ctx_d7d8c2828fba` 已结算；当前为安全来源 / HTTP准备和后续精确 R 消费，未启动新模型。后续 H 交接使用新 Dispatch。
 
 当前 I / 最终 P / 最终 N 尚未派发；发布、tag、正式 V4 冻结解除、人评代填均未执行。下方保留上一阶段交付记录及首失败证据。
 

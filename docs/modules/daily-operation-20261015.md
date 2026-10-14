@@ -16,4 +16,20 @@
 
 `orca automations runs --id f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b --json` 当前只有两次旧运行：`df055da3-8b4c-4e02-8470-e53d176a59ce` 为 scheduled / skipped_unavailable，`59891a05-a832-4c13-8436-9b597726da8d` 为 manual / completed。completed 回执报告 D0 84事件、1Sleep、快照、12/12回答及独立judge通过；本次仅读取派生回执，不替代原根独立验收。
 
-真实锁 / 本日输出 / 快照 / coverage 的独立预检尚待检查人员回执。本模块没有执行今日数据采集；今日 D1 不能因已启用日程而登记完成。
+## 00:16 唯一预检实际完成
+
+合法 `worker_done` 为 `msg_c8a2a8a77b7e`，精确 Task / Dispatch 匹配，outcome=succeeded。正式树分支 `validation/v1-20261012` / HEAD `1c026c3e7f9e91c53d1dced6479099668c9162cb`、clean；检查人员用标准 JSON、Get-FileHash 和 SQLite `mode=ro&immutable=1` / `query_only` 选择派生事实，未创建输出或执行任何日流程命令。
+
+| 实际预检项 | 结果 |
+|---|---|
+| 权威锁与协议 | authority=root、reviewed=true、day0=2026-10-13、route=ACCEPTED、formal根正确；EXPERIMENT全文SHA256=`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`一致。 |
+| CLI | 实际 `codex --version` 为 0.162.0。预检开发客户端另由模块 worker-show / terminal show 独立核 Codex / gpt-6.1-sol / high fast；该身份与实验12臂实际模型记录分别计量。 |
+| D1=2026-10-14 | capture / day / day-state快照 / coverage-through均不存在；真实正式库本日事件0、Sleep0，尚未执行。 |
+| D0完整性 | capture / 快照 / day均在，coverage完整；84事件及认知成功，Astrocyte65 / McPet19 / Morphogenesis0，两客户端扫描1714 / 7文件；错误 / late / 重复均0，Sleep completed。84个event_id逐一在正式库和快照定位且唯一，origin重复0。两库各3189事件 / 3189信号 / 32Sleep；coverage汇总1日、重复日0。 |
+| D0实验去重 | 12题臂终态OK，完成记录无重复、未决STARTED为0；6事实SCORED、judge1 OK。user-sheet存在，user-scores / prediction-scores尚不存在；人评待用户，D+3未成熟。 |
+| 原 automation | enabled / Asia/Shanghai / 原cron / next10-15 00:20保持，仅旧59891a05 completed与df055da3 skipped_unavailable；当前今日run不存在，额外手动执行有00:20重复风险。 |
+| 源码和文件 | 相对已锁集成只有25份Markdown及.gitignore忽略目录追加；检查人员核必要文件前后未变、工作树clean。协议、锁、正式库结构、预算、日程均未修改。 |
+
+本模块已接收报告并用 `orca orchestration worker-release --dispatch ctx_7bba9154b03d --json` 官方释放，返回 released / closed_agent_terminal / transcript captured；Delivery `delivery_002e380eb539` 已处理并 ACK。安全状态 `msg_863681e8d215` 已送根。没有采集或调用模型，继续观察原00:20 actual start / skip / failed，不将 scheduled / accepted 计为完成；不另开 operator。
+
+实验实际路由 gpt-6.1-sol/high/priority 沿原锁；provider echo / wire / exact tokenizer 仍未核实。原始数据、模型输入 / 响应和日志仅留原外部证据根，本文只记录派生计数与状态。
