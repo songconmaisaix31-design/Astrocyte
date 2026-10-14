@@ -71,6 +71,8 @@ export async function startS1Server({ browser = false, relay = false, env: extra
   const relayRoot = relay ? join(localAppData, 'astrocyte-workbench', 'v0.2-access') : undefined;
   const dataDir = relay ? join(relayRoot, 'app-state') : join(temporary, 'data');
   if (relay) await mkdir(relayRoot, { recursive: true });
+  const toolTemporary = join(temporary, 'tool-temp');
+  await mkdir(toolTemporary, { recursive: true });
   const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
   const apiURL = `http://127.0.0.1:${apiPort}`;
   const webURL = `http://127.0.0.1:${webPort}`;
@@ -79,6 +81,7 @@ export async function startS1Server({ browser = false, relay = false, env: extra
   const baseEnv = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.toUpperCase().startsWith('ASTROCYTE_')));
   const env = { ...baseEnv, ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false', ASTROCYTE_ENABLE_SUMMARIZE: 'false', ASTROCYTE_SUMMARIZE_CLI: '', ASTROCYTE_PROJECT_DISCOVERY_ROOTS: JSON.stringify([root]), ...suppliedEnv,
     ...(relay ? { LOCALAPPDATA: localAppData, APPDATA: join(temporary, 'appdata'), HOME: join(temporary, 'profile'), USERPROFILE: join(temporary, 'profile'), ASTROCYTE_RELAY: '1', ASTROCYTE_RELAY_LIVE_SECONDS: '' } : {}),
+    TEMP: toolTemporary, TMP: toolTemporary,
     ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(apiPort), ASTROCYTE_WEB_PORT: String(webPort) };
   let apiChild;
   let webChild;
