@@ -8,7 +8,7 @@
 
 | 长期轨道 | 固定 Agent / 工作树 / 分支 | write_paths | 当前阶段与下一交付 |
 |---|---|---|---|
-| Q 认知快照 | `term_ae3e598d-82b7-4d0a-97b1-830e2e75ba51`；`release-cognition-20261014`；`songconmaisaix31-design/release-cognition-20261014` | `cmd/workbench-snapshot/**`、`tests/release-cognition/**`、`docs/release-cognition.md` | 原 `task_1e8ffb3cbbd9` / `ctx_89ea0fc5b202` 继续。可分发命令 SOURCE 已交付；真实来源认知、独立 SQL、分页与历史仍待完成。 |
+| Q 认知快照 | `term_ae3e598d-82b7-4d0a-97b1-830e2e75ba51`；`release-cognition-20261014`；`songconmaisaix31-design/release-cognition-20261014` | `cmd/workbench-snapshot/**`、`tests/release-cognition/**`、`docs/release-cognition.md` | 原 `task_1e8ffb3cbbd9` / `ctx_89ea0fc5b202` 已 completed / succeeded。终稿 SOURCE / REPORT 已独验，等待总负责人接收旧 Run 合法结算与原终端交接；后续返修沿同 owner。 |
 | P Windows 包 | `term_e67c7493-cef5-439e-9687-3197880820d7`；`release-package-20261014`；`songconmaisaix31-design/release-package-20261014` | `release/**`、`docs/release/**` | 原 `task_76c43934b15c` / `ctx_6d251e04179d` 继续。完成 Q binary / 显式手动快照包装，最终对 I 精确 SOURCE 重建 ZIP 并新目录验收。 |
 | S 科研核验 | `term_131cc610-a2b4-4b1b-8335-b5c4e9d9512a`；`release-research-20261014`；`songconmaisaix31-design/release-research-20261014` | `docs/release-research.md` | 原 `task_c2ab97d9ed86` / `ctx_8df7a990a423` 已 succeeded / completed；总负责人已接受合法 `worker_done` 并确认 released / transcript captured。精确文档作为 I 输入保留，未重派同域人员。 |
 | I 唯一集成 | 领域终稿可验后，独立 release 集成工作树 / 分支 / 第三层 Agent | 必要路由、导入、配置和类型衔接；集成报告 | 尚未派发。普通 `--no-ff` 精确消费各 SOURCE / REPORT 与管理文档，领域失败回原 owner；完整检查后 push SOURCE，交 P 同源重建。 |
@@ -23,15 +23,18 @@
 |---|---|---|
 | Q 命令 SOURCE | `8001a76646f5892bc18d8ccb9e5cd065b51425a6` | 已核对远端一致；Q 已明确接管回执，REPORT 尚未提交。Q 报告真实空库、七个生产 Reader、失败不发布、旧 immutable 代次检查 PASS；尚未独立签认最终组合与非空认知。 |
 | Q 第二 SOURCE | `88bab5fe524e55d40b3799de0ff5fc6d45d08f6b` | 已独立核对远端一致；真实 junction / reparse、逐 SQL scalar、source 主文件保持、Go test / vet 为 Q 报告 PASS。公开 1339 receipts / signals、两个 nodes、一个生产 Sleep、四次 snapshot、七个 Reader 与全部六字段核查已运行；最高 A 主题恰有 20 events，严格超过 20 的分页验收 FAIL，继续真实来源采集。 |
+| Q 终稿 SOURCE / REPORT | `1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50` / `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658` | 模块独验远端同 REPORT、普通 SOURCE 祖先、REPORT 只认知文档、工作树 clean，完整报告与 final-tests.log 的真实 server / Go PASS 已核。Q 的独立生产重放 / snapshot / Reader 完成，首样本前置 FAIL 保留；最新排名与所有标量独立 SQL、Astro134 按 20/50 全分页、1339 origins / 六字段 / raw subject 零泄漏、SQL10、1Sleep、每主题3history实际复验 PASS。不替代最终 HTTP / UI / native / ZIP 验收。 |
 | P 工具 SOURCE / REPORT | `da45adfe72a5b7da721bd16be0a1029f8fa05e66` / `e5e4d26bdc5ff64560c8f55aa633c54273161b91` | P 报告候选基础 28 项、工具复验 24 项 PASS；候选输入 `c7a70be963c432bb72d0fa355705ce2907821120`，ZIP 26,309,211 bytes。候选路径待 P 精确补充；最终认知 / Relay / 组合验收未完成。 |
 | P 快照包装阶段 SOURCE | `d0fb7ff0bb1e791583cc405f098eb684affce35e` | 已核对远端一致；P 已明确接管回执。PS5 参数默认值首次失败保留，本域修复后实际发布通过但修复尚未 commit；独立 Q 8001 archive 编译及候选真实 SQLite 发布 status:ok。Q 普通合并的 HANDOFF.md 冲突转根文档 owner。 |
 | P 默认目录修复 SOURCE | `27e65dd80436030b0157edb6f811c83320dda001` | P 报告已 push，Q 普通合并 `4b15b70` 保留；该精确 archive 的 pnpm build 首 RED 为 relay-runtime.spec.ts 的 fixtureWorksSnapshot 导入 TS2305，未产新 ZIP，Go 部分编译不提升为完整 build。已退原 F 修复并交精确 SOURCE；阶段 REPORT 和 I 最终同源输入仍待。 |
+| P F/Q 新候选 SOURCE / 阶段 REPORT | `c54bcf35162918dab1c55cfa2f0ba6d97ce931ed` / `5b688d756e1db69505dbef1f27eeb4808ee6b531` | P 报告普通 push，含 F9ccb / Q88bab 的候选全 build PASS；本模块独验 ZIP 33,749,040 bytes。新目录 privacy scan 仅 astrocyte.exe 有3匹配，首 RED 保留，启动前终止；等 B/H 授权修复后重建，非最终 Q / I 同源包。 |
 | S 科研报告 | `7d030fc83120052a8f32ea74c6007ff9be6878ca` | 已核对远端一致与唯一文档写域；本模块只读审阅六组范围、主来源方法 / 限制、具体 owner Handoff 与未核实资料。S 未重跑产品、模型或正式实验；论文作者成绩保持归属作者。 |
 | Python 标准整改 SOURCE / REPORT | `a1089f94a13306e3cd250ed8facbb438d6e75a19` / `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` | 总负责人交接：独立 29 + 25 测试、36 文件 / 14 冻结 AST PASS；其余 28 项实验 NOT_RUN 保留。 |
 | Relay 阶段 SOURCE / REPORT | `fbfaa65c2c01094305424ac40d2d39d271eab51b` / `53231b19ddd19a65c5a47c91469a0e34d73cf600` | R 阶段生命周期验证；CreateIntent 需原 owner 修复 SettingsRevision。H 观察 SOURCE `7dd7d1b91128a268c035fcfa49da5f9f8667078d`，实际原生三分钟 / 每 event_id / SQL / HTTP / DOM 验收未完成。 |
 | R SettingsRevision 阶段 SOURCE | `ce3a519efa5317e642d7488a776b850eebca1093` | M-relay 报告普通 push / 独立远端一致。真实业务修复可供 H/F 验证；新增测试仍依赖旧 fake fixture，已退原 R 实际 adapter / SQLite 返修，最终源码未接纳。 |
 | R 权限绑定修复 SOURCE / REPORT | `9719e6970927caee3e0b08d4020708e383881880` / `392bd81e822148cb2a7cb8f7bd7a83699d0f7d44` | M-relay 已独立核远端与普通祖先，移除本次新增 fake driver 后，实际生产 adapter / SQLite / HTTP 拒绝测试及 A/B/C 权限绑定独验 PASS。当前 H/F 原生正向尚未完成，native decode 错误传播仍交原 R，完整模块最终源码待交。 |
 | F 当前 SOURCE | `9ccb198fd1af1bd6ceb2d98b25b0531802543983` | F/M-product 报告远端一致，旧 fixtureWorksSnapshot 导入已完整迁移；同源 typecheck / lint / generated schema check / build、126 纯断言 + 10 真实 HTTP/SQLite 客户端测试 PASS。已交 P 消费；默认全量 E2E / 最新 Sleep 代分页与 H 原生 DOM 仍待。 |
+| R JSON fail-fast SOURCE / REPORT | `d6d4da6ac00a196e6bbcf592cfdc0a2a2731dbe6` / `07449a65ea3bd2465d207cd8771aceda6fe50a9e` | M-product 转 M-relay 的原 native 解码错误传播返修已完成；模块报告远端 / clean / 九个纯 JSON 负例 PASS，缺少 turn.id / status 拒绝，unknown 不重发保留。H 串行消费后实际 native / HTTP / DOM 仍待，纯解析负例不提升为 controller 验收。 |
 
 候选包精确路径：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/package-rehearsal-20261014-202942/Astrocyte-v0.1-windows-x64-c7a70be963c4.zip`。该包用于阶段演练，最终 I 同源 ZIP 尚未生成。
 
@@ -41,13 +44,17 @@ Q 本次并发安全聚合已独立读取：实际 writer PID 43216，recorded 3
 
 本模块已独立检查 Q `.verification/cognition-after-sleep-safe` 的安全产物：SQL expected 恰有 10 值、覆盖四路由，snapshot_at 与最新 `snapshot-892856014` 的 current.json 一致；1339 行逐一恰有六字段。真实事件计数 Astrocyte/Attention Engine 134、MCP 20、unassigned 1185；两主题各有三个实测历史点。Q 原 admission-safe 仍按最高 A 样本超过 20 的前置假设记录 FAIL，未把该结果填为通过。
 
+Q 当前终稿产物使用 `.verification/cognition-latest-safe`：admission 标明 after_sleep / actual_sleep_runs=1，最高 MCP20 与排名 / 标量 SQL 严格核查，独立分页 Astro134 在 20/50 页大小通过；本模块再核 SQL10 与最新 current.json 时间一致。此前本模块按 `cognition-final-safe` 目录名读取了旧 pre-Sleep 阶段，最新指针对应检查实际拒绝，结果保留；最终输入按 phase / publication / 精确报告路径选择。旧阶段资料不提高为最终 PASS。
+
+P c54 新候选路径：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/package-fq-rehearsal-20261014-211834/Astrocyte-v0.1-windows-x64-c54bcf351629.zip`。本模块只读核 `.verification/verify-20261014-212203/private-path-scan.json`：一个生产文件 astrocyte.exe / 三个匹配，没有输出具体私人字符串。包启动前扫描失败，当前没有该候选组合 runtime PASS。
+
 ## 实际阻塞与边界
 
 - Q 已 clone 获准公开 Astrocyte 来源，报告当前实际 1339 commits。当前 seed 与历史 Git 时间的 guard 冲突由源码阅读发现，Q 明确该 time.Now 场景没有实际执行，不登记为运行 RED。总负责人已于原 ask `msg_2cd6790ae313` 回复 `msg_81e3f3984acb`：允许新的隔离公开 Git 历史生产重放 DB，每 topic 以最早真实 commit.ts 作历史重放初始化起点；所有源 ts / event / Git / 数值保持原样、engine 与既定参数不改。该明确授权已交 Q/F/P，时间阻塞解除；只验认知查询 / 分页与可分发快照，不能称本次 live 主题建立时间、用户亲自评分、正式 V4 或科研收益。
 - F 需要 `ASTROCYTE_TEST_COGNITION_LOCALAPPDATA` 独立快照根、独立 SQL expected、两个真实 topic、同 topic 超过 20 个真实 events 及两个实际 historypoints；样本不足继续采集并保持实际状态。H 的 app-state 不能作为已参数化 / Sleep 完成的认知来源。
 - P 普通合并 HANDOFF.md 首冲突保留。总负责人 `msg_0a8a4dd18ac6` 临时授予本模块该单文件文档冲突域；已用 apply_patch 保留当前 P/Q 消费事实与两线历史并单文件 stage，diff 检查通过且无未合并文件，通知原 P 完成普通 merge。临时域随此处理结束，其他业务文件与 P 未提交修改保持原 owner 管理。
 - Q 发现既有 Reader 的 `WorkbenchFormalSource` 个人路径常量会进入 server binary，Reader open 还会对其执行 stat；本模块只核源码引用，没有读取正式源。总负责人 `msg_e7533f584d40` 已授权 M-product 安排原 B 处理独立发布线的 Reader，保护只用用户显式配置来源 / 实际 owned 快照，保留 ro / immutable / query_only 及路径 alias 安全；默认无个人正式路径访问，正式运行树与冻结域不变。Q/P 不修改 Reader。`-trimpath` 只能除构建路径，最终包须独立扫描此业务常量。
-- Q 的实际 Windows junction 检查首 RED 已保留：EvalSymlinks 未展开 junction。原 Q 正使用核实的 Windows reparse 属性 API 修复并复验；早期 8001 SOURCE 不作为该保护的终稿，后续 SOURCE / REPORT 待接收。
+- Q 的实际 Windows junction 检查首 RED 已保留：EvalSymlinks 未展开 junction。Q 已使用核实的 Windows reparse 属性 API 修复并在终稿复验；早期 8001 SOURCE 保持历史来源，最终消费 1d07c5b / 6ad1dfa。
 - 最终认知数据选择已通过正式 ask `msg_e12bbd43f7f5` / reply `msg_ecbf07cfedce` 裁决：继续使用最新 actual Sleep 代，旧 pre-Sleep 保存代只作独立历史视图检查。本模块完整核对 Workbench-v01 / API / integration 规格，没有最高 A 与分页样本必须绑定的要求；原 cognition.spec 的 ordered[0] 属样本前置假设。原 F/Q 可选最新实际超过 20 的同一主题验证两页，严格保留最新排名 / 最高 A / 全部值、两主题轨迹、数量、顺序、六字段、SQL/API/UI 及焦点恢复等覆盖；不改生产数据或排名、不降低分页数量、不新增 skip，首前置 FAIL 保留，修复后真实复验与精确 SOURCE 待交。
 - 已审阅 P 当前 Verify-Windows.ps1：阶段 RequireCombined 覆盖空状态 / 缺快照、session / CSRF、实际基本写入和重启、手动备份空认知表；非空 SQL10 / 六字段与原生 Relay 正向尚未覆盖。已要求 P 在原域补明确输入验证，并和 H 在最终 ZIP 新目录 / 独立端口使用真 packaged server、固定公开任务、CLI 自行鉴权与关闭原生工具的边界完成核心正向；不复制 H 库、配置、会话或凭据进包。H 当前受控窗口尚未注册、模型调用 0，准备参数已交 P，不能填 native PASS。
 - M-relay 首次第三层派发遭 `nested_worker_depth_exceeded` / max1 保留。总负责人消息 `msg_498d887dea6a` 已确认通过官方设置把深度改为 2，并独立 readback Value2；第三层后续任务可派发，开发人员仍禁止派发第四层。唯一 I 及本模块后续 Task 尚未派发。
