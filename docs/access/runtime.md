@@ -1,5 +1,23 @@
 # Works Relay runtime
 
+## 2026-10-15 准确 turn 关系、原 Start resolver 与 Read 前置
+
+追加 SOURCE `014692e644b08b3acb1f76d696afa728362f4591` 已普通 push，独立 ls-remote 同值；此前 `79d9313` / `dbb0fe7` 保留普通祖先。本阶段继续原 Task / Dispatch，没有另起 CLI 或模型。模块已授权准备共同成立的 Codex 真实 started 正向，H 唯一登记、F 唯一实际 UI 操作者；无 started 客户端的迁移规则仍待用户决定。
+
+`RelayOwnedTurnBindingReader.ListOwnedTurnBindings(ctx, taskID)` 从原隔离 store 私有 controller / history 读取 OperationID、原 session / native / controller / startup operation、实际 turn ID、输入受理与开始时间。RPC turn/start 返回 ID 后保存准确关系；turn/started 只匹配同 ID，通知先到时保留其实际时间。接受关系不能改写，开始时间只能由该真实通知补入。旧缺字段返回空 gap，不按相邻时间或最近输入推定。H 只能在正选来源 guard 接纳后，用该 tuple 核对应 turn 的合法输出；不读取被拒绝 alias，不以通知通过覆盖 archive FAIL。全部 tuple 字段 JSON 隐藏，原 six-field events 不变。
+
+`RelayOwnedNativeSessionResolver.ReadOwnedNativeSession(ctx, platformSessionID)` 由当前原 `agents.Registry` 或 `Native` 实现。它只返回实际 n.start 保存的原完整 Start 会话及原 controller 证据，没有从 DB scalar / NativeID 拼会话，没有 RPC 或启动。普通接入从请求中已存在的 PendingOperation / Operations[pending] 的真实 start / resume pending 收据取 operation；start 核 LastOperationID，resume 的 LastOperationID 允许仍为上次完成动作。命令显式 operation 不一致时拒绝；未记录的旧对象仍 unknown。普通冷 Registry 恢复也必须持有原退出控制器，不能只据持久 NativeID 建立 owned。
+
+structured NativeRead 的显式动作核当前准确 controller、无 unresolved delivery、无 pending 和无确认退出；driver 在任何 RPC 前再读原 done 通道。当前 ownership 仍可表示持有已退出对象，safe reason `controller_exited` 明确该事实，不能推 RPC-ready 或 live。terminal Read 保留缓存进程 / Git 观察，EOF 关闭后可记录真实退出；普通 GET 继续只读历史。Send 的 EOF / running / blocked / done / delivery_unknown / 退出拒绝与人工 release 原独立门禁保持。
+
+使用 `GOMAXPROCS=2` / Go `-p=1 -mod=readonly`：app / agents 全包最终 PASS（`v14-turn-resolver-final.log`），agents 在最后普通 resume 原持有检查后再验 PASS（`v14-resolver-native-final.log`）；SQLite Relay 范围 PASS（`v14-turn-store-final.log`）。vet、server build、diff check 均 EXIT 0，产物 `dist/relay-l1/v14-turn-resolver-server.exe` 未启动。空实际 Registry resolver 拒绝、旧无 turn gap、私有 JSON 隐藏与生产 SQLite / HTTP handoff 拒绝通过；实际有 controller 的 resolver / turn 对应仍等待唯一真实窗口。
+
+本阶段两项首失败保留：`v14-turn-read-gates-first.log` 的旧 controlled CLI 用例在派发时 delivery_unknown，耗时 14.91 秒，随后临时目录清理因占用失败；该用例孤立原断言 PASS（`v14-controlled-cli-isolated.log`），R 将清理登记移到 Confirm 之前，原 10 秒期限和成功断言不变，最终 app 全包通过。`v14-turn-resolver-scoped.log` 的 B `local_agents_narrowing_test.go:300` 恢复用例没有本次原 held process，首次错误保留并交 B 原域迁移；R 没有改 B 测试。原 H reconciliation 缺许可的全 Go 403 FAIL 也保留，当前不宣称全套通过。
+
+S3 的 ExternalTargets 批准维按 B / S2 契约是准确 native CLI ID；已核原 Session.CLI / Provider 可提供该维的真实 ID。私有 endpoint 仍未核，与 CLI 维分开。有效工具集合的实际证据仍不足，保持 unknown，不能固定空 Tools；usage 无完整原 operation 实源保持 nil，S3 保留 lease / 预算。S2 的原人类绑定、实际 Agent 身份、grant、绑定版本与私有字段由原 S2 维护，R 不伪造 RelayTask 映射、不将 Agent 改成人类、不修改 Swarm 业务。
+
+当前共同正向的共享公开 Go 基线及 brief 由 S3 交 H/F，R 只提供上述原域接口。实际 tools 关闭、正选来源、模型 started、合法输出目标核查、人工 done / release、Today 与最终包仍须唯一窗口逐项实际核验；所有旧失败和未知不覆盖。完整 raw、原生路径、tuple、credentials 与模型输出不进入 HTTP / Git / 包 / stdout。
+
 ## 2026-10-15 当前所有权纯缓存读取
 
 追加 SOURCE `79d93132967de20fb1fda3d8d74b4edff386178c` 已普通 push，独立远端同值；事实阶段 `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` 和独立 REPORT `a455b7f0e39f606576dbc4c859d1862622fc8f0f` 保留普通祖先。当前 Task / Dispatch 继续活跃，working / 人工完成待答规则未改变。
