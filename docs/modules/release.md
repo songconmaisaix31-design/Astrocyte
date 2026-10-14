@@ -75,6 +75,12 @@ S5当前SOURCE `48abd1fe134b88cfe8122d2aee5a35090fc6d62b` / 独立REPORT `95871f
 
 OpenCode Flash实际可用性SOURCE `d895ffcd0f4e58389a570a6c8a9197195b826bdd` / 独立REPORT `6a4a7220f23573b7e7ce30b54c572bb5f06183a1` 已推送并独立核远端。实际 `opencode 1.18.35` / `alibaba-cn/deepseek-v4.1-flash` 单次公开READY调用成功、工具调用0；详细边界与元数据见 [模型记录](opencode-model-20261015.md)。该调用未改变全局模型、auth、MCP或日预算。
 
+### 当前授权入口与恢复独立REPORT
+
+管理SOURCE `d2dfc70bd7aebf7b19b65b0c7cd1cc8a5b0b7f65` 已普通push，模块独立 `git ls-remote origin refs/heads/songconmaisaix31-design/module-release-20261014` 返回相同完整SHA；clean、`git diff --check`通过，SOURCE恰有本文和根明确新增授权的 `tasks/Release-v0.1-20261014.md` 两个文件。入口记录当前S0–S6授权、三层责任、语义→CLI/Today顺序与独立L2适配边界，保持正式实验门禁和未答事项；本文REPORT随后独立提交。文档本地三个入口文件存在，管理变更未重复产品测试。
+
+Q新Task `task_d3bdc107395a` 当前唯一Dispatch `ctx_54b33a3986f9` / 终端 `term_5d0a8c45-58e4-428f-b7cd-9e859bbcb5ee`，实际Codex / gpt-6.1-sol high fast、ready / turn_started / working / live、depth2；原树与分支基线 `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658` clean。首Dispatch `ctx_bf1aa87951cf` 在真实TUI bootstrap遇account/read routing timeout `-32603` 并回PowerShell；实际文本核查后官方 `worker-stop` 返回stopped / closed_agent_terminal，再按同Task `--retry-of` 恢复，未重复同域writer。工程跨日来源及准确新pub / preSleep / SQL expected仍在原owner运行，不登记产出通过。
+
 当前 I / 最终 P / 最终 N 尚未派发；发布、tag、正式 V4 冻结解除、人评代填均未执行。下方保留上一阶段交付记录及首失败证据。
 
 事实源：[Release v0.1](../../tasks/Release-v0.1-20261014.md)、[AGENTS.md](../../AGENTS.md)、[HANDOFF.md](../../HANDOFF.md)、[STATUS.md](../../STATUS.md)。基线 `dd60de11bca85662f5bb4a5b281cc7b42e6ffd2f`；模块分支 `songconmaisaix31-design/module-release-20261014`。
