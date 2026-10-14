@@ -68,6 +68,18 @@ SOURCE `80248d2c7177823d4535e7730453481426a27305` 普通 push 成功，独立 re
 
 SOURCE `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` 普通 push 成功，独立 remote 查询相同 SHA。真实 SQLite 核心测试与架构检查 PASS；B `ce281d003c093ec26e19dfec78e912f20a014787` 已普通消费，使 Attention 资料端口可复用同数据库事务。S2 将当前来源访问检查纳入每个 Grant 保护动作；B 真实 Admission producer / snapshot 桥仍在实施，准入消费实际成功继续 NOT_RUN。H 已交准确五文件薄装配 SOURCE `e99ae91d670a835c5de5927163568638fa5f3a61`，下一步窄消费该提交并继续原生产 HTTP 检查。
 
+## 生产 HTTP 与原生前置
+
+H 精确五文件窄消费首次发生 main.go、server.go、OpenAPI 域外冲突；由模块明确临时安排原 H 作为这三路径唯一 writer，file editor 保双方正确内容后停止并归还提交控制。原 cherry-pick 顺序完成为 `ea0c4d262c94c049e636aac5e0a9ada9f1914932` 并普通 push。原冲突、第一 HTTP 404 与 H 原树 canonical root 403 保留。
+
+`node --test tests/s2/http.test.mjs` 实际 cmd/server 进程 PASS，25.162 秒：真实 HTTP 创建空间/项目/Goal/Proposal、实际签发 Agent token 批准拒绝 403、旧版本与异输入 409、相同输入幂等批准、实际 SQLite 事件约束失败使提案状态/Grant/receipt 全回滚、两次实际服务进程重启、人类撤销及冷启动后持久状态。零 native session、零 Mission。日志 `.verification/s2-first/http-second.log`；实际库 `.verification/astrocyte-s1-Wto4zC/data/state.sqlite`。该次代码含自域 canonical root 与来源事务复核改动，后续 SOURCE 将保留同一内容；未把当时未提交状态当已提交 SHA 验收。
+
+人工批准使用当前真实 `registered.project.root`，不把 scripts/process 的末尾分隔符拼写作为批准根。资料固定版本访问校验在同数据库事务内复用现 ProjectReferences；当前 Grant 保护动作再次校验相同来源许可。
+
+Human admission 不要求 PolicyVersion；只有 delegated_judgment 分支必须含真实判断 policy 版本。SOURCE `7095732c206bba74018570863f5789502129778d` 同时传播 WorkspaceTx conn.Close 错误，已普通 push / remote 一致；独立真实 SQLite 核心检查 PASS2.331s，准确源已交 B 继续其真实 Admission→draft 事务验证。
+
+S4 快照提供者 `9eff2edb34058826d302d3a465b7fe7e74797be5` 与 B DDL `f25b838738d981f73380f042c2f7940dc3fd3a7e` 已获得消费授权。R 私有 resolver `014692e644b08b3acb1f76d696afa728362f4591` 提供同 Registry 原完整 session/controller tuple。当前接入继续；native/worktree 精确绑定、prepare→Claim 预算→Send 顺序、停止后 retained tuple 提交的完整真实成功仍 NOT_RUN。
+
 ## 第一阶段独立 REPORT
 
 SOURCE `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 普通 push 成功；独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。四个包 `go test -run '^$'` PASS，`git diff --check` PASS；两项均不代表业务验收。准确 SOURCE 已交 S3、H 和 UI，B 的 019 已交 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，下一步消费该迁移并运行真实 SQLite/HTTP。第一次 B SOURCE 通知出现 PowerShell 单引号参数错误，CLI 明确 invalid_argument，未投递；改正参数后继续交接，不将失败视为成功。
