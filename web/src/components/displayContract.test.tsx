@@ -13,7 +13,7 @@ const material: S['MaterialV1'] = { id: 'input-material', kind: 'paper', source_
 const workItem: S['WorkItemV1'] = { id: 'input-workitem', version: 2, status: 'open', holder_id: null, context_packet_id: null, artifact_ids: ['input-artifact'] };
 const mission: S['MissionV1'] = { id: 'input-mission', version: 3, status: 'blocked', grant_id: 'input-grant', goal: '输入目标', work_items: [workItem], artifact_ids: ['input-artifact'], blockers: ['输入阻塞原因'] };
 const project: S['ProjectV1'] = { id: 'input-project', name: '输入项目', root_path: '输入目录', environment_id: 'input-environment', repo_id: null, worktree_id: null };
-const proposal: S['ProposalV1'] = { id: 'input-proposal', revision: 1, status: 'declined', title: '输入提案', goal: '输入目标', scope: { project_ids: [], allowed_roots: [], allowed_actions: [], data_egress_rules: [] }, deliverables: ['输入交付物'], budget: { calls: null, tokens: null, money: null, currency: null }, stop_conditions: ['输入停止条件'] };
+const proposal: S['ProposalV1'] = { id: 'input-proposal', revision: 1, version: 1, status: 'declined', created_at: '2026-10-15T00:00:00Z', updated_at: '2026-10-15T00:00:00Z', content: { title: '输入提案', goal: { id: 'input-goal', revision: 1 }, inputs: null, scope: { project_id: 'input-project', roots: null, actions: null, tools: null, external_targets: null, write_paths: null, max_concurrency: 1, settings_revision: 1 }, deliverables: ['输入交付物'], success_criteria: ['输入成功条件'], budget: { calls: null, tokens: null, money_minor: null, currency: '' }, stops: { deadline: '2026-10-16T00:00:00Z', conditions: ['输入停止条件'], max_work_items: 1, max_attempts: 1, no_progress_seconds: 1, max_no_progress_rounds: 1 } } };
 const session: S['SessionV1'] = { id: 'input-session', adapter: 'input-adapter', native_session_id: null, project_id: 'input-project', binding_status: 'unavailable', capabilities: { native_resume: null, handoff: null }, context_state: 'unknown' };
 const select = () => { throw new Error('静态显示测试不得触发操作'); };
 
@@ -50,7 +50,7 @@ describe('项目、提案和会话显示契约', () => {
   });
   it('显示提案标题、状态和交付数量', () => {
     const html = renderToStaticMarkup(<ProposalList items={[proposal]} onSelect={select} />);
-    expect(html).toContain(proposal.title);
+    expect(html).toContain(proposal.content.title);
     expect(html).toContain('已拒绝');
     expect(html).toContain('1');
   });
