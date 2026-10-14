@@ -9546,6 +9546,8 @@ components:
         admission_id: {type: string}
         opportunity_id: {type: string}
         opportunity_revision: {type: integer, minimum: 1}
+        owner_namespace: {type: string, description: 'Trusted admission owner namespace; optional for existing ordinary drafts.'}
+        assignment_status: {type: string, enum: ['', assigned, unassigned], description: 'Empty is an unrecorded legacy assignment. Unassigned admission drafts need a human revision selecting a real project and Goal before approval.'}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}
         status:
@@ -9564,7 +9566,7 @@ components:
         - content
         - created_at
         - updated_at
-    S2GoalReferenceV1: {type: object, additionalProperties: false, required: [id, revision], properties: {id: {type: string}, revision: {type: integer, minimum: 1}}}
+    S2GoalReferenceV1: {type: object, additionalProperties: false, required: [id, revision], properties: {id: {type: string}, revision: {type: integer, minimum: 0, description: 'Zero is preserved only for an unassigned admission draft; ordinary proposal commands and approval require a fixed positive revision.'}}}
     S2ResourceBudgetV1:
       type: object
       additionalProperties: false
@@ -9646,7 +9648,13 @@ components:
     S2ProposalResultV1: {type: object, additionalProperties: false, required: [schema_version, proposal], properties: {schema_version: {type: integer, const: 1}, proposal: {$ref: '#/components/schemas/ProposalV1'}}}
     S2GoalResultV1: {type: object, additionalProperties: false, required: [schema_version, goal], properties: {schema_version: {type: integer, const: 1}, goal: {$ref: '#/components/schemas/S2GoalV1'}}}
     S2ApprovalResultV1: {type: object, additionalProperties: false, required: [schema_version, approval], properties: {schema_version: {type: integer, const: 1}, approval: {$ref: '#/components/schemas/S2ApprovalGrantV1'}}}
-    S2ProposalRequestV1: {type: object, additionalProperties: false, required: [schema_version, request_id, expected_version, content], properties: {schema_version: {type: integer, const: 1}, request_id: {type: string, minLength: 1}, expected_version: {type: integer, minimum: 0}, content: {$ref: '#/components/schemas/S2ProposalContentV1'}}}
+    S2ProposalContentInputV1:
+      allOf:
+        - {$ref: '#/components/schemas/S2ProposalContentV1'}
+        - properties:
+            goal: {allOf: [{$ref: '#/components/schemas/S2GoalReferenceV1'}, {properties: {id: {type: string, minLength: 1}, revision: {type: integer, minimum: 1}}}]}
+            scope: {allOf: [{$ref: '#/components/schemas/S2ExecutionScopeV1'}, {properties: {project_id: {type: string, minLength: 1}}}]}
+    S2ProposalRequestV1: {type: object, additionalProperties: false, required: [schema_version, request_id, expected_version, content], properties: {schema_version: {type: integer, const: 1}, request_id: {type: string, minLength: 1}, expected_version: {type: integer, minimum: 0}, content: {$ref: '#/components/schemas/S2ProposalContentInputV1'}}}
     S2GoalInputV1:
       type: object
       additionalProperties: false
