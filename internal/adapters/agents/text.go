@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -13,8 +14,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-// The caller owns public-source/project consent checks. This port accepts only
-// text already selected by that owner and never chooses another installed CLI.
+// 来源及项目许可由调用者核实，此接口只处理调用者已经选择的文本。
 func (r *Registry) textSession(ctx context.Context, cli, prompt string, seconds int) (*Native, domain.NativeSession, error) {
 	a, err := r.Adapter(cli)
 	if err != nil {
@@ -24,16 +24,26 @@ func (r *Registry) textSession(ctx context.Context, cli, prompt string, seconds 
 	if !ok {
 		return nil, domain.NativeSession{}, nativeError(apierrors.UnsupportedCapability, "this CLI adapter does not provide the selected-text processing path")
 	}
-	root, err := os.MkdirTemp("", "astrocyte-selected-text-")
+	root, err := selectedTextRoot(n.stateRoot)
 	if err != nil {
 		return nil, domain.NativeSession{}, err
 	}
-	// Empty nonprivate runtime directory retained; removing runtime state is a
-	// separate cleanup policy, never a reason to change native session identity.
+	// 保留专属目录供错误核查，清理目录不改变原生会话身份。
 	id := uuid.NewString()
 	p := domain.LocalProject{ID: id, Root: root, Settings: domain.ProjectSettings{Revision: 1}}
 	s, err := n.Start(ctx, domain.NativeRequest{SessionID: id, Project: p, Session: domain.NativeSession{ID: id, ProjectID: id}, Command: domain.NativeCommand{Message: prompt, DeadlineSeconds: seconds}, Packet: domain.ContextPacket{SchemaVersion: 1, ProjectID: id, Mode: "selected_text"}})
 	return n, s, err
+}
+
+func selectedTextRoot(stateRoot string) (string, error) {
+	if !filepath.IsAbs(stateRoot) {
+		return "", nativeError(apierrors.ValidationFailed, "absolute controller-owned native state directory required")
+	}
+	parent := filepath.Join(stateRoot, "selected-text")
+	if err := os.MkdirAll(parent, 0700); err != nil {
+		return "", err
+	}
+	return os.MkdirTemp(parent, "astrocyte-selected-text-")
 }
 
 func (r *Registry) ConfigurationID(ctx context.Context, cli string) (string, error) {
@@ -105,8 +115,7 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	if len(wirePrompt) > 512*1024 {
 		return result, nativeError(apierrors.ValidationFailed, "final selected text input exceeds512KiB")
 	}
-	// Public size metrics only. No prompt, project path, provider identity,
-	// credentials or conversation content enters diagnostics.
+	// 诊断只记录大小，不记录文本、路径、提供者身份、凭据或对话。
 	slog.Info("selected_text_input", "input_bytes", len(wirePrompt), "input_limit_bytes", 512*1024, "output_limit_bytes", limit)
 	if _, err := n.Send(ctx, s, wirePrompt); err != nil {
 		return result, err
@@ -143,8 +152,7 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 				result.Model = &model
 			}
 			p.mu.Unlock()
-			// Native usage/cost not implemented in this projection: null remains
-			// explicit; neither zero usage nor an invented charge is returned.
+			// 此投影尚无原生 usage/cost 观测，保留 null。
 			return result, nil
 		}
 		select {
@@ -155,8 +163,7 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	}
 }
 
-// Validate the final UTF-8 wire prompt, including the fixed authority instruction
-// and context envelope, before configuration checks or any native launch.
+// 在配置检查与原生启动之前核查包含固定指令和上下文的完整 UTF-8 输入。
 func ValidateSelectedTextPrompt(prompt string) error {
 	if !utf8.ValidString(prompt) || strings.TrimSpace(prompt) == "" || SelectedTextPromptBytes(prompt) > 512*1024 {
 		return nativeError(apierrors.ValidationFailed, "selected text input including fixed instruction/context exceeds 512 KiB or is invalid UTF-8")
@@ -164,9 +171,8 @@ func ValidateSelectedTextPrompt(prompt string) error {
 	return nil
 }
 
-// SelectedTextPromptBytes measures the exact transmitted UTF-8 payload including
-// fixed instructions/envelope. The runtime UUID always has the same36byte width.
-// It executes no process and does not record or log the supplied text.
+// SelectedTextPromptBytes 测量完整 UTF-8 输入，固定 UUID 长度为 36 bytes。
+// 此纯函数不启动进程或记录文本。
 func SelectedTextPromptBytes(prompt string) int {
 	packet := domain.ContextPacket{SchemaVersion: 1, ProjectID: "00000000-0000-0000-0000-000000000000", Mode: "selected_text"}
 	return len(packetPrompt(packet, prompt))
