@@ -40,6 +40,8 @@ func TestRelayFactsRejectMissingOriginalControllerAndFork(t *testing.T) {
 	}
 	_, err = NewRelayNativeDriver(registry).Fork(ctx, app.RelayLaunch{})
 	assert(err, apierrors.UnsupportedCapability)
+	_, err = NewRelayNativeDriver(registry).CurrentControllerEvidence(ctx, app.RelayLaunch{Spec: domain.AgentSpec{Name: "codex"}, Session: request.Session})
+	assert(err, apierrors.DeliveryUnknown)
 	if len(n.processes) != 0 {
 		t.Fatal("rejection created a controller process")
 	}

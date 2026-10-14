@@ -48,6 +48,27 @@ func NewRelayTerminalDriver(options RelayTerminalOptions) *RelayTerminalDriver {
 	return &RelayTerminalDriver{processes: map[string]*relayTerminalProcess{}, options: options}
 }
 
+func (d *RelayTerminalDriver) CurrentControllerEvidence(ctx context.Context, r app.RelayLaunch) (domain.RelayControllerEvidence, error) {
+	if err := ctx.Err(); err != nil {
+		return domain.RelayControllerEvidence{}, err
+	}
+	p, err := d.owned(r.Terminal.ID)
+	if err != nil {
+		return domain.RelayControllerEvidence{}, err
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.evidence.ControllerID == "" || p.evidence.StartupOperationID == "" {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.DeliveryUnknown, "original terminal controller operation is unrecorded")
+	}
+	if p.evidence.ControllerID != r.ControllerID || p.evidence.Provider != r.Spec.Name || !sameRelayMetadataCWD(p.cmd.Dir, r.Workspace.Root) {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.ScopeDenied, "current terminal controller differs from the requested binding")
+	}
+	evidence := p.evidence
+	evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
+	return evidence, nil
+}
+
 // Output is discarded at the boundary. Only the fact and time of actual stdout
 // bytes are retained; terminal text cannot enter a view, report or cognition event.
 func (p *relayTerminalProcess) Write(b []byte) (int, error) {

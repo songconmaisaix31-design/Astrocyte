@@ -107,6 +107,15 @@ func relayFactsAcrossSQLiteConnections(t *testing.T, ctx context.Context, store 
 	if err != nil || len(history) != 0 {
 		t.Fatal("a task without a controller acquired historical ownership")
 	}
+	ownership, err := second.(app.RelayCurrentOwnershipReader).GetCurrentOwnership(ctx, caller(), id)
+	if err != nil || ownership.Status != "unknown" || ownership.Reason != "controller_binding_unrecorded" {
+		t.Fatal("ready task acquired current ownership from persisted state")
+	}
+	_, err = second.(app.RelayCurrentOwnershipReader).GetCurrentOwnership(ctx, domain.Caller{Kind: "agent", ID: "codex"}, id)
+	var denied *apierrors.ServiceError
+	if !errors.As(err, &denied) || denied.Code != apierrors.ScopeDenied {
+		t.Fatal("Agent accessed the human ownership view")
+	}
 	after, err := other.Snapshot(ctx)
 	if err != nil || !reflect.DeepEqual(snapshot, after) {
 		t.Fatal("fact read or rejected mutation changed persisted state")

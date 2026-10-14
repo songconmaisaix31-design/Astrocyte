@@ -37,6 +37,9 @@ func (n *Native) OwnedRelayControllerEvidence(ctx context.Context, session domai
 	if p.relayEvidence.StartupOperationID == "" {
 		return domain.RelayControllerEvidence{}, nil
 	}
+	if session.ID == "" || session.NativeID == "" || session.ProjectID == "" || session.Version == "" || p.cmd == nil || p.cmd.Process == nil || p.cmd.Process.Pid <= 0 {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.DeliveryUnknown, "exact native session or owned process evidence is missing")
+	}
 	if p.projectID != session.ProjectID || session.Ownership != "owned" || session.CLI != n.id || p.relayEvidence.SessionID != session.ID || p.relayEvidence.ControllerID == "" {
 		return domain.RelayControllerEvidence{}, nativeError(apierrors.ScopeDenied, "original controller identity differs")
 	}

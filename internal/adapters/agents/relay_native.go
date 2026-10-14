@@ -53,6 +53,28 @@ func NewRelayNativeDriver(registry app.NativeRegistry, options ...RelayNativeDri
 	return driver
 }
 
+func (d *RelayNativeDriver) CurrentControllerEvidence(ctx context.Context, r app.RelayLaunch) (domain.RelayControllerEvidence, error) {
+	a, err := d.adapter(r)
+	if err != nil {
+		return domain.RelayControllerEvidence{}, err
+	}
+	provider, supported := a.(relayOperationNative)
+	if !supported {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.UnsupportedCapability, "current controller metadata is not supported")
+	}
+	evidence, err := provider.OwnedRelayControllerEvidence(ctx, r.Session)
+	if err != nil {
+		return domain.RelayControllerEvidence{}, err
+	}
+	if evidence.ControllerID == "" {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.DeliveryUnknown, "original controller operation is unrecorded")
+	}
+	if evidence.ControllerID != r.ControllerID || !sameRelayMetadataCWD(evidence.WorkspaceRoot, r.Workspace.Root) {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.ScopeDenied, "current controller differs from the requested binding")
+	}
+	return evidence, nil
+}
+
 func (d *RelayNativeDriver) adapter(r app.RelayLaunch) (app.NativeAdapter, error) {
 	if d.registry == nil {
 		return nil, nativeError(apierrors.UnsupportedCapability, "native registry is not connected")

@@ -112,6 +112,15 @@ type RelayControllerHistoryReader interface {
 	ListOwnedControllerHistory(context.Context, string) ([]domain.RelayControllerEvidence, error)
 }
 
+type RelayCurrentOwnershipReader interface {
+	GetCurrentOwnership(context.Context, domain.Caller, string) (domain.RelayCurrentOwnership, error)
+}
+
+// 只读原持有对象，不执行 Native.Observe、RPC、启动或恢复。
+type RelayControllerEvidenceReader interface {
+	CurrentControllerEvidence(context.Context, RelayLaunch) (domain.RelayControllerEvidence, error)
+}
+
 // RelayDriver is execution only; it cannot authorize, dispatch a task, persist
 // state, choose a different Agent, or retry an unknown delivery.
 type RelayDriver interface {
