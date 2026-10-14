@@ -53,6 +53,7 @@ type WorkspaceTx interface {
 type WorkspaceRepository interface {
 	WithWorkspaceTx(context.Context,func(WorkspaceTx)error) error
 	ListWorkspaceProposals(context.Context,string) ([]domain.Proposal,error)
+	ListWorkspaceGoals(context.Context,string) ([]domain.Goal,error)
 	ReadWorkspaceEvents(context.Context,string,int) ([]WorkspaceEvent,error)
 }
 

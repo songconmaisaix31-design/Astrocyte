@@ -39,10 +39,21 @@ func NormalizeWorkspaceError(err error) error {
 	return err
 }
 
+func semanticWorkspaceInput(input any) ([]byte,error) {
+	data,err:=json.Marshal(input);if err!=nil{return nil,err}
+	var fields map[string]json.RawMessage
+	if err=json.Unmarshal(data,&fields);err!=nil{return nil,err}
+	delete(fields,"request_id")
+	for _,key:=range []string{"Command","Meta"}{
+		if nested,ok:=fields[key];ok{var command map[string]json.RawMessage;if err=json.Unmarshal(nested,&command);err!=nil{return nil,err};delete(command,"request_id");fields[key],err=json.Marshal(command);if err!=nil{return nil,err}}
+	}
+	return json.Marshal(fields)
+}
+
 func (s *S2Service) command(ctx context.Context,c domain.Caller,meta WorkspaceCommandMeta,name string,input any,output any,fn func(WorkspaceTx)error) (err error) {
 	defer func(){err=NormalizeWorkspaceError(err)}()
 	if c.ID=="" || (c.Kind!="human"&&c.Kind!="agent") || meta.SchemaVersion!=1 || meta.RequestID=="" || meta.IdempotencyKey=="" || meta.ExpectedVersion<0 {return domain.WorkspaceError(apierrors.ValidationFailed,"authenticated caller and complete command metadata are required")}
-	data,err:=json.Marshal(input);if err!=nil{return err};digest:=sha256.Sum256(data);requestDigest:=hex.EncodeToString(digest[:]);caller:=c.Kind+":"+c.ID
+	data,err:=semanticWorkspaceInput(input);if err!=nil{return err};digest:=sha256.Sum256(data);requestDigest:=hex.EncodeToString(digest[:]);caller:=c.Kind+":"+c.ID
 	return s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{
 		old,err:=tx.LoadReceipt(caller,name,meta.IdempotencyKey)
 		if err==nil {if old.Digest!=requestDigest{return domain.WorkspaceError(apierrors.VersionConflict,"idempotency key binds different command input")};return json.Unmarshal(old.Result,output)}
@@ -97,6 +108,7 @@ func (s *S2Service) validateContent(ctx context.Context,tx WorkspaceTx,c domain.
 	for _,root:=range content.Scope.Roots{
 		if err=s.validateProjectRoot(p,root);err!=nil{return err}
 	}
+	if execute{for _,action:=range content.Scope.Actions{if err=ValidateProjectActionScope(p,ProjectActionScope{ProjectID:p.ID,SettingsRevision:content.Scope.SettingsRevision,Action:action,Roots:content.Scope.Roots,Tools:content.Scope.Tools,ExternalTargets:content.Scope.ExternalTargets});err!=nil{return err}}}
 	return nil
 }
 
@@ -184,12 +196,13 @@ func (s *S2Service) WithAuthorizedGrant(ctx context.Context,check domain.GrantCh
 	defer func(){err=NormalizeWorkspaceError(err)}()
 	return s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{
 		g,err:=tx.LoadApproval(check.GrantID);if err!=nil{return err};if err=g.Check(check,time.Now().UTC());err!=nil{return err}
-		p,err:=projectAccess(tx,check.Caller,g.Scope.ProjectID);if err!=nil{return err}
+		p,err:=tx.LoadProject(g.Scope.ProjectID);if err!=nil{return err}
 		if g.Scope.SettingsRevision!=p.Settings.Revision{return domain.WorkspaceError(apierrors.ApprovalRevoked,"project settings changed since approval")}
+		var member *domain.ProjectGrant
+		if check.Caller.Kind=="agent"{loaded,err:=tx.LoadProjectGrant(p.ID,check.Caller.ID);if err!=nil{return err};member=&loaded}
+		if err=AuthorizeProjectActionCaller(p,check.Caller,member,check.Action,time.Now().UTC());err!=nil{return err}
+		if err=ValidateProjectActionScope(p,ProjectActionScope{ProjectID:p.ID,SettingsRevision:g.Scope.SettingsRevision,Action:check.Action,Roots:[]string{check.Root},Tools:check.Tools,ExternalTargets:check.ExternalTargets});err!=nil{return err}
 		if err=s.validateProjectRoot(p,check.Root);err!=nil{return err}
-		if !has(p.Settings.AllowedActions,check.Action){return domain.WorkspaceError(apierrors.ScopeDenied,"project action permission was narrowed")}
-		for _,tool:=range check.Tools{if !has(p.Settings.AllowedTools,tool){return domain.WorkspaceError(apierrors.ScopeDenied,"project tool permission was narrowed")}}
-		for _,target:=range check.ExternalTargets{if p.Settings.ExternalModelCLI==""||target!=p.Settings.ExternalModelCLI{return domain.WorkspaceError(apierrors.ScopeDenied,"external target is not allowed by current project settings")}}
 		return fn(tx.Context(),g)
 	})
 }
@@ -197,6 +210,12 @@ func (s *S2Service) WithAuthorizedGrant(ctx context.Context,check domain.GrantCh
 func (s *S2Service) ListProposalsFor(ctx context.Context,c domain.Caller) ([]domain.Proposal,error) {
 	if c.Kind=="human" {if err:=human(c);err!=nil{return nil,err};return s.repo.ListWorkspaceProposals(ctx,"")}
 	if err:=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{_,err:=projectAccess(tx,c,c.ProjectID);return err});err!=nil{return nil,err};return s.repo.ListWorkspaceProposals(ctx,c.ProjectID)
+}
+
+func (s *S2Service) ListGoalsFor(ctx context.Context,c domain.Caller) ([]domain.Goal,error) {
+	if c.Kind=="human"{if err:=human(c);err!=nil{return nil,err};return s.repo.ListWorkspaceGoals(ctx,"")}
+	if err:=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{_,err:=projectAccess(tx,c,c.ProjectID);return err});err!=nil{return nil,NormalizeWorkspaceError(err)}
+	return s.repo.ListWorkspaceGoals(ctx,c.ProjectID)
 }
 
 func (s *S2Service) ReadProposal(ctx context.Context,c domain.Caller,id string,revision int) (p domain.Proposal,err error) {
