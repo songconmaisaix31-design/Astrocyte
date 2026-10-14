@@ -43,7 +43,7 @@ export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) =
   client.use({ async onRequest({ request }) {
     const path = new URL(request.url).pathname;
     if (request.method !== 'GET' || request.signal.aborted || request.headers.has('Authorization') ||
-      ['/auth/session', '/health', '/foundation'].some(suffix => path.endsWith(suffix))) return request;
+      ['/auth/session', '/health', '/foundation'].some(suffix => path === `/api/v1${suffix}`)) return request;
     bootstrap ??= establishSession(request).catch(error => { bootstrap = undefined; throw error; });
     await bootstrap;
     return request;

@@ -1,5 +1,425 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/relay/tasks/{id}/events/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explicit human reconciliation of the same derived event origins
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset. Does not re-execute Agent or clear original receipts. Published means admitted to isolated app observations, not cognitive normalization or snapshot publication.
+         */
+        post: operations["reconcileRelayTaskEvents"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read current human project permission scope
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayProjects"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayAgents
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayAgents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayTasks
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayTasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * getRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["getRelayTask"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayTaskEvents
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayTaskEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * listRelayTaskReceipts
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        get: operations["listRelayTaskReceipts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * createRelayIntent
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["createRelayIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/intents/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * confirmRelayIntent
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["confirmRelayIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * sendRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["sendRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * readRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["readRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/stop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * stopRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["stopRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * resumeRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["resumeRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/relay/tasks/{id}/transition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * transitionRelayTask
+         * @description Candidate Works Relay v1.2 contract. Existing human session and Origin guard; POST also requires CSRF and Idempotency-Key. Sole runtime Service owns state and immutable action receipts. No automatic retry or dispatch. Unconfirmed user seams remain unset.
+         */
+        post: operations["transitionRelayTask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench health
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench today
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchToday"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/focus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench focus
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchFocus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/topics/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench topics/evidence
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchEvidence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench agents
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchAgents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench events
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/cognition/filters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read cognitive workbench filters
+         * @description Read-only published snapshot. Human session, loopback and origin guard apply; no source DB fallback. Events use exactly six safe fields. Shanghai dates are inclusive; missing state is preserved.
+         */
+        get: operations["getWorkbenchFilters"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/source-collections/discover": {
         parameters: {
             query?: never;
@@ -1928,6 +2348,389 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        RelayProjectV1: {
+            project_id: string;
+            name: string;
+            root: string;
+            /** @enum {string} */
+            permission_level: "A" | "B" | "C";
+            project_settings_revision: number;
+            allowed_subdirs: string[];
+            allowed_actions: string[];
+            allow_agent_control: boolean;
+            allow_directory: boolean;
+            expand_references: boolean;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "projects": []
+         *     }
+         */
+        RelayProjectsV1: {
+            /** @constant */
+            schema_version: 1;
+            projects: components["schemas"]["RelayProjectV1"][];
+        };
+        /**
+         * @example {
+         *       "name": "fixture-cli",
+         *       "launch_cmd": [
+         *         "fixture-cli"
+         *       ],
+         *       "capabilities": {},
+         *       "drive_mode": "terminal"
+         *     }
+         * @example {
+         *       "name": "fixture-cli",
+         *       "launch_cmd": [
+         *         "fixture-cli"
+         *       ],
+         *       "capabilities": {},
+         *       "drive_mode": "terminal",
+         *       "input_mode": "stdin_eof"
+         *     }
+         */
+        RelayAgentV1: {
+            name: string;
+            launch_cmd: string[];
+            capabilities: {
+                [key: string]: components["schemas"]["NativeCapabilityObservationV1"];
+            };
+            /** @enum {string} */
+            drive_mode: "structured" | "terminal" | "both";
+            /**
+             * @description Optional trusted registration input framing. Omitted means existing line mode. stdin_eof closes stdin after the full first input and does not support later Send. This field does not authorize launch or prove native CLI compatibility.
+             * @enum {string}
+             */
+            input_mode?: "line" | "stdin_eof";
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "agents": [],
+         *       "inventory": []
+         *     }
+         */
+        RelayAgentsV1: {
+            /** @constant */
+            schema_version: 1;
+            agents: components["schemas"]["RelayAgentV1"][];
+            inventory: components["schemas"]["LocalAgentV1"][];
+        };
+        RelayTaskV1: {
+            task_id: string;
+            work_id: string;
+            project_id: string;
+            worktree_id: string;
+            terminal_id: string;
+            agent: string;
+            description: string;
+            /** @enum {string} */
+            state: "ready" | "accepted" | "working" | "done" | "released";
+            condition: string;
+            /** @enum {string} */
+            permission_level: "A" | "B" | "C";
+            project_settings_revision: number;
+            degraded_launch: boolean;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        RelayTerminalV1: {
+            terminal_id: string;
+            worktree_id: string;
+            agent: string;
+            /** @enum {string} */
+            drive_mode: "structured" | "terminal" | "both";
+            /** @enum {string} */
+            liveness: "live" | "unverifiable" | "exited";
+            /** Format: date-time */
+            last_event_at: string | null;
+            /** Format: date-time */
+            exited_at: string | null;
+            last_sequence: number;
+            /** Format: date-time */
+            created_at: string;
+        };
+        RelayWorkspaceV1: {
+            worktree_id: string;
+            project_id: string;
+            root: string;
+            branch: string;
+            prepared: boolean;
+            active_task_id: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        RelayTransitionV1: {
+            task_id: string;
+            /** @enum {string} */
+            from: "" | "ready" | "accepted" | "working" | "done";
+            /** @enum {string} */
+            to: "ready" | "accepted" | "working" | "done" | "released";
+            /** Format: date-time */
+            ts: string;
+            operator: string;
+        };
+        RelayTaskViewV1: {
+            task: components["schemas"]["RelayTaskV1"];
+            terminal: components["schemas"]["RelayTerminalV1"] | null;
+            worktree: components["schemas"]["RelayWorkspaceV1"] | null;
+            transitions: components["schemas"]["RelayTransitionV1"][];
+            event_publication: {
+                /** @enum {string} */
+                status: "none" | "pending" | "published" | "error";
+                pending_events: number;
+                published_events: number;
+            };
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "tasks": [],
+         *       "dispatched_work_ids": []
+         *     }
+         */
+        RelayTasksV1: {
+            /** @constant */
+            schema_version: 1;
+            tasks: components["schemas"]["RelayTaskViewV1"][];
+            dispatched_work_ids: string[];
+        };
+        RelayTaskResultV1: {
+            /** @constant */
+            schema_version: 1;
+            view: components["schemas"]["RelayTaskViewV1"];
+        };
+        RelayReceiptErrorV1: {
+            /** @enum {string} */
+            code: "validation_failed" | "unsupported_capability" | "version_conflict" | "context_stale" | "index_stale" | "scope_denied" | "approval_required" | "approval_revoked" | "lease_lost" | "budget_exhausted" | "provider_unavailable" | "evidence_missing" | "delivery_unknown" | "not_found" | "internal_error";
+            message: string;
+            request_id: string;
+            retryable: boolean;
+            required_action: string;
+        };
+        RelayReceiptV1: {
+            receipt_id: string;
+            task_id: string;
+            /** Format: uuid */
+            operation_id: string;
+            /** @enum {string} */
+            action: "intent" | "dispatch" | "send" | "read" | "stop" | "resume" | "transition" | "observe" | "reconcile_events";
+            operator: string;
+            /** @enum {string} */
+            status: "pending" | "accepted" | "rejected" | "delivery_unknown";
+            error: components["schemas"]["RelayReceiptErrorV1"] | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            finished_at: string | null;
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "receipts": []
+         *     }
+         */
+        RelayReceiptsV1: {
+            /** @constant */
+            schema_version: 1;
+            receipts: components["schemas"]["RelayReceiptV1"][];
+        };
+        /**
+         * @example {
+         *       "schema_version": 1,
+         *       "events": [
+         *         {
+         *           "event_id": "fixture-relay-event",
+         *           "kind": "edit_file",
+         *           "topic": "fixture-work",
+         *           "tokens": null,
+         *           "scope": "fixture-project",
+         *           "ts": "2026-10-14T00:00:00Z"
+         *         }
+         *       ]
+         *     }
+         */
+        RelayEventsV1: {
+            /** @constant */
+            schema_version: 1;
+            events: components["schemas"]["WorkbenchEventV1"][];
+        };
+        /**
+         * @example {
+         *       "work_id": "fixture-work",
+         *       "project_id": "fixture-project",
+         *       "agent": "fixture-agent",
+         *       "task": "Fixture human task"
+         *     }
+         */
+        RelayIntentRequestV1: {
+            work_id: string;
+            project_id: string;
+            agent: string;
+            task: string;
+        };
+        /**
+         * @example {
+         *       "permission_confirmed": true,
+         *       "permission_level": "A",
+         *       "project_settings_revision": 0
+         *     }
+         */
+        RelayConfirmRequestV1: {
+            /** @constant */
+            permission_confirmed: true;
+            /** @enum {string} */
+            permission_level: "A" | "B" | "C";
+            project_settings_revision: number;
+        };
+        /**
+         * @example {
+         *       "input": "Fixture human input"
+         *     }
+         */
+        RelaySendRequestV1: {
+            input: string;
+        };
+        /** @example {} */
+        RelayEmptyRequestV1: Record<string, never>;
+        /**
+         * @example {
+         *       "from": "working",
+         *       "to": "done",
+         *       "completion_confirmed": true
+         *     }
+         */
+        RelayTransitionRequestV1: {
+            /** @enum {string} */
+            from: "ready" | "accepted" | "working" | "done";
+            /** @enum {string} */
+            to: "accepted" | "working" | "done" | "released";
+            completion_confirmed: boolean;
+        };
+        RelayActionResultV1: {
+            /** @constant */
+            schema_version: 1;
+            view: components["schemas"]["RelayTaskViewV1"];
+            receipt: components["schemas"]["RelayReceiptV1"];
+        };
+        /**
+         * @example {
+         *       "event_id": "fixture-event",
+         *       "kind": "agent_task",
+         *       "topic": "fixture-topic",
+         *       "tokens": null,
+         *       "scope": "fixture-scope",
+         *       "ts": "2026-10-12T16:00:00Z"
+         *     }
+         */
+        WorkbenchEventV1: {
+            event_id: string;
+            kind: string;
+            topic: string;
+            tokens: number | null;
+            scope: string;
+            /** Format: date-time */
+            ts: string;
+        };
+        WorkbenchTopicV1: {
+            topic: string;
+            attention: number;
+            momentum: number;
+            confidence: number;
+        };
+        WorkbenchCardV1: {
+            topic: string;
+            attention: number;
+            momentum: number;
+            confidence: number;
+            attention_delta: number | null;
+        };
+        /**
+         * @example {
+         *       "status": "ok",
+         *       "snapshot_at": "2026-10-13T08:00:00Z",
+         *       "timezone": "Asia/Shanghai"
+         *     }
+         */
+        WorkbenchHealthV1: {
+            /** @constant */
+            status: "ok";
+            /** Format: date-time */
+            snapshot_at: string;
+            /** @constant */
+            timezone: "Asia/Shanghai";
+        };
+        WorkbenchTodayV1: {
+            /** Format: date */
+            day: string;
+            focus: components["schemas"]["WorkbenchCardV1"][];
+            activity: components["schemas"]["WorkbenchEventV1"][];
+            sleep: {
+                /** Format: date */
+                day: string;
+                /** @enum {string} */
+                status: "not_produced" | "running" | "completed";
+                /** Format: date-time */
+                completed_at: string | null;
+            };
+            daily_counts: {
+                /** Format: date */
+                day: string;
+                count: number;
+            }[];
+            sources: {
+                source: string;
+                count: number;
+            }[];
+        };
+        WorkbenchFocusV1: {
+            topics: components["schemas"]["WorkbenchTopicV1"][];
+            series: {
+                topic: string;
+                points: {
+                    /** Format: date-time */
+                    ts: string;
+                    attention: number;
+                }[];
+            }[];
+        };
+        WorkbenchAgentsV1: {
+            groups: {
+                source: string;
+                today: number;
+                days7: number;
+                days30: number;
+                recent: components["schemas"]["WorkbenchEventV1"][];
+            }[];
+        };
+        WorkbenchEventsV1: {
+            events: components["schemas"]["WorkbenchEventV1"][];
+            total: number;
+            page: number;
+            page_size: number;
+        };
+        WorkbenchEvidenceV1: {
+            topic: string;
+            aggregates: {
+                /** Format: date */
+                day: string;
+                kind: string;
+                count: number;
+            }[];
+            events: components["schemas"]["WorkbenchEventV1"][];
+            total: number;
+            page: number;
+            page_size: number;
+        };
+        WorkbenchFiltersV1: {
+            topics: string[];
+            kinds: string[];
+            sources: string[];
+        };
         /**
          * @example {
          *       "schema_version": 1,
@@ -4805,6 +5608,1335 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    reconcileRelayTaskEvents: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayProjectsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayAgents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayAgentsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayTasks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTasksV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getRelayTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayTaskEvents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayEventsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    listRelayTaskReceipts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayReceiptsV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    createRelayIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayIntentRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    confirmRelayIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayConfirmRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    sendRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelaySendRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    readRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    stopRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    resumeRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayEmptyRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    transitionRelayTask: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayTransitionRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Derived relay state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayTaskResultV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Guard, permission, conflict or unavailable result; no launch retry */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchHealth: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchHealthV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchToday: {
+        parameters: {
+            query?: {
+                source?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchTodayV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchFocus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchFocusV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchEvidence: {
+        parameters: {
+            query?: {
+                topic?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchEvidenceV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchAgents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchAgentsV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchEvents: {
+        parameters: {
+            query?: {
+                topic?: string;
+                kind?: string;
+                source?: string;
+                start?: string;
+                end?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchEventsV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
+    getWorkbenchFilters: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed snapshot view */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkbenchFiltersV1"];
+                };
+            };
+            /** @description Invalid filter or pagination */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Local human session required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Published snapshot unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     discoverSourceCollections: {
         parameters: {
             query?: never;
