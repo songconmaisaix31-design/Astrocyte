@@ -164,6 +164,17 @@ M-relay `msg_6cb9cda5083d` 已确认三组契约顺序：原 H 在本次无模�
 
 ## 隐私、冻结与剩余限制
 
+## S5 普通合并冲突的原负责人临时返修计划
+
+M-release `msg_28b5d6291c58` 请求协调 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015` 中的十八项真实冲突。该树普通合入 B `b502f5c3dbf0b57f84a937d314df09d94d164f70` 后，普通合入 S4 `1a55e1630502642324500c3b64853af882962fa4` 未完成；模块独立 `git diff --name-only --diff-filter=U` 核实与所交清单一致。原 S5 已被要求明确 STOP ACK，禁止在返修期间写这些路径或继续当前 merge；本计划普通 push、原 S5 停写确认与原 B/S2 安全检查点 ACK 均满足后，才发具体临时放行。当前尚未授予跨树写入，原人员继续各自实际任务，不中断事务、构建或其他活动。
+
+| 原负责人 | 仅此 S5 树的拟临时写入范围 |
+|---|---|
+| 原 B `ctx_7217777c7bf5` | `dependencies.lock.json`、`go.sum` |
+| 原 S2 `ctx_f32b6d92119a` | `docs/standards/workspace-s2.md`；`internal/adapters/httpapi/workspace_goals.go`、`workspace_proposals.go`；`internal/adapters/sqlite/workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go`、`workspace_session_bindings.go`；`internal/workspace/app/proposal_ports.go`、`s2_service.go`、`session_bindings.go`；`internal/workspace/domain/approvals.go`、`goals.go`、`proposal_context.go`、`proposals.go`、`session_bindings.go`；`tests/s2/approval_test.go` |
+
+原 B/S2 只用文件编辑工具处理上述本人准确冲突并 stage 本人文件，保留当前 S5 实际 SDK 依赖、现行 S2 权限/版本/准入行为与真实 S4 provider，领域错误交原 owner。不得整体复制旧 S4 版本覆盖新 S2，不编辑 S5 私域、其他共享文件、资产或 OS 设置，不执行 commit / merge continue / abort / reset / ours-theirs。各自提交安全检查结果并归还临时范围后，原 S5 核冲突标记零、未合并项零，再继续普通 merge、实际验证和 SOURCE / 独立 REPORT 普通 push。本模块只写此计划，不代写业务或增加同域人员。
+
 原始来源、认证文件、模型输出、流与错误原件只保留本机专门证据目录，不进 HTTP/Git/包/stdout；文档只写安全派生和本机指针。浏览器未知派发锁仅保存公开操作身份与 unknown 状态，跨组件重开/刷新保留，禁止自动重试。
 
 旧正式 V4、冻结 schema/engine/mapper/权重/日程与 17321 不变；真实用户作品、自由工具及未答活性窗口保持未决定。SPEC 已明确的 Mission 按 S3 实施。已授权公开固定项目实际模型/HTTP 操作沿当前许可，原生文件/命令工具关闭。Procmon、两次真实自动快照、人评及七日科研结果继续按真实状态记录。
