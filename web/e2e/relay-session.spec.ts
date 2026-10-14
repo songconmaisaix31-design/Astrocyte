@@ -145,6 +145,11 @@ test.describe('H actual HTTP public DTO replay; not live browser/service accepta
       expect(samples).toHaveLength(3);
       expect(samples[index].schema).toBe('RelaySessionEventsV1');
       const body = samples[index].body;
+      for (const event of body.events) {
+        expect(Object.keys(event).sort()).toEqual(['event_id', 'kind', 'scope', 'tokens', 'topic', 'ts']);
+        expect(typeof event.event_id).toBe('string');
+        expect(event.event_id.length).toBeGreaterThan(0);
+      }
       const state = await setup(page, body); await page.goto('/cognition/today');
       const region = page.getByRole('region', { name: '本机 Session 派生事件', exact: true });
       if (body.coverage.length) {
@@ -152,8 +157,12 @@ test.describe('H actual HTTP public DTO replay; not live browser/service accepta
         await expect(region).toContainText('完整会话生命周期：尚未核实');
       } else await expect(region).toContainText('尚无会话覆盖证据 · unknown');
       await expect(region.locator('tbody tr')).toHaveCount(body.events.length);
+      const ordered = [...body.events].sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts) || a.event_id.localeCompare(b.event_id));
+      for (const [row, event] of ordered.entries()) await expect(region.locator('tbody tr').nth(row).locator('td').first()).toHaveText(event.event_id);
       await snapshotTen(page);
       await expect(page.locator('body')).not.toContainText('PRIVATE_RAW_CANARY');
+      expect(await page.content()).not.toContain('PRIVATE_RAW_CANARY');
+      expect(await page.content()).not.toContain('PRIVATE_NATIVE_ID');
       expect(state.writes).toEqual([]);
     });
   }
