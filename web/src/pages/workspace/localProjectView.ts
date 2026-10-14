@@ -3,7 +3,7 @@ import type { components } from '../../api/schema';
 type Project = components['schemas']['ProjectV1'];
 type Session = components['schemas']['SessionV1'];
 
-/** Presentation fields only. Absent backend facts stay null until an adapter publishes them. */
+/** 仅映射显示字段；尚未观察到的服务字段保持 null。 */
 export interface LocalProjectView {
   project: Project;
   platforms: string[];

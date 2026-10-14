@@ -1,6 +1,10 @@
 # Astrocyte 主控交接
 
-2026-10-14 19:59：继续网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md)。原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 沿新 Dispatch `ctx_5a0a4d492434` 实际继续；新增 B `ctx_e0356fbca4e1` 已 failed 结算并 released，双方修改完整保留。F `ctx_a69aaadfe5b6` 在原工作树继续。主控自己的实际终端为 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f`，已重新绑定原 Run generation 3；接管前必须核实终端实际 Agent 和目录，不能仅按 Orca 工作树元数据推断身份。P REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端且适用独立验证 PASS，旧终端释放状态 unknown。主控只维护状态、验收及最终 Git；完成后交唯一集成人员普通合并。当前正式运行树不接入整改源码；Mission 新业务待定和 V4 冻结保持不变。
+2026-10-14：本发布包分支普通消费 Q 可分发认知快照 SOURCE `8001a76646f5892bc18d8ccb9e5cd065b51425a6` 及其 Workbench / Works Relay 前端父历史，准备合并产品的 Windows x64 包。当前 P 工具 SOURCE `d0fb7ff0bb1e791583cc405f098eb684affce35e`，候选检查为阶段结果；全部领域终稿、唯一 I 精确集成、实际原生链路、非空认知和最终包尚未最终验收。执行事实源为总负责人当前 [release 任务](tasks/Release-v0.1-20261014.md) 与 [AGENTS.md](AGENTS.md)，总负责人终端 `term_494acbb9-67a5-4360-82dc-8514ce124990`；发布模块子 Run `run_ab36c13bc549` 管理 Q / P / S 和后续唯一 I，原活跃 owner 保持其工作树、分支和写域。正式 V4 运行树、日程与 17321 保持原约束，Mission 扩展仍未决定。
+
+## 历史：validation 接管与验收记录
+
+2026-10-14 19:59：网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md) 曾由原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 沿 `ctx_5a0a4d492434` 继续；新增 B `ctx_e0356fbca4e1` 已 failed 结算并 released，双方修改完整保留。F 当时沿 `ctx_a69aaadfe5b6` 在原工作树继续。该时点主控终端 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f` / Run generation 3 属于历史身份，接管时核实实际 Agent、终端与目录。Python REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端且适用独立验证 PASS，旧终端释放状态当时 unknown；后续业务由各原 owner 完成与唯一 I 普通合并，正式运行树不接入整改源码。
 
 2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
 
@@ -87,6 +91,28 @@ A分层材料已正式激活，本地SQL误差0/2006引用回溯/raw0；B1003原
 已合kind映射/固定五种子匹配/observed association/git-log adapter和EX-01的Run两处限定接缝：tagged禁生、pending保留，既有更新/去噪/fluid/merge不改。root完整pnpm check/build PASS，原M2随整包绿；同原100独立复测保留100/映射3/unknown97/候选3/正式eligible0，首RED不覆盖。源码已push，[CI38159885208](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38159885208)对bc594de completed/success：Ubuntu/Windows完整check/build/defaultE2E均PASS，各226 PASS/30 SKIP（3.1m/4.9m），Linux race PASS、Windows按条件SKIP。后续仅文档收尾，代码/测试与此SHA一致。EX-01 rollback对象2947454，未执行。EXPERIMENT已补声明但仍草案、未锁SHA。
 
 本轮明确授权最近30天两客户端原生载荷与两仓git log本地验证，覆盖旧metadata范围未答，旧failed不改；raw不外发/不入Git，不动个人库。外部证据根`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012`。没有schema豁免实施，raw三层/MCP白名单方案尚未落地，审计5 FAIL/4 PASS仍RED。derived同值审计口径与正式运行参数待答；现有unassigned无候选label/provider，正向出生BLOCKED，已询问可复用规则/实现，不新增发现能力。V0未通过，V1–V4/人工抽检及确认/真实三臂未执行，不能抢跑或生成终局报告。
+## 历史：Workbench 接管与验收记录
+## 当前入口：Works Relay v1.2 实施（2026-10-14）
+
+业务目标workbench/v0.2-access，validation登记定稿a429a4d；[三轨计划](tasks/Works-Relay-plan.md)、[决策与owner](tasks/Works-Relay-decisions.md)。起点9d78835与验收d46业务全等，精确CI38440379678已独立核实success。Orca Run run_d577f0d3fee1由term_d7f7e173协调，R-runtime ctx_fd41ff32f67d、H-http ctx_bcc3677fe29c、F-ui ctx_a7f2a326ff24均observed启动。三轨互斥，root只文档/独验/最终Git；领域返修原owner，最后唯一集成普通no-ff合。Today实时接缝/作品当前状态及非Git范围/参考图与活性窗已问人待答，独立开发继续。V4正式源/引擎/schema/权重/快照管道零改，v0.1 Procmon和真实两日收尾不阻塞本切片；未验事项不填绿。
+
+## 最终入口：Workbench 双平台通过（2026-10-14 01:53）
+
+先读STATUS顶部。分支workbench/v0.1-workbench，精确业务d46f9f4，CI38440379678已completed/success：Ubuntu/Windows完整check/build/E2E各238PASS/32SKIP，Linux race PASS。root全check/build和238/32默认E2E、真实live2、双视口与常驻静态十值SQL全部PASS；所有owner/report普通祖先，Worker全结算release，reclaimable=0。访问http://127.0.0.1:17321/cognition/today，当前服务脱离Worker经Windows Start任务常驻。之后仅状态/报告文档变动，业务与d46相等。
+
+剩余管理员Procmon正式DB/WAL/SHM零写与10-15/10-16每日00:30连续两日真实自动验收；详见docs/workbench/backend.md，本机证据在LOCALAPPDATA/astrocyte-workbench/v0.1/verification。验证库、协议、日程、引擎/schema/权重零改，v0.2未启动，未合main；解冻后按裁决一次收敛。旧pending段是历史时点，最终CI结论以上文为准，首RED不覆盖。
+
+## 当前交付入口：Workbench 本机已部署（2026-10-14 01:51）
+
+分支workbench/v0.1-workbench，root测试源码d46f9f4、报告普通合ecc641f；三轨精确SOURCE/REPORT见STATUS顶部，全部succeeded、push/clean，Worker已release，reclaimable=0。既有web/server只读认知四页在http://127.0.0.1:17321/cognition/today，服务由Windows已注册Start任务独立启动，非Worker子进程。root check/build EXIT0，完整默认E2E238PASS/32SKIP；真实live2、双视口十值与独立SQL、最终静态四页十值均PASS。首RED与中断保持本机原件。
+
+新CI38440379678精确归属d46：Ubuntu已success，Windows仍浏览器阶段，待最终追加结论。目标HEAD后续仅文档，业务与d46相等。剩余全验收为管理员Procmon正式DB/WAL/SHM零写和10-15/10-16两日00:30真实自动结果；执行步骤在docs/workbench/backend.md，不能以人工刷新、Ready或hash替代。所有数据库/配置/原始数据/截图/取证仅LOCALAPPDATA；validation/V4/引擎/schema/参数未改，v0.2仍冻结，main未合，解冻后一次收敛。
+
+## 当前入口：Workbench 只读认知页（2026-10-14）
+
+先读STATUS顶部与tasks/Workbench-v01.md、Workbench-api.md。交付分支workbench/v0.1-workbench基于attention-engine/v1-20261011，复用现有web/server，不采用已封存独立工程；引擎/schema/validation/V4不动。Orca重启后原两个Task在原工作树续接，backend ctx1f5ae09e7cad、frontend ctxca3e2f3fcf21，均已observed启动；旧中断failed与首RED保留。root只计划/状态/独立验收/最终Git，业务返修归owner。
+
+等待精确SOURCE/REPORT、测试与push后，派唯一集成owner普通no-ff合两轨，领域问题退owner。root最终check/build、真实四视图十值SQL复核及push；当前未集成。快照与所有真实证据仅LOCALAPPDATA/astrocyte-workbench/v0.1，正式源只在线备份读取。00:30两日自动和管理员文件监控未通过，不以手动两次或静态检查替代。当前不合main，按用户裁决解冻后validation与本分支一次收敛。
 
 ## 最终交付入口：双平台 CI 已通过（2026-10-12）
 

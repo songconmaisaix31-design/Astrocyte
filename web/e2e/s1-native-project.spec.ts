@@ -10,8 +10,7 @@ import { humanAPI } from '../../tests/s1/api.mjs';
 
 type S = components['schemas'];
 
-// Separately assigned after public-material acceptance. At most three short
-// actual Codex turns, one approved public file, no tool permission or private roots.
+// 真实 Codex 需单独分配许可，仅交付已批准公开文件，工具保持关闭。
 test('human observes, stops, resumes the same actual native session and sends one scoped message', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_REAL_NATIVE_UI !== '1', 'Requires separately declared coordinator-assigned native slot.');
   test.setTimeout(360_000);
@@ -28,6 +27,8 @@ test('human observes, stops, resumes the same actual native session and sends on
   const results: unknown[] = [];
   let completed = false;
   let projectID: string | undefined;
+  let primaryError: unknown;
+  let cleanupError: unknown;
   try {
     await page.goto(`${server.webURL}/workspace`);
     await page.getByRole('button', { name: '接入项目', exact: true }).click();
@@ -170,18 +171,19 @@ test('human observes, stops, resumes the same actual native session and sends on
       await native.screenshot({ path: testInfo.outputPath(`actual-native-${width}.png`) });
     }
     completed = true;
-  } finally {
+  } catch (error) { primaryError = error; throw error; } finally {
     try { if (!completed && projectID) {
       const actual = await api.get(`/local-projects/${projectID}/sessions`) as S['NativeSessionListV1'];
       for (const session of actual.items.filter(item => item.ownership === 'owned' && !item.stop_confirmed)) {
-        // Explicit human cleanup stop, never model resend or history takeover.
+        // 人工清理只终止本次持有的会话。
         const key = randomUUID();
         const response = await fetch(`${server.apiURL}/api/v1/local-projects/${projectID}/sessions/${session.id}/stop`, { method: 'POST', headers: { Cookie: api.cookie, Origin: server.apiURL, 'Content-Type': 'application/json', 'X-CSRF-Token': api.session.csrf_token, 'Idempotency-Key': key }, body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 2 }) });
         results.push({ cleanupStopStatus: response.status, receipt: await response.json() as unknown });
       }
-    } } catch (error) { results.push({ cleanupStopError: error instanceof Error ? error.message : String(error), stopConfirmed: false }); }
+    } } catch (error) { cleanupError = error; results.push({ cleanupStopError: error instanceof Error ? error.message : String(error), stopConfirmed: false }); }
     await testInfo.attach('actual-native-receipts', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
     await testInfo.attach('actual-retained-store-path', { body: JSON.stringify({ temporary: server.temporary, dataDir: server.dataDir, completed }, null, 2), contentType: 'application/json' });
-    await server.close({ preserveData: true });
+    await server.close({ primaryError });
   }
+  if (cleanupError) throw cleanupError;
 });

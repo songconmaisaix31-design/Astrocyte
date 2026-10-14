@@ -23,7 +23,7 @@ export type LocalAgent = components['schemas']['LocalAgentV1'];
 export type AgentObservation = components['schemas']['AgentObservationV1'];
 export type NativeCapabilityObservation = components['schemas']['NativeCapabilityObservationV1'];
 
-/** Uses generated types; no command retries. Session bootstrap precedes protected reads. */
+/** 使用生成类型；受保护读取先建立会话，命令不自动重发。 */
 export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) => {
   const client = createClient<paths>({ baseUrl, ...(fetchImpl ? { fetch: fetchImpl } : {}) });
   let bootstrap: Promise<void> | undefined;
@@ -35,25 +35,23 @@ export const createApiClient = (baseUrl = '/api/v1', fetchImpl?: typeof fetch) =
     const timeout = setTimeout(() => controller.abort(), 10000);
     try {
       const response = await (fetchImpl ?? fetch)(new Request(url, { credentials: 'same-origin', signal: controller.signal }));
-      // Finish the bootstrap response and clear its timer before resolving, so
-      // browser network-idle and callers do not wait for the timeout to fire.
+      // 读取完整响应后清除计时器，让调用方立即获知会话结果。
       await response.arrayBuffer();
-      // S0 did not expose sessions. Its 404 preserves compatibility with read-only servers.
-      if (!response.ok && response.status !== 404) throw new Error('Local session could not be established');
+      if (!response.ok) throw new Error(`建立本地会话失败（HTTP ${response.status}）`);
     } finally { clearTimeout(timeout); }
   };
   client.use({ async onRequest({ request }) {
     const path = new URL(request.url).pathname;
     if (request.method !== 'GET' || request.signal.aborted || request.headers.has('Authorization') ||
-      ['/auth/session', '/health', '/foundation'].some(suffix => path.endsWith(suffix))) return request;
+      ['/auth/session', '/health', '/foundation'].some(suffix => path === `/api/v1${suffix}`)) return request;
     bootstrap ??= establishSession(request).catch(error => { bootstrap = undefined; throw error; });
     await bootstrap;
     return request;
   }, async onResponse({ request, response }) {
     if (request.method !== 'GET' || request.headers.has('Authorization') || response.status !== 403 || request.url.endsWith('/auth/session')) return response;
-    const error = await response.clone().json().catch(() => undefined) as ApiErrorBody | undefined;
+    const error = await response.clone().json() as ApiErrorBody;
     if (!['local session required', 'local session expired'].includes(error?.error?.message ?? '')) return response;
-    // Only safe reads are repeated once after restart/expiry. No command is replayed.
+    // 服务重启或会话过期后只重新发送一次读取请求。
     bootstrap = establishSession(request).catch(error => { bootstrap = undefined; throw error; });
     await bootstrap;
     return (fetchImpl ?? fetch)(request);
@@ -93,8 +91,7 @@ export function createReadApi(client = api) {
 }
 export const { getHealth, getFoundation, listMaterials, listOpportunities, listProjects, listLocalAgents, listProposals, listSessions, listMissions } = createReadApi();
 
-/** Human write helpers bootstrap the local session, then send CSRF and the caller's
- * idempotency key. They never retry a write or change its key on failure. */
+/** 人工命令建立会话后携带 CSRF 和调用方提供的 Idempotency-Key，失败后保留命令身份。 */
 export function createAttentionApi(client = api) {
   async function unwrap<T>(result: Promise<{ data?: T; error?: ApiErrorBody; response: Response }>): Promise<T> {
     const { data, error, response } = await result;

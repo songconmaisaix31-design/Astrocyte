@@ -3,7 +3,7 @@ import type { ReadApiState } from '../hooks/useReadApi';
 import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
 
-/** The previous successful snapshot stays visible when a refresh fails. */
+/** 刷新失败时保留已读取快照并显示过期提示。 */
 export function QueryState<T>({ state, children, empty, emptyTitle = '暂无记录' }: { state: ReadApiState<T>; children: (data: T) => ReactNode; empty?: (data: T) => boolean; emptyTitle?: string }) {
   if (!state.data) {
     if (state.loading) return <p role="status">加载中…</p>;

@@ -31,10 +31,10 @@ const reasonNames: Record<string, string> = {
   cli_lookup_failed: 'CLI 入口查询失败',
 };
 
-export function LocalAgentsPanel({ state, fixture }: { state: ReadApiState<components['schemas']['LocalAgentListV1']>; fixture: boolean }) {
-  return <SectionCard title="本机 Agent 清单" tabs={['overview', 'sessions']} padded actions={!fixture && <button type="button" className="ac-button secondary compact" disabled={state.loading} onClick={state.retry}>刷新清单</button>}>
+export function LocalAgentsPanel({ state }: { state: ReadApiState<components['schemas']['LocalAgentListV1']> }) {
+  return <SectionCard title="本机 Agent 清单" tabs={['overview', 'sessions']} padded actions={<button type="button" className="ac-button secondary compact" disabled={state.loading} onClick={state.retry}>刷新清单</button>}>
     <p className={styles.note}>安装、配置、可启动和原生能力分别核实。清单与版本不代表已连接项目或运行中的会话；命令路径中未找到入口，不代表其他位置没有安装。</p>
-    {fixture ? <p className={styles.note}>示例模式不读取本机 Agent 清单。</p> : <QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无本机 Agent 记录">{data => <>
+    <QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无本机 Agent 记录">{data => <>
       <CollectionOverview title="客户端概览" description="显示服务最近保存的探测结果。刷新清单不会启动 Agent。" metrics={[
         { label: '已加载客户端', value: data.items.length },
         { label: '已核实安装', value: data.items.filter(agent => agent.installed.status === 'available').length },
@@ -50,7 +50,7 @@ export function LocalAgentsPanel({ state, fixture }: { state: ReadApiState<compo
           <dl className={styles.capabilities}>{(Object.keys(capabilityNames) as (keyof Agent['capabilities'])[]).map(key => <div key={key}><dt>{capabilityNames[key]}</dt><dd><ObservationValue observation={agent.capabilities[key]} /></dd></div>)}</dl>
         </details>
       </li>)}</ul>
-    </>}</QueryState>}
+    </>}</QueryState>
   </SectionCard>;
 }
 

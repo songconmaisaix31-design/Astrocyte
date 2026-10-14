@@ -88,6 +88,22 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("resolve data dir: %w", err)
 	}
+	dataDir, err = resolveRelayDataDir(dataDir)
+	if err != nil {
+		return err
+	}
+	accessEnabled, e := relayEnabled()
+	if e != nil {
+		return e
+	}
+	if accessEnabled {
+		dataDir, err = guardWorkbenchExplicitDataDir(dataDir)
+	} else {
+		dataDir, err = guardWorkbenchDataDir(dataDir)
+	}
+	if err != nil {
+		return err
+	}
 	distiller, processingSourceKeys, err := resolveDistiller(ctx, dataDir)
 	if err != nil {
 		return err
@@ -140,7 +156,11 @@ func run(logger *slog.Logger) error {
 	registry := agents.NewRegistry(nativeRoot)
 	projectReferences := &projectReferenceBridge{}
 	localProjects := workspaceapp.NewLocalProjectService(db, projectReferences, agents.ProjectFiles{}, registry)
-	localProjects.ConfigureRegisteredDiscovery(db, agents.NewRegisteredProjects())
+	projectDiscovery, err := resolveProjectDiscovery()
+	if err != nil {
+		return fmt.Errorf("configure project discovery: %w", err)
+	}
+	localProjects.ConfigureRegisteredDiscovery(db, projectDiscovery)
 	textProcessor := &selectedTextBridge{projects: localProjects, processor: registry}
 	processingTimeout := min(time.Duration(jobSeconds)*time.Second, 30*time.Minute)
 	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{
@@ -185,6 +205,7 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
+		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot()),
 		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
 		Tracking:             attention,
 		LocalProjects:        localProjects,
@@ -211,6 +232,15 @@ func run(logger *slog.Logger) error {
 	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
 		services.RankingProfile = profile
 	}
+	closeRelay, err := assembleRelay(&services, db, registry)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeRelay() != nil {
+			logger.Error("relay shutdown incomplete; unconfirmed state retained")
+		}
+	}()
 
 	// Resolve port — invalid value fails startup.
 	port, err := resolvePort()
@@ -242,6 +272,8 @@ func run(logger *slog.Logger) error {
 	// Graceful shutdown on SIGINT/SIGTERM.
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
 	defer cancelWorkers()
+	stopRelayObserver := startRelayObserver(workerCtx, services.Relay, logger)
+	defer stopRelayObserver()
 	workerErrors := make(chan error, 1)
 	go func() { workerErrors <- attention.Run(workerCtx) }()
 	// One fixed discovery run per service start. Health remains responsive while

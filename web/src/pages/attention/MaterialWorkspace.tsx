@@ -19,11 +19,10 @@ import { stages, type Material, type Opportunity, type Distillation } from './mo
 import styles from './AttentionPage.module.css';
 
 type Detail = components['schemas']['MaterialDetailV1'];
-export function MaterialWorkspace({ item, id, fixture, refreshToken, materials, domains, onChanged, onQueued, onOpportunity }: { item?: Material; id: string; fixture: boolean; refreshToken: number; materials: Material[]; domains: ReturnType<typeof useDomains>; onChanged: () => void; onQueued: () => void; onOpportunity: (opportunity: Opportunity) => void }) {
-  const state = useMaterialDetail(id, !fixture);
+export function MaterialWorkspace({ id, refreshToken, materials, domains, onChanged, onQueued, onOpportunity }: { id: string; refreshToken: number; materials: Material[]; domains: ReturnType<typeof useDomains>; onChanged: () => void; onQueued: () => void; onOpportunity: (opportunity: Opportunity) => void }) {
+  const state = useMaterialDetail(id);
   const { retry } = state;
   useEffect(() => { if (refreshToken) retry(); }, [refreshToken, retry]);
-  if (fixture && item) return <><MaterialSummary item={item} /><p role="note">示例数据 · 不提供真实原文、来源版本或沉淀历史；所有写操作尚未启用。</p></>;
   return <><button type="button" className="ac-button secondary compact" onClick={state.retry} disabled={state.loading}>刷新资料详情</button><QueryState state={state}>{data => <MaterialBody detail={data} materials={materials} domains={domains} disabled={state.loading || state.stale} onChanged={onChanged} onQueued={onQueued} onOpportunity={onOpportunity} />}</QueryState></>;
 }
 
@@ -113,7 +112,7 @@ function MetadataForm({ item, disabled, onSaved }: { item: Material; disabled: b
   </form>;
 }
 
-function MaterialSummary({ item }: { item: Material }) {
+export function MaterialSummary({ item }: { item: Material }) {
   return <>
     <Field label="标题">{item.title || <MutedValue>无标题</MutedValue>}</Field>
     <FieldRow><Field label="生命周期"><StatusBadge value={item.lifecycle} label={lifecycleLabel(item.lifecycle)} /></Field><Field label="类型">{materialKindLabel(item.kind)}</Field></FieldRow>

@@ -49,7 +49,7 @@ test('real paper_snapshot browser ingest: paste body, source version, dedup, mod
   }
 
   try {
-    // 1. Real full-text snapshot pasted in the browser → paper_snapshot body ingest (no re-fetch).
+    // 浏览器粘贴真实全文快照，通过 paper_snapshot 保存原文。
     const panel = await openPanel();
     const fullJob = await pasteAndImport(panel, fulltext, '按快照正文导入（HTML 正文）');
     const fullJobDone = await waitJob(api, fullJob, 'succeeded', 30_000);
@@ -68,7 +68,7 @@ test('real paper_snapshot browser ingest: paste body, source version, dedup, mod
     const kept = JSON.parse(await readFile(resolve(server.dataDir, 'objects', snapshotAttachment!.object_ref), 'utf8'));
     expect(kept).toEqual(fulltext);
 
-    // 2. Same body re-import dedups to the same material (no new revision).
+    // 相同正文再次导入时复用原资料与版本。
     const panel2 = await openPanel();
     const dedupJob = await pasteAndImport(panel2, fulltext, '按快照正文导入（HTML 正文）');
     await waitJob(api, dedupJob, 'succeeded', 30_000);
@@ -76,7 +76,7 @@ test('real paper_snapshot browser ingest: paste body, source version, dedup, mod
     expect(dedupDetail.material.id).toBe(fullMaterialId);
     expect(dedupDetail.revisions.length).toBe(1);
 
-    // 3. Same URL with a human-modified body yields a NEW revision (browser user-provided), not a 409.
+    // 相同 URL 的人工修改正文保存为新版本。
     const modified = { ...fulltext, text: fulltext.text + '\n\n[Human-provided additional body paragraph for version-change verification.]' };
     const panel3 = await openPanel();
     const modJob = await pasteAndImport(panel3, modified, '按快照正文导入（HTML 正文）');
@@ -87,7 +87,7 @@ test('real paper_snapshot browser ingest: paste body, source version, dedup, mod
     expect(modContent.text).toContain('[Human-provided additional body paragraph');
     expect(modContent.text).toContain(fulltext.title);
 
-    // 4. Fresh API process re-reads the same SQLite/objects.
+    // 新 API 进程重新读取同一 SQLite 与原文对象。
     await server.restart();
     api = await humanAPI(server.apiURL);
     const refetched = await read<S['MaterialDetailV1']>(`/materials/${fullMaterialId}`);
@@ -95,7 +95,7 @@ test('real paper_snapshot browser ingest: paste body, source version, dedup, mod
     const refetchedContent = await read<S['ContentV1']>(`/materials/${fullMaterialId}/revisions/1/content`);
     expect(refetchedContent.content_digest).toBe(fullContent.content_digest);
 
-    // 5. Three sizes + keyboard: the snapshot panel stays usable without overflow.
+    // 三种尺寸与键盘操作保持快照面板可用且没有水平溢出。
     await page.goto(`${server.webURL}/attention`);
     const summary = page.locator('summary').filter({ hasText: /^插件快照复核导入/ });
     const sizedPanel = page.locator('section[aria-label="插件快照复核导入"]');
@@ -107,7 +107,7 @@ test('real paper_snapshot browser ingest: paste body, source version, dedup, mod
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.screenshot({ path: testInfo.outputPath(`actual-paper-snapshot-${width}.png`), fullPage: false, animations: 'disabled' });
     }
-    // Keyboard: the summary is focusable and Enter toggles it open/closed.
+    // summary 可获得焦点，Enter 切换展开状态。
     await summary.focus();
     await page.keyboard.press('Enter');
     await expect(sizedPanel).toBeHidden();

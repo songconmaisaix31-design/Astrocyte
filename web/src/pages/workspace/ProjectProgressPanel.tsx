@@ -22,8 +22,7 @@ export function ProjectProgressPanel({ project, disabled }: { project: Project; 
   const files = overLimit ? [] : parsed;
 
   const infer = () => {
-    // The Idempotency-Key (from prepare's full-payload signature) is the
-    // persisted operation identity; a retry reuses it and never re-charges.
+    // 完整输入确定 Idempotency-Key，人工重试保留同一操作身份。
     const request = command.prepare({ expected_version: 1, files });
     void command.run(
       () => inferProjectProgress(project.id, request.key, files),

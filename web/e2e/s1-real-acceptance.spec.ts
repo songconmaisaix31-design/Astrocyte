@@ -15,8 +15,7 @@ const videoExport = 'C:/Users/DW/orca/workspaces/Astrocyte/s1-attention-ui-1009/
 const paperURL = 'https://arxiv.org/html/2504.16054v1';
 const videoURL = 'https://www.bilibili.com/video/BV1PReT6EEqR/';
 
-// Explicitly assigned single live slot only. Inputs are previously captured real
-// public exports, plus a fresh authorized URL extraction; no fixtures/routes.
+// 获准单一执行范围内使用实际公开导出与明确授权的新提取。
 test('real selected paper/video, scoped model rounds, ordinary reuse, authorized Agent reads and later persistence', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_REAL_S1_ACCEPTANCE !== '1', 'Requires coordinator-assigned live/model/media/native slot.');
   test.setTimeout(8_100_000);
@@ -27,7 +26,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
   expect(savedPaper.extracted.content.length).toBeGreaterThan(90_000);
   const savedVideo = JSON.parse(await readFile(videoExport, 'utf8')) as S['ContentV1'];
   expect(savedVideo.text.length).toBeGreaterThan(10_000);
-  // HTML textarea input normalizes CRLF. Preserve the historical export itself.
+  // textarea 会规范 CRLF，历史导出原件保持原样。
   const videoInput = savedVideo.text.replaceAll('\r\n', '\n');
   const env = await summarizeEnvironment({ LOCALAPPDATA: process.env.LOCALAPPDATA ?? '', ASTROCYTE_ENABLE_SUMMARIZE: 'true', ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false' });
   const reusePath = process.env.ASTROCYTE_S1_REUSE_OWNED_TEMP;
@@ -87,7 +86,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     expect(paperText.text).toBe(savedPaper.extracted.content);
     expect(paperText.provenance.mode).toBe('existing_json_export');
     const oldVideo = await importUI('video', videoInput);
-    // A continuation reuses the genuinely completed first-run media job.
+    // 继续验证时复用实际完成的首次媒体作业。
     const video = await importUI('video', undefined, !reusePath);
     expect(video.detail.material.id).toBe(oldVideo.detail.material.id);
     const originalVideo = await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/1/content`);
@@ -104,7 +103,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     expect(oldReceipt.detail.material.current_revision).toBe(head);
     expect((await read<S['ContentV1']>(`/materials/${video.detail.material.id}/revisions/${head}/content`)).text).toBe(videoText.text);
 
-    // Root-approved genuine historical v1/v2 exports: import-only, never model input.
+    // 获准的历史 v1/v2 导出仅用于导入。
     const versionObjects = 'C:/Users/DW/AppData/Local/Temp/astrocyte-s1-OHU8NF/data/objects';
     const rawV1 = await readFile(join(versionObjects, '159560bf4f2e4f2f82d4a1a03facd615d8a923345864d6cf30514a8249d237c1'), 'utf8');
     const rawV2 = await readFile(join(versionObjects, '75a089219c3dbeeb5ccef83ee8166ec63c4f956d9ff6e34fb8386f624584aae8'), 'utf8');
@@ -157,7 +156,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     expect(probed.status()).toBe(200);
     expect((await probed.json() as S['NativeSessionResultV1']).session.stop_confirmed).toBe(true);
 
-    // Human approval explicitly pins both actual objects, independently of model approval.
+    // 人工许可明确固定两个实际对象，模型许可单独设置。
     await page.goto(`${server.webURL}/attention`);
     await page.locator('main summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
     await page.getByLabel('当前项目顶层空间', { exact: true }).selectOption(spaceID);
@@ -190,7 +189,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       expect(queuedJob.delivery_unknown, 'An earlier unknown operation must never be replayed').not.toBe(true);
       if (recoverPublication && queuedJob.status !== 'succeeded') {
         await expect.poll(async () => (await read<S['JobV1']>(`/jobs/${receipt.job_id}`)).external_started, { timeout: 30_000, intervals: [50] }).toBe(true);
-        // Only this helper's explicitly owned temporary paths may be moved.
+        // 只移动本次 helper 持有的验证路径。
         const objectRoot = resolve(server.dataDir, 'objects');
         const retainedRoot = resolve(server.temporary, 'public-objects-retained');
         for (const path of [objectRoot, retainedRoot]) expect(path.startsWith(resolve(server.temporary) + sep)).toBe(true);
@@ -242,7 +241,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       expect(record!.output_text.length).toBeGreaterThan(20);
       expect(record!.prior_distillation_ids ?? []).toEqual([...prior].sort());
       modelRecords.push(record!);
-      // A new request identity with the same fixed input/question reuses the receipt.
+      // 相同固定输入与问题使用新请求身份时复用原回执。
       if (!recoverPublication) {
         const body = response.request().postDataJSON() as Record<string, unknown>;
         const key = randomUUID();
@@ -253,7 +252,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
       }
       return record!;
     }
-    // A separately authorized new objective; never replay the earlier UNKNOWN.
+    // 新目标单独取得许可，保留先前 UNKNOWN 状态。
     const contentQuestion = '梳理论文关键术语及正文定义依据，缺失定义标待查，不重做旧核心方法/局限作业。仅依据本次完整固定正文，不调用工具，全部文字限制1000中文字以内。';
     const content = await modelRound(paper.detail.material.id, 'content', contentQuestion);
     const videoContent = await modelRound(video.detail.material.id, 'content', '仅依据所选视频实际字幕提炼内容与尚待验证的主张，不补造时间或成果；全部文字限制1000中文字以内。');
@@ -299,7 +298,7 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     expect(reviewed.reviews.some(review => review.feedback === 'reject')).toBe(false);
     await later.getByRole('button', { name: '关闭', exact: true }).click();
 
-    // Actual human grant then token-authenticated Agent reads, with no token artifacts.
+    // 真实人工 grant 后按 Agent 身份读取，token 不写入产物。
     await page.goto(`${server.webURL}/workspace`);
     await panel.getByRole('button', { name: /真实公开资料项目.*查看项目与权限/ }).click();
     await manage.getByText('由你授权的项目 Agent 身份', { exact: true }).click();

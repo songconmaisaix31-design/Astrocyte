@@ -1,20 +1,9 @@
-/**
- * Paper search presentation model (pure, no I/O).
- *
- * The local shapes below mirror W0's published `PaperSearchResultV1` /
- * `PaperSearchHitV1` contract (contracts/openapi.yaml, owned by W0, converged at
- * `e39f8f1`). Search is ephemeral public metadata only: `GET /api/v1/papers/search`
- * returns hits keyed by a canonical `source_key`, a `provider` index, a raw
- * `content_state` and candidate `pdf_urls`. Full-text availability is only
- * resolved when the human selects a hit and imports it through the existing
- * ImportMaterial path (adapter per site, source_key dedup, new revision). No
- * fixture or guessed value is ever presented as a real result.
- */
+/** 论文检索的纯显示类型；公开元数据、来源身份和可得状态均来自服务。 */
 
-/** Raw availability vocabulary; metadata indexes always report `abstract_only`. */
+/** 原始可得状态；元数据索引只说明摘要与元数据可得。 */
 export type PaperContentState = 'readable_fulltext' | 'abstract_only' | 'paywall' | 'restricted' | 'unknown';
 
-/** Local view shape mirroring W0 `PaperSearchHitV1`. */
+/** 对应生成接口 PaperSearchHitV1 的显示类型。 */
 export interface PaperSearchHit {
   source_key: string;
   provider: string;
@@ -30,7 +19,7 @@ export interface PaperSearchHit {
   pdf_urls: string[];
 }
 
-/** Local view shape mirroring W0 `PaperSearchResultV1`. */
+/** 对应生成接口 PaperSearchResultV1 的显示类型。 */
 export interface PaperSearchResult {
   schema_version: 1;
   query: string;
@@ -50,29 +39,24 @@ export const paperContentStateLabel = (state: PaperContentState): string => {
   }
 };
 
-/** Canonical key of a hit is its contract `source_key`; fall back to locator. */
+/** 使用服务给出的 source_key 识别检索结果。 */
 export const paperSearchKey = (hit: PaperSearchHit): string => hit.source_key || hit.locator;
 
 function isArxiv(hit: PaperSearchHit): boolean {
   return !!hit.arxiv_id || hit.provider === 'arxiv' || /(^|\.)arxiv\.org$/i.test(hit.locator || '');
 }
 
-/** Default import adapter for a search hit; non-arXiv sites use `paper_url` HTML extraction. */
+/** arXiv 来源使用官方导入器；其他来源使用 paper_url。 */
 export function paperImportAdapter(hit: PaperSearchHit): 'arxiv' | 'paper_url' {
   return isArxiv(hit) ? 'arxiv' : 'paper_url';
 }
 
-/**
- * A search hit is selectable unless its content state is paywall/restricted.
- * `abstract_only` and `unknown` stay selectable: the import job resolves real
- * availability and the source_key dedup keeps a retry from creating a
- * duplicate. Nothing is auto-selected.
- */
+/** 付费和受限来源禁用选择；摘要与未知来源的实际正文由人工提交后的作业核实。 */
 export function canSelectPaper(hit: PaperSearchHit): boolean {
   return hit.content_state !== 'paywall' && hit.content_state !== 'restricted';
 }
 
-/** Explicit, human-only selection. Never selects a hit automatically. */
+/** 只切换人工明确选择的结果。 */
 export function togglePaper(selected: string[], hit: PaperSearchHit): string[] {
   return selected.includes(paperSearchKey(hit)) ? selected.filter(id => id !== paperSearchKey(hit)) : [...selected, paperSearchKey(hit)];
 }
@@ -81,17 +65,17 @@ export function clearPaperSelection(): string[] {
   return [];
 }
 
-/** Hits the human has actually picked. */
+/** 取得人工已选择的结果。 */
 export function pickedPapers(hits: PaperSearchHit[], selected: string[]): PaperSearchHit[] {
   return hits.filter(hit => selected.includes(paperSearchKey(hit)));
 }
 
-/** All selectable hits. */
+/** 取得当前允许选择的结果。 */
 export function eligiblePapers(hits: PaperSearchHit[]): PaperSearchHit[] {
   return hits.filter(canSelectPaper);
 }
 
-/** True when the human picked every currently selectable hit. */
+/** 判断人工是否已选择全部可选结果。 */
 export function isAllEligiblePicked(hits: PaperSearchHit[], selected: string[]): boolean {
   const eligible = eligiblePapers(hits);
   return eligible.length > 0 && pickedPapers(hits, selected).length === eligible.length;

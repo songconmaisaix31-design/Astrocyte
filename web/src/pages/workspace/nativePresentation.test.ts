@@ -22,5 +22,7 @@ describe('native output and history presentation', () => {
     expect(nativeHistoryMessage(unknown)).toEqual({ text: unknown.text, fullPacket: false });
     const plain = { ...event, text: '用户原文\nUSER_MESSAGE:\n不得截断' };
     expect(nativeHistoryMessage(plain)).toEqual({ text: plain.text, fullPacket: false });
+    const malformed = { ...event, text: `${prefix}{invalid\nUSER_MESSAGE:\n原文` };
+    expect(() => nativeHistoryMessage(malformed)).toThrow(SyntaxError);
   });
 });

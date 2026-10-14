@@ -2,20 +2,18 @@ import { test, expect } from '@playwright/test';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import { humanAPI, waitJob } from '../../tests/s1/api.mjs';
 import { importMaterial } from '../../tests/s1/api.mjs';
-import { changedPaperText, paperImport, paperText, videoImport, videoTranscript } from '../../tests/s1/fixtures.mjs';
-import { seedCandidate } from '../../tests/s1/scenarios.mjs';
+import { capturedPublicDocument, importPublicPaperVersions, importTrackedDocument, trackedCandidate } from './realService';
 
-// Each viewport owns its own API/Vite/data directory. Existing S0 tests stay empty.
-// Synthetic contract_local inputs use real HTTP/SQLite/objects; no page.route mocks.
-test.describe('S1 contract_local with real API and persistence', () => {
+// 每项测试独占生产 HTTP、SQLite 和资料对象，输入保留真实公开来源。
+test.describe('S1 实际 API 与持久化', () => {
   let server: Awaited<ReturnType<typeof startS1Server>>;
   let api: Awaited<ReturnType<typeof humanAPI>>;
-  test.beforeAll(async () => {
-    test.setTimeout(120_000);
+  test.beforeEach(async () => {
+    test.setTimeout(300_000);
     server = await startS1Server({ browser: true });
     api = await humanAPI(server.apiURL);
   });
-  test.afterAll(async () => { if (server) await server.close(); });
+  test.afterEach(async () => { if (server) await server.close(); });
 
   test('fresh browser bootstraps a human session and settles actual empty collections', async ({ page }) => {
     const materialsResponse = page.waitForResponse(response => response.url() === `${server.webURL}/api/v1/materials`);
@@ -30,12 +28,14 @@ test.describe('S1 contract_local with real API and persistence', () => {
   });
 
   test('browser imports a summarize representative export and exposes its retained positions', async ({ page }, testInfo) => {
-    const input = videoImport('https://youtu.be/S1LOCAL005a');
+    const captured = await capturedPublicDocument();
+    const input = { source_locator: captured.url, export_text: captured.raw };
     await page.goto(`${server.webURL}/attention`);
     await page.getByRole('main').getByRole('button', { name: '添加资料', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize');
-    await dialog.getByLabel(/视频原始来源/).fill(input.source_locator);
+    await dialog.getByLabel('既有导出资料类型', { exact: true }).selectOption('paper');
+    await dialog.getByLabel('论文原始来源', { exact: true }).fill(input.source_locator);
     await dialog.getByLabel(/summarize 导出内容/).fill(input.export_text);
     const receiptResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/materials/imports') && response.request().method() === 'POST');
     await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
@@ -47,28 +47,29 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect(detail.material.collection_reason).toBeNull();
     await dialog.getByRole('button', { name: '关闭', exact: true }).click();
     await page.getByRole('main').getByRole('button', { name: '↻ 刷新', exact: true }).click();
-    const card = page.getByRole('button').filter({ has: page.getByText('contract_local 视频代表导出', { exact: true }) });
+    const card = page.getByRole('button').filter({ has: page.getByText(captured.title, { exact: true }) });
     await expect(card).toBeVisible();
     await card.focus();
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('dialog')).toContainText(videoTranscript);
-    await expect(page.getByRole('dialog')).toContainText('0.000s');
+    await expect(page.getByRole('dialog').locator('pre').filter({ hasText: captured.text })).toHaveText(captured.text);
+    expect((await api.get(`/materials/${job.material_id}/revisions/1/content`)).source_spans).toEqual(detail.material.source_spans);
     await expect(page.getByRole('dialog').getByRole('link', { name: /summarize.json/ })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('s1-import-source.png'), fullPage: true });
     expect((await api.get('/missions')).items).toHaveLength(0);
   });
 
   test('view and refresh stay neutral; an explicit keyboard reread increments human attention once', async ({ page }, testInfo) => {
-    const input = { ...paperImport('https://example.invalid/contract-local/browser-reread'), title: 'contract_local 浏览器重读材料' };
-    const imported = await importMaterial(api, input);
-    await importMaterial(api, { ...input, export_text: changedPaperText });
+    const { second: imported } = await importPublicPaperVersions(api);
+    const input = imported.detail.material;
     const id = imported.detail.material.id;
+    const paperText = (await api.get(`/materials/${id}/revisions/1/content`)).text;
     const baseline = await api.get(`/materials/${id}`);
     const humanCount = baseline.material.human_usage_count;
     if (humanCount === undefined) throw new Error('S1 material omitted its human usage count');
     await page.goto(`${server.webURL}/attention`);
     await page.getByRole('main').getByRole('button', { name: '↻ 刷新', exact: true }).click();
-    const card = page.getByRole('button').filter({ has: page.getByText(input.title, { exact: true }) });
+    expect(input.title).toBeTruthy();
+    const card = page.getByRole('button').filter({ has: page.getByText(input.title!, { exact: true }) });
     await card.click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByLabel('原文版本', { exact: true })).toHaveValue('2');
@@ -89,8 +90,9 @@ test.describe('S1 contract_local with real API and persistence', () => {
   });
 
   test('AT04: later records the displayed candidate revision and survives browser/service reconnection', async ({ page }, testInfo) => {
-    const seeded = await seedCandidate(api, 'https://example.invalid/contract-local/browser-later');
-    const candidate = seeded.candidate.opportunity;
+    const candidate = await trackedCandidate(api);
+    const materialID = candidate.evidence_refs[0].material_id;
+    const paperText = (await api.get(`/materials/${materialID}/revisions/1/content`)).text;
     if (!candidate.title) throw new Error('S1 candidate omitted its title');
     await page.goto(`${server.webURL}/attention`);
     const card = page.locator('li[role="button"]').filter({ has: page.getByText(candidate.title, { exact: true }) });
@@ -106,7 +108,7 @@ test.describe('S1 contract_local with real API and persistence', () => {
     expect(saved.reviews).toHaveLength(1);
     expect(saved.reviews[0]).toMatchObject({ revision: candidate.revision, feedback: 'later' });
     expect(saved.reviews.some((review: { feedback: string }) => review.feedback === 'reject')).toBe(false);
-    expect((await api.get(`/materials/${seeded.detail.material.id}`)).material.lifecycle).toBe('active');
+    expect((await api.get(`/materials/${materialID}`)).material.lifecycle).toBe('active');
     await page.screenshot({ path: testInfo.outputPath('s1-later-feedback.png'), fullPage: true });
     await server.restart();
     api = await humanAPI(server.apiURL);
@@ -116,14 +118,15 @@ test.describe('S1 contract_local with real API and persistence', () => {
     await card.click();
     await expect(page.getByRole('dialog')).toContainText('contract_local 以后再做；保留资料待真实验证');
     expect(await api.get(`/opportunities/${candidate.id}`)).toEqual(saved);
-    expect((await api.get(`/materials/${seeded.detail.material.id}/revisions/1/content`)).text).toBe(paperText);
+    expect((await api.get(`/materials/${materialID}/revisions/1/content`)).text).toBe(paperText);
     expect((await api.get('/missions')).items).toHaveLength(0);
   });
 
   test('human classification and @ retain the original file and pinned revision; removing the reference keeps the source', async ({ page }, testInfo) => {
-    const input = { ...paperImport('https://example.invalid/contract-local/browser-space'), title: 'contract_local 空间原资料' };
-    const imported = await importMaterial(api, input);
+    const imported = await importMaterial(api, { kind: 'paper', adapter: 'arxiv', source_key: '', content_digest: '', source_locator: 'https://arxiv.org/abs/1706.03762v1' }, { timeoutMs: 120_000 });
+    const input = imported.detail.material;
     const id = imported.detail.material.id;
+    const paperText = (await api.get(`/materials/${id}/revisions/1/content`)).text;
     await page.goto(`${server.webURL}/attention`);
     const main = page.getByRole('main');
     await main.locator('summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
@@ -136,7 +139,8 @@ test.describe('S1 contract_local with real API and persistence', () => {
     const createdDomain = await domainResponse;
     expect(createdDomain.status()).toBe(201);
     const domainID = (await createdDomain.json()).domain.id;
-    const materialCard = main.getByRole('button').filter({ has: page.getByText(input.title, { exact: true }) });
+    expect(input.title).toBeTruthy();
+    const materialCard = main.getByRole('button').filter({ has: page.getByText(input.title!, { exact: true }) });
     await materialCard.click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('checkbox', { name: 'contract_local 浏览器资料域', exact: true }).check();
@@ -160,7 +164,8 @@ test.describe('S1 contract_local with real API and persistence', () => {
     await references.getByRole('button', { name: '@ 引用文件', exact: true }).click();
     expect((await referenceResponse).status()).toBe(200);
     await expect.poll(async () => (await api.get(`/project-spaces/${spaceID}`)).space.material_refs.length).toBe(1);
-    await importMaterial(api, { ...input, export_text: changedPaperText });
+    const updated = await importMaterial(api, { kind: 'paper', adapter: 'arxiv', source_key: '', content_digest: '', source_locator: 'https://arxiv.org/abs/1706.03762v2' }, { timeoutMs: 120_000 });
+    expect(updated.detail.material.id).toBe(id);
     await main.getByRole('button', { name: '↻ 刷新', exact: true }).click();
     await main.getByLabel('资料域筛选', { exact: true }).selectOption(domainID);
     await expect(materialCard).toBeVisible();
@@ -226,13 +231,14 @@ test.describe('S1 contract_local with real API and persistence', () => {
   });
 
   test('default automatic processing remains disabled and opening its form never submits a model job', async ({ page }) => {
-    const input = { ...paperImport('https://example.invalid/contract-local/browser-disabled'), title: 'contract_local 未授权自动处理资料' };
-    const imported = await importMaterial(api, input);
+    const imported = await importTrackedDocument(api);
+    const input = imported.detail.material;
     const jobsBefore = server.query('SELECT COUNT(*) AS n FROM attention_jobs WHERE json_extract(data,\'$.kind\')=?', 'distillation')[0].n;
     let automaticSubmissions = 0;
     page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/v1/distillations/jobs')) automaticSubmissions++; });
     await page.goto(`${server.webURL}/attention`);
-    await page.getByRole('main').getByRole('button').filter({ has: page.getByText(input.title, { exact: true }) }).click();
+    expect(input.title).toBeTruthy();
+    await page.getByRole('main').getByRole('button').filter({ has: page.getByText(input.title!, { exact: true }) }).click();
     const dialog = page.getByRole('dialog');
     const statusResponse = page.waitForResponse(response => response.url().endsWith('/api/v1/distillations/processor'));
     await dialog.getByRole('button', { name: '继续沉淀', exact: true }).click();

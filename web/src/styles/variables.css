@@ -1,5 +1,5 @@
 :root {
-  /* ── Color palette ── */
+  /* 配色。 */
   --color-bg:             #f5f7f6;
   --color-bg-subtle:      #f7f9f7;
   --color-bg-muted:       #f1f4f1;
@@ -17,7 +17,7 @@
   --color-accent-hover:   #247554;
   --color-accent-subtle:  #edf7f0;
 
-  /* Status colors */
+  /* 状态颜色。 */
   --color-success:        #388b61;
   --color-success-subtle: #ebfbee;
   --color-warning:        #fab005;
@@ -27,12 +27,12 @@
   --color-info:           #259666;
   --color-info-subtle:    #edf7f0;
 
-  /* Disabled / future */
+  /* 禁用与待实现状态。 */
   --color-disabled-bg:    #f1f4f1;
   --color-disabled-text:  #adb5bd;
   --color-disabled-border:#e3e8e4;
 
-  /* ── Typography ── */
+  /* 字体。 */
   --font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei',
     system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
@@ -53,7 +53,7 @@
   --leading-normal: 1.5;
   --leading-loose:  1.7;
 
-  /* ── Spacing ── */
+  /* 间距。 */
   --space-1:  0.25rem; /* 4px  */
   --space-2:  0.5rem;  /* 8px  */
   --space-3:  0.75rem; /* 12px */
@@ -65,26 +65,26 @@
   --space-12: 3rem;    /* 48px */
   --space-16: 4rem;    /* 64px */
 
-  /* ── Radius ── */
+  /* 圆角。 */
   --radius-sm:   4px;
   --radius-md:   6px;
   --radius-lg:   8px;
   --radius-xl:   12px;
   --radius-full: 9999px;
 
-  /* ── Shadows ── */
+  /* 阴影。 */
   --shadow-xs:  0 1px 2px rgba(0,0,0,0.04);
   --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md:  0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.04);
   --shadow-lg:  0 10px 15px rgba(0,0,0,0.05), 0 4px 6px rgba(0,0,0,0.03);
 
-  /* ── Layout ── */
+  /* 布局。 */
   --sidebar-width: 220px;
   --sidebar-collapsed: 56px;
   --content-max-width: 1400px;
   --detail-panel-width: 545px;
 
-  /* ── Transitions ── */
+  /* 过渡。 */
   --duration-fast:   100ms;
   --duration-normal: 200ms;
   --duration-slow:   300ms;
