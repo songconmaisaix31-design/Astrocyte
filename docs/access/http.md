@@ -58,6 +58,8 @@ H 分支：`songconmaisaix31-design/works-relay-http`。当前 SOURCE 为 `b6c67
 | 当前 Foundation / Projects | 实际服务 GET 均 200；运行源码包含 R `d14b08dc50014baf9ee636543564b040112cf3b5` |
 | 旧任务人工 done | 实际 200，operation `32c7f5a0-0cb0-4de2-91aa-3e7b9bc0ad07`，收据 accepted；目标验收 FAIL |
 | done 后实际 read | 首次 409，operation `5f99133e-390f-4987-b8f2-2889716921ff`，收据 `delivery_unknown`；没有重试 |
+| 旧任务单次合法 release | 实际 200 / accepted，operation `ccf54824-6194-4161-81c0-0d6985ee5171`；独立 SQL 核 `released`、`ActiveTaskID` 空、Prepared 保持 true、pending action / receipt 0 |
+| 旧实际服务正常关闭 | PASS，1909.08 秒 / exit 0；原真实进程退出、read unknown 和收据身份保持 |
 | 主装配显式保护源 | SOURCE `b247dfb12b938739f09acc73e6b7582376951a0c`；解析在应用目录和迁移前执行，参数传给 Reader |
 | 精确发布组合构建 | `go build -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json -o dist/l1-live/reader-overlay/server.exe ./cmd/server` PASS；overlay 为 P `579a1cede98b47b08a3126f5d3974da938348929` 的五个精确 Reader 文件 |
 | 保护源与寿命配置目标测试 | 四项 PASS：真实 SQLite 显式来源、受保护目录、实际 snapshot hardlink、启动寿命边界；原编译首 FAIL 保留本机 `first-test-compile-failure.log` |
@@ -72,7 +74,7 @@ H 分支：`songconmaisaix31-design/works-relay-http`。当前 SOURCE 为 `b6c67
 
 F 首 DOM 三个 ID 均在真实 SQLite 定位，其中 `MBV3V2HETK5753LFVJY4PGVJWL` 和 `HFZSCX6TFXYYMOU5VBUNG65QIV` 分别是原档 `task_started` 与 `native_session_header`，第三个是 task 级 `turn_started`。安全证据为本地忽略目录的 `committed-public.json`、`initial-actual-evidence-derived.json`、`initial-actual-model-derived.json` 和 `first-dom-sql-derived.json`。14 个原档记录的 tokens 为真实 null，未填值。原 controller 文件路径只保存在本次 relay.sqlite 的私有绑定中。
 
-人工 done/release 使用用户确认的 `observe` 权限，实际事件出版重核使用 `reconcile`。当前旧 task 已 done，独立 SQL 检查确认进程真实退出、Prepared 工作区和 terminal 归属一致、pending receipt / action 均为 0，工作区仍由原 task 持有，等待 F 单次合法 release。read 的 `delivery_unknown` 收据与任务条件保持；工作区清理不表示目标或来源验收通过。原生回答的目标内容未获合法核实，目标验收 FAIL；当前身份守卫拒绝的文件不绕过读取。
+人工 done/release 使用用户确认的 `observe` 权限，实际事件出版重核使用 `reconcile`。当前旧 task 已 released，独立 SQL 检查确认进程真实退出、Prepared 工作区和 terminal 归属一致、pending receipt / action 均为 0，工作区 `ActiveTaskID` 为空，已解除占用。read 的 `delivery_unknown` 收据与任务条件保持；工作区清理不表示目标或来源验收通过。原生回答的目标内容未获合法核实，目标验收 FAIL；当前身份守卫拒绝的文件不绕过读取。F 首 release 脚本对 Prepared 的错误期望保留首 FAIL，本次 SQL 结果核对现有正确释放语义。
 
 R 通过实际 Windows 文件名称接口与 `samefile` 核对两个名称，分别位于默认 Codex sessions 与 Orca 账户 sessions，均不在 H / R 验证目录。创建者未知，镜像解释仅为推断，没有删除链接或放宽守卫。完整路径仅在本机私有证据中，安全聚合为 `source-identity-derived.json` 和 R 的 `owned-archive-link-safe-aggregate.json`。
 
@@ -81,5 +83,18 @@ R 通过实际 Windows 文件名称接口与 `samefile` 核对两个名称，分
 新独立验证目录为本机 `verification/h-production-next-20261014-2310`，中间文件位于 H 被忽略的 `dist/l1-live/next-20261014-2310`。用户停止指令收到时未注册或派发，随后正常关闭。安全计数与关闭结果保存在 `closure-derived.json`，不会替代明日实际会话验证。内部执行策略采集复用原 Registry 的 `OwnedRelayExecution` 与 SQLite 实际 session，保存安全派生 PID、启动策略、寿命和首 RPC 摘要，不返回 HTTP；新 scope 没有实际模型，执行元数据采集仍 NOT_RUN，effective tool set 不推定为已验证。
 
 完整默认 check/build/E2E、合并前端、Windows ZIP 解压启动和正式发布由对应 owner 与集成验收负责。H 的静态构建和契约检查不能代替实际 Today DOM、完整会话、终端编码或正式部署。
+
+## v1.4 技术差距草案
+
+已全文读取 `docs/research/orca-rea-20261014.md`。以下为交模块的设计输入，四项关键语义、字段名称及旧记录处理由用户确认；本轮没有修改 v1.4 业务或冻结接口。
+
+| 方向 | 当前 H 接缝与差距 | 待确认的必要安全信息 | 真实验收 |
+|---|---|---|---|
+| 投递阶段 | `relay_session_codex.go` 可识别带原 turn_id 的开始 / 完成记录；`relay_session_native.go` 保留通知序号。六字段事件不关联某次 input 的 operation，采集层不判定 task working | R 提供某次操作的输入接受、原生回合开始证据和未知状态；原 turn_id 仅在内部关联，公开 task / receipt 用既有 operation_id 和安全状态表达。人工完成保持独立 | 实际原 controller 的接受收据与开始事件逐一关联 SQL ID；无开始证据不从普通活动、Git、stdout 推定开始；未知收据保留占用且不重发 |
+| 原生会话归属 | `RelaySessionBinding` 绑定 task、terminal、session、worktree、project、native ID、format；私有 cursor 绑定该身份及文件位置或通知序号。当前 source 与 gap 已表达 alias FAIL，缺少可持久的原 controller 代次关系 | 内部持久原会话与执行所有者关系及原因；公开沿现有 source、status、gap 和公开 task / terminal 身份表达，未经必要性确认不扩大事件六字段 | 只读本次准确 controller 路径，逐 ID 回查真实事件库；冷重启保持历史绑定且不重建进程所有权，文件身份冲突立即失败、不删未知链接 |
+| 输入就绪 | 注册已有 drive_mode / input_mode；H 仅解析登记并组装 driver，没有 TUI 或 structured 的输入就绪检测端口，CLI 可执行和注册不证明 ready | R 供给输入方式、就绪三值、实际就绪证据原因和观测时间；命令、原生输出及工具参数保持私有。GET 只读缓存 | 实际 installed controller 的初始化 / ready 正证据；stdin 写入、换行或 EOF 不推定回合提交，缺端口分别保留 unknown / unsupported；不制作伪 CLI 或 ready 输出 |
+| 恢复身份关系 | archive cursor 以 BindingID / FileIdentity / Offset 去重，native cursor 以 BindingID / Sequence 去重。通知恢复缺口仍为 `native_resume_raw_events_unavailable`；现有 coverage 没有持久的恢复 / 换 Agent 关系序列 | R 明确同 session 恢复、新 session、换 Agent 与不支持的 fork 关系；H 消费内部原 / 新绑定关系和 replay 范围。公开只使用获准的 opaque 身份与安全关系状态 | 同 task 恢复核原 native ID / CWD，换 Agent 在合法释放后新 session；原输入不重发，旧 cursor 不错误套到新 stream，重复 ID 不新增或刷新 live，恢复缺口保持 partial |
+
+归档与通知的完整性分别验收，回合完成不封存整个 Session。明日真实 CLI → 三分钟 Today → L1 最终验收需要新独立 scope、F 提前 ready、实际目标内容在人工 done 前核实和真实禁止工具的启动证据；今晚没有新增该窗口。
 
 实际用户作品、自由工具授权、默认活性窗口仍未决定。原生文件的完整前缀、永久追加性与恢复 raw 通知接口不足时，保持具体 unknown/partial。原始 Native 共享源码、mapper、engine、schema/迁移、七类权重及快照流程没有 H 修改。V4 协议、库和运行资料没有读取或修改。管理员 Procmon、两次实际 00:30、正式认知验收和现有 17321 部署均未由本次 H 验收执行。
