@@ -92,6 +92,16 @@ OpenCode 实际安装版本和 npm manifest 都为 1.18.35。已核官方配置/
 
 `go test -mod=readonly ./internal/workspace/app -run '^TestRegisteredProjects(CachedGitActivity|ExistingSQLiteCache)$' -v -count=1` EXIT 0，1.237s，`.verification/registered-cache-actual-first.log`；实际 roots=1/groups=1、投影活动 0→1、恢复 1。定向 vet、全仓 build、gofmt 和 diff 检查 EXIT 0，`.verification/registered-cache-{vet,build}-first.log`。S2 当前唯一 owner 为 `ctx_f32b6d92119a`，其范围包含 app/service.go；B 继续停写完整已移交域。
 
+注册发现生命周期 SOURCE `2a6a6d0ae20cc02f9160f6a1c4fdf5d1066d7ad7` 已普通 push。刷新错误在保存 stale/unknown 旧缓存后继续返回原错误，保存或 metadata 读取错误经 `errors.Join` 一并保留。Scoped 发现通过实际固定 Git `--git-common-dir` 命令取得同一 worktree 家族身份；已知 Git 身份读取失败立即失败，保留未知 Git 观察。SQLite discovery/metadata 测试移除替代 source、原生 controller 和引用 reader，观察包装只计数并委托生产来源。
+
+目录创建、移除、恢复均发生在本树自有目录；实际刷新、权限拒绝、冷重启、unknown/stale、零项目/授权创建均保持覆盖。metadata 测试建立实际 Git 仓库和两个 worktree，通过正常 metadata 接口保存备注；实际 worktree move 后名称更新，移走自有 `.git` 后身份未知，人工备注及已有身份保持，新的 OS 测试进程继续读取同一 SQLite。并发取消由实际事务占用生产单连接触发，首刷新占有刷新锁并等待 SQLite；取消等待者和首刷新均及时返回 `context.Canceled`，没有额外连接等待或来源调用。该检查不声明取消了实际运行中的 Git 子进程。
+
+`go test -mod=readonly ./internal/adapters/sqlite -run '^Test(Registered(ProjectCacheRestartStaleAndNoAuthority|SourceUnavailableBeforeFirstObservation|RefreshWaitCancellationDoesNotBlockShutdown)|ProjectMetadataPersistsThroughRefreshArchiveAndProcessRestart)$' -v -count=1` 第四轮 EXIT 0，4 项，3.806s，`.verification/registered-sqlite-lifecycle-fourth.log`。第一轮共享 helper 编译错误、第二轮被生产抑制的错误、第三轮错误类型期望错误均保留；最终精确断言生产 `ScopeDenied`、固定消息及 action。更新后应用缓存两项、相关三包 vet 和全仓 build EXIT 0，`.verification/registered-cache-current-second.log` 与 `.verification/registered-lifecycle-{vet,build}-first.log`。
+
+按协调者新增共享 DDL 唯一 owner 分配，S3 请求的独立 SOURCE `da48a114d91181075bd32b62996beadd9c2c0a25` 已普通 push，仅增加 `migrations/020_swarm.sql` 五表及 Swarm 版本登记。Mission grant_id、租约 work_item_id/operation_id、消费者 consumer_id/event_id 唯一约束及所请求外键保持，复用既有幂等/outbox 定义；001–018 内容没有修改，019 留给 S2 准确表需求。上述四项实际 SQLite 检查在新迁移下再次 EXIT 0，3.403s，`.verification/swarm-migration-actual-first.log`，包含正常迁移和重新打开。Swarm 业务 CAS、授权同事务重查及两执行者闭环由 `ctx_d4bf65ca06bf` 原 owner 执行，B 尚未运行其验收。
+
+当前协调者最终划分为既有 app/service.go 归 B 薄装配、新增 s2_service.go 归 S2；准确 S2 构造 SOURCE 前 B 继续暂停 service.go。根已授权 OpenCode 仅在完整自有子环境运行无模型生命周期；HOME/profile、XDG config/data/state/cache/temp 与 managed 来源必须全部隔离，宿主来源保持不读取、不复制，缺口直接失败。该原生检查尚未执行。H helper a293 仍待其原 owner 完整修复 junction/symlink 保护，B 没有消费。
+
 收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
 
 收藏 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已普通 push。`go test ./internal/adapters/importers -run TestPublicListingActualWindowCursorWithUnavailableSlot -v -count=1` EXIT 0，实际生产集合列举选出公开 folder `2356677875`，真实 Transport 始终访问上游 HTTP；三次请求位置 0/20/40，各请求 20，实际返回共 59，下一 cursor 为 4。观察包装只记录实际 query，不替代 HTTP 响应；没有把 19 改成 20。证据 `.verification/public-listing-cursor-first.log`，定向 vet EXIT 0，`.verification/public-listing-cursor-vet-first.log`。
@@ -188,7 +198,7 @@ Q 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
 - 原有 attention 应用测试仍有内存 Repository/ObjectStore 与替代模型。经双方零 WIP checkpoint 确认，协调者已把 `internal/attention/app/*_test.go` 与 `tests/s1/automatic_test.go` 共十四个既有文件及同目录新测试交给唯一第三层 T，精确起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454`；B 从此排除这些测试写域，生产需求由 T 提交 Handoff。
-- B 本写域仍有 OpenCode、注册项目 adapter 和 SQLite discovery 测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite `local_agents*_test.go` 的替代原生控制器与引用读取。后续各项整改继续保留完整覆盖。
+- B 本写域仍有 OpenCode及注册项目 adapter 测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite 其他 `local_agents*_test.go` 的替代原生控制器与引用读取。后续各项整改继续保留完整覆盖。
 - `tests/s1/fixtures.mjs`、默认 acceptance 与部分 web E2E 仍依赖虚构论文/视频来源。B 继续整改共享输入，web 改动交 F，不能把现有默认套件通过记为真实来源验收。公开视频 whisper 转写无时间区间，不能伪造已有 positive 时间区间覆盖所需原件。
 - 全写域英文注释清理尚未完成。原生格式 helper 的解码路径及其他同类异常需要继续核查；已增加格式门禁不等于全域零静默解析。
 - 实际 Codex controller / SQLite / HTTP / 自产会话逐 event_id 验证归 R/H，当前 B 没有运行该组合验收。发布完整 E2E、Workbench/Relay 集成与 ZIP 解压验收尚未运行。
