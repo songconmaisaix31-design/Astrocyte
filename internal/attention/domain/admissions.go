@@ -33,6 +33,7 @@ type Admission struct {
 	ModelVersion        string             `json:"model_version,omitempty"`
 	Backend             string             `json:"backend,omitempty"`
 	QuestionType        string             `json:"question_type,omitempty"`
+	Purpose             string             `json:"purpose,omitempty"`
 	Status              string             `json:"status"`
 	AdmittedEventID     string             `json:"admitted_event_id"`
 	RevokedEventID      string             `json:"revoked_event_id,omitempty"`
@@ -63,11 +64,11 @@ func NewAdmission(input AdmissionInput, now time.Time) (Admission, error) {
 	}
 	switch value.Authority {
 	case AdmissionHuman:
-		if value.ActorID != value.OwnerID || value.DecisionID != "" || value.PolicyVersion != "" || value.Model != "" || value.ModelVersion != "" || value.Backend != "" || value.QuestionType != "" {
+		if value.ActorID != value.OwnerID || value.DecisionID != "" || value.PolicyVersion != "" || value.Model != "" || value.ModelVersion != "" || value.Backend != "" || value.QuestionType != "" || value.Purpose != "" {
 			return Admission{}, ErrInvalid
 		}
 	case AdmissionDelegatedJudgment:
-		if value.DecisionID == "" || value.PolicyVersion == "" || value.Model == "" || value.ModelVersion == "" || value.Backend == "" || value.QuestionType != "opportunity_admission" {
+		if value.DecisionID == "" || value.PolicyVersion == "" || value.Model == "" || value.ModelVersion == "" || value.Backend == "" || !slices.Contains([]string{"choice", "score", "truth"}, value.QuestionType) || value.Purpose != "opportunity_admission" {
 			return Admission{}, ErrEvidence
 		}
 	default:
@@ -75,7 +76,7 @@ func NewAdmission(input AdmissionInput, now time.Time) (Admission, error) {
 	}
 	value.Inputs = slices.Clone(value.Inputs)
 	value.Version, value.Status = 1, AdmissionActive
-	value.CreatedAt, value.UpdatedAt = now, now
+	value.CreatedAt, value.UpdatedAt = now.UTC(), now.UTC()
 	value.RevokedEventID, value.Reason = "", ""
 	return value, nil
 }
@@ -89,6 +90,6 @@ func (a *Admission) Revoke(expectedVersion int, actorID, eventID, reason string,
 		return ErrInvalid
 	}
 	a.Status, a.Version = AdmissionRevoked, a.Version+1
-	a.RevokedEventID, a.Reason, a.UpdatedAt = eventID, reason, now
+	a.RevokedEventID, a.Reason, a.UpdatedAt = eventID, reason, now.UTC()
 	return nil
 }
