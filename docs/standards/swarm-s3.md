@@ -1,6 +1,20 @@
 # Swarm S3 / S6 实施与实际验证
 
-## 第三阶段当前结果
+## 第四阶段当前结果
+
+Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`。SOURCE `3c568c7ec8bb13a88b0abf95d44cbb13fc6422b5` 已普通 push，远端完整 SHA 一致；Orca 当前公开 worker 配置记录为客户端 codex、模型 gpt-6.1-sol，本 Task 外部模型调用数仍为零。
+
+Grant 的固定输入现由实际 S2 `ReadProposal` 提供，包含批准提案 revision、Goal revision 和实际已批准资料 revision。AddWorkItem 对普通输入执行白名单检查；真实批准测试追加了未批准输入拒绝及事务没有留下部分任务/计数的断言。相同 Grant 用新幂等键重新投递时复用原 Mission，并保持真实 mission_created 事件只有一条。
+
+根据根允许的 Swarm 域内成果继承，AddWorkItem 增加 artifact_inputs，字段为 id、version、commit、object_ref。服务读取既有 outbox 的不可变 Artifact 版本，要求该版本真实 accepted、接受者引用存在、commit/对象完全匹配，并检查同项目和当前 read_swarm 权限；没有跨项目默认分享。普通资料输入、结果引用与执行权限分别检查。GET Artifact 和 diff 支持可选正整数 version，以读取实际保存的旧版本；没有根据最新 metadata 猜测旧版本。
+
+原执行结果必须属于 completed、failed、cancelled、stopped、not_started 的已知事实；空值和未知结果保持占用，not_started 无法作为成果提交。Artifact 保存实际 execution_outcome 与经过允许列表校验的 execution_failure_code，原始失败文本没有公开输出。调用/tokens 的 known 检查与未知费用规则保持原含义。
+
+本阶段 `go test ./internal/swarm/... ./tests/s3 -count=1`、`go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1`、`go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1` 均 PASS；scope 测试、真实 HTTP/SQLite 认证与回执、五个真实 SQL/Git/Go 组件继续通过。`go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3`、当前服务构建、33 包架构检查、`git diff --check` 通过。
+
+成果引用接口已经实现，实际 acceptedArtifact 来源和真实第二任务执行仍 NOT_RUN；没有使用合成 accepted 记录填补原生依赖。当前独立实现与适用组件检查已交接 H/B/F/UI，后续需要 H 主服务装配精确 SOURCE、R/S2 同原 Registry 的实际绑定/原 operation 生命周期及有效工具/目标事实、B 实际成功经验候选适配。原生合法条件仍按根待答保持未决定。完整 AT08/09/13、实际采用和 AT16 没有降低验收，本 Task 尚未结算。
+
+## 第三阶段记录
 
 Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`。SOURCE `e18c0965708e091b547ca2108579a4b3ca81b72c` 已普通 push，远端完整 SHA 一致。普通消费 S2 当前归属检查 SOURCE `80248d2c7177823d4535e7730453481426a27305` 和 B 的明确退回 policy SOURCE `c110201774dd61b8d7e5280526364786c6af4cc2`；直接编辑仍在本 Task 独占路径。以下各历史阶段保留当时的实际证据与限制。
 
