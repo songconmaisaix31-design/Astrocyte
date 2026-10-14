@@ -54,7 +54,20 @@ func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.
 		return obs, err
 	}
 	native, err := a.Observe(ctx, session)
-	return relayNativeObservation(session, native), err
+	return d.withArchive(ctx, a, relayNativeObservation(session, native)), err
+}
+
+// An optional trusted adapter port must return positively selected metadata.
+// Existing adapters without this port stay unknown; HistoryPath alone is not
+// a root/format/identity proof and triggers no filesystem or home discovery.
+func (d *RelayNativeDriver) withArchive(ctx context.Context, a app.NativeAdapter, obs app.RelayObservation) app.RelayObservation {
+	if source, ok := a.(app.RelayOwnedArchiveProvider); ok && obs.Session.Ownership == "owned" {
+		archive, err := source.OwnedRelayArchive(ctx, obs.Session)
+		if err == nil {
+			obs.Archive = &archive
+		}
+	}
+	return obs
 }
 
 func relayNativeObservation(s domain.NativeSession, obs domain.NativeObservation) app.RelayObservation {
@@ -78,7 +91,7 @@ func (d *RelayNativeDriver) Send(ctx context.Context, r app.RelayLaunch, input s
 		return app.RelayObservation{}, err
 	}
 	obs, err := a.Send(ctx, r.Session, input)
-	return relayNativeObservation(r.Session, obs), err
+	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs)), err
 }
 func (d *RelayNativeDriver) Read(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	a, err := d.adapter(r)
@@ -86,7 +99,7 @@ func (d *RelayNativeDriver) Read(ctx context.Context, r app.RelayLaunch) (app.Re
 		return app.RelayObservation{}, err
 	}
 	obs, err := a.Observe(ctx, r.Session)
-	return relayNativeObservation(r.Session, obs), err
+	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs)), err
 }
 func (d *RelayNativeDriver) Stop(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	a, err := d.adapter(r)
@@ -94,7 +107,7 @@ func (d *RelayNativeDriver) Stop(ctx context.Context, r app.RelayLaunch) (app.Re
 		return app.RelayObservation{}, err
 	}
 	obs, err := a.Stop(ctx, r.Session)
-	return relayNativeObservation(r.Session, obs), err
+	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs)), err
 }
 func (d *RelayNativeDriver) Resume(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	a, err := d.adapter(r)
@@ -108,5 +121,5 @@ func (d *RelayNativeDriver) Resume(ctx context.Context, r app.RelayLaunch) (app.
 		return app.RelayObservation{Session: session}, err
 	}
 	obs, err := a.Observe(ctx, session)
-	return relayNativeObservation(session, obs), err
+	return d.withArchive(ctx, a, relayNativeObservation(session, obs)), err
 }
