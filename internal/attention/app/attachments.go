@@ -6,7 +6,7 @@ const NativePrivateAttachmentMediaType = "application/vnd.astrocyte.private-nati
 func privateNativeAttachment(revisions []MaterialRevision, target AttachmentRef) bool {
 	for _, revision := range revisions {
 		for _, attachment := range revision.Attachments {
-			if attachment.ObjectRef == target.ObjectRef && (attachment.MediaType == NativePrivateAttachmentMediaType || attachment.Name == "whisper-original.json") {
+			if attachment.ObjectRef == target.ObjectRef && (attachment.MediaType == NativePrivateAttachmentMediaType || attachment.Name == "whisper-original.json" || attachment.Name == "summarize-pdf-original.json") {
 				return true
 			}
 		}
