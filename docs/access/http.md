@@ -25,6 +25,10 @@ H 分支：`songconmaisaix31-design/works-relay-http`。当前非原生依赖 SO
 
 ## 当前实现
 
+当前 v1.4 验证准备 SOURCE 为 `261fb73921d2a1b929f40bf4d714de5356b9024d`。实际服务测试与归档 / 通知证据检查都消费本次 listener 和 `service-public.json` 保存的真实 URL，通过 `net/url` / `encoding/json` 校验明确 IPv4 loopback、已绑定端口、无凭据或额外 URL 内容；不再以固定端口连接其他服务。实际验证服务使用既有 `Server.Serve(listener)`；`ASTROCYTE_L1_API_PORT=0` 要求显式 `ASTROCYTE_L1_WEB_PORT`，两端口必须独立。公共记录解析拒绝尾随 JSON。
+
+上述准备通过真实 HTTP / SQLite 的 `TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown`（0.10 秒），精确 P579 Reader overlay build / vet 与格式检查通过。首正常关闭失败保留 `dist/http-listener/v14-address-first-failure.log`，当前通过日志为 `v14-address-second.log`；本次客户端主动释放自己的 idle 连接后正常关闭，没有修改原生状态或重试业务请求。新的实际会话、模型和 Today 窗口尚未启动。R v1.4 精确接口交付前不消费其 WIP、不冻结待答状态机，不把这次验证准备计为语义或 L1 完成。
+
 所有 Relay HTTP 使用既有 Go 服务、loopback、human session、Origin、CSRF 与 ErrorV1。GET 读取已持有任务、派生事件和原收据，不启动 CLI、不发送输入、不恢复会话、不读取原文归档。人工创建 intent 后必须明确确认权限；运行时 Service 是 task、terminal、worktree 与收据的唯一写入者。未知输入交付结果保持 `delivery_unknown`，不能自动重发。
 
 `agents.json` 使用 `encoding/json` 解析受信任的 `AgentSpec` 数组，在启动时加载。条目包含 `name/launch_cmd/capabilities/drive_mode`，可选 `input_mode` 为 `line` 或 `stdin_eof`。新增条目后正常关闭并重启同一服务，调度按注册数据选择既有原生适配器；注册本身不授予启动或工具权限。
