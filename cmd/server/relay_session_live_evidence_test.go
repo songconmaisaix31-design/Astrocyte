@@ -50,12 +50,23 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	defer store.Close()
 	ctx := context.Background()
 	state, err := store.Snapshot(ctx)
-	if err != nil || len(state.Tasks) != 1 {
+	if err != nil || len(state.Tasks) == 0 {
 		t.Fatal("实际任务身份不可核实")
 	}
 	var task domain.RelayTask
-	for _, v := range state.Tasks {
-		task = v
+	if selected := os.Getenv("ASTROCYTE_L1_TASK_ID"); selected != "" {
+		var found bool
+		task, found = state.Tasks[selected]
+		if !found {
+			t.Fatal("本次明确选定任务不存在")
+		}
+	} else {
+		if len(state.Tasks) != 1 {
+			t.Fatal("实际多任务验证必须明确选定 task_id")
+		}
+		for _, v := range state.Tasks {
+			task = v
+		}
 	}
 	owned, ok := state.OwnedSessions[task.ID]
 	if !ok || owned.TaskID != task.ID || owned.SourceStatus != "available" {
@@ -215,9 +226,22 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	}
 	var view workbench.SessionEvents
 	client.request(t, "GET", path, nil, &view)
-	if view.Total < int(batch.Next.Counts.Projected) || len(view.Events) != view.Total || len(view.Coverage) != 1 || view.Coverage[0].Lines != batch.Next.Counts.Lines {
+	if view.Total < int(batch.Next.Counts.Projected) || len(view.Events) == 0 || len(view.Coverage) != 1 || view.Coverage[0].Lines != batch.Next.Counts.Lines || view.Coverage[0].Source != "archive" {
 		t.Fatal("实际完整文件与 HTTP 覆盖数量不符")
 	}
+	all := append([]workbench.Event{}, view.Events...)
+	for page := 2; len(all) < view.Total; page++ {
+		var next workbench.SessionEvents
+		client.request(t, "GET", path+"&page="+fmt.Sprint(page), nil, &next)
+		if next.Total != view.Total || len(next.Events) == 0 {
+			t.Fatal("实际文件 HTTP 分页范围改变")
+		}
+		all = append(all, next.Events...)
+	}
+	if len(all) != view.Total {
+		t.Fatal("实际文件 HTTP 全部事件范围不符")
+	}
+	view.Events = all
 	committed := make([]workbench.Event, 0, len(view.Events))
 	nativeIDs := []string{}
 	for _, event := range view.Events {
