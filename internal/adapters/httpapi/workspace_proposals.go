@@ -32,4 +32,5 @@ func (h *handler) registerWorkspaceS2(mux *http.ServeMux,s *workspace.S2Service)
 		mux.HandleFunc("POST /api/v1/approvals/{id}/"+route.path,workspaceCommand(h,func(c *workspace.ChangeApprovalCommand)*workspace.WorkspaceCommandMeta{return &c.WorkspaceCommandMeta},func(r *http.Request,c workspace.ChangeApprovalCommand)(any,error){g,err:=s.ChangeApproval(r.Context(),localCaller(r),r.PathValue("id"),c,route.status);return localEnvelope("approval",g),err}))
 	}
 	h.registerWorkspaceGoals(mux,s)
+	h.registerWorkspaceContext(mux,s)
 }
