@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -25,7 +26,26 @@ type SwarmGitEvidence struct {
 }
 
 type SwarmProjectChecker interface {
-	VerifyProjectChecks(context.Context, domain.Lease, domain.Artifact) (bool, error)
+	VerifyProjectChecks(context.Context, domain.Lease, domain.Artifact) (SwarmProjectCheckResult, error)
+}
+
+type SwarmProjectCheckResult struct {
+	Passed     bool
+	ReceiptRef string
+}
+
+func (e *SwarmGitEvidence) ReadVerifiedDiff(ctx context.Context, a domain.Artifact) (string, error) {
+	if a.ObjectRef == "" || a.Commit == "" || a.BaseCommit == "" || (a.State != "submitted" && a.State != "accepted" && a.State != "revision_needed") {
+		return "", domain.Failure(apierrors.EvidenceMissing, "artifact has no committed verified diff")
+	}
+	data, err := e.objects.Read(ctx, a.ObjectRef)
+	if err != nil {
+		return "", err
+	}
+	if !utf8.Valid(data) {
+		return "", domain.Failure(apierrors.UnsupportedCapability, "verified diff is not UTF-8 text")
+	}
+	return string(data), nil
 }
 
 // 此记录对应固定 git diff --check 检查，其他测试使用独立证据引用。
@@ -231,12 +251,16 @@ func (e *SwarmGitEvidence) VerifyArtifact(ctx context.Context, l domain.Lease, a
 		return result, domain.Failure(apierrors.EvidenceMissing, "check record differs from the actual fixed Git check")
 	}
 	if e.checks != nil {
-		passed, err := e.checks.VerifyProjectChecks(ctx, l, a)
+		checked, err := e.checks.VerifyProjectChecks(ctx, l, a)
 		if err != nil {
 			return result, err
 		}
-		result.ChecksPassed = result.ChecksPassed && passed
+		if checked.ReceiptRef == "" {
+			return result, domain.Failure(apierrors.EvidenceMissing, "actual project checks have no immutable receipt")
+		}
+		result.ChecksPassed = result.ChecksPassed && checked.Passed
 		result.ApplicableChecksVerified = true
+		result.ProjectChecksRef = checked.ReceiptRef
 	}
 	return result, nil
 }

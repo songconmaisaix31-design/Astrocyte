@@ -50,7 +50,7 @@ func (s *Service) ListMissionsFor(ctx context.Context, p domain.Principal) ([]do
 }
 
 func (s *Service) ReadMission(ctx context.Context, p domain.Principal, id string) (MissionDetail, error) {
-	out := MissionDetail{WorkItems: []domain.WorkItem{}, Leases: []domain.Lease{}, Artifacts: []domain.Artifact{}, Timeline: []TimelineEvent{}}
+	out := MissionDetail{WorkItems: []domain.WorkItem{}, Leases: []domain.Lease{}, Artifacts: []domain.Artifact{}, Timeline: []TimelineEvent{}, Executions: []ExecutionReference{}}
 	err := s.readWithin(ctx, p, id, func(ctx context.Context, tx Transaction) error {
 		var err error
 		out.Mission, err = tx.Mission(id)
@@ -79,12 +79,32 @@ func (s *Service) ReadMission(ctx context.Context, p domain.Principal, id string
 				out.Artifacts = append(out.Artifacts, a)
 			}
 		}
+		history, ok := s.repo.(ExecutionHistoryReader)
+		if !ok {
+			return domain.Failure(apierrors.UnsupportedCapability, "actual operation history query is unavailable")
+		}
+		out.Executions, err = history.ExecutionHistory(ctx, id)
+		if err != nil {
+			return err
+		}
 		if reader, ok := s.repo.(TimelineReader); ok {
 			out.Timeline, err = reader.Timeline(ctx, id)
 			return err
 		}
 		return domain.Failure(apierrors.UnsupportedCapability, "durable mission timeline query is unavailable")
 	})
+	if err != nil {
+		return out, err
+	}
+	if reader, ok := s.ownership.(ToolTraceReader); ok {
+		for i := range out.Executions {
+			e := &out.Executions[i]
+			e.ToolEventsStatus, e.ToolEvents, err = reader.ReadToolEventRefs(ctx, p, e.OperationID, e.SessionID)
+			if err != nil {
+				return out, err
+			}
+		}
+	}
 	return out, err
 }
 

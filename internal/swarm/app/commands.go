@@ -16,12 +16,11 @@ import (
 )
 
 type Service struct {
-	repo        Repository
-	grants      GrantAuthorizer
-	members     MemberAuthorizer
-	evidence    ArtifactEvidence
-	ownership   ExecutionOwnership
-	experiences ExperienceRecorder
+	repo      Repository
+	grants    GrantAuthorizer
+	members   MemberAuthorizer
+	evidence  ArtifactEvidence
+	ownership ExecutionOwnership
 }
 
 func NewSwarmLedger(repo Repository, grants GrantAuthorizer) (*Service, error) {
@@ -31,11 +30,11 @@ func NewSwarmLedger(repo Repository, grants GrantAuthorizer) (*Service, error) {
 	return &Service{repo: repo, grants: grants}, nil
 }
 
-func NewSwarmService(repo Repository, grants GrantAuthorizer, members MemberAuthorizer, evidence ArtifactEvidence, ownership ExecutionOwnership, experiences ExperienceRecorder) (*Service, error) {
-	if repo == nil || grants == nil || members == nil || evidence == nil || ownership == nil || experiences == nil {
+func NewSwarmService(repo Repository, grants GrantAuthorizer, members MemberAuthorizer, evidence ArtifactEvidence, ownership ExecutionOwnership) (*Service, error) {
+	if repo == nil || grants == nil || members == nil || evidence == nil || ownership == nil {
 		return nil, domain.Failure(apierrors.ValidationFailed, "swarm requires storage, current authorization, member binding, Git/object evidence and native ownership")
 	}
-	return &Service{repo: repo, grants: grants, members: members, evidence: evidence, ownership: ownership, experiences: experiences}, nil
+	return &Service{repo: repo, grants: grants, members: members, evidence: evidence, ownership: ownership}, nil
 }
 
 func (s *Service) ListMissions(ctx context.Context) (apierrors.ListResult, error) {
@@ -138,6 +137,9 @@ func finish(tx Transaction, p domain.Principal, name string, m domain.Meta, d st
 	if err = tx.SaveReceipt(actor(p), name, m.IdempotencyKey, Receipt{Digest: d, Result: b}); err != nil {
 		return err
 	}
+	if event == "" {
+		return nil
+	}
 	return tx.Event(Event{ID: uuid.NewString(), Type: "swarm." + event, AggregateID: id, Version: version, At: time.Now().UTC(), RequestID: m.RequestID, Payload: result})
 }
 func checkVersion(current, expected int) error {
@@ -194,7 +196,9 @@ func (s *Service) CreateMission(ctx context.Context, p domain.Principal, c Creat
 			if err != nil && !missing(err) {
 				return err
 			}
+			created := false
 			if missing(err) {
+				created = true
 				out, err = domain.NewMission(uuid.NewString(), g, time.Now().UTC())
 				if err != nil {
 					return err
@@ -210,7 +214,11 @@ func (s *Service) CreateMission(ctx context.Context, p domain.Principal, c Creat
 					return err
 				}
 			}
-			return finish(tx, p, "create_mission", c.Meta, d, out, "mission_created", out.ID, out.Version)
+			event := ""
+			if created {
+				event = "mission_created"
+			}
+			return finish(tx, p, "create_mission", c.Meta, d, out, event, out.ID, out.Version)
 		})
 	})
 	return out, err
@@ -274,14 +282,14 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 
 func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c ClaimCommand) (domain.Lease, error) {
 	var out domain.Lease
-	if s.members == nil || s.evidence == nil || s.ownership == nil {
-		return out, domain.Failure(apierrors.UnsupportedCapability, "real native binding, evidence and ownership are not configured")
-	}
 	if err := validateMeta(p, c.Meta); err != nil {
 		return out, err
 	}
 	if p.Kind != "agent" {
 		return out, domain.Failure(apierrors.ScopeDenied, "bound agent identity required")
+	}
+	if s.members == nil || s.evidence == nil || s.ownership == nil {
+		return out, domain.Failure(apierrors.UnsupportedCapability, "real native binding, evidence and ownership are not configured")
 	}
 	if _, err := uuid.Parse(c.OperationID); err != nil {
 		return out, domain.Failure(apierrors.ValidationFailed, "stable UUID operation identity required")
@@ -333,6 +341,10 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 		return out, err
 	}
 	err = s.authorized(ctx, p, c.MissionID, "claim_work_item", c.Resources, func(ctx context.Context, g domain.Grant) error {
+		binding, err := authorizedBinding(ctx, c.BindingID, c.MemberVersion)
+		if err != nil {
+			return err
+		}
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			if err := s.members.CheckMember(ctx, p, Member{BindingID: c.BindingID, OperationID: c.OperationID, HolderID: p.ID, SessionID: c.SessionID, ProjectID: g.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion}); err != nil {
 				return err
@@ -432,7 +444,7 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 			m.Version++
 			m.State = "running"
 			m.Reserved = reserved
-			out = domain.Lease{BindingID: c.BindingID, WorkItemID: w.ID, MissionID: m.ID, ProjectID: g.ProjectID, HolderID: p.ID, Fence: w.Fence, OperationID: c.OperationID, SessionID: c.SessionID, MemberVersion: c.MemberVersion, Worktree: c.Worktree, BaseCommit: baseCommit, WritePaths: w.WritePaths, Reserved: c.Resources, ExpiresAt: c.ExpiresAt, PolicyVersion: domain.LocalPolicyVersion}
+			out = domain.Lease{ContextPacketID: binding.PacketID, BindingID: c.BindingID, WorkItemID: w.ID, MissionID: m.ID, ProjectID: g.ProjectID, HolderID: p.ID, Fence: w.Fence, OperationID: c.OperationID, SessionID: c.SessionID, MemberVersion: c.MemberVersion, Worktree: c.Worktree, BaseCommit: baseCommit, WritePaths: w.WritePaths, Reserved: c.Resources, ExpiresAt: c.ExpiresAt, PolicyVersion: domain.LocalPolicyVersion}
 			if err = tx.SaveMission(m, oldM); err != nil {
 				return err
 			}
@@ -491,7 +503,7 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 	if err = lease.Check(p.ID, c.Fence, time.Now().UTC()); err != nil {
 		return out, err
 	}
-	out = domain.Artifact{ID: uuid.NewString(), Version: 1, WorkItemID: c.WorkItemID, OperationID: lease.OperationID, SessionID: lease.SessionID, Fence: c.Fence, Inputs: c.Inputs, Commit: c.Commit, ObjectRef: c.ObjectRef, ChecksRef: c.ChecksRef, ChangedPaths: c.ChangedPaths, State: "submitted", CreatedAt: time.Now().UTC()}
+	out = domain.Artifact{ContextPacketID: lease.ContextPacketID, ID: uuid.NewString(), Version: 1, WorkItemID: c.WorkItemID, OperationID: lease.OperationID, SessionID: lease.SessionID, Fence: c.Fence, Inputs: c.Inputs, Commit: c.Commit, BaseCommit: lease.BaseCommit, ObjectRef: c.ObjectRef, ChecksRef: c.ChecksRef, ChangedPaths: c.ChangedPaths, State: "submitted", CreatedAt: time.Now().UTC()}
 	if c.Commit == "" || c.ObjectRef == "" || c.ChecksRef == "" || len(c.ChangedPaths) == 0 {
 		return out, domain.Failure(apierrors.EvidenceMissing, "commit, published objects, checks and changed paths are required")
 	}
@@ -500,13 +512,6 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 	}
 	if !domain.Within(c.ChangedPaths, lease.WritePaths) {
 		return out, domain.Failure(apierrors.ScopeDenied, "artifact exceeds leased write paths")
-	}
-	verification, err := s.evidence.VerifyArtifact(ctx, lease, out)
-	if err != nil {
-		return out, err
-	}
-	if !verification.ApplicableChecksVerified {
-		return out, domain.Failure(apierrors.EvidenceMissing, "the actual project tests and build have not been verified for this commit")
 	}
 	fact, err := s.ownership.Reconcile(ctx, lease.OperationID, lease.SessionID)
 	if err != nil {
@@ -521,6 +526,14 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 	if !resourcesEqual(c.Usage, *fact.Usage) {
 		return out, domain.Failure(apierrors.EvidenceMissing, "submitted usage differs from reconciled operation usage")
 	}
+	verification, err := s.evidence.VerifyArtifact(ctx, lease, out)
+	if err != nil {
+		return out, err
+	}
+	if !verification.ApplicableChecksVerified {
+		return out, domain.Failure(apierrors.EvidenceMissing, "the actual project tests and build have not been verified for this commit")
+	}
+	out.ProjectChecksRef = verification.ProjectChecksRef
 	err = s.authorized(ctx, p, c.MissionID, "submit_artifact", c.Usage, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.Artifact](tx, p, "submit_artifact", c.Meta, c)
@@ -621,9 +634,6 @@ func (s *Service) AcceptArtifact(ctx context.Context, p domain.Principal, c Acce
 	if err := human(p); err != nil {
 		return out, err
 	}
-	if s.experiences == nil {
-		return out, domain.Failure(apierrors.UnsupportedCapability, "actual experience candidate pipeline is not configured")
-	}
 	err := s.authorized(ctx, p, c.MissionID, "accept_artifact", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.Artifact](tx, p, "accept_artifact", c.Meta, c)
@@ -656,13 +666,7 @@ func (s *Service) AcceptArtifact(ctx context.Context, p domain.Principal, c Acce
 			out.State = "accepted"
 			out.AcceptanceID = uuid.NewString()
 			out.AcceptedBy = p.ID
-			out.ExperienceID, err = s.experiences.RecordAccepted(ctx, p, out)
-			if err != nil {
-				return err
-			}
-			if out.ExperienceID == "" {
-				return domain.Failure(apierrors.EvidenceMissing, "experience pipeline returned no persistent reference")
-			}
+			out.ExperienceStatus = "pending"
 			oldW := w.Version
 			w.Version++
 			w.State = "accepted"

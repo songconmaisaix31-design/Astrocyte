@@ -293,21 +293,22 @@ func (w WorkItem) Validate(m Mission) error {
 }
 
 type Lease struct {
-	BindingID     string    `json:"binding_id"`
-	PolicyVersion string    `json:"policy_version"`
-	WorkItemID    string    `json:"work_item_id"`
-	MissionID     string    `json:"mission_id"`
-	ProjectID     string    `json:"project_id"`
-	HolderID      string    `json:"holder_id"`
-	Fence         int64     `json:"fence"`
-	OperationID   string    `json:"operation_id"`
-	SessionID     string    `json:"session_id"`
-	MemberVersion string    `json:"member_version"`
-	Worktree      string    `json:"worktree"`
-	BaseCommit    string    `json:"base_commit"`
-	WritePaths    []string  `json:"write_paths"`
-	Reserved      Resources `json:"reserved"`
-	ExpiresAt     time.Time `json:"expires_at"`
+	ContextPacketID string    `json:"context_packet_id"`
+	BindingID       string    `json:"binding_id"`
+	PolicyVersion   string    `json:"policy_version"`
+	WorkItemID      string    `json:"work_item_id"`
+	MissionID       string    `json:"mission_id"`
+	ProjectID       string    `json:"project_id"`
+	HolderID        string    `json:"holder_id"`
+	Fence           int64     `json:"fence"`
+	OperationID     string    `json:"operation_id"`
+	SessionID       string    `json:"session_id"`
+	MemberVersion   string    `json:"member_version"`
+	Worktree        string    `json:"worktree"`
+	BaseCommit      string    `json:"base_commit"`
+	WritePaths      []string  `json:"write_paths"`
+	Reserved        Resources `json:"reserved"`
+	ExpiresAt       time.Time `json:"expires_at"`
 }
 
 func (l Lease) Check(holder string, fence int64, now time.Time) error {
@@ -318,20 +319,27 @@ func (l Lease) Check(holder string, fence int64, now time.Time) error {
 }
 
 type Artifact struct {
-	ID           string          `json:"id"`
-	Version      int             `json:"version"`
-	WorkItemID   string          `json:"work_item_id"`
-	OperationID  string          `json:"operation_id"`
-	SessionID    string          `json:"session_id"`
-	Fence        int64           `json:"fence"`
-	Inputs       []SourceVersion `json:"inputs"`
-	Commit       string          `json:"commit"`
-	ObjectRef    string          `json:"object_ref"`
-	ChecksRef    string          `json:"checks_ref"`
-	ChangedPaths []string        `json:"changed_paths"`
-	State        string          `json:"state"`
-	AcceptanceID string          `json:"acceptance_id"`
-	AcceptedBy   string          `json:"accepted_by"`
-	ExperienceID string          `json:"experience_id"`
-	CreatedAt    time.Time       `json:"created_at"`
+	ExperienceStatus string          `json:"experience_status"`
+	ContextPacketID  string          `json:"context_packet_id"`
+	ProjectChecksRef string          `json:"project_checks_ref"`
+	BaseCommit       string          `json:"base_commit"`
+	ReviewReason     string          `json:"review_reason"`
+	ReviewedBy       string          `json:"reviewed_by"`
+	ReviewedAt       *time.Time      `json:"reviewed_at"`
+	ID               string          `json:"id"`
+	Version          int             `json:"version"`
+	WorkItemID       string          `json:"work_item_id"`
+	OperationID      string          `json:"operation_id"`
+	SessionID        string          `json:"session_id"`
+	Fence            int64           `json:"fence"`
+	Inputs           []SourceVersion `json:"inputs"`
+	Commit           string          `json:"commit"`
+	ObjectRef        string          `json:"object_ref"`
+	ChecksRef        string          `json:"checks_ref"`
+	ChangedPaths     []string        `json:"changed_paths"`
+	State            string          `json:"state"`
+	AcceptanceID     string          `json:"acceptance_id"`
+	AcceptedBy       string          `json:"accepted_by"`
+	ExperienceID     string          `json:"experience_id"`
+	CreatedAt        time.Time       `json:"created_at"`
 }

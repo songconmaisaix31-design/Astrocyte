@@ -36,6 +36,57 @@ type TimelineReader interface {
 	Timeline(context.Context, string) ([]TimelineEvent, error)
 }
 
+type ExecutionHistoryReader interface {
+	ExecutionHistory(context.Context, string) ([]ExecutionReference, error)
+}
+
+type ExecutionReference struct {
+	OperationID      string               `json:"operation_id"`
+	SessionID        string               `json:"session_id"`
+	WorkItemID       string               `json:"work_item_id"`
+	BindingID        string               `json:"binding_id"`
+	Fence            int64                `json:"fence"`
+	ContextPacketID  string               `json:"context_packet_id"`
+	PolicyVersion    string               `json:"policy_version"`
+	Events           []TimelineEvent      `json:"events"`
+	ToolEventsStatus string               `json:"tool_events_status"`
+	ToolEvents       []ToolEventReference `json:"tool_events"`
+}
+
+type ToolEventReference struct {
+	EventID    string    `json:"event_id"`
+	Type       string    `json:"type"`
+	Tool       string    `json:"tool"`
+	OccurredAt time.Time `json:"occurred_at"`
+}
+
+type ToolTraceReader interface {
+	ReadToolEventRefs(context.Context, domain.Principal, string, string) (string, []ToolEventReference, error)
+}
+
+type AcceptedArtifactEvent struct {
+	EventID    string          `json:"event_id"`
+	MissionID  string          `json:"mission_id"`
+	ProjectID  string          `json:"project_id"`
+	OccurredAt time.Time       `json:"occurred_at"`
+	Artifact   domain.Artifact `json:"artifact"`
+}
+
+type AcceptedArtifactEventReader interface {
+	ReadAcceptedArtifactEvent(context.Context, string) (AcceptedArtifactEvent, error)
+}
+
+type ExperienceCandidateSource struct {
+	ID                string
+	Version           int
+	OwnerProjectID    string
+	AcceptanceEventID string
+	ArtifactID        string
+}
+type ExperienceCandidateReader interface {
+	ReadArtifactCandidateSource(context.Context, string) (ExperienceCandidateSource, error)
+}
+
 type TimelineEvent struct {
 	ID          string    `json:"event_id"`
 	Type        string    `json:"type"`
@@ -45,11 +96,12 @@ type TimelineEvent struct {
 }
 
 type MissionDetail struct {
-	Mission   domain.Mission    `json:"mission"`
-	WorkItems []domain.WorkItem `json:"work_items"`
-	Leases    []domain.Lease    `json:"leases"`
-	Artifacts []domain.Artifact `json:"artifacts"`
-	Timeline  []TimelineEvent   `json:"timeline"`
+	Executions []ExecutionReference `json:"executions"`
+	Mission    domain.Mission       `json:"mission"`
+	WorkItems  []domain.WorkItem    `json:"work_items"`
+	Leases     []domain.Lease       `json:"leases"`
+	Artifacts  []domain.Artifact    `json:"artifacts"`
+	Timeline   []TimelineEvent      `json:"timeline"`
 }
 
 type Member struct {
@@ -85,10 +137,19 @@ type ArtifactEvidence interface {
 type ArtifactVerification struct {
 	ChecksPassed             bool
 	ApplicableChecksVerified bool
+	ProjectChecksRef         string
 }
 
-type ExperienceRecorder interface {
-	RecordAccepted(context.Context, domain.Principal, domain.Artifact) (string, error)
+type ArtifactDiffReader interface {
+	ReadVerifiedDiff(context.Context, domain.Artifact) (string, error)
+}
+
+type ArtifactDiff struct {
+	SchemaVersion int    `json:"schema_version"`
+	ArtifactID    string `json:"artifact_id"`
+	Commit        string `json:"commit"`
+	BaseCommit    string `json:"base_commit"`
+	Diff          string `json:"diff"`
 }
 
 // 生命周期只对账和停止已绑定的原生身份，不创建替代执行者。
@@ -197,6 +258,13 @@ type AcceptCommand struct {
 	domain.Meta
 	MissionID  string `json:"mission_id"`
 	ArtifactID string `json:"artifact_id"`
+}
+
+type RejectCommand struct {
+	domain.Meta
+	MissionID  string `json:"mission_id"`
+	ArtifactID string `json:"artifact_id"`
+	Reason     string `json:"reason"`
 }
 
 type TransitionCommand struct {
