@@ -12,19 +12,16 @@ import (
 	"syscall"
 )
 
-// A single fixed parser reads JSON data. Parser.ParseInput constructs syntax
-// trees and cannot execute supplied commands. stdout is structural JSON only.
+// 固定 Parser.ParseInput 只构建语法树，stdout 只返回结构 JSON。
 const shellASTProgram = `$ErrorActionPreference='Stop'
 [Console]::InputEncoding=[System.Text.UTF8Encoding]::new($false)
 [Console]::OutputEncoding=[System.Text.UTF8Encoding]::new($false)
 while ($null -ne ($line=[Console]::In.ReadLine())) {
- try {
   $request=ConvertFrom-Json -InputObject $line
   $tokens=$null;$errors=$null
   $ast=[System.Management.Automation.Language.Parser]::ParseInput([string]$request.cmd,[ref]$tokens,[ref]$errors)
   $commands=@($ast.FindAll({param($n) $n -is [System.Management.Automation.Language.CommandAst]},$true) | Sort-Object {$_.Extent.StartOffset} | ForEach-Object { $name=$_.GetCommandName(); @{head=[string]$name;dynamic=($null -eq $name)} })
   @{commands=$commands;parse_errors=@($errors).Count;error_ids=@($errors | ForEach-Object {$_.ErrorId})} | ConvertTo-Json -Depth 5 -Compress | ForEach-Object {[Console]::Out.WriteLine($_)}
- } catch { [Console]::Out.WriteLine('{"commands":[],"parse_errors":1}') }
 }`
 
 var shellASTProcess struct {
@@ -43,9 +40,6 @@ func parseShellAST(code string) (shellASTResult, bool) {
 	if !p.started {
 		p.started = true
 		binary, e := exec.LookPath("pwsh")
-		if e != nil {
-			binary, e = exec.LookPath("powershell")
-		}
 		if e != nil {
 			p.err = e
 			return shellASTResult{ParseErrors: 1}, true

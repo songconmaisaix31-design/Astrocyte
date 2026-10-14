@@ -40,8 +40,8 @@ func millis(raw json.RawMessage) int64 {
 }
 
 func nativeRecord(source string, raw []byte) (nativeObservation, error) {
-	if !json.Valid(raw) {
-		return nativeObservation{}, fmt.Errorf("invalid native JSON record")
+	if err := validateNativeFormat(raw); err != nil {
+		return nativeObservation{}, err
 	}
 	v := object(raw)
 	o := nativeObservation{kind: "unknown", outcome: "unknown", depth: "unknown", ts: millis(v["timestamp"])}
@@ -58,6 +58,12 @@ func nativeRecord(source string, raw []byte) (nativeObservation, error) {
 			arguments := p["arguments"]
 			if len(arguments) == 0 {
 				arguments = p["input"]
+			}
+			name := canonicalTool(str(p, "name"))
+			if name == "Bash" || name == "exec_command" || name == "shell_command" || name == "Read" {
+				if err := validateToolObject(arguments); err != nil {
+					return nativeObservation{}, err
+				}
 			}
 			o.kind = toolKind(str(p, "name"), arguments)
 		}

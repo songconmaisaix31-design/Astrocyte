@@ -4,15 +4,13 @@ import { root } from './process.mjs';
 
 export const summarizeVersion = '0.25.1';
 
-// Resolve the locked project installation, never a global PATH command.
+// 使用项目固定版本的实际安装目录。
 export async function summarizeEnvironment(env = process.env) {
   const enabled = env.ASTROCYTE_ENABLE_SUMMARIZE ?? '';
   if (enabled === 'false') return { ...env };
   if (enabled !== '' && enabled !== 'true') throw new Error('ASTROCYTE_ENABLE_SUMMARIZE must be true or false');
   const pkgRoot = join(root, 'node_modules', '@steipete', 'summarize');
-  const pkg = JSON.parse(await readFile(join(pkgRoot, 'package.json'), 'utf8').catch(() => {
-    throw new Error('Project summarize is missing; run pnpm install --frozen-lockfile');
-  }));
+  const pkg = JSON.parse(await readFile(join(pkgRoot, 'package.json'), 'utf8'));
   if (pkg.version !== summarizeVersion) throw new Error(`Project summarize must be ${summarizeVersion}; run pnpm install --frozen-lockfile`);
   const cliLocation = env.ASTROCYTE_SUMMARIZE_CLI || join(pkgRoot, pkg.bin.summarize);
   if (!isAbsolute(cliLocation)) throw new Error('Summarize CLI and Node paths must be absolute');
@@ -34,9 +32,16 @@ export async function summarizeEnvironment(env = process.env) {
       ['ASTROCYTE_WHISPER_BINARY', join(pins.whisper.directory, pins.whisper.executable)],
       ['ASTROCYTE_WHISPER_MODEL', pins.model.file],
     ]) {
-      if (configured[key]) continue;
-      const candidate = join(mediaRoot, relative);
-      if (await stat(candidate).then(info => info.isFile()).catch(() => false)) configured[key] = candidate;
+      const candidate = configured[key] || join(mediaRoot, relative);
+      if (!isAbsolute(candidate)) throw new Error(`${key} must be absolute`);
+      let info;
+      try { info = await stat(candidate); }
+      catch (error) {
+        if (!configured[key] && !env.ASTROCYTE_MEDIA_DIR && error.code === 'ENOENT') continue;
+        throw error;
+      }
+      if (!info.isFile()) throw new Error(`${key} must select a regular file`);
+      configured[key] = candidate;
     }
   }
   return configured;

@@ -2,17 +2,20 @@ package agents
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
 func TestPublicGitHubInputCannotSelectCredentialsHostsOrPaths(t *testing.T) {
 	for _, input := range []string{"https://user:secret@github.com/o/r", "http://github.com/o/r", "https://github.com.evil/o/r", "https://github.com/o/r?token=secret", "../r", "o/..", "o/r/tree/main", "file:///tmp/r", "https://github.com/o/%72", "o/r\n"} {
-		// Surrounding whitespace is intentionally normalized for manual inputs.
+		// 人类输入允许规范化外围空白。
 		if input == "o/r\n" {
 			continue
 		}
@@ -27,55 +30,23 @@ func TestPublicGitHubInputCannotSelectCredentialsHostsOrPaths(t *testing.T) {
 	}
 }
 
-func TestPublicGitHubRateLimitFallbackKeepsStableIdentityAndUnknowns(t *testing.T) {
-	apiCalls, pageCalls := 0, 0
-	rateLimited := true
-	public := true
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Cookie") != "" || r.Header.Get("Authorization") != "" {
-			t.Fatal("fallback sent authentication")
+func TestPublicGitHubRateLimitFailsImmediately(t *testing.T) {
+	// 状态码是纯函数输入；每个非成功状态均有明确的错误结果。
+	for _, status := range []int{301, 302, 401, 403, 404, 429, 500} {
+		var service *apierrors.ServiceError
+		if err := publicGitHubStatus(status); !errors.As(err, &service) || service.Code != apierrors.ProviderUnavailable || service.RequiredAction == "" {
+			t.Fatalf("HTTP %d did not fail explicitly", status)
 		}
-		if strings.HasPrefix(r.URL.Path, "/repos/") || strings.HasPrefix(r.URL.Path, "/users/") {
-			apiCalls++
-			if rateLimited {
-				w.Header().Set("X-RateLimit-Remaining", "0")
-			}
-			w.WriteHeader(403)
-			return
+	}
+	if err := publicGitHubStatus(http.StatusOK); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	for _, input := range []string{"steipete/summarize", "steipete"} {
+		if result, err := NewPublicGitHubSource().FetchPublicRepositories(ctx, input); err == nil || result != nil {
+			t.Fatal("cancelled real HTTP request continued")
 		}
-		pageCalls++
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		visibility := "true"
-		if !public {
-			visibility = "false"
-		}
-		_, _ = w.Write([]byte(`<meta name="octolytics-dimension-repository_id" content="1118209243"><meta content="steipete/summarize" name="octolytics-dimension-repository_nwo"><meta name="octolytics-dimension-repository_public" content="` + visibility + `"><meta name="octolytics-dimension-repository_is_fork" content="false">`))
-	}))
-	defer server.Close()
-	s := NewPublicGitHubSource()
-	s.baseURL = server.URL
-	s.publicBaseURL = server.URL
-	items, err := s.FetchPublicRepositories(context.Background(), "steipete/summarize")
-	if err != nil || len(items) != 1 || items[0].GitHubID != 1118209243 || items[0].MetadataSource != "github_public_html" || len(items[0].UnknownFields) != 7 || apiCalls != 1 || pageCalls != 1 {
-		t.Fatalf("official fallback %+v %v", items, err)
-	}
-	if !items[0].UpdatedAt.IsZero() || items[0].Stars != 0 {
-		t.Fatal("unobserved fields invented")
-	}
-	if _, err = s.FetchPublicRepositories(context.Background(), "steipete"); err == nil || pageCalls != 1 {
-		t.Fatal("account rate limit expanded scope")
-	}
-	rateLimited = false
-	if _, err = s.FetchPublicRepositories(context.Background(), "steipete/summarize"); err == nil || pageCalls != 1 {
-		t.Fatal("authentication403 triggered fallback")
-	}
-	rateLimited = true
-	public = false
-	if _, err = s.FetchPublicRepositories(context.Background(), "steipete/summarize"); err == nil {
-		t.Fatal("private page accepted")
-	}
-	if _, err = parsePublicGitHubPage([]byte(`<meta name="octolytics-dimension-repository_id" content="1">`), "steipete", "summarize"); err == nil {
-		t.Fatal("missing page markers reported success")
 	}
 }
 
@@ -101,66 +72,58 @@ func TestManagedCheckoutPublicationNeverReplacesExistingTarget(t *testing.T) {
 }
 
 func TestPublicGitHubSyncIsAnonymousMetadataOnlyAndRejectsPrivateOrRedirect(t *testing.T) {
-	mode, calls := "repo", 0
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		calls++
-		if r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" {
-			t.Error("sent private authentication")
+	for _, repo := range []string{"summarize", ""} {
+		request, err := publicGitHubRequest(context.Background(), "steipete", repo)
+		if err != nil {
+			t.Fatal(err)
 		}
-		if r.Header.Get("X-GitHub-Api-Version") != "2022-11-28" {
-			t.Error("missing pinned API version")
+		if request.URL.Host != "api.github.com" || request.URL.Scheme != "https" || request.Header.Get("Authorization") != "" || request.Header.Get("Cookie") != "" || request.Header.Get("X-GitHub-Api-Version") != "2022-11-28" {
+			t.Fatal("request authority or anonymity changed")
 		}
-		if mode == "redirect" {
-			http.Redirect(w, r, "/other", 302)
-			return
-		}
-		if mode == "rate" {
-			w.WriteHeader(403)
-			return
-		}
-		if mode == "account" {
-			if r.URL.Path != "/users/steipete/repos" || r.URL.Query().Get("per_page") != "100" || r.URL.Query().Get("page") != "1" {
-				t.Error("unbounded account lookup")
+		if repo == "" {
+			if request.URL.Path != "/users/steipete/repos" || request.URL.Query().Get("per_page") != "100" || request.URL.Query().Get("page") != "1" {
+				t.Fatal("unbounded account request")
 			}
-			_, _ = w.Write([]byte(`[]`))
-			return
+		} else if request.URL.Path != "/repos/steipete/summarize" {
+			t.Fatal("wrong selected repository endpoint")
 		}
-		if r.URL.Path != "/repos/steipete/summarize" {
-			t.Error("unexpected endpoint")
+		if err := NewPublicGitHubSource().client.CheckRedirect(request, nil); err == nil {
+			t.Fatal("redirect accepted")
 		}
-		private := "false"
-		if mode == "private" {
-			private = "true"
+	}
+	// JSON 仅作为 decoder 的明确输入，期望值不表示已观察的仓库事实。
+	input := map[string]any{"id": 123, "full_name": "selected/repository", "private": false, "html_url": "https://github.com/selected/repository", "clone_url": "https://github.com/selected/repository.git", "description": "decoder input"}
+	decode := func() ([]domain.GitHubMetadata, error) {
+		raw, err := json.Marshal(input)
+		if err != nil {
+			t.Fatal(err)
 		}
-		_, _ = w.Write([]byte(`{"id":123,"full_name":"steipete/summarize","private":` + private + `,"html_url":"https://github.com/steipete/summarize","clone_url":"https://github.com/steipete/summarize.git","description":"metadata only"}`))
-	}))
-	defer server.Close()
-	source := NewPublicGitHubSource()
-	source.baseURL = server.URL
+		return decodePublicGitHubMetadata(raw, "selected", "repository")
+	}
 	base := filepath.Join(t.TempDir(), "managed")
 	_ = NewManagedRepositoryCloner(base)
-	items, err := source.FetchPublicRepositories(context.Background(), "steipete/summarize")
-	if err != nil || len(items) != 1 || items[0].GitHubID != 123 || calls != 1 {
-		t.Fatalf("metadata: %v %v calls=%d", items, err, calls)
+	items, err := decode()
+	if err != nil || len(items) != 1 || items[0].GitHubID != 123 {
+		t.Fatalf("decoder: %v %v", items, err)
 	}
 	if items[0].MetadataSource != "github_rest" || len(items[0].UnknownFields) != 7 {
 		t.Fatal("omitted REST statistics/timestamps invented", items[0])
 	}
+	if !items[0].UpdatedAt.IsZero() || items[0].Stars != 0 {
+		t.Fatal("unobserved fields invented")
+	}
 	if _, err = os.Stat(base); !os.IsNotExist(err) {
 		t.Fatal("metadata created code directory")
 	}
-	for _, m := range []string{"private", "redirect", "rate"} {
-		mode = m
-		before := calls
-		if _, err = source.FetchPublicRepositories(context.Background(), "steipete/summarize"); err == nil {
-			t.Fatalf("%s accepted", m)
-		}
-		if calls != before+1 {
-			t.Fatal("automatic retry/redirect")
-		}
+	input["private"] = true
+	if _, err := decode(); err == nil {
+		t.Fatal("private input accepted")
 	}
-	mode = "account"
-	items, err = source.FetchPublicRepositories(context.Background(), "steipete")
+	delete(input, "private")
+	if _, err := decode(); err == nil {
+		t.Fatal("unknown visibility accepted")
+	}
+	items, err = decodePublicGitHubMetadata([]byte(`[]`), "selected", "")
 	if err != nil || len(items) != 0 {
 		t.Fatal("empty public list not preserved", err)
 	}

@@ -3,36 +3,49 @@ package mcp
 import (
 	"context"
 	"encoding/json"
+	"path/filepath"
 	"testing"
+	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
-
-type stubBackend struct{}
 
 func testAstrocyteServer(t *testing.T) *Server {
 	t.Helper()
-	s, err := NewAstrocyteServer(stubBackend{}, app.MCPBinding{Principal: app.Principal{ID: "test-agent", Kind: "agent"}, Scope: "astrocyte", Session: "test"})
+	ctx := context.Background()
+	db, err := sqlite.Open(filepath.Join(t.TempDir(), "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	if err = db.RunMigrations(ctx, migrations.FS); err != nil {
+		t.Fatal(err)
+	}
+	decay, confidence := .1, .5
+	dynamics := app.NewDynamicsEngine(sqlite.NewDynamicsRepository(db), app.DynamicsOptions{Decay: &decay, InitialConfidence: &confidence})
+	// 人工创建主题走实际生产接口，不补写来源事件或关注分值。
+	if _, err = dynamics.SeedTopic(ctx, app.Principal{ID: "local-human", Kind: "human"}, "Agent Swarm", time.Now().UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
+	events := sqlite.NewEventRepository(db)
+	binding := app.MCPBinding{Principal: app.Principal{ID: "test-agent", Kind: "agent"}, Scope: "astrocyte", Session: "test"}
+	backend, err := app.NewEngineMCPBackend(binding, dynamics,
+		app.NewExperienceService(sqlite.NewExperienceRepository(db), events, app.ExperienceOptions{ProjectID: "astrocyte"}),
+		app.NewEventService(events, .01), app.MCPBackendOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := NewAstrocyteServer(backend, binding)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return s
-}
-
-func (stubBackend) GetAttentionState(context.Context) (app.GetAttentionStateResult, error) {
-	return app.GetAttentionStateResult{Topics: []app.FocusItem{{Topic: "Agent Swarm", Attention: 0.8, Momentum: 0.1}}}, nil
-}
-func (stubBackend) ExplainFocus(context.Context, app.ExplainFocusInput) (app.ExplainFocusResult, error) {
-	return app.ExplainFocusResult{}, nil
-}
-func (stubBackend) GetExperiences(context.Context, app.GetExperiencesInput) (app.GetExperiencesResult, error) {
-	return app.GetExperiencesResult{}, nil
-}
-func (stubBackend) ReportEvent(context.Context, app.ReportEventInput) (app.ReportEventResult, error) {
-	return app.ReportEventResult{}, nil
-}
-func (stubBackend) Veto(context.Context, app.VetoInput) (app.VetoResult, error) {
-	return app.VetoResult{}, nil
 }
 
 func TestAstrocyteRegistersFiveTools(t *testing.T) {
