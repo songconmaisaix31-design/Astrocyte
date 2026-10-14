@@ -72,7 +72,7 @@ English 权重 strict=True 匹配，官方 export 三次真实 CPU torch/ONNX pa
 
 直接 SDK CPU 真实三题型/全文截断/候选覆盖检验已执行。首两次 options 前置假设 FAIL 原件保留，候选 ID 先前各自短前缀可区分；真实文档段落的完整标签构成第三次输入，实际 `total=90 / distinct=1 / tokens_per_option=4`。SDK actual model `laya-rl-agent`，local load 的 SDK reported revision 为 null；资产 revision 由严格匹配和已加载文件版本分别保存，不伪造供应商 echo。English 的 `choice:11+` 原配置温度 `0.10058280825614929` 被 SDK 警告为 uncalibrated；产品在推理前拒绝受影响 bucket。实际 SDK 诊断原件 `laya-live-first.log`、`laya-live-options.log`、`laya-live-collapsed.log` 与 `laya-live.json` 在忽略目录。
 
-multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次官方导出 `OSError: [Errno 28] No space left on device`，原件 `laya-export-multilingual-first.log`。只移除了本树可重新下载的 English 源权重，先保存实际 digest；已通过的 English ONNX、原日志与配置保留。multilingual 复验继续，未验证输出不发布、不提高为 PASS。
+multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次官方导出 `OSError: [Errno 28] No space left on device`，原件 `laya-export-multilingual-first.log`。只移除了本树可重新下载的 English 源权重，先保存实际 digest；已通过的 English ONNX、原日志与配置保留。multilingual 官方复验三次 parity PASS，最大 logits 绝对差 `1.4e-6 / 9.5e-7 / 2.1e-6`，act probabilities 差均为 0，实际六项 ONNX 资产已发布到本树忽略目录。multilingual 正式配置的 temperature 三项均为 1，per-bucket 配置为空；实际 Node 推理与语言覆盖仍待验证。
 
 ## 验收状态
 
@@ -83,7 +83,7 @@ multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次�
 | SDK 源码许可与固定模型卡 | PASS；分发仍须保留适用 LICENSE/NOTICE |
 | 官方 SDK build | PASS，忽略目录真实 npm build |
 | English ONNX 导出与 parity | PASS，官方三次 CPU 数值检查；首编码 FAIL 保留 |
-| multilingual ONNX 导出与 parity | 正在复验；首空间 FAIL 保留 |
+| multilingual ONNX 导出与 parity | PASS，官方三次 CPU 数值检查；首空间 FAIL 保留 |
 | SDK 三题型本地 CPU / 长截断 / options不足 | 已真实运行；正常短输入的独立复验继续 |
 | 断网 / 常驻 RPC / 重启 | NOT_RUN |
 | Jev 真 API/model/usage | NOT_RUN，缺本进程 secret |
@@ -91,3 +91,11 @@ multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次�
 | AT10/AT11/AT12 | NOT_RUN |
 
 SOURCE 和独立 REPORT 由各阶段普通提交/push 后登记完整 SHA；当前不能宣称 S5 完成。
+
+## 第一阶段独立 REPORT
+
+SOURCE `48abd1fe134b88cfe8122d2aee5a35090fc6d62b` 已普通 push，`git ls-remote origin refs/heads/songconmaisaix31-design/release-judgment-20261015` 实际同完整 SHA。SOURCE 包含 12 个允许路径文件；私有契约、规则、权限、Jev REST 和 SQLite query/INSERT 已编译，Node worker 的 syntax 检查通过；共享依赖、产品 migrations 与公共路由装配未修改。
+
+实际命令：`go test ./internal/judgment ./internal/adapters/judgment` PASS，但当前无 Go 测试文件；`go test ./internal/adapters/sqlite -run '^TestJudgment' -count=1` PASS，仅编译、无匹配测试；`node --check internal/adapters/judgment/laya-worker.mjs` PASS；`git diff --check` 与 `git diff --cached --check` PASS。这些结果不代表运行持久化或完整 S5 验收。
+
+真实资产命令：`.verification/s5/python/Scripts/python.exe tests/s5/prepare_laya.py --source-dir .verification/s5/upstream/laya --output-dir .verification/s5/assets` 在 UTF-8 环境完整 PASS；同命令 `--output-dir .verification/s5/assets-multilingual --subfolder multilingual` 在本树可解释的空间回收后完整 PASS。CPU/长截断/options 的实际 SDK 命令 `node tests/s5/laya_live.mjs` 已真实执行；正常短输入复验、RPC2 与重启、完整 HTTP/SQLite/撤销/全缓存版本、真实 Jev 与 AT10/11/12 按上表继续，不结算整个 Task。
