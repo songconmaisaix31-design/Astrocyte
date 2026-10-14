@@ -13,6 +13,7 @@
 | B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python、冻结核心与下述 T 的测试文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理真实视频定位、其余实际模型/控制器测试、默认 Go 检查、Reader 发布路径与真实进度入口 |
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 唯一 `web/src/**`、`web/e2e/**`、`docs/standards/frontend.md` owner。消费精确公开契约与 B/R/H/Q 实际入口，完成未知状态持久化、全部既有 Web 和稳定源码默认完整 E2E |
 | T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014`，独立 worktree 起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454` | `task_5f0a79b6a17a` / `ctx_8674c456f49f` / `term_c1d90d02-51be-4443-9afe-ddce0615acb4`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
+| V 视频导入 | `product-video-20261014`，独立工作树起点 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43`，启动后记录实际分支和 Dispatch | 本子 Run 新第三层任务 | 唯一 `internal/adapters/importers/extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importer_test.go`，同目录新增 `video_*_test.go` 与 `docs/standards/video.md`。完整处理实际 summarize 时间信息和视频来源版本；共享 paper 提取器整文件归 V，B 保留配置、依赖、paperDOM、Node helpers 和 native text/bridge，T 测试域保持不变 |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
 2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
@@ -22,6 +23,10 @@
 总负责人 `msg_b2515cb04bf3` 已转交用户追加决定：模块可自主安排第三层人员，无需逐个申请。拆分原 B/F 写域前必须由原 owner 在具体文件安全检查点给出精确阶段或必要 WIP、明确停止写入，并由双方确认新独占范围。B `msg_0c7de990a861` 已明确从该消息起停止修改上述全部 App 测试及 S1 `automatic_test.go`，14 既有文件零 WIP，起点为已 push 的 `b470ecd`。本模块已核测试文件集合与零改动，按共享 fixture/Meta/MemoryRepo/MemoryObjects/TestDistiller 依赖整体交一位 T，不拆同包 helper；B 保留全部生产、其他测试和依赖。功能开发人员不派第四层。
 
 ## 核心路径与当前结论
+
+22:57 上海时间，B `msg_1c578ac3cfce` 明确已 push 的 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` 为 clean、上述视频五文件零 WIP，并从该消息起停止写入。V 只使用公开固定来源，B 本机 `.verification/video-source-third` 保留真实原件和首失败。现有同源真实两版变化尚未取得，不制造换行版本；视频时间 segments/spans 为零的未通过结论保留。明确匿名 proxy 仅由 B 配置生产启动选项，V 消费其准确接口，不继承未授权代理，不修改冻结领域或 Python。
+
+F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f52576b553797c9eb08b0df93bc` 的稳定源码完整默认浏览器运行退出 1：203 PASS、41 FAIL、32 既有条件 SKIP、4 NOT_RUN。首失败清单位于 F `.verification/combined-default-first-failures.md`，其中 F 10、B 5、H 4、缺少真实 R/H 条件 22；下一次完整运行等待有效场景和修复源码。B Reader SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` / REPORT `15c738f88822e553eb228c12c0fdc71ad07b7531` 报告 10 项实际来源测试零跳过通过；T 追加 SOURCE `8525843d458f2d3a5d272b239ab76ac50c3223a5` / REPORT `3b2bd41f49d40ef5e09a5f61368332b2395df7eb`，实际生产工厂、公开保存来源、关闭重开恢复与权限拒绝通过，模型路径继续等待 B 的原会话及实际 Send 映射。
 
 | 范围 | 必需验收 | 当前结论与返修 |
 |---|---|---|
