@@ -3,38 +3,53 @@ package sqlite
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
+	"reflect"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-type registeredSourceFixture struct {
-	calls    int
-	err      error
-	snapshot domain.ProjectDiscoverySnapshot
+type observedRegisteredSource struct {
+	source workspace.RegisteredProjectSource
+	calls  atomic.Int32
 }
 
-func (s *registeredSourceFixture) DiscoverRegistered(context.Context) (domain.ProjectDiscoverySnapshot, error) {
-	s.calls++
-	return s.snapshot, s.err
+func (s *observedRegisteredSource) DiscoverRegistered(ctx context.Context) (domain.ProjectDiscoverySnapshot, error) {
+	s.calls.Add(1)
+	return s.source.DiscoverRegistered(ctx)
+}
+
+func actualRegisteredSource(t *testing.T, root string) *observedRegisteredSource {
+	t.Helper()
+	source, err := agents.NewScopedRegisteredProjects([]string{root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &observedRegisteredSource{source: source}
 }
 
 func TestRegisteredProjectCacheRestartStaleAndNoAuthority(t *testing.T) {
 	ctx := context.Background()
 	dbPath := filepath.Join(t.TempDir(), "state.sqlite")
 	db := openAttentionDB(t, dbPath)
-	source := &registeredSourceFixture{}
-	service := workspace.NewLocalProjectService(db, &localReferences{}, agents.ProjectFiles{}, localRegistry{&localNative{}})
+	root := filepath.Join(t.TempDir(), "observed-directory")
+	if err := os.Mkdir(root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	source := actualRegisteredSource(t, root)
+	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
 	service.ConfigureRegisteredDiscovery(db, source)
 	human := domain.Caller{Kind: "human", ID: "browser-human"}
 	initial, err := service.ListRegisteredProjects(ctx, human)
-	if err != nil || initial.Status != "unknown" || initial.ObservedAt != nil || source.calls != 0 || initial.Projects == nil || initial.Failures == nil {
-		t.Fatalf("initial %+v %v", initial, err)
+	if err != nil || initial.Status != "unknown" || initial.ObservedAt != nil || source.calls.Load() != 0 || initial.Projects == nil || initial.Failures == nil {
+		t.Fatal("initial cache observations are invalid", err)
 	}
 	for _, caller := range []domain.Caller{{Kind: "agent", ID: "agent", ProjectID: "p"}, {Kind: "human"}, {}} {
 		if _, err := service.ListRegisteredProjects(ctx, caller); err == nil {
@@ -44,15 +59,15 @@ func TestRegisteredProjectCacheRestartStaleAndNoAuthority(t *testing.T) {
 			t.Fatal("nonhuman refresh accepted")
 		}
 	}
-	if source.calls != 0 {
+	if source.calls.Load() != 0 {
 		t.Fatal("denied refresh executed source")
 	}
-	root := t.TempDir()
-	stamp := time.Now().Add(-time.Hour).UTC()
-	source.snapshot = domain.ProjectDiscoverySnapshot{Status: "complete", ObservedAt: &stamp, Projects: []domain.RegisteredProject{{Root: root, Name: "Actual observed folder", Source: "orca_registered", Git: domain.ProjectGitObservation{Status: "unknown"}, Activity: domain.ProjectActivityObservation{Status: "unknown"}}}, Failures: []domain.ProjectDiscoveryFailure{}}
 	observed, err := service.RefreshRegisteredProjects(ctx, human)
-	if err != nil || observed.Status != "complete" || source.calls != 1 {
-		t.Fatalf("refresh %+v %v", observed, err)
+	if err != nil || observed.Status != "complete" || observed.ObservedAt == nil || len(observed.Projects) != 1 || source.calls.Load() != 1 {
+		t.Fatal("actual directory discovery failed", err)
+	}
+	if observed.Projects[0].Root != root || observed.Projects[0].Source != "explicit_directory" || observed.Projects[0].Git.Status != "unavailable" || observed.Projects[0].Activity.Status != "unknown" {
+		t.Fatal("actual empty directory observations were invented")
 	}
 	projects, err := service.ListProjects(ctx, human)
 	if err != nil || len(projects) != 0 {
@@ -62,33 +77,37 @@ func TestRegisteredProjectCacheRestartStaleAndNoAuthority(t *testing.T) {
 		t.Fatal(err)
 	}
 	db = openAttentionDB(t, dbPath)
-	service = workspace.NewLocalProjectService(db, &localReferences{}, agents.ProjectFiles{}, localRegistry{&localNative{}})
+	service = workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
 	service.ConfigureRegisteredDiscovery(db, source)
 	restarted, err := service.ListRegisteredProjects(ctx, human)
-	if err != nil || restarted.Status != "complete" || !restarted.ObservedAt.Equal(stamp) || len(restarted.Projects) != 1 || source.calls != 1 {
-		t.Fatalf("cold restart %+v %v", restarted, err)
+	if err != nil || !reflect.DeepEqual(restarted, observed) || source.calls.Load() != 1 {
+		t.Fatal("cold restart changed actual observations or scanned", err)
 	}
-	source.err = errors.New("private diagnostic must not enter cache")
+	if err := os.Remove(root); err != nil {
+		t.Fatal(err)
+	}
 	stale, err := service.RefreshRegisteredProjects(ctx, human)
-	if err != nil || stale.Status != "stale" || len(stale.Projects) != 1 || !stale.ObservedAt.Equal(stamp) || len(stale.Failures) != 1 || stale.Failures[0].Reason != "registered_source_unavailable" {
-		t.Fatalf("stale %+v %v", stale, err)
+	var sourceError *apierrors.ServiceError
+	if !errors.As(err, &sourceError) || sourceError.Code != apierrors.ScopeDenied || sourceError.Message != "project root is unavailable" || sourceError.RequiredAction != "select_explicit_project_scope" || stale.Status != "stale" || len(stale.Projects) != 1 || !stale.ObservedAt.Equal(*observed.ObservedAt) || len(stale.Failures) != 1 || stale.Failures[0].Reason != "registered_source_unavailable" {
+		t.Fatal("actual source disappearance was suppressed or lost the durable observation")
 	}
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
 	}
 	db = openAttentionDB(t, dbPath)
-	service = workspace.NewLocalProjectService(db, &localReferences{}, agents.ProjectFiles{}, localRegistry{&localNative{}})
+	service = workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
 	service.ConfigureRegisteredDiscovery(db, source)
-	stale, err = service.ListRegisteredProjects(ctx, human)
-	if err != nil || stale.Status != "stale" || !stale.ObservedAt.Equal(stamp) || source.calls != 2 {
-		t.Fatalf("stale restart %+v %v", stale, err)
+	restarted, err = service.ListRegisteredProjects(ctx, human)
+	if err != nil || !reflect.DeepEqual(restarted, stale) || source.calls.Load() != 2 {
+		t.Fatal("stale restart changed observations or scanned", err)
 	}
-	// A new source observation updates cache without changing project settings.
-	source.err = nil
-	newStamp := stamp.Add(30 * time.Minute)
-	source.snapshot.ObservedAt = &newStamp
-	if _, err = service.RefreshRegisteredProjects(ctx, human); err != nil {
+	// 恢复同一实际目录后重新观察，不改写此前来源的时间。
+	if err := os.Mkdir(root, 0700); err != nil {
 		t.Fatal(err)
+	}
+	refreshed, err := service.RefreshRegisteredProjects(ctx, human)
+	if err != nil || refreshed.Status != "complete" || refreshed.ObservedAt.Before(*observed.ObservedAt) || source.calls.Load() != 3 {
+		t.Fatal("actual restored directory was not refreshed", err)
 	}
 	projects, err = service.ListProjects(ctx, human)
 	if err != nil || len(projects) != 0 {
@@ -98,48 +117,56 @@ func TestRegisteredProjectCacheRestartStaleAndNoAuthority(t *testing.T) {
 
 func TestRegisteredSourceUnavailableBeforeFirstObservation(t *testing.T) {
 	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
-	source := &registeredSourceFixture{err: errors.New("disconnected")}
+	root := filepath.Join(t.TempDir(), "disappearing-directory")
+	if err := os.Mkdir(root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	source := actualRegisteredSource(t, root)
+	if err := os.Remove(root); err != nil {
+		t.Fatal(err)
+	}
 	service := workspace.NewLocalProjectService(db, nil, nil, nil)
 	service.ConfigureRegisteredDiscovery(db, source)
 	got, err := service.RefreshRegisteredProjects(context.Background(), domain.Caller{Kind: "human", ID: "h"})
-	if err != nil || got.Status != "unknown" || got.ObservedAt != nil || len(got.Projects) != 0 || len(got.Failures) != 1 {
-		t.Fatalf("unobserved %+v %v", got, err)
+	var sourceError *apierrors.ServiceError
+	if !errors.As(err, &sourceError) || sourceError.Code != apierrors.ScopeDenied || sourceError.Message != "project root is unavailable" || sourceError.RequiredAction != "select_explicit_project_scope" || got.Status != "unknown" || got.ObservedAt != nil || len(got.Projects) != 0 || len(got.Failures) != 1 || source.calls.Load() != 1 {
+		t.Fatal("actual unavailable source was reported as an observation")
 	}
-}
-
-type blockedRegisteredSource struct {
-	started chan struct{}
-	release chan struct{}
-	calls   atomic.Int32
-}
-
-func (s *blockedRegisteredSource) DiscoverRegistered(ctx context.Context) (domain.ProjectDiscoverySnapshot, error) {
-	s.calls.Add(1)
-	close(s.started)
-	select {
-	case <-s.release:
-	case <-ctx.Done():
-		return domain.ProjectDiscoverySnapshot{}, ctx.Err()
-	}
-	stamp := time.Now().UTC()
-	return domain.ProjectDiscoverySnapshot{Status: "complete", ObservedAt: &stamp, Projects: []domain.RegisteredProject{}, Failures: []domain.ProjectDiscoveryFailure{}}, nil
 }
 
 func TestRegisteredRefreshWaitCancellationDoesNotBlockShutdown(t *testing.T) {
 	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
-	source := &blockedRegisteredSource{started: make(chan struct{}), release: make(chan struct{})}
-	defer close(source.release)
+	source := actualRegisteredSource(t, t.TempDir())
 	service := workspace.NewLocalProjectService(db, nil, nil, nil)
 	service.ConfigureRegisteredDiscovery(db, source)
 	human := domain.Caller{Kind: "human", ID: "h"}
+	// 实际事务占用生产单连接，首个刷新因此持有刷新锁并等待 SQLite。
+	tx, err := db.Conn().Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := tx.Rollback(); err != nil {
+			t.Error(err)
+		}
+	})
+	priorWaits := db.Conn().Stats().WaitCount
 	firstCtx, firstCancel := context.WithCancel(context.Background())
 	defer firstCancel()
 	firstDone := make(chan error, 1)
 	go func() { _, err := service.RefreshRegisteredProjects(firstCtx, human); firstDone <- err }()
-	select {
-	case <-source.started:
-	case <-time.After(3 * time.Second):
-		t.Fatal("first source did not start")
+	deadline := time.NewTimer(3 * time.Second)
+	defer deadline.Stop()
+	tick := time.NewTicker(time.Millisecond)
+	defer tick.Stop()
+	for db.Conn().Stats().WaitCount == priorWaits {
+		select {
+		case err := <-firstDone:
+			t.Fatal("first refresh ended before waiting for the actual connection", err)
+		case <-deadline.C:
+			t.Fatal("first refresh did not wait for the actual SQLite connection")
+		case <-tick.C:
+		}
 	}
 	waitingCtx, cancel := context.WithCancel(context.Background())
 	waitDone := make(chan error, 1)
@@ -148,21 +175,24 @@ func TestRegisteredRefreshWaitCancellationDoesNotBlockShutdown(t *testing.T) {
 	select {
 	case err := <-waitDone:
 		if !errors.Is(err, context.Canceled) {
-			t.Fatalf("wait result %v", err)
+			t.Fatal("waiting refresh lost its actual cancellation", err)
 		}
 	case <-time.After(time.Second):
-		t.Fatal("cancelled refresh waited behind active source")
+		t.Fatal("cancelled refresh waited behind the active refresh")
 	}
-	if source.calls.Load() != 1 {
-		t.Fatal("cancelled waiter started another discovery")
+	if source.calls.Load() != 0 || db.Conn().Stats().WaitCount != priorWaits+1 {
+		t.Fatal("cancelled waiter started a discovery or another SQLite wait")
 	}
 	firstCancel()
 	select {
 	case err := <-firstDone:
 		if !errors.Is(err, context.Canceled) {
-			t.Fatalf("first result %v", err)
+			t.Fatal("active refresh lost its actual cancellation", err)
 		}
 	case <-time.After(time.Second):
-		t.Fatal("active cancelled discovery did not exit")
+		t.Fatal("active cancelled refresh did not exit")
+	}
+	if source.calls.Load() != 0 {
+		t.Fatal("cancelled SQLite wait reached discovery")
 	}
 }

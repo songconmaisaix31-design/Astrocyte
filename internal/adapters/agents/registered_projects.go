@@ -59,8 +59,23 @@ func (s *RegisteredProjects) discoverExplicit(ctx context.Context) (domain.Proje
 			return result, err
 		}
 		git := s.observeGit(ctx, canonical)
+		projectKey := ""
+		if git.Status == "known" {
+			raw, err := s.read(ctx, "git_common_dir", canonical)
+			if err != nil {
+				return result, err
+			}
+			if len(raw) >= 4096 {
+				return result, errors.New("Git common directory exceeds bound")
+			}
+			common, err := CanonicalRoot(strings.TrimSpace(string(raw)))
+			if err != nil {
+				return result, err
+			}
+			projectKey = "git:" + rootKey(common)
+		}
 		result.Projects = append(result.Projects, domain.RegisteredProject{
-			Root: canonical, Name: filepath.Base(canonical), Source: "explicit_directory", Git: git,
+			Root: canonical, Name: filepath.Base(canonical), Source: "explicit_directory", Git: git, ProjectKey: projectKey,
 			Activity:    domain.ProjectActivityObservation{Status: "unknown", Source: "explicit_directory"},
 			Limitations: []string{"observation_only_no_context_or_execution_permission", "tracked_git_changes_only", "native_session_metadata_not_requested"},
 		})
