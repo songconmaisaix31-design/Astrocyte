@@ -132,10 +132,19 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 			return "", errors.New("workbench publication directory unavailable")
 		}
 		for _, generation := range generations {
-			if !generation.IsDir() {
+			generationPath := filepath.Join(snapshotRoot, generation.Name())
+			canonical, e := workbenchCanonical(generationPath)
+			if e != nil || !strings.EqualFold(filepath.Clean(generationPath), filepath.Clean(canonical)) {
+				return "", errors.New("workbench snapshot directory redirected")
+			}
+			info, e := workbenchExistingInfo(generationPath)
+			if e != nil || info == nil {
+				return "", errors.New("workbench snapshot directory identity unavailable")
+			}
+			if !info.IsDir() {
 				continue
 			}
-			snapshot, e := workbenchExistingInfo(filepath.Join(snapshotRoot, generation.Name(), "snapshot.sqlite"))
+			snapshot, e := workbenchExistingInfo(filepath.Join(generationPath, "snapshot.sqlite"))
 			if e != nil {
 				return "", errors.New("workbench snapshot identity unavailable")
 			}
