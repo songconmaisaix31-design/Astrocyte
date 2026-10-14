@@ -118,3 +118,11 @@ Go `Laya` 使用准确 `sourcegraph/jsonrpc2@v0.2.1`，官方 tag SOURCE `2cc941
 任务 process 显式 `ASTROCYTE_S5_ASSET_ROOT=D:/Astrocyte-agent-assets/20261015/judgment-s5`，同一 Go-RPC 三组每组两次真实加载/重启 PASS，92.65 秒，总命令 93.853 秒；全部 owned 模型关闭。随后检查最终绝对路径仍在本树 `.verification/s5`，逐项删除 C 的已验证可重建六+六模型文件，未递归删除，实际释放 `3,017,906,443` bytes；当次 C 可用 `7,389,450,240` bytes。D 六项模型/配置继续完整保留。实际 copy/reload/release 证据为 `.verification/s5/assets-copy-d-safe.json`、`go-laya-d-reload.log`、`assets-d-released-safe.json`。
 
 当前支持语言验收仅 English/en 和 multilingual/en、zh；其他语言未宣布支持。实际 OS 完全断网尚未执行，独立问题 `msg_d85e334bfdc4` 等待隔离范围裁决；真实 Jev key、B 生产迁移/锁、H 公共字段/装配和同事务委托消费端口继续按准确交接处理。
+
+## 第二阶段独立 REPORT
+
+SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 已普通提交/push。本阶段记录 Go/Node 真实成熟 RPC、三题型、两个 checkpoint 与三条明确语言路由的实际重启、真实 Git snapshot 校核和 D 资产重载；没有运行 HTTP/SQLite 完整业务或 Jev 真 API，没有改变公共接口或 S1/S2 批准。
+
+`go test -modfile=.verification/s5/go.mod -mod=mod ./internal/judgment ./internal/adapters/judgment` PASS，私有核心/适配器编译；`go vet -modfile=.verification/s5/go.mod ./internal/judgment ./internal/adapters/judgment ./tests/s5` PASS；真实 model 测试命令和结果见上节。`git diff --check` / `git diff --cached --check` PASS，root `go.mod/go.sum` 零变动。
+
+root 正常入口首检 `go test -mod=readonly ./internal/adapters/judgment` 为真实 FAIL：`github.com/olivere/ndjson@v1.0.1` 要求 `github.com/google/go-cmp@v0.5.6` 的 go.mod sum 缺失。原件 `.verification/s5/root-dependency-first.log`、安全结果 `root-dependency-first-safe.json` 保留；sourcegraph SDK 同时尚待 B root 依赖集成。该结果已准确交 B/协调者，忽略 module 的组件 PASS 不替代 root 默认 build。公共路由、三表生产迁移、同事务委托消费和实际断网按未决/准确来源继续，不降低验收或宣称整个 S5 完成。
