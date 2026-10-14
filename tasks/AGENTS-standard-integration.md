@@ -16,11 +16,13 @@
 
 | 轨道 | 固定工作树 / 分支 | 独占 write_paths | 验收 |
 |---|---|---|---|
-| B 后端与导入 | standards-backend / Orca 同名独立分支 | `internal/**`、`cmd/**`、`extensions/**`、`tests/s1/**`、`tests/attention-engine/**`、`scripts/*.mjs`，不含任何 `.py`；`docs/standards/backend.md` | 实际导入与权限 / 错误路径、适用 Go / Node 测试；冻结引擎 / schema / 权重保持字节不变 |
+| B 后端与导入 | standards-backend / 同名独立分支 | `internal/**`、`cmd/**`、`extensions/**`、`tests/s1/**`、`tests/attention-engine/**`、`scripts/*.mjs`，不含任何 `.py`；`go.mod`、`go.sum`、`dependencies.lock.json` 的必要 parser 依赖；`docs/standards/backend.md` | 实际导入与权限 / 错误路径、适用 Go / Node 测试；冻结引擎 / schema / 权重保持字节不变 |
 | P Python | standards-python / Orca 同名独立分支 | `events/*.py`、`scripts/validation/*.py`、`scripts/evidence/*.py`、`scripts/experiment/*.py`、`internal/adapters/importers/*.py`、`tests/validation/**/*.py`；`docs/standards/python.md` | 文件头部与注释规范、实际 parser / 文件 / SQLite 操作；正式实验脚本只调整注释和 docstring，执行逻辑保持不变 |
 | F 前端 | standards-frontend / Orca 同名独立分支 | `web/src/**`、`web/e2e/**`；`docs/standards/frontend.md` | 移除 mock / 伪造 API 响应，保留实际功能与等效断言，使用实际生产 HTTP / 存储完成相关 E2E |
 
 每轨只派发一个 Orca Codex Agent，实际 Task / Dispatch / 工作树 / 分支在收到开工回执后登记。开发、测试、报告及返修均归原轨人员。Go / TS / 依赖 / OpenAPI / 迁移共享变更只提交 Handoff，主控记录后由唯一人员实施。源码轨道完成后另派一个集成 Agent，普通 no-ff 合精确交付并执行组合检查；领域失败退原轨。暂不合 main 或 Workbench 当前开发分支。
+
+共享 Handoff 已处理：开发与 S1 验证的输出目录由 B 改为本树 `.verification/`，失败原件保留；真实服务需要显式限定资料发现根，由 B 在既有配置与组装范围实现并提供早期 SOURCE 给 F。B 已确认 HTML 和 JavaScript 自写 parser；必要的成熟 parser 依赖三文件交 B 单独持有，其余轨道不得修改。用户既有模型调用与获准项目推断授权继续有效：本轮独立技术验证只可使用当前工作树已跟踪资料或明确公开输入，官方 CLI 自行鉴权，不直接读取凭据或私人会话，不启动正式 V4 runner。
 
 Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3ad1dddf079e`。三轨工作树均从 `4ec19cddb24068e09597357b0aabc6ecb9420930` 建立，位于 `C:/Users/DW/orca/workspaces/Astrocyte/`；Git 分支分别为 `standards-backend`、`standards-python`、`standards-frontend`。三次回执均 ready / input_accepted / turnStart observed，没有重复派发。
 
