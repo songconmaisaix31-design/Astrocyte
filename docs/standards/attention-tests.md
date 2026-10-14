@@ -20,7 +20,7 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 本测试要求显式绝对路径 `ASTROCYTE_TEST_VIDEO_EXPORT_A` 与 `ASTROCYTE_TEST_VIDEO_EXPORT_B`，没有个人路径源码默认值、fallback 或 skip。此次 A 路径为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/video-original-text.txt`，B 为 `C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first/video-original-text.txt`，均按模块与 V `msg_43e318f2b008` 的精确只读授权消费。production `summarize_markdown` loader 保留已有真实正文；该范围没有宣称 Markdown 自身证明 952 个时间片段，也没有调用新提取 / ASR / 模型 / controller。
 
-经模块允许，普通 `--no-ff` 消费 B 前置 `3384a89aac3be6d5670d756eb2d44263784d0cb8`；其中只有共同 owned execution 口，text / bridge 的原 registry、作业 / operation、活会话和原档 / Send 映射尚未交付。T 没有手工修改该生产输入。
+经模块允许，普通 `--no-ff` 消费 B 前置 `3384a89aac3be6d5670d756eb2d44263784d0cb8` 的共同 owned execution 接口。后续消费的 `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已包含 selected-text 的 ProjectID / JobID / OperationID / SessionID / NativeID、原 controller `thread/read` 指针、Send 阶段和原件保留代码；本轨只读确认代码存在，尚未运行或验收这条映射。T 没有手工修改生产输入。
 
 新增 `http_evidence_test.go` 只委托真实 HTTP Transport，并通过 `io.TeeReader` 将其实际响应原件保存到本机忽略目录；没有替代请求 / 响应、认证 Cookie 或凭据，也没有把原件写入 Git / HTTP / 产品字段。它仅用于定位真实 provider / pagination 问题。
 
@@ -66,6 +66,8 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | 消费准确 cursor SOURCE 后，`go test -mod=readonly ./internal/attention/app -run '^TestPublicFavoriteSourceCapacity$' -count=1` | EXIT0；同原获准匿名公开夹，实际 metadata100 / has_more / SQLite，资料零 | `.verification/favorites-capacity-fixed-cursor.log` |
 | `go test -mod=readonly ./internal/attention/app -run '^TestBoundedPrefixDoesNotMarkUnobservedOlderCacheStale$' -count=1` | EXIT0；真实三窗口，保留原 110 条记录 / has_more / 全部 nonstale 断言 | `.verification/tracking-prefix-actual-first.log` |
 | `go test -mod=readonly ./internal/attention/app -run '^TestActualPartialListingFailureRetainsCursorAndBudget$' -count=1` | EXIT0；实际 1 项缓存 / stale 失败、同 cursor 自动安全重试、总 2 项 / attempts2 / 3 次真实调用 / 原预算 | `.verification/tracking-partial-actual-first.log` |
+| 显式两实际视频导出及现系统获准匿名 loopback 代理后，`go test -mod=readonly ./internal/attention/app -count=1` | RED，23.041s；唯一失败为原 Creator 上传目录 3 项未达到 100 条门槛，其他当前测试通过；仍含待整改的旧替代模型，未作为真实模型验收 | `.verification/app-default-stage6.log` |
+| `go test -mod=readonly ./internal/attention/app ./tests/s1 -list '^Test'` 与 `go build -mod=readonly -o .verification/astrocyte-stage6.exe ./cmd/server` | EXIT0；当前两包编译清单及实际生产服务构建，未运行 S1 模型路径 | `.verification/coverage-stage6.log`、`.verification/build-stage6.log` |
 
 ## 仍在执行
 
@@ -73,7 +75,7 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 
 生产 `agents/text.go` 的 selected-text 目录已通过 B 前置 SOURCE 改为 registry owned root。本轨后续 Go 命令的 `GOTMPDIR / TEMP / TMP` 显式指向 `.verification/go-temp`；S1 子服务另显式使用其 owned evidence directory 内的 native 临时目录。
 
-S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有原生 probe 或模型请求；原件 `.verification/s1-native-first.log` 与 `.verification/s1-native-1981875207/server.log` 保留。模型前置问题 `msg_18fa60d90459` 已由模块回复：只可消费 B 的共同 execution 接口，text / bridge 映射未交付。T 不以 `ExternalStarted` 或工具调用零单独证明实际 Send / 工具关闭，不扫描原生 home、不重发 B 的旧成功请求。
+S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有原生 probe 或模型请求；原件 `.verification/s1-native-first.log` 与 `.verification/s1-native-1981875207/server.log` 保留。模型前置问题 `msg_18fa60d90459` 的回复与后续 SOURCE 分别记录；当前代码已有上述 selected-text 映射，真实运行核查按模块延期决定保持 NOT_RUN。T 不以 `ExternalStarted` 或工具调用零单独证明实际 Send / 工具关闭，不扫描原生 home、不重发 B 的旧成功请求。
 
 收藏夹真实响应原件位于 `.verification/public-http-1166636830/response-1.bin` 至 `response-9.bin`。只读派生为资源页 `20 / 20 / 19 / 0` 项、均 `code=0`、`has_more=true`；目录元数据为 459 项。生产 `PublicListing.ReadPage` 按 returned observed 推进窗口，而 provider 页位置按 requested page size 计算，第三页不足 20 后下一请求落到空槽。这一具体问题已直接 Handoff B `ctx_7217777c7bf5`；T 没有修改 provider、补造行数 / metadata、绕过网络权限或降低 cap。creator3 的有限列表观察、收藏459的目录前置、100 截断失败和最后一页缓存成功分别保留。
 
@@ -83,7 +85,7 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 
 根 `msg_4da181ce8f60` 明确 selected-text 原生身份与模型验证延期至明天 v1.4 语义稳定后的共同身份 / 目标核查窗口。今晚保持实际模型、原生 controller 启动均为零；包含该隐式路径的 `go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 保持 NOT_RUN，不新增 skip、不删除 case 或隐藏默认门槛。
 
-继续验收需要 B 的精确 text / bridge SOURCE 及原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，以及可访问的足量公开 Creator。根已裁决 100 预算为实际 metadata，允许跨缺失槽到第 100 条，真实 Observed19 保留，100 即停止、超时及无进展失败继续保持。准确 cursor 已消费，收藏100 / 110缓存 / partial只读半段均有本轨独立实际结果；Creator 原3与三个候选412仍保持原范围失败，未由收藏结果替代。
+继续验收需要在明天共同窗口核查已消费 text / bridge 代码的原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，以及可访问的足量公开 Creator。根已裁决 100 预算为实际 metadata，允许跨缺失槽到第 100 条，真实 Observed19 保留，100 即停止、超时及无进展失败继续保持。准确 cursor 已消费，收藏100 / 110缓存 / partial只读半段均有本轨独立实际结果；Creator 原3与三个候选412仍保持原范围失败，未由收藏结果替代。
 
 V 的两真实文本导出已支持本轨版本复用验证，完整时间 / 默认提取验收仍归 V 的真实生产路径，不借本轨 Markdown 版本复用结果填其全模块通过。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，明天由本 owner 继续同一写入范围。T 没有发送 worker_done 或发布产品。
 
