@@ -71,8 +71,25 @@ type Proposal struct {
 	OpportunityID string `json:"opportunity_id,omitempty"`
 	OpportunityRevision int `json:"opportunity_revision,omitempty"`
 	GrantID string `json:"grant_id,omitempty"`
+	OwnerNamespace string `json:"owner_namespace,omitempty"`
+	AssignmentStatus string `json:"assignment_status"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// 由Attention可信应用端口提供，包含真实准入和当前访问校验。
+type AdmittedOpportunitySnapshot struct {
+	EventID             string           `json:"event_id"`
+	AdmissionID         string           `json:"admission_id"`
+	OpportunityID       string           `json:"opportunity_id"`
+	OpportunityRevision int              `json:"opportunity_revision"`
+	OwnerNamespace      string           `json:"owner_namespace"`
+	Title               string           `json:"title"`
+	Inputs              []FixedReference `json:"inputs"`
+	ProjectID           string           `json:"project_id,omitempty"`
+	Authority           string           `json:"authority"`
+	PolicyVersion       string           `json:"policy_version"`
+	Active              bool             `json:"active"`
 }
 
 type WorkspaceRuleError struct { Code string; Message string }

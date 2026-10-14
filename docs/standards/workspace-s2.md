@@ -58,6 +58,12 @@ SessionBinding 的 NativeSessionID 使用 json 隐藏；SQLite 使用独立 stor
 
 SOURCE `80248d2c7177823d4535e7730453481426a27305` 普通 push 成功，独立 remote 查询相同 SHA；真实 SQLite 定向测试 PASS，diff 检查 PASS。NativeSessionID 的公有序列化隐藏和私有 SQLite 保存已实码，当前 owned 原生成功仍 NOT_RUN。H/S3 已收到准确来源，生产 HTTP 的首次 404 与全部旧 RED 原件保留；后续依据 H 准确装配继续同一生产入口。
 
+## 准入草稿与分配
+
+协调器正式答复 `msg_65d787a0cc01`：真实准入立即形成未完善 draft，允许项目或固定 Goal 尚未分配，不从旧 GoalRefs 推断新 Goal。未分配草稿仅人类控制面可见，不能 submit、approve 或执行；人类通过新 revision 填写真实项目、固定 Goal、当前来源许可及完整批准约束。
+
+`AdmittedOpportunityReader.ReadAdmittedOpportunity(ctx,eventID)` 仅由 Attention 可信应用桥提供：真实 event/admission/opportunity revision、owner_namespace、固定 input refs、authority/policy_version 及当前 active。`ConsumeOpportunityAdmission` 事务内再次核同源当前快照，按 consumer+event 回执和 opportunity_id+revision 唯一约束生成一次 draft。创建不提供执行目录、native 或 Mission 入口。B 的生产准入及 H 的准确桥尚在实现，真实消费成功目前 NOT_RUN。
+
 ## 第一阶段独立 REPORT
 
 SOURCE `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 普通 push 成功；独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。四个包 `go test -run '^$'` PASS，`git diff --check` PASS；两项均不代表业务验收。准确 SOURCE 已交 S3、H 和 UI，B 的 019 已交 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，下一步消费该迁移并运行真实 SQLite/HTTP。第一次 B SOURCE 通知出现 PowerShell 单引号参数错误，CLI 明确 invalid_argument，未投递；改正参数后继续交接，不将失败视为成功。
