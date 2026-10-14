@@ -162,8 +162,6 @@ Q 后继三个 final inspector 已报告通过；模块只读核其 current 指�
 
 M-relay `msg_6cb9cda5083d` 已确认三组契约顺序：原 H 在本次无模型 CLI 初始化安全节点后，按 S2 Context → S3 → S4 串行共享 main / server / session / OpenAPI 薄装配，将准确 SOURCE / REPORT / factory 交唯一 F 生成客户端，再交同一产品 UI。原 S2 / S3 / S4 准确业务源码已交 H，领域问题交各原 owner；未新增共享写者。其报告当时 H 服务、初始化、模型、登记、Today 均零，F observer 尚未开始；H 在自有新 public-root 无 hardlinks 克隆固定 Go 基线满足真实 containment / guard。新 clone 的真实 Root / worktree / Grant / Git 身份须由原负责人核验，不能仅因 SHA 相同扩大权限或伪造路径；无模型初始化可先进行，R 固定代码上下文仅作为首次输入的实际前置。
 
-## 隐私、冻结与剩余限制
-
 ## S5 普通合并冲突的原负责人临时返修计划
 
 M-release `msg_28b5d6291c58` 请求协调 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015` 中的十八项真实冲突。该树普通合入 B `b502f5c3dbf0b57f84a937d314df09d94d164f70` 后，普通合入 S4 `1a55e1630502642324500c3b64853af882962fa4` 未完成；模块独立 `git diff --name-only --diff-filter=U` 核实与所交清单一致。原 S5 已被要求明确 STOP ACK，禁止在返修期间写这些路径或继续当前 merge；本计划普通 push、原 S5 停写确认与原 B/S2 安全检查点 ACK 均满足后，才发具体临时放行。当前尚未授予跨树写入，原人员继续各自实际任务，不中断事务、构建或其他活动。
@@ -174,6 +172,12 @@ M-release `msg_28b5d6291c58` 请求协调 `release-judgment-20261015` / `songcon
 | 原 S2 `ctx_f32b6d92119a` | `docs/standards/workspace-s2.md`；`internal/adapters/httpapi/workspace_goals.go`、`workspace_proposals.go`；`internal/adapters/sqlite/workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go`、`workspace_session_bindings.go`；`internal/workspace/app/proposal_ports.go`、`s2_service.go`、`session_bindings.go`；`internal/workspace/domain/approvals.go`、`goals.go`、`proposal_context.go`、`proposals.go`、`session_bindings.go`；`tests/s2/approval_test.go` |
 
 原 B/S2 只用文件编辑工具处理上述本人准确冲突并 stage 本人文件，保留当前 S5 实际 SDK 依赖、现行 S2 权限/版本/准入行为与真实 S4 provider，领域错误交原 owner。不得整体复制旧 S4 版本覆盖新 S2，不编辑 S5 私域、其他共享文件、资产或 OS 设置，不执行 commit / merge continue / abort / reset / ours-theirs。各自提交安全检查结果并归还临时范围后，原 S5 核冲突标记零、未合并项零，再继续普通 merge、实际验证和 SOURCE / 独立 REPORT 普通 push。本模块只写此计划，不代写业务或增加同域人员。
+
+临时返修计划 SOURCE `9e05c285deb8efcfae0a9b1c4ee2708364b7c5ac` 已普通 push，模块独立核远端同值，`git diff --check` 无输出。原 B / S2 安全检查点及原 S5 停写 ACK 尚待接收，未放行跨树写入；消息 `msg_e856c4aace11`、`msg_0e479c686197` 与 M-release `msg_22019c44a668` 已分别交付准确范围及条件。冲突未解决不登记为构建或集成通过，全部原任务继续。
+
+产品 UI 另交 SOURCE `b040a6467ae269d8d8f69381b61699d86c2fe009` / REPORT `d74df278e1e1053c6dcc34265f5eba0582012677`，普通 push 后模块独立核远端 REPORT 一致。固定公开仓库 HEAD 的真实资料经生产人工导入、项目引用、UI 保存固定 revision 与历史保持、移除后缺口及实际 submit 403 / 无 Grant 检查，两个尺寸 `2 PASS / 1min`；第一次错误层级断言的 `2 FAIL` 原件保留后按生成 ErrorV1 修正。未调用模型或原生，完整 S2 十项成功保留，后续三组公开契约仍待原负责人交付。
+
+## 隐私、冻结与剩余限制
 
 原始来源、认证文件、模型输出、流与错误原件只保留本机专门证据目录，不进 HTTP/Git/包/stdout；文档只写安全派生和本机指针。浏览器未知派发锁仅保存公开操作身份与 unknown 状态，跨组件重开/刷新保留，禁止自动重试。
 
