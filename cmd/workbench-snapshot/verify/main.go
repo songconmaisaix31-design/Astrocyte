@@ -67,6 +67,8 @@ func run() (finalErr error) {
 	confidence := f.Float64("initial-confidence", -1, "explicit approved initial confidence")
 	seed := f.Bool("authorized-public-replay", false, "coordinator-authorized manual entry at actual earliest source time")
 	pace := f.Duration("pace", 0, "explicit local ingestion pacing; source event times remain unchanged")
+	minimumToday := f.Int("minimum-today", 0, "required actual Shanghai today event count for inspection")
+	closedDay := f.String("closed-day", "", "require yesterday Sleep actually executed today during inspection")
 	if err := f.Parse(os.Args[1:]); err != nil {
 		return err
 	}
@@ -84,7 +86,13 @@ func run() (finalErr error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 	if *mode == "inspect" {
-		return inspect(ctx, *source, *root, *out)
+		if *minimumToday < 0 || ((*minimumToday > 0 || *closedDay != "") && *root == "") {
+			return errors.New("nonnegative minimum and explicit published root required")
+		}
+		if (*repo == "") != (*ref == "") {
+			return errors.New("actual public repository and ref must be supplied together")
+		}
+		return inspect(ctx, *source, *root, *out, *minimumToday, *closedDay, *repo, *ref)
 	}
 	if *mode != "collect" || *repo == "" || *ref == "" || *scope == "" || !*seed || *strength < 0 || *decay < 0 || *confidence < 0 || *confidence > 1 {
 		return errors.New("explicit approved collection configuration required")
@@ -207,7 +215,7 @@ func readonly(path string) (*sql.DB, error) {
 	db.SetMaxOpenConns(1)
 	return db, nil
 }
-func inspect(ctx context.Context, source, root, out string) error {
+func inspect(ctx context.Context, source, root, out string, minimumToday int, closedDay, repo, ref string) error {
 	db, err := readonly(source)
 	if err != nil {
 		return err
@@ -278,6 +286,23 @@ func inspect(ctx context.Context, source, root, out string) error {
 	if err = write(filepath.Join(out, "events-six-fields.json"), safe); err != nil {
 		return err
 	}
+	publicIDs := map[string]bool{}
+	if repo != "" {
+		remote, e := git(ctx, repo, "remote", "get-url", "origin")
+		if e != nil || remote != "https://github.com/songconmaisaix31-design/Astrocyte" {
+			return errors.New("only approved actual public repository allowed")
+		}
+		ids, e := git(ctx, repo, "rev-list", ref)
+		if e != nil {
+			return e
+		}
+		for _, id := range strings.Fields(ids) {
+			publicIDs[id] = true
+		}
+		if len(publicIDs) != len(safe) {
+			return errors.New("SQL event cohort differs from actual reachable public commits")
+		}
+	}
 	for _, event := range safe {
 		var origin, commit, repository string
 		var observed, stored int64
@@ -287,8 +312,25 @@ func inspect(ctx context.Context, source, root, out string) error {
 		if origin != "git:"+strings.ToLower(commit) || repository != "https://github.com/songconmaisaix31-design/Astrocyte" || observed != stored || time.UnixMilli(stored).UTC().Format(time.RFC3339Nano) != event.TS {
 			return errors.New("event origin differs from actual public commit")
 		}
+		if repo != "" {
+			if !publicIDs[commit] {
+				return errors.New("SQL contains repeated or out of cohort public commit")
+			}
+			stamp, e := git(ctx, repo, "show", "-s", "--format=%ct", commit)
+			if e != nil {
+				return e
+			}
+			seconds, e := strconv.ParseInt(stamp, 10, 64)
+			if e != nil || seconds*1000 != stored {
+				return errors.New("SQL event time differs from actual Git commit time")
+			}
+			delete(publicIDs, commit)
+		}
 	}
-	if err = write(filepath.Join(out, "origin-safe.json"), map[string]any{"event_ids_located": len(safe), "actual_git_origins_matched": len(safe), "source": "https://github.com/songconmaisaix31-design/Astrocyte", "source_ts_preserved": true}); err != nil {
+	if len(publicIDs) != 0 {
+		return errors.New("actual public commits missing from SQL")
+	}
+	if err = write(filepath.Join(out, "origin-safe.json"), map[string]any{"event_ids_located": len(safe), "actual_git_origins_matched": len(safe), "source": "https://github.com/songconmaisaix31-design/Astrocyte", "source_ts_preserved": true, "public_ref": ref, "reachable_commits_sql_verified": repo != ""}); err != nil {
 		return err
 	}
 	wire, err := json.Marshal(views)
@@ -494,9 +536,112 @@ func inspect(ctx context.Context, source, root, out string) error {
 	if err = write(filepath.Join(out, "sql-expected.json"), map[string]any{"snapshot_at": views["health"].SnapshotAt, "day": day, "values": values}); err != nil {
 		return err
 	}
+	if len(values) != 10 {
+		return errors.New("four route SQL expectations must contain exactly ten values")
+	}
+	for _, expected := range values {
+		var actual any
+		switch expected["route"] {
+		case "/cognition/today":
+			for _, daily := range views["today"].Today.DailyCounts {
+				if daily.Day == expected["day"] {
+					actual = daily.Count
+				}
+			}
+		case "/cognition/focus":
+			top := views["focus"].Focus.Topics[0]
+			switch expected["metric"] {
+			case "attention":
+				actual = top.Attention
+			case "momentum":
+				actual = top.Momentum
+			case "confidence":
+				actual = top.Confidence
+			}
+		case "/cognition/agents":
+			for _, group := range views["agents"].Agents.Groups {
+				if group.Source == expected["source"] {
+					switch expected["metric"] {
+					case "today":
+						actual = group.Today
+					case "days7":
+						actual = group.Days7
+					case "days30":
+						actual = group.Days30
+					}
+				}
+			}
+		case "/cognition/evidence":
+			actual = views["events"].Events.Total
+		}
+		if actual == nil || actual != expected["value"] {
+			return errors.New("production Reader differs from four route SQL expectations")
+		}
+	}
+	startToday := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, zone)
+	var todayCount, yesterdayCount int
+	if err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM attention_engine_events WHERE ts>=? AND ts<?", startToday.UnixMilli(), startToday.AddDate(0, 0, 1).UnixMilli()).Scan(&todayCount); err != nil {
+		return err
+	}
+	if err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM attention_engine_events WHERE ts>=? AND ts<?", startToday.AddDate(0, 0, -1).UnixMilli(), startToday.UnixMilli()).Scan(&yesterdayCount); err != nil {
+		return err
+	}
+	if todayCount < minimumToday || views["today"].Today.Day != day {
+		return errors.New("actual today events below required sample or Reader day differs")
+	}
+	for _, daily := range views["today"].Today.DailyCounts {
+		if daily.Day == day && daily.Count != todayCount {
+			return errors.New("Reader today count differs from SQL")
+		}
+	}
+	var sleepStarted, sleepCompleted int64
+	if closedDay != "" {
+		if counts["attention_engine_sleep_runs"] != 1 {
+			return errors.New("cross-day isolated source must contain exactly one actual Sleep")
+		}
+		if closedDay != startToday.AddDate(0, 0, -1).Format(time.DateOnly) || yesterdayCount == 0 {
+			return errors.New("closed day must be actual yesterday with real source events")
+		}
+		if err = db.QueryRowContext(ctx, "SELECT started_at,completed_at FROM attention_engine_sleep_runs WHERE day=?", closedDay).Scan(&sleepStarted, &sleepCompleted); err != nil {
+			return err
+		}
+		actualSleep := views["today"].Today.Sleep
+		if sleepStarted < startToday.UnixMilli() || sleepCompleted < sleepStarted || sleepCompleted > time.Now().UnixMilli() || actualSleep.Day != closedDay || actualSleep.Status != "completed" || actualSleep.CompletedAt == nil || *actualSleep.CompletedAt != time.UnixMilli(sleepCompleted).UTC().Format(time.RFC3339Nano) {
+			return errors.New("yesterday Sleep must actually complete today and match Reader")
+		}
+	}
 	historyCounts := map[string]int{}
 	for _, series := range views["focus"].Focus.Series {
 		historyCounts[series.Topic] = len(series.Points)
+		if len(series.Points) < 2 {
+			return errors.New("actual topic history has fewer than two state points")
+		}
+		var updated int64
+		var attention float64
+		if err = db.QueryRowContext(ctx, "SELECT updated_at,attention FROM attention_engine_nodes WHERE topic=?", series.Topic).Scan(&updated, &attention); err != nil {
+			return err
+		}
+		found := false
+		previous := int64(0)
+		for _, point := range series.Points {
+			stamp, e := time.Parse(time.RFC3339Nano, point.TS)
+			if e != nil || stamp.UnixMilli() <= previous || stamp.UnixMilli() > time.Now().UnixMilli() {
+				return errors.New("history must preserve strictly increasing actual state times")
+			}
+			previous = stamp.UnixMilli()
+			if previous == updated && point.Attention == attention {
+				found = true
+			}
+		}
+		if !found {
+			return errors.New("actual SQL node state is absent from history")
+		}
+	}
+	if len(historyCounts) != rank {
+		return errors.New("history must cover every actual topic")
+	}
+	if err = write(filepath.Join(out, "cross-day-safe.json"), map[string]any{"day": day, "today_events": todayCount, "yesterday_events": yesterdayCount, "minimum_today": minimumToday, "closed_day": closedDay, "sleep_started_at": sleepStarted, "sleep_completed_at": sleepCompleted, "zero_token_git_is_model_usage": false, "actual_history_sql_verified": true}); err != nil {
+		return err
 	}
 	phase := "before_sleep"
 	if counts["attention_engine_sleep_runs"] > 0 {
