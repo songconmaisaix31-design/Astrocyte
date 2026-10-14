@@ -681,6 +681,21 @@ func (s *relayService) observe(st *RelayState, t *domain.RelayTask, obs RelayObs
 	if obs.Session.ID != "" {
 		st.Sessions[terminal.ID] = obs.Session
 	}
+	if obs.NativeCapture != nil {
+		previous := st.OwnedSessions[t.ID].NativeCapture
+		var sequence int64
+		if previous != nil {
+			sequence = previous.LastSequence
+		}
+		for _, event := range obs.NativeCapture.Events {
+			if event.Sequence > sequence && !event.TS.IsZero() && !event.TS.After(s.now()) {
+				when := event.TS.UTC()
+				if terminal.LastEventAt == nil || when.After(*terminal.LastEventAt) {
+					terminal.LastEventAt = &when
+				}
+			}
+		}
+	}
 	for _, event := range obs.Events {
 		if event.Sequence <= terminal.LastSequence || event.TS.IsZero() || event.TS.After(s.now()) {
 			continue
