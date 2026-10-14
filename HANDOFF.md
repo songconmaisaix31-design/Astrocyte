@@ -1,5 +1,7 @@
 # Astrocyte 主控交接
 
+2026-10-14：用户要求部署 REA、逆向 Orca 并调研项目参考点，已完成本机 `rea-agents 6.5.0`、Codex MCP 注册与配套技能部署，独立 MCP 握手/207 工具/会话查询 PASS。Orca 1.4.220 实际安装包两组选择范围静态分析、启动恢复 IPC 精确跟踪及 Workbench/R/H 实码比对已记录于 [调研报告](docs/research/orca-rea-20261014.md)。重点建议为输入接收与回合开始区分、原生来源绑定、会话身份关系、活性证据和 CLI 就绪协议；已有 Relay 收据/三值/L1 来源实现分别记录。报告属于调研，原开发人员与 V4 冻结保持当前边界；新 Codex 会话需要重新连接加载 MCP。
+
 2026-10-14 19:59：继续网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md)。原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 沿新 Dispatch `ctx_5a0a4d492434` 实际继续；新增 B `ctx_e0356fbca4e1` 已 failed 结算并 released，双方修改完整保留。F `ctx_a69aaadfe5b6` 在原工作树继续。主控自己的实际终端为 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f`，已重新绑定原 Run generation 3；接管前必须核实终端实际 Agent 和目录，不能仅按 Orca 工作树元数据推断身份。P REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端且适用独立验证 PASS，旧终端释放状态 unknown。主控只维护状态、验收及最终 Git；完成后交唯一集成人员普通合并。当前正式运行树不接入整改源码；Mission 新业务待定和 V4 冻结保持不变。
 
 2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
