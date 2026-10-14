@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -59,5 +60,35 @@ func TestSelectedTextDirectoryStaysUnderControllerOwnedRoot(t *testing.T) {
 	}
 	if _, err = selectedTextRoot(blockedRoot); err == nil {
 		t.Fatal("actual filesystem failure was suppressed")
+	}
+}
+
+// 拒绝输入是调用者声明，不代表已存在的原生来源或进程。
+func TestOwnedTextExecutionRejectsUnattestedIdentity(t *testing.T) {
+	registry := NewRegistry(filepath.Join(t.TempDir(), "native-sessions"))
+	adapter, err := registry.Adapter("codex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	native := adapter.(*Native)
+	for _, input := range []struct {
+		session domain.NativeSession
+		code    apierrors.Code
+	}{
+		{domain.NativeSession{}, apierrors.DeliveryUnknown},
+		{domain.NativeSession{ID: "unattested-id", NativeID: "unattested-native-id", ProjectID: "unattested-project", CLI: "codex", Ownership: "external"}, apierrors.ScopeDenied},
+		{domain.NativeSession{ID: "unattested-id", NativeID: "unattested-native-id", ProjectID: "unattested-project", CLI: "claude", Ownership: "owned"}, apierrors.ScopeDenied},
+		{domain.NativeSession{ID: "unattested-id", NativeID: "unattested-native-id", ProjectID: "unattested-project", CLI: "codex", Ownership: "owned"}, apierrors.DeliveryUnknown},
+	} {
+		_, err := native.OwnedRelayExecution(context.Background(), input.session)
+		var service *apierrors.ServiceError
+		if !errors.As(err, &service) || service.Code != input.code {
+			t.Fatalf("unattested ownership accepted: %v", err)
+		}
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err = native.OwnedRelayExecution(ctx, domain.NativeSession{}); !errors.Is(err, context.Canceled) {
+		t.Fatal("actual cancellation was swallowed")
 	}
 }
