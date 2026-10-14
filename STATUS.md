@@ -12,7 +12,7 @@
 
 Workbench v0.1 验收业务源码 `d46f9f4cf2fd6e13c8362234746105330356c160` 已部署；管理员 Procmon 零写监控和 10-15/10-16 两次真实自动快照仍 NOT_RUN。Works Relay v1.2 工程源码 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已集成，其 CI 38469944551 在 Linux / Windows 均 success；两平台默认 E2E 各 268 PASS / 38 SKIP。该结果不包含后续 L1 会话采集。
 
-L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec501721361e8104a4e6e00781d73656157a4` 已提交；完整采集、HTTP / Today 组合及真实 CLI 闭环以 Workbench 当前原 owner 交付为准，未通过最终验收。V4 day0=2026-10-13，首日采集与三臂机判已完成；用户评分、七日结论和末 D+3 尚未完成。Discovery & Split 保持 IMPLEMENTATION_FROZEN。
+L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec501721361e8104a4e6e00781d73656157a4` 已提交；完整采集、HTTP / Today 组合及真实 CLI 闭环以 Workbench 当前原 owner 交付为准，未通过最终验收。V4 day0=2026-10-13，D0/D1采集、三臂与独立judge已完成，累计24回答/2judge；用户评分、七日结论和末 D+3 尚未完成。Discovery & Split 保持 IMPLEMENTATION_FROZEN。
 
 用户已要求按当前 AGENTS.md 整合仓库；范围、写入边界和验证见 [整合任务](tasks/AGENTS-standard-integration.md)。规则与入口阶段 `4ec19cd` 已 push，链接 / diff 检查 PASS；后端、Python、前端三轨已接受任务并在独立工作树整改，业务验收尚未完成。现有正式库、锁定协议、实验日程和正在开发的原 owner 写入范围保持其已确认边界。
 
@@ -23,6 +23,18 @@ L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec50
 文档校核 PASS：`git diff --check`；Python 文档检查确认21项必备标记、20个本地链接、仅四个Markdown路径和锁定协议SHA不变。业务测试 / 构建本轮未执行；不以文档检查代替 §3 接力功能验收。
 
 ## 验证期冻结令（2026-10-12，V0–V4 全程生效）
+
+### 2026-10-15 V4 D1：实际采集与三臂完成，人评和成熟预测待办
+
+**2026-10-15T00:36:54+08:00：D1（2026-10-14）闭日运行完成。** automation `f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b` 定时 run 3 `50ee3508-e5bc-4ace-8fae-4c652bea59da`已实际派发并执行。root authority/reviewed、CLI0.162.0、无既有本日capture/STARTED及协议全文SHA均通过；day0保持2026-10-13、SHA保持`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`。正式运行源码相对已验d749ecb全等；已提交的Git忽略项不影响运行源码或实验配置。
+
+新增60事件/60信号（Astrocyte46 commits、McPet14 commits、Morphogenesis0）、1生产Sleep、不可变day-state.sqlite；capture_complete/selection_complete=true，unassigned/结构失败/归一化失败/late/source_errors均0。60个event_id逐一在真实日快照定位通过，快照3249事件/3249信号/6节点/33Sleep，未来事件0。授权Claude7文件、Codex20文件；本日Codex145条记录均无工具记录，本日认知信号全部来自git，范围沿原授权根。
+
+4题×3臂12 OK、6事实评分SCORED、独立匿名judge1 OK，共13次实际模型完成，无FAILED/unknown或重发。ABC与judge使用锁定gpt-6.1-sol/872000/4096/5094907/model_context_split，完整usage/输入、no_tools/no_compact与预算复核PASS。A四题各1326引用可回溯、聚合误差0/raw0；B各完整1033消息，未装载0；C仅共同题目，judge仅完成的匿名原答。
+
+累计真实D0/D1为24/84回答、2/7 judge、0/7实际人评、6份预测PENDING_NOT_MATURE。首个预测于10-17闭日采完10-14..16后成熟，本次未提前评分；人评不代填、未执行import-user，未生成终局报告。实际表`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/day-20261014-first/user-sheet.json`待用户另存填写。automation保持enabled，下一次10-16处理10-15；最后D9处理或窗口外唤醒按计划禁用，冻结解除条件仍未满足。
+
+外部安全摘要`root-v4-start/daily-20261014-summary-safe.json`，capture=`v4-w1/formal-20261013-first/capture-20261014-first`，日答/用户表=`v4-w2/day-20261014-first`，覆盖汇总=`v4-w2/coverage-through-20261014-safe.jsonl`。`go run ./cmd/validation --live-phase formal`、`experiment.py select-native/run-day/judge`和本机`daily-20261014-audit.py`均EXIT0；原始输入、响应、模型流与错误继续留外部根。仓库仅本次root状态/交接变更，新增业务测试0，沿用已验源码，不重复整仓测试/构建；本次提交为普通skip ci文档提交。
 
 ### 2026-10-14 V4 首日恢复：采集/三臂/机判完成，人评与预测待办
 
