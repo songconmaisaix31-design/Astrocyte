@@ -1,5 +1,53 @@
 # Works Relay runtime
 
+## 2026-10-14 Native 内部证据口单文件消费
+
+本阶段 Task `task_d480ceaf0e15` / Dispatch `ctx_1f88d9e6f4f4`，仍在原 R 工作树和 `songconmaisaix31-design/works-relay-runtime` 分支。SOURCE `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` 已普通 push；REPORT 独立普通提交并由当前 Dispatch 回传精确 SHA。前阶段 `87a54b7` / `63b55d7` 及全部普通历史保留。当前客户端 Codex，未覆盖模型配置，无第四层人员。
+
+只读核实 B 的 `standards-backend` 基线 `15c738f88822e553eb228c12c0fdc71ad07b7531`：没有 Relay app / domain / capture 类型；`nativeProcess` 没有 R 的 `relayCapture` / projectID / startedAt / deadlineAt / permissionPolicy / firstProtocolFailure。因此此前六文件清单不是 B 的闭合依赖，不能复制一半、临时注释 R 逻辑或把整个 R / H / frozen 树并入 B。本阶段没有修改 B、H、T 或根计划。
+
+### 唯一生产消费文件与调用约束
+
+B 通过文件编辑工具从上述 immutable SOURCE 原样消费唯一文件：
+
+```text
+internal/adapters/agents/relay_execution.go
+```
+
+该文件只依赖双方已有的 `agents.Native` / `nativeProcess` 的 `id`、`get`、`mu`、`nativeID`、`cmd`、`done`，已有 `installedCommand` / `nativeError` / `codexDisabledFeatures`，标准库 context / reflect / time 和既有 apierrors / domain.NativeSession。没有 app.RelayLaunch、RelayStore、Relay capture、HTTP、认知 schema、配置或依赖变更。B 不消费 native.go / native_process.go / relay_native.go / relay_terminal_policy.go / relay_policy_test.go；不得编改 R 逻辑来适配。
+
+调用接口保持 `n.OwnedRelayExecution(ctx, exactSession)`。调用方必须持有原 Registry 返回的同一个 `*agents.Native`，并保持原 `Start` 返回的完整 `domain.NativeSession`：ID、NativeID、ProjectID、CLI、Ownership 和 Version。实际 controller map 只按原 session ID 找已经启动的 owned process，再核原 native ID；没有进程 / 缺少 ID 或项目身份返回 DeliveryUnknown，external / 错 CLI 返回 ScopeDenied。不会凭 NativeID 创建 session、查私人 history、发 RPC、启动模型或推断进程已经死亡。B 的 JobID / OperationID 到原 session / controller / 明确来源的映射仍归其普通 text.go / bridge，T 只写其测试。
+
+原进程返回真实 PID、实际 done 退出事实、实际 argv 对固定关闭工具配置的匹配、CLI / 原 session Version。原 argv / 环境 / 原档 / 模型文本 / 凭据不返回。`effective_tool_set` 始终 unknown，argv 配置、只读 sandbox 或 tool_calls 0 不单独证明完整有效工具集合。
+
+R 的原 project binding / 时间 / permission response / 首 RPC 摘要通过同包可选 `relayExecutionMetadataProvider` 供给，具体实现移到 R-only `relay_execution_metadata.go`。R 保留原项目身份核查、实际时间、通知 writer 参数和 first failure，不减少原 R 证据。B 仅消费公共文件时没有该可选实现，`process_metadata_status=unknown`、权限 unknown、开始 / deadline 为未记录零值、first_protocol_failure 缺省；不能把这些补为当前时间、任务时间、成功 Start 证明或新工具能力。B 基线没有进程绑定的 project 元数据，公共证据不声称独立验证了它；来源 / 业务权限仍由其原调用链核实，不能以该内部证据口新增授权。
+
+R 新增 `relay_execution_test.go` 是可移植纯拒绝测试，只检查缺原身份、无 controller、external、错 CLI 和 canceled read，没有伪造已持有进程或成功状态。B 的生产消费清单不包含该测试；本轮只在只读 overlay 中编译执行它，T 后续独立测试沿自己的写域。
+
+### 对 B 真实基线的只读编译验证
+
+使用本机 `go help build` 核实的标准 `-overlay`；忽略目录的 `dist/relay-l1/portable-native-b-overlay.json` 只映射 B 的两个虚拟文件到本阶段 R 的公共文件和纯拒绝测试。它没有替换 B Native、contracts、依赖、H 或 frozen 文件；不在 B 磁盘创建或编辑文件，不执行其服务或 CLI。验证前后 B HEAD 均为上面的 15c738f，工作树 clean。
+
+| 命令 / 工作目录 | 本阶段结果 |
+|---|---|
+| R：`go test -mod=readonly ./internal/adapters/agents -run 'TestRelayExecutionPortable\|TestRelayOwnedExecution\|TestRelayProtocolFirstFailure' -count=1 -v -timeout=90s` | 四项 PASS，无 Skip / helper / fake 状态；日志 `dist/relay-l1/portable-native-r-first.log` |
+| B：`go test -mod=readonly -overlay <本机R绝对overlay路径> ./internal/adapters/agents -run TestRelayExecutionPortable -count=1 -v -timeout=90s` | 两项 PASS，实际 B 基线编译闭合；日志 `dist/relay-l1/portable-native-b-first.log` |
+| B：`go vet -mod=readonly -overlay <同路径> ./internal/adapters/agents` | EXIT 0 |
+| B：`go build -mod=readonly -overlay <同路径> -o <R忽略证据目录>/portable-native-b-server.exe ./cmd/server` | EXIT 0；只构建，不运行服务 |
+| R：`go test -mod=readonly ./...` | PASS，20 个有测试 package / 9 个无测试 package，既有 native opt-in 未开启；日志 `dist/relay-l1/portable-native-r-full.log` |
+| R：`go vet -mod=readonly ./internal/adapters/agents` 和 `go build -mod=readonly -o dist/relay-l1/portable-native-r-server.exe ./cmd/server` | EXIT 0 |
+| R：`gofmt` / `git diff --check` / `node scripts/check-architecture.mjs` | PASS，29 package 边界 |
+
+本阶段没有新的 RED，没有 CLI / 模型 / 视觉操作或 H/F 原 task 动作；未将 overlay 编译或纯拒绝测试计为当前 actual owned PID / Send / 取消 / 工具集合成功。B 编辑工具实际消费后的 compile / test / commit ACK 仍须由 B 发回，才能视为消费完成。
+
+### 安全 checkpoint 与剩余限制
+
+本阶段 SOURCE / 独立 REPORT 发布后，R 暂停写唯一消费文件 `internal/adapters/agents/relay_execution.go`，直到 B 通过编辑工具原样消费、普通 commit 并明确 ACK 归还。R-only metadata / 本报告不是 B 消费文件。精确内容差异或所有 R 逻辑冲突退回原 R，B 仅实现普通 text / bridge 的映射，不改此公共逻辑；T 不手改 Native / WIP。
+
+最终 I 仍普通合 R / B 原 SOURCE 保留作者和 DAG；临时单文件消费不授权删除 / squash 原作者历史，也不等于最终集成或 ZIP 验收。先前旧 task 一次模型与逐事件核查、首 503 accepted + thread/read -32603、首 registry 三分钟 FAIL、旧 PID / 工具证据不足原样保留。当前旧任务 `reconcile` 权限门禁由模块向最高层询问，裁决前本阶段不改 Transition / revision / A-B-C / grant / ownership、不手写 DB、不由退出推断 done。
+
+具体单文件 closure 已直接交 M-product / B / T / H 与父模块。raw 源 / credentials / 模型输出不进 HTTP、Git、包或 stdout；V4 / schema / engine / mapper / weights / schedule / 17321 冻结不动。实际模型和取消路径验证、H/F 真实操作窗口及最后 ZIP 仍由原 owner / 模块继续，本阶段只交付最小 Native 内部证据依赖。
+
 ## 2026-10-14 默认真实 Relay 场景支持
 
 本阶段 Task `task_6586f574ed0b` / Dispatch `ctx_1210a540a63b`，原分支 `songconmaisaix31-design/works-relay-runtime`；最终 SOURCE `87a54b762aef0c6a175eab1470508e76aa6ace45` 已普通 push。首 SOURCE `6ed9ae1301dc2e91f0d17a335300697fae3e253f`、通知参数修复 `055a57a18c732ffbbc55d49c605f65c655b8edea`、无新增 Skip 的测试返修 `5c37c261ae1f98fbdab6926415712ef4a5181581` 和阶段 REPORT `26925b92a62babce52e96862719eb6f7269bf950` 均保留普通祖先。最终 REPORT 独立普通提交，精确 SHA 经当前 Dispatch 回传。此前 `d6d4da6` / `07449a6` 没有重写历史。客户端为当前 Codex，未覆盖实际模型设置，没有派第四层人员。
