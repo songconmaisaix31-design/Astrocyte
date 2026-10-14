@@ -69,10 +69,11 @@
 - R 可移植内部证据口 SOURCE `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` / 独立 REPORT `d8cb13a8b1a392a2105bba9e826daa1364e70caa` 只给 B 原样消费 `internal/adapters/agents/relay_execution.go`，R metadata 保留独立文件。B SOURCE `3384a89aac3be6d5670d756eb2d44263784d0cb8` 已普通 push，B 和产品模块双 ACK 内容逐行大小写全等、无其他 R 文件消费；14:31Z 模块正式归还该文件写域给 R。B 后续只修改自身 text / bridge，对缺失 metadata 保持 unknown，不以 NativeID 重建原 process 所有权。
 - 总负责人正式 reply `msg_0c1795a84006` 回答 `msg_ac65fadbbe5e`：纯人工 done / released Transition 核现有 observe 许可；保留人工身份、原项目 revision / A-B-C / 对象所有权、grant 撤销和失效、completion_confirmed、真实退出与 pending 拒绝。真正事件 publication reconciliation 继续核 reconcile。R 正在原写域实现；旧 task revision2、原输入、收据与开始时间不修改，F 是唯一实际 UI 操作人。
 - R 新权限真实 SQLite / HTTP A-B-C、vet / build / architecture 已报告 PASS；全 Go 首 RED 为 H `TestRelayPersistentRealHTTPReceiptsMutexAndRestart` 成功 reconcile 场景未预先授权 reconcile，实际403 approval_required。首日志 `dist/relay-l1/human-transition-full-go-test.log` 保留，已交 H 原 owner 补真实权限前置和缺许可403；无新增 skip 或删除成功断言。修复 SOURCE 与完整组合通过仍待实际核验。
-- R 人工权限 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 本地提交已独立审查，修改只在 R 三个 relay 文件；模块独立 `go test -mod=readonly ./internal/workspace/app -run '^TestRelayHumanTransitionProductionPermissionGates$' -count=1 -v -timeout=90s` PASS，真实 A/B/C Git / production SQLite / HTTP 拒绝检查1.13秒、package3.073秒，零模型。该检查不制造 working / exit，也不替代旧 task 实际成功释放；远端及独立 REPORT 待 R 精确交接。
+- R 人工权限 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` / 独立 REPORT `fae304b80cb3288b9edd08f10500c6e5af7e4210` 已普通 push，模块独立远端与普通祖先核验 PASS，REPORT 仅修改 `docs/access/runtime.md`。源码修改只在 R 三个 relay 文件；模块独立 `go test -mod=readonly ./internal/workspace/app -run '^TestRelayHumanTransitionProductionPermissionGates$' -count=1 -v -timeout=90s` PASS，真实 A/B/C Git / production SQLite / HTTP 拒绝检查1.13秒、package3.073秒，零模型。该检查不制造 working / exit，也不替代旧 task 实际成功释放；H 已收到串行部署与 F 唯一操作交接。
 - H Foundation / Projects 实际组装 SOURCE `3016a5369393166ac3a40f520138ae352d2edf92` / REPORT `82d014dd78ac732b86e1a562f633909c75d4941e` 已普通 push；显式受保护来源 guard SOURCE `24b6390bcad60a2a20b671dcb60725e77eb3a7a4` 已 push。薄接口等待 B 精确窄 Reader 提交或唯一集成人员实际组装；不能合 B 含冻结历史的整个分支进入 H，不能由 H 修改 Reader。
 - F 首 native DOM 实际为13:33:25.152Z / .153Z；H 逐 SQL 核两个自产 archive ID，第三个 relay_task 事件不计 native。原注册至 DOM591116 / 591117毫秒 FAIL；dispatch 创建至 DOM14.516 / 14.517秒 PASS，两种起点分列。原 task 单次 read 返回200 / accepted，controller 已实际退出，人工 done / released 等上述权限修复投入和 F 实际操作。
 - 总负责人已授权先合法释放旧 task、SQL 工作区解锁和 pending0，再创建独立明确公开 scope / DB / follow-up；新窗口使用既有显式900秒并提前取得 F observer ready。新模型工具关闭须有本次实际 PID / argv / controller 来源证据；旧第一 FAIL、503 accepted 和 unknown 不覆盖。PUBLICATION_ERROR 尚未执行；H 正核新独占 SQLite 的真实 writer 争用是否能只使事件 sink busy，不能假造 sink、增加测试开关或使用旧 scope / 正式数据。
+- 14:37:50Z H 从原 relay.sqlite 精确 binding 选定本次 controller 原档，实际 regular / bytes105564 / nlink2 / source_status available。Windows 来源身份 guard 要求单链接，当前 `source_identity_unverifiable_or_aliased`、coverage errors1 / snapshot_complete false，当前覆盖 FAIL；此前15行 / 18个 HTTP ID 通过保留为当时结果。H 声明原档未建链接，其保护测试只链接独立新 SQLite。模块已交 R、产品 F/B、发布 Q/N/P 核准确本次消费者和自有链接创建清理证据，禁止扫描私人历史、删除未知第二链接、放宽 guard 或重复旧成功模型填证据。
 
 模块管理阶段 SOURCE `e404da04f7b10296bed8133589c292766c5398cf` 已普通 push，`git diff --check` 和 `git ls-remote` 精确核对 PASS；该结果仅包含本模块管理文档与派发核查，业务修复和产品验收仍按下面记录进行。
 
@@ -83,7 +84,7 @@
 | CreateIntent 保存权限 revision；正常确认；权限变化阻断 | 首 RED 保留；9719e69 实际 SQLite/HTTP 保存与拒绝独立 PASS，真实产品成功确认等待 H/F | H 实际 SQLite/HTTP，F 实际页面，保留前端比较 |
 | 控制器 start/send/read/stop/resume、持久身份与三值状态 | R 阶段报告 PASS，组合未验 | 当前真实 controller 与 SQLite、明确活动窗口语义；H/F 产品链路 |
 | 控制器自产会话逐 event_id 定位、六字段 HTTP、分页与 GET 只读 | 原 task H 独立15行 / 模块18 HTTP ID 实际匹配 PASS | H 原档 / SQL / GetEvent / HTTP 比较；原503与完整会话 partial 独立保留 |
-| 来源覆盖、追加、停止和恢复边界 | PARTIAL / UNKNOWN 保留 | `ArchiveAppendOnly=unknown`，文件 PrefixComplete / SessionComplete 不足，恢复 raw gap 独立记录 |
+| 来源覆盖、追加、停止和恢复边界 | 当前原档 nlink2 / errors1 / snapshot_complete false 为 FAIL；既有 PARTIAL / UNKNOWN 保留 | 已交原来源消费者核链接所有权；`ArchiveAppendOnly=unknown`，文件 PrefixComplete / SessionComplete 不足，恢复 raw gap 独立记录 |
 | 同 URL 未登记基线、真实登记、首次 Today DOM 三分钟 | 首注册至真实 native DOM591116 / 591117毫秒 FAIL；dispatch 至 DOM14.516 / 14.517秒 PASS | 原13:23:34.0366105Z起点不变，两个真实 archive ID 逐 SQL 核实，两种计时分别报告 |
 | 人工 done / released 和事件 reconciliation 许可 | observe 人工映射已批准；R 实现中；旧 task 实际完成释放未验 | R 权限与真实适配器，H 投入和 SQL 核验，F 唯一 UI；reconciliation 继续核 reconcile |
 | 注册表扩展、中性 worktree 换手、terminal-only、互斥与权限拒绝 | 最终组合未验 | 对照 v1.2 与当前 release 任务；每项真实结果独立报告 |
