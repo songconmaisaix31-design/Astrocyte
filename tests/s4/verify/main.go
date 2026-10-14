@@ -196,6 +196,43 @@ func main() {
 		must(service.ValidateProjectSnapshot(ctx, human, before))
 		emit("actual_other_worktree_index_environment_cannot_redirect_snapshot")
 	}
+	if *phase == "same-project-worktrees" {
+		p, err := db.LoadProject(ctx, qa.ProjectID)
+		must(err)
+		originalRoot := p.Root
+		original, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		version := p.Settings.Revision
+		p.Settings.Revision++
+		p.Root = *rootB
+		must(db.SaveProject(ctx, p, version))
+		other, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		assert(original.Head == other.Head && original.RepoID == other.RepoID && original.WorktreeID != other.WorktreeID, "same project did not distinguish its changed worktree")
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.NotFound)
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "index")
+		must(err)
+		feature := qa
+		feature.Text = "name:countParagraphs"
+		result, err := service.SearchRepositoryCode(ctx, human, feature)
+		must(err)
+		assert(len(result.Symbols) == 0, "same-project worktree B reused A source")
+		version = p.Settings.Revision
+		p.Settings.Revision++
+		p.Root = originalRoot
+		must(db.SaveProject(ctx, p, version))
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "rebuild")
+		must(err)
+		result, err = service.SearchRepositoryCode(ctx, human, feature)
+		must(err)
+		assert(len(result.Symbols) > 0, "same-project worktree A did not retain its own source")
+		_, err = service.RefreshRepositoryMap(ctx, human, qa)
+		must(err)
+		emit("same_project_same_commit_worktree_switch_never_reuses_other_graph")
+	}
 	if *phase == "corrupt-rebuild" {
 		snapshot, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
 		must(err)

@@ -77,3 +77,25 @@ SOURCE `263bc7069682ede35af60426140ee6f744b0d472` 已普通 push，父链含 B �
 当前真实限制：SemanticIndex 的用户决定未到；HTTP/前端/最终 Windows 包组合未执行；AOCI 完整系统理解未作额外全量认知声称，FSL 分发仍未决定。公开项目目录和 SDK/工具是本机依赖，发布方须使用 B 的依赖清单和可信实际路径配置。阶段 SOURCE/REPORT 供 S2/H 消费，当前 S4 继续承担后续接入与返修。
 
 Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GIT_WORK_TREE` 重定向注册仓库的实际观察。`verify -phase ambient-git` 实际把宿主 index 指向 B 的真实暂存区，A 的 IndexDigest、WorktreeDigest 和 WorktreeID 保持准确，原快照 Validate 仍通过；随后独立 restart 两图查询 PASS。仓库和 worktree 身份计算方式保持现有记录兼容。
+
+环境约束 SOURCE `1a55e1630502642324500c3b64853af882962fa4` 已普通 push；`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`git diff --check` 与上述实际两阶段验收 PASS。尚未改写 HTTP 路由，新增 `httpapi/repository_context*.go` 写域仍待原 owner 互斥交接；HTTP 请求与安全 DTO 建议已通过模块发送 H/B。
+
+## HTTP 业务处理器
+
+模块管理 SOURCE `95782646bb6181ba8fe97acc2a3f0d4b7b9455f9` 和 `msg_589549037e1d` 已追加本轨唯一 `internal/adapters/httpapi/repository_context*.go` 写域，产品/B 两个原 owner 已确认零 WIP 并停止写入。H 继续只写共享 main/server/session/OpenAPI 薄组装；B 继续配置、依赖与迁移。本轨导出 `RepositoryContextServices`，五个字段分别为 Map、Search、Impact、Indexes、MapCommands，类型使用既有独立 app 端口；`RegisterRepositoryContextRoutes(mux, services)` 在生产认证 router 内注册，不创建额外认证服务。
+
+路由前缀为 `/api/v1/local-projects/{id}/repository-context`：
+
+| 方法与后缀 | 请求 | 行为 |
+|---|---|---|
+| GET `/map` | purpose、重复 root、max_files/max_bytes/max_results/max_depth 均必需 | 仅读保存的安全地图和当前授权 Git |
+| POST `/search` | schema_version=1、purpose、roots、budget、query | 当前授权符号/关键词检索 |
+| POST `/impact` | 同上，使用 symbol_id | 当前快照的有界关系展开 |
+| POST `/index` | 同上，action 为 index/sync/rebuild | 显式人类索引维护 |
+| POST `/map/refresh` | schema_version=1、purpose、roots、budget | 显式人类地图刷新 |
+
+所有 HTTP roots 必须为安全相对路径；ProjectID 只取 route，Caller 只取既有认证 context。严格 JSON 解码拒绝未知的身份、Root、HEAD、digest 和 generation。GET 拒绝未知参数和重复标量。读取仍由 Service 重新验证当前项目授权，维护双重核实 human 身份。H 的 scoped Agent 白名单只增加 map GET、search/impact POST；Agent 维护路由继续拒绝。
+
+成功响应为 `{schema_version:1, repository_context:...}`。IndexStale、ContextStale、BudgetExhausted、VersionConflict 均使用既有 S3 的 HTTP 409，ErrorV1.code 分别保留；未知内部错误只显示固定安全原因。CodeGraph score 是普通排序得分，实际可能大于 1，不能解释为概率；向量能力仍明确缺失。处理器已通过当前真实包 build/vet 和差分检查，实际 HTTP 验证待 H 的准确生产注册及认证薄组装 SOURCE，未使用替代认证或虚假 HTTP。
+
+另已执行 `verify -phase same-project-worktrees`：同一个真实项目 ID 在两个同 HEAD worktree 之间更换注册根，B 的图不会复用 A 的内容；返回 A 时权限 revision 变化要求重新构建，随后准确恢复自己的实现和地图。实际 PASS，原源码/HEAD/暂存区均未修改。
