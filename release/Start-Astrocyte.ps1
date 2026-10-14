@@ -1,7 +1,7 @@
 ﻿param(
     [ValidateRange(1, 65535)]
     [int]$Port = 8787,
-    [string]$DataDir = (Join-Path $PSScriptRoot 'data'),
+    [string]$DataDir = '',
     [string]$SummarizeCli = '',
     [string]$NodeExecutable = '',
     [string]$YtDlp = '',
@@ -20,6 +20,7 @@ if (-not (Test-Path -LiteralPath $binary -PathType Leaf) -or -not (Test-Path -Li
 }
 if ([Environment]::OSVersion.Platform -ne 'Win32NT' -or -not [Environment]::Is64BitOperatingSystem) { throw 'Windows x64 required.' }
 if (($SummarizeCli -eq '') -ne ($NodeExecutable -eq '')) { throw 'SummarizeCli and NodeExecutable must be supplied together.' }
+if ($DataDir -eq '') { $DataDir = Join-Path $PSScriptRoot 'data' }
 $data = [IO.Path]::GetFullPath($DataDir)
 if ($data -eq [IO.Path]::GetPathRoot($data)) { throw 'DataDir must be a dedicated application directory.' }
 $saved = @{}

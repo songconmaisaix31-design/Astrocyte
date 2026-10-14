@@ -1,7 +1,7 @@
 ﻿param(
     [Parameter(Mandatory = $true)]
     [string]$Source,
-    [string]$DataDir = (Join-Path $PSScriptRoot 'data'),
+    [string]$DataDir = '',
     [string]$History = ''
 )
 
@@ -10,6 +10,7 @@ Set-StrictMode -Version Latest
 $binary = Join-Path $PSScriptRoot 'workbench-snapshot.exe'
 if (-not (Test-Path -LiteralPath $binary -PathType Leaf)) { throw 'Extract the complete Windows ZIP before publishing a snapshot.' }
 if (-not [IO.Path]::IsPathRooted($Source) -or -not (Test-Path -LiteralPath $Source -PathType Leaf)) { throw 'Source requires an existing absolute SQLite file explicitly selected by the user.' }
+if ($DataDir -eq '') { $DataDir = Join-Path $PSScriptRoot 'data' }
 $data = [IO.Path]::GetFullPath($DataDir)
 $root = Join-Path $data 'local\astrocyte-workbench\v0.1'
 $arguments = @('--source', $Source, '--root', $root, '--timeout', '120s')
