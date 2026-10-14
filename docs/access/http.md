@@ -1,6 +1,6 @@
 # Works Relay HTTP 与 L1 会话采集
 
-H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a5369393166ac3a40f520138ae352d2edf92`，通过普通合并消费 R 的 `fbfaa65/53231b19`、意图版本 `ce3a519/9719e69`、原生解码 `d6d4da6/07449a6`。本次实际服务的业务构建为 `099ce0b`，报告合并 `b73f749` 的业务相同；后续 H 改动是原件策略核验和既有 Foundation/Projects 构造器组装，尚未替换原运行服务。客户端为 Codex API，工作会话没有暴露精确部署模型名称；实际原生控制器为 Codex `0.162.0`，本次 `turn_context.model` 为 `gpt-6.1-sol`。
+H 分支：`songconmaisaix31-design/works-relay-http`。当前 SOURCE 为 `b6c67e91555522b3d7515d405c4c69a93d0e0bc8`；主装配保护源接线为 `b247dfb12b938739f09acc73e6b7582376951a0c`，真实 SQLite 配置测试为 `78903848199b915a21e95e42f52cbed64c6d606c`。R 的人工完成权限 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 与 REPORT `fae304b80cb3288b9edd08f10500c6e5af7e4210` 已普通合并。旧实际服务运行版本为 `e5714bb868a6519ec70520bca1c0a1b6c4678fb8`。客户端为 Codex API，工作会话没有暴露精确部署模型名称；实际原生控制器为 Codex `0.162.0`，本次 `turn_context.model` 为 `gpt-6.1-sol`。
 
 ## 当前实现
 
@@ -24,6 +24,8 @@ H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a536939316
 
 接入状态位于 `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access`，注册文件为其中 `agents.json`，应用状态为 `app-state/state.sqlite`。启用接入模式用 `ASTROCYTE_RELAY=1`。`ASTROCYTE_RELAY_LIVE_SECONDS` 没有默认值；未配置时活动三值保持 unverifiable，不自行决定活性窗口。
 
+`ASTROCYTE_RELAY_SESSION_DEADLINE_SECONDS` 是启动时的可信配置，显式值范围为 1–1800 秒，无值时传递 NativeDriver 原默认策略。配置错误在创建 Relay store 前立即返回。已授权独立验证使用 900 秒；该寿命不会改变活动三值或既有任务权限。实际验证程序通过 `ASTROCYTE_L1_API_PORT` 选择独占端口，新建项目的初始 actions 包含 `reconcile`。原项目和旧收据身份保持。
+
 `ASTROCYTE_RELAY_PUBLIC_GIT_ROOT` 只用于明确获准的 Agent 自建公开 Git 验证项目。目录必须位于独立接入根的 `verification` 内，每次 Prepare 都以 `os.SameFile` 核对该唯一目录；其他目录立即拒绝。未配置时公开项目启动权限保持关闭。既有中性 worktree 仍核对干净、已提交、正确 Git 根和原身份，不修改用户作品或开放自由工具。实际 Codex 使用现有控制器关闭文件、命令、MCP、skills、浏览器、视觉和其他工具，只提供固定公开上下文。
 
 实际验收服务使用生产 `assembleRelay`、真实 SQLite、真实 HTTP 和本次控制器自己产生的会话文件。API 为 `http://127.0.0.1:17342`，F 网页为 `http://127.0.0.1:17343`。本次数据根为 `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-production-current-20261014`；项目、worktree、数据库和进程均由本次验证持有。所有脚本、中间文件和安全聚合位于 H 工作目录内被忽略的 `dist/l1-live/current-20261014`。原件不进入 Git、HTTP、stdout 或 release 包。官方 CLI 自行鉴权，不读取或复制凭据；归档只读取控制器给出的本次 thread 路径，不枚举历史。
@@ -32,9 +34,9 @@ H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a536939316
 
 | 命令 | 结果 |
 |---|---|
-| `go build -mod=readonly ./cmd/server` | PASS |
-| `go test -mod=readonly -c ./cmd/server` | PASS，实际服务与证据测试二进制已编译 |
-| `go vet -mod=readonly ./cmd/server ./internal/adapters/events ./internal/adapters/httpapi ./internal/adapters/sqlite ./internal/workbench/app` | PASS |
+| 当前 H 原样 `go build -mod=readonly -p=1 ./cmd/server` | FAIL：本分支 Reader 仍为单参数，main 接线需组合消费 B 精确可变参数 Reader |
+| 精确发布组合 `go test -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json -c ./cmd/server` | PASS，实际服务测试二进制已编译；使用下面登记的精确五文件 overlay |
+| 精确发布组合 `go vet -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json ./cmd/server` | PASS |
 | `node scripts/check-architecture.mjs` | PASS，29 个 Go 包边界 |
 | `pnpm exec redocly lint contracts/openapi.yaml --config contracts/redocly.yaml` | PASS，保留既有 EventV1 未引用警告 |
 | `node scripts/validate-examples.mjs` | PASS，291 个契约示例 |
@@ -42,7 +44,7 @@ H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a536939316
 | 实际服务无 Codex 注册基线 | PASS，17342 空注册表，无模型派发 |
 | F 注册前真实浏览器基线 | F 于 `2026-10-14T12:53:45Z` 报告两尺寸 session 200、空 registry 与浏览器 ready |
 | 实际注册前 HTTP 权限检查 | PASS，无 session、跨 Origin、未授权 bearer、缺 CSRF 均 403 |
-| 本轮 SQLite 独立只读计数 | 实际 events=3、signals=0、nodes=0；原生派发前的项目 / Works 观测 |
+| 原生派发前 SQLite 独立只读计数 | 实际 events=3、signals=0、nodes=0；项目 / Works 观测 |
 | 同 URL 追加登记与正常重启 | 实际执行一次，原始 `registered_at=2026-10-14T13:23:34.0366105Z` |
 | 注册起点 → 原生事件首次 DOM | FAIL：F 两尺寸首显示 `13:33:25.152Z/.153Z`，591116/591117 ms，大于 180000 ms |
 | 原 dispatch 收据创建 → 原生事件首次 DOM | PASS：创建 `13:33:10.6363218Z`，约 14.516/14.517 秒；独立于注册起点 FAIL |
@@ -58,7 +60,9 @@ H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a536939316
 | done 后实际 read | 首次 409，operation `5f99133e-390f-4987-b8f2-2889716921ff`，收据 `delivery_unknown`；没有重试 |
 | 主装配显式保护源 | SOURCE `b247dfb12b938739f09acc73e6b7582376951a0c`；解析在应用目录和迁移前执行，参数传给 Reader |
 | 精确发布组合构建 | `go build -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json -o dist/l1-live/reader-overlay/server.exe ./cmd/server` PASS；overlay 为 P `579a1cede98b47b08a3126f5d3974da938348929` 的五个精确 Reader 文件 |
-| 发布组合测试编译 | 首次 FAIL：既有 `cmd/server/workbench_config_test.go` 引用已经移除的 `sqlite.WorkbenchFormalSource`；没有执行该测试或读取该来源 |
+| 保护源与寿命配置目标测试 | 四项 PASS：真实 SQLite 显式来源、受保护目录、实际 snapshot hardlink、启动寿命边界；原编译首 FAIL 保留本机 `first-test-compile-failure.log` |
+| 新独立服务 17344 | 实际启动和正常关闭 PASS，60.32 秒 / exit 0；真实 GET agents=0、tasks=0，无注册文件、无原生会话文件 |
+| 新 scope 原生 / Today | 用户明确今晚停止；注册、模型派发、浏览器与三分钟验收均 NOT_RUN，明日按新窗口继续 |
 
 实际证据检查逐原档 origin 查询 `attention_engine_events` 并通过 `EventRepository.GetEvent` 定位提交 ID，独立比较 HTTP 六字段、分页和 canary 排除；核对重读及持久游标、追加与停止后的真实文件范围。实际 HTTP 权限检查包含无 session、跨 Origin、未授权 bearer 和缺 CSRF；静默 GET 前后事件数量必须一致。模型名称与工具调用数量仅从选定实际文件生成安全聚合。
 
@@ -72,7 +76,9 @@ F 首 DOM 三个 ID 均在真实 SQLite 定位，其中 `MBV3V2HETK5753LFVJY4PGV
 
 R 通过实际 Windows 文件名称接口与 `samefile` 核对两个名称，分别位于默认 Codex sessions 与 Orca 账户 sessions，均不在 H / R 验证目录。创建者未知，镜像解释仅为推断，没有删除链接或放宽守卫。完整路径仅在本机私有证据中，安全聚合为 `source-identity-derived.json` 和 R 的 `owned-archive-link-safe-aggregate.json`。
 
-主装配通过显式 `ASTROCYTE_WORKBENCH_PROTECTED_SOURCES` JSON 数组传递保护来源，默认空数组，不隐式选择私人来源。H 仅修改授权主装配，Reader 使用发布候选精确文件的只读 overlay 验证，未将 B 冻结域历史整体合入。组合构建通过不替代当前 H 旧 Reader 分支完整测试；旧测试常量引用的编译失败仍待其 owner 修正。后续 R 寿命、EOF 与 owned 执行策略端口不反填旧进程证据。
+主装配通过显式 `ASTROCYTE_WORKBENCH_PROTECTED_SOURCES` JSON 数组传递保护来源，默认空数组，不隐式选择私人来源。Reader 使用发布候选精确文件的只读 overlay 验证，未将 B 冻结域历史整体合入。组合构建和适用配置检查通过不替代当前 H 分支完整测试；测试 SOURCE `7890384` 的原域消费由 B 确认。后续 R 寿命、EOF 与 owned 执行策略端口不反填旧进程证据。
+
+新独立验证目录为本机 `verification/h-production-next-20261014-2310`，中间文件位于 H 被忽略的 `dist/l1-live/next-20261014-2310`。用户停止指令收到时未注册或派发，随后正常关闭。安全计数与关闭结果保存在 `closure-derived.json`，不会替代明日实际会话验证。内部执行策略采集复用原 Registry 的 `OwnedRelayExecution` 与 SQLite 实际 session，保存安全派生 PID、启动策略、寿命和首 RPC 摘要，不返回 HTTP；新 scope 没有实际模型，执行元数据采集仍 NOT_RUN，effective tool set 不推定为已验证。
 
 完整默认 check/build/E2E、合并前端、Windows ZIP 解压启动和正式发布由对应 owner 与集成验收负责。H 的静态构建和契约检查不能代替实际 Today DOM、完整会话、终端编码或正式部署。
 
