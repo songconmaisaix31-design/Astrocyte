@@ -4,7 +4,7 @@
 
 ## 发布工具 SOURCE
 
-最新阶段 SOURCE `f12e3a702f99b8dd4f6a890ef34ce9c05af37e48` 已 push，普通消费 Q 加强保护源码 `88bab5fe524e55d40b3799de0ff5fc6d45d08f6b`。包括精确 Git 源码归档、复用生产构建、标准 ZIP、用户启动与手动快照脚本、解压真实 HTTP/session/CSRF/SQLite/重启验证、生产路径扫描及用户说明。当前组合的 TS2305 构建失败仍未修复；此 SOURCE 尚未通过合并产品构建或最终验收。此前发布工具与报告的普通追加历史保留。
+最新阶段 SOURCE `830faaea4f5e19bdf213079f428dc9e0c6995d2e` 已 push，普通消费 F 修复 `9ccb198fd1af1bd6ceb2d98b25b0531802543983`、Q 最终 SOURCE `1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50` 与 REPORT `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`。包括精确 Git 源码归档、复用生产构建、标准 ZIP、用户启动与手动快照脚本、真实 HTTP/session/CSRF/SQLite/重启验证、生产路径扫描、明确输入的真实认知核查及用户说明。TS2305 修复后的 c54 候选构建通过，但解压私有路径扫描失败，尚未通过最终验收。此前全部普通追加历史保留。
 
 ## 候选包演练
 
@@ -63,3 +63,19 @@ P 追加 SOURCE `d0fb7ff0bb1e791583cc405f098eb684affce35e` 已 push，增加 `wo
 生产验证新增 .NET Regex 字符串扫描，对当前用户目录和已知正式源私有常量只输出相对文件与计数，不输出匹配内容。初始 c7a70be ZIP 在另一新目录 `.verification/verify-20261014-210551` 实际扫描零匹配并完成基本运行 25 项 PASS，结果和 scan 聚合记录在该目录；该旧包没有 Workbench 组合，结果不替代新组合。对上述组合已编译 server 的独立只读 `rg --text --count-matches --with-filename` 扫描，安全输出 `astrocyte.exe:3`，确认组合存在私有路径/正式源常量，已交业务 owner 修复。新包最终必须通过生产扫描。
 
 Q 加强保护 SOURCE `88bab5fe524e55d40b3799de0ff5fc6d45d08f6b` 已普通消费为当前阶段 SOURCE。同一精确 Q 归档在 `.verification/q-snapshot-smoke-88bab5fe` 运行 `go build -mod=readonly -trimpath` EXIT 0，再用该 Go 程序和本 P 手动脚本对上述实际候选 SQLite 发布，EXIT 0、generation `snapshot-2185978382`。未重复已失败的完整组合构建；后续候选等待前端精确修复，最终包等待唯一 I 的精确 SOURCE。
+
+## F 修复后新候选与隐私首失败
+
+F 精确修复已普通消费为 `4fd19d83d94d0d8867864d4352c5d07a54ce9986`，P 追加明确的 uvx、既有 Relay 来源模式和用户显式活性窗口启动参数，默认窗口继续未配置；监听检查改用 .NET IPGlobalProperties，网络查询错误立即失败。最新基本验证脚本对初始 c7 ZIP 在 `.verification/verify-20261014-211602` 新目录复验 25 项 PASS；Windows PowerShell 5.1 parser PASS。新的可选参数不启用模型或扩大工具权限。
+
+实际 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Build-Windows.ps1 -Source c54bcf35162918dab1c55cfa2f0ba6d97ce931ed -Label fq-rehearsal` EXIT 0：冻结锁安装、原 Go/TypeScript/Vite 生产构建、Q Go 快照程序均完成。Vite 保留 500 kB chunk 大小警告。ZIP 为 `.verification/package-fq-rehearsal-20261014-211834/Astrocyte-v0.1-windows-x64-c54bcf351629.zip`，33,749,040 字节。
+
+实际 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Verify-Windows.ps1 -Zip <上述ZIP> -RequireCombined` 在 `.verification/verify-20261014-212203` 失败，未启动应用：生产 `astrocyte.exe` 的 UTF-8 字符串扫描匹配 3 处当前个人目录或已知正式源常量。安全记录只输出文件名和计数；首原件 `verify.log`、`private-path-scan.json` 保留。未手工删除二进制字符串，未跳过扫描，问题已交 B/H；后续必须消费其精确修复并同源码重建。该 ZIP 不可作为最终发布包。
+
+## 明确的真实认知与原生验证输入
+
+Q 最终 SOURCE/REPORT 已普通消费。Q 明确交付的 latest 输入是独立 `public-cognition-6f63200932f14a10ad4d9fb91c78d749/app-state/state.sqlite`、`local/astrocyte-workbench/v0.1/current.json` 的实际 `snapshot-892856014` 与该代的真实 `history.json`，均位于 Q 自己的 `.verification`。安全期望位于 Q `.verification/cognition-latest-safe`；独立读其 `admission-safe.json` / `sql-expected.json` 与 current 指针，已确认 `after_sleep`、实际 Sleep 1、原代时间一致、SQL10、1339 六字段、最高 MCP20 与分页 Astro134、两主题各3真实历史。没有按含有 final 的旧目录名选择输入，没有读取正式 V4 或用户原会话。
+
+新 P 验证逻辑要求显式传入上述来源、历史、发布根、安全期望目录和完整 package/Q SOURCE。校验 Q 源码祖先、包文件名、当前发布代与 after_sleep，随后实际包快照命令发布、HTTP SQL10、全部事件六字段、最高排序、每个实际历史点、20/50 同主题分页及重启。Windows PowerShell 5.1 parser 通过；此正向逻辑尚未在通过隐私扫描的新包上执行，不能计为通过。
+
+真实 packaged native 正向还需要原 H 的固定公开任务、真实 CLI/自行鉴权、明确窗口、真实 API 注册/授权/确认与每个 event_id 的 SQLite 核查输入。仅准备脚本，P 尚未启动原生模型。R 已明确 SessionDeadlineSeconds 是可信组装参数，当前不属于环境变量，P 没有发明此参数。候选的空 registry / 空会话事件与认知健康不替代实际原生正向；最终仍须唯一 I 的精确 SOURCE 与全部原验收。
