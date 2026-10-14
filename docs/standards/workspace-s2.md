@@ -32,6 +32,10 @@ B `da79452d1735f8fceca103aaf9d10bb53182f1f5` 已普通消费。新增 immutable 
 
 Proposal 读 DTO 增加 grant_id，刷新页面可读取批准与撤销入口。scope.settings_revision 固定当前项目授权版本；保护动作持有可信 Caller，当前项目版本变更阻止新动作。scope.write_paths 明确相对根目录的写入范围。stops.max_no_progress_rounds 实现 SPEC 连续无产出轮数约束；no_progress_seconds 可额外显式配置，不取代轮数。
 
+## 第二阶段独立 REPORT
+
+SOURCE `5d0ba735533f68259b91128dc404c8e4c2f2a535` 普通 push 成功，独立 remote 查询相同 SHA。实际 SQLite 测试与架构检查通过；HTTP、资料访问拒绝、上下文真实快照与 native binding 的完整成功覆盖仍 NOT_RUN。Grant/成员/Goal 端口、ContextSnapshot 类型、提供者装配和准确 UI 字段已分别交 S3、B、H、S4 与 UI；下一项依赖为 B 的纯当前策略 `4725f0b1c6907ddefb3b1e1dac0f49840031db59` 和 H 的主 HTTP 装配。原架构与路径首次 RED 均保留。
+
 ## 第一阶段独立 REPORT
 
 SOURCE `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 普通 push 成功；独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。四个包 `go test -run '^$'` PASS，`git diff --check` PASS；两项均不代表业务验收。准确 SOURCE 已交 S3、H 和 UI，B 的 019 已交 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，下一步消费该迁移并运行真实 SQLite/HTTP。第一次 B SOURCE 通知出现 PowerShell 单引号参数错误，CLI 明确 invalid_argument，未投递；改正参数后继续交接，不将失败视为成功。
