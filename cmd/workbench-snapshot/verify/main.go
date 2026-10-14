@@ -378,10 +378,73 @@ func inspect(ctx context.Context, source, root, out string) error {
 	if len(views["focus"].Focus.Topics) < 2 {
 		return errors.New("fewer than two actual topics")
 	}
+	ranked, err := db.QueryContext(ctx, `SELECT topic,attention,momentum,confidence FROM attention_engine_nodes ORDER BY attention DESC,topic ASC`)
+	if err != nil {
+		return err
+	}
+	rank := 0
+	for ranked.Next() {
+		var topic string
+		var a, m, c float64
+		if err = ranked.Scan(&topic, &a, &m, &c); err != nil {
+			ranked.Close()
+			return err
+		}
+		if rank >= len(views["focus"].Focus.Topics) {
+			ranked.Close()
+			return errors.New("Reader topic ranking lost nodes")
+		}
+		actual := views["focus"].Focus.Topics[rank]
+		if actual.Topic != topic || actual.Attention != a || actual.Momentum != m || actual.Confidence != c {
+			ranked.Close()
+			return errors.New("Reader topic rank or scalars differ from SQL")
+		}
+		rank++
+	}
+	err = errors.Join(ranked.Err(), ranked.Close())
+	if err != nil {
+		return err
+	}
+	if rank != len(views["focus"].Focus.Topics) {
+		return errors.New("Reader topic ranking added nodes")
+	}
 	topic := views["focus"].Focus.Topics[0].Topic
 	var total int
 	if err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM attention_engine_events WHERE topic=?", topic).Scan(&total); err != nil {
 		return err
+	}
+	var sampleTopic string
+	var sampleCount int
+	if err = db.QueryRowContext(ctx, `SELECT topic,COUNT(*) FROM attention_engine_events WHERE topic<>'' GROUP BY topic HAVING COUNT(*)>20 ORDER BY COUNT(*) DESC,topic ASC LIMIT 1`).Scan(&sampleTopic, &sampleCount); err != nil {
+		return errors.New("no actual topic has more than twenty events")
+	}
+	sample := []workbench.Event{}
+	for _, event := range safe {
+		if event.Topic == sampleTopic {
+			sample = append(sample, event)
+		}
+	}
+	if len(sample) != sampleCount {
+		return errors.New("topic sample differs from SQL count")
+	}
+	for _, size := range []int{20, 50} {
+		for page := 1; page <= (sampleCount+size-1)/size+1; page++ {
+			v, e := reader.Read(ctx, "topics/evidence", workbench.Query{Topic: sampleTopic, Page: page, PageSize: size})
+			if e != nil {
+				return e
+			}
+			expectedLength := max(0, min(size, sampleCount-(page-1)*size))
+			if v.Evidence.Events.Total != sampleCount || len(v.Evidence.Events.Events) != expectedLength {
+				return errors.New("topic evidence pagination lost events")
+			}
+			for i, event := range v.Evidence.Events.Events {
+				a, _ := json.Marshal(event)
+				b, _ := json.Marshal(sample[(page-1)*size+i])
+				if string(a) != string(b) {
+					return errors.New("topic evidence page differs from SQL")
+				}
+			}
+		}
 	}
 	values := []map[string]any{}
 	zone, err := time.LoadLocation("Asia/Shanghai")
@@ -435,19 +498,12 @@ func inspect(ctx context.Context, source, root, out string) error {
 	for _, series := range views["focus"].Focus.Series {
 		historyCounts[series.Topic] = len(series.Points)
 	}
-	status := "PASS"
-	if total <= 20 {
-		status = "FAIL"
-	}
 	phase := "before_sleep"
 	if counts["attention_engine_sleep_runs"] > 0 {
 		phase = "after_sleep"
 	}
-	if err = write(filepath.Join(out, "admission-safe.json"), map[string]any{"status": status, "state_phase": phase, "actual_sleep_runs": counts["attention_engine_sleep_runs"], "provenance": "actual-public-Git-production-replay", "highest_attention_topic": topic, "highest_topic_events": total, "required_highest_topic_events": ">20", "history_points": historyCounts, "six_field_sql_matches": len(safe), "sql_ui_values": len(values)}); err != nil {
+	if err = write(filepath.Join(out, "admission-safe.json"), map[string]any{"status": "PASS", "state_phase": phase, "actual_sleep_runs": counts["attention_engine_sleep_runs"], "provenance": "actual-public-Git-production-replay", "highest_attention_topic": topic, "highest_topic_events": total, "highest_rank_and_scalars_sql_verified": true, "pagination_topic": sampleTopic, "pagination_events": sampleCount, "page_sizes_verified": []int{20, 50}, "required_sample_events": ">20", "history_points": historyCounts, "six_field_sql_matches": len(safe), "sql_ui_values": len(values)}); err != nil {
 		return err
-	}
-	if total <= 20 {
-		return errors.New("highest attention topic has insufficient actual events")
 	}
 	return nil
 }

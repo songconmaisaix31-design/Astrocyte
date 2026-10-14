@@ -1,6 +1,6 @@
 # 认知实际来源验证
 
-`verify-wal.ps1` 的公开来源、ref、scope、日期、时区和已确认的 strength/decay/initial-confidence 全部显式传入。独立 server 实际初始化库后关闭，生产 EventRecorder writer 保持 WAL 写入，另一个 snapshot 进程固定只读视图；保留空库、并发、完整采集和真实 Sleep 后四个实际 generation。脚本终态仍要求最高 attention 主题超过 20 个真实事件，样本不足退出失败，完整副本和本地诊断保留。
+`verify-wal.ps1` 的公开来源、ref、scope、日期、时区和已确认的 strength/decay/initial-confidence 全部显式传入。独立 server 实际初始化库后关闭，生产 EventRecorder writer 保持 WAL 写入，另一个 snapshot 进程固定只读视图；保留空库、并发、完整采集和真实 Sleep 后四个实际 generation。脚本终态要求真实主题超过 20 个事件，独立核对全部主题的最高 attention 排序；样本不足退出失败，完整副本和本地诊断保留。
 
 Workbench 不要求每个主题都超过 20 事件。该条件是此处分页正路径的样本前置，不能通过额外提交、修改 source ts/主题/权重或省略实际失败满足。先前实际不可变 generation 可以用于独立阶段 UI 核查，必须标记其对应阶段与限制，不能代表最新状态。
 
