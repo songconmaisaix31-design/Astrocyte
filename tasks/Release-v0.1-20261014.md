@@ -20,6 +20,14 @@
 
 模块负责人创建自己的子 Run 管理后续开发任务。既有活跃 Dispatch 在原 Run 完成，不中断或重复创建写入者；当前开发人员同时接收所属模块负责人的直接 Handoff，并向模块负责人汇报。总负责人将原 Run 的新增消息转交对应模块；阶段完成后，模块负责人以已核实的同一终端、工作树和分支派发后续任务。已完成 R 的原终端立即交 M-relay 复用，修复真实 CreateIntent 的 SettingsRevision 缺失并复验；不能将阶段生命周期通过作为整条产品已验收。
 
+实际顶层 Run：`run_973808dd6a2f`。M-product：`task_b0197ca7ebdf / ctx_b1cd2e0a39aa / term_580c19de-0c3d-49db-805e-8637184b9301`，子 Run `run_dbf1a68bc692`；M-relay：`task_e8c1d01d67ec / ctx_e6328a370d56 / term_3413269b-9c86-4a2d-804b-790396bf130a`，子 Run `run_8bbda1c3974c`；M-release：`task_fc57d8d54d31 / ctx_376d222c774b / term_5cf00e8f-ad9f-4429-8823-79faa4866c6f`，子 Run `run_ab36c13bc549`。三位均已核实实际任务开始；产品和发布两位的初始输入曾停留输入框，首状态保留，总负责人各补单次 Enter 后核实 Working，没有重复任务或复制文本。
+
+Orca 原嵌套深度为 1，真实第三层派发被 `nested_worker_depth_exceeded` 拒绝且 `effectsApplied=false`。总负责人依照用户明确要求，通过官方设置的纯文本 accessibility 将深度设为 2，并重新读取确认；全过程 `--no-screenshot`。原 R 已合法阶段结算，原终端复用前置识别失败后由总负责人精确 release、归档原输出；M-relay 在原 R 工作树 / 分支派唯一后续开发人员，`task_b833b3a06c1e / ctx_216bf731aaf8 / term_1394f6f0-7f05-486f-b0ee-246a193105a4` 已实际 ready / turnStart observed。功能开发人员不再派第四层。
+
+跨模块的当前处理：M-product 安排唯一依赖 owner B 仅处理 F 工作树本次 `go.mod` 合并冲突，并由原 F 提交普通 merge；M-release 临时仅处理 P 工作树 `HANDOFF.md` 文档冲突并 stage，原 P 提交普通 merge，临时写域处理后撤回。普通 Workbench Reader 的个人正式路径硬编码归 B 在独立开发线整改，保留只读、immutable、query_only、同文件及路径安全检查，默认不得访问个人正式路径；Q / P 只消费精确交付。共享 GitHub TLS 诊断与恢复归 M-release，不关闭验证、修改全局代理或覆盖公共历史。
+
+认知验证分列：现公开 Git 原件按原提交时间，经已有生产 mapper / EventRecorder / Signal / Dynamics / Sleep 在新独立库重放，初始化主题的重放起点为该主题最早实际提交时间，记录其重放身份；先前真实当前时间 SeedTopic 引发的 Engine 拒绝原件保留，不修改源时间、引擎或显式既定参数。该重放验证实际 SQLite / snapshot / API / UI 查询和分页，不代表当前用户主题创建、真实人评、V4 效果或本次原生控制器完整会话验收。
+
 | 轨道 | 固定工作树 / 分支 | 独占 write_paths | 当前结果 |
 |---|---|---|---|
 | B 基础后端与导入整改 | standards-backend / standards-backend | 原 B 范围，排除下述 R / H 所有路径；保留 importer / 普通 agents / native events parser / tests/s1 / scripts/*.mjs / dependencies.lock.json；go.mod/go.sum 单归 B | 保留所有未提交修改，继续实际来源、成熟 parser、失败传播、测试与 SOURCE / REPORT |
