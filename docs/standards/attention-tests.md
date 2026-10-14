@@ -18,6 +18,10 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 第六阶段 SOURCE `61a012464a22d60ef421ea1fdaa5541ef65f1f7e` 已普通提交并 push，修改两个 App tracking 测试文件。经模块 `msg_64b573bcf0a3` 授权，普通消费 B 准确 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b`；同原获准公开收藏的真实 100 条 App / SQLite 验证通过。原 110 条 prefix 缓存断言迁移为真实 `100 + 10 + 前缀100` 三窗口，全部旧记录不标 stale；另新增原 partial 场景的实际只读半段：真实末两页各 1 项、原 cap100、第二次读取发生真实 context 终止、生产 Run 自动有界重试同 cursor，3 次实际 reader 调用 / 2 attempts / 同 operation 与 deadline / 2 条非 stale 记录均通过。观察 helper 只委托生产 Reader，不提供替代页或错误；原模型 unknown 半段继续等待实际模型窗口。
 
+第七阶段 SOURCE `a7370bf1c1086e3cacd612435e15f3f26feb58d2` 已普通提交并 push，修改 `automatic_test.go`，新增本目录专用 `automatic_permissions_service_test.go`。原 Agent 拒绝、空来源许可和未配置处理器断言迁到生产 Service / 官方固定 arXiv Reader / SQLite / ObjectStore；原 `TestAutomaticPriorScopeCannotExpandSelectedSources` 测试名保留并迁到外部包，先通过实际人工 RecordDistillation 保存带有未选上下文的记录，再验证原请求范围拒绝。真实 manual 来源即使其实际 key 已在许可列表，也按真实 provenance 被拒绝；未更改来源 provenance、写入假成功记录或提供替代模型。旧配置变更与无效模型引用断言仍保留等待原生门槛。
+
+第八阶段 SOURCE `870b6561472a978bb684f4c1c83b8e3fae40911f` 已普通提交并 push，只修改 `tracking_production_test.go` 和 `tests/s1/automatic_test.go`。真实原公开 Creator 的现有可用 metadata 支持推荐前正文选择拒绝、未配置推荐失败及 Agent 拒绝检查，没有重复收藏100验证或将有限目录填成容量通过。实际 HTTP 生产服务验证固定公开项目的未引用资料拒绝、未观察原生配置的明确 failed / nonunknown / ExternalStarted=false，以及撤销模型许可后的新请求拒绝；本机 SQLite 中 session / distillation / opportunity 均零，只有一项真实未配置失败的 distillation 作业。原 S1 unknown 作业种类查询同样使用 SQLite `json_extract(data,'$.kind')`，该模型路径仍 NOT_RUN。
+
 本测试要求显式绝对路径 `ASTROCYTE_TEST_VIDEO_EXPORT_A` 与 `ASTROCYTE_TEST_VIDEO_EXPORT_B`，没有个人路径源码默认值、fallback 或 skip。此次 A 路径为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/video-original-text.txt`，B 为 `C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first/video-original-text.txt`，均按模块与 V `msg_43e318f2b008` 的精确只读授权消费。production `summarize_markdown` loader 保留已有真实正文；该范围没有宣称 Markdown 自身证明 952 个时间片段，也没有调用新提取 / ASR / 模型 / controller。
 
 经模块允许，普通 `--no-ff` 消费 B 前置 `3384a89aac3be6d5670d756eb2d44263784d0cb8` 的共同 owned execution 接口。后续消费的 `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已包含 selected-text 的 ProjectID / JobID / OperationID / SessionID / NativeID、原 controller `thread/read` 指针、Send 阶段和原件保留代码；本轨只读确认代码存在，尚未运行或验收这条映射。T 没有手工修改生产输入。
@@ -68,6 +72,12 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | `go test -mod=readonly ./internal/attention/app -run '^TestActualPartialListingFailureRetainsCursorAndBudget$' -count=1` | EXIT0；实际 1 项缓存 / stale 失败、同 cursor 自动安全重试、总 2 项 / attempts2 / 3 次真实调用 / 原预算 | `.verification/tracking-partial-actual-first.log` |
 | 显式两实际视频导出及现系统获准匿名 loopback 代理后，`go test -mod=readonly ./internal/attention/app -count=1` | RED，23.041s；唯一失败为原 Creator 上传目录 3 项未达到 100 条门槛，其他当前测试通过；仍含待整改的旧替代模型，未作为真实模型验收 | `.verification/app-default-stage6.log` |
 | `go test -mod=readonly ./internal/attention/app ./tests/s1 -list '^Test'` 与 `go build -mod=readonly -o .verification/astrocyte-stage6.exe ./cmd/server` | EXIT0；当前两包编译清单及实际生产服务构建，未运行 S1 模型路径 | `.verification/coverage-stage6.log`、`.verification/build-stage6.log` |
+| 自动权限迁移首次编译 | RED：新增用例拆分后的变量声明未完成；原件保留 | `.verification/automatic-permissions-production-first.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestAutomatic(PermissionsAndUnconfiguredProcessorUseActualSource\|PriorScopeCannotExpandSelectedSources)$' -count=1`，沿用获准现系统匿名 loopback 代理 | EXIT0，19.707s；实际官方固定 arXiv、人工附加上下文、真实 SQLite 和对象，五项原拒绝 / 未配置断言组保留，零模型 / controller | `.verification/automatic-permissions-production-second.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestActualPublicMetadataRequiresRecommendationBeforeBodySelection$' -count=1` | EXIT0，3.329s；实际公开 metadata、推荐前选择拒绝、未配置推荐失败与 Agent 拒绝，正文读操作及对象发布零 | `.verification/tracking-selection-gate-production-first.log` |
+| 选定项目实际 HTTP 权限首次验证 | RED，9.811s；作业种类查询不符合真实表结构，前置权限断言已执行，首记录保留 | `.verification/s1-selected-permissions-production-first.log` |
+| `go test -mod=readonly ./tests/s1 -run '^TestSelectedProjectMembershipAndRevocationBeforeNativeStart$' -count=1` | EXIT0，9.087s；实际服务构建 / HTTP / session / SQLite / ObjectStore、固定引用和许可撤销，原生配置未观察保持明确失败，无 probe 或 controller 启动 | `.verification/s1-selected-permissions-production-second.log` |
+| `go test -mod=readonly ./internal/attention/app ./tests/s1 -list '^Test'` | EXIT0；第七 / 八阶段当前两包编译清单，未运行模型路径 | `.verification/coverage-stage7.log`、`.verification/coverage-stage8.log` |
 
 ## 仍在执行
 
@@ -83,10 +93,12 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 
 ## 后续实际验收条件
 
-根 `msg_4da181ce8f60` 明确 selected-text 原生身份与模型验证延期至明天 v1.4 语义稳定后的共同身份 / 目标核查窗口。今晚保持实际模型、原生 controller 启动均为零；包含该隐式路径的 `go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 保持 NOT_RUN，不新增 skip、不删除 case 或隐藏默认门槛。
+模块最新 `msg_0efc7351d1c1` 与 `msg_fc21587f0442` 已替代按日期暂停的指令，根已授权当前语义 / CLI 与 SPEC S0–S6 实施。本轨继续原独占测试整改；实际 selected-text 模型恢复条件为精确 R/H 新语义通过且根 `working/currentowned` 具体规则答复明确，不能仅凭日期或一般实施授权启动 paid controller。目前实际模型、原生 controller 启动均为零；包含该隐式路径的 `go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 保持 NOT_RUN，不新增 skip、不删除 case 或隐藏默认门槛。
 
-继续验收需要在明天共同窗口核查已消费 text / bridge 代码的原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，以及可访问的足量公开 Creator。根已裁决 100 预算为实际 metadata，允许跨缺失槽到第 100 条，真实 Observed19 保留，100 即停止、超时及无进展失败继续保持。准确 cursor 已消费，收藏100 / 110缓存 / partial只读半段均有本轨独立实际结果；Creator 原3与三个候选412仍保持原范围失败，未由收藏结果替代。
+继续验收需要按上述具体门槛核查已消费 text / bridge 代码的原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，以及可访问的足量公开 Creator。根已裁决 100 预算为实际 metadata，允许跨缺失槽到第 100 条，真实 Observed19 保留，100 即停止、超时及无进展失败继续保持。准确 cursor 已消费，收藏100 / 110缓存 / partial只读半段均有本轨独立实际结果；Creator 原3与三个候选412仍保持原范围失败，未由收藏结果替代。
 
-V 的两真实文本导出已支持本轨版本复用验证，完整时间 / 默认提取验收仍归 V 的真实生产路径，不借本轨 Markdown 版本复用结果填其全模块通过。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，明天由本 owner 继续同一写入范围。T 没有发送 worker_done 或发布产品。
+T 已将实际依赖精确交付 B `ctx_7217777c7bf5`：`msg_602d3cc2641f` 说明 production Import Reader 尚无已找到的真实 DeliveryUnknown 路径，现 OpenCLI unknown 只在选中目录桥接且无本轨用户来源授权；`msg_8a48fc5def0a` 说明 S1 须在同一 Job / operation 的实际 `send_accepted` / TurnID 后取消，当前新 UUID controller 的本机 source 指针消费方式仍需准确衔接。现 `OwnedRelayExecution.EffectiveToolSet` 明确保留 unknown，实际 argv 与 LaunchPolicy 不能单独证明有效工具关闭。T 不扫描 home / 私有历史，不生成新索引或 manifest，不替代 B / R / H 写入域；原 Import / listing unknown 断言和模型成功断言均保留，依赖答复与实际原生门槛尚未满足。
+
+V 的两真实文本导出已支持本轨版本复用验证，完整时间 / 默认提取验收仍归 V 的真实生产路径，不借本轨 Markdown 版本复用结果填其全模块通过。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，本 owner 持续负责同一写入范围、功能验证与最终组合支持。T 没有发送 worker_done 或发布产品。
 
 完整成功、权限拒绝、未知交付、重启和整改后相关全包测试尚未完成；本文件所列定向结果不构成全部产品验收。剩余旧共享 helper / 自动模型 / tracking 外部替代测试仍需整改，目录容量不足及模型证据前置分别记录；未用旧替代测试的 PASS 填成本轨完整通过。
