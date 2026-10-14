@@ -56,20 +56,21 @@ func copyWorkbenchPublication(t *testing.T, sourceRoot, targetRoot, pointerName 
 }
 
 func workbenchActualPublication(t *testing.T) *WorkbenchReader {
+	return workbenchSelectedPublication(t, "ASTROCYTE_TEST_COGNITION_LOCALAPPDATA")
+}
+
+func workbenchSelectedPublication(t *testing.T, variable string) *WorkbenchReader {
 	t.Helper()
-	local := os.Getenv("ASTROCYTE_TEST_COGNITION_LOCALAPPDATA")
+	local := os.Getenv(variable)
 	if !filepath.IsAbs(local) {
-		t.Fatal("ASTROCYTE_TEST_COGNITION_LOCALAPPDATA must select the authorized actual public publication")
+		t.Fatalf("%s must select the authorized actual public publication", variable)
 	}
 	root := t.TempDir()
 	publication := copyWorkbenchPublication(t, filepath.Join(local, "astrocyte-workbench", "v0.1"), root, "current.json")
-	observed, err := time.Parse(time.RFC3339Nano, publication.SnapshotAt)
-	if err != nil {
+	if _, err := time.Parse(time.RFC3339Nano, publication.SnapshotAt); err != nil {
 		t.Fatal(err)
 	}
-	reader := NewWorkbenchReader(root)
-	reader.clock = func() time.Time { return observed }
-	return reader
+	return NewWorkbenchReader(root)
 }
 
 // 独立 SQL 连接仅读副本；期望事件由完整 JSON 字段解码得到。
@@ -242,22 +243,12 @@ func TestWorkbenchTodayEmptyDayAndConfirmedHistory(t *testing.T) {
 			t.Fatal("actual seven-day count mismatch", err)
 		}
 	}
-	var sleepDay string
-	var completed int64
-	if err := db.QueryRow(`SELECT day,completed_at FROM attention_engine_sleep_runs WHERE completed_at>0 ORDER BY started_at DESC LIMIT 1`).Scan(&sleepDay, &completed); err != nil {
-		t.Fatal("actual completed Sleep unavailable", err)
-	}
-	day, err := time.ParseInLocation("2006-01-02", sleepDay, s.zone)
+	empty := workbenchSelectedPublication(t, "ASTROCYTE_TEST_COGNITION_EMPTY_LOCALAPPDATA")
+	v, err := empty.Read(context.Background(), "today", workbench.Query{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	// 只调整查询时钟；源事件、Sleep、节点和历史均保持原件。
-	s.clock = func() time.Time { return day.AddDate(0, 0, 2) }
-	v, err := s.Read(context.Background(), "today", workbench.Query{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if v.Today.Day != day.AddDate(0, 0, 2).Format("2006-01-02") || len(v.Today.Activity) != 0 || v.Today.Sleep.Status != "not_produced" || len(v.Today.Focus) == 0 || v.Today.Focus[0].Delta != nil || len(v.Today.DailyCounts) != 7 {
+	if v.Today.Day != observed.In(s.zone).Format("2006-01-02") || len(v.Today.Activity) != 0 || v.Today.Sleep.Status != "not_produced" || len(v.Today.Focus) != 0 || len(v.Today.DailyCounts) != 7 {
 		t.Fatal("empty day fabricated")
 	}
 	v, err = s.Read(context.Background(), "focus", workbench.Query{})
@@ -307,13 +298,21 @@ func TestWorkbenchTodayEmptyDayAndConfirmedHistory(t *testing.T) {
 	if v.SnapshotAt != publication.SnapshotAt {
 		t.Fatal("actual publication identity changed")
 	}
-	s.clock = func() time.Time { return day.AddDate(0, 0, 1) }
-	v, err = s.Read(context.Background(), "today", workbench.Query{})
+	closed := workbenchSelectedPublication(t, "ASTROCYTE_TEST_COGNITION_CLOSED_DAY_LOCALAPPDATA")
+	closedDB := workbenchIndependentDB(t, closed)
+	var completed, started int64
+	yesterday := observed.In(s.zone).AddDate(0, 0, -1).Format("2006-01-02")
+	if err = closedDB.QueryRow(`SELECT started_at,completed_at FROM attention_engine_sleep_runs WHERE day=?`, yesterday).Scan(&started, &completed); err != nil {
+		t.Fatal("actual manually processed closed-day Sleep unavailable", err)
+	}
+	if completed < started || time.UnixMilli(started).In(s.zone).Format("2006-01-02") != observed.In(s.zone).Format("2006-01-02") {
+		t.Fatal("closed-day processing did not retain its actual execution day")
+	}
+	v, err = closed.Read(context.Background(), "today", workbench.Query{})
 	stamp := time.UnixMilli(completed).UTC().Format(time.RFC3339Nano)
 	if err != nil || v.Today.Sleep.Status != "completed" || v.Today.Sleep.CompletedAt == nil || *v.Today.Sleep.CompletedAt != stamp {
 		t.Fatal("actual Sleep mismatch", err)
 	}
-	s.clock = func() time.Time { return observed }
 	v, err = s.Read(context.Background(), "agents", workbench.Query{})
 	if err != nil || len(v.Agents.Groups) == 0 {
 		t.Fatal("actual source groups unavailable", err)
@@ -576,4 +575,40 @@ func TestWorkbenchActualPublicOriginsAndPrivacy(t *testing.T) {
 	}
 	// Git 的整数投影不代表已观测模型 usage；null 样本数量直接按当前副本报告。
 	t.Logf("actual_public_origins=%d projected_null_tokens=%d projected_integer_tokens=%d", len(actual), nullTokens, len(actual)-nullTokens)
+}
+
+func TestWorkbenchActualNativeNullableProjection(t *testing.T) {
+	s := workbenchSelectedPublication(t, "ASTROCYTE_TEST_COGNITION_NATIVE_LOCALAPPDATA")
+	db := workbenchIndependentDB(t, s)
+	expected := workbenchExpectedEvents(t, db, "1=1")
+	if len(expected) < 18 {
+		t.Fatal("authorized actual native source cohort unavailable")
+	}
+	nullTokens := 0
+	for _, event := range expected {
+		if event.Tokens == nil {
+			nullTokens++
+		}
+	}
+	if nullTokens < 17 {
+		t.Fatal("actual native nullable source coverage unavailable")
+	}
+	actual := []workbench.Event{}
+	for page := 1; page <= (len(expected)+99)/100; page++ {
+		view, err := s.Read(context.Background(), "events", workbench.Query{Page: page, PageSize: 100})
+		if err != nil || view.Events.Total != len(expected) {
+			t.Fatal("actual nullable source read failed", err)
+		}
+		actual = append(actual, view.Events.Events...)
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatal("actual nullable source did not preserve every SQL event field")
+	}
+	for _, event := range actual {
+		var id string
+		if err := db.QueryRow(`SELECT id FROM attention_engine_events WHERE id=?`, event.ID).Scan(&id); err != nil || id != event.ID {
+			t.Fatal("actual native event identity missing", err)
+		}
+	}
+	t.Logf("actual_native_events=%d projected_null_tokens=%d", len(actual), nullTokens)
 }
