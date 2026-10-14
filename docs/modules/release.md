@@ -22,23 +22,28 @@
 | 输入 | 精确 SHA / 来源 | 证据范围与状态 |
 |---|---|---|
 | Q 命令 SOURCE | `8001a76646f5892bc18d8ccb9e5cd065b51425a6` | 已核对远端一致；Q 已明确接管回执，REPORT 尚未提交。Q 报告真实空库、七个生产 Reader、失败不发布、旧 immutable 代次检查 PASS；尚未独立签认最终组合与非空认知。 |
+| Q 第二 SOURCE | `88bab5fe524e55d40b3799de0ff5fc6d45d08f6b` | 已独立核对远端一致；真实 junction / reparse、逐 SQL scalar、source 主文件保持、Go test / vet 为 Q 报告 PASS。公开 1339 receipts / signals、两个 nodes、一个生产 Sleep、四次 snapshot、七个 Reader 与全部六字段核查已运行；最高 A 主题恰有 20 events，严格超过 20 的分页验收 FAIL，继续真实来源采集。 |
 | P 工具 SOURCE / REPORT | `da45adfe72a5b7da721bd16be0a1029f8fa05e66` / `e5e4d26bdc5ff64560c8f55aa633c54273161b91` | P 报告候选基础 28 项、工具复验 24 项 PASS；候选输入 `c7a70be963c432bb72d0fa355705ce2907821120`，ZIP 26,309,211 bytes。候选路径待 P 精确补充；最终认知 / Relay / 组合验收未完成。 |
 | P 快照包装阶段 SOURCE | `d0fb7ff0bb1e791583cc405f098eb684affce35e` | 已核对远端一致；P 已明确接管回执。PS5 参数默认值首次失败保留，本域修复后实际发布通过但修复尚未 commit；独立 Q 8001 archive 编译及候选真实 SQLite 发布 status:ok。Q 普通合并的 HANDOFF.md 冲突转根文档 owner。 |
-| P 默认目录修复 SOURCE | `27e65dd80436030b0157edb6f811c83320dda001` | P 报告已 push，Q 普通合并 `4b15b70` 保留；正在从此精确 SOURCE 重新构建候选，阶段 REPORT 仍待。该候选继续等待 I 最终同源输入。 |
+| P 默认目录修复 SOURCE | `27e65dd80436030b0157edb6f811c83320dda001` | P 报告已 push，Q 普通合并 `4b15b70` 保留；该精确 archive 的 pnpm build 首 RED 为 relay-runtime.spec.ts 的 fixtureWorksSnapshot 导入 TS2305，未产新 ZIP，Go 部分编译不提升为完整 build。已退原 F 修复并交精确 SOURCE；阶段 REPORT 和 I 最终同源输入仍待。 |
 | S 科研报告 | `7d030fc83120052a8f32ea74c6007ff9be6878ca` | 已核对远端一致与唯一文档写域；本模块只读审阅六组范围、主来源方法 / 限制、具体 owner Handoff 与未核实资料。S 未重跑产品、模型或正式实验；论文作者成绩保持归属作者。 |
 | Python 标准整改 SOURCE / REPORT | `a1089f94a13306e3cd250ed8facbb438d6e75a19` / `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` | 总负责人交接：独立 29 + 25 测试、36 文件 / 14 冻结 AST PASS；其余 28 项实验 NOT_RUN 保留。 |
 | Relay 阶段 SOURCE / REPORT | `fbfaa65c2c01094305424ac40d2d39d271eab51b` / `53231b19ddd19a65c5a47c91469a0e34d73cf600` | R 阶段生命周期验证；CreateIntent 需原 owner 修复 SettingsRevision。H 观察 SOURCE `7dd7d1b91128a268c035fcfa49da5f9f8667078d`，实际原生三分钟 / 每 event_id / SQL / HTTP / DOM 验收未完成。 |
+| R SettingsRevision 阶段 SOURCE | `ce3a519efa5317e642d7488a776b850eebca1093` | M-relay 报告普通 push / 独立远端一致。真实业务修复可供 H/F 验证；新增测试仍依赖旧 fake fixture，已退原 R 实际 adapter / SQLite 返修，最终源码未接纳。 |
 
 候选包精确路径：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/package-rehearsal-20261014-202942/Astrocyte-v0.1-windows-x64-c7a70be963c4.zip`。该包用于阶段演练，最终 I 同源 ZIP 尚未生成。
 
 模块联络：M-product `ctx_b1cd2e0a39aa`；M-relay `ctx_e6328a370d56` / 子 Run `run_8bbda1c3974c`。双方最终同源交付尚待接收。
 
+Q 本次并发安全聚合已独立读取：实际 writer PID 43216，recorded 32 → 34 时备份，WAL 2,027,072 bytes，总来源 1339；本机证据目录 `.verification/public-cognition-6f63200932f14a10ad4d9fb91c78d749` 属 Q 工作树。未读取该目录 SQLite、原文或日志；完整 SQL expected 10 值仍待 Q 通过严格分页条件后交付。
+
 ## 实际阻塞与边界
 
-- Q 已 clone 获准公开 Astrocyte 来源，报告当前实际 1339 commits。生产 Engine 对当前 time.Now seed 后导入更早 Git 时间的首失败保留。总负责人已于原 ask `msg_2cd6790ae313` 回复 `msg_81e3f3984acb`：允许新的隔离公开 Git 历史生产重放 DB，每 topic 以最早真实 commit.ts 作历史重放初始化起点；所有源 ts / event / Git / 数值保持原样、engine 与既定参数不改。该明确授权已交 Q/F/P，时间阻塞解除；只验认知查询 / 分页与可分发快照，不能称本次 live 主题建立时间、用户亲自评分、正式 V4 或科研收益。
+- Q 已 clone 获准公开 Astrocyte 来源，报告当前实际 1339 commits。当前 seed 与历史 Git 时间的 guard 冲突由源码阅读发现，Q 明确该 time.Now 场景没有实际执行，不登记为运行 RED。总负责人已于原 ask `msg_2cd6790ae313` 回复 `msg_81e3f3984acb`：允许新的隔离公开 Git 历史生产重放 DB，每 topic 以最早真实 commit.ts 作历史重放初始化起点；所有源 ts / event / Git / 数值保持原样、engine 与既定参数不改。该明确授权已交 Q/F/P，时间阻塞解除；只验认知查询 / 分页与可分发快照，不能称本次 live 主题建立时间、用户亲自评分、正式 V4 或科研收益。
 - F 需要 `ASTROCYTE_TEST_COGNITION_LOCALAPPDATA` 独立快照根、独立 SQL expected、两个真实 topic、同 topic 超过 20 个真实 events 及两个实际 historypoints；样本不足继续采集并保持实际状态。H 的 app-state 不能作为已参数化 / Sleep 完成的认知来源。
 - P 普通合并 HANDOFF.md 首冲突保留。总负责人 `msg_0a8a4dd18ac6` 临时授予本模块该单文件文档冲突域；已用 apply_patch 保留当前 P/Q 消费事实与两线历史并单文件 stage，diff 检查通过且无未合并文件，通知原 P 完成普通 merge。临时域随此处理结束，其他业务文件与 P 未提交修改保持原 owner 管理。
-- Q 发现既有 Reader 的 `WorkbenchFormalSource` 个人路径常量会进入 server binary，Reader open 还会对其执行 stat；本模块只核源码引用，没有读取正式源。已向总负责人升级并 Handoff M-product/B 决定发布线的原 owner 修复，Q/P 不修改 Reader。`-trimpath` 只能除构建路径，最终包须独立核查此业务常量，不能据 trimpath 填为通过。
+- Q 发现既有 Reader 的 `WorkbenchFormalSource` 个人路径常量会进入 server binary，Reader open 还会对其执行 stat；本模块只核源码引用，没有读取正式源。总负责人 `msg_e7533f584d40` 已授权 M-product 安排原 B 处理独立发布线的 Reader，保护只用用户显式配置来源 / 实际 owned 快照，保留 ro / immutable / query_only 及路径 alias 安全；默认无个人正式路径访问，正式运行树与冻结域不变。Q/P 不修改 Reader。`-trimpath` 只能除构建路径，最终包须独立扫描此业务常量。
+- Q 的实际 Windows junction 检查首 RED 已保留：EvalSymlinks 未展开 junction。原 Q 正使用核实的 Windows reparse 属性 API 修复并复验；早期 8001 SOURCE 不作为该保护的终稿，后续 SOURCE / REPORT 待接收。
 - M-relay 首次第三层派发遭 `nested_worker_depth_exceeded` / max1 保留。总负责人消息 `msg_498d887dea6a` 已确认通过官方设置把深度改为 2，并独立 readback Value2；第三层后续任务可派发，开发人员仍禁止派发第四层。唯一 I 及本模块后续 Task 尚未派发。
 - 原始会话、凭据、SQLite、私人来源和测试原件不进入 stdout / 产品 HTTP / Git / 包。默认包启动不读取个人正式来源、不运行快照 / Sleep / 自动日程。
 - 正式 V4、engine / mapper / schema / weights、日程与 17321 保持冻结。ArchiveAppendOnly unknown、PrefixComplete / SessionComplete 不足、恢复 raw gap、首 RED / UNKNOWN / NOT_RUN / partial 按真实范围保留。
@@ -55,3 +60,11 @@
 ## 模块文档验证
 
 管理计划提交 `e1d1246d40fd1caf19a34ef5e6a10272eea5668c` 已普通 push，并用 `git ls-remote` 核对完整 SHA。文档本地链接 4 PASS，`git diff --cached --check` PASS；未因管理文档变更运行产品测试。首次 push / 一次远端读取的 TLS `SSL_ERROR_SYSCALL` 保留，后续普通 push / 远端读取成功。Q/P/S 的远端 SHA 已独立核对，业务检查仍按上表原 owner 实测范围登记。
+
+## 共享网络检查
+
+总负责人授权发布模块管理共享 GitHub TLS 诊断。仅检查安全 host / 错误、Git 2.47.0.windows.1 与 gh 2.96.0、指定非敏感 Git HTTP 配置、现有系统代理地址与监听进程；没有读取或输出 token、凭据、完整私有配置，没有关闭 TLS 验签、修改全局 Git、系统代理或远端历史。
+
+[Git 官方配置](https://git-scm.com/docs/git-config) 核实 http.proxy / sslBackend / version 的命令级选项；[GitHub 连接排查](https://docs.github.com/en/get-started/using-github/troubleshooting-connectivity-problems) 与 [SSH over HTTPS](https://docs.github.com/en/authentication/troubleshooting-ssh/using-ssh-over-the-https-port) 用于选择标准诊断入口。实测 TCP 443 可达，默认 ls-remote 曾成功；现有系统代理 `127.0.0.1:7890` 与命令级 Schannel / HTTP1.1 曾成功读取远端，随后相同配置 push / ls-remote 又 TLS 握手失败；openssl direct / proxy、curl direct / proxy 同样失败，gh 公共仓库元数据为 EOF，SSH 443 连接被关闭。尚未证明稳定网络恢复路径，单次 TCP 或读取成功不代表 push / Release 可用。
+
+后续检查提交 `b93d00601507c2722547bf9f620a7d91a7ff7037` 已普通 push，并独立 ls-remote 全 SHA 一致；该成功属于实际一次传输，网络仍按间歇失败登记。各模块继续保留本地精确 SOURCE / REPORT 与首网络失败，恢复后普通 push 并独立核远端，不将本机 commit 当远端交付。
