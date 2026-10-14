@@ -44,9 +44,21 @@ SOURCE `d74c007d31dbcc73b9c86335525953760b0490b7` 与 `9292620ec4c6b442f598be670
 
 PDF MIME 校验复用标准 `net/http.DetectContentType`，PDF 正文仍由现 summarize/markitdown 解析；没有实现 PDF parser。FetchPDF 保持原 ValidationFailed 消息。真实已完整读取的 ACL HTML 47355 bytes 经该生产本机规则拒绝，`go test ./internal/adapters/importers -run TestPaperPDFRequiresPDFMagic -v -count=1` EXIT 0，1.144s，`.verification/paper-pdf-real-format-second.log`；显式环境 `ASTROCYTE_TEST_PUBLIC_PAPER_DIR` 选择获准原件目录，缺失直接失败。原替代 HTTP Transport 已移除，V 可由其原 owner 清理 shared helper。
 
-实际新 ACL HTTP 被 DNS `198.18.0.98` 的原 SSRF 守卫拒绝，`.verification/paper-pdf-real-html-first.log` EXIT 1，未到达 PDF 格式路径。可信代理 DNS 仍未授权，没有修改来源 IP 守卫、OS、DNS 或 TLS；本机格式通过不升级该 HTTP 结果。正向 PDF/text factory 仍需真实 PDF 和实际 CLI 原件；必要生产 NewArxiv collector 第一轮在官方 PDF GET 出现 EOF，`.verification/public-pdf-collector-first.log`，没有生成或伪造原件。第二次明确新目录运行中，结果随后登记。
+实际新 ACL HTTP 被 DNS `198.18.0.98` 的原 SSRF 守卫拒绝，`.verification/paper-pdf-real-html-first.log` EXIT 1，未到达 PDF 格式路径。可信代理 DNS 仍未授权，没有修改来源 IP 守卫、OS、DNS 或 TLS；本机格式通过不升级该 HTTP 结果。必要生产 NewArxiv collector 第一轮在官方 PDF GET 出现 EOF，`.verification/public-pdf-collector-first.log`，没有生成或伪造原件。第二次使用明确新目录完成生产官方来源下载与实际 CLI 提取，结果登记如下。
 
 当前全仓 build/vet EXIT 0，`.verification/helper-video-combined-{build,vet}-first.log`，MIME 阶段全仓 vet EXIT 0，`.verification/paper-mime-vet-first.log`。原子 port0 监听及 H 普通 Workbench guard 测试的精确薄装配依赖已交当前协调者；旧 H/R dispatch 已结束，未向其追加执行或跨域编辑。实际 controller/模型窗口仍按根决定暂停新增，未把原先定向通过记为完整 Go、Relay 或最终产品验收。
+
+## 实际 PDF 原件与 H 明确源测试
+
+SOURCE `4a6076c402e0b5d31982154a31a905bee6127477` 已普通 push；前一 REPORT 为 `b01519924a10128314fd04279738332c14597a0f`。生产 `NewArxiv.Read` 完整取得固定官方 `https://arxiv.org/pdf/2501.12948v1`，1312189 PDF bytes；实际 `ExtractPDF` 使用原 summarize/uvx/markitdown 隔离进程，取得 59636 text bytes 与 64089 原 CLI JSON bytes，0 模型调用。证据 `.verification/public-pdf-collector-second.log`，原件仅在 `.verification/public-pdf-current-second/`；首 EOF 保留。
+
+`TestPaperPDFSourceNeverPresentsURLAsFullText` 使用该实际 PDF、官方源 metadata、原 CLI JSON 及正文，全字段来源和原附件 bytes 保持断言。格式、来源 key、无提取配置及错误输入四项检查 EXIT 0，1.132s，`.verification/paper-pdf-actual-source-first.log`；显式环境 `ASTROCYTE_TEST_PDF_PUBLICATION` 选择上述获准目录，缺失直接失败。该检查是生产来源构造函数的真实输入验证，没有宣称新 `paper_pdf` HTTP 导入已通过。
+
+PDF CLI 原 JSON 包含本机输入路径，构造函数使用已有 private-native MediaType 类别保留在本机对象。跨 revision ObjectRef 权限规则同时识别已有 `summarize-pdf-original.json`，防止既存名字别名开放原生元数据。新的 PDF HTTP 导入受前述原网络守卫限制，实际正向 HTTP 与私有 PDF 原件拒绝尚未运行；不以视频对应检查替代该结论。
+
+协调者正式新建 H 非原生任务 `ctx_d7d8c2828fba` 后，H 冻结 `cmd/server/workbench_config.go`，B 仅原样消费不可变 `24b6390bcad60a2a20b671dcb60725e77eb3a7a4` 单文件，逐行 case-sensitive 内容相等。普通测试保留 H `78903848199b915a21e95e42f52cbed64c6d606c` 全部原断言，唯一修订为本机专属 `.verification/workbench-guard` 根；真实 SQLite/migrations、显式自有 sources、普通 app-state 与实际 snapshot hardlink 拒绝两项检查 EXIT 0，1.832s，`.verification/workbench-config-actual-first.log`。实际服务构建及全仓 build/vet EXIT 0，`.verification/workbench-config-build-first.log`、`.verification/public-pdf-config-{build,vet}-first.log`。该 helper 原写域已经 ACK 归还 H，源中的通用注释与异常处理整改交原 owner，未编辑其 main 装配。
+
+F 已许可只通过 GET 检查原真实视频副本 `.verification/astrocyte-s1-FAkZe5` 的两版资料、952 spans 和安全附件信息，专属实际 API 61280 已启动并核私有原件 HTTP 403，`.verification/existing-video-http-first.log`；0 新 ASR/模型。F 完成后停止原进程，数据不通过人工 SQL 修改。
 
 收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
 
