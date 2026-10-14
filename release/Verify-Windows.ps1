@@ -87,7 +87,7 @@ function Test-CognitionInput {
         Assert-Release ($LASTEXITCODE -eq 0) 'exact Q source is an ancestor of package source'
     } finally { Pop-Location }
     $script:cognitionExpected = Get-Content -LiteralPath (Join-Path $CognitionSafeDir 'sql-expected.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-    $script:cognitionEvents = @(Get-Content -LiteralPath (Join-Path $CognitionSafeDir 'events-six-fields.json') -Raw -Encoding UTF8 | ConvertFrom-Json)
+    $script:cognitionEvents = Get-Content -LiteralPath (Join-Path $CognitionSafeDir 'events-six-fields.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $script:cognitionAdmission = Get-Content -LiteralPath (Join-Path $CognitionSafeDir 'admission-safe.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     $publication = Get-Content -LiteralPath (Join-Path $CognitionPublicationRoot 'current.json') -Raw -Encoding UTF8 | ConvertFrom-Json
     Assert-Release ($cognitionAdmission.state_phase -eq 'after_sleep' -and $cognitionAdmission.actual_sleep_runs -gt 0) 'actual cognition input is the admitted after-Sleep state'
