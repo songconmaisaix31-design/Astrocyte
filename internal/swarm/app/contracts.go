@@ -159,6 +159,7 @@ type ExecutionOwnership interface {
 }
 
 type ExecutionFact struct {
+	FailureCode   string
 	CallsKnown    bool
 	TokensKnown   bool
 	OperationID   string
@@ -195,6 +196,7 @@ type Transaction interface {
 	SaveLease(domain.Lease) error
 	DeleteLease(string, int64) error
 	Artifact(string) (domain.Artifact, error)
+	ArtifactVersion(string, int) (domain.Artifact, error)
 	SaveArtifact(domain.Artifact, int) error
 	Receipt(string, string, string) (Receipt, bool, error)
 	SaveReceipt(string, string, string, Receipt) error
@@ -220,12 +222,13 @@ type CreateMissionCommand struct {
 
 type AddWorkItemCommand struct {
 	domain.Meta
-	RequiredCapabilities []string               `json:"required_capabilities"`
-	MissionID            string                 `json:"mission_id"`
-	Title                string                 `json:"title"`
-	Inputs               []domain.SourceVersion `json:"inputs"`
-	Dependencies         []string               `json:"dependencies"`
-	WritePaths           []string               `json:"write_paths"`
+	ArtifactInputs       []domain.ArtifactReference `json:"artifact_inputs"`
+	RequiredCapabilities []string                   `json:"required_capabilities"`
+	MissionID            string                     `json:"mission_id"`
+	Title                string                     `json:"title"`
+	Inputs               []domain.SourceVersion     `json:"inputs"`
+	Dependencies         []string                   `json:"dependencies"`
+	WritePaths           []string                   `json:"write_paths"`
 }
 
 type ClaimCommand struct {

@@ -15,7 +15,11 @@ func (h *handler) registerSwarmWorkItems(mux *http.ServeMux, s *swarm.Service) {
 		if id == "" {
 			err = invalid("mission_id is required")
 		} else {
-			out, err = s.ReadArtifactDiff(r.Context(), swarmCaller(r), id, r.PathValue("id"))
+			var version int
+			version, err = swarmArtifactVersion(r)
+			if err == nil {
+				out, err = s.ReadArtifactDiff(r.Context(), swarmCaller(r), id, r.PathValue("id"), version)
+			}
 		}
 		h.swarmResult(w, r, out, err)
 	})

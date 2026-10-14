@@ -138,18 +138,19 @@ func (l Limits) Validate() error {
 }
 
 type Grant struct {
-	ID               string    `json:"id"`
-	Epoch            int       `json:"epoch"`
-	ProposalID       string    `json:"proposal_id"`
-	ProposalRevision int       `json:"proposal_revision"`
-	ProjectID        string    `json:"project_id"`
-	Root             string    `json:"root"`
-	Goal             string    `json:"goal"`
-	Actions          []string  `json:"actions"`
-	WritePaths       []string  `json:"write_paths"`
-	Budget           Budget    `json:"budget"`
-	Limits           Limits    `json:"limits"`
-	ExpiresAt        time.Time `json:"expires_at"`
+	Inputs           []SourceVersion `json:"inputs"`
+	ID               string          `json:"id"`
+	Epoch            int             `json:"epoch"`
+	ProposalID       string          `json:"proposal_id"`
+	ProposalRevision int             `json:"proposal_revision"`
+	ProjectID        string          `json:"project_id"`
+	Root             string          `json:"root"`
+	Goal             string          `json:"goal"`
+	Actions          []string        `json:"actions"`
+	WritePaths       []string        `json:"write_paths"`
+	Budget           Budget          `json:"budget"`
+	Limits           Limits          `json:"limits"`
+	ExpiresAt        time.Time       `json:"expires_at"`
 }
 
 type Mission struct {
@@ -250,19 +251,20 @@ type SourceVersion struct {
 }
 
 type WorkItem struct {
-	RequiredCapabilities []string        `json:"required_capabilities"`
-	ID                   string          `json:"id"`
-	MissionID            string          `json:"mission_id"`
-	Version              int             `json:"version"`
-	State                string          `json:"state"`
-	Title                string          `json:"title"`
-	Inputs               []SourceVersion `json:"inputs"`
-	Dependencies         []string        `json:"dependencies"`
-	WritePaths           []string        `json:"write_paths"`
-	Attempts             int             `json:"attempts"`
-	Fence                int64           `json:"fence"`
-	ArtifactID           string          `json:"artifact_id"`
-	Reason               string          `json:"reason"`
+	ArtifactInputs       []ArtifactReference `json:"artifact_inputs"`
+	RequiredCapabilities []string            `json:"required_capabilities"`
+	ID                   string              `json:"id"`
+	MissionID            string              `json:"mission_id"`
+	Version              int                 `json:"version"`
+	State                string              `json:"state"`
+	Title                string              `json:"title"`
+	Inputs               []SourceVersion     `json:"inputs"`
+	Dependencies         []string            `json:"dependencies"`
+	WritePaths           []string            `json:"write_paths"`
+	Attempts             int                 `json:"attempts"`
+	Fence                int64               `json:"fence"`
+	ArtifactID           string              `json:"artifact_id"`
+	Reason               string              `json:"reason"`
 }
 
 func (w WorkItem) Validate(m Mission) error {
@@ -319,27 +321,36 @@ func (l Lease) Check(holder string, fence int64, now time.Time) error {
 }
 
 type Artifact struct {
-	ExperienceStatus string          `json:"experience_status"`
-	ContextPacketID  string          `json:"context_packet_id"`
-	ProjectChecksRef string          `json:"project_checks_ref"`
-	BaseCommit       string          `json:"base_commit"`
-	ReviewReason     string          `json:"review_reason"`
-	ReviewedBy       string          `json:"reviewed_by"`
-	ReviewedAt       *time.Time      `json:"reviewed_at"`
-	ID               string          `json:"id"`
-	Version          int             `json:"version"`
-	WorkItemID       string          `json:"work_item_id"`
-	OperationID      string          `json:"operation_id"`
-	SessionID        string          `json:"session_id"`
-	Fence            int64           `json:"fence"`
-	Inputs           []SourceVersion `json:"inputs"`
-	Commit           string          `json:"commit"`
-	ObjectRef        string          `json:"object_ref"`
-	ChecksRef        string          `json:"checks_ref"`
-	ChangedPaths     []string        `json:"changed_paths"`
-	State            string          `json:"state"`
-	AcceptanceID     string          `json:"acceptance_id"`
-	AcceptedBy       string          `json:"accepted_by"`
-	ExperienceID     string          `json:"experience_id"`
-	CreatedAt        time.Time       `json:"created_at"`
+	ExecutionOutcome     string          `json:"execution_outcome"`
+	ExecutionFailureCode string          `json:"execution_failure_code"`
+	ExperienceStatus     string          `json:"experience_status"`
+	ContextPacketID      string          `json:"context_packet_id"`
+	ProjectChecksRef     string          `json:"project_checks_ref"`
+	BaseCommit           string          `json:"base_commit"`
+	ReviewReason         string          `json:"review_reason"`
+	ReviewedBy           string          `json:"reviewed_by"`
+	ReviewedAt           *time.Time      `json:"reviewed_at"`
+	ID                   string          `json:"id"`
+	Version              int             `json:"version"`
+	WorkItemID           string          `json:"work_item_id"`
+	OperationID          string          `json:"operation_id"`
+	SessionID            string          `json:"session_id"`
+	Fence                int64           `json:"fence"`
+	Inputs               []SourceVersion `json:"inputs"`
+	Commit               string          `json:"commit"`
+	ObjectRef            string          `json:"object_ref"`
+	ChecksRef            string          `json:"checks_ref"`
+	ChangedPaths         []string        `json:"changed_paths"`
+	State                string          `json:"state"`
+	AcceptanceID         string          `json:"acceptance_id"`
+	AcceptedBy           string          `json:"accepted_by"`
+	ExperienceID         string          `json:"experience_id"`
+	CreatedAt            time.Time       `json:"created_at"`
+}
+
+type ArtifactReference struct {
+	ID        string `json:"id"`
+	Version   int    `json:"version"`
+	Commit    string `json:"commit"`
+	ObjectRef string `json:"object_ref"`
 }

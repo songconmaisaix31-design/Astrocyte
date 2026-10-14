@@ -109,10 +109,21 @@ func (s *Service) ReadMission(ctx context.Context, p domain.Principal, id string
 }
 
 func (s *Service) ReadArtifact(ctx context.Context, p domain.Principal, missionID, id string) (domain.Artifact, error) {
+	return s.ReadArtifactVersion(ctx, p, missionID, id, 0)
+}
+
+func (s *Service) ReadArtifactVersion(ctx context.Context, p domain.Principal, missionID, id string, version int) (domain.Artifact, error) {
 	var out domain.Artifact
 	err := s.readWithin(ctx, p, missionID, func(_ context.Context, tx Transaction) error {
 		var err error
-		out, err = tx.Artifact(id)
+		if version < 0 {
+			return domain.Failure(apierrors.ValidationFailed, "artifact version must be nonnegative")
+		}
+		if version == 0 {
+			out, err = tx.Artifact(id)
+		} else {
+			out, err = tx.ArtifactVersion(id, version)
+		}
 		if err != nil {
 			return err
 		}

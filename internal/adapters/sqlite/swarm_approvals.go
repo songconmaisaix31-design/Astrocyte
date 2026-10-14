@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -19,6 +20,10 @@ type SwarmApprovalBridge struct {
 
 type swarmApprovalReader interface {
 	ReadApproval(context.Context, workspace.Caller, string) (workspace.ApprovalGrant, error)
+}
+
+type swarmProposalReader interface {
+	ReadProposal(context.Context, workspace.Caller, string, int) (workspace.Proposal, error)
 }
 
 func (b *SwarmApprovalBridge) WithMissionRead(ctx context.Context, p swarm.Principal, id string, fn func(context.Context) error) error {
@@ -119,8 +124,23 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 		used := workspace.ResourceBudget{Calls: &resources.Calls, Tokens: &resources.Tokens, MoneyMinor: resources.Money, Currency: resources.Currency}
 		check := workspace.GrantCheck{Caller: workspace.Caller{ID: c.Principal.ID, Kind: c.Principal.Kind, ProjectID: c.Principal.ProjectID}, GrantID: c.GrantID, Epoch: c.Epoch, ProposalRevision: c.ProposalRevision, ProjectID: c.ProjectID, Root: c.Root, Action: c.Action, Concurrency: concurrency, Used: used, Tools: c.Tools, ExternalTargets: c.ExternalTargets}
 		invoke := func(ctx context.Context, g workspace.ApprovalGrant) error {
+			reader, ok := b.grants.(swarmProposalReader)
+			if !ok {
+				return swarm.Failure(apierrors.UnsupportedCapability, "actual immutable approved proposal reader unavailable")
+			}
+			proposal, err := reader.ReadProposal(ctx, check.Caller, g.ProposalID, g.ProposalRevision)
+			if err != nil {
+				return err
+			}
+			if proposal.Status != workspace.ProposalApproved || proposal.Revision != g.ProposalRevision {
+				return swarm.Failure(apierrors.ContextStale, "fixed approved proposal snapshot changed")
+			}
 			budget := swarm.Budget{Calls: g.Budget.Calls, Tokens: g.Budget.Tokens, Money: g.Budget.MoneyMinor, Currency: g.Budget.Currency}
 			grant := swarm.Grant{ID: g.ID, Epoch: g.Epoch, ProposalID: g.ProposalID, ProposalRevision: g.ProposalRevision, ProjectID: g.Scope.ProjectID, Root: c.Root, Goal: fmt.Sprintf("%s@%d", g.Goal.ID, g.Goal.Revision), Actions: g.Scope.Actions, WritePaths: g.Scope.WritePaths, Budget: budget, Limits: swarm.Limits{MaxWorkItems: g.Stops.MaxWorkItems, MaxAttempts: g.Stops.MaxAttempts, MaxNoProgress: g.Stops.MaxNoProgressRounds, NoProgressSeconds: g.Stops.NoProgressSeconds, MaxActive: g.Scope.MaxConcurrency, Deadline: g.Stops.Deadline}, ExpiresAt: g.ExpiresAt}
+			grant.Inputs = []swarm.SourceVersion{{ID: g.ProposalID, Revision: strconv.Itoa(g.ProposalRevision)}, {ID: g.Goal.ID, Revision: strconv.Itoa(g.Goal.Revision)}}
+			for _, ref := range proposal.Content.Inputs {
+				grant.Inputs = append(grant.Inputs, swarm.SourceVersion{ID: ref.MaterialID, Revision: strconv.Itoa(ref.Revision)})
+			}
 			return fn(context.WithValue(ctx, swarmTransactionKey{}, tx), grant)
 		}
 		if c.Action == "claim_work_item" || c.Action == "submit_artifact" {

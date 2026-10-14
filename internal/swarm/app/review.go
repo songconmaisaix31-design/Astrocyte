@@ -85,9 +85,16 @@ func (s *Service) RejectArtifact(ctx context.Context, p domain.Principal, c Reje
 	return out, err
 }
 
-func (s *Service) ReadArtifactDiff(ctx context.Context, p domain.Principal, missionID, id string) (ArtifactDiff, error) {
+func (s *Service) ReadArtifactDiff(ctx context.Context, p domain.Principal, missionID, id string, versions ...int) (ArtifactDiff, error) {
 	var out ArtifactDiff
-	a, err := s.ReadArtifact(ctx, p, missionID, id)
+	if len(versions) > 1 {
+		return out, domain.Failure(apierrors.ValidationFailed, "one exact artifact version is required")
+	}
+	version := 0
+	if len(versions) == 1 {
+		version = versions[0]
+	}
+	a, err := s.ReadArtifactVersion(ctx, p, missionID, id, version)
 	if err != nil {
 		return out, err
 	}

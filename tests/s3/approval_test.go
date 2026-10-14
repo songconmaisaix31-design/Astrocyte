@@ -167,6 +167,19 @@ func TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart(t *testing.T
 	if count != 2 {
 		t.Fatalf("successful requests=%d", count)
 	}
+	redelivery := command
+	redelivery.Meta = meta(0)
+	reused, err := sa.CreateMission(ctx, p, redelivery)
+	if err != nil || reused.ID != mission.ID {
+		t.Fatalf("same grant redelivery: %v", err)
+	}
+	var createdEvents int
+	if err = a.Conn().QueryRowContext(ctx, "SELECT COUNT(*) FROM foundation_outbox WHERE aggregate_id=? AND event_type='swarm.mission_created'", mission.ID).Scan(&createdEvents); err != nil {
+		t.Fatal(err)
+	}
+	if createdEvents != 1 {
+		t.Fatalf("same grant emitted %d creation events", createdEvents)
+	}
 	changed := command
 	changed.Root = filepath.Join(root, "internal")
 	_, err = sa.CreateMission(ctx, p, changed)
@@ -177,6 +190,15 @@ func TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart(t *testing.T
 	}
 	if item.State != "open" {
 		t.Fatal("new work item unexpectedly executed")
+	}
+	_, err = sa.AddWorkItem(ctx, p, swarm.AddWorkItemCommand{Meta: meta(mission.Version + 1), MissionID: mission.ID, Title: "Reject an unapproved source", Inputs: []swarmdomain.SourceVersion{{ID: uuid.NewString(), Revision: "1"}}, WritePaths: []string{"internal/swarm/domain"}})
+	code(t, err, apierrors.ScopeDenied)
+	detail, err := sa.ReadMission(ctx, p, mission.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if detail.Mission.WorkItemCount != 1 || len(detail.WorkItems) != 1 || detail.Mission.Version != mission.Version+1 {
+		t.Fatal("rejected source left partial mission or work item state")
 	}
 	if err = a.Close(); err != nil {
 		t.Fatal(err)
