@@ -135,6 +135,8 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 				if len(bindings) != 1 || bindings[0].ID != c.BindingIDs[0] || bindings[0].MemberID != c.Principal.ID {
 					return swarm.Failure(apierrors.ScopeDenied, "binding belongs to another authenticated member")
 				}
+				binding := bindings[0]
+				ctx = swarmapp.WithAuthorizedBinding(ctx, swarmapp.AuthorizedBinding{ID: binding.ID, Version: binding.Version, PacketID: binding.PacketID})
 				return invoke(ctx, g)
 			})
 		}
