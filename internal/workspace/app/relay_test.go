@@ -680,7 +680,7 @@ func TestRelayPermissionDenialReceiptFirstREDAndRevision(t *testing.T) {
 	}
 	f.projects.project.Settings.Revision = 2
 	_, e = f.service.ConfirmIntent(ctx, caller(), id, confirm())
-	checkCode(t, e, apierrors.VersionConflict)
+	checkCode(t, e, apierrors.ApprovalRevoked)
 	f.projects.project.Settings.Revision = 1
 	revoked := time.Now()
 	f.projects.grant = &domain.ProjectGrant{RevokedAt: &revoked}
