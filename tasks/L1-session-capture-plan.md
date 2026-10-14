@@ -1,58 +1,58 @@
-# Works Relay v1.3 · L1 会话采集增补与一页执行计划
+# Works Relay v1.3 · L1 会话采集执行计划
 
-事实源：[认知栈 L1–L4 原文](cognitive-stack-L1-L4.md) §2、§7；用户指定接入层主控终端 `term_d7f7e173-a64c-43fe-981a-dbe57124de87`。本会话主控 `term_23fa4b37-e887-4848-8d1e-c52dd88cab52` 负责增补计划、验收和最终 Git；原 Works Relay 的 R/H/F/I owner 保持，不接管其 Run 或重派任务。
+事实源：[L1–L4 原文](cognitive-stack-L1-L4.md) §2、§7；执行标准为当前根 [AGENTS.md](C:/Users/DW/orca/Astrocyte/AGENTS.md)。本轮只继续 L1；[L2 协议](L2-work-experiment-draft.md)保持草案，L2 实验与 L3/L4 实施等待既定开工条件。
 
-## 基线与范围
+## 目标与基线
 
-- 原 Works Relay Run：`run_d577f0d3fee1`；目标 `workbench/v0.2-access`。可消费工程 SOURCE 为 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`，原集成分支 `songconmaisaix31-design/works-relay-integration`；REPORT `2a4c58c20bb77f535fb2b3af2901af8d1a627aa4` 与其业务全等。Handoff：`msg_60ab2f9d21ed`。CI 38469944551 在 Handoff 时仍运行，未以旧工程检查替代最终验收。
-- 后续复核：CI 38469944551 在该精确 SOURCE 上双平台 success；原主控完成 v1.2 REPORT 收口并保留同一 I owner。新 L1 工程单独验收，不继承这次 CI 结果。三份新文档已由原主控以同内容提交 `266905ab6217230b915b4bcb380440b050f0190f` 消费到 workbench，出处为文档提交 `5ab50a33954195c9d3938e6cfc2a20e26940139a`。
-- 文档基线：validation `98a13b43e76240436fb17d3246d02507bf959417`。原文登记与本计划、[L2 协议草案](L2-work-experiment-draft.md)在独立文档工作树完成；validation 只入 Markdown。
-- 冻结期业务只在 workbench 线：L1 完整原生 Session 纳入接入层自有采集管道，输出统一派生 Event 到独立 workbench 库，并让 Today 可见。L2 实验和 L3/L4 实施不在本轮启动。
-- “完整”指获准、接入层持有的会话中事件覆盖完整并可对账；不把未采集、截断、未知格式或失败记录排除后宣称完整。不展示原始思考、prompt、工具参数、stdout 或私人路径。
+新 Agent 通过注册数据接入，经人工派发后，其原生会话事件自动进入 Workbench 独立数据库，在同 URL 的 Today 页面可见。注册到可见事件的实际演示须在三分钟内完成，活动状态使用 `live / unverifiable / exited`。
 
-## 互斥轨道与接缝
+业务目标分支为 `workbench/v0.2-access`。已集成 v1.2 SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 的 CI 38469944551 双平台通过；本轮 L1 需要独立验证。
 
-| 轨 | 固定 owner 与候选 write_paths | 交付与依赖 |
+| 轨道 | 当前工程 SOURCE | REPORT |
 |---|---|---|
-| R：owned-session 接缝 | 原 R owner、原 `works-relay-runtime` 工作树 / `songconmaisaix31-design/works-relay-runtime`；既有 `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go` 与自身报告 | 只读 Service 端口暴露内部 owned task/session 绑定供采集器使用；不绕过唯一 store writer，不将私有 HistoryPath 变为 HTTP 字段 |
-| H：Session 采集与消费组装 | 原 H owner、原 `works-relay-http` 工作树 / `songconmaisaix31-design/works-relay-http`；新增 `internal/adapters/events/relay_session*.go`，既有 `cmd/server/relay_assembly.go`、observer/config、workbench Reader / HTTP 写域与 `docs/access/http.md` | 完整行读取、会话/CWD 校验、派生投影、稳定事件身份、绑定到既有观察生命周期；复用独立应用库事件仓储，Today 读取接缝；不改 mapper / 引擎 / schema |
-| F：真实体验验收 | 原 F owner、原 worktree/branch；其既有 Today / Relay UI 与新增 `relay*.spec.ts` 写域 | 注册→人工派发→实时事件→Today，三值显示与真实对账；只在实际必要时修改 UI |
+| R 运行时 | `62c7d99f1d6b180ef19f90a2112e801702d9fffb` | `0b4ec501721361e8104a4e6e00781d73656157a4` |
+| H 采集与 HTTP | `e3b63ab30151c372ae8bc3e6594227513ef8cea6` | `e12ce161d300c0d043bd8e3dccee87d489737db3` |
+| F Today | `a500c417377a4b1404d8d4529dfa322a876810e4` | `cf0250f7e6106f6c2963e45e5be977093ed337a7` |
 
-原主控已明确采集与组装合为原 H 一轨，不另建 C owner；`relay_session*` 前缀不让出。R/H/F 每轨仍一 Agent、一工作树、一分支，跨域只交 Handoff；只有原主控为 retained owner 建立新的 Task/Dispatch 后才续作，不向已结算的 Dispatch 投递新开发。所有开发、测试、文档和返修留在同一 owner。唯一集成由原主控的集成 owner 普通 no-ff 合精确 SOURCE/REPORT；领域失败退原轨。本会话只写新三份任务 / 协议文档。
+以上提交均已推送。实际原生控制器、完整采集与 Today 组合验收进行中；现有受控协议和 HTTP 回放结果不满足当前实际服务验收。
 
-2026-10-14 开工回执：原 H 新 Task `task_f215e7452d70` / Dispatch `ctx_2d4b642fbac5`，复用终端 `term_b93b8ad2-cd2c-4f23-8981-1e0a13e0bd15`；`ready / input_accepted / turnStart observed`，实际模型 `gpt-6.1-sol`。首阶段独占仅新 `internal/adapters/events/relay_session*.go`（含测试）与 `docs/access/http.md`，先做公开受控样本下读取 / 身份绑定 / 投影 / 幂等；assembly、HTTP、Today 在接缝及用户决定齐备后由原 owner 续作。活动回执不代表功能完成。
+## 固定开发人员与文件责任
 
-跨线消费：原文与计划从精确文档提交读取；如需在业务线登记三份 Markdown，以同内容新文档提交保留出处，不把整个 validation 父历史合入 workbench。业务 SOURCE/REPORT 则在原 workbench 线普通合并，保持 v1.2 当前 CI 候选不混入新采集代码。
+Run 为 `run_d577f0d3fee1`，当前主控为 `term_4a28ac76-bd04-4a8b-acb2-b3114ca74ee4`。主控负责计划、状态、决策、独立检查与最终提交；业务代码由原 R/H/F 开发人员负责。每轨保持原工作树和分支，跨域修改交 Handoff。
 
-原主控续作 Handoff `msg_fd81e32e5722`：R 在原 agents `relay*` 写域补 metadata-only 的可信归档提供口，核对精确 owned ID / CWD / path；没有正证据的 CLI 分别保留 unknown / unsupported。H 在当前 Task 延续组装，追加自身 `cmd/server/relay_session*`、既有 assembly / observer / HTTP、`internal/workbench/app/relay_session*`、`internal/adapters/sqlite/access_session*` 与最小 contracts / examples 写域；不新增表或迁移，不改 SnapshotReader、认知数值与正式映射。F 仍独占 UI。先以公开受控样本完成工程接缝，未答的真实启动授权不阻断这些开发。
+| 轨道 | 工作树与分支 | 独占 write_paths / 当前任务 |
+|---|---|---|
+| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`docs/access/runtime.md`；现有交付已结算，运行时问题交回本轨 |
+| H | `works-relay-http` / `songconmaisaix31-design/works-relay-http` | `events/relay_session*.go`、`cmd/server/relay*.go` 与既有组装文件、`httpapi/relay*.go` 与 server、`workbench/app/relay*.go`、`sqlite/access_session*.go`、OpenAPI 与 relay examples、自身 `http.md`；解析依赖需要时独占 `go.mod/go.sum`；Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da` |
+| F | `works-relay-frontend` / `songconmaisaix31-design/works-relay-frontend` | 原 Relay UI 与 API、生成 schema、`TodayView.tsx`、cognition/relay 文件、新 `relay*.spec.ts` 与测试、自身 `frontend.md`；Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335` |
 
-## v1.3 采集条款与可复用端口
+H 当前终端为 `term_6d682528-790c-470d-a203-afe228214f50`，执行目录必须明确指定原 `works-relay-http`；其终端工作区元数据指向根目录。F 终端为 `term_480eeb0d-b66b-4cd4-8a9f-f3eb2750e0d4`。两轨使用现有 Codex 配置，实际模型记录为 `gpt-6.1-sol`。
 
-- `RelayState.Sessions` 在独立 relay.sqlite 中按 terminal_id 持久化；不得假设 `ProjectRepository.ListSessions` 可取得 Relay 持有会话。R 通过 Service 提供只读内部绑定，H 不直接写 store。
-- 沿用 `NativeAdapter` 的身份 / 鉴权边界与 `Observe`、`RelayLifecycle.ObserveOwned / Shutdown` 生命周期；GET 只读缓存，生命周期仅观察人工已接受的任务，取消并 join 后关闭存储。不得自动 launch、send、resume 或重新派发。
-- 现有 `ReadContext` 是有条数 / 字节 / 页数上限的 user/assistant 文本投影，不是完整事件归档；不能当 L1 全事件采集，也不能为了采集放宽旧接口。H 在新 `relay_session*` 适配器中实现完整行增量读取，分别记录游标、身份与覆盖缺口；`Observe` 的活动摘要同样不替代完整归档。
-- 新 task 使用新 native session；同未完成 task resume 保留原 session；terminal_id 不绑 PID。terminal-only 需真实原生归档或既有端口的正证据，不凭终端有输出就认定 Session 覆盖完整，不扫描家目录找身份。
-- 原 `internal/adapters/events/relay.go` 到 `NewPendingEventService` 的通道可复用，但 published 只表示本机 admission；另行核对完整 Session 覆盖与 Today 展示，不能偷换为正式认知更新。
-- 采集仅产生事件；现有权重与规范化规则不改，不擅自把未知 native_activity 映射为 edit/commit 或赋固定信号强度。无映射保持未知，完整性统计仍包括它。
-- Today 沿现有只读 API 的六字段事件投影消费本机独立库；与快照确证数值并置的具体语义待用户决定。正式采集根、每日快照、认知状态、schema 与协议均不变。
+R/H/F 完成后，由原唯一 I 集成人员在 `works-relay-integration` 普通 `--no-ff` 合并精确交付，只处理必要路由、导入、配置、生成类型和 Today 父级来源说明；领域问题交回原轨。开发人员完成开发、测试和报告，SOURCE / REPORT 分开提交并 push。文档从精确提交读取后以同内容登记到业务线；validation 的业务父历史不合入 Workbench。
 
-## 核心验收
+## 数据与接口
 
-1. 完整性：超长 JSONL 行、末尾未完成行、连续追加、重启后读取、重复事件、格式未知与错误记录均可核对；只读获准会话，不遍历其他账户或历史根。
-2. 身份：terminal_id 与 task_id、native session、原 CWD 对应；换 Agent 不换工作区，新任务不偷用旧 session。原生会话 metadata 不得由 PID 或客户端名猜测。
-3. 存储：复用既有 EventService / EventRepository；稳定 origin 去重，失败保留首证据，不自动重发模型或换身份。当前旧 sink 的 published 仅表示 pending observation，不能拿它替代此次事件覆盖与 Today 对账。
-4. 展示：沿六字段 `event_id/kind/topic/tokens/scope/ts`；新增会话事件自动出现在同 URL Today。快照 A/M/C 与 Sleep 仍按原确证来源，采集层不计算或写认知状态。
-5. 真实演示：一个此前未登记的真实 CLI，仅增加注册数据，经人工确认启动，三分钟内在 Today 看到它的真实事件；演示不得由 fixture/mock 或人工采集替代。
-6. 活性：活动事件证明 live、真实进程退出证明 exited，静默/联系丢失为 unverifiable；不因重新读取缓存而续命。
-7. 隔离：V4 正式库与采集根、锁定协议、mapper、引擎、schema/迁移、七类权重和 00:30 快照管道零改动。零写审计保持原 Procmon 验收，缺管理员捕获不填 PASS。
+- `RelayState.Sessions` 和任务绑定由原唯一 Relay store 管理。R 只读端口逐次核查权限、任务、原生 session 和 CWD；私有归档路径不进入 HTTP。
+- 沿已持有原生控制器取得具体会话归档来源，核实原生 ID、CWD、文件身份和当前读取范围；禁止扫描家目录、其他账户或历史记录寻找会话。
+- 采集器观察人工已接受的任务，使用库解析成熟格式。错误立即返回，未知语义保持明确状态；未完成尾部不能推进游标。原子游标只保存位置、绑定、文件身份和派生覆盖状态，不保存原文。
+- 事件复用既有独立应用数据库的 EventService / EventRepository。稳定 origin 去重；HTTP `event_id` 必须是实际已提交收据 ID，可直接回查 GetEvent。无变化时不保存游标。
+- GET 只读取现有派生记录和覆盖状态，不启动控制器或采集。生命周期停止先取消并等待观察结束，再关闭存储；未知交付不自动重发。
+- Today 事件只包含 `event_id/kind/topic/tokens/scope/ts`。原始思考、prompt、工具参数、stdout 和私有路径不进入产品字段。A/M/C、Sleep 与每日统计继续读取既有快照；采集器只产生事件。
+- 当前文件字节范围读完、原生会话全生命周期覆盖和认知更新分别核实。未知格式、错误、未完成记录与来源缺口均计入覆盖检查。
 
-## 决策与停止点
+## 实际验收
 
-- 新任务明确要求 workbench 独立库和自动 Session 事件进入 Today；具体读侧接缝交原 H owner，不修改每日正式快照策略。
-- 原主控既有未决项：CLI 中性工作区读写/执行授权、脏/未跟踪/非 Git 作品范围、活性窗口；先继承其最新裁决，不重复询问已答事项。未答时相关真实验收保持未运行，不能缩减为无工具聊天。
-- Session 绑定/来源、独立库消费权限、未知 Agent 原生格式如仍无法从事实源和已有公开端口确定，集中向用户询问；可先实现不依赖决定的读取/投影/幂等单元。
-- 可选 archive 接口与 fixture 测试不等于生产接入：必须核对当前控制器确有提供口实现、能提供实际获准会话归档的正证据。缺实现、缺来源证据与缺用户决定分别登记，不能统称为等待授权。
-- 本会话已集中询问：确认页的中性工作区工具范围、完整原件留存与 Today 派生边界、未提交源作品处理。未回答不激活 `LaunchPolicy` 或 `AllowCommittedGit`，不默选验收范围。
-- 当前状态：精确 SOURCE 与互斥写域已确认，原 H 的完整读取 / 投影 / 幂等工程续作已观察到开工；SOURCE/REPORT 与适用验证待交付。真实 CLI / Today 完整闭环仍 NOT_RUN。文档准备和开工回执不是 L1 完成证据。
+1. 使用实际已安装配置的 Codex、真实独立 SQLite、真实 HTTP 服务及控制器实际产生的归档。验证实际追加、重启去重、退出和停止读取；逐事件比对数据库收据 ID。
+2. 初始测试注册表没有该 CLI，仅增加 `AgentSpec` 数据并正常重启同 URL 服务，经人工派发后记录首次 Today 可见时间。全过程没有人工采集动作或新增平台派发代码。
+3. F 在两个已有 viewport 连接 H 实际服务做 DOM 检查，验证六字段、时间排序、查询分页、未知 tokens、权限与覆盖缺口；禁止 mock、虚假数据和响应拦截。
+4. 快照可用时比对实际读前与读后值；不可用时验证真实服务的不可用状态以及独立会话区域，不制造快照数值。
+5. 活动事件证明 live，实际进程退出证明 exited，静默或联系缺失为 unverifiable；缓存重读不刷新活动证据。未决定的产品活性窗口保持未决定。
+6. 验证修改范围与冻结域差异，执行适用检查和构建、`git diff --check`，核实精确远端 SHA。最终组合需要独立检查，既有 CI 不代替新 L1 验收。
 
-客户端：本会话 Codex，面板实际显示 GPT-6.1-Sol ultra fast；Worker 使用现有配置并登记实际模型，不凭客户端名推断。
+## 权限与剩余条件
+
+本轮可以在自己创建并持有的公开 Git 项目中验证固定公开任务，调用实际模型；文件和命令工具保持关闭。实际用户作品范围、中性工作区工具权限、原件留存和产品活性窗口尚未裁决，相关验证继续保持未运行。公开任务验证只证明其实际覆盖的接入和会话行为。
+
+业务只进入 Workbench 分支。V4 正式材料、锁定协议、引擎、mapper、认知 schema / migration、权重和快照流程保持既定冻结边界。现有 17321 部署不覆盖。管理员 Procmon 零写审计与两日自动快照按各自真实条件验收，未执行不填写通过。
+
+中间文件放各自当前工作目录已忽略的专用目录；代码通过文件编辑工具修改。禁止 Git 回滚、覆盖公共历史或删除无法解释的文件。最终文档只记录正确实现、实际结果和真实限制。
