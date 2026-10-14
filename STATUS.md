@@ -8,7 +8,7 @@ Workbench v0.1 验收业务源码 `d46f9f4cf2fd6e13c8362234746105330356c160` 已
 
 L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec501721361e8104a4e6e00781d73656157a4` 已提交；完整采集、HTTP / Today 组合及真实 CLI 闭环以 Workbench 当前原 owner 交付为准，未通过最终验收。V4 day0=2026-10-13，首日采集与三臂机判已完成；用户评分、七日结论和末 D+3 尚未完成。Discovery & Split 保持 IMPLEMENTATION_FROZEN。
 
-用户已要求按当前 AGENTS.md 整合仓库；范围、写入边界和验证见 [整合任务](tasks/AGENTS-standard-integration.md)。规则与入口文档正在统一，业务整改尚未完成。现有正式库、锁定协议、实验日程和正在开发的原 owner 写入范围保持其已确认边界。
+用户已要求按当前 AGENTS.md 整合仓库；范围、写入边界和验证见 [整合任务](tasks/AGENTS-standard-integration.md)。规则与入口阶段 `4ec19cd` 已 push，链接 / diff 检查 PASS；后端、Python、前端三轨已接受任务并在独立工作树整改，业务验收尚未完成。现有正式库、锁定协议、实验日程和正在开发的原 owner 写入范围保持其已确认边界。
 
 ## 历史：Works Relay v1.1 修订登记（已由 v1.2 取代）
 
