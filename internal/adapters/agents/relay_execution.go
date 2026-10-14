@@ -56,6 +56,10 @@ func (n *Native) OwnedRelayExecution(ctx context.Context, session domain.NativeS
 		for _, feature := range codexDisabledFeatures {
 			args = append(args, "--disable", feature)
 		}
+		// 通知采集使用现有 writer 关闭参数，必须核同一次真实启动策略。
+		if p.relayCapture != nil {
+			args = append(args, "-c", "thread_unload_delay_secs=0")
+		}
 		cmd, err := installedCommand("codex", args)
 		if err != nil {
 			return RelayOwnedExecution{}, err
