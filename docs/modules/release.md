@@ -67,7 +67,11 @@ M-relay `msg_4c82199f5651` 已回传新 H Task `task_3004b636a3ab` / Dispatch `c
 
 规格独立 REPORT `8c93a29ffe7df1f8c110634b3dc1b3c4c63062e9` 已收到。H 当前准备 SOURCE `261fb73921d2a1b929f40bf4d714de5356b9024d` / REPORT `e59b59d076fffc67f2bcde935ec638888ecdfee7`，仅四个H Relay测试文件与独立文档；来源 / 通知 / HTTP 客户端从实际持有listener公告获取api_url，原archive单链接与完整性拒绝保持，不计v1.4真实链路通过。S 已完成基线核实并继续一手研究；S2/S3新计划请求 `msg_41660ccc7675` 已给 M-product，准确计划尚待，SPEC已定部分继续。
 
-S5已使用固定HF revision `7b928d828b7b0e022f929d9bd2e44165aa270148` 与官方源码 `432312b36714d8889eba405507b37eda25257d9c` 导出English资产，三次真实CPU torch/ONNX parity通过；multilingual首次导出实际Errno28，原日志与English已验资产保留。2026-10-15 02:04只读空间计数为C盘2,992,832,512 bytes、D盘113,176,240,128 bytes，精确新增资产目录由根协调，唯一owner继续其余权限 / 缓存 / SQLite / feedback实现。内部JSON-RPC2固定成熟库 `sourcegraph/jsonrpc2@v0.2.1` / `vscode-jsonrpc@8.2.1`，官方laya-ts Git子目录构建与依赖锁、三表迁移交唯一B。公开HTTP契约 / 装配交H，S4真实GitSnapshot接缝尚待，不登记AT10未提交改动通过。Jev实际key缺失，仅云调用保持NOT_RUN；普通backend配置不授予私有外发或S1准入权限。
+S5当前SOURCE `48abd1fe134b88cfe8122d2aee5a35090fc6d62b` / 独立REPORT `95871f3f3d77d27136e3f3195742e6290c587b4a`，模块独核远端同REPORT、SOURCE祖先、12个允许文件和独立单文档REPORT。固定HF revision `7b928d828b7b0e022f929d9bd2e44165aa270148` / 官方源码 `432312b36714d8889eba405507b37eda25257d9c` 的English和multilingual均已strict=True匹配及官方三次CPU parity通过；multilingual首Errno28与English首编码失败保留。Node与Go成熟RPC2对English/en、multi/en、multi/zh的三题型、真实长截断及不同PID重启已实际通过；HTTP / SQLite / 全版本缓存 / feedback重启 / 同Tx S1委托仍待对应准确组合与实际验证。
+
+根 `msg_bc39ab9b23d9` 明确授予原S5独占 `D:/Astrocyte-agent-assets/20261015/judgment-s5` 仅模型及自有可重建环境。实际12项资产3,017,906,443 bytes复制、两端digest一致；D真实Go-RPC三组双PID重启92.65秒通过、owned Close退出后，仅逐项非递归删除原C树可重建model副本，释放同字节数。原件 / 首失败 / 代码 / metadata原位保留；模块独立标准JSON核释放计数，02:11再次只读核C剩7,385,387,008 bytes、D剩110,157,524,992 bytes。没有重新导出或变更全局环境。真实断网隔离Question `msg_d85e334bfdc4` 已交根正式问答 `msg_9b5e2ccae8ac`，实际隔离范围待答，不登记OS断网通过。
+
+内部JSON-RPC2固定成熟库 `sourcegraph/jsonrpc2@v0.2.1` / `vscode-jsonrpc@8.2.1`；官方laya-ts Git子目录构建与依赖锁、三表迁移交唯一B。公开HTTP契约 / 装配交H。S4现有ProjectSnapshotProvider最新SOURCE `1a55e1630502642324500c3b64853af882962fa4` / REPORT `a393627f8f090525fdf4e3d5bf0e320477964c74` 与准确类型 / 迁移闭包已交S5审阅复用；原S4阶段通过不能替代S5组合AT10。Jev实际key缺失，仅云调用保持NOT_RUN；backend配置不授予私有外发。S1明确委托流程由B实际typed authorizer同事务使用opaque resultID，普通Agent不能批准，缺事实拒绝，S5自身不产生准入。
 
 OpenCode Flash实际可用性SOURCE `d895ffcd0f4e58389a570a6c8a9197195b826bdd` / 独立REPORT `6a4a7220f23573b7e7ce30b54c572bb5f06183a1` 已推送并独立核远端。实际 `opencode 1.18.35` / `alibaba-cn/deepseek-v4.1-flash` 单次公开READY调用成功、工具调用0；详细边界与元数据见 [模型记录](opencode-model-20261015.md)。该调用未改变全局模型、auth、MCP或日预算。
 

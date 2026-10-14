@@ -1,10 +1,28 @@
 # Astrocyte 合并产品与 release 包
 
+## 2026-10-15 当前授权与三层执行
+
+用户已明确现在修改语义层、执行实际CLI、运行今日采集，并推进当前S0–S6系列功能。根只委派、协调和最终验收；模块负责人维护计划、跨模块交接与验收，业务实现、实际测试、文档和返修由唯一第三层领域owner完成，禁止第四层。既有互斥工作树、分支和未提交修改保留。
+
+当前M-release为Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324` / 终端 `term_ea9b6554-42cc-4569-ad5b-5f4140aec20d` / 子Run `run_aa4e6a119547`，固定 `module-release-20261014` 与 `songconmaisaix31-design/module-release-20261014`。实际客户端Codex / gpt-6.1-sol；该模块独占本文、`docs/modules/release.md`、`docs/modules/daily-operation-20261015.md`、`docs/modules/opencode-model-20261015.md` 的管理写入，业务仍由下表原owner负责。精确SOURCE、独立REPORT和阶段实际结果见 [发布模块记录](../docs/modules/release.md)，本入口不重复所有后继结果。
+
+| 第二层负责人 / 子Run | 固定模块树与入口 | 第三层连续责任 |
+|---|---|---|
+| M-product / `run_dbf1a68bc692` | `module-product-20261014` / `docs/modules/product.md` | B基础后端、S1、全部共享依赖和迁移；F既有前端；T/V适用导入验证；S2 Goal/Proposal/Grant/Session/Context；S3 Mission/WorkItem/Artifact与S6局部协作；新增UI按已交精确互斥路径安排 |
+| M-relay / `run_8bbda1c3974c` | `module-relay-20261014` / `docs/modules/relay.md` | 原R四语义与控制器；原H实际来源、HTTP/OpenAPI/main组装；S4实际RepositoryMap/CodeSearch/ImpactQuery适配；L经验管道与根明确授予的独立L2适配范围 |
+| M-release / `run_aa4e6a119547` | `module-release-20261014` / `docs/modules/release.md` | Q公开工程认知与跨日快照；S5 Jev/Laya/规则/权限/缓存/feedback；S一手研究；D1独立只读核验；条件完成后的唯一I普通精确集成、P最终同源Windows包、N实际包原生验收 |
+
+执行顺序为四项语义明确并实现 → 真实CLI端到端 → 三分钟Today与逐event_id/SQLite/HTTP/原自产会话核验 → L1验收；完整默认与各功能适用验证由原owner持续完成。working明确开始证据及无started客户端的人工完成规则保持用户待答，不以PID、stdout或文件变化推断开始，不向unknown操作重发模型。正式V4唯一原automation已完成D1，具体真实运行与独立核查见 [今日运行记录](../docs/modules/daily-operation-20261015.md)；Q的10月15日公开工程跨日更新与正式实验分开，保持原source时间与真实闭日，不改Clock或人工填数据。
+
+独立L2适配只实施明确授权的经验来源、固定证据引用、既有quarantine/人工批准与检索消费接缝；准确实施范围由M-relay当前任务及根决定记录约束。L2工作级对照仍为独立协议草案，未回答的任务、评分、预算、工具与统计口径保持待定，不据适配通过启动正式实验或登记学习收益。正式V4、v0.2冻结、实际私有作品和自由工具边界继续按当前事实源；人评只由用户填写。所有功能、完整默认、实际native/Today及最终包通过前，当前ZIP保持已验候选范围，最终发布由根完成验收后执行。
+
+## 2026-10-14 授权与执行记录
+
 2026-10-14 用户确认：继续网络中断任务，尽可能提高分工效率，今晚交付第一版产品及 release 包；合并 Astrocyte 新标准整改与 Workbench / Works Relay 两条线。当前环境为 Windows x64，准备 Windows x64 ZIP；完整验证后沿当前仓库 GitHub Releases 发布。最终交付保留普通 Git 历史并 push，不改正式 V4 运行树、锁定协议、实验数据和日程。
 
 ## 目标与验收
 
-交付一个既有 Go 服务与既有 web 构成的合并产品，保留资料导入 / 人工沉淀、项目权限 / 进度、Workbench 认知查询、Works Relay 人工派发与 L1 派生会话事件。原始会话、凭据、正式库和用户数据不进入 release 包。未授权 Mission 扩展、用户自由工具、真实用户作品范围、活性窗口及 V4 冻结继续遵守当前决定；对应状态真实可见。
+交付一个既有 Go 服务与既有 web 构成的合并产品，保留资料导入 / 人工沉淀、项目权限 / 进度、Workbench 认知查询、Works Relay 人工派发与 L1 派生会话事件，并按当前S0–S6授权完成Mission等规划功能。原始会话、凭据、正式库和用户数据不进入release包。用户自由工具、真实用户作品范围、活性窗口及V4冻结继续遵守当前决定；对应状态真实可见。
 
 发布必须通过精确源码的适用检查、构建、完整默认浏览器验证和实际受控核心路径；原生 Codex 使用 Agent 创建的公开 Git 项目，文件 / 命令工具关闭，经真实控制器、SQLite、HTTP 与自产会话逐 event_id 核查。Windows ZIP 在新目录解压后实际启动，验证静态页面、session bootstrap、实际读写与重启持久化。包中不包含开发 node_modules、私人配置、数据库、测试原件或正式 V4 自动任务；必要可选能力必须明确依赖和配置。
 
