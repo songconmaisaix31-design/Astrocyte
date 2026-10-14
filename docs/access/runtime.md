@@ -1,5 +1,24 @@
 # Works Relay runtime
 
+## 2026-10-14 同阶段 Native 解码追加返修
+
+最终 SOURCE 更新为 `d6d4da6ac00a196e6bbcf592cfdc0a2a2731dbe6`，同分支普通 push 完成，命令级 HTTP/1.1 `ls-remote` 精确一致。原意图修复 SOURCE `9719e6970927caee3e0b08d4020708e383881880` 与独立 REPORT `392bd81e822148cb2a7cb8f7bd7a83699d0f7d44` 保留普通祖先。本 Dispatch 尚未结算时，模块转交 M-product 的 Native 解码缺口，R 在原写域持续返修；没有启动另一人员或重复真实任务。
+
+`native.go` 原三处 `thread/start` / `thread/resume` result、Pi `get_state` data、Codex `turn/start` result 忽略 `json.Unmarshal` 错误；现均立即返回固定安全 `delivery_unknown`，不以零值身份检查覆盖首解码失败。缺少 turn ID 也拒绝记录发送成功。`native_process.go` 同类 protocol error / success、envelope、Claude control response / request 和当前已支持事件字段解码全部检查返回值；缺失、null、类型错误或截断立即失败，读取器保留 blocked / 原生 capture gap。已识别的 turn 完成缺少 ID / status 时不会发布完成事件；本机 Codex 0.162.0 生成的 experimental schema 确认这些字段 required。数值 JSON-RPC ID 保留标准支持，非法 ID 不转换成任意字符串。拒绝工具请求的实际写入失败也立即停止读取。仍复用标准 JSON 解码，没有新增 parser / 依赖。
+
+新增 `relay_native_decode_test.go` 只有纯 JSON 错误输入：缺失 / null / 错型 / 截断 / trailing data 和错误布尔类型必须返回不可自动重试的安全 `delivery_unknown`，不泄漏输入 canary。没有创建控制器、进程或合成成功协议。完整既有测试中的 contract fixture 仍只作为回归检查，不作为实际原生能力验收。
+
+| 追加 SOURCE 验证命令 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/agents -run TestRelayNativeDecode -count=1 -v -timeout=30s` | PASS，纯解析失败输入，不产生原生 effect |
+| `go test -mod=readonly ./internal/adapters/agents -count=1 -timeout=90s` | PASS，日志 `dist/relay-l1/native-decode-final-adapters.log` |
+| `go test -mod=readonly ./...` | PASS，日志 `dist/relay-l1/native-decode-full-go-test.log`；默认 native opt-in 仍 SKIP |
+| `go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/relayworktree ./internal/adapters/httpapi` | EXIT 0 |
+| `go build -mod=readonly -o dist/relay-l1/native-decode-runtime-server.exe ./cmd/server` | EXIT 0，产物忽略 |
+| `node scripts/check-architecture.mjs` / `gofmt` / `git diff --check` | PASS，29 包边界 |
+
+首编译 RED 为移除最后一个 Native JSON 调用后残留未使用 import，保留 `native-decode-adapters-first.log`；修正后适配器和完整 Go 通过，不覆盖首结果。新源码 / 边界已 Handoff 模块、H 和 B；H/F 当前实际成功派发及逐事件 / DOM 仍独立完成，本阶段没有另启模型或重发成功任务。没有新增 archive finalized / append-only / prefix / session complete 结论，原 raw 恢复 gap 和正式冻结全部保留。最终 REPORT 再独立普通提交，精确 SHA 通过当前 Dispatch 回传。
+
 ## 2026-10-14 子 Run 意图权限返修
 
 当前分支 `songconmaisaix31-design/works-relay-runtime`，最终 SOURCE `9719e6970927caee3e0b08d4020708e383881880`，普通 push 完成，命令级 `git -c http.version=HTTP/1.1 ls-remote` 精确一致。本阶段 Task `task_b833b3a06c1e` / Dispatch `ctx_216bf731aaf8` / 子 Run `run_8bbda1c3974c`；模块负责人父 Dispatch `ctx_e6328a370d56`。客户端 Codex，未覆盖模型设置。本段为当前返修记录；下方旧实际 Codex 生命周期结果保留原 SOURCE 归属，不冒称本阶段再次运行。
