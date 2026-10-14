@@ -1,165 +1,457 @@
 package s1_test
 
 import (
-	"context"
+	"bytes"
 	"crypto/rand"
 	"encoding/json"
-	"errors"
+	"net"
+	"net/http"
+	"net/http/cookiejar"
+	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"testing"
+	"time"
 
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
-	"github.com/songconmaisaix31-design/Astrocyte/migrations"
+	workdomain "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-// Error injection only: never returns model output or claims real inference.
-type lostContractLocalProcessor struct {
-	calls int
-	input app.DistillationInput
-}
-
-func (*lostContractLocalProcessor) ConfigurationID(context.Context) (string, error) {
-	return "contract_local:error-only-config-v1", nil
-}
-func (p *lostContractLocalProcessor) Distill(_ context.Context, input app.DistillationInput) (app.DistillationOutput, error) {
-	p.calls++
-	p.input = input
-	return app.DistillationOutput{}, &apierrors.ServiceError{Code: apierrors.DeliveryUnknown, Message: "contract_local injected lost result", RequiredAction: "reconcile_original_operation"}
-}
 func localCommand(version int) app.CommandMeta {
-	return app.CommandMeta{SchemaVersion: 1, RequestID: rand.Text(), IdempotencyKey: rand.Text(), ExpectedVersion: version}
+	key := rand.Text()
+	return app.CommandMeta{SchemaVersion: 1, RequestID: key, IdempotencyKey: key, ExpectedVersion: version}
 }
 
-// Real application API + SQLite/objects + database reopen, with local Atom/PDF
-// source responses and one injected processor error. This is contract_local,
-// not the separate native CLI timeout or a public-network/model success.
-func TestContractLocalAutomaticUnknownSurvivesSQLiteReopenWithoutRetry(t *testing.T) {
-	ctx := context.Background()
-	p := app.Principal{ID: "contract_local-human", Kind: "human"}
-	reader := importers.NewReader(nil)
-	dir := t.TempDir()
-	store, err := objects.New(filepath.Join(dir, "objects"))
+type automaticHTTP struct {
+	t                                 *testing.T
+	dir, executable, root, base, csrf string
+	client                            *http.Client
+	process                           *exec.Cmd
+	log                               *os.File
+	jobSeconds                        int
+	maxAttempts                       int
+}
+
+func newAutomaticHTTP(t *testing.T) *automaticHTTP {
+	t.Helper()
+	root, err := filepath.Abs("../..")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("resolve public worktree")
 	}
-	processor := &lostContractLocalProcessor{}
-	open := func() (*sqlite.DB, *app.Service) {
-		db, err := sqlite.Open(filepath.Join(dir, "state.sqlite"))
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err = db.RunMigrations(ctx, migrations.FS); err != nil {
-			db.Close()
-			t.Fatal(err)
-		}
-		service := app.NewAttentionService(sqlite.NewAttentionRepository(db), reader, store, app.ServiceOptions{Distiller: processor, AllowedProcessingSourceKeys: []string{"arxiv:2501.12948"}})
-		return db, service
+	evidence := filepath.Join(root, ".verification")
+	if err = os.MkdirAll(evidence, 0700); err != nil {
+		t.Fatal("create evidence root")
 	}
-	db, service := open()
-	defer func() { db.Close() }()
+	dir, err := os.MkdirTemp(evidence, "s1-native-")
+	if err != nil {
+		t.Fatal("create owned verification directory")
+	}
+	log, err := os.OpenFile(filepath.Join(dir, "server.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		t.Fatal("open local evidence log")
+	}
+	executable := filepath.Join(dir, "astrocyte.exe")
+	build := exec.Command("go", "build", "-mod=readonly", "-o", executable, "./cmd/server")
+	build.Dir, build.Stdout, build.Stderr = root, log, log
+	if err = build.Run(); err != nil {
+		log.Close()
+		t.Fatal("production server build failed; local evidence retained")
+	}
+	server := &automaticHTTP{t: t, dir: dir, executable: executable, root: root, log: log, jobSeconds: 1800, maxAttempts: 1}
+	t.Cleanup(func() {
+		server.stop()
+		if err := log.Close(); err != nil {
+			t.Error("close local evidence log")
+		}
+	})
+	server.start()
+	return server
+}
+
+func (s *automaticHTTP) start() {
+	s.t.Helper()
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		s.t.Fatal("reserve owned HTTP port")
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	if err = listener.Close(); err != nil {
+		s.t.Fatal("release reserved HTTP port")
+	}
+	s.base = "http://127.0.0.1:" + strconv.Itoa(port)
+	cmd := exec.Command(s.executable)
+	cmd.Dir, cmd.Stdout, cmd.Stderr = s.root, s.log, s.log
+	var environment []string
+	for _, value := range os.Environ() {
+		key, _, _ := strings.Cut(value, "=")
+		if !strings.HasPrefix(strings.ToUpper(key), "ASTROCYTE_") && !strings.EqualFold(key, "TEMP") && !strings.EqualFold(key, "TMP") {
+			environment = append(environment, value)
+		}
+	}
+	temp := filepath.Join(s.dir, "native-temp")
+	if err = os.MkdirAll(temp, 0700); err != nil {
+		s.t.Fatal("create owned native temporary directory")
+	}
+	cmd.Env = append(environment, "ASTROCYTE_PORT="+strconv.Itoa(port), "ASTROCYTE_DATA_DIR="+s.dir, "ASTROCYTE_PROJECT_DISCOVERY_ROOTS=[]", "ASTROCYTE_ENABLE_CODEX_DISTILLATION=false", "ASTROCYTE_ENABLE_SUMMARIZE=false", "ASTROCYTE_JOB_CONCURRENCY=1", "ASTROCYTE_JOB_MAX_ATTEMPTS="+strconv.Itoa(s.maxAttempts), "ASTROCYTE_JOB_TIMEOUT_SECONDS="+strconv.Itoa(s.jobSeconds), "TEMP="+temp, "TMP="+temp)
+	if err = cmd.Start(); err != nil {
+		s.t.Fatal("start actual production HTTP server")
+	}
+	s.process = cmd
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		s.t.Fatal("create session cookie jar")
+	}
+	s.client = &http.Client{Jar: jar, Timeout: 45 * time.Second}
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		response, err := s.client.Get(s.base + "/api/v1/health")
+		if err == nil {
+			response.Body.Close()
+			if response.StatusCode == http.StatusOK {
+				break
+			}
+		}
+		if time.Now().After(deadline) {
+			s.t.Fatal("actual server readiness failed; local evidence retained")
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	var session struct {
+		CSRF string `json:"csrf_token"`
+	}
+	s.request("GET", "/api/v1/auth/session", nil, http.StatusOK, &session)
+	s.csrf = session.CSRF
+	if s.csrf == "" {
+		s.t.Fatal("production session bootstrap omitted CSRF")
+	}
+}
+
+func (s *automaticHTTP) stop() {
+	if s.process == nil {
+		return
+	}
+	if err := s.process.Process.Kill(); err != nil {
+		s.t.Error("stop owned HTTP process")
+	}
+	_ = s.process.Wait()
+	s.process = nil
+}
+
+func (s *automaticHTTP) request(method, path string, input any, status int, output any) {
+	s.t.Helper()
+	var body bytes.Buffer
+	if input != nil {
+		if err := json.NewEncoder(&body).Encode(input); err != nil {
+			s.t.Fatal("encode HTTP request")
+		}
+	}
+	request, err := http.NewRequest(method, s.base+path, &body)
+	if err != nil {
+		s.t.Fatal("create HTTP request")
+	}
+	request.Header.Set("Origin", s.base)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("X-CSRF-Token", s.csrf)
+	if input != nil {
+		var identity struct {
+			RequestID string `json:"request_id"`
+		}
+		if err = json.Unmarshal(body.Bytes(), &identity); err != nil || identity.RequestID == "" {
+			s.t.Fatal("request identity missing")
+		}
+		request.Header.Set("Idempotency-Key", identity.RequestID)
+	}
+	response, err := s.client.Do(request)
+	if err != nil {
+		s.t.Fatal("actual HTTP request failed; local server evidence retained")
+	}
+	defer response.Body.Close()
+	if response.StatusCode != status {
+		s.t.Fatalf("HTTP %s returned %d, expected %d", path, response.StatusCode, status)
+	}
+	if output != nil {
+		if err = json.NewDecoder(response.Body).Decode(output); err != nil {
+			s.t.Fatal("decode actual HTTP response")
+		}
+	}
+}
+
+func (s *automaticHTTP) job(id string) app.Job {
+	var job app.Job
+	s.request("GET", "/api/v1/jobs/"+id, nil, http.StatusOK, &job)
+	return job
+}
+
+func (s *automaticHTTP) finished(id string) app.Job {
+	s.t.Helper()
+	deadline := time.Now().Add(5 * time.Minute)
+	for {
+		job := s.job(id)
+		if job.Status == "succeeded" || job.Status == "failed" || job.Status == "cancelled" {
+			return job
+		}
+		if time.Now().After(deadline) {
+			s.t.Fatal("original job remains unknown; no automatic resend")
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+func TestAutomaticHTTPRejectsUntrustedCallerWithoutSideEffects(t *testing.T) {
+	s := newAutomaticHTTP(t)
+	command := app.RequestDistillationCommand{CommandMeta: localCommand(1), Stage: "content", ProcessingConfig: "selected-public-request", InputRefs: []app.SourceRef{{MaterialID: "unselected", Revision: 1, Locator: "https://github.com/songconmaisaix31-design/Astrocyte"}}}
+	body, err := json.Marshal(command)
+	if err != nil {
+		t.Fatal("encode authorization test request")
+	}
+	for _, mode := range []string{"no_session", "invalid_agent", "foreign_origin"} {
+		t.Run(mode, func(t *testing.T) {
+			request, err := http.NewRequest("POST", s.base+"/api/v1/distillations/jobs", bytes.NewReader(body))
+			if err != nil {
+				t.Fatal("create real authorization request")
+			}
+			request.Header.Set("Content-Type", "application/json")
+			request.Header.Set("Idempotency-Key", command.IdempotencyKey)
+			request.Header.Set("Origin", s.base)
+			client := &http.Client{Timeout: 15 * time.Second}
+			if mode == "invalid_agent" {
+				request.Header.Set("Authorization", "Bearer ungranted")
+			}
+			if mode == "foreign_origin" {
+				client = s.client
+				request.Header.Set("Origin", "https://unauthorized.invalid")
+				request.Header.Set("X-CSRF-Token", s.csrf)
+			}
+			response, err := client.Do(request)
+			if err != nil {
+				t.Fatal("actual authorization HTTP request failed")
+			}
+			defer response.Body.Close()
+			if response.StatusCode != http.StatusForbidden {
+				t.Fatalf("actual untrusted %s request returned %d", mode, response.StatusCode)
+			}
+		})
+	}
+	db, err := sqlite.Open(filepath.Join(s.dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("read actual owned SQLite")
+	}
+	defer db.Close()
+	for _, table := range []string{"attention_jobs", "attention_receipts", "attention_distillations", "attention_materials"} {
+		var rows int
+		if err = db.Conn().QueryRow("SELECT COUNT(*) FROM " + table).Scan(&rows); err != nil || rows != 0 {
+			t.Fatal("permission refusal created durable side effects")
+		}
+	}
+	t.Logf("actual HTTP permission refusals=3; zero durable side effects; evidence=%s", s.dir)
+}
+
+func TestReadOnlyImportHTTPProcessExitPreservesDeadline(t *testing.T) {
+	s := newAutomaticHTTP(t)
+	s.stop()
+	s.jobSeconds, s.maxAttempts = 2, 3
+	s.start()
+	var queued app.ImportJobResult
+	s.request("POST", "/api/v1/materials/imports", app.ImportMaterialCommand{CommandMeta: localCommand(1), Adapter: "arxiv", Kind: "paper", SourceLocator: "https://arxiv.org/abs/2501.12948v1"}, http.StatusAccepted, &queued)
+	var entered app.Job
+	deadline := time.Now().Add(2 * time.Second)
+	for {
+		entered = s.job(queued.JobID)
+		if entered.Status == "running" && entered.ExternalStarted {
+			break
+		}
+		if entered.Status == "succeeded" || entered.Status == "failed" || time.Now().After(deadline) {
+			t.Fatal("actual read-only interruption window was not observed")
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	s.stop()
+	db, err := sqlite.Open(filepath.Join(s.dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("open actual interrupted SQLite")
+	}
+	var beforePayload, beforeCaller string
+	if err = db.Conn().QueryRow("SELECT payload,caller FROM attention_jobs WHERE id=?", entered.JobID).Scan(&beforePayload, &beforeCaller); err != nil {
+		db.Close()
+		t.Fatal("read actual interrupted request")
+	}
+	if err = db.Close(); err != nil {
+		t.Fatal("close actual interrupted SQLite")
+	}
+	remaining := time.Until(entered.DeadlineAt)
+	if remaining > 3*time.Second {
+		t.Fatal("actual test deadline exceeds configured bound")
+	}
+	if remaining > 0 {
+		time.Sleep(remaining + 50*time.Millisecond)
+	}
+	s.start()
+	recovered := s.job(entered.JobID)
+	if recovered.Status != "failed" || recovered.DeliveryUnknown || recovered.OperationID != entered.OperationID || !recovered.DeadlineAt.Equal(entered.DeadlineAt) || recovered.Attempts != 1 {
+		t.Fatal("actual service restart collapsed safe reads or reset durable budget")
+	}
+	var rejected apierrors.ErrorEnvelope
+	s.request("POST", "/api/v1/jobs/"+entered.JobID+"/retry", localCommand(recovered.Version), http.StatusBadRequest, &rejected)
+	if rejected.Error == nil || rejected.Error.Code != apierrors.ValidationFailed {
+		t.Fatal("expired actual read accepted a retry")
+	}
+	db, err = sqlite.Open(filepath.Join(s.dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("reopen actual recovered SQLite")
+	}
+	defer db.Close()
+	var afterPayload, afterCaller string
+	if err = db.Conn().QueryRow("SELECT payload,caller FROM attention_jobs WHERE id=?", entered.JobID).Scan(&afterPayload, &afterCaller); err != nil {
+		t.Fatal("read actual recovered request")
+	}
+	if afterPayload != beforePayload || afterCaller != beforeCaller {
+		t.Fatal("real process restart changed request or caller")
+	}
+}
+
+// 应用取消和同库重启保持 unknown；原生 Send 和工具配置按 owner 证据另行核验。
+func TestAutomaticUnknownSurvivesSQLiteReopenWithoutRetry(t *testing.T) {
+	s := newAutomaticHTTP(t)
 	var material app.MaterialDetail
 	for _, revision := range []string{"v1", "v2"} {
-		receipt, err := service.ImportMaterial(ctx, p, app.ImportMaterialCommand{CommandMeta: localCommand(1), Adapter: "arxiv", Kind: "paper", SourceLocator: "https://arxiv.org/abs/2501.12948" + revision})
-		if err != nil {
-			t.Fatal(err)
+		var receipt app.ImportJobResult
+		s.request("POST", "/api/v1/materials/imports", app.ImportMaterialCommand{CommandMeta: localCommand(1), Adapter: "arxiv", Kind: "paper", SourceLocator: "https://arxiv.org/abs/2501.12948" + revision}, http.StatusAccepted, &receipt)
+		job := s.finished(receipt.JobID)
+		if job.Status != "succeeded" || job.MaterialID == nil {
+			t.Fatal("official Atom/PDF import did not succeed")
 		}
-		if _, err = service.ProcessNextJob(ctx); err != nil {
-			t.Fatal(err)
-		}
-		job, err := service.GetJob(ctx, p, receipt.JobID)
-		if err != nil || job.Status != "succeeded" || job.MaterialID == nil {
-			t.Fatalf("import: %+v %v", job, err)
-		}
-		material, err = service.GetMaterial(ctx, p, *job.MaterialID)
-		if err != nil {
-			t.Fatal(err)
-		}
+		s.request("GET", "/api/v1/materials/"+*job.MaterialID, nil, http.StatusOK, &material)
 	}
 	if material.Material.CurrentRevision != 2 {
 		t.Fatal("second source revision missing")
 	}
-	oldText, err := service.GetContent(ctx, p, material.Material.ID, 1)
-	if err != nil {
-		t.Fatal(err)
+	var oldText app.ContentResult
+	s.request("GET", "/api/v1/materials/"+material.Material.ID+"/revisions/1/content", nil, http.StatusOK, &oldText)
+	var space app.ProjectSpaceResult
+	s.request("POST", "/api/v1/project-spaces", app.ProjectSpaceCommand{CommandMeta: localCommand(1), Title: "Public fixed Attention validation"}, http.StatusCreated, &space)
+	s.request("POST", "/api/v1/project-spaces/"+space.Space.ID+"/references", app.ReferenceMaterialCommand{CommandMeta: localCommand(space.Space.Version), MaterialID: material.Material.ID, Revision: 1}, http.StatusOK, &space)
+	var registered struct {
+		Project workdomain.LocalProject `json:"project"`
 	}
-	request := app.RequestDistillationCommand{CommandMeta: localCommand(1), InputRefs: []app.SourceRef{{MaterialID: material.Material.ID, Revision: 1, Locator: material.Revisions[0].SourceLocator}}, Stage: "content", ProcessingConfig: "contract_local-selected-v1", Question: "contract_local old revision failure case"}
-	original, err := service.RequestDistillation(ctx, p, request)
-	if err != nil {
-		t.Fatal(err)
+	s.request("POST", "/api/v1/local-projects", struct {
+		app.CommandMeta
+		workdomain.RegisterProjectCommand
+	}{localCommand(1), workdomain.RegisterProjectCommand{Name: "Attention owned public worktree", Root: s.root, SpaceID: space.Space.ID}}, http.StatusOK, &registered)
+	project := registered.Project
+	settings := workdomain.ProjectSettings{AllowedActions: []string{"read_context", "start", "observe", "stop"}, AllowedTools: []string{}, ExternalModelCLI: "codex", AllowAgentControl: true}
+	s.request("PUT", "/api/v1/local-projects/"+project.ID+"/settings", struct {
+		app.CommandMeta
+		workdomain.SettingsCommand
+	}{localCommand(1), workdomain.SettingsCommand{ExpectedRevision: project.Settings.Revision, Settings: settings}}, http.StatusOK, &registered)
+	var probe struct {
+		Session workdomain.NativeSession `json:"session"`
 	}
+	s.request("POST", "/api/v1/local-projects/"+project.ID+"/sessions/probe", struct {
+		app.CommandMeta
+		CLI string `json:"cli"`
+	}{localCommand(1), "codex"}, http.StatusOK, &probe)
+	if probe.Session.NativeID == "" || !probe.Session.StopConfirmed {
+		t.Fatal("real native configuration probe or stop missing")
+	}
+	request := app.RequestDistillationCommand{CommandMeta: localCommand(1), InputRefs: []app.SourceRef{{MaterialID: material.Material.ID, Revision: 1, Locator: material.Revisions[0].SourceLocator}}, Stage: "content", ProcessingConfig: "owned-native-selected-v1", Question: "仅依据选定旧版本说明已知信息及待查问题，保留未知。", ProjectID: project.ID, CLI: "codex"}
+	var original app.ImportJobResult
+	s.request("POST", "/api/v1/distillations/jobs", request, http.StatusAccepted, &original)
 	duplicate := request
 	duplicate.CommandMeta = localCommand(1)
-	reused, err := service.RequestDistillation(ctx, p, duplicate)
-	if err != nil || reused.JobID != original.JobID {
-		t.Fatalf("dedupe: %+v %v", reused, err)
+	var reused app.ImportJobResult
+	s.request("POST", "/api/v1/distillations/jobs", duplicate, http.StatusAccepted, &reused)
+	if reused.JobID != original.JobID {
+		t.Fatal("dedupe created another native operation")
 	}
-	if _, err = service.ProcessNextJob(ctx); err != nil {
-		t.Fatal(err)
+	var entered app.Job
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		entered = s.job(original.JobID)
+		if entered.Status == "running" && entered.ExternalStarted {
+			break
+		}
+		if entered.Status == "failed" || entered.Status == "succeeded" || time.Now().After(deadline) {
+			t.Fatal("native cancellation precondition was not observed")
+		}
+		time.Sleep(20 * time.Millisecond)
 	}
-	job, err := service.GetJob(ctx, p, original.JobID)
-	if err != nil || job.Status != "failed" || !job.DeliveryUnknown || job.Error == nil || job.Error.Code != apierrors.DeliveryUnknown {
-		t.Fatalf("lost result: %+v %v", job, err)
+	// ExternalStarted 是应用提交的调用边界；精确原生 Send 证据另行核查。
+	var cancelled app.Job
+	s.request("POST", "/api/v1/jobs/"+entered.JobID+"/cancel", localCommand(entered.Version), http.StatusOK, &cancelled)
+	job := s.finished(original.JobID)
+	if job.Status != "cancelled" || !job.DeliveryUnknown || job.Error == nil || job.Error.Code != apierrors.DeliveryUnknown {
+		t.Fatal("actual cancellation collapsed unknown delivery")
 	}
-	if processor.calls != 1 || len(processor.input.Inputs) != 1 || processor.input.Inputs[0].Ref.Revision != 1 || processor.input.Inputs[0].Text != oldText.Text {
-		t.Fatal("processor input was not fixed to the selected old revision")
+	db, err := sqlite.Open(filepath.Join(s.dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("open real persisted SQLite")
 	}
+	defer func() { db.Close() }()
 	var persistedPayload, persistedCaller string
-	if err = db.Conn().QueryRowContext(ctx, "SELECT payload,caller FROM attention_jobs WHERE id=?", job.JobID).Scan(&persistedPayload, &persistedCaller); err != nil {
-		t.Fatal(err)
+	if err = db.Conn().QueryRow("SELECT payload,caller FROM attention_jobs WHERE id=?", job.JobID).Scan(&persistedPayload, &persistedCaller); err != nil {
+		t.Fatal("read persisted unknown request")
 	}
-	var payload map[string]json.RawMessage
+	var payload struct {
+		Snapshots []app.SourceSnapshot
+		Result    *app.DistillationOutput
+	}
 	if err = json.Unmarshal([]byte(persistedPayload), &payload); err != nil {
-		t.Fatal(err)
+		t.Fatal("decode persisted request")
 	}
-	if len(payload["Result"]) > 0 && string(payload["Result"]) != "null" {
+	if payload.Result != nil {
 		t.Fatal("unknown result was fabricated")
 	}
+	if len(payload.Snapshots) != 1 || payload.Snapshots[0].Ref.Revision != 1 || payload.Snapshots[0].Text != oldText.Text {
+		t.Fatal("processor input was not frozen to selected old revision")
+	}
 	if err = db.Close(); err != nil {
-		t.Fatal(err)
+		t.Fatal("close independent SQLite")
 	}
-	db, service = open()
-	if err = service.RecoverJobs(ctx); err != nil {
-		t.Fatal(err)
+	s.stop()
+	s.start()
+	restarted := s.job(job.JobID)
+	if !restarted.DeliveryUnknown || restarted.OperationID != job.OperationID {
+		t.Fatal("restart replaced original unknown operation")
 	}
-	restarted, err := service.GetJob(ctx, p, job.JobID)
-	if err != nil || !restarted.DeliveryUnknown || restarted.OperationID != job.OperationID {
-		t.Fatalf("restart: %+v %v", restarted, err)
+	var rejected apierrors.ErrorEnvelope
+	s.request("POST", "/api/v1/jobs/"+job.JobID+"/retry", localCommand(restarted.Version), http.StatusConflict, &rejected)
+	if rejected.Error == nil || rejected.Error.Code != apierrors.DeliveryUnknown {
+		t.Fatal("unknown retry did not preserve delivery_unknown")
 	}
-	_, err = service.RetryJob(ctx, p, job.JobID, localCommand(restarted.Version))
-	var failure *apierrors.ServiceError
-	if !errors.As(err, &failure) || failure.Code != apierrors.DeliveryUnknown {
-		t.Fatalf("unknown retry allowed: %v", err)
-	}
-	service.ProcessNextJob(ctx)
-	if processor.calls != 1 {
-		t.Fatal("reopen or retry resent unknown work")
+	db, err = sqlite.Open(filepath.Join(s.dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("reopen persisted SQLite")
 	}
 	var afterPayload, afterCaller string
-	if err = db.Conn().QueryRowContext(ctx, "SELECT payload,caller FROM attention_jobs WHERE id=?", job.JobID).Scan(&afterPayload, &afterCaller); err != nil {
-		t.Fatal(err)
+	if err = db.Conn().QueryRow("SELECT payload,caller FROM attention_jobs WHERE id=?", job.JobID).Scan(&afterPayload, &afterCaller); err != nil {
+		t.Fatal("read reopened unknown request")
 	}
 	if afterPayload != persistedPayload || afterCaller != persistedCaller {
-		t.Fatal("unknown request/caller changed after restart")
+		t.Fatal("unknown request or caller changed after restart")
 	}
-	var outputs, candidates int
-	if err = db.Conn().QueryRowContext(ctx, "SELECT COUNT(*) FROM attention_distillations").Scan(&outputs); err != nil {
-		t.Fatal(err)
+	for _, table := range []string{"attention_distillations", "attention_opportunities"} {
+		var count int
+		if err = db.Conn().QueryRow("SELECT COUNT(*) FROM " + table).Scan(&count); err != nil || count != 0 {
+			t.Fatal("unknown processing generated a record or candidate")
+		}
 	}
-	if err = db.Conn().QueryRowContext(ctx, "SELECT COUNT(*) FROM attention_opportunities").Scan(&candidates); err != nil {
-		t.Fatal(err)
+	var observed app.MaterialDetail
+	s.request("GET", "/api/v1/materials/"+material.Material.ID, nil, http.StatusOK, &observed)
+	if observed.Material.HumanUsageCount != material.Material.HumanUsageCount+1 || observed.Material.AgentUsageCount != material.Material.AgentUsageCount+1 {
+		t.Fatal("model retrieval changed human signals or was counted twice")
 	}
-	if outputs != 0 || candidates != 0 {
-		t.Fatal("lost result generated a record or candidate")
+	var content app.ContentResult
+	s.request("GET", "/api/v1/materials/"+material.Material.ID+"/revisions/1/content", nil, http.StatusOK, &content)
+	if content.Text != oldText.Text {
+		t.Fatal("unknown processing lost original material")
 	}
-	observed, err := service.GetMaterial(ctx, p, material.Material.ID)
-	if err != nil || observed.Material.HumanUsageCount != material.Material.HumanUsageCount || observed.Material.AgentUsageCount != material.Material.AgentUsageCount+1 {
-		t.Fatal("internal processor retrieval became a human signal or was counted twice")
+	var operations int
+	if err = db.Conn().QueryRow("SELECT COUNT(*) FROM attention_jobs WHERE kind='distillation'").Scan(&operations); err != nil || operations != 1 {
+		t.Fatal("restart or rejected retry resent unknown work")
 	}
-	if content, err := service.GetContent(ctx, p, material.Material.ID, 1); err != nil || content.Text != oldText.Text {
-		t.Fatal("unknown processing lost the original material")
-	}
+	t.Logf("actual HTTP/SQLite application cancellation persisted; source revisions=2 durable operations=%d; evidence=%s", operations, s.dir)
 }
