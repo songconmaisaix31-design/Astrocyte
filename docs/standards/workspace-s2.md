@@ -22,6 +22,16 @@ B 独占 migrations、共享 service.go/contracts.go 和依赖；已收到 019 W
 
 `go test ./internal/workspace/app ./internal/workspace/domain ./internal/adapters/sqlite -run '^$'` PASS，仅证明编译。真实 SQLite、HTTP、重启、事务回滚与批准权限验证目前 NOT_RUN，等待 B 的 019 和 H 的真实主服务装配。ContextPacket 持久 successor 和 SessionBinding 继续实施；原生 owned 安全接口及用户 working 条件仍 UNKNOWN，不调用其他 CLI 补证。
 
+## 第二阶段实现与当前业务覆盖
+
+B `da79452d1735f8fceca103aaf9d10bb53182f1f5` 已普通消费。新增 immutable ContextPacket / successor、固定 Goal 与材料引用、对象存储发布、项目快照验证，以及只接受当前 owned 原生事实的 SessionBinding；构造后通过 ConfigureContext 装配 SnapshotProvider / ObjectStore / OwnedSessionProvider。R/H 的 owned 提供者和 S4 的真实快照仍待准确实现；这两条实际成功保持 NOT_RUN，不制造原生会话或项目快照。
+
+`go test ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 45s -v` PASS：实际新 SQLite、既有生产项目注册/设置/空间入口、Goal/Proposal、相同输入幂等/异输入冲突、Agent 拒绝、旧版本冲突、人类批准、foundation outbox 重读、真实 SQLite 唯一约束失败整事务回滚、关闭重开及撤销后拒绝。最后一次库为 `.verification/s2-first/actual-700047605/state.sqlite`，日志 `sqlite-third.log`。该检查使用应用与存储实际实现；HTTP 验收尚 NOT_RUN。
+
+首次真实路径校验 FAIL 保留在 `.verification/s2-first/sqlite-first.log`；现通过 filepath.Rel 向既有 ValidateProjectPath 传相对路径，并复核现行 AllowedSubdirs。首次 Domain import FAIL 保留在 `architecture-first.log`；现在领域自有 WorkspaceRuleError，应用 NormalizeWorkspaceError 映射统一错误，架构检查 32 包 PASS。
+
+Proposal 读 DTO 增加 grant_id，刷新页面可读取批准与撤销入口。scope.settings_revision 固定当前项目授权版本；保护动作持有可信 Caller，当前项目版本变更阻止新动作。scope.write_paths 明确相对根目录的写入范围。stops.max_no_progress_rounds 实现 SPEC 连续无产出轮数约束；no_progress_seconds 可额外显式配置，不取代轮数。
+
 ## 第一阶段独立 REPORT
 
 SOURCE `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 普通 push 成功；独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。四个包 `go test -run '^$'` PASS，`git diff --check` PASS；两项均不代表业务验收。准确 SOURCE 已交 S3、H 和 UI，B 的 019 已交 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，下一步消费该迁移并运行真实 SQLite/HTTP。第一次 B SOURCE 通知出现 PowerShell 单引号参数错误，CLI 明确 invalid_argument，未投递；改正参数后继续交接，不将失败视为成功。

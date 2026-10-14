@@ -43,6 +43,11 @@ type WorkspaceTx interface {
 	LoadReceipt(string,string,string) (WorkspaceReceipt,error)
 	SaveReceipt(string,string,string,WorkspaceReceipt) error
 	AppendWorkspaceEvent(WorkspaceEvent) error
+	LoadContextPacket(string) (domain.ImmutableContextPacket,error)
+	SaveContextPacket(domain.ImmutableContextPacket) error
+	LoadSessionBinding(string) (domain.SessionBinding,error)
+	SaveSessionBinding(domain.SessionBinding,int) error
+	LoadNativeSession(string) (domain.NativeSession,error)
 }
 
 type WorkspaceRepository interface {
@@ -67,4 +72,43 @@ type AdmissionProposalCommand struct {
 	OpportunityID string `json:"opportunity_id"`
 	OpportunityRevision int `json:"opportunity_revision"`
 	Content domain.ProposalContent `json:"content"`
+}
+
+type ProjectSnapshotProvider interface {
+	CaptureProjectSnapshot(context.Context,domain.Caller,string,[]string) (domain.ProjectContextSnapshot,error)
+	ValidateProjectSnapshot(context.Context,domain.Caller,domain.ProjectContextSnapshot) error
+}
+
+type ContextObjectStore interface {
+	Publish(context.Context,[]byte) (string,error)
+	Read(context.Context,string) ([]byte,error)
+}
+
+type OwnedSessionProvider interface {
+	ReadOwnedSessionFacts(context.Context,string) (domain.OwnedSessionFacts,error)
+}
+
+type BuildContextPacketCommand struct {
+	WorkspaceCommandMeta
+	GrantID string `json:"grant_id"`
+	GrantEpoch int `json:"grant_epoch"`
+	PredecessorID string `json:"predecessor_id,omitempty"`
+	MaxBytes int `json:"max_bytes"`
+	Decisions []string `json:"decisions"`
+	Results []string `json:"results"`
+	Checks []string `json:"checks"`
+	Failures []string `json:"failures"`
+	OpenQuestions []string `json:"open_questions"`
+	NextSteps []string `json:"next_steps"`
+}
+
+type BindSessionCommand struct {
+	WorkspaceCommandMeta
+	SessionID string `json:"session_id"`
+	PacketID string `json:"packet_id"`
+	MemberID string `json:"member_id"`
+}
+
+type SessionBindingAuthorizer interface {
+	WithAuthorizedSessionBindings(context.Context,domain.GrantCheck,[]string,func(context.Context,domain.ApprovalGrant,[]domain.SessionBinding)error) error
 }

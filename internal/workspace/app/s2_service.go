@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -14,13 +15,32 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-type S2Service struct { repo WorkspaceRepository; files ProjectFiles; references ProjectReferences }
+type S2Service struct {
+	repo WorkspaceRepository
+	files ProjectFiles
+	references ProjectReferences
+	snapshots ProjectSnapshotProvider
+	objects ContextObjectStore
+	owned OwnedSessionProvider
+}
 
 func NewS2Service(repo WorkspaceRepository,files ProjectFiles,refs ProjectReferences) *S2Service { return &S2Service{repo:repo,files:files,references:refs} }
 
+// 仅在主入口启动并发处理之前装配。
+func (s *S2Service) ConfigureContext(snapshots ProjectSnapshotProvider,objects ContextObjectStore,owned OwnedSessionProvider) {
+	s.snapshots,s.objects,s.owned=snapshots,objects,owned
+}
+
 func absent(err error) bool {var e *apierrors.ServiceError;return errors.As(err,&e)&&e.Code==apierrors.NotFound}
 
-func (s *S2Service) command(ctx context.Context,c domain.Caller,meta WorkspaceCommandMeta,name string,input any,output any,fn func(WorkspaceTx)error) error {
+func NormalizeWorkspaceError(err error) error {
+	var rule *domain.WorkspaceRuleError
+	if errors.As(err,&rule){return &apierrors.ServiceError{Code:apierrors.Code(rule.Code),Message:rule.Message,RequiredAction:"review_workspace_version_and_permissions"}}
+	return err
+}
+
+func (s *S2Service) command(ctx context.Context,c domain.Caller,meta WorkspaceCommandMeta,name string,input any,output any,fn func(WorkspaceTx)error) (err error) {
+	defer func(){err=NormalizeWorkspaceError(err)}()
 	if c.ID=="" || (c.Kind!="human"&&c.Kind!="agent") || meta.SchemaVersion!=1 || meta.RequestID=="" || meta.IdempotencyKey=="" || meta.ExpectedVersion<0 {return domain.WorkspaceError(apierrors.ValidationFailed,"authenticated caller and complete command metadata are required")}
 	data,err:=json.Marshal(input);if err!=nil{return err};digest:=sha256.Sum256(data);requestDigest:=hex.EncodeToString(digest[:]);caller:=c.Kind+":"+c.ID
 	return s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{
@@ -47,16 +67,35 @@ func projectAccess(tx WorkspaceTx,c domain.Caller,id string) (domain.LocalProjec
 	if !has(g.Actions,"read_context"){return p,domain.WorkspaceError(apierrors.ScopeDenied,"project context permission is required")};return p,nil
 }
 
-func (s *S2Service) validateContent(ctx context.Context,tx WorkspaceTx,c domain.Caller,content domain.ProposalContent,execute bool) error {
+func (s *S2Service) validateInputs(ctx context.Context,c domain.Caller,content domain.ProposalContent) (int,error) {
+	var p domain.LocalProject
+	if err:=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var err error;p,err=projectAccess(tx,c,content.Scope.ProjectID);return err});err!=nil{return 0,NormalizeWorkspaceError(err)}
+	for _,ref:=range content.Inputs{
+		if s.references==nil{return 0,&apierrors.ServiceError{Code:apierrors.UnsupportedCapability,Message:"project reference reader is not connected"}}
+		material,err:=s.references.ReadSelected(ctx,c,p.SpaceID,ref,false);if err!=nil{return 0,err}
+		if material.Reference!=ref{return 0,&apierrors.ServiceError{Code:apierrors.ContextStale,Message:"reference reader changed the fixed revision"}}
+	}
+	return p.Settings.Revision,nil
+}
+
+func (s *S2Service) validateProjectRoot(p domain.LocalProject,root string) error {
+	if s.files==nil{return domain.WorkspaceError(apierrors.UnsupportedCapability,"project path validation is unavailable")}
+	canonical,err:=s.files.CanonicalRoot(root);if err!=nil{return err};if canonical!=root{return domain.WorkspaceError(apierrors.ScopeDenied,"protected root must use canonical spelling")}
+	rel,err:=filepath.Rel(p.Root,root);if err!=nil{return err};if _,err=s.files.ValidateProjectPath(p.Root,rel);err!=nil{return err}
+	if !p.Settings.AllowDirectory{return domain.WorkspaceError(apierrors.ScopeDenied,"project directory access is not approved")}
+	for _,sub:=range p.Settings.AllowedSubdirs{dir,err:=s.files.ValidateProjectPath(p.Root,sub);if err!=nil{return err};relative,err:=filepath.Rel(dir,root);if err==nil&&relative!=".."&&!strings.HasPrefix(relative,".."+string(filepath.Separator))&&!filepath.IsAbs(relative){return nil}}
+	return domain.WorkspaceError(apierrors.ScopeDenied,"protected root is outside current allowed subdirectories")
+}
+
+func (s *S2Service) validateContent(ctx context.Context,tx WorkspaceTx,c domain.Caller,content domain.ProposalContent,execute bool,inputSettings int) error {
 	if err:=content.Validate(time.Now().UTC(),execute);err!=nil{return err}
 	p,err:=projectAccess(tx,c,content.Scope.ProjectID);if err!=nil{return err}
+	if p.Settings.Revision!=inputSettings{return domain.WorkspaceError(apierrors.ContextStale,"project permissions changed during input validation")}
+	if content.Scope.SettingsRevision!=p.Settings.Revision{return domain.WorkspaceError(apierrors.ContextStale,"proposal fixes another project settings revision")}
 	g,err:=tx.LoadGoal(content.Goal.ID,content.Goal.Revision);if err!=nil{return err}
 	if g.ProjectID!=p.ID{return domain.WorkspaceError(apierrors.ScopeDenied,"goal is outside proposal project")}
 	for _,root:=range content.Scope.Roots{
-		if s.files==nil{return domain.WorkspaceError(apierrors.UnsupportedCapability,"project path validation is not connected")}
-		canonical,err:=s.files.CanonicalRoot(root);if err!=nil{return err};if canonical!=root{return domain.WorkspaceError(apierrors.ValidationFailed,"proposal root must use canonical path")}
-		if _,err=s.files.ValidateProjectPath(p.Root,root);err!=nil{return err}
-		if !p.Settings.AllowDirectory{return domain.WorkspaceError(apierrors.ScopeDenied,"project directory access is not approved")}
+		if err=s.validateProjectRoot(p,root);err!=nil{return err}
 	}
 	return nil
 }
@@ -73,48 +112,59 @@ func (s *S2Service) PutGoal(ctx context.Context,c domain.Caller,id string,cmd Go
 }
 
 func (s *S2Service) CreateProposal(ctx context.Context,c domain.Caller,cmd CreateProposalCommand) (p domain.Proposal,err error) {
+	inputSettings,err:=s.validateInputs(ctx,c,cmd.Content);if err!=nil{return p,err}
+	if cmd.Content.Scope.SettingsRevision==0{cmd.Content.Scope.SettingsRevision=inputSettings}
 	err=s.command(ctx,c,cmd.WorkspaceCommandMeta,"workspace.proposal.create",cmd,&p,func(tx WorkspaceTx)error{
 		if cmd.ExpectedVersion!=0{return domain.WorkspaceError(apierrors.VersionConflict,"new proposal expects zero")}
-		if err:=s.validateContent(ctx,tx,c,cmd.Content,false);err!=nil{return err}
+		if err:=s.validateContent(ctx,tx,c,cmd.Content,false,inputSettings);err!=nil{return err}
 		now:=time.Now().UTC();p=domain.Proposal{ID:uuid.NewString(),Version:1,Revision:1,Status:domain.ProposalDraft,Content:cmd.Content,CreatedAt:now,UpdatedAt:now};return tx.SaveProposal(p,0)
 	});return
 }
 
 func (s *S2Service) ReviseProposal(ctx context.Context,c domain.Caller,id string,cmd CreateProposalCommand) (p domain.Proposal,err error) {
+	inputSettings,err:=s.validateInputs(ctx,c,cmd.Content);if err!=nil{return p,err}
+	if cmd.Content.Scope.SettingsRevision==0{cmd.Content.Scope.SettingsRevision=inputSettings}
 	err=s.command(ctx,c,cmd.WorkspaceCommandMeta,"workspace.proposal.revise",struct{ID string;Command CreateProposalCommand}{id,cmd},&p,func(tx WorkspaceTx)error{
 		old,err:=tx.LoadProposal(id,0);if err!=nil{return err};if old.Version!=cmd.ExpectedVersion{return domain.WorkspaceError(apierrors.VersionConflict,"proposal changed")}
 		if _,err=projectAccess(tx,c,old.Content.Scope.ProjectID);err!=nil{return err};if old.Content.Scope.ProjectID!=cmd.Content.Scope.ProjectID{return domain.WorkspaceError(apierrors.ScopeDenied,"proposal cannot change project")}
-		if err=s.validateContent(ctx,tx,c,cmd.Content,false);err!=nil{return err}
+		if err=s.validateContent(ctx,tx,c,cmd.Content,false,inputSettings);err!=nil{return err}
 		old.Status=domain.ProposalSuperseded;old.Version++;old.UpdatedAt=time.Now().UTC();if err=tx.SaveProposal(old,cmd.ExpectedVersion);err!=nil{return err}
-		p=old;p.Revision++;p.Version++;p.Status=domain.ProposalDraft;p.Content=cmd.Content;return tx.SaveProposal(p,old.Version)
+		p=old;p.Revision++;p.Version++;p.Status=domain.ProposalDraft;p.Content=cmd.Content;p.GrantID="";return tx.SaveProposal(p,old.Version)
 	});return
 }
 
 func (s *S2Service) TransitionProposal(ctx context.Context,c domain.Caller,id string,meta WorkspaceCommandMeta,target domain.ProposalStatus) (p domain.Proposal,err error) {
+	defer func(){err=NormalizeWorkspaceError(err)}()
 	if target!=domain.ProposalInReview&&target!=domain.ProposalDeclined{return p,domain.WorkspaceError(apierrors.ValidationFailed,"transition must submit or decline")}
 	if target==domain.ProposalDeclined {if err=human(c);err!=nil{return}}
+	current,err:=s.ReadProposal(ctx,c,id,0);if err!=nil{return p,err};inputSettings,err:=s.validateInputs(ctx,c,current.Content);if err!=nil{return p,err}
 	err=s.command(ctx,c,meta,"workspace.proposal."+string(target),struct{ID string;Meta WorkspaceCommandMeta}{id,meta},&p,func(tx WorkspaceTx)error{
 		var err error;p,err=tx.LoadProposal(id,0);if err!=nil{return err}
-		if err=s.validateContent(ctx,tx,c,p.Content,target==domain.ProposalInReview);err!=nil{return err}
+		if p.Revision!=current.Revision{return domain.WorkspaceError(apierrors.VersionConflict,"proposal inputs changed during validation")}
+		if err=s.validateContent(ctx,tx,c,p.Content,target==domain.ProposalInReview,inputSettings);err!=nil{return err}
 		if err=p.Transition(meta.ExpectedVersion,target,time.Now().UTC());err!=nil{return err};return tx.SaveProposal(p,meta.ExpectedVersion)
 	});return
 }
 
 func (s *S2Service) ApproveProposal(ctx context.Context,c domain.Caller,id string,cmd ApproveProposalCommand) (g domain.ApprovalGrant,err error) {
 	if err=human(c);err!=nil{return}
+	current,err:=s.ReadProposal(ctx,c,id,0);if err!=nil{return g,err};inputSettings,err:=s.validateInputs(ctx,c,current.Content);if err!=nil{return g,err}
 	err=s.command(ctx,c,cmd.WorkspaceCommandMeta,"workspace.proposal.approve",struct{ID string;Command ApproveProposalCommand}{id,cmd},&g,func(tx WorkspaceTx)error{
 		p,err:=tx.LoadProposal(id,0);if err!=nil{return err}
+		if p.Revision!=current.Revision{return domain.WorkspaceError(apierrors.VersionConflict,"proposal inputs changed during approval")}
 		if p.Revision!=cmd.ExpectedRevision{return domain.WorkspaceError(apierrors.VersionConflict,"proposal revision changed")}
-		if err=s.validateContent(ctx,tx,c,p.Content,true);err!=nil{return err}
+		if err=s.validateContent(ctx,tx,c,p.Content,true,inputSettings);err!=nil{return err}
 		now:=time.Now().UTC();if !cmd.ExpiresAt.After(now)||cmd.ExpiresAt.After(p.Content.Stops.Deadline){return domain.WorkspaceError(apierrors.ValidationFailed,"approval expiration must fit stopping deadline")}
 		if err=p.Transition(cmd.ExpectedVersion,domain.ProposalApproved,now);err!=nil{return err}
 		g=domain.ApprovalGrant{ID:uuid.NewString(),ProposalID:p.ID,ProposalRevision:p.Revision,Goal:p.Content.Goal,Epoch:1,Status:"active",Scope:p.Content.Scope,Budget:p.Content.Budget,Stops:p.Content.Stops,ApproverID:c.ID,ApprovedAt:now,ChangedAt:now,ExpiresAt:cmd.ExpiresAt}
+		p.GrantID=g.ID
 		if err=tx.SaveProposal(p,cmd.ExpectedVersion);err!=nil{return err};if err=tx.SaveApproval(g,0);err!=nil{return err}
-		return workspaceEvent(tx,cmd.WorkspaceCommandMeta,"proposal_approved",p.ID,p.Version,domain.ProposalApprovedEvent{ProposalID:p.ID,ProposalRevision:p.Revision,GrantID:g.ID,Epoch:g.Epoch})
+		return workspaceEvent(tx,cmd.WorkspaceCommandMeta,"proposal_approved",p.ID,p.Version,domain.ProposalApprovedEvent{ProposalID:p.ID,ProposalRevision:p.Revision,GrantID:g.ID,Epoch:g.Epoch,ActorID:c.ID,ActorKind:c.Kind})
 	});return
 }
 
 func (s *S2Service) ChangeApproval(ctx context.Context,c domain.Caller,id string,cmd ChangeApprovalCommand,status string) (g domain.ApprovalGrant,err error) {
+	defer func(){err=NormalizeWorkspaceError(err)}()
 	if err=human(c);err!=nil{return}
 	if !has([]string{"revoked","completed","expired"},status){return g,domain.WorkspaceError(apierrors.ValidationFailed,"invalid approval state")}
 	err=s.command(ctx,c,cmd.WorkspaceCommandMeta,"workspace.approval."+status,struct{ID string;Command ChangeApprovalCommand}{id,cmd},&g,func(tx WorkspaceTx)error{
@@ -130,13 +180,16 @@ func (s *S2Service) QueryGrant(ctx context.Context,id string) (g domain.Approval
 	err=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var e error;g,e=tx.LoadApproval(id);if e==nil&&g.Status=="active"&&(!g.ExpiresAt.After(time.Now())||!g.Stops.Deadline.After(time.Now())){g.Status="expired"};return e});return
 }
 
-func (s *S2Service) WithAuthorizedGrant(ctx context.Context,check domain.GrantCheck,fn func(context.Context,domain.ApprovalGrant)error) error {
+func (s *S2Service) WithAuthorizedGrant(ctx context.Context,check domain.GrantCheck,fn func(context.Context,domain.ApprovalGrant)error) (err error) {
+	defer func(){err=NormalizeWorkspaceError(err)}()
 	return s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{
 		g,err:=tx.LoadApproval(check.GrantID);if err!=nil{return err};if err=g.Check(check,time.Now().UTC());err!=nil{return err}
-		p,err:=tx.LoadProject(g.Scope.ProjectID);if err!=nil{return err}
-		if !p.Settings.AllowDirectory{return domain.WorkspaceError(apierrors.ScopeDenied,"project directory access was revoked")}
-		if s.files==nil{return domain.WorkspaceError(apierrors.UnsupportedCapability,"project path validation is unavailable")}
-		canonical,err:=s.files.CanonicalRoot(check.Root);if err!=nil{return err};if canonical!=check.Root{return domain.WorkspaceError(apierrors.ScopeDenied,"protected root is not canonical")};if _,err=s.files.ValidateProjectPath(p.Root,canonical);err!=nil{return err}
+		p,err:=projectAccess(tx,check.Caller,g.Scope.ProjectID);if err!=nil{return err}
+		if g.Scope.SettingsRevision!=p.Settings.Revision{return domain.WorkspaceError(apierrors.ApprovalRevoked,"project settings changed since approval")}
+		if err=s.validateProjectRoot(p,check.Root);err!=nil{return err}
+		if !has(p.Settings.AllowedActions,check.Action){return domain.WorkspaceError(apierrors.ScopeDenied,"project action permission was narrowed")}
+		for _,tool:=range check.Tools{if !has(p.Settings.AllowedTools,tool){return domain.WorkspaceError(apierrors.ScopeDenied,"project tool permission was narrowed")}}
+		for _,target:=range check.ExternalTargets{if p.Settings.ExternalModelCLI==""||target!=p.Settings.ExternalModelCLI{return domain.WorkspaceError(apierrors.ScopeDenied,"external target is not allowed by current project settings")}}
 		return fn(tx.Context(),g)
 	})
 }
@@ -147,13 +200,16 @@ func (s *S2Service) ListProposalsFor(ctx context.Context,c domain.Caller) ([]dom
 }
 
 func (s *S2Service) ReadProposal(ctx context.Context,c domain.Caller,id string,revision int) (p domain.Proposal,err error) {
+	defer func(){err=NormalizeWorkspaceError(err)}()
 	err=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var err error;p,err=tx.LoadProposal(id,revision);if err!=nil{return err};_,err=projectAccess(tx,c,p.Content.Scope.ProjectID);return err});return
 }
 
 func (s *S2Service) ReadGoal(ctx context.Context,c domain.Caller,id string,revision int) (g domain.Goal,err error) {
+	defer func(){err=NormalizeWorkspaceError(err)}()
 	err=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var err error;g,err=tx.LoadGoal(id,revision);if err!=nil{return err};_,err=projectAccess(tx,c,g.ProjectID);return err});return
 }
 
 func (s *S2Service) ReadApproval(ctx context.Context,c domain.Caller,id string) (g domain.ApprovalGrant,err error) {
+	defer func(){err=NormalizeWorkspaceError(err)}()
 	err=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var err error;g,err=tx.LoadApproval(id);if err!=nil{return err};_,err=projectAccess(tx,c,g.Scope.ProjectID);return err});if err==nil&&g.Status=="active"&&(!g.ExpiresAt.After(time.Now())||!g.Stops.Deadline.After(time.Now())){g.Status="expired"};return
 }
