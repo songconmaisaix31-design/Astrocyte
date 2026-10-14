@@ -2,7 +2,9 @@
 
 ## L1 当前开发（2026-10-14）
 
-用户要求继续 L1，采用根目录当前 AGENTS.md。H Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da` 继续实际 Codex 原生会话、独立 SQLite 与 HTTP 服务验证；F Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335` 继续实际服务到 Today 的 DOM 验证。原工作树、分支和独占文件范围保持，原唯一 I 在领域交付完成后集成。
+实际 Codex 控制器、独立 SQLite、HTTP 17342 与浏览器 17343 已运行，18 条派生事件可直接回查 GetEvent。F 的实际四项测试通过，两个视口已验证事件展示、查询分页与快照不可用时的独立显示；权限和任务卡验证继续。H SOURCE `addb5795e505db97933a10ecb93ec63156205e25` 与 F SOURCE `ee819e15067a9933eea74faa9ee9d931be4d521e` 已推送。原生 Session 三分钟证据需要首次 DOM 记录匹配实际 Session 来源，当前未确认；R 继续现有控制器的完整通知与关闭端口，H/F 继续消费和验证。产品活性窗口问题待用户回答。
+
+用户要求继续 L1，采用根目录当前 AGENTS.md。R Task `task_a51fab762c01` / Dispatch `ctx_1415e8205d75` 继续实际原生控制器、会话来源与生命周期验证；H Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da` 继续实际 Codex 原生会话、独立 SQLite 与 HTTP 服务验证；F Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335` 继续实际服务到 Today 的 DOM 验证。原工作树、分支和独占文件范围保持，原唯一 I 在领域交付完成后集成。
 
 已推送工程：R SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec501721361e8104a4e6e00781d73656157a4`；H SOURCE `e3b63ab30151c372ae8bc3e6594227513ef8cea6` / REPORT `e12ce161d300c0d043bd8e3dccee87d489737db3`；F SOURCE `a500c417377a4b1404d8d4529dfa322a876810e4` / REPORT `cf0250f7e6106f6c2963e45e5be977093ed337a7`。实际原生会话、注册三分钟演示和组合验收进行中，L1 尚未完成。
 

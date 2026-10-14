@@ -4,7 +4,9 @@
 
 执行标准为当前根 [AGENTS.md](C:/Users/DW/orca/Astrocyte/AGENTS.md)。业务目标仍为 `workbench/v0.2-access`；本轮实施和验收见 [L1 计划](C:/Users/DW/orca/workspaces/Astrocyte/cognitive-stack-planning-20261014/tasks/L1-session-capture-plan.md)。主控 `term_4a28ac76-bd04-4a8b-acb2-b3114ca74ee4` 持有原 Run `run_d577f0d3fee1`，负责计划、决策、验收和最终 Git。
 
-原 R 工程 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，运行时问题交回原工作树。H 在 `works-relay-http` / `songconmaisaix31-design/works-relay-http` 继续 Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da`；F 在 `works-relay-frontend` / `songconmaisaix31-design/works-relay-frontend` 继续 Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335`。两轨保持既有独占文件范围；必要 L1 解析依赖的 `go.mod/go.sum` 由 H 独占修改。
+原 R 工程 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，R 在原工作树继续 Task `task_a51fab762c01` / Dispatch `ctx_1415e8205d75`，负责实际原生控制器、来源覆盖与生命周期。H 在 `works-relay-http` / `songconmaisaix31-design/works-relay-http` 继续 Task `task_cfb7c9bde07d` / Dispatch `ctx_976e732672da`；F 在 `works-relay-frontend` / `songconmaisaix31-design/works-relay-frontend` 继续 Task `task_3c33a99685aa` / Dispatch `ctx_1db29418e335`。各轨保持既有独占文件范围；必要 L1 解析依赖的 `go.mod/go.sum` 由 H 独占修改。
+
+原生归档保留策略的覆盖缺口需要现有控制器提供事件观察端口。R 本轮必要修改可包括 `internal/adapters/agents/native.go/native_process.go` 的最少可选端口与协议处理，保持默认行为；只进入 Workbench，validation / V4 对应文件不变。R 先发布具体接口、来源依据与验收方式 Handoff，再交 H 消费精确 SOURCE。
 
 H 完成实际原生 Codex 控制器、会话来源、独立数据库与 HTTP 验证，错误立即返回，成熟格式使用库解析。F 连接 H 实际服务，在现有两个 viewport 做 DOM 验证，新增会话测试不使用 mock 或 HTTP 回放。注册数据新增、人工派发与三分钟 Today 可见时间须来自同一实际演示。SOURCE / REPORT 分开提交并 push；原唯一 I 在两轨完成后普通合并精确交付，只处理必要接口衔接。
 
