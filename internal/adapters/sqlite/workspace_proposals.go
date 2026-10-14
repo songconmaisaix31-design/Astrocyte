@@ -25,7 +25,8 @@ type workspaceTransaction struct { ctx context.Context; conn *sql.Conn; db *DB }
 // WorkspaceTransaction 仅供同一数据库的跨上下文SQLite adapter复用。
 func WorkspaceTransaction(ctx context.Context, db *DB) (*sql.Conn,error) {
 	t,ok:=ctx.Value(workspaceTransactionKey{}).(*workspaceTransaction)
-	if !ok || t.db!=db { return nil,errors.New("workspace transaction is absent or belongs to another database") }
+	if !ok { return nil,nil }
+	if t.db!=db { return nil,errors.New("workspace transaction belongs to another database") }
 	return t.conn,nil
 }
 
