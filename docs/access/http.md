@@ -1,6 +1,6 @@
 # Works Relay HTTP 与 L1 会话采集
 
-H 分支：`songconmaisaix31-design/works-relay-http`。源码：`7dd7d1b91128a268c035fcfa49da5f9f8667078d`，通过普通合并消费 R 源码 `fbfaa65c2c01094305424ac40d2d39d271eab51b` 和报告 `53231b19ddd19a65c5a47c91469a0e34d73cf600`。客户端为 Codex API；该工作会话没有暴露精确部署模型名称。实际模型以本次原生会话 `turn_context.model` 的安全汇总为准。
+H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a5369393166ac3a40f520138ae352d2edf92`，通过普通合并消费 R 的 `fbfaa65/53231b19`、意图版本 `ce3a519/9719e69`、原生解码 `d6d4da6/07449a6`。本次实际服务的业务构建为 `099ce0b`，报告合并 `b73f749` 的业务相同；后续 H 改动是原件策略核验和既有 Foundation/Projects 构造器组装，尚未替换原运行服务。客户端为 Codex API，工作会话没有暴露精确部署模型名称；实际原生控制器为 Codex `0.162.0`，本次 `turn_context.model` 为 `gpt-6.1-sol`。
 
 ## 当前实现
 
@@ -43,14 +43,25 @@ H 分支：`songconmaisaix31-design/works-relay-http`。源码：`7dd7d1b91128a2
 | F 注册前真实浏览器基线 | F 于 `2026-10-14T12:53:45Z` 报告两尺寸 session 200、空 registry 与浏览器 ready |
 | 实际注册前 HTTP 权限检查 | PASS，无 session、跨 Origin、未授权 bearer、缺 CSRF 均 403 |
 | 本轮 SQLite 独立只读计数 | 实际 events=3、signals=0、nodes=0；原生派发前的项目 / Works 观测 |
-| 同 URL 追加登记、重启、实际模型、Today 首次 DOM | 尚未执行，当前阻塞于就绪意图的项目设置版本；注册次数 0、模型派发 0、计时未开始 |
-| 实际原档逐 origin / event_id、追加 / 停止范围、权限与 GET 只读 | 尚未执行，实际证据检查入口已编译，待真实派发 |
+| 同 URL 追加登记与正常重启 | 实际执行一次，原始 `registered_at=2026-10-14T13:23:34.0366105Z` |
+| 注册起点 → 原生事件首次 DOM | FAIL：F 两尺寸首显示 `13:33:25.152Z/.153Z`，591116/591117 ms，大于 180000 ms |
+| 原 dispatch 收据创建 → 原生事件首次 DOM | PASS：创建 `13:33:10.6363218Z`，约 14.516/14.517 秒；独立于注册起点 FAIL |
+| 实际原件与提交 ID | PASS：15 个完整行、105564 字节、15 个原档 origin 对应提交 ID；全部 18 个 HTTP 事件 GetEvent 一致 |
+| 实际文件范围 | `snapshot_complete=true`、尾行 / 剩余字节 0、unknown 5、errors 0、`session_complete=false` |
+| 实际回答与结束轮次 | `gpt-6.1-sol`，assistant 1、task_complete 1、已报总 tokens 8827；没有重复原输入 |
+| 实际权限、分页与 GET 只读 | PASS：四项 HTTP 403、五项实际文件身份 / 权限拒绝、全分页、canary 排除、静默 GET 事件数不变、持久游标相符 |
+| 实际原件中的工具与策略 | 当前文件工具调用 0、`never/read-only`；旧 owned PID / 启动参数未当时采集，effective tool set 保持 unknown，不能仅用 tool 0 填禁用证据 PASS |
+| 连续追加 / 明确 Stop 后范围 | 未执行，原控制器已在默认 180 秒后实际退出，旧输入没有自动重发 |
 
 实际证据检查逐原档 origin 查询 `attention_engine_events` 并通过 `EventRepository.GetEvent` 定位提交 ID，独立比较 HTTP 六字段、分页和 canary 排除；核对重读及持久游标、追加与停止后的真实文件范围。实际 HTTP 权限检查包含无 session、跨 Origin、未授权 bearer 和缺 CSRF；静默 GET 前后事件数量必须一致。模型名称与工具调用数量仅从选定实际文件生成安全聚合。
 
 ## 剩余限制
 
-本报告为已完成准备与安全检查的阶段报告，H 保持同一活动 Task 继续真实闭环。F 是主任务唯一产品 UI 操作人，执行 create/confirm/send/stop；H 负责注册文件与正常重启，并只读核对每个阶段的原档、SQLite 和 HTTP。注册起点从真实 `registered_at` 计时，派发起点从原 accepted 收据计时；阻塞或超时不得重记起点。
+本报告为实际已执行范围的阶段报告，H 保持同一活动 Task 继续真实闭环。F 是主任务唯一产品 UI 操作人；H 负责注册文件与正常重启，并只读核对原档、SQLite 和 HTTP。原 task 为 `0c6522bc-b232-4040-8407-745885644791`，仅确认一次。HTTP 503 与 dispatch `accepted + provider_unavailable` 原收据保留；实际安全原因是 `thread/read / -32603 / thread_rejected`，更具体的服务内部原因未知。之后原 observer 实际取得正选归档，原件回答成功不覆盖首 503，不授权重发。
+
+F 首 DOM 三个 ID 均在真实 SQLite 定位，其中 `MBV3V2HETK5753LFVJY4PGVJWL` 和 `HFZSCX6TFXYYMOU5VBUNG65QIV` 分别是原档 `task_started` 与 `native_session_header`，第三个是 task 级 `turn_started`。安全证据为本地忽略目录的 `committed-public.json`、`initial-actual-evidence-derived.json`、`initial-actual-model-derived.json` 和 `first-dom-sql-derived.json`。14 个原档记录的 tokens 为真实 null，未填值。原 controller 文件路径只保存在本次 relay.sqlite 的私有绑定中。
+
+本次旧项目权限没有 `reconcile`，因此 done/release 未获准；不能更新项目后覆盖旧 task 的绑定版本、手改状态或把退出自动当完成。Foundation/旧 Projects GET 的未组装异常已保留本机原日志，源码已补既有生产构造器，原服务尚未串行替换核验。后续 R 的寿命、EOF 与 owned 执行策略提供口没有反填旧进程证据。B 新 Reader 接口需要精确窄接缝或 I 组合消费；H 没有整体合入其冻结域旧历史。
 
 完整默认 check/build/E2E、合并前端、Windows ZIP 解压启动和正式发布由对应 owner 与集成验收负责。H 的静态构建和契约检查不能代替实际 Today DOM、完整会话、终端编码或正式部署。
 
