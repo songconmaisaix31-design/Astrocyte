@@ -107,3 +107,24 @@ git diff --check
 全仓 Go vet、带 video_live 的全部 Go 测试编译、服务构建、Node 桥接语法与 diff 检查 PASS。`-run '^$'` 只证明全部包及测试文件编译通过，没有执行其余全仓业务测试；日志 `.verification/video-all-compile-final.log`。
 
 当前真实剩余限制：上述 9 个原有其他范围 opt-in 未执行；CLI 自身时间专用 / summary-only JSON 的实际原件证据不足；共享 Transport helper 的其他 B 使用尚待其 owner 整改；转写进行中的视频取消尚未实际验证。已验证的时间、自然同源版本、重复复用、重启与私有原件 HTTP 权限保持 PASS，未重新运行成功 ASR。完整产品 check / 浏览器 E2E / Windows ZIP 解压和发布由所属模块继续，V 保持模块功能及包支持。
+
+## 真实原生进程启动后取消
+
+SOURCE：`e9e5f52511ca44a947d39fff61fac098c6fbad74`，已普通 push。模块明确授权固定公开 BV 的新取消故障路径。
+
+`SummarizeOptions.ObserveMediaProcess` 是可选的本机回调，默认 nil；它复用固定上游 `setProcessObserver` / `spawnTracked` 的真实 PID 与退出事件，提供安全 kind/phase/pid/exitCode，以及原观察器实际提供的 progress 值，不改变公开 HTTP DTO。Go 使用标准 JSON Decoder，环境、命令参数、原始 stderr 和正文不进入回调。
+
+```text
+go test -mod=readonly -tags video_live ./internal/adapters/importers -run '^TestVideoNativeStartupCancellationHTTPProcessRestart$' -count=1 -v -timeout 8m
+go vet -mod=readonly ./internal/adapters/importers
+node --check internal/adapters/importers/summarize-media.mjs
+git diff --check
+```
+
+实际首次取消验证 PASS，18.73 秒 / 包 20.371 秒。专属 Go 子进程运行生产 Service、HTTP、SQLite、ObjectStore 和 Reader；在原上游观察器报告 whisper.cpp 实际 PID 启动后，父验证器通过原 HTTP CancelJob 取消真实 running 作业。真实进程记录为 Go 服务 `59100`、Node 桥接 `48580`、字幕 Node `54116`、yt-dlp `30252`、whisper `34604`；whisper 退出 1，Node 桥接退出 130。Windows 实际进程句柄 Wait 核实所有上述所属进程退出。
+
+独立新 Go 服务进程 `48172` 重开同库并运行原 worker / RecoverJobs；作业保持 cancelled / attempts=1 / 同 operation_id，没有材料或版本，普通重复导入复用同一取消作业，重启没有新提取进程。两次 Go HTTP 进程均实际退出，真实 SQLite 材料 / 版本 / 沉淀 / 候选为 0，作业为 1。没有 Agent 沉淀调用，也没有重做已成功转写。
+
+本机安全证据为 `.verification/video-cancel-first.log` 及 `.verification/video-cancel-first/owned-process-events.jsonl`、`go-service-1.log`、`go-service-2.log`、`state.sqlite` / `objects`；此前所有成功和首失败原件保持。
+
+转写中途进度证据仍 NOT_RUN：本机 whisper-cli 1.9.2 官方 `--print-progress` 回调通过 fprintf 输出文本；当前时间桥接没有可复用的结构化 native progress 出口。没有自行解析 stderr 或把定时器 / 任意输出标作转写开始，准确验收范围为实际 whisper 进程启动后的取消、清理和重启不续发。
