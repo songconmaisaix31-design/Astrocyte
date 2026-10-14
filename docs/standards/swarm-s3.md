@@ -1,6 +1,32 @@
 # Swarm S3 / S6 实施与实际验证
 
-## 第二阶段当前结果
+## 第三阶段当前结果
+
+Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`。SOURCE `e18c0965708e091b547ca2108579a4b3ca81b72c` 已普通 push，远端完整 SHA 一致。普通消费 S2 当前归属检查 SOURCE `80248d2c7177823d4535e7730453481426a27305` 和 B 的明确退回 policy SOURCE `c110201774dd61b8d7e5280526364786c6af4cc2`；直接编辑仍在本 Task 独占路径。以下各历史阶段保留当时的实际证据与限制。
+
+新增 `GET /api/v1/artifacts/{id}/diff?mission_id=...`，返回 schema_version、artifact_id、commit、base_commit、diff。只读取已提交 Artifact 的真实 Git diff 对象，检查对象 digest 与 UTF-8，按当前项目权限读取。新增 `POST /api/v1/artifacts/{id}/rejection`，正文为 metadata、mission_id、reason；使用独立 `reject_artifact` 人类权限、当前 Grant 和 Artifact CAS。人工退回保存真实审阅者、时间、原因，保留原 commit、对象、检查、采用以外的提交事实，进入 revision_needed 并计入无进展轮数。
+
+Mission 详情新增 executions，只从已存在 outbox 的 work_item_claimed、artifact_submitted、execution_blocked、execution_reconciled、artifact_revision_requested、artifact_accepted 构造原 operation 引用与事件链；没有创建新 Attempt 身份或调度器。绑定版本和不可变 context_packet_id 来自同事务的 S2 已授权绑定，保存在 Lease 与 Artifact。尚无真实工具事件适配时 tool_events_status 为 unsupported，空事件列表不表示实际使用工具为零。
+
+根据模块已确认的事务边界，AcceptArtifact 现在提交人类采用、WorkItem 状态及真实 artifact_accepted outbox，experience_id 为空，experience_status 为 pending。实际成功候选录入交 B 原经验应用负责人。受信任 consumer 可通过 `ReadAcceptedArtifactEvent` 读取真实不可变事件，`LinkAcceptedExperience` 必须使用真实 ExperienceCandidateReader 核候选版本、拥有项目、来源事件与 Artifact 后，幂等保存 candidate_created 引用；此链接不批准经验。上述两个内部端口没有 HTTP 构造入口，实际候选录入和后任务 approved 经验仍 NOT_RUN。完整构造函数现为 `NewSwarmService(repo, grants, members, evidence, ownership)`，五个依赖均须实际实现。
+
+根批准的公开 Go 验证项目已建在 `.verification/s3-public-stats`，独立本地受控 Git baseline 为 `da3bdddb085808863090a05f60cc1c64415039cf`，没有 GitHub remote。正确 Mean 基线支持空值/非有限值拒绝、正负/重复/极大有限输入与输入保持，实际 go test、go build、git diff --check 通过。目标为新增 Median 的真实有用功能，尚未实现 Median、没有启动两原生会话。本地首次在已指定工作目录后仍使用重复相对路径，gofmt 与 git init 路径错误；使用准确路径后运行通过。原生工具仍关闭，实际有效工具集合、外发目标和 working 条件缺证保持未决定/unknown。
+
+`NewSwarmGoProjectChecks(root, baseline, objects)` 只对明确根与 baseline 所属仓库执行固定 go test/build，执行前后重核当前 commit、跟踪与未跟踪输入；使用实际进程退出结果和实际起止时间，原 stdout/stderr 只通过对象引用保存。对其他仓库直接拒绝。提交同时保存 project_checks_ref；Git diff --check 与项目适用检查分别验证，原执行停止与分项 usage 必须先确认。可重现组件测试使用 `tests/s3/testdata/public-stats` 中相同的正确公开 Mean 源码、真实独立 Git 与实际 Go 工具，没有替代工具协议、模型或 API，也没有构造故意失败基线。
+
+| 第三阶段实际命令 | 结果与覆盖 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 -count=1` | PASS；固定策略和实际 S2 批准/两个连接 Mission 唯一、异输入冲突、重启、撤销拒绝 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1` | PASS；生产 registerSwarmS3、生产 session guard、实际 HTTP listener、真实 SQLite；未认证/无 CSRF 拒绝，真实 human 创建与重放、伪造 actor_type 拒绝、每个 timeline event_id 逐条定位真实 outbox、撤销启动拒绝、撤销后人类安全暂停，租约数保持零 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1` | PASS，5 项；原 4 项与真实固定 Go 检查回执、独立仓库拒绝 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o .verification/s3-build/astrocyte.exe ./cmd/server` | PASS；当前 Go 服务真实构建 |
+| `node scripts/check-architecture.mjs` | PASS，33 包 |
+| `git diff --check` / push / ls-remote | PASS |
+
+HTTP 结果属于本域生产路由组件与真实认证/存储组合；H 的 server/main 主服务装配、共享 Agent route policy、OpenAPI 与整个部署仍需 H 精确源码及实际验证。真实人工退回、diff 页面与执行历史的完整正路径需要真实提交；现阶段仅代码/编译完成，不能由 SQL 参数或空数组代替实际成果。两实际 Agent 的 Median 改进、原会话 resume、显式交接、未知在途对账、人工采用、真实候选与实际第二任务引用仍未通过。本 Task 继续执行，未发送 worker_done。
+
+## 第二阶段记录
 
 开发仍为 `task_da9aebf03f83` / `ctx_d4bf65ca06bf`，模块仍为 `task_b0197ca7ebdf` / `ctx_b1cd2e0a39aa`。第二阶段 SOURCE `3b78fd04dbf758e745e9880297ee1c2d6e58bfc2` 已普通 push，远端同值；准确消费共享 policy SOURCE `4725f0b1c6907ddefb3b1e1dac0f49840031db59`、S2 SOURCE `5d0ba735533f68259b91128dc404c8e4c2f2a535` 和 `507be52f4e31759dc8c3765aeea964f1f2efe013`。以下第一阶段记录保留当时结果。
 
