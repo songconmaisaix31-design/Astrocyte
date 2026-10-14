@@ -4,14 +4,14 @@
 
 本阶段 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324` / 实际终端 `term_ea9b6554-42cc-4569-ad5b-5f4140aec20d`，子 Run `run_aa4e6a119547`。固定工作树与原分支保持不变，接管 HEAD 为上一阶段独立 REPORT `6d16ab2143da2a6f15d63827f17d76e9c9419314`，工作树 clean。实际终端由 Orca `terminal show` 核实为 Codex / GPT-6.1-Sol high fast。当前仅写本文及 [今日运行记录](daily-operation-20261015.md)，业务代码、正式运行树与锁定协议保留原 owner。
 
-用户已要求现在推进四项语义修改、实际 CLI、今日采集和 L/S。四项语义及真实 CLI / Today 由 M-relay 管理原 R/H；B/F/T/V 与独立研究由 M-product 管理。今日采集范围和 L/S 含义尚待根收到用户答复；答复前只核真实锁、已发生运行、日输出 / 快照 / 覆盖和调度，不执行 capture、Sleep、模型或 judge。首个协调回执 `msg_ede8860188d6` 已送根 Run `run_973808dd6a2f`。
+用户已要求现在推进四项语义修改、实际 CLI、今日采集和 L/S。四项语义及真实 CLI / Today 由 M-relay 管理原 R/H；B/F/T/V、新S2/S3功能与独立逆向研究由 M-product 管理，科研S报告由本模块在原独占域恢复。根已明确S0–S6当前系列并行授权，working关键规则仍待用户。原V4持续授权的唯一automation已实际完成D1；本模块只诊断恢复其明确未提交的现有输入并核结果，不执行自己的capture、Sleep、模型或judge。首个协调回执 `msg_ede8860188d6` 已送根 Run `run_973808dd6a2f`。
 
 ### 本阶段一页执行计划
 
 | 轨道 | 固定工作树 / 写入范围 | 启动条件与验收 |
 |---|---|---|
 | 日采集只读预检 | 原正式工作树 `C:/Users/DW/orca/Astrocyte`；文件写入范围为空 | 唯一第三层 Task `task_2c8053c4f064` / Dispatch `ctx_7bba9154b03d` 已合法 succeeded / released / transcript captured。实际 projection Codex / gpt-6.1-sol，终端 high fast；锁与全文SHA一致、D1未执行 / 原00:20启用和重复风险已核。详情见今日运行记录。 |
-| D1结果独立只读验收 | 原正式工作树及已有外部根；文件写入范围为空 | 原唯一operator已实际产生60事件 / Sleep和12OK / judgeOK后，新第三层只读检查逐event_id真实正式库与日快照、coverage完整窗口 / 去重、12题臂与judge / 实际预算回执、用户表待填 / 预测未成熟。禁止capture / Sleep / 模型 / judge调用、任何写入或新输出；公开只报告派生计数及真实限制。 |
+| D1结果独立只读验收 | 原正式工作树及已有外部根；文件写入范围为空 | 新Task `task_562e59cee9db` / Dispatch `ctx_fee1ce8fd66a` / 终端 `term_653f6e58-e6de-4f88-b8a8-c44be0c950ea`，ready / turn_started / depth2 / 实际Codex gpt-6.1-sol / live。原operator已产生60事件 / Sleep和12OK / judgeOK；逐event_id真实正式库与日快照、coverage窗口 / 去重、实际预算回执 / 人评 / 预测核查继续。禁止任何日流程调用、写入或新输出，公开只报告派生计数。 |
 | I 唯一集成 | 待条件完成后创建独立 release 集成工作树 / 分支；只补少量路由、导入、配置、类型和集成报告 | 精确 SOURCE / 独立 REPORT、四项语义、完整默认、实际 native / Today 均通过后才启动。普通 `--no-ff`，领域失败交原 owner；check / build / 完整 workers=1 E2E 与适用链路通过后 push SOURCE 与独立 REPORT。 |
 | P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
 | N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
@@ -31,7 +31,8 @@ P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 
 | B 当前追加 | `072628536d325eedbb6b53ffe9ab8fc31c38beeb` | 独立 REPORT 尚待；产品报告 port0 / 实际API helper / 两布局 / auth-CSRF / SQL / occupied-port拒绝 / 重启阶段通过。前一 `4a6076c402e0b5d31982154a31a905bee6127477` / `7614b27e6084bf843f71a6b95082b91a7ca36ed9` 的远端同值 / 祖先 / 独立文档已核，保持其阶段范围。 |
 | V 当前追加 | `3485d7298bf9fe4e548e81768d81144493345c7d` | `8fc4434d1698c5dc51d84f45fff43fed931c869b`；产品报告普通消费B、PDF MIME、实际启动后取消18.73秒 / owned Go-Node-Whisper退出 / 同库重启不续发通过；default 39.945秒 PASS / 9既有SKIP，Node9PASS / 0SKIP，vet / build通过。小路径报告修订最终HEAD尚待；mid-ASR progress与实际CLI特定分支NOT_RUN，不提升为完整原生验收。 |
 | T 当前追加 | `61a012464a22d60ef421ea1fdaa5541ef65f1f7e` | `ef019bbf86f7a11d1a68e4fe2edf21230f48b5a3`；产品报告真实收藏100 / prefix110 / partial retry / 视频A-B-A阶段通过，Creator 实际不足 / 412 和旧模型 helper 未通过。 |
-| F 最终 | 尚待 M-product 提供最终完整 SHA | 原默认 203PASS / 41FAIL / 32SKIP / 4NOT_RUN 保留，未通过完整门禁；port0消费后适用复验继续。 |
+| F 当前阶段 | `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87` | `52a3deb06f4bce9d6b6997913a6266755de136ef`；模块独核远端同REPORT、SOURCE祖先与独立文档；port0单例和既有README GET-only两布局通过，模型0 / 工具有效集合UNKNOWN。原默认203PASS / 41FAIL / 32SKIP / 4NOT_RUN保持，最终门禁尚待。 |
+| 新S2/S3功能 | 当前由M-product安排无WIP精确域移交与新owner | SPEC当前系列已授权，核心未实现项与科研研究分别验收；精确终稿SOURCE / REPORT和实际全项结果尚待，不以Relay阶段或S研究通过替代。 |
 | R 四语义 / H port0及实际链路 | 尚待 M-relay 最终交付 | R `task_f082d8b36471` / `ctx_aa83ef2b5087`；H port0 `1aadeebaba2330bb8b786989f577415da5208fd5`、测试 `4f45a3ab50e6a2863b940915874374f58e65f1da` / REPORT `4f3efd63c3933a8d6efe6bc6068d70ae3eed2f59`；模块独核远端同 REPORT、祖先与独立报告文件。原 H Task 已合法阶段完成，M-relay 在同终端新 Task 续 v1.4，真实 native / Today 尚待。 |
 
 候选包 SOURCE `15f27f4a8e1e2300b8b1152cfd5b8e5f722db744`、33,768,080 bytes、124PASS 保持原验证范围；B / V 追加及 H port0 不在该包。最终 I 消费清单以各模块后来接纳的完整 SHA 和独立 REPORT 更新；阶段候选不会自动成为最终输入。M-relay 联络 `msg_a19ea95c69ad` 和 M-product 联络 `msg_da12f3a65d98` 已由 Orca 重定向到各自实际读取的子 Run，双方回执已收到。

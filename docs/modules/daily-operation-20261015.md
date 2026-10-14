@@ -59,3 +59,5 @@
 00:36:37安全状态已为12个STARTED / 12个OK；随后独立只读核12个题臂组合，未决STARTED组合0、重复STARTED0、重复终态0；日receipt有唯一STARTED / MODEL_VERIFIED / DAY_COLLECTED_CHECK_ARM_STATUSES。judge-scores保留1个STARTED与1个OK；user-sheet存在、user-scores尚不存在、prediction-scores未生成。原run仍dispatched，operator最后安全报告待收到；无需新模型或补填人评。根通知为 `msg_50b53c052ba9`。
 
 下一项为第三层唯一结果只读验收，write_paths为空：逐event_id在实际正式库 / 本日快照定位、单次Sleep与覆盖自然日 / 原锁、12题臂 / 独立judge / 实际预算 / 去重回执及人评 / 预测真实状态。只读成熟SQLite / 标准JSON，原始输入与响应留原根，输出仅派生计数；不得触发任何capture、Sleep、模型、judge、人工评分或预测。此检查与原operator分别拥有读取和执行范围，不构成第二operator。
+
+00:40:22公开原run `50ee3508-e5bc-4ace-8fae-4c652bea59da` 已实际completed / error=null；最后安全摘要可用且未截断。独立只读验收 Task `task_562e59cee9db` / Dispatch `ctx_fee1ce8fd66a` / 终端 `term_653f6e58-e6de-4f88-b8a8-c44be0c950ea` 已官方ready / turn_started / depth2，实际projection Codex / gpt-6.1-sol / live，逐事件与预算核查继续。正式HEAD已前进至 `51793cc651f28be2673e7f025e807a0b257b6d8c`，由验收人员核实际冻结域范围；模块管理文档只读路径明确为本独立模块树，不复制到正式树。根完成状态通知为 `msg_2c8b6be5bd45`。
