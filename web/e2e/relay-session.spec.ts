@@ -9,7 +9,7 @@ import type { CognitionToday } from '../src/api/cognitionTypes';
 type PublicFacts = {
   task_id: string; project_id: string; agent_name: string;
   registered_at: string; dispatched_at: string; events: RelayEvent[];
-  forbidden_canaries: string[];
+  forbidden_canaries: string[]; native_session_event_ids: string[];
 };
 type Observation = {
   origin: string; agent_name: string; registry_before: string[];
@@ -27,6 +27,7 @@ test.beforeAll(async () => {
   facts = JSON.parse(await readFile(expectedPath!, 'utf8')) as PublicFacts;
   observation = JSON.parse(await readFile(join(process.cwd(), 'test-results/l1-live/first-visible.json'), 'utf8')) as Observation;
   expect(facts.events.length).toBeGreaterThanOrEqual(2);
+  expect(facts.native_session_event_ids.length, '需要 H 从真实仓储 origin 正向确认原生来源的公开 ID').toBeGreaterThan(0);
   expect(facts.forbidden_canaries.length, '需要实际原生输入中的公开 canary 标记').toBeGreaterThan(0);
   expect(observation.origin).toBe(origin);
   expect(observation.agent_name).toBe(facts.agent_name);
@@ -95,7 +96,10 @@ test('actual registered native Session appears in the same Today URL within thre
   const elapsed = Date.parse(first!.first_visible_at) - Date.parse(facts.dispatched_at);
   expect(elapsed).toBeGreaterThanOrEqual(0);
   expect(elapsed).toBeLessThanOrEqual(180_000);
-  expect(first!.event_ids.some(id => facts.events.some(event => event.event_id === id))).toBe(true);
+  const fromRegistration = Date.parse(first!.first_visible_at) - Date.parse(facts.registered_at);
+  expect(fromRegistration).toBeGreaterThanOrEqual(0);
+  expect(fromRegistration).toBeLessThanOrEqual(180_000);
+  expect(first!.event_ids.some(id => facts.native_session_event_ids.includes(id))).toBe(true);
   const region = await enter(page);
   const registry = await read<{ agents: { name: string }[] }>(await page.request.get(`${origin}/api/v1/relay/agents`));
   expect(registry.agents.some(agent => agent.name === facts.agent_name)).toBe(true);
@@ -170,10 +174,10 @@ test('actual registered native Session appears in the same Today URL within thre
 test('actual Origin refusal hides previously authorized Session rows and fresh bootstrap reads recover', async ({ page }) => {
   const region = await enter(page);
   await expect(region.locator('tbody tr').filter({ hasText: facts.events[0].event_id })).toHaveCount(1);
+  const denied = await page.request.get(`${origin}/api/v1/relay/session-events`, { headers: { Origin: 'http://127.0.0.1:1' } });
+  expect(denied.status()).toBe(403);
   await page.setExtraHTTPHeaders({ Origin: 'http://127.0.0.1:1' });
-  const rejected = sessionResponse(page, {});
   await region.getByRole('button', { name: '只读刷新会话事件', exact: true }).click();
-  expect((await rejected).status()).toBe(403);
   await expect(region).toContainText('当前会话覆盖未知');
   await expect(region.locator('tbody tr')).toHaveCount(0);
   await page.setExtraHTTPHeaders({});
@@ -185,6 +189,7 @@ test('actual Origin refusal hides previously authorized Session rows and fresh b
 
 test('actual terminal API and task cards retain the observed three-value liveness and incomplete-session boundary', async ({ page }) => {
   await page.goto(`${origin}/workspace/works`);
+  await expect(page.locator('.relay-tasks > li').filter({ hasText: facts.task_id })).toBeVisible();
   const data = await read<{ tasks: RelayTaskView[] }>(await page.request.get(`${origin}/api/v1/relay/tasks`));
   const selected = data.tasks.filter(view => view.task.project_id === facts.project_id && view.terminal);
   expect(selected.length).toBeGreaterThan(0);
