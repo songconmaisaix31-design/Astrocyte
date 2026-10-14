@@ -44,7 +44,7 @@ type GrantCheck struct {
 func (g ApprovalGrant) Check(c GrantCheck, now time.Time) error {
 	if g.Status!="active" || !g.ExpiresAt.After(now) || !g.Stops.Deadline.After(now) { return WorkspaceError("approval_revoked","approval is revoked, expired or completed") }
 	if c.GrantID!=g.ID || c.Epoch!=g.Epoch || c.ProposalRevision!=g.ProposalRevision { return WorkspaceError("version_conflict","approval epoch or proposal revision changed") }
-	if c.ProjectID!=g.Scope.ProjectID || !slices.Contains(g.Scope.Actions,c.Action) || c.Concurrency<1 || c.Concurrency>g.Scope.MaxConcurrency { return WorkspaceError("scope_denied","protected action exceeds approved project, action or concurrency") }
+	if c.ProjectID!=g.Scope.ProjectID || !slices.Contains(g.Scope.Actions,c.Action) || c.Concurrency<0 || c.Concurrency>g.Scope.MaxConcurrency { return WorkspaceError("scope_denied","protected action exceeds approved project, action or concurrency") }
 	if !filepath.IsAbs(c.Root) { return WorkspaceError("scope_denied","protected root must be absolute") }
 	rootAllowed:=false
 	for _, root:=range g.Scope.Roots {

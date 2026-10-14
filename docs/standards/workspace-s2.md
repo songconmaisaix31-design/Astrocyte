@@ -36,6 +36,14 @@ Proposal 读 DTO 增加 grant_id，刷新页面可读取批准与撤销入口。
 
 SOURCE `5d0ba735533f68259b91128dc404c8e4c2f2a535` 普通 push 成功，独立 remote 查询相同 SHA。实际 SQLite 测试与架构检查通过；HTTP、资料访问拒绝、上下文真实快照与 native binding 的完整成功覆盖仍 NOT_RUN。Grant/成员/Goal 端口、ContextSnapshot 类型、提供者装配和准确 UI 字段已分别交 S3、B、H、S4 与 UI；下一项依赖为 B 的纯当前策略 `4725f0b1c6907ddefb3b1e1dac0f49840031db59` 和 H 的主 HTTP 装配。原架构与路径首次 RED 均保留。
 
+## 当前策略接入
+
+B `4725f0b1c6907ddefb3b1e1dac0f49840031db59` 已普通消费，S2 在同事务调用其 ValidateProjectActionScope 与 AuthorizeProjectActionCaller，批准内容逐项核现行项目动作/工具/CLI 外发许可。Grant.Check 接受实际零活跃账本操作，负数与超额仍拒绝；认领由 S3 在事务内提供实际当前租约数加本次需求。
+
+WorkspaceTransaction(ctx,db) 缺席时返回 nil,nil；同数据库返回已有连接；其他数据库明确错误，禁止据错误字符串猜测。B 的 Attention.WithTx 将消费这一准确接口后实现现资料端口在同事务复用；接入前资料当前权限事务复核保持 NOT_RUN。
+
+GET /goals 已提供最新固定版本的真实有权限列表。相同幂等键业务请求的新 request_id 不改变摘要，异业务输入仍冲突；首次 trace 重放 RED 保留 `idempotency-requestid-first.log`，修复后 `idempotency-requestid-second.log` PASS，实际库 `.verification/s2-first/actual-1414563108/state.sqlite`。HTTP 与 native/snapshot 成功仍按真实依赖保持 NOT_RUN。
+
 ## 第一阶段独立 REPORT
 
 SOURCE `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 普通 push 成功；独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。四个包 `go test -run '^$'` PASS，`git diff --check` PASS；两项均不代表业务验收。准确 SOURCE 已交 S3、H 和 UI，B 的 019 已交 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，下一步消费该迁移并运行真实 SQLite/HTTP。第一次 B SOURCE 通知出现 PowerShell 单引号参数错误，CLI 明确 invalid_argument，未投递；改正参数后继续交接，不将失败视为成功。
