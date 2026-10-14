@@ -81,6 +81,7 @@ func fixture(t *testing.T) (*Service, *sqlite.DB, *observedObjects) {
 	if err != nil {
 		t.Fatal("create owned test directory")
 	}
+	t.Logf("owned SQLite and object evidence directory=%s", dir)
 	db, err := sqlite.Open(filepath.Join(dir, "state.sqlite"))
 	if err != nil {
 		t.Fatal("open owned SQLite")

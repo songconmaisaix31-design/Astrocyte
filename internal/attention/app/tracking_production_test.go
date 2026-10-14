@@ -2,8 +2,11 @@ package app_test
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -12,6 +15,114 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
+
+func publicListing() *importers.PublicListing {
+	python := os.Getenv("ASTROCYTE_LISTING_PYTHON")
+	if python == "" {
+		python = filepath.Join(os.Getenv("LOCALAPPDATA"), "Astrocyte", "media", "yt-dlp-2026.08.19", "Scripts", "python.exe")
+	}
+	return importers.NewPublicListingReader(python)
+}
+
+func TestSavedFinalListingPageCompletesWithoutReader(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	_, db, objects := fixture(t)
+	reader := publicListing()
+	captureResponses(t, reader.Bilibili.Client)
+	folders, err := reader.ListCollections(ctx, "bilibili", "3494358764489275")
+	if err != nil {
+		t.Fatal("observe authorized actual public collections")
+	}
+	var chosen *SourceCollection
+	for i := range folders {
+		if folders[i].ItemCount != nil && *folders[i].ItemCount > 0 {
+			chosen = &folders[i]
+			break
+		}
+	}
+	if chosen == nil {
+		t.Fatal("actual final-page source prerequisite unavailable")
+	}
+	position := *chosen.ItemCount - 1
+	cursor := strconv.Itoa(position/20 + 1)
+	if position%20 != 0 {
+		cursor += fmt.Sprintf(":%d", position%20)
+	}
+	s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{ListingReader: reader, JobTimeout: 3 * time.Minute})
+	r, err := s.BindTrackingSource(ctx, human, BindTrackingSourceCommand{CommandMeta: meta("saved-bind", 1), Platform: "bilibili", SourceKind: "favorites", ExternalID: chosen.ExternalID, OwnerID: "3494358764489275", Locator: chosen.Locator})
+	if err != nil {
+		t.Fatal("bind approved actual listing")
+	}
+	// 只阻断完成事务，真实目录页先由生产 Service 持久化。
+	if _, err = db.Conn().Exec("CREATE TRIGGER attention_test_saved_page_failure BEFORE INSERT ON attention_outbox WHEN NEW.type='attention.job_succeeded' BEGIN SELECT RAISE(ABORT, 'owned completion writes refused'); END"); err != nil {
+		t.Fatal("restrict owned final-page completion")
+	}
+	queued, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("saved-final-page", r.Source.Version), Cursor: cursor})
+	if err != nil || len(queued.Jobs) != 1 {
+		t.Fatal("queue real final source window")
+	}
+	if _, err = s.ProcessNextJob(ctx); err == nil {
+		t.Fatal("owned completion restriction did not fail at its transaction")
+	}
+	job, err := s.GetJob(ctx, human, queued.Jobs[0].JobID)
+	if err != nil || job.Status != "running" || job.DeliveryUnknown {
+		t.Fatal("known completion obstruction lost real saved page")
+	}
+	var payload struct {
+		Done         bool
+		Count, Limit int
+		Seen         []string
+	}
+	if err = json.Unmarshal(job.Payload, &payload); err != nil {
+		t.Fatal("decode actual persisted final page")
+	}
+	if !payload.Done || payload.Count != 1 || payload.Limit != 100 || len(payload.Seen) != 1 {
+		code := "unknown"
+		if job.Error != nil {
+			code = string(job.Error.Code)
+		}
+		t.Fatalf("actual final-window prerequisite: done=%t count=%d limit=%d seen=%d code=%s", payload.Done, payload.Count, payload.Limit, len(payload.Seen), code)
+	}
+	if _, err = db.Conn().Exec("DROP TRIGGER attention_test_saved_page_failure"); err != nil {
+		t.Fatal("restore owned final-page completion")
+	}
+	var dbPath string
+	if err = db.Conn().QueryRow("SELECT file FROM pragma_database_list WHERE name='main'").Scan(&dbPath); err != nil {
+		t.Fatal("locate owned durable database")
+	}
+	if err = db.Close(); err != nil {
+		t.Fatal("close actual database before restart")
+	}
+	db, err = sqlite.Open(dbPath)
+	if err != nil {
+		t.Fatal("reopen actual saved-page database")
+	}
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Error("close reopened saved-page database")
+		}
+	})
+	s = NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{JobTimeout: 3 * time.Minute})
+	if err = s.RecoverJobs(ctx); err != nil {
+		t.Fatal("recover actual interrupted saved-page completion")
+	}
+	job, err = s.GetJob(ctx, human, job.JobID)
+	if err != nil || job.Status != "failed" || job.DeliveryUnknown {
+		t.Fatal("safe cached-page recovery changed delivery semantics")
+	}
+	if _, err = s.RetryJob(ctx, human, job.JobID, meta("saved-page-retry", job.Version)); err != nil {
+		t.Fatal("retry saved real final-page completion")
+	}
+	if _, err = s.ProcessNextJob(ctx); err != nil {
+		t.Fatal("complete durable page with no listing reader")
+	}
+	r, err = s.GetTrackingSource(ctx, human, r.Source.ID)
+	job, jobErr := s.GetJob(ctx, human, job.JobID)
+	if err != nil || jobErr != nil || job.Status != "succeeded" || r.Source.LastSuccessAt == nil || len(r.Items) != 1 || r.Items[0].Stale {
+		t.Fatal("durable real final page discarded or fetched again")
+	}
+}
 
 // 只验证人工绑定参数和持久化，不声称已读取这些配置对应的外部目录。
 func TestSourceIdentityAndPublicOnlyBinding(t *testing.T) {
@@ -43,11 +154,7 @@ func TestPublicTrackingSourceCapacity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 	_, db, objects := fixture(t)
-	python := os.Getenv("ASTROCYTE_LISTING_PYTHON")
-	if python == "" {
-		python = filepath.Join(os.Getenv("LOCALAPPDATA"), "Astrocyte", "media", "yt-dlp-2026.08.19", "Scripts", "python.exe")
-	}
-	reader := importers.NewPublicListingReader(python)
+	reader := publicListing()
 	s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{ListingReader: reader, MaxAttempts: 1, JobTimeout: 3 * time.Minute})
 	bound, err := s.BindTrackingSource(ctx, human, BindTrackingSourceCommand{CommandMeta: meta("public-bind", 1), Platform: "bilibili", SourceKind: "uploads", Locator: "3494358764489275"})
 	if err != nil {
@@ -80,5 +187,159 @@ func TestPublicTrackingSourceCapacity(t *testing.T) {
 	}
 	if countRows(t, db, "attention_materials") != 0 {
 		t.Fatal("metadata sync imported unselected bodies")
+	}
+}
+
+func TestPublicFavoriteSourceCapacity(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	reader := publicListing()
+	captureResponses(t, reader.Bilibili.Client)
+	folders, err := reader.ListCollections(ctx, "bilibili", "3494358764489275")
+	if err != nil {
+		t.Fatal("actual approved public collection metadata unavailable")
+	}
+	var chosen *SourceCollection
+	maxCount := 0
+	for i := range folders {
+		folder := &folders[i]
+		if folder.ItemCount != nil {
+			if *folder.ItemCount > maxCount {
+				maxCount = *folder.ItemCount
+			}
+			if *folder.ItemCount > 100 && chosen == nil {
+				chosen = folder
+			}
+		}
+	}
+	if chosen == nil {
+		t.Fatalf("approved public favorites cannot validate 100-item truncation: collections=%d max_items=%d", len(folders), maxCount)
+	}
+	t.Logf("approved public collection observation: folders=%d selected_items=%d", len(folders), *chosen.ItemCount)
+	_, db, objects := fixture(t)
+	s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{ListingReader: reader, MaxAttempts: 1, JobTimeout: 3 * time.Minute})
+	bound, err := s.BindTrackingSource(ctx, human, BindTrackingSourceCommand{CommandMeta: meta("public-favorite-bind", 1), Platform: "bilibili", SourceKind: "favorites", ExternalID: chosen.ExternalID, OwnerID: "3494358764489275", Locator: chosen.Locator})
+	if err != nil {
+		t.Fatal("bind observed approved public favorite folder")
+	}
+	queued, err := s.SyncTrackingSource(ctx, human, bound.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("public-favorite-sync", bound.Source.Version)})
+	if err != nil || len(queued.Jobs) != 1 {
+		t.Fatal("queue actual public favorite listing")
+	}
+	if _, err = s.ProcessNextJob(ctx); err != nil {
+		t.Fatal("process actual public favorite listing")
+	}
+	job, err := s.GetJob(ctx, human, queued.Jobs[0].JobID)
+	if err != nil || job.Status != "succeeded" {
+		code, action := "unknown", "unknown"
+		if job.Error != nil {
+			code, action = string(job.Error.Code), job.Error.RequiredAction
+		}
+		t.Fatalf("actual public favorite listing failed: status=%s code=%s action=%s", job.Status, code, action)
+	}
+	observed, err := s.GetTrackingSource(ctx, human, bound.Source.ID)
+	if err != nil || len(observed.Items) != 100 || !observed.HasMore {
+		t.Fatalf("actual public favorite capacity failed: observed=%d has_more=%t", len(observed.Items), observed.HasMore)
+	}
+	if countRows(t, db, "attention_materials") != 0 {
+		t.Fatal("public favorite metadata sync imported unselected bodies")
+	}
+	t.Logf("source_kind=favorites actual observed metadata=%d has_more=%t", len(observed.Items), observed.HasMore)
+}
+
+func TestStartupResumesCurrentFailureButNotSupersededFailure(t *testing.T) {
+	for _, superseded := range []bool{false, true} {
+		t.Run(fmt.Sprint(superseded), func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+			defer cancel()
+			_, db, objects := fixture(t)
+			reader := publicListing()
+			folders, err := reader.ListCollections(ctx, "bilibili", "3494358764489275")
+			if err != nil {
+				t.Fatal("read approved actual public final-page source")
+			}
+			var chosen *SourceCollection
+			for i := range folders {
+				if folders[i].ItemCount != nil && *folders[i].ItemCount > 0 {
+					chosen = &folders[i]
+					break
+				}
+			}
+			if chosen == nil {
+				t.Fatal("actual source prerequisite unavailable")
+			}
+			position := *chosen.ItemCount - 1
+			cursor := strconv.Itoa(position/20 + 1)
+			if position%20 != 0 {
+				cursor += fmt.Sprintf(":%d", position%20)
+			}
+			s := NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{ListingReader: reader, JobTimeout: 3 * time.Minute})
+			r, err := s.BindTrackingSource(ctx, human, BindTrackingSourceCommand{CommandMeta: meta("startup-bind", 1), Platform: "bilibili", SourceKind: "favorites", ExternalID: chosen.ExternalID, OwnerID: "3494358764489275", Locator: chosen.Locator})
+			if err != nil {
+				t.Fatal("bind approved public source")
+			}
+			if _, err = db.Conn().Exec("CREATE TRIGGER attention_test_startup_failure BEFORE INSERT ON attention_outbox WHEN NEW.type='attention.job_succeeded' BEGIN SELECT RAISE(ABORT, 'owned completion writes refused'); END"); err != nil {
+				t.Fatal("restrict owned completion transaction")
+			}
+			queued, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("old-failed-sync", r.Source.Version), Cursor: cursor})
+			if err != nil || len(queued.Jobs) != 1 {
+				t.Fatal("queue actual source window")
+			}
+			if _, err = s.ProcessNextJob(ctx); err == nil {
+				t.Fatal("actual completion restriction did not interrupt worker")
+			}
+			if _, err = db.Conn().Exec("DROP TRIGGER attention_test_startup_failure"); err != nil {
+				t.Fatal("restore owned completion")
+			}
+			var dbPath string
+			if err = db.Conn().QueryRow("SELECT file FROM pragma_database_list WHERE name='main'").Scan(&dbPath); err != nil {
+				t.Fatal("locate owned database")
+			}
+			if err = db.Close(); err != nil {
+				t.Fatal("close interrupted service database")
+			}
+			db, err = sqlite.Open(dbPath)
+			if err != nil {
+				t.Fatal("reopen interrupted service database")
+			}
+			t.Cleanup(func() { db.Close() })
+			s = NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), objects, ServiceOptions{ListingReader: reader, JobTimeout: 3 * time.Minute})
+			if err = s.RecoverJobs(ctx); err != nil {
+				t.Fatal("recover real interrupted job")
+			}
+			old, err := s.GetJob(ctx, human, queued.Jobs[0].JobID)
+			if err != nil || old.Status != "failed" || old.Error == nil || !old.Error.Retryable || old.DeliveryUnknown {
+				t.Fatal("actual safe interruption did not remain recoverable")
+			}
+			if superseded {
+				r, err = s.GetTrackingSource(ctx, human, r.Source.ID)
+				if err != nil {
+					t.Fatal("reload actual recovered source")
+				}
+				newer, err := s.SyncTrackingSource(ctx, human, r.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("newer-sync", r.Source.Version), Cursor: cursor})
+				if err != nil || len(newer.Jobs) != 1 {
+					t.Fatal("queue human-selected newer source operation")
+				}
+				if _, err = s.ProcessNextJob(ctx); err != nil {
+					t.Fatal("process actual newer source operation")
+				}
+				completed, err := s.GetJob(ctx, human, newer.Jobs[0].JobID)
+				if err != nil || completed.Status != "succeeded" || !completed.CreatedAt.After(old.CreatedAt) {
+					t.Fatal("actual newer operation did not complete after prior failure")
+				}
+			}
+			before := countRows(t, db, "attention_jobs")
+			if err = s.SyncSourcesOnce(ctx); err != nil {
+				t.Fatal("run production startup sync")
+			}
+			expected := before
+			if superseded {
+				expected++
+			}
+			persisted, err := s.GetJob(ctx, human, old.JobID)
+			if err != nil || countRows(t, db, "attention_jobs") != expected || persisted.Status != "failed" {
+				t.Fatal("startup replayed obsolete failure or suppressed current sync")
+			}
+		})
 	}
 }
