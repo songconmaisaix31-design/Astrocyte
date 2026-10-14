@@ -3,6 +3,7 @@ package httpapi
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -88,7 +89,10 @@ func repositoryContextQuery(r *http.Request, body repositoryContextCommand) (dom
 }
 
 func repositoryMapQuery(r *http.Request) (domain.RepositoryQuery, error) {
-	params := r.URL.Query()
+	params, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return domain.RepositoryQuery{}, invalid("repository map query encoding is invalid")
+	}
 	for key := range params {
 		switch key {
 		case "purpose", "root", "max_files", "max_bytes", "max_results", "max_depth":
