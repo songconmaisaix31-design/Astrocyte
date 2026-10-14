@@ -1,10 +1,10 @@
 # Relay 模块管理与验收
 
-业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md 和 [发布任务](../../tasks/Release-v0.1-20261014.md)。2026-10-14 用户已确认三层组织；本模块负责人只修改本文件，业务实现、测试、文档和返修由原 R/H 开发人员持续完成。
+业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md 和 [发布任务](../../tasks/Release-v0.1-20261014.md)。2026-10-14 用户已确认三层组织；总负责人最新授权模块负责人只修改本文件和新增 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)，业务实现、测试、文档和返修由原 R/H 开发人员持续完成。
 
-## 当前执行范围与 v1.4 草案
+## 当前执行范围与 v1.4 规格
 
-2026-10-14T15:12:47Z 总负责人传达用户调整：今晚停止新的 Relay 原生与 Today 验收；2026-10-15 按真实 CLI 端到端、三分钟 Today、L1 最终验收的顺序继续。15:19:11Z 总负责人核实前文只有四个优先方向，今晚交付具体规格草案，关键语义明天结合本稿确认。本节是待确认草案，没有冻结接口或改变业务代码。已完整读取[REA研究报告](../research/orca-rea-20261014.md)和主仓 `tasks/Works-Relay-v1.2.md`，并消费原 R 技术稿 REPORT `6cd44177ca8ff5b04ad9fbb90bf9729321cba9da`、原 H 技术稿 REPORT `c130e16d28011f36e9e96a2bf306585611b2fe7e`。
+2026-10-14T16:03:17Z 总负责人 `msg_0ba76f2d26c3` 转交用户最新授权：现在开始 v1.4 语义实现，验证通过后执行真实 CLI、今日采集并推进 L/S；此前停止新原生 / Today 的时间安排已被替代。完整唯一规格见 [v1.4任务](../../tasks/Works-Relay-v1.4.md)，本节记录模块分工和评审依据。关键 working 严格证据及缺少 started 客户端人工完成规则由总负责人询问用户，答案未到时保留现状态机，独立开发继续。已完整读取[REA研究报告](../research/orca-rea-20261014.md)和主仓 `tasks/Works-Relay-v1.2.md`，并消费原 R 技术稿 REPORT `6cd44177ca8ff5b04ad9fbb90bf9729321cba9da`、原 H 技术稿 REPORT `c130e16d28011f36e9e96a2bf306585611b2fe7e`。
 
 新 API17344 服务曾实际启动，H 核 agents0 / tasks0 / 无注册文件 / 无原生会话文件后正常关闭，服务检查 PASS60.32秒 / exit0；F 未启动17345网页或新 observer，confirm / model 均0。旧 scope 清理释放 HTTP200，operation `ccf54824-6194-4161-81c0-0d6985ee5171`；之后模块只读/query_only SQL 实际核 task released、revision2、Prepared=true、ActiveTaskID为空。服务已关闭后的模块独立 HTTP 检查连接拒绝，未重新启动来补验。旧目标验收不通过、read delivery_unknown、来源 nlink2 FAIL 和原三分钟 FAIL 保留。
 
@@ -16,7 +16,7 @@
 
 拟提供的安全读取内容为输入接收状态及时间、开始证据状态及时间、证据来源类型与固定原因。原输入、provider payload、原生路径和原文继续留在本机；具体字段和可接受开始证据枚举待总负责人确认，之后由 R/H 统一提交。
 
-关键待确认：working 是否严格要求明确开始证据。现 Claude 只有初始化、text和turn_completed，terminal只有cli_activity/Git；没有独立开始协议时拟保持accepted与开始unknown。原状态机只有working→done，这会阻止它们完成完整人工接力。明天必须同时确认这些客户端的开始证据和人工完成规则，不能自行增加accepted→done/released、从完成结果倒造turn_started或降低确认要求。Pi的实际agent_start只能表达该客户端的开始，不生成Codex turn身份。
+关键待确认：working 是否严格要求明确开始证据。现 Claude 只有初始化、text和turn_completed，terminal只有cli_activity/Git；没有独立开始协议时拟保持accepted与开始unknown。原状态机只有working→done，这会阻止它们完成完整人工接力。总负责人正在同时确认这些客户端的开始证据和人工完成规则，不能自行增加accepted→done/released、从完成结果倒造turn_started或降低确认要求。Pi的实际agent_start只能表达该客户端的开始，不生成Codex turn身份。
 
 真实验收：对一次新的受控公开输入核 input 接收、实际 turn 开始与 UI working 的时间和关系；只有输入接受及 Git 活动时仍为 accepted。同 operation 并发只执行一次；实际断连、进程终止和服务重启后的未知保持占用，不能产生第二模型提交。最后先核合法输出满足固定目标，再人工 done。
 
@@ -58,7 +58,7 @@
 
 R继续独占现有领域状态、应用服务、relay store及native/terminal drivers；H继续独占实际来源、私有游标、HTTP与OpenAPI；必要前端展示和动作条件直接交产品模块的原F，依赖仍由B持有。模块只维护本稿，接口共同部分由R定义后给H精确SOURCE，不安排同文件并发人员。
 
-明天先确认四项具体证据规则与安全字段，再由原R实现并提交SOURCE/独立REPORT，原H普通消费并完成来源/HTTP契约，原F消费准确契约实施UI。随后按真实CLI端到端、三分钟Today、L1最终验收执行；三分钟起点使用当次真实登记时间，observer须先ready。今晚的规格和静态构建结果不能代替这些实际验收，完整默认浏览器和实际Windows包原生测试仍待对应精确最终组合。
+原R已经开始实现明确授权的独立事实逻辑，待答部分在答案到达后由同 owner 连续实施并提交SOURCE/独立REPORT；原H先完成 port0 阶段，再消费精确语义SOURCE完成来源/HTTP契约，原F消费准确契约实施UI。随后按真实CLI端到端、三分钟Today、L1最终验收执行；三分钟起点使用当次真实登记时间，observer须先ready。规格和静态构建结果不能代替这些实际验收，完整默认浏览器和实际Windows包原生测试仍待对应精确最终组合。
 
 ## 身份与分工
 
@@ -69,7 +69,7 @@ R继续独占现有领域状态、应用服务、relay store及native/terminal d
 
 | 开发人员 | 固定工作树 / 分支 | 独占写域 | 调度状态 |
 |---|---|---|---|
-| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | `task_d480ceaf0e15/ctx_1f88d9e6f4f4` 已 succeeded 结算，REPORT `6cd44177ca8ff5b04ad9fbb90bf9729321cba9da`；按总负责人固定 owner 明日继续的指令 retained，processAction none；原 `term_6ffbc768-d919-4bcf-bb28-d43e4e250e42` 保留，旧邮箱不接新任务 |
+| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | 原 `task_d480ceaf0e15/ctx_1f88d9e6f4f4` 已 succeeded 结算并 retained；最新授权下官方复用原 `term_6ffbc768-d919-4bcf-bb28-d43e4e250e42` 新建 `task_f082d8b36471/ctx_aa83ef2b5087`，ready / turnStart observed，16:04:22Z R实际开始，无残留资源 |
 | H | `works-relay-http` / `songconmaisaix31-design/works-relay-http` | `internal/adapters/events/relay*.go`、`cmd/server/relay*.go`、`internal/adapters/httpapi/relay*.go`、`internal/workbench/app/relay*.go`、`internal/adapters/sqlite/access_session*.go`、`contracts/openapi.yaml` 与 relay examples、`docs/access/http.md`；必要 `cmd/server/main.go` / `internal/adapters/httpapi/server.go` 组装 | 原 `task_cfb7c9bde07d/ctx_312d983772a9` failed 已由总负责人接收并交接 idle 原终端；当前子 Run 新 Task `task_abf1f8b1e12e/ctx_d7d8c2828fba`，原 `term_7a9d814a-d487-4dc3-9708-f6bdc5e1479d`，官方启动 ready / turnStart observed，无残留资源；只实施获准的非原生 HTTP 依赖 |
 
 依赖单归 B，H 不修改 `cmd/server/config.go` 或 B 的 `cmd/server/workbench_config_test.go`。总负责人 2026-10-14T13:13:29Z 明确增加 H 的 `cmd/server/workbench_config.go` 单文件薄接口写域，只消费 B 已交精确 Reader 接口，默认无私人正式源路径、保留只读和路径保护；Reader / contracts / config.go 均仍由 B 独占。F `ctx_5bac511ada08` 是当前实际产品页面唯一操作人；B `ctx_7217777c7bf5` 接收真实公开来源、生产入口及普通库存测试迁移 Handoff。产品负责人终端协调子 Run `run_dbf1a68bc692`，其 Dispatch 地址由 CLI 正常转交到该 Run；原发布负责人 `ctx_376d222c774b` 已 completed，通知返回 `dispatch_inactive`，已交总负责人转当前集成发布负责人，不继续投递旧邮箱。
@@ -78,13 +78,14 @@ R继续独占现有领域状态、应用服务、relay store及native/terminal d
 
 1. 今晚 H 完成获准的非原生依赖：Go 实际服务一次绑定端口 0 并持续持有同一 listener，提供真实地址给 B 的 `tests/s1/server.mjs`；实际 Origin / CSRF 按真实地址验证。端口预占释放、自动重试、系统排除端口修改和伪造服务均不得作为实现。
 2. H 核实并冻结 `cmd/server/workbench_config.go` 的精确 SOURCE，B 通过编辑工具原样消费；B 回报内容一致和停止修改后归还 H 写域。H 不修改 B 的测试、配置或依赖。源码和独立 REPORT 普通 push 后及时给 B/F 与当前集成负责人；只读精确 Reader overlay 的组合检查和 H 单树旧 Reader 失败分别记录。
-3. 模块提交独立 REPORT 核本次 SOURCE `3d451c614b24fbf0c95eadc20a01b812817d0ab8` 的 v1.4 草案、文档链接、所有权与派发证据。今晚继续支持获准的非原生组合和 Windows x64 包，新的 Relay 原生 / Today 测试暂停。
-4. 明天由总负责人确认关键语义后，同原 R/H 工作树、分支和互斥写域恢复开发；随后按本稿的真实 CLI、三分钟 Today、L1 顺序实施全部核心路径，准确 SOURCE / REPORT 和真实结果交最终集成人员。原登记、首失败和 unknown 保留；最终 GitHub Release 由总负责人接收具体结果后发布。
+3. 模块具体规格与独立 REPORT 继续普通提交。R先实现不依赖待答的四项领域事实；严格 working 和无开始客户端完成规则按用户答案修订。同原 R/H 工作树、分支和互斥写域连续开发，语义源码及组合检查通过前不启动新的模型。
+4. 产品协调原F唯一实际窗口；按 [v1.4任务](../../tasks/Works-Relay-v1.4.md) 的真实 CLI、三分钟 Today、L1 顺序实施全部核心路径，准确 SOURCE / REPORT 和真实结果交最终集成人员。原登记、首失败和 unknown 保留；最终 GitHub Release 由总负责人接收具体结果后发布。
 
 只有总负责人明确接收旧 worker_done 并交接已核实终端，才在子 Run 复用同一开发人员、终端、工作树和分支派下一任务。不得中断活跃人员、重复创建同写域写入者或向 completed Dispatch 投递新开发任务。
 
 ## 当前证据与第一失败
 
+- 新用户授权下原 R 官方复用新 Task `task_f082d8b36471` / Dispatch `ctx_aa83ef2b5087`，request `07392566-ed13-4499-a603-fb26d228c531`、generation32、退出0、ready / turnStart observed / residualResources空。R 自主 `msg_15ba94c0881f` 于16:04:22Z确认 actual turn_started；模块回执 `msg_196b151fda69` 已给总控，产品 `msg_cfdfe8a2e0a2` 协调F窗口，H `msg_955fb71dcfa9` 继续先完成自身唯一port0阶段。R `msg_5e095ca7d68f` 明确沿既有 JSON 事务记录真实事实，private controller / session / CWD另留内部wire，未发布依赖待答的新HTTP DTO，未改portable证据口或sourceguard，零新模型。
 - 模块本阶段 SOURCE `3d451c614b24fbf0c95eadc20a01b812817d0ab8` 已普通 push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/module-relay-20261014` 返回同值。`git merge-base --is-ancestor d16e651969e717ac6a8cddf0a3da2bd4e6c176c2 3d451c614b24fbf0c95eadc20a01b812817d0ab8` 退出0，普通历史包含获准根文档交接；本 REPORT 只修改模块管理文件。`git diff --check` 退出0，逐本地 Markdown 目标 `Test-Path -LiteralPath` 得到 `Document links: 2 PASS`。以上验证覆盖管理草案、链接和派发事实，H port0 实现、B/F实际消费及最终产品验收分别继续执行。
 - 总负责人 `msg_3db49cd4739e` 正式确认唯一新 H 继续由本模块管理，之前的临时接管指令停止适用；产品只消费 SOURCE 和安排 B/F 检查。发布模块本晚合法阶段已完成并 released，当前没有新发布 Dispatch，后续 H 精确 SOURCE / REPORT 仅交总负责人和产品留存，明日新集成发布人员消费；不投递旧发布邮箱。日期进入2026-10-15不改变当前停止新模型和原生 / Today 窗口的授权范围。
 - 2026-10-14T15:50:25Z 总负责人正式转交 `msg_a7fe946c9a9d`，并以 `msg_1e1e5256e86a` 要求优先解除 B/F 等待；原 Question `msg_518249e76560` 已回答，reply `msg_a37f1d774089`。模块完整消费 FIFO `delivery_9707b63a9780` 并 ACK，不重复等待旧问题。原 H failed SOURCE `b6c67e91555522b3d7515d405c4c69a93d0e0bc8` / REPORT `c130e16d28011f36e9e96a2bf306585611b2fe7e` 的精确远端、clean、idle 和资源交接由总负责人核实并接收。
