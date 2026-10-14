@@ -8,7 +8,7 @@
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if (-not [Environment]::Is64BitOperatingSystem -or $env:OS -ne 'Windows_NT') {
+if (-not [Environment]::Is64BitOperatingSystem -or [Environment]::OSVersion.Platform -ne 'Win32NT') {
     throw 'Windows x64 build host required.'
 }
 $repo = Split-Path $PSScriptRoot -Parent

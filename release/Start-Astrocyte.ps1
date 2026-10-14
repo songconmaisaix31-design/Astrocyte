@@ -18,7 +18,7 @@ $web = Join-Path $PSScriptRoot 'web'
 if (-not (Test-Path -LiteralPath $binary -PathType Leaf) -or -not (Test-Path -LiteralPath (Join-Path $web 'index.html') -PathType Leaf)) {
     throw 'Extract the complete Windows ZIP before starting.'
 }
-if ($env:OS -ne 'Windows_NT' -or -not [Environment]::Is64BitOperatingSystem) { throw 'Windows x64 required.' }
+if ([Environment]::OSVersion.Platform -ne 'Win32NT' -or -not [Environment]::Is64BitOperatingSystem) { throw 'Windows x64 required.' }
 if (($SummarizeCli -eq '') -ne ($NodeExecutable -eq '')) { throw 'SummarizeCli and NodeExecutable must be supplied together.' }
 $data = [IO.Path]::GetFullPath($DataDir)
 if ($data -eq [IO.Path]::GetPathRoot($data)) { throw 'DataDir must be a dedicated application directory.' }
