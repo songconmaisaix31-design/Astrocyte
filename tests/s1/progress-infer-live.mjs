@@ -1,16 +1,15 @@
-// One authorized real Codex project-progress inference over the real Astrocyte
-// worktree's existing maintained task document. This is a single paid model
-// turn, never replayed; it reads no personal history and fabricates no TASK.md.
-//
-// Usage:
-//   node tests/s1/progress-infer-live.mjs
+// 对本工作树实际公开 README 执行一次 Codex 推断，并核对 HTTP、SQLite 与重启。
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { stat } from 'node:fs/promises';
+import { join } from 'node:path';
 import { startS1Server } from './server.mjs';
 import { humanAPI } from './api.mjs';
 
 const realRoot = process.cwd();
-const files = ['tasks/S1-final-W2.md'];
+const files = ['README.md'];
+const inputStat = await stat(join(realRoot, files[0]), { bigint: true });
+const expectedVersion = `mtime:${inputStat.mtimeNs};size:${inputStat.size}`;
 
 const server = await startS1Server();
 let primaryError;
@@ -25,17 +24,17 @@ try {
     expected_revision: 1,
     settings: {
       allow_directory: true,
-      allowed_subdirs: ['tasks'],
+      allowed_subdirs: files,
       external_model_cli: 'codex',
       allowed_actions: ['start', 'stop', 'read_context', 'send', 'observe', 'discover', 'resume', 'reconcile'],
     },
   }, { method: 'PUT' });
 
-  // Observe the Codex native configuration (empty session + owned stop, no model turn).
+  // 实际探测空会话并确认停止，推断仅使用当前配置。
   const probe = await api.write(`/local-projects/${id}/sessions/probe`, { cli: 'codex' });
   assert.ok(probe.session.stop_confirmed, 'probe must confirm owned Codex stop');
 
-  // One real model turn. Operation identity is the Idempotency-Key header (a UUID).
+  // 操作身份来自 Idempotency-Key；未知交付保留原件且不重发。
   const op = randomUUID();
   const response = await fetch(`${server.apiURL}/api/v1/local-projects/${id}/progress/infer`, {
     method: 'POST',
@@ -57,9 +56,13 @@ try {
   assert.ok(progress.model, 'real infer must report the actual model');
   assert.ok(progress.observed_at, 'real infer must carry a real observed time');
   assert.ok(progress.evidence.length > 0, 'real infer must carry file evidence');
-  assert.ok(progress.evidence.every(e => e.source_path === 'tasks/S1-final-W2.md' && e.version), 'evidence must name the real file with its version');
+  assert.ok(progress.evidence.every(e => e.source_path === files[0] && e.version === expectedVersion), 'evidence must name the actual README version');
+  const persisted = JSON.parse(server.query('SELECT data FROM local_project_progress WHERE project_id=?', id)[0].data);
+  assert.equal(persisted.source, 'agent_inferred');
+  assert.equal(persisted.native_id, progress.native_id);
+  assert.deepEqual(persisted.evidence, progress.evidence);
 
-  // Durable: fresh API process re-reads the persisted inference (no new model turn).
+  // 新 API 进程读取已有推断，保持原 native_id 与来源版本。
   await server.restart();
   api = await humanAPI(server.apiURL);
   const refetched = await api.get(`/local-projects/${id}/progress`);
