@@ -61,13 +61,17 @@ structured 接入必须取得本次 owned 控制器的初始化和正确会话�
 
 fork 需要实际 provider 支持、明确父关系和适用授权。当前不支持的 fork 明确拒绝，不用新的普通会话填入成功 fork 关系。跨 Agent handoff 在已安全释放的中性工作区创建新 session，记录原会话与人工上下文交接关系，显示实际模式和身份变化。
 
+handoff 沿原 CreateIntent 增加可选 `HandoffFromTaskID` 和 `HandoffContextConfirmed`，表示操作者明确声明原任务和已经核查的人工上下文交接。两者成对校验：缺原任务却确认、给原任务却未确认、原任务不存在 / 未 released / pending非零 / 未核退出 / 跨project或worktree / Agent未变化均立即拒绝。原intent继续核human、当前权限与settings revision，前任务仅限当前操作者允许观察的同域历史。省略两者保持new；不能仅凭同工作区上一released任务推导confirmed handoff。
+
+人工声明与新执行者真实归属分别确认。handoff关系绑定准确原task、本次实际dispatch operation及新owned provider session结果；缺少session确认时执行证据仍unknown。F通过原界面明确取得人工交接确认，不自动勾选；H负责准确DTO / OpenAPI，R交精确领域SOURCE后消费。上述衔接属于已经授权的身份关系实现，不决定待答working或人工done迁移。
+
 每次新的控制器或采集连接关联自身启动 / 恢复 operation。新的序号空间不能冒充旧游标的继续位置；旧连接事件不得更新新会话 live。服务重启、原生状态丢失和身份冲突分别保留真实未确认状态，不自动创建第二执行者。
 
 旧记录缺少的关系、归属、初始化或消费证据保持 unknown。读取旧数据不能补造成功时间、控制器身份或原生开始事件。必要存储兼容只作用于 Relay 自身 store，冻结的认知 schema / engine / mapper / weights 不变。
 
 ## 5. HTTP、前端与证据边界
 
-沿现有 Relay HTTP、OpenAPI、生成类型和前端动作入口增加明确已决定的安全派生内容。session-events 继续精确六字段；不追加原生文件名、CWD、原生 payload 或凭据。内部私有证据与公开 DTO 分别映射，公共响应只含允许的 task/session 引用、安全状态、时间和固定原因。
+沿现有 Relay HTTP、OpenAPI、生成类型和前端动作入口增加明确已决定的安全派生内容。session-events 继续精确 `event_id / kind / topic / tokens / scope / ts` 六字段；不追加原生文件名、CWD、原生 payload 或凭据。内部私有证据与公开 DTO 分别映射，公共响应只含允许的 task/session 引用、安全状态、时间和固定原因。
 
 HTTP / UI 不执行额外模型调用来获取 ready 或修补未知结果。F 继续作为唯一真实产品界面操作者，通过现有 HTTP 执行 confirm / send / read / stop / done / release / 409；H 只核原档、SQLite、HTTP契约和来源覆盖，不另起 CLI 或复现 F 的任务。
 
@@ -81,7 +85,7 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 |---|---|---|
 | 模块负责人 | module-relay-20261014 / songconmaisaix31-design/module-relay-20261014 | 只写本文与 docs/modules/relay.md，管理开发、语义决定和实际验收 |
 | 原 R | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native / terminal adapters 的证据和关系；当前 task_f082d8b36471 / ctx_aa83ef2b5087 |
-| 原 H | works-relay-http / songconmaisaix31-design/works-relay-http | 当前 task_abf1f8b1e12e / ctx_d7d8c2828fba 先完成 port0 / helper 阶段；同 owner 后续处理来源、HTTP、OpenAPI 与实际采集 |
+| 原 H | works-relay-http / songconmaisaix31-design/works-relay-http | port0阶段 task_abf1f8b1e12e / ctx_d7d8c2828fba 已 succeeded 结算；当前同终端新 task_3004b636a3ab / ctx_e1a8ebeeea83 处理来源、HTTP、OpenAPI 与实际采集 |
 | 原 F / B | 由产品负责人持续管理原树 / 分支 | F 消费准确契约并独占 UI 操作；B 独占依赖、config.go、普通后端与 tests/s1 helper |
 
 原 H 的 port0 阶段先完成真实验证和 SOURCE / 独立 REPORT；既有活跃人员不中断，不安排第二 H。同 owner 连续任务或合法结算交接后的新 Task 仍保持原树、分支、终端及写域。源码接口未精确交付前，消费者不采用 WIP；领域问题交原 owner，集成人员只补必要薄组装。
@@ -93,7 +97,7 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 | 阶段 | 实际检查 | 当前状态 |
 |---|---|---|
 | 语义领域实现 | 唯一执行权与重复操作；独立输入 / 开始 / 人工完成事实；初始化 / 消费分别记录；真实归属和关系拒绝；旧记录 unknown；权限版本与撤销 | IMPLEMENTING，待 R 精确 SOURCE / REPORT |
-| HTTP 与 UI 组合 | 正确生成契约、六字段、安全错误；真实 SQLite / HTTP 与权限；F 展示和操作；port0地址与Origin / CSRF / 关闭 | port0 SOURCE 已交，其真实验证继续；v1.4组合 NOT_RUN |
+| HTTP 与 UI 组合 | 正确生成契约、六字段、安全错误；真实 SQLite / HTTP 与权限；F 展示和操作；port0地址与Origin / CSRF / 关闭 | port0真实SQLite / HTTP / CSRF / 关闭独立通过，B/F实际helper消费继续；v1.4组合 NOT_RUN |
 | 单次真实 CLI | 新公开 scope、准确 owned 控制器、自有 DB、工具关闭、一次明确输入；初始化、接受、开始、结束与人工目标分开；源码通过后执行 | NOT_RUN |
 | 三分钟 Today | F observer 先 ready，无登记基线；H一次真实登记并保存原始起点；每 native event_id 逐 SQLite 核；实际六字段 HTTP 与两尺寸 firstDOM 时间 | 新窗口 NOT_RUN，旧591116 / 591117毫秒 FAIL保留 |
 | 生命周期全部核心路径 | 实际 EOF / structured、互斥 / 重复 / 通用冲突、working、unknown send、合法目标完成与释放、alternate / previous、publication error；真实拒绝不制造假状态 | 未满足项 NOT_RUN / FAIL，旧默认203PASS / 41FAIL / 32SKIP / 4NOT_RUN保留 |
