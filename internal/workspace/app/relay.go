@@ -445,6 +445,7 @@ func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd Re
 		}
 		return v, receiptError(r)
 	}
+	var project domain.LocalProject
 	validate := func() error {
 		if strings.TrimSpace(cmd.Task) == "" || len(cmd.Task) > 64*1024 {
 			return relayError(apierrors.ValidationFailed, "bounded nonempty task description required")
@@ -452,7 +453,8 @@ func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd Re
 		if _, e := s.spec(cmd.Agent); e != nil {
 			return e
 		}
-		_, _, e := s.work(ctx, c, cmd.WorkID, cmd.ProjectID)
+		_, p, e := s.work(ctx, c, cmd.WorkID, cmd.ProjectID)
+		project = p
 		return e
 	}
 	if e := validate(); e != nil {
@@ -461,7 +463,7 @@ func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd Re
 	}
 	id := uuid.NewString()
 	err = s.store.Update(ctx, func(st *RelayState) error {
-		t := domain.RelayTask{ID: id, WorkID: cmd.WorkID, ProjectID: cmd.ProjectID, Agent: cmd.Agent, Description: cmd.Task, PermissionLevel: "A", CreatedAt: s.now()}
+		t := domain.RelayTask{ID: id, WorkID: cmd.WorkID, ProjectID: cmd.ProjectID, Agent: cmd.Agent, Description: cmd.Task, PermissionLevel: RelayPermissionLevel(project.Settings), SettingsRevision: project.Settings.Revision, CreatedAt: s.now()}
 		s.move(st, &t, domain.RelayReady, relayActor(c))
 		r.TaskID = id
 		r.Status = "accepted"
@@ -505,11 +507,12 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 	if err != nil {
 		return reject(err)
 	}
+	if v.Task.SettingsRevision != p.Settings.Revision || v.Task.PermissionLevel != RelayPermissionLevel(p.Settings) {
+		return reject(relayError(apierrors.ApprovalRevoked, "project permission changed; review a new intent"))
+	}
 	if cmd.ProjectSettingsRevision != p.Settings.Revision || cmd.PermissionLevel != RelayPermissionLevel(p.Settings) {
 		return reject(relayError(apierrors.VersionConflict, "permission confirmation does not match current project settings"))
 	}
-	v.Task.PermissionLevel = cmd.PermissionLevel
-	v.Task.SettingsRevision = cmd.ProjectSettingsRevision
 	if _, err = s.permission(ctx, c, v.Task, "start"); err != nil {
 		return reject(err)
 	}
@@ -547,8 +550,6 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		workspace.ActiveTaskID = id
 		st.Workspaces[workspaceID] = workspace
 		t.WorktreeID = workspaceID
-		t.PermissionLevel = cmd.PermissionLevel
-		t.SettingsRevision = cmd.ProjectSettingsRevision
 		st.Tasks[id] = t
 		st.PendingActions[id] = r.ID
 		return nil
