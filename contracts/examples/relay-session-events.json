@@ -11,6 +11,7 @@
   ],
   "coverage": [
     {
+      "source": "archive",
       "task_id": "cf1497b0-e092-43c0-80a9-33449bb57a40",
       "terminal_id": "c48d6c05-3b58-4bdc-8a7b-46a471612a0b",
       "worktree_id": "0623c675-ddb7-4d62-bd02-831f6cb6d51d",

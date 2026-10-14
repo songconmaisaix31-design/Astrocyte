@@ -35,7 +35,7 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 	}
 	sink := events.NewRelayEventSink(attention.NewPendingEventService(sqlite.NewEventRepository(db)), nil)
 	neutral := relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: false})
-	structured := agents.NewRelayNativeDriver(registry)
+	structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: true})
 	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{})
 	runtime := workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window, OwnedRoots: agents.RelayOwnedRoots{}})
 	owned, ok := runtime.(workspace.RelayOwnedSessionReader)

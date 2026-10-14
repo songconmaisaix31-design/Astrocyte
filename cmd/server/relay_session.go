@@ -54,6 +54,8 @@ func relayCaptureBinding(v domain.RelayOwnedSession) events.RelaySessionBinding 
 
 func sessionPublicGap(code string) string {
 	switch code {
+	case "native_source_not_finalized", "native_prefix_unverified", "native_source_unverifiable", "native_sequence_invalid", "native_sequence_gap", "native_source_error", "invalid_native_record", "source_extent_unsupported", "native_notification_source_not_armed", "native_start_metadata_decode_failed", "native_start_identity_mismatch", "native_notification_method_invalid", "native_notification_params_invalid", "native_notification_cwd_mismatch", "native_notification_identity_unverified", "native_notification_before_start_identity", "native_notification_semantics_unknown", "native_notification_after_close_or_capacity", "native_token_usage_invalid", "native_stream_ended_without_shutdown_ack", "native_resume_raw_events_unavailable", "native_shutdown_ack_unavailable", "native_reader_end_unconfirmed":
+		return code
 	case "archive_metadata_unavailable", "archive_metadata_unsupported", "archive_metadata_unverifiable", "archive_metadata_identity_unverified", "archive_metadata_path_unavailable":
 		return code
 	case "", "archive_not_selected", "binding_not_recorded", "permission_denied", "workspace_identity_changed", "workspace_unavailable", "session_ownership_unverified", "session_identity_changed", "archive_identity_changed", "prefix_unverified", "append_only_unverified", "source_not_finalized", "exit_unverified", "capture_pending", "unknown_records", "checkpoint_unavailable", "checkpoint_save_unknown", "admission_unknown", "malformed_json", "closed_incomplete_tail", "session_header_unverifiable", "session_or_cwd_changed", "source_replaced", "source_truncated", "checkpoint_binding_mismatch", "source_changed_during_read", "selection_denied", "capture_cancelled", "header_read_failed", "source_read_failed", "source_identity_unverifiable_or_aliased", "source_open_failed", "source_not_regular", "checkpoint_invalid", "checkpoint_not_line_boundary":
@@ -64,13 +66,21 @@ func sessionPublicGap(code string) string {
 }
 
 func coverageFor(v domain.RelayOwnedSession) workbench.SessionCoverage {
-	return workbench.SessionCoverage{TaskID: v.TaskID, TerminalID: v.TerminalID, WorktreeID: v.WorktreeID, ProjectID: v.ProjectID, Status: "unknown", Gap: sessionPublicGap(v.Gap)}
+	source := "unknown"
+	if v.SourceStatus == "available" && v.ArchiveFormat != "" {
+		source = "archive"
+	}
+	return workbench.SessionCoverage{Source: source, TaskID: v.TaskID, TerminalID: v.TerminalID, WorktreeID: v.WorktreeID, ProjectID: v.ProjectID, Status: "unknown", Gap: sessionPublicGap(v.Gap)}
 }
 
 func (c *relaySessionCollector) ObserveOwned(ctx context.Context) error {
 	bindings, err := c.owned.ListOwnedRelaySessions(ctx)
 	if err != nil {
 		return errors.New("session ownership read unavailable")
+	}
+	nativeSources, err := c.nativeSources(ctx)
+	if err != nil {
+		return err
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -82,6 +92,12 @@ func (c *relaySessionCollector) ObserveOwned(ctx context.Context) error {
 			return ctx.Err()
 		}
 		if v.Gap == "permission_denied" || v.Gap == "binding_not_recorded" {
+			continue
+		}
+		if native, ok := nativeSources[v.TaskID]; ok && (native.SourceStatus == "available" || c.entries[v.TaskID].Native != nil) {
+			if err := c.observeNative(ctx, native); err != nil {
+				return err
+			}
 			continue
 		}
 		if v.SourceStatus != "available" {
@@ -172,6 +188,10 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 	if err != nil {
 		return view, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable}
 	}
+	nativeSources, err := c.nativeSources(ctx)
+	if err != nil {
+		return view, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable}
+	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	found := false
@@ -199,6 +219,14 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 		if v.Gap == "permission_denied" || v.Gap == "binding_not_recorded" {
 			continue
 		}
+		if current := c.entries[v.TaskID]; current.Native != nil {
+			if native, exists := nativeSources[v.TaskID]; exists {
+				if native.OwnedSession.Gap == "permission_denied" || native.OwnedSession.Gap == "binding_not_recorded" {
+					continue
+				}
+				v = native.OwnedSession
+			}
+		}
 		found = true
 		coverage := coverageFor(v)
 		entry, ok := c.entries[v.TaskID]
@@ -210,6 +238,38 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 				coverage = coverageFor(v)
 				coverage.Gap = "session_identity_changed"
 			}
+		}
+		nativeSelected := entry.Native != nil
+		if nativeSelected {
+			coverage = entry.Coverage
+			coverage.Source = "native_notifications"
+			if entry.Native.BindingID != v.BindingID {
+				coverage = coverageFor(v)
+				coverage.Gap = "session_identity_changed"
+			}
+			if native, exists := nativeSources[v.TaskID]; !exists || native.OwnedSession.BindingID != entry.Native.BindingID || native.OwnedSession.Gap == "permission_denied" {
+				coverage = coverageFor(v)
+				coverage.Gap = "native_source_unverifiable"
+			} else {
+				coverage.Unknown, coverage.Errors = max(coverage.Unknown, native.Unknown), max(coverage.Errors, native.Errors)
+				if native.LastSequence != entry.Native.Sequence {
+					coverage.SnapshotComplete, coverage.SessionComplete, coverage.Gap = false, false, "capture_pending"
+				}
+				if entry.Native.FirstError != "" {
+					coverage.SessionComplete, coverage.Gap = false, sessionPublicGap(entry.Native.FirstError)
+				} else if native.FirstGap != "" {
+					coverage.SessionComplete, coverage.Gap = false, sessionPublicGap(native.FirstGap)
+				}
+				if native.Finalized != "confirmed" || native.PrefixComplete != "confirmed" {
+					coverage.SessionComplete = false
+				}
+				if !coverage.SessionComplete {
+					coverage.Status = "partial"
+				}
+			}
+		}
+		if coverage.Source == "" {
+			coverage.Source = coverageFor(v).Source
 		}
 		if c.blocked != "" {
 			coverage.Status, coverage.Gap, coverage.SessionComplete = "unknown", c.blocked, false
@@ -226,6 +286,9 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 				if v.SourceStatus == "available" {
 					nativeBinding = relayCaptureBinding(v).BindingID()
 				}
+				if nativeSelected {
+					nativeBinding = entry.Native.BindingID
+				}
 			}
 			taskReader, ok := c.owned.(interface {
 				ListEvents(context.Context, domain.Caller, string) ([]domain.RelayEvent, error)
@@ -240,10 +303,13 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 			ids := make([]string, 0, len(committed))
 			for _, event := range committed {
 				if event.TaskID == v.TaskID && event.Scope == v.ProjectID && event.TerminalID == v.TerminalID {
+					if nativeSelected && event.Source == "native" {
+						continue
+					}
 					ids = append(ids, event.ID)
 				}
 			}
-			scopes = append(scopes, workbench.SessionAdmissionScope{TaskID: v.TaskID, ProjectID: v.ProjectID, TerminalID: v.TerminalID, NativeSessionID: nativeID, NativeBindingID: nativeBinding, RelayEventIDs: ids})
+			scopes = append(scopes, workbench.SessionAdmissionScope{TaskID: v.TaskID, ProjectID: v.ProjectID, TerminalID: v.TerminalID, NativeSessionID: nativeID, NativeBindingID: nativeBinding, RelayEventIDs: ids, NativeNotifications: nativeSelected})
 		}
 	}
 	if q.TaskID != "" && !found {

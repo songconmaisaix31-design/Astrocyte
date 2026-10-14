@@ -129,7 +129,7 @@ func (s *AccessSessionReader) ReadCommittedSessionEvents(ctx context.Context, sc
 			continue
 		}
 		switch p.Kind {
-		case "native_session_header", "native_activity", "edit_file", "search", "read_paper", "commit", "git_activity", "turn_started", "turn_completed", "message", "agent_message", "user_message", "function_call_output", "custom_tool_call", "custom_tool_call_output", "reasoning", "agent_reasoning", "agent_reasoning_raw_content", "turn_context", "task_started", "task_complete", "turn_complete", "context_compacted", "error", "warning":
+		case "session_started", "session_closed", "text", "token_usage", "model_response", "native_error", "native_warning", "native_session_header", "native_activity", "edit_file", "search", "read_paper", "commit", "git_activity", "turn_started", "turn_completed", "message", "agent_message", "user_message", "function_call_output", "custom_tool_call", "custom_tool_call_output", "reasoning", "agent_reasoning", "agent_reasoning_raw_content", "turn_context", "task_started", "task_complete", "turn_complete", "context_compacted", "error", "warning":
 		default:
 			p.Kind = "native_activity"
 		}

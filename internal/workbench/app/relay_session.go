@@ -12,6 +12,7 @@ type SessionEvents struct {
 }
 
 type SessionCoverage struct {
+	Source           string `json:"source"`
 	TaskID           string `json:"task_id"`
 	TerminalID       string `json:"terminal_id"`
 	WorktreeID       string `json:"worktree_id"`

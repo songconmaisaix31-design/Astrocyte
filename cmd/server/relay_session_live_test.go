@@ -45,7 +45,7 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	evidence := os.Getenv("ASTROCYTE_L1_EVIDENCE_DIR")
 	expectedEvidence, err := filepath.Abs(filepath.Join("..", "..", "dist", "l1-live"))
-	if err != nil || evidence != expectedEvidence {
+	if err != nil || !relayInside(expectedEvidence, evidence) {
 		t.Fatal("实际验证中间目录必须使用当前 H 工作目录")
 	}
 	source := filepath.Join(canonical, "public-project")
@@ -108,7 +108,12 @@ func TestRelaySessionActualService(t *testing.T) {
 	if window != 0 {
 		t.Fatal("本轮活性窗口保持未配置")
 	}
-	runtime := workspace.NewRelayService(store, works, db, relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: true}), agents.NewRelayNativeDriver(registry), agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{}), sink, workspace.RelayServiceOptions{Agents: specs, OwnedRoots: agents.RelayOwnedRoots{}})
+	nativeNotifications := os.Getenv("ASTROCYTE_L1_NATIVE_NOTIFICATIONS") == "1"
+	testWindow := time.Duration(0)
+	if nativeNotifications {
+		testWindow = 10 * time.Second
+	}
+	runtime := workspace.NewRelayService(store, works, db, relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: true}), agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: nativeNotifications}), agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{}), sink, workspace.RelayServiceOptions{Agents: specs, OwnedRoots: agents.RelayOwnedRoots{}, LivenessWindow: testWindow})
 	collector := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), events.NewRelaySessionCapture(eventService, nil), relaySessionFileState{root: root}, sqlite.NewAccessSessionReader(db))
 	if collector.blocked != "" {
 		t.Fatal("实际采集游标不可用")
@@ -167,7 +172,10 @@ func TestRelaySessionActualService(t *testing.T) {
 		client.request(t, "PUT", "/api/v1/local-projects/"+project.ID+"/settings", map[string]any{"expected_revision": project.Settings.Revision, "settings": settings}, &response)
 		project = response.Project
 	}
-	public := map[string]any{"api_url": "http://127.0.0.1:17342", "project_id": project.ID, "work_id": snapshot.Works[0].ID, "project_revision": project.Settings.Revision, "agent_name": "codex", "service_started_at": time.Now().UTC()}
+	if snapshot.Works[0].Handoff.Content == "" {
+		client.request(t, "PUT", "/api/v1/works/"+snapshot.Works[0].ID+"/handoff", map[string]any{"expected_revision": snapshot.Works[0].Revision, "content": "Public L1 project. Only the fixed public task context is authorized. Filesystem and command tools remain disabled. Explain native session capture without inspecting files or history."}, nil)
+	}
+	public := map[string]any{"api_url": "http://127.0.0.1:17342", "project_id": project.ID, "work_id": snapshot.Works[0].ID, "project_revision": project.Settings.Revision, "agent_name": "codex", "service_started_at": time.Now().UTC(), "test_liveness_window_seconds": int(testWindow / time.Second), "native_notifications": nativeNotifications}
 	writeActualJSON(t, filepath.Join(evidence, "service-public.json"), public)
 	writeActualJSON(t, filepath.Join(evidence, "service-private.json"), map[string]any{"app_root": root, "source_root": source, "db_path": filepath.Join(appDir, "state.sqlite")})
 	ticker := time.NewTicker(time.Second)
