@@ -39,3 +39,13 @@
 上海00:20:13的只读 `automations runs` 尚无今日新记录，enabled与原next保持；该次观察已通知根 `msg_ad6d6bb4a884`，没有推断为启动、跳过或失败。
 
 上海00:21:10再次实际读取，新增 scheduled run `50ee3508-e5bc-4ace-8fae-4c652bea59da` / runNumber3 / status=dispatched；scheduledFor为10-15 00:20，startedAt=00:20:57.623、dispatchedAt=00:20:57.712，沿原terminalSessionId `2e4f716f-024d-4cea-a93e-69adf61f8ce5`，error=null。回执证明原定时运行已创建并投递，采集、Sleep、模型与judge完成仍待实际结果。根通知为 `msg_040cf13ec9f2`；本模块不另派operator、不手动触发或重发unknown，继续只读接收其安全状态。
+
+上海00:24:21只取公开终端元数据与安全布尔值，原 automation terminalPtyId `@@99f4dc78` 对应 `term_a816e798-ecec-4a59-bb47-8030f6b57982`，connected / Codex身份可见，lastOutputAt为00:20:58.333；working与idle提示布尔值均false，`terminal wait --for tui-idle --timeout-ms 5000` 返回timeout。该结果不能证明当前Agent已退出或真正开始日流程，未停止或重复启动。根 escalation `msg_adf9424d7eed` 已收到准确阶段。
+
+上海00:25:19再读实际run仍dispatched / error=null；D1 capture和day目录仍不存在。真实turn、capture、Sleep与模型完成均未验收。root authority、锁 / 日程和原 operator 保持；本模块继续只读观察，根负责所需运行诊断。终端原内容与模型输入没有写入本文或stdout。
+
+## 原operator未提交输入的诊断与恢复
+
+根 `msg_13377fafb87d` 明确授权必要有界文本检查，并允许在肯定 idle与原定任务未提交证据齐备时仅对原exact终端单次Enter。读取公开 `terminal read --screen` 的18行并在进程内检查，只输出布尔与计数：一个非空composer，本次V4任务位于composer行；Working / Compacting均false，无新工具执行或登录 / 网络错误；屏内原automation提示词末尾连续200字符与现有prompt逐字匹配，锁路径 / 共同预算 / 日期范围一致。顶部被当前文本viewport省略；原run公开记录未提供durable request ID。根判定交接 `msg_00106c191e5b` 已发送。
+
+00:28:37对 `term_a816e798-ecec-4a59-bb47-8030f6b57982` 仅执行一次 `orca terminal send --terminal … --enter --json`，accepted=true / bytesWritten=1，没有附加正文或复制重发任务。00:28:55新的有界文本检查为screen / 15行、Working=true、Compacting=false、新工具执行标记true、网络错误false；原operator实际回合开始已确认，根回执 `msg_b0d00fd5b4f0` 已交。未创建第二operator、修改日程或执行本模块自己的capture / 模型请求；今日采集与模型完成仍须该唯一运行的安全结果。
