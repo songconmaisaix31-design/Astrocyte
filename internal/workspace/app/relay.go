@@ -867,6 +867,7 @@ func (s *relayService) Resume(ctx context.Context, c domain.Caller, id string) (
 }
 
 func (s *relayService) Transition(ctx context.Context, c domain.Caller, id string, cmd RelayTransitionCommand) (domain.RelayTaskView, error) {
+	// begin 在写入收据前检查 human 身份；人工完成和释放检查已有 observe 许可。
 	r, fresh, err := s.begin(ctx, c, id, "transition", cmd)
 	if err != nil {
 		return domain.RelayTaskView{}, err
@@ -880,7 +881,7 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 	}
 	view, e := s.GetTask(ctx, c, id)
 	if e == nil {
-		_, e = s.permission(ctx, c, view.Task, "reconcile")
+		_, e = s.permission(ctx, c, view.Task, "observe")
 	}
 	if e != nil {
 		_, finishErr := s.finish(ctx, c, r, RelayObservation{}, e, true)
@@ -900,6 +901,11 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 		if cmd.To != domain.RelayDone && cmd.To != domain.RelayReleased {
 			return relayError(apierrors.ScopeDenied, "accepted and working are execution observations")
 		}
+		workspace, ownsWorkspace := st.Workspaces[t.WorktreeID]
+		terminal, ownsTerminal := st.Terminals[t.TerminalID]
+		if !ownsWorkspace || !workspace.Prepared || workspace.ActiveTaskID != t.ID || workspace.ProjectID != t.ProjectID || !ownsTerminal || terminal.WorktreeID != workspace.ID || terminal.Agent != t.Agent {
+			return relayError(apierrors.VersionConflict, "task does not own its prepared workspace and terminal")
+		}
 		if cmd.To == domain.RelayDone && !cmd.CompletionConfirmed {
 			return relayError(apierrors.ApprovalRequired, "human task completion confirmation is required")
 		}
@@ -907,8 +913,7 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 			t.Condition = ""
 		}
 		if cmd.To == domain.RelayReleased {
-			terminal, ok := st.Terminals[t.TerminalID]
-			if !ok || terminal.ExitedAt == nil {
+			if terminal.ExitedAt == nil {
 				return relayError(apierrors.DeliveryUnknown, "release requires confirmed process exit")
 			}
 			for _, other := range st.Receipts {
@@ -916,7 +921,6 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 					return relayError(apierrors.VersionConflict, "task action is pending")
 				}
 			}
-			workspace := st.Workspaces[t.WorktreeID]
 			if workspace.ActiveTaskID == id {
 				workspace.ActiveTaskID = ""
 				st.Workspaces[workspace.ID] = workspace
