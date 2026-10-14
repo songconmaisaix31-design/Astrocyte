@@ -10,10 +10,10 @@
 
 | 开发人员 | 固定工作树 / 分支 | 当前原 Dispatch | 写入范围与下一步 |
 |---|---|---|---|
-| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python、冻结核心与下述 T 的测试文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理真实视频定位、其余实际模型/控制器测试、默认 Go 检查、Reader 发布路径与真实进度入口 |
+| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python、冻结核心与下述 T/V 文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理共享输入、配置、真实文本处理会话映射、实际分页、默认 Go 检查、Reader 发布路径与真实进度入口 |
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 唯一 `web/src/**`、`web/e2e/**`、`docs/standards/frontend.md` owner。消费精确公开契约与 B/R/H/Q 实际入口，完成未知状态持久化、全部既有 Web 和稳定源码默认完整 E2E |
 | T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014`，独立 worktree 起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454` | `task_5f0a79b6a17a` / `ctx_8674c456f49f` / `term_c1d90d02-51be-4443-9afe-ddce0615acb4`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
-| V 视频导入 | `product-video-20261014` / `songconmaisaix31-design/product-video-20261014`，独立工作树起点 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` | `task_af564cbc003b` / `ctx_1b382b548db7` / `term_af4a1bd1-cc0c-4961-aa37-cfecaa26e60c`，本子 Run | 唯一 `internal/adapters/importers/extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importer_test.go`，同目录新增 `video_*_test.go` 与 `docs/standards/video.md`。完整处理实际 summarize 时间信息和视频来源版本；共享 paper 提取器整文件归 V，B 保留配置、依赖、paperDOM、Node helpers 和 native text/bridge，T 测试域保持不变 |
+| V 视频导入 | `product-video-20261014` / `songconmaisaix31-design/product-video-20261014`，独立工作树起点 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` | `task_af564cbc003b` / `ctx_1b382b548db7` / `term_af4a1bd1-cc0c-4961-aa37-cfecaa26e60c`，本子 Run | 唯一 `internal/adapters/importers/extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importers_test.go`，同目录新增 `video_*_test.go` 与 `docs/standards/video.md`。完整处理实际 summarize 时间信息和视频来源版本；共享 paper 提取器整文件归 V，B 保留配置、依赖、paperDOM、Node helpers 和 native text/bridge，T 测试域保持不变 |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
 2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
@@ -36,7 +36,7 @@ F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f5257
 | 项目进度 | 人工记录与真实获准项目 infer 均可用；依据引用独立核对、HTTP/SQLite/重启；未授权拒绝不能代替成功 | B README 单次 HTTP/SQLite/重启成功保留，证据位于 B `.verification/progress-infer-readme-first.log`；旧原生会话已停止且未保留正选 source/runtime policy，有效工具集合 UNKNOWN，禁止重发补证；F 新生产 UI 验收待完成 |
 | Workbench Web | Q 本次独立公开生产来源，至少 2 topic、同 topic 超过 20 真实 event 分页、2 实测 history points；独立 SQLexpected 与 UI 一致 | Q 已交公开历史生产重放终稿：1339 实际 origins、2 topic、1 实际 Sleep、3 历史点。F 首次 14 认知 E2E 为 12 PASS/2 过滤请求 FAIL；双 viewport 各 10 独立 SQL、真实 topic134 逐页、六字段与 history 成功保留，过滤缺口退 F |
 | Relay 与 Today Web | 唯一 F 在同 API17342/UI17343 两 viewport 实际 DOM ready 后，H 注册并开始计时；真实 confirm/send/read/stop/release、409/unknown/换 Agent/三值状态及逐 event_id | 原 registered_at `2026-10-14T13:23:34.0366105Z`，三分钟窗口 FAIL 永久保留，不重新登记或修改计时。F 13:35:42 实收固定正文 ACK；首次真实 UI confirm 一次 503，收据 accepted 带 provider_unavailable，实际 task/terminal 后续 exited、publication published；R/H 同次核查，未知不重发，accepted 不提升为模型成功 |
-| 合并产品与发布支持 | 精确源码 `pnpm check`、`pnpm build`、`pnpm test:e2e` 与适用真实路径；Windows x64 ZIP 新目录启动/session bootstrap/读写/重启 | B 默认全 Go 仍 RED 网络 TLS/旧替代实现，F 默认完整 E2E PARTIAL；最终组合与包核心路径 NOT_RUN |
+| 合并产品与发布支持 | 精确源码 `pnpm check`、`pnpm build`、`pnpm test:e2e` 与适用真实路径；Windows x64 ZIP 新目录启动/session bootstrap/读写/重启 | B/T 默认 Go 仍 RED 实际网络与容量输入/游标，F 默认完整 E2E 203 PASS/41 FAIL/32 既有条件 SKIP/4 NOT_RUN；最终组合与包核心路径 NOT_RUN |
 
 纯函数显示测试可以使用明确参数输入，外部网络/API/模型/控制器替代实现不能计为实际功能验收。不得新增 skip、删除已有成功断言或以静态页代替核心路径。资源限制可使用 `GOFLAGS=-p=1`、`GOMAXPROCS=2`、`NODE_OPTIONS=--max-old-space-size=512` 与 Playwright workers=1；稳定源码再运行完整默认套件。
 
@@ -66,7 +66,11 @@ F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f5257
 
 视频第三轨计划 SOURCE `9f988fe` 在启动前已普通 push，首 TLS 失败保留。启动回执 ready、turnStart observed；独立公开 worker-show 核 actual Codex / `gpt-6.1-sol`，实际终端显示 high fast、live/working，工作树 HEAD 等于 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` 且 clean。写域停止确认、实际身份与准确 Dispatch 已分别通知 B/V 和总负责人；阶段业务证据仍等待 V。
 
-旧 `0c6522` 原档当前 nlink 2、source guard FAIL，目标内容 UNKNOWN。F 在 M-relay 先前功能迁移指令后报告唯一 GUI done 200 / accepted / GET done，operation `32c7f5a0-0cb0-4de2-91aa-3e7b9bc0ad07`；随后唯一 read `5f99133e-390f-4987-b8f2-2889716921ff` 409，未 release 或 retry。之后 M-relay 确认 completion checkbox 声明已核任务目标并要求保持 false；模块收到全部 FIFO 立即通知双方停止后续并向根报告实际先后顺序，保留已发生的动作和目标未知，验收边界待根处理。
+旧 `0c6522` 原档当前 nlink 2、source guard FAIL，目标内容 UNKNOWN。F 在 M-relay 先前功能迁移指令后报告唯一 GUI done 200 / accepted / GET done，operation `32c7f5a0-0cb0-4de2-91aa-3e7b9bc0ad07`；随后唯一 read `5f99133e-390f-4987-b8f2-2889716921ff` 409，未 release 或 retry。之后 M-relay 确认 completion checkbox 声明已核任务目标并要求保持 false；模块收到全部 FIFO 立即通知双方停止后续并向根报告实际先后顺序，保留已发生的动作和目标未知，按根下述决定继续。
+
+根 `msg_0957f72ac9ee` 已确定旧任务目标验收不通过，done 真实收据保留。H 核真实进程退出、task done、pending 0、workspace/terminal 归属后，F 才可按现有条件单次 release 清理并核 SQL 解锁；当前 read 回执为 delivery_unknown，任何释放阻断按原规则保留。根 `msg_dbc826308006` 允许旧 scope 保留期间立即使用独立公开 Git 根、DB、端口、registry 与明确新输入继续正向验证；H/F 先准备完整 DOM 观察与内容核查再注册，不重发旧输入或修改旧状态。根 `msg_8d2dcf0e1841` 允许 T 工程 Creator100 验证改选公开已存在超过 100 条真实视频的发布者，先核来源和实际数量，在独立新目录经生产入口运行；原 UID 仅 3 条首结果保留，正式用户案例和科研效果不因此成立。
+
+根 `msg_0a54edd4a766` 转交用户最新时序：先修改 v1.4 的投递阶段、原生会话归属、输入就绪条件与恢复身份关系，2026-10-15 再进行真实 CLI 端到端、三分钟 Today 和 L1 关账。今晚停止新 Relay / Today 验收窗口，旧任务按既有条件安全收尾，全部首事实保留。M-relay 完整读取 `docs/research/orca-rea-20261014.md` 后负责原生域规格和写域安排，跨 Web 契约交原 F；产品非 Relay、视频、Reader、公开容量和发布候选继续。B/T 当前新 Codex 调用为零，实际 selected-text 验证时序待根明确，接口实现可以继续。
 
 管理 SOURCE `6f1e7fd5b68da69cba3f65f47a4324a00fbd2ece` 已普通 push；独立 `git ls-remote` 核分支同 SHA。变更仅本管理文档；`git diff --check` 无输出，7 个相对文档链接均实际存在。SOURCE 不包含业务实现，业务完整验收仍按上表未完成状态保留，本模块继续管理返修与发布支持。
 
