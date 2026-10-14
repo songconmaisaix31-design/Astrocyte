@@ -133,7 +133,7 @@ test.describe('L1 contract-local UI evidence; not native CLI or production accep
 });
 
 test.describe('H actual HTTP public DTO replay; not live browser/service acceptance', () => {
-  for (const index of [0, 1, 2]) {
+  for (const index of [0, 1, 2, 3]) {
     test(`recorded session response ${index + 1} preserves coverage and snapshot separation`, async ({ page }) => {
       const samplePath = process.env.ASTROCYTE_TEST_RELAY_L1_HTTP_SAMPLE;
       test.skip(!samplePath, 'Requires the exact H-owned derived public HTTP sample path.');
@@ -142,7 +142,7 @@ test.describe('H actual HTTP public DTO replay; not live browser/service accepta
       const rel = relative(root, selected);
       expect(!rel.startsWith('..') && !isAbsolute(rel)).toBe(true);
       const samples: { schema: string; body: RelaySessionEvents }[] = JSON.parse(await readFile(selected, 'utf8'));
-      expect(samples).toHaveLength(3);
+      expect(samples).toHaveLength(4);
       expect(samples[index].schema).toBe('RelaySessionEventsV1');
       const body = samples[index].body;
       for (const event of body.events) {
@@ -166,4 +166,37 @@ test.describe('H actual HTTP public DTO replay; not live browser/service accepta
       expect(state.writes).toEqual([]);
     });
   }
+
+  test('terminal Git admissions keep their committed string IDs and unknown native archive coverage', async ({ page }) => {
+    const samplePath = process.env.ASTROCYTE_TEST_RELAY_L1_TERMINAL_HTTP_SAMPLE;
+    test.skip(!samplePath, 'Requires the exact H-owned derived terminal Git HTTP sample path.');
+    const root = await realpath(join(process.env.LOCALAPPDATA!, 'astrocyte-workbench/v0.2-access/l1g-4044697017'));
+    const selected = await realpath(samplePath!);
+    const rel = relative(root, selected);
+    expect(!rel.startsWith('..') && !isAbsolute(rel)).toBe(true);
+    const samples: { schema: string; body: RelaySessionEvents }[] = JSON.parse(await readFile(selected, 'utf8'));
+    expect(samples).toHaveLength(1);
+    const sample = samples[0];
+    expect(sample.schema).toBe('RelaySessionEventsV1');
+    expect(sample.body.events).toHaveLength(3);
+    for (const event of sample.body.events) {
+      expect(Object.keys(event).sort()).toEqual(['event_id', 'kind', 'scope', 'tokens', 'topic', 'ts']);
+      expect(typeof event.event_id).toBe('string');
+      expect(event.event_id.length).toBeGreaterThan(0);
+    }
+    expect(sample.body.coverage).toHaveLength(1);
+    expect(sample.body.coverage[0].status).toBe('unknown');
+    expect(sample.body.coverage[0].session_complete).toBe(false);
+    const state = await setup(page, sample.body); await page.goto('/cognition/today');
+    const region = page.getByRole('region', { name: '本机 Session 派生事件', exact: true });
+    await expect(region).toContainText('未知 · unknown');
+    await expect(region).toContainText('完整会话生命周期：尚未核实');
+    const ordered = [...sample.body.events].sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts) || a.event_id.localeCompare(b.event_id));
+    await expect(region.locator('tbody tr')).toHaveCount(ordered.length);
+    for (const [row, event] of ordered.entries()) await expect(region.locator('tbody tr').nth(row).locator('td').first()).toHaveText(event.event_id);
+    await snapshotTen(page);
+    expect(await page.content()).not.toContain('PRIVATE_RAW_CANARY');
+    expect(await page.content()).not.toContain('PRIVATE_NATIVE_ID');
+    expect(state.writes).toEqual([]);
+  });
 });
