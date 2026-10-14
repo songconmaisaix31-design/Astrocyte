@@ -146,11 +146,19 @@ S2 原 Dispatch `ctx_f32b6d92119a` 自动恢复连接；总负责人独立核实
 
 产品 UI 已报告真实 S2 第三轮两个尺寸 `2 PASS / 1.2min`：实际 Goal 和 Proposal 创建、固定旧 revision 与差异、未知费用、提交审阅、人工批准和撤销、SQL outbox、零原生启动和执行目录、实际 HTTP 服务重启后旧版本及撤销状态均通过。第一次权限配置 `2 FAIL`、第二次实际成功收据后的徽标选择器 `2 FAIL` 原日志、DB 和 trace 保留。截止时间精度、版本冲突、离线 unknown 锁及当前权限恢复的第四轮为 `7 PASS / 1 FAIL`，最后一个 1280 尺寸用例在 bootstrap 连接重置、尚未进入页面；第五轮以相同源码和断言只运行该用例，`1 PASS`。八个尺寸用例分别取得真实成功，不能登记为单轮八项全通过。SOURCE `442447406aa55134f2c09c59fb559bf877204b01` / REPORT `79f2394424fef1745abdd617e03ffb444c9d49ab` 已普通 push，模块独立核远端 REPORT 同值，已交 F 共享入口消费。Context、S3、S4、共享完整 TypeScript 及整个核心路径尚未通过。
 
+产品 UI 后继 SOURCE `d7003863695008592bf8884e5ddd4f5c0852b2c0` / REPORT `a55de818488ac46831b1bff77d3b85e3ec8af6b2` 已普通 push，模块独立核远端 REPORT 同值；S2 完整两个尺寸十项组合以 `workers=1 / retries=0` 实际 `10 PASS / 4.8min`，覆盖上述主链、人工拒绝、版本冲突、离线 unknown 跨重开与当前许可恢复。没有新增 skip、降低断言或自动重试，全部首失败继续保留。S4 查询表单以原后端准确 SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 编写，查询及整个 S4 尚未验收；原 UI 继续同 Task。
+
+S2 后继生产 SOURCE `55b48b755d7d9790d5f6f58f53724a0e4f59ce7e` 已报告普通 push并包含此前真实 HTTP 运行内容，独立 REPORT 待交。模块以 `sqlite3 -readonly`、`PRAGMA query_only=ON` 和读取事务独核其 `.verification/astrocyte-s1-Wto4zC/data/state.sqlite`：一条 Grant 为 revoked / epoch 2，批准与撤销事件各一条，批准回执一条，原生会话和 Mission 各零；只输出安全派生数量，未读取凭据或原件内容。此证据支持本次实际批准及重启组件，完整原生执行仍未通过。
+
 Swarm 第六阶段 SOURCE `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0` / REPORT `23367b448d28c9780ec84d770548ccf870b4d8dd`，原 owner 已报告普通 push、远端同 SHA 和工作树干净。实际 Usage 的 calls / tokens / money 分项缺证保留 null；有限预算缺证保持占用，无界未知按实际停止证据对账，默认项目并发上限为 2 并支持明确配置。当前工作树根交 S2 实际政策核验，claim / submit 的 Member.Purpose 分开；B 所需同一 Workspace DB 事务复用已有真实 commit / rollback / wrongDB 检查通过。Domain、S2 实际链、HTTP、六个 SQLite / Git / Go 组件、vet / build / 33 包架构定向通过；完整两实际 Agent、原 R/S2/H 端口装配及最终验收仍未通过。
 
 B 已报告 L2 新成功经验适配编译、vet 和架构检查通过，真实 completion port 经实际 Interpreter 形成 quarantine 候选，nil Interpreter 明确拒绝，同 owner / event 去重，安全 business receipt 引用保持独立类型；实际来源装配及模型仍 NOT_RUN，人工批准和实际第二任务引用继续验收。S5 第二 SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 已交唯一依赖及迁移 owner B，实际 Node / 独立 Go RPC 组件通过；默认根依赖缺失的首 RED 保留，独立 ignored module 结果不能填写生产组合通过。
 
 Q 原轨已在 M-release 下启动本次真实跨日公开工程来源更新；按真实 commit 时间完整采集，再执行只包含 14 日事件窗口的实际 Sleep，并发布当前结果与独立 SQL expected。今日 15 日事件与闭日窗口明确区分；原来源和正式 V4 不改，不改 Clock 或补造事件。已交真实 preSleep LocalAppData 本机指针 `release-cognition-20261014/.verification/cross-day-20261015-0228/preSleep-local` 及同证据根 `preSleep-safe/sql-expected.json` 给 B/F/T/UI；模块仅核实际文件存在，Q 报告 1316 真实事件、14 日 74 / 15 日 52、Sleep 0、两 topic 各两个历史点和真实分页及逐 ID 通过。该输入只供对应 preSleep 前置只读检查，main/closed 的实际 Sleep 窗口、强 Today、最终 SOURCE / REPORT 尚待核实。F 已收到本次唯一 CLI 同 URL baseline / auth / observer 的优先检查任务，服务未准备时须给准确 H 地址缺口，保留唯一 UI 操作和原始登记起点。
+
+Q 后继三个 final inspector 已报告通过；模块只读核其 current 指针 generation 分别为 main `snapshot-1711995690`、preSleep `snapshot-1373353207`、closed `snapshot-3544892468`，并核 main-safe-final 的安全统计、跨日与隐私报告为 1316 事件 / 两 topic / 一次 Sleep、15 日 52 / 14 日 74、原文字符串泄漏零。三准确 LocalAppData 与独立 `*-safe-final/sql-expected.json` 已交 B/F/T/UI 进行自身真实只读验证；main / closed 是含今日事件的同一实际终态，不能称作 14 日纯截面，Git tokens 不能作为原生或模型用量。源码 `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` 当时报普通 push 中，独立 REPORT 与源码远端核实尚待交付；组件报告不代替旧默认浏览器完整检查。
+
+M-relay `msg_6cb9cda5083d` 已确认三组契约顺序：原 H 在本次无模型 CLI 初始化安全节点后，按 S2 Context → S3 → S4 串行共享 main / server / session / OpenAPI 薄装配，将准确 SOURCE / REPORT / factory 交唯一 F 生成客户端，再交同一产品 UI。原 S2 / S3 / S4 准确业务源码已交 H，领域问题交各原 owner；未新增共享写者。其报告当时 H 服务、初始化、模型、登记、Today 均零，F observer 尚未开始；H 在自有新 public-root 无 hardlinks 克隆固定 Go 基线满足真实 containment / guard。新 clone 的真实 Root / worktree / Grant / Git 身份须由原负责人核验，不能仅因 SHA 相同扩大权限或伪造路径；无模型初始化可先进行，R 固定代码上下文仅作为首次输入的实际前置。
 
 ## 隐私、冻结与剩余限制
 
