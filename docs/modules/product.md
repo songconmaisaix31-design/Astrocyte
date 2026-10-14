@@ -14,6 +14,7 @@
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 唯一 `web/src/**`、`web/e2e/**`、`docs/standards/frontend.md` owner。消费精确公开契约与 B/R/H/Q 实际入口，完成未知状态持久化、全部既有 Web 和稳定源码默认完整 E2E |
 | T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014`，独立 worktree 起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454` | `task_5f0a79b6a17a` / `ctx_8674c456f49f` / `term_c1d90d02-51be-4443-9afe-ddce0615acb4`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
 | V 视频导入 | `product-video-20261014` / `songconmaisaix31-design/product-video-20261014`，独立工作树起点 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` | `task_af564cbc003b` / `ctx_1b382b548db7` / `term_af4a1bd1-cc0c-4961-aa37-cfecaa26e60c`，本子 Run | 唯一 `internal/adapters/importers/extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importers_test.go`，同目录新增 `video_*_test.go` 与 `docs/standards/video.md`。完整处理实际 summarize 时间信息和视频来源版本；共享 paper 提取器整文件归 V，B 保留配置、依赖、paperDOM、Node helpers 和 native text/bridge，T 测试域保持不变 |
+| 固定逆向 Agent X | `C:/Users/DW/orca/workspaces/Astrocyte/reverse-reference-20261014` / `songconmaisaix31-design/reverse-reference-20261014`，独立基线 `1c026c3e7f9e91c53d1dced6479099668c9162cb` | 用户指定原会话 `01a13ae1-1399-78d2-b329-0ea4fc5eb255` / `term_79eeba93-c810-4a04-a1a0-e27ce0767ab5`；当前为已运行用户提示，普通 Handoff 管理，不注入新 Dispatch | 唯一绝对写域 `C:/Users/DW/orca/workspaces/Astrocyte/reverse-reference-20261014/docs/research/reference-code-20261014/**`；下载与 REA 原件仅本树已忽略 `.verification/reference-code-20261014/**`。先交 CSGHub / 官方 server 代码获取、权限、版本、固定 SHA、许可证与实码文件行号索引，再交研究流程；autoscientist 准确仓库未决定，不自行选择。只向 B/F/R/H 原 owner 提供参考，不扩大产品实现 |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
 2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
@@ -21,6 +22,8 @@
 4. 所有实际功能与适用检查通过后，向 M-release 提交精确 SOURCE/REPORT 及覆盖证据供唯一 I 普通合并；最终组合 check/build/默认 E2E、ZIP 新目录启动/读写/重启验收继续由原开发人员支持。模块阶段通过不结算本 Task，最终 GitHub Release 由总负责人接受具体结果后发布。
 
 总负责人 `msg_b2515cb04bf3` 已转交用户追加决定：模块可自主安排第三层人员，无需逐个申请。拆分原 B/F 写域前必须由原 owner 在具体文件安全检查点给出精确阶段或必要 WIP、明确停止写入，并由双方确认新独占范围。B `msg_0c7de990a861` 已明确从该消息起停止修改上述全部 App 测试及 S1 `automatic_test.go`，14 既有文件零 WIP，起点为已 push 的 `b470ecd`。本模块已核测试文件集合与零改动，按共享 fixture/Meta/MemoryRepo/MemoryObjects/TestDistiller 依赖整体交一位 T，不拆同包 helper；B 保留全部生产、其他测试和依赖。功能开发人员不派第四层。
+
+根 `msg_97946f52d9b9` / `msg_a7e92c5f1d5f` 转交用户固定逆向身份决定；X 回执 `msg_91aa495bd9eb` / `msg_1370a0a70797` 核其 Codex 终端公开显示 GPT-6.1-Sol high fast、原会话不变、新工作树 tracked clean、仅忽略参考目录写入。当前 working，官方 csghub-server Git clone 成功；csghub Git clone 首 TLS 失败保持，按实际固定官方 SHA 获取公开 archive 并读取可用 server 代码。本阶段继续原单次用户提示，模块未创建第二名同域人员或重新注入 Task；第一轮 SOURCE/独立 REPORT 普通 push、最终 Handoff 与真实 idle 后，才按官方既有 terminal 接管机制安排下一正式阶段。REA 6.5.0 CLI 允许范围内分析、Go/Python 源码阅读；MCP 保持关闭，不运行上游自治实验，不读取私人源或凭据。
 
 ## 核心路径与当前结论
 
