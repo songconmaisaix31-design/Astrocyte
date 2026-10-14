@@ -64,6 +64,12 @@ T SOURCE `ea8e7e35412e94e10526728fd68c67fffa517469` / REPORT `a0f46fda7147766ede
 
 B 的成功经验现只有 CaptureFailure，根 `msg_4d27f93af3c8` 已指定原 B 应用域提出真实 artifact_accepted 收据/事件到 quarantine 候选的适配，禁止假的 ExperienceID 或自动批准。S3 采用在自身 CAS/outbox 提交后明确经验待处理，实际 consumer 完成再关联候选；Swarm 可以先实现真实 accepted Artifact 的固定版本/来源及第二任务引用，完整 L 经验批准与 AT16 保持 NOT_RUN。B 缺 Admission 新纯领域实体，Workspace 错置会越 bounded context；仅新增 `attention/domain/admissions.go` 的具体例外已向根升级，既有冻结文件不改。
 
+根 `msg_cd9baeb95962` 已明确授权 B 唯一新增 `internal/attention/domain/admissions.go` 及该新文件纯规则测试，按 SPEC 建立 Admission；原 Attention 领域文件、engine/mapper/weights/001–018 和正式树不改。B 新增 `attention/app/experience_accepted.go`、`sqlite/accepted_experience.go` 与应用层 source-kind / 安全引用 resolver 继续原唯一 owner；通过 S3 公开真实 accepted snapshot 端口桥接，不能直接跨域读取私表或伪造 native Event，T 保持所有 App 测试独占。
+
+根 `msg_234178c8e7d8` / M-relay `msg_49656f0b3ed2` 已允许当前 Codex 有实际 turn/started 的共同正向窗口，不因无 started 客户端的人工完成待答暂停全部 CLI。只由 F 操作 UI，H 在其 baseline / observer ready 后唯一登记与原起点计时；R/H 精确 TurnMap / NativeRead / full-session resolver、原持有 PID 和实际工具政策证据与合法原件来源先核。优先与 S3 的上述固定 Go 根 / baseline / Median 目标共用成果，由原 owner 受控应用和实际测试，不另起或重复模型补证。无 started 客户端分支、缺政策/原件的动作仍保留未决定或拒绝，不改旧失败。
+
+S4 实际 ProjectSnapshotProvider SOURCE `9eff2edb34058826d302d3a465b7fe7e74797be5` / REPORT `c87e0564596dd369e17f62a2f2bac2b679b224f5` 已交产品，B 新 DDL `f25b838738d981f73380f042c2f7940dc3fd3a7e`。S2 / H 应立即串行消费真实授权 Git 快照、双观察与同 DB 事务 provider；AOCI 完整地图、SemanticIndex/HTTP/包阶段未通过，组件来源不计完整 S4。跨日工程来源由 M-release 恢复原 Q 唯一轨处理，B 五准确输入与日期缺口交其更新；原时钟、V4 与正式采集保持。
+
 B 实际 OpenCode 1.18.35 owned 无模型 SOURCE `a3fe68f5420f439c51ffa5e67e034543a01358cf` / REPORT `b5dea1d5be6feb5f382169d3e8274ccb76592bea` 的七项生命周期/权限/恢复 12.280s 通过，未运行 paid Send 或非空历史正向。Flash 独立核查已由 M-release 确认实际 `alibaba-cn/deepseek-v4.1-flash`，现复杂三轨保持原强 Agent，未另派仅用于重复核查的人员。
 
 F 最新 SOURCE `fc97cc17945cd496241fe8de36958f5a5df2edfb` / REPORT `51bc7f6ad6a0d1fed9cab5f001af06ce4a057edf` 已核远端，准确 facts/handoff 与共享 unknown Hook 已交新 UI；正消费 e99 生成 S2 client/types。全部旧默认 203/41/32/4 与原生/源/三分钟首失败保持。B 已核五个真实 public publication 输入，但全部 10-14 来源跨至实际 10-15 后不能满足 Today 当日数据/闭日 Sleep 断言；已交 M-release 原公开出版轨更新工程来源，不修改时钟、不回填正式库、不降断言，当前整体检查仍未通过。
