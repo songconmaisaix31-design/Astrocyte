@@ -22,7 +22,7 @@ func NewPublicListingReader(pythonPath string) *PublicListing {
 	return &PublicListing{Bilibili: NewPublicBilibili(), Uploads: &BilibiliUploads{PythonPath: pythonPath}}
 }
 
-// ConfiguredSelectedOwner returns host configuration only; no browser command.
+// ConfiguredSelectedOwner 读取宿主的明确配置。
 func (r *PublicListing) ConfiguredSelectedOwner() string {
 	if r == nil || r.Douyin == nil {
 		return ""
@@ -63,9 +63,7 @@ func (r *PublicListing) ReadPage(ctx context.Context, source app.TrackingSource,
 		}
 	}
 	start := (page-1)*window + offset
-	// Page-number APIs use (pn-1)*ps. Choose a divisor of the exact offset,
-	// bounded by remaining observations, so the final request never fetches
-	// a hidden extra 20 rows merely to return a 100-item view.
+	// 页码接口以 (pn-1)*ps 定位请求窗口，页尺寸受本次剩余观察预算限制。
 	size := min(window, limit)
 	for size > 1 && start%size != 0 {
 		size--
@@ -109,7 +107,8 @@ func (r *PublicListing) ReadPage(ctx context.Context, source app.TrackingSource,
 	items := raw.Items
 	result := app.ListingPage{Items: []app.ListingMetadata{}, HasMore: raw.HasMore, Warnings: raw.Warnings, Observed: raw.Observed}
 	if raw.HasMore {
-		position := start + raw.Observed
+		// provider 可省略窗口中的不可见项；下一窗口仍按实际请求尺寸前进。
+		position := start + size
 		next := strconv.Itoa(position/window + 1)
 		if position%window != 0 {
 			next += ":" + strconv.Itoa(position%window)

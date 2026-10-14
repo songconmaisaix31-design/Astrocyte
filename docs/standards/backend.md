@@ -4,6 +4,38 @@
 
 后续独立 REPORT `94658c3788fc94db8215df403bea6aab4da1cfbb`、`96618df9b62ed0018182b5cbc1aa626c5bcb8362`，文本目录及实际 Works 发现 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，公开生产认知及祖先路径检查 SOURCE `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，默认时钟/实际 Sleep/真实 nullable 及公开论文输入 SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` 均已普通 push。
 
+后续 SOURCE `3384a89aac3be6d5670d756eb2d44263784d0cb8`、`03f92127a74e4d8b49cf5c4bb1010b43349d6d43`、`e05c013a08ccf372bb884dae5eeb3345f92173af`、`5622bfdaec376e23a696cc110a082c72c9d43f3f` 均已普通 push；前一独立 REPORT 为 `15c738f88822e553eb228c12c0fdc71ad07b7531`。整轨及实际模型验收继续保持未完成。
+
+## 当前生产接口与验证
+
+- 按唯一 R owner 的零 WIP 授权，精确消费 `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` 中单文件 `relay_execution.go`；原 identity、进程和实际 launch 参数检查保持，effectiveToolSet 为 unknown。临时单文件写域已归还 R。
+- 真实论文输入具有生成契约类型；`loadPublicPaperSnapshots` 经实际 Node DOM 返回完整 canonical snapshot，包括原 schema、作者、来源及版本。PLOS 完整正文与 ACL 摘要经实际生产 HTTP/SQLite 导入，附件原 bytes 和投影相等。`.verification/public-snapshot-api-first.log` 保留第一次字段选择错误，第二次实际检查通过，证据 `.verification/public-snapshot-api-second.log`。
+- `node scripts/check-s1-project-api.mjs` 使用两个实际公开 arXiv 版本，实际接口、固定引用、权限、撤销、调用键复用和重启通过，证据 `.verification/public-project-api-first.log`。类型声明的 web TypeScript 检查、11 个 Node 测试、31 包架构检查通过；证据分别为 `.verification/public-paper-types-second.log`、`.verification/public-snapshot-types-first.log`、`.verification/node-comment-and-parser-first.log`、`.verification/architecture-module-json-first.log`。类型检查首命令错误仍保留。
+- P/F 明确授权的三文件 Reader 临时冲突处理均只编辑并 stage 原 e914 不可变内容，三文件逐字相等且无 unmerged entries；其 merge/commit 归原 owner。P Reader 十项实际检查通过，P 旧装配常量导致首 build RED；F 对应实际组合 server build 通过。证据 `.verification/p-conflict-reader-first.log`、`.verification/p-conflict-build-first.log`、`.verification/f-conflict-build-first.log`。两项临时授权均已结束。
+- 文本处理原调用处把 project/job/operation 关联到当前精确 controller 身份、原 native_id、PID 和实际 Send turn_id；官方 `thread/read(includeTurns:false)` 元数据及实际原件窗口只保存在已有本机 stateRoot，产品 DB/HTTP 不增加 raw 字段。首次 turn 前仅记录来源路径回执；Send 尝试与受理分别登记，停止前按原 header 的 native_id/cwd 核查并复制实际窗口，窗口完整度保持未核实。
+- `go test ./internal/adapters/agents -run 'TestSelectedText|TestOwnedTextExecution' -v` 实际无模型探测第二次 4 PASS，9.708s，原 controller StopConfirmed，model turns 0，effectiveToolSet unknown；证据 `.verification/text-source-actual-second.log`。首检查错误地要求首次 turn 前原件已创建，原 RED 保留于 `.verification/text-source-actual-first.log`。`go build -o .verification/text-source-server.exe ./cmd/server` 与定向 `go vet` 均 EXIT 0，证据 `.verification/text-source-build-third.log`、`.verification/text-source-vet-first.log`。编译首 RED 与更正后通过均保留。
+- 用户经协调者决定将实际 selected-text 模型/原生身份完整核查窗口移至 2026-10-15；今晚不再启动原生 controller。当前 Send 后原件窗口、原生文件 alias 守卫接缝和 v1.4 身份契约仍待验证，未登记 CLI 完整验收 PASS。
+- 视频固定 owner V 已接收 extractor.go、extractor_test.go、summarize.go、summarize-media.mjs、importers_test.go 五整文件，B 持续停写。T 测试域保持原已交接范围。
+- 当前 Windows 已配置匿名 loopback 代理实际指向 `127.0.0.1:7890`；经明确授权只读取得实际配置，原 arXiv 官方 API 通过该代理实际 HTTP 200，13717 bytes，证据 `.verification/arxiv-configured-proxy-first.atom.xml`。未修改系统网络、SSL 或 DNS；生产显式代理配置仍待消费 V 精确 SOURCE。
+
+上述定向通过未覆盖当前全包 RED、尚存替代实现、视频真实时间区间、私有附件读取边界及 favorites 分页失败。阶段报告继续保留实际限制，后续原 owner 完成生产返修与完整验证。
+
+## 原生视频附件权限与显式代理
+
+SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` 已普通 push，包含普通 `--no-ff` 消费的 V SOURCE `06372a6a82c2942e02c4a46b69cc3f518f4ec5ae` 与 `d48a29b6e1744465666edbfa28be919531ca39a4`。前者实际匿名代理接口四种环境隔离检查，后者已保存实际同公开视频 whisper 原生时间区间；其历史 REPORT `478e8909fe6e2836b434b5d528348bf388372bfe` 随原普通祖先保留，未覆盖 V 写域。
+
+生产配置读取 `ASTROCYTE_SUMMARIZE_PROXY_URL`，默认空；固定 Node/summarize 启动环境只接收明确批准的匿名 HTTP(S) origin，继承的代理、凭据和 `NODE_OPTIONS` 不进入提取进程。实际 Node 24.16.0 的安装帮助和 [官方 CLI 文档](https://nodejs.org/api/cli.html#node_use_env_proxy1) 已核对 `NODE_USE_ENV_PROXY=1` 与 HTTP/HTTPS/NO_PROXY 的启动语义。`go test ./internal/adapters/importers -run TestVideoExplicitAnonymousProxyIsolation -v -count=1` EXIT 0，7.856s；证据 `.verification/proxy-isolation-consumed-first.log`。
+
+原生 whisper JSON 使用已有 MediaType 字段的 `application/vnd.astrocyte.private-native+json` 类别，本机 ObjectStore 保留原件。`GetAttachment` 检查所有 revision 中同一不可变 ObjectRef 的私有类别，已有实际 `whisper-original.json` 作为既存原件识别；同一对象的名称或 revision 别名不能开放 HTTP 读取。冻结 schema、领域及迁移没有改动。
+
+`ASTROCYTE_TEST_VIDEO_PUBLICATION=<V 明确实际出版目录> node tests/s1/private-video-attachment.mjs` 第三次 EXIT 0，实际媒体 id `534HWFW7E5GEF75ZY4F7ETPLQ2`、revision 2、952 个原生 transcription segments。只读 V SQLite 经成熟 Node backup 创建 B 自有副本，按真实 revision 中六个 hash 引用逐件 `COPYFILE_EXCL` 复制对象；没有新 ASR。实际人类及配置 Agent 身份、普通及 URL 编码路径、冷热进程累计 8 次 HTTP 403 `scope_denied`；其他三个公开附件累计 6 次 HTTP 200 且 bytes 全等；本机原生 JSON bytes 完整保留，拒绝读取没有生成成功 machine use，真实 HTTP 进程重启通过。证据 `.verification/private-video-http-third.log` 与 `.verification/astrocyte-s1-FAkZe5/`，全部原件仅在本机。
+
+首复制检查在已有目标目录失败、第二次 ErrorV1 字段选择断言失败均保留于 `.verification/private-video-http-{first,second}.log`；没有放宽断言。当前 `go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 均 EXIT 0，证据 `.verification/private-source-{build,vet}-first.log`。实际完整 Go 套件仍为前次 RED，未因定向权限通过而升级；新生产 private MediaType 的独立后续消费由 V/T 原 owner 继续检查。
+
+旧 README 实际结果使用原 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 启动当前生产 HTTP，只运行 GET session/progress；结果保持旧 native_id、model 与 evidence，新增模型 turns 0，旧 effectiveToolSet/source completeness 仍 unknown。F 已收到只读 URL 与项目 id，专属服务等待其检查后停止；证据 `.verification/existing-progress-http-first.log`。该服务不接续原 native 会话。
+
+收藏第三页实际仅返回 19 条元数据。上游请求窗口位置与真实观察条数分别保留；初次 100 的预算应按实际返回条数或请求槽位计算，已交根决定，未答保持未决定。源 cursor 可独立纠正为请求窗口推进，不能伪填缺失或降低 100 条成功断言。
+
 ## 完成内容
 
 - 保留接管时全部 B 未提交贡献。`paper-dom.mjs` 和插件提取模块使用 `JSON.parse`、`URL` 直接失败，错误 JSON-LD 与 PDF URL 各有断言。

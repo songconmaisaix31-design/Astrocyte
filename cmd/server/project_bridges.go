@@ -72,7 +72,7 @@ func (b *selectedTextBridge) ProcessSelectedText(ctx context.Context, p attentio
 	if _, err := b.projects.CheckProjectModel(ctx, domain.Caller{ID: p.ID, Kind: p.Kind, ProjectID: r.ProjectID}, r.ProjectID, r.CLI); err != nil {
 		return attentionapp.SelectedTextResult{}, err
 	}
-	result, err := b.processor.ProcessSelectedText(ctx, domain.TextRequest{CLI: r.CLI, Prompt: r.Prompt, DeadlineSeconds: r.DeadlineSeconds, OutputLimit: r.OutputLimit})
+	result, err := b.processor.ProcessSelectedText(ctx, domain.TextRequest{ProjectID: r.ProjectID, JobID: r.JobID, OperationID: r.OperationID, CLI: r.CLI, Prompt: r.Prompt, DeadlineSeconds: r.DeadlineSeconds, OutputLimit: r.OutputLimit})
 	if err != nil {
 		return attentionapp.SelectedTextResult{}, err
 	}
