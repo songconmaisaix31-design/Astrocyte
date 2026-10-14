@@ -24,6 +24,11 @@ for (const relay of [false, true]) test(`production server keeps owned SQLite af
     assert.equal(discovery.projects.length, 1);
     assert.equal(discovery.projects[0].source, 'explicit_directory');
     assert.equal(await realpath(discovery.projects[0].root), await realpath(root));
+    const refreshed = await api.write('/works/refresh', { roots: [root] });
+    assert.equal(refreshed.snapshot.works.length, 1);
+    assert.equal(await realpath(refreshed.snapshot.works[0].root), await realpath(root));
+    assert.equal(refreshed.snapshot.works[0].files.verified, true);
+    await assert.rejects(api.write('/works/refresh', { request_id: 'explicitly-mismatched-request', roots: [root] }), /400/);
     await assert.rejects(server.startAPI(), /still running/);
     await server.stopAPI();
     await assert.rejects(fetch(`${server.apiURL}/api/v1/health`, { signal: AbortSignal.timeout(1000) }));

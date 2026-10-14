@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { validateResponse } from './contracts.mjs';
+import { root } from '../../scripts/process.mjs';
 
 export function command(body = {}) {
   return { schema_version: 1, request_id: randomUUID(), expected_version: 1, ...body };
 }
 
-/** Real loopback requests. Writes are sent once; job polling never resubmits them. */
+/** 实际 loopback 请求；写入只发送一次，轮询只读取已有作业。 */
 export async function humanAPI(baseURL) {
   const bootstrap = await fetch(`${baseURL}/api/v1/auth/session`, { signal: AbortSignal.timeout(5000) });
   assert.equal(bootstrap.status, 200, await bootstrap.clone().text());
@@ -29,7 +32,15 @@ export async function humanAPI(baseURL) {
       });
       const text = await response.text();
       let data;
-      try { data = JSON.parse(text); } catch { throw new Error(`${method} ${path} returned non-JSON ${response.status}: ${text}`); }
+      try { data = JSON.parse(text); }
+      catch (cause) {
+        const directory = join(root, '.verification');
+        await mkdir(directory, { recursive: true });
+        const original = join(directory, `http-non-json-${randomUUID()}.txt`);
+        await writeFile(original, text, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+        await writeFile(`${original}.error.txt`, String(cause), { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+        throw new Error(`${method} ${path} returned non-JSON ${response.status}; original retained at ${original}`);
+      }
       validateResponse(method, path, response.status, data);
       return { status: response.status, data };
     },
@@ -39,7 +50,7 @@ export async function humanAPI(baseURL) {
       return result.data;
     },
     async write(path, body, { status = 200, key = randomUUID(), method = 'POST' } = {}) {
-      const result = await this.request(path, { method, body: command(body), key });
+      const result = await this.request(path, { method, body: command({ request_id: key, ...body }), key });
       assert.equal(result.status, status, JSON.stringify(result.data));
       return result.data;
     },
