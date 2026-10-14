@@ -12,7 +12,7 @@ Git 从注册根核对 worktree 根、common-dir、git-dir 与真实 HEAD；授�
 
 `CaptureProjectSnapshot` 保存不可变的 Git 观察和真实授权范围；`ValidateProjectSnapshot` 重新核对当前 Git、项目许可和保存的版本，不信任客户端的 Root 或 digest。保存使用 `repository_context_indexes` 的独立 `git-snapshot:UUID` 后端键。SQLite adapter 在已有 Workspace 事务 context 内调用 `WorkspaceTransaction(ctx, db)` 复用其连接，避免单连接事务的二次借用死锁。
 
-CodeGraph 使用官方 npm `@colbymchenry/codegraph` **1.0.1**，MIT，源码标签 `v1.0.1` 对应 `a1489f77a6d69538bfe29020b8366ee034f90860`。可信配置提供 Node、SDK 和本轨 `codegraph.mjs` 的实际路径。仅子进程设置 `CODEGRAPH_TELEMETRY=0`；不运行安装器、不修改全局 MCP 或 Agent 配置。
+CodeGraph 使用官方 npm `@colbymchenry/codegraph` **1.0.1**，MIT，源码标签 `v1.0.1` 对应 `a1489f77a6d69538bfe29020b8366ee034f90860`。可信配置提供 Node、SDK 和本轨 `codegraph.mjs` 的实际路径。仅子进程设置 `CODEGRAPH_TELEMETRY=0`、`CODEGRAPH_NO_DOWNLOAD=1`；不运行安装器、不修改全局 MCP 或 Agent 配置。失败原始诊断只保存在本平台 ignored 投影目录的 `astrocyte-error-*.log`，HTTP 错误保持安全固定原因。
 
 显式 `index/sync/rebuild` 只把批准范围内的实际源码复制到本平台拥有的独立 generation 目录。版本仍指原 Git repo/worktree；`source_span` 对应原相对文件和行号。sync 复制上次已关闭、已 checkpoint 的真实 SQLite 图，再由官方 SDK 增量识别新增、修改和删除；失败不替换当前已发布 generation，成功后用真实 SQLite generation CAS 发布。受损投影经显式 rebuild 从原源码重建。
 
@@ -40,7 +40,12 @@ SemanticIndex 的具体模型、运行时和向量库仍待用户决定。没有
 | 实际破坏自有图 SQLite；拒绝查询；显式 rebuild | PASS |
 | 跨项目、逃逸根、私有路径、空用途、读取预算拒绝 | PASS |
 | SQLite Agent grant 撤销、目录权限撤销、revision 变化后重建 | PASS |
-| AOCI 源码构建与实际版本 | PASS；模型作者完整地图正向链路尚未执行 |
+| AOCI 源码构建、实际版本、官方 MCP 九工具 | PASS |
+| 模型作者六对象 FRAS → 官方整批 apply → Verify/Check/Guide | PASS：applied=6、aligned=true、complete=true、next_action=none |
+| 保存 AOCI 地图、无 AOCI 配置的 service 读取地图 | PASS：六条语义和相对引用；GET 没有 AOCI 进程或 ledger 写入，`.aoci` 文件数量、大小、mtime 相同 |
+| 无初始化的 B 地图 | PASS：真实 `evidence_missing`，没有伪造语义 |
+| 真实 Git 暂存区变化 | PASS：A 的地图和图均 `index_stale`，B 查询保持当前；显式 sync/refresh 恢复 |
+| 查询结果数量预算 | PASS：图与六条地图超限均拒绝，没有静默截断 |
 | SemanticIndex、HTTP/前端/最终包组合 | NOT_RUN |
 
 适用命令：`go test ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet ./internal/adapters/repositorycontext ./tests/s4/...`、`go build ./...` 已通过。真实操作入口为 `tests/s4/verify.ps1`，各阶段独立进程；本机结果位于 `.verification/s4/actual-first/` 和 `dist/s4/initial-first.log`。`deleted-failure.txt` 保存首 RED，后续 `deleted-check.log` 为准确文件删除验收，不覆盖原件。
@@ -52,3 +57,13 @@ SemanticIndex 的具体模型、运行时和向量库仍待用户决定。没有
 SOURCE `9eff2edb34058826d302d3a465b7fe7e74797be5` 已普通 push。消费方可独立使用 S2 的真实 `ProjectSnapshotProvider`：`repositorycontext.New(db, db, Options)` 后把返回的 service 交给原 S2 构造接口；没有 HTTP 自证快照，也不需要第二 SQLite 连接。查询的 `Root` 不会进入仓库上下文 JSON。H 仍须对 S2 现有快照字段执行其既定安全 DTO 审核。
 
 本次源码适用 Go 测试、vet、完整 Go build 与 `git diff --check` 均 PASS；最后一次独立进程 restart 再次核两 worktree 的真实 Count 符号和调用关系 PASS。AOCI 缺口、SemanticIndex 未决定及完整 HTTP/前端/包验证保持上表状态。本阶段继续同 Agent、工作树和分支开发，不作为 S4 或发布包最终结算。
+
+## AOCI 真实作者与边界验收
+
+两个公开 worktree 的完整 HEAD 均为 `4317d610cbe80aa6c4e22ea4da5e8dde013de4ed`。AOCI 只在 A 内执行官方 init/scan，不写平台 AGENTS、全局 MCP 或已有用户配置。源码和工具存于 `dist/s4`。当前模型完整读取六个候选对象、关联的统计测试与正式 Meta，分别根据实际职责和约束编写条目，通过官方 `aoci_update_entry` 保存 source/candidate/code batch 绑定；没有从名称或 AST 模板生成语义。六个管理对象是 `.gitattributes`、`AGENTS.md`、`README.md`、`cmd/textstats/main.go`、`go.mod`、`textstats/stats.go`；测试属于 AOCI 既有 observe 范围，平台没有降低其治理要求。
+
+`dist/s4/aoci-authored-request.json`、`aoci-authored-first-result.json`、`aoci-verify-first.json`、`aoci-check-first.json`、`aoci-guide-final.json` 是本机原件，全部 ignored。机器治理通过只证明条目格式、来源绑定和对齐条件，语义正确性仍须依据源码和实际行为判断。AOCI build date unknown、发布签名验证 NOT_RUN、FSL 包分发未决定均保留。
+
+首地图查询 FAIL 是 UI 协议对象类型 `file` 的接入判断，原件 `.verification/s4/actual-first/map-failure.txt` 保留；后续按官方 `EntryView` 执行并通过。首本机额外 Go build 曾把 ignored 临时 MCP 客户端文件纳入根 `./...`，缺少该临时工具的依赖 checksum；其记录见 `.verification/s4/actual-first/checkpoint-errors.md`。临时工具在 Go 明确忽略的自有目录中运行，平台正式 MCP 验证入口为 `tests/s4/aoci`，依赖按 B 的准确 SOURCE `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646` 消费，后续 `go build -mod=readonly ./...` PASS。没有修改 AOCI 源码或其 go.mod。
+
+`tests/s4/aoci` 使用官方 Go MCP SDK，拒绝其他 remote，输出只显示工具名、错误状态和数量；原响应以独占文件写入指定 ignored 目录。新验证日志和错误文件均带本次实际时间，保存各轮结果。`tests/s4/verify.ps1 -Phase map-readonly/map-missing/result-bounds/expect-stale` 对应上述实际边界；没有请求新的 native 模型窗口、浏览器或发布操作。

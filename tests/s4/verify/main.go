@@ -49,7 +49,7 @@ func main() {
 	flag.Parse()
 	defer func() {
 		if failure := recover(); failure != nil {
-			_ = os.WriteFile(filepath.Join(*evidence, *phase+"-failure.txt"), []byte(fmt.Sprint(failure)), 0600)
+			_ = os.WriteFile(filepath.Join(*evidence, *phase+"-failure-"+time.Now().UTC().Format("20060102T150405.000000000")+".txt"), []byte(fmt.Sprint(failure)), 0600)
 			fmt.Fprintln(os.Stderr, "FAIL", *phase, "see ignored evidence directory")
 			os.Exit(1)
 		}
@@ -150,6 +150,31 @@ func main() {
 		checkGraph(ctx, service, human, qb)
 		emit("actual_sqlite_and_adapter_restart")
 	}
+	if *phase == "sync-current" {
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "sync")
+		must(err)
+		checkGraph(ctx, service, human, qa)
+		checkGraph(ctx, service, human, qb)
+		emit("explicit_sync_to_current_source_snapshot")
+	}
+	if *phase == "expect-stale" {
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.ReadRepositoryMap(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.SearchRepositoryCode(ctx, human, qb)
+		must(err)
+		emit("changed_git_index_or_head_rejects_saved_map_and_graph_only_in_worktree_a")
+	}
+	if *phase == "result-bounds" {
+		bad := qa
+		bad.Budget.MaxResults = 1
+		_, err = service.SearchRepositoryCode(ctx, human, bad)
+		code(err, apierrors.BudgetExhausted)
+		_, err = service.ReadRepositoryMap(ctx, human, bad)
+		code(err, apierrors.BudgetExhausted)
+		emit("result_count_budget_rejects_without_silent_truncation")
+	}
 	if *phase == "corrupt-rebuild" {
 		snapshot, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
 		must(err)
@@ -229,7 +254,50 @@ func main() {
 		assert(len(result.MapEntries) > 0, "AOCI returned no authored entries")
 		emit("actual_aoci_authored_map_persisted_and_read")
 	}
+	if *phase == "map-readonly" {
+		before, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		withoutAOCI, err := repositorycontext.New(db, db, repositorycontext.Options{Git: repositorycontext.Git{EnvironmentID: "s4-public-windows"}, CacheRoot: filepath.Join(*evidence, "projections"), SnapshotBudget: budget})
+		must(err)
+		result, err := withoutAOCI.ReadRepositoryMap(ctx, human, qa)
+		must(err)
+		assert(len(result.MapEntries) == 6, "saved map did not preserve all actual authored entries")
+		after, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		assert(before == after, "map GET changed AOCI runtime files")
+		_, err = withoutAOCI.ReadRepositoryMap(ctx, human, qb)
+		code(err, apierrors.NotFound)
+		emit("map_get_uses_saved_projection_without_aoci_process_or_ledger_writes")
+	}
+	if *phase == "map-missing" {
+		_, err = service.RefreshRepositoryMap(ctx, human, qb)
+		code(err, apierrors.EvidenceMissing)
+		emit("uninitialized_aoci_map_remains_missing")
+	}
 	fmt.Println("PASS phase", *phase)
+}
+
+func directoryState(root string) (string, error) {
+	state := map[string]string{}
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		state[path] = fmt.Sprintf("%d:%d", info.Size(), info.ModTime().UnixNano())
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	data, err := json.Marshal(state)
+	return string(data), err
 }
 
 func checkGraph(ctx context.Context, service *repositorycontext.Service, caller domain.Caller, q domain.RepositoryQuery) {
