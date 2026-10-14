@@ -66,7 +66,8 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 		if err != nil {
 			return err
 		}
-		resources := swarm.Resources{}
+		zero := int64(0)
+		resources := swarm.Usage{Calls: &zero, Tokens: &zero}
 		if g.Budget.MoneyMinor != nil {
 			n := int64(0)
 			resources.Money = &n
@@ -74,7 +75,7 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 		}
 		m, err := tx.MissionByGrant(c.GrantID)
 		if err == nil {
-			resources, err = m.Used.Add(m.Reserved)
+			resources, err = m.Used.AddReserved(m.Reserved)
 			if err != nil {
 				return err
 			}
@@ -102,7 +103,7 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 			}
 			if original == nil {
 				concurrency++
-				resources, err = resources.Add(c.Resources)
+				resources, err = resources.AddReserved(c.Resources)
 				if err != nil {
 					return err
 				}
@@ -112,17 +113,24 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 			if !c.ExecutionKnown || original == nil {
 				return swarm.Failure(apierrors.LeaseLost, "submission requires the original bound operation")
 			}
-			resources, err = resources.Sub(original.Reserved)
+			remaining, releaseErr := m.Reserved.Sub(original.Reserved)
+			if releaseErr != nil {
+				return releaseErr
+			}
+			resources, err = m.Used.AddReserved(remaining)
 			if err != nil {
 				return err
 			}
-			resources, err = resources.Add(c.Resources)
+			resources, err = resources.Add(c.Usage)
 			if err != nil {
 				return err
 			}
 		}
-		used := workspace.ResourceBudget{Calls: &resources.Calls, Tokens: &resources.Tokens, MoneyMinor: resources.Money, Currency: resources.Currency}
+		used := workspace.ResourceBudget{Calls: resources.Calls, Tokens: resources.Tokens, MoneyMinor: resources.Money, Currency: resources.Currency}
 		check := workspace.GrantCheck{Caller: workspace.Caller{ID: c.Principal.ID, Kind: c.Principal.Kind, ProjectID: c.Principal.ProjectID}, GrantID: c.GrantID, Epoch: c.Epoch, ProposalRevision: c.ProposalRevision, ProjectID: c.ProjectID, Root: c.Root, Action: c.Action, Concurrency: concurrency, Used: used, Tools: c.Tools, ExternalTargets: c.ExternalTargets}
+		if c.ExecutionRoot != "" {
+			check.Root = c.ExecutionRoot
+		}
 		invoke := func(ctx context.Context, g workspace.ApprovalGrant) error {
 			reader, ok := b.grants.(swarmProposalReader)
 			if !ok {

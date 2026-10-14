@@ -154,17 +154,18 @@ type Grant struct {
 }
 
 type Mission struct {
-	ID             string    `json:"id"`
-	Version        int       `json:"version"`
-	Grant          Grant     `json:"grant"`
-	State          string    `json:"state"`
-	Reason         string    `json:"reason"`
-	Reserved       Resources `json:"reserved"`
-	Used           Resources `json:"used"`
-	WorkItemCount  int       `json:"work_item_count"`
-	NoProgress     int       `json:"no_progress"`
-	LastProgressAt time.Time `json:"last_progress_at"`
-	CreatedAt      time.Time `json:"created_at"`
+	SettledOperations int       `json:"settled_operations"`
+	ID                string    `json:"id"`
+	Version           int       `json:"version"`
+	Grant             Grant     `json:"grant"`
+	State             string    `json:"state"`
+	Reason            string    `json:"reason"`
+	Reserved          Resources `json:"reserved"`
+	Used              Usage     `json:"used"`
+	WorkItemCount     int       `json:"work_item_count"`
+	NoProgress        int       `json:"no_progress"`
+	LastProgressAt    time.Time `json:"last_progress_at"`
+	CreatedAt         time.Time `json:"created_at"`
 }
 
 func NewMission(id string, g Grant, now time.Time) (Mission, error) {
@@ -191,7 +192,7 @@ func NewMission(id string, g Grant, now time.Time) (Mission, error) {
 		z.Money = &n
 		z.Currency = g.Budget.Currency
 	}
-	return Mission{ID: id, Version: 1, Grant: g, State: "ready", Reserved: z, Used: z, CreatedAt: now, LastProgressAt: now}, nil
+	return Mission{ID: id, Version: 1, Grant: g, State: "ready", Reserved: z, Used: UsageFromReservation(z), CreatedAt: now, LastProgressAt: now}, nil
 }
 
 func (m Mission) CanExecute(now time.Time) error {
@@ -321,6 +322,7 @@ func (l Lease) Check(holder string, fence int64, now time.Time) error {
 }
 
 type Artifact struct {
+	Usage                *Usage          `json:"usage"`
 	AcceptedActorKind    string          `json:"accepted_actor_kind"`
 	ExecutionOutcome     string          `json:"execution_outcome"`
 	ExecutionFailureCode string          `json:"execution_failure_code"`

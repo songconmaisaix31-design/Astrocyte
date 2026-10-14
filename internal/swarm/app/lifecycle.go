@@ -154,17 +154,25 @@ func (s *Service) blockExecutor(ctx context.Context, l domain.Lease, reason stri
 }
 
 func (s *Service) settleExecutor(ctx context.Context, l domain.Lease, fact ExecutionFact, cancelled bool) error {
-	if fact.OperationID != l.OperationID || fact.SessionID != l.SessionID || !fact.StopConfirmed || !settledOutcome(fact.Outcome) || fact.Usage == nil || !fact.CallsKnown || !fact.TokensKnown {
+	if fact.OperationID != l.OperationID || fact.SessionID != l.SessionID || !fact.StopConfirmed || !settledOutcome(fact.Outcome) {
 		if err := s.blockExecutor(ctx, l, "original execution or usage remains unknown; reservation and write scope retained"); err != nil {
 			return err
 		}
 		return domain.Failure(apierrors.DeliveryUnknown, "original executor must be reconciled; no replacement can claim its scope")
 	}
-	if err := fact.Usage.Validate(); err != nil {
+	usage, err := actualUsage(fact)
+	if err != nil {
 		return err
 	}
-	if !fact.Usage.Fits(l.Reserved) {
-		return domain.Failure(apierrors.BudgetExhausted, "reconciled usage exceeds original reservation")
+	before, err := s.repo.Load(ctx, l.MissionID)
+	if err != nil {
+		return err
+	}
+	if !usage.WithinReservation(l.Reserved, before.Grant.Budget) {
+		if err = s.blockExecutor(ctx, l, "bounded usage evidence is missing or exceeds reservation; original scope retained"); err != nil {
+			return err
+		}
+		return domain.Failure(apierrors.EvidenceMissing, "bounded actual usage must be reconciled before release")
 	}
 	return s.repo.Within(ctx, func(tx Transaction) error {
 		current, err := tx.Lease(l.WorkItemID)
@@ -182,14 +190,12 @@ func (s *Service) settleExecutor(ctx context.Context, l domain.Lease, fact Execu
 		if err != nil {
 			return err
 		}
-		used, err := m.Used.Add(*fact.Usage)
-		if err != nil {
+		if err = m.RecordUsage(usage); err != nil {
 			return err
 		}
 		oldM := m.Version
 		m.Version++
 		m.Reserved = remaining
-		m.Used = used
 		m.NoProgress++
 		w, err := tx.WorkItem(l.WorkItemID)
 		if err != nil {
@@ -218,7 +224,7 @@ func (s *Service) settleExecutor(ctx context.Context, l domain.Lease, fact Execu
 		if err = tx.DeleteLease(w.ID, l.Fence); err != nil {
 			return err
 		}
-		return tx.Event(Event{ID: uuid.NewString(), Type: "swarm.execution_reconciled", AggregateID: w.ID, Version: w.Version, At: time.Now().UTC(), Payload: map[string]any{"operation_id": l.OperationID, "session_id": l.SessionID, "outcome": fact.Outcome, "fence": w.Fence, "usage": fact.Usage}})
+		return tx.Event(Event{ID: uuid.NewString(), Type: "swarm.execution_reconciled", AggregateID: w.ID, Version: w.Version, At: time.Now().UTC(), Payload: map[string]any{"operation_id": l.OperationID, "session_id": l.SessionID, "outcome": fact.Outcome, "fence": w.Fence, "usage": usage}})
 	})
 }
 
