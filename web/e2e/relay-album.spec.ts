@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { realService, repositoryRoot } from './realService';
+import { realService, repositoryRoot, writeWorks } from './realService';
 import type { components } from '../src/api/schema';
 import { relayAlbumMetrics } from '../src/pages/workspace/relayAlbumMetrics';
 
@@ -8,11 +8,11 @@ test('实际扫描作品保留五项统计、平台筛选、交接手册与三�
   const { server, api } = await realService(true);
   try {
     await expect.poll(async () => ((await api.get('/local-projects/registered')) as components['schemas']['RegisteredProjectDiscoveryResultV1']).snapshot.projects.length, { timeout: 120_000 }).toBeGreaterThan(0);
-    const scanned = await api.write('/works/refresh', { roots: [repositoryRoot] }) as components['schemas']['WorksSnapshotResultV1'];
+    const scanned = await writeWorks(api, '/works/refresh', { roots: [repositoryRoot] }) as components['schemas']['WorksSnapshotResultV1'];
     expect(scanned.snapshot.works).toHaveLength(1);
     const work = scanned.snapshot.works[0];
     const content = '本轨实际扫描资料与原文版本；原生接力单独取得许可。';
-    await api.write(`/works/${work.id}/handoff`, { content }, { method: 'PUT' });
+    await writeWorks(api, `/works/${work.id}/handoff`, { expected_revision: work.revision, content }, { method: 'PUT' });
     const snapshot = (await api.get('/works') as components['schemas']['WorksSnapshotResultV1']).snapshot;
     const tasks = await api.get('/relay/tasks') as components['schemas']['RelayTasksV1'];
     const writes: string[] = [], errors: string[] = [];
