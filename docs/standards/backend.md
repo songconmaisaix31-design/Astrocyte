@@ -34,6 +34,20 @@ SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` 已普通 push，包含普通 
 
 旧 README 实际结果使用原 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 启动当前生产 HTTP，只运行 GET session/progress；结果保持旧 native_id、model 与 evidence，新增模型 turns 0，旧 effectiveToolSet/source completeness 仍 unknown。F 已收到只读 URL 与项目 id，专属服务等待其检查后停止；证据 `.verification/existing-progress-http-first.log`。该服务不接续原 native 会话。
 
+F 已完成旧结果两个 viewport 的只读 UI 检查，2 PASS；专属 53863 服务已停止，实际 health 请求 `ECONNREFUSED` 确认，`.verification/existing-progress-stop-first.log`。旧实际 DB 的进度及 accepted receipt 都无 summary；当前 prompt/parser 仅读取 status/percent，summary 在现契约中可选。只读聚合 `.verification/existing-progress-shape-first.log` 确认没有字段丢失，未补造摘要或重发模型；原 frontend 404 与要求非空摘要的首 RED 由 F 保留。
+
+## 实际临时目录与 PDF 格式检查
+
+SOURCE `d74c007d31dbcc73b9c86335525953760b0490b7` 与 `9292620ec4c6b442f598be6702000ce0894f6c0e` 已普通 push；其间普通合入 V 精确 default SOURCE `a54fe8e238a2e52db98c801012c2ccdfd64edbd5`，merge `31a7e10` 保留原历史，未代改 V 的五个整文件。
+
+`startS1Server` 为子进程显式设置本工作树专属 `temporary/tool-temp` 的 TEMP/TMP。`node --test tests/s1/server-lifecycle.test.mjs` EXIT 0，两个实际普通/Relay 目录布局分别运行 HTTP、SQLite、权限、停止、重新启动与原目录再打开，2 PASS、0 SKIP，43.648s；`.verification/helper-owned-temp-first.log`。V 默认输入依赖使用原明确 `.verification/video-source-third` 与 V `.verification/video-timed-first`，七项实际原件解析与 952 个原生时间区间逐段核查 EXIT 0，1.221s，`.verification/video-default-consumed-first.log`；没有新 ASR 或模型。
+
+PDF MIME 校验复用标准 `net/http.DetectContentType`，PDF 正文仍由现 summarize/markitdown 解析；没有实现 PDF parser。FetchPDF 保持原 ValidationFailed 消息。真实已完整读取的 ACL HTML 47355 bytes 经该生产本机规则拒绝，`go test ./internal/adapters/importers -run TestPaperPDFRequiresPDFMagic -v -count=1` EXIT 0，1.144s，`.verification/paper-pdf-real-format-second.log`；显式环境 `ASTROCYTE_TEST_PUBLIC_PAPER_DIR` 选择获准原件目录，缺失直接失败。原替代 HTTP Transport 已移除，V 可由其原 owner 清理 shared helper。
+
+实际新 ACL HTTP 被 DNS `198.18.0.98` 的原 SSRF 守卫拒绝，`.verification/paper-pdf-real-html-first.log` EXIT 1，未到达 PDF 格式路径。可信代理 DNS 仍未授权，没有修改来源 IP 守卫、OS、DNS 或 TLS；本机格式通过不升级该 HTTP 结果。正向 PDF/text factory 仍需真实 PDF 和实际 CLI 原件；必要生产 NewArxiv collector 第一轮在官方 PDF GET 出现 EOF，`.verification/public-pdf-collector-first.log`，没有生成或伪造原件。第二次明确新目录运行中，结果随后登记。
+
+当前全仓 build/vet EXIT 0，`.verification/helper-video-combined-{build,vet}-first.log`，MIME 阶段全仓 vet EXIT 0，`.verification/paper-mime-vet-first.log`。原子 port0 监听及 H 普通 Workbench guard 测试的精确薄装配依赖已交当前协调者；旧 H/R dispatch 已结束，未向其追加执行或跨域编辑。实际 controller/模型窗口仍按根决定暂停新增，未把原先定向通过记为完整 Go、Relay 或最终产品验收。
+
 收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
 
 收藏 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已普通 push。`go test ./internal/adapters/importers -run TestPublicListingActualWindowCursorWithUnavailableSlot -v -count=1` EXIT 0，实际生产集合列举选出公开 folder `2356677875`，真实 Transport 始终访问上游 HTTP；三次请求位置 0/20/40，各请求 20，实际返回共 59，下一 cursor 为 4。观察包装只记录实际 query，不替代 HTTP 响应；没有把 19 改成 20。证据 `.verification/public-listing-cursor-first.log`，定向 vet EXIT 0，`.verification/public-listing-cursor-vet-first.log`。
