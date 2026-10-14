@@ -92,6 +92,9 @@ func ownedPath(path string) error {
 	for p := path; ; p = filepath.Dir(p) {
 		_, err := os.Lstat(p)
 		if err == nil {
+			if err = rejectAlias(p); err != nil {
+				return err
+			}
 			real, err := filepath.EvalSymlinks(p)
 			if err != nil {
 				return err
@@ -126,6 +129,9 @@ func inspectRoot(root string, protected []os.FileInfo) error {
 		}
 		if entry.Type()&os.ModeSymlink != 0 {
 			return errors.New("destination symlink refused")
+		}
+		if err = rejectAlias(path); err != nil {
+			return err
 		}
 		real, err := filepath.EvalSymlinks(path)
 		if err != nil || !samePath(real, path) {
@@ -311,21 +317,8 @@ func publish(ctx context.Context, source, root, externalHistory string) (p publi
 	if err = db.QueryRowContext(ctx, "PRAGMA journal_mode=DELETE").Scan(&mode); err != nil || mode != "delete" {
 		return p, errors.New("backup journal mode unavailable")
 	}
-	for _, query := range []string{
-		`SELECT id,kind,topic,source,ts,CASE WHEN json_type(data,'$.tokens')='integer' THEN json_extract(data,'$.tokens') END,CASE WHEN json_type(data,'$.scope')='text' THEN json_extract(data,'$.scope') ELSE '' END FROM attention_engine_events`,
-		`SELECT topic,attention,momentum,confidence,updated_at FROM attention_engine_nodes`,
-		`SELECT day,completed_at,started_at,id FROM attention_engine_sleep_runs`,
-	} {
-		r, e := db.QueryContext(ctx, query)
-		if e != nil {
-			return p, e
-		}
-		for r.Next() {
-		}
-		e = errors.Join(r.Err(), r.Close())
-		if e != nil {
-			return p, e
-		}
+	if err = validateDatabase(ctx, db); err != nil {
+		return p, err
 	}
 	rows, err := db.QueryContext(ctx, "SELECT topic,updated_at,attention FROM attention_engine_nodes ORDER BY topic")
 	if err != nil {
@@ -396,6 +389,55 @@ func publish(ctx context.Context, source, root, externalHistory string) (p publi
 	}
 	err = replaceFile(tempName, current)
 	return p, err
+}
+
+func validateDatabase(ctx context.Context, db *sql.DB) error {
+	checks := []struct {
+		query string
+		scan  func(*sql.Rows) error
+	}{
+		{`SELECT id,kind,topic,source,ts,CASE WHEN json_type(data,'$.tokens')='integer' THEN json_extract(data,'$.tokens') END,CASE WHEN json_type(data,'$.scope')='text' THEN json_extract(data,'$.scope') ELSE '' END FROM attention_engine_events`, func(r *sql.Rows) error {
+			var id, kind, topic, source, scope string
+			var ts int64
+			var tokens sql.NullInt64
+			return r.Scan(&id, &kind, &topic, &source, &ts, &tokens, &scope)
+		}},
+		{`SELECT topic,attention,momentum,confidence,updated_at FROM attention_engine_nodes`, func(r *sql.Rows) error {
+			var topic string
+			var a, m, c float64
+			var ts int64
+			if err := r.Scan(&topic, &a, &m, &c, &ts); err != nil {
+				return err
+			}
+			if math.IsNaN(a) || math.IsInf(a, 0) || a < 0 || a > 1 || math.IsNaN(m) || math.IsInf(m, 0) || math.IsNaN(c) || math.IsInf(c, 0) || c < 0 || c > 1 {
+				return errors.New("invalid node scalars")
+			}
+			return nil
+		}},
+		{`SELECT day,completed_at,started_at,id FROM attention_engine_sleep_runs`, func(r *sql.Rows) error {
+			var day, id string
+			var completed sql.NullInt64
+			var started int64
+			return r.Scan(&day, &completed, &started, &id)
+		}},
+	}
+	for _, check := range checks {
+		r, err := db.QueryContext(ctx, check.query)
+		if err != nil {
+			return err
+		}
+		for r.Next() {
+			if err = check.scan(r); err != nil {
+				r.Close()
+				return err
+			}
+		}
+		err = errors.Join(r.Err(), r.Close())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func backup(ctx context.Context, source, dest string) (err error) {
