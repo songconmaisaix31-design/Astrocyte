@@ -1,6 +1,6 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前本域 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前本域 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，前序业务 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 ## 完成内容
 
@@ -14,6 +14,8 @@
 
 Relay 人工迁移按已确认规则使用 `observe`，事件接入核对使用 `reconcile`。写操作在传输失败、accepted 与错误并存、HTTP 5xx（明确未实现的 501 除外）时保留未知交付锁；关闭、重开和重新加载继续禁止重复写入。`sessionStorage` 仅保存 operation UUID。Today 区分 archive 与 native notifications，完整性、unknown、null tokens 和原始窗口失败分别保存。
 
+新窗口 observer、dispatch 和迟到观察脚本要求显式 `ASTROCYTE_TEST_RELAY_EVIDENCE_DIR`，限定为当前工作树 `.verification/` 内的独立子目录。已有对应文件时通过实际文件系统 `wx` 在浏览器启动和任何 HTTP 操作前立即拒绝。失败留下本次保留文件及日志，不能改目录重新执行未知派发。Session 浏览器验收读取同一显式目录，原注册到首次 DOM 的 180 秒、真实 GetEvent 和六字段断言均保留；旧 `l1-live` 文件保持原样。
+
 ## 精确源码消费
 
 普通消费 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、B 实际输入 `e05c013a08ccf372bb884dae5eeb3345f92173af`、私有附件 `cc46b9855775adf70bce74242d08ef84ff4f573b`、真实 URL helper `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、R 人工迁移 `d14b08dc50014baf9ee636543564b040112cf3b5`、H Reader 装配 `b247dfb12b938739f09acc73e6b7582376951a0c` 和真实 listener `1aadeebaba2330bb8b786989f577415da5208fd5`。
@@ -24,6 +26,8 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| 新窗口准备的 `npm run typecheck`、`npm run lint`、五个受影响 E2E 文件显式 `npx tsc --ignoreConfig --noEmit ...` | 退出 0；不声明原生窗口已执行 | `.verification/relay-evidence-e2e-typecheck.log` |
+| `node .verification/relay-evidence-preflight.mjs` | 目录必需 / 边界 / 独立目录和三个实际重复文件拒绝通过；原内容相等，浏览器 / HTTP / 模型操作 0 | `relay-evidence-preflight-current.log`；首次检查程序 FAIL 保留在 `relay-evidence-preflight-first.log` |
 | `npm run typecheck`、`npm run lint`、`npm run build` | 退出 0；保留现有约 515 kB 产物提示 | `.verification/typecheck-source-final.log`、`lint-source-final.log`、`web-build-source-final.log` |
 | `node scripts/generate-client.mjs --check`、`git diff --check` | 退出 0 | 生成 schema 与共享源相等，未手工编辑 |
 | `npx vitest run src/api/client.test.ts src/pages/attention/pluginSnapshot.test.ts src/pages/attention/sourceSelection.test.ts` | 3 文件 21 项 PASS；包含真实生产 HTTP / SQLite | `.verification/vitest-affected-http-final.log` |
