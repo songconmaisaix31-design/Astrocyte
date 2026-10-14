@@ -98,7 +98,7 @@ try {
         $name = $entry.FullName.Replace('\', '/')
         if ($name.EndsWith('/')) { continue }
         $count++
-        $allowed = $name -match '^Astrocyte-v0\.1-windows-x64/(astrocyte(-mcp|-sleep)?\.exe|Start-Astrocyte\.(ps1|cmd)|README\.md|LICENSE|web/[^:]+)$'
+        $allowed = $name -match '^Astrocyte-v0\.1-windows-x64/(astrocyte(-mcp|-sleep)?\.exe|workbench-snapshot\.exe|Start-Astrocyte\.(ps1|cmd)|Publish-WorkbenchSnapshot\.ps1|README\.md|LICENSE|web/[^:]+)$'
         $unsafe = $name -match '(^|/)(\.\.|node_modules|data|test-results|\.git)(/|$)|\.(sqlite|db|log|jsonl)(-|$|\.)'
         if (-not $allowed -or $unsafe) { throw ('Unexpected ZIP member: ' + $name) }
     }
@@ -168,6 +168,19 @@ try {
     }
     $db = Join-Path $package 'data\local\astrocyte-workbench\v0.2-access\app-state\state.sqlite'
     Assert-Release ((Test-Path -LiteralPath $db -PathType Leaf) -and (Get-Item -LiteralPath $db).Length -gt 0) 'real independent SQLite created in package data'
+    if ($RequireCombined) {
+        $publisher = Join-Path $package 'Publish-WorkbenchSnapshot.ps1'
+        & (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') -NoProfile -ExecutionPolicy Bypass -File $publisher -Source $db
+        Assert-Release ($LASTEXITCODE -eq 0) 'packaged manual snapshot publishes actual live SQLite without development dependencies'
+        $health = Request-Release 'GET' '/api/v1/cognition/health'
+        Assert-Release ($health.status -eq 200) 'real published snapshot health'
+        $snapshotHealth = $health.body | ConvertFrom-Json
+        Assert-Release ($snapshotHealth.status -eq 'ok' -and $snapshotHealth.snapshot_at.Length -gt 0) 'actual snapshot health identifies its publication'
+        $today = Request-Release 'GET' '/api/v1/cognition/today'
+        Assert-Release ($today.status -eq 200) 'actual published cognition today read'
+        $unchanged = Request-Release 'GET' '/api/v1/material-domains'
+        Assert-Release ($unchanged.status -eq 200 -and $unchanged.body.Contains($created.domain.id)) 'read-only snapshot leaves actual application domain available'
+    }
     Stop-Release 'initial'
     $client.Dispose()
     New-Client
@@ -178,6 +191,10 @@ try {
     Assert-Release ($renewed.status -eq 200) 'restart session bootstrap'
     $persisted = Request-Release 'GET' '/api/v1/material-domains'
     Assert-Release ($persisted.status -eq 200 -and $persisted.body.Contains($created.domain.id)) 'SQLite domain survives actual process restart'
+    if ($RequireCombined) {
+        $restoredSnapshot = Request-Release 'GET' '/api/v1/cognition/health'
+        Assert-Release ($restoredSnapshot.status -eq 200) 'actual published snapshot remains readable after application restart'
+    }
     Stop-Release 'restart'
     $summary = @{ result = 'PASS'; scope = $(if ($RequireCombined) { 'combined-package-runtime' } else { 'candidate-package-runtime' }); zip = [IO.Path]::GetFullPath($Zip); output = $output; checks = $checks; limitations = @('No default browser or native controller acceptance is claimed.', 'Optional summarize/media dependencies were not invoked.', 'Restart exercised owned Windows process termination and SQLite recovery.') }
     $summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $output 'result.json') -Encoding UTF8

@@ -1,3 +1,6 @@
 @echo off
+setlocal
 powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0Start-Astrocyte.ps1" %*
-if errorlevel 1 pause
+set "release_exit=%errorlevel%"
+if not "%release_exit%"=="0" pause
+exit /b %release_exit%

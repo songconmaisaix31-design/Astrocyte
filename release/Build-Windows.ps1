@@ -43,15 +43,17 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Frozen dependency installation failed.' }
         & pnpm build
         if ($LASTEXITCODE -ne 0) { throw 'Existing production build failed.' }
+        & go build -mod=readonly -trimpath -o (Join-Path $sourceDir 'dist\workbench-snapshot.exe') ./cmd/workbench-snapshot
+        if ($LASTEXITCODE -ne 0) { throw 'Portable Workbench snapshot build failed.' }
     } finally { Pop-Location }
     $package = Join-Path $output 'Astrocyte-v0.1-windows-x64'
     New-Item -ItemType Directory -Path $package | Out-Null
     # 只复制指定的生产产物；开发源码、数据库和本机配置不进入包。
-    foreach ($file in @('astrocyte.exe', 'astrocyte-mcp.exe', 'astrocyte-sleep.exe')) {
+    foreach ($file in @('astrocyte.exe', 'astrocyte-mcp.exe', 'astrocyte-sleep.exe', 'workbench-snapshot.exe')) {
         Copy-Item -LiteralPath (Join-Path $sourceDir ('dist\' + $file)) -Destination $package
     }
     Copy-Item -LiteralPath (Join-Path $sourceDir 'web\dist') -Destination (Join-Path $package 'web') -Recurse
-    foreach ($file in @('Start-Astrocyte.ps1', 'Start-Astrocyte.cmd')) {
+    foreach ($file in @('Start-Astrocyte.ps1', 'Start-Astrocyte.cmd', 'Publish-WorkbenchSnapshot.ps1')) {
         Copy-Item -LiteralPath (Join-Path $sourceDir ('release\' + $file)) -Destination $package
     }
     Copy-Item -LiteralPath (Join-Path $sourceDir 'docs\release\windows.md') -Destination (Join-Path $package 'README.md')
