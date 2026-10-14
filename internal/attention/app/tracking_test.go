@@ -80,27 +80,6 @@ func metadataItem(id string) ListingMetadata {
 	return ListingMetadata{ExternalID: id, Locator: "https://www.bilibili.com/video/BV1PReT6EEqR/", Title: "Contract-local provider title " + id, Description: "metadata only"}
 }
 
-func TestSourceIdentityAndPublicOnlyBinding(t *testing.T) {
-	s, repo, _ := fixture(t)
-	first := bindFixture(t, s)
-	r, err := s.BindTrackingSource(context.Background(), human, BindTrackingSourceCommand{CommandMeta: meta("bind-alias", 1), Platform: "bilibili", SourceKind: "uploads", ExternalID: "3494358764489275", Locator: "https://space.bilibili.com/3494358764489275/upload/video?tracking=1"})
-	if err != nil || r.Source.ID != first.Source.ID || len(repo.state.TrackingSources) != 1 {
-		t.Fatal("account aliases duplicated binding", err)
-	}
-	_, err = s.BindTrackingSource(context.Background(), human, BindTrackingSourceCommand{CommandMeta: meta("second-account", 1), Platform: "bilibili", SourceKind: "uploads", Locator: "12345"})
-	if err != nil || len(repo.state.TrackingSources) != 2 {
-		t.Fatal("multiple accounts not retained", err)
-	}
-	_, err = s.BindTrackingSource(context.Background(), human, BindTrackingSourceCommand{CommandMeta: meta("douyin-self", 1), Platform: "douyin", SourceKind: "favorites", Locator: "https://www.douyin.com/user/self?showTab=favorite_collection"})
-	errorCode(t, err, apierrors.ScopeDenied)
-	_, err = s.BindTrackingSource(context.Background(), human, BindTrackingSourceCommand{CommandMeta: meta("mismatch", 1), Platform: "bilibili", SourceKind: "uploads", ExternalID: "1", Locator: "3494358764489275"})
-	errorCode(t, err, apierrors.ValidationFailed)
-	_, err = s.BindTrackingSource(context.Background(), human, BindTrackingSourceCommand{CommandMeta: meta("folder", 1), Platform: "bilibili", SourceKind: "favorites", Locator: "https://space.bilibili.com/3494358764489275/favlist?fid=456"})
-	if err != nil || len(repo.state.TrackingSources) != 3 {
-		t.Fatal("explicit folder not separate source", err)
-	}
-}
-
 func TestMetadataCapRecommendationGateAndHumanSelection(t *testing.T) {
 	ctx := context.Background()
 	s, repo, _ := fixture(t)

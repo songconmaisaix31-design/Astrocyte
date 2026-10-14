@@ -22,10 +22,14 @@ var agent = Principal{ID: "agent-reader", Kind: "agent"}
 
 type observedObjects struct {
 	*objects.Store
-	publishes atomic.Int32
+	publishes     atomic.Int32
+	beforePublish func()
 }
 
 func (o *observedObjects) Publish(ctx context.Context, content []byte) (string, error) {
+	if o.beforePublish != nil {
+		o.beforePublish()
+	}
 	o.publishes.Add(1)
 	return o.Store.Publish(ctx, content)
 }
@@ -33,12 +37,31 @@ func (o *observedObjects) Publish(ctx context.Context, content []byte) (string, 
 // 只记录生产 Reader 调用，不提供替代来源响应。
 type observedSource struct {
 	*importers.Reader
-	calls atomic.Int32
+	calls             atomic.Int32
+	beforeRead        func()
+	beforeReadContext func(context.Context)
 }
 
 func (r *observedSource) ReadSource(ctx context.Context, command ImportMaterialCommand) (ImportedSource, error) {
+	if r.beforeReadContext != nil {
+		r.beforeReadContext(ctx)
+	}
+	if r.beforeRead != nil {
+		r.beforeRead()
+	}
 	r.calls.Add(1)
 	return r.Reader.ReadSource(ctx, command)
+}
+
+type observedRepository struct {
+	Repository
+	active atomic.Int32
+}
+
+func (r *observedRepository) WithTx(ctx context.Context, fn func(AttentionTx) error) error {
+	r.active.Add(1)
+	defer r.active.Add(-1)
+	return r.Repository.WithTx(ctx, fn)
 }
 
 func meta(key string, version int) CommandMeta {
