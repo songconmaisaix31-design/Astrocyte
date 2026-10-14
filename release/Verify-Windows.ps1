@@ -109,7 +109,9 @@ try {
     Assert-Release (-not (Test-Path -LiteralPath (Join-Path $package 'data'))) 'fresh extraction has no database or user data'
     New-Client
     Start-Release 'initial'
-    foreach ($route in @('/', '/attention', '/workspace', '/swarm', '/today', '/focus', '/agents', '/events')) {
+    $routes = @('/', '/attention', '/workspace', '/swarm')
+    if ($RequireCombined) { $routes += @('/cognition/today', '/cognition/focus', '/cognition/agents', '/cognition/events', '/workspace/works') }
+    foreach ($route in $routes) {
         $page = Request-Release 'GET' $route
         Assert-Release ($page.status -eq 200 -and $page.body.Contains('<div id="root">')) ('static SPA ' + $route)
     }
@@ -144,10 +146,24 @@ try {
         foreach ($path in @('/api/v1/relay/agents', '/api/v1/relay/tasks')) {
             $relay = Request-Release 'GET' $path
             Assert-Release ($relay.status -eq 200) ('unconfigured Relay real state ' + $path)
+            $state = $relay.body | ConvertFrom-Json
+            Assert-Release ($state.schema_version -eq 1) ('Relay state schema ' + $path)
+            if ($path.EndsWith('/agents')) {
+                Assert-Release ($null -ne $state.agents -and @($state.agents).Count -eq 0) 'fresh Relay registry contains no inferred Agent'
+            } else {
+                Assert-Release ($null -ne $state.tasks -and @($state.tasks).Count -eq 0 -and @($state.dispatched_work_ids).Count -eq 0) 'fresh Relay has no task or inferred dispatch'
+            }
             [IO.File]::WriteAllText((Join-Path $output (($path.Split('/')[-1]) + '-safe.json')), $relay.body)
         }
         $events = Request-Release 'GET' '/api/v1/relay/session-events'
         Assert-Release ($events.status -eq 200 -or ($events.status -eq 503 -and $events.body.Contains('provider_unavailable'))) 'Relay session events preserve empty or unavailable state'
+        if ($events.status -eq 200) {
+            $admission = $events.body | ConvertFrom-Json
+            Assert-Release (@($admission.events).Count -eq 0 -and $admission.total -eq 0) 'fresh Relay has no invented session event'
+            foreach ($coverage in $admission.coverage) {
+                Assert-Release ($coverage.status -in @('unknown', 'partial') -and -not $coverage.session_complete) 'unconfigured native coverage preserves uncertainty'
+            }
+        }
         [IO.File]::WriteAllText((Join-Path $output 'session-events-safe.json'), $events.body)
     }
     $db = Join-Path $package 'data\local\astrocyte-workbench\v0.2-access\app-state\state.sqlite'
