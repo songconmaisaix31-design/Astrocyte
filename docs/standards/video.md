@@ -138,8 +138,8 @@ V SOURCE：`eead5308823804dc744723ad8e27550f91107c5b`。随后按模块准确许
 真实 PDF 正向来自 B 已完整取得的官方 `https://arxiv.org/pdf/2501.12948v1`，缓存准确指针为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/public-pdf-current-second/{source.json,paper.pdf,summarize-pdf-original.json,paper-original-text.txt}`；PDF 1312189 bytes、正文 59636 bytes、原 CLI JSON 64089 bytes。读取原件与实际文本、附件、来源和全 PDF 引用全等，SDK JSON 保持 private-native 类别；没有重做成功转写或 Agent 模型调用。
 
 ```text
-ASTROCYTE_TEST_VIDEO_BASELINE_DIR=<上述准确 baseline 目录>
-ASTROCYTE_TEST_VIDEO_TIMED_DIR=<上述准确 timed 目录>
+ASTROCYTE_TEST_VIDEO_BASELINE_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third
+ASTROCYTE_TEST_VIDEO_TIMED_DIR=C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first
 ASTROCYTE_TEST_PUBLIC_PAPER_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification
 ASTROCYTE_TEST_PDF_PUBLICATION=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/public-pdf-current-second
 go test -mod=readonly ./internal/adapters/importers -count=1 -v
