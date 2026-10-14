@@ -321,6 +321,7 @@ func (l Lease) Check(holder string, fence int64, now time.Time) error {
 }
 
 type Artifact struct {
+	AcceptedActorKind    string          `json:"accepted_actor_kind"`
 	ExecutionOutcome     string          `json:"execution_outcome"`
 	ExecutionFailureCode string          `json:"execution_failure_code"`
 	ExperienceStatus     string          `json:"experience_status"`

@@ -18,6 +18,20 @@ func (s *Service) ReadAcceptedArtifactEvent(ctx context.Context, eventID string)
 	return reader.ReadAcceptedArtifactEvent(ctx, eventID)
 }
 
+func (s *Service) ReadAcceptedArtifactEvidence(ctx context.Context, p domain.Principal, projectID, eventID string) (AcceptedArtifactEvent, error) {
+	e, err := s.ReadAcceptedArtifactEvent(ctx, eventID)
+	if err != nil {
+		return e, err
+	}
+	if e.ProjectID != projectID {
+		return AcceptedArtifactEvent{}, domain.Failure(apierrors.ScopeDenied, "accepted source belongs to another registered local project")
+	}
+	if err = s.readWithin(ctx, p, e.MissionID, func(context.Context, Transaction) error { return nil }); err != nil {
+		return AcceptedArtifactEvent{}, err
+	}
+	return e, nil
+}
+
 func (s *Service) LinkAcceptedExperience(ctx context.Context, reader ExperienceCandidateReader, eventID, candidateID string) (domain.Artifact, error) {
 	var out domain.Artifact
 	if reader == nil {
@@ -31,7 +45,7 @@ func (s *Service) LinkAcceptedExperience(ctx context.Context, reader ExperienceC
 	if err != nil {
 		return out, err
 	}
-	if source.ID != candidateID || source.Version < 1 || source.OwnerProjectID != event.ProjectID || source.AcceptanceEventID != event.EventID || source.ArtifactID != event.Artifact.ID {
+	if source.ID != candidateID || source.Version < 1 || source.OwnerProjectID == "" || source.LocalProjectID != event.ProjectID || source.AcceptanceEventID != event.EventID || source.ArtifactID != event.Artifact.ID {
 		return out, domain.Failure(apierrors.EvidenceMissing, "experience candidate does not resolve to the actual accepted artifact event")
 	}
 	err = s.repo.Within(ctx, func(tx Transaction) error {
