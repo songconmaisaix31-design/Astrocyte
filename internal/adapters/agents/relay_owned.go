@@ -45,6 +45,20 @@ func (n *Native) OwnedRelayArchive(ctx context.Context, session domain.NativeSes
 	if err != nil {
 		return archive, err
 	}
+	if p.relayCapture != nil {
+		capture := p.relayCapture
+		capture.mu.Lock()
+		path, nativeID, workspace := capture.path, capture.nativeID, capture.workspace
+		capture.mu.Unlock()
+		if nativeID != session.NativeID || !sameRelayMetadataCWD(workspace, p.cmd.Dir) {
+			return archive, nativeError(apierrors.ScopeDenied, "captured native source identity differs")
+		}
+		if path == "" {
+			return archive, nativeError(apierrors.EvidenceMissing, "native start response did not select an archive")
+		}
+		closed := capture.snapshot(p.observe().StopConfirmed).Finalized == "confirmed"
+		return domain.RelaySessionArchive{SessionID: session.ID, NativeID: nativeID, WorkspaceRoot: workspace, Path: path, Root: filepath.Dir(path), Format: "codex", Finalized: closed}, nil
+	}
 	if p.observe().StopConfirmed {
 		return archive, nativeError(apierrors.EvidenceMissing, "stopped native controller cannot resolve new archive metadata; retain its previously bound source")
 	}
@@ -52,8 +66,7 @@ func (n *Native) OwnedRelayArchive(ctx context.Context, session domain.NativeSes
 	if err != nil {
 		return archive, err
 	}
-	// Decode only identity metadata. Preview/title/turn contents, if returned by
-	// a faulty server, are not copied into state, output, events, or diagnostics.
+	// 只解码身份元数据，原始 preview 和 turns 不进入状态、日志或事件。
 	var result struct {
 		Thread struct {
 			ID   string  `json:"id"`
@@ -61,7 +74,10 @@ func (n *Native) OwnedRelayArchive(ctx context.Context, session domain.NativeSes
 			Path *string `json:"path"`
 		} `json:"thread"`
 	}
-	if err = json.Unmarshal(response["result"], &result); err != nil || result.Thread.ID != session.NativeID || !filepath.IsAbs(result.Thread.Cwd) || !sameRelayMetadataCWD(result.Thread.Cwd, p.cmd.Dir) {
+	if err = json.Unmarshal(response["result"], &result); err != nil {
+		return archive, nativeError(apierrors.InternalError, "owned archive metadata response is invalid")
+	}
+	if result.Thread.ID != session.NativeID || !filepath.IsAbs(result.Thread.Cwd) || !sameRelayMetadataCWD(result.Thread.Cwd, p.cmd.Dir) {
 		return archive, nativeError(apierrors.ScopeDenied, "owned archive metadata session or captured CWD differs")
 	}
 	if result.Thread.Path == nil || !filepath.IsAbs(*result.Thread.Path) || !strings.EqualFold(filepath.Ext(*result.Thread.Path), ".jsonl") {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -50,7 +51,7 @@ func (a *relayOwnedNativeFixture) Start(ctx context.Context, r domain.NativeRequ
 func (a *relayOwnedNativeFixture) OwnedRelayArchive(_ context.Context, s domain.NativeSession) (domain.RelaySessionArchive, error) {
 	a.sourceCalls.Add(1)
 	if !a.selected {
-		return domain.RelaySessionArchive{}, os.ErrNotExist
+		return domain.RelaySessionArchive{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "archive not selected"}
 	}
 	archive := domain.RelaySessionArchive{SessionID: s.ID, NativeID: s.NativeID, WorkspaceRoot: a.workspace, Path: s.HistoryPath, Root: a.root, Format: "public_jsonl", Finalized: a.finalized, AppendOnly: a.appendOnly}
 	if a.wrongIdentity {
@@ -331,7 +332,7 @@ func TestRelayOwnedMissingOrConflictingSourceIsGapNeverGuessedFromHistory(t *tes
 		t.Fatal(e)
 	}
 	b := findOwned(t, ownedReader(t, f.service), id)
-	if b.SourceStatus != "unknown" || b.ArchivePath != "" || b.Gap != "archive_metadata_unavailable" {
+	if b.SourceStatus != "unknown" || b.ArchivePath != "" || b.Gap != "archive_metadata_path_unavailable" {
 		t.Fatal("HistoryPath alone inferred an authorized archive")
 	}
 	a.selected = true

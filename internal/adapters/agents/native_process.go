@@ -40,6 +40,7 @@ type nativeProcess struct {
 	textMessage           string
 	textBuffer            strings.Builder
 	next                  int
+	relayCapture          *relayNativeCapture
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -102,7 +103,7 @@ func installedCommand(id string, args []string) (*exec.Cmd, error) {
 	return exec.Command(entry, args...), nil
 }
 
-func launchNative(id string, args []string, root string, lifetime time.Duration) (*nativeProcess, error) {
+func launchNative(id string, args []string, root string, lifetime time.Duration, relayCaptures ...*relayNativeCapture) (*nativeProcess, error) {
 	cmd, err := installedCommand(id, args)
 	if err != nil {
 		return nil, err
@@ -122,6 +123,9 @@ func launchNative(id string, args []string, root string, lifetime time.Duration)
 	cmd.Stderr = io.Discard // no raw authentication/provider payload enters API logs
 	ctx, cancel := context.WithTimeout(context.Background(), lifetime)
 	p := &nativeProcess{cli: id, cmd: cmd, stdin: in, done: make(chan struct{}), cancel: cancel, pending: map[string]chan map[string]json.RawMessage{}, events: []domain.NativeEvent{}, status: "idle"}
+	if len(relayCaptures) != 0 {
+		p.relayCapture = relayCaptures[0]
+	}
 	cleanup, err := startOwnedNative(cmd)
 	if err != nil {
 		cancel()
@@ -230,6 +234,9 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 }
 
 func (p *nativeProcess) read(out io.Reader) {
+	if p.relayCapture != nil {
+		defer p.relayCapture.readerFinished()
+	}
 	scanner := bufio.NewScanner(out)
 	scanner.Buffer(make([]byte, 4096), 1024*1024)
 	for scanner.Scan() {
@@ -237,6 +244,12 @@ func (p *nativeProcess) read(out io.Reader) {
 		if json.Unmarshal(scanner.Bytes(), &record) != nil {
 			p.failOutput()
 			return
+		}
+		if p.relayCapture != nil {
+			if err := p.relayCapture.observe(record); err != nil {
+				p.failOutput()
+				return
+			}
 		}
 		var id string
 		if raw, ok := record["id"]; ok {
@@ -289,6 +302,9 @@ func (p *nativeProcess) read(out io.Reader) {
 }
 
 func (p *nativeProcess) failOutput() {
+	if p.relayCapture != nil {
+		p.relayCapture.fail("native_stream_decode_or_truncation", false)
+	}
 	p.mu.Lock()
 	p.truncated = true
 	p.status = "blocked"

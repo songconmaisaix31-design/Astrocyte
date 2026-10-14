@@ -2,11 +2,11 @@
 
 ## 最新工程交接：v1.3 L1 owned-session 读侧（2026-10-14）
 
-事实源仅用 `git show 913db499233720c369f7f5bf24965d9bc6a8ba54:tasks/L1-session-capture-plan.md` 及其认知栈 §2／§7 读取，未合 validation 父业务。原分支 `songconmaisaix31-design/works-relay-runtime` 普通 no-ff 消费 I 基线 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`；当前 L1 SOURCE `7e282225f7e4b7277ed36c9f2f77c64501fa56ed` 已 push，REPORT 单独提交，精确 SHA 通过本 Dispatch 的 Orca Handoff 给主控。相对该 I 基线仅本 R 写域 11 个 Go 路径与本报告变化，未向 v1.2 候选插入 L1 源码。
+事实源仅用 `git show 913db499233720c369f7f5bf24965d9bc6a8ba54:tasks/L1-session-capture-plan.md` 及其认知栈 §2／§7 读取，未合 validation 父业务。原分支 `songconmaisaix31-design/works-relay-runtime` 普通 no-ff 消费 I 基线 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`；当前 L1 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已 push，REPORT 单独提交，精确 SHA 通过本 Dispatch 的 Orca Handoff 给主控。相对该 I 基线仅本 R 写域 11 个 Go 路径与本报告变化，未向 v1.2 候选插入 L1 源码。
 
 实际客户端仍为 Codex，`orca terminal show` 核实原 pane 为 `GPT-6.1-Sol high fast`。本 Dispatch `task_3303613a7ff7` / `ctx_98f86f7facfd`，原 owner、terminal、worktree、branch 保持；H 是唯一完整 Session 采集 owner。
 
-早期接口 SOURCE `29a400b725ca301ead31d189b353758c992ecfc0` 提前 push 给 H；后续实现 `b640ad506042df37a6074d68a64d36c20b628eee`、架构修复 `aa8899fdd985671dbf3528d045b455048dfeda9c`、ownership 修复 SOURCE `686f104a7550d6dab81604d90e797fe3ace277c7`／阶段 REPORT `9550e526ff26b357369043bbcada88b4f5003055` 保留，完成源码为上述 `7e28222`。Root 的 Orca ask 明确批准在现有 RelayState 中保留每 task 的最小 owned 引用及现有 JSON 私有 wire，并追加实际 metadata provider 和 Resume 失效工程；不新增表、schema、migration、Attempt 或证明系统，不复制归档原件。
+早期接口 SOURCE `29a400b725ca301ead31d189b353758c992ecfc0` 提前 push 给 H；后续实现 `b640ad506042df37a6074d68a64d36c20b628eee`、架构修复 `aa8899fdd985671dbf3528d045b455048dfeda9c`、ownership 修复 SOURCE `686f104a7550d6dab81604d90e797fe3ace277c7`／阶段 REPORT `9550e526ff26b357369043bbcada88b4f5003055`、provider SOURCE `7e282225f7e4b7277ed36c9f2f77c64501fa56ed`／REPORT `b482ac357dbc56c4855e4a8f1d08cada6800f80e` 保留，完成源码为上述 `62c7d99`。Root 的 Orca ask 明确批准在现有 RelayState 中保留每 task 的最小 owned 引用及现有 JSON 私有 wire，并追加实际 metadata provider 和 Resume 失效工程；不新增表、schema、migration、Attempt 或证明系统，不复制归档原件。
 
 已实现的接缝：
 
@@ -19,6 +19,7 @@
 - 新 `agents/relay_owned.go` 给既有 `*Native` 实现实际 provider：Codex 先 `n.get` 核已 owned controller 和原 native ID，仅经现有 `p.call` 查询 `thread/read {threadId: original, includeTurns:false}`。严格回验原 ID／已捕获 CWD，null／relative／非 JSONL 路径不选择。正 metadata Path 的直接 parent 是该 exact file 的 containment，不能据此扫描／授权旁边会话；格式标签为当前 Codex 协议的 `codex`，文件存在、格式／CWD／事件覆盖仍由 H 读取前验证。只解码 ID／CWD／Path，不复制 preview／turn 内容；不调用 thread/list、turns/items/list，不读原档／home，不启动 app-server／模型或第二写者。
 - 本机 Codex 0.162 的公开 `app-server generate-json-schema --out` 成功，输出仅工作树外 `l1-codex-schema-0162`；`ThreadReadParams.includeTurns` 与 `Thread.path`（nullable／unstable）及 captured CWD 已核。公开 schema generation 不等于真实 controller 验收。Claude／Pi 的现有 typed adapter 尚无已核 metadata-only path＋CWD 组合，返回具体 unsupported；本机 Pi 公开 get_state 实码含 sessionFile／sessionId 而没有 CWD，不能调用 bash 获取 CWD。OpenCode 的现有 bounded HTTP context 也不冒充文件归档来源。
 - `ArchiveFinalized` 与 `ArchiveAppendOnly` 为独立 unknown／confirmed：只有 trusted source 的正 metadata 才 confirmed，实际 Wait／Stop 的 ExitedAt 不推导归档 flush 或 append-only。accepted／delivery_unknown 的 Send 或 Resume 使旧 current claims 失效，只有本次新的正 provider metadata 才能恢复；known rejected 无输入影响不冒称重新收尾。新的纯 metadata／安全 ArchiveGap 证据能在既有 observer 原事务保存，不依赖制造活动事件；不变／相同拒绝证据不重复写状态。具体 gap 区分 metadata unsupported／unverifiable／identity_unverified／path_unavailable／unavailable，不含私有路径或原始错误。
+- Send／Resume 尚在 pending receipt 阶段时，读侧也立即派生 closure／append-only 为 unknown，避免动作等待时沿用旧收尾确证；只改返回投影，不额外写 store 或 receipt。公开阻塞 Resume 的竞态验证零 Update。
 
 适用验证（Windows / PowerShell、Go `-mod=readonly`）：
 
@@ -29,6 +30,7 @@
 | `go test -mod=readonly ./internal/workspace/app -run 'TestRelayOwnedArchiveCannot\|TestRelayOwnedReadChecks\|TestRelayOwnedDifferentAgent' -count=1 -v -timeout=60s` | PASS：错 native ProjectID／CLI 即使 Archive IDs/CWD 匹配仍持久拒绝；当前 controller 后续换 ProjectID／CLI 也拒绝；换 Agent 保留旧 closed 身份但遵守当前权限 |
 | `go test -mod=readonly ./internal/adapters/agents -run 'TestRelayOwnedCodex\|TestRelayOwnedMetadata' -count=1 -v -timeout=60s` | PASS：actual nativeProcess 受控 RPC 请求只原 ID／includeTurns false；source 只 metadata，无文件打开；ID／CWD／null／relative／format 错配拒绝，unowned／stopped／unsupported 零 RPC |
 | `go test -mod=readonly ./internal/adapters/agents ./internal/workspace/app -run 'TestRelayNativeDriverReadsActual\|TestRelayOwnedResumeAndAppend' -count=1 -v -timeout=60s` | PASS：真实 RelayNativeDriver 消费新 *Native provider，metadata 不造活动／exit；confirmed → same task Resume → 实际 public fixture append → Stop，未重新证明 closure 时保持 unknown |
+| `go test -mod=readonly ./internal/workspace/app -run 'TestRelayOwnedPendingResume\|TestRelayOwnedResumeAndAppend' -count=1 -v -timeout=60s` | PASS：pending Resume 尚未结束时即不返回旧 closure，读侧零 Update；结束及实际 append／Stop 后仍 unknown，绑定不重派 |
 | `go test -mod=readonly ./...` | 最新 SOURCE PASS，20 个有测试 package、9 个无测试 package；原环境门控 live tests 不因此成为真实 Agent 验收 |
 | `node scripts/check-architecture.mjs` | PASS，29 package，无 app I/O／跨层导入；首 RED 保留 |
 | `go vet -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents` | PASS |
@@ -37,7 +39,7 @@
 
 首 RED 不覆盖：L1 最初直接在 app stat root 导致架构拒绝 `internal/workspace/app imports I/O: os`，已移到本 R 新 relay adapter，保留 `l1-first-architecture-red.log` 的首次诊断记录。Root 对 `b640ad5` 静态发现 ownership gap 被 Archive 覆盖的缺陷（Handoff `msg_1d3f33e90e95`）；`686f104` 修复并增加上述组合负例。Root 另指出 Resume 只清 exit 而保留旧 closure claims（`msg_a41b0c07fb70`），`7e28222` 修正；不能把阶段 fixture PASS 当作两项缺陷已不存在。RPC fixture 首轮漏 Cancel cleanup callback，`l1-codex-metadata-first-test.log` 为 cleanup panic RED；桥接测例漏既有 Registry 的 capability map 初始化，`l1-native-provider-bridge-test.log` RED。两项都只修 fixture 初始化／join，原 Native 共享实现未变，后续 corrected 日志 PASS。
 
-最新完整测试为 `l1-provider-full-go-test.log`；metadata 正反例为 `l1-codex-metadata-corrected-test.log`，实际 Driver bridge／closure 回归为 `l1-native-provider-bridge-corrected-test.log`、`l1-metadata-gap-resume-test.log`。此前 `l1-ownership-complete-full-go-test.log`、`l1-owned-first-test.log`、`l1-source-gaps-test.log`、`l1-adapter-root-test.log`、`l1-final-ownership-test.log` 均保留在工作树外。所有报告只有 derived 汇总。
+最新完整测试为 `l1-provider-pending-full-go-test.log`；前阶段完整为 `l1-provider-full-go-test.log`；metadata 正反例为 `l1-codex-metadata-corrected-test.log`，实际 Driver bridge／closure 回归为 `l1-native-provider-bridge-corrected-test.log`、`l1-metadata-gap-resume-test.log`，pending 竞态为 `l1-pending-resume-closure-test.log`。此前 `l1-ownership-complete-full-go-test.log`、`l1-owned-first-test.log`、`l1-source-gaps-test.log`、`l1-adapter-root-test.log`、`l1-final-ownership-test.log` 均保留在工作树外。所有报告只有 derived 汇总。
 
 真实限制／未执行：Codex metadata provider 已有实码，但真实原生 controller 未运行，path nullable／unstable、null 时不可选择，未知真实文件格式和 flush 仍不宣称已可用。CWD 比较仅接受 normalized spelling（Windows 大小写兼容），不可证明的短／长别名差异保守拒绝，不额外探测未授权 CWD。Claude／Pi／OpenCode 的正路径 metadata 仍具体 unsupported／未实现，不是只归为用户未答。terminal-only 当前只有 owned 标准管道和启动 CWD／Git 观察，stdout 没有可验证的 native archive Path；缺少原 controller 的 metadata 口，不允许自动起第二 app-server、扫 home 或以 thread ID 猜路径。Root／H 已收到该具体差距 Handoff。
 
