@@ -77,3 +77,5 @@ SOURCE `263bc7069682ede35af60426140ee6f744b0d472` 已普通 push，父链含 B �
 当前真实限制：SemanticIndex 的用户决定未到；HTTP/前端/最终 Windows 包组合未执行；AOCI 完整系统理解未作额外全量认知声称，FSL 分发仍未决定。公开项目目录和 SDK/工具是本机依赖，发布方须使用 B 的依赖清单和可信实际路径配置。阶段 SOURCE/REPORT 供 S2/H 消费，当前 S4 继续承担后续接入与返修。
 
 Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GIT_WORK_TREE` 重定向注册仓库的实际观察。`verify -phase ambient-git` 实际把宿主 index 指向 B 的真实暂存区，A 的 IndexDigest、WorktreeDigest 和 WorktreeID 保持准确，原快照 Validate 仍通过；随后独立 restart 两图查询 PASS。仓库和 worktree 身份计算方式保持现有记录兼容。
+
+环境约束 SOURCE `1a55e1630502642324500c3b64853af882962fa4` 已普通 push；`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`git diff --check` 与上述实际两阶段验收 PASS。尚未改写 HTTP 路由，新增 `httpapi/repository_context*.go` 写域仍待原 owner 互斥交接；HTTP 请求与安全 DTO 建议已通过模块发送 H/B。
