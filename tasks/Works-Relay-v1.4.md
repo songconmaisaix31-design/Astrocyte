@@ -103,7 +103,7 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 | 生命周期全部核心路径 | 实际 EOF / structured、互斥 / 重复 / 通用冲突、working、unknown send、合法目标完成与释放、alternate / previous、publication error；真实拒绝不制造假状态 | 未满足项 NOT_RUN / FAIL，旧默认203PASS / 41FAIL / 32SKIP / 4NOT_RUN保留 |
 | 最终 Windows x64 包 | 原集成人员消费准确 SOURCE / REPORT，在实际 packaged server 自有端口 / DB / scope 核全部适用功能及原生路径 | v1.4最终包 NOT_RUN |
 
-语义与组合通过之前只准备公开固定任务、可核查的目标判定、启动策略和 observer，不启动新模型补证。单次真实执行出现未知交付后停止重发；每项真实不足独立保留。
+总负责人 `msg_d807dc7e94d0` 已允许先执行本次实际 Codex turn-start 在两种待答规则共同成立的正向链路。准确语义 SOURCE 组合、本次工具关闭和合法来源核实后，原 F 先取得 observer ready，再唯一登记并保存实际计时起点，经现有产品 HTTP 执行单次输入和动作；H核原档与SQL。无开始客户端规则继续待定，人工done仍须先核本次合法输出满足固定目标。单次真实执行出现未知交付后停止重发；旧失败、来源拒绝和每项真实不足独立保留。
 
 固定目标必须能从本次合法来源独立核查。不能用预置短回复、旧成功输出、静态页面、targeted Go通过或 replay 代替实链路、完整默认浏览器或实际发布包。来源拒绝使目标无法核查时明确失败，不先勾选人工目标完成。
 
