@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -258,10 +257,6 @@ func TestSummarizeTimingAndMissingOriginal(t *testing.T) {
 		t.Fatal("plain export fabricated verified timeline/original", err)
 	}
 }
-
-type roundTripFunc func(*http.Request) (*http.Response, error)
-
-func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
 func TestArxivRevisionAndOriginal(t *testing.T) {
 	for _, id := range []string{"2501.12345v2", "https://arxiv.org/pdf/2501.12345v2.pdf", "arXiv:hep-th/9901001v1"} {

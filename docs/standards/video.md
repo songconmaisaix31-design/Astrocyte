@@ -33,7 +33,7 @@ gofmt -l internal/adapters/importers/extractor.go internal/adapters/importers/vi
 
 模块已批准在授权桥接文件内复用上游 `acquireYtDlpMedia`、cleanup 和 `spawnTracked`，读取同一本机 whisper-cli 的原生 JSON 时间输出。官方 [whisper.cpp 1.9.2 CLI](https://github.com/ggml-org/whisper.cpp/blob/v1.9.2/examples/cli/cli.cpp)定义 `--output-json`，JSON 的 offsets.from/to 为毫秒。桥接验证整数、非负、单调、不重叠时间及正文归属。原生程序一次生成 TXT 和 JSON；原生 JSON 从固定本机文件交 Go 读取，不进入桥接 stdout。
 
-原始转写、原模型输出、凭据和测试原件仅保留于本机忽略目录及对象存储，不进入 Git、HTTP 或 release 包。正式公开响应沿用现有派生 SourceSpans 契约。
+本轮原件、凭据和测试证据仅保留于本机忽略目录及对象存储，不进入 Git 或 release 包。原生 whisper JSON 只允许本机对象读取，HTTP 拒绝；现有公开 summarize 附件保持原有读取权限。正式材料响应沿用现有派生 SourceSpans 契约。
 
 ## 真实时间、刷新与重启阶段
 
@@ -58,4 +58,73 @@ git diff --check
 
 默认 importer 测试在本次运行 EXIT 0，27.576 秒，9 个既有条件 SKIP；此运行尚包含既有替代来源，不能作为全部默认真实来源整改完成。Node 语法、Go vet、实际服务二进制构建与 diff / 格式检查 PASS。
 
-当前剩余边界：原生 `whisper-original.json` 在既有附件服务中仍可被读取，V 未请求其 HTTP 原件；生产私有读取拒绝已 Handoff 给 B，需精确 SOURCE 的实际 HTTP 拒绝验证后才通过完整视频验收。默认测试的全部真实原件整改仍继续；组合产品和 release 包验收由原模块人员继续。
+私有原件边界已普通消费 B 精确 SOURCE，并完成下方组合 HTTP 验证。组合产品完整默认检查、浏览器和 release 包验收由原模块人员继续。
+
+## 默认真实输入阶段
+
+SOURCE：`a54fe8e238a2e52db98c801012c2ccdfd64edbd5`，已普通 push。
+
+保留既有测试名称和来源、版本、摘要分离、时间、canonical identity、digest、本地文件权限及取消拒绝断言。默认视频输入从实际 CLI / media 原件逐字节读取，按生产桥接字段解析；独立读取原生 whisper JSON，对全部 952 段逐项核实毫秒 from/to、文本归属与公开 SourceSpans。页面原件实际拒绝；已有纯文本导出保持缺少可核时间的状态。非法 JSON 字段仅用于拒绝检查。
+
+论文来源正向断言使用实际固定 arXiv `2501.12948v1` 的 summarize CLI 原输出；原 PDF / metadata 断言使用官方实际 `2501.12948v2`，未发布 v999999 与真实 HTTP cancellation 直接失败。显式代理还在构造时拒绝 0、超出 65535 和非法端口。
+
+默认视频证据必须显式提供：
+
+```text
+ASTROCYTE_TEST_VIDEO_BASELINE_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third
+ASTROCYTE_TEST_VIDEO_TIMED_DIR=C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first
+go test -mod=readonly ./internal/adapters/importers -count=1 -v
+node --test internal/adapters/importers/paper-dom.test.mjs
+```
+
+缺少真实原件配置直接 FAIL。没有新增 Skip，没有把任何已有默认测试移入 video_live 标签。默认 importer 全包在真实输入整改后 EXIT 0，26.182 秒，仍有 9 个其他既有 opt-in SKIP；V 专属原件、时间、代理及原测试改写均执行。随后固定论文 CLI 原件正向补验 8.940 秒 PASS，最终 Reader / 代理端口补验 6.770 秒 PASS。Node 9 PASS / 0 SKIP，Go vet、diff 与格式检查 PASS。
+
+首编译 RED（未使用的 fmt import）在 `.verification/video-default-real-first.log` 保留；后续结果为 `.verification/video-default-real-second.log`、`.verification/importers-default-real-final.log`、`.verification/paper-export-real-final.log`、`.verification/video-default-final-targets.log` 和 `.verification/importers-node-final.log`。
+
+真实证据的具体范围：固定 BV 的原 CLI JSON 只有页面输出，CLI transcriptSegments 专用正向分支及 summary-only JSON 分支仍没有真实原件，证据 NOT_RUN；时间成功通过实际 CLI + media/native 合并解析链和生产刷新链核实。公开旧纯文本导出正向与缺时间状态已经核实。共享 `roundTripFunc` 定义仍由其他 B 测试文件依赖，V 自身没有使用替代 HTTP Transport；其他 B 文件的替代来源整改由 B 持续负责。
+
+已按模块准确授权，普通消费 B 私有附件 SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` / REPORT `ee4eeb11dfd7c2e598734ab8ea3da6efd837afd4`；没有手改 B 生产域。
+
+## 组合源码与私有原件 HTTP 验证
+
+组合 SOURCE：`08b3594fe4a3a02d06fead00ee6ead98b9e38bbc`，普通 merge 无冲突，已 push。它包含 V 全部 SOURCE / REPORT，以及 B 对私有附件和显式配置入口的准确交付。
+
+```text
+ASTROCYTE_TEST_VIDEO_PUBLICATION=C:\Users\DW\orca\workspaces\Astrocyte\product-video-20261014\.verification\video-timed-first
+node tests/s1/private-video-attachment.mjs
+go test -mod=readonly ./internal/adapters/importers -count=1 -v
+go vet -mod=readonly ./...
+go test -mod=readonly -tags video_live ./... -run '^$'
+go build -mod=readonly -o .verification/video-combined-server.exe ./cmd/server
+node --check internal/adapters/importers/summarize-media.mjs
+git diff --check
+```
+
+私有原件实际 HTTP 测试 EXIT 0：只读原真实 SQLite，经 Node SQLite backup 建立自有副本 `.verification/astrocyte-s1-y3xYnU`，只按实际材料对象引用复制原件。真实人类 / Agent 身份、普通 / 编码名称、启动及重启后共 8 个 `403 scope_denied`；其他 3 个已有公开附件共 6 个 HTTP 200，字节与本机原件全等。952 段原生 JSON 本机对象逐字节保持，拒绝没有增加机器使用记录，实际 API 进程退出和新进程重启通过，本次新 ASR 为 0。安全日志 `.verification/video-private-http-final.log`。
+
+组合默认 importer 全包首场 EXIT 1，39.208 秒，唯一失败为 B 的 `TestScholarExactDOIRouting` 请求真实 Crossref 返回 EOF；原件 `.verification/importers-default-combined-final.log` 保留。实际定向恢复 PASS，2.767 秒；同精确 SOURCE 后续全包 EXIT 0，37.468 秒，9 个既有条件 SKIP，日志 `.verification/importers-default-combined-recovery.log`。本轮没有代理 / DNS / SSL 全局修改，没有更改失败断言。
+
+全仓 Go vet、带 video_live 的全部 Go 测试编译、服务构建、Node 桥接语法与 diff 检查 PASS。`-run '^$'` 只证明全部包及测试文件编译通过，没有执行其余全仓业务测试；日志 `.verification/video-all-compile-final.log`。
+
+当前真实剩余限制：上述 9 个原有其他范围 opt-in 未执行；CLI 自身时间专用 / summary-only JSON 的实际原件证据不足；共享 Transport helper 的其他 B 使用尚待其 owner 整改；转写进行中的视频取消尚未实际验证。已验证的时间、自然同源版本、重复复用、重启与私有原件 HTTP 权限保持 PASS，未重新运行成功 ASR。完整产品 check / 浏览器 E2E / Windows ZIP 解压和发布由所属模块继续，V 保持模块功能及包支持。
+
+## 真实原生进程启动后取消
+
+SOURCE：`e9e5f52511ca44a947d39fff61fac098c6fbad74`，已普通 push。模块明确授权固定公开 BV 的新取消故障路径。
+
+`SummarizeOptions.ObserveMediaProcess` 是可选的本机回调，默认 nil；它复用固定上游 `setProcessObserver` / `spawnTracked` 的真实 PID 与退出事件，提供安全 kind/phase/pid/exitCode，以及原观察器实际提供的 progress 值，不改变公开 HTTP DTO。Go 使用标准 JSON Decoder，环境、命令参数、原始 stderr 和正文不进入回调。
+
+```text
+go test -mod=readonly -tags video_live ./internal/adapters/importers -run '^TestVideoNativeStartupCancellationHTTPProcessRestart$' -count=1 -v -timeout 8m
+go vet -mod=readonly ./internal/adapters/importers
+node --check internal/adapters/importers/summarize-media.mjs
+git diff --check
+```
+
+实际首次取消验证 PASS，18.73 秒 / 包 20.371 秒。专属 Go 子进程运行生产 Service、HTTP、SQLite、ObjectStore 和 Reader；在原上游观察器报告 whisper.cpp 实际 PID 启动后，父验证器通过原 HTTP CancelJob 取消真实 running 作业。真实进程记录为 Go 服务 `59100`、Node 桥接 `48580`、字幕 Node `54116`、yt-dlp `30252`、whisper `34604`；whisper 退出 1，Node 桥接退出 130。Windows 实际进程句柄 Wait 核实所有上述所属进程退出。
+
+独立新 Go 服务进程 `48172` 重开同库并运行原 worker / RecoverJobs；作业保持 cancelled / attempts=1 / 同 operation_id，没有材料或版本，普通重复导入复用同一取消作业，重启没有新提取进程。两次 Go HTTP 进程均实际退出，真实 SQLite 材料 / 版本 / 沉淀 / 候选为 0，作业为 1。没有 Agent 沉淀调用，也没有重做已成功转写。
+
+本机安全证据为 `.verification/video-cancel-first.log` 及 `.verification/video-cancel-first/owned-process-events.jsonl`、`go-service-1.log`、`go-service-2.log`、`state.sqlite` / `objects`；此前所有成功和首失败原件保持。
+
+转写中途进度证据仍 NOT_RUN：本机 whisper-cli 1.9.2 官方 `--print-progress` 回调通过 fprintf 输出文本；当前时间桥接没有可复用的结构化 native progress 出口。没有自行解析 stderr 或把定时器 / 任意输出标作转写开始，准确验收范围为实际 whisper 进程启动后的取消、清理和重启不续发。
