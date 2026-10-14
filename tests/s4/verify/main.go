@@ -1,0 +1,256 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"flag"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/repositorycontext"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
+	"github.com/songconmaisaix31-design/Astrocyte/migrations"
+)
+
+var phase = flag.String("phase", "", "initial, updated, deleted, restart, corrupt-rebuild, permissions, map")
+var rootA = flag.String("a", "", "owned public worktree A")
+var rootB = flag.String("b", "", "owned public worktree B")
+var evidence = flag.String("evidence", "", "ignored local evidence directory")
+var sdk = flag.String("sdk", "", "installed official CodeGraph SDK directory")
+var script = flag.String("script", "", "repository CodeGraph adapter script")
+var node = flag.String("node", "node", "trusted Node executable")
+var aoci = flag.String("aoci", "", "trusted AOCI executable")
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+func assert(ok bool, message string) {
+	if !ok {
+		panic(errors.New(message))
+	}
+}
+func code(err error, want apierrors.Code) {
+	var e *apierrors.ServiceError
+	assert(errors.As(err, &e) && e.Code == want, fmt.Sprintf("expected %s, got %v", want, err))
+}
+func emit(step string) { fmt.Println("PASS", step) }
+
+func main() {
+	flag.Parse()
+	defer func() {
+		if failure := recover(); failure != nil {
+			_ = os.WriteFile(filepath.Join(*evidence, *phase+"-failure.txt"), []byte(fmt.Sprint(failure)), 0600)
+			fmt.Fprintln(os.Stderr, "FAIL", *phase, "see ignored evidence directory")
+			os.Exit(1)
+		}
+	}()
+	assert(*phase != "" && *rootA != "" && *rootB != "" && *evidence != "", "explicit owned roots, phase and evidence are required")
+	must(os.MkdirAll(*evidence, 0700))
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
+	defer cancel()
+	for _, root := range []string{*rootA, *rootB} {
+		cmd := exec.CommandContext(ctx, "git", "-C", root, "remote", "get-url", "origin")
+		data, err := cmd.Output()
+		must(err)
+		assert(strings.TrimSpace(string(data)) == "https://github.com/songconmaisaix31-design/astrocyte-s4-public-context-20261015.git", "verification is restricted to the owned public project")
+	}
+	db, err := sqlite.Open(filepath.Join(*evidence, "state.sqlite"))
+	must(err)
+	defer db.Close()
+	must(db.RunMigrations(ctx, migrations.FS))
+	budget := domain.RepositoryBudget{MaxFiles: 100, MaxBytes: 8 * 1024 * 1024, MaxResults: 100, MaxDepth: 3}
+	service, err := repositorycontext.New(db, db, repositorycontext.Options{Git: repositorycontext.Git{EnvironmentID: "s4-public-windows"}, Graph: repositorycontext.CodeGraph{Node: *node, SDK: *sdk, Script: *script}, AOCI: *aoci, CacheRoot: filepath.Join(*evidence, "projections"), SnapshotBudget: budget})
+	must(err)
+	human := domain.Caller{Kind: "human", ID: "s4-public-control"}
+	query := func(id string) domain.RepositoryQuery {
+		return domain.RepositoryQuery{ProjectID: id, Purpose: "verify_owned_public_repository_context", Roots: []string{"."}, Text: "Count", Budget: budget}
+	}
+	qa, qb := query("s4-public-a"), query("s4-public-b")
+	if *phase == "initial" {
+		for id, root := range map[string]string{qa.ProjectID: *rootA, qb.ProjectID: *rootB} {
+			must(db.SaveProject(ctx, domain.LocalProject{ID: id, Name: "Public Unicode statistics", Root: root, Settings: domain.ProjectSettings{Revision: 1, AllowDirectory: true, AllowedSubdirs: []string{"."}, AllowedActions: []string{"read_context"}}, CreatedAt: time.Now().UTC()}, 0))
+		}
+		sa, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, []string{*rootA})
+		must(err)
+		sb, err := service.CaptureProjectSnapshot(ctx, human, qb.ProjectID, []string{*rootB})
+		must(err)
+		assert(sa.Head == sb.Head && sa.RepoID == sb.RepoID && sa.WorktreeID != sb.WorktreeID, "same commit worktree isolation")
+		must(sqlite.NewWorkspaceRepository(db).WithWorkspaceTx(ctx, func(tx app.WorkspaceTx) error { return service.ValidateProjectSnapshot(tx.Context(), human, sa) }))
+		emit("same_commit_distinct_worktrees_and_same_transaction_snapshot_validation")
+		data, err := json.Marshal(sa)
+		must(err)
+		must(os.WriteFile(filepath.Join(*evidence, "initial-snapshot.json"), data, 0600))
+		sa.Head = "untrusted-head"
+		code(service.ValidateProjectSnapshot(ctx, human, sa), apierrors.ContextStale)
+		emit("snapshot_tampering_rejected")
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "index")
+		must(err)
+		_, err = service.UpdateRepositoryIndex(ctx, human, qb, "index")
+		must(err)
+		emit("official_codegraph_indexes_created_for_both_worktrees")
+		checkGraph(ctx, service, human, qa)
+		checkGraph(ctx, service, human, qb)
+	}
+	if *phase == "updated" || *phase == "deleted" {
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		emit("dirty_source_rejects_old_index")
+		_, err = service.SearchRepositoryCode(ctx, human, qb)
+		must(err)
+		emit("other_worktree_index_remains_current")
+		var before domain.ProjectContextSnapshot
+		data, err := os.ReadFile(filepath.Join(*evidence, "initial-snapshot.json"))
+		must(err)
+		must(json.Unmarshal(data, &before))
+		code(service.ValidateProjectSnapshot(ctx, human, before), apierrors.ContextStale)
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "sync")
+		must(err)
+		emit("real_incremental_sync")
+		qa.Text = "path:textstats/paragraphs.go name:CountParagraphs"
+		result, err := service.SearchRepositoryCode(ctx, human, qa)
+		must(err)
+		if *phase == "updated" {
+			assert(len(result.Symbols) > 0, "new paragraph feature absent")
+		} else {
+			assert(len(result.Symbols) == 0, "deleted paragraph feature still indexed")
+		}
+		qb.Text = qa.Text
+		other, err := service.SearchRepositoryCode(ctx, human, qb)
+		must(err)
+		assert(len(other.Symbols) == 0, "worktree symbol crossed isolation")
+		emit("added_or_deleted_symbol_and_worktree_isolation")
+	}
+	if *phase == "deleted-check" {
+		qa.Text = "path:textstats/paragraphs.go name:CountParagraphs"
+		result, err := service.SearchRepositoryCode(ctx, human, qa)
+		must(err)
+		assert(len(result.Symbols) == 0, "deleted source file still has indexed symbols")
+		qa.Text = "name:countParagraphs"
+		result, err = service.SearchRepositoryCode(ctx, human, qa)
+		must(err)
+		assert(len(result.Symbols) > 0, "preserved paragraph feature is absent after source-file deletion")
+		qb.Text = qa.Text
+		other, err := service.SearchRepositoryCode(ctx, human, qb)
+		must(err)
+		assert(len(other.Symbols) == 0, "private paragraph implementation crossed worktrees")
+		emit("deleted_file_absent_preserved_feature_present_other_worktree_isolated")
+	}
+	if *phase == "restart" {
+		checkGraph(ctx, service, human, qa)
+		checkGraph(ctx, service, human, qb)
+		emit("actual_sqlite_and_adapter_restart")
+	}
+	if *phase == "corrupt-rebuild" {
+		snapshot, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		index, err := db.LoadRepositoryIndex(ctx, qa.ProjectID, snapshot.WorktreeID, "codegraph")
+		must(err)
+		projection := filepath.Join(*evidence, "projections", snapshot.WorktreeID, index.Generation, ".codegraph", "codegraph.db")
+		must(os.WriteFile(projection, []byte("owned damaged projection"), 0600))
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		assert(err != nil, "corrupt index query succeeded")
+		emit("actual_projection_corruption_rejected")
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "rebuild")
+		must(err)
+		checkGraph(ctx, service, human, qa)
+		emit("explicit_rebuild_from_real_source")
+	}
+	if *phase == "permissions" {
+		agent := domain.Caller{Kind: "agent", ID: "s4-public-agent", ProjectID: qa.ProjectID}
+		grant := domain.ProjectGrant{ProjectID: qa.ProjectID, AgentID: agent.ID, Actions: []string{"read_context"}}
+		must(db.SaveGrant(ctx, grant))
+		_, err = service.SearchRepositoryCode(ctx, agent, qa)
+		must(err)
+		_, err = service.SearchRepositoryCode(ctx, agent, qb)
+		code(err, apierrors.ScopeDenied)
+		bad := qa
+		bad.Roots = []string{"../worktree-b"}
+		_, err = service.SearchRepositoryCode(ctx, agent, bad)
+		code(err, apierrors.ScopeDenied)
+		bad = qa
+		bad.Purpose = ""
+		_, err = service.SearchRepositoryCode(ctx, agent, bad)
+		code(err, apierrors.ValidationFailed)
+		bad = qa
+		bad.Budget.MaxBytes = 1
+		_, err = service.SearchRepositoryCode(ctx, agent, bad)
+		code(err, apierrors.BudgetExhausted)
+		bad = qa
+		bad.Budget.MaxResults = 0
+		_, err = service.SearchRepositoryCode(ctx, agent, bad)
+		code(err, apierrors.BudgetExhausted)
+		bad = qa
+		bad.Roots = []string{".git"}
+		_, err = service.SearchRepositoryCode(ctx, agent, bad)
+		code(err, apierrors.ScopeDenied)
+		bad = qa
+		bad.Roots = []string{".env"}
+		_, err = service.SearchRepositoryCode(ctx, agent, bad)
+		code(err, apierrors.ScopeDenied)
+		emit("real_project_cross_scope_private_paths_purpose_and_budget_rejection")
+		now := time.Now().UTC()
+		grant.RevokedAt = &now
+		must(db.SaveGrant(ctx, grant))
+		_, err = service.SearchRepositoryCode(ctx, agent, qa)
+		code(err, apierrors.ApprovalRevoked)
+		emit("current_sqlite_authorization_revocation")
+		p, err := db.LoadProject(ctx, qa.ProjectID)
+		must(err)
+		revision := p.Settings.Revision
+		p.Settings.Revision++
+		p.Settings.AllowDirectory = false
+		must(db.SaveProject(ctx, p, revision))
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.ScopeDenied)
+		p.Settings.Revision++
+		p.Settings.AllowDirectory = true
+		must(db.SaveProject(ctx, p, revision+1))
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "rebuild")
+		must(err)
+		emit("directory_revocation_and_scope_revision_rebuild")
+	}
+	if *phase == "map" {
+		_, err = service.RefreshRepositoryMap(ctx, human, qa)
+		must(err)
+		result, err := service.ReadRepositoryMap(ctx, human, qa)
+		must(err)
+		assert(len(result.MapEntries) > 0, "AOCI returned no authored entries")
+		emit("actual_aoci_authored_map_persisted_and_read")
+	}
+	fmt.Println("PASS phase", *phase)
+}
+
+func checkGraph(ctx context.Context, service *repositorycontext.Service, caller domain.Caller, q domain.RepositoryQuery) {
+	result, err := service.SearchRepositoryCode(ctx, caller, q)
+	must(err)
+	id := ""
+	for _, symbol := range result.Symbols {
+		if symbol.Name == "Count" && symbol.Span.Path == "textstats/stats.go" {
+			id = symbol.ID
+		}
+	}
+	assert(id != "", "actual Count symbol is absent")
+	q.SymbolID = id
+	impact, err := service.QueryRepositoryImpact(ctx, caller, q)
+	must(err)
+	assert(len(impact.Relations) > 0, "actual Count callers are absent")
+	for _, relation := range impact.Relations {
+		assert(relation.EvidenceKind == "codegraph_static_heuristic" && relation.ExtractorVersion == "1.0.1", "relationship provenance is not explicit")
+	}
+	data, err := json.Marshal(impact)
+	must(err)
+	assert(!strings.Contains(string(data), *rootA) && !strings.Contains(string(data), *rootB), "absolute source roots escaped safe projection")
+	emit("official_symbol_query_real_callers_and_safe_relative_spans")
+}
