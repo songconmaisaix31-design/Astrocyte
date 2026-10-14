@@ -2,7 +2,7 @@
 
 ## 2026-10-15 当前发布协调
 
-本阶段 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324` / 实际终端 `term_ea9b6554-42cc-4569-ad5b-5f4140aec20d`，子 Run `run_aa4e6a119547`。固定工作树与原分支保持不变，接管 HEAD 为上一阶段独立 REPORT `6d16ab2143da2a6f15d63827f17d76e9c9419314`，工作树 clean。实际终端由 Orca `terminal show` 核实为 Codex / GPT-6.1-Sol high fast。当前仅写本文及 [今日运行记录](daily-operation-20261015.md)，业务代码、正式运行树与锁定协议保留原 owner。
+本阶段 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324` / 实际终端 `term_ea9b6554-42cc-4569-ad5b-5f4140aec20d`，子 Run `run_aa4e6a119547`。固定工作树与原分支保持不变，接管 HEAD 为上一阶段独立 REPORT `6d16ab2143da2a6f15d63827f17d76e9c9419314`，工作树 clean。实际终端由 Orca `terminal show` 核实为 Codex / GPT-6.1-Sol high fast。当前管理写域为本文、[今日运行记录](daily-operation-20261015.md)、[模型记录](opencode-model-20261015.md)及根 `msg_7891fde6d183` 明确新增的 [发布任务](../../tasks/Release-v0.1-20261014.md)，业务代码、正式运行树与锁定协议保留原owner。
 
 用户已要求现在推进四项语义修改、实际 CLI、今日采集和 L/S。四项语义及真实 CLI / Today 由 M-relay 管理原 R/H；B/F/T/V、新S2/S3功能与独立逆向研究由 M-product 管理，科研S报告由本模块在原独占域恢复。根已明确S0–S6当前系列并行授权，working关键规则仍待用户。原V4持续授权的唯一automation已实际完成D1；本模块只诊断恢复其明确未提交的现有输入并核结果，不执行自己的capture、Sleep、模型或judge。首个协调回执 `msg_ede8860188d6` 已送根 Run `run_973808dd6a2f`。
 
@@ -18,9 +18,9 @@
 | S 新阶段一手科研依据 | 原 `release-research-20261014` / `songconmaisaix31-design/release-research-20261014`；仅 `docs/release-research.md` | Task `task_ec1f2cb096b1` / Dispatch `ctx_980d42612042` 已唯一succeeded / 官方released / captured，SOURCE1f617 / 独立REPORTde9 / 远端一致与文档检查已核；实际Codex gpt-6.1-sol。研究准确来源已交产品和当前S2，未写业务或解冻。 |
 | S5 判断适配 | 新固定 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015`；准确域见下方 | Task `task_1d3e15a66b2a` / Dispatch `ctx_f403dc7813bc` / 终端 `term_5a158698-b0f0-45b6-8453-2903ffb0fa3a`，实际Codex gpt-6.1-sol / working / live，depth2。B全域零WIP停写、基线da794已核；原start_unknown / 未提交paste保留，唯一现有输入单次Enter后01:20实际开始。Jev key待用户受控配置，本地SDK资产及其余实现继续。 |
 | Q 公开工程跨日刷新 | 原 `release-cognition-20261014` / `songconmaisaix31-design/release-cognition-20261014`；`cmd/workbench-snapshot/**`、`tests/release-cognition/**`、`docs/release-cognition.md` | 原owner已released；重新核clean / HEAD `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`，新Task唯一第三层执行者使用Codex / gpt-6.1-sol。仅从获准公开Astrocyte实际Git活动在新隔离工程DB使用原生产Recorder / Sleep / snapshot，提供10月15日Today与实际10月14日闭日Sleep、独立SQL expected及精确source / pub / preSleep。旧原件保留，禁止修改Clock、制造commit或时间、人工填表、模型调用、正式V4补采。 |
-| 发布组件许可记录 | 已released的原 `release-research-20261014` / 原分支；只新增 `docs/release/components-20261015.md` | P当前Build-Windows只复制项目LICENSE，尚无新S4/S5实际组件许可和资产分发记录，形成具体缺口。根 `msg_2b7cd779bafa` 已授权必要简单任务采用OpenCode / `alibaba-cn/deepseek-v4.1-flash`，公开Orca精确命令启动、唯一第三层，不写旧科研报告或业务。准确核实际固定SDK / runtime / 模型LICENSE/NOTICE及Jev云服务边界，给P配置和包入口Handoff；不自行选择未答组件或分发方式，不替代运行验收。 |
+| 发布组件许可记录 | 已released的原 `release-research-20261014` / 原分支；只新增 `docs/release/components-20261015.md` | P当前Build-Windows只复制项目LICENSE，尚无新S4/S5实际组件许可和资产分发记录，形成具体缺口。根 `msg_2b7cd779bafa` 已授权必要简单任务；Task `task_08d2ca49a825` / Dispatch `ctx_5da3f553109d` / 终端 `term_2a80f712-a0d1-446c-8065-db2888ec2bbc`，公开Orca精确命令启动OpenCode1.18.35 / `alibaba-cn/deepseek-v4.1-flash`，ready / input_accepted、客户端turnStart observation unsupported，实际investigating heartbeat已收到。唯一第三层只核固定SDK / runtime / 模型LICENSE/NOTICE及Jev云边界，给P配置和包入口Handoff；不写旧科研报告或业务、不选择未答组件或分发方式、不替代运行验收。 |
 
-P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 和旧资源 released；不向旧 Dispatch 发送新任务。Q 保留已接纳终稿，只有具体领域失败才恢复原 owner。S 按最新明确授权在原互斥报告域继续一手依据审阅。日预检文件写域为空，与本模块两份管理文档互斥；原始输入 / 响应 / 日志只留已有外部证据根，Git、MCP 与 stdout 只记录派生计数。
+P/N恢复均创建新Task / Dispatch，先核实际工作树、分支、clean和旧资源released；不向旧Dispatch发送新任务。Q保留已接纳终稿与旧出版代，按根当前明确跨日工程输入授权在原独占域恢复唯一新任务。科研S已完成并释放，许可记录的新Task只新增独立文档。日预检文件写域为空，与本模块管理文档互斥；原始输入 / 响应 / 日志只留已有外部证据根，Git、MCP与stdout只记录派生计数。
 
 ### I 精确输入准备
 
@@ -70,7 +70,7 @@ M-relay `msg_4c82199f5651` 已回传新 H Task `task_3004b636a3ab` / Dispatch `c
 
 S5当前SOURCE `48abd1fe134b88cfe8122d2aee5a35090fc6d62b` / 独立REPORT `95871f3f3d77d27136e3f3195742e6290c587b4a`，模块独核远端同REPORT、SOURCE祖先、12个允许文件和独立单文档REPORT。固定HF revision `7b928d828b7b0e022f929d9bd2e44165aa270148` / 官方源码 `432312b36714d8889eba405507b37eda25257d9c` 的English和multilingual均已strict=True匹配及官方三次CPU parity通过；multilingual首Errno28与English首编码失败保留。Node与Go成熟RPC2对English/en、multi/en、multi/zh的三题型、真实长截断及不同PID重启已实际通过；HTTP / SQLite / 全版本缓存 / feedback重启 / 同Tx S1委托仍待对应准确组合与实际验证。
 
-根 `msg_bc39ab9b23d9` 明确授予原S5独占 `D:/Astrocyte-agent-assets/20261015/judgment-s5` 仅模型及自有可重建环境。实际12项资产3,017,906,443 bytes复制、两端digest一致；D真实Go-RPC三组双PID重启92.65秒通过、owned Close退出后，仅逐项非递归删除原C树可重建model副本，释放同字节数。原件 / 首失败 / 代码 / metadata原位保留；模块独立标准JSON核释放计数，02:11再次只读核C剩7,385,387,008 bytes、D剩110,157,524,992 bytes。没有重新导出或变更全局环境。真实断网隔离Question `msg_d85e334bfdc4` 已交根正式问答 `msg_9b5e2ccae8ac`，实际隔离范围待答，不登记OS断网通过。
+根 `msg_bc39ab9b23d9` 明确授予原S5独占 `D:/Astrocyte-agent-assets/20261015/judgment-s5` 仅模型及自有可重建环境。实际12项资产3,017,906,443 bytes复制、两端digest一致；D真实Go-RPC三组双PID重启92.65秒通过、owned Close退出后，仅逐项非递归删除原C树可重建model副本，释放同字节数。原件 / 首失败 / 代码 / metadata原位保留；模块独立标准JSON核释放计数，02:11再次只读核C剩7,385,387,008 bytes、D剩110,157,524,992 bytes。没有重新导出或变更全局环境。真实断网隔离Question `msg_d85e334bfdc4` 经根正式问答 `msg_9b5e2ccae8ac` / reply `msg_cd8d9f66ef34` 已决定先实施进程HTTP出口真实拒绝、本地推理与重启，只报告该范围，OS全断网NOT_RUN保留。Root当前非Administrator，不执行管理员规则或提权；原S5先准备独占node.exe精确路径、临时rule名称、创建/删除/finally及真实拒绝步骤供审查，齐备后由Root交用户决定，其他真验继续。
 
 内部JSON-RPC2固定成熟库 `sourcegraph/jsonrpc2@v0.2.1` / `vscode-jsonrpc@8.2.1`；官方laya-ts Git子目录构建与依赖锁、三表迁移交唯一B。公开HTTP契约 / 装配交H。S4现有ProjectSnapshotProvider最新SOURCE `1a55e1630502642324500c3b64853af882962fa4` / REPORT `a393627f8f090525fdf4e3d5bf0e320477964c74` 与准确类型 / 迁移闭包已交S5审阅复用；原S4阶段通过不能替代S5组合AT10。Jev实际key缺失，仅云调用保持NOT_RUN；backend配置不授予私有外发。S1明确委托流程由B实际typed authorizer同事务使用opaque resultID，普通Agent不能批准，缺事实拒绝，S5自身不产生准入。
 
