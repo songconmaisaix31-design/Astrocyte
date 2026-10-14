@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -20,13 +21,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	sessionevents "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	workbench "github.com/songconmaisaix31-design/Astrocyte/internal/workbench/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 	_ "modernc.org/sqlite"
 )
 
 type options struct {
-	base, mode, output, verification, zip, executable, source, method, path, body, db, task, project string
-	expect, minimum                                                                                  int
+	base, mode, output, verification, zip, executable, source, method, path, body, db, task, project, relayDB string
+	expect, minimum                                                                                           int
 }
 
 type client struct {
@@ -52,6 +55,7 @@ func main() {
 	flag.StringVar(&o.path, "path", "", "exact existing API path")
 	flag.StringVar(&o.body, "body-file", "", "local JSON request file")
 	flag.StringVar(&o.db, "db", "", "actual mutable application SQLite")
+	flag.StringVar(&o.relayDB, "relay-db", "", "actual owned Relay SQLite for original source selection")
 	flag.StringVar(&o.task, "task", "", "exact owned task UUID")
 	flag.StringVar(&o.project, "project", "", "exact owned project ID")
 	flag.IntVar(&o.expect, "expect-status", 200, "required response status")
@@ -116,7 +120,8 @@ func (c *client) run() error {
 		c.output = ""
 		return failure("output_must_be_new")
 	}
-	if len(c.source) != 40 {
+	decodedSource, sourceErr := hex.DecodeString(c.source)
+	if sourceErr != nil || len(decodedSource) != 20 {
 		return failure("package_source_required")
 	}
 	if err := c.packageBytes(); err != nil {
@@ -198,6 +203,12 @@ func (c *client) run() error {
 						}
 					}
 				}
+				if key == "project" || key == "work" {
+					var identifier string
+					if json.Unmarshal(item["id"], &identifier) == nil && identifier != "" {
+						c.summary[key+"_id"] = identifier
+					}
+				}
 			}
 		}
 		return nil
@@ -261,7 +272,7 @@ func allowed(method, path string) bool {
 	if method == "POST" {
 		return path == "/api/v1/local-projects" || path == "/api/v1/works/refresh" || path == "/api/v1/works/delivery" || path == "/api/v1/relay/intents" || (strings.HasPrefix(path, "/api/v1/relay/intents/") && strings.HasSuffix(path, "/confirm")) || (strings.HasPrefix(path, "/api/v1/relay/tasks/") && strings.HasSuffix(path, "/stop"))
 	}
-	return method == "PUT" && strings.HasPrefix(path, "/api/v1/local-projects/") && strings.HasSuffix(path, "/settings")
+	return method == "PUT" && ((strings.HasPrefix(path, "/api/v1/local-projects/") && strings.HasSuffix(path, "/settings")) || (strings.HasPrefix(path, "/api/v1/works/") && strings.HasSuffix(path, "/handoff")))
 }
 
 func (c *client) request(method, path string, body []byte, expected int) ([]byte, error) {
@@ -291,7 +302,7 @@ func (c *client) request(method, path string, body []byte, expected int) ([]byte
 		}
 		req.Header.Set("Idempotency-Key", operation)
 		// 在发送前封存写入信息，传输失败后禁止再次发送。
-		metadata, _ := json.Marshal(map[string]any{"method": method, "path": path, "operation_id": operation, "status": "NOT_SENT"})
+		metadata, _ := json.Marshal(map[string]any{"method": method, "path": path, "operation_id": operation, "status": "SENDING_ONCE_OUTCOME_UNKNOWN"})
 		if err := exclusive(filepath.Join(c.output, fmt.Sprintf("%03d-write.json", c.sequence)), metadata); err != nil {
 			return nil, err
 		}
@@ -386,31 +397,95 @@ func decodeEvent(raw []byte) (workbench.Event, error) {
 	return event, nil
 }
 
+func (c *client) openReadOnly(path string) (*sql.DB, error) {
+	if !inside(c.verification, path) {
+		return nil, failure("database_boundary")
+	}
+	actual, err := filepath.EvalSymlinks(path)
+	if err != nil || !inside(c.verification, actual) {
+		return nil, failure("database_missing_or_redirected")
+	}
+	uriPath := filepath.ToSlash(actual)
+	if filepath.VolumeName(actual) != "" && !strings.HasPrefix(uriPath, "/") {
+		uriPath = "/" + uriPath
+	}
+	dbURL := url.URL{Scheme: "file", Path: uriPath}
+	dbURL.RawQuery = url.Values{"mode": {"ro"}, "_pragma": {"query_only(1)", "busy_timeout(5000)"}}.Encode()
+	db, err := sql.Open("sqlite", dbURL.String())
+	if err != nil {
+		return nil, failure("database_open")
+	}
+	db.SetMaxOpenConns(1)
+	var readonly int
+	if db.QueryRow("PRAGMA query_only").Scan(&readonly) != nil || readonly != 1 {
+		_ = db.Close()
+		return nil, failure("database_query_only")
+	}
+	return db, nil
+}
+
+func (c *client) originalScope(ctx context.Context) (sessionevents.RelaySessionBinding, map[string]sessionevents.RelaySessionItem, error) {
+	db, err := c.openReadOnly(c.relayDB)
+	if err != nil {
+		return sessionevents.RelaySessionBinding{}, nil, err
+	}
+	defer db.Close()
+	var ownedJSON, privateJSON, taskJSON []byte
+	selected := `."` + c.task + `"`
+	err = db.QueryRowContext(ctx, "SELECT json_extract(data,?),json_extract(data,?),json_extract(data,?) FROM relay_state WHERE id=1", "$.State.OwnedSessions"+selected, "$.OwnedSessionInternals"+selected, "$.State.Tasks"+selected).Scan(&ownedJSON, &privateJSON, &taskJSON)
+	if err != nil {
+		return sessionevents.RelaySessionBinding{}, nil, failure("owned_binding_sql")
+	}
+	var owned domain.RelayOwnedSession
+	var private struct{ WorkspaceRoot, SourceRoot, SessionID, NativeID, Ownership, ArchivePath, ArchiveRoot, ArchiveFormat string }
+	var task domain.RelayTask
+	if json.Unmarshal(ownedJSON, &owned) != nil || json.Unmarshal(privateJSON, &private) != nil || json.Unmarshal(taskJSON, &task) != nil || owned.TaskID != c.task || owned.ProjectID != c.project || task.ID != c.task || task.ProjectID != c.project || task.TerminalID != owned.TerminalID || task.WorktreeID != owned.WorktreeID || private.Ownership != "owned" || private.SessionID == "" || private.NativeID == "" || !inside(c.verification, private.SourceRoot) || !inside(c.verification, private.WorkspaceRoot) {
+		return sessionevents.RelaySessionBinding{}, nil, failure("owned_binding_scope")
+	}
+	binding := sessionevents.RelaySessionBinding{TaskID: owned.TaskID, TerminalID: owned.TerminalID, SessionID: private.SessionID, WorktreeID: owned.WorktreeID, ProjectID: owned.ProjectID, NativeID: private.NativeID, Format: private.ArchiveFormat, Path: private.ArchivePath, WorkspaceRoot: private.WorkspaceRoot, ApprovedRoots: []string{private.ArchiveRoot}, Owned: true, Authorized: owned.SourceStatus == "available", ExitConfirmed: owned.ExitedAt != nil, ArchiveFinalized: owned.ArchiveFinalized == "confirmed"}
+	if binding.Format != "codex" || binding.Path == "" {
+		return binding, nil, failure("original_codex_archive_unavailable")
+	}
+	info, err := os.Stat(binding.Path)
+	if err != nil || task.CreatedAt.IsZero() || info.ModTime().Before(task.CreatedAt) {
+		return binding, nil, failure("original_archive_freshness")
+	}
+	batch, err := sessionevents.ReadRelaySession(ctx, binding, sessionevents.RelaySessionCursor{})
+	if err != nil || !batch.HeaderVerified {
+		return binding, nil, failure("original_archive_parse")
+	}
+	items := map[string]sessionevents.RelaySessionItem{}
+	for _, item := range batch.Items {
+		items[item.Origin] = item
+	}
+	c.summary["original_observed_lines"] = batch.Next.Counts.Lines
+	c.summary["original_projected"] = batch.Next.Counts.Projected
+	c.summary["original_unknown"] = batch.Next.Counts.Unknown
+	c.summary["original_errors"] = batch.Next.Counts.Errors
+	c.summary["original_tail_bytes"] = batch.TailBytes
+	c.summary["original_remaining_bytes"] = batch.Remaining
+	c.summary["original_snapshot_complete"] = batch.SnapshotComplete
+	c.summary["original_session_complete"] = batch.SessionComplete
+	c.summary["archive_append_only"] = owned.ArchiveAppendOnly
+	c.summary["archive_finalized"] = owned.ArchiveFinalized
+	return binding, items, nil
+}
+
 func (c *client) events() error {
 	id, err := uuid.Parse(c.task)
 	if err != nil || id == uuid.Nil || id.String() != c.task || c.project == "" || c.minimum < 1 {
 		return failure("owned_event_scope_required")
 	}
-	if !inside(c.verification, c.db) {
-		return failure("database_boundary")
-	}
-	if _, err := os.Stat(c.db); err != nil {
-		return failure("database_missing")
-	}
-	dbURL := url.URL{Scheme: "file", Path: filepath.ToSlash(c.db)}
-	query := url.Values{"mode": {"ro"}, "_pragma": {"query_only(1)", "busy_timeout(5000)"}}
-	dbURL.RawQuery = query.Encode()
-	db, err := sql.Open("sqlite", dbURL.String())
+	db, err := c.openReadOnly(c.db)
 	if err != nil {
 		return failure("database_open")
 	}
 	defer db.Close()
-	db.SetMaxOpenConns(1)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	var readonly int
-	if db.QueryRowContext(ctx, "PRAGMA query_only").Scan(&readonly) != nil || readonly != 1 {
-		return failure("database_query_only")
+	binding, originals, err := c.originalScope(ctx)
+	if err != nil {
+		return err
 	}
 	seen := map[string]bool{}
 	total := -1
@@ -469,7 +544,7 @@ func (c *client) events() error {
 				Session string `json:"session"`
 				Scope   string `json:"scope"`
 			}
-			if json.Unmarshal([]byte(observation), &metadata) != nil || metadata.Session == "" || metadata.Scope != c.project {
+			if json.Unmarshal([]byte(observation), &metadata) != nil || metadata.Scope != c.project {
 				return failure("sql_observation_scope")
 			}
 			originType := ""
@@ -481,6 +556,30 @@ func (c *client) events() error {
 			}
 			if originType == "" {
 				return failure("sql_origin_scope")
+			}
+			if originType == "relay:" {
+				if metadata.Session != binding.TerminalID {
+					return failure("sql_runtime_session_binding")
+				}
+			} else if originType == "relay-session:" {
+				original, exists := originals[origin]
+				if !exists || metadata.Session != binding.SessionID || !strings.HasPrefix(origin, "relay-session:"+binding.BindingID()+":") {
+					return failure("sql_original_session_binding")
+				}
+				encoded, encodeErr := json.Marshal(original.Projection)
+				if encodeErr != nil {
+					return failure("original_projection_encoding")
+				}
+				originalEvent, err := decodeEvent(encoded)
+				if err != nil {
+					return err
+				}
+				originalEvent.ID = storedID
+				if !reflect.DeepEqual(originalEvent, event) {
+					return failure("original_http_six_field_mismatch")
+				}
+			} else {
+				return failure("notification_original_comparison_not_implemented")
 			}
 			originCounts[originType]++
 			count++
@@ -495,6 +594,9 @@ func (c *client) events() error {
 	if count < c.minimum {
 		return failure("required_events_missing")
 	}
+	if originCounts["relay-session:"] == 0 || originCounts["relay-session:"] != len(originals) {
+		return failure("original_observed_range_mismatch")
+	}
 	for _, item := range coverage {
 		if item.TaskID != c.task || item.ProjectID != c.project {
 			return failure("coverage_scope")
@@ -505,5 +607,6 @@ func (c *client) events() error {
 	c.summary["six_field_match_count"] = count
 	c.summary["origin_counts"] = originCounts
 	c.summary["coverage"] = coverage
+	c.summary["original_session_comparison"] = "PASS_OBSERVED_ARCHIVE_RANGE"
 	return nil
 }

@@ -25,13 +25,17 @@ PowerShell 入口核查实际进程文件与该端口的监听者。Go 客户端
 | `registry` | 无 | 同 URL 的注册 Agent 恰为一个；任务和已派发作品均为零，注册保持数据操作 |
 | `idle` | 无 | 任务和已派发作品均为零 |
 | `request` | `Method`、`Path`；写入另传 `BodyFile`；可设 `ExpectStatus` | 真实 Cookie/CSRF、Origin、Idempotency-Key；指定状态；完整响应仅本机封存 |
-| `events` | `Database`、`Task`、`Project`；可设 `MinimumEvents` | 分页选定任务；HTTP 每条精确六字段；每个 event_id 在实际 SQL 中定位并比较字段、毫秒时间和项目范围 |
+| `events` | `Database`、`RelayDatabase`、`Task`、`Project`；可设 `MinimumEvents` | 分页选定任务；HTTP 每条精确六字段；每个 event_id 在实际 SQL 中定位并比较字段、毫秒时间和项目范围；核查 owned binding 与自产原件范围 |
 
-`request` 只允许读取 Relay 状态、local-projects、registered 元数据及 Works，或写入既有项目注册、项目 settings、Works refresh/delivery、Relay intent/confirm/stop。输入 JSON 文件必须放在独立 `.verification`。普通 command envelope 由调用者按实际 API 提供；存在 `request_id` 时，客户端将同一 UUID 用作 `Idempotency-Key`。Relay command 不添加普通 command envelope。
+`request` 只允许读取 Relay 状态、local-projects、registered 元数据及 Works，或写入既有项目注册、项目 settings、Works refresh/delivery/handoff、Relay intent/confirm/stop。输入 JSON 文件必须放在独立 `.verification`。普通 command envelope 由调用者按实际 API 提供；存在 `request_id` 时，客户端将同一 UUID 用作 `Idempotency-Key`。Relay command 不添加普通 command envelope。
 
 每次动作先执行 `/api/v1/health` 和 `/api/v1/auth/session`，以真实 CookieContainer 和返回的 CSRF token 授权。客户端拒绝 HTTP redirect，禁用 proxy 与连接复用，无自动写入重试。写入发送前保留 operation UUID；传输失败或异常 HTTP 状态保留 UNKNOWN，调用者必须读取原回执并检查本机记录，不得自动再次派发。原始 bootstrap 含 CSRF，只保存在本机证据目录，禁止提交或复制入包。
 
 只读 `events` 每页最多 100 条、最多 1000 页；读取期间 total 变化立即失败，调用者可在原生窗口关闭后显式再读取。数据库必须是独立 `.verification` 内已经存在的文件，使用 `mode=ro` 和 `PRAGMA query_only=1`；mutable live 数据库没有 `immutable`。SQL 查询使用绑定的 event_id，读取 `attention_engine_events` 的对应行，在进程内比较派生 JSON，stdout 只导出安全计数、coverage 与本机指针。原始 SQLite 内容不进入 stdout。
+
+`RelayDatabase` 是同一独立数据目录中的实际 `relay.sqlite`。客户端仅选择指定任务的 owned binding、私有路径元数据和任务元数据，核查 task/project/terminal/worktree、owned、独立公开 Git/worktree 边界。随后复用现有 `events.ReadRelaySession` 读取 binding 精确选定的 Codex 自产新会话文件；不搜索历史、不复制会话、数据库或 CLI 鉴权。文件修改时间不得早于该实际 intent，header 必须匹配实际 native ID 和工作目录。archive 来源的每条 SQL origin 必须对应该原件中实际解析的派生记录；HTTP 的六字段必须一致，HTTP archive 事件总数必须与该观察范围投影数一致。原件 unknown、errors、tail、remaining、snapshot_complete、session_complete、archive append/final 原值进入安全汇总。当前该动作要求实际 archive，`native_notifications` 原件范围比较尚未实现，会立即失败并保留真实限制。
+
+P 提供 Zip/PackageSource/Executable/实际 ServerProcessId/Base、独立数据目录、确定的公开任务与 CLI/窗口参数；N 负责在自己的 `.verification` 内运行实际测试与返修。N 从本次 bootstrap 得到 human Caller，P 不提供 Cookie、CSRF 或 CLI credential。项目、Works 与任务标识取自本次真实 HTTP 响应；输入文件中的 manual revision 取自实际项目状态。
 
 ## 已读取的现有接口
 
@@ -50,6 +54,8 @@ PowerShell 入口核查实际进程文件与该端口的监听者。Go 客户端
 | 已提交派生会话事件 | `GET /api/v1/relay/session-events?task_id=…&page=…&page_size=100` |
 
 事件公开字段严格为 `event_id/kind/topic/tokens/scope/ts`。客户端保留 coverage 的 `partial/unknown`、gap、错误与未知计数、`snapshot_complete`、`session_complete` 原值。HTTP/SQL 字段一致不能证明 DOM、原件全范围或完整原生会话；这些结果分别保留 `NOT_RUN`，直至实际 H/F 窗口和原件核查完成。
+
+H 已交固定公开正文：`Public fixed context L1_PUBLIC_CANARY_976E. This public project checks native session event capture. Explain in three concise sentences why a newline boundary and an owned CWD matter. Do not use tools, read files, execute commands, search, or inspect any history. Use only this explicit public context.` 新原生窗口的 effectiveToolSet/MCP/skills/视觉关闭证据、CLI actualargv、最终源码与来源范围仍等待 H 的实际闭环结果。
 
 ## 当前验证记录
 

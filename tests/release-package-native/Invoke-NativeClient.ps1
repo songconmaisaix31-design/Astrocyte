@@ -9,7 +9,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Output,
     [Parameter(Mandatory = $true)][ValidateSet('baseline', 'registry', 'request', 'events', 'idle')][string]$Mode,
     [string]$Method = 'GET', [string]$Path = '', [string]$BodyFile = '',
-    [int]$ExpectStatus = 200, [string]$Database = '', [string]$Task = '', [string]$Project = '',
+    [int]$ExpectStatus = 200, [string]$Database = '', [string]$RelayDatabase = '', [string]$Task = '', [string]$Project = '',
     [ValidateRange(1, 100000)][int]$MinimumEvents = 1
 )
 
@@ -23,7 +23,7 @@ if ($uri.Scheme -ne 'http' -or $uri.Host -ne '127.0.0.1') { throw 'Dedicated loo
 $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $uri.Port -ErrorAction Stop)
 if ($listeners.Count -ne 1 -or $listeners[0].OwningProcess -ne $ServerProcessId) { throw 'Actual HTTP listener does not belong to the packaged process.' }
 $arguments = @('--base', $Base, '--mode', $Mode, '--output', $Output, '--verification-root', $VerificationRoot, '--zip', $Zip, '--executable', $expected, '--package-source', $PackageSource, '--method', $Method, '--expect-status', [string]$ExpectStatus, '--minimum-events', [string]$MinimumEvents)
-foreach ($pair in @(@('--path', $Path), @('--body-file', $BodyFile), @('--db', $Database), @('--task', $Task), @('--project', $Project))) {
+foreach ($pair in @(@('--path', $Path), @('--body-file', $BodyFile), @('--db', $Database), @('--relay-db', $RelayDatabase), @('--task', $Task), @('--project', $Project))) {
     if ($pair[1] -ne '') { $arguments += $pair }
 }
 # 验收客户端只执行一个动作，所有写入失败均需检查原回执。
