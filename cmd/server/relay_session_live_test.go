@@ -113,7 +113,7 @@ func TestRelaySessionActualService(t *testing.T) {
 		t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "native_notifications")
 		t.Setenv("ASTROCYTE_RELAY_LIVE_SECONDS", "10")
 	}
-	services := httpapi.Services{Works: works, LocalProjects: projects, RegisteredProjects: projects, Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}
+	services := httpapi.Services{Works: works, LocalProjects: projects, RegisteredProjects: projects, Progress: workspace.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry), Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}
 	cleanup, err := assembleRelay(&services, db, registry)
 	if err != nil {
 		t.Fatal("实际生产组装失败")
