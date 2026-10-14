@@ -8,12 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	"io"
 	"math"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -26,9 +28,19 @@ type SummarizeOptions struct {
 	Version, YtDlpPath, FFmpegPath, WhisperBinary, WhisperModel string
 	// ProxyURL 仅接收启动配置明确提供的匿名 HTTP(S) 代理。
 	ProxyURL string
+	// ObserveMediaProcess 接收真实上游进程元数据，不包含输出正文。
+	ObserveMediaProcess func(MediaProcessEvent)
 	// UVXPath 指定实际 uvx 程序，供 paper_pdf 转换使用。
 	UVXPath string
 	Timeout time.Duration
+}
+
+type MediaProcessEvent struct {
+	Kind     string   `json:"kind"`
+	Phase    string   `json:"phase"`
+	PID      int      `json:"pid"`
+	ExitCode *int     `json:"exitCode,omitempty"`
+	Progress *float64 `json:"progress,omitempty"`
 }
 type SummarizeExtractor struct {
 	NodeExecutable, CLIPath string
@@ -43,6 +55,12 @@ func NewSummarizeExtractorWithOptions(nodeExecutable, cliPath string, o Summariz
 		proxy, err := url.Parse(o.ProxyURL)
 		if err != nil || (proxy.Scheme != "http" && proxy.Scheme != "https") || proxy.Hostname() == "" || proxy.User != nil || proxy.Opaque != "" || proxy.RawQuery != "" || proxy.ForceQuery || proxy.Fragment != "" || (proxy.Path != "" && proxy.Path != "/") {
 			return nil, errors.New("summarize proxy must be an anonymous HTTP(S) origin without credentials, query or fragment")
+		}
+		if port := proxy.Port(); port != "" {
+			number, err := strconv.ParseUint(port, 10, 16)
+			if err != nil || number == 0 {
+				return nil, errors.New("summarize proxy port must be from 1 to 65535")
+			}
 		}
 	}
 	if o.Version == "" {
@@ -139,14 +157,17 @@ type paperPDFResult struct {
 
 // ExtractPDF 使用固定 summarize、uvx 和 markitdown 提取已下载的公开 PDF。
 func (e *SummarizeExtractor) ExtractPDF(ctx context.Context, pdfURL string, pdfBytes []byte) (paperPDFResult, error) {
+	if len(pdfBytes) == 0 || len(pdfBytes) > 64<<20 {
+		return paperPDFResult{}, invalid("paper PDF must contain from 1 byte to 64MiB")
+	}
+	if err := requirePDFContent(pdfBytes); err != nil {
+		return paperPDFResult{}, err
+	}
 	if e.Options.Version != "0.25.1" {
 		return paperPDFResult{}, dependencyError("paper PDF extraction requires summarize 0.25.1")
 	}
 	if e.Options.UVXPath == "" {
 		return paperPDFResult{}, dependencyError("paper PDF extraction requires uvx (markitdown) configured")
-	}
-	if len(pdfBytes) == 0 || len(pdfBytes) > 64<<20 {
-		return paperPDFResult{}, invalid("paper PDF must contain from 1 byte to 64MiB")
 	}
 	ctx, cancel := context.WithTimeout(ctx, e.Options.Timeout)
 	defer cancel()
@@ -359,8 +380,60 @@ func (e *SummarizeExtractor) ExtractVideo(ctx context.Context, locator string) (
 	cmd.Cancel = func() error { return stdin.Close() }
 	var out, stderr cappedOutput
 	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	runErr := cmd.Run()
+	var observed chan error
+	var eventWriter *io.PipeWriter
+	if e.Options.ObserveMediaProcess == nil {
+		cmd.Stderr = &stderr
+	} else {
+		eventReader, writer := io.Pipe()
+		eventWriter = writer
+		cmd.Stderr = writer
+		observed = make(chan error, 1)
+		go func() {
+			defer eventReader.Close()
+			limited := &io.LimitedReader{R: eventReader, N: (16 << 20) + 1}
+			decoder := json.NewDecoder(limited)
+			for {
+				var event MediaProcessEvent
+				err := decoder.Decode(&event)
+				if errors.Is(err, io.EOF) {
+					if limited.N == 0 {
+						cancel()
+						observed <- errors.New("summarize process observations exceed size limit")
+						return
+					}
+					observed <- nil
+					return
+				}
+				if err != nil || event.Kind == "" || event.PID <= 0 || (event.Phase != "started" && event.Phase != "exited" && event.Phase != "progress") {
+					cancel()
+					observed <- errors.New("invalid summarize process observation")
+					return
+				}
+				e.Options.ObserveMediaProcess(event)
+			}
+		}()
+	}
+	startErr := cmd.Start()
+	if startErr != nil {
+		if eventWriter != nil {
+			eventWriter.Close()
+			<-observed
+		}
+		return Export{}, startErr
+	}
+	if e.Options.ObserveMediaProcess != nil {
+		e.Options.ObserveMediaProcess(MediaProcessEvent{Kind: "node", Phase: "started", PID: cmd.Process.Pid})
+	}
+	runErr := cmd.Wait()
+	if eventWriter != nil {
+		eventWriter.Close()
+		exitCode := cmd.ProcessState.ExitCode()
+		e.Options.ObserveMediaProcess(MediaProcessEvent{Kind: "node", Phase: "exited", PID: cmd.Process.Pid, ExitCode: &exitCode})
+		if err := <-observed; err != nil {
+			return Export{}, err
+		}
+	}
 	if ctx.Err() != nil {
 		return Export{}, ctx.Err()
 	}

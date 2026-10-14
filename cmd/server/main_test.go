@@ -1,9 +1,6 @@
 package main
 
-import (
-	"os"
-	"testing"
-)
+import "testing"
 
 func TestResolvePort_Valid(t *testing.T) {
 	tests := []struct {
@@ -11,6 +8,7 @@ func TestResolvePort_Valid(t *testing.T) {
 		want int
 	}{
 		{"", 8787},
+		{"0", 0},
 		{"9000", 9000},
 		{"8080", 8080},
 		{"1", 1},
@@ -19,12 +17,7 @@ func TestResolvePort_Valid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.env, func(t *testing.T) {
-			if tt.env != "" {
-				os.Setenv("ASTROCYTE_PORT", tt.env)
-				defer os.Unsetenv("ASTROCYTE_PORT")
-			} else {
-				os.Unsetenv("ASTROCYTE_PORT")
-			}
+			t.Setenv("ASTROCYTE_PORT", tt.env)
 
 			port, err := resolvePort()
 			if err != nil {
@@ -43,7 +36,6 @@ func TestResolvePort_Invalid(t *testing.T) {
 		env  string
 	}{
 		{"negative", "-1"},
-		{"zero", "0"},
 		{"too_high", "65536"},
 		{"not_a_number", "abc"},
 		{"float", "8080.5"},
@@ -52,8 +44,7 @@ func TestResolvePort_Invalid(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			os.Setenv("ASTROCYTE_PORT", tt.env)
-			defer os.Unsetenv("ASTROCYTE_PORT")
+			t.Setenv("ASTROCYTE_PORT", tt.env)
 
 			_, err := resolvePort()
 			if err == nil {

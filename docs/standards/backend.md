@@ -18,7 +18,7 @@
 - 视频固定 owner V 已接收 extractor.go、extractor_test.go、summarize.go、summarize-media.mjs、importers_test.go 五整文件，B 持续停写。T 测试域保持原已交接范围。
 - 当前 Windows 已配置匿名 loopback 代理实际指向 `127.0.0.1:7890`；经明确授权只读取得实际配置，原 arXiv 官方 API 通过该代理实际 HTTP 200，13717 bytes，证据 `.verification/arxiv-configured-proxy-first.atom.xml`。未修改系统网络、SSL 或 DNS；生产显式代理配置仍待消费 V 精确 SOURCE。
 
-上述定向通过未覆盖当前全包 RED、尚存替代实现、视频真实时间区间、私有附件读取边界及 favorites 分页失败。阶段报告继续保留实际限制，后续原 owner 完成生产返修与完整验证。
+上述定向通过未覆盖当前全包 RED、尚存替代实现及 favorites 最终容量验收。视频真实时间区间及私有附件读取结果分别由 V 和下节实际检查登记，阶段报告继续保留其他限制。
 
 ## 原生视频附件权限与显式代理
 
@@ -34,7 +34,109 @@ SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` 已普通 push，包含普通 
 
 旧 README 实际结果使用原 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 启动当前生产 HTTP，只运行 GET session/progress；结果保持旧 native_id、model 与 evidence，新增模型 turns 0，旧 effectiveToolSet/source completeness 仍 unknown。F 已收到只读 URL 与项目 id，专属服务等待其检查后停止；证据 `.verification/existing-progress-http-first.log`。该服务不接续原 native 会话。
 
-收藏第三页实际仅返回 19 条元数据。上游请求窗口位置与真实观察条数分别保留；初次 100 的预算应按实际返回条数或请求槽位计算，已交根决定，未答保持未决定。源 cursor 可独立纠正为请求窗口推进，不能伪填缺失或降低 100 条成功断言。
+F 已完成旧结果两个 viewport 的只读 UI 检查，2 PASS；专属 53863 服务已停止，实际 health 请求 `ECONNREFUSED` 确认，`.verification/existing-progress-stop-first.log`。旧实际 DB 的进度及 accepted receipt 都无 summary；当前 prompt/parser 仅读取 status/percent，summary 在现契约中可选。只读聚合 `.verification/existing-progress-shape-first.log` 确认没有字段丢失，未补造摘要或重发模型；原 frontend 404 与要求非空摘要的首 RED 由 F 保留。
+
+## 实际临时目录与 PDF 格式检查
+
+SOURCE `d74c007d31dbcc73b9c86335525953760b0490b7` 与 `9292620ec4c6b442f598be6702000ce0894f6c0e` 已普通 push；其间普通合入 V 精确 default SOURCE `a54fe8e238a2e52db98c801012c2ccdfd64edbd5`，merge `31a7e10` 保留原历史，未代改 V 的五个整文件。
+
+`startS1Server` 为子进程显式设置本工作树专属 `temporary/tool-temp` 的 TEMP/TMP。`node --test tests/s1/server-lifecycle.test.mjs` EXIT 0，两个实际普通/Relay 目录布局分别运行 HTTP、SQLite、权限、停止、重新启动与原目录再打开，2 PASS、0 SKIP，43.648s；`.verification/helper-owned-temp-first.log`。V 默认输入依赖使用原明确 `.verification/video-source-third` 与 V `.verification/video-timed-first`，七项实际原件解析与 952 个原生时间区间逐段核查 EXIT 0，1.221s，`.verification/video-default-consumed-first.log`；没有新 ASR 或模型。
+
+PDF MIME 校验复用标准 `net/http.DetectContentType`，PDF 正文仍由现 summarize/markitdown 解析；没有实现 PDF parser。FetchPDF 保持原 ValidationFailed 消息。真实已完整读取的 ACL HTML 47355 bytes 经该生产本机规则拒绝，`go test ./internal/adapters/importers -run TestPaperPDFRequiresPDFMagic -v -count=1` EXIT 0，1.144s，`.verification/paper-pdf-real-format-second.log`；显式环境 `ASTROCYTE_TEST_PUBLIC_PAPER_DIR` 选择获准原件目录，缺失直接失败。原替代 HTTP Transport 已移除，V 可由其原 owner 清理 shared helper。
+
+实际新 ACL HTTP 被 DNS `198.18.0.98` 的原 SSRF 守卫拒绝，`.verification/paper-pdf-real-html-first.log` EXIT 1，未到达 PDF 格式路径。可信代理 DNS 仍未授权，没有修改来源 IP 守卫、OS、DNS 或 TLS；本机格式通过不升级该 HTTP 结果。必要生产 NewArxiv collector 第一轮在官方 PDF GET 出现 EOF，`.verification/public-pdf-collector-first.log`，没有生成或伪造原件。第二次使用明确新目录完成生产官方来源下载与实际 CLI 提取，结果登记如下。
+
+当前全仓 build/vet EXIT 0，`.verification/helper-video-combined-{build,vet}-first.log`，MIME 阶段全仓 vet EXIT 0，`.verification/paper-mime-vet-first.log`。原子 port0 监听及 H 普通 Workbench guard 测试的精确薄装配依赖已交当前协调者；旧 H/R dispatch 已结束，未向其追加执行或跨域编辑。实际 controller/模型窗口仍按根决定暂停新增，未把原先定向通过记为完整 Go、Relay 或最终产品验收。
+
+## 实际 PDF 原件与 H 明确源测试
+
+SOURCE `4a6076c402e0b5d31982154a31a905bee6127477` 已普通 push；前一 REPORT 为 `b01519924a10128314fd04279738332c14597a0f`。生产 `NewArxiv.Read` 完整取得固定官方 `https://arxiv.org/pdf/2501.12948v1`，1312189 PDF bytes；实际 `ExtractPDF` 使用原 summarize/uvx/markitdown 隔离进程，取得 59636 text bytes 与 64089 原 CLI JSON bytes，0 模型调用。证据 `.verification/public-pdf-collector-second.log`，原件仅在 `.verification/public-pdf-current-second/`；首 EOF 保留。
+
+`TestPaperPDFSourceNeverPresentsURLAsFullText` 使用该实际 PDF、官方源 metadata、原 CLI JSON 及正文，全字段来源和原附件 bytes 保持断言。格式、来源 key、无提取配置及错误输入四项检查 EXIT 0，1.132s，`.verification/paper-pdf-actual-source-first.log`；显式环境 `ASTROCYTE_TEST_PDF_PUBLICATION` 选择上述获准目录，缺失直接失败。该检查是生产来源构造函数的真实输入验证，没有宣称新 `paper_pdf` HTTP 导入已通过。
+
+PDF CLI 原 JSON 包含本机输入路径，构造函数使用已有 private-native MediaType 类别保留在本机对象。跨 revision ObjectRef 权限规则同时识别已有 `summarize-pdf-original.json`，防止既存名字别名开放原生元数据。新的 PDF HTTP 导入受前述原网络守卫限制，实际正向 HTTP 与私有 PDF 原件拒绝尚未运行；不以视频对应检查替代该结论。
+
+协调者正式新建 H 非原生任务 `ctx_d7d8c2828fba` 后，H 冻结 `cmd/server/workbench_config.go`，B 仅原样消费不可变 `24b6390bcad60a2a20b671dcb60725e77eb3a7a4` 单文件，逐行 case-sensitive 内容相等。普通测试保留 H `78903848199b915a21e95e42f52cbed64c6d606c` 全部原断言，唯一修订为本机专属 `.verification/workbench-guard` 根；真实 SQLite/migrations、显式自有 sources、普通 app-state 与实际 snapshot hardlink 拒绝两项检查 EXIT 0，1.832s，`.verification/workbench-config-actual-first.log`。实际服务构建及全仓 build/vet EXIT 0，`.verification/workbench-config-build-first.log`、`.verification/public-pdf-config-{build,vet}-first.log`。该 helper 原写域已经 ACK 归还 H，源中的通用注释与异常处理整改交原 owner，未编辑其 main 装配。
+
+F 只通过 GET 检查原真实视频副本 `.verification/astrocyte-s1-FAkZe5` 的两版资料、952 spans 和安全附件信息，两个 viewport 2 PASS。实际 revision 1 为 spans 0、public 1、private 0；revision 2 为 spans 952、public 3、private 1；安全只读聚合 `.verification/existing-video-version-counts-first.log`，原首错误计数断言由 F 保留。专属 API 61280 已停止，实际 health `ECONNREFUSED` 确认，`.verification/existing-video-stop-first.log`；0 新 ASR/模型，没有人工 SQL 修改资料。
+
+## 原子监听与真实 DOM 输入
+
+SOURCE `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、`bd3c3ee3628e61bc99f800232fc17550843af026` 均已普通 push。经 H owner 与两个模块明确临时授权，B 仅移植 `1aadeebaba2330bb8b786989f577415da5208fd5` 相对其父的 main/server changed blocks，以及整文件 `relay_http_listener.go`，新增文件逐行 case-sensitive 相等；未消费其他 H 装配或整段历史。三个临时 H 文件域已在 SOURCE 后明确 ACK 归还，B 后续停止修改。
+
+Go 一次绑定并持有实际 port0 listener；helper 使用成熟 readline、JSON、URL 读取自产 `http_listening/api_url`，随后实际 GET health。API 没有 Node 先占后释放的探测；明确重启绑定原已观测端口，Vite 使用该准确 API port，`--strictPort` 在端口失败时直接终止。公告和 HTTP 可响应分别核验，启动失败保留原 cause，不重绑或换端口。
+
+`go test ./cmd/server -run 'TestResolvePort|TestWorkbench' -v -count=1` EXIT 0，四项测试及全部原有效/无效参数覆盖通过，2.300s，`.verification/atomic-listener-main-first.log`。端口 0 按明确新语义移至成功参数，其余拒绝断言保留。实际服务 build、全仓 vet 和 gofmt/diff 检查通过，`.verification/atomic-listener-build-first.log`、`.verification/atomic-listener-vet-first.log`。
+
+`node --test tests/s1/server-lifecycle.test.mjs` 当前完整三项 EXIT 0，3 PASS、0 SKIP，64.936s，`.verification/atomic-listener-helper-final.log`；覆盖实际两个布局/SQLite/重开、Vite 代理/同源身份/CSRF、第二真实 Go 进程重复绑定必失败，以及原端口进程重启后的真实 Works 写入与独立 SQL 完整性。首 Vite 检查在缺公告事件的文字断言失败，`.verification/atomic-listener-web-first.log`；生产 helper 对同一公告失效语义保留不同实际事件 cause，第二次完整检查 23.971s 通过，`.verification/atomic-listener-web-second.log`。原 F 49680 Windows bind 首 RED 仍保留，F 独立实际用例验收不由该 helper 结果替代。
+
+论文来源工厂及隔离检查移除虚构的论文 HTML/title/abstract/text，使用完整实际 ACL 与 PLOS HTML，经现生产 Node DOM 解析，正文和附件原 bytes、source key、标题、摘要和状态保持断言。restricted 是明确拒绝规则参数，未声明观察真实付费来源；IP/URL 表格属于明确纯函数参数。`go test ./internal/adapters/importers -run 'TestPaperSource|TestPaperDOMInstalledPinAndIsolation|TestIsPublicIP|TestValidatePublicPaperURL' -v -count=1` EXIT 0，六项 PASS，2.188s，`.verification/paper-source-actual-first.log`。必要 Node/固定 CLI 缺失现在直接失败，没有新增 skip；既有独立 opt-in public captures 保留，未假设其已运行。
+
+当前根已授权继续语义、CLI 与 L/S 的已确认工作，但实际 CLI/selected-text/Today 仍须先相关 R/H 语义通过和根 working/done 决定。没有仅因跨日启动 controller 或模型，Source alias 合法端口及全写域残余替代实现仍待后续原 owner 完成。
+
+## 当前默认来源检查与失败传播
+
+SOURCE merge `0d9640ecb8142f643c4565aaac28b1c8b6b4b956` 普通消费 V 精确 `eead5308823804dc744723ad8e27550f91107c5b`，含其原 observer/cancellation SOURCE `e9e5f52511ca44a947d39fff61fac098c6fbad74` 和 REPORT `c2833a5de92644602868abc4200c1774186356c3` 祖先；已正常 push。ExtractPDF 在 dependency/CLI 之前复用成熟 MIME 规则，shared 替代 Transport helper 定义由原 V owner 移除；B 未修改 V 五文件。原实际 native progress 是否可观测保持 V 的 NOT_RUN，未用自写 parser 补时间或进度。
+
+明确提供实际 video baseline/timed、public paper dir、PDF publication、批准匿名 proxy 及公开搜索开关后，`go test -mod=readonly ./internal/adapters/importers -json -count=1` 当前 EXIT 0，76 个测试/子测试 PASS、0 FAIL、6 个既有 opt-in SKIP，package 44.930s；`.verification/importers-default-current-sixth.jsonl`。SKIP 为 public Bilibili 独立检查、独立 arXiv live、本地 PDF live、两个跨站捕获以及 paper URL live，不能当作通过。此前默认公开网络的首 RED 保留，当前 package 通过不替代全仓或整轨验收。对应全仓 build/vet EXIT 0，`.verification/video-mime-combined-{build,vet}-first.log`。
+
+F 再次明确授权的唯一 `cmd/server/workbench_config_test.go` 冲突已按不可变 `4a6076c402e0b5d31982154a31a905bee6127477` 完整源经文件编辑工具处理并仅 stage，逐行大小写相等，unmerged entries 空；其他 staged 依赖和 web WIP 全部保留。实际 F 组合服务 build EXIT 0，`.verification/f-workbench-config-build-first.log`；没有在 F commit/merge，单文件临时授权已归还。
+
+SOURCE `391c6176145044b099c13a05a926aef2096db170` 已普通 push，进度失败保存与未知结果读取分别保留原语义错误和实际存储异常。真实 SQLite/migrations 经实际 context cancellation 同时触发生产写入和读取失败，原错误及 `context.Canceled` 都可定位，数据库零进度记录；`go test ./internal/workspace/app -run TestProgressFailureKeepsActualSQLiteCancellation -v -count=1` EXIT 0，0.974s，`.verification/progress-sqlite-cancel-first.log`。测试只调用相同生产函数，没有替代 repository；语义错误是明确函数参数，未声明模型调用或交付。进度代码注释改为中文，定向 vet 和全仓 build EXIT 0，`.verification/progress-error-vet-second.log`、`.verification/progress-error-build-first.log`。旧 progress memory/native 替代测试仍待完整整改，未用新增检查覆盖该限制。
+
+协调者按最新用户决定要求 S2/S3 实现。B 已确认下列域在精确已 push `0d9640e` 无 WIP，并停止写入后移交固定 owner：S2 goals/proposals/approvals/session_bindings/proposal_context/proposal_ports 的指定 workspace/domain/app 文件、既有 app/service.go、指定 sqlite/httpapi workspace 文件、tests/s2 及 workspace-s2 报告；S3 internal/swarm、指定 sqlite/httpapi swarm 文件及 tests/s3。B 保留 projects/contracts/native_context/deps/migrations/scripts/config 的共享边界，跨域需求只提交 Handoff。
+
+OpenCode 实际安装版本和 npm manifest 都为 1.18.35。固定版本来源、权限、server/CLI 文档与源码已核实；按根授权，版本检查和 serve 均使用完整自有 HOME/profile、XDG config/data/state/cache、temp、managed、数据库与 Windows appdata/programdata 子环境。原宿主 auth、配置与历史保持不读取、不复制，环境仅继承明确允许的系统路径与 locale，provider 凭据和启动注入项不继承。实际无模型生命周期已验证；当前模型和正向 Send 继续保持未核实。
+
+注册项目缓存 SOURCE `bee569f0b30fe2496dc933b026989d955efdbaf3` 已普通 push。应用测试使用本工作树实际 Git、生产 `NewScopedRegisteredProjects`、真实 SQLite 和正常 metadata 接口；缓存读取断开发现来源并设置 `PRAGMA query_only=ON`，实际观察、人工备注、revision/updated_at 和持久化 JSON 全部保持。只清空可重建的 Board 活动投影以验证重新聚合，原 Git 来源不变；创建时间与活动时间规则另以明确聚合函数输入验证，不声明原生会话事实。两个原测试名及活动、元数据、零扫描/写入、原缓存不变覆盖保留，内存 repository 和替代扫描回调已移除。
+
+`go test -mod=readonly ./internal/workspace/app -run '^TestRegisteredProjects(CachedGitActivity|ExistingSQLiteCache)$' -v -count=1` EXIT 0，1.237s，`.verification/registered-cache-actual-first.log`；实际 roots=1/groups=1、投影活动 0→1、恢复 1。定向 vet、全仓 build、gofmt 和 diff 检查 EXIT 0，`.verification/registered-cache-{vet,build}-first.log`。S2 当前唯一 owner 为 `ctx_f32b6d92119a`，使用新增 s2_service.go；既有 app/service.go 归 B 薄装配，在准确构造 SOURCE 前继续暂停修改。
+
+注册发现生命周期 SOURCE `2a6a6d0ae20cc02f9160f6a1c4fdf5d1066d7ad7` 已普通 push。刷新错误在保存 stale/unknown 旧缓存后继续返回原错误，保存或 metadata 读取错误经 `errors.Join` 一并保留。Scoped 发现通过实际固定 Git `--git-common-dir` 命令取得同一 worktree 家族身份；已知 Git 身份读取失败立即失败，保留未知 Git 观察。SQLite discovery/metadata 测试移除替代 source、原生 controller 和引用 reader，观察包装只计数并委托生产来源。
+
+目录创建、移除、恢复均发生在本树自有目录；实际刷新、权限拒绝、冷重启、unknown/stale、零项目/授权创建均保持覆盖。metadata 测试建立实际 Git 仓库和两个 worktree，通过正常 metadata 接口保存备注；实际 worktree move 后名称更新，移走自有 `.git` 后身份未知，人工备注及已有身份保持，新的 OS 测试进程继续读取同一 SQLite。并发取消由实际事务占用生产单连接触发，首刷新占有刷新锁并等待 SQLite；取消等待者和首刷新均及时返回 `context.Canceled`，没有额外连接等待或来源调用。该检查不声明取消了实际运行中的 Git 子进程。
+
+`go test -mod=readonly ./internal/adapters/sqlite -run '^Test(Registered(ProjectCacheRestartStaleAndNoAuthority|SourceUnavailableBeforeFirstObservation|RefreshWaitCancellationDoesNotBlockShutdown)|ProjectMetadataPersistsThroughRefreshArchiveAndProcessRestart)$' -v -count=1` 第四轮 EXIT 0，4 项，3.806s，`.verification/registered-sqlite-lifecycle-fourth.log`。第一轮共享 helper 编译错误、第二轮被生产抑制的错误、第三轮错误类型期望错误均保留；最终精确断言生产 `ScopeDenied`、固定消息及 action。更新后应用缓存两项、相关三包 vet 和全仓 build EXIT 0，`.verification/registered-cache-current-second.log` 与 `.verification/registered-lifecycle-{vet,build}-first.log`。
+
+按协调者新增共享 DDL 唯一 owner 分配，S3 请求的独立 SOURCE `da48a114d91181075bd32b62996beadd9c2c0a25` 已普通 push，仅增加 `migrations/020_swarm.sql` 五表及 Swarm 版本登记。Mission grant_id、租约 work_item_id/operation_id、消费者 consumer_id/event_id 唯一约束及所请求外键保持，复用既有幂等/outbox 定义；001–018 内容没有修改，019 留给 S2 准确表需求。上述四项实际 SQLite 检查在新迁移下再次 EXIT 0，3.403s，`.verification/swarm-migration-actual-first.log`，包含正常迁移和重新打开。Swarm 业务 CAS、授权同事务重查及两执行者闭环由 `ctx_d4bf65ca06bf` 原 owner 执行，B 尚未运行其验收。
+
+当前协调者最终划分为既有 app/service.go 归 B 薄装配、新增 s2_service.go 归 S2；S2 已交准确构造 SOURCE，既有 service.go 无需修改。B 已普通 no-ff 消费 S2 `507be52f4e31759dc8c3765aeea964f1f2efe013`，同数据库 Attention adapter 衔接与实际验证登记如下。H 单 helper 修正已按下述精确 SOURCE 消费并归还临时写域。
+
+S2 精确请求的新增迁移 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5` 已普通 push，仅增加 `migrations/019_workspace_approvals.sql`。七表保存目标/提案固定版本、ApprovalGrant、ContextPacket 和 SessionBinding，复合版本键、指定唯一约束与外键均按原 owner 请求实现；实际原会话表为 `local_agent_sessions`。新增 foundation_idempotency.result_json 使用 `TEXT NOT NULL DEFAULT 'null'`，既有 result_code/outbox 和 001–018 文件保持原内容；workspace schema 版本由 6 增至 7。上述四项实际 SQLite 迁移/重启/metadata OS 进程/权限/取消检查 EXIT 0，7.487s，`.verification/workspace-migration-actual-first.log`。S2 已发布源码已消费，HTTP 及完整上下文接续验收仍由原 owner 与 H 执行。
+
+H 唯一 helper 精确消费 SOURCE `9f7891ecabd51cffa645a61cfa861eeef670b046` 已普通 push，`cmd/server/workbench_config.go` 与 H `25d843783d65ada98c0c51766a8d5b35b8f5f941` 全文件 case-sensitive 比对相等；只使用文件编辑工具，没有合入其他 H 历史。Stat/ReadDir、generation canonical 与 identity 错误立即拒绝，首次尚未创建目录保持原初始化语义。B 既有真实 SQLite 目录和 hardlink 两项 EXIT 0，1.874s，`.verification/workbench-helper-25d-second.log`，临时单文件写域已归还。H 自己的实际 junction 检查通过和 symlink OS 1314 首次失败分别保留，B 没有将该 symlink 语义记为通过。
+
+共享 policy SOURCE `4725f0b1c6907ddefb3b1e1dac0f49840031db59` 已普通 push。`ValidateProjectActionScope` 只接收事务已加载的项目与要求，强制当前 settings revision、明确业务 action、tools、CLI 原名外发以及目录/AllowedSubdirs；`claim_work_item` 还需 AgentControl。`AuthorizeProjectActionCaller` 接收同事务已加载的 ProjectGrant，检查 Agent 归属、到期、撤销与 action，拒绝 Agent 的五项人类专属业务；人类安全停止在身份验证后通过原 owned 控制器处理，不依赖已撤销执行批准。S3 九项业务名称逐一加入既有 validActions，没有 native 别名映射。两项纯函数参数检查及 11 个子项 EXIT 0，0.929s，`.verification/project-policy-ports-first.log`；这些输入不声明真实批准或来源，S2/Swarm 实际接口与并发验收仍由原 owner 执行。
+
+OpenCode SOURCE `a3fe68f5420f439c51ffa5e67e034543a01358cf` 已普通 push，移除全部替代 HTTP 服务。实际安装的 1.18.35 原生进程返回原 session ID，实际 HTTP 核对自有路径、空 MCP、空 external plugin、末尾通配 deny 权限；创建、空历史读取、确认进程停止、重新启动同 ID 恢复、错误 Basic auth、未知 session、四种不安全权限均通过真实原生接口。模型调用为 0；正文/回复投影继续使用明确 JSON 函数参数，不冒称实际模型回复。paid Send、真实非空上下文及跨会话交接保持 NOT_RUN，原 opt-in paid 测试继续保留，未新增 skip。
+
+启动必须先取得固定版本在 Server.listen 成功后输出的实际 listener URL，经标准 `net/url` 核对精确 endpoint 后，只发送一次健康请求；原 20 秒启动总预算保持。官方来源为 [固定版本 serve](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/cli/cmd/serve.ts)、[固定版本 listener](https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/server/server.ts) 与 [server 文档](https://opencode.ai/docs/server/)。HTTP/JSON/响应关闭/清理错误明确返回，停止仍完成实际进程树处理；输出超限拒绝。实际 raw CLI 输出、原生数据库与原生响应只留在本树 `.verification/opencode-owned-*`，不进入产品数据库或 Git。
+
+`go test -mod=readonly ./internal/adapters/agents -run '^TestOpencode(IsolationEnv|SessionLifecycleOverHTTP|SessionDenyPermissionFailClosed|RejectsUnauthenticatedAndUnknownReply|ReplyProjectionInputs|WaitHealth|AdapterSnapshotRegistered)$' -v -count=1` 最终 EXIT 0，7 项，12.280s，`.verification/opencode-owned-announced-first.log`。实际四个保留目录为 `opencode-owned-1049957266`、`opencode-owned-425773741`、`opencode-owned-2171616221`、`opencode-owned-4283419979`；首个目录记录同 ID 创建/停止/恢复。前面的 Windows 错误类型与首次健康请求期限失败仍保留于 `opencode-owned-no-model-{final,corrected,budget}.log`，未重标为 PASS。最终相关包 vet、全仓 build、gofmt/diff EXIT 0，`.verification/opencode-announced-{vet,build}-first.log`。协作式 CLI 的 OS 读取隔离、原生来源完整度、有效工具集合及实际 Codex event_id 链验收均未由这些结果提升。
+
+S2 精确普通合并为 `20bdbc55850e0a5e9d5297aa9c27d399f8a2e696`，Attention 共享事务 SOURCE `ce281d003c093ec26e19dfec78e912f20a014787` 已普通 push。`AttentionRepository.WithTx` 明确区分缺席、同数据库和另一数据库；同数据库复用现连接，由原 Workspace 事务提交或回滚，独立事务则保留原处理并传播回滚/关闭异常。实际 `Service.CreateProjectSpace` 同事务提交，重复同一空间 INSERT 的真实主键约束使空间、attention_outbox、attention_receipts 全部回滚；另一数据库拒绝回调，缺席上下文可正常开启独立事务，连接等待计数保持原值。两个测试含四条路径 EXIT 0，1.839s，`.verification/attention-workspace-transaction-second.log`，第一轮查错 foundation 表的断言失败保留。S2 原实际批准/撤销/幂等/SQLite 重启用例在 B 组合源码 EXIT 0，1.295s，`.verification/workspace-s2-507-actual-first.log`；相关 vet/full build EXIT 0。源码合并第一次远端拒绝，核 remote 仍在前一 REPORT 后第二次正常 push 成功。
+
+按 M/H 明确授权及 H 零 WIP 停写 ACK，B 在 H 工作树仅使用文件编辑工具复制 019 原件并只 stage 该文件。H index blob 与原 da794 文件精确同为 `352ecc0e5e2f12aa52bf3871e7304f15292ba667`，001–018 无 diff；H 的其他 WIP、源码提交、实际服务和数据库没有由 B 操作。临时范围已归还 H，未复制 020 或整段 B 历史。
+
+S4 新增投影迁移 SOURCE `98bb9236c68f45ca4ab4114d46eafba5c90cdedf` 与 S3 人工退回 policy SOURCE `c110201774dd61b8d7e5280526364786c6af4cc2` 已普通 push。`021_repository_context.sql` 只增加所请求安全元数据五列、三字段主键及 workspace 版本 8；S4 实际 generation/CAS/索引语义归其原 owner。`reject_artifact` 逐名加入 validActions 并仅允许人类，Agent 即使持有该动作字符串仍拒绝。新增迁移下实际 SQLite 四路径 EXIT 0，2.069s，policy 两项含 11 子项 EXIT 0，0.906s，`.verification/repository-context-migration-first.log`；定向 vet/full build/gofmt/diff EXIT 0。CodeGraph 1.0.1 官方元数据和实际 SDK 依赖已按下述结果登记，实际 S4 索引与 MCP 能力继续由原 owner 验证。
+
+当前已向新 UI 与 M 提供实际 GetItem 核实的五个 Reader 环境变量指针：Q main `public-cognition-6f63200932f14a10ad4d9fb91c78d749/local`、Q `cognition-before-sleep-local`，以及 B `reader-actual-public/{empty,closed,native}/local`。这些出版物均为本次公开来源工程派生；本机已跨上海 10-15，旧出版物和闭日 Sleep 执行时间仍为 10-14，默认实际时钟检查的今日来源前提需要当前公开出版物。未改变时钟、断言、正式资料或实验日程；整套 Reader 新一轮验收保持未完成。
+
+依赖 SOURCE `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646` 已普通 push，`go.mod`、`go.sum` 与现有 `dependencies.lock.json` 增加官方 `github.com/modelcontextprotocol/go-sdk v1.6.1` 及其实际运行依赖，现有 x/net/x/sys 版本保持。官方固定版本 go.mod 要求 Go 1.25.0，当前 1.27.2 满足；[固定版本许可](https://github.com/modelcontextprotocol/go-sdk/blob/v1.6.1/LICENSE) 按贡献适用 Apache-2.0/MIT，非规范文档为 CC-BY-4.0，未统一标为单一 MIT。
+
+CodeGraph 顶层和实际 Windows bundle 均为 `1.0.1`，本机 bundled Node 实际 `--version` 为 `v24.16.0`，SDK 要求 `>=20.0.0 <25.0.0`。`lib/package.json` 的十项实际 runtime 版本与许可已经逐一读取并登记；tree-sitter-wasms `0.1.13` 使用 Unlicense，其余九项元数据为 MIT。Node 使用上游 MIT 及[第三方许可](https://github.com/nodejs/node/blob/v24.16.0/LICENSE)。顶层/Windows bundle 许可为 package metadata 的 MIT，顶层没有独立 LICENSE 文件；实际依赖 LICENSE 保留在安装目录。子环境要求 `CODEGRAPH_TELEMETRY=0`、`CODEGRAPH_NO_DOWNLOAD=1`，没有修改 global、root package.json 或 pnpm lock，也没有在 B 启动索引/daemon。实际清单 `.verification/codegraph-actual-dependencies-first.json`；AOCI 完整构建身份等待 S4 原 owner 的准确指针，未自行补造。
+
+`go build -mod=readonly github.com/modelcontextprotocol/go-sdk/mcp`、`go list -mod=readonly -m -json all`、`node scripts/check-dependencies.mjs`、全仓 `go build -mod=readonly ./...` 和 `go vet -mod=readonly ./...` 均 EXIT 0。证据为 `.verification/mcp-go-sdk-build-first.log`、`mcp-go-sdk-module-graph-third.json`、`mcp-sdk-dependency-inventory-first.log` 与 `mcp-sdk-combined-{build,vet}-first.log`。模块全图前两次缺既有 ndjson 传递元数据 checksum 的失败保留，校验值仅从实际官方 Go download 结果通过文件编辑工具追加。SDK 包编译与库存通过不等于 AOCI/CodeGraph 实际查询验收。
+
+按 H 当前路径 freeze 和 M 必要依赖授权，B 又在 H 树仅精确复制并 stage `072628536d325eedbb6b53ffe9ab8fc31c38beeb:tests/s1/server.mjs` 与 `da48a114d91181075bd32b62996beadd9c2c0a25:migrations/020_swarm.sql`，对应 index blob 为 `2bf5614179269c87e3570e79dbbb19a0e086f726`、`298034448fe71fa2d74c8307c20393affaaf4792`，均与不可变原件相等。H 001–018 无 diff，Node --check EXIT 0；H 其他 WIP 没有修改，源码提交、实际 S2 HTTP 与首次失败证据由 H 完成，临时范围已归还。
+
+收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
+
+收藏 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已普通 push。`go test ./internal/adapters/importers -run TestPublicListingActualWindowCursorWithUnavailableSlot -v -count=1` EXIT 0，实际生产集合列举选出公开 folder `2356677875`，真实 Transport 始终访问上游 HTTP；三次请求位置 0/20/40，各请求 20，实际返回共 59，下一 cursor 为 4。观察包装只记录实际 query，不替代 HTTP 响应；没有把 19 改成 20。证据 `.verification/public-listing-cursor-first.log`，定向 vet EXIT 0，`.verification/public-listing-cursor-vet-first.log`。
+
+容量测试 SOURCE `c28f6b15ae0032df2a21e0625f0985546759610d` 已普通 push，独立前段 REPORT 为 `580b4a37d0bd3decce491a772fe5ee86fd64d445`。同一 folder 属于原已获准公开 UID `3494358764489275`，来源许可为 `docs/QUESTIONS.md` 2026-10-10 用户决定；T 明确原件目录 `public-http-1166636830` 中 response 3/5/7/9 的成熟 JSON 聚合分别为相同 id、media_count 459、20/20/19/0，确认与 T 原容量来源相同，没有新增收藏范围。
+
+原 `TestPublicListingBoundsActualFavoriteRequestsIncludingSkippedRows` 完整覆盖改为生产公开 HTTP，计数和剩余预算保持断言；六次实际窗口位置 0/20/40/60/80/100，尺寸 20/20/20/20/20/1，观察恰 100、实际资料 100、请求槽位 101、next cursor `6:1`。三项定向检查 EXIT 0，2.273s，`.verification/public-listing-capacity-first.log`；最后十行 uploads JSON 属于明确格式函数参数和期望值，未声明为真实上传来源或容量验收。两个 SOURCE push 首次 TLS 失败保留，第三次普通 push 成功。T 的独立应用/SQLite 100 条验收继续由其原 owner 执行。
 
 ## 完成内容
 
@@ -120,18 +222,28 @@ Reader 验证环境须明确提供下列实际本机原件，不提供时直接�
 
 Q 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014`。全部副本和出版物只在本机，不加入 Git 或发布包；H 原源、Q 原 source/current、正式实验均未写入。
 
+## 原生操作身份检查与准入开发状态
+
+SOURCE `dfdd75ed4b245fe462df2ff916728afdae7361cc` 已普通 push，保留现有生产 `NativeRequest.Session.PendingOperation` 调用链，新增实际 SQLite、实际公开项目注册、当前项目设置与真实 Registry 的拒绝检查。无效操作 UUID 在启动前返回 `validation_failed`，实际会话表为空，Registry 的启动观察保持 `unknown`；没有新模型调用。全部中间原件留在本树 `.verification/native-operation-actual-3426206494/`。
+
+`go test -mod=readonly ./internal/workspace/app -run TestNativeOperationInvalidIdentityDoesNotLaunch -count=1 -v` EXIT 0，1 PASS、0 SKIP，2.712s；证据 `.verification/native-operation-identity-owned.log`。早期实际检查 `.verification/native-operation-identity-first.log` 与 `.verification/native-operation-identity-current.log` 保留。
+
+准确 S2 SOURCE `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` 经普通 merge `cc3ed6887ed6834d691988c040e3b9600b52277c` 消费。当前工作区的 `go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 与 `node scripts/check-architecture.mjs` 均 EXIT 0，架构检查覆盖 33 个包；证据 `.verification/admission-current-build.log`、`.verification/admission-current-vet.log`、`.verification/admission-architecture-first.log`。这些检查包含尚未提交的准入实现，未作为准入真实验收结果。
+
+实际准入验证先经历两次公开 arXiv 来源 `provider_unavailable`，原失败保留于 `.verification/admission-actual-first.log`、`.verification/admission-actual-second.log`。显式使用已经核实的现有匿名系统代理后，实际固定论文导入、人工待审记录和候选创建成功；第三次验证在 S2 消费者因人工准入缺少委托策略版本返回 `evidence_missing`，证据 `.verification/admission-actual-proxy-third.log`。该约束已交原 S2 owner 修正，人工记录不填充委托模型或策略版本，真实事务正向仍为未通过。独立准入领域规则检查 EXIT 0，证据 `.verification/admission-domain-current.log`，不代表真实委托判断或业务组合验收。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
 - 原有 attention 应用测试仍有内存 Repository/ObjectStore 与替代模型。经双方零 WIP checkpoint 确认，协调者已把 `internal/attention/app/*_test.go` 与 `tests/s1/automatic_test.go` 共十四个既有文件及同目录新测试交给唯一第三层 T，精确起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454`；B 从此排除这些测试写域，生产需求由 T 提交 Handoff。
-- B 本写域仍有 OpenCode 和注册项目测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite `local_agents*_test.go` 的替代原生控制器与引用读取。后续各项整改继续保留完整覆盖。
+- B 本写域仍有注册项目 adapter 测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite 其他 `local_agents*_test.go` 的替代原生控制器与引用读取。后续各项整改继续保留完整覆盖。
 - `tests/s1/fixtures.mjs`、默认 acceptance 与部分 web E2E 仍依赖虚构论文/视频来源。B 继续整改共享输入，web 改动交 F，不能把现有默认套件通过记为真实来源验收。公开视频 whisper 转写无时间区间，不能伪造已有 positive 时间区间覆盖所需原件。
 - 全写域英文注释清理尚未完成。原生格式 helper 的解码路径及其他同类异常需要继续核查；已增加格式门禁不等于全域零静默解析。
 - 实际 Codex controller / SQLite / HTTP / 自产会话逐 event_id 验证归 R/H，当前 B 没有运行该组合验收。发布完整 E2E、Workbench/Relay 集成与 ZIP 解压验收尚未运行。
 - B README 一次实际 inference 已核对 HTTP、模型返回、原 native_id、SQLite 与重启；当次进程启动 argv 未独立留存。R 原 owner 已核实原 controller Stop 后无 capture pointer、新 Registry 无 ownership，不能按旧 native_id 重建控制器或扫描私人历史。该旧结果的有效工具集合保持未知，不重复成功推断；新文本处理的正选证据接口需模块确认精确 R 文件消费方式后继续 B/R 互斥接入。
 - Workbench Reader 十项检查覆盖实际公开生产回放、实际 Sleep 和当前自产 native 副本。H/I 仍需在既有路由组合精确源码；发布完整二进制、浏览器 E2E 与两次实际 00:30 触发验收尚未运行。H 原会话部分完整度未知不能因 Reader 查询通过而提升。
 - 当前 arXiv DNS 实际响应 `198.18.0.71`，系统网络配置不在 B 授权写域。完整 Go 检查失败已提交模块负责人；公开 source 与 CLI positive 断言保持，未添加 skip 或伪造响应。
-- Mission 创建仍使用生产 501 状态，未获业务扩展授权。V4、人评、正式库、冻结脚本、引擎、schema、迁移、权重和日程保持原边界。
+- 当前 B 源码的 Mission 创建仍返回生产 501；最新用户授权的 S2/S3 实际业务实现已移交固定 owner，尚未消费其 SOURCE 或运行该功能验收。V4、人评、正式库、冻结脚本、引擎、现有 schema、迁移、权重和日程保持原边界，新增共享 DDL 仅按明确跨域需求实施。
 
 ## 未执行操作与后续交付
 

@@ -75,5 +75,5 @@ func TestPublicListingActualWindowCursorWithUnavailableSlot(t *testing.T) {
 			t.Fatal("actual request windows overlapped or fetched outside their sizes")
 		}
 	}
-	t.Logf("actual_folder=%s provider_slots_requested=60 metadata_observed=%d next_cursor=%s final_100_budget=undecided", selected.ExternalID, observed, cursor)
+	t.Logf("actual_folder=%s provider_slots_requested=60 metadata_observed=%d next_cursor=%s", selected.ExternalID, observed, cursor)
 }
