@@ -4,7 +4,7 @@
 
 2026-10-14，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa` / 终端 `term_580c19de-0c3d-49db-805e-8637184b9301`，子 Run `run_dbf1a68bc692`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，接管基线 `dd60de11bca85662f5bb4a5b281cc7b42e6ffd2f`，接管时工作区无改动。
 
-事实源为 [AGENTS.md](../../AGENTS.md)、[HANDOFF.md](../../HANDOFF.md)、[STATUS.md](../../STATUS.md)、[SPEC](../SPEC.md)、[TASKS](../TASKS.md)、[QUESTIONS](../QUESTIONS.md) 和 [本次发布任务](../../tasks/Release-v0.1-20261014.md)。本模块只修改此文件，负责资料导入、人工沉淀、项目权限、进度与全部既有 Web；实现、测试和返修交原 B/F。当前任务限定六组既有合并产品功能，历史 S0–S6 规划不扩大本次实现授权。
+事实源为 [AGENTS.md](../../AGENTS.md)、[HANDOFF.md](../../HANDOFF.md)、[STATUS.md](../../STATUS.md)、[SPEC](../SPEC.md)、[TASKS](../TASKS.md)、[QUESTIONS](../QUESTIONS.md) 和 [本次发布任务](../../tasks/Release-v0.1-20261014.md)。本模块只修改此文件，负责资料导入、人工沉淀、项目权限、进度与全部既有 Web。用户最新明确按 SPEC 并行实施 S0–S6，根消息 `msg_e83cb8e73578`、`msg_c07e28cb0b8f` 已转交；具体私有外发、自由工具及 `working` 条件仍按待答边界处理。
 
 ## 一页执行计划
 
@@ -17,7 +17,7 @@
 | 固定逆向 Agent X | `C:/Users/DW/orca/workspaces/Astrocyte/reverse-reference-20261014` / `songconmaisaix31-design/reverse-reference-20261014`，独立基线 `1c026c3e7f9e91c53d1dced6479099668c9162cb` | 用户指定原会话 `01a13ae1-1399-78d2-b329-0ea4fc5eb255` / `term_79eeba93-c810-4a04-a1a0-e27ce0767ab5`；当前为已运行用户提示，普通 Handoff 管理，不注入新 Dispatch | 唯一绝对写域 `C:/Users/DW/orca/workspaces/Astrocyte/reverse-reference-20261014/docs/research/reference-code-20261014/**`；下载与 REA 原件仅本树已忽略 `.verification/reference-code-20261014/**`。先交 CSGHub / 官方 server 代码获取、权限、版本、固定 SHA、许可证与实码文件行号索引，再交研究流程；autoscientist 准确仓库未决定，不自行选择。只向 B/F/R/H 原 owner 提供参考，不扩大产品实现 |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
-2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
+2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交当前 M-release `ctx_dee6ef251324` / `run_aa4e6a119547`。管理人员不代写业务。
 3. 总负责人接收原 worker_done 并交接已核实终端后，才在本子 Run 复用同一终端、工作树和分支创建后续 Task；不重新绑定总负责人 Run，不增加同写域人员。
 4. 所有实际功能与适用检查通过后，向 M-release 提交精确 SOURCE/REPORT 及覆盖证据供唯一 I 普通合并；最终组合 check/build/默认 E2E、ZIP 新目录启动/读写/重启验收继续由原开发人员支持。模块阶段通过不结算本 Task，最终 GitHub Release 由总负责人接受具体结果后发布。
 
@@ -26,6 +26,19 @@
 根 `msg_97946f52d9b9` / `msg_a7e92c5f1d5f` 转交用户固定逆向身份决定；X 回执 `msg_91aa495bd9eb` / `msg_1370a0a70797` 核其 Codex 终端公开显示 GPT-6.1-Sol high fast、原会话不变、新工作树 tracked clean、仅忽略参考目录写入。当前 working，官方 csghub-server Git clone 成功；csghub Git clone 首 TLS 失败保持，按实际固定官方 SHA 获取公开 archive 并读取可用 server 代码。本阶段继续原单次用户提示，模块未创建第二名同域人员或重新注入 Task；第一轮 SOURCE/独立 REPORT 普通 push、最终 Handoff 与真实 idle 后，才按官方既有 terminal 接管机制安排下一正式阶段。REA 6.5.0 CLI 允许范围内分析、Go/Python 源码阅读；MCP 保持关闭，不运行上游自治实验，不读取私人源或凭据。
 
 ## 核心路径与当前结论
+
+### 2026-10-15 S2 / S3 实际实现安排
+
+B `msg_bbd9f766de8d` 已确认以下全部路径零 WIP 并停止写入，移交基线 `0d9640ecb8142f643c4565aaac28b1c8b6b4b956` 已 push。模块独立检查 B 当前工作树 clean。V 视频 Task `task_af564cbc003b` / `ctx_1b382b548db7` 已成功结算，本模块接受其阶段报告；公开 worker-show 核终端仍为原 GPT-6.1-Sol、空闲可写，原树与远端均为 clean `4aa442cd77616a0032ee6769087bb6b1663577c5`。复用同一终端、工作树、分支实施 S2；视频五文件后续返修仍由同一人员负责。
+
+| 新开发轨道 | 独占写入范围 | 实际功能与验收 |
+|---|---|---|
+| S2 Workspace，复用 V 原终端 / 原树 / 原分支 | `internal/workspace/domain/{goals,proposals,approvals,session_bindings,proposal_context}*.go`；`internal/workspace/app/{goals,proposals,approvals,session_bindings,proposal_context,proposal_ports}*.go` 与既有 `service.go`；`internal/adapters/sqlite/workspace_{goals,proposals,approvals,session_bindings,context_packets}*.go`；`internal/adapters/httpapi/workspace_{goals,proposals,approvals,session_bindings,context_packets}*.go`；`tests/s2/**`；`docs/standards/workspace-s2.md` | 按 SPEC §6/7/12 实施版本化 Goal/Proposal、人类批准、ApprovalGrant 撤销/epoch/过期、幂等回执与 outbox 原子事务、准入只建草稿、真实会话绑定及不可变上下文包。实际 SQLite/HTTP 验证版本冲突、同键不同输入、撤销拒绝、重启与重投递；AT05/06/07/12 逐项记录。Agent 无批准入口，批准本身不启动进程 |
+| S3 Swarm，独立第三层人员 / 树 / 分支 | `internal/swarm/**`；`internal/adapters/sqlite/swarm_*.go`；`internal/adapters/httpapi/swarm_*.go`；`tests/s3/**`；`docs/standards/swarm-s3.md` | 按 SPEC §8/10/12/14 实施有效 Grant 重查及唯一 Mission、WorkItem 单持有者 CAS/单调 fence/资源预留、结果提交与人工采用、暂停/取消/恢复。真实原生接续与交接依赖 R/H 公共接口，S2 批准接口以精确 SOURCE 消费；不模拟批准或原生成功。AT08/09/13 需要真实公开改进及来源链 |
+
+B 保留 `projects.go`、`contracts.go`、`native_context.go`、共享依赖、所有 migrations、scripts 与 `config.go`；新增 Workspace / Swarm DDL 必须交 B 唯一 owner 实施。H 保留 OpenAPI、HTTP server/main 薄装配，F 保留全部现有 Web/types/auth；新领域服务的实际入口由原 owner 串行消费精确 SOURCE 后接入。当前 `emptyProposalService`、`emptyMissionService` 和 501 命令入口属于待实现功能，领域阶段通过不会登记完整 S2/S3 完成。
+
+S4 RepositoryMap / AOCI / CodeGraph、S5 Jev / Laya 与 S6 LocalPolicy / Experience 的实际依赖由对应模块负责人接收。产品提供现有项目权限、版本与批准接口；不自行修改冻结认知域或建设重复调度、Attempt、Manifest、Hash 或完成证明系统。X 已交 CSGHub 固定源码研究 `153b8534a8be46e4ce20c8f77a43c6bca730529e`，作为原 owner 实现参考；研究静态结果不填实际功能验收。
 
 22:57 上海时间，B `msg_1c578ac3cfce` 明确已 push 的 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` 为 clean、上述视频五文件零 WIP，并从该消息起停止写入。V 只使用公开固定来源，B 本机 `.verification/video-source-third` 保留真实原件和首失败。现有同源真实两版变化尚未取得，不制造换行版本；视频时间 segments/spans 为零的未通过结论保留。V 在独占 extractor 中定义显式匿名 `SummarizeOptions.ProxyURL` 与隔离环境用法，B 配置 `ASTROCYTE_SUMMARIZE_PROXY_URL`；两方串行消费准确接口，不继承未授权代理，不修改冻结领域或 Python。
 
@@ -73,7 +86,7 @@ F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f5257
 
 根 `msg_0957f72ac9ee` 已确定旧任务目标验收不通过，done 真实收据保留。H 核真实进程退出、task done、pending 0、workspace/terminal 归属后，F 才可按现有条件单次 release 清理并核 SQL 解锁；当前 read 回执为 delivery_unknown，任何释放阻断按原规则保留。根 `msg_dbc826308006` 允许旧 scope 保留期间立即使用独立公开 Git 根、DB、端口、registry 与明确新输入继续正向验证；H/F 先准备完整 DOM 观察与内容核查再注册，不重发旧输入或修改旧状态。根 `msg_8d2dcf0e1841` 允许 T 工程 Creator100 验证改选公开已存在超过 100 条真实视频的发布者，先核来源和实际数量，在独立新目录经生产入口运行；原 UID 仅 3 条首结果保留，正式用户案例和科研效果不因此成立。
 
-根 `msg_0a54edd4a766` 转交用户最新时序：先修改 v1.4 的投递阶段、原生会话归属、输入就绪条件与恢复身份关系，2026-10-15 再进行真实 CLI 端到端、三分钟 Today 和 L1 关账。今晚停止新 Relay / Today 验收窗口，旧任务按既有条件安全收尾，全部首事实保留。M-relay 完整读取 `docs/research/orca-rea-20261014.md` 后负责原生域规格和写域安排，跨 Web 契约交原 F；产品非 Relay、视频、Reader、公开容量和发布候选继续。根 `msg_4da181ce8f60` 明确 selected-text 实际模型同样移至明天共用完整身份与目标核查窗口。B 之前已启动的无模型 metadata probe 已实际结束 StopConfirmed，今晚不再新建 controller；T controller / model 均为零，接口实现和编译继续。
+根最新 `msg_feacb4092c08` 已允许当前语义、CLI、Today 与 L/S 实施；真实原生窗口仍须 R/H 精确语义组合、用户明确的 `working` / 未开始人工完成条件、F observer 先 ready、公开固定目标与原生工具关闭。M-relay 负责原生域及准确公开契约，F 保持唯一实际 UI 操作人。B 既有无模型 metadata probe 已结束 StopConfirmed；旧模型有效工具 UNKNOWN 不补证重发。
 
 V 时间 SOURCE `d48a29b6e1744465666edbfa28be919531ca39a4` / REPORT `4ac1b34edd9c77e045cd3322420576eb1b8a0b27` 已普通 push 并由模块独立核远端一致。模块 `sqlite3 mode=ro` / `query_only` 独立核其实际库：材料 1、版本 2；版本 1 时间区间 0 / 附件 1，版本 2 时间区间 952 / 附件 4，成功作业 2、沉淀 0，原文和模型输出未读取到 stdout。T SOURCE `bee27ca1f710b6b077e51f78d5ec744f24d0ded6` / REPORT `b2751472db826cda478352eadb8ae2df4151ce4b` 的实际 S1 权限拒绝和进程退出预算重启通过；追加视频真实两版 A/B/A、3 次读取 / 3 作业 / 2 版本 / head B 的 SOURCE `aa7257e66bff29140a826afdaab93f36e35958d9` / REPORT `4c7ab86e61f90251ec109d8201477ee150979122` 已 push，Markdown 复用未宣称时间解析。
 
@@ -91,7 +104,7 @@ F 受影响 10 项真实浏览器首复验为 9 PASS / 1 FAIL，唯一失败在 
 
 原始来源、认证文件、模型输出、流与错误原件只保留本机专门证据目录，不进 HTTP/Git/包/stdout；文档只写安全派生和本机指针。浏览器未知派发锁仅保存公开操作身份与 unknown 状态，跨组件重开/刷新保留，禁止自动重试。
 
-旧正式 V4、冻结 schema/engine/mapper/权重/日程与 17321 不变；真实用户作品、自由工具、未定 Mission 和活性窗口不扩大。已授权公开固定项目实际模型/HTTP 操作沿当前许可，原生文件/命令工具关闭。Procmon、两次真实自动快照、人评及七日科研结果继续按真实状态记录，不能由 release 可用性验收替代。
+旧正式 V4、冻结 schema/engine/mapper/权重/日程与 17321 不变；真实用户作品、自由工具及未答活性窗口保持未决定。SPEC 已明确的 Mission 按 S3 实施。已授权公开固定项目实际模型/HTTP 操作沿当前许可，原生文件/命令工具关闭。Procmon、两次真实自动快照、人评及七日科研结果继续按真实状态记录。
 
 当前未执行最终组合核心路径与 ZIP 验收，未自行发布 Release。模块文档适用检查为相对链接存在性和 `git diff --check`；业务检查结论以同源实际运行结果更新。
 
