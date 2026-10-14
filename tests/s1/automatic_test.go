@@ -313,6 +313,73 @@ func TestReadOnlyImportHTTPProcessExitPreservesDeadline(t *testing.T) {
 	}
 }
 
+func TestSelectedProjectMembershipAndRevocationBeforeNativeStart(t *testing.T) {
+	s := newAutomaticHTTP(t)
+	var imported app.ImportJobResult
+	s.request("POST", "/api/v1/materials/imports", app.ImportMaterialCommand{CommandMeta: localCommand(1), Adapter: "manual", Kind: "text", SourceLocator: "https://github.com/songconmaisaix31-design/Astrocyte", ExportText: "这是固定公开项目权限验证的人工输入参数，未声称外部正文或模型输出。"}, http.StatusAccepted, &imported)
+	job := s.finished(imported.JobID)
+	if job.Status != "succeeded" || job.MaterialID == nil {
+		t.Fatal("actual manual import prerequisite failed")
+	}
+	var material app.MaterialDetail
+	s.request("GET", "/api/v1/materials/"+*job.MaterialID, nil, http.StatusOK, &material)
+	var space app.ProjectSpaceResult
+	s.request("POST", "/api/v1/project-spaces", app.ProjectSpaceCommand{CommandMeta: localCommand(1), Title: "Public fixed membership verification"}, http.StatusCreated, &space)
+	var registered struct {
+		Project workdomain.LocalProject `json:"project"`
+	}
+	s.request("POST", "/api/v1/local-projects", struct {
+		app.CommandMeta
+		workdomain.RegisterProjectCommand
+	}{localCommand(1), workdomain.RegisterProjectCommand{Name: "Public fixed permission validation", Root: s.root, SpaceID: space.Space.ID}}, http.StatusOK, &registered)
+	settings := workdomain.ProjectSettings{AllowedActions: []string{"read_context", "start", "observe", "stop"}, AllowedTools: []string{}, ExternalModelCLI: "codex"}
+	s.request("PUT", "/api/v1/local-projects/"+registered.Project.ID+"/settings", struct {
+		app.CommandMeta
+		workdomain.SettingsCommand
+	}{localCommand(1), workdomain.SettingsCommand{ExpectedRevision: registered.Project.Settings.Revision, Settings: settings}}, http.StatusOK, &registered)
+	command := app.RequestDistillationCommand{CommandMeta: localCommand(1), Stage: "content", ProjectID: registered.Project.ID, CLI: "codex", InputRefs: []app.SourceRef{{MaterialID: material.Material.ID, Revision: 1, Locator: material.Material.SourceLocator}}}
+	var denied apierrors.ErrorEnvelope
+	s.request("POST", "/api/v1/distillations/jobs", command, http.StatusForbidden, &denied)
+	if denied.Error == nil || denied.Error.Code != apierrors.ScopeDenied {
+		t.Fatal("unreferenced source entered selected project processing")
+	}
+	s.request("POST", "/api/v1/project-spaces/"+space.Space.ID+"/references", app.ReferenceMaterialCommand{CommandMeta: localCommand(space.Space.Version), MaterialID: material.Material.ID, Revision: 1}, http.StatusOK, &space)
+	command.CommandMeta = localCommand(1)
+	var unavailable app.ImportJobResult
+	s.request("POST", "/api/v1/distillations/jobs", command, http.StatusAccepted, &unavailable)
+	failed := s.finished(unavailable.JobID)
+	if failed.Status != "failed" || failed.Error == nil || failed.Error.Code != apierrors.EvidenceMissing || failed.ExternalStarted || failed.DeliveryUnknown || failed.DistillationID != nil {
+		t.Fatal("unobserved native configuration claimed external processing")
+	}
+	settings.ExternalModelCLI = ""
+	s.request("PUT", "/api/v1/local-projects/"+registered.Project.ID+"/settings", struct {
+		app.CommandMeta
+		workdomain.SettingsCommand
+	}{localCommand(1), workdomain.SettingsCommand{ExpectedRevision: registered.Project.Settings.Revision, Settings: settings}}, http.StatusOK, &registered)
+	command.CommandMeta = localCommand(1)
+	command.Question = "模型许可撤销后的新请求"
+	s.request("POST", "/api/v1/distillations/jobs", command, http.StatusForbidden, &denied)
+	if denied.Error == nil || denied.Error.Code != apierrors.ApprovalRequired {
+		t.Fatal("revoked selected model permission entered another processing route")
+	}
+	db, err := sqlite.Open(filepath.Join(s.dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("open actual permission verification SQLite")
+	}
+	defer db.Close()
+	for _, table := range []string{"local_agent_sessions", "attention_distillations", "attention_opportunities"} {
+		var count int
+		if err = db.Conn().QueryRow("SELECT COUNT(*) FROM " + table).Scan(&count); err != nil || count != 0 {
+			t.Fatal("pre-native permission checks produced session, result or candidate")
+		}
+	}
+	var operations int
+	if err = db.Conn().QueryRow("SELECT COUNT(*) FROM attention_jobs WHERE json_extract(data,'$.kind')='distillation'").Scan(&operations); err != nil || operations != 1 {
+		t.Fatal("denied selected project request created another operation")
+	}
+	t.Logf("actual selected-project membership and revoked consent verified before native start; evidence=%s", s.dir)
+}
+
 // 应用取消和同库重启保持 unknown；原生 Send 和工具配置按 owner 证据另行核验。
 func TestAutomaticUnknownSurvivesSQLiteReopenWithoutRetry(t *testing.T) {
 	s := newAutomaticHTTP(t)
@@ -450,7 +517,7 @@ func TestAutomaticUnknownSurvivesSQLiteReopenWithoutRetry(t *testing.T) {
 		t.Fatal("unknown processing lost original material")
 	}
 	var operations int
-	if err = db.Conn().QueryRow("SELECT COUNT(*) FROM attention_jobs WHERE kind='distillation'").Scan(&operations); err != nil || operations != 1 {
+	if err = db.Conn().QueryRow("SELECT COUNT(*) FROM attention_jobs WHERE json_extract(data,'$.kind')='distillation'").Scan(&operations); err != nil || operations != 1 {
 		t.Fatal("restart or rejected retry resent unknown work")
 	}
 	t.Logf("actual HTTP/SQLite application cancellation persisted; source revisions=2 durable operations=%d; evidence=%s", operations, s.dir)

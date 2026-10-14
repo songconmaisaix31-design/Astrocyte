@@ -294,6 +294,67 @@ func TestPublicTrackingSourceCapacity(t *testing.T) {
 	}
 }
 
+func TestActualPublicMetadataRequiresRecommendationBeforeBodySelection(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	_, db, objects := fixture(t)
+	listing := publicListing()
+	captureResponses(t, listing.Bilibili.Client)
+	reader := &observedSource{Reader: importers.NewReader(nil)}
+	s := NewAttentionService(sqlite.NewAttentionRepository(db), reader, objects, ServiceOptions{ListingReader: listing, MaxAttempts: 1, JobTimeout: 3 * time.Minute})
+	bound, err := s.BindTrackingSource(ctx, human, BindTrackingSourceCommand{CommandMeta: meta("gate-bind", 1), Platform: "bilibili", SourceKind: "uploads", Locator: "3494358764489275"})
+	if err != nil {
+		t.Fatal("bind authorized public source for selection gate")
+	}
+	queued, err := s.SyncTrackingSource(ctx, human, bound.Source.ID, SyncTrackingSourceCommand{CommandMeta: meta("gate-sync", bound.Source.Version)})
+	if err != nil || len(queued.Jobs) != 1 {
+		t.Fatal("queue actual public metadata observation")
+	}
+	if _, err = s.ProcessNextJob(ctx); err != nil {
+		t.Fatal("process actual public metadata observation")
+	}
+	job, err := s.GetJob(ctx, human, queued.Jobs[0].JobID)
+	if err != nil || job.Status != "succeeded" {
+		t.Fatal("actual public metadata prerequisite failed")
+	}
+	observed, err := s.GetTrackingSource(ctx, human, bound.Source.ID)
+	if err != nil {
+		t.Fatal("read actual public metadata cache")
+	}
+	var selection []SourceItemSelection
+	for _, item := range observed.Items {
+		if !item.Stale && item.Metadata.UnavailableReason == "" && item.Metadata.Locator != "" {
+			selection = []SourceItemSelection{{ExternalID: item.ExternalID, Revision: item.Revision}}
+			break
+		}
+	}
+	if len(selection) != 1 || reader.calls.Load() != 0 || objects.publishes.Load() != 0 || countRows(t, db, "attention_materials") != 0 {
+		t.Fatal("actual metadata missing or unselected body was imported")
+	}
+	beforeJobs := countRows(t, db, "attention_jobs")
+	beforeReceipts := countRows(t, db, "attention_receipts")
+	_, err = s.SelectSourceItems(ctx, human, observed.Source.ID, SelectSourceItemsCommand{CommandMeta: meta("gate-before-recommendation", observed.Source.Version), Items: selection})
+	errorCode(t, err, apierrors.EvidenceMissing)
+	command := RecommendSourceItemsCommand{CommandMeta: meta("gate-unconfigured-recommendation", observed.Source.Version), ProjectID: "unselected-public-project", CLI: "codex", Items: selection}
+	_, err = s.RecommendSourceItems(ctx, human, observed.Source.ID, command)
+	errorCode(t, err, apierrors.ProviderUnavailable)
+	command.CommandMeta = meta("gate-agent-recommendation", observed.Source.Version)
+	_, err = s.RecommendSourceItems(ctx, agent, observed.Source.ID, command)
+	errorCode(t, err, apierrors.ScopeDenied)
+	if countRows(t, db, "attention_jobs") != beforeJobs || countRows(t, db, "attention_receipts") != beforeReceipts || countRows(t, db, "attention_materials") != 0 || reader.calls.Load() != 0 || objects.publishes.Load() != 0 {
+		t.Fatal("refused selection or recommendation performed body work")
+	}
+	current, err := s.GetTrackingSource(ctx, human, observed.Source.ID)
+	if err != nil || current.Source.Version != observed.Source.Version {
+		t.Fatal("refused actions changed source version")
+	}
+	for _, item := range current.Items {
+		if item.Selected || item.ImportJobID != nil || item.Recommendation != nil {
+			t.Fatal("refused actions fabricated selection or recommendation")
+		}
+	}
+}
+
 func TestPublicFavoriteSourceCapacity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
