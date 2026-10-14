@@ -74,6 +74,20 @@ Go 一次绑定并持有实际 port0 listener；helper 使用成熟 readline、J
 
 当前根已授权继续语义、CLI 与 L/S 的已确认工作，但实际 CLI/selected-text/Today 仍须先相关 R/H 语义通过和根 working/done 决定。没有仅因跨日启动 controller 或模型，Source alias 合法端口及全写域残余替代实现仍待后续原 owner 完成。
 
+## 当前默认来源检查与失败传播
+
+SOURCE merge `0d9640ecb8142f643c4565aaac28b1c8b6b4b956` 普通消费 V 精确 `eead5308823804dc744723ad8e27550f91107c5b`，含其原 observer/cancellation SOURCE `e9e5f52511ca44a947d39fff61fac098c6fbad74` 和 REPORT `c2833a5de92644602868abc4200c1774186356c3` 祖先；已正常 push。ExtractPDF 在 dependency/CLI 之前复用成熟 MIME 规则，shared 替代 Transport helper 定义由原 V owner 移除；B 未修改 V 五文件。原实际 native progress 是否可观测保持 V 的 NOT_RUN，未用自写 parser 补时间或进度。
+
+明确提供实际 video baseline/timed、public paper dir、PDF publication、批准匿名 proxy 及公开搜索开关后，`go test -mod=readonly ./internal/adapters/importers -json -count=1` 当前 EXIT 0，76 个测试/子测试 PASS、0 FAIL、6 个既有 opt-in SKIP，package 44.930s；`.verification/importers-default-current-sixth.jsonl`。SKIP 为 public Bilibili 独立检查、独立 arXiv live、本地 PDF live、两个跨站捕获以及 paper URL live，不能当作通过。此前默认公开网络的首 RED 保留，当前 package 通过不替代全仓或整轨验收。对应全仓 build/vet EXIT 0，`.verification/video-mime-combined-{build,vet}-first.log`。
+
+F 再次明确授权的唯一 `cmd/server/workbench_config_test.go` 冲突已按不可变 `4a6076c402e0b5d31982154a31a905bee6127477` 完整源经文件编辑工具处理并仅 stage，逐行大小写相等，unmerged entries 空；其他 staged 依赖和 web WIP 全部保留。实际 F 组合服务 build EXIT 0，`.verification/f-workbench-config-build-first.log`；没有在 F commit/merge，单文件临时授权已归还。
+
+SOURCE `391c6176145044b099c13a05a926aef2096db170` 已普通 push，进度失败保存与未知结果读取分别保留原语义错误和实际存储异常。真实 SQLite/migrations 经实际 context cancellation 同时触发生产写入和读取失败，原错误及 `context.Canceled` 都可定位，数据库零进度记录；`go test ./internal/workspace/app -run TestProgressFailureKeepsActualSQLiteCancellation -v -count=1` EXIT 0，0.974s，`.verification/progress-sqlite-cancel-first.log`。测试只调用相同生产函数，没有替代 repository；语义错误是明确函数参数，未声明模型调用或交付。进度代码注释改为中文，定向 vet 和全仓 build EXIT 0，`.verification/progress-error-vet-second.log`、`.verification/progress-error-build-first.log`。旧 progress memory/native 替代测试仍待完整整改，未用新增检查覆盖该限制。
+
+协调者按最新用户决定要求 S2/S3 实现。B 已确认下列域在精确已 push `0d9640e` 无 WIP，并停止写入后移交固定 owner：S2 goals/proposals/approvals/session_bindings/proposal_context/proposal_ports 的指定 workspace/domain/app 文件、既有 app/service.go、指定 sqlite/httpapi workspace 文件、tests/s2 及 workspace-s2 报告；S3 internal/swarm、指定 sqlite/httpapi swarm 文件及 tests/s3。B 保留 projects/contracts/native_context/deps/migrations/scripts/config 的共享边界，跨域需求只提交 Handoff。
+
+OpenCode 实际安装版本和 npm manifest 都为 1.18.35。已核官方配置/权限/server/CLI 文档及固定版本源码；现 owned config 仍不足以排除原 global data/state/auth、home `.opencode`、remote/account 与 managed 来源，`--pure` 的外部插件限制与工具 deny 分别核对。存在原生 test-only home/managed hooks，改变 managed 读取边界尚未授权；B 未读取或复制私人原件/凭据，未启动不符合来源隔离前提的 serve，真实 no-model/session/auth 链仍待该重要边界决定。模型正向 Send 继续等待统一真实窗口，不能把旧替代 HTTP 通过记为原生能力。
+
 收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
 
 收藏 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已普通 push。`go test ./internal/adapters/importers -run TestPublicListingActualWindowCursorWithUnavailableSlot -v -count=1` EXIT 0，实际生产集合列举选出公开 folder `2356677875`，真实 Transport 始终访问上游 HTTP；三次请求位置 0/20/40，各请求 20，实际返回共 59，下一 cursor 为 4。观察包装只记录实际 query，不替代 HTTP 响应；没有把 19 改成 20。证据 `.verification/public-listing-cursor-first.log`，定向 vet EXIT 0，`.verification/public-listing-cursor-vet-first.log`。
