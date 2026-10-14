@@ -29,7 +29,10 @@ export async function loadPublicPaperInputs(directory) {
     assert.ok(parsed.text.length > 1000, 'Actual complete paper text is required');
     if (input.version) assert.equal(parsed.observed_version, input.version);
     result[input.name] = {
-      source: parsed,
+      source: {
+        source_url: parsed.source_url, source_key: parsed.source_key, title: parsed.title,
+        observed_version: parsed.observed_version, text: parsed.text, content_state: parsed.content_state,
+      },
       text: parsed.text,
       import: {
         kind: 'paper', adapter: 'manual', source_locator: parsed.source_url,

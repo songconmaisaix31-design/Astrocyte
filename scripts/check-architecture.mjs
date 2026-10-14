@@ -2,8 +2,13 @@ import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { findGo, root } from './process.mjs';
 
-const moduleName = (await readFile(new URL('../go.mod', import.meta.url), 'utf8')).match(/^module\s+(\S+)/m)[1];
-const result = spawnSync(await findGo(), ['list', '-mod=readonly', '-f', '{{.ImportPath}}|{{join .Imports ","}}', './...'], { cwd: root, encoding: 'utf8', windowsHide: true });
+const go = await findGo();
+const moduleResult = spawnSync(go, ['list', '-mod=readonly', '-m', '-json'], { cwd: root, encoding: 'utf8', windowsHide: true });
+if (moduleResult.error) throw moduleResult.error;
+if (moduleResult.status !== 0) throw new Error(moduleResult.stderr);
+const moduleName = JSON.parse(moduleResult.stdout).Path;
+if (typeof moduleName !== 'string' || !moduleName) throw new Error('Go module identity is unavailable');
+const result = spawnSync(go, ['list', '-mod=readonly', '-f', '{{.ImportPath}}|{{join .Imports ","}}', './...'], { cwd: root, encoding: 'utf8', windowsHide: true });
 if (result.error) throw result.error;
 if (result.status !== 0) throw new Error(result.stderr);
 const graph = new Map(result.stdout.trim().split(/\r?\n/).filter(Boolean).map(line => {
@@ -12,8 +17,7 @@ const graph = new Map(result.stdout.trim().split(/\r?\n/).filter(Boolean).map(li
 }));
 if (!graph.size) throw new Error('No Go packages; backend owner work is pending');
 
-// net/url parses value objects and performs no network I/O. Keep net itself and
-// every other net/* package (including net/http) outside Domain/app.
+// net/url 只解析值对象，其余网络 I/O 不得进入 Domain/app。
 const io = /^(database(?:\/|$)|net(?:\/(?!url$)|$)|os(?:\/|$)|io(?:\/|$)|bufio$|syscall$|log(?:\/|$)|modernc\.org\/|golang\.org\/x\/sys)/;
 const issues = [];
 for (const [name, imports] of graph) {
