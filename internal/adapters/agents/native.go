@@ -321,14 +321,18 @@ func (n *Native) Resume(ctx context.Context, r domain.NativeRequest) (domain.Nat
 }
 
 func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool, operations ...string) (domain.NativeSession, error) {
+	operation := ""
+	if len(operations) != 0 {
+		operation = operations[0]
+	}
+	return n.startWithInputGuard(ctx, r, resume, operation, nil)
+}
+
+func (n *Native) startWithInputGuard(ctx context.Context, r domain.NativeRequest, resume bool, operation string, guard func(context.Context, domain.NativeSession) error) (domain.NativeSession, error) {
 	n.startMu.Lock()
 	defer n.startMu.Unlock()
 	if err := ctx.Err(); err != nil {
 		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
-	}
-	operation := ""
-	if len(operations) != 0 {
-		operation = operations[0]
 	}
 	if operation != "" {
 		if _, err := uuid.Parse(operation); err != nil {
@@ -528,6 +532,14 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool,
 		n.observed("start")
 	}
 	if strings.TrimSpace(r.Command.Message) != "" {
+		if guard != nil {
+			if err = p.captureOriginalSession(s); err != nil {
+				return fail(err)
+			}
+			if err = guard(ctx, s); err != nil {
+				return fail(err)
+			}
+		}
 		obs, err := n.send(ctx, s, packetPrompt(r.Packet, r.Command.Message), operation)
 		if err != nil {
 			if captureErr := p.captureOriginalSession(s); captureErr != nil {
@@ -544,7 +556,14 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool,
 }
 
 func (n *Native) Send(ctx context.Context, s domain.NativeSession, message string) (domain.NativeObservation, error) {
-	return n.send(ctx, s, message, "")
+	operation, err := nativeRequestOperation(domain.NativeRequest{Session: s}, "send")
+	if err != nil {
+		return domain.NativeObservation{}, err
+	}
+	if operation == "" {
+		return domain.NativeObservation{}, nativeError(apierrors.DeliveryUnknown, "original pending send operation is unrecorded")
+	}
+	return n.send(ctx, s, message, operation)
 }
 
 func (n *Native) send(ctx context.Context, s domain.NativeSession, message, operation string) (domain.NativeObservation, error) {

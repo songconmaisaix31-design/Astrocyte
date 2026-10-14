@@ -90,6 +90,12 @@ type RelayLaunch struct {
 	Input        string
 	OperationID  string
 	ControllerID string
+	Packet       domain.ContextPacket `json:"-"`
+}
+
+// 受信组装选择固定文件；读取沿用原项目授权，不接受 HTTP 原文或路径。
+type RelayLaunchContextReader interface {
+	ReadRelayLaunchContext(context.Context, domain.Caller, RelayLaunch) (domain.ContextPacket, error)
 }
 
 type RelayObservation struct {
@@ -176,8 +182,9 @@ type RelayOwnedRoots interface {
 }
 
 type RelayServiceOptions struct {
-	Agents     []domain.AgentSpec
-	OwnedRoots RelayOwnedRoots
+	Agents        []domain.AgentSpec
+	OwnedRoots    RelayOwnedRoots
+	LaunchContext RelayLaunchContextReader
 	// No implicit 60-second decision. Zero means no configured live window.
 	LivenessWindow time.Duration
 	Clock          func() time.Time
