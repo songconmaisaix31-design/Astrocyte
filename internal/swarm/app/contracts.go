@@ -8,6 +8,8 @@ import (
 )
 
 type GrantCheck struct {
+	Usage            domain.Usage
+	ExecutionRoot    string
 	BindingIDs       []string
 	OperationID      string
 	Tools            []string
@@ -103,15 +105,19 @@ type TimelineEvent struct {
 }
 
 type MissionDetail struct {
-	Executions []ExecutionReference `json:"executions"`
-	Mission    domain.Mission       `json:"mission"`
-	WorkItems  []domain.WorkItem    `json:"work_items"`
-	Leases     []domain.Lease       `json:"leases"`
-	Artifacts  []domain.Artifact    `json:"artifacts"`
-	Timeline   []TimelineEvent      `json:"timeline"`
+	MaxActiveExecutors int                  `json:"max_active_executors"`
+	Executions         []ExecutionReference `json:"executions"`
+	Mission            domain.Mission       `json:"mission"`
+	WorkItems          []domain.WorkItem    `json:"work_items"`
+	Leases             []domain.Lease       `json:"leases"`
+	Artifacts          []domain.Artifact    `json:"artifacts"`
+	Timeline           []TimelineEvent      `json:"timeline"`
 }
 
+type ServiceOptions struct{ ProjectMaxActive int }
+
 type Member struct {
+	Purpose     string
 	BindingID   string
 	OperationID string
 	HolderID    string
@@ -173,7 +179,7 @@ type ExecutionFact struct {
 	SessionID     string
 	StopConfirmed bool
 	Outcome       string
-	Usage         *domain.Resources
+	Usage         *domain.Usage
 }
 
 type Event struct {
@@ -261,7 +267,7 @@ type SubmitCommand struct {
 	ChecksRef    string                 `json:"checks_ref"`
 	ChangedPaths []string               `json:"changed_paths"`
 	Inputs       []domain.SourceVersion `json:"inputs"`
-	Usage        domain.Resources       `json:"usage"`
+	Usage        domain.Usage           `json:"usage"`
 }
 
 type AcceptCommand struct {

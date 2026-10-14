@@ -57,6 +57,7 @@ func (s *Service) ReadMission(ctx context.Context, p domain.Principal, id string
 		if err != nil {
 			return err
 		}
+		out.MaxActiveExecutors = min(s.projectMaxActive, out.Mission.Grant.Limits.MaxActive)
 		out.WorkItems, err = tx.WorkItems(id)
 		if err != nil {
 			return err
@@ -140,6 +141,7 @@ func (s *Service) ReadArtifactVersion(ctx context.Context, p domain.Principal, m
 }
 
 func (s *Service) SelectWorkItems(ctx context.Context, p domain.Principal, missionID string, member Member, inputs []domain.SourceVersion) ([]domain.Candidate, error) {
+	member.Purpose = "claim_work_item"
 	out := []domain.Candidate{}
 	err := s.authorized(ctx, p, missionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
 		descriptor, err := s.execution(ctx, p, member)
@@ -159,7 +161,9 @@ func (s *Service) SelectWorkItems(ctx context.Context, p domain.Principal, missi
 			if err != nil {
 				return err
 			}
-			out, err = domain.SelectWorkItems(m, items, leases, domain.SelectionContext{Inputs: inputs, Capabilities: descriptor.Capabilities}, time.Now().UTC())
+			effective := m
+			effective.Grant.Limits.MaxActive = min(s.projectMaxActive, g.Limits.MaxActive)
+			out, err = domain.SelectWorkItems(effective, items, leases, domain.SelectionContext{Inputs: inputs, Capabilities: descriptor.Capabilities}, time.Now().UTC())
 			return err
 		})
 	})

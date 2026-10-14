@@ -14,8 +14,62 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/swarm/domain"
+	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
+
+func TestSwarmActualWorkspaceTransactionBorrowingAndRollback(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	dir := swarmTestDirectory(t)
+	db := swarmTestDB(t, filepath.Join(dir, "shared.sqlite"))
+	db.conn.SetMaxOpenConns(1)
+	other := swarmTestDB(t, filepath.Join(dir, "other.sqlite"))
+	repo, err := NewSwarmRepository(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrongDB, err := NewSwarmRepository(other)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m, _ := swarmSQLParameters(t)
+	rollback := errors.New("candidate transaction rejected")
+	err = NewWorkspaceRepository(db).WithWorkspaceTx(ctx, func(wtx workspaceapp.WorkspaceTx) error {
+		if err := wrongDB.Within(wtx.Context(), func(swarmapp.Transaction) error {
+			t.Fatal("cross-database callback was invoked")
+			return nil
+		}); err == nil {
+			t.Fatal("cross-database transaction was accepted")
+		}
+		return repo.Within(wtx.Context(), func(tx swarmapp.Transaction) error {
+			if err := tx.SaveMission(m, 0); err != nil {
+				return err
+			}
+			return rollback
+		})
+	})
+	if !errors.Is(err, rollback) {
+		t.Fatal(err)
+	}
+	if _, err = repo.Load(ctx, m.ID); err == nil {
+		t.Fatal("borrowed transaction left a partial mission after rollback")
+	} else {
+		var missing *apierrors.ServiceError
+		if !errors.As(err, &missing) || missing.Code != apierrors.NotFound {
+			t.Fatal(err)
+		}
+	}
+	err = NewWorkspaceRepository(db).WithWorkspaceTx(ctx, func(wtx workspaceapp.WorkspaceTx) error {
+		return repo.Within(wtx.Context(), func(tx swarmapp.Transaction) error { return tx.SaveMission(m, 0) })
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = repo.Load(ctx, m.ID); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func swarmTestDirectory(t *testing.T) string {
 	t.Helper()

@@ -47,11 +47,20 @@ func (r *SwarmRepository) Within(ctx context.Context, fn func(swarmapp.Transacti
 		}
 		return fn(tx)
 	}
-	conn, err := r.db.conn.Conn(ctx)
+	conn, err := WorkspaceTransaction(ctx, r.db)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	if conn != nil {
+		tx := &swarmTransaction{ctx: ctx, exec: conn, db: r.db}
+		tx.ctx = context.WithValue(ctx, swarmTransactionKey{}, tx)
+		return fn(tx)
+	}
+	conn, err = r.db.conn.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, conn.Close()) }()
 	if _, err = conn.ExecContext(ctx, "BEGIN IMMEDIATE"); err != nil {
 		return err
 	}
