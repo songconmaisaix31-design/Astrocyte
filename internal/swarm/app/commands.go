@@ -709,6 +709,7 @@ func (s *Service) AcceptArtifact(ctx context.Context, p domain.Principal, c Acce
 			out.State = "accepted"
 			out.AcceptanceID = uuid.NewString()
 			out.AcceptedBy = p.ID
+			out.AcceptedActorKind = p.Kind
 			out.ExperienceStatus = "pending"
 			oldW := w.Version
 			w.Version++

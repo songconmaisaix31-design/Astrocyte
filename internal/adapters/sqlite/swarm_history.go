@@ -31,9 +31,11 @@ func (r *SwarmRepository) ReadAcceptedArtifactEvent(ctx context.Context, id stri
 		return out, err
 	}
 	a := out.Artifact
-	if a.ID == "" || a.State != "accepted" || a.AcceptanceID == "" || a.AcceptedBy == "" || a.Commit == "" || a.ObjectRef == "" || a.ProjectChecksRef == "" {
+	if a.ID == "" || a.State != "accepted" || a.AcceptanceID == "" || a.AcceptedBy == "" || a.AcceptedActorKind != "human" || a.Commit == "" || a.ObjectRef == "" || a.ProjectChecksRef == "" {
 		return out, domain.Failure(apierrors.EvidenceMissing, "accepted artifact event lacks immutable human adoption provenance")
 	}
+	out.ActorID = a.AcceptedBy
+	out.ActorKind = a.AcceptedActorKind
 	err = r.db.conn.QueryRowContext(ctx, "SELECT w.mission_id,m.project_id FROM swarm_work_items w JOIN swarm_missions m ON m.id=w.mission_id WHERE w.id=?", a.WorkItemID).Scan(&out.MissionID, &out.ProjectID)
 	return out, err
 }

@@ -65,6 +65,8 @@ type ToolTraceReader interface {
 }
 
 type AcceptedArtifactEvent struct {
+	ActorID    string          `json:"actor_id"`
+	ActorKind  string          `json:"actor_kind"`
 	EventID    string          `json:"event_id"`
 	MissionID  string          `json:"mission_id"`
 	ProjectID  string          `json:"project_id"`
@@ -76,7 +78,12 @@ type AcceptedArtifactEventReader interface {
 	ReadAcceptedArtifactEvent(context.Context, string) (AcceptedArtifactEvent, error)
 }
 
+type AcceptedArtifactEvidenceReader interface {
+	ReadAcceptedArtifactEvidence(context.Context, domain.Principal, string, string) (AcceptedArtifactEvent, error)
+}
+
 type ExperienceCandidateSource struct {
+	LocalProjectID    string
 	ID                string
 	Version           int
 	OwnerProjectID    string
