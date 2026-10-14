@@ -67,3 +67,13 @@ SOURCE `9eff2edb34058826d302d3a465b7fe7e74797be5` 已普通 push。消费方可�
 首地图查询 FAIL 是 UI 协议对象类型 `file` 的接入判断，原件 `.verification/s4/actual-first/map-failure.txt` 保留；后续按官方 `EntryView` 执行并通过。首本机额外 Go build 曾把 ignored 临时 MCP 客户端文件纳入根 `./...`，缺少该临时工具的依赖 checksum；其记录见 `.verification/s4/actual-first/checkpoint-errors.md`。临时工具在 Go 明确忽略的自有目录中运行，平台正式 MCP 验证入口为 `tests/s4/aoci`，依赖按 B 的准确 SOURCE `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646` 消费，后续 `go build -mod=readonly ./...` PASS。没有修改 AOCI 源码或其 go.mod。
 
 `tests/s4/aoci` 使用官方 Go MCP SDK，拒绝其他 remote，输出只显示工具名、错误状态和数量；原响应以独占文件写入指定 ignored 目录。新验证日志和错误文件均带本次实际时间，保存各轮结果。`tests/s4/verify.ps1 -Phase map-readonly/map-missing/result-bounds/expect-stale` 对应上述实际边界；没有请求新的 native 模型窗口、浏览器或发布操作。
+
+## AOCI 后继交付
+
+SOURCE `263bc7069682ede35af60426140ee6f744b0d472` 已普通 push，父链含 B 的精确 SDK/依赖 SOURCE。该源码的 `node --check internal/adapters/repositorycontext/codegraph.mjs`、`go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`go build -mod=readonly ./...`、`git diff --check` 全部 PASS。源码提交前最后一次独立进程 restart、map-readonly、result-bounds 均 PASS，正式 MCP 验证客户端实际列出官方九工具。
+
+模块负责人在自有新 SQLite 和投影目录独立运行 `verify -phase initial`，实际 6.181 秒 PASS：同 HEAD 的独立 worktree 身份、同事务快照校验、篡改拒绝、两棵真实官方图、Count 与调用关系及安全相对 span。执行来源包含当时已读后继修改，模块没有把该结果冒称首个 9eff 源码的精确验收；消息 `msg_98a7649970a4` 保留范围。公开源码与原验证证据没有被独立检查覆盖。
+
+当前真实限制：SemanticIndex 的用户决定未到；HTTP/前端/最终 Windows 包组合未执行；AOCI 完整系统理解未作额外全量认知声称，FSL 分发仍未决定。公开项目目录和 SDK/工具是本机依赖，发布方须使用 B 的依赖清单和可信实际路径配置。阶段 SOURCE/REPORT 供 S2/H 消费，当前 S4 继续承担后续接入与返修。
+
+Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GIT_WORK_TREE` 重定向注册仓库的实际观察。`verify -phase ambient-git` 实际把宿主 index 指向 B 的真实暂存区，A 的 IndexDigest、WorktreeDigest 和 WorktreeID 保持准确，原快照 Validate 仍通过；随后独立 restart 两图查询 PASS。仓库和 worktree 身份计算方式保持现有记录兼容。

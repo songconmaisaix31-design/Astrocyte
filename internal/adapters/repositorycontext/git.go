@@ -41,6 +41,13 @@ func digest(data []byte) string { sum := sha256.Sum256(data); return hex.EncodeT
 func git(ctx context.Context, root string, args ...string) ([]byte, error) {
 	argv := append([]string{"--no-optional-locks", "-c", "core.fsmonitor=false", "-C", root}, args...)
 	cmd := exec.CommandContext(ctx, "git", argv...)
+	// 固定注册仓库的真实Git状态，不接受宿主变量重定向index或worktree。
+	for _, entry := range os.Environ() {
+		key, _, _ := strings.Cut(entry, "=")
+		if !strings.HasPrefix(strings.ToUpper(key), "GIT_") {
+			cmd.Env = append(cmd.Env, entry)
+		}
+	}
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	output, err := cmd.Output()
