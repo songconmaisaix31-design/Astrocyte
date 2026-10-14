@@ -1,5 +1,19 @@
 # Works Relay runtime
 
+## 2026-10-15 当前所有权纯缓存读取
+
+追加 SOURCE `79d93132967de20fb1fda3d8d74b4edff386178c` 已普通 push，独立远端同值；事实阶段 `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` 和独立 REPORT `a455b7f0e39f606576dbc4c859d1862622fc8f0f` 保留普通祖先。当前 Task / Dispatch 继续活跃，working / 人工完成待答规则未改变。
+
+新增 `RelayCurrentOwnershipReader.GetCurrentOwnership(ctx, humanCaller, taskID)` 返回安全 `RelayCurrentOwnership{Status, Reason}`。读取先核当前 observe、项目 revision / A-B-C / grant 和工作区身份；store 中的历史 ControllerID 不产生当前 confirmed。服务把原 `Sessions` 保存的完整 Start 返回会话交原 driver 的 `CurrentControllerEvidence`，由当前 Registry 的原 owned 对象核准确 controller / startup operation / session / native identity / provider / CWD。缺原 map、旧未记录启动关系或缺完整 ID / project / version / 实际 owned process 均保持 unknown；身份冲突在实际位置拒绝。
+
+该方法只读缓存与原持有对象，没有调用 Native.Observe、thread/read 或其他 RPC，没有 CLI probe、启动、恢复、模型调用、store 写入或 live 时间刷新。所有权与活性分开；持有已退出进程的原控制器对象不表示终端 live。私有证据不进入返回 DTO；没有从历史 scalar 重建 NativeSession。
+
+H 对公共 DTO 使用上述 safe status / 固定 reason，并独立展示已持久化历史事实的时间和来源。实际工具配置核查沿原 RelayStore Snapshot 的完整 session 与同 Registry `Native.OwnedRelayExecution`，只交安全本机证据；history reader 的 session / native 标量不能拼成新的 owned session。raw argv、原生 ID、CWD、原档和 credentials 继续不公开。
+
+`GOMAXPROCS=2` / Go `-p=1 -mod=readonly` 下，app / agents 全包 PASS（`v14-current-ownership-first.log`），追加身份缺失 guard 后权限 / handoff / 原 metadata 回归与空 Registry 当前归属拒绝 PASS（`v14-current-ownership-final.log`）。生产 SQLite 检查确认 ready 任务只能得到 controller_binding_unrecorded / unknown，Agent 读取被 ScopeDenied，读取前后 store 全等；没有生成 controller 或开始事实。vet、server build 和 diff check 均 EXIT 0，产物 `dist/relay-l1/v14-current-ownership-server.exe` 未启动。
+
+带真实原生 session 的正向当前所有权、实际服务重启后的冷 Registry 读取、当前来源 / 工具关闭及所有新 CLI / Today / L1 仍 NOT_RUN，等待语义与 H/F 组合门禁。全套 Go 的原 H reconciliation 许可首 FAIL 保留，未因定向检查覆盖；本阶段没有扩大来源权限或重复旧输入。
+
 ## 2026-10-15 v1.4 独立事实阶段
 
 当前 Task `task_f082d8b36471` / Dispatch `ctx_aa83ef2b5087` 延续原 R 工作树、分支及写入范围。已读取模块唯一规格 `tasks/Works-Relay-v1.4.md`，初稿 SOURCE `297d00420f4478dd24805a9ad70ced47fb5b711f` 与人工 handoff 增补 SOURCE `61977021f7babe86205cd23f1b83c23a6627af6c`；此前停止窗口安排已被当前实现授权替代。本阶段 SOURCE `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` 已普通 push，独立 ls-remote 同值。客户端 Codex，模型设置未修改，没有派第四层人员。
