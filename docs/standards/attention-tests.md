@@ -10,6 +10,10 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 第二阶段 SOURCE `03af9854dac57f69fc206d4d647ad0c518b98b20` 已普通提交并 push。经模块明确授权，普通 `--no-ff` 消费 B 的前置 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，没有手工修改 B 的生产文件。T 本阶段实际修改 9 个 App 测试文件，新增专用 `attention_service_test.go`、`imports_service_test.go`、`jobs_service_test.go` 和 `tracking_production_test.go`；新增测试均在约定的 `*_test.go` 写入范围内。
 
+第三阶段 SOURCE `8525843d458f2d3a5d272b239ab76ac50c3223a5` 已普通提交并 push。迁移生产 factory 的全局可用性状态、真实保存页面后的 SQLite 关闭 / 重开 / 恢复 / 无 Reader 完成，以及启动恢复的两种后续作业情形；没有手工创建 completed 页面、成功作业、metadata 或时间。实际 API 最后一页提供 1 项，原 `Limit=100`、1 项保存页面、成功 / LastSuccessAt / nonstale 与旧失败不重写的断言继续保留。目录请求与未完成事务由真实生产实现执行。
+
+新增 `http_evidence_test.go` 只委托真实 HTTP Transport，并通过 `io.TeeReader` 将其实际响应原件保存到本机忽略目录；没有替代请求 / 响应、认证 Cookie 或凭据，也没有把原件写入 Git / HTTP / 产品字段。它仅用于定位真实 provider / pagination 问题。
+
 已迁移共享人工业务的全部 7 项断言组、5 项读操作作业断言组，以及来源绑定、官方 arXiv 两版和别名去重。保留原成功、失败、回执、12 个并发请求、2 个 Worker / 8 个作业、旧正文与 PDF、100 条截断要求、事务外 I/O、人机使用分离、未知维度及反馈历史。观察 helper 只记录或同步生产调用边界，所有来源与对象结果均委托生产 Reader / Store；实际 SQLite 负责事务及回执。
 
 mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 arXiv 或视频发生了修改。原输入分类的 21 个参数只验证生产纯函数，另以相同 21 个参数在真实 SQLite 验证队列与回执去重，未将参数分类填成网络成功。
@@ -35,6 +39,13 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | `go test -mod=readonly ./internal/attention/app -run '^TestPublicTrackingSourceCapacity$' -count=1` | RED：实际获准 UID `3494358764489275` 上传目录仅观察到 3 项，`has_more=false`，无法验证 100 条截断；未降低门槛 | `.verification/listing-production-first.log` |
 | `go test -mod=readonly ./internal/attention/app ./tests/s1 -list '^Test'` | EXIT0，当前编译及测试清单；没有运行实际模型，不代表全包通过 | `.verification/coverage-current.log` |
 | `go build -mod=readonly -o .verification/astrocyte-stage2.exe ./cmd/server` | EXIT0 | `.verification/build-stage2.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestGlobalSelectedProcessorStatusDoesNotInventAvailability$' -count=1` | EXIT0，使用生产 SelectedTextFactory 和真实 SQLite，保持未选项目的配置 / 模型未知 | `.verification/processor-status-production.log` |
+| `go test -mod=readonly ./tests/s1 -run '^TestAutomaticHTTPRejectsUntrustedCallerWithoutSideEffects$' -count=1` | EXIT0，9.258s；实际生产服务的无 session、无效 Agent 与跨来源请求均 403，SQLite 作业 / 回执 / 沉淀 / 资料均零 | `.verification/s1-http-denied-first.log` |
+| 保存页面首次及后续真实前置验证 | RED：完成事务限制的首次配置错误、creator offset 请求未取得页面、真实事务错误向调用者立即返回；全部原件保留 | `.verification/tracking-final-page-first.log`、`-second.log`、`-third.log`、`-favorites.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestSavedFinalListingPageCompletesWithoutReader$' -count=1` | EXIT0，2.021s；同获准 UID 收藏夹实际最后一页、完整 cap100、SQLite 实际关闭重开后无 Reader 完成 | `.verification/tracking-final-page-reopen.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestStartupResumesCurrentFailureButNotSupersededFailure$' -count=1` | EXIT0，3.652s；两子例均以真实目录、失败完成事务和实际数据库恢复创建前置，后续成功作业来自实际请求 | `.verification/tracking-startup-production.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestPublicFavoriteSourceCapacity$' -count=1` | RED：同已批准 UID 匿名目录观察 2 个收藏夹，选中夹报告 459 项；分页实际 provider_unavailable，尚未验证 100 条截断 | `.verification/favorites-capacity-first.log`、`-second.log`、`-capture.log` |
+| 当前相关包 `-list '^Test'` | EXIT0；编译及测试清单，不代表全包或模型通过 | `.verification/coverage-stage3.log` |
 
 ## 仍在执行
 
@@ -42,6 +53,8 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 
 生产 `agents/text.go` 的 selected-text 目录已通过 B 前置 SOURCE 改为 registry owned root。本轨后续 Go 命令的 `GOTMPDIR / TEMP / TMP` 显式指向 `.verification/go-temp`；S1 子服务另显式使用其 owned evidence directory 内的 native 临时目录。
 
-S1 `automatic_test.go` 当前是尚未提交的测试 WIP：使用实际编译的生产服务、真实 HTTP/session bootstrap、官方 Atom/PDF、项目许可、取消请求及同库重启。首次运行在第一次导入请求的身份构造前 RED，8.36s，没有原生 probe 或模型请求；原件 `.verification/s1-native-first.log` 与 `.verification/s1-native-1981875207/server.log` 保留。请求身份已修正，尚未继续运行到模型。模块已要求真实模型前先由 B/R 保留原 registry 中精确 session、自产源指针和实际运行配置，T 等待该生产口，不以 `ExternalStarted` 或工具调用零单独证明实际 Send / 工具关闭，不扫描原生 home、不重发 B 的旧成功请求。
+S1 `automatic_test.go` 当前是尚未提交的测试 WIP：使用实际编译的生产服务、真实 HTTP/session bootstrap、官方 Atom/PDF、项目许可、取消请求及同库重启。实际 HTTP 三种权限拒绝已通过，未知交付的模型分支尚未执行。首次运行在第一次导入请求的身份构造前 RED，8.36s，没有原生 probe 或模型请求；原件 `.verification/s1-native-first.log` 与 `.verification/s1-native-1981875207/server.log` 保留。请求身份已修正，尚未继续运行到模型。模块已要求真实模型前先由 B/R 保留原 registry 中精确 session、自产源指针和实际运行配置，T 等待该生产口，不以 `ExternalStarted` 或工具调用零单独证明实际 Send / 工具关闭，不扫描原生 home、不重发 B 的旧成功请求。精确入口问题沿原 `msg_18fa60d90459` 等待，超时保持同一消息，不重复询问。
+
+收藏夹真实响应原件位于 `.verification/public-http-1166636830/response-1.bin` 至 `response-9.bin`。只读派生为资源页 `20 / 20 / 19 / 0` 项、均 `code=0`、`has_more=true`；目录元数据为 459 项。生产 `PublicListing.ReadPage` 按 returned observed 推进窗口，而 provider 页位置按 requested page size 计算，第三页不足 20 后下一请求落到空槽。这一具体问题已直接 Handoff B `ctx_7217777c7bf5`；T 没有修改 provider、补造行数 / metadata、绕过网络权限或降低 cap。creator3 的有限列表观察、收藏459的目录前置、100 截断失败和最后一页缓存成功分别保留。
 
 完整成功、权限拒绝、未知交付、重启和整改后相关全包测试尚未完成；本文件所列定向结果不构成全部产品验收。剩余旧共享 helper / 自动模型 / tracking 外部替代测试仍需整改，目录容量不足及模型证据前置分别记录；未用旧替代测试的 PASS 填成本轨完整通过。
