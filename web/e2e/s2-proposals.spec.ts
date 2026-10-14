@@ -218,3 +218,28 @@ test('实际项目许可拒绝审阅，读取403时保留快照并禁用写入�
     await expect(dialog.getByRole('button', { name: '提交审阅', exact: true })).toBeEnabled();
   } finally { await context.setExtraHTTPHeaders({}); await server.close({ preserveData: true }); }
 });
+
+test('实际人工拒绝固定提案版本，保留内容且不签发Grant或启动执行', async ({ page }) => {
+  test.setTimeout(180_000);
+  const { server, api } = await realService();
+  try {
+    const { project, proposal } = await prepareDraft(api);
+    const dialog = await openDraft(page, server.webURL, proposal);
+    await dialog.getByRole('button', { name: '提交审阅', exact: true }).click();
+    await expect(dialog.getByRole('status', { name: '状态: 审核中', exact: true })).toBeVisible();
+    const declinedResponse = page.waitForResponse(response => response.url().endsWith(`/proposals/${proposal.id}/decline`));
+    await dialog.getByRole('button', { name: '拒绝当前版本', exact: true }).click();
+    const declined = await declinedResponse;
+    expect(declined.status()).toBe(200);
+    const result = await declined.json() as components['schemas']['S2ProposalResultV1'];
+    expect(result.proposal.status).toBe('declined');
+    expect(result.proposal.revision).toBe(proposal.revision);
+    expect(result.proposal.content).toEqual(proposal.content);
+    await expect(dialog.getByRole('status', { name: '状态: 已拒绝', exact: true })).toBeVisible();
+    expect(server.query('SELECT COUNT(*) AS count FROM workspace_approvals WHERE proposal_id=?', proposal.id)).toEqual([{ count: 0 }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM local_agent_sessions WHERE project_id=?', project.id)).toEqual([{ count: 0 }]);
+    await server.restart();
+    const restarted = await humanAPI(server.apiURL);
+    expect((await restarted.get(`/proposals/${proposal.id}`) as components['schemas']['S2ProposalResultV1']).proposal).toEqual(result.proposal);
+  } finally { await server.close({ preserveData: true }); }
+});
