@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -94,10 +95,16 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	if err != nil {
 		return result, err
 	}
+	var source *selectedTextSource
 	defer func() {
+		if source != nil {
+			if err := source.retainOriginal(); err != nil {
+				resultErr = errors.Join(resultErr, nativeError(apierrors.EvidenceMissing, "selected-text original source retention failed"))
+			}
+		}
 		obs, err := n.Stop(context.Background(), s)
 		if err != nil || !obs.StopConfirmed {
-			resultErr = nativeError(apierrors.DeliveryUnknown, "selected-text owned process stop remains unconfirmed")
+			resultErr = errors.Join(resultErr, nativeError(apierrors.DeliveryUnknown, "selected-text owned process stop remains unconfirmed"))
 		}
 	}()
 	p, err := n.get(s)
@@ -111,15 +118,35 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	if actualConfig != expectedConfig {
 		return result, nativeError(apierrors.ContextStale, "native model configuration changed; refresh before processing")
 	}
+	source, err = n.selectedTextSource(ctx, s, input)
+	if err != nil {
+		return result, err
+	}
 	wirePrompt := packetPrompt(s.ContextPacket, input.Prompt)
 	if len(wirePrompt) > 512*1024 {
 		return result, nativeError(apierrors.ValidationFailed, "final selected text input exceeds512KiB")
 	}
 	// 诊断只记录大小，不记录文本、路径、提供者身份、凭据或对话。
 	slog.Info("selected_text_input", "input_bytes", len(wirePrompt), "input_limit_bytes", 512*1024, "output_limit_bytes", limit)
+	source.Phase = "send_attempted"
+	if err = source.save(); err != nil {
+		return result, err
+	}
 	if _, err := n.Send(ctx, s, wirePrompt); err != nil {
 		return result, err
 	}
+	p.mu.Lock()
+	source.TurnID = p.turnID
+	p.mu.Unlock()
+	if n.id == "codex" && source.TurnID == "" {
+		return result, nativeError(apierrors.DeliveryUnknown, "native turn acceptance has no original turn identity")
+	}
+	source.Phase = "send_accepted"
+	if err = source.save(); err != nil {
+		return result, err
+	}
+	// 仅在原生 Send 实际受理后发布安全关联，原档路径与输出只在本机文件。
+	slog.Info("selected_text_send_accepted", "project_id", input.ProjectID, "job_id", input.JobID, "operation_id", input.OperationID, "session_id", s.ID, "native_id", s.NativeID, "owned_process_id", source.Execution.ProcessID, "evidence_file", source.file)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 	for {

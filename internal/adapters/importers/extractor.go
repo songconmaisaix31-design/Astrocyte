@@ -24,6 +24,8 @@ var summarizeMediaBridge []byte
 // 路径来自可信启动配置；媒体处理使用固定版本的上游接口。
 type SummarizeOptions struct {
 	Version, YtDlpPath, FFmpegPath, WhisperBinary, WhisperModel string
+	// ProxyURL 仅接收启动配置明确提供的匿名 HTTP(S) 代理。
+	ProxyURL string
 	// UVXPath 指定实际 uvx 程序，供 paper_pdf 转换使用。
 	UVXPath string
 	Timeout time.Duration
@@ -37,6 +39,12 @@ func NewSummarizeExtractor(nodeExecutable, cliPath string) (*SummarizeExtractor,
 	return NewSummarizeExtractorWithOptions(nodeExecutable, cliPath, SummarizeOptions{})
 }
 func NewSummarizeExtractorWithOptions(nodeExecutable, cliPath string, o SummarizeOptions) (*SummarizeExtractor, error) {
+	if o.ProxyURL != "" {
+		proxy, err := url.Parse(o.ProxyURL)
+		if err != nil || (proxy.Scheme != "http" && proxy.Scheme != "https") || proxy.Hostname() == "" || proxy.User != nil || proxy.Opaque != "" || proxy.RawQuery != "" || proxy.ForceQuery || proxy.Fragment != "" || (proxy.Path != "" && proxy.Path != "/") {
+			return nil, errors.New("summarize proxy must be an anonymous HTTP(S) origin without credentials, query or fragment")
+		}
+	}
 	if o.Version == "" {
 		o.Version = "0.25.1"
 	}
@@ -97,6 +105,9 @@ func (e *SummarizeExtractor) isolatedEnv(home string, media bool) []string {
 				paths = append(paths, filepath.Dir(p[1]))
 			}
 		}
+	}
+	if e.Options.ProxyURL != "" {
+		env = append(env, "HTTP_PROXY="+e.Options.ProxyURL, "HTTPS_PROXY="+e.Options.ProxyURL, "NODE_USE_ENV_PROXY=1", "NO_PROXY=localhost,127.0.0.1,::1")
 	}
 	for _, k := range []string{"SystemRoot", "WINDIR", "COMSPEC"} {
 		if v := os.Getenv(k); v != "" {
@@ -353,7 +364,26 @@ func (e *SummarizeExtractor) ExtractVideo(ctx context.Context, locator string) (
 	if ctx.Err() != nil {
 		return Export{}, ctx.Err()
 	}
-	return e.decodeVideoResult(locator, out.Bytes(), stderr.String(), runErr)
+	parsed, err := e.decodeVideoResult(locator, out.Bytes(), stderr.String(), runErr)
+	if err != nil {
+		return Export{}, err
+	}
+	if parsed.Mode == "upstream_media_transcript" {
+		nativePath := filepath.Join(home, "whisper-original.json")
+		info, err := os.Stat(nativePath)
+		if err != nil {
+			return Export{}, err
+		}
+		if !info.Mode().IsRegular() || info.Size() > 16<<20 {
+			return Export{}, errors.New("native whisper.cpp JSON is not a regular file within size limit")
+		}
+		native, err := os.ReadFile(nativePath)
+		if err != nil {
+			return Export{}, err
+		}
+		parsed.ExtraAttachments = append(parsed.ExtraAttachments, ExportAttachment{Name: "whisper-original.json", MediaType: "application/json", Data: native})
+	}
+	return parsed, nil
 }
 
 func (e *SummarizeExtractor) decodeVideoResult(locator string, output []byte, stderr string, runErr error) (Export, error) {
