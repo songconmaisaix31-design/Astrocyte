@@ -60,6 +60,9 @@ func workbenchUnredirected(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if err = workbenchPathUnredirected(abs); err != nil {
+		return "", err
+	}
 	resolved, err := filepath.EvalSymlinks(abs)
 	if err != nil || !strings.EqualFold(filepath.Clean(abs), filepath.Clean(resolved)) {
 		return "", workbench.ErrUnavailable
@@ -349,18 +352,22 @@ func (s *WorkbenchReader) focus(db workbenchDB, dir string) (workbench.Focus, er
 		return result, err
 	}
 	for _, topic := range topics {
-		points := history[topic.Topic]
-		sort.SliceStable(points, func(i, j int) bool { return points[i].TS < points[j].TS })
-		series := workbench.Series{Topic: topic.Topic, Points: []workbench.Point{}}
-		for i, point := range points {
-			if i > 0 && points[i-1].TS == point.TS {
-				continue
-			}
-			series.Points = append(series.Points, workbench.Point{TS: workbenchStamp(point.TS), Attention: point.Attention})
-		}
-		result.Series = append(result.Series, series)
+		result.Series = append(result.Series, workbenchSeries(topic.Topic, history[topic.Topic]))
 	}
 	return result, nil
+}
+
+func workbenchSeries(topic string, points []workbenchPoint) workbench.Series {
+	ordered := append([]workbenchPoint(nil), points...)
+	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].TS < ordered[j].TS })
+	series := workbench.Series{Topic: topic, Points: []workbench.Point{}}
+	for i, point := range ordered {
+		if i > 0 && ordered[i-1].TS == point.TS {
+			continue
+		}
+		series.Points = append(series.Points, workbench.Point{TS: workbenchStamp(point.TS), Attention: point.Attention})
+	}
+	return series
 }
 func (s *WorkbenchReader) filters(db workbenchDB) (workbench.Filters, error) {
 	result := workbench.Filters{}
