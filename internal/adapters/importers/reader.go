@@ -78,7 +78,11 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		}
 		attachments := []app.SourceAttachment{{Name: name, MediaType: "application/json", Data: e.Original, SourceLocator: e.URL}}
 		for _, a := range e.ExtraAttachments {
-			attachments = append(attachments, app.SourceAttachment{Name: a.Name, MediaType: a.MediaType, Data: a.Data, SourceLocator: e.URL})
+			mediaType := a.MediaType
+			if a.Name == "whisper-original.json" {
+				mediaType = app.NativePrivateAttachmentMediaType
+			}
+			attachments = append(attachments, app.SourceAttachment{Name: a.Name, MediaType: mediaType, Data: a.Data, SourceLocator: e.URL})
 		}
 		version := e.Version
 		if e.TranscriptSource != "" {

@@ -4,6 +4,22 @@
 
 后续独立 REPORT `94658c3788fc94db8215df403bea6aab4da1cfbb`、`96618df9b62ed0018182b5cbc1aa626c5bcb8362`，文本目录及实际 Works 发现 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，公开生产认知及祖先路径检查 SOURCE `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，默认时钟/实际 Sleep/真实 nullable 及公开论文输入 SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` 均已普通 push。
 
+后续 SOURCE `3384a89aac3be6d5670d756eb2d44263784d0cb8`、`03f92127a74e4d8b49cf5c4bb1010b43349d6d43`、`e05c013a08ccf372bb884dae5eeb3345f92173af`、`5622bfdaec376e23a696cc110a082c72c9d43f3f` 均已普通 push；前一独立 REPORT 为 `15c738f88822e553eb228c12c0fdc71ad07b7531`。整轨及实际模型验收继续保持未完成。
+
+## 当前生产接口与验证
+
+- 按唯一 R owner 的零 WIP 授权，精确消费 `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` 中单文件 `relay_execution.go`；原 identity、进程和实际 launch 参数检查保持，effectiveToolSet 为 unknown。临时单文件写域已归还 R。
+- 真实论文输入具有生成契约类型；`loadPublicPaperSnapshots` 经实际 Node DOM 返回完整 canonical snapshot，包括原 schema、作者、来源及版本。PLOS 完整正文与 ACL 摘要经实际生产 HTTP/SQLite 导入，附件原 bytes 和投影相等。`.verification/public-snapshot-api-first.log` 保留第一次字段选择错误，第二次实际检查通过，证据 `.verification/public-snapshot-api-second.log`。
+- `node scripts/check-s1-project-api.mjs` 使用两个实际公开 arXiv 版本，实际接口、固定引用、权限、撤销、调用键复用和重启通过，证据 `.verification/public-project-api-first.log`。类型声明的 web TypeScript 检查、11 个 Node 测试、31 包架构检查通过；证据分别为 `.verification/public-inputs-types-second.log`、`.verification/node-comment-and-parser-first.log`、`.verification/architecture-module-json-first.log`。类型检查首命令错误仍保留。
+- P/F 明确授权的三文件 Reader 临时冲突处理均只编辑并 stage 原 e914 不可变内容，三文件逐字相等且无 unmerged entries；其 merge/commit 归原 owner。P Reader 十项实际检查通过，P 旧装配常量导致首 build RED；F 对应实际组合 server build 通过。证据 `.verification/p-conflict-reader-first.log`、`.verification/p-conflict-build-first.log`、`.verification/f-conflict-build-first.log`。两项临时授权均已结束。
+- 文本处理原调用处把 project/job/operation 关联到当前精确 controller 身份、原 native_id、PID 和实际 Send turn_id；官方 `thread/read(includeTurns:false)` 元数据及实际原件窗口只保存在已有本机 stateRoot，产品 DB/HTTP 不增加 raw 字段。首次 turn 前仅记录来源路径回执；Send 尝试与受理分别登记，停止前按原 header 的 native_id/cwd 核查并复制实际窗口，窗口完整度保持未核实。
+- `go test ./internal/adapters/agents -run 'TestSelectedText|TestOwnedTextExecution' -v` 实际无模型探测第二次 4 PASS，9.708s，原 controller StopConfirmed，model turns 0，effectiveToolSet unknown；证据 `.verification/text-source-actual-second.log`。首检查错误地要求首次 turn 前原件已创建，原 RED 保留于 `.verification/text-source-actual-first.log`。`go build -o .verification/text-source-server.exe ./cmd/server` 与定向 `go vet` 均 EXIT 0，证据 `.verification/text-source-build-third.log`、`.verification/text-source-vet-first.log`。编译首 RED 与更正后通过均保留。
+- 用户经协调者决定将实际 selected-text 模型/原生身份完整核查窗口移至 2026-10-15；今晚不再启动原生 controller。当前 Send 后原件窗口、原生文件 alias 守卫接缝和 v1.4 身份契约仍待验证，未登记 CLI 完整验收 PASS。
+- 视频固定 owner V 已接收 extractor.go、extractor_test.go、summarize.go、summarize-media.mjs、importers_test.go 五整文件，B 持续停写。T 测试域保持原已交接范围。
+- 当前 Windows 已配置匿名 loopback 代理实际指向 `127.0.0.1:7890`；经明确授权只读取得实际配置，原 arXiv 官方 API 通过该代理实际 HTTP 200，13717 bytes，证据 `.verification/arxiv-configured-proxy-first.atom.xml`。未修改系统网络、SSL 或 DNS；生产显式代理配置仍待消费 V 精确 SOURCE。
+
+上述定向通过未覆盖当前全包 RED、尚存替代实现、视频真实时间区间、私有附件读取边界及 favorites 分页失败。阶段报告继续保留实际限制，后续原 owner 完成生产返修与完整验证。
+
 ## 完成内容
 
 - 保留接管时全部 B 未提交贡献。`paper-dom.mjs` 和插件提取模块使用 `JSON.parse`、`URL` 直接失败，错误 JSON-LD 与 PDF URL 各有断言。

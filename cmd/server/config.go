@@ -168,7 +168,8 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 		Version: "0.25.1", YtDlpPath: os.Getenv("ASTROCYTE_YT_DLP_PATH"),
 		FFmpegPath: os.Getenv("ASTROCYTE_FFMPEG_PATH"), WhisperBinary: os.Getenv("ASTROCYTE_WHISPER_BINARY"),
 		WhisperModel: os.Getenv("ASTROCYTE_WHISPER_MODEL"), UVXPath: os.Getenv("ASTROCYTE_UVX_PATH"),
-		Timeout: time.Duration(timeoutSeconds) * time.Second,
+		ProxyURL: os.Getenv("ASTROCYTE_SUMMARIZE_PROXY_URL"),
+		Timeout:  time.Duration(timeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("configure summarize extraction: %w", err)

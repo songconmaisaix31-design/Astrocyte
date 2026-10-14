@@ -194,6 +194,9 @@ type AgentToken struct {
 }
 
 type TextRequest struct {
+	ProjectID       string
+	JobID           string
+	OperationID     string
 	CLI             string
 	Prompt          string
 	DeadlineSeconds int
