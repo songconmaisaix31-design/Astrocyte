@@ -10,7 +10,6 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"net/http/cookiejar"
 	"os"
 	"path/filepath"
 	"testing"
@@ -112,11 +111,8 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 			t.Error("实际 Serve 关闭未完成")
 		}
 	}()
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		t.Fatal("实际客户端 session 初始化失败")
-	}
-	client := &http.Client{Jar: jar, Timeout: 5 * time.Second}
+	writeActualJSON(t, filepath.Join(root, "service-public.json"), map[string]any{"api_url": apiURL})
+	client := newActualRelayHTTP(t, actualRelayAPIURL(t, root)).client
 	defer client.CloseIdleConnections()
 	request := func(method, path, origin, csrf string, body any, status int, target any) {
 		t.Helper()
@@ -194,6 +190,7 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	}
 	shutdownCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+	client.CloseIdleConnections()
 	if err := server.Shutdown(shutdownCtx); err != nil {
 		t.Fatal("实际 HTTP 正常关闭失败")
 	}

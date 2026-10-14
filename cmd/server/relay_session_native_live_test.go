@@ -83,7 +83,7 @@ func TestRelaySessionActualNativeNotificationEvidence(t *testing.T) {
 	if err == nil || failure.Sequence != invalid.Sequence || failure.Blocked != "native_sequence_invalid" {
 		t.Fatal("实际通知游标负例未立即失败")
 	}
-	client := newActualRelayHTTP(t)
+	client := newActualRelayHTTP(t, actualRelayAPIURL(t, evidence))
 	client.request(t, "GET", "/api/v1/auth/session", nil, nil)
 	var view workbench.SessionEvents
 	client.request(t, "GET", "/api/v1/relay/session-events?task_id="+task.ID+"&page_size=100", nil, &view)
