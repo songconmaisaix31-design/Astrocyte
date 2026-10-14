@@ -103,3 +103,5 @@ Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GI
 HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确注册函数、五个端口字段和 DTO 已分别交模块负责人、H 与 UI 负责人。`go build -mod=readonly ./internal/adapters/httpapi`、`go vet -mod=readonly ./internal/adapters/httpapi`、`git diff --check` PASS；真实 HTTP/认证/SQLite/重启组合仍 NOT_RUN，等 H 的准确生产薄组装 SOURCE 后由本轨继续验证。没有用编译通过替代实际接口通过。
 
 模块独立审读 `msg_1d21efa0bebb` 指出 GET 查询解析应拒绝畸形编码。本轨使用成熟 `net/url.ParseQuery(r.URL.RawQuery)` 并立即拒绝解析错误，避免静默忽略畸形未知参数；HTTP 验收脚本已准备畸形 percent、semicolon、重复标量与未知参数场景，实际执行仍待生产组装，不使用自研 parser。
+
+查询解析修复 SOURCE `293af633570d6a4f4cf4bbf9c5b651821ab977e7` 已普通 push；当前 HTTP 包 build/vet 和差分检查 PASS。真实 HTTP 验收脚本仅在准备目录中，未宣称实际运行成功；H 生产注册/认证准确 SOURCE 是其当前依赖。模块及 H 已收到准确 Services、注册函数、DTO 和权限规则，F/UI 仅按 H 唯一契约生成类型消费。
