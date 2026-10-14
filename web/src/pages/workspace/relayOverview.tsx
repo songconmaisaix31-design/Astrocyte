@@ -24,6 +24,6 @@ export function RelayOverview({ workNames }: { workNames?: Readonly<Record<strin
         <RelayTaskSummary view={view} workName={workNames?.[view.task.work_id]} /><button type="button" className="ac-button secondary compact" onClick={() => setTaskID(view.task.task_id)}>{view.task.state === 'ready' ? '查看意图与权限' : '查看任务、事件和收据'}</button>
       </li>)}</ul> : <p>尚无人工接力意图。</p>}</QueryState>
     </SectionCard>
-    {taskID && <DetailPanel title={`接力任务 · ${taskID}`} onClose={() => setTaskID('')}><RelayTaskPanel taskID={taskID} onChanged={tasks.retry} /></DetailPanel>}
+    {taskID && <DetailPanel title={`接力任务 · ${taskID}`} onClose={() => setTaskID('')}><RelayTaskPanel key={taskID} taskID={taskID} onChanged={tasks.retry} /></DetailPanel>}
   </div>;
 }

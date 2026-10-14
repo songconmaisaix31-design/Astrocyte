@@ -1,5 +1,25 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/relay/tasks/{id}/facts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read persisted safe action facts and session relations
+         * @description Human session and Origin required. GET reads persisted facts with current project permission; no controller observation, source-file IO, input delivery, receipt write or state transition. Six-field session-events remains unchanged.
+         */
+        get: operations["listRelayTaskFacts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/relay/session-events": {
         parameters: {
             query?: never;
@@ -2650,19 +2670,78 @@ export interface components {
             schema_version: 1;
             events: components["schemas"]["WorkbenchEventV1"][];
         };
-        /**
-         * @example {
-         *       "work_id": "fixture-work",
-         *       "project_id": "fixture-project",
-         *       "agent": "fixture-agent",
-         *       "task": "Fixture human task"
-         *     }
-         */
         RelayIntentRequestV1: {
             work_id: string;
             project_id: string;
             agent: string;
             task: string;
+            /**
+             * Format: uuid
+             * @description Explicit prior released task in the same Work and original workspace. Requires handoff_context_confirmed=true and a different Agent. This declaration does not prove a new native session.
+             */
+            handoff_from_task_id?: string;
+            /** @description Human confirmation of prior task context. Omitted or false retains ordinary intent semantics when no source task is specified. */
+            handoff_context_confirmed?: boolean;
+        };
+        RelayRuntimeFactV1: {
+            /** Format: uuid */
+            fact_id: string;
+            /** Format: uuid */
+            task_id: string;
+            /** Format: uuid */
+            terminal_id?: string;
+            /** Format: uuid */
+            worktree_id?: string;
+            /** @description Original immutable business receipt identity; not a UUID. Matches a readable receipt of this task. */
+            receipt_id?: string;
+            /** Format: uuid */
+            operation_id?: string;
+            /** @enum {string} */
+            kind: "action_claimed" | "action_result" | "observation_rejected" | "handoff_declared" | "human_target_confirmed" | "controller_initialized" | "session_confirmed" | "input_channel_open" | "input_written" | "input_closed" | "input_accepted" | "turn_started" | "input_consumption";
+            /** @enum {string} */
+            status: "confirmed" | "unknown" | "pending" | "accepted" | "rejected" | "delivery_unknown";
+            /** @enum {string} */
+            source: "relay_store" | "human_intent" | "human_transition" | "codex_initialize" | "codex_thread_identity" | "claude_initialize" | "claude_system_init" | "pi_get_state" | "native_request_pipe" | "codex_turn_acknowledgement" | "pi_prompt_acknowledgement" | "codex_turn_started" | "pi_agent_start" | "claude_stream_input" | "native_protocol" | "owned_stdin_pipe" | "stdin_pipe" | "stdin_eof";
+            /** @enum {string} */
+            reason?: "client_consumption_not_acknowledged" | "operation_not_bound" | "controller_evidence_rejected" | "not_found" | "validation_failed" | "unsupported_capability" | "version_conflict" | "context_stale" | "index_stale" | "scope_denied" | "approval_required" | "approval_revoked" | "lease_lost" | "budget_exhausted" | "provider_unavailable" | "evidence_missing" | "delivery_unknown" | "internal_error";
+            sequence: number;
+            /** Format: date-time */
+            ts: string;
+        };
+        RelaySessionRelationV1: {
+            /** Format: uuid */
+            task_id: string;
+            /** Format: uuid */
+            previous_task_id?: string;
+            /** Format: uuid */
+            worktree_id?: string;
+            /** Format: uuid */
+            terminal_id?: string;
+            /** Format: uuid */
+            operation_id: string;
+            /** @enum {string} */
+            kind: "new" | "resume" | "handoff" | "unknown";
+            /** @enum {string} */
+            status: "confirmed" | "unknown";
+            /** @enum {string} */
+            source: "human_intent" | "controller_session";
+            /** Format: date-time */
+            ts: string;
+        };
+        RelayFactsV1: {
+            /** @constant */
+            schema_version: 1;
+            /** Format: uuid */
+            task_id: string;
+            facts: components["schemas"]["RelayRuntimeFactV1"][];
+            session_relations: components["schemas"]["RelaySessionRelationV1"][];
+            /** @description Ownership comes only from the original controller object retained by this service, independently of historical facts and liveness. GET performs no RPC or activity refresh. A cold registry returns unknown. */
+            current_ownership: {
+                /** @enum {string} */
+                status: "confirmed" | "unknown";
+                /** @enum {string} */
+                reason?: "controller_binding_unrecorded" | "workspace_identity_unverified" | "controller_metadata_unsupported" | "controller_not_held";
+            };
         };
         /**
          * @example {
@@ -5699,6 +5778,73 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    listRelayTaskFacts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Safe facts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayFactsV1"];
+                };
+            };
+            /** @description Invalid request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Permission denied */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Task unavailable */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Runtime facts capability unavailable */
+            501: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+            /** @description Evidence or provider unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorV1"];
+                };
+            };
+        };
+    };
     listRelaySessionEvents: {
         parameters: {
             query?: {

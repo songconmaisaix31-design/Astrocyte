@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { RelayTaskView, RelayTaskResult } from '../../api/relay';
 import { RelayTaskSummary } from './relayTaskPanel';
 import { RelayTransitionControls } from './relayTransitionControls';
+import { relayElapsed } from './relayPresentation';
 
 // 明确参数输入只验证组件显示与确认入口，不表示实际任务、终端或执行结果。
 function inputView(state: RelayTaskView['task']['state'], liveness: NonNullable<RelayTaskView['terminal']>['liveness']): RelayTaskView {
@@ -13,6 +14,14 @@ function inputView(state: RelayTaskView['task']['state'], liveness: NonNullable<
     transitions: [], event_publication: { status: 'none', pending_events: 0, published_events: 0 },
   };
 }
+
+it('明确非法时间输入立即拒绝，合法时间保留实际时长', () => {
+  const view = inputView('working', 'live');
+  expect(relayElapsed(view, Date.parse('2026-10-14T00:01:30Z'))).toBe('1 分 30 秒');
+  expect(() => relayElapsed(view, Date.parse('2026-10-13T23:59:59Z'))).toThrow('时间顺序无法核查');
+  view.task.created_at = 'invalid-input-time';
+  expect(() => relayElapsed(view)).toThrow('接力任务时间无效');
+});
 
 for (const [liveness, label] of [['live', '近期活动确证 · live'], ['unverifiable', '活性无法核实 · unverifiable'], ['exited', '终端已退出 · exited']] as const) {
   it(`参数 ${liveness} 完整保留三值活性与独立任务状态`, () => {

@@ -10,6 +10,7 @@ import { RelayIntentPanel } from './relayIntentPanel';
 import { relayActionLabel, relayDisplayState, relayElapsed, relayLivenessLabel, relayReceiptLabel, relayUnresolved, relaySingleInput } from './relayPresentation';
 import { RelayReceipts } from './relayReceipts';
 import { RelayTransitionControls } from './relayTransitionControls';
+import { RelayRuntimeFacts } from './relayFacts';
 
 export function RelayTaskSummary({ view, workName }: { view: RelayTaskView; workName?: string }) {
   return <div className="relay-task-summary">
@@ -17,6 +18,7 @@ export function RelayTaskSummary({ view, workName }: { view: RelayTaskView; work
     <Field label="Agent">{view.task.agent}</Field><Field label="作品">{workName || view.task.work_id}</Field>
     <Field label="分支">{view.worktree?.branch || '工作区尚未准备'}</Field>
     <Field label="当前状态">{relayDisplayState(view)}</Field>
+    <p className="relay-note">原生回合开始、输入消费与人工目标声明见动作事实，缺少证据时保持未知。</p>
     <Field label="已持续时间">{relayElapsed(view)}</Field>
     <Field label="终端活性"><span className={`relay-liveness relay-${view.terminal?.liveness || 'unverifiable'}`}>{view.terminal ? relayLivenessLabel[view.terminal.liveness] : '终端尚未创建 · 活性未知'}</span></Field>
     {view.terminal && <Field label="终端 ID">{view.terminal.terminal_id}</Field>}
@@ -29,19 +31,24 @@ export function RelayTaskPanel({ taskID, onChanged }: { taskID: string; onChange
   const task = useReadApi(signal => relayApi.task(taskID, signal), { key: taskID, refreshMs: 3000 });
   const events = useReadApi(signal => relayApi.events(taskID, signal), { key: taskID, refreshMs: 3000 });
   const receipts = useReadApi(signal => relayApi.receipts(taskID, signal), { key: taskID, refreshMs: 3000 });
+  const facts = useReadApi(signal => relayApi.facts(taskID, signal), { key: taskID, refreshMs: 3000 });
   const projects = useReadApi(signal => relayApi.projects(signal), { refreshMs: 5000 });
   const registry = useReadApi(signal => relayApi.agents(signal));
   const [input, setInput] = useState('');
   const send = useRelayCommand(`send:${taskID}`), read = useRelayCommand(`read:${taskID}`), stop = useRelayCommand(`stop:${taskID}`);
   const reconcile = useRelayCommand<RelayTaskResult>(`reconcile:${taskID}`);
-  const changed = () => { task.retry(); events.retry(); receipts.retry(); onChanged(); };
+  const changed = () => { task.retry(); events.retry(); receipts.retry(); facts.retry(); onChanged(); };
   const view = task.data?.view;
   const permission = projects.data?.projects.find(project => project.project_id === view?.task.project_id);
   const singleInput = relaySingleInput(view?.terminal ?? null, registry.data?.agents.find(agent => agent.name === view?.task.agent));
   const active = view && ['accepted', 'working', 'done'].includes(view.task.state) && !!view.terminal;
   const unavailable = !active || task.stale || receipts.stale || projects.stale || !receipts.data || !permission;
   const pending = send.pending || read.pending || stop.pending || reconcile.pending;
+  const currentControllerUnavailable = !facts.data || facts.loading || facts.stale || facts.data.current_ownership.status !== 'confirmed';
+  const pendingReceipt = receipts.data?.receipts.some(receipt => receipt.status === 'pending');
   const disabled = (action: RelayReceipt['action']) => unavailable || pending || !permission?.allowed_actions.includes(action === 'read' ? 'observe' : action) || relayUnresolved(receipts.data?.receipts || [], action) ||
+    (['read', 'send', 'stop'].includes(action) && (currentControllerUnavailable || pendingReceipt)) ||
+    (action === 'read' && (view?.terminal?.liveness === 'exited' || !!view?.terminal?.exited_at || view?.task.condition === 'terminal_exited' || view?.task.condition === 'delivery_unknown')) ||
     (action === 'send' && (singleInput || view?.task.state === 'done' || view?.task.condition === 'delivery_unknown' || view?.task.condition === 'terminal_exited' || view?.terminal?.liveness === 'exited')) || (action === 'stop' && view?.terminal?.liveness === 'exited');
   return <div className="relay-flow">
     <QueryState state={task}>{data => <><RelayTaskSummary view={data.view} />
@@ -53,8 +60,9 @@ export function RelayTaskPanel({ taskID, onChanged }: { taskID: string; onChange
     </>}</QueryState>
     <QueryState state={projects}>{() => null}</QueryState>
     <QueryState state={registry}>{() => null}</QueryState>
+    <section aria-label="动作事实与会话关系"><h3>动作事实与会话关系</h3><QueryState state={facts}>{data => <RelayRuntimeFacts data={data} />}</QueryState></section>
     {singleInput && <p role="status">当前终端登记为一次性输入：首条手册与任务发送后关闭标准输入，不支持继续发送；仍可读取和停止。</p>}
-    <form onSubmit={event => { event.preventDefault(); if (!disabled('send') && !send.uncertain && input.trim()) void send.run(key => relayApi.send(taskID, input, key), result => { if (result.receipt.status === 'accepted') setInput(''); changed(); }); }}>
+    <form onSubmit={event => { event.preventDefault(); if (!disabled('send') && !send.uncertain && input.trim()) void send.run(key => relayApi.send(taskID, input, key), result => { if (result.receipt.status === 'accepted' && !result.receipt.error) setInput(''); changed(); }); }}>
       <label>发送输入<textarea aria-label="发送输入" value={input} onChange={event => setInput(event.target.value)} rows={4} disabled={pending || singleInput} /></label>
       <div className="relay-card-actions">
         <button type="submit" className="ac-button compact" disabled={!!disabled('send') || send.uncertain || !input.trim()}>发送输入</button>

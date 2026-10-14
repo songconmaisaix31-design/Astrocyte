@@ -41,6 +41,63 @@ test('实际注册CLI、默认A确认与权限拒绝保留意图和收据', asyn
   } finally { await owned.server.close(); }
 });
 
+test('实际HTTP拒绝不成对交接声明，新意图不自动声明交接', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    const body = { work_id: owned.work.id, project_id: owned.project.id, agent: 'codex', task: '只核成对声明校验，不启动控制器。' };
+    for (const fields of [{ handoff_context_confirmed: true }, { handoff_from_task_id: crypto.randomUUID() }]) {
+      const rejected = await owned.api.request('/relay/intents', { method: 'POST', body: { ...body, ...fields } });
+      expect(rejected.status).toBe(400);
+      expect((await owned.api.get('/relay/tasks') as S['RelayTasksV1']).tasks).toEqual([]);
+    }
+    const commands = writes(page);
+    await declareIntent(page, owned);
+    expect(commands).toHaveLength(1);
+    expect(commands[0].body).not.toHaveProperty('handoff_from_task_id');
+    expect(commands[0].body).not.toHaveProperty('handoff_context_confirmed');
+    const data = await owned.api.get('/relay/tasks') as S['RelayTasksV1'];
+    expect(data.tasks).toHaveLength(1);
+    expect(data.tasks[0].task.state).toBe('ready');
+    expect(data.tasks[0].terminal).toBeNull();
+  } finally { await owned.server.close(); }
+});
+
+test('真实拒绝动作事实逐项对应HTTP和DOM，历史事实不授当前控制器归属', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    await owned.api.write(`/local-projects/${owned.project.id}/settings`, { expected_revision: owned.project.settings.revision, settings: { external_model_cli: 'codex', allowed_actions: ['observe'] } }, { method: 'PUT' });
+    await declareIntent(page, owned);
+    const before = await owned.api.get('/relay/tasks') as S['RelayTasksV1'];
+    const id = before.tasks[0].task.task_id;
+    const rejected = await owned.api.request(`/relay/tasks/${id}/transition`, { method: 'POST', body: { from: 'working', to: 'done', completion_confirmed: true } });
+    expect(rejected.status).toBe(409);
+    const facts = await owned.api.get(`/relay/tasks/${id}/facts`) as S['RelayFactsV1'];
+    expect(facts.current_ownership).toEqual({ status: 'unknown', reason: 'controller_binding_unrecorded' });
+    expect(facts.session_relations).toEqual([]);
+    expect(facts.facts.some(fact => fact.kind === 'action_result' && fact.status === 'rejected' && fact.reason === 'version_conflict')).toBe(true);
+    await page.keyboard.press('Escape');
+    const commands = writes(page);
+    await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+    const region = page.getByRole('region', { name: '动作事实与会话关系', exact: true });
+    await expect(region).toContainText('当前原控制器归属未知');
+    await expect(region).toContainText('controller_binding_unrecorded');
+    await expect(region.getByRole('list', { name: '已记录动作事实' }).locator('li')).toHaveCount(facts.facts.length);
+    for (const fact of facts.facts) {
+      const row = region.getByRole('list', { name: '已记录动作事实' }).locator('li').filter({ hasText: fact.fact_id });
+      await expect(row).toContainText(fact.source);
+      if (fact.receipt_id) await expect(row).toContainText(fact.receipt_id);
+      if (fact.operation_id) await expect(row).toContainText(fact.operation_id);
+      if (fact.reason) await expect(row).toContainText(fact.reason);
+    }
+    await expect(region).toContainText('尚无已记录会话关系');
+    expect(await owned.api.get('/relay/tasks')).toEqual(before);
+    expect(await owned.api.get(`/relay/tasks/${id}/facts`)).toEqual(facts);
+    expect(commands).toEqual([]);
+  } finally { await owned.server.close(); }
+});
+
 test('实际B与C独立设置保留服务权限摘要，未许可原生操作时拒绝', async ({ page }) => {
   test.setTimeout(120_000);
   const owned = await relayIntentService();
@@ -258,7 +315,7 @@ test('真实释放工作区由另一注册Agent接续，重新经过权限确认
   expect(view.task.agent).not.toBe(previous.task.agent);
   await dialog.getByRole('checkbox').check();
   await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-  await expect(dialog.getByRole('status').filter({ hasText: '派发收据' })).toContainText('动作已确认');
+  await expect(dialog.getByRole('status').filter({ hasText: '派发收据' })).toContainText('动作已接受');
   const currentResponse = await page.request.get(`${origin}/api/v1/relay/tasks/${view.task.task_id}`);
   expect(currentResponse.status()).toBe(200);
   const current = (await currentResponse.json() as S['RelayTaskResultV1']).view;
@@ -274,7 +331,7 @@ test('实际事件接入错误由人工核对，发布不表示认知快照更�
   expect(commands).toEqual([]);
   await dialog.getByRole('button', { name: '核对事件接入' }).click();
   await expect(dialog).toContainText('已接入本机应用事件');
-  await expect(dialog.getByRole('region', { name: '任务收据' })).toContainText('核对事件接入 · 动作已确认');
+  await expect(dialog.getByRole('region', { name: '任务收据' })).toContainText('核对事件接入 · 动作已接受');
   expect(commands.map(command => command.action)).toEqual(['reconcile']);
 });
 
