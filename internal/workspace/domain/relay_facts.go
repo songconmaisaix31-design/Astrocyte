@@ -2,6 +2,12 @@ package domain
 
 import "time"
 
+// 当前所有权只来自此服务仍持有的原控制器，独立于历史事实和活性。
+type RelayCurrentOwnership struct {
+	Status string `json:"status"`
+	Reason string `json:"reason,omitempty"`
+}
+
 // 事实独立于收据和任务状态；后到观察不得重写原动作结果。
 type RelayRuntimeFact struct {
 	ID          string    `json:"fact_id"`
