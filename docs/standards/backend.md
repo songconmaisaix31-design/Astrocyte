@@ -18,7 +18,7 @@
 - 视频固定 owner V 已接收 extractor.go、extractor_test.go、summarize.go、summarize-media.mjs、importers_test.go 五整文件，B 持续停写。T 测试域保持原已交接范围。
 - 当前 Windows 已配置匿名 loopback 代理实际指向 `127.0.0.1:7890`；经明确授权只读取得实际配置，原 arXiv 官方 API 通过该代理实际 HTTP 200，13717 bytes，证据 `.verification/arxiv-configured-proxy-first.atom.xml`。未修改系统网络、SSL 或 DNS；生产显式代理配置仍待消费 V 精确 SOURCE。
 
-上述定向通过未覆盖当前全包 RED、尚存替代实现、视频真实时间区间、私有附件读取边界及 favorites 分页失败。阶段报告继续保留实际限制，后续原 owner 完成生产返修与完整验证。
+上述定向通过未覆盖当前全包 RED、尚存替代实现及 favorites 最终容量验收。视频真实时间区间及私有附件读取结果分别由 V 和下节实际检查登记，阶段报告继续保留其他限制。
 
 ## 原生视频附件权限与显式代理
 
@@ -34,7 +34,13 @@ SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` 已普通 push，包含普通 
 
 旧 README 实际结果使用原 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 启动当前生产 HTTP，只运行 GET session/progress；结果保持旧 native_id、model 与 evidence，新增模型 turns 0，旧 effectiveToolSet/source completeness 仍 unknown。F 已收到只读 URL 与项目 id，专属服务等待其检查后停止；证据 `.verification/existing-progress-http-first.log`。该服务不接续原 native 会话。
 
-收藏第三页实际仅返回 19 条元数据。上游请求窗口位置与真实观察条数分别保留；初次 100 的预算应按实际返回条数或请求槽位计算，已交根决定，未答保持未决定。源 cursor 可独立纠正为请求窗口推进，不能伪填缺失或降低 100 条成功断言。
+收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
+
+收藏 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已普通 push。`go test ./internal/adapters/importers -run TestPublicListingActualWindowCursorWithUnavailableSlot -v -count=1` EXIT 0，实际生产集合列举选出公开 folder `2356677875`，真实 Transport 始终访问上游 HTTP；三次请求位置 0/20/40，各请求 20，实际返回共 59，下一 cursor 为 4。观察包装只记录实际 query，不替代 HTTP 响应；没有把 19 改成 20。证据 `.verification/public-listing-cursor-first.log`，定向 vet EXIT 0，`.verification/public-listing-cursor-vet-first.log`。
+
+容量测试 SOURCE `c28f6b15ae0032df2a21e0625f0985546759610d` 已普通 push，独立前段 REPORT 为 `580b4a37d0bd3decce491a772fe5ee86fd64d445`。同一 folder 属于原已获准公开 UID `3494358764489275`，来源许可为 `docs/QUESTIONS.md` 2026-10-10 用户决定；T 明确原件目录 `public-http-1166636830` 中 response 3/5/7/9 的成熟 JSON 聚合分别为相同 id、media_count 459、20/20/19/0，确认与 T 原容量来源相同，没有新增收藏范围。
+
+原 `TestPublicListingBoundsActualFavoriteRequestsIncludingSkippedRows` 完整覆盖改为生产公开 HTTP，计数和剩余预算保持断言；六次实际窗口位置 0/20/40/60/80/100，尺寸 20/20/20/20/20/1，观察恰 100、实际资料 100、请求槽位 101、next cursor `6:1`。三项定向检查 EXIT 0，2.273s，`.verification/public-listing-capacity-first.log`；最后十行 uploads JSON 属于明确格式函数参数和期望值，未声明为真实上传来源或容量验收。两个 SOURCE push 首次 TLS 失败保留，第三次普通 push 成功。T 的独立应用/SQLite 100 条验收继续由其原 owner 执行。
 
 ## 完成内容
 

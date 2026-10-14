@@ -2,11 +2,13 @@ package importers
 
 import (
 	"context"
-	"io"
-	"net/http"
+	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
@@ -17,7 +19,7 @@ func TestPaperPDFSourceKey(t *testing.T) {
 	}{
 		{"https://aclanthology.org/2024.acl-long.1.pdf", "doi:10.18653/v1/2024.acl-long.1"},
 		{"https://aclanthology.org/P19-1001.pdf", "doi:10.18653/v1/P19-1001"},
-		// Non-ACL PDFs fall back to the canonical URL, never a fabricated DOI.
+		// 其他站点使用其 canonical URL。
 		{"https://proceedings.mlr.press/v202/dettmers23a/dettmers23a.pdf", "https://proceedings.mlr.press/v202/dettmers23a/dettmers23a.pdf"},
 	}
 	for _, c := range cases {
@@ -63,11 +65,21 @@ func TestPaperPDFReaderValidation(t *testing.T) {
 }
 
 func TestPaperPDFRequiresPDFMagic(t *testing.T) {
-	w := NewPaperWeb()
-	w.Client.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
-		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(`<html>login required</html>`)), Header: make(http.Header)}, nil
-	})
-	if _, err := w.FetchPDF(context.Background(), "https://aclanthology.org/2024.acl-long.1.pdf", 64<<20); err == nil {
-		t.Fatal("HTML wall accepted as a PDF")
+	// 使用已完整取得的真实公开 HTML，核生产格式检查，不声明新的 HTTP 访问。
+	directory := os.Getenv("ASTROCYTE_TEST_PUBLIC_PAPER_DIR")
+	if directory == "" || !filepath.IsAbs(directory) {
+		t.Fatal("explicit approved actual public paper directory required")
+	}
+	html, err := os.ReadFile(filepath.Join(directory, "acl-public.html"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(html) != 47355 {
+		t.Fatal("approved full public ACL HTML changed")
+	}
+	err = requirePDFContent(html)
+	var failure *apierrors.ServiceError
+	if !errors.As(err, &failure) || failure.Code != apierrors.ValidationFailed || failure.Message != "paper PDF source did not return a PDF document" {
+		t.Fatalf("actual public HTML did not reach the PDF format rejection: %v", err)
 	}
 }
