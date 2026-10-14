@@ -364,7 +364,26 @@ func (e *SummarizeExtractor) ExtractVideo(ctx context.Context, locator string) (
 	if ctx.Err() != nil {
 		return Export{}, ctx.Err()
 	}
-	return e.decodeVideoResult(locator, out.Bytes(), stderr.String(), runErr)
+	parsed, err := e.decodeVideoResult(locator, out.Bytes(), stderr.String(), runErr)
+	if err != nil {
+		return Export{}, err
+	}
+	if parsed.Mode == "upstream_media_transcript" {
+		nativePath := filepath.Join(home, "whisper-original.json")
+		info, err := os.Stat(nativePath)
+		if err != nil {
+			return Export{}, err
+		}
+		if !info.Mode().IsRegular() || info.Size() > 16<<20 {
+			return Export{}, errors.New("native whisper.cpp JSON is not a regular file within size limit")
+		}
+		native, err := os.ReadFile(nativePath)
+		if err != nil {
+			return Export{}, err
+		}
+		parsed.ExtraAttachments = append(parsed.ExtraAttachments, ExportAttachment{Name: "whisper-original.json", MediaType: "application/json", Data: native})
+	}
+	return parsed, nil
 }
 
 func (e *SummarizeExtractor) decodeVideoResult(locator string, output []byte, stderr string, runErr error) (Export, error) {

@@ -1,6 +1,6 @@
 // 使用固定版本上游接口完成字幕提取与本地转写。
 import { findPackageJSON } from 'node:module';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -43,15 +43,50 @@ try {
  if (output.cliExit !== 0) throw new Error(`summarize captions exited with ${output.cliExit}`);
  const raw = JSON.parse(output.cliJSON);
  const hasCaption = raw?.extracted?.transcriptSource && raw?.extracted?.diagnostics?.transcript?.textProvided !== false && raw?.extracted?.content?.trim();
+ if (hasCaption && !raw.extracted.transcriptSegments?.length) throw new Error('Published transcript has no verified timestamp segments');
  if (!hasCaption) {
   for (const key of ['YT_DLP_PATH', 'FFMPEG_PATH', 'SUMMARIZE_WHISPER_CPP_BINARY', 'SUMMARIZE_WHISPER_CPP_MODEL_PATH']) {
    if (!process.env[key]) throw new Error(`No real video captions; configure local dependency ${key}`);
   }
   // 上游明确返回无字幕时，按已确认流程转写同一视频。
-  const { fetchTranscriptWithYtDlp } = await import(pathToFileURL(resolve(dirname(coreEntry), 'content/transcript/providers/youtube/yt-dlp.js')).href);
-  const result = await fetchTranscriptWithYtDlp({ url, ytDlpPath: process.env.YT_DLP_PATH, env: process.env, service: 'generic', mediaKind: 'video', extraArgs: ['--ignore-config', '--no-playlist', '--playlist-items', '1', '--ffmpeg-location', dirname(process.env.FFMPEG_PATH)] });
-  output.media = { ...result, error: result.error ? result.error.message : null };
-  if (result.error) throw result.error;
+  const { acquireYtDlpMedia } = await import(pathToFileURL(resolve(dirname(coreEntry), 'content/transcript/providers/youtube/yt-dlp-media.js')).href);
+  const acquired = await acquireYtDlpMedia({ url, ytDlpPath: process.env.YT_DLP_PATH, service: 'generic', mediaKind: 'video', downloadVideo: false, extraArgs: ['--ignore-config', '--no-playlist', '--playlist-items', '1', '--ffmpeg-location', dirname(process.env.FFMPEG_PATH)] });
+  try {
+   if (cancelled) throw new Error('Cancelled');
+   const base = resolve(process.cwd(), 'whisper-original');
+   // 固定上游纯文本转写缺少时间；同一原生程序一次生成正文与 JSON 时间。
+   const whisperArgs = ['--model', process.env.SUMMARIZE_WHISPER_CPP_MODEL_PATH, '--language', 'auto', '-mc', '0', '--no-prints', '--output-json', '--output-txt', '--output-file', base, acquired.filePath];
+   const { proc: whisper } = spawnTracked(process.env.SUMMARIZE_WHISPER_CPP_BINARY, whisperArgs, { env: process.env, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true, label: 'whisper.cpp timed transcript', kind: 'whisper.cpp', captureOutput: false });
+   let detail = '';
+   whisper.stderr.setEncoding('utf8');
+   whisper.stderr.on('data', chunk => {
+    if (Buffer.byteLength(detail) + Buffer.byteLength(chunk) > limit) { output.error = 'whisper.cpp diagnostics exceed size limit'; terminate(); }
+    else detail += chunk;
+   });
+   const exit = await new Promise((done, reject) => { whisper.once('error', reject); whisper.once('close', code => done(code ?? -1)); });
+   if (cancelled) throw new Error('Cancelled');
+   if (output.error) throw new Error(output.error);
+   if (exit !== 0) throw new Error(`whisper.cpp timed transcript exited with ${exit}`);
+   for (const path of [`${base}.json`, `${base}.txt`]) {
+    const info = await stat(path);
+    if (!info.isFile() || info.size > limit) throw new Error('whisper.cpp output exceeds size limit or is not a regular file');
+   }
+   const native = JSON.parse(await readFile(`${base}.json`, 'utf8'));
+   const text = (await readFile(`${base}.txt`, 'utf8')).trim();
+   if (!text || !Array.isArray(native.transcription) || !native.transcription.length) throw new Error('whisper.cpp returned no timed transcript');
+   let previousEnd = 0;
+   const segments = native.transcription.map(segment => {
+    const startMs = segment?.offsets?.from;
+    const endMs = segment?.offsets?.to;
+    if (!Number.isSafeInteger(startMs) || !Number.isSafeInteger(endMs) || startMs < previousEnd || endMs < startMs || typeof segment.text !== 'string' || !segment.text.trim() || !text.includes(segment.text.trim())) throw new Error('Invalid native whisper.cpp millisecond offsets or transcript text');
+    previousEnd = endMs;
+    return { startMs, endMs, text: segment.text.trim() };
+   });
+   // 原生 JSON 保留在本机文件，由 Go 读取为独立原件附件。
+   output.media = { text, provider: 'whisper.cpp', error: null, notes: ['native whisper.cpp JSON offsets in milliseconds'], segments };
+  } finally {
+   await acquired.cleanup();
+  }
  }
 } catch (error) {
  output.error = error instanceof Error ? error.message : String(error);
