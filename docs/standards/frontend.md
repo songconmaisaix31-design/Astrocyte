@@ -1,6 +1,6 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前本域 SOURCE `fc97cc17945cd496241fe8de36958f5a5df2edfb`，提案入口 SOURCE `b7709c9694efcc3c031e829abb2f08a120da2735`，窗口准备 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，前序业务 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前公共 API 阶段 SOURCE `0657d32760867e735a71fc891c05189a1c216cfd`，前序已验证业务 SOURCE `fc97cc17945cd496241fe8de36958f5a5df2edfb`，提案入口 SOURCE `b7709c9694efcc3c031e829abb2f08a120da2735`，窗口准备 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 ## 完成内容
 
@@ -28,6 +28,10 @@ Intent 通过真实任务历史选择同项目 / 作品、不同 Agent、原工�
 
 公共 `usePersistentCommand<T>` 复用已验证的浏览器未知锁，Relay 保留原 namespace。命令结果由准确业务响应分类；网络 / 5xx（501 除外）/ delivery_unknown 继续锁定，pending 或 accepted 带错误同样锁定。只有实际返回的原请求身份匹配，才能通过只读收据核查解锁；缺少身份的普通 HTTP 返回不能用于解锁。作用域变更通过组件 key 重新挂载，输入 / 响应原文不进入 sessionStorage。发送在 accepted 带错误时保留正文；新 UI 可直接消费此 SOURCE，S2/S3 具体收据分类仍等待准确契约。
 
+S2 公共 API 阶段普通消费 H `e99ae91d670a835c5de5927163568638fa5f3a61`，通过 generator 生成 `ProposalV1.content` 与准确 Goal / scope / budget / stops / Grant 类型。`api/proposals.ts` 提供实际 Goal / Proposal 固定版本读取、创建 / CAS 修改、提交 / 拒绝、人工批准及 Grant 读取 / 撤销 / 完成 / 过期，复用原客户端、human session、CSRF 和幂等身份，写入前立即拒绝 request_id 与 key 不同。新创建 expected_version 为 0；Goal 修改核 revision、Proposal 修改核 version、Grant 修改以 expected_version 核 epoch。当前成功响应为实际实体 envelope，未返回原命令身份，不能据实体 GET 解锁未知写入。
+
+该 API 文件独立 tsc / lint 通过，已经提前交新 UI 消费；当前全局 typecheck 在准确新 schema 下 FAIL，日志为 `.verification/s2-contract-typecheck-generated.log`。旧 ProposalWorkspace / ProposalRevision 平铺字段整改由新 UI Owner 负责，旧 WorkspacePage / shared display 参数整改由 F 负责，均持续进行。实际 API HTTP / SQLite 组合及本次 S2 功能验收尚未运行，不以此阶段提交声明完成。Context / session-binding 暂无准确公开生成路径，S3 新契约与后继 assignment / native 字段仍等待对应 Owner。
+
 ## 精确源码消费
 
 普通消费 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、B 实际输入 `e05c013a08ccf372bb884dae5eeb3345f92173af`、私有附件 `cc46b9855775adf70bce74242d08ef84ff4f573b`、真实 URL helper `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、R 人工迁移 `d14b08dc50014baf9ee636543564b040112cf3b5`、H Reader 装配 `b247dfb12b938739f09acc73e6b7582376951a0c` 和真实 listener `1aadeebaba2330bb8b786989f577415da5208fd5`。
@@ -38,6 +42,7 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| S2 公共 `api/proposals.ts` 独立 tsc / eslint | 退出 0；当前全局新契约 typecheck FAIL，实际 HTTP 验证 NOT_RUN | `.verification/s2-api-typecheck-first.log`、`s2-contract-typecheck-generated.log` |
 | 当前 facts / shared Hook 的 build（含 typecheck）/ lint / E2E 显式 tsc / generator check | 退出 0 | `.verification/relay-facts-shared-build-source.log`、`relay-facts-shared-lint-source-final.log`、`relay-facts-shared-e2e-typecheck.log`；初次类型 / Hook lint 失败日志保留 |
 | `npx vitest run` 四个 Relay 参数 / 静态显示文件 | 4 文件 19 项 PASS；明确参数输入，不声明原生执行 | `.verification/relay-facts-shared-vitest-source.log` |
 | 原权限 / 版本 / 离线未知锁和新的交接声明 / facts 六用例，两尺寸 | 首 10 PASS / 2 实际 403 FAIL；补全本次项目准确 codex + observe 许可后，facts 两尺寸 2 PASS | `.verification/relay-facts-shared-playwright-first.log`、`relay-facts-permission-playwright-current.log`；HTTP / DOM 逐事实比较、无原生会话和新模型调用 |
