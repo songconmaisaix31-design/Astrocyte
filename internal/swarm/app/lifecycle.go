@@ -154,7 +154,7 @@ func (s *Service) blockExecutor(ctx context.Context, l domain.Lease, reason stri
 }
 
 func (s *Service) settleExecutor(ctx context.Context, l domain.Lease, fact ExecutionFact, cancelled bool) error {
-	if fact.OperationID != l.OperationID || fact.SessionID != l.SessionID || !fact.StopConfirmed || fact.Outcome == "unknown" || fact.Usage == nil || !fact.CallsKnown || !fact.TokensKnown {
+	if fact.OperationID != l.OperationID || fact.SessionID != l.SessionID || !fact.StopConfirmed || !settledOutcome(fact.Outcome) || fact.Usage == nil || !fact.CallsKnown || !fact.TokensKnown {
 		if err := s.blockExecutor(ctx, l, "original execution or usage remains unknown; reservation and write scope retained"); err != nil {
 			return err
 		}

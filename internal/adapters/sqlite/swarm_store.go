@@ -228,6 +228,39 @@ func (t *swarmTransaction) DeleteLease(id string, fence int64) error {
 func (t *swarmTransaction) Artifact(id string) (domain.Artifact, error) {
 	return swarmDecode[domain.Artifact](t.exec.QueryRowContext(t.ctx, "SELECT data FROM swarm_artifacts WHERE id=?", id), "artifact", id)
 }
+
+func (t *swarmTransaction) ArtifactVersion(id string, version int) (domain.Artifact, error) {
+	var out domain.Artifact
+	rows, err := t.exec.QueryContext(t.ctx, "SELECT o.payload FROM foundation_outbox o JOIN swarm_artifacts a ON a.id=o.aggregate_id WHERE o.aggregate_id=? AND o.aggregate_version=? AND o.event_type IN ('swarm.artifact_submitted','swarm.artifact_accepted','swarm.artifact_revision_requested','swarm.artifact_experience_linked')", id, version)
+	if err != nil {
+		return out, err
+	}
+	defer rows.Close()
+	found := false
+	for rows.Next() {
+		if found {
+			return out, domain.Failure(apierrors.VersionConflict, "artifact version has conflicting durable snapshots")
+		}
+		var data string
+		if err = rows.Scan(&data); err != nil {
+			return out, err
+		}
+		if err = json.Unmarshal([]byte(data), &out); err != nil {
+			return out, err
+		}
+		found = true
+	}
+	if err = rows.Err(); err != nil {
+		return out, err
+	}
+	if !found {
+		return out, apierrors.NewNotFound("artifact version", id)
+	}
+	if out.ID != id || out.Version != version {
+		return out, domain.Failure(apierrors.ContextStale, "artifact snapshot identity does not match its event")
+	}
+	return out, nil
+}
 func (t *swarmTransaction) SaveArtifact(a domain.Artifact, expected int) error {
 	if a.Version != expected+1 {
 		return domain.Failure(apierrors.VersionConflict, "artifact version must increase by one")

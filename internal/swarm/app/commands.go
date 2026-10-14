@@ -82,6 +82,13 @@ func resourcesEqual(a, b domain.Resources) bool {
 	return a.Calls == b.Calls && a.Tokens == b.Tokens && a.Currency == b.Currency && ((a.Money == nil && b.Money == nil) || (a.Money != nil && b.Money != nil && *a.Money == *b.Money))
 }
 
+func settledOutcome(outcome string) bool {
+	return slices.Contains([]string{"completed", "failed", "cancelled", "stopped", "not_started"}, outcome)
+}
+func safeFailureCode(code string) bool {
+	return slices.Contains([]string{"", "unknown", "native_failure", "validation_failed", "unsupported_capability", "scope_denied", "approval_required", "approval_revoked", "lease_lost", "budget_exhausted", "provider_unavailable", "delivery_unknown", "evidence_missing", "context_stale", "version_conflict", "cancelled"}, code)
+}
+
 type executionCheckKey struct{}
 type executionCheck struct {
 	operationID string
@@ -230,6 +237,11 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 		return out, err
 	}
 	err := s.authorized(ctx, p, c.MissionID, "manage_work_items", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
+		if len(c.ArtifactInputs) > 0 {
+			if err := s.grants.WithAuthorizedGrant(ctx, GrantCheck{GrantID: g.ID, Epoch: g.Epoch, ProposalRevision: g.ProposalRevision, ProjectID: g.ProjectID, Root: g.Root, Action: "read_swarm", Principal: p}, func(context.Context, domain.Grant) error { return nil }); err != nil {
+				return err
+			}
+		}
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.WorkItem](tx, p, "add_work_item", c.Meta, c)
 			if err != nil {
@@ -253,6 +265,32 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 				return domain.Failure(apierrors.BudgetExhausted, "mission work item limit reached")
 			}
 			out = domain.WorkItem{ID: uuid.NewString(), MissionID: m.ID, Version: 1, State: "open", Title: c.Title, Inputs: c.Inputs, Dependencies: c.Dependencies, WritePaths: c.WritePaths, RequiredCapabilities: c.RequiredCapabilities}
+			for _, input := range c.Inputs {
+				if !slices.Contains(g.Inputs, input) {
+					return domain.Failure(apierrors.ScopeDenied, "work item input is not a fixed approved proposal source")
+				}
+			}
+			for _, ref := range c.ArtifactInputs {
+				a, err := tx.ArtifactVersion(ref.ID, ref.Version)
+				if err != nil {
+					return err
+				}
+				if a.State != "accepted" || a.AcceptanceID == "" || a.Commit != ref.Commit || a.ObjectRef != ref.ObjectRef {
+					return domain.Failure(apierrors.ContextStale, "source artifact does not match the fixed human-accepted version")
+				}
+				sourceWork, err := tx.WorkItem(a.WorkItemID)
+				if err != nil {
+					return err
+				}
+				sourceMission, err := tx.Mission(sourceWork.MissionID)
+				if err != nil {
+					return err
+				}
+				if sourceMission.Grant.ProjectID != g.ProjectID {
+					return domain.Failure(apierrors.ScopeDenied, "cross-project artifact sharing is not authorized")
+				}
+				out.ArtifactInputs = append(out.ArtifactInputs, ref)
+			}
 			if err = out.Validate(m); err != nil {
 				return err
 			}
@@ -517,8 +555,11 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 	if err != nil {
 		return out, err
 	}
-	if fact.OperationID != lease.OperationID || fact.SessionID != lease.SessionID || !fact.StopConfirmed || fact.Outcome == "unknown" {
+	if fact.OperationID != lease.OperationID || fact.SessionID != lease.SessionID || !fact.StopConfirmed || !settledOutcome(fact.Outcome) {
 		return out, domain.Failure(apierrors.DeliveryUnknown, "original executor must be reconciled before releasing its reservation")
+	}
+	if fact.Outcome == "not_started" || !safeFailureCode(fact.FailureCode) {
+		return out, domain.Failure(apierrors.EvidenceMissing, "original execution has no safe actual artifact outcome")
 	}
 	if fact.Usage == nil || !fact.CallsKnown || !fact.TokensKnown {
 		return out, domain.Failure(apierrors.EvidenceMissing, "original operation usage has not been reconciled")
@@ -534,6 +575,8 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 		return out, domain.Failure(apierrors.EvidenceMissing, "the actual project tests and build have not been verified for this commit")
 	}
 	out.ProjectChecksRef = verification.ProjectChecksRef
+	out.ExecutionOutcome = fact.Outcome
+	out.ExecutionFailureCode = fact.FailureCode
 	err = s.authorized(ctx, p, c.MissionID, "submit_artifact", c.Usage, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.Artifact](tx, p, "submit_artifact", c.Meta, c)

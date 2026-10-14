@@ -3,6 +3,7 @@ package httpapi
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarm "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -74,6 +75,18 @@ type swarmDetailEnvelope struct {
 	swarm.MissionDetail
 }
 
+func swarmArtifactVersion(r *http.Request) (int, error) {
+	raw := r.URL.Query().Get("version")
+	if raw == "" {
+		return 0, nil
+	}
+	version, err := strconv.Atoi(raw)
+	if err != nil || version < 1 {
+		return 0, invalid("artifact version must be a positive integer")
+	}
+	return version, nil
+}
+
 // H 在同一个已认证主 router 注册，移除相同路径的 S0 占位项。
 func (h *handler) registerSwarmS3(mux *http.ServeMux, s *swarm.Service) {
 	if s == nil {
@@ -102,7 +115,11 @@ func (h *handler) registerSwarmS3(mux *http.ServeMux, s *swarm.Service) {
 		if id == "" {
 			err = invalid("mission_id is required")
 		} else {
-			a, err = s.ReadArtifact(r.Context(), swarmCaller(r), id, r.PathValue("id"))
+			var version int
+			version, err = swarmArtifactVersion(r)
+			if err == nil {
+				a, err = s.ReadArtifactVersion(r.Context(), swarmCaller(r), id, r.PathValue("id"), version)
+			}
 		}
 		h.swarmResult(w, r, localEnvelope("artifact", a), err)
 	})
