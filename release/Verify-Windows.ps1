@@ -51,6 +51,9 @@ function New-Client {
     $script:client = [Net.Http.HttpClient]::new($handler)
     $script:client.Timeout = [TimeSpan]::FromSeconds(10)
 }
+function Test-PortFree {
+    return @([Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners() | Where-Object { $_.Port -eq $Port }).Count -eq 0
+}
 function Request-Release([string]$method, [string]$path, [string]$body = '', [hashtable]$headers = @{}) {
     $request = [Net.Http.HttpRequestMessage]::new([Net.Http.HttpMethod]::new($method), ($base + $path))
     foreach ($key in $headers.Keys) { $request.Headers.Add($key, [string]$headers[$key]) }
@@ -106,10 +109,10 @@ function Stop-Release([string]$cycle) {
     [IO.File]::WriteAllText((Join-Path $output ($cycle + '-stderr.log')), $stderr.GetAwaiter().GetResult())
     $process.Dispose()
     $script:process = $null
-    Assert-Release (@(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue).Count -eq 0) ($cycle + ' owned listener stopped')
+    Assert-Release (Test-PortFree) ($cycle + ' owned listener stopped')
 }
 try {
-    Assert-Release (@(Get-NetTCPConnection -State Listen -LocalPort $Port -ErrorAction SilentlyContinue).Count -eq 0) 'isolated port initially free'
+    Assert-Release (Test-PortFree) 'isolated port initially free'
     $archive = [IO.Compression.ZipFile]::OpenRead([IO.Path]::GetFullPath($Zip))
     $count = 0
     foreach ($entry in $archive.Entries) {

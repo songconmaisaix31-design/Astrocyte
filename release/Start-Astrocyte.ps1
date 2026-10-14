@@ -8,7 +8,12 @@
     [string]$FFmpeg = '',
     [string]$WhisperBinary = '',
     [string]$WhisperModel = '',
-    [string]$ListingPython = ''
+    [string]$ListingPython = '',
+    [string]$UVXExecutable = '',
+    [ValidateSet('archive', 'native_notifications')]
+    [string]$RelaySessionSource = 'archive',
+    [ValidateRange(1, 86400)]
+    [Nullable[int]]$RelayLiveSeconds = $null
 )
 
 $ErrorActionPreference = 'Stop'
@@ -36,6 +41,8 @@ try {
     $env:ASTROCYTE_WEB_PORT = [string]$Port
     $env:ASTROCYTE_ALLOWED_ORIGINS = 'http://127.0.0.1:' + $Port + ',http://localhost:' + $Port
     $env:ASTROCYTE_RELAY = '1'
+    $env:ASTROCYTE_RELAY_SESSION_SOURCE = $RelaySessionSource
+    if ($null -ne $RelayLiveSeconds) { $env:ASTROCYTE_RELAY_LIVE_SECONDS = [string]$RelayLiveSeconds }
     $env:ASTROCYTE_ENABLE_SUMMARIZE = 'false'
     $env:ASTROCYTE_ENABLE_CODEX_DISTILLATION = 'false'
     if ($SummarizeCli -ne '') {
@@ -46,7 +53,7 @@ try {
         $env:ASTROCYTE_SUMMARIZE_CLI = $SummarizeCli
         $env:ASTROCYTE_NODE = $NodeExecutable
     }
-    $optional = @{ ASTROCYTE_YT_DLP_PATH = $YtDlp; ASTROCYTE_FFMPEG_PATH = $FFmpeg; ASTROCYTE_WHISPER_BINARY = $WhisperBinary; ASTROCYTE_WHISPER_MODEL = $WhisperModel; ASTROCYTE_LISTING_PYTHON = $ListingPython }
+    $optional = @{ ASTROCYTE_YT_DLP_PATH = $YtDlp; ASTROCYTE_FFMPEG_PATH = $FFmpeg; ASTROCYTE_WHISPER_BINARY = $WhisperBinary; ASTROCYTE_WHISPER_MODEL = $WhisperModel; ASTROCYTE_LISTING_PYTHON = $ListingPython; ASTROCYTE_UVX_PATH = $UVXExecutable }
     foreach ($name in $optional.Keys) {
         $path = $optional[$name]
         if ($path -ne '') {

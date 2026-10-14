@@ -12,6 +12,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -P
 
 启动脚本为当前进程设置独立 `LOCALAPPDATA` 并清理继承的 `ASTROCYTE_*` 配置。Workbench 使用该目录下 `astrocyte-workbench/v0.1` 的既有只读快照协议；包不携带快照，没有发布快照时返回真实不可用状态。Relay 默认启用，空注册表不会启动 Agent；手动配置使用 `data/local/astrocyte-workbench/v0.2-access/agents.json`。Agent CLI 的安装、登录、控制能力和项目授权需分别成立；原生链路成功以实际控制器及事件证据为准。没有配置的状态、未知交付和生命周期缺口保留原含义。默认启动只运行应用，不安装自动任务、不执行 Sleep、不调用模型。
 
+Relay 会话来源可显式指定 `-RelaySessionSource native_notifications`，使用原生控制器的实际通知；默认 `archive` 使用既有受控归档读取。活性窗口保持未配置，可由用户明确提供 `-RelayLiveSeconds`（1 到 86400 秒），不会自动选择数值。注册表沿用现有 JSON 数组格式：`name`、可信直接 argv 的 `launch_cmd`、`drive_mode`（structured、terminal、both）、实际观测的 `capabilities`，可选 `input_mode`（line、stdin_eof）。不要用脚本或命令行字符串替代直接 argv，不凭已安装或帮助输出填充成功能力。配置后仍需产品内的人工项目授权，当前未授权范围继续拒绝派发。
+
 手动发布自己的实际认知 SQLite：
 
 ```powershell
@@ -26,7 +28,7 @@ Source 必须是用户明确选择的、包含现有认知表的实际 SQLite �
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -SummarizeCli 'D:\tools\summarize\dist\cli.js' -NodeExecutable 'C:\Program Files\nodejs\node.exe'
 ```
 
-Node 的构建基线为 24.16.0。视频按实际来源需要 `-YtDlp`、`-FFmpeg`、`-WhisperBinary` 和 `-WhisperModel`；列表导入可配置 `-ListingPython` 为已安装 yt-dlp 环境的 Python。参数均为已存在的绝对文件。包不包含这些 CLI、模型、凭据、字幕或用户文件；缺依赖和无法取得真实内容时按原服务报告失败。上述命令不启用 Codex 自动沉淀；原生 Agent 使用产品中的人工项目授权流程。
+Node 的构建基线为 24.16.0。视频按实际来源需要 `-YtDlp`、`-FFmpeg`、`-WhisperBinary` 和 `-WhisperModel`；列表导入可配置 `-ListingPython` 为已安装 yt-dlp 环境的 Python。PDF 提取需要 `-UVXExecutable` 指向实际 uvx 及其 markitdown 运行依赖。参数均为已存在的绝对文件。包不包含这些 CLI、模型、凭据、字幕或用户文件；缺依赖和无法取得真实内容时按原服务报告失败。上述命令不启用 Codex 自动沉淀；原生 Agent 使用产品中的人工项目授权流程。
 
 `astrocyte-mcp.exe -h` 与 `astrocyte-sleep.exe -h` 列出原生参数。MCP 需要明确的项目、会话、调用者与 `signal-strength`；Sleep 需要明确日期、时区、衰减、初始置信度及事实投影。使用时明确传入应用的 `-data-dir`，未确定的参数由使用者决定。包中的启动脚本不调用这两个程序。
 
