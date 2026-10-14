@@ -59,3 +59,28 @@ git diff --check
 默认 importer 测试在本次运行 EXIT 0，27.576 秒，9 个既有条件 SKIP；此运行尚包含既有替代来源，不能作为全部默认真实来源整改完成。Node 语法、Go vet、实际服务二进制构建与 diff / 格式检查 PASS。
 
 当前剩余边界：原生 `whisper-original.json` 在既有附件服务中仍可被读取，V 未请求其 HTTP 原件；生产私有读取拒绝已 Handoff 给 B，需精确 SOURCE 的实际 HTTP 拒绝验证后才通过完整视频验收。默认测试的全部真实原件整改仍继续；组合产品和 release 包验收由原模块人员继续。
+
+## 默认真实输入阶段
+
+SOURCE：`a54fe8e238a2e52db98c801012c2ccdfd64edbd5`，已普通 push。
+
+保留既有测试名称和来源、版本、摘要分离、时间、canonical identity、digest、本地文件权限及取消拒绝断言。默认视频输入从实际 CLI / media 原件逐字节读取，按生产桥接字段解析；独立读取原生 whisper JSON，对全部 952 段逐项核实毫秒 from/to、文本归属与公开 SourceSpans。页面原件实际拒绝；已有纯文本导出保持缺少可核时间的状态。非法 JSON 字段仅用于拒绝检查。
+
+论文来源正向断言使用实际固定 arXiv `2501.12948v1` 的 summarize CLI 原输出；原 PDF / metadata 断言使用官方实际 `2501.12948v2`，未发布 v999999 与真实 HTTP cancellation 直接失败。显式代理还在构造时拒绝 0、超出 65535 和非法端口。
+
+默认视频证据必须显式提供：
+
+```text
+ASTROCYTE_TEST_VIDEO_BASELINE_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third
+ASTROCYTE_TEST_VIDEO_TIMED_DIR=C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first
+go test -mod=readonly ./internal/adapters/importers -count=1 -v
+node --test internal/adapters/importers/paper-dom.test.mjs
+```
+
+缺少真实原件配置直接 FAIL。没有新增 Skip，没有把任何已有默认测试移入 video_live 标签。默认 importer 全包在真实输入整改后 EXIT 0，26.182 秒，仍有 9 个其他既有 opt-in SKIP；V 专属原件、时间、代理及原测试改写均执行。随后固定论文 CLI 原件正向补验 8.940 秒 PASS，最终 Reader / 代理端口补验 6.770 秒 PASS。Node 9 PASS / 0 SKIP，Go vet、diff 与格式检查 PASS。
+
+首编译 RED（未使用的 fmt import）在 `.verification/video-default-real-first.log` 保留；后续结果为 `.verification/video-default-real-second.log`、`.verification/importers-default-real-final.log`、`.verification/paper-export-real-final.log`、`.verification/video-default-final-targets.log` 和 `.verification/importers-node-final.log`。
+
+真实证据的具体范围：固定 BV 的原 CLI JSON 只有页面输出，CLI transcriptSegments 专用正向分支及 summary-only JSON 分支仍没有真实原件，证据 NOT_RUN；时间成功通过实际 CLI + media/native 合并解析链和生产刷新链核实。公开旧纯文本导出正向与缺时间状态已经核实。共享 `roundTripFunc` 定义仍由其他 B 测试文件依赖，V 自身没有使用替代 HTTP Transport；其他 B 文件的替代来源整改由 B 持续负责。
+
+下一步按模块准确授权，普通消费 B 私有附件 SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` / REPORT `ee4eeb11dfd7c2e598734ab8ea3da6efd837afd4`，在新独立目录对已有真实库做只读成熟 backup，核实际 HTTP 拒绝及进程重启，不再次运行成功 ASR。
