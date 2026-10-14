@@ -327,11 +327,11 @@ func (s *relayService) begin(ctx context.Context, c domain.Caller, id, action st
 }
 
 func receiptError(r domain.RelayReceipt) error {
-	if r.Status == "accepted" {
-		return nil
-	}
 	if r.Error != nil {
 		return &apierrors.ServiceError{Code: apierrors.Code(r.Error.Code), Message: r.Error.Message, RequiredAction: r.Error.RequiredAction}
+	}
+	if r.Status == "accepted" {
+		return nil
 	}
 	return relayError(apierrors.DeliveryUnknown, "action is pending or has unknown delivery; do not replay")
 }
@@ -379,12 +379,17 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 	r.FinishedAt = &now
 	r.Status = "accepted"
 	if effectErr != nil {
+		var archiveFailure *domain.RelayArchiveObservationFailure
+		metadataOnlyFailure := errors.As(effectErr, &archiveFailure)
 		var known *apierrors.ServiceError
 		if !errors.As(effectErr, &known) {
 			known = relayError(apierrors.DeliveryUnknown, "action delivery could not be verified")
 		}
 		r.Status = "rejected"
-		if known.Code == apierrors.DeliveryUnknown || (!knownUnstarted && r.Action == "dispatch") {
+		if metadataOnlyFailure && (r.Action == "dispatch" || r.Action == "send" || r.Action == "resume" || r.Action == "stop") {
+			r.Status = "accepted"
+			known = &apierrors.ServiceError{Code: apierrors.Code(archiveFailureCode(effectErr)), Message: "native operation accepted; archive metadata observation failed", RequiredAction: "inspect_archive_source_without_replaying_input"}
+		} else if known.Code == apierrors.DeliveryUnknown || (!knownUnstarted && r.Action == "dispatch") {
 			r.Status = "delivery_unknown"
 			known = relayError(apierrors.DeliveryUnknown, "launch delivery is unknown; no second writer may be started")
 		}
@@ -398,6 +403,11 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 		if (r.Action == "send" || r.Action == "resume") && r.Status != "rejected" {
 			if bound, ok := st.OwnedSessions[t.ID]; ok {
 				bound.ArchiveFinalized, bound.ArchiveAppendOnly = "unknown", "unknown"
+				if bound.NativeCapture != nil {
+					capture := *bound.NativeCapture
+					capture.Finalized = "unknown"
+					bound.NativeCapture = &capture
+				}
 				st.OwnedSessions[t.ID] = bound
 			}
 		}
@@ -622,7 +632,7 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		terminal := st.Terminals[t.TerminalID]
 		terminal.DriveMode = mode
 		st.Terminals[terminal.ID] = terminal
-		if launchErr == nil {
+		if relayNativeEffectAccepted(launchErr) {
 			s.move(st, &t, domain.RelayAccepted, relayActor(c))
 		}
 		// A proven unstarted process is not an observed process exit. Its durable
@@ -805,7 +815,7 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 	case "resume":
 		obs, err = driver.Resume(ctx, launch)
 	}
-	if action == "resume" && err == nil {
+	if action == "resume" && relayNativeEffectAccepted(err) {
 		if e := s.store.Update(context.WithoutCancel(ctx), func(st *RelayState) error {
 			t := st.Tasks[id]
 			t.Condition = ""

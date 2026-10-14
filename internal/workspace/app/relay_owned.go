@@ -2,15 +2,30 @@ package app
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
 	"sort"
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
 var _ RelayOwnedSessionReader = (*relayService)(nil)
+
+func relayNativeEffectAccepted(err error) bool {
+	var failure *domain.RelayArchiveObservationFailure
+	return err == nil || errors.As(err, &failure)
+}
+
+func archiveFailureCode(err error) string {
+	var failure *apierrors.ServiceError
+	if errors.As(err, &failure) {
+		return string(failure.Code)
+	}
+	return string(apierrors.ProviderUnavailable)
+}
 
 func (s *relayService) attachOwnedSession(st *RelayState, task domain.RelayTask, workspace domain.RelayWorkspace, terminal domain.RelayTerminal) {
 	if st.OwnedSessions == nil {
@@ -72,7 +87,13 @@ func (s *relayService) observeOwnedSession(st *RelayState, task domain.RelayTask
 			}
 		}
 	}
-	if bound.SourceStatus == "unknown" && obs.ArchiveGap != "" {
+	if obs.NativeCapture != nil && bound.Ownership == "owned" && bound.SessionID != "" && bound.NativeID != "" && bound.Gap != "session_identity_changed" && bound.Gap != "session_ownership_unverified" {
+		bound.NativeCapture = obs.NativeCapture
+	}
+	if obs.ArchiveGap != "" && obs.ArchiveGap != "archive_metadata_path_unavailable" && obs.ArchiveGap != "archive_metadata_unsupported" {
+		bound.SourceStatus, bound.Gap = "gap", obs.ArchiveGap
+		bound.ArchiveFinalized, bound.ArchiveAppendOnly = "unknown", "unknown"
+	} else if bound.SourceStatus == "unknown" && obs.ArchiveGap != "" {
 		bound.Gap = obs.ArchiveGap
 	}
 	st.OwnedSessions[task.ID] = bound
@@ -83,6 +104,7 @@ func relayBindingGap(bound domain.RelayOwnedSession, reason string) domain.Relay
 	bound.ArchiveFinalized, bound.ArchiveAppendOnly = "unknown", "unknown"
 	bound.WorkspaceRoot, bound.SourceRoot, bound.SessionID, bound.NativeID, bound.Ownership = "", "", "", "", ""
 	bound.ArchivePath, bound.ArchiveRoot, bound.ArchiveFormat = "", "", ""
+	bound.NativeCapture = nil
 	return bound
 }
 
@@ -97,6 +119,10 @@ func (s *relayService) existingOwnedRoot(root string) bool {
 }
 
 func (s *relayService) ListOwnedRelaySessions(ctx context.Context) ([]domain.RelayOwnedSession, error) {
+	return s.listOwnedRelaySessions(ctx, false)
+}
+
+func (s *relayService) listOwnedRelaySessions(ctx context.Context, native bool) ([]domain.RelayOwnedSession, error) {
 	st, err := s.store.Snapshot(ctx)
 	if err != nil {
 		return nil, err
@@ -139,7 +165,10 @@ func (s *relayService) ListOwnedRelaySessions(ctx context.Context) ([]domain.Rel
 				continue
 			}
 		}
-		if bound.SourceStatus == "gap" {
+		if native && bound.NativeCapture != nil && (bound.Gap == "" || strings.HasPrefix(bound.Gap, "archive_metadata_")) {
+			bound.SourceStatus = bound.NativeCapture.SourceStatus
+			bound.Gap = bound.NativeCapture.FirstGap
+		} else if bound.SourceStatus == "gap" {
 			bound = relayBindingGap(bound, bound.Gap)
 		} else if bound.SourceStatus != "available" {
 			bound.ArchivePath, bound.ArchiveRoot, bound.ArchiveFormat = "", "", ""
@@ -151,9 +180,33 @@ func (s *relayService) ListOwnedRelaySessions(ctx context.Context) ([]domain.Rel
 		// its effect receipt finalizes. This is a read projection, never a write.
 		if pending, ok := st.Receipts[st.PendingActions[task.ID]]; ok && pending.Status == "pending" && (pending.Action == "send" || pending.Action == "resume") {
 			bound.ArchiveFinalized, bound.ArchiveAppendOnly = "unknown", "unknown"
+			if bound.NativeCapture != nil {
+				capture := *bound.NativeCapture
+				capture.Finalized = "unknown"
+				bound.NativeCapture = &capture
+			}
 		}
 		result = append(result, bound)
 	}
 	sort.Slice(result, func(i, j int) bool { return result[i].TaskID < result[j].TaskID })
+	return result, nil
+}
+
+func (s *relayService) ListOwnedRelayNativeSessions(ctx context.Context) ([]domain.RelayNativeSessionBatch, error) {
+	owned, err := s.listOwnedRelaySessions(ctx, true)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]domain.RelayNativeSessionBatch, 0, len(owned))
+	for _, bound := range owned {
+		capture := domain.RelayNativeSessionCapture{Events: []domain.RelayNativeSessionEvent{}, SourceStatus: "unknown", PrefixComplete: "unknown", Finalized: "unknown", FirstGap: "native_notification_source_not_armed"}
+		if bound.NativeCapture != nil {
+			capture = *bound.NativeCapture
+			capture.Events = append([]domain.RelayNativeSessionEvent{}, capture.Events...)
+		} else if bound.SourceStatus == "gap" {
+			capture.SourceStatus, capture.FirstGap = "gap", bound.Gap
+		}
+		result = append(result, domain.RelayNativeSessionBatch{OwnedSession: bound, RelayNativeSessionCapture: capture})
+	}
 	return result, nil
 }

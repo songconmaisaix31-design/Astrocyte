@@ -85,6 +85,7 @@ type RelayLaunch struct {
 
 type RelayObservation struct {
 	Session       domain.NativeSession
+	NativeCapture *domain.RelayNativeSessionCapture
 	Archive       *domain.RelaySessionArchive
 	ArchiveGap    string
 	Events        []domain.RelayEvent
@@ -118,6 +119,11 @@ type RelayLifecycle interface {
 // and cannot produce action receipts or fresh activity timestamps.
 type RelayOwnedSessionReader interface {
 	ListOwnedRelaySessions(context.Context) ([]domain.RelayOwnedSession, error)
+}
+
+// 只读取已经持久化的派生通知，不调用原生控制器或刷新活动时间。
+type RelayOwnedNativeSessionReader interface {
+	ListOwnedRelayNativeSessions(context.Context) ([]domain.RelayNativeSessionBatch, error)
 }
 
 // RelayOwnedArchiveProvider supplies exact positive native metadata. Absence is
