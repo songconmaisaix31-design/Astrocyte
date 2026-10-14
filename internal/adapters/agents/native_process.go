@@ -45,6 +45,7 @@ type nativeProcess struct {
 	projectID             string
 	startedAt, deadlineAt time.Time
 	permissionPolicy      string
+	firstProtocolFailure  *RelayProtocolFailure
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -230,8 +231,10 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 				Message string `json:"message"`
 			}
 			if err := decodeNativeValue(response["error"], &failure); err != nil {
+				p.recordProtocolFailure(method, 0, "protocol_error_decode_failed")
 				return nil, err
 			}
+			p.recordProtocolFailure(method, failure.Code, protocolReason(failure.Message))
 			slog.Warn("native protocol rejected operation", "method", method, "protocol_code", failure.Code, "reason", protocolReason(failure.Message))
 			if failure.Code == -32601 {
 				return nil, nativeError(apierrors.UnsupportedCapability, "installed native protocol or thread store does not support this method")
@@ -241,17 +244,21 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 		if raw, ok := response["success"]; ok {
 			var success bool
 			if err := decodeNativeValue(raw, &success); err != nil {
+				p.recordProtocolFailure(method, 0, "protocol_success_decode_failed")
 				return nil, err
 			}
 			if !success {
+				p.recordProtocolFailure(method, 0, "native_operation_not_succeeded")
 				return nil, nativeError(apierrors.ProviderUnavailable, "native operation did not succeed")
 			}
 		}
 		return response, nil
 	case <-ctx.Done():
+		p.recordProtocolFailure(method, 0, "reply_deadline")
 		slog.Warn("native delivery unresolved", "method", method, "reason", "reply_deadline")
 		return nil, nativeError(apierrors.DeliveryUnknown, "native reply deadline elapsed; do not replay automatically")
 	case <-p.done:
+		p.recordProtocolFailure(method, 0, "process_exited_before_reply")
 		return nil, nativeError(apierrors.DeliveryUnknown, "native process exited before reply")
 	}
 }

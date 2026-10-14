@@ -2,8 +2,10 @@ package agents
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
@@ -109,5 +111,17 @@ func TestRelayOwnedExecutionRejectsUnownedAndMissingController(t *testing.T) {
 		if evidence, err := native.OwnedRelayExecution(context.Background(), session); err == nil || evidence.ProcessID != 0 || evidence.LaunchPolicy != "" {
 			t.Fatal("unowned or missing controller produced execution evidence")
 		}
+	}
+}
+
+// 仅核首错误安全投影，不制造控制器、成功响应或已完成状态。
+func TestRelayProtocolFirstFailureIsSafeAndPreserved(t *testing.T) {
+	p := &nativeProcess{}
+	p.recordProtocolFailure("thread/read", -32603, protocolReason("credentials PRIVATE_RPC_ERROR_CANARY"))
+	first := *p.firstProtocolFailure
+	p.recordProtocolFailure("turn/start", -32600, "reply_deadline")
+	encoded, err := json.Marshal(p.firstProtocolFailure)
+	if err != nil || p.firstProtocolFailure.Method != first.Method || p.firstProtocolFailure.Code != first.Code || p.firstProtocolFailure.ObservedAt != first.ObservedAt || first.ObservedAt.IsZero() || first.Reason != "credentials_rejected" || strings.Contains(string(encoded), "PRIVATE_RPC_ERROR_CANARY") {
+		t.Fatal("first failure was overwritten, incomplete or leaked its raw response")
 	}
 }
