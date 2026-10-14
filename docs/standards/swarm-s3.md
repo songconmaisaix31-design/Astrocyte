@@ -1,6 +1,16 @@
 # Swarm S3 / S6 实施与实际验证
 
-## 第六阶段当前结果
+## 第七阶段当前结果
+
+Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa` 的后继 SOURCE 为 `2bd5d26ea6f932d8511afd869ff41f2146c0f94a`，前置 SOURCE 为 `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0`。第六阶段 REPORT `23367b448d28c9780ec84d770548ccf870b4d8dd` 已普通 push，远端完整 SHA 一致。
+
+成功经验来源的全部 Swarm 查询复用当前实际连接：Load、List、Timeline、ExecutionHistory、ReadAcceptedArtifactEvent 都先检查同数据库 Swarm/Workspace 事务。真实单连接测试在未提交 Mission 内执行各读取，缺少采用事实仍返回真实 NotFound；外层失败后 Mission 整体回滚。没有构造 accepted 事件或经验候选补充正向验收。B 的实际解释、候选写入和当前权限复核继续由原负责人完成。
+
+LocalPolicy 在固定上下文排序前过滤预算耗尽、有限维度实际用量未知和缺少实际 token_budget/money_budget 能力。实际已用与当前预留共同占满 calls 上限时不推荐新工作项；减少预留后恢复可选任务。领域检查覆盖这些预算状态，没有执行原生会话或虚构绑定。
+
+`go test ./internal/swarm/... ./tests/s3 -count=1`、`go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1`、`go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1`、`go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3`、`go build -o .verification/s3-build/astrocyte.exe ./cmd/server`、33 包架构检查和 `git diff --check` 均 PASS。实际采用、H 主装配、原生生命周期、两实际 Agent 和 S6 后任务经验引用仍未通过；这些组件结果不替代完整验收。当前客户端/模型仍为 codex / gpt-6.1-sol，本 Task 外部模型调用数为零。
+
+## 第六阶段记录
 
 Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`。SOURCE `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0` 使用 codex / gpt-6.1-sol 实施。本 Task 没有调用外部模型，没有创建原生会话。
 
