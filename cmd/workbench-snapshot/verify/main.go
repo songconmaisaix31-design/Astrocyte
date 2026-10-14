@@ -234,6 +234,10 @@ func inspect(ctx context.Context, source, root, out string) error {
 	if root == "" {
 		return nil
 	}
+	root, err = filepath.Abs(root)
+	if err != nil {
+		return err
+	}
 	reader := adapter.NewWorkbenchReader(root)
 	views := map[string]workbench.View{}
 	for _, name := range []string{"health", "today", "focus", "agents", "events", "filters", "topics/evidence"} {
@@ -274,10 +278,86 @@ func inspect(ctx context.Context, source, root, out string) error {
 	if err = write(filepath.Join(out, "events-six-fields.json"), safe); err != nil {
 		return err
 	}
+	for _, event := range safe {
+		var origin, commit, repository string
+		var observed, stored int64
+		if err = db.QueryRowContext(ctx, `SELECT origin_key,json_extract(raw_bytes,'$.commit'),json_extract(raw_bytes,'$.public_repository'),json_extract(raw_bytes,'$.ts'),ts FROM attention_engine_events WHERE id=?`, event.ID).Scan(&origin, &commit, &repository, &observed, &stored); err != nil {
+			return err
+		}
+		if origin != "git:"+strings.ToLower(commit) || repository != "https://github.com/songconmaisaix31-design/Astrocyte" || observed != stored || time.UnixMilli(stored).UTC().Format(time.RFC3339Nano) != event.TS {
+			return errors.New("event origin differs from actual public commit")
+		}
+	}
+	if err = write(filepath.Join(out, "origin-safe.json"), map[string]any{"event_ids_located": len(safe), "actual_git_origins_matched": len(safe), "source": "https://github.com/songconmaisaix31-design/Astrocyte", "source_ts_preserved": true}); err != nil {
+		return err
+	}
+	wire, err := json.Marshal(views)
+	if err != nil {
+		return err
+	}
+	var wireValues any
+	if err = json.Unmarshal(wire, &wireValues); err != nil {
+		return err
+	}
+	stringsInView := map[string]bool{}
+	var visit func(any)
+	visit = func(value any) {
+		switch x := value.(type) {
+		case string:
+			stringsInView[x] = true
+		case []any:
+			for _, child := range x {
+				visit(child)
+			}
+		case map[string]any:
+			for _, child := range x {
+				visit(child)
+			}
+		}
+	}
+	visit(wireValues)
+	allowed := map[string]bool{}
+	for _, x := range safe {
+		allowed[x.ID] = true
+		allowed[x.Kind] = true
+		allowed[x.Topic] = true
+		allowed[x.Scope] = true
+		allowed[x.TS] = true
+	}
+	raw, err := db.QueryContext(ctx, `SELECT json_extract(raw_bytes,'$.subject') FROM attention_engine_events WHERE origin_key LIKE 'git:%'`)
+	if err != nil {
+		return err
+	}
+	rawChecked := 0
+	for raw.Next() {
+		var subject string
+		if err = raw.Scan(&subject); err != nil {
+			raw.Close()
+			return err
+		}
+		if len(subject) >= 8 && !allowed[subject] {
+			rawChecked++
+			if stringsInView[subject] {
+				raw.Close()
+				return errors.New("raw public source subject leaked into Reader")
+			}
+		}
+	}
+	err = errors.Join(raw.Err(), raw.Close())
+	if err != nil {
+		return err
+	}
+	if err = write(filepath.Join(out, "privacy-safe.json"), map[string]any{"event_fields": []string{"event_id", "kind", "topic", "tokens", "scope", "ts"}, "raw_source_strings_checked": rawChecked, "raw_string_leaks": 0, "projected_events": len(safe)}); err != nil {
+		return err
+	}
 	for page := 1; page <= (len(safe)+99)/100; page++ {
 		v, e := reader.Read(ctx, "events", workbench.Query{Page: page, PageSize: 100})
 		if e != nil {
 			return e
+		}
+		length := min(100, len(safe)-(page-1)*100)
+		if v.Events.Total != len(safe) || len(v.Events.Events) != length {
+			return errors.New("Reader page length or total differs from source SQL")
 		}
 		for i, x := range v.Events.Events {
 			expected := safe[(page-1)*100+i]
@@ -288,6 +368,13 @@ func inspect(ctx context.Context, source, root, out string) error {
 			}
 		}
 	}
+	last, e := reader.Read(ctx, "events", workbench.Query{Page: (len(safe)+99)/100 + 1, PageSize: 100})
+	if e != nil {
+		return e
+	}
+	if len(last.Events.Events) != 0 || last.Events.Total != len(safe) {
+		return errors.New("Reader final page or total differs from SQL")
+	}
 	if len(views["focus"].Focus.Topics) < 2 {
 		return errors.New("fewer than two actual topics")
 	}
@@ -295,9 +382,6 @@ func inspect(ctx context.Context, source, root, out string) error {
 	var total int
 	if err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM attention_engine_events WHERE topic=?", topic).Scan(&total); err != nil {
 		return err
-	}
-	if total <= 20 {
-		return errors.New("highest attention topic has insufficient actual events")
 	}
 	values := []map[string]any{}
 	zone, err := time.LoadLocation("Asia/Shanghai")
@@ -344,5 +428,26 @@ func inspect(ctx context.Context, source, root, out string) error {
 		return err
 	}
 	values = append(values, map[string]any{"route": "/cognition/evidence", "metric": "total", "value": all, "query": map[string]any{}})
-	return write(filepath.Join(out, "sql-expected.json"), map[string]any{"snapshot_at": views["health"].SnapshotAt, "day": day, "values": values})
+	if err = write(filepath.Join(out, "sql-expected.json"), map[string]any{"snapshot_at": views["health"].SnapshotAt, "day": day, "values": values}); err != nil {
+		return err
+	}
+	historyCounts := map[string]int{}
+	for _, series := range views["focus"].Focus.Series {
+		historyCounts[series.Topic] = len(series.Points)
+	}
+	status := "PASS"
+	if total <= 20 {
+		status = "FAIL"
+	}
+	phase := "before_sleep"
+	if counts["attention_engine_sleep_runs"] > 0 {
+		phase = "after_sleep"
+	}
+	if err = write(filepath.Join(out, "admission-safe.json"), map[string]any{"status": status, "state_phase": phase, "actual_sleep_runs": counts["attention_engine_sleep_runs"], "provenance": "actual-public-Git-production-replay", "highest_attention_topic": topic, "highest_topic_events": total, "required_highest_topic_events": ">20", "history_points": historyCounts, "six_field_sql_matches": len(safe), "sql_ui_values": len(values)}); err != nil {
+		return err
+	}
+	if total <= 20 {
+		return errors.New("highest attention topic has insufficient actual events")
+	}
+	return nil
 }
