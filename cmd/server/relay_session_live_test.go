@@ -23,6 +23,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
@@ -82,6 +83,10 @@ func TestRelaySessionActualService(t *testing.T) {
 	if err := db.RunMigrations(context.Background(), migrations.FS); err != nil {
 		t.Fatal("既有数据库初始化失败")
 	}
+	schemaVersion, err := db.SchemaVersion(context.Background())
+	if err != nil {
+		t.Fatal("实际数据库版本不可用")
+	}
 	registry := agents.NewRegistry(filepath.Join(appDir, "native-sessions"))
 	projects := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
 	projects.ConfigureRegisteredDiscovery(db, nil)
@@ -113,7 +118,7 @@ func TestRelaySessionActualService(t *testing.T) {
 		t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "native_notifications")
 		t.Setenv("ASTROCYTE_RELAY_LIVE_SECONDS", "10")
 	}
-	services := httpapi.Services{Works: works, LocalProjects: projects, RegisteredProjects: projects, Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}
+	services := httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), Projects: workspace.NewProjectService(), Sessions: workspace.NewSessionService(), Proposals: workspace.NewProposalService(), Works: works, LocalProjects: projects, RegisteredProjects: projects, Progress: workspace.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry), Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}
 	cleanup, err := assembleRelay(&services, db, registry)
 	if err != nil {
 		t.Fatal("实际生产组装失败")

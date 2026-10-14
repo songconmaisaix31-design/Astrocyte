@@ -50,12 +50,23 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	defer store.Close()
 	ctx := context.Background()
 	state, err := store.Snapshot(ctx)
-	if err != nil || len(state.Tasks) != 1 {
+	if err != nil || len(state.Tasks) == 0 {
 		t.Fatal("实际任务身份不可核实")
 	}
 	var task domain.RelayTask
-	for _, v := range state.Tasks {
-		task = v
+	if selected := os.Getenv("ASTROCYTE_L1_TASK_ID"); selected != "" {
+		var found bool
+		task, found = state.Tasks[selected]
+		if !found {
+			t.Fatal("本次明确选定任务不存在")
+		}
+	} else {
+		if len(state.Tasks) != 1 {
+			t.Fatal("实际多任务验证必须明确选定 task_id")
+		}
+		for _, v := range state.Tasks {
+			task = v
+		}
 	}
 	owned, ok := state.OwnedSessions[task.ID]
 	if !ok || owned.TaskID != task.ID || owned.SourceStatus != "available" {
@@ -103,14 +114,27 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	}
 	defer file.Close()
 	models := map[string]bool{}
+	policies := map[string]bool{}
 	toolCalls := 0
+	assistantMessages, completedTurns := 0, 0
+	var reportedTokens *int
 	reader := ndjson.NewReaderSize(file, int(batch.SnapshotBytes)+1)
 	for reader.Next() {
 		var record struct {
 			Type    string `json:"type"`
 			Payload struct {
-				Type  string `json:"type"`
-				Model string `json:"model"`
+				Type           string `json:"type"`
+				Model          string `json:"model"`
+				Role           string `json:"role"`
+				ApprovalPolicy string `json:"approval_policy"`
+				SandboxPolicy  *struct {
+					Type string `json:"type"`
+				} `json:"sandbox_policy"`
+				Info *struct {
+					TotalTokenUsage struct {
+						TotalTokens *int `json:"total_tokens"`
+					} `json:"total_token_usage"`
+				} `json:"info"`
 			} `json:"payload"`
 		}
 		if reader.Decode(&record) != nil {
@@ -118,13 +142,31 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		}
 		if record.Type == "turn_context" && record.Payload.Model != "" {
 			models[record.Payload.Model] = true
+			if record.Payload.SandboxPolicy == nil || record.Payload.ApprovalPolicy != "never" || record.Payload.SandboxPolicy.Type != "read-only" {
+				t.Fatal("实际 turn_context 不满足既有原生权限策略")
+			}
+			policies[record.Payload.ApprovalPolicy+"/"+record.Payload.SandboxPolicy.Type] = true
 		}
 		if record.Type == "response_item" && (record.Payload.Type == "function_call" || record.Payload.Type == "custom_tool_call") {
 			toolCalls++
 		}
+		if record.Type == "response_item" && record.Payload.Type == "message" && record.Payload.Role == "assistant" {
+			assistantMessages++
+		}
+		if record.Type == "event_msg" && record.Payload.Type == "task_complete" {
+			completedTurns++
+		}
+		if record.Type == "event_msg" && record.Payload.Type == "token_count" && record.Payload.Info != nil {
+			if tokens := record.Payload.Info.TotalTokenUsage.TotalTokens; tokens != nil && (reportedTokens == nil || *tokens > *reportedTokens) {
+				reportedTokens = tokens
+			}
+		}
 	}
 	if reader.Err() != nil || len(models) == 0 || toolCalls != 0 {
 		t.Fatal("实际原生会话缺少模型元数据或发生工具调用")
+	}
+	if assistantMessages == 0 || completedTurns == 0 {
+		t.Fatal("实际原生会话缺少回答或轮次完成证据")
 	}
 	restart, err := events.ReadRelaySession(ctx, binding, batch.Next)
 	if err != nil || len(restart.Items) != 0 || restart.Next.Offset != batch.Next.Offset || restart.Next.Counts != batch.Next.Counts {
@@ -215,9 +257,22 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	}
 	var view workbench.SessionEvents
 	client.request(t, "GET", path, nil, &view)
-	if view.Total < int(batch.Next.Counts.Projected) || len(view.Events) != view.Total || len(view.Coverage) != 1 || view.Coverage[0].Lines != batch.Next.Counts.Lines {
+	if view.Total < int(batch.Next.Counts.Projected) || len(view.Events) == 0 || len(view.Coverage) != 1 || view.Coverage[0].Lines != batch.Next.Counts.Lines || view.Coverage[0].Source != "archive" {
 		t.Fatal("实际完整文件与 HTTP 覆盖数量不符")
 	}
+	all := append([]workbench.Event{}, view.Events...)
+	for page := 2; len(all) < view.Total; page++ {
+		var next workbench.SessionEvents
+		client.request(t, "GET", path+"&page="+fmt.Sprint(page), nil, &next)
+		if next.Total != view.Total || len(next.Events) == 0 {
+			t.Fatal("实际文件 HTTP 分页范围改变")
+		}
+		all = append(all, next.Events...)
+	}
+	if len(all) != view.Total {
+		t.Fatal("实际文件 HTTP 全部事件范围不符")
+	}
+	view.Events = all
 	committed := make([]workbench.Event, 0, len(view.Events))
 	nativeIDs := []string{}
 	for _, event := range view.Events {
@@ -297,7 +352,7 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		}
 	}
 	writeActualJSON(t, filepath.Join(evidence, "current-cursor.json"), batch.Next)
-	writeActualJSON(t, filepath.Join(evidence, "actual-model-derived.json"), map[string]any{"models": models, "tool_calls": toolCalls, "signals": signals, "nodes": nodes, "production_assembly": true, "source": "controller_selected_archive"})
+	writeActualJSON(t, filepath.Join(evidence, "actual-model-derived.json"), map[string]any{"models": models, "policies": policies, "effective_tool_set": "unknown", "tool_calls": toolCalls, "assistant_messages": assistantMessages, "completed_turns": completedTurns, "reported_tokens": reportedTokens, "signals": signals, "nodes": nodes, "production_assembly": true, "source": "controller_selected_archive"})
 	writeActualJSON(t, filepath.Join(evidence, "committed-public.json"), map[string]any{"task_id": task.ID, "project_id": task.ProjectID, "agent_name": task.Agent, "registered_at": registered.RegisteredAt, "dispatched_at": dispatched.UTC().Format(time.RFC3339Nano), "events": committed, "native_session_event_ids": nativeIDs, "archive_event_ids": nativeIDs, "forbidden_canaries": []string{"L1_PUBLIC_CANARY_976E"}, "coverage": view.Coverage})
 	writeActualJSON(t, filepath.Join(evidence, "actual-evidence-derived.json"), map[string]any{"lines": batch.Next.Counts.Lines, "projected": batch.Next.Counts.Projected, "unknown": batch.Next.Counts.Unknown, "errors": batch.Next.Counts.Errors, "snapshot_bytes": batch.SnapshotBytes, "snapshot_complete": batch.SnapshotComplete, "session_complete": batch.SessionComplete, "get_event_matches": len(committed), "readonly_get_event_count_unchanged": before == after, "negative_file_checks": 5, "archive_format": binding.Format, "has_private_paths_in_public": strings.Contains(fmt.Sprint(committed), private.AppRoot), "exit_confirmed": owned.ExitedAt != nil, "archive_finalized": owned.ArchiveFinalized, "archive_append_only": owned.ArchiveAppendOnly, "native_version": state.Sessions[task.TerminalID].Version})
 }
