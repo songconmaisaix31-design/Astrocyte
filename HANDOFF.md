@@ -1,6 +1,6 @@
 # Astrocyte 主控交接
 
-2026-10-14 19:43：恢复网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md)，沿原 Run `run_7b2ce96bcd13` / B、F 原 Task 及独立工作树继续；新 Dispatch 分别 `ctx_e0356fbca4e1`、`ctx_a69aaadfe5b6`，两者 turnStart observed，未提交修改保留。P 最新 REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端，适用独立验证进行中；旧终端释放状态仍 unknown。主控只维护状态、验收及最终 Git；B / F 开发及返修持续归各原轨，完成后交唯一集成人员普通合并。当前正式运行树不接入整改源码；Mission 新业务待定和 V4 冻结保持不变。
+2026-10-14 19:59：继续网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md)。原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 沿新 Dispatch `ctx_5a0a4d492434` 实际继续；新增 B `ctx_e0356fbca4e1` 已 failed 结算并 released，双方修改完整保留。F `ctx_a69aaadfe5b6` 在原工作树继续。主控自己的实际终端为 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f`，已重新绑定原 Run generation 3；接管前必须核实终端实际 Agent 和目录，不能仅按 Orca 工作树元数据推断身份。P REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端且适用独立验证 PASS，旧终端释放状态 unknown。主控只维护状态、验收及最终 Git；完成后交唯一集成人员普通合并。当前正式运行树不接入整改源码；Mission 新业务待定和 V4 冻结保持不变。
 
 2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
 

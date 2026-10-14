@@ -47,9 +47,9 @@ Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3
 
 ## 当前状态
 
-2026-10-14 网络中断恢复：继续原 Run `run_7b2ce96bcd13`，主控现绑定 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749`（generation 2）。B / F 原终端已失效，原 Dispatch 被运行时登记为 abandoned / failed，Task 恢复为 ready；两工作树未提交修改完整保留。恢复沿用原 Task、工作树、分支及上述互斥 write_paths，只补回原开发人员的执行上下文，不新开同域轨道。B 继续 parser、依赖登记与真实后端验证；F 继续已有前端修改及真实服务验证。两轨完成后，由唯一集成人员普通合并精确 SOURCE / REPORT，执行组合检查并推送独立整改分支。
+2026-10-14 网络中断恢复：继续原 Run `run_7b2ce96bcd13`，主控自己的终端经当前屏幕命令及执行进程身份核实为 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f`，Run 已绑定 generation 3。运行时将 B / F 原 Dispatch 登记为 abandoned / failed、Task 恢复为 ready；后续核查确认原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 继续运行，其 Orca 工作树元数据为根目录，实际执行目录为 standards-backend。新增 B 已 accepted worker_done failed，并 release / closed_agent_terminal；双方修改完整保留。原 B 同 Task 新 Dispatch `ctx_5a0a4d492434` 继续唯一写入，注入首次停在输入框而 turn_start_unobserved，主控确认输入框后仅补按 Enter，原 B 已实际收到新 preamble 并开始执行。F 在原工作树继续独立开发。两轨完成后，由唯一集成人员普通合并精确 SOURCE / REPORT，执行组合检查并推送独立整改分支。
 
-恢复回执：B 新 Dispatch `ctx_e0356fbca4e1` / 终端 `term_37307630-9a25-480e-b6d4-2bc830dbc3d1`；F 新 Dispatch `ctx_a69aaadfe5b6` / 终端 `term_54201688-6be7-42d0-a42a-15e6ea3b6631`。两回执均 ready / input_accepted / turnStart observed，使用 Orca Codex 现有模型配置。B 已核实当前 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 并保留修改；B / F 均收到主控当前规则、后续授权和跨轨消费要求。P 已结算，但旧终端清理为 `release_unknown`；按回执检查并重试后仍无法证明旧进程状态，未使用批量终端关闭。
+恢复回执：F Dispatch `ctx_a69aaadfe5b6` / 终端 `term_54201688-6be7-42d0-a42a-15e6ea3b6631`，ready / input_accepted / turnStart observed。新增 B `ctx_e0356fbca4e1` / 终端 `term_37307630-9a25-480e-b6d4-2bc830dbc3d1` 同样实际启动，发现原 B 持续写入后停止修改；其新增 native 格式校验及错误传播仍保留在原工作树，原 B 后续统一审阅，Go 整包首次 RED、Node 12 PASS、events / cmd/validation PASS 和公共来源网络失败证据均保留。P 已结算，但旧终端清理为 `release_unknown`；按回执检查并重试后仍无法证明旧进程状态，未使用批量终端关闭。
 
 P 已完成返修：SOURCE `a1089f94a13306e3cd250ed8facbb438d6e75a19` / REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71`。原 `worker_done` 已被编排接受；报告记载本次 29 项证据测试与 25 项安全测试 PASS、36 文件规范检查及 14 冻结 AST 全等。主控将核对远端、修改路径与适用独立验证，不将该子集计作完整实验验收。Mission 扩展决定仍未收到；V4 / Discovery & Split 冻结、正式数据和日程继续按既有边界处理。
 
