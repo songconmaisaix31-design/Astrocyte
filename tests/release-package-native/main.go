@@ -521,13 +521,7 @@ func (c *client) originalScope(ctx context.Context) (sessionevents.RelaySessionB
 		return binding, nil, failure("original_archive_freshness")
 	}
 	batch, err := sessionevents.ReadRelaySession(ctx, binding, sessionevents.RelaySessionCursor{})
-	if err != nil || !batch.HeaderVerified {
-		return binding, nil, failure("original_archive_parse")
-	}
-	items := map[string]sessionevents.RelaySessionItem{}
-	for _, item := range batch.Items {
-		items[item.Origin] = item
-	}
+	c.summary["original_header_verified"] = batch.HeaderVerified
 	c.summary["original_observed_lines"] = batch.Next.Counts.Lines
 	c.summary["original_projected"] = batch.Next.Counts.Projected
 	c.summary["original_unknown"] = batch.Next.Counts.Unknown
@@ -538,6 +532,19 @@ func (c *client) originalScope(ctx context.Context) (sessionevents.RelaySessionB
 	c.summary["original_session_complete"] = batch.SessionComplete
 	c.summary["archive_append_only"] = owned.ArchiveAppendOnly
 	c.summary["archive_finalized"] = owned.ArchiveFinalized
+	if err != nil || !batch.HeaderVerified {
+		gap := "original_source_unavailable"
+		switch batch.Next.FirstError {
+		case "source_identity_unverifiable_or_aliased", "selection_denied", "source_replaced", "source_truncated", "malformed_json", "session_header_unverifiable", "session_or_cwd_changed", "source_changed_during_read", "source_read_failed", "closed_incomplete_tail", "source_open_failed", "source_not_regular", "capture_cancelled", "invalid_native_record", "header_read_failed", "source_extent_unsupported":
+			gap = batch.Next.FirstError
+		}
+		c.summary["original_gap"] = gap
+		return binding, nil, failure("original_archive_parse")
+	}
+	items := map[string]sessionevents.RelaySessionItem{}
+	for _, item := range batch.Items {
+		items[item.Origin] = item
+	}
 	return binding, items, nil
 }
 
@@ -548,9 +555,13 @@ func (c *client) events() error {
 	}
 	db, err := c.openReadOnly(c.db)
 	if err != nil {
-		return failure("database_open")
+		return err
 	}
 	defer db.Close()
+	c.summary["database"] = c.db
+	c.summary["relay_database"] = c.relayDB
+	c.summary["task_id"] = c.task
+	c.summary["project_id"] = c.project
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	binding, originals, err := c.originalScope(ctx)
