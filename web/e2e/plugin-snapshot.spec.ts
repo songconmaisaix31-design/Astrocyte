@@ -1,8 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
-import { capturedPublicDocument, realService } from './realService';
+import { publicPaperSnapshots, realService } from './realService';
+import type { PublicPaperSnapshot } from '../../tests/s1/public-inputs.mjs';
 import { humanAPI, waitJob } from '../../tests/s1/api.mjs';
 
 const panel = (page: Page) => page.locator('section[aria-label="插件快照复核导入"]');
+const completeSnapshotText = (snapshot: PublicPaperSnapshot) => `# ${snapshot.title}\n\nSource: ${snapshot.source_url}\n\n## Abstract\n\n${snapshot.abstract}\n\n## Full text (browser snapshot)\n\n${snapshot.text}`;
 async function open(page: Page, url = '/attention') {
   await page.goto(url);
   await page.locator('summary').filter({ hasText: /^插件快照复核导入/ }).click();
@@ -19,13 +21,15 @@ test('实际页面拒绝非 JSON 与缺少来源的输入', async ({ page }) => 
   await expect(panel(page).getByText(/不是有效的 JSON/)).toBeVisible();
   await review(page, '{}');
   await expect(panel(page).getByText(/缺少来源链接/)).toBeVisible();
+  await review(page, JSON.stringify({ source_url: 'https://example.com/input', schema_version: 2 }));
+  await expect(panel(page).getByText(/协议版本无效/)).toBeVisible();
 });
 test('复核真实已捕获公共来源，不自动发送导入', async ({ page }) => {
-  const captured = await capturedPublicDocument();
+  const captured = (await publicPaperSnapshots()).secondary;
   const writes: string[] = [];
   page.on('request', request => { if (request.url().includes('/api/v1/') && request.method() !== 'GET') writes.push(request.url()); });
   await open(page);
-  await review(page, JSON.stringify({ source_url: captured.url, title: captured.title, content_state: 'readable_fulltext', text: captured.text }));
+  await review(page, JSON.stringify(captured));
   await expect(panel(page).getByRole('heading', { name: captured.title, exact: true })).toBeVisible();
   await expect(panel(page).getByRole('button', { name: '按快照正文导入（HTML 正文）', exact: true })).toBeEnabled();
   expect(writes).toEqual([]);
@@ -34,8 +38,8 @@ test('真实已捕获正文保留完整文本，并使用生产 paper_snapshot �
   test.setTimeout(120_000);
   const { server, api } = await realService();
   try {
-    const captured = await capturedPublicDocument();
-    const raw = JSON.stringify({ source_url: captured.url, title: captured.title, host_family: 'generic', content_state: 'readable_fulltext', text: captured.text });
+    const captured = (await publicPaperSnapshots()).secondary;
+    const raw = JSON.stringify(captured);
     await open(page, `${server.webURL}/attention`);
     await review(page, raw);
     await expect(panel(page).getByRole('heading', { name: captured.title, exact: true })).toBeVisible();
@@ -48,21 +52,24 @@ test('真实已捕获正文保留完整文本，并使用生产 paper_snapshot �
     const receipt = await accepted.json();
     const job = await waitJob(api, receipt.job_id);
     const content = await api.get(`/materials/${job.material_id}/revisions/1/content`);
-    expect(content.text).toBe(captured.text);
+    expect(content.text).toBe(completeSnapshotText(captured));
     expect(content.provenance.processor).toBe('paper_snapshot');
-    expect(content.provenance.source).toBe(captured.url);
+    expect(content.provenance.source).toBe(captured.source_url);
+    const original = await page.request.get(`${server.webURL}/api/v1/materials/${job.material_id}/revisions/1/attachments/paper-snapshot.json`);
+    expect(original.status()).toBe(200);
+    expect(await original.text()).toBe(raw);
   } finally { await server.close({ preserveData: true }); }
 });
 test('公共 PDF 的非 arXiv 选择逻辑保留为明确参数契约', async () => {
   const { snapshotImportOptions, parsePluginSnapshot } = await import('../src/pages/attention/pluginSnapshot');
   // 本测试不声明 PDF 来源已获取，只验证调用者提供的地址如何进入导入参数。
-  const raw = JSON.stringify({ source_url: 'https://example.com/input', host_family: 'generic', content_state: 'abstract_only', pdf_urls: ['https://example.com/input.pdf'] });
+  const raw = JSON.stringify({ schema_version: 1, source_url: 'https://example.com/input', host_family: 'generic', content_state: 'abstract_only', pdf_urls: ['https://example.com/input.pdf'] });
   expect(snapshotImportOptions(parsePluginSnapshot(raw), raw)).toEqual([{ adapter: 'paper_pdf', source_locator: 'https://example.com/input.pdf', export_text: null, label: '按公共 PDF 导入' }]);
 });
 test('付费和受限状态明确输入时禁止构造导入选项', async () => {
   const { snapshotImportOptions, parsePluginSnapshot } = await import('../src/pages/attention/pluginSnapshot');
   for (const content_state of ['paywall', 'restricted']) {
-    const raw = JSON.stringify({ source_url: 'https://example.com/input', host_family: 'generic', content_state });
+    const raw = JSON.stringify({ schema_version: 1, source_url: 'https://example.com/input', host_family: 'generic', content_state });
     expect(snapshotImportOptions(parsePluginSnapshot(raw), raw)).toEqual([]);
   }
 });
@@ -70,12 +77,13 @@ test('修改人工输入标题产生新命令身份，实际服务保留原始�
   test.setTimeout(120_000);
   const { server, api } = await realService();
   try {
-    const captured = await capturedPublicDocument();
+    const captured = (await publicPaperSnapshots()).secondary;
     await open(page, `${server.webURL}/attention`);
     const keys: string[] = [];
     const jobs: string[] = [];
     for (const title of [captured.title, `人工复核标题 · ${captured.title}`]) {
-      const raw = JSON.stringify({ source_url: captured.url, host_family: 'generic', title, content_state: 'readable_fulltext', text: captured.text });
+      const edited = { ...captured, title };
+      const raw = JSON.stringify(edited);
       await review(page, raw);
       const response = page.waitForResponse(value => value.url().endsWith('/materials/imports') && value.request().method() === 'POST');
       await panel(page).getByRole('button', { name: '按快照正文导入（HTML 正文）', exact: true }).click();
@@ -84,7 +92,9 @@ test('修改人工输入标题产生新命令身份，实际服务保留原始�
       keys.push(accepted.request().headers()['idempotency-key']);
       jobs.push((await accepted.json()).job_id);
       await expect(panel(page).getByLabel('粘贴插件快照 JSON', { exact: true })).toHaveValue('');
-      await waitJob(api, jobs.at(-1)!);
+      const job = await waitJob(api, jobs.at(-1)!);
+      const detail = await api.get(`/materials/${job.material_id}`);
+      expect((await api.get(`/materials/${job.material_id}/revisions/${detail.material.current_revision}/content`)).text).toBe(completeSnapshotText(edited));
     }
     expect(keys).toHaveLength(2);
     expect(keys[0]).not.toBe(keys[1]);
@@ -95,10 +105,10 @@ test('修改人工输入标题产生新命令身份，实际服务保留原始�
   } finally { await server.close({ preserveData: true }); }
 });
 test('390px 显示实际已捕获来源，复核不产生水平溢出', async ({ page }) => {
-  const captured = await capturedPublicDocument();
+  const captured = (await publicPaperSnapshots()).secondary;
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page);
-  await review(page, JSON.stringify({ source_url: captured.url, title: captured.title, content_state: 'readable_fulltext', text: captured.text }));
+  await review(page, JSON.stringify(captured));
   await expect(panel(page).getByRole('heading', { name: captured.title, exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

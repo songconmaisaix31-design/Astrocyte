@@ -49,7 +49,7 @@ export function RelayTaskPanel({ taskID, onChanged }: { taskID: string; onChange
       {data.view.task.condition === 'terminal_exited' && <p role="alert">终端退出，任务未完成；不会自动重派。</p>}
       {data.view.worktree && <Field label="中性工作区"><code>{data.view.worktree.worktree_id} · {data.view.worktree.root}</code></Field>}
       <details><summary>服务端持久状态迁移</summary><ol>{data.view.transitions.map((transition, index) => <li key={`${transition.ts}-${index}`}>{transition.from} → {transition.to} · {transition.ts} · {transition.operator}</li>)}</ol>{!data.view.transitions.length && <p>尚无状态迁移记录。</p>}</details>
-      <RelayTransitionControls view={data.view} disabled={task.stale || receipts.stale || projects.stale || !receipts.data || pending || !permission?.allowed_actions.includes('reconcile') || relayUnresolved(receipts.data?.receipts || [], 'transition') || !!receipts.data?.receipts.some(receipt => receipt.status === 'pending')} transition={(body, key) => relayApi.transition(taskID, body, key)} onChanged={changed} />
+      <RelayTransitionControls view={data.view} disabled={task.stale || receipts.stale || projects.stale || !receipts.data || pending || !permission?.allowed_actions.includes('observe') || relayUnresolved(receipts.data?.receipts || [], 'transition') || !!receipts.data?.receipts.some(receipt => receipt.status === 'pending')} transition={(body, key) => relayApi.transition(taskID, body, key)} onChanged={changed} />
     </>}</QueryState>
     <QueryState state={projects}>{() => null}</QueryState>
     <QueryState state={registry}>{() => null}</QueryState>
@@ -66,8 +66,8 @@ export function RelayTaskPanel({ taskID, onChanged }: { taskID: string; onChange
     <button type="button" className="ac-button secondary compact" onClick={changed}>只读取任务、事件和收据</button>
     <section aria-label="任务收据"><h3>动作收据</h3><QueryState state={receipts}>{data => <RelayReceipts receipts={data.receipts} />}</QueryState></section>
     <section aria-label="任务事件流"><h3>任务事件</h3><p className="relay-note">按时间倒序 · 仅六个派生字段</p><QueryState state={events}>{data => <EventTable events={[...data.events].sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts) || a.event_id.localeCompare(b.event_id))} />}</QueryState></section>
-    <p className="relay-note">事件接入状态只指本机应用事件存储。Today 接入方式待确认，认知数值仍来自已发布快照。</p>
-    <button type="button" className="ac-button secondary compact" disabled={pending || reconcile.uncertain || !permission?.allowed_actions.includes('observe') || task.stale || receipts.stale || projects.stale || !receipts.data || relayUnresolved(receipts.data?.receipts || [], 'reconcile_events')} onClick={() => { void reconcile.run(key => relayApi.reconcileEvents(taskID, key), changed); }}>核对事件接入</button>
+    <p className="relay-note">事件接入状态指本机应用事件存储。Today 展示 Session 派生事件，认知数值来自已发布快照。</p>
+    <button type="button" className="ac-button secondary compact" disabled={pending || reconcile.uncertain || !permission?.allowed_actions.includes('reconcile') || task.stale || receipts.stale || projects.stale || !receipts.data || relayUnresolved(receipts.data?.receipts || [], 'reconcile_events')} onClick={() => { void reconcile.run(key => relayApi.reconcileEvents(taskID, key), changed); }}>核对事件接入</button>
     {reconcile.error && <p role="alert">{reconcile.error} · 操作 {reconcile.operationID}</p>}
     {reconcile.uncertain && <p role="alert">事件核对结果未知，不重复提交；请读取收据。</p>}
     <button type="button" className="ac-button secondary compact" onClick={() => navigate('/cognition/today')}>在 Today 查看认知活动</button>

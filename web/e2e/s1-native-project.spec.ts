@@ -117,7 +117,7 @@ test('human observes, stops, resumes the same actual native session and sends on
       }, { timeout: 120_000, intervals: [500] }).toBe(true);
       return observation!;
     }
-    await observeUI(); // First unknown-capability human observe uses actual driver.
+    await observeUI(); // 首次人工观察通过实际驱动核查未知能力。
     await settledOutput(0);
     await observeUI();
     await expect(row).toContainText('Astrocyte-W3-public-native');

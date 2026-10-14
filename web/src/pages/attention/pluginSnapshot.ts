@@ -33,6 +33,7 @@ export interface SnapshotImportOption {
 }
 
 interface RawSnapshot {
+  schema_version?: unknown;
   source_url?: unknown; host_family?: unknown; source_key?: unknown; title?: unknown;
   authors?: unknown; doi?: unknown; arxiv_id?: unknown; abstract?: unknown;
   observed_version?: unknown; pdf_urls?: unknown; content_state?: unknown;
@@ -40,14 +41,20 @@ interface RawSnapshot {
 }
 
 function asString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim() ? value.trim() : null;
+  if (value === null || value === undefined) return null;
+  if (typeof value !== 'string') throw new Error('插件快照的文本字段类型无效。');
+  return value.trim() || null;
 }
 function asStringArray(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0) : [];
+  if (value === null || value === undefined) return [];
+  if (!Array.isArray(value) || value.some(item => typeof item !== 'string' || !item.trim())) throw new Error('插件快照的文本列表字段类型无效。');
+  return value;
 }
 const contentStates: SnapshotContentState[] = ['readable_fulltext', 'abstract_only', 'paywall', 'restricted', 'unknown'];
 function asContentState(value: unknown): SnapshotContentState {
-  return (contentStates as unknown[]).includes(value) ? (value as SnapshotContentState) : 'unknown';
+  if (value === null || value === undefined) return 'unknown';
+  if (!(contentStates as unknown[]).includes(value)) throw new Error('插件快照的原文可得状态无效。');
+  return value as SnapshotContentState;
 }
 
 /** 解析粘贴快照；JSON 无效或缺少来源时立即报告错误。 */
@@ -57,6 +64,9 @@ export function parsePluginSnapshot(text: string): PluginSnapshotReview {
   const snapshot = (raw && typeof raw === 'object' ? raw : {}) as RawSnapshot;
   const sourceUrl = asString(snapshot.source_url);
   if (!sourceUrl) throw new Error('插件快照缺少来源链接（source_url）。请粘贴扩展复制的完整快照，不要只粘贴摘要文字。');
+  if (snapshot.schema_version !== 1) throw new Error('插件快照协议版本无效（schema_version 必须为 1）。请粘贴扩展复制的完整快照。');
+  if (snapshot.truncated !== undefined && typeof snapshot.truncated !== 'boolean') throw new Error('插件快照的截断标识类型无效。');
+  if (snapshot.text !== undefined && snapshot.text !== null && typeof snapshot.text !== 'string') throw new Error('插件快照正文类型无效。');
   return {
     source_url: sourceUrl,
     host_family: asString(snapshot.host_family) ?? 'generic',
@@ -69,7 +79,7 @@ export function parsePluginSnapshot(text: string): PluginSnapshotReview {
     observed_version: asString(snapshot.observed_version),
     pdf_urls: asStringArray(snapshot.pdf_urls),
     content_state: asContentState(snapshot.content_state),
-    text: asString(snapshot.text),
+    text: typeof snapshot.text === 'string' && snapshot.text.trim() ? snapshot.text : null,
     warning: asString(snapshot.warning),
     truncated: snapshot.truncated === true,
   };

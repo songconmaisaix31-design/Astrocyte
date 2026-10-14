@@ -75,7 +75,7 @@ test('实际人工分组与态度保存后控制分组和筛选', async ({ page 
     await expect(dialog.getByRole('status')).toContainText('人工记录已保存');
     await page.keyboard.press('Escape');
     await album.getByRole('button', { name: '按分组', exact: true }).click();
-    await expect(album.getByRole('heading', { name: '标准整改', exact: true })).toBeVisible();
+    await expect(album.getByRole('region', { name: '标准整改', exact: true }).getByRole('heading', { name: '标准整改 1', exact: true })).toBeVisible();
     await album.getByLabel('态度', { exact: true }).selectOption('park');
     await expect(card).toBeVisible();
     await album.getByLabel('态度', { exact: true }).selectOption('continue');

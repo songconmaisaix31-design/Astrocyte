@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import { humanAPI, waitJob } from '../../tests/s1/api.mjs';
 import { importMaterial } from '../../tests/s1/api.mjs';
-import { capturedPublicDocument, importPublicPaperVersions, importTrackedDocument, trackedCandidate } from './realService';
+import { capturedPublicDocument, importPublicPaperVersions, importTrackedDocument, publicPaperInputs, trackedCandidate } from './realService';
 
 // 每项测试独占生产 HTTP、SQLite 和资料对象，输入保留真实公开来源。
 test.describe('S1 实际 API 与持久化', () => {
@@ -52,7 +52,15 @@ test.describe('S1 实际 API 与持久化', () => {
     await card.focus();
     await page.keyboard.press('Enter');
     await expect(page.getByRole('dialog').locator('pre').filter({ hasText: captured.text })).toHaveText(captured.text);
-    expect((await api.get(`/materials/${job.material_id}/revisions/1/content`)).source_spans).toEqual(detail.material.source_spans);
+    const revision = detail.revisions.find((item: { revision: number }) => item.revision === 1);
+    expect(revision).toBeDefined();
+    if (!revision) throw new Error('实际资料缺少固定版本1的来源记录');
+    expect(revision.source_spans).toEqual(detail.material.source_spans);
+    const content = await api.get(`/materials/${job.material_id}/revisions/1/content`);
+    expect(content.content_digest).toBe(revision.content_digest);
+    expect(content.text).toBe(captured.text);
+    const source = page.getByRole('dialog').getByRole('region', { name: '来源与原文版本' });
+    await expect(source.getByText(revision.source_spans.length ? revision.source_spans.join('；') : '未提供真实位置', { exact: true })).toBeVisible();
     await expect(page.getByRole('dialog').getByRole('link', { name: /summarize.json/ })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('s1-import-source.png'), fullPage: true });
     expect((await api.get('/missions')).items).toHaveLength(0);
@@ -123,7 +131,8 @@ test.describe('S1 实际 API 与持久化', () => {
   });
 
   test('human classification and @ retain the original file and pinned revision; removing the reference keeps the source', async ({ page }, testInfo) => {
-    const imported = await importMaterial(api, { kind: 'paper', adapter: 'arxiv', source_key: '', content_digest: '', source_locator: 'https://arxiv.org/abs/1706.03762v1' }, { timeoutMs: 120_000 });
+    const inputs = await publicPaperInputs();
+    const imported = await importMaterial(api, inputs.original.import, { timeoutMs: 120_000 });
     const input = imported.detail.material;
     const id = imported.detail.material.id;
     const paperText = (await api.get(`/materials/${id}/revisions/1/content`)).text;
@@ -164,7 +173,7 @@ test.describe('S1 实际 API 与持久化', () => {
     await references.getByRole('button', { name: '@ 引用文件', exact: true }).click();
     expect((await referenceResponse).status()).toBe(200);
     await expect.poll(async () => (await api.get(`/project-spaces/${spaceID}`)).space.material_refs.length).toBe(1);
-    const updated = await importMaterial(api, { kind: 'paper', adapter: 'arxiv', source_key: '', content_digest: '', source_locator: 'https://arxiv.org/abs/1706.03762v2' }, { timeoutMs: 120_000 });
+    const updated = await importMaterial(api, inputs.revised.import, { timeoutMs: 120_000 });
     expect(updated.detail.material.id).toBe(id);
     await main.getByRole('button', { name: '↻ 刷新', exact: true }).click();
     await main.getByLabel('资料域筛选', { exact: true }).selectOption(domainID);

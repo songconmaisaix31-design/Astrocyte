@@ -28,7 +28,8 @@ test('实际人工进度保留本轨 STATUS.md，并显示模型推断所需许�
     await expect(progress.getByLabel('推断文件（相对路径，每行一个）', { exact: true })).toHaveValue('STATUS.md');
     await server.restart();
     await page.reload();
-    await expect(progress.getByText(summary, { exact: true })).toBeVisible();
+    const reopened = await openProgress(page, server.webURL);
+    await expect(reopened.getByText(summary, { exact: true })).toBeVisible();
     expect((await realProgress(await humanAPI(server.apiURL), project.id)).summary).toBe(summary);
   } finally { await server.close({ preserveData: true }); }
 });

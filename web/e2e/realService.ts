@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 import { expect } from '@playwright/test';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import { humanAPI, importMaterial } from '../../tests/s1/api.mjs';
+import { loadPublicPaperInputs, loadPublicPaperSnapshots } from '../../tests/s1/public-inputs.mjs';
 import type { components } from '../src/api/schema';
 
 export const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -34,16 +35,26 @@ export async function importTrackedDocument(api: Awaited<ReturnType<typeof human
   });
 }
 
-/** 两个正式 arXiv 版本经生产导入器取得；未取得正文时立即失败。 */
+function publicPaperDirectory() {
+  const directory = process.env.ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR;
+  if (!directory) throw new Error('需要B交付实际公开HTML缓存的 ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR');
+  if (!/[\\/]\.verification[\\/]|[\\/]\.verification$/.test(directory)) throw new Error('公开HTML输入必须来自明确获准的验证目录');
+  return directory;
+}
+
+/** 实际公开HTML解析复用生产paperDOM及安装的第三方库。 */
+export function publicPaperInputs() { return loadPublicPaperInputs(publicPaperDirectory()); }
+export function publicPaperSnapshots() { return loadPublicPaperSnapshots(publicPaperDirectory()); }
+
+/** 两个实际arXiv版本正文通过生产手工导入，来源和版本完整保留。 */
 export async function importPublicPaperVersions(api: Awaited<ReturnType<typeof humanAPI>>) {
-  const first = await importMaterial(api, {
-    kind: 'paper', adapter: 'arxiv', source_key: '', content_digest: '', source_locator: 'https://arxiv.org/abs/1706.03762v1',
-  }, { timeoutMs: 120_000 });
-  const second = await importMaterial(api, {
-    kind: 'paper', adapter: 'arxiv', source_key: '', content_digest: '', source_locator: 'https://arxiv.org/abs/1706.03762v2',
-  }, { timeoutMs: 120_000 });
+  const inputs = await publicPaperInputs();
+  const first = await importMaterial(api, inputs.original.import, { timeoutMs: 120_000 });
+  const second = await importMaterial(api, inputs.revised.import, { timeoutMs: 120_000 });
   expect(second.detail.material.id).toBe(first.detail.material.id);
   expect(second.detail.material.current_revision).toBe(2);
+  expect((await api.get(`/materials/${first.detail.material.id}/revisions/1/content`)).text).toBe(inputs.original.text);
+  expect((await api.get(`/materials/${second.detail.material.id}/revisions/2/content`)).text).toBe(inputs.revised.text);
   return { first, second };
 }
 
