@@ -1,5 +1,47 @@
 # Works Relay runtime
 
+## 2026-10-15 v1.4 独立事实阶段
+
+当前 Task `task_f082d8b36471` / Dispatch `ctx_aa83ef2b5087` 延续原 R 工作树、分支及写入范围。已读取模块唯一规格 `tasks/Works-Relay-v1.4.md`，初稿 SOURCE `297d00420f4478dd24805a9ad70ced47fb5b711f` 与人工 handoff 增补 SOURCE `61977021f7babe86205cd23f1b83c23a6627af6c`；此前停止窗口安排已被当前实现授权替代。本阶段 SOURCE `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` 已普通 push，独立 ls-remote 同值。客户端 Codex，模型设置未修改，没有派第四层人员。
+
+现有 RelayStore JSON 事务记录动作执行权、最终动作结果、人工目标确认和控制器产生的独立事实。最终 receipt 保持不可变；事实、关系和人工交接声明不得删除或改写。Confirm / send / read / stop / resume 的原 operation 取得执行权后才进入 driver，动作取得执行权时重新核工作区占用、当前会话与控制器身份。观察事实被拒绝时，保存最终 delivery_unknown、安全拒绝原因及工作区占用，匹配原任务的准确 NativeSession 保留用于停止；后续 send 被阻断。没有从坏证据补造所有权。
+
+原 Native 进程实际启动后创建私有 controller 身份，绑定原 session / provider / CWD 及真实 startup operation。初始化、会话身份确认、请求 pipe 写入、原生 RPC 输入受理、明确开始分别追加事实。Codex turn/started 必须匹配原 thread 和实际 turn/start 返回的 turn；通知先到时保留其实际时间，ACK 到后按相同 turn 关联，并去重。Claude 的 user message 写入仅记录 input_written，system/init 另记录身份确认；Pi 保留自己的 get_state / prompt / agent_start 来源，不创建 Codex turn 身份。没有明确消费确认时单独记录 input_consumption=unknown。terminal 只记录实际 pipe 建立、完整写入与 EOF 关闭，短写立即失败，关闭后 send 仍拒绝；未增加 TUI / paste-ready 协议。
+
+原 `RelayOwnedSession` 与 `RelayNativeSessionCapture` 增加私有 `ControllerID` / `StartupOperationID`，JSON 隐藏，隔离 store 私有 wire 保留。恢复必须从当前 Registry 原持有且已退出的准确 session / CWD / operation 验证，首 input 为空；新 capture 从自身 sequence 0 开始，prefix / finalized 保持 unknown，原 raw gap 和错误计数保留。旧连接的身份与事实保留在私有历史，只能用于已提交事件的归属核查。旧记录缺启动 operation 的可选证据口返回空未记录，不产生新 confirmed 事实；实际 SendOperation 缺原控制器证据仍拒绝为 delivery_unknown。Source guard、单链接限制及正选路径规则未修改。
+
+经模块及根明确确认，原 CreateIntent 支持可选 `handoff_from_task_id` / `handoff_context_confirmed`，两者成对校验。前任务必须同项目和作品、Agent 实际不同、released、真实退出、无 pending、工作区已准备且解除占用；确认时锁定前任务准确 worktree_id。读取只限当前人工操作者可观察的同域安全历史，继续核当前项目 observe 许可和 grant，不读取旧原生上下文。人工声明独立记录，实际新 provider session 确认前执行关系保持 unknown；省略声明保持 new，不能凭相邻任务推导 handoff。fork 明确 UnsupportedCapability，没有创建普通会话代替。
+
+### H / F 消费接口
+
+| 原 R 接口 | 含义与消费要求 |
+|---|---|
+| `RelayRuntimeFactsReader.ListRuntimeFacts(ctx, humanCaller, taskID)` | 只读已持久化安全事实与关系，核原 observe / revision / grant；不启动控制器、发 RPC 或刷新 live。旧缺事实为空，含义为未记录 / unknown |
+| `RelayControllerHistoryReader.ListOwnedControllerHistory(ctx, taskID)` | 内部只读已保存 controller 历史及当前持久指针，核当前权限和原工作区根；JSON 全部私有。只核已提交 ID 的历史归属，不能授予当前进程所有权 |
+| `Native.OwnedRelayControllerEvidence(ctx, exactSession)` | 只访问原 Registry 当前实际持有的准确 NativeSession；返回私有连接身份和原进程事实，不读原档、不发 RPC。原完整 Start session 必须由原调用链保存，不能从 NativeID 重建 |
+| `RelayOwnedSession.ControllerID / StartupOperationID` 与 capture 同名字段 | H 将新的通知游标按实际连接分开，并保留旧连接游标 / 已提交 IDs。当前 capture 与原启动操作必须一致；新 sequence 不延续旧 stream |
+| 原 `RelayIntentCommand` 的两个可选 handoff 字段 | H 在原 OpenAPI / DTO 衔接，F 用生成类型消费；确认框默认未勾选，项目或 Agent 改变后清空。R 完整核实际前置条件 |
+
+本阶段历史 reader 不表达服务重启后的当前所有权。冷 Registry 没有原控制器时当前归属必须 unknown，不能用持久 ControllerID、PID 或历史 confirmed 事实替代。当前所有权的安全纯缓存读取口随后由 R 精确追加 SOURCE 交 H；H 不从私有历史自行拼新 session。公共 session-events 仍精确六字段，HTTP / OpenAPI 由 H 原域维护。
+
+### 实际验证与第一失败
+
+所有 Go 命令使用 `GOMAXPROCS=2`、`-p=1`、`-mod=readonly`。日志均在本机忽略目录 `dist/relay-l1`，没有原始模型数据。
+
+| 命令 / 检查 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree -count=1 -timeout=180s` | 最终四包 PASS，日志 `v14-scoped-final.log`；最后工作区及观察失败检查后 app 全包再验 PASS，`v14-app-handoff-final.log` |
+| `go test -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents -run 'TestRelayHumanTransitionProductionPermissionGates\|TestRelayFactsRejectMissingOriginalControllerAndFork' -count=1 -v -timeout=120s` | PASS，`v14-handoff-first.log`；实际生产 HTTP / SQLite 拒绝五类 handoff 声明，省略声明只创建普通 ready；空实际 Registry 拒绝缺控制器 / fork，没有制造成功进程 |
+| 实际两个 SQLite 连接、16 个同 operation 并发拒绝 | 一个最终拒绝 receipt、一个结果事实；事实删除 / 改写与最终 receipt 改写全部拒绝，跨连接只读与原状态全等，没有 controller / started / 人工 done / 关系成功 |
+| `go vet -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree ./internal/adapters/httpapi` | EXIT 0 |
+| `go build -p=1 -mod=readonly -o dist/relay-l1/v14-stage-runtime-server.exe ./cmd/server` | EXIT 0；服务未启动 |
+| `node scripts/check-architecture.mjs`，Node memory 512 MB | 29 包 PASS；`git diff --check` EXIT 0 |
+| `go test -p=1 -mod=readonly ./... -count=1 -timeout=180s` | 首 FAIL，唯一失败为 H 原 `TestRelayPersistentRealHTTPReceiptsMutexAndRestart`：缺 reconcile 许可却期待 200，实际 403 approval_required；`v14-full-go-first.log` 保留，交 H 原域处理 |
+
+新增生产测试最初因 helper 类型名 `WorksService` 不存在而编译失败，`v14-sqlite-facts-first.log` 保留；改为现有 `Works` 后实际通过。首次四包回归的既有 metadata fixture 缺新 startup operation，新增端口 ScopeDenied 导致 agents FAIL，`v14-scoped-first.log` 保留；旧缺证据按规格返回空 unknown 后原成功断言保持并回归通过，没有新增 skip 或成功协议替身。既有 fixture 回归不计入真实控制器验收。
+
+working 的严格证据与无 started 客户端的人工完成规则仍待用户答复，当前状态机未改变。真实初始化、输入受理与开始、恢复新连接、合法 handoff、观察失败后的实际停止、工具关闭及新来源文件身份正向验证均 NOT_RUN；没有新 native / 模型或旧输入重发。H/F 组合、三分钟 Today、L1 和最终 Windows 包仍待精确语义组合通过后的唯一实际窗口。旧 nlink2 来源 FAIL、原注册三分钟 FAIL、503 accepted 及全部首失败独立保留。
+
 ## 2026-10-14 v1.4 技术建议，等待语义确认
 
 本节按模块 `msg_17d0345e078d` 的范围，只提供现有实现、拟改内容与真实验收条件。已完整读取根 `docs/research/orca-rea-20261014.md`、`tasks/Works-Relay-v1.2.md` 和最新 `tasks/Release-v0.1-20261014.md`。四个方向已经确认，具体字段、迁移规则与就绪协议尚未确认；唯一规格草案由模块在 `docs/modules/relay.md` 维护。本节没有改变业务代码或 HTTP 契约，今晚没有启动新的 CLI、模型或 Today 窗口。
