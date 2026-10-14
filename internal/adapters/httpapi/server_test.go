@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -642,4 +643,28 @@ func TestHTTP500_ErrorV1_AllFieldsPresent(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	os.Exit(m.Run())
+}
+
+// 纯序列化输入触发 encoding/json 的实际错误，保留 HTTP 错误字段。
+func TestJSONEncodingFailureDoesNotSendSuccess(t *testing.T) {
+	w := httptest.NewRecorder()
+	w.Header().Set("X-Request-ID", "encoding-input")
+	writeJSON(w, http.StatusOK, map[string]float64{"value": math.Inf(1)})
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("encoding failure sent success: %d", w.Code)
+	}
+	var result struct {
+		SchemaVersion int `json:"schema_version"`
+		Error         struct {
+			Code, Message  string
+			RequestID      string `json:"request_id"`
+			RequiredAction string `json:"required_action"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.SchemaVersion != 1 || result.Error.Code != "internal_error" || result.Error.RequestID != "encoding-input" || result.Error.Message == "" || result.Error.RequiredAction == "" {
+		t.Fatalf("encoding error envelope incomplete: %+v", result)
+	}
 }

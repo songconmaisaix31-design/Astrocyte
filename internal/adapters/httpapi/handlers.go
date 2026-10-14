@@ -7,17 +7,27 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
 
-// handler holds the application services and implements HTTP handlers.
+// handler 组装应用服务与 HTTP 响应。
 type handler struct {
 	services Services
 	logger   any
 }
 
-// writeJSON writes a JSON response with the given status code.
+// writeJSON 在发送成功状态之前完成 JSON 编码，写入失败终止当前请求。
 func writeJSON(w http.ResponseWriter, status int, v any) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		status = http.StatusInternalServerError
+		data, err = json.Marshal(apierrors.Wrap(&apierrors.ServiceError{Code: apierrors.InternalError, Message: "response JSON encoding failed", RequestID: w.Header().Get("X-Request-ID"), RequiredAction: "report_response_encoding_failure"}))
+		if err != nil {
+			panic(http.ErrAbortHandler)
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(v) //nolint:errcheck
+	if _, err := w.Write(append(data, '\n')); err != nil {
+		panic(http.ErrAbortHandler)
+	}
 }
 
 // writeError writes a structured error response in the ErrorV1 envelope:

@@ -34,12 +34,10 @@ func resolveProjectDiscovery() (*agents.RegisteredProjects, error) {
 	return agents.NewScopedRegisteredProjects(roots)
 }
 
-// The selected video's observed local transcription exceeds the former 300s
-// budget. Reader and Service share the existing bounded runtime setting.
+// Reader 与 Service 共用现有处理期限。
 const defaultJobTimeoutSeconds = 1800
 
-// Only the explicitly configured or pinned project yt-dlp environment is used.
-// No generic Python PATH fallback, history search or dependency install occurs.
+// yt-dlp 只使用明确配置或固定安装的 Python 环境。
 func resolveListingPython() (string, error) {
 	if configured := os.Getenv("ASTROCYTE_LISTING_PYTHON"); configured != "" {
 		info, err := os.Stat(configured)
@@ -69,13 +67,11 @@ func resolveListingPython() (string, error) {
 			return candidate, nil
 		}
 	}
-	// Favorites can still use the public HTTP adapter. Upload jobs retain a
-	// truthful configuration error until the known Python environment is present.
+	// 收藏夹继续使用公开 HTTP；上传列表缺少 Python 时返回明确配置错误。
 	return "", nil
 }
 
-// The source scope is startup-owned and has no implicit public/private defaults.
-// An ordinary test or dev invocation never starts model processing unless opted in.
+// 启动配置明确控制来源范围与模型处理权限。
 func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distiller, []string, error) {
 	raw := os.Getenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION")
 	if raw == "" || raw == "false" {
@@ -117,9 +113,7 @@ func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distill
 	return processor, sourceKeys, nil
 }
 
-// Extraction uses the project installation by default. Launch scripts supply
-// absolute paths; direct binary launches can resolve a checkout beside the binary
-// or above the current directory. A missing installation is an actionable error.
+// 提取使用项目固定安装，启动脚本提供绝对路径；缺少安装时明确失败。
 func resolveSourceReader(roots []string) (*importers.Reader, error) {
 	reader := importers.NewReader(roots)
 	enabled := os.Getenv("ASTROCYTE_ENABLE_SUMMARIZE")
@@ -158,8 +152,7 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, fmt.Errorf("summarize dependency must be an existing absolute file: %s", path)
 		}
 	}
-	// Node resolves pnpm junctions consistently with the media bridge. Go's
-	// EvalSymlinks does not resolve this Windows installation correctly.
+	// Node 按包管理器实际规则解析 pnpm junction，与媒体处理保持一致。
 	resolveCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	resolved, err := exec.CommandContext(resolveCtx, nodePath, "-e", "process.stdout.write(require('node:fs').realpathSync(process.argv[1]))", cliPath).Output()
@@ -231,7 +224,7 @@ func resolveProjectSummarize() (string, error) {
 	return "", fmt.Errorf("project summarize not found; launch with pnpm dev/start from an installed checkout, or configure absolute ASTROCYTE_SUMMARIZE_CLI and ASTROCYTE_NODE")
 }
 
-// Runtime bounds are local service configuration, not client-supplied authority.
+// 运行期限来自本地服务配置。
 func configuredPositiveInt(name string, defaultValue, maxValue int) (int, error) {
 	raw := os.Getenv(name)
 	if raw == "" {
