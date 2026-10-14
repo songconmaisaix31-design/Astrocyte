@@ -1,19 +1,40 @@
-import { expect, it } from 'vitest';
-import type { RelaySessionCoverage } from '../../api/relaySession';
+import { expect, it, beforeAll } from 'vitest';
+import { request } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import type { RelaySessionEvents } from '../../api/relaySession';
 import { relaySessionGap, relaySessionHasGap, relaySessionQueryError } from './relaySessionPresentation';
 
-const coverage: RelaySessionCoverage = { task_id: 'cf1497b0-e092-43c0-80a9-33449bb57a40', terminal_id: 'public-terminal', worktree_id: 'public-worktree', project_id: 'public-project', status: 'complete', gap: '', lines: 3, projected: 3, duplicates: 0, unknown: 0, errors: 0, unknown_tokens: 1, remaining_bytes: 0, tail_bytes: 0, snapshot_complete: true, session_complete: false };
-it('keeps unknown records, first errors and incomplete tails as explicit coverage gaps', () => {
-  for (const field of ['unknown', 'errors', 'tail_bytes', 'remaining_bytes'] as const) expect(relaySessionHasGap({ ...coverage, [field]: 1 })).toBe(true);
-  expect(relaySessionHasGap({ ...coverage, gap: 'first_capture_failed' })).toBe(true);
-  expect(coverage.snapshot_complete).not.toBe(coverage.session_complete);
-  expect(relaySessionGap('PRIVATE_RAW_CANARY /native/path')).toBe('存在未识别的覆盖缺口，保持未知');
-  expect(relaySessionGap('prefix_unverified')).toContain('前缀尚未核实');
+let data: RelaySessionEvents, taskID: string, canaries: string[];
+beforeAll(async () => {
+  const origin = process.env.ASTROCYTE_TEST_RELAY_PUBLIC_URL || '';
+  expect(origin).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+  const file = process.env.ASTROCYTE_TEST_RELAY_L1_GETEVENT_PUBLIC_FILE;
+  expect(file, '需要实际 GetEvent 公开事实').toBeTruthy();
+  const facts = JSON.parse(await readFile(file!, 'utf8')) as { task_id: string; forbidden_canaries: string[] };
+  taskID = facts.task_id; canaries = facts.forbidden_canaries;
+  const context = await request.newContext({ baseURL: origin });
+  try {
+    expect((await context.get('/api/v1/auth/session')).status()).toBe(200);
+    const response = await context.get(`/api/v1/relay/session-events?task_id=${taskID}&page_size=100`);
+    expect(response.status()).toBe(200);
+    data = await response.json() as RelaySessionEvents;
+  } finally { await context.dispose(); }
 });
-it('accepts only canonical task UUIDs and ordered offset-aware time filters', () => {
-  expect(relaySessionQueryError({ task_id: coverage.task_id, start: '2026-10-14T00:00:00Z', end: '2026-10-15T08:00:00+08:00' })).toBe('');
-  expect(relaySessionQueryError({ task_id: 'public/private/path' })).not.toBe('');
+
+it('retains actual native coverage gaps and anonymizes actual public raw markers', () => {
+  expect(data.coverage).toHaveLength(1);
+  expect(data.coverage[0].gap).not.toBe('');
+  expect(relaySessionHasGap(data.coverage[0])).toBe(true);
+  expect(relaySessionGap(data.coverage[0].gap)).not.toBe('');
+  expect(data.coverage[0].session_complete).toBe(false);
+  expect(canaries.length).toBeGreaterThan(0);
+  for (const marker of canaries) expect(relaySessionGap(marker)).toBe('存在未识别的覆盖缺口，保持未知');
+});
+
+it('accepts the actual canonical task and source timestamps and rejects invalid user query input', () => {
+  expect(data.events.length).toBeGreaterThan(0);
+  expect(relaySessionQueryError({ task_id: taskID, start: data.events.at(-1)!.ts, end: data.events[0].ts })).toBe('');
+  expect(relaySessionQueryError({ task_id: 'invalid/task/id' })).not.toBe('');
   expect(relaySessionQueryError({ task_id: '00000000-0000-0000-0000-000000000000' })).not.toBe('');
-  expect(relaySessionQueryError({ start: '2026-10-14' })).not.toBe('');
-  expect(relaySessionQueryError({ start: '2026-10-15T00:00:00Z', end: '2026-10-14T00:00:00Z' })).not.toBe('');
+  expect(relaySessionQueryError({ start: data.events[0].ts.slice(0, 10) })).not.toBe('');
 });

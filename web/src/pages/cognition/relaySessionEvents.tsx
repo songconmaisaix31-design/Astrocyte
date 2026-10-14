@@ -24,6 +24,7 @@ function Coverage({ item }: { item: RelaySessionCoverage }) {
 
 export function RelaySessionEvents({ revision }: { revision: number }) {
   const [task, setTask] = useState(''), [start, setStart] = useState(''), [end, setEnd] = useState('');
+  const [pageSize, setPageSize] = useState(50);
   const [query, setQuery] = useState<RelaySessionQuery>({ page: 1, page_size: 50 });
   const [queryError, setQueryError] = useState('');
   const state = useReadApi(signal => relaySessionApi.events(query, signal), { key: `${revision}:${JSON.stringify(query)}`, refreshMs: 5000 });
@@ -33,13 +34,14 @@ export function RelaySessionEvents({ revision }: { revision: number }) {
       <p className="cg-muted">来源绑定不代表完整覆盖；当前文件快照读完，也不代表完整会话生命周期已核实。只读刷新缓存不会启动、发送、恢复或停止 Agent。</p>
       <form className="relay-session-filters" onSubmit={event => {
         event.preventDefault();
-        const next: RelaySessionQuery = { page: 1, page_size: 50, ...(task.trim() ? { task_id: task.trim() } : {}), ...(start.trim() ? { start: start.trim() } : {}), ...(end.trim() ? { end: end.trim() } : {}) };
+        const next: RelaySessionQuery = { page: 1, page_size: pageSize, ...(task.trim() ? { task_id: task.trim() } : {}), ...(start.trim() ? { start: start.trim() } : {}), ...(end.trim() ? { end: end.trim() } : {}) };
         const error = relaySessionQueryError(next); setQueryError(error);
         if (!error) { if (JSON.stringify(next) === JSON.stringify(query)) state.retry(); else setQuery(next); }
       }}>
         <label className="cg-field">任务 ID<input aria-label="会话任务 ID" value={task} onChange={event => setTask(event.target.value)} placeholder="可选 UUID" /></label>
         <label className="cg-field">开始时间<input aria-label="会话开始时间" value={start} onChange={event => setStart(event.target.value)} placeholder="可选 RFC3339（含时区）" /></label>
         <label className="cg-field">结束时间<input aria-label="会话结束时间" value={end} onChange={event => setEnd(event.target.value)} placeholder="可选 RFC3339（含时区）" /></label>
+        <label className="cg-field">每页条数<select aria-label="会话每页条数" value={pageSize} onChange={event => setPageSize(Number(event.target.value))}>{[1, 20, 50, 100].map(size => <option key={size} value={size}>{size}</option>)}</select></label>
         <button type="submit" className="ac-button secondary compact">读取所选事件</button>
       </form>
       {queryError && <p role="alert">{queryError} 查询未提交，保留上次结果。</p>}
@@ -47,7 +49,7 @@ export function RelaySessionEvents({ revision }: { revision: number }) {
       <QueryState state={state.error || state.stale ? { ...state, data: null } : state}>{data => <>
         <div className="relay-session-coverages">{data.coverage.length ? data.coverage.map(item => <Coverage key={`${item.task_id}:${item.terminal_id}`} item={item} />) : <p>尚无会话覆盖证据 · unknown。空列表不证明全部会话已采集。</p>}</div>
         <p className="cg-muted">派生事件按时间倒序 · Token 缺失保持未知 · 不含原文或原生身份</p>
-        {data.events.length ? <EventTable events={[...data.events].sort((a, b) => Date.parse(b.ts) - Date.parse(a.ts) || a.event_id.localeCompare(b.event_id))} /> : <p>本次查询没有可展示的派生事件；空结果不证明会话完整。</p>}
+        {data.events.length ? <EventTable events={data.events} /> : <p>本次查询没有可展示的派生事件；空结果不证明会话完整。</p>}
         <div className="cg-pagination"><span>当前查询 {data.total} 条 · 第 {data.page} 页 · 每页 {data.page_size} 条</span><div>
           <button type="button" className="ac-button secondary compact" disabled={state.loading || !!state.error || data.page <= 1} onClick={() => setQuery({ ...query, page: data.page - 1 })}>会话上一页</button>
           <button type="button" className="ac-button secondary compact" disabled={state.loading || !!state.error || data.page * data.page_size >= data.total} onClick={() => setQuery({ ...query, page: data.page + 1 })}>会话下一页</button>

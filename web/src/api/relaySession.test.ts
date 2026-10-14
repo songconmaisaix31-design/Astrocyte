@@ -1,21 +1,57 @@
-import { expect, it, vi } from 'vitest';
-import { ApiError, createApiClient } from './client';
-import { createRelaySessionApi } from './relaySession';
+import { expect, it, beforeAll } from 'vitest';
+import { request } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { createApiClient } from './client';
+import { createRelaySessionApi, type RelaySessionEvents } from './relaySession';
 
-it('uses the existing session bootstrap and only GET with generated strict query fields', async () => {
-  const body = { events: [], coverage: [], total: 0, page: 2, page_size: 50 };
-  const fetchImpl = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response('{}')).mockResolvedValueOnce(new Response(JSON.stringify(body)));
-  const query = { task_id: 'cf1497b0-e092-43c0-80a9-33449bb57a40', start: '2026-10-14T00:00:00Z', end: '2026-10-15T00:00:00Z', page: 2, page_size: 50 };
-  expect(await createRelaySessionApi(createApiClient('http://localhost/api/v1', fetchImpl)).events(query)).toEqual(body);
-  const requests = fetchImpl.mock.calls.map(([request]) => request as Request);
-  expect(requests.every(request => request.method === 'GET')).toBe(true);
-  expect(new URL(requests[0].url).pathname).toBe('/api/v1/auth/session');
-  expect(Object.fromEntries(new URL(requests[1].url).searchParams)).toEqual(Object.fromEntries(Object.entries(query).map(([key, value]) => [key, String(value)])));
+let origin: string, taskID: string;
+beforeAll(async () => {
+  origin = process.env.ASTROCYTE_TEST_RELAY_PUBLIC_URL || '';
+  expect(origin).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+  const file = process.env.ASTROCYTE_TEST_RELAY_L1_GETEVENT_PUBLIC_FILE;
+  expect(file, '需要实际 GetEvent 公开事实').toBeTruthy();
+  taskID = (JSON.parse(await readFile(file!, 'utf8')) as { task_id: string }).task_id;
 });
 
-it('preserves a 503 unknown result without retrying capture or issuing commands', async () => {
-  const fetchImpl = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response('{}')).mockResolvedValueOnce(new Response(JSON.stringify({ schema_version: 1, error: { code: 'provider_unavailable', message: 'Relay provider unavailable', required_action: 'inspect_local_relay_provider', retryable: false, request_id: 'public-request' } }), { status: 503 }));
-  await expect(createRelaySessionApi(createApiClient('http://localhost/api/v1', fetchImpl)).events()).rejects.toBeInstanceOf(ApiError);
-  expect(fetchImpl).toHaveBeenCalledTimes(2);
-  expect(fetchImpl.mock.calls.every(([request]) => (request as Request).method === 'GET')).toBe(true);
+it('uses actual session bootstrap and generated GET query against the owned L1 service', async () => {
+  const context = await request.newContext({ baseURL: origin });
+  const requests: URL[] = [];
+  try {
+    const transport: typeof fetch = async input => {
+      expect(input).toBeInstanceOf(Request);
+      const outgoing = input as Request;
+      expect(outgoing.method).toBe('GET');
+      requests.push(new URL(outgoing.url));
+      const response = await context.get(outgoing.url, { headers: Object.fromEntries(outgoing.headers) });
+      return new Response(await response.text(), { status: response.status(), headers: response.headers() });
+    };
+    const api = createRelaySessionApi(createApiClient(`${origin}/api/v1`, transport));
+    const data = await api.events({ task_id: taskID, page: 1, page_size: 1 });
+    expect(requests[0].pathname).toBe('/api/v1/auth/session');
+    expect(Object.fromEntries(requests[1].searchParams)).toEqual({ task_id: taskID, page: '1', page_size: '1' });
+    expect(data.events).toHaveLength(1);
+    const direct = await context.get(`${origin}/api/v1/relay/session-events?task_id=${taskID}&page=1&page_size=1`);
+    expect(direct.status()).toBe(200);
+    expect(data).toEqual(await direct.json() as RelaySessionEvents);
+  } finally { await context.dispose(); }
+});
+
+it('preserves actual Origin refusal as a read error without command or forbidden-read retries', async () => {
+  const context = await request.newContext({ baseURL: origin });
+  let deniedOrigin = false, forbiddenRequests = 0;
+  try {
+    const transport: typeof fetch = async input => {
+      expect(input).toBeInstanceOf(Request);
+      const outgoing = input as Request;
+      expect(outgoing.method).toBe('GET');
+      if (deniedOrigin) forbiddenRequests++;
+      const response = await context.get(outgoing.url, { headers: { ...Object.fromEntries(outgoing.headers), ...(deniedOrigin ? { Origin: 'http://127.0.0.1:1' } : {}) } });
+      return new Response(await response.text(), { status: response.status(), headers: response.headers() });
+    };
+    const api = createRelaySessionApi(createApiClient(`${origin}/api/v1`, transport));
+    await api.events({ task_id: taskID });
+    deniedOrigin = true;
+    await expect(api.events({ task_id: taskID })).rejects.toMatchObject({ status: 403 });
+    expect(forbiddenRequests).toBe(1);
+  } finally { await context.dispose(); }
 });
