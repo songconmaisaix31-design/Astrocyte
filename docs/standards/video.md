@@ -81,7 +81,7 @@ node --test internal/adapters/importers/paper-dom.test.mjs
 
 首编译 RED（未使用的 fmt import）在 `.verification/video-default-real-first.log` 保留；后续结果为 `.verification/video-default-real-second.log`、`.verification/importers-default-real-final.log`、`.verification/paper-export-real-final.log`、`.verification/video-default-final-targets.log` 和 `.verification/importers-node-final.log`。
 
-真实证据的具体范围：固定 BV 的原 CLI JSON 只有页面输出，CLI transcriptSegments 专用正向分支及 summary-only JSON 分支仍没有真实原件，证据 NOT_RUN；时间成功通过实际 CLI + media/native 合并解析链和生产刷新链核实。公开旧纯文本导出正向与缺时间状态已经核实。共享 `roundTripFunc` 定义仍由其他 B 测试文件依赖，V 自身没有使用替代 HTTP Transport；其他 B 文件的替代来源整改由 B 持续负责。
+真实证据的具体范围：固定 BV 的原 CLI JSON 只有页面输出，CLI transcriptSegments 专用正向分支及 summary-only JSON 分支仍没有真实原件，证据 NOT_RUN；时间成功通过实际 CLI + media/native 合并解析链和生产刷新链核实。公开旧纯文本导出正向与缺时间状态已经核实。共享 `roundTripFunc` 的全部使用及定义已经移除，PDF 和公开列表输入按下方原 owner 的实际 SOURCE 使用；其他 B 文件的实际来源整改由 B 持续负责。
 
 已按模块准确授权，普通消费 B 私有附件 SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` / REPORT `ee4eeb11dfd7c2e598734ab8ea3da6efd837afd4`；没有手改 B 生产域。
 
@@ -106,7 +106,7 @@ git diff --check
 
 全仓 Go vet、带 video_live 的全部 Go 测试编译、服务构建、Node 桥接语法与 diff 检查 PASS。`-run '^$'` 只证明全部包及测试文件编译通过，没有执行其余全仓业务测试；日志 `.verification/video-all-compile-final.log`。
 
-当前真实剩余限制：上述 9 个原有其他范围 opt-in 未执行；CLI 自身时间专用 / summary-only JSON 的实际原件证据不足；共享 Transport helper 的其他 B 使用尚待其 owner 整改；转写进行中的视频取消尚未实际验证。已验证的时间、自然同源版本、重复复用、重启与私有原件 HTTP 权限保持 PASS，未重新运行成功 ASR。完整产品 check / 浏览器 E2E / Windows ZIP 解压和发布由所属模块继续，V 保持模块功能及包支持。
+当前真实剩余限制：上述 9 个原有其他范围 opt-in 未执行；CLI 自身时间专用 / summary-only JSON 的实际原件证据不足；转写中途结构化进度没有真实证据。已验证的时间、自然同源版本、重复复用、重启与私有原件 HTTP 权限保持 PASS；实际 whisper 启动后的取消和重启不续发见下方结果。完整产品 check / 浏览器 E2E / Windows ZIP 解压和发布由所属模块继续，V 保持模块功能及包支持。
 
 ## 真实原生进程启动后取消
 
@@ -128,3 +128,26 @@ git diff --check
 本机安全证据为 `.verification/video-cancel-first.log` 及 `.verification/video-cancel-first/owned-process-events.jsonl`、`go-service-1.log`、`go-service-2.log`、`state.sqlite` / `objects`；此前所有成功和首失败原件保持。
 
 转写中途进度证据仍 NOT_RUN：本机 whisper-cli 1.9.2 官方 `--print-progress` 回调通过 fprintf 输出文本；当前时间桥接没有可复用的结构化 native progress 出口。没有自行解析 stderr 或把定时器 / 任意输出标作转写开始，准确验收范围为实际 whisper 进程启动后的取消、清理和重启不续发。
+
+## 共享 PDF 格式检查与实际输入组合
+
+V SOURCE：`eead5308823804dc744723ad8e27550f91107c5b`。随后按模块准确许可普通消费 B `9292620ec4c6b442f598be6702000ce0894f6c0e` / REPORT `b01519924a10128314fd04279738332c14597a0f` 和 B 实际 PDF SOURCE `4a6076c402e0b5d31982154a31a905bee6127477` / REPORT `7614b27e6084bf843f71a6b95082b91a7ca36ed9`；组合 SOURCE `3485d7298bf9fe4e548e81768d81144493345c7d`。
+
+共享 ExtractPDF 在任何依赖校验和 CLI 启动前调用原 B `requirePDFContent`，由标准 `net/http.DetectContentType` 验证 PDF MIME。完整 47355 bytes 的既有真实 ACL HTML 被立即拒绝，验证返回正确 validation_failed；缺失 UVX 或版本不匹配不会先触发其他错误。单项检查 1.221 秒 PASS。全部 B 引用解除后，V 删除唯一不再使用的替代 Transport helper，没有改变 B 文件。
+
+真实 PDF 正向来自 B 已完整取得的官方 `https://arxiv.org/pdf/2501.12948v1`，缓存准确指针为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/public-pdf-current-second/{source.json,paper.pdf,summarize-pdf-original.json,paper-original-text.txt}`；PDF 1312189 bytes、正文 59636 bytes、原 CLI JSON 64089 bytes。读取原件与实际文本、附件、来源和全 PDF 引用全等，SDK JSON 保持 private-native 类别；没有重做成功转写或 Agent 模型调用。
+
+```text
+ASTROCYTE_TEST_VIDEO_BASELINE_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third
+ASTROCYTE_TEST_VIDEO_TIMED_DIR=C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first
+ASTROCYTE_TEST_PUBLIC_PAPER_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification
+ASTROCYTE_TEST_PDF_PUBLICATION=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/public-pdf-current-second
+go test -mod=readonly ./internal/adapters/importers -count=1 -v
+go vet -mod=readonly ./...
+go build -mod=readonly -o .verification/video-pdf-server-final.exe ./cmd/server
+node --test internal/adapters/importers/paper-dom.test.mjs
+node --check internal/adapters/importers/summarize-media.mjs
+git diff --check
+```
+
+本次组合默认 importer 全包 EXIT 0，39.945 秒，9 个原有条件 SKIP，V 全部默认原件 / MIME / 代理 / 时间断言执行；B 新实际公开列表窗口和游标检查也执行。Go 全仓 vet、服务构建、Node 9 PASS / 0 SKIP、桥接语法、格式及 diff 检查 PASS。日志 `.verification/importers-video-pdf-final.log`、`.verification/video-shared-pdf-first.log` 与 `.verification/video-pdf-node-final.log`。全部首次 RED / UNKNOWN / NOT_RUN 保留；此轮没有重跑已通过的成功 ASR、私有 HTTP 或取消路径。
