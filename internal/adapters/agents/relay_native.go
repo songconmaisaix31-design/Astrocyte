@@ -30,6 +30,18 @@ type relayNativeLifecycle interface {
 	OwnedRelayNativeCapture(context.Context, domain.NativeSession) (domain.RelayNativeSessionCapture, error)
 }
 
+type relayOperationNative interface {
+	StartOperation(context.Context, domain.NativeRequest, string) (domain.NativeSession, error)
+	ResumeOperation(context.Context, domain.NativeRequest, string) (domain.NativeSession, error)
+	SendOperation(context.Context, domain.NativeSession, string, string) (domain.NativeObservation, error)
+	OwnedRelayControllerEvidence(context.Context, domain.NativeSession) (domain.RelayControllerEvidence, error)
+}
+
+type relayCaptureOperationNative interface {
+	StartRelayOperation(context.Context, domain.NativeRequest, string) (domain.NativeSession, error)
+	ResumeRelayOperation(context.Context, domain.NativeRequest, string) (domain.NativeSession, error)
+}
+
 var _ app.RelayDriver = (*RelayNativeDriver)(nil)
 
 func NewRelayNativeDriver(registry app.NativeRegistry, options ...RelayNativeDriverOptions) *RelayNativeDriver {
@@ -76,7 +88,11 @@ func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.
 	}
 	request := d.request(r)
 	var session domain.NativeSession
-	if lifecycle, ok := a.(relayNativeLifecycle); ok && d.captureNativeNotifications {
+	if lifecycle, ok := a.(relayCaptureOperationNative); ok && d.captureNativeNotifications && r.OperationID != "" {
+		session, err = lifecycle.StartRelayOperation(ctx, request, r.OperationID)
+	} else if operation, ok := a.(relayOperationNative); ok && !d.captureNativeNotifications && r.OperationID != "" {
+		session, err = operation.StartOperation(ctx, request, r.OperationID)
+	} else if lifecycle, ok := a.(relayNativeLifecycle); ok && d.captureNativeNotifications {
 		session, err = lifecycle.StartRelay(ctx, request)
 	} else {
 		session, err = a.Start(ctx, request)
@@ -96,6 +112,11 @@ func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.
 // Existing adapters without this port stay unknown; HistoryPath alone is not
 // a root/format/identity proof and triggers no filesystem or home discovery.
 func (d *RelayNativeDriver) withArchive(ctx context.Context, a app.NativeAdapter, obs app.RelayObservation) (app.RelayObservation, error) {
+	var evidenceErr error
+	obs, evidenceErr = d.withControllerEvidence(ctx, a, obs)
+	if evidenceErr != nil {
+		return obs, &domain.RelayArchiveObservationFailure{Cause: evidenceErr}
+	}
 	var captureErr error
 	obs, captureErr = d.withNativeCapture(a, obs)
 	if captureErr != nil {
@@ -128,6 +149,17 @@ func (d *RelayNativeDriver) withArchive(ctx context.Context, a app.NativeAdapter
 		}
 	} else if obs.Session.Ownership == "owned" {
 		obs.ArchiveGap = "archive_metadata_unsupported"
+	}
+	return obs, nil
+}
+
+func (d *RelayNativeDriver) withControllerEvidence(ctx context.Context, a app.NativeAdapter, obs app.RelayObservation) (app.RelayObservation, error) {
+	if provider, ok := a.(relayOperationNative); ok && obs.Session.Ownership == "owned" {
+		evidence, err := provider.OwnedRelayControllerEvidence(ctx, obs.Session)
+		if err != nil {
+			return obs, err
+		}
+		obs.Evidence = &evidence
 	}
 	return obs, nil
 }
@@ -175,9 +207,15 @@ func (d *RelayNativeDriver) Send(ctx context.Context, r app.RelayLaunch, input s
 	if err != nil {
 		return app.RelayObservation{}, err
 	}
-	obs, err := a.Send(ctx, r.Session, input)
+	var obs domain.NativeObservation
+	if operation, ok := a.(relayOperationNative); ok && r.OperationID != "" {
+		obs, err = operation.SendOperation(ctx, r.Session, input, r.OperationID)
+	} else {
+		obs, err = a.Send(ctx, r.Session, input)
+	}
 	if err != nil {
-		return relayNativeObservation(r.Session, obs), err
+		result, evidenceErr := d.withControllerEvidence(context.WithoutCancel(ctx), a, relayNativeObservation(r.Session, obs))
+		return result, errors.Join(err, evidenceErr)
 	}
 	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs))
 }
@@ -223,7 +261,11 @@ func (d *RelayNativeDriver) Resume(ctx context.Context, r app.RelayLaunch) (app.
 	request := d.request(r)
 	request.Command.Message = "" // original input is never replayed
 	var session domain.NativeSession
-	if lifecycle, ok := a.(relayNativeLifecycle); ok && d.captureNativeNotifications {
+	if lifecycle, ok := a.(relayCaptureOperationNative); ok && d.captureNativeNotifications && r.OperationID != "" {
+		session, err = lifecycle.ResumeRelayOperation(ctx, request, r.OperationID)
+	} else if operation, ok := a.(relayOperationNative); ok && !d.captureNativeNotifications && r.OperationID != "" {
+		session, err = operation.ResumeOperation(ctx, request, r.OperationID)
+	} else if lifecycle, ok := a.(relayNativeLifecycle); ok && d.captureNativeNotifications {
 		session, err = lifecycle.ResumeRelay(ctx, request)
 	} else {
 		session, err = a.Resume(ctx, request)
@@ -236,4 +278,12 @@ func (d *RelayNativeDriver) Resume(ctx context.Context, r app.RelayLaunch) (app.
 		return relayNativeObservation(session, obs), err
 	}
 	return d.withArchive(ctx, a, relayNativeObservation(session, obs))
+}
+
+// 现有 provider 没有获授权的 fork 路径，明确拒绝且不创建普通会话代替。
+func (d *RelayNativeDriver) Fork(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
+	if err := ctx.Err(); err != nil {
+		return app.RelayObservation{}, err
+	}
+	return app.RelayObservation{}, nativeError(apierrors.UnsupportedCapability, "relay provider fork is not supported")
 }

@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -170,6 +171,15 @@ type relayStateWire struct {
 	WorkspaceInternals    map[string]relayWorkspacePrivate
 	SessionHistoryPaths   map[string]string
 	OwnedSessionInternals map[string]relayOwnedSessionPrivate
+	ControllerEvidence    map[string]relayControllerEvidencePrivate
+	ControllerHistory     map[string][]relayControllerEvidencePrivate
+}
+
+// 私有字段仅在本机隔离库中编码，公开类型的 JSON 保持隐藏。
+type relayControllerEvidencePrivate struct {
+	ControllerID, PreviousControllerID, StartupOperationID string
+	SessionID, NativeID, Provider, WorkspaceRoot, Relation string
+	Facts                                                  []domain.RelayDriverFact
 }
 
 // Only the isolated relay state encodes these references. DTO serialization
@@ -178,6 +188,8 @@ type relayOwnedSessionPrivate struct {
 	WorkspaceRoot, SourceRoot, SessionID, NativeID, Ownership string
 	ArchivePath, ArchiveRoot, ArchiveFormat                   string
 	NativeCapture                                             *domain.RelayNativeSessionCapture
+	ControllerID, StartupOperationID                          string
+	CaptureControllerID, CaptureOperationID                   string
 }
 
 func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error) {
@@ -193,6 +205,16 @@ func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error)
 			return state, err
 		}
 		state = wire.State
+		state.ControllerEvidence = map[string]domain.RelayControllerEvidence{}
+		for id, p := range wire.ControllerEvidence {
+			state.ControllerEvidence[id] = domain.RelayControllerEvidence{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
+		}
+		state.ControllerHistory = map[string][]domain.RelayControllerEvidence{}
+		for id, history := range wire.ControllerHistory {
+			for _, p := range history {
+				state.ControllerHistory[id] = append(state.ControllerHistory[id], domain.RelayControllerEvidence{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts})
+			}
+		}
 		for id, private := range wire.WorkspaceInternals {
 			w := state.Workspaces[id]
 			w.SourceRoot = private.SourceRoot
@@ -209,11 +231,24 @@ func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error)
 			bound.WorkspaceRoot, bound.SourceRoot, bound.SessionID, bound.NativeID, bound.Ownership = private.WorkspaceRoot, private.SourceRoot, private.SessionID, private.NativeID, private.Ownership
 			bound.ArchivePath, bound.ArchiveRoot, bound.ArchiveFormat = private.ArchivePath, private.ArchiveRoot, private.ArchiveFormat
 			bound.NativeCapture = private.NativeCapture
+			bound.ControllerID, bound.StartupOperationID = private.ControllerID, private.StartupOperationID
+			if bound.NativeCapture != nil {
+				bound.NativeCapture.ControllerID, bound.NativeCapture.StartupOperationID = private.CaptureControllerID, private.CaptureOperationID
+			}
 			state.OwnedSessions[id] = bound
 		}
 	}
 	if state.OwnedSessions == nil {
 		state.OwnedSessions = map[string]domain.RelayOwnedSession{}
+	}
+	if state.ControllerEvidence == nil {
+		state.ControllerEvidence = map[string]domain.RelayControllerEvidence{}
+	}
+	if state.HandoffDeclarations == nil {
+		state.HandoffDeclarations = map[string]string{}
+	}
+	if state.ControllerHistory == nil {
+		state.ControllerHistory = map[string][]domain.RelayControllerEvidence{}
 	}
 	if state.Published == nil {
 		state.Published = map[string]bool{}
@@ -275,11 +310,53 @@ func (s *RelayStore) Update(ctx context.Context, update func(*app.RelayState) er
 		return err
 	}
 	old := make(map[string]domain.RelayReceipt, len(state.Receipts))
+	oldFacts := append([]domain.RelayRuntimeFact{}, state.RuntimeFacts...)
+	oldRelations := append([]domain.RelaySessionRelation{}, state.SessionRelations...)
+	oldHandoffs := make(map[string]string, len(state.HandoffDeclarations))
+	oldHistory := make(map[string][]domain.RelayControllerEvidence, len(state.ControllerHistory))
+	for id, history := range state.ControllerHistory {
+		for _, evidence := range history {
+			evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
+			oldHistory[id] = append(oldHistory[id], evidence)
+		}
+	}
+	for id, previous := range state.HandoffDeclarations {
+		oldHandoffs[id] = previous
+	}
 	for id, receipt := range state.Receipts {
 		old[id] = receipt
 	}
 	if err = update(&state); err != nil {
 		return err
+	}
+	for id, previous := range oldHandoffs {
+		if state.HandoffDeclarations[id] != previous {
+			return errors.New("relay handoff declaration is immutable")
+		}
+	}
+	for id, previous := range oldHistory {
+		current := state.ControllerHistory[id]
+		if len(current) < len(previous) {
+			return errors.New("relay controller history cannot be removed")
+		}
+		for i, evidence := range previous {
+			if !reflect.DeepEqual(evidence, current[i]) {
+				return errors.New("relay controller history is append-only")
+			}
+		}
+	}
+	if len(state.RuntimeFacts) < len(oldFacts) || len(state.SessionRelations) < len(oldRelations) {
+		return errors.New("relay facts and relations cannot be removed")
+	}
+	for i, previous := range oldFacts {
+		if !reflect.DeepEqual(previous, state.RuntimeFacts[i]) {
+			return errors.New("relay runtime facts are append-only")
+		}
+	}
+	for i, previous := range oldRelations {
+		if !reflect.DeepEqual(previous, state.SessionRelations[i]) {
+			return errors.New("relay session relations are append-only")
+		}
 	}
 	for id, previous := range old {
 		current, ok := state.Receipts[id]
@@ -312,6 +389,16 @@ ON CONFLICT(id) DO UPDATE SET data=excluded.data,input=excluded.input`, id, stri
 	}
 	state.Receipts = nil
 	wire := relayStateWire{State: state, WorkspaceInternals: map[string]relayWorkspacePrivate{}}
+	wire.ControllerEvidence = map[string]relayControllerEvidencePrivate{}
+	wire.ControllerHistory = map[string][]relayControllerEvidencePrivate{}
+	for id, history := range state.ControllerHistory {
+		for _, p := range history {
+			wire.ControllerHistory[id] = append(wire.ControllerHistory[id], relayControllerEvidencePrivate{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts})
+		}
+	}
+	for id, p := range state.ControllerEvidence {
+		wire.ControllerEvidence[id] = relayControllerEvidencePrivate{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
+	}
 	wire.SessionHistoryPaths = map[string]string{}
 	for id, session := range state.Sessions {
 		if session.HistoryPath != "" {
@@ -321,6 +408,12 @@ ON CONFLICT(id) DO UPDATE SET data=excluded.data,input=excluded.input`, id, stri
 	wire.OwnedSessionInternals = map[string]relayOwnedSessionPrivate{}
 	for id, bound := range state.OwnedSessions {
 		wire.OwnedSessionInternals[id] = relayOwnedSessionPrivate{WorkspaceRoot: bound.WorkspaceRoot, SourceRoot: bound.SourceRoot, SessionID: bound.SessionID, NativeID: bound.NativeID, Ownership: bound.Ownership, ArchivePath: bound.ArchivePath, ArchiveRoot: bound.ArchiveRoot, ArchiveFormat: bound.ArchiveFormat, NativeCapture: bound.NativeCapture}
+		private := wire.OwnedSessionInternals[id]
+		private.ControllerID, private.StartupOperationID = bound.ControllerID, bound.StartupOperationID
+		if bound.NativeCapture != nil {
+			private.CaptureControllerID, private.CaptureOperationID = bound.NativeCapture.ControllerID, bound.NativeCapture.StartupOperationID
+		}
+		wire.OwnedSessionInternals[id] = private
 	}
 	for id, w := range state.Workspaces {
 		wire.WorkspaceInternals[id] = relayWorkspacePrivate{SourceRoot: w.SourceRoot, GitObservation: w.GitObservation}
