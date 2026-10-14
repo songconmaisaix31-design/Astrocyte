@@ -37,7 +37,7 @@ export function ProposalEditor({ initial, latest, disabled = false, onSaved }: {
     event.preventDefault();
     if (unavailable || !project) return;
     let content: components['schemas']['S2ProposalContentV1'];
-    try { content = draftToContent(draft, inputs, project.settings.revision); }
+    try { content = draftToContent(draft, inputs, project.settings.revision, initial?.content); }
     catch (cause) { setValidation(cause instanceof Error ? cause.message : '请核对提案内容'); return; }
     setValidation('');
     void command.run(key => {
@@ -51,7 +51,7 @@ export function ProposalEditor({ initial, latest, disabled = false, onSaved }: {
       if (!goal && value) throw new Error('所选目标版本不在当前已读取记录中');
       setDraft({ ...draft, goalId: goal?.id ?? '', goalRevision: goal ? String(goal.revision) : '' });
     }} />}</QueryState>
-    {project && <p>本次保存使用项目权限版本 r{project.settings.revision}。已许可目录：{project.settings.allowed_subdirs.join('；') || '无'}。</p>}
+    {project && <div><p>本次保存使用项目权限版本 r{project.settings.revision}。已许可目录：{project.settings.allowed_subdirs.join('；') || '无'}。</p><p>项目允许动作：{project.settings.allowed_actions.join('；') || '无'}。原生控制：{project.settings.allow_agent_control ? '已许可' : '未许可'}。</p><p>项目允许工具：{project.settings.allowed_tools.join('；') || '无'}。模型 CLI：{project.settings.external_model_cli || '未配置'}。</p></div>}
     <ProposalContentFields draft={draft} disabled={unavailable} projectLocked={projectLocked} onChange={next => { if (next.projectId !== draft.projectId) setInputs([]); setDraft(next); }} />
     <QueryState state={spaces}>{() => <FixedInputPicker available={available} selected={inputs} disabled={unavailable} onChange={setInputs} />}</QueryState>
     {validation && <p role="alert">{validation} 输入已保留。</p>}
