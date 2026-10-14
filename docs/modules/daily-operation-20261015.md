@@ -61,3 +61,17 @@
 下一项为第三层唯一结果只读验收，write_paths为空：逐event_id在实际正式库 / 本日快照定位、单次Sleep与覆盖自然日 / 原锁、12题臂 / 独立judge / 实际预算 / 去重回执及人评 / 预测真实状态。只读成熟SQLite / 标准JSON，原始输入与响应留原根，输出仅派生计数；不得触发任何capture、Sleep、模型、judge、人工评分或预测。此检查与原operator分别拥有读取和执行范围，不构成第二operator。
 
 00:40:22公开原run `50ee3508-e5bc-4ace-8fae-4c652bea59da` 已实际completed / error=null；最后安全摘要可用且未截断。独立只读验收 Task `task_562e59cee9db` / Dispatch `ctx_fee1ce8fd66a` / 终端 `term_653f6e58-e6de-4f88-b8a8-c44be0c950ea` 已官方ready / turn_started / depth2，实际projection Codex / gpt-6.1-sol / live，逐事件与预算核查继续。正式HEAD已前进至 `51793cc651f28be2673e7f025e807a0b257b6d8c`，由验收人员核实际冻结域范围；模块管理文档只读路径明确为本独立模块树，不复制到正式树。根完成状态通知为 `msg_2c8b6be5bd45`。
+
+## D1独立验收与真实剩余项
+
+合法独验 `worker_done` 为 `msg_567e2feb0c7b`，精确 Task / Dispatch匹配、outcome=succeeded；本模块已官方released / closed_agent_terminal / transcript captured，未触发第二operator。
+
+| 已实际独验 | 结果 |
+|---|---|
+| 原始事件与真实库 | 60个event_id逐一在正式state.sqlite和本日day-state.sqlite唯一定位，完整origin / ts / scope / raw / derived及60信号字段一致；两库3249事件 / 3249信号 / 6节点 / 33Sleep，本日唯一completed Sleep。 |
+| 覆盖与日去重 | 精确10-14完整自然日，capture_complete / selection_complete true，late / source_errors / 重复0；锁root reviewed / day0 / formal根 / 原授权 / 固定预算一致，原automation completed / error=null且enabled / cron保持。 |
+| 三臂 / judge / 事实 | 12pair各唯一STARTED与OK，未决0；judge唯一STARTED与OK，6事实SCORED逐项重算一致。A四份实际MCP响应与SQL重算一致、各1326引用 / 聚合误差0 / raw0；B四题各同1033完整人口、未装载0；judge与paired原答重建一致。 |
+| 实际13原生回执 | config / input / argv / stream / output / usage / byte / elapsed逐一匹配，零工具 / no compact；最大input510778、output693、elapsed39.4173477秒、总字节1693552，均满足872000 context / 4096 output / 5094907字节 / 1800秒原锁预算。实际CLI0.162.0，不因echo缺失重发模型。 |
+| 文件与执行边界 | 原正式分支validation/v1-20261012 / HEAD51793cc651f28be2673e7f025e807a0b257b6d8c clean；独验只读标准JSON / SQLite mode=ro / query_only、日快照immutable / python -B，没有文件写入、输出创建、模型或日流程重发、Git提交。 |
+
+真实剩余项：本日user-sheet全部空、user-scores缺失，只用户填写；本日3预测为D+3_not_finished，prediction-scores未生成，七日和终局尚未完成。13回执response_model_echo均null、provider_input_wire_verified均false；exact tokenizer / 硬output cap未暴露，按原已接受限制保留unknown。Claude扫描timestamp_unknown463、26条原生白名单初始化warning和原run1 skipped_unavailable均保留，未删除错误或降低验收。原始输入、响应、日志与SQLite均只在既有外部证据根。
