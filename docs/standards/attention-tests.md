@@ -16,6 +16,8 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 第五阶段 SOURCE `aa7257e66bff29140a826afdaab93f36e35958d9` 已普通提交并 push，只修改 `video_reuse_test.go`。原替代 SourceReader 已移除，使用 V 明确交付的同 BV 两个 immutable 实际文本导出和生产 Reader / SQLite / ObjectStore，保留 alias 首读 1 次、显式 B refresh 与 normal latest 2 次、返回 A 第 3 次读取 / 3 个作业 / 2 个 revision / B head / 旧 A revision1 / 同 material，以及 multipart 单独身份的全部断言。p2 只提交其真实 URL，没有借用 p1 原件；生产 `summarize_url` 对不支持的 multipart 返回实际 validation_failed，零新资料。
 
+第六阶段 SOURCE `61a012464a22d60ef421ea1fdaa5541ef65f1f7e` 已普通提交并 push，修改两个 App tracking 测试文件。经模块 `msg_64b573bcf0a3` 授权，普通消费 B 准确 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b`；同原获准公开收藏的真实 100 条 App / SQLite 验证通过。原 110 条 prefix 缓存断言迁移为真实 `100 + 10 + 前缀100` 三窗口，全部旧记录不标 stale；另新增原 partial 场景的实际只读半段：真实末两页各 1 项、原 cap100、第二次读取发生真实 context 终止、生产 Run 自动有界重试同 cursor，3 次实际 reader 调用 / 2 attempts / 同 operation 与 deadline / 2 条非 stale 记录均通过。观察 helper 只委托生产 Reader，不提供替代页或错误；原模型 unknown 半段继续等待实际模型窗口。
+
 本测试要求显式绝对路径 `ASTROCYTE_TEST_VIDEO_EXPORT_A` 与 `ASTROCYTE_TEST_VIDEO_EXPORT_B`，没有个人路径源码默认值、fallback 或 skip。此次 A 路径为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/video-original-text.txt`，B 为 `C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first/video-original-text.txt`，均按模块与 V `msg_43e318f2b008` 的精确只读授权消费。production `summarize_markdown` loader 保留已有真实正文；该范围没有宣称 Markdown 自身证明 952 个时间片段，也没有调用新提取 / ASR / 模型 / controller。
 
 经模块允许，普通 `--no-ff` 消费 B 前置 `3384a89aac3be6d5670d756eb2d44263784d0cb8`；其中只有共同 owned execution 口，text / bridge 的原 registry、作业 / operation、活会话和原档 / Send 映射尚未交付。T 没有手工修改该生产输入。
@@ -61,6 +63,9 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | 相关两包 `-list '^Test'` 与 `go build -mod=readonly -o .verification/astrocyte-stage4.exe ./cmd/server` | EXIT0；编译清单与生产服务构建 | `.verification/coverage-stage4.log`、`.verification/build-stage4.log` |
 | 实际两视频导出首次 A/B/A 验证 | RED：新增 p2 失败断言的预期错误类型与生产拒绝规则不同；A/B/A 原断言已通过，首记录保留 | `.verification/video-reuse-actual-exports-first.log` |
 | 显式 `ASTROCYTE_TEST_VIDEO_EXPORT_A/B` 后，`go test -mod=readonly ./internal/attention/app -run '^TestNormalVideoReuseExplicitRefreshAndABAHead$' -count=1` | EXIT0；实际已有两版导出、alias、refresh、A/B/A、SQLite / objects 与 p2 实际拒绝 | `.verification/video-reuse-actual-exports-explicit.log` |
+| 消费准确 cursor SOURCE 后，`go test -mod=readonly ./internal/attention/app -run '^TestPublicFavoriteSourceCapacity$' -count=1` | EXIT0；同原获准匿名公开夹，实际 metadata100 / has_more / SQLite，资料零 | `.verification/favorites-capacity-fixed-cursor.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestBoundedPrefixDoesNotMarkUnobservedOlderCacheStale$' -count=1` | EXIT0；真实三窗口，保留原 110 条记录 / has_more / 全部 nonstale 断言 | `.verification/tracking-prefix-actual-first.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestActualPartialListingFailureRetainsCursorAndBudget$' -count=1` | EXIT0；实际 1 项缓存 / stale 失败、同 cursor 自动安全重试、总 2 项 / attempts2 / 3 次真实调用 / 原预算 | `.verification/tracking-partial-actual-first.log` |
 
 ## 仍在执行
 
@@ -78,7 +83,7 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 
 根 `msg_4da181ce8f60` 明确 selected-text 原生身份与模型验证延期至明天 v1.4 语义稳定后的共同身份 / 目标核查窗口。今晚保持实际模型、原生 controller 启动均为零；包含该隐式路径的 `go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 保持 NOT_RUN，不新增 skip、不删除 case 或隐藏默认门槛。
 
-继续验收需要 B 的精确 text / bridge SOURCE 及原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，B 的真实分页修复与可访问足量公开 Creator。收藏夹累计 99 项后是否允许读取第 101 个请求位置取得第 100 个实际 metadata，当前由模块唯一正式问题等待根裁决，不据未答选择上限解释、造第 20 项或放宽 100 条断言。
+继续验收需要 B 的精确 text / bridge SOURCE 及原 operation → 原 registry / session / 正选原档 / 实际 argv / Send 受理 / Stop 证据，以及可访问的足量公开 Creator。根已裁决 100 预算为实际 metadata，允许跨缺失槽到第 100 条，真实 Observed19 保留，100 即停止、超时及无进展失败继续保持。准确 cursor 已消费，收藏100 / 110缓存 / partial只读半段均有本轨独立实际结果；Creator 原3与三个候选412仍保持原范围失败，未由收藏结果替代。
 
 V 的两真实文本导出已支持本轨版本复用验证，完整时间 / 默认提取验收仍归 V 的真实生产路径，不借本轨 Markdown 版本复用结果填其全模块通过。原生只提供固定公开输入，工具配置由真实运行证据核对；未确定部分保持 UNKNOWN。完整 App 自动处理 / tracking 及 shared helper 的替代实现整改仍未完成，明天由本 owner 继续同一写入范围。T 没有发送 worker_done 或发布产品。
 
