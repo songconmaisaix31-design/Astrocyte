@@ -6,7 +6,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
 import { DetailPanel, Field, FieldRow, MutedValue } from '../../components/DetailPanel';
-import { proposalStatusLabel, bindingStatusLabel, contextStateLabel, formatBudget, capabilityLabel } from '../../utils/format';
+import { proposalStatusLabel, bindingStatusLabel, contextStateLabel, capabilityLabel } from '../../utils/format';
 import type { components } from '../../api/schema';
 import { PageFrame, RailSummary } from '../../components/PageFrame';
 import { matchesQuery } from '../../utils/search';
@@ -17,6 +17,7 @@ import { ManagedProjectsPanel } from './ManagedProjectsPanel';
 import { ProjectBoardPanel } from './ProjectBoardPanel';
 import { WorksAlbumPanel } from './WorksAlbumPanel';
 import { ProposalWorkspace } from './proposals/ProposalWorkspace';
+import { ProposalRevision } from './proposals/ProposalRevision';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -44,7 +45,7 @@ export function WorkspacePage({ query, onClearQuery }: Props) {
   const manageRef = useRef<HTMLDetailsElement>(null);
   const [selected, setSelected] = useState<SelectedItem>(null);
 
-  const proposals = (prop.data?.items ?? []).filter(p => matchesQuery(query, [p.title, p.id, p.goal]));
+  const proposals = (prop.data?.items ?? []).filter(p => matchesQuery(query, [p.content.title, p.id, p.content.goal.id]));
   const sessions = (sess.data?.items ?? []).filter(p => matchesQuery(query, [p.adapter, p.id, p.project_id]));
 
   const handleClose = useCallback(() => setSelected(null), []);
@@ -126,14 +127,14 @@ export function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect:
           onClick={() => onSelect(p)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); }}}>
           <div className={styles.itemHeader}>
-            <span className={`${styles.itemTitle} line-clamp-2`}>{p.title}</span>
+            <span className={`${styles.itemTitle} line-clamp-2`}>{p.content.title}</span>
             <StatusBadge value={p.status} label={proposalStatusLabel(p.status)} />
           </div>
-          <div className={`${styles.itemDesc} line-clamp-2`}>{p.goal}</div>
+          <div className={`${styles.itemDesc} line-clamp-2`}>目标 {p.content.goal.id} · r{p.content.goal.revision}</div>
           <div className={styles.itemMeta}>
             <span>r{p.revision}</span>
-            <span>{p.deliverables.length} 项交付物</span>
-            <span>{p.scope.project_ids.length} 个项目</span>
+            <span>{p.content.deliverables === null ? '交付数量未提供' : `${p.content.deliverables.length} 项交付物`}</span>
+            <span>项目 {p.content.scope.project_id}</span>
           </div>
           <span className="ac-text-button">查看范围与停止条件<Icon name="arrow" size={14} /></span>
         </li>
@@ -185,38 +186,7 @@ export function ProjectDetail({ item }: { item: Project }) {
   );
 }
 export function ProposalDetail({ item }: { item: Proposal }) {
-  return (
-    <>
-      <Field label="标题">{item.title}</Field>
-      <Field label="状态"><StatusBadge value={item.status} label={proposalStatusLabel(item.status)} /></Field>
-      <Field label="目标">{item.goal}</Field>
-      <Field label="交付物">
-        {item.deliverables.length > 0
-          ? <ul style={{ paddingLeft: 'var(--space-5)', margin: 0 }}>{item.deliverables.map((d, i) => <li key={i}>{d}</li>)}</ul>
-          : <MutedValue>无</MutedValue>}
-      </Field>
-      <Field label="预算">{formatBudget(item.budget) === '—' ? <MutedValue>未知（未提供预算）</MutedValue> : formatBudget(item.budget)}</Field>
-      <FieldRow>
-        <Field label="调用上限">{item.budget?.calls ?? <MutedValue>未知</MutedValue>}</Field>
-        <Field label="费用上限">{item.budget?.money != null ? `${item.budget.money} ${item.budget.currency ?? '币种未知'}` : <MutedValue>未知</MutedValue>}</Field>
-      </FieldRow>
-      <Field label="停止条件">
-        {item.stop_conditions.length > 0
-          ? item.stop_conditions.join('; ')
-          : <MutedValue>无</MutedValue>}
-      </Field>
-      <Field label="范围">
-        <div style={{ fontSize: 'var(--text-sm)' }}>
-          <div>项目: {item.scope.project_ids.length > 0 ? item.scope.project_ids.join(', ') : '无'}</div>
-          <div>允许操作: {item.scope.allowed_actions.length > 0 ? item.scope.allowed_actions.join(', ') : '无'}</div>
-        </div>
-      </Field>
-      <FieldRow>
-        <Field label="版本">r{item.revision}</Field>
-        <Field label="ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{item.id}</code></Field>
-      </FieldRow>
-    </>
-  );
+  return <ProposalRevision proposal={item} />;
 }
 
 export function SessionDetail({ item }: { item: Session }) {
