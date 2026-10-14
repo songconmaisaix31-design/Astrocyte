@@ -1,5 +1,21 @@
 # Works Relay runtime
 
+## 2026-10-14 本次归档链接元数据核查
+
+当前 Task `task_d480ceaf0e15` / Dispatch `ctx_1f88d9e6f4f4` 接收最高层授权，只核原 task `0c6522bc-b232-4040-8407-745885644791` 的已获准归档链接元数据。SOURCE 仍为 `d14b08dc50014baf9ee636543564b040112cf3b5`，当前追加只更新独立 REPORT。
+
+R 从 H 明确给出的本机 locator 读取 `app_root`，以 SQLite `mode=ro` / `query_only=ON` 读取 `relay_state` 的单个原任务 binding，再与 H 提供的本次私有 pointer 做同文件身份比较。两者指向同一正选文件，native identity 已存在；归档为 regular，105564 bytes，当前 nlink=2。原档正文、其他 history 和 credentials 没有读取。
+
+实际 `fsutil hardlink list` EXIT 0，完整名称仅保留本机忽略文件。通过 Windows 官方 [FindFirstFileNameW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findfirstfilenamew) / [FindNextFileNameW](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-findnextfilenamew) 查询该文件的两个硬链接名称，使用 `os.path.samefile` 确认两者为同一文件身份。未解析 fsutil 文本。
+
+安全聚合结果：两个名称有相同 basename，一个与原正选文件同 parent，另一个 parent 不同。原名称位于默认 Codex 目录的 sessions，另一个位于 Orca codex-accounts 目录的 sessions；都不在 R / H 工作树或 H 隔离 app_root，也不位于 client_sessions / archived_sessions。路径类别与账户镜像相符属于推断，创建者尚无命令、进程或运行时创建记录确证。系统当前元数据不能恢复创建者历史。
+
+R 当前任务和前一支持任务没有归档链接创建动作。R 调用边界没有 thread/archive / thread/unarchive 请求或硬链接创建；已保存的官方 Codex 0.162.0 归档实现使用 rename。这些是已核源码事实，不能据此确定此次第二链接的实际创建者。
+
+完整原档和链接路径仅在 R 本机 `dist/relay-l1/owned-archive-link-pointer-private.json`、`owned-archive-hardlinks-private.txt` 和 `owned-archive-native-targets-private.json`，安全结果在 `owned-archive-link-safe-aggregate.json`。私有信息不进入 Git、HTTP、包或 stdout。查询定位的第一次失败和 PowerShell Target 查询失败保留在执行记录；随后系统 API 查询和同文件比较通过。
+
+当前来源的 `source_identity_unverifiable_or_aliased` / nlink=2 保持 FAIL，nlink=1 守卫保持。两路径的创建者未确证，R 没有删除或移动它们。先前 15 行 / 18 event IDs 的成功保持当时结果，不能代替当前来源验证。最高层明确：旧 done 状态保留，目标验收未通过；H 核实 done / exited / pending=0 / 对象归属后，由 F 执行清理释放，再准备独立公开新任务。来源调查不阻塞 H 的必要组装与新任务准备，旧模型不重发。
+
 ## 2026-10-14 人工完成与释放的权限
 
 当前 Task `task_d480ceaf0e15` / Dispatch `ctx_1f88d9e6f4f4` 的后续授权来自最高层决定 `msg_ac65fadbbe5e` / 回复 `msg_0c1795a84006`。SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 已普通 push，独立 REPORT 通过当前 Dispatch 交接。此前单文件证据接口 SOURCE `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` 保留普通祖先，`relay_execution.go` 内容保持一致。
