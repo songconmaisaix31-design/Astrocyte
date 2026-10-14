@@ -83,6 +83,10 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	protectedSources, err := workbenchProtectedSources()
+	if err != nil {
+		return err
+	}
 	// Resolve data directory.
 	dataDir, err := resolveDataDir()
 	if err != nil {
@@ -205,7 +209,7 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
-		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot()),
+		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot(), protectedSources...),
 		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
 		Tracking:             attention,
 		LocalProjects:        localProjects,

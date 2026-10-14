@@ -278,7 +278,7 @@ func (s *relayService) ReconcileEvents(ctx context.Context, c domain.Caller, id 
 	}
 	view, err := s.GetTask(ctx, c, id)
 	if err == nil {
-		_, err = s.permission(ctx, c, view.Task, "observe")
+		_, err = s.permission(ctx, c, view.Task, "reconcile")
 	}
 	if err == nil {
 		err = s.store.Update(ctx, func(st *RelayState) error { delete(st.PublicationErrors, id); return nil })

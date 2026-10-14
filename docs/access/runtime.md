@@ -1,5 +1,177 @@
 # Works Relay runtime
 
+## 2026-10-14 人工完成与释放的权限
+
+当前 Task `task_d480ceaf0e15` / Dispatch `ctx_1f88d9e6f4f4` 的后续授权来自最高层决定 `msg_ac65fadbbe5e` / 回复 `msg_0c1795a84006`。SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 已普通 push，独立 REPORT 通过当前 Dispatch 交接。此前单文件证据接口 SOURCE `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` 保留普通祖先，`relay_execution.go` 内容保持一致。
+
+人工 `working→done` 和 `done→released` 检查当前项目已有的 `observe` 许可。入口在写入 receipt 前通过现有 human 门禁拒绝 Agent 调用；原 intent 的 revision / A-B-C、当前 CLI、项目权限和 grant 撤销继续核实。任务必须持有 prepared workspace，workspace 的 ActiveTaskID / project ID 和 terminal 的 WorktreeID / Agent 必须匹配该任务。完成需要 `completion_confirmed=true`；释放需要 done、持久化的真实 ExitedAt、没有 pending action 或 pending receipt。释放清除该任务的 workspace 占用。
+
+`ReconcileEvents` 明确检查 `reconcile` 许可。它的权限版本和 grant 检查继续使用原任务绑定；人工完成和释放的授权不会扩大事件发布 reconciliation 的权限。
+
+新增 `TestRelayHumanTransitionProductionPermissionGates` 在 R 当前忽略目录内创建实际公开 README Git 项目，使用现有 LocalProjectService、Works 导入、两个实际 SQLite store、NativeRegistry 和实际 HTTP handler。A/B/C 三组都验证：只有 observe 的任务通过权限检查后仍受真实 ready 状态限制；缺少 reconcile 的发布请求返回 ApprovalRequired；Agent transition 返回 ScopeDenied 且没有新 receipt；grant 缺少 observe、grant 撤销和权限版本变化阻断 transition，原 intent 的 state / revision / A-B-C 保持。测试只创建 ready 意图，完成 / 退出 / released 状态由 H/F 的真实原任务验证。
+
+| 验证命令 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/workspace/app -run TestRelayHumanTransitionProductionPermissionGates -count=1 -v -timeout=90s` | A/B/C 全部 PASS；日志 `dist/relay-l1/human-transition-production-first.log` |
+| `go test -mod=readonly ./internal/workspace/app -run TestRelay -count=1 -timeout=90s` | PASS；既有回归日志 `dist/relay-l1/human-transition-existing-first.log` |
+| `go vet -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/httpapi` | EXIT 0 |
+| `go build -mod=readonly -o dist/relay-l1/human-transition-runtime-server.exe ./cmd/server` | EXIT 0，服务未由 R 启动 |
+| `gofmt` / `git diff --check` / `node scripts/check-architecture.mjs` | PASS，29 package 边界 |
+| `go test -mod=readonly ./...` | 本阶段首次 FAIL，唯一失败在 H 的 `cmd/server/relay_runtime_http_test.go:297`：缺 reconcile 许可的事件 reconciliation 请求实际 403 ApprovalRequired，测试期待 200；原件 `dist/relay-l1/human-transition-full-go-test.log` 保留 |
+
+该全套失败已交 H 在原测试写入范围处理，成功场景需要真实许可和适用生产验证。R 的生产权限测试和构建通过不替代最终全套通过。最高层后续资源决定为 Go 测试使用 `-p=1` / `GOMAXPROCS=2`；已完成的目标检查不重复执行。
+
+H 负责串行部署此 SOURCE，保留原 DB、权限 revision 2、原输入、receipt 和第一次 503；F 是旧 task `0c6522bc-b232-4040-8407-745885644791` 完成与释放的唯一 UI / HTTP 操作人。F 已确认其人工控件使用 observe、事件 reconciliation 控件使用 reconcile，当前真实完成 / 释放结果待其回传。R 没有操作该任务或调用新模型。旧进程退出仍以 H 已确认的实际结果为依据。
+
+单文件消费已收到 B 和产品模块的明确 ACK：B SOURCE `3384a89aac3be6d5670d756eb2d44263784d0cb8` 已普通 push，R 只读比较两工作树的 `relay_execution.go` 内容一致。B 已归还该文件写入范围；B 普通 text / bridge 的映射和 T 的真实取消验证继续由原负责人执行。
+
+## 2026-10-14 Native 内部证据口单文件消费
+
+本阶段 Task `task_d480ceaf0e15` / Dispatch `ctx_1f88d9e6f4f4`，仍在原 R 工作树和 `songconmaisaix31-design/works-relay-runtime` 分支。SOURCE `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` 已普通 push；REPORT 独立普通提交并由当前 Dispatch 回传精确 SHA。前阶段 `87a54b7` / `63b55d7` 及全部普通历史保留。当前客户端 Codex，未覆盖模型配置，无第四层人员。
+
+只读核实 B 的 `standards-backend` 基线 `15c738f88822e553eb228c12c0fdc71ad07b7531`。公共证据文件使用 B 已有的 Native 类型和字段，R 的采集、项目身份、时间、权限和第一次 RPC 错误记录通过可选接口提供。本阶段的生产消费范围为一个文件。
+
+### 唯一生产消费文件与调用约束
+
+B 通过文件编辑工具从上述 immutable SOURCE 原样消费唯一文件：
+
+```text
+internal/adapters/agents/relay_execution.go
+```
+
+该文件依赖双方已有的 `agents.Native` / `nativeProcess` 的 `id`、`get`、`mu`、`nativeID`、`cmd`、`done`，已有 `installedCommand` / `nativeError` / `codexDisabledFeatures`，标准库 context / reflect / time 和既有 apierrors / domain.NativeSession。B 使用文件编辑工具原样消费此文件；涉及该文件逻辑的修改由 R 负责。
+
+调用接口为 `n.OwnedRelayExecution(ctx, exactSession)`。调用方必须持有原 Registry 返回的同一个 `*agents.Native`，并保持原 `Start` 返回的完整 `domain.NativeSession`：ID、NativeID、ProjectID、CLI、Ownership 和 Version。实际 controller map 按原 session ID 查找已经启动的 owned process，再次检查原 native ID；没有进程 / 缺少 ID 或项目身份返回 DeliveryUnknown，external / 错 CLI 返回 ScopeDenied。B 在普通 text.go / bridge 中维护 JobID / OperationID 到原 session、controller 和明确来源的映射，T 在自己的写入范围验证它们。
+
+原进程返回真实 PID、实际 done 退出事实、实际 argv 对固定关闭工具配置的匹配、CLI / 原 session Version。原 argv / 环境 / 原档 / 模型文本 / 凭据不返回。`effective_tool_set` 始终 unknown，argv 配置、只读 sandbox 或 tool_calls 0 不单独证明完整有效工具集合。
+
+R 的 project binding、时间、permission response 和第一次 RPC 摘要通过同包可选 `relayExecutionMetadataProvider` 提供，实现在 R 专用的 `relay_execution_metadata.go`。R 继续检查原项目身份并提供实际时间、通知 writer 参数和第一次错误。B 消费公共文件后，`process_metadata_status=unknown`、权限 unknown、开始 / deadline 为未记录零值、first_protocol_failure 缺省；这些字段保持未记录状态。B 的来源、业务权限和项目身份仍由原调用链核实。
+
+R 新增 `relay_execution_test.go` 是可移植纯拒绝测试，只检查缺原身份、无 controller、external、错 CLI 和 canceled read，没有伪造已持有进程或成功状态。B 的生产消费清单不包含该测试；本轮只在只读 overlay 中编译执行它，T 后续独立测试沿自己的写域。
+
+### 对 B 真实基线的只读编译验证
+
+使用本机 `go help build` 核实的标准 `-overlay`。忽略目录的 `dist/relay-l1/portable-native-b-overlay.json` 将公共文件和纯拒绝测试提供给 B 的编译操作。验证前后 B HEAD 均为上面的 15c738f，工作树 clean。B 命令使用以下本机路径：
+
+```powershell
+$relayEvidenceOverlay = 'C:/Users/DW/orca/workspaces/Astrocyte/works-relay-runtime/dist/relay-l1/portable-native-b-overlay.json'
+```
+
+| 命令 / 工作目录 | 本阶段结果 |
+|---|---|
+| R：`go test -mod=readonly ./internal/adapters/agents -run 'TestRelayExecutionPortable\|TestRelayOwnedExecution\|TestRelayProtocolFirstFailure' -count=1 -v -timeout=90s` | 四项 PASS，无 Skip / helper / fake 状态；日志 `dist/relay-l1/portable-native-r-first.log` |
+| B：`go test -mod=readonly -overlay $relayEvidenceOverlay ./internal/adapters/agents -run TestRelayExecutionPortable -count=1 -v -timeout=90s` | 两项 PASS，B 实际基线编译通过；日志 `dist/relay-l1/portable-native-b-first.log` |
+| B：`go vet -mod=readonly -overlay $relayEvidenceOverlay ./internal/adapters/agents` | EXIT 0 |
+| B：`go build -mod=readonly -overlay $relayEvidenceOverlay -o C:/Users/DW/orca/workspaces/Astrocyte/works-relay-runtime/dist/relay-l1/portable-native-b-server.exe ./cmd/server` | EXIT 0；服务运行未执行 |
+| R：`go test -mod=readonly ./...` | PASS，20 个有测试 package / 9 个无测试 package，既有 native opt-in 未开启；日志 `dist/relay-l1/portable-native-r-full.log` |
+| R：`go vet -mod=readonly ./internal/adapters/agents` 和 `go build -mod=readonly -o dist/relay-l1/portable-native-r-server.exe ./cmd/server` | EXIT 0 |
+| R：`gofmt` / `git diff --check` / `node scripts/check-architecture.mjs` | PASS，29 package 边界 |
+
+单文件依赖验证阶段没有新的 RED。B 已通过编辑工具消费并提交 SOURCE `3384a89aac3be6d5670d756eb2d44263784d0cb8`，产品模块和 B 均已 ACK，R 只读比较确认公共文件内容一致。实际 owned PID / Send / 取消 / 有效工具集合验证仍按各原负责人的真实任务独立执行。
+
+### 安全 checkpoint 与剩余限制
+
+本阶段 SOURCE / 独立 REPORT 发布后，R 曾暂停写消费文件 `internal/adapters/agents/relay_execution.go`；B 原样消费、普通 commit 和明确 ACK 已完成，该文件写入范围已归还 R。B 继续在普通 text / bridge 中实现映射，涉及公共文件逻辑的修改由 R 负责；T 在自己的测试范围工作。
+
+最终 I 通过普通合并 R / B 原 SOURCE 保留作者和 DAG。旧 task 一次模型与逐事件核查、第一次 503 accepted + thread/read -32603、首次 registry 三分钟 FAIL、旧 PID / 工具证据不足按任务要求保留。人工完成 / 释放的 observe 权限与事件 reconciliation 的 reconcile 权限按本报告当前章节执行。最后集成和 ZIP 验收仍由对应负责人完成。
+
+单文件接口、精确 SOURCE 和验证结果已直接交 M-product / B / T / H 与父模块。raw 源 / credentials / 模型输出不进 HTTP、Git、包或 stdout；V4 / schema / engine / mapper / weights / schedule / 17321 保持冻结。实际模型和取消路径验证、H/F 真实操作窗口及最后 ZIP 仍由原负责人和模块继续执行。
+
+## 2026-10-14 默认真实 Relay 场景支持
+
+本阶段 Task `task_6586f574ed0b` / Dispatch `ctx_1210a540a63b`，原分支 `songconmaisaix31-design/works-relay-runtime`；最终 SOURCE `87a54b762aef0c6a175eab1470508e76aa6ace45` 已普通 push。首 SOURCE `6ed9ae1301dc2e91f0d17a335300697fae3e253f`、通知参数修复 `055a57a18c732ffbbc55d49c605f65c655b8edea`、无新增 Skip 的测试返修 `5c37c261ae1f98fbdab6926415712ef4a5181581` 和阶段 REPORT `26925b92a62babce52e96862719eb6f7269bf950` 均保留普通祖先。最终 REPORT 独立普通提交，精确 SHA 经当前 Dispatch 回传。此前 `d6d4da6` / `07449a6` 没有重写历史。客户端为当前 Codex，未覆盖实际模型设置，没有派第四层人员。
+
+H 仍独占 17342 的公开 Git、DB、控制器及服务组装，F 独占 17343 的实际产品 UI / HTTP 操作。本阶段没有 create / confirm / send / stop H/F 的任务，没有另启 CLI / 模型，未读取凭据或私人历史。协调端报告的首注册三分钟 FAIL 和模型调用 0 保持原结论，不重记 `registered_at` / 首 DOM。只运行本机已装 `codex exec --help`、`claude --help`、`pi --help` 的公开选项探测；安装不代表配置、可启动或模型能力通过。
+
+### 可消费的生产组装接口
+
+原 Relay Native 请求没有传入显式寿命，既有 Native 默认进程 180 秒后退出，影响顺序人工操作窗口。新增 `RelayNativeDriverOptions.SessionDeadlineSeconds` 传给同一个 `NativeRequest.Command.DeadlineSeconds`：零保留既有默认，1 到 1800 秒显式配置；负数或超过 1800 在 Launch / Resume 调用 adapter 前作为确定未启动拒绝。没有延迟伪造退出、续租、自动 Resume 或重发。H 在自己的组装里选择明确验证窗口，例如：
+
+```go
+structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{
+    CaptureNativeNotifications: true,
+    SessionDeadlineSeconds: 900,
+})
+```
+
+900 秒只是 H 可显式选用的公开操作窗口示例，未变为默认值或活性窗口。实际可用窗口需以同一进程的 `started_at` / `deadline_at` 和实际退出为准；进程可能提前失败。此选项不是现成环境变量，R 没有修改 config / H 组装；最终 actualserver 参数由 H 交 P / M-release。
+
+H 原 production terminal 组装的 `LaunchPolicy` 为空，EOF_TERMINAL 会明确 unsupported。新增 `agents.RelayPublicEOFTerminalSpec()` 解析已安装 Claude 的直接入口，Windows npm wrapper 复用既有 `installedCommand` 选择实际 native exe 或 `node + cli.js`，不调用 shell、不启动 CLI、不读取 auth / config。固定 argv 为：
+
+```text
+-p --input-format text --output-format stream-json --verbose
+--safe-mode --tools= --disallowedTools mcp__*
+--strict-mcp-config --mcp-config {"mcpServers":{}} --no-chrome
+```
+
+本机公开 help 明确 `--tools` 空集合、safe mode、strict MCP 和 stdin text 的语义。该命令没有验证本机 Claude 鉴权或 paid turn，也不承诺操作系统读取隔离。它使用 spec 名称 `claude`、`drive_mode=terminal`、`input_mode=stdin_eof`，首条手册和任务写入后真实关闭 stdin；不能后续 send / native resume。Claude 自然完成会退出，没有为测试保持假进程，F 必须在新确认后的实际窗口操作并读取真实状态。
+
+`agents.NewRelayPublicEOFTerminalPolicy(exactApprovedPublicRoot)` 返回可交 `RelayTerminalOptions.LaunchPolicy` 的门禁。入口拒绝相对或 redirected 根，每次启动对 `Project.Root` / `Workspace.SourceRoot` 核同一目录文件身份，要求完全相同的已装 argv、terminal EOF 和空 `AllowedTools`；附加 Read / shell / 任意脚本或另一个来源都会拒绝。H 先沿现有 public workspace 组装核该唯一根确在独立 verification 下，再显式组装，不能开放任意用户作品：
+
+```go
+spec, err := agents.RelayPublicEOFTerminalSpec() // 注册保存由 H 独占
+if err != nil { return err }
+policy, err := agents.NewRelayPublicEOFTerminalPolicy(exactApprovedPublicRoot)
+if err != nil { return err }
+terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{LaunchPolicy: policy})
+```
+
+以上是受信组装片段，H 仍负责注册和服务消费；R 不改 registry 起点、已有进程或权限版本，不制造成功状态。
+
+### 工具关闭的本机证据口
+
+新增 `(*agents.Native).OwnedRelayExecution(ctx, exactOwnedSession)`：只核当前 Registry 已持有的 session ID / native ID / project ID / CLI，返回实际 owned PID、开始时间、deadline、真实退出、CLI / version、安全启动策略与禁用 feature 名称。Codex 启动参数必须与本实例固定策略完全一致；通知模式额外核现有 `thread_unload_delay_secs=0` 的 writer 关闭参数。不返回原 argv、环境、工作目录、原档、模型文本或凭据，不发 RPC、不读文件或扫描 history。PID 是本次已持有进程证据，不能据 PID 接管重启前的 controller。
+
+原 `thread/start` / `thread/resume` 响应现读取官方 schema 的 `approvalPolicy` 和 `sandbox.type`；实际明确不符合 `never` / `readOnly` 时立即失败。两项均实际返回符合时内部证据为 `permission_policy=never_read_only`；缺项保持 unknown。已识别字段错型仍沿既有标准 JSON 解码 fast fail，不增加 parser。
+
+`launch_policy=selected_context_tools_disabled_v1` 表示实际 owned 命令使用该固定禁用参数；`effective_tool_set` 始终 unknown。完整有效工具清单仍需 H 只对本次 controller 正选自产来源聚合，不能用 `tool_calls=0`、源码静态 feature 或只读 sandbox 独自证明所有工具关闭。本轮只验证拒绝路径，未将该新证据口声明为已实际执行成功。
+
+首次实际来源错误出现后，新增 `first_protocol_failure` 可选派生字段保留同一进程第一条 RPC method / 数值 protocol_code / 既有白名单 reason / 实际时间。原始 message 不保留，后续失败不覆盖，日志关闭也可由原 owner 的内部证据口核查。错误 reply / success 解码失败、明确 false、reply deadline 或 reply 前进程退出同样给出固定摘要，没有新增重试、fallback、HTTP 或持久证明系统。它不能补回旧二进制没捕获的内容。
+
+旧运行中的二进制没有此新增口，不通过重启新 Registry 反填旧 controller 所有权或新策略。H 对自己的已知 server PID 可读取精确 ParentProcessId 子链，本机保留 CommandLine、输出只含固定禁用项 bool / PID / 时间，再对本次正选 `turn_context` 做安全聚合；不得输出命令全文、全机扫描或重发旧成功补证。R 不代操作 H 当前服务。
+
+B 的旧成功 native ID 只有 ID / model / README mtime / size，不足以正选原档。`Native.get` 只认当前实例内 exact owned session；`ProcessSelectedText` 最后实际 Stop，若已退出且先前没有 capture metadata，`OwnedRelayArchive` 直接 EvidenceMissing，不发新的 thread/read。重启后 map 空保持 DeliveryUnknown，不能从 native ID 建新 ownership / history fallback。该旧证据不足已直接 Handoff B 与 M-product，旧成功 inference 不重复调用。
+
+### F 的每个真实场景前置条件
+
+以下是源码确认的实际生产路径和缺口，未运行的 H / F 默认浏览器场景保持 NOT_RUN。所有写操作沿既有 session / origin、UUID `Idempotency-Key` 和真实 DTO；F 是唯一执行人，H 不与 F 对同 task 双写。每个尺寸 1920 / 1280 的可变动作使用独立真实任务和明确 controller 窗口；同来源 workspace 同时仅一个 active task，需要实际完成退出释放后顺序推进。
+
+| F 场景 / 环境变量片段 | 实际前置条件与动作 | 支持与限制 |
+|---|---|---|
+| `EOF_TERMINAL` | H 消费上述单根 policy / 已装 Claude EOF spec，F 实际确认后立即进入 read / stop 窗口 | EOF 一次性输入、read 收据与真实 stop 已有实现；实际 Claude 配置、启动及自然完成窗口尚未验收 |
+| `EOF_STRUCTURED` | 注册 codex structured + input_mode stdin_eof，实际确认；等首 turn 完成再交 F send | InputMode 只约束 terminal，structured 仍通过官方 turn/start 发送，不伪造 EOF |
+| `CONFLICT_INITIAL` / `CONFLICT_REOPENED` | 保持实际 working A；同来源 ready B 经一次真实 confirm 拒绝，持久 rejected 收据 `view_existing_task:A`；F 只 GET | 已有真实 workspace 互斥与收据持久化，不能手写 ready / working / receipt |
+| `DUPLICATE` | 同来源 A 仍 working，交 F 新 ready C，由 F 唯一一次 confirm 得 409 | task C 保持原意图；HTTP 现有 required_action 导向人工查看 A，不自动重派 |
+| `GENERIC_CONFLICT` | 非互斥 VersionConflict 的 HTTP action 是 `refresh_relay_state`；直接错误 revision 的 confirm 可触发 409 | 正常 UI 使用当前只读 DTO 且旧意图权限变化优先 403，尚无稳定真实 UI 前置触发；不能故意改状态、手改 DB 或伪造响应凑断言 |
+| `WORKING` | 首 confirm 接受后由实际 native / Git activity 进入 working；保留原 controller | model turn complete 不表示 task done；GET / reload 不刷新 LastEventAt，live / unverifiable / exited 保持三值 |
+| `UNKNOWN_SEND` | 新 working structured 任务，F browser offline 阻断 send，保留 sessionStorage 未知输入；恢复网络只 GET 后 F stop | 不制造 native delivery_unknown，不重发 send，不以浏览器 unknown 写服务原生状态；实际退出仍由 StopConfirmed |
+| `COMPLETE_RELEASE` | working，F 人工确认 `working→done`，read，stop 实际退出，再 `done→released` | `completion_confirmed=true` 仅完成阶段；release 必须真实 exited；原 UI 取消确认不会写服务 |
+| `ALTERNATE` / `ALTERNATE_PREVIOUS` | 前任务实际 released；该公开项目显式改 external_model_cli 为另一真实已注册 CLI，创建新 ready，再 F confirm | prepared worktree 的 ID / root / branch / created_at 复用；第二 CLI 配置/启动/tool 禁用尚未核实，不能别名装成第二 Agent；项目设置变更不迁移旧意图 |
+| 用户描述 `EVENT_PUBLICATION`，F 实际变量 `PUBLICATION_ERROR` | 真生产 sink 出错得到 error，之后 F 明确 `/events/reconcile` 并 GET | 持久 pending/error、显式 reconcile 已有；没有获准真实生产失败触发条件，不新增 fake sink、不手写 error、不删 success assertion 或加 skip |
+
+F 固定命名为 `ASTROCYTE_TEST_RELAY_<SCENARIO>_<1920或1280>_TASK_ID`，另有 `ASTROCYTE_TEST_RELAY_PUBLIC_URL`；ALTERNATE_PREVIOUS 同格式，publication 的准确场景名为 PUBLICATION_ERROR。H 交每个真实 task ID 与状态、前任务及开始 / deadline 窗口，F 使用自己的正常浏览器 helper；R 不填测试环境的 task ID，也不制造任务。
+
+既有实际 production 操作保持：`POST /api/v1/relay/intents` 创建 ready；`POST /api/v1/relay/intents/{id}/confirm` 使用当前 permission_level / project_settings_revision / permission_confirmed；任务 `send` / `read` / `stop` / `transition` 与 `/events/reconcile` 由 F 正常产品调用。完成 JSON 为 `{"from":"working","to":"done","completion_confirmed":true}`；退出后的释放为 `{"from":"done","to":"released","completion_confirmed":false}`。GET `/tasks/{id}` / `/receipts` / `/events` 只是查询，没有确认/补绑定/重发。当前 DTO `task.state/condition`、`terminal.drive_mode/liveness/exited_at`、`worktree` 身份、`receipt.status/error.required_action`、`event_publication.status` 足够表达这些状态，本阶段没有改 HTTP / OpenAPI。
+
+### 本阶段验证和交接
+
+| 命令 | 本阶段结果 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/agents -run 'TestRelayNativeDeadline\|TestRelayPublicEOFPolicy\|TestRelayOwnedExecution\|TestRelayProtocolFirstFailure' -count=1 -v -timeout=90s` | 最终四项和真实 PATH 缺入口拒绝子例 PASS，无 Skip；实际已装入口解析 / 目录身份门禁、纯请求拒绝、首错误保留与 raw canary 不泄漏，零 CLI 启动 / 模型调用；日志 `dist/relay-l1/default-policy-protocol-final.log` |
+| `go test -mod=readonly ./...` | 最终 SOURCE PASS，20 个有测试 package / 9 个无测试 package；日志 `dist/relay-l1/default-protocol-full-go-test.log`，未设置 opt-in 的既有真实 native 测试仍 SKIP |
+| `go vet -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/relayworktree` | EXIT 0 |
+| `go build -mod=readonly -o dist/relay-l1/default-protocol-runtime-server.exe ./cmd/server` | 最终 SOURCE EXIT 0，忽略产物，不代 H 当前服务 |
+| `node scripts/check-architecture.mjs` / `gofmt` / `git diff --check` | PASS，29 package 边界 |
+| `git -c http.version=HTTP/1.1 push origin songconmaisaix31-design/works-relay-runtime` / `ls-remote` | SOURCE 普通 push 与精确远端核实 PASS；REPORT 独立普通提交 |
+
+没有新的 Go RED；旧 Native / Intent 第一失败日志全部保留。模块审阅首 SOURCE 发现新增 `t.Skip` 违反本轮要求，最终 SOURCE 已普通追加移除，改为实际缺入口时明确检查 ProviderUnavailable / 无可启动命令，并继续全部拒绝检查；额外 PATH 缺入口子例在已装环境也实际运行，没有 return / helper / 假模式跳过。新增测试没有创建 controller / helper process、合成成功协议或伪 lifecycle，实际 H HTTP / F DOM / 两视口默认 suite / 第二 CLI / publication error / ZIP 验收均没有由上述 Go 通过填绿。
+
+模块于 13:37 / 13:38 UTC 交来首次实际 UI task `0c6522bc-b232-4040-8407-745885644791` 的查询：确认 operation `906dd04e-6956-4539-af2b-694d33f286c0` 返回 503，dispatch receipt 是 accepted 并有 provider_unavailable，随后任务 working / terminal_exited，事件 published。该组合沿 `RelayArchiveObservationFailure` 表示原生操作已经接受、之后来源读取出错，不能解释成首输入未交付或重发许可。标准解码失败是 DeliveryUnknown，与这次 provider_unavailable 不同。H 于 13:49:50 UTC 补核原日志：上海 21:33:19 `method=thread/read` / `protocol_code=-32603` / `reason=thread_rejected`，本次实际 mode archive、notifications 未 arm；安全摘要不含具体内部错误 message，不能推断确切上游根因或模型失败。
+
+H 明确报告原任务没有重发，后来原 observer 获得同一 owned source，当前 source available / 实际 exit；本次原档 15 完整行 / 105564 bytes，15 origin→SQL ID 匹配、HTTP 18 event IDs / 分页 / 权限 / GET 只读核查通过，assistant / task_complete 各 1。H 自产安全证据保留在原工作树忽略目录 `dist/l1-live/current-20261014/initial-actual-*.json` / `committed-public.json`；私有正选指针只在其本机 RelayStore，不输出到 Git / HTTP / 包。snapshot complete 只描述当前范围，SessionComplete、prefix、finalized 和 append-only 仍未确证；tool_calls 0 不证明工具关闭。以上是 H 的现场 Handoff，R 没有读取其 raw 或重演该任务。新 lifetime / first failure / PID 口不反填这个旧 180 秒进程；首 503 保持 RED，根因未确证，不以之后来源读取或本阶段 Go 通过覆盖。H 自查 Foundation / 旧 Projects 端口未组装产生的 GET nil panic 属于 H 自身薄组装返修，待 F 释放旧任务后串行修，不归 R 改跨域文件。
+
+接口和 SOURCE 已直接交 H `ctx_312d983772a9`、F `ctx_5bac511ada08`、B `ctx_7217777c7bf5` 与模块父 `ctx_e6328a370d56`。T `ctx_8674c456f49f` 已收到 NewRegistry / TextProcessor / LocalProjectService 真实入口、配置时效和真正 Observe / StopConfirmed / 取消 unknown 的要求，不复用 H DB 或重发 B 成功任务。P / M-release 只消费 H 最终 actualserver 参数及精确集成 SOURCE，R 不改包、不复制 raw 配置或凭据。V4 / schema / engine / mapper / weights / schedule / 17321 冻结不动，archive append-only 和恢复 raw gap 的限制原样保留。
+
 ## 2026-10-14 同阶段 Native 解码追加返修
 
 最终 SOURCE 更新为 `d6d4da6ac00a196e6bbcf592cfdc0a2a2731dbe6`，同分支普通 push 完成，命令级 HTTP/1.1 `ls-remote` 精确一致。原意图修复 SOURCE `9719e6970927caee3e0b08d4020708e383881880` 与独立 REPORT `392bd81e822148cb2a7cb8f7bd7a83699d0f7d44` 保留普通祖先。本 Dispatch 尚未结算时，模块转交 M-product 的 Native 解码缺口，R 在原写域持续返修；没有启动另一人员或重复真实任务。
