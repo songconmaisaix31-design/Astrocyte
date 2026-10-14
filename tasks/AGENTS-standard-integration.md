@@ -24,6 +24,8 @@
 
 共享 Handoff 已处理：开发与 S1 验证的输出目录由 B 改为本树 `.verification/`，失败原件保留；真实服务需要显式限定资料发现根，由 B 在既有配置与组装范围实现并提供早期 SOURCE 给 F。B 已确认 HTML 和 JavaScript 自写 parser；必要的成熟 parser 依赖三文件交 B 单独持有，其余轨道不得修改。用户既有模型调用与获准项目推断授权继续有效：本轮独立技术验证只可使用当前工作树已跟踪资料或明确公开输入，官方 CLI 自行鉴权，不直接读取凭据或私人会话，不启动正式 V4 runner。
 
+当前规则已更新至 `bc5c6aa04e6c92e98091732903328d20a5ac6788`：真实 Codex 验证对象进一步限定为 Agent 创建的公开 Git 项目，原生文件和命令工具关闭，必须使用真实控制器、SQLite / HTTP 及自产会话文件，每个 event_id 逐条定位；全部轨道已收到重读要求。显式目录发现的真实结果被原 OpenAPI source 枚举拒绝，B 追加独占 `contracts/openapi.yaml` 及相关 examples，仅登记真实 `explicit_directory` 来源类型；F 消费该精确契约后在自身写入范围生成 `web/src/api/schema.d.ts`。不修改认知 Event 六字段、数据库 schema、引擎或权重。
+
 P 的非冻结 Git 输出路径保护仍解析 porcelain。该问题继续由原 P 返修：使用成熟 pygit2 仓库 / worktree API，保留所有关联工作树的输出排除，不以仅检查 `.git` 标记缩减布局覆盖。Python 依赖文件只归 P；`dependencies.lock.json` 登记仍只归 B，双方 Handoff。P 已有 SOURCE `55ca989` / REPORT `c592b6a` 保留，下一次源码和报告追加提交。
 
 Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3ad1dddf079e`。三轨工作树均从 `4ec19cddb24068e09597357b0aabc6ecb9420930` 建立，位于 `C:/Users/DW/orca/workspaces/Astrocyte/`；Git 分支分别为 `standards-backend`、`standards-python`、`standards-frontend`。三次回执均 ready / input_accepted / turnStart observed，没有重复派发。
