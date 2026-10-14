@@ -18,7 +18,7 @@
 - 视频固定 owner V 已接收 extractor.go、extractor_test.go、summarize.go、summarize-media.mjs、importers_test.go 五整文件，B 持续停写。T 测试域保持原已交接范围。
 - 当前 Windows 已配置匿名 loopback 代理实际指向 `127.0.0.1:7890`；经明确授权只读取得实际配置，原 arXiv 官方 API 通过该代理实际 HTTP 200，13717 bytes，证据 `.verification/arxiv-configured-proxy-first.atom.xml`。未修改系统网络、SSL 或 DNS；生产显式代理配置仍待消费 V 精确 SOURCE。
 
-上述定向通过未覆盖当前全包 RED、尚存替代实现、视频真实时间区间、私有附件读取边界及 favorites 分页失败。阶段报告继续保留实际限制，后续原 owner 完成生产返修与完整验证。
+上述定向通过未覆盖当前全包 RED、尚存替代实现及 favorites 最终容量验收。视频真实时间区间及私有附件读取结果分别由 V 和下节实际检查登记，阶段报告继续保留其他限制。
 
 ## 原生视频附件权限与显式代理
 
@@ -35,6 +35,8 @@ SOURCE `cc46b9855775adf70bce74242d08ef84ff4f573b` 已普通 push，包含普通 
 旧 README 实际结果使用原 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 启动当前生产 HTTP，只运行 GET session/progress；结果保持旧 native_id、model 与 evidence，新增模型 turns 0，旧 effectiveToolSet/source completeness 仍 unknown。F 已收到只读 URL 与项目 id，专属服务等待其检查后停止；证据 `.verification/existing-progress-http-first.log`。该服务不接续原 native 会话。
 
 收藏第三页实际仅返回 19 条元数据。上游请求窗口位置与真实观察条数分别保留；初次 100 的预算应按实际返回条数或请求槽位计算，已交根决定，未答保持未决定。源 cursor 可独立纠正为请求窗口推进，不能伪填缺失或降低 100 条成功断言。
+
+收藏 cursor SOURCE `52bd568811cbcdf59540ba18eee5a37c9d32002b` 已普通 push。`go test ./internal/adapters/importers -run TestPublicListingActualWindowCursorWithUnavailableSlot -v -count=1` EXIT 0，实际生产集合列举选出公开 folder `2356677875`，真实 Transport 始终访问上游 HTTP；三次请求位置 0/20/40，各请求 20，实际返回共 59，下一 cursor 为 4。观察包装只记录实际 query，不替代 HTTP 响应；没有把 19 改成 20。证据 `.verification/public-listing-cursor-first.log`，定向 vet EXIT 0，`.verification/public-listing-cursor-vet-first.log`。最终 100 预算仍待根决定，旧替代 HTTP 测试未据此登记真实容量通过。
 
 ## 完成内容
 
