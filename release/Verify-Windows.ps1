@@ -3,7 +3,13 @@
     [string]$Zip,
     [ValidateRange(1, 65535)]
     [int]$Port = 17887,
-    [switch]$RequireCombined
+    [switch]$RequireCombined,
+    [string]$Source = '',
+    [string]$CognitionSource = '',
+    [string]$CognitionHistory = '',
+    [string]$CognitionPublicationRoot = '',
+    [string]$CognitionSafeDir = '',
+    [string]$CognitionSourceSha = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -11,6 +17,7 @@ Set-StrictMode -Version Latest
 Add-Type -AssemblyName System.Net.Http
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repo = Split-Path $PSScriptRoot -Parent
+if ($CognitionSource -ne '') { $RequireCombined = $true }
 $output = Join-Path $repo ('.verification\verify-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 if (Test-Path -LiteralPath $output) { throw 'Verification directory already exists.' }
 New-Item -ItemType Directory -Path $output | Out-Null
@@ -60,9 +67,110 @@ function Request-Release([string]$method, [string]$path, [string]$body = '', [ha
     if ($body -ne '') { $request.Content = [Net.Http.StringContent]::new($body, [Text.Encoding]::UTF8, 'application/json') }
     try {
         $response = $client.SendAsync($request).GetAwaiter().GetResult()
-        try { return @{ status = [int]$response.StatusCode; body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult() } }
+        try {
+            $snapshotAt = ''
+            if ($response.Headers.Contains('X-Snapshot-At')) { $snapshotAt = [string]::Join(',', [string[]]$response.Headers.GetValues('X-Snapshot-At')) }
+            return @{ status = [int]$response.StatusCode; body = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult(); snapshot_at = $snapshotAt }
+        }
         finally { $response.Dispose() }
     } finally { $request.Dispose() }
+}
+function Test-CognitionInput {
+    foreach ($path in @($CognitionSource, $CognitionHistory, $CognitionPublicationRoot, $CognitionSafeDir)) {
+        Assert-Release ([IO.Path]::IsPathRooted($path) -and (Test-Path -LiteralPath $path)) 'explicit actual cognition input exists'
+    }
+    Assert-Release ($Source -match '^[0-9a-f]{40}$' -and $CognitionSourceSha -match '^[0-9a-f]{40}$') 'cognition verification records exact package and Q source commits'
+    Assert-Release ([IO.Path]::GetFileName($Zip).EndsWith('-' + $Source.Substring(0, 12) + '.zip')) 'ZIP name matches explicit package source'
+    Push-Location $repo
+    try {
+        & git merge-base --is-ancestor $CognitionSourceSha $Source
+        Assert-Release ($LASTEXITCODE -eq 0) 'exact Q source is an ancestor of package source'
+    } finally { Pop-Location }
+    $script:cognitionExpected = Get-Content -LiteralPath (Join-Path $CognitionSafeDir 'sql-expected.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $script:cognitionEvents = @(Get-Content -LiteralPath (Join-Path $CognitionSafeDir 'events-six-fields.json') -Raw -Encoding UTF8 | ConvertFrom-Json)
+    $script:cognitionAdmission = Get-Content -LiteralPath (Join-Path $CognitionSafeDir 'admission-safe.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $publication = Get-Content -LiteralPath (Join-Path $CognitionPublicationRoot 'current.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    Assert-Release ($cognitionAdmission.state_phase -eq 'after_sleep' -and $cognitionAdmission.actual_sleep_runs -gt 0) 'actual cognition input is the admitted after-Sleep state'
+    Assert-Release ($publication.snapshot_at -ceq $cognitionExpected.snapshot_at) 'SQL expected values bind to current admitted publication'
+    $expectedHistory = Join-Path $CognitionPublicationRoot ('snapshots\' + $publication.generation + '\history.json')
+    Assert-Release ([IO.Path]::GetFullPath($CognitionHistory) -ieq [IO.Path]::GetFullPath($expectedHistory)) 'explicit actual history belongs to admitted publication'
+    $script:cognitionHistoryExpected = Get-Content -LiteralPath $CognitionHistory -Raw -Encoding UTF8 | ConvertFrom-Json
+    $zone = [TimeZoneInfo]::FindSystemTimeZoneById('China Standard Time')
+    $day = [TimeZoneInfo]::ConvertTime([DateTimeOffset]::UtcNow, $zone).ToString('yyyy-MM-dd')
+    Assert-Release ($cognitionExpected.day -ceq $day) 'daily SQL expected values match actual Shanghai day'
+    Assert-Release (@($cognitionExpected.values).Count -eq 10 -and $cognitionEvents.Count -gt 0 -and $cognitionEvents.Count -eq $cognitionAdmission.six_field_sql_matches) 'actual SQL10 and nonempty six-field source are complete'
+}
+function Test-ActualCognition {
+    $publisher = Join-Path $package 'Publish-WorkbenchSnapshot.ps1'
+    & (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') -NoProfile -ExecutionPolicy Bypass -File $publisher -Source $CognitionSource -History $CognitionHistory
+    Assert-Release ($LASTEXITCODE -eq 0) 'packaged snapshot publishes explicit actual public after-Sleep source'
+    $publication = Get-Content -LiteralPath (Join-Path $package 'data\local\astrocyte-workbench\v0.1\current.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+    $views = @{}
+    foreach ($name in @('health', 'today', 'focus', 'agents', 'topics/evidence', 'filters')) {
+        $view = Request-Release 'GET' ('/api/v1/cognition/' + $name)
+        Assert-Release ($view.status -eq 200 -and $view.snapshot_at -ceq $publication.snapshot_at) ('actual public cognition view ' + $name)
+        $views[$name] = $view.body | ConvertFrom-Json
+    }
+    foreach ($metric in $cognitionExpected.values) {
+        $actual = $null
+        switch ($metric.metric) {
+            'daily_count' {
+                $rows = @($views['today'].daily_counts | Where-Object { $_.day -ceq $metric.day })
+                Assert-Release ($rows.Count -eq 1) 'actual SQL day has one HTTP count'
+                $actual = $rows[0].count
+            }
+            { $_ -in @('attention', 'momentum', 'confidence') } {
+                $rows = @($views['focus'].topics | Where-Object { $_.topic -ceq $metric.topic })
+                Assert-Release ($rows.Count -eq 1) 'actual SQL topic has one HTTP state'
+                $actual = $rows[0].($metric.metric)
+            }
+            { $_ -in @('today', 'days7', 'days30') } {
+                $rows = @($views['agents'].groups | Where-Object { $_.source -ceq $metric.source })
+                Assert-Release ($rows.Count -eq 1) 'actual SQL source has one HTTP group'
+                $actual = $rows[0].($metric.metric)
+            }
+            'total' { $actual = $views['topics/evidence'].total }
+            default { throw 'Unsupported SQL expected metric.' }
+        }
+        Assert-Release ($null -ne $actual -and $actual -is [ValueType] -and $actual -isnot [bool] -and [Math]::Abs([double]$actual - [double]$metric.value) -le 1e-12) ('actual independent SQL value ' + $metric.metric)
+    }
+    Assert-Release ($views['focus'].topics[0].topic -ceq $cognitionAdmission.highest_attention_topic) 'actual highest attention topic retains SQL rank'
+    foreach ($topic in $cognitionAdmission.history_points.PSObject.Properties) {
+        $series = @($views['focus'].series | Where-Object { $_.topic -ceq $topic.Name })
+        Assert-Release ($series.Count -eq 1 -and @($series[0].points).Count -eq $topic.Value) 'actual history retains its known point count'
+        $points = @($cognitionHistoryExpected.($topic.Name))
+        for ($index = 0; $index -lt $points.Count; $index++) {
+            $actual = $series[0].points[$index]
+            $stamp = [DateTimeOffset]::Parse($actual.ts, [Globalization.CultureInfo]::InvariantCulture).ToUnixTimeMilliseconds()
+            if ($stamp -ne $points[$index].ts -or [Math]::Abs([double]$actual.attention - [double]$points[$index].attention) -gt 1e-12) { throw 'Actual history point differs from explicitly admitted history.' }
+        }
+    }
+    $offset = 0
+    for ($page = 1; $offset -lt $cognitionEvents.Count; $page++) {
+        $response = Request-Release 'GET' ('/api/v1/cognition/events?page=' + $page + '&page_size=100')
+        Assert-Release ($response.status -eq 200 -and $response.snapshot_at -ceq $publication.snapshot_at) ('actual six-field page ' + $page)
+        $result = $response.body | ConvertFrom-Json
+        $wanted = [Math]::Min(100, $cognitionEvents.Count - $offset)
+        Assert-Release ($result.total -eq $cognitionEvents.Count -and @($result.events).Count -eq $wanted) ('actual six-field page count ' + $page)
+        foreach ($row in $result.events) {
+            $expected = $cognitionEvents[$offset]
+            $names = ($row.PSObject.Properties.Name | Sort-Object) -join ','
+            if ($names -cne 'event_id,kind,scope,tokens,topic,ts') { throw ('Unexpected public event fields at row ' + $offset) }
+            foreach ($field in @('event_id', 'kind', 'topic', 'tokens', 'scope', 'ts')) {
+                if ($row.$field -cne $expected.$field) { throw ('SQL event field mismatch at row ' + $offset + ' field=' + $field) }
+            }
+            $offset++
+        }
+    }
+    Assert-Release ($offset -eq $cognitionEvents.Count) 'all actual public events match independent SQL six fields'
+    foreach ($size in $cognitionAdmission.page_sizes_verified) {
+        $topic = [Uri]::EscapeDataString($cognitionAdmission.pagination_topic)
+        $response = Request-Release 'GET' ('/api/v1/cognition/topics/evidence?topic=' + $topic + '&page_size=' + $size + '&page=2')
+        Assert-Release ($response.status -eq 200 -and $response.snapshot_at -ceq $publication.snapshot_at) ('actual same-topic pagination ' + $size)
+        $result = $response.body | ConvertFrom-Json
+        Assert-Release ($result.total -eq $cognitionAdmission.pagination_events -and @($result.events).Count -eq $size) ('actual same-topic page preserves SQL count ' + $size)
+    }
+    [IO.File]::WriteAllText((Join-Path $output 'cognition-input-safe.json'), (@{ source_commit = $CognitionSourceSha; admitted_phase = $cognitionAdmission.state_phase; original_snapshot_at = $cognitionExpected.snapshot_at; published_snapshot_at = $publication.snapshot_at; sql_values = 10; six_field_events = $offset } | ConvertTo-Json -Compress))
 }
 function Start-Release([string]$cycle) {
     $info = [Diagnostics.ProcessStartInfo]::new()
@@ -112,6 +220,7 @@ function Stop-Release([string]$cycle) {
     Assert-Release (Test-PortFree) ($cycle + ' owned listener stopped')
 }
 try {
+    if ($CognitionSource -ne '') { Test-CognitionInput }
     Assert-Release (Test-PortFree) 'isolated port initially free'
     $archive = [IO.Compression.ZipFile]::OpenRead([IO.Path]::GetFullPath($Zip))
     $count = 0
@@ -203,6 +312,7 @@ try {
         $unchanged = Request-Release 'GET' '/api/v1/material-domains'
         Assert-Release ($unchanged.status -eq 200 -and $unchanged.body.Contains($created.domain.id)) 'read-only snapshot leaves actual application domain available'
     }
+    if ($CognitionSource -ne '') { Test-ActualCognition }
     Stop-Release 'initial'
     $client.Dispose()
     New-Client
@@ -217,8 +327,17 @@ try {
         $restoredSnapshot = Request-Release 'GET' '/api/v1/cognition/health'
         Assert-Release ($restoredSnapshot.status -eq 200) 'actual published snapshot remains readable after application restart'
     }
+    if ($CognitionSource -ne '') {
+        $restoredFocus = Request-Release 'GET' '/api/v1/cognition/focus'
+        Assert-Release ($restoredFocus.status -eq 200) 'actual public focus survives process restart'
+        $topics = ($restoredFocus.body | ConvertFrom-Json).topics
+        foreach ($metric in @($cognitionExpected.values | Where-Object { $_.metric -in @('attention', 'momentum', 'confidence') })) {
+            $rows = @($topics | Where-Object { $_.topic -ceq $metric.topic })
+            Assert-Release ($rows.Count -eq 1 -and [Math]::Abs([double]$rows[0].($metric.metric) - [double]$metric.value) -le 1e-12) ('actual SQL state survives restart ' + $metric.metric)
+        }
+    }
     Stop-Release 'restart'
-    $summary = @{ result = 'PASS'; scope = $(if ($RequireCombined) { 'combined-package-runtime' } else { 'candidate-package-runtime' }); zip = [IO.Path]::GetFullPath($Zip); output = $output; checks = $checks; limitations = @('No default browser or native controller acceptance is claimed.', 'Optional summarize/media dependencies were not invoked.', 'Restart exercised owned Windows process termination and SQLite recovery.') }
+    $summary = @{ result = 'PASS'; source_commit = $(if ($Source -eq '') { $null } else { $Source }); scope = $(if ($CognitionSource -ne '') { 'candidate-package-cognition-runtime' } elseif ($RequireCombined) { 'combined-package-runtime' } else { 'candidate-package-runtime' }); zip = [IO.Path]::GetFullPath($Zip); output = $output; checks = $checks; limitations = @('No default browser or native controller acceptance is claimed.', 'Optional summarize/media dependencies were not invoked.', 'Restart exercised owned Windows process termination and SQLite recovery.') }
     $summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $output 'result.json') -Encoding UTF8
     Write-Output ('VERIFICATION=' + $output)
 } finally {
