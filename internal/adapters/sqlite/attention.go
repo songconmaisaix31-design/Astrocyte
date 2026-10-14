@@ -13,29 +13,38 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
-// AttentionRepository owns only attention_* tables. BEGIN IMMEDIATE serializes
-// read/modify/write callbacks across independent database connections/processes.
+// Attention 表的读写与独立连接共用 BEGIN IMMEDIATE 事务规则。
 type AttentionRepository struct{ db *DB }
 
 func NewAttentionRepository(db *DB) *AttentionRepository { return &AttentionRepository{db: db} }
 
 var _ app.Repository = (*AttentionRepository)(nil)
 
-func (r *AttentionRepository) WithTx(ctx context.Context, fn func(app.AttentionTx) error) error {
+func (r *AttentionRepository) WithTx(ctx context.Context, fn func(app.AttentionTx) error) (resultErr error) {
+	shared, err := WorkspaceTransaction(ctx, r.db)
+	if err != nil {
+		return err
+	}
+	if shared != nil {
+		return fn(&attentionTx{ctx: ctx, conn: shared})
+	}
 	conn, err := r.db.conn.Conn(ctx)
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() { resultErr = errors.Join(resultErr, conn.Close()) }()
 	if _, err = conn.ExecContext(ctx, "BEGIN IMMEDIATE"); err != nil {
 		return err
 	}
-	defer conn.ExecContext(context.Background(), "ROLLBACK")
 	if err = fn(&attentionTx{ctx: ctx, conn: conn}); err != nil {
-		return err
+		_, rollbackErr := conn.ExecContext(context.WithoutCancel(ctx), "ROLLBACK")
+		return errors.Join(err, rollbackErr)
 	}
-	_, err = conn.ExecContext(ctx, "COMMIT")
-	return err
+	if _, err = conn.ExecContext(ctx, "COMMIT"); err != nil {
+		_, rollbackErr := conn.ExecContext(context.WithoutCancel(ctx), "ROLLBACK")
+		return errors.Join(err, rollbackErr)
+	}
+	return nil
 }
 
 type attentionTx struct {
