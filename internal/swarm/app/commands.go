@@ -24,6 +24,13 @@ type Service struct {
 	experiences ExperienceRecorder
 }
 
+func NewSwarmLedger(repo Repository, grants GrantAuthorizer) (*Service, error) {
+	if repo == nil || grants == nil {
+		return nil, domain.Failure(apierrors.ValidationFailed, "actual storage and Workspace approval service required")
+	}
+	return &Service{repo: repo, grants: grants}, nil
+}
+
 func NewSwarmService(repo Repository, grants GrantAuthorizer, members MemberAuthorizer, evidence ArtifactEvidence, ownership ExecutionOwnership, experiences ExperienceRecorder) (*Service, error) {
 	if repo == nil || grants == nil || members == nil || evidence == nil || ownership == nil || experiences == nil {
 		return nil, domain.Failure(apierrors.ValidationFailed, "swarm requires storage, current authorization, member binding, Git/object evidence and native ownership")
@@ -76,6 +83,34 @@ func resourcesEqual(a, b domain.Resources) bool {
 	return a.Calls == b.Calls && a.Tokens == b.Tokens && a.Currency == b.Currency && ((a.Money == nil && b.Money == nil) || (a.Money != nil && b.Money != nil && *a.Money == *b.Money))
 }
 
+type executionCheckKey struct{}
+type executionCheck struct {
+	operationID string
+	descriptor  ExecutionDescriptor
+	bindingID   string
+}
+
+func (s *Service) execution(ctx context.Context, p domain.Principal, m Member) (ExecutionDescriptor, error) {
+	if s.members == nil {
+		return ExecutionDescriptor{}, domain.Failure(apierrors.UnsupportedCapability, "actual native member binding is not configured")
+	}
+	if err := s.members.CheckMember(ctx, p, m); err != nil {
+		return ExecutionDescriptor{}, err
+	}
+	reader, ok := s.members.(ExecutionDescriptorReader)
+	if !ok {
+		return ExecutionDescriptor{}, domain.Failure(apierrors.UnsupportedCapability, "native binding does not expose its actual execution policy")
+	}
+	d, err := reader.DescribeExecution(ctx, p, m)
+	if err != nil {
+		return d, err
+	}
+	if !d.Known {
+		return d, domain.Failure(apierrors.EvidenceMissing, "actual native tools and external targets remain unknown")
+	}
+	return d, nil
+}
+
 func replay[T any](tx Transaction, p domain.Principal, name string, m domain.Meta, command any) (T, bool, string, error) {
 	var out T
 	d, err := digest(command)
@@ -120,7 +155,15 @@ func (s *Service) authorized(ctx context.Context, p domain.Principal, id, action
 	if p.Kind == "agent" && p.ProjectID != m.Grant.ProjectID {
 		return domain.Failure(apierrors.ScopeDenied, "agent belongs to a different project")
 	}
-	return s.grants.WithAuthorizedGrant(ctx, GrantCheck{GrantID: m.Grant.ID, Epoch: m.Grant.Epoch, ProposalRevision: m.Grant.ProposalRevision, ProjectID: m.Grant.ProjectID, Root: m.Grant.Root, Action: action, Resources: resources, Principal: p}, fn)
+	check := GrantCheck{GrantID: m.Grant.ID, Epoch: m.Grant.Epoch, ProposalRevision: m.Grant.ProposalRevision, ProjectID: m.Grant.ProjectID, Root: m.Grant.Root, Action: action, Resources: resources, Principal: p}
+	if e, ok := ctx.Value(executionCheckKey{}).(executionCheck); ok {
+		check.OperationID = e.operationID
+		check.BindingIDs = []string{e.bindingID}
+		check.ExecutionKnown = e.descriptor.Known
+		check.Tools = e.descriptor.Tools
+		check.ExternalTargets = e.descriptor.ExternalTargets
+	}
+	return s.grants.WithAuthorizedGrant(ctx, check, fn)
 }
 
 func (s *Service) CreateMission(ctx context.Context, p domain.Principal, c CreateMissionCommand) (domain.Mission, error) {
@@ -131,7 +174,7 @@ func (s *Service) CreateMission(ctx context.Context, p domain.Principal, c Creat
 	if err := human(p); err != nil && p.Kind != "consumer" {
 		return out, err
 	}
-	err := s.grants.WithAuthorizedGrant(ctx, GrantCheck{GrantID: c.GrantID, Epoch: c.Epoch, ProposalRevision: c.ProposalRevision, ProjectID: c.ProjectID, Root: c.Root, Action: "start", Principal: p}, func(ctx context.Context, g domain.Grant) error {
+	err := s.grants.WithAuthorizedGrant(ctx, GrantCheck{GrantID: c.GrantID, Epoch: c.Epoch, ProposalRevision: c.ProposalRevision, ProjectID: c.ProjectID, Root: c.Root, Action: "create_mission", Principal: p}, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.Mission](tx, p, "create_mission", c.Meta, c)
 			if err != nil {
@@ -159,6 +202,8 @@ func (s *Service) CreateMission(ctx context.Context, p domain.Principal, c Creat
 				if err = tx.SaveMission(out, 0); err != nil {
 					return err
 				}
+			} else if out.Grant.Root != g.Root || out.Grant.Epoch != g.Epoch || out.Grant.ProposalRevision != g.ProposalRevision {
+				return domain.Failure(apierrors.VersionConflict, "existing mission has a different fixed approval scope")
 			}
 			if c.EventID != "" {
 				if _, err := tx.Consume("swarm.create_mission", c.EventID); err != nil {
@@ -176,7 +221,7 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 	if err := validateMeta(p, c.Meta); err != nil {
 		return out, err
 	}
-	err := s.authorized(ctx, p, c.MissionID, "claim", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
+	err := s.authorized(ctx, p, c.MissionID, "manage_work_items", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.WorkItem](tx, p, "add_work_item", c.Meta, c)
 			if err != nil {
@@ -199,7 +244,7 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 			if m.WorkItemCount >= g.Limits.MaxWorkItems {
 				return domain.Failure(apierrors.BudgetExhausted, "mission work item limit reached")
 			}
-			out = domain.WorkItem{ID: uuid.NewString(), MissionID: m.ID, Version: 1, State: "open", Title: c.Title, Inputs: c.Inputs, Dependencies: c.Dependencies, WritePaths: c.WritePaths}
+			out = domain.WorkItem{ID: uuid.NewString(), MissionID: m.ID, Version: 1, State: "open", Title: c.Title, Inputs: c.Inputs, Dependencies: c.Dependencies, WritePaths: c.WritePaths, RequiredCapabilities: c.RequiredCapabilities}
 			if err = out.Validate(m); err != nil {
 				return err
 			}
@@ -229,6 +274,9 @@ func (s *Service) AddWorkItem(ctx context.Context, p domain.Principal, c AddWork
 
 func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c ClaimCommand) (domain.Lease, error) {
 	var out domain.Lease
+	if s.members == nil || s.evidence == nil || s.ownership == nil {
+		return out, domain.Failure(apierrors.UnsupportedCapability, "real native binding, evidence and ownership are not configured")
+	}
 	if err := validateMeta(p, c.Meta); err != nil {
 		return out, err
 	}
@@ -241,20 +289,52 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 	if err := c.Resources.Validate(); err != nil {
 		return out, err
 	}
-	if c.Resources.Calls < 1 || c.SessionID == "" || c.MemberVersion == "" {
+	if c.Resources.Calls < 1 || c.SessionID == "" || c.MemberVersion == "" || c.BindingID == "" {
 		return out, domain.Failure(apierrors.ValidationFailed, "bound session, member version and a call reservation required")
 	}
 	m, err := s.repo.Load(ctx, c.MissionID)
 	if err != nil {
 		return out, err
 	}
+	replayed := false
+	var descriptor ExecutionDescriptor
+	err = s.authorized(ctx, p, c.MissionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
+		var err error
+		descriptor, err = s.execution(ctx, p, Member{BindingID: c.BindingID, OperationID: c.OperationID, HolderID: p.ID, SessionID: c.SessionID, ProjectID: g.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion})
+		if err != nil {
+			return err
+		}
+		return s.repo.Within(ctx, func(tx Transaction) error {
+			cached, found, _, err := replay[domain.Lease](tx, p, "claim_work_item", c.Meta, c)
+			if err != nil {
+				return err
+			}
+			if !found {
+				return nil
+			}
+			current, err := tx.Lease(c.WorkItemID)
+			if err != nil {
+				return err
+			}
+			if err = current.Check(p.ID, cached.Fence, time.Now().UTC()); err != nil {
+				return err
+			}
+			out = cached
+			replayed = true
+			return nil
+		})
+	})
+	if err != nil || replayed {
+		return out, err
+	}
+	ctx = context.WithValue(ctx, executionCheckKey{}, executionCheck{operationID: c.OperationID, descriptor: descriptor, bindingID: c.BindingID})
 	baseCommit, err := s.evidence.VerifyWorktree(ctx, m.Grant.Root, c.Worktree)
 	if err != nil {
 		return out, err
 	}
-	err = s.authorized(ctx, p, c.MissionID, "claim", c.Resources, func(ctx context.Context, g domain.Grant) error {
+	err = s.authorized(ctx, p, c.MissionID, "claim_work_item", c.Resources, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
-			if err := s.members.CheckMember(ctx, p, Member{HolderID: p.ID, SessionID: c.SessionID, ProjectID: g.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion}); err != nil {
+			if err := s.members.CheckMember(ctx, p, Member{BindingID: c.BindingID, OperationID: c.OperationID, HolderID: p.ID, SessionID: c.SessionID, ProjectID: g.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion}); err != nil {
 				return err
 			}
 			cached, found, d, err := replay[domain.Lease](tx, p, "claim_work_item", c.Meta, c)
@@ -295,6 +375,11 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 			}
 			if w.Attempts >= g.Limits.MaxAttempts {
 				return domain.Failure(apierrors.BudgetExhausted, "work item attempt limit reached")
+			}
+			for _, capability := range w.RequiredCapabilities {
+				if !slices.Contains(descriptor.Capabilities, capability) {
+					return domain.Failure(apierrors.UnsupportedCapability, "bound agent lacks a required capability")
+				}
 			}
 			if !now.Before(c.ExpiresAt) || c.ExpiresAt.After(g.ExpiresAt) || c.ExpiresAt.After(g.Limits.Deadline) {
 				return domain.Failure(apierrors.ValidationFailed, "lease expiry exceeds authorized execution window")
@@ -347,7 +432,7 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 			m.Version++
 			m.State = "running"
 			m.Reserved = reserved
-			out = domain.Lease{WorkItemID: w.ID, MissionID: m.ID, ProjectID: g.ProjectID, HolderID: p.ID, Fence: w.Fence, OperationID: c.OperationID, SessionID: c.SessionID, Worktree: c.Worktree, BaseCommit: baseCommit, WritePaths: w.WritePaths, Reserved: c.Resources, ExpiresAt: c.ExpiresAt}
+			out = domain.Lease{BindingID: c.BindingID, WorkItemID: w.ID, MissionID: m.ID, ProjectID: g.ProjectID, HolderID: p.ID, Fence: w.Fence, OperationID: c.OperationID, SessionID: c.SessionID, MemberVersion: c.MemberVersion, Worktree: c.Worktree, BaseCommit: baseCommit, WritePaths: w.WritePaths, Reserved: c.Resources, ExpiresAt: c.ExpiresAt, PolicyVersion: domain.LocalPolicyVersion}
 			if err = tx.SaveMission(m, oldM); err != nil {
 				return err
 			}
@@ -365,6 +450,9 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 
 func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c SubmitCommand) (domain.Artifact, error) {
 	var out domain.Artifact
+	if s.members == nil || s.evidence == nil || s.ownership == nil {
+		return out, domain.Failure(apierrors.UnsupportedCapability, "real native binding, evidence and ownership are not configured")
+	}
 	if err := validateMeta(p, c.Meta); err != nil {
 		return out, err
 	}
@@ -372,10 +460,34 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 		return out, domain.Failure(apierrors.ScopeDenied, "bound agent identity required")
 	}
 	var lease domain.Lease
-	err := s.repo.Within(ctx, func(tx Transaction) error { var e error; lease, e = tx.Lease(c.WorkItemID); return e })
-	if err != nil {
+	replayed := false
+	var descriptor ExecutionDescriptor
+	err := s.authorized(ctx, p, c.MissionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
+		return s.repo.Within(ctx, func(tx Transaction) error {
+			cached, found, _, err := replay[domain.Artifact](tx, p, "submit_artifact", c.Meta, c)
+			if err != nil {
+				return err
+			}
+			if found {
+				out = cached
+				replayed = true
+				return nil
+			}
+			lease, err = tx.Lease(c.WorkItemID)
+			if err != nil {
+				return err
+			}
+			if lease.MissionID != c.MissionID {
+				return domain.Failure(apierrors.ScopeDenied, "lease belongs to a different mission")
+			}
+			descriptor, err = s.execution(ctx, p, Member{BindingID: lease.BindingID, OperationID: lease.OperationID, HolderID: p.ID, SessionID: lease.SessionID, ProjectID: g.ProjectID, Worktree: lease.Worktree, Version: lease.MemberVersion})
+			return err
+		})
+	})
+	if err != nil || replayed {
 		return out, err
 	}
+	ctx = context.WithValue(ctx, executionCheckKey{}, executionCheck{operationID: lease.OperationID, descriptor: descriptor, bindingID: lease.BindingID})
 	if err = lease.Check(p.ID, c.Fence, time.Now().UTC()); err != nil {
 		return out, err
 	}
@@ -393,6 +505,9 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 	if err != nil {
 		return out, err
 	}
+	if !verification.ApplicableChecksVerified {
+		return out, domain.Failure(apierrors.EvidenceMissing, "the actual project tests and build have not been verified for this commit")
+	}
 	fact, err := s.ownership.Reconcile(ctx, lease.OperationID, lease.SessionID)
 	if err != nil {
 		return out, err
@@ -400,13 +515,13 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 	if fact.OperationID != lease.OperationID || fact.SessionID != lease.SessionID || !fact.StopConfirmed || fact.Outcome == "unknown" {
 		return out, domain.Failure(apierrors.DeliveryUnknown, "original executor must be reconciled before releasing its reservation")
 	}
-	if fact.Usage == nil {
+	if fact.Usage == nil || !fact.CallsKnown || !fact.TokensKnown {
 		return out, domain.Failure(apierrors.EvidenceMissing, "original operation usage has not been reconciled")
 	}
 	if !resourcesEqual(c.Usage, *fact.Usage) {
 		return out, domain.Failure(apierrors.EvidenceMissing, "submitted usage differs from reconciled operation usage")
 	}
-	err = s.authorized(ctx, p, c.MissionID, "submit", c.Usage, func(ctx context.Context, g domain.Grant) error {
+	err = s.authorized(ctx, p, c.MissionID, "submit_artifact", c.Usage, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.Artifact](tx, p, "submit_artifact", c.Meta, c)
 			if err != nil {
@@ -506,7 +621,10 @@ func (s *Service) AcceptArtifact(ctx context.Context, p domain.Principal, c Acce
 	if err := human(p); err != nil {
 		return out, err
 	}
-	err := s.authorized(ctx, p, c.MissionID, "accept", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
+	if s.experiences == nil {
+		return out, domain.Failure(apierrors.UnsupportedCapability, "actual experience candidate pipeline is not configured")
+	}
+	err := s.authorized(ctx, p, c.MissionID, "accept_artifact", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.Artifact](tx, p, "accept_artifact", c.Meta, c)
 			if err != nil {

@@ -30,7 +30,7 @@ func (s *Service) transition(ctx context.Context, p domain.Principal, c Transiti
 	}
 	var leases []domain.Lease
 	fresh := false
-	err := s.repo.Within(ctx, func(tx Transaction) error {
+	err := s.readWithin(ctx, p, c.MissionID, func(_ context.Context, tx Transaction) error {
 		cached, found, d, err := replay[domain.Mission](tx, p, target+"_mission", c.Meta, c)
 		if err != nil {
 			return err
@@ -90,6 +90,12 @@ func (s *Service) transition(ctx context.Context, p domain.Principal, c Transiti
 		return out, err
 	}
 	for _, l := range leases {
+		if s.ownership == nil {
+			if err := s.blockExecutor(ctx, l, "native ownership service unavailable; original reservation retained"); err != nil {
+				return out, err
+			}
+			return out, domain.Failure(apierrors.UnsupportedCapability, "actual native ownership is not configured")
+		}
 		fact, err := s.ownership.Stop(ctx, l.OperationID, l.SessionID)
 		if err != nil {
 			if recordErr := s.blockExecutor(context.WithoutCancel(ctx), l, "native stop failed; reconcile original operation"); recordErr != nil {
@@ -148,7 +154,7 @@ func (s *Service) blockExecutor(ctx context.Context, l domain.Lease, reason stri
 }
 
 func (s *Service) settleExecutor(ctx context.Context, l domain.Lease, fact ExecutionFact, cancelled bool) error {
-	if fact.OperationID != l.OperationID || fact.SessionID != l.SessionID || !fact.StopConfirmed || fact.Outcome == "unknown" || fact.Usage == nil {
+	if fact.OperationID != l.OperationID || fact.SessionID != l.SessionID || !fact.StopConfirmed || fact.Outcome == "unknown" || fact.Usage == nil || !fact.CallsKnown || !fact.TokensKnown {
 		if err := s.blockExecutor(ctx, l, "original execution or usage remains unknown; reservation and write scope retained"); err != nil {
 			return err
 		}
@@ -229,8 +235,17 @@ func (s *Service) RecoverMission(ctx context.Context, p domain.Principal, c Tran
 		return out, domain.Failure(apierrors.ValidationFailed, "recovery reason required")
 	}
 	var leases []domain.Lease
-	err := s.repo.Within(ctx, func(tx Transaction) error {
-		var err error
+	replayed := false
+	err := s.readWithin(ctx, p, c.MissionID, func(_ context.Context, tx Transaction) error {
+		cached, found, _, err := replay[domain.Mission](tx, p, "recover_mission", c.Meta, c)
+		if err != nil {
+			return err
+		}
+		if found {
+			out = cached
+			replayed = true
+			return nil
+		}
 		out, err = tx.Mission(c.MissionID)
 		if err != nil {
 			return err
@@ -249,10 +264,13 @@ func (s *Service) RecoverMission(ctx context.Context, p domain.Principal, c Tran
 		}
 		return nil
 	})
-	if err != nil {
+	if err != nil || replayed {
 		return out, err
 	}
 	for _, l := range leases {
+		if s.ownership == nil {
+			return out, domain.Failure(apierrors.UnsupportedCapability, "actual native ownership is not configured")
+		}
 		fact, err := s.ownership.Reconcile(ctx, l.OperationID, l.SessionID)
 		if err != nil {
 			if recordErr := s.blockExecutor(context.WithoutCancel(ctx), l, "reconciliation failed; original executor remains reserved"); recordErr != nil {
@@ -267,7 +285,7 @@ func (s *Service) RecoverMission(ctx context.Context, p domain.Principal, c Tran
 	if out.State == "cancelled" {
 		return s.repo.Load(ctx, out.ID)
 	}
-	err = s.authorized(ctx, p, c.MissionID, "claim", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
+	err = s.authorized(ctx, p, c.MissionID, "recover_mission", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, d, err := replay[domain.Mission](tx, p, "recover_mission", c.Meta, c)
 			if err != nil {

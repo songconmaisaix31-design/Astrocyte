@@ -8,6 +8,11 @@ import (
 )
 
 type GrantCheck struct {
+	BindingIDs       []string
+	OperationID      string
+	Tools            []string
+	ExternalTargets  []string
+	ExecutionKnown   bool
 	GrantID          string
 	Epoch            int
 	ProposalRevision int
@@ -23,16 +28,53 @@ type GrantAuthorizer interface {
 	WithAuthorizedGrant(context.Context, GrantCheck, func(context.Context, domain.Grant) error) error
 }
 
+type MissionReadAuthorizer interface {
+	WithMissionRead(context.Context, domain.Principal, string, func(context.Context) error) error
+}
+
+type TimelineReader interface {
+	Timeline(context.Context, string) ([]TimelineEvent, error)
+}
+
+type TimelineEvent struct {
+	ID          string    `json:"event_id"`
+	Type        string    `json:"type"`
+	AggregateID string    `json:"aggregate_id"`
+	Version     int       `json:"aggregate_version"`
+	OccurredAt  time.Time `json:"occurred_at"`
+}
+
+type MissionDetail struct {
+	Mission   domain.Mission    `json:"mission"`
+	WorkItems []domain.WorkItem `json:"work_items"`
+	Leases    []domain.Lease    `json:"leases"`
+	Artifacts []domain.Artifact `json:"artifacts"`
+	Timeline  []TimelineEvent   `json:"timeline"`
+}
+
 type Member struct {
-	HolderID  string
-	SessionID string
-	ProjectID string
-	Worktree  string
-	Version   string
+	BindingID   string
+	OperationID string
+	HolderID    string
+	SessionID   string
+	ProjectID   string
+	Worktree    string
+	Version     string
 }
 
 type MemberAuthorizer interface {
 	CheckMember(context.Context, domain.Principal, Member) error
+}
+
+type ExecutionDescriptor struct {
+	Capabilities    []string
+	Known           bool
+	Tools           []string
+	ExternalTargets []string
+}
+
+type ExecutionDescriptorReader interface {
+	DescribeExecution(context.Context, domain.Principal, Member) (ExecutionDescriptor, error)
 }
 
 type ArtifactEvidence interface {
@@ -40,7 +82,10 @@ type ArtifactEvidence interface {
 	VerifyArtifact(context.Context, domain.Lease, domain.Artifact) (ArtifactVerification, error)
 }
 
-type ArtifactVerification struct{ ChecksPassed bool }
+type ArtifactVerification struct {
+	ChecksPassed             bool
+	ApplicableChecksVerified bool
+}
 
 type ExperienceRecorder interface {
 	RecordAccepted(context.Context, domain.Principal, domain.Artifact) (string, error)
@@ -53,6 +98,8 @@ type ExecutionOwnership interface {
 }
 
 type ExecutionFact struct {
+	CallsKnown    bool
+	TokensKnown   bool
 	OperationID   string
 	SessionID     string
 	StopConfirmed bool
@@ -112,15 +159,17 @@ type CreateMissionCommand struct {
 
 type AddWorkItemCommand struct {
 	domain.Meta
-	MissionID    string                 `json:"mission_id"`
-	Title        string                 `json:"title"`
-	Inputs       []domain.SourceVersion `json:"inputs"`
-	Dependencies []string               `json:"dependencies"`
-	WritePaths   []string               `json:"write_paths"`
+	RequiredCapabilities []string               `json:"required_capabilities"`
+	MissionID            string                 `json:"mission_id"`
+	Title                string                 `json:"title"`
+	Inputs               []domain.SourceVersion `json:"inputs"`
+	Dependencies         []string               `json:"dependencies"`
+	WritePaths           []string               `json:"write_paths"`
 }
 
 type ClaimCommand struct {
 	domain.Meta
+	BindingID     string           `json:"binding_id"`
 	MissionID     string           `json:"mission_id"`
 	WorkItemID    string           `json:"work_item_id"`
 	SessionID     string           `json:"session_id"`

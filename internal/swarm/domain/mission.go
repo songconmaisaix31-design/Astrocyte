@@ -250,18 +250,19 @@ type SourceVersion struct {
 }
 
 type WorkItem struct {
-	ID           string          `json:"id"`
-	MissionID    string          `json:"mission_id"`
-	Version      int             `json:"version"`
-	State        string          `json:"state"`
-	Title        string          `json:"title"`
-	Inputs       []SourceVersion `json:"inputs"`
-	Dependencies []string        `json:"dependencies"`
-	WritePaths   []string        `json:"write_paths"`
-	Attempts     int             `json:"attempts"`
-	Fence        int64           `json:"fence"`
-	ArtifactID   string          `json:"artifact_id"`
-	Reason       string          `json:"reason"`
+	RequiredCapabilities []string        `json:"required_capabilities"`
+	ID                   string          `json:"id"`
+	MissionID            string          `json:"mission_id"`
+	Version              int             `json:"version"`
+	State                string          `json:"state"`
+	Title                string          `json:"title"`
+	Inputs               []SourceVersion `json:"inputs"`
+	Dependencies         []string        `json:"dependencies"`
+	WritePaths           []string        `json:"write_paths"`
+	Attempts             int             `json:"attempts"`
+	Fence                int64           `json:"fence"`
+	ArtifactID           string          `json:"artifact_id"`
+	Reason               string          `json:"reason"`
 }
 
 func (w WorkItem) Validate(m Mission) error {
@@ -292,18 +293,21 @@ func (w WorkItem) Validate(m Mission) error {
 }
 
 type Lease struct {
-	WorkItemID  string    `json:"work_item_id"`
-	MissionID   string    `json:"mission_id"`
-	ProjectID   string    `json:"project_id"`
-	HolderID    string    `json:"holder_id"`
-	Fence       int64     `json:"fence"`
-	OperationID string    `json:"operation_id"`
-	SessionID   string    `json:"session_id"`
-	Worktree    string    `json:"worktree"`
-	BaseCommit  string    `json:"base_commit"`
-	WritePaths  []string  `json:"write_paths"`
-	Reserved    Resources `json:"reserved"`
-	ExpiresAt   time.Time `json:"expires_at"`
+	BindingID     string    `json:"binding_id"`
+	PolicyVersion string    `json:"policy_version"`
+	WorkItemID    string    `json:"work_item_id"`
+	MissionID     string    `json:"mission_id"`
+	ProjectID     string    `json:"project_id"`
+	HolderID      string    `json:"holder_id"`
+	Fence         int64     `json:"fence"`
+	OperationID   string    `json:"operation_id"`
+	SessionID     string    `json:"session_id"`
+	MemberVersion string    `json:"member_version"`
+	Worktree      string    `json:"worktree"`
+	BaseCommit    string    `json:"base_commit"`
+	WritePaths    []string  `json:"write_paths"`
+	Reserved      Resources `json:"reserved"`
+	ExpiresAt     time.Time `json:"expires_at"`
 }
 
 func (l Lease) Check(holder string, fence int64, now time.Time) error {

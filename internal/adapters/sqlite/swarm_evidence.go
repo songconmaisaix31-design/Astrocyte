@@ -19,7 +19,14 @@ type SwarmObjectReader interface {
 	Read(context.Context, string) ([]byte, error)
 }
 
-type SwarmGitEvidence struct{ objects SwarmObjectReader }
+type SwarmGitEvidence struct {
+	objects SwarmObjectReader
+	checks  SwarmProjectChecker
+}
+
+type SwarmProjectChecker interface {
+	VerifyProjectChecks(context.Context, domain.Lease, domain.Artifact) (bool, error)
+}
 
 // 此记录对应固定 git diff --check 检查，其他测试使用独立证据引用。
 type SwarmGitChecks struct {
@@ -30,11 +37,21 @@ type SwarmGitChecks struct {
 	DiffCheckOutputRef string `json:"diff_check_output_ref"`
 }
 
-func NewSwarmGitEvidence(objects SwarmObjectReader) (*SwarmGitEvidence, error) {
+func NewSwarmGitEvidence(objects SwarmObjectReader, checks ...SwarmProjectChecker) (*SwarmGitEvidence, error) {
 	if objects == nil {
 		return nil, domain.Failure(apierrors.ValidationFailed, "immutable object store required")
 	}
-	return &SwarmGitEvidence{objects: objects}, nil
+	if len(checks) > 1 {
+		return nil, domain.Failure(apierrors.ValidationFailed, "exactly one actual project check implementation is supported")
+	}
+	e := &SwarmGitEvidence{objects: objects}
+	if len(checks) == 1 {
+		if checks[0] == nil {
+			return nil, domain.Failure(apierrors.ValidationFailed, "project check implementation is nil")
+		}
+		e.checks = checks[0]
+	}
+	return e, nil
 }
 
 func swarmGit(ctx context.Context, root string, args ...string) ([]byte, error) {
@@ -212,6 +229,14 @@ func (e *SwarmGitEvidence) VerifyArtifact(ctx context.Context, l domain.Lease, a
 	}
 	if checks.DiffCheckPassed != result.ChecksPassed || !bytes.Equal(actualCheck, publishedCheck) {
 		return result, domain.Failure(apierrors.EvidenceMissing, "check record differs from the actual fixed Git check")
+	}
+	if e.checks != nil {
+		passed, err := e.checks.VerifyProjectChecks(ctx, l, a)
+		if err != nil {
+			return result, err
+		}
+		result.ChecksPassed = result.ChecksPassed && passed
+		result.ApplicableChecksVerified = true
 	}
 	return result, nil
 }

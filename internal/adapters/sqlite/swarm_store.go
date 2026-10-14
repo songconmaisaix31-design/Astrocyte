@@ -133,6 +133,35 @@ func (r *SwarmRepository) List(ctx context.Context) ([]domain.Mission, error) {
 func (r *SwarmRepository) Load(ctx context.Context, id string) (domain.Mission, error) {
 	return swarmDecode[domain.Mission](r.db.conn.QueryRowContext(ctx, "SELECT data FROM swarm_missions WHERE id=?", id), "mission", id)
 }
+
+func (r *SwarmRepository) Timeline(ctx context.Context, id string) ([]swarmapp.TimelineEvent, error) {
+	var exec SwarmSQLExecutor = r.db.conn
+	if tx, ok := ctx.Value(swarmTransactionKey{}).(*swarmTransaction); ok {
+		if tx.db != r.db {
+			return nil, domain.Failure(apierrors.ScopeDenied, "timeline transaction belongs to another database")
+		}
+		exec = tx.exec
+	}
+	rows, err := exec.QueryContext(ctx, "SELECT event_id,event_type,aggregate_id,aggregate_version,occurred_at FROM foundation_outbox WHERE event_type LIKE 'swarm.%' AND (aggregate_id=? OR aggregate_id IN (SELECT id FROM swarm_work_items WHERE mission_id=?) OR aggregate_id IN (SELECT a.id FROM swarm_artifacts a JOIN swarm_work_items w ON a.work_item_id=w.id WHERE w.mission_id=?)) ORDER BY occurred_at,event_id", id, id, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []swarmapp.TimelineEvent{}
+	for rows.Next() {
+		var e swarmapp.TimelineEvent
+		var at string
+		if err = rows.Scan(&e.ID, &e.Type, &e.AggregateID, &e.Version, &at); err != nil {
+			return nil, err
+		}
+		e.OccurredAt, err = time.Parse(time.RFC3339Nano, at)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, e)
+	}
+	return out, rows.Err()
+}
 func (t *swarmTransaction) Mission(id string) (domain.Mission, error) {
 	return swarmDecode[domain.Mission](t.exec.QueryRowContext(t.ctx, "SELECT data FROM swarm_missions WHERE id=?", id), "mission", id)
 }
