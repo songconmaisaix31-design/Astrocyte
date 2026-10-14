@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -91,4 +93,50 @@ func TestOwnedTextExecutionRejectsUnattestedIdentity(t *testing.T) {
 	if _, err = native.OwnedRelayExecution(ctx, domain.NativeSession{}); !errors.Is(err, context.Canceled) {
 		t.Fatal("actual cancellation was swallowed")
 	}
+}
+
+func TestSelectedTextActualOwnedSourceWithoutModel(t *testing.T) {
+	stateRoot := filepath.Join(t.TempDir(), "native-sessions")
+	registry := NewRegistry(stateRoot)
+	adapter, err := registry.Adapter("codex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	native := adapter.(*Native)
+	publicRoot, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := uuid.NewString()
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	session, err := native.Start(ctx, domain.NativeRequest{SessionID: id, Project: domain.LocalProject{ID: id, Root: publicRoot, Settings: domain.ProjectSettings{Revision: 1}}, Session: domain.NativeSession{ID: id, ProjectID: id}, Command: domain.NativeCommand{DeadlineSeconds: 60}, Packet: domain.ContextPacket{SchemaVersion: 1, ProjectID: id, Mode: "selected_context"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		observation, err := native.Stop(ctx, session)
+		if err != nil || !observation.StopConfirmed {
+			t.Errorf("actual owned source probe stop unconfirmed: %v", err)
+		}
+	})
+	source, err := native.selectedTextSource(ctx, session, domain.TextRequest{ProjectID: id, OperationID: uuid.NewString(), CLI: "codex"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if source.NativeID != session.NativeID || source.Execution.ProcessID <= 0 || source.Execution.LaunchPolicy != "selected_context_tools_disabled_v1" || source.SourceStatus != "owned_metadata_pointer_observed" || source.Execution.EffectiveToolSet != "unknown" {
+		t.Fatal("actual owned source identity or launch observation mismatch")
+	}
+	if err = source.retainOriginal(); err != nil {
+		t.Fatal(err)
+	}
+	if source.SourceSnapshot != "" {
+		t.Fatal("a model-free source probe claimed an original window")
+	}
+	if _, err = os.Stat(source.file); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("actual_native_id=%s owned_pid=%d metadata_pointer_observed=true model_turns=0 effective_tool_set=unknown", session.NativeID, source.Execution.ProcessID)
 }

@@ -368,7 +368,7 @@ func (s *projectProgressService) InferProjectProgress(ctx context.Context, c dom
 	if err != nil {
 		return s.failSettle(ctx, current, op, "failed", err)
 	}
-	result, err := s.processor.ProcessSelectedText(ctx, domain.TextRequest{CLI: before.Settings.ExternalModelCLI, Prompt: progressPrompt(files)})
+	result, err := s.processor.ProcessSelectedText(ctx, domain.TextRequest{ProjectID: before.ID, OperationID: op, CLI: before.Settings.ExternalModelCLI, Prompt: progressPrompt(files)})
 	if err != nil {
 		// A definite prelaunch rejection is "failed"; an unknown native delivery
 		// is "unknown" and must never be automatically replayed.
