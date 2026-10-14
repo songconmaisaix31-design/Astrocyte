@@ -1,4 +1,4 @@
-"""Fixed paired questions and full native-message budget loading."""
+# 固定配对题目，并按预算装载完整原生消息。
 from collections import Counter
 import hashlib
 import json
@@ -131,7 +131,7 @@ def load_native(selection, start, end):
                                 issues.append({'source': entry['source'], 'file': rel, 'line': line_number,
                                                'reason': 'message_content_missing'})
                                 continue
-                            # Only stable native IDs dedup; absent IDs are distinct physical records.
+                            # 只按稳定原生 ID 去重，缺少 ID 的物理记录分别保留。
                             native_id = record.get('uuid') or record.get('payload', {}).get('id')
                             key = (entry['source'], native_id) if native_id else (entry['source'], str(path), line_number)
                             if key in seen:

@@ -1,10 +1,4 @@
-"""Export complete production MCP evidence; original SQLite and raw stay local.
-
-Run from the checkout. All subprocess output, original payloads and audit
-diagnostics are captured in a fresh directory outside every worktree. Markdown
-is published only after projection, traceback, immutability and raw audits pass.
-This reads a historical replay, never runs Sleep or creates a signal.
-"""
+# 只读历史回放；派生证据通过审计后导出，原始资料留在本地。
 from __future__ import annotations
 
 import argparse
@@ -85,7 +79,7 @@ def json_strings(value, keys=False, nested=False):
         if nested:
             try:
                 decoded = json.loads(value)
-            except (ValueError, RecursionError):
+            except json.JSONDecodeError:
                 return
             if not isinstance(decoded, str) or decoded != value:
                 yield from json_strings(decoded, keys, nested)
@@ -105,8 +99,7 @@ def derived_event(row):
 
 
 def raw_unique(raw, derived):
-    # Same conservative UTF-8 byte threshold and per-event exact six-scalar
-    # subtraction as the original v2.1 Go audit. No substring/schema exceptions.
+    # 使用 v2.1 Go 审计的 UTF-8 字节阈值，逐事件扣除六个派生标量。
     allowed = {str(value) for value in derived.values() if value is not None}
     return {value for value in json_strings(json.loads(raw))
             if len(value.encode("utf-8")) >= 8 and value not in allowed}
@@ -118,9 +111,8 @@ def audit_raw(rows, responses, markdowns):
         targets.append(json.dumps(response, ensure_ascii=False, separators=(",", ":")))
         targets.extend(json_strings(response, keys=True, nested=True))
     targets.extend(markdowns)
-    # Use literal substring search, including complete wire bytes and decoded
-    # keys/strings. The joined prefilter never changes the per-target rule.
-    # Collision records contain only numeric row indexes.
+    # 对完整传输字节、解码键和值执行字面子串检查，合并预筛保留逐目标规则。
+    # 冲突记录只包含数字行号。
     all_values = set()
     distinct_raw = set()
     per_event = 0
@@ -364,8 +356,7 @@ def export(args):
         summary["status"] = "PASS"
     except Exception as error:
         summary["error_type"] = type(error).__name__
-        # Exceptions from external libraries can contain original payloads.
-        # Fixed AuditError messages are the only safe diagnostic text.
+        # 外部库异常可能包含原始资料，只有固定 AuditError 文本可以公开。
         summary["error"] = str(error) if isinstance(error, AuditError) else "Failure details suppressed; local artifacts retained"
     finally:
         summary["original_logical_unchanged"] = database_snapshot(original) == original_before

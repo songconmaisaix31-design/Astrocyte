@@ -1,4 +1,4 @@
-"""Synthetic exporter regressions; actual replay acceptance is a separate run."""
+# 纯函数及自有 SQLite 文件回归；正式回放验收单独记录。
 import copy
 import importlib.util
 import json
@@ -9,6 +9,7 @@ import unittest
 
 
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts/evidence/export_mcp.py"
+(SCRIPT.parents[2] / ".verification").mkdir(exist_ok=True)
 SPEC = importlib.util.spec_from_file_location("evidence_export", SCRIPT)
 exporter = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(exporter)
@@ -34,6 +35,10 @@ def fixture():
 
 
 class RawAuditTests(unittest.TestCase):
+    def test_nested_json_resource_error_fails_audit(self):
+        with self.assertRaises(RecursionError):
+            list(exporter.json_strings('[' * 1100 + '0' + ']' * 1100, nested=True))
+
     def test_exact_six_derived_scalars_only(self):
         raw = json.dumps({"body": "prefix-fixture-scope-suffix", "scope": "fixture-scope", "short": "1234567",
                           "number": 123456789, "boolean": True, "shared": "PRIVATE_DIFFERENT_81"}).encode()
@@ -171,7 +176,7 @@ class ExportTests(unittest.TestCase):
         self.assertIn("原库 query_only 只读节点值；不是 MCP 返回", markdown)
 
     def test_snapshot_reads_without_changes_and_detects_boost_history(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(dir=SCRIPT.parents[2] / ".verification") as directory:
             path = Path(directory) / "state.sqlite"
             with exporter.closing(sqlite3.connect(path)) as connection:
                 connection.execute("CREATE TABLE nodes(id INTEGER, attention REAL, history TEXT, boost REAL)")

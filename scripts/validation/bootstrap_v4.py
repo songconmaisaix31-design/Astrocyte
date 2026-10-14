@@ -1,4 +1,4 @@
-"""One-time SQLite backup only: no model math or production-table writes."""
+# 使用 SQLite backup 创建一次性只读来源备份。
 import argparse
 from contextlib import closing
 import hashlib
@@ -19,8 +19,7 @@ def backup(source, destination, expected_sha=None):
             before = hashlib.file_digest(handle, "sha256").hexdigest()
         if before != expected_sha:
             raise ValueError("Frozen source checksum mismatch")
-    # ro prohibits database changes, including journal mode changes. Backup
-    # consumes the SQLite snapshot rather than copying possibly stale pages.
+    # mode=ro 禁止修改数据库及日志模式，backup 使用 SQLite 一致性快照。
     with closing(sqlite3.connect(source.as_uri() + "?mode=ro", uri=True)) as reader:
         reader.execute("PRAGMA query_only=ON")
         with closing(sqlite3.connect(destination)) as writer:
@@ -49,7 +48,7 @@ def main():
     if out.name != "state.sqlite" or out.parent.parent != ROOT or out.exists() or not unredirected(out) or not unredirected(SOURCE):
         raise ValueError("Require new bounded live state and unredirected frozen source")
     out.parent.mkdir(exist_ok=False)
-    # Exclusive reservation survives a failed backup; do not silently retry.
+    # 备份失败后保留独占预留文件，避免自动重试。
     with out.open("xb"):
         pass
     backup(SOURCE, out, SOURCE_SHA)

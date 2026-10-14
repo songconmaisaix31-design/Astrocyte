@@ -1,4 +1,4 @@
-"""V4 activated layered A projection. Views only: no engine formulas or writes."""
+# V4 分层 A 只读投影。
 from collections import Counter
 from datetime import datetime
 from decimal import Decimal
@@ -7,7 +7,7 @@ import sys
 
 from local_store import REPO, ZONE, readonly_db
 
-# Reuse the released W0 typed boundary/traceback/raw audit; never change its owner.
+# 复用已发布 W0 的类型边界、来源追溯和原始资料审计。
 sys.path.insert(0, str(REPO / 'scripts/evidence'))
 _bytecode_setting = sys.dont_write_bytecode
 try:
@@ -56,7 +56,7 @@ def verified_material(memory, db):
         conn.row_factory = __import__('sqlite3').Row
         node_rows = {r['topic']: dict(r) for r in conn.execute('SELECT * FROM attention_engine_nodes')}
         event_rows = {r['id']: dict(r) for r in conn.execute('SELECT * FROM attention_engine_events ORDER BY ts,id')}
-        # Existing strict W0 audit verifies every evidence/header/related field against stored history.
+        # W0 严格审计逐字段核对 evidence、header、related 与已存历史。
         validate_explanation(memory['astrocyte.explain_focus'], topic, node_rows, event_rows)
         expected_state = [{'topic': r['topic'], 'attention': r['attention'], 'momentum': r['momentum']}
                           for r in conn.execute("SELECT topic,attention,momentum FROM attention_engine_nodes WHERE lifecycle<>'cold' ORDER BY attention DESC,topic")]
@@ -69,7 +69,7 @@ def verified_material(memory, db):
         direct_ids = [r[0] for r in conn.execute('SELECT s.event_id FROM attention_engine_signals s WHERE s.topic=? ORDER BY s.ts,s.event_id,s.class', (topic,))]
         if direct != material['kind_day_aggregate'] or Counter(direct_ids) != Counter(material['event_id_references']):
             raise ValueError('kind-day SQL aggregate or complete event references differ')
-        # Inspect raw strictly inside the process; only aggregate audit numbers leave this function.
+        # 原始资料只在进程内检查，函数只返回聚合审计数字。
         raw_audit = audit_raw(list(event_rows.values()), [material], [])
         if raw_audit['violations']:
             raise ValueError('layered A raw audit failed')

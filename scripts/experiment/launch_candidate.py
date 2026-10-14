@@ -1,4 +1,4 @@
-"""Launch the downloaded local candidate, with explicit public runtime parameters."""
+# 使用明确的公开运行参数启动已下载的本地候选模型。
 import argparse
 import json
 from pathlib import Path

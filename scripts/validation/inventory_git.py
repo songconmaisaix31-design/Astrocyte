@@ -1,4 +1,4 @@
-"""Read only the two authorized named heads; keep raw git subjects local."""
+# 只读取两个已授权仓库的指定 HEAD，原始 Git subject 留在本地。
 import argparse
 import base64
 from collections import Counter
@@ -47,7 +47,7 @@ def main():
             days[datetime.fromtimestamp(ts / 1000, zone).date().isoformat()] += 1
             if commit not in all_ids:
                 all_ids.add(commit)
-                records.append({'project': str(root), 'git_line_base64': base64.b64encode(line).decode('ascii'), 'record': {'commit': commit, 'ts': ts, 'subject': subject.decode('utf-8', errors='replace')}})
+                records.append({'project': str(root), 'git_line_base64': base64.b64encode(line).decode('ascii'), 'record': {'commit': commit, 'ts': ts, 'subject': subject.decode('utf-8')}})
         inventory[label] = {'branch': branch, 'head': head, 'unique_commits': len(ids), 'days': dict(sorted(days.items()))}
     with (out / 'git-log-local.jsonl').open('x', encoding='utf-8') as handle:
         for row in sorted(records, key=lambda r: (r['record']['ts'], r['record']['commit'])):

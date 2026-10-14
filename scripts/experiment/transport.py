@@ -1,4 +1,4 @@
-"""Local inference only; actual MCP subprocess, no fixture fallback."""
+# 本地推理及真实 MCP 子进程传输。
 import ipaddress
 import json
 from pathlib import Path

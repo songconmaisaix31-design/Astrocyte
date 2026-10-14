@@ -1,4 +1,4 @@
-"""Inventory and freeze a kind-blind sample; never emit native payloads."""
+# 盘点并冻结不按 kind 筛选的样本，输出只包含安全统计。
 import argparse
 import base64
 from collections import Counter
@@ -29,7 +29,7 @@ def timestamp(record):
         try:
             return int(datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp() * 1000)
         except ValueError:
-            pass
+            raise ValueError("Native timestamp is invalid") from None
     return None
 
 
@@ -66,15 +66,18 @@ def inventory(root, source):
     sessions = {}
     if not root.is_dir() or not unredirected(root):
         counts["root_authorization_rejected"] += 1
-        return counts, layouts, kinds, days, files, rows
+        raise ValueError("Authorized native root unavailable or redirected")
     counts["authorized_roots"] += 1
-    # os.walk does not follow directory links; reject junctions explicitly too.
-    for parent, dirs, names in os.walk(root, followlinks=False):
+    # os.walk 禁止跟随目录链接，junction 也必须拒绝。
+    def onerror(error):
+        raise OSError("Native directory read failed") from None
+    for parent, dirs, names in os.walk(root, followlinks=False, onerror=onerror):
         safe = []
         for name in sorted(dirs):
             child = Path(parent) / name
             if child.is_symlink() or os.path.isjunction(child):
                 counts["redirected_directories_rejected"] += 1
+                raise ValueError("Native directory is redirected")
             else:
                 safe.append(name)
         dirs[:] = safe
@@ -91,7 +94,7 @@ def inventory(root, source):
         layouts[layout + "_files"] += 1
         if not unredirected(path) or not path.is_file():
             counts["file_authorization_rejected"] += 1
-            continue
+            raise ValueError("Native file unavailable or redirected")
         counts["readable_files"] += 1
         counts["available_bytes"] += path.stat().st_size
         session, project = "", ""
@@ -105,10 +108,10 @@ def inventory(root, source):
                         record = json.loads(raw)
                     except (ValueError, UnicodeDecodeError):
                         counts["parse_error_all"] += 1
-                        continue
+                        raise ValueError("Native source contains invalid JSON") from None
                     if not isinstance(record, dict):
                         counts["non_object_all"] += 1
-                        continue
+                        raise ValueError("Native source record is not an object")
                     counts["parsed_objects_all"] += 1
                     payload = record.get("payload")
                     payload = payload if isinstance(payload, dict) else {}
@@ -138,7 +141,7 @@ def inventory(root, source):
                     if key not in sessions:
                         sessions[key] = len(sessions)
                     rows.append((ts, file_index, line, sessions[key], project, bool(session and project)))
-                    # Only closed native schema tags can enter aggregate output.
+                    # 聚合输出只允许固定集合中的原生类型标记。
                     kind = record.get("type")
                     if kind not in {"session_meta", "turn_context", "response_item", "event_msg", "assistant", "user", "system", "progress", "file-history-snapshot", "queue-operation", "summary"}:
                         kind = "other"
@@ -147,6 +150,7 @@ def inventory(root, source):
                     days[day] += 1
         except OSError:
             counts["read_error_files"] += 1
+            raise OSError("Native file read failed") from None
         counts["header_complete_files" if seen_header else "header_missing_files"] += 1
         counts["window_files"] += int(window_file)
     counts["jsonl_files"] = len(files)
@@ -206,6 +210,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as error:
-        # Native values and paths must not leak through exception text.
+        # 异常文本不能泄露原生资料及路径。
         print("Diagnostic failed: " + type(error).__name__, file=sys.stderr)
         sys.exit(1)

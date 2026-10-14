@@ -1,4 +1,4 @@
-"""Freeze all structural tool units plus an independent random negative sample."""
+# 冻结全部结构化工具记录及独立随机负样本。
 import argparse
 import base64
 from collections import Counter
@@ -40,6 +40,7 @@ def enumerate_files(root, counts):
     files = []
     def onerror(error):
         counts['directory_read_errors'] += 1
+        raise OSError('Native directory read failed') from None
     for parent, dirs, names in os.walk(root, followlinks=False, onerror=onerror):
         safe = []
         for name in sorted(dirs):
@@ -47,6 +48,7 @@ def enumerate_files(root, counts):
                 safe.append(name)
             else:
                 counts['redirected_dirs'] += 1
+                raise ValueError('Native directory is redirected')
         dirs[:] = safe
         files.extend(Path(parent) / name for name in sorted(names) if name.endswith('.jsonl'))
     return sorted(files, key=lambda p: str(p.relative_to(root)).casefold())
@@ -65,22 +67,24 @@ def reservoir_add(reservoir, envelope, seen, rng, size=200):
             reservoir[position] = envelope
 
 
-def inventory(out):
+def inventory(out, roots):
+    if set(roots) != {'claude_code', 'codex'}:
+        raise ValueError('Both native source roots required')
     write_json(out / 'population-policy.json', POLICY)
     rng = random.Random(POLICY['negative_seed'])
     reservoir, negatives_seen, all_counts = [], 0, {}
     seen = set()
     manifest = []
     with (out / 'tool-records-local.jsonl').open('xb') as frozen:
-        for source, relative in [('claude_code', '.claude/projects'), ('codex', '.codex/sessions')]:
+        for source in ('claude_code', 'codex'):
             counts, shapes = Counter(), Counter()
-            root = Path.home() / relative
+            root = Path(roots[source])
             files = enumerate_files(root, counts)
             counts['files'] = len(files)
             for index, path in enumerate(files):
                 if not unredirected(path):
                     counts['file_redirect_rejected'] += 1
-                    continue
+                    raise ValueError('Native file is redirected')
                 session, scope = '', ''
                 association_bad = False
                 try:
@@ -91,10 +95,10 @@ def inventory(out):
                                 record = json.loads(raw)
                             except (ValueError, UnicodeDecodeError):
                                 counts['parse_errors'] += 1
-                                continue
+                                raise ValueError('Native source contains invalid JSON') from None
                             if not isinstance(record, dict):
                                 counts['non_object'] += 1
-                                continue
+                                raise ValueError('Native source record is not an object')
                             payload = record.get('payload')
                             payload = payload if isinstance(payload, dict) else {}
                             if source == 'codex' and record.get('type') == 'session_meta':
@@ -147,6 +151,7 @@ def inventory(out):
                                 reservoir_add(reservoir, envelope, negatives_seen, rng, POLICY['negative_count'])
                 except OSError:
                     counts['file_read_errors'] += 1
+                    raise OSError('Native file read failed') from None
             all_counts[source] = {'counts': dict(counts), 'shapes': dict(shapes)}
     reservoir.sort(key=lambda row: (row['source'], row['file_index'], row['line']))
     if len(reservoir) != 200:
@@ -161,7 +166,7 @@ def inventory(out):
     all_counts['non_tool_population'] = negatives_seen
     all_counts['negative_sample'] = len(reservoir)
     write_json(out / 'inventory.json', all_counts)
-    print(json.dumps(all_counts, sort_keys=True))
+    return all_counts
 
 
 if __name__ == '__main__':
@@ -174,7 +179,8 @@ if __name__ == '__main__':
         if not out.is_relative_to(allowed) or not unredirected(out):
             raise ValueError('Unauthorized evidence output')
         out.mkdir(parents=True, exist_ok=True)
-        inventory(out)
+        result = inventory(out, {'claude_code': Path.home() / '.claude/projects', 'codex': Path.home() / '.codex/sessions'})
+        print(json.dumps(result, sort_keys=True))
     except Exception as error:
         print('Population inventory failed: ' + type(error).__name__, file=sys.stderr)
         sys.exit(1)

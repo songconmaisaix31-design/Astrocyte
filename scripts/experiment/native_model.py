@@ -1,8 +1,4 @@
-"""Released isolated native Codex text processor, explicit V4 route boundary.
-
-No credential reads, tool execution, child agents, automatic replay or private
-egress without a scoped user authorization record. Public probe is separate.
-"""
+# 已发布的隔离原生 Codex 文本处理入口，按明确的 V4 授权范围运行。
 import json
 import os
 from pathlib import Path
@@ -224,7 +220,7 @@ def process(messages, out, context_tokens, schema, private=True, authorization=N
         if context_file.read_text(encoding='utf-8') != initial:
             raise ValueError('native initial context file differs from full input')
         initial_bytes = len(initial.encode('utf-8'))
-    # Archive the exact subprocess input, separately from the original packet.
+    # 独立封存子进程的准确输入字节。
     with (out / 'stdin-local.txt').open('xb') as file:
         file.write(prompt.encode('utf-8'))
     write_new(out / 'input-local.json', {'messages': messages, 'utf8_bytes': len(prompt.encode('utf-8'))})
@@ -247,7 +243,7 @@ def process(messages, out, context_tokens, schema, private=True, authorization=N
         raise
     records = queue.Queue()
     def read(channel, stream):
-        # Real pipe bytes are consumed as they arrive, not buffered until complete lines.
+        # 管道字节到达时立即读取。
         while True:
             chunk = os.read(stream.fileno(), 4096)
             if not chunk:
@@ -288,7 +284,7 @@ def process(messages, out, context_tokens, schema, private=True, authorization=N
                 files[channel].write(chunk)
                 files[channel].flush()
                 if first is None:
-                    first = elapsed  # transport/process bytes, not model tokens
+                    first = elapsed  # 此处计量传输及进程字节。
                 if channel == 'stdout':
                     buffers[channel] += chunk
                     while b'\n' in buffers[channel]:

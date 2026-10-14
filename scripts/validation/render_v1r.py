@@ -1,4 +1,4 @@
-"""Standalone three-topic chart and safe human tables; never open source raw."""
+# 导出三主题图表和安全人工检查表，不读取原始来源。
 import argparse
 from datetime import datetime, timedelta, timezone
 import json
@@ -23,8 +23,7 @@ def render(run):
     fig, axis = plt.subplots(figsize=(11, 4.5), layout="constrained")
     daily = {}
     for topic, color in zip(topics, colors):
-        # Every actual event point plus daily decay, never interpolation into
-        # invented events. Daily-only data is also exported for simpler review.
+        # 导出实际事件点及每日衰减点，另外导出每日序列以便检查。
         points = series[topic]
         timestamps = [datetime.fromtimestamp(p["ts"] / 1000, zone) for p in points]
         axis.plot(timestamps, [p["attention"] for p in points], color=color, label=names[topic], linewidth=1.4)

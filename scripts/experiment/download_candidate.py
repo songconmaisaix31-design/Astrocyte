@@ -1,4 +1,4 @@
-"""Public pinned model/runtime downloads only; no credential access or private payload I/O."""
+# 只下载固定版本的公开模型和运行环境。
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json

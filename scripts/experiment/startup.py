@@ -1,4 +1,4 @@
-"""Manual V4 startup checks; historical material never becomes day0 answers."""
+# 手动检查 V4 启动条件，历史资料保持历史状态。
 import hashlib
 import json
 
@@ -14,8 +14,7 @@ SCHEMA = ANSWER_SCHEMA
 
 
 def validate_reason_answer(decoded):
-    # Registered explanation:... permits prose or a structured explanation.
-    # Keep the returned object unchanged; neither normalize nor regenerate it.
+    # 已登记的 explanation 允许文本或结构化说明，返回对象保持原样。
     if not isinstance(decoded, dict) or not isinstance(decoded.get('explanation'), (str, dict)) or not decoded['explanation'] or not all(isinstance(decoded.get(k), list) for k in ('evidence_event_ids', 'unknowns')):
         raise ValueError('full B reason answer schema differs')
 

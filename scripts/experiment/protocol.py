@@ -1,4 +1,4 @@
-"""Only the requested full-protocol SHA lock; no experiment scheduler or manifests."""
+# 按用户要求锁定完整协议 SHA。
 from datetime import datetime
 import hashlib
 import json
@@ -49,7 +49,7 @@ def lock_protocol(protocol, output, route, reviewed, root):
             raise ValueError('UNLOCKED: actual full input transport/shared byte route differs')
         if not budget.get('actual_identity_verified') or not route.get('full_population_usage_verified') or not route.get('native_request_input_complete_verified') or type(budget.get('input_utf8_bytes_limit')) is not int:
             raise ValueError('UNLOCKED: actual V4 identity/usage/output/UTF8 budget acceptance pending')
-    # W2 prepares this tool. Only root invokes after integration and actual route acceptance.
+    # W2 准备工具，只有主控在集成及真实路由验收后调用。
     if not reviewed or route.get('status') != 'ACCEPTED' or not budget.get('identity'):
         raise ValueError('protocol remains UNLOCKED: route/root review pending')
     required = ('model', 'context_tokens', 'model_path', 'chat_template', 'endpoint')

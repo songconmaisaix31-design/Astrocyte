@@ -1,4 +1,4 @@
-"""Private JSONL evidence and read-only event projection. No engine implementation."""
+# 私人 JSONL 证据存储及只读事件投影。
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 import json
@@ -45,7 +45,7 @@ def write_new(path, value, root=PRIVATE_ROOT):
 def append_row(path, row, root=PRIVATE_ROOT):
     p = private_path(path, root)
     p.parent.mkdir(parents=True, exist_ok=True)
-    # Single W2 owner; fsync before reporting success. No overwrite/retry orchestration.
+    # W2 独占写入，报告成功前执行 fsync。
     with p.open('a', encoding='utf-8', newline='\n') as f:
         f.write(json.dumps(row, ensure_ascii=False, separators=(',', ':')) + '\n')
         f.flush()
@@ -70,7 +70,7 @@ def readonly_db(path):
     conn = sqlite3.connect(p.as_uri() + '?mode=ro', uri=True)
     try:
         conn.execute('PRAGMA query_only=ON')
-        conn.execute('BEGIN')  # coherent snapshot; raw/data/observation never selected
+        conn.execute('BEGIN')  # 使用一致性快照，不选择 raw、data、observation。
         yield conn
     finally:
         conn.rollback()

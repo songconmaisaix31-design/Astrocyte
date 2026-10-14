@@ -1,4 +1,4 @@
-"""Manual, one-day execution; append-only local receipts, never auto-retries."""
+# 手动执行单日流程，追加本地回执，禁止自动重试。
 from datetime import datetime, timedelta
 from contextlib import closing
 import json
@@ -26,7 +26,7 @@ def snapshot(source, target, root=PRIVATE_ROOT):
     dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open('xb'):
         pass
-    # Native SQLite backup from read-only handle, not raw copy of possible WAL DB.
+    # 从只读连接使用 SQLite backup 获取一致性数据库。
     with readonly_db(source) as src, closing(sqlite3.connect(dest)) as out:
         src.backup(out)
     return dest
@@ -55,7 +55,7 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
     start_day = datetime.fromisoformat(locked['day0']).date()
     chosen = datetime.fromisoformat(day).date()
     now = datetime.now(ZONE)
-    # Previous complete local calendar day only; do not backfill missed prospective days.
+    # 只处理本地上一个完整自然日，不补填漏掉的实验日。
     if chosen != now.date() - timedelta(days=1) or not 0 <= (chosen - start_day).days < 7:
         raise ValueError('only yesterday inside locked seven-day window is eligible')
     selected_coverage = [r for r in coverage if r['day'] == day]
@@ -67,7 +67,7 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
     if daily.get('snapshot_file') != 'day-state.sqlite' or Path(db).name != 'day-state.sqlite':
         raise ValueError('immutable production day-end snapshot required')
     out = private_path(out, root)
-    out.mkdir(parents=True, exist_ok=False)  # unknown execution requires reconciliation, no retry
+    out.mkdir(parents=True, exist_ok=False)  # 未知执行须核查，不重试。
     append_row(out / 'receipts.jsonl', {'day': day, 'status': 'STARTED', 'evidence': 'prospective',
                                       'protocol_sha256': locked['protocol_sha256'], 'day0': locked['day0'], 'started_at': now.isoformat()}, root)
     try:
@@ -93,7 +93,7 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
                                           'native_messages': len(native), 'actual_events': len(actual)}, root)
         for q in qs:
             answers = {}
-            # Fixed Latin rotation balances execution position over questions/days, same model/seed/question.
+            # 固定 Latin 轮换平衡各题及各日执行位置，模型、seed、题目保持一致。
             index = int(q['question_id'][-1]) - 1 + (chosen - start_day).days
             order = 'ABC'[index % 3:] + 'ABC'[:index % 3]
             for arm in order:
@@ -131,13 +131,13 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
                     try:
                         info['all_input_utf8_bytes'] = (context_bytes(prompt, budget['input_transport']) if budget.get('input_transport') in ('model_instructions_file', 'model_context_split') else input_bytes(prompt)) if isinstance(client, NativeCodexModel) else info['prompt_utf8_bytes']
                     except ValueError:
-                        # Oversized full packets remain archived, even before I/O.
+                        # 超出预算的完整输入在 I/O 前同样封存。
                         append_row(out / 'inputs.jsonl', {**base, 'messages': prompt, 'loading': info,
                                                          'budget': budget, 'identity': identity,
                                                          'delivery': 'not_sent', 'construction_status': 'full_packet_channel_overflow'}, root)
                         raise
                     info['input_utf8_bytes_limit'] = budget.get('input_utf8_bytes_limit')
-                    # Inputs durable before any model I/O, including errors and delivery uncertainty.
+                    # 模型 I/O 前持久化输入，保留错误及交付未知状态。
                     append_row(out / 'inputs.jsonl', {**base, 'messages': prompt, 'loading': info,
                                                      'budget': budget, 'identity': identity}, root)
                     if type(budget.get('input_utf8_bytes_limit')) is not int or info['all_input_utf8_bytes'] > budget['input_utf8_bytes_limit']:
@@ -174,7 +174,7 @@ def run_day(day, db, selection, coverage, protocol, lock, binary, out, root=PRIV
 
 
 def import_user(source, day_dir, root=PRIVATE_ROOT):
-    # Separate user's editing file from the machine/Judge ledger.
+    # 用户填写文件与机器及 Judge 记录分别存储。
     p = private_path(day_dir, root)
     original = json.loads(private_path(source, root).read_text(encoding='utf-8'))
     question = next(q for q in rows(p / 'questions.jsonl') if q['dimension'] == 'reason')
@@ -194,7 +194,7 @@ def run_judge(day_dir, client, protocol, lock, root=PRIVATE_ROOT):
     payload = json.loads((p / 'judge-input.json').read_text(encoding='utf-8'))
     append_row(p / 'judge-scores.jsonl', {'question_id': payload['question_id'], 'authority': 'llm_judge', 'status': 'STARTED'}, root)
     try:
-        # Rebuild from the persisted paired answers; never accept arbitrary chat appended to a judge file.
+        # 从持久化的配对回答重建 Judge 输入。
         question = next(q for q in rows(p / 'questions.jsonl') if q['question_id'] == payload['question_id'] and q['dimension'] == 'reason')
         latest = {r['arm']: r for r in rows(p / 'answers.jsonl') if r['question_id'] == question['question_id']}
         if set(latest) != set('ABC') or any(r.get('status') != 'OK' for r in latest.values()):

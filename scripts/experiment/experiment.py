@@ -1,4 +1,4 @@
-"""Run from repository root. Stdout contains status/counts only; raw stays local."""
+# 从仓库根目录运行，stdout 只输出状态和计数，原始资料留在本地。
 import argparse
 from datetime import datetime
 import hashlib
@@ -233,7 +233,7 @@ def main():
         result = execute(a)
         print(json.dumps(result, ensure_ascii=False))
     except Exception as error:
-        # Never print private HTTP body, path, prompt or exception string.
+        # 禁止输出私人 HTTP 正文、路径、提示词和异常文本。
         status = 'INVALID' if str(error).startswith('INVALID:') else 'FAILED'
         append_row(PRIVATE_ROOT / 'cli-failures-local.jsonl', {'status': status, 'command': a.command,
                    'error_type': type(error).__name__, 'error_local': str(error), 'at': datetime.now(ZONE).isoformat()})

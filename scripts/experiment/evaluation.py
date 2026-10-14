@@ -1,4 +1,4 @@
-"""Three separate authorities: event facts, user causes, future event activity."""
+# 事件事实、用户原因评分及未来事件活动分别计算。
 from collections import Counter
 from datetime import datetime, timedelta
 import json
@@ -53,11 +53,11 @@ def blind_pack(question, answers):
 
 
 def validate_user_score(row, question_id):
-    # Import, never synthesize; the original user's file remains untouched.
+    # 导入用户填写的记录，保留用户原文件。
     if row.get('authority') != 'user' or row.get('question_id') != question_id or row.get('winner') not in ('X', 'Y', 'Z', 'tie'):
         raise ValueError('independent user rating required')
     if row.get('ab_preference') not in ('P', 'Q', 'tie') or not row.get('rated_at') or not row.get('rationale'):
-        # ab_preference is separately evaluated in an AB-only anonymous sheet below.
+        # ab_preference 在下方独立 AB 匿名表中评估。
         raise ValueError('user pairwise rating fields missing')
     for field, labels in (('scores', 'XYZ'), ('ab_scores', 'PQ')):
         scores = row.get(field, {})

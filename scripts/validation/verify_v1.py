@@ -1,9 +1,4 @@
-"""Independent V1 reference: no production formulas, imports or output-as-expected.
-
-Only event kind, topic, timestamp, call order and literal frozen parameters
-drive expected A/M/C. Actual points and reported s/w are comparison targets.
-Every persisted signal is seen once; daily re-offering must be a duplicate.
-"""
+# 根据事件 kind、topic、timestamp、调用顺序及冻结参数独立计算 V1 预期值。
 
 import argparse
 import datetime as dt
@@ -48,7 +43,7 @@ def verify(operations, expected_population=None):
             fixed_start = int(dt.datetime(2026, 9, 12, tzinfo=dt.timezone(dt.timedelta(hours=8))).timestamp() * 1000)
             if started != fixed_start:
                 raise ValueError("seed clock differs from frozen window start")
-            # Expected state uses declared constants, never reported seed A/M/C.
+            # 使用已声明常量计算预期状态。
             states = {topic: {"a": 0.05, "m": 0.0, "c": 0.5, "ts": timestamp} for topic in SEEDS}
             expected_topics = SEEDS
         elif phase == "event":
@@ -72,8 +67,7 @@ def verify(operations, expected_population=None):
                 equal_ts += 1
             previous_event_ts = timestamp
             event_count += 1
-            # Frozen V0 contains these three kinds only. Do not infer unknown
-            # paper depth/outcome or supply an undecided confidence increment.
+            # 冻结 V0 只包含三种 kind，未知论文深度、结果及未决定的置信增量保持未知。
             weight = WEIGHTS[event["kind"]]
             if op["strength"] != 1 or op["weight"] != weight:
                 failures.append({"operation": index, "reason": "s/w binding"})
@@ -93,8 +87,7 @@ def verify(operations, expected_population=None):
             offered = op.get("signal_ids", [])
             if len(offered) != len(set(offered)) or set(offered) != daily_ids or op.get("input_events", 0) != len(daily_ids):
                 raise ValueError("daily signal receipts disagree with event stream")
-            # All daily offered signals were applied on their event calls or
-            # persist unassigned. No signal contributes again during Sleep.
+            # 每日信号已在事件调用时应用或保留为 unassigned，Sleep 不重复贡献。
             if not daily_ids:
                 empty_days += 1
             for state in states.values():
@@ -136,7 +129,7 @@ def main():
         json.dump(errors, target, indent=2)
     with args.output.open("x", encoding="utf-8") as target:
         json.dump(result, target, indent=2)
-    # No raw or event command is printed, including on mismatch.
+    # 发生不匹配时同样禁止输出原始资料和事件命令。
     print(json.dumps({k: result[k] for k in ("result", "events", "sleep_calls", "compared_points", "max_attention_error", "max_momentum_error")}))
     return 0 if result["result"] == "PASS" else 1
 

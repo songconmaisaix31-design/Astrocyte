@@ -1,4 +1,4 @@
-"""Recover observed headers for the frozen sample without resampling or printing raw."""
+# 恢复冻结样本的实际头部关联，不重新采样或输出原始资料。
 import argparse
 import base64
 from collections import Counter
@@ -14,8 +14,12 @@ def files_under(root):
     if not unredirected(root) or not root.is_dir():
         raise ValueError("Unauthorized source root")
     files = []
-    for parent, dirs, names in os.walk(root, followlinks=False):
-        dirs[:] = sorted(name for name in dirs if unredirected(Path(parent) / name))
+    def onerror(error):
+        raise OSError('Native directory read failed') from None
+    for parent, dirs, names in os.walk(root, followlinks=False, onerror=onerror):
+        if any(not unredirected(Path(parent) / name) for name in dirs):
+            raise ValueError('Native directory is redirected')
+        dirs[:] = sorted(dirs)
         files.extend(Path(parent) / name for name in names if name.endswith('.jsonl'))
     return sorted(files, key=lambda p: str(p.relative_to(root)).casefold())
 

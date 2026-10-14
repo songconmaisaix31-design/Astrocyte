@@ -5,6 +5,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
+(ROOT / ".verification").mkdir(exist_ok=True)
 spec = importlib.util.spec_from_file_location("render_v1r", ROOT / "scripts/validation/render_v1r.py")
 renderer = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(renderer)
@@ -12,9 +13,7 @@ spec.loader.exec_module(renderer)
 
 class V1RArtifactTests(unittest.TestCase):
     def test_standalone_chart_tables_and_no_overwrite(self):
-        if importlib.util.find_spec("matplotlib") is None:
-            self.skipTest("matplotlib required only for standalone artifact export")
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(dir=ROOT / ".verification") as temporary:
             run = Path(temporary)
             topics = ["Morphogenesis", "Astrocyte/Attention Engine", "McPet"]
             series = {topic: [{"topic": topic, "ts": 1789142400000, "attention": 0.05, "phase": "seed"},

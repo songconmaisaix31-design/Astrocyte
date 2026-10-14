@@ -1,8 +1,4 @@
-"""One credential-free metadata page via the installed pinned upstream extractor.
-
-The query follows BilibiliSpaceVideoIE; signing/fingerprints/networking remain
-upstream yt-dlp. No config files, browser cookies, video extraction or downloads.
-"""
+# 使用固定版本 yt-dlp 读取一页公开元数据，签名与网络请求由上游处理。
 import json
 import re
 import sys

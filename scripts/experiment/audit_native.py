@@ -1,4 +1,4 @@
-"""Kind-blind native message inventory; only aggregate metadata on stdout."""
+# 盘点原生消息时不按 kind 筛选，stdout 只输出聚合元数据。
 from collections import Counter
 from datetime import datetime
 import json
@@ -53,8 +53,7 @@ def audit(day):
                         counts['line_parse_errors'] += 1
             unmatched, consumed = [], set()
             for mirror in mirrors:
-                # Inventory evidence only, not a parser dedup rule: matching content is never
-                # enough to remove a native message. Record how many have nearby counterparts.
+                # 内容相同只用于统计邻近对应记录，保留全部原生消息。
                 nearby = [i for i, r in enumerate(canonical) if i not in consumed and r[2:] == mirror[2:] and abs(r[1] - mirror[1]) <= 2000 and abs(r[0] - mirror[0]) <= 8]
                 if nearby:
                     consumed.add(min(nearby, key=lambda i: abs(canonical[i][0] - mirror[0])))

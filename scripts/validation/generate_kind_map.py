@@ -1,4 +1,4 @@
-"""Generate the Go production table from canonical Python literals."""
+# 根据 Python 规范字面量生成 Go 生产映射表。
 import argparse
 import ast
 import json

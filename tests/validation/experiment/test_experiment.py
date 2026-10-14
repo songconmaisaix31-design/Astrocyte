@@ -1,4 +1,4 @@
-"""Fixture/contract evidence only. Actual MCP/model smoke is separately recorded."""
+# 实验契约回归，真实 MCP 和模型验收须单独执行。
 from datetime import datetime, timedelta
 from contextlib import closing
 import hashlib
@@ -14,6 +14,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 REPO = Path(__file__).resolve().parents[3]
+(REPO / '.verification').mkdir(exist_ok=True)
 sys.path.insert(0, str(REPO / 'scripts/experiment'))
 from evaluation import audit_fact, blind_pack, judge_messages, prediction, reason_sheet, summarize, validate_user_score, valid_judge
 from inputs import SYSTEM, questions, messages, load_native, pack_b, select_native_files, prompt_bytes
@@ -62,7 +63,7 @@ def token_fixture(msgs):
 
 class Fixtures(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix='astro-v3-contract-')
+        self.temp = tempfile.TemporaryDirectory(prefix='astro-v3-contract-', dir=REPO / '.verification')
         self.root = Path(self.temp.name)
         self.roots_patch = patch('inputs.AUTHORIZED_ROOTS', {s: str(self.root / s) for s in ('claude_code', 'codex')})
         self.roots_patch.start()
@@ -497,7 +498,7 @@ class V4Contracts(unittest.TestCase):
                 validate_reason_answer({'explanation':explanation,'evidence_event_ids':[],'unknowns':[]})
 
     def test_native_protocol_binds_complete_split_frames(self):
-        with tempfile.TemporaryDirectory(prefix='v4-envelope-contract-') as temp:
+        with tempfile.TemporaryDirectory(prefix='v4-envelope-contract-', dir=REPO / '.verification') as temp:
             p=Path(temp)/'protocol.md'
             text=(REPO/'docs/EXPERIMENT.md').read_text(encoding='utf-8')
             p.write_text(text,encoding='utf-8');rules(p)
@@ -507,7 +508,7 @@ class V4Contracts(unittest.TestCase):
     def test_native_lock_rejects_stale_transport_and_unreviewed_draft(self):
         protocol=REPO/'docs/EXPERIMENT.md';budget=rules(protocol)['model']
         route={'input_transport':'stdin','input_utf8_bytes_limit':5094907}
-        with tempfile.TemporaryDirectory(prefix='v4-route-contract-') as temp:
+        with tempfile.TemporaryDirectory(prefix='v4-route-contract-', dir=REPO / '.verification') as temp:
             out=Path(temp)/'never-written-lock.json'
             with self.assertRaisesRegex(ValueError,'transport'):
                 lock_protocol(protocol,out,route,True,Path(temp))
@@ -556,7 +557,7 @@ class V4Contracts(unittest.TestCase):
         self.assertIn('--ignore-user-config',args);self.assertIn('--ignore-rules',args)
 
     def test_full_b_narrow_scope_complete_fixture_and_out_of_window_rejection(self):
-        with tempfile.TemporaryDirectory(prefix='v4-narrow-B-contract-') as temp:
+        with tempfile.TemporaryDirectory(prefix='v4-narrow-B-contract-', dir=REPO / '.verification') as temp:
             root=Path(temp);qs=questions('2026-10-12',[],PRIOR);population=[native(bounds('2026-10-12')[0]+1,'整条🙂')]
             candidate={'native':population,'questions':qs,'messages_by_question':[messages(q,population) for q in qs]}
             source=root/'candidate.json';source.write_text(json.dumps(candidate),encoding='utf-8')
@@ -592,7 +593,7 @@ class V4Contracts(unittest.TestCase):
         self.assertIsNone(input_rejection(text.replace('input_too_large','network_unknown')))
         self.assertIsNone(input_rejection('private or unrelated diagnostic fixture'))
     def test_b_only_user_scope_rejects_old_abc_and_missing_authorization(self):
-        with tempfile.TemporaryDirectory(prefix='v4-scope-contract-') as temp:
+        with tempfile.TemporaryDirectory(prefix='v4-scope-contract-', dir=REPO / '.verification') as temp:
             source=Path(temp)/'auth.json'
             row={'authority':'user','status':'APPROVED','model':'gpt-6.1-sol','scope':B_SCOPE,
                  'endpoint_boundary':ENDPOINT_BOUNDARY,'decision_reference':'fixture user decision'}
@@ -611,7 +612,7 @@ class V4Contracts(unittest.TestCase):
                 send.assert_not_called()
 
     def test_native_real_fixture_full_stdin_output_usage_and_missing_termination(self):
-        with tempfile.TemporaryDirectory(prefix='v4-native-contract-') as temp:
+        with tempfile.TemporaryDirectory(prefix='v4-native-contract-', dir=REPO / '.verification') as temp:
             root=Path(temp)
             prompt=messages(questions('2026-10-12',[],PRIOR)[2],[native(1,'完整🙂'*200)])
             def fixture_arguments(out,context):
@@ -638,7 +639,7 @@ class V4Contracts(unittest.TestCase):
                 self.assertEqual(input_bytes(prompt),failure['stdin_receipt']['written_bytes'])
 
     def test_full_b_privacy_block_has_complete_input_and_not_sent_receipt(self):
-        with tempfile.TemporaryDirectory(prefix='v4-b-contract-') as temp:
+        with tempfile.TemporaryDirectory(prefix='v4-b-contract-', dir=REPO / '.verification') as temp:
             root=Path(temp);qs=questions('2026-10-12',[],PRIOR);population=[native(bounds('2026-10-12')[0]+1,'完整🙂'*20)]
             source=root/'candidate.json';source.write_text(json.dumps({'native':population,'questions':qs,'messages_by_question':[messages(q,population) for q in qs]}),encoding='utf-8')
             with patch('startup.local_input',side_effect=lambda p:Path(p)),patch('startup.private_path',side_effect=lambda p:Path(p)),patch('startup.write_new',side_effect=lambda p,v:write_new(p,v,root)),patch('startup.append_row',side_effect=lambda p,v:append_row(p,v,root)),patch('startup.process') as send:
@@ -681,10 +682,19 @@ class V4Contracts(unittest.TestCase):
         client=NativeCodexModel({'model':'gpt-6.1-sol'})
         with self.assertRaisesRegex(ValueError,'identity'):client.identity()
         with self.assertRaisesRegex(ValueError,'tokenizer'):client.count(messages(questions('2026-10-12',[],PRIOR)[0],None))
-        with patch('native_model.subprocess.Popen') as launch:
+        launches = []
+        observing = True
+        def observe(event, arguments):
+            # Python 审计记录真实进程启动，不替换 Popen 或外部响应。
+            if observing and event == 'subprocess.Popen':
+                launches.append(arguments[0])
+        sys.addaudithook(observe)
+        try:
             with self.assertRaisesRegex(ValueError,'PRIVATE_EGRESS_BLOCKED'):
-                native_process([],Path('not-created'),872000,{'type':'object'})
-            launch.assert_not_called()
+                native_process([],REPO / '.verification/private-egress-rejected',872000,{'type':'object'})
+            self.assertEqual([], launches)
+        finally:
+            observing = False
         one=native_arguments(Path('one'),872000);two=native_arguments(Path('two'),872000)
         self.assertEqual(one[one.index('-C')+1],two[two.index('-C')+1])
         self.assertIn('request_max_retries=0',next(v for v in one if v.startswith('model_providers.')))

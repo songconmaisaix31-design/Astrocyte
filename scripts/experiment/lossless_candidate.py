@@ -1,8 +1,4 @@
-"""Prelock review candidate only. Never imported by the formal collector.
-
-Objects retain ordered keys; tables retain ordered rows and nested object schema.
-Every scalar is unchanged. No cognition, summaries, selection or opaque compression.
-"""
+# 锁定前评审候选表示，保留键顺序、行顺序、嵌套结构及全部标量。
 import argparse
 import hashlib
 import json
@@ -134,7 +130,7 @@ def main():
             raise ValueError('actual candidate MCP failed')
         encoded = encode(memory)
         restored = decode(encoded)
-        # Compare ordered JSON as well as values, preserving float/int spelling and field order.
+        # 比较有序 JSON 及字段值，保留 float、int 的拼写和字段顺序。
         if canonical(restored) != canonical(memory):
             raise ValueError('lossless candidate roundtrip mismatch')
         question = questions('2026-10-12', [], rules('docs/EXPERIMENT.md')['baseline_topics'])[2]

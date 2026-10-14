@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
+(ROOT / ".verification").mkdir(exist_ok=True)
 sys.path.insert(0, str(ROOT / "scripts/validation"))
 spec = importlib.util.spec_from_file_location("bootstrap_v4", ROOT / "scripts/validation/bootstrap_v4.py")
 bootstrap = importlib.util.module_from_spec(spec)
@@ -16,7 +17,7 @@ spec.loader.exec_module(bootstrap)
 
 class V4BackupTests(unittest.TestCase):
     def test_day_snapshot_stays_immutable_when_live_source_advances(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(dir=ROOT / ".verification") as temporary:
             source = Path(temporary) / "live.sqlite"
             snapshot = Path(temporary) / "day-state.sqlite"
             with closing(sqlite3.connect(source)) as connection:
@@ -31,7 +32,7 @@ class V4BackupTests(unittest.TestCase):
                 self.assertEqual(connection.execute("SELECT value FROM synthetic").fetchone()[0], 7)
 
     def test_sqlite_backup_preserves_original_bytes_and_rejects_wrong_checksum(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(dir=ROOT / ".verification") as temporary:
             source = Path(temporary) / "source.sqlite"
             destination = Path(temporary) / "destination.sqlite"
             with closing(sqlite3.connect(source)) as connection:

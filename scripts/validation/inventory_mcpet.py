@@ -1,8 +1,4 @@
-"""Capture only the separately confirmed McPet HEAD; all subjects stay LOCAL.
-
-The worker may invoke this only after root's explicit source confirmation.
-Original frozen two-repository facts and native sessions are never recaptured.
-"""
+# 主控确认来源后，只捕获指定 McPet HEAD，原始 subject 留在本地。
 import argparse
 import base64
 from collections import Counter
@@ -32,7 +28,7 @@ def selected_records(root, log):
             continue
         seen.add(commit)
         rows.append({"project": str(root), "git_line_base64": base64.b64encode(line).decode("ascii"),
-                     "record": {"commit": commit, "ts": timestamp, "subject": subject.decode("utf-8", errors="replace")}})
+                     "record": {"commit": commit, "ts": timestamp, "subject": subject.decode("utf-8")}})
     return sorted(rows, key=lambda r: (r["record"]["ts"], r["record"]["commit"]))
 
 
@@ -44,8 +40,12 @@ def capture(confirmed_root, confirmed_remote, confirmation_reference, out):
         raise ValueError("Confirmed source/evidence root unavailable or redirected")
     if confirmed_remote != "https://github.com/songconmaisaix31-design/mcpet":
         raise ValueError("Confirmed remote differs from bounded source")
-    # Reserve before reading any Git metadata or payload. Never overwrite a
-    # failed capture, and never print subprocess stderr or commit subjects.
+    source = capture_repository(root, confirmed_remote, confirmation_reference, out)
+    print(json.dumps({"source": "confirmed McPet", "head": source["head"], "unique_commits": source["unique_commits"], "days": source["days"]}))
+
+
+def capture_repository(root, confirmed_remote, confirmation_reference, out):
+    # 读取 Git 元数据前独占预留目录，保留失败记录；不输出 stderr 或 subject。
     out.mkdir(exist_ok=False)
     observed_root = git(root, "rev-parse", "--show-toplevel").decode().strip()
     remote = git(root, "config", "--get", "remote.origin.url").decode().strip()
@@ -69,7 +69,7 @@ def capture(confirmed_root, confirmed_remote, confirmation_reference, out):
               "window_start": int(START), "window_end_exclusive": int(END), "unique_commits": len(rows), "days": dict(sorted(days.items()))}
     with (out / "source-local.json").open("x", encoding="utf-8") as target:
         json.dump(source, target, indent=2)
-    print(json.dumps({"source": "confirmed McPet", "head": head, "unique_commits": len(rows), "days": source["days"]}))
+    return source
 
 
 def main():
