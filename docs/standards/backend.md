@@ -58,7 +58,21 @@ PDF CLI 原 JSON 包含本机输入路径，构造函数使用已有 private-nat
 
 协调者正式新建 H 非原生任务 `ctx_d7d8c2828fba` 后，H 冻结 `cmd/server/workbench_config.go`，B 仅原样消费不可变 `24b6390bcad60a2a20b671dcb60725e77eb3a7a4` 单文件，逐行 case-sensitive 内容相等。普通测试保留 H `78903848199b915a21e95e42f52cbed64c6d606c` 全部原断言，唯一修订为本机专属 `.verification/workbench-guard` 根；真实 SQLite/migrations、显式自有 sources、普通 app-state 与实际 snapshot hardlink 拒绝两项检查 EXIT 0，1.832s，`.verification/workbench-config-actual-first.log`。实际服务构建及全仓 build/vet EXIT 0，`.verification/workbench-config-build-first.log`、`.verification/public-pdf-config-{build,vet}-first.log`。该 helper 原写域已经 ACK 归还 H，源中的通用注释与异常处理整改交原 owner，未编辑其 main 装配。
 
-F 已许可只通过 GET 检查原真实视频副本 `.verification/astrocyte-s1-FAkZe5` 的两版资料、952 spans 和安全附件信息，专属实际 API 61280 已启动并核私有原件 HTTP 403，`.verification/existing-video-http-first.log`；0 新 ASR/模型。F 完成后停止原进程，数据不通过人工 SQL 修改。
+F 只通过 GET 检查原真实视频副本 `.verification/astrocyte-s1-FAkZe5` 的两版资料、952 spans 和安全附件信息，两个 viewport 2 PASS。实际 revision 1 为 spans 0、public 1、private 0；revision 2 为 spans 952、public 3、private 1；安全只读聚合 `.verification/existing-video-version-counts-first.log`，原首错误计数断言由 F 保留。专属 API 61280 已停止，实际 health `ECONNREFUSED` 确认，`.verification/existing-video-stop-first.log`；0 新 ASR/模型，没有人工 SQL 修改资料。
+
+## 原子监听与真实 DOM 输入
+
+SOURCE `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、`bd3c3ee3628e61bc99f800232fc17550843af026` 均已普通 push。经 H owner 与两个模块明确临时授权，B 仅移植 `1aadeebaba2330bb8b786989f577415da5208fd5` 相对其父的 main/server changed blocks，以及整文件 `relay_http_listener.go`，新增文件逐行 case-sensitive 相等；未消费其他 H 装配或整段历史。三个临时 H 文件域已在 SOURCE 后明确 ACK 归还，B 后续停止修改。
+
+Go 一次绑定并持有实际 port0 listener；helper 使用成熟 readline、JSON、URL 读取自产 `http_listening/api_url`，随后实际 GET health。API 没有 Node 先占后释放的探测；明确重启绑定原已观测端口，Vite 使用该准确 API port，`--strictPort` 在端口失败时直接终止。公告和 HTTP 可响应分别核验，启动失败保留原 cause，不重绑或换端口。
+
+`go test ./cmd/server -run 'TestResolvePort|TestWorkbench' -v -count=1` EXIT 0，四项测试及全部原有效/无效参数覆盖通过，2.300s，`.verification/atomic-listener-main-first.log`。端口 0 按明确新语义移至成功参数，其余拒绝断言保留。实际服务 build、全仓 vet 和 gofmt/diff 检查通过，`.verification/atomic-listener-build-first.log`、`.verification/atomic-listener-vet-first.log`。
+
+`node --test tests/s1/server-lifecycle.test.mjs` 当前完整三项 EXIT 0，3 PASS、0 SKIP，64.936s，`.verification/atomic-listener-helper-final.log`；覆盖实际两个布局/SQLite/重开、Vite 代理/同源身份/CSRF、第二真实 Go 进程重复绑定必失败，以及原端口进程重启后的真实 Works 写入与独立 SQL 完整性。首 Vite 检查在缺公告事件的文字断言失败，`.verification/atomic-listener-web-first.log`；生产 helper 对同一公告失效语义保留不同实际事件 cause，第二次完整检查 23.971s 通过，`.verification/atomic-listener-web-second.log`。原 F 49680 Windows bind 首 RED 仍保留，F 独立实际用例验收不由该 helper 结果替代。
+
+论文来源工厂及隔离检查移除虚构的论文 HTML/title/abstract/text，使用完整实际 ACL 与 PLOS HTML，经现生产 Node DOM 解析，正文和附件原 bytes、source key、标题、摘要和状态保持断言。restricted 是明确拒绝规则参数，未声明观察真实付费来源；IP/URL 表格属于明确纯函数参数。`go test ./internal/adapters/importers -run 'TestPaperSource|TestPaperDOMInstalledPinAndIsolation|TestIsPublicIP|TestValidatePublicPaperURL' -v -count=1` EXIT 0，六项 PASS，2.188s，`.verification/paper-source-actual-first.log`。必要 Node/固定 CLI 缺失现在直接失败，没有新增 skip；既有独立 opt-in public captures 保留，未假设其已运行。
+
+当前根已授权继续语义、CLI 与 L/S 的已确认工作，但实际 CLI/selected-text/Today 仍须先相关 R/H 语义通过和根 working/done 决定。没有仅因跨日启动 controller 或模型，Source alias 合法端口及全写域残余替代实现仍待后续原 owner 完成。
 
 收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
 
