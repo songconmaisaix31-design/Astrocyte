@@ -17,7 +17,7 @@ func (s *S2Service) ConsumeOpportunityAdmission(ctx context.Context,eventID stri
 	defer func(){err=NormalizeWorkspaceError(err)}()
 	if s.admissions==nil{return proposal,domain.WorkspaceError(apierrors.UnsupportedCapability,"trusted admission reader is unavailable")}
 	snapshot,err:=s.admissions.ReadAdmittedOpportunity(ctx,eventID);if err!=nil{return proposal,err}
-	if !snapshot.Active||snapshot.EventID!=eventID||snapshot.AdmissionID==""||snapshot.OpportunityID==""||snapshot.OpportunityRevision<1||snapshot.OwnerNamespace==""||snapshot.Title==""||len(snapshot.Inputs)==0||!has([]string{"human","delegated_judgment"},snapshot.Authority)||snapshot.PolicyVersion==""{return proposal,domain.WorkspaceError(apierrors.EvidenceMissing,"admission lacks current authority, fixed version or sources")}
+	if !snapshot.Active||snapshot.EventID!=eventID||snapshot.AdmissionID==""||snapshot.OpportunityID==""||snapshot.OpportunityRevision<1||snapshot.OwnerNamespace==""||snapshot.Title==""||len(snapshot.Inputs)==0||!has([]string{"human","delegated_judgment"},snapshot.Authority)||snapshot.Authority=="delegated_judgment"&&snapshot.PolicyVersion==""{return proposal,domain.WorkspaceError(apierrors.EvidenceMissing,"admission lacks current authority, fixed version or sources")}
 	for _,ref:=range snapshot.Inputs{if ref.MaterialID==""||ref.Revision<1{return proposal,domain.WorkspaceError(apierrors.EvidenceMissing,"admission source revision is missing")}}
 	data,err:=json.Marshal(snapshot);if err!=nil{return proposal,err};digest:=sha256.Sum256(data);requestDigest:=hex.EncodeToString(digest[:])
 	err=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{
