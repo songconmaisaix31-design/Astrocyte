@@ -75,3 +75,11 @@
 | 文件与执行边界 | 原正式分支validation/v1-20261012 / HEAD51793cc651f28be2673e7f025e807a0b257b6d8c clean；独验只读标准JSON / SQLite mode=ro / query_only、日快照immutable / python -B，没有文件写入、输出创建、模型或日流程重发、Git提交。 |
 
 真实剩余项：本日user-sheet全部空、user-scores缺失，只用户填写；本日3预测为D+3_not_finished，prediction-scores未生成，七日和终局尚未完成。13回执response_model_echo均null、provider_input_wire_verified均false；exact tokenizer / 硬output cap未暴露，按原已接受限制保留unknown。Claude扫描timestamp_unknown463、26条原生白名单初始化warning和原run1 skipped_unavailable均保留，未删除错误或降低验收。原始输入、响应、日志与SQLite均只在既有外部证据根。
+
+## D1独立安全REPORT
+
+本日安全交付SOURCE为 `d895ffcd0f4e58389a570a6c8a9197195b826bdd`，已普通push；随后S5独占计划 `dc6ee2fddc77e49ab5031bf6747cf437083be63f` 只修改release.md，未改变本日协议或结果。本节为SOURCE后的独立报告，只修改本文；完整REPORT SHA由实际提交回执提供。
+
+实际检查使用原 `orca automations show / runs`、`terminal read --screen` 进程内安全布尔、标准ConvertFrom-Json / SQLite mode=ro-query_only / python -B只读审计、`git diff --check`。D1原生产capture / Sleep / run-day / judge仅由原automation run50ee执行，原run已completed、独验唯一succeeded并official released/captured。模块文档相对链接、stage范围与白名单写域检查通过；本模块没有新日流程或模型重发。
+
+D1技术验收通过范围为本日60事件/1Sleep/快照、12题臂/独立judge、13真实原件预算和逐事件对账。用户评分、D+3与七日终局保持未完成；实际用户作品/新实验/自由工具与正式冻结没有改变。
