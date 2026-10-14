@@ -1,10 +1,14 @@
 # Astrocyte 主控交接
 
-2026-10-14：用户 [Works Relay v1.2 自包含定稿](tasks/Works-Relay-v1.2.md) 取代所有旧版，421a076 的 v1.1 保留评审历史。v1.0 缺失与实现窗口待答已关闭；明确授权从 workbench/v0.1-workbench（验收业务d46f9f4）立即建立 workbench/v0.2-access，实现只在Workbench线。validation仅登记Markdown，不共写V4恢复文件，不触正式库/引擎/schema/权重/快照管道。三分钟真实作品→Agent→Today、三值/换手/数据注册/terminal-only及权限/互斥/receipt验收逐项执行；Procmon和两日快照与v0.1收尾并行，未完成不填PASS。root正在建立独占写域计划和Orca长期轨道。
+2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
+
+Works Relay v1.2 工程 SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已普通集成，CI 38469944551 双平台 success；L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，采集 / HTTP / Today 组合及真实 CLI 闭环尚未最终验收。Workbench v0.1 已部署，Procmon 与两日自动快照仍 NOT_RUN。当前工作树不包含这些 Workbench 业务提交，不能用本树测试代表其验收。
+
+用户 [Works Relay v1.2 自包含定稿](tasks/Works-Relay-v1.2.md) 已取代旧版；v1.0 缺失和实施窗口问题已关闭。原 R/H/F/I owner 持续负责开发、测试及返修，后续业务仍由唯一集成 owner 普通合并。V4 首日技术完成与 Discovery & Split 冻结状态见下方记录。
 
 2026-10-14：用户 Works Relay v1.1 修订已登记 [tasks/Works-Relay-v1.1.md](tasks/Works-Relay-v1.1.md)，状态 REVISION_REGISTERED_REVIEW_PENDING。完整保留三值终端、单一 store、数据注册 Agent、中性 worktree 换手、人工 intent 与双路径降级及四项增补验收。当前未找到 v1.0，已询问原文与实现窗口；未答不补写剩余条款、不冻结接口、不解除 V4 冻结或启动实现。现有 Works “接力过”仅手册统计，固定 Agent 注册表未达新要求；详见任务内实码基线与待裁决项。业务验收全部 NOT_RUN，本轮只文档。
 
-## 当前入口：M6 v3.0（2026-10-12）
+## V4 验证入口：M6 v3.0
 
 2026-10-14 03:13：用户授权首日恢复已完成。D0=10-13新增84 commits（Astro65/McPet19）、1生产Sleep、正式日快照；4题×3臂12 OK、6事实机判、独立judge OK。A聚合误差0/raw0/1280引用可溯，B各1003完整消息，无重发。原scheduled run df055da3的01:18启动补调度missing-project skip保留；手动run59891a05 completed。同一自动任务原提示词/目标/日程/设置逐项全等，next10-15 00:20。Orca启动rendererReady未等待界面项目加载，skip不是仓库删除；未改安装包门禁，后续真正定时运行待观察。授权两客户端根最新10-10，首日原生事件0，未扩源。根STATUS顶部、tasks/M6-V4-first-day-recovery.md及root-v4-start/automation-recovery-20261014-*-safe.json为证据；人评表v4-w2/day-20261013-first/user-sheet.json待用户独立填写，首个预测于10-17闭日采完10-14..16后成熟。day0/协议SHA不变，不重采本日、不重发已成功模型，不代填人评；v0.2仍冻结。
 

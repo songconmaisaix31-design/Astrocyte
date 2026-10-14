@@ -1,10 +1,16 @@
 # Astrocyte 当前状态
 
-## Works Relay v1.2 已定稿并授权开工（2026-10-14）
+## 当前开发入口（2026-10-14）
 
-用户 [自包含任务书](tasks/Works-Relay-v1.2.md) 取代旧版本，v1.0和实施窗口旧问题关闭。目标 workbench/v0.2-access 从 workbench/v0.1-workbench 建立，已核实验收业务 d46f9f4cf2fd6e13c8362234746105330356c160 存在。validation本轮只登记文档；业务实现与最终验收在Workbench线，原V4冻结边界保持。当前建立计划与长期互斥写域轨道；业务验收未开始，不借v0.1绿CI代表v0.2。
+本工作树为 `validation/v1-20261012`，负责 V4 验证与任务登记。Workbench 开发分支为 `workbench/v0.2-access`，当前状态由 [Workbench 状态入口](../workspaces/Astrocyte/works-relay-coordination/STATUS.md) 持续维护；其当前文件需要从对应工作树读取。本文件下方保留任务要求的历史验证记录。
 
-## Works Relay v1.1 修订登记（2026-10-14）
+Workbench v0.1 验收业务源码 `d46f9f4cf2fd6e13c8362234746105330356c160` 已部署；管理员 Procmon 零写监控和 10-15/10-16 两次真实自动快照仍 NOT_RUN。Works Relay v1.2 工程源码 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已集成，其 CI 38469944551 在 Linux / Windows 均 success；两平台默认 E2E 各 268 PASS / 38 SKIP。该结果不包含后续 L1 会话采集。
+
+L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` / REPORT `0b4ec501721361e8104a4e6e00781d73656157a4` 已提交；完整采集、HTTP / Today 组合及真实 CLI 闭环以 Workbench 当前原 owner 交付为准，未通过最终验收。V4 day0=2026-10-13，首日采集与三臂机判已完成；用户评分、七日结论和末 D+3 尚未完成。Discovery & Split 保持 IMPLEMENTATION_FROZEN。
+
+用户已要求按当前 AGENTS.md 整合仓库；范围、写入边界和验证见 [整合任务](tasks/AGENTS-standard-integration.md)。规则与入口文档正在统一，业务整改尚未完成。现有正式库、锁定协议、实验日程和正在开发的原 owner 写入范围保持其已确认边界。
+
+## 历史：Works Relay v1.1 修订登记（已由 v1.2 取代）
 
 [修订与实码评审](tasks/Works-Relay-v1.1.md) 状态 REVISION_REGISTERED_REVIEW_PENDING；基线 `47e83cfada27b020e61da22679a3fb690c28b898`。本轮单 Agent 文档登记，无业务改动、worker 派发或终端操作。v1.0 原文与实施窗口已询问，等待用户答复；其余已列关键歧义先对照 v1.0，再请求未决项裁决。实现未开始，三值实测 / Codex 接 Claude 同工作树 / 注册扩展 / terminal-only 认知流验收均 NOT_RUN。V4 冻结和锁定协议保持生效，未以本修订解除；文档交付 SHA 与校核结果以本轮 Git 交付为准。
 
