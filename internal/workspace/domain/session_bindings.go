@@ -8,7 +8,7 @@ type SessionBinding struct {
 	ProjectID string `json:"project_id"`
 	SessionID string `json:"session_id"`
 	AdapterID string `json:"adapter_id"`
-	NativeSessionID string `json:"native_session_id"`
+	NativeSessionID string `json:"-"`
 	WorktreeID string `json:"worktree_id"`
 	GrantID string `json:"grant_id"`
 	GrantEpoch int `json:"grant_epoch"`
