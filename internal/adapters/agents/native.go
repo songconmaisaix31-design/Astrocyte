@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"os"
 	"path/filepath"
 	"strings"
@@ -84,6 +85,7 @@ func (n *Native) snapshot() domain.LocalAgent {
 
 type Native struct {
 	mu            sync.Mutex
+	startMu       sync.Mutex
 	id, stateRoot string
 	processes     map[string]*nativeProcess
 	capabilities  map[string]domain.CapabilityObservation
@@ -297,7 +299,21 @@ func (n *Native) Resume(ctx context.Context, r domain.NativeRequest) (domain.Nat
 	return n.start(ctx, r, true)
 }
 
-func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool) (domain.NativeSession, error) {
+func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool, operations ...string) (domain.NativeSession, error) {
+	n.startMu.Lock()
+	defer n.startMu.Unlock()
+	if err := ctx.Err(); err != nil {
+		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+	}
+	operation := ""
+	if len(operations) != 0 {
+		operation = operations[0]
+	}
+	if operation != "" {
+		if _, err := uuid.Parse(operation); err != nil {
+			return r.Session, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.ValidationFailed, "relay operation must be a UUID")}
+		}
+	}
 	s := r.Session
 	s.Ownership = "owned"
 	s.ID = r.SessionID
@@ -344,6 +360,17 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 	go func() { <-p.done; <-n.slots }()
 	p.mu.Lock()
 	p.projectID = r.Project.ID
+	p.relayEvidence.SessionID = s.ID
+	p.relayEvidence.StartupOperationID = operation
+	p.relayEvidence.Relation = "new"
+	if resume {
+		p.relayEvidence.Relation = "resume"
+		if existing != nil {
+			existing.mu.Lock()
+			p.relayEvidence.PreviousControllerID = existing.relayEvidence.ControllerID
+			existing.mu.Unlock()
+		}
+	}
 	p.mu.Unlock()
 	// Keep the actual process reachable even if initialization or its stop is
 	// uncertain. Never lose a still-owned process on a failed handshake.
@@ -374,6 +401,9 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		if err = p.write(map[string]any{"method": "initialized"}); err != nil {
 			return fail(err)
 		}
+		p.mu.Lock()
+		p.relayFact("controller_initialized", "codex_initialize", operation)
+		p.mu.Unlock()
 		params := map[string]any{"cwd": r.Project.Root, "approvalPolicy": "never", "sandbox": "read-only"}
 		method := "thread/start"
 		if resume {
@@ -420,6 +450,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		}
 		p.mu.Lock()
 		p.nativeID = result.Thread.ID
+		p.relayFact("session_confirmed", "codex_thread_identity", operation)
 		p.model, p.provider = result.Model, result.ModelProvider
 		if result.ApprovalPolicy == "never" && result.Sandbox.Type == "readOnly" {
 			p.permissionPolicy = "never_read_only"
@@ -431,6 +462,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			return fail(err)
 		}
 		p.mu.Lock()
+		p.relayFact("controller_initialized", "claude_initialize", operation)
 		p.nativeID = r.SessionID
 		if resume {
 			p.nativeID = r.Session.NativeID
@@ -457,6 +489,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		}
 		p.mu.Lock()
 		p.nativeID = state.SessionFile
+		p.relayFact("session_confirmed", "pi_get_state", operation)
 		p.model, p.provider = state.Model.ID, state.Model.Provider
 		p.modelObservedAt = time.Now()
 		p.mu.Unlock()
@@ -474,7 +507,7 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		n.observed("start")
 	}
 	if strings.TrimSpace(r.Command.Message) != "" {
-		obs, err := n.Send(ctx, s, packetPrompt(r.Packet, r.Command.Message))
+		obs, err := n.send(ctx, s, packetPrompt(r.Packet, r.Command.Message), operation)
 		if err != nil {
 			return s, err
 		}
@@ -484,6 +517,15 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 }
 
 func (n *Native) Send(ctx context.Context, s domain.NativeSession, message string) (domain.NativeObservation, error) {
+	return n.send(ctx, s, message, "")
+}
+
+func (n *Native) send(ctx context.Context, s domain.NativeSession, message, operation string) (domain.NativeObservation, error) {
+	if operation != "" {
+		if _, err := uuid.Parse(operation); err != nil {
+			return domain.NativeObservation{}, nativeError(apierrors.ValidationFailed, "relay operation must be a UUID")
+		}
+	}
 	if err := ctx.Err(); err != nil {
 		return domain.NativeObservation{}, err
 	}
@@ -491,12 +533,18 @@ func (n *Native) Send(ctx context.Context, s domain.NativeSession, message strin
 	if err != nil {
 		return domain.NativeObservation{}, err
 	}
+	p.operationMu.Lock()
+	defer p.operationMu.Unlock()
 	obs := p.observe()
 	if obs.StopConfirmed || obs.Status == "running" || obs.Status == "blocked" {
 		return obs, nativeError(apierrors.VersionConflict, "native session is stopped, occupied or blocked")
 	}
 	p.mu.Lock()
 	p.status = "running"
+	p.inputOperationID = operation
+	if n.id == "codex" {
+		p.turnID = ""
+	}
 	p.mu.Unlock()
 	if n.id == "codex" {
 		response, err := p.call(ctx, "turn/start", map[string]any{"threadId": s.NativeID, "input": []any{map[string]any{"type": "text", "text": message}}, "approvalPolicy": "never", "sandboxPolicy": map[string]any{"type": "readOnly"}}, false)
@@ -518,15 +566,35 @@ func (n *Native) Send(ctx context.Context, s domain.NativeSession, message strin
 		}
 		p.mu.Lock()
 		p.turnID = result.Turn.ID
+		p.relayFact("input_accepted", "codex_turn_acknowledgement", operation)
+		p.consumptionUnknown(operation)
+		if when, exists := p.relayStartedTurns[result.Turn.ID]; exists && operation != "" {
+			p.addEvent("turn_started", "")
+			p.relayFact("turn_started", "codex_turn_started", operation)
+			p.relayEvidence.Facts[len(p.relayEvidence.Facts)-1].TS = when
+			if p.relayPublishedTurns == nil {
+				p.relayPublishedTurns = map[string]bool{}
+			}
+			p.relayPublishedTurns[result.Turn.ID] = true
+			delete(p.relayStartedTurns, result.Turn.ID)
+		}
 		p.mu.Unlock()
 	} else if n.id == "claude" {
 		if err := p.write(map[string]any{"type": "user", "session_id": s.NativeID, "message": map[string]any{"role": "user", "content": message}, "parent_tool_use_id": nil}); err != nil {
 			return p.observe(), nativeError(apierrors.DeliveryUnknown, "Claude user-message delivery is unknown")
 		}
+		p.mu.Lock()
+		p.relayFact("input_written", "claude_stream_input", operation)
+		p.consumptionUnknown(operation)
+		p.mu.Unlock()
 	} else {
 		if _, err := p.call(ctx, "prompt", map[string]any{"message": message}, true); err != nil {
 			return p.observe(), err
 		}
+		p.mu.Lock()
+		p.relayFact("input_accepted", "pi_prompt_acknowledgement", operation)
+		p.consumptionUnknown(operation)
+		p.mu.Unlock()
 	}
 	n.observed("send")
 	return p.observe(), nil

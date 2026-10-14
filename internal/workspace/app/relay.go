@@ -423,10 +423,33 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 			}
 		}
 		if t.TerminalID != "" {
-			s.observe(st, &t, obs)
+			if err := s.observe(st, &t, obs); err != nil {
+				// 观察失败终止该动作；保留已交付后的占用和原控制器返回的准确会话。
+				r.Status = "delivery_unknown"
+				r.Error = &domain.RelayReceiptError{Code: string(apierrors.DeliveryUnknown), Message: "controller evidence was rejected; delivery must be inspected without replay", RequiredAction: "inspect_controller_without_replaying_input"}
+				t.Condition = "delivery_unknown"
+				st.Tasks[t.ID] = t
+				previous := st.Sessions[t.TerminalID]
+				if obs.Session.ID != "" && obs.Session.NativeID != "" && obs.Session.Ownership == "owned" && obs.Session.ProjectID == t.ProjectID && obs.Session.CLI == t.Agent && (previous.ID == "" || previous.ID == obs.Session.ID && previous.NativeID == obs.Session.NativeID) {
+					st.Sessions[t.TerminalID] = obs.Session
+					s.observeOwnedSession(st, t, st.Terminals[t.TerminalID], RelayObservation{Session: obs.Session, ArchiveGap: "controller_evidence_rejected"})
+				}
+				reason := "controller_evidence_rejected"
+				var failure *apierrors.ServiceError
+				if errors.As(err, &failure) {
+					reason = string(failure.Code)
+				}
+				st.RuntimeFacts = append(st.RuntimeFacts, domain.RelayRuntimeFact{ID: uuid.NewString(), TaskID: t.ID, TerminalID: t.TerminalID, WorktreeID: t.WorktreeID, ReceiptID: r.ID, OperationID: r.OperationID, Kind: "observation_rejected", Status: "unknown", Source: "relay_store", Reason: reason, TS: now})
+			}
 		}
 	}
 	st.Receipts[r.ID] = r
+	reason := ""
+	if r.Error != nil {
+		reason = r.Error.Code
+	}
+	task := st.Tasks[r.TaskID]
+	st.RuntimeFacts = append(st.RuntimeFacts, domain.RelayRuntimeFact{ID: uuid.NewString(), TaskID: r.TaskID, TerminalID: task.TerminalID, WorktreeID: task.WorktreeID, ReceiptID: r.ID, OperationID: r.OperationID, Kind: "action_result", Status: r.Status, Source: "relay_store", Reason: reason, TS: now})
 	if st.PendingActions[r.TaskID] == r.ID {
 		delete(st.PendingActions, r.TaskID)
 	}
@@ -455,7 +478,10 @@ func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd Re
 		}
 		_, p, e := s.work(ctx, c, cmd.WorkID, cmd.ProjectID)
 		project = p
-		return e
+		if e != nil {
+			return e
+		}
+		return s.validateHandoff(ctx, c, p, cmd)
 	}
 	if e := validate(); e != nil {
 		_, err = s.finish(ctx, c, r, RelayObservation{}, e, true)
@@ -463,6 +489,11 @@ func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd Re
 	}
 	id := uuid.NewString()
 	err = s.store.Update(ctx, func(st *RelayState) error {
+		if cmd.HandoffFromTaskID != "" {
+			if err := relayHandoffState(*st, project, cmd); err != nil {
+				return err
+			}
+		}
 		t := domain.RelayTask{ID: id, WorkID: cmd.WorkID, ProjectID: cmd.ProjectID, Agent: cmd.Agent, Description: cmd.Task, PermissionLevel: RelayPermissionLevel(project.Settings), SettingsRevision: project.Settings.Revision, CreatedAt: s.now()}
 		s.move(st, &t, domain.RelayReady, relayActor(c))
 		r.TaskID = id
@@ -470,6 +501,14 @@ func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd Re
 		now := s.now()
 		r.FinishedAt = &now
 		st.Receipts[r.ID] = r
+		if cmd.HandoffFromTaskID != "" {
+			if st.HandoffDeclarations == nil {
+				st.HandoffDeclarations = map[string]string{}
+			}
+			st.HandoffDeclarations[id] = cmd.HandoffFromTaskID
+			st.RuntimeFacts = append(st.RuntimeFacts, domain.RelayRuntimeFact{ID: uuid.NewString(), TaskID: id, ReceiptID: r.ID, OperationID: r.OperationID, Kind: "handoff_declared", Status: "confirmed", Source: "human_intent", TS: now})
+			st.SessionRelations = append(st.SessionRelations, domain.RelaySessionRelation{TaskID: id, PreviousTask: cmd.HandoffFromTaskID, WorktreeID: st.Tasks[cmd.HandoffFromTaskID].WorktreeID, OperationID: r.OperationID, Kind: "handoff", Status: "unknown", Source: "human_intent", TS: now})
+		}
 		return nil
 	})
 	if err != nil {
@@ -531,7 +570,16 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		if t.State != domain.RelayReady || t.Condition == "delivery_unknown" {
 			return relayError(apierrors.VersionConflict, "task has already been dispatched or has unknown delivery")
 		}
+		if previous := st.HandoffDeclarations[id]; previous != "" {
+			if err := relayHandoffState(*st, p, RelayIntentCommand{WorkID: t.WorkID, Agent: t.Agent, HandoffFromTaskID: previous}); err != nil {
+				return err
+			}
+			workspaceID = st.Tasks[previous].WorktreeID
+		}
 		for _, existing := range st.Workspaces {
+			if workspaceID != "" {
+				break
+			}
 			if sameRelayRoot(existing.SourceRoot, p.Root) {
 				workspaceID = existing.ID
 				break
@@ -552,6 +600,7 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		t.WorktreeID = workspaceID
 		st.Tasks[id] = t
 		st.PendingActions[id] = r.ID
+		s.claimFact(st, r)
 		return nil
 	})
 	if err != nil {
@@ -601,6 +650,7 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		return reject(err)
 	}
 	launch.Input = "HANDOFF_MANUAL:\n" + w.Handoff.Content + "\n\nTASK:\n" + v.Task.Description
+	launch.OperationID = r.OperationID
 	driver := s.structured
 	mode := "structured"
 	if spec.DriveMode == "terminal" {
@@ -674,10 +724,13 @@ func (s *relayService) launch(ctx context.Context, c domain.Caller, id, action s
 	if !ok {
 		return RelayLaunch{}, relayError(apierrors.EvidenceMissing, "task terminal identity is absent")
 	}
-	return RelayLaunch{Spec: spec, Project: p, Workspace: w, Terminal: terminal, Session: st.Sessions[terminal.ID]}, nil
+	return RelayLaunch{Spec: spec, Project: p, Workspace: w, Terminal: terminal, Session: st.Sessions[terminal.ID], ControllerID: st.ControllerEvidence[t.ID].ControllerID}, nil
 }
 
-func (s *relayService) observe(st *RelayState, t *domain.RelayTask, obs RelayObservation) {
+func (s *relayService) observe(st *RelayState, t *domain.RelayTask, obs RelayObservation) error {
+	if err := s.observeRuntimeFacts(st, *t, obs); err != nil {
+		return err
+	}
 	terminal := st.Terminals[t.TerminalID]
 	if obs.Session.ID != "" {
 		st.Sessions[terminal.ID] = obs.Session
@@ -731,6 +784,7 @@ func (s *relayService) observe(st *RelayState, t *domain.RelayTask, obs RelayObs
 	terminal.Liveness = domain.RelayLiveness(terminal.LastEventAt, terminal.ExitedAt, s.now(), s.options.LivenessWindow)
 	st.Terminals[terminal.ID] = terminal
 	s.observeOwnedSession(st, *t, terminal, obs)
+	return nil
 }
 
 func (s *relayService) publish(ctx context.Context, id string) error {
@@ -800,7 +854,20 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 		if st.PendingActions[id] != "" {
 			return relayError(apierrors.VersionConflict, "another task action is pending")
 		}
+		current := st.Tasks[id]
+		terminal := st.Terminals[current.TerminalID]
+		session := st.Sessions[current.TerminalID]
+		if current.TerminalID != launch.Terminal.ID || current.WorktreeID != launch.Workspace.ID || st.Workspaces[current.WorktreeID].ActiveTaskID != id || current.State == domain.RelayReleased || st.ControllerEvidence[id].ControllerID != launch.ControllerID || session.ID != launch.Session.ID || session.NativeID != launch.Session.NativeID {
+			return relayError(apierrors.VersionConflict, "task controller or reservation changed before execution")
+		}
+		if action == "send" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil || current.State == domain.RelayDone) {
+			return relayError(apierrors.VersionConflict, "task cannot accept another input")
+		}
+		if action == "resume" && (terminal.ExitedAt == nil || current.State == domain.RelayDone) {
+			return relayError(apierrors.DeliveryUnknown, "resume requires confirmed original exit")
+		}
 		st.PendingActions[id] = r.ID
+		s.claimFact(st, r)
 		return nil
 	})
 	if err != nil {
@@ -814,6 +881,7 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 		return reject(relayError(apierrors.UnsupportedCapability, "task drive path is not connected"))
 	}
 	var obs RelayObservation
+	launch.OperationID = r.OperationID
 	switch action {
 	case "send":
 		cmd := input.(RelaySendCommand)
@@ -925,6 +993,10 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 				workspace.ActiveTaskID = ""
 				st.Workspaces[workspace.ID] = workspace
 			}
+		}
+		s.claimFact(st, r)
+		if cmd.To == domain.RelayDone {
+			st.RuntimeFacts = append(st.RuntimeFacts, domain.RelayRuntimeFact{ID: uuid.NewString(), TaskID: id, TerminalID: t.TerminalID, WorktreeID: t.WorktreeID, ReceiptID: r.ID, OperationID: r.OperationID, Kind: "human_target_confirmed", Status: "confirmed", Source: "human_transition", TS: s.now()})
 		}
 		s.move(st, &t, cmd.To, relayActor(c))
 		return nil

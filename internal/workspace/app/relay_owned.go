@@ -57,6 +57,9 @@ func (s *relayService) observeOwnedSession(st *RelayState, task domain.RelayTask
 		return
 	} // old states remain an explicit gap; read never backfills
 	bound.DriveMode, bound.ExitedAt = terminal.DriveMode, terminal.ExitedAt
+	if evidence, exists := st.ControllerEvidence[task.ID]; exists && obs.Evidence != nil {
+		bound.ControllerID, bound.StartupOperationID = evidence.ControllerID, evidence.StartupOperationID
+	}
 	if obs.Session.ID != "" {
 		session := obs.Session
 		if bound.SessionID == "" && (session.Ownership != "owned" || session.NativeID == "") {
@@ -105,6 +108,7 @@ func relayBindingGap(bound domain.RelayOwnedSession, reason string) domain.Relay
 	bound.WorkspaceRoot, bound.SourceRoot, bound.SessionID, bound.NativeID, bound.Ownership = "", "", "", "", ""
 	bound.ArchivePath, bound.ArchiveRoot, bound.ArchiveFormat = "", "", ""
 	bound.NativeCapture = nil
+	bound.ControllerID, bound.StartupOperationID = "", ""
 	return bound
 }
 

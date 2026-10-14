@@ -16,10 +16,16 @@ export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWo
   const [agent, setAgent] = useState('');
   const [description, setDescription] = useState('');
   const [view, setView] = useState<RelayTaskView | null>(existing ?? null);
+  const [handoffFromTaskID, setHandoffFromTaskID] = useState('');
+  const [handoffConfirmed, setHandoffConfirmed] = useState(false);
+  const history = useReadApi(signal => relayApi.tasks(signal), { enabled: !view, key: `${projectID}:${agent}` });
+  const previousReceipts = useReadApi(signal => relayApi.receipts(handoffFromTaskID, signal), { enabled: !!handoffFromTaskID, key: handoffFromTaskID, refreshMs: 3000 });
   const command = useRelayCommand<RelayTaskResult>(`intent:${work?.id ?? existing?.task.work_id}`);
   const compatible = projects.data?.projects.filter(project => !work || relayProjectMatches(work.root, project)) ?? [];
   const project = projects.data?.projects.find(project => project.project_id === (view?.task.project_id || projectID));
   const unavailable = projects.loading || projects.stale || !projects.data || agents.loading || agents.stale || !agents.data;
+  const candidates = history.data?.tasks.filter(previous => previous.task.work_id === work?.id && previous.task.project_id === projectID && previous.task.agent !== agent && previous.task.state === 'released' && previous.worktree?.prepared && !previous.worktree.active_task_id && previous.worktree.project_id === projectID && previous.worktree.worktree_id === previous.task.worktree_id && previous.terminal?.worktree_id === previous.task.worktree_id && previous.terminal.terminal_id === previous.task.terminal_id && previous.terminal.agent === previous.task.agent && previous.terminal.liveness === 'exited' && !!previous.terminal.exited_at) ?? [];
+  const handoffReady = !handoffFromTaskID || handoffConfirmed && !!project?.allowed_actions.includes('observe') && !!candidates.find(previous => previous.task.task_id === handoffFromTaskID) && !history.stale && !!previousReceipts.data && !previousReceipts.loading && !previousReceipts.stale && !previousReceipts.data.receipts.some(receipt => receipt.status === 'pending');
   return <div className="relay-flow">
     {view ? <RelayConfirmation key={view.task.task_id} view={view} onChanged={onChanged} /> : <>
       <p>声明意图只保存任务，下一页确认权限后才会启动 Agent。</p>
@@ -28,20 +34,26 @@ export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWo
       <QueryState state={agents}>{() => null}</QueryState>
       <form onSubmit={event => {
         event.preventDefault();
-        if (unavailable || !project || !work || !agent.trim() || !description.trim()) return;
-        void command.run(key => relayApi.intent({ work_id: work.id, project_id: project!.project_id, agent, task: description.trim() }, key), result => {
+        if (unavailable || !handoffReady || !project || !work || !agent.trim() || !description.trim()) return;
+        void command.run(key => relayApi.intent({ work_id: work.id, project_id: project!.project_id, agent, task: description.trim(), ...(handoffFromTaskID ? { handoff_from_task_id: handoffFromTaskID, handoff_context_confirmed: true } : {}) }, key), result => {
           setView(result.view);
           onChanged();
         });
       }}>
         <fieldset disabled={unavailable || command.pending || command.uncertain}>
           <legend>你希望如何接力</legend>
-          <label>获准项目<select aria-label="获准项目" value={projectID} onChange={event => setProjectID(event.target.value)} required><option value="">选择项目…</option>{compatible.map(project => <option key={project.project_id} value={project.project_id}>{project.name} · {project.root}</option>)}</select></label>
-          <label>偏好 Agent<select aria-label="偏好 Agent" value={agent} onChange={event => setAgent(event.target.value)} required><option value="">选择注册 Agent…</option>{agents.data?.agents.map(spec => <option key={spec.name} value={spec.name}>{spec.name} · {spec.drive_mode}</option>)}</select></label>
+          <label>获准项目<select aria-label="获准项目" value={projectID} onChange={event => { setProjectID(event.target.value); setHandoffFromTaskID(''); setHandoffConfirmed(false); }} required><option value="">选择项目…</option>{compatible.map(project => <option key={project.project_id} value={project.project_id}>{project.name} · {project.root}</option>)}</select></label>
+          <label>偏好 Agent<select aria-label="偏好 Agent" value={agent} onChange={event => { setAgent(event.target.value); setHandoffFromTaskID(''); setHandoffConfirmed(false); }} required><option value="">选择注册 Agent…</option>{agents.data?.agents.map(spec => <option key={spec.name} value={spec.name}>{spec.name} · {spec.drive_mode}</option>)}</select></label>
           {agent && agents.data?.agents.filter(spec => spec.name === agent).map(spec => <p className="relay-note" key={spec.name}>{relayAgentAvailability(spec, agents.data!.inventory)}</p>)}
           <label>任务描述<textarea aria-label="任务描述" value={description} onChange={event => setDescription(event.target.value)} rows={5} required /></label>
+          <QueryState state={history}>{() => <label>人工上下文交接来源<select aria-label="人工上下文交接来源" value={handoffFromTaskID} onChange={event => { setHandoffFromTaskID(event.target.value); setHandoffConfirmed(false); }} disabled={!projectID || !agent || history.stale || !project?.allowed_actions.includes('observe')}><option value="">创建新会话，未声明上下文交接</option>{candidates.map(previous => <option key={previous.task.task_id} value={previous.task.task_id}>{previous.task.agent} · {previous.task.task_id} · 原工作区 {previous.task.worktree_id}</option>)}</select></label>}</QueryState>
+          {handoffFromTaskID && <>
+            <QueryState state={previousReceipts}>{data => <><p>原任务待处理收据：{data.receipts.filter(receipt => receipt.status === 'pending').length}</p><RelayReceipts receipts={data.receipts} /></>}</QueryState>
+            <label className="relay-check"><input type="checkbox" checked={handoffConfirmed} onChange={event => setHandoffConfirmed(event.target.checked)} />我已核查所选原任务的实际上下文，明确确认交接给本次不同的 Agent</label>
+            <p className="relay-note">此声明不证明新原生会话已经建立。服务端保存时重新核对原任务释放、退出、pending、同项目 / 作品 / 原工作区和当前许可。</p>
+          </>}
           <p className="relay-note">首条输入由服务端合并交接手册与任务描述。注册、安装和原生能力分别核实。</p>
-          <button type="submit" className="ac-button" disabled={!projectID || !agent || !description.trim()}>保存意图并查看权限</button>
+          <button type="submit" className="ac-button" disabled={!projectID || !agent || !description.trim() || !handoffReady}>保存意图并查看权限</button>
         </fieldset>
       </form>
     </>}

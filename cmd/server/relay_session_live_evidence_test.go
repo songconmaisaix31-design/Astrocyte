@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -223,7 +224,7 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	if err := readonly.QueryRowContext(ctx, "SELECT COUNT(*) FROM attention_engine_events").Scan(&before); err != nil {
 		t.Fatal("实际事件计数不可用")
 	}
-	client := newActualRelayHTTP(t)
+	client := newActualRelayHTTP(t, actualRelayAPIURL(t, evidence))
 	client.request(t, "GET", "/api/v1/auth/session", nil, nil)
 	path := "/api/v1/relay/session-events?task_id=" + task.ID + "&page_size=100"
 	for _, denied := range []string{"no_session", "cross_origin", "agent", "csrf"} {
@@ -231,11 +232,11 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		if denied == "csrf" {
 			method = "POST"
 		}
-		req, err := http.NewRequest(method, "http://127.0.0.1:17342"+path, nil)
+		req, err := http.NewRequest(method, client.baseURL+path, nil)
 		if err != nil {
 			t.Fatal("实际权限请求不可用")
 		}
-		req.Header.Set("Origin", "http://127.0.0.1:17342")
+		req.Header.Set("Origin", client.baseURL)
 		if denied == "cross_origin" {
 			req.Header.Set("Origin", "https://untrusted.example")
 		}
@@ -366,7 +367,7 @@ func readActualJSON(t *testing.T, path string, value any) {
 	defer f.Close()
 	decoder := json.NewDecoder(f)
 	decoder.DisallowUnknownFields()
-	if err := decoder.Decode(value); err != nil {
+	if err := decoder.Decode(value); err != nil || decoder.Decode(new(any)) != io.EOF {
 		t.Fatal("当前实际验证文件不可解码")
 	}
 }

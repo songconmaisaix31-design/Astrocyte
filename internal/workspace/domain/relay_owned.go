@@ -16,17 +16,19 @@ type RelayOwnedSession struct {
 	Gap          string     `json:"gap,omitempty"`
 	ExitedAt     *time.Time `json:"exited_at"`
 	// Process exit does not prove archive flushing or append-only semantics.
-	ArchiveFinalized  string                     `json:"archive_finalized"`
-	ArchiveAppendOnly string                     `json:"archive_append_only"`
-	WorkspaceRoot     string                     `json:"-"`
-	SourceRoot        string                     `json:"-"`
-	SessionID         string                     `json:"-"`
-	NativeID          string                     `json:"-"`
-	Ownership         string                     `json:"-"`
-	ArchivePath       string                     `json:"-"`
-	ArchiveRoot       string                     `json:"-"`
-	ArchiveFormat     string                     `json:"-"`
-	NativeCapture     *RelayNativeSessionCapture `json:"-"`
+	ArchiveFinalized   string                     `json:"archive_finalized"`
+	ArchiveAppendOnly  string                     `json:"archive_append_only"`
+	WorkspaceRoot      string                     `json:"-"`
+	SourceRoot         string                     `json:"-"`
+	SessionID          string                     `json:"-"`
+	NativeID           string                     `json:"-"`
+	Ownership          string                     `json:"-"`
+	ArchivePath        string                     `json:"-"`
+	ArchiveRoot        string                     `json:"-"`
+	ArchiveFormat      string                     `json:"-"`
+	NativeCapture      *RelayNativeSessionCapture `json:"-"`
+	ControllerID       string                     `json:"-"`
+	StartupOperationID string                     `json:"-"`
 }
 
 // RelaySessionArchive is positive source selection supplied by a trusted
@@ -60,14 +62,16 @@ type RelayNativeSessionEvent struct {
 
 // 覆盖范围是已持有 app-server 暴露的通知流，内部未暴露事件保持限制。
 type RelayNativeSessionCapture struct {
-	Events         []RelayNativeSessionEvent `json:"events"`
-	SourceStatus   string                    `json:"source_status"`
-	PrefixComplete string                    `json:"prefix_complete"`
-	Finalized      string                    `json:"finalized"`
-	LastSequence   int64                     `json:"last_sequence"`
-	Errors         int64                     `json:"errors"`
-	Unknown        int64                     `json:"unknown"`
-	FirstGap       string                    `json:"first_gap,omitempty"`
+	ControllerID       string                    `json:"-"`
+	StartupOperationID string                    `json:"-"`
+	Events             []RelayNativeSessionEvent `json:"events"`
+	SourceStatus       string                    `json:"source_status"`
+	PrefixComplete     string                    `json:"prefix_complete"`
+	Finalized          string                    `json:"finalized"`
+	LastSequence       int64                     `json:"last_sequence"`
+	Errors             int64                     `json:"errors"`
+	Unknown            int64                     `json:"unknown"`
+	FirstGap           string                    `json:"first_gap,omitempty"`
 }
 
 type RelayNativeSessionBatch struct {

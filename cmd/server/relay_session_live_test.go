@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -50,12 +51,21 @@ func TestRelaySessionActualService(t *testing.T) {
 		t.Fatal("实际验证中间目录必须使用当前 H 工作目录")
 	}
 	t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
-	port, err := configuredPositiveInt("ASTROCYTE_L1_API_PORT", 17342, 65534)
-	if err != nil {
-		t.Fatal("实际服务端口配置错误")
+	port := 17342
+	if raw := os.Getenv("ASTROCYTE_L1_API_PORT"); raw != "" {
+		port, err = strconv.Atoi(raw)
+		if err != nil || port < 0 || port > 65535 {
+			t.Fatal("实际服务端口配置错误")
+		}
 	}
-	apiURL := "http://127.0.0.1:" + strconv.Itoa(port)
-	webURL := "http://127.0.0.1:" + strconv.Itoa(port+1)
+	if (port == 0 || port == 65535) && os.Getenv("ASTROCYTE_L1_WEB_PORT") == "" {
+		t.Fatal("实际端口 0 验证必须明确独立 Web 端口")
+	}
+	webPort, err := configuredPositiveInt("ASTROCYTE_L1_WEB_PORT", port+1, 65535)
+	if err != nil {
+		t.Fatal("实际 Web 端口配置错误")
+	}
+	webURL := "http://127.0.0.1:" + strconv.Itoa(webPort)
 	root, err := relayRoot()
 	if err != nil {
 		t.Fatal("独立接入目录不可用")
@@ -137,21 +147,26 @@ func TestRelaySessionActualService(t *testing.T) {
 	}()
 	wrapped := services.Relay.(*relaySessionRuntime)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	server := httpapi.NewServer(httpapi.Config{Port: port, AllowedOrigins: []string{webURL}, Logger: logger, Services: services})
-	listener, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
+	listener, err := bindHTTPListener(port)
 	if err != nil {
 		t.Fatal("实际服务端口不可用")
 	}
-	transport := &http.Server{Handler: server.Handler(), ReadHeaderTimeout: 5 * time.Second}
+	defer listener.Close()
+	actualPort := listener.Addr().(*net.TCPAddr).Port
+	if actualPort == webPort {
+		t.Fatal("实际 API 与 Web 端口必须独立")
+	}
+	apiURL := "http://" + listener.Addr().String()
+	server := httpapi.NewServer(httpapi.Config{Port: actualPort, AllowedOrigins: []string{webURL}, Logger: logger, Services: services})
 	serveDone := make(chan error, 1)
-	go func() { serveDone <- transport.Serve(listener) }()
+	go func() { serveDone <- server.Serve(listener) }()
 	stopObserver := startRelayObserver(ctx, wrapped, logger)
 	defer func() {
 		cancel()
 		stopObserver()
 		closeCtx, closeCancel := context.WithTimeout(context.Background(), 15*time.Second)
 		defer closeCancel()
-		if err := transport.Shutdown(closeCtx); err != nil {
+		if err := server.Shutdown(closeCtx); err != nil {
 			t.Error("实际 HTTP 服务关闭失败")
 		}
 		if err := wrapped.Shutdown(closeCtx); err != nil {
@@ -161,7 +176,7 @@ func TestRelaySessionActualService(t *testing.T) {
 			t.Error("实际 HTTP 服务异常终止")
 		}
 	}()
-	client := newActualRelayHTTP(t)
+	client := newActualRelayHTTP(t, apiURL)
 	client.request(t, "GET", "/api/v1/auth/session", nil, nil)
 	var project domain.LocalProject
 	list, err := projects.ListProjects(ctx, domain.Caller{Kind: "human", ID: "local-human"})
@@ -265,17 +280,38 @@ type actualRelayHTTP struct {
 	baseURL string
 }
 
-func newActualRelayHTTP(t *testing.T) *actualRelayHTTP {
+func newActualRelayHTTP(t *testing.T, apiURL string) *actualRelayHTTP {
 	t.Helper()
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		t.Fatal("实际会话 Cookie 不可用")
 	}
-	port, err := configuredPositiveInt("ASTROCYTE_L1_API_PORT", 17342, 65534)
-	if err != nil {
-		t.Fatal("实际服务端口配置错误")
+	validateActualRelayAPIURL(t, apiURL)
+	return &actualRelayHTTP{client: &http.Client{Jar: jar, Timeout: 30 * time.Second}, baseURL: apiURL}
+}
+
+func actualRelayAPIURL(t *testing.T, evidence string) string {
+	t.Helper()
+	var public map[string]json.RawMessage
+	readActualJSON(t, filepath.Join(evidence, "service-public.json"), &public)
+	var apiURL string
+	if err := json.Unmarshal(public["api_url"], &apiURL); err != nil {
+		t.Fatal("实际服务地址记录不可解码")
 	}
-	return &actualRelayHTTP{client: &http.Client{Jar: jar, Timeout: 30 * time.Second}, baseURL: "http://127.0.0.1:" + strconv.Itoa(port)}
+	validateActualRelayAPIURL(t, apiURL)
+	return apiURL
+}
+
+func validateActualRelayAPIURL(t *testing.T, apiURL string) {
+	t.Helper()
+	parsed, err := url.Parse(apiURL)
+	if err != nil || parsed.Scheme != "http" || parsed.Hostname() != "127.0.0.1" || parsed.User != nil || parsed.Path != "" || parsed.RawQuery != "" || parsed.Fragment != "" {
+		t.Fatal("实际服务地址必须为明确的 loopback HTTP 地址")
+	}
+	port, err := strconv.Atoi(parsed.Port())
+	if err != nil || port < 1 || port > 65535 {
+		t.Fatal("实际服务地址缺少已绑定端口")
+	}
 }
 
 func (c *actualRelayHTTP) request(t *testing.T, method, path string, body map[string]any, result any) {

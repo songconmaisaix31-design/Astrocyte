@@ -1,6 +1,6 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前本域 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，前序业务 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前本域 SOURCE `b7709c9694efcc3c031e829abb2f08a120da2735`，窗口准备 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，前序业务 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 ## 完成内容
 
@@ -16,6 +16,10 @@ Relay 人工迁移按已确认规则使用 `observe`，事件接入核对使用 
 
 新窗口 observer、dispatch 和迟到观察脚本要求显式 `ASTROCYTE_TEST_RELAY_EVIDENCE_DIR`，限定为当前工作树 `.verification/` 内的独立子目录。已有对应文件时通过实际文件系统 `wx` 在浏览器启动和任何 HTTP 操作前立即拒绝。失败留下本次保留文件及日志，不能改目录重新执行未知派发。Session 浏览器验收读取同一显式目录，原注册到首次 DOM 的 180 秒、真实 GetEvent 和六字段断言均保留；旧 `l1-live` 文件保持原样。
 
+普通消费产品 UI SOURCE `27e9fd86f4a4d4f7ec29013a14670914b9f82c7a`，在现有共同工作区接入 `ProposalWorkspace`，保留搜索清除、页面刷新和成功写入后的父页刷新参数。当前面板读取真实提案集合，显示范围、预算未知与固定来源；批准、Grant、Context 写入尚未接入。实际两窗口验证空集合、真实 403、人工读取恢复，HTTP 写入为 0。
+
+模块已将 `workspace/proposals/**`、`swarm/SwarmPage.tsx` / `SwarmPage.module.css`、`swarm/missions/**` 以及 `e2e/s2-*.spec.ts` / `s3-*.spec.ts` 独占移交 `product-ui-20261015`，Task `task_d0cee5a583bb` / Dispatch `ctx_e6aafcccc10a`。F 已停止写入这些路径，继续负责共享 API / schema / hooks / auth / router / components、WorkspacePage 薄接入、DevelopmentSpacePanel、既有 E2E 与 Relay 唯一实际界面操作；新 UI 的业务返修归该 Owner。
+
 ## 精确源码消费
 
 普通消费 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、B 实际输入 `e05c013a08ccf372bb884dae5eeb3345f92173af`、私有附件 `cc46b9855775adf70bce74242d08ef84ff4f573b`、真实 URL helper `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、R 人工迁移 `d14b08dc50014baf9ee636543564b040112cf3b5`、H Reader 装配 `b247dfb12b938739f09acc73e6b7582376951a0c` 和真实 listener `1aadeebaba2330bb8b786989f577415da5208fd5`。
@@ -26,6 +30,8 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| 提案入口 `npm run typecheck` / `npm run lint` / `npm run build` | 退出 0 | `.verification/proposal-entry-typecheck-first.log`、`proposal-entry-lint-final.log`、`proposal-entry-build-first.log` |
+| 提案入口实际导航 / 空集合 / 权限拒绝 / 人工读取恢复 | 两种窗口 8 PASS，20.6 秒；实际生产 Go / SQLite / HTTP，无新模型调用 | `.verification/proposal-entry-playwright-first.log`；当前新增用例不覆盖原完整默认结果 |
 | 新窗口准备的 `npm run typecheck`、`npm run lint`、五个受影响 E2E 文件显式 `npx tsc --ignoreConfig --noEmit ...` | 退出 0；不声明原生窗口已执行 | `.verification/relay-evidence-e2e-typecheck.log` |
 | `node .verification/relay-evidence-preflight.mjs` | 目录必需 / 边界 / 独立目录和三个实际重复文件拒绝通过；原内容相等，浏览器 / HTTP / 模型操作 0 | `relay-evidence-preflight-current.log`；首次检查程序 FAIL 保留在 `relay-evidence-preflight-first.log` |
 | `npm run typecheck`、`npm run lint`、`npm run build` | 退出 0；保留现有约 515 kB 产物提示 | `.verification/typecheck-source-final.log`、`lint-source-final.log`、`web-build-source-final.log` |
@@ -64,11 +70,11 @@ B 原实际 README 结果为 `agent_inferred`、模型 `gpt-6.1-sol`、原生 ID
 | 剩余范围 | 当前状态 |
 | --- | --- |
 | 原三分钟窗口、目标完成及当前原档身份 | FAIL，历史不改 |
-| 新 v1.4 投递阶段、原生归属、输入 ready、恢复身份与人工上下文交接 | 已收到成对人工交接决定；准确 R / H SOURCE、OpenAPI 和 working 规则尚待交付，不手写或冻结接口 |
+| 新 v1.4 投递阶段、原生归属、输入 ready、恢复身份与人工上下文交接 | 已收到准确 R `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` / H `074cf55de4f2d87812a87cde77780c67b76c8fe5`，F 继续消费；working 规则仍待决定，不手写字段 |
 | EOF / structured、互斥与 generic 409、未知 send、第二 CLI、publication error | 原完整默认 22 项缺获准真实场景 FAIL，尚未通过 |
 | 新真实 CLI / Today / L1 完整验收 | 用户当前允许继续准备；在语义及根规则满足前未开启新窗口 |
 | 完整默认合并产品最终验收 | 尚未通过，203 / 41 / 32 / 4 保留 |
-| Agent 检索、Mission 创建等未确定业务范围 | 保持原边界，不扩大权限或实现未确认业务 |
+| S2 / S3 实际 Proposal / Grant / Context / Mission / WorkItem / Artifact | 用户已允许按 SPEC 实施；独立业务与 UI Owner 持续开发，准确公共契约消费及本次组合验收未完成 |
 | 生成 schema 中共享源英文说明 | 未自行改变共享源或生成内容；本域普通注释已中文化 |
 
 没有 push main、force push、Git 回滚、私有原件读取、正式实验执行或人工评分补填。后续字段、真实模型 / CLI 窗口和最终组合验收由当前任务及协调者的准确交付继续。

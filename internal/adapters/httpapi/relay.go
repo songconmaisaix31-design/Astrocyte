@@ -182,6 +182,7 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 		}
 	}
 	if s == nil {
+		mux.HandleFunc("GET /api/v1/relay/tasks/{id}/facts", read(h.relayFacts))
 		for _, route := range []string{"GET /api/v1/relay/agents", "GET /api/v1/relay/projects", "GET /api/v1/relay/tasks", "GET /api/v1/relay/tasks/{id}", "GET /api/v1/relay/tasks/{id}/events", "GET /api/v1/relay/tasks/{id}/receipts", "POST /api/v1/relay/intents", "POST /api/v1/relay/intents/{id}/confirm", "POST /api/v1/relay/tasks/{id}/send", "POST /api/v1/relay/tasks/{id}/read", "POST /api/v1/relay/tasks/{id}/stop", "POST /api/v1/relay/tasks/{id}/resume", "POST /api/v1/relay/tasks/{id}/transition", "POST /api/v1/relay/tasks/{id}/events/reconcile"} {
 			mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
 				h.relayResult(w, r, nil, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable})
@@ -222,6 +223,7 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 		}{1, a, inventory}, nil
 	}))
 	mux.HandleFunc("GET /api/v1/relay/projects", read(h.relayProjects))
+	mux.HandleFunc("GET /api/v1/relay/tasks/{id}/facts", read(h.relayFacts))
 	mux.HandleFunc("GET /api/v1/relay/tasks", read(func(r *http.Request) (any, error) {
 		v, err := s.ListTasks(r.Context(), localCaller(r))
 		if err != nil {

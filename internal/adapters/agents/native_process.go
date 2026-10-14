@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"log/slog"
 	"os"
@@ -46,6 +47,11 @@ type nativeProcess struct {
 	startedAt, deadlineAt time.Time
 	permissionPolicy      string
 	firstProtocolFailure  *RelayProtocolFailure
+	operationMu           sync.Mutex
+	relayEvidence         domain.RelayControllerEvidence
+	inputOperationID      string
+	relayStartedTurns     map[string]time.Time
+	relayPublishedTurns   map[string]bool
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -146,6 +152,7 @@ func launchNative(id string, args []string, root string, lifetime time.Duration,
 		return nil, err
 	}
 	p.startedAt = time.Now().UTC()
+	p.relayEvidence = domain.RelayControllerEvidence{ControllerID: uuid.NewString(), Provider: id, WorkspaceRoot: root, Facts: []domain.RelayDriverFact{}}
 	p.deadlineAt, _ = ctx.Deadline()
 	go p.read(out)
 	go func() {
@@ -222,6 +229,11 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 	}
 	if err := p.write(request); err != nil {
 		return nil, nativeError(apierrors.DeliveryUnknown, "native request delivery is unknown")
+	}
+	if method == "turn/start" || method == "prompt" {
+		p.mu.Lock()
+		p.relayFact("input_written", "native_request_pipe", p.inputOperationID)
+		p.mu.Unlock()
 	}
 	select {
 	case response := <-ch:
@@ -426,10 +438,11 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		p.textMessage = ""
 	}
 	var params struct {
-		Delta  string `json:"delta"`
-		ItemID string `json:"itemId"`
-		TurnID string `json:"turnId"`
-		Turn   struct {
+		ThreadID string `json:"threadId"`
+		Delta    string `json:"delta"`
+		ItemID   string `json:"itemId"`
+		TurnID   string `json:"turnId"`
+		Turn     struct {
 			ID     string `json:"id"`
 			Status string `json:"status"`
 		} `json:"turn"`
@@ -450,9 +463,36 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		if params.Turn.ID == "" {
 			return nativeError(apierrors.DeliveryUnknown, "native turn identity is unavailable")
 		}
+		if p.relayEvidence.StartupOperationID != "" {
+			if p.relayPublishedTurns[params.Turn.ID] {
+				break
+			}
+			if params.ThreadID == "" || params.ThreadID != p.nativeID || p.turnID != "" && p.turnID != params.Turn.ID {
+				return nativeError(apierrors.ScopeDenied, "turn start differs from the original thread or turn")
+			}
+			if p.turnID == "" {
+				if p.relayStartedTurns == nil {
+					p.relayStartedTurns = map[string]time.Time{}
+				}
+				if len(p.relayStartedTurns) >= 256 {
+					return nativeError(apierrors.BudgetExhausted, "unbound turn observations exceed the limit")
+				}
+				if _, exists := p.relayStartedTurns[params.Turn.ID]; !exists {
+					p.relayStartedTurns[params.Turn.ID] = time.Now().UTC()
+				}
+				break
+			}
+		}
 		p.status = "running"
 		p.turnID = params.Turn.ID
 		p.addEvent("turn_started", "")
+		if p.relayEvidence.StartupOperationID != "" {
+			p.relayFact("turn_started", "codex_turn_started", p.inputOperationID)
+			if p.relayPublishedTurns == nil {
+				p.relayPublishedTurns = map[string]bool{}
+			}
+			p.relayPublishedTurns[params.Turn.ID] = true
+		}
 	case "turn/completed":
 		if params.Turn.ID == "" || params.Turn.Status == "" {
 			return nativeError(apierrors.DeliveryUnknown, "native turn completion is unavailable")
@@ -465,6 +505,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	case "agent_start":
 		p.status = "running"
 		p.addEvent("turn_started", "")
+		p.relayFact("turn_started", "pi_agent_start", p.inputOperationID)
 	case "agent_settled":
 		if p.status != "failed" {
 			p.status = "completed"
@@ -524,6 +565,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			p.provider = "configured_cli_transport"
 			p.modelObservedAt = time.Now()
 			p.addEvent("native_session_initialized", "")
+			p.relayFact("session_confirmed", "claude_system_init", p.relayEvidence.StartupOperationID)
 		}
 	case "assistant":
 		var message struct {
