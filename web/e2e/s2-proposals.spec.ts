@@ -1,5 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { realService, registerCurrentProject } from './realService';
+import { importTrackedDocument, realService, registerCurrentProject } from './realService';
 import { humanAPI } from '../../tests/s1/api.mjs';
 import { join } from 'node:path';
 import { readdir } from 'node:fs/promises';
@@ -241,5 +241,44 @@ test('实际人工拒绝固定提案版本，保留内容且不签发Grant或启
     await server.restart();
     const restarted = await humanAPI(server.apiURL);
     expect((await restarted.get(`/proposals/${proposal.id}`) as components['schemas']['S2ProposalResultV1']).proposal).toEqual(result.proposal);
+  } finally { await server.close({ preserveData: true }); }
+});
+
+test('真实固定资料引用经界面保存，项目移除引用后保留历史且新审阅拒绝', async ({ page }) => {
+  test.setTimeout(180_000);
+  const { server, api } = await realService();
+  try {
+    const { project, proposal } = await prepareDraft(api);
+    const imported = await importTrackedDocument(api);
+    const material = imported.detail.material;
+    const space = (await api.get(`/project-spaces/${project.space_id}`) as components['schemas']['ProjectSpaceResultV1']).space;
+    const included = (await api.write(`/project-spaces/${project.space_id}/references`, { expected_version: space.version, material_id: material.id, revision: 1 }) as components['schemas']['ProjectSpaceResultV1']).space;
+    expect(included.material_refs).toHaveLength(1);
+    const dialog = await openDraft(page, server.webURL, proposal);
+    await dialog.getByRole('button', { name: '编辑新版本', exact: true }).click();
+    const picker = dialog.getByRole('group', { name: '项目已纳入的固定资料版本', exact: true });
+    await expect(picker).toContainText(included.material_refs[0].locator);
+    await picker.getByRole('checkbox').check();
+    const savedResponse = page.waitForResponse(response => response.url().endsWith(`/proposals/${proposal.id}`) && response.request().method() === 'PUT');
+    await dialog.getByRole('button', { name: '保存新版本', exact: true }).click();
+    const saved = await savedResponse;
+    expect(saved.status()).toBe(200);
+    const fixed = (await saved.json() as components['schemas']['S2ProposalResultV1']).proposal;
+    expect(fixed.content.inputs).toEqual([{ material_id: material.id, revision: 1 }]);
+    expect((await api.get(`/proposals/${proposal.id}?revision=1`) as components['schemas']['S2ProposalResultV1']).proposal.content).toEqual(proposal.content);
+    await api.write(`/project-spaces/${project.space_id}/references/remove`, { expected_version: included.version, material_id: material.id });
+    await page.reload();
+    const reopened = page.getByRole('dialog', { name: '提案详情', exact: true });
+    await page.getByRole('button', { name: `查看提案 ${proposal.content.title}`, exact: true }).click();
+    await reopened.getByRole('button', { name: '编辑新版本', exact: true }).click();
+    await expect(reopened.getByRole('alert').filter({ hasText: '以下已保存引用当前未出现在所选项目空间中' })).toBeVisible();
+    await reopened.getByRole('button', { name: '关闭编辑', exact: true }).click();
+    const deniedResponse = page.waitForResponse(response => response.url().endsWith(`/proposals/${proposal.id}/submit`));
+    await reopened.getByRole('button', { name: '提交审阅', exact: true }).click();
+    const denied = await deniedResponse;
+    expect(denied.status()).toBe(403);
+    expect((await denied.json() as components['schemas']['ErrorV1']).error.code).toBe('scope_denied');
+    expect((await api.get(`/proposals/${proposal.id}?revision=2`) as components['schemas']['S2ProposalResultV1']).proposal).toEqual(fixed);
+    expect(server.query('SELECT COUNT(*) AS count FROM workspace_approvals WHERE proposal_id=?', proposal.id)).toEqual([{ count: 0 }]);
   } finally { await server.close({ preserveData: true }); }
 });
