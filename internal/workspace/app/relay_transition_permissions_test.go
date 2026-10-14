@@ -103,6 +103,9 @@ func TestRelayHumanTransitionProductionPermissionGates(t *testing.T) {
 			relayTransitionPermissionHTTP(t, service, intent.Task.ID, cmd, http.StatusConflict, apierrors.VersionConflict)
 			_, err = service.(app.RelayLifecycle).ReconcileEvents(ctx, caller(), intent.Task.ID)
 			checkCode(t, err, apierrors.ApprovalRequired)
+			if level == "A" {
+				relayFactsAcrossSQLiteConnections(t, ctx, store, stateRoot, service, works, db, registry, root, intent.Task.ID)
+			}
 			before, err := store.Snapshot(ctx)
 			if err != nil {
 				t.Fatal(err)
@@ -138,11 +141,51 @@ func TestRelayHumanTransitionProductionPermissionGates(t *testing.T) {
 			if err != nil || len(state.Workspaces) != 0 || len(state.Terminals) != 0 || len(state.Sessions) != 0 || len(state.OwnedSessions) != 0 || len(state.PendingActions) != 0 {
 				t.Fatal("permission check created execution state")
 			}
+			if level == "A" {
+				handoffService := app.NewRelayService(store, works, db, relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: true}), agents.NewRelayNativeDriver(registry), nil, nil, app.RelayServiceOptions{Agents: []domain.AgentSpec{{Name: "codex", DriveMode: "structured"}, {Name: "claude", DriveMode: "structured"}}})
+				settings.ExternalModelCLI = "claude"
+				project, err = projects.SetProjectSettings(ctx, caller(), project.ID, domain.SettingsCommand{ExpectedRevision: project.Settings.Revision, Settings: settings})
+				if err != nil {
+					t.Fatal(err)
+				}
+				cases := []struct {
+					name, from string
+					confirmed  bool
+					code       apierrors.Code
+					status     int
+				}{
+					{"missing_confirmation", intent.Task.ID, false, apierrors.ValidationFailed, http.StatusBadRequest},
+					{"missing_source", "", true, apierrors.ValidationFailed, http.StatusBadRequest},
+					{"invalid_source", "invalid", true, apierrors.ValidationFailed, http.StatusBadRequest},
+					{"absent_source", uuid.NewString(), true, apierrors.NotFound, http.StatusNotFound},
+					{"unreleased_source", intent.Task.ID, true, apierrors.VersionConflict, http.StatusConflict},
+				}
+				for _, test := range cases {
+					command := app.RelayIntentCommand{WorkID: album.Works[0].ID, ProjectID: project.ID, Agent: "claude", Task: "Read the public human handoff documentation", HandoffFromTaskID: test.from, HandoffContextConfirmed: test.confirmed}
+					_, err = handoffService.CreateIntent(ctx, caller(), command)
+					checkCode(t, err, test.code)
+					relayPermissionHTTP(t, handoffService, "/api/v1/relay/intents", command, test.status, test.code)
+				}
+				command := app.RelayIntentCommand{WorkID: album.Works[0].ID, ProjectID: project.ID, Agent: "claude", Task: "Read public documentation in a new session"}
+				ordinary, err := handoffService.CreateIntent(ctx, caller(), command)
+				if err != nil || ordinary.Task.State != domain.RelayReady {
+					t.Fatal("ordinary intent without a handoff declaration failed")
+				}
+				after, err := store.Snapshot(ctx)
+				if err != nil || len(after.Tasks) != 2 || len(after.HandoffDeclarations) != 0 || len(after.ControllerEvidence) != 0 || len(after.SessionRelations) != 0 || len(after.Workspaces) != 0 {
+					t.Fatal("rejected handoff created a relationship or execution")
+				}
+				t.Log("production HTTP and SQLite rejected five invalid handoff declarations; an omitted declaration created only an ordinary ready intent")
+			}
 		})
 	}
 }
 
 func relayTransitionPermissionHTTP(t *testing.T, service app.RelayRuntime, id string, cmd app.RelayTransitionCommand, status int, code apierrors.Code) {
+	relayPermissionHTTP(t, service, "/api/v1/relay/tasks/"+id+"/transition", cmd, status, code)
+}
+
+func relayPermissionHTTP(t *testing.T, service app.RelayRuntime, path string, cmd any, status int, code apierrors.Code) {
 	t.Helper()
 	server := httptest.NewServer(httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Relay: service}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}).Handler())
 	defer server.Close()
@@ -162,7 +205,7 @@ func relayTransitionPermissionHTTP(t *testing.T, service app.RelayRuntime, id st
 	if err != nil {
 		t.Fatal(err)
 	}
-	req, err := http.NewRequest(http.MethodPost, server.URL+"/api/v1/relay/tasks/"+id+"/transition", strings.NewReader(string(body)))
+	req, err := http.NewRequest(http.MethodPost, server.URL+path, strings.NewReader(string(body)))
 	if err != nil {
 		t.Fatal(err)
 	}

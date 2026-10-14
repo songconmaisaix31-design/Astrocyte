@@ -232,8 +232,12 @@ func (c *relayNativeCapture) snapshot(stopped bool) domain.RelayNativeSessionCap
 }
 
 func (n *Native) StartRelay(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
+	return n.StartRelayOperation(ctx, r, "")
+}
+
+func (n *Native) StartRelayOperation(ctx context.Context, r domain.NativeRequest, operation string) (domain.NativeSession, error) {
 	if n.id != "codex" {
-		return n.Start(ctx, r)
+		return n.start(ctx, r, false, operation)
 	}
 	capture := newRelayNativeCapture(r.Project.Root)
 	n.mu.Lock()
@@ -242,21 +246,42 @@ func (n *Native) StartRelay(ctx context.Context, r domain.NativeRequest) (domain
 	}
 	n.relayCaptures[r.SessionID] = capture
 	n.mu.Unlock()
-	return n.Start(ctx, r)
+	return n.start(ctx, r, false, operation)
 }
 
 func (n *Native) ResumeRelay(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
+	return n.ResumeRelayOperation(ctx, r, "")
+}
+
+func (n *Native) ResumeRelayOperation(ctx context.Context, r domain.NativeRequest, operation string) (domain.NativeSession, error) {
+	if operation != "" {
+		if err := n.validateRelayResume(ctx, r, operation); err != nil {
+			return r.Session, err
+		}
+	}
 	if n.id != "codex" {
+		if operation != "" {
+			return n.ResumeOperation(ctx, r, operation)
+		}
 		return n.Resume(ctx, r)
 	}
 	n.mu.Lock()
 	previous := n.relayCaptures[r.SessionID]
 	n.mu.Unlock()
 	if previous == nil {
+		if operation != "" {
+			return n.ResumeOperation(ctx, r, operation)
+		}
 		return n.Resume(ctx, r)
 	}
 	capture := newRelayNativeCapture(r.Project.Root)
 	capture.state = previous.snapshot(false)
+	if operation != "" {
+		// 新连接从自身序号开始；旧连接的派生事件由原事件库保存。
+		capture.state.Events = []domain.RelayNativeSessionEvent{}
+		capture.state.LastSequence = 0
+		capture.state.PrefixComplete, capture.state.Finalized = "unknown", "unknown"
+	}
 	previous.mu.Lock()
 	capture.previousPath = previous.path
 	previous.mu.Unlock()
@@ -268,6 +293,9 @@ func (n *Native) ResumeRelay(ctx context.Context, r domain.NativeRequest) (domai
 	n.mu.Lock()
 	n.relayCaptures[r.SessionID] = capture
 	n.mu.Unlock()
+	if operation != "" {
+		return n.ResumeOperation(ctx, r, operation)
+	}
 	return n.Resume(ctx, r)
 }
 
@@ -284,6 +312,9 @@ func (n *Native) OwnedRelayNativeCapture(ctx context.Context, session domain.Nat
 	}
 	capture := p.relayCapture
 	state := capture.snapshot(p.observe().StopConfirmed)
+	p.mu.Lock()
+	state.ControllerID, state.StartupOperationID = p.relayEvidence.ControllerID, p.relayEvidence.StartupOperationID
+	p.mu.Unlock()
 	capture.mu.Lock()
 	failed := capture.failed
 	capture.mu.Unlock()

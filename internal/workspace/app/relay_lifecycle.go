@@ -125,11 +125,13 @@ func (s *relayService) ownedAction(ctx context.Context, id, action string) error
 		}
 		current.PendingActions[id] = r.ID
 		current.Receipts[r.ID] = r
+		s.claimFact(current, r)
 		return nil
 	})
 	if err != nil {
 		return err
 	}
+	launch.OperationID = r.OperationID
 	obs, err := driver.Stop(ctx, launch)
 	_, err = s.finish(ctx, domain.Caller{}, r, obs, err, false)
 	return err
@@ -138,6 +140,9 @@ func (s *relayService) ownedAction(ctx context.Context, id, action string) error
 var errRelayObservationUnchanged = errors.New("relay observation unchanged")
 
 func (s *relayService) observationChanged(st RelayState, launch RelayLaunch, obs RelayObservation, git *string) bool {
+	if obs.Evidence != nil && !reflect.DeepEqual(*obs.Evidence, st.ControllerEvidence[st.Workspaces[launch.Workspace.ID].ActiveTaskID]) {
+		return true
+	}
 	t := st.Terminals[launch.Terminal.ID]
 	if obs.ExitConfirmed && t.ExitedAt == nil {
 		return true
