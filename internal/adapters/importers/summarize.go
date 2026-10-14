@@ -38,6 +38,11 @@ type Segment struct {
 // ParseSummarizeJSON accepts the installed 0.21.8 CLI output (extract or
 // summary). Original JSON is retained; unknown usage/cost is not filled in.
 func ParseSummarizeJSON(raw []byte) (Export, error) {
+	return parseSummarizeJSON(raw, false)
+}
+
+// 媒体管线只允许上游明确返回的无字幕页面继续进入同一视频转写。
+func parseSummarizeJSON(raw []byte, allowPageOnly bool) (Export, error) {
 	var v struct {
 		Input struct {
 			URL string `json:"url"`
@@ -82,7 +87,9 @@ func ParseSummarizeJSON(raw []byte) (Export, error) {
 		v.Extracted.Diagnostics.Strategy == "html" && v.Extracted.Diagnostics.Transcript.TextProvided != nil && !*v.Extracted.Diagnostics.Transcript.TextProvided &&
 		v.Extracted.TranscriptSource == nil && len(v.Extracted.TranscriptSegments) == 0 && bytes.Equal(bytes.TrimSpace(v.LLM), []byte("null")) &&
 		(strings.TrimSpace(v.Summary) == "" || strings.TrimSpace(v.Summary) == strings.TrimSpace(v.Extracted.Content)) {
-		return Export{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "Bilibili page extraction contains no video transcript or generated summary", RequiredAction: "provide_existing_video_summary_or_real_subtitle_export"}
+		if !allowPageOnly {
+			return Export{}, &apierrors.ServiceError{Code: apierrors.EvidenceMissing, Message: "Bilibili page extraction contains no video transcript or generated summary", RequiredAction: "provide_existing_video_summary_or_real_subtitle_export"}
+		}
 	}
 	if v.Input.URL != "" && v.Extracted.URL != "" && v.Input.URL != v.Extracted.URL {
 		// Redirects are legitimate. Both values remain in the immutable export;

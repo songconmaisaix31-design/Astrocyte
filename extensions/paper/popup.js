@@ -1,7 +1,4 @@
-// Astrocyte Paper popup. On an explicit human click it injects the vendored
-// Readability and the extraction core into the current tab only (activeTab),
-// then shows title/abstract/identity and the observed content state. Import is
-// a separate explicit action; a snapshot is never auto-imported.
+// 人工点击后，仅在当前 activeTab 注入 Readability 和提取模块；入库由人工单独确认。
 "use strict";
 
 const result = document.getElementById("result");
@@ -73,8 +70,9 @@ async function copySnapshot(snapshot) {
   try {
     await navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2));
     hint.textContent = "已复制快照到剪贴板；请在 Astrocyte 应用中粘贴并人工确认入库。";
-  } catch {
-    hint.textContent = "复制失败；请手动记录标题与来源。";
+  } catch (error) {
+    hint.textContent = `复制失败：${error.message || error}`;
+    throw error;
   }
 }
 

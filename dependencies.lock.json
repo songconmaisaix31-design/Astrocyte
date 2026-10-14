@@ -38,14 +38,34 @@
       "vitest": "5.0.3"
     },
     "go": {
+      "github.com/dop251/goja": "v0.0.0-20261013122152-245c54f48cfc",
+      "github.com/google/uuid": "v1.6.0",
+      "golang.org/x/net": "v0.61.0",
+      "golang.org/x/sys": "v0.49.0",
+      "mvdan.cc/sh/v3": "v3.14.1",
       "modernc.org/sqlite": "v1.60.1"
     }
   },
   "authoritative_graphs": [
     "pnpm-lock.yaml",
     "go.mod",
-    "go.sum"
+    "go.sum",
+    "requirements-validation.txt"
   ],
+  "validation_python": {
+    "requirements": "requirements-validation.txt",
+    "dependencies": {
+      "pygit2": "1.20.1",
+      "cffi": "2.1.1",
+      "pycparser": "3.11"
+    },
+    "licenses": {
+      "pygit2": "GPLv2 with linking exception",
+      "cffi": "MIT-0",
+      "pycparser": "BSD-3-Clause"
+    },
+    "libgit2": "1.9.7"
+  },
   "external_media": {
     "platform": "windows-x64",
     "python_minimum": "3.10",

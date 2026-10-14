@@ -49,7 +49,10 @@ func TestSemanticParserRetainsDynamicAndIgnoresQuotedCalls(t *testing.T) {
 		{`await tools[toolName]({})`, []string{"unresolved_structure"}},
 	}
 	for i, c := range cases {
-		children := SemanticTools("codex", semanticFixture("exec", c.code), 0)
+		children, err := SemanticTools("codex", semanticFixture("exec", c.code), 0)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if len(children) != len(c.buckets) {
 			t.Fatalf("case %d child count %d", i, len(children))
 		}
@@ -93,7 +96,10 @@ func TestSemanticLiteralConstDataExpressionsAndShellAST(t *testing.T) {
 		`await tools.exec_command({cmd:"$env:GOFLAGS='-p=1';go test ./...;if ($LASTEXITCODE) { exit 1 }"});`,
 		`const script="python - <<'PY'\nprint('not a command: rg fake')\nPY\n";await tools.exec_command({cmd:script});`,
 	} {
-		children := SemanticTools("codex", semanticFixture("exec", code), 0)
+		children, err := SemanticTools("codex", semanticFixture("exec", code), 0)
+		if err != nil {
+			t.Fatal(err)
+		}
 		want := "cognitive_search"
 		if i >= 2 {
 			want = "noncognitive_shell"
@@ -114,7 +120,7 @@ func TestStaticQuoteHelperConstantFoldingDoesNotEvaluateCode(t *testing.T) {
 		t.Fatalf("literal quote helper failed: err=%v children=%d bucket=%s reason=%s", err, len(children), children[0].Bucket, children[0].Reason)
 	}
 	malicious := `const quote = s => eval(s);await tools.exec_command({cmd:quote("rg fixture")});`
-	if got := SemanticTools("codex", semanticFixture("exec", malicious), 0); len(got) != 1 || got[0].Bucket != "unresolved_structure" {
+	if got, err := SemanticTools("codex", semanticFixture("exec", malicious), 0); err != nil || len(got) != 1 || got[0].Bucket != "unresolved_structure" {
 		t.Fatal("arbitrary helper evaluated")
 	}
 }
@@ -129,7 +135,10 @@ func TestInvalidWrapperNeverPromotesPrefixCalls(t *testing.T) {
 
 func TestLiteralObjectPropertiesRequireUnmutatedBindings(t *testing.T) {
 	for i, code := range []string{`const config={cmd:'rg fixture'};await tools.exec_command({cmd:config.cmd});`, `const config={cmd:'rg fixture'};config.cmd=dynamic;await tools.exec_command({cmd:config.cmd});`} {
-		got := SemanticTools("codex", semanticFixture("exec", code), 0)
+		got, err := SemanticTools("codex", semanticFixture("exec", code), 0)
+		if err != nil {
+			t.Fatal(err)
+		}
 		want := "cognitive_search"
 		if i == 1 {
 			want = "unresolved_structure"
@@ -193,7 +202,10 @@ func TestClosedForOfRejectsAmbiguityMutationAndRuntimeControl(t *testing.T) {
 		`function run(){for(const cmd of ['rg first','rg second']){await tools.exec_command({cmd});}}`,
 		`if(ready) for(const config of [{cmd:'rg first'},{cmd:'rg second'}]){await tools.exec_command({cmd:config.cmd});}`,
 	} {
-		children := SemanticTools("codex", semanticFixture("exec", code), 0)
+		children, err := SemanticTools("codex", semanticFixture("exec", code), 0)
+		if err != nil {
+			t.Fatal(err)
+		}
 		if len(children) != 1 || children[0].Bucket != "unresolved_structure" {
 			t.Fatalf("unsafe closed loop case %d promoted a call", i)
 		}

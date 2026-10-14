@@ -1,22 +1,19 @@
-// Package foundation provides the neutral foundation service for S0.
-//
-// This service is not part of any bounded context. It provides
-// health checks and foundation status reporting.
+// Package foundation 提供 S0 健康检查与基础能力状态。
 package foundation
 
 import "context"
 
-// SchemaVersion is the API response schema version for S0.
+// SchemaVersion 是 S0 响应版本。
 const SchemaVersion = 1
 
-// HealthResponse is the health check response.
+// HealthResponse 是健康检查响应。
 type HealthResponse struct {
 	SchemaVersion int    `json:"schema_version"`
 	Status        string `json:"status"`
 	Service       string `json:"service"`
 }
 
-// FoundationResponse describes the current foundation state.
+// FoundationResponse 描述当前基础能力。
 type FoundationResponse struct {
 	SchemaVersion int          `json:"schema_version"`
 	Stage         string       `json:"stage"`
@@ -25,7 +22,7 @@ type FoundationResponse struct {
 	Fixture       bool         `json:"fixture"`
 }
 
-// Capabilities lists which feature flags are active.
+// Capabilities 列出启用的功能。
 type Capabilities struct {
 	Imports      bool `json:"imports"`
 	Approvals    bool `json:"approvals"`
@@ -34,13 +31,13 @@ type Capabilities struct {
 	Handoff      bool `json:"handoff"`
 }
 
-// StorageInfo describes the storage backend.
+// StorageInfo 描述存储。
 type StorageInfo struct {
 	Engine        string `json:"engine"`
 	SchemaVersion int    `json:"schema_version"`
 }
 
-// Service provides the foundation status endpoints.
+// Service 提供基础状态接口。
 type Service interface {
 	Health(ctx context.Context) (HealthResponse, error)
 	Foundation(ctx context.Context) (FoundationResponse, error)
@@ -51,18 +48,20 @@ type service struct {
 	attention            bool
 }
 
-// NewService creates the S0 foundation service.
+// NewService 创建 S0 服务。
 func NewService(storageSchemaVersion int) Service {
 	return &service{storageSchemaVersion: storageSchemaVersion}
 }
 
-// NewAttentionService reports the assembled S1 import capability; it does not
-// imply approvals, execution, automatic judgment or native agent readiness.
+// NewAttentionService 报告已经组装的 S1 导入能力。
 func NewAttentionService(storageSchemaVersion int) Service {
 	return &service{storageSchemaVersion: storageSchemaVersion, attention: true}
 }
 
-func (s *service) Health(_ context.Context) (HealthResponse, error) {
+func (s *service) Health(ctx context.Context) (HealthResponse, error) {
+	if err := ctx.Err(); err != nil {
+		return HealthResponse{}, err
+	}
 	return HealthResponse{
 		SchemaVersion: SchemaVersion,
 		Status:        "ok",
@@ -70,7 +69,10 @@ func (s *service) Health(_ context.Context) (HealthResponse, error) {
 	}, nil
 }
 
-func (s *service) Foundation(_ context.Context) (FoundationResponse, error) {
+func (s *service) Foundation(ctx context.Context) (FoundationResponse, error) {
+	if err := ctx.Err(); err != nil {
+		return FoundationResponse{}, err
+	}
 	stage := "S0"
 	if s.attention {
 		stage = "S1"

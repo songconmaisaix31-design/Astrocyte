@@ -5,8 +5,10 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	"math"
 	"net/url"
 	"os"
 	"os/exec"
@@ -19,13 +21,10 @@ import (
 //go:embed summarize-media.mjs
 var summarizeMediaBridge []byte
 
-// All paths are trusted startup configuration. Empty tools permit captions,
-// never a cloud fallback. The bridge uses only pinned upstream media code.
+// 路径来自可信启动配置；媒体处理使用固定版本的上游接口。
 type SummarizeOptions struct {
 	Version, YtDlpPath, FFmpegPath, WhisperBinary, WhisperModel string
-	// UVXPath points at the uvx binary summarize uses to convert a local PDF to
-	// markdown. It is only required for paper_pdf extraction; empty means PDF
-	// extraction is unavailable, which is reported honestly rather than guessed.
+	// UVXPath 指定实际 uvx 程序，供 paper_pdf 转换使用。
 	UVXPath string
 	Timeout time.Duration
 }
@@ -67,11 +66,13 @@ func NewSummarizeExtractorWithOptions(nodeExecutable, cliPath string, o Summariz
 			return nil, err
 		}
 	} else if resolved, err := exec.LookPath("uvx"); err == nil {
-		// Best-effort: use the ambient uvx when no explicit path is configured.
-		// PDF extraction remains optional; its absence is reported as unavailable.
-		if abs, err := filepath.Abs(resolved); err == nil {
-			o.UVXPath = abs
+		abs, err := filepath.Abs(resolved)
+		if err != nil {
+			return nil, err
 		}
+		o.UVXPath = abs
+	} else if !errors.Is(err, exec.ErrNotFound) {
+		return nil, err
 	}
 	return &SummarizeExtractor{nodeExecutable, cliPath, o}, nil
 }
@@ -102,7 +103,7 @@ func (e *SummarizeExtractor) isolatedEnv(home string, media bool) []string {
 			env = append(env, k+"="+v)
 		}
 	}
-	// Upstream cleanup needs the OS taskkill; unrelated PATH tools stay excluded.
+	// 上游清理需要系统 taskkill，PATH 仅包含所需程序目录。
 	if root := os.Getenv("SystemRoot"); root != "" {
 		paths = append(paths, filepath.Join(root, "System32"))
 	}
@@ -119,18 +120,13 @@ func extractionAction(message, fallback string) string {
 	return fallback
 }
 
-// paperPDFResult is the local markdown extraction of one already-downloaded PDF,
-// plus the immutable original summarize JSON for provenance. Text is empty when
-// the document yields no readable content; it is never guessed or OCR-filled
-// without an explicit model key, which this path does not use.
+// paperPDFResult 保存实际 PDF 提取文字和原始 summarize JSON。
 type paperPDFResult struct {
 	Text     string
 	Original []byte
 }
 
-// ExtractPDF converts an already-downloaded public PDF to markdown using the
-// pinned summarize local-PDF path (uvx + markitdown), never an LLM. The PDF
-// bytes are written to a private temp file; no URL is fetched here.
+// ExtractPDF 使用固定 summarize、uvx 和 markitdown 提取已下载的公开 PDF。
 func (e *SummarizeExtractor) ExtractPDF(ctx context.Context, pdfURL string, pdfBytes []byte) (paperPDFResult, error) {
 	if e.Options.Version != "0.25.1" {
 		return paperPDFResult{}, dependencyError("paper PDF extraction requires summarize 0.25.1")
@@ -150,8 +146,7 @@ func (e *SummarizeExtractor) ExtractPDF(ctx context.Context, pdfURL string, pdfB
 	defer os.RemoveAll(home)
 	env := e.isolatedEnv(home, false)
 	env = append(env, "UVX_PATH="+e.Options.UVXPath)
-	// uv reuses its package cache across runs; pointing it at a stable location
-	// avoids re-downloading markitdown[all] on every single-paper extraction.
+	// uv 使用固定缓存目录，复用实际安装的 markitdown 包。
 	env = append(env, "UV_CACHE_DIR="+filepath.Join(home, "uv-cache"))
 	if err = e.verifyVersion(ctx, env); err != nil {
 		return paperPDFResult{}, err
@@ -205,7 +200,7 @@ func (e *SummarizeExtractor) verifyVersion(ctx context.Context, env []string) er
 	return nil
 }
 
-// Extract remains restricted to fixed official arXiv HTML, with media disabled.
+// Extract 仅处理固定版本的官方 arXiv HTML。
 func (e *SummarizeExtractor) Extract(ctx context.Context, locator string) (Export, error) {
 	id, err := NormalizeArxivID(locator)
 	if err != nil || !revisionSuffix.MatchString(id) || locator != "https://arxiv.org/html/"+id {
@@ -249,7 +244,7 @@ func (e *SummarizeExtractor) Extract(ctx context.Context, locator string) (Expor
 var bilibiliVideoPath = regexp.MustCompile(`^/video/BV[0-9A-Za-z]{10}/?$`)
 var youtubeVideoID = regexp.MustCompile(`^[0-9A-Za-z_-]{11}$`)
 
-// Do not send playlists/search, credentials, arbitrary hosts or LAN URLs to yt-dlp.
+// yt-dlp 仅接收经过验证的公开视频单条 URL。
 func validateVideoURL(locator string) error {
 	u, err := url.Parse(locator)
 	if err != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || u.Fragment != "" {
@@ -310,7 +305,7 @@ func validateVideoURL(locator string) error {
 	return nil
 }
 
-// Original failure outputs can be saved by live probes without accepting page text.
+// 实际验证可以保存首次失败原件。
 type ExtractionFailure struct {
 	Err                           error
 	CLIJSON, CLIStderr, MediaJSON []byte
@@ -349,7 +344,7 @@ func (e *SummarizeExtractor) ExtractVideo(ctx context.Context, locator string) (
 		return Export{}, err
 	}
 	defer stdin.Close()
-	// EOF uses upstream tracked-child cleanup before WaitDelay's kill fallback.
+	// stdin EOF 先触发上游子进程清理，WaitDelay 限制剩余等待时间。
 	cmd.Cancel = func() error { return stdin.Close() }
 	var out, stderr cappedOutput
 	cmd.Stdout = &out
@@ -381,23 +376,33 @@ func (e *SummarizeExtractor) decodeVideoResult(locator string, output []byte, st
 	if runErr != nil {
 		return fail("summarize media bridge exited unsuccessfully", apierrors.ProviderUnavailable)
 	}
-	parsed, parseErr := ParseSummarizeJSON([]byte(result.CLIJSON))
-	if parseErr == nil && result.CLIExit == 0 && parsed.HasOriginal && parsed.TranscriptSource != "" {
-		if canonicalWebKey(parsed.URL) != canonicalWebKey(locator) {
-			return fail("summarize transcript source mismatch", apierrors.EvidenceMissing)
-		}
+	if result.CLIExit != 0 {
+		return fail("summarize captions exited unsuccessfully", apierrors.ProviderUnavailable)
+	}
+	parsed, err := parseSummarizeJSON([]byte(result.CLIJSON), true)
+	if err != nil {
+		return fail("summarize captions could not be parsed: "+err.Error(), apierrors.EvidenceMissing)
+	}
+	if canonicalWebKey(parsed.URL) != canonicalWebKey(locator) {
+		return fail("summarize transcript source mismatch", apierrors.EvidenceMissing)
+	}
+	if parsed.HasOriginal && parsed.TranscriptSource != "" {
 		parsed.Version = e.Options.Version
 		parsed.Mode = "upstream_cli_transcript"
 		return parsed, nil
 	}
 	var media struct {
-		Text     *string         `json:"text"`
-		Provider string          `json:"provider"`
-		Error    *string         `json:"error"`
-		Segments json.RawMessage `json:"segments"`
+		Text     *string `json:"text"`
+		Provider string  `json:"provider"`
+		Error    *string `json:"error"`
+		Segments []struct {
+			StartMS *float64 `json:"startMs"`
+			EndMS   *float64 `json:"endMs"`
+			Text    string   `json:"text"`
+		} `json:"segments"`
 	}
 	if err := json.Unmarshal(result.Media, &media); err != nil {
-		return fail("selected video has no real transcript", apierrors.EvidenceMissing)
+		return fail("summarize media could not be parsed: "+err.Error(), apierrors.EvidenceMissing)
 	}
 	if media.Error != nil && *media.Error != "" {
 		return fail(*media.Error, apierrors.ProviderUnavailable)
@@ -408,19 +413,20 @@ func (e *SummarizeExtractor) decodeVideoResult(locator string, output []byte, st
 	if media.Provider != "whisper.cpp" {
 		return fail("unexpected nonlocal transcriber", apierrors.EvidenceMissing)
 	}
-	var cliMetadata struct {
-		Extracted struct {
-			Title string `json:"title"`
-		} `json:"extracted"`
-	}
-	_ = json.Unmarshal([]byte(result.CLIJSON), &cliMetadata)
-	normalized, err := json.Marshal(map[string]any{"input": map[string]string{"url": locator}, "extracted": map[string]any{"title": cliMetadata.Extracted.Title, "content": *media.Text, "transcriptSegments": media.Segments}})
-	if err != nil {
-		return Export{}, err
-	}
-	parsed, err = ParseSummarizeJSON(normalized)
-	if err != nil {
-		return Export{}, err
+	parsed.Text = *media.Text
+	parsed.Summary = ""
+	parsed.HasOriginal = true
+	parsed.Segments = nil
+	for _, seg := range media.Segments {
+		if seg.StartMS == nil || math.IsNaN(*seg.StartMS) || math.IsInf(*seg.StartMS, 0) || *seg.StartMS < 0 {
+			return fail("invalid transcript startMs", apierrors.EvidenceMissing)
+		}
+		if seg.EndMS != nil && (math.IsNaN(*seg.EndMS) || math.IsInf(*seg.EndMS, 0) || *seg.EndMS < *seg.StartMS) {
+			return fail("invalid transcript endMs", apierrors.EvidenceMissing)
+		}
+		if strings.TrimSpace(seg.Text) != "" {
+			parsed.Segments = append(parsed.Segments, Segment{StartMS: *seg.StartMS, EndMS: seg.EndMS, Text: seg.Text})
+		}
 	}
 	parsed.Original = append([]byte(nil), result.Media...)
 	parsed.Version = e.Options.Version

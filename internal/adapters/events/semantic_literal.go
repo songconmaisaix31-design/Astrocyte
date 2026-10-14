@@ -4,431 +4,267 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+
+	"github.com/dop251/goja/ast"
+	"github.com/dop251/goja/token"
 )
 
 type staticDataFunction struct {
 	parameter string
-	body      []semanticToken
-}
-type staticQuotePattern struct {
-	text string
-	all  bool
+	body      ast.Expression
 }
 
-// This is a finite data-expression grammar, not JS evaluation. Only immutable
-// literal const bindings, string concatenation, literal array join and JSON
-// serialization are supported. Every other expression stays unknown.
-func staticExpression(t []semanticToken, i *int, bindings map[string]any) (any, bool) {
-	value, ok := staticPrimary(t, i, bindings)
-	if !ok {
+// 仅计算成熟 AST 中已经确认的常量数据，函数和外部调用不会执行。
+func staticValue(expression ast.Expression, bindings map[string]any, depth int) (any, bool) {
+	if expression == nil || depth > 64 {
 		return nil, false
 	}
-	for *i < len(t) {
-		if *i+1 < len(t) && t[*i].value == "." && (*i+2 >= len(t) || t[*i+2].value != "(") {
-			key := t[*i+1].value
-			*i += 2
-			switch object := value.(type) {
-			case map[string]any:
-				next, ok := object[key]
-				if !ok {
+	next := func(value ast.Expression) (any, bool) { return staticValue(value, bindings, depth+1) }
+	switch value := expression.(type) {
+	case *ast.StringLiteral:
+		return value.Value.String(), true
+	case *ast.NumberLiteral:
+		switch number := value.Value.(type) {
+		case int64:
+			return float64(number), true
+		case float64:
+			return number, true
+		}
+	case *ast.BooleanLiteral:
+		return value.Value, true
+	case *ast.NullLiteral:
+		return nil, true
+	case *ast.Identifier:
+		result, ok := bindings[value.Name.String()]
+		return result, ok
+	case *ast.ArrayLiteral:
+		result := make([]any, 0, len(value.Value))
+		for _, element := range value.Value {
+			parsed, ok := next(element)
+			if !ok {
+				return nil, false
+			}
+			result = append(result, parsed)
+		}
+		return result, true
+	case *ast.ObjectLiteral:
+		result := map[string]any{}
+		for _, element := range value.Value {
+			var key string
+			var input ast.Expression
+			switch property := element.(type) {
+			case *ast.PropertyShort:
+				if property.Initializer != nil {
 					return nil, false
 				}
-				value = next
-			case []any:
-				if key != "length" {
+				key, input = property.Name.Name.String(), &property.Name
+			case *ast.PropertyKeyed:
+				if property.Computed || property.Kind != ast.PropertyKindValue {
 					return nil, false
 				}
-				value = float64(len(object))
-			case string:
-				if key != "length" {
+				switch name := property.Key.(type) {
+				case *ast.StringLiteral:
+					key = name.Value.String()
+				case *ast.Identifier:
+					key = name.Name.String()
+				default:
 					return nil, false
 				}
-				value = float64(len(object))
+				input = property.Value
 			default:
 				return nil, false
 			}
-			continue
-		}
-		if t[*i].value == "[" {
-			*i++
-			index, ok := staticExpression(t, i, bindings)
-			if !ok || *i >= len(t) || t[*i].value != "]" {
+			parsed, ok := next(input)
+			if !ok {
 				return nil, false
 			}
-			*i++
-			switch object := value.(type) {
-			case map[string]any:
-				key, ok := index.(string)
+			result[key] = parsed
+		}
+		return result, true
+	case *ast.BinaryExpression:
+		if value.Operator != token.PLUS {
+			return nil, false
+		}
+		left, a := next(value.Left)
+		right, b := next(value.Right)
+		ls, lok := left.(string)
+		rs, rok := right.(string)
+		if a && b && lok && rok {
+			return ls + rs, true
+		}
+	case *ast.UnaryExpression:
+		if value.Operator == token.MINUS && !value.Postfix {
+			parsed, ok := next(value.Operand)
+			if number, valid := parsed.(float64); ok && valid {
+				return -number, true
+			}
+		}
+	case *ast.TemplateLiteral:
+		if value.Tag != nil || len(value.Elements) != len(value.Expressions)+1 {
+			return nil, false
+		}
+		var text strings.Builder
+		for i, element := range value.Elements {
+			if !element.Valid {
+				return nil, false
+			}
+			text.WriteString(element.Parsed.String())
+			if i < len(value.Expressions) {
+				parsed, ok := next(value.Expressions[i])
 				if !ok {
 					return nil, false
 				}
-				next, ok := object[key]
+				part, ok := scalarText(parsed)
 				if !ok {
 					return nil, false
 				}
-				value = next
-			case []any:
-				n, ok := index.(float64)
-				if !ok || n != float64(int(n)) || n < 0 || n >= float64(len(object)) {
+				text.WriteString(part)
+			}
+		}
+		return text.String(), true
+	case *ast.DotExpression:
+		parsed, ok := next(value.Left)
+		if !ok {
+			return nil, false
+		}
+		key := value.Identifier.Name.String()
+		switch object := parsed.(type) {
+		case map[string]any:
+			item, found := object[key]
+			return item, found
+		case []any:
+			if key == "length" {
+				return float64(len(object)), true
+			}
+		case string:
+			if key == "length" {
+				return float64(len(object)), true
+			}
+		}
+	case *ast.BracketExpression:
+		parsed, ok := next(value.Left)
+		key, valid := next(value.Member)
+		if !ok || !valid {
+			return nil, false
+		}
+		switch object := parsed.(type) {
+		case map[string]any:
+			name, ok := key.(string)
+			item, found := object[name]
+			return item, ok && found
+		case []any:
+			index, ok := key.(float64)
+			if ok && index >= 0 && index == float64(int(index)) && index < float64(len(object)) {
+				return object[int(index)], true
+			}
+		}
+	case *ast.ArrowFunctionLiteral:
+		if value.Async || value.ParameterList.Rest != nil || len(value.ParameterList.List) != 1 {
+			return nil, false
+		}
+		parameter := value.ParameterList.List[0]
+		name, ok := parameter.Target.(*ast.Identifier)
+		body, valid := value.Body.(*ast.ExpressionBody)
+		if ok && valid && parameter.Initializer == nil {
+			return staticDataFunction{name.Name.String(), body.Expression}, true
+		}
+	case *ast.CallExpression:
+		if name, ok := value.Callee.(*ast.Identifier); ok && len(value.ArgumentList) == 1 {
+			function, valid := bindings[name.Name.String()].(staticDataFunction)
+			argument, found := next(value.ArgumentList[0])
+			if valid && found {
+				return staticValue(function.body, map[string]any{function.parameter: argument}, depth+1)
+			}
+			return nil, false
+		}
+		member, ok := value.Callee.(*ast.DotExpression)
+		if !ok {
+			return nil, false
+		}
+		method := member.Identifier.Name.String()
+		if owner, ok := member.Left.(*ast.Identifier); ok && owner.Name.String() == "JSON" && method == "stringify" && len(value.ArgumentList) == 1 {
+			argument, ok := next(value.ArgumentList[0])
+			if !ok {
+				return nil, false
+			}
+			encoded, err := json.Marshal(argument)
+			return string(encoded), err == nil
+		}
+		subject, ok := next(member.Left)
+		if !ok {
+			return nil, false
+		}
+		if method == "join" && len(value.ArgumentList) == 1 {
+			separator, valid := next(value.ArgumentList[0])
+			sep, isString := separator.(string)
+			array, isArray := subject.([]any)
+			if !valid || !isString || !isArray {
+				return nil, false
+			}
+			parts := make([]string, 0, len(array))
+			for _, element := range array {
+				part, ok := scalarText(element)
+				if !ok {
 					return nil, false
 				}
-				value = object[int(n)]
-			default:
-				return nil, false
+				parts = append(parts, part)
 			}
-			continue
+			return strings.Join(parts, sep), true
 		}
-		if *i+3 < len(t) && t[*i].value == "." && (t[*i+1].value == "replace" || t[*i+1].value == "replaceAll") && t[*i+2].value == "(" {
-			method := t[*i+1].value
-			*i += 3
-			pattern, ok := staticExpression(t, i, bindings)
-			if !ok || *i >= len(t) || t[*i].value != "," {
-				return nil, false
-			}
-			*i++
-			replacement, ok := staticExpression(t, i, bindings)
-			if !ok || *i >= len(t) || t[*i].value != ")" {
-				return nil, false
-			}
-			*i++
-			subject, sok := value.(string)
-			with, wok := replacement.(string)
-			if !sok || !wok || strings.Contains(with, "$") {
+		if (method == "replace" || method == "replaceAll") && len(value.ArgumentList) == 2 {
+			text, ok := subject.(string)
+			replacement, valid := next(value.ArgumentList[1])
+			with, isString := replacement.(string)
+			if !ok || !valid || !isString || strings.Contains(with, "$") {
 				return nil, false
 			}
 			count := 1
 			if method == "replaceAll" {
 				count = -1
 			}
-			var target string
-			switch p := pattern.(type) {
-			case string:
-				target = p
-			case staticQuotePattern:
-				target = p.text
-				if p.all {
+			var pattern string
+			if regex, ok := value.ArgumentList[0].(*ast.RegExpLiteral); ok {
+				if regex.Flags != "" && regex.Flags != "g" {
+					return nil, false
+				}
+				if regex.Flags == "g" {
 					count = -1
 				}
-			default:
-				return nil, false
-			}
-			value = strings.Replace(subject, target, with, count)
-			continue
-		}
-		if t[*i].value == "+" {
-			*i++
-			right, ok := staticExpression(t, i, bindings)
-			if !ok {
-				return nil, false
-			}
-			a, aok := value.(string)
-			b, bok := right.(string)
-			if !aok || !bok {
-				return nil, false
-			}
-			value = a + b
-			continue
-		}
-		if *i+3 < len(t) && t[*i].value == "." && t[*i+1].value == "join" && t[*i+2].value == "(" {
-			*i += 3
-			separator, ok := staticExpression(t, i, bindings)
-			if !ok || *i >= len(t) || t[*i].value != ")" {
-				return nil, false
-			}
-			*i++
-			sep, ok := separator.(string)
-			array, aok := value.([]any)
-			if !ok || !aok {
-				return nil, false
-			}
-			var parts []string
-			for _, item := range array {
-				switch v := item.(type) {
-				case string:
-					parts = append(parts, v)
-				case float64:
-					parts = append(parts, strconv.FormatFloat(v, 'g', -1, 64))
+				switch regex.Pattern {
+				case "'", "\"", "`":
+					pattern = regex.Pattern
+				case `\\`:
+					pattern = "\\"
+				case `\n`:
+					pattern = "\n"
+				case `\r`:
+					pattern = "\r"
+				case `\r\n`:
+					pattern = "\r\n"
 				default:
 					return nil, false
 				}
-			}
-			value = strings.Join(parts, sep)
-			continue
-		}
-		break
-	}
-	return value, true
-}
-
-func staticPrimary(t []semanticToken, i *int, bindings map[string]any) (any, bool) {
-	if *i >= len(t) {
-		return nil, false
-	}
-	token := t[*i]
-	*i++
-	if token.literal {
-		if !token.dynamic {
-			return token.value, true
-		}
-		// Only scalar literal/const substitutions can resolve templates.
-		var b strings.Builder
-		s := token.value
-		for {
-			start := strings.Index(s, "${")
-			if start < 0 {
-				b.WriteString(s)
-				return b.String(), true
-			}
-			b.WriteString(s[:start])
-			end, ok := skipJSInterpolation(s, start+2)
-			if !ok {
-				return nil, false
-			}
-			expr, valid := semanticTokens(s[start+2 : end-1])
-			if !valid {
-				return nil, false
-			}
-			at := 0
-			v, ok := staticExpression(expr, &at, bindings)
-			if !ok || at != len(expr) {
-				return nil, false
-			}
-			switch v := v.(type) {
-			case string:
-				b.WriteString(v)
-			case float64:
-				b.WriteString(strconv.FormatFloat(v, 'g', -1, 64))
-			case bool:
-				b.WriteString(strconv.FormatBool(v))
-			default:
-				return nil, false
-			}
-			s = s[end:]
-		}
-	}
-	if token.dynamic {
-		if strings.HasPrefix(token.value, "/") {
-			end := strings.LastIndex(token.value, "/")
-			if end > 0 {
-				pattern, flags := token.value[1:end], token.value[end+1:]
-				if flags != "" && flags != "g" {
+			} else {
+				parsed, ok := next(value.ArgumentList[0])
+				pattern, valid = parsed.(string)
+				if !ok || !valid {
 					return nil, false
 				}
-				switch pattern {
-				case "'", "\"", "`":
-					return staticQuotePattern{pattern, flags == "g"}, true
-				case `\\`:
-					return staticQuotePattern{"\\", flags == "g"}, true
-				case `\n`:
-					return staticQuotePattern{"\n", flags == "g"}, true
-				case `\r`:
-					return staticQuotePattern{"\r", flags == "g"}, true
-				case `\r\n`:
-					return staticQuotePattern{"\r\n", flags == "g"}, true
-				}
 			}
+			return strings.Replace(text, pattern, with, count), true
 		}
-		return nil, false
 	}
-	switch token.value {
-	case "{":
-		result := map[string]any{}
-		for *i < len(t) && t[*i].value != "}" {
-			key := t[*i].value
-			*i++
-			if *i < len(t) && t[*i].value == ":" {
-				*i++
-				v, ok := staticExpression(t, i, bindings)
-				if !ok {
-					return nil, false
-				}
-				result[key] = v
-			} else {
-				v, ok := bindings[key]
-				if !ok {
-					return nil, false
-				}
-				result[key] = v
-			}
-			if *i < len(t) && t[*i].value == "," {
-				*i++
-			} else {
-				break
-			}
-		}
-		if *i >= len(t) || t[*i].value != "}" {
-			return nil, false
-		}
-		*i++
-		return result, true
-	case "[":
-		var result []any
-		for *i < len(t) && t[*i].value != "]" {
-			v, ok := staticExpression(t, i, bindings)
-			if !ok {
-				return nil, false
-			}
-			result = append(result, v)
-			if *i < len(t) && t[*i].value == "," {
-				*i++
-			} else {
-				break
-			}
-		}
-		if *i >= len(t) || t[*i].value != "]" {
-			return nil, false
-		}
-		*i++
-		return result, true
-	case "(":
-		v, ok := staticExpression(t, i, bindings)
-		if !ok || *i >= len(t) || t[*i].value != ")" {
-			return nil, false
-		}
-		*i++
-		return v, true
-	case "true":
-		return true, true
-	case "false":
-		return false, true
-	case "null":
-		return nil, true
-	case "JSON":
-		if *i+2 >= len(t) || t[*i].value != "." || t[*i+1].value != "stringify" || t[*i+2].value != "(" {
-			return nil, false
-		}
-		*i += 3
-		v, ok := staticExpression(t, i, bindings)
-		if !ok || *i >= len(t) || t[*i].value != ")" {
-			return nil, false
-		}
-		*i++
-		b, err := json.Marshal(v)
-		return string(b), err == nil
-	}
-	if v, ok := bindings[token.value]; ok {
-		if function, ok := v.(staticDataFunction); ok {
-			if *i >= len(t) || t[*i].value != "(" {
-				return nil, false
-			}
-			*i++
-			arg, ok := staticExpression(t, i, bindings)
-			if !ok || *i >= len(t) || t[*i].value != ")" {
-				return nil, false
-			}
-			*i++
-			nested := map[string]any{}
-			for k, v := range bindings {
-				if _, function := v.(staticDataFunction); !function {
-					nested[k] = v
-				}
-			}
-			nested[function.parameter] = arg
-			at := 0
-			value, ok := staticExpression(function.body, &at, nested)
-			return value, ok && at == len(function.body)
-		}
-		return v, true
-	}
-	n, err := strconv.ParseFloat(token.value, 64)
-	return n, err == nil
+	return nil, false
 }
 
-func staticBindings(tokens []semanticToken) map[string]any {
-	bindings := map[string]any{}
-	seen := map[string]bool{}
-	for j := 0; j+3 < len(tokens); j++ {
-		if tokens[j].value == "function" && j+7 < len(tokens) && tokens[j+2].value == "(" && tokens[j+4].value == ")" && tokens[j+5].value == "{" && tokens[j+6].value == "return" {
-			end := j + 7
-			for end < len(tokens) && tokens[end].value != ";" && tokens[end].value != "}" {
-				end++
-			}
-			if end < len(tokens) {
-				bindings[tokens[j+1].value] = staticDataFunction{tokens[j+3].value, tokens[j+7 : end]}
-			}
-		}
-		if tokens[j].literal || tokens[j].value != "const" || tokens[j+1].literal || tokens[j+2].value != "=" {
-			continue
-		}
-		name := tokens[j+1].value
-		if seen[name] {
-			delete(bindings, name)
-			continue
-		}
-		seen[name] = true
-		// Compile only a single-parameter, expression-only data helper. No
-		// statement/callback/loop or arbitrary historical function is evaluated.
-		arrow := j + 3
-		parameter := ""
-		bodyStart := 0
-		if arrow+2 < len(tokens) && tokens[arrow+1].value == "=" && tokens[arrow+2].value == ">" {
-			parameter = tokens[arrow].value
-			bodyStart = arrow + 3
-		}
-		if arrow+4 < len(tokens) && tokens[arrow].value == "(" && tokens[arrow+2].value == ")" && tokens[arrow+3].value == "=" && tokens[arrow+4].value == ">" {
-			parameter = tokens[arrow+1].value
-			bodyStart = arrow + 5
-		}
-		if parameter != "" && bodyStart < len(tokens) && tokens[bodyStart].value != "{" {
-			end := bodyStart
-			for end < len(tokens) && tokens[end].value != ";" {
-				end++
-			}
-			if end < len(tokens) {
-				bindings[name] = staticDataFunction{parameter, tokens[bodyStart:end]}
-				continue
-			}
-		}
-		at := j + 3
-		v, ok := staticExpression(tokens, &at, bindings)
-		if ok && at < len(tokens) && (tokens[at].value == ";" || tokens[at].value == "," || tokens[at].value == ")") {
-			bindings[name] = v
-		}
+func scalarText(value any) (string, bool) {
+	switch value := value.(type) {
+	case string:
+		return value, true
+	case float64:
+		return strconv.FormatFloat(value, 'g', -1, 64), true
+	case bool:
+		return strconv.FormatBool(value), true
 	}
-	// Const references to objects/arrays can still be mutated. Reject observed
-	// writes and mutating methods instead of freezing the earlier literal value.
-	for j, token := range tokens {
-		if token.literal {
-			continue
-		}
-		value, exists := bindings[token.value]
-		if !exists {
-			continue
-		}
-		switch value.(type) {
-		case map[string]any, []any:
-		default:
-			continue
-		}
-		end := j + 1
-		for end < len(tokens) && (tokens[end].value == "." || tokens[end].value == "[") {
-			if tokens[end].value == "." {
-				if end+1 >= len(tokens) {
-					break
-				}
-				method := tokens[end+1].value
-				switch method {
-				case "push", "pop", "shift", "unshift", "splice", "sort", "reverse", "fill", "copyWithin":
-					delete(bindings, token.value)
-				}
-				end += 2
-			} else {
-				end++
-				for end < len(tokens) && tokens[end].value != "]" {
-					end++
-				}
-				end++
-			}
-		}
-		if end > j+1 && end < len(tokens) && (tokens[end].value == "=" || tokens[end].value == "+" || tokens[end].value == "-") {
-			delete(bindings, token.value)
-		}
-	}
-	return bindings
-}
-
-func staticArgument(tokens []semanticToken, start int, bindings map[string]any) (any, int, bool) {
-	i := start
-	v, ok := staticExpression(tokens, &i, bindings)
-	return v, i, ok
+	return "", false
 }

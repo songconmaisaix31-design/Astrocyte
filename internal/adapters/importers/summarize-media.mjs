@@ -1,5 +1,4 @@
-// Thin glue over the exact installed upstream; no media downloader/transcriber
-// implementation lives here. Internal API use is deliberately pinned/fail-closed.
+// 使用固定版本上游接口完成字幕提取与本地转写。
 import { findPackageJSON } from 'node:module';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -27,7 +26,7 @@ try {
  if (cancelled) throw new Error('Cancelled');
  const captionEnv = { ...process.env, SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1' };
  delete captionEnv.YT_DLP_PATH;
- // Captions precede local transcription. Isolated HOME contains no config/auth.
+ // 先查询字幕，隔离 HOME 不包含配置或凭据。
  const args = [cli, url, '--extract', '--json', '--format', 'text', '--firecrawl', 'off', '--youtube', 'web', '--video-mode', 'transcript', '--embedded-video', 'off', '--timestamps', '--timeout', '30s', '--retries', '0', '--metrics', 'off'];
  const { proc } = spawnTracked(process.execPath, args, { env: captionEnv, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, label: 'summarize captions' });
  const limit = 16 << 20;
@@ -35,28 +34,28 @@ try {
   if (Buffer.byteLength(output[key]) + Buffer.byteLength(chunk) > limit) { output.error = 'summarize output exceeds size limit'; terminate(); }
   else output[key] += chunk.toString('utf8');
  });
- // setEncoding handles multibyte Chinese characters split across chunks.
+ // setEncoding 处理跨 chunk 的中文多字节字符。
  proc.stdout.setEncoding('utf8'); proc.stderr.setEncoding('utf8');
  collect(proc.stdout, 'cliJSON'); collect(proc.stderr, 'cliStderr');
  output.cliExit = await new Promise((done, reject) => { proc.once('error', reject); proc.once('close', code => done(code ?? -1)); });
  if (cancelled) throw new Error('Cancelled');
  if (output.error) throw new Error(output.error);
- let raw;
- try { raw = JSON.parse(output.cliJSON); } catch { raw = null; }
- const hasCaption = output.cliExit === 0 && raw?.extracted?.transcriptSource && raw?.extracted?.diagnostics?.transcript?.textProvided !== false && raw?.extracted?.content?.trim();
+ if (output.cliExit !== 0) throw new Error(`summarize captions exited with ${output.cliExit}`);
+ const raw = JSON.parse(output.cliJSON);
+ const hasCaption = raw?.extracted?.transcriptSource && raw?.extracted?.diagnostics?.transcript?.textProvided !== false && raw?.extracted?.content?.trim();
  if (!hasCaption) {
   for (const key of ['YT_DLP_PATH', 'FFMPEG_PATH', 'SUMMARIZE_WHISPER_CPP_BINARY', 'SUMMARIZE_WHISPER_CPP_MODEL_PATH']) {
    if (!process.env[key]) throw new Error(`No real video captions; configure local dependency ${key}`);
   }
-  // The generic upstream Bilibili routing gap is handled by selecting its
-  // existing generic yt-dlp path explicitly for this same single source URL.
+  // 上游明确返回无字幕时，按已确认流程转写同一视频。
   const { fetchTranscriptWithYtDlp } = await import(pathToFileURL(resolve(dirname(coreEntry), 'content/transcript/providers/youtube/yt-dlp.js')).href);
   const result = await fetchTranscriptWithYtDlp({ url, ytDlpPath: process.env.YT_DLP_PATH, env: process.env, service: 'generic', mediaKind: 'video', extraArgs: ['--ignore-config', '--no-playlist', '--playlist-items', '1', '--ffmpeg-location', dirname(process.env.FFMPEG_PATH)] });
   output.media = { ...result, error: result.error ? result.error.message : null };
-  if (result.error) output.error = result.error.message;
+  if (result.error) throw result.error;
  }
 } catch (error) {
  output.error = error instanceof Error ? error.message : String(error);
+ process.exitCode = cancelled ? 130 : 1;
 } finally {
  terminate();
  process.stdin.pause();

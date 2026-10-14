@@ -6,11 +6,16 @@ import { root } from '../../scripts/process.mjs';
 import { startS1Server } from './server.mjs';
 import { humanAPI } from './api.mjs';
 
-test('production server keeps owned SQLite after close and reopens it without private discovery', { timeout: 120_000 }, async () => {
-  let server = await startS1Server();
+for (const relay of [false, true]) test(`production server keeps owned SQLite after close and reopens it without private discovery (relay layout=${relay})`, { timeout: 120_000 }, async () => {
+  let server = await startS1Server({ relay });
   const original = server.temporary;
   try {
     assert.ok(relative(join(root, '.verification'), await realpath(original)).startsWith('astrocyte-s1-'));
+    if (relay) {
+      assert.equal(server.localAppData, join(original, 'local-appdata'));
+      assert.equal(server.relayRoot, join(server.localAppData, 'astrocyte-workbench', 'v0.2-access'));
+      assert.equal(server.dataDir, join(server.relayRoot, 'app-state'));
+    }
     let api = await humanAPI(server.apiURL);
     assert.deepEqual((await api.get('/materials')).items, []);
     assert.deepEqual((await api.get('/local-projects')).items, []);
@@ -25,9 +30,9 @@ test('production server keeps owned SQLite after close and reopens it without pr
     await server.startAPI();
     const oldURL = server.apiURL;
     await server.close();
-    await access(join(original, 'data', 'state.sqlite'));
+    await access(join(server.dataDir, 'state.sqlite'));
     await assert.rejects(fetch(`${oldURL}/api/v1/health`, { signal: AbortSignal.timeout(1000) }));
-    server = await startS1Server({ reuseOwnedTemporary: { path: original, ownedRoot: original } });
+    server = await startS1Server({ relay, reuseOwnedTemporary: { path: original, ownedRoot: original } });
     assert.equal(server.temporary, original);
     api = await humanAPI(server.apiURL);
     assert.deepEqual((await api.get('/materials')).items, []);

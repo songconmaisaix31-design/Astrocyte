@@ -1,11 +1,6 @@
-// Astrocyte Paper extraction core (browser build).
-//
-// Adapted from steipete/summarize's DOM clone + Readability approach
-// (MIT, Peter Steinberger) and the Astrocyte scholarly metadata parser used by
-// the Node build. This file runs in the extension's isolated world, reads only
-// the current page the human clicked, performs no navigation or network call,
-// and never persists credentials or cookies. Full text requires scholarly body
-// evidence; metadata/restricted states stay explicit.
+// 浏览器提取沿用 steipete/summarize 的 DOM 克隆与 Readability 思路
+// （MIT，Peter Steinberger）及 Astrocyte 的论文元数据解析。
+// 在扩展隔离环境中仅读取人类点击的当前页面，正文状态需要论文结构证据。
 (function (global) {
   "use strict";
 
@@ -53,11 +48,9 @@
     const first = (...keys) => keys.map(k => metas.get(k)?.[0]).find(Boolean) || "";
     let scholarly = {};
     for (const script of document.querySelectorAll('script[type="application/ld+json"]')) {
-      try {
-        const root = JSON.parse(script.textContent);
-        const entries = Array.isArray(root) ? root : [...(root["@graph"] || []), root];
-        scholarly = entries.find(v => ["ScholarlyArticle", "MedicalScholarlyArticle"].includes(v["@type"])) || scholarly;
-      } catch { /* malformed metadata does not invent identity */ }
+      const root = JSON.parse(script.textContent);
+      const entries = Array.isArray(root) ? root : [...(root["@graph"] || []), root];
+      scholarly = entries.find(v => ["ScholarlyArticle", "MedicalScholarlyArticle"].includes(v["@type"])) || scholarly;
     }
     const doi = normalizeDOI(first("citation_doi", "dc.identifier", "dc.identifier.doi", "prism.doi")) ||
       normalizeDOI(typeof scholarly.identifier === "string" ? scholarly.identifier : scholarly.identifier?.value || "");
@@ -71,12 +64,10 @@
     const authors = metas.get("citation_author") || metas.get("dc.creator") || [];
     const pdfs = [];
     const addPDF = raw => {
-      try {
-        const parsed = new URL(raw, locator);
-        if (parsed.protocol === "https:" && !parsed.username && !parsed.password && !parsed.port && !pdfs.includes(parsed.href)) {
-          pdfs.push(parsed.href);
-        }
-      } catch { /* bad metadata remains absent */ }
+      const parsed = new URL(raw, locator);
+      if (parsed.protocol === "https:" && !parsed.username && !parsed.password && !parsed.port && !pdfs.includes(parsed.href)) {
+        pdfs.push(parsed.href);
+      }
     };
     for (const raw of metas.get("citation_pdf_url") || []) addPDF(raw);
     for (const node of document.querySelectorAll('a[href$=".pdf"], link[type="application/pdf"]')) addPDF(node.getAttribute("href"));
