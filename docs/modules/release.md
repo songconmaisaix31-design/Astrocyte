@@ -16,6 +16,7 @@
 | P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
 | N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
 | S 新阶段一手科研依据 | 原 `release-research-20261014` / `songconmaisaix31-design/release-research-20261014`；仅 `docs/release-research.md` | 根 `msg_9f7f7d5edc5b` 转最新用户并行授权。原owner已released、原树clean / HEAD `7d030fc83120052a8f32ea74c6007ff9be6878ca`；新Task `task_ec1f2cb096b1` / Dispatch `ctx_980d42612042` / 终端 `term_1f61ef16-79ad-49c8-b804-9f149c4fc544`，ready / turn_started / depth2 / 实际Codex gpt-6.1-sol / live。核前沿一手论文、开源与REA资料、机制限制、S2/S3及L实际代码入口；只研究与领域Handoff，不写业务、不解除冻结、不派第四层。 |
+| S5 判断适配 | 新固定 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015`；准确域见下方 | 根 `msg_4efd7793dc79` 明确交本模块管理，复杂实现用第三层强Codex。B `msg_6f60846f814c` 全域零WIP停写，SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5` / REPORT `1a1c170e33647cd286ddbf3e2776b62251a08a72`，独立核该域零diff；正式V4 / v0.2不变。 |
 
 P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 和旧资源 released；不向旧 Dispatch 发送新任务。Q 保留已接纳终稿，只有具体领域失败才恢复原 owner。S 按最新明确授权在原互斥报告域继续一手依据审阅。日预检文件写域为空，与本模块两份管理文档互斥；原始输入 / 响应 / 日志只留已有外部证据根，Git、MCP 与 stdout 只记录派生计数。
 
@@ -40,6 +41,22 @@ P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 
 已处理实际 FIFO 回执：M-relay `msg_c7d9b9c2575c`、M-product `msg_31e1518ea604`、唯一规格交接 `msg_9fdb8cf6255c`、根持续 V4 授权 `msg_3bfcb58d722e`；Delivery `delivery_f8799ae5fafc` 已处理并 ACK。完整读取 v1.4 唯一规格 SOURCE `297d00420f4478dd24805a9ad70ced47fb5b711f`，模块独核两文件提交和远端同值；working 严格开始证据与无 started 人工完成仍待用户决定。原00:20 automation持续授权，采集范围未答不暂停它；新的操作仅只读预检。首次 worker-start 缺少 sender 被入口拒绝，未创建资源；补实际 `--from` 后唯一预检成功，未创建重复执行者。
 
 规格独立 REPORT `d64dc5c6bb933c0ec6b3203d75d9e2df0207765d` 仅修改 Relay 管理文档。M-relay `msg_48cbc0d4f40b` 确认原 H Task / Dispatch 已接收合法 succeeded，后续在实际 idle 同终端创建新任务；当前不向旧 Dispatch 派发。T 独立远端同 `ef019bb`，SOURCE祖先与报告单文件已核；V 的 `a21379e` 来源祖先与报告单文件已核，远端已前进至 `eead5308823804dc744723ad8e27550f91107c5b`，该新提交需 M-product 提供独立报告和接纳范围，不按旧报告验新源码。P/N 原树 clean、HEAD分别为 `7cccea1` / `b74b97a`，尚未启动新 Task。已将 N 原客户端只支持 archive 的范围交 M-relay；最终若选择 native_notifications，由原 N 在自身域补准确验证，不改变原生领域实现。
+
+科研S当前SOURCE `1f617c51abcc2ca1fea3932747ba11ceabb7394e` / 独立REPORT `de9ef941adcb550b997b98fa819ba05bcfccfead` 已合法succeeded / released / captured；模块独核远端同REPORT / SOURCE祖先 / 唯一研究文件 / clean，完整审阅§7–12。新产品计划SOURCE `56bcc9c64ec94e0c8f1fc9f8cc43189580315c2b` / REPORT `7eee36a92370495235df1a3a447cea633498d8ce` 后来已交，S2 `task_6846cdb90c46` / `ctx_f32b6d92119a` 原V树 / 分支真实开始、S3 `ctx_d4bf65ca06bf` 管Swarm / S6；科研准确报告已交当前S2 `msg_e40b01a12145` 和 M-product，旧科研S不再投递。研究和实际功能分别验收。
+
+R当前准确SOURCE `79d93132967de20fb1fda3d8d74b4edff386178c`，事实祖先 `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` / 阶段REPORT `a455b7f0e39f606576dbc4c859d1862622fc8f0f`；H消费后的SOURCE `074cf55de4f2d87812a87cde77780c67b76c8fe5` / REPORT `25ecca0e1c620a20af0d495763a5a32f8c6a7422` 已收到。仅实际facts / HTTP / SQLite / cached ownership范围，cold registry和旧缺字段unknown、working待答、新CLI / Today / 最终包未通过。H helper链接保护适用OS1314创建失败保留，不据阶段报告终审。
+
+### S5一页完整实施方案
+
+唯一owner在精确B基线的新固定树 / 分支连续负责开发、真实测试、文档、返修与SOURCE / 独立REPORT。独占 `internal/judgment/**`、新 `internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**`、`docs/standards/judgment-s5.md`；原S1 distillers / Workspace / Swarm / 冻结核心不写。全部迁移、共享Go/Node/Python依赖与锁由B接收准确Handoff；OpenAPI/server/main装配归H，Web/生成类型归F及产品明确分域。没有第四层人员。
+
+保留既有shared judgment能力：Go实现JudgmentRequest/Result、规则判断、配置路由、权限核查、版本化缓存与反馈记录；Jev使用Go `net/http` / 标准JSON的官方结构化REST，Laya使用官方成熟laya-ts + CPU ONNX常驻Node worker。内部IPC使用成熟JSON/RPC库，不手写文件或流parser。规则可确定时不调用模型，证据不足返回need_evidence；模型仅按显式题型 / 语言 / backend / 外发范围 / 预算调用一个，配置缺失和错误保留准确unavailable / abstain / error，禁止隐式切换后端或吞错继续。结果保留真实selected/value/distribution、nullable confidence、model revision、input digest、truncation / options覆盖、usage / decision / evidence_refs；Noul不制造confidence。
+
+调用前与实际结果使用前核当前caller / project / grant与policy epoch、固定候选及证据revision；外发未经授权时不调Jev。缓存键覆盖问题schema、候选顺序、证据digest、goal / taste / policy / model / access epoch；命中仍核权限。adopt/later/reject/revise/already_solved反馈通过实际human与固定结果版本持久化，重启保留；不训练权重、不自动准入或批准。S2候选 / Grant端口只消费其精确SOURCE，不能用WIP或假的批准服务替代。
+
+已完整读取SPEC§5/11/15/19、TASKS P0 / P4，以及用户引用的官方 [Jev Introduction](https://docs.typesafe.ai/introduction)、[Confidence](https://docs.typesafe.ai/confidence)、[Laya README](https://github.com/NandhaKishorM/laya/blob/main/laya-ts/README.md)。另已完整读取TypeSafe quickstart / API / models；版本化Jev `jev-1.13.0` 与response model/usage需实测核，禁自动重试。官方Laya HF元数据 `convaiinnovations/laya` / revision `7b928d828b7b0e022f929d9bd2e44165aa270148` 为公开未gated、Apache-2.0；当前列出safetensors与matching tokenizer/config，无ONNX文件。唯一owner先核源码/LICENSE/模型卡与匹配参数，按已授权Python/依赖下载取得资产并使用官方export脚本实际torch↔ONNX parity、不跳过verify；CPU直接加载固定本地encoder/head/tokenizer/config，禁止GPU/语言/backend失败后fallback。初始人工模式及未配置的阈值不自填数字，未答或未授权字段不冻结。
+
+真实验收包含公开固定实际材料 / 项目的三题型、原服务SQLite / HTTP / 权限版本 / 真缓存失效 / 反馈重启、原Jev真实API回执、Laya实际本地断网推理与重启、真实长输入截断 / options覆盖不足与拒答不准入，AT10/11/12分别登记；完整默认与最终组合/ZIP由既有owner承担。SDK/model/license下载或auth缺失只标其真实限制，不能用mock或固定回答补通过。当前API key / model资产存在性先核，必要用户决定经根问答；独立契约、成熟SDK资产和权限/缓存实现继续，不整体暂停S5。
 
 M-relay `msg_4c82199f5651` 已回传新 H Task `task_3004b636a3ab` / Dispatch `ctx_e1a8ebeeea83`，实际复用原 `term_7a9d814a-d487-4dc3-9708-f6bdc5e1479d`、原树与分支，ready / turnStart observed，旧 `ctx_d7d8c2828fba` 已结算；当前为安全来源 / HTTP准备和后续精确 R 消费，未启动新模型。后续 H 交接使用新 Dispatch。
 
