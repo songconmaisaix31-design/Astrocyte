@@ -69,22 +69,27 @@ R继续独占现有领域状态、应用服务、relay store及native/terminal d
 
 | 开发人员 | 固定工作树 / 分支 | 独占写域 | 调度状态 |
 |---|---|---|---|
-| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | 当前 `task_d480ceaf0e15/ctx_1f88d9e6f4f4`，复用 `term_6ffbc768-d919-4bcf-bb28-d43e4e250e42`；actual started 并持续实现，公开观察 live / working / exactWorker；首 start_unknown 保留 |
-| H | `works-relay-http` / `songconmaisaix31-design/works-relay-http` | `internal/adapters/events/relay*.go`、`cmd/server/relay*.go`、`internal/adapters/httpapi/relay*.go`、`internal/workbench/app/relay*.go`、`internal/adapters/sqlite/access_session*.go`、`contracts/openapi.yaml` 与 relay examples、`docs/access/http.md`；必要 `cmd/server/main.go` / `internal/adapters/httpapi/server.go` 组装 | `task_cfb7c9bde07d/ctx_312d983772a9` 沿原 Run 活跃；已发直接 Handoff，要求同时向模块 Dispatch 报告 |
+| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | `task_d480ceaf0e15/ctx_1f88d9e6f4f4` 已 succeeded 结算，REPORT `6cd44177ca8ff5b04ad9fbb90bf9729321cba9da`；按总负责人固定 owner 明日继续的指令 retained，processAction none；原 `term_6ffbc768-d919-4bcf-bb28-d43e4e250e42` 保留，旧邮箱不接新任务 |
+| H | `works-relay-http` / `songconmaisaix31-design/works-relay-http` | `internal/adapters/events/relay*.go`、`cmd/server/relay*.go`、`internal/adapters/httpapi/relay*.go`、`internal/workbench/app/relay*.go`、`internal/adapters/sqlite/access_session*.go`、`contracts/openapi.yaml` 与 relay examples、`docs/access/http.md`；必要 `cmd/server/main.go` / `internal/adapters/httpapi/server.go` 组装 | 原 `task_cfb7c9bde07d/ctx_312d983772a9` failed 已由总负责人接收并交接 idle 原终端；当前子 Run 新 Task `task_abf1f8b1e12e/ctx_d7d8c2828fba`，原 `term_7a9d814a-d487-4dc3-9708-f6bdc5e1479d`，官方启动 ready / turnStart observed，无残留资源；只实施获准的非原生 HTTP 依赖 |
 
-依赖单归 B，H 不修改 `cmd/server/config.go`。总负责人 2026-10-14T13:13:29Z 明确增加 H 的 `cmd/server/workbench_config.go` 单文件薄接口写域，只消费 B 已交精确 Reader 接口，默认无私人正式源路径、保留只读和路径保护；Reader / contracts / config.go 均仍由 B 独占。F `ctx_5bac511ada08` 是当前实际产品页面唯一操作人；B `ctx_7217777c7bf5` 接收真实公开来源、生产入口及普通库存测试迁移 Handoff。产品模块负责人 `ctx_b1cd2e0a39aa`、集成发布模块负责人 `ctx_376d222c774b` 已由总负责人确认，跨模块依赖直接 Handoff 其精确 Dispatch。
+依赖单归 B，H 不修改 `cmd/server/config.go` 或 B 的 `cmd/server/workbench_config_test.go`。总负责人 2026-10-14T13:13:29Z 明确增加 H 的 `cmd/server/workbench_config.go` 单文件薄接口写域，只消费 B 已交精确 Reader 接口，默认无私人正式源路径、保留只读和路径保护；Reader / contracts / config.go 均仍由 B 独占。F `ctx_5bac511ada08` 是当前实际产品页面唯一操作人；B `ctx_7217777c7bf5` 接收真实公开来源、生产入口及普通库存测试迁移 Handoff。产品负责人终端协调子 Run `run_dbf1a68bc692`，其 Dispatch 地址由 CLI 正常转交到该 Run；原发布负责人 `ctx_376d222c774b` 已 completed，通知返回 `dispatch_inactive`，已交总负责人转当前集成发布负责人，不继续投递旧邮箱。
 
 ## 连续执行计划
 
-1. R 修复 CreateIntent 的项目权限和版本绑定：经既有领域端口读取实际项目 settings，保存真实 `settings.revision` 与 `permissionlevel`。确认必须再次验证当前权限和版本；保留前端比较。真实 SQLite/HTTP 正常确认与之后权限变化阻断均须验证。
-2. R 普通 push 阶段 SOURCE 和独立 REPORT，将精确 SHA 交 H；H 普通消费并核实自身实际服务组合。R 另交 B 实际 `actualpublicsources.json` 本机指针与生产入口，作品进度 infer 使用实际公开 README/手册及既有领域端口。
-3. F 在同一 URL 建立无 Codex 登记基线并启动 DOM 观察；H 仅收到 ready 后真实注册、重启并记录原始开始时间。F 经产品 HTTP 执行 confirm/send/read/stop/release/409；H 独立核控制器自产文件、真实 SQL 与每个 event_id。
-4. H 交精确 SOURCE/REPORT、服务配置参数、安全聚合与本机证据指针；模块负责人逐项核验并向集成发布负责人交接。阶段通过后继续支持组合、Windows x64 包与返修，最终发布支持未完成时模块 Dispatch 保持活跃。
+1. 今晚 H 完成获准的非原生依赖：Go 实际服务一次绑定端口 0 并持续持有同一 listener，提供真实地址给 B 的 `tests/s1/server.mjs`；实际 Origin / CSRF 按真实地址验证。端口预占释放、自动重试、系统排除端口修改和伪造服务均不得作为实现。
+2. H 核实并冻结 `cmd/server/workbench_config.go` 的精确 SOURCE，B 通过编辑工具原样消费；B 回报内容一致和停止修改后归还 H 写域。H 不修改 B 的测试、配置或依赖。源码和独立 REPORT 普通 push 后及时给 B/F 与当前集成负责人；只读精确 Reader overlay 的组合检查和 H 单树旧 Reader 失败分别记录。
+3. 模块提交独立 REPORT 核本次 SOURCE `3d451c614b24fbf0c95eadc20a01b812817d0ab8` 的 v1.4 草案、文档链接、所有权与派发证据。今晚继续支持获准的非原生组合和 Windows x64 包，新的 Relay 原生 / Today 测试暂停。
+4. 明天由总负责人确认关键语义后，同原 R/H 工作树、分支和互斥写域恢复开发；随后按本稿的真实 CLI、三分钟 Today、L1 顺序实施全部核心路径，准确 SOURCE / REPORT 和真实结果交最终集成人员。原登记、首失败和 unknown 保留；最终 GitHub Release 由总负责人接收具体结果后发布。
 
 只有总负责人明确接收旧 worker_done 并交接已核实终端，才在子 Run 复用同一开发人员、终端、工作树和分支派下一任务。不得中断活跃人员、重复创建同写域写入者或向 completed Dispatch 投递新开发任务。
 
 ## 当前证据与第一失败
 
+- 模块本阶段 SOURCE `3d451c614b24fbf0c95eadc20a01b812817d0ab8` 已普通 push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/module-relay-20261014` 返回同值。`git merge-base --is-ancestor d16e651969e717ac6a8cddf0a3da2bd4e6c176c2 3d451c614b24fbf0c95eadc20a01b812817d0ab8` 退出0，普通历史包含获准根文档交接；本 REPORT 只修改模块管理文件。`git diff --check` 退出0，逐本地 Markdown 目标 `Test-Path -LiteralPath` 得到 `Document links: 2 PASS`。以上验证覆盖管理草案、链接和派发事实，H port0 实现、B/F实际消费及最终产品验收分别继续执行。
+- 总负责人 `msg_3db49cd4739e` 正式确认唯一新 H 继续由本模块管理，之前的临时接管指令停止适用；产品只消费 SOURCE 和安排 B/F 检查。发布模块本晚合法阶段已完成并 released，当前没有新发布 Dispatch，后续 H 精确 SOURCE / REPORT 仅交总负责人和产品留存，明日新集成发布人员消费；不投递旧发布邮箱。日期进入2026-10-15不改变当前停止新模型和原生 / Today 窗口的授权范围。
+- 2026-10-14T15:50:25Z 总负责人正式转交 `msg_a7fe946c9a9d`，并以 `msg_1e1e5256e86a` 要求优先解除 B/F 等待；原 Question `msg_518249e76560` 已回答，reply `msg_a37f1d774089`。模块完整消费 FIFO `delivery_9707b63a9780` 并 ACK，不重复等待旧问题。原 H failed SOURCE `b6c67e91555522b3d7515d405c4c69a93d0e0bc8` / REPORT `c130e16d28011f36e9e96a2bf306585611b2fe7e` 的精确远端、clean、idle 和资源交接由总负责人核实并接收。
+- 2026-10-14T15:57Z 官方 `worker-start --spec ... --worktree path:C:/Users/DW/orca/workspaces/Astrocyte/works-relay-http --terminal term_7a9d814a-d487-4dc3-9708-f6bdc5e1479d --run run_8bbda1c3974c` 返回退出 0、`ready`、`turnStart observed`，prompt stages 为 `input_accepted / turn_started`，request `3e793c27-6f35-481b-80f2-13dba340e718`、generation12、residualResources空；新 Task `task_abf1f8b1e12e` / Dispatch `ctx_d7d8c2828fba`。总控回执 `msg_872eca8b4c29`、B `msg_85ee0852ef7a`、F `msg_77a173b95c65` 和产品子 Run `msg_1647a2f73d2b` 均成功发送；实际 port0 功能和 B/F 消费验证仍待 H 本任务交付。
+- H 自主消息 `msg_afd0e5485489` 于15:57:57Z确认本轮实际开始。总负责人同批临时交接给产品的消息与本轮启动时间交错；产品 `msg_604bd14dbb26` 已核新 Dispatch 并明确不创建重复任务，唯一 H 继续本子 Run，模块维护其生命周期，产品协调 B/F 消费。模块已给总控及 H 回执；显式跨产品 Run 发送被 `dispatch_run_mismatch` 拒绝后，通过产品精确 Dispatch 的官方重定向继续，不改变 Run 绑定。
 - R 已接收阶段 SOURCE `fbfaa65c2c01094305424ac40d2d39d271eab51b` / REPORT `53231b19ddd19a65c5a47c91469a0e34d73cf600`；本机只读核实 HEAD 为 REPORT、工作树 clean、原分支正确。实际 Codex/SQLite 生命周期结果由 R 报告，HTTP/DOM/三分钟尚未据此通过。
 - H 用户派发输入 SOURCE 为 `99a250d0b9069ffb32205420f63f82b372de5607`；2026-10-14T12:52Z 本机读取其当前 HEAD 为 `7dd7d1b91128a268c035fcfa49da5f9f8667078d`，`docs/access/http.md` 有活跃未提交修改。当前文件属于 H，模块负责人未修改或接纳为最终报告。
 - 实际 API `http://127.0.0.1:17342`、F 页面 `http://127.0.0.1:17343`；H 数据根 `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-production-current-20261014`，安全中间结果位于 H 忽略目录 `dist/l1-live/current-20261014`。
