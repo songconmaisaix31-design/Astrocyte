@@ -51,7 +51,7 @@
 | `go mod verify` / `node scripts/check-dependencies.mjs` | EXIT 0，实际 Relay parser 依赖 union 验证；`.verification/relay-dependency-union-first.log` |
 | 第三阶段 `go vet -mod=readonly ./...` / `go build -mod=readonly ./...` | 全部 EXIT 0，`.verification/{vet,build}-third-source.log` |
 | `go test -mod=readonly ./... -json -count=1`，公开查询开启 | EXIT 1，七项实际公开请求失败，网络 RED 保留；`.verification/go-current-all-third.jsonl`。不以之前定向 PASS 覆盖当前全包结论 |
-| `go test -mod=readonly ./internal/adapters/httpapi -run 'TestHealth\|TestHumanAttentionHTTPFailure\|TestJSONEncodingFailureReturnsErrorV1' -v -count=1` | EXIT 0，实际服务失败与明确不可编码值保留完整 ErrorV1；`.verification/http-json-error-first.log` |
+| `go test -mod=readonly ./internal/adapters/httpapi -run 'TestHealthEndpoint\|TestHTTP500_ErrorV1_AllFieldsPresent\|TestJSONEncodingFailureDoesNotSendSuccess' -v -count=1` | EXIT 0，实际服务失败与明确不可编码值保留完整 ErrorV1；`.verification/http-json-error-first.log` |
 | `node --test tests/s1/server-lifecycle.test.mjs`，命令身份修正后 | EXIT 0，两个实际布局各验证成功刷新及显式错误 request_id 400；2 PASS、0 SKIP，`.verification/helper-command-identity-first.log` |
 | `go test -mod=readonly ./internal/adapters/sqlite -run TestWorkbench -v -count=1` | EXIT 0，六项实际 SQLite 检查：投影/过滤/日期/分页、数据不完整拒绝、缓存切换、同源及硬链接拒绝、独立源可读取、实际 Windows junction 拒绝；`.verification/workbench-reader-second.log`。输入认知行明确为人工输入，不冒称 native/Sleep 来源 |
 | Reader SOURCE 的 `go build -mod=readonly ./...` / `go vet -mod=readonly ./...` | 全部 EXIT 0，`.verification/workbench-{build,vet}-first.log`；架构检查 31 包通过 |
