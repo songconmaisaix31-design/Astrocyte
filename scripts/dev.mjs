@@ -1,22 +1,23 @@
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { mkdir, mkdtemp } from 'node:fs/promises';
+import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { root, web, findGo, requireFile, wait, start, stop } from './process.mjs';
 import { summarizeEnvironment } from './summarize.mjs';
 
 await requireFile('cmd/server/main.go');
 await requireFile('web/index.html');
-const temporary = await mkdtemp(join(tmpdir(), 'astrocyte-dev-'));
+const verification = join(root, '.verification');
+await mkdir(verification, { recursive: true });
+const temporary = await mkdtemp(join(verification, 'astrocyte-dev-'));
 const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
 let env = { ...process.env };
 if (process.argv.includes('--ephemeral')) {
   env.ASTROCYTE_DATA_DIR = join(temporary, 'data');
-  // Ordinary browser checks must not inherit opt-in model/external extraction.
+  // 浏览器检查仅使用本次显式授权的提取与模型配置。
   env.ASTROCYTE_ENABLE_CODEX_DISTILLATION = 'false';
   env.ASTROCYTE_ENABLE_SUMMARIZE = 'false';
-  // Default browser acceptance never inherits the human's selected Chrome
-  // bridge. Live collection acceptance supplies its scope through the S1 helper.
+  env.ASTROCYTE_PROJECT_DISCOVERY_ROOTS = JSON.stringify([root]);
+  // 真实采集的 Chrome 范围通过 S1 helper 显式传入。
   for (const name of Object.keys(env)) {
     if (name.toUpperCase().startsWith('ASTROCYTE_DOUYIN_')) delete env[name];
   }
@@ -32,11 +33,7 @@ async function shutdown(code = 0) {
   const results = await Promise.allSettled(children.map(stop));
   const errors = results.filter(result => result.status === 'rejected');
   for (const error of errors) console.error(error.reason);
-  if (!errors.length) {
-    // This exact directory is created above, under OS temp, and contains only our process outputs.
-    if (!resolve(temporary).startsWith(resolve(tmpdir()) + (process.platform === 'win32' ? '\\' : '/'))) throw new Error('Unsafe temporary cleanup path');
-    await rm(temporary, { recursive: true, force: true });
-  }
+  console.log(`Development data retained: ${temporary}`);
   process.exitCode = errors.length ? 1 : code;
 }
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { void shutdown(); });
@@ -54,11 +51,17 @@ async function waitForAPI(child) {
   const deadline = Date.now() + 30_000;
   while (!stopping && Date.now() < deadline) {
     if (child.exitCode !== null || child.signalCode !== null) throw new Error('API exited before becoming ready');
-    try {
-      const response = await fetch(url, { signal: AbortSignal.any([readiness.signal, AbortSignal.timeout(1000)]) });
+    let response;
+    try { response = await fetch(url, { signal: AbortSignal.any([readiness.signal, AbortSignal.timeout(1000)]) }); }
+    catch (error) {
+      if (stopping && readiness.signal.aborted) return;
+      if (error.cause?.code !== 'ECONNREFUSED') throw error;
+    }
+    if (response) {
       const health = await response.json();
       if (response.ok && health.service === 'astrocyte' && health.status === 'ok') return;
-    } catch { /* Readiness probes do not replay any business command. */ }
+      throw new Error(`API readiness failed: ${response.status}`);
+    }
     if (!stopping) await delay(100, undefined, { signal: readiness.signal });
   }
   if (!stopping) throw new Error('API health readiness timed out; frontend was not started');

@@ -140,7 +140,11 @@ func run(logger *slog.Logger) error {
 	registry := agents.NewRegistry(nativeRoot)
 	projectReferences := &projectReferenceBridge{}
 	localProjects := workspaceapp.NewLocalProjectService(db, projectReferences, agents.ProjectFiles{}, registry)
-	localProjects.ConfigureRegisteredDiscovery(db, agents.NewRegisteredProjects())
+	projectDiscovery, err := resolveProjectDiscovery()
+	if err != nil {
+		return fmt.Errorf("configure project discovery: %w", err)
+	}
+	localProjects.ConfigureRegisteredDiscovery(db, projectDiscovery)
 	textProcessor := &selectedTextBridge{projects: localProjects, processor: registry}
 	processingTimeout := min(time.Duration(jobSeconds)*time.Second, 30*time.Minute)
 	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{

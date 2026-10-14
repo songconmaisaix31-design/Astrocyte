@@ -12,10 +12,27 @@ import (
 	"strings"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
+
+// 显式目录模式使用应用级配置；未设置时保持现有注册来源。
+func resolveProjectDiscovery() (*agents.RegisteredProjects, error) {
+	raw, configured := os.LookupEnv("ASTROCYTE_PROJECT_DISCOVERY_ROOTS")
+	if !configured {
+		return agents.NewRegisteredProjects(), nil
+	}
+	var roots []string
+	if err := json.Unmarshal([]byte(raw), &roots); err != nil {
+		return nil, fmt.Errorf("ASTROCYTE_PROJECT_DISCOVERY_ROOTS must be a JSON array: %w", err)
+	}
+	if roots == nil {
+		return nil, fmt.Errorf("ASTROCYTE_PROJECT_DISCOVERY_ROOTS must be an explicit JSON array")
+	}
+	return agents.NewScopedRegisteredProjects(roots)
+}
 
 // The selected video's observed local transcription exceeds the former 300s
 // budget. Reader and Service share the existing bounded runtime setting.
