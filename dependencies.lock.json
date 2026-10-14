@@ -40,6 +40,7 @@
     "go": {
       "github.com/dop251/goja": "v0.0.0-20261013122152-245c54f48cfc",
       "github.com/google/uuid": "v1.6.0",
+      "github.com/olivere/ndjson": "v1.0.1",
       "golang.org/x/net": "v0.61.0",
       "golang.org/x/sys": "v0.49.0",
       "mvdan.cc/sh/v3": "v3.14.1",
