@@ -42,6 +42,9 @@ type nativeProcess struct {
 	textBuffer            strings.Builder
 	next                  int
 	relayCapture          *relayNativeCapture
+	projectID             string
+	startedAt, deadlineAt time.Time
+	permissionPolicy      string
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -141,6 +144,8 @@ func launchNative(id string, args []string, root string, lifetime time.Duration,
 		cancel()
 		return nil, err
 	}
+	p.startedAt = time.Now().UTC()
+	p.deadlineAt, _ = ctx.Deadline()
 	go p.read(out)
 	go func() {
 		waitErr := cmd.Wait()

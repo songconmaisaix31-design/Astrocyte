@@ -14,9 +14,14 @@ import (
 type RelayNativeDriver struct {
 	registry                   app.NativeRegistry
 	captureNativeNotifications bool
+	sessionDeadlineSeconds     int
 }
 
-type RelayNativeDriverOptions struct{ CaptureNativeNotifications bool }
+type RelayNativeDriverOptions struct {
+	CaptureNativeNotifications bool
+	// 受信组装显式设置进程寿命；零值保留 Native 的既有 180 秒上限。
+	SessionDeadlineSeconds int
+}
 
 type relayNativeLifecycle interface {
 	StartRelay(context.Context, domain.NativeRequest) (domain.NativeSession, error)
@@ -31,6 +36,7 @@ func NewRelayNativeDriver(registry app.NativeRegistry, options ...RelayNativeDri
 	driver := &RelayNativeDriver{registry: registry}
 	if len(options) != 0 {
 		driver.captureNativeNotifications = options[0].CaptureNativeNotifications
+		driver.sessionDeadlineSeconds = options[0].SessionDeadlineSeconds
 	}
 	return driver
 }
@@ -52,10 +58,13 @@ func (d *RelayNativeDriver) request(r app.RelayLaunch) domain.NativeRequest {
 	session.ProjectID = p.ID
 	session.CLI = r.Spec.Name
 	packet := domain.ContextPacket{ID: uuid.NewString(), SchemaVersion: 1, ProjectID: p.ID, SettingsRevision: p.Settings.Revision, Mode: "selected_context", Materials: []domain.ContextMaterial{}, Files: []domain.ContextFile{}, CreatedAt: time.Now().UTC()}
-	return domain.NativeRequest{SessionID: session.ID, Project: p, Session: session, Command: domain.NativeCommand{CLI: r.Spec.Name, Message: r.Input, Mode: "native"}, Packet: packet}
+	return domain.NativeRequest{SessionID: session.ID, Project: p, Session: session, Command: domain.NativeCommand{CLI: r.Spec.Name, Message: r.Input, Mode: "native", DeadlineSeconds: d.sessionDeadlineSeconds}, Packet: packet}
 }
 
 func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
+	if d.sessionDeadlineSeconds < 0 || d.sessionDeadlineSeconds > 1800 {
+		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.BudgetExhausted, "relay native deadline must be zero or 1 to 1800 seconds")}
+	}
 	a, err := d.adapter(r)
 	if err != nil {
 		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: err}
@@ -204,6 +213,9 @@ func (d *RelayNativeDriver) Stop(ctx context.Context, r app.RelayLaunch) (app.Re
 	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs))
 }
 func (d *RelayNativeDriver) Resume(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
+	if d.sessionDeadlineSeconds < 0 || d.sessionDeadlineSeconds > 1800 {
+		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.BudgetExhausted, "relay native deadline must be zero or 1 to 1800 seconds")}
+	}
 	a, err := d.adapter(r)
 	if err != nil {
 		return app.RelayObservation{}, err
