@@ -27,6 +27,10 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 	if err != nil {
 		return nil, err
 	}
+	deadlineSeconds, err := relayNativeDeadlineSeconds()
+	if err != nil {
+		return nil, err
+	}
 	store, err := sqlite.OpenRelayStore(root)
 	if err != nil {
 		return nil, errors.New("isolated relay store unavailable")
@@ -40,7 +44,7 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 	if err != nil {
 		return nil, errors.Join(err, store.Close())
 	}
-	structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: notifications})
+	structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: notifications, SessionDeadlineSeconds: deadlineSeconds})
 	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{})
 	runtime := workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window, OwnedRoots: agents.RelayOwnedRoots{}})
 	owned, ok := runtime.(workspace.RelayOwnedSessionReader)

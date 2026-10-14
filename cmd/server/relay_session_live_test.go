@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -49,6 +50,12 @@ func TestRelaySessionActualService(t *testing.T) {
 		t.Fatal("实际验证中间目录必须使用当前 H 工作目录")
 	}
 	t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
+	port, err := configuredPositiveInt("ASTROCYTE_L1_API_PORT", 17342, 65534)
+	if err != nil {
+		t.Fatal("实际服务端口配置错误")
+	}
+	apiURL := "http://127.0.0.1:" + strconv.Itoa(port)
+	webURL := "http://127.0.0.1:" + strconv.Itoa(port+1)
 	root, err := relayRoot()
 	if err != nil {
 		t.Fatal("独立接入目录不可用")
@@ -130,8 +137,8 @@ func TestRelaySessionActualService(t *testing.T) {
 	}()
 	wrapped := services.Relay.(*relaySessionRuntime)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	server := httpapi.NewServer(httpapi.Config{Port: 17342, AllowedOrigins: []string{"http://127.0.0.1:17343"}, Logger: logger, Services: services})
-	listener, err := net.Listen("tcp", "127.0.0.1:17342")
+	server := httpapi.NewServer(httpapi.Config{Port: port, AllowedOrigins: []string{webURL}, Logger: logger, Services: services})
+	listener, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
 	if err != nil {
 		t.Fatal("实际服务端口不可用")
 	}
@@ -178,16 +185,28 @@ func TestRelaySessionActualService(t *testing.T) {
 		}
 		settings := project.Settings
 		settings.ExternalModelCLI = "codex"
-		settings.AllowedActions = []string{"start", "observe", "send", "stop", "resume"}
+		settings.AllowedActions = []string{"start", "observe", "send", "stop", "resume", "reconcile"}
 		client.request(t, "PUT", "/api/v1/local-projects/"+project.ID+"/settings", map[string]any{"expected_revision": project.Settings.Revision, "settings": settings}, &response)
 		project = response.Project
 	}
 	if snapshot.Works[0].Handoff.Content == "" {
 		client.request(t, "PUT", "/api/v1/works/"+snapshot.Works[0].ID+"/handoff", map[string]any{"expected_revision": snapshot.Works[0].Revision, "content": "Public L1 project. Only the fixed public task context is authorized. Filesystem and command tools remain disabled. Explain native session capture without inspecting files or history."}, nil)
 	}
-	public := map[string]any{"api_url": "http://127.0.0.1:17342", "project_id": project.ID, "work_id": snapshot.Works[0].ID, "project_revision": project.Settings.Revision, "agent_name": "codex", "service_started_at": time.Now().UTC(), "test_liveness_window_seconds": int(testWindow / time.Second), "native_notifications": nativeNotifications}
+	deadlineSeconds, err := relayNativeDeadlineSeconds()
+	if err != nil {
+		t.Fatal("实际进程寿命配置错误")
+	}
+	public := map[string]any{"api_url": apiURL, "web_url": webURL, "project_id": project.ID, "work_id": snapshot.Works[0].ID, "project_revision": project.Settings.Revision, "agent_name": "codex", "service_started_at": time.Now().UTC(), "test_liveness_window_seconds": int(testWindow / time.Second), "native_notifications": nativeNotifications, "session_deadline_seconds": deadlineSeconds}
 	writeActualJSON(t, filepath.Join(evidence, "service-public.json"), public)
 	writeActualJSON(t, filepath.Join(evidence, "service-private.json"), map[string]any{"app_root": root, "source_root": source, "db_path": filepath.Join(appDir, "state.sqlite")})
+	var executionStore *sqlite.RelayStore
+	if os.Getenv("ASTROCYTE_L1_CAPTURE_EXECUTION") == "1" {
+		executionStore, err = sqlite.OpenRelayStore(root)
+		if err != nil {
+			t.Fatal("实际进程证据的只读快照不可用")
+		}
+		defer executionStore.Close()
+	}
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
@@ -196,6 +215,9 @@ func TestRelaySessionActualService(t *testing.T) {
 			serveDone <- err
 			t.Fatal("实际 HTTP 服务提前终止")
 		case <-ticker.C:
+			if executionStore != nil {
+				captureActualRelayExecutions(t, ctx, registry, executionStore, evidence)
+			}
 			_, err := os.Stat(filepath.Join(evidence, "shutdown"))
 			if err == nil {
 				return
@@ -207,9 +229,40 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 }
 
+// 仅取当前 Registry 原控制器和 SQLite 实际会话，不从原生 ID 重建进程。
+func captureActualRelayExecutions(t *testing.T, ctx context.Context, registry *agents.Registry, store *sqlite.RelayStore, evidence string) {
+	t.Helper()
+	state, err := store.Snapshot(ctx)
+	if err != nil {
+		t.Fatal("实际进程证据的 SQLite 快照读取失败")
+	}
+	for taskID, task := range state.Tasks {
+		session, ok := state.Sessions[task.TerminalID]
+		if !ok || session.NativeID == "" {
+			continue
+		}
+		adapter, err := registry.Adapter(session.CLI)
+		if err != nil {
+			t.Fatal("实际会话的原控制器不可用")
+		}
+		reader, ok := adapter.(interface {
+			OwnedRelayExecution(context.Context, domain.NativeSession) (agents.RelayOwnedExecution, error)
+		})
+		if !ok {
+			t.Fatal("实际会话的内部执行策略端口缺失")
+		}
+		execution, err := reader.OwnedRelayExecution(ctx, session)
+		if err != nil {
+			t.Fatal("实际原控制器进程证据核对失败")
+		}
+		writeActualJSON(t, filepath.Join(evidence, "execution-"+taskID+"-derived.json"), map[string]any{"task_id": taskID, "observed_at": time.Now().UTC(), "execution": execution})
+	}
+}
+
 type actualRelayHTTP struct {
-	client *http.Client
-	csrf   string
+	client  *http.Client
+	csrf    string
+	baseURL string
 }
 
 func newActualRelayHTTP(t *testing.T) *actualRelayHTTP {
@@ -218,7 +271,11 @@ func newActualRelayHTTP(t *testing.T) *actualRelayHTTP {
 	if err != nil {
 		t.Fatal("实际会话 Cookie 不可用")
 	}
-	return &actualRelayHTTP{client: &http.Client{Jar: jar, Timeout: 30 * time.Second}}
+	port, err := configuredPositiveInt("ASTROCYTE_L1_API_PORT", 17342, 65534)
+	if err != nil {
+		t.Fatal("实际服务端口配置错误")
+	}
+	return &actualRelayHTTP{client: &http.Client{Jar: jar, Timeout: 30 * time.Second}, baseURL: "http://127.0.0.1:" + strconv.Itoa(port)}
 }
 
 func (c *actualRelayHTTP) request(t *testing.T, method, path string, body map[string]any, result any) {
@@ -233,11 +290,11 @@ func (c *actualRelayHTTP) request(t *testing.T, method, path string, body map[st
 			t.Fatal("实际请求编码失败")
 		}
 	}
-	req, err := http.NewRequest(method, "http://127.0.0.1:17342"+path, &encoded)
+	req, err := http.NewRequest(method, c.baseURL+path, &encoded)
 	if err != nil {
 		t.Fatal("实际请求不可用")
 	}
-	req.Header.Set("Origin", "http://127.0.0.1:17342")
+	req.Header.Set("Origin", c.baseURL)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("X-CSRF-Token", c.csrf)
