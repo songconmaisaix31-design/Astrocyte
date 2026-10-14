@@ -36,6 +36,16 @@ type relaySessionFixtureDriver struct {
 }
 
 func publicSessionLine(v any) string { data, _ := json.Marshal(v); return string(data) + "\n" }
+
+type relaySessionStateSpy struct {
+	relaySessionState
+	saves int
+}
+
+func (s *relaySessionStateSpy) Save(v relaySessionCheckpoints) error {
+	s.saves++
+	return s.relaySessionState.Save(v)
+}
 func publicSessionCall() string {
 	return publicSessionLine(map[string]any{"type": "response_item", "timestamp": "2026-10-14T01:00:01Z", "payload": map[string]any{"type": "function_call", "name": "Edit", "call_id": "PRIVATE_CANARY", "arguments": "PRIVATE_CANARY prompt/tool/stdout"}})
 }
@@ -103,7 +113,8 @@ func TestRelaySessionActualHTTPAdmissionRestartPermissionAndExitTail(t *testing.
 	repo := sqlite.NewEventRepository(db)
 	capture := events.NewRelaySessionCapture(attention.NewPendingEventService(repo), nil)
 	state := relaySessionFileState{root: root}
-	collector := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state)
+	stateSpy := &relaySessionStateSpy{relaySessionState: state}
+	collector := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, stateSpy, sqlite.NewAccessSessionReader(db))
 	wrapped := &relaySessionRuntime{RelayRuntime: runtime, RelayLifecycle: runtime.(workspace.RelayLifecycle), collector: collector}
 	client := &relayPersistentHTTP{t: t, server: httptest.NewServer(httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Relay: wrapped, RelaySessionEvents: collector}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}).Handler())}
 	defer client.server.Close()
@@ -147,29 +158,57 @@ func TestRelaySessionActualHTTPAdmissionRestartPermissionAndExitTail(t *testing.
 	if view.Events[0].TS < view.Events[1].TS {
 		t.Fatal("source timestamps not descending")
 	}
+	for _, event := range view.Events {
+		committed, e := repo.GetEvent(ctx, event.ID)
+		if e != nil || committed.ID != event.ID {
+			t.Fatal("HTTP event ID is not a committed repository receipt")
+		}
+	}
+	silentSaves := stateSpy.saves
+	if wrapped.ObserveOwned(ctx) != nil || stateSpy.saves != silentSaves {
+		t.Fatal("silent observation wrote checkpoint metadata")
+	}
+	pagedBytes := client.request("GET", "/api/v1/relay/session-events?task_id="+taskID+"&page=2&page_size=1", "", "", 200)
+	var paged workbench.SessionEvents
+	if json.Unmarshal(pagedBytes, &paged) != nil || paged.Total != 2 || len(paged.Events) != 1 || paged.Events[0].ID != view.Events[1].ID {
+		t.Fatal("actual source timestamp pagination failed")
+	}
+	readSamples = append(readSamples, relayContractSample{Schema: "RelaySessionEventsV1", Body: append(json.RawMessage(nil), pagedBytes...)})
 	checkpointPath, _ := state.path()
 	saved, e := os.ReadFile(checkpointPath)
-	if e != nil || strings.Contains(string(saved), "PRIVATE_CANARY") {
+	if e != nil || strings.Contains(string(saved), "PRIVATE_CANARY") || strings.Contains(string(saved), "event_id") {
 		t.Fatal("private source leaked to checkpoint")
 	}
 	reads := driver.reads
-	restarted := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state)
+	restarted := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state, sqlite.NewAccessSessionReader(db))
 	restored, e := restarted.ReadSessionEvents(ctx, workbench.SessionEventsQuery{Page: 1, PageSize: 50})
 	if e != nil || restored.Total != 2 || restored.Events[0].ID != view.Events[0].ID || driver.reads != reads {
 		t.Fatal("restart read lost stable admission")
 	}
 	line := publicSessionCall()
+	restarted.state = stateSpy
 	sessionFixtureAppend(t, driver.archive.Path, line[:len(line)/2])
+	beforeTailSaves := stateSpy.saves
 	if restarted.ObserveOwned(ctx) != nil {
 		t.Fatal("partial append unavailable")
+	}
+	if stateSpy.saves != beforeTailSaves+1 {
+		t.Fatal("new tail extent not saved once")
+	}
+	if restarted.ObserveOwned(ctx) != nil || stateSpy.saves != beforeTailSaves+1 {
+		t.Fatal("unchanged tail extent rewrote checkpoint")
 	}
 	partial, e := restarted.ReadSessionEvents(ctx, workbench.SessionEventsQuery{Page: 1, PageSize: 50})
 	if e != nil || partial.Total != 2 || partial.Coverage[0].TailBytes == 0 || partial.Coverage[0].SnapshotComplete {
 		t.Fatal("unfinished tail published")
 	}
 	sessionFixtureAppend(t, driver.archive.Path, line[len(line)/2:])
+	beforeLineSaves := stateSpy.saves
 	if restarted.ObserveOwned(ctx) != nil {
 		t.Fatal("complete append unavailable")
+	}
+	if stateSpy.saves != beforeLineSaves+1 {
+		t.Fatal("new complete line not saved once")
 	}
 	driver.closed = true
 	if wrapped.ObserveOwned(ctx) != nil {
@@ -222,7 +261,7 @@ func TestRelaySessionActualHTTPAdmissionRestartPermissionAndExitTail(t *testing.
 	if e != nil {
 		t.Fatal("checkpoint read unavailable")
 	}
-	writer := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state)
+	writer := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state, sqlite.NewAccessSessionReader(db))
 	if os.Rename(checkpointPath, checkpointPath+".retained") != nil || os.Mkdir(checkpointPath, 0700) != nil {
 		t.Fatal("public save failure fixture unavailable")
 	}
@@ -231,17 +270,17 @@ func TestRelaySessionActualHTTPAdmissionRestartPermissionAndExitTail(t *testing.
 		t.Fatal("metadata failure did not block")
 	}
 	failedRead, e := writer.ReadSessionEvents(ctx, workbench.SessionEventsQuery{Page: 1, PageSize: 50})
-	if e != nil || failedRead.Total != 4 || failedRead.Coverage[0].Gap != "checkpoint_save_unknown" {
+	if e != nil || failedRead.Total != 5 || failedRead.Coverage[0].Gap != "checkpoint_save_unknown" {
 		t.Fatal("failed metadata write advanced committed cursor")
 	}
-	broken := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state)
+	broken := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state, sqlite.NewAccessSessionReader(db))
 	if broken.blocked != "checkpoint_unavailable" || broken.ObserveOwned(ctx) == nil {
 		t.Fatal("bad checkpoint silently reset")
 	}
 	if os.Remove(checkpointPath) != nil || os.WriteFile(checkpointPath, priorBytes, 0600) != nil {
 		t.Fatal("public checkpoint restore unavailable")
 	}
-	recovery := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state)
+	recovery := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state, sqlite.NewAccessSessionReader(db))
 	if recovery.ObserveOwned(ctx) != nil {
 		t.Fatal("old checkpoint stable replay unavailable")
 	}
@@ -256,9 +295,23 @@ func TestRelaySessionActualHTTPAdmissionRestartPermissionAndExitTail(t *testing.
 	if os.WriteFile(checkpointPath, []byte("PRIVATE_CANARY invalid JSON"), 0600) != nil {
 		t.Fatal("public corruption unavailable")
 	}
-	corrupt := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state)
+	corrupt := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), capture, state, sqlite.NewAccessSessionReader(db))
 	if corrupt.blocked != "checkpoint_unavailable" || corrupt.ObserveOwned(ctx) == nil {
 		t.Fatal("corrupt cursor silently reset")
+	}
+	var semantic relaySessionCheckpoints
+	if json.Unmarshal(priorBytes, &semantic) != nil {
+		t.Fatal("public checkpoint decode failed")
+	}
+	badVersion := semantic[taskID]
+	badVersion.Cursor.Version = 99
+	semantic[taskID] = badVersion
+	badJSON, _ := json.Marshal(semantic)
+	if os.WriteFile(checkpointPath, badJSON, 0600) != nil {
+		t.Fatal("public semantic corruption unavailable")
+	}
+	if _, e = state.Load(); e == nil {
+		t.Fatal("unknown checkpoint version accepted before capture")
 	}
 	wrong := relaySessionFileState{root: filepath.Join(root, "snapshots")}
 	if _, e = wrong.Load(); e == nil {

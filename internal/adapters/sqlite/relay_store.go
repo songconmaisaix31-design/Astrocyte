@@ -177,6 +177,7 @@ type relayStateWire struct {
 type relayOwnedSessionPrivate struct {
 	WorkspaceRoot, SourceRoot, SessionID, NativeID, Ownership string
 	ArchivePath, ArchiveRoot, ArchiveFormat                   string
+	NativeCapture                                             *domain.RelayNativeSessionCapture
 }
 
 func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error) {
@@ -207,6 +208,7 @@ func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error)
 			bound := state.OwnedSessions[id]
 			bound.WorkspaceRoot, bound.SourceRoot, bound.SessionID, bound.NativeID, bound.Ownership = private.WorkspaceRoot, private.SourceRoot, private.SessionID, private.NativeID, private.Ownership
 			bound.ArchivePath, bound.ArchiveRoot, bound.ArchiveFormat = private.ArchivePath, private.ArchiveRoot, private.ArchiveFormat
+			bound.NativeCapture = private.NativeCapture
 			state.OwnedSessions[id] = bound
 		}
 	}
@@ -318,7 +320,7 @@ ON CONFLICT(id) DO UPDATE SET data=excluded.data,input=excluded.input`, id, stri
 	}
 	wire.OwnedSessionInternals = map[string]relayOwnedSessionPrivate{}
 	for id, bound := range state.OwnedSessions {
-		wire.OwnedSessionInternals[id] = relayOwnedSessionPrivate{WorkspaceRoot: bound.WorkspaceRoot, SourceRoot: bound.SourceRoot, SessionID: bound.SessionID, NativeID: bound.NativeID, Ownership: bound.Ownership, ArchivePath: bound.ArchivePath, ArchiveRoot: bound.ArchiveRoot, ArchiveFormat: bound.ArchiveFormat}
+		wire.OwnedSessionInternals[id] = relayOwnedSessionPrivate{WorkspaceRoot: bound.WorkspaceRoot, SourceRoot: bound.SourceRoot, SessionID: bound.SessionID, NativeID: bound.NativeID, Ownership: bound.Ownership, ArchivePath: bound.ArchivePath, ArchiveRoot: bound.ArchiveRoot, ArchiveFormat: bound.ArchiveFormat, NativeCapture: bound.NativeCapture}
 	}
 	for id, w := range state.Workspaces {
 		wire.WorkspaceInternals[id] = relayWorkspacePrivate{SourceRoot: w.SourceRoot, GitObservation: w.GitObservation}

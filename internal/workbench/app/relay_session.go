@@ -12,6 +12,7 @@ type SessionEvents struct {
 }
 
 type SessionCoverage struct {
+	Source           string `json:"source"`
 	TaskID           string `json:"task_id"`
 	TerminalID       string `json:"terminal_id"`
 	WorktreeID       string `json:"worktree_id"`
@@ -39,4 +40,15 @@ type SessionEventsQuery struct {
 // rechecked by its entrypoint bridge before reading cached derived admissions.
 type SessionEventsReader interface {
 	ReadSessionEvents(context.Context, SessionEventsQuery) (SessionEvents, error)
+}
+
+// Internal selection from the owned runtime, never decoded from HTTP. The
+// repository returns committed receipt IDs, not parser or cursor event IDs.
+type SessionAdmissionScope struct {
+	TaskID, ProjectID, TerminalID, NativeSessionID, NativeBindingID string
+	RelayEventIDs                                                   []string
+	NativeNotifications                                             bool
+}
+type SessionAdmissions interface {
+	ReadCommittedSessionEvents(context.Context, []SessionAdmissionScope, SessionEventsQuery) ([]Event, int, error)
 }

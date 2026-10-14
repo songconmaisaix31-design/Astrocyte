@@ -128,8 +128,8 @@ func TestRelaySessionUnknownAndErrorsRemainInDenominator(t *testing.T) {
 	b.ArchiveFinalized = true
 	b.PrefixComplete = true
 	r, e := ReadRelaySession(context.Background(), b, RelaySessionCursor{})
-	if e != nil || r.Next.Counts.Lines != 4 || r.Next.Counts.Errors != 1 || r.Next.Counts.Unknown != 2 || r.Next.Counts.Projected != 2 || r.SessionComplete || r.Next.FirstError != "malformed_json" {
-		t.Fatal("unknown/error records excluded from coverage")
+	if e == nil || r.Next.Counts.Lines != 2 || r.Next.Counts.Errors != 1 || r.Next.Counts.Projected != 1 || r.SessionComplete || r.Next.FirstError != "malformed_json" || r.Next.Blocked != "malformed_json" {
+		t.Fatal("格式错误没有立即停止并保留覆盖缺口")
 	}
 	b2 := sessionFixture(t)
 	b2.Format = "never-seen-CLI"
@@ -204,13 +204,21 @@ func TestRelaySessionBoundaryAndMutationFailures(t *testing.T) {
 }
 
 type sessionFailRecorder struct {
-	delegate RelaySessionRecorder
-	calls    int
-	fail     bool
+	delegate       RelaySessionRecorder
+	calls          int
+	fail           bool
+	commitThenFail bool
 }
 
 func (s *sessionFailRecorder) Record(ctx context.Context, rows []attention.StoredEvent) ([]attention.StoredEvent, error) {
 	s.calls++
+	if s.commitThenFail {
+		_, err := s.delegate.Record(ctx, rows)
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New("PRIVATE_CANARY ambiguous committed admission")
+	}
 	if s.fail {
 		return nil, errors.New("PRIVATE_CANARY sink SQL/provider")
 	}
@@ -266,5 +274,26 @@ func TestRelaySessionEventServiceStableAdmissionAndUnknownFailure(t *testing.T) 
 	signals, e := repo.ListSignals(context.Background(), 0, fixtureEnd)
 	if e != nil || len(signals) != 0 {
 		t.Fatal("capture produced cognitive signals")
+	}
+	// Unknown acknowledgement can occur after the transaction committed. Keep
+	// the old cursor and original origins, with no automatic second Record call.
+	port.commitThenFail = true
+	unknown, e := capture.Capture(context.Background(), b, RelaySessionCursor{})
+	if e == nil || !unknown.Pending || unknown.Checkpoint.Offset != 0 {
+		t.Fatal("committed unknown acknowledgement advanced cursor")
+	}
+	firstCalls := port.calls
+	_, e = capture.Capture(context.Background(), b, unknown.Checkpoint)
+	if e == nil || port.calls != firstCalls {
+		t.Fatal("committed unknown retried automatically")
+	}
+	port.commitThenFail = false
+	reconciled, e := capture.ReconcileAdmission(context.Background(), b, unknown)
+	if e != nil || reconciled.Pending || reconciled.Checkpoint.FirstError != "admission_unknown" {
+		t.Fatal("committed unknown explicit reconciliation failed")
+	}
+	confirmed, e := repo.ListEvents(context.Background(), 0, fixtureEnd)
+	if e != nil || len(confirmed) != 2 || confirmed[0].ID != rows[0].ID {
+		t.Fatal("unknown commit reconciliation replaced original identity")
 	}
 }

@@ -147,7 +147,10 @@ func runSemantic(dir, gitPath, out, policyPath string) error {
 			if _, ok := parents[parent]; ok {
 				return fmt.Errorf("duplicate native parent")
 			}
-			original := events.NativeToolName(v.Source, raw, block)
+			original, e := events.NativeToolName(v.Source, raw, block)
+			if e != nil {
+				return e
+			}
 			// Historical direct-612 vocabulary is independent of revised mapper table.
 			name := strings.TrimPrefix(strings.TrimPrefix(strings.TrimPrefix(original, "functions."), "tools."), "container.")
 			switch name {

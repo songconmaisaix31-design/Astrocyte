@@ -5,7 +5,7 @@ import { relayAlbumMetrics } from '../src/pages/workspace/relayAlbumMetrics';
 
 test('实际扫描作品保留五项统计、平台筛选、交接手册与三种尺寸布局', async ({ page }) => {
   test.setTimeout(180_000);
-  const { server, api } = await realService();
+  const { server, api } = await realService(true);
   try {
     await expect.poll(async () => ((await api.get('/local-projects/registered')) as components['schemas']['RegisteredProjectDiscoveryResultV1']).snapshot.projects.length, { timeout: 120_000 }).toBeGreaterThan(0);
     const scanned = await api.write('/works/refresh', { roots: [repositoryRoot] }) as components['schemas']['WorksSnapshotResultV1'];

@@ -38,7 +38,10 @@ func runRelayObserver(ctx context.Context, observer relayOwnedObserver, cadence 
 			err := observer.ObserveOwned(bounded)
 			cancel()
 			if err != nil && ctx.Err() == nil && logger != nil {
-				logger.Warn("relay observation unavailable; prior evidence retained")
+				logger.Error("relay observation stopped; prior evidence retained")
+			}
+			if err != nil {
+				return
 			}
 		}
 	}

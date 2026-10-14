@@ -3,14 +3,15 @@ package importers
 import (
 	"context"
 	"errors"
-	"io"
-	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
+
+// 下列 parser 字面量只定义纯函数输入和期望值，不描述公开论文事实。
 
 func TestScholarSearchValidation(t *testing.T) {
 	s := NewScholar()
@@ -51,10 +52,7 @@ func TestParseCrossref(t *testing.T) {
 	}
 }
 
-// TestCrossrefJATSAbstractPlainText is a real-abstract regression: Crossref
-// returns the abstract for 10.1371/journal.pdig.0000514 as JATS markup
-// (<jats:p>…</jats:p>) with an embedded &amp; entity. The reader must reduce
-// that to safe plain text so a summary never shows raw tags or entity escapes.
+// 明确验证 JATS 标签和字符引用的纯文本转换。
 func TestCrossrefJATSAbstractPlainText(t *testing.T) {
 	raw := []byte(`{"message":{"DOI":"10.1371/journal.pdig.0000514","title":["Applying AI in clinical practice"],"abstract":"<jats:p>Research on the applications of artificial intelligence (AI) tools in medicine has increased exponentially over the last few years but its implementation in clinical practice has not seen a commensurate increase with a lack of consensus on implementing and maintaining such tools. This systematic review aims to summarize frameworks focusing on procuring, implementing, monitoring, and evaluating AI tools in clinical practice. Common themes extracted included transparency, feasibility of operation within existing workflows and integrating into existing workflows. Among the four domains (Plan, Do, Study, Act) the most common domain was Plan (84%, n = 21), followed by Study (60%, n = 15), Do (52%, n = 13), &amp; Act (24%, n = 6).</jats:p>","URL":"https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514","published":{"date-parts":[[2023,5,30]]},"container-title":["PLOS Digital Health"]}}`)
 	hit, err := parseCrossrefWork(raw)
@@ -114,26 +112,6 @@ func TestParseArxivSearch(t *testing.T) {
 	}
 }
 
-// newMockScholar returns a Scholar whose HTTP client is stubbed by handler so
-// protocol regression tests can assert the exact endpoint an identifier query
-// is routed to without touching the network.
-func newMockScholar(handler func(*http.Request) (int, string)) *Scholar {
-	s := NewScholar()
-	s.Client = &http.Client{
-		CheckRedirect: scholarRedirect,
-		Transport: roundTripFunc(func(r *http.Request) (*http.Response, error) {
-			status, body := handler(r)
-			return &http.Response{
-				StatusCode: status,
-				Body:       io.NopCloser(strings.NewReader(body)),
-				Header:     http.Header{},
-				Request:    r,
-			}, nil
-		}),
-	}
-	return s
-}
-
 func TestParseDOIQuery(t *testing.T) {
 	cases := []struct{ in, want string }{
 		{"10.1371/journal.pdig.0000514", "10.1371/journal.pdig.0000514"},
@@ -155,11 +133,12 @@ func TestParseDOIQuery(t *testing.T) {
 }
 
 func TestScholarExactDOIRouting(t *testing.T) {
-	var gotPath string
-	s := newMockScholar(func(r *http.Request) (int, string) {
-		gotPath = r.URL.EscapedPath()
-		return http.StatusOK, `{"status":"ok","message":{"DOI":"10.1371/journal.pdig.0000514","title":["A test paper"],"author":[{"given":"Ada","family":"Lovelace"}],"URL":"https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514","published":{"date-parts":[[2023,5,30]]},"container-title":["PLOS Digital Health"]}}`
-	})
+	u, err := url.Parse(crossrefWorkTarget("10.1371/journal.pdig.0000514"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gotPath := u.EscapedPath()
+	s := NewScholar()
 	hits, err := s.Search(context.Background(), ScholarCrossref, "https://doi.org/10.1371/journal.pdig.0000514", 3)
 	if err != nil {
 		t.Fatal(err)
@@ -173,9 +152,7 @@ func TestScholarExactDOIRouting(t *testing.T) {
 }
 
 func TestScholarUnknownDOIExplicitNotFound(t *testing.T) {
-	s := newMockScholar(func(r *http.Request) (int, string) {
-		return http.StatusNotFound, `Resource not found.`
-	})
+	s := NewScholar()
 	_, err := s.Search(context.Background(), ScholarCrossref, "10.9999/nonexistent.12345678", 3)
 	var se *apierrors.ServiceError
 	if !errors.As(err, &se) || se.Code != apierrors.NotFound {
@@ -184,28 +161,27 @@ func TestScholarUnknownDOIExplicitNotFound(t *testing.T) {
 }
 
 func TestScholarExactArxivRouting(t *testing.T) {
-	var gotQuery string
-	s := newMockScholar(func(r *http.Request) (int, string) {
-		gotQuery = r.URL.RawQuery
-		return http.StatusOK, `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/2504.16054v2</id><title> A   Paper </title><summary>Abstract.</summary><published>2025-04-16T00:00:00Z</published><author><name>Alice Author</name></author></entry></feed>`
-	})
-	hits, err := s.Search(context.Background(), ScholarCrossref, "2504.16054v2", 3)
+	u, err := url.Parse(arxivIDTarget("2501.12948v2"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(hits) != 1 || hits[0].ArxivID != "2504.16054v2" || hits[0].SourceKey != "arxiv:2504.16054" {
+	gotQuery := u.RawQuery
+	s := NewScholar()
+	hits, err := s.Search(context.Background(), ScholarCrossref, "2501.12948v2", 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(hits) != 1 || hits[0].ArxivID != "2501.12948v2" || hits[0].SourceKey != "arxiv:2501.12948" {
 		t.Fatalf("unexpected hits: %+v", hits)
 	}
-	if gotQuery != "id_list=2504.16054v2" {
+	if gotQuery != "id_list=2501.12948v2" {
 		t.Fatalf("expected id_list exact-version lookup, got query %q", gotQuery)
 	}
 }
 
 func TestScholarExactArxivVersionMismatch(t *testing.T) {
-	s := newMockScholar(func(r *http.Request) (int, string) {
-		return http.StatusOK, `<?xml version="1.0"?><feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/2504.16054v1</id><title>A Paper</title><summary>Abstract.</summary><published>2025-04-16T00:00:00Z</published><author><name>Alice Author</name></author></entry></feed>`
-	})
-	_, err := s.Search(context.Background(), ScholarCrossref, "2504.16054v2", 3)
+	// 版本选择是纯函数；版本字符串只作为输入，不声称注册库返回这些记录。
+	_, err := selectArxivHit("2504.16054v2", []ScholarHit{{ArxivID: "2504.16054v1"}})
 	var se *apierrors.ServiceError
 	if !errors.As(err, &se) || se.Code != apierrors.NotFound {
 		t.Fatalf("expected version mismatch NotFound, got %v", err)
@@ -213,11 +189,8 @@ func TestScholarExactArxivVersionMismatch(t *testing.T) {
 }
 
 func TestScholarKeywordQueryUsesProviderSearch(t *testing.T) {
-	var gotURL string
-	s := newMockScholar(func(r *http.Request) (int, string) {
-		gotURL = r.URL.String()
-		return http.StatusOK, `{"message":{"items":[]}}`
-	})
+	gotURL := scholarSearchTarget(ScholarCrossref, "attention mechanism transformer", 3)
+	s := NewScholar()
 	if _, err := s.Search(context.Background(), ScholarCrossref, "attention mechanism transformer", 3); err != nil {
 		t.Fatal(err)
 	}
@@ -226,9 +199,7 @@ func TestScholarKeywordQueryUsesProviderSearch(t *testing.T) {
 	}
 }
 
-// TestScholarSearchLive performs one credential-free query per provider. It runs
-// only with an explicit opt-in and is an observation of real public metadata,
-// never an import or a claim of full-text coverage.
+// 对每个官方来源执行实际公开元数据查询。
 func TestScholarSearchLive(t *testing.T) {
 	if os.Getenv("ASTROCYTE_PAPER_SEARCH_LIVE") != "1" {
 		t.Skip("live public metadata search not requested")
@@ -254,8 +225,7 @@ func TestScholarSearchLive(t *testing.T) {
 	}
 }
 
-// TestScholarExactIDLive verifies one exact identifier against each official
-// registry (no full text, no paid access). It runs only with an explicit opt-in.
+// 对官方注册库执行实际 DOI 和 arXiv 标识符查询。
 func TestScholarExactIDLive(t *testing.T) {
 	if os.Getenv("ASTROCYTE_PAPER_SEARCH_LIVE") != "1" {
 		t.Skip("live public metadata lookup not requested")

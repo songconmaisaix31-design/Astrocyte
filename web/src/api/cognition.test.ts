@@ -1,60 +1,74 @@
-import { describe, expect, it, vi } from 'vitest';
-import { createApiClient, ApiError } from './client';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import type { S1Server } from '../../../tests/s1/server.mjs';
+import { ApiError } from './client';
 import { createCognitionApi } from './cognition';
+import { cognitionTestServer, recordedClient } from './realHttpTest';
 
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-const denied = { schema_version: 1, error: { code: 'scope_denied', message: 'local session expired', retryable: true, required_action: '请重新建立本机会话', request_id: 'contract-request' } };
-describe('cognition uses the existing authenticated read client', () => {
-  it('bootstraps the protected cognition health and coalesces parallel reads', async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockImplementation(async request => {
-      const path = new URL((request as Request).url).pathname;
-      return json(path.endsWith('/auth/session') ? { csrf_token: 'contract-session' } : path.endsWith('/health') ? { status: 'ok', snapshot_at: '2026-10-12T16:01:00Z', timezone: 'Asia/Shanghai' } : { topics: [], series: [] });
-    });
-    const api = createCognitionApi(createApiClient('http://localhost/api/v1', fetchImpl));
+describe('认知客户端使用生产服务、公开来源快照和既有会话', () => {
+  let server: S1Server;
+  beforeAll(async () => { server = await cognitionTestServer(); }, 120_000);
+  afterAll(async () => { if (server) await server.close(); });
+
+  it('并发受保护读取只建立一次实际会话', async () => {
+    const recorded = recordedClient(server), api = createCognitionApi(recorded.client);
     const [health, focus] = await Promise.all([api.health(), api.focus()]);
     expect(health.timezone).toBe('Asia/Shanghai');
-    expect(focus).toEqual({ topics: [], series: [] });
-    const requests = fetchImpl.mock.calls.map(([request]) => request as Request);
-    expect(requests[0].url).toBe('http://localhost/api/v1/auth/session');
-    expect(requests.filter(request => request.url.endsWith('/auth/session'))).toHaveLength(1);
-    expect(requests.every(request => request.method === 'GET')).toBe(true);
+    expect(focus.topics.length).toBeGreaterThan(0);
+    expect(recorded.requests[0].url).toBe(`${server.apiURL}/api/v1/auth/session`);
+    expect(recorded.requests.filter(request => request.url.endsWith('/auth/session'))).toHaveLength(1);
+    expect(recorded.requests.every(request => request.method === 'GET')).toBe(true);
+    expect(health).toEqual(await recorded.responses.find(response => response.url.endsWith('/cognition/health'))!.json());
   });
-  it('recovers one expired session on cognition health without adding another authentication flow', async () => {
-    const health = { status: 'ok', snapshot_at: '2026-10-13T08:00:00Z', timezone: 'Asia/Shanghai' };
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValueOnce(json({ csrf_token: 'first' })).mockResolvedValueOnce(json(denied, 403)).mockResolvedValueOnce(json({ csrf_token: 'second' })).mockResolvedValueOnce(json(health));
-    await expect(createCognitionApi(createApiClient('http://localhost/api/v1', fetchImpl)).health()).resolves.toEqual(health);
-    expect(fetchImpl.mock.calls.map(([request]) => new URL((request as Request).url).pathname)).toEqual(['/api/v1/auth/session', '/api/v1/cognition/health', '/api/v1/auth/session', '/api/v1/cognition/health']);
+
+  it('实际服务重启使旧会话失效，只重新建立一次会话', async () => {
+    const recorded = recordedClient(server), api = createCognitionApi(recorded.client);
+    const health = await api.health();
+    await server.restart();
+    const offset = recorded.requests.length;
+    expect(await api.health()).toEqual(health);
+    expect(recorded.requests.slice(offset).map(request => new URL(request.url).pathname)).toEqual(['/api/v1/cognition/health', '/api/v1/auth/session', '/api/v1/cognition/health']);
+  }, 60_000);
+
+  it('原健康接口直接返回实际健康状态', async () => {
+    const recorded = recordedClient(server);
+    const result = await recorded.client.GET('/health');
+    expect(result.response.status).toBe(200);
+    expect(recorded.requests).toHaveLength(1);
+    expect(recorded.requests[0].url).toBe(`${server.apiURL}/api/v1/health`);
   });
-  it('keeps original root health public', async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(json({ status: 'ok' }));
-    await createApiClient('http://localhost/api/v1', fetchImpl).GET('/health');
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect((fetchImpl.mock.calls[0][0] as Request).url).toBe('http://localhost/api/v1/health');
-  });
-  it('preserves all filters and paging in the GET query, including source only as query', async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockImplementation(async () => json({ events: [], total: 0, page: 3, page_size: 100 }));
-    const api = createCognitionApi(createApiClient('http://localhost/api/v1', fetchImpl));
-    await api.events({ topic: '真实主题 / A', kind: 'code_created', source: 'manual', start: '2026-10-11', end: '2026-10-12', page: 3, page_size: 100 });
-    const request = fetchImpl.mock.calls[1][0] as Request;
-    expect(Object.fromEntries(new URL(request.url).searchParams)).toEqual({ topic: '真实主题 / A', kind: 'code_created', source: 'manual', start: '2026-10-11', end: '2026-10-12', page: '3', page_size: '100' });
+
+  it('GET 完整保留调用者提供的过滤与分页参数', async () => {
+    const recorded = recordedClient(server), api = createCognitionApi(recorded.client);
+    const filters = { topic: '输入主题 / A', kind: 'code_created', source: 'manual', start: '2026-10-11', end: '2026-10-12', page: 3, page_size: 100 };
+    const result = await api.events(filters);
+    const request = recorded.requests.at(-1)!;
+    expect(Object.fromEntries(new URL(request.url).searchParams)).toEqual({ ...filters, page: '3', page_size: '100' });
     expect(request.method).toBe('GET');
     expect(request.body).toBeNull();
+    expect(result).toEqual(await recorded.responses.at(-1)!.json());
   });
-  it('preserves null values, empty days and fixed API failures without fixture fallback', async () => {
-    const today = { day: '2026-10-13', focus: [{ topic: '主题', attention: 1, momentum: 0, confidence: 0.5, attention_delta: null }], activity: [], sleep: { day: '2026-10-12', status: 'not_produced', completed_at: null }, daily_counts: [], sources: [] };
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValueOnce(json({ csrf_token: 'human' })).mockResolvedValueOnce(json(today)).mockResolvedValueOnce(json({ ...denied, error: { ...denied.error, code: 'snapshot_unavailable', message: '工作台快照不可用' } }, 503));
-    const api = createCognitionApi(createApiClient('http://localhost/api/v1', fetchImpl));
-    await expect(api.today()).resolves.toEqual(today);
-    await expect(api.focus()).rejects.toBeInstanceOf(ApiError);
-    expect(fetchImpl).toHaveBeenCalledTimes(3);
-  });
-  it('forwards cancellation and does not bootstrap bearer requests', async () => {
+
+  it('完整保留实际空日期、unknown 与连接失败', async () => {
+    const recorded = recordedClient(server), api = createCognitionApi(recorded.client);
+    const today = await api.today();
+    expect(today).toEqual(await recorded.responses.at(-1)!.json());
+    const empty = await api.events({ start: '1900-01-01', end: '1900-01-01' });
+    expect(empty.events).toEqual([]);
+    expect(empty.total).toBe(0);
+    await server.stopAPI();
+    try { await expect(api.focus()).rejects.toThrow(); }
+    finally { await server.startAPI(); }
+  }, 60_000);
+
+  it('实际取消立即失败，无效 Bearer 保留拒绝且不自动读取认证', async () => {
+    const recorded = recordedClient(server), api = createCognitionApi(recorded.client);
     const controller = new AbortController(); controller.abort();
-    const fetchImpl = vi.fn<typeof fetch>().mockRejectedValue(new DOMException('Aborted', 'AbortError'));
-    await expect(createCognitionApi(createApiClient('http://localhost/api/v1', fetchImpl)).agents(controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
-    const bearerFetch = vi.fn<typeof fetch>().mockResolvedValue(json(denied, 403));
-    await createApiClient('http://localhost/api/v1', bearerFetch).GET('/cognition/health', { headers: { Authorization: 'Bearer denied' } });
-    expect(bearerFetch).toHaveBeenCalledTimes(1);
+    await expect(api.agents(controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+    expect(recorded.requests).toHaveLength(1);
+    const offset = recorded.requests.length;
+    const result = await recorded.client.GET('/cognition/health', { headers: { Authorization: 'Bearer invalid' } });
+    expect(result.response.status).toBe(403);
+    expect(recorded.requests.length - offset).toBe(1);
+    expect(new ApiError(result.response.status, result.error!).code).toBe('scope_denied');
   });
 });

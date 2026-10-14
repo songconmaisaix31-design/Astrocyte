@@ -40,14 +40,15 @@ function inside(path, directory) {
   return rel === '' || (!rel.startsWith(`..${sep}`) && rel !== '..' && !isAbsolute(rel));
 }
 
-async function existingOwnedTemporary(choice) {
+async function existingOwnedTemporary(choice, relay) {
   // 调用者必须明确原 helper 目录及协调者授权的根目录。
   if (!choice || typeof choice.path !== 'string' || typeof choice.ownedRoot !== 'string' || !isAbsolute(choice.path) || !isAbsolute(choice.ownedRoot)) throw new Error('Reuse requires explicit absolute original path and approved ownedRoot');
   const approved = await realpath(choice.ownedRoot);
   const chosen = await realpath(choice.path);
   const verification = await realpath(join(root, '.verification'));
   if (!inside(approved, verification) || approved === verification || !inside(chosen, approved)) throw new Error('Original helper directory must stay within this worktree verification directory and its explicitly approved root');
-  for (const [path, directory] of [[chosen, true], [join(chosen, 'data'), true], [join(chosen, 'data', 'state.sqlite'), false], [join(chosen, 'data', 'objects'), true], [join(chosen, process.platform === 'win32' ? 'server.exe' : 'server'), false]]) {
+  const data = relay ? join(chosen, 'local-appdata', 'astrocyte-workbench', 'v0.2-access', 'app-state') : join(chosen, 'data');
+  for (const [path, directory] of [[chosen, true], [data, true], [join(data, 'state.sqlite'), false], [join(data, 'objects'), true], [join(chosen, process.platform === 'win32' ? 'server.exe' : 'server'), false]]) {
     const info = await lstat(path);
     if (info.isSymbolicLink() || (directory ? !info.isDirectory() : !info.isFile()) || !inside(await realpath(path), approved)) throw new Error('Original helper store must be an existing ordinary SQLite/objects directory within its approved root');
   }
@@ -55,7 +56,8 @@ async function existingOwnedTemporary(choice) {
 }
 
 /** 使用现有 Go 服务及可选 Vite，数据仅放在本工作树的验证目录。 */
-export async function startS1Server({ browser = false, env: extraEnv = {}, reuseOwnedTemporary, apiPort: requestedAPIPort, webPort: requestedWebPort } = {}) {
+export async function startS1Server({ browser = false, relay = false, env: extraEnv = {}, reuseOwnedTemporary, apiPort: requestedAPIPort, webPort: requestedWebPort } = {}) {
+  if (typeof relay !== 'boolean') throw new Error('relay must be an explicit boolean');
   if (!browser && requestedWebPort !== undefined) throw new Error('A web acceptance port requires browser:true');
   // 创建数据目录和进程前先检查分配端口，已占用的端口立即失败。
   const apiPort = await freePort(requestedAPIPort);
@@ -63,16 +65,21 @@ export async function startS1Server({ browser = false, env: extraEnv = {}, reuse
   if (browser && apiPort === webPort) throw new Error('API and Vite acceptance ports must differ');
   const verification = join(root, '.verification');
   await mkdir(verification, { recursive: true });
-  const original = reuseOwnedTemporary ? await existingOwnedTemporary(reuseOwnedTemporary) : null;
+  const original = reuseOwnedTemporary ? await existingOwnedTemporary(reuseOwnedTemporary, relay) : null;
   const temporary = original?.temporary ?? await mkdtemp(join(verification, 'astrocyte-s1-'));
-  const dataDir = join(temporary, 'data');
+  const localAppData = relay ? join(temporary, 'local-appdata') : undefined;
+  const relayRoot = relay ? join(localAppData, 'astrocyte-workbench', 'v0.2-access') : undefined;
+  const dataDir = relay ? join(relayRoot, 'app-state') : join(temporary, 'data');
+  if (relay) await mkdir(relayRoot, { recursive: true });
   const executable = join(temporary, process.platform === 'win32' ? 'server.exe' : 'server');
   const apiURL = `http://127.0.0.1:${apiPort}`;
   const webURL = `http://127.0.0.1:${webPort}`;
   const suppliedEnv = typeof extraEnv === 'function' ? await extraEnv({ dataDir, temporary }) : extraEnv;
   // 仅接收本次明确传入的产品配置，防止继承私人源范围或模型授权。
   const baseEnv = Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.toUpperCase().startsWith('ASTROCYTE_')));
-  const env = { ...baseEnv, ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false', ASTROCYTE_ENABLE_SUMMARIZE: 'false', ASTROCYTE_SUMMARIZE_CLI: '', ASTROCYTE_PROJECT_DISCOVERY_ROOTS: JSON.stringify([root]), ...suppliedEnv, ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(apiPort), ASTROCYTE_WEB_PORT: String(webPort) };
+  const env = { ...baseEnv, ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false', ASTROCYTE_ENABLE_SUMMARIZE: 'false', ASTROCYTE_SUMMARIZE_CLI: '', ASTROCYTE_PROJECT_DISCOVERY_ROOTS: JSON.stringify([root]), ...suppliedEnv,
+    ...(relay ? { LOCALAPPDATA: localAppData, APPDATA: join(temporary, 'appdata'), HOME: join(temporary, 'profile'), USERPROFILE: join(temporary, 'profile'), ASTROCYTE_RELAY: '1', ASTROCYTE_RELAY_LIVE_SECONDS: '' } : {}),
+    ASTROCYTE_DATA_DIR: dataDir, ASTROCYTE_PORT: String(apiPort), ASTROCYTE_WEB_PORT: String(webPort) };
   let apiChild;
   let webChild;
   let disposed = false;
@@ -113,7 +120,7 @@ export async function startS1Server({ browser = false, env: extraEnv = {}, reuse
     throw error;
   }
   return {
-    apiURL, webURL, dataDir, temporary, close,
+    apiURL, webURL, dataDir, temporary, localAppData, relayRoot, close,
     startAPI,
     async stopAPI() { await stop(apiChild); },
     // 通过本次实际服务进程的退出和新进程启动验证持久化恢复。

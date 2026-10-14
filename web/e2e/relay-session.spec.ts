@@ -25,7 +25,7 @@ test.beforeAll(async () => {
   const expectedPath = process.env.ASTROCYTE_TEST_RELAY_L1_GETEVENT_PUBLIC_FILE;
   expect(expectedPath, '需要 H 从实际 GetEvent 导出的公开事实文件').toBeTruthy();
   facts = JSON.parse(await readFile(expectedPath!, 'utf8')) as PublicFacts;
-  observation = JSON.parse(await readFile(join(process.cwd(), 'test-results/l1-live/first-visible.json'), 'utf8')) as Observation;
+  observation = JSON.parse(await readFile(join(process.cwd(), '../.verification/l1-live/first-visible.json'), 'utf8')) as Observation;
   expect(facts.events.length).toBeGreaterThanOrEqual(2);
   expect(facts.native_session_event_ids.length, '需要 H 从真实仓储 origin 正向确认原生来源的公开 ID').toBeGreaterThan(0);
   expect(facts.forbidden_canaries.length, '需要实际原生输入中的公开 canary 标记').toBeGreaterThan(0);
@@ -76,9 +76,13 @@ async function assertRows(page: Page, data: RelaySessionEvents) {
 async function assertCoverage(page: Page, item: RelaySessionCoverage) {
   const coverage = page.getByRole('article', { name: `会话覆盖 ${item.task_id}`, exact: true });
   await expect(coverage).toContainText(`· ${item.status}`);
-  await expect(coverage).toContainText(`当前文件快照：${item.snapshot_complete ? '已读完当前冻结字节范围' : '尚未读完或无法核实'}`);
-  await expect(coverage).toContainText(`完整会话生命周期：${item.session_complete ? '服务报告已核实' : '尚未核实'}`);
-  const counts = [['完整行', item.lines], ['已派生', item.projected], ['重复', item.duplicates], ['未知格式', item.unknown], ['错误', item.errors], ['Token 未知', item.unknown_tokens], ['剩余字节', item.remaining_bytes], ['未完成尾部字节', item.tail_bytes]] as const;
+  const notifications = item.source === 'native_notifications';
+  const title = notifications ? '当前公开通知范围' : item.source === 'archive' ? '当前文件快照' : '当前来源范围';
+  const snapshot = item.snapshot_complete ? notifications ? '已处理当前已接收通知' : item.source === 'archive' ? '已读完当前冻结字节范围' : '服务报告已处理当前范围，来源协议仍未知' : '尚未完成或无法核实';
+  await expect(coverage).toContainText(`${title}：${snapshot}`);
+  await expect(coverage).toContainText(`所选来源协议生命周期：${item.session_complete ? '服务报告已核实' : '尚未核实'}`);
+  if (notifications) await expect(coverage).toContainText('零字节不证明原生归档完整');
+  const counts = [[notifications ? '公开通知' : item.source === 'archive' ? '完整行' : '记录（单位未提供）', item.lines], ['已派生', item.projected], ['重复', item.duplicates], ['未知格式', item.unknown], ['错误', item.errors], ['Token 未知', item.unknown_tokens], ['剩余字节', item.remaining_bytes], ['未完成尾部字节', item.tail_bytes]] as const;
   for (const [label, value] of counts) await expect(coverage.locator('dl div').filter({ has: page.locator('dt', { hasText: new RegExp(`^${label}$`) }) }).locator('dd')).toHaveText(String(value));
   if (item.gap || item.unknown || item.errors || item.tail_bytes || item.remaining_bytes) await expect(coverage).toContainText('不能据此宣称会话完整');
 }

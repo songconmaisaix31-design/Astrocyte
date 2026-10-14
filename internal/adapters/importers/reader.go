@@ -17,8 +17,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
 
-// Reader accepts existing exports. Local files are disabled unless explicit
-// allowed roots are supplied by the application's trusted configuration.
+// Reader 读取现有导出，本地文件必须位于启动配置明确授权的目录。
 type Reader struct {
 	Arxiv        *Arxiv
 	Summarize    *SummarizeExtractor
@@ -161,8 +160,7 @@ func (r *Reader) ReadSource(ctx context.Context, cmd app.ImportMaterialCommand) 
 		}
 		source = paperPDFSource(cmd.SourceLocator, cmd.Title, result.Text, pdf, result.Original)
 	case "paper_snapshot":
-		// A human-reviewed browser-plugin snapshot pasted as JSON. No network
-		// access, no model call, no paywall bypass; the snapshot is the source.
+		// 人工审阅的浏览器快照 JSON 作为本次导入原件。
 		if cmd.Kind != "paper" || cmd.LocalFileRef != "" {
 			return source, invalid("paper_snapshot requires a paper kind without a local file")
 		}
@@ -229,11 +227,11 @@ func (r *Reader) exportBytes(cmd app.ImportMaterialCommand) ([]byte, error) {
 	for _, root := range r.AllowedRoots {
 		root, err = filepath.EvalSymlinks(root)
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("resolve configured import root: %w", err)
 		}
 		root, err = filepath.Abs(root)
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("resolve configured import root: %w", err)
 		}
 		rel, err := filepath.Rel(root, resolved)
 		if err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel) {
@@ -253,9 +251,7 @@ func (r *Reader) exportBytes(cmd app.ImportMaterialCommand) ([]byte, error) {
 
 func canonicalWebKey(raw string) string { return domain.CanonicalWebKey(raw) }
 
-// Official paper locators retain their exact original version/URL in the
-// export and provenance, while sharing the existing arXiv material identity.
-// Neither video URLs, arbitrary domains nor invalid paper IDs are collapsed.
+// 官方论文 URL 保留观察版本，复用同一 arXiv 资料标识。
 func exportSourceKey(locator, kind string) string {
 	if kind == "paper" {
 		if id, err := NormalizeArxivID(locator); err == nil {

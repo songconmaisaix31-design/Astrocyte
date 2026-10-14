@@ -191,18 +191,34 @@ func resolveProjectSummarize() (string, error) {
 		return "", fmt.Errorf("resolve project directory: %w", err)
 	}
 	starts := []string{cwd}
-	if executable, err := os.Executable(); err == nil {
-		starts = append(starts, filepath.Dir(executable))
+	executable, err := os.Executable()
+	if err != nil {
+		return "", fmt.Errorf("resolve server executable: %w", err)
 	}
+	starts = append(starts, filepath.Dir(executable))
 	for _, start := range starts {
 		for dir := start; ; dir = filepath.Dir(dir) {
 			var project struct{ Name string }
 			raw, readErr := os.ReadFile(filepath.Join(dir, "package.json"))
-			if readErr == nil && json.Unmarshal(raw, &project) == nil && project.Name == "astrocyte" {
+			if readErr != nil && !os.IsNotExist(readErr) {
+				return "", fmt.Errorf("read project package: %w", readErr)
+			}
+			if readErr == nil {
+				if err := json.Unmarshal(raw, &project); err != nil {
+					return "", fmt.Errorf("parse project package: %w", err)
+				}
+			}
+			if readErr == nil && project.Name == "astrocyte" {
 				packageRoot := filepath.Join(dir, "node_modules", "@steipete", "summarize")
 				var pkg struct{ Version string }
 				raw, err := os.ReadFile(filepath.Join(packageRoot, "package.json"))
-				if err != nil || json.Unmarshal(raw, &pkg) != nil || pkg.Version != "0.25.1" {
+				if err != nil {
+					return "", fmt.Errorf("read summarize package: %w", err)
+				}
+				if err := json.Unmarshal(raw, &pkg); err != nil {
+					return "", fmt.Errorf("parse summarize package: %w", err)
+				}
+				if pkg.Version != "0.25.1" {
 					return "", fmt.Errorf("project summarize 0.25.1 is missing or mismatched; run pnpm install --frozen-lockfile")
 				}
 				return filepath.Join(packageRoot, "dist", "cli.js"), nil

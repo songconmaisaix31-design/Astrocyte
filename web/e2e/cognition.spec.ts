@@ -1,33 +1,41 @@
 import { test, expect, type Page } from '@playwright/test';
+import { startS1Server } from '../../tests/s1/server.mjs';
+import { humanAPI } from '../../tests/s1/api.mjs';
+import { cognitionTestServer } from '../src/api/realHttpTest';
+import type { CognitionToday, CognitionFocus, CognitionEvents, CognitionAgents, CognitionFilters, CognitionEvidence, CognitionEvent } from '../src/api/cognitionTypes';
+import { formatNumber, formatDate } from '../src/pages/cognition/format';
 
-// Explicit contract fixtures belong only to the test harness; the product always reads the API.
-const topics = [{ topic: '测试主题甲', attention: 3.25, momentum: 0.4, confidence: 0.8 }, { topic: '测试主题乙', attention: 1.5, momentum: -0.1, confidence: 0.6 }];
-const events = Array.from({ length: 45 }, (_, index) => ({ event_id: `contract-event-${String(index).padStart(3, '0')}`, kind: index % 2 ? 'code_created' : 'topic_activated', topic: index % 3 ? topics[0].topic : topics[1].topic, tokens: index % 4 ? index * 7 : null, scope: 'project', ts: `2026-10-12T${String(15 - Math.floor(index / 4)).padStart(2, '0')}:${String(59 - index).padStart(2, '0')}:00Z` }));
-async function setup(page: Page) {
-  const requests: URL[] = [];
-  await page.route('**/api/v1/cognition/**', async route => {
-    const request = route.request(); expect(request.method()).toBe('GET');
-    const url = new URL(request.url()); requests.push(url);
-    let response: unknown;
-    const suffix = url.pathname.slice('/api/v1/cognition'.length);
-    if (suffix === '/health') response = { status: 'ok', snapshot_at: '2026-10-13T08:01:00Z', timezone: 'Asia/Shanghai' };
-    else if (suffix === '/filters') response = { topics: topics.map(topic => topic.topic), kinds: ['topic_activated', 'code_created'], sources: ['codex', 'manual'] };
-    else if (suffix === '/today') response = { day: '2026-10-13', focus: topics.map(topic => ({ ...topic, attention_delta: null })), activity: [], sleep: { day: '2026-10-12', status: 'not_produced', completed_at: null }, daily_counts: Array.from({ length: 7 }, (_, index) => ({ day: `2026-10-${String(7 + index).padStart(2, '0')}`, count: index === 6 ? 0 : index * 5 })), sources: [{ source: 'codex', count: 0 }, { source: 'manual', count: 0 }] };
-    else if (suffix === '/focus') response = { topics: [...topics].reverse(), series: topics.map(topic => ({ topic: topic.topic, points: [{ ts: '2026-10-11T03:00:00Z', attention: topic.attention - 1 }, { ts: '2026-10-12T03:00:00Z', attention: topic.attention }] })) };
-    else if (suffix === '/agents') response = { groups: [{ source: 'manual', today: 0, days7: 45, days30: 45, recent: events.slice(0, 3) }] };
-    else {
-      const topic = url.searchParams.get('topic'), kind = url.searchParams.get('kind'), start = url.searchParams.get('start'), end = url.searchParams.get('end');
-      const rows = events.filter(event => (!topic || event.topic === topic) && (!kind || event.kind === kind) && (!start || start <= '2026-10-12') && (!end || end >= '2026-10-12'));
-      const size = Number(url.searchParams.get('page_size') || 50), pageNumber = Number(url.searchParams.get('page') || 1);
-      response = { events: rows.slice((pageNumber - 1) * size, pageNumber * size).map(event => ({ ...event, raw: 'contract-extra-raw-must-not-render', source: 'extra-event-source-must-not-render' })), total: rows.length, page: pageNumber, page_size: size, ...(suffix === '/topics/evidence' ? { topic, aggregates: [{ day: '2026-10-12', kind: 'topic_activated', count: rows.filter(event => event.kind === 'topic_activated').length }, { day: '2026-10-12', kind: 'code_created', count: rows.filter(event => event.kind === 'code_created').length }] } : {}) };
-    }
-    await route.fulfill({ json: response });
+const columns = ['事件 ID', '类型', '主题', 'Token 数', '范围', '时间（上海）'];
+let server: Awaited<ReturnType<typeof startS1Server>>, api: Awaited<ReturnType<typeof humanAPI>>;
+test.beforeAll(async () => {
+  test.setTimeout(120_000);
+  server = await cognitionTestServer(true);
+  api = await humanAPI(server.apiURL);
+});
+test.afterAll(async () => { if (server) await server.close(); });
+const go = (route: string) => `${server.webURL}${route}`;
+async function read<T>(path: string) { return await api.get(`/cognition${path}`) as T; }
+function observe(page: Page) {
+  const requests: URL[] = [], writes: string[] = [];
+  page.on('request', request => {
+    const url = new URL(request.url());
+    if (url.pathname.startsWith('/api/v1/cognition/')) requests.push(url);
+    if (url.pathname.startsWith('/api/v1/') && request.method() !== 'GET') writes.push(url.pathname);
   });
-  return requests;
+  return { requests, writes };
 }
-test('cognition enters the existing shell, navigates four routes, survives reload and keyboard tabs', async ({ page }) => {
-  await setup(page);
-  await page.goto('/attention?fixture=1');
+async function assertEvents(page: Page, events: CognitionEvent[], container = page.locator('.cg-page')) {
+  await expect(container.locator('.cg-events tbody tr')).toHaveCount(events.length);
+  if (!events.length) { await expect(container.getByText('当前条件下没有事件')).toBeVisible(); return; }
+  await expect(container.locator('.cg-events thead th')).toHaveText(columns);
+  for (const [index, event] of events.entries()) {
+    expect(Object.keys(event).sort()).toEqual(['event_id', 'kind', 'scope', 'tokens', 'topic', 'ts']);
+    await expect(container.locator('.cg-events tbody tr').nth(index).locator('td')).toHaveText([event.event_id, event.kind, event.topic || '未标注', formatNumber(event.tokens), event.scope || '未标注', formatDate(event.ts)]);
+  }
+}
+
+test('认知使用既有外壳、四个路由、刷新和键盘页签', async ({ page }) => {
+  await page.goto(go('/attention?fixture=1'));
   await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '认知', exact: true }).click();
   await expect(page).toHaveURL(/\/cognition\/today/);
   await expect(page.getByRole('heading', { name: '认知工作台' })).toBeVisible();
@@ -46,89 +54,128 @@ test('cognition enters the existing shell, navigates four routes, survives reloa
   await expect(page).toHaveURL(/\/cognition\/focus/);
   await expect(page.getByRole('tab', { name: '焦点', exact: true })).toBeFocused();
 });
-test('today preserves the empty current day, unknown delta, actual Sleep and source GET filter', async ({ page }) => {
-  const requests = await setup(page);
-  await page.goto('/cognition/today');
-  await expect(page.getByText('2026-10-13', { exact: true })).toBeVisible();
-  await expect(page.getByTestId('snapshot-time')).toContainText('2026/10/13');
-  await expect(page.getByTestId('today-a-测试主题甲')).toHaveText('3.25');
-  await expect(page.getByTestId('today-delta-测试主题甲')).toContainText('日环比暂无');
-  await expect(page.getByTestId('sleep-status')).toHaveText('尚未产出');
-  await expect(page.getByTestId('daily-2026-10-13')).toHaveText('0');
-  await expect(page.getByText('当前条件下没有事件')).toBeVisible();
-  await expect(page.locator('.cg-events')).toHaveCount(0);
-  await page.getByLabel('来源', { exact: true }).selectOption('manual');
-  await expect.poll(() => requests.some(url => url.pathname.endsWith('/today') && url.searchParams.get('source') === 'manual')).toBe(true);
+
+test('今日完整保留实际日期、unknown日环比、Sleep、七日计数与来源过滤', async ({ page }) => {
+  const { requests, writes } = observe(page);
+  const today = await read<CognitionToday>('/today'), filters = await read<CognitionFilters>('/filters');
+  expect(today.focus.length).toBeGreaterThan(0);
+  expect(today.daily_counts).toHaveLength(7);
+  expect(today.focus.some(topic => topic.attention_delta === null)).toBe(true);
+  await page.goto(go('/cognition/today'));
+  await expect(page.getByText(today.day, { exact: true })).toBeVisible();
+  await expect(page.getByTestId('snapshot-time')).toBeVisible();
+  for (const topic of today.focus) {
+    await expect(page.getByTestId(`today-a-${topic.topic}`)).toHaveText(formatNumber(topic.attention));
+    if (topic.attention_delta === null) await expect(page.getByTestId(`today-delta-${topic.topic}`)).toContainText('日环比暂无');
+  }
+  await expect(page.getByTestId('sleep-status')).toHaveText({ completed: '已完成', running: '运行中', not_produced: '尚未产出' }[today.sleep.status]);
+  for (const day of today.daily_counts) await expect(page.getByTestId(`daily-${day.day}`)).toHaveText(formatNumber(day.count));
+  const source = filters.sources[0];
+  expect(source).toBeTruthy();
+  const response = page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/cognition/today') && new URL(response.url()).searchParams.get('source') === source);
+  await page.getByLabel('来源', { exact: true }).selectOption(source);
+  const filtered = await response;
+  expect(filtered.status()).toBe(200);
+  const selected = await filtered.json() as CognitionToday;
+  await assertEvents(page, selected.activity);
+  expect(requests.some(url => url.searchParams.get('source') === source)).toBe(true);
+  expect(writes).toEqual([]);
 });
-test('focus sorts A, shows multiple measured lines, and pages full evidence drawer with focus restoration', async ({ page }) => {
-  const requests = await setup(page);
-  await page.goto('/cognition/focus');
+
+test('焦点按实际A排序、显示多条确证轨迹，抽屉完整分页且恢复焦点', async ({ page }) => {
+  const { requests, writes } = observe(page);
+  const focus = await read<CognitionFocus>('/focus');
+  expect(focus.topics.length).toBeGreaterThanOrEqual(2);
+  expect(focus.series.filter(line => line.points.length).length).toBeGreaterThanOrEqual(2);
+  const ordered = [...focus.topics].sort((a, b) => b.attention - a.attention);
+  await page.goto(go('/cognition/focus'));
   await expect(page.getByRole('img', { name: '多主题注意力历史与实验轨迹' })).toBeVisible();
-  await expect(page.locator('.cg-topic-row').first()).toContainText('测试主题甲');
-  await expect(page.locator('.cg-legend>span')).toHaveCount(2);
-  await page.getByRole('button', { name: '测试主题乙', exact: true }).click();
-  await expect(page.locator('.cg-legend>span')).toHaveCount(1);
+  await expect(page.locator('.cg-topic-row strong')).toHaveText(ordered.map(topic => topic.topic));
+  const lines = focus.series.filter(line => line.points.length);
+  await expect(page.locator('.cg-legend>span')).toHaveCount(lines.length);
+  await page.getByRole('button', { name: lines[1].topic, exact: true }).click();
+  await expect(page.locator('.cg-legend>span')).toHaveCount(lines.length - 1);
+  const evidence = await read<CognitionEvidence>(`/topics/evidence?topic=${encodeURIComponent(ordered[0].topic)}&page_size=20`);
+  expect(evidence.total).toBeGreaterThan(20);
   const trigger = page.locator('.cg-topic-row').first();
   await trigger.click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog).toBeVisible();
   await expect(dialog.getByRole('heading', { name: '按日与类型汇总' })).toBeVisible();
-  await expect(dialog.locator('.cg-events thead th')).toHaveCount(6);
-  await expect(dialog.locator('.cg-events tbody tr')).toHaveCount(20);
-  await expect(dialog.getByTestId('events-total')).toHaveText('30');
+  await assertEvents(page, evidence.events, dialog);
+  await expect(dialog.getByTestId('events-total')).toHaveText(formatNumber(evidence.total));
   await dialog.getByRole('button', { name: '下一页' }).click();
-  await expect(dialog.locator('.cg-events tbody tr')).toHaveCount(10);
-  await expect.poll(() => requests.some(url => url.pathname.endsWith('/topics/evidence') && url.searchParams.get('page') === '2' && url.searchParams.get('topic') === '测试主题甲')).toBe(true);
-  await expect(dialog).not.toContainText('contract-extra-raw-must-not-render');
-  await expect(dialog).not.toContainText('extra-event-source-must-not-render');
-  await expect(dialog.getByRole('button', { name: '下一页' })).toBeDisabled();
+  const second = await read<CognitionEvidence>(`/topics/evidence?topic=${encodeURIComponent(ordered[0].topic)}&page_size=20&page=2`);
+  await assertEvents(page, second.events, dialog);
+  await expect.poll(() => requests.some(url => url.pathname.endsWith('/topics/evidence') && url.searchParams.get('page') === '2' && url.searchParams.get('topic') === ordered[0].topic)).toBe(true);
   await dialog.getByRole('button', { name: '关闭', exact: true }).press('Shift+Tab');
-  await expect(dialog.getByRole('button', { name: '上一页' })).toBeFocused();
+  await expect(dialog.getByRole('button', { name: second.total > 40 ? '下一页' : '上一页', exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(dialog).not.toBeVisible();
   await expect(trigger).toBeFocused();
+  expect(writes).toEqual([]);
 });
-test('agents keeps source labels, real count meanings and only six event fields', async ({ page }) => {
-  await setup(page); await page.goto('/cognition/agents');
-  await expect(page.getByRole('heading', { name: 'manual', exact: true })).toBeVisible();
-  await expect(page.getByTestId('agent-manual-today')).toHaveText('0');
-  await expect(page.getByTestId('agent-manual-days7')).toHaveText('45');
-  await expect(page.locator('.cg-events thead th')).toHaveCount(6);
+
+test('来源完整保留实际计数、来源名称与六字段投影', async ({ page }) => {
+  const agents = await read<CognitionAgents>('/agents');
+  expect(agents.groups.length).toBeGreaterThan(0);
+  await page.goto(go('/cognition/agents'));
+  for (const group of agents.groups) {
+    await expect(page.getByRole('heading', { name: group.source, exact: true })).toBeVisible();
+    for (const metric of ['today', 'days7', 'days30'] as const) await expect(page.getByTestId(`agent-${group.source}-${metric}`)).toHaveText(formatNumber(group[metric]));
+  }
+  for (const table of await page.locator('.cg-events').all()) await expect(table.locator('thead th')).toHaveText(columns);
   await expect(page.locator('.cg-page')).not.toContainText('人类行为');
 });
-test('evidence applies topic kind source inclusive dates, resets paging, and preserves six-column projection', async ({ page }) => {
-  const requests = await setup(page); await page.goto('/cognition/evidence');
-  await expect(page.getByTestId('events-total')).toHaveText('45');
-  await expect(page.locator('.cg-events tbody tr')).toHaveCount(20);
+
+test('证据完整保留过滤、日期、分页重置、每页条数和空日期', async ({ page }) => {
+  const { requests, writes } = observe(page);
+  const filters = await read<CognitionFilters>('/filters'), initial = await read<CognitionEvents>('/events?page_size=20');
+  expect(initial.total).toBeGreaterThan(20);
+  expect(filters.topics.length).toBeGreaterThan(0);
+  expect(filters.kinds.length).toBeGreaterThan(0);
+  expect(filters.sources.length).toBeGreaterThan(0);
+  await page.goto(go('/cognition/evidence'));
+  await expect(page.getByTestId('events-total')).toHaveText(formatNumber(initial.total));
+  await assertEvents(page, initial.events);
   await page.getByRole('button', { name: '下一页' }).click();
-  await expect(page.locator('.cg-pagination')).toContainText('第 2 / 3 页');
-  await page.getByLabel('主题', { exact: true }).selectOption('测试主题甲');
-  await expect(page.locator('.cg-pagination')).toContainText('第 1 / 2 页');
-  await page.getByLabel('类型', { exact: true }).selectOption('code_created');
-  await page.getByLabel('来源', { exact: true }).selectOption('manual');
-  await page.getByLabel('开始日期', { exact: true }).fill('2026-10-12');
-  await page.getByLabel('结束日期', { exact: true }).fill('2026-10-12');
-  await expect(page.getByTestId('events-total')).toHaveText('15');
-  await expect.poll(() => requests.some(url => url.pathname.endsWith('/events') && ['topic', 'kind', 'source', 'start', 'end'].every(key => url.searchParams.has(key)) && url.searchParams.get('page') === '1')).toBe(true);
-  await expect(page.locator('.cg-events thead th')).toHaveText(['事件 ID', '类型', '主题', 'Token 数', '范围', '时间（上海）']);
-  await expect(page.locator('.cg-page')).not.toContainText('contract-extra-raw-must-not-render');
-  await expect(page.locator('.cg-page')).not.toContainText('extra-event-source-must-not-render');
+  await expect(page.locator('.cg-pagination')).toContainText('第 2 /');
+  const topic = filters.topics[0], kind = filters.kinds[0], source = filters.sources[0];
+  await page.getByLabel('主题', { exact: true }).selectOption(topic);
+  await expect(page.locator('.cg-pagination')).toContainText('第 1 /');
+  await page.getByLabel('类型', { exact: true }).selectOption(kind);
+  await page.getByLabel('来源', { exact: true }).selectOption(source);
+  const day = initial.events[0].ts.slice(0, 10);
+  await page.getByLabel('开始日期', { exact: true }).fill(day);
+  await page.getByLabel('结束日期', { exact: true }).fill(day);
+  await expect.poll(() => requests.some(url => ['topic', 'kind', 'source', 'start', 'end'].every(key => url.searchParams.has(key)) && url.searchParams.get('page') === '1')).toBe(true);
+  const params = new URLSearchParams({ topic, kind, source, start: day, end: day, page_size: '20' });
+  const selected = await read<CognitionEvents>(`/events?${params}`);
+  await expect(page.getByTestId('events-total')).toHaveText(formatNumber(selected.total));
+  await assertEvents(page, selected.events);
   await page.getByLabel('每页条数', { exact: true }).selectOption('50');
   await page.getByRole('button', { name: '清除筛选' }).click();
-  await expect(page.locator('.cg-events tbody tr')).toHaveCount(45);
-  await page.getByLabel('开始日期', { exact: true }).fill('2026-10-13');
-  await page.getByLabel('结束日期', { exact: true }).fill('2026-10-13');
+  await assertEvents(page, (await read<CognitionEvents>('/events?page_size=50')).events);
+  await page.getByLabel('开始日期', { exact: true }).fill('1900-01-01');
+  await page.getByLabel('结束日期', { exact: true }).fill('1900-01-01');
   await expect(page.getByTestId('events-total')).toHaveText('0');
   await expect(page.getByText('当前条件下没有事件')).toBeVisible();
+  expect(writes).toEqual([]);
 });
-test('an unavailable snapshot stays an explicit error without fixture fallback, and retry rereads', async ({ page }) => {
-  let attempts = 0;
-  await page.route('**/api/v1/cognition/**', async route => { attempts++; await route.fulfill({ status: 503, json: { schema_version: 1, error: { code: 'snapshot_unavailable', message: '工作台快照不可用', retryable: true, required_action: '请检查本机快照', request_id: 'contract-error' } } }); });
-  await page.goto('/cognition/today?fixture=1');
-  await expect(page.locator('.cg-page').getByRole('alert').first()).toBeVisible();
-  await expect(page.locator('.cg-focus-card')).toHaveCount(0);
-  await expect(page.getByText('示例论文')).not.toBeVisible();
-  const before = attempts;
-  await page.getByRole('button', { name: '重新读取', exact: false }).click();
-  await expect.poll(() => attempts).toBeGreaterThan(before);
+
+test('真实缺少快照时显示错误，人工重试重新读取且没有示例回退', async ({ page }) => {
+  test.setTimeout(120_000);
+  const unavailable = await startS1Server({ browser: true, env: ({ temporary }) => ({ LOCALAPPDATA: temporary }) });
+  try {
+    const { requests, writes } = observe(page);
+    const response = page.waitForResponse(response => response.url().endsWith('/cognition/health'));
+    await page.goto(`${unavailable.webURL}/cognition/today?fixture=1`);
+    expect((await response).status()).toBe(503);
+    await expect(page.locator('.cg-page').getByRole('alert').first()).toBeVisible();
+    await expect(page.locator('.cg-focus-card')).toHaveCount(0);
+    await expect(page.getByText('示例论文')).not.toBeVisible();
+    const before = requests.length;
+    await page.getByRole('button', { name: '↻ 重新读取', exact: true }).click();
+    await expect.poll(() => requests.length).toBeGreaterThan(before);
+    expect(writes).toEqual([]);
+  } finally { await unavailable.close(); }
 });

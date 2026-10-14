@@ -82,7 +82,10 @@ func TestLocalV22CookedCommandByteParity(t *testing.T) {
 			if err != nil {
 				t.Fatal("invalid frozen encoding")
 			}
-			children := SemanticTools(v.Source, raw, block)
+			children, err := SemanticTools(v.Source, raw, block)
+			if err != nil {
+				t.Fatal(err)
+			}
 			for _, child := range children {
 				want, ok := paths[child.Path]
 				if !ok {
@@ -94,9 +97,7 @@ func TestLocalV22CookedCommandByteParity(t *testing.T) {
 				}
 				checked++
 				original, _ := parseShellAST(got)
-				clean, cleanOK := stripShellData(got)
-				normalized, _ := parseShellAST(clean)
-				t.Logf("safe event %s/semantic/%s original_errors=%d clean_errors=%d normalization_changed=%t clean_ok=%t", parent, child.Path, original.ParseErrors, normalized.ParseErrors, got != clean, cleanOK)
+				t.Logf("safe event %s/semantic/%s original_errors=%d", parent, child.Path, original.ParseErrors)
 				if original.ParseErrors != 0 {
 					t.Error("independently valid cooked input became a native syntax failure")
 				}

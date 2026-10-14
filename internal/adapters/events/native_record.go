@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// nativeObservation is adapter-local parsing state, not an engine contract.
+// nativeObservation 保存适配器的原生格式解析状态。
 type nativeObservation struct {
 	session, cwd, kind, outcome, depth string
 	ts                                 int64
@@ -40,46 +40,72 @@ func millis(raw json.RawMessage) int64 {
 }
 
 func nativeRecord(source string, raw []byte) (nativeObservation, error) {
-	if !json.Valid(raw) {
-		return nativeObservation{}, fmt.Errorf("invalid native JSON record")
+	if err := validateNativeFormat(raw); err != nil {
+		return nativeObservation{}, err
 	}
-	v := object(raw)
-	o := nativeObservation{kind: "unknown", outcome: "unknown", depth: "unknown", ts: millis(v["timestamp"])}
-	o.session, o.cwd = str(v, "sessionId"), str(v, "cwd")
+	var v nativeEnvelope
+	if err := json.Unmarshal(raw, &v); err != nil {
+		return nativeObservation{}, err
+	}
+	timestamp, err := nativeTimestamp(v.Timestamp)
+	if err != nil {
+		return nativeObservation{}, err
+	}
+	o := nativeObservation{kind: "unknown", outcome: "unknown", depth: "unknown", ts: timestamp, session: v.SessionID, cwd: v.CWD}
 	if source == "codex" {
-		p := object(v["payload"])
-		if str(v, "type") == "session_meta" {
-			o.session, o.cwd = str(p, "id"), str(p, "cwd")
+		p := v.Payload
+		if p == nil {
+			return o, nil
+		}
+		if v.Type == "session_meta" {
+			o.session, o.cwd = p.ID, p.CWD
 			if o.ts == 0 {
-				o.ts = millis(p["timestamp"])
+				o.ts, err = nativeTimestamp(p.Timestamp)
+				if err != nil {
+					return nativeObservation{}, err
+				}
 			}
 		}
-		if str(v, "type") == "response_item" && (str(p, "type") == "function_call" || str(p, "type") == "custom_tool_call") {
-			arguments := p["arguments"]
+		if v.Type == "response_item" && (p.Type == "function_call" || p.Type == "custom_tool_call") {
+			arguments := p.Arguments
 			if len(arguments) == 0 {
-				arguments = p["input"]
+				arguments = p.Input
 			}
-			o.kind = toolKind(str(p, "name"), arguments)
+			name := canonicalTool(p.Name)
+			if name == "Bash" || name == "exec_command" || name == "shell_command" || name == "Read" {
+				if err := validateToolObject(arguments); err != nil {
+					return nativeObservation{}, err
+				}
+			}
+			o.kind = toolKind(p.Name, arguments)
 		}
-		if str(v, "type") == "response_item" && str(p, "type") == "message" && str(p, "role") == "assistant" {
-			o.kind = assistantKind(messageText(p["content"]))
+		if v.Type == "response_item" && p.Type == "message" && p.Role == "assistant" {
+			text, _, err := nativeContent(p.Content)
+			if err != nil {
+				return nativeObservation{}, err
+			}
+			o.kind = assistantKind(text)
 		}
-		if str(v, "type") == "event_msg" && str(p, "type") == "agent_message" {
-			o.kind = assistantKind(str(p, "message"))
+		if v.Type == "event_msg" && p.Type == "agent_message" {
+			o.kind = assistantKind(p.Message)
 		}
-		if str(v, "type") == "event_msg" && str(p, "type") == "token_count" {
-			u := object(object(p["info"])["last_token_usage"])
-			o.tokens = tokenTotal(u)
+		if v.Type == "event_msg" && p.Type == "token_count" && p.Info != nil {
+			o.tokens = nativeTokenTotal(p.Info.Usage)
 		}
 	} else if source == "claude_code" {
-		m := object(v["message"])
-		o.tokens = tokenTotal(object(m["usage"]))
-		var blocks []map[string]json.RawMessage
-		_ = json.Unmarshal(m["content"], &blocks)
+		m := v.Message
+		if m == nil {
+			return o, nil
+		}
+		o.tokens = nativeTokenTotal(m.Usage)
+		text, blocks, err := nativeContent(m.Content)
+		if err != nil {
+			return nativeObservation{}, err
+		}
 		kinds := map[string]bool{}
 		for _, b := range blocks {
-			if str(v, "type") == "assistant" && str(b, "type") == "tool_use" {
-				kinds[toolKind(str(b, "name"), b["input"])] = true
+			if v.Type == "assistant" && b.Type == "tool_use" {
+				kinds[toolKind(b.Name, b.Input)] = true
 			}
 		}
 		if len(kinds) == 1 {
@@ -87,8 +113,8 @@ func nativeRecord(source string, raw []byte) (nativeObservation, error) {
 				o.kind = k
 			}
 		}
-		if len(kinds) == 0 && str(v, "type") == "assistant" {
-			o.kind = assistantKind(messageText(m["content"]))
+		if len(kinds) == 0 && v.Type == "assistant" {
+			o.kind = assistantKind(text)
 		}
 	} else {
 		return o, fmt.Errorf("unsupported native source")
@@ -96,8 +122,7 @@ func nativeRecord(source string, raw []byte) (nativeObservation, error) {
 	return o, nil
 }
 
-// A missing usage component remains unknown; cache and cumulative totals are
-// not substituted for per-record input/output usage.
+// 缺失的 usage 分量保持未知。
 func tokenTotal(u map[string]json.RawMessage) *int {
 	var total int
 	if string(u["total_tokens"]) != "null" && json.Unmarshal(u["total_tokens"], &total) == nil && total >= 0 {

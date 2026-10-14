@@ -23,6 +23,17 @@ func relayEnabled() (bool, error) {
 		return false, errors.New("ASTROCYTE_RELAY must be 0 or 1")
 	}
 }
+
+func relayNativeNotifications() (bool, error) {
+	switch os.Getenv("ASTROCYTE_RELAY_SESSION_SOURCE") {
+	case "", "archive":
+		return false, nil
+	case "native_notifications":
+		return true, nil
+	default:
+		return false, errors.New("relay session source must be archive or native_notifications")
+	}
+}
 func relayRoot() (string, error) {
 	local := os.Getenv("LOCALAPPDATA")
 	if !filepath.IsAbs(local) {

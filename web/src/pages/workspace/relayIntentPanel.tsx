@@ -16,7 +16,7 @@ export function RelayIntentPanel({ work, existing, onChanged }: { work?: WorksWo
   const [agent, setAgent] = useState('');
   const [description, setDescription] = useState('');
   const [view, setView] = useState<RelayTaskView | null>(existing ?? null);
-  const command = useRelayCommand<RelayTaskResult>();
+  const command = useRelayCommand<RelayTaskResult>(`intent:${work?.id ?? existing?.task.work_id}`);
   const compatible = projects.data?.projects.filter(project => !work || relayProjectMatches(work.root, project)) ?? [];
   const project = projects.data?.projects.find(project => project.project_id === (view?.task.project_id || projectID));
   const unavailable = projects.loading || projects.stale || !projects.data || agents.loading || agents.stale || !agents.data;
@@ -57,7 +57,7 @@ function RelayConfirmation({ view, onChanged }: { view: RelayTaskView; onChanged
   const task = useReadApi(signal => relayApi.task(view.task.task_id, signal), { refreshMs: 3000 });
   const receipts = useReadApi(signal => relayApi.receipts(view.task.task_id, signal), { refreshMs: 3000 });
   const [confirmedRevision, setConfirmedRevision] = useState<number | null>(null);
-  const command = useRelayCommand();
+  const command = useRelayCommand(`confirm:${view.task.task_id}`);
   const current = task.data?.view;
   const project = projects.data?.projects.find(project => project.project_id === view.task.project_id);
   const denied = !project || !current || current.task.state !== 'ready' || projects.stale || task.stale || receipts.stale || !receipts.data || relayUnresolved(receipts.data.receipts, 'dispatch');

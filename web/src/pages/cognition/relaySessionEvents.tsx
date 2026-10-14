@@ -8,14 +8,18 @@ import { relaySessionGap, relaySessionHasGap, relaySessionQueryError } from './r
 import '../../styles/relaySession.css';
 
 const statusLabels = { unknown: '未知', partial: '部分覆盖', complete: '完整（服务报告）' };
-function Coverage({ item }: { item: RelaySessionCoverage }) {
-  const disputedComplete = item.status === 'complete' && (relaySessionHasGap(item) || !item.snapshot_complete || !item.session_complete);
-  const counts = [['完整行', item.lines], ['已派生', item.projected], ['重复', item.duplicates], ['未知格式', item.unknown], ['错误', item.errors], ['Token 未知', item.unknown_tokens], ['剩余字节', item.remaining_bytes], ['未完成尾部字节', item.tail_bytes]] as const;
+const sourceLabels = { unknown: '未知', archive: '获准原生归档文件', native_notifications: '原生公开通知' };
+export function RelaySessionCoverageCard({ item }: { item: RelaySessionCoverage }) {
+  const disputedComplete = item.status === 'complete' && (!item.source || item.source === 'unknown' || relaySessionHasGap(item) || !item.snapshot_complete || !item.session_complete);
+  const notifications = item.source === 'native_notifications';
+  const counts = [[notifications ? '公开通知' : item.source === 'archive' ? '完整行' : '记录（单位未提供）', item.lines], ['已派生', item.projected], ['重复', item.duplicates], ['未知格式', item.unknown], ['错误', item.errors], ['Token 未知', item.unknown_tokens], ['剩余字节', item.remaining_bytes], ['未完成尾部字节', item.tail_bytes]] as const;
   return <article className="relay-session-coverage" aria-label={`会话覆盖 ${item.task_id}`}>
     <p>任务 <code>{item.task_id}</code></p>
+    <p>来源协议：{item.source ? sourceLabels[item.source] : '未提供，保持未知'}</p>
     <p>服务报告覆盖：{disputedComplete ? '完整主张尚未核实' : statusLabels[item.status]} · {item.status}</p>
-    <p>当前文件快照：{item.snapshot_complete ? '已读完当前冻结字节范围' : '尚未读完或无法核实'}</p>
-    <p>完整会话生命周期：{item.session_complete ? '服务报告已核实' : '尚未核实'}</p>
+    <p>{notifications ? '当前公开通知范围' : item.source === 'archive' ? '当前文件快照' : '当前来源范围'}：{item.snapshot_complete ? notifications ? '已处理当前已接收通知' : item.source === 'archive' ? '已读完当前冻结字节范围' : '服务报告已处理当前范围，来源协议仍未知' : '尚未完成或无法核实'}</p>
+    <p>所选来源协议生命周期：{item.session_complete ? '服务报告已核实' : '尚未核实'}</p>
+    {notifications && <p>字节计数不适用于公开通知；零字节不证明原生归档完整。协议未公开的内部事件仍在此覆盖范围之外。</p>}
     <p>缺口：{relaySessionGap(item.gap)}</p>
     {relaySessionHasGap(item) && <p role="status">仍有覆盖缺口；未知格式、错误和尾部均计入，不能据此宣称会话完整。</p>}
     <dl>{counts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
@@ -47,7 +51,7 @@ export function RelaySessionEvents({ revision }: { revision: number }) {
       {queryError && <p role="alert">{queryError} 查询未提交，保留上次结果。</p>}
       {(state.error || state.stale) && <p role="alert">当前会话覆盖未知：此次读取失败，不能用旧缓存宣称当前完整。</p>}
       <QueryState state={state.error || state.stale ? { ...state, data: null } : state}>{data => <>
-        <div className="relay-session-coverages">{data.coverage.length ? data.coverage.map(item => <Coverage key={`${item.task_id}:${item.terminal_id}`} item={item} />) : <p>尚无会话覆盖证据 · unknown。空列表不证明全部会话已采集。</p>}</div>
+        <div className="relay-session-coverages">{data.coverage.length ? data.coverage.map(item => <RelaySessionCoverageCard key={`${item.task_id}:${item.terminal_id}`} item={item} />) : <p>尚无会话覆盖证据 · unknown。空列表不证明全部会话已采集。</p>}</div>
         <p className="cg-muted">派生事件按时间倒序 · Token 缺失保持未知 · 不含原文或原生身份</p>
         {data.events.length ? <EventTable events={data.events} /> : <p>本次查询没有可展示的派生事件；空结果不证明会话完整。</p>}
         <div className="cg-pagination"><span>当前查询 {data.total} 条 · 第 {data.page} 页 · 每页 {data.page_size} 条</span><div>

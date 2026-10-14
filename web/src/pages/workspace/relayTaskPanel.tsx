@@ -32,8 +32,8 @@ export function RelayTaskPanel({ taskID, onChanged }: { taskID: string; onChange
   const projects = useReadApi(signal => relayApi.projects(signal), { refreshMs: 5000 });
   const registry = useReadApi(signal => relayApi.agents(signal));
   const [input, setInput] = useState('');
-  const send = useRelayCommand(), read = useRelayCommand(), stop = useRelayCommand();
-  const reconcile = useRelayCommand<RelayTaskResult>();
+  const send = useRelayCommand(`send:${taskID}`), read = useRelayCommand(`read:${taskID}`), stop = useRelayCommand(`stop:${taskID}`);
+  const reconcile = useRelayCommand<RelayTaskResult>(`reconcile:${taskID}`);
   const changed = () => { task.retry(); events.retry(); receipts.retry(); onChanged(); };
   const view = task.data?.view;
   const permission = projects.data?.projects.find(project => project.project_id === view?.task.project_id);

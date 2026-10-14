@@ -11,8 +11,8 @@ import type { components } from '../src/api/schema';
 export const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 type Schemas = components['schemas'];
 
-export async function realService() {
-  const server = await startS1Server({ browser: true });
+export async function realService(relay = false) {
+  const server = await startS1Server({ browser: true, relay });
   const api = await humanAPI(server.apiURL);
   return { server, api };
 }
