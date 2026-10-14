@@ -20,7 +20,6 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/relayworktree"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -48,9 +47,14 @@ func TestRelaySessionActualService(t *testing.T) {
 	if err != nil || !relayInside(expectedEvidence, evidence) {
 		t.Fatal("实际验证中间目录必须使用当前 H 工作目录")
 	}
-	source := filepath.Join(canonical, "public-project")
+	t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
+	root, err := relayRoot()
+	if err != nil {
+		t.Fatal("独立接入目录不可用")
+	}
+	source := filepath.Join(root, "verification", "public-project")
 	if _, err := os.Stat(source); errors.Is(err, os.ErrNotExist) {
-		if err := os.Mkdir(source, 0700); err != nil {
+		if err := os.MkdirAll(source, 0700); err != nil {
 			t.Fatal("公开项目目录不可用")
 		}
 		if err := os.WriteFile(filepath.Join(source, "README.md"), []byte("# L1 public project\nThis project validates native session capture with fixed public context and disabled tools.\n"), 0600); err != nil {
@@ -66,11 +70,6 @@ func TestRelaySessionActualService(t *testing.T) {
 	} else if err != nil {
 		t.Fatal("公开项目身份不可核实")
 	}
-	t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
-	root, err := relayRoot()
-	if err != nil {
-		t.Fatal("独立接入目录不可用")
-	}
 	appDir := filepath.Join(root, "app-state")
 	if err := os.MkdirAll(appDir, 0700); err != nil {
 		t.Fatal("独立应用目录不可用")
@@ -83,17 +82,11 @@ func TestRelaySessionActualService(t *testing.T) {
 	if err := db.RunMigrations(context.Background(), migrations.FS); err != nil {
 		t.Fatal("既有数据库初始化失败")
 	}
-	store, err := sqlite.OpenRelayStore(root)
-	if err != nil {
-		t.Fatal("独立运行时数据库不可用")
-	}
-	defer store.Close()
 	registry := agents.NewRegistry(filepath.Join(appDir, "native-sessions"))
 	projects := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
 	projects.ConfigureRegisteredDiscovery(db, nil)
 	repo := sqlite.NewEventRepository(db)
 	eventService := attention.NewPendingEventService(repo)
-	sink := events.NewRelayEventSink(eventService, nil)
 	works := workspace.NewWorksService(db, worksscan.NewScanner(), nil, events.NewWorksEventSink(eventService, nil), workspace.WorksServiceOptions{})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -101,7 +94,7 @@ func TestRelaySessionActualService(t *testing.T) {
 	if err != nil || len(snapshot.Works) != 1 || len(snapshot.Failures) != 0 {
 		t.Fatal("真实公开项目扫描失败")
 	}
-	_, specs, window, err := relayConfiguration()
+	_, _, window, err := relayConfiguration()
 	if err != nil {
 		t.Fatal("实际登记配置不可用")
 	}
@@ -113,14 +106,26 @@ func TestRelaySessionActualService(t *testing.T) {
 	if nativeNotifications {
 		testWindow = 10 * time.Second
 	}
-	runtime := workspace.NewRelayService(store, works, db, relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: true}), agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: nativeNotifications}), agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{}), sink, workspace.RelayServiceOptions{Agents: specs, OwnedRoots: agents.RelayOwnedRoots{}, LivenessWindow: testWindow})
-	collector := newRelaySessionCollector(runtime.(workspace.RelayOwnedSessionReader), events.NewRelaySessionCapture(eventService, nil), relaySessionFileState{root: root}, sqlite.NewAccessSessionReader(db))
-	if collector.blocked != "" {
-		t.Fatal("实际采集游标不可用")
+	t.Setenv("ASTROCYTE_RELAY", "1")
+	t.Setenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT", source)
+	t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "archive")
+	if nativeNotifications {
+		t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "native_notifications")
+		t.Setenv("ASTROCYTE_RELAY_LIVE_SECONDS", "10")
 	}
-	wrapped := &relaySessionRuntime{RelayRuntime: runtime, RelayLifecycle: runtime.(workspace.RelayLifecycle), collector: collector}
+	services := httpapi.Services{Works: works, LocalProjects: projects, RegisteredProjects: projects, Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}
+	cleanup, err := assembleRelay(&services, db, registry)
+	if err != nil {
+		t.Fatal("实际生产组装失败")
+	}
+	defer func() {
+		if err := cleanup(); err != nil {
+			t.Error("实际生产组装清理失败")
+		}
+	}()
+	wrapped := services.Relay.(*relaySessionRuntime)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	server := httpapi.NewServer(httpapi.Config{Port: 17342, AllowedOrigins: []string{"http://127.0.0.1:17343"}, Logger: logger, Services: httpapi.Services{Relay: wrapped, RelaySessionEvents: collector, Works: works, LocalProjects: projects, RegisteredProjects: projects, Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}})
+	server := httpapi.NewServer(httpapi.Config{Port: 17342, AllowedOrigins: []string{"http://127.0.0.1:17343"}, Logger: logger, Services: services})
 	listener, err := net.Listen("tcp", "127.0.0.1:17342")
 	if err != nil {
 		t.Fatal("实际服务端口不可用")

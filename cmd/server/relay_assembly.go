@@ -3,13 +3,11 @@ package main
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/relayworktree"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -34,8 +32,15 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 		return nil, errors.New("isolated relay store unavailable")
 	}
 	sink := events.NewRelayEventSink(attention.NewPendingEventService(sqlite.NewEventRepository(db)), nil)
-	neutral := relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: false})
-	structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: true})
+	neutral, err := relayWorkspaceProvider(root)
+	if err != nil {
+		return nil, errors.Join(err, store.Close())
+	}
+	notifications, err := relayNativeNotifications()
+	if err != nil {
+		return nil, errors.Join(err, store.Close())
+	}
+	structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: notifications})
 	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{})
 	runtime := workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window, OwnedRoots: agents.RelayOwnedRoots{}})
 	owned, ok := runtime.(workspace.RelayOwnedSessionReader)
