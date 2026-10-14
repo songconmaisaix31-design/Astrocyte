@@ -46,6 +46,7 @@ SOURCE `c0726349a5aca66c548364e2d85c9916056530aa` 已普通 push，独立 `git l
 | 两尺寸真实 S2 第四轮 | 7 PASS / 1 FAIL，2.6 分钟；新增真实 CAS 冲突与人工核对后保存、原截止时间精度保留、真实离线未知跨重开刷新锁、真实许可拒绝/读取 403/stale/恢复。唯一失败为末项 1280 用例建立 `humanAPI` 时的 `write ECONNRESET`，Go health 已 200、尚无 auth 请求日志；`.verification/product-ui/e2e-s2-fourth.log` 和实际库 `astrocyte-s1-j9UikZ` 保留 |
 | 同源码同断言单独复验第四轮失败的 1280 用例 | 1 PASS，29.6 秒；实际审阅 403 `approval_required`、Grant 零记录、读取 403 保留快照/禁用写入、恢复实际 200 均通过。`.verification/product-ui/e2e-s2-fifth.log` 和 `astrocyte-s1-6vGGF2` 保留；没有网络重试、修改 helper、skip 或减断言 |
 | 两尺寸实际人工拒绝，workers=1/retries=0 | 2 PASS，1.4 分钟；真实 UI 提交审阅并人工拒绝，HTTP 200、同 revision 内容保持、SQLite Grant 与原生会话均为零、真实服务重启后拒绝状态和内容保持。命令 `pnpm --dir web exec playwright test e2e/s2-proposals.spec.ts --grep '实际人工拒绝固定提案' --workers=1 --retries=0`，日志 `.verification/product-ui/e2e-s2-decline.log` 和对应输出目录、实际 SQLite 均保留 |
+| 新增拒绝后的两尺寸全部 S2 用例 | 10 PASS，4.8 分钟；命令 `pnpm --dir web exec playwright test e2e/s2-proposals.spec.ts --workers=1 --retries=0 --output ../.verification/product-ui/e2e-s2-combined`，沿用原默认配置。日志 `.verification/product-ui/e2e-s2-combined.log`、报告 `e2e-s2-combined-report`、输出目录及全部真实库保留；此轮没有失败、自动重试或 skip |
 | 本域代码与全部 S2 spec 定向 ESLint | PASS，0 errors / 0 warnings；`.verification/product-ui/lint-s2-edges.log` |
 
 约束保留与真实边界测试 SOURCE `442447406aa55134f2c09c59fb559bf877204b01` 和独立 REPORT `79f2394424fef1745abdd617e03ffb444c9d49ab` 已普通 push，独立 `git ls-remote` 核远端同 REPORT。该阶段首次 TLS `SSL_ERROR_SYSCALL` 保留。所有四项 S2 用例均已在两尺寸实际通过，其中第四轮启动连接失败与第五轮单项通过分别保留。Context 与 SessionBinding 尚无可消费公开生成接口；S3/S4 实际页面与完整默认 check/build/E2E 尚未通过，不能由以上结果标记整任务完成。所有实际失败、原件和数据库保留，无原生 Relay 注册/确认/读取/停止操作，无模型或 ASR 重复调用。
@@ -55,6 +56,8 @@ SOURCE `c0726349a5aca66c548364e2d85c9916056530aa` 已普通 push，独立 `git l
 已只读 S4 提交 `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 的实际领域 DTO 和 HTTP 实现，尚未自行消费最新分支或未提交内容。新增独占 `RepositoryQueryFields` 收集用途、项目相对根、搜索内容或符号 ID，以及文件/字节/结果/关系深度四项明确预算。实际预算上限与路径约束依该源码；不配置虚假语义能力，不返回伪造结果。公开 OpenAPI、F 生成类型/客户端和薄入口仍待准确交付，已直接联系 S4 `ctx_585bbb800279`。
 
 人工拒绝测试与查询字段 SOURCE `d7003863695008592bf8884e5ddd4f5c0852b2c0`。`pnpm --dir web exec eslint src/pages/workspace/repositorycontext e2e/s2-proposals.spec.ts` 为 0 errors / 0 warnings，`git diff --check` 通过。S4 查询字段阶段未连接生产接口，不记为 S4 整功能通过。
+
+模块答复 `msg_90c7399780e2` 明确当前 H `ctx_e1a8ebeeea83` 负责公开 HTTP 装配及 OpenAPI，F `ctx_5bac511ada08` 负责生成类型、公开客户端与共享入口。Context、S3、S4 尚无已核实的新公开契约 SOURCE；继续等待各原负责人的准确交付，原任务及写域不变。当前完整 S2 10 项通过只覆盖表中实际路径，撤销后新受保护动作、Context、S3/S4 与完整组合验收仍未完成。
 
 ## 实际检查与首次失败
 
