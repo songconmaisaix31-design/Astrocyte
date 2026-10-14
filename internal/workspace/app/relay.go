@@ -843,6 +843,9 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 	if view.Task.State == domain.RelayReleased {
 		return reject(relayError(apierrors.VersionConflict, "released task cannot control the terminal"))
 	}
+	if action == "read" && launch.Terminal.DriveMode != "terminal" && (view.Task.Condition == "delivery_unknown" || view.Terminal.ExitedAt != nil) {
+		return reject(relayError(apierrors.VersionConflict, "native read requires a current process without an unresolved delivery or confirmed exit"))
+	}
 	if action == "send" && (view.Task.Condition == "delivery_unknown" || view.Terminal.ExitedAt != nil || view.Task.State == domain.RelayDone) {
 		return reject(relayError(apierrors.VersionConflict, "task cannot accept another input"))
 	}
@@ -862,6 +865,9 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 		}
 		if action == "send" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil || current.State == domain.RelayDone) {
 			return relayError(apierrors.VersionConflict, "task cannot accept another input")
+		}
+		if action == "read" && terminal.DriveMode != "terminal" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil) {
+			return relayError(apierrors.VersionConflict, "native read requires a current process without unresolved delivery or confirmed exit")
 		}
 		if action == "resume" && (terminal.ExitedAt == nil || current.State == domain.RelayDone) {
 			return relayError(apierrors.DeliveryUnknown, "resume requires confirmed original exit")

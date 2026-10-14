@@ -242,6 +242,15 @@ func (d *RelayNativeDriver) Send(ctx context.Context, r app.RelayLaunch, input s
 	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs))
 }
 func (d *RelayNativeDriver) Read(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
+	if r.OperationID != "" {
+		evidence, err := d.CurrentControllerEvidence(ctx, r)
+		if err != nil {
+			return app.RelayObservation{}, err
+		}
+		if evidence.ExitConfirmed {
+			return app.RelayObservation{}, nativeError(apierrors.VersionConflict, "native process has exited; read stored history without another control operation")
+		}
+	}
 	a, err := d.adapter(r)
 	if err != nil {
 		return app.RelayObservation{}, err
