@@ -39,6 +39,16 @@
 - H/F 已收到精确 Dispatch Handoff，登记 durable enqueue；尚未把 enqueue 解释为实际开始或接收。
 - F 2026-10-14T12:53:45Z 报告在同 URL 实际两 viewport session200 与空 registry 基线，观察器打印 `F_BROWSER_READY`。其初次 registry 403 竞态原件 `.verification/l1-first-visible-current.log` 保留。H 12:54:45Z 确认注册未开始、模型派发为零、计时未启动，待 R 精确 SOURCE 后正常消费/编译/重启并协调 F 观察窗口。
 - 已向 B 提供现存实际来源文件本机指针 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-runtime/dist/relay-l1/actualpublicsources.json`，只读文件列表确认存在，未读取或输出源内容；生产入口与进度上下文要求由 R/H 持续交接。
+- R 2026-10-14T12:59:57Z 报告实际 started：原 tree/branch clean、HEAD 为原 REPORT，已读取规则和当前任务；不启动额外 CLI/模型，沿既有权限领域端口返修。公开 worker-list 进一步给出当前 `ctx_216bf731aaf8` 为 active/live/working、实际 provider.model `gpt-6.1-sol`；该状态仅证明开发任务活跃。
+- H 阶段 REPORT `fad2b48a9ff7ed0d8d5d6c202caf8efe9076e880` 已本地提交，仅 `docs/access/http.md`，SOURCE `7dd7d1b91128a268c035fcfa49da5f9f8667078d` 为普通祖先。普通 push 因 `SSL_ERROR_SYSCALL` 未成功；模块独立只读 ls-remote 同样 TLS 失败，已交总负责人共享网络阻塞，不声称 REPORT 已 push。
+- B 报告自身生产 HTTP/Service 对公开 README 的一次真实 progress infer 已成功，并核 SQLite、引用 mtime/size 与新 API 进程；该路径与 H 同一受控项目的组合验收分列，成功调用不重复。普通库存生命周期迁移所需实际 NativeRegistry 输入和工具关闭入口已交 R 继续提供。
+- R 阶段 SOURCE `ce3a519efa5317e642d7488a776b850eebca1093` 已普通 push，模块独立 ls-remote 同 SHA、diff 写域核对 PASS。生产逻辑保存真实项目 revision / permissionlevel，Confirm 在原意图与当前权限不同时返回 ApprovalRevoked，保留请求版本的 VersionConflict 校验；不覆写原意图。H 已收到精确源码消费和复启 Handoff，真实成功确认与权限变化拒绝仍待执行。
+- 独立源码审查发现该阶段新 `relay_intent_test.go` 使用原 contract fixture 的模拟 driver 成功和项目手改，已退原 R 在同写域普通追加真实适配器 / SQLite 验证；保留阶段 Git 历史，不接纳替身成功为当前验收。最终 SOURCE / REPORT 等待该返修。
+- 总负责人已将共享网络排查交集成发布模块。其只读诊断为 TCP443 可达、TLS 间歇失败；现有系统代理为 `127.0.0.1:7890`，仅命令级 proxy/schannel/HTTP1.1 曾读成功，后续 push 仍可能失败。已交 R/H 有界普通 push 与独立远端核查，禁止全局 TLS/代理修改；一次成功不登记网络永久恢复。
+- R 追加真实测试 SOURCE `9719e6970927caee3e0b08d4020708e383881880` / 独立 REPORT `392bd81e822148cb2a7cb8f7bd7a83699d0f7d44` 已普通 push，模块独立核远端 REPORT 与 SOURCE 普通祖先。相对 ce3a519 只替换新测试，生产逻辑全等；模块独立 `go test -mod=readonly ./internal/workspace/app -run '^TestRelayIntentBindsSQLiteSettingsAcrossReload$' -count=1 -v -timeout=90s` PASS，A/B/C 共 0.96s / package 2.756s，真实 production adapters / Git / SQLite / HTTP 权限版本保存重载及旧意图 403 拒绝，零模型派发。
+- H 已普通 no-ff 合 R ce3a519，merge `afb4993e3316d946ec2727686fdc397a2fc1fd82`，追加真实 assistant / task_complete / tool0 / nullable token 检查 SOURCE `9b0df7f2251cd16f0176035c8ab31bb07b0bca4e`。模块独立远端 SHA 一致，旧 H REPORT fad2b48 为普通祖先。H 报告 API17342 正常 shutdown/recompile/restart 为本次 owned PID12552；F 新 ready 前 registry/model/clock 仍为零，不据源码合入推断 DOM 通过。
+- 产品模块发现 R `native.go` 原生 response decode 可能忽略 json.Unmarshal 错误，已交原 R 同一活跃 Dispatch 核查 fast-fail。R 13:10:55Z 确认尚未 worker_done，继续原任务纯解析错误检查与普通追加 SOURCE/REPORT，不重发实际任务。
+- B 普通 Reader 新 API 预告为 `NewWorkbenchReader(root string, protectedSources ...string)`，默认不 stat 私人正式源，显式保护源保留同文件/alias 拒绝与 ro/immutable/query_only。`workbench_config.go` 旧常量衔接已请求总负责人明确 H 写域或交唯一集成人员；接口未有精确 SOURCE 前不消费 WIP。H 当前服务 Progress 未配置，已交产品模块/B 给现有生产构造口，只由 H 自身 relay 验证组装文件补必要导入，不代写进度领域。
 
 模块管理阶段 SOURCE `e404da04f7b10296bed8133589c292766c5398cf` 已普通 push，`git diff --check` 和 `git ls-remote` 精确核对 PASS；该结果仅包含本模块管理文档与派发核查，业务修复和产品验收仍按下面记录进行。
 
@@ -46,7 +56,7 @@
 
 | 核心路径 | 当前结果 | 必需证据与负责人员 |
 |---|---|---|
-| CreateIntent 保存权限 revision；正常确认；权限变化阻断 | RED / 返修未开始 | R 实际 SQLite/HTTP，F 实际页面；禁止删前端比较 |
+| CreateIntent 保存权限 revision；正常确认；权限变化阻断 | 首 RED 保留；9719e69 实际 SQLite/HTTP 保存与拒绝独立 PASS，真实产品成功确认等待 H/F | H 实际 SQLite/HTTP，F 实际页面，保留前端比较 |
 | 控制器 start/send/read/stop/resume、持久身份与三值状态 | R 阶段报告 PASS，组合未验 | 当前真实 controller 与 SQLite、明确活动窗口语义；H/F 产品链路 |
 | 控制器自产会话逐 event_id 定位、六字段 HTTP、分页与 GET 只读 | 进行中 | H 独立原档 / SQL / EventRepository / HTTP 比较 |
 | 来源覆盖、追加、停止和恢复边界 | PARTIAL / UNKNOWN 保留 | `ArchiveAppendOnly=unknown`，文件 PrefixComplete / SessionComplete 不足，恢复 raw gap 独立记录 |
