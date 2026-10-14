@@ -45,7 +45,7 @@ func failure(code string) error { return errors.New(code) }
 func main() {
 	var o options
 	flag.StringVar(&o.base, "base", "", "actual loopback server URL")
-	flag.StringVar(&o.mode, "mode", "", "baseline, registry, request, events, or idle")
+	flag.StringVar(&o.mode, "mode", "", "baseline, registry, request, events, idle, or task-state")
 	flag.StringVar(&o.output, "output", "", "new local evidence directory")
 	flag.StringVar(&o.verification, "verification-root", "", "dedicated .verification directory")
 	flag.StringVar(&o.zip, "zip", "", "actual P ZIP")
@@ -151,7 +151,8 @@ func (c *client) run() error {
 		Kind string `json:"actor_kind"`
 		CSRF string `json:"csrf_token"`
 	}
-	if json.Unmarshal(data, &identity) != nil || identity.Kind != "human" || identity.CSRF == "" || len(jar.Cookies(u)) == 0 {
+	cookieURL := u.ResolveReference(&url.URL{Path: "/api/v1/auth/session"})
+	if json.Unmarshal(data, &identity) != nil || identity.Kind != "human" || identity.CSRF == "" || len(jar.Cookies(cookieURL)) == 0 {
 		return failure("human_bootstrap")
 	}
 	c.csrf = identity.CSRF
@@ -163,6 +164,8 @@ func (c *client) run() error {
 		return c.baseline(false)
 	case "idle":
 		return c.idle()
+	case "task-state":
+		return c.taskState()
 	case "request":
 		if !allowed(c.method, c.path) {
 			return failure("request_out_of_scope")
@@ -234,7 +237,7 @@ func (c *client) packageBytes() error {
 	}
 	matched := 0
 	for _, entry := range archive.File {
-		if entry.Name != "Astrocyte-v0.1-windows-x64/astrocyte.exe" {
+		if strings.ReplaceAll(entry.Name, "\\", "/") != "Astrocyte-v0.1-windows-x64/astrocyte.exe" {
 			continue
 		}
 		matched++
@@ -306,6 +309,10 @@ func (c *client) request(method, path string, body []byte, expected int) ([]byte
 		if err := exclusive(filepath.Join(c.output, fmt.Sprintf("%03d-write.json", c.sequence)), metadata); err != nil {
 			return nil, err
 		}
+		if err := exclusive(filepath.Join(c.output, fmt.Sprintf("%03d-request-local.json", c.sequence)), body); err != nil {
+			return nil, err
+		}
+		c.summary["delivery"] = "SENDING_ONCE_OUTCOME_UNKNOWN"
 	}
 	res, err := c.http.Do(req)
 	if err != nil {
@@ -328,6 +335,9 @@ func (c *client) request(method, path string, body []byte, expected int) ([]byte
 			c.summary["delivery"] = "UNKNOWN_INSPECT_RECEIPT"
 		}
 		return nil, failure("http_status")
+	}
+	if method != "GET" {
+		c.summary["delivery"] = "HTTP_RESPONSE_RECEIVED_INSPECT_RECEIPT"
 	}
 	return data, nil
 }
@@ -372,6 +382,66 @@ func (c *client) idle() error {
 	if len(state.Tasks) != 0 || len(state.Dispatched) != 0 {
 		return failure("unexpected_automatic_dispatch")
 	}
+	return nil
+}
+
+func (c *client) taskState() error {
+	id, err := uuid.Parse(c.task)
+	if err != nil || id == uuid.Nil || id.String() != c.task || c.project == "" {
+		return failure("owned_task_scope_required")
+	}
+	data, err := c.request("GET", "/api/v1/relay/tasks", nil, 200)
+	if err != nil {
+		return err
+	}
+	var result struct {
+		Version    int                    `json:"schema_version"`
+		Tasks      []domain.RelayTaskView `json:"tasks"`
+		Dispatched []string               `json:"dispatched_work_ids"`
+	}
+	if json.Unmarshal(data, &result) != nil || result.Version != 1 || len(result.Tasks) != 1 || len(result.Dispatched) != 1 {
+		return failure("expected_single_owned_dispatch")
+	}
+	view := result.Tasks[0]
+	if view.Task.ID != c.task || view.Task.ProjectID != c.project || result.Dispatched[0] != view.Task.WorkID || view.Terminal == nil || view.Workspace == nil || view.Terminal.ID != view.Task.TerminalID || view.Workspace.ID != view.Task.WorktreeID {
+		return failure("task_state_binding")
+	}
+	data, err = c.request("GET", "/api/v1/relay/tasks/"+c.task+"/receipts", nil, 200)
+	if err != nil {
+		return err
+	}
+	var history struct {
+		Receipts []struct {
+			Action string `json:"action"`
+			Status string `json:"status"`
+		} `json:"receipts"`
+	}
+	if json.Unmarshal(data, &history) != nil || history.Receipts == nil {
+		return failure("receipt_schema")
+	}
+	accepted, unknown := 0, 0
+	for _, receipt := range history.Receipts {
+		if receipt.Action == "dispatch" && receipt.Status == "accepted" {
+			accepted++
+		}
+		if receipt.Status == "unknown" {
+			unknown++
+		}
+	}
+	if accepted != 1 {
+		return failure("dispatch_receipt_count")
+	}
+	c.summary["task_id"] = c.task
+	c.summary["project_id"] = c.project
+	c.summary["work_id"] = view.Task.WorkID
+	c.summary["worktree_id"] = view.Task.WorktreeID
+	c.summary["terminal_id"] = view.Task.TerminalID
+	c.summary["task_state"] = view.Task.State
+	c.summary["terminal_liveness"] = view.Terminal.Liveness
+	c.summary["accepted_dispatch_receipts"] = accepted
+	c.summary["unknown_receipts"] = unknown
+	c.summary["tasks"] = len(result.Tasks)
+	c.summary["dispatched_work_ids"] = len(result.Dispatched)
 	return nil
 }
 

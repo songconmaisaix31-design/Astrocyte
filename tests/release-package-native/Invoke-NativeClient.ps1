@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory = $true)][string]$Client,
     [Parameter(Mandatory = $true)][int]$ServerProcessId,
     [Parameter(Mandatory = $true)][string]$Executable,
@@ -7,7 +7,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Base,
     [Parameter(Mandatory = $true)][string]$VerificationRoot,
     [Parameter(Mandatory = $true)][string]$Output,
-    [Parameter(Mandatory = $true)][ValidateSet('baseline', 'registry', 'request', 'events', 'idle')][string]$Mode,
+    [Parameter(Mandatory = $true)][ValidateSet('baseline', 'registry', 'request', 'events', 'idle', 'task-state')][string]$Mode,
     [string]$Method = 'GET', [string]$Path = '', [string]$BodyFile = '',
     [int]$ExpectStatus = 200, [string]$Database = '', [string]$RelayDatabase = '', [string]$Task = '', [string]$Project = '',
     [ValidateRange(1, 100000)][int]$MinimumEvents = 1
