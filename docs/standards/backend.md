@@ -86,11 +86,11 @@ SOURCE `391c6176145044b099c13a05a926aef2096db170` 已普通 push，进度失败�
 
 协调者按最新用户决定要求 S2/S3 实现。B 已确认下列域在精确已 push `0d9640e` 无 WIP，并停止写入后移交固定 owner：S2 goals/proposals/approvals/session_bindings/proposal_context/proposal_ports 的指定 workspace/domain/app 文件、既有 app/service.go、指定 sqlite/httpapi workspace 文件、tests/s2 及 workspace-s2 报告；S3 internal/swarm、指定 sqlite/httpapi swarm 文件及 tests/s3。B 保留 projects/contracts/native_context/deps/migrations/scripts/config 的共享边界，跨域需求只提交 Handoff。
 
-OpenCode 实际安装版本和 npm manifest 都为 1.18.35。已核官方配置/权限/server/CLI 文档及固定版本源码；现 owned config 仍不足以排除原 global data/state/auth、home `.opencode`、remote/account 与 managed 来源，`--pure` 的外部插件限制与工具 deny 分别核对。存在原生 test-only home/managed hooks，改变 managed 读取边界尚未授权；B 未读取或复制私人原件/凭据，未启动不符合来源隔离前提的 serve，真实 no-model/session/auth 链仍待该重要边界决定。模型正向 Send 继续等待统一真实窗口，不能把旧替代 HTTP 通过记为原生能力。
+OpenCode 实际安装版本和 npm manifest 都为 1.18.35。已核官方配置/权限/server/CLI 文档及固定版本源码；现 owned config 仍不足以排除原 global data/state/auth、home `.opencode`、remote/account 与 managed 来源，`--pure` 的外部插件限制与工具 deny 分别核对。根已授权完整自有子环境、无模型生命周期；B 未读取或复制私人原件/凭据，尚未启动符合全部隔离前提的 serve。模型正向 Send 继续等待统一真实窗口，不能把旧替代 HTTP 通过记为原生能力。
 
 注册项目缓存 SOURCE `bee569f0b30fe2496dc933b026989d955efdbaf3` 已普通 push。应用测试使用本工作树实际 Git、生产 `NewScopedRegisteredProjects`、真实 SQLite 和正常 metadata 接口；缓存读取断开发现来源并设置 `PRAGMA query_only=ON`，实际观察、人工备注、revision/updated_at 和持久化 JSON 全部保持。只清空可重建的 Board 活动投影以验证重新聚合，原 Git 来源不变；创建时间与活动时间规则另以明确聚合函数输入验证，不声明原生会话事实。两个原测试名及活动、元数据、零扫描/写入、原缓存不变覆盖保留，内存 repository 和替代扫描回调已移除。
 
-`go test -mod=readonly ./internal/workspace/app -run '^TestRegisteredProjects(CachedGitActivity|ExistingSQLiteCache)$' -v -count=1` EXIT 0，1.237s，`.verification/registered-cache-actual-first.log`；实际 roots=1/groups=1、投影活动 0→1、恢复 1。定向 vet、全仓 build、gofmt 和 diff 检查 EXIT 0，`.verification/registered-cache-{vet,build}-first.log`。S2 当前唯一 owner 为 `ctx_f32b6d92119a`，其范围包含 app/service.go；B 继续停写完整已移交域。
+`go test -mod=readonly ./internal/workspace/app -run '^TestRegisteredProjects(CachedGitActivity|ExistingSQLiteCache)$' -v -count=1` EXIT 0，1.237s，`.verification/registered-cache-actual-first.log`；实际 roots=1/groups=1、投影活动 0→1、恢复 1。定向 vet、全仓 build、gofmt 和 diff 检查 EXIT 0，`.verification/registered-cache-{vet,build}-first.log`。S2 当前唯一 owner 为 `ctx_f32b6d92119a`，使用新增 s2_service.go；既有 app/service.go 归 B 薄装配，在准确构造 SOURCE 前继续暂停修改。
 
 注册发现生命周期 SOURCE `2a6a6d0ae20cc02f9160f6a1c4fdf5d1066d7ad7` 已普通 push。刷新错误在保存 stale/unknown 旧缓存后继续返回原错误，保存或 metadata 读取错误经 `errors.Join` 一并保留。Scoped 发现通过实际固定 Git `--git-common-dir` 命令取得同一 worktree 家族身份；已知 Git 身份读取失败立即失败，保留未知 Git 观察。SQLite discovery/metadata 测试移除替代 source、原生 controller 和引用 reader，观察包装只计数并委托生产来源。
 
@@ -101,6 +101,8 @@ OpenCode 实际安装版本和 npm manifest 都为 1.18.35。已核官方配置/
 按协调者新增共享 DDL 唯一 owner 分配，S3 请求的独立 SOURCE `da48a114d91181075bd32b62996beadd9c2c0a25` 已普通 push，仅增加 `migrations/020_swarm.sql` 五表及 Swarm 版本登记。Mission grant_id、租约 work_item_id/operation_id、消费者 consumer_id/event_id 唯一约束及所请求外键保持，复用既有幂等/outbox 定义；001–018 内容没有修改，019 留给 S2 准确表需求。上述四项实际 SQLite 检查在新迁移下再次 EXIT 0，3.403s，`.verification/swarm-migration-actual-first.log`，包含正常迁移和重新打开。Swarm 业务 CAS、授权同事务重查及两执行者闭环由 `ctx_d4bf65ca06bf` 原 owner 执行，B 尚未运行其验收。
 
 当前协调者最终划分为既有 app/service.go 归 B 薄装配、新增 s2_service.go 归 S2；准确 S2 构造 SOURCE 前 B 继续暂停 service.go。根已授权 OpenCode 仅在完整自有子环境运行无模型生命周期；HOME/profile、XDG config/data/state/cache/temp 与 managed 来源必须全部隔离，宿主来源保持不读取、不复制，缺口直接失败。该原生检查尚未执行。H helper a293 仍待其原 owner 完整修复 junction/symlink 保护，B 没有消费。
+
+S2 精确请求的新增迁移 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5` 已普通 push，仅增加 `migrations/019_workspace_approvals.sql`。七表保存目标/提案固定版本、ApprovalGrant、ContextPacket 和 SessionBinding，复合版本键、指定唯一约束与外键均按原 owner 请求实现；实际原会话表为 `local_agent_sessions`。新增 foundation_idempotency.result_json 使用 `TEXT NOT NULL DEFAULT 'null'`，既有 result_code/outbox 和 001–018 文件保持原内容；workspace schema 版本由 6 增至 7。上述四项实际 SQLite 迁移/重启/metadata OS 进程/权限/取消检查 EXIT 0，7.487s，`.verification/workspace-migration-actual-first.log`。S2 业务事务、当前批准与上下文接续的验收仍由原 owner 执行，B 尚未消费其源码。
 
 收藏第三页实际仅返回 19 条元数据。协调者转根正式决定：初次 100 指实际返回的资料元数据，允许同一已获准公开来源跨越缺失请求槽位，取得第 100 条即停止；Observed 保持实际条数，cursor 按请求窗口推进，原 timeout、显式 limit 和无进展失败继续执行。
 
