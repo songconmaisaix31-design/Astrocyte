@@ -35,6 +35,10 @@ H 分支：`songconmaisaix31-design/works-relay-http`。当前非原生依赖 SO
 
 `RelayIntentRequestV1` 明确提供 `handoff_from_task_id` 与 `handoff_context_confirmed`；人明确选择原任务并确认上下文，R 验证同项目 / Work / 原工作区、不同 Agent、已释放和退出且无 pending。声明的 handoff 关系保持 unknown，实际新 session 证据到达后独立追加关系；省略来源保持 ordinary intent，不自动推断上下文交接。
 
+私有通知游标 SOURCE `ae2160a4a1be77314570a83cc149e019f584ba57` 在原来源 UUID 下使用准确 controller / startup operation 区分连接，恢复的新连接从自身序号范围开始，不套用旧序号。旧 checkpoint 保留在本机 history；GET 读取旧已提交 origin 前通过 R 的历史端口重核同原 session、native identity、provider、workspace 和原 operation。缺旧连接字段的记录保留原来源和 unknown，不倒造连接或当前所有权。归档仍按原文件身份和 offset 增量采集，通知完整性和 raw 恢复 gap 保持独立。精确 Reader overlay build / vet 与实际无控制器 HTTP / SQLite 两项组合 PASS；新的真实通知连接、恢复、历史 origin 正向仍 NOT_RUN，代码提交不替代该验收。
+
+当前公开固定 JSON 目标已准备，实际 assistant 核验必须在来源 identityguard 接纳原档后，准确关联本次 dispatch / send operation。R 已供给操作事实与原控制器身份，但当前没有 operation 到实际原 turn_id 的私有对应端口；此缺口已交原 R，时间邻近不用于推断对应。目标核验与合法 done 前检查保持 NOT_RUN，来源被拒绝时保持真实 FAIL，不用通知、复制 JSON 或模型回答摘要代替原档。
+
 `TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission` 使用本次独占公开 Git 项目、生产 Registry / worktree / runtime、真实 Go listener 和 SQLite，在没有控制器启动的情况下生成真实 ready 与拒绝收据。当前 PASS 0.30 秒，HTTP 每个 fact_id 精确对应实际 store，闭合响应字段检查、GET 前后全状态一致、跨 Origin 拒绝、grant 改变后权限拒绝、原生 session / terminal / worktree 为零。首失败保留 `dist/http-listener/facts-http-first.log`，当前为 `facts-http-final.log`；OpenAPI lint、精确 Reader overlay build / vet、格式检查通过。F 独占生成客户端与产品 UI 消费，新真实窗口仍需模块明确授权。
 
 所有 Relay HTTP 使用既有 Go 服务、loopback、human session、Origin、CSRF 与 ErrorV1。GET 读取已持有任务、派生事件和原收据，不启动 CLI、不发送输入、不恢复会话、不读取原文归档。人工创建 intent 后必须明确确认权限；运行时 Service 是 task、terminal、worktree 与收据的唯一写入者。未知输入交付结果保持 `delivery_unknown`，不能自动重发。
