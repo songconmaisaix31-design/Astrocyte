@@ -48,7 +48,7 @@ export async function runTool(name, args, options = {}) {
 export async function goFiles(dir = root) {
   const files = [];
   for (const entry of await readdir(dir, { withFileTypes: true })) {
-    if (['.git', 'node_modules', 'dist'].includes(entry.name)) continue;
+    if (['.git', '.verification', 'node_modules', 'dist'].includes(entry.name)) continue;
     const path = join(dir, entry.name);
     if (entry.isDirectory()) files.push(...await goFiles(path));
     else if (entry.isFile() && entry.name.endsWith('.go')) files.push(path);

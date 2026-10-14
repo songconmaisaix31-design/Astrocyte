@@ -6,6 +6,8 @@ export interface S1Server {
   /** Pass the original error being rethrown from a finally; cleanup failures remain on stderr and error.cleanupError. */
   close(options?: { preserveData?: boolean; primaryError?: unknown }): Promise<void>;
   restart(): Promise<void>;
+  stopAPI(): Promise<void>;
+  startAPI(): Promise<void>;
   query(sql: string, ...parameters: (string | number)[]): Record<string, string | number | null>[];
 }
 export function startS1Server(options?: {
