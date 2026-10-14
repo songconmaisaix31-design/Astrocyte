@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -43,6 +44,12 @@ func NewSummarizeExtractorWithOptions(nodeExecutable, cliPath string, o Summariz
 		proxy, err := url.Parse(o.ProxyURL)
 		if err != nil || (proxy.Scheme != "http" && proxy.Scheme != "https") || proxy.Hostname() == "" || proxy.User != nil || proxy.Opaque != "" || proxy.RawQuery != "" || proxy.ForceQuery || proxy.Fragment != "" || (proxy.Path != "" && proxy.Path != "/") {
 			return nil, errors.New("summarize proxy must be an anonymous HTTP(S) origin without credentials, query or fragment")
+		}
+		if port := proxy.Port(); port != "" {
+			number, err := strconv.ParseUint(port, 10, 16)
+			if err != nil || number == 0 {
+				return nil, errors.New("summarize proxy port must be from 1 to 65535")
+			}
 		}
 	}
 	if o.Version == "" {

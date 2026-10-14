@@ -40,7 +40,7 @@ func TestVideoExplicitAnonymousProxyIsolation(t *testing.T) {
 			}
 		}
 	}
-	for _, proxy := range []string{" http://127.0.0.1:7890", "http://", "socks5://127.0.0.1:7890", "http://user:secret@127.0.0.1:7890", "http://127.0.0.1:7890/path", "http://127.0.0.1:7890?token=secret", "http://127.0.0.1:7890#fragment"} {
+	for _, proxy := range []string{" http://127.0.0.1:7890", "http://", "socks5://127.0.0.1:7890", "http://user:secret@127.0.0.1:7890", "http://127.0.0.1:7890/path", "http://127.0.0.1:7890?token=secret", "http://127.0.0.1:7890#fragment", "http://127.0.0.1:0", "http://127.0.0.1:65536", "http://127.0.0.1:abc"} {
 		if _, err := NewSummarizeExtractorWithOptions(e.NodeExecutable, e.CLIPath, SummarizeOptions{ProxyURL: proxy}); err == nil {
 			t.Fatal("accepted invalid or credentialed proxy")
 		}

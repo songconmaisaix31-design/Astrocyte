@@ -73,7 +73,7 @@ func TestExtractorSubprocessIsolationAndFixedRevision(t *testing.T) {
 	}
 	r, err := e.Extract(context.Background(), "https://arxiv.org/html/2501.12948v1")
 	if err != nil || len(r.Text) < 1000 || r.URL != "https://arxiv.org/html/2501.12948v1" || r.Version != "0.25.1" || !r.HasOriginal || len(r.Original) == 0 {
-		t.Fatal(r, err)
+		t.Fatal("actual fixed-revision extraction missing source, original or version", err)
 	}
 	for _, bad := range []string{"https://arxiv.org/html/2504.16054", "https://evil.test/html/2504.16054v1", "https://arxiv.org/abs/2504.16054v1"} {
 		if _, err = e.Extract(context.Background(), bad); err == nil {
@@ -134,38 +134,67 @@ func TestVideoURLSinglePublicSourceAndLegacySemantics(t *testing.T) {
 }
 
 func TestUpstreamMediaResultsRemainSeparateFromCLIAndSummary(t *testing.T) {
-	// JSON 字面量只定义纯函数输入和期望值，不声称来自实际 CLI 或视频。
 	locator := "https://www.bilibili.com/video/BV1PReT6EEqR/"
-	cli := `{"input":{"url":"https://www.bilibili.com/video/BV1PReT6EEqR/"},"extracted":{"title":"输入标题","content":"recommendations","transcriptSource":null,"diagnostics":{"strategy":"html","transcript":{"textProvided":false}}},"llm":null,"summary":null}`
 	e := &SummarizeExtractor{Options: SummarizeOptions{Version: "0.25.1"}}
-	for _, segments := range []string{`null`, `[{"startMs":1234,"endMs":5678,"text":"输入时间段"}]`} {
-		media := `{"text":"输入中文文字","provider":"whisper.cpp","error":null,"notes":["model=base"],"segments":` + segments + `}`
-		wire, _ := json.Marshal(map[string]any{"cliJSON": cli, "cliExit": 0, "cliStderr": "caption unavailable", "media": json.RawMessage(media)})
-		got, err := e.decodeVideoResult(locator, wire, "", nil)
-		if err != nil || got.Title != "输入标题" || got.Text != "输入中文文字" || got.Summary != "" || got.Mode != "upstream_media_transcript" || string(got.Original) != media || len(got.ExtraAttachments) != 2 || string(got.ExtraAttachments[0].Data) != cli {
-			t.Fatal("lost actual provenance/output or invented model summary", got, err)
+	for _, timed := range []bool{false, true} {
+		cli, media, stderr := videoActualInputs(t, timed)
+		original, err := parseSummarizeJSON(cli, true)
+		if err != nil {
+			t.Fatal(err)
 		}
-		if segments == `null` && len(got.Segments) != 0 {
+		var actual struct {
+			Text     string
+			Segments []Segment
+		}
+		if err := json.Unmarshal(media, &actual); err != nil {
+			t.Fatal(err)
+		}
+		wire := videoActualWire(t, cli, media, stderr)
+		got, err := e.decodeVideoResult(locator, wire, "", nil)
+		if err != nil || got.Title != original.Title || got.Text != actual.Text || got.Summary != "" || got.Mode != "upstream_media_transcript" || string(got.Original) != string(media) || len(got.ExtraAttachments) != 2 || string(got.ExtraAttachments[0].Data) != string(cli) || string(got.ExtraAttachments[1].Data) != string(stderr) {
+			t.Fatal("actual source, separate originals or transcript changed", err)
+		}
+		if !timed && len(got.Segments) != 0 {
 			t.Fatal("invented timeline")
 		}
-		if segments != `null` && (len(got.Segments) != 1 || got.Segments[0].StartMS != 1234) {
-			t.Fatal("lost upstream timing")
+		if timed && len(got.Segments) == 0 {
+			t.Fatal("lost actual native timing")
+		}
+		if len(got.Segments) != len(actual.Segments) {
+			t.Fatal("actual segment count changed")
+		}
+		for index, segment := range got.Segments {
+			if segment.StartMS != actual.Segments[index].StartMS || segment.Text != actual.Segments[index].Text || segment.EndMS == nil || *segment.EndMS != *actual.Segments[index].EndMS {
+				t.Fatal("actual segment timing or text changed", index)
+			}
 		}
 	}
-	for _, media := range []string{`{"text":"words","provider":"openai","error":null}`, `{"text":"words","provider":"whisper.cpp","error":null,"segments":[{"endMs":1000,"text":"missing start"}]}`, `{"text":null,"provider":"whisper.cpp","error":"download denied"}`} {
-		wire, _ := json.Marshal(map[string]any{"cliJSON": cli, "cliExit": 0, "media": json.RawMessage(media)})
+	cli, media, stderr := videoActualInputs(t, true)
+	for _, corrupt := range []func(map[string]any){
+		func(value map[string]any) { value["provider"] = "openai" },
+		func(value map[string]any) { delete(value["segments"].([]any)[0].(map[string]any), "startMs") },
+		func(value map[string]any) { value["text"] = nil },
+	} {
+		var value map[string]any
+		if err := json.Unmarshal(media, &value); err != nil {
+			t.Fatal(err)
+		}
+		corrupt(value)
+		invalidMedia, err := json.Marshal(value)
+		if err != nil {
+			t.Fatal(err)
+		}
+		wire := videoActualWire(t, cli, invalidMedia, stderr)
 		if _, err := e.decodeVideoResult(locator, wire, "", nil); err == nil {
-			t.Fatal("accepted cloud/malformed/failed upstream result", media)
+			t.Fatal("accepted corrupted provider, timing or text")
 		}
 	}
-	wire, _ := json.Marshal(map[string]any{"cliJSON": cli, "cliExit": 0, "cliStderr": "retained original", "error": "blocked local network address"})
-	_, err := e.decodeVideoResult(locator, wire, "", nil)
+	_, err := e.decodeVideoResult(locator, videoActualWire(t, cli, media, stderr), "", context.Canceled)
 	var failed *ExtractionFailure
-	if !errors.As(err, &failed) || string(failed.CLIJSON) != cli || string(failed.CLIStderr) != "retained original" {
+	if !errors.As(err, &failed) || string(failed.CLIJSON) != string(cli) || string(failed.CLIStderr) != string(stderr) || string(failed.MediaJSON) != string(media) {
 		t.Fatal("original failure discarded", err)
 	}
-	var service *apierrors.ServiceError
-	if !errors.As(err, &service) || service.RequiredAction != "configure_public_source_network" {
-		t.Fatal("network block misreported as missing tools", err)
+	if extractionAction("blocked local network address", "check_tools") != "configure_public_source_network" {
+		t.Fatal("network failure action changed")
 	}
 }
