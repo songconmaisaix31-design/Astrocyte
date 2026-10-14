@@ -68,7 +68,10 @@ func TestWorkbenchRejectsApplicationDBHardlinkToSnapshot(t *testing.T) {
 
 func workbenchOwnedActualRoot(t *testing.T) string {
 	t.Helper()
-	parent := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification")
+	parent, err := filepath.Abs(filepath.Join("..", "..", ".verification", "workbench-guard"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := os.MkdirAll(parent, 0700); err != nil {
 		t.Fatal(err)
 	}

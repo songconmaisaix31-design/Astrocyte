@@ -3,9 +3,7 @@ package importers
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -13,36 +11,33 @@ import (
 )
 
 func TestPublicListingBoundsActualFavoriteRequestsIncludingSkippedRows(t *testing.T) {
-	observed, requests := 0, 0
 	r := NewPublicListingReader("")
-	r.Bilibili.Client = &http.Client{Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
-		q := request.URL.Query()
-		page, _ := strconv.Atoi(q.Get("pn"))
-		size, _ := strconv.Atoi(q.Get("ps"))
-		start := (page - 1) * size
-		if q.Get("media_id") != "456" || size < 1 || size > 20 || observed+size > 100 {
-			t.Fatal("provider request exceeded metadata cap", request.URL)
+	folders, err := r.ListCollections(context.Background(), "bilibili", "3494358764489275")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var selected *app.SourceCollection
+	for i := range folders {
+		if folders[i].ItemCount != nil && *folders[i].ItemCount > 100 {
+			selected = &folders[i]
+			break
 		}
-		requests++
-		observed += size
-		entries := []string{}
-		for i := 0; i < size; i++ {
-			if start+i == 5 {
-				entries = append(entries, `{"type":2,"title":"missing identity"}`)
-			} else {
-				entries = append(entries, fmt.Sprintf(`{"id":%d,"type":2,"bvid":"BV1PReT6EEqR","title":"contract-local row"}`, start+i+1))
-			}
-		}
-		raw := fmt.Sprintf(`{"code":0,"data":{"info":{"id":456,"media_count":150},"has_more":true,"medias":[%s]}}`, strings.Join(entries, ","))
-		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(raw)), Header: http.Header{}}, nil
-	})}
-	source := app.TrackingSource{Platform: "bilibili", SourceKind: "favorites", ExternalID: "456"}
+	}
+	if selected == nil {
+		t.Fatal("approved actual favorite folder capacity unavailable")
+	}
+	transport := &actualListingTransport{inner: http.DefaultTransport}
+	r.Bilibili.Client.Transport = transport
+	source := app.TrackingSource{Platform: "bilibili", SourceKind: "favorites", ExternalID: selected.ExternalID, OwnerID: selected.OwnerID}
 	cursor := ""
 	total, count := 0, 0
 	for total < 100 {
 		page, err := r.ReadPage(context.Background(), source, cursor, 100-total)
 		if err != nil {
 			t.Fatal(err)
+		}
+		if page.Observed <= 0 || page.Observed > 100-total || len(page.Items) > page.Observed {
+			t.Fatal("actual page did not advance within the remaining metadata budget")
 		}
 		total += page.Observed
 		count += len(page.Items)
@@ -51,12 +46,23 @@ func TestPublicListingBoundsActualFavoriteRequestsIncludingSkippedRows(t *testin
 		}
 		cursor = *page.NextCursor
 	}
-	if observed != 100 || total != 100 || count != 99 || requests != 5 || cursor != "6" {
-		t.Fatalf("real request rows%d observations%d metadata%d requests%d cursor%s", observed, total, count, requests, cursor)
+	if total != 100 || count != 100 || len(transport.positions) != 6 || cursor != "6:1" {
+		t.Fatalf("actual observations%d metadata%d requests%d cursor%s", total, count, len(transport.positions), cursor)
 	}
+	for i := range transport.positions {
+		expectedSize := 20
+		if i == 5 {
+			expectedSize = 1
+		}
+		if transport.positions[i] != i*20 || transport.sizes[i] != expectedSize {
+			t.Fatal("actual request window changed or fetched beyond its remaining metadata limit")
+		}
+	}
+	t.Logf("actual_folder=%s metadata_observed=100 provider_slots_requested=101 requests=6 next_cursor=%s", selected.ExternalID, cursor)
 }
 
 func TestNativeUploadLastPageUsesRemainingTenRows(t *testing.T) {
+	// 下列数据只作为 JSON 解析参数与期望值，不声明为客户端或公开来源观测。
 	entries := []string{}
 	for i := 0; i < 10; i++ {
 		entries = append(entries, fmt.Sprintf(`{"aid":%d,"mid":3494358764489275,"bvid":"BV1PReT6EEqR"}`, i+91))

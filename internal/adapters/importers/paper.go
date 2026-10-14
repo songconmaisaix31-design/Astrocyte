@@ -192,7 +192,7 @@ func paperPDFSource(pdfURL, title string, text string, pdf, original []byte) app
 		Provenance:    app.Provenance{Processor: "paper_pdf+summarize", Version: "summarize 0.25.1 + markitdown", Mode: "public_pdf_fulltext", Source: pdfURL},
 		Attachments: []app.SourceAttachment{
 			{Name: name + ".pdf", MediaType: "application/pdf", Data: pdf, SourceLocator: pdfURL},
-			{Name: "summarize-pdf-original.json", MediaType: "application/json", Data: original, SourceLocator: pdfURL},
+			{Name: "summarize-pdf-original.json", MediaType: app.NativePrivateAttachmentMediaType, Data: original, SourceLocator: pdfURL},
 		},
 	}
 }
