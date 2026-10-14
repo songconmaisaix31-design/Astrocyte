@@ -115,6 +115,8 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	defer file.Close()
 	models := map[string]bool{}
 	toolCalls := 0
+	assistantMessages, completedTurns := 0, 0
+	var reportedTokens *int
 	reader := ndjson.NewReaderSize(file, int(batch.SnapshotBytes)+1)
 	for reader.Next() {
 		var record struct {
@@ -122,6 +124,12 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 			Payload struct {
 				Type  string `json:"type"`
 				Model string `json:"model"`
+				Role  string `json:"role"`
+				Info  *struct {
+					TotalTokenUsage struct {
+						TotalTokens *int `json:"total_tokens"`
+					} `json:"total_token_usage"`
+				} `json:"info"`
 			} `json:"payload"`
 		}
 		if reader.Decode(&record) != nil {
@@ -133,9 +141,23 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		if record.Type == "response_item" && (record.Payload.Type == "function_call" || record.Payload.Type == "custom_tool_call") {
 			toolCalls++
 		}
+		if record.Type == "response_item" && record.Payload.Type == "message" && record.Payload.Role == "assistant" {
+			assistantMessages++
+		}
+		if record.Type == "event_msg" && record.Payload.Type == "task_complete" {
+			completedTurns++
+		}
+		if record.Type == "event_msg" && record.Payload.Type == "token_count" && record.Payload.Info != nil {
+			if tokens := record.Payload.Info.TotalTokenUsage.TotalTokens; tokens != nil && (reportedTokens == nil || *tokens > *reportedTokens) {
+				reportedTokens = tokens
+			}
+		}
 	}
 	if reader.Err() != nil || len(models) == 0 || toolCalls != 0 {
 		t.Fatal("实际原生会话缺少模型元数据或发生工具调用")
+	}
+	if assistantMessages == 0 || completedTurns == 0 {
+		t.Fatal("实际原生会话缺少回答或轮次完成证据")
 	}
 	restart, err := events.ReadRelaySession(ctx, binding, batch.Next)
 	if err != nil || len(restart.Items) != 0 || restart.Next.Offset != batch.Next.Offset || restart.Next.Counts != batch.Next.Counts {
@@ -321,7 +343,7 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		}
 	}
 	writeActualJSON(t, filepath.Join(evidence, "current-cursor.json"), batch.Next)
-	writeActualJSON(t, filepath.Join(evidence, "actual-model-derived.json"), map[string]any{"models": models, "tool_calls": toolCalls, "signals": signals, "nodes": nodes, "production_assembly": true, "source": "controller_selected_archive"})
+	writeActualJSON(t, filepath.Join(evidence, "actual-model-derived.json"), map[string]any{"models": models, "tool_calls": toolCalls, "assistant_messages": assistantMessages, "completed_turns": completedTurns, "reported_tokens": reportedTokens, "signals": signals, "nodes": nodes, "production_assembly": true, "source": "controller_selected_archive"})
 	writeActualJSON(t, filepath.Join(evidence, "committed-public.json"), map[string]any{"task_id": task.ID, "project_id": task.ProjectID, "agent_name": task.Agent, "registered_at": registered.RegisteredAt, "dispatched_at": dispatched.UTC().Format(time.RFC3339Nano), "events": committed, "native_session_event_ids": nativeIDs, "archive_event_ids": nativeIDs, "forbidden_canaries": []string{"L1_PUBLIC_CANARY_976E"}, "coverage": view.Coverage})
 	writeActualJSON(t, filepath.Join(evidence, "actual-evidence-derived.json"), map[string]any{"lines": batch.Next.Counts.Lines, "projected": batch.Next.Counts.Projected, "unknown": batch.Next.Counts.Unknown, "errors": batch.Next.Counts.Errors, "snapshot_bytes": batch.SnapshotBytes, "snapshot_complete": batch.SnapshotComplete, "session_complete": batch.SessionComplete, "get_event_matches": len(committed), "readonly_get_event_count_unchanged": before == after, "negative_file_checks": 5, "archive_format": binding.Format, "has_private_paths_in_public": strings.Contains(fmt.Sprint(committed), private.AppRoot), "exit_confirmed": owned.ExitedAt != nil, "archive_finalized": owned.ArchiveFinalized, "archive_append_only": owned.ArchiveAppendOnly, "native_version": state.Sessions[task.TerminalID].Version})
 }
