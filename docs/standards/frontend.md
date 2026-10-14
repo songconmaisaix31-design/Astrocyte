@@ -1,51 +1,70 @@
 # 前端标准整改与合并产品验证
 
-## 已交付阶段
+分支 `standards-frontend`，当前本域 SOURCE `fcf5f55012ba0b05535fe851606cbf3c5a9f3f87`，已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
-分支 `standards-frontend`，当前 SOURCE `205d2d2ce91091e6add67d637cb65aae33946292`，已 push。执行客户端为本次 Orca 派发的 Codex；运行参数按派发使用既有 `--yolo`，本次 Worker 的实际模型身份等待主控运行观测确认。本轨没有另派 Agent。
+## 完成内容
 
-前端移除 `vi.fn` / `vi.mock` API 模拟、`page.route` / `route.fulfill` 伪造响应和 fixture 事实展示。实际页面读取复用会话、生成客户端、生产 Go 服务与独立 SQLite。历史 `fixture=1` 仅作为查询参数回归输入，仍读取实际服务。纯函数和静态组件测试明确标记参数输入，保留 unknown、权限、完整路径和状态显示断言。
+前端移除 `vi.fn` / `vi.mock` API 模拟、`page.route` / `route.fulfill` 伪造响应及 fixture 事实展示。历史 `fixture=1` 仅作为回归查询参数，页面继续读取实际服务。纯函数测试明确参数输入，不声明检索、模型或原生操作已经执行。读取、命令、生成客户端和会话复用现有实现。
 
-真实测试使用既有 `tests/s1/server.mjs`，本轨创建的服务、SQLite、原文对象及首失败仅位于本树 `.verification/`。资料输入使用本轨 Git 已跟踪协议、README、实际捕获的公共文档导出或公开 arXiv 版本。Q 交付的实际公开 Git 来源快照和 H 交付的安全派生事实仅按明确授权目录读取；没有读取正式库、私人会话、原生会话原件或凭据。失败场景使用实际权限拒绝、输入校验、请求取消及网络或服务断开。
+实际验证使用既有生产 Go 服务、真实 SQLite 和真实 HTTP。失败条件使用权限拒绝、输入校验、取消、网络断开、进程退出及实际系统端口拒绝。F 创建的产物保留在本树 `.verification/`，不会覆盖首失败。
 
-已普通合并 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、H `99a250d0b9069ffb32205420f63f82b372de5607`、R `ce3a519efa5317e642d7488a776b850eebca1093` 及 B `b470ecd736af261a10e4c4822bdcd3b02d0da454`。根文档和 `go.mod` 冲突由对应 Owner 处理。
+插件输入直接采用 B 的生产 `paperDOM` 对获准公开 HTML 生成的完整对象，保留 schema、来源、正文和原始 JSON 附件。缺少或非法 schema version、非法文本 / 列表 / 可得状态 / 截断字段立即拒绝，正文首尾空白完整保留。公开论文两个实际版本经生产手工导入，来源、不同正文、版本切换、固定引用及人工计数仍完整验证；该路径不声明本次重新进行网络提取。
 
-Relay 写操作在传输失败、存在 accepted 结果及错误、HTTP 5xx（明确未实现的 501 除外）时保存未知交付锁。`sessionStorage` 仅保存 operation UUID，关闭、重开和重新加载继续禁止重复写入。Today 会话区分实际 archive 与 native notifications，保留 unknown、null tokens、分页和未完整确认状态。
+作品分组断言完整包含分组名称和数量；进度重启后重新打开实际折叠区，继续比较原摘要。资料来源位置从实际 revision DTO 获取，内容 digest、正文、DOM 和原始附件保留。私有原生附件依现有 MediaType、旧 `whisper-original.json` 标记和跨 revision 相同 ObjectRef 仅显示本机保留，不生成 HTTP 链接；公开附件保留原入口。
 
-## 阶段验证
+Relay 人工迁移按已确认规则使用 `observe`，事件接入核对使用 `reconcile`。写操作在传输失败、accepted 与错误并存、HTTP 5xx（明确未实现的 501 除外）时保留未知交付锁；关闭、重开和重新加载继续禁止重复写入。`sessionStorage` 仅保存 operation UUID。Today 区分 archive 与 native notifications，完整性、unknown、null tokens 和原始窗口失败分别保存。
 
-- `npm run typecheck`、`npm run lint`、`npm run build`、生成 schema 检查和 `git diff --check`：已退出 0。构建保留现有大于 500 kB 的产物提示。
-- `npm run test`：26 文件、147 项通过，日志 `.verification/vitest-combined-all-first.log`；包含实际生产 HTTP、SQLite、公开快照和 H 实际六字段事件查询，以及明确输入的纯函数测试。
-- Playwright 实际无模型场景筛选运行（`--workers=1`）：两种窗口共 12 项通过，日志 `.verification/playwright-relay-owned-second.log`。覆盖权限拒绝、撤销、revision、网络断开后未知锁及嵌套目录授权。
-- `npx playwright test e2e/cognition.spec.ts e2e/cognition-live.spec.ts --workers=1`：最近完整复验 13 项通过、1 项因实际 `ECONNRESET` 失败，日志 `.verification/playwright-cognition-latest-final.log`。失败发生于 1920 窗口独立 SQL 比较的会话 bootstrap，不能视为 14 项通过。
-- Cognition 实际非空过滤输入修正后，两种窗口过滤用例 2 项通过，日志 `.verification/playwright-cognition-filter-fixed.log`。保留原先 12 通过 / 2 失败及独立诊断记录。
-- `npx playwright test e2e/cognition-live.spec.ts --workers=1`：实际十个 SQL 值在两种窗口独立复验 2 项通过，日志 `.verification/playwright-cognition-sql-current.log`。没有代码修改、自动重试或断言放宽，前次连接重置保持 FAIL 记录；服务启动连接原因已提交 B 排查。
-- `npx playwright test e2e/relay-session-readonly.spec.ts --workers=1`：两种窗口共 2 项通过，日志 `.verification/playwright-relay-session-readonly-first.log`。H 实际 18 个事件逐一匹配来源 ID，保留 5 个 unknown、17 个 null tokens、分页、真实 Origin 403 隐藏旧数据及恢复。
-- 完整默认 Playwright：初次在范围变更后中断，日志 `.verification/playwright-dispatch-current.log`，保持 PARTIAL；合并产品后的完整默认验收尚未完成。
+## 精确源码消费
 
-前次纯函数、显示契约、typecheck、lint 首失败见 `.verification/first-failures.md`。前次真实浏览器日志及产物保留于 `.verification/playwright-first-*`、`playwright-materials-first-*`、`playwright-resumed-*`。Works 首次实际 400 导致 12 项失败保留于 `.verification/playwright-relay-owned-first.log`；请求 key / revision 修复后的通过记录单独保存。原生注册三分钟失败记录和后续观测分别保存，本次结果不覆盖首失败。
+普通消费 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、B 实际输入 `e05c013a08ccf372bb884dae5eeb3345f92173af`、私有附件 `cc46b9855775adf70bce74242d08ef84ff4f573b`、真实 URL helper `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、R 人工迁移 `d14b08dc50014baf9ee636543564b040112cf3b5`、H Reader 装配 `b247dfb12b938739f09acc73e6b7582376951a0c` 和真实 listener `1aadeebaba2330bb8b786989f577415da5208fd5`。
 
-## 后续范围与真实限制
+H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自产实际 URL 后再核 health，Origin 使用实际地址，Vite 使用严格端口。共享 Go 冲突由模块明确授权的原 Owner 使用文件编辑工具处理并 stage，F 完成普通 merge；F 没有编辑共享 Go、根配置、依赖、OpenAPI 或迁移。
 
-Q 最新公开 Git 来源快照 `snapshot-892856014` 实际包含 1339 个可定位提交、两个主题各三条实际轨迹和一次实际 Sleep。实际最高 A 主题 MCP 有 20 条证据；独立分页断言使用实际 134 条证据的 Astrocyte / Attention Engine。最高 A 排序与大于 20 条证据的完整分页分别验证。最终验收使用 Sleep 后的当前来源，不使用此前来源替代。
+## 验证命令与结果
 
-获准固定公开任务通过生产 GUI 仅提交一次，任务 `0c6522bc-b232-4040-8407-745885644791`。实际输入被接受后返回 HTTP 503 / `provider_unavailable`，交付保持未知并禁止自动重试。H 独立检查确认实际 `gpt-6.1-sol`、一个 assistant、一个 task_complete、8827 tokens、观察到零次工具调用；旧任务的有效工具集合及 owned PID 未完整确认，工具关闭验收不能标记 PASS。
+| 命令 / 实际验证 | 结果 | 本机记录 |
+| --- | --- | --- |
+| `npm run typecheck`、`npm run lint`、`npm run build` | 退出 0；保留现有约 515 kB 产物提示 | `.verification/typecheck-source-final.log`、`lint-source-final.log`、`web-build-source-final.log` |
+| `node scripts/generate-client.mjs --check`、`git diff --check` | 退出 0 | 生成 schema 与共享源相等，未手工编辑 |
+| `npx vitest run src/api/client.test.ts src/pages/attention/pluginSnapshot.test.ts src/pages/attention/sourceSelection.test.ts` | 3 文件 21 项 PASS；包含真实生产 HTTP / SQLite | `.verification/vitest-affected-http-final.log` |
+| 合并产品之前完整 `npm run test` | 26 文件 147 项 PASS，限定当时 SOURCE | `.verification/vitest-combined-all-first.log` |
+| 完整默认 `npx playwright test --workers=1` | 280 项：203 PASS、41 FAIL、32 既有门禁 SKIP、4 NOT_RUN，退出 1 | `.verification/playwright-combined-default-first.log`，逐项清单 `combined-default-first-failures.md` |
+| 本域五个受影响用例，两种窗口 | 首复验 9 PASS / 1 Windows bind FAIL | `.verification/playwright-affected-ten-first.log` |
+| `npx playwright test e2e/s1.spec.ts --grep 'browser imports a summarize' --project=chromium-1920 --workers=1` | 实际 port 0 helper 修复后单例 PASS；旧 49680 bind 拒绝保留 | `.verification/playwright-s1-port0-single.log` |
+| 实际两版论文取消、人工重读和分类 / 固定引用 | 两种窗口 6 PASS | `.verification/playwright-public-versions-current.log` |
+| `npx playwright test e2e/progress-existing.spec.ts --workers=1` | 两种窗口 2 PASS，全部 GET，新的模型调用 0 | `.verification/playwright-progress-existing-contract.log` |
+| `npx playwright test e2e/video-existing.spec.ts --workers=1` | 两种窗口 2 PASS，两版正文 / 位置 / 私有入口 / 公开原件内容均核实 | `.verification/playwright-video-existing-bytes.log` |
+| 先前真实 Works 无模型权限 / revision / 撤销 / 嵌套目录 / 未知锁 | 两种窗口 12 PASS | `.verification/playwright-relay-owned-second.log` |
+| 最新公开 cognition 四视图及十个独立 SQL 值 | 原完整复验 13 PASS / 1 ECONNRESET FAIL；无修改的独立 SQL 两窗口 2 PASS | `.verification/playwright-cognition-latest-final.log`、`playwright-cognition-sql-current.log` |
 
-原始注册时间 `2026-10-14T13:23:34.0366105Z` 后三分钟窗口失败。两个窗口后续首次可见时间为 `13:33:25.152Z` / `13:33:25.153Z`，距离原注册约 591 秒，距离实际 dispatch 约 14.516 / 14.517 秒；该后续延迟只作实际观测。`.verification/l1-live/late-first-visible.json` 与 H 独立首 DOM / SQLite 派生记录保留，不能替代三分钟验收。
+所有通过项限定各自 SOURCE、实际来源和运行范围。完整默认 41 项失败未由子集通过覆盖，下一次完整运行等待 R / H 场景与相应合同具备条件。初始 fixture / 类型 / 显示契约失败、HTTP 400、外部来源 503、bootstrap 连接错误、系统 bind 拒绝和未执行项均保留。
 
-旧任务为 `working / terminal_exited / exited`。本轨通过 GUI 成功执行一次获准读取，operation `ede29910-9f7a-4f5e-97a9-9293f7b87a25`，实际 HTTP 200 / accepted，记录 `.verification/l1-live/existing-ui-safe.json`。旧 revision 2 的授权没有 reconcile，当前人工完成及释放控件禁用；R 正按主控新裁决实现 observe 下人工完成 / 释放，待准确 SOURCE、H 实际组装和本轨 GUI 复验。
+## 既有真实模型进度与视频
 
-| 验收范围 | 当前状态 |
+B 原实际 README 结果为 `agent_inferred`、模型 `gpt-6.1-sol`、原生 ID `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`、revision 3、一个实际依据。用户决定及 OpenAPI 允许 summary 缺失；B 独立原 SQLite / receipt 确认此记录没有生成摘要，HTTP 没有丢失字段。页面完整比较实际状态、依据 / 版本、模型、原生 ID、观察时间及缺失摘要，人工摘要重启的正向覆盖仍保留。首次不存在 GET 路径的 404 和两次错误 summary 必需断言保留。没有取得 Agent 摘要正向样本，原始来源完整性和有效工具集合仍 UNKNOWN。
+
+既有实际公开视频 `BV1PReT6EEqR`、material `534HWFW7E5GEF75ZY4F7ETPLQ2`：revision 1 原文长度 11746、位置 0、公开附件 1、私有附件 0；revision 2 原文长度 13979、位置 952、公开附件 3、私有附件 1。F 对各版实际 HTTP、完整 DOM、digest 和公开附件与既有不可变对象内容逐项比较，私有原件从未通过 F 请求。每版附件都相同及原件必须非空的首次错误断言保留，实际空文件仍完整保存。新的提取、ASR 和模型调用均为 0。
+
+## 原生链路与当前限制
+
+原固定公开任务 `0c6522bc-b232-4040-8407-745885644791` 仅提交一次。输入被接受后实际 HTTP 503 / provider_unavailable 保留；H 独立观察实际 `gpt-6.1-sol`、assistant 1、task_complete 1、8827 tokens、工具调用 0。原有效工具集合 / owned PID 未完整核实，不能标记工具关闭验收 PASS。
+
+原注册 `2026-10-14T13:23:34.0366105Z` 的三分钟窗口 FAIL。两个窗口后续首次 DOM 为 `13:33:25.152Z` / `13:33:25.153Z`，距离原注册约 591 秒，距离实际 dispatch 约 14.516 / 14.517 秒，单独记录。旧 18 个已提交事件仍逐一匹配 H GetEvent，先前只读两窗口 2 PASS；后续原档实测 nlink 2，当前守卫正确拒绝，coverage errors 1 / snapshot_complete false，本次默认只读两窗口 FAIL。F 没有读取、复制或创建原档链接。
+
+人工 done 实际操作 `32c7f5a0-0cb0-4de2-91aa-3e7b9bc0ad07` 于 `15:00:24.5863561Z` 迁移，HTTP 200 / accepted。在模型内容目标核查前勾选，根明确该目标完成验收 FAIL；实际历史保留。随后唯一 native read `5f99133e-390f-4987-b8f2-2889716921ff` 实际 HTTP 409 / delivery_unknown，未重试。
+
+根随后单独批准符合真实退出与归属条件后的清理释放。H 独立 SQL 确认 done、原退出、Prepared、同项目 / 工作区 / Agent 归属及 pending 0 后，F 单次 GUI release `ccf54824-6194-4161-81c0-0d6985ee5171` 于 `15:19:03.3026899Z` 实际 HTTP 200 / accepted。独立 GET 与 H SQL 核 `released`、ActiveTaskID 空、Prepared true、pending 0，原 read 未知和 condition 未知保留。初始脚本错误 Prepared false 断言保留，未重新执行 mutation。清理不填模型目标或来源验收 PASS。
+
+自有 Vite 17343 / PID 3460、只读进度 17346 / PID 36948、只读视频 17347 / PID 60264 均按实际 listener、父进程配置、Vite 命令和退出核实后准确关闭；没有终止 H / B 的 API 或原生进程。新 17345 观察 / 确认 / 模型操作均为 0。
+
+| 剩余范围 | 当前状态 |
 | --- | --- |
-| 实际 HTTP 客户端、公开 cognition 查询、六字段原生事件、纯函数输入 | Vitest PASS 147 项 |
-| Works 权限、撤销、revision、嵌套目录、未知锁关闭 / 重开 / reload | 实际 Playwright PASS 12 项 |
-| 最新 cognition 四视图、排序、实际轨迹、过滤、日期、分页、十个 SQL 值 | 最近完整 13 PASS / 1 FAIL，继续排查连接重置 |
-| Today 实际事件 ID、null / unknown、两页及实际 403 | 实际 Playwright PASS 2 项 |
-| 注册后原生三分钟首次可见 | FAIL，首窗口不重置 |
-| 旧任务人工完成 / 释放、完整工具关闭证据 | BLOCKED / 未完整确认 |
-| 实际 EOF、结构化 EOF、generic 409、publication error、第二 CLI | 所需真实条件未完整交付，未 PASS |
-| 资料版本 / 去重 / 显式刷新、人工内容与问题、later / reject / revise、四维 unknown、A/B/C 与独立模型参数 | 完整默认用例保留，合并后的最终完整运行未完成 |
-| 人工进度与一次真实生产 infer 的缓存页面验证 | B 已报告实际调用，等待获准缓存输入及 GUI 复验，未 PASS |
-| 实际带时间段的视频来源 | 当前公开来源零个时间段，正向时间断言缺少真实输入，未 PASS |
+| 原三分钟窗口、目标完成及当前原档身份 | FAIL，历史不改 |
+| 新 v1.4 投递阶段、原生归属、输入 ready、恢复身份与人工上下文交接 | 已收到成对人工交接决定；准确 R / H SOURCE、OpenAPI 和 working 规则尚待交付，不手写或冻结接口 |
+| EOF / structured、互斥与 generic 409、未知 send、第二 CLI、publication error | 原完整默认 22 项缺获准真实场景 FAIL，尚未通过 |
+| 新真实 CLI / Today / L1 完整验收 | 用户当前允许继续准备；在语义及根规则满足前未开启新窗口 |
+| 完整默认合并产品最终验收 | 尚未通过，203 / 41 / 32 / 4 保留 |
+| Agent 检索、Mission 创建等未确定业务范围 | 保持原边界，不扩大权限或实现未确认业务 |
+| 生成 schema 中共享源英文说明 | 未自行改变共享源或生成内容；本域普通注释已中文化 |
 
-原生场景保留准确获准任务 ID 输入要求；不添加 skip，不删除成功覆盖，不伪造来源、错误或执行结果。B 新公开输入缓存及 Reader、R 新执行 / 权限源码、H 配套组装尚待准确交付及消费。Mission 创建接口仍受当前后端能力与授权限制。
+没有 push main、force push、Git 回滚、私有原件读取、正式实验执行或人工评分补填。后续字段、真实模型 / CLI 窗口和最终组合验收由当前任务及协调者的准确交付继续。
