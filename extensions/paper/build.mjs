@@ -1,10 +1,6 @@
-// Build a loadable Manifest V3 extension under extensions/paper/dist.
-// It reuses the pinned installed summarize core to resolve the vendored
-// Readability 0.6.0 (Apache-2.0) and copies the browser-native extraction
-// assets. No new package, lockfile or build framework is introduced; no
-// provider credentials, automatic browsing or daemon are shipped.
+// 在 extensions/paper/dist 构建 Manifest V3，复用固定安装的 Readability 0.6.0。
 import { createRequire, findPackageJSON } from 'node:module';
-import { readFile, realpath, mkdir, copyFile, writeFile, rm } from 'node:fs/promises';
+import { readFile, realpath, lstat, mkdir, copyFile, writeFile, rm } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
@@ -19,6 +15,15 @@ const readabilityPackage = JSON.parse(await readFile(resolve(dirname(readability
 if (readabilityPackage.version !== '0.6.0') throw new Error('Readability pin differs from 0.6.0');
 
 const output = resolve(base, 'dist');
+const canonicalBase = await realpath(base);
+if (process.platform === 'win32' ? canonicalBase.toLowerCase() !== base.toLowerCase() : canonicalBase !== base) throw new Error('Extension build directory redirects');
+if (dirname(output) !== base) throw new Error('Extension output escaped its owned build directory');
+try {
+  const info = await lstat(output);
+  if (!info.isDirectory() || info.isSymbolicLink()) throw new Error('Extension output must be an owned ordinary build directory');
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+}
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
 await copyFile(resolve(dirname(readability), 'Readability.js'), resolve(output, 'Readability.js'));

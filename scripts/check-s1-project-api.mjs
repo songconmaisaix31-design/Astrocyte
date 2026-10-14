@@ -1,14 +1,15 @@
-// Real HTTP/SQLite/object integration with explicit contract_local input and a
-// temporary approved project root. No model, media, native launch or browser.
+// 实际公开论文原件通过生产 HTTP、SQLite、对象存储及项目权限处理。
 import assert from 'node:assert/strict';
 import { access, mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { startS1Server } from '../tests/s1/server.mjs';
 import { command, humanAPI, importMaterial } from '../tests/s1/api.mjs';
-import { paperImport, paperText, changedPaperText } from '../tests/s1/fixtures.mjs';
+import { loadPublicPaperInputs } from '../tests/s1/public-inputs.mjs';
 import { validateResponse } from '../tests/s1/contracts.mjs';
 
+const papers = await loadPublicPaperInputs(resolve(process.argv[2] ?? '.verification'));
+const paperText = papers.original.text;
 let server = await startS1Server();
 let stage = 'bootstrap';
 let preserveOnExit = false;
@@ -26,22 +27,22 @@ try {
   assert.equal(server.query('SELECT COUNT(*) AS n FROM local_github_repositories')[0].n, 0);
   await assert.rejects(access(join(server.dataDir, 'repositories')), { code: 'ENOENT' });
   stage = 'fixed source and explicit refresh';
-  const imported = await importMaterial(api, paperImport());
+  const imported = await importMaterial(api, papers.original.import);
   const material = imported.detail.material;
-  await importMaterial(api, { ...paperImport(undefined, changedPaperText), refresh: true });
-  const reused = await importMaterial(api, paperImport());
+  await importMaterial(api, { ...papers.revised.import, refresh: true });
+  const reused = await importMaterial(api, papers.original.import);
   assert.equal(reused.detail.material.current_revision, 2, 'A-B-A reuse must retain B as the head');
-  assert.equal((await api.get(`/materials/${material.id}/revisions/1/content`)).text, paperText);
-  const space = (await api.write('/project-spaces', { title: 'contract_local W0 transport space' }, { status: 201 })).space;
+  assert.ok((await api.get(`/materials/${material.id}/revisions/1/content`)).text === paperText, 'actual original revision text differs');
+  const space = (await api.write('/project-spaces', { title: '公开论文权限验收空间' }, { status: 201 })).space;
   const referenced = (await api.write(`/project-spaces/${space.id}/references`, {
     expected_version: space.version, material_id: material.id, revision: 1,
   })).space;
   const projectRoot = join(server.temporary, 'approved-project');
   await mkdir(projectRoot);
-  await writeFile(join(projectRoot, 'selected.txt'), 'contract_local explicit directory context');
+  await writeFile(join(projectRoot, 'selected.txt'), '人工明确选择的受控目录内容');
   stage = 'register project contract';
   const project = (await api.write('/local-projects', {
-    name: 'contract_local W0 project', root: projectRoot, space_id: space.id,
+    name: '公开论文权限验收项目', root: projectRoot, space_id: space.id,
   })).project;
   assert.deepEqual(project.settings.history_roots, {});
   assert.equal(project.settings.allow_directory, false);
@@ -49,17 +50,18 @@ try {
   assert.equal(project.settings.external_model_cli, '');
   const contextBody = { references: [{ material_id: material.id, revision: 1 }], files: [] };
   stage = 'human fixed reference read';
-  assert.equal((await api.write(`/local-projects/${project.id}/context`, contextBody)).materials[0].text, paperText);
+  assert.ok((await api.write(`/local-projects/${project.id}/context`, contextBody)).materials[0].text === paperText, 'human fixed reference text differs');
   const baseline = (await api.get(`/materials/${material.id}`)).material;
   stage = 'human grant and scoped Agent token';
   await api.write(`/local-projects/${project.id}/grants`, { agent_id: 'w0-contract-agent', actions: ['read_context', 'observe'] });
   const credential = (await api.write(`/local-projects/${project.id}/agent-token`, { agent_id: 'w0-contract-agent' })).credential;
-  // Credentials stay only in memory and never enter printed assertions.
+  // 凭据只留在内存，不进入验证输出。
   async function agentRequest(path, body, method = 'POST') {
+    const key = randomUUID();
     const response = await fetch(`${server.apiURL}/api/v1${path}`, {
       method, signal: AbortSignal.timeout(10_000),
-      headers: { Authorization: `Bearer ${credential.token}`, 'Content-Type': 'application/json', 'Idempotency-Key': randomUUID() },
-      ...(body === undefined ? {} : { body: JSON.stringify(command(body)) }),
+      headers: { Authorization: `Bearer ${credential.token}`, 'Content-Type': 'application/json', 'Idempotency-Key': key },
+      ...(body === undefined ? {} : { body: JSON.stringify(command({ request_id: key, ...body })) }),
     });
     const data = await response.json();
     validateResponse(method, path, response.status, data);
@@ -67,7 +69,7 @@ try {
   }
   const packet = await agentRequest(`/local-projects/${project.id}/context`, contextBody);
   assert.equal(packet.status, 200);
-  assert.equal(packet.data.materials[0].text, paperText);
+  assert.ok(packet.data.materials[0].text === paperText, 'authorized Agent fixed reference text differs');
   const after = (await api.get(`/materials/${material.id}`)).material;
   assert.equal(after.human_usage_count, baseline.human_usage_count);
   assert.equal(after.agent_usage_count, baseline.agent_usage_count + 1);
@@ -99,13 +101,14 @@ try {
   server = await startS1Server({ reuseOwnedTemporary: { path: original, ownedRoot: original } });
   api = await humanAPI(server.apiURL);
   assert.equal((await api.get(`/materials/${material.id}`)).material.current_revision, 2);
-  assert.equal((await api.get(`/materials/${material.id}/revisions/1/content`)).text, paperText);
+  assert.ok((await api.get(`/materials/${material.id}/revisions/1/content`)).text === paperText, 'original revision changed after owned store reopen');
   assert.equal((await agentRequest(`/local-projects/${project.id}/context`, { references: [], files: [] })).status, 403);
   assert.equal(server.query('SELECT COUNT(*) AS n FROM attention_material_revisions WHERE material_id=?', material.id)[0].n, 2);
-  preserveOnExit = false; // This script created and verified this exact root.
-  console.log('PASS contract_local real API: A-B-A, fixed objects, scoped Agent usage, human-only settings, restart, membership/grant revocation, preserved-store reuse');
+  preserveOnExit = true;
+  console.log('PASS actual public-paper HTTP/SQLite: A-B-A, fixed objects, scoped Agent usage, human settings, restart, membership/grant revocation, owned store reuse');
 } catch (error) {
-  console.error(`FAIL contract_local real API at ${stage}`);
+  preserveOnExit = true;
+  console.error(`FAIL actual public-paper API at ${stage}`);
   throw error;
 } finally {
   await server.close({ preserveData: preserveOnExit });

@@ -12,7 +12,7 @@ async function ownedNode(t, source) {
     await new Promise(resolve => setImmediate(resolve));
     if (child.exitCode !== null || child.signalCode !== null) return;
     const exited = once(child, 'exit');
-    child.kill('SIGKILL'); // Only this test's original process handle.
+    child.kill('SIGKILL'); // 只终止本测试原先持有的子进程。
     await exited;
   });
   await once(child, 'spawn');
@@ -21,8 +21,7 @@ async function ownedNode(t, source) {
 
 test('stop confirms a queued exit without misreporting a missing Windows PID', async t => {
   const child = await ownedNode(t, 'process.exit(0)');
-  // Reproduce the event-loop race: the OS child exits while JS cannot dispatch
-  // its exit event. This is controlled fault injection, not readiness polling.
+  // 控制本测试的事件循环暂停，使实际子进程退出事件尚未分发。
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
   assert.equal(child.exitCode, null);
   await stop(child);

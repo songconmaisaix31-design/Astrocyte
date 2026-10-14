@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -27,7 +28,11 @@ func worksHTTPRequest(s *Server, method, path, body string, cookie *http.Cookie,
 	var meta struct {
 		RequestID string `json:"request_id"`
 	}
-	_ = json.Unmarshal([]byte(body), &meta)
+	if body != "" {
+		if err := json.Unmarshal([]byte(body), &meta); err != nil {
+			panic(err)
+		}
+	}
 	r.Header.Set("Idempotency-Key", meta.RequestID)
 	if cookie != nil {
 		r.AddCookie(cookie)
@@ -40,23 +45,21 @@ func worksHTTPRequest(s *Server, method, path, body string, cookie *http.Cookie,
 	return w
 }
 
-type worksRegisteredRoots struct {
-	root      string
+// 包装只统计调用次数，发现结果和缓存始终由生产服务提供。
+type worksRegisteredProbe struct {
+	workspaceapp.RegisteredProjects
 	refreshes int
 }
 
-func (r *worksRegisteredRoots) ListRegisteredProjects(context.Context, domain.Caller) (domain.ProjectDiscoverySnapshot, error) {
-	return domain.ProjectDiscoverySnapshot{Projects: []domain.RegisteredProject{{Root: r.root}}}, nil
-}
-func (r *worksRegisteredRoots) RefreshRegisteredProjects(context.Context, domain.Caller) (domain.ProjectDiscoverySnapshot, error) {
+func (r *worksRegisteredProbe) RefreshRegisteredProjects(ctx context.Context, caller domain.Caller) (domain.ProjectDiscoverySnapshot, error) {
 	r.refreshes++
-	return domain.ProjectDiscoverySnapshot{}, nil
+	return r.RegisteredProjects.RefreshRegisteredProjects(ctx, caller)
 }
 
 func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	ctx := context.Background()
 	root := t.TempDir()
-	if err := os.WriteFile(filepath.Join(root, "metadata.txt"), []byte("fixture"), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "metadata.txt"), []byte("人工创建的受控目录文件"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	path := filepath.Join(t.TempDir(), "state.sqlite")
@@ -68,8 +71,24 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	if err = db.RunMigrations(ctx, migrations.FS); err != nil {
 		t.Fatal(err)
 	}
-	roots := &worksRegisteredRoots{root: root}
+	source, err := agents.NewScopedRegisteredProjects([]string{root})
+	if err != nil {
+		t.Fatal(err)
+	}
+	registered := workspaceapp.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
+	registered.ConfigureRegisteredDiscovery(db, source)
+	observed, err := registered.RefreshRegisteredProjects(ctx, domain.Caller{Kind: "human", ID: "local-human"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if observed.ObservedAt == nil || len(observed.Projects) != 1 || observed.Projects[0].Root != root || observed.Projects[0].Source != "explicit_directory" {
+		t.Fatalf("actual discovery: %+v", observed)
+	}
+	roots := &worksRegisteredProbe{}
 	makeServer := func() *Server {
+		registered := workspaceapp.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
+		registered.ConfigureRegisteredDiscovery(db, source)
+		roots.RegisteredProjects = registered
 		return NewServer(Config{Services: Services{Works: workspaceapp.NewWorksService(db, worksscan.NewScanner(), worksscan.Delivery{}, nil, workspaceapp.WorksServiceOptions{}), RegisteredProjects: roots}, AgentToken: "test-agent", Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
 	}
 	s := makeServer()
@@ -121,7 +140,7 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	}
 	id := snapshot.Snapshot.Works[0].ID
 	revision := snapshot.Snapshot.Works[0].Revision
-	if err = os.WriteFile(filepath.Join(root, "new-observation.txt"), []byte("later fixture"), 0600); err != nil {
+	if err = os.WriteFile(filepath.Join(root, "new-observation.txt"), []byte("人工追加的第二个受控目录文件"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	defaultReply := w.Body.String()
@@ -155,7 +174,11 @@ func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	if w.Code != 409 {
 		t.Fatalf("different input reused receipt: %d %s", w.Code, w.Body.String())
 	}
-	delivery, _ := json.Marshal(map[string]any{"works": []map[string]any{{"name": "Delivered work", "platform": "codex", "path": filepath.Join(root, "never-read"), "kind": "folder"}}})
+	// 投递字段是明确人工输入，文件核实状态由生产扫描服务决定。
+	delivery, err := json.Marshal(map[string]any{"works": []map[string]any{{"name": "Delivered work", "platform": "codex", "path": filepath.Join(root, "never-read"), "kind": "folder"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
 	w = worksHTTPRequest(s, "POST", "/api/v1/works/delivery", command("delivery", map[string]any{"content": string(delivery)}), cookie, csrf, "", "")
 	if w.Code != 200 {
 		t.Fatalf("delivery: %d %s", w.Code, w.Body.String())

@@ -16,7 +16,6 @@ import (
 	workbench "github.com/songconmaisaix31-design/Astrocyte/internal/workbench/app"
 )
 
-const WorkbenchFormalSource = "C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w1/formal-20261013-first/state.sqlite"
 const workbenchProjection = `id,kind,topic,CASE WHEN json_type(data,'$.tokens')='integer' THEN json_extract(data,'$.tokens') END,CASE WHEN json_type(data,'$.scope')='text' THEN json_extract(data,'$.scope') ELSE '' END,ts`
 
 type workbenchPublication struct {
@@ -28,9 +27,10 @@ type workbenchPoint struct {
 	Attention float64 `json:"attention"`
 }
 type WorkbenchReader struct {
-	root  string
-	clock func() time.Time
-	zone  *time.Location
+	root             string
+	clock            func() time.Time
+	zone             *time.Location
+	protectedSources []string
 }
 type workbenchDB struct {
 	*sql.DB
@@ -41,73 +41,111 @@ func (d workbenchDB) query(q string, args ...any) (*sql.Rows, error) {
 	return d.QueryContext(d.ctx, q, args...)
 }
 func (d workbenchDB) row(q string, args ...any) *sql.Row { return d.QueryRowContext(d.ctx, q, args...) }
-func NewWorkbenchReader(root string) *WorkbenchReader {
-	z, _ := time.LoadLocation("Asia/Shanghai")
-	return &WorkbenchReader{root, time.Now, z}
+
+var workbenchZone = func() *time.Location {
+	zone, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		panic(err)
+	}
+	return zone
+}()
+
+// 保护来源由启动配置明确提供；默认 Reader 只访问自身出版目录。
+func NewWorkbenchReader(root string, protectedSources ...string) *WorkbenchReader {
+	return &WorkbenchReader{root: root, clock: time.Now, zone: workbenchZone, protectedSources: append([]string(nil), protectedSources...)}
 }
 
-// Every request pins a complete published generation. No migration or mutable
-// database constructor is called. Atomic pointer changes affect the next read.
+func workbenchUnredirected(path string) (string, error) {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	if err = workbenchPathUnredirected(abs); err != nil {
+		return "", err
+	}
+	resolved, err := filepath.EvalSymlinks(abs)
+	if err != nil || !strings.EqualFold(filepath.Clean(abs), filepath.Clean(resolved)) {
+		return "", workbench.ErrUnavailable
+	}
+	return resolved, nil
+}
+
+// 每次请求固定完整的已出版 generation，不执行迁移或打开可写源库。
 func (s *WorkbenchReader) open(ctx context.Context) (workbenchDB, workbenchPublication, string, error) {
 	var p workbenchPublication
 	var empty workbenchDB
-	b, e := os.ReadFile(filepath.Join(s.root, "current.json"))
-	if e != nil {
-		return empty, p, "", e
+	pointer, err := workbenchUnredirected(filepath.Join(s.root, "current.json"))
+	if err != nil {
+		return empty, p, "", err
 	}
-	if json.Unmarshal(b, &p) != nil {
+	info, err := os.Lstat(pointer)
+	if err != nil || !info.Mode().IsRegular() {
 		return empty, p, "", workbench.ErrUnavailable
+	}
+	data, err := os.ReadFile(pointer)
+	if err != nil {
+		return empty, p, "", err
+	}
+	if err = json.Unmarshal(data, &p); err != nil {
+		return empty, p, "", err
 	}
 	if p.Generation == "" || filepath.Base(p.Generation) != p.Generation || strings.ContainsAny(p.Generation, "/\\:") || p.Generation == "." || p.Generation == ".." {
 		return empty, p, "", workbench.ErrUnavailable
 	}
-	if _, e = time.Parse(time.RFC3339Nano, p.SnapshotAt); e != nil {
-		return empty, p, "", e
+	if _, err = time.Parse(time.RFC3339Nano, p.SnapshotAt); err != nil {
+		return empty, p, "", err
 	}
-	base, e := filepath.EvalSymlinks(filepath.Join(s.root, "snapshots"))
-	if e != nil {
-		return empty, p, "", e
+	base, err := workbenchUnredirected(filepath.Join(s.root, "snapshots"))
+	if err != nil {
+		return empty, p, "", err
 	}
-	dir := filepath.Join(base, p.Generation)
-	real, e := filepath.EvalSymlinks(dir)
-	if e != nil || !strings.EqualFold(real, dir) {
+	dir, err := workbenchUnredirected(filepath.Join(base, p.Generation))
+	if err != nil {
+		return empty, p, "", err
+	}
+	file, err := workbenchUnredirected(filepath.Join(dir, "snapshot.sqlite"))
+	if err != nil {
+		return empty, p, "", err
+	}
+	snapshot, err := os.Lstat(file)
+	if err != nil || !snapshot.Mode().IsRegular() {
 		return empty, p, "", workbench.ErrUnavailable
 	}
-	file := filepath.Join(dir, "snapshot.sqlite")
-	real, e = filepath.EvalSymlinks(file)
-	if e != nil || !strings.EqualFold(real, file) {
-		return empty, p, "", workbench.ErrUnavailable
+	for _, source := range s.protectedSources {
+		if !filepath.IsAbs(source) {
+			return empty, p, "", workbench.ErrUnavailable
+		}
+		original, err := os.Stat(source)
+		if err != nil {
+			return empty, p, "", err
+		}
+		if !original.Mode().IsRegular() || os.SameFile(snapshot, original) {
+			return empty, p, "", workbench.ErrUnavailable
+		}
 	}
-	st, e := os.Stat(file)
-	if e != nil || !st.Mode().IsRegular() {
-		return empty, p, "", workbench.ErrUnavailable
-	}
-	if src, e := os.Stat(WorkbenchFormalSource); e == nil && os.SameFile(st, src) {
-		return empty, p, "", workbench.ErrUnavailable
-	}
-	uriPath := filepath.ToSlash(real)
-	if filepath.VolumeName(real) != "" {
+	uriPath := filepath.ToSlash(file)
+	if filepath.VolumeName(file) != "" {
 		uriPath = "/" + uriPath
 	}
 	u := url.URL{Scheme: "file", Path: uriPath}
-	q := u.Query()
-	q.Set("mode", "ro")
-	q.Set("immutable", "1")
-	q.Add("_pragma", "query_only(1)")
-	u.RawQuery = q.Encode()
-	db, e := sql.Open("sqlite", u.String())
-	if e != nil {
-		return empty, p, "", e
+	query := u.Query()
+	query.Set("mode", "ro")
+	query.Set("immutable", "1")
+	query.Add("_pragma", "query_only(1)")
+	u.RawQuery = query.Encode()
+	db, err := sql.Open("sqlite", u.String())
+	if err != nil {
+		return empty, p, "", err
 	}
 	db.SetMaxOpenConns(1)
-	if e = db.PingContext(ctx); e != nil {
-		db.Close()
-		return empty, p, "", e
+	if err = db.PingContext(ctx); err != nil {
+		return empty, p, "", errors.Join(err, db.Close())
 	}
 	return workbenchDB{db, ctx}, p, dir, nil
 }
+
 func (s *WorkbenchReader) Read(ctx context.Context, name string, q workbench.Query) (v workbench.View, err error) {
-	// Collapse all internal paths/SQL/payload errors before crossing app boundary.
+	// 请求边界只公开固定错误；内部路径、SQL 和原始内容保留在本机。
 	defer func() {
 		if err != nil && !errors.Is(err, workbench.ErrInvalidQuery) {
 			err = workbench.ErrUnavailable
@@ -126,7 +164,7 @@ func (s *WorkbenchReader) Read(ctx context.Context, name string, q workbench.Que
 	}
 	for _, day := range []string{q.Start, q.End} {
 		if day != "" {
-			if _, _, e := s.bounds(day); e != nil {
+			if _, _, err := s.bounds(day); err != nil {
 				return v, workbench.ErrInvalidQuery
 			}
 		}
@@ -134,330 +172,355 @@ func (s *WorkbenchReader) Read(ctx context.Context, name string, q workbench.Que
 	if q.Start != "" && q.End != "" && q.Start > q.End {
 		return v, workbench.ErrInvalidQuery
 	}
-	db, p, dir, e := s.open(ctx)
-	if e != nil {
-		return v, e
+	db, p, dir, err := s.open(ctx)
+	if err != nil {
+		return v, err
 	}
-	defer db.Close()
+	defer func() { err = errors.Join(err, db.Close()) }()
 	v.SnapshotAt = p.SnapshotAt
 	switch name {
 	case "health":
 		v.Health = &workbench.Health{Status: "ok", SnapshotAt: p.SnapshotAt, Timezone: "Asia/Shanghai"}
 	case "events":
 		x, e := s.events(db, q)
-		v.Events = &x
-		err = e
+		v.Events, err = &x, e
 	case "topics/evidence":
 		x, e := s.events(db, q)
 		if e != nil {
 			return v, e
 		}
 		a, e := s.aggregates(db, q)
-		v.Evidence = &workbench.Evidence{Topic: q.Topic, Aggregates: a, Events: x}
-		err = e
+		v.Evidence, err = &workbench.Evidence{Topic: q.Topic, Aggregates: a, Events: x}, e
 	case "filters":
 		x, e := s.filters(db)
-		v.Filters = &x
-		err = e
+		v.Filters, err = &x, e
 	case "focus":
 		x, e := s.focus(db, dir)
-		v.Focus = &x
-		err = e
+		v.Focus, err = &x, e
 	case "today":
 		x, e := s.today(db, dir, q.Source)
-		v.Today = &x
-		err = e
+		v.Today, err = &x, e
 	case "agents":
 		x, e := s.agents(db)
-		v.Agents = &x
-		err = e
+		v.Agents, err = &x, e
 	default:
 		err = workbench.ErrInvalidQuery
 	}
 	return v, err
 }
+
 func workbenchStamp(ms int64) string { return time.UnixMilli(ms).UTC().Format(time.RFC3339Nano) }
 func (s *WorkbenchReader) bounds(day string) (int64, int64, error) {
-	t, e := time.ParseInLocation("2006-01-02", day, s.zone)
-	if e != nil {
-		return 0, 0, e
+	t, err := time.ParseInLocation("2006-01-02", day, s.zone)
+	if err != nil {
+		return 0, 0, err
 	}
 	return t.UnixMilli(), t.AddDate(0, 0, 1).UnixMilli(), nil
 }
-func (s *WorkbenchReader) where(q workbench.Query) (string, []any) {
-	w := "1=1"
-	a := []any{}
-	for _, p := range []struct{ k, v string }{{"topic", q.Topic}, {"kind", q.Kind}, {"source", q.Source}} {
-		if p.v != "" {
-			w += " AND " + p.k + "=?"
-			a = append(a, p.v)
+func (s *WorkbenchReader) where(q workbench.Query) (string, []any, error) {
+	w, args := "1=1", []any{}
+	for _, field := range []struct{ key, value string }{{"topic", q.Topic}, {"kind", q.Kind}, {"source", q.Source}} {
+		if field.value != "" {
+			w += " AND " + field.key + "=?"
+			args = append(args, field.value)
 		}
 	}
 	if q.Start != "" {
-		start, _, _ := s.bounds(q.Start)
+		start, _, err := s.bounds(q.Start)
+		if err != nil {
+			return "", nil, err
+		}
 		w += " AND ts>=?"
-		a = append(a, start)
+		args = append(args, start)
 	}
 	if q.End != "" {
-		_, end, _ := s.bounds(q.End)
+		_, end, err := s.bounds(q.End)
+		if err != nil {
+			return "", nil, err
+		}
 		w += " AND ts<?"
-		a = append(a, end)
+		args = append(args, end)
 	}
-	return w, a
+	return w, args, nil
 }
-func workbenchEvents(db workbenchDB, w string, args []any, n, offset int) ([]workbench.Event, error) {
-	rows, e := db.query(`SELECT `+workbenchProjection+` FROM attention_engine_events WHERE `+w+` ORDER BY ts DESC,id ASC LIMIT ? OFFSET ?`, append(append([]any{}, args...), n, offset)...)
-	if e != nil {
-		return nil, e
+func workbenchEvents(db workbenchDB, where string, args []any, count, offset int) ([]workbench.Event, error) {
+	rows, err := db.query(`SELECT `+workbenchProjection+` FROM attention_engine_events WHERE `+where+` ORDER BY ts DESC,id ASC LIMIT ? OFFSET ?`, append(append([]any{}, args...), count, offset)...)
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
-	out := []workbench.Event{}
+	result := []workbench.Event{}
 	for rows.Next() {
-		var x workbench.Event
-		var n sql.NullInt64
+		var event workbench.Event
+		var tokens sql.NullInt64
 		var ms int64
-		if e = rows.Scan(&x.ID, &x.Kind, &x.Topic, &n, &x.Scope, &ms); e != nil {
-			return nil, e
+		if err = rows.Scan(&event.ID, &event.Kind, &event.Topic, &tokens, &event.Scope, &ms); err != nil {
+			return nil, err
 		}
-		if n.Valid {
-			x.Tokens = &n.Int64
+		if tokens.Valid {
+			event.Tokens = &tokens.Int64
 		}
-		x.TS = workbenchStamp(ms)
-		out = append(out, x)
+		event.TS = workbenchStamp(ms)
+		result = append(result, event)
 	}
-	return out, rows.Err()
+	return result, rows.Err()
 }
 func (s *WorkbenchReader) events(db workbenchDB, q workbench.Query) (workbench.Events, error) {
-	out := workbench.Events{Page: q.Page, PageSize: q.PageSize}
-	w, a := s.where(q)
-	if e := db.row(`SELECT COUNT(*) FROM attention_engine_events WHERE `+w, a...).Scan(&out.Total); e != nil {
-		return out, e
+	result := workbench.Events{Page: q.Page, PageSize: q.PageSize}
+	where, args, err := s.where(q)
+	if err != nil {
+		return result, err
 	}
-	ev, e := workbenchEvents(db, w, a, q.PageSize, (q.Page-1)*q.PageSize)
-	out.Events = ev
-	return out, e
+	if err = db.row(`SELECT COUNT(*) FROM attention_engine_events WHERE `+where, args...).Scan(&result.Total); err != nil {
+		return result, err
+	}
+	result.Events, err = workbenchEvents(db, where, args, q.PageSize, (q.Page-1)*q.PageSize)
+	return result, err
 }
 func (s *WorkbenchReader) aggregates(db workbenchDB, q workbench.Query) ([]workbench.Aggregate, error) {
-	w, a := s.where(q)
-	rows, e := db.query(`SELECT strftime('%Y-%m-%d',ts/1000.0,'unixepoch','+8 hours'),kind,COUNT(*) FROM attention_engine_events WHERE `+w+` GROUP BY 1,2 ORDER BY 1,2`, a...)
-	if e != nil {
-		return nil, e
+	where, args, err := s.where(q)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := db.query(`SELECT strftime('%Y-%m-%d',ts/1000.0,'unixepoch','+8 hours'),kind,COUNT(*) FROM attention_engine_events WHERE `+where+` GROUP BY 1,2 ORDER BY 1,2`, args...)
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
-	out := []workbench.Aggregate{}
+	result := []workbench.Aggregate{}
 	for rows.Next() {
-		var x workbench.Aggregate
-		if e = rows.Scan(&x.Day, &x.Kind, &x.Count); e != nil {
-			return nil, e
+		var aggregate workbench.Aggregate
+		if err = rows.Scan(&aggregate.Day, &aggregate.Kind, &aggregate.Count); err != nil {
+			return nil, err
 		}
-		out = append(out, x)
+		result = append(result, aggregate)
 	}
-	return out, rows.Err()
+	return result, rows.Err()
 }
 func workbenchTopics(db workbenchDB, source string) ([]workbench.Topic, error) {
-	w := ""
-	a := []any{}
+	where, args := "", []any{}
 	if source != "" {
-		w = ` WHERE topic IN (SELECT DISTINCT topic FROM attention_engine_events WHERE source=?)`
-		a = append(a, source)
+		where = ` WHERE topic IN (SELECT DISTINCT topic FROM attention_engine_events WHERE source=?)`
+		args = append(args, source)
 	}
-	rows, e := db.query(`SELECT topic,attention,momentum,confidence FROM attention_engine_nodes`+w+` ORDER BY attention DESC,topic ASC`, a...)
-	if e != nil {
-		return nil, e
+	rows, err := db.query(`SELECT topic,attention,momentum,confidence FROM attention_engine_nodes`+where+` ORDER BY attention DESC,topic ASC`, args...)
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
-	out := []workbench.Topic{}
+	result := []workbench.Topic{}
 	for rows.Next() {
-		var x workbench.Topic
-		if e = rows.Scan(&x.Topic, &x.Attention, &x.Momentum, &x.Confidence); e != nil {
-			return nil, e
+		var topic workbench.Topic
+		if err = rows.Scan(&topic.Topic, &topic.Attention, &topic.Momentum, &topic.Confidence); err != nil {
+			return nil, err
 		}
-		out = append(out, x)
+		result = append(result, topic)
 	}
-	return out, rows.Err()
+	return result, rows.Err()
 }
 func workbenchHistory(dir string) (map[string][]workbenchPoint, error) {
-	f := filepath.Join(dir, "history.json")
-	real, e := filepath.EvalSymlinks(f)
-	if e != nil || !strings.EqualFold(real, f) {
-		return nil, workbench.ErrUnavailable
+	file, err := workbenchUnredirected(filepath.Join(dir, "history.json"))
+	if err != nil {
+		return nil, err
 	}
-	b, e := os.ReadFile(f)
-	if e != nil {
-		return nil, e
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
 	}
-	out := map[string][]workbenchPoint{}
-	e = json.Unmarshal(b, &out)
-	if e != nil {
-		return nil, e
+	result := map[string][]workbenchPoint{}
+	if err = json.Unmarshal(data, &result); err != nil {
+		return nil, err
 	}
-	for _, points := range out {
-		for _, p := range points {
-			if p.TS <= 0 || p.Attention < 0 || p.Attention > 1 {
+	for _, points := range result {
+		for _, point := range points {
+			if point.TS <= 0 || point.Attention < 0 || point.Attention > 1 {
 				return nil, workbench.ErrUnavailable
 			}
 		}
 	}
-	return out, nil
+	return result, nil
 }
 func (s *WorkbenchReader) focus(db workbenchDB, dir string) (workbench.Focus, error) {
-	out := workbench.Focus{Series: []workbench.Series{}}
-	ts, e := workbenchTopics(db, "")
-	if e != nil {
-		return out, e
+	result := workbench.Focus{Series: []workbench.Series{}}
+	topics, err := workbenchTopics(db, "")
+	if err != nil {
+		return result, err
 	}
-	out.Topics = ts
-	hist, e := workbenchHistory(dir)
-	if e != nil {
-		return out, e
+	result.Topics = topics
+	history, err := workbenchHistory(dir)
+	if err != nil {
+		return result, err
 	}
-	for _, t := range ts {
-		pts := hist[t.Topic]
-		sort.SliceStable(pts, func(i, j int) bool { return pts[i].TS < pts[j].TS })
-		ss := workbench.Series{Topic: t.Topic, Points: []workbench.Point{}}
-		for i, p := range pts {
-			if i > 0 && pts[i-1].TS == p.TS {
-				continue
-			}
-			ss.Points = append(ss.Points, workbench.Point{TS: workbenchStamp(p.TS), Attention: p.Attention})
+	for _, topic := range topics {
+		result.Series = append(result.Series, workbenchSeries(topic.Topic, history[topic.Topic]))
+	}
+	return result, nil
+}
+
+func workbenchSeries(topic string, points []workbenchPoint) workbench.Series {
+	ordered := append([]workbenchPoint(nil), points...)
+	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].TS < ordered[j].TS })
+	series := workbench.Series{Topic: topic, Points: []workbench.Point{}}
+	for i, point := range ordered {
+		if i > 0 && ordered[i-1].TS == point.TS {
+			continue
 		}
-		out.Series = append(out.Series, ss)
+		series.Points = append(series.Points, workbench.Point{TS: workbenchStamp(point.TS), Attention: point.Attention})
 	}
-	return out, nil
+	return series
 }
 func (s *WorkbenchReader) filters(db workbenchDB) (workbench.Filters, error) {
-	out := workbench.Filters{}
-	for _, p := range []struct {
+	result := workbench.Filters{}
+	for _, projection := range []struct {
 		sql  string
 		dest *[]string
-	}{{`SELECT DISTINCT topic FROM attention_engine_events UNION SELECT topic FROM attention_engine_nodes ORDER BY 1`, &out.Topics}, {`SELECT DISTINCT kind FROM attention_engine_events ORDER BY kind`, &out.Kinds}, {`SELECT DISTINCT source FROM attention_engine_events ORDER BY source`, &out.Sources}} {
-		rows, e := db.query(p.sql)
-		if e != nil {
-			return out, e
+	}{
+		{`SELECT DISTINCT topic FROM attention_engine_events UNION SELECT topic FROM attention_engine_nodes ORDER BY 1`, &result.Topics},
+		{`SELECT DISTINCT kind FROM attention_engine_events ORDER BY kind`, &result.Kinds},
+		{`SELECT DISTINCT source FROM attention_engine_events ORDER BY source`, &result.Sources},
+	} {
+		rows, err := db.query(projection.sql)
+		if err != nil {
+			return result, err
 		}
-		*p.dest = []string{}
+		*projection.dest = []string{}
 		for rows.Next() {
-			var x string
-			if e = rows.Scan(&x); e != nil {
+			var value string
+			if err = rows.Scan(&value); err != nil {
 				rows.Close()
-				return out, e
+				return result, err
 			}
-			*p.dest = append(*p.dest, x)
+			*projection.dest = append(*projection.dest, value)
 		}
-		e = rows.Err()
+		err = rows.Err()
 		rows.Close()
-		if e != nil {
-			return out, e
+		if err != nil {
+			return result, err
 		}
 	}
-	return out, nil
+	return result, nil
 }
 func (s *WorkbenchReader) today(db workbenchDB, dir, source string) (workbench.Today, error) {
 	now := s.clock().In(s.zone)
-	day := now.Format("2006-01-02")
-	yday := now.AddDate(0, 0, -1).Format("2006-01-02")
-	start, end, _ := s.bounds(day)
-	out := workbench.Today{Day: day, Focus: []workbench.Card{}, Sleep: workbench.Sleep{Day: yday, Status: "not_produced"}, DailyCounts: []workbench.DayCount{}, Sources: []workbench.SourceCount{}}
-	ts, e := workbenchTopics(db, source)
-	if e != nil {
-		return out, e
+	day, yesterday := now.Format("2006-01-02"), now.AddDate(0, 0, -1).Format("2006-01-02")
+	start, end, err := s.bounds(day)
+	if err != nil {
+		return workbench.Today{}, err
 	}
-	hist, e := workbenchHistory(dir)
-	if e != nil {
-		return out, e
+	result := workbench.Today{Day: day, Focus: []workbench.Card{}, Sleep: workbench.Sleep{Day: yesterday, Status: "not_produced"}, DailyCounts: []workbench.DayCount{}, Sources: []workbench.SourceCount{}}
+	topics, err := workbenchTopics(db, source)
+	if err != nil {
+		return result, err
 	}
-	// Compare current confirmed state with last confirmed point on the previous
-	// Shanghai day. Current state must itself belong to today, else delta is null.
-	for _, t := range ts {
+	history, err := workbenchHistory(dir)
+	if err != nil {
+		return result, err
+	}
+	// 只比较昨天与今天已确认的实际观测，缺失时 delta 保持 null。
+	for _, topic := range topics {
 		var ms int64
-		if e = db.row(`SELECT updated_at FROM attention_engine_nodes WHERE topic=?`, t.Topic).Scan(&ms); e != nil {
-			return out, e
+		if err = db.row(`SELECT updated_at FROM attention_engine_nodes WHERE topic=?`, topic.Topic).Scan(&ms); err != nil {
+			return result, err
 		}
 		var previous *workbenchPoint
-		for i, p := range hist[t.Topic] {
-			if time.UnixMilli(p.TS).In(s.zone).Format("2006-01-02") == yday && (previous == nil || p.TS > previous.TS) {
-				x := hist[t.Topic][i]
-				previous = &x
+		for i, point := range history[topic.Topic] {
+			if time.UnixMilli(point.TS).In(s.zone).Format("2006-01-02") == yesterday && (previous == nil || point.TS > previous.TS) {
+				p := history[topic.Topic][i]
+				previous = &p
 			}
 		}
 		var delta *float64
 		if previous != nil && time.UnixMilli(ms).In(s.zone).Format("2006-01-02") == day {
-			v := t.Attention - previous.Attention
-			delta = &v
+			value := topic.Attention - previous.Attention
+			delta = &value
 		}
-		out.Focus = append(out.Focus, workbench.Card{Topic: t, Delta: delta})
+		result.Focus = append(result.Focus, workbench.Card{Topic: topic, Delta: delta})
 	}
-	q := workbench.Query{Source: source, Start: day, End: day}
-	w, a := s.where(q)
-	out.Activity, e = workbenchEvents(db, w, a, 50, 0)
-	if e != nil {
-		return out, e
+	where, args, err := s.where(workbench.Query{Source: source, Start: day, End: day})
+	if err != nil {
+		return result, err
+	}
+	result.Activity, err = workbenchEvents(db, where, args, 50, 0)
+	if err != nil {
+		return result, err
 	}
 	var completed sql.NullInt64
-	e = db.row(`SELECT completed_at FROM attention_engine_sleep_runs WHERE day=? ORDER BY started_at DESC,id ASC LIMIT 1`, yday).Scan(&completed)
-	if e != nil && e != sql.ErrNoRows {
-		return out, e
+	err = db.row(`SELECT completed_at FROM attention_engine_sleep_runs WHERE day=? ORDER BY started_at DESC,id ASC LIMIT 1`, yesterday).Scan(&completed)
+	if err != nil && err != sql.ErrNoRows {
+		return result, err
 	}
-	if e == nil {
-		out.Sleep.Status = "running"
+	if err == nil {
+		result.Sleep.Status = "running"
 		if completed.Valid && completed.Int64 > 0 {
-			out.Sleep.Status = "completed"
-			v := workbenchStamp(completed.Int64)
-			out.Sleep.CompletedAt = &v
+			result.Sleep.Status = "completed"
+			value := workbenchStamp(completed.Int64)
+			result.Sleep.CompletedAt = &value
 		}
 	}
 	for i := 6; i >= 0; i-- {
-		d := now.AddDate(0, 0, -i).Format("2006-01-02")
-		w, a := s.where(workbench.Query{Source: source, Start: d, End: d})
-		var c int
-		if e = db.row(`SELECT COUNT(*) FROM attention_engine_events WHERE `+w, a...).Scan(&c); e != nil {
-			return out, e
+		day := now.AddDate(0, 0, -i).Format("2006-01-02")
+		where, args, err := s.where(workbench.Query{Source: source, Start: day, End: day})
+		if err != nil {
+			return result, err
 		}
-		out.DailyCounts = append(out.DailyCounts, workbench.DayCount{Day: d, Count: c})
+		var count int
+		if err = db.row(`SELECT COUNT(*) FROM attention_engine_events WHERE `+where, args...).Scan(&count); err != nil {
+			return result, err
+		}
+		result.DailyCounts = append(result.DailyCounts, workbench.DayCount{Day: day, Count: count})
 	}
-	rows, e := db.query(`SELECT source,COUNT(*) FROM attention_engine_events WHERE ts>=? AND ts<? GROUP BY source ORDER BY source`, start, end)
-	if e != nil {
-		return out, e
+	rows, err := db.query(`SELECT source,COUNT(*) FROM attention_engine_events WHERE ts>=? AND ts<? GROUP BY source ORDER BY source`, start, end)
+	if err != nil {
+		return result, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var x workbench.SourceCount
-		if e = rows.Scan(&x.Source, &x.Count); e != nil {
-			return out, e
+		var source workbench.SourceCount
+		if err = rows.Scan(&source.Source, &source.Count); err != nil {
+			return result, err
 		}
-		out.Sources = append(out.Sources, x)
+		result.Sources = append(result.Sources, source)
 	}
-	return out, rows.Err()
+	return result, rows.Err()
 }
 func (s *WorkbenchReader) agents(db workbenchDB) (workbench.Agents, error) {
-	out := workbench.Agents{Groups: []workbench.AgentGroup{}}
-	d := s.clock().In(s.zone)
-	a, b, _ := s.bounds(d.Format("2006-01-02"))
-	a7, _, _ := s.bounds(d.AddDate(0, 0, -6).Format("2006-01-02"))
-	a30, _, _ := s.bounds(d.AddDate(0, 0, -29).Format("2006-01-02"))
-	rows, e := db.query(`SELECT source,SUM(CASE WHEN ts>=? AND ts<? THEN 1 ELSE 0 END),SUM(CASE WHEN ts>=? AND ts<? THEN 1 ELSE 0 END),SUM(CASE WHEN ts>=? AND ts<? THEN 1 ELSE 0 END) FROM attention_engine_events GROUP BY source ORDER BY source`, a, b, a7, b, a30, b)
-	if e != nil {
-		return out, e
+	result := workbench.Agents{Groups: []workbench.AgentGroup{}}
+	now := s.clock().In(s.zone)
+	start, end, err := s.bounds(now.Format("2006-01-02"))
+	if err != nil {
+		return result, err
+	}
+	start7, _, err := s.bounds(now.AddDate(0, 0, -6).Format("2006-01-02"))
+	if err != nil {
+		return result, err
+	}
+	start30, _, err := s.bounds(now.AddDate(0, 0, -29).Format("2006-01-02"))
+	if err != nil {
+		return result, err
+	}
+	rows, err := db.query(`SELECT source,SUM(CASE WHEN ts>=? AND ts<? THEN 1 ELSE 0 END),SUM(CASE WHEN ts>=? AND ts<? THEN 1 ELSE 0 END),SUM(CASE WHEN ts>=? AND ts<? THEN 1 ELSE 0 END) FROM attention_engine_events GROUP BY source ORDER BY source`, start, end, start7, end, start30, end)
+	if err != nil {
+		return result, err
 	}
 	for rows.Next() {
-		var x workbench.AgentGroup
-		if e = rows.Scan(&x.Source, &x.Today, &x.Days7, &x.Days30); e != nil {
+		var group workbench.AgentGroup
+		if err = rows.Scan(&group.Source, &group.Today, &group.Days7, &group.Days30); err != nil {
 			rows.Close()
-			return out, e
+			return result, err
 		}
-		out.Groups = append(out.Groups, x)
+		result.Groups = append(result.Groups, group)
 	}
-	e = rows.Err()
+	err = rows.Err()
 	rows.Close()
-	if e != nil {
-		return out, e
+	if err != nil {
+		return result, err
 	}
-	for i := range out.Groups {
-		ev, e := workbenchEvents(db, "source=?", []any{out.Groups[i].Source}, 5, 0)
-		if e != nil {
-			return out, e
+	for i := range result.Groups {
+		recent, err := workbenchEvents(db, "source=?", []any{result.Groups[i].Source}, 5, 0)
+		if err != nil {
+			return result, err
 		}
-		out.Groups[i].Recent = ev
+		result.Groups[i].Recent = recent
 	}
-	return out, nil
+	return result, nil
 }

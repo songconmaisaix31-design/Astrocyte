@@ -2,6 +2,9 @@ package agents
 
 import (
 	"context"
+	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -22,8 +25,7 @@ func TestSelectedTextFinalPromptUTF8BoundaryBeforeLaunch(t *testing.T) {
 		}
 	}
 	for _, prompt := range []string{strings.Repeat("x", 512*1024-overhead+1), strings.Repeat("文", (512*1024-overhead)/3+1), "\xff"} {
-		// A registry with no adapters would panic if launch/configuration were
-		// reached; validation must reject first and preserve unknown effects.
+		// 空 Registry 没有原生适配器，格式错误必须在选择配置之前失败。
 		_, err := (&Registry{}).ProcessSelectedText(context.Background(), domain.TextRequest{CLI: "codex", Prompt: prompt})
 		serviceErr, ok := err.(*apierrors.ServiceError)
 		if !ok || serviceErr.Code != apierrors.ValidationFailed {
@@ -33,5 +35,60 @@ func TestSelectedTextFinalPromptUTF8BoundaryBeforeLaunch(t *testing.T) {
 	_, err := (&Registry{}).ProcessSelectedText(context.Background(), domain.TextRequest{CLI: "uninstalled", Prompt: strings.Repeat("x", 128*1024+1)})
 	if e, ok := err.(*apierrors.ServiceError); !ok || e.Code != apierrors.UnsupportedCapability {
 		t.Fatalf("valid expanded prompt rejected before actual registry selection: %v", err)
+	}
+}
+
+func TestSelectedTextDirectoryStaysUnderControllerOwnedRoot(t *testing.T) {
+	stateRoot := filepath.Join(t.TempDir(), "native-sessions")
+	root, err := selectedTextRoot(stateRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !inside(filepath.Join(stateRoot, "selected-text"), root) {
+		t.Fatal("selected text directory escaped the controller-owned root")
+	}
+	info, err := os.Stat(root)
+	if err != nil || !info.IsDir() {
+		t.Fatalf("owned directory unavailable: %v", err)
+	}
+	if _, err = selectedTextRoot("relative-native-state"); err == nil {
+		t.Fatal("relative runtime root was accepted")
+	}
+	blockedRoot := filepath.Join(t.TempDir(), "not-a-directory")
+	if err = os.WriteFile(blockedRoot, []byte("人工创建的目录类型错误输入"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = selectedTextRoot(blockedRoot); err == nil {
+		t.Fatal("actual filesystem failure was suppressed")
+	}
+}
+
+// 拒绝输入是调用者声明，不代表已存在的原生来源或进程。
+func TestOwnedTextExecutionRejectsUnattestedIdentity(t *testing.T) {
+	registry := NewRegistry(filepath.Join(t.TempDir(), "native-sessions"))
+	adapter, err := registry.Adapter("codex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	native := adapter.(*Native)
+	for _, input := range []struct {
+		session domain.NativeSession
+		code    apierrors.Code
+	}{
+		{domain.NativeSession{}, apierrors.DeliveryUnknown},
+		{domain.NativeSession{ID: "unattested-id", NativeID: "unattested-native-id", ProjectID: "unattested-project", CLI: "codex", Ownership: "external"}, apierrors.ScopeDenied},
+		{domain.NativeSession{ID: "unattested-id", NativeID: "unattested-native-id", ProjectID: "unattested-project", CLI: "claude", Ownership: "owned"}, apierrors.ScopeDenied},
+		{domain.NativeSession{ID: "unattested-id", NativeID: "unattested-native-id", ProjectID: "unattested-project", CLI: "codex", Ownership: "owned"}, apierrors.DeliveryUnknown},
+	} {
+		_, err := native.OwnedRelayExecution(context.Background(), input.session)
+		var service *apierrors.ServiceError
+		if !errors.As(err, &service) || service.Code != input.code {
+			t.Fatalf("unattested ownership accepted: %v", err)
+		}
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err = native.OwnedRelayExecution(ctx, domain.NativeSession{}); !errors.Is(err, context.Canceled) {
+		t.Fatal("actual cancellation was swallowed")
 	}
 }

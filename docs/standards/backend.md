@@ -1,6 +1,8 @@
 # 基础后端与导入整改
 
-本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，接管 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39`。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
+本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，接管 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39`。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
+
+后续独立 REPORT `94658c3788fc94db8215df403bea6aab4da1cfbb`、`96618df9b62ed0018182b5cbc1aa626c5bcb8362`，文本目录及实际 Works 发现 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，公开生产认知及祖先路径检查 SOURCE `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，默认时钟/实际 Sleep/真实 nullable 及公开论文输入 SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` 均已普通 push。
 
 ## 完成内容
 
@@ -19,7 +21,16 @@
 - Works 原有十项测试全部改为实际 SQLite、生产 Scanner/Delivery/WorksEventSink 与磁盘资料；保留平台计数、人工字段、版本冲突、投递来源、事件归属、零额外认知 Signal、实际根失效的覆盖，并增加格式错误保留 stale 缓存的测试。
 - 作品标记 JSON 格式、文件类型和遍历异常直接失败。Workspace 保存 stale 缓存后返回原失败，HTTP 不会把失败刷新报告为成功；深度/数量限制仍明确报告未核实。
 - 进度人工输入验证不再创建虚构 TASK/STATUS 或 OS 临时根。实际项目读取授权仅选 `README.md`，Codex inference 使用已有配置且不指定模型；独立 `stat` 核对实际 `mtime;size` 引用，SQLite 与新 HTTP 进程复核同一结果，零 Mission。
-- 根据 H 不可变 `99a250d0b9069ffb32205420f63f82b372de5607` 的实际 NDJSON 使用，依赖源追加 `github.com/olivere/ndjson v1.0.1` 与精确 checksum。保留 B parser 依赖、`x/sys v0.49.0` 与直接 `uuid`，模块和库存验证通过；F 冲突按唯一依赖 owner Handoff，未直接修改 F 工作树。
+- 根据 H 不可变 `99a250d0b9069ffb32205420f63f82b372de5607` 的实际 NDJSON 使用，依赖源追加 `github.com/olivere/ndjson v1.0.1` 与精确 checksum。保留 B parser 依赖、`x/sys v0.49.0` 与直接 `uuid`，模块和库存验证通过。后续协调者明确临时授权 B 编辑并 stage F 唯一冲突 `go.mod`，实际内容与 B `2a6f03605ebb87f36f7bd56c577aaf4853cb6671` 全等；其他 F 文件及 merge commit 均归 F，单文件授权已经结束。
+- HumanAPI helper 使用实际 Idempotency-Key 作为未显式提供的 request_id，显式错误身份仍由生产 400 拒绝。HTTP 响应先完成 JSON 编码再写状态；编码失败返回完整 ErrorV1 500，响应写入失败终止当前 HTTP 处理。非 JSON HTTP 原件及解析错误只保存在 `.verification/`，异常文本仅公开证据指针。
+- 按明确授权，复用不可变 Workbench SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 中 `internal/workbench/app/contracts.go`、`internal/adapters/sqlite/workbench.go` 和对应测试。保持既有六字段事件投影、日期范围、分页、过滤和 null 语义；未导入其他 owner 文件。
+- Reader 使用 `NewWorkbenchReader(root string, protectedSources ...string)`。受保护源由可信启动调用者显式指定，默认仅读取发布根；不含或探测个人正式库常量。显式源同文件及硬链接通过 `os.SameFile` 拒绝，发布文件及路径拒绝 symlink/junction，SQLite 采用 `mode=ro`、`immutable=1`、`query_only(1)`，解析和关闭异常传播。上海时区使用嵌入 tzdata。
+- 文本处理目录限定到现有 Registry 的绝对 `stateRoot/selected-text`；相对根与真实文件类型异常直接失败。HTTP Works 通过生产注册服务对明确选择的实际目录执行一次发现，缓存、权限、刷新、重复请求及 SQLite 重启由生产服务处理；观察包装只统计真实刷新调用。
+- Reader 查询使用 Q 不可变 SOURCE `1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50` / REPORT `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658` 的实际公开 Git 生产回放出版物。1,339 个实际 event_id 逐一核对 Git commit origin、原 ts 与公开仓库，全部六字段、日期、分页、聚合、节点数值、实际历史、current 切换与只读检查保持完整断言。
+- Windows 每个路径祖先均使用现有 `x/sys/windows.GetFileAttributes` 核查 reparse；实际根和 generation 的 junction，以及同文件/hardlink 全部拒绝。历史去重仅在内存中重复同一实际点作为明确规则输入；JSON null/整数投影作为明确 SQL 参数输入，两者均不写来源事件、节点或 Sleep。
+- 默认 Reader 与 Sleep 均使用实际 `time.Now`。在新的自有公开副本中，实际生产 `cmd/sleep` 手动处理明确闭日 2026-10-13，开始 `1791986176576`、完成 `1791986176583` 毫秒，均为今天实际执行时间。成熟 Q CLI 生成 `snapshot-2249990550`，默认 Today 正确查询该前日完成记录；此操作只属于本次工程验证，正式实验及 Q 最终发布代保持原件。
+- H 本轮自有实际公开数据库通过其 `dist/l1-live/current-20261014/service-private.json` 中正选 `db_path` 使用 Q 只读在线备份，B 出版代 `snapshot-3888376845`。独立 SQL 实际 25 个事件全部逐 id 和字段核对，Reader tokens 投影 25 个 null。该 Workbench 投影与先前 Relay HTTP 18/17 的投影及取得时刻分别登记；原生会话完整度及工具集合的未知状态不改变。
+- `loadPublicPaperInputs(absoluteDirectory)` 使用实际已经完整取得的 arXiv v1/v2 与 PLOS HTML，经现有 linkedom/Readability/paperDOM 解析。固定来源身份与版本全等、两版真实正文不同、完整正文状态通过；导入字段只包含实际正文、标题及 whole-document 引用。该入口尚待默认 S1 与 F 消费。
 
 ## 实际验证
 
@@ -48,19 +59,48 @@
 | `go mod verify` / `node scripts/check-dependencies.mjs` | EXIT 0，实际 Relay parser 依赖 union 验证；`.verification/relay-dependency-union-first.log` |
 | 第三阶段 `go vet -mod=readonly ./...` / `go build -mod=readonly ./...` | 全部 EXIT 0，`.verification/{vet,build}-third-source.log` |
 | `go test -mod=readonly ./... -json -count=1`，公开查询开启 | EXIT 1，七项实际公开请求失败，网络 RED 保留；`.verification/go-current-all-third.jsonl`。不以之前定向 PASS 覆盖当前全包结论 |
+| `go test -mod=readonly ./internal/adapters/httpapi -run 'TestHealthEndpoint\|TestHTTP500_ErrorV1_AllFieldsPresent\|TestJSONEncodingFailureDoesNotSendSuccess' -v -count=1` | EXIT 0，实际服务失败与明确不可编码值保留完整 ErrorV1；`.verification/http-json-error-first.log` |
+| `node --test tests/s1/server-lifecycle.test.mjs`，命令身份修正后 | EXIT 0，两个实际布局各验证成功刷新及显式错误 request_id 400；2 PASS、0 SKIP，`.verification/helper-command-identity-first.log` |
+| 早期 Reader 物理机制检查 | `.verification/workbench-reader-second.log` 保留，仅属于早期物理 SQLite/机制候选；当前真实来源查询结论使用下方完整生产来源记录 |
+| Reader SOURCE 的 `go build -mod=readonly ./...` / `go vet -mod=readonly ./...` | 全部 EXIT 0，`.verification/workbench-{build,vet}-first.log`；架构检查 31 包通过 |
+| 实际 Reader 测试二进制扫描 | EXIT 0，旧个人路径常量不在实际编译二进制，21141504 bytes；`.verification/workbench-binary-first.log`。验证从不可变原始代码 AST 提取字符串，只比较二进制 bytes，未打开该原始路径 |
+| `go test -mod=readonly ./internal/adapters/agents -run TestSelectedText -v -count=1` | EXIT 0，两项完整 UTF-8 与实际受控目录检查；TEMP/TMP 为本树 `.verification/go-temp`，`.verification/selected-text-owned-second.log` |
+| `go test -mod=readonly ./internal/adapters/httpapi -run 'TestWorksHTTPActualStoresRegisteredBoundsAndRestart\|TestEngineIndependentServicesActivateSessionGuard' -v -count=1` | EXIT 0，两项真实发现/SQLite/HTTP/权限/重启检查；`.verification/http-works-real-second.log` |
+| `go test -mod=readonly ./internal/adapters/sqlite -run TestWorkbench -v -count=1`，明确选择下方 Q/B/H 的实际出版物 | EXIT 0，10 PASS、0 SKIP；`.verification/workbench-real-source-fifth.log`。Git cohort 1339 origins 全匹配，实际整数投影 1339/null 0；另一次实际 native 副本 25/null 25。整数投影不冒称模型 usage |
+| 当前 Reader SOURCE 的 build / vet / architecture | `go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 全 EXIT 0；`.verification/workbench-real-{build,vet}-first.log`，架构 31 包通过 |
+| 当前 Reader 测试二进制扫描 | EXIT 0，旧个人路径常量不存在，21196288 bytes；`.verification/workbench-real-binary-first.log`，只读 Git 对象及本机二进制 |
+| `go run ./cmd/sleep --data-dir .verification/reader-actual-public/closed/app-state --day 2026-10-13 --timezone Asia/Shanghai --decay 0.1 --initial-confidence 0.5 --fact-projection none` | EXIT 0，真实闭日处理完成且非 replay；`.verification/reader-closed-day-sleep-first.log`，没有改 Clock 或源时间 |
+| Q 实际 `workbench-snapshot-final.exe --source <本轮明确自有源> --root <本树出版根> --timeout 120s` | 闭日、实际空库、H 实际 native 三次均 EXIT 0；`.verification/reader-{closed,empty,native}-publication-first.log` |
+| `node tests/s1/public-paper-inputs.mjs .verification` | EXIT 0，arXiv v1/v2 正文分别 57465/229400 bytes、PLOS 64008 bytes，实际版本与 source_key 全等；`.verification/public-paper-inputs-first.log` |
+| `node scripts/verify-import-inputs.mjs .verification/public-inputs-youtube-first youtube` | EXIT 1，实际完整网页取得后 summarize 子进程 `ETIMEDOUT`；`.verification/public-youtube-input-first.log`，未伪造字幕或补时间区间 |
+| `go test -mod=readonly ./... -json -count=1`，全部当次实际来源与公开查询环境明确提供 | EXIT 1，arXiv 原件 HTTP、summarize、精确查询、公开搜索四个相关 case 失败；`.verification/go-current-all-fourth.jsonl`，网络首 RED 保留 |
 
 公开 DOM 来源为 `https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514` 与 `https://aclanthology.org/2024.acl-long.1/`。本报告只给聚合与本机证据指针；原件保留在 `.verification/`。
+
+Reader 验证环境须明确提供下列实际本机原件，不提供时直接失败，不加 skip：
+
+- `TEMP`、`TMP`：本工作树 `.verification/go-temp`。
+- `ASTROCYTE_TEST_COGNITION_LOCALAPPDATA`：Q 工作树 `.verification/public-cognition-6f63200932f14a10ad4d9fb91c78d749/local`。
+- `ASTROCYTE_TEST_COGNITION_PRE_SLEEP_LOCALAPPDATA`：Q 工作树 `.verification/cognition-before-sleep-local`。
+- `ASTROCYTE_TEST_COGNITION_EMPTY_LOCALAPPDATA`：本工作树 `.verification/reader-actual-public/empty/local`。
+- `ASTROCYTE_TEST_COGNITION_CLOSED_DAY_LOCALAPPDATA`：本工作树 `.verification/reader-actual-public/closed/local`。
+- `ASTROCYTE_TEST_COGNITION_NATIVE_LOCALAPPDATA`：本工作树 `.verification/reader-actual-public/native/local`。
+
+Q 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014`。全部副本和出版物只在本机，不加入 Git 或发布包；H 原源、Q 原 source/current、正式实验均未写入。
 
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
-- 本写域仍有外部替代实现：`internal/attention/app/attention_test.go` 的内存 Repository/ObjectStore 与 `automatic_test.go`、`project_distiller_test.go` 的替代模型；HTTP works 的替代注册来源；OpenCode 和注册项目测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite `local_agents*_test.go` 的替代原生控制器与引用读取。
-- `tests/s1/automatic_test.go` 仍有替代模型错误；`tests/s1/fixtures.mjs`、默认 acceptance 与部分 web E2E 仍依赖虚构纸/视频来源。B 继续整改自身测试与共享输入，web 改动交 F，不能把现有默认套件通过记为真实来源验收。
+- 原有 attention 应用测试仍有内存 Repository/ObjectStore 与替代模型。经双方零 WIP checkpoint 确认，协调者已把 `internal/attention/app/*_test.go` 与 `tests/s1/automatic_test.go` 共十四个既有文件及同目录新测试交给唯一第三层 T，精确起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454`；B 从此排除这些测试写域，生产需求由 T 提交 Handoff。
+- B 本写域仍有 OpenCode 和注册项目测试的替代来源；M5 MCP 与 delivery 测试的替代 backend、失败存储和确认丢失；SQLite `local_agents*_test.go` 的替代原生控制器与引用读取。后续各项整改继续保留完整覆盖。
+- `tests/s1/fixtures.mjs`、默认 acceptance 与部分 web E2E 仍依赖虚构论文/视频来源。B 继续整改共享输入，web 改动交 F，不能把现有默认套件通过记为真实来源验收。公开视频 whisper 转写无时间区间，不能伪造已有 positive 时间区间覆盖所需原件。
 - 全写域英文注释清理尚未完成。原生格式 helper 的解码路径及其他同类异常需要继续核查；已增加格式门禁不等于全域零静默解析。
 - 实际 Codex controller / SQLite / HTTP / 自产会话逐 event_id 验证归 R/H，当前 B 没有运行该组合验收。发布完整 E2E、Workbench/Relay 集成与 ZIP 解压验收尚未运行。
+- B README 一次实际 inference 已核对 HTTP、模型返回、原 native_id、SQLite 与重启；当次进程启动 argv 未独立留存。R 原 owner 已核实原 controller Stop 后无 capture pointer、新 Registry 无 ownership，不能按旧 native_id 重建控制器或扫描私人历史。该旧结果的有效工具集合保持未知，不重复成功推断；新文本处理的正选证据接口需模块确认精确 R 文件消费方式后继续 B/R 互斥接入。
+- Workbench Reader 十项检查覆盖实际公开生产回放、实际 Sleep 和当前自产 native 副本。H/I 仍需在既有路由组合精确源码；发布完整二进制、浏览器 E2E 与两次实际 00:30 触发验收尚未运行。H 原会话部分完整度未知不能因 Reader 查询通过而提升。
 - 当前 arXiv DNS 实际响应 `198.18.0.71`，系统网络配置不在 B 授权写域。完整 Go 检查失败已提交模块负责人；公开 source 与 CLI positive 断言保持，未添加 skip 或伪造响应。
 - Mission 创建仍使用生产 501 状态，未获业务扩展授权。V4、人评、正式库、冻结脚本、引擎、schema、迁移、权重和日程保持原边界。
 
 ## 未执行操作与后续交付
 
-部分 SOURCE/REPORT 首次 push 遇到 GitHub `SSL_ERROR_SYSCALL`，原件保留；上述五次交付均已通过后续普通 push，未 force push。本报告作为独立 REPORT 追加提交并推送。阶段 SOURCE/REPORT 不结算整轨，后续源码与报告继续追加；最终精确 SHA 和剩余限制由最后一次报告登记。
+部分 SOURCE/REPORT 普通 push 遇到 GitHub `SSL_ERROR_SYSCALL`，原件保留；上述已列源码及报告均已普通 push，未 force push。Reader 前四次握手失败保留在 `.verification/workbench-source-push-{first,second,third,fourth}.log`，第五次正常推送成功。本报告作为独立 REPORT 追加提交并推送。阶段 SOURCE/REPORT 不结算整轨，后续源码与报告继续追加；最终精确 SHA 和剩余限制由最后一次报告登记。
