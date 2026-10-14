@@ -46,6 +46,8 @@ func TestSwarmActualWorkspaceTransactionBorrowingAndRollback(t *testing.T) {
 			if err := tx.SaveMission(m, 0); err != nil {
 				return err
 			}
+			swarmAssertTransactionReads(t, wtx.Context(), repo, m.ID)
+			swarmAssertTransactionReads(t, tx.(*swarmTransaction).ctx, repo, m.ID)
 			return rollback
 		})
 	})
@@ -68,6 +70,31 @@ func TestSwarmActualWorkspaceTransactionBorrowingAndRollback(t *testing.T) {
 	}
 	if _, err = repo.Load(ctx, m.ID); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func swarmAssertTransactionReads(t *testing.T, ctx context.Context, repo *SwarmRepository, missionID string) {
+	t.Helper()
+	if _, err := repo.Load(ctx, missionID); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := repo.List(ctx)
+	if err != nil || len(rows) != 1 || rows[0].ID != missionID {
+		t.Fatal("transaction did not expose its actual uncommitted mission", err)
+	}
+	if _, err = repo.Timeline(ctx, missionID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = repo.ExecutionHistory(ctx, missionID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = repo.ReadAcceptedArtifactEvent(ctx, uuid.NewString()); err == nil {
+		t.Fatal("missing adoption event was accepted")
+	} else {
+		var missing *apierrors.ServiceError
+		if !errors.As(err, &missing) || missing.Code != apierrors.NotFound {
+			t.Fatal(err)
+		}
 	}
 }
 

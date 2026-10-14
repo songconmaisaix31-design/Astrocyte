@@ -15,7 +15,11 @@ import (
 func (r *SwarmRepository) ReadAcceptedArtifactEvent(ctx context.Context, id string) (swarm.AcceptedArtifactEvent, error) {
 	var out swarm.AcceptedArtifactEvent
 	var at, payload string
-	err := r.db.conn.QueryRowContext(ctx, "SELECT occurred_at,payload FROM foundation_outbox WHERE event_id=? AND event_type='swarm.artifact_accepted' AND schema_version=1", id).Scan(&at, &payload)
+	exec, err := r.executor(ctx)
+	if err != nil {
+		return out, err
+	}
+	err = exec.QueryRowContext(ctx, "SELECT occurred_at,payload FROM foundation_outbox WHERE event_id=? AND event_type='swarm.artifact_accepted' AND schema_version=1", id).Scan(&at, &payload)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return out, apierrors.NewNotFound("accepted artifact event", id)
@@ -36,18 +40,15 @@ func (r *SwarmRepository) ReadAcceptedArtifactEvent(ctx context.Context, id stri
 	}
 	out.ActorID = a.AcceptedBy
 	out.ActorKind = a.AcceptedActorKind
-	err = r.db.conn.QueryRowContext(ctx, "SELECT w.mission_id,m.project_id FROM swarm_work_items w JOIN swarm_missions m ON m.id=w.mission_id WHERE w.id=?", a.WorkItemID).Scan(&out.MissionID, &out.ProjectID)
+	err = exec.QueryRowContext(ctx, "SELECT w.mission_id,m.project_id FROM swarm_work_items w JOIN swarm_missions m ON m.id=w.mission_id WHERE w.id=?", a.WorkItemID).Scan(&out.MissionID, &out.ProjectID)
 	return out, err
 }
 
 // 从既有 outbox 的真实 operation 事实构造只读视图，不创建新的执行身份。
 func (r *SwarmRepository) ExecutionHistory(ctx context.Context, id string) ([]swarm.ExecutionReference, error) {
-	var executor SwarmSQLExecutor = r.db.conn
-	if tx, ok := ctx.Value(swarmTransactionKey{}).(*swarmTransaction); ok {
-		if tx.db != r.db {
-			return nil, domain.Failure(apierrors.ScopeDenied, "execution history transaction belongs to another database")
-		}
-		executor = tx.exec
+	executor, err := r.executor(ctx)
+	if err != nil {
+		return nil, err
 	}
 	rows, err := executor.QueryContext(ctx, "SELECT event_id,event_type,aggregate_id,aggregate_version,occurred_at,payload FROM foundation_outbox WHERE event_type IN ('swarm.work_item_claimed','swarm.artifact_submitted','swarm.execution_blocked','swarm.execution_reconciled','swarm.artifact_revision_requested','swarm.artifact_accepted') AND (aggregate_id IN (SELECT id FROM swarm_work_items WHERE mission_id=?) OR aggregate_id IN (SELECT a.id FROM swarm_artifacts a JOIN swarm_work_items w ON w.id=a.work_item_id WHERE w.mission_id=?)) ORDER BY occurred_at,event_id", id, id)
 	if err != nil {
