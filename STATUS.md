@@ -2,7 +2,7 @@
 
 ## REA 部署与 Orca 调研（2026-10-14）
 
-[调研报告](docs/research/orca-rea-20261014.md)已完成：REA 6.5.0、Codex 注册/配套技能 aligned，实际 MCP 207 工具与 `binary_session` 查询 PASS；Orca 1.4.220 实际 ASAR 和编译目录选择范围内 18 个 JavaScript 文件解析错误 0，启动恢复 IPC 精确跟踪 partial。报告区分已有 Workbench/R/H 实现与建议，未修改业务路径或替代原 L1/V4/整改验收。当前 Codex 需重新连接后加载新 MCP；完整 Orca 运行时、main 鉴权和原生二进制分析未执行。
+[调研报告](docs/research/orca-rea-20261014.md)与第 42 版技能已接手：REA 6.5.0 的实际 MCP 207 工具与 `binary_session` 查询成功，Orca 1.4.220 两份静态分析共 18 个 JavaScript 文件解析错误为零，启动恢复 IPC 跟踪 partial。按用户要求，今晚 Codex REA 注册已移除、REA MCP 服务已停止；CLI、技能与分析结果保留，10-23 之后重新注册为陌生代码库任务和 L2 经验来源候选。2026-10-15 按 v1.4 语义规格与修改 → 真实 CLI 端到端 → 三分钟 Today → L1 关账执行。完整 Orca 运行时、main 鉴权和原生二进制分析未执行。
 
 ## 当前开发入口（2026-10-14）
 
