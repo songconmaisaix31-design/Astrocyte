@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import type { RelaySessionEvents, RelaySessionCoverage } from '../src/api/relaySession';
 import type { RelayEvent, RelayTaskView } from '../src/api/relay';
 import type { CognitionToday } from '../src/api/cognitionTypes';
+import { relayEvidenceDirectory } from './relayEvidence';
 
 type PublicFacts = {
   task_id: string; project_id: string; agent_name: string;
@@ -25,7 +26,7 @@ test.beforeAll(async () => {
   const expectedPath = process.env.ASTROCYTE_TEST_RELAY_L1_GETEVENT_PUBLIC_FILE;
   expect(expectedPath, '需要 H 从实际 GetEvent 导出的公开事实文件').toBeTruthy();
   facts = JSON.parse(await readFile(expectedPath!, 'utf8')) as PublicFacts;
-  observation = JSON.parse(await readFile(join(process.cwd(), '../.verification/l1-live/first-visible.json'), 'utf8')) as Observation;
+  observation = JSON.parse(await readFile(join(relayEvidenceDirectory(), 'first-visible.json'), 'utf8')) as Observation;
   expect(facts.events.length).toBeGreaterThanOrEqual(2);
   expect(facts.native_session_event_ids.length, '需要 H 从真实仓储 origin 正向确认原生来源的公开 ID').toBeGreaterThan(0);
   expect(facts.forbidden_canaries.length, '需要实际原生输入中的公开 canary 标记').toBeGreaterThan(0);

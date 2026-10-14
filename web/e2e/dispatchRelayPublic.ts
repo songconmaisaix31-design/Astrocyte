@@ -3,11 +3,16 @@ import { chromium, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { components } from '../src/api/schema';
+import { relayEvidenceDirectory } from './relayEvidence';
 
 type S = components['schemas'];
 const origin = process.env.ASTROCYTE_TEST_RELAY_PUBLIC_URL;
 const task = process.env.ASTROCYTE_TEST_RELAY_FIXED_TASK;
 if (!origin || !/^http:\/\/127\.0\.0\.1:\d+$/.test(origin) || !task) throw new Error('需要H交付本次实际页面URL和固定公开任务');
+const directory = relayEvidenceDirectory();
+const output = resolve(directory, 'dispatch-ui-safe.json');
+await mkdir(directory, { recursive: true });
+await writeFile(output, '', { flag: 'wx' });
 const browser = await chromium.launch();
 try {
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
@@ -47,9 +52,7 @@ try {
   await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
   const dispatchHTTP = await dispatchResponse;
   const dispatch = await dispatchHTTP.json() as S['RelayActionResultV1'];
-  const directory = resolve('../.verification/l1-live');
-  await mkdir(directory, { recursive: true });
-  await writeFile(resolve(directory, 'dispatch-ui-safe.json'), JSON.stringify({ task_id: intent.view.task.task_id, project_id: projects[0].project_id, work_id: works[0].id, agent_name: agents[0].name, status: dispatchHTTP.status(), view: dispatch.view, receipt: dispatch.receipt, operations, returned_at: new Date().toISOString() }, null, 2));
+  await writeFile(output, JSON.stringify({ task_id: intent.view.task.task_id, project_id: projects[0].project_id, work_id: works[0].id, agent_name: agents[0].name, status: dispatchHTTP.status(), view: dispatch.view, receipt: dispatch.receipt, operations, returned_at: new Date().toISOString() }, null, 2));
   expect(dispatchHTTP.status()).toBe(200);
   expect(dispatch.receipt.status).toBe('accepted');
   expect(operations.map(operation => operation.action)).toEqual(['intents', 'confirm']);

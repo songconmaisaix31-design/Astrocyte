@@ -3,10 +3,15 @@ import { chromium, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { components } from '../src/api/schema';
+import { relayEvidenceDirectory } from './relayEvidence';
 
 const origin = process.env.ASTROCYTE_TEST_RELAY_PUBLIC_URL;
 const requestedAgent = process.env.ASTROCYTE_TEST_RELAY_L1_AGENT;
 if (!origin || !/^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) throw new Error('需要H交付实际页面URL');
+const directory = relayEvidenceDirectory();
+const output = resolve(directory, 'first-visible.json');
+await mkdir(directory, { recursive: true });
+await writeFile(output, '', { flag: 'wx' });
 const browser = await chromium.launch();
 try {
   const viewports = [{ name: 'chromium-1920', width: 1920, height: 1080 }, { name: 'chromium-1280', width: 1280, height: 720 }];
@@ -52,9 +57,7 @@ try {
     }, { timeout: 180_000, intervals: [1000, 2000, 5000] }).toBe(true);
     return { name: viewports[index].name, first_visible_at: new Date().toISOString(), event_ids: eventIDs, task_id: taskID, agent_name: observedAgent };
   }));
-  const directory = resolve('../.verification/l1-live');
-  await mkdir(directory, { recursive: true });
   expect(observations[0].agent_name).toBe(observations[1].agent_name);
-  await writeFile(resolve(directory, 'first-visible.json'), JSON.stringify({ origin, agent_name: observations[0].agent_name, registry_before: registryBefore, viewports: observations }, null, 2));
-  console.log('F_BROWSER_FIRST_VISIBLE: 两个原viewport实际首次可见记录已保存到.verification/l1-live/first-visible.json。');
+  await writeFile(output, JSON.stringify({ origin, agent_name: observations[0].agent_name, registry_before: registryBefore, viewports: observations }, null, 2));
+  console.log('F_BROWSER_FIRST_VISIBLE: 两个原viewport实际首次可见记录已保存到本次独立证据目录。');
 } finally { await browser.close(); }
