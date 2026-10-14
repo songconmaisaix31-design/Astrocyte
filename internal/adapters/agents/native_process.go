@@ -2,6 +2,7 @@ package agents
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -52,6 +53,15 @@ func (e *nativeOwnershipError) Unwrap() error { return e.cause }
 
 func nativeError(code apierrors.Code, message string) error {
 	return &apierrors.ServiceError{Code: code, Message: message, RequiredAction: "check_native_session_and_project_settings"}
+}
+
+// 解码错误只返回固定安全消息；请求可能已交付，不能据此自动重试。
+func decodeNativeValue(raw json.RawMessage, target any) error {
+	value := bytes.TrimSpace(raw)
+	if len(value) == 0 || bytes.Equal(value, []byte("null")) || json.Unmarshal(value, target) != nil {
+		return nativeError(apierrors.DeliveryUnknown, "native protocol value could not be decoded; do not replay")
+	}
+	return nil
 }
 
 // Installed native entrypoints only. HTTP can select a registry ID, never a
@@ -214,15 +224,23 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 				Code    int    `json:"code"`
 				Message string `json:"message"`
 			}
-			_ = json.Unmarshal(response["error"], &failure)
+			if err := decodeNativeValue(response["error"], &failure); err != nil {
+				return nil, err
+			}
 			slog.Warn("native protocol rejected operation", "method", method, "protocol_code", failure.Code, "reason", protocolReason(failure.Message))
 			if failure.Code == -32601 {
 				return nil, nativeError(apierrors.UnsupportedCapability, "installed native protocol or thread store does not support this method")
 			}
 			return nil, nativeError(apierrors.ProviderUnavailable, "native protocol rejected the operation")
 		}
-		if raw, ok := response["success"]; ok && string(raw) != "true" {
-			return nil, nativeError(apierrors.ProviderUnavailable, "native operation did not succeed")
+		if raw, ok := response["success"]; ok {
+			var success bool
+			if err := decodeNativeValue(raw, &success); err != nil {
+				return nil, err
+			}
+			if !success {
+				return nil, nativeError(apierrors.ProviderUnavailable, "native operation did not succeed")
+			}
 		}
 		return response, nil
 	case <-ctx.Done():
@@ -241,7 +259,7 @@ func (p *nativeProcess) read(out io.Reader) {
 	scanner.Buffer(make([]byte, 4096), 1024*1024)
 	for scanner.Scan() {
 		var record map[string]json.RawMessage
-		if json.Unmarshal(scanner.Bytes(), &record) != nil {
+		if decodeNativeValue(scanner.Bytes(), &record) != nil {
 			p.failOutput()
 			return
 		}
@@ -253,35 +271,67 @@ func (p *nativeProcess) read(out io.Reader) {
 		}
 		var id string
 		if raw, ok := record["id"]; ok {
-			if json.Unmarshal(raw, &id) != nil {
-				id = string(raw)
+			if decodeNativeValue(raw, &id) != nil {
+				var numericID json.Number
+				if decodeNativeValue(raw, &numericID) != nil {
+					p.failOutput()
+					return
+				}
+				id = numericID.String()
+			}
+			if id == "" {
+				p.failOutput()
+				return
 			}
 		}
 		var method, typ string
-		_ = json.Unmarshal(record["method"], &method)
-		_ = json.Unmarshal(record["type"], &typ)
+		if raw, ok := record["method"]; ok {
+			if decodeNativeValue(raw, &method) != nil {
+				p.failOutput()
+				return
+			}
+		}
+		if raw, ok := record["type"]; ok {
+			if decodeNativeValue(raw, &typ) != nil {
+				p.failOutput()
+				return
+			}
+		}
 		if typ == "control_response" {
 			var response map[string]json.RawMessage
-			_ = json.Unmarshal(record["response"], &response)
-			_ = json.Unmarshal(response["request_id"], &id)
 			var subtype string
-			_ = json.Unmarshal(response["subtype"], &subtype)
+			if decodeNativeValue(record["response"], &response) != nil || decodeNativeValue(response["request_id"], &id) != nil || decodeNativeValue(response["subtype"], &subtype) != nil {
+				p.failOutput()
+				return
+			}
 			if subtype == "error" {
 				record["error"] = json.RawMessage(`{"code":-32600}`)
-			} else {
+			} else if subtype == "success" {
 				record["result"] = response["response"]
+			} else {
+				p.failOutput()
+				return
 			}
 		}
 		if typ == "control_request" {
 			var requestID string
-			_ = json.Unmarshal(record["request_id"], &requestID)
-			_ = p.write(map[string]any{"type": "control_response", "response": map[string]any{"subtype": "success", "request_id": requestID, "response": map[string]any{"behavior": "deny", "message": "controller tool policy denies this request"}}})
+			if decodeNativeValue(record["request_id"], &requestID) != nil {
+				p.failOutput()
+				return
+			}
+			if p.write(map[string]any{"type": "control_response", "response": map[string]any{"subtype": "success", "request_id": requestID, "response": map[string]any{"behavior": "deny", "message": "controller tool policy denies this request"}}}) != nil {
+				p.failOutput()
+				return
+			}
 			continue
 		}
 		// Server requests are denied. Document content cannot approve tools or
 		// grant its own permissions. We do not forward native approval to agents.
 		if method != "" && id != "" {
-			_ = p.write(map[string]any{"id": json.RawMessage(record["id"]), "error": map[string]any{"code": -32601, "message": "operation not permitted by controller"}})
+			if p.write(map[string]any{"id": json.RawMessage(record["id"]), "error": map[string]any{"code": -32601, "message": "operation not permitted by controller"}}) != nil {
+				p.failOutput()
+				return
+			}
 			continue
 		}
 		p.mu.Lock()
@@ -293,8 +343,12 @@ func (p *nativeProcess) read(out io.Reader) {
 				}
 			}
 		}
-		p.handleEvent(method, typ, record)
+		eventErr := p.handleEvent(method, typ, record)
 		p.mu.Unlock()
+		if eventErr != nil {
+			p.failOutput()
+			return
+		}
 	}
 	if scanner.Err() != nil {
 		p.failOutput()
@@ -352,9 +406,9 @@ func (p *nativeProcess) addTextDelta(message, text string) {
 	}
 }
 
-func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMessage) {
+func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMessage) error {
 	if p.truncated {
-		return
+		return nil
 	}
 	if (method != "" && method != "item/agentMessage/delta") || (typ != "" && typ != "message_update") {
 		p.textMessage = ""
@@ -368,7 +422,11 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			Status string `json:"status"`
 		} `json:"turn"`
 	}
-	_ = json.Unmarshal(r["params"], &params)
+	if method == "item/agentMessage/delta" || method == "turn/started" || method == "turn/completed" {
+		if err := decodeNativeValue(r["params"], &params); err != nil {
+			return err
+		}
+	}
 	switch method {
 	case "item/agentMessage/delta":
 		message := ""
@@ -377,10 +435,16 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		}
 		p.addTextDelta(message, params.Delta)
 	case "turn/started":
+		if params.Turn.ID == "" {
+			return nativeError(apierrors.DeliveryUnknown, "native turn identity is unavailable")
+		}
 		p.status = "running"
 		p.turnID = params.Turn.ID
 		p.addEvent("turn_started", "")
 	case "turn/completed":
+		if params.Turn.ID == "" || params.Turn.Status == "" {
+			return nativeError(apierrors.DeliveryUnknown, "native turn completion is unavailable")
+		}
 		p.status = params.Turn.Status
 		p.modelObservedAt = time.Now()
 		p.addEvent("turn_"+params.Turn.Status, "")
@@ -400,7 +464,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			Type  string `json:"type"`
 			Delta string `json:"delta"`
 		}
-		_ = json.Unmarshal(r["assistantMessageEvent"], &e)
+		if err := decodeNativeValue(r["assistantMessageEvent"], &e); err != nil {
+			return err
+		}
 		if e.Type == "text_delta" {
 			// Pi emits message_start/message_end around each message; either
 			// boundary above ends this contiguous delta group.
@@ -412,7 +478,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			StopReason   string `json:"stopReason"`
 			ErrorMessage string `json:"errorMessage"`
 		}
-		_ = json.Unmarshal(r["message"], &m)
+		if err := decodeNativeValue(r["message"], &m); err != nil {
+			return err
+		}
 		if m.Role == "assistant" && (m.StopReason == "error" || m.StopReason == "aborted") {
 			p.status = "failed"
 			p.addEvent("turn_failed", "")
@@ -421,14 +489,23 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		}
 	case "system":
 		var subtype, sessionID, model string
-		_ = json.Unmarshal(r["subtype"], &subtype)
-		_ = json.Unmarshal(r["session_id"], &sessionID)
-		_ = json.Unmarshal(r["model"], &model)
+		if err := decodeNativeValue(r["subtype"], &subtype); err != nil {
+			return err
+		}
 		if subtype == "init" {
+			if err := decodeNativeValue(r["session_id"], &sessionID); err != nil {
+				return err
+			}
+			if err := decodeNativeValue(r["model"], &model); err != nil {
+				return err
+			}
+			if sessionID == "" || model == "" {
+				return nativeError(apierrors.DeliveryUnknown, "native initialization identity is unavailable")
+			}
 			if p.nativeID != "" && sessionID != p.nativeID {
 				p.status = "blocked"
 				go func() { _ = p.cmd.Cancel() }()
-				return
+				return nativeError(apierrors.ScopeDenied, "native initialization identity differs")
 			}
 			p.nativeID = sessionID
 			p.model = model
@@ -443,7 +520,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 				Text string `json:"text"`
 			} `json:"content"`
 		}
-		_ = json.Unmarshal(r["message"], &message)
+		if err := decodeNativeValue(r["message"], &message); err != nil {
+			return err
+		}
 		for _, part := range message.Content {
 			if part.Type == "text" {
 				p.addEvent("text", part.Text)
@@ -452,8 +531,12 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	case "result":
 		var subtype string
 		var isError bool
-		_ = json.Unmarshal(r["subtype"], &subtype)
-		_ = json.Unmarshal(r["is_error"], &isError)
+		if err := decodeNativeValue(r["subtype"], &subtype); err != nil {
+			return err
+		}
+		if err := decodeNativeValue(r["is_error"], &isError); err != nil {
+			return err
+		}
 		if isError || subtype != "success" {
 			p.status = "failed"
 			p.addEvent("turn_failed", "")
@@ -463,6 +546,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			p.addEvent("turn_completed", "")
 		}
 	}
+	return nil
 }
 
 func (p *nativeProcess) observe() domain.NativeObservation {
