@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { realService, repositoryRoot } from './realService';
+import { realService, repositoryRoot, writeWorks } from './realService';
 import type { components } from '../src/api/schema';
 type S = components['schemas'];
 
@@ -9,7 +9,7 @@ async function actualWork() {
     const discovery = await api.get('/local-projects/registered') as S['RegisteredProjectDiscoveryResultV1'];
     return discovery.snapshot.projects.some(project => project.root.replace(/[\\/]$/, '').toLowerCase() === repositoryRoot.replace(/[\\/]$/, '').toLowerCase());
   }, { timeout: 120_000 }).toBe(true);
-  const result = await api.write('/works/refresh', { roots: [repositoryRoot] }) as S['WorksSnapshotResultV1'];
+  const result = await writeWorks(api, '/works/refresh', { roots: [repositoryRoot] }) as S['WorksSnapshotResultV1'];
   expect(result.snapshot.works).toHaveLength(1);
   const work = result.snapshot.works[0];
   expect(work.files.verified).toBe(true);

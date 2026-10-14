@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { expect, type Page } from '@playwright/test';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import { humanAPI } from '../../tests/s1/api.mjs';
-import { registerCurrentProject, repositoryRoot } from './realService';
+import { registerCurrentProject, repositoryRoot, writeWorks } from './realService';
 import type { components } from '../src/api/schema';
 
 type S = components['schemas'];
@@ -22,10 +22,10 @@ export async function relayIntentService({ nestedRoot = false } = {}) {
     project = result.project;
   } else project = await registerCurrentProject(api);
   await expect.poll(async () => (await api.get('/local-projects/registered') as S['RegisteredProjectDiscoveryResultV1']).snapshot.projects.length).toBeGreaterThan(0);
-  const { snapshot } = await api.write('/works/refresh', { roots: [repositoryRoot] }) as S['WorksSnapshotResultV1'];
+  const { snapshot } = await writeWorks(api, '/works/refresh', { roots: [repositoryRoot] }) as S['WorksSnapshotResultV1'];
   expect(snapshot.works).toHaveLength(1);
   const work = snapshot.works[0];
-  await api.write(`/works/${work.id}/handoff`, { content: '本轨前端真实HTTP与资料权限核查；此环境未授权原生启动。' }, { method: 'PUT' });
+  await writeWorks(api, `/works/${work.id}/handoff`, { expected_revision: work.revision, content: '本轨前端真实HTTP与资料权限核查；此环境未授权原生启动。' }, { method: 'PUT' });
   return { server, api, project, work };
 }
 

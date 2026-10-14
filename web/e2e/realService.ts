@@ -17,6 +17,12 @@ export async function realService(relay = false) {
   return { server, api };
 }
 
+/** Works命令使用同一操作身份写入正文和请求头。 */
+export function writeWorks(api: Awaited<ReturnType<typeof humanAPI>>, path: string, body: Record<string, unknown>, options: { method?: string } = {}) {
+  const key = crypto.randomUUID();
+  return api.write(path, { ...body, request_id: key }, { ...options, key });
+}
+
 /** 来源是本轨已跟踪文件与精确 Git 提交，人工导入不调用提取器或模型。 */
 export async function importTrackedDocument(api: Awaited<ReturnType<typeof humanAPI>>, filename = 'AGENTS.md') {
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repositoryRoot, encoding: 'utf8' }).trim();

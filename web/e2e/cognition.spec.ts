@@ -95,18 +95,20 @@ test('焦点按实际A排序、显示多条确证轨迹，抽屉完整分页且�
   await expect(page.locator('.cg-legend>span')).toHaveCount(lines.length);
   await page.getByRole('button', { name: lines[1].topic, exact: true }).click();
   await expect(page.locator('.cg-legend>span')).toHaveCount(lines.length - 1);
-  const evidence = await read<CognitionEvidence>(`/topics/evidence?topic=${encodeURIComponent(ordered[0].topic)}&page_size=20`);
-  expect(evidence.total).toBeGreaterThan(20);
-  const trigger = page.locator('.cg-topic-row').first();
+  const candidates = await Promise.all(ordered.map(topic => read<CognitionEvidence>(`/topics/evidence?topic=${encodeURIComponent(topic.topic)}&page_size=20`)));
+  const evidence = candidates.find(item => item.total > 20);
+  expect(evidence, '需要实际同一主题超过20条完整证据').toBeDefined();
+  expect(evidence!.total).toBeGreaterThan(20);
+  const trigger = page.locator('.cg-topic-row').filter({ has: page.getByTestId(`focus-a-${evidence!.topic}`) });
   await trigger.click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading', { name: '按日与类型汇总' })).toBeVisible();
-  await assertEvents(page, evidence.events, dialog);
-  await expect(dialog.getByTestId('events-total')).toHaveText(formatNumber(evidence.total));
+  await assertEvents(page, evidence!.events, dialog);
+  await expect(dialog.getByTestId('events-total')).toHaveText(formatNumber(evidence!.total));
   await dialog.getByRole('button', { name: '下一页' }).click();
-  const second = await read<CognitionEvidence>(`/topics/evidence?topic=${encodeURIComponent(ordered[0].topic)}&page_size=20&page=2`);
+  const second = await read<CognitionEvidence>(`/topics/evidence?topic=${encodeURIComponent(evidence!.topic)}&page_size=20&page=2`);
   await assertEvents(page, second.events, dialog);
-  await expect.poll(() => requests.some(url => url.pathname.endsWith('/topics/evidence') && url.searchParams.get('page') === '2' && url.searchParams.get('topic') === ordered[0].topic)).toBe(true);
+  await expect.poll(() => requests.some(url => url.pathname.endsWith('/topics/evidence') && url.searchParams.get('page') === '2' && url.searchParams.get('topic') === evidence!.topic)).toBe(true);
   await dialog.getByRole('button', { name: '关闭', exact: true }).press('Shift+Tab');
   await expect(dialog.getByRole('button', { name: second.total > 40 ? '下一页' : '上一页', exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
@@ -127,7 +129,7 @@ test('来源完整保留实际计数、来源名称与六字段投影', async ({
   await expect(page.locator('.cg-page')).not.toContainText('人类行为');
 });
 
-test('证据完整保留过滤、日期、分页重置、每页条数和空日期', async ({ page }) => {
+test('证据完整保留过滤、日期、分页重置、每页条数和空日期', async ({ page }, info) => {
   const { requests, writes } = observe(page);
   const filters = await read<CognitionFilters>('/filters'), initial = await read<CognitionEvents>('/events?page_size=20');
   expect(initial.total).toBeGreaterThan(20);
@@ -139,16 +141,20 @@ test('证据完整保留过滤、日期、分页重置、每页条数和空日�
   await assertEvents(page, initial.events);
   await page.getByRole('button', { name: '下一页' }).click();
   await expect(page.locator('.cg-pagination')).toContainText('第 2 /');
-  const topic = filters.topics[0], kind = filters.kinds[0], source = filters.sources[0];
-  await page.getByLabel('主题', { exact: true }).selectOption(topic);
+  const topic = filters.topics.find(Boolean), kind = filters.kinds.find(Boolean), source = filters.sources.find(Boolean);
+  expect(topic, '主题筛选需要实际非空选项').toBeTruthy();
+  expect(kind, '类型筛选需要实际非空选项').toBeTruthy();
+  expect(source, '来源筛选需要实际非空选项').toBeTruthy();
+  await page.getByLabel('主题', { exact: true }).selectOption(topic!);
   await expect(page.locator('.cg-pagination')).toContainText('第 1 /');
-  await page.getByLabel('类型', { exact: true }).selectOption(kind);
-  await page.getByLabel('来源', { exact: true }).selectOption(source);
+  await page.getByLabel('类型', { exact: true }).selectOption(kind!);
+  await page.getByLabel('来源', { exact: true }).selectOption(source!);
   const day = initial.events[0].ts.slice(0, 10);
   await page.getByLabel('开始日期', { exact: true }).fill(day);
   await page.getByLabel('结束日期', { exact: true }).fill(day);
+  await info.attach('actual-evidence-query-state', { contentType: 'application/json', body: JSON.stringify({ queries: requests.filter(url => url.pathname.endsWith('/events')).map(url => Object.fromEntries(url.searchParams)), values: { topic: await page.getByLabel('主题', { exact: true }).inputValue(), kind: await page.getByLabel('类型', { exact: true }).inputValue(), source: await page.getByLabel('来源', { exact: true }).inputValue(), start: await page.getByLabel('开始日期', { exact: true }).inputValue(), end: await page.getByLabel('结束日期', { exact: true }).inputValue() } }) });
   await expect.poll(() => requests.some(url => ['topic', 'kind', 'source', 'start', 'end'].every(key => url.searchParams.has(key)) && url.searchParams.get('page') === '1')).toBe(true);
-  const params = new URLSearchParams({ topic, kind, source, start: day, end: day, page_size: '20' });
+  const params = new URLSearchParams({ topic: topic!, kind: kind!, source: source!, start: day, end: day, page_size: '20' });
   const selected = await read<CognitionEvents>(`/events?${params}`);
   await expect(page.getByTestId('events-total')).toHaveText(formatNumber(selected.total));
   await assertEvents(page, selected.events);
