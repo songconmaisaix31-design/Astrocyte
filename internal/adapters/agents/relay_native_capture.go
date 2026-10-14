@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -17,8 +18,11 @@ type relayNativeCapture struct {
 	mu                        sync.Mutex
 	state                     domain.RelayNativeSessionCapture
 	workspace, nativeID, path string
+	previousPath              string
 	closed, readerDone        chan struct{}
 	closedSeen, readerEnded   bool
+	diagnosticMethod          string
+	failed                    bool
 }
 
 func newRelayNativeCapture(root string) *relayNativeCapture {
@@ -32,6 +36,7 @@ func (c *relayNativeCapture) fail(reason string, unknown bool) {
 }
 
 func (c *relayNativeCapture) failLocked(reason string, unknown bool) {
+	c.failed = true
 	if c.state.FirstGap == "" {
 		c.state.FirstGap = reason
 	}
@@ -69,7 +74,26 @@ func (c *relayNativeCapture) bind(raw json.RawMessage, request domain.NativeRequ
 		c.state.PrefixComplete = "confirmed"
 	}
 	if source.Path != nil && filepath.IsAbs(*source.Path) && filepath.Ext(*source.Path) == ".jsonl" && !source.Ephemeral {
-		c.path = filepath.Clean(*source.Path)
+		path := filepath.Clean(*source.Path)
+		if resume && c.previousPath != "" && path != c.previousPath {
+			// 恢复响应可使用 Windows 长路径别名，只核控制器正选的两个文件。
+			previous, err := os.Stat(c.previousPath)
+			if err != nil {
+				c.failLocked("native_resume_archive_identity_unavailable", false)
+				return nativeError(apierrors.EvidenceMissing, "original native archive identity is unavailable")
+			}
+			current, err := os.Stat(path)
+			if err != nil {
+				c.failLocked("native_resume_archive_identity_unavailable", false)
+				return nativeError(apierrors.EvidenceMissing, "resumed native archive identity is unavailable")
+			}
+			if !previous.Mode().IsRegular() || !current.Mode().IsRegular() || !os.SameFile(previous, current) {
+				c.failLocked("native_resume_archive_identity_changed", false)
+				return nativeError(apierrors.ScopeDenied, "resumed native archive is a different file")
+			}
+			path = c.previousPath
+		}
+		c.path = path
 	}
 	return nil
 }
@@ -115,14 +139,12 @@ func (c *relayNativeCapture) observe(record map[string]json.RawMessage) error {
 		return nativeError(apierrors.ScopeDenied, "native notification thread identity is unavailable or differs")
 	}
 	if c.nativeID == "" {
-		if method != "thread/started" {
-			c.failLocked("native_notification_before_start_identity", true)
-			return nativeError(apierrors.EvidenceMissing, "native notification arrived before its source identity")
-		}
+		// start 响应与通知可在不同 goroutine 交错；bind 随后核实际 ID/CWD。
 		c.nativeID = params.ThreadID
 	}
 	kind, known := relayCodexNotificationKind(method)
 	if !known {
+		c.diagnosticMethod = method
 		c.failLocked("native_notification_semantics_unknown", true)
 		return nativeError(apierrors.UnsupportedCapability, "native notification semantics are unknown")
 	}
@@ -158,6 +180,9 @@ func relayCodexConnectionNotification(method string) bool {
 }
 
 func relayCodexNotificationKind(method string) (string, bool) {
+	if relayCodexConnectionNotification(method) {
+		return "native_activity", true
+	}
 	switch method {
 	case "thread/started":
 		return "session_started", true
@@ -232,8 +257,14 @@ func (n *Native) ResumeRelay(ctx context.Context, r domain.NativeRequest) (domai
 	}
 	capture := newRelayNativeCapture(r.Project.Root)
 	capture.state = previous.snapshot(false)
+	previous.mu.Lock()
+	capture.previousPath = previous.path
+	previous.mu.Unlock()
 	capture.nativeID = r.Session.NativeID
-	capture.fail("native_resume_raw_events_unavailable", true)
+	capture.state.Unknown++
+	if capture.state.FirstGap == "" {
+		capture.state.FirstGap = "native_resume_raw_events_unavailable"
+	}
 	n.mu.Lock()
 	n.relayCaptures[r.SessionID] = capture
 	n.mu.Unlock()
@@ -251,7 +282,15 @@ func (n *Native) OwnedRelayNativeCapture(ctx context.Context, session domain.Nat
 	if session.Ownership != "owned" || session.CLI != n.id || p.relayCapture == nil {
 		return domain.RelayNativeSessionCapture{}, nativeError(apierrors.UnsupportedCapability, "native controller has no armed notification source")
 	}
-	return p.relayCapture.snapshot(p.observe().StopConfirmed), nil
+	capture := p.relayCapture
+	state := capture.snapshot(p.observe().StopConfirmed)
+	capture.mu.Lock()
+	failed := capture.failed
+	capture.mu.Unlock()
+	if failed {
+		return state, nativeError(apierrors.ProviderUnavailable, "native notification source failed; inspect its preserved coverage gap")
+	}
+	return state, nil
 }
 
 func (n *Native) StopRelay(ctx context.Context, session domain.NativeSession) (domain.NativeObservation, error) {

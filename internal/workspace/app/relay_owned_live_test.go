@@ -124,7 +124,7 @@ func TestRelayOwnedActualCodexLifecycleAndSQLite(t *testing.T) {
 		t.Fatal("public owned work import failed")
 	}
 	spaces := relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: true})
-	options := app.RelayServiceOptions{Agents: []domain.AgentSpec{{Name: "codex", DriveMode: "structured", LaunchCmd: []string{"codex"}}}, OwnedRoots: agents.RelayOwnedRoots{}, LivenessWindow: time.Minute}
+	options := app.RelayServiceOptions{Agents: []domain.AgentSpec{{Name: "codex", DriveMode: "structured", LaunchCmd: []string{"codex"}}}, OwnedRoots: agents.RelayOwnedRoots{}, LivenessWindow: 10 * time.Second}
 	service := app.NewRelayService(store, works, db, spaces, driver, nil, nil, options)
 	lifecycle := service.(app.RelayLifecycle)
 	shutdownDone := false
@@ -148,7 +148,7 @@ func TestRelayOwnedActualCodexLifecycleAndSQLite(t *testing.T) {
 	confirmCaller := human()
 	confirmed, err := service.ConfirmIntent(launchCtx, confirmCaller, intent.Task.ID, app.RelayConfirmCommand{PermissionConfirmed: true, PermissionLevel: "A", ProjectSettingsRevision: project.Settings.Revision})
 	if err == nil || confirmed.Receipt.Status != "accepted" || confirmed.Receipt.Error == nil || confirmed.View.Task.Condition == "delivery_unknown" {
-		t.Fatal("post-send metadata cancellation hid failure or rewrote accepted delivery")
+		t.Fatalf("post-send metadata failure status=%s condition=%s error_present=%t", confirmed.Receipt.Status, confirmed.View.Task.Condition, err != nil)
 	}
 	replayed, replayErr := service.ConfirmIntent(ctx, confirmCaller, intent.Task.ID, app.RelayConfirmCommand{PermissionConfirmed: true, PermissionLevel: "A", ProjectSettingsRevision: project.Settings.Revision})
 	if replayErr == nil || replayed.Receipt.ID != confirmed.Receipt.ID || replayed.Receipt.Status != "accepted" {
@@ -204,6 +204,12 @@ func TestRelayOwnedActualCodexLifecycleAndSQLite(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(before, after) {
 		t.Fatal("unchanged real metadata/cache observation created activity or a receipt")
 	}
+	lastEvent := *view.Terminal.LastEventAt
+	time.Sleep(11 * time.Second)
+	silent, err := service.GetTask(ctx, human(), intent.Task.ID)
+	if err != nil || silent.Terminal.Liveness != domain.RelayUnverifiable || !silent.Terminal.LastEventAt.Equal(lastEvent) {
+		t.Fatal("actual silence or cached read refreshed activity inside the explicit test window")
+	}
 	if _, err := service.Send(ctx, human(), intent.Task.ID, app.RelaySendCommand{Input: "Reply with exactly PUBLIC_L1_SECOND. Do not use any tool."}); err != nil {
 		t.Fatal("actual second input failed; not retried")
 	}
@@ -229,8 +235,19 @@ func TestRelayOwnedActualCodexLifecycleAndSQLite(t *testing.T) {
 		t.Fatal("actual original-session resume failed; no replacement created")
 	}
 	current := findOwned(t, ownedReader(t, service), intent.Task.ID)
-	if current.NativeID != bound.NativeID || current.BindingID != bound.BindingID || current.ExitedAt != nil || resumed.View.Terminal.Liveness != domain.RelayUnverifiable {
-		t.Fatal("actual resume changed source identity or invented live evidence")
+	if current.NativeID != bound.NativeID || current.BindingID != bound.BindingID || current.ExitedAt != nil || resumed.View.Terminal.Liveness == domain.RelayExited {
+		state, stateErr := store.Snapshot(ctx)
+		if stateErr != nil {
+			t.Fatal(stateErr)
+		}
+		selected, selectedErr := native.OwnedRelayArchive(ctx, state.Sessions[bound.TerminalID])
+		var sameFile bool
+		if selectedErr == nil {
+			oldInfo, oldErr := os.Stat(bound.ArchivePath)
+			newInfo, newErr := os.Stat(selected.Path)
+			sameFile = oldErr == nil && newErr == nil && os.SameFile(oldInfo, newInfo)
+		}
+		t.Fatalf("actual resume identity: gap=%s source=%s native_equal=%t binding_equal=%t exited=%t liveness=%s provider_error=%t path_equal=%t file_equal=%t", current.Gap, current.SourceStatus, current.NativeID == bound.NativeID, current.BindingID == bound.BindingID, current.ExitedAt != nil, resumed.View.Terminal.Liveness, selectedErr != nil, selected.Path == bound.ArchivePath, sameFile)
 	}
 	if _, err := service.Send(ctx, human(), intent.Task.ID, app.RelaySendCommand{Input: "Reply with exactly PUBLIC_L1_RESUMED. Do not use any tool."}); err != nil {
 		t.Fatal("actual resumed input failed; not retried")

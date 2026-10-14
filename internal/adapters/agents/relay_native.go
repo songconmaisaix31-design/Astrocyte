@@ -87,7 +87,11 @@ func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.
 // Existing adapters without this port stay unknown; HistoryPath alone is not
 // a root/format/identity proof and triggers no filesystem or home discovery.
 func (d *RelayNativeDriver) withArchive(ctx context.Context, a app.NativeAdapter, obs app.RelayObservation) (app.RelayObservation, error) {
-	obs = d.withNativeCapture(a, obs)
+	var captureErr error
+	obs, captureErr = d.withNativeCapture(a, obs)
+	if captureErr != nil {
+		return obs, captureErr
+	}
 	if source, ok := a.(app.RelayOwnedArchiveProvider); ok && obs.Session.Ownership == "owned" {
 		archive, err := source.OwnedRelayArchive(ctx, obs.Session)
 		if err == nil {
@@ -119,15 +123,27 @@ func (d *RelayNativeDriver) withArchive(ctx context.Context, a app.NativeAdapter
 	return obs, nil
 }
 
-func (d *RelayNativeDriver) withNativeCapture(a app.NativeAdapter, obs app.RelayObservation) app.RelayObservation {
+func (d *RelayNativeDriver) withNativeCapture(a app.NativeAdapter, obs app.RelayObservation) (app.RelayObservation, error) {
+	if !d.captureNativeNotifications {
+		return obs, nil
+	}
 	if source, ok := a.(relayNativeLifecycle); ok && obs.Session.Ownership == "owned" {
 		// 这是当前进程已产生数据的纯复制，不发 RPC 或更新时间。
 		capture, err := source.OwnedRelayNativeCapture(context.Background(), obs.Session)
-		if err == nil {
-			obs.NativeCapture = &capture
+		if err != nil {
+			var failure *apierrors.ServiceError
+			if errors.As(err, &failure) && failure.Code == apierrors.UnsupportedCapability {
+				obs.NativeCapture = &domain.RelayNativeSessionCapture{Events: []domain.RelayNativeSessionEvent{}, SourceStatus: "unknown", PrefixComplete: "unknown", Finalized: "unknown", FirstGap: "native_notification_source_unsupported"}
+				return obs, nil
+			}
+			if capture.SourceStatus != "" {
+				obs.NativeCapture = &capture
+			}
+			return obs, &domain.RelayArchiveObservationFailure{Cause: err}
 		}
+		obs.NativeCapture = &capture
 	}
-	return obs
+	return obs, nil
 }
 
 func relayNativeObservation(s domain.NativeSession, obs domain.NativeObservation) app.RelayObservation {
@@ -179,7 +195,11 @@ func (d *RelayNativeDriver) Stop(ctx context.Context, r app.RelayLaunch) (app.Re
 		obs, err = a.Stop(ctx, r.Session)
 	}
 	if err != nil {
-		return d.withNativeCapture(a, relayNativeObservation(r.Session, obs)), err
+		result, captureErr := d.withNativeCapture(a, relayNativeObservation(r.Session, obs))
+		if captureErr != nil {
+			return result, errors.Join(err, captureErr)
+		}
+		return result, err
 	}
 	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs))
 }
