@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"time"
@@ -80,10 +81,11 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		return result, err
 	}
 	key, err := digestJSON(struct {
-		Actor   Actor
-		Request JudgmentRequest
-		Policy  Policy
-	}{actor, request, input.Policy})
+		Actor         Actor
+		Request       JudgmentRequest
+		Policy        Policy
+		AccessVersion string
+	}{actor, request, input.Policy, input.AccessVersion})
 	if err != nil {
 		return result, err
 	}
@@ -239,8 +241,11 @@ func (s *Service) recordAccess(ctx context.Context, actor Actor, record Record) 
 	if actor.Kind != "human" && (actor.ID != record.Actor.ID || actor.Kind != record.Actor.Kind) {
 		return &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "judgment record belongs to a different actor"}
 	}
-	_, err := s.resolve(ctx, actor, record.Request)
-	return err
+	access, ok := s.access.(RecordAuthorizer)
+	if !ok {
+		return apierrors.NewUnsupported("judgment_history_authorization")
+	}
+	return access.AuthorizeRecord(ctx, actor, record.Request)
 }
 
 func (s *Service) Feedback(ctx context.Context, actor Actor, id string, version int, kind, reason string) (Feedback, error) {
@@ -325,7 +330,7 @@ func ValidateModelResult(q Question, out BackendResult) error {
 		if out.Selected == nil || !expected[*out.Selected] || out.Value != nil {
 			return invalid("provider choice is missing or outside candidates")
 		}
-	} else if out.Value == nil || *out.Value < 0 || *out.Value > float64(len(q.Levels)-1) {
+	} else if out.Value == nil || math.IsNaN(*out.Value) || math.IsInf(*out.Value, 0) || *out.Value < 0 || *out.Value > float64(len(q.Levels)-1) {
 		return invalid("provider score is missing or outside rubric")
 	}
 	return nil

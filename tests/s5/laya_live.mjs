@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 
 const root = resolve(import.meta.dirname, '../..');
 const source = join(root, '.verification/s5/upstream/laya');
-const modelDir = join(root, '.verification/s5/assets/onnx');
+if (!process.env.ASTROCYTE_S5_ASSET_ROOT) throw new Error('ASTROCYTE_S5_ASSET_ROOT must explicitly name the owned local assets');
+const modelDir = join(process.env.ASTROCYTE_S5_ASSET_ROOT, 'english');
 const { Agent } = await import(pathToFileURL(join(source, 'laya-ts/dist/index.js')).href);
 const packageInfo = JSON.parse(await readFile(join(source, 'laya-ts/package.json'), 'utf8'));
 const digests = {};

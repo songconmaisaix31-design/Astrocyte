@@ -37,7 +37,8 @@ if (!Array.isArray(cfg.temperature) || cfg.temperature.length !== 3 || cfg.tempe
   throw new Error('Laya checkpoint base temperature is invalid');
 }
 const agent = await Agent.load(values['model-dir'], { device: 'cpu', expectedSha256: assets.files });
-const modelRevision = `${assets.model_revision}/${assets.checkpoint}/${assets.source_revision}/${assets.files['encoder.onnx']}/${assets.files['head.onnx']}`;
+const assetDigest = createHash('sha256').update(JSON.stringify(Object.fromEntries(Object.entries(assets.files).sort(([left], [right]) => left.localeCompare(right))))).digest('hex');
+const modelRevision = `${assets.model_revision}/${assets.checkpoint}/${assets.source_revision}/${assetDigest}`;
 const connection = createMessageConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let busy = false;
 connection.onRequest('judgment/health', () => ({

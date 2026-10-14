@@ -130,6 +130,7 @@ type Policy struct {
 	ProjectSettingsRevision int           `json:"project_settings_revision"`
 	WorktreeID              string        `json:"worktree_id"`
 	SnapshotID              string        `json:"snapshot_id"`
+	SnapshotFiles           []string      `json:"snapshot_files"`
 	QuestionType            QuestionType  `json:"question_type"`
 	Versions                Versions      `json:"versions"`
 	Backend                 Backend       `json:"backend"`
@@ -143,15 +144,20 @@ type Policy struct {
 }
 
 type AuthorizedInput struct {
-	Policy     Policy
-	Evidence   []Evidence
-	WorktreeID string
-	SnapshotID string
+	Policy        Policy
+	AccessVersion string
+	Evidence      []Evidence
+	WorktreeID    string
+	SnapshotID    string
 }
 
 // 权限、固定引用和策略从真实业务来源读取，传输内容不能自行批准。
 type Authorizer interface {
 	Resolve(context.Context, Actor, JudgmentRequest) (AuthorizedInput, error)
+}
+
+type RecordAuthorizer interface {
+	AuthorizeRecord(context.Context, Actor, JudgmentRequest) error
 }
 
 type PolicyRepository interface {
