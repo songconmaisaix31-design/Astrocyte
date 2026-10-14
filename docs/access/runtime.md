@@ -422,3 +422,38 @@ $env:ASTROCYTE_RELAY_L1_EVIDENCE = (Resolve-Path 'dist/relay-l1').Path
 - 当前进程结束的 writer 证据不跨服务重启证明仍有原控制器所有权。持久引用和通知可重载；不能据 PID、terminal pane 或数据库记录接管旧 writer、自动 Resume 或补历史。
 - 实际用户作品、dirty / untracked / non-Git 来源、自由工具、原件留存和产品活性窗口仍未决定。终端 TTY / terminal-only coding、其他 CLI 完整 Session、race detector、正式 Procmon 零写和真实两日 00:30 验收仍未执行。
 - 正式 V4 材料 / 协议 / engine / mapper / 认知 schema / migration / 权重 / 快照流程未修改或读取正式原档。当前部署 17321 保持独立，未合 main、未发布 ZIP、未向外部沟通渠道发送消息。
+
+## v1.4 固定上下文与首输入前来源检查阶段
+
+本阶段 SOURCE 为 `ce0302835cb7477eb606107351a9ab46dd8d4714`，分支 `songconmaisaix31-design/works-relay-runtime`。本阶段沿原 Task `task_f082d8b36471` / Dispatch `ctx_aa83ef2b5087`，没有启动新的原生进程或模型，没有操作旧任务。
+
+`RelayServiceOptions.LaunchContext` 是受信后台组装的可选私有端口。`relayworktree.NewFixedContext` 接收原 `LocalProjects.ReadProjectContext` 实例和明确的 `FixedContextSelection`：实际 ProjectID、批准的绝对项目根、完整 baseline commit、settings revision 和明确相对文件列表。选择在构造时复制，重复项目、重复文件、相对根、不完整 commit 和越界路径立即拒绝。
+
+Confirm 在原唯一 action claim 后核当前 `read_context` 权限和原 Agent grant，再读取一次原项目授权端口。读取前后分别核实际 Git 根身份、准确 HEAD、干净状态和指定文件已被跟踪；packet 的项目、revision、数量、文件名与版本分别核对。读取完成后重新核 `start` 权限，才交原 driver。未配置该端口保留既有任务手册输入；配置后的未选项目拒绝，不能自动改选根或文件。
+
+原项目根是固定源码的读取来源，中性工作区是实际控制器 CWD，两者分别保存。首次公开 Go 候选可使用批准 primary root 的四个固定文件。Swarm 的 actual worktree snapshot / BindSession / Claim 顺序仍由 S2 / S4 / S3 沿原授权端口处理；当前端口不将 primary root 当作新的 worktree snapshot，也不授予自由读取或文件工具。
+
+`RelayLaunch.Packet` 私有传入原 `NativeRequest.Packet`，structured 输入继续使用既有 `packetPrompt`，terminal 首输入使用相同 fixed context framing。正文只在实际输入和原控制器内存中使用；Relay store 保存会话绑定时剔除 `ContextFile.Text` 和 `ContextMaterial.Text`，保留 packet、版本和身份。新增端口没有 HTTP 正文或路径参数，session-events 六字段保持。
+
+H 可在原 `RelayNativeDriverOptions` 同时设置 `CaptureNativeNotifications=true` 与 `BeforeFirstInput`。该回调位于同一个实际 Codex 控制器完成 initialize / thread-start 之后、任何首 turn/start 写入之前。`StartRelayOperationWithInputGuard` 从 armed capture 读取同次官方 Thread.path，不发额外 RPC，不发现其他档案，不另起 CLI。回调收到实际完整 NativeSession、私有正选 archive 和安全 gap；官方尚未提供 path 时传 `nil` 与 `archive_not_yet_available`。提供的 path 非绝对 JSONL 或与 ephemeral 状态冲突时立即拒绝，不能转换为可用路径。
+
+H 在该回调中沿原 source guard 核正选文件的身份和单链接条件。指针已经给出但文件尚未 materialize、实际来源拒绝或身份变化分别保留实际结果；不得删除未知链接、扫描 home 或改用旧档案。回调拒绝会停止原 held controller，保留已经发生的初始化 / session facts、实际退出和 unknown 收据，不发送首输入。未 armed 的控制器、不支持的 provider 和缺失 operation 在进程启动前拒绝该回调。回调通过不证明工具已经有效关闭、整个 session 完整或目标已经完成。
+
+普通 `Native.Send` 现在核原完整会话的 `PendingOperation` 和 `Operations[operation]`，只将实际 `send / pending` operation 传入原发送路径。缺记录返回 `delivery_unknown`，动作或状态不匹配返回 `scope_denied`；不从 SessionID、startup operation 或时间邻近推导新的输入身份。S3 的原 generic Start 空 Message 仍仅初始化 owned / idle，不发送模型首输入；实际 worktree 授权与绑定后 Claim 新 input operation，再沿同一个 Registry / controller Send。
+
+验证共同使用 `GOMAXPROCS=2`、`go -p=1 -mod=readonly`，本机证据均在忽略目录 `dist/relay-l1`：
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/relayworktree ./internal/adapters/agents ./internal/workspace/app` | 首次 context 阶段 PASS：5.242 / 7.204 / 11.495 秒；`v14-fixed-context-first.log` |
+| 同三个 package 的 checkpoint 回归 | PASS：agents 6.938 / app 18.666 / worktree 9.706 秒；`v14-context-checkpoint-final.log` |
+| 三个 package，限定 `TestRelayStoredSession / TestRelayFirstInputCheckpoint / TestRelayFactsRejectMissing / TestFixedRelayContext`，`-count=1` | PASS：app 2.269 / agents 1.971 / worktree 3.482 秒；`v14-context-boundaries-final.log`。真实 Git / SQLite / 原 ProjectFiles 读取、源根变化、未提交修改和 baseline 变化拒绝均实际运行；拒绝和隐私测试不构造成功模型或 owned 进程 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/adapters/sqlite -run '^TestRelay' -count=1` | PASS：3.636 / 2.482 秒；`v14-context-relay-final.log` |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/workspace/app ./internal/adapters/relayworktree` | 最终源码 PASS：6.497 / 11.039 秒，worktree 使用同源码 cache；`v14-context-source-final.log` |
+| `go vet -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/relayworktree ./internal/adapters/sqlite` | EXIT 0；`v14-context-source-vet.log` |
+| `go build -p=1 -mod=readonly -o dist/relay-l1/v14-context-source-server.exe ./cmd/server` | EXIT 0；产物未启动，`v14-context-source-build.log` |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package 边界 / EXIT 0 |
+
+本阶段第一次普通 SOURCE push 遇到 `SSL_ERROR_SYSCALL`，保留该首失败；同一普通 push 再执行成功，独立 `ls-remote` 精确核得 `ce0302835cb7477eb606107351a9ab46dd8d4714`。此前完整 Go 的 H 权限断言 RED、控制器测试首 RED、旧 nlink2 来源 FAIL、旧未知交付、旧三分钟 firstDOM FAIL 均保留，没有用本阶段 targeted PASS 改写完整验收。
+
+H / F 仍须消费准确 SOURCE 后组装当前新公开项目和 observer，核实际 argv / 自产权限 / 合法来源，唯一登记保存真实计时起点，再执行已授权的共同 Codex started 正向。首输入前 callback、当前新档案单链接、实际上下文消费、模型候选、准确 turn mapping 的 HTTP / SQLite 回查、Today 两尺寸、人工目标完成 / release 和新 provider handoff 仍未实测。working 严格门禁与无开始客户端人工 done 的待答规则保持现有状态机；Swarm usage / actual toolset 不补造。最终 ZIP、L / S 完整默认验收仍由原 owner 持续处理。
