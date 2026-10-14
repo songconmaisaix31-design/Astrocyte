@@ -1,5 +1,43 @@
 # 集成发布模块执行记录
 
+## 2026-10-15 当前发布协调
+
+本阶段 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324` / 实际终端 `term_ea9b6554-42cc-4569-ad5b-5f4140aec20d`，子 Run `run_aa4e6a119547`。固定工作树与原分支保持不变，接管 HEAD 为上一阶段独立 REPORT `6d16ab2143da2a6f15d63827f17d76e9c9419314`，工作树 clean。实际终端由 Orca `terminal show` 核实为 Codex / GPT-6.1-Sol high fast。当前仅写本文及 [今日运行记录](daily-operation-20261015.md)，业务代码、正式运行树与锁定协议保留原 owner。
+
+用户已要求现在推进四项语义修改、实际 CLI、今日采集和 L/S。四项语义及真实 CLI / Today 由 M-relay 管理原 R/H；B/F/T/V 与独立研究由 M-product 管理。今日采集范围和 L/S 含义尚待根收到用户答复；答复前只核真实锁、已发生运行、日输出 / 快照 / 覆盖和调度，不执行 capture、Sleep、模型或 judge。首个协调回执 `msg_ede8860188d6` 已送根 Run `run_973808dd6a2f`。
+
+### 本阶段一页执行计划
+
+| 轨道 | 固定工作树 / 写入范围 | 启动条件与验收 |
+|---|---|---|
+| 日采集只读预检 | 原正式工作树 `C:/Users/DW/orca/Astrocyte`；文件写入范围为空 | 唯一第三层 Task `task_2c8053c4f064` / Dispatch `ctx_7bba9154b03d` / 终端 `term_9a994931-084f-46a2-93c7-e436980fcf3c`，ready / turnStart observed / depth2；实际 projection Codex / gpt-6.1-sol，终端 high fast。核真实锁 / 全文 SHA / CLI / 日去重 / 输出与 coverage / 原 automation；不创建输出或执行日流程。 |
+| I 唯一集成 | 待条件完成后创建独立 release 集成工作树 / 分支；只补少量路由、导入、配置、类型和集成报告 | 精确 SOURCE / 独立 REPORT、四项语义、完整默认、实际 native / Today 均通过后才启动。普通 `--no-ff`，领域失败交原 owner；check / build / 完整 workers=1 E2E 与适用链路通过后 push SOURCE 与独立 REPORT。 |
+| P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
+| N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
+
+P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 和旧资源 released；不向旧 Dispatch 发送新任务。Q/S 保留已接纳终稿，只有具体领域失败才恢复原 owner。日预检文件写域为空，与本模块两份管理文档互斥；原始输入 / 响应 / 日志只留已有外部证据根，Git、MCP 与 stdout 只记录派生计数。
+
+### I 精确输入准备
+
+| 模块输入 | SOURCE | 独立 REPORT / 当前门禁 |
+|---|---|---|
+| Q 认知 | `1d07c5b2ff78db5ffe7e90b4d903c618b5a8ac50` | `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`；公开真实 SQL / 六字段 / Sleep / history / 同主题分页阶段通过，原 owner 已释放。 |
+| P 构建与验证工具 | `1a1c14d6fdd02e7824efb82a618848a1c315dedb` | `7cccea1d426944ebc3292857ecddaa1c6ef81cdf`；对应 15f 候选 124PASS，完整最终包尚待。 |
+| N 客户端 | `7202f07c9c4122f08d760afa88472fb32852b38e` | `b74b97a44d5a116d090424d78f358fdf520667e2`；非模型阶段通过，最终包原生尚待。 |
+| S 科研审阅 | 文档提交 `7d030fc83120052a8f32ea74c6007ff9be6878ca` | 已释放；作者成绩与本项目实证范围分别登记。 |
+| Python 标准整改 | `a1089f94a13306e3cd250ed8facbb438d6e75a19` | `91e3e59dcfc8024cd2e4955ac72f627e65c18e71`；按根已验范围消费。 |
+| B 当前追加 | `4a6076c402e0b5d31982154a31a905bee6127477` | `7614b27e6084bf843f71a6b95082b91a7ca36ed9`；真实 PDF / 私有类别 / Reader guards 阶段，模块独核远端同 REPORT、SOURCE 祖先、独立文档提交；尚待最终完整默认与实际模型接纳。 |
+| V 当前追加 | `08b3594fe4a3a02d06fead00ee6ead98b9e38bbc` | `a21379e41f700d8f88d6ee1fb4618c08f49abf54`；产品报告时间区间 / HTTP / 冷重启通过，Whisper 实际取消 18.73 秒与重启不续尚待新精确提交。 |
+| T 当前追加 | `61a012464a22d60ef421ea1fdaa5541ef65f1f7e` | `ef019bbf86f7a11d1a68e4fe2edf21230f48b5a3`；产品报告真实收藏100 / prefix110 / partial retry / 视频A-B-A阶段通过，Creator 实际不足 / 412 和旧模型 helper 未通过。 |
+| F 最终 | 尚待 M-product 提供最终完整 SHA | 原默认 203PASS / 41FAIL / 32SKIP / 4NOT_RUN 保留，未通过完整门禁；port0消费后适用复验继续。 |
+| R 四语义 / H port0及实际链路 | 尚待 M-relay 最终交付 | R `task_f082d8b36471` / `ctx_aa83ef2b5087`，H `task_abf1f8b1e12e` / `ctx_d7d8c2828fba`；H `1aadeeb` 为阶段来源，不提升为最终 native / Today 通过。 |
+
+候选包 SOURCE `15f27f4a8e1e2300b8b1152cfd5b8e5f722db744`、33,768,080 bytes、124PASS 保持原验证范围；B / V 追加及 H port0 不在该包。最终 I 消费清单以各模块后来接纳的完整 SHA 和独立 REPORT 更新；阶段候选不会自动成为最终输入。M-relay 联络 `msg_a19ea95c69ad` 和 M-product 联络 `msg_da12f3a65d98` 已由 Orca 重定向到各自实际读取的子 Run，当前等待回执。
+
+已处理实际 FIFO 回执：M-relay `msg_c7d9b9c2575c`、M-product `msg_31e1518ea604`、唯一规格交接 `msg_9fdb8cf6255c`、根持续 V4 授权 `msg_3bfcb58d722e`；Delivery `delivery_f8799ae5fafc` 已处理并 ACK。完整读取 v1.4 唯一规格 SOURCE `297d00420f4478dd24805a9ad70ced47fb5b711f`，模块独核两文件提交和远端同值；working 严格开始证据与无 started 人工完成仍待用户决定。原00:20 automation持续授权，采集范围未答不暂停它；新的操作仅只读预检。首次 worker-start 缺少 sender 被入口拒绝，未创建资源；补实际 `--from` 后唯一预检成功，未创建重复执行者。
+
+当前 I / 最终 P / 最终 N 尚未派发；发布、tag、正式 V4 冻结解除、人评代填均未执行。下方保留上一阶段交付记录及首失败证据。
+
 事实源：[Release v0.1](../../tasks/Release-v0.1-20261014.md)、[AGENTS.md](../../AGENTS.md)、[HANDOFF.md](../../HANDOFF.md)、[STATUS.md](../../STATUS.md)。基线 `dd60de11bca85662f5bb4a5b281cc7b42e6ffd2f`；模块分支 `songconmaisaix31-design/module-release-20261014`。
 
 本 Dispatch 的当前交付范围为今晚候选阶段。总负责人对真实问题 `msg_a12796dc79a7` 回复 `msg_b62e6bd10626`，明确接受已交124PASS候选、P/N阶段交付及清理、最终I与发布的明日交接，要求本阶段合法结算。该阶段已完成；完整产品与最终Release门禁仍保留。2026-10-15在v1.4语义 / 原生 / 默认等门禁完成后，以原模块tree / branch新Task继续唯一I及P最终同源重建。
