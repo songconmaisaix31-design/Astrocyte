@@ -46,3 +46,9 @@ SemanticIndex 的具体模型、运行时和向量库仍待用户决定。没有
 适用命令：`go test ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet ./internal/adapters/repositorycontext ./tests/s4/...`、`go build ./...` 已通过。真实操作入口为 `tests/s4/verify.ps1`，各阶段独立进程；本机结果位于 `.verification/s4/actual-first/` 和 `dist/s4/initial-first.log`。`deleted-failure.txt` 保存首 RED，后续 `deleted-check.log` 为准确文件删除验收，不覆盖原件。
 
 首次额外 `go test ./internal/adapters/sqlite` 保留 FAIL：九项既有 Workbench 实际来源测试未配置 `ASTROCYTE_TEST_COGNITION_LOCALAPPDATA` / `ASTROCYTE_TEST_COGNITION_NATIVE_LOCALAPPDATA`。没有新增 skip、修改其断言或声明全包通过。完整默认 check/build、HTTP、前端和包级验证由最终精确组合接续执行。
+
+## 首个可消费交付
+
+SOURCE `9eff2edb34058826d302d3a465b7fe7e74797be5` 已普通 push。消费方可独立使用 S2 的真实 `ProjectSnapshotProvider`：`repositorycontext.New(db, db, Options)` 后把返回的 service 交给原 S2 构造接口；没有 HTTP 自证快照，也不需要第二 SQLite 连接。查询的 `Root` 不会进入仓库上下文 JSON。H 仍须对 S2 现有快照字段执行其既定安全 DTO 审核。
+
+本次源码适用 Go 测试、vet、完整 Go build 与 `git diff --check` 均 PASS；最后一次独立进程 restart 再次核两 worktree 的真实 Count 符号和调用关系 PASS。AOCI 缺口、SemanticIndex 未决定及完整 HTTP/前端/包验证保持上表状态。本阶段继续同 Agent、工作树和分支开发，不作为 S4 或发布包最终结算。
