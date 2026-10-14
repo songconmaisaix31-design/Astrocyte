@@ -15,6 +15,14 @@ test('production server keeps owned SQLite after close and reopens it without pr
     assert.deepEqual((await api.get('/materials')).items, []);
     assert.deepEqual((await api.get('/local-projects')).items, []);
     assert.equal(server.query('PRAGMA integrity_check')[0].integrity_check, 'ok');
+    const { snapshot: discovery } = await api.write('/local-projects/registered/refresh', {});
+    assert.equal(discovery.projects.length, 1);
+    assert.equal(discovery.projects[0].source, 'explicit_directory');
+    assert.equal(await realpath(discovery.projects[0].root), await realpath(root));
+    await assert.rejects(server.startAPI(), /still running/);
+    await server.stopAPI();
+    await assert.rejects(fetch(`${server.apiURL}/api/v1/health`, { signal: AbortSignal.timeout(1000) }));
+    await server.startAPI();
     const oldURL = server.apiURL;
     await server.close();
     await access(join(original, 'data', 'state.sqlite'));
