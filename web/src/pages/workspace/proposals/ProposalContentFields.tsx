@@ -55,7 +55,7 @@ export function ProposalContentFields({ draft, onChange, disabled, projectLocked
     <fieldset disabled={disabled}><legend>产出与停止条件</legend>
       <TextField label="预期产出" value={draft.deliverables} onChange={update('deliverables')} multiline hint="每行一项交付内容。" />
       <TextField label="成功条件" value={draft.successCriteria} onChange={update('successCriteria')} multiline hint="每行一项可检查的成功条件。" />
-      <label><span>截止时间</span><input aria-label="截止时间" type="datetime-local" value={draft.deadline} onChange={event => update('deadline')(event.target.value)} required /></label>
+      <label><span>截止时间</span><input aria-label="截止时间" type="datetime-local" step="any" value={draft.deadline} onChange={event => update('deadline')(event.target.value)} required /></label>
       <TextField label="停止条件" value={draft.stopConditions} onChange={update('stopConditions')} multiline hint="每行一项明确停止条件。" />
       <TextField label="最大工作项数" value={draft.maxWorkItems} onChange={update('maxWorkItems')} type="number" numberRange={{ ...integerRange, min: 1 }} required />
       <TextField label="最大尝试次数" value={draft.maxAttempts} onChange={update('maxAttempts')} type="number" numberRange={{ ...integerRange, min: 1 }} required />

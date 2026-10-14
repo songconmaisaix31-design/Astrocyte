@@ -46,8 +46,8 @@ export function ArtifactFields({ draft, onChange, disabled }: { draft: ArtifactD
     <TextField label="产物对象引用" value={draft.objectRef} onChange={update('objectRef')} required />
     <TextField label="检查结果引用" value={draft.checksRef} onChange={update('checksRef')} required />
     <TextField label="实际修改路径" value={draft.changedPaths} onChange={update('changedPaths')} multiline required hint="每行一个实际修改的相对路径；服务核对真实 Git 差分及批准范围。" />
-    <TextField label="实际调用量" value={draft.calls} onChange={update('calls')} type="number" numberRange={integerRange} required />
-    <TextField label="实际 Token 用量" value={draft.tokens} onChange={update('tokens')} type="number" numberRange={integerRange} required />
+    <TextField label="实际调用量" value={draft.calls} onChange={update('calls')} type="number" numberRange={integerRange} hint="未知用量保持空白；已知零用量填写 0。" />
+    <TextField label="实际 Token 用量" value={draft.tokens} onChange={update('tokens')} type="number" numberRange={integerRange} hint="未知用量保持空白；限额所需用量证据由服务核查。" />
     <TextField label="实际费用（最小货币单位）" value={draft.money} onChange={update('money')} type="number" numberRange={integerRange} hint="未知费用保持空白。" />
     <TextField label="实际费用币种" value={draft.currency} onChange={update('currency')} />
     <p>提交后进入待验收状态。人工采用后才记录验收通过。</p>
