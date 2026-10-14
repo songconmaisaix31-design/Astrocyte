@@ -2,6 +2,64 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md 和 [发布任务](../../tasks/Release-v0.1-20261014.md)。2026-10-14 用户已确认三层组织；本模块负责人只修改本文件，业务实现、测试、文档和返修由原 R/H 开发人员持续完成。
 
+## 当前执行范围与 v1.4 草案
+
+2026-10-14T15:12:47Z 总负责人传达用户调整：今晚停止新的 Relay 原生与 Today 验收；2026-10-15 按真实 CLI 端到端、三分钟 Today、L1 最终验收的顺序继续。15:19:11Z 总负责人核实前文只有四个优先方向，今晚交付具体规格草案，关键语义明天结合本稿确认。本节是待确认草案，没有冻结接口或改变业务代码。已完整读取[REA研究报告](../research/orca-rea-20261014.md)和主仓 `tasks/Works-Relay-v1.2.md`，并消费原 R 技术稿 REPORT `6cd44177ca8ff5b04ad9fbb90bf9729321cba9da`、原 H 技术稿 REPORT `c130e16d28011f36e9e96a2bf306585611b2fe7e`。
+
+新 API17344 服务曾实际启动，H 核 agents0 / tasks0 / 无注册文件 / 无原生会话文件后正常关闭，服务检查 PASS60.32秒 / exit0；F 未启动17345网页或新 observer，confirm / model 均0。旧 scope 清理释放 HTTP200，operation `ccf54824-6194-4161-81c0-0d6985ee5171`；之后模块只读/query_only SQL 实际核 task released、revision2、Prepared=true、ActiveTaskID为空。服务已关闭后的模块独立 HTTP 检查连接拒绝，未重新启动来补验。旧目标验收不通过、read delivery_unknown、来源 nlink2 FAIL 和原三分钟 FAIL 保留。
+
+### 1. 投递阶段
+
+现状：动作先由既有 store 保存 pending 和 operation 身份，完成后保留不可变收据；`relay.go` 的 observe 对任意新 native / CLI 活动迁移 accepted → working，`relay_lifecycle.go` 的 Git 记录也会迁移。Native 的 turn/start 回复与 turn/started 通知已有不同入口，terminal 的 pipe 写入及 EOF 关闭只有输入交付事实。
+
+拟改行为：保留 ready → accepted → working → done → released 状态机及现有收据。分别记录动作取得唯一执行权、输入接收、回合开始和人工目标确认；最终收据不因后续事件而重写，后到事实通过既有事件和 operation 关系追加。working 仅由当前 owned session 的明确回合开始证据驱动。拟接受的证据为实际 turn/started 通知、身份和当前 turn 匹配的 controller 自产 task_started，或该客户端实测并已确认语义的提交开始证明。普通 stdout、Git 改动、PID存在和 stdin写入不触发 working。未知交付保留占用和原收据，不自动重试；回合完成与退出不产生人工 done。
+
+拟提供的安全读取内容为输入接收状态及时间、开始证据状态及时间、证据来源类型与固定原因。原输入、provider payload、原生路径和原文继续留在本机；具体字段和可接受开始证据枚举待总负责人确认，之后由 R/H 统一提交。
+
+关键待确认：working 是否严格要求明确开始证据。现 Claude 只有初始化、text和turn_completed，terminal只有cli_activity/Git；没有独立开始协议时拟保持accepted与开始unknown。原状态机只有working→done，这会阻止它们完成完整人工接力。明天必须同时确认这些客户端的开始证据和人工完成规则，不能自行增加accepted→done/released、从完成结果倒造turn_started或降低确认要求。Pi的实际agent_start只能表达该客户端的开始，不生成Codex turn身份。
+
+真实验收：对一次新的受控公开输入核 input 接收、实际 turn 开始与 UI working 的时间和关系；只有输入接受及 Git 活动时仍为 accepted。同 operation 并发只执行一次；实际断连、进程终止和服务重启后的未知保持占用，不能产生第二模型提交。最后先核合法输出满足固定目标，再人工 done。
+
+### 2. 原生会话归属
+
+现状：R 已按 task / terminal / worktree / project / Agent / session / native身份绑定，并从原 controller metadata 取得正选档案。H 使用私有文件身份、位置和通知序号游标。服务重启后 registry map为空时，不能用持久化 NativeID 重建 owned process。本次同一原档有两个系统名称，属于文件别名事实，不能解释成另一会话或控制器。
+
+拟改行为：原生来源绑定同时包含 provider类型、原生身份、原工作区、取得所有权的真实控制器或采集连接、既有启动/恢复 operation 关系及来源身份。活性三值与所有权分开：PID或近期活动不授予所有权；当前同 task 关系不足、身份冲突、路径别名或来源歧义保持未确认。档案只使用控制器给出的正选文件及已授权根，沿既有单链接和同文件保护执行，不能扫描 home 或切换候选来源补齐成功。事件提交仍逐 EventRepository event_id 回查，游标只有成功提交后推进；旧重放不更新 live。
+
+拟公开的内容仅为归属确认状态和固定拒绝原因；原生ID、完整CWD、文件名、原始序号细节和进程所有者资料仍在私有状态。现有 session-events 六字段保持精确，不向事件记录增加上述私有内容。
+
+真实验收：当前准确 controller自产文件、CWD和事件库逐一核实；错误身份、未授权根、重复名称和恢复后旧连接事件应安全拒绝，保留覆盖分母与首错误。新的真实通知与档案各按自身来源验证，不能用一种来源的通过替代另一种；本次 nlink2限制单独保留。
+
+### 3. 输入就绪条件
+
+现状：AgentSpec 的 DriveMode / InputMode 声明执行方式和输入 framing，注册与可执行文件存在不证明 ready。terminal当前核实际argv、owned进程及stdin pipe，尚无TUI/paste-ready观察端口；structured已有 initialize / thread/start / turn协议。
+
+拟改行为：接入层单独记录输入协议、就绪前置、实际就绪证据和输入关闭状态。structured须有本次 owned controller 初始化及正确原生会话建立的确认；不能仅因进程启动就开始输入。已验证的非交互 stdin协议须匹配可信启动策略、实际命令和输入通道；其输入就绪不表示回合已经开始。交互式TUI须由相应客户端提供实际就绪信号，当前缺少证据时保持未确认并拒绝依赖该信号的输入，不更换 framing。stdin_eof首输入只有一次，关闭后的后续send必须明确拒绝；声明EOF不授予工具权限。注册表继续记录 installed / configured / launchable / native capability各自事实，不相互替代。
+
+拟公开内容为输入协议、就绪三值和固定原因；具体就绪证据规则须经总负责人确认。当前没有依据选择通用TUI组件、视觉判断或新调度框架。
+
+关键待确认：就绪表示允许安全提交输入的协议条件，还是客户端已经消费输入的确认。Codex initialize / initialized / thread建立，Claude控制initialize与之后system/init，Pi get_state的原sessionFile核实，各有不同可观察边界。pipe可写与完成EOF提交只能按本身语义记录；不能将它们直接定义为客户端ready。GET只读已观察结果，不为刷新就绪而启动或probe控制器。
+
+真实验收：本次结构化初始化确认、实际受控非交互CLI与输入关闭拒绝分别检查；未验证客户端、错误命令/工作区、只有pipe写入或启动失败不能标为就绪/开始工作。所有新模型测试只在已授权公开根、关闭原生文件与命令工具条件下进行。
+
+### 4. 恢复身份关系
+
+现状：R Resume保留原task / binding / session / native身份，首input为空；capture核thread / CWD / fork及同文件关系。换Agent在已释放的中性工作区创建新session。当前未见完整持久化的new / resume / fork / Agent换手关系序列。
+
+拟改行为：在既有store和启动/恢复收据中保存关系种类及原会话关系。resume保持原身份根及task，必须由实际provider恢复结果确认；fork须有明确父关系及适用授权，当前不支持的fork拒绝。换Agent记录新的session与人工上下文交接关系，保留中性工作区，不声称续接前一provider会话。每次实际采集连接关联其启动/恢复operation；新连接序号不能冒充旧游标的继续位置，旧连接事件不得刷新新会话live。终端持久ID与PID分离。旧记录缺少的关系和所有者证据保持unknown，不补造成功历史。
+
+拟公开关系种类、确认状态和允许的既有task/session引用，私有provider handle及原档信息不进入HTTP。具体关系字段、旧数据读取规则及未支持fork的错误契约经总负责人确认后实施，不另建Attempt、Manifest或完成证明系统。
+
+关键待确认：恢复关系如何使用已有operation记录区分实际控制器或采集连接的前后关系，以及缺少关系字段的旧记录如何显示unknown。持久binding不等于当前owned process；通知恢复的raw缺口、档案prefix/session完整性和append-only unknown继续保留。
+
+真实验收：同一公开task实际恢复后核原身份、空首input、原工作区和重放去重；错误恢复/fork拒绝；实际人工释放并换Agent后核工作区保留、新session及交接关系。服务重启不能自动创建第二执行者，历史unknown和第一失败不覆盖。
+
+### 分工、确认与实施顺序
+
+R继续独占现有领域状态、应用服务、relay store及native/terminal drivers；H继续独占实际来源、私有游标、HTTP与OpenAPI；必要前端展示和动作条件直接交产品模块的原F，依赖仍由B持有。模块只维护本稿，接口共同部分由R定义后给H精确SOURCE，不安排同文件并发人员。
+
+明天先确认四项具体证据规则与安全字段，再由原R实现并提交SOURCE/独立REPORT，原H普通消费并完成来源/HTTP契约，原F消费准确契约实施UI。随后按真实CLI端到端、三分钟Today、L1最终验收执行；三分钟起点使用当次真实登记时间，observer须先ready。今晚的规格和静态构建结果不能代替这些实际验收，完整默认浏览器和实际Windows包原生测试仍待对应精确最终组合。
+
 ## 身份与分工
 
 - 总负责人：`term_494acbb9-67a5-4360-82dc-8514ce124990`，顶层 Run `run_973808dd6a2f`。
@@ -74,6 +132,15 @@
 - F 首 native DOM 实际为13:33:25.152Z / .153Z；H 逐 SQL 核两个自产 archive ID，第三个 relay_task 事件不计 native。原注册至 DOM591116 / 591117毫秒 FAIL；dispatch 创建至 DOM14.516 / 14.517秒 PASS，两种起点分列。原 task 单次 read 返回200 / accepted，controller 已实际退出，人工 done / released 等上述权限修复投入和 F 实际操作。
 - 总负责人已授权先合法释放旧 task、SQL 工作区解锁和 pending0，再创建独立明确公开 scope / DB / follow-up；新窗口使用既有显式900秒并提前取得 F observer ready。新模型工具关闭须有本次实际 PID / argv / controller 来源证据；旧第一 FAIL、503 accepted 和 unknown 不覆盖。PUBLICATION_ERROR 尚未执行；H 正核新独占 SQLite 的真实 writer 争用是否能只使事件 sink busy，不能假造 sink、增加测试开关或使用旧 scope / 正式数据。
 - 14:37:50Z H 从原 relay.sqlite 精确 binding 选定本次 controller 原档，实际 regular / bytes105564 / nlink2 / source_status available。Windows 来源身份 guard 要求单链接，当前 `source_identity_unverifiable_or_aliased`、coverage errors1 / snapshot_complete false，当前覆盖 FAIL；此前15行 / 18个 HTTP ID 通过保留为当时结果。H 声明原档未建链接，其保护测试只链接独立新 SQLite。模块已交 R、产品 F/B、发布 Q/N/P 核准确本次消费者和自有链接创建清理证据，禁止扫描私人历史、删除未知第二链接、放宽 guard 或重复旧成功模型填证据。
+- H 已普通合权限 SOURCE / REPORT，服务组合 SOURCE `e5714bb868a6519ec70520bca1c0a1b6c4678fb8`。模块14:52:47Z 独立实际 auth/session200、17342唯一 listener PID31980 / actual-service.test、启动14:50:41.4138931Z、binary编译14:48:35.8549174Z；H14:54:55Z 正式确认 ready，原 task working / revision2 / terminal exited13:36:11、原 DB / registration 保留，新 native 启动0。Foundation / Projects 实际 HTTP200；F 已收到唯一人工 done / read / release 操作窗口，实际收据和 SQL 解锁待交接。
+- 编译仍运行时首次复制服务 binary 被文件占用拒绝，未启动第二 writer；H 确认原 PID 退出后才复制并启动新服务，第一失败保留。模块旧14:42Z 末命令观察已被随后14:48编译、14:50保存日志和实际 ready 更新；没有据旧观察中断活跃人员。
+- 发布模块核 P SOURCE `579a1cede98b47b08a3126f5d3974da938348929` 已组合 B Reader 与 H guard，但 `main.go` 未将 `workbenchProtectedSources()` 结果传入 Reader，显式保护来源未生效。已交 H 原有薄组装写域修复并完成实际 API / alias 验证后交精确 SOURCE；P 不修改业务，候选包等待该必要组装。
+- 消费者实际声明：F 未读取原 archive 或建链接；P/N 本轮原 archive / relay.sqlite / auth 零动作，Q 只使用公开 Git；B/T 自有消费审计仍在进行。R 本轮未创建原档链接，并核官方0.162.0归档源码使用 rename；实际第二链接创建者尚未证明。R 正沿既有本机 locator / 单一 binding 核准确原档系统链接元数据，未知继续保持 FAIL。
+- R 实际系统 API 与 samefile 核查确认原档两个名称指同一文件：同 basename、不同 parent、均在 sessions，一个属于默认 Codex 目录，一个属于 Orca codex-accounts；不在 H/R 工作树或 H 隔离 app_root。账户镜像只作为路径类别推断，创建者未证明，不删除链接。完整名称只存 R `dist/relay-l1/owned-archive-native-targets-private.json`，安全聚合为 `owned-archive-link-safe-aggregate.json`。B/T 后续也已声明无原档读取或链接，其测试仅使用自己的 SQLite / ObjectStore。
+- F 首轮旧 GUI 实际 done HTTP200 / receipt accepted，operation `32c7f5a0-0cb0-4de2-91aa-3e7b9bc0ad07`；随后 native read operation `5f99133e-390f-4987-b8f2-2889716921ff` 返回409，fast-fail 停止，未 release / retry。done 勾选发生于目标内容核查之前，目标完成验收不通过；实际收据保留，不能把 native task_complete / 退出代替目标确认。UI 明确要求核对任务目标，后续只 GET task / receipts，不重复原 native read。
+- 总负责人15:05Z 正式决定：保留已写 done，不手改恢复、不重发旧 input；当前被 sourceguard 拒绝的原档不得绕过读取，只能核此前已封存、同 task 的合法输出。H 核当前 done、实际退出、pending0 与 workspace / terminal 所属成立后，F 可经现有 release 一次清理释放，并由 H 核 SQL 解锁；清理结果与目标 / 来源缺口分列。随后允许独立公开 root / DB / 明确新 input，新窗口先准备观察和真实目标核查流程。
+- F 默认整套首结果 `203 PASS / 41 FAIL / 32 SKIP / 4 NOT_RUN` 保留；22个两尺寸失败缺实际 EOF、互斥 / 重复 / 通用冲突、working / unknown send / complete release、alternate 与 publication error 条件，另4个涉及当前 guard / 原3分钟。已交 R/H 准备真实生产场景和独占 F 操作窗口，稳定输入前不重跑整套，不新增 skip 或伪造任务状态。
+- H main 薄衔接可对 P 精确 Reader 用 Go 原生 readonly overlay 验证组合，独立提交自身 main SOURCE；不修改 Reader 三文件或合入 B 的跨域冻结历史。P 实际消费该 SOURCE 后仍须对最终组合运行构建与 HTTP，H 旧 Reader 分支的完整检查状态另列。
 
 模块管理阶段 SOURCE `e404da04f7b10296bed8133589c292766c5398cf` 已普通 push，`git diff --check` 和 `git ls-remote` 精确核对 PASS；该结果仅包含本模块管理文档与派发核查，业务修复和产品验收仍按下面记录进行。
 
@@ -86,7 +153,7 @@
 | 控制器自产会话逐 event_id 定位、六字段 HTTP、分页与 GET 只读 | 原 task H 独立15行 / 模块18 HTTP ID 实际匹配 PASS | H 原档 / SQL / GetEvent / HTTP 比较；原503与完整会话 partial 独立保留 |
 | 来源覆盖、追加、停止和恢复边界 | 当前原档 nlink2 / errors1 / snapshot_complete false 为 FAIL；既有 PARTIAL / UNKNOWN 保留 | 已交原来源消费者核链接所有权；`ArchiveAppendOnly=unknown`，文件 PrefixComplete / SessionComplete 不足，恢复 raw gap 独立记录 |
 | 同 URL 未登记基线、真实登记、首次 Today DOM 三分钟 | 首注册至真实 native DOM591116 / 591117毫秒 FAIL；dispatch 至 DOM14.516 / 14.517秒 PASS | 原13:23:34.0366105Z起点不变，两个真实 archive ID 逐 SQL 核实，两种计时分别报告 |
-| 人工 done / released 和事件 reconciliation 许可 | observe 人工映射已批准；R 实现中；旧 task 实际完成释放未验 | R 权限与真实适配器，H 投入和 SQL 核验，F 唯一 UI；reconciliation 继续核 reconcile |
+| 人工 done / released 和事件 reconciliation 许可 | d14实际权限拒绝 PASS；旧 done200 已发生但目标验收不通过；后 read409 首失败，清理 release 待核 | H 当前 done / exit / pending / 所属与 SQL 解锁；F 单次清理；reconciliation 继续核 reconcile |
 | 注册表扩展、中性 worktree 换手、terminal-only、互斥与权限拒绝 | 最终组合未验 | 对照 v1.2 与当前 release 任务；每项真实结果独立报告 |
 | 默认检查、构建、完整浏览器、Windows 解压启动读写及重启持久化 | 模块未验 | 各原领域人员、唯一集成人员和发布包人员精确组合 SOURCE |
 | Procmon、两次真实 00:30、用户自由工具与实际作品 | NOT_RUN / 未决定 | 不降低门禁、不扩大授权 |
