@@ -2,7 +2,6 @@ package agents
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -397,7 +396,9 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 				Cwd string `json:"cwd"`
 			} `json:"thread"`
 		}
-		_ = json.Unmarshal(response["result"], &result)
+		if err = decodeNativeValue(response["result"], &result); err != nil {
+			return fail(err)
+		}
 		if result.Thread.ID == "" || (resume && result.Thread.ID != r.Session.NativeID) || filepath.Clean(result.Thread.Cwd) != filepath.Clean(r.Project.Root) {
 			return fail(nativeError(apierrors.ScopeDenied, "native thread identity or project differs"))
 		}
@@ -434,7 +435,9 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			SessionFile string `json:"sessionFile"`
 			SessionID   string `json:"sessionId"`
 		}
-		_ = json.Unmarshal(response["data"], &state)
+		if err = decodeNativeValue(response["data"], &state); err != nil {
+			return fail(err)
+		}
 		if state.SessionFile == "" || !inside(filepath.Join(n.stateRoot, r.Project.ID, n.id), state.SessionFile) || (resume && state.SessionFile != r.Session.NativeID) {
 			return fail(nativeError(apierrors.ScopeDenied, "native Pi session identity differs or is unavailable"))
 		}
@@ -491,7 +494,14 @@ func (n *Native) Send(ctx context.Context, s domain.NativeSession, message strin
 				ID string `json:"id"`
 			} `json:"turn"`
 		}
-		_ = json.Unmarshal(response["result"], &result)
+		if err = decodeNativeValue(response["result"], &result); err != nil {
+			p.failOutput()
+			return p.observe(), err
+		}
+		if result.Turn.ID == "" {
+			p.failOutput()
+			return p.observe(), nativeError(apierrors.DeliveryUnknown, "native turn identity is unavailable; do not replay")
+		}
 		p.mu.Lock()
 		p.turnID = result.Turn.ID
 		p.mu.Unlock()

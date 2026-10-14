@@ -1,5 +1,49 @@
 # Works Relay runtime
 
+## 2026-10-14 同阶段 Native 解码追加返修
+
+最终 SOURCE 更新为 `d6d4da6ac00a196e6bbcf592cfdc0a2a2731dbe6`，同分支普通 push 完成，命令级 HTTP/1.1 `ls-remote` 精确一致。原意图修复 SOURCE `9719e6970927caee3e0b08d4020708e383881880` 与独立 REPORT `392bd81e822148cb2a7cb8f7bd7a83699d0f7d44` 保留普通祖先。本 Dispatch 尚未结算时，模块转交 M-product 的 Native 解码缺口，R 在原写域持续返修；没有启动另一人员或重复真实任务。
+
+`native.go` 原三处 `thread/start` / `thread/resume` result、Pi `get_state` data、Codex `turn/start` result 忽略 `json.Unmarshal` 错误；现均立即返回固定安全 `delivery_unknown`，不以零值身份检查覆盖首解码失败。缺少 turn ID 也拒绝记录发送成功。`native_process.go` 同类 protocol error / success、envelope、Claude control response / request 和当前已支持事件字段解码全部检查返回值；缺失、null、类型错误或截断立即失败，读取器保留 blocked / 原生 capture gap。已识别的 turn 完成缺少 ID / status 时不会发布完成事件；本机 Codex 0.162.0 生成的 experimental schema 确认这些字段 required。数值 JSON-RPC ID 保留标准支持，非法 ID 不转换成任意字符串。拒绝工具请求的实际写入失败也立即停止读取。仍复用标准 JSON 解码，没有新增 parser / 依赖。
+
+新增 `relay_native_decode_test.go` 只有纯 JSON 错误输入：缺失 / null / 错型 / 截断 / trailing data 和错误布尔类型必须返回不可自动重试的安全 `delivery_unknown`，不泄漏输入 canary。没有创建控制器、进程或合成成功协议。完整既有测试中的 contract fixture 仍只作为回归检查，不作为实际原生能力验收。
+
+| 追加 SOURCE 验证命令 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/agents -run TestRelayNativeDecode -count=1 -v -timeout=30s` | PASS，纯解析失败输入，不产生原生 effect |
+| `go test -mod=readonly ./internal/adapters/agents -count=1 -timeout=90s` | PASS，日志 `dist/relay-l1/native-decode-final-adapters.log` |
+| `go test -mod=readonly ./...` | PASS，日志 `dist/relay-l1/native-decode-full-go-test.log`；默认 native opt-in 仍 SKIP |
+| `go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/relayworktree ./internal/adapters/httpapi` | EXIT 0 |
+| `go build -mod=readonly -o dist/relay-l1/native-decode-runtime-server.exe ./cmd/server` | EXIT 0，产物忽略 |
+| `node scripts/check-architecture.mjs` / `gofmt` / `git diff --check` | PASS，29 包边界 |
+
+首编译 RED 为移除最后一个 Native JSON 调用后残留未使用 import，保留 `native-decode-adapters-first.log`；修正后适配器和完整 Go 通过，不覆盖首结果。新源码 / 边界已 Handoff 模块、H 和 B；H/F 当前实际成功派发及逐事件 / DOM 仍独立完成，本阶段没有另启模型或重发成功任务。没有新增 archive finalized / append-only / prefix / session complete 结论，原 raw 恢复 gap 和正式冻结全部保留。最终 REPORT 再独立普通提交，精确 SHA 通过当前 Dispatch 回传。
+
+## 2026-10-14 子 Run 意图权限返修
+
+当前分支 `songconmaisaix31-design/works-relay-runtime`，最终 SOURCE `9719e6970927caee3e0b08d4020708e383881880`，普通 push 完成，命令级 `git -c http.version=HTTP/1.1 ls-remote` 精确一致。本阶段 Task `task_b833b3a06c1e` / Dispatch `ctx_216bf731aaf8` / 子 Run `run_8bbda1c3974c`；模块负责人父 Dispatch `ctx_e6328a370d56`。客户端 Codex，未覆盖模型设置。本段为当前返修记录；下方旧实际 Codex 生命周期结果保留原 SOURCE 归属，不冒称本阶段再次运行。
+
+CreateIntent 原先丢弃 `s.work` 返回的真实项目设置，写入固定权限 A 和 revision 0；现从既有 LocalProjectRepository 取得并持久绑定 `settings.revision` 与现有 A/B/C 语义。ConfirmIntent 先比较原意图与当前项目设置，不同即 `approval_revoked`；请求中的当前版本 / 权限比较仍保留 `version_conflict`。确认不再用请求 revision 覆盖原意图，权限变化后即使更新请求版本也不能绕过旧绑定。原 revision 0 的旧意图保持过期，需要人类创建新意图，不迁移或自动重发。
+
+普通 SOURCE `ce3a519efa5317e642d7488a776b850eebca1093` 保留业务修复和首次测试历史；负责人拒绝新增测试中的替身成功和手改权限后，`9719e69` 仅普通追加替换 `relay_intent_test.go`，业务逻辑与 `ce3a519` 相同。最终新增测试使用自建且实际提交 README 的公开 Git 根、生产 Works 导入 / ProjectFiles / NativeRegistry / relayworktree / LocalProjectService / 两个 SQLite store 和真实 HTTP guard，没有新增替身。实际设置变更、A/B/C 保存、cold RelayStore 重载、当前 cmd 不能绕过旧意图、HTTP 新意图显示真实版本 / 权限、旧意图 HTTP 403 `approval_revoked` 全部通过；store 中无 workspace / terminal / session / owned binding / pending action，磁盘没有创建 neutral worktree。成功 Confirm 不在本测试中制造，仍由 H/F 独占实际服务和控制器执行。本阶段零 CLI 启动、零模型调用、零视觉操作。
+
+| 本阶段命令 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/workspace/app -run TestRelayIntent -count=1 -v -timeout=90s` | PASS；A/B/C 三场生产适配器 SQLite / HTTP 门禁，日志 `dist/relay-l1/intent-production-first.log` |
+| `go test -mod=readonly ./...` | 最终 SOURCE 全套 PASS；20 个有测试 package / 9 个无测试 package，默认 native opt-in 仍 SKIP；日志 `dist/relay-l1/intent-production-full-go-test.log` |
+| `go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/agents ./internal/adapters/relayworktree ./internal/adapters/httpapi` | 最终 SOURCE EXIT 0 |
+| `go build -mod=readonly -o dist/relay-l1/intent-runtime-server.exe ./cmd/server` | EXIT 0，业务树 `ce3a519`；最终 SOURCE 只替换测试，业务树不变 |
+| `node scripts/check-architecture.mjs` / `gofmt` / `git diff --check` | PASS；29 包边界，当前所有 Go 变更 |
+| `git -c http.version=HTTP/1.1 push origin songconmaisaix31-design/works-relay-runtime` 与同配置 `ls-remote` | SOURCE 普通 push / 精确远端一致；REPORT 独立提交 |
+
+本阶段首 RED 保留：新增测试两次未组装 ProjectFiles / Registry 的 nil pointer 在当前终端执行记录中；`intent-http-sqlite-first.log` 保存 HTTP DTO 错按顶层 task 解码的失败，修正读取真实 `view.task` 后最终生产测试通过。首次 plain `ls-remote` 的 `SSL_ERROR_SYSCALL` 保留在当前执行记录，命令级 HTTP/1.1 精确查询成功；没有修改 TLS、代理或全局 Git。旧失败 / UNKNOWN / 归档缺口不覆盖。
+
+H / F 已收到两个精确 SOURCE，最终业务与首个修复相同；本阶段生产 HTTP 门禁通过不代表 H 服务真实 native 成功派发、逐原生事件采集、F DOM 或 release 接受。H 继续持有 17342 的公开 Git / DB 与唯一 controller，F 为 17343 唯一 UI 操作人。B 已收到生产入口和旧 `local_agents*_test.go` 迁移建议：既有 `agents.NewRegistry`、LocalProjectService、公开 Git / 显式设置 / UUID 操作、StartNativeSession / ObserveNativeSession / StopNativeSession / ResumeNativeSession；completed 只取实际 Observe，stopped 只取 StopConfirmed，不自动重发 unknown。真实 progress infer 已由模块通知 B 独立成功，本阶段没有重复调用。`dist/relay-l1/actualpublicsources.json` 沿原本机指针交接，不进 Git、HTTP 或发布包。
+
+原 `ArchiveAppendOnly=unknown`、文件 PrefixComplete / SessionComplete 未确证、恢复 raw gap 的限制全部保持。原始来源 / 凭据 / 模型输出不进入 HTTP、Git、包或 stdout；没有改依赖、H 组装、前端、正式 V4 / schema / engine / mapper / 权重 / 日程 / 17321。整体产品 / release 验收由对应 owner 和主控继续，不能由本阶段 Go 通过填绿。
+
+## 前阶段实际生命周期记录
+
 2026-10-14 当前交付：分支 `songconmaisaix31-design/works-relay-runtime`；SOURCE `fbfaa65c2c01094305424ac40d2d39d271eab51b`，已 push 且 `git ls-remote` 返回同一 SHA。REPORT 单独提交，精确 SHA 通过当前 Orca Dispatch 发送。原 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb`、REPORT `0b4ec501721361e8104a4e6e00781d73656157a4` 和可选通知端口 `139ce8090b868ee2764a13b0517fec6dee079424` 的普通历史保留。
 
 事实源为认知规划原文 `cognitive-stack-L1-L4.md` §2 / §7、`L1-session-capture-plan.md`、当前根 AGENTS 和 `tasks/Release-v0.1-20261014.md`。本轨只负责 runtime、owned provider、可选 Native 观察端口和本报告；H 负责完整采集、HTTP 和实际服务，B 独占依赖，F 负责实际 DOM，最终整合和 release 验收由主控安排。本次 Task `task_a51fab762c01` / Dispatch `ctx_b4fcb141ca00`，执行客户端为 Codex，`orca terminal show` 核实面板模型 `GPT-6.1-Sol high fast`。

@@ -1,231 +1,68 @@
-# Works Relay HTTP / assembly owner
+# Works Relay HTTP 与 L1 会话采集
 
-Client: Codex API; session identifies GPT-6 family only, exact deployed model name unavailable. Owner branch: `songconmaisaix31-design/works-relay-http`; baseline `6ebf523`, business equivalent to accepted `d46f9f4`. Specification: Works Relay v1.2, not older revisions.
+H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a5369393166ac3a40f520138ae352d2edf92`，通过普通合并消费 R 的 `fbfaa65/53231b19`、意图版本 `ce3a519/9719e69`、原生解码 `d6d4da6/07449a6`。本次实际服务的业务构建为 `099ce0b`，报告合并 `b73f749` 的业务相同；后续 H 改动是原件策略核验和既有 Foundation/Projects 构造器组装，尚未替换原运行服务。客户端为 Codex API，工作会话没有暴露精确部署模型名称；实际原生控制器为 Codex `0.162.0`，本次 `turn_context.model` 为 `gpt-6.1-sol`。
 
-## Contract candidate
+## 当前实现
 
-All routes share the existing server, loopback, human session, Origin, CSRF and ErrorV1. `/api/v1/relay/agents` is a typed registry query; `/local-agents` remains the independently verified CLI inventory. `/works` remains the real persisted scan/catalog, existing manual and file verification paths remain authoritative. No scan or CLI launch on a relay GET.
+所有 Relay HTTP 使用既有 Go 服务、loopback、human session、Origin、CSRF 与 ErrorV1。GET 读取已持有任务、派生事件和原收据，不启动 CLI、不发送输入、不恢复会话、不读取原文归档。人工创建 intent 后必须明确确认权限；运行时 Service 是 task、terminal、worktree 与收据的唯一写入者。未知输入交付结果保持 `delivery_unknown`，不能自动重发。
 
-`POST /relay/intents` stores an explicit human intent as `ready`, without launch. `POST /relay/intents/{id}/confirm` requires explicit permission confirmation, A/B/C and current project settings revision. Confirmation is checked again by the sole runtime Service, using the transport-established human Caller. Bodies cannot choose trusted actor, command, raw path, native session or grant. Idempotency-Key names a single operation; the UI must never automatically retry an ambiguous launch or send. Default A does not create a grant or change existing project settings.
+`agents.json` 使用 `encoding/json` 解析受信任的 `AgentSpec` 数组，在启动时加载。条目包含 `name/launch_cmd/capabilities/drive_mode`，可选 `input_mode` 为 `line` 或 `stdin_eof`。新增条目后正常关闭并重启同一服务，调度按注册数据选择既有原生适配器；注册本身不授予启动或工具权限。
 
-`GET /relay/tasks`, task detail, event and receipt queries read the runtime Service. `POST /relay/tasks/{id}/send`, `/read`, `/stop`, `/resume` and `/transition` also call that Service. Terminal, task and worktree writes have no HTTP/store shortcut. Dispatch/send/read/stop preserve their original receipt, including first RED and delivery_unknown. Transport rejection happens before a runtime action; runtime rejection must have a receipt. Agent bearer credentials cannot change human permissions or confirm a launch.
+`cmd/server/relay_assembly.go` 复用实际 Works、既有项目权限与 NativeRegistry、独立 relay.sqlite、既有 PendingEventService 和 EventRepository。observer 只观察人工已接受的任务，取消并 join 后关闭自有进程和存储。静默重读不更新活动时间或持久化未变化的游标。
 
-Task state remains ready → accepted → working → done → released. A terminal exit is separate display evidence (`terminal_exited`) for unfinished tasks; silence is `unverifiable`, never online/exited/done. Terminal identity survives restart. Workspace identity remains independent of Agent. No timed, chained or autonomous launch.
+`GET /api/v1/relay/session-events` 按当前 owned binding 与权限读取已经提交的真实事件。事件只有 `event_id/kind/topic/tokens/scope/ts` 六字段，时间倒序，ID 升序，分页最多 100 条。未知 tokens 保持 null。任务级事件使用仓储提交 ID，归档记录使用稳定 origin 查得的提交 ID；公开查询没有 prompt、reasoning 原文、工具参数、stdout、归档路径或 SQL 错误。
 
-Events are newest first and expose exactly `event_id`, `kind`, `topic`, `tokens`, `scope`, `ts`. Null tokens remain unknown. No native text, raw, payload, tool arguments, messages, local SQL errors or source paths belong in event DTOs. Task done is not model success; Git activity is not done.
+## 实际来源与覆盖
 
-## Event and Today seams
+`ASTROCYTE_RELAY_SESSION_SOURCE` 未配置或为 `archive` 时采集控制器提供的准确归档路径。H 通过 `github.com/olivere/ndjson` 读取该实际 JSONL，校验 owned task、terminal、session、原生 ID、原 CWD 和文件身份；增量位置只在事件 admission 成功后持久化。未知记录仍计入覆盖，格式错误立即失败，未完成尾行保留待追加范围。
 
-Baseline has `internal/adapters/events/mapping.go` native observations, `native_reader.go` selected-file reader and `attention/app/event_service.go` PendingEventService. `NewPendingEventService` records observations only and rejects mapped events requiring an undecided signal strength. `cmd/server/main.go` already assembles WorksEventSink into application events. There is no running generic Git watcher or git_record/repository_observation file in this baseline (bounded Go search of internal and cmd). R-runtime will supply a scoped fixed Git observation port; H will bridge existing event vocabulary through the entrypoint, never import another app from workspace/app or transplant validation mappers/engine code.
+选择 `native_notifications` 时显式启用 R 的原生观察端口，从控制器持有的通知序号派生事件。其覆盖标为 `source=native_notifications`；归档覆盖标为 `source=archive`。通知和归档分别保留来源语义，通知的前缀或关闭证据不证明归档文件永久追加。
 
-Relay events write only isolated application event state, never engine/cognitive state, formal source or published snapshot. The existing Workbench Reader continues `mode=ro`, `immutable=1`, `query_only(1)` against atomically published daily snapshots. Today numeric snapshot fields and source provenance are unchanged. Whether Today may append local live events, dirty/untracked and non-Git workspace treatment, and the recent liveness window remain user decisions; this candidate does not set those policies.
+`snapshot_complete` 只表示当前选定范围的完整行已覆盖。归档的完整前缀、永久追加性和关闭证据不足时，`session_complete=false`，公开状态保留 partial 与具体 gap。R 的真实原生结果保留 `ArchiveAppendOnly=unknown`：当前接口没有永久 append-only 保证，原生会话允许 rollback/revert/压缩。恢复后的 raw 通知订阅缺口为 `native_resume_raw_events_unavailable`。进程退出、输入接受、任务完成和模型成功分别解释，不互相替代。
 
-## Local operation and validation
+## 本机配置
 
-All access-layer state, configuration, raw evidence and databases stay under `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access`. The formal V4 source is read only by the existing snapshot program. No edits to `scripts/workbench`, 00:30 tasks, migrations, engine, cognitive schema or weights. Prepare configuration/run instructions here; replacing the current permanent service at `http://127.0.0.1:17321` waits for root acceptance.
+接入状态位于 `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access`，注册文件为其中 `agents.json`，应用状态为 `app-state/state.sqlite`。启用接入模式用 `ASTROCYTE_RELAY=1`。`ASTROCYTE_RELAY_LIVE_SECONDS` 没有默认值；未配置时活动三值保持 unverifiable，不自行决定活性窗口。
 
-Early candidate is for schema generation, not assembled HTTP acceptance. Required owner checks: OpenAPI lint/examples, real HTTP session/Origin/CSRF/human permission rejection, actual runtime persistence/receipts and mutex, six-field canary, unknown/no-retry boundaries, scoped Go build/tests and import boundaries. Full root check/build/E2E, actual CLI handover/terminal-only, administrator Procmon and the two real scheduled dates retain their separate outcomes.
+`ASTROCYTE_RELAY_PUBLIC_GIT_ROOT` 只用于明确获准的 Agent 自建公开 Git 验证项目。目录必须位于独立接入根的 `verification` 内，每次 Prepare 都以 `os.SameFile` 核对该唯一目录；其他目录立即拒绝。未配置时公开项目启动权限保持关闭。既有中性 worktree 仍核对干净、已提交、正确 Git 根和原身份，不修改用户作品或开放自由工具。实际 Codex 使用现有控制器关闭文件、命令、MCP、skills、浏览器、视觉和其他工具，只提供固定公开上下文。
 
-Current transport tests use a real loopback TCP listener and the actual session/Origin/CSRF chain with a recording port: unauthenticated/cross-origin/agent/invalid command denial; ready intent invokes no confirm; missing confirmation reaches Service for its denial receipt; provider canary redaction; descending six-field event projection and null tokens; delivery_unknown invokes send once and does not count as a confirmed relayed work. Actual isolated SQLite EventService test records a stable derived observation twice, preserves one pending receipt and zero cognitive signals. These do not establish CLI launch or runtime store acceptance.
+实际验收服务使用生产 `assembleRelay`、真实 SQLite、真实 HTTP 和本次控制器自己产生的会话文件。API 为 `http://127.0.0.1:17342`，F 网页为 `http://127.0.0.1:17343`。本次数据根为 `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-production-current-20261014`；项目、worktree、数据库和进程均由本次验证持有。所有脚本、中间文件和安全聚合位于 H 工作目录内被忽略的 `dist/l1-live/current-20261014`。原件不进入 Git、HTTP、stdout 或 release 包。官方 CLI 自行鉴权，不读取或复制凭据；归档只读取控制器给出的本次 thread 路径，不枚举历史。
 
-Registration/run configuration prepared in `cmd/server/relay_config.go`: `ASTROCYTE_RELAY=1` selects isolated v0.2 app-state; trusted registration is fixed `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/agents.json`. Entries contain AgentSpec name/launch_cmd/capabilities/drive_mode; no config means no registered launch, while independent `/local-agents` inventory remains visible. `ASTROCYTE_RELAY_LIVE_SECONDS` has no implicit value; unset remains unverifiable. Its eventual selected value is a user policy, not this owner's default. B (`allow_directory`) and C (`expand_references`) are independent existing settings, both explicitly projected; neither authorizes unrestricted CLI tools.
+## 验证命令与当前结果
 
-## Runtime assembly checkpoint
+| 命令 | 结果 |
+|---|---|
+| `go build -mod=readonly ./cmd/server` | PASS |
+| `go test -mod=readonly -c ./cmd/server` | PASS，实际服务与证据测试二进制已编译 |
+| `go vet -mod=readonly ./cmd/server ./internal/adapters/events ./internal/adapters/httpapi ./internal/adapters/sqlite ./internal/workbench/app` | PASS |
+| `node scripts/check-architecture.mjs` | PASS，29 个 Go 包边界 |
+| `pnpm exec redocly lint contracts/openapi.yaml --config contracts/redocly.yaml` | PASS，保留既有 EventV1 未引用警告 |
+| `node scripts/validate-examples.mjs` | PASS，291 个契约示例 |
+| `git diff --check` | PASS |
+| 实际服务无 Codex 注册基线 | PASS，17342 空注册表，无模型派发 |
+| F 注册前真实浏览器基线 | F 于 `2026-10-14T12:53:45Z` 报告两尺寸 session 200、空 registry 与浏览器 ready |
+| 实际注册前 HTTP 权限检查 | PASS，无 session、跨 Origin、未授权 bearer、缺 CSRF 均 403 |
+| 本轮 SQLite 独立只读计数 | 实际 events=3、signals=0、nodes=0；原生派发前的项目 / Works 观测 |
+| 同 URL 追加登记与正常重启 | 实际执行一次，原始 `registered_at=2026-10-14T13:23:34.0366105Z` |
+| 注册起点 → 原生事件首次 DOM | FAIL：F 两尺寸首显示 `13:33:25.152Z/.153Z`，591116/591117 ms，大于 180000 ms |
+| 原 dispatch 收据创建 → 原生事件首次 DOM | PASS：创建 `13:33:10.6363218Z`，约 14.516/14.517 秒；独立于注册起点 FAIL |
+| 实际原件与提交 ID | PASS：15 个完整行、105564 字节、15 个原档 origin 对应提交 ID；全部 18 个 HTTP 事件 GetEvent 一致 |
+| 实际文件范围 | `snapshot_complete=true`、尾行 / 剩余字节 0、unknown 5、errors 0、`session_complete=false` |
+| 实际回答与结束轮次 | `gpt-6.1-sol`，assistant 1、task_complete 1、已报总 tokens 8827；没有重复原输入 |
+| 实际权限、分页与 GET 只读 | PASS：四项 HTTP 403、五项实际文件身份 / 权限拒绝、全分页、canary 排除、静默 GET 事件数不变、持久游标相符 |
+| 实际原件中的工具与策略 | 当前文件工具调用 0、`never/read-only`；旧 owned PID / 启动参数未当时采集，effective tool set 保持 unknown，不能仅用 tool 0 填禁用证据 PASS |
+| 连续追加 / 明确 Stop 后范围 | 未执行，原控制器已在默认 180 秒后实际退出，旧输入没有自动重发 |
 
-Consumed exact R sources `d2cf9d3c13be32369bfe353ef9907c4aa2e4cf6c` and `bcc60c0681f92855fd334008b95a7c73a2d7c509` by ordinary no-ff dependency merges. `cmd/server/relay_assembly.go` wires the sole Service to real Works cache, existing project repository/native registry, independent relay.sqlite and pending observation sink. Unanswered workspace and unrestricted tool policies remain disabled. Main resolves the access state before migration and uses the existing protected database guard.
+实际证据检查逐原档 origin 查询 `attention_engine_events` 并通过 `EventRepository.GetEvent` 定位提交 ID，独立比较 HTTP 六字段、分页和 canary 排除；核对重读及持久游标、追加与停止后的真实文件范围。实际 HTTP 权限检查包含无 session、跨 Origin、未授权 bearer 和缺 CSRF；静默 GET 前后事件数量必须一致。模型名称与工具调用数量仅从选定实际文件生成安全聚合。
 
-Coordinator explicitly approved extending this owner's write domain to `cmd/server/workbench_config.go` only to extract `guardWorkbenchExplicitDataDir`: the old v0.1 default remains unchanged, while v0.2 selection reuses every formal/snapshot/path/hardlink check without being overwritten by the old default. New regression in relay_config_test creates a fixture snapshot hardlink and rejects it before SQLite opens; bytes and both paths' WAL/SHM remain unchanged. No real formal source was written or opened by this test.
+## 剩余限制
 
-Real loopback HTTP + actual R Service + real isolated SQLite + controlled execution ports: ready intent, mandatory confirm, exact duplicate dispatch with one launch, accepted dispatch work count, exclusive-workspace refusal, explicit test-only live window/quiet unverifiable/confirmed exited, retained terminal identity after reopen, one original rejected confirmation and delivery_unknown send receipt after reopen, read/stop receipts, current grant revocation denial all PASS. Fourteen successful actual HTTP responses independently validated against OpenAPI with AJV PASS. Receipt status vocabulary is `pending | accepted | rejected | delivery_unknown`; accepted is action acceptance, never model or task success. Initial task audit edge is empty → ready; task progression then follows the specified state machine.
+本报告为实际已执行范围的阶段报告，H 保持同一活动 Task 继续真实闭环。F 是主任务唯一产品 UI 操作人；H 负责注册文件与正常重启，并只读核对原档、SQLite 和 HTTP。原 task 为 `0c6522bc-b232-4040-8407-745885644791`，仅确认一次。HTTP 503 与 dispatch `accepted + provider_unavailable` 原收据保留；实际安全原因是 `thread/read / -32603 / thread_rejected`，更具体的服务内部原因未知。之后原 observer 实际取得正选归档，原件回答成功不覆盖首 503，不授权重发。
 
-Native real model CLI, terminal-only real coding, Today live append and administrator formal zero-write acceptance remain NOT_RUN or BLOCKED by the respective undecided policy/owner handoff. No existing permanent service has been replaced.
+F 首 DOM 三个 ID 均在真实 SQLite 定位，其中 `MBV3V2HETK5753LFVJY4PGVJWL` 和 `HFZSCX6TFXYYMOU5VBUNG65QIV` 分别是原档 `task_started` 与 `native_session_header`，第三个是 task 级 `turn_started`。安全证据为本地忽略目录的 `committed-public.json`、`initial-actual-evidence-derived.json`、`initial-actual-model-derived.json` 和 `first-dom-sql-derived.json`。14 个原档记录的 tokens 为真实 null，未填值。原 controller 文件路径只保存在本次 relay.sqlite 的私有绑定中。
 
-## Independent HTTP engineering report
+本次旧项目权限没有 `reconcile`，因此 done/release 未获准；不能更新项目后覆盖旧 task 的绑定版本、手改状态或把退出自动当完成。Foundation/旧 Projects GET 的未组装异常已保留本机原日志，源码已补既有生产构造器，原服务尚未串行替换核验。后续 R 的寿命、EOF 与 owned 执行策略提供口没有反填旧进程证据。B 新 Reader 接口需要精确窄接缝或 I 组合消费；H 没有整体合入其冻结域旧历史。
 
-Validated checkpoint SOURCE: `c3533d5554403f2523e7c5b1d63b88e268fa9ecc`, pushed to the owner branch. It includes exact R SOURCE `a3f47921f4627a8b3e48e44c7cabe0d2b021b617` and REPORT `2e8112669deffd9b85017fc81cc665e7863bb030` through ordinary no-ff merges. Subsequent repairs and their validation are recorded below, without changing this checkpoint's results. The H report is a separate documentation commit; this is an engineering handoff, not Works Relay v1.2 acceptance.
+完整默认 check/build/E2E、合并前端、Windows ZIP 解压启动和正式发布由对应 owner 与集成验收负责。H 的静态构建和契约检查不能代替实际 Today DOM、完整会话、终端编码或正式部署。
 
-`cmd/server/relay_observer.go` assembles the optional runtime lifecycle port outside both application contexts. A bounded two-second observer calls only existing owned-task observation: it cannot create intent, confirm, launch, send or resume. Cancellation is joined before store cleanup; Shutdown receives a bounded cleanup context. This cadence is an internal observation loop, not the undecided liveness threshold or Today policy. Observer cancellation/join and actual runtime HTTP observation tests PASS.
-
-Task `event_publication` projects `none | pending | published | error` and pending/published counts. Here published means only an isolated application observation was recorded. A failing sink retains its original error and pending event, repeated observation neither retries publication nor renews stale evidence, and only an explicit human `/events/reconcile` with the current observe grant attempts reconciliation. The real HTTP flaky-sink case verifies published-after-reconcile without relaunch, stable origin, retained failure and no automatic replay. Pending observation storage does not imply cognitive normalization, model success or formal publication.
-
-Validation on the exact SOURCE:
-
-| Command/check | Result |
-| --- | --- |
-| `go test -mod=readonly ./...` | PASS: 29 packages, including actual TCP HTTP + runtime + isolated SQLite fixtures; controlled CLI fixture is not a real model case. |
-| `go vet -mod=readonly ./...` | PASS. |
-| `go build -mod=readonly -o <access-root>/verification/build/astrocyte-relay-http.exe ./cmd/server` | PASS; output outside Git. |
-| `node scripts/check-architecture.mjs` | PASS: 29 packages. |
-| `pnpm exec redocly lint contracts/openapi.yaml --config contracts/redocly.yaml` | PASS with one existing unused EventV1 warning. |
-| `node scripts/validate-examples.mjs` | PASS: 287 examples. |
-| Actual HTTP JSON independently validated with AJV against this OpenAPI | PASS: 14 response samples; evidence stays under access-root/verification. |
-| `git diff --check` | PASS. |
-| Missing LOCALAPPDATA simulation, with GOCACHE pinned before removing it, `go test -mod=readonly ./cmd/server ./internal/adapters/events -run Relay -count=1` | PASS. Only fixtures use a temporary absolute root when the variable is absent; production still rejects missing/relative LOCALAPPDATA. |
-| Local Linux validation via WSL | NOT_RUN: installed Ubuntu has no Go executable. |
-| Remote complete CI | RED; details below. |
-
-First CI `38455064422` on `3e9dc58` exposed the Linux fixture's absent-LOCALAPPDATA failure. It remains retained; fixture repair SOURCE `8d353e3381cd620834ee64aea357611267f0d27d` and the missing-variable check are separate later results. The first attempt to simulate the missing variable failed before tests because Go's default GOCACHE also requires LOCALAPPDATA; the corrected test explicitly pins the existing cache first. Production's configuration rejection was not relaxed.
-
-CI `38457889686` on `8d353e3` and `38458172696` on the final SOURCE both remain RED. Ubuntu reached the frontend owner's generated-client schema drift; this branch intentionally does not write `web/src/api/schema.d.ts`. Windows additionally failed R's `TestNeutralWorkspacePrecedesAgentAndReusePreservesChanges` at `workspaces_test.go:42` (`scope_denied: work must match the repository root`); the final-source run also failed `TestRelayControlledCLIFullStateAndGitObservation` at `relay_process_test.go:72` with the same error. Exact failures were handed back to the R owner for runner path/canonical-root diagnosis. Remote race/build/E2E stages were skipped after check failure. Local PASS does not overwrite these remote failures or establish full CI acceptance.
-
-## Formal collector handoff and remaining gates
-
-Read-only source inspection of validation ref `98a13b43e76240436fb17d3246d02507bf959417` identifies the concrete existing entrypoint: `cmd/validation/live.go/runLiveCLI` takes explicit `--live-claude-root`, `--live-codex-root` and the three `--live-*-root` Git roots. `live_capture.go/captureLive` selects authorized JSONL files, verifies native session/CWD association and timestamps, and passes real native tool blocks or Git commits through `NativeSemanticMapper.MapTool/MapGit`, `NormalizeValidationSignal` and the existing production `EventRecorder.Record`. No collector entrypoint consumes Relay's isolated pending-observation database. No private transcript, database, deployed configuration or credentials were opened during this inspection.
-
-For a neutral Relay worktree to enter that existing chain, the real CLI must archive a verifiable native session under an already authorized collector root, its original CWD/session must associate with the worktree, and repository common-dir/remote identity must support the existing mapper's topic classification. Git collection requires the selected explicit Git root and actual commit evidence. Whether those conditions hold is NOT_RUN; current source provides no evidence of a real coding launch or formal ingestion. The collector/root owner must verify authorized source coverage and repository identity for the chosen real worktree and perform any necessary authorized-root configuration change. H does not add default signal strength, import validation mappers/engine code, change the seven weights, or turn task-done/git activity/pending observations into cognitive success.
-
-Current independent HTTP assembly keeps committed-Git workspaces disabled (`AllowCommittedGit:false`) and unrestricted terminal tool policy unset (`LaunchPolicy:nil`) while those choices await the user. Dirty/untracked/non-Git treatment, recent liveness window and Today live append also remain undecided. The observer and cached queries are independently testable, but these safe gates block a real coding dispatch; they are not a reduced acceptance criterion. Formal event-to-cognition acceptance therefore remains BLOCKED/NOT_RUN for the collector handoff and real case.
-
-Root/integration still owns generated-type integration, full build/race/E2E and real Works scan/Agent handover on the integrated SHA. Real native/terminal-only coding and cross-Agent takeover, administrator Procmon, the two real 00:30 scheduled dates, formal cognitive-source/snapshot zero-write evidence and final same-URL permanent deployment remain NOT_RUN or BLOCKED. Existing Workbench Reader remains `mode=ro`, `immutable=1`, `query_only(1)`; no snapshot pipeline, schedule, formal source, mapper, engine, migrations or weights were modified by H.
-
-## Original-owner repairs after the checkpoint
-
-Exact R Windows identity repair `af6e76d1083c73b3fb3d28d0e3c915e99ee014cb` was consumed by ordinary merge SOURCE `0c21364218eb4dc0ae379a5a66942532e986b460`. Existing directory identity now uses `os.Stat`/`os.SameFile`, accepting a real Windows 8.3 alias without accepting an unrelated directory or guessed prefix. `go test -mod=readonly ./internal/adapters/relayworktree ./internal/workspace/app ./cmd/server -count=1` PASS; the additional verbose `TestNeutralWindowsActualShortRoot` ran against an actual distinct alias and PASS, not skip. Later exact-source CI `38459252341` reached generated schema drift on both operating systems after their Go checks, without the earlier root failures; the complete CI still failed and subsequent race/build/E2E were skipped. This later result does not overwrite either earlier Windows RED.
-
-H repair SOURCE `7e167026593cd510f2f6e62aa4b3d737531ade64` preserves the mutex hint in immediate ErrorV1 and saved receipt ErrorV1. Only `version_conflict` with exact `view_existing_task:<canonical nonnil UUID>` and an exact task ID verified through the same human caller's runtime `GetTask` public projection retains that action. Provider messages/paths/raw are discarded, and other conflicts retain the fixed refresh action. Real TCP HTTP with actual Service/SQLite verifies the first refusal, persistent receipt and receipt after reopen show the existing task, with only one launch. Unknown task, malformed UUID, private suffix, noncanonical spelling, unrelated conflict and provider canary cases PASS. `go test -mod=readonly ./internal/adapters/httpapi ./cmd/server -run Relay -count=1` and `git diff --check` PASS; 16 actual HTTP public responses independently pass AJV. OpenAPI shape is unchanged; F's original owner received the exact source and safe-action semantics for an explicit read-only lookup.
-
-## Initial local registration candidate
-
-No active registration was changed. A four-entry candidate is stored only at `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/registry-candidates/20261014/agents.candidate.json`; all four entries pass AJV `RelayAgentV1` validation. It contains trusted absolute direct argv only, uses existing native-registry names and `drive_mode: structured`, and launches nothing. Root/integration can inspect the candidate before selecting the active `agents.json` for the accepted service. Registration is data, not launch permission or an all-Agents-ready claim. The trusted file is loaded once at server startup: an appended entry requires a safe restart to appear in `ListAgents`; there is no hot reload. I's real JSON append/restart/query/UI extension acceptance remains NOT_RUN here, and a mock list or decoder test cannot establish it.
-
-R's bounded public version/help investigation and H's public entry existence check support these candidates:
-
-| Registry name | Public version/help | Trusted direct entry | Configuration / real start / model / native runtime capabilities |
-| --- | --- | --- | --- |
-| `codex` | 0.162.0, PASS | absolute Node executable + installed `@openai/codex/bin/codex.js` | unknown / NOT_RUN / NOT_RUN / unknown |
-| `claude` | 2.1.238, PASS | installed `@anthropic-ai/claude-code/bin/claude.exe`; old cli.js absent | unknown / NOT_RUN / NOT_RUN / unknown |
-| `pi` | 1.0.1, PASS | absolute Node executable + installed `@earendil-works/pi-coding-agent/dist/cli.js` | unknown / NOT_RUN / NOT_RUN / unknown |
-| `opencode` | 1.18.35, PASS | installed `opencode-ai/bin/opencode.exe` | unknown / NOT_RUN / NOT_RUN / unknown |
-
-The eight native capability observations remain unknown. The additional `workspace_tools: unsupported` describes the existing selected-context adapter's restriction, not the CLI's intrinsic capability: Codex/Claude/Pi disable tools and OpenCode applies deny rules in current source. A coding task must not treat these context-only adapters as a coding-capable Relay. Main's neutral-workspace and unrestricted-tool gates remain unchanged.
-
-The independent inventory already distinguishes PATH installation, private configuration, native startability and native capabilities. A bounded new PATH-only lookup found entries for Codex, Claude, OpenCode, Pi, Grok, Kimi, Qwen and Cursor; Gemini and Cursor Agent were not found on PATH, which is not a whole-machine absence claim. Qwen 0.24.6 has R's public help/version evidence but no verified trusted direct entry or native adapter. Grok/Kimi/Cursor have PATH-entry evidence only here. These four are therefore queryable inventory observations, not executable registration candidates. No configuration, credentials or private native history was inspected.
-
-Terminal-only native candidates remain NOT_RUN: public help did not establish incremental input with an open stdin, EOF submission semantics or TTY compatibility for any real model CLI. OpenCode's JSON format describes output, not an input framing protocol. The terminal pipe helper's successful fixture does not establish these native cases; no PTY was introduced.
-
-Root subsequently approved the optional trusted `AgentSpec.input_mode` field: `line | stdin_eof`, omitted/legacy empty means line. Exact interface SOURCE `556c6f1645778286a171ea02668ed0456cde3a98` uses `omitempty`; H's configuration accepts the two modes and rejects unknown values, while the versioned OpenAPI keeps the field optional and validates both an old four-field entry and an EOF entry. The runtime EOF implementation is still the R owner's work at this contract checkpoint. Intended semantics are one complete initial input followed by closing stdin, normal read/stop and explicit unsupported later Send with no write. This host framing field grants no tool, workspace or launch permission and does not prove real Codex/Claude compatibility. Candidate data remains inactive; root's undecided permission/source/Today/liveness gates are unchanged.
-
-Two optional EOF alternatives are stored only in the same local candidate directory as `terminal-eof.candidate.json`: Codex's trusted direct entry with `exec --json -` and Claude's trusted executable with `--print --input-format text --output-format stream-json --verbose`. Both are explicit terminal/stdin_eof candidates; all runtime capabilities and workspace tools remain unknown and unapproved. They pass AJV as registration data only. Select an alternative for a given name rather than concatenating duplicate names with the structured candidates. Neither active configuration nor a model process was changed.
-
-## Final independent HTTP engineering handoff
-
-Final SOURCE: `c7c3255d0530b93312bb541a477b9ec47e0afc15`, including exact R EOF/noop SOURCE `b19d83635fe10cde9d42642d7444f3771d02f513` and REPORT `4848a98eef45656f30326054f3da8298f61044b1` by ordinary merges. H contract SOURCE `f52a5b84c5e36679c60a7bdbc7605c535dc212cb` was handed to F for the existing generator. H's actual EOF HTTP test SOURCE is `9323154c7b026991fed0ac9fecf0c8167251c8d6`; the final-source merge changes only R's report from that tested source, with identical Go and contract files. Final H REPORT is a separate documentation commit. Root explicitly authorized settlement of this independent engineering phase; complete v1.2 acceptance remains outside that settlement.
-
-Consumed R repairs preserve monotonic maximum event time across native/Git sources, do not refresh unchanged evidence and prioritize real exit. Reusing a released task's terminal ID clears the old native conversation, while original-task Resume does not replay input. `drive_mode` chooses the default path: both structured and both may reach terminal only after a proven zero-start Unsupported result, where the trusted terminal policy is still checked. A missing policy refuses launch. Operation idempotency also compares the target task. Background unchanged observation does not append receipts or update persisted state; fresh evidence/first capture error is recorded, and failed capture requires explicit reconciliation rather than automatic reprobe. Explicit human Read continues to record each receipt.
-
-The real EOF HTTP case uses an actual child executable and stdin/stdout pipes, actual runtime Service, actual isolated SQLite, shared TCP/session/Origin/CSRF and a controlled workspace port. It verifies cached registry `input_mode`, ready intent without launch, human-confirmed complete first manual/task input followed by EOF, safe HTTP 501 Unsupported for subsequent Send, one original rejected receipt for duplicate operation, explicit accepted Read/Stop receipts, raw stdout canary exclusion and real exit distinct from done/released. It is a public helper fixture, not a model CLI or coding demonstration.
-
-Final applicable validation:
-
-| Command/check | Result |
-| --- | --- |
-| `go test -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree ./internal/adapters/httpapi ./cmd/server -count=1` after consuming b19d836 | PASS: all six affected packages. |
-| `go test -mod=readonly ./cmd/server ./internal/adapters/httpapi -count=1` after the new real EOF HTTP test | PASS: entire two packages, including observer, configuration, origin/auth, mutex, receipts, unknown/sink and EOF. |
-| `go test -mod=readonly ./internal/adapters/events -run Relay -count=1` | PASS: six-field pending bridge, stable observation origin and no cognitive signal inference. |
-| `go vet -mod=readonly ./cmd/server ./internal/adapters/httpapi ./internal/workspace/app` | PASS. |
-| `node scripts/check-architecture.mjs` | PASS: 29 packages. |
-| `go build -mod=readonly -o <access-root>/verification/build/astrocyte-relay-http.exe ./cmd/server` | PASS. |
-| OpenAPI lint and `node scripts/validate-examples.mjs` on f52a5b8 contract | PASS: existing unused EventV1 warning, 289 examples. |
-| Independent AJV on actual HTTP and candidate DTOs | PASS: 16 runtime HTTP samples + 10 EOF HTTP samples (including the actual 501 ErrorV1); four structured candidates + two alternative EOF candidates. |
-| `git diff --check` | PASS. |
-
-The EOF HTTP test's first two failures are retained outside Git as `verification/eof-http-first-red.txt` and `eof-http-second-red.txt`. First, its fixture used an arbitrary child path instead of the required LOCALAPPDATA-derived access root and was refused before opening the Relay DB. Second, the recording-only workspace fixture marked Prepared without creating a directory, so the real process could not start and confirmation returned 409. The repaired EOF-specific fixture uses the required root and creates its directory through the Service's workspace port; each rerun uses a new isolated fixture. No production guard was weakened and no original unknown receipt was overwritten or replayed. Later PASS does not replace those failures. The one transient ordinary push rejection at 377b1f5 was followed by read-only remote verification and a successful ordinary push; no force push was used.
-
-The last inspected newer CI `38462618912` on 9323154 was still in progress; earlier 7e16702 CI `38459655342` failed only at F-owned generated schema drift after Go checks on both systems. Complete remote CI is not claimed PASS, and its race/build/E2E remain NOT_RUN until the integrated F-generated client is tested by I/root. Full local Go results at the earlier checkpoint and R's own final full suite remain separately labeled; the table above states H's actual applicable final commands.
-
-Final limitations: no active `agents.json` change, registration hot reload, real native/terminal-only model launch, tool authorization, dirty/non-Git source decision, default liveness window, Today live-append decision, formal collector/normalize/cognition completion, administrator Procmon or two real 00:30 dates. No replacement of the existing 17321 permanent service. I/root still owns same-URL integrated acceptance, real registration extension after safe restart, full UI/build/race/E2E and final deployment; original owners remain responsible for their subsequent fixes.
-
-## Original H owner: Root deep-isolation EOF fixture diagnosis
-
-Task `task_06ea6371c814`, Dispatch `ctx_e1fe34e57251`, same terminal/worktree/branch; no additional worker. Client remains Codex API. Read the local development protocol and this report, plus Root's decisions at `b0280b3`. Scope is the public EOF helper and the specified isolated Root fixture/log; no real Agent, private transcript, credentials or formal database is involved.
-
-Root's independent check on SOURCE `3387019f7c349957ef8f4c75d98ecd7fbbe42200` first failed after 316.5 seconds: only `TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt`, confirmation HTTP 409 / expected 200 / public `delivery_unknown`, test duration 0.13 seconds. The original `root-3387019-20261014/check-first.*` evidence and failed fixture remain retained. This is a distinct later RED, not a replacement of H's earlier stage results. Root's later build PASS does not clear that check failure.
-
-Bounded causal findings:
-
-- Root's valid child environment points LOCALAPPDATA into its deeper isolated directory and all three native discovery variables into its public-empty-cli directory. With `GOFLAGS=-p=1`, `GOMAXPROCS=2`, `NODE_OPTIONS=--max-old-space-size=512`, H reproduced the same target failure in a fresh fixture: EXIT 1, 10.38 seconds overall. The existing compiler cache was pinned separately to avoid recompiling unrelated code; all runtime isolation and resource settings stayed unchanged.
-- Both retained failing fixtures have an existing owned workspace path of length 281, without a first-input proof file. The old H fixture appended `access/verification/eof-http/<UUID>` to the caller's LOCALAPPDATA, then set that as its own LOCALAPPDATA and appended another access-root/worktrees/UUID scaffold. This unnecessary layout inflation came from the test fixture, not Root's external isolation wrapper.
-- An independently compiled public Go test helper, with stdin/stdout redirected and no model entrypoint, could not start in a fresh existing directory of the same length 281: Windows process creation returned native error 267 (`ERROR_DIRECTORY`) before Start succeeded. The same helper started in the length-126 control directory, received complete input followed by EOF, created its proof and exited 0. Only static error class, lengths, status and timing are reported; private diagnostics are never emitted.
-- The evidence locates the failure before EOF submission, rather than a closed-input race or a demonstrated runtime domain defect. The existing conservative `delivery_unknown` mapping and original receipt were not changed. The observed Windows long-CWD process restriction remains a limitation; this is a fixture repair, not a product fix for arbitrary long process paths.
-
-Repair SOURCE `19c83e39b65e9a0cebc5bad20f7dba3f6c82cd2a` changes only `cmd/server/relay_eof_http_test.go`: create unique child appdata with `os.MkdirTemp` directly under the same caller-derived access root. It remains outside Git and global temporary storage. The external Root directory and all native-empty/resource settings, actual HTTP/Service/SQLite/child executable, workspace identity, input and receipt assertions, permissions, operation identity and deadlines are unchanged. No R driver, specification, OpenAPI, workflow or business code changed; no original unknown action was replayed.
-
-| Exact same deep Root environment check | Later result |
-| --- | --- |
-| `go test -mod=readonly ./cmd/server -run '^TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt$' -count=1 -v` | PASS / EXIT 0 / 3.50 seconds; owned CWD length 233 and full first-input proof exists. |
-| `go test -mod=readonly ./cmd/server -count=1 -v` | PASS / EXIT 0 / 19.16 seconds; 23 top-level tests, zero failures, including the original target. |
-| `go vet -mod=readonly ./cmd/server` | PASS / EXIT 0. |
-| `gofmt` / `git diff --check` | PASS. |
-
-Separate evidence stays under `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-eof-root338-diagnosis-20261014`: `exact-root-reproduction-first.log`, `process-controls-derived.json`, `exact-root-after-fixture-fix.log`, `exact-root-entire-cmd-server.log` and `exact-root-cmd-server-vet.log`. The first Root log/result and original failed workspace/store are untouched; fresh case results do not overwrite the original rejected/unknown receipt. Source and this REPORT are separate ordinary commits and pushed, with clean/remote parity verified at handoff.
-
-The exact repair was handed to I/root for an ordinary merge. H did not rerun unrelated full suites, modify I's CI resource configuration or weaken any check. Root still must independently pass complete check/build on the integrated source, and I owns the full dual-platform CI with the generated frontend types and approved Windows resource change. Real native/terminal-only coding, formal cognition, Today, tool/source/liveness policy decisions, administrator Procmon, two real scheduled dates and permanent deployment retain their previous NOT_RUN/undecided outcomes.
-
-## Original H owner: fresh Linux evidence-directory initialization
-
-Task `task_c0577095b4cb`, Dispatch `ctx_a01ed6996519`, same terminal/worktree/branch and two-file write domain. I reported a new first Linux RED in CI `38468510081`, exact SOURCE `bdfbbdbbd6cbd6567e57ef3ed06ac2b3a860e97a`: `TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt` reached the final evidence write and failed with `EOF public response evidence unavailable`. The preceding real HTTP, first-input/EOF, receipt, exit and privacy assertions had passed. That run and Root338's earlier first RED remain separate retained failures; neither original unknown action nor old CI run was retried.
-
-Source inspection confirms the fixture defect: the shortened layout created only `filepath.Dir(evidence)`. On a fresh missing-LOCALAPPDATA fallback, `relayTestLocalAppData` supplies a new test-owned root, so the `verification` child does not exist. Prior Windows validation used an already populated evidence directory and therefore did not expose this initialization dependency. The final `WriteFile` required the child directory that the fixture had stopped creating.
-
-Repair SOURCE `67c7d2a5a205f4df8cc824b8d9c8c20ba60a5821`, pushed early without a skip-CI marker, changes only the initialization call to `os.MkdirAll(evidence, 0700)` and its fixed failure message. This creates both the parent and evidence child. `os.MkdirTemp(fixtureParent, "")`, the short Windows CWD layout, actual HTTP/Service/SQLite/public subprocess, assertions, timeout and skip behavior stay unchanged. No specification, R domain, workflow, API or business code changed. I received the precise source for ordinary integration and a new Linux validation run.
-
-Validation uses the same Root338 deep child LOCALAPPDATA, three public-empty native directories and `GOFLAGS=-p=1`, `GOMAXPROCS=2`, `NODE_OPTIONS=--max-old-space-size=512`; the existing Go compiler cache is pinned before the missing-variable case.
-
-| Command/check | Result |
-| --- | --- |
-| Targeted actual EOF HTTP test, same deep Root environment, `go test -mod=readonly ./cmd/server -run '^TestRelayRealHTTPEOFFirstInputAndUnsupportedReceipt$' -count=1 -v` | Windows PASS / EXIT 0 / 3.45 seconds. |
-| Same targeted test with LOCALAPPDATA removed and a fresh fallback root | Windows PASS / EXIT 0 / 3.06 seconds; this is not a native Linux result. |
-| `go test -mod=readonly ./cmd/server -count=1 -v`, same deep Root environment | Windows PASS / EXIT 0 / 3.47 seconds; 23 top-level tests, zero failures. |
-| `go vet -mod=readonly ./cmd/server`, same deep Root environment | PASS / EXIT 0. |
-| `gofmt` / `git diff --check` | PASS. |
-| `wsl -d Ubuntu --exec go version` | Go executable absent; local native Linux regression NOT_RUN, handed to remote validation. |
-
-New results are retained only under `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access/verification/h-eof-linux-evidence-20261014`: `same-deep-root-target.log`, `windows-missing-localappdata-target.log`, `same-deep-root-entire-cmd-server.log` and `same-deep-root-cmd-server-vet.log`. The first attempt to download the whole CI failed because run 38468510081 was still in progress; that access failure is separately retained as `ci-38468510081-log-access-first-failure.txt` and is not represented as the CI failure log. Root/I retain the original Linux job evidence. No logs, database, configuration or raw helper output enter Git or stdout; this report contains only derived findings.
-
-SOURCE and REPORT are separate ordinary commits; REPORT uses `[skip ci]`. Clean/remote equality is verified at delivery. Native Linux success and integrated complete check/build/dual-platform CI remain pending I/root verification. Existing real Agent, Today, permissions/source/liveness policy, formal cognition, Procmon, scheduled dates and deployment gates do not gain a PASS from this fixture initialization repair.
-
-## Original H owner: L1 selected session capture and independent read seam
-
-Task `task_f215e7452d70`, current Dispatch `ctx_f5069c1ad909`, terminal `term_6d682528-790c-470d-a203-afe228214f50`; original worktree and branch `songconmaisaix31-design/works-relay-http`. Client is Codex API; the exact client model identifier is unavailable to this worker. Read exact DOC `54f28ab42d89c2896f54975eadf66024506d748a` (plan and cognitive-stack specification), Root amendment `913db499233720c369f7f5bf24965d9bc6a8ba54` and updated repository execution instructions. Ordinary no-ff merges consumed accepted I SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` and final R SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb`. Both DOC commits remain outside this branch's ancestry.
-
-Final SOURCE `e3b63ab30151c372ae8bc3e6594227513ef8cea6` is pushed. OpenAPI contract SOURCE `525d5df2c7fa69e1d6617bffc3adb085402c50c0` was delivered early for F's schema generation. Root's authorized write domain covers new session adapters/tests, assembly, HTTP server/session handler, workbench session contracts, `sqlite/access_session*`, OpenAPI/examples and this report. H's source changes remain within those paths; dependencies retain their original owners. REPORT is a separate commit.
-
-The collector opens only a selected owned native session archive supplied by R's read port. Each observation and HTTP read rechecks current project grant/revision and binding through that Service. It validates native session, exact session/turn-context CWD and explicitly approved archive containment, without directory/history discovery. Redirects, hardlinks, replacement/shrink, identity changes and invalid checkpoints fail with static codes. There is no home scan, raw copy, source mutation, Agent launch/send/resume/dispatch or direct RelayStore write.
-
-`ReadBytes` consumes complete JSONL lines within a frozen file extent, including lines beyond the old reader's bounds. An unfinished tail stays before the checkpoint for a later append. Unknown records/timestamps/usage and malformed JSON remain in coverage. Source byte-extent completion is separate from full-session coverage; exit, finalization, append-only semantics and prefix completeness are independent evidence. The host has no positive prefix-completeness port and therefore retains `prefix_unverified`, without claiming complete native coverage. The earlier text/256-record/128-KiB ReadContext protection is unchanged.
-
-The bounded structural vocabulary was checked against the official fixed-version [rollout serialization](https://github.com/openai/codex/blob/rust-v0.162.0/codex-rs/history/src/rollout_payload.rs), [persisted line wrapper](https://github.com/openai/codex/blob/rust-v0.162.0/codex-rs/history/src/lib.rs), [native event protocol](https://github.com/openai/codex/blob/rust-v0.162.0/codex-rs/protocol/src/protocol.rs) and [response items](https://github.com/openai/codex/blob/rust-v0.162.0/codex-rs/protocol/src/models.rs). This is public schema plus controlled-fixture evidence, not a claim that a real CLI archive was exercised. Common message, call/output, reasoning, turn-context and agent/user/task envelopes retain closed native type labels; unverified nested content/future types remain unknown. Semantic outcome/depth stay unknown, Event stays nil, no Signal is created, and native `task_complete` never updates the Relay task or proves archive finalization.
-
-Stable origins use owned binding, OS file identity and byte position. `call_id` and `message.id` correlate multiple native records and are not treated as per-record uniqueness. Re-reading a position preserves its origin; repeated contents at different positions remain distinct without positive native uniqueness evidence. Token components reject wrong types, negatives and addition overflow. Cache/cumulative counts and read times do not fill missing native data.
-
-Existing `NewPendingEventService`/`EventRepository` admit only the six-field derived projection. No native body, prompt, reasoning text, tool arguments/output, command, native ID or private path enters the stored projection, HTTP or cursor. A failed/unknown acknowledgement, including a transaction that committed before returning an error, retains the old checkpoint and blocks automatic retries. Explicit library reconciliation reuses original derived origins and rechecks selection permission; the HTTP read endpoint cannot invoke reconciliation or drive the Agent. Failed source reads do not commit their proposed progress.
-
-Root approved one private `app-state/session-cursor.json` under the existing LOCALAPPDATA-derived access root. It contains binding UUIDs, OS identity/offset, derived counts, coverage and an opaque boolean position index. Event payloads remain in the existing event repository. EventService success precedes atomic cursor replacement. Replacement failure blocks and retains the previous committed checkpoint; restart from a valid old file reuses original origins. Invalid JSON/unsupported version blocks. Checkpoint/coverage changes produce one Save; silent observation, unchanged tails and unchanged gaps produce zero Save calls. GET reads state without modifying it.
-
-The existing two-second observer still handles only already accepted owned tasks, then the entrypoint wrapper captures selected archives, including retained exited bindings and late tail lines. GET does not observe or open archives. Existing cancellation joins the observer before state closure; shutdown performs one final available-extent capture after runtime containment without inferring finalization. Production LaunchPolicy, `AllowCommittedGit: false`, unconfigured liveness window and the existing 17321 service remain unchanged. R's new Codex metadata-only provider may identify an exact archive using the already owned controller; its actual controller call has not been exercised here. Other unsupported/unknown provider results retain safe gaps, not guessed history paths.
-
-`GET /api/v1/relay/session-events` is a human-session/Origin-protected read of committed local pending observations and cached coverage; Agent credentials are refused. Unique query fields are `task_id`, RFC3339 `start/end`, `page` (1..1000000) and `page_size` (1..100; default 50). Unknown/duplicate queries are rejected, errors use ErrorV1, and success is no-store. Events contain exactly `event_id/kind/topic/tokens/scope/ts`. Each HTTP `event_id` is the EventRepository's committed ID and can be resolved with GetEvent. Source timestamps, including sub-millisecond precision, determine descending order before pagination; equal timestamps use committed ID as the tie break. Coverage is separate: `unknown/partial/complete`, safe gap, line/projected/duplicate/unknown/error/unknown-token counts, remaining/tail bytes and snapshot/session booleans. Permission denial hides events and coverage; an explicit denied task read fails. Extent describes the last captured bytes. F owns schema generation and the separate Today section; snapshot A/M/C/Sleep values retain their existing source.
-
-The entrypoint supplies `AccessSessionReader` with current owned native binding prefixes and exact task event origins obtained through R's existing ListEvents port. SQL selects these positive origins from the existing pending event table, then the adapter strictly decodes their metadata and six-field projection. Unrelated plaintext/foreign-scope pending records remain outside that selection. A selected malformed projection returns an explicit failure. The read adapter preserves native labels and `git_activity`, with no Signal generation or formal snapshot access.
-
-Terminal-only observations use the existing R observer, Git observation adapter, RelayEventSink and EventService. An actual public helper executable edits a tracked public fixture after the initial Git baseline is observed; real HTTP then exposes the baseline and changed Git receipts, each resolvable by its committed ID. The native coverage stays unknown, and the task remains unfinished. The fixture LaunchPolicy accepts only the current public test executable. Production policy, source authorization and liveness configuration retain their current settings.
-
-The task-mandated first RED evidence remains outside Git under `verification/l1-session-engineering`: `first-red-derived.txt` (fixed fixture-time query bound), `terminal-git-first-red-derived.txt` (initial baseline observation), `access-session-unrelated-first.log` (unrelated plaintext isolation), and `source-precision-first-red-derived.txt` (assertion uses the repository-returned committed ID). Root338 and the earlier Linux EOF first REDs remain retained separately. Subsequent checks use distinct result files.
-
-| Applicable verification | Outcome |
-| --- | --- |
-| Final `go test -mod=readonly ./... -count=1`, GOFLAGS `-p=1`, GOMAXPROCS `2` | PASS: 20 test packages, 9 without tests; zero failed packages. |
-| New selected-session tests | PASS: complete/unfinished/closed tails, append/restart/re-read, separate call/output/multipart, long lines, unknown/error denominators, ownership/root/CWD/identity/cursor/replacement/truncation/hardlink/cancellation, invalid/overflow usage, sink failures before/after commit, actual HTTP pagination/revoke/exit tail, real metadata replacement failure and corrupt/unsupported-version cursor. |
-| Normal envelope controlled regression | PASS: 11 recognized lines, source extent complete, no false session completion; two future nested/event types increment unknown; no raw disclosure or synthesized signals. |
-| Committed read/terminal Git/storage boundaries | PASS: actual HTTP IDs resolve through GetEvent; silent polls produce zero Save; first gap/new line produces one Save; public executable edits Git through the existing observer/sink; unrelated non-JSON and foreign-scope rows stay isolated; selected malformed projection fails; sub-millisecond ordering precedes pagination. |
-| `go vet -mod=readonly ./...`; architecture check | PASS; 29 packages satisfy boundaries. |
-| OpenAPI lint and examples | PASS: 291 examples; pre-existing unused EventV1 warning retained. |
-| Independent AJV against initial actual derived session HTTP | PASS: 3 responses at the initial contract checkpoint; F owns the final UI replay against the committed-ID samples. |
-| Windows server build | PASS; executable below isolated access verification/build, not deployed. |
-| Final Linux amd64 `go test -c` for events and cmd/server | PASS compilation only. |
-| Native Linux / symlink | NOT_RUN: WSL Ubuntu lacks Go and this Windows worker lacks symlink privilege; integrated Linux CI must execute it. |
-| `go mod verify`; gofmt; `git diff --check` | PASS. |
-
-Fixtures, databases, state files, logs and build artifacts stay below `%LOCALAPPDATA%/astrocyte-workbench/v0.2-access`. Final complete Go output is `verification/l1-session-engineering/recovered-dispatch-go-all-final.log`; earlier checkpoint logs remain separate. The current native-fixture HTTP sample is `verification/session-http/1b056d1f-5ad9-450e-8618-2e0ef36832c2/session-http-derived.json`, and the terminal helper sample is `l1g-4044697017/terminal-git-http-derived.json`. Both contain closed derived API responses, and their exact paths and SOURCE were sent to current Root/F Dispatches. Public protocol downloads remain bounded to `verification/l1-session-engineering/public-schema`.
-
-Root/I owns integrated pnpm check/build, frontend client parity, dual-platform CI/race/E2E and final same-URL acceptance. R's final pending-operation metadata invalidation is included through SOURCE `62c7d99`. Real new CLI registration/manual coding/three-minute Today, archive retention/tool/dirty-source decisions, actual format/prefix completeness, configured liveness, privileged Procmon, two real scheduled dates, formal cognition and permanent deployment remain NOT_RUN or undecided.
+实际用户作品、自由工具授权、默认活性窗口仍未决定。原生文件的完整前缀、永久追加性与恢复 raw 通知接口不足时，保持具体 unknown/partial。原始 Native 共享源码、mapper、engine、schema/迁移、七类权重及快照流程没有 H 修改。V4 协议、库和运行资料没有读取或修改。管理员 Procmon、两次实际 00:30、正式认知验收和现有 17321 部署均未由本次 H 验收执行。

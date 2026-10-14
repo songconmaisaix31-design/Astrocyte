@@ -1,16 +1,37 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 )
 
 func workbenchRoot() string {
 	return filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.1")
+}
+
+func workbenchProtectedSources() ([]string, error) {
+	value := os.Getenv("ASTROCYTE_WORKBENCH_PROTECTED_SOURCES")
+	if value == "" {
+		return []string{}, nil
+	}
+	decoder := json.NewDecoder(strings.NewReader(value))
+	var paths []string
+	if decoder.Decode(&paths) != nil || decoder.Decode(new(any)) != io.EOF || paths == nil {
+		return nil, errors.New("protected workbench sources must be an explicit JSON array")
+	}
+	for _, path := range paths {
+		if !filepath.IsAbs(path) {
+			return nil, errors.New("protected workbench source must be absolute")
+		}
+		if _, err := workbenchCanonical(path); err != nil {
+			return nil, errors.New("protected workbench source unavailable")
+		}
+	}
+	return paths, nil
 }
 
 // Resolve existing ancestors before constructing a new directory, including
@@ -52,7 +73,15 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 	if e != nil {
 		return "", errors.New("application database unavailable")
 	}
-	for _, protected := range []string{filepath.Dir(sqlite.WorkbenchFormalSource), filepath.Join(workbenchRoot(), "snapshots")} {
+	sources, e := workbenchProtectedSources()
+	if e != nil {
+		return "", e
+	}
+	directories := []string{filepath.Join(workbenchRoot(), "snapshots")}
+	for _, source := range sources {
+		directories = append(directories, filepath.Dir(source))
+	}
+	for _, protected := range directories {
 		base, e := workbenchCanonical(protected)
 		if e != nil {
 			return "", errors.New("application data directory unavailable")
@@ -79,8 +108,10 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 	}
 	appDB, e := os.Stat(filepath.Join(resolved, "state.sqlite"))
 	if e == nil {
-		if source, e := os.Stat(sqlite.WorkbenchFormalSource); e == nil && os.SameFile(appDB, source) {
-			return "", errors.New("application database must be independent")
+		for _, path := range sources {
+			if source, e := os.Stat(path); e == nil && os.SameFile(appDB, source) {
+				return "", errors.New("application database must be independent")
+			}
 		}
 		generations, _ := filepath.Glob(filepath.Join(workbenchRoot(), "snapshots", "*", "snapshot.sqlite"))
 		for _, path := range generations {
