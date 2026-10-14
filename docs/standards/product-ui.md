@@ -12,6 +12,12 @@ SOURCE `27e9fd86f4a4d4f7ec29013a14670914b9f82c7a` 已普通 push，`git ls-remot
 
 本阶段是查询与显示组件，不构成 S2/S3 整功能通过。创建、人工批准、拒绝、撤销、Grant 状态、Context、Mission 时间线、工作项命令与 Artifact 验收等待准确公开契约及生产接口。已直接向 S2 `ctx_f32b6d92119a`、S3 `ctx_d4bf65ca06bf`、H `ctx_e1a8ebeeea83` 与 F `ctx_5bac511ada08` 交接；不手写未经确认的公共 DTO。
 
+## 执行内容表单阶段
+
+SOURCE `d6be4017a54797fddaf40f9d18f1acbee951c3eb` 已普通 push，远端 SHA 一致。`ProposalContentFields` 按 S2 精确 SOURCE `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 的 `ProposalContent` 提供完整编辑字段：固定目标版本、项目、根目录、动作、工具、外发目标、并发限制、调用/Token/最小货币单位预算、币种、产出、成功条件、截止时间及停止条件和数量/尝试/无进展限制。表单字符串状态属于页面编辑内容，生产命令仍等待公共生成类型与 F 客户端绑定。该阶段 `pnpm --dir web typecheck` 和 `pnpm --dir web lint` PASS。
+
+已交 S2 补充批准记录的持久查询关联：现有提案读取未提供 Grant ID，重载后需通过真实关联或过滤列表取得有效 Grant 和撤销入口。Goal 创建后可使用实际返回的固定版本，列表需求也已交 S2。未知命令锁的公共复用入口交 F；现有 `useCommand` 不提供跨重开持久锁。
+
 ## 实际检查与首次失败
 
 | 命令 | 实际结果 |
