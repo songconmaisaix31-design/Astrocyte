@@ -11,7 +11,7 @@
 
 | 开发人员 | 固定工作树 / 分支 | 独占写域 | 调度状态 |
 |---|---|---|---|
-| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | 前阶段 `task_b833b3a06c1e/ctx_216bf731aaf8` succeeded 并独立接收；当前具体默认场景支持 `task_6586f574ed0b/ctx_1210a540a63b` 已恢复 ready / turnStart observed 和 actual started |
+| R | `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `internal/workspace/{domain,app}/relay*.go`、`internal/adapters/{sqlite,agents}/relay*.go`、`internal/adapters/relayworktree/**`、`agents/native.go`、`agents/native_process.go`、`docs/access/runtime.md` | 当前 `task_d480ceaf0e15/ctx_1f88d9e6f4f4`，复用 `term_6ffbc768-d919-4bcf-bb28-d43e4e250e42`；actual started 并持续实现，公开观察 live / working / exactWorker；首 start_unknown 保留 |
 | H | `works-relay-http` / `songconmaisaix31-design/works-relay-http` | `internal/adapters/events/relay*.go`、`cmd/server/relay*.go`、`internal/adapters/httpapi/relay*.go`、`internal/workbench/app/relay*.go`、`internal/adapters/sqlite/access_session*.go`、`contracts/openapi.yaml` 与 relay examples、`docs/access/http.md`；必要 `cmd/server/main.go` / `internal/adapters/httpapi/server.go` 组装 | `task_cfb7c9bde07d/ctx_312d983772a9` 沿原 Run 活跃；已发直接 Handoff，要求同时向模块 Dispatch 报告 |
 
 依赖单归 B，H 不修改 `cmd/server/config.go`。总负责人 2026-10-14T13:13:29Z 明确增加 H 的 `cmd/server/workbench_config.go` 单文件薄接口写域，只消费 B 已交精确 Reader 接口，默认无私人正式源路径、保留只读和路径保护；Reader / contracts / config.go 均仍由 B 独占。F `ctx_5bac511ada08` 是当前实际产品页面唯一操作人；B `ctx_7217777c7bf5` 接收真实公开来源、生产入口及普通库存测试迁移 Handoff。产品模块负责人 `ctx_b1cd2e0a39aa`、集成发布模块负责人 `ctx_376d222c774b` 已由总负责人确认，跨模块依赖直接 Handoff 其精确 Dispatch。
@@ -63,7 +63,16 @@
 - 模块独立 HTTP session-events 对原 task 返回18事件，字段集合精确六项，其中17 tokens null；只读 SQLite 的 attention_engine_events 逐18 ID 均存在，missing0。首 SQLite CLI 多行 JSON 收集错误导致比较未执行，已修正收集方式实际重验，不当作事件缺失。真实 archive coverage 为 lines15/projected15/unknown5/errors0/snapshot_complete true/session_complete false，gap unknown_records；已给 B/H 真实 nullable 样本本机指针范围，不插假数据或新增模型凑样本。
 - H 原本机白名单 WARN 保留 method thread/read、protocol_code -32603、reason thread_rejected、实际 Shanghai21:33:19；已给原 R 继续处理首错误安全保留，不猜内部拒绝原因。原调用模型成功与首 metadata 503 分列；旧 owned PID / argv 未保存，工具有效集合证据不足，不由 tool0 或新配置反填。
 - R 新窗口支持 SOURCE `6ed9ae1301dc2e91f0d17a335300697fae3e253f` 已普通 push 且模块远端核验：显式 SessionDeadlineSeconds（零仍180秒）、真实已装 Claude 固定 stdin_eof argv / 单公开根 LaunchPolicy，以及原 owned session 的本机 PID / deadline / argv 策略安全证据口。后续 `055a57a18c732ffbbc55d49c605f65c655b8edea` 核通知模式真实 argv 参数，`5c37c261ae1f98fbdab6926415712ef4a5181581` 移除新增 Skip 并保留缺入口拒绝验证；R 继续同域首 RPC 错误安全摘要。模块实际三个门禁测试 PASS（package8.190s），后接 ls-remote TLS失败分列，不声明最新远端核验完成。
-- H 日常领域问题保留 preamble 精确身份，通过 `ask --to run:run_8bbda1c3974c` 直接归模块 reply；worker_done 仍原 owning Run，旧资源结算由总负责人转交。模块不绑定或抢读根 Run、不读取 Orca 内部 DB。
+- H 原 Dispatch 的跨 Run `ask --to run:run_8bbda1c3974c` 实际被所属 Run 校验拒绝；模块 reply 原问题也返回 consumer_fenced。日常领域问题通过普通 Handoff 直接给模块，必要的正式 ask 留原 owning Run，由总负责人回复。原问题 `msg_f4c73bd8170c` 已由总负责人合法回复并获 H 实际确认；worker_done 仍留原 owning Run。模块不夺取绑定、不读取 Orca 内部 DB。
+- R 默认场景阶段 SOURCE `87a54b762aef0c6a175eab1470508e76aa6ace45` / REPORT `63b55d770a00724795196417af2ef4f3ba922ed0` 已由 R 普通 push 并核远端，13:55:21Z worker_done 接收。模块独立四个真实拒绝及首错误安全保留测试 PASS，package 1.215s；最新独立远端读取 TLS 失败另列。该阶段保留默认180秒，显式可信组装可配置900秒；既有 EOF helper 只接受准确公开根、实际已装 Claude 固定 argv 和关闭工具策略，effective tool set 仍需实际窗口证据。
+- 当前 R Task 初次启动 turn_start_unobserved，公开文本确认任务停留在 composer 后只提交原输入一次；14:03:56Z R actual started。14:31Z 公开 worker-show 为 owned / live / working / exactWorker；首次 startup UNKNOWN 不改为首次成功，无重复人员或输入。
+- R 可移植内部证据口 SOURCE `0de4e464e3dab342a06fdb37d76ea58a8d5f1f32` / 独立 REPORT `d8cb13a8b1a392a2105bba9e826daa1364e70caa` 只给 B 原样消费 `internal/adapters/agents/relay_execution.go`，R metadata 保留独立文件。B SOURCE `3384a89aac3be6d5670d756eb2d44263784d0cb8` 已普通 push，B 和产品模块双 ACK 内容逐行大小写全等、无其他 R 文件消费；14:31Z 模块正式归还该文件写域给 R。B 后续只修改自身 text / bridge，对缺失 metadata 保持 unknown，不以 NativeID 重建原 process 所有权。
+- 总负责人正式 reply `msg_0c1795a84006` 回答 `msg_ac65fadbbe5e`：纯人工 done / released Transition 核现有 observe 许可；保留人工身份、原项目 revision / A-B-C / 对象所有权、grant 撤销和失效、completion_confirmed、真实退出与 pending 拒绝。真正事件 publication reconciliation 继续核 reconcile。R 正在原写域实现；旧 task revision2、原输入、收据与开始时间不修改，F 是唯一实际 UI 操作人。
+- R 新权限真实 SQLite / HTTP A-B-C、vet / build / architecture 已报告 PASS；全 Go 首 RED 为 H `TestRelayPersistentRealHTTPReceiptsMutexAndRestart` 成功 reconcile 场景未预先授权 reconcile，实际403 approval_required。首日志 `dist/relay-l1/human-transition-full-go-test.log` 保留，已交 H 原 owner 补真实权限前置和缺许可403；无新增 skip 或删除成功断言。修复 SOURCE 与完整组合通过仍待实际核验。
+- R 人工权限 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 本地提交已独立审查，修改只在 R 三个 relay 文件；模块独立 `go test -mod=readonly ./internal/workspace/app -run '^TestRelayHumanTransitionProductionPermissionGates$' -count=1 -v -timeout=90s` PASS，真实 A/B/C Git / production SQLite / HTTP 拒绝检查1.13秒、package3.073秒，零模型。该检查不制造 working / exit，也不替代旧 task 实际成功释放；远端及独立 REPORT 待 R 精确交接。
+- H Foundation / Projects 实际组装 SOURCE `3016a5369393166ac3a40f520138ae352d2edf92` / REPORT `82d014dd78ac732b86e1a562f633909c75d4941e` 已普通 push；显式受保护来源 guard SOURCE `24b6390bcad60a2a20b671dcb60725e77eb3a7a4` 已 push。薄接口等待 B 精确窄 Reader 提交或唯一集成人员实际组装；不能合 B 含冻结历史的整个分支进入 H，不能由 H 修改 Reader。
+- F 首 native DOM 实际为13:33:25.152Z / .153Z；H 逐 SQL 核两个自产 archive ID，第三个 relay_task 事件不计 native。原注册至 DOM591116 / 591117毫秒 FAIL；dispatch 创建至 DOM14.516 / 14.517秒 PASS，两种起点分列。原 task 单次 read 返回200 / accepted，controller 已实际退出，人工 done / released 等上述权限修复投入和 F 实际操作。
+- 总负责人已授权先合法释放旧 task、SQL 工作区解锁和 pending0，再创建独立明确公开 scope / DB / follow-up；新窗口使用既有显式900秒并提前取得 F observer ready。新模型工具关闭须有本次实际 PID / argv / controller 来源证据；旧第一 FAIL、503 accepted 和 unknown 不覆盖。PUBLICATION_ERROR 尚未执行；H 正核新独占 SQLite 的真实 writer 争用是否能只使事件 sink busy，不能假造 sink、增加测试开关或使用旧 scope / 正式数据。
 
 模块管理阶段 SOURCE `e404da04f7b10296bed8133589c292766c5398cf` 已普通 push，`git diff --check` 和 `git ls-remote` 精确核对 PASS；该结果仅包含本模块管理文档与派发核查，业务修复和产品验收仍按下面记录进行。
 
@@ -75,7 +84,8 @@
 | 控制器 start/send/read/stop/resume、持久身份与三值状态 | R 阶段报告 PASS，组合未验 | 当前真实 controller 与 SQLite、明确活动窗口语义；H/F 产品链路 |
 | 控制器自产会话逐 event_id 定位、六字段 HTTP、分页与 GET 只读 | 原 task H 独立15行 / 模块18 HTTP ID 实际匹配 PASS | H 原档 / SQL / GetEvent / HTTP 比较；原503与完整会话 partial 独立保留 |
 | 来源覆盖、追加、停止和恢复边界 | PARTIAL / UNKNOWN 保留 | `ArchiveAppendOnly=unknown`，文件 PrefixComplete / SessionComplete 不足，恢复 raw gap 独立记录 |
-| 同 URL 未登记基线、真实登记、首次 Today DOM 三分钟 | 首注册三分钟 FAIL；F 准确输入已 ACK，迟到 DOM 继续 | 原13:23:34.0366105Z起点不变，只有真实原生提交 ID 才计 native DOM |
+| 同 URL 未登记基线、真实登记、首次 Today DOM 三分钟 | 首注册至真实 native DOM591116 / 591117毫秒 FAIL；dispatch 至 DOM14.516 / 14.517秒 PASS | 原13:23:34.0366105Z起点不变，两个真实 archive ID 逐 SQL 核实，两种计时分别报告 |
+| 人工 done / released 和事件 reconciliation 许可 | observe 人工映射已批准；R 实现中；旧 task 实际完成释放未验 | R 权限与真实适配器，H 投入和 SQL 核验，F 唯一 UI；reconciliation 继续核 reconcile |
 | 注册表扩展、中性 worktree 换手、terminal-only、互斥与权限拒绝 | 最终组合未验 | 对照 v1.2 与当前 release 任务；每项真实结果独立报告 |
 | 默认检查、构建、完整浏览器、Windows 解压启动读写及重启持久化 | 模块未验 | 各原领域人员、唯一集成人员和发布包人员精确组合 SOURCE |
 | Procmon、两次真实 00:30、用户自由工具与实际作品 | NOT_RUN / 未决定 | 不降低门禁、不扩大授权 |
