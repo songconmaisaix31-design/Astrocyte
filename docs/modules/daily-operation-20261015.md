@@ -49,3 +49,9 @@
 根 `msg_13377fafb87d` 明确授权必要有界文本检查，并允许在肯定 idle与原定任务未提交证据齐备时仅对原exact终端单次Enter。读取公开 `terminal read --screen` 的18行并在进程内检查，只输出布尔与计数：一个非空composer，本次V4任务位于composer行；Working / Compacting均false，无新工具执行或登录 / 网络错误；屏内原automation提示词末尾连续200字符与现有prompt逐字匹配，锁路径 / 共同预算 / 日期范围一致。顶部被当前文本viewport省略；原run公开记录未提供durable request ID。根判定交接 `msg_00106c191e5b` 已发送。
 
 00:28:37对 `term_a816e798-ecec-4a59-bb47-8030f6b57982` 仅执行一次 `orca terminal send --terminal … --enter --json`，accepted=true / bytesWritten=1，没有附加正文或复制重发任务。00:28:55新的有界文本检查为screen / 15行、Working=true、Compacting=false、新工具执行标记true、网络错误false；原operator实际回合开始已确认，根回执 `msg_b0d00fd5b4f0` 已交。未创建第二operator、修改日程或执行本模块自己的capture / 模型请求；今日采集与模型完成仍须该唯一运行的安全结果。
+
+## D1真实采集与三臂进展
+
+00:31:21只读确认 `capture-20261014-first` / `day-20261014-first` 均存在，run仍dispatched。随后标准JSON仅选择coverage安全字段：day=2026-10-14、phase=formal、day0=10-13、协议SHA全等；capture_complete / selection_complete均true，Astrocyte46 / McPet14 / Morphogenesis0、cognitive_success60，unassigned / structure_failed / late / source_errors均0、sleep_status=completed。Codex20文件 / 145窗口非工具记录，Claude7文件 / 2660扫描行；来源仍为原授权根，没有扩大源。
+
+00:34:26独立只读解析answers / receipts的状态与计数：9个OK终态、10个STARTED、10个已观察题臂组合、未决STARTED组合1，重复STARTED / 重复终态均0。user-sheet已生成，judge-scores尚不存在；原STARTED随顺序实际完成记录保留。没有输出题目、回答、原始evidence或匿名映射。此时三臂未完成，不执行本模块的新请求或judge，继续接收唯一原operator结果。

@@ -14,7 +14,7 @@
 | I 唯一集成 | 待条件完成后创建独立 release 集成工作树 / 分支；只补少量路由、导入、配置、类型和集成报告 | 精确 SOURCE / 独立 REPORT、四项语义、完整默认、实际 native / Today 均通过后才启动。普通 `--no-ff`，领域失败交原 owner；check / build / 完整 workers=1 E2E 与适用链路通过后 push SOURCE 与独立 REPORT。 |
 | P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
 | N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
-| S 新阶段一手科研依据 | 原 `release-research-20261014` / `songconmaisaix31-design/release-research-20261014`；仅 `docs/release-research.md` | 根 `msg_9f7f7d5edc5b` 转最新用户并行授权。原owner已released、原树clean / HEAD `7d030fc83120052a8f32ea74c6007ff9be6878ca`，新第三层Task核前沿一手论文 / 已有开源和REA资料、真实机制与限制、S2/S3及L系列实际代码入口；只研究与具体领域Handoff，不写业务、不解除正式冻结、不派第四层。客户端采用原Codex配置，实际模型待ready后核实。 |
+| S 新阶段一手科研依据 | 原 `release-research-20261014` / `songconmaisaix31-design/release-research-20261014`；仅 `docs/release-research.md` | 根 `msg_9f7f7d5edc5b` 转最新用户并行授权。原owner已released、原树clean / HEAD `7d030fc83120052a8f32ea74c6007ff9be6878ca`；新Task `task_ec1f2cb096b1` / Dispatch `ctx_980d42612042` / 终端 `term_1f61ef16-79ad-49c8-b804-9f149c4fc544`，ready / turn_started / depth2 / 实际Codex gpt-6.1-sol / live。核前沿一手论文、开源与REA资料、机制限制、S2/S3及L实际代码入口；只研究与领域Handoff，不写业务、不解除冻结、不派第四层。 |
 
 P/N 恢复均创建新 Task / Dispatch，先核实际工作树、分支、clean 和旧资源 released；不向旧 Dispatch 发送新任务。Q 保留已接纳终稿，只有具体领域失败才恢复原 owner。S 按最新明确授权在原互斥报告域继续一手依据审阅。日预检文件写域为空，与本模块两份管理文档互斥；原始输入 / 响应 / 日志只留已有外部证据根，Git、MCP 与 stdout 只记录派生计数。
 
@@ -44,6 +44,8 @@ M-relay `msg_4c82199f5651` 已回传新 H Task `task_3004b636a3ab` / Dispatch `c
 根 `msg_c46c0e0cc962` 交接的产品实码事实为 S2/S3 核心 Proposal / Mission / WorkItem / Artifact / Context 仍 empty；Relay 与候选包阶段不代表全部 S0–S6 完成。根 `msg_9f7f7d5edc5b` 已转最新用户授权：S0–S6按当前系列推进，M-product在无WIP精确域移交后安排S2/S3功能owner，科研研究提供具体一手依据与机制限制。working关键规则仍待用户答案，正式V4 / v0.2冻结不解除。产品 `msg_b26b601c06b9` 已交当前 B / V 新来源；B 独立报告及 V 最终路径报告修订后再核最终输入。
 
 当前唯一 v1.4 规格追加 SOURCE `61977021f7babe86205cd23f1b83c23a6627af6c` 已收到并完整阅读改动：人工 handoff 沿既有 CreateIntent 使用成对显式声明，真实释放 / 退出 / pending / 同 project与worktree / 新Agent归属分别核查；接口消费仍以 R/H 精确功能来源为准。该规格没有决定待答 working / 人工done迁移。B `0726285` 的 H三个临时文件精确消费与域归还已收到 M-relay 独立核查回执 `msg_9236d5af6f15`，不等于 F 默认完整通过。
+
+规格独立 REPORT `8c93a29ffe7df1f8c110634b3dc1b3c4c63062e9` 已收到。H 当前准备 SOURCE `261fb73921d2a1b929f40bf4d714de5356b9024d` / REPORT `e59b59d076fffc67f2bcde935ec638888ecdfee7`，仅四个H Relay测试文件与独立文档；来源 / 通知 / HTTP 客户端从实际持有listener公告获取api_url，原archive单链接与完整性拒绝保持，不计v1.4真实链路通过。S 已完成基线核实并继续一手研究；S2/S3新计划请求 `msg_41660ccc7675` 已给 M-product，准确计划尚待，SPEC已定部分继续。
 
 当前 I / 最终 P / 最终 N 尚未派发；发布、tag、正式 V4 冻结解除、人评代填均未执行。下方保留上一阶段交付记录及首失败证据。
 
