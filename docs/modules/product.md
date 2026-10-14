@@ -10,15 +10,16 @@
 
 | 开发人员 | 固定工作树 / 分支 | 当前原 Dispatch | 写入范围与下一步 |
 |---|---|---|---|
-| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python 和冻结核心；`tests/s1`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理真实视频定位、实际模型/控制器测试、默认 Go 检查、Reader 发布路径与真实进度入口 |
+| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python、冻结核心与下述 T 的测试文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理真实视频定位、其余实际模型/控制器测试、默认 Go 检查、Reader 发布路径与真实进度入口 |
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 唯一 `web/src/**`、`web/e2e/**`、`docs/standards/frontend.md` owner。消费精确公开契约与 B/R/H/Q 实际入口，完成未知状态持久化、全部既有 Web 和稳定源码默认完整 E2E |
+| T Attention 实际测试 | 计划 `product-attention-tests-20261014` / 同一新分支，以 B 精确 `b470ecd736af261a10e4c4822bdcd3b02d0da454` 创建独立 worktree | 创建后的实际 Task/Dispatch/终端待登记 | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
 2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
 3. 总负责人接收原 worker_done 并交接已核实终端后，才在本子 Run 复用同一终端、工作树和分支创建后续 Task；不重新绑定总负责人 Run，不增加同写域人员。
 4. 所有实际功能与适用检查通过后，向 M-release 提交精确 SOURCE/REPORT 及覆盖证据供唯一 I 普通合并；最终组合 check/build/默认 E2E、ZIP 新目录启动/读写/重启验收继续由原开发人员支持。模块阶段通过不结算本 Task，最终 GitHub Release 由总负责人接受具体结果后发布。
 
-总负责人 `msg_b2515cb04bf3` 已转交用户追加决定：模块可自主安排第三层人员，无需逐个申请。拆分原 B/F 写域前必须由原 owner 在具体文件安全检查点给出精确阶段或必要 WIP、明确停止写入，并由双方确认新独占范围。本模块已向 B 请求测试文件集合的可交接范围；尚未收到交接确认，未新增写入者。功能开发人员不派第四层。
+总负责人 `msg_b2515cb04bf3` 已转交用户追加决定：模块可自主安排第三层人员，无需逐个申请。拆分原 B/F 写域前必须由原 owner 在具体文件安全检查点给出精确阶段或必要 WIP、明确停止写入，并由双方确认新独占范围。B `msg_0c7de990a861` 已明确从该消息起停止修改上述全部 App 测试及 S1 `automatic_test.go`，14 既有文件零 WIP，起点为已 push 的 `b470ecd`。本模块已核测试文件集合与零改动，按共享 fixture/Meta/MemoryRepo/MemoryObjects/TestDistiller 依赖整体交一位 T，不拆同包 helper；B 保留全部生产、其他测试和依赖。功能开发人员不派第四层。
 
 ## 核心路径与当前结论
 
