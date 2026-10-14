@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
 
 type ProposalStatus string
@@ -33,11 +32,13 @@ type ResourceBudget struct {
 
 type ExecutionScope struct {
 	ProjectID string `json:"project_id"`
+	SettingsRevision int `json:"settings_revision"`
 	Roots []string `json:"roots"`
 	Actions []string `json:"actions"`
 	Tools []string `json:"tools"`
 	ExternalTargets []string `json:"external_targets"`
 	MaxConcurrency int `json:"max_concurrency"`
+	WritePaths []string `json:"write_paths"`
 }
 
 type StopConditions struct {
@@ -46,6 +47,7 @@ type StopConditions struct {
 	MaxWorkItems int `json:"max_work_items"`
 	MaxAttempts int `json:"max_attempts"`
 	NoProgressSeconds int `json:"no_progress_seconds"`
+	MaxNoProgressRounds int `json:"max_no_progress_rounds"`
 }
 
 type ProposalContent struct {
@@ -68,39 +70,43 @@ type Proposal struct {
 	AdmissionID string `json:"admission_id,omitempty"`
 	OpportunityID string `json:"opportunity_id,omitempty"`
 	OpportunityRevision int `json:"opportunity_revision,omitempty"`
+	GrantID string `json:"grant_id,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func WorkspaceError(code apierrors.Code, message string) error {
-	return &apierrors.ServiceError{Code: code, Message: message, RequiredAction: "review_workspace_version_and_permissions"}
+type WorkspaceRuleError struct { Code string; Message string }
+func (e *WorkspaceRuleError) Error() string { return e.Code+": "+e.Message }
+func WorkspaceError[C ~string](code C, message string) error {
+	return &WorkspaceRuleError{Code: string(code), Message: message}
 }
 
 func (b ResourceBudget) Validate() error {
 	for _, limit := range []*int64{b.Calls,b.Tokens,b.MoneyMinor} {
-		if limit != nil && *limit < 0 { return WorkspaceError(apierrors.ValidationFailed,"resource limits cannot be negative") }
+		if limit != nil && *limit < 0 { return WorkspaceError("validation_failed","resource limits cannot be negative") }
 	}
-	if b.MoneyMinor != nil && (len(b.Currency)!=3 || strings.ToUpper(b.Currency)!=b.Currency) { return WorkspaceError(apierrors.ValidationFailed,"money requires an uppercase three-letter currency") }
-	if b.MoneyMinor == nil && b.Currency != "" { return WorkspaceError(apierrors.ValidationFailed,"currency requires a money budget") }
+	if b.MoneyMinor != nil && (len(b.Currency)!=3 || strings.ToUpper(b.Currency)!=b.Currency) { return WorkspaceError("validation_failed","money requires an uppercase three-letter currency") }
+	if b.MoneyMinor == nil && b.Currency != "" { return WorkspaceError("validation_failed","currency requires a money budget") }
 	return nil
 }
 
 func (c ProposalContent) Validate(now time.Time, executable bool) error {
-	if strings.TrimSpace(c.Title)=="" || c.Goal.ID=="" || c.Goal.Revision<1 || c.Scope.ProjectID=="" { return WorkspaceError(apierrors.ValidationFailed,"title, fixed goal and project are required") }
+	if strings.TrimSpace(c.Title)=="" || c.Goal.ID=="" || c.Goal.Revision<1 || c.Scope.ProjectID=="" { return WorkspaceError("validation_failed","title, fixed goal and project are required") }
 	if err:=c.Budget.Validate(); err!=nil { return err }
-	for _, ref:=range c.Inputs { if ref.MaterialID=="" || ref.Revision<1 { return WorkspaceError(apierrors.ValidationFailed,"input references require a fixed material revision") } }
+	for _, ref:=range c.Inputs { if ref.MaterialID=="" || ref.Revision<1 { return WorkspaceError("validation_failed","input references require a fixed material revision") } }
 	if !executable { return nil }
-	if len(c.Scope.Roots)==0 || len(c.Scope.Actions)==0 || c.Scope.MaxConcurrency<1 || len(c.Deliverables)==0 || len(c.SuccessCriteria)==0 || len(c.Stops.Conditions)==0 || c.Stops.MaxWorkItems<1 || c.Stops.MaxAttempts<1 || c.Stops.NoProgressSeconds<1 || !c.Stops.Deadline.After(now) { return WorkspaceError(apierrors.ValidationFailed,"execution requires roots, actions, concurrency, outputs, success and stopping conditions") }
-	if c.Budget.Calls==nil && c.Budget.Tokens==nil && c.Budget.MoneyMinor==nil { return WorkspaceError(apierrors.ValidationFailed,"execution requires an explicit resource limit") }
-	for _, root:=range c.Scope.Roots { if !filepath.IsAbs(root) { return WorkspaceError(apierrors.ValidationFailed,"allowed roots must be absolute") } }
-	for _, action:=range c.Scope.Actions { if strings.TrimSpace(action)=="" { return WorkspaceError(apierrors.ValidationFailed,"allowed actions cannot be empty") } }
+	if len(c.Scope.Roots)==0 || len(c.Scope.Actions)==0 || c.Scope.MaxConcurrency<1 || len(c.Deliverables)==0 || len(c.SuccessCriteria)==0 || len(c.Stops.Conditions)==0 || c.Stops.MaxWorkItems<1 || c.Stops.MaxAttempts<1 || c.Stops.MaxNoProgressRounds<1 || c.Stops.NoProgressSeconds<0 || !c.Stops.Deadline.After(now) { return WorkspaceError("validation_failed","execution requires roots, actions, concurrency, outputs, success and stopping conditions") }
+	if c.Budget.Calls==nil && c.Budget.Tokens==nil && c.Budget.MoneyMinor==nil { return WorkspaceError("validation_failed","execution requires an explicit resource limit") }
+	for _, root:=range c.Scope.Roots { if !filepath.IsAbs(root) { return WorkspaceError("validation_failed","allowed roots must be absolute") } }
+	for _, path:=range c.Scope.WritePaths { if filepath.IsAbs(path)||filepath.Clean(path)==".."||strings.HasPrefix(filepath.Clean(path),".."+string(filepath.Separator)) { return WorkspaceError("validation_failed","write paths must be relative to approved roots") } }
+	for _, action:=range c.Scope.Actions { if strings.TrimSpace(action)=="" { return WorkspaceError("validation_failed","allowed actions cannot be empty") } }
 	return nil
 }
 
 func (p *Proposal) Transition(expected int, target ProposalStatus, now time.Time) error {
-	if p.Version!=expected { return WorkspaceError(apierrors.VersionConflict,"proposal version changed") }
+	if p.Version!=expected { return WorkspaceError("version_conflict","proposal version changed") }
 	valid:=p.Status==ProposalDraft && target==ProposalInReview || p.Status==ProposalInReview && slices.Contains([]ProposalStatus{ProposalApproved,ProposalDeclined},target)
-	if !valid { return WorkspaceError(apierrors.ValidationFailed,"proposal transition is not allowed") }
+	if !valid { return WorkspaceError("validation_failed","proposal transition is not allowed") }
 	if target==ProposalInReview || target==ProposalApproved { if err:=p.Content.Validate(now,true); err!=nil { return err } }
 	p.Status=target; p.Version++; p.UpdatedAt=now
 	return nil
