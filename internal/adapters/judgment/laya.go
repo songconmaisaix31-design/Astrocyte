@@ -117,6 +117,9 @@ func (l *Laya) Evaluate(ctx context.Context, input judgment.BackendInput) (judgm
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	var result judgment.BackendResult
+	if err := judgment.ValidateBackendInputBytes(input); err != nil {
+		return result, err
+	}
 	if l.closed {
 		return result, fmt.Errorf("Laya worker is closed; explicit restart is required")
 	}

@@ -126,6 +126,17 @@ func digestJSON(value any) (string, error) {
 	return DigestText(string(data)), nil
 }
 
+func ValidateBackendInputBytes(input BackendInput) error {
+	data, err := json.Marshal(input)
+	if err != nil {
+		return err
+	}
+	if input.Budget.MaxInputBytes <= 0 || len(data) > input.Budget.MaxInputBytes {
+		return invalid("complete question, criteria and evidence input exceeds explicit byte budget")
+	}
+	return nil
+}
+
 func ValidatePolicy(p Policy) error {
 	if p.ProjectID == "" || len(p.Languages) == 0 || p.Revision < 1 || p.ProjectSettingsRevision < 1 || p.WorktreeID == "" || p.SnapshotID == "" {
 		return invalid("policy requires project and allowed languages")

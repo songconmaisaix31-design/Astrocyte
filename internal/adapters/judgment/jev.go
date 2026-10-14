@@ -74,12 +74,18 @@ func providerQuestion(q judgment.Question) map[string]any {
 
 func (j *Jev) Evaluate(ctx context.Context, input judgment.BackendInput) (judgment.BackendResult, error) {
 	var result judgment.BackendResult
+	if err := judgment.ValidateBackendInputBytes(input); err != nil {
+		return result, err
+	}
 	if input.ModelRevision != JevModel {
 		return result, fmt.Errorf("Jev requires pinned %s", JevModel)
 	}
 	body, err := json.Marshal(map[string]any{"model": JevModel, "state": input.State, "questions": map[string]any{input.Question.ID: providerQuestion(input.Question)}})
 	if err != nil {
 		return result, err
+	}
+	if len(body) > input.Budget.MaxInputBytes {
+		return result, fmt.Errorf("Jev complete REST input exceeds explicit byte budget")
 	}
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, jevEndpoint, bytes.NewReader(body))
 	if err != nil {

@@ -124,7 +124,11 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		EvidenceRefs: append([]EvidenceRef{}, request.EvidenceRefs...), CreatedAt: time.Now().UTC(),
 		Distribution: map[string]float64{}, Options: map[string]OptionCoverage{},
 	}
-	if strings.TrimSpace(state) != "" {
+	backendInput := BackendInput{Question: request.Question, State: state, Language: request.Language, ModelRevision: request.Versions.Model, Budget: request.Budget}
+	if budgetErr := ValidateBackendInputBytes(backendInput); budgetErr != nil {
+		result.Decision, result.ReasonCode = Abstain, "input_byte_budget_exceeded"
+		err = budgetErr
+	} else if strings.TrimSpace(state) != "" {
 		if !applyRule(request.Question, input.Evidence, &result) {
 			if request.Backend == RuleBackend {
 				result.Decision, result.ReasonCode = Abstain, "rule_does_not_determine_answer"
@@ -156,10 +160,6 @@ func (s *Service) recheck(ctx context.Context, actor Actor, request JudgmentRequ
 
 func (s *Service) evaluateModel(ctx context.Context, request JudgmentRequest, policy Policy, state string, result *JudgmentResult) error {
 	result.Backend, result.Decision = request.Backend, Abstain
-	if len([]byte(state)) > request.Budget.MaxInputBytes {
-		result.ReasonCode = "input_byte_budget_exceeded"
-		return invalid("input exceeds explicit byte budget; repackage evidence")
-	}
 	model := s.models[request.Backend]
 	if model == nil {
 		result.ReasonCode = "backend_unavailable"

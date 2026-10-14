@@ -54,7 +54,7 @@ connection.onRequest('judgment/evaluate', async input => {
   const count = type === 'choice' ? question.options.length : type === 'score' ? question.levels.length : 2;
   const bucket = `${type}:${count <= 2 ? '2' : count <= 5 ? '3-5' : count <= 10 ? '6-10' : '11+'}`;
   if (invalidBuckets.includes(bucket)) throw new ResponseError(-32602, `Laya checkpoint has invalid calibration for ${bucket}`);
-  if (Buffer.byteLength(input.state, 'utf8') > input.budget.max_input_bytes) throw new ResponseError(-32602, 'Laya input exceeds explicit byte budget');
+  if (Buffer.byteLength(JSON.stringify(input), 'utf8') > input.budget.max_input_bytes) throw new ResponseError(-32602, 'Laya complete question, criteria and state exceed explicit byte budget');
   const definition = { type, instructions: question.instructions };
   if (type === 'choice') definition.criteria = Object.fromEntries(question.options.map(option => [option.id, option.description]));
   if (type === 'score') definition.criteria = question.levels;
