@@ -17,4 +17,13 @@
 .formFields textarea { min-height: 76px; resize: vertical; }
 .formFields small, .formFields p { color: var(--color-text-muted); font-size: var(--text-xs); }
 .formFields input:focus-visible, .formFields textarea:focus-visible { outline: 2px solid var(--color-accent, #39875b); outline-offset: 2px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+.review { border-top: 1px solid var(--color-border-light); padding-top: 20px; margin-top: 20px; }
+.review > p { color: var(--color-text-muted); margin: 12px 0; }
+.formFields .confirmation { display: flex; align-items: flex-start; gap: 10px; }
+.confirmation input { width: auto; margin-top: 4px; flex-shrink: 0; }
+.inputs { min-width: 0; padding: 16px; border: 1px solid var(--color-border-light); border-radius: 10px; margin: 16px 0; }
+.inputs legend { padding: 0 6px; font-weight: 600; }
+.inputs .confirmation { display: flex; align-items: flex-start; gap: 10px; overflow-wrap: anywhere; }
+.sourceLocator { display: block; color: var(--color-text-muted); font-size: var(--text-xs); margin-top: 6px; }
 @media (max-width: 600px) { .comparison { grid-template-columns: 1fr; } .header { flex-wrap: wrap; } }
