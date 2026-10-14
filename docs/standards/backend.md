@@ -222,6 +222,16 @@ Reader 验证环境须明确提供下列实际本机原件，不提供时直接�
 
 Q 工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014`。全部副本和出版物只在本机，不加入 Git 或发布包；H 原源、Q 原 source/current、正式实验均未写入。
 
+## 原生操作身份检查与准入开发状态
+
+SOURCE `dfdd75ed4b245fe462df2ff916728afdae7361cc` 已普通 push，保留现有生产 `NativeRequest.Session.PendingOperation` 调用链，新增实际 SQLite、实际公开项目注册、当前项目设置与真实 Registry 的拒绝检查。无效操作 UUID 在启动前返回 `validation_failed`，实际会话表为空，Registry 的启动观察保持 `unknown`；没有新模型调用。全部中间原件留在本树 `.verification/native-operation-actual-3426206494/`。
+
+`go test -mod=readonly ./internal/workspace/app -run TestNativeOperationInvalidIdentityDoesNotLaunch -count=1 -v` EXIT 0，1 PASS、0 SKIP，2.712s；证据 `.verification/native-operation-identity-owned.log`。早期实际检查 `.verification/native-operation-identity-first.log` 与 `.verification/native-operation-identity-current.log` 保留。
+
+准确 S2 SOURCE `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` 经普通 merge `cc3ed6887ed6834d691988c040e3b9600b52277c` 消费。当前工作区的 `go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 与 `node scripts/check-architecture.mjs` 均 EXIT 0，架构检查覆盖 33 个包；证据 `.verification/admission-current-build.log`、`.verification/admission-current-vet.log`、`.verification/admission-architecture-first.log`。这些检查包含尚未提交的准入实现，未作为准入真实验收结果。
+
+实际准入验证先经历两次公开 arXiv 来源 `provider_unavailable`，原失败保留于 `.verification/admission-actual-first.log`、`.verification/admission-actual-second.log`。显式使用已经核实的现有匿名系统代理后，实际固定论文导入、人工待审记录和候选创建成功；第三次验证在 S2 消费者因人工准入缺少委托策略版本返回 `evidence_missing`，证据 `.verification/admission-actual-proxy-third.log`。该约束已交原 S2 owner 修正，人工记录不填充委托模型或策略版本，真实事务正向仍为未通过。独立准入领域规则检查 EXIT 0，证据 `.verification/admission-domain-current.log`，不代表真实委托判断或业务组合验收。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
