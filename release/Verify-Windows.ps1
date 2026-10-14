@@ -26,6 +26,24 @@ function Assert-Release([bool]$condition, [string]$name) {
     $checks.Add(@{ check = $name; result = 'PASS' })
     Write-Output ('PASS: ' + $name)
 }
+function Test-PackagePrivatePaths {
+    $segments = ([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile) -split '[\\/]') | Where-Object { $_ -ne '' }
+    $homePattern = (($segments | ForEach-Object { [Regex]::Escape($_) }) -join '[\\/]+') + '[\\/]+'
+    $pattern = $homePattern + '|astrocyte-validation[\\/]+v1-20261012|formal-20261013-first|v1r-w1[\\/]+replay-002'
+    $findings = @()
+    # 仅扫描生产文件中的字符串，不解析可执行格式，不输出实际匹配内容。
+    foreach ($file in @(Get-ChildItem -LiteralPath $package -Recurse -File)) {
+        $contents = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($file.FullName))
+        $count = [Regex]::Matches($contents, $pattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
+        if ($count -gt 0) {
+            $relative = $file.FullName.Substring($package.Length + 1)
+            $findings += @{ file = $relative; matches = $count }
+            Write-Output ('PRIVATE_PATH_MATCHES: ' + $relative + ' count=' + $count)
+        }
+    }
+    @{ scope = 'UTF8 production strings; current user home and known formal source constants'; files_with_matches = $findings.Count; findings = $findings } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $output 'private-path-scan.json') -Encoding UTF8
+    Assert-Release ($findings.Count -eq 0) 'production package excludes current personal paths and known formal source constants'
+}
 function New-Client {
     $handler = [Net.Http.HttpClientHandler]::new()
     $handler.UseProxy = $false
@@ -107,6 +125,7 @@ try {
     $archive = $null
     Expand-Archive -LiteralPath $Zip -DestinationPath (Join-Path $output 'extracted')
     Assert-Release (-not (Test-Path -LiteralPath (Join-Path $package 'data'))) 'fresh extraction has no database or user data'
+    Test-PackagePrivatePaths
     New-Client
     Start-Release 'initial'
     $routes = @('/', '/attention', '/workspace', '/swarm')
