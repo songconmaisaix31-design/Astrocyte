@@ -13,7 +13,7 @@
 | B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python、冻结核心与下述 T 的测试文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json` 与 `cmd/server/config.go` owner。处理真实视频定位、其余实际模型/控制器测试、默认 Go 检查、Reader 发布路径与真实进度入口 |
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 唯一 `web/src/**`、`web/e2e/**`、`docs/standards/frontend.md` owner。消费精确公开契约与 B/R/H/Q 实际入口，完成未知状态持久化、全部既有 Web 和稳定源码默认完整 E2E |
 | T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014`，独立 worktree 起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454` | `task_5f0a79b6a17a` / `ctx_8674c456f49f` / `term_c1d90d02-51be-4443-9afe-ddce0615acb4`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
-| V 视频导入 | `product-video-20261014`，独立工作树起点 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43`，启动后记录实际分支和 Dispatch | 本子 Run 新第三层任务 | 唯一 `internal/adapters/importers/extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importer_test.go`，同目录新增 `video_*_test.go` 与 `docs/standards/video.md`。完整处理实际 summarize 时间信息和视频来源版本；共享 paper 提取器整文件归 V，B 保留配置、依赖、paperDOM、Node helpers 和 native text/bridge，T 测试域保持不变 |
+| V 视频导入 | `product-video-20261014` / `songconmaisaix31-design/product-video-20261014`，独立工作树起点 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` | `task_af564cbc003b` / `ctx_1b382b548db7` / `term_af4a1bd1-cc0c-4961-aa37-cfecaa26e60c`，本子 Run | 唯一 `internal/adapters/importers/extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importer_test.go`，同目录新增 `video_*_test.go` 与 `docs/standards/video.md`。完整处理实际 summarize 时间信息和视频来源版本；共享 paper 提取器整文件归 V，B 保留配置、依赖、paperDOM、Node helpers 和 native text/bridge，T 测试域保持不变 |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
 2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_376d222c774b` / `run_ab36c13bc549`。管理人员不代写业务。
@@ -24,7 +24,7 @@
 
 ## 核心路径与当前结论
 
-22:57 上海时间，B `msg_1c578ac3cfce` 明确已 push 的 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` 为 clean、上述视频五文件零 WIP，并从该消息起停止写入。V 只使用公开固定来源，B 本机 `.verification/video-source-third` 保留真实原件和首失败。现有同源真实两版变化尚未取得，不制造换行版本；视频时间 segments/spans 为零的未通过结论保留。明确匿名 proxy 仅由 B 配置生产启动选项，V 消费其准确接口，不继承未授权代理，不修改冻结领域或 Python。
+22:57 上海时间，B `msg_1c578ac3cfce` 明确已 push 的 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` 为 clean、上述视频五文件零 WIP，并从该消息起停止写入。V 只使用公开固定来源，B 本机 `.verification/video-source-third` 保留真实原件和首失败。现有同源真实两版变化尚未取得，不制造换行版本；视频时间 segments/spans 为零的未通过结论保留。V 在独占 extractor 中定义显式匿名 `SummarizeOptions.ProxyURL` 与隔离环境用法，B 配置 `ASTROCYTE_SUMMARIZE_PROXY_URL`；两方串行消费准确接口，不继承未授权代理，不修改冻结领域或 Python。
 
 F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f52576b553797c9eb08b0df93bc` 的稳定源码完整默认浏览器运行退出 1：203 PASS、41 FAIL、32 既有条件 SKIP、4 NOT_RUN。首失败清单位于 F `.verification/combined-default-first-failures.md`，其中 F 10、B 5、H 4、缺少真实 R/H 条件 22；下一次完整运行等待有效场景和修复源码。B Reader SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` / REPORT `15c738f88822e553eb228c12c0fdc71ad07b7531` 报告 10 项实际来源测试零跳过通过；T 追加 SOURCE `8525843d458f2d3a5d272b239ab76ac50c3223a5` / REPORT `3b2bd41f49d40ef5e09a5f61368332b2395df7eb`，实际生产工厂、公开保存来源、关闭重开恢复与权限拒绝通过，模型路径继续等待 B 的原会话及实际 Send 映射。
 
@@ -63,6 +63,10 @@ F SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f5257
 - 本模块只读发现 R `native.go` 忽略 JSON 解码错误，已 Handoff 原 R 返修。M-relay 交 SOURCE `d6d4da6ac00a196e6bbcf592cfdc0a2a2731dbe6` / REPORT `07449a65ea3bd2465d207cd8771aceda6fe50a9e` 已普通 push/远端一致，独立 9 个纯 JSON 负例 PASS；缺少 turn ID/status 明确失败、安全 unknown 不重发。H 首次注册前串行消费该精确输入并重启，解析负例不代替实际控制器窗口。
 
 ## 模块管理阶段独立 REPORT
+
+视频第三轨计划 SOURCE `9f988fe` 在启动前已普通 push，首 TLS 失败保留。启动回执 ready、turnStart observed；独立公开 worker-show 核 actual Codex / `gpt-6.1-sol`，实际终端显示 high fast、live/working，工作树 HEAD 等于 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43` 且 clean。写域停止确认、实际身份与准确 Dispatch 已分别通知 B/V 和总负责人；阶段业务证据仍等待 V。
+
+旧 `0c6522` 原档当前 nlink 2、source guard FAIL，目标内容 UNKNOWN。F 在 M-relay 先前功能迁移指令后报告唯一 GUI done 200 / accepted / GET done，operation `32c7f5a0-0cb0-4de2-91aa-3e7b9bc0ad07`；随后唯一 read `5f99133e-390f-4987-b8f2-2889716921ff` 409，未 release 或 retry。之后 M-relay 确认 completion checkbox 声明已核任务目标并要求保持 false；模块收到全部 FIFO 立即通知双方停止后续并向根报告实际先后顺序，保留已发生的动作和目标未知，验收边界待根处理。
 
 管理 SOURCE `6f1e7fd5b68da69cba3f65f47a4324a00fbd2ece` 已普通 push；独立 `git ls-remote` 核分支同 SHA。变更仅本管理文档；`git diff --check` 无输出，7 个相对文档链接均实际存在。SOURCE 不包含业务实现，业务完整验收仍按上表未完成状态保留，本模块继续管理返修与发布支持。
 
