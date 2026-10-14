@@ -18,6 +18,7 @@ import (
 type relaySessionEntry struct {
 	Cursor   events.RelaySessionCursor
 	Coverage workbench.SessionCoverage
+	Native   *events.RelaySessionNativeCursor `json:",omitempty"`
 }
 type relaySessionCheckpoints map[string]relaySessionEntry
 type relaySessionState interface {
@@ -267,18 +268,24 @@ type relaySessionRuntime struct {
 
 func (s *relaySessionRuntime) ObserveOwned(ctx context.Context) error {
 	baseErr := s.RelayLifecycle.ObserveOwned(ctx)
+	if baseErr != nil {
+		return baseErr
+	}
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-	return errors.Join(baseErr, s.collector.ObserveOwned(ctx))
+	return s.collector.ObserveOwned(ctx)
 }
 
 func (s *relaySessionRuntime) Shutdown(ctx context.Context) error {
 	err := s.RelayLifecycle.Shutdown(ctx)
+	if err != nil {
+		return err
+	}
 	if ctx.Err() != nil {
 		return errors.Join(err, ctx.Err())
 	}
 	// The periodic observer has been canceled and joined by the entrypoint.
 	// Drain the currently available owned archive extent after containment.
-	return errors.Join(err, s.collector.ObserveOwned(ctx))
+	return s.collector.ObserveOwned(ctx)
 }

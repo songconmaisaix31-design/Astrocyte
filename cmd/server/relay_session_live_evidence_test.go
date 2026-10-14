@@ -111,10 +111,14 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		t.Fatal("实际完整文件与 HTTP 覆盖数量不符")
 	}
 	committed := make([]workbench.Event, 0, len(view.Events))
+	nativeIDs := []string{}
 	for _, event := range view.Events {
 		row, err := repo.GetEvent(ctx, event.ID)
 		if err != nil || row.ID != event.ID || row.Event != nil || row.Observation.Depth != "unknown" || row.Observation.Outcome != "unknown" {
 			t.Fatal("实际提交 ID 未在既有仓储解析")
+		}
+		if strings.HasPrefix(row.OriginKey, "relay-session:") {
+			nativeIDs = append(nativeIDs, row.ID)
 		}
 		var fields map[string]json.RawMessage
 		if err := json.Unmarshal(row.RawBytes, &fields); err != nil || len(fields) != 6 {
@@ -160,7 +164,10 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	if dispatched.IsZero() {
 		t.Fatal("实际派发接受收据缺失")
 	}
-	writeActualJSON(t, filepath.Join(evidence, "committed-public.json"), map[string]any{"task_id": task.ID, "project_id": task.ProjectID, "agent_name": task.Agent, "registered_at": registered.RegisteredAt, "dispatched_at": dispatched.UTC().Format(time.RFC3339Nano), "events": committed, "forbidden_canaries": []string{"L1_PUBLIC_CANARY_976E"}, "coverage": view.Coverage})
+	if len(nativeIDs) != int(batch.Next.Counts.Projected) {
+		t.Fatal("实际 Session 提交 ID 未覆盖全部投影")
+	}
+	writeActualJSON(t, filepath.Join(evidence, "committed-public.json"), map[string]any{"task_id": task.ID, "project_id": task.ProjectID, "agent_name": task.Agent, "registered_at": registered.RegisteredAt, "dispatched_at": dispatched.UTC().Format(time.RFC3339Nano), "events": committed, "native_session_event_ids": nativeIDs, "archive_event_ids": nativeIDs, "forbidden_canaries": []string{"L1_PUBLIC_CANARY_976E"}, "coverage": view.Coverage})
 	writeActualJSON(t, filepath.Join(evidence, "actual-evidence-derived.json"), map[string]any{"lines": batch.Next.Counts.Lines, "projected": batch.Next.Counts.Projected, "unknown": batch.Next.Counts.Unknown, "errors": batch.Next.Counts.Errors, "snapshot_bytes": batch.SnapshotBytes, "snapshot_complete": batch.SnapshotComplete, "session_complete": batch.SessionComplete, "get_event_matches": len(committed), "readonly_get_event_count_unchanged": before == after, "negative_file_checks": 5, "archive_format": binding.Format, "has_private_paths_in_public": strings.Contains(fmt.Sprint(committed), private.AppRoot)})
 }
 

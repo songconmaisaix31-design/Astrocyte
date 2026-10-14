@@ -44,6 +44,9 @@ func (s *AccessSessionReader) ReadCommittedSessionEvents(ctx context.Context, sc
 				return nil, 0, errors.New("session admission scope invalid")
 			}
 			prefix := "relay-session:" + scope.NativeBindingID + ":"
+			if scope.NativeNotifications {
+				prefix = "relay-native-session:" + scope.NativeBindingID + ":"
+			}
 			prefixes[prefix] = scope
 			clauses = append(clauses, "origin_key LIKE ?")
 			args = append(args, prefix+"%")

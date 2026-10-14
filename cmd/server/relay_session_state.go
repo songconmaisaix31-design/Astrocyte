@@ -54,6 +54,12 @@ func (s relaySessionFileState) Load() (relaySessionCheckpoints, error) {
 			return nil, errors.New("session state invalid")
 		}
 		cursor := entry.Cursor
+		if native := entry.Native; native != nil {
+			id, err := uuid.Parse(native.BindingID)
+			if native.Version != 1 || err != nil || id == uuid.Nil || id.String() != native.BindingID || native.Sequence < 0 || native.Counts.Lines < 0 || native.Counts.Projected < 0 || native.Counts.Unknown < 0 || native.Counts.Errors < 0 || native.Counts.UnknownTokens < 0 || native.Counts.Projected > native.Sequence {
+				return nil, errors.New("native session state invalid")
+			}
+		}
 		if cursor.Version == 0 {
 			if cursor.Offset != 0 || len(cursor.Seen) != 0 || cursor.BindingID != "" || cursor.FileIdentity != "" {
 				return nil, errors.New("session state invalid")

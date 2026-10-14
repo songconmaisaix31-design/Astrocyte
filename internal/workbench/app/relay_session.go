@@ -46,6 +46,7 @@ type SessionEventsReader interface {
 type SessionAdmissionScope struct {
 	TaskID, ProjectID, TerminalID, NativeSessionID, NativeBindingID string
 	RelayEventIDs                                                   []string
+	NativeNotifications                                             bool
 }
 type SessionAdmissions interface {
 	ReadCommittedSessionEvents(context.Context, []SessionAdmissionScope, SessionEventsQuery) ([]Event, int, error)
