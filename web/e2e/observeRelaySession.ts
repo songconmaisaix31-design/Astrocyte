@@ -23,6 +23,14 @@ try {
   expect(registryBefore).toEqual([]);
   if (requestedAgent) expect(registryBefore).not.toContain(requestedAgent);
   console.log('F_BROWSER_READY: 两个原viewport已打开实际Today，等待H注册并派发获准公开任务。');
+  // 注册前没有三分钟起点；注册后的首次可见仍由实际时间和最终180秒断言判定。
+  await expect.poll(async () => {
+    const response = await pages[0].request.get(`${origin}/api/v1/relay/agents`);
+    expect(response.status()).toBe(200);
+    const agents = (await response.json() as components['schemas']['RelayAgentsV1']).agents;
+    return agents.filter(item => requestedAgent ? item.name === requestedAgent : !registryBefore.includes(item.name)).length;
+  }, { timeout: 600_000, intervals: [1000, 2000, 5000] }).toBe(1);
+  console.log('F_BROWSER_REGISTRATION_VISIBLE: 实际注册已可读取，开始等待派发事件；最终仍逐一核对H注册时间与180秒边界。');
   const observations = await Promise.all(pages.map(async (page, index) => {
     let taskID = '', observedAgent = '', eventIDs: string[] = [];
     const region = page.getByRole('region', { name: '本机 Session 派生事件', exact: true });
