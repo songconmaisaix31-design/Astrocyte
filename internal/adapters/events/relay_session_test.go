@@ -128,8 +128,8 @@ func TestRelaySessionUnknownAndErrorsRemainInDenominator(t *testing.T) {
 	b.ArchiveFinalized = true
 	b.PrefixComplete = true
 	r, e := ReadRelaySession(context.Background(), b, RelaySessionCursor{})
-	if e != nil || r.Next.Counts.Lines != 4 || r.Next.Counts.Errors != 1 || r.Next.Counts.Unknown != 2 || r.Next.Counts.Projected != 2 || r.SessionComplete || r.Next.FirstError != "malformed_json" {
-		t.Fatal("unknown/error records excluded from coverage")
+	if e == nil || r.Next.Counts.Lines != 2 || r.Next.Counts.Errors != 1 || r.Next.Counts.Projected != 1 || r.SessionComplete || r.Next.FirstError != "malformed_json" || r.Next.Blocked != "malformed_json" {
+		t.Fatal("格式错误没有立即停止并保留覆盖缺口")
 	}
 	b2 := sessionFixture(t)
 	b2.Format = "never-seen-CLI"

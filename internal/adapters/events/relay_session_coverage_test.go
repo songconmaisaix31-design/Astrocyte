@@ -43,8 +43,13 @@ func TestRelaySessionTokenCoverageRejectsOverflowAndNegativeComponents(t *testin
 		b := sessionFixture(t)
 		appendSession(t, b, sessionJSON(map[string]any{"type": "event_msg", "timestamp": "2026-10-14T01:00:01Z", "payload": map[string]any{"type": "token_count", "info": map[string]any{"last_token_usage": json.RawMessage(usage)}}}))
 		r, e := ReadRelaySession(context.Background(), b, RelaySessionCursor{})
-		if e != nil || r.Next.Counts.Lines != 2 || r.Next.Counts.Unknown != 1 || r.Items[1].Projection.Tokens != nil || r.SessionComplete {
-			t.Fatal("invalid usage invented token total or dropped coverage")
+		invalid := strings.Contains(usage, "-1") || strings.Contains(usage, strconv.Itoa(math.MaxInt)) || strings.Contains(usage, "1.5")
+		if invalid {
+			if e == nil || r.Next.Counts.Errors != 1 || r.Next.Blocked != "invalid_native_record" || r.SessionComplete {
+				t.Fatal("无效使用量没有立即返回错误")
+			}
+		} else if e != nil || r.Next.Counts.Lines != 2 || r.Next.Counts.Unknown != 1 || r.Items[1].Projection.Tokens != nil || r.SessionComplete {
+			t.Fatal("缺失使用量没有保持未知")
 		}
 	}
 }

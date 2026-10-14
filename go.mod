@@ -2,7 +2,10 @@ module github.com/songconmaisaix31-design/Astrocyte
 
 go 1.27.2
 
-require modernc.org/sqlite v1.60.1
+require (
+	github.com/olivere/ndjson v1.0.1
+	modernc.org/sqlite v1.60.1
+)
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect

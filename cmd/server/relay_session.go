@@ -76,7 +76,6 @@ func (c *relaySessionCollector) ObserveOwned(ctx context.Context) error {
 	if c.blocked != "" {
 		return errors.New("session checkpoints blocked")
 	}
-	failed := false
 	for _, v := range bindings {
 		if ctx.Err() != nil {
 			return ctx.Err()
@@ -117,7 +116,6 @@ func (c *relaySessionCollector) ObserveOwned(ctx context.Context) error {
 		switch {
 		case readErr != nil:
 			entry.Coverage.Gap = sessionPublicGap(entry.Cursor.FirstError)
-			failed = true
 		case counts.Errors > 0:
 			entry.Coverage.Gap = sessionPublicGap(entry.Cursor.FirstError)
 		case counts.Unknown > 0:
@@ -138,9 +136,9 @@ func (c *relaySessionCollector) ObserveOwned(ctx context.Context) error {
 		if c.commitEntry(v.TaskID, entry) != nil {
 			return errors.New("session checkpoint save unknown")
 		}
-	}
-	if failed {
-		return errors.New("session coverage incomplete")
+		if readErr != nil {
+			return errors.New("session coverage incomplete")
+		}
 	}
 	return nil
 }

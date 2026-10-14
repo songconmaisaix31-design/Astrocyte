@@ -5,112 +5,173 @@ import (
 	"encoding/json"
 )
 
-// These closed structural envelopes come from OpenAI's public rust-v0.162.0
-// protocol.rs and models.rs. They identify native records, never tool success,
-// task completion, Signal strength or approval to retain their original bodies.
-func sessionCodexEnvelope(kind string, p map[string]json.RawMessage, o *nativeObservation) bool {
-	stringField := func(key string) bool {
+// 仅识别公开协议结构，不推断工具结果、任务成功或认知信号。
+func sessionCodexEnvelope(kind string, p map[string]json.RawMessage, o *nativeObservation) (bool, error) {
+	var fields struct {
+		Type      string `json:"type"`
+		ID        string `json:"id"`
+		CWD       string `json:"cwd"`
+		Model     string `json:"model"`
+		Name      string `json:"name"`
+		CallID    string `json:"call_id"`
+		Role      string `json:"role"`
+		Author    string `json:"author"`
+		Recipient string `json:"recipient"`
+		TurnID    string `json:"turn_id"`
+	}
+	data, err := json.Marshal(p)
+	if err != nil {
+		return false, err
+	}
+	if err := json.Unmarshal(data, &fields); err != nil {
+		return false, err
+	}
+	stringField := func(key string) (bool, error) {
 		raw, ok := p[key]
 		if !ok || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-			return false
+			return false, nil
 		}
-		var value string
-		return json.Unmarshal(raw, &value) == nil
+		_, err := sessionString(p, key)
+		return err == nil, err
 	}
-	arrayField := func(key string) bool { return sessionJSONArray(p[key]) }
+	outputField := func() (bool, error) {
+		if len(p["output"]) == 0 {
+			return false, nil
+		}
+		var output any
+		if err := json.Unmarshal(p["output"], &output); err != nil {
+			return false, err
+		}
+		switch output.(type) {
+		case string, []any:
+			return true, nil
+		}
+		return false, sessionFailure("output_type_invalid")
+	}
 	switch kind {
 	case "session_meta":
 		o.kind = "native_session_header"
-		return str(p, "id") != "" && str(p, "cwd") != ""
+		return fields.ID != "" && fields.CWD != "", nil
 	case "turn_context":
 		o.kind = "turn_context"
-		return str(p, "cwd") != "" && str(p, "model") != "" && len(p["approval_policy"]) > 0 && object(p["sandbox_policy"]) != nil
+		policy, err := sessionObject(p["sandbox_policy"])
+		if err != nil {
+			return false, err
+		}
+		return fields.CWD != "" && fields.Model != "" && len(p["approval_policy"]) > 0 && policy != nil, nil
 	case "response_item":
-		switch str(p, "type") {
+		switch fields.Type {
 		case "function_call":
-			return str(p, "name") != "" && str(p, "call_id") != "" && stringField("arguments")
+			o.kind = sessionToolKind(fields.Name)
+			valid, err := stringField("arguments")
+			return valid && fields.Name != "" && fields.CallID != "", err
 		case "function_call_output":
 			o.kind = "function_call_output"
-			return stringField("output") || arrayField("output")
+			return outputField()
 		case "custom_tool_call":
 			o.kind = "custom_tool_call"
-			return str(p, "name") != "" && str(p, "call_id") != "" && stringField("input")
+			valid, err := stringField("input")
+			return valid && fields.Name != "" && fields.CallID != "", err
 		case "custom_tool_call_output":
 			o.kind = "custom_tool_call_output"
-			return str(p, "call_id") != "" && (stringField("output") || arrayField("output"))
-		case "message":
-			o.kind = "message"
-			return str(p, "role") != "" && sessionCodexContent(p["content"])
-		case "agent_message":
-			o.kind = "agent_message"
-			return str(p, "author") != "" && str(p, "recipient") != "" && sessionCodexContent(p["content"])
+			valid, err := outputField()
+			return valid && fields.CallID != "", err
+		case "message", "agent_message":
+			o.kind = fields.Type
+			valid, err := sessionCodexContent(p["content"])
+			if fields.Type == "message" {
+				return valid && fields.Role != "", err
+			}
+			return valid && fields.Author != "" && fields.Recipient != "", err
 		case "reasoning":
 			o.kind = "reasoning"
-			return arrayField("summary")
+			return sessionJSONArray(p["summary"])
 		}
 	case "event_msg":
-		switch str(p, "type") {
+		switch fields.Type {
 		case "token_count":
 			o.kind = "native_activity"
-			if raw, ok := p["info"]; !ok || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-				o.tokens = nil
-				return true
+			info, err := sessionObject(p["info"])
+			if err != nil {
+				return false, err
 			}
-			info := object(p["info"])
 			if info == nil {
-				return false
+				return true, nil
 			}
-			raw, ok := info["last_token_usage"]
-			if !ok || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
-				o.tokens = nil
-				return true
+			usage, err := sessionObject(info["last_token_usage"])
+			if err != nil {
+				return false, err
+			}
+			if usage == nil {
+				return true, nil
 			}
 			var valid bool
-			o.tokens, valid = sessionTokenTotal(object(raw))
-			return valid
+			o.tokens, valid, err = sessionTokenTotal(usage)
+			return valid, err
 		case "agent_message", "user_message":
-			o.kind = str(p, "type")
+			o.kind = fields.Type
 			return stringField("message")
 		case "agent_reasoning", "agent_reasoning_raw_content":
-			o.kind = str(p, "type")
+			o.kind = fields.Type
 			return stringField("text")
 		case "task_started", "turn_started", "task_complete", "turn_complete":
-			o.kind = str(p, "type")
-			return str(p, "turn_id") != ""
+			o.kind = fields.Type
+			return fields.TurnID != "", nil
 		case "context_compacted":
 			o.kind = "context_compacted"
-			return true
+			return true, nil
 		case "error", "warning":
-			o.kind = str(p, "type")
+			o.kind = fields.Type
 			return stringField("message")
 		}
 	}
-	return false
+	return false, nil
 }
 
-func sessionJSONArray(raw json.RawMessage) bool {
-	var items []json.RawMessage
-	return len(bytes.TrimSpace(raw)) > 0 && bytes.TrimSpace(raw)[0] == '[' && json.Unmarshal(raw, &items) == nil
-}
-
-func sessionCodexContent(raw json.RawMessage) bool {
-	if !sessionJSONArray(raw) {
-		return false
+func sessionToolKind(name string) string {
+	switch name {
+	case "Edit", "Write", "MultiEdit", "apply_patch":
+		return "edit_file"
+	case "Grep", "Glob", "WebSearch", "WebFetch", "web.run":
+		return "search"
+	case "ReadPaper":
+		return "read_paper"
 	}
-	var items []map[string]json.RawMessage
-	if json.Unmarshal(raw, &items) != nil {
-		return false
+	return "native_activity"
+}
+
+func sessionJSONArray(raw json.RawMessage) (bool, error) {
+	if len(raw) == 0 || bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+		return false, nil
+	}
+	var items []json.RawMessage
+	if err := json.Unmarshal(raw, &items); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func sessionCodexContent(raw json.RawMessage) (bool, error) {
+	valid, err := sessionJSONArray(raw)
+	if err != nil || !valid {
+		return false, err
+	}
+	var items []struct {
+		Type string  `json:"type"`
+		Text *string `json:"text"`
+	}
+	if err := json.Unmarshal(raw, &items); err != nil {
+		return false, err
 	}
 	for _, item := range items {
-		switch str(item, "type") {
+		switch item.Type {
 		case "input_text", "output_text":
-			var value string
-			if json.Unmarshal(item["text"], &value) != nil || string(item["text"]) == "null" {
-				return false
+			if item.Text == nil {
+				return false, sessionFailure("content_text_missing")
 			}
 		default:
-			return false // unverified content variants retain an explicit gap
+			return false, nil
 		}
 	}
-	return true
+	return true, nil
 }
