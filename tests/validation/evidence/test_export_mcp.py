@@ -4,7 +4,9 @@ import importlib.util
 import json
 from pathlib import Path
 import sqlite3
+import subprocess
 import tempfile
+from types import SimpleNamespace
 import unittest
 
 
@@ -162,6 +164,133 @@ class TracebackTests(unittest.TestCase):
         nodes["McPet"]["data"] = json.dumps(data)
         explanation["evidence"][0]["class"] = ""
         self.check(row, nodes, explanation)
+
+
+class GitWorktreeTests(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(dir=SCRIPT.parents[2] / ".verification")
+        self.base = Path(self.temporary.name).resolve()
+
+    def tearDown(self):
+        self.temporary.cleanup()
+
+    def git(self, root, *arguments):
+        return subprocess.run(["git", "-C", str(root), *arguments], check=True, capture_output=True)
+
+    def repository(self, name, *options):
+        root = self.base / name
+        root.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(["git", "init", *options, str(root)], check=True, capture_output=True)
+        self.git(root, "-c", "user.name=Owned validation", "-c", "user.email=owned@example.invalid",
+                 "commit", "--allow-empty", "-m", "Owned Git input")
+        return root
+
+    def assert_roots_protected(self, entry, expected):
+        self.assertEqual(exporter.worktree_roots(entry), {root.resolve() for root in expected})
+        for root in expected:
+            for output in (root, root / "new-evidence/nested"):
+                with self.subTest(entry=entry.name, root=root.name, output=output.name):
+                    existed = output.exists()
+                    with self.assertRaisesRegex(exporter.AuditError, "outside all worktrees"):
+                        exporter.evidence_directory(entry, output)
+                    self.assertEqual(output.exists(), existed)
+        allowed = self.base / "outside worktrees/new-evidence"
+        self.assertEqual(exporter.evidence_directory(entry, allowed), allowed.resolve())
+        self.assertFalse(allowed.exists())
+
+    def test_primary_linked_detached_and_unicode_paths_from_each_entry(self):
+        main = self.repository("主库 with spaces")
+        first = self.base / "关联 工作树"
+        second = self.base / "detached worktree"
+        self.git(main, "worktree", "add", "-b", "owned-first", str(first))
+        self.git(main, "worktree", "add", "--detach", str(second))
+        for entry in (main, first, second):
+            self.assert_roots_protected(entry, (main, first, second))
+        self.git(main, "worktree", "lock", str(first))
+        self.assert_roots_protected(second, (main, first, second))
+
+    def test_external_git_directory_and_core_worktree_from_each_entry(self):
+        metadata = self.base / "separate Git metadata"
+        main = self.repository("external metadata worktree", "--separate-git-dir=" + str(metadata))
+        self.git(main, "config", "core.worktree", str(main))
+        linked = self.base / "separate linked worktree"
+        self.git(main, "worktree", "add", "-b", "owned-separate", str(linked))
+        for entry in (main, metadata, linked):
+            self.assert_roots_protected(entry, (main, linked))
+
+    def test_separate_git_directory_without_core_worktree_primary_entry(self):
+        metadata = self.base / "standalone Git metadata"
+        main = self.repository("standalone main", "--separate-git-dir=" + str(metadata))
+        linked = self.base / "standalone linked"
+        self.git(main, "worktree", "add", "-b", "owned-standalone", str(linked))
+        self.assert_roots_protected(main, (main, linked))
+
+    def test_external_core_worktree_without_dotgit_marker(self):
+        metadata = self.base / "nonstandard metadata"
+        main = self.repository("markerless main", "--separate-git-dir=" + str(metadata))
+        self.git(main, "config", "core.worktree", str(main))
+        linked = self.base / "markerless linked"
+        self.git(main, "worktree", "add", "-b", "owned-markerless", str(linked))
+        (main / ".git").rename(main / "owned-gitlink-backup")
+        self.assertFalse((main / ".git").exists())
+        for entry in (metadata, linked):
+            self.assert_roots_protected(entry, (main, linked))
+
+    def test_unconfigured_external_metadata_linked_entry_fails_closed(self):
+        metadata = self.base / "metadata container/external Git"
+        metadata.parent.mkdir()
+        main = self.repository("separate container/main", "--separate-git-dir=" + str(metadata))
+        linked = self.base / "unknown primary linked"
+        self.git(main, "worktree", "add", "-b", "owned-unknown-primary", str(linked))
+        for output in (main / "private-output", self.base / "outside-output"):
+            with self.assertRaises(exporter.pygit2.GitError):
+                exporter.evidence_directory(linked, output)
+            self.assertFalse(output.exists())
+
+    def test_bare_parent_with_associated_worktree(self):
+        main = self.repository("seed repository")
+        bare = self.base / "bare parent.git"
+        subprocess.run(["git", "clone", "--bare", str(main), str(bare)], check=True, capture_output=True)
+        linked = self.base / "bare associated"
+        self.git(bare, "worktree", "add", "-b", "owned-bare", str(linked))
+        for entry in (bare, linked):
+            self.assert_roots_protected(entry, (bare, linked))
+
+    def test_moved_worktree_registration_keeps_original_path_excluded(self):
+        main = self.repository("registered main")
+        linked = self.base / "registered linked"
+        moved = self.base / "unregistered moved directory"
+        self.git(main, "worktree", "add", "-b", "owned-moved", str(linked))
+        linked.rename(moved)
+        roots = exporter.worktree_roots(main)
+        self.assertIn(linked.resolve(), roots)
+        with self.assertRaises(exporter.AuditError):
+            exporter.evidence_directory(main, linked / "private-output")
+        self.assertFalse(linked.exists())
+
+    def test_invalid_repository_fails_before_creating_output(self):
+        unknown = self.base / "not a repository"
+        unknown.mkdir()
+        broken = self.base / "broken.git"
+        broken.mkdir()
+        for entry in (unknown, broken):
+            with self.assertRaises(exporter.pygit2.GitError):
+                exporter.evidence_directory(entry, self.base / "never-created")
+        self.assertFalse((self.base / "never-created").exists())
+
+    def test_export_rejects_own_worktree_before_reading_sqlite_or_writing_evidence(self):
+        database = self.base / "own.sqlite"
+        with exporter.closing(sqlite3.connect(database)) as connection:
+            connection.execute("CREATE TABLE owned_input(value INTEGER)")
+            connection.execute("INSERT INTO owned_input VALUES(1)")
+            connection.commit()
+        before = database.read_bytes()
+        output = self.base / "not-created/private-evidence"
+        args = SimpleNamespace(database=database, local_root=output, publish=False, confidence_source="unavailable")
+        with self.assertRaisesRegex(exporter.AuditError, "outside all worktrees"):
+            exporter.export(args)
+        self.assertEqual(database.read_bytes(), before)
+        self.assertFalse(output.exists())
 
 
 class ExportTests(unittest.TestCase):

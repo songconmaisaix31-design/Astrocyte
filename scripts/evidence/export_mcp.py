@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
+import pygit2
 import sqlite3
 import subprocess
 import tempfile
@@ -266,14 +267,48 @@ def requests(raw_probe):
     return result
 
 
+def worktree_roots(repo_path):
+    repository = pygit2.Repository(str(repo_path), flags=pygit2.enums.RepositoryOpenFlag.NO_SEARCH)
+    try:
+        linked = {Path(repository.lookup_worktree(name).path).resolve()
+                  for name in repository.list_worktrees()}
+        current = Path(repository.path if repository.is_bare else repository.workdir).resolve()
+        roots = linked | {current}
+        if repository.is_bare or current in linked:
+            # Git 只返回一个公共目录路径，工作树结构和路径均由 pygit2 解析。
+            common = subprocess.check_output(
+                ["git", "--git-dir=" + repository.path, "rev-parse", "--path-format=absolute", "--git-common-dir"]
+            ).decode("utf-8").removesuffix("\n")
+            require(Path(common).is_absolute(), "Absolute common repository directory required")
+            primary = pygit2.Repository(common, flags=pygit2.enums.RepositoryOpenFlag.NO_SEARCH)
+            try:
+                if not primary.is_bare and "core.worktree" not in primary.config:
+                    # 默认主目录必须实际指回公共库；无法确认时禁止生成证据。
+                    owner = pygit2.Repository(primary.workdir, flags=pygit2.enums.RepositoryOpenFlag.NO_SEARCH)
+                    try:
+                        require(Path(owner.path).resolve() == Path(primary.path).resolve(),
+                                "Primary worktree identity unavailable")
+                    finally:
+                        owner.free()
+                roots.add(Path(primary.path if primary.is_bare else primary.workdir).resolve())
+            finally:
+                primary.free()
+        return roots
+    finally:
+        repository.free()
+
+
+def evidence_directory(repo_path, local_root):
+    local_root = Path(local_root).resolve()
+    require(all(not local_root.is_relative_to(root) for root in worktree_roots(repo_path)),
+            "Local evidence directory must be outside all worktrees")
+    return local_root
+
+
 def export(args):
     repo = Path(__file__).resolve().parents[2]
     original = args.database.resolve(strict=True)
-    local_root = args.local_root.resolve()
-    worktrees = subprocess.check_output(["git", "worktree", "list", "--porcelain"], cwd=repo, text=True)
-    roots = [Path(line.removeprefix("worktree ")).resolve() for line in worktrees.splitlines()
-             if line.startswith("worktree ")]
-    require(all(not local_root.is_relative_to(root) for root in roots), "Local evidence directory must be outside all worktrees")
+    local_root = evidence_directory(repo, args.local_root)
     local_root.mkdir(parents=True, exist_ok=True)
     run = Path(tempfile.mkdtemp(prefix="run-", dir=local_root))
     started = time.monotonic()
