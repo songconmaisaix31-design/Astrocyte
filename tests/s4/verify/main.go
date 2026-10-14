@@ -175,6 +175,27 @@ func main() {
 		code(err, apierrors.BudgetExhausted)
 		emit("result_count_budget_rejects_without_silent_truncation")
 	}
+	if *phase == "ambient-git" {
+		before, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		cmd := exec.CommandContext(ctx, "git", "-C", *rootB, "rev-parse", "--path-format=absolute", "--git-path", "index")
+		data, err := cmd.Output()
+		must(err)
+		previous, existed := os.LookupEnv("GIT_INDEX_FILE")
+		must(os.Setenv("GIT_INDEX_FILE", strings.TrimSpace(string(data))))
+		defer func() {
+			if existed {
+				_ = os.Setenv("GIT_INDEX_FILE", previous)
+			} else {
+				_ = os.Unsetenv("GIT_INDEX_FILE")
+			}
+		}()
+		after, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		assert(before.IndexDigest == after.IndexDigest && before.WorktreeDigest == after.WorktreeDigest && before.WorktreeID == after.WorktreeID, "ambient Git index redirected the registered repository")
+		must(service.ValidateProjectSnapshot(ctx, human, before))
+		emit("actual_other_worktree_index_environment_cannot_redirect_snapshot")
+	}
 	if *phase == "corrupt-rebuild" {
 		snapshot, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
 		must(err)
