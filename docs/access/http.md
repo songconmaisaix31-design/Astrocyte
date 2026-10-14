@@ -46,12 +46,19 @@ H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a536939316
 | 同 URL 追加登记与正常重启 | 实际执行一次，原始 `registered_at=2026-10-14T13:23:34.0366105Z` |
 | 注册起点 → 原生事件首次 DOM | FAIL：F 两尺寸首显示 `13:33:25.152Z/.153Z`，591116/591117 ms，大于 180000 ms |
 | 原 dispatch 收据创建 → 原生事件首次 DOM | PASS：创建 `13:33:10.6363218Z`，约 14.516/14.517 秒；独立于注册起点 FAIL |
-| 实际原件与提交 ID | PASS：15 个完整行、105564 字节、15 个原档 origin 对应提交 ID；全部 18 个 HTTP 事件 GetEvent 一致 |
-| 实际文件范围 | `snapshot_complete=true`、尾行 / 剩余字节 0、unknown 5、errors 0、`session_complete=false` |
+| 首次实际原件与提交 ID | 首次检查 PASS：15 个完整行、105564 字节、15 个原档 origin 对应提交 ID；全部 18 个 HTTP 事件 GetEvent 一致 |
+| 首次实际文件范围 | `snapshot_complete=true`、尾行 / 剩余字节 0、unknown 5、errors 0、`session_complete=false` |
+| 当前原件身份与采集范围 | FAIL：实际 nlink=2，`source_identity_unverifiable_or_aliased`、`snapshot_complete=false`；现有已提交 ID 保留 |
 | 实际回答与结束轮次 | `gpt-6.1-sol`，assistant 1、task_complete 1、已报总 tokens 8827；没有重复原输入 |
 | 实际权限、分页与 GET 只读 | PASS：四项 HTTP 403、五项实际文件身份 / 权限拒绝、全分页、canary 排除、静默 GET 事件数不变、持久游标相符 |
 | 实际原件中的工具与策略 | 当前文件工具调用 0、`never/read-only`；旧 owned PID / 启动参数未当时采集，effective tool set 保持 unknown，不能仅用 tool 0 填禁用证据 PASS |
 | 连续追加 / 明确 Stop 后范围 | 未执行，原控制器已在默认 180 秒后实际退出，旧输入没有自动重发 |
+| 当前 Foundation / Projects | 实际服务 GET 均 200；运行源码包含 R `d14b08dc50014baf9ee636543564b040112cf3b5` |
+| 旧任务人工 done | 实际 200，operation `32c7f5a0-0cb0-4de2-91aa-3e7b9bc0ad07`，收据 accepted；目标验收 FAIL |
+| done 后实际 read | 首次 409，operation `5f99133e-390f-4987-b8f2-2889716921ff`，收据 `delivery_unknown`；没有重试 |
+| 主装配显式保护源 | SOURCE `b247dfb12b938739f09acc73e6b7582376951a0c`；解析在应用目录和迁移前执行，参数传给 Reader |
+| 精确发布组合构建 | `go build -mod=readonly -p=1 -overlay=dist/l1-live/reader-overlay/overlay.json -o dist/l1-live/reader-overlay/server.exe ./cmd/server` PASS；overlay 为 P `579a1cede98b47b08a3126f5d3974da938348929` 的五个精确 Reader 文件 |
+| 发布组合测试编译 | 首次 FAIL：既有 `cmd/server/workbench_config_test.go` 引用已经移除的 `sqlite.WorkbenchFormalSource`；没有执行该测试或读取该来源 |
 
 实际证据检查逐原档 origin 查询 `attention_engine_events` 并通过 `EventRepository.GetEvent` 定位提交 ID，独立比较 HTTP 六字段、分页和 canary 排除；核对重读及持久游标、追加与停止后的真实文件范围。实际 HTTP 权限检查包含无 session、跨 Origin、未授权 bearer 和缺 CSRF；静默 GET 前后事件数量必须一致。模型名称与工具调用数量仅从选定实际文件生成安全聚合。
 
@@ -61,7 +68,11 @@ H 分支：`songconmaisaix31-design/works-relay-http`。源码：`3016a536939316
 
 F 首 DOM 三个 ID 均在真实 SQLite 定位，其中 `MBV3V2HETK5753LFVJY4PGVJWL` 和 `HFZSCX6TFXYYMOU5VBUNG65QIV` 分别是原档 `task_started` 与 `native_session_header`，第三个是 task 级 `turn_started`。安全证据为本地忽略目录的 `committed-public.json`、`initial-actual-evidence-derived.json`、`initial-actual-model-derived.json` 和 `first-dom-sql-derived.json`。14 个原档记录的 tokens 为真实 null，未填值。原 controller 文件路径只保存在本次 relay.sqlite 的私有绑定中。
 
-本次旧项目权限没有 `reconcile`，因此 done/release 未获准；不能更新项目后覆盖旧 task 的绑定版本、手改状态或把退出自动当完成。Foundation/旧 Projects GET 的未组装异常已保留本机原日志，源码已补既有生产构造器，原服务尚未串行替换核验。后续 R 的寿命、EOF 与 owned 执行策略提供口没有反填旧进程证据。B 新 Reader 接口需要精确窄接缝或 I 组合消费；H 没有整体合入其冻结域旧历史。
+人工 done/release 使用用户确认的 `observe` 权限，实际事件出版重核使用 `reconcile`。当前旧 task 已 done，独立 SQL 检查确认进程真实退出、Prepared 工作区和 terminal 归属一致、pending receipt / action 均为 0，工作区仍由原 task 持有，等待 F 单次合法 release。read 的 `delivery_unknown` 收据与任务条件保持；工作区清理不表示目标或来源验收通过。原生回答的目标内容未获合法核实，目标验收 FAIL；当前身份守卫拒绝的文件不绕过读取。
+
+R 通过实际 Windows 文件名称接口与 `samefile` 核对两个名称，分别位于默认 Codex sessions 与 Orca 账户 sessions，均不在 H / R 验证目录。创建者未知，镜像解释仅为推断，没有删除链接或放宽守卫。完整路径仅在本机私有证据中，安全聚合为 `source-identity-derived.json` 和 R 的 `owned-archive-link-safe-aggregate.json`。
+
+主装配通过显式 `ASTROCYTE_WORKBENCH_PROTECTED_SOURCES` JSON 数组传递保护来源，默认空数组，不隐式选择私人来源。H 仅修改授权主装配，Reader 使用发布候选精确文件的只读 overlay 验证，未将 B 冻结域历史整体合入。组合构建通过不替代当前 H 旧 Reader 分支完整测试；旧测试常量引用的编译失败仍待其 owner 修正。后续 R 寿命、EOF 与 owned 执行策略端口不反填旧进程证据。
 
 完整默认 check/build/E2E、合并前端、Windows ZIP 解压启动和正式发布由对应 owner 与集成验收负责。H 的静态构建和契约检查不能代替实际 Today DOM、完整会话、终端编码或正式部署。
 
