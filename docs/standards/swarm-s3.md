@@ -1,6 +1,30 @@
 # Swarm S3 / S6 实施与实际验证
 
-## 第五阶段当前结果
+## 第六阶段当前结果
+
+Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`。SOURCE `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0` 使用 codex / gpt-6.1-sol 实施。本 Task 没有调用外部模型，没有创建原生会话。
+
+预留 `Resources` 与实际 `Usage` 分开。实际 calls、tokens、money 分别使用 nullable 数量；没有证据的维度在 HTTP、Artifact 和持久化中保留 null。实际已知零保留为零，累计时未知部分继续保持未知。`ExecutionFact.Usage` 和提交正文 usage 现在使用 `domain.Usage`；原 ownership 适配必须逐项提供真实证据，known 标记与缺失数量冲突时立即拒绝。预算没有约束的未知维度不阻止对账；有上限的维度必须有真实数量且满足原预留与累计预算，否则保留租约、预算和写域。有限 tokens/money 预算在认领时还要求原执行描述提供真实的 token_budget/money_budget 执行能力，缺少能力时拒绝。
+
+项目活跃执行者默认上限为 2，同时受 Grant 更小上限约束。完整构造函数仍接受五个实际依赖，新增可选 `ServiceOptions{ProjectMaxActive: n}`，只接受正数；详情返回实际有效的 max_active_executors。Claim 和 Submit 用各自真实 worktree 调用 S2 根范围检查，不能根据 Git 同仓库关系扩大权限。Member.Purpose 明确为 claim_work_item 或 submit_artifact，供原负责人分别核验存活执行者和已停止的原始绑定；该字段不能代替原生事实。原生 Start 的空 Message 不调用 send，可由原 R/H 沿既有实现准备控制器，再完成真实绑定和预算租约后发送新 input operation；不能事后补造租约。
+
+SwarmRepository.Within 复用实际 WorkspaceTransaction 的同数据库连接。内部 Swarm 事务和 Workspace 事务都拒绝跨数据库复用；借用连接不自行提交、回滚或关闭。真实单连接测试覆盖同事务成功提交、失败整体回滚、错误数据库回调不执行。自有连接关闭错误与原错误共同返回。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 -count=1` | PASS；新增未知用量/已知零/矛盾证据/累计用量检查，真实 S2 批准链继续通过 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1` | PASS；六个真实 SQLite/Git/Go 组件，含新增同连接事务复用、回滚与错误数据库拒绝 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1` | PASS；真实 listener、session guard、SQLite 与本域生产路由 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o .verification/s3-build/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs` | PASS，33 包 |
+| `git diff --check` | PASS |
+
+本阶段没有新测试 RED。读取命令首次使用 PowerShell 不展开的 rg 路径通配符和不存在的 attention_tx.go，读取失败后改用实际目录与文件；未改变任何代码或验收断言。全部先前 RED、UNKNOWN 和 NOT_RUN 在历史记录保留原结果。
+
+根已允许真实 Codex turn/started 公共固定任务正向验证；无 started 的 human-done 分支保持未决定。公开 Go 基线与 Median 固定任务指针已交 M-relay/H/F 原负责人，实际模型候选尚未返回，本 Task 没有预先实现 Median。R/S2 原 Registry 的 full session、准确 input operation、用途区分、有效工具事实和实际 worktree/context 映射仍需原负责人精确 SOURCE；H 主服务装配、真实两 Agent、人工采用、成功经验候选和后任务引用仍 NOT_RUN。上述组件 PASS 不表示完整 AT08/09/13 或 S6 通过，本 Task 继续执行。
+
+## 第五阶段记录
 
 SOURCE `ec653ddd90a9c91c83af28a8909fb41741116160` 已普通 push 并核实远端同值。Task `task_da9aebf03f83` / `ctx_d4bf65ca06bf` 对模块 `task_b0197ca7ebdf` / `ctx_b1cd2e0a39aa` 交付成功采用来源端口：`AcceptedArtifactEvidenceReader.ReadAcceptedArtifactEvidence(ctx, principal, localProjectID, eventID)`。它读取实际不可变 artifact_accepted 事件，核对注册 LocalProjectID，再通过当前项目权限回调授权；返回实际 actor_id、actor_kind、occurred_at 及固定 Artifact/version/source/commit/object/检查引用。actor_kind 来自采用时实际保存的人类 Principal，旧事件缺少该事实时拒绝补造。
 
