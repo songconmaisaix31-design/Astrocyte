@@ -59,11 +59,15 @@ Q 当前终稿产物使用 `.verification/cognition-latest-safe`：admission 标
 
 P c54 新候选路径：`C:/Users/DW/orca/workspaces/Astrocyte/release-package-20261014/.verification/package-fq-rehearsal-20261014-211834/Astrocyte-v0.1-windows-x64-c54bcf351629.zip`。本模块只读核 `.verification/verify-20261014-212203/private-path-scan.json`：一个生产文件 astrocyte.exe / 三个匹配，没有输出具体私人字符串。包启动前扫描失败，当前没有该候选组合 runtime PASS。
 
-P 按 e914 普通合并出现三项领域 add/add：internal/adapters/sqlite/workbench.go、workbench_test.go、internal/workbench/app/contracts.go。原 B 按临时域 apply_patch 解决并仅 stage，三文件全等 e914、ls-files-u 空、实际 P Reader 十项零 SKIP PASS；临时域已撤回。P 已提交原普通 merge，并合 H24b 为 `579a1cede98b47b08a3126f5d3974da938348929`，资源参数 SOURCE `fa8d4ec5ae0fc5ca2bb23127925593fba67a6649`、F205d 普通合并 `9caabb1d5be6f7b7f3b10bdf12328f588be703ec` 均报告 push。旧配置常量编译首 RED 保留；当前 main 尚未把 workbenchProtectedSources 传入 Reader，已交原 H 获准薄胶水域。该精确提交到达后立即一次新完整构建 / scan / Q真实SQL正向，不等待唯一 I 才验证候选。
+P 按 e914 普通合并出现三项领域 add/add：internal/adapters/sqlite/workbench.go、workbench_test.go、internal/workbench/app/contracts.go。原 B 按临时域 apply_patch 解决并仅 stage，三文件全等 e914、ls-files-u 空、实际 P Reader 十项零 SKIP PASS；临时域已撤回。P 已提交原普通 merge，并合 H24b 为 `579a1cede98b47b08a3126f5d3974da938348929`，资源参数 SOURCE `fa8d4ec5ae0fc5ca2bb23127925593fba67a6649`、F205d 普通合并 `9caabb1d5be6f7b7f3b10bdf12328f588be703ec` 均报告 push。H 显式保护源装配 SOURCE `b247dfb12b938739f09acc73e6b7582376951a0c` / REPORT `a8334b79aeb0c3a1b1038d45964d6092dc6cc5de` 已普通 push；模块独立远端同 REPORT、SOURCE 祖先与唯一 main 六行修改核验通过。H 使用 P579 五个精确 Reader 文件的只读 Go overlay 实际组合 build PASS，旧 config_test 常量引用编译首 RED 交 M-product / 原 B 测试域。P 已获精确输入，普通合并后一次新完整构建 / scan / Q真实SQL正向，不等待唯一 I 才验证候选。
 
 N 的实际旧基本包检查限定为客户端 HTTP 验证：早期 c7a70be 源已独立 grep 确认不含 WorkbenchFormalSource，原 ZIP 26,309,211 bytes；先只扫描解压文件确认0匹配，N 本树空身份 / 系统PATH / 独立17896真实 owned进程已启动并关闭，模型0。首次客户端在发 HTTP 前遇 zip_executable_count，后续 cookiePath 首失败也保留；原 N 完成 ZIP 名称规范化与 PS5 实际调用返修，最后 health / session / protectedGET200 通过。旧基本包没有 Relay，baseline / registry / events / native 保持 NOT_RUN。
 
 H 本次原生 archive 当前 nlink=2 / regular / 105,564 bytes，source_identity_unverifiable_or_aliased 守卫失败、snapshot_complete=false。既往 source15 / HTTP18 是此前范围，未覆盖当前失败。N/P 已实际回执对该 H 原档读取 / 复制 / hardlink 动作0、原生模型0，N events模式仍未运行，Q只公开Git；B消费者事实向 M-product 核实。没有枚举私人历史、删除未知第二链接、降低 nlink1 守卫或重发旧模型。
+
+用户于总负责人消息 `msg_ce444a9b148c` 调整 L1 时序：v1.4 的投递阶段、原生会话归属、输入就绪条件、恢复身份关系四项语义先修改；2026-10-15 再执行真实 CLI 端到端、三分钟 Today 与 L1 最终验收。今晚新的 H API17344 / F web17345 原生验收窗口停止，现有任务由原 owner 按实际条件安全收尾；N 保留17896独立包根与客户端准备，不启动新的注册、派发、模型或 Today 验收。P / Reader / 视频和其他非 Relay 功能继续，最终 native / Today 仍为 NOT_RUN，发布完整门禁保留。H REPORT 已确认旧 task done / 进程 exited / 归属一致 / pending0，旧 read409 / delivery_unknown、目标验收 FAIL 与来源身份 FAIL 保留；等待 F 一次合法 release 不提升为目标通过。
+
+H 测试 SOURCE `78903848199b915a21e95e42f52cbed64c6d606c` 在模块撤回 config_test 指示前完成提交；H 已停止该文件域。`cmd/server/workbench_config_test.go` 当前归原 B 审阅，精确提交及保留断言 / 自有真实 SQLite / 只读目标组合三项测试与 vet 结果已交 M-product，待明确消费或返修；P 先消费独立 main SOURCE / REPORT，不以该未接纳测试提交改变最终范围。
 
 F stable SOURCE `205d2d2ce91091e6add67d637cb65aae33946292` / REPORT `386382628b9a9f52576b553797c9eb08b0df93bc`；完整默认280场已实际结束，203 PASS / 41 FAIL / 32 SKIP / 4 NOT_RUN，原结果与分域清单保留。当前不重复全套，原 F 与领域 owner 返修适用影响；已确认无 Playwright 验证进程，可供 P 一次候选构建，F17343仍为 H旧scope后续 UI 服务，其他 owner 不终止。
 
