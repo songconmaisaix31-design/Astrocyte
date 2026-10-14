@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -259,15 +260,24 @@ func run(logger *slog.Logger) error {
 		logger.Info("static file serving enabled", "dir", webDir)
 	}
 
+	listener, err := bindHTTPListener(port)
+	if err != nil {
+		return fmt.Errorf("bind HTTP listener: %w", err)
+	}
+	defer listener.Close()
+	actualPort := listener.Addr().(*net.TCPAddr).Port
 	// Create and start HTTP server.
 	srv := httpapi.NewServer(httpapi.Config{
 		AgentToken:     os.Getenv("ASTROCYTE_AGENT_TOKEN"),
 		AllowedOrigins: origins,
-		Port:           port,
+		Port:           actualPort,
 		Logger:         logger,
 		Services:       services,
 		WebDir:         webDir,
 	})
+	if err := announceHTTPListener(os.Stdout, listener); err != nil {
+		return fmt.Errorf("announce HTTP listener: %w", err)
+	}
 
 	// Graceful shutdown on SIGINT/SIGTERM.
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
@@ -294,7 +304,7 @@ func run(logger *slog.Logger) error {
 
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- srv.ListenAndServe()
+		errCh <- srv.Serve(listener)
 	}()
 
 	var runError error
@@ -361,8 +371,8 @@ func resolvePort() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("not a number: %w", err)
 	}
-	if n <= 0 || n >= 65536 {
-		return 0, fmt.Errorf("port %d out of range (1-65535)", n)
+	if n < 0 || n >= 65536 {
+		return 0, fmt.Errorf("port %d out of range (0-65535)", n)
 	}
 	return n, nil
 }
