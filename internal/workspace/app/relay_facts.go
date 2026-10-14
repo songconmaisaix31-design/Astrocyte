@@ -10,6 +10,30 @@ import (
 
 var _ RelayRuntimeFactsReader = (*relayService)(nil)
 
+func copyRuntimeController(evidence domain.RelayControllerEvidence) domain.RelayControllerEvidence {
+	evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
+	evidence.Turns = append([]domain.RelayTurnBinding{}, evidence.Turns...)
+	for i, turn := range evidence.Turns {
+		if turn.StartedAt != nil {
+			when := *turn.StartedAt
+			evidence.Turns[i].StartedAt = &when
+		}
+	}
+	return evidence
+}
+
+func (s *relayService) ListOwnedTurnBindings(ctx context.Context, id string) ([]domain.RelayTurnBinding, error) {
+	history, err := s.ListOwnedControllerHistory(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	result := []domain.RelayTurnBinding{}
+	for _, evidence := range history {
+		result = append(result, evidence.Turns...)
+	}
+	return result, nil
+}
+
 func (s *relayService) ListOwnedControllerHistory(ctx context.Context, id string) ([]domain.RelayControllerEvidence, error) {
 	st, err := s.store.Snapshot(ctx)
 	if err != nil {
@@ -31,12 +55,10 @@ func (s *relayService) ListOwnedControllerHistory(ctx context.Context, id string
 	}
 	result := []domain.RelayControllerEvidence{}
 	for _, evidence := range st.ControllerHistory[id] {
-		evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
-		result = append(result, evidence)
+		result = append(result, copyRuntimeController(evidence))
 	}
 	if evidence, exists := st.ControllerEvidence[id]; exists {
-		evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
-		result = append(result, evidence)
+		result = append(result, copyRuntimeController(evidence))
 	}
 	return result, nil
 }
@@ -102,6 +124,41 @@ func (s *relayService) observeRuntimeFacts(st *RelayState, task domain.RelayTask
 	previous := st.ControllerEvidence[task.ID]
 	if previous.ControllerID != "" && previous.ControllerID != evidence.ControllerID && (evidence.Relation != "resume" || evidence.PreviousControllerID != previous.ControllerID || evidence.SessionID != previous.SessionID || evidence.NativeID != previous.NativeID) {
 		return relayError(apierrors.ScopeDenied, "resumed controller identity differs")
+	}
+	for i, turn := range evidence.Turns {
+		if turn.OperationID == "" || turn.TurnID == "" || turn.SessionID != evidence.SessionID || turn.NativeID != evidence.NativeID || turn.ControllerID != evidence.ControllerID || turn.StartupOperationID != evidence.StartupOperationID {
+			return relayError(apierrors.ScopeDenied, "native turn binding differs from its original controller")
+		}
+		if turn.AcceptedAt.IsZero() || turn.AcceptedAt.After(s.now()) || turn.StartedAt != nil && (turn.StartedAt.IsZero() || turn.StartedAt.After(s.now())) {
+			return relayError(apierrors.EvidenceMissing, "native turn binding time is invalid")
+		}
+		bound := false
+		for _, receipt := range st.Receipts {
+			if receipt.TaskID == task.ID && receipt.OperationID == turn.OperationID && (receipt.Action == "dispatch" || receipt.Action == "send") {
+				bound = true
+				break
+			}
+		}
+		if !bound {
+			return relayError(apierrors.ScopeDenied, "native turn operation is not bound to this task")
+		}
+		for j := 0; j < i; j++ {
+			if evidence.Turns[j].OperationID == turn.OperationID || evidence.Turns[j].TurnID == turn.TurnID {
+				return relayError(apierrors.ScopeDenied, "native turn binding is duplicated")
+			}
+		}
+	}
+	if previous.ControllerID == evidence.ControllerID {
+		if len(evidence.Turns) < len(previous.Turns) {
+			return relayError(apierrors.ScopeDenied, "native turn binding was removed")
+		}
+		for i, old := range previous.Turns {
+			current := evidence.Turns[i]
+			current.StartedAt = old.StartedAt
+			if !reflect.DeepEqual(old, current) || old.StartedAt != nil && !reflect.DeepEqual(old.StartedAt, evidence.Turns[i].StartedAt) {
+				return relayError(apierrors.ScopeDenied, "native turn binding changed after acceptance")
+			}
+		}
 	}
 	var last int64
 	if previous.ControllerID == evidence.ControllerID {

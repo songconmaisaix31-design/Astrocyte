@@ -65,6 +65,7 @@ func (d *RelayTerminalDriver) CurrentControllerEvidence(ctx context.Context, r a
 		return domain.RelayControllerEvidence{}, nativeError(apierrors.ScopeDenied, "current terminal controller differs from the requested binding")
 	}
 	evidence := p.evidence
+	evidence.ExitConfirmed = p.exited
 	evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
 	return evidence, nil
 }
