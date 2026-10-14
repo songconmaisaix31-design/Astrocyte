@@ -40,6 +40,23 @@ func NewSwarmRepository(db *DB) (*SwarmRepository, error) {
 	return &SwarmRepository{db: db}, nil
 }
 
+func (r *SwarmRepository) executor(ctx context.Context) (SwarmSQLExecutor, error) {
+	if tx, ok := ctx.Value(swarmTransactionKey{}).(*swarmTransaction); ok {
+		if tx.db != r.db {
+			return nil, domain.Failure(apierrors.ScopeDenied, "Swarm transaction belongs to another database")
+		}
+		return tx.exec, nil
+	}
+	conn, err := WorkspaceTransaction(ctx, r.db)
+	if err != nil {
+		return nil, err
+	}
+	if conn != nil {
+		return conn, nil
+	}
+	return r.db.conn, nil
+}
+
 func (r *SwarmRepository) Within(ctx context.Context, fn func(swarmapp.Transaction) error) (err error) {
 	if tx, ok := ctx.Value(swarmTransactionKey{}).(*swarmTransaction); ok {
 		if tx.db != r.db {
@@ -133,23 +150,28 @@ func swarmCAS(result sql.Result, err error) error {
 }
 
 func (r *SwarmRepository) List(ctx context.Context) ([]domain.Mission, error) {
-	rows, err := r.db.conn.QueryContext(ctx, "SELECT data FROM swarm_missions ORDER BY id")
+	exec, err := r.executor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := exec.QueryContext(ctx, "SELECT data FROM swarm_missions ORDER BY id")
 	if err != nil {
 		return nil, err
 	}
 	return swarmRows[domain.Mission](rows)
 }
 func (r *SwarmRepository) Load(ctx context.Context, id string) (domain.Mission, error) {
-	return swarmDecode[domain.Mission](r.db.conn.QueryRowContext(ctx, "SELECT data FROM swarm_missions WHERE id=?", id), "mission", id)
+	exec, err := r.executor(ctx)
+	if err != nil {
+		return domain.Mission{}, err
+	}
+	return swarmDecode[domain.Mission](exec.QueryRowContext(ctx, "SELECT data FROM swarm_missions WHERE id=?", id), "mission", id)
 }
 
 func (r *SwarmRepository) Timeline(ctx context.Context, id string) ([]swarmapp.TimelineEvent, error) {
-	var exec SwarmSQLExecutor = r.db.conn
-	if tx, ok := ctx.Value(swarmTransactionKey{}).(*swarmTransaction); ok {
-		if tx.db != r.db {
-			return nil, domain.Failure(apierrors.ScopeDenied, "timeline transaction belongs to another database")
-		}
-		exec = tx.exec
+	exec, err := r.executor(ctx)
+	if err != nil {
+		return nil, err
 	}
 	rows, err := exec.QueryContext(ctx, "SELECT event_id,event_type,aggregate_id,aggregate_version,occurred_at FROM foundation_outbox WHERE event_type LIKE 'swarm.%' AND (aggregate_id=? OR aggregate_id IN (SELECT id FROM swarm_work_items WHERE mission_id=?) OR aggregate_id IN (SELECT a.id FROM swarm_artifacts a JOIN swarm_work_items w ON a.work_item_id=w.id WHERE w.mission_id=?)) ORDER BY occurred_at,event_id", id, id, id)
 	if err != nil {

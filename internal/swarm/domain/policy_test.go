@@ -43,3 +43,28 @@ func TestLocalPolicyFiltersPermissionDependenciesOccupancyAndCapabilities(t *tes
 		t.Fatal("no-progress stop condition was ignored")
 	}
 }
+
+func TestLocalPolicyFiltersExhaustedOrUnknownBoundedBudgetBeforeRanking(t *testing.T) {
+	now := time.Now()
+	limit, used := int64(2), int64(1)
+	m := Mission{ID: "mission", State: "ready", Used: Usage{Calls: &used}, Reserved: Resources{Calls: 1}, Grant: Grant{WritePaths: []string{"src"}, Budget: Budget{Calls: &limit}, Limits: Limits{MaxActive: 2, MaxAttempts: 3, Deadline: now.Add(time.Hour)}}}
+	items := []WorkItem{{ID: "available", MissionID: m.ID, State: "open", WritePaths: []string{"src/file"}}}
+	check := func(want int, capabilities []string) {
+		t.Helper()
+		result, err := SelectWorkItems(m, items, nil, SelectionContext{Capabilities: capabilities}, now)
+		if err != nil || len(result) != want {
+			t.Fatalf("unexpected budget-filtered selection: count=%d error=%v", len(result), err)
+		}
+	}
+	check(0, nil)
+	m.Reserved.Calls = 0
+	check(1, nil)
+	m.Used.Calls = nil
+	check(0, nil)
+	m.Used.Calls = &used
+	m.Grant.Budget.Tokens = &limit
+	check(0, []string{"token_budget"})
+	m.Used.Tokens = &used
+	check(0, nil)
+	check(1, []string{"token_budget"})
+}

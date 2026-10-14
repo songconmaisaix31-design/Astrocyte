@@ -28,6 +28,16 @@ func SelectWorkItems(m Mission, items []WorkItem, leases []Lease, c SelectionCon
 	if len(leases) >= m.Grant.Limits.MaxActive {
 		return result, nil
 	}
+	usage, err := m.Used.AddReserved(m.Reserved)
+	if err != nil {
+		return nil, err
+	}
+	if !usage.Within(m.Grant.Budget) || m.Grant.Budget.Calls != nil && (usage.Calls == nil || *usage.Calls >= *m.Grant.Budget.Calls) {
+		return result, nil
+	}
+	if m.Grant.Budget.Tokens != nil && !slices.Contains(c.Capabilities, "token_budget") || m.Grant.Budget.Money != nil && !slices.Contains(c.Capabilities, "money_budget") {
+		return result, nil
+	}
 	states := map[string]string{}
 	for _, w := range items {
 		states[w.ID] = w.State
