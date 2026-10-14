@@ -1,6 +1,12 @@
 # Swarm S3 / S6 实施与实际验证
 
-## 第四阶段当前结果
+## 第五阶段当前结果
+
+SOURCE `ec653ddd90a9c91c83af28a8909fb41741116160` 已普通 push 并核实远端同值。Task `task_da9aebf03f83` / `ctx_d4bf65ca06bf` 对模块 `task_b0197ca7ebdf` / `ctx_b1cd2e0a39aa` 交付成功采用来源端口：`AcceptedArtifactEvidenceReader.ReadAcceptedArtifactEvidence(ctx, principal, localProjectID, eventID)`。它读取实际不可变 artifact_accepted 事件，核对注册 LocalProjectID，再通过当前项目权限回调授权；返回实际 actor_id、actor_kind、occurred_at 及固定 Artifact/version/source/commit/object/检查引用。actor_kind 来自采用时实际保存的人类 Principal，旧事件缺少该事实时拒绝补造。
+
+候选回链 `ExperienceCandidateSource` 明确区分 LocalProjectID 与 OwnerProjectID；前者是注册项目 ID，后者由 B 的真实 LocalProject→AttentionSpace 映射提供。S3 不根据名称猜测映射，不读取 Attention 内部表。实际候选录入、批准、分享和正向回链仍 NOT_RUN；此阶段的真实批准/HTTP组件测试与 Domain 编译继续 PASS，新增来源读取正路径等待真实采用事实。
+
+## 第四阶段记录
 
 Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`。SOURCE `3c568c7ec8bb13a88b0abf95d44cbb13fc6422b5` 已普通 push，远端完整 SHA 一致；Orca 当前公开 worker 配置记录为客户端 codex、模型 gpt-6.1-sol，本 Task 外部模型调用数仍为零。
 
