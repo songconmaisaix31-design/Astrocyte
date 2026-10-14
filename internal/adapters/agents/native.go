@@ -342,6 +342,9 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		return s, err
 	}
 	go func() { <-p.done; <-n.slots }()
+	p.mu.Lock()
+	p.projectID = r.Project.ID
+	p.mu.Unlock()
 	// Keep the actual process reachable even if initialization or its stop is
 	// uncertain. Never lose a still-owned process on a failed handshake.
 	n.mu.Lock()
@@ -389,9 +392,13 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 			return fail(err)
 		}
 		var result struct {
-			Model         string `json:"model"`
-			ModelProvider string `json:"modelProvider"`
-			Thread        struct {
+			Model          string `json:"model"`
+			ModelProvider  string `json:"modelProvider"`
+			ApprovalPolicy string `json:"approvalPolicy"`
+			Sandbox        struct {
+				Type string `json:"type"`
+			} `json:"sandbox"`
+			Thread struct {
 				ID  string `json:"id"`
 				Cwd string `json:"cwd"`
 			} `json:"thread"`
@@ -402,6 +409,10 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		if result.Thread.ID == "" || (resume && result.Thread.ID != r.Session.NativeID) || filepath.Clean(result.Thread.Cwd) != filepath.Clean(r.Project.Root) {
 			return fail(nativeError(apierrors.ScopeDenied, "native thread identity or project differs"))
 		}
+		// 实际响应明确违反请求策略时立即失败；缺失响应不冒称已核实。
+		if (result.ApprovalPolicy != "" && result.ApprovalPolicy != "never") || (result.Sandbox.Type != "" && result.Sandbox.Type != "readOnly") {
+			return fail(nativeError(apierrors.ScopeDenied, "native thread did not acknowledge the requested permission policy"))
+		}
 		if p.relayCapture != nil {
 			if err = p.relayCapture.bind(response["result"], r, resume); err != nil {
 				return fail(err)
@@ -410,6 +421,9 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool)
 		p.mu.Lock()
 		p.nativeID = result.Thread.ID
 		p.model, p.provider = result.Model, result.ModelProvider
+		if result.ApprovalPolicy == "never" && result.Sandbox.Type == "readOnly" {
+			p.permissionPolicy = "never_read_only"
+		}
 		p.modelObservedAt = time.Now()
 		p.mu.Unlock()
 	} else if n.id == "claude" {
