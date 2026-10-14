@@ -228,9 +228,13 @@ SOURCE `dfdd75ed4b245fe462df2ff916728afdae7361cc` 已普通 push，保留现有�
 
 `go test -mod=readonly ./internal/workspace/app -run TestNativeOperationInvalidIdentityDoesNotLaunch -count=1 -v` EXIT 0，1 PASS、0 SKIP，2.712s；证据 `.verification/native-operation-identity-owned.log`。早期实际检查 `.verification/native-operation-identity-first.log` 与 `.verification/native-operation-identity-current.log` 保留。
 
-准确 S2 SOURCE `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` 经普通 merge `cc3ed6887ed6834d691988c040e3b9600b52277c` 消费。当前工作区的 `go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 与 `node scripts/check-architecture.mjs` 均 EXIT 0，架构检查覆盖 33 个包；证据 `.verification/admission-current-build.log`、`.verification/admission-current-vet.log`、`.verification/admission-architecture-first.log`。这些检查包含尚未提交的准入实现，未作为准入真实验收结果。
+准确 S2 SOURCE `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` 经普通 merge `cc3ed6887ed6834d691988c040e3b9600b52277c` 消费。准入阶段 SOURCE `e96f8d78f686f6db0f0a9edb5e15cc57ddb8aa1a` 已普通 push，包含独立领域文件、应用服务、SQLite repository、新业务迁移 `022_attention_admissions.sql`、实际 S2 bridge、HTTP 路由注册函数及实际来源测试；旧领域文件和迁移 001–018没有修改。`go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 与 `node scripts/check-architecture.mjs` 均 EXIT 0，架构检查覆盖 33 个包；证据 `.verification/admission-current-build.log`、`.verification/admission-current-vet.log`、`.verification/admission-architecture-first.log`。编译及静态检查未作为准入真实验收结果。
 
 实际准入验证先经历两次公开 arXiv 来源 `provider_unavailable`，原失败保留于 `.verification/admission-actual-first.log`、`.verification/admission-actual-second.log`。显式使用已经核实的现有匿名系统代理后，实际固定论文导入、人工待审记录和候选创建成功；第三次验证在 S2 消费者因人工准入缺少委托策略版本返回 `evidence_missing`，证据 `.verification/admission-actual-proxy-third.log`。该约束已交原 S2 owner 修正，人工记录不填充委托模型或策略版本，真实事务正向仍为未通过。独立准入领域规则检查 EXIT 0，证据 `.verification/admission-domain-current.log`，不代表真实委托判断或业务组合验收。
+
+`admissionbridge.Connect` 在启动前连接真实 Attention core、`NewAdmissionRepository(db)` 和同一实际数据库的 S2 service，配置实际事件读取和草稿消费。准入记录固定候选 revision、输入、真实操作者及所有者空间；准入 outbox、候选状态、生产者回执和 S2 草稿共用一个 SQLite 事务。撤销保留原固定输入和准入事件 ID，执行批准由既有 Workspace 单独管理。真实委托入口需要实际决策记录、当前问题委托、固定输入、明确拒答与截断状态、模型和策略版本、当前权限及预算；未配置时返回 `approval_required`。对应决策源尚未装配，未执行真实委托正向。
+
+HTTP 新文件提供 `registerAdmissions(mux, service)`，沿用现有严格 JSON、请求元数据、认证主体和错误映射；共享 `server.go` 的 Services 字段与路由调用、`main.go` 的生产装配交 H 原 owner。当前 B 未宣称默认服务已开放准入路由，实际 HTTP 组合和 S2 准入正向仍待完成。S2 消费者、原生控制器和共享装配文件均未由 B 代改。
 
 ## 真实剩余限制
 
