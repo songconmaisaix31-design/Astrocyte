@@ -18,9 +18,9 @@
 
 B 独占 migrations、共享 service.go/contracts.go 和依赖；已收到 019 Workspace 六类聚合表及 foundation_idempotency.result_json 的准确 DDL。H 独占 server.go/main/OpenAPI，调用 `h.registerWorkspaceS2(mux,services.WorkspaceS2)` 并移除已被覆盖的 GET proposals、POST submit/approvals/revoke S0 route。应用装配使用 `sqlite.NewWorkspaceRepository(db)`、既有 ProjectFiles 与 ProjectReferences，不启动 native controller。前端从 H 的 OpenAPI 生成类型。
 
-## 当前验证
+## 第一阶段编译记录
 
-`go test ./internal/workspace/app ./internal/workspace/domain ./internal/adapters/sqlite -run '^$'` PASS，仅证明编译。真实 SQLite、HTTP、重启、事务回滚与批准权限验证目前 NOT_RUN，等待 B 的 019 和 H 的真实主服务装配。ContextPacket 持久 successor 和 SessionBinding 继续实施；原生 owned 安全接口及用户 working 条件仍 UNKNOWN，不调用其他 CLI 补证。
+第一阶段 `go test ./internal/workspace/app ./internal/workspace/domain ./internal/adapters/sqlite -run '^$'` PASS，仅证明编译。当时真实 SQLite、HTTP、重启、事务回滚与批准权限验证 NOT_RUN，依赖 B 的 019 和 H 的真实主服务装配。后续实际结果见下方阶段记录；原生 owned 安全接口及用户 working 条件仍 UNKNOWN，不调用其他 CLI 补证。
 
 ## 第二阶段实现与当前业务覆盖
 
@@ -43,6 +43,10 @@ B `4725f0b1c6907ddefb3b1e1dac0f49840031db59` 已普通消费，S2 在同事务�
 WorkspaceTransaction(ctx,db) 缺席时返回 nil,nil；同数据库返回已有连接；其他数据库明确错误，禁止据错误字符串猜测。B 的 Attention.WithTx 将消费这一准确接口后实现现资料端口在同事务复用；接入前资料当前权限事务复核保持 NOT_RUN。
 
 GET /goals 已提供最新固定版本的真实有权限列表。相同幂等键业务请求的新 request_id 不改变摘要，异业务输入仍冲突；首次 trace 重放 RED 保留 `idempotency-requestid-first.log`，修复后 `idempotency-requestid-second.log` PASS，实际库 `.verification/s2-first/actual-1414563108/state.sqlite`。HTTP 与 native/snapshot 成功仍按真实依赖保持 NOT_RUN。
+
+## 第三阶段独立 REPORT
+
+SOURCE `507be52f4e31759dc8c3765aeea964f1f2efe013` 已普通 push；独立 remote 查询相同 SHA。实际 SQLite 幂等/批准/撤销/重启测试 PASS，32 包架构检查与 diff 检查 PASS。已准确交 B 共享事务 absent/sameDB/wrongDB 接口、交 S3 零活跃并发和共享当前授权接口；H 正通过模块确认准确来源闭包，再交主 HTTP 装配。准入事件生产者、资料事务授权桥、固定快照与 owned 原生成功仍按实际依赖保持 NOT_RUN。
 
 ## 第一阶段独立 REPORT
 
