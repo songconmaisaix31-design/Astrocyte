@@ -8,6 +8,7 @@ export interface ProposalDraft {
   goalRevision: string;
   projectId: string;
   roots: string;
+  writePaths: string;
   actions: string;
   tools: string;
   externalTargets: string;
@@ -23,6 +24,7 @@ export interface ProposalDraft {
   maxWorkItems: string;
   maxAttempts: string;
   noProgressSeconds: string;
+  maxNoProgressRounds: string;
 }
 
 export function ProposalContentFields({ draft, onChange, disabled }: { draft: ProposalDraft; onChange: (draft: ProposalDraft) => void; disabled: boolean }) {
@@ -37,6 +39,7 @@ export function ProposalContentFields({ draft, onChange, disabled }: { draft: Pr
     </fieldset>
     <fieldset disabled={disabled}><legend>执行范围</legend>
       <TextField label="允许根目录" value={draft.roots} onChange={update('roots')} multiline hint="每行一个绝对目录；提交审阅前必须明确执行范围。" />
+      <TextField label="允许修改的路径" value={draft.writePaths} onChange={update('writePaths')} multiline hint="每行一个根目录内的相对文件或目录。" />
       <TextField label="允许动作" value={draft.actions} onChange={update('actions')} multiline hint="每行一个项目已许可的动作。" />
       <TextField label="允许工具" value={draft.tools} onChange={update('tools')} multiline hint="每行一个明确许可的工具。" />
       <TextField label="允许外发目标" value={draft.externalTargets} onChange={update('externalTargets')} multiline hint="每行一个明确许可的外发目标；空白表示没有外发目标。" />
@@ -56,7 +59,8 @@ export function ProposalContentFields({ draft, onChange, disabled }: { draft: Pr
       <TextField label="停止条件" value={draft.stopConditions} onChange={update('stopConditions')} multiline hint="每行一项明确停止条件。" />
       <TextField label="最大工作项数" value={draft.maxWorkItems} onChange={update('maxWorkItems')} type="number" numberRange={{ ...integerRange, min: 1 }} />
       <TextField label="最大尝试次数" value={draft.maxAttempts} onChange={update('maxAttempts')} type="number" numberRange={{ ...integerRange, min: 1 }} />
-      <TextField label="无进展时限（秒）" value={draft.noProgressSeconds} onChange={update('noProgressSeconds')} type="number" numberRange={{ ...integerRange, min: 1 }} />
+      <TextField label="连续无进展轮数上限" value={draft.maxNoProgressRounds} onChange={update('maxNoProgressRounds')} type="number" numberRange={{ ...integerRange, min: 1 }} />
+      <TextField label="无进展时限（秒）" value={draft.noProgressSeconds} onChange={update('noProgressSeconds')} type="number" numberRange={integerRange} hint="轮数与时间限制独立保存。" />
     </fieldset>
   </div>;
 }
