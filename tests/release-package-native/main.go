@@ -131,7 +131,7 @@ func (c *client) run() error {
 	if err != nil || u.Scheme != "http" || u.Hostname() != "127.0.0.1" || u.Port() == "" || u.Path != "" || u.RawQuery != "" || u.User != nil || u.Fragment != "" {
 		return failure("loopback_url_required")
 	}
-	if u.Port() == "17321" || u.Port() == "17342" || u.Port() == "17343" {
+	if u.Port() == "17321" || u.Port() == "17342" || u.Port() == "17343" || u.Port() == "17344" || u.Port() == "17345" {
 		return failure("reserved_port")
 	}
 	jar, err := cookiejar.New(nil)

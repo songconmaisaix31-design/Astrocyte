@@ -2,6 +2,8 @@
 
 N 独占 `tests/release-package-native/**` 和本文；P 继续负责 `release/**` 的构建、启动、认知快照和包说明。客户端沿用仓库 Go module、`encoding/json`、`archive/zip` 与现有 `modernc.org/sqlite`，产物与原始响应仅写入当前工作树已忽略的 `.verification`。
 
+2026-10-14 用户最新时序：先修改 v1.4 的投递阶段、原生会话归属、输入就绪、恢复身份，2026-10-15 再运行真实 CLI、三分钟 Today 和 L1 结算。今晚停止新的 Relay 注册、派发、模型和 Today 验收。本文接口是已读取源码的兼容记录，v1.4 最终语义与验收窗口到达后须重新核查；当前记录不冻结 v1.4 接口。
+
 ## 调用入口
 
 在仓库根目录编译：
@@ -16,7 +18,7 @@ P 启动实际 ZIP 解压目录中的 `astrocyte.exe` 后调用 `tests/release-p
 
 PowerShell 入口核查实际进程文件与该端口的监听者。Go 客户端通过 ZIP 库读取 `Astrocyte-v0.1-windows-x64/astrocyte.exe`，与实际解压文件逐字节比较；每次调用均重新检查。`PackageSource` 记录 P 的来源声明，代码没有从 ZIP 内容独立推导源码提交。保留这些限制，不将来源声明当作构建追溯的独立证据。
 
-服务启动与停止继续由 P 负责。N 客户端通过实际 HTTP intent/confirm 请求服务控制器，CLI 命令与 Agent 注册由 H 的准确配置提供。17321、17342、17343 被入口明确拒绝。
+服务启动与停止继续由 P 负责。N 客户端通过实际 HTTP intent/confirm 请求服务控制器，CLI 命令与 Agent 注册由 H 的准确配置提供。17321、17342、17343、17344、17345 被入口明确拒绝。N 保留独立端口 17896。
 
 ## 可复用动作
 
@@ -30,6 +32,8 @@ PowerShell 入口核查实际进程文件与该端口的监听者。Go 客户端
 | `events` | `Database`、`RelayDatabase`、`Task`、`Project`；可设 `MinimumEvents` | 分页选定任务；HTTP 每条精确六字段；每个 event_id 在实际 SQL 中定位并比较字段、毫秒时间和项目范围；核查 owned binding 与自产原件范围 |
 
 `request` 只允许读取 Relay 状态、local-projects、registered 元数据及 Works，或写入既有项目注册、项目 settings、Works refresh/delivery/handoff、Relay intent/confirm/stop。输入 JSON 文件必须放在独立 `.verification`。普通 command envelope 由调用者按实际 API 提供；存在 `request_id` 时，客户端将同一 UUID 用作 `Idempotency-Key`。Relay command 不添加普通 command envelope。
+
+JSON 输入文件须采用 UTF-8 且不带 BOM；PowerShell 5.1 调用者可使用 `[IO.File]::WriteAllText` 与 `[Text.UTF8Encoding]::new($false)` 输出 `ConvertTo-Json` 的结果。脚本源码自身采用 UTF-8 BOM，JSON 请求格式按服务的实际 decoder 要求提供。
 
 每次动作先执行 `/api/v1/health` 和 `/api/v1/auth/session`，以真实 CookieContainer 和返回的 CSRF token 授权。客户端拒绝 HTTP redirect，禁用 proxy 与连接复用，无自动写入重试。写入发送前保留 operation UUID；传输失败或异常 HTTP 状态保留 UNKNOWN，调用者必须读取原回执并检查本机记录，不得自动再次派发。原始 bootstrap 含 CSRF，只保存在本机证据目录，禁止提交或复制入包。
 
@@ -67,6 +71,8 @@ H 已交固定公开正文：`Public fixed context L1_PUBLIC_CANARY_976E. This p
 
 本机 `.verification/basic-http-20261014-223940/basic-safe.json` 和其 `protected-read/summary.json` 记录 PASS：已知私人路径匹配 0，运行的解压 `astrocyte.exe` 与真实 ZIP 成员逐字节一致，实际进程与监听端口一致，health 200、human session bootstrap 200、真实 Cookie/CSRF、受保护 `GET /api/v1/local-projects` 200。实际服务进程和端口均已关闭，写入请求和模型调用均为 0。仅保存安全聚合及本机指针，原始 bootstrap 与 server 日志留在忽略目录。
 
-本任务要求保留的客户端首失败原件分别位于 `.verification/basic-http-20261014-223748` 与 `.verification/basic-http-20261014-223837`；两轮均已关闭 owned 进程和端口。该早期 ZIP 不含 Relay，Relay baseline、registry、事件 SQL/原件范围、原生模型、原生停止及重启、DOM 仍为 `NOT_RUN`。最终 I 源码、P fresh ZIP 和协调者明确的原生窗口尚未到达。
+本任务要求保留的客户端首失败原件分别位于 `.verification/basic-http-20261014-223748` 与 `.verification/basic-http-20261014-223837`；两轮均已关闭 owned 进程和端口。该早期 ZIP 不含 Relay，Relay baseline、registry、事件 SQL/原件范围、原生模型、原生停止及重启、DOM 仍为 `NOT_RUN`。N 没有读取、复制或建立 H 新旧原档的链接，`events` 模式没有执行。
+
+H 后续 SOURCE `b247dfb12b938739f09acc73e6b7582376951a0c` 的 main/relay config 已只读核查，包含 relay 模式使用显式数据目录 guard 的组装修正。该源码没有被 N 用来构建或启动服务。新组合包和 v1.4 最终源未验收，原生窗口按用户最新时序等待 2026-10-15。
 
 旧候选 c54 privacy scan 的 server 三项匹配 FAIL、原生首确认 503 与 accepted 后 working/exited 的 UNKNOWN 继续由原 owner 的报告保留。本文的编译结果没有改变这些实际验收结论。

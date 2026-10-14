@@ -6,7 +6,7 @@
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
-if ($Port -in @(17321, 17342, 17343)) { throw 'Reserved port.' }
+if ($Port -in @(17321, 17342, 17343, 17344, 17345)) { throw 'Reserved port.' }
 $repo = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $verification = Join-Path $repo '.verification'
 $output = Join-Path $verification ('basic-http-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
