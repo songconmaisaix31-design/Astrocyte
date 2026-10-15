@@ -2,6 +2,12 @@
 
 ## 当前执行入口（2026-10-16）
 
+00:30 本轮恢复：用户要求继续总控 Agent 并完成任务。当前 runtime `289612e9-b83c-4f70-80ab-1e360c8ff7e5`、app PID 24148，主控 `term_325a9aca-4a77-4e2c-93ed-cae95acd628c` 已普通绑定原 `run_973808dd6a2f` generation 30。原三模块 Dispatch 已由运行时结算 abandoned / failed，原三 Task 为 ready；公开清单无原模块和开发终端。继续原 Task、原工作树、原分支及 WIP；原任务正文的旧身份、create 子 Run 和旧集成顺序由本入口替代，不新建替代 Run。模块负责人只写原管理文档，原领域人员继续业务与返修，主控只协调、验收和最终 Git。
+
+恢复分工：M-product 沿原 `run_dbf1a68bc692` 及 `run_7b2ce96bcd13` 恢复 B / F / S2，D 盘入口已交后恢复原 UI / T / S3；M-relay 沿 `run_8bbda1c3974c` 恢复原 R / H / S4，优先完成 H 真实 GoalVerificationReader 与 B 对象事件接缝；M-release 沿 `run_aa4e6a119547` 恢复唯一 I / 原 S5，核中断检查，再协调 P / N 同源包和正式 V4 实际运行。旧临时冲突权限已结束，新的跨树编辑先取得准确互斥交接。全部恢复先核原 Task 和实际生命周期，不重送未知输入，不重复成功推理，不增加第四层。
+
+当前独立实核：I `works-relay-integration` HEAD `2367224`，已合 B D 盘入口和 R 后继，远端跟踪同值；仅 QUESTIONS、认知计划、v0.3 任务三件已授权同步 WIP，保留给原 I。原 check / build / 默认前端的实际退出码和完整结果由同一 I 核日志后报告，未据提交推断通过。C 空余 `11,348,205,568 bytes`、D `79,043,928,064 bytes`；新增大型产物继续 D 盘。四树组合验证 → 集成版 L1 → L2 六步首跑 → 最终同源发布的顺序、实际用户批准、原 180 秒和独立释放要求保持。正式 V4 原 00:20 run 4 的实际结果待核，不重复创建日程或运行。
+
 00:24 当前分工：主控继续原 `run_973808dd6a2f` generation 29，只负责协调、管理文档和最终检查。三位模块负责人均已实际恢复：M-product `ctx_9b068e2051ff`，M-relay `ctx_c89f162e6fb7`，M-release `ctx_eee578a1b9d8`，仍使用下文原 Task / Run / 工作树和独占写入范围。原 B、F、S2、R、H、唯一 I、S5、S4 与 UI 均已实际工作；原 T / S3 保留任务与修改，按依赖恢复，不另建替代开发轨道。
 
 当前集成：唯一 I `ctx_29518fe03538` 已在原分支 `songconmaisaix31-design/works-relay-integration` 普通收拢 B / F / R / H 与 R 后继，准确 SOURCE `9aa583eb1cc774ed77bd80d14547814363204c99` 已 push，发布负责人独核远端同值；实际完整 check 在途，build / 默认前端和 L1 仍待完成。两轮临时冲突写域已由原 B / S2 / R / H 本人归还并独核，权限结束。I 的两处 dist 和 `.verification` 已核实使用既有 D 盘 Junction；原 B 的明确 D 盘产物和进程入口 SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` / REPORT `ec8a97debd79049ba9a346f77544046151d8f3b0` 已交准确消费，五项实际生命周期检查 PASS。原 F 已先交共享契约供原 UI 连续修复；原 S4 负责事务内纯数据库快照和权限核验，实际 Git 观察保持事务外。当前检查结束后再合后继，保留每次检查对应的准确来源；管理报告集中登记，不构成继续集成的新前置。
