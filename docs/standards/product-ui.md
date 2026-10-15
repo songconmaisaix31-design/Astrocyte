@@ -1,8 +1,34 @@
-# S2/S3 产品页面开发记录
+# S2/S3/S4 产品页面开发记录
 
-当前任务 `task_d0cee5a583bb` / Dispatch `ctx_e6aafcccc10a`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，模型 `gpt-6.1-sol`。接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，工作区 clean。
+当前任务 `task_d0cee5a583bb` / Dispatch `ctx_af3cbd15f128`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9ce12d181768`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，模型 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，当时工作区 clean；本次恢复基线 `f70fadfa8d0645ee342cbf96ff67fc97e6e16079`，保留并继续完成既有 `ApprovalPanel.tsx` 修改。
 
 只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`，仍由同一任务、人员和工作树承担。Workspace 入口、公共客户端、生成类型、查询 Hook、认证、共享组件与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+
+## 2026-10-15 恢复阶段：批准快照与键盘验证
+
+SOURCE `94e21baebbb9c50ee53d03438efe2bab461b2f0b` 已普通 push，独立 `git ls-remote` 核远端同 SHA。仅变更 `ApprovalPanel.tsx`、提案 CSS 和 `s2-proposals.spec.ts` 三个本域文件；本树已包含 F `2f2db3017193bf0572648d90bc7adb88b8d475b1` 的共享字段修正与 `self-service.config.ts`。
+
+Grant 详情使用现有生成 `S2ApprovalGrantV1` 和公共请求接口，显示批准的固定目标、权限版本、项目与根目录、允许修改路径、动作、工具、外发目标、并发、调用及 Token 上限、费用未知、全部停止条件，以及批准时间、有效期、状态变更时间。长路径和停止条件可以换行。Grant 状态直接显示真实读取响应；服务端读取核查过期状态。
+
+真实浏览器用例把批准响应的范围、预算和停止条件与原固定提案比较，并逐项核对批准详情。撤销后实际重启 Go 服务、重读同一 SQLite 和页面，核对相同快照、`revoked` 状态和递增 Epoch，撤销按钮保持禁用；两尺寸均验证 Enter 打开、Escape 关闭、焦点恢复及无横向溢出。原有创建、不可变修订、差分、真实版本冲突、未知请求锁、许可拒绝、人工拒绝和固定资料引用检查均保留。
+
+| 命令或实际路径 | 本阶段结果与本机记录 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS |
+| `pnpm --dir web exec eslint src/pages/workspace/proposals e2e/s2-proposals.spec.ts` | PASS，0 errors / 0 warnings |
+| `pnpm build` | PASS，Go 服务、MCP、Sleep 和生产 Web；`.verification/product-ui/build-grant-resume-first.log` |
+| `pnpm check` | 首 FAIL：`internal/adapters/httpapi/workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go` 的 gofmt；`.verification/product-ui/check-grant-resume-first.log`。已交原 S2/H 处理 |
+| 默认配置首轮 S2 | 首 FAIL：开发服务启动超过既有 120000ms，尚未运行用例；`.verification/product-ui/e2e-s2-grant-resume-first.log` 与原输出目录保留 |
+| 同参数非 trimpath Go 编译 | PASS；`.verification/product-ui/e2e-go-build-resume-first.log`，编译输出位于本任务 D 盘目录 |
+| 默认配置第二轮原 12 项 | 10 PASS / 2 FAIL，7.8 分钟；1920 未知请求用例初始化 `read ECONNRESET`，1280 版本冲突用例初始化读取超时。两次均在真实服务已就绪、尚无 auth 请求日志时发生；`.verification/product-ui/e2e-s2-grant-resume-second.log`、报告、trace 和真实 SQLite 保留 |
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s2-proposals.spec.ts --workers=1 --retries=0 --output ../.verification/product-ui/e2e-s2-grant-resume-third` | 12 PASS，5.6 分钟；1920×1080 / 1280×720，原十项与固定资料引用两项，零重试和零 skip。日志 `.verification/product-ui/e2e-s2-grant-resume-third.log`、报告 `e2e-s2-grant-resume-third-report` 和真实数据库均保留 |
+| `git diff --check` | PASS |
+
+专用配置由每个用例的既有 helper 持有真实 Go、SQLite 和 Vite；它复用原两个 viewport、原断言与原超时。默认配置两项初始化失败已交 F，专用配置通过只登记实际 S2 覆盖。没有执行模型或 ASR 调用，没有操作 F 的原生 Relay 注册、确认、读取或停止接口，没有使用视觉功能。
+
+本轮构建及浏览器复验最初使用独占 D 盘 `go-build/product-ui` 缓存；根经模块 `msg_47928df3f862` 更新决定后，在本轮测试结束的安全检查点，新命令进程级 `GOCACHE` 统一为 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR` 继续为 `D:/Astrocyte-agent-assets/20261015/go-temp/product-ui`。`go env` 已实际核查两路径。自有缓存和全部证据保留，运行配置没有全局修改。既有 helper 的实际 SQLite、服务二进制及 tool-temp 仍位于本树 `.verification`，其 D 盘临时构建参数需求已交 F。
+
+模块 `msg_3000c7656a83` 确认暂不消费 S2 `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d`。只运行的 `git merge-tree --write-tree --name-only` 预检发现 20 处非 UI 冲突，实际工作树没有开始合并或进入冲突；该 SOURCE 的完整后端依赖、装配及公开契约由原 S2/H/F 顺序交付。Context、S3、S4 仍等待 H 已验证完整组装 SOURCE → F 生成类型与公共客户端 → 本域接入；撤销后新的受保护动作及完整默认 E2E 尚未通过。任务继续保持原人员、原树和原写域，阶段结果不作为整任务完成。
 
 ## 首阶段源码
 
