@@ -470,7 +470,7 @@ RelayNativeDriver.Initialize 需要 Codex、通知观察器及受信 BeforeFirst
 
 固定正文取自原控制器内存中的完整 ContextPacket，真实首 Send 使用既有 packetPrompt；SQLite 绑定仍剔除正文。最终输入检查 UTF-8 和512KiB上限。受信 NewRelayGuardedRegistry(stateRoot, guard) 同时提供 generic Start / Send 的相同保护：空 Start 自动 armed，同控制器后续 Send 核原 pending send operation 并携带原固定上下文。该 generic 入口不能替代 Relay task / Today 绑定。冷 Registry 无原控制器时拒绝，持久标识不能创建所有权。
 
-真实登记的先后受现有生产入口约束：CreateIntent 和 PrepareIntent 均依赖同一个公开 Agent 注册表。已向模块报告可执行顺序为 F 空登记 observer ready、H 唯一真实登记并保存当刻起点、F 创建 intent / 空初始化、H 核正选来源及工具、F 同控制器 Confirm。准备时间计入该原始登记起点；不隐藏登记、重新计时或更换控制器。最终执行顺序仍须总负责人接收；当前没有登记或三分钟结果。
+总负责人正式答复 msg_e8f75be9692e 已确认单 Registry 顺序：F 在同 URL 读取空 agents 并确认 observer ready，H 唯一真实登记并保存当刻 t0，F CreateIntent / PrepareIntent 空初始化，H 核同控制器正选来源及工具，F 原 Confirm 首次提交。初始化、来源检查和准备耗时计入同一三分钟，t0 不重记；不隐藏登记或更换控制器。当前没有该新窗口的登记或三分钟结果。
 
 进程环境为 GOMAXPROCS=2、go -p=1 -mod=readonly；后续缓存按模块指令使用 D:/Astrocyte-agent-assets/20261015/go-build/backend，临时目录为独占 go-temp/R。本机证据位于 D:/Astrocyte-agent-assets/20261015/relay/R：
 
@@ -487,3 +487,19 @@ RelayNativeDriver.Initialize 需要 Codex、通知观察器及受信 BeforeFirst
 首四包完整检查 guarded-registry-components.log 的 SQLite TestProvenUnstartedResumePreservesOwnedOriginalSession 保留 RED：缺原 controller 的恢复实际返回 delivery_unknown，该 B 测试要求 prelaunch。已交 B / 模块核现有断言与所有权约束，没有修改 B 测试或放宽 cold Registry。随后定向通过不改写该完整检查结果。模块读取活动 WIP 中间类型组合的首编译 FAIL 也独立保留，不作为准确已提交 SOURCE 的结果。
 
 H 须准确消费 SOURCE 后增加准备入口及公共契约，F 须通过同一实际服务操作；空初始化正向、来源和工具关闭、首次提交、逐 event_id SQL、真实目标输出、两尺寸 Today、人工 done / release 与实际发布包均尚未执行。原 nlink2、首 UNKNOWN、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 保留；working / 无 started 客户端人工完成规则仍待用户。L Interpreter 后继接口为 B SOURCE c715342cff4ccfa1b3198275f981385296fe6641，依赖消费方式和实际模型窗口由模块协调。冻结的 V4 / schema / engine / mapper / weights / schedule / 17321 均未修改。
+
+## 原输入 operation 私有证据端口
+
+本阶段 SOURCE `9807d2b6d7f0042bcd59d36ded0b332d74333dc2` 只新增 agents/relay_input_operation.go 与同名测试；仍属同一 R 工作树、分支和当前 Dispatch。`Registry.ReadOwnedInputOperation(ctx, sessionID, operationID, purpose)` 仅从该 Registry 原持有控制器读取完整原 NativeSession、controller evidence、owned execution 和准确 TurnBinding。purpose 只接受 claim_work_item / submit_artifact，operation 必须为 UUID；不从 SQLite scalar、PID 或调用方重建原会话。
+
+Claim 需要原控制器仍有真实进程持有记录且未退出；其他输入正在运行或已 blocked 时拒绝。Claim 可发生在实际 Send 之前，未接受输入保持 InputAccepted=false，不生成虚构回合。Submit 允许原持有控制器已退出，但必须存在相同原 input operation 的真实 TurnBinding，准确 session / native / controller / startup operation 全部相同。
+
+`StopOwnedInputOperation` 只停止原已接受输入对应的原控制器。停止前在同一 operation 锁内核当前 inputOperationID，已经转为其他输入时拒绝；不停止其他任务。已确认退出直接返回现有证据，不重新发送或恢复进程。该端口不替代 S2 的 binding / epoch / caller / grant 检查。
+
+全部返回字段的 JSON 投影为空对象。ToolsKnown / TargetsKnown / CallsKnown / TokensKnown 保持 false；启动策略、输入接受和进程退出均不补造有效工具、外部目标、完整 usage 或任务成果。此阶段不实现 Swarm 的权限和绑定领域；H / S2 / S3 按各自准确端口作必要映射，缺少的实际执行描述继续未知。
+
+从 git archive 的准确 SOURCE 在 D:/Astrocyte-agent-assets/20261015/relay/R/exact-input-source 独立验证，未包含本树后继 L 的未提交修改。共同环境为 GOMAXPROCS=2、共享 backend GOCACHE、独占 go-temp/R：`go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=120s` PASS19.212秒，`go vet -p=1 -mod=readonly ./internal/adapters/agents` 和 `go build -p=1 -mod=readonly ./internal/adapters/agents` 均 EXIT0；日志 exact-9807-input-full-agents.log。冷 Registry、错误 purpose、未知停止和私有 JSON 边界实际运行，没有启动原生进程或构造成功协议。
+
+独立 L 依赖按模块明确授权通过 cherry-pick -x 消费 B c715342 的五路径，保作者与来源，提交为37c3b9d。该依赖实际需要尚未提供的 S2 WorkspaceRepository / WorkspaceTx / WorkspaceTransaction / workspaceCAS，组合 Go 检查首 FAIL 保留在 completion-components-first.log，已交原 B / 模块；R 未修改这些领域。B 后继准确 SOURCE f76e25b84b29495994f2e5877b586d4c22669d3f / REPORT ce5a86b0cdc27ea9567d1041a7fccc89795d9395 已由独立远端和普通祖先核实，窄消费为6b7ba3ad14209ace91a89cf2f63ecafafbba390d。模型标识来源区分 configured_route / provider_reported，独立版本缺证据时固定 unknown；不以别名或 CLI 版本补造。
+
+当前原输入端口准确源码可单独消费，后继 L 源码仍待 B 事务前置和适用组合验证后交付。原控制器正向、S3 Member / Ownership 实际组装、真实 tools / targets / usage、模型候选和第二任务经验引用仍未验证；本阶段不宣称 service build、完整 Swarm / L 或最终 release 已通过。
