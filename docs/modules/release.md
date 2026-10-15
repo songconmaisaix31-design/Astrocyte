@@ -2,6 +2,18 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:35 实际生产与三项原失败均已有准确结果
+
+S4 SOURCE `6e441f7a6c14a11492d188a7259106445715700a` / 最终 REPORT `7f9c7fa9fc3b23153eb462931924a7782775cacb` 已由 M-relay 独核远端、祖先、报告和原件，本模块已读该报告。准确 b73 的原 `tests/s4/production.ps1` 在新独占 D 库实际 EXIT0 / PASS1 / FAIL0 / SKIP0；用例47.574393秒、总47.876767秒，真实 main / SQLite / 官方 CodeGraph / AOCI / 双公开 worktree、HTTP 授权撤权、两次重启、原十秒清理 A 并保留 B 原 generation 全部通过。两个首失败及原件保留，不重复已通过生产或模型；本结果不替代完整默认、L1 / L2 或最终包。
+
+F 认知 SOURCE `12a17f7bf7a9fbef273e872516961aa9262b7110` / REPORT `94d827a34f8cc659de8ab3e051483eb194480d76` 已由 M-product 独验并交 I：准确 b73 / PID4676 / `snapshot-1711995690` 下，四视图10项 SQL 指标、两主题各三个实际 history 点、九页155个 event_id 六字段逐一真实库定位，HTTP / DOM 通过，无重复、写入或模型。真实10月16日的今日0 / 七日1076 / 三十日1316按 SQL 重算，原 Q 期望与真实 source 时间保持，没有修改 Clock 或重新采集。
+
+H 目录修复 SOURCE `237a95719d18b69063def0323cf35cc3a93b8232` / REPORT `a5c05cffdb27c8baba33337bb2dd0c5345ea817b` 已普通消费。在准确 `6f613692b8ec3de5f33b9ff56244734bcb24d56f` 的原 D 输出环境，仅复验三项首失败，实际全部 PASS，server 包2.376秒 / events 包1.585秒。本模块独读 `integration/c16-product-root-repair-6f61369.log` 三项通过；生产 guard、全部断言与 Skip 保持，7401 / 3edd 原 RED 保留。随后普通合入 S4 / F 报告为 `48793bac010d9b160106488040491556d49d63c7`，I 实际普通 push EXIT0并独核远端同值。
+
+含 B 完成桥、成熟 Origin 解析和 UI 后继的准确 `5322e7de66945067601868a82b4b7d790f236fef` 原 `pnpm build` EXIT0 / `34.1603979` 秒、source_after 同值，本模块独读 result。该阶段初次 push 实际被远端拒绝，原件保留，第二次普通 push EXIT0且 I 独核精确远端。H 本人已稳定复制 `versions/5322e7de`、核 Go revision / modified=false / index 并停止读取、归还 I 产物窗口，当前实际服务仍 b73 / PID4676 / 同一 Q 代。B 准入组件 `19ff699f304961d3c9fad6a336163848c923057b` / `bf8fda3c45b9198a7e7537355d5ba419f9bc87f8`、T 实际边界测试 `fa5c6e6a2cedcf34b22bf760c24ac6b81c3a7241` / `41cfefc24792470bd00d25b80b3235142d68e3ee` 及 F UI 相容消费 `a871d62c6b5ed6b708dfc1b70f938741f0b44081` / `a4e3dc39350911268fd5cde4f177d2362928e765` 已交唯一 I 后继普通消费。主入口与完整公共契约继续由原 H 交准确来源，组件拒绝边界不计正向完成。
+
+原 runtime HTTP 的 approval_required、session Git 的 delivery_unknown、workbench symlink1314、junction 命令及 selected-text 自产身份仍无 I 新通过记录，已交原 H / R 持续处理。原 B 四项 OpenCode PASS 仅归其准确来源；受限控制器、重复探针和模型暂停边界保持。当前所有完成标记只适用上述准确范围，完整 check / 默认、经验正向、受限原生及最终同源发布仍未通过。
+
 ### 2026-10-16 04:26 同库装配运行与准确复验输入
 
 原 H 在 F / UI 双安全 ACK 后确认旧 cffac367 / PID45616 已退出且端口清空，随后更新同一 SQLite / LOCALAPPDATA，当前实际运行准确 `b73dc79e7c59a9192ec2bfbd3625a620d8304efb` / modified=false，PID `4676`，启动 UTC `2026-10-15T20:22:58.8651960Z`。本模块实际 GET 首页 HTTP200 / text/html / 562 bytes，独核唯一 `127.0.0.1:64505` listener、稳定 `versions/b73dc79e/astrocyte.exe` 程序路径和启动时间。Q 独立 root 已接原 `cross-day-20261015-0228/local/astrocyte-workbench/v0.1`，current generation 为 `snapshot-1711995690`，没有重新采集或复制旧代。Jev / Laya、原生登记和模型输入状态保持原范围。
