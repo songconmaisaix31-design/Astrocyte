@@ -2,6 +2,7 @@ package app_test
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"testing"
 
@@ -10,12 +11,12 @@ import (
 	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
-// 示例来自当前公开 Git 固定原档；规则和 unknown 是明确提交的人工配置参数。
+// 示例来自当前公开 Git 固定原档；规则与期望值是明确提交的人工配置参数。
 func publicTasteCommand(material MaterialDetail, key string, expected int) UpdateTasteProfileCommand {
 	return UpdateTasteProfileCommand{
 		CommandMeta: meta(key, expected), Enabled: true,
-		Rubrics:     []TasteRubric{{ID: "readme-scope", QuestionType: "truth", Criteria: "依据固定公开 README 核查所述能力的证据范围，缺少验证结果时保留 unknown。"}},
-		Examples:    []TasteExample{{ID: "readme-example", RubricID: "readme-scope", MaterialID: material.Material.ID, Revision: material.Revisions[0].Revision, ContentDigest: material.Revisions[0].ContentDigest, Expected: "unknown"}},
+		Rubrics:     []TasteRubric{{ID: "readme-scope", QuestionType: "truth", Criteria: "依据固定公开 README 核查所述能力的证据范围，缺少验证结果时保留 unknown。", Options: []TasteOption{}, Levels: []string{}}},
+		Examples:    []TasteExample{{ID: "readme-example", RubricID: "readme-scope", MaterialID: material.Material.ID, Revision: material.Revisions[0].Revision, ContentDigest: material.Revisions[0].ContentDigest, Expected: "0"}},
 		Delegations: []TasteDelegation{},
 	}
 }
@@ -60,7 +61,7 @@ func TestActualTasteProfileVersionsFixedSourcesAndRevocation(t *testing.T) {
 	thirdCommand := secondCommand
 	thirdCommand.CommandMeta = meta("taste-example-next", second.Profile.Version)
 	thirdCommand.Examples = slices.Clone(secondCommand.Examples)
-	thirdCommand.Examples[0].Expected = "false"
+	thirdCommand.Examples[0].Expected = "1"
 	third, err := core.UpdateTasteProfile(ctx, human, thirdCommand)
 	if err != nil || third.Profile == nil || third.Profile.Version != 3 {
 		t.Fatal("actual example update did not produce a new Taste version")
@@ -152,5 +153,51 @@ func TestActualTasteProfileRejectsUnknownQuestionType(t *testing.T) {
 	errorCode(t, err, apierrors.ValidationFailed)
 	if countRows(t, db, "attention_taste_profiles") != 0 || countRows(t, db, "attention_taste_profile_revisions") != 0 || countRows(t, db, "attention_outbox") != events || countRows(t, db, "attention_receipts") != receipts {
 		t.Fatal("unknown Taste question type retained a configuration or success receipt")
+	}
+}
+
+func TestActualTasteProfileChoiceAndScoreKeepHumanConfiguration(t *testing.T) {
+	for _, kind := range []string{"choice", "score"} {
+		t.Run(kind, func(t *testing.T) {
+			core, db, _, material, _ := readyOpportunityFromPublicGit(t)
+			command := publicTasteCommand(material, "taste-typed-"+kind, 1)
+			command.Rubrics[0].QuestionType = kind
+			if kind == "choice" {
+				command.Rubrics[0].Options = []TasteOption{{ID: "needs-evidence", Description: "继续核查证据"}, {ID: "review-scope", Description: "审阅已列出的来源范围"}}
+				command.Examples[0].Expected = "needs-evidence"
+			} else {
+				command.Rubrics[0].Levels = []string{"补充来源", "审阅固定来源", "比较附加验证"}
+				command.Examples[0].Expected = "1"
+			}
+			configured, err := core.UpdateTasteProfile(context.Background(), human, command)
+			if err != nil || configured.Profile == nil || !sameAdmissionJSON(t, configured.Profile.Rubrics, command.Rubrics) || !sameAdmissionJSON(t, configured.Profile.Examples, command.Examples) || len(configured.Profile.Delegations) != 0 {
+				t.Fatal("actual typed Taste storage changed explicit human configuration")
+			}
+			read, err := core.ReadTasteProfile(context.Background(), human, "attention", configured.Profile.Version)
+			if err != nil || !sameAdmissionJSON(t, read.Fixed, configured.Profile) || !sameAdmissionJSON(t, read.Current, configured.Profile) || tasteReceiptCount(t, db) != 1 {
+				t.Fatal("actual typed Taste reader changed the configured example or rubric")
+			}
+			assertNoAdmissionExecution(t, db)
+		})
+	}
+}
+
+func TestActualTasteProfileRejectsInvalidTypedExpectations(t *testing.T) {
+	for _, expected := range []string{"unknown", "null", "false", "2", "{}"} {
+		t.Run(expected, func(t *testing.T) {
+			core, db, _, material, _ := readyOpportunityFromPublicGit(t)
+			command := publicTasteCommand(material, "taste-invalid-expectation", 1)
+			command.Examples[0].Expected = expected
+			events, receipts := countRows(t, db, "attention_outbox"), countRows(t, db, "attention_receipts")
+			_, err := core.UpdateTasteProfile(context.Background(), human, command)
+			var reported *apierrors.ServiceError
+			if errors.As(err, &reported) {
+				t.Logf("typed expectation returned service error code=%s", reported.Code)
+			}
+			errorCode(t, err, apierrors.ValidationFailed)
+			if countRows(t, db, "attention_taste_profiles") != 0 || countRows(t, db, "attention_taste_profile_revisions") != 0 || countRows(t, db, "attention_outbox") != events || countRows(t, db, "attention_receipts") != receipts {
+				t.Fatal("invalid typed expectation retained a Taste configuration or success receipt")
+			}
+		})
 	}
 }
