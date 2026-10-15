@@ -2,6 +2,16 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:26 同库装配运行与准确复验输入
+
+原 H 在 F / UI 双安全 ACK 后确认旧 cffac367 / PID45616 已退出且端口清空，随后更新同一 SQLite / LOCALAPPDATA，当前实际运行准确 `b73dc79e7c59a9192ec2bfbd3625a620d8304efb` / modified=false，PID `4676`，启动 UTC `2026-10-15T20:22:58.8651960Z`。本模块实际 GET 首页 HTTP200 / text/html / 562 bytes，独核唯一 `127.0.0.1:64505` listener、稳定 `versions/b73dc79e/astrocyte.exe` 程序路径和启动时间。Q 独立 root 已接原 `cross-day-20261015-0228/local/astrocyte-workbench/v0.1`，current generation 为 `snapshot-1711995690`，没有重新采集或复制旧代。Jev / Laya、原生登记和模型输入状态保持原范围。
+
+M-product 已独验 F SOURCE `1e242e1573b72046adf572bb0874c6f870730636` / REPORT `38acb723bfa04fcb7eed8a69347b8e6c958f6cf7`：准确旧 cffac367 下 Core 七页、Paper 三版本 / 人工摘录、Project r2 和 Proposal / Grant / Context 四项真实 HTTP / DOM / SQLite 检查均 EXIT0，七个真实 event_id 逐一定位；旧认知三端点503、候选 / Mission 为零及首失败保留。唯一 I 已普通消费，组合 `9686801b0bc9843a268d3e8c8f816c16e991011a` 的 typecheck / 定向 eslint 实际 EXIT0。新 b73 的认知和核心后继继续由原 F 在同实例检查，不借旧结果填新来源。
+
+S4 首次在单 H REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 的 production main 启动失败，原89.095秒及日志保留，HTTP / 清理断言未运行。M-relay 已精确确认缺少 S2 SOURCE `4f875b0f8bffc5740e6a1eee828e7e34833226b8` 的 `sqlite/workspace_proposals.go` / `DB.AfterWorkspaceCommit`；完整 I b73 已包含该接口并实际 ready。原 S4 现以精确 b73、新独占 D 目录和真实生产入口复验，当前同库实例保持运行，不重复实现现存接口或放宽提交后通知门禁。清理正向尚未通过。
+
+H 已完成3edd稳定复制、停止读取并归还 I 产物窗口，后续仅在必要同源构建时覆盖。I 独立 REPORT `6a54db5c49b40fadb5488ddaddcb8f330626e59c` 已 push；准确2128的 CompletionExperienceHTTP 实际拒绝边界 / SQLite 重开检查 EXIT0 / 2.336秒，Interpreter 正向仍未运行。H 正继续三项实际目录返修、B 完成桥主入口及既有 human 准入 / OpenAPI 装配。UI SOURCE `f0d27271c15d131aea50012658232f7fa41a142b` / REPORT `7467ddb17ab204172d9656e47c5f82ec0a97d9b2` 和 B 成熟 Origin 解析 SOURCE `bd18df4c57f41b3c880bb47fba98c0deec5135ce` / REPORT `517b3073c803f88c2d7798e3da4ceb876fba03f5` 已交唯一 I 普通消费，实际保存、完整默认和最终包继续按真实结果验收。
+
 ### 2026-10-16 04:23 后继组合与真实目录失败返修
 
 R REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f` 与 B helper REPORT `8179cf9c5074ab26a053fe7f1bfd691b153b4084` 已无冲突普通合入 `7401b302275c7ef6c8dc1dcca133ace263527a2f`。同源目标中 agents 三项主检查与 Works 真实 HTTP / SQLite 重开通过；events `TestRelaySourceIdentityActualFileAndAliasRejection` 在 `relay_session_source_test.go:35` 实际失败，错误为 `workspace_unverifiable`，准确原件 `integration/c16-product-target-7401b30.log` 保留。
