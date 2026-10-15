@@ -1,5 +1,25 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第九阶段：固定项目实际公开
+
+Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b`，模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_9ce12d181768`，原模块 Dispatch `ctx_b1cd2e0a39aa`。根决定 `msg_5691824b3258` 经模块 `msg_d264ae90eaf9` 授权本 owner 将必要的固定任务代码与原历史实际公开；M-relay `msg_c43ffea07b79` 确认沿唯一原 Root，没有其他 remote 或竞争项目。
+
+公开仓库为 [astrocyte-s3-public-stats](https://github.com/songconmaisaix31-design/astrocyte-s3-public-stats)，origin 为 `https://github.com/songconmaisaix31-design/astrocyte-s3-public-stats.git`，默认分支 `main`，准确 SOURCE/baseline 为 `da3bdddb085808863090a05f60cc1c64415039cf`。本地根继续使用 `C:/Users/DW/orca/workspaces/Astrocyte/product-swarm-20261015/.verification/s3-public-stats`。只有 `README.md`、`go.mod`、`stats.go`、`stats_test.go` 四个原固定文件、一个原提交；没有增加文件、改变原历史或预先实现 Median。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| 固定项目 `git status --short`、`git log --all`、`git ls-files -s`、`git remote -v` | 发布前 clean、仅原提交与四文件、无 remote；发布后 clean、仅公开 origin |
+| 固定提交 `git grep -l` 的凭据、私人路径标记检查 | 没有命中；没有输出文件正文 |
+| `gh api user --jq .login` | 当前账户 `songconmaisaix31-design` |
+| `gh repo create songconmaisaix31-design/astrocyte-s3-public-stats --public ...` | PASS，实际建立空公开仓库 |
+| 固定项目 `git push origin da3bdddb085808863090a05f60cc1c64415039cf:refs/heads/main` | PASS，普通 push 原提交 |
+| `gh api repos/songconmaisaix31-design/astrocyte-s3-public-stats`，仅提取公开 metadata | PASS：`visibility=public`、`private=false`、`default_branch=main` |
+| 固定项目 `git ls-remote origin refs/heads/main` | PASS，远端 SHA 精确等于上述 baseline |
+
+创建前的指定仓库 GET 实际返回 404，随后执行授权的创建。创建后首次只读 visibility 查询遇到 `TLS handshake timeout`，保留失败；后一次真实官方 GET 成功，没有重复创建或改写该失败。固定代码与已验证基线完全一致，本阶段没有重复运行应用测试。前阶段业务 SOURCE `10fa36cdd68b3247a70da9230453b74c0f5a04fa` / 独立 REPORT `58f847cac85a05e794d7ad1d19198712a96f256a` 已普通 push，远端一致。
+
+实际 remote、visibility 与 baseline 已交 H `ctx_e7abbaf902da`、F `ctx_4a385bf65390`、M-relay `ctx_bc51f7008918` 和本模块。真实原生动作仍由 R/H/F 按同 controller 空 Message 初始化、实际 source/tool 事实、observer ready、唯一登记和输入的顺序完成。本阶段没有模型输入、原生启动或登记；完整 S3、人工采用和第二任务经验引用继续 `NOT_RUN`，本 Task 尚未结算。
+
 ## 第八阶段当前结果
 
 Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b` 继续原分支与工作树，恢复基线为 `fb57f0f31c4e667b050cb26891a891190eaf4c14`。当前模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_9ce12d181768`，原模块 Dispatch `ctx_b1cd2e0a39aa` 保留为历史。模块已明确恢复基线优先于最初的 `391c617` 起点；只读模块准确文档，不将管理文档合入业务分支。公开 `worker-show` 核当前客户端为 Codex、实际模型为 `gpt-6.1-sol`，本阶段外部模型调用数为零。
