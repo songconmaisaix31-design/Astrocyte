@@ -55,7 +55,7 @@ structured 接入必须取得本次 owned 控制器的初始化和正确会话�
 
 首次输入必须复用上述原控制器和原 native 会话，并通过当前权限 revision、CAS、预算、准确 input operation、来源 guard、实际工具关闭及固定上下文检查。空初始化后的 generic Send 同样必须核查首输入来源，并将实际批准的固定上下文交给本次输入；仅配置回调不能作为运行证据。错误在模型请求前明确拒绝时保留该拒绝；已受理后未知继续占用原 operation，不重复发送、不创建替代会话。重复或并发首次输入不能产生第二次提交。
 
-执行时先完成同会话来源准备，由 F 在同 URL 核空登记基线和 observer ready，H 再唯一登记并保存真实计时起点，F 经既有产品 HTTP 发送一次。当前固定目标仍为公开 Go 项目 baseline `da3bdddb085808863090a05f60cc1c64415039cf` 的四个批准文件，保留 Mean 并实现 Median。初始化与首输入之间的身份、授权和来源变化均须重新核查；后继第二 native / handoff 独立记录，不混入首个三分钟窗口。
+总负责人正式答复 `msg_e8f75be9692e` 确认实际单一 Registry 时序：F 在同 URL 确认空 agents 与 observer ready → H 唯一真实登记并保存当刻 t0 → F CreateIntent / PrepareIntent 以空 Message 初始化同一控制器 → H 核实际正选来源与工具关闭 → F 原 Confirm 提交首次输入。初始化、来源检查和准备耗时全部计入同一个三分钟，t0 不重记；不隐藏登记、不预热其他控制器、不创建第二 Registry 或 generic 替代会话。source guard 必须先于任何模型输入。当前固定目标为公开 Go 项目 baseline `da3bdddb085808863090a05f60cc1c64415039cf` 的四个批准文件，保留 Mean 并实现 Median。初始化与首输入之间的身份、授权和来源变化均须重新核查；后继第二 native / handoff 独立记录，不混入首个三分钟窗口。
 
 非交互 stdin 接入必须符合可信启动策略、实际 argv、原工作区和当前 owned 输入通道。pipe 可写、写入完成、EOF 提交完成、客户端接受与客户端消费是不同事实。stdin_eof 只有一次首输入；关闭后的 send 明确拒绝，不改变 framing 重新投递。实际输入消费没有协议证据时保持 unknown。
 
@@ -106,13 +106,13 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 |---|---|---|
 | 语义领域实现 | 唯一执行权与重复操作；独立输入 / 开始 / 人工完成事实；初始化 / 消费分别记录；真实归属和关系拒绝；旧记录 unknown；权限版本与撤销 | 独立事实 / 人工handoff拒绝阶段 SOURCE1a4f120已交且实际领域检查PASS；working / done待用户答案，当前所有权安全口增补及完整真实链路待交 |
 | HTTP 与 UI 组合 | 正确生成契约、六字段、安全错误；真实 SQLite / HTTP 与权限；F 展示和操作；port0地址与Origin / CSRF / 关闭 | port0真实SQLite / HTTP / CSRF / 关闭独立通过，B/F实际helper消费继续；v1.4组合 NOT_RUN |
-| Relay 两阶段初始化与首输入 | 同控制器空 Message 零模型初始化；准确身份 / operation；来源未就绪及拒绝；首输入重新核权限 revision / CAS / 预算 / tools / source / 固定上下文；并发与未知禁止重发 | 原 R 已获授权优先实现，精确 SOURCE / REPORT 与真实组件结果尚待交 |
+| Relay 两阶段初始化与首输入 | 同控制器空 Message 零模型初始化；准确身份 / operation；来源未就绪及拒绝；首输入重新核权限 revision / CAS / 预算 / tools / source / 固定上下文；并发与未知禁止重发 | SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854` 已交；模块精确快照五项实际边界检查 PASS，原 B SQLite 冷 Registry 断言 RED 保留；真实初始化和首输入 NOT_RUN |
 | 单次真实 CLI | 新公开 scope、准确 owned 控制器、自有 DB、工具关闭、一次明确输入；初始化、接受、开始、结束与人工目标分开；两阶段源码通过后执行 | NOT_RUN |
 | 三分钟 Today | F observer 先 ready，无登记基线；H一次真实登记并保存原始起点；每 native event_id 逐 SQLite 核；实际六字段 HTTP 与两尺寸 firstDOM 时间 | 新窗口 NOT_RUN，旧591116 / 591117毫秒 FAIL保留 |
 | 生命周期全部核心路径 | 实际 EOF / structured、互斥 / 重复 / 通用冲突、working、unknown send、合法目标完成与释放、alternate / previous、publication error；真实拒绝不制造假状态 | 未满足项 NOT_RUN / FAIL，旧默认203PASS / 41FAIL / 32SKIP / 4NOT_RUN保留 |
 | 最终 Windows x64 包 | 原集成人员消费准确 SOURCE / REPORT，在实际 packaged server 自有端口 / DB / scope 核全部适用功能及原生路径 | v1.4最终包 NOT_RUN |
 
-总负责人 `msg_d807dc7e94d0` 已允许先执行本次实际 Codex turn-start 在两种待答规则共同成立的正向链路。准确语义 SOURCE 组合、本次工具关闭和合法来源核实后，原 F 先取得 observer ready，再唯一登记并保存实际计时起点，经现有产品 HTTP 执行单次输入和动作；H核原档与SQL。无开始客户端规则继续待定，人工done仍须先核本次合法输出满足固定目标。单次真实执行出现未知交付后停止重发；旧失败、来源拒绝和每项真实不足独立保留。
+总负责人 `msg_d807dc7e94d0` 已允许先执行本次实际 Codex turn-start 在两种待答规则共同成立的正向链路。准确语义 SOURCE 组合通过后，按第 3 节时序由原 F 先取得空登记 observer ready，H 唯一登记并保存 t0，F 空初始化同一控制器；本次工具关闭和合法来源核实后，F 经现有产品 HTTP 执行单次首输入与动作，H 核原档与 SQLite。无开始客户端规则继续待定，人工 done 仍须先核本次合法输出满足固定目标。单次真实执行出现未知交付后停止重发；旧失败、来源拒绝和每项真实不足独立保留。
 
 固定目标必须能从本次合法来源独立核查。不能用预置短回复、旧成功输出、静态页面、targeted Go通过或 replay 代替实链路、完整默认浏览器或实际发布包。来源拒绝使目标无法核查时明确失败，不先勾选人工目标完成。
 
