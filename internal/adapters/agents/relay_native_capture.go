@@ -247,18 +247,32 @@ func (n *Native) StartRelayOperationWithInputGuard(ctx context.Context, r domain
 	if n.id != "codex" || operation == "" || guard == nil {
 		return r.Session, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.UnsupportedCapability, "first input source checkpoint requires an armed Codex operation")}
 	}
-	return n.startRelayWithGuard(ctx, r, operation, func(ctx context.Context, session domain.NativeSession) error {
+	return n.startRelayWithGuard(ctx, r, operation, n.relaySourceCheckpoint(guard))
+}
+
+func (n *Native) relaySourceCheckpoint(guard RelayBeforeFirstInput) func(context.Context, domain.NativeSession) error {
+	return func(ctx context.Context, session domain.NativeSession) error {
+		p, err := n.get(session)
+		if err != nil {
+			return err
+		}
+		if p.relayCapture == nil {
+			return nativeError(apierrors.DeliveryUnknown, "original source checkpoint was not armed")
+		}
 		// armed capture 的路径来自同次 thread/start 响应，此读取不发 RPC。
 		archive, err := n.OwnedRelayArchive(ctx, session)
 		if err != nil {
 			var known *apierrors.ServiceError
 			if errors.As(err, &known) && known.Code == apierrors.EvidenceMissing {
-				return guard(ctx, session, nil, "archive_not_yet_available")
+				if err := guard(ctx, session, nil, "archive_not_yet_available"); err != nil {
+					return err
+				}
+				return nativeError(apierrors.EvidenceMissing, "selected archive is not yet available before input")
 			}
 			return err
 		}
 		return guard(ctx, session, &archive, "")
-	})
+	}
 }
 
 func (n *Native) startRelayWithGuard(ctx context.Context, r domain.NativeRequest, operation string, guard func(context.Context, domain.NativeSession) error) (domain.NativeSession, error) {

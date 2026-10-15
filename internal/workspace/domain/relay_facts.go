@@ -2,6 +2,12 @@ package domain
 
 import "time"
 
+// 此拒绝发生在模型输入写入前；初始化成功与输入交付分别保留。
+type RelayInputNotSubmitted struct{ Cause error }
+
+func (e *RelayInputNotSubmitted) Error() string { return e.Cause.Error() }
+func (e *RelayInputNotSubmitted) Unwrap() error { return e.Cause }
+
 // 当前所有权只来自此服务仍持有的原控制器，独立于历史事实和活性。
 type RelayCurrentOwnership struct {
 	Status string `json:"status"`

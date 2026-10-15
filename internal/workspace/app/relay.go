@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,6 +25,7 @@ type relayService struct {
 	structured, terminal RelayDriver
 	events               RelayEventSink
 	options              RelayServiceOptions
+	agentsMu             sync.RWMutex
 }
 
 var _ RelayRuntime = (*relayService)(nil)
@@ -32,10 +34,8 @@ func NewRelayService(store RelayStore, works Works, projects LocalProjectReposit
 	if options.Clock == nil {
 		options.Clock = time.Now
 	}
-	// Copy registration data so external mutation cannot change executable policy.
-	data, _ := json.Marshal(options.Agents)
-	_ = json.Unmarshal(data, &options.Agents)
-	return &relayService{store, works, projects, workspaces, structured, terminal, events, options}
+	options.Agents = cloneRelayAgents(options.Agents)
+	return &relayService{store: store, works: works, projects: projects, workspaces: workspaces, structured: structured, terminal: terminal, events: events, options: options}
 }
 
 func relayError(code apierrors.Code, message string) *apierrors.ServiceError {
@@ -60,9 +60,11 @@ func (s *relayService) now() time.Time  { return s.options.Clock().UTC() }
 func relayActor(c domain.Caller) string { return c.Kind + ":" + c.ID }
 
 func (s *relayService) spec(name string) (domain.AgentSpec, error) {
+	s.agentsMu.RLock()
+	defer s.agentsMu.RUnlock()
 	for _, v := range s.options.Agents {
 		if v.Name == name && (v.DriveMode == "structured" || v.DriveMode == "terminal" || v.DriveMode == "both") {
-			return v, nil
+			return cloneRelayAgents([]domain.AgentSpec{v})[0], nil
 		}
 	}
 	return domain.AgentSpec{}, relayError(apierrors.UnsupportedCapability, "selected Agent has no valid relay registration")
@@ -75,10 +77,9 @@ func (s *relayService) ListAgents(ctx context.Context, c domain.Caller) ([]domai
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	items := []domain.AgentSpec{}
-	data, _ := json.Marshal(s.options.Agents)
-	_ = json.Unmarshal(data, &items)
-	return items, nil
+	s.agentsMu.RLock()
+	defer s.agentsMu.RUnlock()
+	return cloneRelayAgents(s.options.Agents), nil
 }
 
 func (s *relayService) snapshot(ctx context.Context, c domain.Caller) (RelayState, error) {
@@ -381,6 +382,8 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 	if effectErr != nil {
 		var archiveFailure *domain.RelayArchiveObservationFailure
 		metadataOnlyFailure := errors.As(effectErr, &archiveFailure)
+		var inputFailure *domain.RelayInputNotSubmitted
+		inputNotSubmitted := errors.As(effectErr, &inputFailure)
 		var known *apierrors.ServiceError
 		if !errors.As(effectErr, &known) {
 			known = relayError(apierrors.DeliveryUnknown, "action delivery could not be verified")
@@ -389,7 +392,7 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 		if metadataOnlyFailure && (r.Action == "dispatch" || r.Action == "send" || r.Action == "resume" || r.Action == "stop") {
 			r.Status = "accepted"
 			known = &apierrors.ServiceError{Code: apierrors.Code(archiveFailureCode(effectErr)), Message: "native operation accepted; archive metadata observation failed", RequiredAction: "inspect_archive_source_without_replaying_input"}
-		} else if known.Code == apierrors.DeliveryUnknown || (!knownUnstarted && r.Action == "dispatch") {
+		} else if !inputNotSubmitted && (known.Code == apierrors.DeliveryUnknown || (!knownUnstarted && (r.Action == "dispatch" || r.Action == "prepare"))) {
 			r.Status = "delivery_unknown"
 			known = relayError(apierrors.DeliveryUnknown, "launch delivery is unknown; no second writer may be started")
 		}
@@ -415,7 +418,7 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 			t.Condition = "delivery_unknown"
 			st.Tasks[t.ID] = t
 		}
-		if knownUnstarted && r.Status != "delivery_unknown" && r.Action == "dispatch" && st.PendingActions[t.ID] == r.ID {
+		if knownUnstarted && r.Status != "delivery_unknown" && (r.Action == "dispatch" || r.Action == "prepare") && st.PendingActions[t.ID] == r.ID && st.Sessions[t.TerminalID].Ownership != "owned" {
 			w := st.Workspaces[t.WorktreeID]
 			if w.ActiveTaskID == t.ID {
 				w.ActiveTaskID = ""
@@ -518,7 +521,19 @@ func (s *relayService) CreateIntent(ctx context.Context, c domain.Caller, cmd Re
 }
 
 func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id string, cmd RelayConfirmCommand) (domain.RelayActionResult, error) {
-	r, fresh, err := s.begin(ctx, c, id, "dispatch", cmd)
+	return s.confirmIntent(ctx, c, id, cmd, false)
+}
+
+func (s *relayService) PrepareIntent(ctx context.Context, c domain.Caller, id string, cmd RelayConfirmCommand) (domain.RelayActionResult, error) {
+	return s.confirmIntent(ctx, c, id, cmd, true)
+}
+
+func (s *relayService) confirmIntent(ctx context.Context, c domain.Caller, id string, cmd RelayConfirmCommand, initialize bool) (domain.RelayActionResult, error) {
+	action := "dispatch"
+	if initialize {
+		action = "prepare"
+	}
+	r, fresh, err := s.begin(ctx, c, id, action, cmd)
 	if err != nil {
 		return domain.RelayActionResult{}, err
 	}
@@ -557,6 +572,24 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 	}
 	if strings.TrimSpace(w.Handoff.Content) == "" {
 		return reject(relayError(apierrors.EvidenceMissing, "complete handoff manual is required"))
+	}
+	if !initialize && v.Task.TerminalID != "" {
+		state, err := s.store.Snapshot(ctx)
+		if err != nil {
+			return reject(err)
+		}
+		if state.Sessions[v.Task.TerminalID].Ownership == "owned" {
+			return s.submitPreparedIntent(ctx, c, r, v.Task, w, p)
+		}
+	}
+	if initialize {
+		spec, err := s.spec(v.Task.Agent)
+		if err != nil {
+			return reject(err)
+		}
+		if _, ok := s.structured.(RelayDriverInitializer); !ok || spec.Name != "codex" || spec.DriveMode == "terminal" {
+			return reject(relayError(apierrors.UnsupportedCapability, "selected path has no verified two-stage initializer"))
+		}
 	}
 	if s.workspaces == nil {
 		return reject(relayError(apierrors.UnsupportedCapability, "neutral workspace provider is not connected"))
@@ -650,6 +683,9 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		return reject(err)
 	}
 	launch.Input = "HANDOFF_MANUAL:\n" + w.Handoff.Content + "\n\nTASK:\n" + v.Task.Description
+	if initialize {
+		launch.Input = ""
+	}
 	launch.OperationID = r.OperationID
 	if s.options.LaunchContext != nil {
 		if _, err = s.permission(ctx, c, v.Task, "read_context"); err != nil {
@@ -676,12 +712,14 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 	var launchErr error
 	if driver == nil {
 		launchErr = &domain.NativePrelaunchFailure{Cause: relayError(apierrors.UnsupportedCapability, "selected drive path is not connected")}
+	} else if initialize {
+		obs, launchErr = driver.(RelayDriverInitializer).Initialize(ctx, launch)
 	} else {
 		obs, launchErr = driver.Launch(ctx, launch)
 	}
 	var prelaunch *domain.NativePrelaunchFailure
 	degraded := false
-	if launchErr != nil && mode == "structured" && errors.As(launchErr, &prelaunch) {
+	if !initialize && launchErr != nil && mode == "structured" && errors.As(launchErr, &prelaunch) {
 		var known *apierrors.ServiceError
 		if errors.As(prelaunch.Cause, &known) && known.Code == apierrors.UnsupportedCapability && s.terminal != nil {
 			degraded = true
@@ -698,7 +736,7 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 		terminal := st.Terminals[t.TerminalID]
 		terminal.DriveMode = mode
 		st.Terminals[terminal.ID] = terminal
-		if relayNativeEffectAccepted(launchErr) {
+		if !initialize && relayNativeEffectAccepted(launchErr) {
 			s.move(st, &t, domain.RelayAccepted, relayActor(c))
 		}
 		// A proven unstarted process is not an observed process exit. Its durable
@@ -864,6 +902,9 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 	if action == "send" && (view.Task.Condition == "delivery_unknown" || view.Terminal.ExitedAt != nil || view.Task.State == domain.RelayDone) {
 		return reject(relayError(apierrors.VersionConflict, "task cannot accept another input"))
 	}
+	if action == "send" && view.Task.State == domain.RelayReady {
+		return reject(relayError(apierrors.VersionConflict, "initialized task requires explicit dispatch confirmation before input"))
+	}
 	if action == "resume" && (view.Terminal.ExitedAt == nil || view.Task.State == domain.RelayDone) {
 		return reject(relayError(apierrors.DeliveryUnknown, "resume requires a confirmed exit of the original task"))
 	}
@@ -878,7 +919,7 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 		if current.TerminalID != launch.Terminal.ID || current.WorktreeID != launch.Workspace.ID || st.Workspaces[current.WorktreeID].ActiveTaskID != id || current.State == domain.RelayReleased || st.ControllerEvidence[id].ControllerID != launch.ControllerID || session.ID != launch.Session.ID || session.NativeID != launch.Session.NativeID {
 			return relayError(apierrors.VersionConflict, "task controller or reservation changed before execution")
 		}
-		if action == "send" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil || current.State == domain.RelayDone) {
+		if action == "send" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil || current.State == domain.RelayDone || current.State == domain.RelayReady) {
 			return relayError(apierrors.VersionConflict, "task cannot accept another input")
 		}
 		if action == "read" && terminal.DriveMode != "terminal" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil) {
