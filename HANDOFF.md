@@ -2,6 +2,10 @@
 
 ## 当前执行入口（2026-10-16）
 
+00:35 三模块已实际恢复并读取当前入口：M-product `ctx_76ef94015349` / `term_f9466086-7599-4f16-b9d8-a615a4e4a7ba`，M-relay `ctx_114d68a5f971` / `term_b8c2e97f-b3ca-4146-a0a5-4e1fc648cc4a`，M-release `ctx_33f48c269580` / `term_6c9ec2c9-6b29-4745-ad63-6452fa7907df`。公开 projection 独核三者均 Codex / `gpt-6.1-sol`、live / working，各继续原子 Run；发布负责人在读取新入口前创建的 `run_9ede59f72848` 保持空，不用于派发。
+
+主控独立读取精确 I SOURCE `23672247d340e80c233951afdce7155b7fa66b1c` 的 CI `38768919397`：Windows 和 Ubuntu 均 completed / failure，`pnpm check` 在 gofmt 阶段失败，Windows 为 `internal/adapters/sqlite/workspace_proposals.go`，Ubuntu 另有 `internal/attention/app/admissions_service.go`。后续测试、构建和浏览器阶段未运行。已交 M-product 安排原 S2 / B 使用文件编辑工具修复，M-release / 唯一 I 核本机中断结果并消费准确后继，不越域修复或重复成功检查。根管理 `31057ea9415c241dc981d2e58a3a0fe512f218ef` 与 I 当前完整 SHA 均已独立核远端同值。
+
 00:30 本轮恢复：用户要求继续总控 Agent 并完成任务。当前 runtime `289612e9-b83c-4f70-80ab-1e360c8ff7e5`、app PID 24148，主控 `term_325a9aca-4a77-4e2c-93ed-cae95acd628c` 已普通绑定原 `run_973808dd6a2f` generation 30。原三模块 Dispatch 已由运行时结算 abandoned / failed，原三 Task 为 ready；公开清单无原模块和开发终端。继续原 Task、原工作树、原分支及 WIP；原任务正文的旧身份、create 子 Run 和旧集成顺序由本入口替代，不新建替代 Run。模块负责人只写原管理文档，原领域人员继续业务与返修，主控只协调、验收和最终 Git。
 
 恢复分工：M-product 沿原 `run_dbf1a68bc692` 及 `run_7b2ce96bcd13` 恢复 B / F / S2，D 盘入口已交后恢复原 UI / T / S3；M-relay 沿 `run_8bbda1c3974c` 恢复原 R / H / S4，优先完成 H 真实 GoalVerificationReader 与 B 对象事件接缝；M-release 沿 `run_aa4e6a119547` 恢复唯一 I / 原 S5，核中断检查，再协调 P / N 同源包和正式 V4 实际运行。旧临时冲突权限已结束，新的跨树编辑先取得准确互斥交接。全部恢复先核原 Task 和实际生命周期，不重送未知输入，不重复成功推理，不增加第四层。
