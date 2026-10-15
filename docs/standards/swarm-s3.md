@@ -1,5 +1,26 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第十八阶段：首次认领消费真实准备记录
+
+Task `task_da9aebf03f83` / Dispatch `ctx_463188124a36` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349` 交付 SOURCE `a9d7c5d1e8403a4a63057288ed049d41fca79a76`，前置为第十七阶段的九字段契约。只修改本域 `internal/adapters/sqlite/swarm_native.go` 和原参数测试。客户端 / 实际配置模型为 Codex / `gpt-6.1-sol`，没有新原生初始化、模型输入或实际准备记录。
+
+R `msg_f7699e9a4cae` 已明确后继适配对象同时实现原 `RelayMemberEvidenceSource` 与已发布的 `RelayPreparedInputReader`，成员 / 停止仍委托原 Registry，准备读取核对 B 同事务元数据和原 Registry 内存身份。本域只从同一个实际成员证据源取得准备读取接口。缺少原租约的新认领必须成功读取真实未发送准备，再复用原 tuple 检查核对 session / native / CLI / project / root / controller / startup / input；原 ActorKind / ActorID / ActorProjectID 须对应当前认证 Agent 及 S2 已授权成员，PreparedAt 须为真实非零时间，session 须保持 owned 且未确认停止。
+
+已有 input 受理、原 turn 标识 / 受理时间、结果或失败观察均拒绝事后补建租约。原有租约继续核对原 binding / member version / holder / operation / native tuple，不将已发送状态重新解释为首次准备。准备是否仍未尝试发送由原 R / B 真实读取端口确认，不根据 `InputAccepted=false`、任意 UUID 或私有状态猜测，也不读取输入正文或将两类 ContextPacket ID 等同。实际源尚未提供准备读取接口时返回 `unsupported_capability`；当前部署未因本阶段参数规则变成可执行。Known / Calls 与 human 代表 member 关系保持未决定，预算及最终 Claim CAS 规则保持。
+
+新增参数检查包括一组一致的准备关系和二十七组拒绝条件：原 actor / 项目缺失或变化、human、时间缺失、已停止或非 owned 会话、原 tuple 变化、已受理或结果事实、其他当前 Principal。全部通过；这些参数检查不创建 Registry、原生协议、会话或持久准备事实，不作为实际 Claim 或 AT08 正向验收。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 ./internal/workspace/domain -count=1 -timeout=120s` | PASS；领域、真实 S2 批准链 / 幂等 / 撤销 / 重启及私有契约 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarm(Actual\|Native)' -count=1 -timeout=180s` | PASS，15.104 秒；原实际 SQL / Git / Go、唯一租约与预算事务，以及本阶段参数规则 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，3.533 秒；实际 listener、生产路由、认证与 SQLite |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3`、`go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、两个修改文件的 `gofmt -l`、`git diff --check` | PASS；33 包，格式检查无输出 |
+| `git push origin HEAD`、`git ls-remote --heads origin songconmaisaix31-design/product-swarm-20261015` | SOURCE 普通 push 成功，远端完整 SHA 相同 |
+
+本阶段检查首轮均通过，原阶段首 RED / UNKNOWN / NOT_RUN 保留。实际日志在 D 盘专用目录的 `prepared-consumer-domain-first.log`、`prepared-consumer-sqlite-first.log`、`prepared-consumer-http-first.log`，Go cache / 临时目录沿前阶段配置。R 适配实现与 B 实际 Prepare / Send 仍待准确源码和 H 装配，当前未实例化未提交适配器、未以 B reader 代替原 Registry。真实 owned 双观察、首次 Claim / 同 operation Send、两个实际 Agent、接续 / 交接、人工采用和六步经验首跑仍 NOT_RUN，Task 继续。
+
 ## 第十七阶段：原准备记录的私有读取契约
 
 Task `task_da9aebf03f83` / Dispatch `ctx_463188124a36` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349` 交付准确消费 SOURCE `4c0fc8332eeb9549be6a7b3dc0b140a3df2f5e79`。首次按模块 `msg_b2c69d8bcce7` 消费 R 独立 SOURCE `a165fae709e212be4e98c96b326552da739985d0` 为 `b28542469473f75ab1813348f773a7873210f20c`，独立报告为 `da5bb21f3d85dcbd2ed261b7cd0639d354535235`。后继按正式答复 `msg_999fe98055ff`，在 clean `da5bb21` 检查点用文件编辑工具原样消费 R SOURCE `8947ff7e36415da07a0eb85c103b722713460356` 的 `internal/workspace/domain/relay_prepared_input.go` 和原隐私测试，保留真实 ActorProjectID 与明确未发送边界。两完整文件与准确原件 diff 为零，普通提交及 push 成功，远端完整 SHA 相同。模块同时授权后继同两文件的 R 已提交 SOURCE 连续原样消费，每次须原树安全、目标无 WIP、完整 diff0 并普通提交 / push，内容冲突或语义不符交原 R / 模块；维护仍归 R，范围不扩大。客户端 / 实际配置模型为 Codex / `gpt-6.1-sol`，本阶段没有原生初始化或模型输入。
