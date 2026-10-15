@@ -26,6 +26,18 @@ P 新 Task `task_3347b755071e` / Dispatch `ctx_d20c14245ccd` / 终端 `term_365b
 
 管理 SOURCE `4cac31e93b85d115c1177633c39fbfb2131ff88c` 已普通 push，独立 `git ls-remote` 返回同完整 SHA；该 SOURCE 恰有四个根明确授权管理文件，`git diff --check` / staged diff 检查通过。后继管理记录追加独立 REPORT，不重复产品测试，不把启动回执、冲突清除或许可文档提升为最终包通过。
 
+### 11:21 判断 HTTP、委托规则与分发边界
+
+S5 SOURCE `bc5ffc910b660d6ae9084234ffc8ced8e265cbc5` / 独立 REPORT `cd8cb2d36d4640f1d313de67d402cf00779236a2` 已普通 push；本模块独核远端同 REPORT、SOURCE 祖先、十一件允许文件及单文档 REPORT，完整阅读第三阶段与真实测试源码。原 S5 报告三项真实测试 `23.942s PASS`：原 HTTP human session / 实际资料导入、规则结果与五版本缓存失效、五类人工反馈重开、真实 token 撤销、同事务 SQLite 主键失败完整回滚、两个公开 worktree 与未提交变化隔离。该范围没有模型参与，不能替代判断公共 HTTP、OS、Jev 或 delegated 准入。
+
+根 `msg_b714848879ee` 指定 S5 独占 `internal/adapters/httpapi/judgment*.go` 及同前缀测试。H 本人 `msg_718c87bf6e11` / `msg_b1aa0468b2d3` 与 B 本人 `msg_64603e094464` 均明确该前缀零 WIP 并停止写入，已以 `msg_ac970afa4f68` 放行原 S5。H `msg_80eab93afa9a` 已确认六类 project 路径、严格 project 一致、现有 schema_version=1 envelope、localCaller / CSRF / grant、human 写与 Agent 仅 evaluate / read / history；H 利用自己现有 `relayScopedWorkspaceRoute` 扩展准确白名单，无需修改 B 的 session.go。S5 handler 与 H 的 `cmd/server/judgment*.go` / Services / main / server / OpenAPI 薄装配分域，准确 DTO / factory / 配置沿精确 SOURCE 交接。
+
+根正式答复确认 SPEC §5.3 / §7.1 / §11.1 / §11.4 的 DelegationRule、用户逐项开启与固定 Opportunity 版本属于已授权功能。S5 实现版本化真实规则、业务绑定及可信 authorizer；实际范围、后端、语言、预算、复核条件与必要阈值由用户在产品运行时显式配置，缺配置拒绝，不默认开启。Result 保持 recommend / abstain / need_evidence，三题型保持 choice / score / truth，opportunity_admission 仅为 purpose。可信适配器从实际持久化 workflow、固定 opportunity ID / revision、owner、Rule 版本与 admit 候选映射取事实，在 B 既有同事务 Context 重核后生成 AdmissionJudgmentProof；普通 Agent 不能自行填写 proof。准确 B DTO SOURCE 为 `ddfae290e3b0cf468af9aeaa98c5bdf39ea1604d`，S5 准确 DDL 交 B 唯一迁移。暂停 / 撤销 / 版本变更 / 拒答 / 截断 / 缺项均须真实验证，未作为通过。
+
+P 已报告固定 AOCI `45990a1dcfc4415efdc6fbfa13bc159a415f127c` 的实际 LICENSE / NOTICE 和具体文件；根独核后确认当前 FSL-1.1-MIT，并已向用户询问本次公开包的显式外置配置、非商业科研分发或已有适用作者授权。答案未到，AOCI 随包方式保持未决定，不默认某方案或联系作者。P 继续其他明确许可组件、当前本地适配和中性配置接口；最终 README / license / 功能验收必须匹配用户决定。
+
+P 当前已实际本人接管，projection 为 Codex / gpt-6.1-sol / live / working、终端 xhigh fast。SOURCE / 独立 REPORT `4cac31e93b85d115c1177633c39fbfb2131ff88c` / `04131b4e5c7c0ca4b537c873f735fad18db144f2` 已独立核远端同 REPORT 且 clean；此后本模块继续管理记录，不修改业务代码或正式数据。
+
 ### 10:20 Runtime 重启后恢复
 
 当前实际 Task `task_315679474dc4` / Dispatch `ctx_744d9ac00043` / 终端 `term_4f1b7b90-da3c-4a1e-bf87-4e0695fe410b`，管理客户端为 Orca CLI / Codex，实际终端显示 GPT-6.1-Sol xhigh fast。接管 HEAD `fbe2a8e494d58e62769191d1016bfa3a9ac358e9`、原分支与工作树 clean。按根最新交接 `msg_fe37149e5f6a` 恢复原子 Run `run_aa4e6a119547` generation 2；读取该消息前依旧启动正文创建的 `run_aca0907e6744` 没有 Task 或 Worker，不用于本轮派发。当前只修改本文及今日运行记录，保留已有其他文件。
@@ -52,9 +64,10 @@ S5 模型资产继续由唯一 S5 执行者使用 `D:/Astrocyte-agent-assets/202
 | P 最终包 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**`、`docs/release/**` | 原阶段已 released，无同域人员。只对 I 最终精确 SOURCE 标准 archive 重建；新目录解压、隐私扫描、实际读写 / 重启、非空认知和最终 native 全部验收；保留来源、完整 SHA、路径、字节数及首失败。 |
 | N 最终包原生验收 | 原 `release-native-verification-20261014` / 同名原分支；`tests/release-package-native/**`、`docs/release-package-native.md` | 原阶段已 released。最终 v1.4 来源、准确 API / CLI、最终包与 H/F 串行窗口明确后新 Task 恢复；只用真正 packaged server、独立数据 / 端口及获准公开任务。unknown 不重发，不派第四层。 |
 | S 新阶段一手科研依据 | 原 `release-research-20261014` / `songconmaisaix31-design/release-research-20261014`；仅 `docs/release-research.md` | Task `task_ec1f2cb096b1` / Dispatch `ctx_980d42612042` 已唯一succeeded / 官方released / captured，SOURCE1f617 / 独立REPORTde9 / 远端一致与文档检查已核；实际Codex gpt-6.1-sol。研究准确来源已交产品和当前S2，未写业务或解冻。 |
-| S5 判断适配 | 固定 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015`；准确域见下方 | 原 Task `task_1d3e15a66b2a` 恢复唯一 Dispatch `ctx_e200fb7cf3c4` / 终端 `term_ed38814f-92fb-4acf-aff6-cb9fd0a6b71a`，实际 Codex / GPT-6.1-Sol xhigh fast，depth2。首次 input_accepted / turn_start_unobserved 保留；有界文本确认任务仍在 composer，无 Working，原终端单次 Enter 后实际 assistant 回合及 Working 已核。最新恢复指令 `msg_47dce959c202` 已入准确 child FIFO；先再次确认共享 18 件停止写入，由原作者解决后继续。Jev key 待用户，本地其余实现继续。 |
+| S5 判断适配 | 固定 `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015`；准确域见下方 | 原 Task `task_1d3e15a66b2a` / 当前唯一 `ctx_0a7797464f02` / `term_7856a4de-9184-4c83-a958-3aa732e3d69b`，实际 Codex / GPT-6.1-Sol xhigh fast、depth2。十八件已原 B/S2 归还且独核零冲突，普通 merge 512fa 已 push；私域 SOURCE bc5 / 独立 REPORT cd8 已独核，真实三项规则 / SQLite / cache / 反馈 / 权限阶段通过。判断 HTTP 精确前缀已获 H/B 本人零 WIP 确认并放行，OS / Jev / delegated 准入按真实待定继续。 |
 | Q 公开工程跨日刷新 | 原 `release-cognition-20261014` / `songconmaisaix31-design/release-cognition-20261014`；`cmd/workbench-snapshot/**`、`tests/release-cognition/**`、`docs/release-cognition.md` | Task `task_d3bdc107395a` / 最终 Dispatch `ctx_54b33a3986f9` 已 succeeded / released / captured。精确 SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / 独立 REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7`；公开 1,316 事件、今日 52 / 前日 74、两个主题、一次原 Sleep、preSleep / main / closed 三份 safe admission PASS 已独核。保留原阶段与首失败，不重采、不增加 Sleep。 |
-| 发布组件许可记录 | 原 `release-research-20261014` / 原分支；只新增 `docs/release/components-20261015.md` | P当前Build-Windows只复制项目LICENSE，新S4/S5许可记录缺口由根 `msg_2b7cd779bafa` 授权的简单任务负责。原 Task `task_08d2ca49a825` 在原树恢复唯一 Dispatch `ctx_2190424f2cf0` / 终端 `term_cc1aeeeb-b23b-4000-a288-e561a60fd200`，指定 OpenCode1.18.35 / `alibaba-cn/deepseek-v4.1-flash` 已 TUI ready / input_accepted，turnStart observation unsupported。只核固定 SDK / runtime / 模型 LICENSE/NOTICE 及 Jev 云边界，给 P 配置和包入口 Handoff；不选择未答组件或分发方式、不替代运行验收。 |
+| 发布组件许可记录 | 原 `release-research-20261014` / 原分支；只新增 `docs/release/components-20261015.md` | 原 Task `task_08d2ca49a825` / 当前唯一 `ctx_c9d28891657d` / `term_63d7be11-6caf-4ad6-9206-8ecab071a370`，OpenCode 1.18.35 / `alibaba-cn/deepseek-v4.1-flash` 由显式 argv 与实际 TUI 核实，真实工具执行中。只核固定 SDK / runtime / 模型 LICENSE/NOTICE 及 Jev 云边界；与 P 准备并行，不选择未答组件或分发方式、不替代运行验收。 |
+| P 后继打包准备 | 原 `release-package-20261014` / `songconmaisaix31-design/release-package-20261014`；`release/**` 与发布说明 / 报告，排除 Flash 组件文档 | 新 Task `task_3347b755071e` / 唯一 `ctx_d20c14245ccd` / `term_365b9dc3-eaf8-414f-82c0-4e87f96fda73`，实际 Codex / gpt-6.1-sol / live / working，终端 xhigh fast。必要标准资产、许可、配置与打包实现继续；最终 I 前不 archive，不重复旧候选。AOCI 具体条款 / 文件 / 方案已正式问根，未答不决定纳包或外置。 |
 
 P/N恢复均创建新Task / Dispatch，先核实际工作树、分支、clean和旧资源released；不向旧Dispatch发送新任务。Q保留已接纳终稿与旧出版代，按根当前明确跨日工程输入授权在原独占域恢复唯一新任务。科研S已完成并释放，许可记录的新Task只新增独立文档。日预检文件写域为空，与本模块管理文档互斥；原始输入 / 响应 / 日志只留已有外部证据根，Git、MCP与stdout只记录派生计数。
 
