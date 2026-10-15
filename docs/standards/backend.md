@@ -467,6 +467,36 @@ SOURCE `1308702f9ce8133404588aa0509f343b1292e186` 已普通 push。原 `paper_sn
 
 全部 `internal/attention/app/*_test.go`（包括既有规则测试）由 T 唯一持续维护，B 当前该域零 WIP 并停止写入；SOURCE `5866b52` 已提交规则贡献完整保留并已交 T，没有改写公共历史。当前 H 沿既有对象 / 事件 API 在原 `events/relay_goal*.go` 实现薄 Reader，B 不新增重复存储 API。原完整 Go / E2E、冷 Registry 及实际完成经验组合限制继续保留。
 
+## 当前项目权限事务与 Vite 实际冷启动
+
+SOURCE `c60479619b0c992fe3e2fe42fa0ee68b217a5115` 已普通 push。项目、Grant 与原生会话的八项 SQLite 方法复用当前 `WorkspaceTransaction` 的同一连接；错误数据库的事务 Context 直接拒绝，列表关闭错误直接返回。没有新增表、缓存或事务协调系统。实际项目注册、空间创建、授权、空会话列表和缺失会话读取均沿原生产接口执行。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^(TestLocalProjectUsesActualWorkspaceTransaction|TestLocalProjectRejectsAnotherActualDatabaseTransaction)$' -v -count=1` | EXIT 0，2 项主检查、2 项提交/真实约束回滚子项通过，21.638s；`.verification/local-project-actual-transaction-first.log` |
+| `go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestNativeSessionUsesActualWorkspaceTransactionWithoutModel$' -v -count=1` | EXIT 1，原 `thread/start` 回复期限触发 `delivery_unknown`，测试 22.56s、包 36.184s；`.verification/native-session-actual-transaction-first.log` |
+| `go build -mod=readonly -p=2 ./...`、目标项目/SQLite 包 `go vet -mod=readonly -p=2` | EXIT 0；`.verification/local-project-context-{build,vet}-first.log` |
+
+同数据库检查核实 `WaitCount` 没有增加，真实主键冲突使空间、项目、授权、回执与 outbox 一起回滚；错库、取消和关闭存储直接失败。原生首失败的自有目录为 `D:/Astrocyte-agent-assets/20261015/backend/s1-verification/accepted-experience-actual-1544338517`；没有模型输入、自动重发或补造停止证据，后续原会话保存、重开断言仍未执行。准确 SOURCE 和首失败已交 R；该结果不作为原生会话事务正向验收。
+
+SOURCE `0b69db66c826fa822ef31d8b7e965c03b53ee983` 已普通 push。Vite 8.3.4 的真实 WebSocket 绑定自有 HTTP listener，使用实际分配端口；`vite_ready` 前完成真实依赖扫描、index 和入口模块转换及既有请求处理。初始化期间收到的 HTTP 请求仍由原中间件处理。新增的并发检查通过两个实际 Vite、实际 Go HTTP、真实 SQLite 与 Node WebSocket 完成，不使用替代服务。
+
+| 实际命令 | 结果 |
+|---|---|
+| `node --test tests/s1/vite-readiness.test.mjs`，SOURCE 修改前 | EXIT 1，真实 WebSocket 连接失败，10.962s；`.verification/vite-owned-readiness-first.log` |
+| 同命令，SOURCE 修改后 | EXIT 0，1 PASS、0 SKIP，78.484s；`.verification/vite-owned-readiness-second.log` |
+| `node --test tests/s1/server-lifecycle.test.mjs tests/s1/development-lifecycle.test.mjs tests/s1/vite-lifecycle.test.mjs` | EXIT 1，6 PASS、1 FAIL、0 SKIP，398.308s；`.verification/vite-initialization-lifecycle-current-first.log` |
+| `node --test tests/s1/development-lifecycle.test.mjs`，显式 `GOMAXPROCS=2`、`GOFLAGS=-p=2` | EXIT 1，0 PASS、1 FAIL、0 SKIP，65.153s；`.verification/development-actual-limited-go-first.log` |
+| 两个变更 Node 文件语法与 working / cached diff 检查 | EXIT 0 |
+
+双冷服务目录为 D 盘 `astrocyte-s1-uqSwrm`、`astrocyte-s1-rMdClO`。普通/Relay 服务重开、绑定冲突、提前 HTTP 请求及初始化失败检查通过；development 仍在原 60 秒就绪期限失败，原期限和断言保持。失败日志只证明 API 已返回健康响应且 Vite 已加载配置，后续阶段没有完成，当前原因未确定。完整 UI、默认 E2E 和开发命令验收继续为 RED。
+
+按模块精确授权并收到安全 ACK，B 在 I 树仅编辑和 stage `scripts/vite-server.mjs` 的单件冲突，与准确早期 SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872` 的该件完整 diff 为零；没有夹带后续冷启动改动。Node 语法、working / cached diff 检查通过，U0，准确 stage blob 为 `96cf281adc902525cb8a4588edbb8630b48d83f6`。原 HEAD `f3c2e0722cae7c36ecc5ca97602ac1b0684e6483` 和 MERGE_HEAD `1d6238d0dbfb45d5c29fe17e70e3bf5350e02b6e` 保持，单件写入和进程访问已经停止归还。
+
+H 的原 Redocly Windows libuv 终止日志完整保留。针对准确 H OpenAPI 的官方 CLI、原 `runTool` 及实际畸形 YAML 拒绝诊断均 EXIT 0，分别见 `.verification/redocly-h-exact-network-off-first.log`、`redocly-h-exact-process-first.log`、`redocly-process-actual-first.log`；这些诊断未复现原终止，不能确定其原因。没有提交 Redocly 配置或依赖修改，没有继续重复运行；临时诊断脚本保存在已忽略的 `.verification/`。
+
+F 下一次自然验证所需公开论文输入目录及四件获准 HTML 已准确交接；没有授予同目录其他原件读取权限。Completion 完整来源读取移到事务外、同事务当前权限复核的方向已获模块授权，准确新增接口仍等待 R/H 确认；原生 Prepare/Claim/Send 继续按 R/S3 原类型协作，当前未创建准备记录或模型请求。上述两项业务组合验收保持 NOT_RUN。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
