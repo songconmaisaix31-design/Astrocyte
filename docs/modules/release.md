@@ -18,6 +18,12 @@
 
 23:51 实测 C / D 空余分别 `10,665,730,048` / `80,765,390,848 bytes`，未清理或移动任何证据。新增验证由原 B helper 提供 D 盘入口，Go / Node / PowerShell 父子进程显式使用 D 盘 GOCACHE / GOTMPDIR / TEMP / TMP；大型 C 盘检查暂不启动。I 现有 `D:/Astrocyte-agent-assets/20261015/integration/run-validation.ps1` 先核实际环境与输出后使用。顺序保持四树组合 → 集成版 L1 → L2 六步，正式锁、日程、预算与人评边界保持。
 
+23:57 原 I 已恢复 `ctx_29518fe03538` / `term_3e0c581c-df78-4af4-beb6-92048d95c4a3`，原 S5 已恢复 `ctx_fc76cd365979` / `term_e97bed01-dfae-496b-81a2-402c5d06aec9`。官方首次 ready / turn_started 后，文本核查发现任务仍在 composer，各仅补一次 bare Enter；后继公开 fleet 核两者 live / working、Codex / `gpt-6.1-sol`，终端均 xhigh fast，未重送正文或另建同域 Task。首次未带 `--from` 的 I 启动被 CLI 在创建前拒绝，随后使用本人精确句柄启动原 Task，没有产生额外 Dispatch。
+
+I 本人安全 STOP `msg_068eac76c5ae` 已确认六件未编辑 / stage、全部 merge 生命周期停止。M-product 已取得原 S2 `ctx_17fb6df5098e` 本人 `msg_ceea917d556e` 新安全 ACK，本模块 `msg_8b4512930a6a` 明确仅放行该原作者在 I 树六件 edit / stage；完成本人停止 I 树全部写入归还后，再独核 U0、普通及 cached diff，仅 I 继续当前 R merge。H 可消费阶段 SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` / REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60` 由 M-relay 当前负责人再次确认，现有 LaunchContextReader WIP 不作为提交消费。
+
+根 `msg_1876b25dc7a7` 允许核安全可重建缓存迁移 D；本轮只读核原 Go cache 为 816 文件 / `3,056,811 bytes`，I 的 `dist` 与 `web/dist` 已是指向 D 盘准确构建目录的 junction。没有新确认的可迁移大缓存，本轮不迁移或清理；原数据库、会话、模型、日志、源码与 Git 保留。原 S5 成功推理和 Close 结果由当前唯一作者继续核准确原件，当前未重复推理。
+
 ### 21:57 用户决定与当前第一优先集成
 
 根 `msg_e33689cdd5f6` 转达用户最新顺序：① B / F / R / H 四树普通收拢与组合验证 → ② 集成版 L1 真实收账 → ③ L2 经验管道 → ④ 六步流程端到端首跑。10-22 是 L2 验收的目标日期，相关功能进入发布包；实际验收保持逐项完成。当前唯一 I 立即准备并消费已提交的准确阶段来源，未完成领域由原 owner 持续交准确 SOURCE / 独立 REPORT 后普通消费。
