@@ -8,6 +8,7 @@ import (
 )
 
 type GrantCheck struct {
+	BindingPurpose   string
 	Usage            domain.Usage
 	ExecutionRoot    string
 	BindingIDs       []string

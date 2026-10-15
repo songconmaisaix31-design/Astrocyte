@@ -395,7 +395,7 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 	var descriptor ExecutionDescriptor
 	err = s.authorized(ctx, p, c.MissionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
 		var err error
-		descriptor, err = s.execution(ctx, p, Member{Purpose: "claim_work_item", BindingID: c.BindingID, OperationID: c.OperationID, HolderID: p.ID, SessionID: c.SessionID, ProjectID: g.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion})
+		descriptor, err = s.executionForGrant(ctx, p, g, Member{Purpose: "claim_work_item", BindingID: c.BindingID, OperationID: c.OperationID, HolderID: p.ID, SessionID: c.SessionID, ProjectID: g.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion})
 		if err != nil {
 			return err
 		}
@@ -585,7 +585,7 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 			if lease.MissionID != c.MissionID {
 				return domain.Failure(apierrors.ScopeDenied, "lease belongs to a different mission")
 			}
-			descriptor, err = s.execution(ctx, p, Member{Purpose: "submit_artifact", BindingID: lease.BindingID, OperationID: lease.OperationID, HolderID: p.ID, SessionID: lease.SessionID, ProjectID: g.ProjectID, Worktree: lease.Worktree, Version: lease.MemberVersion})
+			descriptor, err = s.executionForGrant(ctx, p, g, Member{Purpose: "submit_artifact", BindingID: lease.BindingID, OperationID: lease.OperationID, HolderID: p.ID, SessionID: lease.SessionID, ProjectID: g.ProjectID, Worktree: lease.Worktree, Version: lease.MemberVersion})
 			return err
 		})
 	})

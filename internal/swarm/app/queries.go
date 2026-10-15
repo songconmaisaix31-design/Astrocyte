@@ -144,7 +144,7 @@ func (s *Service) SelectWorkItems(ctx context.Context, p domain.Principal, missi
 	member.Purpose = "claim_work_item"
 	out := []domain.Candidate{}
 	err := s.authorized(ctx, p, missionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
-		descriptor, err := s.execution(ctx, p, member)
+		descriptor, err := s.executionForGrant(ctx, p, g, member)
 		if err != nil {
 			return err
 		}
