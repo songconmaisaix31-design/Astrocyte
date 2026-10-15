@@ -42,7 +42,10 @@ func newAutomaticHTTP(t *testing.T) *automaticHTTP {
 	if err != nil {
 		t.Fatal("resolve public worktree")
 	}
-	evidence := filepath.Join(root, ".verification")
+	evidence := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if evidence == "" || !filepath.IsAbs(evidence) {
+		t.Fatal("ASTROCYTE_TEST_OUTPUT_ROOT must name an explicit absolute owned evidence directory")
+	}
 	if err = os.MkdirAll(evidence, 0700); err != nil {
 		t.Fatal("create evidence root")
 	}

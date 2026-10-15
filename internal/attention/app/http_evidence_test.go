@@ -76,11 +76,7 @@ func (e *evidenceTransport) RoundTrip(request *http.Request) (*http.Response, er
 
 func captureResponses(t *testing.T, client *http.Client) {
 	t.Helper()
-	root, err := filepath.Abs("../../../.verification")
-	if err != nil {
-		t.Fatal("resolve raw HTTP evidence root")
-	}
-	dir, err := os.MkdirTemp(root, "public-http-")
+	dir, err := os.MkdirTemp(evidenceRoot(t), "public-http-")
 	if err != nil {
 		t.Fatal("create raw HTTP evidence directory")
 	}

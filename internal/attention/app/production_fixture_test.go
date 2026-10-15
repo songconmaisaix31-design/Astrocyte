@@ -73,16 +73,21 @@ func meta(key string, version int) CommandMeta {
 	return CommandMeta{SchemaVersion: 1, RequestID: "request-" + key, IdempotencyKey: key, ExpectedVersion: version}
 }
 
-func fixture(t *testing.T) (*Service, *sqlite.DB, *observedObjects) {
+func evidenceRoot(t *testing.T) string {
 	t.Helper()
-	root, err := filepath.Abs("../../../.verification")
-	if err != nil {
-		t.Fatal("resolve evidence directory")
+	root := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if root == "" || !filepath.IsAbs(root) {
+		t.Fatal("ASTROCYTE_TEST_OUTPUT_ROOT must name an explicit absolute owned evidence directory")
 	}
-	if err = os.MkdirAll(root, 0700); err != nil {
+	if err := os.MkdirAll(root, 0700); err != nil {
 		t.Fatal("create evidence directory")
 	}
-	dir, err := os.MkdirTemp(root, "attention-")
+	return root
+}
+
+func fixture(t *testing.T) (*Service, *sqlite.DB, *observedObjects) {
+	t.Helper()
+	dir, err := os.MkdirTemp(evidenceRoot(t), "attention-")
 	if err != nil {
 		t.Fatal("create owned test directory")
 	}

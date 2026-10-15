@@ -192,11 +192,7 @@ func TestMutableImportCommandsReadUpdatedContent(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctx := context.Background()
 			_, db, objects := fixture(t)
-			root, err := filepath.Abs("../../../.verification")
-			if err != nil {
-				t.Fatal("resolve owned export directory")
-			}
-			dir, err := os.MkdirTemp(root, "mutable-export-")
+			dir, err := os.MkdirTemp(evidenceRoot(t), "mutable-export-")
 			if err != nil {
 				t.Fatal("create owned export directory")
 			}

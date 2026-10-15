@@ -156,3 +156,102 @@ func TestCurrentGoalGuardSharesAttentionCommitRollbackAndReopen(t *testing.T) {
 	}
 	assertNoAdmissionExecution(t, reopenedDB)
 }
+
+func TestCurrentGoalGuardSharesTasteCommitRollbackAndReopen(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	core, db, objects, material, _ := readyOpportunityFromPublicGit(t)
+	space, err := core.CreateProjectSpace(ctx, human, ProjectSpaceCommand{CommandMeta: meta("taste-goal-space", 1), Title: "Fixed public Taste and Goal transaction validation"})
+	if err != nil {
+		t.Fatal("create actual Taste and Goal project space")
+	}
+	root, err := filepath.Abs("../../..")
+	if err != nil {
+		t.Fatal("resolve approved public project")
+	}
+	root, err = agents.CanonicalRoot(root)
+	if err != nil {
+		t.Fatal("resolve actual canonical public project root")
+	}
+	caller := workdomain.Caller{ID: human.ID, Kind: human.Kind}
+	projects := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
+	project, err := projects.RegisterProject(ctx, caller, workdomain.RegisterProjectCommand{Name: "Actual Taste and fixed Goal transaction", Root: root, SpaceID: space.Space.ID})
+	if err != nil {
+		t.Fatal("register actual approved public project")
+	}
+	s2 := workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, nil)
+	goalMeta := func(key string, version int) workspace.WorkspaceCommandMeta {
+		return workspace.WorkspaceCommandMeta{SchemaVersion: 1, RequestID: key, IdempotencyKey: key, ExpectedVersion: version}
+	}
+	goal, err := s2.PutGoal(ctx, caller, "", workspace.GoalCommand{WorkspaceCommandMeta: goalMeta("taste-goal-initial", 0), Goal: workdomain.Goal{ProjectID: project.ID, Title: "Check the complete Taste configuration against the fixed public README", Status: "active", SuccessCriteria: []string{"The selected Goal and the complete Taste update share one actual transaction"}}})
+	if err != nil {
+		t.Fatal("save explicit human Taste validation Goal")
+	}
+	snapshot, err := s2.ReadCurrentGoalSnapshot(ctx, caller, project.ID, goal.ID, goal.Revision)
+	if err != nil {
+		t.Fatal("read actual selected Goal before the Taste update")
+	}
+	command := publicTasteCommand(material, "taste-goal-guarded-update", 1)
+	events, receipts := countRows(t, db, "attention_outbox"), countRows(t, db, "attention_receipts")
+	waits := db.Conn().Stats().WaitCount
+	var saved TasteProfileDetail
+	err = s2.WithCurrentGoalSnapshot(ctx, caller, snapshot, func(txctx context.Context, current workdomain.CurrentGoalSnapshot) error {
+		conn, err := sqlite.WorkspaceTransaction(txctx, db)
+		if err != nil {
+			return err
+		}
+		if conn == nil || current.Goal.ID != goal.ID || current.Goal.Revision != goal.Revision {
+			t.Fatal("Taste update did not receive the original transaction and fixed Goal")
+		}
+		saved, err = core.UpdateTasteProfile(txctx, human, command)
+		if err != nil {
+			return err
+		}
+		// 完整写入后触发真实唯一约束，检查外层事务能否回滚全部 Taste 状态。
+		_, err = conn.ExecContext(txctx, "INSERT INTO attention_taste_profile_revisions(profile_id,version,data) SELECT profile_id,version,data FROM attention_taste_profile_revisions WHERE profile_id='attention'")
+		return err
+	})
+	if err == nil || saved.Profile == nil || db.Conn().Stats().WaitCount != waits {
+		t.Fatal("post-write SQL failure or shared Taste connection was not observed")
+	}
+	if countRows(t, db, "attention_taste_profiles") != 0 || countRows(t, db, "attention_taste_profile_revisions") != 0 || countRows(t, db, "attention_outbox") != events || countRows(t, db, "attention_receipts") != receipts {
+		t.Fatal("failed outer Goal transaction retained a Taste head, fixed revision, event or receipt")
+	}
+	commit := func(txctx context.Context, _ workdomain.CurrentGoalSnapshot) error {
+		var err error
+		saved, err = core.UpdateTasteProfile(txctx, human, command)
+		return err
+	}
+	if err = s2.WithCurrentGoalSnapshot(ctx, caller, snapshot, commit); err != nil || saved.Profile == nil || saved.Profile.Version != 1 || db.Conn().Stats().WaitCount != waits {
+		t.Fatal("original rolled-back Taste update could not commit once in the actual Goal transaction")
+	}
+	changed := goal
+	changed.Title = "Check the revised Goal and retained complete Taste configuration"
+	changed, err = s2.PutGoal(ctx, caller, goal.ID, workspace.GoalCommand{WorkspaceCommandMeta: goalMeta("taste-goal-next", goal.Revision), Goal: changed})
+	if err != nil {
+		t.Fatal("persist actual next Goal revision")
+	}
+	entered := false
+	stale := func(context.Context, workdomain.CurrentGoalSnapshot) error { entered = true; return nil }
+	err = s2.WithCurrentGoalSnapshot(ctx, caller, snapshot, stale)
+	errorCode(t, err, apierrors.ContextStale)
+	if entered {
+		t.Fatal("superseded Goal allowed the Taste consumer to run")
+	}
+	core, db, s2, _ = reopenAdmissionServices(t, db, objects)
+	read, err := core.ReadTasteProfile(ctx, human, "attention", saved.Profile.Version)
+	if err != nil || !sameAdmissionJSON(t, read.Fixed, saved.Profile) || !sameAdmissionJSON(t, read.Current, saved.Profile) {
+		t.Fatal("guarded Taste fixed or current configuration changed after reopen")
+	}
+	historical, err := s2.ReadGoal(ctx, caller, goal.ID, goal.Revision)
+	if err != nil || !sameAdmissionJSON(t, historical, goal) {
+		t.Fatal("guarded Taste update changed fixed Goal history after reopen")
+	}
+	err = s2.WithCurrentGoalSnapshot(ctx, caller, snapshot, stale)
+	errorCode(t, err, apierrors.ContextStale)
+	replay, err := core.UpdateTasteProfile(ctx, human, command)
+	if err != nil || !sameAdmissionJSON(t, replay, saved) || entered || countRows(t, db, "attention_taste_profile_revisions") != 1 || countRows(t, db, "attention_outbox") != events+1 || countRows(t, db, "attention_receipts") != receipts+1 {
+		t.Fatal("reopen, stale Goal or replay changed the original complete Taste transaction")
+	}
+	assertNoAdmissionExecution(t, db)
+}

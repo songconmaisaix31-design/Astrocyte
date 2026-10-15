@@ -228,11 +228,7 @@ func TestCanonicalContractKindsAndMutableSourceRefresh(t *testing.T) {
 		errorCode(t, err, apierrors.ValidationFailed)
 	}
 	_, db, objects := fixture(t)
-	root, err := filepath.Abs("../../../.verification")
-	if err != nil {
-		t.Fatal("resolve owned export root")
-	}
-	dir, err := os.MkdirTemp(root, "refresh-export-")
+	dir, err := os.MkdirTemp(evidenceRoot(t), "refresh-export-")
 	if err != nil {
 		t.Fatal("create owned export directory")
 	}

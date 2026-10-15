@@ -6,6 +6,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -200,4 +201,86 @@ func TestActualTasteProfileRejectsInvalidTypedExpectations(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestActualTasteProfileConcurrentConnectionsKeepOneVersionAndReceipt(t *testing.T) {
+	ctx := context.Background()
+	core, db, objects, material, _ := readyOpportunityFromPublicGit(t)
+	initial, err := core.UpdateTasteProfile(ctx, human, publicTasteCommand(material, "taste-concurrent-initial", 1))
+	if err != nil || initial.Profile == nil || initial.Profile.Version != 1 {
+		t.Fatal("persist actual Taste configuration before competing updates")
+	}
+	var file string
+	if err = db.Conn().QueryRow("SELECT file FROM pragma_database_list WHERE name='main'").Scan(&file); err != nil {
+		t.Fatal("locate actual Taste database")
+	}
+	otherDB, err := sqlite.Open(file)
+	if err != nil {
+		t.Fatal("open independent Taste connection")
+	}
+	t.Cleanup(func() {
+		if err := otherDB.Close(); err != nil {
+			t.Error("close independent Taste connection")
+		}
+	})
+	other := NewAttentionService(sqlite.NewAttentionRepository(otherDB), importers.NewReader(nil), objects, ServiceOptions{})
+	commands := []UpdateTasteProfileCommand{
+		publicTasteCommand(material, "taste-concurrent-rubric", 1),
+		publicTasteCommand(material, "taste-concurrent-example", 1),
+	}
+	commands[0].Rubrics[0].Criteria = "人工核查固定公开 README 的实际来源范围和未验证内容。"
+	commands[1].Examples[0].Expected = "1"
+	events, receipts := countRows(t, db, "attention_outbox"), tasteReceiptCount(t, db)
+	type result struct {
+		index   int
+		profile TasteProfileDetail
+		err     error
+	}
+	start, finished := make(chan struct{}), make(chan result, 2)
+	for index, service := range []*Service{core, other} {
+		go func(index int, service *Service) {
+			<-start
+			profile, err := service.UpdateTasteProfile(ctx, human, commands[index])
+			finished <- result{index: index, profile: profile, err: err}
+		}(index, service)
+	}
+	close(start)
+	winner, conflicts := -1, 0
+	var saved TasteProfileDetail
+	for range commands {
+		outcome := <-finished
+		if outcome.err != nil {
+			errorCode(t, outcome.err, apierrors.VersionConflict)
+			conflicts++
+			continue
+		}
+		if winner != -1 || outcome.profile.Profile == nil || outcome.profile.Profile.Version != 2 {
+			t.Fatal("competing Taste updates retained more than one successful version")
+		}
+		winner, saved = outcome.index, outcome.profile
+	}
+	if winner < 0 || conflicts != 1 || countRows(t, db, "attention_taste_profiles") != 1 || countRows(t, db, "attention_taste_profile_revisions") != 2 || tasteReceiptCount(t, db) != receipts+1 || countRows(t, db, "attention_outbox") != events+1 {
+		t.Fatal("competing Taste updates retained a losing version, receipt or event")
+	}
+	if !sameAdmissionJSON(t, saved.Profile.Rubrics, commands[winner].Rubrics) || !sameAdmissionJSON(t, saved.Profile.Examples, commands[winner].Examples) {
+		t.Fatal("persisted Taste configuration differs from the actual successful command")
+	}
+	if err = otherDB.Close(); err != nil {
+		t.Fatal("close independent Taste connection before reopening the database")
+	}
+	core, db, _, _ = reopenAdmissionServices(t, db, objects)
+	loaded, err := core.ReadTasteProfile(ctx, human, "attention", initial.Profile.Version)
+	if err != nil || !sameAdmissionJSON(t, loaded.Fixed, initial.Profile) || !sameAdmissionJSON(t, loaded.Current, saved.Profile) {
+		t.Fatal("competing Taste updates changed immutable history or the reopened head")
+	}
+	replay, err := core.UpdateTasteProfile(ctx, human, commands[winner])
+	if err != nil || !sameAdmissionJSON(t, replay, saved) {
+		t.Fatal("original successful Taste receipt changed after database reopen")
+	}
+	_, err = core.UpdateTasteProfile(ctx, human, commands[1-winner])
+	errorCode(t, err, apierrors.VersionConflict)
+	if countRows(t, db, "attention_taste_profile_revisions") != 2 || tasteReceiptCount(t, db) != receipts+1 || countRows(t, db, "attention_outbox") != events+1 {
+		t.Fatal("reopened Taste replay or rejected competing update created new state")
+	}
+	assertNoAdmissionExecution(t, db)
 }
