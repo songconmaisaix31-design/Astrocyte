@@ -17,7 +17,7 @@ try {
     $env:GOTMPDIR = 'D:/Astrocyte-agent-assets/20261015/go-temp/S4'
     $env:TEMP = $env:GOTMPDIR
     $env:TMP = $env:GOTMPDIR
-    foreach ($Phase in @('initial', 'cleanup', 'cleanup-restart')) {
+    foreach ($Phase in @('initial', 'cleanup', 'cleanup-restart', 'cleanup-worker', 'cleanup-worker-restart', 'cleanup-sql-boundary')) {
         & (Join-Path $PSScriptRoot 'verify.ps1') -Phase $Phase -EvidenceRoot $WorkRoot -SdkPath $SdkPath -NodePath $NodePath
     }
 } finally {

@@ -158,10 +158,78 @@ func (s *Service) cleanupWorktree(ctx context.Context, cache, worktree *os.Root,
 		if !safeRelative(filepath.ToSlash(relative)) || relative == "." {
 			return failure(apierrors.ScopeDenied, "repository cleanup target escapes the cache")
 		}
+		if err := preserveGraphDiagnostics(ctx, cache, relative); err != nil {
+			return err
+		}
 		if err := cache.RemoveAll(relative); err != nil {
 			return err
 		}
 		result.DeletedGenerations++
+	}
+	return nil
+}
+
+func preserveGraphDiagnostics(ctx context.Context, cache *os.Root, generation string) error {
+	graphPath := filepath.Join(generation, ".codegraph")
+	info, err := cache.Lstat(graphPath)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		return failure(apierrors.ScopeDenied, "repository diagnostic directory is unsafe")
+	}
+	graph, err := cache.OpenRoot(graphPath)
+	if err != nil {
+		return err
+	}
+	defer graph.Close()
+	entries, err := cleanupEntries(graph)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		name := entry.Name()
+		if !strings.HasPrefix(name, "astrocyte-error-") || !strings.HasSuffix(name, ".log") {
+			continue
+		}
+		id := strings.TrimSuffix(strings.TrimPrefix(name, "astrocyte-error-"), ".log")
+		identity, err := uuid.Parse(id)
+		if err != nil || identity.String() != id {
+			return failure(apierrors.ScopeDenied, "repository diagnostic identity is unsafe")
+		}
+		info, err := graph.Lstat(name)
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return failure(apierrors.ScopeDenied, "repository diagnostic must be a regular file")
+		}
+		if err := cache.MkdirAll("diagnostics", 0700); err != nil {
+			return err
+		}
+		info, err = cache.Lstat("diagnostics")
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+			return failure(apierrors.ScopeDenied, "repository diagnostic archive directory is unsafe")
+		}
+		destination := filepath.Join("diagnostics", name)
+		if _, err := cache.Lstat(destination); err == nil {
+			return failure(apierrors.VersionConflict, "repository diagnostic archive already exists")
+		} else if !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		// 仅移动本平台自己的错误日志，原件在删除旧generation后继续保留。
+		if err := cache.Rename(filepath.Join(graphPath, name), destination); err != nil {
+			return err
+		}
 	}
 	return nil
 }

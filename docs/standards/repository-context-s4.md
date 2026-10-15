@@ -40,7 +40,7 @@ SemanticIndex 的具体模型、运行时和向量库仍待用户决定。没有
 | 实际破坏自有图 SQLite；拒绝查询；显式 rebuild | PASS |
 | 跨项目、逃逸根、私有路径、空用途、读取预算拒绝 | PASS |
 | SQLite Agent grant 撤销、目录权限撤销、revision 变化后重建 | PASS |
-| 失效投影清理、同 worktree 的其他项目保护、分批删除与重启 | PASS；内部 pass，生产 worker 接入待交 |
+| 失效投影清理、同 worktree 的其他项目保护、分批删除与重启 | PASS；内部 pass 与专用生命周期，B/H 生产接线待交 |
 | AOCI 源码构建、实际版本、官方 MCP 九工具 | PASS |
 | 模型作者六对象 FRAS → 官方整批 apply → Verify/Check/Guide | PASS：applied=6、aligned=true、complete=true、next_action=none |
 | 保存 AOCI 地图、无 AOCI 配置的 service 读取地图 | PASS：六条语义和相对引用；GET 没有 AOCI 进程或 ledger 写入，`.aoci` 文件数量、大小、mtime 相同 |
@@ -170,13 +170,13 @@ P 源码 SDK 在 `D:/Astrocyte-agent-assets/20261015/relay/S4/sdk-first` 新建�
 
 内部端口为 `app.RepositoryProjectionCleaner.CleanupRepositoryContext(ctx, maxGenerations)`，结果只含 `RetiredIndexes / DeletedGenerations / PreservedEntries / HasMore`。调用者必须是持有同一个 `repositorycontext.Service` 的既有后台 worker，且在请求事务之外调用。该方法复用索引维护和图查询的互斥锁；一个 CacheRoot 只能由该单一服务实例维护，不能由另一个进程并发构建或清理。
 
-SQLite 在既有 `WithWorkspaceTx` 的 `BEGIN IMMEDIATE` 内完整读取索引与当前项目：目录授权撤回、allowed_subdirs 为空、权限 revision 不符或项目已删除时，按准确项目 / worktree / backend / generation 撤下失效元数据。保留候选还通过真实 Git 核当前注册根的 WorktreeID 与稳定 EnvironmentID；Git 观察错误立即返回并回滚，未把临时不可读取当作来源撤回。Root 不通过公开 JSON 获取，也不写回外部提供的自证值。
+SQLite 先读取并关闭完整索引 / 项目查询，再于 SQL 写事务之外通过真实 Git 核当前注册根的 WorktreeID 与稳定 EnvironmentID。随后在短 `WithWorkspaceTx / BEGIN IMMEDIATE` 中重新核对当前 project JSON、完整 index JSON 与 generation；任何变化立即返回 `version_conflict` 并回滚。目录授权撤回、allowed_subdirs 为空、权限 revision 不符或项目已删除时，按准确项目 / worktree / backend / generation 撤下失效元数据。Git 观察错误立即返回，临时不可读取不作为来源撤回。Root 不通过公开 JSON 获取，也不写回外部提供的自证值。
 
 元数据提交后，清理只检查可信 CacheRoot 的目录。所有保留索引共同保护其 generation，包括同一 worktree 注册的其他项目；单个 Agent grant 撤销不会撤下项目索引。合法名称必须是 64 位小写十六进制 worktree 身份和标准 UUID generation，其他条目保留并计数。目录链接被拒绝。每次递归删除前验证解析后的绝对目标在 CacheRoot 内，再使用 `os.Root.RemoveAll` 约束操作；源项目、AOCI 原文件和发布资产不作为删除对象。
 
 每次最多删除 `maxGenerations` 个目录，范围为 1–1000；还有旧 generation 时返回 `HasMore=true`。清理未发布或已被替代的旧 generation，保留当前图供增量 sync 使用。事务已提交而磁盘清理失败时，不重新开放旧结果；下一次 pass 根据真实元数据继续清理。现有表已足够保存事实，此变更没有新增 DDL。
 
-生产衔接已经交产品负责人、唯一 B 与 H：项目目录设置 / 注册根变更或项目删除成功提交后，由 B 的既有异步任务入口唤醒该 pass；服务恢复时也调用，以处理上次中断留下的投影。H 注入同一 adapter 实例，HTTP 不提供清理命令。B 的准确 worker 入口与同事务持久请求尚未交付，当前不能声称生产异步清理已接入。
+根授权 `msg_0f397f12b04e` 与模块 `msg_40c63d059b3a` 已明确专用 Go 清理生命周期，由本轨在同一 Service 实现。B 在项目目录设置 / 注册根变更或项目删除成功提交后窄唤醒，H 注入同一 adapter 并负责启动、错误上送、取消等待和随后关闭 SQLite。该 B/H 生产接线尚待准确 SOURCE；HTTP 不提供清理命令。
 
 实际命令为 `tests/s4/cleanup.ps1 -WorkRoot D:/Astrocyte-agent-assets/20261015/relay/S4/cleanup-second -SdkPath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/sdk/node_modules/@colbymchenry/codegraph -NodePath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe`。在原两个公开 Git 根与全新自有 SQLite / 投影中，官方 SDK 实际建图，真实 Agent grant 撤销后人类仍可查询；项目授权收窄后图和六条实际作者地图立即拒读。真实 Windows junction 导致安全拒绝，失效元数据已经提交、全部图文件仍在；移除该自有 junction 后，每次删除一个目录并明确报告剩余，最后当前 A 投影从磁盘移除，同 worktree 另一项目与 B 的图和关系保持可查。独立进程重新打开 SQLite 后清理幂等，剩余投影的数量、大小和 mtime 不变。
 
@@ -185,3 +185,19 @@ SQLite 在既有 `WithWorkspaceTx` 的 `BEGIN IMMEDIATE` 内完整读取索引�
 清理 SOURCE `4ebd777b7b340c717c5311d78a0f26174374bbbf` 已普通提交和 push。该精确源码的 `go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./internal/adapters/sqlite ./tests/s4/...`、`go build -mod=readonly ./...` 全部退出 0，日志为上述 `cleanup-second/exact-source-{test,vet,build}.log`；PowerShell parser、gofmt 和 `git diff --check` 通过。最后一次独立 `cleanup-restart` 同时实际核验请求事务内调用 production Service 的拒绝与保留图重读通过。首 push 及随后 `ls-remote` 曾返回 `github.com:443 SSL_ERROR_SYSCALL`，之后原 `git push origin HEAD` 成功，未改 TLS 或代理配置。
 
 H 后继主入口 SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` 的既有 S4 production 文件与本次 SOURCE 的父版本一致。已读取其 `cmd/server/relay_repository_context.go`：原 S2、Map、Search、Impact 和显式索引维护复用同一个 provider；新增清理扩展必须完整消费 adapter、SQLite 和 app/domain 文件。当前源码和报告均交模块、H、B 与发布负责人，生产 worker 接线、SemanticIndex 决定、AOCI 分发及最终 UI / ZIP 仍未完成。
+
+## 专用清理生命周期
+
+`app.RepositoryCleanupNotifier` 仅提供 `WakeRepositoryCleanup()`；`app.RepositoryCleanupWorker` 另外提供 `RunRepositoryCleanup(ctx, maxGenerations) error`。同一 Service 同时只允许一个 Run，第二次调用立即返回 `version_conflict`。Run 一开始就完整扫描，不依赖之前的通知；每个 pass 仍与前台图查询和显式索引维护共用同一互斥锁。显式索引维护创建自有目录后，无论成功或失败都会在离开临界区时通知 worker，当前正在构建的目录受同一锁保护。
+
+通知使用容量为 1 的 channel 合并。持久待清理事实由当前项目权限 / revision / root、保存的索引引用和磁盘目录共同表示：已提交撤回使旧索引失配，元数据已撤下而目录仍存在时形成无引用目录，后继启动均可重新观察。目录实际删除且没有后续条目时，本次 pass 返回 `HasMore=false`；没有单独的完成标记或持久请求表。通知丢失会延迟本进程的唤醒，重启的全量扫描会恢复实际剩余；不能把该 channel 描述为持久队列。
+
+只有 `HasMore=true` 且确有已删除 generation 时 Run 立即继续下一批，否则等待下一次通知或 context 取消。Git、SQLite、权限冲突、路径安全或文件系统失败立即从 Run 返回，由 H 上送到原主生命周期并结束服务；本轨不自动重试。取消时等待当前互斥区和文件系统操作结束，pass 在 Git / SQL 操作和条目之间检查 context，H 必须等待 Run 返回后才关闭数据库。
+
+删除无引用旧图之前，实际 `astrocyte-error-UUID.log` 原件使用 `os.Root.Rename` 移至同一私有 CacheRoot 的 `diagnostics` 目录。日志身份、常规文件及目标目录均严格检查，目标已存在时失败；不覆盖原件。完成移动而后续删除失败时，下次扫描继续删除原目录，日志继续保留。该目录不进入 HTTP 或包内容。
+
+实际运行 `tests/s4/cleanup.ps1` 的新独立目录为 `D:/Astrocyte-agent-assets/20261015/relay/S4/cleanup-worker-third`，Node / SDK 参数与前文相同。真实通过：无通知的冷启动按每轮一个目录删除两个官方图的旧 generation；第二个 Run 被拒绝；实际损坏自有 SQLite 后读取拒绝、正式 rebuild 自动唤醒、原错误日志逐字节保留；实际目录授权撤销后立即拒读，合并一千次通知后清理并取消等待；已提交授权撤回而不发送通知，下一独立进程从真实元数据和目录恢复。B 的真实符号与关系保持可查。原件为该目录的 `cleanup-worker-20261015T1437145478368.log` 与 `cleanup-worker-restart-20261015T1439272899271.log`；原 `initial / cleanup / cleanup-restart` 日志也保留。
+
+`cleanup-second/cleanup-sql-boundary-20261015T1436121380348.log` 实际通过 SQL 边界：官方 `git hash-object --stdin` 在真实输入管道上等待期间，另一 SQLite 写者在既定十秒上限内提交真实项目目录撤销，读取立即拒绝；Git 释放后，重新核对项目变化，清理提交返回 `version_conflict` 且原索引 generation 保持。另一次取消真实 Git 观察后 SQLite 与当前图仍可读取。Git 使用不写对象的实际命令，未替换程序、输出或协议，也没有新增提交或事件。
+
+Go 生命周期测试使用真实新 SQLite 和已有迁移，验证两个并发 Run 仅一个取得执行权、一千次合并通知、取消等待与实际不合法缓存文件的错误返回。没有合成索引、虚假 SDK 或条件 skip；测试目录位于本树 ignored `.verification/s4/cleanup-worker-tests`。B/H 的生产后继源码仍须消费本次完整窄闭包再验证原主生命周期，未把本组件的运行结果作为整体产品验收。

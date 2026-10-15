@@ -57,7 +57,7 @@ func main() {
 		}
 	}()
 	assert(*phase != "" && *rootA != "" && *rootB != "" && *evidence != "", "explicit owned roots, phase and evidence are required")
-	assert(slices.Contains([]string{"initial", "updated", "deleted", "deleted-check", "restart", "query-readonly", "uncheckpointed-wal", "sync-current", "expect-stale", "result-bounds", "ambient-git", "same-project-worktrees", "corrupt-rebuild", "permissions", "map", "map-readonly", "map-missing", "cleanup", "cleanup-restart"}, *phase), "unsupported verification phase")
+	assert(slices.Contains([]string{"initial", "updated", "deleted", "deleted-check", "restart", "query-readonly", "uncheckpointed-wal", "sync-current", "expect-stale", "result-bounds", "ambient-git", "same-project-worktrees", "corrupt-rebuild", "permissions", "map", "map-readonly", "map-missing", "cleanup", "cleanup-restart", "cleanup-worker", "cleanup-worker-restart", "cleanup-sql-boundary"}, *phase), "unsupported verification phase")
 	must(os.MkdirAll(*evidence, 0700))
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()
@@ -84,6 +84,15 @@ func main() {
 	}
 	if *phase == "cleanup-restart" {
 		verifyCleanupRestart(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-worker" {
+		verifyCleanupWorker(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-worker-restart" {
+		verifyCleanupWorkerRestart(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-sql-boundary" {
+		verifyCleanupSQLBoundary(ctx, db, service, human, qb)
 	}
 	if *phase == "initial" {
 		for id, root := range map[string]string{qa.ProjectID: *rootA, qb.ProjectID: *rootB} {

@@ -32,9 +32,18 @@ type RepositoryProjectReader interface {
 	LoadRepositoryGrant(context.Context, string, string) (domain.ProjectGrant, error)
 }
 
-// 仅供既有后台worker调用，必须复用索引和查询所用的同一个Service。
+// 仅供平台后台清理生命周期调用，必须复用索引和查询所用的同一个Service。
 type RepositoryProjectionCleaner interface {
 	CleanupRepositoryContext(context.Context, int) (domain.RepositoryCleanupResult, error)
+}
+
+type RepositoryCleanupNotifier interface {
+	WakeRepositoryCleanup()
+}
+
+type RepositoryCleanupWorker interface {
+	RepositoryCleanupNotifier
+	RunRepositoryCleanup(context.Context, int) error
 }
 
 type RepositoryCleanupState struct {
