@@ -196,7 +196,7 @@ B 精确两表来源 `491e7f606d8265e9f7e9694f547a91682b305e74` 已普通合为 
 
 此前四项真实组件组合 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActual' -count=1 -v -timeout 6m` 为 `290.250s PASS`。Laya 三题型实际 input token 为 `205/220/220`，平台 Noul confidence 为 null；全文实际 input `1024`、丢弃 `3006` state token，90 个公开原文候选的 distinct 为 1。缺证据、外发未授权、真实 worker 关闭后的错误持久化及不缓存均通过；该检查使用实际成熟 SDK / ONNX，未训练权重。原 `actual-model-service-ctx_0a-{first,noul,fixed-space}.log` 首 FAIL 与通过的 `reselected`、`actual-combination-ctx_0a-first.log` 保留。
 
-新增低置信和绑定候选消费测试的首次启动为实际 60 秒 startup 超时，随后扩展场景在原三分钟总测试 Context 中到期；两件原日志为 `actual-model-delegation-ctx_0a-first.log`、`actual-model-sanitized-ctx_0a-first.log`。新增场景使用五分钟测试总 Context，产品每次调用预算、startup 60 秒和 shutdown 10 秒保持原值，真实结果继续复验，尚未计通过。
+新增低置信和绑定候选消费测试的首次启动为实际 60 秒 startup 超时，随后扩展场景在原三分钟总测试 Context 中到期；两件原日志为 `actual-model-delegation-ctx_0a-first.log`、`actual-model-sanitized-ctx_0a-first.log`。新增场景使用五分钟测试总 Context，产品每次调用预算、startup 60 秒和 shutdown 10 秒保持原值，最终结果见第五阶段。
 
 HTTP handler 当前有真实 SOURCE 和编译/vet 结果，生产注册、原 guard 白名单与 `cmd/server` factory 继续由 H 交付；本阶段没有将它们登记为完整 HTTP 验收。Jev API secret 与 OS 单程序隔离许可仍待根处理，未调用云端、未创建防火墙或提权。实际 Goal/taste 来源问题已提交协调者：当前五版本测试作用于真实持久化 Policy；Goal 或 profile 在自身服务变更而 Policy 未更新的情形尚未验收。
 
@@ -206,4 +206,16 @@ P 原完整包扫描在四图 `onnx.StringStringEntryProto.value` 检出 current
 
 两套模型的 `onnx.checker.check_model(..., full_check=True)` 均通过；sidecar、tokenizer、config 实际 SHA 与原件相同，所有其余 Protobuf 字段保存/重新读取后序列相同。实际公开 README 的 64/192 token 输入分别通过 CPU encoder 与三题型 head，原件/新件所有输出 tensor `np.array_equal`，各最大绝对差为 0。安全记录 `.verification/s5/onnx-sanitized-ctx_0a-safe.json`，过程日志 `onnx-sanitized-ctx_0a-first.log`。
 
-新 descriptor 明确 `artifact_kind=astrocyte_privacy_sanitized_derivative` 与自身 `artifact_revision=metadata-clean-20261015-ctx_0a7797464f02`，`derived_from` 保留准确原版与原文件 digest；官方 HF/source revision 仅作来源。新字节、有效 revision 与描述均独立，不能当作官方原件。P 已收到准确新路径作原 scanner 复验；常驻 SDK / 新有效 revision / 模型低置信绑定测试及最终包验收仍在进行。
+新 descriptor 明确 `artifact_kind=astrocyte_privacy_sanitized_derivative` 与自身 `artifact_revision=metadata-clean-20261015-ctx_0a7797464f02`，`derived_from` 保留准确原版与原文件 digest；官方 HF/source revision 仅作来源。新字节、有效 revision 与描述均独立，不能当作官方原件。P 使用原 scanner 复验，通过 14 项共 `3,014,649,292` bytes，privacy 为 0；协调者回执 `msg_c891c370dab6`。本项不替代最终集成包的完整验收。
+
+## 第五阶段独立 REPORT
+
+SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` 已普通提交和 push，远端全 SHA 一致。六件允许文件包含成熟 ONNX 元数据处理与数值等价检查脚本、衍生资产准确版本读取、流式完整性检查、常驻 worker 有界关闭和真实模型消费测试。原始资产和首 FAIL 均保持。
+
+衍生资产实际命令为 `ASTROCYTE_S5_LIVE=1 ASTROCYTE_S5_ASSET_ROOT=<sanitized-ctx_0a> ASTROCYTE_S5_METADATA_ROOT=<sanitized-ctx_0a> go test -mod=readonly ./tests/s5 -run '^TestActualLayaJudgmentServiceSafety$' -count=1 -v -timeout 6m`，`35.412s PASS`，日志 `actual-model-sanitized-ctx_0a-scope.log`。实际返回版本为 `metadata-clean-20261015-ctx_0a7797464f02/7b928d828b7b0e022f929d9bd2e44165aa270148/multilingual/432312b36714d8889eba405507b37eda25257d9c/779825135bb7a2663f6635f75ec7c6a9bc0754633912d0804adbeb01f908c767`。实际模型 confidence 经真实 human 提交显式测试阈值后返回 `low_provider_confidence/abstain`，完整 Context 绑定后的真实 90 个公开原文候选覆盖不足也返回 abstain，两者均被可信准入 authorizer 拒绝。没有产品默认数字阈值。
+
+同资产 `go test -mod=readonly ./tests/s5 -run '^TestLayaActualCPUThreeTypesAndRestart$' -count=1 -v -timeout 8m` 最终 `147.849s PASS`，三条明确路由分别 `43.02/60.08/41.42s`，六次进程启动、三题型、自然长输入截断和显式重启全部通过。日志 `actual-sanitized-restart-ctx_0a-bounded.log`。首轮 `actual-sanitized-restart-ctx_0a-first.log` 的真实启动与退出等待超时保留；关闭路径超出预算时请求终止并明确返回退出未确认，禁止无界等待或把请求终止当作退出成功。
+
+`go vet ./internal/judgment ./internal/adapters/judgment ./internal/adapters/httpapi ./internal/adapters/sqlite ./tests/s5` PASS，`go test -mod=readonly` 同五包 `-run '^$' -count=1` 编译 PASS，Node syntax、gofmt diff、Git diff-check 均通过。上述 Go 命令逐进程使用已授权 D 盘共享 warm GOCACHE 和本任务独占 GOTMPDIR。
+
+AT12 按根 `msg_e1415e3ad447` 继续：固定真实 Goal ID/revision 经 S2 读取固定及当前版本；四维 RankingProfile 使用真实 ID/version/configured/enabled，完整 TasteProfile 的实际 rubric/example/delegation 来源由原 B 补齐；全部实际参与内容进入既有缓存并同事务重核。当前 Policy 五版本测试不算完整 AT12。新依赖 DTO 已交 H 确认，Jev secret、OS 单程序隔离执行许可及 H 生产 HTTP 装配仍待原责任人；没有扩大授权或宣称 S5 完成。
