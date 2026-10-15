@@ -1,6 +1,6 @@
 # Works Relay v1.4 语义修改与真实验收
 
-2026-10-15 当前状态：IMPLEMENTATION_AUTHORIZED_DECISIONS_PENDING。总负责人消息 `msg_0ba76f2d26c3` 转交用户最新明确要求：现在修改语义层，通过后执行真实 CLI、今日采集并推进 L/S。此前停止新 Relay 原生与 Today 的时间安排已被本次授权替代；执行顺序仍为语义修改和验证、真实 CLI 端到端、三分钟 Today、L1 最终验收。L/S 的其他模块和正式 V4 日程由总负责人协调，本模块只交真实安全派生结果。
+2026-10-15 当前状态：IMPLEMENTATION_AUTHORIZED_OPEN_GATES。总负责人消息 `msg_0ba76f2d26c3` 授权修改语义层、真实 CLI、今日采集并推进 L/S；`msg_c0b5fd86176f`、`msg_2cf72d3f5ad9` 和正式答复 `msg_3b809b065867` 更新完成通道及验收顺序。当前顺序为四树普通集成与组合验证、集成版真实 L1、L2 经验管道及六步端到端首跑，目标 10-22 并入包。Calls 单位及权限完整覆盖仍待答，不开始登记 t0 或模型输入。L/S 的其他模块和正式 V4 日程由总负责人协调，本模块只交真实安全派生结果。
 
 本文是本次四项语义修改的唯一具体规格。业务基线继承 [Works Relay v1.2](Works-Relay-v1.2.md)、[SPEC](../docs/SPEC.md)、[发布任务](Release-v0.1-20261014.md) 和 [REA研究报告](../docs/research/orca-rea-20261014.md)；最新用户决定通过总负责人正式消息更新本文件。模块分工、精确 SHA、运行参数和验收事实记录在 [模块管理文档](../docs/modules/relay.md)。
 
@@ -13,11 +13,12 @@
 | 待答项 | 当前约束 | 答案影响 |
 |---|---|---|
 | working 是否严格要求明确开始证据 | 不据 stdout、Git、PID、pipe 写入或完成结果产生新的开始证明；不冻结依赖该决定的接口 | 哪些真实客户端证据允许 accepted → working，以及 UI 的具体条件 |
-| 缺少独立 started 信号的客户端如何人工完成 | 保留既有 working → done → released；不自行增加 accepted → done / released | Claude、非交互 CLI 和交互终端的人工完成入口及相应验收 |
 | Calls 的计数单位及 Known 覆盖 | 保持 CallsKnown=false；completed Responses 只作私有独立观察量 | 区分已完成 response 与全部尝试 / 失败 / 重试的分母和预算语义 |
 | 工具与外部目标的完整集合门禁 | 保持 ToolsKnown / TargetsKnown=false 及当前 Claim 拒绝；不以 argv、tool0 或空数组填已知 | 已授权文件 / 命令关闭、外发策略与完整能力集合各自需要的证明范围 |
 
 接口的公共字段由原 R/H 根据已授权证据语义和用户答案在现有契约中共同维护；确定后交原 F 消费。本文中的证据含义明确，未决定的字段名称、枚举及迁移规则不作为冻结契约。
+
+人工完成已由总负责人正式答复 `msg_3b809b065867`：权限成立且操作者明确确认目标完成时，accepted 或 working 均可进入 done，使用 `user_confirmed_complete`，缺少 started 继续 unknown。`verified_complete` 须关联本任务合法 owned 输出及固定目标实际检查通过的证据，不能由归属或原生回合结束单独产生。user_confirmed 任务正常进入经验管道并保留通道和确认出处；资源释放独立核验，仍沿 done → released，不新增 accepted / working → released。
 
 总负责人正式答复 `msg_9e32e1f32ba5` 确认后两项已向用户提问，当前未决定。答复前不开始三分钟登记窗口，不绕过原 Claim / 预算发送输入，也不扩大工具权限；原 R 继续适配与独立检查，H 继续已有 Context / S3 / S4 契约、生产装配和无模型负例，F / UI 继续已交接口。真实完成 response 可以私有记录其实际身份和观测数量，不能转换为全部尝试次数；六字段 session-events 不变。
 
@@ -29,9 +30,9 @@
 
 最终动作收据不可重写。后到的开始、结束和观察结果沿既有事件和 operation 关系追加，不将第一次失败、`delivery_unknown` 或 provider 错误改为成功。旧输入不自动重发；未知交付继续占用工作区，原进程和 pending 未核实之前不得释放或由第二执行者接管。
 
-当前 task 状态机保持 ready → accepted → working → done → released。accepted 表示既有人工派发动作已被接受，不能代替模型已经开始或固定目标已完成。working 的严格证据门禁及无开始信号客户端的完成路径按上表等待用户决定。
+task 保留 ready → accepted → working 的执行状态；权限成立且明确人工目标确认时，accepted 和 working 均可进入 done。accepted 表示既有人工派发动作已被接受，不能代替模型开始或固定目标完成。working 的严格证据门禁按上表保持待决定，后到 done 不补造 started。
 
-done 必须由原产品界面的人工确认执行。固定目标的实际输出先通过合法 owned 来源核查，再允许操作者确认；原生 turn 完成、进程退出、Git 活动均不产生人工目标通过。released 保留真实退出、pending 为零、对象所有权和权限校验；中性工作区仍可以 Prepared=true，但 ActiveTaskID 必须解除。
+done 分别保存 `verified_complete` 与 `user_confirmed_complete`。前者保存合法 owned 输出关联及固定目标实际检查通过的证据；后者保存有权限操作者的明确目标完成确认。只有 CompletionConfirmed 而无实际目标检查事实时归入人工通道。沿既有 RelayService Transition、收据、事件和人工确认端口增加必要证据接缝，不以原生 turn 完成、进程退出或 Git 活动产生目标通过。released 继续从 done 进入并独立核真实退出、pending 为零、对象所有权和权限；中性工作区仍可以 Prepared=true，但 ActiveTaskID 必须解除。失败或取消沿现有终止清理路径保留审计，不通过伪造 done 清理资源。
 
 保存 intent 时绑定真实项目 settings revision 和 permission level，确认及后续权限敏感动作重新核版本、A/B/C、操作者、对象所有权与 grant 状态。纯人工 done / released 继承已确认的 observe 授权规则；真正 publication reconciliation 继续使用 reconcile。
 
@@ -79,7 +80,7 @@ fork 需要实际 provider 支持、明确父关系和适用授权。当前不�
 
 handoff 沿原 CreateIntent 增加可选 `HandoffFromTaskID` 和 `HandoffContextConfirmed`，表示操作者明确声明原任务和已经核查的人工上下文交接。两者成对校验：缺原任务却确认、给原任务却未确认、原任务不存在 / 未 released / pending非零 / 未核退出 / 跨project或worktree / Agent未变化均立即拒绝。原intent继续核human、当前权限与settings revision，前任务仅限当前操作者允许观察的同域历史。省略两者保持new；不能仅凭同工作区上一released任务推导confirmed handoff。
 
-人工声明与新执行者真实归属分别确认。handoff关系绑定准确原task、本次实际dispatch operation及新owned provider session结果；缺少session确认时执行证据仍unknown。F通过原界面明确取得人工交接确认，不自动勾选；H负责准确DTO / OpenAPI，R交精确领域SOURCE后消费。上述衔接属于已经授权的身份关系实现，不决定待答working或人工done迁移。
+人工声明与新执行者真实归属分别确认。handoff关系绑定准确原task、本次实际dispatch operation及新owned provider session结果；缺少session确认时执行证据仍unknown。F通过原界面明确取得人工交接确认，不自动勾选；H负责准确DTO / OpenAPI，R交精确领域SOURCE后消费。上述衔接属于已经授权的身份关系实现，working 门禁继续待答，人工 done 采用第 1 节已确认双通道。
 
 每次新的控制器或采集连接关联自身启动 / 恢复 operation。新的序号空间不能冒充旧游标的继续位置；旧连接事件不得更新新会话 live。服务重启、原生状态丢失和身份冲突分别保留真实未确认状态，不自动创建第二执行者。
 
@@ -100,8 +101,8 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 | 人员 | 固定工作树 / 分支 | 本轮责任 |
 |---|---|---|
 | 模块负责人 | module-relay-20261014 / songconmaisaix31-design/module-relay-20261014 | 只写本文与 docs/modules/relay.md，管理开发、语义决定和实际验收 |
-| 原 R | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native / terminal adapters 的证据和关系；当前 task_f082d8b36471 / ctx_99b96d053325 |
-| 原 H | works-relay-http / songconmaisaix31-design/works-relay-http | 当前 task_3004b636a3ab / ctx_e7abbaf902da 处理来源、HTTP、OpenAPI 与实际采集；历史阶段与恢复记录见模块管理文档 |
+| 原 R | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native / terminal adapters 的证据和关系；当前 task_f082d8b36471 / ctx_f17d901de131 |
+| 原 H | works-relay-http / songconmaisaix31-design/works-relay-http | 当前 task_3004b636a3ab / ctx_7eb5801f4450 处理来源、HTTP、OpenAPI 与实际采集；历史阶段与恢复记录见模块管理文档 |
 | 原 F / B | 由产品负责人持续管理原树 / 分支 | F 消费准确契约并独占 UI 操作；B 独占依赖、config.go、普通后端与 tests/s1 helper |
 
 原 H 的 port0 阶段先完成真实验证和 SOURCE / 独立 REPORT；既有活跃人员不中断，不安排第二 H。同 owner 连续任务或合法结算交接后的新 Task 仍保持原树、分支、终端及写域。源码接口未精确交付前，消费者不采用 WIP；领域问题交原 owner，集成人员只补必要薄组装。
@@ -112,7 +113,7 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 
 | 阶段 | 实际检查 | 当前状态 |
 |---|---|---|
-| 语义领域实现 | 唯一执行权与重复操作；独立输入 / 开始 / 人工完成事实；初始化 / 消费分别记录；真实归属和关系拒绝；旧记录 unknown；权限版本与撤销 | 独立事实 / 人工handoff拒绝阶段 SOURCE1a4f120已交且实际领域检查PASS；working / done待用户答案，当前所有权安全口增补及完整真实链路待交 |
+| 语义领域实现 | 唯一执行权与重复操作；独立输入 / 开始 / 双通道完成事实；初始化 / 消费分别记录；真实归属和关系拒绝；旧记录 unknown；权限版本与撤销 | 独立事实 / 人工handoff拒绝阶段实际检查PASS；双完成通道已明确，R/H实施与实际验收继续；working门禁及Calls/权限覆盖仍待答 |
 | HTTP 与 UI 组合 | 正确生成契约、六字段、安全错误；真实 SQLite / HTTP 与权限；F 展示和操作；port0地址与Origin / CSRF / 关闭 | port0真实SQLite / HTTP / CSRF / 关闭独立通过，B/F实际helper消费继续；v1.4组合 NOT_RUN |
 | Relay 两阶段初始化与首输入 | 同控制器空 Message 零模型初始化；准确身份 / operation；来源未就绪及拒绝；首输入重新核权限 revision / CAS / 预算 / tools / source / 固定上下文；并发与未知禁止重发 | SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854` 已交；模块精确快照五项实际边界检查 PASS，原 B SQLite 冷 Registry 断言 RED 保留；真实初始化和首输入 NOT_RUN |
 | 单次真实 CLI | 新公开 scope、准确 owned 控制器、自有 DB、工具关闭、一次明确输入；初始化、接受、开始、结束与人工目标分开；两阶段源码通过后执行 | NOT_RUN |
@@ -120,8 +121,8 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 | 生命周期全部核心路径 | 实际 EOF / structured、互斥 / 重复 / 通用冲突、working、unknown send、合法目标完成与释放、alternate / previous、publication error；真实拒绝不制造假状态 | 未满足项 NOT_RUN / FAIL，旧默认203PASS / 41FAIL / 32SKIP / 4NOT_RUN保留 |
 | 最终 Windows x64 包 | 原集成人员消费准确 SOURCE / REPORT，在实际 packaged server 自有端口 / DB / scope 核全部适用功能及原生路径 | v1.4最终包 NOT_RUN |
 
-总负责人 `msg_d807dc7e94d0` 已允许先执行本次实际 Codex turn-start 在两种待答规则共同成立的正向链路。准确语义 SOURCE 组合通过后，按第 3 节时序由原 F 先取得空登记 observer ready，H 唯一登记并保存 t0，F 空初始化同一控制器；本次工具关闭和合法来源核实后，F 经现有产品 HTTP 执行单次首输入与动作，H 核原档与 SQLite。无开始客户端规则继续待定，人工 done 仍须先核本次合法输出满足固定目标。单次真实执行出现未知交付后停止重发；旧失败、来源拒绝和每项真实不足独立保留。
+总负责人 `msg_d807dc7e94d0` 曾授权实际 Codex turn-start 正向链路，后续 `msg_9e32e1f32ba5` 明确 Calls / Known 用户待答期间不开始 t0 或输入，当前继续保持该门禁。允许实际执行且准确源码组合通过后，按第 3 节时序由原 F 先取得空登记 observer ready，H 唯一登记并保存 t0，F 空初始化同一控制器；实际工具关闭与合法来源核实后，经产品 HTTP 单次输入，H 核原档与 SQLite。人工 done 如实保留实际完成通道；verified 须有目标核验事实。未知交付停止重发；旧失败、来源拒绝和每项真实不足独立保留。
 
-固定目标必须能从本次合法来源独立核查。不能用预置短回复、旧成功输出、静态页面、targeted Go通过或 replay 代替实链路、完整默认浏览器或实际发布包。来源拒绝使目标无法核查时明确失败，不先勾选人工目标完成。
+verified 固定目标必须能从本次合法来源独立核查，来源拒绝时保留未通过。user_confirmed 保存操作者明确确认及其出处，不冒记独立目标核验。不能用预置短回复、旧成功输出、静态页面、targeted Go通过或 replay 代替实链路、完整默认浏览器或实际发布包。
 
 源码、报告、实际参数和独立结果交总负责人及产品留存，由合法新集成发布人员普通合并。最终 GitHub Release 仅由总负责人接受具体结果后发布。旧正式 V4、锁定协议、自动任务日程及17321服务继续不变。

@@ -20,17 +20,33 @@ S3 Calls 单位和权限证据覆盖仍未决定，保持当前 Claim 拒绝；�
 
 三位终端纯文本显示 Codex 0.162.0 / GPT-6.1-Sol xhigh fast；启动参数未覆盖用户配置。首次读取新恢复消息与创建 Run 在同批命令执行，另生成空 `run_7ec4ed6599d6`；该 Run 未派发任何人员，当前管理使用恢复后的原子 Run。跨 Run 直接 `--to run:` 携带本模块生命周期 ID 被 `dispatch_run_mismatch` 拒绝，改发当前准确 Dispatch 后由运行时重定向到接收者子 Run；没有改变其绑定。
 
-H 当前 `CHERRY_PICK_HEAD=aa445adf834c3a397a0817bec0593fcf1039420a`，四冲突路径为 SQLite workspace_session_bindings、app proposal_ports、domain session_bindings 和 tests/s2/approval_test。产品负责人当前 `ctx_c2889e0e477c`、原 S2 当前 `ctx_edce6bc4ca6c`。原 H 正式问题 `msg_a3a058701f7c` 已答复 `msg_07f181fba39a`：H 本人停写四路径后，由原 S2 在安全检查点仅编辑并 stage，明确归还后仅 H 继续原序列；config.go / 依赖继续归 B。当前 H 其他独占范围继续，无第二 H 写入者。
+H 的 S2 四文件冲突已由原 S2 明确停止写入并归还。模块独立核对未合并路径为零、普通与暂存 `diff --check` 均通过，原 H 单独继续 `aa445adf834c3a397a0817bec0593fcf1039420a` 为 `c84cec7`，随后消费 `02d16dd` 为 `1e6ee32`、S3 `70e6e5a` 为 `688ebb8`。产品负责人当前 `ctx_c2889e0e477c`、原 S2 当前 `ctx_edce6bc4ca6c`。原 H 正式问题 `msg_a3a058701f7c` 已答复 `msg_07f181fba39a`；config.go / 依赖继续归 B，无第二 H 写入者。
 
-本轮恢复管理 SOURCE `940d9cc6fbb9530291b975c04a46ba8d8f51d259` 已普通 push，`git diff --check`、单文件提交范围与 `git ls-remote` 精确核同值 PASS。三原 Task 的实际开始、当前身份与恢复首失败均已报告总负责人；当前只读核验未启动原生控制器或模型。H 13:55:01Z 本人 STOP `msg_d24e06d1dc99` 明确无测试、构建、HTTP 或 SQLite 事务占用，已交产品负责人安排原 S2；最终归还仍待本人记录。
+本轮恢复管理 SOURCE `940d9cc6fbb9530291b975c04a46ba8d8f51d259` / 独立 REPORT `1f26960ac9519f005d346140452666f4df921b9d` 已普通 push，`git diff --check`、单文件提交范围与最终 `git ls-remote` 精确核同值 PASS。REPORT 首次独立远端读取 TLS 失败保留，随后核对通过。三原 Task 的实际开始、当前身份与恢复首失败均已报告总负责人；当前核验未启动原生控制器或模型。H 13:55:01Z 本人 STOP `msg_d24e06d1dc99` 和 S2 后续归还记录均已收取。
 
 已交唯一 I 的当前阶段输入：R SOURCE `00dbd9c63dce2311518a1c47002947180d770a2f` / REPORT `29ed9d69c83cb80e0c3731870995876461a8c2b0`，后者远端精确核同值；H SOURCE `59a7150b1143680b67fe53fdf831fcca5f328660` / REPORT `0aab7edd54fb7bb031e9709f752c6240ce7852a9`，其 Context Root 泄漏仍为未通过项，不能据此交付或读取私有数据；S4 SOURCE / REPORT 如本节所列，远端精确核同值。H 后继输入所有权 SOURCE `0138c6318dac2aa0e3091b06830ee7842b40f152` 及普通合并 `7f41232a72da3e8c8681ac46e334dae717a4d5a7` 正交 H 核验并 push；I 只读取准确已提交阶段，不读取 WIP。
 
-R 13:56:54Z 报告可信登记两个真实 SQLite 检查 PASS，app 13.680 秒、agents 5.630 秒、relayworktree 4.451 秒 PASS；SQLite 全包原 B `TestProvenUnstartedResumePreservesOwnedOriginalSession` 在冷 Registry 下期待原 owned 会话，实际 `delivery_unknown` 仍为 RED，原件位于 R `dist/relay-l1/registration/scoped-packages-first.log`。已交产品原 B，不修改其测试或伪造 owned 事实。R 十一份 S2 文件仅在逐项等于 `aa445adf834c3a397a0817bec0593fcf1039420a` 原 blob 后允许独立普通提交登记原样消费；内容不一致即停止对应消费，其他 S2 路径不在授权范围。
+R 可信登记 SOURCE `4d93a52028e5ea72c705c5c6e7f30d0cb7f016bb` / 独立 REPORT `9021cbaa0dac6321491c9ae86d466749b8a32904` 已普通 push，模块独立核对远端 REPORT、SOURCE 普通祖先和纯文档 REPORT 通过。生产端口为可选 `RelayTrustedAgentRegistrar.RegisterTrustedAgents(context.Context, []domain.AgentSpec) error`，不扩充 `RelayRuntime`；完整快照校验、深复制、互斥原子发布和原 store 占用保护均保留。H 明确转发该端口，继续使用同 Service / Registry。
+
+模块在已忽略的 `dist/relay-module/registration` 中对准确 SOURCE 作 `git archive`，独立运行 `go test -p=1 -mod=readonly ./internal/workspace/app -run '^TestRelayTrustedRegistration' -count=1 -v -timeout=90s`，两个真实 SQLite / Git 测试 `TestRelayTrustedRegistrationSameServiceAtomicAndReservedIntent` 与 `TestRelayTrustedRegistrationConcurrentCompleteSnapshotsAndIntent` 均 PASS，package 2.439 秒。Go 使用已预热 D 盘缓存及模块独占临时目录，零原生初始化与模型输入。
+
+R 原 app 13.680 秒、agents 5.630 秒、relayworktree 4.451 秒检查 PASS；SQLite 全包原 B `TestProvenUnstartedResumePreservesOwnedOriginalSession` 在冷 Registry 下期待原 owned 会话，实际 `delivery_unknown` 仍为 RED，原件位于 R `dist/relay-l1/registration/scoped-packages-first.log`。已交产品原 B，不修改其测试或伪造 owned 事实。十一份 S2 文件逐项等于 `aa445adf834c3a397a0817bec0593fcf1039420a` 原 blob 后，以独立消费提交 `4b5312ff47241777d5fff07bd4afec1adc19e3cd` 保留来源；其他 S2 路径不在授权范围。
+
+H SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` / 独立 REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60` 已由本人普通 push 并核远端。实际安全 Context / 批准重启 / Git / SQLite PASS 5.304 秒，同 Service 空登记与 observer 激活、GET 不重载、八并发、坏登记拒绝、在途策略保护及 Prepare 权限拒绝的生产 HTTP / SQLite 检查 PASS 2.255 秒，native_sessions 为零。P 精确 Reader 五文件只读 overlay 的 build / vet、OpenAPI 273 例和 34 包边界通过；H 原单 Reader 分支 build FAIL、首 PowerShell overlay 参数失败和 TLS 失败均保留。最终组合、owned 正向、原生、Today 和包未通过。
+
+唯一 I 当前为 `ctx_b573b61bb4aa / term_1c79262e-de36-41c2-bdd5-5113e2d3bb87`。首普通合并有十一份冲突，I 本人 `msg_10c3dbb9dc19` 明确停止且未编辑或 stage。H 本人 14:08:54Z `msg_c0c470f23fa1` 确认原树干净、无运行命令 / 事务 / 编辑并 STOP，发布负责人 `msg_b1be7ca0f4cb` 明确放行 H 临时仅处理 I 树 `cmd/server/main.go`、`cmd/server/workbench_config.go`、`contracts/openapi.yaml`、`internal/adapters/httpapi/server.go`。B 不处理 workbench_config.go，H 仅编辑并 stage，不操作 merge 生命周期；全部原 owner 明确停止并归还后仅 I 继续。
+
+S4 14:07:23Z 报告内部 `CleanupRepositoryContext(ctx, maxGenerations)` 真实公开双 worktree / SQLite / 官方 SDK 检查通过：单 Agent 撤销保留共享图、项目授权收窄立即拒读、真实 junction 拒绝、分批删除、其他项目保护与重启幂等。SOURCE `4ebd777b7b340c717c5311d78a0f26174374bbbf` 首次普通 push TLS 失败，远端交付待核。B 已核项目 service 没有既有 worker / queue / wake 或持久清理请求；生产接入尚未实现。
+
+总负责人正式答复 `msg_0f397f12b04e` 授权原 S4 在同一 repositorycontext Service 内增加专用 Go 后台清理生命周期。本阶段 S4 精确新增写入路径为 `internal/adapters/repositorycontext/cleanup_worker.go`、同名测试，必要窄端口仅修改已有 `internal/workspace/app/repository_context.go`，真实验证沿 `tests/s4/cleanup*` 与原标准文档；其余原 S4 写入范围不变。B 在项目事务成功提交后调用窄唤醒口，H 在 I 冲突写入归还后独占同实例组装、错误上送与取消退出。启动核真实持久索引 / 项目元数据，每 pass 有上限，仅实际进展且 HasMore 时续行；唤醒可合并，持久待清理事实不可只存内存。失败经原主生命周期终止服务，停止后台清理后才关闭 DB。不修改冻结 engine / 001–025，不新增通用调度器 / 队列 / schema。准确交付逐项核待清理 / 完成 / 撤销的持久事实、可恢复 / 去重 / 并发 / 取消、真实撤销拒读、分批清理、丢唤醒重启和退出；事实不足先交 B 准确差异再报根。SemanticIndex 和分发条件继续未决定。
 
 ### 用户最新完成语义与集成顺序
 
 总负责人 13:53:48Z 消息 `msg_c0b5fd86176f` 转交用户决定：done 采用 `verified_complete` 与 `user_confirmed_complete` 两通道，各自保留真实出处；开始证据独立记录，后到完成不得回填 started；资源释放独立审计，不跳过既有权限、对象归属、真实退出及 pending 检查；user_confirmed 任务照常进入经验管道并保留其完成通道。R 在原领域实施，H 维护安全 HTTP / OpenAPI 与薄组装；需要新增持久化或版本变化时先交准确差异，由 B 处理其独占迁移。当前尚未完成新双通道实际验证。
+
+总负责人正式答复 `msg_3b809b065867`：有权限操作者明确确认目标完成时，accepted 或 working 均可进入 done，实际通道为 `user_confirmed_complete`；缺少 started 的事实继续 unknown。`verified_complete` 必须同时关联本任务合法 owned 输出和固定目标实际检查通过的证据；H 来源归属核查、原生回合结束都不能单独证明目标通过。只有 `CompletionConfirmed` 而无目标核查事实归人工通道。R / H 沿既有 Transition、收据、事件和人工确认端口交付准确证据接缝。释放保持 done → released，逐次核真实退出、pending 为零、权限和归属；未新增 accepted / working → released，失败或取消沿既有终止清理路径保留实际审计。
+
+总负责人 `msg_2cf72d3f5ad9` 明确 L2 六步，根精确文档 SOURCE `eb27bd6712b5df92a55ad542026534860726d8ff` 的 `tasks/cognitive-stack-L1-L4.md` §3.2.1 / §3.4 已完整读取：保存验收结果、产物、检查和实际完成通道；保留成败、轨迹和产物引用；Interpreter 起草有证据经验进入 quarantine；用户审核批准进入 approved 并保存批准记录；新任务经 get_experiences 获取并写入交接上下文；保存后续执行结果、实际经验使用和是否避免重复错误。人工批准不可代签，工程闭环结果与认知表现的独立对照实验分列。只消费该准确文档内容，不合入 validation 的其他祖先。
 
 顺序更新为四树分支收拢与组合验证 → 集成版真实 L1 → L2 经验管道 → 六步端到端首跑作为 L2 验收，目标 10-22 并入发布包。当前可消费准确 SOURCE / 独立 REPORT 先交发布负责人 `ctx_babf16de02e2` 的唯一 I，整体检查在准确组合上执行；领域失败继续交原 owner。Astrocyte 管理目标、批准和上下文，Works Relay 后端 A 与 Morphogenesis 后端 B 的 Mission 认领、预算和租约由单一后端独占；v0.3 任务书及 L3 自动路由由总负责人维护，本模块不扩大当前实现范围。
 
