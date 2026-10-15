@@ -2,6 +2,18 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:51 生产准入与完成桥已准确集成
+
+H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 已由原作者及 M-relay 确认可消费。本模块独读六件 H 文件的范围与单件 http.md 报告；生产装配接入同 DB human AdmissionService、真实完成来源 Reader，并补完整公开 Schema。无快照时使用 B 完整逐引用权限，有快照时保留原 selectedrefs / delegated-owner；Agent completion 未决定分支继续拒绝，session-events 六字段保持。
+
+唯一 I 无冲突普通合入准确 `609993b25543a74e64d89a31c99bf3c08b81b44b`，实际普通 push / 远端核对完成。原 `pnpm build` EXIT0 / `30.1152367` 秒，source / source_after 同值，本模块独读 `integration/c16-product-build-609993b/result.json`。同源新增两种实际 SQLite / HTTP 准入模式、完成桥空真实 Store 及静态路径处理三项检查 EXIT0 / 包4.761秒，原件 `integration/c16-product-main-609993b.log`。H 已稳定复制 `versions/609993b2`、核 revision / modified=false / index，停止读取并归还 I 产物窗口；当前服务仍 b73 / PID4676 / 原 Q generation，实际切换由 H 取得 F / UI 本次安全 ACK 后执行。
+
+准确609的原 `pnpm check:contracts` 首次 EXIT1：Redocly 通过、保留原13条 warning，264个 examples 通过，生成 client 的 `--check` 报 `Generated client schema drift`。本模块独读该日志并交原 F 运行原 generator，I 未手写或修改 web 类型。H 独立报告与 F 候选 SOURCE `fd7db97d26991ec04937bfb7ecae3208ad339706` / REPORT `3320e0a18b17edc6b6bdba9e4b08ccef6d4966af` 随后普通合为 `ecb29c9593348d409514cc1ddff05ff04affcd87`，I 实际 push EXIT0 / 远端同值 / clean，已立即交 M-product。F 保护原 manual-progress WIP 后消费该准确组合生成 schema / client，再交原 UI；609构建结果只归609，不迁到新 HEAD。
+
+F 候选脚本仅作为已有实际操作的验证来源合入，I 不执行创建或修改脚本。当前候选保持 `ready_for_review`，四维 null、原 later 状态与两个版本及首失败保留，实际准入与批准等待用户具体决定。B 完整 fixed refs 权限在 `f1fdc35d1b5386749cd10b2f636fa47a5581846c` 实际同事务 / 撤销 / 旧 revision / 材料生命周期目标 EXIT0 / 1.174秒，公开 snapshot 仅核 metadata；B 历史进度存储检查只读取获准 derived 元数据，不复制 Grant / token / raw / 原生所有权，不将历史记录计为本轮模型结果。
+
+I 独立 REPORT `ab7f3bfdb21a4671d36f11bde2e4643aa6446196` 已交，记录上述主入口通过、契约首 RED 和精确交接。后继 B Windows junction helper SOURCE `d8067aae16acdec89e2bb8cb91ec153f45bf32f4` / REPORT `e850414e1b97b91a2e690cfdf62492577dd9cf00` 已普通合入 `b2673ffb4fc5f0d2a921593b0a4bcc503ea7ba56` 并推送；单独真实 Windows 路径 / 空格目录 / SameFile 检查 EXIT0 / 1.410秒，原 replayFixture 未执行，原生回放和 symlink1314 未据此解除。视频现有配置指针已交 M-product 核原 V / B 成果后给 H，不重复 ASR、模型或下载。完整默认、受限原生正向、解释器正向和最终同源发布仍未通过。
+
 ### 2026-10-16 04:35 实际生产与三项原失败均已有准确结果
 
 S4 SOURCE `6e441f7a6c14a11492d188a7259106445715700a` / 最终 REPORT `7f9c7fa9fc3b23153eb462931924a7782775cacb` 已由 M-relay 独核远端、祖先、报告和原件，本模块已读该报告。准确 b73 的原 `tests/s4/production.ps1` 在新独占 D 库实际 EXIT0 / PASS1 / FAIL0 / SKIP0；用例47.574393秒、总47.876767秒，真实 main / SQLite / 官方 CodeGraph / AOCI / 双公开 worktree、HTTP 授权撤权、两次重启、原十秒清理 A 并保留 B 原 generation 全部通过。两个首失败及原件保留，不重复已通过生产或模型；本结果不替代完整默认、L1 / L2 或最终包。
