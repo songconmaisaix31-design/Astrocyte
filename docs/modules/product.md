@@ -55,6 +55,33 @@ H 本人 `msg_c60e81a7e588` 与 M-relay `msg_0a57645bf245` 明确四路径停写
 
 B 原 `app/*_test.go` 全部零 WIP 并归还 T，`f76e25b` 已有测试贡献保留。S5 当前 `ctx_8ff0e4770bd8` 已交 Goal/Ranking reader SOURCE `32e701e98604b5c3139c3da61a5cfbe4a63d220e` / REPORT `ac288c54caeae932267c8104e46986ff1fb2b23a`；完整 Taste 与 026 继续由 B/S5 核真实字段和事务后交 T。已将 R 组合的原 B 冷 Registry 测试首 RED、S4 既有 worker 清理入口的真实依赖交回 B，不新增模拟、skip、调度器或绕过授权。完整默认、真实原生、AT12 与最终 Windows 包仍未通过，模块继续支持发布。
 
+### 22:08 集成冲突与后继消费计划
+
+H 四文件由原 S2 `msg_a1f70e5e4f93` 明确停写归还后，模块独立核 U0、限定 working / cached diff-check 均 EXIT0，HEAD `0138c6318dac2aa0e3091b06830ee7842b40f152` / CHERRY_PICK_HEAD `aa445adf834c3a397a0817bec0593fcf1039420a` 不变；通过 `msg_97231399b8e6` 交 H 唯一继续，S2 临时权限已经收回。M-relay 另行独核同结果。恢复 REPORT `8f306b44691074217739ab7f727f7d646a5650d4` 后续远端独立核实一致，前两次 GitHub TLS 失败保留；不改变网络、SSL 或 DNS。
+
+唯一 I `ctx_b573b61bb4aa` 在原 `works-relay-integration` / `songconmaisaix31-design/works-relay-integration` 开始普通合并 B。模块实核 HEAD `0e5ce82898c3d546f711d1e452dadfabb13b5537`、MERGE_HEAD `da7227749ea2f361c8b708be8614d3236fe2f04a` 与十一项未合并路径。M-release 维护整体临时计划和 I 本人 STOP；本模块仅安排下表原 B 的四件，不新增集成人员。`cmd/server/workbench_config.go` 长期归 H，其以前 B 精确消费已归还，已交 M-relay / M-release 由原 H 随其装配处理；除非取得明确临时交接，不进入 B 范围。
+
+| 原人员及目标树 | 临时限定 write_paths | 放行与归还条件 |
+|---|---|---|
+| B `ctx_ed3af07294cf` / `works-relay-integration` | `cmd/server/workbench_config_test.go`、`internal/adapters/sqlite/workbench.go`、`internal/adapters/sqlite/workbench_test.go`、`internal/workbench/app/contracts.go` | 本计划普通 push、I 本人 STOP、B 当前命令安全检查点 ACK 和 M-release 明确放行后，仅文件编辑并 stage 四件，保完整真实 Reader 和 Workbench 行为；不执行 commit / continue / abort / reset / 整体选边，不改其他路径。完成停止 I 树写入归还，交限定 diff、未合并项与适用检查，再由唯一 I 继续 |
+| S2 `ctx_edce6bc4ca6c` / `release-judgment-20261015` | 仅 `tests/s2/approval_test.go` | S5 本人 `msg_84e07f4bdca7` 已停写本次四件 S2 路径及消费生命周期。模块独核该树 HEAD `c26c3873f216d75f06c32dca576dab263c3aed68` / CHERRY_PICK_HEAD `ee7889cf04383162e160ae30544eb324257ed45c`，U 清单严格一件。本计划普通 push、S2 当前安全检查点 ACK 后具体放行，仅文件编辑并 stage 该测试，保 S5 现有事务修复及本次 Goal 检查；停止归还后模块核 U0 / 限定 diff，再交 M-release 唯一放行原 S5 继续 |
+
+两处临时范围互斥，原工作树和 WIP 保留，实际测试或事务不被中断。所有领域源码继续由原作者完成与验证，管理人员不代改。冲突清除不能代替构建、生产 HTTP 或最终验收。
+
+根 `msg_0d10e122304b` 已转交用户完整六步：保存验收、产物、检查和真实完成通道；追溯成败、轨迹和产物引用；Interpreter 关联证据起草 quarantine 经验；用户审核批准并保存记录；新任务通过 `get_experiences` 检索并写入交接上下文；保存后续实际结果并核验经验的实际使用。工程顺序仍先 I → 集成版 L1，再做 L2 六步；认知收益由独立对照实验判断。原 B/F/S3 延续既有服务和检索，不代签批准、不新增平行迁移。
+
+后继已交来源与实际限制：
+
+| 原领域 | SOURCE / 独立 REPORT | 已核范围 |
+|---|---|---|
+| B 完整 Taste 存储 | `41602e6f2a14a75e3765ef0a72f7afadf1856bbb` / `fbdc89c1b2961d253d0268eff8098e9552a5dfd5` | 原 owner 报告普通 push、三个实际 SQLite 检查 1.622 秒通过；模块只读核唯一 026 恰两表、历史只 INSERT、当前及固定来源同事务读取、README 固定原生 Git blob 一致。题型 / expected 与 S5 三题型一致性继续返原 B/S5，存储通过不计 AT12 |
+| S2 当前 Goal | `ee7889cf04383162e160ae30544eb324257ed45c`、测试 `885e72a57d2986b7d5962bc846f3f9e6f935f530` / `5ade870744ad6d396cca7e268899a19c133ea1ec` | 原 owner 报告 SQLite/Git/Handler 6.26 秒、实际服务 HTTP 两次重启 32.423 秒、同事务写入回滚 / 重放 / 错库 / 目标状态 0.12 秒通过。模块审阅当前 active 固定版本、当前项目权限及同 DB 最终复核；准确来源已交 I/S5/T |
+| S3 | `71af7fde6a0a6d0e2f6f23813626d44e26e144e8` / `ce525d4c0a1053a89da1ff68b8eaa59dbe4aa93e`、后继 `fc5b04795970ea77a41aaa9108434d09d8d010fd` | 模块独核远端后继 REPORT 同值、修改只原 S3 三件；真实 untracked 认领缺失首 RED 保留，修复后的 SQLite/HTTP/构建检查由原 owner 通过。两 Agent 和原生仍未运行 |
+| F 精确 helper | `f3f1fbd8670bd28bb7a78b47c58489469a2ed321` / `430d3cbd81801b27b055993aa3a7ad307d6cb641` | 模块独核远端 REPORT 同值、helper 与 B 原件完整 diff0；typecheck/lint/build、十五项实际 HTTP 通过。默认一百项实测 86 PASS / 1 Vite 启动 EACCES FAIL / 13 NOT_RUN，原日志、DB、trace 和 startup-failure.json 保留，交唯一 B 修复，不盲重跑或改变期限 / 断言 |
+| T 排序组件 | `1a340788bca4c29aef38d24c1c7ed2c1f32e1778` / `9991eee115925740718ef33b25eb727330e3b2b8`、后继 `65e7bc3d0018ad55f9326946e5cf667755d8464a` | 模块独核远端后继 REPORT 同值；两独立 SQLite 连接 CAS、历史、重开与回执两个测试 2.493 秒、应用构建通过。原官方与手工准入保持，完整 Taste / 原生十四项及两包全部仍未验收 |
+
+原 B 实核项目服务没有适用 worker / queue / wake 或持久化清理请求，只有 Attention.Run 和一次 discovery。S4 清理触发与恢复方案已交所属 M-relay 处理，不假定既有入口存在，不冒用资料作业或执行批准。冷 Registry 正向原件、H 安全 Context、新完成通道、完整默认和最终 Windows 包继续真实验收，模块未结算。
+
 ### 2026-10-15 10:41 再次重启后的恢复计划
 
 根当前交接 `msg_54ce630eae98` 确认 10:31 运行时再次重启，原人员 OS 进程退出、旧句柄失效；沿原子 Run、原 Task、原工作树和原分支恢复。公开 Task 列表实测 T / S2 / S3 / 产品 UI 均为 `ready`，旧 Dispatch 为 `failed / terminal_missing`。公开终端清单无这四位旧句柄，当前 Codex 进程启动时间均在重启之后；不根据单独的 `missing_status` 判定退出。B/F 生命周期由根在原 Run 恢复，本模块不重复启动。S0–S6 授权和前端复用此前白绿设计、使用 TypeScript 的用户决定保持。
