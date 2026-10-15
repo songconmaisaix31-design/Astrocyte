@@ -201,5 +201,29 @@ func TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(before, final) || len(final.Sessions) != 0 || len(final.Terminals) != 0 || len(final.Workspaces) != 0 {
 		t.Fatal("读取或拒绝产生原生进程状态或 store 写入")
 	}
+	prepareBody, err := json.Marshal(workspace.RelayConfirmCommand{PermissionConfirmed: true, PermissionLevel: "A", ProjectSettingsRevision: project.Settings.Revision})
+	if err != nil {
+		t.Fatal("实际初始化命令编码失败")
+	}
+	prepareRequest, err := http.NewRequest("POST", client.baseURL+"/api/v1/relay/intents/"+intent.Task.ID+"/prepare", bytes.NewReader(prepareBody))
+	if err != nil {
+		t.Fatal("实际初始化请求创建失败")
+	}
+	prepareRequest.Header.Set("Origin", client.baseURL)
+	prepareRequest.Header.Set("Content-Type", "application/json")
+	prepareRequest.Header.Set("X-CSRF-Token", client.csrf)
+	prepareRequest.Header.Set("Idempotency-Key", uuid.NewString())
+	prepareResponse, err := client.client.Do(prepareRequest)
+	if err != nil {
+		t.Fatal("实际初始化请求失败，没有重试")
+	}
+	prepareResponse.Body.Close()
+	if prepareResponse.StatusCode != http.StatusForbidden {
+		t.Fatal("原Prepare包装没有重核当前start权限")
+	}
+	prepared, err := store.Snapshot(ctx)
+	if err != nil || prepared.Tasks[intent.Task.ID].State != "ready" || len(prepared.Sessions) != 0 || len(prepared.Terminals) != 0 || len(prepared.Workspaces) != 0 {
+		t.Fatal("被拒绝的初始化改变了原生会话或任务状态")
+	}
 	writeActualJSON(t, filepath.Join(root, "safe-result.json"), map[string]any{"facts": len(response.Facts), "fact_ids_located": true, "get_readonly": true, "origin_rejected": true, "permission_rechecked": true, "native_sessions": 0})
 }

@@ -183,7 +183,7 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 	}
 	if s == nil {
 		mux.HandleFunc("GET /api/v1/relay/tasks/{id}/facts", read(h.relayFacts))
-		for _, route := range []string{"GET /api/v1/relay/agents", "GET /api/v1/relay/projects", "GET /api/v1/relay/tasks", "GET /api/v1/relay/tasks/{id}", "GET /api/v1/relay/tasks/{id}/events", "GET /api/v1/relay/tasks/{id}/receipts", "POST /api/v1/relay/intents", "POST /api/v1/relay/intents/{id}/confirm", "POST /api/v1/relay/tasks/{id}/send", "POST /api/v1/relay/tasks/{id}/read", "POST /api/v1/relay/tasks/{id}/stop", "POST /api/v1/relay/tasks/{id}/resume", "POST /api/v1/relay/tasks/{id}/transition", "POST /api/v1/relay/tasks/{id}/events/reconcile"} {
+		for _, route := range []string{"GET /api/v1/relay/agents", "GET /api/v1/relay/projects", "GET /api/v1/relay/tasks", "GET /api/v1/relay/tasks/{id}", "GET /api/v1/relay/tasks/{id}/events", "GET /api/v1/relay/tasks/{id}/receipts", "POST /api/v1/relay/intents", "POST /api/v1/relay/intents/{id}/prepare", "POST /api/v1/relay/intents/{id}/confirm", "POST /api/v1/relay/tasks/{id}/send", "POST /api/v1/relay/tasks/{id}/read", "POST /api/v1/relay/tasks/{id}/stop", "POST /api/v1/relay/tasks/{id}/resume", "POST /api/v1/relay/tasks/{id}/transition", "POST /api/v1/relay/tasks/{id}/events/reconcile"} {
 			mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
 				h.relayResult(w, r, nil, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable})
 			})
@@ -280,6 +280,14 @@ func (h *handler) registerRelay(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/relay/intents", relayCommand(h, func(r *http.Request, c workspace.RelayIntentCommand) (any, error) {
 		v, e := s.CreateIntent(r.Context(), localCaller(r), c)
 		return relayTaskResult(v), e
+	}))
+	mux.HandleFunc("POST /api/v1/relay/intents/{id}/prepare", relayCommand(h, func(r *http.Request, c workspace.RelayConfirmCommand) (any, error) {
+		preparer, ok := s.(workspace.RelayIntentPreparer)
+		if !ok {
+			return nil, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
+		}
+		v, e := preparer.PrepareIntent(r.Context(), localCaller(r), r.PathValue("id"), c)
+		return h.relayActionResult(r, v), e
 	}))
 	mux.HandleFunc("POST /api/v1/relay/intents/{id}/confirm", relayCommand(h, func(r *http.Request, c workspace.RelayConfirmCommand) (any, error) {
 		v, e := s.ConfirmIntent(r.Context(), localCaller(r), r.PathValue("id"), c)

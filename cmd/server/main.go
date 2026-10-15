@@ -242,7 +242,7 @@ func run(logger *slog.Logger) error {
 	if err := assembleSwarmLedger(&services, db); err != nil {
 		return err
 	}
-	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig); err != nil {
+	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry); err != nil {
 		return err
 	}
 	closeRelay, err := assembleRelay(&services, db, registry)

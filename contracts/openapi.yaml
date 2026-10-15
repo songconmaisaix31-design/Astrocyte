@@ -51,6 +51,28 @@ tags:
   - name: relay
     description: Human confirmed Works Relay access layer
 paths:
+  /relay/intents/{id}/prepare:
+    post:
+      operationId: prepareRelayIntent
+      summary: Initialize the original owned controller with an empty message
+      description: Human permission confirmation reserves the original workspace and initializes the same controller without a model input. The task remains ready. First input requires a separate Confirm operation; delivery_unknown must never be replayed.
+      tags: [relay]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters:
+        - {$ref: '#/components/parameters/S2ID'}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, format: uuid}}
+        - {name: X-CSRF-Token, in: header, required: true, schema: {type: string, minLength: 1}}
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/RelayConfirmRequestV1'}}}}
+      responses:
+        '200': {description: Original initialization receipt and current ready task, content: {application/json: {schema: {$ref: '#/components/schemas/RelayActionResultV1'}}}}
+        '400': {$ref: '#/components/responses/S2CommandError'}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        '404': {$ref: '#/components/responses/S2CommandError'}
+        '409': {$ref: '#/components/responses/S2CommandError'}
+        '500': {$ref: '#/components/responses/S2CommandError'}
+        '501': {$ref: '#/components/responses/S2CommandError'}
+        '503': {$ref: '#/components/responses/S2CommandError'}
   /context-packets:
     post:
       operationId: buildWorkspaceContextPacket
@@ -9504,7 +9526,7 @@ components:
     RelayTasksV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"tasks":{"type":"array","items":{"$ref":"#/components/schemas/RelayTaskViewV1"}},"dispatched_work_ids":{"type":"array","items":{"type":"string"}}},"required":["schema_version","tasks","dispatched_work_ids"],"examples":[{"schema_version":1,"tasks":[],"dispatched_work_ids":[]}]}
     RelayTaskResultV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"view":{"$ref":"#/components/schemas/RelayTaskViewV1"}},"required":["schema_version","view"]}
     RelayReceiptErrorV1: {"type":"object","additionalProperties":false,"properties":{"code":{"type":"string","enum":["validation_failed","unsupported_capability","version_conflict","context_stale","index_stale","scope_denied","approval_required","approval_revoked","lease_lost","budget_exhausted","provider_unavailable","evidence_missing","delivery_unknown","not_found","internal_error"]},"message":{"type":"string"},"request_id":{"type":"string"},"retryable":{"type":"boolean"},"required_action":{"type":"string"}},"required":["code","message","request_id","retryable","required_action"]}
-    RelayReceiptV1: {"type":"object","additionalProperties":false,"properties":{"receipt_id":{"type":"string","minLength":1},"task_id":{"type":"string","minLength":1},"operation_id":{"type":"string","format":"uuid"},"action":{"type":"string","enum":["intent","dispatch","send","read","stop","resume","transition","observe","reconcile_events"]},"operator":{"type":"string","minLength":1},"status":{"type":"string","enum":["pending","accepted","rejected","delivery_unknown"]},"error":{"anyOf":[{"$ref":"#/components/schemas/RelayReceiptErrorV1"},{"type":"null"}]},"created_at":{"type":"string","format":"date-time"},"finished_at":{"type":["string","null"],"format":"date-time"}},"required":["receipt_id","task_id","operation_id","action","operator","status","error","created_at","finished_at"]}
+    RelayReceiptV1: {"type":"object","additionalProperties":false,"properties":{"receipt_id":{"type":"string","minLength":1},"task_id":{"type":"string","minLength":1},"operation_id":{"type":"string","format":"uuid"},"action":{"type":"string","enum":["intent","prepare","dispatch","send","read","stop","resume","transition","observe","reconcile_events"]},"operator":{"type":"string","minLength":1},"status":{"type":"string","enum":["pending","accepted","rejected","delivery_unknown"]},"error":{"anyOf":[{"$ref":"#/components/schemas/RelayReceiptErrorV1"},{"type":"null"}]},"created_at":{"type":"string","format":"date-time"},"finished_at":{"type":["string","null"],"format":"date-time"}},"required":["receipt_id","task_id","operation_id","action","operator","status","error","created_at","finished_at"]}
     RelayReceiptsV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"receipts":{"type":"array","items":{"$ref":"#/components/schemas/RelayReceiptV1"}}},"required":["schema_version","receipts"],"examples":[{"schema_version":1,"receipts":[]}]}
     RelayEventsV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"const":1,"type":"integer"},"events":{"type":"array","items":{"$ref":"#/components/schemas/WorkbenchEventV1"}}},"required":["schema_version","events"],"examples":[{"schema_version":1,"events":[{"event_id":"fixture-relay-event","kind":"edit_file","topic":"fixture-work","tokens":null,"scope":"fixture-project","ts":"2026-10-14T00:00:00Z"}]}]}
     RelayIntentRequestV1: {"type":"object","additionalProperties":false,"properties":{"work_id":{"type":"string","minLength":1},"project_id":{"type":"string","minLength":1},"agent":{"type":"string","minLength":1},"task":{"type":"string","minLength":1,"maxLength":65536},"handoff_from_task_id":{"type":"string","format":"uuid","description":"Explicit prior released task in the same Work and original workspace. Requires handoff_context_confirmed=true and a different Agent. This declaration does not prove a new native session."},"handoff_context_confirmed":{"type":"boolean","description":"Human confirmation of prior task context. Omitted or false retains ordinary intent semantics when no source task is specified."}},"required":["work_id","project_id","agent","task"]}
@@ -10306,13 +10328,12 @@ components:
     S2ProjectContextSnapshotV1:
       type: object
       additionalProperties: false
-      required: [environment_id, repo_id, worktree_id, project_id, root, head, index_digest, worktree_digest, generation, observed_at]
+      required: [environment_id, repo_id, worktree_id, project_id, head, index_digest, worktree_digest, generation, observed_at]
       properties:
         environment_id: {type: string}
         repo_id: {type: string}
         worktree_id: {type: string}
         project_id: {type: string}
-        root: {type: string, description: Approved project root already selected in the local project configuration.}
         head: {type: string}
         index_digest: {type: string}
         worktree_digest: {type: string}
@@ -10327,6 +10348,15 @@ components:
         object_ref: {type: string}
         title: {type: string}
         locations: {type: [array, 'null'], items: {type: string}}
+    S2ContextPacketScopeV1:
+      allOf:
+        - {$ref: '#/components/schemas/S2ExecutionScopeV1'}
+        - type: object
+          properties:
+            roots:
+              type: array
+              description: Project relative roots derived from the fixed private snapshot; absolute source paths remain local.
+              items: {type: string, pattern: '^(?!/)(?![A-Za-z]:)[^\\]*$'}
     S2ContextPacketV1:
       allOf:
         - {$ref: '#/components/schemas/S2ContextNotesV1'}
@@ -10345,7 +10375,7 @@ components:
             goal: {$ref: '#/components/schemas/S2GoalV1'}
             snapshot: {$ref: '#/components/schemas/S2ProjectContextSnapshotV1'}
             sources: {type: array, items: {$ref: '#/components/schemas/S2PacketSourceV1'}}
-            scope: {$ref: '#/components/schemas/S2ExecutionScopeV1'}
+            scope: {$ref: '#/components/schemas/S2ContextPacketScopeV1'}
             stops: {$ref: '#/components/schemas/S2StopConditionsV1'}
             object_ref: {type: string}
             created_at: {type: string, format: date-time}
@@ -10378,14 +10408,13 @@ components:
         member_id: {type: string}
         status: {type: string}
         capabilities:
-          type: [object, 'null']
+          type: object
           additionalProperties:
             type: object
             additionalProperties: false
-            required: [status, reason, checked_at]
+            required: [status, checked_at]
             properties:
               status: {type: string}
-              reason: {type: string}
               checked_at: {type: [string, 'null'], format: date-time}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}

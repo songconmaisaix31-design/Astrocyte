@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/repositorycontext"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
@@ -23,11 +24,11 @@ func assembleRepositoryContext(services *httpapi.Services, db *sqlite.DB, option
 	return provider, nil
 }
 
-func assembleConfiguredRepositoryContext(services *httpapi.Services, db *sqlite.DB, objects workspace.ContextObjectStore, config repositoryContextConfig) error {
+func assembleConfiguredRepositoryContext(services *httpapi.Services, db *sqlite.DB, objects workspace.ContextObjectStore, config repositoryContextConfig, registry *agents.Registry) error {
 	if config.EnvironmentID == "" {
 		return nil
 	}
-	if services == nil || services.WorkspaceS2 == nil || objects == nil {
+	if services == nil || services.WorkspaceS2 == nil || objects == nil || registry == nil {
 		return errors.New("fixed Workspace context requires the original service and object store")
 	}
 	provider, err := assembleRepositoryContext(services, db, repositorycontext.Options{
@@ -39,7 +40,10 @@ func assembleConfiguredRepositoryContext(services *httpapi.Services, db *sqlite.
 	if err != nil {
 		return err
 	}
-	// 当前原生绑定端口缺失时，BindSession沿既有服务明确返回unsupported_capability。
-	services.WorkspaceS2.ConfigureContext(provider, objects, nil)
+	owned, err := workspace.NewOwnedSessionProvider(relayOwnedContext{registry: registry}, provider)
+	if err != nil {
+		return err
+	}
+	services.WorkspaceS2.ConfigureContext(provider, objects, owned)
 	return nil
 }
