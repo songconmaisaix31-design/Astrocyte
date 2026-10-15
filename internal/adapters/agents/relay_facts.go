@@ -234,5 +234,16 @@ func (n *Native) SendOperation(ctx context.Context, session domain.NativeSession
 	} else if evidence.ControllerID == "" {
 		return domain.NativeObservation{}, nativeError(apierrors.DeliveryUnknown, "original relay controller operation is unrecorded")
 	}
+	p, err := n.get(session)
+	if err != nil {
+		return domain.NativeObservation{}, err
+	}
+	if p.relayInputGuard != nil {
+		original, err := p.relayInputSession(session)
+		if err != nil {
+			return domain.NativeObservation{}, err
+		}
+		input = packetPrompt(original.ContextPacket, input)
+	}
 	return n.send(ctx, session, input, operation)
 }

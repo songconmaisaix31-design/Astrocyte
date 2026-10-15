@@ -22,6 +22,15 @@ type RelayConfirmCommand struct {
 	ProjectSettingsRevision int    `json:"project_settings_revision"`
 }
 
+// 初始化持有原控制器和工作区，首输入仍由原 ConfirmIntent 确认。
+type RelayIntentPreparer interface {
+	PrepareIntent(context.Context, domain.Caller, string, RelayConfirmCommand) (domain.RelayActionResult, error)
+}
+
+type RelayDriverInitializer interface {
+	Initialize(context.Context, RelayLaunch) (RelayObservation, error)
+}
+
 type RelaySendCommand struct {
 	Input string `json:"input"`
 }

@@ -108,6 +108,11 @@ func TestRelayIntentBindsSQLiteSettingsAcrossReload(t *testing.T) {
 				t.Fatal("SQLite reload lost original intent permission")
 			}
 			wrong := app.RelayConfirmCommand{PermissionConfirmed: true, PermissionLevel: level, ProjectSettingsRevision: project.Settings.Revision + 1}
+			preparer := service.(app.RelayIntentPreparer)
+			_, err = preparer.PrepareIntent(ctx, caller(), intent.Task.ID, wrong)
+			checkCode(t, err, apierrors.VersionConflict)
+			_, err = preparer.PrepareIntent(ctx, caller(), intent.Task.ID, app.RelayConfirmCommand{})
+			checkCode(t, err, apierrors.ApprovalRequired)
 			_, err = service.ConfirmIntent(ctx, caller(), intent.Task.ID, wrong)
 			checkCode(t, err, apierrors.VersionConflict)
 			// 通过生产项目服务真实保存一次版本变化，A/B/C 标签保持相同。
@@ -132,6 +137,36 @@ func TestRelayIntentBindsSQLiteSettingsAcrossReload(t *testing.T) {
 			}
 			if _, err = os.Stat(worktrees); !os.IsNotExist(err) {
 				t.Fatal("denied intent prepared a real worktree")
+			}
+			// 有效权限也不能绕过两阶段来源保护；此驱动明确没有首输入 guard。
+			freshIntent, err := service.CreateIntent(ctx, caller(), intentCmd)
+			if err != nil {
+				t.Fatal(err)
+			}
+			prepareCaller := caller()
+			prepared, err := preparer.PrepareIntent(ctx, prepareCaller, freshIntent.Task.ID, current)
+			checkCode(t, err, apierrors.UnsupportedCapability)
+			if prepared.Receipt.Status != "rejected" || prepared.View.Task.State != domain.RelayReady {
+				t.Fatal("unarmed preparation became an accepted input")
+			}
+			repeated, err := preparer.PrepareIntent(ctx, prepareCaller, freshIntent.Task.ID, current)
+			checkCode(t, err, apierrors.UnsupportedCapability)
+			if repeated.Receipt.ID != prepared.Receipt.ID || repeated.Receipt.Status != prepared.Receipt.Status || !repeated.Receipt.FinishedAt.Equal(*prepared.Receipt.FinishedAt) {
+				t.Fatal("repeated preparation rewrote the original rejected receipt")
+			}
+			state, err = store.Snapshot(ctx)
+			if err != nil || len(state.ControllerEvidence) != 0 || len(state.Sessions) != 0 || len(state.PendingActions) != 0 {
+				t.Fatal("unarmed initializer created native ownership or left a pending action")
+			}
+			for _, workspace := range state.Workspaces {
+				if workspace.ActiveTaskID != "" {
+					t.Fatal("proven unstarted initialization kept a workspace reservation")
+				}
+			}
+			for _, fact := range state.RuntimeFacts {
+				if fact.Kind == "input_written" || fact.Kind == "input_accepted" || fact.Kind == "turn_started" {
+					t.Fatal("rejected initialization manufactured an input fact")
+				}
 			}
 			// 成功派发由 H/F 的独占真实控制器服务执行，本检查不启动 CLI 或模型。
 		})

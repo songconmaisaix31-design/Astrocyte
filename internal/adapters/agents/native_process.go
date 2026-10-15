@@ -53,6 +53,7 @@ type nativeProcess struct {
 	relayStartedTurns     map[string]time.Time
 	relayPublishedTurns   map[string]bool
 	originalSession       *domain.NativeSession
+	relayInputGuard       func(context.Context, domain.NativeSession) error
 }
 
 // An ownership attachment failure happens after a process may have started.
