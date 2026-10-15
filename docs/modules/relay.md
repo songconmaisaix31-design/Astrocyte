@@ -2,6 +2,20 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 01:58 业务来源与实际组合检查
+
+H 生产 Goal Reader SOURCE `b22395c6eb1eed0be9e87957ae21111b5ce8f782` 的后继来源检查 SOURCE 为 `7037a452a2f7cd61e239a4a054fb2b4d55270f79`，独立 REPORT 为 `4dea8dd4627449aa790ceabcdb3f748863407d67`，均普通 push。模块已逐差异及原 sourceGuard 实现审查：原 actualService 采集入口在 accepted 空 Prepare、ready、pending 为零时，核同 Registry 原 Session、原 SQLite 当前授权 binding 和 Prepare 保存的正选 archive，再调用原 guard。无新增 RPC、模型、混合事件来源或 driver / receipt / cursor 修改；失败保存安全本机结果并终止，首次发送继续原 guard 重新检查。空任务服务实际 PASS 1.11 秒 / package 4.489 秒，task / agent / native 均为零，vet / diff check 退出零；该检查没有触发真实 Prepare，冷启动来源路径、文件、单链接、header 和工具关闭检查仍为 NOT_RUN。`CaptureNativeNotifications=true` 的私有元数据检查与 `ASTROCYTE_RELAY_SESSION_SOURCE=archive` 的独立 collector 选择分别生效，不能将 notification 采集混作 archive 来源。
+
+R 完成通道 SOURCE `1a529ac79a7499b45c3d80d256852f4d598a5754` / 独立 REPORT `9f9d2ac624e589ddf52042fe8d37f0c879dfeaa9` 保留真实 CompletionChannel / CompletionReceiptID，人工确认缺少原生轨迹时不补造。私有准备契约 SOURCE `a165fae709e212be4e98c96b326552da739985d0` 的后继 `8947ff7e36415da07a0eb85c103b722713460356` 加入 ActorProjectID，共九字段全部 JSON 隐藏；Read 成功仅代表真实尚未尝试发送，domain 实际 PASS 0.873 秒。模块已读准确差异并交发布；prepared wrapper、Claim 和真实来源 Reader 尚未据此完成，R 三份未提交来源 / SQL 诊断文件不供消费者使用。
+
+R `msg_4ebb939c8c86` 确认安全检查点、目标前像吻合及没有目标 WIP 后，模块 `msg_7395d91a1d10` 登记一次临时原件消费范围：本轮只允许在原 R 树通过文件编辑工具原样消费 B `176742241681a3b00257da33f4f8a69dd308a908` 的 `internal/attention/app/experience_accepted.go`，以及 B `c60479619b0c992fe3e2fe42fa0ee68b217a5115` 的 `internal/adapters/sqlite/local_agents.go` / `local_project_transaction_test.go`。逐件准确 diff 为零、独立 commit / 普通 push 后本人 STOP 归还；B / T 继续拥有共享逻辑及测试，不消费整个分支或 WIP。首三秒事务超时 RED 保留，修复后原条件真实复验；B 两方法接口与 R 实际 Read / Authorize 实现须成组交唯一 I，不单交未实现接口。此前 B 完成通道四件消费权限已结束。
+
+S4 在准确已提交 `f0277e7ca755792bae394f479b672b11847067d4`、新 D 盘 SQLite 和实际 production main 上检查双公开根：官方 CodeGraph index / Count 关系、Span 严格 snake 字段与真实 15–21 行、AOCI 六条刷新及 B 的真实 missing、GET 与原 `.aoci` 只读、真实进程重启三组 PASS。首 FAIL 为撤回目录授权后的清理，102.668 秒 / EXIT 1；实际 A allow_directory=false / revision3，但其 CodeGraph / AOCI metadata 与物理 generation 仍保留，B 当前 CodeGraph 保留。预算 409、agent grant 有效 200 / 撤销 403、人类仍 200 和目录关闭后 403 均已实际通过。原件为 `D:/Astrocyte-agent-assets/20261015/relay/S4/production-f027-first/production-first.log`。准确 main 未启动已有 RunRepositoryCleanup，项目设置提交后未唤醒同 provider；已交原 H 完成同实例生命周期、错误上送、取消等待及随后关闭 SQLite，交产品原 B 完成成功提交后窄 Wake 与可信配置来源。每 pass 删除上限的合法范围为 1–1000，尚无既定生产值，H 不自行冻结默认。原 S4 新生产 HTTP 检查继续迭代，未提交 WIP不作来源，首 FAIL 不覆盖；实际 Span 已通过，无需修改 domain / H 契约或 UI 容错。
+
+R 固定官方 Codex 0.162.0 / c1382380 的 spec_plan.rs 实际显示 shell 工具与 ApplyPatchHandler 分别注册：ShellTool=false 不足以证明 apply_patch 已关闭。原 R 正核官方支持的关闭入口，未另启 CLI 或模型；readOnly / tool_calls 为零不能替代关闭事实，完整 EffectiveToolSet 仍 unknown。根、H、F 已收到该既有 L1 要求的实际缺口，新 Mean / Median scope 尚无登记 t0、初始化或输入。R 整包首超时中另有一次 B 无模型 Native.Start 初始化尝试，原生命周期退出证据待 B 核实，该事实与新 scope 分列。
+
+唯一 I 正在原 S5 合并，尚无新的 S4 / S5 完整可构建阶段可交 H；35cc 的成功构建不适用于 85ac 或后继。H 的正式来源问题 `msg_b3b0848ffae6` 已由模块准确回复：当前只读准备接口，等待唯一 I 首次实际 build / push 的准确同源阶段，不另造叶提交组合。完整默认检查中的真实 context-packets 500、dev 原 60 秒首失败和 HMR 占用分别交原 S2 / H / B，未推断共同原因、重跑在途 F 或延长时限。组合检查、真实 L1 / 两尺寸 Today、L2 用户批准与最终 Windows 包继续；模块和三位原开发人员均未因阶段通过结算。
+
 ## 当前恢复分工（2026-10-16 00:30）
 
 根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 00:30 入口及正式消息 `msg_00aaf93e7172` 为当前恢复依据。总负责人为 `term_325a9aca-4a77-4e2c-93ed-cae95acd628c`，顶层 Run 保持 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_114d68a5f971 / term_b8c2e97f-b3ca-4146-a0a5-4e1fc648cc4a`。原子 Run `run_8bbda1c3974c` 已普通恢复至 generation 6，没有新建 Run 或绑定总负责人 Run。
