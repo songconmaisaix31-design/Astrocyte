@@ -1,6 +1,6 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前公共 API 阶段 SOURCE `0657d32760867e735a71fc891c05189a1c216cfd`，前序已验证业务 SOURCE `fc97cc17945cd496241fe8de36958f5a5df2edfb`，提案入口 SOURCE `b7709c9694efcc3c031e829abb2f08a120da2735`，窗口准备 SOURCE `9d01320204279a4e40e526f782b9f537510e95b9`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前本域 SOURCE `2f2db3017193bf0572648d90bc7adb88b8d475b1`，公共 API 阶段 SOURCE `0657d32760867e735a71fc891c05189a1c216cfd`，前序 Relay SOURCE `fc97cc17945cd496241fe8de36958f5a5df2edfb`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 ## 完成内容
 
@@ -30,7 +30,15 @@ Intent 通过真实任务历史选择同项目 / 作品、不同 Agent、原工�
 
 S2 公共 API 阶段普通消费 H `e99ae91d670a835c5de5927163568638fa5f3a61`，通过 generator 生成 `ProposalV1.content` 与准确 Goal / scope / budget / stops / Grant 类型。`api/proposals.ts` 提供实际 Goal / Proposal 固定版本读取、创建 / CAS 修改、提交 / 拒绝、人工批准及 Grant 读取 / 撤销 / 完成 / 过期，复用原客户端、human session、CSRF 和幂等身份，写入前立即拒绝 request_id 与 key 不同。新创建 expected_version 为 0；Goal 修改核 revision、Proposal 修改核 version、Grant 修改以 expected_version 核 epoch。当前成功响应为实际实体 envelope，未返回原命令身份，不能据实体 GET 解锁未知写入。
 
-该 API 文件独立 tsc / lint 通过，已经提前交新 UI 消费；当前全局 typecheck 在准确新 schema 下 FAIL，日志为 `.verification/s2-contract-typecheck-generated.log`。旧 ProposalWorkspace / ProposalRevision 平铺字段整改由新 UI Owner 负责，旧 WorkspacePage / shared display 参数整改由 F 负责，均持续进行。实际 API HTTP / SQLite 组合及本次 S2 功能验收尚未运行，不以此阶段提交声明完成。Context / session-binding 暂无准确公开生成路径，S3 新契约与后继 assignment / native 字段仍等待对应 Owner。
+准确新 schema 的首次全局 typecheck FAIL 保留在 `.verification/s2-contract-typecheck-generated.log`。普通消费新 UI `c0726349a5aca66c548364e2d85c9916056530aa` / `442447406aa55134f2c09c59fb559bf877204b01` 后，F 更新自身 WorkspacePage / shared display 参数，重用 Owner 的完整 ProposalRevision，保留原 17 个静态显示断言；当前全局 typecheck / lint / build 退出 0。新 `e2e/self-service.config.ts` 沿原配置的两种窗口、单 Worker、零重试；S2/S3 用例通过原 helper 持有真实 Go / SQLite / Vite，不再额外启动未使用的默认服务。原默认完整配置和覆盖没有改动。
+
+在该准确组合源码上，既有 S2 完整 workflow 两种窗口 2 PASS，1.5 分钟。Goal / Proposal 创建、不可变 revision、人工批准、撤销、真实 SQL / outbox、HTTP / SQLite 重启及重新加载均核对，新的原生会话 / 模型调用为 0。新 UI Owner 的其余权限 / 版本冲突 / 网络未知用例阶段结果仍按原报告分别记录，首 bootstrap ECONNRESET 保留；该连接问题已交唯一 helper Owner B。Context / session-binding 暂无准确公开生成路径，S3/S4 新契约与后继 assignment / native 字段仍等待对应 Owner，不把上述子集作为完整 S2/S3 验收。
+
+S4 新 `workspace/repositorycontext/**` / `e2e/s4-*.spec.ts` 经 F 核零 WIP、停止写入并 ACK 后，模块已正式交同一产品 UI Owner。共享 `api/repositoryContext.ts` / schema / hooks / auth 与 WorkspacePage 或 localProject 选择入口仍归 F；未收到准确公开契约前不产生模拟视图。
+
+2026-10-15 恢复 Dispatch `ctx_4a385bf65390` 后，用户确认继续复用既有白绿 React / TypeScript / Vite 设计。主控明确 F 保留共享客户端、auth、hooks、router 与唯一真实 Relay DOM 操作观察；页面实现与返修继续由产品 UI Owner 负责。第一 Codex 正向先核明确 started、公开目标、实际退出、pending 为 0 及 release，第二原生客户端与 context_handoff 单独验收。F 等待 H 交付同一控制器、空 Message 初始化、来源守卫和工具关闭证据后，准备空 registry 页面；尚未自行初始化或发送新任务。
+
+恢复时磁盘查询显示 C 盘可用 5,246,283,776 bytes，已向主控报告；后续大型构建临时目录和缓存按用户指定使用 `D:/Astrocyte-agent-assets/20261015/product/frontend`，F 不执行证据清理。原 10:28 设计浏览器运行在 Orca 重启前只完成 28 项中的第 1 项，结果为 PARTIAL；原日志保留，不记为整套通过。
 
 ## 精确源码消费
 
@@ -42,7 +50,12 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
-| S2 公共 `api/proposals.ts` 独立 tsc / eslint | 退出 0；当前全局新契约 typecheck FAIL，实际 HTTP 验证 NOT_RUN | `.verification/s2-api-typecheck-first.log`、`s2-contract-typecheck-generated.log` |
+| 10-15 当前 SOURCE 的 `npm run typecheck` / `npm run lint` / `npm run build` | 退出 0；Vite 产物 551.65 kB，保留大于 500 kB 的提示 | `.verification/f-dispatch-current-typecheck.log`、`f-dispatch-current-lint.log`、`f-dispatch-current-build.log` |
+| 10-15 当前 HTTP / 参数 Vitest 五文件 | 4 文件 36 项 PASS；`relaySession.test.ts` 缺少真实 PUBLIC_URL / GetEvent，beforeAll 失败、2 项未执行，整体 FAIL | `.verification/f-dispatch-current-http-vitest.log`；不使用模拟服务替代缺失原生来源 |
+| 10-15 既有设计 Playwright，两尺寸共 28 项 | PARTIAL：仅第 1 项完成 PASS，Orca 重启中断后续运行，无完整退出结果 | `.verification/f-dispatch-design-current-playwright-first.log` |
+| S2 公共 `api/proposals.ts` 独立 tsc / eslint | 退出 0；首次全局新契约 FAIL 保留，后续准确 UI 及 shared 内容适配通过 | `.verification/s2-api-typecheck-first.log`、`s2-contract-typecheck-generated.log` |
+| 当前组合 typecheck / lint / build / generator check | 退出 0；原 17 个显示参数测试全部 PASS | `.verification/s2-shared-content-typecheck-first.log`、`s2-shared-content-lint-final.log`、`s2-shared-content-build-final.log`、`s2-shared-display-vitest-first.log` |
+| `npx playwright test --config e2e/self-service.config.ts --grep '真实提案创建、不可变版本' --workers=1` | 两种窗口 2 PASS，真实 SQL / HTTP 重启；无新模型 | `.verification/s2-shared-workflow-playwright-first.log`；默认完整套件与其他阶段不足不覆盖 |
 | 当前 facts / shared Hook 的 build（含 typecheck）/ lint / E2E 显式 tsc / generator check | 退出 0 | `.verification/relay-facts-shared-build-source.log`、`relay-facts-shared-lint-source-final.log`、`relay-facts-shared-e2e-typecheck.log`；初次类型 / Hook lint 失败日志保留 |
 | `npx vitest run` 四个 Relay 参数 / 静态显示文件 | 4 文件 19 项 PASS；明确参数输入，不声明原生执行 | `.verification/relay-facts-shared-vitest-source.log` |
 | 原权限 / 版本 / 离线未知锁和新的交接声明 / facts 六用例，两尺寸 | 首 10 PASS / 2 实际 403 FAIL；补全本次项目准确 codex + observe 许可后，facts 两尺寸 2 PASS | `.verification/relay-facts-shared-playwright-first.log`、`relay-facts-permission-playwright-current.log`；HTTP / DOM 逐事实比较、无原生会话和新模型调用 |
@@ -88,7 +101,7 @@ B 原实际 README 结果为 `agent_inferred`、模型 `gpt-6.1-sol`、原生 ID
 | 原三分钟窗口、目标完成及当前原档身份 | FAIL，历史不改 |
 | 新 v1.4 投递阶段、原生归属、输入 ready、恢复身份与人工上下文交接 | 准确 H `074cf55`（包含 R 事实与 current ownership）已普通消费及生成，安全事实 UI / 成对声明负向 / 公共未知锁实际通过；正向原生 ready / resume / 跨 Agent handoff 未执行，working 规则仍待决定 |
 | EOF / structured、互斥与 generic 409、未知 send、第二 CLI、publication error | 原完整默认 22 项缺获准真实场景 FAIL，尚未通过 |
-| 新真实 CLI / Today / L1 完整验收 | 用户当前允许继续准备；在语义及根规则满足前未开启新窗口 |
+| 新真实 CLI / Today / L1 完整验收 | 根已允许单一 Codex 明确 started 的共同正向，待 R 精确 Source、H 真实组装 / 工具关闭证据及模块明确 Go scope / 输入 / 窗口；新初始化 / 模型 / Today 尚未开启 |
 | 完整默认合并产品最终验收 | 尚未通过，203 / 41 / 32 / 4 保留 |
 | S2 / S3 实际 Proposal / Grant / Context / Mission / WorkItem / Artifact | 用户已允许按 SPEC 实施；独立业务与 UI Owner 持续开发，准确公共契约消费及本次组合验收未完成 |
 | 生成 schema 中共享源英文说明 | 未自行改变共享源或生成内容；本域普通注释已中文化 |
