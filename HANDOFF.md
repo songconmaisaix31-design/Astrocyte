@@ -6,6 +6,10 @@
 
 用户本轮明确六步：保存验收结果、产物、检查与实际完成通道 → 成败 / 轨迹 / 产物引用可追溯 → Interpreter 起草有证据候选进入 quarantine → 用户审核批准进入 approved 并保存批准记录 → 新任务 get_experiences 获取经验并写入交接上下文 → 保存后续结果，检查实际使用及是否避免重复踩坑。开发执行定义已登记 [认知计划 §3.2.1](tasks/cognitive-stack-L1-L4.md)，三位模块负责人已收到逐步交接；发布负责人同步原发布任务。六步跑通记录为工程闭环，认知是否提升任务表现由 §3.4 独立对照实验判断。六步首跑尚未完成，具体候选的用户批准不能由开发 Agent 代签。
 
+22:32 执行范围核查：H `msg_b8b949b43abc` 的准确生产调用链与主控源码复核一致，原独立 Relay L1 不经 Mission / WorkItem / Member / Claim 或 S3 预算预留。正式消息 `msg_99a867237e30` 确认按用户既有授权继续该独立 L1，Calls 单位与完整权限清单两项待定仅约束实际涉及 S3 的路径，其 Known=false / Claim 拒绝保持；详见 [决定记录的适用范围](docs/QUESTIONS.md)。H 先接好既有 LaunchContextReader 和固定批准上下文，唯一 I 组合通过后按原 F / H 时序运行，原 180 秒计时、真实来源、工具关闭、一次输入、逐 event_id 与独立释放审计全部保留。本次 t0 和模型输入仍为零。
+
+四树集成已完成首 B 普通合并 `392bbb17fc56b15a86c9b84349e6e4d6cb884755`，首 push TLS 失败保留；当前 F `02a7976d997ef14ac298b2e240da43a9bb423c93` 合并有十九处冲突，原 B 两件依赖、原 S2 十一件、原 H 三件装配与同一 I 三管理文档各自处理。正式答复 `msg_f2e0f3db3f00` 将 I 三管理文档授权延续到本轮剩余 F / R / H；另 `msg_08131884a50c` 只授权 I 将根准确六步及三决定同步进集成树的认知任务、QUESTIONS 和 v0.3 任务，保留其他正确内容，不合入 validation 全部祖先。全部本人归还并独核后仍仅 I 继续原 merge。C 盘近期新增写入定位到 F / UI 验证 helper，原 B 持续负责将后续新产物切到 D 盘，旧证据保留。
+
 22:05 集成进度：唯一 I 为 `task_2ee44933df72 / ctx_b573b61bb4aa / term_1c79262e-de36-41c2-bdd5-5113e2d3bb87`，原 `works-relay-integration` 工作树与分支，实际 live / working。首次普通合并 B 出现十一处冲突，保持原现场；I 本人 STOP 后由原 B / H 分别处理领域路径，全部归还后仅 I 继续 merge。正式答复 `msg_bae427f5bdbd` 临时授权同一 I 仅处理该树 `HANDOFF.md`、`STATUS.md`、`tasks/Workbench-v01.md` 三份管理文档冲突并 stage，不包含根当前工作树；准确 write_paths 由发布负责人登记。四树组合、集成版 L1、L2 首跑和完整新 release 仍待验收。
 
 21:40 恢复计划：Orca 当前 runtime `50292233-afc2-49fb-bdeb-36dd3b08a033`、app PID 40964；旧模块 Dispatch 已由运行时记录为 abandoned / failed，三个原 Task 均恢复为 ready，旧终端不在公开清单。当前主控 `term_499a85ee-d93d-4385-bad1-5228a2b34146` 已绑定原顶层 Run `run_973808dd6a2f` generation 28。沿原任务、工作树、分支和未提交修改恢复三位模块负责人，禁止重复创建任务或开发轨道。产品负责人恢复 `run_dbf1a68bc692` 的 T / S2 / S3 / UI，并获授权接管旧 `run_7b2ce96bcd13` 中仅 B / F 的恢复及生命周期；Relay 负责人恢复 `run_8bbda1c3974c` 的 R / H / S4；发布负责人恢复 `run_aa4e6a119547` 的 S5 / P。所有恢复先核实际存活和原 Task 状态；ready 使用原 Task，failed 按公开恢复指令处理，无法证明退出的人员保持原状。模块负责人只写原管理文档，领域人员保持原独占 write_paths，不增加第四层。
