@@ -31,7 +31,7 @@ SOURCE `2249dabdf0245b7769af3ae2a10c7a07dd8ad5a1` 已普通 push，`git ls-remot
 
 ## 原十四项未完成断言与最窄实际依赖
 
-以下函数和全部原断言保留，当前仍含旧替代实现，不作为本次成功证据，也没有再次运行。模型部分共同需要 B 的生产 `SelectedTextBridge` / `SelectedTextFactory` 与 R/H 实际控制器组合；同一 JobID / OperationID 的原生受理、TurnID、正选自产原档、有效工具关闭及实际 Stop 证据必须通过当前生产入口取得。当前 `EffectiveToolSet=unknown` 保持未知；启动 argv 或工具调用零均不单独证明有效工具关闭。
+以下函数和全部原断言保留，当前仍含旧替代实现，不作为本次成功证据，也没有再次运行。模型部分共同需要 B 的 `cmd/server` 生产 `selectedTextBridge`、`distillers.SelectedTextFactory` 与 R/H 实际控制器组合；同一 JobID / OperationID 的原生受理、TurnID、正选自产原档、有效工具关闭及实际 Stop 证据必须通过当前生产入口取得。当前 `EffectiveToolSet=unknown` 保持未知；启动 argv 或工具调用零均不单独证明有效工具关闭。
 
 | 原函数名 | 保留的断言与实际依赖 |
 |---|---|
@@ -51,6 +51,8 @@ SOURCE `2249dabdf0245b7769af3ae2a10c7a07dd8ad5a1` 已普通 push，`git ls-remot
 | `TestUnknownSourceReadIsNotResentByStartupOrNewRequestKey` | 实际目录读取明确 unknown 后，LastError / 原 Job 全量 JSON 保持，启动和新键不再发起读取。当前生产明确 unknown 仅涉及另一个 OpenCLI 目录桥，未取得本轨对应来源授权及准确实际交付入口，保留 NOT_RUN。 |
 
 原 `tests/s1/automatic_test.go::TestAutomaticUnknownSurvivesSQLiteReopenWithoutRetry` 同样保留真实 arXiv Atom / PDF 和全部旧版本、幂等、payload / caller、无结果、无候选及不重发断言；原首次前置 RED 保留。该检查等待上述同 Job / operation 的真实 Send / TurnID / 原档 / 工具关闭及 Stop 证据，尚未再次启动。`go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 的整改后完整运行仍为 NOT_RUN；本阶段定向成功不代表全产品验收，Task 持续由同一负责人完成后续组合与返修。
+
+当前独立源码审阅已核 `cmd/server/project_bridges.go` 的 `selectedTextBridge` 原样传递 ProjectID / JobID / OperationID，`agents/text.go` 与 `text_source.go` 已保存真实 Send 受理阶段、TurnID 和原 controller 的原档指针。停止证据的具体缺口已交 B `msg_1560da97a5d0`：当前 defer 先保存原档、再调用实际 Stop，`source.Execution` 仍为 Send 前快照，没有在 Stop 后持久更新实际 ExitConfirmed；外层 HTTP 测试不能访问原 Registry，也不能把函数成功返回或操作系统 PID 查无推断为原控制器停止回执。原 B 与 R 在自身范围处理该本机证据接续，有效工具集合继续保持未知；本次源码审阅没有启动 CLI 或模型。
 
 ## 已提交源码阶段
 
