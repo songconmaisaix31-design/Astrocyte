@@ -16,11 +16,17 @@ S3 Calls 单位和权限证据覆盖仍未决定，保持当前 Claim 拒绝；�
 |---|---|---|---|
 | R | `task_f082d8b36471` | `ctx_f17d901de131` / `term_8e589b7d-3e7e-44ba-ad91-25c9a9cf719c` | 首 `turn_start_unobserved`，纯文本确认 composer 后只补一次 Enter；13:50:50Z、13:51:18Z 本人 actual ACK |
 | H | `task_3004b636a3ab` | `ctx_7eb5801f4450` / `term_c93817c5-5c4a-4db5-8b26-10260c99be5f` | 首 `ctx_08bb2c2de1ca` 账号路由超时并实际返回 PowerShell 后官方 stop / release；重试 observed 但仍在 composer，只补一次 Enter，13:52:50Z 本人 actual ACK |
-| S4 | `task_bd209566be37` | `ctx_09391d7a7e02` / `term_671572db-2c69-4faf-a3a8-3332c0ecb081` | 首 `ctx_44918f469105` 任务落入 PowerShell 并 ParserError，官方 stop / release；重试首 UNKNOWN，纯文本确认 composer 后只补一次 Enter，本人 ACK 待收 |
+| S4 | `task_bd209566be37` | `ctx_09391d7a7e02` / `term_671572db-2c69-4faf-a3a8-3332c0ecb081` | 首 `ctx_44918f469105` 任务落入 PowerShell 并 ParserError，官方 stop / release；重试首 UNKNOWN，纯文本确认 composer 后只补一次 Enter；13:54:20Z 本人 actual ACK，13:55:36Z 核当前权威身份 |
 
 三位终端纯文本显示 Codex 0.162.0 / GPT-6.1-Sol xhigh fast；启动参数未覆盖用户配置。首次读取新恢复消息与创建 Run 在同批命令执行，另生成空 `run_7ec4ed6599d6`；该 Run 未派发任何人员，当前管理使用恢复后的原子 Run。跨 Run 直接 `--to run:` 携带本模块生命周期 ID 被 `dispatch_run_mismatch` 拒绝，改发当前准确 Dispatch 后由运行时重定向到接收者子 Run；没有改变其绑定。
 
 H 当前 `CHERRY_PICK_HEAD=aa445adf834c3a397a0817bec0593fcf1039420a`，四冲突路径为 SQLite workspace_session_bindings、app proposal_ports、domain session_bindings 和 tests/s2/approval_test。产品负责人当前 `ctx_c2889e0e477c`、原 S2 当前 `ctx_edce6bc4ca6c`。原 H 正式问题 `msg_a3a058701f7c` 已答复 `msg_07f181fba39a`：H 本人停写四路径后，由原 S2 在安全检查点仅编辑并 stage，明确归还后仅 H 继续原序列；config.go / 依赖继续归 B。当前 H 其他独占范围继续，无第二 H 写入者。
+
+本轮恢复管理 SOURCE `940d9cc6fbb9530291b975c04a46ba8d8f51d259` 已普通 push，`git diff --check`、单文件提交范围与 `git ls-remote` 精确核同值 PASS。三原 Task 的实际开始、当前身份与恢复首失败均已报告总负责人；当前只读核验未启动原生控制器或模型。H 13:55:01Z 本人 STOP `msg_d24e06d1dc99` 明确无测试、构建、HTTP 或 SQLite 事务占用，已交产品负责人安排原 S2；最终归还仍待本人记录。
+
+已交唯一 I 的当前阶段输入：R SOURCE `00dbd9c63dce2311518a1c47002947180d770a2f` / REPORT `29ed9d69c83cb80e0c3731870995876461a8c2b0`，后者远端精确核同值；H SOURCE `59a7150b1143680b67fe53fdf831fcca5f328660` / REPORT `0aab7edd54fb7bb031e9709f752c6240ce7852a9`，其 Context Root 泄漏仍为未通过项，不能据此交付或读取私有数据；S4 SOURCE / REPORT 如本节所列，远端精确核同值。H 后继输入所有权 SOURCE `0138c6318dac2aa0e3091b06830ee7842b40f152` 及普通合并 `7f41232a72da3e8c8681ac46e334dae717a4d5a7` 正交 H 核验并 push；I 只读取准确已提交阶段，不读取 WIP。
+
+R 13:56:54Z 报告可信登记两个真实 SQLite 检查 PASS，app 13.680 秒、agents 5.630 秒、relayworktree 4.451 秒 PASS；SQLite 全包原 B `TestProvenUnstartedResumePreservesOwnedOriginalSession` 在冷 Registry 下期待原 owned 会话，实际 `delivery_unknown` 仍为 RED，原件位于 R `dist/relay-l1/registration/scoped-packages-first.log`。已交产品原 B，不修改其测试或伪造 owned 事实。R 十一份 S2 文件仅在逐项等于 `aa445adf834c3a397a0817bec0593fcf1039420a` 原 blob 后允许独立普通提交登记原样消费；内容不一致即停止对应消费，其他 S2 路径不在授权范围。
 
 ### 用户最新完成语义与集成顺序
 
