@@ -139,6 +139,12 @@ func TestTasteProfileActualServiceHistoryCASAndRestart(t *testing.T) {
 			t.Fatal("truth accepted a nonnumeric or out-of-range expected value", expected)
 		}
 	}
+	malformed := command
+	malformed.CommandMeta = tasteMeta()
+	malformed.Examples = append([]attention.TasteExample(nil), command.Examples...)
+	malformed.Examples[0].Expected = "unknown"
+	_, err = service.UpdateTasteProfile(ctx, principal, malformed)
+	tasteCode(t, err, apierrors.ValidationFailed)
 	otherDB := openAttentionDB(t, path)
 	otherService := tasteService(t, otherDB, directory)
 	results := make(chan error, 8)

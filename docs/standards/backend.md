@@ -363,6 +363,18 @@ SOURCE `41602e6f2a14a75e3765ef0a72f7afadf1856bbb` 已普通 push。根正式批�
 
 当前冷 Registry 正向恢复测试仍缺真实 controller 所有权来源，原替代构造与首 RED 没有被改期望或跳过。已交模块和原 R/H 请求固定公开原件与准确入口；本轮原生窗口为零。原 S4 清理 pass 所需项目 worker / 持久请求 / wake 在本树不存在，已据 `projects.go` 和 `cmd/server/main.go` 实码交原 S4 及模块；未将资料 Attention 作业用于项目清理。F 最新 Vite `61137` 的 EACCES 及 13 项未运行已交本轨道，真实设施修复继续进行，不能因 Taste 存储通过提升默认 E2E 结论。
 
+## 完整题型与集成树限定返修
+
+后继 SOURCE `daf577dd65fbc1ab18caf0e6c71bd889ae5acf80` 已普通 push。完整品味题型与原 S5 的 `choice / score / truth` 一致。每个 rubric 明确保存 options 和 levels：choice 提供 2–255 个唯一 ID 及非空说明，score 提供 2–10 个有序非空等级，truth 的两项数组均为空。每个 example 的 Expected 按所属 rubric 核验：choice 必须对应其固定选项 ID，score 和 truth 由标准 JSON 库解码为数值，分别限定在评分等级下标范围和 `[0,1]`。null、布尔、带引号数字、畸形 JSON 和越界值均失败。示例属于固定 rubric，不把示例期望设成本次新问题的答案。
+
+相同 D 盘 Go 环境下，`go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestTasteProfile' -count=1 -v` EXIT 0，3 PASS、0 SKIP，21.465s；`.verification/taste-profile-complete-rubric-first.log`。新检查同时保留原真实 README 导入、CAS、完整回执、约束回滚、资料撤回、升级和重开覆盖，并验证三种完整题型、未知题型及数值类型拒绝；这些明确的规则输入没有执行模型判断。最终目录为 `.verification/taste-profile-actual-{3623657765,1040033859,3636986210}/`。全包 build、目标 App/SQLite vet、变更文件 gofmt 与 diff 检查均 EXIT 0，日志 `taste-profile-complete-rubric-{build,vet}-first.log`。
+
+经模块正式计划 `83fd634904680a68534ad51832bf03a670cd028c` 和双方安全检查点放行，B 仅在 `works-relay-integration` 使用文件编辑工具处理并 stage 四件：`cmd/server/workbench_config_test.go`、`internal/adapters/sqlite/workbench.go`、`workbench_test.go`、`internal/workbench/app/contracts.go`。四件完整内容相对精确 `da7227749ea2f361c8b708be8614d3236fe2f04a` diff 为零；原四个测试名和全部真实 Reader 检查保持，gofmt 与限定 working/cached diff 检查通过。index blob 依次为 `8897886afef9d6f763990dd0e346d54f748aa5e1`、`8459eff2bcef80e385aa6cbc027700704172cccc`、`0a85499020a9a8eaa8a3e4320ae73e97f0a577e3`、`b4b109c3f7426b6cf1b8c48f3bca5668976c9061`。
+
+该树实际 `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestWorkbenchTokenProjectionExplicitJSONValues$' -count=1 -v` EXIT 0，1 PASS、6.619s；本树证据 `.verification/i-four-workbench-sql-first.log`。最后观察 HEAD `0e5ce82898c3d546f711d1e452dadfabb13b5537`、MERGE_HEAD `da7227749ea2f361c8b708be8614d3236fe2f04a`，全树未合并项为零；其他冲突未由 B 编辑。本轮没有执行该树 commit 或合并生命周期，四件已明确停止写入并归还，模块独立核收回。完整组合和 Reader 全部实际路径仍由唯一 I 验证。
+
+已向原 S2/S3 交精确 `GetExperiences` approved-only 构造、固定 ownerProject 和同 Workspace 事务 Context 的既有边界。该方法本身不读取当前 LocalProject Grant；新的 Context 经验固定快照、当前映射与来源权限重核入口需要按原负责人准确契约补齐，不能仅凭方法名宣称授权或使用已经完成。根已授权的 S4 专用清理生命周期、R 双完成通道、F 单配置冲突及 helper 原子监听和明确 D 盘产物目录继续按原范围接续，真实模型窗口仍为零。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
