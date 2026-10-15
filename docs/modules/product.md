@@ -190,13 +190,21 @@ F S4 客户端 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f` / REPORT `1c9f0
 
 ### AT12 计划后继独立 REPORT
 
-计划 SOURCE `ac7222e` 已普通 push，仅修改本管理文档，`git diff --check` 通过。原 B 确认完整品味存储 / reader 当前缺失，拟在本人非冻结应用和 SQLite 范围补不可变修订；新增 `migrations/026_taste_profiles.sql` 两表超出现行 023–025 迁移例外，模块已通过根唯一问答请求该具体例外，当前待答。rubric / example 结构及固定来源继续由原 B / S5 核实，候选依赖 DTO 未冻结，前端未据候选生成代码。原 S2 已收到真实 Goal 的固定版本与同 DB 重核要求，T 保持应用测试原 owner。
+计划 SOURCE `ac7222e` 已普通 push，仅修改本管理文档，`git diff --check` 通过。原 B 确认完整品味存储 / reader 当前缺失，拟在本人非冻结应用和 SQLite 范围补不可变修订；新增 `migrations/026_taste_profiles.sql` 两表的具体例外已由根 `msg_384bef3fbfaa` 批准，准确范围见下方计划。rubric / example 结构及固定来源继续由原 B / S5 核实，候选依赖 DTO 未冻结，前端未据候选生成代码。原 S2 已收到真实 Goal 的固定版本与同 DB 重核要求，T 保持应用测试原 owner。
 
 S2 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` / 后继 `02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` / 独立 REPORT `b9629a68a3e29f46f394ef1093d99265349dbab7` 已普通 push且模块独立核远端 REPORT 同值。最终真实 Handler/SQLite/Git 29.994 秒通过，原十秒 POST timeout 首失败保留。R 准确 `c569c8718e65a6ca50e2e531580b1f2814ad3056` 的只读 Go overlay 已实际完成：同 aa 的十一 Domain/port/SQLite 文件、B `ce281d003c093ec26e19dfec78e912f20a014787` 两文件编译 EXIT0；真实 SQLite 五顶层 / 七叶场景通过，首参数未引用导致未运行的记录保留。原 R 正常消费及完整服务仍待验证，019 来源仍 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，没有用包级成功替代完整 L。
 
 M-relay / 根明确 H `59a7150b1143680b67fe53fdf831fcca5f328660` / REPORT `0aab7edd54fb7bb031e9709f752c6240ce7852a9` 的旧 Context 绝对 Root 输出未通过安全验收，F/UI 已直接收到停止消费该 Context 的指令；S4 准确 `03bbaed` 继续。原 H 正消费 aa 安全 DTO，实际四 U 已由模块独核，M-relay 已限定原 S2 安全 ACK 后只处理 H 树四件：`internal/adapters/sqlite/workspace_session_bindings.go`、`internal/workspace/app/proposal_ports.go`、`internal/workspace/domain/session_bindings.go`、`tests/s2/approval_test.go`。原 H 对四件停写，S2 仅文件编辑并 stage、不处理生命周期，结束明确归还原 H；模块已接收同范围，无第二写者。
 
 根 `msg_ab0dfdda7d0e` 的原 Service / Store / Receipts 可信登记和同实例 agents.json reload 决定已交唯一 F。F 先同 URL 空 agents / observer ready，H 首次实际写入本次完整目标登记为唯一 t0，写入 / reload / 激活全部计入一百八十秒；Calls 和权限用户待答，当前不提前登记或发送模型输入。旧三分钟失败完整保留，不通过重启实例重计时间。
+
+### 026 迁移已确认范围与 write_paths
+
+根对唯一问答 `msg_c48bd554039e` 正式回复 `msg_384bef3fbfaa`，允许原 B 唯一新增 `migrations/026_taste_profiles.sql`，仅完整 TasteProfile 的 head 与不可变 revisions 两表。B 的新增准确范围为 `internal/attention/app/taste_profile*.go`（排除所有 `*_test.go`）、`internal/adapters/sqlite/taste_profile*.go` 及上述唯一迁移；T 继续独占 Attention 应用测试。B 使用原 Attention CAS/receipt/outbox 与同 Workspace 事务，实施真实新库、升级、回滚、重开、并发和 CAS 的存储检查，SOURCE / 独立 REPORT 普通 push。原 B 的 F/H 临时范围已经归还，模块本计划普通 push后交 B 连续实现。
+
+不得修改 001–025、原 `domain/profile.go`、V4 正式数据或锁定协议 / engine / mapper / 权重 / 日程，不将新迁移应用于正式实验运行树。实际人类配置产生不可变版本，不生成默认 rubrics/examples 或伪造版本；rubric/example 结构先与原 S5 在既有规格内核实，再交 H/F/UI，未答字段保持未决定。Taste 的 delegation 只保存 S5 权威规则准确固定引用与必要快照，当前授权、暂停和撤销继续由 S5 同事务重核。
+
+完整 Goal、排序 profile、rubrics、examples、delegations 各自变化及旧缓存 / 旧 proof 拒绝均实际通过前，AT12 继续未完成。T 发现已有 `experience_accepted_rules_test.go` 的 B 提交贡献，模块已要求原 B 安全停止全部应用测试后续写入并交准确来源给 T，保留现有贡献和历史，未安排第二写者或删除测试。
 
 ### readiness helper 后继单文件消费计划
 
@@ -242,7 +250,7 @@ M-release `msg_c996642abb6e` 已转交恢复后唯一 S5 `ctx_e200fb7cf3c4` 本�
 
 | 开发人员 | 固定工作树 / 分支 | 当前原 Dispatch | 写入范围与下一步 |
 |---|---|---|---|
-| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_1fd66a8adc28` / `term_ee93800d-69d5-4405-a60d-0c51b1c66f64`，根原 Run | 原 `internal/**` 与 `cmd`，排除 R/H/Q、已移交 S2/S3/S4/S5 域、全部 Python、冻结核心和 T/V 独占文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json`、全部 migrations 与 `cmd/server/config.go`。Judgment HTTP 前缀已停写交原 S5；共享 helper 的后续逻辑仍归 B |
+| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_1fd66a8adc28` / `term_ee93800d-69d5-4405-a60d-0c51b1c66f64`，根原 Run | 原 `internal/**` 与 `cmd`，排除 R/H/Q、已移交 S2/S3/S4/S5 域、全部 Python、冻结核心和 T/V 独占文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json`、migrations 与 `cmd/server/config.go`。根已批准新增 `internal/attention/app/taste_profile*.go`（排除 `*_test.go`）、`internal/adapters/sqlite/taste_profile*.go` 和仅两表的 `migrations/026_taste_profiles.sql`；001–025 和原 `domain/profile.go` 不改。全部应用 `*_test.go` 归 T。Judgment HTTP 前缀已停写交原 S5；共享 helper 后续逻辑仍归 B |
 | F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_4a385bf65390` / `term_0e565e8d-906a-46c6-a5fd-a61b81674a0d`，根原 Run | 原 `web/src/**`、`web/e2e/**` 排除原产品 UI 的 S2/S3/S4 页面、S5 delegation 和 s2/s3/s4/s5 spec 精确域；`docs/standards/frontend.md`。唯一共享 API/types/auth/router/hooks、Attention/Workspace 薄入口和 Relay GUI；按已提交精确 SOURCE 消费页面及公共组合，完成默认完整 E2E |
 | T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014` | `task_5f0a79b6a17a` / `ctx_491ad741b3cd` / `term_e39f5608-91dd-4c07-856a-9ebe7b9bb555`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。人工路径已真实 SQLite/ObjectStore；剩十四项实际模型/unknown/推荐前置未满足，保留全部断言和默认未完成状态；生产、依赖与共享 helper 变更只 Handoff B |
 | S2，复用 V | `product-video-20261014` / `songconmaisaix31-design/product-video-20261014` | `task_6846cdb90c46` / `ctx_b9a5305d8480` / `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`，本子 Run | S2 精确域见原实施表；同一人员保留视频 `extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importers_test.go`、`video_*_test.go`、`docs/standards/video.md` 返修。B 保留配置、依赖、paperDOM/Node helpers/native text bridge，T 域不变 |
