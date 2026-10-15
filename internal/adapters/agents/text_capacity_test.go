@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -96,7 +97,25 @@ func TestOwnedTextExecutionRejectsUnattestedIdentity(t *testing.T) {
 }
 
 func TestSelectedTextActualOwnedSourceWithoutModel(t *testing.T) {
-	stateRoot := filepath.Join(t.TempDir(), "native-sessions")
+	base := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if base == "" {
+		var err error
+		base, err = filepath.Abs("../../../.verification")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if !filepath.IsAbs(base) {
+		t.Fatal("selected-text verification requires an absolute output root")
+	}
+	if err := os.MkdirAll(base, 0700); err != nil {
+		t.Fatal(err)
+	}
+	stateRoot, err := os.MkdirTemp(base, "selected-text-stop-actual-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("actual owned native evidence directory: %s", stateRoot)
 	registry := NewRegistry(stateRoot)
 	adapter, err := registry.Adapter("codex")
 	if err != nil {
@@ -137,6 +156,32 @@ func TestSelectedTextActualOwnedSourceWithoutModel(t *testing.T) {
 	}
 	if _, err = os.Stat(source.file); err != nil {
 		t.Fatal(err)
+	}
+	if err := native.finishSelectedText(session, source); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(source.file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var stored selectedTextSource
+	if err := json.Unmarshal(raw, &stored); err != nil {
+		t.Fatal(err)
+	}
+	if stored.NativeID != session.NativeID || stored.SessionID != session.ID || stored.Execution.ProcessID != source.Execution.ProcessID || !stored.Execution.ExitConfirmed || stored.Stop == nil || !stored.Stop.Confirmed || stored.Stop.ObservedAt.IsZero() || stored.Stop.Error != "" || stored.Execution.EffectiveToolSet != "unknown" || stored.Phase != "started" || stored.SourceSnapshot != "" {
+		t.Fatal("actual owned stop was not preserved independently from model or tool observations")
+	}
+	blocked := filepath.Join(stateRoot, "blocked-record")
+	if err := os.Mkdir(blocked, 0700); err != nil {
+		t.Fatal(err)
+	}
+	source.file = blocked
+	if err := native.finishSelectedText(session, source); err == nil {
+		t.Fatal("actual final source write failure returned success")
+	}
+	execution, err := native.OwnedRelayExecution(ctx, session)
+	if err != nil || !execution.ExitConfirmed {
+		t.Fatal("source write failure obscured the original controller exit", err)
 	}
 	t.Logf("actual_native_id=%s owned_pid=%d metadata_pointer_observed=true model_turns=0 effective_tool_set=unknown", session.NativeID, source.Execution.ProcessID)
 }

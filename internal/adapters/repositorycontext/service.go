@@ -21,6 +21,7 @@ import (
 type IndexStore interface {
 	LoadRepositoryIndex(context.Context, string, string, string) (domain.RepositoryIndex, error)
 	SaveRepositoryIndex(context.Context, domain.RepositoryIndex, string) error
+	PrepareRepositoryContextCleanup(context.Context, func(context.Context, domain.LocalProject, domain.RepositoryIndex) (bool, error)) (app.RepositoryCleanupState, error)
 }
 
 type Options struct {
@@ -33,6 +34,7 @@ type Options struct {
 
 type Service struct {
 	mu       sync.Mutex
+	cleanup  cleanupWorker
 	projects app.RepositoryProjectReader
 	indexes  IndexStore
 	options  Options
@@ -50,7 +52,7 @@ func New(projects app.RepositoryProjectReader, indexes IndexStore, options Optio
 		return nil, err
 	}
 	options.CacheRoot = cache
-	return &Service{projects: projects, indexes: indexes, options: options}, nil
+	return &Service{projects: projects, indexes: indexes, options: options, cleanup: cleanupWorker{wake: make(chan struct{}, 1)}}, nil
 }
 
 func relativeRoots(p domain.LocalProject, roots []string) ([]string, error) {
@@ -181,6 +183,7 @@ func (s *Service) UpdateRepositoryIndex(ctx context.Context, c domain.Caller, q 
 	if err := os.MkdirAll(root, 0700); err != nil {
 		return result, err
 	}
+	defer s.WakeRepositoryCleanup()
 	// 每次维护使用独立generation；失败不会改写上次已发布的投影。
 	if action == "sync" {
 		oldRoot, err := s.projection(previous)

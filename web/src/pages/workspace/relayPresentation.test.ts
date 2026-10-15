@@ -37,4 +37,13 @@ describe('relay projection safety', () => {
     expect(relayUnresolved(receipts, 'send')).toBe(true);
     expect(relayUnresolved(receipts, 'stop')).toBe(false);
   });
+  it('prepare的待定、未知或带错误接受收据持续阻止重新初始化', () => {
+    const receipt: RelayReceipt = { receipt_id: 'input-receipt', task_id: 'input-task', operation_id: '63d38b74-1655-43eb-98a7-5f1e2d9a4edb', action: 'prepare', operator: 'human', status: 'accepted', error: null, created_at: '2026-10-14T00:00:00Z', finished_at: null };
+    expect(relayUnresolved([receipt], 'prepare')).toBe(false);
+    expect(relayUnresolved([{ ...receipt, status: 'pending' }], 'prepare')).toBe(true);
+    expect(relayUnresolved([{ ...receipt, status: 'delivery_unknown' }], 'prepare')).toBe(true);
+    expect(relayUnresolved([{ ...receipt, error: { code: 'delivery_unknown', message: '明确参数输入', request_id: receipt.operation_id, retryable: false, required_action: 'inspect_original_receipt_do_not_resend' } }], 'prepare')).toBe(true);
+    expect(relayUnresolved([{ ...receipt, status: 'rejected' }], 'prepare')).toBe(false);
+    expect(relayUnresolved([{ ...receipt, status: 'pending' }], 'dispatch')).toBe(false);
+  });
 });

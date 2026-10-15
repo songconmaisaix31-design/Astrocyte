@@ -47,6 +47,9 @@ func (s *S2Service) BuildContextPacket(ctx context.Context, c domain.Caller, cmd
 	if cmd.ExpectedVersion != 0 || cmd.MaxBytes < 1 || cmd.MaxBytes > 2*1024*1024 {
 		return packet, domain.WorkspaceError(apierrors.ValidationFailed, "new packet requires zero version and explicit bounded max_bytes")
 	}
+	if err = s.requireWorkspaceObservation(ctx); err != nil {
+		return packet, err
+	}
 	var grant domain.ApprovalGrant
 	var project domain.LocalProject
 	var proposal domain.Proposal
@@ -108,6 +111,9 @@ func (s *S2Service) BuildContextPacket(ctx context.Context, c domain.Caller, cmd
 	if err != nil {
 		return packet, err
 	}
+	if err = s.snapshots.ValidateProjectSnapshot(ctx, c, snapshot); err != nil {
+		return packet, err
+	}
 	err = s.command(ctx, c, cmd.WorkspaceCommandMeta, "workspace.context.build", cmd, &packet, func(tx WorkspaceTx) error {
 		_, current, err := packetGrant(tx, c, grant.ID, grant.Epoch)
 		if err != nil {
@@ -139,7 +145,7 @@ func (s *S2Service) BuildContextPacket(ctx context.Context, c domain.Caller, cmd
 				return domain.WorkspaceError(apierrors.ScopeDenied, "packet predecessor belongs to another project")
 			}
 		}
-		if err = s.snapshots.ValidateProjectSnapshot(tx.Context(), c, snapshot); err != nil {
+		if err = validateProjectSnapshotReference(tx.Context(), s.snapshots, c, snapshot); err != nil {
 			return err
 		}
 		if err = tx.SaveContextPacket(packet); err != nil {

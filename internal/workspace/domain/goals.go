@@ -12,3 +12,9 @@ type Goal struct {
 	Status          string    `json:"status"`
 	CreatedAt       time.Time `json:"created_at"`
 }
+
+type CurrentGoalSnapshot struct {
+	Goal                    Goal      `json:"goal"`
+	ProjectSettingsRevision int       `json:"project_settings_revision"`
+	ObservedAt              time.Time `json:"observed_at"`
+}

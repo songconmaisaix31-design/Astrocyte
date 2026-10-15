@@ -20,12 +20,25 @@ func (s *S2Service) BindSession(ctx context.Context, c domain.Caller, cmd BindSe
 	if cmd.ExpectedVersion != 0 || cmd.MemberID == "" {
 		return binding, domain.WorkspaceError(apierrors.ValidationFailed, "new binding requires zero version and member identity")
 	}
+	if err = s.requireWorkspaceObservation(ctx); err != nil {
+		return binding, err
+	}
+	if s.snapshots == nil {
+		return binding, domain.WorkspaceError(apierrors.UnsupportedCapability, "current project snapshot provider is required")
+	}
+	observedPacket, err := s.ReadContextPacket(ctx, c, cmd.PacketID)
+	if err != nil {
+		return binding, err
+	}
 	facts, err := s.owned.ReadOwnedSessionFacts(ctx, c, cmd.SessionID, OwnedPurposeBind)
 	if err != nil {
 		return binding, err
 	}
 	if !facts.Owned || facts.SessionID != cmd.SessionID || facts.NativeID == "" || facts.AdapterID == "" || facts.WorktreeID == "" || facts.ControllerID == "" || facts.StartupOperationID == "" || facts.Liveness != "live" {
 		return binding, domain.WorkspaceError(apierrors.EvidenceMissing, "native provider did not confirm current live owned session")
+	}
+	if err = s.snapshots.ValidateProjectSnapshot(ctx, c, observedPacket.Snapshot); err != nil {
+		return binding, err
 	}
 	err = s.command(ctx, c, cmd.WorkspaceCommandMeta, "workspace.session.bind", cmd, &binding, func(tx WorkspaceTx) error {
 		packet, err := tx.LoadContextPacket(cmd.PacketID)
@@ -36,10 +49,13 @@ func (s *S2Service) BindSession(ctx context.Context, c domain.Caller, cmd BindSe
 		if err != nil {
 			return err
 		}
-		if s.snapshots == nil {
-			return domain.WorkspaceError(apierrors.UnsupportedCapability, "current project snapshot provider is required")
+		if packet.ObjectRef != observedPacket.ObjectRef || packet.Snapshot != observedPacket.Snapshot {
+			return domain.WorkspaceError(apierrors.ContextStale, "session packet changed after its actual project observation")
 		}
-		if err = s.snapshots.ValidateProjectSnapshot(tx.Context(), c, packet.Snapshot); err != nil {
+		if err = validateProjectSnapshotReference(tx.Context(), s.snapshots, c, packet.Snapshot); err != nil {
+			return err
+		}
+		if err = s.owned.ValidateOwnedSessionFacts(tx.Context(), c, facts, OwnedPurposeBind); err != nil {
 			return err
 		}
 		session, err := tx.LoadNativeSession(cmd.SessionID)
@@ -64,53 +80,9 @@ func (s *S2Service) BindSession(ctx context.Context, c domain.Caller, cmd BindSe
 }
 
 func (s *S2Service) WithAuthorizedSessionBindings(ctx context.Context, check domain.GrantCheck, ids []string, fn func(context.Context, domain.ApprovalGrant, []domain.SessionBinding) error) error {
-	if check.Action != OwnedPurposeClaim && check.Action != OwnedPurposeSubmit {
-		return NormalizeWorkspaceError(domain.WorkspaceError(apierrors.ValidationFailed, "protected binding requires claim_work_item or submit_artifact purpose"))
+	observed, err := s.ObserveSessionBindings(ctx, check, ids)
+	if err != nil {
+		return err
 	}
-	return s.WithAuthorizedGrant(ctx, check, func(txctx context.Context, g domain.ApprovalGrant) error {
-		return s.repo.WithWorkspaceTx(txctx, func(tx WorkspaceTx) error {
-			bindings := make([]domain.SessionBinding, 0, len(ids))
-			for _, id := range ids {
-				if s.owned == nil {
-					return domain.WorkspaceError(apierrors.UnsupportedCapability, "current owned registry facts are required for protected member actions")
-				}
-				b, err := tx.LoadSessionBinding(id)
-				if err != nil {
-					return err
-				}
-				if b.Status != "bound" || b.GrantID != g.ID || b.GrantEpoch != g.Epoch || b.ProjectID != g.Scope.ProjectID {
-					return domain.WorkspaceError(apierrors.ApprovalRevoked, "member binding is outside current approval")
-				}
-				facts, err := s.owned.ReadOwnedSessionFacts(txctx, check.Caller, b.SessionID, check.Action)
-				if err != nil {
-					return err
-				}
-				if !facts.Owned || facts.ProjectID != b.ProjectID || facts.NativeID != b.NativeSessionID || facts.WorktreeID != b.WorktreeID || facts.AdapterID != b.AdapterID || b.ControllerID == "" || b.StartupOperationID == "" || facts.ControllerID != b.ControllerID || facts.StartupOperationID != b.StartupOperationID {
-					return domain.WorkspaceError(apierrors.EvidenceMissing, "current Registry controller tuple does not match member binding")
-				}
-				if facts.Liveness != "live" && (check.Action != OwnedPurposeSubmit || facts.Liveness != "exited") {
-					return domain.WorkspaceError(apierrors.EvidenceMissing, "controller lifecycle does not permit the protected action")
-				}
-				member, err := tx.LoadProjectGrant(b.ProjectID, b.MemberID)
-				if err != nil {
-					return err
-				}
-				if member.RevokedAt != nil || member.ExpiresAt != nil && !member.ExpiresAt.After(time.Now()) {
-					return domain.WorkspaceError(apierrors.ApprovalRevoked, "member project grant is inactive")
-				}
-				if !has(member.Actions, check.Action) {
-					return domain.WorkspaceError(apierrors.ScopeDenied, "member action is not authorized")
-				}
-				session, err := tx.LoadNativeSession(b.SessionID)
-				if err != nil {
-					return err
-				}
-				if session.NativeID != b.NativeSessionID || session.ProjectID != b.ProjectID || session.Ownership != "owned" || session.StopConfirmed && check.Action != OwnedPurposeSubmit {
-					return domain.WorkspaceError(apierrors.EvidenceMissing, "bound native session is no longer permitted for this action")
-				}
-				bindings = append(bindings, b)
-			}
-			return fn(txctx, g, bindings)
-		})
-	})
+	return s.WithObservedSessionBindings(ctx, check, observed, fn)
 }
