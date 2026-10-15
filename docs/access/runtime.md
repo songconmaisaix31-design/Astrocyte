@@ -503,3 +503,28 @@ Claim 需要原控制器仍有真实进程持有记录且未退出；其他输�
 独立 L 依赖按模块明确授权通过 cherry-pick -x 消费 B c715342 的五路径，保作者与来源，提交为37c3b9d。该依赖实际需要尚未提供的 S2 WorkspaceRepository / WorkspaceTx / WorkspaceTransaction / workspaceCAS，组合 Go 检查首 FAIL 保留在 completion-components-first.log，已交原 B / 模块；R 未修改这些领域。B 后继准确 SOURCE f76e25b84b29495994f2e5877b586d4c22669d3f / REPORT ce5a86b0cdc27ea9567d1041a7fccc89795d9395 已由独立远端和普通祖先核实，窄消费为6b7ba3ad14209ace91a89cf2f63ecafafbba390d。模型标识来源区分 configured_route / provider_reported，独立版本缺证据时固定 unknown；不以别名或 CLI 版本补造。
 
 当前原输入端口准确源码可单独消费，后继 L 源码仍待 B 事务前置和适用组合验证后交付。原控制器正向、S3 Member / Ownership 实际组装、真实 tools / targets / usage、模型候选和第二任务经验引用仍未验证；本阶段不宣称 service build、完整 Swarm / L 或最终 release 已通过。
+
+## L Completion Interpreter 包级源码
+
+SOURCE 为 `d7d47d68c80a1ee3f0007de9f9b08ccfd654d158`，本阶段为适配器源码和包级检查。普通 push 后独立 ls-remote 得到同一 SHA。整体服务构建仍有下述 S2 事务前置缺口；真实模型、完整 L 和 Swarm 均未验证。
+
+`agents.NewCompletionExperienceInterpreter(registry, CompletionExperienceOptions)` 直接实现 B 已提交的 CompletionExperienceInterpreter。调用使用 B CompletionExperienceRequest 的 OperationID / Evidence / ResumeOnly，不创建替代请求身份。受信组装必须提供 ReadContext、BeforeFirstInput 和明确 DeadlineSeconds。ReadContext 返回当前批准项目和固定 ContextPacket；首输入 callback 必须包含当前来源、工具、授权及实际模型窗口门禁。它不替代 S2 / S3 的 Claim、预算、绑定或权限服务。模型版本读取 callback 可省略，省略时保持 unknown。
+
+实际调用只选择同一 Registry 的 Codex native。空输入初始化先建立原 controller，确认其配置路由为 gpt-6.1-sol，再在相同原 operation 提交一次固定上下文和 JSON 草稿要求。原 receiver 只接受同 thread / turn 的完整 final_answer item 和成功 turn/completed，不拼接 delta 作为完成结果；额外工具 item、模型路由变化、截断、错误或身份冲突立即失败。outputSchema 只约束 pattern / verdict / condition / exact evidence / refused，JSON 库拒绝外来字段、额外输出、拒绝回答和缺少原 evidence 的草稿。产物只作为 quarantine 候选的输入，不批准、评分或决定业务成果。
+
+原生响应正文仅留在原进程内存。错误返回固定安全消息，配置路径和原生正文不进入 stdout / HTTP / Git / 包。Provenance.Model 使用实际 thread/start 的配置路由，ModelIdentitySource=configured_route；独立 ModelVersion / ModelVersionSource 均为 unknown。只有受信来源确实报告独立版本时才可记录 provider_reported；模型别名和 CLI 版本不能充当独立版本。PolicyVersion=completion-experience-fixed-json-v1 标识本源码实际实现的固定草稿指令和 JSON 约束，不能替代项目授权政策。
+
+同一 Native 的原操作检查串行进行。重复调用核对原固定 Evidence 后只读取原结果；ResumeOnly 在冷 Registry、缺原进程或缺原 evidence 时返回 delivery_unknown，不启动、恢复或重发。已经提交后未知仍保留原 operation，后续仅核对相同原控制器。B 的现有 attention_receipts 保留同 owner / event 唯一操作，候选事务仍由 B 保存和复核。
+
+以下命令使用 GOMAXPROCS=2、共享 backend GOCACHE、独占 go-temp/R；最终包检查另将 TEMP / TMP 指向同一独占 D 盘目录：
+
+| 命令 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=150s` | PASS32.960秒；completion-adapter-final-package.log |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/attention/app -run 'TestCompletionExperience\|Test.*Interpretation\|TestRelayInputOperation' -count=1 -v -timeout=120s` | PASS8.616 / 3.052秒；completion-final-model-source-rules.log。实际缺前置、冷重放、非法 purpose、未知停止、拒绝/不完整输出、正文隐私和 unknown 模型版本规则通过 |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` / `go build -p=1 -mod=readonly ./internal/adapters/agents` | EXIT0 |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package / EXIT0 |
+
+组合首 FAIL 原件 completion-components-first.log 继续保留：B c715 的 SQLite 适配依赖尚未消费的 S2 NewWorkspaceRepository / WorkspaceTx / WorkspaceTransaction / workspaceCAS。S2 的最小准确十一文件闭包由原 owner 验证并经模块交付后再消费；R 不改 B / S2 领域或整合其无关历史。此包级 SOURCE 不将该服务组合标为通过。先前原输入端口 REPORT c569 首普通 push 的 TLS128 保存在 input-report-push-first-failure.log；同一提交普通重试后远端精确同值。
+
+当前执行门禁按 ROOT msg_9e32e1f32ba5：Calls 计数单位及 Known 完整覆盖两项等待用户，现 Calls / Tools / Targets Known=false 和 Claim 拒绝保持；不登记新 t0、不绕 Claim / 预算提交输入、不扩大工具权限。新登记、controller 和 model 均为0。rawResponse 仅交私有观察设计，尚未扩展 store / schema 或执行额外 RPC，已完成 Responses 的数量和 nullable usage 不充当全部调用/用量。H / B 精确装配、服务组合构建、真实完整非拒绝结果、人工批准和第二任务引用仍未完成。
