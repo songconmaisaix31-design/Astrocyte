@@ -1,5 +1,25 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第十三阶段：本机文件名别名与写域并发规则
+
+Task `task_da9aebf03f83` / Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` 交付 SOURCE `840afa0fa265056cc8f500ab62940f3561b5b30e`，客户端 Codex / 模型 `gpt-6.1-sol`。只修改本域 `mission.go`、新增路径规则测试及 `tests/s3/paths_test.go`。Windows 的范围包含和重叠判断识别大小写别名；相对文件名复用 Go `filepath.IsLocal`，Windows 路径段的尾部句点和空格拒绝为独立写域。其他系统保持本机大小写语义，目录边界仍须完整匹配。
+
+实际本机文件系统测试创建普通文件，经 `os.Stat` / `os.SameFile` 核对大小写、尾部句点和空格是否指向同一文件；若为同一实际文件，则不得被判定为独立写域。本机标准库允许的扩展文件名 `aux.txt` 已实际写入并核对为普通文件，没有手写 Windows 设备名称解析器。测试文件仅放在本树已忽略的 `.verification/s3-paths` 独立目录，没有模型、原生执行、外部 API 或协议替代实现。
+
+首 RED 保留：首次路径规则检查的两个测试失败，分别为大小写范围未重叠和尾部句点别名未拒绝。修复后第二轮新增的 `aux.txt` 拒绝预期失败；读取已安装 Go 源码确认扩展设备名使用当前 Windows 系统判定，将该用例改为实际标准库及真实普通文件检查。原有成功断言、测试期限和真实数据库检查保持，没有新增 skip。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 -count=1 -timeout=120s` | 最终 PASS；新本机文件身份检查、全部领域规则及真实 S2 批准/SQLite 链 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarm(Actual\|Native)' -count=1 -timeout=180s` | PASS，110.364 秒；原实际 SQL/Git/Go 与私有 tuple/预算/重启检查，原 Lease 和测试期限保持 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，21.813 秒；原生产 HTTP/认证/真实 SQLite 组合 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、`git diff --check`、三个修改/新增 Go 文件的 `gofmt -l` | PASS，33 包；格式检查无输出 |
+| `git push origin HEAD` | SOURCE 普通 push 成功；没有覆盖历史 |
+
+第十二阶段的 SOURCE 和独立 REPORT `f535bb0b45f280a4b28218846007d75e59dbb8a5` 后续普通 push 成功，独立远端查询核实完整 SHA 相同。六步经验流程以根 SOURCE `eb27bd6712b5df92a55ad542026534860726d8ff` 的 `tasks/cognitive-stack-L1-L4.md` §3.2.1 为准；S3 已向 B 和 S2 交准确依赖，等待真实 approved-only / 当前项目同库读取与不可变包引用端口，不把手写文字或未执行检索记为经验复用。H 的私有绑定二字段映射等待 S2 精确类型/存储消费范围登记；没有扩大其他领域写入。Calls 与权限证据两项未答，Claim 拒绝和原生零窗口保持，完整 AT08/09/13/16 与六步首跑仍未通过，Task 继续。
+
 ## 第十二阶段：原 Registry 的私有成员与生命周期桥
 
 Task `task_da9aebf03f83` / Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` 交付 SOURCE `86e467fb9798faf29b009e45d7c01740c1dac938`，实际客户端 Codex / 模型 `gpt-6.1-sol`。前置为 R 的独立契约 SOURCE `b2461140be791596242e9a8d13aba49e32d098ee`，已准确 cherry-pick 为本树 `b59843f35e03331e7f763007fa200bcc7213e313`；该原提交只有 `workspace/domain/relay_member_evidence.go` 及私有 JSON 规则测试，依赖仅标准库。没有合入完整 R 业务历史或修改其文件。Registry 的实际生产实现由原 R SOURCE `00dbd9c63dce2311518a1c47002947180d770a2f` 提供，H 只在原同一 Registry 实例装配，不创建替代所有权。
