@@ -61,19 +61,30 @@ async function actualAPIURL(child, expectedPort) {
 }
 
 async function ready(url, child) {
+  const failure = (message, cause) => {
+    const error = new Error(`${message}: ${url}`, { cause });
+    error.readiness = { url, pid: child.pid ?? null, exit_code: child.exitCode, signal_code: child.signalCode };
+    return error;
+  };
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
-    if (child.exitCode !== null || child.signalCode !== null) throw new Error(`Server exited before ${url}`);
+    if (child.exitCode !== null || child.signalCode !== null) throw failure('Owned server exited before readiness');
     let response;
-    try { response = await fetch(url, { signal: AbortSignal.timeout(1000) }); }
-    catch (error) { if (error.cause?.code !== 'ECONNREFUSED') throw error; }
+    try {
+      response = await fetch(url, { signal: AbortSignal.timeout(1000) });
+      // 完整消费本次就绪响应，归还实际 HTTP 连接。
+      await response.arrayBuffer();
+    } catch (error) {
+      if (error.cause?.code !== 'ECONNREFUSED') throw failure('Actual readiness GET failed', error);
+    }
     if (response) {
-      if (!response.ok) throw new Error(`Server readiness failed: ${url} returned ${response.status}`);
+      if (!response.ok) throw failure(`Actual readiness GET returned ${response.status}`);
+      if (child.exitCode !== null || child.signalCode !== null) throw failure('Owned server exited during readiness');
       return;
     }
     await delay(100);
   }
-  throw new Error(`Server readiness timed out: ${url}`);
+  throw failure('Actual readiness GET timed out');
 }
 
 function inside(path, directory) {
