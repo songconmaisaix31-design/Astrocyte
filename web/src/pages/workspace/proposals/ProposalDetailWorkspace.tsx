@@ -10,6 +10,7 @@ import { ProposalRevision, ProposalRevisionDiff } from './ProposalRevision';
 import { ProposalReviewActions } from './ProposalReviewActions';
 import { ProposalEditor } from './ProposalEditor';
 import { ApprovalPanel } from './ApprovalPanel';
+import { FixedGoalReference } from './FixedGoalReference';
 import styles from './ProposalWorkspace.module.css';
 
 type CommandResult = components['schemas']['S2ProposalResultV1'] | components['schemas']['S2ApprovalResultV1'];
@@ -33,6 +34,7 @@ export function ProposalDetailWorkspace({ id, onChanged }: { id: string; onChang
     <QueryState state={state}>{({ proposal }) => <>
       {!!revision && <p>正在查看固定历史版本；当前执行内容通过新版本修改。</p>}
       <ProposalRevision proposal={proposal} />
+      <FixedGoalReference key={`${proposal.content.goal.id}@${proposal.content.goal.revision}`} goal={proposal.content.goal} />
       {previousRevision > 0 && <QueryState state={previous}>{({ proposal: before }) => <ProposalRevisionDiff before={before} after={proposal} />}</QueryState>}
       <div className={styles.actions}><button className="ac-button secondary" type="button" disabled={blocked || !!editing} onClick={() => setEditing(proposal)}>编辑新版本</button></div>
       <ProposalReviewActions key={`${proposal.id}:${proposal.revision}`} status={proposal.status} revision={proposal.revision} disabled={blocked || !!editing || !proposal.content.goal.id || !proposal.content.scope.project_id} pending={command.pending}
