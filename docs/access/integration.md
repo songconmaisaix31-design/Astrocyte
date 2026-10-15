@@ -1,4 +1,54 @@
-# Works Relay v1.2 integration engineering report
+# Works Relay integration report
+
+## 2026-10-16 普通产品集成与构建
+
+本阶段沿根 04:04 HANDOFF / STATUS、发布模块 04:08 计划及当前经理消息执行。唯一 I 为 Task `task_2ee44933df72` / Dispatch `ctx_4a4234c26f8c` / 终端 `term_9f0b076a-c973-4c86-b073-2c17640750e9`，公开终端核实客户端 Codex / GPT-6.1-Sol xhigh fast。固定工作树 `works-relay-integration`、分支 `songconmaisaix31-design/works-relay-integration`，接管准确 HEAD `8b0eb882969d972f3f419602c12b5e20f00b79e2`，工作区干净。当前优先同一普通产品运行及核心操作；完整默认、L1 / L2 和最终发布继续按实际结果验收。
+
+### 准确来源与普通合并
+
+仅消费 M-release 已确认的提交，全部普通 `git merge --no-ff --no-edit` 无冲突完成，没有复制原作者 WIP。直接文件编辑仅本报告；领域源码和检查脚本均来自原作者提交。
+
+| 原作者输入 | 准确 SOURCE / REPORT | 组合 SOURCE |
+|---|---|---|
+| B 项目设置提交后唤醒清理，与既有 S2 AfterWorkspaceCommit 配对 | SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3` | 先普通消费 B，再消费下一行 F，得到 `cffac3671f21dbf90df9eaa2804a2eb5e070d332` |
+| F 固定上下文预算及真实事件身份断言 | SOURCE `90e69e703f79b81653ea5ccc1e6c9eca4bd781f9` / REPORT `a166310a3c7d7b22806ec74aa4125e9f6c6a2222` | `cffac3671f21dbf90df9eaa2804a2eb5e070d332` |
+| F 同一产品检查辅助脚本，七件 web/e2e 文件 | SOURCE `8bd599c8a34661dc9f4a47398212b387278a483f` | `79b2de5e318e900269230bfc5b12c1a5aea9f16b` |
+| F 分离旧记录与新输出目录，增加只读 Stored 核查 | SOURCE `6503077885aee63dd97f9642deab66ba57167925` | `76030ec7846d41b709a0f21d6d3761ba4d7bcae0` |
+| F 当前持久化恢复的独立报告 | REPORT `da692e8dd1a29e5621d127a4bea4fbc9ef7ab21a` | `deec6c7b27510f2139a910508a268f6d2585dff2` |
+
+B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约消费、token 撤销争用检查和 cleanup batch 配置；上述范围已核实际合并差异。B 原 native WIP 保持原树。F 的 inspect 写入脚本保留其原成功记录，本阶段没有执行这些脚本；同实例实际 HTTP / DOM / SQLite 操作仍由原 F 独占。每个组合 SOURCE 均已立即普通 push；`deec6c7` 的远端分支已独立读回同值。
+
+### 实际验证
+
+| 准确来源 / 命令 | 实际结果与原件 |
+|---|---|
+| 原 `8b0eb882` 完整 `pnpm check` 原件核查 | EXIT UNKNOWN。`c16-product-check-8b0eb882/check.log` 有 gofmt / vet 完成及四个 Go 包失败，最后输出为 httpapi FAIL；没有 `result.json`。后续包和契约、TypeScript、lint、Vitest 阶段无完成记录，未重新运行已知未修全套。 |
+| `cffac367`：`pwsh -NoProfile -File D:/Astrocyte-agent-assets/20261015/integration/run-validation.ps1 -Step build -RunName c16-product-build-cffac367` | 原 `pnpm build` EXIT0 / 49.3755472 秒；server / MCP / Sleep / TypeScript / Vite 完成，source 与 source_after 精确同值。原件为该 RunName 目录的 `result.json`、`environment.json`、`build.log`，原 bundle 体积提示保留。 |
+| `cffac367`：`go version -m D:/Astrocyte-agent-assets/20261015/integration/build/dist/astrocyte.exe` | 实际 revision 为 `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，`vcs.modified=false`。 |
+| `79b2de5`：`pnpm --dir web typecheck`、`pnpm --dir web lint` | 两命令均实际 EXIT0；日志为 `c16-product-static-79b2de5-typecheck.log`、`c16-product-static-79b2de5-lint.log`。 |
+| `76030ec`：`pnpm --dir web typecheck`、`pnpm --dir web lint` | 新增四件后另行检查，两命令均实际 EXIT0，检查前后 SOURCE 同值；日志为 `c16-product-static-76030ec-typecheck.log`、`c16-product-static-76030ec-lint.log`。 |
+| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合已普通 push，远端为 `deec6c7b27510f2139a910508a268f6d2585dff2`；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
+
+本轮全部新增验证原件位于 `D:/Astrocyte-agent-assets/20261015/integration/`。构建沿用原 dist、web/dist、.verification 到 D 盘的 junction，Go 缓存与临时编译目录为已确认的 D 盘位置；只设置验证子进程环境。没有改变全局 HOME、身份配置或 TEMP。
+
+原 `8b0eb882` 的失败逐包保留并已交 M-release 分派原作者：
+
+- `cmd/server`：公开项目注册失败；HTTP 403 与预期 200；`approval_required`；原 `delivery_unknown`；真实 symlink OS1314。
+- `internal/adapters/agents`：四项 OpenCode redirected ancestor；原控制器拒绝结果预期不符；selected-text 自产来源身份或启动观察不符。
+- `internal/adapters/events`：Windows junction 命令 `Invalid switch`；合法单链接文件被拒绝。
+- `internal/adapters/httpapi`：实际 Works 发现为 `no_project_git_marker`，未取得预期 Git 来源。
+
+没有改动这些断言、skip、retry、timeout 或原 UNKNOWN 记录。原 F 完整 320 项中断记录仍为 204 PASS / 55 FAIL / 43 原 SKIP / 18 无结果、EXIT UNKNOWN，归原 F 的准确来源；本阶段未新运行完整默认 E2E。
+
+### 运行交接与真实剩余项
+
+`cffac367` 构建产物已通过 M-release 交原 H。H 本人确认复制到其稳定 `shared-product-ad8413/versions/cffac367`，复制前后实际 Go revision 同值、modified=false、index 存在，随后停止读取并归还 I 的产物窗口。后继 F 脚本和文档没有引起重复产品构建，`cffac367` 的 build 结果仅归该准确来源。
+
+同一产品 64505 的 Node / SDK probe 首 EXIT1、同一 D 盘 SQLite 及既有业务保存结果保留；H / B 继续修复生产启动与装配，三个同 Dir / 白名单环境 probe 后继 EXIT0 由原 H 独立登记。当前页面、HTTP、清理正向和完成来源的完整结果仍待原作者交付，I 没有另起共享服务、读正式库、登记控制器或发送模型输入。Jev 密钥、Laya 语言、Agent completion action 等待定项保持原决定状态；受限 Codex 工具关闭要求和 unknown 不重发继续适用。
+
+最终完整 check / 默认 E2E、原生 L1、L2 六步和最终同源发布仍未通过。本次来源组合和构建属于普通产品阶段，正式 V4 / v0.2、17321、原锁、协议、日程、D1 / Q 及成功 OS / 模型结果保持原范围。
+
+## 先前已结束的 Works Relay v1.2 集成记录
 
 This report covers the integration engineering task only. Real model handover, terminal-only coding, the three-minute Today loop and formal zero-write/scheduled-date acceptance remain separate gates.
 
