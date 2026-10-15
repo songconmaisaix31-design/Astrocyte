@@ -40,6 +40,8 @@ S4 新 `workspace/repositorycontext/**` / `e2e/s4-*.spec.ts` 经 F 核零 WIP、
 
 恢复时磁盘查询显示 C 盘可用 5,246,283,776 bytes，已向主控报告；后续大型构建临时目录和缓存按用户指定使用 `D:/Astrocyte-agent-assets/20261015/product/frontend`，F 不执行证据清理。原 10:28 设计浏览器运行在 Orca 重启前只完成 28 项中的第 1 项，结果为 PARTIAL；原日志保留，不记为整套通过。
 
+本次随后两次完整设计交互运行均为 14 PASS、1 FAIL、13 NOT_RUN、退出 1。第一轮在新 D 盘缓存下遇到原 `beforeAll` 的 120 秒超时；缓存生成后的第二轮，1920 尺寸在生产 Go health 200 与 Vite 就绪后发生实际 `fetch failed / read ECONNRESET`，1280 尺寸 14 项全部通过。第二轮保留独立日志、trace 与实际 SQLite，并交模块转给 B 的唯一共享 helper Owner；根因尚未确定。源码、28 项断言、120 秒准备超时及零重试均未改变，不继续盲目重跑。`GOCACHE`、`GOTMPDIR`、`TEMP`、`TMP` 仅对 F 验证进程设置为上述 D 盘目录下 `ctx_4a385bf65390` 的独立子目录。
+
 ## 精确源码消费
 
 普通消费 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、B 实际输入 `e05c013a08ccf372bb884dae5eeb3345f92173af`、私有附件 `cc46b9855775adf70bce74242d08ef84ff4f573b`、真实 URL helper `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、R 人工迁移 `d14b08dc50014baf9ee636543564b040112cf3b5`、H Reader 装配 `b247dfb12b938739f09acc73e6b7582376951a0c` 和真实 listener `1aadeebaba2330bb8b786989f577415da5208fd5`。
@@ -53,6 +55,8 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 | 10-15 当前 SOURCE 的 `npm run typecheck` / `npm run lint` / `npm run build` | 退出 0；Vite 产物 551.65 kB，保留大于 500 kB 的提示 | `.verification/f-dispatch-current-typecheck.log`、`f-dispatch-current-lint.log`、`f-dispatch-current-build.log` |
 | 10-15 当前 HTTP / 参数 Vitest 五文件 | 4 文件 36 项 PASS；`relaySession.test.ts` 缺少真实 PUBLIC_URL / GetEvent，beforeAll 失败、2 项未执行，整体 FAIL | `.verification/f-dispatch-current-http-vitest.log`；不使用模拟服务替代缺失原生来源 |
 | 10-15 既有设计 Playwright，两尺寸共 28 项 | PARTIAL：仅第 1 项完成 PASS，Orca 重启中断后续运行，无完整退出结果 | `.verification/f-dispatch-design-current-playwright-first.log` |
+| `npx playwright test --config ../.verification/design-current.config.ts --workers=1` | 14 PASS / 1 准备超时 FAIL / 13 NOT_RUN，退出 1，6.1 分钟 | `.verification/f-dispatch-design-current-playwright-recovery.log`；新 D 盘缓存首轮，原 trace 保留 |
+| 同一设计命令追加 `--output ../.verification/design-current-warm-artifacts` | 14 PASS / 1 实际 ECONNRESET FAIL / 13 NOT_RUN，退出 1，4.1 分钟 | `.verification/f-dispatch-design-current-playwright-warm.log`；独立 trace / SQLite 保留，待共享 helper 排查 |
 | S2 公共 `api/proposals.ts` 独立 tsc / eslint | 退出 0；首次全局新契约 FAIL 保留，后续准确 UI 及 shared 内容适配通过 | `.verification/s2-api-typecheck-first.log`、`s2-contract-typecheck-generated.log` |
 | 当前组合 typecheck / lint / build / generator check | 退出 0；原 17 个显示参数测试全部 PASS | `.verification/s2-shared-content-typecheck-first.log`、`s2-shared-content-lint-final.log`、`s2-shared-content-build-final.log`、`s2-shared-display-vitest-first.log` |
 | `npx playwright test --config e2e/self-service.config.ts --grep '真实提案创建、不可变版本' --workers=1` | 两种窗口 2 PASS，真实 SQL / HTTP 重启；无新模型 | `.verification/s2-shared-workflow-playwright-first.log`；默认完整套件与其他阶段不足不覆盖 |
