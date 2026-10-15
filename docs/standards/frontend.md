@@ -1,6 +1,6 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前本域 SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3`，前序 helper / Grant 组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6`，公共 API 阶段 SOURCE `0657d32760867e735a71fc891c05189a1c216cfd`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前本域 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f`，QueryState SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3`，前序 helper / Grant 组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 ## 完成内容
 
@@ -48,7 +48,11 @@ S5 经零 WIP 核查和停止写入 ACK 后，模块计划 `2f609ea` 已普通 p
 
 该组合沿原默认配置执行设计与导航全部 100 项，97 PASS / 3 FAIL，12.7 分钟、退出 1、零 skip。28 项设计用例两尺寸均通过；一个导航准备阶段实际 Vite GET `http://127.0.0.1:50258` 发生 `TimeoutError`，与旧 `ECONNRESET` 分别保留，具体进程状态未在 reporter 文本中封存。另两项导航失败来自共享 QueryState 对过期空集合继续显示空结果。当前 SOURCE 已修正该呈现：失败的过期空集合显示读取错误与人工重试；非空旧快照继续显示过期说明并保留禁写条件。原导航两尺寸 2 PASS、原 S2 非空快照 / 权限拒绝 / 恢复两尺寸 2 PASS，全部断言保持。当前完整默认验收仍未通过，S2 全部 12 项与新源码 100 项完整复验尚未执行。
 
-后续 Go 命令按根当前决定使用进程 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR/TEMP/TMP` 使用 F 独占 D 盘目录。S4 H SOURCE `31256d5` / REPORT `89d84d5` 已收到；只读普通合并预检发现五个 B 共享文件冲突，已交模块安排原 Owner，尚未合入或生成 S4 客户端。没有用未配置 503 代表配置图正向、原生或 Today 通过。
+后续 Go 命令按根当前决定使用进程 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR/TEMP/TMP` 使用 F 独占 D 盘目录。S4 H SOURCE `31256d5` / REPORT `89d84d5` 已按模块计划 `4434c39` 普通消费，五个共享冲突文件由原 B 通过文件编辑工具处理并暂存、停止写入归还；模块独立复核后由 F 完成合并 `90b2819`。F 没有编写共享依赖或 helper 冲突逻辑。
+
+S4 `api/repositoryContext.ts` 复用准确生成类型和原客户端，提供 map / search / impact / index / refreshMap 五项方法及 AbortSignal。map 完整传递重复 root 与显式预算，POST 沿真实人工会话携带 CSRF，保持契约原字段；该阶段没有命令 request_id / 幂等键或匹配请求的收据，不据普通实体读取解锁未知写入。实际 Go 构建无需 overlay、全局 typecheck、客户端 ESLint、前端 build 与 generator check 均退出 0。五项真实 Go / HTTP / SQLite 测试全部通过，覆盖实际未配置 503、完整正文 / 预算 / CSRF、400 / 403、取消和服务断开，并核对公开项目已保存、原生会话为零；没有生成成功地图或图查询事实。
+
+五件共享文件的完整依赖检查在实际 `summarize --version` 的 60 秒期限失败，原件由 B 保留；可选全缓存 `go mod verify` 未完成、原 B 核自有进程后终止，均不计通过。模块实际 modulegraph 退出 0 单独记录。配置图正向、S4 页面组合、S2 Context / S3 / S5 准确公共契约及完整默认验收仍未完成。根待答的 Calls 单位与完整集合覆盖规则保持未决定，Calls / Tools / Targets Known=false、nullable usage 保持 null，未开始新登记、初始化或模型调用。
 
 ## 精确源码消费
 
@@ -60,6 +64,9 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| 当前 S4 `go build -mod=readonly -p=1 -o D:/…/s4-source-server.exe ./cmd/server` | 退出 0；本树准确源码，无 overlay | `.verification/f-s4-actual-go-build-first.log` |
+| 当前 S4 typecheck / API ESLint / build / generator check | 退出 0；553.30 kB 提示保留 | `.verification/f-s4-client-typecheck-first.log`、`f-s4-client-typecheck-with-http-tests.log`、`f-s4-client-lint-first.log`、`f-s4-client-build-first.log` |
+| `npx vitest run src/api/repositoryContext.test.ts` | 5 PASS，18.26 秒；生产 Go、实际 HTTP、SQLite；未配置 503 不代表正向图成功 | `.verification/f-s4-client-http-first.log` |
 | 当前 SOURCE `npm run build`（含 typecheck）/ `npm run lint` / 显示 Vitest | 退出 0；显示 17 PASS，保留 553.30 kB 构建提示 | `.verification/f-stale-empty-build-first.log`、`f-stale-empty-lint-first.log`、`f-stale-empty-vitest-first.log` |
 | 原默认 `navigation.spec.ts` 中提案空集合 / 实际 403 / 人工恢复用例，两尺寸 | 2 PASS，20.9 秒；全部 GET，原断言保持 | `.verification/f-stale-empty-proposals-playwright-first.log` |
 | 原 `self-service.config.ts` 的 S2 非空提案 / 实际 403 / 禁写 / 恢复用例，两尺寸 | 2 PASS，35.4 秒；实际生产服务与 SQLite | `.verification/f-stale-empty-nonempty-playwright-first.log` |
@@ -118,9 +125,10 @@ B 原实际 README 结果为 `agent_inferred`、模型 `gpt-6.1-sol`、原生 ID
 | 原三分钟窗口、目标完成及当前原档身份 | FAIL，历史不改 |
 | 新 v1.4 投递阶段、原生归属、输入 ready、恢复身份与人工上下文交接 | 准确 H `074cf55`（包含 R 事实与 current ownership）已普通消费及生成，安全事实 UI / 成对声明负向 / 公共未知锁实际通过；正向原生 ready / resume / 跨 Agent handoff 未执行，working 规则仍待决定 |
 | EOF / structured、互斥与 generic 409、未知 send、第二 CLI、publication error | 原完整默认 22 项缺获准真实场景 FAIL，尚未通过 |
-| 新真实 CLI / Today / L1 完整验收 | 根已允许单一 Codex 明确 started 的共同正向，待 R 精确 Source、H 真实组装 / 工具关闭证据及模块明确 Go scope / 输入 / 窗口；新初始化 / 模型 / Today 尚未开启 |
+| 新真实 CLI / Today / L1 完整验收 | Calls 计数单位与完整集合覆盖待用户决定；Known=false、Claim 拒绝保持，新登记 / 初始化 / 模型 / Today 尚未开启 |
 | 完整默认合并产品最终验收 | 尚未通过，203 / 41 / 32 / 4 保留 |
 | S2 / S3 实际 Proposal / Grant / Context / Mission / WorkItem / Artifact | 用户已允许按 SPEC 实施；独立业务与 UI Owner 持续开发，准确公共契约消费及本次组合验收未完成 |
+| S4 公共契约与客户端 | H `31256d5` 已消费并生成，真实 503 / 校验 / 权限 / 取消 / 断开通过；可信配置的图 / 地图正向与 UI 组合未通过 |
 | 生成 schema 中共享源英文说明 | 未自行改变共享源或生成内容；本域普通注释已中文化 |
 
 没有 push main、force push、Git 回滚、私有原件读取、正式实验执行或人工评分补填。后续字段、真实模型 / CLI 窗口和最终组合验收由当前任务及协调者的准确交付继续。
