@@ -27,6 +27,9 @@ type localProjectService struct {
 	files           ProjectFiles
 	registry        NativeRegistry
 
+	nativeMessageMu      sync.RWMutex
+	nativeMessageOptions nativeMessageOptions
+
 	repositoryCleanup projectCleanupNotifier
 }
 
@@ -611,48 +614,7 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 func (s *localProjectService) SendNativeMessage(ctx context.Context, c domain.Caller, projectID, sessionID, message string) (domain.NativeObservation, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, session, a, err := s.session(ctx, c, projectID, sessionID, "send")
-	if err != nil {
-		return domain.NativeObservation{}, err
-	}
-	if err := s.nativePermission(ctx, c, p, session.CLI, "send"); err != nil {
-		return domain.NativeObservation{}, err
-	}
-	if err := s.checkPacket(ctx, c, p, session.ContextPacket); err != nil {
-		return domain.NativeObservation{}, err
-	}
-	op, err := operationID(c, domain.NativeCommand{})
-	if err != nil {
-		return domain.NativeObservation{}, err
-	}
-	if receipt, ok := session.Operations[op]; ok {
-		if receipt.Status != "accepted" {
-			return domain.NativeObservation{}, projectError(apierrors.DeliveryUnknown, "original native command delivery remains unknown")
-		}
-		return a.Observe(ctx, session)
-	}
-	if session.PendingOperation != "" || session.StopConfirmed {
-		return domain.NativeObservation{}, projectError(apierrors.DeliveryUnknown, "native session has unknown delivery or has stopped")
-	}
-	if strings.TrimSpace(message) == "" || len(message) > 64*1024 {
-		return domain.NativeObservation{}, projectError(apierrors.ValidationFailed, "native message is empty or exceeds 64 KiB")
-	}
-	session.PendingOperation = op
-	if session.Operations == nil {
-		session.Operations = map[string]domain.NativeOperation{}
-	}
-	if len(session.Operations) >= 64 {
-		return domain.NativeObservation{}, projectError(apierrors.BudgetExhausted, "native session command receipt bound reached")
-	}
-	session.Operations[op] = domain.NativeOperation{Action: "send", Status: "pending", CreatedAt: time.Now().UTC()}
-	if err := s.repo.SaveSession(ctx, session); err != nil {
-		return domain.NativeObservation{}, err
-	}
-	obs, err := a.Send(ctx, session, message)
-	session.Status = obs.Status
-	session.StopConfirmed = obs.StopConfirmed
-	_, saveErr := s.finishNative(ctx, session, op, err)
-	return obs, saveErr
+	return s.sendPreparedNativeMessage(ctx, c, projectID, sessionID, message)
 }
 func (s *localProjectService) stopOwned(ctx context.Context, session domain.NativeSession) error {
 	if session.Ownership != "owned" {

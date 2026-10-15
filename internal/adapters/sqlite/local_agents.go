@@ -196,11 +196,7 @@ func (db *DB) LoadSession(ctx context.Context, id string) (domain.NativeSession,
 	err = json.Unmarshal([]byte(data), &s)
 	return s, err
 }
-func (db *DB) SaveSession(ctx context.Context, s domain.NativeSession) error {
-	conn, err := db.localProjectConnection(ctx)
-	if err != nil {
-		return err
-	}
+func localNativeSessionForStorage(s domain.NativeSession) domain.NativeSession {
 	// 只保存固定引用及文件快照元数据。
 	s.ContextPacket.Materials = append([]domain.ContextMaterial{}, s.ContextPacket.Materials...)
 	for i := range s.ContextPacket.Materials {
@@ -210,11 +206,25 @@ func (db *DB) SaveSession(ctx context.Context, s domain.NativeSession) error {
 	for i := range s.ContextPacket.Files {
 		s.ContextPacket.Files[i].Text = ""
 	}
+	return s
+}
+
+func (db *DB) SaveSession(ctx context.Context, s domain.NativeSession) error {
+	conn, err := db.localProjectConnection(ctx)
+	if err != nil {
+		return err
+	}
+	s = localNativeSessionForStorage(s)
 	data, err := json.Marshal(s)
 	if err != nil {
 		return err
 	}
-	result, err := conn.ExecContext(ctx, "INSERT INTO local_agent_sessions(id,project_id,data) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data WHERE local_agent_sessions.project_id=excluded.project_id", s.ID, s.ProjectID, string(data))
+	// 普通观察和停止更新保留私有的固定输入记录，不能恢复为尚未发送。
+	result, err := conn.ExecContext(ctx, `INSERT INTO local_agent_sessions(id,project_id,data) VALUES(?,?,?)
+		ON CONFLICT(id) DO UPDATE SET data=CASE
+		WHEN json_type(local_agent_sessions.data,'$.private_native_messages') IS NULL THEN excluded.data
+		ELSE json_set(excluded.data,'$.private_native_messages',json_extract(local_agent_sessions.data,'$.private_native_messages')) END
+		WHERE local_agent_sessions.project_id=excluded.project_id`, s.ID, s.ProjectID, string(data))
 	if err != nil {
 		return err
 	}

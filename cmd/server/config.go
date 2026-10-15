@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -87,7 +88,7 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 			return c, fmt.Errorf("create repository tool runtime directory: %w", err)
 		}
 	}
-	probe := func(executable string, args ...string) ([]byte, error) {
+	probe := func(stage, executable string, args ...string) ([]byte, error) {
 		probeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 		defer cancel()
 		command := exec.CommandContext(probeCtx, executable, args...)
@@ -101,7 +102,11 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 		}
 		output, err := command.Output()
 		if err != nil {
-			return nil, fmt.Errorf("verify configured repository executable %s: %w", executable, err)
+			var exit *exec.ExitError
+			if errors.As(err, &exit) && len(exit.Stderr) > 0 {
+				return nil, fmt.Errorf("verify configured repository %s executable %s: %w: %s", stage, executable, err, strings.TrimSpace(string(exit.Stderr)))
+			}
+			return nil, fmt.Errorf("verify configured repository %s executable %s: %w", stage, executable, err)
 		}
 		return output, nil
 	}
@@ -114,7 +119,7 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 		if err := repositoryConfiguredPath("ASTROCYTE_CODEGRAPH_SDK", c.SDK, true); err != nil {
 			return c, err
 		}
-		version, err := probe(c.Node, "--version")
+		version, err := probe("Node version", c.Node, "--version")
 		if err != nil {
 			return c, err
 		}
@@ -125,10 +130,10 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 			return c, err
 		}
 		// 让官方包实际解析其生产依赖；源码 SDK 与 npm wrapper 共用公开导出契约。
-		if _, err := probe(c.Node, "-e", "const sdk=require(process.argv[1]);for(const key of ['CodeGraph','QueryBuilder','setLogger'])if(typeof sdk[key]!=='function')throw Error('codegraph_exports_unavailable');if(!sdk.silentLogger)throw Error('codegraph_logger_unavailable')", c.SDK); err != nil {
+		if _, err := probe("CodeGraph SDK exports", c.Node, "-e", "const sdk=require(process.argv[1]);for(const key of ['CodeGraph','QueryBuilder','setLogger'])if(typeof sdk[key]!=='function')throw Error('codegraph_exports_unavailable');if(!sdk.silentLogger)throw Error('codegraph_logger_unavailable')", c.SDK); err != nil {
 			return c, err
 		}
-		if _, err := probe(c.Node, "--check", c.Script); err != nil {
+		if _, err := probe("CodeGraph bridge syntax", c.Node, "--check", c.Script); err != nil {
 			return c, err
 		}
 	}
@@ -136,7 +141,7 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 		if err := repositoryConfiguredPath("ASTROCYTE_AOCI_EXECUTABLE", c.AOCI, false); err != nil {
 			return c, err
 		}
-		version, err := probe(c.AOCI, "--version")
+		version, err := probe("AOCI version", c.AOCI, "--version")
 		if err != nil {
 			return c, err
 		}
