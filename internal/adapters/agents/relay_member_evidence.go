@@ -77,6 +77,14 @@ func (r *Registry) portableMemberEvidence(ctx context.Context, original RelayOwn
 			started := *original.Turn.StartedAt
 			result.TurnStartedAt = &started
 		}
+		if original.Turn.ResultObservedAt != nil && original.Turn.ResultSource == "codex_turn_completed" {
+			outcome, when := original.Turn.Outcome, *original.Turn.ResultObservedAt
+			result.Outcome, result.ResultObservedAt, result.ResultSource = &outcome, &when, original.Turn.ResultSource
+			if original.Turn.FailureCode != "" {
+				code := original.Turn.FailureCode
+				result.FailureCode = &code
+			}
+		}
 	}
 	// 不从读取时间生成退出时间，不将原控制器持有记录当作完整活性证明。
 	// 当前没有完整工具、目标或单输入 usage 来源，保持 false / nil。

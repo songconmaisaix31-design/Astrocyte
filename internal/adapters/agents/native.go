@@ -669,8 +669,12 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 			return p.observe(), nativeError(apierrors.DeliveryUnknown, "native turn identity is unavailable; do not replay")
 		}
 		p.mu.Lock()
+		if err := p.bindRelayTurn(s, operation, result.Turn.ID); err != nil {
+			p.mu.Unlock()
+			p.failOutput()
+			return p.observe(), nativeError(apierrors.DeliveryUnknown, "native input was submitted but its original turn binding is unconfirmed; do not replay")
+		}
 		p.turnID = result.Turn.ID
-		p.bindRelayTurn(s, operation, result.Turn.ID)
 		p.relayFact("input_accepted", "codex_turn_acknowledgement", operation)
 		p.consumptionUnknown(operation)
 		if when, exists := p.relayStartedTurns[result.Turn.ID]; exists && operation != "" {
