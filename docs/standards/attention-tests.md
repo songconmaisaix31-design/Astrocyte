@@ -1,10 +1,39 @@
 # Attention 测试整改记录
 
-本轨工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/product-attention-tests-20261014`，分支为 `songconmaisaix31-design/product-attention-tests-20261014`，首次接管基线为 `b470ecd736af261a10e4c4822bdcd3b02d0da454`。2026-10-16 00:36 本次恢复基线为 `71d31340301eb4787a7bdcc477ec4c696f3485ee`，接管时工作树干净；当前 Orca 终端为 `term_990812cc-b99b-474f-be16-fb6f8007b237`，Task `task_5f0a79b6a17a`，Dispatch `ctx_1ad6d580f95f`。公开 terminal 元数据核实实际客户端为 Codex，终端显示 GPT-6.1-Sol xhigh fast。
+本轨工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/product-attention-tests-20261014`，分支为 `songconmaisaix31-design/product-attention-tests-20261014`，首次接管基线为 `b470ecd736af261a10e4c4822bdcd3b02d0da454`。2026-10-16 04:20 恢复基线为 `059669d603f151aa1f9a21f4cee4201d5ede159d`，工作树干净；当前 Orca 终端为 `term_5ad7b00b-7dd1-4c3f-bee3-1cfe1bb7d749`，Task `task_5f0a79b6a17a`，Dispatch `ctx_7860ae02e15d`。公开 `worker-show` 核实实际客户端为 Codex、模型为 `gpt-6.1-sol`，终端显示 xhigh fast；沿原 Task 和独占写域继续。
 
-本轨唯一写入范围为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 和本文件；生产、依赖、native/relay 与其他测试归原人员。旧原件保留本树已忽略 `.verification`；按当前 D 盘产物要求，本次新数据库、对象、二进制、HTTP 原件与日志写入本轨独占 `D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_1ad6d580f95f/.verification`，不纳入 Git 或产品接口。
+本轨唯一写入范围为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 和本文件；生产、依赖、native/relay 与其他测试归原人员。旧原件保留本树已忽略 `.verification`；00:36 阶段证据保留 `D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_1ad6d580f95f/.verification`。04:20 阶段的新数据库、对象、二进制、HTTP 原件与日志写入独占 `D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_7860ae02e15d/.verification`，不纳入 Git 或产品接口。
 
-## 当前产品启动优先与实际主服务缺口
+## 04:20 Taste 生产复验与 completion 实际组件
+
+按模块 `msg_48f7e7dd5c29` / `msg_dbd1e64f0946`，清洁检查点分别预检查并普通 `--no-ff` 消费准确 I `b73dc79e7c59a9192ec2bfbd3625a620d8304efb` 和 B `faee82ec7a3f4e0c832bb198d1c42393ae88ea02`。预检查均 EXIT0，实际合并零冲突，组合为 `5c5c8d4ebc799ec029188e9bcfc99b3459d812f7`；未手工修改生产、依赖或其他人员测试。H 的 Taste 装配 `67fb5f2` 和后继 `3569f5d` 已包含在该准确 I 来源中。
+
+原 `TestProductionTasteHTTPKeepsUnconfiguredStateAfterRestart` 在这个组合上实际 PASS：构建并启动独立 `cmd/server`，完整 Taste GET 为 HTTP200 / configured=false / profile=nil，原 SQLite 进程重启后状态保持，Taste 版本、作业与原生会话均为零。原 GET404 首 RED 的日志、数据库和后续断言未执行状态保持在下节；此处为准确后继生产源码的实际复验，没有操作共享 64505 进程。
+
+SOURCE `fa5c6e6a2cedcf34b22bf760c24ac6b81c3a7241` 已普通 push，独立 `git ls-remote` 核远端同值；唯一新源码为 `internal/attention/app/experience_completion_service_test.go`。两项检查使用真实生产 Service、SQLite 与原收据，没有替代来源结果、完成事件或 Interpreter 输出。
+
+`TestCompletionCaptureActualProjectMissingSourceAndReopen` 通过生产 `LocalProjectService` 登记本获准公开 Git 项目，实际授予 discovery 权限、签发并认证 Agent token。Agent 的 completion action 仍未授权，Application Service 返回 `approval_required`，生产来源适配器返回 `scope_denied`；非法主体和命令在来源读取前拒绝。真实 human 原样传给当前项目 Service，owner 使用实际 `LocalProject.ID`；Root、SpaceID 和未登记 ID 均无法取得来源。独立真实 `RelayStore` 和 `ReadRelayCompletion` 对未观察到的 UUID 返回缺失；相同原命令的重复读取保持无候选、完成来源、捕获回执或原生会话，原 Relay 状态完整不变。关闭并重开主库和 Relay 库后保留全部拒绝与零副作用断言，原 Agent token 身份保持；实际撤销 Grant 后原 token 认证明确拒绝。
+
+当前项目回调仅调用生产 `LocalProjectService.ListProjects` 并返回其中实际登记的 ID；观察 wrapper 只委托生产 `RelayCompletionExperienceSource`。未观察到的 UUID 是明确的拒绝输入，没有创建业务完成事件。这个组件支持当前项目、principal、缺失来源和重启边界；没有将缺失来源拒绝计为成功完成或候选形成。
+
+`TestCompletionRepositorySharesActualCommandReceiptRollbackAndReopen` 在生产 `AcceptedExperienceRepository` 事务内调用实际 Attention 人工 RankingProfile 命令，使用原 `WorkspaceTransaction` 连接读取真实生成的收据。再次保存同一原收据触发 SQLite 唯一约束及 `version_conflict`，Profile head、revision、回执和事件完整回滚，连接等待次数不增加。原请求随后成功一次，关闭重开后完整 Profile 和原收据保持，幂等重放不增加记录；经验候选、完成来源和原生会话始终为零。权重是明确的人工用例参数；这个结果支持共享持久化事务，完成捕获的正向幂等收据仍需要实际完成来源与 Interpreter。
+
+下表日志相对于本节独占 D 盘 `.verification`。本节命令设置 `ASTROCYTE_TEST_OUTPUT_ROOT` 为该绝对根，TEMP / TMP / GOTMPDIR 为其下 `temp`，共享 GOCACHE 为 `D:/Astrocyte-agent-assets/20261015/go-build/backend`；没有 OS 临时目录、模型请求或原生初始化。
+
+| 实际命令 | 结果 | 本机日志 |
+|---|---|---|
+| `git merge-tree --write-tree --name-only --messages HEAD b73dc79e7c59a9192ec2bfbd3625a620d8304efb`，随后对 B `faee82e` 同样预检查 | 两次 EXIT0，实际普通合并零冲突 | `h-b73-merge-precheck.log`、`b-faee-merge-precheck.log` |
+| `go test -mod=readonly ./tests/s1 -run '^TestProductionTasteHTTPKeepsUnconfiguredStateAfterRestart$' -count=1 -v -timeout=15m` | PASS，25.626s；实际生产构建、HTTP 和同库进程重启 | `taste-http-after-h-first.log`；`s1-native-1763273845/server.log` 和 `state.sqlite` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestCompletion(CaptureActualProject\|RepositorySharesActual)' -count=1 -v -timeout=15m`，新增组件首次 | 两项 PASS，5.112s | `completion-service-first.log` |
+| 同两项命令，补充真实 token 生命周期后的首次 | RED / build failed，业务未执行；完整原件保留 | `completion-service-current-token.log` |
+| 同两项命令，当前源码 | 两项 PASS，2.458s | `completion-service-current-token-second.log`；`attention-2930046485/state.sqlite` 和 `attention-269701519/state.sqlite` |
+| `go vet -mod=readonly ./internal/attention/app` | EXIT0 | `completion-app-vet.log` |
+| `gofmt -l internal/attention/app/experience_completion_service_test.go`、`git diff --check` | 无输出，EXIT0 | 当前源码检查 |
+| SOURCE 普通 push 和 `git ls-remote origin refs/heads/songconmaisaix31-design/product-attention-tests-20261014` | EXIT0，远端同 SOURCE | `completion-source-push-first.log`；远端查询安全 SHA |
+
+准确 `5c5c8d4` 组合的 `main.go` 已装配 Relay 完成来源 wrapper，但尚未向 `experienceHTTPBridge` 注入 `completionSources`；这个生产注入由原 H 继续，正向完成来源与 Interpreter 保持未执行。原十四项替代实现及 S1 原生 unknown 断言继续保留 NOT_RUN，`go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 尚未执行；不新增 skip、不删除断言，不将本节定向通过计为全产品完成。受限 Codex、Agent completion action、经验候选人工批准与其他原待定项继续遵守根当前决定。本轨继续同一 Task 的准确来源消费和返修，阶段不发送 worker_done。
+
+## 产品启动与原主服务缺口（先前阶段）
 
 按用户最新顺序及模块 `msg_16d49ab01c3a`，先集成并跑通完整产品，再并行全面测试与整理；本轨只做当前主运行缺口所需的无原生核心检查。唯一 I 的准确可构建 SOURCE `ad8413e119379c9795bab558a41fe425ea9095ca` 已包含 S5 `f955fe3`。本轨在干净检查点预检查零冲突，普通 `--no-ff` 消费为 `b1df5ae5c04dbe43cfaf326fde184b4d0de72f32`，保留原七件测试；`go test -mod=readonly ./internal/attention/app -list '^Test'` EXIT0，完整日志为本次 D 根 `i-ad841-app-compile-first.stdout.log` / `.stderr.log`。组合已普通 push 并立即交唯一 I，没有等待本 REPORT 或重复完整构建、旧成功用例、模型推理。
 
