@@ -1,5 +1,24 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 02:50 判断策略表单与同实例只读导航
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_6e10ec67cf13`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_a3dc3bfa5554`。原分支 `songconmaisaix31-design/product-ui-20261015`，恢复基线 `58e3fc0`，SOURCE `0ad83a96bc50747867146a38a80b7a90ecbedc5f` 已普通 push，远端同值。模块 `msg_d38657b3e079` 确认原 `attention/delegation/**` 独占范围连续；已保留并完成恢复时的 `JudgmentPolicyFields.tsx` 修改。
+
+判断策略字段复用原 `TextField` / `SelectField`，明确选择后端、语言、实际模型和策略版本、外发范围、四项预算及可选置信条件。预算检查安全整数、正输入和非负输出；重复语言、非有限或越界置信、真实性范围缺少边界和顺序错误显示复核提示。切换题型保留原范围并提示核查；字段禁用随外层状态生效。参数验证来自现有 `internal/judgment/contracts.go` / `validation.go`，没有生成或猜测公共 DTO，没有发起判断、保存策略或开启委托。
+
+| 实际命令或操作 | 本阶段结果 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS，无类型错误 |
+| `pnpm --dir web exec eslint src/pages/attention/delegation` | PASS，零 errors / warnings |
+| `pnpm --dir web exec vitest run src/pages/attention/delegation/policyDraftIssues.test.tsx --maxWorkers=1` | 4 PASS，EXIT0；仅明确参数的验证与静态显示，不代表后端、策略或模型调用 |
+| `pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-policy-0249` | PASS，EXIT0；原大于 500 kB 的分块提示保留。安全日志 `logs/web-policy-build-0249.log` |
+| Playwright 只读访问同一普通产品 `http://127.0.0.1:64505` | `/attention`、`/workspace`、`/swarm` × 1920×1080 / 1280×720 共六项：HTTP200、各一个 h1，导航检查时零 alert、横向溢出和 pageerror。没有业务写入、原生操作、模型或截图；安全日志 `logs/live-readonly-navigation-0245.log` |
+| `git diff --check`、`git diff --cached --check` | PASS |
+
+本轮新产物、进程 TEMP / TMP 与日志均在 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`。共享产品仍为 H 持有、F 唯一业务操作的实例；本树未启动第二共享服务，未部署本阶段 SOURCE。上述导航覆盖当前生产 `ad8413e`，表单检查覆盖本树 SOURCE，两者分别记录。
+
+H `67fb5f255d52130f5ae30377ab615dd17b7c79ef` 已提交 Judgment / Taste 生产装配；本树公共 OpenAPI 与生成类型尚无对应 Judgment、policy、snapshot、delegation 和完整 Taste 路径。准确缺口已交 H / F，后续继续按 H OpenAPI → F 生成类型和公开客户端 → 本域页面接入，未消费 WIP。S5 实际 HTTP / SQLite / 两尺寸操作、S3 原生和 Artifact 正向、最终同源 `pnpm check` / `pnpm build` / 完整默认 E2E 及 Windows 包继续待验，未将本阶段字段与导航检查计为整功能通过。
+
 ## 2026-10-16 02:01 真实仓库上下文两尺寸验证
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`。分支 `songconmaisaix31-design/product-ui-20261015`，SOURCE `96fa3e6d6ef5716d8cc3aa0a2180bc600b706b3d` 已普通 push，独立 `git ls-remote` 同值。源码仅两件：新增 `web/e2e/s4-repository-configured.spec.ts`，以及本域 `RepositoryContextPanel.tsx` 在真实 `evidence_missing` 时显示仓库源码、索引与治理说明的核查提示。共享 API、类型、认证、helper 和配置未修改。
