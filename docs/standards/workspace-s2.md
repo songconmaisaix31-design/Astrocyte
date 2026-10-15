@@ -2,6 +2,18 @@
 
 当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_54302cb333c4`，终端 `term_721cf30f-a6d2-4a21-abcd-0f73c8b793f5`。实际客户端 Codex，模块公开 worker-list 已核 `gpt-6.1-sol`；原 Task、工作树、分支与测试记录保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
 
+## 2026-10-16 准入格式与 Context 失败核查独立 REPORT
+
+SOURCE `7f0c43b27a2cf5cea8ed6d5725bdca8c4127f8c0` 仅通过文件编辑工具格式化原树 `internal/workspace/app/proposals_admission.go`。提交前后分别经只读 `gofmt` 的完整内容逐字相同；`gofmt -l` 与限定 `git diff --check` 无输出，SOURCE 普通 push 后独立 `git ls-remote` 返回同一完整 SHA。准入的固定来源、当前权限、未分配草稿、幂等与事务逻辑保持，没有重复已通过的功能测试。CI `38780870658` 对准确 I SOURCE `2b77ac6ece0aaa4c4f88a02deb5c9663994e3809` 的双平台首个 gofmt 失败保留，后续测试、构建和 E2E 在该次 CI 中仍未运行。
+
+依新临时授权，本人仅处理 I `domain/session_bindings.go` 并 stage，保留私有身份与隐藏的 Snapshot；原 HEAD `f0277e7ca755792bae394f479b672b11847067d4`、MERGE_HEAD `745d5b489969bd4a8bb4e07f2882fcc1fbf2c4b4` 保持，限定格式和 working / cached diff 检查通过，最终文件同 I 当时 HEAD。本人于 `msg_f1653d5392ef` / `msg_93c17307efed` 明确停止 I 全部写入和进程访问并归还，其余十件 S3 冲突由原作者处理。
+
+随后依据 01:52 新临时范围和正式放行 `msg_406a71737502`，只在 I 逐块处理并 stage 指定十一件 S2 冲突。原 HEAD `2b77ac6ece0aaa4c4f88a02deb5c9663994e3809`、MERGE_HEAD `6fe2234004e1632cff72c7de4f0e11d3de99906c` 保持，全树 U0；限定格式和 working / cached diff 检查通过，十一件最终内容均保持 I 当前已提交版本。双观察、Grant、固定 Goal、当前来源同数据库读取、私有身份与 Snapshot、严格 ASCII 币种及全部实际 Context / Goal 断言保留，S5 其他非冲突闭包未改。本人于 `msg_515909ffc516` / `msg_7524229ad843` 明确停止 I 全部写入、stage 和进程访问并归还；没有运行测试、调用模型或原生控制器，也没有执行合并生命周期。
+
+F 准确 SOURCE `a166310a3c7d7b22806ec74aa4125e9f6c6a2222` 的原完整默认检查中，Context 场景出现 240000 毫秒超时。原日志 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/astrocyte-s1-SjCa4v/process-logs-zSqf35/api-1.stderr.log` 第 121 行记录 01:52:42 的 POST `/api/v1/context-packets` 为 500，request_id 为 `ae1596f64758230c`。其 middleware 仅记录 method / path / status / request_id，错误映射对非 ServiceError 返回通用 internal_error，没有底层异常日志；具体 Go error 保持 UNKNOWN。
+
+只读实码核查确认该 F 来源缺少 Attention 共享 WorkspaceTransaction：`BuildContextPacket` 在 Workspace 写事务内调用 `ReadSelected(tx.Context())`，经生产 `projectReferenceBridge` 进入 Attention `ReadProjectReference`，其 `AttentionRepository.WithTx` 再从实际 MaxOpenConns(1) 的同一连接池申请连接。这条确定的源码等待路径位于保存前旧 `ValidateProjectSnapshot(tx.Context())` 之前；该 F 来源还没有 S2 `aa0a5d3` 的事务前 Guard、外部 Git 校验和纯数据库最终引用校验。当前 I 的上述 S2 调用与 Attention 共享事务分支均已存在，静态差异已经交 H 和模块；该差异不能代替当前 I 的实际完整 Context 验收。本轮没有修改 F 文件或数据库、复制 WIP 或重跑其首失败，准确旧失败和未完成状态保持。
+
 ## 2026-10-16 最外层事务观察独立 REPORT
 
 单文件契约 SOURCE `6eedf02d4da0efbaac44221435981b3aca5eb0c3` 和实现 SOURCE `aa0a5d310cbfc5c07063bb22fdc951e6ca549195` 已普通 push，独立 `git ls-remote` 核实现完整 SHA 相同。`ObserveSessionBindings` 在最外层 Workspace 事务之前读取实际当前 owned 会话并完成 Git 观察，返回仅含私有字段的原请求观察值；`WithObservedSessionBindings` 在最终同数据库事务内重新检查 Grant epoch、当前项目与成员权限、绑定版本、不可变 Packet 和当前 Registry controller / startup / native 身份。最终检查允许更新实际 Used / Concurrency，其余 Caller、批准、动作和执行范围逐项匹配；原请求取消通道须由事务 context 继承。观察不会进入 HTTP 或持久缓存，零值不能授权。原 `WithAuthorizedSessionBindings` 使用同一实现，已有外层事务时在 Git 观察前明确拒绝。
