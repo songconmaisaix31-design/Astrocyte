@@ -87,7 +87,11 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	}
 	apiURL := announced["api_url"]
 	webOrigin := "http://127.0.0.1:17345"
-	server := httpapi.NewServer(httpapi.Config{Port: address.Port, AllowedOrigins: []string{webOrigin}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Services: httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), LocalProjects: projects, RepositoryContext: &httpapi.RepositoryContextServices{}}})
+	services := httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), LocalProjects: projects, WorkspaceS2: workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, nil), RepositoryContext: &httpapi.RepositoryContextServices{}}
+	if err := assembleSwarmLedger(&services, db); err != nil {
+		t.Fatal("实际同数据库批准桥与Swarm账本装配失败")
+	}
+	server := httpapi.NewServer(httpapi.Config{Port: address.Port, AllowedOrigins: []string{webOrigin}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Services: services})
 	if err := server.Serve(nil); err == nil {
 		t.Fatal("缺少 listener 没有立即失败")
 	}
@@ -147,6 +151,7 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	}
 	request("GET", "/api/v1/health", apiURL, "", nil, 200, nil)
 	request("GET", "/api/v1/local-projects", apiURL, "", nil, 403, nil)
+	request("GET", "/api/v1/missions", apiURL, "", nil, 403, nil)
 	request("GET", "/api/v1/auth/session", "http://127.0.0.1:0", "", nil, 403, nil)
 	var bootstrap struct {
 		CSRF string `json:"csrf_token"`
@@ -156,6 +161,17 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 		t.Fatal("实际 bootstrap 缺少 CSRF")
 	}
 	request("GET", "/api/v1/local-projects", webOrigin, "", nil, 200, nil)
+	var missions struct {
+		SchemaVersion int               `json:"schema_version"`
+		Items         []json.RawMessage `json:"items"`
+	}
+	request("GET", "/api/v1/missions", webOrigin, "", nil, 200, &missions)
+	if missions.SchemaVersion != 1 || missions.Items == nil || len(missions.Items) != 0 {
+		t.Fatal("实际空Swarm账本响应不符合公开集合契约")
+	}
+	missingGrant := map[string]any{"schema_version": 1, "request_id": uuid.NewString(), "expected_version": 0, "grant_id": uuid.NewString(), "epoch": 1, "proposal_revision": 1, "project_id": uuid.NewString(), "root": projectRoot}
+	request("POST", "/api/v1/missions", webOrigin, "", missingGrant, 403, nil)
+	request("POST", "/api/v1/missions", webOrigin, bootstrap.CSRF, missingGrant, 404, nil)
 	command := map[string]any{"schema_version": 1, "request_id": uuid.NewString(), "expected_version": 1, "name": "Atomic HTTP public project", "root": projectRoot, "space_id": "http-listener-public"}
 	request("POST", "/api/v1/local-projects", apiURL, "", command, 403, nil)
 	request("POST", "/api/v1/local-projects", "http://127.0.0.1:0", bootstrap.CSRF, command, 403, nil)
@@ -207,6 +223,10 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	var nativeSessions int
 	if err := readonly.QueryRowContext(ctx, "SELECT COUNT(*) FROM local_agent_sessions").Scan(&nativeSessions); err != nil || nativeSessions != 0 {
 		t.Fatal("本轮原生会话零调用状态无法核实")
+	}
+	var missionCount int
+	if err := readonly.QueryRowContext(ctx, "SELECT COUNT(*) FROM swarm_missions").Scan(&missionCount); err != nil || missionCount != 0 {
+		t.Fatal("未批准的请求创建了实际Mission")
 	}
 	if listener.Addr().String() != address.String() || server.Addr() != address.String() {
 		t.Fatal("HTTP 服务没有保持原始 listener 地址")
