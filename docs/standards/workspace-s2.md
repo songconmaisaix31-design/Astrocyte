@@ -1,6 +1,10 @@
 # Workspace S2
 
-当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_17fb6df5098e`，终端 `term_9c053dcd-fba7-4856-bcca-f769391b864d`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试记录保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_54302cb333c4`，终端 `term_721cf30f-a6d2-4a21-abcd-0f73c8b793f5`。实际客户端 Codex，模块公开 worker-list 已核 `gpt-6.1-sol`；原 Task、工作树、分支与测试记录保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+
+## 2026-10-16 SQLite 格式独立 REPORT
+
+SOURCE `83c8b62766b28470fc4fe2514631172ea2f286eb` 仅格式化 `internal/adapters/sqlite/workspace_proposals.go`，使用文件编辑工具保留全部 SQL、事务复用、回滚和关闭错误处理。`gofmt -l` 和限定 `git diff --check` 无输出；只读地将提交前内容及当前内容分别经 `gofmt` 比较，完整内容相同。该 SOURCE 已普通 push，独立 `git ls-remote` 返回相同完整 SHA；准确集成源码 `2367224` 的 CI `38768919397` 首次格式失败保留。本次布局变更未重复运行功能检查，四件事务观察 WIP 保留，后继真实 Context、绑定及 S3 最外层事务验证继续实施。
 
 ## 2026-10-16 I 六文件冲突处理 REPORT
 
