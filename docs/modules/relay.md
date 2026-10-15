@@ -2,7 +2,7 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前恢复分工（2026-10-16 04:28）
+## 当前恢复分工（2026-10-16 04:45）
 
 根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 04:04 入口、当前 `QUESTIONS.md` 和正式消息 `msg_546d9fc03e1c` 为本轮依据。总负责人为 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669`，顶层 Run 保持 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_7f070ad688f5 / term_8d816f16-fefd-45e8-b49a-29c4cf681c47`。模块已普通绑定原子 Run `run_8bbda1c3974c` generation 8，没有创建新 Run 或绑定根 Run。
 
@@ -43,7 +43,19 @@ S4 沿相同脚本、全部断言和十秒清理预算，对准确 b73 在新独
 
 产品模块 `msg_2aee77e2c9e6` 转交 F 同一 b73 / PID4676 的 Q 独立根实际结果：四视图十指标与同代 SQL / HTTP / DOM 一致，两主题各三项 history，155个 event_id 逐一在真实库定位、九页无重复，六字段 DOM 与零写入 / 模型通过。按10-16实际日期计算今日 manual0、近七日1076、三十日1316，旧10-15原值保留；该项为 Q 只读快照链路，F 准确 SOURCE / REPORT 待交，不代替 Relay 原生自产会话或 L1 三分钟。
 
-H 后继继续消费 B SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` / REPORT `921e30b56683118a0d22a29cb63161b599395d3a`，连接真实完成来源 bridge，并补 human 准入实际公共注册与精确 OpenAPI。当前已存在的领域准入通过同主库 bridge 复用；缺 Interpreter 保持 provider_unavailable，Agent completion action 和 Laya 语言待答。I 环境三项真实失败已交 H 修检查目录的显式 D 输出根，生产路径保护、权限及断言保持。根已向用户询问原生边界，未答继续零新登记 / 初始化 / 模型 / 探针，不预实现未授权模式。
+H 已普通消费 B 完成桥 SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` / REPORT `921e30b56683118a0d22a29cb63161b599395d3a`，以及完整 human 引用授权 SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383` / REPORT `c0bfe00456329249e279a4353abe634381656806`。根已向用户询问原生边界，未答继续零新登记 / 初始化 / 模型 / 探针，不预实现未授权模式；Agent completion action、Laya 语言、SemanticIndex 和 AOCI 分发继续按原待定边界处理。
+
+### 人工准入、完成来源与公开契约
+
+H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / 独立 REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 已普通 push。模块逐源码审查、核远端精确 REPORT、SOURCE 祖先、六件 H 文件、REPORT 仅 http.md 和 clean 后交唯一 I；F 已收到准确 OpenAPI 生成客户端 / schema，前端与实际 UI 继续由原人员负责。
+
+同主库准入服务注册实际 POST / GET / revoke；无判断快照时使用 B 完整 human 适配器逐引用核当前 space / revision / lifecycle，有快照时保持原完整 selected refs / delegated-owner 授权。显式项目准入保存未分配 S2 草稿，GrantID 为空；省略项目保持未分配，未注册项目、Agent、另一项目未选资料及当前引用撤回均实际拒绝。同一个 Relay Reader 注入 B 完成经验 bridge，原完成不存在返回404；未配置 Interpreter 继续 provider_unavailable，没有补造来源或模型候选。
+
+模块在精确25b341d独立运行 `go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayJudgmentProductionAssemblyActualSQLiteHTTP|TestRelayHumanAdmissionsWithoutJudgmentSnapshotsActualSQLiteHTTP|TestRelayStaticActualMissingAndInvalidPaths)$' -count=1 -v -timeout=120s`，三项 PASS、零 Skip、package5.824秒。原日志为 `D:/Astrocyte-agent-assets/20261015/relay/module/product-25b341d/test.log`。H 原五项适用检查、25份真实响应的 YAML / Ajv schema 校验、264个当前契约例、Redocly EXIT0 / 原13 warning、vet / 生产 build 通过；首4xx及空 root schema RED保留。公开判断 root 是空字符串，S2 快照保持自身语义，session-events 仍精确六字段。
+
+当前共享实例仍为 b73 / PID4676 / Q 原 generation，尚未部署25b341d。I 同源构建、F 生成与实际操作、H 安全更新、完整默认、真实 L1 / L2 六步及最终 Windows 包继续；Jev / Laya / Interpreter 尚未配置，阶段检查通过不作为全部功能完成。
+
+H 三检查目录 SOURCE `237a95719d18b69063def0323cf35cc3a93b8232` / REPORT `a5c05cffdb27c8baba33337bb2dd0c5345ea817b` 已由模块审查并核远端、祖先及独立报告：仅三件原检查文件使用显式绝对 `ASTROCYTE_TEST_OUTPUT_ROOT`，原断言、Skip 和生产 guard 均不改。唯一 I 在准确 `6f613692b8ec3de5f33b9ff56244734bcb24d56f` 的原 D 环境实际复验三项全部 PASS / 零新增 Skip，cmd/server2.376秒、events1.585秒；原7401 workspace_unverifiable及3edd两个 scope_denied首 RED保留。旧替身检查、OS1314、普通 native path / selected-text 剩余分别归原作者与其真实授权边界，不用本次通过覆盖。
 
 原 `runtime_http` 自定义 driver / sink、`session_git` 自生成 CLI helper 不作为真实原生验收，旧首 RED 和正向验收要求保留。B 另发现 native path 测试虚构协议，R / H 只交既有获准公开来源 locator：当前 Codex 原件 metadata regular、nlink2，单链接拒绝保持，append-only / raw gap / event IDs 未核部分继续未知；没有已确认的 Claude 自产 locator，不补造协议、扫描私人历史或重做原生 / 模型。
 
