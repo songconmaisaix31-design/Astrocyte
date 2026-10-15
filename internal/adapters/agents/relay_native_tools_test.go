@@ -39,23 +39,6 @@ func TestRelayCodexFileToolRestrictionRejectsBeforeNativeEffects(t *testing.T) {
 		observation, err := effect(context.Background(), launch)
 		assert(observation.Session, err)
 	}
-	for _, send := range []func() error{
-		func() error {
-			_, err := native.send(context.Background(), domain.NativeSession{}, privateInput, uuid.NewString())
-			return err
-		},
-		func() error {
-			_, err := driver.Send(context.Background(), launch, privateInput)
-			return err
-		},
-	} {
-		err := send()
-		var notSubmitted *domain.RelayInputNotSubmitted
-		var known *apierrors.ServiceError
-		if !errors.As(err, &notSubmitted) || !errors.As(err, &known) || known.Code != apierrors.UnsupportedCapability || strings.Contains(err.Error(), privateInput) {
-			t.Fatal("unsupported original send was not explicitly rejected before input submission")
-		}
-	}
 	if len(native.processes) != 0 || len(native.relayCaptures) != 0 {
 		t.Fatal("unsupported file tool restriction created a controller or capture")
 	}

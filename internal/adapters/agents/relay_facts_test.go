@@ -7,6 +7,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
+	"strings"
 	"testing"
 )
 
@@ -61,5 +62,43 @@ func TestRelayFactsRejectMissingOriginalControllerAndFork(t *testing.T) {
 	assert(err, apierrors.ScopeDenied)
 	if len(n.processes) != 0 {
 		t.Fatal("rejection created a controller process")
+	}
+}
+
+func TestRelaySendRequiresOriginalControllerBeforeRestrictedAdmission(t *testing.T) {
+	const input = "PRIVATE_UNSUBMITTED_INPUT_CANARY"
+	for _, provider := range []string{"codex", "claude", "pi"} {
+		t.Run(provider, func(t *testing.T) {
+			registry := NewRegistry("unopened-controller-root")
+			native := registry.adapters[provider].(*Native)
+			operation := uuid.NewString()
+			session := domain.NativeSession{ID: uuid.NewString(), NativeID: uuid.NewString(), ProjectID: uuid.NewString(), CLI: provider, Ownership: "owned", PendingOperation: operation, Operations: map[string]domain.NativeOperation{operation: {Action: "send", Status: "pending"}}}
+			launch := app.RelayLaunch{Spec: domain.AgentSpec{Name: provider}, Session: session, OperationID: operation}
+			driver := NewRelayNativeDriver(registry)
+			for _, send := range []struct {
+				name string
+				run  func() error
+			}{
+				{"native_send", func() error { _, err := native.send(context.Background(), session, input, operation); return err }},
+				{"pending_send", func() error { _, err := native.Send(context.Background(), session, input); return err }},
+				{"operation_send", func() error {
+					_, err := native.SendOperation(context.Background(), session, input, operation)
+					return err
+				}},
+				{"relay_send", func() error { _, err := driver.Send(context.Background(), launch, input); return err }},
+			} {
+				t.Run(send.name, func(t *testing.T) {
+					err := send.run()
+					var known *apierrors.ServiceError
+					var notSubmitted *domain.RelayInputNotSubmitted
+					if !errors.As(err, &known) || known.Code != apierrors.DeliveryUnknown || errors.As(err, &notSubmitted) || strings.Contains(err.Error(), input) {
+						t.Fatal("missing original controller must retain unknown delivery without exposing input")
+					}
+				})
+			}
+			if len(native.processes) != 0 || len(native.relayCaptures) != 0 || session.Operations[operation].Status != "pending" {
+				t.Fatal("missing original controller changed pending input or created native effects")
+			}
+		})
 	}
 }

@@ -610,12 +610,12 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 	if err := ctx.Err(); err != nil {
 		return domain.NativeObservation{}, err
 	}
-	if err := relayNativeToolsDisabled(n.id); err != nil {
-		return domain.NativeObservation{}, &domain.RelayInputNotSubmitted{Cause: err}
-	}
 	p, err := n.get(s)
 	if err != nil {
 		return domain.NativeObservation{}, err
+	}
+	if err := relayNativeToolsDisabled(n.id); err != nil {
+		return domain.NativeObservation{}, &domain.RelayInputNotSubmitted{Cause: err}
 	}
 	p.operationMu.Lock()
 	defer p.operationMu.Unlock()

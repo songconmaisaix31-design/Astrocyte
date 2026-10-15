@@ -270,9 +270,6 @@ func relayNativeObservation(s domain.NativeSession, obs domain.NativeObservation
 }
 
 func (d *RelayNativeDriver) Send(ctx context.Context, r app.RelayLaunch, input string) (app.RelayObservation, error) {
-	if err := relayNativeToolsDisabled(r.Spec.Name); err != nil {
-		return app.RelayObservation{Session: r.Session}, &domain.RelayInputNotSubmitted{Cause: err}
-	}
 	a, err := d.adapter(r)
 	if err != nil {
 		return app.RelayObservation{}, err
