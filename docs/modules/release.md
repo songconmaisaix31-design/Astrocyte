@@ -2,9 +2,17 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:20 H 生产装配已准确构建
+
+H SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 已由原作者及 M-relay 独验确认可消费；本模块独读九件 H 文件和一件报告，并核远端准确同 REPORT。唯一 I 无冲突普通合入，得到 SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`。原 `pnpm build` 实际 EXIT0 / `20.8431586` 秒，source / source_after 同值，本模块独读 `integration/c16-product-build-b73dc79/result.json`，并独立核远端同 SOURCE。
+
+本阶段接入同 provider 的 ConfigureRepositoryCleanup 和现有 worker 生命周期，提供真实 ExperienceCompletionReader 的读取 / 事务内授权转发，并支持独立 `ASTROCYTE_WORKBENCH_READER_ROOT` 与原 / 新快照硬链接保护；Agent 未决定权限分支继续拒绝。B experience bridge 尚未包含，已交原 B 按此准确接口继续。I 当前运行新增装配的适用无模型 SQLite / HTTP 检查，未重跑已知未修全套。准确产物已暂停覆盖交 H 稳定复制；当前服务仍 cffac367 / PID45616，F 保持唯一只读窗口，H 实际切换前取得 F 本人安全 ACK，保持同一数据库与端口。
+
+M-relay 已确认 R SOURCE `ce541794d58560747124fea2cf9d08222700587e` / REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f`，M-product 已交 B helper SOURCE `a8d361b1cb4133713e25f1d6c20ea4bfd22d844d` / REPORT `8179cf9c5074ab26a053fe7f1bfd691b153b4084`，均已交唯一 I 在固定源码窗口后普通消费。原 I 独立 REPORT `50fec6db0e9cc6144613fea13e60b346e2cbc978` 已 push；其中准确1c的真实 Node / SDK 配置5主项 / 8子项检查 EXIT0。完整默认、真实核心操作、L1 / L2 和最终同源包仍按原条件验收。
+
 ### 2026-10-16 04:16 启动诊断组合已构建并推送
 
-唯一 I 已无冲突普通消费 B REPORT `c563ff9498d4e54f095a1bddf3c46d2cd869ea85`，准确组合 SOURCE 为 `1c27477272c8d6e8aeb6dac5302bacb65fef614a`。该祖先同时带入 B 已提交 native fixed-input SOURCE `759764900bc45ed4c58efaad79ae9d20d421b834` / REPORT `9a96c365`，没有复制原四件 experience WIP。原 `pnpm build` 实际 EXIT0 / `31.0071399` 秒，source / source_after 同值、Go revision 同值 / modified=false。本模块独读 `D:/Astrocyte-agent-assets/20261015/integration/c16-product-build-1c274772/result.json`。首次普通 push 退出 UNKNOWN、原件保留；确认旧进程结束后第二次普通 push 实际 EXIT0。本模块独读 `c16-product-push-1c274772-second.log`，并独立 `git ls-remote` 核远端准确同值。
+唯一 I 已无冲突普通消费 B REPORT `c563ff9498d4e54f095a1bddf3c46d2cd869ea85`，准确组合 SOURCE 为 `1c27477272c8d6e8aeb6dac5302bacb65fef614a`。该祖先同时带入 B 已提交 native fixed-input SOURCE `759764900bc45ed4c58efaad79ae9d20d421b834` / REPORT `9a96c365021c826e90a6271d7a3f8571fb0c780f`，没有复制原四件 experience WIP。原 `pnpm build` 实际 EXIT0 / `31.0071399` 秒，source / source_after 同值、Go revision 同值 / modified=false。本模块独读 `D:/Astrocyte-agent-assets/20261015/integration/c16-product-build-1c274772/result.json`。首次普通 push 退出 UNKNOWN、原件保留；确认旧进程结束后第二次普通 push 实际 EXIT0。本模块独读 `c16-product-push-1c274772-second.log`，并独立 `git ls-remote` 核远端准确同值。
 
 准确产物已暂停覆盖并交 H 稳定复制，读取窗口明确归还前 I 不执行后继构建。当前实际服务仍为下节 cffac367 / PID45616，F 保持同实例只读 HTTP / DOM / SQLite 窗口；H 仅在 F 安全 ACK 后执行必要更新。I 独立 REPORT `7da8d4caaa0f9e5b227b3af08c089cf5d6878869` 已普通 push，本模块独读仅 `docs/access/integration.md`，记录前阶段精确来源、8b UNKNOWN、cffac367 build 与两轮静态检查；当前 B 诊断及新构建 / push 的后继独立报告继续由 I 追加。根 04:15 当前入口及 QUESTIONS 已重读，原领域返修、H 生产装配、完整默认、L1 / L2 与最终同源发布继续按实际条件处理。
 
