@@ -615,3 +615,11 @@ SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` 已普通 push，包含原四�
 实际检查通过生产服务创建空间、注册本公开工作树、保存人工 Grant 并签发项目 token，然后使用实际 loopback HTTP、自产人类会话和 SQLite；覆盖缺认证、CSRF、Agent 当前权限、目录 / SpaceID / 未注册 ID 替代、版本错误、未接来源、缺少证据、SQLite 重开和实际关闭数据库的失败。未观察 UUID 只用于拒绝请求。SQLite 核经验候选、完成来源和原生会话均为零，没有写入虚构完成记录或模型输出。
 
 H `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 的实际 `services.Relay` 已实现相同 `ExperienceCompletionReader`；准确接口已经通过 Handoff 交 H，在原 main / OpenAPI 写域完成注入和公共契约，B 没有复制 H 源码或修改其工作树。受限 Codex、真实解释器、正向实际完成候选、用户批准、后续经验使用及六步闭环继续 NOT_RUN；上述拒绝和生命周期检查不替代这些验收。
+
+## Origin 的标准 URL 解析
+
+SOURCE `bd18df4c57f41b3c880bb47fba98c0deec5135ce` 已普通 push，仅修改 B 的 middleware 与新增实际 HTTP 检查。Origin 使用 `net/url` 完整解析，并核 HTTP(S)、无凭据、纯 origin 和明确回环 Host；拒绝响应复用现有 `writeJSON`，实际写入失败会终止请求。该文件注释使用中文，请求 ID 的随机读取错误立即终止。
+
+`go test -mod=readonly -p=2 ./internal/adapters/httpapi -run '^(TestLoopback|TestIsLoopbackHost|TestRequestIDMiddleware)' -v -count=1` EXIT 0，6 项主检查，包 5.773s；`.verification/origin-standard-url-first.log`。新增检查运行真实 Foundation 服务和实际 loopback HTTP，16 个明确 Origin 输入涵盖正常 IPv4 / IPv6、缺省 Origin、外部地址、错误格式、用户字段、路径、空及非空 query / fragment、错误 scheme；拒绝状态、ErrorV1 和同一请求 ID 全部保持。原 5 项主检查和全部断言保留，没有使用替代服务或来源。
+
+`go build -mod=readonly -p=2 ./...`、`go vet -mod=readonly -p=2 ./internal/adapters/httpapi` 均 EXIT 0，日志分别为 `.verification/origin-standard-build-first.log`、`origin-standard-vet-first.log`；两个变更文件 `gofmt -l` 与 diff 检查无输出。H 独占的 `server.go` 静态路由中 Stat 错误分类与注释整改已单独 Handoff，没有跨域编辑；完整默认、受限原生和实际六步结果继续未通过。
