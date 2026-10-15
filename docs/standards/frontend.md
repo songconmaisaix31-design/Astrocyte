@@ -1,8 +1,123 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:49 人工项目进度与三层资料
+
+本阶段 SOURCE `696828478eeaf128309079957234bb78aafbaaf9` 已普通 push。新增人工项目状态、说明和可留空的整数完成度表单，使用已有生成 `SetProgressRequestV1`、human 会话、CSRF 与固定操作标识保存；人工保存与模型许可分别控制。读取失败显示过期记录并禁用写入；网络结果未知后保留输入和跨重开持久锁，不因读取而解除。人工保存待定或结果未知期间，进度推断同时禁用。React 组件检查沿既有组件、Hook 与样式完成。
+
+| 本次实际命令（在 web 执行） | 实际结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | 最终 EXIT0；首类型检查 EXIT2 原件保留 | `typecheck-manual-progress-fixed.log`、`typecheck-manual-progress-first.log` |
+| `npx eslint src/pages/workspace/ProjectManualProgressForm.tsx src/pages/workspace/ProjectProgressPanel.tsx src/pages/workspace/progressClient.ts e2e/progress.spec.ts e2e/self-service.config.ts e2e/readProductReview.ts e2e/createProductProjectLayer.ts` | EXIT0 | `lint-manual-progress-fixed.log` |
+| `npx playwright test -c e2e/self-service.config.ts e2e/progress.spec.ts --workers=1 --reporter=list`，输出明确到 `progress-artifacts` | 两窗口完整 10 项自然完成，8 PASS / 2 FAIL，2.8 分钟、EXIT1、零 skip / 重试；原件保留 | `playwright-manual-progress-first.log`、`progress-artifacts` |
+| 同一入口增加 `--grep '人工进度表单保存'`，输出明确到 `progress-fixed-artifacts` | 原两失败场景均 PASS，59.3 秒、EXIT0，保留完整状态 / 摘要 / 未知百分数 / 403 恢复 / 重启 / 权限与零原生断言；原八项已通过场景未重跑 | `playwright-manual-progress-fixed.log`、`progress-fixed-artifacts` |
+| `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_c22d1dd61be3/.verification/web-dist-manual-progress` | EXIT0；保留 615.34 kB 提示 | `build-manual-progress.log` |
+| `node --experimental-strip-types e2e/createProductProjectLayer.ts`，使用 H 已交 b73 SOURCE / URL 和本次目录 | EXIT0；共享产品的实际 content / topic / project 三层人工记录完整，原摘要与候选 r2 不变 | `product-project-layer-first.log`、`product-project-layer-human.json` |
+| `node --experimental-strip-types e2e/readProductReview.ts`，相同实际产品与目录 | EXIT0；只读取得原论文标题、已保存人工摘要、Goal 标题和实际项目名称 | `product-candidate-review.log`、`product-candidate-review.json` |
+
+Playwright 复用既有 S1 helper 的独立真实 Go / HTTP / SQLite / Vite 与两窗口。新增人工保存、权限拒绝恢复、离线未知锁和实际重启均已运行，原推断权限和输入校验覆盖保留，项目模型许可、原生会话与实际模型调用没有增加。本次没有重跑默认 320 项，也未将定向结果写作当前完整默认通过。测试全部新数据和日志、TEMP / TMP / GOTMPDIR 在本次 D 盘目录，浏览器及 Go 缓存沿原获准目录。
+
+共享 b73 产品中的项目层人工记录为 `7GWJ7TEG7BV7XCHNHEJNQ4U3SU`，实际事件 `B2YDY2GW27X7FI3TKFOXULRWSJ` 已逐 ID 核库。其固定输入为 PLOS revision1，引用原 Goal、已保存主题和候选资产；输出复用已存人工摘要，实际效果与原生执行仍待查，没有填写模型或执行成果。具体候选审阅内容已由模块转根；本阶段没有增加候选 revision、资料准入、Grant 或执行授权。人工进度新入口目前属于本树已验源码，仍需唯一 I 消费及 H 更新同一产品后实际核查共享页面。
+
+## 2026-10-16 04:38 实际人工候选、反馈与版本保留
+
+本阶段 SOURCE `fd7db97d26991ec04937bfb7ecae3208ad339706` 已普通 push，新增三件明确分开创建、后继版本和只读恢复的产品验证脚本。Task / Dispatch 为原 `task_7cbe30017760` / `ctx_c22d1dd61be3`，仍使用原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。实际对象仍为 H 的 b73 SOURCE / PID4676 / URL64505 同一产品库。
+
+复用已保存 PLOS 资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` 的固定 revision1 及原人工摘要 `LD6A7RPZQJIQW6F224QALLQDR5`，通过实际页面新增主题记录 `SNU6QNVCQGGIRU3WTADLRIOU7U`，正文与原已存摘要一致，保留实际效果待查问题。候选 `QILUA3J6WINYVSRKX3CU6FA35A` 当前 r2 / version3 / `ready_for_review`，r1 及其一条 `later` 人工暂缓反馈完整保留。四个维度均为 null，理由为“尚未进行实际任务和效果评估。”；未将未知填零。
+
+用户可审阅的候选标题为“公开论文固定摘要的候选复核”，用途为“保留当前公开摘要及固定版本，在人工审阅后核查资料与本项目的实际适用性。”，下一步为“先核对固定摘要和待查问题，再由人工分别决定资料准入与任务批准。”。当前缺失依据为“人工暂缓记录已保存；实际任务、模型处理与独立效果证据仍未产生。”，固定来源为 `https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514`，关联原 Goal `46a1b8e5-583c-4df0-921a-46ef83660d8a`。具体候选和安全内容已交模块转达；用户的准入决定保持待答，准入和批准请求均未发送。
+
+| 本次实际命令（在 web 执行） | 实际结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `node --experimental-strip-types e2e/createProductCandidate.ts` | EXIT1，三个实际命令已依次返回 200 / 201 / 201 并保存；响应检查首失败原件保留，未重发 | `product-candidate-first.log`、`product-candidate-human.json` |
+| `node --experimental-strip-types e2e/reviseProductCandidate.ts` | EXIT1，仅执行尚未发送的新版本命令并返回 200；r2 已保存后的检查首失败保留，未重发版本命令 | `product-candidate-revision-first.log`、`product-candidate-revision.json` |
+| `node --experimental-strip-types e2e/readProductCandidate.ts` | 首次 EXIT1 原件保留；最终只读核查 EXIT0，HTTP / SQLite / 1280 DOM、两版本和一条反馈、四维 unknown、全部四个收据和四个事件逐项通过 | `product-candidate-readonly-first.log`、`product-candidate-readonly-projection.log`、`product-candidate-readonly.json` |
+| `npm run typecheck` | EXIT0 | `typecheck-candidate-final.log` |
+| `npx eslint e2e/createProductCandidate.ts e2e/reviseProductCandidate.ts e2e/readProductCandidate.ts` | EXIT0 | `lint-candidate-final.log` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+四个实际操作为主题记录、候选创建、人工暂缓反馈和候选新版本，具有四个不同操作标识；生产收据与 `distillation_recorded / opportunity_created / opportunity_reviewed / opportunity_revised` 四个真实事件逐 ID 定位。最终只读核查显式检查实际排序配置未配置，HTTP 当前人工排序说明与其余全部持久化字段相符，原候选内容与版本没有覆盖。审批数量保持原一条，Mission 和原生会话均为零，新增模型调用为零；没有重发旧导入、原摘要、Goal、Grant 或已成功和未知操作。
+
+创建与修改脚本的成功写入不重放，表中两次 EXIT1 继续按实际结果保留；完整浏览器流程由最终只读结果核查已保存的实际对象。准入 UI 等待 H 的真实 human Service 注册和准确公开契约，后继类型由获准生成流程提供，不手写 DTO；候选的实际准入与批准仍等待用户具体决定。当前功能记录不作为完整默认、L1 / L2 或最终发布通过。
+
+## 2026-10-16 04:30 原 UI 三段源码消费
+
+按模块精确放行，在每段目标零 WIP / staged、与原父版本完整相容后，依次普通 `cherry-pick -x` 原 UI SOURCE `dbd1018f163e6760cc7806c302fd3aa677706267`、`0ad83a96bc50747867146a38a80b7a90ecbedc5f`、`f0d27271c15d131aea50012658232f7fa41a142b`。本树消费提交为 `bfded1f`、`1d860ab`、`a871d62c6b5ed6b708dfc1b70f938741f0b44081`，均已普通 push；每段目标与原 SOURCE 完整 diff 为零，无冲突。只消费各段明确的 9 / 3 / 3 件前端页面、参数函数和测试，原 UI 领域逻辑继续归原负责人。
+
+| 本次实际命令（在 web 执行） | 结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0 | `typecheck-ui-consumed.log` |
+| `npm run lint` | EXIT0 | `lint-ui-consumed.log` |
+| `npx vitest run src/pages/attention/delegation/policyDraftIssues.test.tsx src/pages/attention/delegation/questionDraftIssues.test.tsx` | 2 文件、7 PASS，EXIT0；仅明确表单参数，不产生后端或模型事实 | `vitest-ui-consumed.log` |
+| `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_c22d1dd61be3/.verification/web-dist-ui-consumed` | EXIT0；保留 612.05 kB 产物提示，新目录没有自动清理 | `build-ui-consumed.log` |
+
+上述检查对应准确本地组合 `a871d62`。同一运行服务仍为下节 H 的 b73 SOURCE，本次没有把新 UI 消费记为已部署或新的浏览器通过，没有重复模型。Human 候选 / 反馈后继在已保存 PLOS 固定来源范围内继续；准入的实际 Service 注册与公开类型差异已交 H / B，等待准确契约，不手写 DTO 或伪造成功。
+
+## 2026-10-16 04:27 同实例认知真实四视图
+
+本阶段 SOURCE `12a17f7bf7a9fbef273e872516961aa9262b7110` 已普通 push，仅新增 `web/e2e/readProductCognition.ts`。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_c22d1dd61be3`，使用原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。H 实际服务更新为 SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、modified=false、PID4676、启动 UTC `2026-10-15T20:22:58.8651960Z`，URL 和产品 SQLite 保持原值。
+
+读取的 Q 独立公开目录为 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/cross-day-20261015-0228/local/astrocyte-workbench/v0.1`，固定 generation `snapshot-1711995690`，快照时间 `2026-10-14T18:48:42.2097174Z`；只读打开该代 `snapshot.sqlite` 与实际 `history.json`，没有采集、改写或重放事件。Q 的原 SQL 预期为同 cross-day 目录下 `main-safe-final/sql-expected.json`，原 day 为 10 月 15 日。本次生产日期保持真实 10 月 16 日；今日 / 近七日 / 近三十日按实际时间边界分别查询同代 SQLite 后与 HTTP / DOM 对比，原预期值和实际值都保存在结果中。
+
+| 本次实际验证（在 web 执行） | 结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0 | `typecheck-cognition-first.log` |
+| `npx eslint e2e/readProductCognition.ts` | EXIT0 | `lint-cognition-first.log` |
+| `node --experimental-strip-types e2e/readProductCognition.ts`，显式传入上述产品 URL / SOURCE 与本次输出目录、原 D 盘浏览器及 TEMP / TMP | EXIT0，四视图十项实际 SQL / HTTP / DOM 数值逐项相等；零写入、零页面异常 | `product-cognition-first.log`、`product-cognition-readonly.json` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+实际来源计数为今日 `0`、近七日 `1076`、近三十日 `1316`；原 SQL 预期同三项为 `52 / 1316 / 1316`，日期和时间窗口差异完整保留。两主题分别显示三条真实历史点。MCP 的 21 个事件共两页、Astrocyte/Attention Engine 的 134 个事件共七页，全部九页通过真实浏览器逐页读取，155 个唯一 `event_id` 均逐项在实际事件库定位并核对完整六字段，分页无重复，末页下一页按钮禁用，关闭抽屉恢复原焦点，generation 前后相等。
+
+本结果确认上述准确 b73 实例的认知读取。原 cff 实例的 503 记录保留；本阶段没有模型 / CLI / 原生登记、采集或新业务写入，完整默认、候选准入后继、L1 / L2 与最终发布继续未通过。原生工具关闭、S3 和 Agent 完成证据权限等未答边界保持。
+
+## 2026-10-16 04:18 同一运行实例 HTTP / DOM / SQLite 恢复
+
+本阶段 SOURCE `1e242e1573b72046adf572bb0874c6f870730636` 已普通 push，仅修改 `readProductProposal.ts`；沿用前序输入与输出分离 SOURCE `6503077885aee63dd97f9642deab66ba57167925`。Task / Dispatch 为 `task_7cbe30017760` / `ctx_c22d1dd61be3`，客户端与模型仍为原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。
+
+H 正式交付的同一产品为 `http://127.0.0.1:64505`，准确运行 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332`、buildinfo modified=false、PID45616、启动 UTC `2026-10-15T20:13:21.8983808Z`。本次使用 H 保留的原 SQLite 与 LOCALAPPDATA，只通过原 human 会话执行读取。原记录仍在前序 `ctx_fefd1edc052e/.verification`，所有新增输出位于本次 `ctx_c22d1dd61be3/.verification`，均在 `D:/Astrocyte-agent-assets/20261015/product/frontend/` 下；浏览器复用 `D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001`。
+
+| 实际命令（在 web 执行，使用下段环境） | 结果 | 本次输出目录内记录 |
+| --- | --- | --- |
+| `node --experimental-strip-types e2e/inspectProductCore.ts` | EXIT0，1920 窗口七页均 HTTP200、零页面异常、零水平溢出；集合为 2 资料 / 1 项目 / 1 Goal / 1 Proposal / 0 Mission；零页面写入 | `product-core-recovery.log`、`product-core-readonly.json` |
+| `node --experimental-strip-types e2e/readProductPaper.ts` | EXIT0，1280 窗口完整显示实际论文和人工摘要摘录；两资料三版本、五个实际事件逐 ID 定位 | `product-paper-recovery.log`、`product-paper-readonly.json` |
+| `node --experimental-strip-types e2e/readProductProject.ts` | EXIT0，1280 窗口显示原 r2 目录权限、读取动作和禁止原生启动状态；HTTP / SQL 权限一致、原生会话零 | `product-project-recovery.log`、`product-project-readonly.json` |
+| `node --experimental-strip-types e2e/readProductProposal.ts` | EXIT0，1280 窗口显示实际过期 Grant，撤销及建立上下文禁用，原固定包仍可读取和展开；两个 Workspace 事件逐 ID 定位 | `product-proposal-safe-view-role.log`、`product-proposal-readonly.json` |
+| `npm run typecheck` | EXIT0 | `typecheck-safe-view-final.log` |
+| `npx eslint e2e/readProductProposal.ts` | EXIT0 | `lint-safe-view-final.log` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+环境明确指定 `ASTROCYTE_TEST_PRODUCT_URL=http://127.0.0.1:64505`、`ASTROCYTE_TEST_PRODUCT_SOURCE=cffac3671f21dbf90df9eaa2804a2eb5e070d332`、上述原记录目录 `ASTROCYTE_TEST_PRODUCT_RECORDS_DIR` 与本次 `ASTROCYTE_VERIFICATION_OUTPUT_DIR`，TEMP / TMP 使用本次输出目录。论文核查只读取原 B 明确交付的四件公开 HTML：`ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification`。
+
+Grant 的实际 `expires_at=2026-10-15T19:48:00Z` 早于本次读取。生产 `ReadApproval` 按真实时间返回 `expired`，原签发记录保持 `active`；测试明确核这两个状态及实际到期时间，其他所有字段完整相等。ContextPacket 的 HTTP 快照明确不含本机 `root`，允许根为 `web/src/pages/workspace/proposals`；测试完整核对 SQL 中原项目根身份、批准的绝对允许根及全部其他字段。原固定来源、Goal、Grant 与 packet 身份不变，没有续期、重建或重发写入。
+
+首失败原件保留：`product-proposal-recovery.log`、`product-proposal-expired-grant.log`、`product-proposal-safe-view.log`；最终通过仅对应本表准确命令。所有页面记录均为零写入，全部七个事件已逐一定位，原生会话和新增模型调用为零。项目原允许读取 200 / 越界 403 记录属于前次实际操作，本次通过读取原结果和持久化权限恢复核查，没有重发原上下文操作。
+
+当前认知 health / today / filters 三个端点仍实际返回 `503 / provider_unavailable / check_filters_or_refresh_local_snapshot`；会话派生事件端点返回 200。H 尚未配置 Q 独立快照根、Jev 或 Laya，后继清理与完成来源装配继续由原作者负责。当前只读核心恢复通过，完整默认仍为原 204 PASS / 55 FAIL / 43 既有 SKIP / 18 无结果、EXIT UNKNOWN；本阶段没有重跑全套或新增 CLI / 模型，完整产品、L1 / L2 与最终发布继续未通过。
+
+## 2026-10-16 04:11 同一产品的持久化恢复核查
+
+分支 `standards-frontend`，本阶段 SOURCE `6503077885aee63dd97f9642deab66ba57167925` 已普通 push，父提交 `8bd599c8a34661dc9f4a47398212b387278a483f`。当前 Task / Dispatch 为 `task_7cbe30017760` / `ctx_c22d1dd61be3`；客户端 Codex，Orca 实际观测 `gpt-6.1-sol` / xhigh fast，沿原 `--yolo` 配置。原七件产品检查脚本保留，`inspectProductPaper.ts`、`inspectProductProject.ts`、`inspectProductProposal.ts` 的原写入操作没有重发。
+
+三件 `readProductPaper.ts`、`readProductProject.ts`、`readProductProposal.ts` 通过显式 `ASTROCYTE_TEST_PRODUCT_RECORDS_DIR` 读取原安全记录，输出使用独立 `ASTROCYTE_VERIFICATION_OUTPUT_DIR`；输入与输出相同立即失败，结果继续使用 `wx` 创建。新增 `readProductStored.ts` 只以 `readOnly: true` 打开协调者明确交付的同一产品 SQLite，按原公开 ID 核对已保存内容和实际事件，不发送 HTTP 请求。
+
+原安全记录位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_fefd1edc052e/.verification`。本次实际读取的数据库为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；本次输出位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_c22d1dd61be3/.verification`，进程 TEMP / TMP 同样使用该目录。
+
+实际恢复核查通过：原 arXiv v1 / v2 与 PLOS 三次导入对应两份资料，人工摘录仍为 `human` / `manual`；项目权限保持 r2 与原明确目录，Goal、已批准 Proposal、Grant 和 ContextPacket 的固定来源及版本关系存在。五个 Attention 事件和两个 Workspace 事件均逐 ID 在原事件库定位，批准事件的 `grant_id` 与实际批准一致。原生会话数量为零。本结果属于持久化恢复核查，产品服务恢复后的 HTTP / DOM 尚待执行。
+
+| 验证命令（在 web 执行） | 实际结果 | 本次输出目录内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0，包含当前 E2E 类型 | `typecheck-current.log`；首检查原件为 `typecheck-first.log` |
+| `npm run lint` | EXIT0 | `lint-first.log` |
+| `npx eslint e2e/readProductPaper.ts e2e/readProductProject.ts e2e/readProductProposal.ts e2e/readProductStored.ts` | EXIT0 | `lint-readonly-final.log` |
+| `node --experimental-strip-types e2e/readProductStored.ts`，显式配置上述原记录及输出目录 | EXIT0，真实 SQLite 只读、七个事件逐项核对、零 HTTP / 模型调用 | `product-stored-readonly.log`、`product-stored-readonly.json` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+当前唯一产品服务由原 H 恢复，首选 `http://127.0.0.1:64505`；未收到准确运行 SOURCE 和 ready 前，不执行页面读取，不启动第二共享服务。原完整默认 320 项准确结果为 204 PASS / 55 FAIL / 43 既有 SKIP / 18 无结果，EXIT UNKNOWN，原件保留，本阶段没有重跑。当前 HTTP / DOM 恢复、真实 CLI / 模型、L1 / L2 及最终完整产品仍未通过；受限 Codex、未答 S3、Agent 完成证据权限和 Laya 范围按绝对根最新决定保持现状。
+
 ## 2026-10-16 Swarm 页面组合与设计导航验证
 
 分支 `standards-frontend`，当前业务 SOURCE `ae2f56b257a9f6f880d1e96db26c6470f9966384` 已普通 push。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_630293cc6778`，沿现有 Codex `--yolo` 配置，模块公开核实模型为 `gpt-6.1-sol`。本阶段没有在 H 管理的 L1 服务新增登记，没有新建原生会话、发送模型输入或调用模型。
+
+后继测试消费 SOURCE `90e69e703f79b81653ea5ccc1e6c9eca4bd781f9` 已普通 push，只 cherry-pick `-x` 原 UI SOURCE `471bcc9f34b5ae82375b03fdcf5938d3a127d9b1`。唯一目标 `web/e2e/s2-context.spec.ts` 消费前与父内容相等且零 WIP / staged，消费后完整文件 diff 为零；明确批准调用量为 3，并核对实际保存的 `workspace.` 事件前缀。模块交接登记原 UI 两场景、两种窗口共 4 PASS / 1.0 分钟 / EXIT0，模型调用为零。F 按明确要求没有单独重跑已通过的四项，本树最终同源完整默认覆盖仍待执行。
 
 按模块精确放行，逐段普通 cherry-pick `-x` UI SOURCE `64ab5ca`、`32adab9`、`033557f`、`614ebc7`，本树消费提交分别为 `ad42870`、`1781f7a`、`729ec95`、`b2bbe58`。各段目标文件消费前与父内容相容且无 WIP / staged，消费后完整文件 diff 为零；先核出第三段缺少的已提交测试前置，经准确放行补齐后继续，没有制造或处理冲突。页面逻辑归原 UI 负责人，F 仅修改 `web/e2e/preview-design.spec.ts` 的时间线验证。
 
@@ -19,7 +134,7 @@
 | 在 web 执行 `npx playwright test e2e/preview-design.spec.ts e2e/navigation.spec.ts --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/design-navigation-ui-fixed-artifacts` | 两种窗口完整 100 PASS，11.9 分钟、EXIT0、零 skip、零重试，原超时保持 | `design-navigation-ui-fixed-playwright.log`、`design-navigation-ui-fixed-artifacts` |
 | 在 web 执行 `npx playwright test --list --reporter=list` | EXIT0；当前默认清单为 37 文件、320 项，仅收集 | `default-case-list-ui-fixed.log` |
 
-设计与导航 100 项通过不代表全部默认 E2E。前序 308 项清单和原完整 280 项首结果分别保留，当前完整 320 项尚未执行；真实 Relay 场景、来源输入和单人原生窗口等条件见下节。Context 的原预算前置失败由原 UI 负责人继续修复，本阶段没有重复该已知失败场景；正向 Context、真实 CLI / 模型及最终唯一 I 组合仍未完成。前序 Prepare 四项通过与真实 HTTP 17 项结果按各自精确源码登记，不与本阶段重复累加。
+设计与导航 100 项通过不代表全部默认 E2E。前序 308 项清单和原完整 280 项首结果分别保留，当前完整 320 项尚未执行；真实 Relay 场景、来源输入和单人原生窗口等条件见下节。Context 的预算和事件前缀测试修复已准确消费，当前本树同源 Context、真实 CLI / 模型及最终唯一 I 组合仍未完成。前序 Prepare 四项通过与真实 HTTP 17 项结果按各自精确源码登记，不与本阶段重复累加。
 
 ## 前序：2026-10-16 Prepare 与真实共享客户端阶段
 

@@ -29,7 +29,14 @@ import (
 
 func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	ctx := context.Background()
-	parent, err := filepath.Abs(filepath.Join("..", "..", "dist", "http-listener"))
+	parent := filepath.Join("..", "..", "dist", "http-listener")
+	if outputRoot := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); outputRoot != "" {
+		if !filepath.IsAbs(outputRoot) {
+			t.Fatal("明确的测试输出根必须为绝对目录")
+		}
+		parent = filepath.Join(outputRoot, "http-listener")
+	}
+	parent, err := filepath.Abs(parent)
 	if err != nil {
 		t.Fatal("本轮验证目录无法解析")
 	}
@@ -146,7 +153,15 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 		}
 		defer response.Body.Close()
 		if response.StatusCode != status {
-			t.Fatalf("实际 HTTP 状态 %d，预期 %d", response.StatusCode, status)
+			var failure struct {
+				Error struct {
+					Code string `json:"code"`
+				} `json:"error"`
+			}
+			if json.NewDecoder(response.Body).Decode(&failure) != nil {
+				t.Fatal("实际 HTTP 错误响应无法解码")
+			}
+			t.Fatalf("实际 HTTP 状态 %d，预期 %d，public_code=%s", response.StatusCode, status, failure.Error.Code)
 		}
 		if target != nil {
 			if err := json.NewDecoder(response.Body).Decode(target); err != nil {

@@ -10,6 +10,7 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workbench "github.com/songconmaisaix31-design/Astrocyte/internal/workbench/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -351,9 +352,10 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 type relaySessionRuntime struct {
 	workspace.RelayRuntime
 	workspace.RelayLifecycle
-	collector    *relaySessionCollector
-	sourceGuard  *relaySourceGuard
-	registration *relayTrustedRegistration
+	collector        *relaySessionCollector
+	sourceGuard      *relaySourceGuard
+	registration     *relayTrustedRegistration
+	completionSource attention.ExperienceCompletionReader
 }
 
 func (s *relaySessionRuntime) PrepareIntent(ctx context.Context, caller domain.Caller, id string, command workspace.RelayConfirmCommand) (domain.RelayActionResult, error) {

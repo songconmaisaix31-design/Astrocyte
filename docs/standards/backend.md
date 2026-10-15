@@ -1,6 +1,6 @@
 # 基础后端与导入整改
 
-本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，本次恢复 HEAD `ddfae290e3b0cf468af9aeaa98c5bdf39ea1604d`。完成收据阶段 SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，实际业务来源、模型解释与人工批准后使用仍未验收。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
+本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，2026-10-16 本次恢复 HEAD `9a96c365021c826e90a6271d7a3f8571fb0c780f`。当前启动检查诊断 SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` 已普通 push，准确结果与限制见末节。完成收据阶段 SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，实际业务来源、模型解释与人工批准后使用仍未验收。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
 
 后续独立 REPORT `94658c3788fc94db8215df403bea6aab4da1cfbb`、`96618df9b62ed0018182b5cbc1aa626c5bcb8362`，文本目录及实际 Works 发现 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，公开生产认知及祖先路径检查 SOURCE `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，默认时钟/实际 Sleep/真实 nullable 及公开论文输入 SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` 均已普通 push。
 
@@ -467,6 +467,68 @@ SOURCE `1308702f9ce8133404588aa0509f343b1292e186` 已普通 push。原 `paper_sn
 
 全部 `internal/attention/app/*_test.go`（包括既有规则测试）由 T 唯一持续维护，B 当前该域零 WIP 并停止写入；SOURCE `5866b52` 已提交规则贡献完整保留并已交 T，没有改写公共历史。当前 H 沿既有对象 / 事件 API 在原 `events/relay_goal*.go` 实现薄 Reader，B 不新增重复存储 API。原完整 Go / E2E、冷 Registry 及实际完成经验组合限制继续保留。
 
+## 当前项目权限事务与 Vite 实际冷启动
+
+SOURCE `c60479619b0c992fe3e2fe42fa0ee68b217a5115` 已普通 push。项目、Grant 与原生会话的八项 SQLite 方法复用当前 `WorkspaceTransaction` 的同一连接；错误数据库的事务 Context 直接拒绝，列表关闭错误直接返回。没有新增表、缓存或事务协调系统。实际项目注册、空间创建、授权、空会话列表和缺失会话读取均沿原生产接口执行。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^(TestLocalProjectUsesActualWorkspaceTransaction|TestLocalProjectRejectsAnotherActualDatabaseTransaction)$' -v -count=1` | EXIT 0，2 项主检查、2 项提交/真实约束回滚子项通过，21.638s；`.verification/local-project-actual-transaction-first.log` |
+| `go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestNativeSessionUsesActualWorkspaceTransactionWithoutModel$' -v -count=1` | EXIT 1，原 `thread/start` 回复期限触发 `delivery_unknown`，测试 22.56s、包 36.184s；`.verification/native-session-actual-transaction-first.log` |
+| `go build -mod=readonly -p=2 ./...`、目标项目/SQLite 包 `go vet -mod=readonly -p=2` | EXIT 0；`.verification/local-project-context-{build,vet}-first.log` |
+
+同数据库检查核实 `WaitCount` 没有增加，真实主键冲突使空间、项目、授权、回执与 outbox 一起回滚；错库、取消和关闭存储直接失败。原生首失败的自有目录为 `D:/Astrocyte-agent-assets/20261015/backend/s1-verification/accepted-experience-actual-1544338517`；没有模型输入、自动重发或补造停止证据，后续原会话保存、重开断言仍未执行。准确 SOURCE 和首失败已交 R；该结果不作为原生会话事务正向验收。
+
+SOURCE `0b69db66c826fa822ef31d8b7e965c03b53ee983` 已普通 push。Vite 8.3.4 的真实 WebSocket 绑定自有 HTTP listener，使用实际分配端口；`vite_ready` 前完成真实依赖扫描、index 和入口模块转换及既有请求处理。初始化期间收到的 HTTP 请求仍由原中间件处理。新增的并发检查通过两个实际 Vite、实际 Go HTTP、真实 SQLite 与 Node WebSocket 完成，不使用替代服务。
+
+| 实际命令 | 结果 |
+|---|---|
+| `node --test tests/s1/vite-readiness.test.mjs`，SOURCE 修改前 | EXIT 1，真实 WebSocket 连接失败，10.962s；`.verification/vite-owned-readiness-first.log` |
+| 同命令，SOURCE 修改后 | EXIT 0，1 PASS、0 SKIP，78.484s；`.verification/vite-owned-readiness-second.log` |
+| `node --test tests/s1/server-lifecycle.test.mjs tests/s1/development-lifecycle.test.mjs tests/s1/vite-lifecycle.test.mjs` | EXIT 1，6 PASS、1 FAIL、0 SKIP，398.308s；`.verification/vite-initialization-lifecycle-current-first.log` |
+| `node --test tests/s1/development-lifecycle.test.mjs`，显式 `GOMAXPROCS=2`、`GOFLAGS=-p=2` | EXIT 1，0 PASS、1 FAIL、0 SKIP，65.153s；`.verification/development-actual-limited-go-first.log` |
+| 两个变更 Node 文件语法与 working / cached diff 检查 | EXIT 0 |
+
+双冷服务目录为 D 盘 `astrocyte-s1-uqSwrm`、`astrocyte-s1-rMdClO`。普通/Relay 服务重开、绑定冲突、提前 HTTP 请求及初始化失败检查通过；development 仍在原 60 秒就绪期限失败，原期限和断言保持。失败日志只证明 API 已返回健康响应且 Vite 已加载配置，后续阶段没有完成，当前原因未确定。完整 UI、默认 E2E 和开发命令验收继续为 RED。
+
+按模块精确授权并收到安全 ACK，B 在 I 树仅编辑和 stage `scripts/vite-server.mjs` 的单件冲突，与准确早期 SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872` 的该件完整 diff 为零；没有夹带后续冷启动改动。Node 语法、working / cached diff 检查通过，U0，准确 stage blob 为 `96cf281adc902525cb8a4588edbb8630b48d83f6`。原 HEAD `f3c2e0722cae7c36ecc5ca97602ac1b0684e6483` 和 MERGE_HEAD `1d6238d0dbfb45d5c29fe17e70e3bf5350e02b6e` 保持，单件写入和进程访问已经停止归还。
+
+H 的原 Redocly Windows libuv 终止日志完整保留。针对准确 H OpenAPI 的官方 CLI、原 `runTool` 及实际畸形 YAML 拒绝诊断均 EXIT 0，分别见 `.verification/redocly-h-exact-network-off-first.log`、`redocly-h-exact-process-first.log`、`redocly-process-actual-first.log`；这些诊断未复现原终止，不能确定其原因。没有提交 Redocly 配置或依赖修改，没有继续重复运行；临时诊断脚本保存在已忽略的 `.verification/`。
+
+F 下一次自然验证所需公开论文输入目录及四件获准 HTML 已准确交接；没有授予同目录其他原件读取权限。Completion 完整来源读取移到事务外、同事务当前权限复核的方向已获模块授权，准确新增接口仍等待 R/H 确认；原生 Prepare/Claim/Send 继续按 R/S3 原类型协作，当前未创建准备记录或模型请求。上述两项业务组合验收保持 NOT_RUN。
+
+## Completion 事务外来源读取与同事务授权
+
+SOURCE `176742241681a3b00257da33f4f8a69dd308a908` 已普通 push，仅修改生产 `internal/attention/app/experience_accepted.go`。按 R/H 明确确认，`ExperienceCompletionReader` 增加 `AuthorizeExperienceCompletion(context.Context, Principal, ExperienceCompletionEvidence) error`；准备原幂等收据和最终保存候选的两个短事务各调用一次。完整来源读取只在这两个事务之外执行，Interpreter 返回后完整重读并严格 `reflect.DeepEqual`，随后再次复核当前权限和既有幂等记录。候选状态仍为 `quarantine`，`ResolveEvidence` 继续在事务外读取来源。
+
+R 确认完成记录与最终 transition receipt 的原时间、Actor、Channel、ReceiptID、OperationID、输出事件和检查引用不可改写或删除；done 到 released 的独立审计不改变来源值。新增 Authorize 只使用原主数据库同一 `WorkspaceTransaction` 中的当前 project/owner/grant 和固定 Evidence 约束，不读取 Relay、对象、档案、Git 或 CLI。准确 R/H 实现与组合装配尚待原负责人交付，本 SOURCE 不单独证明这项业务约束已经通过真实路径验收。
+
+进程级 D 盘 Go 环境与 `GOMAXPROCS=2` 下，`go build -mod=readonly -p=2 ./...`、`go vet -mod=readonly -p=2 ./internal/attention/app ./internal/adapters/sqlite` 均 EXIT 0，日志 `.verification/completion-authorization-split-{build,vet}-first.log`。`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^(TestAcceptedExperience|TestLocalProjectUsesActualWorkspaceTransaction|TestLocalProjectRejectsAnotherActualDatabaseTransaction)' -v -count=1` EXIT 0，5 项主检查、4 项提交/真实约束回滚子项通过，3.712s，日志 `.verification/completion-authorization-sqlite-first.log`。Go 格式与 diff 检查无输出。该轮没有原生初始化或模型请求；实际完成来源、权限撤回竞争、Interpreter 后变更拒绝与 quarantine 组合验收保持 NOT_RUN，应用测试全部由 T 持续维护。
+
+本轮临时授权的 I `cmd/server/config.go` 单件已编辑并 stage，重复发现函数保留一份，与原 HEAD 该件完整 diff 为零。Go 格式、限定 working / cached diff 检查 EXIT 0，U0，准确 stage blob `f8fdeb628de94c0e1c46ded6b4f16abc9b6a835a`；原 HEAD `85ac31e61c9f0ac9d0b49e45a24b26379bb5b5da`、MERGE_HEAD `91676ad0dbacea6a9f1640e224e2dbfa7cbf8024` 保持，其余 28 件 F stage 文件未修改。全部目标树写入、stage 和进程访问已停止并归还，无 merge 生命周期操作。
+
+完整读取获准 R `channels-agents-first.log` 后，实际结果为包 185.806s、180 秒 panic 时 `TestSelectedTextActualOwnedSourceWithoutModel` 仅运行 4 秒，调用停在原 `initialize` 等待。该原件没有 controller 原 PID、启动身份或自产目录，退出状态保持 UNKNOWN；已交 R 沿同次 launch 原件核查，没有猜测进程归属、重复初始化或终止宿主进程。此窗口与 B 的 `thread/start` 首失败分别保留。
+
+## 原准备读取契约的准确消费
+
+SOURCE `442e693d5056e2bb17e1950c62a48de01e977ec6` 已普通 push，原样消费 R SOURCE `8947ff7e36415da07a0eb85c103b722713460356` 的两个 `relay_prepared_input` 文件；实际 Git blob 分别同为 `590f3eb822e493483ef3bb9528adfdf7b4170ab5`、`5df909d640086f22c915477d2ba6109d925e911e`。九字段包含原 `ActorProjectID`，全部隐藏 JSON；读取仅限明确尚未尝试发送的原准备。两个现有 workspace app 文件只翻译注释，执行行为保持。
+
+`go test -mod=readonly -p=2 ./internal/workspace/domain -run '^TestRelayPreparedInputPrivateSerialization$' -v -count=1` EXIT 0，1 PASS、0 SKIP，0.960s，日志 `.verification/prepared-input-private-json-first.log`；`go build -mod=readonly -p=2 ./...` EXIT 0，日志 `prepared-input-type-build-first.log`。格式、diff 检查无输出。该序列化检查仅使用明确隐私标记输入，不作为原生会话、操作者或来源事实；实际准备持久化、当前授权、原子发送占用、S3 Claim 和 H 发送前 live lease 复核均未执行，不登记首次 Claim 或消息发送成功。B 当前旧 Registry 没有原 controller/startup 读取接口，准确 R 源码闭包与既有 ObjectStore 的装配口已交模块协调，尚未按草案固定新接口。
+
+## 实际连接竞争下的令牌撤回
+
+SOURCE `ef8f944069996b8b4ff849d8f7f8ab6e48e1a870` 已普通 push，只整改 `TestConcurrentTokenIssuanceCannotResurrectRevokedGrant`。通过原 Attention 服务创建实际空间、注册当前公开工作树并授予原 Grant，再用真实 SQLite 事务占用单连接；签发操作持有原服务锁等待连接，撤回不能越过该锁或产生第二次连接等待。释放事务后，实际签发和撤回完成，原令牌认证拒绝，持久化 Grant 保留 `RevokedAt` 且清空 token digest。没有调用原生控制器或模型。
+
+`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestConcurrentTokenIssuanceCannotResurrectRevokedGrant$' -v -count=1` EXIT 0，1 PASS、0 SKIP，2.973s，日志 `.verification/token-revocation-actual-lock-first.log`；Go 格式与 diff 检查无输出。自有数据库目录为 D 盘 `accepted-experience-actual-2083530046`。保留原竞争、认证拒绝和持久化断言，并增加真实连接等待数量检查；没有替代 Repository、Native 或引用来源。
+
+经 F 最窄只读授权，逐项核对完整默认第 131 / 133 项各自 error-context 和 HTTP 日志，并以 SQLite `readOnly` 仅查询指定两个数据库的资料表 schema、资料数量及人工使用计数汇总。两个原错误均在公开论文目录配置检查处发生；两库分别为 `material_count=0`、`human_usage_count=0`、`human_use_records=0`，HTTP 没有到达资料导入、使用或分类写入。查询 EXIT 0，日志 `.verification/f-two-s1-readonly-first.log`。两项 FAIL 保留，业务断言未运行；没有访问 auth/session 或完整 payload、修改 F 环境或重跑在途套件。
+
+## 可信清理批量配置
+
+SOURCE `da084e44a93adda7c3465a564fb5b63510222b0a` 已普通 push。`repositoryContextConfig.CleanupMaxGenerations` 来自可信环境 `ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS`；未设置时使用程序常量 64，范围沿 S4 既有接口限制为 1–1000，错误值立即失败。该值只限制每次清理删除的 generation 数量，不作为业务权重或用户规则；HTTP 不提供该配置。
+
+`go test -mod=readonly -p=2 ./cmd/server -run '^TestRepository(ContextConfig|CleanupBatchTrustedConfiguration)' -v -count=1` EXIT 0，4 项主检查及原 8 项拒绝子项通过，3.264s；显式 1/64/1000 精确返回，0、负数、超限、非整数和非数字被拒绝，日志 `.verification/repository-cleanup-trusted-config-first.log`。全包 build、cmd/server vet、Go 格式与 diff 检查通过，日志 `repository-cleanup-config-{build,vet}-first.log`。同 provider 的实际清理生命周期由 H 接入；项目修改的成功 commit 后 Wake 仍待原 S2 事务接口确认，当前没有发出唤醒或清理目录，S4 实际撤回清理首 RED 继续保留。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
@@ -483,3 +545,115 @@ SOURCE `1308702f9ce8133404588aa0509f343b1292e186` 已普通 push。原 `paper_sn
 ## 未执行操作与后续交付
 
 部分 SOURCE/REPORT 普通 push 遇到 GitHub `SSL_ERROR_SYSCALL`，原件保留；上述已列源码及报告均已普通 push，未 force push。Reader 前四次握手失败保留在 `.verification/workbench-source-push-{first,second,third,fourth}.log`，第五次正常推送成功。本报告作为独立 REPORT 追加提交并推送。阶段 SOURCE/REPORT 不结算整轨，后续源码与报告继续追加；最终精确 SHA 和剩余限制由最后一次报告登记。
+
+## 项目设置成功提交后的清理通知
+
+SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` 已普通 push 到 `standards-backend`，仅修改 `project_cleanup.go` 与 `projects.go`。`ConfigureRepositoryCleanup` 接收原索引、查询共用 provider 的 `WakeRepositoryCleanup`，配置时要求实际 Repository 提供 `AfterWorkspaceCommit(context.Context, func()) error`；nil provider 或缺失回调能力直接失败。项目设置成功保存后登记通知，原 S2 SOURCE `4f875b0f8bffc5740e6a1eee828e7e34833226b8` 的回调负责在外层事务成功提交并释放连接后通知。没有配置清理 provider 时保留当前项目操作。
+
+当前工作树包含仍未提交的原生准备修改；以下 Go 检查针对该工作树执行，不能作为隔离 cleanup SOURCE 或完整产品的实际验收。全部新增大产物放在 `D:/Astrocyte-agent-assets/20261016/backend`，现有原件保留。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go build -mod=readonly -p=2 ./...` | EXIT 0，138.832s；`.verification/backend-product-build-first.log` |
+| `go vet -mod=readonly -p=2 ./internal/workspace/app ./internal/adapters/sqlite` | EXIT 0，86.676s；`.verification/backend-product-vet-first.log` |
+| `go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^(TestNativeMessageActualTransactionBoundaries\|TestPreparedNativeMessageMissingOriginalReaderDoesNotPublish\|TestNativeMessageExplicitJSONRules\|TestLocalProjectUsesActualWorkspaceTransaction\|TestLocalProjectRejectsAnotherActualDatabaseTransaction)$' -v -count=1` | EXIT 0，5 项主检查、2 项提交/实际约束回滚子项，包 13.228s；`.verification/backend-product-test-first.log` |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run '^TestNativeMessageExplicit' -v -count=1` | EXIT 0，2 项主检查、13 项子项，包 9.986s；`.verification/backend-product-rules-first.log` |
+| 变更 Go 格式、working / cached diff 检查 | EXIT 0 |
+
+事务、错误数据库、真实取消和缺失原 Reader 拒绝检查使用自有实际 SQLite、原生产项目服务及 ObjectStore；没有产生原生会话、准备来源或模型输入。JSON、身份和状态检查使用明确纯函数参数，未作为实际来源。原生初始化、正向准备和发送、同源产品与 S4 实际撤回清理仍未运行；H、S4 和唯一集成负责人已收到准确 cleanup SOURCE，继续配对原 S2 提交回调及同 provider 清理生命周期。其余原生 WIP 保留，未包含在本 SOURCE。
+
+## 原生固定准备与单次发送接缝
+
+SOURCE `759764900bc45ed4c58efaad79ae9d20d421b834` 已普通 push。项目服务通过 `WithNativeMessageObjects` 复用现有 ObjectStore，通过 `WithOwnedNativeSessions` 只读取原 Registry 持有的原控制器身份。`PrepareNativeMessage` 在事务外检查当前权限、固定上下文和实际控制器，发布原输入对象；短 Workspace 事务固定原 Caller、operation、packet、settings revision、controller、startup、workspace、PreparedAt 与 ObjectRef。`ReadPreparedNativeSession` 不读取正文，只允许当前仍未尝试发送的原准备；在途、未知和已受理状态均拒绝。
+
+`SendNativeMessage` 在事务外读取原对象并严格比较输入，在同一主数据库事务内重查当前权限、原准备、项目和会话，通过原 session JSON 的 CAS 单次转为 `send_attempted`。原生发送在事务外执行，随后短事务记录结果；观察和停止不能删除私有准备或恢复发送资格。相同已受理输入只可观察原会话，在途和未知操作拒绝重发。公共 JSON 不包含正文、对象引用或控制器身份。`domain/relay_facts.go` 与 R `269e95c032b5a64794e6908ca6c40e5ffe5acac4` 的准确文件 blob 同为 `c5c33810795693323213a2e01f8bed989ca69854`，未自行生成另一套原生类型。
+
+上一节记录的 build、vet、5 项 SQLite/JSON 主检查和 2 项纯函数规则主检查覆盖本 SOURCE 的源码内容，全部 EXIT 0；运行目录和原日志保持。身份、上下文版本、Caller、投递状态和 JSON 隐私的明确参数检查不作为控制器来源。真实 SQLite 检查只验证事务、错误数据库、取消和缺失 Reader 时不发布对象、不创建会话。
+
+`TestProvenUnstartedResumePreservesOwnedOriginalSession` 保留原原生身份、两次缺失 CLI 启动前失败及冷 Registry 未知断言，准备来源改由实际空输入探测和明确停止取得；本轮按当前禁止原生初始化的边界未运行该测试。正向 Prepare、实际单次发送、并发 CAS、停止更新保存私有准备、重启后的原控制器拒绝及 H/S3 同 Grant/epoch/member/Lease 组合仍 NOT_RUN。受限 Codex 文件工具无法关闭的路径继续拒绝，不登记会话或模型输入；Claim/Known 未答边界保持。全部 Attention 应用测试继续由 T 维护。
+
+## 配置启动检查的准确失败信息
+
+SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` 已普通 push 到 `standards-backend`，只修改 `cmd/server/config.go` 与 `repository_config_actual_test.go`。生产检查分别标识 Node 版本、CodeGraph SDK 导出、桥脚本语法与 AOCI 版本，实际子进程错误及 `ExitError.Stderr` 一起返回；原 15 秒期限、隔离目录、完整环境白名单、版本要求和公开导出要求保持。
+
+`runtime-sanitized-third` 的实际 Node 24.16.0、CodeGraph 1.0.1 和原桥脚本在 B 自有 `.verification/repository-probe-restored-first/` 分阶段检查均 EXIT 0。该目录的三份 stdout/stderr 分别保留；这次使用准确生产白名单，尚未取得 H 原进程的全部安全配置路径和准确 `command.Dir`，不能判定原服务失败已重现或恢复。共享服务由 H 持续负责，B 没有读取共享数据库、启动第二服务或修改依赖。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./cmd/server -run '^TestRepository(ContextConfig\|CleanupBatch)' -v -count=1` | EXIT 0，4 项主检查及 8 项配置子检查；包 2.136s，`.verification/backend-recovery-config-first.log` |
+| `go test -mod=readonly -p=2 -tags=repository_context_live ./cmd/server -run '^TestRepositoryContextConfigActualNodeSyntaxRefusal$' -v -count=1` | EXIT 0，包 3.461s；实际 Node / SDK 检查后，以原 Go 源文件触发 Node `ERR_UNKNOWN_FILE_EXTENSION`，核阶段及原错误保留，`.verification/repository-probe-syntax-first.log` |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0，9.154s，`.verification/backend-recovery-build-first.log` |
+| `go vet -mod=readonly -p=2 ./cmd/server` | EXIT 0，4.745s，`.verification/backend-recovery-vet-first.log` |
+| `node --test internal/adapters/importers/paper-dom.test.mjs` | EXIT 0，9 PASS、0 SKIP；5.765s，`.verification/backend-recovery-node-first.log` |
+| 两个变更 Go 文件的 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
+
+实际 Node 检查显式提供 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third/runtime/` 下 `node/node.exe`、`sdk/node_modules/@colbymchenry/codegraph`、`adapters/codegraph.mjs`。Go 缓存与编译临时文件继续使用 D 盘专属目录。上述 build / vet 含原四件未提交 experience WIP；本 SOURCE 没有提交这些 WIP，原完成来源组合、模型调用、完整 Go / 前端和同实例产品验收没有升级为 PASS。
+
+## 普通目录路径与 OpenCode 实际生命周期
+
+SOURCE `a8d361b1cb4133713e25f1d6c20ea4bfd22d844d` 已普通 push，只有两个测试文件改动。Works HTTP 在创建受控目录后调用现有生产 `CanonicalRoot`，发现结果与断言使用同一实际规范路径。OpenCode 使用明确 `ASTROCYTE_TEST_OUTPUT_ROOT`，缺少配置时使用本树 `.verification/`；绝对路径和全部祖先 reparse 检查保持，实际会话仍由官方 OpenCode 1.18.35 创建。
+
+在 D 盘 TEMP 下，`go test -mod=readonly -p=2 ./internal/adapters/httpapi -run '^TestWorksHTTPActualStoresRegisteredBoundsAndRestart$' -v -count=1` 首次 EXIT 1，原路径拼写断言保留于 `.verification/works-http-recovery-first.log`。修订后同命令 EXIT 0，包 2.983s，`.verification/works-http-recovery-second.log`；原缓存读取、人工请求、目录范围、幂等、权限、metadata、SQLite 重开和审计断言全部保持。
+
+`ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261016/backend/s1-verification` 下执行 `go test -mod=readonly -p=2 ./internal/adapters/agents -run '^TestOpencode(SessionLifecycleOverHTTP|SessionDenyPermissionFailClosed|RejectsUnauthenticatedAndUnknownReply|WaitHealth)$' -v -count=1` EXIT 0，4 PASS、0 SKIP，包 19.992s；`.verification/opencode-owned-output-recovery-first.log`。四个隔离服务使用实际本机 HTTP、原生生成的身份和独立配置；覆盖同一 ID 停止后恢复、权限规则拒绝、认证拒绝、未知会话与实际健康检查，全部进程停止由原清理断言确认，model turns 为 0。变更文件 `gofmt -l` 和 diff 检查通过。
+
+该结果不覆盖受限 Codex 或 Windows Replay 的来源真实性。`native_path_windows_test.go` 原有构造原生文件需要实际获准公开项目的自产原件；B 已向协调者提出准确来源指针依赖，没有运行该虚构来源路径、添加 skip 或削减断言。`text_capacity_test.go` 需要 Codex 初始化的正向检查仍按当前暂停令未运行。H 报告同一数据库的 64505 服务已恢复；B 没有独立操作该共享实例，原启动 exit1 的原因保持 UNKNOWN。
+
+## 完成经验的 HTTP 与固定请求身份
+
+SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` 已普通 push，包含原四件 experience 修改和新增实际 HTTP 检查。`POST /api/v1/experiences/completions` 接收实际 `local_project_id`、`event_id` 和既有命令字段，要求 schema / expected version 为 1，使用现有 `Idempotency-Key`；原请求键在既有主数据库事务内绑定语义输入，模型操作继续复用原完成事件收据。`GET /api/v1/experiences/{id}/evidence?project_id=...` 返回安全固定引用。桥接只接受当前实际 `LocalProject.ID`；来源读取及解释在事务外进行，当前来源授权在同一主数据库事务内执行。
+
+治理与完成捕获共用 `AcceptedExperienceRepository`，读取、批准和分享时可恢复已存完成来源的真实身份。当前未答的 Agent 完成权限继续明确拒绝，候选仍为 quarantine，由用户批准。原 `ExperienceCompletionReader` / `CompletionExperienceInterpreter` 注入字段只接实际服务；来源缺失返回 unsupported，真实解释器未配置返回 provider unavailable，不产生替代候选。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./cmd/server -run '^TestCompletionExperienceHTTPActualProjectBoundariesAndRestart$' -v -count=1` | EXIT 0，包 3.125s；`.verification/completion-http-actual-first.log` |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0；`.verification/completion-http-build-first.log` |
+| `go vet -mod=readonly -p=2 ./cmd/server ./internal/adapters/httpapi ./internal/attention/app` | EXIT 0；`.verification/completion-http-vet-first.log` |
+| 五个变更 Go 文件 `gofmt -l`、`git diff --check` | EXIT 0，无输出 |
+
+实际检查通过生产服务创建空间、注册本公开工作树、保存人工 Grant 并签发项目 token，然后使用实际 loopback HTTP、自产人类会话和 SQLite；覆盖缺认证、CSRF、Agent 当前权限、目录 / SpaceID / 未注册 ID 替代、版本错误、未接来源、缺少证据、SQLite 重开和实际关闭数据库的失败。未观察 UUID 只用于拒绝请求。SQLite 核经验候选、完成来源和原生会话均为零，没有写入虚构完成记录或模型输出。
+
+H `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 的实际 `services.Relay` 已实现相同 `ExperienceCompletionReader`；准确接口已经通过 Handoff 交 H，在原 main / OpenAPI 写域完成注入和公共契约，B 没有复制 H 源码或修改其工作树。受限 Codex、真实解释器、正向实际完成候选、用户批准、后续经验使用及六步闭环继续 NOT_RUN；上述拒绝和生命周期检查不替代这些验收。
+
+## Origin 的标准 URL 解析
+
+SOURCE `bd18df4c57f41b3c880bb47fba98c0deec5135ce` 已普通 push，仅修改 B 的 middleware 与新增实际 HTTP 检查。Origin 使用 `net/url` 完整解析，并核 HTTP(S)、无凭据、纯 origin 和明确回环 Host；拒绝响应复用现有 `writeJSON`，实际写入失败会终止请求。该文件注释使用中文，请求 ID 的随机读取错误立即终止。
+
+`go test -mod=readonly -p=2 ./internal/adapters/httpapi -run '^(TestLoopback|TestIsLoopbackHost|TestRequestIDMiddleware)' -v -count=1` EXIT 0，6 项主检查，包 5.773s；`.verification/origin-standard-url-first.log`。新增检查运行真实 Foundation 服务和实际 loopback HTTP，16 个明确 Origin 输入涵盖正常 IPv4 / IPv6、缺省 Origin、外部地址、错误格式、用户字段、路径、空及非空 query / fragment、错误 scheme；拒绝状态、ErrorV1 和同一请求 ID 全部保持。原 5 项主检查和全部断言保留，没有使用替代服务或来源。
+
+`go build -mod=readonly -p=2 ./...`、`go vet -mod=readonly -p=2 ./internal/adapters/httpapi` 均 EXIT 0，日志分别为 `.verification/origin-standard-build-first.log`、`origin-standard-vet-first.log`；两个变更文件 `gofmt -l` 与 diff 检查无输出。H 独占的 `server.go` 静态路由中 Stat 错误分类与注释整改已单独 Handoff，没有跨域编辑；完整默认、受限原生和实际六步结果继续未通过。
+
+## 人工准入的当前项目权限与实际草稿事务
+
+SOURCE `19ff699f304961d3c9fad6a336163848c923057b` 已普通 push，引入独立人工项目身份检查。当前完整构造与逐项固定引用检查见末节 SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383`；H 的生产装配继续使用其原有完整人工 / 委托判断授权。项目读取复用原 `ListProjects(ctx)` 和同一主数据库事务。Root、SpaceID、未知 ID、Agent 及未授权判断角色不能代替实际人工项目权限。
+
+`ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261016/backend/s1-verification` 下，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` EXIT 0，包 5.282s，`.verification/admission-project-actual-first.log`。实际空间和公开项目注册、同事务零额外连接、错误项目与角色、另一实际数据库事务、取消全部保持预期；准入、草稿、批准及原生会话记录均为零。既有准入检查的输出目录现同样接收明确绝对路径。
+
+明确设置已获准的匿名 `HTTP_PROXY` / `HTTPS_PROXY=http://127.0.0.1:7890` 后，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestActualAdmissionDraftAtomicLifecycle$' -v -count=1` EXIT 0，包 8.859s，`.verification/admission-actual-recovery-first.log`。原检查实际读取固定官方 arXiv `2501.12948v1` Atom / PDF，以人工记录创建候选；覆盖错误数据库消费者的原子回滚、成功准入与唯一草稿、幂等重放、同 revision 冲突、原 outbox / receipt、独立撤销、SQLite 重开及真实资料撤回拒绝。全部原断言保留，执行批准及原生会话始终为零；未调用模型或修改系统网络。
+
+全包 `go build -mod=readonly -p=2 ./...`、目标包 `go vet -mod=readonly -p=2 ./internal/adapters/admissionbridge`、三件 Go 格式及 diff 检查均 EXIT 0；日志为 `.verification/admission-project-build-first.log`、`admission-project-vet-first.log`。生产 HTTP 的 Services 字段、路由和 main / OpenAPI 装配仍由 H 实施，本文实际 service / SQLite 结果不替代同实例 UI / HTTP 验收。
+
+## arXiv 原件格式与实际 DOM
+
+SOURCE `25a4ae879ca0a4cd059540bfa5aeddf8cf713dcc` 已普通 push。arXiv PDF 类型通过已有标准 `http.DetectContentType` 检查，官方 HTTP 响应的 Close 错误经 `errors.Join` 保留；读取错误会阻止发布来源。四件变更中的原注释使用中文，原固定命令和路径语义保持。
+
+在已授权匿名进程代理下，原完整 `go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestActualAdmissionDraftAtomicLifecycle$' -v -count=1` 再次 EXIT 0，包 5.306s；`.verification/arxiv-mime-actual-first.log`。实际官方 Atom / PDF、完整准入草稿与撤销重启断言保持，模型调用为零。全包 build、importers / agents 两包 vet、Node bridge 语法、Go 格式及 diff 检查均 EXIT 0；日志 `.verification/arxiv-mime-build-first.log`、`arxiv-mime-vet-first.log`。
+
+`node .verification/paper-dom-actual-recovery.mjs` EXIT 0，`.verification/paper-dom-actual-recovery-first.log`。使用本工作树先前完整取得的官方 `2501.12948v1` HTML 原件 225089 bytes，经实际 linkedom / Readability / `paperDOM` 得到 `readable_fulltext`、57465 text bytes、原标题、固定版本、来源 key 及 PDF URL；文档在提取前后相同。实际快照保存在本树 `.verification/paper-dom-actual-recovery.snapshot.json`；这是现有公开原件的实际 DOM 解析，没有声明本次重新获取网页或原生模型。最初空 JSON 与 `fetch failed` 原件继续保留。
+
+## 人工项目准入的逐项固定引用检查
+
+SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383` 已普通 push。当前构造为 `NewHumanProjectAccess(actualLocalProjects, actualAttentionProjectReferences)`，任一真实端口缺失立即失败。每项来源通过原 `ReadProjectReference` 检查当前所选项目空间、准确 revision 和生命周期。H 的既有 `AdmissionProjects` 保留人工 / delegated 当前 owner 和逐项 `ReadSelected` 的完整检查；B 组件没有替换该生产装配。
+
+显式 `ASTROCYTE_TEST_PUBLIC_PAPER_SNAPSHOT` 选择本树实际 DOM 生成的 `.verification/paper-dom-actual-recovery.snapshot.json` 绝对路径后，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` 第二次 EXIT 0，包 2.973s；`.verification/admission-fixed-reference-actual-second.log`。测试通过实际 `paper_snapshot` 生产导入保存公开来源，核未加入空间时拒绝、实际加入后同事务允许、零额外连接和实际撤回后拒绝；之前项目、角色、另一实际数据库和取消检查全部保持。第一轮在实际加入资料使 Material version 前进后，旧 expected version 撤回触发 `version_conflict`，原件保留于 `admission-fixed-reference-actual-first.log`；当前撤回读取实际最新版本。
+
+全包 build、目标包 vet、Go 格式与 diff 检查均 EXIT 0，日志 `.verification/admission-fixed-reference-build-first.log`、`admission-fixed-reference-vet-first.log`。该实际公开输入是默认检查需要明确提供的来源，缺少时直接失败，没有新增 skip、替代资料或模型。原 H 同实例的准入 UI / HTTP 与全部源码的完整默认检查仍待原负责人执行。
+
+## 既存公开推断收据的实际存储检查
+
+SOURCE `82426bab2c405e1a1a2184801a60fa4e98985c2b` 已普通 push，仅更改进度存储测试和该 adapter 的中文注释。测试使用实际 migrations，既有公开 README 推断结果由 SQLite `mode=ro` 连接按固定 project ID 读取一条进度及一条项目元数据；Grant、token 和原生原档没有读取或复制。新自有数据库保存原项目元数据和准确推断字段，新的本库投影 CAS revision 从 1 开始，随后由真实人工进度服务更新为 review / 50%，原 accepted 推断收据全部保持。全部字段的 round trip、实际旧版本 INSERT 拒绝、人工更新、原项目保持以及零 Grant / Session 覆盖保留。
+
+`ASTROCYTE_TEST_PUBLIC_PROGRESS_DB` 必须明确选择本树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 的绝对路径。`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestProgressStorageRoundTripAndCAS$' -v -count=1` 第二次 EXIT 0，包 2.699s，`.verification/progress-storage-actual-source-second.log`；第一次 Windows file URI authority 错误保留于 `progress-storage-actual-source-first.log`。目标包 vet、Go 格式和 diff 检查 EXIT 0，日志 `progress-storage-actual-source-vet-first.log`。本 SOURCE 的生产部分只有注释，最近完整 build 记录仍为上一节 SOURCE。
+
+该结果只覆盖历史持久化和人工 CAS。旧实际 `native_id`、模型元数据及原 accepted 回执保持原来源，旧原件完整度 / EffectiveToolSet 继续 unknown，没有向新 Registry 登记原控制器、创建新推断、发送模型输入或宣称当前原生来源已验收。正式库、共享产品库及实验原件没有读取或修改。需要完整默认检查的负责人已收到两个实际公开输入参数及本机准确指针，缺少前置时直接失败。

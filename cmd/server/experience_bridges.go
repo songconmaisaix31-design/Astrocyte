@@ -10,16 +10,63 @@ import (
 	workspacedomain "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-// HTTP selects an existing trusted project context. The body cannot register
-// a project or grant an Agent scope; MCP uses its separate startup binding.
+// HTTP 使用已注册的可信项目；MCP 使用独立的启动绑定。
 type experienceHTTPBridge struct {
 	db         *sqlite.DB
 	events     attentionapp.EventReader
 	projects   workspaceapp.LocalProjects
 	registered workspaceapp.RegisteredProjects
+
+	completionSources     attentionapp.ExperienceCompletionReader
+	completionInterpreter attentionapp.CompletionExperienceInterpreter
 }
 
 var _ attentionapp.ExperienceGovernanceService = (*experienceHTTPBridge)(nil)
+var _ attentionapp.CompletionExperienceGovernance = (*experienceHTTPBridge)(nil)
+
+// 完成经验的 owner 始终使用 LocalProject.ID，不接收目录或发现页身份替代。
+func (b *experienceHTTPBridge) completionService(ctx context.Context, p attentionapp.Principal, projectID string) (*attentionapp.AcceptedExperienceService, error) {
+	denied := &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "Completion experience requires a current human and actual registered local project identity", RequiredAction: "select_registered_project"}
+	if p.Kind != "human" || p.ID == "" || projectID == "" || b.projects == nil {
+		return nil, denied
+	}
+	projects, err := b.projects.ListProjects(ctx, workspacedomain.Caller{Kind: p.Kind, ID: p.ID})
+	if err != nil {
+		return nil, err
+	}
+	known := false
+	for _, project := range projects {
+		if project.ID == projectID {
+			known = true
+			break
+		}
+	}
+	if !known {
+		return nil, denied
+	}
+	if b.db == nil {
+		return nil, apierrors.NewUnsupported("actual_completion_experience_source")
+	}
+	repository := sqlite.NewAcceptedExperienceRepository(b.db)
+	governance := attentionapp.NewExperienceService(repository, b.events, attentionapp.ExperienceOptions{ProjectID: projectID})
+	return attentionapp.NewAcceptedExperienceService(governance, repository, b.completionSources, b.completionInterpreter), nil
+}
+
+func (b *experienceHTTPBridge) CaptureCompletionExperience(ctx context.Context, p attentionapp.Principal, command attentionapp.CaptureCompletionExperienceCommand) (attentionapp.StoredExperience, error) {
+	service, err := b.completionService(ctx, p, command.LocalProjectID)
+	if err != nil {
+		return attentionapp.StoredExperience{}, err
+	}
+	return service.CaptureCompletionExperience(ctx, p, command)
+}
+
+func (b *experienceHTTPBridge) ResolveExperienceEvidence(ctx context.Context, p attentionapp.Principal, id, projectID string) ([]attentionapp.SafeExperienceEvidence, error) {
+	service, err := b.completionService(ctx, p, projectID)
+	if err != nil {
+		return nil, err
+	}
+	return service.ResolveEvidence(ctx, p, id, projectID)
+}
 
 func (b *experienceHTTPBridge) service(ctx context.Context, p attentionapp.Principal, project string) (*attentionapp.ExperienceService, error) {
 	denied := &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "Experience requires a trusted registered project context", RequiredAction: "select_registered_project"}
@@ -61,7 +108,10 @@ func (b *experienceHTTPBridge) service(ctx context.Context, p attentionapp.Princ
 	if !known {
 		return nil, denied
 	}
-	return attentionapp.NewExperienceService(sqlite.NewExperienceRepository(b.db), b.events, attentionapp.ExperienceOptions{ProjectID: project}), nil
+	if b.db == nil {
+		return nil, apierrors.NewUnsupported("experience_persistence")
+	}
+	return attentionapp.NewExperienceService(sqlite.NewAcceptedExperienceRepository(b.db), b.events, attentionapp.ExperienceOptions{ProjectID: project}), nil
 }
 
 func (b *experienceHTTPBridge) ApproveExperience(ctx context.Context, p attentionapp.Principal, id string, c attentionapp.ApproveExperienceCommand) (attentionapp.ExperienceResult, error) {

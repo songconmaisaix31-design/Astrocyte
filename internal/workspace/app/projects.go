@@ -26,6 +26,11 @@ type localProjectService struct {
 	refs            ProjectReferences
 	files           ProjectFiles
 	registry        NativeRegistry
+
+	nativeMessageMu      sync.RWMutex
+	nativeMessageOptions nativeMessageOptions
+
+	repositoryCleanup projectCleanupNotifier
 }
 
 func NewLocalProjectService(repo LocalProjectRepository, refs ProjectReferences, files ProjectFiles, registry NativeRegistry) *localProjectService {
@@ -152,8 +157,7 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 			return p, err
 		}
 	}
-	// This adapter currently supplies selected context only. Never accept a tool
-	// setting which the chosen native protocol cannot enforce as a bounded scope.
+	// 当前 adapter 只提供选定上下文，拒绝原生协议无法限制范围的工具配置。
 	if len(cmd.Settings.AllowedTools) > 0 {
 		return p, projectError(apierrors.UnsupportedCapability, "native filesystem and command tools are not scoped by this adapter")
 	}
@@ -172,6 +176,9 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 	}
 	p.Settings = cmd.Settings
 	if err := s.repo.SaveProject(ctx, p, cmd.ExpectedRevision); err != nil {
+		return p, err
+	}
+	if err := s.wakeRepositoryCleanupAfterCommit(ctx); err != nil {
 		return p, err
 	}
 	sessions, err := s.repo.ListSessions(ctx, id)
@@ -607,48 +614,7 @@ func (s *localProjectService) ResumeNativeSession(ctx context.Context, c domain.
 func (s *localProjectService) SendNativeMessage(ctx context.Context, c domain.Caller, projectID, sessionID, message string) (domain.NativeObservation, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	p, session, a, err := s.session(ctx, c, projectID, sessionID, "send")
-	if err != nil {
-		return domain.NativeObservation{}, err
-	}
-	if err := s.nativePermission(ctx, c, p, session.CLI, "send"); err != nil {
-		return domain.NativeObservation{}, err
-	}
-	if err := s.checkPacket(ctx, c, p, session.ContextPacket); err != nil {
-		return domain.NativeObservation{}, err
-	}
-	op, err := operationID(c, domain.NativeCommand{})
-	if err != nil {
-		return domain.NativeObservation{}, err
-	}
-	if receipt, ok := session.Operations[op]; ok {
-		if receipt.Status != "accepted" {
-			return domain.NativeObservation{}, projectError(apierrors.DeliveryUnknown, "original native command delivery remains unknown")
-		}
-		return a.Observe(ctx, session)
-	}
-	if session.PendingOperation != "" || session.StopConfirmed {
-		return domain.NativeObservation{}, projectError(apierrors.DeliveryUnknown, "native session has unknown delivery or has stopped")
-	}
-	if strings.TrimSpace(message) == "" || len(message) > 64*1024 {
-		return domain.NativeObservation{}, projectError(apierrors.ValidationFailed, "native message is empty or exceeds 64 KiB")
-	}
-	session.PendingOperation = op
-	if session.Operations == nil {
-		session.Operations = map[string]domain.NativeOperation{}
-	}
-	if len(session.Operations) >= 64 {
-		return domain.NativeObservation{}, projectError(apierrors.BudgetExhausted, "native session command receipt bound reached")
-	}
-	session.Operations[op] = domain.NativeOperation{Action: "send", Status: "pending", CreatedAt: time.Now().UTC()}
-	if err := s.repo.SaveSession(ctx, session); err != nil {
-		return domain.NativeObservation{}, err
-	}
-	obs, err := a.Send(ctx, session, message)
-	session.Status = obs.Status
-	session.StopConfirmed = obs.StopConfirmed
-	_, saveErr := s.finishNative(ctx, session, op, err)
-	return obs, saveErr
+	return s.sendPreparedNativeMessage(ctx, c, projectID, sessionID, message)
 }
 func (s *localProjectService) stopOwned(ctx context.Context, session domain.NativeSession) error {
 	if session.Ownership != "owned" {
@@ -676,8 +642,8 @@ func (s *localProjectService) stopOwned(ctx context.Context, session domain.Nati
 	return err
 }
 
-// Shutdown persists positive owned exits before the entrypoint closes SQLite.
-// A stale row from an unclean restart remains unconfirmed; absence is no proof.
+// Shutdown 在入口关闭 SQLite 前保存自有进程的明确退出结果。
+// 异常重启遗留记录继续保持未确认。
 func (s *localProjectService) Shutdown(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -717,8 +683,7 @@ func (s *localProjectService) CheckProjectModel(ctx context.Context, c domain.Ca
 	return p, nil
 }
 
-// Probe is explicit human interaction, never an inventory GET or startup scan.
-// It performs no model turn and stops the owned process before returning.
+// Probe 由人工明确触发，使用空输入启动自有控制器并在返回前停止。
 func (s *localProjectService) ProbeNativeCLI(ctx context.Context, c domain.Caller, projectID, cli string) (domain.NativeSession, error) {
 	if err := human(c); err != nil {
 		return domain.NativeSession{}, err

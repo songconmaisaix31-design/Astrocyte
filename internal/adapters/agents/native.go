@@ -343,6 +343,11 @@ func (n *Native) startWithInputGuard(ctx context.Context, r domain.NativeRequest
 	if err := ctx.Err(); err != nil {
 		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
 	}
+	if r.Command.Message != "" || guard != nil || n.relayInputGuard != nil {
+		if err := relayNativeToolsDisabled(n.id); err != nil {
+			return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+		}
+	}
 	if n.relayInputGuard != nil {
 		if operation == "" {
 			return r.Session, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.ValidationFailed, "guarded native startup operation is required")}
@@ -367,6 +372,9 @@ func (n *Native) startWithInputGuard(ctx context.Context, r domain.NativeRequest
 	s.Status = "starting"
 	s.StopConfirmed = false
 	s.Limitations = []string{"cooperative native CLI; no operating-system read isolation guarantee", "filesystem and command tools disabled; only explicitly delivered fixed context", "existing external sessions are not taken over"}
+	if n.id == "codex" {
+		s.Limitations[1] = "native file tool disablement unavailable through the configured app-server; restricted model input is denied"
+	}
 	n.mu.Lock()
 	existing, ok := n.processes[s.ID]
 	n.mu.Unlock()
@@ -605,6 +613,9 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 	p, err := n.get(s)
 	if err != nil {
 		return domain.NativeObservation{}, err
+	}
+	if err := relayNativeToolsDisabled(n.id); err != nil {
+		return domain.NativeObservation{}, &domain.RelayInputNotSubmitted{Cause: err}
 	}
 	p.operationMu.Lock()
 	defer p.operationMu.Unlock()

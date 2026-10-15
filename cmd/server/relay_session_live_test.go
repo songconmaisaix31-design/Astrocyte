@@ -26,6 +26,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -278,6 +279,7 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
+	sourceChecks := map[string]bool{}
 	for {
 		select {
 		case err := <-serveDone:
@@ -285,7 +287,7 @@ func TestRelaySessionActualService(t *testing.T) {
 			t.Fatal("实际 HTTP 服务提前终止")
 		case <-ticker.C:
 			if executionStore != nil {
-				captureActualRelayExecutions(t, ctx, registry, executionStore, evidence)
+				captureActualRelayExecutions(t, ctx, registry, executionStore, evidence, wrapped, sourceChecks)
 			}
 			_, err := os.Stat(filepath.Join(evidence, "shutdown"))
 			if err == nil {
@@ -308,11 +310,15 @@ func TestRelaySessionActualService(t *testing.T) {
 }
 
 // 仅取当前 Registry 原控制器和 SQLite 实际会话，不从原生 ID 重建进程。
-func captureActualRelayExecutions(t *testing.T, ctx context.Context, registry *agents.Registry, store *sqlite.RelayStore, evidence string) {
+func captureActualRelayExecutions(t *testing.T, ctx context.Context, registry *agents.Registry, store *sqlite.RelayStore, evidence string, runtime *relaySessionRuntime, checked map[string]bool) {
 	t.Helper()
 	state, err := store.Snapshot(ctx)
 	if err != nil {
 		t.Fatal("实际进程证据的 SQLite 快照读取失败")
+	}
+	bindings, err := runtime.collector.owned.ListOwnedRelaySessions(ctx)
+	if err != nil {
+		t.Fatal("实际正选来源的当前权限读取失败")
 	}
 	for taskID, task := range state.Tasks {
 		session, ok := state.Sessions[task.TerminalID]
@@ -334,7 +340,69 @@ func captureActualRelayExecutions(t *testing.T, ctx context.Context, registry *a
 			t.Fatal("实际原控制器进程证据核对失败")
 		}
 		writeActualJSON(t, filepath.Join(evidence, "execution-"+taskID+"-derived.json"), map[string]any{"task_id": taskID, "observed_at": time.Now().UTC(), "execution": execution})
+		controller := state.ControllerEvidence[taskID]
+		prepared := false
+		for _, receipt := range state.Receipts {
+			if receipt.TaskID == taskID && receipt.Action == "prepare" && receipt.OperationID == controller.StartupOperationID && receipt.Status == "accepted" {
+				prepared = true
+			}
+		}
+		if !prepared || task.State != domain.RelayReady || state.PendingActions[taskID] != "" || session.StopConfirmed {
+			continue
+		}
+		key := taskID + ":" + controller.ControllerID + ":" + controller.StartupOperationID
+		if checked[key] {
+			continue
+		}
+		checked[key] = true
+		guardErr := checkActualPreparedRelaySource(ctx, registry, runtime.sourceGuard, task, session, controller, bindings)
+		reason := ""
+		if guardErr != nil {
+			reason = "source_preflight_unverified"
+			var failure *apierrors.ServiceError
+			if errors.As(guardErr, &failure) {
+				reason = string(failure.Code)
+				switch failure.Message {
+				case "original_controller_identity_unverified", "original_controller_identity_changed", "original_controller_metadata_unsupported", "original_tool_closure_unverified", "original_archive_not_yet_available", "original_archive_identity_changed", "original_archive_unavailable", "original_workspace_unavailable", "original_archive_workspace_changed", "original_source_identity_changed":
+					reason = failure.Message
+				}
+			} else if strings.HasPrefix(guardErr.Error(), "relay session capture: ") {
+				reason = sessionPublicGap(strings.TrimPrefix(guardErr.Error(), "relay session capture: "))
+			}
+		}
+		writeActualJSON(t, filepath.Join(evidence, "source-preflight-"+taskID+"-private.json"), map[string]any{"task_id": taskID, "project_id": task.ProjectID, "worktree_id": task.WorktreeID, "terminal_id": task.TerminalID, "controller_id": controller.ControllerID, "startup_operation_id": controller.StartupOperationID, "session_id": session.ID, "native_id": session.NativeID, "observed_at": time.Now().UTC(), "passed": guardErr == nil, "reason": reason, "input_turns": len(controller.Turns)})
+		if guardErr != nil {
+			t.Fatal("空初始化的实际来源或工具策略未确认；原失败已保存，禁止提交输入")
+		}
 	}
+}
+
+// 只消费本次原 Registry 缓存和已授权绑定，不调用 RPC 或改变原 Prepare 收据。
+func checkActualPreparedRelaySource(ctx context.Context, registry *agents.Registry, guard *relaySourceGuard, task domain.RelayTask, session domain.NativeSession, controller domain.RelayControllerEvidence, bindings []domain.RelayOwnedSession) error {
+	if guard == nil || controller.ControllerID == "" || controller.StartupOperationID == "" || len(controller.Turns) != 0 {
+		return &apierrors.ServiceError{Code: apierrors.EvidenceMissing}
+	}
+	original, err := registry.ReadOwnedNativeSession(ctx, session.ID)
+	if err != nil {
+		return err
+	}
+	if original.Session.ID != session.ID || original.Session.NativeID != session.NativeID || original.Session.ProjectID != task.ProjectID || original.Evidence.ControllerID != controller.ControllerID || original.Evidence.StartupOperationID != controller.StartupOperationID || len(original.Evidence.Turns) != 0 {
+		return &apierrors.ServiceError{Code: apierrors.ScopeDenied}
+	}
+	for _, bound := range bindings {
+		if bound.TaskID != task.ID {
+			continue
+		}
+		if bound.Ownership != "owned" || bound.SessionID != session.ID || bound.NativeID != session.NativeID || bound.ControllerID != controller.ControllerID || bound.StartupOperationID != controller.StartupOperationID {
+			return &apierrors.ServiceError{Code: apierrors.ScopeDenied}
+		}
+		if bound.SourceStatus != "available" || bound.Gap != "" {
+			return guard.Check(ctx, original.Session, nil, bound.Gap)
+		}
+		archive := domain.RelaySessionArchive{SessionID: bound.SessionID, NativeID: bound.NativeID, WorkspaceRoot: bound.WorkspaceRoot, Path: bound.ArchivePath, Root: bound.ArchiveRoot, Format: bound.ArchiveFormat}
+		return guard.Check(ctx, original.Session, &archive, "")
+	}
+	return &apierrors.ServiceError{Code: apierrors.ScopeDenied}
 }
 
 type actualRelayHTTP struct {

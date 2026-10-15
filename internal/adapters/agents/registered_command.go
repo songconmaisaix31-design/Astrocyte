@@ -13,8 +13,7 @@ import (
 	"time"
 )
 
-// Only fixed read commands are callable. Neither a request nor repository
-// contents can select executable names, arguments, hooks or a remote operation.
+// 仅调用固定读取命令，程序及参数由此处明确指定。
 func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, error) {
 	tool, args, limit := "git", []string{}, 64*1024
 	switch kind {
@@ -46,8 +45,7 @@ func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, erro
 	if err != nil {
 		return nil, err
 	}
-	// No shell wrapper or command interpolation. Orca's installed public binary
-	// is used; an unverified wrapper stays explicitly unavailable.
+	// 直接使用已安装的公开程序入口，脚本包装入口保持不可用。
 	if ext := strings.ToLower(filepath.Ext(entry)); ext == ".cmd" || ext == ".bat" || ext == ".ps1" {
 		return nil, errors.New("read-only binary entrypoint unavailable")
 	}
@@ -55,8 +53,7 @@ func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, erro
 	cmd.Env = []string{}
 	for _, env := range os.Environ() {
 		key, _, _ := strings.Cut(env, "=")
-		// Git command environment must not redirect the repository/index/config,
-		// enable tracing sensitive config or invoke an inherited pager/helper.
+		// Git 子环境移除仓库、索引、配置及外部程序重定向。
 		if !strings.HasPrefix(strings.ToUpper(key), "GIT_") {
 			cmd.Env = append(cmd.Env, env)
 		}
@@ -66,8 +63,7 @@ func registeredReadCommand(ctx context.Context, kind, root string) ([]byte, erro
 }
 
 func registeredOrcaCommand() string {
-	// Entrypoint environment only; no HTTP caller can supply a binary or args.
-	// Linux's unrelated GNOME `orca` must never be launched as an IDE source.
+	// 启动环境明确选择 Orca 入口，Linux 使用 Orca IDE 的程序名称。
 	if configured := os.Getenv("ORCA_CLI_COMMAND"); configured != "" {
 		return configured
 	}
