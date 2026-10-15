@@ -53,13 +53,17 @@ done 必须由原产品界面的人工确认执行。固定目标的实际输出
 
 structured 接入必须取得本次 owned 控制器的初始化和正确会话建立确认，再按对应真实协议提交输入。GET只读已观察的状态，不因页面刷新启动、probe 或恢复控制器。每个客户端的真实协议边界保留来源证据，不能把另一个 provider 的信号迁移成相同的原生身份。
 
-2026-10-15 总负责人正式答复 `msg_a1839d29aa46` 授权原 R 补齐 Relay 同一控制器的两阶段端口，优先于 L Interpreter 工程适配。当前 Relay ConfirmIntent 会携带非空首输入启动，LocalProject 的空 Message session 尚无接入 Relay task 的生产端口；本轮沿既有 Relay service、store、operation、Registry 和真实控制器完成初始化与首次输入的衔接。H 维护唯一生产组装与公共契约，F 继续唯一实际界面操作；接口名称与准确签名由 R/H 随精确 SOURCE 交接。
+2026-10-15 总负责人正式答复 `msg_a1839d29aa46` 授权原 R 补齐 Relay 同一控制器的两阶段端口，优先于 L Interpreter 工程适配。本轮沿既有 Relay service、store、operation、Registry 和真实控制器完成初始化与首次输入的衔接。H 维护唯一生产组装与公共契约，F 继续唯一实际界面操作；接口名称与准确签名由 R/H 随精确 SOURCE 交接。
 
 初始化阶段使用空 Message，不调用模型，记录真实初始化、原 native 身份、原控制器及本次准备 operation 关系。初始化不产生输入已发送、模型已开始、目标完成或人工 done 事实。正选 metadata 尚未可用时如实表示 NotYetAvailable，不另起探针、不更换控制器或档案补齐。初始化失败、来源拒绝、进程退出与恢复后的所有权不足分别保留实际结果；未核实的初始化不能进入首次输入。
 
 首次输入必须复用上述原控制器和原 native 会话，并通过当前权限 revision、CAS、预算、准确 input operation、来源 guard、实际工具关闭及固定上下文检查。空初始化后的 generic Send 同样必须核查首输入来源，并将实际批准的固定上下文交给本次输入；仅配置回调不能作为运行证据。错误在模型请求前明确拒绝时保留该拒绝；已受理后未知继续占用原 operation，不重复发送、不创建替代会话。重复或并发首次输入不能产生第二次提交。
 
 总负责人正式答复 `msg_e8f75be9692e` 确认实际单一 Registry 时序：F 在同 URL 确认空 agents 与 observer ready → H 唯一真实登记并保存当刻 t0 → F CreateIntent / PrepareIntent 以空 Message 初始化同一控制器 → H 核实际正选来源与工具关闭 → F 原 Confirm 提交首次输入。初始化、来源检查和准备耗时全部计入同一个三分钟，t0 不重记；不隐藏登记、不预热其他控制器、不创建第二 Registry 或 generic 替代会话。source guard 必须先于任何模型输入。当前固定目标为公开 Go 项目 baseline `da3bdddb085808863090a05f60cc1c64415039cf` 的四个批准文件，保留 Mean 并实现 Median。初始化与首输入之间的身份、授权和来源变化均须重新核查；后继第二 native / handoff 独立记录，不混入首个三分钟窗口。
+
+总负责人正式答复 `msg_c818d5461146` 授权原 R 在原 RelayService / Store / Receipts 与原写域内实现内部可信 `RegisterTrustedAgents`，原 H 复用 `relayConfiguration` 的成熟 JSON 解析和固定可信 `agents.json`，提供同一服务实例的实际重载路径。保持唯一 Service / Registry / store / controller；不重启或新建实例替代空登记阶段，不新增 schema、调度器或接受 HTTP 命令 / 路径 / argv 的入口。完整登记快照须先校验和复制，再原子发布并保护并发读取；错误立即返回，不部分激活或沿旧配置声称新登记成功。重登记不得改变在途 operation / intent / controller 的身份、执行策略或权限，冲突沿现有版本和占用规则拒绝。
+
+唯一 t0 为 F 在同 URL 确认空 agents 且 observer ready 后，H 首次实际写入本次目标 Agent 完整可信登记的开始时刻。另保留实际写入完成、解析 / reload 与首次激活时刻，全部耗时计入原 180 秒，失败和重载不重记 t0。空文件创建、文件 mtime、预先写好的登记或激活后新取时间均不能作为起点。R 交准确 SOURCE / 独立 REPORT，H 消费后验证真实 SQLite / HTTP、同实例更新、失败与并发，再交 F 准确契约。Calls / Known 两项用户待答约束保持；当前只开发与独立验证，不提前开始登记窗口或发送模型输入。
 
 非交互 stdin 接入必须符合可信启动策略、实际 argv、原工作区和当前 owned 输入通道。pipe 可写、写入完成、EOF 提交完成、客户端接受与客户端消费是不同事实。stdin_eof 只有一次首输入；关闭后的 send 明确拒绝，不改变 framing 重新投递。实际输入消费没有协议证据时保持 unknown。
 
@@ -96,8 +100,8 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 | 人员 | 固定工作树 / 分支 | 本轮责任 |
 |---|---|---|
 | 模块负责人 | module-relay-20261014 / songconmaisaix31-design/module-relay-20261014 | 只写本文与 docs/modules/relay.md，管理开发、语义决定和实际验收 |
-| 原 R | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native / terminal adapters 的证据和关系；当前 task_f082d8b36471 / ctx_aa83ef2b5087 |
-| 原 H | works-relay-http / songconmaisaix31-design/works-relay-http | port0阶段 task_abf1f8b1e12e / ctx_d7d8c2828fba 已 succeeded 结算；当前同终端新 task_3004b636a3ab / ctx_e1a8ebeeea83 处理来源、HTTP、OpenAPI 与实际采集 |
+| 原 R | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native / terminal adapters 的证据和关系；当前 task_f082d8b36471 / ctx_99b96d053325 |
+| 原 H | works-relay-http / songconmaisaix31-design/works-relay-http | 当前 task_3004b636a3ab / ctx_e7abbaf902da 处理来源、HTTP、OpenAPI 与实际采集；历史阶段与恢复记录见模块管理文档 |
 | 原 F / B | 由产品负责人持续管理原树 / 分支 | F 消费准确契约并独占 UI 操作；B 独占依赖、config.go、普通后端与 tests/s1 helper |
 
 原 H 的 port0 阶段先完成真实验证和 SOURCE / 独立 REPORT；既有活跃人员不中断，不安排第二 H。同 owner 连续任务或合法结算交接后的新 Task 仍保持原树、分支、终端及写域。源码接口未精确交付前，消费者不采用 WIP；领域问题交原 owner，集成人员只补必要薄组装。
