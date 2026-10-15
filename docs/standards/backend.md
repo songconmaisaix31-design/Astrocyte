@@ -284,6 +284,12 @@ SOURCE `efa137eb36177f69643c750c26ad8eb59b446741` 已普通 push，仅修改 `te
 
 根已将 `internal/adapters/httpapi/judgment*.go` 及同前缀测试交唯一原 S5；B 本人确认该前缀无文件/WIP，并已停止写入。B 继续共享依赖、迁移及 `config.go`，S4 可信配置等待其原负责人准确接口与资产交接。冷 Registry 原生会话测试整改等待实际自有项目和原会话来源，真实 Interpreter、人工批准后使用及全部组合验收仍未完成；没有以机制通过替代这些结果。
 
+## 模型身份与独立版本的实际来源
+
+SOURCE `f76e25b84b29495994f2e5877b586d4c22669d3f` 已普通 push。`ExperienceInterpretationProvenance` 新增 `ModelIdentitySource` 和 `ModelVersionSource`；模型身份明确区分 `configured_route` 与 `provider_reported`，独立版本不可观测时两个版本字段均保存 `unknown`。已知独立版本仅接受实际 provider 报告，禁止重复模型 ID。完整响应、明确非拒绝/非截断、原 `OperationID`、policy 与真实完成来源要求保持，候选仍进入 `quarantine`。
+
+`go test -mod=readonly -p=1 ./internal/attention/app ./internal/adapters/sqlite -run '^(TestCompletionInterpretationRules|TestAcceptedExperience)' -v -count=1` EXIT 0，规则检查及三项实际 SQLite 检查通过，日志 `.verification/completion-model-identity-rule-first.log`；SQLite 最终 16.237s。新增规则检查仅使用明确输入和期望值，没有模型调用、控制器或来源收据。`go build -mod=readonly -p=1 ./...`、目标包 `go vet`、两文件 `gofmt -l` 和 `git diff --check` 均 EXIT 0，无格式输出；全部 Go 命令沿进程级 D 盘缓存与临时目录。实际 R Interpreter 与来源桥接仍未运行，不据此宣称原生验收或不可变模型复现。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
