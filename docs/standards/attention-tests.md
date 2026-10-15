@@ -4,6 +4,29 @@
 
 本轨唯一写入范围为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 和本文件；生产、依赖、native/relay 与其他测试归原人员。旧原件保留本树已忽略 `.verification`；00:36 阶段证据保留 `D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_1ad6d580f95f/.verification`。04:20 阶段的新数据库、对象、二进制、HTTP 原件与日志写入独占 `D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_7860ae02e15d/.verification`，不纳入 Git 或产品接口。
 
+## 04:51 真实主入口的完成来源与同库重启
+
+模块 `msg_330a12532102` 交 H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8`。本轨先只读完整准确改动及五项实际 HTTP 报告，未重复其装配、准入、权限与快照组件。精确未覆盖触发通过 `msg_60971cbf6b43` 报告，模块 `msg_2241be34ab67` 确认补充实际 `cmd/server` 的 `ASTROCYTE_RELAY=1` 主入口及同库进程重启。清洁检查点预检查 EXIT0，普通 `--no-ff` 消费 H SOURCE 为 `fd8b30d52cfca288ae80d05ee8c25792f43494ce`，零冲突，未手工修改生产或外域文件。
+
+SOURCE `5d701bdd7f4d6696a1f730f21c47f84d222dd6cd` 已普通 push，唯一新源码修改为 `tests/s1/automatic_test.go`。`TestProductionCompletionHTTPMissingSourceSurvivesProcessRestart` 实际构建并启动主服务，启用 archive Relay，LOCALAPPDATA 显式使用本用例的 owned `relay-local`，主库位于其 access 根下 `app-state/state.sqlite`，独立 Relay 库为同 access 根下 `relay.sqlite`。原其他 S1 用例继续采用其明确配置；这个选项没有打开原生控制器或发送模型输入。
+
+用例通过真实 HTTP 创建空间并登记获准公开 Git 项目，以认证 human 发出包含明确缺失 UUID 的原捕获命令。实际主入口的完成来源已连接原 RelayStore，返回 HTTP404 / `not_found`，并提供当前请求标识。独立读取实际主库和 RelayStore 后，完整项目、原命令回执及事件数量、全部 Relay 状态保持；经验候选、完成来源、作业、原生会话和 Relay 执行记录均为零。终止主服务并等待退出后，以同一二进制、主库和独立 Relay 库重启，重新取得真实 HTTP session；相同原 command / EventID / IdempotencyKey 继续返回原缺失来源，全部原状态和零副作用断言保持。没有创建完成事件、替代原生协议或 Interpreter 输出。
+
+首实际运行在 readiness 前 RED，业务请求未发送；原件完整保留。当前用例明确遵守生产 access 根配置，生产 `resolveRelayDataDir` 保护保持。诊断通过 Go 官方 `go/parser` / AST 提取固定源码错误语句，只输出安全派生；原服务错误未输出。没有重试同一失败配置或改变 DNS / SSL / OS 权限。
+
+下表日志相对于本轨独占 `D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_7860ae02e15d/.verification`，Go 进程环境沿上一节相同配置。
+
+| 实际命令 | 结果 | 本机日志和数据库 |
+|---|---|---|
+| `git merge-tree --write-tree --name-only --messages HEAD 25b341dd5a6b74cc2588d12544eb955235f9274c` | EXIT0，后续普通合并零冲突 | `h25b-merge-precheck.log` |
+| `go test -mod=readonly ./tests/s1 -run '^TestProductionCompletionHTTPMissingSourceSurvivesProcessRestart$' -count=1 -v -timeout=15m`，首次 | RED，40.967s；readiness 前退出，业务和模型未执行 | `completion-production-main-first.log`；`s1-native-3214301151/server.log` |
+| 同一命令，当前明确配置 | PASS，30.116s；实际生产构建 / HTTP / 同库进程重启 | `completion-production-main-second.log`；`s1-native-2475855521/server.log`，其 `relay-local/astrocyte-workbench/v0.2-access/app-state/state.sqlite` 与 `relay.sqlite` |
+| `go vet -mod=readonly ./tests/s1` | EXIT0 | `completion-production-main-vet.log` |
+| `gofmt -l tests/s1/automatic_test.go`、`git diff --check` | 无输出，EXIT0 | 当前源码检查 |
+| SOURCE 普通 push | EXIT0 | `completion-main-source-push-first.log` |
+
+当前真实主入口已验证完成来源注入与缺失来源的重启拒绝；Interpreter 尚未配置，真实完成证据的正向捕获仍 NOT_RUN。原 H 五项、原成功 Taste、Sources 推理与受限原生没有重复运行，共享 64505 未操作。原十四项、S1 原生 unknown 和整改后相关两包完整运行仍 NOT_RUN，全部原成功 / 首失败 / 未知断言保留；本轨继续准确来源与必要返修，不以本节定向通过结算整体 Task 或全产品验收。
+
 ## 04:20 Taste 生产复验与 completion 实际组件
 
 按模块 `msg_48f7e7dd5c29` / `msg_dbd1e64f0946`，清洁检查点分别预检查并普通 `--no-ff` 消费准确 I `b73dc79e7c59a9192ec2bfbd3625a620d8304efb` 和 B `faee82ec7a3f4e0c832bb198d1c42393ae88ea02`。预检查均 EXIT0，实际合并零冲突，组合为 `5c5c8d4ebc799ec029188e9bcfc99b3459d812f7`；未手工修改生产、依赖或其他人员测试。H 的 Taste 装配 `67fb5f2` 和后继 `3569f5d` 已包含在该准确 I 来源中。
