@@ -538,6 +538,10 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 			m.State = "running"
 			m.Reserved = reserved
 			out = domain.Lease{ContextPacketID: binding.PacketID, BindingID: c.BindingID, WorkItemID: w.ID, MissionID: m.ID, ProjectID: g.ProjectID, HolderID: p.ID, Fence: w.Fence, OperationID: c.OperationID, SessionID: c.SessionID, MemberVersion: c.MemberVersion, Worktree: c.Worktree, BaseCommit: baseCommit, WritePaths: w.WritePaths, Reserved: c.Resources, ExpiresAt: c.ExpiresAt, PolicyVersion: domain.LocalPolicyVersion}
+			out.NativeSessionID = binding.NativeSessionID
+			out.AdapterID = binding.AdapterID
+			out.ControllerID = binding.ControllerID
+			out.StartupOperationID = binding.StartupOperationID
 			if err = tx.SaveMission(m, oldM); err != nil {
 				return err
 			}
