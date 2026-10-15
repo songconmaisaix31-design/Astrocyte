@@ -16,6 +16,18 @@ const sdkEntry = join(root, '.verification/s5/upstream/laya/laya-ts/dist/index.j
 const { createMessageConnection, StreamMessageReader, StreamMessageWriter } = await import(pathToFileURL(rpcEntry).href);
 const source = await readFile(join(root, '.verification/s5/upstream/laya/laya-ts/README.md'), 'utf8');
 const state = source.slice(0, source.indexOf('## Node'));
+async function measuredDeadline(pending, milliseconds, phase) {
+  const started = performance.now();
+  let timer;
+  try {
+    const value = await Promise.race([pending, new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${phase} exceeded ${milliseconds}ms`)), milliseconds);
+    })]);
+    return { value, elapsed_ms: performance.now() - started };
+  } finally {
+    clearTimeout(timer);
+  }
+}
 let proxy;
 if (mode === 'http-proxy') {
   const server = createServer();
@@ -37,7 +49,8 @@ for (const round of [1, 2]) {
   connection.listen();
   const timeout = setTimeout(() => child.kill(), 120000);
   try {
-    const health = await connection.sendRequest('judgment/health');
+    const startup = await measuredDeadline(connection.sendRequest('judgment/health'), 60000, 'CPU worker startup');
+    const health = startup.value;
     const network = JSON.parse(await readFile(networkEvidence, 'utf8'));
     assert.equal(network.pid, child.pid);
     assert.equal(health.pid, child.pid);
@@ -50,21 +63,26 @@ for (const round of [1, 2]) {
       { question_id: 'detail', question_type: 'score', instructions: 'How explicit is the export verification?', levels: ['No verification', 'Verification without tolerance', 'Verification with numerical tolerance'] },
     ];
     const answers = [];
+    const evaluationTimes = [];
     for (const question of questions) {
-      const answer = await connection.sendRequest('judgment/evaluate', { question, state, language: 'en', model_revision: health.model_revision, budget: { timeout_ms: 60000, max_input_bytes: 131072, max_input_tokens: 2048, max_output_tokens: 0 } });
+      const evaluation = await measuredDeadline(connection.sendRequest('judgment/evaluate', { question, state, language: 'en', model_revision: health.model_revision, budget: { timeout_ms: 60000, max_input_bytes: 131072, max_input_tokens: 2048, max_output_tokens: 0 } }), 60000, `CPU ${question.question_type} evaluation`);
+      const answer = evaluation.value;
       assert.equal(answer.model_revision, health.model_revision);
       assert.equal(answer.raw.model, 'laya-rl-agent');
       assert.equal(answer.raw.usage.truncated, false);
       assert.ok(answer.raw.usage.input_tokens > 0);
       answers.push(answer);
+      evaluationTimes.push({ question_type: question.question_type, elapsed_ms: evaluation.elapsed_ms });
     }
-    assert.equal((await connection.sendRequest('judgment/health')).pid, child.pid);
+    assert.equal((await measuredDeadline(connection.sendRequest('judgment/health'), 60000, 'CPU worker final health')).value.pid, child.pid);
     child.stdin.end();
-    const exit = await exited;
+    const shutdown = await measuredDeadline(exited, 10000, 'CPU worker shutdown');
+    const exit = shutdown.value;
     assert.equal(exit.code, 0);
-    const report = { mode, round, network, health, answers, stderr, exit };
+    const timings = { startup_ms: startup.elapsed_ms, evaluation: evaluationTimes, shutdown_ms: shutdown.elapsed_ms, startup_budget_ms: 60000, evaluation_budget_ms: 60000, shutdown_budget_ms: 10000 };
+    const report = { mode, round, network, health, answers, stderr, exit, timings };
     await writeFile(join(root, `.verification/s5/offline-${mode}-${round}.json`), JSON.stringify(report, null, 2));
-    reports.push({ mode, round, health, networkFailure: network.failure.cause.code ?? network.failure.name, exit });
+    reports.push({ mode, round, health, networkFailure: network.failure.cause.code ?? network.failure.name, exit, timings });
   } finally {
     clearTimeout(timeout);
     connection.dispose();
@@ -72,5 +90,5 @@ for (const round of [1, 2]) {
     await writeFile(join(root, `.verification/s5/offline-${mode}-stderr-${round}.log`), stderr);
   }
 }
-await writeFile(join(root, `.verification/s5/offline-${mode}-safe.json`), JSON.stringify({ scope: mode === 'http-proxy' ? 'These two Node processes HTTP outlet only' : 'These two dedicated Node executables OS outbound rule only', os_full_network: 'NOT_RUN', reports }, null, 2));
+await writeFile(join(root, `.verification/s5/offline-${mode}-safe.json`), JSON.stringify({ scope: mode === 'http-proxy' ? 'These two Node processes HTTP outlet only' : 'These two dedicated Node executables OS outbound rule only', os_program_outbound: mode === 'os-program-block' ? 'PASS' : 'NOT_RUN', reports }, null, 2));
 console.log(JSON.stringify(reports));

@@ -88,11 +88,11 @@ multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次�
 | multilingual ONNX 导出与 parity | PASS，官方三次 CPU 数值检查；首空间 FAIL 保留 |
 | SDK 三题型本地 CPU / 长截断 / options不足 | PASS；正常短输入未截断，长输入和候选覆盖损失实际记录；首前置 FAIL 保留 |
 | Node/Go 常驻 RPC / 重启 | PASS，English/en、multilingual/en、zh；独占 D 资产实际重载/重启 PASS |
-| 断网 | 进程 HTTP 出口拒绝、English 三题型与双 PID 重启 PASS；OS 隔离 NOT_RUN |
+| 断网 | 进程 HTTP 出口拒绝及专用程序 OS 出站 Block 实测 PASS；English 三题型、双 PID 重启和规则/进程/环境清理 PASS |
 | Jev 真 API/model/usage | NOT_RUN，缺本进程 secret |
 | 真实 SQLite/撤销/缓存/反馈重启 | PASS；原 HTTP 会话、资料导入和判断 handler 实际运行；H 生产组装 NOT_RUN |
 | AT10 | 判断接入 PASS：两个实际公开 worktree 与未提交 README 变化隔离；不替代 S4 索引全项 |
-| AT11 | 既有真实 Laya 三题型、截断/options、低置信、缺证据、未授权外发、worker 故障不缓存 PASS；完整 Sources 的实际模型输入 PASS；Jev、OS 隔离和 H 生产组装按真实剩余分别登记 |
+| AT11 | 既有真实 Laya 三题型、截断/options、低置信、缺证据、未授权外发、worker 故障不缓存 PASS；完整 Sources 的实际模型输入及专用程序 OS 出站隔离 PASS；Jev 和 H 生产组装按真实剩余分别登记 |
 | AT12 | 实际 Goal、完整 Taste 的 rubric/example/delegation、被引用规则和 Ranking 各自变化后，旧 cache/proof 在 Policy 更新前拒绝 PASS；完整 Sources 的真实模型输入、HTTP 往返/独立失效与 SQLite 重启 PASS；H 生产组装 NOT_RUN |
 
 SOURCE 和独立 REPORT 由各阶段普通提交/push 后登记完整 SHA；当前不能宣称 S5 完成。
@@ -317,3 +317,15 @@ SOURCE `f955fe3c3450200342e8cbf0b0c152e8065a882e` 已普通提交并 push，独�
 准确源码对应上述三题型真实 HTTP `37.014s PASS`、八项真实非模型场景 `169.713s PASS / 零 skip`、五包 vet、Node syntax、gofmt 和两类 diff-check。当前 Task 没有增加模型调用，已有固定模型、CPU 推理、usage 与 Close 原件继续按其准确范围保留。合并后首 HTTP 400 / FAIL 原件独立保存，完整默认产品检查、H 生产注册、Jev 和 OS 隔离不计为本阶段通过。
 
 准确源码和装配签名已通过 `msg_f112b8e776ad` 交协调者供 H/I/T 消费；当前 Process 的 `TYPESAFE_API_KEY` 和 `ASTROCYTE_LAYA_MODEL_DIR` 存在性均为 false，没有读取凭据文件。Jev 临时 secret、OS 执行许可及 H 生产源码仍为后续实际输入，完整 S5 Task 持续。本 REPORT 作为随后单文档普通提交。
+
+## 已授权的专用程序 OS 出站隔离
+
+根 `msg_063936932ea3` 转达用户授权，协调者 `msg_b17c189f1a09` 明确本 owner 单次运行原 `tests/s5/os-offline.ps1 -Execute`，允许用户确认 UAC。`msg_7ae67fbed787` 确认在原 Node 验证程序补启动/调用 60 秒、关闭 10 秒的分阶段计时检查；原 PowerShell 参数、规则作用、固定模型/公开输入和每轮 120 秒整体期限保持。没有新增普通模型预检或第二次 Execute。
+
+实际唯一命令为 `Start-Process -FilePath powershell.exe -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File','"C:\Users\DW\orca\workspaces\Astrocyte\release-judgment-20261015\tests\s5\os-offline.ps1"','-Execute') -Verb RunAs -WindowStyle Hidden -PassThru`，随后等待同一进程退出。唯一管理员 PID `54324`，UTC `2026-10-15T17:04:14.8945115Z` 至 `17:04:49.7144505Z`，实际 EXIT 0。原专用程序为 `.verification/s5/os-offline/node.exe`，`92,279,112 bytes`、Node `v24.16.0`，SHA256 `B3094D0B49F9AD602262A9921551737BB97637C05DD357A06AE98188D7290AA3` 与配置的 Node 一致。执行前独占目录非 reparse、专用进程和同名规则均为零，三个防火墙 profile 已启用。
+
+沿用已审阅的规则 Name `Astrocyte-S5-ctx_0a7797464f02-owned-node-outbound`，本次唯一 Group `Astrocyte-S5-ctx_0a7797464f02-ea5eba8bfaf24c769e033503a2071a93`，Program 始终为该专用 exe。实际规则/Program 读回与真实网络错误原件保留；两个 CPU PID `47140`、`53160` 的固定官方 HTTP 请求均真实返回 `EACCES`。两轮各完成 choice/truth/score，实际 input_tokens 分别 `212/224/224`，全部未截断、provider model 为 `laya-rl-agent`、SDK revision 为 null，资产有效 revision 为 `7b928d828b7b0e022f929d9bd2e44165aa270148/english/432312b36714d8889eba405507b37eda25257d9c/196b372122a5fec9c701abe4de8660e86c7a184fc1d40ff2e1f8b6a7b58a9e05`。
+
+启动实际 `7470.7873/7632.2908 ms`，关闭 `95.8965/126.0599 ms`；六次推理均在 60 秒内，两个不同 PID 均 EXIT 0。`.verification/s5/offline-os-program-block-{1,2}.json` 保存实际回答/usage/时间，`offline-os-program-block-safe.json` 保存该专用程序 OS 出站检查 PASS。原 PowerShell 运行的 plan/rule/first/cleanup 文件共同前缀为 `os-offline-ctx_0a7797464f02-ea5eba8bfaf24c769e033503a2071a93`；清理原件记录准确规则已删除、专用进程已退出、全部 Process 环境已恢复，cleanup_failures 为空。本人在原进程结束后独立查询准确 Name/Group 规则数、专用程序进程数及管理员 PID 数均为零，三个 profile 仍启用。本阶段新增证据为这些小型本树记录，模型继续只读使用原获准 D 盘资产。
+
+Jev 安全本机注入入口按根 `msg_5ec15ce2eb5a` 仅准备，实际 key 调用仍未授权/未执行；H 生产装配准确源码仍在途。完整 S5 不因本次 OS 检查通过而结算成功。
