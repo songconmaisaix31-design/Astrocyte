@@ -35,6 +35,12 @@ SOURCE `2249dabdf0245b7769af3ae2a10c7a07dd8ad5a1` 已普通 push，`git ls-remot
 
 以下函数和全部原断言保留，当前仍含旧替代实现，不作为本次成功证据，也没有再次运行。模型部分共同需要 B 的 `cmd/server` 生产 `selectedTextBridge`、`distillers.SelectedTextFactory` 与 R/H 实际控制器组合；同一 JobID / OperationID 的原生受理、TurnID、正选自产原档、有效工具关闭及实际 Stop 证据必须通过当前生产入口取得。当前 `EffectiveToolSet=unknown` 保持未知；启动 argv 或工具调用零均不单独证明有效工具关闭。
 
+模块 `msg_970669d9f525` 已交 R 准确 SOURCE `d9f80c2038f9c178357393ee28e7d072a7bab955` / REPORT `0663ccb9503354d0af974a497489daae56e8c006`，本轨仅只读源码。原 Registry 的 `ReadOwnedNativeSession` 要求原 controller 仍持有完整 Start session 及实际 startup operation，再由相同 Registry 中的原 `*agents.Native` 调用 `OwnedRelayExecution` 核原进程；该路径不发 RPC、模型请求或扫描历史。`LaunchPolicy=selected_context_tools_disabled_v1` 只对应实际 `p.cmd.Args` 与安装入口固定参数逐项全等，`PermissionPolicy=never_read_only` 只对应原线程实际返回的 `approvalPolicy=never` / `sandbox.type=readOnly`，缺失响应保持 unknown。PID、StartedAt、DeadlineAt、ExitConfirmed、MetadataStatus 和首固定协议错误分别保存本机；完整 `EffectiveToolSet` 始终单独保持 unknown，不推断操作系统读取隔离或全部工具已知。可证明的具体策略与完整集合未知分别记录，S3 未答的完整集合要求不扩展到独立 L1。R 没有本轨旧调用的实际结果文件，本轨未执行上述只读会话入口，也没有借新配置、其他会话或已有成功模型调用补写旧事实；新的 T 实际窗口仍待 F/H 串行通知。
+
+上述只读审阅还定位到当前生产入口的具体前置差异：B 的 `textSession` 直接调用 `n.Start`，其中 Session 仅有 ID / ProjectID，没有 PendingOperation / Operations；R 的 `nativeRequestOperation` 对此返回空 operation。`OwnedRelayControllerEvidence` 在 StartupOperationID 为空时返回空记录，`ReadOwnedNativeSession` 随后拒绝未记录的 startup operation。按这些源码条件，当前选定文本启动尚不能通过该端口取得原 session；这是源码审阅结论，没有将其记录为已发生的运行失败。本轨已交原 B 与模块核真实持久 Job / operation 和原生 start / input 操作的组合，不补造操作、不修改 native，也不从 sessionID 名称推导操作归属。
+
+按模块 `msg_c4695165cb30`，本轨已在独占 D 盘 `.verification/s5` 准备 AT12 的明确公开输入：来源 Laya checkout 固定 HEAD `432312b36714d8889eba405507b37eda25257d9c`，其 README 无本地变更；两个获准公开 Astrocyte checkout 固定 HEAD 均为 `da79452d1735f8fceca103aaf9d10bb53182f1f5` 且 clean。实际 `git clone --local --no-hardlinks` 创建两个本轨独立副本，复制获准 README / API 原件后 SHA256 与各自来源全等，没有网络重新获取声明。测试要求的本树 `.verification/s5` 是指向该 owned D 目录的新 Junction，原 S5 工作树零写入。准备记录为该目录的 `preparation-safe.json`，原件不进入 Git / 产品 HTTP / stdout；源码消费仍等待唯一集成负责人的准确闭包，未运行新的模型或 AT12 组合检查。
+
 | 原函数名 | 保留的断言与实际依赖 |
 |---|---|
 | `TestAutomaticFixedSnapshotsReuseAndContinuation` | 实际固定 v1 入队后 head 变化仍读取原正文 / 标题；原生配置及真实输出保存；相同输入复用同 Job，明确新问题与 prior 形成新一轮，人类热度不增加、AgentUsageCount=2、不自行形成候选。需要真实两个来源版本与两次不同工作的原生受理；观察 helper 只能委托实际 processor。 |
