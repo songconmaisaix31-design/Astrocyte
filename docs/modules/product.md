@@ -145,6 +145,12 @@ S4 的完整 Options/资产/预算正文已原文交 B 当前 Dispatch，稳定 
 
 S5 完整规则源码 `d73507a8a26ce49b92ec8504649738f336bcdfd1` 已由 M-release 核实远端并交 F/UI 只读准确契约，B 迁移 SOURCE `491e7f606d8265e9f7e9694f547a91682b305e74` 已交原 S5。完整 HTTP 尚未验收，生成 schema 继续等待 H 准确公开契约，不猜字段或盲合无关历史。T 仍保持十四个生产原生依赖场景 NOT_RUN，未额外调用 CLI 或模型。
 
+### 15:28 H 可信配置单文件返修计划
+
+H 原负责人 `ctx_e7abbaf902da` 通过 `msg_21eec0926c1b` 报告：在 `works-relay-http` 窄消费 B SOURCE `e346c40cc9edcbd5b4588e47585f3c0b616b0770` 时，仅 `cmd/server/config.go` 冲突，并已停止写入此 B 域。模块独立核实际未合并清单恰此一件、CHERRY_PICK_HEAD 同该 SOURCE；`repository_config_test.go` 已 stage，其余 H 在途改动由原 H 保持。
+
+本计划普通 push、原 B 到达实际测试安全检查点并 ACK 后，仅允许原 B `ctx_1fd66a8adc28` 在 H 树用文件编辑工具处理并 stage `cmd/server/config.go`。必须保留已提交可信 RepositoryContext 的配置校验及 H 当前真实服务配置，不能复制整文件覆盖其他现行设置。B 不编辑测试文件、main、OpenAPI 或 H 业务路径，不执行 commit、continue、abort、reset 或整体选边；交限定差异、未合并项和配置适用检查结果，明确停止写入归还 H 后，由原 H 继续当前窄消费及组装验证。此单文件与 F 五件分开归还，均只由原 B 串行处理，不中断运行中的测试或新增写者。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
