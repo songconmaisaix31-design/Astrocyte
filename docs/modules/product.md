@@ -2,7 +2,23 @@
 
 ## 责任与事实源
 
-2026-10-16，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_a3dc3bfa5554` / 终端 `term_172d7d57-1526-4e21-af3e-144a7f14fc5e`，按根 02:21 入口及 `msg_ddaa2ba3d38b` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_8de37bb3-e73a-4c10-8a7c-5c39156da4e7` / `run_973808dd6a2f` generation31。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `dd5829d1638a7398198e20cd97f768619d04eb0f`，接管时本文件已有 02:05 优先级与 02:02 返修修改，完整保留。原 Task、子 Run、工作树、分支和旧 Dispatch 的失败记录继续保留。
+2026-10-16，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b` / 终端 `term_baf5bb3e-643c-4b3f-92b2-ea607911e155`，按绝对根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 04:04 入口及 `msg_f6a62afd9256` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669` / `run_973808dd6a2f` generation32。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `596710ac0dcf2743726b821f9c6510d371f86ba6`、工作区干净。原 Task、子 Run、工作树、分支、已有修改及旧 Dispatch 的失败记录继续保留。
+
+### 04:08 同一产品恢复与原负责人接续
+
+本模块先读取上述绝对根入口、当前用户决定和本树规格及发布任务，沿原两个 Run 恢复。原 B/F Run 已普通绑定 generation58；公开 worker-list 核两个 Run 的 active worker 均为空，原 B/F Task 为 ready，原 B/F 树公开终端均为空。未创建新 Run、替代 Task、工作树或第四层人员。
+
+原 B `task_7b4e93c1a3c1` 已沿原树启动为 `ctx_4f388a292a1f / term_c23258b6-32b5-41bc-bf41-db579cf6eac7`，实际 turnStart observed。其准确 HEAD `9a96c365021c826e90a6271d7a3f8571fb0c780f`，接管时四件经验功能修改完整保留：`cmd/server/experience_bridges.go`、`internal/adapters/httpapi/engine_governance.go`、`internal/attention/app/experience_accepted.go`、新增 `internal/attention/app/experience_completion_contract.go`。本轮先与 H 核同一 D 盘 SQLite / 64505 的 CodeGraph Node / SDK probe 退出 1，配置仍单归 B；只采用实际错误和既有准确依赖修复，守卫保持。
+
+原 B cleanup SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / 独立 REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3` 已由模块独读实际提交，生产修改仅 `project_cleanup.go` 与 `projects.go`，报告仅 `backend.md`；远端 `standards-backend` 当前为 `9a96c365`，两提交均在其祖先。准确交付已交 M-release / 唯一 I，与 I 已含的 S2 `AfterWorkspaceCommit` 配对。B 原 build / vet / SQLite 五项主检查 / 纯函数两项主检查均实际 EXIT0，但运行时含当时 native WIP，不能填写隔离 cleanup SOURCE 或同源产品通过；S4 实际撤权清理继续待验。共享 main / server / OpenAPI 继续由 H 薄装配，唯一 I 普通集成；本模块仅写本文件。
+
+原 F `task_7cbe30017760` 已实际启动为 `ctx_c22d1dd61be3 / term_2a5572b8-ac94-4801-bb97-91e6a5d46c19`，turnStart observed。其接管时准确 HEAD `8bd599c8a34661dc9f4a47398212b387278a483f`、工作区干净；该 SOURCE 仅七件 `web/e2e` 真实产品检查脚本，前轮独立 REPORT 尚未收到。B / F 公开 projection 均实核 Codex / `gpt-6.1-sol`、live / working。当前 F 只核原成功与未知动作，保存论文、摘录、项目、Goal / Proposal / Grant / ContextPacket 的实际记录，不重发 mutation。`inspectProductPaper / Project / Proposal` 包含原 human 写入，当前仅阅读原证据；H 正式 ready 后执行 `readProductPaper / Project / Proposal` 及 GET / DOM 只读检查。F 正将原 records 与新输出目录分开，原记录与失败保持，避免 `wx` 覆盖。
+
+同一产品当前尚未恢复可访问。原 H 准确 `0db5836b7cd466f6a5328bc84ba4530c2bb826ce` 启动错误原件留在 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/api-0db-20261015-185255.stderr.log`；本模块不输出原件或启动第二共享服务。先修实际启动错误，恢复原数据与首选 `http://127.0.0.1:64505/`，F 继续唯一核心界面 / HTTP 操作。旧 320 项结果保持 204 PASS / 55 FAIL / 43 既有 SKIP / 18 无结果、EXIT UNKNOWN，不先重跑全套。
+
+Agent 完成证据权限、Laya 语言及 S3 两项选择仍待用户答复；受限 Codex 登记、初始化、模型及相同探针继续暂停。其他原许可生产装配和 human 操作继续，成功模型、OS、Q 与正式实验不重做。UI / S2 / S3 / T 按实际生产依赖恢复，最终功能、适用检查、同源包和发布支持继续，阶段结果不结算本模块。
+
+原产品 Run 已普通绑定 generation32，旧消息逐项处理。H 当前 `ctx_5b3dc511cccd / term_bfb664a5-e843-4d81-b14c-6421c2125f77`、唯一 I 当前 `ctx_4a4234c26f8c`，分别由 M-relay `ctx_7f070ad688f5` 与 M-release `ctx_6256d5837fb3` 管理。H 已将准确公开 CodeGraph Node / SDK / bridge 和 runtime 路径直接交 B；B 独立最小环境三项 probe 实际 EXIT0，尚需核生产实际 runtime 的失败，当前未登记启动恢复。原 8b 普通 OpenCode 验证目录、text capacity 身份及 Windows junction 命令首失败已准确交 B 在产品恢复后处理；R/H 来源、控制器及 HTTP 域仍归 M-relay，保持路径守卫和所有既有断言。
 
 ### 02:29 当前恢复与产品分工
 
