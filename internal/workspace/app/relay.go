@@ -98,6 +98,10 @@ func (s *relayService) view(st RelayState, id string) (domain.RelayTaskView, err
 		return domain.RelayTaskView{}, apierrors.NewNotFound("relay task", id)
 	}
 	v := domain.RelayTaskView{Task: t, Transitions: []domain.RelayTransition{}}
+	if completion, ok := st.Completions[id]; ok {
+		copied := cloneRelayCompletion(completion)
+		v.Completion = &copied
+	}
 	v.EventPublication.Status = "none"
 	for _, e := range st.Events {
 		if e.TaskID == id {
@@ -1017,6 +1021,15 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 		_, finishErr := s.finish(ctx, c, r, RelayObservation{}, e, true)
 		return domain.RelayTaskView{}, finishErr
 	}
+	completion, verification, e := s.prepareCompletion(ctx, c, view.Task, cmd, r)
+	if e != nil {
+		_, finishErr := s.finish(ctx, c, r, RelayObservation{}, e, true)
+		return domain.RelayTaskView{}, finishErr
+	}
+	if _, e = s.permission(ctx, c, view.Task, "observe"); e != nil {
+		_, finishErr := s.finish(ctx, c, r, RelayObservation{}, e, true)
+		return domain.RelayTaskView{}, finishErr
+	}
 	err = s.store.Update(ctx, func(st *RelayState) error {
 		t, ok := st.Tasks[id]
 		if !ok {
@@ -1040,7 +1053,14 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 			return relayError(apierrors.ApprovalRequired, "human task completion confirmation is required")
 		}
 		if cmd.To == domain.RelayDone {
-			t.Condition = ""
+			if _, exists := st.Completions[id]; exists {
+				return relayError(apierrors.VersionConflict, "task completion is already recorded")
+			}
+			if verification != nil {
+				if err := s.checkGoalVerification(*st, t, *verification); err != nil {
+					return err
+				}
+			}
 		}
 		if cmd.To == domain.RelayReleased {
 			if terminal.ExitedAt == nil {
@@ -1058,7 +1078,15 @@ func (s *relayService) Transition(ctx context.Context, c domain.Caller, id strin
 		}
 		s.claimFact(st, r)
 		if cmd.To == domain.RelayDone {
-			st.RuntimeFacts = append(st.RuntimeFacts, domain.RelayRuntimeFact{ID: uuid.NewString(), TaskID: id, TerminalID: t.TerminalID, WorktreeID: t.WorktreeID, ReceiptID: r.ID, OperationID: r.OperationID, Kind: "human_target_confirmed", Status: "confirmed", Source: "human_transition", TS: s.now()})
+			if st.Completions == nil {
+				st.Completions = map[string]domain.RelayCompletion{}
+			}
+			completion.TS = s.now()
+			st.Completions[id] = completion
+			st.RuntimeFacts = append(st.RuntimeFacts, domain.RelayRuntimeFact{ID: completion.ID, TaskID: id, TerminalID: t.TerminalID, WorktreeID: t.WorktreeID, ReceiptID: r.ID, OperationID: r.OperationID, Kind: "human_target_confirmed", Status: "confirmed", Source: "human_transition", Reason: completion.Channel, TS: completion.TS})
+		}
+		if cmd.To == domain.RelayReleased {
+			st.RuntimeFacts = append(st.RuntimeFacts, domain.RelayRuntimeFact{ID: uuid.NewString(), TaskID: id, TerminalID: t.TerminalID, WorktreeID: t.WorktreeID, ReceiptID: r.ID, OperationID: r.OperationID, Kind: "resources_released", Status: "confirmed", Source: "human_transition", TS: s.now()})
 		}
 		s.move(st, &t, cmd.To, relayActor(c))
 		return nil
