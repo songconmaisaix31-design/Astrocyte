@@ -155,17 +155,22 @@ func (f *fixture) importOfficialReadme(t *testing.T) judgment.EvidenceRef {
 		t.Fatal(err)
 	}
 	short := strings.Split(string(text), "## Node")[0]
-	command := attention.ImportMaterialCommand{CommandMeta: commandMeta(), Kind: "text", Adapter: "manual", SourceLocator: "https://github.com/NandhaKishorM/laya/blob/432312b36714d8889eba405507b37eda25257d9c/laya-ts/README.md", Title: "Official Laya export documentation", ExportText: short, ContentDigest: judgment.DigestText(short), SourceSpans: []string{"Export weights section"}}
+	return f.importPublicText(t, short, "https://github.com/NandhaKishorM/laya/blob/432312b36714d8889eba405507b37eda25257d9c/laya-ts/README.md", "Official Laya export documentation", []string{"Export weights section"})
+}
+
+func (f *fixture) importPublicText(t *testing.T, text, locator, title string, spans []string) judgment.EvidenceRef {
+	t.Helper()
+	command := attention.ImportMaterialCommand{CommandMeta: commandMeta(), Kind: "text", Adapter: "manual", SourceLocator: locator, Title: title, ExportText: text, ContentDigest: judgment.DigestText(text), SourceSpans: spans}
 	var job attention.ImportJobResult
 	f.request(t, http.MethodPost, "/api/v1/materials/imports", command, http.StatusAccepted, &job)
 	if _, err := f.attention.ProcessNextJob(context.Background()); err != nil {
 		t.Fatal(err)
 	}
 	actual, err := f.attention.GetJob(context.Background(), attention.Principal{ID: f.actor.ID, Kind: f.actor.Kind}, job.JobID)
-	if err != nil || actual.MaterialID == nil || actual.Status != "succeeded" {
+	if err != nil || actual.MaterialID == nil || actual.MaterialRevision == nil || actual.Status != "succeeded" {
 		t.Fatal("actual original import did not complete", err)
 	}
-	return judgment.EvidenceRef{MaterialID: *actual.MaterialID, Revision: 1, Digest: judgment.DigestText(short)}
+	return judgment.EvidenceRef{MaterialID: *actual.MaterialID, Revision: *actual.MaterialRevision, Digest: judgment.DigestText(text)}
 }
 
 func (f *fixture) project(t *testing.T, ref judgment.EvidenceRef, checkout string) domain.LocalProject {

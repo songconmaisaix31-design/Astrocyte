@@ -2,6 +2,7 @@ package judgment
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
@@ -111,6 +112,16 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		stateParts[i] = evidence.Text
 	}
 	state := strings.Join(stateParts, "\n\n")
+	if request.Context != nil {
+		data, err := json.Marshal(struct {
+			Opportunity OpportunitySnapshot `json:"opportunity"`
+			Evidence    []string            `json:"evidence"`
+		}{request.Context.Opportunity, stateParts})
+		if err != nil {
+			return result, err
+		}
+		state = string(data)
+	}
 	inputDigest, err := digestJSON(struct {
 		Question Question
 		State    string
@@ -126,6 +137,7 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		ReasonCode: "missing_evidence", Versions: request.Versions,
 		EvidenceRefs: append([]EvidenceRef{}, request.EvidenceRefs...), CreatedAt: time.Now().UTC(),
 		Distribution: map[string]float64{}, Options: map[string]OptionCoverage{},
+		Context: request.Context,
 	}
 	backendInput := BackendInput{Question: request.Question, State: state, Language: request.Language, ModelRevision: request.Versions.Model, Budget: request.Budget}
 	if budgetErr := ValidateBackendInputBytes(backendInput); budgetErr != nil {
@@ -259,6 +271,23 @@ func (s *Service) recordAccess(ctx context.Context, actor Actor, record Record) 
 		return apierrors.NewUnsupported("judgment_history_authorization")
 	}
 	return access.AuthorizeRecord(ctx, actor, record.Request)
+}
+
+func (s *Service) Revalidate(ctx context.Context, actor Actor, id string) (Record, error) {
+	var record Record
+	err := s.repo.WithJudgmentTx(ctx, func(ctx context.Context) error {
+		var err error
+		record, err = s.repo.LoadResult(ctx, id)
+		if err != nil {
+			return err
+		}
+		if err := s.recordAccess(ctx, actor, record); err != nil {
+			return err
+		}
+		_, err = s.resolve(ctx, actor, record.Request)
+		return err
+	})
+	return record, err
 }
 
 func (s *Service) Feedback(ctx context.Context, actor Actor, id string, version int, kind, reason string) (Feedback, error) {

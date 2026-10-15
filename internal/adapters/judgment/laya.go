@@ -189,6 +189,8 @@ func (l *Laya) Evaluate(ctx context.Context, input judgment.BackendInput) (judgm
 		}
 		result.Value = answer.Noul
 		result.Distribution = map[string]float64{}
+		// Noul 使用真值概率，平台的 confidence 保持 null。
+		result.Confidence = nil
 	default:
 		return result, fmt.Errorf("unsupported Laya question type")
 	}

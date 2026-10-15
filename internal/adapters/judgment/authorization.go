@@ -161,3 +161,10 @@ func (a *ProjectAuthorization) AuthorizeRecord(ctx context.Context, actor judgme
 	}
 	return nil
 }
+
+func (a *ProjectAuthorization) ReadPolicy(ctx context.Context, actor judgment.Actor, projectID string, questionType judgment.QuestionType) (judgment.Policy, error) {
+	if _, err := a.project(ctx, actor, projectID); err != nil {
+		return judgment.Policy{}, err
+	}
+	return a.Policies.LoadJudgmentPolicy(ctx, projectID, questionType)
+}

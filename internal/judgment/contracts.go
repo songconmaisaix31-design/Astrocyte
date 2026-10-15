@@ -72,17 +72,18 @@ type Budget struct {
 }
 
 type JudgmentRequest struct {
-	SchemaVersion string        `json:"schema_version"`
-	ProjectID     string        `json:"project_id"`
-	WorktreeID    string        `json:"worktree_id"`
-	SnapshotID    string        `json:"snapshot_id"`
-	Question      Question      `json:"question"`
-	EvidenceRefs  []EvidenceRef `json:"evidence_refs"`
-	Language      string        `json:"language"`
-	Backend       Backend       `json:"backend"`
-	ExternalScope string        `json:"external_scope"`
-	Versions      Versions      `json:"versions"`
-	Budget        Budget        `json:"budget"`
+	SchemaVersion string           `json:"schema_version"`
+	ProjectID     string           `json:"project_id"`
+	WorktreeID    string           `json:"worktree_id"`
+	SnapshotID    string           `json:"snapshot_id"`
+	Question      Question         `json:"question"`
+	EvidenceRefs  []EvidenceRef    `json:"evidence_refs"`
+	Language      string           `json:"language"`
+	Backend       Backend          `json:"backend"`
+	ExternalScope string           `json:"external_scope"`
+	Versions      Versions         `json:"versions"`
+	Budget        Budget           `json:"budget"`
+	Context       *DecisionContext `json:"context,omitempty"`
 }
 
 type OptionCoverage struct {
@@ -124,6 +125,7 @@ type JudgmentResult struct {
 	EvidenceRefs       []EvidenceRef             `json:"evidence_refs"`
 	CreatedAt          time.Time                 `json:"created_at"`
 	CacheHit           bool                      `json:"cache_hit"`
+	Context            *DecisionContext          `json:"context,omitempty"`
 }
 
 type Policy struct {

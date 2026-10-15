@@ -13,11 +13,14 @@ import (
 type JudgmentPolicies interface {
 	SetPolicy(context.Context, judgment.Actor, judgment.Policy, int) error
 	Snapshot(context.Context, judgment.Actor, string, []string) (domain.ProjectContextSnapshot, error)
+	ReadPolicy(context.Context, judgment.Actor, string, judgment.QuestionType) (judgment.Policy, error)
 }
 
 type JudgmentServices struct {
-	Judgments *judgment.Service
-	Policies  JudgmentPolicies
+	Judgments  *judgment.Service
+	Policies   JudgmentPolicies
+	Delegation *judgment.DelegationService
+	Admissions judgment.DelegatedAdmissions
 }
 
 type JudgmentFeedbackCommand struct {
@@ -79,6 +82,7 @@ func (h *handler) judgmentResult(w http.ResponseWriter, r *http.Request, result 
 }
 
 func (h *handler) registerJudgment(mux *http.ServeMux, services JudgmentServices) {
+	h.registerDelegation(mux, services)
 	const prefix = "/api/v1/local-projects/{project_id}"
 	mux.HandleFunc("POST "+prefix+"/judgments", func(w http.ResponseWriter, r *http.Request) {
 		actor, err := judgmentCaller(r, false)
@@ -88,6 +92,9 @@ func (h *handler) registerJudgment(mux *http.ServeMux, services JudgmentServices
 		}
 		if err == nil && request.ProjectID != actor.ProjectID {
 			err = &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "Judgment body and path project must match"}
+		}
+		if err == nil && request.Context != nil {
+			err = invalid("Bound judgments require the configured delegation workflow")
 		}
 		var result judgment.JudgmentResult
 		if err == nil {
