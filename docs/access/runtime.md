@@ -528,3 +528,25 @@ SOURCE 为 `d7d47d68c80a1ee3f0007de9f9b08ccfd654d158`，本阶段为适配器源
 组合首 FAIL 原件 completion-components-first.log 继续保留：B c715 的 SQLite 适配依赖尚未消费的 S2 NewWorkspaceRepository / WorkspaceTx / WorkspaceTransaction / workspaceCAS。S2 的最小准确十一文件闭包由原 owner 验证并经模块交付后再消费；R 不改 B / S2 领域或整合其无关历史。此包级 SOURCE 不将该服务组合标为通过。先前原输入端口 REPORT c569 首普通 push 的 TLS128 保存在 input-report-push-first-failure.log；同一提交普通重试后远端精确同值。
 
 当前执行门禁按 ROOT msg_9e32e1f32ba5：Calls 计数单位及 Known 完整覆盖两项等待用户，现 Calls / Tools / Targets Known=false 和 Claim 拒绝保持；不登记新 t0、不绕 Claim / 预算提交输入、不扩大工具权限。新登记、controller 和 model 均为0。rawResponse 仅交私有观察设计，尚未扩展 store / schema 或执行额外 RPC，已完成 Responses 的数量和 nullable usage 不充当全部调用/用量。H / B 精确装配、服务组合构建、真实完整非拒绝结果、人工批准和第二任务引用仍未完成。
+
+## 独立 portable Member 契约与原 Registry 映射
+
+契约 SOURCE `b2461140be791596242e9a8d13aba49e32d098ee` 只新增 workspace/domain/relay_member_evidence.go 与同名测试，依赖仅为标准库 context / time。S3 可单独消费该两文件提交，不需要复制 Registry、NativeSession、完整 Relay 状态或其他历史。实际映射 SOURCE `00dbd9c63dce2311518a1c47002947180d770a2f` 只新增 agents/relay_member_evidence.go 与同名测试；H 在原实际服务将同一个 Registry 注入为 RelayMemberEvidenceSource。普通 push 后独立远端核实为00dbd9c。
+
+准确签名为 ReadRelayMemberEvidence(ctx, sessionID, inputOperationID, purpose) 和 StopRelayMemberEvidence(ctx, sessionID, inputOperationID)，均返回 domain.RelayMemberEvidence / error。该接口提案已通过 Orca 直接发送原 S3（msg_9011e5b87393、msg_31111c404faf），消费签名仍待其确认；不据此冻结待答的 Known 语义。
+
+事实包含私有 session / native / controller / startup / input / accepted turn、ProjectID / CWD / CLI / CLIVersion / purpose，以及原控制器持有、当前输入和真实退出确认。接受时间、明确开始时间和控制器启动时间只复制原事实；缺少实际退出观察时间时保留 nil。ControllerHeld 表示此 Registry 当前仍持有原对象，单独持有记录不证明客户端当前可响应，也不刷新活性时间。Claim / Submit 继续使用9807的原完整会话与精确输入检查；S2 / S3 自行检查 binding / epoch / holder / grant，不能由该私有事实获得权限。
+
+Capabilities / Tools / ExternalTargets 均为 nil，ToolsKnown / TargetsKnown / CallsKnown / TokensKnown 均为 false。nullable reported usage 和 completed response 观察量当前均为 nil，未把未知值改为0或空的已知集合。全部 JSON 字段排除，非空私有 canary 的投影仍为 `{}`。读取和停止期间原 controller / startup 身份或退出事实发生变化时立即拒绝，不补造新的所有权。没有新 store、schema、RPC、控制器或模型。
+
+共同环境沿用独占 D 盘临时目录及共享 backend cache，以下检查通过：
+
+| 命令 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly internal/workspace/domain/relay_member_evidence.go internal/workspace/domain/relay_member_evidence_test.go -count=1 -v` | 独立两文件 PASS0.919秒；portable-contract-standalone-first.log |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run 'TestRelayPortableMember\|TestRelayInputOperation\|TestRelayFactsRejectMissing' -count=1 -v -timeout=90s` | PASS1.205秒；portable-member-refusals-first.log，真实 cold Registry / 原输入缺失与未知停止拒绝 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=150s` | PASS7.172秒；portable-member-final-package.log |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` / `go build -p=1 -mod=readonly ./internal/adapters/agents` | EXIT0 |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package / EXIT0 |
+
+S3 自有桥接的准确组合检查和实际 Claim / Submit / Stop 正向尚未执行；Known 和 Calls 用户待答维持原拒绝。H 另报告原 Options.Agents 仅构造时读取，没有同 Service / Registry 的运行期登记端口。可信一次性登记设计已交模块与 H，登记锚点、显式可信触发方式等待根准确决定；未新增 HTTP 命令入口、未登记或开始计时。L 服务构建仍等待 S2 十一文件事务闭包，原首 FAIL 与全部0实际原生窗口保持。
