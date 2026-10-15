@@ -92,6 +92,16 @@ H 已本人交安全 Context / Prepare / 同实例登记 SOURCE `fbf2a4a4752ef28
 
 已按根要求完整读取 `eb27bd6712b5df92a55ad542026534860726d8ff:tasks/cognitive-stack-L1-L4.md` 的 §3.2.1 / §3.4，并向原 B/F/S3 交六步职责。步骤四必须取得具体候选的真实用户批准记录，开发授权不代签；工程复用观察与独立效果实验分别验收。B 原 approved-only `GetExperiences` 的已提交位置已交 S3，当前项目授权、固定映射与同 DB 使用仍须原 B 准确交接。用户确认完成保留真实通道、unknown outcome 和 started 事实，不为进入经验候选补写成功。
 
+### 22:20 F 消费安全 H 的单文件计划
+
+F 本人 `msg_d3ed159bd8b3` 只读预检准确父 `02a7976d997ef14ac298b2e240da43a9bb423c93` 与 H REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`，报告唯一冲突 `cmd/server/config.go`，当前工作树 clean，未开始实际 merge。该文件长期只归原 B。H 其他共享装配由 F 普通合入准确已提交来源，F 不编辑 B 配置。
+
+本计划普通 push 且 F 确认该单文件零 WIP / 停写后，原 F 自己开始该次普通 `--no-ff` merge，并在实际冲突处停止，报告实际父 SHA、MERGE_HEAD 与完整 U 清单。只有 U 清单严格此一件，原 B 已完成 I 四件并明确停止 I 树写入归还、到达新安全检查点后，才限定放行 B 在 `standards-frontend/cmd/server/config.go` 使用文件编辑工具处理并 stage；不复制旧整文件覆盖现有配置、不编辑其他路径、不执行 commit / continue / abort / reset / 整体选边。完成本人停写归还并报告限定 diff / 配置检查，经模块独核 U0 后交原 F 唯一继续 merge、生成客户端、真实适用检查、SOURCE / 独立 REPORT 普通 push，再由原 UI 消费。实际冲突清单改变时先交原负责人，不能自动扩大范围。
+
+I 四文件当前仍由原 B 持有，以上只安排后继串行范围，不中断其当前检查或产生第二写入者。H 已确认的安全 Context、Prepare 与登记契约可精确消费；原生登记 / 输入 / 模型仍为零，两项权限与调用预算未决继续保留。
+
+S5 原 S2 单测试已经本人停写归还，模块与 M-release 分别实核 U0、限定 working / cached diff-check 和原 HEAD / CHERRY_PICK_HEAD 一致；M-release `msg_13a76adda6ce` 已放行原 S5 唯一继续，该临时权限已收回。根 `msg_0f397f12b04e` 已授权 S4 专用清理生命周期，B 仅项目事务成功提交后唤醒；同 Service 后台实现、启动扫描、限量 / 实际进展续行、错误终止与取消等待由原 S4/H 负责，不新建通用调度器、队列或 schema。此准确决定已经转原 B，集成返修归还后接续。
+
 ### 2026-10-15 10:41 再次重启后的恢复计划
 
 根当前交接 `msg_54ce630eae98` 确认 10:31 运行时再次重启，原人员 OS 进程退出、旧句柄失效；沿原子 Run、原 Task、原工作树和原分支恢复。公开 Task 列表实测 T / S2 / S3 / 产品 UI 均为 `ready`，旧 Dispatch 为 `failed / terminal_missing`。公开终端清单无这四位旧句柄，当前 Codex 进程启动时间均在重启之后；不根据单独的 `missing_status` 判定退出。B/F 生命周期由根在原 Run 恢复，本模块不重复启动。S0–S6 授权和前端复用此前白绿设计、使用 TypeScript 的用户决定保持。
