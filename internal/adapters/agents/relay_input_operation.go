@@ -23,7 +23,7 @@ type RelayOwnedInputOperation struct {
 	TokensKnown   bool                           `json:"-"`
 }
 
-// Claim 在输入前核当前控制器；Submit 核实际已接受输入，允许原控制器已退出。
+// Claim 在输入前检查当前控制器；Submit 检查实际已接受输入，允许原控制器已退出。
 func (r *Registry) ReadOwnedInputOperation(ctx context.Context, sessionID, operationID, purpose string) (RelayOwnedInputOperation, error) {
 	var result RelayOwnedInputOperation
 	if err := ctx.Err(); err != nil {
@@ -47,7 +47,7 @@ func (r *Registry) ReadOwnedInputOperation(ctx context.Context, sessionID, opera
 		return result, err
 	}
 	native := adapter.(*Native)
-	execution, err := native.OwnedRelayExecution(ctx, original.Session)
+	execution, err := native.ownedRelayMemberExecution(ctx, original.Session)
 	if err != nil {
 		return result, err
 	}
@@ -86,7 +86,7 @@ func (r *Registry) ReadOwnedInputOperation(ctx context.Context, sessionID, opera
 	return result, nil
 }
 
-// 调用方先核原 binding / epoch / grant；此端口只终止准确已持有的原输入。
+// 调用方先检查原 binding / epoch / grant；此端口只终止准确已持有的原输入。
 func (r *Registry) StopOwnedInputOperation(ctx context.Context, sessionID, operationID string) (RelayOwnedInputOperation, error) {
 	original, err := r.ReadOwnedInputOperation(ctx, sessionID, operationID, "submit_artifact")
 	if err != nil {

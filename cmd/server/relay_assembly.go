@@ -16,7 +16,7 @@ import (
 
 // This entrypoint owns cross-context assembly. The runtime remains the sole
 // task/terminal/worktree writer; event observations enter the existing app port.
-func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace.NativeRegistry, contextReaders ...workspace.RelayLaunchContextReader) (func() error, error) {
+func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace.NativeRegistry, objectStore attention.ObjectStore, contextReaders ...workspace.RelayLaunchContextReader) (func() error, error) {
 	if len(contextReaders) > 1 || len(contextReaders) == 1 && contextReaders[0] == nil {
 		return nil, errors.New("relay launch context requires one explicit trusted reader")
 	}
@@ -56,14 +56,24 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 	structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: true, SessionDeadlineSeconds: deadlineSeconds, BeforeFirstInput: sourceGuard.Check})
 	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{})
 	options := workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window, OwnedRoots: agents.RelayOwnedRoots{}}
+	var goalReader *relayGoalVerificationReader
 	if len(contextReaders) == 1 {
+		fixed, ok := contextReaders[0].(*relayPublicContext)
+		if !ok || objectStore == nil {
+			return nil, errors.Join(errors.New("fixed goal verification requires the original context and object store"), store.Close())
+		}
 		options.LaunchContext = contextReaders[0]
+		goalReader = &relayGoalVerificationReader{evidence: events.NewRelayGoalEvidenceStore(objectStore, attention.NewPendingEventService(sqlite.NewEventRepository(db)), sqlite.NewEventRepository(db)), admitted: sqlite.NewAccessSessionReader(db), context: fixed, projects: db}
+		options.GoalVerification = goalReader
 	}
 	runtime := workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, options)
 	owned, ok := runtime.(workspace.RelayOwnedSessionReader)
 	if !ok {
 		_ = store.Close()
 		return nil, errors.New("owned session read port unavailable")
+	}
+	if goalReader != nil {
+		goalReader.runtime, goalReader.owned = runtime, owned
 	}
 	lifecycle, ok := runtime.(workspace.RelayLifecycle)
 	if !ok {

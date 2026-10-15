@@ -189,13 +189,15 @@ type relayTurnBindingPrivate struct {
 	OperationID, SessionID, NativeID, ControllerID, StartupOperationID, TurnID string
 	AcceptedAt                                                                 time.Time
 	StartedAt                                                                  *time.Time
+	Outcome, FailureCode, ResultSource                                         string
+	ResultObservedAt                                                           *time.Time
 }
 
 func encodeRelayController(p domain.RelayControllerEvidence) relayControllerEvidencePrivate {
 	result := relayControllerEvidencePrivate{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
 	result.ExitConfirmed = p.ExitConfirmed
 	for _, t := range p.Turns {
-		result.Turns = append(result.Turns, relayTurnBindingPrivate{OperationID: t.OperationID, SessionID: t.SessionID, NativeID: t.NativeID, ControllerID: t.ControllerID, StartupOperationID: t.StartupOperationID, TurnID: t.TurnID, AcceptedAt: t.AcceptedAt, StartedAt: t.StartedAt})
+		result.Turns = append(result.Turns, relayTurnBindingPrivate{OperationID: t.OperationID, SessionID: t.SessionID, NativeID: t.NativeID, ControllerID: t.ControllerID, StartupOperationID: t.StartupOperationID, TurnID: t.TurnID, AcceptedAt: t.AcceptedAt, StartedAt: t.StartedAt, Outcome: t.Outcome, FailureCode: t.FailureCode, ResultSource: t.ResultSource, ResultObservedAt: t.ResultObservedAt})
 	}
 	return result
 }
@@ -204,7 +206,7 @@ func decodeRelayController(p relayControllerEvidencePrivate) domain.RelayControl
 	result := domain.RelayControllerEvidence{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
 	result.ExitConfirmed = p.ExitConfirmed
 	for _, t := range p.Turns {
-		result.Turns = append(result.Turns, domain.RelayTurnBinding{OperationID: t.OperationID, SessionID: t.SessionID, NativeID: t.NativeID, ControllerID: t.ControllerID, StartupOperationID: t.StartupOperationID, TurnID: t.TurnID, AcceptedAt: t.AcceptedAt, StartedAt: t.StartedAt})
+		result.Turns = append(result.Turns, domain.RelayTurnBinding{OperationID: t.OperationID, SessionID: t.SessionID, NativeID: t.NativeID, ControllerID: t.ControllerID, StartupOperationID: t.StartupOperationID, TurnID: t.TurnID, AcceptedAt: t.AcceptedAt, StartedAt: t.StartedAt, Outcome: t.Outcome, FailureCode: t.FailureCode, ResultSource: t.ResultSource, ResultObservedAt: t.ResultObservedAt})
 	}
 	return result
 }
@@ -277,6 +279,9 @@ func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error)
 	if state.ControllerHistory == nil {
 		state.ControllerHistory = map[string][]domain.RelayControllerEvidence{}
 	}
+	if state.Completions == nil {
+		state.Completions = map[string]domain.RelayCompletion{}
+	}
 	if state.Published == nil {
 		state.Published = map[string]bool{}
 	}
@@ -341,6 +346,16 @@ func (s *RelayStore) Update(ctx context.Context, update func(*app.RelayState) er
 	oldRelations := append([]domain.RelaySessionRelation{}, state.SessionRelations...)
 	oldHandoffs := make(map[string]string, len(state.HandoffDeclarations))
 	oldHistory := make(map[string][]domain.RelayControllerEvidence, len(state.ControllerHistory))
+	oldCompletions := make(map[string]domain.RelayCompletion, len(state.Completions))
+	for id, completion := range state.Completions {
+		completion.OutputEventIDs = append([]string(nil), completion.OutputEventIDs...)
+		completion.CheckEvidenceIDs = append([]string(nil), completion.CheckEvidenceIDs...)
+		if completion.VerifiedAt != nil {
+			when := *completion.VerifiedAt
+			completion.VerifiedAt = &when
+		}
+		oldCompletions[id] = completion
+	}
 	for id, history := range state.ControllerHistory {
 		for _, evidence := range history {
 			evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
@@ -349,6 +364,10 @@ func (s *RelayStore) Update(ctx context.Context, update func(*app.RelayState) er
 				if turn.StartedAt != nil {
 					when := *turn.StartedAt
 					evidence.Turns[i].StartedAt = &when
+				}
+				if turn.ResultObservedAt != nil {
+					when := *turn.ResultObservedAt
+					evidence.Turns[i].ResultObservedAt = &when
 				}
 			}
 			oldHistory[id] = append(oldHistory[id], evidence)
@@ -362,6 +381,12 @@ func (s *RelayStore) Update(ctx context.Context, update func(*app.RelayState) er
 	}
 	if err = update(&state); err != nil {
 		return err
+	}
+	for id, previous := range oldCompletions {
+		current, exists := state.Completions[id]
+		if !exists || !reflect.DeepEqual(previous, current) {
+			return errors.New("relay completion evidence is immutable")
+		}
 	}
 	for id, previous := range oldHandoffs {
 		if state.HandoffDeclarations[id] != previous {

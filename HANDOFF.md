@@ -1,11 +1,44 @@
 # Astrocyte 主控交接
 
-2026-10-14：当前分支由合并前端唯一人员普通消费 Astrocyte 整改与 Workbench / Works Relay 交付，准备今晚的合并产品和 release 包。正式 V4 运行树与日程继续保持原约束；实际组合、原生链路及发布包尚未最终验收。具体执行以主控当前 `tasks/Release-v0.1-20261014.md` 和当前 `AGENTS.md` 为准。
+## 当前入口：四树集成与组合验证（2026-10-15）
+
+本工作树为 `works-relay-integration`，分支 `songconmaisaix31-design/works-relay-integration`，本轮 clean 起点 `0e5ce82898c3d546f711d1e452dadfabb13b5537`。唯一 I 使用 Orca Codex / gpt-6.1-sol，Task `task_2ee44933df72`、Dispatch `ctx_b573b61bb4aa`；按 M-release 核实的准确阶段来源普通合并，领域冲突由原负责人在精确互斥路径处理，全部归还后由 I 继续合并。当前合并和验收结果见 [集成报告](docs/access/integration.md)。
+
+当前顺序为四树收拢与组合验证、集成版 L1 真实验收、L2 经验管道、六步工程首跑，目标日期 2026-10-22。六步涵盖真实结果与完成通道保存、轨迹和产物追溯、Interpreter 起草 quarantine 候选、用户批准、下一任务通过 `get_experiences` 消费、后续结果与实际复用核查。人工批准由用户执行，工程闭环与独立效果实验分别验收。
+
+完成语义为 `verified_complete | user_confirmed_complete`，started 独立记录且永不回填，资源释放独立审计；两种完成通道均可进入经验候选。Astrocyte 管目标、批准和上下文，Works Relay 与 Morphogenesis 分别为执行后端 A / B；同一 Mission 的认领、预算、租约由单一后端独占，自动路由后置 L3。Calls 和权限证据覆盖未答项、正式 V4 / v0.2 冻结及现有 17321 部署保持。
+
+## 2026-10-14 Works Relay 与 Workbench 历史交接
+
+### Works Relay v1.2 实施记录
+
+业务目标workbench/v0.2-access，validation登记定稿a429a4d；[三轨计划](tasks/Works-Relay-plan.md)、[决策与owner](tasks/Works-Relay-decisions.md)。起点9d78835与验收d46业务全等，精确CI38440379678已独立核实success。Orca Run run_d577f0d3fee1由term_d7f7e173协调，R-runtime ctx_fd41ff32f67d、H-http ctx_bcc3677fe29c、F-ui ctx_a7f2a326ff24均observed启动。三轨互斥，root只文档/独验/最终Git；领域返修原owner，最后唯一集成普通no-ff合。Today实时接缝/作品当前状态及非Git范围/参考图与活性窗已问人待答，独立开发继续。V4正式源/引擎/schema/权重/快照管道零改，v0.1 Procmon和真实两日收尾不阻塞本切片；未验事项不填绿。
+
+## 最终入口：Workbench 双平台通过（2026-10-14 01:53）
+
+先读STATUS顶部。分支workbench/v0.1-workbench，精确业务d46f9f4，CI38440379678已completed/success：Ubuntu/Windows完整check/build/E2E各238PASS/32SKIP，Linux race PASS。root全check/build和238/32默认E2E、真实live2、双视口与常驻静态十值SQL全部PASS；所有owner/report普通祖先，Worker全结算release，reclaimable=0。访问http://127.0.0.1:17321/cognition/today，当前服务脱离Worker经Windows Start任务常驻。之后仅状态/报告文档变动，业务与d46相等。
+
+剩余管理员Procmon正式DB/WAL/SHM零写与10-15/10-16每日00:30连续两日真实自动验收；详见docs/workbench/backend.md，本机证据在LOCALAPPDATA/astrocyte-workbench/v0.1/verification。验证库、协议、日程、引擎/schema/权重零改，v0.2未启动，未合main；解冻后按裁决一次收敛。旧pending段是历史时点，最终CI结论以上文为准，首RED不覆盖。
+
+## 当前交付入口：Workbench 本机已部署（2026-10-14 01:51）
+
+分支workbench/v0.1-workbench，root测试源码d46f9f4、报告普通合ecc641f；三轨精确SOURCE/REPORT见STATUS顶部，全部succeeded、push/clean，Worker已release，reclaimable=0。既有web/server只读认知四页在http://127.0.0.1:17321/cognition/today，服务由Windows已注册Start任务独立启动，非Worker子进程。root check/build EXIT0，完整默认E2E238PASS/32SKIP；真实live2、双视口十值与独立SQL、最终静态四页十值均PASS。首RED与中断保持本机原件。
+
+新CI38440379678精确归属d46：Ubuntu已success，Windows仍浏览器阶段，待最终追加结论。目标HEAD后续仅文档，业务与d46相等。剩余全验收为管理员Procmon正式DB/WAL/SHM零写和10-15/10-16两日00:30真实自动结果；执行步骤在docs/workbench/backend.md，不能以人工刷新、Ready或hash替代。所有数据库/配置/原始数据/截图/取证仅LOCALAPPDATA；validation/V4/引擎/schema/参数未改，v0.2仍冻结，main未合，解冻后一次收敛。
+
+## 当前入口：Workbench 只读认知页（2026-10-14）
+
+先读STATUS顶部与tasks/Workbench-v01.md、Workbench-api.md。交付分支workbench/v0.1-workbench基于attention-engine/v1-20261011，复用现有web/server，不采用已封存独立工程；引擎/schema/validation/V4不动。Orca重启后原两个Task在原工作树续接，backend ctx1f5ae09e7cad、frontend ctxca3e2f3fcf21，均已observed启动；旧中断failed与首RED保留。root只计划/状态/独立验收/最终Git，业务返修归owner。
+
+等待精确SOURCE/REPORT、测试与push后，派唯一集成owner普通no-ff合两轨，领域问题退owner。root最终check/build、真实四视图十值SQL复核及push；当前未集成。快照与所有真实证据仅LOCALAPPDATA/astrocyte-workbench/v0.1，正式源只在线备份读取。00:30两日自动和管理员文件监控未通过，不以手动两次或静态检查替代。当前不合main，按用户裁决解冻后validation与本分支一次收敛。
+### 合并前端历史交接（2026-10-14）
+
+当时前端分支由唯一人员普通消费 Astrocyte 整改与 Workbench / Works Relay 交付，准备合并产品和 release 包。正式 V4 运行树与日程继续保持原约束；当时实际组合、原生链路及发布包尚未最终验收。
 
 ## 历史：validation 接管与验收记录
 2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
 
-Works Relay v1.2 工程 SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已普通集成，CI 38469944551 双平台 success；L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，采集 / HTTP / Today 组合及真实 CLI 闭环尚未最终验收。Workbench v0.1 已部署，Procmon 与两日自动快照仍 NOT_RUN。当前工作树不包含这些 Workbench 业务提交，不能用本树测试代表其验收。
+Works Relay v1.2 工程 SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已普通集成，CI 38469944551 双平台 success；L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，采集 / HTTP / Today 组合及真实 CLI 闭环尚未最终验收。Workbench v0.1 已部署，Procmon 与两日自动快照仍 NOT_RUN。当时的正式 validation 工作树未包含这些 Workbench 业务提交，其测试不代表 Workbench 验收。
 
 用户 [Works Relay v1.2 自包含定稿](tasks/Works-Relay-v1.2.md) 已取代旧版；v1.0 缺失和实施窗口问题已关闭。原 R/H/F/I owner 持续负责开发、测试及返修，后续业务仍由唯一集成 owner 普通合并。V4 首日技术完成与 Discovery & Split 冻结状态见下方记录。
 

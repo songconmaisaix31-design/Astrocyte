@@ -1,8 +1,193 @@
 # S2/S3/S4/S5 产品页面开发记录
 
-当前任务 `task_d0cee5a583bb` / Dispatch `ctx_4ac5810bae08`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，当时工作区 clean；本次恢复基线 `71360db458052eea387e4d4f72b303f59d3a4743`，保留并继续完成既有 repositorycontext CSS 及三个新增 TypeScript 文件。
+## 2026-10-16 04:23 判断题目输入校验
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_e366c835cb43`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b`。本域 SOURCE `f0d27271c15d131aea50012658232f7fa41a142b` 已普通 push 并独核远端同值，改动仅原 `attention/delegation/**` 三件。`JudgmentQuestionFields` 增加空白题目标识与说明、选项数量 / 标识、确定性选项规则缺少依据、评分等级数量与空白说明的检查提示；输入继续保留。约束直接读取现有 `internal/judgment/validation.go`，未构造公共 DTO 或提交来源。
+
+`pnpm --dir web typecheck`、`pnpm --dir web exec eslint src/pages/attention/delegation` 均 EXIT0；`pnpm --dir web exec vitest run src/pages/attention/delegation/policyDraftIssues.test.tsx src/pages/attention/delegation/questionDraftIssues.test.tsx --maxWorkers=1` 为 7 PASS / EXIT0，范围为明确表单参数与静态显示。`pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-question-ctx-e366c835cb43` EXIT0，日志 `logs/build-question-ctx-e366c835cb43.log`；`git diff --check` / `git diff --cached --check` 均通过。上述构建是本树 Web 目标，不登记为最终同源完整 `pnpm check` / `pnpm build` 通过。
+
+模块 `msg_6e2c4fb9634b` 通知更新共享服务后，已在前一检查自然 EXIT0、浏览器关闭且零在途 HTTP / 测试的检查点暂停64505全部读取，并直接交 H / F / 模块安全 ACK。后继等待 H 实际 ready 和正式公共契约、F 的生成类型及公开客户端；本阶段无业务写入、模型或原生操作，没有重试已知或未知动作。原失败、S5 实际客户端、S3 原生与 Artifact 正向和最终发布门禁继续保留。
+
+## 2026-10-16 04:20 同一产品的键盘与异步读取
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_e366c835cb43`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b`。沿原分支 `songconmaisaix31-design/product-ui-20261015`、基线 `93654a7466ccd33069ede76a248d5203971a9538` 接续，原 02:55 连接拒绝记录保留。当前页面 SOURCE 由 H 正式交付为 `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，地址仍为 `http://127.0.0.1:64505/`；本树没有部署、启动或停止共享服务。原本域代码 SOURCE `0ad83a96bc50747867146a38a80b7a90ecbedc5f` 保持，本阶段仅追加实际检查记录。
+
+执行 `node D:/Astrocyte-agent-assets/20261015/product-ui-20261015/live-readonly-keyboard-ctx-e366c835cb43.mjs`，实际 Playwright Chromium、单浏览器顺序检查 `/attention`、`/workspace`、`/swarm` 的 1920×1080 和 1280×720。临时目录与结果均在同一 D 盘目录，未读取或输出响应正文、凭据或模型内容，没有截图、网络替换或业务写入。
+
+| 实际运行 | 结果 |
+|---|---|
+| 第一轮，结果 `live-readonly-keyboard-ctx-e366c835cb43.json` | EXIT1；1920 资料与工作区两项通过，蜂群一项断言失败后停止。原件保留；该轮未记录具体失败请求。 |
+| 第二轮，结果 `live-readonly-keyboard-ctx-e366c835cb43-second.json` | EXIT1；四项通过，1280 工作区三条 GET 为 `net::ERR_ABORTED`：`relay/agents`、`relay/tasks`、`local-projects/registered`。切换页面时读取尚未完成，原件保留。 |
+| 第三轮，结果 `live-readonly-keyboard-ctx-e366c835cb43-third.json` | EXIT0，六项通过。每次键盘切换和打开抽屉后等待 React 绘制与实际网络读取完成，全部原断言保留。 |
+
+第三轮实际覆盖 ArrowRight / Home / End 的选中状态与焦点、Tab 到达创建提案和从批准建立任务的入口、Enter 打开详情、Shift+Tab / Tab 焦点循环、Escape 关闭及恢复触发焦点、键盘触发刷新后新增成功 GET。六项均为 HTTP200 页面、一个 h1、零 pageerror、零失败请求、全部观察到的 API 响应为 2xx、零 alert、无横向溢出，业务写入计数为零。抽屉只打开并关闭，没有提交表单或重发已有操作。
+
+按模块 `msg_1a5484842db5` 继续原 `attention/delegation/**` 范围。已向 H `ctx_5b3dc511cccd` 和 F `ctx_c22d1dd61be3` 交接正式公共契约依赖；当前本树仍缺 Judgment / policy / snapshot / delegation 公开客户端，接入须消费 H 已提交 OpenAPI 和 F 生成的类型与公开调用。S5 实际调用、S3 原生与 Artifact 正向、最终同源检查和 Windows 包保持待验，本阶段结果仅覆盖上述只读交互。
+
+## 2026-10-16 02:50 判断策略表单与同实例只读导航
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_6e10ec67cf13`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_a3dc3bfa5554`。原分支 `songconmaisaix31-design/product-ui-20261015`，恢复基线 `58e3fc0`，SOURCE `0ad83a96bc50747867146a38a80b7a90ecbedc5f` 已普通 push，远端同值。模块 `msg_d38657b3e079` 确认原 `attention/delegation/**` 独占范围连续；已保留并完成恢复时的 `JudgmentPolicyFields.tsx` 修改。
+
+判断策略字段复用原 `TextField` / `SelectField`，明确选择后端、语言、实际模型和策略版本、外发范围、四项预算及可选置信条件。预算检查安全整数、正输入和非负输出；重复语言、非有限或越界置信、真实性范围缺少边界和顺序错误显示复核提示。切换题型保留原范围并提示核查；字段禁用随外层状态生效。参数验证来自现有 `internal/judgment/contracts.go` / `validation.go`，没有生成或猜测公共 DTO，没有发起判断、保存策略或开启委托。
+
+| 实际命令或操作 | 本阶段结果 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS，无类型错误 |
+| `pnpm --dir web exec eslint src/pages/attention/delegation` | PASS，零 errors / warnings |
+| `pnpm --dir web exec vitest run src/pages/attention/delegation/policyDraftIssues.test.tsx --maxWorkers=1` | 4 PASS，EXIT0；仅明确参数的验证与静态显示，不代表后端、策略或模型调用 |
+| `pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-policy-0249` | PASS，EXIT0；原大于 500 kB 的分块提示保留。安全日志 `logs/web-policy-build-0249.log` |
+| Playwright 只读访问同一普通产品 `http://127.0.0.1:64505` | `/attention`、`/workspace`、`/swarm` × 1920×1080 / 1280×720 共六项：HTTP200、各一个 h1，导航检查时零 alert、横向溢出和 pageerror。没有业务写入、原生操作、模型或截图；安全日志 `logs/live-readonly-navigation-0245.log` |
+| `git diff --check`、`git diff --cached --check` | PASS |
+
+本轮新产物、进程 TEMP / TMP 与日志均在 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`。共享产品仍为 H 持有、F 唯一业务操作的实例；本树未启动第二共享服务，未部署本阶段 SOURCE。上述导航覆盖当前生产 `ad8413e`，表单检查覆盖本树 SOURCE，两者分别记录。
+
+02:55 补充键盘导航与异步读取检查时，首个 `page.goto("http://127.0.0.1:64505/attention")` 实际返回 `net::ERR_CONNECTION_REFUSED`，Node EXIT1，未进入页面和业务断言。02:55:57 本机只读核查 `listener_count=0`，原 PID25048 无进程返回。此前六项导航结果保持原时间含义；本轮没有自动重试、启动替代实例或操作共享进程，已交 H / F / 模块核查当前运行状态。完整键盘和异步读取仍未通过。
+
+H `67fb5f255d52130f5ae30377ab615dd17b7c79ef` 已提交 Judgment / Taste 生产装配；本树公共 OpenAPI 与生成类型尚无对应 Judgment、policy、snapshot、delegation 和完整 Taste 路径。准确缺口已交 H / F，后续继续按 H OpenAPI → F 生成类型和公开客户端 → 本域页面接入，未消费 WIP。S5 实际 HTTP / SQLite / 两尺寸操作、S3 原生和 Artifact 正向、最终同源 `pnpm check` / `pnpm build` / 完整默认 E2E 及 Windows 包继续待验，未将本阶段字段与导航检查计为整功能通过。
+
+## 2026-10-16 02:01 真实仓库上下文两尺寸验证
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`。分支 `songconmaisaix31-design/product-ui-20261015`，SOURCE `96fa3e6d6ef5716d8cc3aa0a2180bc600b706b3d` 已普通 push，独立 `git ls-remote` 同值。源码仅两件：新增 `web/e2e/s4-repository-configured.spec.ts`，以及本域 `RepositoryContextPanel.tsx` 在真实 `evidence_missing` 时显示仓库源码、索引与治理说明的核查提示。共享 API、类型、认证、helper 和配置未修改。
+
+按模块 `msg_213a3e36e496` / `msg_04b104e4f465` 的本人当前输入，直接只读使用公开仓库 `astrocyte-s4-public-context-20261015` 的两个真实工作树，HEAD 均为 `4317d610cbe80aa6c4e22ea4da5e8dde013de4ed`。A 的九项现有 WIP 和十件 `.aoci` 文件保持，B 无治理索引；每项已启动服务的用例结束后均核 Git 状态及两树治理文件的路径、大小和修改时间未变。测试没有复制原数据库或投影，没有写入原工作树。CodeGraph 使用实际 Node v24.16.0 / SDK 1.0.1 与本树原适配脚本；AOCI 使用本人交付的实际 v0.1.0-rc20 程序，程序与原始地图仅保留本机，不进入 Git 或发布包。
+
+每个服务使用独立 D 盘 SQLite、objects、projection/cache、TEMP 和空程序 profile。按模块 00:42 已授权的实际缓存，明确设置 `GOMODCACHE=C:/Users/DW/go/pkg/mod` / `GOPROXY=off`；缺少依赖立即失败。其余资源为 `GOMAXPROCS=2`、`GOFLAGS=-p=2`、`workers=1`、`retries=0`，没有新增 skip、放宽业务断言或修改原 helper / 超时。没有调用原生 Agent 或模型。
+
+| 实际命令与运行 | 结果与本机证据 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS / EXIT0 |
+| `pnpm --dir web exec eslint src/pages/workspace/repositorycontext e2e/s4-repository-configured.spec.ts` | PASS / EXIT0，零 errors / warnings |
+| 配置场景首轮，`pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s4-repository-configured.spec.ts --workers=1 --retries=0`，两尺寸 | 6 FAIL / EXIT1，全部保留。两个 CodeGraph 场景实际 index/search、Count snake 字段和来源行号通过后，测试的相对 `has` 定位符错误；1280 AOCI 实际 refresh 200 / 地图六项读取后遇同类定位错误；1920 AOCI 在私有 HOME 的新 Go 模块缓存下载发生 EOF，未到业务；两个 B 缺口场景真实 404 / 400 / 空存储通过后，页面缺少对应领域提示。日志为 `product-ui-20261015/logs/e2e-s4-configured-first.log`，原始数据库、trace 和报告为 `ui-s4-first` / `ui-s4-first-results` / `ui-s4-first-report` |
+| 同一配置场景修正后第二轮，两尺寸 | 6 PASS / EXIT0，2.8 分钟。日志 `product-ui-20261015/logs/e2e-s4-configured-second.log`，数据、trace 和报告为 `ui-s4-second` / `ui-s4-second-results` / `ui-s4-second-report` |
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s4-repository-context.spec.ts --workers=1 --retries=0`，原未配置场景两尺寸 | 2 PASS / EXIT0，50.0 秒。原用例零改动，503 / 明确参数 / 403 快照保留与人工恢复 / 维护禁用 / 零索引和原生会话 / 页面无横向溢出均通过。日志 `product-ui-20261015/logs/e2e-s4-unconfigured-first.log`，数据和报告为 `ui-s4-unconfigured` / `ui-s4-unconfigured-results` / `ui-s4-unconfigured-report` |
+| `git diff --check` | PASS |
+
+上表全部本机路径前缀为 `D:/Astrocyte-agent-assets/20261015/`，原始响应、模型编写的地图说明、认证、SQLite、trace 和工具诊断只保留本机。文档和工具输出只给安全派生结果与指针。八个尺寸用例的成功来自配置六项和未配置两项两次独立运行，没有登记成单轮八项。
+
+配置场景实际覆盖两工作树的同仓库身份与不同 worktree / generation、明确用途 / 根路径 / 四项预算、人工建立索引、真实 Count 搜索和来源位置、选择符号后实际影响查询、全部关系标记 `codegraph_static_heuristic` 与明确 `semantic_embedding_not_available`、目录许可撤销后的新查询 403 / 保留结果 / 禁止维护、恢复权限后的 409 / 人工重建 / 新权限版本、服务进程重启后的实际 SQLite generation、零原生会话和两尺寸无横向溢出。AOCI 实际读取缺失地图 404 后明确刷新、HTTP 200、六项 `aoci_model_authored_fras` 说明与职责 / 约束字段逐项展示均通过；B 的真实缺口拒绝刷新 400 / `evidence_missing`，SQLite 未保存 AOCI 索引，页面显示对应核查提示。地图说明保持模型编写来源，静态关系保持启发式来源。
+
+完整默认浏览器需明确提供以下当前本人输入，正向测试不使用猜测默认值或 skip：
+
+| 环境变量 | 当前实际绝对路径 |
+|---|---|
+| `ASTROCYTE_TEST_S4_WORKTREE_A` | `C:/Users/DW/orca/workspaces/Astrocyte/works-repository-context-s4-20261015/dist/s4/worktree-a` |
+| `ASTROCYTE_TEST_S4_WORKTREE_B` | `C:/Users/DW/orca/workspaces/Astrocyte/works-repository-context-s4-20261015/dist/s4/worktree-b` |
+| `ASTROCYTE_TEST_S4_NODE` | `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe` |
+| `ASTROCYTE_TEST_S4_SDK` | `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/sdk/node_modules/@colbymchenry/codegraph` |
+| `ASTROCYTE_TEST_S4_AOCI` | `C:/Users/DW/orca/workspaces/Astrocyte/works-repository-context-s4-20261015/dist/s4/tools/aoci.exe` |
+| `GOMODCACHE` | `C:/Users/DW/go/pkg/mod`，同时明确 `GOPROXY=off` |
+
+本轮准确生产组合沿 `60288aa0d1d2a5b1ceb014497b60ab89ba3620ea`。模块 `msg_91406158bd47` 已明确另一个实际 main 的撤权异步清理失败，等待 B/H 原负责人准确 SOURCE；本轮未验收 metadata / generation 的后台清除，不以领域旧检查替代 main 结果。S4 的同步与预算拒绝浏览器检查、S3 认领与 Artifact 正向、S5 H→F 的实际客户端、最终同源标准 `pnpm check` / `pnpm build` / 无过滤默认 E2E 及 Windows 包仍继续。当前未消费任何在途 WIP，未执行 Relay 原生操作，未结算整功能。
+
+## 2026-10-16 01:22 实际 S2 / S3 人工路径与固定上下文验证
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`，分支 `songconmaisaix31-design/product-ui-20261015`。当前准确 SOURCE `471bcc9f34b5ae82375b03fdcf5938d3a127d9b1` 已普通 push 并独核远端同值，工作区 clean。本域页面增量为 `64ab5cadb93067aacfe11c51f5ad0036cf9bb49a`、`32adab9201f44d6a1628da1f02a48d9e4a2ba819`、`614ebc72bf87d8c41bd75be67f659da34a85526b`；原 S3 用例 SOURCE `033557f16b6b806e8a1626fc28bfd34bde13bed7`，后继测试修复为当前 SOURCE。
+
+模块 `msg_ff0a45cfebe9` 放行后，从 clean 检查点只读预检 I `9ce5c2c21b273344e2448bee2ee4b80fa27d5fec`，EXIT0 / 无冲突，tree `81661e49401b14986ffdecd0ed1dda86ff054fd7`。随后普通 no-ff 消费为 `60288aa0d1d2a5b1ceb014497b60ab89ba3620ea`，无冲突；成熟 YAML 完整解析通过，未手改 OpenAPI。前一 REPORT `ba0ed8f` 首次普通 push 的 `remote rejected (failed)` 保留；后续 SOURCE 普通 push 成功，包含该 REPORT 与准确 I 消费。
+
+本轮全部真实服务使用生产 Go、实际 HTTP、独立 SQLite、真实 Git 与已跟踪公开协议资料；原生控制与模型调用均为零。全部浏览器运行 `workers=1 / retries=0`，1920×1080 和 1280×720；没有改原断言、超时或新增 skip。
+
+| 实际运行 | 精确结果与本机证据 |
+|---|---|
+| S3 + Context 两文件、两尺寸共 12 项 | 8 PASS / 4 FAIL，2.5 分钟；`logs/e2e-swarm-context-second.log`、`swarm-context-e2e-second-report` / `-results` 与全部实际数据库保留。S3 四场景两尺寸八项全部 PASS；四个 Context 失败均为测试提案前置未填必需资源上限，被真实服务拒绝 |
+| S3 实际覆盖 | 明确建立 ready Mission、真实固定输入工作项、租约为空和原生执行为零、时间线全部 event_id 在真实 outbox 逐项定位、暂停 / 恢复 / 取消、工作项随任务取消、SQLite 重启、版本冲突保留输入及人工核对、Grant 撤销后的新动作 403、离线未知锁跨关闭 / 刷新保持、读取 403 后快照 / 输入保持与人工恢复、任务 / 工作项 / 时间线 / 产物空集合导航 |
+| 全部原 S2 + Context 两文件、两尺寸共 20 项 | 15 PASS / 5 FAIL，12.2 分钟；`logs/e2e-s2-context-third.log` 与 `s2-context-e2e-third-*` 保留。原 S2 为 13 PASS / 3 FAIL；三个 1280 失败均为 Vite 初始化就绪 GET 在约 1 秒的 response_headers timeout，尚未进入业务，已交唯一 B。另两个 Context 已真实建立原包和后继、展开来源并完成 403 恢复，失败为本域测试查询遗漏事件类型 `workspace.` 前缀；实际两条事件已逐一在原 SQLite 找到 |
+| 修正后的完整 Context 四项 | 4 PASS / EXIT0，1.0 分钟；`logs/e2e-context-fourth.log` 与 `context-e2e-fourth-*`。SOURCE `471bcc9` 使用明确调用上限和准确事件类型，新增按每个 event_id 的独立 SQL 定位，全部断言保留。采用 `GOMAXPROCS=2 / GOFLAGS=-p=2`，其余期限、helper 和断言不变 |
+| Context 实际覆盖 | 建立固定上下文、实际来源与 Goal 版本、相对根和无绝对根快照、实际 HEAD / 两项 digest、原包不可变及显式后继、来源与备注展开、真实 403 快照保持及恢复、两条真实构建事件、服务重启后按 ID 读取、Grant 撤销后新建拒绝、零原生会话、离线未知锁跨关闭 / 刷新保持与零重发 |
+| 原 S2 三个初始化失败的限定资源复验 | 3 PASS / EXIT0，35.8 秒；`logs/e2e-s2-resource-fifth.log` 与 `s2-resource-e2e-fifth-*`。原 `s2-proposals.spec.ts` 未修改，限定原三名称及 chromium-1280，使用同一 Go 资源限制；未修改 ready 1000ms、任何超时、retries 或断言。原 S2 的 16 项成功覆盖来自前轮 13 项加本轮 3 项，未登记成单轮全绿 |
+| 最终 `pnpm --dir web typecheck` | PASS / EXIT0；`logs/typecheck-s2-s3-final.log` |
+| 最终生产 Go 三个目标 | `go build -mod=readonly -trimpath -o D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-s2-s3-final/astrocyte.exe ./cmd/server` 及同目录 MCP / Sleep 对应目标均 PASS / EXIT0；`logs/go-server-final.log`、`go-mcp-final.log`、`go-sleep-final.log` |
+| 最终生产 Web | `pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-s2-s3-final/web` PASS / EXIT0；`logs/web-build-s2-s3-final.log`，保留既有大于 500 kB 分块提示 |
+
+所有路径前缀均为 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`，仅本机指针；数据库、trace、原始失败与凭据不进入 Git 或包。原三次 Vite 超时的具体目录为第三轮 `astrocyte-s1-327UNH/process-logs-YdujCJ`、`astrocyte-s1-DAi6q9/process-logs-BNmHZU`、`astrocyte-s1-rPoQ26/process-logs-LeF7Ak`。限定资源复验成功不构成对原启动失败原因的确定诊断，helper 逻辑继续归 B。
+
+当前只登记以上实际覆盖。S3 原生认领 / 提交、Artifact diff / 采用 / 退回正向、S4 配置后索引及双 worktree、S5 实际客户端、完整默认浏览器与标准 `pnpm check` / `pnpm build`、最终 Windows 包继续待对应准确组合验收。标准 build 固定本树普通 C 盘 dist，本轮使用上表完整生产目标的显式 D 输出，没有将其记为标准命令通过。S3 两项待答和相关认领门禁保持，未开启原生控制。已向模块请求准确 core 检查安排，向 S4 请求当前公开双 worktree / 启动参数；同一任务持续支持集成及返修，未结算整功能。
+
+## 2026-10-16 00:59 真实 Swarm 集合与导航
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，SOURCE `614ebc72bf87d8c41bd75be67f659da34a85526b` 已普通 push 并独核远端同值，仅修改 Swarm 页面、Mission 详情及新增集合组件 / Hook 和原 S3 用例五件。默认协作现场可展开已有任务、查看任务和工作项；成果与继承显示实际产物引用。工作项、当前租约、产物和事件来自每个真实 Mission 详情，独立读取并保留 loading / empty / error / stale / 人工重试；任务列表权限错误传播至三个集合，未取得记录时数量明确未知。工作项和产物可直接打开原功能详情；建立 Mission 入口在空记录折叠时仍可使用。
+
+任务时间线使用实际持久化事件，空记录显示“暂无任务事件”；没有协作图时保留真实拓扑缺口说明。原 F `preview-design` 的“事件时间线尚未接入”断言已与现行准确 Mission timeline 契约冲突，已向 F 和模块交接，须验证真实空事件及零虚构动态，页面不显示错误能力状态。原导航、三集合空状态和权限恢复的实际行为继续验收，没有删除原用例或断言。
+
+全域 `pnpm --dir web typecheck` PASS，记录为 `logs/typecheck-swarm-collections-first.log` / `typecheck-swarm-collections-second.log`；定向 `pnpm --dir web exec eslint src/pages/swarm/SwarmPage.tsx src/pages/swarm/missions e2e/s3-missions.spec.ts` PASS / 零 warnings。首次 Fast Refresh warning 保留于本 Dispatch 输出，Hook 分离后检查通过。`git diff --check` / `git diff --cached --check` 通过。S3 原用例另增真实工作项直达、时间线事件与产物空记录检查；真实浏览器仍待准确契约修复，没有将静态检查登记为整功能通过。
+
+H 已向模块确认在唯一 I 原树修复并归还重复契约；模块已独核原 S2 归还后 U0 并交 M-release，准确后继 SOURCE 尚待 I 完成。F 在途默认浏览器由其本人自然完成，本树未修改 F 在途文件。前一实际 E2E YAML 首失败、原成功和所有后续依赖继续保留。
+
+## 2026-10-16 00:49 实际 Context 建立入口与契约首失败
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd` 持续执行。模块准确授权后，已从 clean 检查点普通 no-ff 消费唯一 I `23672247d340e80c233951afdce7155b7fa66b1c`，合并为 `b2f7de9916a5babba831cbf7175326f3a34c2608`，无冲突。OpenAPI 与该 I 完整 diff0，未修改共享逻辑。
+
+SOURCE `32adab9201f44d6a1628da1f02a48d9e4a2ba819` 在批准详情接入 ContextPacket 实际建立、后继重建和按 ID 读取。预算必须明确填写 1–2097152 字节；前序包与六类备注由人工填写。调用复用 F `workspaceContextApi`、原人类认证和 CSRF、当前 Grant Epoch 与持久命令 Hook。无 read_context、非有效批准、读取过期或撤销结果未知时禁用建立；未知建立请求跨关闭和刷新保持锁定，读取不重发。服务独立核快照、当前权限和来源预算；页面不生成快照或执行身份。
+
+新增 `s2-context.spec.ts` 两场景沿两 viewport。生产 helper 明确配置本次环境 ID，仅使用真实 Git 快照，不配置 CodeGraph / AOCI，不触发原生操作。用例覆盖实际来源版本、不可变前序包与后继关系、403 快照保持与恢复、撤销后新建拒绝、实际 SQLite 与重启、离线未知锁；当前尚未执行，不能登记 Context 正向通过。
+
+| 命令 | 实际结果 |
+|---|---|
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s3-missions.spec.ts --workers=1 --retries=0 --output D:/Astrocyte-agent-assets/20261015/product-ui-20261015/swarm-e2e-first-results` | 首 FAIL / EXIT1：`tests/s1/contracts.mjs` 使用真实 yaml 2.9.1 解析准确 I OpenAPI，line524 重复 `/goals`，八项尚未加载，服务与原生未启动。原 `logs/e2e-swarm-first.log` / report 保留；已直接交 H 与模块 |
+| `pnpm --dir web typecheck`，Context 表单及用例后 | FAIL：仅 F 原七处显示参数和 Prepare 标签错误，本域零类型错误；`logs/typecheck-context-builder-first.log` / `typecheck-context-e2e-first.log` 保留 |
+| `pnpm --dir web exec eslint src/pages/workspace/proposals e2e/s2-context.spec.ts` | PASS，零 errors / warnings |
+| `git diff --check` / `git diff --cached --check` | PASS |
+| F SOURCE `e689e7f5410d977f8cb72df57efbfeb5f490c415` 七件准确消费 | 模块放行后由 clean 检查点普通 `cherry-pick -x` 为 `6b1fc5e`，无冲突，七件完整 diff0；逻辑归还 F |
+| B SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872` 四件准确消费 | 同条件普通 `cherry-pick -x` 为 `6a52d4d`，无冲突，四件完整 diff0；逻辑归还 B |
+| 消费 F 后 `pnpm --dir web typecheck` | 全域 PASS / EXIT0；`logs/typecheck-F-e689-first.log`。原七处错误与此前首失败日志保留 |
+| `go build -mod=readonly -trimpath -o D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-context-first/astrocyte.exe ./cmd/server` | PASS / EXIT0，`logs/go-build-context-first.log` |
+| `pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-context-first/web` | PASS / EXIT0，`logs/web-build-context-first.log`；保留既有大于 500 kB 分块提示 |
+
+H 当前 `ctx_e492c738e964` 负责 OpenAPI 修复；原 F / B 精确共享修复已消费。成熟 YAML parser 的只读完整诊断另发现八处重复键，已交 H：line524 `/goals`、549 `/goals/{id}`、576 `/proposals/{id}`、603 `/proposals/{id}/decline`、618 `/approvals/{id}`、630 `/approvals/{id}/complete`、645 `/approvals/{id}/expire`、9732 `S2GoalListV1`。本树只修改自身页面和用例，原 S2 全部成功与首次失败保持；完整 `pnpm check` / `pnpm build`、实际 S3 / Context、S4 / S5、原生与最终包尚未通过，同一任务继续开发和返修。标准 build 仍固定本树普通 dist，本轮使用上表显式 D 输出命令，未将其登记为标准命令通过。
+
+本阶段 SOURCE 首次普通 push 返回 `remote rejected (failed)` / EXIT1；独立远端仍为前一 REPORT `8c10d42c9b55747974d6588db76524f854d358dc`，错误保留于本 Dispatch 命令记录。继续普通 push，未 force 或改变历史。
+
+后续普通 push 成功，独立 `git ls-remote` 核远端 REPORT `3fae7289565505c4be6030f134cbd8bd18e00db2` 同值，包含准确 SOURCE `32adab9` 及 I 消费；首失败保持。可交 F 的本域准确增量为 `64ab5ca` 三件和 `32adab9` 三件，全部目标已停止写入、无 WIP，由模块在本人安全检查点安排精确消费。
+
+## 2026-10-16 00:35 恢复与真实 Mission 用例
+
+当前 Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，产品模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`。当前执行入口为根 HANDOFF / STATUS 与模块 00:34 计划；原工作树、分支和全部证据保留。接管 HEAD `2bfbbe966b6f977e4df241bfae05bd0e7fcd7ba4`，唯一未提交内容为 `web/e2e/s3-missions.spec.ts`，已由同一任务继续完成。B 显式 D 输出八件与 F 生成类型及公开 Swarm / Context 客户端均已准确消费，无重复合入。
+
+本阶段 SOURCE `033557f16b6b806e8a1626fc28bfd34bde13bed7` 已普通 push，独立 `git ls-remote` 核远端同值。新增四个真实服务场景，沿原两 viewport 配置，使用生产 Go / HTTP、真实 SQLite、实际跟踪协议文件的固定资料版本、人工会话与 CSRF；覆盖人工建立 ready Mission、添加工作项、实际事件库逐项定位、暂停恢复取消、版本冲突保留输入、Grant 撤销后新动作拒绝、未知锁跨关闭和刷新保留、403 后快照及输入保持与权限恢复。认领、提交和原生执行没有构造替代身份。
+
+| 本阶段命令 | 实际结果 |
+|---|---|
+| `pnpm --dir web typecheck` 首轮 | FAIL：本域用例一处 Grant 字段错误及原 F 七处旧显示参数 / Prepare 标签错误；全部输出保留于 D 专用 `logs/typecheck-swarm-resume-first.log` |
+| 修正后 `pnpm --dir web typecheck` | FAIL：仅原 F 七处错误，本域零类型错误；`logs/typecheck-swarm-resume-second.log`。已交模块，不修改共享文件 |
+| `pnpm --dir web exec eslint src/pages/swarm/SwarmPage.tsx src/pages/swarm/missions e2e/s3-missions.spec.ts` | PASS，零 errors / warnings |
+| `git diff --check`、`git diff --cached --check`、普通 push / 远端核查 | PASS |
+| clean 检查点只读 `git merge-tree --write-tree --name-only HEAD 23672247d340e80c233951afdce7155b7fa66b1c` | EXIT0，无冲突，结果 tree `ceed51c368d3ca5c9817a882faaa6c451b1cb696`；`logs/merge-tree-I2367224-first.log`。尚未实际 merge，index 与工作区不变 |
+| 新增 S3 两尺寸真实 E2E、完整 `pnpm check` / `pnpm build` | 本轮尚未执行，待准确可消费后端组合及 F 修复来源；I 首 check 格式错误保留并由原 S2 / B 修复 |
+
+本轮输出和进程临时目录为 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`；GOCACHE 沿原共享 `D:/Astrocyte-agent-assets/20261015/go-build`。新增用例已提交只表示可审核的测试内容；Mission HTTP 正向、原生、Artifact 采用退回、S4 / S5 正向及最终 Windows 包继续未完成，任务持续执行。
+
+后继 SOURCE `64ab5cadb93067aacfe11c51f5ad0036cf9bb49a` 已普通 push 并独核远端同值。固定 ContextPacket 引用沿 F 现有公开客户端和查询 Hook 按用户展开动作读取；任务租约、历史执行和产物证据提供入口。展开显示固定来源版本和位置、批准与目标版本、项目快照、两项 digest、工具与外发范围、停止条件、决定、结果、检查、失败和后继关系。读取失败保留快照并提示过期，包 ID 与项目不一致立即失败。本域 lint / diff-check 通过；TypeScript 仍仅 F 原七处错误，原件为 D 专用 `logs/typecheck-context-reference-first.log`。实际 Context HTTP / 浏览器展开尚未运行，不登记为正向通过。
+
+模块准确授权消息 `msg_8c42d042650d` 已允许独立 REPORT 完成后的 clean 检查点普通 no-ff 消费 I `23672247d340e80c233951afdce7155b7fa66b1c`。本域后继来源无在途命令、零 WIP 时重新预检仍 EXIT0 / 无冲突，tree `bf9861645bf45b9db6fe4a7cd155a4f6a671d63d`。F 当前 `ctx_630293cc6778` 负责共享修复，来源待交；本树不复制其 WIP。React 组件按现有 Hook、键盘按钮、展开语义与状态保持检查，未新增依赖。
+
+上阶段任务 `task_d0cee5a583bb` / Dispatch `ctx_dcc1247de817`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9b068e2051ff`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`；该阶段恢复基线 `50751569fe2086178247b1a8aae912d62e5cb5ae`，接管时工作区 clean。执行入口采用根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 及产品模块记录。
 
 只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`；模块计划 `2f609ea484fa690b8f2a2b6a754e1a63e398fe42` 和 F `msg_ea981e24bc0d` 正式追加 `web/src/pages/attention/delegation/**` 与 `web/e2e/s5-*.spec.ts`。全部新增范围继续由同一任务、人员和工作树承担。Workspace/AttentionPage 薄入口、公共客户端（包括 `api/judgment.ts`）、生成类型、查询 Hook、认证、共享组件、RankingPanel 与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+
+## 2026-10-16 准确 Swarm 契约与人工控制页面
+
+SOURCE `0661b49fd5b29cded5dbf15277fc5abafa20b8c2` 已普通 push，独立 `git ls-remote` 核远端同值。本阶段只修改 Swarm 页面、其 CSS 和 `missions` 域八件。实际列表消费生成的 `SwarmMissionV1`；详情通过准确公共 `swarmApi` 读取 Mission、WorkItem、当前 Lease、历史执行身份、上下文与策略版本、工具事件读取状态、产物和持久化事件引用。列表的工作项数量来自实际账本，产物从所选任务详情读取；未知用量与费用明确保留未知。
+
+人工会话提供从固定 Grant 建立任务、添加固定输入工作项、暂停、取消、原执行核查与恢复、产物当前或固定版本读取、真实 Git diff、人工采用与退回。命令复用现有生成客户端、人类会话、CSRF、版本与幂等键，以及 `usePersistentCommand`；未知请求跨关闭和刷新保持锁定，读取不解除锁或自动重发。工作项输入在版本变化时保留，用户核对当前任务版本后才能再次保存。当前 Grant 状态单独读取，失效或读取失败时禁用新工作项与产物验收。人工停止操作仍由真实服务核查当前状态。
+
+认领和提交接口要求已绑定的 Agent 身份，人工网页显示对应受限入口和实际租约、上下文、执行与产物证据。页面不收集 Agent token 或改变 caller 身份。S3 调用计数单位、权限证据两项待答条件与原生窗口门禁继续有效。本阶段未进行原生注册、确认、读取、停止或模型调用；人工采用产物与批准经验保持分别受控。
+
+| 精确消费输入 | 本地消费 Commit / 实际结果 |
+|---|---|
+| F 生成类型 SOURCE `cdf0b5eb4c2b3a1c7b76a335eb01d02dd7f6fee6` | 模块本人安全 ACK 和临时范围放行后普通 cherry-pick 为 `148ad6d60b8be41e7d6a5b32d7eee2bad7159bef`；仅 `schema.d.ts`，与来源完整 diff0，后续逻辑归还 F |
+| F 人工 Swarm / 固定 Context 客户端 SOURCE `4192c26bd77ec70504f286f8ddb75a145779ab58` | 同条件普通 cherry-pick 为 `fa24ac53a91891fb47c3df6952b7865444226ca4`；仅 `relay.ts`、`swarm.ts`、`workspaceContext.ts`，完整 diff0，后续逻辑归还 F |
+| B D 盘与真实日志 helper SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` | 同条件普通 cherry-pick 为 `cded4e70aecfd8a5c13ea19dc95ab36b41e939f2`；仅指定八件，完整 diff0，后续逻辑归还 B |
+
+全部消费均无冲突，没有带入输入的其他后端祖先。后续验证使用独立 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/` 的输出、日志与进程 TEMP/TMP/GOTMPDIR/GOCACHE；官方浏览器二进制路径由发布负责人明确交为 `D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001`，仅作进程配置，不修改全局设置。
+
+| 本阶段命令 | 实际结果 |
+|---|---|
+| `pnpm --dir web typecheck` | 首 FAIL：仅 F 域四个旧 Mission/WorkItem 参数显示测试、`relayReceipts.tsx` 与 `relayTaskPanel.tsx` 的 Prepare 标签未适配；本域零类型错误。原输出保留于 D 盘 `logs/typecheck-swarm-contract-first.log`，已交原 F，不能登记全域通过 |
+| `pnpm --dir web exec eslint src/pages/swarm/SwarmPage.tsx src/pages/swarm/missions` | PASS，0 errors / 0 warnings |
+| `git diff --check`、限定输入完整 diff、源码普通 push / 远端核查 | PASS |
+| 实际 HTTP / SQLite / 两 viewport E2E、`pnpm check`、`pnpm build` | 本轮尚未运行，等待准确可构建集成与 F 参数测试修复；缓存迁移已归还不替代功能验收 |
+
+当前页面阶段只登记以上真实覆盖。S2 原先成功与全部首次失败继续保留；本阶段 HTTP / E2E、Context 正向、S3 原生执行、S4 实际索引、S5、默认完整检查及最终 Windows 包尚未完成，同一任务持续开发与返修。
 
 ## 2026-10-15 22:00 恢复阶段：仓库上下文实际客户端接入
 
@@ -22,6 +207,30 @@ SOURCE `c5925670311189acc5294f8be58fe014afe8ae55` 已普通 push，包含本树�
 新增用例使用生产 Go、真实 HTTP/SQLite 和原两 viewport，验证未配置服务的 503、明确查询参数、键盘提交、项目读取 403 保留输入/禁用动作、人工恢复权限和零索引/原生会话。用例不替换网络响应，不将未配置能力登记为正向查询通过。
 
 当前生产 `cmd/server/main.go` 的 Repository services 为空；原 S4 `ctx_09391d7a7e02` 已交实际 CodeGraph/AOCI 配置和只读公开两个 worktree 指针，但依赖 H 后继安全装配 SOURCE。模块明确禁止消费 `59a7150b1143680b67fe53fdf831fcca5f328660`，本树未消费该提交。安全 Context → S3 → S4/S5 的准确 OpenAPI、生成客户端和入口继续由 H/F 持有；S3 现行准确业务 SOURCE 为 `a5d00e764ffa0266bf34067190f72f3463fe9852`，没有依据私有原生 controller 信息扩展页面字段。Calls 单位和权限证据未答，Claim 拒绝与原生窗口零保持。完整 check、默认 E2E、正向 S4、Context、S3/S5 和 Windows 最终包尚未通过，任务持续支持集成。
+
+## 2026-10-15 22:43 固定目标版本与真实组合验证
+
+本阶段 SOURCE `dbd1018f163e6760cc7806c302fd3aa677706267`。目标列表提供键盘可操作的详情入口，详情显示名称、成功条件、优先级、状态、项目、固定版本及保存时间；支持当前记录、不可变历史版本、相邻版本差分与人工创建新版本。并发版本冲突保留编辑内容，重新读取当前目标后，用户明确核对并选择新版本再保存。目标状态使用现有生成契约的 `active / paused / completed / archived`，已有目标的项目保持固定。未知保存结果沿同一目标作用域保留跨关闭和刷新锁，不自动重发。
+
+提案详情按已经保存的 Goal ID 与 revision 读取固定目标，展开后显示原名称和成功条件。当前目标更新后，历史提案、Grant 与该展开内容继续引用原版本；固定目标读取、历史记录和编辑命令均使用 F 现有 `proposalsApi`，没有新增公共 DTO、共享请求或认证实现。
+
+| 实际命令或路径 | 本阶段结果与本机记录 |
+|---|---|
+| 新 Goal 两场景 × 两 viewport 首轮 | 4 PASS，5.2 分钟；真实 CAS 冲突、人工核对保存 r3、旧 Goal/提案/Grant 引用、SQLite 与进程重启、离线未知跨关闭/刷新锁。`.verification/product-ui/e2e-goal-revisions-first.log` 与报告、真实数据库保留 |
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s2-proposals.spec.ts --workers=1 --retries=0 --output ../.verification/product-ui/e2e-s2-goal-combined-first` | 15 PASS / 1 FAIL，27.6 分钟；全部原 12 项及新增 4 项，无 retry / skip / 断言删减。新增固定目标展开路径在两个 viewport 通过；`.verification/product-ui/e2e-s2-goal-combined-first.log` 与 `e2e-s2-goal-combined-first-report` 保留 |
+| 组合首 FAIL | 第 3 项 1920，在 `realService` 的实际 Vite 就绪 GET `http://127.0.0.1:56087` 发生 `read ECONNRESET`；Go health 已 200、Vite ready 3234ms，尚无 auth 请求及业务交互。真实数据 `astrocyte-s1-UorV8K`、error-context 与 trace 均保留；已交 F，未修改 helper 或降低验收 |
+| 首次 Goal 类型与 lint 检查 | 三处测试访问 `grant` 字段的类型错误及同文件导出常量的 Fast Refresh warning 保留；随后沿生成响应的 `approval` 字段和独立 `goalDraft.ts` 修正 |
+| 最新 `pnpm --dir web typecheck` | PASS；`.verification/product-ui/typecheck-goal-question-second.log` |
+| `pnpm --dir web exec eslint src/pages/attention/delegation src/pages/workspace/proposals e2e/s2-proposals.spec.ts` | PASS，0 errors / 0 warnings |
+| `pnpm build` | PASS：Go 服务、MCP、Sleep 和生产 Web；`.verification/product-ui/build-goal-question-first.log`。Vite 分块提示保留 |
+| `pnpm check` | FAIL：`internal/adapters/httpapi/workspace_context_packets.go` 的 gofmt；`.verification/product-ui/check-repository-goal-first.log`。该文件归原后端负责人，准确 H 安全组合已包含修正，待 F 交完整可消费来源 |
+| `git diff --check`、`git diff --cached --check` | PASS |
+
+同一 SOURCE 的 `JudgmentQuestionFields` 按准确 S5 `d73507a8a26ce49b92ec8504649738f336bcdfd1` 的 Question 与验证规则提供受控编辑：显式题型、完整题目、2–255 个候选选项与固定必要依据、2–10 个有序评分等级、确定性规则选择、重复标识和当前不可用依据提示。切换题型保留输入并提示规则不匹配。该组件仅为本域表单字段，没有 API 保存、委托开启或判断调用；S5 实际功能仍待准确公共客户端，不登记为 HTTP 或业务通过。
+
+本阶段首次及第二次普通 push 发生 `SSL_ERROR_SYSCALL`，第二次后独立远端核为前一 REPORT `47467a886ba6a013df33607f1569afad15ed9cc5`；原错误保留于本 Dispatch 命令记录。后续继续普通 push，不改历史。
+
+模块 `msg_d8f6943bf737` 与原问题 `msg_063afc14de9a` 的准确答复已给 F 入口 SOURCE `d94f6ef2d3188c02e82ccf9cee529833e9f89df5` / REPORT `02a7976d997ef14ac298b2e240da43a9bb423c93`，模块已核远端，并报告 S4 两尺寸未配置/权限恢复 2 PASS。当前 16 项已自然结束，先保存本域 SOURCE / 独立 REPORT，再只读预检并普通消费该精确入口。新的大型验证使用 B 后继显式 D 盘 helper；原证据保留。H 安全 Context `fbf2a4a4752ef2842900b3d3a851f80986734ce9` → F 的生成客户端仍在原负责人组合流程；S3、Context 正向、S4 真实索引与两个 worktree、S5、完整默认检查和最终包继续未完成。
 
 ## S5 委托设置的实际接口依赖
 

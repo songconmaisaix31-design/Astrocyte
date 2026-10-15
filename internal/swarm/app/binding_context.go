@@ -9,17 +9,19 @@ import (
 )
 
 type AuthorizedBinding struct {
-	ID              string
-	Purpose         string
-	Version         int
-	PacketID        string
-	ProjectID       string
-	MemberID        string
-	SessionID       string
-	NativeSessionID string
-	AdapterID       string
-	WorktreeID      string
-	Root            string
+	ID                 string
+	Purpose            string
+	Version            int
+	PacketID           string
+	ProjectID          string
+	MemberID           string
+	SessionID          string
+	NativeSessionID    string
+	AdapterID          string
+	ControllerID       string
+	StartupOperationID string
+	WorktreeID         string
+	Root               string
 }
 type authorizedBindingKey struct{}
 
@@ -48,22 +50,25 @@ func AuthorizedBindingForMember(ctx context.Context, p domain.Principal, m Membe
 	if p.Kind != "agent" || p.ID == "" || p.ProjectID == "" || p.ID != m.HolderID || p.ID != b.MemberID || p.ProjectID != m.ProjectID || p.ProjectID != b.ProjectID {
 		return b, domain.Failure(apierrors.ScopeDenied, "member binding does not belong to the current authenticated project identity")
 	}
-	if b.SessionID == "" || b.NativeSessionID == "" || b.AdapterID == "" || b.WorktreeID == "" || b.Root == "" || m.SessionID != b.SessionID || m.Worktree != b.Root || m.OperationID == "" {
+	if b.SessionID == "" || b.NativeSessionID == "" || b.AdapterID == "" || b.ControllerID == "" || b.StartupOperationID == "" || b.WorktreeID == "" || b.Root == "" || m.SessionID != b.SessionID || m.Worktree != b.Root || m.OperationID == "" {
 		return b, domain.Failure(apierrors.ContextStale, "current member binding lacks the exact native session and fixed worktree")
 	}
 	return b, nil
 }
 
-func (s *Service) executionForGrant(ctx context.Context, p domain.Principal, g domain.Grant, member Member) (ExecutionDescriptor, error) {
-	var descriptor ExecutionDescriptor
-	err := s.grants.WithAuthorizedGrant(ctx, GrantCheck{
+func (s *Service) withExecutionForGrant(ctx context.Context, p domain.Principal, g domain.Grant, member Member, fn func(context.Context, domain.Grant, ExecutionDescriptor) error) error {
+	if p.Kind != "agent" || p.ProjectID != g.ProjectID {
+		return domain.Failure(apierrors.ScopeDenied, "bound agent must belong to the approved project")
+	}
+	return s.grants.WithAuthorizedGrant(ctx, GrantCheck{
 		GrantID: g.ID, Epoch: g.Epoch, ProposalRevision: g.ProposalRevision, ProjectID: g.ProjectID,
 		Root: g.Root, ExecutionRoot: member.Worktree, Action: "read_swarm", Principal: p,
 		BindingIDs: []string{member.BindingID}, BindingPurpose: member.Purpose,
-	}, func(ctx context.Context, _ domain.Grant) error {
-		var err error
-		descriptor, err = s.execution(ctx, p, member)
-		return err
+	}, func(ctx context.Context, current domain.Grant) error {
+		descriptor, err := s.execution(ctx, p, member)
+		if err != nil {
+			return err
+		}
+		return fn(ctx, current, descriptor)
 	})
-	return descriptor, err
 }

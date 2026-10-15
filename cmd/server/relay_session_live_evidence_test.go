@@ -31,7 +31,14 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		t.Skip("NOT_RUN: explicit actual-service evidence directory required")
 	}
 	expected, err := filepath.Abs(filepath.Join("..", "..", "dist", "l1-live"))
-	if err != nil || !relayInside(expected, evidence) {
+	configuredAccess := os.Getenv("ASTROCYTE_L1_CONFIGURED_ACCESS") == "1"
+	configuredRoot := ""
+	if configuredAccess {
+		configuredRoot, err = relayRoot()
+		if err != nil || !strings.EqualFold(filepath.Clean(evidence), filepath.Join(configuredRoot, "verification", "h-evidence")) {
+			t.Fatal("实际验证目录超出本次明确接入根")
+		}
+	} else if err != nil || !relayInside(expected, evidence) {
 		t.Fatal("实际验证目录超出当前 H 工作目录")
 	}
 	var private struct {
@@ -40,10 +47,12 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 		SourceRoot string `json:"source_root"`
 	}
 	readActualJSON(t, filepath.Join(evidence, "service-private.json"), &private)
-	if !relayInside(filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification"), private.AppRoot) || private.DBPath != filepath.Join(private.AppRoot, "app-state", "state.sqlite") {
+	if private.DBPath != filepath.Join(private.AppRoot, "app-state", "state.sqlite") || configuredAccess && private.AppRoot != configuredRoot || !configuredAccess && !relayInside(filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification"), private.AppRoot) {
 		t.Fatal("实际数据库目录超出本轮范围")
 	}
-	t.Setenv("LOCALAPPDATA", filepath.Dir(filepath.Dir(private.AppRoot)))
+	if !configuredAccess {
+		t.Setenv("LOCALAPPDATA", filepath.Dir(filepath.Dir(private.AppRoot)))
+	}
 	store, err := sqlite.OpenRelayStore(private.AppRoot)
 	if err != nil {
 		t.Fatal("实际运行时数据库不可用")
@@ -356,6 +365,9 @@ func TestRelaySessionActualCommittedEvidence(t *testing.T) {
 	writeActualJSON(t, filepath.Join(evidence, "actual-model-derived.json"), map[string]any{"models": models, "policies": policies, "effective_tool_set": "unknown", "tool_calls": toolCalls, "assistant_messages": assistantMessages, "completed_turns": completedTurns, "reported_tokens": reportedTokens, "signals": signals, "nodes": nodes, "production_assembly": true, "source": "controller_selected_archive"})
 	writeActualJSON(t, filepath.Join(evidence, "committed-public.json"), map[string]any{"task_id": task.ID, "project_id": task.ProjectID, "agent_name": task.Agent, "registered_at": registered.RegisteredAt, "dispatched_at": dispatched.UTC().Format(time.RFC3339Nano), "events": committed, "native_session_event_ids": nativeIDs, "archive_event_ids": nativeIDs, "forbidden_canaries": []string{"L1_PUBLIC_CANARY_976E"}, "coverage": view.Coverage})
 	writeActualJSON(t, filepath.Join(evidence, "actual-evidence-derived.json"), map[string]any{"lines": batch.Next.Counts.Lines, "projected": batch.Next.Counts.Projected, "unknown": batch.Next.Counts.Unknown, "errors": batch.Next.Counts.Errors, "snapshot_bytes": batch.SnapshotBytes, "snapshot_complete": batch.SnapshotComplete, "session_complete": batch.SessionComplete, "get_event_matches": len(committed), "readonly_get_event_count_unchanged": before == after, "negative_file_checks": 5, "archive_format": binding.Format, "has_private_paths_in_public": strings.Contains(fmt.Sprint(committed), private.AppRoot), "exit_confirmed": owned.ExitedAt != nil, "archive_finalized": owned.ArchiveFinalized, "archive_append_only": owned.ArchiveAppendOnly, "native_version": state.Sessions[task.TerminalID].Version})
+	if configuredAccess {
+		recordRelayGoalActualOwnedOutputAndHostChecks(t)
+	}
 }
 
 func readActualJSON(t *testing.T, path string, value any) {

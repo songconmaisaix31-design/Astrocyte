@@ -58,6 +58,47 @@ func NewSwarmApprovalBridge(db *DB, grants workspaceapp.GrantAuthorizer) (*Swarm
 }
 
 func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmapp.GrantCheck, fn func(context.Context, swarm.Grant) error) error {
+	check := workspace.GrantCheck{Caller: workspace.Caller{ID: c.Principal.ID, Kind: c.Principal.Kind, ProjectID: c.Principal.ProjectID}, GrantID: c.GrantID, Epoch: c.Epoch, ProposalRevision: c.ProposalRevision, ProjectID: c.ProjectID, Root: c.Root, Action: c.Action, Tools: c.Tools, ExternalTargets: c.ExternalTargets}
+	if c.ExecutionRoot != "" {
+		check.Root = c.ExecutionRoot
+	}
+	bindingCheck := check
+	if c.BindingPurpose != "" {
+		if c.Action != "read_swarm" || c.BindingPurpose != "claim_work_item" && c.BindingPurpose != "submit_artifact" {
+			return swarm.Failure(apierrors.ValidationFailed, "binding preflight requires one explicit protected member purpose")
+		}
+		bindingCheck.Action = c.BindingPurpose
+	}
+	needsBindings := c.Action == "claim_work_item" || c.Action == "submit_artifact" || c.BindingPurpose != ""
+	var authorizer workspaceapp.ObservedSessionBindingAuthorizer
+	var observed *workspaceapp.SessionBindingObservation
+	if needsBindings {
+		if _, ok := ctx.Value(swarmTransactionKey{}).(*swarmTransaction); ok {
+			return swarm.Failure(apierrors.VersionConflict, "member observation must begin outside a database transaction")
+		}
+		conn, err := WorkspaceTransaction(ctx, b.db)
+		if err != nil {
+			return err
+		}
+		if conn != nil {
+			return swarm.Failure(apierrors.VersionConflict, "member observation must begin outside a database transaction")
+		}
+		if len(c.BindingIDs) != 1 || c.BindingIDs[0] == "" {
+			return swarm.Failure(apierrors.EvidenceMissing, "one exact current Workspace member binding is required")
+		}
+		current, ok := b.grants.(workspaceapp.ObservedSessionBindingAuthorizer)
+		if !ok {
+			return swarm.Failure(apierrors.UnsupportedCapability, "actual two-phase Workspace member authorization is unavailable")
+		}
+		authorizer = current
+		observed, err = authorizer.ObserveSessionBindings(ctx, bindingCheck, c.BindingIDs)
+		if err != nil {
+			return err
+		}
+		if observed == nil {
+			return swarm.Failure(apierrors.EvidenceMissing, "actual Workspace member observation is absent")
+		}
+	}
 	return NewWorkspaceRepository(b.db).WithWorkspaceTx(ctx, func(wtx workspaceapp.WorkspaceTx) error {
 		ctx := wtx.Context()
 		conn, err := WorkspaceTransaction(ctx, b.db)
@@ -131,10 +172,8 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 			}
 		}
 		used := workspace.ResourceBudget{Calls: resources.Calls, Tokens: resources.Tokens, MoneyMinor: resources.Money, Currency: resources.Currency}
-		check := workspace.GrantCheck{Caller: workspace.Caller{ID: c.Principal.ID, Kind: c.Principal.Kind, ProjectID: c.Principal.ProjectID}, GrantID: c.GrantID, Epoch: c.Epoch, ProposalRevision: c.ProposalRevision, ProjectID: c.ProjectID, Root: c.Root, Action: c.Action, Concurrency: concurrency, Used: used, Tools: c.Tools, ExternalTargets: c.ExternalTargets}
-		if c.ExecutionRoot != "" {
-			check.Root = c.ExecutionRoot
-		}
+		check.Concurrency, check.Used = concurrency, used
+		bindingCheck.Concurrency, bindingCheck.Used = concurrency, used
 		invoke := func(ctx context.Context, g workspace.ApprovalGrant) error {
 			reader, ok := b.grants.(swarmProposalReader)
 			if !ok {
@@ -155,22 +194,13 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 			}
 			return fn(context.WithValue(ctx, swarmTransactionKey{}, tx), grant)
 		}
-		bindingCheck := check
-		if c.BindingPurpose != "" {
-			if c.Action != "read_swarm" || c.BindingPurpose != "claim_work_item" && c.BindingPurpose != "submit_artifact" {
-				return swarm.Failure(apierrors.ValidationFailed, "binding preflight requires one explicit protected member purpose")
-			}
-			bindingCheck.Action = c.BindingPurpose
-		}
-		if c.Action == "claim_work_item" || c.Action == "submit_artifact" || c.BindingPurpose != "" {
-			if len(c.BindingIDs) != 1 || c.BindingIDs[0] == "" {
-				return swarm.Failure(apierrors.EvidenceMissing, "one exact current Workspace member binding is required")
-			}
-			authorizer, ok := b.grants.(workspaceapp.SessionBindingAuthorizer)
-			if !ok {
-				return swarm.Failure(apierrors.UnsupportedCapability, "actual Workspace member authorization is unavailable")
-			}
-			return authorizer.WithAuthorizedSessionBindings(tx.ctx, bindingCheck, c.BindingIDs, func(ctx context.Context, g workspace.ApprovalGrant, bindings []workspace.SessionBinding) error {
+		if needsBindings {
+			return authorizer.WithObservedSessionBindings(tx.ctx, bindingCheck, observed, func(ctx context.Context, g workspace.ApprovalGrant, bindings []workspace.SessionBinding) error {
+				if c.BindingPurpose != "" {
+					if err := b.grants.WithAuthorizedGrant(ctx, check, func(context.Context, workspace.ApprovalGrant) error { return nil }); err != nil {
+						return err
+					}
+				}
 				if len(bindings) != 1 || bindings[0].ID != c.BindingIDs[0] || bindings[0].MemberID != c.Principal.ID {
 					return swarm.Failure(apierrors.ScopeDenied, "binding belongs to another authenticated member")
 				}
@@ -186,7 +216,7 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 				if packet.ID != binding.PacketID || packet.ProjectID != binding.ProjectID || packet.GrantID != g.ID || packet.GrantEpoch != g.Epoch || packet.Snapshot.ProjectID != binding.ProjectID || packet.Snapshot.WorktreeID != binding.WorktreeID || packet.Snapshot.Root == "" {
 					return swarm.Failure(apierrors.ContextStale, "member binding differs from its actual immutable project snapshot")
 				}
-				ctx = swarmapp.WithAuthorizedBinding(ctx, swarmapp.AuthorizedBinding{ID: binding.ID, Purpose: bindingCheck.Action, Version: binding.Version, PacketID: binding.PacketID, ProjectID: binding.ProjectID, MemberID: binding.MemberID, SessionID: binding.SessionID, NativeSessionID: binding.NativeSessionID, AdapterID: binding.AdapterID, WorktreeID: binding.WorktreeID, Root: packet.Snapshot.Root})
+				ctx = swarmapp.WithAuthorizedBinding(ctx, swarmapp.AuthorizedBinding{ID: binding.ID, Purpose: bindingCheck.Action, Version: binding.Version, PacketID: binding.PacketID, ProjectID: binding.ProjectID, MemberID: binding.MemberID, SessionID: binding.SessionID, NativeSessionID: binding.NativeSessionID, AdapterID: binding.AdapterID, ControllerID: binding.ControllerID, StartupOperationID: binding.StartupOperationID, WorktreeID: binding.WorktreeID, Root: packet.Snapshot.Root})
 				return invoke(ctx, g)
 			})
 		}

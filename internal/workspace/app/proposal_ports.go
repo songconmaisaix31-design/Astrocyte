@@ -91,6 +91,10 @@ type AdmissionProposalCommand struct {
 	Content             domain.ProposalContent `json:"content"`
 }
 
+type AdmittedOpportunityReader interface {
+	ReadAdmittedOpportunity(context.Context, string) (domain.AdmittedOpportunitySnapshot, error)
+}
+
 type ProjectSnapshotProvider interface {
 	CaptureProjectSnapshot(context.Context, domain.Caller, string, []string) (domain.ProjectContextSnapshot, error)
 	ValidateProjectSnapshot(context.Context, domain.Caller, domain.ProjectContextSnapshot) error
@@ -103,6 +107,7 @@ type ContextObjectStore interface {
 
 type OwnedSessionProvider interface {
 	ReadOwnedSessionFacts(context.Context, domain.Caller, string, string) (domain.OwnedSessionFacts, error)
+	ValidateOwnedSessionFacts(context.Context, domain.Caller, domain.OwnedSessionFacts, string) error
 }
 
 type OwnedNativeSessionReader interface {

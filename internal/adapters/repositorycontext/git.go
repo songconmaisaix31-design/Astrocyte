@@ -52,6 +52,9 @@ func git(ctx context.Context, root string, args ...string) ([]byte, error) {
 	cmd.Stderr = &stderr
 	output, err := cmd.Output()
 	if err != nil {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		return nil, failure(apierrors.ProviderUnavailable, "Git observation failed")
 	}
 	return output, nil

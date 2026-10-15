@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -228,13 +230,23 @@ func (m *Mission) ResumeAfterReconciliation(expectedVersion int, reason string, 
 }
 
 func ValidateWritePath(p string) error {
-	if p == "" || strings.ContainsAny(p, "\\:*?[]\x00") || strings.HasPrefix(p, "/") || path.Clean(p) != p || p == ".." || strings.HasPrefix(p, "../") {
+	if p == "" || strings.ContainsAny(p, "\\:*?[]\x00") || strings.HasPrefix(p, "/") || path.Clean(p) != p || p == ".." || strings.HasPrefix(p, "../") || !filepath.IsLocal(filepath.FromSlash(p)) {
 		return Failure("validation_failed", fmt.Sprintf("write path %q must be a normalized relative file or directory", p))
+	}
+	if runtime.GOOS == "windows" && p != "." {
+		for _, part := range strings.Split(p, "/") {
+			if strings.TrimRight(part, ". ") != part {
+				return Failure("validation_failed", "Windows write scope cannot contain a trailing dot or space alias")
+			}
+		}
 	}
 	return nil
 }
 
 func ContainsPath(parent, child string) bool {
+	if runtime.GOOS == "windows" {
+		parent, child = strings.ToLower(parent), strings.ToLower(child)
+	}
 	return parent == "." || parent == child || strings.HasPrefix(child, parent+"/")
 }
 func Overlaps(a, b []string) bool {
@@ -313,22 +325,26 @@ func (w WorkItem) Validate(m Mission) error {
 }
 
 type Lease struct {
-	ContextPacketID string    `json:"context_packet_id"`
-	BindingID       string    `json:"binding_id"`
-	PolicyVersion   string    `json:"policy_version"`
-	WorkItemID      string    `json:"work_item_id"`
-	MissionID       string    `json:"mission_id"`
-	ProjectID       string    `json:"project_id"`
-	HolderID        string    `json:"holder_id"`
-	Fence           int64     `json:"fence"`
-	OperationID     string    `json:"operation_id"`
-	SessionID       string    `json:"session_id"`
-	MemberVersion   string    `json:"member_version"`
-	Worktree        string    `json:"worktree"`
-	BaseCommit      string    `json:"base_commit"`
-	WritePaths      []string  `json:"write_paths"`
-	Reserved        Resources `json:"reserved"`
-	ExpiresAt       time.Time `json:"expires_at"`
+	NativeSessionID    string    `json:"-"`
+	AdapterID          string    `json:"-"`
+	ControllerID       string    `json:"-"`
+	StartupOperationID string    `json:"-"`
+	ContextPacketID    string    `json:"context_packet_id"`
+	BindingID          string    `json:"binding_id"`
+	PolicyVersion      string    `json:"policy_version"`
+	WorkItemID         string    `json:"work_item_id"`
+	MissionID          string    `json:"mission_id"`
+	ProjectID          string    `json:"project_id"`
+	HolderID           string    `json:"holder_id"`
+	Fence              int64     `json:"fence"`
+	OperationID        string    `json:"operation_id"`
+	SessionID          string    `json:"session_id"`
+	MemberVersion      string    `json:"member_version"`
+	Worktree           string    `json:"worktree"`
+	BaseCommit         string    `json:"base_commit"`
+	WritePaths         []string  `json:"write_paths"`
+	Reserved           Resources `json:"reserved"`
+	ExpiresAt          time.Time `json:"expires_at"`
 }
 
 func (l Lease) Check(holder string, fence int64, now time.Time) error {

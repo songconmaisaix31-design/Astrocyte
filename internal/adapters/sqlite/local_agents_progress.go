@@ -13,8 +13,7 @@ import (
 
 var _ app.ProjectProgressRepository = (*DB)(nil)
 
-// LoadProjectProgress returns the zero record for an absent project so a cache
-// GET never invents a stage. It performs no process or model work.
+// 没有进度记录时返回零值，查询保持原有观察状态。
 func (db *DB) LoadProjectProgress(ctx context.Context, id string) (domain.ProjectProgress, error) {
 	var progress domain.ProjectProgress
 	var data string
@@ -29,8 +28,7 @@ func (db *DB) LoadProjectProgress(ctx context.Context, id string) (domain.Projec
 	return progress, err
 }
 
-// SaveProjectProgress uses the same revision CAS discipline as project metadata.
-// expected is the revision this write is based on; a new record passes 0.
+// 使用原 revision 的 CAS 约束，新记录的 expected 为零。
 func (db *DB) SaveProjectProgress(ctx context.Context, progress domain.ProjectProgress, expected int) error {
 	if progress.Revision != expected+1 || expected < 0 {
 		return &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "invalid project progress revision"}

@@ -1,24 +1,44 @@
 package importers
 
 import (
+	"bytes"
+	"context"
 	"net"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
-func TestPaperSourceMetadataOnly(t *testing.T) {
-	snap := PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://aclanthology.org/2024.acl-long.1/", HostFamily: "acl",
-		SourceKey: "https://aclanthology.org/2024.acl-long.1/", Title: "A Paper", Abstract: "Only abstract",
-		ContentState: "abstract_only", Provenance: struct{ Processor, Version, Mode, Source string }{Version: "v"},
+func actualPublicPaperSnapshot(t *testing.T, name, locator string) (PaperSnapshot, []byte) {
+	t.Helper()
+	directory := os.Getenv("ASTROCYTE_TEST_PUBLIC_PAPER_DIR")
+	if directory == "" || !filepath.IsAbs(directory) {
+		t.Fatal("explicit approved public paper originals required")
 	}
-	src, err := paperSource(snap, []byte("<html></html>"))
+	body, err := os.ReadFile(filepath.Join(directory, name))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if src.Kind != "paper" || src.Title != "A Paper" || src.Summary != "Only abstract" {
-		t.Fatalf("metadata fields lost: %+v", src)
+	snapshot, err := installedPaperExtractor(t).InspectPaperHTML(context.Background(), locator, body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return snapshot, body
+}
+
+func TestPaperSourceMetadataOnly(t *testing.T) {
+	snap, html := actualPublicPaperSnapshot(t, "acl-public.html", "https://aclanthology.org/2024.acl-long.1/")
+	if snap.ContentState != "abstract_only" || snap.Abstract == "" || snap.Text != "" {
+		t.Fatal("actual public ACL metadata observation changed")
+	}
+	src, err := paperSource(snap, html)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if src.Kind != "paper" || src.Title != snap.Title || src.Summary != snap.Abstract || src.SourceKey != "doi:10.18653/v1/2024.acl-long.1" {
+		t.Fatal("actual metadata fields lost")
 	}
 	if !strings.Contains(src.Text, "metadata only") || strings.Contains(src.Text, "Full text") {
 		t.Fatalf("metadata presented as full text: %q", src.Text)
@@ -26,27 +46,25 @@ func TestPaperSourceMetadataOnly(t *testing.T) {
 	if src.Provenance.Mode != "public_html_abstract_only" {
 		t.Fatalf("wrong provenance mode: %s", src.Provenance.Mode)
 	}
-	if len(src.Attachments) != 1 || src.Attachments[0].Name != "source.html" {
-		t.Fatalf("source HTML attachment missing: %+v", src.Attachments)
+	if len(src.Attachments) != 1 || src.Attachments[0].Name != "source.html" || !bytes.Equal(src.Attachments[0].Data, html) {
+		t.Fatal("actual source HTML attachment missing or changed")
 	}
 }
 
 func TestPaperSourceFulltext(t *testing.T) {
-	snap := PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://journals.plos.org/x", HostFamily: "plos",
-		SourceKey: "doi:10.1371/journal.pdig.0000514", Title: "Full Paper", Abstract: "Abs",
-		ContentState: "readable_fulltext", Text: "Introduction Methods Results Discussion",
-		Provenance: struct{ Processor, Version, Mode, Source string }{Version: "v"},
+	snap, html := actualPublicPaperSnapshot(t, "plos-public.html", "https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514")
+	if snap.ContentState != "readable_fulltext" || len(snap.Text) < 30000 || snap.Truncated {
+		t.Fatal("actual full paper observation changed")
 	}
-	src, err := paperSource(snap, []byte("<html></html>"))
+	src, err := paperSource(snap, html)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if src.SourceKey != "doi:10.1371/journal.pdig.0000514" {
 		t.Fatalf("source key wrong: %s", src.SourceKey)
 	}
-	if !strings.Contains(src.Text, "Introduction Methods Results Discussion") {
-		t.Fatalf("full text missing: %q", src.Text)
+	if !strings.Contains(src.Text, snap.Text) || src.Title != snap.Title || len(src.Attachments) != 1 || !bytes.Equal(src.Attachments[0].Data, html) {
+		t.Fatal("actual full text or original attachment missing")
 	}
 	if src.Provenance.Mode != "public_html_fulltext" {
 		t.Fatalf("wrong provenance mode: %s", src.Provenance.Mode)
@@ -54,13 +72,10 @@ func TestPaperSourceFulltext(t *testing.T) {
 }
 
 func TestPaperSourceRestrictedRefused(t *testing.T) {
-	snap := PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://example.com/article", HostFamily: "generic",
-		SourceKey: "https://example.com/article", Title: "Paywalled", Abstract: "Abs",
-		ContentState: "restricted",
-		Provenance:   struct{ Processor, Version, Mode, Source string }{Version: "v"},
-	}
-	if _, err := paperSource(snap, []byte("<html></html>")); err == nil {
+	snap, html := actualPublicPaperSnapshot(t, "acl-public.html", "https://aclanthology.org/2024.acl-long.1/")
+	// 此状态是拒绝规则的明确函数参数，不声明观察到真实付费页面。
+	snap.ContentState = "restricted"
+	if _, err := paperSource(snap, html); err == nil {
 		t.Fatal("restricted page accepted as importable source")
 	}
 }
@@ -96,8 +111,7 @@ func TestIsPublicIP(t *testing.T) {
 		{"2606:4700:4700::1111", true},
 		{"2001:4860:4860::8888", true},
 		{"2a00:1450:4001::", true},
-		// Documentation prefix 2001:db8::/32 and discard-only 100::/64 are not
-		// globally routable, but ordinary global unicast IPv6 stays accepted.
+		// 文档地址和丢弃专用地址保留拒绝规则。
 		{"2001:db8::1", false},
 		{"2001:db8:0:0:0:0:0:1", false},
 		{"2001:db8:ffff:ffff:ffff:ffff:ffff:ffff", false},
@@ -121,7 +135,11 @@ func TestValidatePublicPaperURL(t *testing.T) {
 			t.Errorf("accepted non-compliant URL %s", raw)
 		}
 	}
-	if u, _ := url.Parse("https://example.com/x"); validatePublicPaperURL(u) != nil {
+	u, err := url.Parse("https://example.com/x")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if validatePublicPaperURL(u) != nil {
 		t.Error("rejected compliant public HTTPS URL")
 	}
 }

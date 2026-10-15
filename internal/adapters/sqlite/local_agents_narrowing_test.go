@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -237,13 +238,30 @@ func TestNativeResumeCannotCreateSecondProjectWriter(t *testing.T) {
 }
 
 func TestNativeUnavailableLaunchDoesNotLeaveGhostWriter(t *testing.T) {
-	t.Setenv("PATH", "") // no native CLI/model process can be launched
+	// 通过真实缺失的可执行程序触发启动前失败，不启动原生控制器或模型。
+	t.Setenv("PATH", "")
 	ctx := context.Background()
-	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
-	defer db.Close()
-	service := workspace.NewLocalProjectService(db, &localReferences{}, agents.ProjectFiles{}, agents.NewRegistry(t.TempDir()))
-	human := domain.Caller{Kind: "human", ID: "human"}
-	p, err := service.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "unavailable", Root: t.TempDir(), SpaceID: "space"})
+	root, err := filepath.Abs(filepath.Join("..", "..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	directory, err := os.MkdirTemp(filepath.Join(root, ".verification"), "native-prelaunch-actual-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("actual owned prelaunch directory: %s", directory)
+	db := openAttentionDB(t, filepath.Join(directory, "state.sqlite"))
+	registry := agents.NewRegistry(filepath.Join(directory, "native"))
+	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
+	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
+		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
+		Title:       "Public project prelaunch failure validation",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := service.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "Actual public checkout with unavailable native CLI", Root: root, SpaceID: space.Space.ID})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -264,6 +282,10 @@ func TestNativeUnavailableLaunchDoesNotLeaveGhostWriter(t *testing.T) {
 		if !session.StopConfirmed || session.Ownership != "unstarted" || session.PendingOperation != "" || session.Operations[human.OperationID].Status != "failed" {
 			t.Fatalf("unstarted failure left ghost ownership: %+v", session)
 		}
+		stored, err := db.LoadSession(ctx, session.ID)
+		if err != nil || stored.NativeID != "" || stored.Ownership != "unstarted" || !stored.StopConfirmed || stored.PendingOperation != "" || stored.Operations[human.OperationID].Status != "failed" {
+			t.Fatalf("actual prelaunch failure lacks its durable unstarted receipt: %+v %v", stored, err)
+		}
 		if _, err := service.StartNativeSession(ctx, human, p.ID, domain.NativeCommand{CLI: "codex"}); err == nil {
 			t.Fatal("duplicate failed native start falsely succeeded")
 		}
@@ -271,27 +293,75 @@ func TestNativeUnavailableLaunchDoesNotLeaveGhostWriter(t *testing.T) {
 }
 
 func TestProvenUnstartedResumePreservesOwnedOriginalSession(t *testing.T) {
-	t.Setenv("PATH", "")
-	ctx := context.Background()
-	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
-	defer db.Close()
-	service := workspace.NewLocalProjectService(db, &localReferences{}, agents.ProjectFiles{}, agents.NewRegistry(t.TempDir()))
-	human := domain.Caller{Kind: "human", ID: "human"}
-	p, err := service.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "original ID retained", Root: t.TempDir(), SpaceID: "space"})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	root, err := filepath.Abs(filepath.Join("..", "..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	verification := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if verification == "" {
+		verification = filepath.Join(root, ".verification")
+	}
+	if !filepath.IsAbs(verification) {
+		t.Fatal("native verification requires an explicit absolute output root")
+	}
+	if err := os.MkdirAll(verification, 0700); err != nil {
+		t.Fatal(err)
+	}
+	directory, err := os.MkdirTemp(verification, "native-resume-owned-actual-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("actual owned resume evidence directory: %s", directory)
+	for _, name := range []string{"TEMP", "TMP", "GOTMPDIR"} {
+		t.Setenv(name, directory)
+	}
+	db := openAttentionDB(t, filepath.Join(directory, "state.sqlite"))
+	registryRoot := filepath.Join(directory, "native")
+	registry := agents.NewRegistry(registryRoot)
+	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
+	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
+		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
+		Title:       "Public project original controller resume validation",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := service.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "Actual public checkout original session", Root: root, SpaceID: space.Space.ID})
 	if err != nil {
 		t.Fatal(err)
 	}
 	settings := p.Settings
-	settings.ExternalModelCLI, settings.AllowedActions = "codex", []string{"resume", "stop"}
+	settings.ExternalModelCLI, settings.AllowedActions = "codex", []string{"start", "resume", "stop"}
 	p, err = service.SetProjectSettings(ctx, human, p.ID, domain.SettingsCommand{ExpectedRevision: p.Settings.Revision, Settings: settings})
 	if err != nil {
 		t.Fatal(err)
 	}
-	// A stored positive-stop fixture, not evidence of a task-live native ID.
-	session := domain.NativeSession{ID: uuid.NewString(), ProjectID: p.ID, CLI: "codex", NativeID: "offline-original-id", Ownership: "owned", StopConfirmed: true, Status: "stopped", ContextPacket: domain.ContextPacket{SchemaVersion: 1, ProjectID: p.ID, SettingsRevision: p.Settings.Revision}}
-	if err := db.SaveSession(ctx, session); err != nil {
+	var session domain.NativeSession
+	t.Cleanup(func() {
+		if session.ID == "" || session.StopConfirmed {
+			return
+		}
+		cleanup, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cleanupCancel()
+		observation, stopErr := service.StopNativeSession(cleanup, human, p.ID, session.ID)
+		if stopErr != nil || !observation.StopConfirmed {
+			t.Error("actual original controller cleanup did not confirm exit", stopErr)
+		}
+	})
+	// 复用实际空输入探测入口，原生控制器生成身份并实际停止；不发送模型输入。
+	human.OperationID = uuid.NewString()
+	session, err = service.ProbeNativeCLI(ctx, human, p.ID, "codex")
+	if err != nil {
 		t.Fatal(err)
 	}
+	if session.NativeID == "" || session.Ownership != "owned" || !session.StopConfirmed || session.PendingOperation != "" || session.Operations[human.OperationID].Status != "accepted" {
+		t.Fatal("actual original controller lacks a settled start and positive stop")
+	}
+	// 在同一 Registry 已持有真实原控制器后，实际缺失 CLI 才构成启动前失败。
+	t.Setenv("PATH", "")
 	for i := 0; i < 2; i++ {
 		human.OperationID = uuid.NewString()
 		result, err := service.ResumeNativeSession(ctx, human, p.ID, session.ID, domain.NativeCommand{})
@@ -301,6 +371,31 @@ func TestProvenUnstartedResumePreservesOwnedOriginalSession(t *testing.T) {
 		}
 		if result.NativeID != session.NativeID || result.Ownership != "owned" || !result.StopConfirmed || result.PendingOperation != "" || result.Operations[human.OperationID].Status != "failed" {
 			t.Fatalf("unstarted resume destroyed original durable session: %+v", result)
+		}
+		stored, err := db.LoadSession(ctx, session.ID)
+		if err != nil || stored.NativeID != session.NativeID || stored.Ownership != "owned" || !stored.StopConfirmed || stored.PendingOperation != "" || stored.Operations[human.OperationID].Status != "failed" {
+			t.Fatal("actual prelaunch failure changed the original stored identity or receipt", err)
+		}
+	}
+	// 新 Registry 只读取同一真实记录，持久化身份不会生成控制器拥有权。
+	coldRegistry := agents.NewRegistry(registryRoot)
+	coldService := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, coldRegistry)
+	human.OperationID = uuid.NewString()
+	result, err := coldService.ResumeNativeSession(ctx, human, p.ID, session.ID, domain.NativeCommand{})
+	var unknown *apierrors.ServiceError
+	if !errors.As(err, &unknown) || unknown.Code != apierrors.DeliveryUnknown {
+		t.Fatal("cold registry did not preserve unknown original controller ownership", err)
+	}
+	if result.NativeID != session.NativeID || result.Ownership != "owned" || result.Operations[human.OperationID].Status != "unknown" || result.PendingOperation != human.OperationID {
+		t.Fatal("cold registry did not retain the actual original identity and unknown receipt")
+	}
+	observations, err := coldRegistry.SnapshotNative(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range observations {
+		if item.Capabilities["start"].Status != "unknown" || item.Startable.Status != "unknown" {
+			t.Fatal("cold registry rejection created a native startup observation")
 		}
 	}
 }

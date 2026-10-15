@@ -51,6 +51,280 @@ tags:
   - name: relay
     description: Human confirmed Works Relay access layer
 paths:
+  /experiences/completions:
+    post:
+      operationId: captureCompletionExperience
+      summary: Draft an experience from one actual completed task
+      description: Human-only command bound to an actual LocalProject.ID and immutable completion event. Missing Interpreter returns provider_unavailable; unknown model delivery is never replayed. A successful candidate remains quarantine until the user approves it.
+      tags: [attention-engine]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/S2Idempotency'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/CaptureCompletionExperienceRequestV1'}}}
+      responses:
+        '200': {description: Original or newly persisted quarantine candidate, content: {application/json: {schema: {$ref: '#/components/schemas/ExperienceReadResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /experiences/{id}/evidence:
+    get:
+      operationId: readExperienceEvidence
+      summary: Resolve safe references using current project permissions
+      tags: [attention-engine]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters:
+        - {$ref: '#/components/parameters/S2ID'}
+        - {name: project_id, in: query, required: true, schema: {type: string, minLength: 1}, description: Actual registered LocalProject.ID}
+      responses:
+        '200': {description: Safe references without original source payloads, content: {application/json: {schema: {$ref: '#/components/schemas/ExperienceEvidenceResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /admissions/{id}:
+    get:
+      operationId: readOpportunityAdmission
+      summary: Read the original human or delegated admission
+      tags: [opportunities]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/S2ID'}]
+      responses:
+        '200': {description: Persisted admission and any original draft reference, content: {application/json: {schema: {$ref: '#/components/schemas/AdmissionResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /admissions/{id}/revocations:
+    post:
+      operationId: revokeOpportunityAdmission
+      summary: Revoke a current admission with an explicit human reason
+      description: Does not change a separately issued execution grant.
+      tags: [opportunities]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/S2ID'}, {$ref: '#/components/parameters/S2Idempotency'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/RevokeAdmissionRequestV1'}}}
+      responses:
+        '200': {description: Persisted revoked admission, content: {application/json: {schema: {$ref: '#/components/schemas/AdmissionResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /attention-taste-profile:
+    get:
+      operationId: readAttentionTasteProfile
+      summary: Read current human taste configuration
+      tags: [attention-engine]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      responses:
+        '200': {description: Current actual profile or configured false and profile null, content: {application/json: {schema: {$ref: '#/components/schemas/TasteProfileResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+    put:
+      operationId: updateAttentionTasteProfile
+      summary: Save an explicit versioned human taste profile
+      tags: [attention-engine]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/S2Idempotency'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/UpdateTasteProfileRequestV1'}}}
+      responses:
+        '200': {description: Persisted current profile, content: {application/json: {schema: {$ref: '#/components/schemas/TasteProfileResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/judgment-snapshots:
+    post:
+      operationId: captureJudgmentSnapshot
+      summary: Capture explicitly selected approved files
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [files], properties: {files: {type: array, minItems: 1, items: {type: string}}}}
+      responses:
+        '200': {description: Snapshot with an empty public root, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentSnapshotResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/judgment-policies/{question_type}:
+    get:
+      operationId: readJudgmentPolicy
+      summary: Read the current question policy under human authority
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentQuestionType'}]
+      responses:
+        '200': {description: Current fixed policy, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentPolicyResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+    put:
+      operationId: updateJudgmentPolicy
+      summary: Save an explicit current-project policy
+      description: Requires an actual snapshot, matching settings revision and approved sources. Public snapshot root is empty; the internal root comes from the authorized project.
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentQuestionType'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [expected_revision, policy], properties: {expected_revision: {type: integer, minimum: 0}, policy: {$ref: '#/components/schemas/JudgmentPolicyV1'}}}
+      responses:
+        '200': {description: Saved policy, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentPolicyResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/judgments:
+    post:
+      operationId: submitProjectJudgment
+      summary: Evaluate an explicitly authorized fixed-source question
+      description: The body project must match the path. Context-bound questions use the delegation workflow. Backend, language and budgets are supplied explicitly; unavailable configured models fail without a replacement.
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}, {AgentBearer: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentRequestV1'}}}
+      responses:
+        '200': {description: Actual result with source and usage status, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentResultEnvelopeV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/judgments/{decision_id}:
+    get:
+      operationId: readProjectJudgment
+      summary: Read an actual judgment under current source permissions
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}, {AgentBearer: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentDecisionID'}]
+      responses:
+        '200': {description: Original judgment, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentResultEnvelopeV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/judgments/{decision_id}/feedback:
+    get:
+      operationId: readJudgmentFeedback
+      summary: Read actual feedback for the fixed judgment
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}, {AgentBearer: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentDecisionID'}]
+      responses:
+        '200': {description: Persisted feedback list, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentFeedbackListV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+    post:
+      operationId: recordJudgmentFeedback
+      summary: Record explicit human feedback for the exact result version
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentDecisionID'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentFeedbackRequestV1'}}}
+      responses:
+        '200': {description: Persisted feedback, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentFeedbackResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/delegation-rules:
+    get:
+      operationId: listJudgmentDelegationRules
+      summary: List current project delegation rules
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}]
+      responses:
+        '200': {description: Actual versioned rules, content: {application/json: {schema: {$ref: '#/components/schemas/DelegationRuleListV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/delegation-rules/{rule_id}:
+    get:
+      operationId: readJudgmentDelegationRule
+      summary: Read the original current-project rule
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentRuleID'}]
+      responses:
+        '200': {description: Versioned rule, content: {application/json: {schema: {$ref: '#/components/schemas/DelegationRuleResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+    put:
+      operationId: updateJudgmentDelegationRule
+      summary: Save an explicit human delegation rule
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentRuleID'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [expected_revision, rule], properties: {expected_revision: {type: integer, minimum: 0}, rule: {$ref: '#/components/schemas/DelegationRuleV1'}}}
+      responses:
+        '200': {description: Saved rule, content: {application/json: {schema: {$ref: '#/components/schemas/DelegationRuleResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/delegation-rules/{rule_id}/state:
+    post:
+      operationId: changeJudgmentDelegationState
+      summary: Apply an explicit current rule state change
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentRuleID'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [expected_revision, state], properties: {expected_revision: {type: integer, minimum: 1}, state: {type: string}}}
+      responses:
+        '200': {description: Saved rule state, content: {application/json: {schema: {$ref: '#/components/schemas/DelegationRuleResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/delegation-rules/{rule_id}/judgments:
+    post:
+      operationId: evaluateJudgmentDelegation
+      summary: Evaluate a fixed opportunity using its current authorized rule
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentRuleID'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [rule_revision, opportunity_id, opportunity_revision], properties: {rule_revision: {type: integer, minimum: 1}, opportunity_id: {type: string}, opportunity_revision: {type: integer, minimum: 1}}}
+      responses:
+        '200': {description: Actual bound judgment, content: {application/json: {schema: {$ref: '#/components/schemas/JudgmentResultEnvelopeV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
+  /local-projects/{project_id}/judgments/{decision_id}/admissions:
+    post:
+      operationId: admitDelegatedJudgment
+      summary: Consume a complete authorized judgment into a draft proposal
+      tags: [local-agents]
+      x-s1-supported: true
+      security: [{HumanSession: []}]
+      parameters: [{$ref: '#/components/parameters/JudgmentProjectID'}, {$ref: '#/components/parameters/JudgmentDecisionID'}, {$ref: '#/components/parameters/S2Idempotency'}, {$ref: '#/components/parameters/ProductCSRF'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {type: object, additionalProperties: false, required: [schema_version, request_id, expected_opportunity_version], properties: {schema_version: {type: integer, const: 1}, request_id: {type: string}, expected_opportunity_version: {type: integer, minimum: 1}}}
+      responses:
+        '200': {description: Original admission and draft proposal references, content: {application/json: {schema: {$ref: '#/components/schemas/DelegatedAdmissionResultV1'}}}}
+        '403': {$ref: '#/components/responses/S2CommandError'}
+        default: {$ref: '#/components/responses/S2CommandError'}
   /relay/intents/{id}/prepare:
     post:
       operationId: prepareRelayIntent
@@ -4643,13 +4917,13 @@ paths:
   /opportunities/{id}/admissions:
     post:
       operationId: admitOpportunity
-      summary: admit Opportunity
-      description: S0 MUST return HTTP 501 unsupported_capability without side
-        effects. Examples describe future DTOs only.
+      summary: Admit an actual review-ready opportunity into a draft proposal
+      description: Human command binds the current opportunity version and fixed revision. An explicit project rechecks current project and selected-source permission. The proposal remains unassigned and creates no execution grant, native session or Mission.
       tags:
         - opportunities
-      x-s0-supported: false
+      x-s1-supported: true
       parameters:
+        - {$ref: '#/components/parameters/ProductCSRF'}
         - name: id
           in: path
           required: true
@@ -4665,117 +4939,29 @@ paths:
           description: Caller-scoped command deduplication key; never automatic retry
       responses:
         "201":
-          description: Future capability contract; NOT implemented in S0
+          description: Original persisted admission and any draft reference
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/VersionResultV1"
-              example:
-                schema_version: 1
-                id: fixture-resource
-                version: 1
+                $ref: "#/components/schemas/AdmissionResultV1"
         "400":
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-              example:
-                schema_version: 1
-                error:
-                  code: validation_failed
-                  message: Invalid request
-                  request_id: example-request
-                  retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented
-                    operation
+          $ref: '#/components/responses/S2CommandError'
         "403":
-          description: Scope or user-control access denied
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-              example:
-                schema_version: 1
-                error:
-                  code: scope_denied
-                  message: Scope or user-control access denied
-                  request_id: example-request
-                  retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented
-                    operation
+          $ref: '#/components/responses/S2CommandError'
         "404":
-          description: Resource not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-              example:
-                schema_version: 1
-                error:
-                  code: not_found
-                  message: Resource not found
-                  request_id: example-request
-                  retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented
-                    operation
+          $ref: '#/components/responses/S2CommandError'
         "409":
-          description: Resource version changed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-              example:
-                schema_version: 1
-                error:
-                  code: version_conflict
-                  message: Resource version changed
-                  request_id: example-request
-                  retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented
-                    operation
+          $ref: '#/components/responses/S2CommandError'
         "500":
-          description: Unexpected service failure
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-              example:
-                schema_version: 1
-                error:
-                  code: internal_error
-                  message: Unexpected service failure
-                  request_id: example-request
-                  retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented
-                    operation
+          $ref: '#/components/responses/S2CommandError'
         "501":
-          description: Capability is not implemented in S0
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorV1"
-              example:
-                schema_version: 1
-                error:
-                  code: unsupported_capability
-                  message: Capability is not implemented in S0
-                  request_id: example-request
-                  retryable: false
-                  required_action: Read the current S0 capabilities; choose an implemented
-                    operation
+          $ref: '#/components/responses/S2CommandError'
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/AdmitOpportunityRequestV1"
-            example:
-              schema_version: 1
-              request_id: fixture-request
-              expected_version: 1
-              reason: Fixture only
-              policy_version: null
       security:
         - HumanSession: []
   /sessions/{id}/resume:
@@ -8990,12 +9176,490 @@ paths:
                   required_action: configure_supported_service
 components:
   parameters:
+    ProductCSRF: {name: X-CSRF-Token, in: header, required: true, schema: {type: string, minLength: 1}, description: Required for authenticated human writes}
+    JudgmentProjectID: {name: project_id, in: path, required: true, schema: {type: string, minLength: 1}}
+    JudgmentDecisionID: {name: decision_id, in: path, required: true, schema: {type: string, minLength: 1}}
+    JudgmentRuleID: {name: rule_id, in: path, required: true, schema: {type: string, minLength: 1}}
+    JudgmentQuestionType: {name: question_type, in: path, required: true, schema: {type: string, enum: [choice, score, truth]}}
     S2ID: {in: path, name: id, required: true, schema: {type: string, minLength: 1}}
     S2Revision: {in: query, name: revision, required: false, schema: {type: integer, minimum: 1}}
     S2Idempotency: {in: header, name: Idempotency-Key, required: true, schema: {type: string, minLength: 1}, description: 'Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay.'}
   responses:
     S2CommandError: {description: 'Invalid command, current permission denial, version conflict or unavailable dependency. No execution retry.', content: {application/json: {schema: {$ref: '#/components/schemas/ErrorV1'}}}}
   schemas:
+    CaptureCompletionExperienceRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request_id, expected_version, local_project_id, event_id]
+      properties:
+        schema_version: {type: integer, const: 1}
+        request_id: {type: string, minLength: 1}
+        expected_version: {type: integer, const: 1}
+        local_project_id: {type: string, minLength: 1}
+        event_id: {type: string, minLength: 1}
+    CompletionArtifactReferenceV1:
+      type: object
+      additionalProperties: false
+      required: [id, version, object_refs, inputs]
+      properties:
+        id: {type: string}
+        version: {type: integer}
+        commit: {type: string}
+        object_refs: {type: [array, 'null'], items: {type: string}}
+        inputs: {type: [array, 'null'], items: {$ref: '#/components/schemas/SourceRefV1'}}
+    ExperienceCompletionEvidenceV1:
+      type: object
+      additionalProperties: false
+      required: [source_kind, event_id, version, occurred_at, local_project_id, owner_project, actor_id, actor_kind, task_id, outcome, origin_event_ids, artifacts]
+      properties:
+        source_kind: {type: string, enum: [swarm_artifact_accepted, relay_task_completed]}
+        event_id: {type: string}
+        version: {type: integer, minimum: 1}
+        occurred_at: {type: integer}
+        local_project_id: {type: string}
+        owner_project: {type: string}
+        actor_id: {type: string}
+        actor_kind: {type: string, const: human}
+        task_id: {type: string}
+        outcome: {type: string}
+        origin_event_ids: {type: [array, 'null'], items: {type: string}}
+        artifacts: {type: [array, 'null'], items: {$ref: '#/components/schemas/CompletionArtifactReferenceV1'}}
+        completion_channel: {type: string, enum: [verified_complete, user_confirmed_complete]}
+        completion_receipt_id: {type: string}
+    SafeExperienceEvidenceV1:
+      type: object
+      additionalProperties: false
+      required: [source_kind, event_id, occurred_at]
+      properties:
+        source_kind: {type: string, enum: [original_event, swarm_artifact_accepted, relay_task_completed]}
+        event_id: {type: string}
+        occurred_at: {type: integer}
+        completion: {$ref: '#/components/schemas/ExperienceCompletionEvidenceV1'}
+    ExperienceEvidenceResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, evidence]
+      properties:
+        schema_version: {type: integer, const: 1}
+        evidence: {type: array, items: {$ref: '#/components/schemas/SafeExperienceEvidenceV1'}}
+    AdmissionRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request_id, expected_version, expected_revision]
+      properties:
+        schema_version: {type: integer, const: 1}
+        request_id: {type: string, minLength: 1}
+        expected_version: {type: integer, minimum: 1}
+        expected_revision: {type: integer, minimum: 1}
+        project_id: {type: string, description: An explicit project requires current permission; omitted or empty keeps the draft unassigned}
+    RevokeAdmissionRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request_id, expected_version, reason]
+      properties:
+        schema_version: {type: integer, const: 1}
+        request_id: {type: string, minLength: 1}
+        expected_version: {type: integer, minimum: 1}
+        reason: {type: string, minLength: 1}
+    OpportunityAdmissionV1:
+      type: object
+      additionalProperties: false
+      required: [id, version, opportunity_id, opportunity_revision, opportunity_version, inputs, owner_id, owner_namespace, actor_id, authority, status, admitted_event_id, created_at, updated_at]
+      properties:
+        id: {type: string}
+        version: {type: integer, minimum: 1}
+        opportunity_id: {type: string}
+        opportunity_revision: {type: integer, minimum: 1}
+        opportunity_version: {type: integer, minimum: 1}
+        project_id: {type: string}
+        inputs: {type: array, items: {type: object, additionalProperties: false, required: [kind, id, revision], properties: {kind: {type: string}, id: {type: string}, revision: {type: integer}}}}
+        owner_id: {type: string}
+        owner_namespace: {type: string}
+        actor_id: {type: string}
+        authority: {type: string, enum: [human, delegated_judgment]}
+        decision_id: {type: string}
+        policy_version: {type: string}
+        model: {type: string}
+        model_version: {type: string}
+        backend: {type: string}
+        question_type: {type: string}
+        purpose: {type: string}
+        status: {type: string, enum: [active, revoked]}
+        admitted_event_id: {type: string}
+        revoked_event_id: {type: string}
+        reason: {type: string}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    AdmissionResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, admission]
+      properties:
+        schema_version: {type: integer, const: 1}
+        admission: {$ref: '#/components/schemas/OpportunityAdmissionV1'}
+        draft: {type: object, additionalProperties: false, required: [id, version], properties: {id: {type: string}, version: {type: integer, minimum: 1}}}
+    JudgmentEvidenceRefV1:
+      type: object
+      additionalProperties: false
+      required: [material_id, revision, digest]
+      properties:
+        material_id: {type: string}
+        revision: {type: integer, minimum: 1}
+        digest: {type: string}
+    JudgmentOptionV1:
+      type: object
+      additionalProperties: false
+      required: [id]
+      properties:
+        id: {type: string}
+        description: {type: string}
+        required_evidence: {type: [array, 'null'], items: {$ref: '#/components/schemas/JudgmentEvidenceRefV1'}}
+    JudgmentQuestionV1:
+      type: object
+      additionalProperties: false
+      required: [question_id, question_type, instructions]
+      properties:
+        question_id: {type: string}
+        question_type: {type: string, enum: [choice, score, truth]}
+        instructions: {type: string}
+        options: {type: [array, 'null'], items: {$ref: '#/components/schemas/JudgmentOptionV1'}}
+        levels: {type: [array, 'null'], items: {type: string}}
+        rule: {type: string}
+    JudgmentVersionsV1:
+      type: object
+      additionalProperties: false
+      required: [goal_version, taste_version, policy_version, model_revision, access_epoch]
+      properties:
+        goal_version: {type: string}
+        taste_version: {type: string}
+        policy_version: {type: string}
+        model_revision: {type: string}
+        access_epoch: {type: string}
+    JudgmentBudgetV1:
+      type: object
+      additionalProperties: false
+      required: [timeout_ms, max_input_bytes, max_input_tokens]
+      properties:
+        timeout_ms: {type: integer, minimum: 1}
+        max_input_bytes: {type: integer, minimum: 1}
+        max_input_tokens: {type: integer, minimum: 1}
+        max_output_tokens: {type: integer, minimum: 0}
+    JudgmentProfileReferenceV1:
+      type: object
+      additionalProperties: false
+      required: [id, version]
+      properties:
+        id: {type: string}
+        version: {type: integer, minimum: 1}
+    JudgmentSourceReferencesV1:
+      type: object
+      additionalProperties: false
+      required: [goal, taste]
+      properties:
+        goal: {type: object, additionalProperties: false, required: [id, revision], properties: {id: {type: string}, revision: {type: integer, minimum: 1}}}
+        taste: {$ref: '#/components/schemas/JudgmentProfileReferenceV1'}
+        ranking: {$ref: '#/components/schemas/JudgmentProfileReferenceV1'}
+    JudgmentOpportunitySnapshotV1:
+      type: object
+      additionalProperties: false
+      required: [id, revision, version, state, title, next_step, goal_refs, missing_evidence, evidence]
+      properties:
+        id: {type: string}
+        revision: {type: integer}
+        version: {type: integer}
+        state: {type: string}
+        title: {type: string}
+        next_step: {type: string}
+        goal_refs: {type: [array, 'null'], items: {type: string}}
+        missing_evidence: {type: [array, 'null'], items: {type: string}}
+        evidence: {type: [array, 'null'], items: {type: object, additionalProperties: false, required: [reference, locator, span], properties: {reference: {$ref: '#/components/schemas/JudgmentEvidenceRefV1'}, locator: {type: string}, span: {type: [string, 'null']}}}}
+    JudgmentDecisionContextV1:
+      type: object
+      additionalProperties: false
+      required: [purpose, rule_id, rule_version, workflow_id, owner_id, opportunity]
+      properties:
+        purpose: {type: string}
+        rule_id: {type: string}
+        rule_version: {type: integer}
+        workflow_id: {type: string}
+        owner_id: {type: string}
+        opportunity: {$ref: '#/components/schemas/JudgmentOpportunitySnapshotV1'}
+    JudgmentRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, project_id, worktree_id, snapshot_id, question, language, backend, versions, budget]
+      properties:
+        schema_version: {type: string, const: '1.0'}
+        project_id: {type: string}
+        worktree_id: {type: string}
+        snapshot_id: {type: string}
+        question: {$ref: '#/components/schemas/JudgmentQuestionV1'}
+        evidence_refs: {type: [array, 'null'], items: {$ref: '#/components/schemas/JudgmentEvidenceRefV1'}}
+        language: {type: string}
+        backend: {type: string, enum: [rule, jev, laya]}
+        external_scope: {type: string}
+        versions: {$ref: '#/components/schemas/JudgmentVersionsV1'}
+        budget: {$ref: '#/components/schemas/JudgmentBudgetV1'}
+        context: {type: 'null', description: Bound context is produced only by the actual delegation workflow}
+        sources: {$ref: '#/components/schemas/JudgmentSourceReferencesV1'}
+    JudgmentOptionCoverageV1:
+      type: object
+      additionalProperties: false
+      required: [total, distinct, tokens_per_option]
+      properties:
+        total: {type: integer}
+        distinct: {type: integer}
+        tokens_per_option: {type: integer}
+    JudgmentUsageV1:
+      type: object
+      additionalProperties: false
+      required: [input_tokens, output_tokens, state_tokens, state_tokens_dropped, truncated, truncated_questions, options]
+      properties:
+        input_tokens: {type: integer}
+        output_tokens: {type: integer}
+        state_tokens: {type: [integer, 'null']}
+        state_tokens_dropped: {type: [integer, 'null']}
+        truncated: {type: [boolean, 'null']}
+        truncated_questions: {type: [array, 'null'], items: {type: string}}
+        options: {type: [object, 'null'], additionalProperties: {$ref: '#/components/schemas/JudgmentOptionCoverageV1'}}
+    JudgmentResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, decision_id, result_version, question_id, question_type, selected, value, distribution, provider_confidence, provider, provider_model, model_revision, input_digest, truncated, options, usage, decision, reason_code, versions, evidence_refs, created_at, cache_hit]
+      properties:
+        schema_version: {type: string, const: '1.0'}
+        decision_id: {type: string}
+        result_version: {type: integer}
+        question_id: {type: string}
+        question_type: {type: string, enum: [choice, score, truth]}
+        selected: {type: [string, 'null']}
+        value: {type: [number, 'null']}
+        distribution: {type: [object, 'null'], additionalProperties: {type: number}}
+        provider_confidence: {type: [number, 'null']}
+        provider: {type: string, enum: [rule, jev, laya]}
+        provider_model: {type: [string, 'null']}
+        model_revision: {type: [string, 'null']}
+        input_digest: {type: string}
+        truncated: {type: boolean}
+        options: {type: [object, 'null'], additionalProperties: {$ref: '#/components/schemas/JudgmentOptionCoverageV1'}}
+        usage: {anyOf: [{$ref: '#/components/schemas/JudgmentUsageV1'}, {type: 'null'}]}
+        decision: {type: string, enum: [recommend, abstain, need_evidence]}
+        reason_code: {type: string}
+        versions: {$ref: '#/components/schemas/JudgmentVersionsV1'}
+        evidence_refs: {type: [array, 'null'], items: {$ref: '#/components/schemas/JudgmentEvidenceRefV1'}}
+        created_at: {type: string, format: date-time}
+        cache_hit: {type: boolean}
+        context: {$ref: '#/components/schemas/JudgmentDecisionContextV1'}
+        sources: {$ref: '#/components/schemas/JudgmentSourceReferencesV1'}
+    JudgmentPolicyV1:
+      type: object
+      additionalProperties: false
+      required: [revision, project_id, project_settings_revision, worktree_id, snapshot_id, snapshot_files, snapshot, question_type, versions, backend, languages, budget]
+      properties:
+        revision: {type: integer, minimum: 1}
+        project_id: {type: string}
+        project_settings_revision: {type: integer, minimum: 1}
+        worktree_id: {type: string}
+        snapshot_id: {type: string}
+        snapshot_files: {type: [array, 'null'], items: {type: string}}
+        snapshot: {$ref: '#/components/schemas/JudgmentSnapshotV1'}
+        question_type: {type: string, enum: [choice, score, truth]}
+        versions: {$ref: '#/components/schemas/JudgmentVersionsV1'}
+        backend: {type: string, enum: [rule, jev, laya]}
+        languages: {type: [array, 'null'], items: {type: string}}
+        external_scope: {type: string}
+        external_evidence: {type: [array, 'null'], items: {$ref: '#/components/schemas/JudgmentEvidenceRefV1'}}
+        budget: {$ref: '#/components/schemas/JudgmentBudgetV1'}
+        min_confidence: {type: [number, 'null']}
+        truth_accept_min: {type: [number, 'null']}
+        truth_accept_max: {type: [number, 'null']}
+        sources: {$ref: '#/components/schemas/JudgmentSourceReferencesV1'}
+        external_sources: {$ref: '#/components/schemas/JudgmentSourceReferencesV1'}
+    JudgmentFeedbackRequestV1:
+      type: object
+      additionalProperties: false
+      required: [result_version, kind, reason]
+      properties:
+        result_version: {type: integer, minimum: 1}
+        kind: {type: string, enum: [adopt, later, reject, revise, already_solved]}
+        reason: {type: string}
+    JudgmentFeedbackV1:
+      type: object
+      additionalProperties: false
+      required: [id, result_id, result_version, actor_id, actor_kind, kind, reason, created_at]
+      properties:
+        id: {type: string}
+        result_id: {type: string}
+        result_version: {type: integer}
+        actor_id: {type: string}
+        actor_kind: {type: string}
+        kind: {type: string}
+        reason: {type: string}
+        created_at: {type: string, format: date-time}
+    JudgmentResultEnvelopeV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, judgment]
+      properties:
+        schema_version: {type: integer, const: 1}
+        judgment: {$ref: '#/components/schemas/JudgmentResultV1'}
+    JudgmentPolicyResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, policy]
+      properties:
+        schema_version: {type: integer, const: 1}
+        policy: {$ref: '#/components/schemas/JudgmentPolicyV1'}
+    JudgmentSnapshotV1:
+      type: object
+      additionalProperties: false
+      required: [environment_id, repo_id, worktree_id, project_id, root, head, index_digest, worktree_digest, generation, observed_at]
+      properties:
+        environment_id: {type: string}
+        repo_id: {type: string}
+        worktree_id: {type: string}
+        project_id: {type: string}
+        root: {type: string, const: ''}
+        head: {type: string}
+        index_digest: {type: string}
+        worktree_digest: {type: string}
+        generation: {type: string}
+        observed_at: {type: string, format: date-time}
+    JudgmentSnapshotResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, snapshot]
+      properties:
+        schema_version: {type: integer, const: 1}
+        snapshot: {$ref: '#/components/schemas/JudgmentSnapshotV1'}
+    JudgmentFeedbackResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, feedback]
+      properties:
+        schema_version: {type: integer, const: 1}
+        feedback: {$ref: '#/components/schemas/JudgmentFeedbackV1'}
+    JudgmentFeedbackListV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, items, next_cursor]
+      properties:
+        schema_version: {type: integer, const: 1}
+        items: {type: array, items: {$ref: '#/components/schemas/JudgmentFeedbackV1'}}
+        next_cursor: {type: [string, 'null']}
+    DelegationRuleV1:
+      type: object
+      additionalProperties: false
+      required: [id, project_id, workflow_id, owner_id, revision, state, purpose, question, policy_revision, language, materials, admission_choice, admission_value_min, admission_value_max, allow_opportunity_external, review_conditions]
+      properties:
+        id: {type: string}
+        project_id: {type: string}
+        workflow_id: {type: string}
+        owner_id: {type: string}
+        revision: {type: integer, minimum: 1}
+        state: {type: string}
+        purpose: {type: string}
+        question: {$ref: '#/components/schemas/JudgmentQuestionV1'}
+        policy_revision: {type: integer}
+        language: {type: string}
+        materials: {type: [array, 'null'], items: {$ref: '#/components/schemas/JudgmentEvidenceRefV1'}}
+        admission_choice: {type: [string, 'null']}
+        admission_value_min: {type: [number, 'null']}
+        admission_value_max: {type: [number, 'null']}
+        allow_opportunity_external: {type: [boolean, 'null']}
+        review_conditions: {type: [array, 'null'], items: {type: string}}
+    DelegationRuleResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, delegation_rule]
+      properties:
+        schema_version: {type: integer, const: 1}
+        delegation_rule: {$ref: '#/components/schemas/DelegationRuleV1'}
+    DelegationRuleListV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, items, next_cursor]
+      properties:
+        schema_version: {type: integer, const: 1}
+        items: {type: array, items: {$ref: '#/components/schemas/DelegationRuleV1'}}
+        next_cursor: {type: [string, 'null']}
+    DelegatedAdmissionResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, admission]
+      properties:
+        schema_version: {type: integer, const: 1}
+        admission:
+          type: object
+          additionalProperties: false
+          required: [admission_id, admission_version, proposal_id, proposal_version]
+          properties:
+            admission_id: {type: string}
+            admission_version: {type: integer}
+            proposal_id: {type: string}
+            proposal_version: {type: integer}
+    TasteRubricV1:
+      type: object
+      additionalProperties: false
+      required: [id, question_type, criteria, options, levels]
+      properties:
+        id: {type: string}
+        question_type: {type: string, enum: [choice, score, truth]}
+        criteria: {type: string}
+        options: {type: array, items: {type: object, additionalProperties: false, required: [id, description], properties: {id: {type: string}, description: {type: string}}}}
+        levels: {type: array, items: {type: string}}
+    TasteExampleV1:
+      type: object
+      additionalProperties: false
+      required: [id, rubric_id, material_id, revision, content_digest, expected]
+      properties:
+        id: {type: string}
+        rubric_id: {type: string}
+        material_id: {type: string}
+        revision: {type: integer, minimum: 1}
+        content_digest: {type: string}
+        expected: {type: string}
+    TasteDelegationV1:
+      type: object
+      additionalProperties: false
+      required: [rule_id, revision, workflow_id]
+      properties:
+        rule_id: {type: string}
+        revision: {type: integer, minimum: 1}
+        workflow_id: {type: string}
+    TasteProfileV1:
+      type: object
+      additionalProperties: false
+      required: [id, version, enabled, rubrics, examples, delegations, created_at, configured_by]
+      properties:
+        id: {type: string, const: attention}
+        version: {type: integer, minimum: 1}
+        enabled: {type: boolean}
+        rubrics: {type: array, items: {$ref: '#/components/schemas/TasteRubricV1'}}
+        examples: {type: array, items: {$ref: '#/components/schemas/TasteExampleV1'}}
+        delegations: {type: array, items: {$ref: '#/components/schemas/TasteDelegationV1'}}
+        created_at: {type: string, format: date-time}
+        configured_by: {type: string}
+    TasteProfileResultV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, configured, profile]
+      properties:
+        schema_version: {type: integer, const: 1}
+        configured: {type: boolean}
+        profile: {anyOf: [{$ref: '#/components/schemas/TasteProfileV1'}, {type: 'null'}]}
+    UpdateTasteProfileRequestV1:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request_id, expected_version, enabled, rubrics, examples, delegations]
+      properties:
+        schema_version: {type: integer, const: 1}
+        request_id: {type: string, minLength: 1}
+        expected_version: {type: integer, minimum: 1}
+        enabled: {type: boolean}
+        rubrics: {type: array, maxItems: 256, items: {$ref: '#/components/schemas/TasteRubricV1'}}
+        examples: {type: array, maxItems: 256, items: {$ref: '#/components/schemas/TasteExampleV1'}}
+        delegations: {type: array, maxItems: 256, items: {$ref: '#/components/schemas/TasteDelegationV1'}}
     SwarmMetaV1:
       type: object
       required: [schema_version, request_id, expected_version]
@@ -9522,7 +10186,38 @@ components:
     RelayTerminalV1: {"type":"object","additionalProperties":false,"properties":{"terminal_id":{"type":"string","minLength":1},"worktree_id":{"type":"string","minLength":1},"agent":{"type":"string","minLength":1},"drive_mode":{"type":"string","enum":["structured","terminal","both"]},"liveness":{"type":"string","enum":["live","unverifiable","exited"]},"last_event_at":{"type":["string","null"],"format":"date-time"},"exited_at":{"type":["string","null"],"format":"date-time"},"last_sequence":{"type":"integer","minimum":0},"created_at":{"type":"string","format":"date-time"}},"required":["terminal_id","worktree_id","agent","drive_mode","liveness","last_event_at","exited_at","last_sequence","created_at"]}
     RelayWorkspaceV1: {"type":"object","additionalProperties":false,"properties":{"worktree_id":{"type":"string","minLength":1},"project_id":{"type":"string","minLength":1},"root":{"type":"string"},"branch":{"type":"string"},"prepared":{"type":"boolean"},"active_task_id":{"type":"string"},"created_at":{"type":"string","format":"date-time"}},"required":["worktree_id","project_id","root","branch","prepared","active_task_id","created_at"]}
     RelayTransitionV1: {"type":"object","additionalProperties":false,"properties":{"task_id":{"type":"string","minLength":1},"from":{"type":"string","enum":["","ready","accepted","working","done"]},"to":{"type":"string","enum":["ready","accepted","working","done","released"]},"ts":{"type":"string","format":"date-time"},"operator":{"type":"string","minLength":1}},"required":["task_id","from","to","ts","operator"]}
-    RelayTaskViewV1: {"type":"object","additionalProperties":false,"properties":{"task":{"$ref":"#/components/schemas/RelayTaskV1"},"terminal":{"anyOf":[{"$ref":"#/components/schemas/RelayTerminalV1"},{"type":"null"}]},"worktree":{"anyOf":[{"$ref":"#/components/schemas/RelayWorkspaceV1"},{"type":"null"}]},"transitions":{"type":"array","items":{"$ref":"#/components/schemas/RelayTransitionV1"}},"event_publication":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["none","pending","published","error"]},"pending_events":{"type":"integer","minimum":0},"published_events":{"type":"integer","minimum":0}},"required":["status","pending_events","published_events"]}},"required":["task","terminal","worktree","transitions","event_publication"]}
+    RelayTaskViewV1: {"type":"object","additionalProperties":false,"properties":{"task":{"$ref":"#/components/schemas/RelayTaskV1"},"terminal":{"anyOf":[{"$ref":"#/components/schemas/RelayTerminalV1"},{"type":"null"}]},"worktree":{"anyOf":[{"$ref":"#/components/schemas/RelayWorkspaceV1"},{"type":"null"}]},"transitions":{"type":"array","items":{"$ref":"#/components/schemas/RelayTransitionV1"}},"completion":{"$ref":"#/components/schemas/RelayCompletionV1"},"event_publication":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["none","pending","published","error"]},"pending_events":{"type":"integer","minimum":0},"published_events":{"type":"integer","minimum":0}},"required":["status","pending_events","published_events"]}},"required":["task","terminal","worktree","transitions","event_publication"]}
+    RelayCompletionV1:
+      type: object
+      additionalProperties: false
+      description: 'Saved completion channel and original human action. Missing on old records means unrecorded. Completion never supplies started evidence or releases resources; release is audited separately.'
+      required: [completion_id, task_id, worktree_id, terminal_id, channel, source, operator, actor_id, actor_kind, receipt_id, operation_id, ts]
+      properties:
+        completion_id: {type: string, format: uuid}
+        task_id: {type: string, format: uuid}
+        worktree_id: {type: string, format: uuid}
+        terminal_id: {type: string, format: uuid}
+        channel: {type: string, enum: [verified_complete, user_confirmed_complete]}
+        source: {type: string, enum: [human_confirmation, owned_output_and_goal_checks]}
+        operator: {type: string, minLength: 1}
+        actor_id: {type: string, minLength: 1}
+        actor_kind: {type: string, const: human}
+        receipt_id: {type: string, minLength: 1}
+        operation_id: {type: string, format: uuid}
+        ts: {type: string, format: date-time}
+        evidence_id: {type: string, maxLength: 160, pattern: '^[A-Za-z0-9:_-]+$'}
+        input_operation_id: {type: string, format: uuid}
+        output_event_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: {type: string, maxLength: 160, pattern: '^[A-Za-z0-9:_-]+$'}
+        check_evidence_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: {type: string, maxLength: 160, pattern: '^[A-Za-z0-9:_-]+$'}
+        verified_at: {type: string, format: date-time}
     RelayTasksV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"tasks":{"type":"array","items":{"$ref":"#/components/schemas/RelayTaskViewV1"}},"dispatched_work_ids":{"type":"array","items":{"type":"string"}}},"required":["schema_version","tasks","dispatched_work_ids"],"examples":[{"schema_version":1,"tasks":[],"dispatched_work_ids":[]}]}
     RelayTaskResultV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"view":{"$ref":"#/components/schemas/RelayTaskViewV1"}},"required":["schema_version","view"]}
     RelayReceiptErrorV1: {"type":"object","additionalProperties":false,"properties":{"code":{"type":"string","enum":["validation_failed","unsupported_capability","version_conflict","context_stale","index_stale","scope_denied","approval_required","approval_revoked","lease_lost","budget_exhausted","provider_unavailable","evidence_missing","delivery_unknown","not_found","internal_error"]},"message":{"type":"string"},"request_id":{"type":"string"},"retryable":{"type":"boolean"},"required_action":{"type":"string"}},"required":["code","message","request_id","retryable","required_action"]}
@@ -9541,10 +10236,10 @@ components:
         worktree_id: {type: string, format: uuid}
         receipt_id: {type: string, description: 'Original immutable business receipt identity; not a UUID. Matches a readable receipt of this task.'}
         operation_id: {type: string, format: uuid}
-        kind: {type: string, enum: [action_claimed, action_result, observation_rejected, handoff_declared, human_target_confirmed, controller_initialized, session_confirmed, input_channel_open, input_written, input_closed, input_accepted, turn_started, input_consumption]}
+        kind: {type: string, enum: [action_claimed, action_result, observation_rejected, handoff_declared, human_target_confirmed, resources_released, controller_initialized, session_confirmed, input_channel_open, input_written, input_closed, input_accepted, turn_started, input_consumption, input_result]}
         status: {type: string, enum: [confirmed, unknown, pending, accepted, rejected, delivery_unknown]}
-        source: {type: string, enum: [relay_store, human_intent, human_transition, codex_initialize, codex_thread_identity, claude_initialize, claude_system_init, pi_get_state, native_request_pipe, codex_turn_acknowledgement, pi_prompt_acknowledgement, codex_turn_started, pi_agent_start, claude_stream_input, native_protocol, owned_stdin_pipe, stdin_pipe, stdin_eof]}
-        reason: {type: string, enum: [client_consumption_not_acknowledged, operation_not_bound, controller_evidence_rejected, not_found, validation_failed, unsupported_capability, version_conflict, context_stale, index_stale, scope_denied, approval_required, approval_revoked, lease_lost, budget_exhausted, provider_unavailable, evidence_missing, delivery_unknown, internal_error]}
+        source: {type: string, enum: [relay_store, human_intent, human_transition, codex_initialize, codex_thread_identity, claude_initialize, claude_system_init, pi_get_state, native_request_pipe, codex_turn_acknowledgement, pi_prompt_acknowledgement, codex_turn_started, codex_turn_completed, pi_agent_start, claude_stream_input, native_protocol, owned_stdin_pipe, stdin_pipe, stdin_eof]}
+        reason: {type: string, enum: [client_consumption_not_acknowledged, operation_not_bound, controller_evidence_rejected, verified_complete, user_confirmed_complete, completed, failed, interrupted, not_found, validation_failed, unsupported_capability, version_conflict, context_stale, index_stale, scope_denied, approval_required, approval_revoked, lease_lost, budget_exhausted, provider_unavailable, evidence_missing, delivery_unknown, internal_error]}
         sequence: {type: integer, minimum: 0}
         ts: {type: string, format: date-time}
     RelaySessionRelationV1:
@@ -9581,7 +10276,7 @@ components:
     RelayConfirmRequestV1: {"type":"object","additionalProperties":false,"properties":{"permission_confirmed":{"type":"boolean","const":true},"permission_level":{"type":"string","enum":["A","B","C"]},"project_settings_revision":{"type":"integer","minimum":0}},"required":["permission_confirmed","permission_level","project_settings_revision"],"examples":[{"permission_confirmed":true,"permission_level":"A","project_settings_revision":0}]}
     RelaySendRequestV1: {"type":"object","additionalProperties":false,"properties":{"input":{"type":"string","minLength":1,"maxLength":65536}},"required":["input"],"examples":[{"input":"Fixture human input"}]}
     RelayEmptyRequestV1: {"type":"object","additionalProperties":false,"properties":{},"required":[],"examples":[{}]}
-    RelayTransitionRequestV1: {"type":"object","additionalProperties":false,"properties":{"from":{"type":"string","enum":["ready","accepted","working","done"]},"to":{"type":"string","enum":["accepted","working","done","released"]},"completion_confirmed":{"type":"boolean"}},"required":["from","to","completion_confirmed"],"examples":[{"from":"working","to":"done","completion_confirmed":true}]}
+    RelayTransitionRequestV1: {"type":"object","additionalProperties":false,"description":"Current permission and explicit human confirmation allow accepted or working to enter done. Omitted channel selects user_confirmed_complete. verified_complete additionally requires a trusted reference to this task's owned output and actual fixed-goal checks; it never creates started evidence. Resource release remains a separate done-to-released action.","properties":{"from":{"type":"string","enum":["ready","accepted","working","done"]},"to":{"type":"string","enum":["accepted","working","done","released"]},"completion_confirmed":{"type":"boolean"},"completion_channel":{"type":"string","enum":["verified_complete","user_confirmed_complete"]},"completion_evidence_id":{"type":"string","maxLength":160,"pattern":"^[A-Za-z0-9:_-]+$","description":"Required only for verified_complete; a safe reference, never raw checks, paths or native identities."}},"required":["from","to","completion_confirmed"],"examples":[{"from":"accepted","to":"done","completion_confirmed":true,"completion_channel":"user_confirmed_complete"}]}
     RelayActionResultV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"view":{"$ref":"#/components/schemas/RelayTaskViewV1"},"receipt":{"$ref":"#/components/schemas/RelayReceiptV1"}},"required":["schema_version","view","receipt"]}
     WorkbenchEventV1: {"type": "object", "additionalProperties": false, "properties": {"event_id": {"type": "string"}, "kind": {"type": "string"}, "topic": {"type": "string"}, "tokens": {"type": ["integer", "null"]}, "scope": {"type": "string"}, "ts": {"type": "string", "format": "date-time"}}, "required": ["event_id", "kind", "topic", "tokens", "scope", "ts"], "examples": [{"event_id": "fixture-event", "kind": "agent_task", "topic": "fixture-topic", "tokens": null, "scope": "fixture-scope", "ts": "2026-10-12T16:00:00Z"}]}
     WorkbenchTopicV1: {"type": "object", "additionalProperties": false, "properties": {"topic": {"type": "string"}, "attention": {"type": "number"}, "momentum": {"type": "number"}, "confidence": {"type": "number"}}, "required": ["topic", "attention", "momentum", "confidence"]}
@@ -11153,35 +11848,7 @@ components:
           feedback: later
           reason: Fixture only
     AdmitOpportunityRequestV1:
-      type: object
-      additionalProperties: false
-      properties:
-        schema_version:
-          type: integer
-          const: 1
-        request_id:
-          type: string
-        expected_version:
-          type: integer
-          minimum: 1
-        reason:
-          type: string
-        policy_version:
-          type:
-            - string
-            - "null"
-      required:
-        - schema_version
-        - request_id
-        - expected_version
-        - reason
-        - policy_version
-      examples:
-        - schema_version: 1
-          request_id: fixture-request
-          expected_version: 1
-          reason: Fixture only
-          policy_version: null
+      $ref: '#/components/schemas/AdmissionRequestV1'
     RegisterProjectRequestV1:
       type: object
       additionalProperties: false
@@ -15194,6 +15861,7 @@ components:
       type: object
       additionalProperties: false
       properties:
+        source_kind: {type: string, enum: [swarm_artifact_accepted, relay_task_completed]}
         experience:
           $ref: "#/components/schemas/ExperienceV1"
         owner_project: &a19

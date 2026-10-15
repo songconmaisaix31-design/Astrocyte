@@ -116,7 +116,7 @@ func actualUsage(f ExecutionFact) (domain.Usage, error) {
 }
 
 func settledOutcome(outcome string) bool {
-	return slices.Contains([]string{"completed", "failed", "cancelled", "stopped", "not_started"}, outcome)
+	return slices.Contains([]string{"completed", "failed", "interrupted", "cancelled", "stopped", "not_started"}, outcome)
 }
 func safeFailureCode(code string) bool {
 	return slices.Contains([]string{"", "unknown", "native_failure", "validation_failed", "unsupported_capability", "scope_denied", "approval_required", "approval_revoked", "lease_lost", "budget_exhausted", "provider_unavailable", "delivery_unknown", "evidence_missing", "context_stale", "version_conflict", "cancelled"}, code)
@@ -393,12 +393,8 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 	ctx = context.WithValue(ctx, executionCheckKey{}, executionCheck{operationID: c.OperationID, executionRoot: c.Worktree, bindingID: c.BindingID})
 	replayed := false
 	var descriptor ExecutionDescriptor
-	err = s.authorized(ctx, p, c.MissionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
-		var err error
-		descriptor, err = s.executionForGrant(ctx, p, g, Member{Purpose: "claim_work_item", BindingID: c.BindingID, OperationID: c.OperationID, HolderID: p.ID, SessionID: c.SessionID, ProjectID: g.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion})
-		if err != nil {
-			return err
-		}
+	err = s.withExecutionForGrant(ctx, p, m.Grant, Member{Purpose: "claim_work_item", BindingID: c.BindingID, OperationID: c.OperationID, HolderID: p.ID, SessionID: c.SessionID, ProjectID: m.Grant.ProjectID, Worktree: c.Worktree, Version: c.MemberVersion}, func(ctx context.Context, _ domain.Grant, current ExecutionDescriptor) error {
+		descriptor = current
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			cached, found, _, err := replay[domain.Lease](tx, p, "claim_work_item", c.Meta, c)
 			if err != nil {
@@ -538,6 +534,10 @@ func (s *Service) ClaimWorkItem(ctx context.Context, p domain.Principal, c Claim
 			m.State = "running"
 			m.Reserved = reserved
 			out = domain.Lease{ContextPacketID: binding.PacketID, BindingID: c.BindingID, WorkItemID: w.ID, MissionID: m.ID, ProjectID: g.ProjectID, HolderID: p.ID, Fence: w.Fence, OperationID: c.OperationID, SessionID: c.SessionID, MemberVersion: c.MemberVersion, Worktree: c.Worktree, BaseCommit: baseCommit, WritePaths: w.WritePaths, Reserved: c.Resources, ExpiresAt: c.ExpiresAt, PolicyVersion: domain.LocalPolicyVersion}
+			out.NativeSessionID = binding.NativeSessionID
+			out.AdapterID = binding.AdapterID
+			out.ControllerID = binding.ControllerID
+			out.StartupOperationID = binding.StartupOperationID
 			if err = tx.SaveMission(m, oldM); err != nil {
 				return err
 			}
@@ -565,6 +565,7 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 		return out, domain.Failure(apierrors.ScopeDenied, "bound agent identity required")
 	}
 	var lease domain.Lease
+	var grant domain.Grant
 	replayed := false
 	var descriptor ExecutionDescriptor
 	err := s.authorized(ctx, p, c.MissionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
@@ -585,11 +586,18 @@ func (s *Service) SubmitArtifact(ctx context.Context, p domain.Principal, c Subm
 			if lease.MissionID != c.MissionID {
 				return domain.Failure(apierrors.ScopeDenied, "lease belongs to a different mission")
 			}
-			descriptor, err = s.executionForGrant(ctx, p, g, Member{Purpose: "submit_artifact", BindingID: lease.BindingID, OperationID: lease.OperationID, HolderID: p.ID, SessionID: lease.SessionID, ProjectID: g.ProjectID, Worktree: lease.Worktree, Version: lease.MemberVersion})
-			return err
+			grant = g
+			return nil
 		})
 	})
 	if err != nil || replayed {
+		return out, err
+	}
+	err = s.withExecutionForGrant(ctx, p, grant, Member{Purpose: "submit_artifact", BindingID: lease.BindingID, OperationID: lease.OperationID, HolderID: p.ID, SessionID: lease.SessionID, ProjectID: grant.ProjectID, Worktree: lease.Worktree, Version: lease.MemberVersion}, func(_ context.Context, _ domain.Grant, current ExecutionDescriptor) error {
+		descriptor = current
+		return nil
+	})
+	if err != nil {
 		return out, err
 	}
 	ctx = context.WithValue(ctx, executionCheckKey{}, executionCheck{operationID: lease.OperationID, executionRoot: lease.Worktree, descriptor: descriptor, bindingID: lease.BindingID})

@@ -13,6 +13,26 @@ func workbenchRoot() string {
 	return filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.1")
 }
 
+// 认知快照可使用独立只读根，应用数据和 Relay 根仍由原配置选择。
+func workbenchReaderRoot() (string, error) {
+	value := os.Getenv("ASTROCYTE_WORKBENCH_READER_ROOT")
+	if value == "" {
+		return workbenchRoot(), nil
+	}
+	if !filepath.IsAbs(value) || strings.TrimSpace(value) != value {
+		return "", errors.New("workbench reader root must be an explicit absolute directory")
+	}
+	canonical, err := workbenchCanonical(value)
+	if err != nil || !strings.EqualFold(filepath.Clean(value), filepath.Clean(canonical)) {
+		return "", errors.New("workbench reader root is unavailable or redirected")
+	}
+	info, err := os.Stat(canonical)
+	if err != nil || !info.IsDir() {
+		return "", errors.New("workbench reader root is unavailable")
+	}
+	return canonical, nil
+}
+
 func workbenchProtectedSources() ([]string, error) {
 	value := os.Getenv("ASTROCYTE_WORKBENCH_PROTECTED_SOURCES")
 	if value == "" {
@@ -75,7 +95,11 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 	if e != nil {
 		return "", e
 	}
-	directories := []string{filepath.Join(workbenchRoot(), "snapshots")}
+	readerRoot, e := workbenchReaderRoot()
+	if e != nil {
+		return "", e
+	}
+	directories := []string{filepath.Join(workbenchRoot(), "snapshots"), filepath.Join(readerRoot, "snapshots")}
 	for _, source := range sources {
 		directories = append(directories, filepath.Dir(source))
 	}
@@ -126,30 +150,31 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 				return "", errors.New("application database must be independent")
 			}
 		}
-		snapshotRoot := filepath.Join(workbenchRoot(), "snapshots")
-		generations, e := os.ReadDir(snapshotRoot)
-		if e != nil && !os.IsNotExist(e) {
-			return "", errors.New("workbench publication directory unavailable")
-		}
-		for _, generation := range generations {
-			generationPath := filepath.Join(snapshotRoot, generation.Name())
-			canonical, e := workbenchCanonical(generationPath)
-			if e != nil || !strings.EqualFold(filepath.Clean(generationPath), filepath.Clean(canonical)) {
-				return "", errors.New("workbench snapshot directory redirected")
+		for _, snapshotRoot := range []string{filepath.Join(workbenchRoot(), "snapshots"), filepath.Join(readerRoot, "snapshots")} {
+			generations, e := os.ReadDir(snapshotRoot)
+			if e != nil && !os.IsNotExist(e) {
+				return "", errors.New("workbench publication directory unavailable")
 			}
-			info, e := workbenchExistingInfo(generationPath)
-			if e != nil || info == nil {
-				return "", errors.New("workbench snapshot directory identity unavailable")
-			}
-			if !info.IsDir() {
-				continue
-			}
-			snapshot, e := workbenchExistingInfo(filepath.Join(generationPath, "snapshot.sqlite"))
-			if e != nil {
-				return "", errors.New("workbench snapshot identity unavailable")
-			}
-			if snapshot != nil && os.SameFile(appDB, snapshot) {
-				return "", errors.New("application database must be independent")
+			for _, generation := range generations {
+				generationPath := filepath.Join(snapshotRoot, generation.Name())
+				canonical, e := workbenchCanonical(generationPath)
+				if e != nil || !strings.EqualFold(filepath.Clean(generationPath), filepath.Clean(canonical)) {
+					return "", errors.New("workbench snapshot directory redirected")
+				}
+				info, e := workbenchExistingInfo(generationPath)
+				if e != nil || info == nil {
+					return "", errors.New("workbench snapshot directory identity unavailable")
+				}
+				if !info.IsDir() {
+					continue
+				}
+				snapshot, e := workbenchExistingInfo(filepath.Join(generationPath, "snapshot.sqlite"))
+				if e != nil {
+					return "", errors.New("workbench snapshot identity unavailable")
+				}
+				if snapshot != nil && os.SameFile(appDB, snapshot) {
+					return "", errors.New("application database must be independent")
+				}
 			}
 		}
 	}

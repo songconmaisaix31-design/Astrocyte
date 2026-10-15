@@ -58,7 +58,10 @@ func (r *worksRegisteredProbe) RefreshRegisteredProjects(ctx context.Context, ca
 
 func TestWorksHTTPActualStoresRegisteredBoundsAndRestart(t *testing.T) {
 	ctx := context.Background()
-	root := t.TempDir()
+	root, err := agents.CanonicalRoot(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(filepath.Join(root, "metadata.txt"), []byte("人工创建的受控目录文件"), 0600); err != nil {
 		t.Fatal(err)
 	}

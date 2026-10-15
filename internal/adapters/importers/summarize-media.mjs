@@ -21,14 +21,28 @@ try {
  if (corePackage.name !== '@steipete/summarize-core' || corePackage.version !== '0.25.1') throw new Error('Pinned summarize core package mismatch');
  const { assertNetworkTargetAllowed } = await import(pathToFileURL(resolve(dirname(coreEntry), 'content/network-guard.js')).href);
  await assertNetworkTargetAllowed(url, { targetLabel: 'selected public video' });
- const { spawnTracked, terminateTrackedProcesses } = await import(pathToFileURL(resolve(dirname(coreEntry), 'processes.js')).href);
+ const { spawnTracked, terminateTrackedProcesses, setProcessObserver } = await import(pathToFileURL(resolve(dirname(coreEntry), 'processes.js')).href);
+ // 原观察器只转发实际进程标识和退出；环境、命令参数与原始输出保持本机私有。
+ setProcessObserver({ register(info) {
+  if (!['summarize', 'yt-dlp', 'ffmpeg', 'ffprobe', 'whisper.cpp'].includes(info.kind)) return null;
+  let pid = null;
+  const emit = (phase, fields = {}) => {
+   if (pid !== null) process.stderr.write(`${JSON.stringify({ kind: info.kind, phase, pid, ...fields })}\n`);
+  };
+  return {
+   setPid(actualPid) { pid = actualPid; emit('started'); },
+   setProgress(progress) { emit('progress', { progress }); },
+   appendOutput() {},
+   finish(result) { emit('exited', { exitCode: result.exitCode }); },
+  };
+ } });
  terminate = () => terminateTrackedProcesses('SIGTERM');
  if (cancelled) throw new Error('Cancelled');
  const captionEnv = { ...process.env, SUMMARIZE_DISABLE_LOCAL_WHISPER_CPP: '1' };
  delete captionEnv.YT_DLP_PATH;
  // 先查询字幕，隔离 HOME 不包含配置或凭据。
  const args = [cli, url, '--extract', '--json', '--format', 'text', '--firecrawl', 'off', '--youtube', 'web', '--video-mode', 'transcript', '--embedded-video', 'off', '--timestamps', '--timeout', '30s', '--retries', '0', '--metrics', 'off'];
- const { proc } = spawnTracked(process.execPath, args, { env: captionEnv, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, label: 'summarize captions' });
+ const { proc } = spawnTracked(process.execPath, args, { env: captionEnv, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, label: 'summarize captions', kind: 'summarize', captureOutput: false });
  const limit = 16 << 20;
  const collect = (stream, key) => stream.on('data', chunk => {
   if (Buffer.byteLength(output[key]) + Buffer.byteLength(chunk) > limit) { output.error = 'summarize output exceeds size limit'; terminate(); }

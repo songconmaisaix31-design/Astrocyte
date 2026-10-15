@@ -72,17 +72,17 @@ func swarmCleanSnapshot(ctx context.Context, worktree, commit string) error {
 		return err
 	}
 	if head != commit {
-		return domain.Failure(apierrors.ContextStale, "project check worktree HEAD differs from submitted commit")
+		return domain.Failure(apierrors.ContextStale, "worktree HEAD differs from the fixed commit")
 	}
 	if _, err = swarmGit(ctx, worktree, "diff", "--quiet", "--no-ext-diff", "HEAD", "--"); err != nil {
-		return domain.Failure(apierrors.ContextStale, "project check worktree has tracked changes")
+		return domain.Failure(apierrors.ContextStale, "worktree has tracked changes outside the fixed commit")
 	}
 	untracked, err := swarmGit(ctx, worktree, "ls-files", "--others", "--exclude-standard")
 	if err != nil {
 		return err
 	}
 	if len(untracked) != 0 {
-		return domain.Failure(apierrors.ContextStale, "project check worktree has untracked input")
+		return domain.Failure(apierrors.ContextStale, "worktree has untracked input outside the fixed commit")
 	}
 	return nil
 }

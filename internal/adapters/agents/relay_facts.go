@@ -167,15 +167,49 @@ func copyRelayTurns(turns []domain.RelayTurnBinding) []domain.RelayTurnBinding {
 			when := *turn.StartedAt
 			result[i].StartedAt = &when
 		}
+		if turn.ResultObservedAt != nil {
+			when := *turn.ResultObservedAt
+			result[i].ResultObservedAt = &when
+		}
 	}
 	return result
 }
 
-func (p *nativeProcess) bindRelayTurn(session domain.NativeSession, operation, turn string) {
+func (p *nativeProcess) bindRelayTurn(session domain.NativeSession, operation, turn string) error {
 	if operation == "" || p.relayEvidence.StartupOperationID == "" {
-		return
+		return nil
+	}
+	if p.cli != "codex" || p.relayEvidence.Provider != "codex" || turn == "" || session.ID == "" || session.ID != p.relayEvidence.SessionID || session.NativeID == "" || session.NativeID != p.nativeID || session.CLI != p.cli || session.ProjectID != p.projectID || session.Ownership != "owned" || p.relayEvidence.ControllerID == "" || p.inputOperationID != operation {
+		return nativeError(apierrors.ScopeDenied, "native turn acknowledgement differs from its original controller input")
+	}
+	for _, previous := range p.relayEvidence.Turns {
+		if previous.OperationID == operation || previous.TurnID == turn {
+			return nativeError(apierrors.ScopeDenied, "native turn acknowledgement duplicates an original binding")
+		}
+	}
+	for observed, pending := range p.relayCompletedTurns {
+		if pending.OperationID == operation && observed != turn {
+			return nativeError(apierrors.ScopeDenied, "native completion turn differs from input acknowledgement")
+		}
+	}
+	pending, found := p.relayCompletedTurns[turn]
+	if found && pending.OperationID != operation {
+		return nativeError(apierrors.ScopeDenied, "native completion differs from the original pending input")
 	}
 	p.relayEvidence.Turns = append(p.relayEvidence.Turns, domain.RelayTurnBinding{OperationID: operation, SessionID: session.ID, NativeID: session.NativeID, ControllerID: p.relayEvidence.ControllerID, StartupOperationID: p.relayEvidence.StartupOperationID, TurnID: turn, AcceptedAt: time.Now().UTC()})
+	if found {
+		fresh, err := p.applyRelayTurnCompletion(len(p.relayEvidence.Turns)-1, pending)
+		if err != nil {
+			return err
+		}
+		if fresh {
+			p.status = pending.Outcome
+			p.modelObservedAt = pending.ObservedAt
+			p.addEvent("turn_"+pending.Outcome, "")
+		}
+		delete(p.relayCompletedTurns, turn)
+	}
+	return nil
 }
 
 func (p *nativeProcess) markRelayTurnStarted(turn string, when time.Time) {

@@ -1,5 +1,179 @@
 # Works Relay runtime
 
+## 2026-10-16 发送前的原控制器归属核查
+
+SOURCE `ce541794d58560747124fea2cf9d08222700587e` 已普通 push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-runtime` 返回相同 SHA。当前 Task `task_f082d8b36471` / Dispatch `ctx_1500d65ab213`，沿原 R 工作树和分支执行；客户端为 Orca Codex，启动模型保持原配置。本阶段仅修改 `native.go`、`relay_native.go`、`relay_facts_test.go` 和 `relay_native_tools_test.go`。
+
+`Native.send` 在输入格式、operation 与 context 检查后，先只读核当前 Registry 实际持有的原 session / native identity，再执行原文件工具能力门禁。缺少原控制器时返回 `delivery_unknown`，不会据当前工具能力把历史输入判为确定未提交，也不会产生 `RelayInputNotSubmitted`。实际 owned Codex 输入继续在取得 operation 锁、改变运行状态、记录输入或执行任何原生写入之前返回 `unsupported_capability`；该门禁仍位于实际 Native 适配器。Relay driver 的 Send 沿原 SendOperation / Send 进入该顺序。启动与恢复的受限能力拒绝继续在原生启动前执行。
+
+原 pending operation、最终收据、权限与来源检查继续使用原记录。新增检查使用实际空 Registry，覆盖 Codex、Claude、Pi 各自的内部 send、pending Send、SendOperation 和 Relay Send 四个入口；逐项要求未知交付、没有输入泄露、不生成 controller / capture、pending 原值保留。没有构造 owned 进程、成功协议回复或模型结果。
+
+准确集成首失败原件为 `D:/Astrocyte-agent-assets/20261015/integration/c16-product-check-8b0eb882/check.log`。本树首次实际运行同一 `TestRelayFactsRejectMissingOriginalControllerAndFork` 仍为 FAIL，日志 `original-controller-first.log` 保留；最终实现对应检查通过。下列日志与未启动的构建文件位于 `D:/Astrocyte-agent-assets/20261015/relay/R/controller-refusal-20261016/`。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^(TestRelayFactsRejectMissingOriginalControllerAndFork\|TestRelaySendRequiresOriginalControllerBeforeRestrictedAdmission\|TestRelayCodexFileToolRestrictionRejectsBeforeNativeEffects)$' -count=1 -timeout=90s -v` | PASS，3 项顶层检查与 12 项实际发送拒绝，包 1.420 秒；`original-controller-final.log` |
+| 下列四包的相关无模型检查 | PASS，26 项顶层检查；agents 1.730 秒、domain 0.874 秒、app 3.739 秒、SQLite 2.655 秒；`related-model-free.log`，包括真实 SQLite 当前事务和生产 HTTP / SQLite A/B/C 权限拒绝 |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite` | EXIT 0；`controller-vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/controller-refusal-20261016/controller-server.exe ./cmd/server` | EXIT 0；`controller-build.log`，产物未运行 |
+| 四份修改源码 `gofmt -l` / `git diff --check` | 无格式差异 / EXIT 0 |
+
+相关检查的准确命令为：
+
+```powershell
+go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite -run '^(TestRelay(FactsRejectMissingOriginalControllerAndFork|SendRequiresOriginalControllerBeforeRestrictedAdmission|CodexFileToolRestrictionRejectsBeforeNativeEffects|NativeDeadlineRejectsBeforeController|FirstInputCheckpointRefusesUnarmedController|PreparedMemberRejectsMissingOriginalSources|MemberExecutionRejectsUnownedMetadata|InputOperationRejectsColdRegistryAndInvalidPurpose|GuardedRegistryRequiresOriginalOperationAndController|InputOutcomeRejects.*|ExecutionPortableRejects.*|PortableMemberSourceRejectsColdRegistry|NativeDecodeRejectsMalformedValuesWithoutRawLeak|PreparedInputPrivateSerialization|MemberEvidencePrivateSerialization|CompletionEdgesKeepStartAndReleaseIndependent|CompletionMissingGoalEvidenceCannotVerify|CompletionActualReadyCannotCompleteOrRelease|HumanTransitionProductionPermissionGates|CompletionProjectPermissionUsesActualCurrentTransaction)|TestCompletionExperience.*)$' -count=1 -timeout=90s -v
+```
+
+全部 Go 命令使用 `GOMAXPROCS=2` 与 `-p=1 -mod=readonly`。最终检查使用既有 D 盘 backend 编译缓存和 R 独占 TEMP / TMP / GOTMPDIR，`GOPROXY=off`；SQLite 输出根为上述独占证据目录。首次复现使用独立 D 盘缓存和临时目录，同样没有创建原生控制器。
+
+本阶段登记、原生初始化、probe、capture 与模型输入均为零。H 的现有完成来源读取及事务内授权接口没有变化，Agent completion action 仍待用户决定；真实 owned 模型发送、L1 / Today、经验六步及最终产品组合验收尚未通过。原 Codex 文件工具关闭能力缺口、完整包首 RED、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 和原 raw gap 保留。
+
+## 2026-10-16 完成通道输入与实际事务边界
+
+完成通道输入 SOURCE `1a529ac79a7499b45c3d80d256852f4d598a5754` 和准备读取契约 SOURCE `a165fae709e212be4e98c96b326552da739985d0` 均已普通 push，并分别独立 `git ls-remote` 核实相同 SHA。此前按模块登记及本人安全 ACK，通过文件编辑工具原样消费 B SOURCE `5866b5296a5f6ffe253fa5deac632f72d27fe128` 的四份原件，消费提交为 `bc3fda0838105acaa1e61f08fb46bc4c4103de01`；逐文件内容完全相同，随后已停止全部四件写入并归还 B / T。没有合入 B 整支或未提交内容。
+
+Interpreter 复用 B 的 `ValidateCompletionSource`，接收带有原完成通道和 accepted transition 收据的来源。人工确认可以缺少原生轨迹；verified 继续要求原输出事件引用。固定 JSON 原样保存实际 `CompletionChannel` 与 `CompletionReceiptID`，policy 为 `completion-experience-fixed-json-v2`。提示明确人工确认的出处，不将其当成独立目标核验或原生成功；缺少的 trace 不补造，completion / receipt 引用不充作原生事件，模型仍只起草候选。
+
+新增 `domain/relay_prepared_input.go` 提供私有只读 `RelayPreparedInput` 和 `RelayPreparedInputReader.ReadPreparedNativeSession(context.Context, string, string) (RelayPreparedInput, error)`。记录包含实际完整 Session、OperationID、ActorID、ActorKind、ControllerID、StartupOperationID、WorkspaceRoot 和 PreparedAt，八字段全部 JSON 隐藏，没有输入正文或 ObjectStore 引用。旧 `relay_member_evidence.go` 的标准库独立契约没有增加 NativeSession 依赖。B 负责从原操作的私有 JSON 读取真实准备、原操作者及当前许可；该类型没有创建准备记录、控制器、任务状态或成功 claim。Registry 的 prepared wrapper 和生产装配尚未实现。
+
+所有检查使用 `GOMAXPROCS=2`、`-p=1 -mod=readonly`，Go 缓存与临时目录沿下节 D 盘设置，进程 `GOPROXY=off`。SQLite 原件另明确设置 `ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016`。日志与未启动的 `channels-server.exe` 均位于该目录。
+
+| 实际检查 | 结果 |
+|---|---|
+| B 完成通道 / 模型版本规则及 AcceptedExperience 实际 SQLite 生命周期 | PASS，5 个顶层 / 15 个含子项；app 5.411 秒、SQLite 9.253 秒，`channels-sqlite-first.log`；实际 commit / constraint rollback、跨库、关闭和取消，规则参数没有声明产生原生或完成来源 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -v -timeout=90s` | PASS，三项，1.283 秒，`channels-targeted-final.log`；没有初始化客户端 |
+| 适配器 `go vet` / server `go build` | EXIT 0，`channels-vet-final.log` / `channels-build-final.log`；产物未启动 |
+| prepared 契约 domain 检查 | PASS，2.581 秒，`prepared-input-contract-first.log`；完整类型编译及私有 JSON 边界 |
+| 修改文件 `gofmt -l` / `git diff --check` | 无格式差异 / EXIT 0 |
+
+整包 agents 首次检查为 FAIL，保留 `channels-agents-first.log`：包 185.806 秒，达到全包 180 秒总时限时，正在执行 B 的 `TestSelectedTextActualOwnedSourceWithoutModel`，该用例当时仅已运行 4 秒，停在空 Message 的 Native.Start / initialize。不能据此判定该单例运行 180 秒或模型调用失败。该既有整包检查实际尝试过一次无模型初始化，没有登记 t0 或提交模型输入；没有通过新的客户端调用重跑该检查。临时控制器的实际退出需原 B 沿本次真实生命周期核实，不能根据父测试退出或其他 session 结果补成通过。
+
+真实来源读取仍未实现。已实际运行 R 独占 `relay_completion_transaction_test.go` 的空库检查：在生产 AcceptedExperience 事务内以原 `tx.Context()` 读取不存在的 project / grant，两个调用均为 context deadline，分别 3.12 / 3.39 秒，包 7.908 秒、EXIT 1；原件 `completion-project-tx-first.log`。没有插入项目、完成、候选或原生记录。当前主 DB `LoadProject` / `LoadGrant` 直接申请自身的单连接，没有复用已有 WorkspaceTransaction；准确位置与实际 RED 已交原 B 修复，R 没有修改其共享方法或连接数。诊断测试当前保留为 R 自有未发布文件，不作为可消费源码。
+
+跨 Relay 数据库的锁序另为尚未运行并发验证的代码风险。最终经验事务的来源复核必须沿既有不可变原完成引用和当前同 DB 授权完成，原档 / 外部读取保持事务外，不添加缓存、证明库、DDL 或延长期限。H / B 的实际来源读取、principal / owner 映射与唯一生产装配继续；真实 Interpreter 候选、用户批准、后续检索、集成版 L1 / Today 与最终包均未据本阶段通过。原始 RED / UNKNOWN / NOT_RUN 及 ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 保留。
+
+## 2026-10-16 同一已构建组合消费与 S3 接缝
+
+依据模块正式消息 `msg_6eb47253068c`，本树在 clean 检查点普通 `--no-ff` 合入唯一 I 已实际构建通过的 `35cc64faac271d43e5f63103a810081b0eb7ac62`，形成 SOURCE `d9f80c2038f9c178357393ee28e7d072a7bab955`。合并没有冲突，已普通 push 并独立 `git ls-remote` 核实相同 SHA。相对该 I 来源，原 R 领域、应用、store、native 和 relayworktree 全部相同，仅保留本轮 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` 的两份 CompletionExperience 后继源码；没有消费未验证的 I `9ce5c2c` 或任何 WIP。
+
+合并后的实际 `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=180s` PASS，包 23.152 秒；`go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016/integrated35cc-server.exe ./cmd/server` EXIT 0。日志为同目录 `integrated35cc-agents.log` 和 `integrated35cc-build.log`，产物未启动。Go 缓存和临时目录沿本节后文的 D 盘配置，另仅本进程设置 `GOPROXY=off`，使用已有依赖缓存；本次没有新增依赖下载。`git diff --check` EXIT 0。这是本树的适用组合检查，不代表完整默认浏览器或后继 I 组合通过。
+
+原 S3 SOURCE `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b` 的 portable 契约缺少原 R 已实现的四个结果字段。S3 按产品及模块明确授权，在自身工作树以文件编辑工具完整原样消费 R SOURCE `23253502143bb23bf47e1606c38e0158540e328d` 的 `relay_member_evidence.go` 与同名测试，交 SOURCE `12f659b7d741a48237ae2230c786d7ac3572590b`。R 独立 `git diff --exit-code` 核实两文件完全相同，并接收 S3 本人停止临时写入和归还逻辑维护的记录。S3 仅在自身 bridge 映射实际 accepted input 结果；R 没有重复实现原字段或增加测试。
+
+首次 claim 前的准确剩余接缝已交 B、S3、模块和产品：原 Relay PrepareIntent 与 Native 空 Message 初始化已经存在，generic Native.Send 按当前会话的 `PendingOperation` / `Operations[send,pending]` 校验后立即发送。B 原 `SendNativeMessage` 尚无独立的持久准备与后续同 operation 发送入口；现有 NativeOperation 仅有动作、状态和时间，没有待发送内容的固定关系。原 Registry 保存的 Start 会话不能替代未来输入的真实准备收据，调用者提供 UUID 不产生准备证据。B 负责其原 projects、收据、私有存储及受信调用，R 按准确后继核原完整身份；没有增加控制器、任务状态、DDL、队列或 Attempt。S3 的新 claim unsupported、Calls / 权限集合 Known=false 门禁保持，该依赖不扩大为独立人工 L1 的阻塞。
+
+人工经验两字段及实际来源读取后继仍待 B 准确 SOURCE。本阶段 t0、原生初始化和模型输入均为零；H 目标 reader、集成版 L1 / Today、六步首跑和最终 Windows 包继续由原负责人实施，全部首次失败和 unknown 保留。
+
+## 2026-10-16 经验候选的原会话与回合结果核验
+
+本阶段 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` 已普通 push，独立 `git ls-remote` 返回相同 SHA。当前 Task `task_f082d8b36471` / Dispatch `ctx_1bc01d1c9ef9` / 终端 `term_bfbc83d9-c104-4be1-a6a5-9f66869cc812`，继续原 R 工作树及分支。已读取根 00:30 恢复入口、模块工作树的当前管理文档和 v1.4 任务。实际客户端 `codex-cli 0.162.0`，沿当前模型配置，没有覆盖模型参数。
+
+`CompletionExperienceInterpreter` 读取已完成结果时，沿原进程锁核对实际保留的完整 Start 会话、provider、项目、controller、startup operation、input operation 和 turn。原受理回合必须同时具有 `AcceptedAt`、实际 `ResultObservedAt`、`Outcome=completed`、空失败码及 `ResultSource=codex_turn_completed`。缺少或冲突的原身份、缺受理回合、缺原生终态均立即拒绝，完成 JSON 不生成这些事实。StartedAt 不作为结果的补填目标；原结果不会生成任务 done、资源释放、usage 或权限集合。
+
+修改仅涉及原 R 已授权的 `completion_experience_response.go` 和同前缀测试。现有模型最终消息格式、首次输入 guard、工具关闭、原操作只读恢复与未知禁止重发保持原语义。新增检查只使用无原 Start、无受理回合或 external_observed 的拒绝输入，没有构造成功原生通知、模型输出或控制器。
+
+全部 Go 命令使用 `GOMAXPROCS=2`、`-p=1 -mod=readonly`，共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`TEMP` / `TMP` / `GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/R`。日志与未启动的构建产物位于 `D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016/`。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=180s` | PASS，5.150 秒，`agents-first.log`；之后仅补充当前 turn 身份比较 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -v -timeout=90s` | 最终 SOURCE 对应三项检查全部 PASS，包 2.683 秒，`refusals-final.log` |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` | EXIT 0，`vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016/server.exe ./cmd/server` | EXIT 0，`build.log`；产物未启动 |
+| 两份修改文件的 `gofmt -l` / `git diff --check` | 无格式差异 / EXIT 0 |
+
+当前 B / I 的 `ExperienceCompletionEvidence` 仍未提供 `CompletionChannel`、`CompletionReceiptID`，其 Relay 来源校验和本适配器仍要求原生轨迹引用。人工确认且没有原生轨迹的经验候选需要 B 先交准确 DTO、来源读取与持久化后继，再由 R 消费并调整解释输入；该依赖已经报告模块。H 的生产目标 reader、合法输出受信应用与实际固定检查仍归原 H / B，R 的 accepted dispatch / send 收据和完整 tuple 后置校验继续保留。
+
+本阶段没有登记 t0、初始化原生控制器或发送模型输入。经验模型正向、H 真实目标核验、集成版 CLI / Today、六步首跑与最终 Windows 包仍待准确组合实际执行。原冷 Registry RED、来源 nlink2 FAIL、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 及全部首次 RED / UNKNOWN / NOT_RUN 保留。
+
+## 2026-10-16 verified_complete 生产入口核查
+
+模块 `msg_7572618ec5e3` 要求核查现有生产实现。R SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 提供 `RelayGoalVerificationReader`、可选 `RelayServiceOptions.GoalVerification`、原 owned controller / accepted input / transition 关系检查，以及完成记录的私有持久化。当前 R `d6dab8a`、H `8bc21f140c36b77275358e28951e1ca1b7cb7a6d` 及当时 H 未提交域、I `b9bf9d7` 的 `internal` / `cmd` 没有 `ReadRelayGoalVerification` 生产方法实现或 `GoalVerification` 注入，也没有实际固定目标检查的持久证据入口。因此 `verified_complete` 生产能力仍未实现，真实正向验收为 NOT_RUN；没有 reader 时明确返回 evidence_missing。
+
+原设计由 H 负责合法正选来源输出、固定目标实际检查的可信 reader、证据出处和唯一生产装配，当前没有该实现的准确 SOURCE。F / H 仍须在原单窗口核查本任务合法输出与固定目标；人工通道如实保存操作者确认，不能据 DTO、原生终态或拒绝测试生成 verified 结果。`ReadRelayCompletion` 只读取已经完成的 Completions 记录及 finalized transition 收据，不提供前置目标检查。此核查没有新增通用 checker、检查协议、控制器或模型输入。
+
+## 2026-10-16 原输入回合终态观察
+
+本阶段 SOURCE `23253502143bb23bf47e1606c38e0158540e328d` 已普通 push，独立 `git ls-remote` 返回同一 SHA。当前 Task 为 `task_f082d8b36471`，Dispatch 为 `ctx_c17c6124e9dc`；使用原 R 工作树、分支和写入范围，客户端为 Codex 0.162.0，模块核实终端配置 GPT-6.1-Sol / xhigh / fast。原双完成 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 保持普通祖先。
+
+Codex 原接收器将真实 `turn/completed` 的 completed / failed / interrupted 关联到原 input operation、turn、session、native identity、controller 和 startup operation。通知早于 turn/start 回复时仅保留待核观察，取得同一原输入的准确 ACK 后才形成 TurnBinding；冲突身份、重复绑定、不同终态和不完整错误立即拒绝。错误原文不存入结果字段，只保留固定 `native_failure`。ACK 关联失败保留 delivery_unknown，将原控制器标为 blocked 并请求终止，不能重发输入。重复终态不追加事件、不刷新观察时间；迟到的真实 started 可以补充独立事实，已观察终态保持原值。
+
+`RelayTurnBinding` 新增 JSON 隐藏的 Outcome、FailureCode、ResultSource 和 ResultObservedAt。ResultSource 仅为 `codex_turn_completed`，时间取原通知接收时刻；没有通知时四字段保持空。已有 Relay 私有 JSON 保存这些字段，历史复制包含独立时间值，没有 SQL DDL 或认知迁移。应用服务复核 provider、准确动作关系、允许终态和原时间，并拒绝覆盖已经保存的终态。后到事实通过原 RuntimeFacts 追加固定 `input_result`，不重写最终动作收据，不产生目标完成、started、调用预算或资源释放证明。
+
+portable `RelayMemberEvidence` 保持原接口签名，新增私有 Outcome / FailureCode 指针、ResultSource 和 ResultObservedAt。值只复制原 Registry 已持有的准确 accepted turn；缺来源、冷 Registry 和原输入不明继续拒绝，缺退出观察时间保持 nil。ToolsKnown / TargetsKnown / CallsKnown / TokensKnown 继续 false，完整调用次数和工具集合没有补值。全部私有结果和身份字段的 JSON 投影仍为 `{}`；session-events 六字段保持原样。H / S3 如消费这些字段，必须沿原实际 Registry 注入和绑定检查，不从持久 scalar 重建所有权。
+
+本机实际 `codex --version` 为 0.162.0；通过该二进制的离线 `app-server generate-json-schema` 核对 TurnCompletedNotification、TurnStatus 和 TurnError，确认 error.message 必需及三个允许终态。生成物只在 R 的 D 盘目录，没有启动 app-server、原生会话或模型。
+
+全部 Go 检查使用 `GOMAXPROCS=2`、`-p=1 -mod=readonly`、共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`；TEMP / TMP / GOTMPDIR 为 R 独占 `D:/Astrocyte-agent-assets/20261015/go-temp/R`。日志与未启动的构建产物位于 `D:/Astrocyte-agent-assets/20261015/relay/R/outcome-20261015/`。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/relayworktree -count=1` | PASS；0.464 / 11.014 / 4.965 / 3.553 秒，`final-core-go.log`。包含原实际 Git / SQLite / 权限 / 并发与冷 Registry 检查，以及本次非法终态、缺完整原身份拒绝和私有 JSON 边界 |
+| `go test -p=1 -mod=readonly ./internal/adapters/sqlite -run '^Test(RelayStore\|AttentionUsesActualWorkspaceTransaction\|AttentionRejectsActualWorkspaceTransactionFromAnotherDB\|AcceptedExperienceActualTransactionLifecycle\|AcceptedExperienceRejectsActualWrongDatabaseAndClosedStore\|AcceptedExperienceActualCancellationCreatesNoEvidence)' -count=1` | PASS，2.134 秒，`final-sqlite-go.log`；Relay 独立库、实际 hardlink 拒绝、最终收据不可改写及原同事务 commit / rollback / 取消 |
+| `go vet -p=1 -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree` | EXIT 0，`final-vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/outcome-20261015/outcome-server.exe ./cmd/server` | EXIT 0，`final-build.log`；产物未启动 |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 packages / EXIT 0 |
+
+五包完整基线的首 FAIL 保留在 `baseline-go.log`：原 B `TestProvenUnstartedResumePreservesOwnedOriginalSession` 于 `local_agents_narrowing_test.go:300` 仍期待冷 Registry 恢复，实际返回原所有权门禁的 delivery_unknown。其余四包通过；此失败已交模块与原 B，未修改 B 文件、原门禁或断言。上表 SQLite 定向通过不代表整个 SQLite 包已通过。
+
+本阶段没有构造成功原生回复或模型输出。准确终态正向、H 的真实目标核验、集成版 CLI / Today、经验管道六步和最终 Windows 包仍待原负责人在准确组合上执行。working 严格门禁继续待答，独立 L1 按已确认范围执行，S3 的两项 Known / Calls 待答保留其所属拒绝。旧 nlink2 FAIL、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown，以及全部首 RED / UNKNOWN / NOT_RUN 保留。本次登记、原生初始化和模型输入均为零。
+
+## 2026-10-15 双完成通道与独立释放
+
+本阶段 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 已普通 push，独立 `git ls-remote` 返回精确同值。依据根正式决定 `msg_3b809b065867` 和模块交接 `msg_3a897996ebdf`，有当前权限的人工操作者可以将 accepted 或 working 确认到 done。原 `CompletionConfirmed=true` 且没有核验引用的请求记录为 `user_confirmed_complete`；请求可显式选择该通道。`verified_complete` 另外要求本任务合法 owned 输出和固定目标实际检查通过的可信证据。完成不补造 started，不清除原交付未知或退出事实；旧 done 没有新记录时保持完成通道未记录。
+
+原 `RelayTransitionCommand` 增加可选 `completion_channel` 和 `completion_evidence_id`。HTTP 只提交核验引用，不能提交 passed、原生 tuple、目标检查命令或原文。H 已明确负责受信 `RelayGoalVerificationReader.ReadRelayGoalVerification(ctx, caller, taskID, evidenceID)`，通过 `RelayServiceOptions.GoalVerification` 注入。其私有返回值 `RelayGoalVerification` 含准确 task / worktree / terminal / controller / startup operation / session / native / input operation / turn、合法输出 event 引用、实际检查证据引用和 PassedAt；全部字段 JSON 隐藏。R 核原 task 的当前或历史 controller、准确 accepted turn 与原 accepted dispatch / send 收据，并再次核当前权限、对象和 CAS。缺 reader、缺出处、错误引用或实际 source 拒绝均立即失败，没有自动降级到人工通道。
+
+完成出处沿原隔离 `RelayState.Completions[taskID]` JSON 保存，旧字段缺失初始化为空；没有 SQL DDL、认知 schema 或新版本迁移。记录含 completion_id、channel、source、实际操作者、原 receipt / operation / task / worktree / terminal 和时间；verified 另保安全 input_operation_id、证据与输出 / 检查引用。该记录与原 RuntimeFacts 的 human_target_confirmed 共用准确 ID，不将其冒充 native event_id。隔离 store 拒绝完成记录改写和删除。`RelayTaskView.Completion` 只返回安全字段。
+
+内部 `RelayCompletionEvidenceReader.ReadRelayCompletion(ctx, projectID, completionID)` 只读原 store，并重新核原项目 observe / revision / grant、task 所属、实际 finalized accepted transition 收据及已保存通道；缺记录不从 task.State 推断。调用方仍须核本次真实身份和经验权限。H 的包装器如需公开此内部端口须显式转发。B 已收到经验 DTO 的准确差异：保留 CompletionChannel 和原 CompletionReceiptID，user_confirmed 来源照常进入 quarantine / 人工批准；缺 native trace 时保持空，不把 completion_id 或 receipt_id 填成原生 event 引用。B 独占经验存储和必要迁移，R 没有修改其文件。
+
+释放继续仅允许 done → released，独立核当前 observe、原 settings revision / grant、真实退出、pending 为零和工作区 / terminal 所属，另追加 resources_released 事实。accepted / working 不能直接 released；取消失败沿原实际终止 / 清理处理，不能补造 done。未因完成记录生成 ArchiveAppendOnly、PrefixComplete 或 SessionComplete。
+
+| 命令 / 检查 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/workspace/domain ./internal/workspace/app -run '^TestRelay(Completion\|HumanTransitionProductionPermissionGates)' -count=1 -v -timeout=180s` | PASS；domain 2.633 秒、app 38.400 秒，含独立完成 / 释放边、私有 JSON 隐藏、nil verified reader 拒绝、实际 Git / SQLite ready 拒绝与幂等、纯缓存缺 completion 读取、生产 A/B/C / HTTP / 两连接权限；`completion-boundaries-final.log` |
+| SQLite Relay / Attention 与 AcceptedExperience 同事务适用检查 | PASS，24.839 秒，`completion-sqlite-final.log`，含实际 commit / constraint rollback、跨库 / 关闭 / 取消及真实 hardlink 拒绝 |
+| `go vet -p=1 -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite` | EXIT 0，`completion-vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/registration/completion-server.exe ./cmd/server` | EXIT 0，`completion-build.log`，产物未启动 |
+| 全 domain / app / agents / relayworktree 包回归 | 首 FAIL 保留于 `completion-scoped-final.log`：原 controlled helper 在其 10 秒期限中 deadline exceeded，实际用例 33.13 秒；原 B inventory version helper 返回 Access is denied。domain 2.707 秒、relayworktree 43.132 秒 PASS；不将定向结果作为全套通过 |
+
+Go 参数与 D 盘进程缓存范围沿上一阶段。没有新增模拟控制器、伪造协议或模型成功；原 helper 的失败未通过改期限、改断言或新增 skip 消除。登记阶段原 B 冷 Registry 恢复失败仍独立保留。SOURCE 首次 push 为连接 github.com:443 失败，之后同 SHA 普通重试成功，首失败未改写。开始与双完成正向的真实 controlled native / HTTP / UI、H 的实际 verified reader、经验模型 / quarantine / 人工批准 / 后续检索仍 NOT_RUN；源码接口和拒绝边界阶段不代表整条 v1.4 或 L2 完成。
+
+### 当前生产调用链只读核查
+
+根 `msg_4d5670f839e6` 要求的只读检查使用 H SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` / REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`，逐函数对照原 R REPORT `9021cbaa0dac6321491c9ae86d466749b8a32904`，没有执行探针、登记、初始化或模型。main 先独立构建 Swarm ledger，再将原 DB / Registry / Works 交 assembleRelay；Relay 未接收 Swarm service、Member authorizer 或租约预算。原 HTTP CreateIntent → PrepareIntent 空初始化 → ConfirmIntent / submitPreparedIntent → RelayNativeDriver.Send → Native.SendOperation / send 的首输入检查仍通过本次原 p.relayInputGuard、relaySourceCheckpoint 和 H sourceGuard。observer 则可信 reload → 原 lifecycle → collector → 原 EventRepository / SQLite admissions / 六字段 Today。
+
+该人工路径没有调用 ClaimWorkItem 或创建 Mission / WorkItem / Member / lease。原认证、CSRF、幂等、revision / A-B-C / grant、独占工作区、pending / controller CAS、工具关闭和正选单链接来源全部保留；原 Native 四个共享 slots、1..1800 秒 deadline、512 KiB 输入与 256 events / 128 KiB 输出上限保留。根正式决定 `msg_99a867237e30` 已确认 S3 Calls / Known 未答项约束 S3 所属路径，原人工 L1 仍按其独立授权准备；当前没有实际新窗口。
+
+该精确 main 没有向 assembleRelay 传 LaunchContext reader，ConfiguredRepositoryContext 只配置 S2。H 须完成实际固定四文件上下文接入和输入核查；不能据已有接口宣称四文件已经交付。唯一 I 准确组合通过后，仍由 F / H 沿原 observer、真实登记起点、空初始化和首次输入顺序执行原 180 秒窗口。
+
+## 2026-10-15 同实例可信登记与 L 最小事务闭包
+
+当前 Task `task_f082d8b36471` / Dispatch `ctx_f17d901de131` 使用原工作树、原分支和独占写入范围。实际客户端 Codex 0.162.0，终端配置 GPT-6.1-Sol / xhigh / fast，未覆盖模型配置。已读取模块当前管理文件、v1.4 唯一规格和 Release 任务；本阶段没有原生初始化、模型输入或新的三分钟登记起点。
+
+登记 SOURCE `4d93a52028e5ea72c705c5c6e7f30d0cb7f016bb` 提供内部可选端口 `RelayTrustedAgentRegistrar.RegisterTrustedAgents(context.Context, []domain.AgentSpec) error`。原 `RelayRuntime` 方法集合保持兼容，H 的包装器须显式转发该可选端口。受信组装将固定 `agents.json` 经现有成熟 JSON 解码后交完整快照；方法校验全部条目及重复名称、drive / input mode、实际 launch 字段，复制 slice、map 和时间指针，然后在原服务实例原子发布。ListAgents 与内部 spec 读取使用同一锁并返回独立复制；读取不启动或探测控制器。
+
+原 store 事务核未结束任务、工作区占用、当前 owned 会话及 pending / delivery_unknown 收据。已保存的 ready intent 同样保留其登记策略；移除或更改所用登记返回 VersionConflict。同一完整登记可以重载，不涉及在途身份的新增登记可以发布。失败不部分发布，不改动作收据、任务、controller 或当前权限；调用者必须按返回错误记录本次登记失败。实际文件写入起点、写入完成、解析 / reload 和激活时间由 H 沿唯一 t0 记录，当前没有开始该窗口。
+
+依赖消费经模块正式答复 `msg_dbff4cd21c8a` 授权，独立提交 `4b5312f` 原样登记 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 的十一文件：SQLite `workspace_approvals.go`、`workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go`、`workspace_session_bindings.go`，app `proposal_ports.go`，domain `approvals.go`、`goals.go`、`proposal_context.go`、`proposals.go`、`session_bindings.go`。逐项 Git blob 与原 SOURCE 相等，没有消费其他 S2 路径。B SOURCE `ce281d003c093ec26e19dfec78e912f20a014787` 的两文件由 `0ce81b7` 原样消费，019 迁移 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5` 由 `b9cb066` 原样消费；对应内容独立 diff 全等。L 最小闭包不需要 020 / 021 / 022。
+
+所有 Go 命令使用 `GOMAXPROCS=2`、`-p=1 -mod=readonly`，共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，GOTMPDIR / TEMP / TMP 仅本进程使用 R 的 D 盘独占目录。安全日志位于 `D:/Astrocyte-agent-assets/20261015/relay/R/registration/`。
+
+| 命令 / 检查 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/workspace/app -run '^TestRelayTrustedRegistration' -count=1 -v -timeout=180s` | PASS，2 项：原服务空登记激活、完整失败校验、复制隔离、ready intent 保护、独立新增，以及 16 个并发读写调用者和真实 intent 竞争；包 2.421 秒，`registration-first.log` |
+| `go test -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree -count=1 -timeout=180s` | app 13.680 秒、agents 5.630 秒、relayworktree 4.451 秒 PASS；SQLite 原 B `TestProvenUnstartedResumePreservesOwnedOriginalSession` 第 300 行冷 Registry 恢复期望 FAIL，`scoped-packages-first.log` 保留，原 owner 处理 |
+| `go test -p=1 -mod=readonly ./internal/adapters/sqlite -run '^Test(AttentionUsesActualWorkspaceTransaction\|AttentionRejectsActualWorkspaceTransactionFromAnotherDB\|AcceptedExperienceActualTransactionLifecycle\|AcceptedExperienceRejectsActualWrongDatabaseAndClosedStore\|AcceptedExperienceActualCancellationCreatesNoEvidence)$' -count=1 -v -timeout=120s` | PASS，5 个顶层、7 个叶场景；包 2.462 秒，实际同事务 commit / constraint rollback、跨库拒绝、关闭与取消检查，`l-minimal-transaction.log` |
+| SQLite Relay 来源与不可变收据检查 | PASS，含独立库、真实 hardlink 拒绝和首 RED 保留，`sqlite-relay-transaction.log` |
+| `go vet -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree` | EXIT 0，`vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/registration/registration-server.exe ./cmd/server` | EXIT 0，`build-first.log`；产物未启动 |
+| `git diff --check` | EXIT 0 |
+
+SOURCE 首次 push 和之后独立 ls-remote 首次查询均遇 `SSL_ERROR_SYSCALL`；同 SHA 普通 push 重试成功，没有更改 TLS、代理或公共历史。远端精确 SHA 后续独立核实。上述编译和事务结果使用已经准确登记的最小闭包，没有把越域 WIP 作为源码交付。
+
+H 的固定可信文件实际 reload、生产 HTTP / SQLite 同实例检查和 F observer 窗口继续由原 owner 完成。双完成通道 `verified_complete` / `user_confirmed_complete` 已收到最新用户决定，当前登记 SOURCE 尚未实施该后继变更；开始证据保持独立，完成不能补造 started。L 完整模型输出、quarantine → 人工批准 → 后续检索、实际 native / Today 和最终包仍未通过，Calls / Known 的未决定项继续保持原 Claim 拒绝。旧来源 nlink2 FAIL、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 和全部第一 RED / UNKNOWN / NOT_RUN 独立保留。
+
 ## 2026-10-15 准确 turn 关系、原 Start resolver 与 Read 前置
 
 追加 SOURCE `014692e644b08b3acb1f76d696afa728362f4591` 已普通 push，独立 ls-remote 同值；此前 `79d9313` / `dbb0fe7` 保留普通祖先。本阶段继续原 Task / Dispatch，没有另起 CLI 或模型。模块已授权准备共同成立的 Codex 真实 started 正向，H 唯一登记、F 唯一实际 UI 操作者；无 started 客户端的迁移规则仍待用户决定。
@@ -262,7 +436,7 @@ terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{LaunchPoli
 
 原 `thread/start` / `thread/resume` 响应现读取官方 schema 的 `approvalPolicy` 和 `sandbox.type`；实际明确不符合 `never` / `readOnly` 时立即失败。两项均实际返回符合时内部证据为 `permission_policy=never_read_only`；缺项保持 unknown。已识别字段错型仍沿既有标准 JSON 解码 fast fail，不增加 parser。
 
-`launch_policy=selected_context_tools_disabled_v1` 表示实际 owned 命令使用该固定禁用参数；`effective_tool_set` 始终 unknown。完整有效工具清单仍需 H 只对本次 controller 正选自产来源聚合，不能用 `tool_calls=0`、源码静态 feature 或只读 sandbox 独自证明所有工具关闭。本轮只验证拒绝路径，未将该新证据口声明为已实际执行成功。
+`launch_policy=selected_context_command_tools_disabled_v1` 表示实际 owned 命令使用该固定命令工具禁用参数；`effective_tool_set` 始终 unknown。原生 apply_patch 不受 ShellTool feature 控制，该标签不表示文件工具关闭。不能用 `tool_calls=0`、源码静态 feature 或只读 sandbox 独自证明所有工具关闭。本轮只验证拒绝路径，未将该新证据口声明为已实际执行成功。
 
 首次实际来源错误出现后，新增 `first_protocol_failure` 可选派生字段保留同一进程第一条 RPC method / 数值 protocol_code / 既有白名单 reason / 实际时间。原始 message 不保留，后续失败不覆盖，日志关闭也可由原 owner 的内部证据口核查。错误 reply / success 解码失败、明确 false、reply deadline 或 reply 前进程退出同样给出固定摘要，没有新增重试、fallback、HTTP 或持久证明系统。它不能补回旧二进制没捕获的内容。
 
@@ -470,7 +644,7 @@ RelayNativeDriver.Initialize 需要 Codex、通知观察器及受信 BeforeFirst
 
 固定正文取自原控制器内存中的完整 ContextPacket，真实首 Send 使用既有 packetPrompt；SQLite 绑定仍剔除正文。最终输入检查 UTF-8 和512KiB上限。受信 NewRelayGuardedRegistry(stateRoot, guard) 同时提供 generic Start / Send 的相同保护：空 Start 自动 armed，同控制器后续 Send 核原 pending send operation 并携带原固定上下文。该 generic 入口不能替代 Relay task / Today 绑定。冷 Registry 无原控制器时拒绝，持久标识不能创建所有权。
 
-真实登记的先后受现有生产入口约束：CreateIntent 和 PrepareIntent 均依赖同一个公开 Agent 注册表。已向模块报告可执行顺序为 F 空登记 observer ready、H 唯一真实登记并保存当刻起点、F 创建 intent / 空初始化、H 核正选来源及工具、F 同控制器 Confirm。准备时间计入该原始登记起点；不隐藏登记、重新计时或更换控制器。最终执行顺序仍须总负责人接收；当前没有登记或三分钟结果。
+总负责人正式答复 msg_e8f75be9692e 已确认单 Registry 顺序：F 在同 URL 读取空 agents 并确认 observer ready，H 唯一真实登记并保存当刻 t0，F CreateIntent / PrepareIntent 空初始化，H 核同控制器正选来源及工具，F 原 Confirm 首次提交。初始化、来源检查和准备耗时计入同一三分钟，t0 不重记；不隐藏登记或更换控制器。当前没有该新窗口的登记或三分钟结果。
 
 进程环境为 GOMAXPROCS=2、go -p=1 -mod=readonly；后续缓存按模块指令使用 D:/Astrocyte-agent-assets/20261015/go-build/backend，临时目录为独占 go-temp/R。本机证据位于 D:/Astrocyte-agent-assets/20261015/relay/R：
 
@@ -487,3 +661,133 @@ RelayNativeDriver.Initialize 需要 Codex、通知观察器及受信 BeforeFirst
 首四包完整检查 guarded-registry-components.log 的 SQLite TestProvenUnstartedResumePreservesOwnedOriginalSession 保留 RED：缺原 controller 的恢复实际返回 delivery_unknown，该 B 测试要求 prelaunch。已交 B / 模块核现有断言与所有权约束，没有修改 B 测试或放宽 cold Registry。随后定向通过不改写该完整检查结果。模块读取活动 WIP 中间类型组合的首编译 FAIL 也独立保留，不作为准确已提交 SOURCE 的结果。
 
 H 须准确消费 SOURCE 后增加准备入口及公共契约，F 须通过同一实际服务操作；空初始化正向、来源和工具关闭、首次提交、逐 event_id SQL、真实目标输出、两尺寸 Today、人工 done / release 与实际发布包均尚未执行。原 nlink2、首 UNKNOWN、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 保留；working / 无 started 客户端人工完成规则仍待用户。L Interpreter 后继接口为 B SOURCE c715342cff4ccfa1b3198275f981385296fe6641，依赖消费方式和实际模型窗口由模块协调。冻结的 V4 / schema / engine / mapper / weights / schedule / 17321 均未修改。
+
+## 原输入 operation 私有证据端口
+
+本阶段 SOURCE `9807d2b6d7f0042bcd59d36ded0b332d74333dc2` 只新增 agents/relay_input_operation.go 与同名测试；仍属同一 R 工作树、分支和当前 Dispatch。`Registry.ReadOwnedInputOperation(ctx, sessionID, operationID, purpose)` 仅从该 Registry 原持有控制器读取完整原 NativeSession、controller evidence、owned execution 和准确 TurnBinding。purpose 只接受 claim_work_item / submit_artifact，operation 必须为 UUID；不从 SQLite scalar、PID 或调用方重建原会话。
+
+Claim 需要原控制器仍有真实进程持有记录且未退出；其他输入正在运行或已 blocked 时拒绝。Claim 可发生在实际 Send 之前，未接受输入保持 InputAccepted=false，不生成虚构回合。Submit 允许原持有控制器已退出，但必须存在相同原 input operation 的真实 TurnBinding，准确 session / native / controller / startup operation 全部相同。
+
+`StopOwnedInputOperation` 只停止原已接受输入对应的原控制器。停止前在同一 operation 锁内核当前 inputOperationID，已经转为其他输入时拒绝；不停止其他任务。已确认退出直接返回现有证据，不重新发送或恢复进程。该端口不替代 S2 的 binding / epoch / caller / grant 检查。
+
+全部返回字段的 JSON 投影为空对象。ToolsKnown / TargetsKnown / CallsKnown / TokensKnown 保持 false；启动策略、输入接受和进程退出均不补造有效工具、外部目标、完整 usage 或任务成果。此阶段不实现 Swarm 的权限和绑定领域；H / S2 / S3 按各自准确端口作必要映射，缺少的实际执行描述继续未知。
+
+从 git archive 的准确 SOURCE 在 D:/Astrocyte-agent-assets/20261015/relay/R/exact-input-source 独立验证，未包含本树后继 L 的未提交修改。共同环境为 GOMAXPROCS=2、共享 backend GOCACHE、独占 go-temp/R：`go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=120s` PASS19.212秒，`go vet -p=1 -mod=readonly ./internal/adapters/agents` 和 `go build -p=1 -mod=readonly ./internal/adapters/agents` 均 EXIT0；日志 exact-9807-input-full-agents.log。冷 Registry、错误 purpose、未知停止和私有 JSON 边界实际运行，没有启动原生进程或构造成功协议。
+
+独立 L 依赖按模块明确授权通过 cherry-pick -x 消费 B c715342 的五路径，保作者与来源，提交为37c3b9d。该依赖实际需要尚未提供的 S2 WorkspaceRepository / WorkspaceTx / WorkspaceTransaction / workspaceCAS，组合 Go 检查首 FAIL 保留在 completion-components-first.log，已交原 B / 模块；R 未修改这些领域。B 后继准确 SOURCE f76e25b84b29495994f2e5877b586d4c22669d3f / REPORT ce5a86b0cdc27ea9567d1041a7fccc89795d9395 已由独立远端和普通祖先核实，窄消费为6b7ba3ad14209ace91a89cf2f63ecafafbba390d。模型标识来源区分 configured_route / provider_reported，独立版本缺证据时固定 unknown；不以别名或 CLI 版本补造。
+
+当前原输入端口准确源码可单独消费，后继 L 源码仍待 B 事务前置和适用组合验证后交付。原控制器正向、S3 Member / Ownership 实际组装、真实 tools / targets / usage、模型候选和第二任务经验引用仍未验证；本阶段不宣称 service build、完整 Swarm / L 或最终 release 已通过。
+
+## L Completion Interpreter 包级源码
+
+SOURCE 为 `d7d47d68c80a1ee3f0007de9f9b08ccfd654d158`，本阶段为适配器源码和包级检查。普通 push 后独立 ls-remote 得到同一 SHA。整体服务构建仍有下述 S2 事务前置缺口；真实模型、完整 L 和 Swarm 均未验证。
+
+`agents.NewCompletionExperienceInterpreter(registry, CompletionExperienceOptions)` 直接实现 B 已提交的 CompletionExperienceInterpreter。调用使用 B CompletionExperienceRequest 的 OperationID / Evidence / ResumeOnly，不创建替代请求身份。受信组装必须提供 ReadContext、BeforeFirstInput 和明确 DeadlineSeconds。ReadContext 返回当前批准项目和固定 ContextPacket；首输入 callback 必须包含当前来源、工具、授权及实际模型窗口门禁。它不替代 S2 / S3 的 Claim、预算、绑定或权限服务。模型版本读取 callback 可省略，省略时保持 unknown。
+
+实际调用只选择同一 Registry 的 Codex native。空输入初始化先建立原 controller，确认其配置路由为 gpt-6.1-sol，再在相同原 operation 提交一次固定上下文和 JSON 草稿要求。原 receiver 只接受同 thread / turn 的完整 final_answer item 和成功 turn/completed，不拼接 delta 作为完成结果；额外工具 item、模型路由变化、截断、错误或身份冲突立即失败。outputSchema 只约束 pattern / verdict / condition / exact evidence / refused，JSON 库拒绝外来字段、额外输出、拒绝回答和缺少原 evidence 的草稿。产物只作为 quarantine 候选的输入，不批准、评分或决定业务成果。
+
+原生响应正文仅留在原进程内存。错误返回固定安全消息，配置路径和原生正文不进入 stdout / HTTP / Git / 包。Provenance.Model 使用实际 thread/start 的配置路由，ModelIdentitySource=configured_route；独立 ModelVersion / ModelVersionSource 均为 unknown。只有受信来源确实报告独立版本时才可记录 provider_reported；模型别名和 CLI 版本不能充当独立版本。PolicyVersion=completion-experience-fixed-json-v1 标识本源码实际实现的固定草稿指令和 JSON 约束，不能替代项目授权政策。
+
+同一 Native 的原操作检查串行进行。重复调用核对原固定 Evidence 后只读取原结果；ResumeOnly 在冷 Registry、缺原进程或缺原 evidence 时返回 delivery_unknown，不启动、恢复或重发。已经提交后未知仍保留原 operation，后续仅核对相同原控制器。B 的现有 attention_receipts 保留同 owner / event 唯一操作，候选事务仍由 B 保存和复核。
+
+以下命令使用 GOMAXPROCS=2、共享 backend GOCACHE、独占 go-temp/R；最终包检查另将 TEMP / TMP 指向同一独占 D 盘目录：
+
+| 命令 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=150s` | PASS32.960秒；completion-adapter-final-package.log |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/attention/app -run 'TestCompletionExperience\|Test.*Interpretation\|TestRelayInputOperation' -count=1 -v -timeout=120s` | PASS8.616 / 3.052秒；completion-final-model-source-rules.log。实际缺前置、冷重放、非法 purpose、未知停止、拒绝/不完整输出、正文隐私和 unknown 模型版本规则通过 |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` / `go build -p=1 -mod=readonly ./internal/adapters/agents` | EXIT0 |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package / EXIT0 |
+
+组合首 FAIL 原件 completion-components-first.log 继续保留：B c715 的 SQLite 适配依赖尚未消费的 S2 NewWorkspaceRepository / WorkspaceTx / WorkspaceTransaction / workspaceCAS。S2 的最小准确十一文件闭包由原 owner 验证并经模块交付后再消费；R 不改 B / S2 领域或整合其无关历史。此包级 SOURCE 不将该服务组合标为通过。先前原输入端口 REPORT c569 首普通 push 的 TLS128 保存在 input-report-push-first-failure.log；同一提交普通重试后远端精确同值。
+
+当前执行门禁按 ROOT msg_9e32e1f32ba5：Calls 计数单位及 Known 完整覆盖两项等待用户，现 Calls / Tools / Targets Known=false 和 Claim 拒绝保持；不登记新 t0、不绕 Claim / 预算提交输入、不扩大工具权限。新登记、controller 和 model 均为0。rawResponse 仅交私有观察设计，尚未扩展 store / schema 或执行额外 RPC，已完成 Responses 的数量和 nullable usage 不充当全部调用/用量。H / B 精确装配、服务组合构建、真实完整非拒绝结果、人工批准和第二任务引用仍未完成。
+
+## 独立 portable Member 契约与原 Registry 映射
+
+契约 SOURCE `b2461140be791596242e9a8d13aba49e32d098ee` 只新增 workspace/domain/relay_member_evidence.go 与同名测试，依赖仅为标准库 context / time。S3 可单独消费该两文件提交，不需要复制 Registry、NativeSession、完整 Relay 状态或其他历史。实际映射 SOURCE `00dbd9c63dce2311518a1c47002947180d770a2f` 只新增 agents/relay_member_evidence.go 与同名测试；H 在原实际服务将同一个 Registry 注入为 RelayMemberEvidenceSource。普通 push 后独立远端核实为00dbd9c。
+
+准确签名为 ReadRelayMemberEvidence(ctx, sessionID, inputOperationID, purpose) 和 StopRelayMemberEvidence(ctx, sessionID, inputOperationID)，均返回 domain.RelayMemberEvidence / error。该接口提案已通过 Orca 直接发送原 S3（msg_9011e5b87393、msg_31111c404faf），消费签名仍待其确认；不据此冻结待答的 Known 语义。
+
+事实包含私有 session / native / controller / startup / input / accepted turn、ProjectID / CWD / CLI / CLIVersion / purpose，以及原控制器持有、当前输入和真实退出确认。接受时间、明确开始时间和控制器启动时间只复制原事实；缺少实际退出观察时间时保留 nil。ControllerHeld 表示此 Registry 当前仍持有原对象，单独持有记录不证明客户端当前可响应，也不刷新活性时间。Claim / Submit 继续使用9807的原完整会话与精确输入检查；S2 / S3 自行检查 binding / epoch / holder / grant，不能由该私有事实获得权限。
+
+Capabilities / Tools / ExternalTargets 均为 nil，ToolsKnown / TargetsKnown / CallsKnown / TokensKnown 均为 false。nullable reported usage 和 completed response 观察量当前均为 nil，未把未知值改为0或空的已知集合。全部 JSON 字段排除，非空私有 canary 的投影仍为 `{}`。读取和停止期间原 controller / startup 身份或退出事实发生变化时立即拒绝，不补造新的所有权。没有新 store、schema、RPC、控制器或模型。
+
+共同环境沿用独占 D 盘临时目录及共享 backend cache，以下检查通过：
+
+| 命令 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly internal/workspace/domain/relay_member_evidence.go internal/workspace/domain/relay_member_evidence_test.go -count=1 -v` | 独立两文件 PASS0.919秒；portable-contract-standalone-first.log |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run 'TestRelayPortableMember\|TestRelayInputOperation\|TestRelayFactsRejectMissing' -count=1 -v -timeout=90s` | PASS1.205秒；portable-member-refusals-first.log，真实 cold Registry / 原输入缺失与未知停止拒绝 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=150s` | PASS7.172秒；portable-member-final-package.log |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` / `go build -p=1 -mod=readonly ./internal/adapters/agents` | EXIT0 |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package / EXIT0 |
+
+S3 自有桥接的准确组合检查和实际 Claim / Submit / Stop 正向尚未执行；Known 和 Calls 用户待答维持原拒绝。H 另报告原 Options.Agents 仅构造时读取，没有同 Service / Registry 的运行期登记端口。可信一次性登记设计已交模块与 H，登记锚点、显式可信触发方式等待根准确决定；未新增 HTTP 命令入口、未登记或开始计时。L 服务构建仍等待 S2 十一文件事务闭包，原首 FAIL 与全部0实际原生窗口保持。
+
+## 当前 completion 来源与准备输入组合
+
+SOURCE `269e95c032b5a64794e6908ca6c40e5ffe5acac4` 提供 `NewRelayCompletionExperienceSource(reader, access)`，实际实现 B 的 Read / Authorize 两个方法。完整读取在主数据库事务外调用原 `ReadRelayCompletion`，核原完成记录和最终转移收据；原完成时间、操作者、完成通道、收据与输出引用均不随释放或再次观察改变。不可变完成记录使用 Version=1，Outcome 按其真实完成通道解释。`user_confirmed_complete` 保留人工确认含义，不能作为独立目标核验或原生回合成功。`verified_complete` 要求原输出、实际检查和输入操作引用；适配器不构造缺失的产物、检查或 trace。
+
+`CompletionExperienceAccess` 由 H 在可信组装提供，签名为 `(context.Context, attention.Principal, localProjectID) (ownerProject, error)`，只访问当前主数据库权限与项目关系，并复用收到的事务 context。B 在两次短事务中调用 Authorize；完整 Read 和 Interpreter 后的严格相等重读都发生在事务外。Authorize 不读取 Relay store、对象、文件、原生控制器或模型。来源和授权依赖缺失直接拒绝。
+
+B SOURCE `176742241681a3b00257da33f4f8a69dd308a908` 的 experience_accepted.go，以及 `c60479619b0c992fe3e2fe42fa0ee68b217a5115` 的 local_agents.go / local_project_transaction_test.go，经模块登记临时写域后逐件原样消费为 `aad4e228cb8d34b3214d83e5d09f173924ba3709`。暂存内容分别与准确原件 diff0，普通提交、push 和独立 ls-remote 一致，三件消费写入已经停止并归还 B / T。没有消费 B 整分支。
+
+真实空 SQLite 中，在 AcceptedExperience 原事务内读取不存在的 project / grant，修复前两个三秒期限均超时；首日志为 `completion-project-tx-first.log`。消费 B 修复后，相同三秒条件均即时返回实际 NotFound；同一连接的 commit、真实约束回滚和跨库拒绝也通过。诊断使用实际数据库及不存在的查询键，没有构造完成来源或模型成功。
+
+SOURCE `8947ff7e36415da07a0eb85c103b722713460356` 的 `RelayPreparedInput` 九字段全部不进入 JSON：原 NativeSession、输入 OperationID、ActorID / ActorKind / ActorProjectID、ControllerID、StartupOperationID、WorkspaceRoot、PreparedAt。`RelayPreparedInputReader.ReadPreparedNativeSession` 只允许实际明确尚未尝试发送的私有准备记录；发送在途、unknown、已受理均拒绝。InputAccepted=false 和 pending 收据单独不能证明尚未尝试。
+
+SOURCE `d0725db901446d3bd81a71473de28441b31eb625` 提供 `NewRelayPreparedMemberEvidenceSource(originalRegistry, actualPreparedReader)`。同一返回对象实现原 RelayMemberEvidenceSource 和上述准备读取接口；成员读取及停止始终委托同一个原 Registry。准备读取前后核原内存控制器、实际 session / native / project / CLI / version / CWD / startup / input 身份，原控制器仍未退出、未过期且本输入未尝试；中间通过 B 复用当前事务读取实际准备元数据。实际操作者项目不从 member 或 session 推断，Agent 的原 ActorProjectID 必须匹配。原 send 收据、准备时间和固定 native ContextPacket 元数据均核对；不会把 S2 ImmutableContextPacket 的 ID 当作 native ContextPacket ID。
+
+成员事务的执行观察通过 `ownedRelayMemberExecution` 只读取原控制器内存和原 cmd 对象，不调用 installedCommand、文件系统、RPC 或模型。单独的公开 `OwnedRelayExecution` 保持原实际启动参数检查语义。ToolsKnown / TargetsKnown / CallsKnown / TokensKnown 仍为 false；新的准备读取接口不产生调用、完整工具范围或活性证明。B 的实际准备、Claim 提交后再 SendPrepared、S2 / S3 当前 binding / epoch / grant / lease 和 H 的可信装配仍须由对应实现及真实链路验证。
+
+本阶段命令沿用 GOMAXPROCS=2、D 盘 backend cache 和 R 独占临时目录，Go 使用 `-p=1 -mod=readonly`。证据目录为 `D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016`。
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/sqlite -run '^(TestRelayCompletionProjectPermissionUsesActualCurrentTransaction\|TestLocalProjectUsesActualWorkspaceTransaction\|TestLocalProjectRejectsAnotherActualDatabaseTransaction)$' -count=1 -timeout=90s -v` | PASS2.491秒，3主项4子项；completion-project-tx-final.log |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -timeout=90s` | PASS2.937秒，4项实际拒绝检查；source-b176-targeted.log |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents ./internal/adapters/sqlite` | EXIT0；source-b176-vet.log |
+| `go build -p=1 -mod=readonly -o <D盘证据目录>/completion-source-b176-server.exe ./cmd/server` | EXIT0；source-b176-build.log；未运行该服务文件 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^(TestRelayPreparedMemberRejectsMissingOriginalSources\|TestRelayMemberExecutionRejectsUnownedMetadata\|TestRelayPortableMemberSourceRejectsColdRegistry\|TestRelayInputOperationRejectsColdRegistryAndInvalidPurpose)$' -count=1 -timeout=90s -v` | PASS0.813秒；prepared-member-first.log |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` / `go build -p=1 -mod=readonly -o <D盘证据目录>/prepared-member-server.exe ./cmd/server` | EXIT0；prepared-member-vet.log / prepared-member-build.log；未运行该服务文件 |
+
+`channels-agents-first.log` 保留完整 agents 包在180秒总期限处失败的首记录：总执行185.806秒，报警时原有 TestSelectedTextActualOwnedSourceWithoutModel 已运行约4秒，正在空输入初始化。该记录不能解释为该测试独自运行180秒。测试过程确实尝试过一次原生空初始化，未提交模型输入；父测试进程结束不能证明原子进程已经退出，其原 owner 生命周期核查另行处理。之后的本节适用检查未启动新的控制器或模型。真实 completion→Interpreter→quarantine、人工批准、第二任务引用和准备输入正向链路尚未执行；完整包首 RED、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown、原 raw gap 均保留。
+
+## Codex 0.162.0 文件工具配置边界
+
+本机离线 `codex --version` 返回 codex-cli 0.162.0；`codex app-server --help` EXIT0，没有启动控制器、会话或模型。官方源码固定为 `rust-v0.162.0` / `c1382380de69521303b416720a52f42d51af6248`。
+
+- [工具注册](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/core/src/tools/spec_plan.rs#L1150)：shell_tool=false 在 add_shell_tools 中排除命令工具；add_core_utility_tools 的1344行独立按实际 model_info.apply_patch_tool_type 注册 apply_patch，没有沿用 ShellTool 条件。
+- [Feature 解析](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/features/src/lib.rs#L659)：apply_patch_freeform 配置被忽略，该 feature 为 Removed，不能用它签署文件工具关闭。
+- [公开配置](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/config/src/config_toml.rs#L695)：ToolsToml 只有 web_search、experimental_request_user_input 和 update_plan；没有原生 apply_patch 排除项。
+- [宿主工具政策](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/ext/extension-api/src/tool_policy.rs#L10)：allowed_tools 的空许可表确实可以排除工具，但要求 Rust 宿主在启动时注入 ExtensionDataInit；当前公开 app-server / CLI / thread 协议没有发现该入口映射。[thread/start 实现](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/app-server/src/request_processors/thread_processor.rs#L1466) 只注入 selected capability roots；普通会话缺少 ToolPolicy 时[使用默认政策](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/core/src/session/session.rs#L999)。
+
+当前启动参数不能证明原生 apply_patch 关闭，完整 EffectiveToolSet 继续 unknown。根正式答复 `msg_dfe105fea7e1` 保留原文件与命令工具关闭要求，L1 和相关真实模型路径暂停；普通 web / API、项目、Goal / Proposal、Mission 人工与判断 / 认知的集成启动继续。没有猜测参数、改写模型 catalog、替换 API、改造原生程序或创建替代控制器。原 never / readOnly 响应只记录其实际权限含义。
+
+本机官方原件和离线 help 位于上述证据目录的 codex-official-c1382380。固定官方 tar 首次解包在 Windows 的 vendor/bubblewrap/LICENSE 项返回 Invalid argument，未将整包解压标为通过；本节所引源文件分别完整可读且已逐项核查。公开原件不包含用户作品、原生输出或凭据，不进入 HTTP / 发布包。
+
+SOURCE `0740dc3ec6a50421b34c971d30f08287e071fb77` 已普通 push 并经独立 ls-remote 核实。受限 Codex Relay Launch / Initialize / Resume 和直接 capture 入口在控制器启动前返回 unsupported_capability 与 NativePrelaunchFailure；新 Codex 模型输入在 start / send 前拒绝，Send 使用 RelayInputNotSubmitted 明确表示尚未提交。Completion Interpreter 保留原 held 操作只读及冷 ResumeOnly 的 delivery_unknown；新的有效草稿请求在读取 context、启动 controller 和模型之前返回相同能力拒绝。构造和普通产品服务启动继续可用。
+
+单独的 model-free、无来源 guard 的普通安装能力初始化保持其原事实范围；不能由此获得受限 Relay 或模型准入。OwnedRelayExecution 的当前标签为 selected_context_command_tools_disabled_v1，原实际 argv、never / readOnly 观察与完整工具未知分别保留。原 B / T text_capacity_test.go 的旧标签断言已交原 owner 处理，R 没有修改该测试。
+
+`go test -p=1 -mod=readonly ./internal/adapters/agents -run '^(TestRelayCodexFileToolRestrictionRejectsBeforeNativeEffects|TestRelayNativeDeadlineRejectsBeforeController|TestRelayFirstInputCheckpointRefusesUnarmedController|TestCompletionExperience.*|TestRelayPreparedMemberRejectsMissingOriginalSources|TestRelayMemberExecutionRejectsUnownedMetadata)$' -count=1 -timeout=90s -v` PASS0.852秒，共9项；日志 codex-file-tools-admission-first.log。agents vet 与 cmd/server 构建 EXIT0，日志 codex-file-tools-admission-vet.log / codex-file-tools-admission-build.log，构建文件未运行。检查没有创建 controller / capture、执行来源 callback 或提交输入，没有构造任何成功协议响应。真实原生路径依原要求暂停，完整包与产品实际运行仍由同源集成验收分别记录。
+
+## 完成来源的当前项目身份与授权
+
+SOURCE `82d89d5b89e30d591d509ed597d513c90f2df682` 只修改 `completion_experience_source.go` 及其原测试，已普通 push 并独立核远端同值。实际客户端为 Orca Codex / gpt-6.1-sol，本轮 Task `task_f082d8b36471` / Dispatch `ctx_3920346a06ed`。
+
+`CompletionExperienceAccess(context.Context, attention.Principal, localProjectID) (string, error)` 保持原签名。H 的可信回调核当前 principal、项目及 owner 许可，并返回实际 `LocalProject.ID`；适配器要求返回值与本次 `LocalProjectID` 精确相等，不接受另一项目或项目路径作为 owner。完整来源读取仍在主数据库事务外，`AuthorizeExperienceCompletion` 仍在 B 的原短事务内复用收到的 context，只核当前权限及固定来源，不读取 Relay、对象、文件或控制器。
+
+Agent completion action 的映射仍待用户决定。Read 与 Authorize 两个入口对 Agent 返回 `scope_denied`，尚未调用权限回调或读取来源。human 保持原可信权限回调与固定来源校验；错误信息不包含原生原文、路径或凭据。原完成通道、时间、收据及输出引用继续只读，无法取得真实完成来源时不会生成完成记录或候选。
+
+本次准确修改使用 GOMAXPROCS=2、Go `-p=1 -mod=readonly`、D 盘共享编译缓存与 R 独占临时目录。证据目录沿用 `D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016`。
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -timeout=90s -v` | PASS0.404秒，4项；`completion-authority-final.log`。核缺失依赖、Agent 两入口明确拒绝、冷恢复、缺失原回合及不完整输出 |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` | EXIT0；`completion-authority-vet.log` |
+| `go build -p=1 -mod=readonly -o <证据目录>/completion-authority-server.exe ./cmd/server` | EXIT0；`completion-authority-build.log`，未运行该文件 |
+| `gofmt -l` 两件源码 / `git diff --check` | 无输出 / EXIT0 |
+
+H 的实际回调与 B 的候选装配及完整产品组合尚待同源检查。本轮没有创建 controller、probe、capture 或模型输入，真实 completion → Interpreter → quarantine、用户批准与第二任务消费尚未通过；受限 Codex 的 unsupported 准入、完整包首 RED、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 和原 raw gap 保持原结果。

@@ -5,249 +5,258 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
 func TestOpencodeIsolationEnv(t *testing.T) {
-	t.Setenv("OPENCODE_CONFIG_DIR", "inherited-config")
-	t.Setenv("XDG_CONFIG_HOME", "inherited-xdg")
-	t.Setenv("KEEP_ME", "kept")
-	env := opencodeIsolationEnv("owned-config", "user", "pass")
+	t.Setenv("OPENCODE_CONFIG_DIR", "caller-config-input")
+	t.Setenv("XDG_CONFIG_HOME", "caller-xdg-input")
+	t.Setenv("OPENAI_API_KEY", "caller-credential-input")
+	t.Setenv("NODE_OPTIONS", "caller-injection-input")
+	t.Setenv("LANG", "C.UTF-8")
+	root := t.TempDir()
+	env, err := opencodeIsolationEnv(root, "caller-user", "caller-password")
+	if err != nil {
+		t.Fatal(err)
+	}
 	values := map[string]string{}
 	for _, kv := range env {
 		key, val, _ := strings.Cut(kv, "=")
 		values[key] = val
 	}
-	if values["OPENCODE_CONFIG_DIR"] != "owned-config" {
-		t.Fatalf("config dir not redirected: %v", values["OPENCODE_CONFIG_DIR"])
+	for key, name := range map[string]string{
+		"HOME": "home", "USERPROFILE": "home", "OPENCODE_TEST_HOME": "home",
+		"OPENCODE_CONFIG_DIR": "config", "XDG_CONFIG_HOME": "config",
+		"XDG_DATA_HOME": "data", "XDG_STATE_HOME": "state", "XDG_CACHE_HOME": "cache",
+		"TEMP": "tmp", "TMP": "tmp", "TMPDIR": "tmp",
+		"APPDATA": "appdata", "LOCALAPPDATA": "local-appdata", "ProgramData": "programdata",
+		"OPENCODE_TEST_MANAGED_CONFIG_DIR": "managed",
+	} {
+		if values[key] != filepath.Join(root, name) {
+			t.Fatalf("owned source path was not established for %s", key)
+		}
 	}
-	if values["XDG_CONFIG_HOME"] != "owned-config" {
-		t.Fatalf("xdg config not redirected: %v", values["XDG_CONFIG_HOME"])
+	if values["OPENCODE_DB"] != filepath.Join(root, "data", "opencode.db") {
+		t.Fatal("native database did not remain within owned data")
 	}
-	if values["OPENCODE_DISABLE_PROJECT_CONFIG"] != "1" || values["OPENCODE_DISABLE_CLAUDE_CODE_PROMPT"] != "1" {
-		t.Fatalf("project/claude prompt not disabled: %v", values)
+	for _, key := range []string{"OPENCODE_DISABLE_PROJECT_CONFIG", "OPENCODE_DISABLE_CLAUDE_CODE_PROMPT", "OPENCODE_PURE", "OPENCODE_DISABLE_DEFAULT_PLUGINS", "OPENCODE_DISABLE_AUTOUPDATE", "OPENCODE_DISABLE_MODELS_FETCH"} {
+		if values[key] != "1" {
+			t.Fatalf("native source restriction is missing: %s", key)
+		}
 	}
-	if values["OPENCODE_PURE"] != "1" || values["OPENCODE_DISABLE_DEFAULT_PLUGINS"] != "1" {
-		t.Fatalf("plugins not disabled: %v", values)
+	if values["OPENCODE_PERMISSION"] != opencodeDenyPermission || values["OPENCODE_SERVER_USERNAME"] != "caller-user" || values["OPENCODE_SERVER_PASSWORD"] != "caller-password" {
+		t.Fatal("owned permission or authentication input was not retained")
 	}
-	if values["OPENCODE_PERMISSION"] == "" || !strings.Contains(values["OPENCODE_PERMISSION"], `"*":"deny"`) || !strings.Contains(values["OPENCODE_PERMISSION"], `"bash":"deny"`) {
-		t.Fatalf("permission deny not set as final override: %v", values["OPENCODE_PERMISSION"])
+	if values["OPENAI_API_KEY"] != "" || values["NODE_OPTIONS"] != "" || values["LANG"] != "C.UTF-8" {
+		t.Fatal("child environment inherited credentials/injection or lost the allowed locale")
 	}
-	if values["OPENCODE_SERVER_USERNAME"] != "user" || values["OPENCODE_SERVER_PASSWORD"] != "pass" {
-		t.Fatalf("basic auth not set: %v", values)
-	}
-	if values["KEEP_ME"] != "kept" {
-		t.Fatal("unrelated environment dropped")
+	if _, err := opencodeIsolationEnv("relative-root", "caller-user", "caller-password"); err == nil {
+		t.Fatal("relative isolation root was accepted")
 	}
 }
 
-// opencodeTestServer mimics the subset of the OpenCode serve HTTP API the
-// driver depends on, and asserts loopback Basic auth is present on every call.
-func opencodeTestServer(t *testing.T, username, password string) *httptest.Server {
+func actualOpencodeProcess(t *testing.T) (*opencodeNative, domain.NativeRequest, domain.NativeSession, *opencodeProcess) {
 	t.Helper()
-	mux := http.NewServeMux()
-	auth := func(r *http.Request) bool {
-		u, p, ok := r.BasicAuth()
-		return ok && u == username && p == password
+	root, err := filepath.Abs("../../..")
+	if err != nil {
+		t.Fatal(err)
 	}
-	mux.HandleFunc("/global/health", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		_, _ = w.Write([]byte(`{"healthy":true,"version":"1.18.35"}`))
-	})
-	mux.HandleFunc("/session", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		var body struct {
-			Title      string                   `json:"title"`
-			Permission []opencodePermissionRule `json:"permission"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		denyAll := false
-		for _, rule := range body.Permission {
-			if rule.Permission == "*" && rule.Action == "deny" {
-				denyAll = true
-			}
-		}
-		if !denyAll {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		_, _ = w.Write([]byte(`{"id":"sess-1","permission":[{"permission":"*","pattern":"*","action":"deny"}]}`))
-	})
-	mux.HandleFunc("/session/sess-1", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		_, _ = w.Write([]byte(`{"id":"sess-1","permission":[{"permission":"*","pattern":"*","action":"deny"}]}`))
-	})
-	mux.HandleFunc("/session/sess-nodeny", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		if r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusMethodNotAllowed)
-			return
-		}
-		_, _ = w.Write([]byte(`{"id":"sess-nodeny"}`))
-	})
-	mux.HandleFunc("/session/sess-narrow", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		_, _ = w.Write([]byte(`{"id":"sess-narrow","permission":[{"permission":"*","pattern":"specific","action":"deny"}]}`))
-	})
-	mux.HandleFunc("/session/sess-late-allow", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		_, _ = w.Write([]byte(`{"id":"sess-late-allow","permission":[{"permission":"*","pattern":"*","action":"deny"},{"permission":"*","pattern":"*","action":"allow"}]}`))
-	})
-	mux.HandleFunc("/session/sess-read-allow", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		_, _ = w.Write([]byte(`{"id":"sess-read-allow","permission":[{"permission":"*","pattern":"*","action":"deny"},{"permission":"read","pattern":"*","action":"allow"}]}`))
-	})
-	mux.HandleFunc("/session/sess-1/message", func(w http.ResponseWriter, r *http.Request) {
-		if !auth(r) {
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
-		if r.Method == http.MethodPost {
-			var body struct {
-				Parts []struct {
-					Type string `json:"type"`
-					Text string `json:"text"`
-				} `json:"parts"`
-			}
-			if err := json.NewDecoder(r.Body).Decode(&body); err != nil || len(body.Parts) != 1 || body.Parts[0].Text != "hello" {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			_, _ = w.Write([]byte(`{"info":{"role":"assistant","modelID":"test-model","providerID":"test-provider"},"parts":[{"type":"text","text":"reply"}]}`))
-			return
-		}
-		if r.Method == http.MethodGet {
-			_, _ = w.Write([]byte(`[{"info":{"role":"user"},"parts":[{"type":"text","text":"hello"}]},{"info":{"role":"assistant"},"parts":[{"type":"text","text":"reply"}]}]`))
-			return
-		}
-		w.WriteHeader(http.StatusMethodNotAllowed)
-	})
-	return httptest.NewServer(mux)
-}
-
-func newTestOpencodeProcess(server *httptest.Server, username, password string) *opencodeProcess {
-	return &opencodeProcess{
-		done:     make(chan struct{}),
-		client:   server.Client(),
-		baseURL:  server.URL,
-		username: username,
-		password: password,
-		status:   "idle",
+	verification := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if verification == "" {
+		verification = filepath.Join(root, ".verification")
 	}
+	if !filepath.IsAbs(verification) {
+		t.Fatal("OpenCode verification requires an absolute output root")
+	}
+	if err := os.MkdirAll(verification, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if hasRedirectedAncestor(verification) {
+		t.Fatal("owned verification directory has a redirected ancestor")
+	}
+	stateRoot, err := os.MkdirTemp(verification, "opencode-owned-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	native := newOpencodeNative(stateRoot, make(chan struct{}, 4))
+	projectID, sessionID := uuid.NewString(), uuid.NewString()
+	request := domain.NativeRequest{
+		SessionID: sessionID,
+		Project:   domain.LocalProject{ID: projectID, Root: root},
+		Session:   domain.NativeSession{ID: sessionID, ProjectID: projectID},
+		Command:   domain.NativeCommand{DeadlineSeconds: 120},
+		Packet:    domain.ContextPacket{SchemaVersion: 1, ProjectID: projectID, Mode: "selected_context"},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Second)
+	defer cancel()
+	session, err := native.Start(ctx, request)
+	if err != nil {
+		t.Fatal("actual isolated OpenCode start failed", err)
+	}
+	if session.NativeID == "" || session.StopConfirmed || session.Status != "idle" || session.Version != "1.18.35" {
+		t.Fatal("actual native start did not retain its identity/version/lifecycle")
+	}
+	process, err := native.get(session)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		observation, err := native.Stop(ctx, session)
+		if err != nil || !observation.StopConfirmed {
+			t.Error("actual native process stop was not confirmed", err)
+		}
+	})
+	data, status, err := process.do(context.Background(), http.MethodGet, "/path", nil)
+	if err != nil || status != http.StatusOK {
+		t.Fatal("actual native source path query failed", err)
+	}
+	if err := os.WriteFile(filepath.Join(stateRoot, "actual-native-paths.json"), data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	var paths map[string]string
+	if err := json.Unmarshal(data, &paths); err != nil {
+		t.Fatal("actual native path schema is unavailable", err)
+	}
+	for _, key := range []string{"home", "config", "state"} {
+		if !filepath.IsAbs(paths[key]) || !inside(stateRoot, paths[key]) {
+			t.Fatalf("actual native %s path did not remain within owned state", key)
+		}
+	}
+	if !strings.EqualFold(filepath.Clean(paths["directory"]), filepath.Clean(root)) {
+		t.Fatal("actual native project directory differs from the approved public worktree")
+	}
+	for _, endpoint := range []string{"/config", "/mcp"} {
+		data, status, err := process.do(context.Background(), http.MethodGet, endpoint, nil)
+		if err != nil || status != http.StatusOK {
+			t.Fatal("actual native owned config query failed", err)
+		}
+		if err := os.WriteFile(filepath.Join(stateRoot, "actual-native"+strings.ReplaceAll(endpoint, "/", "-")+".json"), data, 0600); err != nil {
+			t.Fatal(err)
+		}
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(data, &fields); err != nil {
+			t.Fatal("actual native owned config schema is unavailable", err)
+		}
+		if endpoint == "/mcp" && len(fields) != 0 {
+			t.Fatal("actual native instance loaded an MCP server")
+		}
+		if endpoint == "/config" {
+			var plugins []json.RawMessage
+			if value, ok := fields["plugin"]; ok {
+				if err := json.Unmarshal(value, &plugins); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if len(plugins) != 0 {
+				t.Fatal("actual native instance loaded an external plugin")
+			}
+		}
+	}
+	t.Logf("actual native version=%s native_id=%s pid=%d; owned sources; model turns=0; evidence=%s", session.Version, session.NativeID, process.cmd.Process.Pid, stateRoot)
+	return native, request, session, process
 }
 
 func TestOpencodeSessionLifecycleOverHTTP(t *testing.T) {
-	server := opencodeTestServer(t, "user", "pass")
-	defer server.Close()
-	p := newTestOpencodeProcess(server, "user", "pass")
-
-	id, err := p.createSession(context.Background(), "project")
-	if err != nil || id != "sess-1" {
-		t.Fatalf("session create %q %v", id, err)
+	native, request, session, process := actualOpencodeProcess(t)
+	ctx := context.Background()
+	events, err := native.ReadContext(ctx, session)
+	if err != nil || events == nil || len(events) != 0 {
+		t.Fatal("actual new native session was not empty", err)
 	}
-	text, err := p.sendMessage(context.Background(), "sess-1", "hello")
-	if err != nil || text != "reply" {
-		t.Fatalf("message send %q %v", text, err)
+	if err := process.verifySession(ctx, session.NativeID); err != nil {
+		t.Fatal("actual same-ID session did not verify", err)
 	}
-	p.mu.Lock()
-	model, provider := p.model, p.provider
-	p.mu.Unlock()
-	if model != "test-model" || provider != "test-provider" {
-		t.Fatalf("model/provider not observed from reply: %q/%q", model, provider)
+	if err := process.verifySession(ctx, session.NativeID+"-caller-unknown"); err == nil {
+		t.Fatal("unknown session verified as resumable")
 	}
-	events, err := p.readMessages(context.Background(), "sess-1")
-	if err != nil || len(events) != 2 || events[0].Kind != "user_text" || events[0].Text != "hello" || events[1].Text != "reply" {
-		t.Fatalf("context read %+v %v", events, err)
+	observation, err := native.Stop(ctx, session)
+	if err != nil || !observation.StopConfirmed {
+		t.Fatal("actual first process exit was not confirmed", err)
 	}
-	if err := p.verifySession(context.Background(), "sess-1"); err != nil {
-		t.Fatalf("same-ID session verify %v", err)
+	request.Session = session
+	request.Session.StopConfirmed = true
+	resumed, err := native.Resume(ctx, request)
+	if err != nil || resumed.NativeID != session.NativeID || resumed.StopConfirmed {
+		t.Fatal("actual persisted native identity did not resume", err)
 	}
-	if err := p.verifySession(context.Background(), "sess-missing"); err == nil {
-		t.Fatal("missing session verified as resumable")
+	events, err = native.ReadContext(ctx, resumed)
+	if err != nil || events == nil || len(events) != 0 {
+		t.Fatal("actual no-model history changed on resume", err)
 	}
-	if err := p.verifySession(context.Background(), "sess-nodeny"); err == nil {
-		t.Fatal("session without deny-by-default permission verified as safe to send")
+	if process.model != "" || process.provider != "" || native.Capabilities()["send"].Status != "unknown" {
+		t.Fatal("no-model lifecycle invented model readiness or send capability")
 	}
 }
 
-// The session create body must carry the deny-all permission ruleset; a session
-// whose effective wildcard fallback is not the last deny is fail-closed before
-// any message is sent.
+func TestOpencodeReplyProjectionInputs(t *testing.T) {
+	// JSON 为投影函数的明确参数，不声明存在模型回复或 HTTP 来源。
+	text, model, provider, err := decodeOpencodeReply([]byte(`{"info":{"role":"assistant","modelID":"input-model","providerID":"input-provider"},"parts":[{"type":"text","text":"reply"}]}`))
+	if err != nil || text != "reply" || model != "input-model" || provider != "input-provider" {
+		t.Fatal("explicit reply projection input was not preserved", err)
+	}
+	if _, _, _, err := decodeOpencodeReply([]byte(`{"info":`)); err == nil {
+		t.Fatal("malformed reply projection input was accepted")
+	}
+}
+
 func TestOpencodeSessionDenyPermissionFailClosed(t *testing.T) {
-	server := opencodeTestServer(t, "user", "pass")
-	defer server.Close()
-	p := newTestOpencodeProcess(server, "user", "pass")
-	for _, id := range []string{"sess-nodeny", "sess-narrow", "sess-late-allow", "sess-read-allow"} {
+	_, _, _, process := actualOpencodeProcess(t)
+	for _, permission := range [][]opencodePermissionRule{
+		{},
+		{{Permission: "*", Pattern: "specific", Action: "deny"}},
+		{{Permission: "*", Pattern: "*", Action: "deny"}, {Permission: "*", Pattern: "*", Action: "allow"}},
+		{{Permission: "*", Pattern: "*", Action: "deny"}, {Permission: "read", Pattern: "*", Action: "allow"}},
+	} {
+		data, status, err := process.do(context.Background(), http.MethodPost, "/session", map[string]any{"title": "owned permission verification", "permission": permission})
+		if err != nil || status != http.StatusOK {
+			t.Fatal("actual native permission session create failed", err)
+		}
+		var created struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(data, &created); err != nil || created.ID == "" {
+			t.Fatal("actual native permission session identity is missing", err)
+		}
 		var service *apierrors.ServiceError
-		if !errors.As(p.verifySession(context.Background(), id), &service) || service.Code != apierrors.ScopeDenied {
-			t.Fatalf("session %s without an effective last deny-all rule verified as safe: %v", id, service)
+		if !errors.As(process.verifySession(context.Background(), created.ID), &service) || service.Code != apierrors.ScopeDenied {
+			t.Fatal("actual session without an effective last deny-all rule verified as safe")
 		}
 	}
 }
 
 func TestOpencodeRejectsUnauthenticatedAndUnknownReply(t *testing.T) {
-	server := opencodeTestServer(t, "user", "pass")
-	defer server.Close()
-	p := newTestOpencodeProcess(server, "wrong", "wrong")
-	if _, err := p.createSession(context.Background(), "project"); err == nil {
-		t.Fatal("unauthenticated session create accepted")
-	}
-	good := newTestOpencodeProcess(server, "user", "pass")
-	_, err := good.sendMessage(context.Background(), "sess-unknown", "hello")
-	if err == nil {
-		t.Fatal("unknown session message accepted")
+	_, _, session, process := actualOpencodeProcess(t)
+	wrong := &opencodeProcess{client: process.client, baseURL: process.baseURL, username: "caller-wrong", password: "caller-wrong"}
+	if _, err := wrong.createSession(context.Background(), "owned rejected session"); err == nil {
+		t.Fatal("actual unauthenticated session create accepted")
 	}
 	var service *apierrors.ServiceError
-	if !errors.As(err, &service) || service.Code != apierrors.ProviderUnavailable {
-		t.Fatalf("unknown session not a provider rejection: %v", err)
+	if _, err := process.readMessages(context.Background(), session.NativeID+"-caller-unknown"); !errors.As(err, &service) || service.Code != apierrors.ProviderUnavailable {
+		t.Fatal("actual unknown session context was not a provider rejection")
 	}
 }
 
 func TestOpencodeWaitHealth(t *testing.T) {
-	server := opencodeTestServer(t, "user", "pass")
-	defer server.Close()
-	p := newTestOpencodeProcess(server, "user", "pass")
+	_, _, _, process := actualOpencodeProcess(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := waitHealth(ctx, p); err != nil {
-		t.Fatalf("health wait %v", err)
+	if err := waitHealth(ctx, process); err != nil {
+		t.Fatal("actual native health wait failed", err)
+	}
+	wrong := &opencodeProcess{client: process.client, baseURL: process.baseURL, username: "caller-wrong", password: "caller-wrong", done: process.done}
+	var service *apierrors.ServiceError
+	if !errors.As(waitHealth(ctx, wrong), &service) || service.Code != apierrors.ProviderUnavailable || service.Message != "OpenCode health endpoint rejected the request" {
+		t.Fatal("actual unauthorized health response was suppressed or retried as readiness")
 	}
 }
 
@@ -262,7 +271,7 @@ func TestOpencodeAdapterSnapshotRegistered(t *testing.T) {
 		if item.ID == "opencode" && item.NativeAdapterRegistered {
 			found = true
 			if item.Configured.Status != "unknown" {
-				t.Fatalf("opencode configured observation fabricated: %+v", item.Configured)
+				t.Fatal("opencode configured observation was invented")
 			}
 		}
 	}
@@ -270,6 +279,6 @@ func TestOpencodeAdapterSnapshotRegistered(t *testing.T) {
 		t.Fatal("opencode adapter not registered")
 	}
 	if _, err := registry.Adapter("opencode"); err != nil {
-		t.Fatalf("opencode adapter lookup %v", err)
+		t.Fatal("opencode adapter lookup failed", err)
 	}
 }

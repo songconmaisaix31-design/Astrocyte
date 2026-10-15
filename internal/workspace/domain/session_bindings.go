@@ -35,6 +35,7 @@ type OwnedSessionFacts struct {
 	StartupOperationID string
 	Liveness           string
 	Capabilities       map[string]CapabilityObservation
+	Snapshot           ProjectContextSnapshot `json:"-"`
 }
 
 // 原 Registry 读取器的私有返回值，绝不直接成为 HTTP DTO。

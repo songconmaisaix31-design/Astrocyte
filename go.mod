@@ -7,6 +7,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/modelcontextprotocol/go-sdk v1.6.1
 	github.com/olivere/ndjson v1.0.1
+	github.com/sourcegraph/jsonrpc2 v0.2.1
 	golang.org/x/net v0.61.0
 	golang.org/x/sys v0.49.0
 	modernc.org/sqlite v1.60.1

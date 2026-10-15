@@ -10,15 +10,8 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
-// paperSnapshotSource parses a human-reviewed browser-plugin snapshot and maps
-// it to an importable source. It performs no network access, no paywall bypass
-// and no model call: the bytes are the exact JSON the human reviewed and pasted.
-//
-// Provenance is preserved as a browser_snapshot (not a publisher-verified
-// network export): the material source key is re-derived from the observed
-// DOI/arXiv/URL identity rather than trusted from the snapshot's own source_key,
-// so a hand-edited or conflicting key cannot merge different texts. A summary or
-// truncated observation is never presented as full text.
+// paperSnapshotSource 解析人工审阅的浏览器快照，原 JSON bytes 完整保留。
+// 来源由观察到的 DOI/arXiv/URL 重新计算，正文保留实际访问状态及截断标记。
 func paperSnapshotSource(raw []byte, locator string) (app.ImportedSource, error) {
 	var source app.ImportedSource
 	var snap PaperSnapshot
@@ -53,7 +46,7 @@ func paperSnapshotSource(raw []byte, locator string) (app.ImportedSource, error)
 		Summary:       snap.Abstract,
 		SourceSpans:   []string{"browser snapshot: " + snap.SourceURL},
 		Provenance:    app.Provenance{Processor: "paper_snapshot", Version: version, Source: snap.SourceURL},
-		// The original snapshot JSON is the provenance truth; keep it verbatim.
+		// 原始快照 JSON 保留实际观察来源。
 		Attachments: []app.SourceAttachment{{Name: "paper-snapshot.json", MediaType: "application/json", Data: append([]byte(nil), raw...), SourceLocator: snap.SourceURL}},
 	}
 	switch snap.ContentState {
@@ -69,8 +62,7 @@ func paperSnapshotSource(raw []byte, locator string) (app.ImportedSource, error)
 			source.Provenance.Mode = "browser_snapshot_fulltext"
 		}
 	case "abstract_only":
-		// Metadata only. Any captured body is deliberately dropped here because
-		// it was never established as readable full-paper structure.
+		// 当前观察只有元数据，不能将未经核实的正文作为论文全文。
 		source.Text = fmt.Sprintf("# %s\n\nSource: %s\n\n## Abstract (metadata only)\n\n%s", snap.Title, snap.SourceURL, snap.Abstract)
 		source.Provenance.Mode = "browser_snapshot_abstract_only"
 	case "paywall", "restricted":
@@ -81,10 +73,8 @@ func paperSnapshotSource(raw []byte, locator string) (app.ImportedSource, error)
 	return source, nil
 }
 
-// paperSnapshotSourceKey re-derives the stable material identity from the
-// snapshot's observed fields, never from its self-reported source_key. Priority
-// matches the existing arXiv/ACL/DOI importers so a snapshot and a paper_pdf or
-// paper_url import of the same paper share one material identity.
+// paperSnapshotSourceKey 按既有 arXiv/ACL/DOI 顺序重新计算来源身份，
+// 让同一论文的快照、PDF 和页面导入共用资料身份。
 func paperSnapshotSourceKey(snap PaperSnapshot) (string, error) {
 	if strings.TrimSpace(snap.ArxivID) != "" {
 		id, err := NormalizeArxivID(snap.ArxivID)
@@ -93,8 +83,7 @@ func paperSnapshotSourceKey(snap PaperSnapshot) (string, error) {
 		}
 		return "arxiv:" + revisionSuffix.ReplaceAllString(id, ""), nil
 	}
-	// The ACL Anthology URL embeds its DOI identity; use it exactly as the
-	// paper_pdf adapter does so the two paths correlate without case drift.
+	// ACL Anthology URL 内含 DOI 身份，复用 paper_pdf 的相同计算方式。
 	if key, ok := aclAnthologySourceKey(snap.SourceURL); ok {
 		return key, nil
 	}

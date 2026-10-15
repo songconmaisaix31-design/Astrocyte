@@ -23,8 +23,10 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -39,8 +41,21 @@ func TestRelaySessionActualService(t *testing.T) {
 		t.Skip("NOT_RUN: explicit actual-service directory required")
 	}
 	parent := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification")
+	accessMode := os.Getenv("ASTROCYTE_L1_CONFIGURED_ACCESS")
+	if accessMode != "" && accessMode != "0" && accessMode != "1" {
+		t.Fatal("实际服务接入模式必须明确")
+	}
+	configuredAccess := accessMode == "1"
 	canonical, err := workbenchCanonical(selected)
-	if err != nil || !filepath.IsAbs(selected) || !relayInside(parent, canonical) || canonical == parent {
+	if err != nil || !filepath.IsAbs(selected) {
+		t.Fatal("实际服务目录不在指定本机范围")
+	}
+	if configuredAccess {
+		configured, err := relayRoot()
+		if err != nil || canonical != configured || !strings.EqualFold(filepath.Clean(os.Getenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT")), filepath.Join(configured, "verification", "public-project")) || os.Getenv("ASTROCYTE_L1_PUBLIC_GIT_COMMIT") != "da3bdddb085808863090a05f60cc1c64415039cf" {
+			t.Fatal("配置入口必须保持本次明确接入根和原批准目标")
+		}
+	} else if !relayInside(parent, canonical) || canonical == parent {
 		t.Fatal("实际服务目录不在指定本机范围")
 	}
 	if err := os.MkdirAll(canonical, 0700); err != nil {
@@ -48,10 +63,12 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	evidence := os.Getenv("ASTROCYTE_L1_EVIDENCE_DIR")
 	expectedEvidence, err := filepath.Abs(filepath.Join("..", "..", "dist", "l1-live"))
-	if err != nil || !relayInside(expectedEvidence, evidence) {
-		t.Fatal("实际验证中间目录必须使用当前 H 工作目录")
+	if err != nil || !configuredAccess && !relayInside(expectedEvidence, evidence) || configuredAccess && !strings.EqualFold(filepath.Clean(evidence), filepath.Join(canonical, "verification", "h-evidence")) {
+		t.Fatal("实际验证中间目录必须保持本次明确 H 范围")
 	}
-	t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
+	if !configuredAccess {
+		t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
+	}
 	port := 17342
 	if raw := os.Getenv("ASTROCYTE_L1_API_PORT"); raw != "" {
 		port, err = strconv.Atoi(raw)
@@ -157,13 +174,22 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	t.Setenv("ASTROCYTE_RELAY", "1")
 	t.Setenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT", source)
+	t.Setenv("ASTROCYTE_RELAY_PUBLIC_GIT_COMMIT", os.Getenv("ASTROCYTE_L1_PUBLIC_GIT_COMMIT"))
 	t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "archive")
 	if nativeNotifications {
 		t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "native_notifications")
 		t.Setenv("ASTROCYTE_RELAY_LIVE_SECONDS", "10")
 	}
 	services := httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), Projects: workspace.NewProjectService(), Sessions: workspace.NewSessionService(), Proposals: workspace.NewProposalService(), Works: works, LocalProjects: projects, RegisteredProjects: projects, Progress: workspace.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry), Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}
-	cleanup, err := assembleRelay(&services, db, registry)
+	launchContexts, err := relayPublicLaunchContexts(projects)
+	if err != nil {
+		t.Fatal("实际固定公开上下文配置失败")
+	}
+	objectStore, err := objects.New(filepath.Join(appDir, "objects"))
+	if err != nil {
+		t.Fatal("实际对象存储不可用")
+	}
+	cleanup, err := assembleRelay(&services, db, registry, objectStore, launchContexts...)
 	if err != nil {
 		t.Fatal("实际生产组装失败")
 	}
@@ -227,12 +253,14 @@ func TestRelaySessionActualService(t *testing.T) {
 		}
 		settings := project.Settings
 		settings.ExternalModelCLI = "codex"
-		settings.AllowedActions = []string{"start", "observe", "send", "stop", "resume", "reconcile"}
+		settings.AllowDirectory = true
+		settings.AllowedSubdirs = []string{"."}
+		settings.AllowedActions = []string{"read_context", "start", "observe", "send", "stop", "resume", "reconcile"}
 		client.request(t, "PUT", "/api/v1/local-projects/"+project.ID+"/settings", map[string]any{"expected_revision": project.Settings.Revision, "settings": settings}, &response)
 		project = response.Project
 	}
 	if snapshot.Works[0].Handoff.Content == "" {
-		client.request(t, "PUT", "/api/v1/works/"+snapshot.Works[0].ID+"/handoff", map[string]any{"expected_revision": snapshot.Works[0].Revision, "content": "Public L1 project. Only the fixed public task context is authorized. Filesystem and command tools remain disabled. Explain native session capture without inspecting files or history."}, nil)
+		client.request(t, "PUT", "/api/v1/works/"+snapshot.Works[0].ID+"/handoff", map[string]any{"expected_revision": snapshot.Works[0].Revision, "content": "Public Go project. Use only the explicitly supplied fixed files and task. Preserve the existing Mean behavior and implement Median as requested. Native filesystem and command tools remain disabled."}, nil)
 	}
 	deadlineSeconds, err := relayNativeDeadlineSeconds()
 	if err != nil {
@@ -251,6 +279,7 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
+	sourceChecks := map[string]bool{}
 	for {
 		select {
 		case err := <-serveDone:
@@ -258,10 +287,19 @@ func TestRelaySessionActualService(t *testing.T) {
 			t.Fatal("实际 HTTP 服务提前终止")
 		case <-ticker.C:
 			if executionStore != nil {
-				captureActualRelayExecutions(t, ctx, registry, executionStore, evidence)
+				captureActualRelayExecutions(t, ctx, registry, executionStore, evidence, wrapped, sourceChecks)
 			}
 			_, err := os.Stat(filepath.Join(evidence, "shutdown"))
 			if err == nil {
+				if os.Getenv("ASTROCYTE_L1_EXPECT_EMPTY") == "1" {
+					tasks, taskErr := services.Relay.ListTasks(ctx, domain.Caller{Kind: "human", ID: "local-human"})
+					agents, agentErr := services.Relay.ListAgents(ctx, domain.Caller{Kind: "human", ID: "local-human"})
+					var nativeSessions int
+					if taskErr != nil || agentErr != nil || len(tasks) != 0 || len(agents) != 0 || db.Conn().QueryRowContext(ctx, "SELECT count(*) FROM local_agent_sessions").Scan(&nativeSessions) != nil || nativeSessions != 0 {
+						t.Fatal("无原生启动检查发现任务、登记或原生会话")
+					}
+					writeActualJSON(t, filepath.Join(evidence, "empty-startup-derived.json"), map[string]any{"tasks": len(tasks), "registered_agents": len(agents), "native_sessions": nativeSessions, "native_initializations": 0, "model_inputs": 0})
+				}
 				return
 			}
 			if !errors.Is(err, os.ErrNotExist) {
@@ -272,11 +310,15 @@ func TestRelaySessionActualService(t *testing.T) {
 }
 
 // 仅取当前 Registry 原控制器和 SQLite 实际会话，不从原生 ID 重建进程。
-func captureActualRelayExecutions(t *testing.T, ctx context.Context, registry *agents.Registry, store *sqlite.RelayStore, evidence string) {
+func captureActualRelayExecutions(t *testing.T, ctx context.Context, registry *agents.Registry, store *sqlite.RelayStore, evidence string, runtime *relaySessionRuntime, checked map[string]bool) {
 	t.Helper()
 	state, err := store.Snapshot(ctx)
 	if err != nil {
 		t.Fatal("实际进程证据的 SQLite 快照读取失败")
+	}
+	bindings, err := runtime.collector.owned.ListOwnedRelaySessions(ctx)
+	if err != nil {
+		t.Fatal("实际正选来源的当前权限读取失败")
 	}
 	for taskID, task := range state.Tasks {
 		session, ok := state.Sessions[task.TerminalID]
@@ -298,7 +340,69 @@ func captureActualRelayExecutions(t *testing.T, ctx context.Context, registry *a
 			t.Fatal("实际原控制器进程证据核对失败")
 		}
 		writeActualJSON(t, filepath.Join(evidence, "execution-"+taskID+"-derived.json"), map[string]any{"task_id": taskID, "observed_at": time.Now().UTC(), "execution": execution})
+		controller := state.ControllerEvidence[taskID]
+		prepared := false
+		for _, receipt := range state.Receipts {
+			if receipt.TaskID == taskID && receipt.Action == "prepare" && receipt.OperationID == controller.StartupOperationID && receipt.Status == "accepted" {
+				prepared = true
+			}
+		}
+		if !prepared || task.State != domain.RelayReady || state.PendingActions[taskID] != "" || session.StopConfirmed {
+			continue
+		}
+		key := taskID + ":" + controller.ControllerID + ":" + controller.StartupOperationID
+		if checked[key] {
+			continue
+		}
+		checked[key] = true
+		guardErr := checkActualPreparedRelaySource(ctx, registry, runtime.sourceGuard, task, session, controller, bindings)
+		reason := ""
+		if guardErr != nil {
+			reason = "source_preflight_unverified"
+			var failure *apierrors.ServiceError
+			if errors.As(guardErr, &failure) {
+				reason = string(failure.Code)
+				switch failure.Message {
+				case "original_controller_identity_unverified", "original_controller_identity_changed", "original_controller_metadata_unsupported", "original_tool_closure_unverified", "original_archive_not_yet_available", "original_archive_identity_changed", "original_archive_unavailable", "original_workspace_unavailable", "original_archive_workspace_changed", "original_source_identity_changed":
+					reason = failure.Message
+				}
+			} else if strings.HasPrefix(guardErr.Error(), "relay session capture: ") {
+				reason = sessionPublicGap(strings.TrimPrefix(guardErr.Error(), "relay session capture: "))
+			}
+		}
+		writeActualJSON(t, filepath.Join(evidence, "source-preflight-"+taskID+"-private.json"), map[string]any{"task_id": taskID, "project_id": task.ProjectID, "worktree_id": task.WorktreeID, "terminal_id": task.TerminalID, "controller_id": controller.ControllerID, "startup_operation_id": controller.StartupOperationID, "session_id": session.ID, "native_id": session.NativeID, "observed_at": time.Now().UTC(), "passed": guardErr == nil, "reason": reason, "input_turns": len(controller.Turns)})
+		if guardErr != nil {
+			t.Fatal("空初始化的实际来源或工具策略未确认；原失败已保存，禁止提交输入")
+		}
 	}
+}
+
+// 只消费本次原 Registry 缓存和已授权绑定，不调用 RPC 或改变原 Prepare 收据。
+func checkActualPreparedRelaySource(ctx context.Context, registry *agents.Registry, guard *relaySourceGuard, task domain.RelayTask, session domain.NativeSession, controller domain.RelayControllerEvidence, bindings []domain.RelayOwnedSession) error {
+	if guard == nil || controller.ControllerID == "" || controller.StartupOperationID == "" || len(controller.Turns) != 0 {
+		return &apierrors.ServiceError{Code: apierrors.EvidenceMissing}
+	}
+	original, err := registry.ReadOwnedNativeSession(ctx, session.ID)
+	if err != nil {
+		return err
+	}
+	if original.Session.ID != session.ID || original.Session.NativeID != session.NativeID || original.Session.ProjectID != task.ProjectID || original.Evidence.ControllerID != controller.ControllerID || original.Evidence.StartupOperationID != controller.StartupOperationID || len(original.Evidence.Turns) != 0 {
+		return &apierrors.ServiceError{Code: apierrors.ScopeDenied}
+	}
+	for _, bound := range bindings {
+		if bound.TaskID != task.ID {
+			continue
+		}
+		if bound.Ownership != "owned" || bound.SessionID != session.ID || bound.NativeID != session.NativeID || bound.ControllerID != controller.ControllerID || bound.StartupOperationID != controller.StartupOperationID {
+			return &apierrors.ServiceError{Code: apierrors.ScopeDenied}
+		}
+		if bound.SourceStatus != "available" || bound.Gap != "" {
+			return guard.Check(ctx, original.Session, nil, bound.Gap)
+		}
+		archive := domain.RelaySessionArchive{SessionID: bound.SessionID, NativeID: bound.NativeID, WorkspaceRoot: bound.WorkspaceRoot, Path: bound.ArchivePath, Root: bound.ArchiveRoot, Format: bound.ArchiveFormat}
+		return guard.Check(ctx, original.Session, &archive, "")
+	}
+	return &apierrors.ServiceError{Code: apierrors.ScopeDenied}
 }
 
 type actualRelayHTTP struct {

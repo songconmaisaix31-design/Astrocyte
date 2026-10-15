@@ -8,8 +8,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
 
-// Principal is set by the trusted transport, never decoded from a command body.
-// S1 has a local human session and an optional read-only agent credential.
+// Principal 由可信传输层设置；S1 使用本地人工会话和可选的只读 Agent 凭据。
 type Principal struct {
 	ID   string
 	Kind string
@@ -135,8 +134,7 @@ type SourceReader interface {
 	ReadSource(context.Context, ImportMaterialCommand) (ImportedSource, error)
 }
 
-// Publish returns a digest-addressed immutable object reference after atomic publication.
-// Read accepts object references only, never arbitrary filesystem paths.
+// Publish 原子发布不可变对象并返回 digest 引用；Read 只接受对象引用。
 type ObjectStore interface {
 	Publish(context.Context, []byte) (string, error)
 	Read(context.Context, string) ([]byte, error)
@@ -271,7 +269,7 @@ type Job struct {
 	UpdatedAt        time.Time               `json:"updated_at"`
 	DeadlineAt       time.Time               `json:"deadline_at"`
 	CancelRequested  bool                    `json:"cancel_requested"`
-	// Payload and caller are durable internal state, never serialized to clients.
+	// Payload 和调用主体只作为内部持久化状态，不序列化给客户端。
 	Payload json.RawMessage `json:"-"`
 	Caller  Principal       `json:"-"`
 }
@@ -294,15 +292,15 @@ type ContentResult struct {
 	Provenance    Provenance `json:"provenance"`
 }
 
-// AttentionService is the S1 boundary. Plain queries never count human attention;
-// explicit RecordUse receives the authenticated principal. Agent credentials are read-only.
+// AttentionService 是 S1 边界；查询不计人工注意力，RecordUse 接收认证主体。
+// Agent 凭据只允许读取。
 type AttachmentContent struct {
 	Data      []byte
 	MediaType string
 	Name      string
 }
 
-// MaterialDomain is a human classification; membership never grants Agent access.
+// MaterialDomain 保存人工分类，成员关系不授予 Agent 访问权限。
 type MaterialDomain struct {
 	ID          string    `json:"id"`
 	Version     int       `json:"version"`
@@ -324,8 +322,7 @@ type SetMaterialDomainsCommand struct {
 	DomainIDs []string `json:"domain_ids"`
 }
 
-// ProjectSpace is an Attention projection of human-selected file references,
-// not a Workspace project/approval or an executable work directory.
+// ProjectSpace 是 Attention 中人工选定文件引用的展示；Workspace 独立管理项目和授权。
 type ProjectSpace struct {
 	ID           string      `json:"id"`
 	Version      int         `json:"version"`
@@ -351,8 +348,7 @@ type RemoveMaterialReferenceCommand struct {
 	MaterialID string `json:"material_id"`
 }
 
-// Only selected, authorized snapshots enter the processor. There are no database
-// handles, object paths, shell capabilities or authentication fields in this input.
+// 处理器仅接收已选择且获准的快照，输入不携带数据库、对象路径、shell 或认证能力。
 type SourceSnapshot struct {
 	Ref           SourceRef  `json:"ref"`
 	SourceKey     string     `json:"source_key"`
@@ -387,14 +383,12 @@ type DistillationOutput struct {
 	Provenance          Provenance           `json:"provenance"`
 }
 type Distiller interface {
-	// ConfigurationID describes actual frozen processor settings, including model
-	// and isolation policy. It performs no paid model call or credential export.
+	// ConfigurationID 描述实际固定的模型和隔离配置，不调用付费模型或导出凭据。
 	ConfigurationID(context.Context) (string, error)
 	Distill(context.Context, DistillationInput) (DistillationOutput, error)
 }
 
-// DistillerStatusProvider is an optional factual native-runtime projection.
-// It must not invoke model processing or return a guessed model/configuration.
+// DistillerStatusProvider 返回实际原生运行状态，不能调用模型或推测配置。
 type DistillerStatusProvider interface {
 	Status(context.Context) (DistillerStatus, error)
 }
@@ -409,8 +403,7 @@ type RequestDistillationCommand struct {
 	Question             string      `json:"question"`
 }
 
-// Kept separate so a runtime can expose human recording while its automatic
-// processor is blocked by missing native read isolation, with honest 501/jobs.
+// 人工记录与自动处理独立；缺少原生读取隔离时保留实际 501 和任务状态。
 type AutomaticDistillationService interface {
 	GetDistillerStatus(context.Context, Principal) (DistillerStatus, error)
 	RequestDistillation(context.Context, Principal, RequestDistillationCommand) (ImportJobResult, error)
@@ -435,8 +428,8 @@ type CandidateSuggestion struct {
 	Purpose         string      `json:"purpose"`
 }
 
-// A single explicit, versioned user profile controls candidate composite ordering.
-// No profile means manual order; partial or unknown dimensions never become zero.
+// 单个明确且版本化的用户配置控制候选排序；未配置时保持人工顺序。
+// 缺失或未知维度不转换为零。
 type RankingProfile struct {
 	ID        string             `json:"id"`
 	Version   int                `json:"version"`
@@ -495,8 +488,8 @@ type AttentionService interface {
 	RemoveMaterialReference(context.Context, Principal, string, RemoveMaterialReferenceCommand) (ProjectSpaceResult, error)
 }
 
-// Repository serializes each callback in one transaction. Do not call external
-// providers or objects inside callbacks. All methods are scoped to Attention.
+// Repository 在同一事务中串行执行回调；回调中不访问外部 provider 或对象。
+// 全部方法限于 Attention。
 type Repository interface {
 	WithTx(context.Context, func(AttentionTx) error) error
 }
@@ -540,8 +533,7 @@ type AttentionTx interface {
 	SaveProjectSpace(ProjectSpace, int) error
 }
 
-// Tracking stores public metadata only. A binding never imports every item,
-// grants credentials, or permits model processing outside a selected project.
+// Tracking 只存储公开元数据；绑定不授予整批导入、凭据或项目外模型处理权限。
 type TrackingSource struct {
 	AccessMode    string                  `json:"access_mode"`
 	ID            string                  `json:"id"`
@@ -638,7 +630,7 @@ type TrackingService interface {
 	SelectSourceItems(context.Context, Principal, string, SelectSourceItemsCommand) (TrackingSourceResult, error)
 }
 
-// TrackingTx is optional so pre-tracking repository implementations remain valid.
+// TrackingTx 为可选能力，原 Repository 可独立使用。
 type TrackingTx interface {
 	AttentionTx
 	ListTrackingSources() ([]TrackingSource, error)
@@ -688,8 +680,8 @@ type DiscoverSourceCollectionsCommand struct {
 	AccessMode string `json:"access_mode,omitempty"`
 }
 
-// Explicit human discovery may invoke a provider/browser; the GET service only
-// reads saved catalog observations. Failure must preserve the previous cache.
+// 人工明确发现可调用 provider 或浏览器；GET 只读取已保存的目录观察。
+// 失败时保留此前缓存。
 type SourceCollectionDiscoveryService interface {
 	DiscoverSourceCollections(context.Context, Principal, DiscoverSourceCollectionsCommand) (apierrors.ListResult, error)
 }
@@ -703,8 +695,7 @@ type PublicCollectionReader interface {
 	ListCollections(context.Context, string, string) ([]SourceCollection, error)
 }
 
-// Called only after Workspace authorizes a project operation. Membership and
-// fixed-version linked access remain checked in Attention on every read.
+// Workspace 授权项目操作后才调用；Attention 每次读取仍检查成员和固定版本引用权限。
 type AttentionProjectReferences interface {
 	ReadProjectReference(context.Context, Principal, string, SourceRef, bool) (SourceSnapshot, error)
 	LinkedProjectReferences(context.Context, Principal, string, SourceRef) ([]SourceRef, error)
@@ -725,8 +716,7 @@ type SelectedTextResult struct {
 	Model    *string
 }
 
-// The composition bridge rechecks project model consent on config and processing.
-// It never changes provider or converts denied scope into a fallback CLI.
+// 装配桥接在配置和处理时重新检查项目模型授权，拒绝后直接返回错误。
 type SelectedTextProcessor interface {
 	ProjectSpaceID(context.Context, Principal, string, string) (string, error)
 	ConfigurationID(context.Context, Principal, string, string) (string, error)
