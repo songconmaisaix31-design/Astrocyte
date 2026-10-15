@@ -2,7 +2,27 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前恢复分工（2026-10-16 02:21）
+## 当前恢复分工（2026-10-16 04:08）
+
+根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 04:04 入口、当前 `QUESTIONS.md` 和正式消息 `msg_546d9fc03e1c` 为本轮依据。总负责人为 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669`，顶层 Run 保持 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_7f070ad688f5 / term_8d816f16-fefd-45e8-b49a-29c4cf681c47`。模块已普通绑定原子 Run `run_8bbda1c3974c` generation 8，没有创建新 Run 或绑定根 Run。
+
+当前产品尚未恢复可访问。H 在 F 安全 ACK 后停止旧 PID25048，更新准确 `0db5836b7cd466f6a5328bc84ba4530c2bb826ce` 时，配置的 CodeGraph Node / SDK 程序校验退出 1；原件指针为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/api-0db-20261015-185255.stderr.log`。H / B 先核实际 probe 和 P 已备入口，修复后恢复同一 D 盘 SQLite 与首选 `http://127.0.0.1:64505/`；不重置已保存的论文、项目、Goal、Proposal、Grant 或 ContextPacket。F 等待 H 明确 ready 后只读复核，成功和未知 mutation 不重复。
+
+公开 CLI 核 H 原 Task 为 ready、旧 `ctx_7822f0fe0335` 已 abandoned / failed / terminal_missing，原 H 树终端数量为零。原树 HEAD `ef1ca4fda22b83342fa5a4b190d79e910a8b2a16` 保留七件 WIP：`cmd/server/main.go`、`cmd/server/relay_judgment_actual_test.go`、`cmd/server/relay_session.go`、`cmd/server/workbench_config.go`，以及新增 `cmd/server/relay_completion_experience.go`、`cmd/server/relay_repository_cleanup.go`、`cmd/server/relay_repository_cleanup_test.go`。原 Task / 工作树 / 分支和互斥写域继续由 H 本人负责。
+
+| 原人员 / Task | 当前状态 | 本轮必要工作 |
+|---|---|---|
+| H `task_3004b636a3ab` | `ctx_5b3dc511cccd / term_bfb664a5-e843-4d81-b14c-6421c2125f77`；首回执 `turn_start_unobserved` 保留，现有输入单次 Enter 后实际 Working，本人 `msg_ad4ae8d3bb55` 已 ACK 当前入口和准确起点；客户端 Codex 0.162.0 / GPT-6.1-Sol xhigh fast | 先恢复同库产品，再完成 cleanup 生命周期、完成来源、Q 独立 reader root 和本域实际失败诊断 |
+| R `task_f082d8b36471` | 旧 `ctx_3920346a06ed` 由运行时结算；原树 / 分支和已交来源保留，按实际依赖恢复 | 原 Relay / native 来源与完成权限；受限模型路径继续拒绝 |
+| S4 `task_bd209566be37` | 旧 `ctx_f150ca32cf39` 由运行时结算；原树 / 分支和生产检查 WIP 保留，待 H / B cleanup 组合后恢复复验 | 沿独立实际生产 SQLite 复验原撤权清理失败，不操作共享64505 |
+
+恢复输入 `msg_5077ee024939` 已定向交 H 当前 Dispatch；产品模块已收到 `msg_90a503bb8006`，由原 B 核配置和实际程序入口，`config.go` 不归 H。唯一 I 准确 `8b0eb882969d972f3f419602c12b5e20f00b79e2` 的首 check 失败保留：合法单链接来源拒绝和作品发现 unavailable 已交 H 诊断本域，junction 命令与共享 helper 交产品原 B；不放宽 guard、删除断言或重跑已知未修组合。
+
+产品已恢复原 B `ctx_4f388a292a1f` 和原 F `ctx_c22d1dd61be3`，发布已恢复唯一 I `ctx_4a4234c26f8c`，H 已收到准确身份并直接配对。B cleanup SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3` 经产品模块核远端和祖先后交 H：同 provider 的 Wake 经 S2 成功提交后通知，H 完成其生命周期装配，S4 后续实际复验；B 当时包含 native WIP 的 Go 成功不作为隔离 cleanup 或本次产品同源验收。
+
+用户优先产品集成、普通启动和核心操作，再并行整理与全面测试。Laya 语言和 Agent completion action 继续待答；原 60 秒启动 / 10 秒关闭预算保持。受限 Codex 的文件工具要求未满足，登记、初始化、模型输入与本轮 L1 t0 继续为零；成功 OS、Q / D1、P 准备和原模型结果不重做，正式 D2 partial 保留。管理记录集中提交；领域 SOURCE / 独立 REPORT 按精确 SHA 普通 push，模块持续至最终发布支持完成。
+
+## 02:21 恢复记录
 
 根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 02:21 入口及正式消息 `msg_289d91953805` 为当前恢复依据。总负责人为 `term_8de37bb3-e73a-4c10-8a7c-5c39156da4e7`，顶层 Run 为 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_f967479130c2 / term_8800f84b-428d-4af9-bf4e-4a9e47b20fe8`。原子 Run `run_8bbda1c3974c` 已普通恢复至 generation 7，保持原 Task、工作树、分支与全部 WIP。
 
