@@ -1,8 +1,27 @@
 # S2/S3/S4/S5 产品页面开发记录
 
-当前任务 `task_d0cee5a583bb` / Dispatch `ctx_af3cbd15f128`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9ce12d181768`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，模型 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，当时工作区 clean；本次恢复基线 `f70fadfa8d0645ee342cbf96ff67fc97e6e16079`，保留并继续完成既有 `ApprovalPanel.tsx` 修改。
+当前任务 `task_d0cee5a583bb` / Dispatch `ctx_4ac5810bae08`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，当时工作区 clean；本次恢复基线 `71360db458052eea387e4d4f72b303f59d3a4743`，保留并继续完成既有 repositorycontext CSS 及三个新增 TypeScript 文件。
 
 只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`；模块计划 `2f609ea484fa690b8f2a2b6a754e1a63e398fe42` 和 F `msg_ea981e24bc0d` 正式追加 `web/src/pages/attention/delegation/**` 与 `web/e2e/s5-*.spec.ts`。全部新增范围继续由同一任务、人员和工作树承担。Workspace/AttentionPage 薄入口、公共客户端（包括 `api/judgment.ts`）、生成类型、查询 Hook、认证、共享组件、RankingPanel 与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+
+## 2026-10-15 22:00 恢复阶段：仓库上下文实际客户端接入
+
+SOURCE `c5925670311189acc5294f8be58fe014afe8ae55` 已普通 push，包含本树已经普通消费的 F Repository 客户端 `03bbaed523a6d03faba45595dcfb51ab4fcc696f`。`RepositoryContextPanel` 使用该准确生成接口和既有 `useReadApi`、`usePersistentCommand`、人工会话与 CSRF，提供明确选择项目、用途、相对路径与四项预算的仓库说明、代码搜索和改动影响查询。结果显示实际覆盖、缺口、后端、generation、工作树/仓库/环境身份、HEAD、权限版本、两项 digest、源码行号、关系证据和提取器版本。符号可明确选入影响查询，过期结果的符号选择禁用。
+
+维护入口包含建立、同步、重建代码索引及刷新仓库说明。首次查询返回缺少索引或索引过期时显示明确说明，由用户选择维护；当前项目读取失败时保留快照并禁用新动作，支持重新读取实际项目权限。维护结果未知时沿既有公开请求身份保留跨刷新操作锁，查询不会解除该锁，也不会自动重新提交维护。
+
+| 命令或检查 | 本阶段结果 |
+|---|---|
+| 首次 `pnpm --dir web typecheck` | FAIL：页面错误地将 map 的生成结果当作 Index；原 TypeScript 输出保留于本 Dispatch 命令记录 |
+| 修正后的 `pnpm --dir web typecheck` | PASS |
+| `pnpm --dir web exec eslint src/pages/workspace/repositorycontext e2e/s4-repository-context.spec.ts` | PASS，0 errors / 0 warnings |
+| `pnpm build` | PASS，Go 服务、MCP、Sleep 与生产 Web；`.verification/product-ui/build-repository-resume-first.log`。Vite 现有大于 500 kB 的分块提示保留 |
+| `git diff --check`、`git diff --cached --check` | PASS |
+| 新 `s4-repository-context.spec.ts` | 已编译，实际浏览器尚未运行；待 F 共享薄入口 SOURCE |
+
+新增用例使用生产 Go、真实 HTTP/SQLite 和原两 viewport，验证未配置服务的 503、明确查询参数、键盘提交、项目读取 403 保留输入/禁用动作、人工恢复权限和零索引/原生会话。用例不替换网络响应，不将未配置能力登记为正向查询通过。
+
+当前生产 `cmd/server/main.go` 的 Repository services 为空；原 S4 `ctx_09391d7a7e02` 已交实际 CodeGraph/AOCI 配置和只读公开两个 worktree 指针，但依赖 H 后继安全装配 SOURCE。模块明确禁止消费 `59a7150b1143680b67fe53fdf831fcca5f328660`，本树未消费该提交。安全 Context → S3 → S4/S5 的准确 OpenAPI、生成客户端和入口继续由 H/F 持有；S3 现行准确业务 SOURCE 为 `a5d00e764ffa0266bf34067190f72f3463fe9852`，没有依据私有原生 controller 信息扩展页面字段。Calls 单位和权限证据未答，Claim 拒绝与原生窗口零保持。完整 check、默认 E2E、正向 S4、Context、S3/S5 和 Windows 最终包尚未通过，任务持续支持集成。
 
 ## S5 委托设置的实际接口依赖
 
