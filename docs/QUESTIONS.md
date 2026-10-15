@@ -1,5 +1,9 @@
 # 用户决定与待定项
 
+## S5 单次 OS 断网验收（2026-10-16，已确认）
+
+用户对单次专用程序隔离验收及管理员 UAC 明确回复“允许”。原 S5 使用已完成预览的 `tests/s5/os-offline.ps1 -Execute`，唯一隔离程序为 `C:/Users/DW/orca/workspaces/Astrocyte/release-judgment-20261015/.verification/s5/os-offline/node.exe`；保持原固定规则名称、本次唯一 Group、精确 Program、程序身份和独占目录守卫。临时阻断该程序出站后运行实际 HTTP 拒绝、公开输入 CPU 推理及重启，结束逐项核规则删除、专用进程退出与进程环境恢复。UAC 由用户确认，不修改全局防火墙配置、共享程序或系统网络；原 S5 执行，发布负责人唯一协调，实际结果登记原模块。本授权不代替 Jev secret、S3 两项业务选择或具体经验候选批准。
+
 ## 三项拍板（2026-10-15，已确认）
 
 1. 完成语义采用 `done = verified_complete | user_confirmed_complete` 双通道。started 证据独立记录，永不回填；资源释放独立审计，不可跳过。`user_confirmed_complete` 任务照常进入经验管道，保留其真实完成通道，候选仍经过既有人工批准。
