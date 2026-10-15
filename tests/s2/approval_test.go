@@ -32,6 +32,21 @@ func requireCode(t *testing.T, err error, code apierrors.Code) {
 	}
 }
 
+func s2OutputDirectory(t *testing.T, root string) string {
+	t.Helper()
+	directory := filepath.Join(root, ".verification", "s2-first")
+	if configured := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); configured != "" {
+		if !filepath.IsAbs(configured) {
+			t.Fatal("explicit S2 output directory must be absolute")
+		}
+		directory = configured
+	}
+	if err := os.MkdirAll(directory, 0700); err != nil {
+		t.Fatal(err)
+	}
+	return directory
+}
+
 func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	ctx := context.Background()
 	root, err := filepath.Abs("../..")
@@ -43,10 +58,7 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 		t.Fatal(err)
 	}
 	approvedRoot := filepath.Join(root, "internal", "workspace", "domain")
-	base := filepath.Join(root, ".verification", "s2-first")
-	if err = os.MkdirAll(base, 0700); err != nil {
-		t.Fatal(err)
-	}
+	base := s2OutputDirectory(t, root)
 	dir, err := os.MkdirTemp(base, "actual-")
 	if err != nil {
 		t.Fatal(err)
@@ -90,6 +102,33 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 		t.Fatal(err)
 	}
 	calls := int64(2)
+	goalSnapshot, err := service.ReadCurrentGoalSnapshot(ctx, human, project.ID, goal.ID, goal.Revision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if goalSnapshot.ObservedAt.IsZero() || goalSnapshot.ProjectSettingsRevision != project.Settings.Revision || goalSnapshot.Goal.Title != goal.Title {
+		t.Fatal("actual goal snapshot omitted its current target or permission revision")
+	}
+	err = service.WithCurrentGoalSnapshot(ctx, human, goalSnapshot, func(txctx context.Context, current domain.CurrentGoalSnapshot) error {
+		conn, err := sqlite.WorkspaceTransaction(txctx, db)
+		if err != nil {
+			return err
+		}
+		if conn == nil || current.Goal.ID != goal.ID || current.Goal.Revision != goal.Revision {
+			t.Fatal("actual goal snapshot lost its same-database transaction")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	unobserved := goalSnapshot
+	unobserved.ObservedAt = time.Time{}
+	err = service.WithCurrentGoalSnapshot(ctx, human, unobserved, func(context.Context, domain.CurrentGoalSnapshot) error {
+		t.Fatal("unobserved goal callback executed")
+		return nil
+	})
+	requireCode(t, err, apierrors.ValidationFailed)
 	content := domain.ProposalContent{Title: "Verify public workspace approval behavior", Goal: domain.GoalReference{ID: goal.ID, Revision: goal.Revision}, Scope: domain.ExecutionScope{ProjectID: project.ID, Roots: []string{approvedRoot}, Actions: []string{"read_context"}, MaxConcurrency: 2}, Budget: domain.ResourceBudget{Calls: &calls}, Stops: domain.StopConditions{Deadline: time.Now().UTC().Add(time.Hour), Conditions: []string{"Stop when checks complete"}, MaxWorkItems: 2, MaxAttempts: 2, MaxNoProgressRounds: 2}, Deliverables: []string{"Actual SQLite approval receipts"}, SuccessCriteria: []string{"No execution is started by approval"}}
 	create := workspace.CreateProposalCommand{WorkspaceCommandMeta: workspaceMeta(0), Content: content}
 	proposal, err := service.CreateProposal(ctx, human, create)
@@ -161,6 +200,7 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	if packet.Goal.Revision != goal.Revision || packet.ProposalRevision != grant.ProposalRevision || packet.Snapshot.Head == "" || packet.ObjectRef == "" {
 		t.Fatal("packet omitted fixed actual context references")
 	}
+	verifyObservationBoundary(t, ctx, repo, service, human, grant)
 	packetObject, err := objectStore.Read(ctx, packet.ObjectRef)
 	if err != nil {
 		t.Fatal(err)
@@ -203,6 +243,8 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	}
 	_, err = service.ReadContextPacket(ctx, otherMember, packet.ID)
 	requireCode(t, err, apierrors.ScopeDenied)
+	_, err = service.ReadCurrentGoalSnapshot(ctx, otherMember, project.ID, goal.ID, goal.Revision)
+	requireCode(t, err, apierrors.ScopeDenied)
 	verifyActualPacketHTTP(t, service, projects, packet, grant, credential.Token, otherCredential.Token)
 	if _, err = projects.RevokeProjectAgent(ctx, human, project.ID, memberID); err != nil {
 		t.Fatal(err)
@@ -211,7 +253,20 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	requireCode(t, err, apierrors.ApprovalRevoked)
 	updatedGoal := goal
 	updatedGoal.Title = "Review the current public approval implementation"
-	_, err = service.PutGoal(ctx, human, goal.ID, workspace.GoalCommand{WorkspaceCommandMeta: workspaceMeta(goal.Revision), Goal: updatedGoal})
+	updatedGoal, err = service.PutGoal(ctx, human, goal.ID, workspace.GoalCommand{WorkspaceCommandMeta: workspaceMeta(goal.Revision), Goal: updatedGoal})
+	if err != nil {
+		t.Fatal(err)
+	}
+	oldGoal, err := service.ReadGoal(ctx, human, goal.ID, goal.Revision)
+	if err != nil || oldGoal.Title != goal.Title || oldGoal.Revision != goal.Revision || updatedGoal.Revision != goal.Revision+1 {
+		t.Fatalf("goal revisions changed historical target: %v", err)
+	}
+	err = service.WithCurrentGoalSnapshot(ctx, human, goalSnapshot, func(context.Context, domain.CurrentGoalSnapshot) error {
+		t.Fatal("stale goal snapshot callback executed")
+		return nil
+	})
+	requireCode(t, err, apierrors.ContextStale)
+	currentGoalSnapshot, err := service.ReadCurrentGoalSnapshot(ctx, human, project.ID, goal.ID, updatedGoal.Revision)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -236,6 +291,11 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	}
 	_, err = service.BuildContextPacket(ctx, human, workspace.BuildContextPacketCommand{WorkspaceCommandMeta: workspaceMeta(0), GrantID: grant.ID, GrantEpoch: grant.Epoch, MaxBytes: 128 * 1024})
 	requireCode(t, err, apierrors.ApprovalRevoked)
+	err = service.WithCurrentGoalSnapshot(ctx, human, currentGoalSnapshot, func(context.Context, domain.CurrentGoalSnapshot) error {
+		t.Fatal("changed project permission callback executed")
+		return nil
+	})
+	requireCode(t, err, apierrors.ContextStale)
 	before := goal
 	before.ID = uuid.NewString()
 	before.Revision = 1
@@ -268,6 +328,14 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	if err != nil || persisted.Epoch != 1 || persisted.ProposalRevision != 1 {
 		t.Fatalf("restart approval: %v", err)
 	}
+	oldGoal, err = service.ReadGoal(ctx, human, goal.ID, goal.Revision)
+	if err != nil || oldGoal.Title != goal.Title || oldGoal.Revision != goal.Revision {
+		t.Fatalf("restart historical goal: %v", err)
+	}
+	retained, err = service.ReadContextPacket(ctx, human, packet.ID)
+	if err != nil || retained.ObjectRef != packet.ObjectRef || retained.Goal.Revision != goal.Revision {
+		t.Fatalf("restart fixed context packet: %v", err)
+	}
 	_, err = service.ChangeApproval(ctx, human, grant.ID, workspace.ChangeApprovalCommand{WorkspaceCommandMeta: workspaceMeta(grant.Epoch), Reason: "End actual approval validation"}, "revoked")
 	if err != nil {
 		t.Fatal(err)
@@ -277,5 +345,49 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	old, err := service.ReadProposal(ctx, human, proposal.ID, 1)
 	if err != nil || old.Status != domain.ProposalApproved {
 		t.Fatalf("fixed approved proposal changed: %v", err)
+	}
+	approveCurrent := func(title string, lifetime time.Duration) domain.ApprovalGrant {
+		t.Helper()
+		currentContent := content
+		currentContent.Title = title
+		currentContent.Scope.SettingsRevision = project.Settings.Revision
+		current, err := service.CreateProposal(ctx, human, workspace.CreateProposalCommand{WorkspaceCommandMeta: workspaceMeta(0), Content: currentContent})
+		if err != nil {
+			t.Fatal(err)
+		}
+		current, err = service.TransitionProposal(ctx, human, current.ID, workspaceMeta(current.Version), domain.ProposalInReview)
+		if err != nil {
+			t.Fatal(err)
+		}
+		approved, err := service.ApproveProposal(ctx, human, current.ID, workspace.ApproveProposalCommand{WorkspaceCommandMeta: workspaceMeta(current.Version), ExpectedRevision: current.Revision, ExpiresAt: time.Now().UTC().Add(lifetime)})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return approved
+	}
+	completed := approveCurrent("Finish actual public context review", time.Minute)
+	completed, err = service.ChangeApproval(ctx, human, completed.ID, workspace.ChangeApprovalCommand{WorkspaceCommandMeta: workspaceMeta(completed.Epoch), Reason: "Actual review completed"}, "completed")
+	if err != nil || completed.Status != "completed" || completed.Epoch != 2 {
+		t.Fatalf("complete approval: %v", err)
+	}
+	completedCheck := check
+	completedCheck.GrantID, completedCheck.Epoch = completed.ID, completed.Epoch
+	completedCheck.ProposalRevision = completed.ProposalRevision
+	err = service.WithAuthorizedGrant(ctx, completedCheck, func(context.Context, domain.ApprovalGrant) error { t.Fatal("completed callback executed"); return nil })
+	requireCode(t, err, apierrors.ApprovalRevoked)
+	expiring := approveCurrent("Observe actual approval expiry", 2*time.Second)
+	time.Sleep(time.Until(expiring.ExpiresAt) + time.Millisecond)
+	expired, err := service.ReadApproval(ctx, human, expiring.ID)
+	if err != nil || expired.Status != "expired" {
+		t.Fatalf("read elapsed approval: %v", err)
+	}
+	expiredCheck := check
+	expiredCheck.GrantID, expiredCheck.Epoch = expiring.ID, expiring.Epoch
+	expiredCheck.ProposalRevision = expiring.ProposalRevision
+	err = service.WithAuthorizedGrant(ctx, expiredCheck, func(context.Context, domain.ApprovalGrant) error { t.Fatal("expired callback executed"); return nil })
+	requireCode(t, err, apierrors.ApprovalRevoked)
+	expired, err = service.ChangeApproval(ctx, human, expiring.ID, workspace.ChangeApprovalCommand{WorkspaceCommandMeta: workspaceMeta(expiring.Epoch), Reason: "Actual approval expiry observed"}, "expired")
+	if err != nil || expired.Status != "expired" || expired.Epoch != 2 {
+		t.Fatalf("persist elapsed approval: %v", err)
 	}
 }

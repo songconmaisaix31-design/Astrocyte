@@ -29,8 +29,47 @@ type selectedTextSource struct {
 	SourceSnapshot    string              `json:"source_snapshot,omitempty"`
 	SourceStatus      string              `json:"source_status"`
 	Execution         RelayOwnedExecution `json:"execution"`
+	Stop              *selectedTextStop   `json:"stop,omitempty"`
 	ObservedAt        time.Time           `json:"observed_at"`
 	file              string
+}
+
+type selectedTextStop struct {
+	Status     string    `json:"status"`
+	Confirmed  bool      `json:"confirmed"`
+	ObservedAt time.Time `json:"observed_at"`
+	Error      string    `json:"error,omitempty"`
+}
+
+// 始终停止原 controller，再保存同一进程的实际退出观测；工具集合保持原观测值。
+func (n *Native) finishSelectedText(session domain.NativeSession, source *selectedTextSource) error {
+	ctx := context.Background()
+	observation, stopErr := n.Stop(ctx, session)
+	var failure error
+	if stopErr != nil || !observation.StopConfirmed {
+		failure = errors.Join(nativeError(apierrors.DeliveryUnknown, "selected-text owned process stop remains unconfirmed"), stopErr)
+	}
+	if source == nil {
+		return failure
+	}
+	source.Stop = &selectedTextStop{Status: observation.Status, Confirmed: observation.StopConfirmed, ObservedAt: time.Now().UTC()}
+	if stopErr != nil {
+		source.Stop.Error = stopErr.Error()
+	}
+	execution, err := n.OwnedRelayExecution(ctx, session)
+	if err != nil {
+		failure = errors.Join(failure, nativeError(apierrors.EvidenceMissing, "selected-text final execution observation failed"), err)
+	} else {
+		source.Execution = execution
+	}
+	// 即使原档保留失败，本次实际停止结果仍须先保存。
+	if err := source.save(); err != nil {
+		return errors.Join(failure, nativeError(apierrors.EvidenceMissing, "selected-text final source retention failed"), err)
+	}
+	if err := source.retainOriginal(); err != nil {
+		return errors.Join(failure, nativeError(apierrors.EvidenceMissing, "selected-text original source retention failed"), err)
+	}
+	return failure
 }
 
 func (n *Native) selectedTextSource(ctx context.Context, session domain.NativeSession, input domain.TextRequest) (*selectedTextSource, error) {
@@ -137,7 +176,7 @@ func (s *selectedTextSource) retainOriginal() error {
 	if err = os.WriteFile(s.SourceSnapshot, body, 0600); err != nil {
 		return err
 	}
-	// 原件是停止前实际窗口，完整度由原生读取和具体消费者另行核查。
+	// 原件只声明本次实际保留窗口，完整度由原生读取和具体消费者另行核查。
 	s.SourceStatus = "owned_source_window_retained"
 	return s.save()
 }

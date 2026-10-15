@@ -94,11 +94,21 @@ test.describe('实际资料、项目与协作边界', () => {
     await expect(page.getByText('拓扑尚未接入；下面显示真实任务与工作项快照。')).toBeVisible();
     await expect(page.getByText('设计示意 · 非实时拓扑')).not.toBeVisible();
   });
-  test('真实时间线接口缺口保持可见且不生成动态', async ({ page }) => {
+  test('真实时间线在无任务时保持空集合且不生成动态', async ({ page }) => {
+    const writes: string[] = [];
+    page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/api/v1/')) writes.push(request.url()); });
+    const response = page.waitForResponse(value => new URL(value.url()).pathname === '/api/v1/missions');
     await page.goto(go('swarm?tab=timeline'));
-    await expect(page.getByRole('status', { name: '事件时间线尚未接入' })).toBeVisible();
+    const actual = await response;
+    expect(actual.status()).toBe(200);
+    expect((await actual.json() as components['schemas']['SwarmMissionListV1']).items).toEqual([]);
+    expect(owned.server.query('SELECT COUNT(*) AS count FROM swarm_missions')).toEqual([{ count: 0 }]);
+    const timeline = page.getByRole('tabpanel', { name: '任务时间线', exact: true });
+    await expect(timeline.getByRole('status', { name: '暂无任务事件', exact: true })).toBeVisible();
+    await expect(timeline.locator('time')).toHaveCount(0);
     await expect(page.getByText('14:32', { exact: true })).not.toBeVisible();
     await expect(page.getByText('Codex', { exact: true })).not.toBeVisible();
+    expect(writes).toEqual([]);
   });
   test('切换实际页面关闭详情，浏览器返回后重新读取实际来源', async ({ page }) => {
     await page.goto(go('attention'));

@@ -1,5 +1,39 @@
 # Works Relay runtime
 
+## 2026-10-16 同一已构建组合消费与 S3 接缝
+
+依据模块正式消息 `msg_6eb47253068c`，本树在 clean 检查点普通 `--no-ff` 合入唯一 I 已实际构建通过的 `35cc64faac271d43e5f63103a810081b0eb7ac62`，形成 SOURCE `d9f80c2038f9c178357393ee28e7d072a7bab955`。合并没有冲突，已普通 push 并独立 `git ls-remote` 核实相同 SHA。相对该 I 来源，原 R 领域、应用、store、native 和 relayworktree 全部相同，仅保留本轮 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` 的两份 CompletionExperience 后继源码；没有消费未验证的 I `9ce5c2c` 或任何 WIP。
+
+合并后的实际 `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=180s` PASS，包 23.152 秒；`go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016/integrated35cc-server.exe ./cmd/server` EXIT 0。日志为同目录 `integrated35cc-agents.log` 和 `integrated35cc-build.log`，产物未启动。Go 缓存和临时目录沿本节后文的 D 盘配置，另仅本进程设置 `GOPROXY=off`，使用已有依赖缓存；本次没有新增依赖下载。`git diff --check` EXIT 0。这是本树的适用组合检查，不代表完整默认浏览器或后继 I 组合通过。
+
+原 S3 SOURCE `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b` 的 portable 契约缺少原 R 已实现的四个结果字段。S3 按产品及模块明确授权，在自身工作树以文件编辑工具完整原样消费 R SOURCE `23253502143bb23bf47e1606c38e0158540e328d` 的 `relay_member_evidence.go` 与同名测试，交 SOURCE `12f659b7d741a48237ae2230c786d7ac3572590b`。R 独立 `git diff --exit-code` 核实两文件完全相同，并接收 S3 本人停止临时写入和归还逻辑维护的记录。S3 仅在自身 bridge 映射实际 accepted input 结果；R 没有重复实现原字段或增加测试。
+
+首次 claim 前的准确剩余接缝已交 B、S3、模块和产品：原 Relay PrepareIntent 与 Native 空 Message 初始化已经存在，generic Native.Send 按当前会话的 `PendingOperation` / `Operations[send,pending]` 校验后立即发送。B 原 `SendNativeMessage` 尚无独立的持久准备与后续同 operation 发送入口；现有 NativeOperation 仅有动作、状态和时间，没有待发送内容的固定关系。原 Registry 保存的 Start 会话不能替代未来输入的真实准备收据，调用者提供 UUID 不产生准备证据。B 负责其原 projects、收据、私有存储及受信调用，R 按准确后继核原完整身份；没有增加控制器、任务状态、DDL、队列或 Attempt。S3 的新 claim unsupported、Calls / 权限集合 Known=false 门禁保持，该依赖不扩大为独立人工 L1 的阻塞。
+
+人工经验两字段及实际来源读取后继仍待 B 准确 SOURCE。本阶段 t0、原生初始化和模型输入均为零；H 目标 reader、集成版 L1 / Today、六步首跑和最终 Windows 包继续由原负责人实施，全部首次失败和 unknown 保留。
+
+## 2026-10-16 经验候选的原会话与回合结果核验
+
+本阶段 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` 已普通 push，独立 `git ls-remote` 返回相同 SHA。当前 Task `task_f082d8b36471` / Dispatch `ctx_1bc01d1c9ef9` / 终端 `term_bfbc83d9-c104-4be1-a6a5-9f66869cc812`，继续原 R 工作树及分支。已读取根 00:30 恢复入口、模块工作树的当前管理文档和 v1.4 任务。实际客户端 `codex-cli 0.162.0`，沿当前模型配置，没有覆盖模型参数。
+
+`CompletionExperienceInterpreter` 读取已完成结果时，沿原进程锁核对实际保留的完整 Start 会话、provider、项目、controller、startup operation、input operation 和 turn。原受理回合必须同时具有 `AcceptedAt`、实际 `ResultObservedAt`、`Outcome=completed`、空失败码及 `ResultSource=codex_turn_completed`。缺少或冲突的原身份、缺受理回合、缺原生终态均立即拒绝，完成 JSON 不生成这些事实。StartedAt 不作为结果的补填目标；原结果不会生成任务 done、资源释放、usage 或权限集合。
+
+修改仅涉及原 R 已授权的 `completion_experience_response.go` 和同前缀测试。现有模型最终消息格式、首次输入 guard、工具关闭、原操作只读恢复与未知禁止重发保持原语义。新增检查只使用无原 Start、无受理回合或 external_observed 的拒绝输入，没有构造成功原生通知、模型输出或控制器。
+
+全部 Go 命令使用 `GOMAXPROCS=2`、`-p=1 -mod=readonly`，共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`TEMP` / `TMP` / `GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/R`。日志与未启动的构建产物位于 `D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016/`。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=180s` | PASS，5.150 秒，`agents-first.log`；之后仅补充当前 turn 身份比较 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -v -timeout=90s` | 最终 SOURCE 对应三项检查全部 PASS，包 2.683 秒，`refusals-final.log` |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` | EXIT 0，`vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016/server.exe ./cmd/server` | EXIT 0，`build.log`；产物未启动 |
+| 两份修改文件的 `gofmt -l` / `git diff --check` | 无格式差异 / EXIT 0 |
+
+当前 B / I 的 `ExperienceCompletionEvidence` 仍未提供 `CompletionChannel`、`CompletionReceiptID`，其 Relay 来源校验和本适配器仍要求原生轨迹引用。人工确认且没有原生轨迹的经验候选需要 B 先交准确 DTO、来源读取与持久化后继，再由 R 消费并调整解释输入；该依赖已经报告模块。H 的生产目标 reader、合法输出受信应用与实际固定检查仍归原 H / B，R 的 accepted dispatch / send 收据和完整 tuple 后置校验继续保留。
+
+本阶段没有登记 t0、初始化原生控制器或发送模型输入。经验模型正向、H 真实目标核验、集成版 CLI / Today、六步首跑与最终 Windows 包仍待准确组合实际执行。原冷 Registry RED、来源 nlink2 FAIL、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 及全部首次 RED / UNKNOWN / NOT_RUN 保留。
+
 ## 2026-10-16 verified_complete 生产入口核查
 
 模块 `msg_7572618ec5e3` 要求核查现有生产实现。R SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 提供 `RelayGoalVerificationReader`、可选 `RelayServiceOptions.GoalVerification`、原 owned controller / accepted input / transition 关系检查，以及完成记录的私有持久化。当前 R `d6dab8a`、H `8bc21f140c36b77275358e28951e1ca1b7cb7a6d` 及当时 H 未提交域、I `b9bf9d7` 的 `internal` / `cmd` 没有 `ReadRelayGoalVerification` 生产方法实现或 `GoalVerification` 注入，也没有实际固定目标检查的持久证据入口。因此 `verified_complete` 生产能力仍未实现，真实正向验收为 NOT_RUN；没有 reader 时明确返回 evidence_missing。

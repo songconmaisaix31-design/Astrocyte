@@ -114,9 +114,23 @@ func swarmMatchLeasedNative(e workspace.RelayMemberEvidence, l domain.Lease) err
 	return swarmMatchNativeTuple(e, "submit_artifact", l.SessionID, l.NativeSessionID, l.AdapterID, l.ControllerID, l.StartupOperationID, l.OperationID, l.ProjectID, l.Worktree)
 }
 
-func swarmNativeExecutionFact(e workspace.RelayMemberEvidence) swarm.ExecutionFact {
-	// 原契约没有完整 input outcome 或调用预算计数，响应观测量不替代这些事实。
-	return swarm.ExecutionFact{OperationID: e.InputOperationID, SessionID: e.SessionID, StopConfirmed: e.ExitConfirmed}
+func swarmNativeExecutionFact(e workspace.RelayMemberEvidence) (swarm.ExecutionFact, error) {
+	fact := swarm.ExecutionFact{OperationID: e.InputOperationID, SessionID: e.SessionID, StopConfirmed: e.ExitConfirmed}
+	if e.Outcome == nil && e.FailureCode == nil && e.ResultSource == "" && e.ResultObservedAt == nil {
+		return fact, nil
+	}
+	if e.Purpose != "submit_artifact" || e.CLI != "codex" || !e.InputAccepted || e.AcceptedTurnID == nil || *e.AcceptedTurnID == "" || e.InputAcceptedAt == nil || e.InputAcceptedAt.IsZero() || e.Outcome == nil || e.ResultSource != "codex_turn_completed" || e.ResultObservedAt == nil || e.ResultObservedAt.IsZero() {
+		return fact, domain.Failure(apierrors.EvidenceMissing, "original accepted input result lacks its actual native observation")
+	}
+	if !slices.Contains([]string{"completed", "failed", "interrupted"}, *e.Outcome) || e.FailureCode != nil && (*e.FailureCode != "native_failure" || *e.Outcome == "completed") {
+		return fact, domain.Failure(apierrors.EvidenceMissing, "original input result contains unsupported or contradictory outcome evidence")
+	}
+	// 原 input 结果、控制器退出与调用预算分别保存；响应计数不补充未知用量。
+	fact.Outcome = *e.Outcome
+	if e.FailureCode != nil {
+		fact.FailureCode = *e.FailureCode
+	}
+	return fact, nil
 }
 
 func (b *SwarmNativeBridge) Reconcile(ctx context.Context, operationID, sessionID string) (swarm.ExecutionFact, error) {
@@ -131,7 +145,7 @@ func (b *SwarmNativeBridge) Reconcile(ctx context.Context, operationID, sessionI
 	if err = swarmMatchLeasedNative(e, l); err != nil {
 		return swarm.ExecutionFact{}, err
 	}
-	return swarmNativeExecutionFact(e), nil
+	return swarmNativeExecutionFact(e)
 }
 
 func (b *SwarmNativeBridge) Stop(ctx context.Context, operationID, sessionID string) (swarm.ExecutionFact, error) {
@@ -158,5 +172,5 @@ func (b *SwarmNativeBridge) Stop(ctx context.Context, operationID, sessionID str
 			return swarm.ExecutionFact{}, err
 		}
 	}
-	return swarmNativeExecutionFact(e), nil
+	return swarmNativeExecutionFact(e)
 }

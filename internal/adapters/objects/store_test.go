@@ -35,11 +35,17 @@ func TestConcurrentPublishRestartAndCorruption(t *testing.T) {
 		}
 		digest = d
 	}
-	entries, _ := os.ReadDir(root)
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if len(entries) != 1 {
 		t.Fatalf("objects = %d", len(entries))
 	}
-	reopened, _ := New(root)
+	reopened, err := New(root)
+	if err != nil {
+		t.Fatal(err)
+	}
 	b, err := reopened.Read(context.Background(), digest)
 	if err != nil || string(b) != "原文" {
 		t.Fatalf("restart read: %s %v", b, err)
@@ -56,13 +62,19 @@ func TestConcurrentPublishRestartAndCorruption(t *testing.T) {
 }
 
 func TestCancelledPublication(t *testing.T) {
-	s, _ := New(t.TempDir())
+	s, err := New(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	if _, err := s.Publish(ctx, []byte("x")); err == nil {
 		t.Fatal("published cancelled write")
 	}
-	files, _ := os.ReadDir(s.root)
+	files, err := os.ReadDir(s.root)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if len(files) != 0 {
 		t.Fatal("left an object")
 	}

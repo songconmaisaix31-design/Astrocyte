@@ -44,3 +44,38 @@ func TestCompletionInterpretationRulesRetainUnknownModelVersion(t *testing.T) {
 		}
 	}
 }
+
+// 这些值是明确的校验函数参数，不声明产生了完成收据或原生轨迹。
+func TestCompletionSourceRulesKeepHumanAndVerifiedChannelsDistinct(t *testing.T) {
+	input := ExperienceCompletionEvidence{
+		SourceKind: ExperienceSourceRelayCompletion, EventID: "completion-rule-input", LocalProjectID: "project-rule-input",
+		OwnerProject: "owner-rule-input", Version: 1, OccurredAt: 1, ActorID: "human-rule-input", ActorKind: "human",
+		TaskID: "task-rule-input", Outcome: "success", OriginEventIDs: []string{}, Artifacts: []CompletionArtifactReference{},
+		CompletionChannel: "user_confirmed_complete", CompletionReceiptID: "transition-receipt-rule-input",
+	}
+	for _, scenario := range []struct {
+		name    string
+		channel string
+		receipt string
+		traces  []string
+		valid   bool
+	}{
+		{"human_confirmation_without_native_trace", "user_confirmed_complete", input.CompletionReceiptID, []string{}, true},
+		{"human_confirmation_with_native_trace", "user_confirmed_complete", input.CompletionReceiptID, []string{"native-event-rule-input"}, true},
+		{"verified_requires_native_trace", "verified_complete", input.CompletionReceiptID, []string{}, false},
+		{"verified_with_native_trace", "verified_complete", input.CompletionReceiptID, []string{"native-event-rule-input"}, true},
+		{"missing_channel", "", input.CompletionReceiptID, []string{"native-event-rule-input"}, false},
+		{"unknown_channel", "complete", input.CompletionReceiptID, []string{"native-event-rule-input"}, false},
+		{"missing_receipt", "user_confirmed_complete", "", []string{}, false},
+		{"empty_trace_reference", "user_confirmed_complete", input.CompletionReceiptID, []string{""}, false},
+	} {
+		t.Run(scenario.name, func(t *testing.T) {
+			source := input
+			source.CompletionChannel, source.CompletionReceiptID, source.OriginEventIDs = scenario.channel, scenario.receipt, scenario.traces
+			err := ValidateCompletionSource(source, input.LocalProjectID, input.EventID, input.OwnerProject)
+			if (err == nil) != scenario.valid {
+				t.Fatal("completion channel rule differs from the explicit expectation", err)
+			}
+		})
+	}
+}

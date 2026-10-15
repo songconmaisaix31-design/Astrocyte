@@ -1,5 +1,85 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 Swarm 页面组合与设计导航验证
+
+分支 `standards-frontend`，当前业务 SOURCE `ae2f56b257a9f6f880d1e96db26c6470f9966384` 已普通 push。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_630293cc6778`，沿现有 Codex `--yolo` 配置，模块公开核实模型为 `gpt-6.1-sol`。本阶段没有在 H 管理的 L1 服务新增登记，没有新建原生会话、发送模型输入或调用模型。
+
+按模块精确放行，逐段普通 cherry-pick `-x` UI SOURCE `64ab5ca`、`32adab9`、`033557f`、`614ebc7`，本树消费提交分别为 `ad42870`、`1781f7a`、`729ec95`、`b2bbe58`。各段目标文件消费前与父内容相容且无 WIP / staged，消费后完整文件 diff 为零；先核出第三段缺少的已提交测试前置，经准确放行补齐后继续，没有制造或处理冲突。页面逻辑归原 UI 负责人，F 仅修改 `web/e2e/preview-design.spec.ts` 的时间线验证。
+
+时间线验证读取实际 `/missions` HTTP 200 与空集合，在真实 SQLite 核对任务数量为零，再核对时间线明确空状态、零事件时间元素和零写入；原禁止虚构时间与 Codex 动态的断言保留。导航、三类空集合、实际权限拒绝与恢复的原断言全部保留，设计与导航两文件仍为 100 项。
+
+验证继续使用下节登记的 D 盘进程目录、Go 缓存和浏览器入口。以下记录均位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification`：
+
+| 本阶段命令 | 实际结果 | 记录 |
+| --- | --- | --- |
+| 在 web 执行 `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/web-dist-ui-fixed` | EXIT0，包含全局 `tsc -b`；保留 606.09 kB 产物提示 | `build-ui-fixed.log` |
+| 在 web 执行 `npm run lint` | EXIT0 | `lint-ui-fixed.log` |
+| 在根目录执行 `node scripts/generate-client.mjs --check` | EXIT0，准确生成契约与当前共享源相等；没有修改生成文件 | 实际命令输出 |
+| 在 web 执行 `npx vitest run src/components/displayContract.test.tsx src/pages/workspace/relayPresentation.test.ts src/pages/workspace/relayCommand.test.ts src/pages/workspace/relayFacts.test.tsx src/pages/workspace/relayDisplayContract.test.tsx` | 5 文件、37 PASS，EXIT0 | `display-vitest-ui-fixed.log` |
+| 在 web 执行 `npx playwright test e2e/preview-design.spec.ts e2e/navigation.spec.ts --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/design-navigation-ui-fixed-artifacts` | 两种窗口完整 100 PASS，11.9 分钟、EXIT0、零 skip、零重试，原超时保持 | `design-navigation-ui-fixed-playwright.log`、`design-navigation-ui-fixed-artifacts` |
+| 在 web 执行 `npx playwright test --list --reporter=list` | EXIT0；当前默认清单为 37 文件、320 项，仅收集 | `default-case-list-ui-fixed.log` |
+
+设计与导航 100 项通过不代表全部默认 E2E。前序 308 项清单和原完整 280 项首结果分别保留，当前完整 320 项尚未执行；真实 Relay 场景、来源输入和单人原生窗口等条件见下节。Context 的原预算前置失败由原 UI 负责人继续修复，本阶段没有重复该已知失败场景；正向 Context、真实 CLI / 模型及最终唯一 I 组合仍未完成。前序 Prepare 四项通过与真实 HTTP 17 项结果按各自精确源码登记，不与本阶段重复累加。
+
+## 前序：2026-10-16 Prepare 与真实共享客户端阶段
+
+当前 F Task `task_7cbe30017760` / Dispatch `ctx_630293cc6778`，分支 `standards-frontend`。本次沿既有 Codex `--yolo` 配置，模块公开确认实际模型为 `gpt-6.1-sol`；没有另派 Agent，没有新增原生登记、初始化、首次输入或模型调用。
+
+源码 SOURCE `e689e7f5410d977f8cb72df57efbfeb5f490c415` 已普通 push，提交原五件修改和两个真实 HTTP API 测试。前置消费提交 `375469b2fc0a029128c81b63350f3e5ed176d400` 只普通 cherry-pick 原 UI SOURCE `0661b49fd5b29cded5dbf15277fc5abafa20b8c2` 的八件 Swarm 页面文件；消费后八件完整 diff 为零，页面逻辑继续归原 UI 负责人。没有修改共享配置、依赖、schema 或其他负责人的工作树。
+
+后继组合 SOURCE `4e52a3ab9b8561e58d40719c98a64ab1d03d51f2` 已普通 push，按模块明确授权只 cherry-pick `-x` 原 B SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872`。四件为 `scripts/vite-server.mjs` 与 `tests/s1` 的三个生命周期测试文件，消费前与原 SOURCE 父版本相同且零 WIP / staged，消费后四件完整 diff 为零。初始化期间已到达的 HTTP 请求交给初始化完成后的真实 Vite，后续逻辑仍归 B；原 120 秒期限和零重试保持。
+
+Relay 权限页提供单独的 Prepare 操作，初始化与首次输入分别提交。Prepare 收据显示原身份和实际结果；Prepare 或 Dispatch 待定、交付未知、接受但带错误时，两项操作均禁止重发。浏览器持久锁按原任务保存，请求结果未知后，重新读取、关闭重开和刷新均不自动解除。新增两尺寸真实拒绝和离线验证仍保留原断言。
+
+Swarm 客户端测试使用本轨精确已跟踪的 `AGENTS.md`，通过生产资料导入、空间引用、Goal、Proposal、人类批准、Mission 和 WorkItem 接口建立实际记录，逐个 `event_id` 在真实 outbox 中定位，HTTP / SQLite 重启后完整核对固定版本。Context 测试保留实际未配置的 501、实际不存在的 404、权限拒绝 403、CSRF、命令身份、取消和服务断开；没有把未配置来源记为正向成功。显示测试仅验证明确参数，不产生来源或执行事实。
+
+本次进程使用 `GOMODCACHE=C:/Users/DW/go/pkg/mod`、`GOPROXY=off` 和获准共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`。全部新服务数据、构建输出、日志及 TEMP / TMP / GOTMPDIR 位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification`。浏览器使用发布负责人已归还的 `PLAYWRIGHT_BROWSERS_PATH=D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001`，没有移动或下载浏览器。
+
+以下命令在 `web` 执行，记录均位于上述独占 `.verification`：
+
+| 验证命令 | 实际结果 | 记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0，包含准确 Swarm 页面与当前 E2E 类型 | `typecheck-ui-source.log` |
+| `npm run lint` | EXIT0 | `lint-ui-source.log` |
+| `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/web-dist` | EXIT0，保留 594.17 kB 产物提示；新输出目录没有自动清理 | `build.log` |
+| `npx vitest run src/api/swarm.test.ts src/api/workspaceContext.test.ts src/api/relay.test.ts src/pages/workspace/relayPresentation.test.ts --maxWorkers=1` | 4 文件、17 PASS，85.26 秒、EXIT0；真实生产 Go / HTTP / SQLite | `safe-clients-real-http-current.log` |
+| `npx vitest run src/components/displayContract.test.tsx src/pages/workspace/relayPresentation.test.ts src/pages/workspace/relayCommand.test.ts src/pages/workspace/relayFacts.test.tsx src/pages/workspace/relayDisplayContract.test.tsx` | 5 文件、37 PASS，EXIT0；包含与前行重合的收据参数测试，不累加为独立总数 | `display-vitest.log` |
+| `npx tsc --ignoreConfig --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM --types vite/client --jsx react-jsx --skipLibCheck --allowJs src/api/swarm.test.ts src/api/workspaceContext.test.ts src/pages/workspace/relayIntentPanel.tsx e2e/relay-runtime.spec.ts` | EXIT0；原缺少 CSS 类型声明的检查命令首失败保留 | `focused-typecheck-vite-types.log`、`focused-typecheck.log` |
+| `npx playwright test e2e/relay-runtime.spec.ts --grep '真实空会话初始化权限拒绝\|真实网络断开的初始化未知锁' --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/prepare-artifacts` | EXIT1；原 `webServer` 120 秒准备超时，未进入四项测试，零项通过 | `prepare-playwright.log`、`astrocyte-dev-PamDCI` |
+| 同一 Prepare 命令在准确 B 修复组合上执行，输出改为 `prepare-helper-fixed-artifacts` | 两种窗口全部 4 PASS，1.0 分钟、EXIT0、零 skip；真实权限拒绝及离线未知锁，未启动原生会话 | `prepare-helper-fixed-playwright.log` |
+| `npx playwright test e2e/preview-design.spec.ts e2e/navigation.spec.ts --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/default-helper-fixed-artifacts` | 设计与导航两文件完整 100 项：92 PASS / 8 FAIL，6.0 分钟、EXIT1、零 skip；全部自然完成 | `default-helper-fixed-playwright.log`、`default-helper-fixed-artifacts` |
+| `npx playwright test --list --reporter=list` | EXIT0；仅收集当前默认 35 文件、308 项，没有执行来源、浏览器或模型动作 | `default-case-list.log` |
+
+首次默认 Playwright 准备期间，实际 Go 在 `00:44:02+08:00` 的 health 返回 200，Vite 已公告 `vite_listening` 和 `vite_ready`，随后仍未通过默认入口的 HTTP 就绪检查。完整 stdout / stderr 与独立 SQLite 保留；准确消费 B 修复后的 Prepare 四项已通过，没有重跑未消费修复的旧源码。
+
+设计与导航的八项失败均发生在页面断言。两种窗口各三项涉及 Swarm 的已有任务入口、任务 / 工作项 / 产物空集合及实际 403 逐视图传播，已交原 UI 负责人返修；各一项是时间线旧断言，需在准确 UI 修复提交消费后迁移到真实事件读取与空集合断言。当前公开 `SwarmMissionDetail.timeline` 已支持实际保存的事件，页面不能用失实的未接入说明满足旧断言。无虚构事件、unknown、错误恢复和空状态覆盖继续保留，拓扑数据缺口单独处理。
+
+两文件 100 项结果不能代表全部默认 E2E。原完整 280 项首结果 `203 PASS / 41 FAIL / 32 既有 SKIP / 4 NOT_RUN` 保留。当前默认已增至 308 项，完整运行仍需获准的 Relay 实际 URL / GetEvent / 各场景任务身份与单人执行窗口、真实公开论文输入、当前 progress / video / cognition 来源，以及受控浏览器和元数据目录许可。没有增加 skip，没有隐式启动 CLI 或模型，没有重发已经成功的任务；真实 CLI / 模型正向、当前全部默认 E2E 和最终组合仍未完成。
+
+## 2026-10-16 恢复后的准确生成契约
+
+F 原 Task `task_7cbe30017760` / Dispatch `ctx_5888aa5adf82`，工作树与分支保持 `standards-frontend`。Orca 公开观测客户端 Codex、模型 `gpt-6.1-sol`，终端显示 xhigh fast，沿既有 `--yolo` 配置；本阶段未启动额外 Agent 或模型请求。
+
+原普通合并 SOURCE `c1d49b18ea14c3b7106f7f5c8743bbeba547f444` 已 push，双亲为 `02a7976d997ef14ac298b2e240da43a9bb423c93` 与 H REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`。原 B 归还的单件 `cmd/server/config.go` index blob 为 `5fa5bf8ead480753c9b9eaa82bdfd31833e0ef8c`，工作文件与 index 相等、未合并项零，CHERRY_PICK / REBASE 均不存在后，由 F 唯一完成原 merge。其他暂存内容和前端 API 草稿完整保留。
+
+窄生成 SOURCE `cdf0b5eb4c2b3a1c7b76a335eb01d02dd7f6fee6` 已普通 push，仅包含 `web/src/api/schema.d.ts`。按当前模块正式授权运行仓库既有 `node scripts/generate-client.mjs`，从已合入的准确 OpenAPI 生成安全 Context、Swarm 及 Relay Prepare 类型；未手写生成内容，生成文件零 WIP，供原产品 UI 负责人消费。
+
+共享客户端阶段 SOURCE `4192c26bd77ec70504f286f8ddb75a145779ab58` 已普通 push，仅包含 `api/swarm.ts`、`api/workspaceContext.ts` 和 `api/relay.ts`。`swarmApi` 提供真实 Mission / WorkItem / timeline / Artifact 读取、人工创建、暂停、取消、恢复、采用与退回；`workspaceContextApi` 提供安全固定 packet 读取 / 构建及原控制器 session binding；`relayApi.prepare` 单独调用准确 Prepare 路径。命令沿既有人工会话传递 CSRF、固定请求身份和版本，Context / Swarm 支持 AbortSignal；网页不切换 Agent 身份。
+
+| 本阶段验证 | 实际结果 |
+| --- | --- |
+| `node scripts/generate-client.mjs --check` | EXIT0，生成内容与已提交共享源完全相等 |
+| 在 web 执行 `npx tsc --ignoreConfig --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM --skipLibCheck src/api/schema.d.ts` | EXIT0；日志 `.verification/f-safe-schema-typecheck.log` |
+| 相同 strict tsc 参数检查 `src/api/swarm.ts src/api/workspaceContext.ts src/api/relay.ts`，随后对三文件执行 `npx eslint` | 均 EXIT0；日志 `.verification/f-safe-client-source-typecheck.log`、`f-safe-client-source-lint.log`；限定共享客户端阶段 |
+| `git diff --check` | EXIT0 |
+| 包含当前 API / Prepare 草稿的全局 `npm run typecheck` | FAIL，原 SwarmPage 仍读取旧 Mission 字段，已交原页面负责人；日志 `.verification/f-safe-shared-typecheck-first.log` |
+| 当前草稿的全域 `npm run lint` 和共享 API / HTTP 测试 / Relay E2E 显式 tsc | EXIT0，限定当前草稿，不能计为未提交接口的实际运行验收；日志 `.verification/f-safe-shared-lint-first.log`、`f-safe-shared-focused-typecheck-fixed.log` |
+| 新 shared API / Prepare 的真实 HTTP、SQLite、Playwright 与正向 CLI | NOT_RUN，等待 B 准确 D 盘 helper、浏览器缓存迁移和后续准确组合；未启动新登记、原生控制器或模型输入 |
+
+相关真实服务测试、Relay Prepare UI 及其权限拒绝 / 离线锁测试继续保留为原负责人 WIP，未包含在以上阶段 SOURCE。全局 typecheck 的旧 Swarm 页面由原产品 UI 负责人消费准确契约后返修；实际 HTTP 和浏览器尚未运行。全部旧默认首失败、未执行项和原生限制仍保留；阶段检查不改变其状态。后续验证进程的 TEMP / TMP 显式使用获准 D 盘 F 独占目录，浏览器迁移完成前不新启动 Playwright。
+
+## 前序工程与验收
+
 分支 `standards-frontend`，当前本域 SOURCE `d94f6ef2d3188c02e82ccf9cee529833e9f89df5`，helper SOURCE `f3f1fbd8670bd28bb7a78b47c58489469a2ed321`，S4 客户端 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f`，QueryState SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3`，前序 helper / Grant 组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 恢复 Dispatch `ctx_37e5eab0d417` 后，公开 Orca `worker-show` 实核当前模型为 `gpt-6.1-sol`，沿原 Task 继续，原生登记、初始化、输入和模型调用均为零。模块 `1437afc` 明确许可仅消费 `tests/s1/server.mjs`，原运行及其本树子进程均已结束后，F 使用文件编辑工具移入 B `01d28a54bb221e59cf262cbf9941fa418f6e937c` 同路径完整内容。全文件 diff 为零，Node syntax 和限定差异检查通过；后续 helper 逻辑归还 B。当前 SOURCE 已交 M-product / M-release，供唯一集成人员普通消费，不包含未交付的安全 Context 或原生契约。

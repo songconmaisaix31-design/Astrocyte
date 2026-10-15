@@ -1,4 +1,4 @@
-// Package objects stores immutable, content-addressed originals and outputs.
+// objects 保存不可变的原件及输出，沿用内容寻址对象目录。
 package objects
 
 import (
@@ -16,7 +16,7 @@ import (
 
 var digestPattern = regexp.MustCompile(`^[a-f0-9]{64}$`)
 
-// Store owns an application-data objects directory, outside the worktree.
+// Store 管理应用数据中的对象目录。
 type Store struct{ root string }
 
 func New(root string) (*Store, error) {
@@ -29,14 +29,13 @@ func New(root string) (*Store, error) {
 	return &Store{root: root}, nil
 }
 
-// Publish syncs and publishes a complete object without replacing an existing
-// digest. A database transaction can reference the returned digest afterwards.
-func (s *Store) Publish(ctx context.Context, content []byte) (string, error) {
+// Publish 完整写入并同步对象；后续数据库事务可以引用返回的对象。
+func (s *Store) Publish(ctx context.Context, content []byte) (digest string, resultErr error) {
 	if err := ctx.Err(); err != nil {
 		return "", err
 	}
 	sum := sha256.Sum256(content)
-	digest := hex.EncodeToString(sum[:])
+	digest = hex.EncodeToString(sum[:])
 	dest := filepath.Join(s.root, digest)
 	if _, err := os.Lstat(dest); err == nil {
 		if err := s.verify(digest); err != nil {
@@ -50,22 +49,28 @@ func (s *Store) Publish(ctx context.Context, content []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer os.Remove(tmp.Name())
-	defer tmp.Close()
+	opened := true
+	defer func() {
+		var closeErr error
+		if opened {
+			closeErr = tmp.Close()
+		}
+		resultErr = errors.Join(resultErr, closeErr, os.Remove(tmp.Name()))
+	}()
 	if _, err = tmp.Write(content); err != nil {
 		return "", err
 	}
 	if err = tmp.Sync(); err != nil {
 		return "", err
 	}
+	opened = false
 	if err = tmp.Close(); err != nil {
 		return "", err
 	}
 	if err = ctx.Err(); err != nil {
 		return "", err
 	}
-	// Linking is an atomic create-if-absent on both supported platforms. Rename
-	// would replace an existing file on Unix and violate immutable publication.
+	// 硬链接在两个平台均以原子方式创建新对象，保留已有对象。
 	if err = os.Link(tmp.Name(), dest); err != nil {
 		if !os.IsExist(err) {
 			return "", fmt.Errorf("publish object: %w", err)
@@ -79,7 +84,7 @@ func (s *Store) Publish(ctx context.Context, content []byte) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		defer dir.Close()
+		defer func() { resultErr = errors.Join(resultErr, dir.Close()) }()
 		if err := dir.Sync(); err != nil {
 			return "", err
 		}
@@ -100,7 +105,7 @@ func (s *Store) Read(ctx context.Context, digest string) ([]byte, error) {
 	return os.ReadFile(filepath.Join(s.root, digest))
 }
 
-func (s *Store) verify(digest string) error {
+func (s *Store) verify(digest string) (resultErr error) {
 	p := filepath.Join(s.root, digest)
 	info, err := os.Lstat(p)
 	if err != nil {
@@ -113,7 +118,7 @@ func (s *Store) verify(digest string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { resultErr = errors.Join(resultErr, f.Close()) }()
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return err

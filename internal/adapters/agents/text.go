@@ -97,15 +97,7 @@ func (r *Registry) ProcessSelectedText(ctx context.Context, input domain.TextReq
 	}
 	var source *selectedTextSource
 	defer func() {
-		if source != nil {
-			if err := source.retainOriginal(); err != nil {
-				resultErr = errors.Join(resultErr, nativeError(apierrors.EvidenceMissing, "selected-text original source retention failed"))
-			}
-		}
-		obs, err := n.Stop(context.Background(), s)
-		if err != nil || !obs.StopConfirmed {
-			resultErr = errors.Join(resultErr, nativeError(apierrors.DeliveryUnknown, "selected-text owned process stop remains unconfirmed"))
-		}
+		resultErr = errors.Join(resultErr, n.finishSelectedText(s, source))
 	}()
 	p, err := n.get(s)
 	if err != nil {

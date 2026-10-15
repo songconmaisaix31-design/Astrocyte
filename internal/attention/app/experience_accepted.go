@@ -40,6 +40,9 @@ type ExperienceCompletionEvidence struct {
 	Outcome        string                        `json:"outcome"`
 	OriginEventIDs []string                      `json:"origin_event_ids"`
 	Artifacts      []CompletionArtifactReference `json:"artifacts"`
+
+	CompletionChannel   string `json:"completion_channel,omitempty"`
+	CompletionReceiptID string `json:"completion_receipt_id,omitempty"`
 }
 
 type ExperienceCompletionReader interface {
@@ -111,7 +114,8 @@ func NewAcceptedExperienceService(governance *ExperienceService, repository Acce
 	return &AcceptedExperienceService{governance: governance, repository: repository, sources: sources, interpreter: interpreter}
 }
 
-func validateCompletionSource(source ExperienceCompletionEvidence, projectID, eventID, owner string) error {
+// 服务与持久化读取共用同一来源约束，缺失通道的旧记录不能推断为 verified。
+func ValidateCompletionSource(source ExperienceCompletionEvidence, projectID, eventID, owner string) error {
 	if source.EventID != eventID || source.LocalProjectID != projectID || source.OwnerProject != owner || source.EventID == "" || source.LocalProjectID == "" || source.OwnerProject == "" || source.Version < 1 || source.OccurredAt < 1 || source.ActorID == "" || source.TaskID == "" {
 		return serviceError(apierrors.EvidenceMissing, "Completion lacks an actual fixed receipt and registered project mapping", "inspect_completion_source")
 	}
@@ -127,7 +131,11 @@ func validateCompletionSource(source ExperienceCompletionEvidence, projectID, ev
 		if source.ActorKind != "human" && source.ActorKind != "agent" {
 			return serviceError(apierrors.EvidenceMissing, "Relay completion has no actual actor", "inspect_original_completion")
 		}
-		if len(source.OriginEventIDs) == 0 {
+		if strings.TrimSpace(source.CompletionReceiptID) == "" || !slices.Contains([]string{"verified_complete", "user_confirmed_complete"}, source.CompletionChannel) {
+			return serviceError(apierrors.EvidenceMissing, "Relay completion lacks its actual channel and accepted transition receipt", "inspect_original_completion")
+		}
+		// 人工确认保持独立来源；只有 verified 通道要求原生输出轨迹。
+		if source.CompletionChannel == "verified_complete" && len(source.OriginEventIDs) == 0 {
 			return serviceError(apierrors.EvidenceMissing, "Relay completion lacks original trace event references", "inspect_original_completion")
 		}
 	default:
@@ -191,7 +199,7 @@ func (s *AcceptedExperienceService) CaptureCompletion(ctx context.Context, p Pri
 	if err != nil {
 		return result, err
 	}
-	if err := validateCompletionSource(source, localProjectID, eventID, owner); err != nil {
+	if err := ValidateCompletionSource(source, localProjectID, eventID, owner); err != nil {
 		return result, err
 	}
 	digest, err := semanticDigest(source)

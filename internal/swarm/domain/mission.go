@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -228,13 +230,23 @@ func (m *Mission) ResumeAfterReconciliation(expectedVersion int, reason string, 
 }
 
 func ValidateWritePath(p string) error {
-	if p == "" || strings.ContainsAny(p, "\\:*?[]\x00") || strings.HasPrefix(p, "/") || path.Clean(p) != p || p == ".." || strings.HasPrefix(p, "../") {
+	if p == "" || strings.ContainsAny(p, "\\:*?[]\x00") || strings.HasPrefix(p, "/") || path.Clean(p) != p || p == ".." || strings.HasPrefix(p, "../") || !filepath.IsLocal(filepath.FromSlash(p)) {
 		return Failure("validation_failed", fmt.Sprintf("write path %q must be a normalized relative file or directory", p))
+	}
+	if runtime.GOOS == "windows" && p != "." {
+		for _, part := range strings.Split(p, "/") {
+			if strings.TrimRight(part, ". ") != part {
+				return Failure("validation_failed", "Windows write scope cannot contain a trailing dot or space alias")
+			}
+		}
 	}
 	return nil
 }
 
 func ContainsPath(parent, child string) bool {
+	if runtime.GOOS == "windows" {
+		parent, child = strings.ToLower(parent), strings.ToLower(child)
+	}
 	return parent == "." || parent == child || strings.HasPrefix(child, parent+"/")
 }
 func Overlaps(a, b []string) bool {
