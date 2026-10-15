@@ -19,6 +19,7 @@ $SourceURL = "https://github.com/NandhaKishorM/laya/blob/$SourceRevision/laya-ts
 $Plan = [ordered]@{
     phase = $Phase; model = 'jev-1.13.0'; endpoint = 'https://api.typesafe.ai/v1/systemone'
     source = $SourceURL; language = 'en'; question_types = @('choice','score','truth')
+    manual_build_tag = 'astrocyte_jev_live'
     planned_provider_requests = 3; request_timeout_ms = 60000; max_input_bytes = 131072
     max_input_tokens = 8192; max_output_tokens = 256; automatic_retries = 0
     evidence_root = $EvidenceRoot
@@ -91,7 +92,7 @@ $ActualRevision = Invoke-JevTaskProcess -Program 'git.exe' -Arguments 'rev-parse
 if ($ActualRevision.Trim() -ne $SourceRevision) { throw 'The public source revision differs from the fixed task' }
 $null = Invoke-JevTaskProcess -Program 'git.exe' -Arguments "diff --quiet $SourceRevision -- laya-ts/README.md" -WorkingDirectory $SourceRoot -Name 'public-source-content'
 $TestProgram = Join-Path $EvidenceRoot 'jev-public.test.exe'
-$null = Invoke-JevTaskProcess -Program 'go.exe' -Arguments "test -c -trimpath -mod=readonly -o `"$TestProgram`" ./internal/adapters/judgment" -WorkingDirectory $RepositoryRoot -Name 'compile'
+$null = Invoke-JevTaskProcess -Program 'go.exe' -Arguments "test -c -tags=astrocyte_jev_live -trimpath -mod=readonly -o `"$TestProgram`" ./internal/adapters/judgment" -WorkingDirectory $RepositoryRoot -Name 'compile'
 if ($Phase -eq 'Prepare') {
     [ordered]@{ phase = 'prepared'; provider_requests = 0; source_revision = $SourceRevision; test_program = $TestProgram; receipts = $ReceiptRoot } | ConvertTo-Json
     return

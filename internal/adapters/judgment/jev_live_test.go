@@ -1,3 +1,5 @@
+//go:build astrocyte_jev_live
+
 package judgmentadapter
 
 import (
@@ -77,7 +79,7 @@ func (r *actualJevTransport) RoundTrip(request *http.Request) (*http.Response, e
 
 func TestJevActualPinnedPublicThreeTypes(t *testing.T) {
 	if os.Getenv("ASTROCYTE_S5_JEV_LIVE") != "1" {
-		t.Skip("requires explicit authorization for the fixed public Jev task")
+		t.Fatal("manual Jev execution requires explicit authorization; no provider request was sent")
 	}
 	key := os.Getenv("TYPESAFE_API_KEY")
 	if key == "" {
