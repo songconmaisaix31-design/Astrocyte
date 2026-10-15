@@ -657,3 +657,11 @@ SOURCE `82426bab2c405e1a1a2184801a60fa4e98985c2b` 已普通 push，仅更改进�
 `ASTROCYTE_TEST_PUBLIC_PROGRESS_DB` 必须明确选择本树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 的绝对路径。`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestProgressStorageRoundTripAndCAS$' -v -count=1` 第二次 EXIT 0，包 2.699s，`.verification/progress-storage-actual-source-second.log`；第一次 Windows file URI authority 错误保留于 `progress-storage-actual-source-first.log`。目标包 vet、Go 格式和 diff 检查 EXIT 0，日志 `progress-storage-actual-source-vet-first.log`。本 SOURCE 的生产部分只有注释，最近完整 build 记录仍为上一节 SOURCE。
 
 该结果只覆盖历史持久化和人工 CAS。旧实际 `native_id`、模型元数据及原 accepted 回执保持原来源，旧原件完整度 / EffectiveToolSet 继续 unknown，没有向新 Registry 登记原控制器、创建新推断、发送模型输入或宣称当前原生来源已验收。正式库、共享产品库及实验原件没有读取或修改。需要完整默认检查的负责人已收到两个实际公开输入参数及本机准确指针，缺少前置时直接失败。
+
+## Windows junction 的实际命令参数
+
+SOURCE `d8067aae16acdec89e2bb8cb91ec153f45bf32f4` 已普通 push，只修改 `native_path_windows_test.go` 的 junction helper 和新增目录检查。`mklink /J` 参数经过标准 `filepath.FromSlash` 转为 Windows 路径，`cmd.exe /d` 关闭宿主 AutoRun。helper 继续核实际目标和 link 的文件身份；没有扩大 OS 权限。
+
+D 盘 TEMP 下 `go test -mod=readonly -p=2 ./internal/adapters/events -run '^TestReplayJunctionUsesActualWindowsPaths$' -v -count=1` EXIT 0，包 1.641s，`.verification/windows-junction-actual-first.log`；实际空格目录与明确正斜杠输入创建 junction 后 `os.SameFile` 核实通过。目标包 vet、Go 格式和 diff 检查均通过，`.verification/windows-junction-vet-first.log`。
+
+该检查没有创建原生会话或原生格式记录。原 `replayFixture` 的替代 Codex / Claude 文件仍待实际获准公开项目原件替换，本次没有运行该路径、删除其断言、增加 skip 或将目录检查记作实际原生回放通过。原已知 mklink 参数失败与真实原件缺口分别保留。
