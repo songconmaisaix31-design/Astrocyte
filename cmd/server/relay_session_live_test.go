@@ -40,8 +40,21 @@ func TestRelaySessionActualService(t *testing.T) {
 		t.Skip("NOT_RUN: explicit actual-service directory required")
 	}
 	parent := filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.2-access", "verification")
+	accessMode := os.Getenv("ASTROCYTE_L1_CONFIGURED_ACCESS")
+	if accessMode != "" && accessMode != "0" && accessMode != "1" {
+		t.Fatal("实际服务接入模式必须明确")
+	}
+	configuredAccess := accessMode == "1"
 	canonical, err := workbenchCanonical(selected)
-	if err != nil || !filepath.IsAbs(selected) || !relayInside(parent, canonical) || canonical == parent {
+	if err != nil || !filepath.IsAbs(selected) {
+		t.Fatal("实际服务目录不在指定本机范围")
+	}
+	if configuredAccess {
+		configured, err := relayRoot()
+		if err != nil || canonical != configured || !strings.EqualFold(filepath.Clean(os.Getenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT")), filepath.Join(configured, "verification", "public-project")) || os.Getenv("ASTROCYTE_L1_PUBLIC_GIT_COMMIT") != "da3bdddb085808863090a05f60cc1c64415039cf" {
+			t.Fatal("配置入口必须保持本次明确接入根和原批准目标")
+		}
+	} else if !relayInside(parent, canonical) || canonical == parent {
 		t.Fatal("实际服务目录不在指定本机范围")
 	}
 	if err := os.MkdirAll(canonical, 0700); err != nil {
@@ -49,10 +62,12 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	evidence := os.Getenv("ASTROCYTE_L1_EVIDENCE_DIR")
 	expectedEvidence, err := filepath.Abs(filepath.Join("..", "..", "dist", "l1-live"))
-	if err != nil || !relayInside(expectedEvidence, evidence) {
-		t.Fatal("实际验证中间目录必须使用当前 H 工作目录")
+	if err != nil || !configuredAccess && !relayInside(expectedEvidence, evidence) || configuredAccess && !strings.EqualFold(filepath.Clean(evidence), filepath.Join(canonical, "verification", "h-evidence")) {
+		t.Fatal("实际验证中间目录必须保持本次明确 H 范围")
 	}
-	t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
+	if !configuredAccess {
+		t.Setenv("LOCALAPPDATA", filepath.Join(canonical, "local"))
+	}
 	port := 17342
 	if raw := os.Getenv("ASTROCYTE_L1_API_PORT"); raw != "" {
 		port, err = strconv.Atoi(raw)
@@ -274,6 +289,15 @@ func TestRelaySessionActualService(t *testing.T) {
 			}
 			_, err := os.Stat(filepath.Join(evidence, "shutdown"))
 			if err == nil {
+				if os.Getenv("ASTROCYTE_L1_EXPECT_EMPTY") == "1" {
+					tasks, taskErr := services.Relay.ListTasks(ctx, domain.Caller{Kind: "human", ID: "local-human"})
+					agents, agentErr := services.Relay.ListAgents(ctx, domain.Caller{Kind: "human", ID: "local-human"})
+					var nativeSessions int
+					if taskErr != nil || agentErr != nil || len(tasks) != 0 || len(agents) != 0 || db.Conn().QueryRowContext(ctx, "SELECT count(*) FROM local_agent_sessions").Scan(&nativeSessions) != nil || nativeSessions != 0 {
+						t.Fatal("无原生启动检查发现任务、登记或原生会话")
+					}
+					writeActualJSON(t, filepath.Join(evidence, "empty-startup-derived.json"), map[string]any{"tasks": len(tasks), "registered_agents": len(agents), "native_sessions": nativeSessions, "native_initializations": 0, "model_inputs": 0})
+				}
 				return
 			}
 			if !errors.Is(err, os.ErrNotExist) {

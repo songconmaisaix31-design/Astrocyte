@@ -85,12 +85,20 @@ func (r *relayGoalVerificationReader) ReadRelayGoalVerification(ctx context.Cont
 		if err != nil || output.Origin != evidence.OutputOrigin || !bytes.Equal(output.Text, evidence.Output) {
 			return denied()
 		}
-		projection := output.Projection
-		id, err := r.admitted.ReadCommittedRelayGoalOutput(ctx, output.Origin, identity.SessionID, identity.ProjectID, workbench.Event{ID: projection.ID, Kind: projection.Kind, Topic: projection.Topic, Tokens: projection.Tokens, Scope: projection.Scope, TS: projection.TS})
+		id, err := r.admitted.ReadCommittedRelayGoalOutput(ctx, output.Origin, identity.SessionID, identity.ProjectID, relayGoalProjection(output.Projection))
 		if err != nil || id != evidence.OutputEventID {
 			return denied()
 		}
 		return domain.RelayGoalVerification{EvidenceID: evidenceID, TaskID: taskID, WorktreeID: identity.WorktreeID, TerminalID: identity.TerminalID, ControllerID: identity.ControllerID, StartupOperationID: identity.StartupOperationID, SessionID: identity.SessionID, NativeID: identity.NativeID, InputOperationID: identity.InputOperationID, TurnID: identity.TurnID, OutputEventIDs: []string{id}, CheckEvidenceIDs: []string{evidenceID}, PassedAt: evidence.PassedAt}, nil
 	}
 	return denied()
+}
+
+func relayGoalProjection(p events.RelaySessionProjection) workbench.Event {
+	var tokens *int64
+	if p.Tokens != nil {
+		value := int64(*p.Tokens)
+		tokens = &value
+	}
+	return workbench.Event{ID: p.ID, Kind: p.Kind, Topic: p.Topic, Tokens: tokens, Scope: p.Scope, TS: p.TS}
 }

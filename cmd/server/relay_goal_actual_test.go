@@ -18,7 +18,6 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
-	workbench "github.com/songconmaisaix31-design/Astrocyte/internal/workbench/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -46,7 +45,7 @@ func TestRelayGoalActualOwnedOutputAndHostChecks(t *testing.T) {
 	readActualJSON(t, filepath.Join(evidenceDir, "service-private.json"), &locator)
 	private.AppRoot, private.DBPath, private.SourceRoot = locator.AppRoot, locator.DBPath, locator.SourceRoot
 	root, err := relayRoot()
-	if err != nil || private.AppRoot != root || private.DBPath != filepath.Join(root, "app-state", "state.sqlite") || private.SourceRoot != os.Getenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT") {
+	if err != nil || private.AppRoot != root || private.DBPath != filepath.Join(root, "app-state", "state.sqlite") || !strings.EqualFold(filepath.Clean(private.SourceRoot), filepath.Clean(os.Getenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT"))) {
 		t.Fatal("实际服务记录与本次明确配置不符")
 	}
 	db, err := sqlite.Open(private.DBPath)
@@ -98,8 +97,7 @@ func TestRelayGoalActualOwnedOutputAndHostChecks(t *testing.T) {
 	if err != nil {
 		t.Fatal("本次原生输出来源拒绝；原件和首错误保留")
 	}
-	p := output.Projection
-	outputID, err := sqlite.NewAccessSessionReader(db).ReadCommittedRelayGoalOutput(ctx, output.Origin, identity.SessionID, identity.ProjectID, workbench.Event{ID: p.ID, Kind: p.Kind, Topic: p.Topic, Tokens: p.Tokens, Scope: p.Scope, TS: p.TS})
+	outputID, err := sqlite.NewAccessSessionReader(db).ReadCommittedRelayGoalOutput(ctx, output.Origin, identity.SessionID, identity.ProjectID, relayGoalProjection(output.Projection))
 	if err != nil {
 		t.Fatal("本次输出尚无逐项核实的实际 SQL event_id")
 	}
