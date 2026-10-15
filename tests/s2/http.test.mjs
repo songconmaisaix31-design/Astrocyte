@@ -95,9 +95,28 @@ test('actual production HTTP approval, revision, idempotency, revoke and process
     assert.equal(JSON.parse(events[0].payload).grant_id, grant.id);
     assert.equal(application.query('SELECT count(*) AS n FROM local_agent_sessions')[0].n, 0);
     assert.equal(application.query('SELECT count(*) AS n FROM swarm_missions')[0].n, 0);
+    const goalKey = randomUUID();
+    const goalUpdate = { expected_version: goal.revision, goal: { ...goal, title: 'Review current public approval and fixed goal history', priority: 2 } };
+    const updatedGoal = (await api.write(`/goals/${goal.id}`, goalUpdate, { method: 'PUT', key: goalKey })).goal;
+    assert.equal(updatedGoal.revision, goal.revision + 1);
+    assert.deepEqual((await api.write(`/goals/${goal.id}`, goalUpdate, { method: 'PUT', key: goalKey })).goal, updatedGoal);
+    assert.deepEqual((await api.get(`/goals/${goal.id}?revision=${goal.revision}`)).goal, goal);
+    assert.deepEqual((await api.get(`/goals/${goal.id}`)).goal, updatedGoal);
+    const staleGoal = await api.request(`/goals/${goal.id}`, { method: 'PUT', body: { schema_version: 1, request_id: randomUUID(), ...goalUpdate } });
+    assert.equal(staleGoal.status, 409);
+    assert.equal(staleGoal.data.error.code, 'version_conflict');
+    const agentGoalResponse = await fetch(`${application.apiURL}/api/v1/goals/${goal.id}`, {
+      method: 'PUT', headers: { Authorization: `Bearer ${issued.credential.token}`, 'Content-Type': 'application/json', 'Idempotency-Key': randomUUID() },
+      body: JSON.stringify({ schema_version: 1, request_id: randomUUID(), expected_version: updatedGoal.revision, goal: { ...updatedGoal, title: 'Request target change without human authorization' } }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    assert.equal(agentGoalResponse.status, 403);
+    assert.equal(application.query('SELECT count(*) AS n FROM workspace_goal_revisions WHERE id=?', goal.id)[0].n, 2);
     await application.restart();
     api = await humanAPI(application.apiURL);
     assert.deepEqual((await api.get(`/approvals/${grant.id}`)).approval, grant);
+    assert.deepEqual((await api.get(`/goals/${goal.id}?revision=${goal.revision}`)).goal, goal);
+    assert.deepEqual((await api.get(`/goals/${goal.id}`)).goal, updatedGoal);
     assert.equal((await api.get(`/proposals/${proposal.id}?revision=1`)).proposal.content.goal.revision, goal.revision);
     const revoked = await api.write(`/approvals/${grant.id}/revoke`, { expected_version: grant.epoch, reason: 'End actual public HTTP validation' });
     assert.equal(revoked.approval.status, 'revoked');

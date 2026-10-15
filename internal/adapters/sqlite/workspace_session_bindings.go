@@ -9,7 +9,9 @@ import (
 
 type storedSessionBinding struct {
 	domain.SessionBinding
-	PrivateNativeSessionID string `json:"private_native_session_id"`
+	PrivateNativeSessionID    string `json:"private_native_session_id"`
+	PrivateControllerID       string `json:"private_controller_id"`
+	PrivateStartupOperationID string `json:"private_startup_operation_id"`
 }
 
 func (t *workspaceTransaction) LoadNativeSession(id string) (s domain.NativeSession, err error) {
@@ -22,6 +24,8 @@ func (t *workspaceTransaction) LoadSessionBinding(id string) (b domain.SessionBi
 	err = t.read("SELECT data FROM workspace_session_bindings WHERE id=?", "session binding", id, &stored, id)
 	b = stored.SessionBinding
 	b.NativeSessionID = stored.PrivateNativeSessionID
+	b.ControllerID = stored.PrivateControllerID
+	b.StartupOperationID = stored.PrivateStartupOperationID
 	return
 }
 
@@ -29,7 +33,7 @@ func (t *workspaceTransaction) SaveSessionBinding(b domain.SessionBinding, expec
 	if b.Version != expected+1 {
 		return conflict("binding version must advance once")
 	}
-	data, err := json.Marshal(storedSessionBinding{SessionBinding: b, PrivateNativeSessionID: b.NativeSessionID})
+	data, err := json.Marshal(storedSessionBinding{SessionBinding: b, PrivateNativeSessionID: b.NativeSessionID, PrivateControllerID: b.ControllerID, PrivateStartupOperationID: b.StartupOperationID})
 	if err != nil {
 		return err
 	}
