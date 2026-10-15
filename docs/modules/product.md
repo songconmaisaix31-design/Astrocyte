@@ -64,6 +64,18 @@ UI 本轮构建通过；新 E2E 首轮开发服务超 120 秒，尚无十二项�
 
 根 `msg_5691824b3258` 明确 R 先交同 controller 的空 Message 初始化→首输入生产端口以解除 H/F Relay/Today 等待，再继续 Interpreter。正式首输入前由原 S3 核同一 Median 四文件项目真实 remote、官方 `visibility=public` 与 `da3bdddb085808863090a05f60cc1c64415039cf` 基线；若尚只有本地样例，原 S3 获准沿原历史普通公开仅固定任务代码。模块已交 S3 和 M-relay 核同一实际 Root/授权/Git 身份，不另建竞争项目或提前实现目标。
 
+### 11:09 H 三依赖冲突的原 B 临时返修计划
+
+H 当前 `ctx_e7abbaf902da` 本人 `msg_f70eb2aa6b3e` 请求原 B 处理 `works-relay-http` 中窄消费 `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646` 的三依赖冲突。模块独立核 `CHERRY_PICK_HEAD` 同值，未合并项恰为 `dependencies.lock.json`、`go.mod`、`go.sum`。H 已明确停写三路径；模块 `msg_e075aa987576` 要求在临时处理期间保留原队列和全部 WIP，不执行 commit / cherry-pick continue / abort / reset。原 B 当前安全检查点 ACK 和本计划普通 push 完成前，尚未授予跨树写入。
+
+只由原 B `ctx_1fd66a8adc28` 临时编辑并 stage 这三件，保 H 当前依赖与准确新 SDK/CodeGraph 条目，不修改 H 其他路径，不操作 cherry-pick 生命周期。B 在当前真实检查安全节点确认后接入；完成给 H/M-relay/本模块明确停止写入归还、实际解析/依赖与 diff 检查。模块独核三件冲突清除后交原 H 接续原窄消费及五项 S4 队列，领域错误交原 owner，不由管理人员改业务。
+
+S3 SOURCE `10fa36cdd68b3247a70da9230453b74c0f5a04fa` / REPORT `58f847cac85a05e794d7ad1d19198712a96f256a` 已普通 push，模块独立核远端 REPORT 一致、工作区 clean，并审阅 Recover 版本/终态保护及取消对账回执改动。Domain/App、真实 S2 两连接链、六 SQLite/Git 组件、实际 HTTP、vet/build/33 包架构检查均为原 owner 实测通过；同键异输入首 RED 保留。完整原生两 Agent 和后任务引用仍 NOT_RUN。
+
+B SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push并独立核远端一致，独立 REPORT 待交。当前采用经验在既有 `attention_receipts` 固定 owner/event→operation，重入 `ResumeOnly` 对账同一身份，要求 Interpreter 返回匹配 OperationID；候选及来源同事务保存，始终 quarantine。模块已审阅精确实现，真实 SQLite 事务、编译/vet/33 包架构和 Node 组件为 B 报告通过；完整来源、模型、人工批准与第二任务仍 NOT_RUN。
+
+S2 报告 Context/固定 Goal/对象不变/当前 settings_revision 拒绝实际 5.029 秒通过，准确 SOURCE 与生产 HTTP 回归待交。T 已按模块要求明确拆成原官方完整 `TestActualAdmissionServiceAndDraftLifecycle` 和新固定 Git/manual 完整 `TestActualPublicGitAdmissionServiceAndDraftLifecycle`，共享全部生命周期断言；旧名 manual 运行成功保留，新测试名准确源码的结果待交，官方 429 不改为成功。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
