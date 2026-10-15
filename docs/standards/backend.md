@@ -428,7 +428,7 @@ Vite 使用现有实际依赖、原配置和 middlewareMode，外部实际 HTTP 
 
 按本轮 I 新 STOP、模块 00:44 准确范围与 B 新安全 ACK，仅编辑并 stage I 树 `dependencies.lock.json`、`go.sum`。保留完整 S4 / MCP、S5 / JSON-RPC 依赖，两件相对 HEAD 完整 diff 为零，working / cached 限定 diff 检查 EXIT 0；stage blob 仍为 `64c1432f721a6371a5c8e4badce719cd1bbbbd92`、`def74ba382fec897f8f9bc9a0d40f5bb6e1bb88f`。原生 JSON 读取及实际 `go list -mod=readonly -m -json all` EXIT 0，输出 `.verification/i-dependencies-actual-20261016-first.json`；当时 HEAD `0f420b827c3d676c93757893e5d17791a2744b8b`、MERGE_HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da` 不变，剩余 28 U 归原 S2 / S4。已停止目标树全部编辑、stage 和进程访问并归还。
 
-H 的实际产物 / 检查关系与 R 的人工完成经验来源继续在各自原域接续。现有 selected-text `codex exec --ephemeral` 路径只记录实际 thread.started 与 usage，没有同一 R controller / startup / input operation / turn 的持久化正选来源读取端口，原成功结果的有效工具集合保持 unknown。已向 T 交准确生产缺口，没有替代原十四项 unknown 覆盖或重发成功模型。完整默认 E2E、发布和整轨验收仍未通过。
+H 的实际产物 / 检查关系与 R 的人工完成经验来源继续在各自原域接续。生产项目选定文本路径为 `selectedTextBridge` → `SelectedTextFactory` → `Registry.ProcessSelectedText`，原样传递 ProjectID / JobID / OperationID，原本机来源保存 send_accepted / TurnID 和原档指针；停止后观测的后继见下节。独立可配置的 `Codex.Distill` 支路使用 `codex exec --ephemeral`，其 thread / usage 日志不替代项目路径的原控制器证据。有效工具集合保持 unknown，原十四项模型 / unknown 覆盖与完整默认 E2E、发布和整轨验收仍未通过。
 
 ## 经验完成通道与原收据校验
 
@@ -439,6 +439,14 @@ SOURCE `5866b5296a5f6ffe253fa5deac632f72d27fe128` 已普通 push，前一独立 
 全包 `go build -mod=readonly ./...`、目标 `go vet -mod=readonly ./internal/attention/app ./internal/adapters/sqlite`、四件 gofmt / diff 检查 EXIT 0，分别为 `.verification/completion-channels-build-first.log`、`.verification/completion-channels-vet-first.log`。早期同逻辑的 SQLite 生命周期检查使用原 helper 的本树目录，原件保留在 `.verification/accepted-experience-actual-*`；后继 helper 已支持明确绝对输出根，不移动旧数据库。
 
 R 已收到精确 SOURCE，沿原真实完成 Reader 更新 Interpreter 输入。H 的当前来源读取、实际完成记录在重启后的字段保存、真实 Interpreter 候选及批准 / 后续使用组合尚未运行，不由上述纯函数或事务检查替代。原 S3 prepare → Claim → 原输入发送缺少独立生产准备入口，已由 R 交准确差异；当前未知预算与新 Claim 拒绝保持，没有据此扩大独立 Relay L1 的阻塞范围。
+
+## 选定文本原控制器停止后的来源保存
+
+SOURCE `20cff2c10d4ebfe7b9611bc4b08055ab64c9f80f` 已普通 push，前一独立 REPORT 为 `3d83095171ba69a01432462ac851453acebb6578`。只修改 B 原有 `text.go`、`text_source.go`、`text_capacity_test.go`，R 原生控制器文件未修改。`ProcessSelectedText` 清理共用 `finishSelectedText`：调用原 `Native.Stop`，再用既有 `OwnedRelayExecution` 刷新同一实际进程的 `ExitConfirmed`；本机来源记录保留实际 stop 状态、confirmed、观测时间和错误，再保存原档窗口。停止失败、最终来源保存失败和原档保留失败均继续返回错误，保留原错误关系。
+
+实际 `go test -mod=readonly ./internal/adapters/agents -run '^TestSelectedTextActualOwnedSourceWithoutModel$' -count=1 -v` EXIT 0，1 PASS、0 SKIP，7.784s；`.verification/selected-text-actual-stop-first.log`。检查使用已配置 Codex 原生控制器，在公开本工作树目录创建空输入会话并停止，模型 turn 为 0；同一来源 JSON 读回的 native_id / session_id / PID 保持，stop confirmed 和 execution ExitConfirmed 为 true，Phase 保持 started，没有声明原生输出窗口或模型完成。实际创建同名目录触发最终记录写入失败后，生产清理函数返回错误，同一原控制器退出仍可独立核验。产物仅在 D 盘 `selected-text-stop-actual-126972448`，不扫描历史或读取私人原件。
+
+全包 `go build -mod=readonly ./...`、`go vet -mod=readonly ./internal/adapters/agents ./internal/adapters/distillers ./cmd/server`、三件 gofmt / diff 检查 EXIT 0；日志为 `.verification/selected-text-stop-build-first.log`、`.verification/selected-text-stop-vet-first.log`。T 已收到准确 SOURCE。该检查只验证实际空输入生命周期，完整模型输出、工具有效清单及十四项原 unknown 场景没有借此升级；旧成功调用没有补写停止或工具事实。
 
 ## 真实剩余限制
 
