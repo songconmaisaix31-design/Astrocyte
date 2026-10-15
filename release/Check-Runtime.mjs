@@ -42,8 +42,17 @@ for (const checkpoint of ['english', 'multilingual']) {
   assert.equal(assets.source_revision, '432312b36714d8889eba405507b37eda25257d9c');
   assert.equal(assets.checkpoint, checkpoint);
   assert.equal(assets.device, 'cpu');
+  assert.equal(assets.artifact_kind, 'astrocyte_privacy_sanitized_derivative');
+  assert.equal(assets.artifact_revision, 'metadata-clean-20261015-ctx_0a7797464f02');
+  assert.equal(assets.derived_from.model_revision, assets.model_revision);
+  assert.equal(assets.derived_from.source_revision, assets.source_revision);
   const names = ['encoder.onnx', 'encoder.onnx.data', 'head.onnx', 'head.onnx.data', 'tokenizer.json', 'rl_agent_config.json'];
   assert.deepEqual(Object.keys(assets.files).sort(), [...names].sort());
+  assert.deepEqual(Object.keys(assets.derived_from.files).sort(), [...names].sort());
+  for (const name of names) {
+    if (name.endsWith('.onnx')) assert.notEqual(assets.files[name], assets.derived_from.files[name]);
+    else assert.equal(assets.files[name], assets.derived_from.files[name], `${checkpoint}/${name} unchanged derivative input`);
+  }
   assert.deepEqual((await readdir(dir)).sort(), [...names, 'assets.json'].sort());
   for (const name of names) {
     assert.ok((await stat(join(dir, name))).size > 0);
@@ -54,4 +63,4 @@ for (const checkpoint of ['english', 'multilingual']) {
   JSON.parse(await readFile(join(dir, 'tokenizer.json'), 'utf8'));
   JSON.parse(await readFile(join(dir, 'rl_agent_config.json'), 'utf8'));
 }
-console.log('PASS: Node, native ONNX binding, official built Laya, CodeGraph, RPC, SQLite and twelve fixed S5 assets; no inference executed.');
+console.log('PASS: Node, native ONNX binding, official built Laya, CodeGraph, RPC, SQLite, twelve fixed S5 derivative assets and two provenance descriptors; no inference executed.');

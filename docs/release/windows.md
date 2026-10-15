@@ -50,12 +50,12 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Verify-Windows
 先显式运行联网准备命令；应用启动时没有隐式下载：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Runtime.ps1 -Output 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -EnglishAssets '<S5公开导出english的assets.json绝对路径>' -MultilingualAssets '<S5公开导出multilingual的assets.json绝对路径>'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Runtime.ps1 -Output 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -ModelRoot 'D:\Astrocyte-agent-assets\20261015\judgment-s5\sanitized-ctx_0a' -EnglishAssets 'D:\Astrocyte-agent-assets\20261015\judgment-s5\sanitized-ctx_0a\laya-english-assets.json' -MultilingualAssets 'D:\Astrocyte-agent-assets\20261015\judgment-s5\sanitized-ctx_0a\laya-multilingual-assets.json'
 ```
 
-`-ModelRoot` 默认为 S5 只读共享资产 `D:/Astrocyte-agent-assets/20261015/judgment-s5`。准备程序核对两个 checkpoint 的全部十二项资产与原 S5 metadata，复制到自身目录后再次核对，保持原资产不变。它不重新下载权重、不导出模型、不调用推理。每个模型目录保留 encoder/head ONNX、两份 `.onnx.data`、tokenizer、rl_agent_config 和原 S5 worker 的 `assets.json`。S5 原官方 export 的 strict 加载和 CPU parity 记录是这些资产的来源；模型并非上游直接提供的 ONNX。
+`-ModelRoot` 必须显式指定。当前获准的衍生资产根为 `D:/Astrocyte-agent-assets/20261015/judgment-s5/sanitized-ctx_0a`，两个 descriptor 为该根的 `laya-english-assets.json` 和 `laya-multilingual-assets.json`。准备程序核对两个 checkpoint 的十二项资产和两个 descriptor，复制后再次核对，保持输入不变。它不重新下载权重、不导出模型、不调用推理。每个模型目录保留 encoder/head ONNX、两份 `.onnx.data`、tokenizer、rl_agent_config 和 S5 worker 的 `assets.json`。S5 原官方 export 的 strict 加载和 CPU parity 记录是这些资产的来源；模型并非上游直接提供的 ONNX。
 
-原始四份 ONNX 图的 metadata 含导出环境私人路径，原资产完整 runtime 隐私扫描实际失败并保留。S5 已交独立新产物 `artifact_kind=astrocyte_privacy_sanitized_derivative`、`artifact_revision=metadata-clean-20261015-ctx_0a7797464f02`，带新文件身份和 `derived_from` 来源；P 对该实际目录十四项文件的原扫描为零匹配。S5 的精确后继 runtime SOURCE 与完整组合验证仍须交付。准备与构建入口均执行完整 runtime 扫描，构建入口在应用源码归档前拒绝不合格输入；新产物通过显式 `-ModelRoot` 和两个新 descriptor 消费。原始资产、私人路径规则和身份核对继续保留，净化后的图按 NOTICE 记作衍生文件。
+原始四份 ONNX 图的 metadata 含导出环境私人路径，原资产完整 runtime 隐私扫描实际失败并保留。当前输入为 S5 SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` / REPORT `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73` 的独立新产物，十四项共 `3,014,649,292 bytes`，声明 `artifact_kind=astrocyte_privacy_sanitized_derivative`、`artifact_revision=metadata-clean-20261015-ctx_0a7797464f02`，带新文件身份和 `derived_from` 来源。检查要求这两个标识、准确上游 revision、六文件集合、四个未修改输入的原身份与全部实际字节相符；P 对该实际目录的原扫描为零匹配。S5 已交数值等价、三路六 PID 重启的实际验证，P 复用该结果；生产 HTTP、AT12 与最终应用组合仍按各 owner 的实际交付验收。准备与构建入口均执行完整 runtime 扫描，构建入口在应用源码归档前拒绝不合格输入。原始资产与首失败保留，净化后的图按 NOTICE 记作衍生文件。
 
 可以显式传入本任务已取得的 `-NodeArchive` / `-NodeChecksums`、`-NpmCache` 和 `-DirectMLPackage`，复用同版本官方 ZIP、标准缓存和 NuGet；这些路径仍须在自身 D 盘范围，校验继续执行。未提供时只从脚本列出的固定官方来源联网准备，失败立即终止，没有自动更换来源或版本。
 
@@ -80,7 +80,7 @@ S5 `NewLaya` 需要绝对 Node/Worker/ModelDir/AssetsPath/SDKEntry/RPCEntry 路�
 配置前可从已提交 owner SOURCE 准备准确 adapter 资产：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Adapter.ps1 -Source f407337f2199d5e49f1ff49862063d964a738a9c -Component repositorycontext -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -Output 'D:\Astrocyte-agent-assets\20261015\release-package\adapter-s4'
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Adapter.ps1 -Source faab2daf83f6a578773b61077140aff73af9ef9b -Component repositorycontext -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -Output 'D:\Astrocyte-agent-assets\20261015\release-package\adapter-s4'
 ```
 
 该命令只归档准确提交的单个 adapter 文件，标准解压并核对 Git blob、Node syntax 后放入 `runtime/adapters/codegraph.mjs`；不会覆盖已有版本。`-Component judgment` 对应准确 S5 SOURCE 的 `laya-worker.mjs`。最终应用包的两个脚本由 Build 从最终 I 的源码归档复制。S4 已观察到图数据库路径 255 字符时 SQLite WAL 建库失败，191 字符的实际普通路径通过；投影缓存目录须由可信配置在目标环境实际验证，源码目录保持原位，当前没有长路径支持保证。
@@ -95,6 +95,6 @@ Jev 仅为官方 `jev-1.13.0` 云 REST 模型，不分发本地权重或凭据�
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Test-ReleaseTools.ps1 -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -Output 'D:\Astrocyte-agent-assets\20261015\release-package\dependency-probe'
 ```
 
-此命令核全部固定模型身份、真实 SDK/native binding/SQLite，归档实际 Node/SDK/许可并在新目录解压，逐文件检查原字节与完整 privacy 扫描。它不构建应用候选、不运行模型推理，不替代最终 I 同源码包验收。PowerShell 5.1 与 7 的检查分别登记实际结果。
+此命令核全部固定衍生模型身份、两个准确 adapter 的 Node syntax、真实 SDK/native binding/SQLite 和完整 runtime 隐私；归档实际 Node/SDK/adapter/许可并在新目录解压，逐文件检查原字节、允许项与完整 privacy 扫描。模型本体不进入此依赖 ZIP。它不构建应用候选、不运行模型推理，不替代最终 I 同源码包验收。PowerShell 5.1 与 7 的检查分别登记实际结果。包内 NOTICE 从最终 I 的准确源码复制，依赖的许可原件从已核准备目录复制。
 
 构建进程使用 `GOFLAGS=-p=1`、`GOMAXPROCS=2` 和 `NODE_OPTIONS=--max-old-space-size=512`；退出后恢复原进程配置。这些设置仅限制构建资源，不删减适用检查。

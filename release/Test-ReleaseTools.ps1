@@ -14,6 +14,12 @@ try {
     $node = Join-Path $Runtime 'runtime\node\node.exe'
     & $node (Join-Path $PSScriptRoot 'Check-Runtime.mjs') (Join-Path $Runtime 'runtime')
     if ($LASTEXITCODE -ne 0) { throw 'Actual runtime dependency/asset check failed.' }
+    & $node (Join-Path $PSScriptRoot 'Inspect-Package.mjs') (Join-Path $Runtime 'runtime')
+    if ($LASTEXITCODE -ne 0) { throw 'Actual complete runtime privacy scan failed.' }
+    foreach ($name in @('codegraph.mjs', 'laya-worker.mjs')) {
+        & $node --check (Join-Path $Runtime ('runtime\adapters\' + $name))
+        if ($LASTEXITCODE -ne 0) { throw ('Committed adapter syntax check failed: ' + $name) }
+    }
     foreach ($file in Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.ps1') {
         $tokens = $null
         $errors = $null
@@ -25,7 +31,7 @@ try {
     $runtimeOut = Join-Path $package 'runtime'
     New-Item -ItemType Directory -Path $runtimeOut | Out-Null
     # 此归档仅验证实际依赖的打包路径，不创建应用候选包。
-    foreach ($dir in @('node', 'sdk')) { Copy-Item -LiteralPath (Join-Path $Runtime ('runtime\' + $dir)) -Destination $runtimeOut -Recurse }
+    foreach ($dir in @('node', 'sdk', 'adapters')) { Copy-Item -LiteralPath (Join-Path $Runtime ('runtime\' + $dir)) -Destination $runtimeOut -Recurse }
     if (-not (Test-Path -LiteralPath (Join-Path $runtimeOut 'node\node.exe') -PathType Leaf) -or -not (Test-Path -LiteralPath (Join-Path $runtimeOut 'sdk\package-lock.json') -PathType Leaf)) { throw 'Actual runtime copy is incomplete.' }
     Copy-Item -LiteralPath (Join-Path $Runtime 'legal') -Destination $package -Recurse
     Copy-Item -LiteralPath (Join-Path $Runtime 'NOTICE.md') -Destination $package

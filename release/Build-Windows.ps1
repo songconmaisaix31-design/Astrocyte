@@ -84,7 +84,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $sourceDir 'docs\release\windows.md') -Destination (Join-Path $package 'README.md')
     Copy-Item -LiteralPath (Join-Path $sourceDir 'LICENSE') -Destination $package
     Copy-Item -LiteralPath (Join-Path $Runtime 'legal') -Destination $package -Recurse
-    Copy-Item -LiteralPath (Join-Path $Runtime 'NOTICE.md') -Destination $package
+    Copy-Item -LiteralPath (Join-Path $sourceDir 'release\NOTICE.md') -Destination $package
     $runtimeOut = Join-Path $package 'runtime'
     New-Item -ItemType Directory -Path $runtimeOut | Out-Null
     foreach ($dir in @('node', 'sdk', 'models')) { Copy-Item -LiteralPath (Join-Path $Runtime ('runtime\' + $dir)) -Destination $runtimeOut -Recurse }

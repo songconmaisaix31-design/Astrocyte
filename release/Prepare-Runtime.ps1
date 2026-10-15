@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)][string]$Output,
     [Parameter(Mandatory = $true)][string]$EnglishAssets,
     [Parameter(Mandatory = $true)][string]$MultilingualAssets,
-    [string]$ModelRoot = 'D:\Astrocyte-agent-assets\20261015\judgment-s5',
+    [Parameter(Mandatory = $true)][string]$ModelRoot,
     [string]$NodeArchive = '',
     [string]$NodeChecksums = '',
     [string]$NpmCache = '',
