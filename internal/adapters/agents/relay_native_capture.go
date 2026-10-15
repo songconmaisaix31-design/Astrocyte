@@ -276,6 +276,12 @@ func (n *Native) relaySourceCheckpoint(guard RelayBeforeFirstInput) func(context
 }
 
 func (n *Native) startRelayWithGuard(ctx context.Context, r domain.NativeRequest, operation string, guard func(context.Context, domain.NativeSession) error) (domain.NativeSession, error) {
+	if err := ctx.Err(); err != nil {
+		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+	}
+	if err := relayNativeToolsDisabled(n.id); err != nil {
+		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+	}
 	if n.id != "codex" {
 		return n.start(ctx, r, false, operation)
 	}
@@ -294,6 +300,12 @@ func (n *Native) ResumeRelay(ctx context.Context, r domain.NativeRequest) (domai
 }
 
 func (n *Native) ResumeRelayOperation(ctx context.Context, r domain.NativeRequest, operation string) (domain.NativeSession, error) {
+	if err := ctx.Err(); err != nil {
+		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+	}
+	if err := relayNativeToolsDisabled(n.id); err != nil {
+		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+	}
 	if operation != "" {
 		if err := n.validateRelayResume(ctx, r, operation); err != nil {
 			return r.Session, err

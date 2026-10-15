@@ -47,6 +47,8 @@ type ExperienceCompletionEvidence struct {
 
 type ExperienceCompletionReader interface {
 	ReadExperienceCompletion(context.Context, Principal, string, string) (ExperienceCompletionEvidence, error)
+	// 只复用当前主数据库事务核查固定证据和当前权限。
+	AuthorizeExperienceCompletion(context.Context, Principal, ExperienceCompletionEvidence) error
 }
 
 type ExperienceInterpretationProvenance struct {
@@ -209,6 +211,9 @@ func (s *AcceptedExperienceService) CaptureCompletion(ctx context.Context, p Pri
 	request := CompletionExperienceRequest{Evidence: source}
 	var found bool
 	err = s.repository.WithAcceptedExperienceTx(ctx, func(tx AcceptedExperienceTx) error {
+		if err := s.sources.AuthorizeExperienceCompletion(tx.Context(), p, source); err != nil {
+			return err
+		}
 		var err error
 		result, found, err = tx.FindExperience(owner, eventID)
 		if err != nil {
@@ -275,13 +280,17 @@ func (s *AcceptedExperienceService) CaptureCompletion(ctx context.Context, p Pri
 	if draft.Provenance.OperationID != request.OperationID {
 		return result, serviceError(apierrors.DeliveryUnknown, "Interpreter result belongs to another original operation", "reconcile_original_completion")
 	}
+	// 完整来源读取可能访问 Relay 和对象；在打开主数据库事务之前完成。
+	current, err := s.sources.ReadExperienceCompletion(ctx, p, localProjectID, eventID)
+	if err != nil {
+		return result, err
+	}
+	if !reflect.DeepEqual(source, current) {
+		return result, serviceError(apierrors.ContextStale, "Actual completion authority or fixed evidence changed", "review_current_completion_source")
+	}
 	err = s.repository.WithAcceptedExperienceTx(ctx, func(tx AcceptedExperienceTx) error {
-		current, err := s.sources.ReadExperienceCompletion(tx.Context(), p, localProjectID, eventID)
-		if err != nil {
+		if err := s.sources.AuthorizeExperienceCompletion(tx.Context(), p, source); err != nil {
 			return err
-		}
-		if !reflect.DeepEqual(source, current) {
-			return serviceError(apierrors.ContextStale, "Actual completion authority or fixed evidence changed", "review_current_completion_source")
 		}
 		previous, found, err := tx.FindExperience(owner, eventID)
 		if err != nil {

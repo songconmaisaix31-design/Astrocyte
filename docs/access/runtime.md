@@ -1,5 +1,29 @@
 # Works Relay runtime
 
+## 2026-10-16 完成通道输入与实际事务边界
+
+完成通道输入 SOURCE `1a529ac79a7499b45c3d80d256852f4d598a5754` 和准备读取契约 SOURCE `a165fae709e212be4e98c96b326552da739985d0` 均已普通 push，并分别独立 `git ls-remote` 核实相同 SHA。此前按模块登记及本人安全 ACK，通过文件编辑工具原样消费 B SOURCE `5866b5296a5f6ffe253fa5deac632f72d27fe128` 的四份原件，消费提交为 `bc3fda0838105acaa1e61f08fb46bc4c4103de01`；逐文件内容完全相同，随后已停止全部四件写入并归还 B / T。没有合入 B 整支或未提交内容。
+
+Interpreter 复用 B 的 `ValidateCompletionSource`，接收带有原完成通道和 accepted transition 收据的来源。人工确认可以缺少原生轨迹；verified 继续要求原输出事件引用。固定 JSON 原样保存实际 `CompletionChannel` 与 `CompletionReceiptID`，policy 为 `completion-experience-fixed-json-v2`。提示明确人工确认的出处，不将其当成独立目标核验或原生成功；缺少的 trace 不补造，completion / receipt 引用不充作原生事件，模型仍只起草候选。
+
+新增 `domain/relay_prepared_input.go` 提供私有只读 `RelayPreparedInput` 和 `RelayPreparedInputReader.ReadPreparedNativeSession(context.Context, string, string) (RelayPreparedInput, error)`。记录包含实际完整 Session、OperationID、ActorID、ActorKind、ControllerID、StartupOperationID、WorkspaceRoot 和 PreparedAt，八字段全部 JSON 隐藏，没有输入正文或 ObjectStore 引用。旧 `relay_member_evidence.go` 的标准库独立契约没有增加 NativeSession 依赖。B 负责从原操作的私有 JSON 读取真实准备、原操作者及当前许可；该类型没有创建准备记录、控制器、任务状态或成功 claim。Registry 的 prepared wrapper 和生产装配尚未实现。
+
+所有检查使用 `GOMAXPROCS=2`、`-p=1 -mod=readonly`，Go 缓存与临时目录沿下节 D 盘设置，进程 `GOPROXY=off`。SQLite 原件另明确设置 `ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016`。日志与未启动的 `channels-server.exe` 均位于该目录。
+
+| 实际检查 | 结果 |
+|---|---|
+| B 完成通道 / 模型版本规则及 AcceptedExperience 实际 SQLite 生命周期 | PASS，5 个顶层 / 15 个含子项；app 5.411 秒、SQLite 9.253 秒，`channels-sqlite-first.log`；实际 commit / constraint rollback、跨库、关闭和取消，规则参数没有声明产生原生或完成来源 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -v -timeout=90s` | PASS，三项，1.283 秒，`channels-targeted-final.log`；没有初始化客户端 |
+| 适配器 `go vet` / server `go build` | EXIT 0，`channels-vet-final.log` / `channels-build-final.log`；产物未启动 |
+| prepared 契约 domain 检查 | PASS，2.581 秒，`prepared-input-contract-first.log`；完整类型编译及私有 JSON 边界 |
+| 修改文件 `gofmt -l` / `git diff --check` | 无格式差异 / EXIT 0 |
+
+整包 agents 首次检查为 FAIL，保留 `channels-agents-first.log`：包 185.806 秒，达到全包 180 秒总时限时，正在执行 B 的 `TestSelectedTextActualOwnedSourceWithoutModel`，该用例当时仅已运行 4 秒，停在空 Message 的 Native.Start / initialize。不能据此判定该单例运行 180 秒或模型调用失败。该既有整包检查实际尝试过一次无模型初始化，没有登记 t0 或提交模型输入；没有通过新的客户端调用重跑该检查。临时控制器的实际退出需原 B 沿本次真实生命周期核实，不能根据父测试退出或其他 session 结果补成通过。
+
+真实来源读取仍未实现。已实际运行 R 独占 `relay_completion_transaction_test.go` 的空库检查：在生产 AcceptedExperience 事务内以原 `tx.Context()` 读取不存在的 project / grant，两个调用均为 context deadline，分别 3.12 / 3.39 秒，包 7.908 秒、EXIT 1；原件 `completion-project-tx-first.log`。没有插入项目、完成、候选或原生记录。当前主 DB `LoadProject` / `LoadGrant` 直接申请自身的单连接，没有复用已有 WorkspaceTransaction；准确位置与实际 RED 已交原 B 修复，R 没有修改其共享方法或连接数。诊断测试当前保留为 R 自有未发布文件，不作为可消费源码。
+
+跨 Relay 数据库的锁序另为尚未运行并发验证的代码风险。最终经验事务的来源复核必须沿既有不可变原完成引用和当前同 DB 授权完成，原档 / 外部读取保持事务外，不添加缓存、证明库、DDL 或延长期限。H / B 的实际来源读取、principal / owner 映射与唯一生产装配继续；真实 Interpreter 候选、用户批准、后续检索、集成版 L1 / Today 与最终包均未据本阶段通过。原始 RED / UNKNOWN / NOT_RUN 及 ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 保留。
+
 ## 2026-10-16 同一已构建组合消费与 S3 接缝
 
 依据模块正式消息 `msg_6eb47253068c`，本树在 clean 检查点普通 `--no-ff` 合入唯一 I 已实际构建通过的 `35cc64faac271d43e5f63103a810081b0eb7ac62`，形成 SOURCE `d9f80c2038f9c178357393ee28e7d072a7bab955`。合并没有冲突，已普通 push 并独立 `git ls-remote` 核实相同 SHA。相对该 I 来源，原 R 领域、应用、store、native 和 relayworktree 全部相同，仅保留本轮 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` 的两份 CompletionExperience 后继源码；没有消费未验证的 I `9ce5c2c` 或任何 WIP。
@@ -672,3 +696,45 @@ Capabilities / Tools / ExternalTargets 均为 nil，ToolsKnown / TargetsKnown / 
 | `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package / EXIT0 |
 
 S3 自有桥接的准确组合检查和实际 Claim / Submit / Stop 正向尚未执行；Known 和 Calls 用户待答维持原拒绝。H 另报告原 Options.Agents 仅构造时读取，没有同 Service / Registry 的运行期登记端口。可信一次性登记设计已交模块与 H，登记锚点、显式可信触发方式等待根准确决定；未新增 HTTP 命令入口、未登记或开始计时。L 服务构建仍等待 S2 十一文件事务闭包，原首 FAIL 与全部0实际原生窗口保持。
+
+## 当前 completion 来源与准备输入组合
+
+SOURCE `269e95c032b5a64794e6908ca6c40e5ffe5acac4` 提供 `NewRelayCompletionExperienceSource(reader, access)`，实际实现 B 的 Read / Authorize 两个方法。完整读取在主数据库事务外调用原 `ReadRelayCompletion`，核原完成记录和最终转移收据；原完成时间、操作者、完成通道、收据与输出引用均不随释放或再次观察改变。不可变完成记录使用 Version=1，Outcome 按其真实完成通道解释。`user_confirmed_complete` 保留人工确认含义，不能作为独立目标核验或原生回合成功。`verified_complete` 要求原输出、实际检查和输入操作引用；适配器不构造缺失的产物、检查或 trace。
+
+`CompletionExperienceAccess` 由 H 在可信组装提供，签名为 `(context.Context, attention.Principal, localProjectID) (ownerProject, error)`，只访问当前主数据库权限与项目关系，并复用收到的事务 context。B 在两次短事务中调用 Authorize；完整 Read 和 Interpreter 后的严格相等重读都发生在事务外。Authorize 不读取 Relay store、对象、文件、原生控制器或模型。来源和授权依赖缺失直接拒绝。
+
+B SOURCE `176742241681a3b00257da33f4f8a69dd308a908` 的 experience_accepted.go，以及 `c60479619b0c992fe3e2fe42fa0ee68b217a5115` 的 local_agents.go / local_project_transaction_test.go，经模块登记临时写域后逐件原样消费为 `aad4e228cb8d34b3214d83e5d09f173924ba3709`。暂存内容分别与准确原件 diff0，普通提交、push 和独立 ls-remote 一致，三件消费写入已经停止并归还 B / T。没有消费 B 整分支。
+
+真实空 SQLite 中，在 AcceptedExperience 原事务内读取不存在的 project / grant，修复前两个三秒期限均超时；首日志为 `completion-project-tx-first.log`。消费 B 修复后，相同三秒条件均即时返回实际 NotFound；同一连接的 commit、真实约束回滚和跨库拒绝也通过。诊断使用实际数据库及不存在的查询键，没有构造完成来源或模型成功。
+
+SOURCE `8947ff7e36415da07a0eb85c103b722713460356` 的 `RelayPreparedInput` 九字段全部不进入 JSON：原 NativeSession、输入 OperationID、ActorID / ActorKind / ActorProjectID、ControllerID、StartupOperationID、WorkspaceRoot、PreparedAt。`RelayPreparedInputReader.ReadPreparedNativeSession` 只允许实际明确尚未尝试发送的私有准备记录；发送在途、unknown、已受理均拒绝。InputAccepted=false 和 pending 收据单独不能证明尚未尝试。
+
+SOURCE `d0725db901446d3bd81a71473de28441b31eb625` 提供 `NewRelayPreparedMemberEvidenceSource(originalRegistry, actualPreparedReader)`。同一返回对象实现原 RelayMemberEvidenceSource 和上述准备读取接口；成员读取及停止始终委托同一个原 Registry。准备读取前后核原内存控制器、实际 session / native / project / CLI / version / CWD / startup / input 身份，原控制器仍未退出、未过期且本输入未尝试；中间通过 B 复用当前事务读取实际准备元数据。实际操作者项目不从 member 或 session 推断，Agent 的原 ActorProjectID 必须匹配。原 send 收据、准备时间和固定 native ContextPacket 元数据均核对；不会把 S2 ImmutableContextPacket 的 ID 当作 native ContextPacket ID。
+
+成员事务的执行观察通过 `ownedRelayMemberExecution` 只读取原控制器内存和原 cmd 对象，不调用 installedCommand、文件系统、RPC 或模型。单独的公开 `OwnedRelayExecution` 保持原实际启动参数检查语义。ToolsKnown / TargetsKnown / CallsKnown / TokensKnown 仍为 false；新的准备读取接口不产生调用、完整工具范围或活性证明。B 的实际准备、Claim 提交后再 SendPrepared、S2 / S3 当前 binding / epoch / grant / lease 和 H 的可信装配仍须由对应实现及真实链路验证。
+
+本阶段命令沿用 GOMAXPROCS=2、D 盘 backend cache 和 R 独占临时目录，Go 使用 `-p=1 -mod=readonly`。证据目录为 `D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016`。
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/sqlite -run '^(TestRelayCompletionProjectPermissionUsesActualCurrentTransaction\|TestLocalProjectUsesActualWorkspaceTransaction\|TestLocalProjectRejectsAnotherActualDatabaseTransaction)$' -count=1 -timeout=90s -v` | PASS2.491秒，3主项4子项；completion-project-tx-final.log |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -timeout=90s` | PASS2.937秒，4项实际拒绝检查；source-b176-targeted.log |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents ./internal/adapters/sqlite` | EXIT0；source-b176-vet.log |
+| `go build -p=1 -mod=readonly -o <D盘证据目录>/completion-source-b176-server.exe ./cmd/server` | EXIT0；source-b176-build.log；未运行该服务文件 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^(TestRelayPreparedMemberRejectsMissingOriginalSources\|TestRelayMemberExecutionRejectsUnownedMetadata\|TestRelayPortableMemberSourceRejectsColdRegistry\|TestRelayInputOperationRejectsColdRegistryAndInvalidPurpose)$' -count=1 -timeout=90s -v` | PASS0.813秒；prepared-member-first.log |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` / `go build -p=1 -mod=readonly -o <D盘证据目录>/prepared-member-server.exe ./cmd/server` | EXIT0；prepared-member-vet.log / prepared-member-build.log；未运行该服务文件 |
+
+`channels-agents-first.log` 保留完整 agents 包在180秒总期限处失败的首记录：总执行185.806秒，报警时原有 TestSelectedTextActualOwnedSourceWithoutModel 已运行约4秒，正在空输入初始化。该记录不能解释为该测试独自运行180秒。测试过程确实尝试过一次原生空初始化，未提交模型输入；父测试进程结束不能证明原子进程已经退出，其原 owner 生命周期核查另行处理。之后的本节适用检查未启动新的控制器或模型。真实 completion→Interpreter→quarantine、人工批准、第二任务引用和准备输入正向链路尚未执行；完整包首 RED、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown、原 raw gap 均保留。
+
+## Codex 0.162.0 文件工具配置边界
+
+本机离线 `codex --version` 返回 codex-cli 0.162.0；`codex app-server --help` EXIT0，没有启动控制器、会话或模型。官方源码固定为 `rust-v0.162.0` / `c1382380de69521303b416720a52f42d51af6248`。
+
+- [工具注册](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/core/src/tools/spec_plan.rs#L1150)：shell_tool=false 在 add_shell_tools 中排除命令工具；add_core_utility_tools 的1344行独立按实际 model_info.apply_patch_tool_type 注册 apply_patch，没有沿用 ShellTool 条件。
+- [Feature 解析](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/features/src/lib.rs#L659)：apply_patch_freeform 配置被忽略，该 feature 为 Removed，不能用它签署文件工具关闭。
+- [公开配置](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/config/src/config_toml.rs#L695)：ToolsToml 只有 web_search、experimental_request_user_input 和 update_plan；没有原生 apply_patch 排除项。
+- [宿主工具政策](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/ext/extension-api/src/tool_policy.rs#L10)：allowed_tools 的空许可表确实可以排除工具，但要求 Rust 宿主在启动时注入 ExtensionDataInit；当前公开 app-server / CLI / thread 协议没有发现该入口映射。[thread/start 实现](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/app-server/src/request_processors/thread_processor.rs#L1466) 只注入 selected capability roots；普通会话缺少 ToolPolicy 时[使用默认政策](https://github.com/openai/codex/blob/c1382380de69521303b416720a52f42d51af6248/codex-rs/core/src/session/session.rs#L999)。
+
+当前启动参数不能证明原生 apply_patch 关闭，完整 EffectiveToolSet 继续 unknown。该已有文件工具关闭要求的能力缺口已经交根决定；没有猜测参数、改写模型 catalog、替换 API、改造原生程序或创建替代控制器。原 never / readOnly 响应只记录其实际权限含义。
+
+本机官方原件和离线 help 位于上述证据目录的 codex-official-c1382380。固定官方 tar 首次解包在 Windows 的 vendor/bubblewrap/LICENSE 项返回 Invalid argument，未将整包解压标为通过；本节所引源文件分别完整可读且已逐项核查。公开原件不包含用户作品、原生输出或凭据，不进入 HTTP / 发布包。
