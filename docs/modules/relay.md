@@ -55,6 +55,14 @@ R 原输入结果证据 SOURCE `23253502143bb23bf47e1606c38e0158540e328d` / 独�
 
 正式回复 `msg_8a9d44c5f99a` 要求 H 等同一 I 准确可构建阶段后普通 merge，不单独 cherry-pick R 或携带其他迁移形成不同组合。H 已确认后继必须补齐双完成 request / 安全 completion DTO，以及 facts 的 resources_released、input_result、codex_turn_completed 和固定 Reason；当前闭合词表未同步时完成后的 facts 可能 503。F 已收到该缺口，等待 H 准确契约后生成。H 同时在自然检查点与原 S5 核 Taste 路由和安全 Sources，不消费 S5 修改中的代码。真实 L1 / Today / L2 / 六步首跑和最终 Windows 包继续待准确组合验收，本次 t0 和模型输入均为零。
 
+### 当前阶段独立 REPORT
+
+管理 SOURCE `3e0e17181eaf910ba27b135eb8159eb3dd43839f` 已普通 push，`git diff --check`、单文件提交范围、clean 和独立 `git ls-remote` exact SHA 核同值均 PASS。本阶段独立业务复核仅运行上列精确 H Context 检查；R 新结果事实的原生正向、H 双完成 HTTP / facts、新 S4 短事务接口、I 整体检查、真实 Today 和最终包保持未通过，不以来源及文档核验替代。
+
+发布负责人 `msg_6006ca7bedda` 确认：原 R 本人安全 ACK、I 本人 STOP 和新一页管理 SOURCE `120750a` 普通 push 后，已明确仅放行 I 树 `internal/adapters/agents/relay_input_operation.go` 编辑及 stage。R 完成后须本人停止 I 树全部写入并向发布与本模块归还；其他两域保持 B / S2 所有权，仍仅 I 负责 merge 生命周期。
+
+H 当前纯文档源码为 `8bc21f140c36b77275358e28951e1ca1b7cb7a6d`，模块独立核只修改 HTTP 报告。H 16:10:21Z 明确 `GET / PUT /api/v1/attention-taste-profile` 可使用，保持原 TasteProfileService、JudgmentServices.Taste、session / CSRF / idempotency / CommandMeta CAS；原 S5 交准确 handler SOURCE 后由 H 在同一 I 组合上维护生产注册与 OpenAPI，不另起模型验证或冻结新别名。
+
 ## 前次恢复范围与 v1.4 规格
 
 2026-10-15T13:44:28Z 总负责人恢复指令 `msg_dda268e9b152`：模块当前为 `task_e8c1d01d67ec / ctx_533af1fca9b7 / term_2717fa40-9809-4cca-8140-89111b01073d`；总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146`，顶层 Run `run_973808dd6a2f`。已按明确授权恢复原子 Run `run_8bbda1c3974c`，generation 4。本次仅修改本文件，继续原 R / H / S4 Task、工作树、分支及独占写入范围。
