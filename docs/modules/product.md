@@ -65,6 +65,36 @@ T 已沿原 Task 实际启动为 `ctx_7860ae02e15d / term_5ad7b00b-7dd1-4c3f-bee
 
 F 精确消费 UI 原源码的顺序为 `dbd1018f163e6760cc7806c302fd3aa677706267`（九件原 S2 页面 / spec 与 JudgmentQuestionFields）、`0ad83a96bc50747867146a38a80b7a90ecbedc5f`（三件 policy 字段 / 纯参数检查）、`f0d27271c15d131aea50012658232f7fa41a142b`（三件 question 字段 / 纯参数检查）。模块已核 F 当前 clean、原 delegation 六件新增文件尚未消费，前两段精确目标与父基线相容。F 每段在实际安全检查点核目标零 WIP / staged、再普通 cherry-pick；若目标不等父或发生冲突，保留现场交原 UI，不整体选边、覆盖未提交内容或执行 abort / reset。后继完整目标内容须与原 UI 对应 SOURCE 相等，共享生产契约仍单独消费 H 准确提交。
 
+### 04:39 完整产品范围与原视频 / S2 责任恢复
+
+根 `msg_8fa1e5b95277` 要求继续核全量产品：资料含既定 summarize 视频时间定位、人工沉淀、项目权限 / 进度、人工派发、Judgment / Taste 与当前认知。现有检查和已通过结果沿准确来源复用，不新增证明系统、不重做成功动作、不在未修首错误时重跑320。根 `msg_08043ea4b19f` 的具体候选用户批准边界已交 F：原 PLOS 候选和反馈只读恢复、具体内容交根；准入 / 批准请求准备到可审阅，未取得根转交的实际用户决定不代签。当前尚无真实经验候选。
+
+F 认知 SOURCE `12a17f7bf7a9fbef273e872516961aa9262b7110` / REPORT `94d827a34f8cc659de8ab3e051483eb194480d76` 已普通 push 并交 I，模块独读脚本 / 安全 JSON / 远端。准确 b73 / 同 snapshot-1711995690，实际10-16日的今日0、近7日1076、30日1316与真实 SQL / HTTP / DOM一致，原 Q 的10-15预期保留。两主题各三个真实历史点，21与134个事件完整九页、155个ID逐一实库定位、六字段完整，无异常 / 业务写入 / 新模型。F 已完成 UI 三段准确消费为 `a871d62c6b5ed6b708dfc1b70f938741f0b44081` / REPORT `a4e3dc39350911268fd5cde4f177d2362928e765`，各段目标完整 diff0、无冲突，typecheck / lint / 七项纯参数检查 / Web build通过；服务仍 b73，没有混记部署。
+
+T SOURCE `fa5c6e6a2cedcf34b22bf760c24ac6b81c3a7241` / REPORT `41cfefc24792470bd00d25b80b3235142d68e3ee` 已普通 push、clean并交 I。模块读完整324行检查、报告和远端：原 Taste 生产重启通过，两个真实完成来源拒绝 / 当前权限 / 事务收据回滚重开检查2.458秒通过；观察 wrapper 完全委托真实来源，未制造完成事件、原生协议或 Interpreter 输出。正向完成、十四项及完整两包未运行。
+
+B 补充 `bd18df4c57f41b3c880bb47fba98c0deec5135ce` / REPORT `517b3073c803f88c2d7798e3da4ceb876fba03f5` 的成熟 Origin parser与真实HTTP检查，以及 `25a4ae879ca0a4cd059540bfa5aeddf8cf713dcc` / REPORT `ce4e12aca2f272f7ed5edb48b9cf76fdccddad5e` 的PDF MIME / Close错误传播，均普通 push并交 I。原 human 辅助授权补强 SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383` / REPORT `c0bfe00456329249e279a4353abe634381656806` 必须注入真实项目与资料引用端口，逐固定资料核当前space / revision / lifecycle；实际导入、未加入拒绝、加入后同事务允许、撤回拒绝通过，原冲突保留。H现有human / delegated完整授权继续保持，未自动替换。新增公开DOM输入仅本机 `standards-backend/.verification/paper-dom-actual-recovery.snapshot.json`，原文不输出或入包。
+
+视频原负责人现承担 S2，原 Task `task_6846cdb90c46`、原树 `product-video-20261014`、分支 `songconmaisaix31-design/product-video-20261014` 连续，恢复基线 `81eb88df11f2c69b71290d5bb9ad5b2e2e0f0d9f`、clean、公开终端为空。因完整产品视频核查具备明确依赖，恢复该原作者，保持此前已移交的视频五文件 / `video_*_test.go` / `video.md` 与原S2领域和 `workspace-s2.md` 写域；配置 / 依赖 / 非视频 importer仍B，共享main / server / OpenAPI仍H，应用测试仍T，当前共享业务操作仍F。
+
+该人员先核既有真实公开 `BV1PReT6EEqR` 两版32908 / 35807 bytes、952时间片段、原附件 / 私有原件拒绝 / 重启证据及准确 SOURCE `d48a29b6e1744465666edbfa28be919531ca39a4`、`a54fe8e238a2e52db98c801012c2ccdfd64edbd5` 在当前 I / 产品的实际消费。只读取原V自有 `video-timed-first` 与原B `video-source-third` 明确原件，核源码 / 依赖 / 当前必要配置；不重新提取、转写、调用模型或重发旧作业，不输出原始媒体 / transcript / whisper JSON。未配置或未运行的当前链路明确交B/H/F；只有发现实际源码差异或功能错误才在原视频 / S2范围修复并做必要真实验证，历史成功不迁移为未测新源码通过。S2既有AfterWorkspaceCommit / Context / Goal准确结果保持，原生和用户未答部分继续暂停。
+
+### 04:50 公开契约、人工进度与视频配置的实际边界
+
+H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / 独立 REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 已普通 push，实际主入口接入 human Admission 和完成来源 Reader。带快照模式保持原完整资料引用 / delegated 授权，无快照 human 模式注入 B 的真实项目及资料引用授权；公开契约包含 Judgment / Policy / Feedback / Delegation / Taste、完成经验与 Admission，静态资源只对 `fs.NotExist` 返回 SPA。H 报告真实两模式五项 SQLite / HTTP、25 响应 schema、264 示例和 build / vet 通过，原生 / 模型零、Interpreter 未配置。当前服务仍 b73，没有将未部署源码记为当前功能通过。
+
+唯一 I 已普通消费 H 和 F 候选三脚本到准确 `ecb29c9593348d409514cc1ddff05ff04affcd87`，本人交付已 push、独立远端一致和 clean。原 `609993b` 的契约检查首 FAIL 是生成 schema 漂移，Redocly 零错误 / 13 个旧 warning 和264示例通过；首原件保留。F 在人工进度的自然检查点保护原修改，再普通消费准确组合、用既有 generator 生成客户端类型，交准确 SOURCE 给原 UI；不手写类型、不复制未提交内容、不等待完整默认终稿才继续必要开发。
+
+F 人工进度 SOURCE `696828478eeaf128309079957234bb78aafbaaf9` / REPORT `963d880e30df4fff0923623c5efa711e6adfed2a` 已普通 push、模块审阅七件实现 / 检查并交 I。原项目人工表单使用既有 PUT 客户端，保留当前权限、读取失败禁止陈旧写入、持久 unknown 锁。独立真实 Go / SQLite / Vite 两尺寸十项首轮实际8 PASS / 2 FAIL，失败是摘要同时出现在显示段落和 textarea 的严格定位；原成功保存不重发。类型检查首 EXIT2 的缺失项目检查和准确 aria 定位已由原 F 修复，类型 / eslint / build 后继 EXIT0，原两项定向补验实际2 PASS / 59.3秒，不能登记单轮十项全通过。共享 b73 的 content / topic / project 三层人工沉淀实际完成，新增 project 记录 `7GWJ7TEG7BV7XCHNHEJNQ4U3SU` 与事件 `B2YDY2GW27X7FI3TKFOXULRWSJ` 逐一在真实库定位；旧摘要、候选 revision及零模型保持。新进度 UI 尚未部署到共享服务。
+
+根要求的固定候选审阅资料已由 F 仅 GET 取得并经模块消息 `msg_9f6af6e1d79f` 交根：已存论文标题、短人工摘要、实际 Goal 标题 / 成功条件与项目名称。安全文件为 F 当前证据目录 `product-candidate-review.json`，未改原摘要或候选。候选 `QILUA3J6WINYVSRKX3CU6FA35A` 保持 revision2 / version3、四维 unknown 和固定资料 revision1；原 later 反馈保留。先完成实际页面与精确可审阅请求，再由根取得本固定版本资料 Admission / draft 的具体用户决定；当前不发送准入，不增加 Grant / 执行或经验批准。
+
+V/S2 原 Task 恢复为 `ctx_d0d16cb94204 / term_468e8fd7-6ac4-42eb-bc98-ede302c182b1`，首 `outcome_unknown / turn_start_unobserved` 保留，核 composer 后仅一次 bare Enter，随后本人和公开状态核实际 Codex / `gpt-6.1-sol` 工作中。只读核查 SOURCE `d58ce7d5c724e5f165c545a2a1bb1cb9ebfee796` / REPORT `a640c181a6a1cc056be021385c23e71ab6913b6c` 已普通 push，只改原视频文档。旧 SQLite 两版实际对象及952项时间位置逐一核查通过，三个生产视频文件与 b73 / I 零差异；首历史 MediaType 断言 RED 保留。现有私有附件拒绝按真实名称和 ObjectRef 仍成立。
+
+当前 H 启动脚本明确 `ASTROCYTE_ENABLE_SUMMARIZE=false`。已交 B 配置唯一 owner 和 H 服务唯一 owner 核 enable / Node / CLI / yt-dlp / ffmpeg / whisper / 模型 / 显式代理的安全配置白名单，后续同库更新仍需精确 SOURCE 和 F / UI 当前双安全 ACK。缺少 extractor 的实际生产作业会保存 `provider_unavailable`，入队202不算提取成功。现有 manual API 会创建新的人工来源记录，不能恢复旧 summarize provenance / 附件 / revision 身份；已备人工请求保持未执行，不把 media JSON 或 whisper JSON 当 CLI 导出，不重做旧 ASR / 模型或成功作业。
+
+B 实际 Windows junction SOURCE `d8067aae16acdec89e2bb8cb91ec153f45bf32f4` / REPORT `e850414e1b97b91a2e690cfdf62492577dd9cf00` 已普通 push、模块审阅并交 I。标准路径转换、关闭 cmd AutoRun、真实空格目录与文件身份检查1.641秒通过；原虚构协议 replayFixture 未运行，不能算真实原生回放通过。原 R/H 只提供既有获准公开项目原件指针及实际完整度，当前可用性 UNKNOWN，来源缺口和受限探针暂停保持。
+
 ### 02:29 当前恢复与产品分工
 
 本模块已实际读取根 02:21 入口和当前用户决定，沿原两个 Run 恢复，未创建新的 Run 或 Task。公开清单核两个 Run 的 active worker 均为空、原 B / F / S2 Task 均为 ready；原 B/F Run 已普通绑定 generation56。B 首启动 `ctx_0451d133cc3d / term_8821b14c-2a83-4459-a276-f28f11a7c67c` 实际 turnStart observed，准确基线 `a550cfba2d7e571954bf96bec9a8eb6e3af228a8`，原十件 WIP 保留；本次只继续其既有项目清理通知、原生消息存储和来源接缝，生产装配交 H、提交回调交 S2、应用测试仍唯一 T。F 原树准确 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`、clean，S2 原树准确 `8ef7219b3bd4233b1b16c0a7735c29f4e07673ba`、clean，沿原任务恢复。
