@@ -18,6 +18,8 @@ Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b`，模块 Task `task_b0197
 
 创建前的指定仓库 GET 实际返回 404，随后执行授权的创建。创建后首次只读 visibility 查询遇到 `TLS handshake timeout`，保留失败；后一次真实官方 GET 成功，没有重复创建或改写该失败。固定代码与已验证基线完全一致，本阶段没有重复运行应用测试。前阶段业务 SOURCE `10fa36cdd68b3247a70da9230453b74c0f5a04fa` / 独立 REPORT `58f847cac85a05e794d7ad1d19198712a96f256a` 已普通 push，远端一致。
 
+公开事实独立 REPORT `5b2d4acd65fc14c3637964c92ae123a400f51c4f` 首次 push 被 GitHub 以 `fatal error in commit_refs` 拒绝，远端只读核实仍为 `58f847c`。随后普通 push 相同提交成功，没有 force、改写历史或重建仓库。该失败与后续成功均保留。
+
 实际 remote、visibility 与 baseline 已交 H `ctx_e7abbaf902da`、F `ctx_4a385bf65390`、M-relay `ctx_bc51f7008918` 和本模块。真实原生动作仍由 R/H/F 按同 controller 空 Message 初始化、实际 source/tool 事实、observer ready、唯一登记和输入的顺序完成。本阶段没有模型输入、原生启动或登记；完整 S3、人工采用和第二任务经验引用继续 `NOT_RUN`，本 Task 尚未结算。
 
 ## 第八阶段当前结果
