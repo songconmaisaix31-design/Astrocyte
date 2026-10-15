@@ -12,7 +12,7 @@
 |---|---|---|
 | R `task_f082d8b36471` | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native 与原报告写域；保留九份已修改文件及两份未跟踪输入结果文件，继续实际证据语义和既有双通道交付，不改 H 装配、B 依赖或迁移 |
 | H `task_3004b636a3ab` | works-relay-http / songconmaisaix31-design/works-relay-http | 原来源、HTTP、契约及薄装配写域；保留五份已修改文件与 relay_public_context.go，完成既有 LaunchContextReader 的真实批准上下文和 B 窄共享事务消费，不改其他领域 |
-| S4 `task_bd209566be37` | works-repository-context-s4-20261015 / 原分支 | 原 Task 保持 ready，工作树干净；待 D 盘入口和集成依赖恢复后继续，不创建替代任务 |
+| S4 `task_bd209566be37` | works-repository-context-s4-20261015 / songconmaisaix31-design/works-repository-context-s4-20261015 | 原 Task 恢复后优先处理 S2 提交的短事务快照引用校验，保原 repositorycontext 写入范围；全部新检查产物使用 S4 独占 D 盘目录，不启动模型或大型资产验证 |
 | 模块负责人 | module-relay-20261014 / songconmaisaix31-design/module-relay-20261014 | 只修改本管理文档，检查当前身份、互斥写入范围、准确交付、实际验收及发布支持 |
 
 当前顺序为四树普通集成与组合验证 → 集成版真实 L1 → L2 经验管道 → 六步端到端首跑。唯一 I 当前仍由发布模块恢复原 Task；R `9021cbaa0dac6321491c9ae86d466749b8a32904` 普通合并的六项 S2 冲突由产品原 S2 处理，模块不修改该现场。R 双通道 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` / REPORT `be0edfca394ac49824185beec2e61c087d33210c` 为后继准确输入，不更换当前 MERGE_HEAD。
@@ -25,6 +25,7 @@
 |---|---|---|
 | R `task_f082d8b36471` | `ctx_c17c6124e9dc` / `term_88610b02-6111-415d-b2a0-9de60ac0a798` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；15:55:26Z 本人 actualturnstarted，15:58:31Z 再核当前入口与原修改 |
 | H `task_3004b636a3ab` | `ctx_74e83fb8ed0c` / `term_ffd141be-29a2-4928-8afb-bdcb18dd8487` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；15:57:10Z 本人 actualturnstarted，15:58:30Z 明确固定批准上下文与独立检查范围 |
+| S4 `task_bd209566be37` | `ctx_50420bf0cb12` / `term_7e96cb3e-c57b-4197-832a-7dae7b4f4e09` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；16:07:20Z 本人 actualturnstarted，确认原树 clean 和窄接口范围 |
 
 两位均沿原 Task 和原工作树启动 Codex；终端文本显示 0.162.0 / GPT-6.1-Sol xhigh fast，启动参数没有覆盖用户模型配置。已向两个准确 Dispatch 发送当前根入口、双通道完成决定、写入范围、D 盘进程环境和禁止重复模型输入的要求；发送回执只证明入队，不作为本人已读取或已经开始的证据。
 
@@ -34,7 +35,25 @@
 
 模块本次独立核得 R 双通道 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 只涉及原 R 十份 relay 文件，REPORT `be0edfca394ac49824185beec2e61c087d33210c` 只修改 `docs/access/runtime.md`，SOURCE 为 REPORT 普通祖先且远端 branch 精确指向该 REPORT。R 当前输入结果证据 WIP、H 真实固定上下文与 Context 十秒回归、I 四树组合、L1 / Today / L2 / 六步首跑和最终新 Windows 包均未据此变为 PASS。
 
-产品当前 B 为 `ctx_1e8091197976`，S2 为 `ctx_17fb6df5098e`，F 正沿原 Task 恢复；模块当前 R / H 身份与准确后继输入已交产品和发布当前负责人。S4 `f6c865710375340d528b878bc09b7c3fd4984ee7` 的现有快照端口只有 CaptureProjectSnapshot / ValidateProjectSnapshot，产品提议的 ValidateProjectSnapshotReference 尚无准确交付；保留事务外真实 Git 双观察和事务内当前权限 / 版本，待原 S4 继续处理，不由其他人员代写。S4 当前未启动，原工作树干净。
+产品当前 B 为 `ctx_1e8091197976`，S2 为 `ctx_17fb6df5098e`，F 为 `ctx_5888aa5adf82`；模块当前 R / H 身份与准确后继输入已交产品和发布当前负责人。唯一 I 为 `task_2ee44933df72 / ctx_29518fe03538 / term_3e0c581c-df78-4af4-beb6-92048d95c4a3`，只由本人在领域人员归还后继续普通合并。
+
+### S4 必要集成依赖恢复
+
+2026-10-15T16:03:55Z S2 正式交接 `msg_19fed40ac959`：I 六件已归还，BuildContextPacket 最终短事务中的 ValidateProjectSnapshot 当前触发 Git capture，提出沿既有 ProjectSnapshotProvider 增加 `ValidateProjectSnapshotReference(context.Context, domain.Caller, domain.ProjectContextSnapshot) error`。准确签名和语义由原 S4 确认后交付，当前不冻结未实现接口。该路径只核同 DB 固定 RepositoryIndex、当前 Project / Grant / AllowedSubdirs 与 stored Snapshot.SettingsRevision，重核完整身份、版本、roots 和 ObservedAt，并复用 WorkspaceTransaction；禁止在该短事务内执行 Git、文件观察、子进程或新事务。Capture 双观察、提交前真实 Validate 和 BindSession 的真实外部观察仍保留。
+
+S4 当前 HEAD `f6c865710375340d528b878bc09b7c3fd4984ee7` 没有该新增端口。模块再次公开核原树 clean、终端为空且无该树开发进程，原 Task 保持 ready；本次按原恢复授权继续该 Task，限定先完成上述必要接口与原域真实检查，不创建替代 Task、不由 H / S2 代写。直接 Go 所需 D 盘进程入口已经明确，新增大型前端、打包和资产检查仍等待所属依赖。精确 SOURCE / 独立 REPORT 交原 S2、H、唯一 I 和模块，十秒产品预算、原超时和未知结果保留。
+
+### 已交准确领域阶段与组合衔接
+
+H 固定批准上下文 SOURCE `c0526d444e4a6fe798cdd1514b72a303de10b5b4` / 独立 REPORT `aaaf603a9477e470ff0ce0c269597802a6f25b40` 已普通 push。模块独立核远端 exact、七份源码均在 H 写域、REPORT 只修改 `docs/access/http.md`，已交唯一 I。主入口和实际服务入口通过既有 LocalProjects 授权读取明确的固定 Git 文件，并核 settings revision、固定正文和前后 HEAD。H 原十秒 Context HTTP 回归 PASS 18.395 秒，四项真实 Git / SQLite / HTTP 检查 PASS 3.585 秒；build / vet 的适用范围仍是 P579 五份 Reader 的只读 overlay，旧 H 单树 build FAIL 保留。H 后继纯文档 `8bc21f1` 已同步当前双完成语义，没有新增代码检查。
+
+模块在 D 盘独立 Git clone、精确 H SOURCE 上实际运行 `go test -p=1 -mod=readonly ./tests/s2 -run '^TestActualSQLiteApprovalRestartAndRollback$' -count=1 -v -timeout=120s`，PASS，测试 2.60 秒、package 3.921 秒。原十秒 HTTP client 时限保持，日志为 `D:/Astrocyte-agent-assets/20261015/relay/module/context-c0526d4.log`，cache / TEMP / TMP / GOTMPDIR 均在 D 盘。本次没有原生初始化或模型。该结果不覆盖原首超时，也不证明 S4 事务边界、owned 正向、真实首输入或 Today 已通过。
+
+R 原输入结果证据 SOURCE `23253502143bb23bf47e1606c38e0158540e328d` / 独立 REPORT `d6dab8a7d5681f944a11f512beeb265f03fdc63e` 已普通 push。模块独立核远端 exact、SOURCE 为 REPORT 普通祖先、十二份源码均在 R 原域、REPORT 仅 `docs/access/runtime.md` 和 clean。真实 turn/completed 只按原 input / turn / controller / startup / session / native tuple 追加固定 input_result；缺 ACK 不发布绑定，重复不刷新，冲突保持 blocked 并禁止重发。Outcome / FailureCode / ResultSource / ResultObservedAt 及 portable Member 对应字段私有持久化，不进入 JSON，不产生 started 或 task done。R 四包与 Relay SQLite 定向、vet / build / architecture 检查通过；全 SQLite 的原 B 冷 Registry 恢复断言仍 RED，原件为 `D:/Astrocyte-agent-assets/20261015/relay/R/outcome-20261015/baseline-go.log`，已交 B，R 不改其测试或所有权门禁。
+
+唯一 I 已普通合并并 push 原 R9021 阶段为 `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87`；合 H aaaf603 时三份领域文件冲突，I 本人明确全部 merge 生命周期 STOP 且没有编辑或 stage。发布负责人唯一协调 B 的 `cmd/server/config.go`、S2 的 `internal/workspace/app/proposal_ports.go` 和 R 的 `internal/adapters/agents/relay_input_operation.go`。R 16:09:13Z 本人安全 ACK 原树无在途命令且 clean，等待发布一页登记与单文件放行；临时处理只编辑和 stage，明确归还后仍仅 I 继续，不复制 R 本树修改、不修改其他文件。
+
+正式回复 `msg_8a9d44c5f99a` 要求 H 等同一 I 准确可构建阶段后普通 merge，不单独 cherry-pick R 或携带其他迁移形成不同组合。H 已确认后继必须补齐双完成 request / 安全 completion DTO，以及 facts 的 resources_released、input_result、codex_turn_completed 和固定 Reason；当前闭合词表未同步时完成后的 facts 可能 503。F 已收到该缺口，等待 H 准确契约后生成。H 同时在自然检查点与原 S5 核 Taste 路由和安全 Sources，不消费 S5 修改中的代码。真实 L1 / Today / L2 / 六步首跑和最终 Windows 包继续待准确组合验收，本次 t0 和模型输入均为零。
 
 ## 前次恢复范围与 v1.4 规格
 
