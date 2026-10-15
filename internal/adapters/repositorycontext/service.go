@@ -21,6 +21,7 @@ import (
 type IndexStore interface {
 	LoadRepositoryIndex(context.Context, string, string, string) (domain.RepositoryIndex, error)
 	SaveRepositoryIndex(context.Context, domain.RepositoryIndex, string) error
+	PrepareRepositoryContextCleanup(context.Context, func(context.Context, domain.LocalProject, domain.RepositoryIndex) (bool, error)) (app.RepositoryCleanupState, error)
 }
 
 type Options struct {

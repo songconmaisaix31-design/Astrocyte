@@ -40,6 +40,7 @@ SemanticIndex 的具体模型、运行时和向量库仍待用户决定。没有
 | 实际破坏自有图 SQLite；拒绝查询；显式 rebuild | PASS |
 | 跨项目、逃逸根、私有路径、空用途、读取预算拒绝 | PASS |
 | SQLite Agent grant 撤销、目录权限撤销、revision 变化后重建 | PASS |
+| 失效投影清理、同 worktree 的其他项目保护、分批删除与重启 | PASS；内部 pass，生产 worker 接入待交 |
 | AOCI 源码构建、实际版本、官方 MCP 九工具 | PASS |
 | 模型作者六对象 FRAS → 官方整批 apply → Verify/Check/Guide | PASS：applied=6、aligned=true、complete=true、next_action=none |
 | 保存 AOCI 地图、无 AOCI 配置的 service 读取地图 | PASS：六条语义和相对引用；GET 没有 AOCI 进程或 ledger 写入，`.aoci` 文件数量、大小、mtime 相同 |
@@ -101,7 +102,7 @@ Git 子进程移除宿主 `GIT_*` 环境变量，防止外部 `GIT_INDEX_FILE/GI
 
 另已执行 `verify -phase same-project-worktrees`：同一个真实项目 ID 在两个同 HEAD worktree 之间更换注册根，B 的图不会复用 A 的内容；返回 A 时权限 revision 变化要求重新构建，随后准确恢复自己的实现和地图。实际 PASS，原源码/HEAD/暂存区均未修改。
 
-HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确注册函数、五个端口字段和 DTO 已分别交模块负责人、H 与 UI 负责人。`go build -mod=readonly ./internal/adapters/httpapi`、`go vet -mod=readonly ./internal/adapters/httpapi`、`git diff --check` PASS；真实 HTTP/认证/SQLite/重启组合仍 NOT_RUN，等 H 的准确生产薄组装 SOURCE 后由本轨继续验证。没有用编译通过替代实际接口通过。
+HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确注册函数、五个端口字段和 DTO 已分别交模块负责人、H 与 UI 负责人。`go build -mod=readonly ./internal/adapters/httpapi`、`go vet -mod=readonly ./internal/adapters/httpapi`、`git diff --check` PASS；后继真实 HTTP、认证、SQLite 与重启结果见下文生产组合记录。
 
 模块独立审读 `msg_1d21efa0bebb` 指出 GET 查询解析应拒绝畸形编码。本轨使用成熟 `net/url.ParseQuery(r.URL.RawQuery)` 并立即拒绝解析错误，避免静默忽略畸形未知参数；HTTP 验收脚本已准备畸形 percent、semicolon、重复标量与未知参数场景，实际执行仍待生产组装，不使用自研 parser。
 
@@ -109,7 +110,7 @@ HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确�
 
 ## 生产组合的准确输入
 
-恢复后继续使用同一 Task `task_bd209566be37`、Dispatch `ctx_12ae8872df87`、工作树与分支。Orca 当前 provider 投影记录客户端 `codex`、模型 `gpt-6.1-sol`。本阶段检查实际使用 D 盘 S4 缓存。依模块后续确认，新的 Go 及调用 Go 的父进程仅在自身环境中使用 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR`、`TEMP`、`TMP` 均使用本轨独占的 `D:/Astrocyte-agent-assets/20261015/go-temp/S4`；不修改全局环境，不复制或清理共享缓存。原始数据库、日志与验证源码继续保留。
+本次恢复使用同一 Task `task_bd209566be37`、Dispatch `ctx_09391d7a7e02`、工作树与分支；前次 `ctx_12ae8872df87` 已由恢复流程记录 failed / terminal_missing。Orca 当前 provider 投影记录客户端 `codex`、模型 `gpt-6.1-sol`，本次实际开始已向模块确认。新的 Go 及调用 Go 的父进程仅在自身环境中使用 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR`、`TEMP`、`TMP` 均使用本轨独占的 `D:/Astrocyte-agent-assets/20261015/go-temp/S4`。原始数据库、日志与验证源码继续保留。
 
 H 按顺序精确消费以下 SOURCE；仅含报告的提交无须进入其业务组合：
 
@@ -125,7 +126,7 @@ H 按顺序精确消费以下 SOURCE；仅含报告的提交无须进入其业�
 
 实际构造为 `repositorycontext.New(db, db, repositorycontext.Options{Git: repositorycontext.Git{EnvironmentID: ...}, Graph: repositorycontext.CodeGraph{Node: ..., SDK: ..., Script: ...}, AOCI: ..., CacheRoot: ..., SnapshotBudget: ...})`。Node 可执行程序、官方 SDK 目录、本轨 codegraph.mjs、AOCI 可执行程序与投影目录均由可信启动配置提供。生产服务使用同一 adapter 实例作为 S2 快照端口和五个 HTTP 能力端口。
 
-`tests/s4/_http/main.go` 当前为未提交的实际 HTTP 验证入口，依赖 H 将 `RepositoryContext` 注册到既有生产 `Services`、认证白名单和 server；生产组装 SOURCE 未到，HTTP 保持 NOT_RUN。`query-readonly` 阶段核对真实 Search、Impact 与保存地图查询前后所有自有图投影和 AOCI 运行文件的数量、大小及 mtime，实际结果另行登记。
+`tests/s4/_http/main.go` 是 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` 的实际 HTTP 验证入口，使用 H 的生产 `Services`、认证白名单和 server。`query-readonly` 阶段核对真实 Search、Impact 与保存地图查询前后所有自有图投影和 AOCI 运行文件的数量、大小及 mtime，实际结果见下文。
 
 恢复后在 D 盘进程缓存配置下执行 `tests/s4/verify.ps1 -Phase restart` PASS。`query-readonly` 首次真实运行 FAIL，原件为 `.verification/s4/actual-first/query-readonly-failure-20261015T030418.352154300.txt` 及 `query-readonly-20261015T0304098327094.log`。随后保持同一数量、大小和 mtime 断言，真实两图符号与关系查询、六条作者地图读取全部 PASS，日志为 `query-readonly-20261015T0305549291173.log`；当前查询使用上述 immutable URI。
 
@@ -133,9 +134,9 @@ H 按顺序精确消费以下 SOURCE；仅含报告的提交无须进入其业�
 
 只读修复 SOURCE `f407337f2199d5e49f1ff49862063d964a738a9c` 已普通 push，并直接交 H 与模块负责人消费。该精确源码的 Node 语法检查、`go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`go build -mod=readonly ./...`、gofmt 检查与 `git diff --check` 均 PASS。Go 日志为 `D:/Astrocyte-agent-assets/20261015/relay/S4/readonly-source-go-{test,vet,build}-final.log`；实际 WAL 验收日志为 `.verification/s4/actual-first/uncheckpointed-wal-20261015T0310375483343.log`。
 
-HTTP 生产组合仍等待 H 的准确注册、认证与构造 SOURCE；现有 `_http` 验证入口没有计为已运行。SemanticIndex 用户决定、HTTP/前端/最终 Windows 包组合及 AOCI 分发条件分别保留待定或 NOT_RUN，本阶段继续同一 Task，不代表 S4 或整个产品验收完成。
+H 的准确注册、认证与实际 Service 构造已按下文完成 HTTP 验证。SemanticIndex 用户决定、B 生产配置与 main 接线、前端和最终 Windows 包组合及 AOCI 分发条件分别保留待定或 NOT_RUN。
 
-SPEC §9.5 的磁盘异步清理尚未接入：当前 Agent grant 撤销会立即拒绝该主体读取，源码删除后的 sync 会移除当前图中的旧文件与符号；历史 generation 目录仍保留。已交模块协调 B 的现有项目撤销动作、worker 入口及清理作用范围。单个 Agent 的授权撤销不能删除仍供其他授权主体使用的共享项目图，GET 查询保持只读；没有建立新调度器或把该缺口标记为完成。
+SPEC §9.5 的内部磁盘清理 pass 已按末节实现和真实验证；生产异步调用仍待 B 的既有项目授权动作与 worker 接入。当前 Agent grant 撤销立即拒绝该主体读取，源码删除后的 sync 移除当前图中的旧文件与符号。单个 Agent 的授权撤销保留其他主体仍可使用的共享项目图，GET 查询保持只读。
 
 ## 生产配置与发布资产交接
 
@@ -159,8 +160,24 @@ AOCI 只接受显式外部本机绝对路径，所选版本与源码标识见前
 
 P 源码 SDK 在 `D:/Astrocyte-agent-assets/20261015/relay/S4/sdk-first` 新建真实 SQLite 与投影，分别从零建立两棵图，实际同 commit / 不同 worktree、同 SQLite 事务快照校验、篡改拒绝及两图真实符号和关系全部 PASS。其图数据库路径长度为 191。此前 `.verification/s4/packaged-source-sdk-first` 的 255 字符图数据库路径在启用 WAL 时失败；标准 Windows 命名空间路径可建库但 SDK 扫描返回空图，两次原件均保留。当前桥使用普通路径，较长 Windows 投影路径仍是已观察到的组件限制；没有修改 SDK 或缩短原公开仓库路径掩盖失败。
 
-本组合验证覆盖真实已配置 Service / HTTP，不覆盖 B 生产配置解析与 main 接线、前端、最终 Windows ZIP、SemanticIndex 或异步旧 generation 清理。这些仍按对应当前状态继续处理。
+本 HTTP 组合验证覆盖真实已配置 Service / HTTP；B 生产配置解析与 main 接线、前端、最终 Windows ZIP、SemanticIndex 仍待各自准确组合验收。旧 generation 清理的独立实际结果见末节。
 
 验证工具 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` 已普通 push。实际适用命令 `go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`go build -mod=readonly ./...`、对 H 精确归档和相同 overlay 的 `go vet ./tests/s4/http`、两个 PowerShell 文件 parser 检查、gofmt 检查和 `git diff --check` 全部 PASS。未知验证阶段实际返回非零，原件为 `D:/Astrocyte-agent-assets/20261015/relay/S4/unsupported-phase-first.log`，没有静默打印阶段成功。
 
 发布 SDK 的 `initial`、`map`、`query-readonly`、`uncheckpointed-wal` 实际日志保存在 `D:/Astrocyte-agent-assets/20261015/relay/S4/sdk-first`；失败的 C 盘长路径目录及全部旧阶段证据保留。此次代码变更仅包含本轨验证入口及文档，不修改 H 的生产源码、P 的 SDK / Node 资产或任何冻结领域。
+
+## 失效投影清理与既有 worker 衔接
+
+内部端口为 `app.RepositoryProjectionCleaner.CleanupRepositoryContext(ctx, maxGenerations)`，结果只含 `RetiredIndexes / DeletedGenerations / PreservedEntries / HasMore`。调用者必须是持有同一个 `repositorycontext.Service` 的既有后台 worker，且在请求事务之外调用。该方法复用索引维护和图查询的互斥锁；一个 CacheRoot 只能由该单一服务实例维护，不能由另一个进程并发构建或清理。
+
+SQLite 在既有 `WithWorkspaceTx` 的 `BEGIN IMMEDIATE` 内完整读取索引与当前项目：目录授权撤回、allowed_subdirs 为空、权限 revision 不符或项目已删除时，按准确项目 / worktree / backend / generation 撤下失效元数据。保留候选还通过真实 Git 核当前注册根的 WorktreeID 与稳定 EnvironmentID；Git 观察错误立即返回并回滚，未把临时不可读取当作来源撤回。Root 不通过公开 JSON 获取，也不写回外部提供的自证值。
+
+元数据提交后，清理只检查可信 CacheRoot 的目录。所有保留索引共同保护其 generation，包括同一 worktree 注册的其他项目；单个 Agent grant 撤销不会撤下项目索引。合法名称必须是 64 位小写十六进制 worktree 身份和标准 UUID generation，其他条目保留并计数。目录链接被拒绝。每次递归删除前验证解析后的绝对目标在 CacheRoot 内，再使用 `os.Root.RemoveAll` 约束操作；源项目、AOCI 原文件和发布资产不作为删除对象。
+
+每次最多删除 `maxGenerations` 个目录，范围为 1–1000；还有旧 generation 时返回 `HasMore=true`。清理未发布或已被替代的旧 generation，保留当前图供增量 sync 使用。事务已提交而磁盘清理失败时，不重新开放旧结果；下一次 pass 根据真实元数据继续清理。现有表已足够保存事实，此变更没有新增 DDL。
+
+生产衔接已经交产品负责人、唯一 B 与 H：项目目录设置 / 注册根变更或项目删除成功提交后，由 B 的既有异步任务入口唤醒该 pass；服务恢复时也调用，以处理上次中断留下的投影。H 注入同一 adapter 实例，HTTP 不提供清理命令。B 的准确 worker 入口与同事务持久请求尚未交付，当前不能声称生产异步清理已接入。
+
+实际命令为 `tests/s4/cleanup.ps1 -WorkRoot D:/Astrocyte-agent-assets/20261015/relay/S4/cleanup-second -SdkPath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/sdk/node_modules/@colbymchenry/codegraph -NodePath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe`。在原两个公开 Git 根与全新自有 SQLite / 投影中，官方 SDK 实际建图，真实 Agent grant 撤销后人类仍可查询；项目授权收窄后图和六条实际作者地图立即拒读。真实 Windows junction 导致安全拒绝，失效元数据已经提交、全部图文件仍在；移除该自有 junction 后，每次删除一个目录并明确报告剩余，最后当前 A 投影从磁盘移除，同 worktree 另一项目与 B 的图和关系保持可查。独立进程重新打开 SQLite 后清理幂等，剩余投影的数量、大小和 mtime 不变。
+
+原件为 `cleanup-second/{initial-20261015T1404321108530.log,cleanup-20261015T1404424765055.log,cleanup-restart-20261015T1405033435118.log}`。首相对根命令真实被拒，原件 `cleanup-first/initial-failure-20261015T140359.991362100.txt` 保留；后续改用既有 verify.ps1 的绝对公开根，没有改变作用域断言。首包含完整 sqlite 包的 Go 命令因九个 Workbench 测试缺少其独立实际来源环境变量退出 1，详情保留在本树 `.verification/s4/cleanup-first/checkpoint-failures.md`；未给这些测试提供私人来源、移除断言或新增 skip，该九项不计通过。此次真实清理、适用 workspace / adapter 检查和构建结果分别登记。

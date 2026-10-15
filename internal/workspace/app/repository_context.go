@@ -31,3 +31,13 @@ type RepositoryProjectReader interface {
 	LoadRepositoryProject(context.Context, string) (domain.LocalProject, error)
 	LoadRepositoryGrant(context.Context, string, string) (domain.ProjectGrant, error)
 }
+
+// 仅供既有后台worker调用，必须复用索引和查询所用的同一个Service。
+type RepositoryProjectionCleaner interface {
+	CleanupRepositoryContext(context.Context, int) (domain.RepositoryCleanupResult, error)
+}
+
+type RepositoryCleanupState struct {
+	RetiredIndexes int
+	Retained       []domain.RepositoryIndex
+}
