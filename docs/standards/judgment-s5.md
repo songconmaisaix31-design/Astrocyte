@@ -2,7 +2,7 @@
 
 固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。2026-10-16 当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_fc76cd365979`，接管 HEAD `03e2e511de290454d3f21a7803f291bbfe7614a7` 及原十六件 S5 修改，协调者 `msg_950aee66a55d` / `msg_68b18070297c` 确认唯一写入者与接续授权。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；原机制、委托、模型与各阶段精确来源见对应 REPORT。
 
-仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。H/B 已本人确认并归还判断 handler 前缀，原 S5 持续负责；新增公共字段和完整 Taste 路由由 H 确认。正式 V4 与认知冻结域保持原授权边界。
+仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。H/B 已本人确认并归还判断 handler 前缀，原 S5 持续负责；新增公共字段和完整 Taste 路由已经 H 本人确认。正式 V4 与认知冻结域保持原授权边界。
 
 ## 官方输入与资产
 
@@ -258,7 +258,7 @@ Jev 的 `external_sources` 必须与所选完整 Sources 引用逐项相等，�
 
 增加历史示例权限/撤回和外发许可检查后的五项组合实际命令为 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActual(CompleteSourcesInvalidateCacheAndAdmission|AutomaticSourcesAndExternalPermission|DelegationBindingsAndAdmission|GoalAndRankingSources|DelegationSourceSnapshot)$' -count=1 -v -timeout 8m`，完整 `389.387s PASS`，日志 `actual-sources-final-ctx_8ff-first.log`。原 Delegation 全链 `120.97s`、完整来源 `217.81s`、未配置自动使用与独立外发许可 `19.76s`、Goal/Ranking `1.72s`、规则来源 `11.42s`，零 skip。该结果属于规则、领域服务与真实 SQL 来源；新 Sources 进入真实 Laya 模型的必要检查和 H 生产组装分别验收。
 
-完整 Taste 的有限选项、评分等级和实际 human expected 对应已向 B 交具体方案 `msg_f8ce1c42a2fa` / `msg_f12f0dc54eed`，准确后继源码待原作者交付；既有存储接受的任意题型不会直接进入 S5 模型。新完整 Taste 的 HTTP 人工配置入口已交 H 核定，候选路由未作为既定契约。Jev secret、OS 隔离执行仍未得到所需输入/许可。两次普通 push 依赖消费提交发生真实 `OpenSSL SSL_connect: SSL_ERROR_SYSCALL`；随后公开 GitHub HTTPS 的 curl 也握手失败，远端当时仍为 c26 全 SHA，未将本地提交登记为已推送。
+完整 Taste 的有限选项、评分等级和实际 human expected 对应已向 B 交具体方案 `msg_f8ce1c42a2fa` / `msg_f12f0dc54eed`，准确后继源码待原作者交付；既有存储接受的任意题型不会直接进入 S5 模型。完整 Taste 的 HTTP 人工配置入口已获 H `msg_f17902dcd7ec` 核定。Jev secret、OS 隔离执行仍未得到所需输入/许可。两次普通 push 依赖消费提交发生真实 `OpenSSL SSL_connect: SSL_ERROR_SYSCALL`；随后公开 GitHub HTTPS 的 curl 也握手失败，远端当时仍为 c26 全 SHA，未将本地提交登记为已推送。
 
 ## 当前 Sources 输入、HTTP 与验收交接
 
@@ -268,7 +268,7 @@ Jev 的 `external_sources` 必须与所选完整 Sources 引用逐项相等，�
 
 本次 HTTP 使用原 SQLite migrations、loopback listener、session/CSRF 和原领域服务，实际保存完整 Taste，创建固定 Goal，通过 Policy/Request/Result 的 `sources` 往返、同源缓存、五类反馈及 SQLite/HTTP 重启。实际 Taste 更新独立返回 `version_conflict`，实际 Goal 更新独立返回 `context_stale`；旧人工历史仍能按当前资料权限读取，全部响应继续检查项目绝对路径没有泄漏。H 的 `NewServer` 与 `cmd/server` 生产组装单独验收。
 
-协调者对问题 `msg_a8a04885ba5a` 明确要求先交可独立编译的 Sources 核心及测试，完整 Taste HTTP 候选三文件保留原工作区修改，等 H 本人准确回执后继续交付。本阶段 SOURCE 排除 `judgment_handlers.go`、`judgment_http_test.go` 与 `judgment_taste.go`；上面的 HTTP 实测属于对应工作区，分拆 SOURCE 单独验证。
+H 本人 `msg_f17902dcd7ec` 经协调者 `msg_e30c8662ea05` 确认 `GET/PUT /api/v1/attention-taste-profile` 与原 ranking 路径并存，采用原 `TasteProfileDetail` 和 `UpdateTasteProfileCommand` 的 session/CSRF/Idempotency-Key/CAS 语义；`JudgmentServices.Taste` 使用原 `attention.TasteProfileService`。核心提交为 `cabeb3bdce74ba52b958f2c6835ee324550766ea`；同阶段 HTTP 源码另有普通提交，完整来源在随后独立 REPORT 登记。
 
 新增运行入口 `tests/s5/verify-sources.ps1` 显式使用本任务独占 `D:/Astrocyte-agent-assets/20261015/judgment-s5/verification-ctx_fc76cd365979`，其 `runs` 保存真实 SQLite/objects/projections，`temp` 同时供 `GOTMPDIR/TEMP/TMP` 使用；共享 warm `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build`。Go 子进程 stdout/stderr 分别原样保存，非零退出立即失败，`finally` 恢复 Process 环境。S5 模型测试的 stderr 同样要求显式 `ASTROCYTE_S5_RUN_ROOT`。
 
@@ -284,4 +284,4 @@ Jev 的 `external_sources` 必须与所选完整 Sources 引用逐项相等，�
 
 交 H 的装配输入为 `ProjectAuthorization.Goals` 接实际 S2 `ReadGoal/ReadCurrentGoalSnapshot`，`Taste/Ranking` 接实际 Attention service，`Rules` 接同一 DB；`JudgmentServices.Taste` 使用该 Attention service。公共 `sources` 含固定 `goal{id,revision}`、`taste{id,version}` 和可选 `ranking{id,version}`，Policy 的 `external_sources` 为独立显式外发许可。现有 JSON 列保存这些字段，本阶段没有新增依赖或 DDL 请求。
 
-真实剩余为 H 的公共契约和生产组装、B 的完整 Taste 有限候选/评分等级后继、实际 Jev 回执和 OS 全断网。当前父进程 `TYPESAFE_API_KEY` 存在性仍为 false；Jev 为 NOT_RUN。OS 管理员执行尚未授权，既有进程 HTTP 出口拒绝范围单独保留。S5 完整验收与最终组合/发布尚未完成。
+真实剩余为 H 的 OpenAPI 与生产组装、B 的完整 Taste 有限候选/评分等级后继、实际 Jev 回执和 OS 全断网。当前父进程 `TYPESAFE_API_KEY` 存在性仍为 false；Jev 为 NOT_RUN。OS 管理员执行尚未授权，既有进程 HTTP 出口拒绝范围单独保留。S5 完整验收与最终组合/发布尚未完成。

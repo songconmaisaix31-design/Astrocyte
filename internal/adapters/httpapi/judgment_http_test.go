@@ -11,6 +11,7 @@ import (
 	"net/http/cookiejar"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -22,6 +23,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/repositorycontext"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/judgment"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -64,7 +66,8 @@ func judgmentHTTPStart(t *testing.T, repoRoot, runRoot string) *judgmentHTTPRun 
 	if err != nil {
 		t.Fatal(err)
 	}
-	access := &adapter.ProjectAuthorization{Projects: db, References: refs, Policies: db, Snapshots: snapshots}
+	s2 := workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, refs)
+	access := &adapter.ProjectAuthorization{Projects: db, References: refs, Policies: db, Snapshots: snapshots, Goals: s2, Taste: a, Ranking: a, Rules: db}
 	core, err := judgment.NewService(db, access)
 	if err != nil {
 		t.Fatal(err)
@@ -74,7 +77,7 @@ func judgmentHTTPStart(t *testing.T, repoRoot, runRoot string) *judgmentHTTPRun 
 	h := &handler{services: services, logger: slog.New(slog.NewTextHandler(io.Discard, nil))}
 	h.registerAttention(mux)
 	h.registerLocalProjects(mux)
-	h.registerJudgment(mux, JudgmentServices{Judgments: core, Policies: access})
+	h.registerJudgment(mux, JudgmentServices{Judgments: core, Policies: access, Taste: a})
 	guard := newSessionGuard(Config{Services: services})
 	mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -168,8 +171,12 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	runRoot := filepath.Join(repoRoot, ".verification", "s5", "http-"+uuid.NewString())
-	if err := os.Mkdir(runRoot, 0700); err != nil {
+	evidenceRoot := os.Getenv("ASTROCYTE_S5_RUN_ROOT")
+	if !filepath.IsAbs(evidenceRoot) {
+		t.Fatal("ASTROCYTE_S5_RUN_ROOT must be an explicit absolute owned evidence directory")
+	}
+	runRoot, err := os.MkdirTemp(evidenceRoot, "http-")
+	if err != nil {
 		t.Fatal(err)
 	}
 	f := judgmentHTTPStart(t, repoRoot, runRoot)
@@ -195,6 +202,24 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 		t.Fatal("the actual original material import did not finish", err)
 	}
 	ref := judgment.EvidenceRef{MaterialID: *actual.MaterialID, Revision: *actual.MaterialRevision, Digest: judgment.DigestText(text)}
+	var taste attention.TasteProfileDetail
+	f.call(t, http.MethodGet, "/api/v1/attention-taste-profile", nil, http.StatusOK, &taste)
+	if taste.Configured || taste.Profile != nil {
+		t.Fatal("the actual new database invented a complete taste profile")
+	}
+	tasteCommand := attention.UpdateTasteProfileCommand{CommandMeta: meta(), Enabled: true, Rubrics: []attention.TasteRubric{{ID: "official-source-availability", QuestionType: "truth", Criteria: "The selected fixed official source section is present"}}, Examples: []attention.TasteExample{{ID: "official-export-section", RubricID: "official-source-availability", MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: "1"}}, Delegations: []attention.TasteDelegation{}}
+	f.call(t, http.MethodPut, "/api/v1/attention-taste-profile", tasteCommand, http.StatusOK, &taste)
+	if !taste.Configured || taste.Profile == nil || taste.Profile.Version != 1 || taste.Profile.ConfiguredBy != human.ID {
+		t.Fatal("the actual HTTP human did not create a fixed complete taste profile")
+	}
+	tasteCommand.CommandMeta = meta()
+	tasteCommand.Rubrics[0].Criteria = "Verify that each fixed official source section is present before recommending review"
+	f.call(t, http.MethodPut, "/api/v1/attention-taste-profile", tasteCommand, http.StatusOK, &taste)
+	if taste.Profile == nil || taste.Profile.Version != 2 {
+		t.Fatal("the actual HTTP rubric change did not create the next immutable taste version")
+	}
+	tasteCommand.CommandMeta = meta()
+	f.call(t, http.MethodPut, "/api/v1/attention-taste-profile", tasteCommand, http.StatusConflict, nil)
 	space, err := a.CreateProjectSpace(ctx, principal, attention.ProjectSpaceCommand{CommandMeta: meta(), Title: "Public judgment HTTP verification"})
 	if err != nil {
 		t.Fatal(err)
@@ -213,6 +238,10 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.privateRoot = project.Root
+	goal, err := f.access.Goals.(*workspace.S2Service).PutGoal(ctx, human, "", workspace.GoalCommand{WorkspaceCommandMeta: workspace.WorkspaceCommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString()}, Goal: domain.Goal{ProjectID: project.ID, Title: "Verify the fixed official Laya CPU documentation", SuccessCriteria: []string{"Read the official export verification and local runtime contract"}, Priority: 1, Status: "active"}})
+	if err != nil {
+		t.Fatal(err)
+	}
 	prefix := "/api/v1/local-projects/" + project.ID
 	var captured struct {
 		Snapshot domain.ProjectContextSnapshot `json:"snapshot"`
@@ -223,6 +252,7 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 		t.Fatal("public snapshot must expose its actual fixed identity without a local absolute root")
 	}
 	policy := judgment.Policy{Revision: 1, ProjectID: project.ID, ProjectSettingsRevision: project.Settings.Revision, WorktreeID: snapshot.WorktreeID, SnapshotID: snapshot.Generation, Snapshot: snapshot, SnapshotFiles: []string{"README.md"}, QuestionType: judgment.Truth, Backend: judgment.RuleBackend, Languages: []string{"en"}, Versions: judgment.Versions{Goal: "public-goal-v1", Taste: "manual-review-v1", Policy: "http-policy-v1", Model: "rule:all_evidence_present/v1", AccessEpoch: "public-http-v1"}, Budget: judgment.Budget{TimeoutMS: 60000, MaxInputBytes: 131072, MaxInputTokens: 2048, MaxOutputTokens: 0}}
+	policy.Sources = &judgment.SourceReferences{Goal: domain.GoalReference{ID: goal.ID, Revision: goal.Revision}, Taste: judgment.ProfileReference{ID: taste.Profile.ID, Version: taste.Profile.Version}}
 	private := policy
 	private.Snapshot.Root = project.Root
 	f.call(t, http.MethodPut, prefix+"/judgment-policies/truth", JudgmentPolicyCommand{Policy: private}, http.StatusBadRequest, nil)
@@ -231,16 +261,17 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 		Policy judgment.Policy `json:"policy"`
 	}
 	f.call(t, http.MethodGet, prefix+"/judgment-policies/truth", nil, http.StatusOK, &saved)
-	if saved.Policy.Snapshot.Root != "" || saved.Policy.Snapshot.Generation != snapshot.Generation {
+	if saved.Policy.Snapshot.Root != "" || saved.Policy.Snapshot.Generation != snapshot.Generation || !reflect.DeepEqual(saved.Policy.Sources, policy.Sources) {
 		t.Fatal("the persisted public policy disclosed or changed its actual snapshot identity")
 	}
 	request := judgment.JudgmentRequest{SchemaVersion: "1.0", ProjectID: project.ID, WorktreeID: policy.WorktreeID, SnapshotID: policy.SnapshotID, Question: judgment.Question{ID: "official-export-availability", Type: judgment.Truth, Instructions: "Are all selected official export source sections available?", Rule: "all_evidence_present"}, EvidenceRefs: []judgment.EvidenceRef{ref}, Language: "en", Backend: policy.Backend, Versions: policy.Versions, Budget: policy.Budget}
+	request.Sources = policy.Sources
 	var answer struct {
 		Judgment judgment.JudgmentResult `json:"judgment"`
 	}
 	f.call(t, http.MethodPost, prefix+"/judgments", request, http.StatusOK, &answer)
 	original := answer.Judgment
-	if original.ID == "" || original.Decision != judgment.Recommend || original.ProviderConfidence != nil || original.CacheHit {
+	if original.ID == "" || original.Decision != judgment.Recommend || original.ProviderConfidence != nil || original.CacheHit || !reflect.DeepEqual(original.Sources, policy.Sources) {
 		t.Fatal("actual HTTP rule judgment is incomplete")
 	}
 	f.call(t, http.MethodPost, prefix+"/judgments", request, http.StatusOK, &answer)
@@ -258,7 +289,7 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 	f = judgmentHTTPStart(t, repoRoot, runRoot)
 	f.privateRoot = project.Root
 	f.call(t, http.MethodGet, path, nil, http.StatusOK, &answer)
-	if answer.Judgment.ID != original.ID || answer.Judgment.InputDigest != original.InputDigest {
+	if answer.Judgment.ID != original.ID || answer.Judgment.InputDigest != original.InputDigest || !reflect.DeepEqual(answer.Judgment.Sources, policy.Sources) {
 		t.Fatal("actual SQLite and HTTP restart changed the immutable result")
 	}
 	var history struct {
@@ -273,7 +304,34 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 			t.Fatal("persisted feedback lost its actual authenticated human or fixed version")
 		}
 	}
-	t.Log("actual judgment handlers, original human/CSRF guard, SQLite cache, five feedback kinds and restart passed; production registration remains a separate H integration")
+	f.call(t, http.MethodGet, "/api/v1/attention-taste-profile", nil, http.StatusOK, &taste)
+	if taste.Profile == nil || taste.Profile.Version != 2 || taste.Profile.Rubrics[0].Criteria != tasteCommand.Rubrics[0].Criteria {
+		t.Fatal("the actual complete taste profile did not survive SQLite and HTTP restart")
+	}
+	f.call(t, http.MethodPost, prefix+"/judgments", request, http.StatusOK, &answer)
+	if !answer.Judgment.CacheHit || answer.Judgment.ID != original.ID {
+		t.Fatal("the complete source cache did not survive SQLite and HTTP restart")
+	}
+	tasteCommand.CommandMeta = meta()
+	tasteCommand.ExpectedVersion = taste.Profile.Version
+	tasteCommand.Rubrics[0].Criteria = "Require the current fixed source versions before recommending the documented local CPU review"
+	f.call(t, http.MethodPut, "/api/v1/attention-taste-profile", tasteCommand, http.StatusOK, &taste)
+	var sourceFailure apierrors.ErrorEnvelope
+	f.call(t, http.MethodPost, prefix+"/judgments", request, http.StatusConflict, &sourceFailure)
+	if sourceFailure.Error == nil || sourceFailure.Error.Code != apierrors.VersionConflict {
+		t.Fatal("the actual HTTP taste change did not reject its fixed old version")
+	}
+	f.call(t, http.MethodGet, path, nil, http.StatusOK, &answer)
+	goal.Title = "Verify current local CPU parity and loading requirements"
+	_, err = f.access.Goals.(*workspace.S2Service).PutGoal(ctx, human, goal.ID, workspace.GoalCommand{WorkspaceCommandMeta: workspace.WorkspaceCommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: goal.Revision}, Goal: goal})
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.call(t, http.MethodPost, prefix+"/judgments", request, http.StatusConflict, &sourceFailure)
+	if sourceFailure.Error == nil || sourceFailure.Error.Code != apierrors.ContextStale {
+		t.Fatal("the actual HTTP Goal change did not reject its fixed old revision independently")
+	}
+	t.Log("actual judgment handlers, fixed Goal/taste source references, independent source changes, original human/CSRF guard, SQLite cache, five feedback kinds and restart passed; production registration remains a separate H integration")
 }
 
 func mustJudgmentObjects(t *testing.T, root string) *objects.Store {

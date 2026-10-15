@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/judgment"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -21,6 +22,7 @@ type JudgmentServices struct {
 	Policies   JudgmentPolicies
 	Delegation *judgment.DelegationService
 	Admissions judgment.DelegatedAdmissions
+	Taste      attention.TasteProfileService
 }
 
 type JudgmentFeedbackCommand struct {
@@ -83,6 +85,7 @@ func (h *handler) judgmentResult(w http.ResponseWriter, r *http.Request, result 
 
 func (h *handler) registerJudgment(mux *http.ServeMux, services JudgmentServices) {
 	h.registerDelegation(mux, services)
+	h.registerJudgmentTaste(mux, services)
 	const prefix = "/api/v1/local-projects/{project_id}"
 	mux.HandleFunc("POST "+prefix+"/judgments", func(w http.ResponseWriter, r *http.Request) {
 		actor, err := judgmentCaller(r, false)
