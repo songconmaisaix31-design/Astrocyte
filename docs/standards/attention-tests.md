@@ -30,9 +30,11 @@ SOURCE `a1e1195464c2f989083780a7b2bc0ade0cc07ab6` 已普通提交并 push：候�
 
 按模块 `msg_f14bea6c12a5`，原 `TestActualAdmissionServiceAndDraftLifecycle` 继续以官方固定论文运行全部准入生命周期断言；新增独立 `TestActualPublicGitAdmissionServiceAndDraftLifecycle`。两个测试共用完整断言，保留所有原成功和失败条件，并增加消费者回执、逐 event_id 定位以及两次实际关闭 / 重开 SQLite 的检查。固定 Git 场景从本获准公开 Astrocyte 仓库的实际 HEAD 读取原始 README，经生产 Reader 的显式 `manual` 导入形成固定 revision1，实际来源和错误仅存本机忽略目录。其 provenance 保持 manual，没有外部读取或模型成功声明，也没有网络失败后改换来源的执行分支。
 
-准确 SOURCE 的固定 Git/manual 完整链已通过：Agent / 未授权判断 / incubating / 旧 revision / 实际 outbox SQL 故障拒绝、人工准入、原请求幂等、真实草稿事件重放、其他所有者拒绝、撤销及撤销幂等、来源撤回后的停止分发。原始 admitted / revoked event_id 均在真实 outbox 逐一定位；两次数据库关闭重开后，准入、草稿、撤销和双方回执保持完整 JSON 契约及全部时间精度。人工 PolicyVersion / Model 继续为空、GoalRefs 与综合分保持未知，八项 execution / session 表始终为零。原官方论文完整路径遇到实际 Atom `HTTP 429`，仍未完成该来源的准入成功验证；不以 manual 成功替代论文 AT01 或官方源成功。
+准确 SOURCE 的固定 Git/manual 完整链已通过：Agent / 未授权判断 / incubating / 旧 revision / 实际 outbox SQL 故障拒绝、人工准入、原请求幂等、真实草稿事件重放、其他所有者拒绝、撤销及撤销幂等、来源撤回后的停止分发。原始 admitted / revoked event_id 均在真实 outbox 逐一定位；两次数据库关闭重开后，准入、草稿、撤销和双方回执保持完整 JSON 契约及全部时间精度。人工 PolicyVersion / Model 继续为空、GoalRefs 与综合分保持未知，八项 execution / session 表始终为零。原官方论文完整路径首次遇到实际 Atom `HTTP 429`；后续经模块明确授权的单次正常复验已取得该来源完整生命周期的实际成功，见下方独立记录。manual 与官方论文分别保留自身结果。
 
 本阶段的 HTTP 观察 helper 继续委托实际 Transport，附加保存实际状态 / 请求定位和传输错误的本机 JSON；不复制认证头或 Cookie、不替换响应。三次来源前置失败和所有首 RED 均保留；定位到官方 Atom 429 后没有继续重复请求、修改 DNS / SSL 或使用其他网络绕行方式。
+
+2026-10-15 官方论文单次复验沿用测试 SOURCE `41f88230997382ea0972652ab3f15135c75a90f1`，实际运行 HEAD 为独立 REPORT `b6799eb090df2fbb8c939f00581131b4117906cd`，本轮没有修改源码。模块 `msg_f43eb72cce23` 明确允许原 429 发生四小时后仅执行一次原正常官方论文完整准入命令；使用同一获准匿名 `127.0.0.1:7890` 代理、共享 D backend GOCACHE 与本轨独占 GOTMPDIR。实际官方 Atom 和 PDF 的两个 Transport 响应均为 200，真实来源形成 Ready 候选；完整准入、幂等、拒绝 / 回滚、撤销、来源撤回、逐 event_id 及两次 SQLite 关闭重开全部通过。该次没有模型、原生控制器、循环请求、代理策略或 DNS / SSL 变更；旧 429 原件完整保留。此结果补充官方来源的实际准入消费验证，没有将其扩大为整个 S1 或模型路径通过。
 
 本测试要求显式绝对路径 `ASTROCYTE_TEST_VIDEO_EXPORT_A` 与 `ASTROCYTE_TEST_VIDEO_EXPORT_B`，没有个人路径源码默认值、fallback 或 skip。此次 A 路径为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/video-original-text.txt`，B 为 `C:/Users/DW/orca/workspaces/Astrocyte/product-video-20261014/.verification/video-timed-first/video-original-text.txt`，均按模块与 V `msg_43e318f2b008` 的精确只读授权消费。production `summarize_markdown` loader 保留已有真实正文；该范围没有宣称 Markdown 自身证明 952 个时间片段，也没有调用新提取 / ASR / 模型 / controller。
 
@@ -104,6 +106,7 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | 同十二项命令，保持原断言和全部观测期限 | EXIT0，12 项 PASS，3.992s；没有修改并发数、作业数或期限 | `.verification/admission-stage11-appropriate-regression-second.log` |
 | 准确 SOURCE `41f8823`，同十二项命令 | EXIT0，12 项 PASS，3.595s；固定 Git 原始输入为该 SOURCE 的实际 README | `.verification/admission-stage11-source41f8823.log` |
 | `go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/t/astrocyte-stage11.exe ./cmd/server` | EXIT0；生产服务构建，未执行原生模型或完整产品链 | `.verification/build-stage11.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestActualAdmissionServiceAndDraftLifecycle$' -count=1 -v`，模块获准的一次官方来源复验 | EXIT0，包 25.994s / 测试 4.94s；官方 Atom/PDF 两个实际 200、四项拒绝 / 回滚子例、原全部成功 / 幂等 / 撤销 / 来源 / 逐事件 / 两次数据库重开通过 | `.verification/admission-official-recheck-once-20261015.log`、`.verification/attention-3895065177/state.sqlite`、`.verification/public-http-4037936165` |
 
 第十一阶段十二项适用回归的实际命令：
 
@@ -131,7 +134,11 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 
 T 已将实际依赖精确交付 B `ctx_7217777c7bf5`：`msg_602d3cc2641f` 说明 production Import Reader 尚无已找到的真实 DeliveryUnknown 路径，现 OpenCLI unknown 只在选中目录桥接且无本轨用户来源授权；`msg_8a48fc5def0a` 说明 S1 须在同一 Job / operation 的实际 `send_accepted` / TurnID 后取消，当前新 UUID controller 的本机 source 指针消费方式仍需准确衔接。现 `OwnedRelayExecution.EffectiveToolSet` 明确保留 unknown，实际 argv 与 LaunchPolicy 不能单独证明有效工具关闭。T 不扫描 home / 私有历史，不生成新索引或 manifest，不替代 B / R / H 写入域；原 Import / listing unknown 断言和模型成功断言均保留，依赖答复与实际原生门槛尚未满足。
 
-模块新增资料准入测试支持由本 owner 承担。B 已取得本轨实际 helper 签名和来源环境 `msg_de49a3b81a9a`；其准确生产 SOURCE 已按上述普通消费并独立执行。真实人工 consumer 首失败已精确 Handoff B `msg_98795e92f7b5`，原 S2 准确修复 SOURCE 已普通消费；当前固定 Git/manual 的完整成功、幂等、撤销、来源生命周期和两次数据库重开均已实际通过。官方论文完整生命周期继续受实际 Atom429 阻断，原断言与首失败保留；没有补造 PolicyVersion / 判断授权或事件，没有修改 S2 / B 的生产域。判断委托的正向路径和模型仍须实际获准入口，GoalRef 不自行补充。当前真实 selected-text / Import unknown 生产入口的依赖已重新交 B `msg_b818207d89f7` 和模块 `msg_75ba5cdb74f7`；仅依赖待交付时，本 Task 保持 check --wait 和检查点心跳，继续准确 SOURCE 的组合与返修支持，不按日期暂停或结算任务。
+模块新增资料准入测试支持由本 owner 承担。B 已取得本轨实际 helper 签名和来源环境 `msg_de49a3b81a9a`；其准确生产 SOURCE 已按上述普通消费并独立执行。真实人工 consumer 首失败已精确 Handoff B `msg_98795e92f7b5`，原 S2 准确修复 SOURCE 已普通消费；当前固定 Git/manual 和原官方论文两个独立来源的完整成功、幂等、撤销、来源生命周期和两次数据库重开均已实际通过，原断言及全部首失败保留。没有补造 PolicyVersion / 判断授权或事件，没有修改 S2 / B 的生产域。判断委托的正向路径和模型仍须实际获准入口，GoalRef 不自行补充。当前真实 selected-text / Import unknown 生产入口的依赖已重新交 B `msg_b818207d89f7` 和模块 `msg_75ba5cdb74f7`；仅依赖待交付时，本 Task 保持 check --wait 和检查点心跳，继续准确 SOURCE 的组合与返修支持，不按日期暂停或结算任务。
+
+按模块 `msg_c0700623c50b` 逐一复核，当前 `attention_test.go` 只定义旧共享 helper；独立人工保存、三层沉淀、反馈 later / reject、事务回滚、排序及人机统计均已迁入外部测试包的真实持久化路径。旧 memory fixture 剩余消费者为 `automatic_test.go` 八个模型 / unknown / 已交付缓存测试、`project_distiller_test.go` 一个项目模型测试、`jobs_test.go` 两个包含实际模型或 Import DeliveryUnknown 的测试、`tracking_test.go` 三个包含实际推荐或 Listing DeliveryUnknown 的测试，共十四个。纯 profile 排名仅复用明确参数的 clone，不使用内存持久化。当前没有通过删除旧成功断言、未配置 provider 失败或新的 skip 填补这十四项要求。
+
+模块 `msg_72d429776b13` 仅授权只读 R 两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854`，本轨已核 `RelayIntentPreparer.PrepareIntent`、原 `ConfirmIntent` 的两 operation / 同 controller 和 `NewRelayGuardedRegistry` 的来源保护接口；没有合并或运行新的 CLI / 模型。该 SOURCE 没有修改选定文本的 `text.go / text_source.go`，B/H 的实际组装及同 JobID / OperationID 的 Send 受理 / TurnID / 正选原档 / Stop / EffectiveToolSet 证据契约仍待交付；`msg_4092e7c7a0c4` 和 `msg_7cc75230d7f5` 已分别交模块和 B。原生门槛与获准 Import / Listing unknown 来源均未满足，默认相关两包全跑继续 NOT_RUN。
 
 模块 `msg_1c993379cac1` 通知实际 C 盘容量限制，本轨已确认保留所有首失败与当前证据，不重复构建 / 下载 / ASR、不清理其他 owner 或私有资料；必要新字段和核心检查继续执行。当前未发生本轨 NoSpace，若实际发生则按准确 owned 路径和所需容量向模块与 M-release 交付，不以 skip 或删除断言处理资源不足。
 
