@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"slices"
 	"strings"
 	"time"
@@ -240,7 +241,7 @@ func ValidateTasteProfile(profile TasteProfile) error {
 			// 使用 JSON 库保留数值类型；null、布尔、字符串及越界值均拒绝。
 			var decoded any
 			if err := json.Unmarshal([]byte(example.Expected), &decoded); err != nil {
-				return err
+				return errors.Join(domain.ErrInvalid, err)
 			}
 			value, ok := decoded.(float64)
 			limit := 1.0
