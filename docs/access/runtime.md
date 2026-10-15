@@ -1,5 +1,31 @@
 # Works Relay runtime
 
+## 2026-10-15 同实例可信登记与 L 最小事务闭包
+
+当前 Task `task_f082d8b36471` / Dispatch `ctx_f17d901de131` 使用原工作树、原分支和独占写入范围。实际客户端 Codex 0.162.0，终端配置 GPT-6.1-Sol / xhigh / fast，未覆盖模型配置。已读取模块当前管理文件、v1.4 唯一规格和 Release 任务；本阶段没有原生初始化、模型输入或新的三分钟登记起点。
+
+登记 SOURCE `4d93a52028e5ea72c705c5c6e7f30d0cb7f016bb` 提供内部可选端口 `RelayTrustedAgentRegistrar.RegisterTrustedAgents(context.Context, []domain.AgentSpec) error`。原 `RelayRuntime` 方法集合保持兼容，H 的包装器须显式转发该可选端口。受信组装将固定 `agents.json` 经现有成熟 JSON 解码后交完整快照；方法校验全部条目及重复名称、drive / input mode、实际 launch 字段，复制 slice、map 和时间指针，然后在原服务实例原子发布。ListAgents 与内部 spec 读取使用同一锁并返回独立复制；读取不启动或探测控制器。
+
+原 store 事务核未结束任务、工作区占用、当前 owned 会话及 pending / delivery_unknown 收据。已保存的 ready intent 同样保留其登记策略；移除或更改所用登记返回 VersionConflict。同一完整登记可以重载，不涉及在途身份的新增登记可以发布。失败不部分发布，不改动作收据、任务、controller 或当前权限；调用者必须按返回错误记录本次登记失败。实际文件写入起点、写入完成、解析 / reload 和激活时间由 H 沿唯一 t0 记录，当前没有开始该窗口。
+
+依赖消费经模块正式答复 `msg_dbff4cd21c8a` 授权，独立提交 `4b5312f` 原样登记 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 的十一文件：SQLite `workspace_approvals.go`、`workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go`、`workspace_session_bindings.go`，app `proposal_ports.go`，domain `approvals.go`、`goals.go`、`proposal_context.go`、`proposals.go`、`session_bindings.go`。逐项 Git blob 与原 SOURCE 相等，没有消费其他 S2 路径。B SOURCE `ce281d003c093ec26e19dfec78e912f20a014787` 的两文件由 `0ce81b7` 原样消费，019 迁移 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5` 由 `b9cb066` 原样消费；对应内容独立 diff 全等。L 最小闭包不需要 020 / 021 / 022。
+
+所有 Go 命令使用 `GOMAXPROCS=2`、`-p=1 -mod=readonly`，共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，GOTMPDIR / TEMP / TMP 仅本进程使用 R 的 D 盘独占目录。安全日志位于 `D:/Astrocyte-agent-assets/20261015/relay/R/registration/`。
+
+| 命令 / 检查 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/workspace/app -run '^TestRelayTrustedRegistration' -count=1 -v -timeout=180s` | PASS，2 项：原服务空登记激活、完整失败校验、复制隔离、ready intent 保护、独立新增，以及 16 个并发读写调用者和真实 intent 竞争；包 2.421 秒，`registration-first.log` |
+| `go test -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree -count=1 -timeout=180s` | app 13.680 秒、agents 5.630 秒、relayworktree 4.451 秒 PASS；SQLite 原 B `TestProvenUnstartedResumePreservesOwnedOriginalSession` 第 300 行冷 Registry 恢复期望 FAIL，`scoped-packages-first.log` 保留，原 owner 处理 |
+| `go test -p=1 -mod=readonly ./internal/adapters/sqlite -run '^Test(AttentionUsesActualWorkspaceTransaction\|AttentionRejectsActualWorkspaceTransactionFromAnotherDB\|AcceptedExperienceActualTransactionLifecycle\|AcceptedExperienceRejectsActualWrongDatabaseAndClosedStore\|AcceptedExperienceActualCancellationCreatesNoEvidence)$' -count=1 -v -timeout=120s` | PASS，5 个顶层、7 个叶场景；包 2.462 秒，实际同事务 commit / constraint rollback、跨库拒绝、关闭与取消检查，`l-minimal-transaction.log` |
+| SQLite Relay 来源与不可变收据检查 | PASS，含独立库、真实 hardlink 拒绝和首 RED 保留，`sqlite-relay-transaction.log` |
+| `go vet -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree` | EXIT 0，`vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/registration/registration-server.exe ./cmd/server` | EXIT 0，`build-first.log`；产物未启动 |
+| `git diff --check` | EXIT 0 |
+
+SOURCE 首次 push 和之后独立 ls-remote 首次查询均遇 `SSL_ERROR_SYSCALL`；同 SHA 普通 push 重试成功，没有更改 TLS、代理或公共历史。远端精确 SHA 后续独立核实。上述编译和事务结果使用已经准确登记的最小闭包，没有把越域 WIP 作为源码交付。
+
+H 的固定可信文件实际 reload、生产 HTTP / SQLite 同实例检查和 F observer 窗口继续由原 owner 完成。双完成通道 `verified_complete` / `user_confirmed_complete` 已收到最新用户决定，当前登记 SOURCE 尚未实施该后继变更；开始证据保持独立，完成不能补造 started。L 完整模型输出、quarantine → 人工批准 → 后续检索、实际 native / Today 和最终包仍未通过，Calls / Known 的未决定项继续保持原 Claim 拒绝。旧来源 nlink2 FAIL、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 和全部第一 RED / UNKNOWN / NOT_RUN 独立保留。
+
 ## 2026-10-15 准确 turn 关系、原 Start resolver 与 Read 前置
 
 追加 SOURCE `014692e644b08b3acb1f76d696afa728362f4591` 已普通 push，独立 ls-remote 同值；此前 `79d9313` / `dbb0fe7` 保留普通祖先。本阶段继续原 Task / Dispatch，没有另起 CLI 或模型。模块已授权准备共同成立的 Codex 真实 started 正向，H 唯一登记、F 唯一实际 UI 操作者；无 started 客户端的迁移规则仍待用户决定。
