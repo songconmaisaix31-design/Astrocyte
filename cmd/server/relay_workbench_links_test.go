@@ -16,7 +16,14 @@ import (
 )
 
 func TestRelayWorkbenchActualLinkedGenerationRejected(t *testing.T) {
-	parent, err := filepath.Abs(filepath.Join("..", "..", "dist", "workbench-links"))
+	parent := filepath.Join("..", "..", "dist", "workbench-links")
+	if outputRoot := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); outputRoot != "" {
+		if !filepath.IsAbs(outputRoot) {
+			t.Fatal("明确的测试输出根必须为绝对目录")
+		}
+		parent = filepath.Join(outputRoot, "workbench-links")
+	}
+	parent, err := filepath.Abs(parent)
 	if err != nil || os.MkdirAll(parent, 0700) != nil {
 		t.Fatal("本次链接验证目录不可用")
 	}
@@ -60,7 +67,7 @@ func TestRelayWorkbenchActualLinkedGenerationRejected(t *testing.T) {
 					t.Fatal("实际目录 symlink 创建失败，OS error 未提供")
 				}
 			} else {
-				command := exec.Command("cmd.exe", "/c", "mklink", "/J", linked, target)
+				command := exec.Command("cmd.exe", "/c", "mklink", "/J", filepath.FromSlash(linked), filepath.FromSlash(target))
 				command.Stdout, command.Stderr = io.Discard, io.Discard
 				if err := command.Run(); err != nil {
 					t.Fatal("实际目录 junction 创建失败")
