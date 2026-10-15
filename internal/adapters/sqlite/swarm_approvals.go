@@ -58,6 +58,19 @@ func NewSwarmApprovalBridge(db *DB, grants workspaceapp.GrantAuthorizer) (*Swarm
 }
 
 func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmapp.GrantCheck, fn func(context.Context, swarm.Grant) error) error {
+	needsBindings := c.Action == "claim_work_item" || c.Action == "submit_artifact" || c.BindingPurpose != ""
+	if needsBindings {
+		if _, ok := ctx.Value(swarmTransactionKey{}).(*swarmTransaction); ok {
+			return swarm.Failure(apierrors.VersionConflict, "member observation must begin outside a database transaction")
+		}
+		conn, err := WorkspaceTransaction(ctx, b.db)
+		if err != nil {
+			return err
+		}
+		if conn != nil {
+			return swarm.Failure(apierrors.VersionConflict, "member observation must begin outside a database transaction")
+		}
+	}
 	return NewWorkspaceRepository(b.db).WithWorkspaceTx(ctx, func(wtx workspaceapp.WorkspaceTx) error {
 		ctx := wtx.Context()
 		conn, err := WorkspaceTransaction(ctx, b.db)
@@ -162,7 +175,7 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 			}
 			bindingCheck.Action = c.BindingPurpose
 		}
-		if c.Action == "claim_work_item" || c.Action == "submit_artifact" || c.BindingPurpose != "" {
+		if needsBindings {
 			if len(c.BindingIDs) != 1 || c.BindingIDs[0] == "" {
 				return swarm.Failure(apierrors.EvidenceMissing, "one exact current Workspace member binding is required")
 			}
@@ -171,6 +184,11 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 				return swarm.Failure(apierrors.UnsupportedCapability, "actual Workspace member authorization is unavailable")
 			}
 			return authorizer.WithAuthorizedSessionBindings(tx.ctx, bindingCheck, c.BindingIDs, func(ctx context.Context, g workspace.ApprovalGrant, bindings []workspace.SessionBinding) error {
+				if c.BindingPurpose != "" {
+					if err := b.grants.WithAuthorizedGrant(ctx, check, func(context.Context, workspace.ApprovalGrant) error { return nil }); err != nil {
+						return err
+					}
+				}
 				if len(bindings) != 1 || bindings[0].ID != c.BindingIDs[0] || bindings[0].MemberID != c.Principal.ID {
 					return swarm.Failure(apierrors.ScopeDenied, "binding belongs to another authenticated member")
 				}

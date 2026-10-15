@@ -56,16 +56,19 @@ func AuthorizedBindingForMember(ctx context.Context, p domain.Principal, m Membe
 	return b, nil
 }
 
-func (s *Service) executionForGrant(ctx context.Context, p domain.Principal, g domain.Grant, member Member) (ExecutionDescriptor, error) {
-	var descriptor ExecutionDescriptor
-	err := s.grants.WithAuthorizedGrant(ctx, GrantCheck{
+func (s *Service) withExecutionForGrant(ctx context.Context, p domain.Principal, g domain.Grant, member Member, fn func(context.Context, domain.Grant, ExecutionDescriptor) error) error {
+	if p.Kind != "agent" || p.ProjectID != g.ProjectID {
+		return domain.Failure(apierrors.ScopeDenied, "bound agent must belong to the approved project")
+	}
+	return s.grants.WithAuthorizedGrant(ctx, GrantCheck{
 		GrantID: g.ID, Epoch: g.Epoch, ProposalRevision: g.ProposalRevision, ProjectID: g.ProjectID,
 		Root: g.Root, ExecutionRoot: member.Worktree, Action: "read_swarm", Principal: p,
 		BindingIDs: []string{member.BindingID}, BindingPurpose: member.Purpose,
-	}, func(ctx context.Context, _ domain.Grant) error {
-		var err error
-		descriptor, err = s.execution(ctx, p, member)
-		return err
+	}, func(ctx context.Context, current domain.Grant) error {
+		descriptor, err := s.execution(ctx, p, member)
+		if err != nil {
+			return err
+		}
+		return fn(ctx, current, descriptor)
 	})
-	return descriptor, err
 }
