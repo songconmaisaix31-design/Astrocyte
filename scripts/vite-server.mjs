@@ -1,4 +1,6 @@
 import { createServer as createHTTPServer } from 'node:http';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { createServer } from '../web/node_modules/vite/dist/node/index.js';
 
 let vite;
@@ -58,10 +60,18 @@ try {
   await announce('vite_listening', webURL);
   const apiURL = await configured;
   process.env.ASTROCYTE_PORT = apiURL.port;
-  vite = await createServer({ configLoader: 'runner', cacheDir: process.env.ASTROCYTE_TEST_VITE_CACHE, clearScreen: false, server: { middlewareMode: { server: listener } } });
+  const started = Date.now();
+  vite = await createServer({ configLoader: 'runner', cacheDir: process.env.ASTROCYTE_TEST_VITE_CACHE, clearScreen: false,
+    server: { port: address.port, middlewareMode: { server: listener }, ws: { server: listener, clientPort: address.port } } });
   initialized = true;
   for (const [response, request] of pending) vite.middlewares(request, response);
   pending.clear();
+  console.log(JSON.stringify({ type: 'vite_initializing', phase: 'configuration_loaded', elapsed_ms: Date.now() - started }));
+  await vite.environments.client.depsOptimizer?.scanProcessing;
+  await vite.transformIndexHtml('/', await readFile(join(vite.config.root, 'index.html'), 'utf8'));
+  if (!await vite.transformRequest('/src/main.tsx')) throw new Error('Actual Vite application entry transformation returned no module');
+  await vite.waitForRequestsIdle();
+  console.log(JSON.stringify({ type: 'vite_initializing', phase: 'initial_transforms_complete', elapsed_ms: Date.now() - started }));
   await announce('vite_ready', webURL);
 } catch (error) {
   console.error(error);

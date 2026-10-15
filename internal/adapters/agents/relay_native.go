@@ -120,6 +120,9 @@ func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.
 	if d.sessionDeadlineSeconds < 0 || d.sessionDeadlineSeconds > 1800 {
 		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.BudgetExhausted, "relay native deadline must be zero or 1 to 1800 seconds")}
 	}
+	if err := relayNativeToolsDisabled(r.Spec.Name); err != nil {
+		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: err}
+	}
 	a, err := d.adapter(r)
 	if err != nil {
 		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: err}
@@ -267,6 +270,9 @@ func relayNativeObservation(s domain.NativeSession, obs domain.NativeObservation
 }
 
 func (d *RelayNativeDriver) Send(ctx context.Context, r app.RelayLaunch, input string) (app.RelayObservation, error) {
+	if err := relayNativeToolsDisabled(r.Spec.Name); err != nil {
+		return app.RelayObservation{Session: r.Session}, &domain.RelayInputNotSubmitted{Cause: err}
+	}
 	a, err := d.adapter(r)
 	if err != nil {
 		return app.RelayObservation{}, err
@@ -326,6 +332,9 @@ func (d *RelayNativeDriver) Stop(ctx context.Context, r app.RelayLaunch) (app.Re
 func (d *RelayNativeDriver) Resume(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	if d.sessionDeadlineSeconds < 0 || d.sessionDeadlineSeconds > 1800 {
 		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.BudgetExhausted, "relay native deadline must be zero or 1 to 1800 seconds")}
+	}
+	if err := relayNativeToolsDisabled(r.Spec.Name); err != nil {
+		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: err}
 	}
 	a, err := d.adapter(r)
 	if err != nil {

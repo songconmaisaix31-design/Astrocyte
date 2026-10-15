@@ -13,6 +13,24 @@ import (
 
 var _ app.LocalProjectRepository = (*DB)(nil)
 
+type localProjectSQL interface {
+	ExecContext(context.Context, string, ...any) (sql.Result, error)
+	QueryContext(context.Context, string, ...any) (*sql.Rows, error)
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+// 当前 Workspace 事务复用同一连接；另一数据库的上下文直接拒绝。
+func (db *DB) localProjectConnection(ctx context.Context) (localProjectSQL, error) {
+	conn, err := WorkspaceTransaction(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+	if conn != nil {
+		return conn, nil
+	}
+	return db.conn, nil
+}
+
 func normalizeLocalProject(p domain.LocalProject) domain.LocalProject {
 	if p.Settings.HistoryRoots == nil {
 		p.Settings.HistoryRoots = map[string]string{}
@@ -29,13 +47,17 @@ func normalizeLocalProject(p domain.LocalProject) domain.LocalProject {
 	return p
 }
 
-func (db *DB) ListProjects(ctx context.Context) ([]domain.LocalProject, error) {
-	rows, err := db.conn.QueryContext(ctx, "SELECT data FROM local_agent_projects ORDER BY id")
+func (db *DB) ListProjects(ctx context.Context) (result []domain.LocalProject, resultErr error) {
+	conn, err := db.localProjectConnection(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	result := []domain.LocalProject{}
+	rows, err := conn.QueryContext(ctx, "SELECT data FROM local_agent_projects ORDER BY id")
+	if err != nil {
+		return nil, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, rows.Close()) }()
+	result = []domain.LocalProject{}
 	for rows.Next() {
 		var data string
 		var p domain.LocalProject
@@ -52,7 +74,11 @@ func (db *DB) ListProjects(ctx context.Context) ([]domain.LocalProject, error) {
 func (db *DB) LoadProject(ctx context.Context, id string) (domain.LocalProject, error) {
 	var p domain.LocalProject
 	var data string
-	err := db.conn.QueryRowContext(ctx, "SELECT data FROM local_agent_projects WHERE id=?", id).Scan(&data)
+	conn, err := db.localProjectConnection(ctx)
+	if err != nil {
+		return p, err
+	}
+	err = conn.QueryRowContext(ctx, "SELECT data FROM local_agent_projects WHERE id=?", id).Scan(&data)
 	if errors.Is(err, sql.ErrNoRows) {
 		return p, apierrors.NewNotFound("local project", id)
 	}
@@ -63,6 +89,10 @@ func (db *DB) LoadProject(ctx context.Context, id string) (domain.LocalProject, 
 	return normalizeLocalProject(p), err
 }
 func (db *DB) SaveProject(ctx context.Context, p domain.LocalProject, expected int) error {
+	conn, err := db.localProjectConnection(ctx)
+	if err != nil {
+		return err
+	}
 	p = normalizeLocalProject(p)
 	data, err := json.Marshal(p)
 	if err != nil {
@@ -73,9 +103,9 @@ func (db *DB) SaveProject(ctx context.Context, p domain.LocalProject, expected i
 	}
 	var result sql.Result
 	if expected == 0 {
-		result, err = db.conn.ExecContext(ctx, "INSERT INTO local_agent_projects(id,version,data) VALUES(?,?,?) ON CONFLICT(id) DO NOTHING", p.ID, p.Settings.Revision, string(data))
+		result, err = conn.ExecContext(ctx, "INSERT INTO local_agent_projects(id,version,data) VALUES(?,?,?) ON CONFLICT(id) DO NOTHING", p.ID, p.Settings.Revision, string(data))
 	} else {
-		result, err = db.conn.ExecContext(ctx, "UPDATE local_agent_projects SET version=?,data=? WHERE id=? AND version=?", p.Settings.Revision, string(data), p.ID, expected)
+		result, err = conn.ExecContext(ctx, "UPDATE local_agent_projects SET version=?,data=? WHERE id=? AND version=?", p.Settings.Revision, string(data), p.ID, expected)
 	}
 	if err != nil {
 		return err
@@ -98,7 +128,11 @@ type storedLocalGrant struct {
 func (db *DB) LoadGrant(ctx context.Context, projectID, agentID string) (domain.ProjectGrant, error) {
 	var g storedLocalGrant
 	var data string
-	err := db.conn.QueryRowContext(ctx, "SELECT data FROM local_agent_grants WHERE project_id=? AND agent_id=?", projectID, agentID).Scan(&data)
+	conn, err := db.localProjectConnection(ctx)
+	if err != nil {
+		return g.ProjectGrant, err
+	}
+	err = conn.QueryRowContext(ctx, "SELECT data FROM local_agent_grants WHERE project_id=? AND agent_id=?", projectID, agentID).Scan(&data)
 	if errors.Is(err, sql.ErrNoRows) {
 		return g.ProjectGrant, apierrors.NewNotFound("project Agent grant", agentID)
 	}
@@ -110,20 +144,28 @@ func (db *DB) LoadGrant(ctx context.Context, projectID, agentID string) (domain.
 	return g.ProjectGrant, err
 }
 func (db *DB) SaveGrant(ctx context.Context, g domain.ProjectGrant) error {
+	conn, err := db.localProjectConnection(ctx)
+	if err != nil {
+		return err
+	}
 	data, err := json.Marshal(storedLocalGrant{ProjectGrant: g, PrivateTokenDigest: g.TokenDigest})
 	if err != nil {
 		return err
 	}
-	_, err = db.conn.ExecContext(ctx, "INSERT INTO local_agent_grants(project_id,agent_id,data) VALUES(?,?,?) ON CONFLICT(project_id,agent_id) DO UPDATE SET data=excluded.data", g.ProjectID, g.AgentID, string(data))
+	_, err = conn.ExecContext(ctx, "INSERT INTO local_agent_grants(project_id,agent_id,data) VALUES(?,?,?) ON CONFLICT(project_id,agent_id) DO UPDATE SET data=excluded.data", g.ProjectID, g.AgentID, string(data))
 	return err
 }
-func (db *DB) ListSessions(ctx context.Context, projectID string) ([]domain.NativeSession, error) {
-	rows, err := db.conn.QueryContext(ctx, "SELECT data FROM local_agent_sessions WHERE project_id=? ORDER BY id", projectID)
+func (db *DB) ListSessions(ctx context.Context, projectID string) (result []domain.NativeSession, resultErr error) {
+	conn, err := db.localProjectConnection(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	result := []domain.NativeSession{}
+	rows, err := conn.QueryContext(ctx, "SELECT data FROM local_agent_sessions WHERE project_id=? ORDER BY id", projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { resultErr = errors.Join(resultErr, rows.Close()) }()
+	result = []domain.NativeSession{}
 	for rows.Next() {
 		var data string
 		var s domain.NativeSession
@@ -140,7 +182,11 @@ func (db *DB) ListSessions(ctx context.Context, projectID string) ([]domain.Nati
 func (db *DB) LoadSession(ctx context.Context, id string) (domain.NativeSession, error) {
 	var s domain.NativeSession
 	var data string
-	err := db.conn.QueryRowContext(ctx, "SELECT data FROM local_agent_sessions WHERE id=?", id).Scan(&data)
+	conn, err := db.localProjectConnection(ctx)
+	if err != nil {
+		return s, err
+	}
+	err = conn.QueryRowContext(ctx, "SELECT data FROM local_agent_sessions WHERE id=?", id).Scan(&data)
 	if errors.Is(err, sql.ErrNoRows) {
 		return s, apierrors.NewNotFound("native session", id)
 	}
@@ -150,8 +196,8 @@ func (db *DB) LoadSession(ctx context.Context, id string) (domain.NativeSession,
 	err = json.Unmarshal([]byte(data), &s)
 	return s, err
 }
-func (db *DB) SaveSession(ctx context.Context, s domain.NativeSession) error {
-	// Persist fixed refs and file snapshot metadata, not duplicate original bodies.
+func localNativeSessionForStorage(s domain.NativeSession) domain.NativeSession {
+	// 只保存固定引用及文件快照元数据。
 	s.ContextPacket.Materials = append([]domain.ContextMaterial{}, s.ContextPacket.Materials...)
 	for i := range s.ContextPacket.Materials {
 		s.ContextPacket.Materials[i].Text = ""
@@ -160,11 +206,25 @@ func (db *DB) SaveSession(ctx context.Context, s domain.NativeSession) error {
 	for i := range s.ContextPacket.Files {
 		s.ContextPacket.Files[i].Text = ""
 	}
+	return s
+}
+
+func (db *DB) SaveSession(ctx context.Context, s domain.NativeSession) error {
+	conn, err := db.localProjectConnection(ctx)
+	if err != nil {
+		return err
+	}
+	s = localNativeSessionForStorage(s)
 	data, err := json.Marshal(s)
 	if err != nil {
 		return err
 	}
-	result, err := db.conn.ExecContext(ctx, "INSERT INTO local_agent_sessions(id,project_id,data) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data WHERE local_agent_sessions.project_id=excluded.project_id", s.ID, s.ProjectID, string(data))
+	// 普通观察和停止更新保留私有的固定输入记录，不能恢复为尚未发送。
+	result, err := conn.ExecContext(ctx, `INSERT INTO local_agent_sessions(id,project_id,data) VALUES(?,?,?)
+		ON CONFLICT(id) DO UPDATE SET data=CASE
+		WHEN json_type(local_agent_sessions.data,'$.private_native_messages') IS NULL THEN excluded.data
+		ELSE json_set(excluded.data,'$.private_native_messages',json_extract(local_agent_sessions.data,'$.private_native_messages')) END
+		WHERE local_agent_sessions.project_id=excluded.project_id`, s.ID, s.ProjectID, string(data))
 	if err != nil {
 		return err
 	}

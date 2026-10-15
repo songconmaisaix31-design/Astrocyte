@@ -13,6 +13,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -48,7 +49,7 @@ func main() {
 	}
 }
 
-func run(logger *slog.Logger) error {
+func run(logger *slog.Logger) (runErr error) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -110,6 +111,10 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	repositoryConfig, err := resolveRepositoryContextConfig(ctx, dataDir)
+	if err != nil {
+		return err
+	}
+	judgmentConfig, err := resolveRelayJudgmentConfig()
 	if err != nil {
 		return err
 	}
@@ -212,11 +217,15 @@ func run(logger *slog.Logger) error {
 		logger.Warn("local CLI discovery incomplete; cached partial observations retained")
 	}
 
+	readerRoot, err := workbenchReaderRoot()
+	if err != nil {
+		return err
+	}
 	// 组装现有 S1 服务和 S2 提案命令，原生执行由原控制器接口负责。
 	services := httpapi.Services{
 		RepositoryContext:    &httpapi.RepositoryContextServices{},
 		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),
-		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot(), protectedSources...),
+		Workbench:            sqlite.NewWorkbenchReader(readerRoot, protectedSources...),
 		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
 		Tracking:             attention,
 		LocalProjects:        localProjects,
@@ -246,9 +255,26 @@ func run(logger *slog.Logger) error {
 	if err := assembleSwarmLedger(&services, db, registry, objectStore); err != nil {
 		return err
 	}
-	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry); err != nil {
+	repositoryProvider, err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry)
+	if err != nil {
 		return err
 	}
+	var snapshots workspaceapp.ProjectSnapshotProvider
+	if repositoryProvider != nil {
+		if err := localProjects.ConfigureRepositoryCleanup(repositoryProvider); err != nil {
+			return err
+		}
+		snapshots = repositoryProvider
+	}
+	judgmentCtx, cancelJudgment := context.WithCancel(context.Background())
+	defer cancelJudgment()
+	closeJudgment, err := assembleRelayJudgment(judgmentCtx, &services, db, projectReferences, snapshots, attention, judgmentConfig)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		runErr = errors.Join(runErr, closeJudgment())
+	}()
 	launchContexts, err := relayPublicLaunchContexts(localProjects)
 	if err != nil {
 		return err
@@ -262,6 +288,11 @@ func run(logger *slog.Logger) error {
 			logger.Error("relay shutdown incomplete; unconfirmed state retained")
 		}
 	}()
+	if services.Relay != nil {
+		if err := assembleRelayCompletionSource(&services); err != nil {
+			return err
+		}
+	}
 
 	// Resolve port — invalid value fails startup.
 	port, err := resolvePort()
@@ -302,6 +333,14 @@ func run(logger *slog.Logger) error {
 	// Graceful shutdown on SIGINT/SIGTERM.
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
 	defer cancelWorkers()
+	var repositoryCleanupErrors <-chan error
+	if repositoryProvider != nil {
+		var stopRepositoryCleanup func() error
+		repositoryCleanupErrors, stopRepositoryCleanup = startRelayRepositoryCleanup(workerCtx, repositoryProvider, repositoryConfig.CleanupMaxGenerations)
+		defer func() {
+			runErr = errors.Join(runErr, stopRepositoryCleanup())
+		}()
+	}
 	stopRelayObserver := startRelayObserver(workerCtx, services.Relay, logger)
 	defer stopRelayObserver()
 	workerErrors := make(chan error, 1)
@@ -340,6 +379,12 @@ func run(logger *slog.Logger) error {
 			runError = fmt.Errorf("attention workers: %w", err)
 		} else {
 			runError = fmt.Errorf("attention workers stopped unexpectedly")
+		}
+	case err := <-repositoryCleanupErrors:
+		if err != nil {
+			runError = fmt.Errorf("repository cleanup: %w", err)
+		} else {
+			runError = errors.New("repository cleanup stopped unexpectedly")
 		}
 	case <-ctx.Done():
 		logger.Info("shutdown signal received")

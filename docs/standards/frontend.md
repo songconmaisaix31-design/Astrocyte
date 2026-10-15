@@ -1,8 +1,30 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:11 同一产品的持久化恢复核查
+
+分支 `standards-frontend`，本阶段 SOURCE `6503077885aee63dd97f9642deab66ba57167925` 已普通 push，父提交 `8bd599c8a34661dc9f4a47398212b387278a483f`。当前 Task / Dispatch 为 `task_7cbe30017760` / `ctx_c22d1dd61be3`；客户端 Codex，Orca 实际观测 `gpt-6.1-sol` / xhigh fast，沿原 `--yolo` 配置。原七件产品检查脚本保留，`inspectProductPaper.ts`、`inspectProductProject.ts`、`inspectProductProposal.ts` 的原写入操作没有重发。
+
+三件 `readProductPaper.ts`、`readProductProject.ts`、`readProductProposal.ts` 通过显式 `ASTROCYTE_TEST_PRODUCT_RECORDS_DIR` 读取原安全记录，输出使用独立 `ASTROCYTE_VERIFICATION_OUTPUT_DIR`；输入与输出相同立即失败，结果继续使用 `wx` 创建。新增 `readProductStored.ts` 只以 `readOnly: true` 打开协调者明确交付的同一产品 SQLite，按原公开 ID 核对已保存内容和实际事件，不发送 HTTP 请求。
+
+原安全记录位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_fefd1edc052e/.verification`。本次实际读取的数据库为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；本次输出位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_c22d1dd61be3/.verification`，进程 TEMP / TMP 同样使用该目录。
+
+实际恢复核查通过：原 arXiv v1 / v2 与 PLOS 三次导入对应两份资料，人工摘录仍为 `human` / `manual`；项目权限保持 r2 与原明确目录，Goal、已批准 Proposal、Grant 和 ContextPacket 的固定来源及版本关系存在。五个 Attention 事件和两个 Workspace 事件均逐 ID 在原事件库定位，批准事件的 `grant_id` 与实际批准一致。原生会话数量为零。本结果属于持久化恢复核查，产品服务恢复后的 HTTP / DOM 尚待执行。
+
+| 验证命令（在 web 执行） | 实际结果 | 本次输出目录内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0，包含当前 E2E 类型 | `typecheck-current.log`；首检查原件为 `typecheck-first.log` |
+| `npm run lint` | EXIT0 | `lint-first.log` |
+| `npx eslint e2e/readProductPaper.ts e2e/readProductProject.ts e2e/readProductProposal.ts e2e/readProductStored.ts` | EXIT0 | `lint-readonly-final.log` |
+| `node --experimental-strip-types e2e/readProductStored.ts`，显式配置上述原记录及输出目录 | EXIT0，真实 SQLite 只读、七个事件逐项核对、零 HTTP / 模型调用 | `product-stored-readonly.log`、`product-stored-readonly.json` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+当前唯一产品服务由原 H 恢复，首选 `http://127.0.0.1:64505`；未收到准确运行 SOURCE 和 ready 前，不执行页面读取，不启动第二共享服务。原完整默认 320 项准确结果为 204 PASS / 55 FAIL / 43 既有 SKIP / 18 无结果，EXIT UNKNOWN，原件保留，本阶段没有重跑。当前 HTTP / DOM 恢复、真实 CLI / 模型、L1 / L2 及最终完整产品仍未通过；受限 Codex、未答 S3、Agent 完成证据权限和 Laya 范围按绝对根最新决定保持现状。
+
 ## 2026-10-16 Swarm 页面组合与设计导航验证
 
 分支 `standards-frontend`，当前业务 SOURCE `ae2f56b257a9f6f880d1e96db26c6470f9966384` 已普通 push。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_630293cc6778`，沿现有 Codex `--yolo` 配置，模块公开核实模型为 `gpt-6.1-sol`。本阶段没有在 H 管理的 L1 服务新增登记，没有新建原生会话、发送模型输入或调用模型。
+
+后继测试消费 SOURCE `90e69e703f79b81653ea5ccc1e6c9eca4bd781f9` 已普通 push，只 cherry-pick `-x` 原 UI SOURCE `471bcc9f34b5ae82375b03fdcf5938d3a127d9b1`。唯一目标 `web/e2e/s2-context.spec.ts` 消费前与父内容相等且零 WIP / staged，消费后完整文件 diff 为零；明确批准调用量为 3，并核对实际保存的 `workspace.` 事件前缀。模块交接登记原 UI 两场景、两种窗口共 4 PASS / 1.0 分钟 / EXIT0，模型调用为零。F 按明确要求没有单独重跑已通过的四项，本树最终同源完整默认覆盖仍待执行。
 
 按模块精确放行，逐段普通 cherry-pick `-x` UI SOURCE `64ab5ca`、`32adab9`、`033557f`、`614ebc7`，本树消费提交分别为 `ad42870`、`1781f7a`、`729ec95`、`b2bbe58`。各段目标文件消费前与父内容相容且无 WIP / staged，消费后完整文件 diff 为零；先核出第三段缺少的已提交测试前置，经准确放行补齐后继续，没有制造或处理冲突。页面逻辑归原 UI 负责人，F 仅修改 `web/e2e/preview-design.spec.ts` 的时间线验证。
 
@@ -19,7 +41,7 @@
 | 在 web 执行 `npx playwright test e2e/preview-design.spec.ts e2e/navigation.spec.ts --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/design-navigation-ui-fixed-artifacts` | 两种窗口完整 100 PASS，11.9 分钟、EXIT0、零 skip、零重试，原超时保持 | `design-navigation-ui-fixed-playwright.log`、`design-navigation-ui-fixed-artifacts` |
 | 在 web 执行 `npx playwright test --list --reporter=list` | EXIT0；当前默认清单为 37 文件、320 项，仅收集 | `default-case-list-ui-fixed.log` |
 
-设计与导航 100 项通过不代表全部默认 E2E。前序 308 项清单和原完整 280 项首结果分别保留，当前完整 320 项尚未执行；真实 Relay 场景、来源输入和单人原生窗口等条件见下节。Context 的原预算前置失败由原 UI 负责人继续修复，本阶段没有重复该已知失败场景；正向 Context、真实 CLI / 模型及最终唯一 I 组合仍未完成。前序 Prepare 四项通过与真实 HTTP 17 项结果按各自精确源码登记，不与本阶段重复累加。
+设计与导航 100 项通过不代表全部默认 E2E。前序 308 项清单和原完整 280 项首结果分别保留，当前完整 320 项尚未执行；真实 Relay 场景、来源输入和单人原生窗口等条件见下节。Context 的预算和事件前缀测试修复已准确消费，当前本树同源 Context、真实 CLI / 模型及最终唯一 I 组合仍未完成。前序 Prepare 四项通过与真实 HTTP 17 项结果按各自精确源码登记，不与本阶段重复累加。
 
 ## 前序：2026-10-16 Prepare 与真实共享客户端阶段
 

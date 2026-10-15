@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -29,7 +30,12 @@ type repositoryContextConfig struct {
 	MaxBytes      int64
 	MaxResults    int
 	MaxDepth      int
+
+	CleanupMaxGenerations int
 }
+
+// 每次清理最多删除 64 个 generation；可信环境可在 S4 规定的 1..1000 内配置。
+const defaultRepositoryCleanupMaxGenerations = 64
 
 // HTTP 只提交业务请求；程序、环境身份和预算由本地可信启动配置提供。
 func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (repositoryContextConfig, error) {
@@ -58,6 +64,9 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 	if c.MaxDepth, err = configuredPositiveInt("ASTROCYTE_REPOSITORY_MAX_DEPTH", 5, 5); err != nil {
 		return c, err
 	}
+	if c.CleanupMaxGenerations, err = configuredPositiveInt("ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS", defaultRepositoryCleanupMaxGenerations, 1000); err != nil {
+		return c, err
+	}
 	graphConfigured := c.Node != "" || c.SDK != "" || c.Script != ""
 	if graphConfigured && (c.Node == "" || c.SDK == "" || c.Script == "") {
 		return c, fmt.Errorf("ASTROCYTE_CODEGRAPH_NODE, ASTROCYTE_CODEGRAPH_SDK and ASTROCYTE_CODEGRAPH_SCRIPT must be configured together")
@@ -79,7 +88,7 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 			return c, fmt.Errorf("create repository tool runtime directory: %w", err)
 		}
 	}
-	probe := func(executable string, args ...string) ([]byte, error) {
+	probe := func(stage, executable string, args ...string) ([]byte, error) {
 		probeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 		defer cancel()
 		command := exec.CommandContext(probeCtx, executable, args...)
@@ -93,7 +102,11 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 		}
 		output, err := command.Output()
 		if err != nil {
-			return nil, fmt.Errorf("verify configured repository executable %s: %w", executable, err)
+			var exit *exec.ExitError
+			if errors.As(err, &exit) && len(exit.Stderr) > 0 {
+				return nil, fmt.Errorf("verify configured repository %s executable %s: %w: %s", stage, executable, err, strings.TrimSpace(string(exit.Stderr)))
+			}
+			return nil, fmt.Errorf("verify configured repository %s executable %s: %w", stage, executable, err)
 		}
 		return output, nil
 	}
@@ -106,7 +119,7 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 		if err := repositoryConfiguredPath("ASTROCYTE_CODEGRAPH_SDK", c.SDK, true); err != nil {
 			return c, err
 		}
-		version, err := probe(c.Node, "--version")
+		version, err := probe("Node version", c.Node, "--version")
 		if err != nil {
 			return c, err
 		}
@@ -117,10 +130,10 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 			return c, err
 		}
 		// 让官方包实际解析其生产依赖；源码 SDK 与 npm wrapper 共用公开导出契约。
-		if _, err := probe(c.Node, "-e", "const sdk=require(process.argv[1]);for(const key of ['CodeGraph','QueryBuilder','setLogger'])if(typeof sdk[key]!=='function')throw Error('codegraph_exports_unavailable');if(!sdk.silentLogger)throw Error('codegraph_logger_unavailable')", c.SDK); err != nil {
+		if _, err := probe("CodeGraph SDK exports", c.Node, "-e", "const sdk=require(process.argv[1]);for(const key of ['CodeGraph','QueryBuilder','setLogger'])if(typeof sdk[key]!=='function')throw Error('codegraph_exports_unavailable');if(!sdk.silentLogger)throw Error('codegraph_logger_unavailable')", c.SDK); err != nil {
 			return c, err
 		}
-		if _, err := probe(c.Node, "--check", c.Script); err != nil {
+		if _, err := probe("CodeGraph bridge syntax", c.Node, "--check", c.Script); err != nil {
 			return c, err
 		}
 	}
@@ -128,7 +141,7 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 		if err := repositoryConfiguredPath("ASTROCYTE_AOCI_EXECUTABLE", c.AOCI, false); err != nil {
 			return c, err
 		}
-		version, err := probe(c.AOCI, "--version")
+		version, err := probe("AOCI version", c.AOCI, "--version")
 		if err != nil {
 			return c, err
 		}
