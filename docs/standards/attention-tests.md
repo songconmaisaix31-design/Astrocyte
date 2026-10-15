@@ -107,6 +107,7 @@ mutable 参数与真实可变文件使用明确 manual 导入；不声称远端 
 | 准确 SOURCE `41f8823`，同十二项命令 | EXIT0，12 项 PASS，3.595s；固定 Git 原始输入为该 SOURCE 的实际 README | `.verification/admission-stage11-source41f8823.log` |
 | `go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/t/astrocyte-stage11.exe ./cmd/server` | EXIT0；生产服务构建，未执行原生模型或完整产品链 | `.verification/build-stage11.log` |
 | `go test -mod=readonly ./internal/attention/app -run '^TestActualAdmissionServiceAndDraftLifecycle$' -count=1 -v`，模块获准的一次官方来源复验 | EXIT0，包 25.994s / 测试 4.94s；官方 Atom/PDF 两个实际 200、四项拒绝 / 回滚子例、原全部成功 / 幂等 / 撤销 / 来源 / 逐事件 / 两次数据库重开通过 | `.verification/admission-official-recheck-once-20261015.log`、`.verification/attention-3895065177/state.sqlite`、`.verification/public-http-4037936165` |
+| 模块获准一次 `creator-page-recheck-once.ps1`，实际调用固定 Python 的 `-I internal/adapters/importers/bilibili-listing.py 49683148 1 30` | FAIL：原 reader 进程 EXIT0，上游 JSON 的实际 API code 为 -352，缺少正常 page / list，正常 metadata 不可用；总数和观察条数均 UNKNOWN，100 条容量未验证 | `.verification/creator-49683148-recheck-once-20261015.original.json`、`.error.log`、`.safe.json` |
 
 第十一阶段十二项适用回归的实际命令：
 
@@ -125,6 +126,8 @@ S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有�
 收藏夹真实响应原件位于 `.verification/public-http-1166636830/response-1.bin` 至 `response-9.bin`。只读派生为资源页 `20 / 20 / 19 / 0` 项、均 `code=0`、`has_more=true`；目录元数据为 459 项。生产 `PublicListing.ReadPage` 按 returned observed 推进窗口，而 provider 页位置按 requested page size 计算，第三页不足 20 后下一请求落到空槽。这一具体问题已直接 Handoff B `ctx_7217777c7bf5`；T 没有修改 provider、补造行数 / metadata、绕过网络权限或降低 cap。creator3 的有限列表观察、收藏459的目录前置、100 截断失败和最后一页缓存成功分别保留。
 
 根 `msg_8d2dcf0e1841` 批准另选足量、匿名公开可访问 Creator 作为工程 QA 来源；正式用户案例与科研成绩不随之改变。T 对三个现有公开发布者候选 `49683148`、`1408168321`、`946974` 使用原生产 `bilibili-listing.py` 与已安装固定 yt-dlp 查询首 metadata 页，实际均 HTTP412，stdout 原件为零，真实发布总数仍 UNKNOWN。原错误仅在 `.verification/creator-<UID>-first.error.log`，不进 stdout / Git；没有登录、Cookie、凭据、源外下载或生成数量。三个同类拒绝已向模块及 B 报告，不继续批量盲扫。
+
+2026-10-15 模块 `msg_3581e25d48d9` 允许数小时后仅对原候选 `49683148` 执行一次正常首 metadata 页查询。实际运行 HEAD 为 `feb0719e6398116b0d1d00c8848614d474c07826`，没有修改生产或测试源码；中间脚本仅在本树已忽略 `.verification`，经 PowerShell 标准 parser 检查后调用原生产 helper 和固定 yt-dlp 2026.08.19。子进程按生产同样清空环境后只加入 Python 编码、NO_COLOR、SystemRoot、WINDIR 和固定 PATH；仅第一页 30 项、60 秒期限，未改变 Cookie / 登录 / 代理 / DNS / SSL，没有模型或视频请求。完整实际 stdout 为 137 bytes、stderr 为 0 bytes，只在本机保存；返回 API code -352 且没有正常分页或列表，因此本次来源验证失败，总数及 observed 保持 null。失败后立即停止，其他两个 UID 未查询，没有用进程 EXIT0 或缺失数据填成外部成功、空来源或实际 100 条容量通过。模块已收到 `msg_2ee547e46be5`，前三次 HTTP412 和本次原件均保留。
 
 ## 后续实际验收条件
 
