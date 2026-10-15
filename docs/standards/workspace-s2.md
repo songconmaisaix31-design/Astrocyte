@@ -1,6 +1,6 @@
 # Workspace S2
 
-当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_54302cb333c4`，终端 `term_721cf30f-a6d2-4a21-abcd-0f73c8b793f5`。实际客户端 Codex，模块公开 worker-list 已核 `gpt-6.1-sol`；原 Task、工作树、分支与测试记录保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_172ff9553370`，终端 `term_340713c9-7cfb-4ff9-abfc-6ffa7989fd88`。实际客户端 Codex；原 Task、工作树、分支与测试记录保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
 
 ## 2026-10-16 准入格式与 Context 失败核查独立 REPORT
 
@@ -306,7 +306,7 @@ SOURCE `55b48b755d7d9790d5f6f58f53724a0e4f59ce7e` 普通 push / remote 同值，
 
 `go test -mod=readonly ./tests/s2 -timeout 90s -v` PASS，5.893 秒。真实 SQLite 验证嵌套事务提交前没有通知、提交后依次通知、通知通过已归还的唯一连接读取实际 Goal、无外层事务立即通知、回滚零通知、真实延迟外键在 COMMIT 时失败且零通知/零残留、异库及空回调拒绝、结束后的事务不能登记。原批准、人类/Agent 权限、版本冲突、幂等、事务回滚、事件重读、重启、撤销及过期检查同时通过。`go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/server-aftercommit.exe ./cmd/server` PASS，三项修改文件的只读 gofmt 和 `git diff --check` PASS。
 
-日志为 `D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/aftercommit-first.log`、`aftercommit-build-first.log`；实际库为同目录下的 `actual-1428354769/state.sqlite` 和 `current-goal-163912885/state.sqlite`。临时目录、Go cache、编译结果和日志均放在 D 盘；没有原生或模型调用。
+测试日志为 `D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/aftercommit-first.log`，构建产物为同目录下的 `server-aftercommit.exe`；实际库为同目录下的 `actual-1428354769/state.sqlite` 和 `current-goal-163912885/state.sqlite`。临时目录、Go cache、编译结果和日志均放在 D 盘；没有原生或模型调用。
 
 B 的项目设置调用与 S4 的真实撤权清理仍需各 owner 集成检查。完整资料 Context 的生产 HTTP 验证等待包含当前 S2/S4/B 修改并实际 ConfigureContext 的同源二进制，保持未验；本次构建的自树入口没有完成该装配，不能代替它。根正式决定 `msg_dfe105fea7e1` 暂不执行当前入口不能满足工具关闭要求的受限原生与关联模型调用；该限制保留，普通产品集成继续。
 
