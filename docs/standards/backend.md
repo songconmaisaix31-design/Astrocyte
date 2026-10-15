@@ -523,6 +523,12 @@ SOURCE `ef8f944069996b8b4ff849d8f7f8ab6e48e1a870` 已普通 push，只整改 `Te
 
 经 F 最窄只读授权，逐项核对完整默认第 131 / 133 项各自 error-context 和 HTTP 日志，并以 SQLite `readOnly` 仅查询指定两个数据库的资料表 schema、资料数量及人工使用计数汇总。两个原错误均在公开论文目录配置检查处发生；两库分别为 `material_count=0`、`human_usage_count=0`、`human_use_records=0`，HTTP 没有到达资料导入、使用或分类写入。查询 EXIT 0，日志 `.verification/f-two-s1-readonly-first.log`。两项 FAIL 保留，业务断言未运行；没有访问 auth/session 或完整 payload、修改 F 环境或重跑在途套件。
 
+## 可信清理批量配置
+
+SOURCE `da084e44a93adda7c3465a564fb5b63510222b0a` 已普通 push。`repositoryContextConfig.CleanupMaxGenerations` 来自可信环境 `ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS`；未设置时使用程序常量 64，范围沿 S4 既有接口限制为 1–1000，错误值立即失败。该值只限制每次清理删除的 generation 数量，不作为业务权重或用户规则；HTTP 不提供该配置。
+
+`go test -mod=readonly -p=2 ./cmd/server -run '^TestRepository(ContextConfig|CleanupBatchTrustedConfiguration)' -v -count=1` EXIT 0，4 项主检查及原 8 项拒绝子项通过，3.264s；显式 1/64/1000 精确返回，0、负数、超限、非整数和非数字被拒绝，日志 `.verification/repository-cleanup-trusted-config-first.log`。全包 build、cmd/server vet、Go 格式与 diff 检查通过，日志 `repository-cleanup-config-{build,vet}-first.log`。同 provider 的实际清理生命周期由 H 接入；项目修改的成功 commit 后 Wake 仍待原 S2 事务接口确认，当前没有发出唤醒或清理目录，S4 实际撤回清理首 RED 继续保留。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
