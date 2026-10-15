@@ -84,7 +84,7 @@ func (g *relaySourceGuard) Check(ctx context.Context, session domain.NativeSessi
 	if err != nil || !os.SameFile(workspaceInfo, archiveWorkspace) {
 		return relaySourceDenied(apierrors.ScopeDenied, "original_archive_workspace_changed")
 	}
-	fileID, err := events.VerifyRelaySessionSource(ctx, archive.Path, archive.WorkspaceRoot, []string{archive.Root})
+	fileID, err := events.VerifyRelaySessionArchive(ctx, archive.Path, archive.WorkspaceRoot, []string{archive.Root}, archive.NativeID, archive.Format)
 	if err != nil {
 		return err
 	}

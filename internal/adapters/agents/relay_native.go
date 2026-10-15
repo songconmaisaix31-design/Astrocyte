@@ -108,6 +108,14 @@ func (d *RelayNativeDriver) request(r app.RelayLaunch) domain.NativeRequest {
 	return domain.NativeRequest{SessionID: session.ID, Project: p, Session: session, Command: domain.NativeCommand{CLI: r.Spec.Name, Message: r.Input, Mode: "native", DeadlineSeconds: d.sessionDeadlineSeconds}, Packet: packet}
 }
 
+func (d *RelayNativeDriver) Initialize(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
+	if r.Spec.Name != "codex" || !d.captureNativeNotifications || d.beforeFirstInput == nil {
+		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.UnsupportedCapability, "two-stage initialization requires an armed source checkpoint")}
+	}
+	r.Input = ""
+	return d.Launch(ctx, r)
+}
+
 func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
 	if d.sessionDeadlineSeconds < 0 || d.sessionDeadlineSeconds > 1800 {
 		return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.BudgetExhausted, "relay native deadline must be zero or 1 to 1800 seconds")}

@@ -1,5 +1,84 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-15 安全 Context、两阶段 HTTP 与同实例可信登记
+
+SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9`，分支 `songconmaisaix31-design/works-relay-http`。本轮沿原 H 工作树恢复，原 S2 按限定四路径编辑和 stage 后明确停止写入，产品模块独立核 U0 后仅 H 继续原消费序列。准确消费 S2 `aa445adf834c3a397a0817bec0593fcf1039420a` 为 `c84cec7`、`02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` 为 `1e6ee32`，S3 `70e6e5a03fca9a19aa0a70e44b23b78337d34714` 为 `688ebb8`，R 登记 SOURCE `4d93a52028e5ea72c705c5c6e7f30d0cb7f016bb` 为 `525288a`。两阶段领域来源仍为 `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854`。
+
+Context HTTP 只投影安全 DTO：snapshot 省略私有绝对 Root，scope.roots 使用该固定项目内的相对路径，session binding 省略 native / controller / startup operation 身份及能力原因原文。生产 S2 配置使用同一 S4 snapshot provider、原 object store 和原 Registry 的只读 `ReadOwnedNativeSession` 桥；冷 Registry 没有原持有对象时明确拒绝。内部仍保存原始归属与工作区身份。新的 owned 原生正向绑定尚未执行。
+
+`POST /api/v1/relay/intents/{id}/prepare` 使用既有 `RelayConfirmRequestV1`、人类 session、Origin、CSRF 和 Idempotency-Key，转发原 `RelayIntentPreparer`。它表示空 Message 初始化；首次输入仍由原 Confirm 操作提交。生产 driver 已接入 `BeforeFirstInput: sourceGuard.Check`；实际来源检查、工具关闭与固定上下文、同控制器首次输入的正向链路尚未运行。session-events 保持精确六字段。
+
+可信登记使用同一 Service、Registry、store 和原 observer。`relaySessionRuntime.ReloadTrustedAgents` 只读取启动时固定根下的 `agents.json`，重新核根文件身份和既定活性窗口，再显式转发原 `RelayTrustedAgentRegistrar`。原 observer 每轮观察前执行该重载；GET 只读取已发布快照。完整快照由 R 校验、复制并原子发布，在途身份 / 策略冲突按原 store 规则拒绝；解析、根身份或启动策略变化立即返回错误并终止该次观察。没有新增 HTTP 配置入口。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./tests/s2 -run '^TestActualSQLiteApprovalRestartAndRollback$' -count=1 -timeout=120s` | PASS，5.304 秒；真实 Git / SQLite / 批准重启与 Context HTTP，含人类和项目 Agent 的安全相对路径投影；`recovery-s2-context-first.log` |
+| `go test -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server -run '^(TestRelayTrustedRegistrationActualSQLiteHTTP\|TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission\|TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown)$' -count=1 -timeout=120s` | PASS，2.255 秒；同服务空登记、原 observer 激活、GET 无重载、八路并发、畸形登记拒绝、启动策略保护、Prepare 当前权限 403、真实 SQLite / HTTP / Origin / CSRF / 关闭；`recovery-http-registration-second.log` |
+| `go build -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' -o D:/Astrocyte-agent-assets/20261015/relay/H/recovery-context-registration-server.exe ./cmd/server` | EXIT 0；产物未启动，`recovery-context-registration-build.log` |
+| `go vet -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server ./internal/adapters/httpapi` | EXIT 0；`recovery-context-registration-vet.log` |
+| 官方 Redocly lint / `node scripts/validate-examples.mjs` | EXIT 0，13 项已有 unused component 警告 / PASS，273 个示例 |
+| `node scripts/check-architecture.mjs` / 十个 Go 文件 `gofmt -l` / `git diff --check` | PASS，34 个包边界 / 无输出 / EXIT 0 |
+
+本机检查日志与构建产物位于 `D:/Astrocyte-agent-assets/20261015/relay/H`；本次实际登记检查的自有数据库和安全聚合位于忽略目录 `dist/relay-registration/owned-*`。检查使用已安装的真实 Codex 启动入口作为登记值，没有启动控制器；实际任务、收据、原生会话、terminal、worktree 和模型输入均为零。本轮开发客户端为 Orca Codex，公开运行状态显示 `gpt-6.1-sol`；Go `GOMAXPROCS=2 / -p=1`，Node 512 MiB。
+
+首命令的未完整引用 overlay 参数被 PowerShell 截断，原始失败保留 `recovery-http-registration-first.log`，该命令没有进入编译或实际检查。源码首次 push 成功，独立远端核对首场 TLS 失败与后继检查分别保存。既有 H 单树旧 Reader build FAIL、P579 五文件 readonly overlay 组合 PASS、S4 首 search unknown、旧 SQL 表名 FAIL、nlink2 来源 FAIL、raw 恢复 gap、session_complete=false、旧三分钟 FAIL 和未知交付均保留。
+
+F 继续独占产品界面与客户端生成。Calls / Tools / Targets Known 的待定范围保持原 Claim 拒绝，本次目标登记 t0、原生初始化和模型输入仍为零。双完成通道由原 R 实施后交准确 SOURCE，started 独立保存，资源释放保持原审计。实际固定上下文输入、合法来源正向核验、逐 event_id SQLite、真实 CLI / Today、S5 生产注册、完整默认浏览器和最终包验收尚未完成；本阶段交付支持唯一 I 准确组合。
+
+## Context 与 S3 依赖及既有检查
+
+本阶段 SOURCE 为 `59a7150b1143680b67fe53fdf831fcca5f328660`，分支为 `songconmaisaix31-design/works-relay-http`。准确消费 S2 `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d`、S3 的 `b220ab2`、`3b78fd0`、`e18c096`、`3c568c7`、`ec653dd`、`93d1f6b`、`2bd5d26`、`10fa36c` 八项源码，以及 B 的 action 提交 `c110201` 和可信配置 `e346c40cc9edcbd5b4588e47585f3c0b616b0770`。配置冲突仅由原 B 在模块限定范围内编辑并 stage，归还后 H 核实 U=0、完整 index blob `2d7a7bdc1a31b8f97545baed2f74806c2168d796` 和仅两件 staged 文件，再普通继续为 `b535216`；没有消费其他 B 历史。
+
+生产入口将明确的环境身份、工具路径、缓存目录和预算传给同一个 S4 provider，同时把该对象、原 object store 和原 Registry 的私有 owned 读取桥配置给当前 S2 服务。环境身份为空时保留明确的缺配置结果。HTTP 只提供当前批准下的固定 Context Packet 构建、读取和原生绑定命令；原生 ID 不进入绑定 DTO。OpenAPI 使用现有固定引用、Goal、Scope 和 Stops，闭合描述安全快照、后继关系、六组上下文记录、能力观察和错误状态。
+
+生产 `SwarmS3` 通过原 SQLite repository、同库批准桥和当前 S2 服务构造原 `NewSwarmLedger`，注册原 S3 全部处理器；原生执行、成员与证据端口缺失时仍由现有领域拒绝。Agent 白名单只增加已鉴权的任务读取、work item、claim、submit 和 diff，人工任务创建、暂停、取消、恢复、验收和拒绝继续经过人类入口。OpenAPI 的任务、lease、artifact、时间线、执行引用、未知用量与命令对应原服务实际字段和 200 响应。
+
+私有 `VerifyRelaySessionArchive` 使用原 NDJSON 库和既有 header 身份 / 工作目录检查，在同一文件句柄上先后检查正选来源与单链接身份。该函数只返回本机文件身份，不产生事件或游标；`relaySourceGuard.Check` 已采用此检查。当前尚未接入新的两阶段实际窗口，新的真实原档正向预查仍为 NOT_RUN，实际调用前不能据编译或文件身份测试宣称来源通过。
+
+本机安全日志在 `D:/Astrocyte-agent-assets/20261015/relay/H`，构建及临时目录使用前述 D 盘专用进程环境；Go `GOMAXPROCS=2 / -p=1`、Node 512 MiB。当前 Orca Codex 客户端的具体模型没有独立回显，本阶段模型调用为零。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server -run '^(TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown\|TestRepositoryContextConfig.*)$' -count=1 -timeout=180s` | PASS，1.998 秒；实际主服务、同库 ledger、空任务读取、缺授权 / CSRF 拒绝、五项缺配置、配置三项和 native sessions=0；`v14-context-s3-main-actual.log` |
+| 原 S3 实际 HTTP 授权、时间线和撤销检查 | PASS，3.319 秒；此前同组 H atomic 检查 PASS，2.407 秒；`v14-s3-http-first.log` |
+| `go test -mod=readonly -p=1 ./tests/s3 -run '^TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart$' -count=1 -timeout=180s` | PASS，6.830 秒；`v14-s3-approval-actual.log` |
+| `go test -mod=readonly -p=1 ./tests/s2 -run '^TestActualSQLiteApprovalRestartAndRollback$' -count=1 -timeout=180s` | PASS，23.068 秒；真实 SQLite、固定 Git 快照、批准、重启、后继与事务回退；`v14-context-actual.log` |
+| `go test -mod=readonly -p=1 ./internal/adapters/events -run '^TestRelaySourceIdentityActualFileAndAliasRejection$' -count=1 -timeout=90s` | PASS，0.935 秒；实际普通文件身份与 hardlink 拒绝，未使用伪造原生文件；`v14-source-archive-identity.log` |
+| `go vet` 当前 cmd/server、HTTP、events、repositorycontext / `go build` 当前 cmd/server，均带准确 P579 readonly overlay | EXIT 0 / EXIT 0；`v14-context-s3-final-vet.log`、`v14-context-s3-final-build.log`；构建产物未启动 |
+| 官方 Redocly CLI lint / `node scripts/validate-examples.mjs` | EXIT 0，13 项 unused 等警告 / PASS，273 个现有示例；`v14-context-s3-openapi.log`、`v14-context-s3-examples.log` |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，34 个包边界 / EXIT 0 |
+
+此前第一次 S3 正则在 `tests/s3` 未命中测试，保持 NOT_RUN；随后已用上表准确测试名运行实际并发批准检查。原 B 在本树进行配置检查时的旧 Reader 变参编译 RED、H 单树旧 Reader FAIL、S4 首 search 超时 unknown、旧 SQL 表名 FAIL、旧 nlink2 来源 FAIL、旧三分钟 FAIL 和未知交付保留实际记录。当前 build / vet 使用的 overlay 仍为既有 P `579a1ce` 五件准确 Reader 源，尚未将 B 新 Reader 闭包写入本树。
+
+F 是唯一实际 GUI 操作人，生成客户端与当前完整配置 HTTP 正向组合交原 owner 消费准确 SOURCE。Calls、Tools、Targets 的 Known 完整性继续等待根转交的用户决定；Claim 保持原拒绝。本次目标原生登记、controller、模型输入和新 t0 均为零；S5 薄装配、真实 CLI / Today / 逐 event_id SQL 及最终产品验收继续，不发送阶段 worker_done。
+
+## 2026-10-15 仓库上下文公共装配阶段
+
+本阶段 SOURCE 为 `31256d5d6758daf25892d55df73feffde7a7e573`。沿原作者准确消费 S4 的 `9eff2ed`、`263bc70`、`1a55e16`、`896a7b4`、`293af63`、`f407337` 六个源码提交，以及 B 的 `98bb923` 迁移和 `6b78f64` 依赖提交。三件依赖冲突由原 B 通过文件编辑工具解决并明确归还；S4 报告冲突先由原 owner 处理，后经模块 `msg_d8d09a25bb0e` 临时授权 H 仅处理该报告的后续冲突。H 已在 `msg_1ef84752900b` 明确停止并归还该单文件范围，S4 业务文件保持准确源码内容。
+
+生产 `httpapi.Services.RepositoryContext` 现在在原 `NewServer` 和原 session guard 中注册五个 S4 处理器。现有项目 Agent 白名单只放行 map GET 与 search / impact POST；索引和地图维护仍限人类。OpenAPI 闭合描述全部请求、预算、版本、结果和缺口；Search 必需 query，Impact 必需 symbol_id，分别注明实际 1024 / 512 UTF-8 字节限制。查询不接受调用方提供的原始根、Caller、HEAD 或 generation。
+
+主入口显式保留空能力集合，因此缺可信配置时实际接口返回 `provider_unavailable / 503`。私有 `assembleRepositoryContext` 使用原 SQLite 和准确 S4 Options 构造同一个 provider，返回供后续 S2 快照装配使用。生产 EnvironmentID / 工具 / 投影 / 预算配置仍由 B 精确交付；当前没有把测试路径或测试 EnvironmentID 作为生产默认。配置完整的实际图 / 地图 HTTP 正向检查仍由原 S4 消费本 SOURCE 后执行，本阶段没有将其填为通过。
+
+B 的成熟依赖检查脚本经产品模块授权，在 H 树内由原 B 用文件编辑工具精确消费 `efa137eb36177f69643c750c26ad8eb59b446741:scripts/check-dependencies.mjs`。本人停止写入与提交权归还见 `msg_7f13d6c5cd8c`；H 和模块核得该文件完整内容相等。脚本使用 Go 的 JSON 元数据检查准确依赖，没有由 H 修改其逻辑或合入 B 的其他历史。
+
+新增私有 `relaySourceGuard.Check` 已编译：它读取原 Registry 持有的 controller / startup operation、真实进程启动策略和权限，再核正选文件与单链接身份；预查和后续输入可复用同一内存身份。缺少正选 metadata 或文件尚未产生时保持固定 NotYetAvailable 原因。该回调尚未接入真实两阶段模型窗口，不能据本阶段构建声称实际工具关闭或来源通过。采集器的私有 archive-only 选择也尚未用于新的实际窗口。
+
+新命令统一使用进程环境 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR/TEMP/TMP` 为 D 盘 H 独占目录；`GOMAXPROCS=2`、Go `-p=1`、Node 512 MiB。安全日志位于本机 `D:/Astrocyte-agent-assets/20261015/relay/H`。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| 原两项真实 HTTP / SQLite 测试，准确 P579 Reader readonly overlay，`-count=1 -timeout=120s` | PASS，15.927 秒；五项缺配置接口实际 503、CSRF 403、畸形编码 / 重复标量 / 未知参数 400，安全错误无本机原路径，项目不变，实际 native sessions=0；`v14-s4-http-first.log` |
+| `go vet -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server ./internal/adapters/repositorycontext` | EXIT 0；`v14-s4-vet.log` |
+| `go build -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' -o D:/Astrocyte-agent-assets/20261015/relay/H/public-s4-server.exe ./cmd/server` | EXIT 0，产物未启动；`v14-s4-build.log` |
+| `node scripts/check-architecture.mjs` | PASS，33 个包边界 |
+| 同一官方 Redocly CLI 直接 lint / `node scripts/validate-examples.mjs` | EXIT 0，4 项既有警告 / 284 个示例；`v14-s4-openapi-reviewed.log`、`v14-s4-examples-reviewed.log` |
+| `node scripts/check-dependencies.mjs` / `git diff --check` | EXIT 0，准确依赖与实际安装一致 / EXIT 0；`v14-s4-dependencies.log` |
+
+本阶段首次新增路由缺少既有 validator 要求的 supported 标记，契约检查失败原件为 `v14-s4-examples-first.log`；最终标记与实际实现一致，没有改 validator 或减少检查。先前 H 单树 Reader 构建 FAIL、首 SQL 表名 FAIL、旧 nlink2 来源 FAIL、旧三分钟 FAIL 及所有未知交付保持原结果。
+
+当前没有登记 Agent、初始化原生控制器或发送模型输入；F 仍是唯一实际 GUI 操作人。Context 的安全 DTO / 原生绑定、S3 准确八提交闭包、B 可信配置和 R 两阶段 HTTP 是后续准确装配内容；真实 CLI、Today、逐 event_id / 六字段 SQL、固定目标核查及产品最终验收均未因本阶段通过而完成。当前 Task 继续，不发送阶段 worker_done。
+
 ## 2026-10-15 当前来源与安全契约阶段
 
 本阶段 SOURCE 为 `37156a31478c22480abb7ae64a5f62f20d620b1f`，分支 `songconmaisaix31-design/works-relay-http`；当前 Task `task_3004b636a3ab` / Dispatch `ctx_e7abbaf902da`。已普通合入 R SOURCE `ce0302835cb7477eb606107351a9ab46dd8d4714` / REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`，原四项未提交修改已完整保留并完成适用检查。开发使用当前 Orca Codex 客户端，具体运行模型未独立回显；本轮外部模型调用为零。
@@ -67,7 +146,7 @@ H 分支：`songconmaisaix31-design/works-relay-http`。当前非原生依赖 SO
 
 所有 Relay HTTP 使用既有 Go 服务、loopback、human session、Origin、CSRF 与 ErrorV1。GET 读取已持有任务、派生事件和原收据，不启动 CLI、不发送输入、不恢复会话、不读取原文归档。人工创建 intent 后必须明确确认权限；运行时 Service 是 task、terminal、worktree 与收据的唯一写入者。未知输入交付结果保持 `delivery_unknown`，不能自动重发。
 
-`agents.json` 使用 `encoding/json` 解析受信任的 `AgentSpec` 数组，在启动时加载。条目包含 `name/launch_cmd/capabilities/drive_mode`，可选 `input_mode` 为 `line` 或 `stdin_eof`。新增条目后正常关闭并重启同一服务，调度按注册数据选择既有原生适配器；注册本身不授予启动或工具权限。
+`agents.json` 使用 `encoding/json` 解析受信任的 `AgentSpec` 数组，在启动及原 observer 的可信重载入口读取。条目包含 `name/launch_cmd/capabilities/drive_mode`，可选 `input_mode` 为 `line` 或 `stdin_eof`。完整有效登记由同一服务原子发布，调度按该登记选择既有原生适配器；注册本身不授予启动或工具权限。
 
 `cmd/server/relay_assembly.go` 复用实际 Works、既有项目权限与 NativeRegistry、独立 relay.sqlite、既有 PendingEventService 和 EventRepository。observer 只观察人工已接受的任务，取消并 join 后关闭自有进程和存储。静默重读不更新活动时间或持久化未变化的游标。
 

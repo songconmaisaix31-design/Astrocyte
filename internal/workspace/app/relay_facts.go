@@ -111,7 +111,7 @@ func (s *relayService) observeRuntimeFacts(st *RelayState, task domain.RelayTask
 	}
 	startupBound := false
 	for _, r := range st.Receipts {
-		if r.TaskID == task.ID && r.OperationID == evidence.StartupOperationID && (r.Action == "dispatch" || r.Action == "resume") {
+		if r.TaskID == task.ID && r.OperationID == evidence.StartupOperationID && (r.Action == "dispatch" || r.Action == "prepare" || r.Action == "resume") {
 			startupBound = true
 		}
 	}
@@ -192,7 +192,7 @@ func (s *relayService) observeRuntimeFacts(st *RelayState, task domain.RelayTask
 		last = f.Sequence
 		var receipt domain.RelayReceipt
 		for _, r := range st.Receipts {
-			if r.TaskID == task.ID && r.OperationID == f.OperationID && (r.Action == "dispatch" || r.Action == "resume" || r.Action == "send") {
+			if r.TaskID == task.ID && r.OperationID == f.OperationID && (r.Action == "dispatch" || r.Action == "prepare" || r.Action == "resume" || r.Action == "send") {
 				receipt = r
 				break
 			}

@@ -109,6 +109,10 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	repositoryConfig, err := resolveRepositoryContextConfig(ctx, dataDir)
+	if err != nil {
+		return err
+	}
 	distiller, processingSourceKeys, err := resolveDistiller(ctx, dataDir)
 	if err != nil {
 		return err
@@ -238,6 +242,12 @@ func run(logger *slog.Logger) error {
 	}
 	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
 		services.RankingProfile = profile
+	}
+	if err := assembleSwarmLedger(&services, db); err != nil {
+		return err
+	}
+	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry); err != nil {
+		return err
 	}
 	closeRelay, err := assembleRelay(&services, db, registry)
 	if err != nil {
