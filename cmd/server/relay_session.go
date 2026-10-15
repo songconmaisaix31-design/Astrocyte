@@ -369,6 +369,14 @@ func (s *relaySessionRuntime) GetCurrentOwnership(ctx context.Context, caller do
 	return reader.GetCurrentOwnership(ctx, caller, id)
 }
 
+func (s *relaySessionRuntime) ListOwnedTurnBindings(ctx context.Context, id string) ([]domain.RelayTurnBinding, error) {
+	reader, ok := s.RelayRuntime.(workspace.RelayOwnedTurnBindingReader)
+	if !ok {
+		return nil, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
+	}
+	return reader.ListOwnedTurnBindings(ctx, id)
+}
+
 func (s *relaySessionRuntime) ObserveOwned(ctx context.Context) error {
 	baseErr := s.RelayLifecycle.ObserveOwned(ctx)
 	if baseErr != nil {

@@ -91,7 +91,7 @@ func (h *handler) relayFacts(r *http.Request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !relayFactValue(ownership.Status, "confirmed", "unknown") || !relayFactValue(ownership.Reason, "", "controller_binding_unrecorded", "workspace_identity_unverified", "controller_metadata_unsupported", "controller_not_held") || ownership.Status == "confirmed" && ownership.Reason != "" {
+	if !relayFactValue(ownership.Status, "confirmed", "unknown") || !relayFactValue(ownership.Reason, "", "controller_binding_unrecorded", "workspace_identity_unverified", "controller_metadata_unsupported", "controller_not_held", "controller_exited") || ownership.Status == "confirmed" && !relayFactValue(ownership.Reason, "", "controller_exited") {
 		return nil, &apierrors.ServiceError{Code: apierrors.EvidenceMissing}
 	}
 	outFacts := make([]relayFact, 0, len(facts))

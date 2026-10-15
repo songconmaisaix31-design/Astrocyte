@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -72,21 +73,47 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	source := filepath.Join(root, "verification", "public-project")
 	if _, err := os.Stat(source); errors.Is(err, os.ErrNotExist) {
-		if err := os.MkdirAll(source, 0700); err != nil {
-			t.Fatal("公开项目目录不可用")
-		}
-		if err := os.WriteFile(filepath.Join(source, "README.md"), []byte("# L1 public project\nThis project validates native session capture with fixed public context and disabled tools.\n"), 0600); err != nil {
-			t.Fatal("公开项目文件不可用")
-		}
-		for _, args := range [][]string{{"init", "--initial-branch=main"}, {"add", "README.md"}, {"-c", "user.name=L1 Verification", "-c", "user.email=l1@example.invalid", "commit", "-m", "Create public session verification project"}} {
-			cmd := exec.Command("git", append([]string{"-C", source}, args...)...)
-			cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
-			if err := cmd.Run(); err != nil {
-				t.Fatal("公开 Git 项目初始化失败")
+		if upstream := os.Getenv("ASTROCYTE_L1_PUBLIC_GIT_SOURCE"); upstream != "" {
+			baseline := os.Getenv("ASTROCYTE_L1_PUBLIC_GIT_COMMIT")
+			canonicalUpstream, err := workbenchCanonical(upstream)
+			if err != nil || !filepath.IsAbs(upstream) || !strings.EqualFold(filepath.Clean(upstream), filepath.Clean(canonicalUpstream)) || len(baseline) != 40 {
+				t.Fatal("明确公开来源或固定 Git 版本无效")
+			}
+			if err := os.MkdirAll(filepath.Dir(source), 0700); err != nil {
+				t.Fatal("公开项目独占父目录不可用")
+			}
+			for _, args := range [][]string{{"clone", "--no-hardlinks", "--no-checkout", "--", canonicalUpstream, source}, {"-C", source, "checkout", "--detach", baseline}} {
+				command := exec.Command("git", args...)
+				command.Stdout, command.Stderr = io.Discard, io.Discard
+				if command.Run() != nil {
+					t.Fatal("实际公开 Git 固定版本消费失败")
+				}
+			}
+		} else {
+			if err := os.MkdirAll(source, 0700); err != nil {
+				t.Fatal("公开项目目录不可用")
+			}
+			if err := os.WriteFile(filepath.Join(source, "README.md"), []byte("# L1 public project\nThis project validates native session capture with fixed public context and disabled tools.\n"), 0600); err != nil {
+				t.Fatal("公开项目文件不可用")
+			}
+			for _, args := range [][]string{{"init", "--initial-branch=main"}, {"add", "README.md"}, {"-c", "user.name=L1 Verification", "-c", "user.email=l1@example.invalid", "commit", "-m", "Create public session verification project"}} {
+				cmd := exec.Command("git", append([]string{"-C", source}, args...)...)
+				cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
+				if err := cmd.Run(); err != nil {
+					t.Fatal("公开 Git 项目初始化失败")
+				}
 			}
 		}
 	} else if err != nil {
 		t.Fatal("公开项目身份不可核实")
+	}
+	if baseline := os.Getenv("ASTROCYTE_L1_PUBLIC_GIT_COMMIT"); baseline != "" {
+		command := exec.Command("git", "-C", source, "rev-parse", "HEAD")
+		command.Stderr = io.Discard
+		head, err := command.Output()
+		if err != nil || strings.TrimSpace(string(head)) != baseline {
+			t.Fatal("实际公开 Git 项目没有保持明确固定版本")
+		}
 	}
 	appDir := filepath.Join(root, "app-state")
 	if err := os.MkdirAll(appDir, 0700); err != nil {

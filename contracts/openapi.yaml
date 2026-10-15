@@ -8840,7 +8840,7 @@ components:
           description: 'Ownership comes only from the original controller object retained by this service, independently of historical facts and liveness. GET performs no RPC or activity refresh. A cold registry returns unknown.'
           properties:
             status: {type: string, enum: [confirmed, unknown]}
-            reason: {type: string, enum: [controller_binding_unrecorded, workspace_identity_unverified, controller_metadata_unsupported, controller_not_held]}
+            reason: {type: string, enum: [controller_binding_unrecorded, workspace_identity_unverified, controller_metadata_unsupported, controller_not_held, controller_exited], description: 'controller_exited with confirmed only means the original exited controller object remains held; it does not authorize RPC Read or Send.'}
     RelayConfirmRequestV1: {"type":"object","additionalProperties":false,"properties":{"permission_confirmed":{"type":"boolean","const":true},"permission_level":{"type":"string","enum":["A","B","C"]},"project_settings_revision":{"type":"integer","minimum":0}},"required":["permission_confirmed","permission_level","project_settings_revision"],"examples":[{"permission_confirmed":true,"permission_level":"A","project_settings_revision":0}]}
     RelaySendRequestV1: {"type":"object","additionalProperties":false,"properties":{"input":{"type":"string","minLength":1,"maxLength":65536}},"required":["input"],"examples":[{"input":"Fixture human input"}]}
     RelayEmptyRequestV1: {"type":"object","additionalProperties":false,"properties":{},"required":[],"examples":[{}]}
