@@ -69,13 +69,17 @@ function RelayConfirmation({ view, onChanged }: { view: RelayTaskView; onChanged
   const task = useReadApi(signal => relayApi.task(view.task.task_id, signal), { refreshMs: 3000 });
   const receipts = useReadApi(signal => relayApi.receipts(view.task.task_id, signal), { refreshMs: 3000 });
   const [confirmedRevision, setConfirmedRevision] = useState<number | null>(null);
+  const prepareCommand = useRelayCommand(`prepare:${view.task.task_id}`);
   const command = useRelayCommand(`confirm:${view.task.task_id}`);
   const current = task.data?.view;
   const project = projects.data?.projects.find(project => project.project_id === view.task.project_id);
-  const denied = !project || !current || current.task.state !== 'ready' || projects.stale || task.stale || receipts.stale || !receipts.data || relayUnresolved(receipts.data.receipts, 'dispatch');
+  const denied = !project || !current || current.task.state !== 'ready' || projects.stale || task.stale || receipts.stale || !receipts.data || receipts.data.receipts.some(receipt => ['prepare', 'dispatch'].includes(receipt.action) && relayUnresolved([receipt]));
   const changed = project && project.project_settings_revision !== current?.task.project_settings_revision;
   const checked = !!project && confirmedRevision === project.project_settings_revision;
-  const locked = denied || changed || command.pending || command.uncertain;
+  const locked = denied || changed || command.pending || command.uncertain || prepareCommand.pending || prepareCommand.uncertain;
+  const initialized = receipts.data?.receipts.some(receipt => receipt.action === 'prepare' && receipt.status === 'accepted' && !receipt.error);
+  const reserved = !!current?.task.terminal_id || !!current?.task.worktree_id;
+  const refresh = () => { task.retry(); receipts.retry(); onChanged(); };
   return <section className="relay-flow" aria-label="权限确认页">
     <h3>启动前确认权限</h3>
     <Field label="任务 ID">{view.task.task_id}</Field><Field label="Agent">{view.task.agent}</Field><Field label="任务描述">{view.task.description}</Field>
@@ -88,18 +92,28 @@ function RelayConfirmation({ view, onChanged }: { view: RelayTaskView; onChanged
       <p className="relay-note">A：主动纳入的固定版本资料；B：明确获准目录 / 文件；C：展开获准资料引用。B / C 独立，此页沿用项目现有许可。资料许可不授权 CLI 自由工具；中性工作区执行权限尚待用户裁决，由服务端拒绝未获准请求。</p>
     </> : <p role="alert">项目许可无法读取，不能确认启动。</p>}</QueryState>
     <QueryState state={task}>{data => <p>服务端当前状态：{data.view.task.state} · {data.view.task.condition || '无附加状态'}</p>}</QueryState>
-    <section aria-label="派发与意图收据"><h3>派发与意图收据</h3><QueryState state={receipts}>{data => <RelayReceipts receipts={data.receipts.filter(receipt => ['intent', 'dispatch'].includes(receipt.action))} />}</QueryState></section>
+    <section aria-label="派发与意图收据"><h3>派发与意图收据</h3><QueryState state={receipts}>{data => <RelayReceipts receipts={data.receipts.filter(receipt => ['intent', 'prepare', 'dispatch'].includes(receipt.action))} />}</QueryState></section>
     {changed && <p role="alert">项目权限已变化，任务的权限版本已过期。请核对项目许可和保存的意图，当前不能启动。</p>}
     <form onSubmit={event => {
       event.preventDefault();
       if (locked || !checked || !project) return;
-      void command.run(key => relayApi.confirm(view.task.task_id, { permission_confirmed: true, permission_level: project.permission_level, project_settings_revision: project.project_settings_revision }, key), () => { task.retry(); receipts.retry(); onChanged(); });
+      void command.run(key => relayApi.confirm(view.task.task_id, { permission_confirmed: true, permission_level: project.permission_level, project_settings_revision: project.project_settings_revision }, key), refresh);
     }}><fieldset disabled={!!locked}><legend>此次接力的权限范围</legend>
       <label>权限级别<input aria-label="权限级别" readOnly value={project?.permission_level || '未获取'} /></label>
       <p className="relay-note">新项目默认为 A。此处确认现有项目许可摘要；修改 B / C 范围需回到项目设置，由你另行保存。</p>
       <label className="relay-check"><input type="checkbox" checked={checked} onChange={event => setConfirmedRevision(event.target.checked && project ? project.project_settings_revision : null)} />我已核对根目录、资料权限和允许动作，确认请求此 Agent 接力</label>
+      <p className="relay-note">初始化会话只建立空会话，不发送任务输入。核查会话来源、权限和固定上下文后，再确认请求接力以发送首次输入。</p>
+      <button type="button" className="ac-button secondary" disabled={!checked || reserved || initialized} onClick={() => {
+        if (locked || !checked || !project || reserved || initialized) return;
+        void prepareCommand.run(key => relayApi.prepare(view.task.task_id, { permission_confirmed: true, permission_level: project.permission_level, project_settings_revision: project.project_settings_revision }, key), refresh);
+      }}>确认资料权限并初始化会话</button>
       <button type="submit" className="ac-button" disabled={!checked}>确认资料权限并请求接力</button>
     </fieldset></form>
+    {initialized && <p role="status">空会话初始化收据已接受；尚未据此确认首次输入或模型开始。</p>}
+    {prepareCommand.error && <p role="alert">{prepareCommand.error} · 操作 {prepareCommand.operationID}</p>}
+    {prepareCommand.existingTaskID && <RelayExistingTask key={prepareCommand.existingTaskID} taskID={prepareCommand.existingTaskID} />}
+    {prepareCommand.uncertain && <p role="alert">初始化结果未知，禁止重新初始化或派发。只读取任务和收据核对结果。</p>}
+    {prepareCommand.result && <p role="status">初始化收据 {prepareCommand.result.receipt.receipt_id} · {relayReceiptLabel[prepareCommand.result.receipt.status]}</p>}
     {command.error && <p role="alert">{command.error} · 操作 {command.operationID}</p>}
     {command.existingTaskID && <RelayExistingTask key={command.existingTaskID} taskID={command.existingTaskID} />}
     {command.uncertain && <p role="alert">派发结果未知，禁止重派。只读取任务和收据核对结果。</p>}
