@@ -298,6 +298,18 @@ S4 快照提供者 `9eff2edb34058826d302d3a465b7fe7e74797be5` 与 B DDL `f25b838
 
 SOURCE `55b48b755d7d9790d5f6f58f53724a0e4f59ce7e` 普通 push / remote 同值，工作树在提交后 clean。实际 HTTP PASS 的测试与实现内容保存于该 SOURCE；测试运行时 H thin 是 `ea0c4d2` 加后来保存的五文件自域改动，未重复已有成功仅用于变成已提交状态。新增 human policy / conn-close 修复 `7095732` 的实际 SQLite PASS 单独记录。当前批准核心 HTTP/SQLite/进程重启已可用，资料完整权限、真实上下文及原生绑定继续验证；所有首次失败按原件保留。
 
+## 外层事务提交后的通知
+
+负责人答复 `msg_51f42a9e5253` 确认 `(*sqlite.DB).AfterWorkspaceCommit(context.Context, func()) error`。SOURCE `4f875b0f8bffc5740e6a1eee828e7e34833226b8` 已普通 commit / push，独立 `git ls-remote` 返回相同 SHA；分支为 `songconmaisaix31-design/product-video-20261014`。源码形成后已交 B、S4、H 和 I，未等待本报告。
+
+同数据库的外层 Workspace 事务持有通知，嵌套调用继续登记到该外层事务。实际 COMMIT 成功且持有连接归还后按登记顺序调用一次；事务、COMMIT 或连接关闭发生错误时不调用通知。其他数据库的事务上下文、空回调和已结束的事务上下文直接返回错误。没有外层事务时立即通知，调用方必须先确认实际保存成功。B 通过实际项目 repository 的窄接口调用，回调限定现有非阻塞 Wake；实际清理、Git、对象操作及原生操作继续在事务外执行。
+
+`go test -mod=readonly ./tests/s2 -timeout 90s -v` PASS，5.893 秒。真实 SQLite 验证嵌套事务提交前没有通知、提交后依次通知、通知通过已归还的唯一连接读取实际 Goal、无外层事务立即通知、回滚零通知、真实延迟外键在 COMMIT 时失败且零通知/零残留、异库及空回调拒绝、结束后的事务不能登记。原批准、人类/Agent 权限、版本冲突、幂等、事务回滚、事件重读、重启、撤销及过期检查同时通过。`go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/server-aftercommit.exe ./cmd/server` PASS，三项修改文件的只读 gofmt 和 `git diff --check` PASS。
+
+日志为 `D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/aftercommit-first.log`、`aftercommit-build-first.log`；实际库为同目录下的 `actual-1428354769/state.sqlite` 和 `current-goal-163912885/state.sqlite`。临时目录、Go cache、编译结果和日志均放在 D 盘；没有原生或模型调用。
+
+B 的项目设置调用与 S4 的真实撤权清理仍需各 owner 集成检查。完整资料 Context 的生产 HTTP 验证等待包含当前 S2/S4/B 修改并实际 ConfigureContext 的同源二进制，保持未验；本次构建的自树入口没有完成该装配，不能代替它。根正式决定 `msg_dfe105fea7e1` 暂不执行当前入口不能满足工具关闭要求的受限原生与关联模型调用；该限制保留，普通产品集成继续。
+
 ## 第一阶段独立 REPORT
 
 SOURCE `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 普通 push 成功；独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。四个包 `go test -run '^$'` PASS，`git diff --check` PASS；两项均不代表业务验收。准确 SOURCE 已交 S3、H 和 UI，B 的 019 已交 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，下一步消费该迁移并运行真实 SQLite/HTTP。第一次 B SOURCE 通知出现 PowerShell 单引号参数错误，CLI 明确 invalid_argument，未投递；改正参数后继续交接，不将失败视为成功。
