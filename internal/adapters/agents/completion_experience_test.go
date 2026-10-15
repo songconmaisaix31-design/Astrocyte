@@ -70,3 +70,24 @@ func TestCompletionExperienceRejectsIncompleteAndPrivateOutput(t *testing.T) {
 		}
 	}
 }
+
+// 缺少原 Start 与受理回合的值只能拒绝，不能据完成 JSON 生成原生结果。
+func TestCompletionExperienceRejectsUnrecordedOriginalTurn(t *testing.T) {
+	for _, process := range []*nativeProcess{
+		{},
+		{originalSession: &domain.NativeSession{}},
+		{relayEvidence: domain.RelayControllerEvidence{ControllerID: "unowned-controller", StartupOperationID: "unowned-operation"}},
+	} {
+		err := process.checkCompletionExperienceTurn("unowned-operation", completionExperienceOperation{operationID: "unowned-operation"})
+		var failure *apierrors.ServiceError
+		if !errors.As(err, &failure) || failure.Code != apierrors.EvidenceMissing || len(process.relayEvidence.Facts) != 0 || len(process.relayEvidence.Turns) != 0 || process.inputOperationID != "" {
+			t.Fatal("unrecorded original controller acquired an accepted completion turn")
+		}
+	}
+	process := &nativeProcess{originalSession: &domain.NativeSession{Ownership: "external_observed"}, relayEvidence: domain.RelayControllerEvidence{ControllerID: "unowned-controller", StartupOperationID: "unowned-operation"}}
+	err := process.checkCompletionExperienceTurn("unowned-operation", completionExperienceOperation{operationID: "unowned-operation"})
+	var failure *apierrors.ServiceError
+	if !errors.As(err, &failure) || failure.Code != apierrors.ScopeDenied || len(process.relayEvidence.Facts) != 0 || len(process.relayEvidence.Turns) != 0 {
+		t.Fatal("unowned session acquired an accepted completion turn")
+	}
+}
