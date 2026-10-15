@@ -1,5 +1,15 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 00:59 真实 Swarm 集合与导航
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，SOURCE `614ebc72bf87d8c41bd75be67f659da34a85526b` 已普通 push 并独核远端同值，仅修改 Swarm 页面、Mission 详情及新增集合组件 / Hook 和原 S3 用例五件。默认协作现场可展开已有任务、查看任务和工作项；成果与继承显示实际产物引用。工作项、当前租约、产物和事件来自每个真实 Mission 详情，独立读取并保留 loading / empty / error / stale / 人工重试；任务列表权限错误传播至三个集合，未取得记录时数量明确未知。工作项和产物可直接打开原功能详情；建立 Mission 入口在空记录折叠时仍可使用。
+
+任务时间线使用实际持久化事件，空记录显示“暂无任务事件”；没有协作图时保留真实拓扑缺口说明。原 F `preview-design` 的“事件时间线尚未接入”断言已与现行准确 Mission timeline 契约冲突，已向 F 和模块交接，须验证真实空事件及零虚构动态，页面不显示错误能力状态。原导航、三集合空状态和权限恢复的实际行为继续验收，没有删除原用例或断言。
+
+全域 `pnpm --dir web typecheck` PASS，记录为 `logs/typecheck-swarm-collections-first.log` / `typecheck-swarm-collections-second.log`；定向 `pnpm --dir web exec eslint src/pages/swarm/SwarmPage.tsx src/pages/swarm/missions e2e/s3-missions.spec.ts` PASS / 零 warnings。首次 Fast Refresh warning 保留于本 Dispatch 输出，Hook 分离后检查通过。`git diff --check` / `git diff --cached --check` 通过。S3 原用例另增真实工作项直达、时间线事件与产物空记录检查；真实浏览器仍待准确契约修复，没有将静态检查登记为整功能通过。
+
+H 已向模块确认在唯一 I 原树修复并归还重复契约；模块已独核原 S2 归还后 U0 并交 M-release，准确后继 SOURCE 尚待 I 完成。F 在途默认浏览器由其本人自然完成，本树未修改 F 在途文件。前一实际 E2E YAML 首失败、原成功和所有后续依赖继续保留。
+
 ## 2026-10-16 00:49 实际 Context 建立入口与契约首失败
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd` 持续执行。模块准确授权后，已从 clean 检查点普通 no-ff 消费唯一 I `23672247d340e80c233951afdce7155b7fa66b1c`，合并为 `b2f7de9916a5babba831cbf7175326f3a34c2608`，无冲突。OpenAPI 与该 I 完整 diff0，未修改共享逻辑。
