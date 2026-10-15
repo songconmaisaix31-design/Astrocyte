@@ -1,6 +1,6 @@
 # S5 判断实施与实际验证
 
-固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。2026-10-16 当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_fc76cd365979`，接管 HEAD `03e2e511de290454d3f21a7803f291bbfe7614a7` 及原十六件 S5 修改，协调者 `msg_950aee66a55d` / `msg_68b18070297c` 确认唯一写入者与接续授权。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；原机制、委托、模型与各阶段精确来源见对应 REPORT。
+固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。2026-10-16 当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_693200d34a48`，接管 HEAD `b125268d11322c69c652bce677665001bd47e344` 和原 B 普通合并的两件 Taste 冲突。本人停止写入、原 B 临时处理归还及模块独核后，协调者 `msg_5796ede098a5` 放行继续，普通合并为 `158e0a3d4361d410c4d6a8664a48c3abb6741b85`。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；原机制、委托、模型与各阶段精确来源见对应 REPORT。
 
 仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。H/B 已本人确认并归还判断 handler 前缀，原 S5 持续负责；新增公共字段和完整 Taste 路由已经 H 本人确认。正式 V4 与认知冻结域保持原授权边界。
 
@@ -297,3 +297,15 @@ H 本人 `msg_f17902dcd7ec` 经协调者 `msg_e30c8662ea05` 确认 `GET/PUT /api
 完整 HTTP 源码沿用上节实际 `6.415s PASS`，核心工作区八项 `41.260s PASS`、五包 vet、Node syntax、gofmt 与两种 Git diff-check 各按原准确范围保留。独立 archive 的成功单独证明分拆核心可以实际编译运行，没有将 HTTP 工作区结果替代该检查。本轮模型调用为零，既有完整 Sources 的真实单次 truth 推理按原件保留；新增完整 Sources 与 choice/score 的组合、Sources 绑定后的低置信/候选覆盖场景尚未重新运行，前阶段实际模型结果保持各自范围。
 
 H 本人已确认字段、路由和原服务语义，准确源码与 `registerJudgment(*http.ServeMux, JudgmentServices)` / `registerJudgmentTaste(*http.ServeMux, JudgmentServices)` 已交协调者供 H 消费；生产注册与 OpenAPI 仍由 H 完成。B 的完整 Taste 后继、Jev secret 与 OS 执行许可仍需对应实际输入，整个 S5 Task 持续。
+
+## 完整 Taste 的有限题型配置
+
+原 B 精确 SOURCE `6d1d59bf07b008a0969efefceb911e49b6b33db6` 已经通过上述普通合并消费，026 两表、不可变完整 Taste 内容及严格题型校验保持原领域实现。S5 的实际来源准备显式映射 choice 的有限 Options 和 score 的有序 Levels，truth 明确提供两个空数组；所有 expected 由实际 human 提交，choice 对应候选 ID，score 和 truth 使用原 JSON 数值范围校验。没有新增依赖或 DDL 请求。
+
+真实 HTTP 保存 truth、choice、score 三项 rubric 及其固定公开原文示例，拒绝布尔 truth、未知 choice、越界 score 和 null score 后，实际版本与配置保持不变。完整候选、评分等级、示例、Goal/Taste 来源、同源缓存及五类反馈在 SQLite/HTTP 关闭重开后逐项核查。命令 `powershell -NoProfile -ExecutionPolicy Bypass -File tests/s5/verify-sources.ps1 -EvidenceRoot D:/Astrocyte-agent-assets/20261015/judgment-s5/verification-ctx_693200d34a48 -Phase http` 实际测试 `23.27s` / 包 `37.014s PASS`，原件 `http-20261015T1646564925526.{stdout,stderr}.log`，stderr 空。合并后的首次实际 PUT 400 / 包 `2.022s FAIL` 保存在 `http-20261015T1645356259282.stdout.log`。
+
+同一入口 `-Phase tests` 八项真实非模型场景全部 PASS、零 skip，包 `169.713s`。完整 Sources 场景 `21.09s PASS`，在实际配置中加入有限 choice/score 及固定 human expected，再独立更新 choice 候选描述和 score 等级；每次均在 Policy 更新前拒绝旧缓存和旧准入依据，实际 human 更新引用后产生新的 input_digest。Goal、rubric、示例、delegation、被引用规则、Ranking 及示例撤回检查同时通过，最终 Goal revision=2、Taste version=8、Ranking version=2、来源规则 revision=2。原委托 `59.86s`、五版本与反馈重启 `38.07s`、撤销/回滚 `17.35s`、双公开 worktree `23.42s`、自动使用与外发许可 `1.79s`、Goal/Ranking reader `0.14s`、委托来源 `0.86s`，原件 `tests-20261015T1648346546164.{stdout,stderr}.log`，stderr 空。
+
+同一入口 `-Phase checks` 五个适用包 `go vet -mod=readonly` 与 Node worker syntax 均 EXIT 0，`checks-20261015T1651589199092.{stdout,stderr}.log` 均空。`gofmt -l` 对两件 Go 修改无输出，普通与 staged Git diff-check 通过。本阶段只修改两件 S5 真实测试和本文；公共装配、共享依赖、迁移及其他领域由各原负责人保持。
+
+本轮沿用既有完整 Sources 的真实 Laya 推理与成功 Close 原件，没有重复模型调用。H 的生产注册与 OpenAPI、实际 Jev API 回执和 OS 全断网仍按各自实际验收要求保留，当前没有宣称完整 S5 通过。

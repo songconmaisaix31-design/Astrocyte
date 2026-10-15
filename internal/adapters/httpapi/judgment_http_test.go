@@ -207,10 +207,34 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 	if taste.Configured || taste.Profile != nil {
 		t.Fatal("the actual new database invented a complete taste profile")
 	}
-	tasteCommand := attention.UpdateTasteProfileCommand{CommandMeta: meta(), Enabled: true, Rubrics: []attention.TasteRubric{{ID: "official-source-availability", QuestionType: "truth", Criteria: "The selected fixed official source section is present"}}, Examples: []attention.TasteExample{{ID: "official-export-section", RubricID: "official-source-availability", MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: "1"}}, Delegations: []attention.TasteDelegation{}}
+	tasteCommand := attention.UpdateTasteProfileCommand{CommandMeta: meta(), Enabled: true,
+		Rubrics: []attention.TasteRubric{
+			{ID: "official-source-availability", QuestionType: "truth", Criteria: "The selected fixed official source section is present", Options: []attention.TasteOption{}, Levels: []string{}},
+			{ID: "official-export-format", QuestionType: "choice", Criteria: "Which model format does the official export section produce?", Options: []attention.TasteOption{{ID: "onnx", Description: "Split encoder and head ONNX files"}, {ID: "safetensors", Description: "Only the source safetensors checkpoint"}}, Levels: []string{}},
+			{ID: "official-export-verification", QuestionType: "score", Criteria: "How explicitly does the official export section describe numerical verification?", Options: []attention.TasteOption{}, Levels: []string{"No verification described", "Verification mentioned", "Torch and ONNX agreement and tolerance described"}},
+		},
+		Examples: []attention.TasteExample{
+			{ID: "official-export-section", RubricID: "official-source-availability", MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: "1"},
+			{ID: "official-format-review", RubricID: "official-export-format", MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: "onnx"},
+			{ID: "official-verification-review", RubricID: "official-export-verification", MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: "2"},
+		}, Delegations: []attention.TasteDelegation{}}
 	f.call(t, http.MethodPut, "/api/v1/attention-taste-profile", tasteCommand, http.StatusOK, &taste)
 	if !taste.Configured || taste.Profile == nil || taste.Profile.Version != 1 || taste.Profile.ConfiguredBy != human.ID {
 		t.Fatal("the actual HTTP human did not create a fixed complete taste profile")
+	}
+	for _, invalid := range []struct {
+		index    int
+		expected string
+	}{{0, "true"}, {1, "unlisted-format"}, {2, "3"}, {2, "null"}} {
+		original := tasteCommand.Examples[invalid.index].Expected
+		tasteCommand.CommandMeta = meta()
+		tasteCommand.Examples[invalid.index].Expected = invalid.expected
+		f.call(t, http.MethodPut, "/api/v1/attention-taste-profile", tasteCommand, http.StatusBadRequest, nil)
+		tasteCommand.Examples[invalid.index].Expected = original
+	}
+	f.call(t, http.MethodGet, "/api/v1/attention-taste-profile", nil, http.StatusOK, &taste)
+	if taste.Profile == nil || taste.Profile.Version != 1 || !reflect.DeepEqual(taste.Profile.Rubrics, tasteCommand.Rubrics) || !reflect.DeepEqual(taste.Profile.Examples, tasteCommand.Examples) {
+		t.Fatal("rejected HTTP examples changed the actual immutable finite taste schema or expected values")
 	}
 	tasteCommand.CommandMeta = meta()
 	tasteCommand.Rubrics[0].Criteria = "Verify that each fixed official source section is present before recommending review"
@@ -305,7 +329,7 @@ func TestJudgmentActualHTTPRulesFeedbackAndRestart(t *testing.T) {
 		}
 	}
 	f.call(t, http.MethodGet, "/api/v1/attention-taste-profile", nil, http.StatusOK, &taste)
-	if taste.Profile == nil || taste.Profile.Version != 2 || taste.Profile.Rubrics[0].Criteria != tasteCommand.Rubrics[0].Criteria {
+	if taste.Profile == nil || taste.Profile.Version != 2 || !reflect.DeepEqual(taste.Profile.Rubrics, tasteCommand.Rubrics) || !reflect.DeepEqual(taste.Profile.Examples, tasteCommand.Examples) {
 		t.Fatal("the actual complete taste profile did not survive SQLite and HTTP restart")
 	}
 	f.call(t, http.MethodPost, prefix+"/judgments", request, http.StatusOK, &answer)

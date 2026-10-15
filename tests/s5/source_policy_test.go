@@ -28,7 +28,11 @@ func actualSourcePolicy(t *testing.T, f *fixture, policy judgment.Policy, questi
 	if err != nil {
 		t.Fatal(err)
 	}
-	profile, err := f.attention.UpdateTasteProfile(ctx, attention.Principal{ID: f.actor.ID, Kind: f.actor.Kind}, attention.UpdateTasteProfileCommand{CommandMeta: commandMeta(), Enabled: true, Rubrics: []attention.TasteRubric{{ID: question.ID, QuestionType: string(question.Type), Criteria: question.Instructions}}, Examples: []attention.TasteExample{{ID: "official-public-source-review", RubricID: question.ID, MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: expected}}, Delegations: []attention.TasteDelegation{}})
+	rubric := attention.TasteRubric{ID: question.ID, QuestionType: string(question.Type), Criteria: question.Instructions, Options: []attention.TasteOption{}, Levels: append([]string{}, question.Levels...)}
+	for _, option := range question.Options {
+		rubric.Options = append(rubric.Options, attention.TasteOption{ID: option.ID, Description: option.Description})
+	}
+	profile, err := f.attention.UpdateTasteProfile(ctx, attention.Principal{ID: f.actor.ID, Kind: f.actor.Kind}, attention.UpdateTasteProfileCommand{CommandMeta: commandMeta(), Enabled: true, Rubrics: []attention.TasteRubric{rubric}, Examples: []attention.TasteExample{{ID: "official-public-source-review", RubricID: question.ID, MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: expected}}, Delegations: []attention.TasteDelegation{}})
 	if err != nil || profile.Profile == nil {
 		t.Fatal("actual explicit complete taste configuration failed", err)
 	}
@@ -150,6 +154,28 @@ func TestActualCompleteSourcesInvalidateCacheAndAdmission(t *testing.T) {
 	updateTaste()
 	checkStale(apierrors.VersionConflict)
 	t.Log("actual rubric change rejected the old cache and admission before policy changed")
+	policy.Sources.Taste.Version = taste.Version
+	refresh()
+	taste.Rubrics = append(taste.Rubrics,
+		attention.TasteRubric{ID: "official-export-format", QuestionType: "choice", Criteria: "Which model format does the official export section produce?", Options: []attention.TasteOption{{ID: "onnx", Description: "Split encoder and head ONNX files"}, {ID: "safetensors", Description: "Only the source safetensors checkpoint"}}, Levels: []string{}},
+		attention.TasteRubric{ID: "official-export-verification", QuestionType: "score", Criteria: "How explicitly does the official export section describe numerical verification?", Options: []attention.TasteOption{}, Levels: []string{"No verification described", "Verification mentioned", "Torch and ONNX agreement and tolerance described"}})
+	taste.Examples = append(taste.Examples,
+		attention.TasteExample{ID: "official-format-review", RubricID: "official-export-format", MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: "onnx"},
+		attention.TasteExample{ID: "official-verification-review", RubricID: "official-export-verification", MaterialID: ref.MaterialID, Revision: ref.Revision, ContentDigest: ref.Digest, Expected: "2"})
+	updateTaste()
+	checkStale(apierrors.VersionConflict)
+	policy.Sources.Taste.Version = taste.Version
+	refresh()
+	taste.Rubrics[1].Options[0].Description = "The documented encoder.onnx and head.onnx output files"
+	updateTaste()
+	checkStale(apierrors.VersionConflict)
+	t.Log("actual finite choice option change rejected the old cache and admission before policy changed")
+	policy.Sources.Taste.Version = taste.Version
+	refresh()
+	taste.Rubrics[2].Levels[2] = "Torch and ONNX agreement verified within the documented 1e-4 tolerance"
+	updateTaste()
+	checkStale(apierrors.VersionConflict)
+	t.Log("actual ordered score level change rejected the old cache and admission before policy changed")
 	policy.Sources.Taste.Version = taste.Version
 	refresh()
 	apiText, err := os.ReadFile(filepath.Join(s5Root(t), ".verification", "s5", "upstream", "jev-api.md"))
