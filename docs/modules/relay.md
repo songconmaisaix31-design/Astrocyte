@@ -19,14 +19,22 @@
 
 原独立 Relay L1 不经过 S3 Claim，Calls 单位和权限证据覆盖两项待答仅约束 S3 所属路径，其 Known=false / Claim 拒绝保持。H 必须先交真实固定批准上下文及准确组合验证；F 仍是唯一实际界面操作者。原同 URL 空登记、observer ready、唯一登记 t0、空输入初始化同一控制器、来源与工具关闭检查、一次首输入、180 秒 Today、逐 event_id SQLite 和独立释放审计均保留。本次尚未登记、初始化或发送模型输入。
 
-新增大型验证等待原 B 完成 D 盘 TEMP / TMP 和产物入口；后续 Go 使用已预热 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，各 owner 独占 D 盘临时目录，仅设置进程环境。十秒 Context 首超时、冷 Registry RED、来源拒绝与历史计时失败保留，不延长产品时限或用未测代码替代实际功能。R / H 各阶段继续 SOURCE 与独立 REPORT 普通 push；模块持续至组合、真实核心路径和 Windows 包支持完成，不因阶段通过结算本模块。
+前端及调用其旧 helper 的大型验证等待原 B 完成 D 盘 TEMP / TMP 和产物入口；R / H 直接 Go 检查在核实全部新产物写入 D 盘后可独立执行，使用已预热 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，各 owner 独占 D 盘临时目录，仅设置进程环境。十秒 Context 首超时、冷 Registry RED、来源拒绝与历史计时失败保留，不延长产品时限或用未测代码替代实际功能。R / H 各阶段继续 SOURCE 与独立 REPORT 普通 push；模块持续至组合、真实核心路径和 Windows 包支持完成，不因阶段通过结算本模块。
 
 | 当前原 Task | 新 Dispatch / 终端 | 本次开始证据 |
 |---|---|---|
-| R `task_f082d8b36471` | `ctx_c17c6124e9dc` / `term_88610b02-6111-415d-b2a0-9de60ac0a798` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；随后实际读取文件并显示 Working，待本人 ACK |
-| H `task_3004b636a3ab` | `ctx_74e83fb8ed0c` / `term_ffd141be-29a2-4928-8afb-bdcb18dd8487` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；待实际开始和本人 ACK |
+| R `task_f082d8b36471` | `ctx_c17c6124e9dc` / `term_88610b02-6111-415d-b2a0-9de60ac0a798` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；15:55:26Z 本人 actualturnstarted，15:58:31Z 再核当前入口与原修改 |
+| H `task_3004b636a3ab` | `ctx_74e83fb8ed0c` / `term_ffd141be-29a2-4928-8afb-bdcb18dd8487` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；15:57:10Z 本人 actualturnstarted，15:58:30Z 明确固定批准上下文与独立检查范围 |
 
 两位均沿原 Task 和原工作树启动 Codex；终端文本显示 0.162.0 / GPT-6.1-Sol xhigh fast，启动参数没有覆盖用户模型配置。已向两个准确 Dispatch 发送当前根入口、双通道完成决定、写入范围、D 盘进程环境和禁止重复模型输入的要求；发送回执只证明入队，不作为本人已读取或已经开始的证据。
+
+### 本次恢复独立 REPORT
+
+管理 SOURCE `84bfd968eee7894621999193127fa448256c4634` 已普通 push，`git diff --check`、提交范围仅 `docs/modules/relay.md` 和独立 `git ls-remote origin refs/heads/songconmaisaix31-design/module-relay-20261014` exact SHA 核同值均 PASS。本次未新增业务代码，未重复既有已经通过的业务检查；R / H 新修改仍须原 owner 实际验证后交准确源码。
+
+模块本次独立核得 R 双通道 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 只涉及原 R 十份 relay 文件，REPORT `be0edfca394ac49824185beec2e61c087d33210c` 只修改 `docs/access/runtime.md`，SOURCE 为 REPORT 普通祖先且远端 branch 精确指向该 REPORT。R 当前输入结果证据 WIP、H 真实固定上下文与 Context 十秒回归、I 四树组合、L1 / Today / L2 / 六步首跑和最终新 Windows 包均未据此变为 PASS。
+
+产品当前 B 为 `ctx_1e8091197976`，S2 为 `ctx_17fb6df5098e`，F 正沿原 Task 恢复；模块当前 R / H 身份与准确后继输入已交产品和发布当前负责人。S4 `f6c865710375340d528b878bc09b7c3fd4984ee7` 的现有快照端口只有 CaptureProjectSnapshot / ValidateProjectSnapshot，产品提议的 ValidateProjectSnapshotReference 尚无准确交付；保留事务外真实 Git 双观察和事务内当前权限 / 版本，待原 S4 继续处理，不由其他人员代写。S4 当前未启动，原工作树干净。
 
 ## 前次恢复范围与 v1.4 规格
 
