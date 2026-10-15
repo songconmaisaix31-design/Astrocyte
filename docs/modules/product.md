@@ -18,6 +18,20 @@
 
 T / S3 / 产品 UI 保留原 ready Task、原分支和 WIP，待 D helper 与组合依赖可消费后恢复，不取消已有功能。Q 今日采集和正式 D1 已完成，不重复运行。当前 C 盘约 10.06 GiB，由发布负责人唯一协调维护；新大型验证等待 D 盘入口，旧证据和数据库保留。独立 Relay L1 按根当前授权继续，S3 两项未答只约束涉及 Claim / 预算的路径；独立 L1 不据此停止。执行顺序为四树组合验证 → 集成版 L1 → L2 六步首跑；用户批准、started 事实和资源释放审计保持原要求。阶段 SOURCE 与独立 REPORT 普通 push，模块持续到最终发布支持完成。
 
+### 23:58 恢复独立 REPORT 与六件具体放行
+
+恢复计划 SOURCE `dae019dbb8df2c196ba46895af845cdb268798ee` 已普通 push，模块通过 `git ls-remote` 独立核远端同值，`git diff --check` 与工作区检查通过。本轮三个原 Task 已沿原工作树、原分支恢复；客户端为 Codex，公开 projection 与终端文本核实际模型为 `gpt-6.1-sol`，终端显示 xhigh fast。S2 / F 首 `worker-start` 回执为 `outcome_unknown / turn_start_unobserved`，随后两人公开 projection 均为 `live / working` 且文本显示实际读取任务；首次未知保留，没有重派或重送正文。
+
+| 本轮原唯一开发人员 | 当前 Dispatch / 终端 | 已取得的实际确认 |
+|---|---|---|
+| B | `ctx_1e8091197976` / `term_7abe3cd0-ce0a-44a7-9929-26b639885ae8` | 本人 `msg_07d0e3e1bc37` 核 `6d1d59b` 与仅 backend 报告 WIP，先交独立 REPORT，再完成 D helper；不重新进入原已归还 F / I 范围 |
+| F | `ctx_5888aa5adf82` / `term_3a12bb40-71b2-4fa1-adb4-3fe436f3d3fb` | 已实际工作，原 MERGE_HEAD `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`，U0，配置 index blob `5fa5bf8ead480753c9b9eaa82bdfd31833e0ef8c` 和限定 working / cached diff-check 均通过；等待本人确认现场后由 F 唯一继续原 merge |
+| S2 | `ctx_17fb6df5098e` / `term_9c053dcd-fba7-4856-bcca-f769391b864d` | 本人 `msg_ceea917d556e` 核 clean `db3f381`，未启动编译、测试或业务进程，明确未写 I 六件并等待放行 |
+
+原 B 单配置最终归还 `msg_89dfe8ee4510` 已从旧 Run FIFO 接收并与其 backend 报告交叉核查，Discovery 最终 EXIT0、全部进程自然结束；先前过早状态保留在原报告，本轮不重复已经通过的检查。B 当前 `6d1d59b` 已完成 Expected 错误分类修复，T 后续沿准确源码复验，不重复实施。S5 后继实际 Sources / HTTP / CPU 结果与根 23:47 记录一起交发布负责人，不继续旧的全局安静等待。D helper 尚未交付，完整默认和新增大型验证仍待同源入口。
+
+M-release 本轮 `msg_8b4512930a6a` 交新 I 本人 STOP `msg_068eac76c5ae`，准确 I 为 `task_2ee44933df72 / ctx_29518fe03538 / term_3e0c581c-df78-4af4-beb6-92048d95c4a3`，本人六件未 edit / stage，停止全部合并生命周期。结合本计划和 S2 当前安全 ACK，已向原 S2 具体放行上节准确六件，仅编辑并 stage，完成必须停止全部 I 树写入和进程访问并归还。当前返修尚未交结果，六件没有被登记为已解决或组合通过。模块与发布负责人独核后，仅 I 继续原 merge。T / S3 / 产品 UI 的原任务与 WIP 保留，后续按原准确依赖恢复。
+
 ### 21:51 恢复与原负责人返修计划
 
 根最新 `msg_1bdccb5e8fe6` / `msg_90e98714dbc2` 和根 HANDOFF 21:40 入口明确授权恢复原产品子 Run，以及旧 `run_7b2ce96bcd13` 中仅 B/F 的恢复、问答、结算和终端管理；不创建新 Run 或新 Task，不启动其他已完成任务。公开 Task 列表核四个未完成产品任务均为 ready，原 Dispatch 已 failed / terminal_missing；公开终端清单没有六位旧句柄，与根本次重启及进程退出证据一致。原分支与未提交修改保留。
