@@ -206,18 +206,30 @@ const defaultJobTimeoutSeconds = 1800
 // yt-dlp 只使用明确配置或固定安装的 Python 环境。
 func resolveListingPython() (string, error) {
 	if configured := os.Getenv("ASTROCYTE_LISTING_PYTHON"); configured != "" {
+		if !filepath.IsAbs(configured) {
+			return "", fmt.Errorf("ASTROCYTE_LISTING_PYTHON must be an existing absolute file")
+		}
 		info, err := os.Stat(configured)
-		if !filepath.IsAbs(configured) || err != nil || !info.Mode().IsRegular() {
+		if err != nil {
+			return "", fmt.Errorf("read ASTROCYTE_LISTING_PYTHON: %w", err)
+		}
+		if !info.Mode().IsRegular() {
 			return "", fmt.Errorf("ASTROCYTE_LISTING_PYTHON must be an existing absolute file")
 		}
 		return configured, nil
 	}
 	var candidate string
-	if ytDlp := os.Getenv("ASTROCYTE_YT_DLP_PATH"); filepath.IsAbs(ytDlp) {
+	explicit := false
+	if ytDlp := os.Getenv("ASTROCYTE_YT_DLP_PATH"); ytDlp != "" {
+		if !filepath.IsAbs(ytDlp) {
+			return "", fmt.Errorf("ASTROCYTE_YT_DLP_PATH must be absolute")
+		}
 		candidate = filepath.Join(filepath.Dir(ytDlp), "python.exe")
+		explicit = true
 	}
 	if candidate == "" {
 		mediaRoot := os.Getenv("ASTROCYTE_MEDIA_DIR")
+		explicit = mediaRoot != ""
 		if mediaRoot == "" && os.Getenv("LOCALAPPDATA") != "" {
 			mediaRoot = filepath.Join(os.Getenv("LOCALAPPDATA"), "Astrocyte", "media")
 		}
@@ -229,9 +241,17 @@ func resolveListingPython() (string, error) {
 		}
 	}
 	if candidate != "" {
-		if info, err := os.Stat(candidate); err == nil && info.Mode().IsRegular() {
-			return candidate, nil
+		info, err := os.Stat(candidate)
+		if err != nil {
+			if !explicit && os.IsNotExist(err) {
+				return "", nil
+			}
+			return "", fmt.Errorf("read configured listing Python: %w", err)
 		}
+		if !info.Mode().IsRegular() {
+			return "", fmt.Errorf("configured listing Python must select a regular file")
+		}
+		return candidate, nil
 	}
 	// 收藏夹继续使用公开 HTTP；上传列表缺少 Python 时返回明确配置错误。
 	return "", nil

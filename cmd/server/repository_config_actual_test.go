@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -53,4 +54,45 @@ func TestRepositoryContextConfigActualNodeSyntaxRefusal(t *testing.T) {
 	if _, err := resolveRepositoryContextConfig(context.Background(), directory); err == nil || !strings.Contains(err.Error(), "CodeGraph bridge syntax") || !strings.Contains(err.Error(), "ERR_UNKNOWN_FILE_EXTENSION") {
 		t.Fatal("actual Node syntax refusal lost its stage or original error", err)
 	}
+}
+
+func TestVideoSourceConfigActualInstalledTools(t *testing.T) {
+	path := os.Getenv("ASTROCYTE_VERIFY_VIDEO_CONFIG")
+	if !filepath.IsAbs(path) {
+		t.Fatal("select the absolute path of the actual public media configuration")
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var settings map[string]string
+	if err := json.Unmarshal(raw, &settings); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{
+		"ASTROCYTE_ENABLE_SUMMARIZE", "ASTROCYTE_NODE", "ASTROCYTE_MEDIA_DIR",
+		"ASTROCYTE_SUMMARIZE_CLI", "ASTROCYTE_YT_DLP_PATH", "ASTROCYTE_LISTING_PYTHON",
+		"ASTROCYTE_FFMPEG_PATH", "ASTROCYTE_WHISPER_BINARY", "ASTROCYTE_WHISPER_MODEL",
+		"ASTROCYTE_UVX_PATH", "ASTROCYTE_SUMMARIZE_PROXY_URL", "ASTROCYTE_JOB_TIMEOUT_SECONDS",
+	} {
+		if settings[key] == "" {
+			t.Fatal("actual explicit configuration is required", key)
+		}
+		t.Setenv(key, settings[key])
+	}
+	// 构造与生产启动相同的 Reader，只执行 Node 真实路径解析。
+	reader, err := resolveSourceReader(nil)
+	if err != nil || reader == nil || reader.Summarize == nil || reader.Arxiv.TextExtractor != reader.Summarize {
+		t.Fatal("actual installed source reader configuration failed", err)
+	}
+	python, err := resolveListingPython()
+	if err != nil || python != settings["ASTROCYTE_LISTING_PYTHON"] {
+		t.Fatal("actual installed listing Python identity changed", err)
+	}
+	t.Setenv("ASTROCYTE_ENABLE_SUMMARIZE", "false")
+	disabled, err := resolveSourceReader(nil)
+	if err != nil || disabled == nil || disabled.Summarize != nil || disabled.Arxiv.TextExtractor != nil {
+		t.Fatal("disabled extraction configuration changed", err)
+	}
+	t.Log("Actual production reader and listing configuration passed; extraction, ASR, model and shared service operations were not run")
 }
