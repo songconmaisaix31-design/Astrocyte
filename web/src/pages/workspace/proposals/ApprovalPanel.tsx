@@ -21,11 +21,20 @@ export function ApprovalPanel({ id, onChanged }: { id: string; onChanged: () => 
   return <section aria-label="审批授权" className={styles.review}><h4>批准记录与当前有效状态</h4><QueryState state={approval}>{({ approval: grant }) => <>
     <Field label="Grant 状态"><StatusBadge value={grant.status} label={statusLabels[grant.status]} /></Field>
     <FieldRow><Field label="批准提案版本">r{grant.proposal_revision}</Field><Field label="授权 Epoch">{grant.epoch}</Field></FieldRow>
-    <Field label="批准者">{grant.approver_id}</Field><Field label="有效期">{grant.expires_at}</Field>
-    <Field label="授权项目">{grant.scope.project_id}</Field><Field label="允许根目录">{grant.scope.roots?.join('；') || <MutedValue>无</MutedValue>}</Field>
+    <Field label="批准者">{grant.approver_id}</Field><Field label="批准时间">{grant.approved_at}</Field><Field label="有效期">{grant.expires_at}</Field><Field label="状态变更时间">{grant.changed_at}</Field>
+    <Field label="批准的固定目标"><code>{grant.goal.id}</code> · r{grant.goal.revision}</Field>
+    <Field label="授权项目">{grant.scope.project_id}</Field><Field label="批准时的项目权限版本">r{grant.scope.settings_revision}</Field><Field label="允许根目录">{grant.scope.roots?.join('；') || <MutedValue>无</MutedValue>}</Field>
     <Field label="允许修改的路径">{grant.scope.write_paths?.join('；') || <MutedValue>无</MutedValue>}</Field>
     <Field label="允许动作">{grant.scope.actions?.join('；') || <MutedValue>无</MutedValue>}</Field>
-    <Field label="调用上限">{grant.budget.calls ?? <MutedValue>未知</MutedValue>}</Field><Field label="费用上限">{grant.budget.money_minor === null ? <MutedValue>未知</MutedValue> : `${grant.budget.money_minor} ${grant.budget.currency}（最小货币单位）`}</Field>
+    <Field label="允许工具">{grant.scope.tools?.join('；') || <MutedValue>无</MutedValue>}</Field>
+    <Field label="允许外发目标">{grant.scope.external_targets?.join('；') || <MutedValue>无</MutedValue>}</Field>
+    <Field label="最大并发数">{grant.scope.max_concurrency}</Field>
+    <FieldRow><Field label="调用上限">{grant.budget.calls ?? <MutedValue>未知</MutedValue>}</Field><Field label="Token 上限">{grant.budget.tokens ?? <MutedValue>未知</MutedValue>}</Field></FieldRow>
+    <Field label="费用上限">{grant.budget.money_minor === null ? <MutedValue>未知</MutedValue> : `${grant.budget.money_minor} ${grant.budget.currency}（最小货币单位）`}</Field>
+    <Field label="停止条件">{grant.stops.conditions?.length ? <ul className={styles.values}>{grant.stops.conditions.map((condition, index) => <li key={`${index}:${condition}`}>{condition}</li>)}</ul> : <MutedValue>无</MutedValue>}</Field>
+    <Field label="执行截止时间">{grant.stops.deadline}</Field>
+    <FieldRow><Field label="最大工作项数">{grant.stops.max_work_items}</Field><Field label="最大尝试次数">{grant.stops.max_attempts}</Field></FieldRow>
+    <FieldRow><Field label="连续无进展轮数上限">{grant.stops.max_no_progress_rounds}</Field><Field label="无进展时限（秒）">{grant.stops.no_progress_seconds}</Field></FieldRow>
     <Field label="Grant ID"><code>{grant.id}</code></Field>{grant.reason && <Field label="变更原因">{grant.reason}</Field>}
     <form className={styles.formFields} onSubmit={event => {
       event.preventDefault();
