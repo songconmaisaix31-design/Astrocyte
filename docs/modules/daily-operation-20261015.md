@@ -1,5 +1,21 @@
 # 2026-10-15 今日采集协调记录
 
+## 2026-10-16 00:38 D2 原运行只读核对
+
+本轮沿原 `run_aa4e6a119547` 接续，负责人为 `task_315679474dc4` / `ctx_33f48c269580` / `term_6c9ec2c9-6b29-4745-ad63-6452fa7907df`。根 00:30 入口与后继 `msg_1082af45c908` 明确本模块唯一协调原定时运行，不重复 capture / Sleep / run-day、不补 Enter 或新建 operator。原 D1、Q 和 P 准备的完成记录保持。
+
+原 automation `f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b` 的 run4 `db3b3d79-0159-40c0-8f61-ce50ffff0256` 公开状态 completed / error=null，但其 outputSnapshot 只有 Codex 恢复画面。本轮原终端 `term_e51a8355-db1e-4723-959c-beded959ffc5` 文本屏内仅 PowerShell 提示，无 Working 或待提交 composer；没有发送输入。该公开状态不构成 D2 日流程完成证明。
+
+| 实际只读项目 | 当前结果 |
+|---|---|
+| 权威锁与源码 | authority=root、day0=2026-10-13，正式协议全文 SHA256 与锁同为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`。相对 `d749ecb54015520e92847cad31b14a0bdabf2f34` 的 cmd / internal / migrations / experiment / validation / 依赖 / 协议差异为空，正式工作树 clean。 |
+| 10-15 正式采集 | `formal-20261013-first/capture-20261015-first` 存在，57 个成功事件：Astrocyte 52、McPet 5、Morphogenesis 0。完整自然日 coverage / selection 为 true，unassigned / structure_failed / late / source_errors 为 0，Sleep completed，日快照存在。逐 event_id 的 D2 独立验收尚未执行。 |
+| 本日三臂持久化 | `day-20261015-first` 有两个 STARTED、一个 C / OK；日 receipts 仅 STARTED 与 MODEL_VERIFIED。user-sheet 和 judge-scores 尚不存在。没有本轮 run-day / judge 活跃进程证据，未据此推断远端请求终态。 |
+| 唯一可核原生请求 | `native-completion-1792081544084521600` 为 C / no_memory_C；thread / turn.started / turn.completed、完整 stdin / stream / output 与成功 receipt 齐全。实际 input 6,278 / output 59、29.7799039 秒、全部输入 1,724 bytes，gpt-6.1-sol、872000 context、1800 秒原预算，工具和 compact 为 0。原答已写本日 OK，不重新请求。 |
+| A 的未决状态 | A 仅 STARTED，MCP 回执已保存；inputs 只有 C 一行，A 输入与终态均为 0。00:25:39 之后本机原生目录仅上述 C，没有观察到 A 原生回执或 usage。原生产顺序为持久化 inputs 后才进入 answer / 原生独占目录 / STARTED / Popen；现有原件停在 A 准备阶段，A 远端送达保持未核实。B 与其他题没有 STARTED。 |
+
+原 `run-day` 会拒绝已经存在的本日目录，公开 CLI 未见 resume 参数；本模块没有改生产脚本、替换输出目录或重发任何请求。逐请求状态、已成功 C 预算和原件位置已交根决定准确恢复方式。原始输入、回答、错误、会话和 SQLite 仅保留既有外部证据根，本文只收派生状态；原日程 enabled / Asia/Shanghai / next 10-17 00:20 保持，锁、正式参数、模型预算和人工评分权限保持。
+
 ## 23:51 恢复后的只读检查
 
 本轮负责人为 `task_315679474dc4` / `ctx_eee578a1b9d8` / `term_835902d6-c7f0-464b-a0f4-38f80ae39164`，实际 Codex / `gpt-6.1-sol`、xhigh fast，按正式根 HANDOFF / STATUS 23:47 接续原发布 Run。标准 JSON 仅选安全字段再次核外部权威锁：authority=root、reviewed=true、day0=2026-10-13、route.status=ACCEPTED，正式 EXPERIMENT 全文 SHA256 与锁同为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`；本日 capture 与 day 目录均存在。

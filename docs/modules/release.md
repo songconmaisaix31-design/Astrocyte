@@ -15,6 +15,10 @@
 
 大型产物继续使用 D 盘，I 两处 dist 和 `.verification` 的既有 junction 保留；原 runner / B helper 的准确 D 环境继续使用。领域冲突和失败回原作者，四树组合 → 集成版 L1 → L2 六步 → 最终同源发布的顺序保持；正式锁、日程、预算、人评和冻结边界保持。
 
+00:37 实际恢复：唯一 I 为 `ctx_929201185718` / `term_38c69f61-0254-4f70-82af-faadcf6efc12`，原 S5 为 `ctx_693200d34a48` / `term_afa03a7a-43f0-4f61-a4c1-b7e97d66475e`；公开 fleet 均为 live / working、Codex / `gpt-6.1-sol`，终端 xhigh fast。I 首回执 `turn_start_unobserved` 后，核原准确终端任务停在 7,336 字符 composer、无 Working 或 shell 错误，仅补一次 bare Enter，未重送正文；后继本人 `msg_6e1fbbc711dd` 确认实际开始。S5 原成功 Sources 模型和关闭原件已本人复核，本轮没有重复推理。
+
+S5 本人新 STOP `msg_c8803c8e8609` 已核准确 HEAD / MERGE_HEAD、两项 AA 和全部写入及 merge 生命周期停止。临时域仅原 S5 树 `internal/attention/app/taste_profile.go`、`internal/adapters/sqlite/taste_profile_test.go`，经 M-product 取得本轮原 B 本人安全 ACK 后仅 edit / stage；其余路径和所有 merge 生命周期保持 S5 所有。完成本人 STOP 归还后本模块独核，再仅放行 S5 继续。根独核 CI `38768919397` 对准确 `2367224` 的 Windows gofmt 首失败与 Ubuntu `admissions_service.go` 首失败，均已交原 S2 / B；本机 c16 与 CI 分别保留，build / 默认 E2E 尚未执行。
+
 ### 2026-10-16 00:11 浏览器二进制迁移与当前交接
 
 根 `msg_b63815bcc6dc` 明确授权唯一维护者核 Playwright 二进制缓存迁移 D。I `msg_d73c2aac0ec9`、F `msg_e65c5d391d83`、新恢复 UI `msg_18ea54456772` 均本人确认没有本次在途浏览器，迁移窗口不新启；M-product 双人 ACK 同步成立。实际读取 [Playwright 官方浏览器缓存说明](https://playwright.dev/docs/browsers#managing-browser-binaries)及本机 `playwright-core@1.64.0/lib/coreBundle.js`：`PLAYWRIGHT_BROWSERS_PATH` 的绝对值直接作为运行查找根。
