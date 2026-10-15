@@ -160,3 +160,7 @@ AOCI 只接受显式外部本机绝对路径，所选版本与源码标识见前
 P 源码 SDK 在 `D:/Astrocyte-agent-assets/20261015/relay/S4/sdk-first` 新建真实 SQLite 与投影，分别从零建立两棵图，实际同 commit / 不同 worktree、同 SQLite 事务快照校验、篡改拒绝及两图真实符号和关系全部 PASS。其图数据库路径长度为 191。此前 `.verification/s4/packaged-source-sdk-first` 的 255 字符图数据库路径在启用 WAL 时失败；标准 Windows 命名空间路径可建库但 SDK 扫描返回空图，两次原件均保留。当前桥使用普通路径，较长 Windows 投影路径仍是已观察到的组件限制；没有修改 SDK 或缩短原公开仓库路径掩盖失败。
 
 本组合验证覆盖真实已配置 Service / HTTP，不覆盖 B 生产配置解析与 main 接线、前端、最终 Windows ZIP、SemanticIndex 或异步旧 generation 清理。这些仍按对应当前状态继续处理。
+
+验证工具 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` 已普通 push。实际适用命令 `go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`go build -mod=readonly ./...`、对 H 精确归档和相同 overlay 的 `go vet ./tests/s4/http`、两个 PowerShell 文件 parser 检查、gofmt 检查和 `git diff --check` 全部 PASS。未知验证阶段实际返回非零，原件为 `D:/Astrocyte-agent-assets/20261015/relay/S4/unsupported-phase-first.log`，没有静默打印阶段成功。
+
+发布 SDK 的 `initial`、`map`、`query-readonly`、`uncheckpointed-wal` 实际日志保存在 `D:/Astrocyte-agent-assets/20261015/relay/S4/sdk-first`；失败的 C 盘长路径目录及全部旧阶段证据保留。此次代码变更仅包含本轨验证入口及文档，不修改 H 的生产源码、P 的 SDK / Node 资产或任何冻结领域。
