@@ -2,6 +2,16 @@
 
 ## 当前执行入口（2026-10-15）
 
+23:47 恢复计划：Orca 当前 runtime `c129040b-bf20-4b35-9fbe-0656b3764fdb`、app PID 10692，主控 `term_24db7f74-f79a-4689-be1d-3f585a38e6b4` 已正常绑定原顶层 Run `run_973808dd6a2f` generation 29。公开清单没有旧模块或开发终端，旧模块 Dispatch 已由运行时标记 abandoned / failed，原三 Task 均 ready。沿原 Task、工作树、分支和 WIP 恢复，禁止新建替代 Run 或重复写入者；原不可变任务中的旧身份、create 子 Run 和先 L1 后集成顺序均由本入口替代。原 Run 非 legacy，使用普通 run-use，不使用 takeover-legacy。
+
+本次先恢复三位原模块负责人：M-product `task_b0197ca7ebdf` 继续 `run_dbf1a68bc692` 及旧 `run_7b2ce96bcd13` 的 B / F；M-relay `task_e8c1d01d67ec` 继续 `run_8bbda1c3974c`；M-release `task_315679474dc4` 继续 `run_aa4e6a119547`。模块仍只写原管理文档，业务由原作者连续开发、测试、返修。当前优先恢复原 B / F / S2、R / H 和唯一 I；T / S3 / UI / S4 的原任务与 WIP 保留，待 D 盘入口和集成所需依赖恢复后继续，已有功能不取消。P 准备阶段、Q 今日采集、正式 D1 和 REA 保持已完成或原停止状态，不重复启动。
+
+准确集成现场：I 原树 `works-relay-integration` / 原分支，B 普通 merge `392bbb17fc56b15a86c9b84349e6e4d6cb884755`、F 普通 merge `ebfeda40b37cc516f994e1a4f46f0869a824bd4c` 已形成；当前 HEAD 为 ebfeda40，MERGE_HEAD 为 R `9021cbaa0dac6321491c9ae86d466749b8a32904`，仅六个 S2 路径未合并。M-release 恢复原唯一 I `task_2ee44933df72`，本人重新确认停写后，由 M-product 恢复原 S2、登记准确六路径并取得本人安全 ACK，仅编辑和 stage；全部归还、独立核查后仍仅 I 继续 merge，随后 H。R 后继双完成 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` / REPORT `be0edfca394ac49824185beec2e61c087d33210c` 只作为后继准确输入，当前不更换 MERGE_HEAD。
+
+C 空余实测 `10,806,358,016 bytes`，约 10.06 GiB；D `80,765,784,064 bytes`。M-release 继续唯一协调空间，M-product 优先让原 B 在原 helper 写域完成后续产物与进程 TEMP / TMP 的 D 盘入口，F / UI 准确消费后再启动大型验证；旧证据、数据库、会话和模型保留。源码冲突处理和文档继续，恢复阶段不启动会向 C 写入大产物的检查。
+
+原 S5 安静窗口请求已有后继事实 `msg_a124f309d1ab`：PID 50088 已退出且此前已实际推理，完整 Sources 场景因测试取消顺序先于 Cleanup.Close 失败，60 / 10 秒产品预算未变。主控 23:44 只读也未找到 PID 50088。本次不延续旧的全局安静等待；M-release 先沿原 S5 真实日志核查当前阶段、未完成生命周期及必要新影响，之后仅由同一 S5 继续，保留首失败和实际推理记录。四树形成准确可构建阶段并 push 后，其他原作者在自然检查点普通合入同一 I 源码，减少不同 S2 / 依赖历史造成的重复冲突。独立 Relay L1 与 S3 的范围按下文和 QUESTIONS 当前决定执行，六步定义以 eb27bd6 为准，正式 V4 锁与日程保持。
+
 用户最新三项决定已登记 [QUESTIONS](docs/QUESTIONS.md)、[v0.3 §2.7](tasks/v0.3-capability-board.md) 和 [认知分层计划](tasks/cognitive-stack-L1-L4.md)。当前顺序为：四树分支收拢与组合验证 → 集成版 L1 真实验收 → L2 经验管道 → 六步流程端到端首跑（L2 工程验收，目标 2026-10-22，进入发布包）。唯一第三层集成人员已沿原工作树实际开始，先收拢可消费源码，不等待 L1 / L2 或所有后继功能终稿；领域修复由原作者连续交付后普通合入。完成语义为 `done = verified_complete | user_confirmed_complete`；started 证据独立记录永不回填，资源释放独立审计不可跳过，用户确认完成的任务照常进入经验候选及人工批准流程。Astrocyte 管目标 / 批准 / 上下文，Works Relay 后端 A、Morphogenesis 后端 B，同 Mission 的认领 / 预算 / 租约由单一后端独占；自动路由后置 L3。调用单位与权限证据覆盖两项仍待用户决定。
 
 用户本轮明确六步：保存验收结果、产物、检查与实际完成通道 → 成败 / 轨迹 / 产物引用可追溯 → Interpreter 起草有证据候选进入 quarantine → 用户审核批准进入 approved 并保存批准记录 → 新任务 get_experiences 获取经验并写入交接上下文 → 保存后续结果，检查实际使用及是否避免重复踩坑。开发执行定义已登记 [认知计划 §3.2.1](tasks/cognitive-stack-L1-L4.md)，三位模块负责人已收到逐步交接；发布负责人同步原发布任务。六步跑通记录为工程闭环，认知是否提升任务表现由 §3.4 独立对照实验判断。六步首跑尚未完成，具体候选的用户批准不能由开发 Agent 代签。
