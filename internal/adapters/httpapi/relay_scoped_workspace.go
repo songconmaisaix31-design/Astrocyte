@@ -14,6 +14,9 @@ func relayScopedWorkspaceRoute(r *http.Request, projectID string) bool {
 	if len(parts) < 3 || parts[0] != "api" || parts[1] != "v1" {
 		return false
 	}
+	if len(parts) >= 5 && parts[2] == "local-projects" && parts[3] == projectID && parts[4] == "judgments" {
+		return len(parts) == 5 && r.Method == http.MethodPost || len(parts) == 6 && r.Method == http.MethodGet || len(parts) == 7 && parts[6] == "feedback" && r.Method == http.MethodGet
+	}
 	if len(parts) == 6 && parts[2] == "local-projects" && parts[3] == projectID && parts[4] == "repository-context" {
 		switch parts[5] {
 		case "map":

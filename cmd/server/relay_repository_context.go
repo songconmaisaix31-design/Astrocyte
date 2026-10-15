@@ -24,12 +24,12 @@ func assembleRepositoryContext(services *httpapi.Services, db *sqlite.DB, option
 	return provider, nil
 }
 
-func assembleConfiguredRepositoryContext(services *httpapi.Services, db *sqlite.DB, objects workspace.ContextObjectStore, config repositoryContextConfig, registry *agents.Registry) error {
+func assembleConfiguredRepositoryContext(services *httpapi.Services, db *sqlite.DB, objects workspace.ContextObjectStore, config repositoryContextConfig, registry *agents.Registry) (*repositorycontext.Service, error) {
 	if config.EnvironmentID == "" {
-		return nil
+		return nil, nil
 	}
 	if services == nil || services.WorkspaceS2 == nil || objects == nil || registry == nil {
-		return errors.New("fixed Workspace context requires the original service and object store")
+		return nil, errors.New("fixed Workspace context requires the original service and object store")
 	}
 	provider, err := assembleRepositoryContext(services, db, repositorycontext.Options{
 		Git:   repositorycontext.Git{EnvironmentID: config.EnvironmentID},
@@ -38,12 +38,12 @@ func assembleConfiguredRepositoryContext(services *httpapi.Services, db *sqlite.
 		SnapshotBudget: domain.RepositoryBudget{MaxFiles: config.MaxFiles, MaxBytes: config.MaxBytes, MaxResults: config.MaxResults, MaxDepth: config.MaxDepth},
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	owned, err := workspace.NewOwnedSessionProvider(relayOwnedContext{registry: registry}, provider)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	services.WorkspaceS2.ConfigureContext(provider, objects, owned)
-	return nil
+	return provider, nil
 }
