@@ -1,6 +1,111 @@
 # Windows x64 发布包记录
 
-发布 owner：`release-package-20261014`，分支 `songconmaisaix31-design/release-package-20261014`。只修改 `release/**` 和 `docs/release/**`，本机输出在自己的 `.verification`。实际执行客户端为 Orca Codex；当前终端 `term_e67c7493-cef5-439e-9687-3197880820d7` 的公开运行信息显示 `GPT-6.1-Sol high fast`。未读取私人凭据、原会话、正式数据库，未使用视觉功能，未发布 tag 或 GitHub Release。
+## 2026-10-15 固定运行依赖与打包准备
+
+本阶段 Task `task_3347b755071e`，当前恢复 Dispatch `ctx_6cf3f6a0c68f`，固定原树和分支 `songconmaisaix31-design/release-package-20261014`。原派发 `ctx_d20c14245ccd` 已由运行时记录 abandoned / failed，协调者确认无其他写入者。本次接管 HEAD 为 `a4abbab5a0b095822437237c9216e96b0ffd5be8`，保留本报告原有未提交内容及四件未推送提交；当前终端 `term_c5c89219-2808-4a0d-99d1-893b1bbd9981` 的公开状态显示 Orca Codex / `GPT-6.1-Sol xhigh fast`。没有派发下级 Agent。原 P 工具 SOURCE `8e62c7f99b513115a19fc22569e33587bddcc300`、许可消费组合 `2790488346c0e0b9b28051793ed9d5cc318231dd` 及原来源历史保留。
+
+本次准备 SOURCE 为 `7431db6451fa759638dedc4aad7687a217d3a6d9`，追加修改四个发布检查/构建脚本和 Windows 说明；父链包含原固定依赖、NOTICE、标准 adapter 准备与组件文档普通合并。未修改业务、根依赖锁、迁移、原生控制器或正式运行树。所有新增下载、源码构建、模型复制、标准 ZIP、解压和日志都在 `D:/Astrocyte-agent-assets/20261015/release-package/`，原 `.verification` 与 15f 候选保留。Go 父进程仅使用共享标准 `go-build/backend` 和独占 `go-temp/release-package` 的 D 盘进程配置；没有清理缓存或修改全局 HOME/auth/TEMP。大型操作的 C 盘空余检查保持至少 10 GiB，PS7 本次末次记录 `12,330,934,272 bytes`。
+
+SOURCE 已普通 push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/release-package-20261014` 返回相同完整 SHA。首次只读远端 TLS 失败及首次 push 的 `remote rejected (failed)` / EXIT 1 保留，服务端没有提供更多原因；先核远端仍为 `2790488346c0e0b9b28051793ed9d5cc318231dd`，再一次普通 push 成功，没有更改鉴权、TLS、代理、全局配置或公共历史。本 REPORT 随后单独追加提交。
+
+已完整读取并通过普通 `--no-ff` 合并消费 Flash 许可 SOURCE `da5bbf28eaa4776b6fa267c22bbf3bdf309df224` 和最新路径说明 SOURCE `e5d52481fa4a66d66d25497a9c80cc26a82441f1`；对应独立 REPORT 为 `2341b353cdc29ebeae71aa996b5fc1c8d31f859c`、`61cad05f13d56d82a1ac916a5f0027b64c429554`。合并无冲突，未代改 [组件文档](components-20261015.md)，当前组件文件与 e5d 的 Git blob 完全一致。路径明确为 `runtime/adapters/codegraph.mjs`，H/B 按实际文件和其准确生产配置接入。
+
+### 实际准备与准确来源
+
+当前完整准备目录为 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third`，18:00:59 的 `prepare.log` 明确准备成功；Node/生产 SDK 显式复用本轨 `runtime-fourth`，模型使用原 S5 的 `sanitized-ctx_0a` 新 descriptor 和实际资产。原始模型分发仍被隐私检查拒绝，原件目录保留。
+
+| 组件 | 固定来源与实际结果 |
+|---|---|
+| Node | 官方 `node-v24.16.0-win-x64.zip`，与官方 SHASUMS256 相符，实际运行版本 v24.16.0 |
+| Laya SDK | 官方 Git `432312b36714d8889eba405507b37eda25257d9c`，laya-ts 0.1.0 子目录固定锁安装、真实 build、标准 npm pack 与生产安装通过 |
+| CodeGraph SDK | 官方 Git `a1489f77a6d69538bfe29020b8366ee034f90860`，固定锁安装、真实 build/npm pack；包根 main=dist/index.js，生产 JS/WASM 和全部 S4 现用 API 导出核查通过 |
+| ONNX / RPC | onnxruntime-node/common 1.30.0、vscode-jsonrpc 8.2.1；真实 native binding、SDK/RPC 导入和 Node SQLite 检查通过；Go jsonrpc2 v0.2.1 对应 `2cc94179e136b565cb9df7d9d0bff9fc06912ac9` 许可准确保留 |
+| 模型 | HF `convaiinnovations/laya` 的 `7b928d828b7b0e022f929d9bd2e44165aa270148` 与上述官方源码 export 为原始来源；本次实际消费 S5 独立衍生资产，十二文件及两个 descriptor 共 `3,014,649,292 bytes`，身份与原 S5 新 descriptor 逐项一致；未重导出或调用推理 |
+| 许可 | 原 Node LICENSE、Laya Apache-2.0、固定模型卡、CodeGraph/Go RPC MIT、ONNX v1.30.0 LICENSE/完整 ThirdPartyNotices 和标准 npm CycloneDX SBOM 已保留 |
+| 附属 DLL | DirectML 实际版本 1.15.4，官方 NuGet 的 LICENSE、LICENSE-CODE、ThirdPartyNotices 通过标准 ZIP/XML 读取；DXC 1.8.2502.8 对应 `b4711839eb9a87da7c3436d9b212e0492359fbbd`，完整复合通知已保留 |
+
+DirectML 二进制适用其 Microsoft 条款，§1(a) 允许其随 Windows/Xbox 的 ML 应用和服务分发，§3(c)/(e) 保留通知并限制独立分发；LICENSE-CODE 单独适用于 NuGet 的代码部分。实际厂商文件完整保留，Laya 明确 CPU 配置不变。许可原件在 `runtime-fourth/legal`，补充读取原件在 `onnx-legal-second/legal`，官方 nupkg 在 `onnx-legal-first/downloads`。精确归属和链接见 [NOTICE](../../release/NOTICE.md)。
+
+当前 SDK 根为 `runtime-sanitized-third/runtime/sdk/node_modules/@colbymchenry/codegraph`，Node 为 `runtime-sanitized-third/runtime/node/node.exe`。S4 已只读消费同源 SDK，准确 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` / REPORT `9907404b8df7f9f4a76dc7c90372e967fd2b33cd` 记录独立 D 盘普通路径下从零建立两图、实际 Search/Impact、只读查询、WAL 拒绝和重启通过。255 字符图数据库路径的 SQLite WAL 失败保留，191 字符普通路径实测通过；当前没有长路径支持保证。完整产品配置、前端与最终 ZIP 仍须后续准确组合验收。
+
+两个已准备 adapter 逐项对应准确已提交源码：`runtime/adapters/codegraph.mjs` 与 S4 faab 的 Git blob `d35fff9daa0a20354b7f891706846935ef85823c` 相同，`runtime/adapters/laya-worker.mjs` 与 S5 `50d9cb299954fa41e381bd5d2d3ce758d00e353b` 的 blob `d630058470347ebed9decd3299192aa28c616e2f` 相同。`Prepare-Adapter.ps1` 使用标准单文件 Git archive / ZIP 解压和 Node syntax，不覆盖已有版本；最终应用包仍从最终 I 的准确源码复制两个 adapter。
+
+实际衍生准备命令如下，EXIT 0；完整 argv 和结果保存在该目录 `prepare.log`。现入口要求显式 `-ModelRoot`，不使用原模型目录作为默认输入。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Prepare-Runtime.ps1 -Output D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third -RuntimeSource D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth -EnglishAssets D:/Astrocyte-agent-assets/20261015/judgment-s5/sanitized-ctx_0a/laya-english-assets.json -MultilingualAssets D:/Astrocyte-agent-assets/20261015/judgment-s5/sanitized-ctx_0a/laya-multilingual-assets.json -ModelRoot D:/Astrocyte-agent-assets/20261015/judgment-s5/sanitized-ctx_0a
+```
+
+`Prepare-OnnxLegal.ps1` 在 `onnx-legal-first` 完成官方下载，并在 `onnx-legal-second` 显式使用同一官方 nupkg 完成全部通知读取，均 EXIT 0。本次只读核对衍生准备目录的六份 ONNX/DirectML/DXC 许可，与 Flash 原文档记录的全部 SHA256 前缀相符；没有重新下载或替换许可。
+
+### 前阶段依赖 ZIP 实际验证
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Test-ReleaseTools.ps1 -Runtime 'D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth' -Output 'D:/Astrocyte-agent-assets/20261015/release-package/probe-ps51-fourth'
+pwsh -NoProfile -ExecutionPolicy Bypass -File release/Test-ReleaseTools.ps1 -Runtime 'D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth' -Output 'D:/Astrocyte-agent-assets/20261015/release-package/probe-ps7-first'
+```
+
+两命令均 EXIT 0。两个新目录均实际执行固定模型身份、native/SDK/RPC/SQLite 检查、全部 PS 脚本 parser、生产依赖复制、允许项校验、完整 UTF8/UTF16LE 字符串与凭据文件名检查、标准 .NET ZIP、新目录解压、解压 Node 和 S4 API、再扫描与逐文件字节核对。每个依赖包 **1384 文件 / 470,098,559 bytes**，私人匹配为零；模型本体没有进入这两个小范围 ZIP。此处的模型身份通过不代表模型隐私通过。
+
+| 环境 | 实际 ZIP 字节数 | 证据 |
+|---|---:|---|
+| Windows PowerShell 5.1.26100.9711 | 155,404,809 | `probe-ps51-fourth/probe.log`、`runtime-dependencies-probe.zip`、`extracted/` |
+| PowerShell 7.6.6 | 159,525,724 | `probe-ps7-first/probe.log`、`runtime-dependencies-probe.zip`、`extracted/` |
+
+`Check-CodeGraph.mjs` 实际核对静态 init/open、indexAll/sync/getChangedFiles/getStats/close、QueryBuilder searchNodes/getNodeById/getIncomingEdges、setLogger/silentLogger。`node --check`、两个 PS parser、`git diff --check` / staged diff 检查通过。扫描实际既有含个人路径的旧发布报告时如实拒绝，安全日志 `privacy-existing-report-rejection.log` 未输出匹配内容。
+
+### 本次恢复的完整 runtime 与依赖 ZIP 检查
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File release/Test-ReleaseTools.ps1 -Runtime D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third -Output D:/Astrocyte-agent-assets/20261015/release-package/probe-ps51-recovered-first
+pwsh -NoProfile -ExecutionPolicy Bypass -File release/Test-ReleaseTools.ps1 -Runtime D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third -Output D:/Astrocyte-agent-assets/20261015/release-package/probe-ps7-recovered-first
+```
+
+两环境均实际 PASS，PowerShell 7 命令实际 EXIT 0；Windows PowerShell 5.1 的原执行输出未取回 exit code，其 `probe.log` 在 21:56:37 记录全部检查 PASS 及正常 transcript 结束。本次核对 Node 24.16.0、真实 native ONNX binding、Laya/CodeGraph/RPC 导入和 SQLite；全部 PS 文件 parser 与两个准确 adapter 的 Node syntax 通过。模型只执行 descriptor/实际字节身份检查，要求衍生来源、修改图身份、未修改 sidecar/tokenizer/config 的原身份和全部文件集准确，没有推理。
+
+完整 `runtime` 扫描实际覆盖 **1,388 文件 / 3,484,313,396 bytes / private_matches=0**，包含十四项衍生模型文件及两个 adapter。每个依赖包实际 **1,386 文件 / 470,110,352 bytes**，包含 Node、生产 SDK、两个 adapter、全部许可与 NOTICE；归档前允许项/隐私扫描、标准 .NET ZIP、新目录解压、实际解压 Node/CodeGraph API、再次扫描和逐文件字节比较全部通过。模型本体没有进入此小范围 ZIP。
+
+| 环境 | 实际 ZIP 字节数 | 本任务 D 盘证据目录 |
+|---|---:|---|
+| Windows PowerShell 5.1.26100.9711 | 155,409,804 | `probe-ps51-recovered-first/` |
+| PowerShell 7.6.6 | 159,530,734 | `probe-ps7-recovered-first/` |
+
+每个目录保留 `probe.log`、`runtime-dependencies-probe.zip`、归档内容和 `extracted/`。两个 ZIP 字节大小因 .NET 压缩器不同而不同，解压内容按实际每文件比较相同。构建 NOTICE 现从最终 I 的准确源码读取；这条复制路径通过两个 PS parser，本阶段没有执行最终 Build 或应用 archive。`node --check release/Check-Runtime.mjs`、`git diff --check` 和 SOURCE 的 staged diff 检查通过；文档报告变更不重复产品测试。
+
+### 模型隐私首失败与当前衍生来源
+
+完整 `runtime-fourth/runtime` 扫描实际 EXIT 1，首文件 `models/english/encoder.onnx`。`Inspect-OnnxMetadata.py` 使用已安装官方 ONNX/Protobuf 库、`load_external_data=False` 和 `-B` 只读定位；四图包含当前用户 home 的字段均为 `onnx.StringStringEntryProto.value`、类型 string。安全派生结果 `onnx-metadata-privacy.json` 只包含类别、字段和数量，不包含实际值：
+
+| 图 | 包含私人路径的字段字符串数量 |
+|---|---:|
+| english/encoder.onnx | 1633 |
+| english/head.onnx | 155 |
+| multilingual/encoder.onnx | 1289 |
+| multilingual/head.onnx | 155 |
+
+已通过 `msg_f4b08b2936cc` / `msg_4b3359bd4728` 交模块负责人和原 S5 `ctx_0a7797464f02`。根确认原 S5 通过成熟 ONNX 工具生成必要 metadata 净化的独立新产物，原十二资产/导出/首失败保留。当前已接收准确 SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` / REPORT `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73` 和新 descriptor，明确 `artifact_kind=astrocyte_privacy_sanitized_derivative` / `artifact_revision=metadata-clean-20261015-ctx_0a7797464f02`，`derived_from` 保存原资产来源与身份。原 owner 的两 checkpoint、64/192 token encoder/三题型 head 输出逐项相等及三路六 PID 重启结果按准确报告复用，本轨没有重复推理。P 未修改模型、descriptor 或私人路径规则，没有豁免扫描。准备/构建入口都执行完整 runtime 隐私门禁，Build 在应用源码 archive 前拒绝不合格输入。
+
+H 的 `31256d5d6758daf25892d55df73feffde7a7e573` / `89d84d55a822e2f0506e18e93adaa1ec02a8342e` 仍属其阶段交付；完整生产配置与最终 I 未交付，本轨未用 WIP 冻结参数或增加虚构 ENV。S5 原 CPU 验证没有代表 OS 隔离；Jev 没有 key 的真实 API 仍为 NOT_RUN。
+
+### 首失败原件与当前范围
+
+准备 `runtime-first` 的 TypeScript Windows 编译器依赖错误、`runtime-second` 官方 npm ECONNRESET、`runtime-third` npm CodeGraph 包装入口失败均保留各自 transcript。当前使用固定源码实际 SDK，不调用 CLI 安装器或宿主缓存。PS5 首三个 probe 原件保留：首轮 ZIP 成员反斜杠、下一轮原生库格式标签匹配、第三轮压缩程序集未加载；最终 UTF8 BOM、显式标准压缩程序集、前向斜杠成员名与文本材料匹配已在两个实际环境通过。没有跳过厂商文件或改变私人路径匹配条件。
+
+衍生准备 `runtime-sanitized-first` 在固定 HF 模型卡下载失败后立即终止，`runtime-sanitized-second` 在复制已有 legal 目录时报错；两个原目录/日志保留。`runtime-sanitized-third` 使用显式已构建 runtime 来源并完成全部真实准备。现有 runtime-source 分支逐个复制许可成员到新目录，缺失直接失败，没有更换上游或自动下载替代。
+
+本阶段未执行应用源码 archive、15f 重建、最终包、默认浏览器、原生控制器、采集、Sleep、Jev 或其他模型推理。原 `runtime-fourth` 的完整模型隐私失败继续有效，当前完整衍生 runtime 与旧原件分别保留。
+
+### 最终组合的当前准确认知输入
+
+协调者 `msg_f61e0255b359` 已通知唯一 I 启动，尚未交付准确组合 SOURCE。新 Q SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7` 为后续同代验证输入。已只读其完整当前报告和 main 的 `current.json` / 安全 SQL / admission：Q 原树 `.verification/cross-day-20261015-0228/app-state/state.sqlite` 为来源，发布根为同目录 `local/astrocyte-workbench/v0.1`，实际 generation `snapshot-1711995690` / `2026-10-14T18:48:42.2097174Z`，History 为该代 `history.json`，安全期望为同目录 `main-safe-final`。
+
+当前安全输入绑定 2026-10-15，十项 SQL、1,316 条六字段、实际 Sleep 1、Today 52 / 前日 74、MCP 最高排名及实际 21 事件、Astrocyte 134 条分页和两主题各三历史点。这里只登记 Q 交付值及现有指针，没有重新运行 Q 验收、读取原始会话或采集/Sleep。P helper 按输入数量与实际同代动态核查，没有固定旧 1,339 或旧 generation；旧候选结果继续仅属于下面的历史章节。若实际验收跨日，现有日期检查会拒绝过期期望，交原 Q owner 提供准确日期的同代 SQL 期望，不借旧样本通过。
+
+实际剩余：H/B 的准确完整生产配置及启动参数接入；S5 完整 Goal/TasteProfile AT12 和生产 HTTP；AOCI FSL-1.1-MIT 的用户用途/分发决定；OS 执行授权及 Jev key；S4 较长 Windows 投影路径限制、SemanticIndex 未决定与其他原域缺项；唯一 I、完整默认检查、真实原生/Today、同源码新包和实际核心路径验收。AOCI 没有进入资产或 ZIP，显式合法外置配置仍为已提交方案；Jev 仅固定 `jev-1.13.0` 云 REST，缺 key 的真实 API 为 NOT_RUN。未发布 tag/Release，没有人工代测要求，领域失败均通过协调者交原 owner。独立可消费准备阶段不等待只能在最终组合上执行的检查。
+
+## 2026-10-14 候选包历史
+
+当日发布 owner 为 `release-package-20261014`，分支相同，输出在自己的 `.verification`。当时 Orca Codex 终端 `term_e67c7493-cef5-439e-9687-3197880820d7` 公开运行信息显示 `GPT-6.1-Sol high fast`。未读取私人凭据、原会话、正式数据库，未使用视觉功能，未发布 tag 或 GitHub Release。
 
 ## 发布工具 SOURCE
 
