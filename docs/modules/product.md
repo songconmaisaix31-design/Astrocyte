@@ -67,6 +67,12 @@ M-release `msg_bd9dee86ff1c` 已交 I 本人新 STOP `msg_d41719dea525`。模块
 
 F 后继共享 client SOURCE `4192c26bd77ec70504f286f8ddb75a145779ab58` 仅修改 `web/src/api/relay.ts`、新增 `web/src/api/swarm.ts`、`web/src/api/workspaceContext.ts`，独立 REPORT `e3161bb67ea1edbd3ac7082b8f89eb215efb3555`。这三件按同样精确 SOURCE 消费，由 F 本人确认源文件零 WIP / 停写和 UI 确认目标三件零 WIP 后，单独放行原 UI 的该 SOURCE 普通 cherry-pick；不消费未提交测试或 Prepare 组件 WIP，不引入其他 ancestor。消费不授予 UI 共享 API 的逻辑所有权。阶段仅表明准确类型、生成一致性和定向编译 / lint 通过；完整 HTTP、浏览器与 CLI 未运行，原全域 typecheck 失败记录保留。浏览器是否恢复按发布负责人缓存完成事实与 B D helper 的实际依赖分别处理。
 
+### 00:19 B 显式 D 输出入口的准确消费计划
+
+B SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` / REPORT `ec8a97debd79049ba9a346f77544046151d8f3b0` 已由本人普通 push并交付，源 clean。只包含八件：`scripts/dev.mjs`、`scripts/process.mjs`、`scripts/vite-server.mjs`、`tests/s1/api.mjs`、`tests/s1/development-lifecycle.test.mjs`、`tests/s1/server-lifecycle.test.mjs`、`tests/s1/server.d.mts`、`tests/s1/server.mjs`。五项真实生命周期 77.169 秒、零 skip 通过，首轮 1 PASS / 3 FAIL 保留；完整默认仍未运行。F 本人 `msg_31679517dcfa` 已核目标八件零 WIP / 零 staged，与 SOURCE 父完整一致；在此安全检查点仅允许原 F 通过单个 SOURCE 普通 cherry-pick 精确消费八件，保其他前端 WIP，不引入 B 其他 ancestor，不修改 helper 逻辑，完成逐件完整 diff0 后明确归还后续逻辑给 B。
+
+同一原 UI 在自己的自然安全检查点确认这八件零 WIP / staged 后，按相同单 SOURCE 方式独立消费；不停止页面命令。任何冲突或额外路径均停止消费并交原 B / 模块，不使用 abort / reset / 整体选边。新调用为每个负责人显式设置独占 D 盘 `ASTROCYTE_TEST_OUTPUT_ROOT`、TEMP / TMP / GOTMPDIR 与共享 D 盘 GOCACHE，源检查证明 SQLite、二进制、Vite 缓存和完整日志进入该根。Playwright 迁移完成按 M-release 准确官方路径消息消费；其完成事实与 D helper 是两个实际条件。I 沿发布负责人安排消费准确来源和执行组合检查，模块管理报告不增加其继续条件。
+
 ### 21:51 恢复与原负责人返修计划
 
 根最新 `msg_1bdccb5e8fe6` / `msg_90e98714dbc2` 和根 HANDOFF 21:40 入口明确授权恢复原产品子 Run，以及旧 `run_7b2ce96bcd13` 中仅 B/F 的恢复、问答、结算和终端管理；不创建新 Run 或新 Task，不启动其他已完成任务。公开 Task 列表核四个未完成产品任务均为 ready，原 Dispatch 已 failed / terminal_missing；公开终端清单没有六位旧句柄，与根本次重启及进程退出证据一致。原分支与未提交修改保留。
