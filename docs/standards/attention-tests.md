@@ -131,6 +131,16 @@ go test -mod=readonly ./internal/attention/app -run '^(TestActualPublicGitAdmiss
 
 剩余 App 共享 MemoryRepo / MemoryObjects、替代模型、provider 目录及 S1 unknown 生命周期继续整改；本轨未完成，未发送 worker_done。已有成功和失败断言、未知状态继续保留，不新增 skip、不删除断言、不替换为伪外部成功。
 
+## 完整 Taste 应用验证
+
+2026-10-15 22:27，模块 `msg_395996d92161` 交准确 B SOURCE `41602e6f2a14a75e3765ef0a72f7afadf1856bbb` / REPORT `fbdc89c1b2961d253d0268eff8098e9552a5dfd5`。本轨合并预检无冲突，普通 `--no-ff` 消费到 `24ed6968bb70612c0ccfb4864b8dd6ea86d4c3b7`；没有手工修改生产、SQLite 测试或迁移，原 `experience_accepted_rules_test.go` 贡献保留。该来源提供人工配置的 head / 固定 revisions、Current / Fixed Reader 和 command / CAS / receipt / outbox。
+
+本轨 SOURCE `1c15c16890aa95148c31b0502606762730e5b515` 已普通提交并 push，唯一新源码为 `taste_profile_service_test.go`。实际使用当前公开 Git HEAD 的固定 README，经生产 manual Reader、真实对象和 SQLite 形成示例引用；rubric / example 的配置参数由测试明确提交，delegations 为空数组，没有伪造 S5 规则或准入授权。
+
+首命令 `go test -mod=readonly ./internal/attention/app -run '^TestActualTasteProfile' -count=1 -v` 为 RED / 两项 PASS、一项 FAIL / 包 25.162s，日志 `.verification/taste41602-app-first.log`。固定来源、未配置 false / nil、rubric / example / disable 产生版本 1–4、不可变历史、原完整回执、Agent / 旧 CAS 拒绝、两次 SQLite 重开、真实来源撤回拒绝通过；实际 outbox 故障完整回滚后原 key 成功，以及错误 digest / 缺失 revision 拒绝通过。两成功库为 `.verification/attention-999323475/state.sqlite` 和 `.verification/attention-3955454268/state.sqlite`。该旧 SOURCE 尚未校验题型和期望值类型，因此这两项结果仅支持存储与来源生命周期，不能作为合法 S5 typed 配置或判断正向。
+
+`TestActualTasteProfileRejectsUnknownQuestionType` 对明确非法 `source-check` 要求 `validation_failed`，实际未拒绝，首 RED 库 `.verification/attention-3062474668/state.sqlite` 保留；全部拒绝及无副作用断言继续保留。已向 B 当前负责人交 `msg_8ca92d4e43d1`，修复只由原 B 实施。本轨已只读模块后继 `daf577dd65fbc1ab18caf0e6c71bd889ae5acf80` 的正式 choice / score / truth 字段与数值期望契约，等待原 B 的普通 push 和闭包确认后准确消费并复验；旧字符串参数不作为该后继源码的合法输入。完整 S5 cache / proof / 权威 delegation、AT12、原十四项与相关两包完整运行仍未通过。
+
 生产 `agents/text.go` 的 selected-text 目录已通过 B 前置 SOURCE 改为 registry owned root。2026-10-15 本恢复阶段的 Go 命令仅为自身进程设置 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/product-t`、`GOTMPDIR / TEMP / TMP=D:/Astrocyte-agent-assets/20261015/go-temp/product-t`；日志、来源和数据库仍在本树 `.verification`。模块 `msg_cb2c75691b3a` 的后续要求在当前检查结束后生效：新 Go 命令仅进程改用已预热共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，GOTMPDIR 继续本轨独占 D 目录，不复制或清理缓存。S1 子服务仍显式使用其 owned evidence directory 内的 native 临时目录。
 
 S1 首次运行在第一次导入请求的身份构造前 RED，8.36s，没有原生 probe 或模型请求；原件 `.verification/s1-native-first.log` 与 `.verification/s1-native-1981875207/server.log` 保留。模型前置问题 `msg_18fa60d90459` 的回复与后续 SOURCE 分别记录；当前代码已有上述 selected-text 映射，真实运行核查按模块延期决定保持 NOT_RUN。T 不以 `ExternalStarted` 或工具调用零单独证明实际 Send / 工具关闭，不扫描原生 home、不重发 B 的旧成功请求。
