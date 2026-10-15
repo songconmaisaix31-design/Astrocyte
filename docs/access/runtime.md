@@ -1,5 +1,11 @@
 # Works Relay runtime
 
+## 2026-10-16 verified_complete 生产入口核查
+
+模块 `msg_7572618ec5e3` 要求核查现有生产实现。R SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 提供 `RelayGoalVerificationReader`、可选 `RelayServiceOptions.GoalVerification`、原 owned controller / accepted input / transition 关系检查，以及完成记录的私有持久化。当前 R `d6dab8a`、H `8bc21f140c36b77275358e28951e1ca1b7cb7a6d` 及当时 H 未提交域、I `b9bf9d7` 的 `internal` / `cmd` 没有 `ReadRelayGoalVerification` 生产方法实现或 `GoalVerification` 注入，也没有实际固定目标检查的持久证据入口。因此 `verified_complete` 生产能力仍未实现，真实正向验收为 NOT_RUN；没有 reader 时明确返回 evidence_missing。
+
+原设计由 H 负责合法正选来源输出、固定目标实际检查的可信 reader、证据出处和唯一生产装配，当前没有该实现的准确 SOURCE。F / H 仍须在原单窗口核查本任务合法输出与固定目标；人工通道如实保存操作者确认，不能据 DTO、原生终态或拒绝测试生成 verified 结果。`ReadRelayCompletion` 只读取已经完成的 Completions 记录及 finalized transition 收据，不提供前置目标检查。此核查没有新增通用 checker、检查协议、控制器或模型输入。
+
 ## 2026-10-16 原输入回合终态观察
 
 本阶段 SOURCE `23253502143bb23bf47e1606c38e0158540e328d` 已普通 push，独立 `git ls-remote` 返回同一 SHA。当前 Task 为 `task_f082d8b36471`，Dispatch 为 `ctx_c17c6124e9dc`；使用原 R 工作树、分支和写入范围，客户端为 Codex 0.162.0，模块核实终端配置 GPT-6.1-Sol / xhigh / fast。原双完成 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 保持普通祖先。
