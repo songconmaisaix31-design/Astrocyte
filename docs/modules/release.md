@@ -2,6 +2,27 @@
 
 ## 2026-10-15 当前发布协调
 
+### 21:47 Runtime 恢复执行计划
+
+当前 Task `task_315679474dc4` / Dispatch `ctx_babf16de02e2` / 终端 `term_4b0a1372-6750-47f7-8a99-e7e9d0236130`，根当前终端为 `term_499a85ee-d93d-4385-bad1-5228a2b34146`。根 `msg_e947b9ae48de` / `msg_50ac884c4910` 明确恢复原发布 Run；本模块已读取并 ACK，在 `run_aa4e6a119547` generation 4 接续。接管时按旧派发正文创建的 `run_be01327823fb` 没有 Task 或 Worker，保留且不用于派发。管理实际客户端由公开 worker-show 核为 Codex / `gpt-6.1-sol`，终端显示 xhigh fast；本轮只维护原管理文档，业务代码由原第三层领域人员持续负责。
+
+| 恢复轨道 | 原 Task / 固定工作树与分支 | write_paths 与下一项实际交付 |
+|---|---|---|
+| S5 | `task_1d3e15a66b2a`；`release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015` | 保持原 `internal/judgment/**`、`internal/adapters/judgment/**`、SQLite / HTTP `judgment_*.go`、`tests/s5/**`、`docs/standards/judgment-s5.md`。接续现有 authorization / sources WIP，与原 B / S2 完整接入 TasteProfile、Goal 和 AT12，交可消费 SOURCE / 独立 REPORT；Delegation 仍为 S5 单一权威。 |
+| P | `task_3347b755071e`；`release-package-20261014` / `songconmaisaix31-design/release-package-20261014` | 保持原 `release/**`、`docs/release/package-report.md`、`docs/release/windows.md`，组件许可文档仍归原作者。保留已有报告 WIP 和四件未 push 提交，消费准确 S5 / S4 / 许可输入，完成运行组件准备及适用检查；最终应用包从唯一 I 的精确 SOURCE 构建。 |
+
+运行时已记录旧 S5 `ctx_0a7797464f02` 与 P `ctx_d20c14245ccd` 为 abandoned / failed，原 Task 均 ready；恢复前按公开生命周期处理旧资源，不由缺少终端推断退出。两树原有 WIP 保留，不重复创建 Task 或同域 writer，禁止第四层。
+
+根已接收的 S5 SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` / REPORT `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73` 的衍生模型服务与六 PID 重启结果复用；S4 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` / REPORT `9907404b8df7f9f4a76dc7c90372e967fd2b33cd` 同样复用。P / H 按准确输入消费，不重复导出或已验模型推理。B 的 026 仅两张完整 TasteProfile 表获准，DDL / 领域持久化由 B 负责，S5 不修改迁移。
+
+唯一 I 的启动条件以根当前答复为准：全部领域 SOURCE / REPORT 准确且可消费后立即普通 `--no-ff` 集成，完整整仓检查、真实 native / Today 在该准确组合上执行。领域失败交回原作者，最终发布仍须全部适用门禁通过。当前 Calls / 权限问题、AOCI 分发、OS 管理员执行尚待用户，Jev 缺 key 维持 NOT_RUN，其他已授权开发继续。正式 D1 与 Q 已完成，不重复采集、Sleep、模型或 judge。新增大型产物全部使用 D 盘独占目录和既有共享 Go 缓存；C 盘维护仅由本模块协调。
+
+21:53 两条原 Task 已恢复唯一第三层人员：S5 当前 `ctx_8ff0e4770bd8` / `term_c8a6ea08-dc91-45dd-bb66-4eea961ac2b3`，P 当前 `ctx_6cf3f6a0c68f` / `term_c5c89219-2808-4a0d-99d1-893b1bbd9981`。公开 fleet 独核两者实际 `live / working`、Codex / `gpt-6.1-sol`，终端均 xhigh fast；P 已本人报告接管，准确模型、descriptor、S4 与许可输入及原写域已分别通过消息交接。
+
+S5 首次恢复 `ctx_a31464a8a5c5` 的真实 `account/read` bootstrap 错误为 `workspace routing discovery timed out (code -32603)`，有界文本记录确认返回 PowerShell 续行，未发送 Enter；官方 `worker-stop` 关闭该准确终端，原 Task 单次 `--retry-of` 后接续，首失败资源已 official released。P 首回执 `turn_start_unobserved`、S5 retry 回执 `turn_started` 均保留；实际文本检查发现两次正文仍在 Codex composer，各只发送一次 bare Enter，随后 fleet 已核实际工作，没有重送任务正文或创建同域第二写入者。旧 S5 / P `ctx_0a` / `ctx_d20` 资源已 released / archive unavailable；更早 `ctx_f403dc7813bc` 官方两次 release 仍为 release_unknown，保留其准确错误，不以宽泛关闭替代清理。
+
+本次 C / D 空余分别为 `12,439,113,728` / `84,291,158,016 bytes`，只读测量，没有新清理动作。唯一 I 的准确来源已向 M-product / M-relay 当前 Dispatch 请求；两模块继续处理原 B/S2/H 冲突、可信登记、完整 Taste / Goal 与生产装配，未提交文件不作为已冻结输入。
+
 ### 18:00 当前准确输入与剩余验收
 
 | 输入 | 准确 SOURCE / 独立 REPORT | 已核范围 |

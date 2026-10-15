@@ -1,5 +1,13 @@
 # 2026-10-15 今日采集协调记录
 
+## 21:53 当前恢复只读核查
+
+当前模块为 `task_315679474dc4` / `ctx_babf16de02e2` / `term_4b0a1372-6750-47f7-8a99-e7e9d0236130`，根明确授权接续原 `run_aa4e6a119547` generation 4。实际管理客户端由公开 fleet 核为 Codex / `gpt-6.1-sol`、终端 xhigh fast。本轮读根当前 HANDOFF / STATUS、原日运行计划和正式 OPERATIONS；根 `msg_e947b9ae48de` / `msg_50ac884c4910` 明确正式 D1 与工程 Q 已完成，不重复运行。
+
+标准 JSON 只选安全字段重核实际外部锁：authority=root、reviewed=true、day0=2026-10-13、route.status=ACCEPTED；正式 EXPERIMENT 文件通过 `Get-FileHash` 得到全文 SHA256 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，与锁一致。公开 `orca automations show / runs` 重核原 automation 仍 enabled、Asia/Shanghai，nextRunAt 对应 2026-10-16 00:20；原 D1 scheduled run `50ee3508-e5bc-4ace-8fae-4c652bea59da` 仍为 completed / error=null，旧 D0 completed 与首 skipped_unavailable 均保留。本轮没有新增运行。
+
+本次仅核现有安全状态与协议 SHA，没有重新读取正式 SQLite 或模型原始输入 / 响应，没有执行 capture、Sleep、select-native、run-day、judge、import-user 或预测命令。下方既有 D1 独验的 60 事件 / 单次 Sleep / 12 题臂 / judge 与逐事件原件核对继续有效；人评仍由用户填写，D+3 与七日终局按真实日期继续，冻结条件保持。
+
 事实源为根当前 HANDOFF / STATUS、[原日运行计划](../../tasks/M6-V4-daily-operation.md)与原正式工作树 `docs/experiment/OPERATIONS.md`。负责人 Task `task_315679474dc4` / 当前 Dispatch `ctx_b80c795a71a4`，原子 Run `run_aa4e6a119547` 已恢复 generation 3；根继续明确管理写域为本文、`release.md`、`opencode-model-20261015.md` 与发布任务。当前实际管理客户端为 Orca CLI / Codex，终端读取模型为 GPT-6.1-Sol xhigh fast。下列日流程由重启前 Dispatch `ctx_dee6ef251324` 协调，原管理客户端为 GPT-6.1-Sol high fast。
 
 上海日期为 2026-10-15，刚闭合自然日为 2026-10-14，即 day0=10-13 的 D1。原V4日采集持续授权，原automation为唯一operator；本模块只读预检、明确未提交输入的单次恢复及结果验收，不执行自己的capture、Sleep、select-native、run-day、judge、import-user或score-predictions。根已转交S0–S6当前系列并行授权，科研与产品功能由各owner推进；working关键规则和额外范围仍保持待答。不补漏日、不重发unknown、不改变日程、协议、正式库结构或模型预算。
