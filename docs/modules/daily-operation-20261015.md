@@ -16,6 +16,8 @@
 
 原 `run-day` 会拒绝已经存在的本日目录，公开 CLI 未见 resume 参数；本模块没有改生产脚本、替换输出目录或重发任何请求。逐请求状态、已成功 C 预算和原件位置已交根决定准确恢复方式。原始输入、回答、错误、会话和 SQLite 仅保留既有外部证据根，本文只收派生状态；原日程 enabled / Asia/Shanghai / next 10-17 00:20 保持，锁、正式参数、模型预算和人工评分权限保持。
 
+根 `msg_e64db9e51356` 已确认当前没有可直接使用的已授权恢复入口。D2 保留 partial：一个 C / OK、A / STARTED 且送达未核实，其余十个题臂 NOT_RUN；57 个事件、一次 Sleep 与本日快照保留。不补写正式答案、不重做日流程或修改冻结脚本，原日程和后续合法闭日继续；该实验缺口不构成当前产品组合及 L1 / L2 工程的新前置。未来恢复功能先由原 W2 提交准确方案及冻结影响，再按授权执行。
+
 ## 23:51 恢复后的只读检查
 
 本轮负责人为 `task_315679474dc4` / `ctx_eee578a1b9d8` / `term_835902d6-c7f0-464b-a0f4-38f80ae39164`，实际 Codex / `gpt-6.1-sol`、xhigh fast，按正式根 HANDOFF / STATUS 23:47 接续原发布 Run。标准 JSON 仅选安全字段再次核外部权威锁：authority=root、reviewed=true、day0=2026-10-13、route.status=ACCEPTED，正式 EXPERIMENT 全文 SHA256 与锁同为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`；本日 capture 与 day 目录均存在。
