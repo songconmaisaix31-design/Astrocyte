@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net"
@@ -20,6 +21,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/judgment"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -73,6 +75,26 @@ func TestRelayJudgmentProductionAssemblyActualSQLiteHTTP(t *testing.T) {
 			t.Error("生产判断关闭失败")
 		}
 	}()
+	t.Setenv("LOCALAPPDATA", root)
+	t.Setenv("ASTROCYTE_RELAY", "1")
+	t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "archive")
+	t.Setenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT", "")
+	closeRelay, err := assembleRelay(&services, db, registry, store)
+	if err != nil {
+		t.Fatal("实际空 Relay 生产组装失败")
+	}
+	defer func() {
+		if closeRelay() != nil {
+			t.Error("实际空 Relay 关闭失败")
+		}
+	}()
+	if err := assembleRelayCompletionSource(&services); err != nil {
+		t.Fatal("生产完成来源组装失败")
+	}
+	completionReader, ok := services.Relay.(attention.ExperienceCompletionReader)
+	if !ok {
+		t.Fatal("生产 Relay 未提供完成来源读取接口")
+	}
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal("真实判断 HTTP 监听失败")
@@ -157,6 +179,35 @@ func TestRelayJudgmentProductionAssemblyActualSQLiteHTTP(t *testing.T) {
 	project, err := projects.RegisterProject(ctx, caller, domain.RegisterProjectCommand{Name: "Astrocyte public checkout", Root: publicRoot, SpaceID: space.Space.ID})
 	if err != nil {
 		t.Fatal("实际公开项目登记失败")
+	}
+	access := relayCompletionProjectAccess{projects: projects}
+	if owner, err := access.currentOwner(ctx, principal, project.ID); err != nil || owner != project.ID {
+		t.Fatal("实际完成来源未绑定当前项目身份")
+	}
+	if evidence, err := completionReader.ReadExperienceCompletion(ctx, principal, project.ID, uuid.NewString()); err == nil || evidence.EventID != "" {
+		t.Fatal("真实空 Relay store 产生了完成证据")
+	}
+	for _, candidate := range []attention.Principal{{ID: principal.ID, Kind: "agent"}, {Kind: "human"}} {
+		_, err := access.currentOwner(ctx, candidate, project.ID)
+		var denied *apierrors.ServiceError
+		if !errors.As(err, &denied) || denied.Code != apierrors.ScopeDenied {
+			t.Fatal("未授权完成来源未被拒绝")
+		}
+		if _, err := completionReader.ReadExperienceCompletion(ctx, candidate, project.ID, uuid.NewString()); !errors.As(err, &denied) || denied.Code != apierrors.ScopeDenied {
+			t.Fatal("生产完成来源转发未拒绝未授权身份")
+		}
+	}
+	if err := sqlite.NewWorkspaceRepository(db).WithWorkspaceTx(ctx, func(tx workspace.WorkspaceTx) error {
+		owner, err := access.currentOwner(tx.Context(), principal, project.ID)
+		if err != nil {
+			return err
+		}
+		if owner != project.ID {
+			t.Fatal("完成来源事务内项目身份不符")
+		}
+		return nil
+	}); err != nil {
+		t.Fatal("完成来源未复用实际主数据库事务")
 	}
 	settings := project.Settings
 	settings.AllowDirectory, settings.AllowedSubdirs = true, []string{"."}

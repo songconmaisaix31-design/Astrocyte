@@ -1,5 +1,26 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 清理生命周期、完成来源与独立认知根
+
+SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc`，分支 `songconmaisaix31-design/works-relay-http`，九件 H 文件。已普通消费 B 的 cleanup SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3`。原主入口将项目设置的提交后通知连接到同一个 RepositoryContext provider，并启动其现有清理 worker；错误进入原服务退出流程，退出时取消并等待 worker 返回，再关闭 SQLite。
+
+同一 `relaySessionRuntime` 实现原 `ExperienceCompletionReader`，将 `ReadExperienceCompletion` 和 `AuthorizeExperienceCompletion` 转发到原 Relay 完成来源。读取原完成记录与最终收据在主库事务外执行；当前项目授权复用主库事务 context，并要求当前 human、真实 `LocalProject.ID` 与 owner 一致。Agent completion action 尚未授权，保持明确拒绝。原 B 的 AcceptedExperienceService 消费桥继续由 B 连接；真实完成正向及经验候选闭环尚未验收。
+
+可信配置 `ASTROCYTE_WORKBENCH_READER_ROOT` 选择独立只读认知根，不改变应用数据与 Relay 根。明确目录必须可用、为绝对路径且没有重定向；应用数据库同时与本地原快照、独立根快照及受保护来源核实际文件身份，拒绝目录重用和同文件别名。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayRepositoryCleanupActualSQLiteLifecycle\|TestRelayJudgmentProductionAssemblyActualSQLiteHTTP\|TestRelayReaderRootActualDirectoriesAndDatabaseAliases)$' -count=1 -v -timeout=120s` | PASS，package 6.113 秒；真实 SQLite / HTTP / 公开 README / 规则判断、空 RelayStore 生产读取与未授权拒绝、同主库事务 context、清理取消等待与实际数据库错误、两类快照 hardlink 拒绝 |
+| `go test -mod=readonly -p=1 ./internal/adapters/events -run '^TestRelaySourceIdentityActualFileAndAliasRejection$' -count=1 -v -timeout=60s` | PASS，package 0.633 秒；真实单链接、身份稳定、未授权根、取消和硬链接拒绝 |
+| `go vet -mod=readonly -p=1 ./cmd/server ./internal/adapters/events` | EXIT 0，8.986 秒 |
+| `go build -mod=readonly -p=1 -o <H 本机检查目录>/astrocyte-recovery.exe ./cmd/server` | EXIT 0，4.684 秒；此检查产物未部署 |
+| 实际 CodeGraph Node version / SDK exports / script syntax | 复用原配置的准确工作目录、完整白名单环境及每步 15 秒，三项均 EXIT 0；原 `0db5836` 启动 exit 1 原件保留，首次原因仍 UNKNOWN |
+| 当前普通产品恢复 | 准确 `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，buildinfo modified=false，PID45616 / UTC `2026-10-15T20:13:21.8983808Z`，原 SQLite / LOCALAPPDATA / `http://127.0.0.1:64505`；唯一 loopback listener，health=ok，首页 HTTP200 |
+
+原件和独立 result 留在 H 本机 `production-assembly/`，本轮前缀为 `assembly-recovery-20261015-201510`、`source-recovery-20261015-201142`、`vet-recovery-20261015-201538`、`build-recovery-20261015-201538`；运行指针在同一共享产品目录的 `running.json`，逐步 probe 为 `codegraph-recovery-20261015-201221.json`。当前 Orca 客户端为 Codex 0.162.0 / GPT-6.1-Sol，检查使用 Go `GOMAXPROCS=2 / -p=1`、Node 512 MiB，未调用模型。
+
+当前运行产物尚未包含本段 H 后继，Q 独立根与 Jev / Laya 尚未配置。F 保持唯一产品页面和核心 HTTP 操作，当前先恢复已保存数据的只读核查，成功和未知 mutation 不重发。原生登记、初始化、模型输入及新 L1 计时起点均为零。完整默认及最终发布尚未通过；旧 `runtime_http` 自定义 driver / sink 和 `session_git` 自生成 CLI helper 不作为真实原生验收，原 OS1314、HTTP 和来源首失败各自保留。
+
 ## 2026-10-16 Judgment 与 Taste 生产装配
 
 SOURCE `67fb5f255d52130f5ae30377ab615dd17b7c79ef`，七件原 H 路径。生产入口使用原主 SQLite、Attention、Workspace S2、Registry、固定快照 provider 和既有准入桥构造 Judgment / Delegation / Admissions；Taste 复用原 Attention 服务。现有 S5 HTTP 在独立子 mux 中注册，继续经过当前 session / CSRF / 项目权限保护；项目 Agent 仅放行原判断提交及结果、反馈读取，策略、快照、反馈写入及完整品味操作继续核人类身份。公共快照保持省略私有 Root。
@@ -15,7 +36,7 @@ Jev 仅在可信进程环境提供原密钥时配置。Laya 仅在明确配置�
 
 检查统一使用 `GOMAXPROCS=2 / -p=1`、Node 512 MiB、共享 D 盘 Go cache 和 H 独占 D 盘 TEMP / TMP / GOTMPDIR。原日志及每次命令的实际结果位于 `D:/Astrocyte-agent-assets/20261015/relay/H/production-assembly/`。开发客户端为当前 Orca Codex，本阶段没有外部模型调用。
 
-普通产品服务继续运行于原 64505 地址、原 D 盘稳定程序 / 静态文件与同一 SQLite，实际运行源码仍为 `ad8413e119379c9795bab558a41fe425ea9095ca`；本段新源码尚未部署到该实例。F 保持唯一实际页面和核心 HTTP 操作人。S4 后台清理、成功提交后唤醒、完成来源生产装配及后继准确组合继续，真实 L1 / L2、Jev / Laya 产品正向和最终发布尚未通过。受限 Codex 文件工具无法满足关闭要求时保持明确拒绝，本轮登记、初始化、模型输入与 L1 t0 均为零；原未知和首次失败记录保留。
+普通产品当前运行状态见本页顶部。F 保持唯一实际页面和核心 HTTP 操作人。真实 L1 / L2、Jev / Laya 产品正向和最终发布尚未通过。受限 Codex 文件工具无法满足关闭要求时保持明确拒绝，本轮登记、初始化、模型输入与 L1 t0 均为零；原未知和首次失败记录保留。
 
 ## 2026-10-16 空 Prepare 后的同实例来源检查
 
