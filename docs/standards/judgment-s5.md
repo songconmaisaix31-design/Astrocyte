@@ -335,3 +335,21 @@ Jev 安全本机注入入口按根 `msg_5ec15ce2eb5a` 仅准备，实际 key 调
 OS SOURCE `ef20179eb60d986a3d4d93a5232cffa0970382fd` 已普通 push，独立 `git ls-remote` 返回同完整 SHA；该提交仅含 `tests/s5/offline-live.mjs` 与本文。原 PowerShell 文件和准确命令参数保持原值，Node syntax 与两类 diff-check 通过，实际单次管理员进程 EXIT 0 和上述两轮 EACCES / CPU 三题型 / 重启 / 分阶段预算 / 清理原件共同构成本阶段验收；没有另行重复 Execute 或成功模型预检。
 
 本阶段实际结果已通过 `msg_75dcca8abe7d` 交协调者。追加独立查询准确 Name/Group 规则数、专用程序进程数、原管理员 PID 数均为零，全部 profile 仍启用；Process 环境在原脚本内逐项恢复并读回。通用网络修复已由用户取消，本执行者没有开展该事项、变更网络/代理或全局防火墙。Jev 本机安全入口继续准备，实际云端回执与 H 生产组合仍未通过，完整 Task 保持持续。
+
+## Jev 本机安全输入与固定公开任务入口
+
+根 `msg_5ec15ce2eb5a` 经协调者 `msg_585470199343` 授权准备可审阅入口，实际云端调用仍待用户明确授权和本机输入。`tests/s5/verify-jev.ps1` 默认 `Preview`，`Prepare` 只核官方公开 source revision/README 内容并编译真实 Go 验收程序，均发送零 provider 请求。`Execute` 支持本机 `Read-Host -AsSecureString`，或显式使用既有 Process 的 `TYPESAFE_API_KEY`；两条路径均只向固定任务测试子进程传入同名环境变量，编译/Git 子进程移除该变量，调用方 Process 环境保持原值。
+
+固定任务使用原官方 Laya `432312b36714d8889eba405507b37eda25257d9c` 的完整 `laya-ts/README.md`，语言 `en`，依次提问导出格式 choice、数值验证说明 score 与默认 torch/ONNX 校验 truth。仅请求 `POST https://api.typesafe.ai/v1/systemone`、固定 `jev-1.13.0`，至多三次请求、每次 60 秒，完整输入上限 131072 bytes / 8192 tokens、输出上限 256 tokens，没有自动重试。首失败立即终止剩余题目，现有证据目录拒绝覆盖。
+
+`internal/adapters/judgment/jev_live_test.go` 使用生产 Jev 适配器和实际标准 HTTP transport，保存真实公开请求正文、原始响应正文、HTTP 状态及规范化 model/usage/nullable confidence。记录器不保存请求头；写入回执及打印/保存子进程 stdout/stderr 前检查密钥，检测到密钥即拒绝输出或持久化。密钥通过子进程环境传递，未进入命令行、任务计划、Git 或证据；本机安全输入不要求发送私密值到协调消息或读取凭据文件。
+
+已实际运行 `powershell -NoProfile -ExecutionPolicy Bypass -File tests/s5/verify-jev.ps1 -EvidenceRoot D:/Astrocyte-agent-assets/20261015/judgment-s5/jev-prepare-ctx_693200d34a48-002 -Phase Prepare`，EXIT 0、provider_requests=0，官方 source revision 和 README 一致，`go test -c -trimpath -mod=readonly` 真实编译成功。该目录的 compile stdout/stderr 与 source-content stdout/stderr 均空，source-revision stdout 为固定全 SHA；先前 `-001` 准备原件保留。默认 Preview、PowerShell parser、适用 adapter `go vet -mod=readonly`、gofmt 和 diff-check 通过；没有运行 `Execute`、输入实际 key 或调用 Jev。原已结束的 OS 验收保持其准确结果，后续日志的 nullable 字段使用显式空值变量，原件保持。
+
+根确认本次三个公开请求并由用户在本机输入后，准确命令为：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\DW\orca\workspaces\Astrocyte\release-judgment-20261015\tests\s5\verify-jev.ps1" -EvidenceRoot "D:\Astrocyte-agent-assets\20261015\judgment-s5\jev-public-authorized-001" -Phase Execute -PromptForKey
+```
+
+该命令在准备完成后显示安全输入提示，API key 由用户直接输入本机终端。证据根必须是全新目录；执行失败保留原件并交根处理，不自动重复调用。真实 Jev 三题型 model/usage 回执、安全输入全流程及 H 生产装配仍为 NOT_RUN，准备通过不替代这些验收。

@@ -116,7 +116,9 @@ try {
         }
     }
     try {
-        [ordered]@{ rule_name = $ruleName; rule_group = $ruleGroup; creation_completed = $created; rule_absent = $ruleAbsent; owned_processes_absent = $ownedProcessesAbsent; environment_restored = $environmentRestored; operation_failure = $(if ($null -ne $operationFailure) { $operationFailure.ToString() }); cleanup_failures = @($cleanupFailures | ForEach-Object { $_.ToString() }); observed_at = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath "$evidencePrefix-cleanup.json" -Encoding utf8
+        $operationFailureText = $null
+        if ($null -ne $operationFailure) { $operationFailureText = $operationFailure.ToString() }
+        [ordered]@{ rule_name = $ruleName; rule_group = $ruleGroup; creation_completed = $created; rule_absent = $ruleAbsent; owned_processes_absent = $ownedProcessesAbsent; environment_restored = $environmentRestored; operation_failure = $operationFailureText; cleanup_failures = @($cleanupFailures | ForEach-Object { $_.ToString() }); observed_at = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath "$evidencePrefix-cleanup.json" -Encoding utf8
     } catch { $cleanupFailures.Add($_.Exception) }
     if ($cleanupFailures.Count -ne 0) {
         if ($null -ne $operationFailure) { $cleanupFailures.Insert(0, $operationFailure) }
