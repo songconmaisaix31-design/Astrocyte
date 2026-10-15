@@ -1,5 +1,29 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 人工准入、完成经验桥与完整公开契约
+
+SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c`，六件 H 文件，已普通消费 B 完成桥 `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` / REPORT `921e30b56683118a0d22a29cb63161b599395d3a`、完整 human 来源权限 `089a3d276fa186cf41cc8384fb2bc9dad91d9383` / REPORT `c0bfe00456329249e279a4353abe634381656806` 和原 b73 生产依赖组合。
+
+原 `assembleRelayCompletionSource` 将同一个 Relay wrapper 注入 B 的 `experienceHTTPBridge.completionSources`。原主入口调用该装配，实际 HTTP 完成经验命令已到达原 RelayStore；原完成记录缺失返回404，不生成替代来源。Interpreter 尚未配置，真实有效来源的后继解释保持 `provider_unavailable`；Agent completion action 尚未授权，保持拒绝。
+
+原 `admissionbridge.Connect` 构造的同库服务通过 `Services.OpportunityAdmissions` 注册原人工 POST / GET / revoke 路由。具备判断快照时继续核完整 selected refs、当前项目和 delegated owner；没有判断快照时使用 B 的实际人类权限适配器，逐固定引用核当前 space / revision / lifecycle。人工准入不要求配置 CodeGraph；显式项目通过当前权限检查，省略项目保持未分配。准入只产生原 S2 草稿，执行批准由独立流程管理。
+
+公开 OpenAPI 对应实际人工准入和撤销、完成经验与安全证据、Judgment / Policy / Feedback / Delegation / Taste 的字段、空值、版本和角色。判断快照的公开 `root` 为明确空字符串；S2 快照契约保持自身语义。session-events 继续精确六字段。F 负责从本 SOURCE 生成前端类型并消费，H 未修改前端生成文件。
+
+| 实际命令 / 检查 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayRepositoryCleanupActualSQLiteLifecycle\|TestRelayJudgmentProductionAssemblyActualSQLiteHTTP\|TestRelayHumanAdmissionsWithoutJudgmentSnapshotsActualSQLiteHTTP\|TestRelayReaderRootActualDirectoriesAndDatabaseAliases\|TestRelayStaticActualMissingAndInvalidPaths)$' -count=1 -v -timeout=120s` | 五项 PASS，零 Skip，package 5.473 秒；带快照 / 无快照均实际验证有效项目、空项目、未注册项目、实际 Agent token 拒绝、另一已注册项目未选资料拒绝、当前项目撤回引用后拒绝、未分配草稿及 proposal.GrantID 为空、GET / revoke；原生会话数量为零 |
+| 当前公开契约与实际 HTTP 原响应，官方 YAML / Ajv2020 | 15 + 10 份实际响应全部通过，分别覆盖8 / 3个 schema，含实际规则判断、政策、空 root 快照、反馈、准入、品味和错误；没有构造模型响应 |
+| `pnpm exec redocly lint contracts/openapi.yaml --config contracts/redocly.yaml` | EXIT 0，3.396 秒，原13条 warning |
+| `node scripts/validate-examples.mjs` | EXIT 0，264个当前契约例及能力边界 |
+| `go vet -mod=readonly -p=1 ./cmd/server ./internal/adapters/events`、`go vet -mod=readonly -p=1 ./internal/adapters/httpapi` | 均 EXIT 0 |
+| `go build -mod=readonly -p=1 -o <H 本机检查目录>/astrocyte-recovery.exe ./cmd/server` | EXIT 0，5.086 秒，检查产物未部署 |
+| 静态资源实际 HTTP | 首页与未存在的前端路由200；真实非法文件路径500。只有 `os.ErrNotExist` 按原 SPA 规则处理，其他 Stat 错误立即返回固定500 |
+
+准确原件位于 H 本机 `production-assembly/`：`assembly-recovery-20261015-204126.log`、`openapi-recovery-20261015-204226.log`、`vet-recovery-20261015-204200.log`、`vet-httpapi-20261015-204319.log`、`build-recovery-20261015-204200.log`。实际安全响应仅保存在该目录的 `verification/relay-product-contracts.json` 和 `relay-human-contracts-without-snapshots.json`。首 OpenAPI 的4xx缺失、首判断快照 schema 对空 root 的拒绝原件分别保留；修订的是准确公开契约，原生产权限和成功要求保持。
+
+当前共享运行仍为下节准确 b73 / PID4676 / Q 原 generation，尚未部署本段后继。生成类型、同源整体构建及 F 实际产品操作继续；受限原生工具缺口、Jev / Laya 未配置、Agent completion 权限待答、经验 Interpreter 未配置、真实 L1 / L2 六步与完整默认 / 最终发布均未通过，不以此阶段通过替代。
+
 ## 2026-10-16 明确测试目录与当前运行组合
 
 SOURCE `237a95719d18b69063def0323cf35cc3a93b8232` 仅修改原三项真实检查的目录选择，尊重既有 `ASTROCYTE_TEST_OUTPUT_ROOT` 的绝对目录配置。集成环境的 `dist` 是 D 盘 junction；生产路径保护按原规则拒绝其 C 盘重定向拼写。检查现在直接在明确的真实 D 盘输出根创建自有目录，全部成功、权限和硬链接拒绝断言保持，生产 guard、返回码与 Skip 条件没有变更。
