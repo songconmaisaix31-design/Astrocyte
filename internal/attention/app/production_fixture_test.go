@@ -40,6 +40,7 @@ type observedSource struct {
 	calls             atomic.Int32
 	beforeRead        func()
 	beforeReadContext func(context.Context)
+	onError           func(error)
 }
 
 func (r *observedSource) ReadSource(ctx context.Context, command ImportMaterialCommand) (ImportedSource, error) {
@@ -50,7 +51,11 @@ func (r *observedSource) ReadSource(ctx context.Context, command ImportMaterialC
 		r.beforeRead()
 	}
 	r.calls.Add(1)
-	return r.Reader.ReadSource(ctx, command)
+	result, err := r.Reader.ReadSource(ctx, command)
+	if err != nil && r.onError != nil {
+		r.onError(err)
+	}
+	return result, err
 }
 
 type observedRepository struct {

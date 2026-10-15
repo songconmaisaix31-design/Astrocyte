@@ -2,6 +2,8 @@ package app_test
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
@@ -15,6 +17,17 @@ func automaticPublicSource(t *testing.T) (*Service, *sqlite.DB, *observedObjects
 	ctx := context.Background()
 	_, db, objects := fixture(t)
 	reader := &observedSource{Reader: importers.NewReader(nil)}
+	captureResponses(t, reader.Arxiv.Client)
+	var databaseFile string
+	if err := db.Conn().QueryRow("SELECT file FROM pragma_database_list WHERE name='main'").Scan(&databaseFile); err != nil {
+		t.Fatal("resolve owned source error evidence directory")
+	}
+	reader.onError = func(err error) {
+		file := filepath.Join(filepath.Dir(databaseFile), "original-source-error.txt")
+		if writeErr := os.WriteFile(file, []byte(err.Error()), 0600); writeErr != nil {
+			t.Fatal("retain original source error in owned evidence directory")
+		}
+	}
 	repository := sqlite.NewAttentionRepository(db)
 	s := NewAttentionService(repository, reader, objects, ServiceOptions{})
 	queued, err := s.ImportMaterial(ctx, human, ImportMaterialCommand{CommandMeta: meta("permissions-official-source", 1), Kind: "paper", Adapter: "arxiv", SourceLocator: "https://arxiv.org/abs/2501.12948v1"})

@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,11 +34,37 @@ func (b *evidenceBody) Close() error {
 }
 
 func (e *evidenceTransport) RoundTrip(request *http.Request) (*http.Response, error) {
+	sequence := e.next.Add(1)
 	response, err := e.base.RoundTrip(request)
+	metadata := struct {
+		Method string `json:"method"`
+		URL    string `json:"url"`
+		Status int    `json:"status"`
+		Error  string `json:"error,omitempty"`
+	}{Method: request.Method, URL: request.URL.Redacted()}
+	if response != nil {
+		metadata.Status = response.StatusCode
+	}
+	if err != nil {
+		metadata.Error = err.Error()
+	}
+	data, encodeErr := json.Marshal(metadata)
+	if encodeErr != nil {
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+		}
+		return nil, encodeErr
+	}
+	if writeErr := os.WriteFile(filepath.Join(e.root, fmt.Sprintf("response-%d.json", sequence)), data, 0600); writeErr != nil {
+		if response != nil && response.Body != nil {
+			response.Body.Close()
+		}
+		return nil, writeErr
+	}
 	if err != nil {
 		return response, err
 	}
-	file, err := os.OpenFile(filepath.Join(e.root, fmt.Sprintf("response-%d.bin", e.next.Add(1))), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+	file, err := os.OpenFile(filepath.Join(e.root, fmt.Sprintf("response-%d.bin", sequence)), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
 	if err != nil {
 		response.Body.Close()
 		return nil, err
