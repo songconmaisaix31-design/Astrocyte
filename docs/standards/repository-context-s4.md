@@ -205,3 +205,21 @@ Go 生命周期测试使用真实新 SQLite 和已有迁移，验证两个并发
 生命周期与短事务 SOURCE `054cc5dba765ee211a8e383a09355719d7ecaf7a` 已普通 push；前置为清理 pass SOURCE `4ebd777b7b340c717c5311d78a0f26174374bbbf`。准确十一文件闭包仅在本轨原独占域，包含两个 worker 文件、清理 / Git / Service、SQLite 清理、app 窄端口、实际检查与本文档。当前 `go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./internal/adapters/sqlite ./tests/s4/...`、`go build -mod=readonly ./...` 均退出 0，原件为 `cleanup-worker-third/final-{test,vet,build}.log`；PowerShell parser、gofmt 与差分检查通过。完整 sqlite 包中九个独立 Workbench 来源环境缺失的首次失败仍按前文保留，未记为通过。
 
 本次准确窄契约与源码已直接交 B、H 和模块：B 负责原项目事务成功后的 notifier，H 负责同 provider 的主生命周期接线和实际退出；根的 SemanticIndex / AOCI 分发决定、生产完整组合、前端与最终 Windows 包仍待实际结果。没有启动新的原生会话、模型调用或登记 t0，本 Task 按模块要求继续承担后继集成验证与返修。
+
+## 短事务快照引用核验
+
+SOURCE `55fd3853a8230da580c01e3bc427a4074ada5553` 在原 Service 增加 `ValidateProjectSnapshotReference(context.Context, domain.Caller, domain.ProjectContextSnapshot) error`，并实现 `app.ProjectSnapshotReferenceValidator`。该方法只读取保存的固定 `git-snapshot:<generation>` 索引和当前项目、Agent grant；SQLite reader 复用 `WorkspaceTransaction(ctx, db)` 的同一连接，其他数据库的事务 context 立即被拒绝。方法不观察 Git、文件或进程，不创建事务，不写入数据库。
+
+引用校验核对 generation、`ready/git-v1`、项目 / 环境 / repo / worktree 身份、HEAD、index / worktree digest 和准确 ObservedAt；服务 EnvironmentID 也必须一致。SQLite 同时核数据库 generation 列与 metadata 的值。当前真实项目 Root 必须精确等于快照 Root，当前 settings revision 必须等于保存的 SettingsRevision；固定 roots 必须规范且仍在当前 AllowedSubdirs 范围内。每次重新读取目录开关、grant 的项目 / Agent、撤销、过期和 read_context，不缓存权限事实。
+
+RepositoryVersion.Root 继续从 JSON 隐藏，保存的 RepositoryIndex 不携带该根路径；此引用方法直接使用同事务当前 LocalProject.Root 核对快照字段。现有 Domain 字段、存储 JSON 和迁移保持原格式，旧快照使用相同核验流程。S2 在事务外保留 Capture 的双观察及提交前真实 Validate，在最终短事务中调用 Reference 后保存 packet / binding。源码实际变更后，Reference 仍只证明保存引用及当前数据库权限；完整 Validate 会重新观察 Git 并拒绝过期快照。
+
+本轮实际检查入口为 `go run -mod=readonly -p=1 ./tests/s4/verify -phase snapshot-reference -a (Resolve-Path 'dist/s4/worktree-a').Path -b (Resolve-Path 'dist/s4/worktree-b').Path -evidence D:/Astrocyte-agent-assets/20261015/relay/S4/reference-checks/verify-first`。入口先检查两个原根的准确公开 remote，再从原 B 本地 clone 到独占 D 盘目录，运行真实 Git、全新 SQLite 和已有迁移；全部 stdout 仅包含安全 PASS 标签。未启动 CodeGraph / AOCI / 模型或原生控制器。
+
+实际九组检查均 PASS：保存引用重启和私有 Root；临时移走自有 clone、PATH 无 Git 且同连接 query_only 的引用读取；逐项快照字段和服务环境篡改拒绝；当前 grant 撤销 / 过期 / action / scope；同事务尚未提交的 grant 撤销及 Root 变化；其他数据库事务拒绝；保存版本 / 状态 / roots / revision 及 generation 列不一致；当前项目目录开关 / 子目录 / revision / 注册根变化；真实源码新增文件后外部 Git Validate 返回 context_stale。用例直接损坏自有 SQLite 元数据以验证拒绝路径，不伪造成功来源或 CLI。
+
+全部 Go 父进程使用 `GOMAXPROCS=2`，Go 参数 `-p=1`，共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`；TEMP / TMP / GOTMPDIR 仅在进程中指向本轨 `reference-checks/temp`。最终 `go test -mod=readonly -p=1 -count=1 ./internal/workspace/... ./tests/s4/...`、`go vet -mod=readonly -p=1 ./internal/adapters/repositorycontext ./internal/adapters/sqlite ./internal/workspace/... ./tests/s4/...`、`go build -mod=readonly -p=1 ./...`、gofmt 和 `git diff --check` 全部通过。原件为 `reference-checks/{verify-final-first,final-test,final-vet,final-build}.log`；SOURCE 已普通 push，独立 ls-remote 精确核同值。
+
+本轮组合检查首次的 workspace 两包通过，S4 检查进程经精确身份核实后由本 Agent 终止，最终 `exit status 0xffffffff` / 171.749 秒 / EXIT 1 保留在 `reference-checks/test-final.log`，不记为完整通过。后继准确 Root 语义的独立检查实际 22.003 秒通过，原件 `test-reference-final-first.log` 保留；当前源码的正式入口九组结果另存 `verify-final-first.log`。旧 first RED / UNKNOWN / NOT_RUN 记录继续保留。
+
+本次 SOURCE 已直接交原 S2、H、唯一 I 和模块负责人，未合入其 WIP。S2 的 packet / binding 事务消费、准确组合与原十秒 Context 预算、完整 HTTP / UI / Windows 包仍待其实际验收；本轮未执行这些操作，也未执行新增模型调用或登记原生 t0。
