@@ -48,6 +48,17 @@ I 后继实际核三处原 Junction 已指向 D 盘，发布负责人 `msg_e8847
 
 原 UI Task 已在原树和分支恢复为 `ctx_dcc1247de817 / term_3c0e6052-f817-469c-b5e3-b0c90ac67429`，启动回执 `ready / turn_started observed`。当前先读取事实源和准确合同，原页面范围继续，F 共享源码待交准确可消费阶段。Playwright 缓存迁移由 M-release 唯一协调，F 本人 `msg_eaef57743046` 明确本轮零浏览器且窗口内不新启；原 UI 已收到同一限制，待本人 ACK，不将启动回执作为浏览器安全确认。代码、小型 TypeScript 检查与普通合并继续，真实 CLI / 模型、默认完整 E2E 和包验收均未因此通过。
 
+### 00:09 I 普通合入 H 的两件原作者返修计划
+
+M-release `msg_bd9dee86ff1c` 已交 I 本人新 STOP `msg_d41719dea525`。模块实核 I 当前 HEAD `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87`，MERGE_HEAD `aaaf603a9477e470ff0ce0c269597802a6f25b40`，未合并项恰为 `cmd/server/config.go`、`internal/adapters/agents/relay_input_operation.go`、`internal/workspace/app/proposal_ports.go`。旧六件已归还，当前新范围分别重新取得原作者自然安全检查点 ACK，本计划普通 push 后才具体放行。
+
+| 原唯一负责人 | 仅 I 树的本次临时 write_paths | 放行与归还 |
+|---|---|---|
+| B `ctx_1e8091197976` | `cmd/server/config.go` | 当前 D helper 真实检查自然结束后提供新安全 ACK，保全部实际项目发现、代理、S4 配置与 H 当前装配所需配置；只文件编辑并 stage 此件 |
+| S2 `ctx_17fb6df5098e` | `internal/workspace/app/proposal_ports.go` | 提供本轮新安全 ACK，保当前 Caller / purpose、同 DB 事务及准确 Context / Native 端口；只文件编辑并 stage 此件 |
+
+`relay_input_operation.go` 由 M-relay 安排原 R，本模块不授权该文件。B / S2 不复制 WIP、不整体选边、不改其他 I 路径、不操作 commit / continue / abort / reset。完成须停止 I 树全部写入、stage 和进程访问，报告限定 diff / 适用检查 / 剩余 U 并明确归还；模块及发布负责人独立核查后，仍仅 I 继续当前普通 merge。当前本人新安全 ACK 和具体放行尚待接收，未登记为已解决。F / UI 两位本人均已给缓存迁移期间无浏览器及不新启动的 ACK，由 M-release 唯一协调迁移；本轮源码、静态检查与原 Go 命令继续。
+
 ### 21:51 恢复与原负责人返修计划
 
 根最新 `msg_1bdccb5e8fe6` / `msg_90e98714dbc2` 和根 HANDOFF 21:40 入口明确授权恢复原产品子 Run，以及旧 `run_7b2ce96bcd13` 中仅 B/F 的恢复、问答、结算和终端管理；不创建新 Run 或新 Task，不启动其他已完成任务。公开 Task 列表核四个未完成产品任务均为 ready，原 Dispatch 已 failed / terminal_missing；公开终端清单没有六位旧句柄，与根本次重启及进程退出证据一致。原分支与未提交修改保留。
