@@ -2,6 +2,16 @@
 
 当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_b9a5305d8480`，终端 `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
 
+## 2026-10-15 Grant 结束状态与 HTTP 重启 REPORT
+
+测试 SOURCE `169c1b37a0342109fb40cb681f8bc4d078647d37` 已普通 commit / push，独立远端查询同值；生产内容保持 `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d`。实际 `go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` PASS，5.715 秒，库 `.verification/s2-first/actual-1897772779/state.sqlite`，日志 `grant-completion-expiry-first.log`。新增数据库重开后的固定 ContextPacket 引用、human 完成批准及 epoch 递增、真实时间自然过期、两类状态阻止保护动作，以及人类显式持久化 expired；没有修改时钟或制造状态。`go vet -mod=readonly ./tests/s2` 和 `git diff --check` EXIT 0。
+
+对首轮 HTTP 失败库 `astrocyte-s1-YckzZ9` 使用原生产入口进行冷启动 / 再次进程重启 / 只读核查，两次人类 session bootstrap 分别 62ms / 2ms，实际批准仍为持久 active / epoch 1、当前查询依真实有效期显示 expired。没有重新批准或撤销，日志 `http-restart-inspection-first.log`，诊断脚本仅存本机忽略目录。首轮读取超时的具体原因保持 UNKNOWN。
+
+随后同一生产内容、原 120 秒测试期限、原 5 秒 bootstrap / 10 秒请求期限、全部原断言完整运行 `node --test tests/s2/http.test.mjs` PASS，23.734 秒，无 skip / 自动重试；批准、Agent 拒绝、旧版本、同键同输入 / 异输入、SQLite 事件约束整事务回滚、两次实际进程重启与撤销持久化均通过。日志 `http-context-permission-second.log`，实际库 `.verification/astrocyte-s1-oeZ2zc/data/state.sqlite`；零原生会话和 Mission。首次 FAIL 保留为独立结果。
+
+上述后续命令按根新要求仅在自身进程使用 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，独占 `GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/product-s2`；未修改全局或清理其他缓存。生产 Context 主装配、公开 OpenAPI 与真实 owned SessionBinding 仍等待 H / R，完整材料引用与 AT12 判断缓存继续按实际未完成状态记录。
+
 ## 2026-10-15 Context 当前权限与格式修复 REPORT
 
 SOURCE `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d` 已普通 commit / push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。创建上下文包和绑定会话先检查当前 Grant 状态、epoch、项目权限版本与 `read_context` 范围；包提交时在同一 SQLite 事务复核来源访问。三个 S2 HTTP 文件使用标准 Go 格式。
@@ -12,7 +22,7 @@ SOURCE `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d` 已普通 commit / push，独�
 
 `go vet -mod=readonly ./internal/workspace/app ./internal/adapters/httpapi ./tests/s2` 无错误输出，`node scripts/check-architecture.mjs` PASS（34 包），五个变更 Go 文件的 `gofmt -l` 和 `git diff --check` 均无输出。
 
-本轮 `node --test tests/s2/http.test.mjs` FAIL：真实批准、Agent 拒绝、版本冲突、同键重放和 SQLite 事件约束整事务回滚已经运行，首次进程重启的 health 为 200，接续人类 session bootstrap 读取发生 TimeoutError。保留 `.verification/s2-first/http-context-permission.log` 及 `.verification/astrocyte-s1-YckzZ9/data/state.sqlite`；没有调整期限、增加 skip 或沿用旧 HTTP PASS 作为本轮通过。生产 Context 的 main 装配与 OpenAPI 仍等待 H，完整原生 SessionBinding 和 AT12 判断缓存成功保持 NOT_RUN。
+本阶段 `node --test tests/s2/http.test.mjs` 首轮 FAIL：真实批准、Agent 拒绝、版本冲突、同键重放和 SQLite 事件约束整事务回滚已经运行，首次进程重启的 health 为 200，接续人类 session bootstrap 读取发生 TimeoutError。保留 `.verification/s2-first/http-context-permission.log` 及 `.verification/astrocyte-s1-YckzZ9/data/state.sqlite`；该次结果保持 FAIL，后续成功独立记录于上方。生产 Context 的 main 装配与 OpenAPI 仍等待 H，完整原生 SessionBinding 和 AT12 判断缓存成功保持 NOT_RUN。
 
 依模块 `msg_6688b3a35039` 临时授权，本人在 `release-judgment-20261015` 使用文件编辑工具逐块解决并 stage 原计划十六件 S2 冲突，保留当前权限 / 幂等 / 准入 / 私有原生身份逻辑与实际 S4 provider。最终十六件与该树当前 HEAD 内容相同，`git diff --check` 及未合并项查询均无输出；未执行 commit 或继续合并。已于 `msg_083e1782c9cb` / `msg_9d38835d5ee7` 明确停止跨树写入并归还范围，S5 的组合验证由原 owner 执行。
 
