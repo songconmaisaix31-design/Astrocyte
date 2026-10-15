@@ -332,6 +332,14 @@ SOURCE `8a76e9bc2afd7b0b875e9eeb78aeef34b3822c35` 已普通 push，新增 `repos
 
 显式 `ASTROCYTE_VERIFY_CODEGRAPH_NODE` 为 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe`，SDK 为同根 `runtime/sdk/node_modules/@colbymchenry/codegraph`，第二次 Script 为同根 `runtime/adapters/codegraph.mjs`。`ASTROCYTE_VERIFY_AOCI_EXECUTABLE` 指向 S4 已核公开二进制程序；该路径只用于集成检查，生产没有默认。真实检查覆盖 Node 24.16.0、SDK 1.0.1 实际公开导出、桥语法及 AOCI 版本/commit，未运行模型、索引、业务 HTTP 或最终包解压验收。
 
+## 蒸馏输出的直接解析失败
+
+SOURCE `ea9225da1c2d98ba890968ded77244a8d28927ef` 已普通 push。固定输出 schema 使用成熟 JSON 解码并立即返回错误；原生 JSONL 使用既有第三方 `olivere/ndjson` 解码，畸形记录、字段类型错误、缺少 type 或读取错误立即失败，不发布部分事件。已启动请求的解析失败保留 `delivery_unknown`，原进程错误同时保留；没有自动重发。该文件注释已使用中文，工具集合的实际观测要求保持明确。
+
+`go test -mod=readonly -p=1 ./internal/adapters/distillers -run '^(TestProcessorEventJSONLRules|TestStructuredOutputDoesNotTrustModelRefsOrProvenance|TestStartedProcessLossIsUnknownAndUnstartedIsUnavailable)' -count=1 -v` EXIT 0，3 PASS、0 SKIP，2.370s；`.verification/distillation-events-rules-fourth.log`。JSONL 新检查仅使用明确格式规则输入，不作为 CLI、模型或来源事实。原进程检查使用实际退出、实际取消与实际不存在的程序；结构化输出检查是明确输入的纯规则。目标包 vet、全包 build、变更文件 gofmt 与 diff 检查均通过，日志 `distillation-events-vet-current.log`、`distillation-events-build-current.log`。
+
+当前没有重复模型调用或生成替代原生协议，完整付费原生处理和选定文本来源验收仍等待原 R/H 准确证据端口与验证窗口，没有把解析规则通过登记为模型或来源链路通过。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
