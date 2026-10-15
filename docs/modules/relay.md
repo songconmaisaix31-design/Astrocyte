@@ -2,6 +2,22 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 当前恢复分工（2026-10-16 02:21）
+
+根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 02:21 入口及正式消息 `msg_289d91953805` 为当前恢复依据。总负责人为 `term_8de37bb3-e73a-4c10-8a7c-5c39156da4e7`，顶层 Run 为 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_f967479130c2 / term_8800f84b-428d-4af9-bf4e-4a9e47b20fe8`。原子 Run `run_8bbda1c3974c` 已普通恢复至 generation 7，保持原 Task、工作树、分支与全部 WIP。
+
+用户当前优先级为集成并跑通完整产品，随后并行整理代码和测试。H 优先沿 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413` 的既有 binary、web、环境配置和 SQLite 恢复同一产品服务，首选地址 `http://127.0.0.1:64505/`；旧 PID47956 和 `running.json` 仅为历史，恢复后须交实际进程、URL 与数据根。H 随后完成 Judgment / Taste 注册、S4 cleanup 生命周期和完成来源装配，与唯一 I 的准确来源衔接。原受限 Codex 文件工具要求未满足，维持明确 unsupported，登记、初始化、模型输入与本轮 L1 t0 均不启动。OS、Q / D1 和原模型成功结果保持；正式 D2 partial 不重做。
+
+公开 CLI 已核 H 当前原 Task `task_3004b636a3ab` 为 ready，前次 `ctx_e492c738e964` 为 abandoned / failed / terminal_missing，原 H 工作树终端数量为零。原树 HEAD `bcfb14595ced3b9992635e99f8ce10ba48c91d41` 保留七件 WIP：`cmd/server/main.go`、`cmd/server/relay_repository_context.go`、`internal/adapters/httpapi/relay_scoped_workspace.go`、`internal/adapters/httpapi/server.go`，以及新增 `cmd/server/relay_judgment.go`、`cmd/server/relay_judgment_actual_test.go`、`internal/adapters/httpapi/relay_judgment.go`。仅同一 H 继续原互斥写域；R / S4 按实际生产依赖恢复，模块负责人只维护本文件。
+
+| 原人员 / Task | 当前 Dispatch / 终端 | 开始证据与本轮范围 |
+|---|---|---|
+| H `task_3004b636a3ab` | `ctx_7822f0fe0335` / `term_b31d31bd-90a2-4e21-97a1-6f85a4760f2b` | 首回执 `turn_start_unobserved`，纯文本终端显示现有输入停在 composer；单次 Enter 后实际 Working，本人 `msg_f5df653f682f` 确认已读恢复消息。原七件 WIP、薄装配和实际共享产品服务由 H 持续负责 |
+| R `task_f082d8b36471` | `ctx_3920346a06ed` / `term_1b0fa3aa-e044-4d07-83a3-b978c3d331ce` | `worker-start` 返回 ready / turnStart observed；原树 HEAD `480b80025491127ea5eceb45f0217a3a744e29c0` 的两件 completion 来源 WIP 保留，继续原来源授权、原 Relay / native 写域和 runtime.md |
+| S4 `task_bd209566be37` | `ctx_f150ca32cf39` / `term_c742d54f-3019-4982-bd1e-f058f734cb91` | `worker-start` 返回 ready / turnStart observed；原树 HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da` 的生产检查脚本两件和报告修改保留，继续原 repositorycontext / domain / app / SQLite、独占 repository_context HTTP、tests/s4 和对应报告 |
+
+根已答的完成来源规则通过 `msg_73c49df9093f` 继续生效：W5 OwnerProject 为真实 LocalProject.ID；Agent completion action 的映射仍待用户选择，当前明确未授权；human 路径继续检查主 DB 当前 principal / project / owner 权限。R 准确实现及 H 生产装配分别交独立 SOURCE / REPORT，未提交代码不供 I 消费。S4 沿 H worker 生命周期和 B 成功提交后 Wake 的准确新组合复验既有撤权清理失败，已通过且源码未变化的检查复用原结果。
+
 ## 02:08 业务来源与实际组合检查
 
 当前唯一共享产品地址为 `http://127.0.0.1:64505`，网页与 API 同 URL，原 H 持有。H `msg_0e9be1986bf6` 报告准确 ad8413e 产物于 `2026-10-15T18:08:46.9479236Z` 启动，PID 47956；模块独立 `Get-NetTCPConnection` / `Get-Process` 核 127.0.0.1:64505 唯一监听进程、启动时间及运行路径 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/astrocyte.exe`。H 已核 binary 的 vcs.revision 同值 / modified=false、health 正常与根页面 200。argv 为空，后台 Hidden，产物复制到 H 独占 D 盘，SQLite 与运行指针在同一共享服务目录；没有登记原生、初始化、模型或 t0。根、发布、I、F 和产品已逐正文收到来源、地址与缺口，F 继续唯一实际界面和核心 HTTP 操作。当前产物尚缺 H 在途 Judgment / Taste 公共注册、S4 Run / Wake；S5 / Jev / Laya 未配置调用，Q 本代 snapshot 尚未接。后继由 H 更新同一共享服务，不启动第二个共享 writer。
