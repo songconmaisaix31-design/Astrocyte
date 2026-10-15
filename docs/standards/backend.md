@@ -448,6 +448,25 @@ SOURCE `20cff2c10d4ebfe7b9611bc4b08055ab64c9f80f` 已普通 push，前一独立 
 
 全包 `go build -mod=readonly ./...`、`go vet -mod=readonly ./internal/adapters/agents ./internal/adapters/distillers ./cmd/server`、三件 gofmt / diff 检查 EXIT 0；日志为 `.verification/selected-text-stop-build-first.log`、`.verification/selected-text-stop-vet-first.log`。T 已收到准确 SOURCE。该检查只验证实际空输入生命周期，完整模型输出、工具有效清单及十四项原 unknown 场景没有借此升级；旧成功调用没有补写停止或工具事实。
 
+## 公开论文快照与实际对象存储
+
+SOURCE `1308702f9ce8133404588aa0509f343b1292e186` 已普通 push。原 `paper_snapshot_test.go` 七项测试全部保留，通过既有 DOM helper 完整读取获准 PLOS / ACL / arXiv HTML，使用真实标题、摘要、正文、DOI、原版本和 snapshot JSON bytes。冲突 key、访问限制、截断标记仅作为明确规则输入，不宣称公开原件具有这些状态。对象存储沿用原实现，临时文件关闭 / 删除、目录关闭、校验读取关闭错误均传播；原测试中的 ReadDir / New 错误直接失败，相关注释改为中文。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/importers -run '^TestPaperSnapshot' -count=1 -v` | EXIT 0，7 PASS、0 SKIP，4.845s；`.verification/paper-snapshot-actual-first.log` |
+| `go test -mod=readonly ./internal/adapters/objects -count=1 -v` | EXIT 0，2 PASS、0 SKIP，0.685s；`.verification/objects-actual-lifecycle-first.log` |
+| `node tests/s1/paper-dom-invalid.mjs` | EXIT 0，Node / 扩展分别对坏 JSON-LD 返回 SyntaxError、坏 PDF URL 返回 TypeError，共四项；`.verification/paper-dom-invalid-actual-first.log` |
+| `node tests/s1/public-snapshot-inputs.mjs <本树获准公开HTML目录>` | EXIT 0，实际 Go HTTP / SQLite 导入 PLOS 全文与 ACL 摘要，完整文本及原附件 bytes 相等；`.verification/paper-snapshot-actual-http-first.log` |
+| `go build -mod=readonly ./...`、`go vet -mod=readonly ./internal/adapters/objects ./internal/adapters/importers` | EXIT 0；`.verification/paper-object-actual-{build,vet}-first.log` |
+| 变更 Node 语法、Go 格式、working / cached diff 检查 | EXIT 0 |
+
+坏 JSON / URL 是对实际 DOM 的明确错误参数，未保存为外部来源或 API 响应。对象检查通过实际文件系统执行 16 次并发发布、重新打开读取、已存在对象损坏拒绝、路径越界拒绝和真实 context cancellation；“原文”等 bytes 只是对象接口的明确输入。实际 HTTP 的 PLOS snapshot 为 68011 bytes、导入文本 66380 bytes，ACL snapshot 为 2563 bytes、导入文本 1859 bytes；store 在 D 盘 `astrocyte-s1-Ab1t6n`，实际进程已经退出。
+
+按模块本轮单件交接和 S2 本人 STOP，在新 B 安全 ACK 后，仅编辑并 stage S2 树 `tests/s1/server.mjs`，保留明确 D 输出、原子端口、双通道日志、实际就绪响应消费和失败原件。与准确 SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` 的该单件完整 diff 为零，Node 语法与限定 working / cached diff 检查 EXIT 0，stage blob `6fef86cdf3e7915ba13b08f00891e8be2267ca13`，U0；HEAD `aa0a5d310cbfc5c07063bb22fdc951e6ca549195`、CHERRY_PICK_HEAD 不变，其余七件 stage 未修改。全部目标树写入、stage 与进程访问已停止并归还，没有操作原 cherry-pick 生命周期。
+
+全部 `internal/attention/app/*_test.go`（包括既有规则测试）由 T 唯一持续维护，B 当前该域零 WIP 并停止写入；SOURCE `5866b52` 已提交规则贡献完整保留并已交 T，没有改写公共历史。当前 H 沿既有对象 / 事件 API 在原 `events/relay_goal*.go` 实现薄 Reader，B 不新增重复存储 API。原完整 Go / E2E、冷 Registry 及实际完成经验组合限制继续保留。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
