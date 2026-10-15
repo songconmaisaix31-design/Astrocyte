@@ -1,5 +1,23 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:49 人工项目进度与三层资料
+
+本阶段 SOURCE `696828478eeaf128309079957234bb78aafbaaf9` 已普通 push。新增人工项目状态、说明和可留空的整数完成度表单，使用已有生成 `SetProgressRequestV1`、human 会话、CSRF 与固定操作标识保存；人工保存与模型许可分别控制。读取失败显示过期记录并禁用写入；网络结果未知后保留输入和跨重开持久锁，不因读取而解除。人工保存待定或结果未知期间，进度推断同时禁用。React 组件检查沿既有组件、Hook 与样式完成。
+
+| 本次实际命令（在 web 执行） | 实际结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | 最终 EXIT0；首类型检查 EXIT2 原件保留 | `typecheck-manual-progress-fixed.log`、`typecheck-manual-progress-first.log` |
+| `npx eslint src/pages/workspace/ProjectManualProgressForm.tsx src/pages/workspace/ProjectProgressPanel.tsx src/pages/workspace/progressClient.ts e2e/progress.spec.ts e2e/self-service.config.ts e2e/readProductReview.ts e2e/createProductProjectLayer.ts` | EXIT0 | `lint-manual-progress-fixed.log` |
+| `npx playwright test -c e2e/self-service.config.ts e2e/progress.spec.ts --workers=1 --reporter=list`，输出明确到 `progress-artifacts` | 两窗口完整 10 项自然完成，8 PASS / 2 FAIL，2.8 分钟、EXIT1、零 skip / 重试；原件保留 | `playwright-manual-progress-first.log`、`progress-artifacts` |
+| 同一入口增加 `--grep '人工进度表单保存'`，输出明确到 `progress-fixed-artifacts` | 原两失败场景均 PASS，59.3 秒、EXIT0，保留完整状态 / 摘要 / 未知百分数 / 403 恢复 / 重启 / 权限与零原生断言；原八项已通过场景未重跑 | `playwright-manual-progress-fixed.log`、`progress-fixed-artifacts` |
+| `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_c22d1dd61be3/.verification/web-dist-manual-progress` | EXIT0；保留 615.34 kB 提示 | `build-manual-progress.log` |
+| `node --experimental-strip-types e2e/createProductProjectLayer.ts`，使用 H 已交 b73 SOURCE / URL 和本次目录 | EXIT0；共享产品的实际 content / topic / project 三层人工记录完整，原摘要与候选 r2 不变 | `product-project-layer-first.log`、`product-project-layer-human.json` |
+| `node --experimental-strip-types e2e/readProductReview.ts`，相同实际产品与目录 | EXIT0；只读取得原论文标题、已保存人工摘要、Goal 标题和实际项目名称 | `product-candidate-review.log`、`product-candidate-review.json` |
+
+Playwright 复用既有 S1 helper 的独立真实 Go / HTTP / SQLite / Vite 与两窗口。新增人工保存、权限拒绝恢复、离线未知锁和实际重启均已运行，原推断权限和输入校验覆盖保留，项目模型许可、原生会话与实际模型调用没有增加。本次没有重跑默认 320 项，也未将定向结果写作当前完整默认通过。测试全部新数据和日志、TEMP / TMP / GOTMPDIR 在本次 D 盘目录，浏览器及 Go 缓存沿原获准目录。
+
+共享 b73 产品中的项目层人工记录为 `7GWJ7TEG7BV7XCHNHEJNQ4U3SU`，实际事件 `B2YDY2GW27X7FI3TKFOXULRWSJ` 已逐 ID 核库。其固定输入为 PLOS revision1，引用原 Goal、已保存主题和候选资产；输出复用已存人工摘要，实际效果与原生执行仍待查，没有填写模型或执行成果。具体候选审阅内容已由模块转根；本阶段没有增加候选 revision、资料准入、Grant 或执行授权。人工进度新入口目前属于本树已验源码，仍需唯一 I 消费及 H 更新同一产品后实际核查共享页面。
+
 ## 2026-10-16 04:38 实际人工候选、反馈与版本保留
 
 本阶段 SOURCE `fd7db97d26991ec04937bfb7ecae3208ad339706` 已普通 push，新增三件明确分开创建、后继版本和只读恢复的产品验证脚本。Task / Dispatch 为原 `task_7cbe30017760` / `ctx_c22d1dd61be3`，仍使用原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。实际对象仍为 H 的 b73 SOURCE / PID4676 / URL64505 同一产品库。
@@ -10,7 +28,7 @@
 
 | 本次实际命令（在 web 执行） | 实际结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
 | --- | --- | --- |
-| `node --experimental-strip-types e2e/createProductCandidate.ts` | EXIT1，三个实际命令已依次返回 200 / 201 / 201 并保存；页面异常断言原件保留，未重发 | `product-candidate-first.log`、`product-candidate-human.json` |
+| `node --experimental-strip-types e2e/createProductCandidate.ts` | EXIT1，三个实际命令已依次返回 200 / 201 / 201 并保存；响应检查首失败原件保留，未重发 | `product-candidate-first.log`、`product-candidate-human.json` |
 | `node --experimental-strip-types e2e/reviseProductCandidate.ts` | EXIT1，仅执行尚未发送的新版本命令并返回 200；r2 已保存后的检查首失败保留，未重发版本命令 | `product-candidate-revision-first.log`、`product-candidate-revision.json` |
 | `node --experimental-strip-types e2e/readProductCandidate.ts` | 首次 EXIT1 原件保留；最终只读核查 EXIT0，HTTP / SQLite / 1280 DOM、两版本和一条反馈、四维 unknown、全部四个收据和四个事件逐项通过 | `product-candidate-readonly-first.log`、`product-candidate-readonly-projection.log`、`product-candidate-readonly.json` |
 | `npm run typecheck` | EXIT0 | `typecheck-candidate-final.log` |
