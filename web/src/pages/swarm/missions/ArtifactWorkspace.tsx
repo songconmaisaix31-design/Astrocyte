@@ -11,6 +11,7 @@ import { workItemStatusLabel } from '../../../utils/format';
 import { commandError } from '../../../utils/commandError';
 import { ArtifactDiff, ArtifactReviewActions } from './ArtifactReviewActions';
 import { ResourceRecord } from './MissionRecords';
+import { ContextPacketReference } from '../../workspace/proposals/ContextPacketReference';
 import styles from './MissionWorkspace.module.css';
 
 export function ArtifactWorkspace({ id, missionId, disabled, onChanged }: { id: string; missionId: string; disabled: boolean; onChanged: () => void }) {
@@ -38,6 +39,7 @@ export function ArtifactWorkspace({ id, missionId, disabled, onChanged }: { id: 
       <Field label="实际修改路径">{artifact.changed_paths?.join('；') || <MutedValue>无</MutedValue>}</Field><Field label="固定输入版本">{artifact.inputs?.map(input => `${input.id} · ${input.revision}`).join('；') || <MutedValue>无</MutedValue>}</Field>
       <Field label="原生执行身份"><code>{artifact.operation_id}</code> · <code>{artifact.session_id}</code> · fencing token {artifact.fence}</Field><Field label="上下文包 ID">{artifact.context_packet_id || <MutedValue>未提供</MutedValue>}</Field>
       <Field label="执行结果">{artifact.execution_outcome || <MutedValue>未知</MutedValue>}</Field><Field label="执行失败代码">{artifact.execution_failure_code || <MutedValue>无</MutedValue>}</Field>
+      {!!artifact.context_packet_id && <ContextPacketReference id={artifact.context_packet_id} />}
       {artifact.usage ? <ResourceRecord label="实际用量" resources={artifact.usage} /> : <Field label="实际用量"><MutedValue>未知</MutedValue></Field>}
       <Field label="人工采用记录">{artifact.acceptance_id ? <><code>{artifact.acceptance_id}</code> · {artifact.accepted_by} · {artifact.accepted_actor_kind}</> : <MutedValue>尚未采用</MutedValue>}</Field><Field label="人工复核">{artifact.reviewed_by ? `${artifact.reviewed_by} · ${artifact.reviewed_at} · ${artifact.review_reason}` : <MutedValue>暂无复核记录</MutedValue>}</Field><Field label="经验候选状态">{artifact.experience_status || <MutedValue>尚未形成</MutedValue>}</Field><Field label="经验引用">{artifact.experience_id || <MutedValue>无</MutedValue>}</Field>
       <button className="ac-button secondary" type="button" disabled={state.loading || state.stale} onClick={() => setShowDiff(true)}>查看 diff</button>

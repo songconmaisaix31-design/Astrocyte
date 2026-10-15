@@ -2,6 +2,7 @@ import { Field, FieldRow, MutedValue } from '../../../components/DetailPanel';
 import { StatusBadge } from '../../../components/StatusBadge';
 import type { components } from '../../../api/schema';
 import { missionStatusLabel, workItemStatusLabel } from '../../../utils/format';
+import { ContextPacketReference } from '../../workspace/proposals/ContextPacketReference';
 import styles from '../SwarmPage.module.css';
 import detailStyles from './MissionWorkspace.module.css';
 
@@ -85,6 +86,7 @@ export function WorkItemDetail({ item, missionId, lease, executions }: { item: W
     <Field label="尝试次数">{item.attempts}</Field><Field label="当前 fencing token">{item.fence}</Field>
     <Field label="当前持有者">{lease ? lease.holder_id : <MutedValue>{item.state === 'open' ? '未认领' : '当前无有效租约'}</MutedValue>}</Field>
     <Field label="上下文包 ID">{lease?.context_packet_id || <MutedValue>当前无有效租约上下文；历史引用见执行记录</MutedValue>}</Field>
+    {!!lease?.context_packet_id && <ContextPacketReference id={lease.context_packet_id} />}
     {lease && <><Field label="绑定及原生会话"><code>{lease.binding_id}</code> · <code>{lease.session_id}</code> · {lease.member_version}</Field><Field label="原操作 ID"><code>{lease.operation_id}</code></Field><Field label="执行工作树"><code>{lease.worktree}</code></Field><Field label="基准 Commit"><code>{lease.base_commit}</code></Field><Field label="租约有效期">{lease.expires_at}</Field><Field label="策略版本">{lease.policy_version}</Field><ResourceRecord label="租约资源预留" resources={lease.reserved} /></>}
     <Field label="产物引用">{item.artifact_id || <MutedValue>无</MutedValue>}</Field><Field label="阻塞或退回原因">{item.reason || <MutedValue>无</MutedValue>}</Field>
     <ExecutionRecords items={executions} />
@@ -96,6 +98,7 @@ export function ExecutionRecords({ items }: { items?: Execution[] }) {
     <Field label="原操作 ID"><code>{item.operation_id}</code></Field><Field label="原生会话 ID"><code>{item.session_id}</code></Field><Field label="绑定 ID"><code>{item.binding_id}</code></Field><Field label="上下文包 ID">{item.context_packet_id || <MutedValue>未提供</MutedValue>}</Field><Field label="fencing token">{item.fence}</Field><Field label="策略版本">{item.policy_version}</Field>
     <MissionTimeline items={item.events ?? []} />
     <Field label="工具事件读取状态">{item.tool_events_status}</Field>
+    {!!item.context_packet_id && <ContextPacketReference id={item.context_packet_id} />}
     {item.tool_events?.length ? <ul>{item.tool_events.map(event => <li key={event.event_id}><time>{event.occurred_at}</time> · {event.type} · {event.tool} · <code>{event.event_id}</code></li>)}</ul> : <p>当前没有可显示的工具事件引用。</p>}
   </li>)}</ul> : <p>暂无实际执行记录。</p> : <p>执行记录尚未读取。</p>}</section>;
 }
