@@ -165,6 +165,50 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	memberID := uuid.NewString()
+	if _, err = projects.GrantProjectAgent(ctx, human, project.ID, domain.ProjectGrant{AgentID: memberID, Actions: []string{"read_context"}}); err != nil {
+		t.Fatal(err)
+	}
+	credential, err := projects.IssueProjectAgentToken(ctx, human, project.ID, memberID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	member, err := projects.AuthenticateAgentToken(ctx, credential.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	accessible, err := service.ReadContextPacket(ctx, member, packet.ID)
+	if err != nil || accessible.ObjectRef != packet.ObjectRef {
+		t.Fatalf("authorized fixed packet access: %v", err)
+	}
+	otherSpace, err := attentionService.CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}, Title: "Separate public packet access"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherProject, err := projects.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "Separate public packet review", Root: approvedRoot, SpaceID: otherSpace.Space.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherMemberID := uuid.NewString()
+	if _, err = projects.GrantProjectAgent(ctx, human, otherProject.ID, domain.ProjectGrant{AgentID: otherMemberID, Actions: []string{"read_context"}}); err != nil {
+		t.Fatal(err)
+	}
+	otherCredential, err := projects.IssueProjectAgentToken(ctx, human, otherProject.ID, otherMemberID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	otherMember, err := projects.AuthenticateAgentToken(ctx, otherCredential.Token)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = service.ReadContextPacket(ctx, otherMember, packet.ID)
+	requireCode(t, err, apierrors.ScopeDenied)
+	verifyActualPacketHTTP(t, service, projects, packet, grant, credential.Token, otherCredential.Token)
+	if _, err = projects.RevokeProjectAgent(ctx, human, project.ID, memberID); err != nil {
+		t.Fatal(err)
+	}
+	_, err = service.ReadContextPacket(ctx, member, packet.ID)
+	requireCode(t, err, apierrors.ApprovalRevoked)
 	updatedGoal := goal
 	updatedGoal.Title = "Review the current public approval implementation"
 	_, err = service.PutGoal(ctx, human, goal.ID, workspace.GoalCommand{WorkspaceCommandMeta: workspaceMeta(goal.Revision), Goal: updatedGoal})
