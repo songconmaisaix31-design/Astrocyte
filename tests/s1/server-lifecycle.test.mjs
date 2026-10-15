@@ -1,16 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { access, realpath } from 'node:fs/promises';
+import { access, readFile, realpath } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { root } from '../../scripts/process.mjs';
 import { startS1Server } from './server.mjs';
 import { humanAPI } from './api.mjs';
 
+const outputRoot = process.env.ASTROCYTE_TEST_OUTPUT_ROOT ?? join(root, '.verification');
+
 for (const relay of [false, true]) test(`production server keeps owned SQLite after close and reopens it without private discovery (relay layout=${relay})`, { timeout: 120_000 }, async () => {
   let server = await startS1Server({ relay });
   const original = server.temporary;
   try {
-    assert.ok(relative(join(root, '.verification'), await realpath(original)).startsWith('astrocyte-s1-'));
+    assert.ok(relative(await realpath(outputRoot), await realpath(original)).startsWith('astrocyte-s1-'));
     if (relay) {
       assert.equal(server.localAppData, join(original, 'local-appdata'));
       assert.equal(server.relayRoot, join(server.localAppData, 'astrocyte-workbench', 'v0.2-access'));
@@ -50,13 +52,34 @@ for (const relay of [false, true]) test(`production server keeps owned SQLite af
 
 test('actual Go port zero stays bound and Vite uses its observed address through restart', { timeout: 90_000 }, async () => {
   const server = await startS1Server({ browser: true });
+  const closedURLs = [server.apiURL, server.webURL];
   try {
     const actualURL = server.apiURL;
     assert.notEqual(server.webURL, actualURL);
     assert.equal((await fetch(`${server.webURL}/`)).status, 200);
     let api = await humanAPI(server.webURL);
     assert.deepEqual((await api.get('/materials')).items, []);
-    await assert.rejects(startS1Server({ apiPort: Number(new URL(actualURL).port) }), { message: 'Actual Go listener announcement became unavailable' });
+    let apiFailure;
+    await assert.rejects(startS1Server({ apiPort: Number(new URL(actualURL).port) }), error => {
+      apiFailure = error;
+      assert.equal(error.message, 'Actual Go listener announcement became unavailable');
+      return true;
+    });
+    const failedAPI = JSON.parse(await readFile(join(apiFailure.logsDirectory, 'startup-failure.json'), 'utf8'));
+    assert.equal(failedAPI.logs.length, 1);
+    assert.match(await readFile(failedAPI.logs[0].stderr, 'utf8'), /bind|listen/i);
+    assert.throws(() => process.kill(failedAPI.logs[0].pid, 0), { code: 'ESRCH' });
+    let webFailure;
+    await assert.rejects(startS1Server({ browser: true, webPort: Number(new URL(server.webURL).port) }), error => {
+      webFailure = error;
+      assert.equal(error.message, 'Actual Vite listener announcement became unavailable');
+      return true;
+    });
+    const failedWeb = JSON.parse(await readFile(join(webFailure.logsDirectory, 'startup-failure.json'), 'utf8'));
+    assert.equal(failedWeb.logs.length, 1, 'Vite bind failure must occur before starting another API');
+    assert.match(await readFile(failedWeb.logs[0].stderr, 'utf8'), /already in use|EACCES|EADDRINUSE/);
+    for (const log of failedWeb.logs) assert.throws(() => process.kill(log.pid, 0), { code: 'ESRCH' });
+    assert.equal((await fetch(`${server.webURL}/`)).status, 200, 'failed second startup must retain the original Vite listener');
     await server.restart();
     assert.equal(server.apiURL, actualURL, 'explicit restart must retain the actual assigned port');
     api = await humanAPI(server.webURL);
@@ -65,4 +88,16 @@ test('actual Go port zero stays bound and Vite uses its observed address through
     assert.equal(await realpath(result.snapshot.works[0].root), await realpath(root));
     assert.equal(server.query('PRAGMA integrity_check')[0].integrity_check, 'ok');
   } finally { await server.close(); }
+  assert.equal(server.processLogs.length, 3);
+  for (const log of server.processLogs) {
+    assert.throws(() => process.kill(log.pid, 0), { code: 'ESRCH' });
+    assert.ok(relative(server.temporary, log.stdout).startsWith('process-logs-'));
+    assert.match(await readFile(log.stdout, 'utf8'), log.name === 'vite' ? /vite_listening/ : /http_listening/);
+    await access(log.stderr);
+  }
+  for (const url of closedURLs) await assert.rejects(fetch(url, { signal: AbortSignal.timeout(1000) }));
+});
+
+test('relative output root fails before any process starts', async () => {
+  await assert.rejects(startS1Server({ outputRoot: 'relative-output' }), { message: 'Verification outputRoot must be an explicit absolute directory' });
 });
