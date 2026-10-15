@@ -29,7 +29,14 @@ import (
 
 func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	ctx := context.Background()
-	parent, err := filepath.Abs(filepath.Join("..", "..", "dist", "http-listener"))
+	parent := filepath.Join("..", "..", "dist", "http-listener")
+	if outputRoot := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); outputRoot != "" {
+		if !filepath.IsAbs(outputRoot) {
+			t.Fatal("明确的测试输出根必须为绝对目录")
+		}
+		parent = filepath.Join(outputRoot, "http-listener")
+	}
+	parent, err := filepath.Abs(parent)
 	if err != nil {
 		t.Fatal("本轮验证目录无法解析")
 	}
