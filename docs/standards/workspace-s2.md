@@ -19,6 +19,12 @@
 
 当前 S4 只有实际 `CaptureProjectSnapshot` / `ValidateProjectSnapshot`，原提供者的保存前校验包含 Git 观察。已向原 S4 提交事务内固定引用与当前权限校验的具体需求，接口等待其确认和精确 SOURCE；外部真实文件观察、原 10 秒请求期限、最终同数据库授权复核保持。完整生产资料 Context 继续等待同源可运行组合，真实 owned 绑定正向与完整 AT12 不因冲突处理登记为通过。
 
+## 2026-10-16 Context 请求耗时独立 REPORT
+
+SOURCE `967720e848806eb7b299c4e51468ab7603c3a526` 为现有完整资料 Context 检查增加本地请求耗时记录。原真实请求、认证、OpenAPI 校验、10 秒期限和全部成功及拒绝断言保持；正常或失败后将实际阶段、method、path、耗时、HTTP status 或安全错误名称写入本次独占 D 盘目录的 `http-timings.json`。记录不包含正文、cookie、token 或原始错误内容，写入失败与原检查错误一起报告。没有新增服务、模拟数据或重试。
+
+`node --check tests/s2/context_material.test.mjs` 和 `git diff --check` 均 EXIT 0。SOURCE 已普通 push，独立 `git ls-remote` 返回相同完整 SHA。完整实际运行尚等待包含共享 Attention 事务及准确 S4 / H 装配的可运行产物；当前结果仅为语法通过，原 Context 首 FAIL 保持。本 Task 继续支持原作者集成与真实验证。
+
 ## 2026-10-15 当前 Goal 与固定历史 REPORT
 
 SOURCE `ee7889cf04383162e160ae30544eb324257ed45c` 提供 `CurrentGoalReader`。`ReadCurrentGoalSnapshot(ctx, caller, projectID, goalID, revision)` 要求用户明确选择的正整数版本，读取实际项目、当前成员授权与 Goal 最新不可变 revision；项目不符、旧 revision、非 active 状态或缺目标依据时立即拒绝。返回 `domain.CurrentGoalSnapshot`，包含真实 Goal、ProjectSettingsRevision、ObservedAt；没有默认 Goal 或推断的目标。历史 `ReadGoal` 与批准继续保留原固定版本。
