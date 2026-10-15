@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -237,13 +238,30 @@ func TestNativeResumeCannotCreateSecondProjectWriter(t *testing.T) {
 }
 
 func TestNativeUnavailableLaunchDoesNotLeaveGhostWriter(t *testing.T) {
-	t.Setenv("PATH", "") // no native CLI/model process can be launched
+	// 通过真实缺失的可执行程序触发启动前失败，不启动原生控制器或模型。
+	t.Setenv("PATH", "")
 	ctx := context.Background()
-	db := openAttentionDB(t, filepath.Join(t.TempDir(), "state.sqlite"))
-	defer db.Close()
-	service := workspace.NewLocalProjectService(db, &localReferences{}, agents.ProjectFiles{}, agents.NewRegistry(t.TempDir()))
-	human := domain.Caller{Kind: "human", ID: "human"}
-	p, err := service.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "unavailable", Root: t.TempDir(), SpaceID: "space"})
+	root, err := filepath.Abs(filepath.Join("..", "..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	directory, err := os.MkdirTemp(filepath.Join(root, ".verification"), "native-prelaunch-actual-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("actual owned prelaunch directory: %s", directory)
+	db := openAttentionDB(t, filepath.Join(directory, "state.sqlite"))
+	registry := agents.NewRegistry(filepath.Join(directory, "native"))
+	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, registry)
+	human := domain.Caller{Kind: "human", ID: uuid.NewString()}
+	space, err := attention.NewAttentionService(NewAttentionRepository(db), nil, nil, attention.ServiceOptions{}).CreateProjectSpace(ctx, attention.Principal{Kind: human.Kind, ID: human.ID}, attention.ProjectSpaceCommand{
+		CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1},
+		Title:       "Public project prelaunch failure validation",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p, err := service.RegisterProject(ctx, human, domain.RegisterProjectCommand{Name: "Actual public checkout with unavailable native CLI", Root: root, SpaceID: space.Space.ID})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -263,6 +281,10 @@ func TestNativeUnavailableLaunchDoesNotLeaveGhostWriter(t *testing.T) {
 		}
 		if !session.StopConfirmed || session.Ownership != "unstarted" || session.PendingOperation != "" || session.Operations[human.OperationID].Status != "failed" {
 			t.Fatalf("unstarted failure left ghost ownership: %+v", session)
+		}
+		stored, err := db.LoadSession(ctx, session.ID)
+		if err != nil || stored.NativeID != "" || stored.Ownership != "unstarted" || !stored.StopConfirmed || stored.PendingOperation != "" || stored.Operations[human.OperationID].Status != "failed" {
+			t.Fatalf("actual prelaunch failure lacks its durable unstarted receipt: %+v %v", stored, err)
 		}
 		if _, err := service.StartNativeSession(ctx, human, p.ID, domain.NativeCommand{CLI: "codex"}); err == nil {
 			t.Fatal("duplicate failed native start falsely succeeded")
