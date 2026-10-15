@@ -2,6 +2,16 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:23 后继组合与真实目录失败返修
+
+R REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f` 与 B helper REPORT `8179cf9c5074ab26a053fe7f1bfd691b153b4084` 已无冲突普通合入 `7401b302275c7ef6c8dc1dcca133ace263527a2f`。同源目标中 agents 三项主检查与 Works 真实 HTTP / SQLite 重开通过；events `TestRelaySourceIdentityActualFileAndAliasRejection` 在 `relay_session_source_test.go:35` 实际失败，错误为 `workspace_unverifiable`，准确原件 `integration/c16-product-target-7401b30.log` 保留。
+
+H 安全诊断 SOURCE `a77f9b12e84147b8de95f9179d9e03aa170b27e6` / REPORT `a4a9ce37464d1e12880dc65b4e5348c50504131e` 仅两件测试诊断与原报告，已普通合入 `3edd1f3cb9c3a95ee2c06446af9667e1f3f9a24f`。含 R 生产修改的原 `pnpm build` 实际 EXIT0 / `37.1029359` 秒，source / source_after 同值，本模块独读 `integration/c16-product-build-3edd1f3/result.json`。该准确组合的两项 HTTP 诊断实际 EXIT1 / 包4.535秒：`relay_facts_http_test.go:76` 为 `scope_denied: project root is unavailable`，`relay_http_listener_test.go:198` 为 HTTP403 / `scope_denied`，原件 `integration/c16-product-http-diagnostic-3edd1f3.log` 保留。
+
+三项实际失败的自有检查目录均固定从 `dist` 构造，没有读取明确的 `ASTROCYTE_TEST_OUTPUT_ROOT`；I 的既有 dist 是 D 盘 junction，生产路径保护拒绝该重定向祖先。本模块已通过 `msg_49815821f29d` / `msg_ba607e90afb4` 将精确来源、行号和 D 环境交原 H 返修检查目录支持，保持生产 reparse / 权限保护、全部断言和 skip。原8b失败和当前复现分列，不重跑未修全套。准确3edd产物已暂停覆盖交 H 稳定复制，后继构建等待明确窗口归还；当前运行仍 cffac367，b73实际切换等待 F 安全 ACK。
+
+B 经验 bridge SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` / REPORT `921e30b56683118a0d22a29cb63161b599395d3a` 已由 M-product 确认可消费，唯一 I 无冲突普通合入，报告组合 `2128fd3177ff4d567eb1f0871945d3ec1cdea121` 已 push。当前先做新增拒绝边界适用检查，H 主入口 Reader 注入及 OpenAPI 仍由原 H 继续装配，未复制 WIP。Interpreter 尚未配置，`provider_unavailable` 和拒绝检查不计 L2 正向；真实完成、用户批准、复用及最终发布继续待验收。
+
 ### 2026-10-16 04:20 H 生产装配已准确构建
 
 H SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 已由原作者及 M-relay 独验确认可消费；本模块独读九件 H 文件和一件报告，并核远端准确同 REPORT。唯一 I 无冲突普通合入，得到 SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`。原 `pnpm build` 实际 EXIT0 / `20.8431586` 秒，source / source_after 同值，本模块独读 `integration/c16-product-build-b73dc79/result.json`，并独立核远端同 SOURCE。
