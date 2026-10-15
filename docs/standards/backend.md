@@ -649,3 +649,11 @@ SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383` 已普通 push。当前构造�
 显式 `ASTROCYTE_TEST_PUBLIC_PAPER_SNAPSHOT` 选择本树实际 DOM 生成的 `.verification/paper-dom-actual-recovery.snapshot.json` 绝对路径后，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` 第二次 EXIT 0，包 2.973s；`.verification/admission-fixed-reference-actual-second.log`。测试通过实际 `paper_snapshot` 生产导入保存公开来源，核未加入空间时拒绝、实际加入后同事务允许、零额外连接和实际撤回后拒绝；之前项目、角色、另一实际数据库和取消检查全部保持。第一轮在实际加入资料使 Material version 前进后，旧 expected version 撤回触发 `version_conflict`，原件保留于 `admission-fixed-reference-actual-first.log`；当前撤回读取实际最新版本。
 
 全包 build、目标包 vet、Go 格式与 diff 检查均 EXIT 0，日志 `.verification/admission-fixed-reference-build-first.log`、`admission-fixed-reference-vet-first.log`。该实际公开输入是默认检查需要明确提供的来源，缺少时直接失败，没有新增 skip、替代资料或模型。原 H 同实例的准入 UI / HTTP 与全部源码的完整默认检查仍待原负责人执行。
+
+## 既存公开推断收据的实际存储检查
+
+SOURCE `82426bab2c405e1a1a2184801a60fa4e98985c2b` 已普通 push，仅更改进度存储测试和该 adapter 的中文注释。测试使用实际 migrations，既有公开 README 推断结果由 SQLite `mode=ro` 连接按固定 project ID 读取一条进度及一条项目元数据；Grant、token 和原生原档没有读取或复制。新自有数据库保存原项目元数据和准确推断字段，新的本库投影 CAS revision 从 1 开始，随后由真实人工进度服务更新为 review / 50%，原 accepted 推断收据全部保持。全部字段的 round trip、实际旧版本 INSERT 拒绝、人工更新、原项目保持以及零 Grant / Session 覆盖保留。
+
+`ASTROCYTE_TEST_PUBLIC_PROGRESS_DB` 必须明确选择本树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite` 的绝对路径。`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestProgressStorageRoundTripAndCAS$' -v -count=1` 第二次 EXIT 0，包 2.699s，`.verification/progress-storage-actual-source-second.log`；第一次 Windows file URI authority 错误保留于 `progress-storage-actual-source-first.log`。目标包 vet、Go 格式和 diff 检查 EXIT 0，日志 `progress-storage-actual-source-vet-first.log`。本 SOURCE 的生产部分只有注释，最近完整 build 记录仍为上一节 SOURCE。
+
+该结果只覆盖历史持久化和人工 CAS。旧实际 `native_id`、模型元数据及原 accepted 回执保持原来源，旧原件完整度 / EffectiveToolSet 继续 unknown，没有向新 Registry 登记原控制器、创建新推断、发送模型输入或宣称当前原生来源已验收。正式库、共享产品库及实验原件没有读取或修改。需要完整默认检查的负责人已收到两个实际公开输入参数及本机准确指针，缺少前置时直接失败。
