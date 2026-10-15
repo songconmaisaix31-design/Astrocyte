@@ -38,7 +38,7 @@ S4 新 `workspace/repositorycontext/**` / `e2e/s4-*.spec.ts` 经 F 核零 WIP、
 
 S5 经零 WIP 核查和停止写入 ACK 后，模块计划 `2f609ea` 已普通 push，新增 `pages/attention/delegation/**` 与 `e2e/s5-*.spec.ts` 正式交同一产品 UI Owner `ctx_af3cbd15f128`。共享 `api/judgment.ts` / 生成 DTO / hooks / auth、AttentionPage 薄接入及现有 RankingPanel 继续由 F 负责。委托开关、阈值和范围由用户在运行时明确设置；共享接口等待 H 的准确公开契约。
 
-2026-10-15 恢复 Dispatch `ctx_4a385bf65390` 后，用户确认继续复用既有白绿 React / TypeScript / Vite 设计。主控明确 F 保留共享客户端、auth、hooks、router 与唯一真实 Relay DOM 操作观察；页面实现与返修继续由产品 UI Owner 负责。第一 Codex 正向先核明确 started、公开目标、实际退出、pending 为 0 及 release，第二原生客户端与 context_handoff 单独验收。根最终批准的计时顺序为：F 在同 URL 确认空 agents 与 observer ready，H 唯一登记并保存真实 t0，F 经 CreateIntent / PrepareIntent 完成同一控制器空 Message 初始化，H 核正选来源与工具关闭，再由 F 经原 Confirm 发送首输入。初始化、来源核查和准备均计入原三分钟；尚未收到准确 Prepare 契约及已验证 SOURCE，未开始新登记、初始化或模型调用。
+2026-10-15 恢复 Dispatch `ctx_4a385bf65390` 后，用户确认继续复用既有白绿 React / TypeScript / Vite 设计。主控明确 F 保留共享客户端、auth、hooks、router 与唯一真实 Relay DOM 操作观察；页面实现与返修继续由产品 UI Owner 负责。第一 Codex 正向先核明确 started、公开目标、实际退出、pending 为 0 及 release，第二原生客户端与 context_handoff 单独验收。根最终批准的计时顺序为：F 在同 URL 确认空 agents 与 observer ready，H 首次实际写入完整登记时保存唯一 t0，在原 Service / Store / Receipts 实例通过固定解析器 reload，F 经 CreateIntent / PrepareIntent 完成同一控制器空 Message 初始化，H 核正选来源与工具关闭，再由 F 经原 Confirm 发送首输入。登记写入、reload、激活、初始化、来源核查和准备均计入原三分钟；尚未收到准确契约及已验证 SOURCE，Calls 与权限范围仍待用户决定，未开始新登记、初始化或模型调用。
 
 恢复时磁盘查询显示 C 盘可用 5,246,283,776 bytes，已向主控报告；后续大型构建临时目录和缓存按用户指定使用 `D:/Astrocyte-agent-assets/20261015/product/frontend`，F 不执行证据清理。原 10:28 设计浏览器运行在 Orca 重启前只完成 28 项中的第 1 项，结果为 PARTIAL；原日志保留，不记为整套通过。
 
@@ -46,7 +46,7 @@ S5 经零 WIP 核查和停止写入 ACK 后，模块计划 `2f609ea` 已普通 p
 
 模块计划 `78cbb0b` 明确授权本次仅消费 `tests/s1/server.mjs`。F 通过文件编辑工具将该文件与 B `efa137e` 同路径完整内容保持相等，提交 `509126da91b61eb5b0e48609b64e9a8038e1743e`；后续 helper 逻辑写入归还 B。新错误保留实际 readiness URL 与原 cause，完整读取响应正文；原请求 / 总准备期限、端口规则和断言均保留。普通合入 UI `94e21ba` 后形成组合 `67caeae`，完整展示实际 Grant 固定范围与时间，未新增模型操作。
 
-该组合沿原默认配置执行设计与导航全部 100 项，97 PASS / 3 FAIL，12.7 分钟、退出 1、零 skip。28 项设计用例两尺寸均通过；一个导航准备阶段实际 Vite GET `http://127.0.0.1:50258` 发生 `TimeoutError`，与旧 `ECONNRESET` 分别保留，具体进程状态未在 reporter 文本中封存。另两项导航失败来自共享 QueryState 对过期空集合继续显示空结果。当前 SOURCE 已修正该呈现：失败的过期空集合显示读取错误与人工重试；非空旧快照继续显示过期说明并保留禁写条件。原导航两尺寸 2 PASS、原 S2 非空快照 / 权限拒绝 / 恢复两尺寸 2 PASS，全部断言保持。当前完整默认验收仍未通过，S2 全部 12 项与新源码 100 项完整复验尚未执行。
+该组合沿原默认配置执行设计与导航全部 100 项，97 PASS / 3 FAIL，12.7 分钟、退出 1、零 skip。28 项设计用例两尺寸均通过；一个导航准备阶段实际 Vite GET `http://127.0.0.1:50258` 发生 `TimeoutError`，与旧 `ECONNRESET` 分别保留，具体进程状态未在 reporter 文本中封存。另两项导航失败来自共享 QueryState 对过期空集合继续显示空结果。当前 SOURCE 已修正该呈现：失败的过期空集合显示读取错误与人工重试；非空旧快照继续显示过期说明并保留禁写条件。原导航两尺寸 2 PASS、原 S2 非空快照 / 权限拒绝 / 恢复两尺寸 2 PASS，全部断言保持。S4 SOURCE `03bbaed` 上的既有 S2 全部 12 项随后通过，6.5 分钟、退出 0、零 skip，覆盖真实资料引用、权限拒绝、不可变版本、未知写入、人工批准 / 拒绝、Grant 与 HTTP / SQLite 重启；新的原生会话和模型调用为 0。完整默认验收仍未通过，新源码 100 项完整复验尚未执行。
 
 后续 Go 命令按根当前决定使用进程 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR/TEMP/TMP` 使用 F 独占 D 盘目录。S4 H SOURCE `31256d5` / REPORT `89d84d5` 已按模块计划 `4434c39` 普通消费，五个共享冲突文件由原 B 通过文件编辑工具处理并暂存、停止写入归还；模块独立复核后由 F 完成合并 `90b2819`。F 没有编写共享依赖或 helper 冲突逻辑。
 
@@ -64,6 +64,7 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| S4 SOURCE `03bbaed`：`npx playwright test --config e2e/self-service.config.ts e2e/s2-proposals.spec.ts --workers=1` | 既有全部 12 PASS，6.5 分钟、退出 0、零 skip；生产 Go / SQLite / HTTP / Vite，两尺寸原断言保持，无新原生会话和模型 | `.verification/f-s4-stage-s2-playwright-first.log`、`f-s4-stage-s2-artifacts` |
 | 当前 S4 `go build -mod=readonly -p=1 -o D:/…/s4-source-server.exe ./cmd/server` | 退出 0；本树准确源码，无 overlay | `.verification/f-s4-actual-go-build-first.log` |
 | 当前 S4 typecheck / API ESLint / build / generator check | 退出 0；553.30 kB 提示保留 | `.verification/f-s4-client-typecheck-first.log`、`f-s4-client-typecheck-with-http-tests.log`、`f-s4-client-lint-first.log`、`f-s4-client-build-first.log` |
 | `npx vitest run src/api/repositoryContext.test.ts` | 5 PASS，18.26 秒；生产 Go、实际 HTTP、SQLite；未配置 503 不代表正向图成功 | `.verification/f-s4-client-http-first.log` |
