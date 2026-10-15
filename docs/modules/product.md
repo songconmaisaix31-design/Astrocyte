@@ -72,11 +72,44 @@ T 消费 B `6d1d59b` 为 `320ea2569c608120fbc07aaae25682e27bd25f8d` 后，原 Ta
 |---|---|---|
 | S3 成员事务 | `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b` / `841c147153ebea043542e14d8b09682f1ba93952` | 模块已独核远端、原六源码范围和真实报告，交唯一 I。领域 / S2 批准链、SQLite 6.684 秒、HTTP 2.306 秒、vet / build / 架构通过；单连接自锁首 RED 保留。双 Git 观察生产链仍待 S2 最小契约及后继实现，Claim 未答门禁保持 |
 | F 共享 Prepare | `e689e7f5410d977f8cb72df57efbfeb5f490c415` / `72f8ba4e2414ba8cd553e3172e38aa0a6c1de203` | 模块独核远端、七件原 F 域及 source clean，交唯一 I 和原 UI。全局 type / lint / Web build、四真实 HTTP 文件 17 PASS / 85.26 秒、五纯显示文件 37 PASS；测试有重合，不累加。原 Prepare 两尺寸四项在 webServer 120 秒超时未运行，全部首 RED 保留 |
-| B 生命周期 | `837647d5913c739a73a72ec7829d24f78b4ab872` / `65036a6e210745ed44e9094090fcdd0b8887e469` | 模块独核远端、四件实际范围与完整报告，交 I / F / UI。初始化前两 HTTP 首 RED 后 1 PASS / 20.345 秒；完整生命周期 8 PASS、0 FAIL、0 SKIP / 155.584 秒，初始化失败另 1 PASS / 3.490 秒，build / vet / PLOS 与 ACL 真实 DOM 通过。F 准确消费为 `4e52a3a`、四件完整 diff0，正在原配置复验 Prepare 四项；默认 100 项仍待运行 |
+| B 生命周期 | `837647d5913c739a73a72ec7829d24f78b4ab872` / `65036a6e210745ed44e9094090fcdd0b8887e469` | 模块独核远端、四件实际范围与完整报告，交 I / F / UI。初始化前两 HTTP 首 RED 后 1 PASS / 20.345 秒；完整生命周期 8 PASS、0 FAIL、0 SKIP / 155.584 秒，初始化失败另 1 PASS / 3.490 秒，build / vet / PLOS 与 ACL 真实 DOM 通过。F 准确消费为 `4e52a3ab9b8561e58d40719c98a64ab1d03d51f2`、四件完整 diff0；Prepare 四项已实际通过，设计与导航组及全部默认范围分别见下方 |
 
 S2 单文件格式 SOURCE `83c8b62766b28470fc4fe2514631172ea2f286eb` / REPORT `f0fa889742d5e2c4c0bc113fcf857930e2c99122` 已交 I；B `53f0bebdfcf311706ee680d48542d9bc46e151a7` 格式改动由上述实际业务 REPORT 覆盖。原 `2367224` CI 和 `9aa583e` 本机首格式失败均保留，未据新单件来源填写完整 check 成功。
 
-R 已交真实 input Outcome / FailureCode / ResultSource / ResultObservedAt 来源 `23253502143bb23bf47e1606c38e0158540e328d`，I `2367224` 已含；S3 后继消费当前可构建组合处理自身旧字段，不重建同类来源。首次 Claim 前的真实持久准备收据仍属 B projects 与原 R controller 的既有接缝，任意 UUID 不能视为输入已准备，未答 Known / Claim 拒绝保持。B `selected-text` 的 `codex exec --ephemeral` 现缺同一原控制器持久正选来源读取端口，原有效工具 unknown 不补造；H / B 最窄对象事件关系、双完成经验字段和完整模型路径继续实现，原生成功推理不重复。
+R 已交真实 input Outcome / FailureCode / ResultSource / ResultObservedAt 来源 `23253502143bb23bf47e1606c38e0158540e328d`，I `2367224` 已含；S3 后继消费当前可构建组合处理自身旧字段，不重建同类来源。首次 Claim 前的真实持久准备收据仍属 B projects 与原 R controller 的既有接缝，任意 UUID 不能视为输入已准备，未答 Known / Claim 拒绝保持。T 已核选定文本的现有 bridge / factory / Registry 映射和 send_accepted / TurnID，B `20cff2c` 保存停止后的实际本机观测；有效工具 unknown、正选原档完整度及真实模型组合继续未验，不补造或重发成功推理。H 沿原 ObjectStore / Record / GetEvent 实现自有薄 Reader，不新增重复目标证据存储接口。
+
+### 01:33 当前组合与验收安排
+
+根 `msg_aacc41c978b9` 要求 F 在当前稳定准确源码立即运行全部默认浏览器，不等待 L1 模型正向或管理报告。本模块已交原 F `msg_2eb952c39459`：当前 REPORT `a166310a3c7d7b22806ec74aa4125e9f6c6a2222` clean，沿原完整 testDir、两个 viewport、workers=1 / retries=0，不带 spec / grep 过滤。准确清单 320 项仅为收集结果；全域实际结果尚未产生，旧 203 PASS / 41 FAIL / 32 既有 SKIP / 4 NOT_RUN 保留原版本范围。缺少真实前置按实际首失败交原作者，不新增 skip、伪造输入或擅自启动原生与模型。
+
+F 设计导航 SOURCE `ae2f56b257a9f6f880d1e96db26c6470f9966384` / REPORT `91676ad0dbacea6a9f1640e224e2dbfa7cbf8024` 的 100 项实际 100 PASS / 11.9 分钟、零 skip / retry；原 92 PASS / 8 FAIL 保留。时间线用实际 Mission HTTP 空集合、SQLite 零记录、DOM 零事件和零写操作核实。Context 后继 SOURCE `471bcc9f34b5ae82375b03fdcf5938d3a127d9b1` 已由 F 精确消费为 `90e69e703f79b81653ea5ccc1e6c9eca4bd781f9`，完整单件 diff0。UI 独立 REPORT `4518f63b9fb2ec935fecb119f6d446ad4315c9b6` 已由模块独核远端同值：S2 成功覆盖 16 为前轮 13 加限定资源后三项，Context 四项、S3 人工八项实际通过；类型、lint、三个 Go 生产目标及显式 D Web 构建通过。普通 push 的 missing necessary objects 首失败保留，后续普通 no-thin push 成功；未记为单轮 S2 全绿、标准 check / build 或完整默认通过。
+
+唯一 I 已结束前轮 B 单 Vite 临时范围，保准确 `837647d` 完整内容；实际 stage blob 为 `96cf281adc902525cb8a4588edbb8630b48d83f6`。普通 S2 合并 SOURCE `f0277e7ca755792bae394f479b672b11847067d4` 已 push；当前普通合入 S3 REPORT `745d5b489969bd4a8bb4e07f2882fcc1fbf2c4b4`，模块独核 HEAD / MERGE_HEAD 与十一项 U 全部一致。I 本人新 STOP `msg_e7abbbd9b02f` 和发布计划 `release.md` 01:29 已交，本轮仅以下两组互斥临时范围，逐人新安全 ACK 后才具体放行，不等待独立管理报告。
+
+| 原作者 | 仅唯一 I 树的本轮临时 edit / stage 范围 |
+|---|---|
+| S2 `ctx_54302cb333c4` | `internal/workspace/domain/session_bindings.go` |
+| S3 `ctx_463188124a36` | `internal/adapters/sqlite/swarm_approvals.go`、`swarm_native.go`、`swarm_native_test.go`；`internal/swarm/app/binding_context.go`、`binding_context_test.go`、`commands.go`、`lifecycle.go`、`queries.go`、`usage_test.go`；`internal/swarm/domain/mission.go` |
+
+两人保留当前双观察、实际 accepted 身份、Used / Concurrency 最终事务复核与原成功断言，未答 Claim / Known 门禁保持。仅文件编辑与 stage 本组，不操作 commit / continue / abort / reset、不复制 WIP 或整体选边；本人停止目标树全部写入归还、模块与发布负责人独核后仅 I 继续原普通 merge。S2 当前完整资料 Context 和 owned 正向仍缺包含最新 S2 / S4 / S5 的同源装配二进制；H 当前 b223 的二进制不能计为该组合通过。S2 已被要求直接交 S4 准确纯数据库 Reference 与外部 Git 观察入口，UI 等原 S4 实际双公开 worktree 与配置，不自行编造。
+
+H SOURCE `b22395c6eb1eed0be9e87957ae21111b5ce8f782` / REPORT `8893a2080e6dab6e5c3883a998c15df48691a476` 已由 M-relay 核原域、远端和真实 ObjectStore / Event 关系；生产 Reader 已实现与注入，不再等待 B 新目标 API。八项无模型 Go、四包 vet、生产构建、273 示例与空 Registry 服务启动 / 停止通过。官方 Redocly 原两次 Windows libuv 退出 `-1073740791` 保留首 FAIL；根 `msg_34bd390469ff` 在同一准确 H schema、本机 Node 24.16.0 和进程级 `NODE_OPTIONS=--max-old-space-size=512` 的官方 lint 实际 EXIT0 / 6838 毫秒、原十三 warnings，无改依赖配置或屏蔽退出。已交 B 不重复该成功，只有 I 完整检查实际重现才继续定位。F 只读消费预检出现 config / vite 两处外域冲突，未实际 merge；准确组合交唯一 I，随后原 F 用实际合并 OpenAPI 运行既有 generator，不复制 H 分支旧 schema。双完成渠道、started 与资源释放分别核实，L1 仍未开始。
+
+F 已核 S5 `f955fe3c3450200342e8cbf0b0c152e8065a882e` / `75c7fe1eff22fa8d2951950b2f1687595552d7a2` 的十五个真实 handler / DTO；H8893 尚无对应公开注册和 OpenAPI，已交 M-relay / 原 H 完成其薄装配。F 收准确契约后提供共享客户端，再交唯一 UI；不猜字段、不用未注册服务替代。R 已原样消费 B5866 四件为 `bc3fda0838105acaa1e61f08fb46bc4c4103de01` 并停止、归还 B / T；R 只继续自有真实 completion 映射。T 完整组合命令必须显式提供执行者绝对 `ASTROCYTE_TEST_OUTPUT_ROOT` 及 D 盘 TEMP / TMP / GOTMPDIR，共享 GOCACHE 沿原路径；十四模型 / unknown 和完整两包仍未验。
+
+### 01:05 已交阶段与首失败记录
+
+F 在准确 `4e52a3a` 组合的原配置 Prepare 拒绝 / 离线未知锁两尺寸四项实际 4 PASS / 1 分钟 / EXIT0；设计与导航两文件 100 项自然运行结果为 92 PASS、8 FAIL、零 skip / 6 分钟，失败交原 UI 页面及原 F 实质断言分别处理，原失败保留。准确 REPORT `6ecf5fdc7d71709dc5e656fc1aaa40b99c382211` 已报告普通 push。当前 `test:e2e=playwright test` 覆盖整个 e2e，设计导航 100 项是定向组；该组合完整清单为 308 项 / 35 文件。原完整 280 项的 203 PASS / 41 FAIL / 32 既有 SKIP / 4 NOT_RUN 仍保留对应版本，最终准确组合须运行不带 spec / grep 过滤的完整默认，不能用子集替代或新增 skip / retry。
+
+原 UI Swarm 导航 SOURCE `614ebc72bf87d8c41bd75be67f659da34a85526b` 恢复真实集合、详情入口、空状态和三视图权限错误传播；原时间线已使用真实公开 timeline，测试保留事件 / 无虚构动态的实质验证，不要求页面输出失实的未接入标签。F 自然 clean 节点按 `64ab5ca` → `32adab9` → 原测试前置 `033557f16b6b806e8a1626fc28bfd34bde13bed7` → `614ebc7` 精确单 SOURCE 消费，保其他文件，遇额外路径或冲突保留现场交原 UI，不操作 abort / reset / 整体选边。页面后续逻辑继续原 UI。UI 消费准确 I `9ce5c2c21b273344e2448bee2ee4b80fa27d5fec` 为 `60288aa` 后，成熟 YAML 全文解析通过，S3 两尺寸八项实际全部通过；Context 四项首失败为测试前置缺明确资源上限，原 UI 仅修本域明确限额输入，原 S2 与 Context 二十项正在真实运行，原生 / 模型均零。Artifact 正向和完整执行仍未通过。
+
+I 的 H 契约修复在 `9ce5c2c` 完成，当前后继普通合 S2 的 HEAD 为该源、MERGE_HEAD `f0fa889742d5e2c4c0bc113fcf857930e2c99122`，初始十五冲突。原 S2 本轮只处理 app/proposal_context.go、domain/proposals.go、tests/s2/approval_test.go 三件，已本人 `msg_30191ec1e0c3` STOP 归还并由模块核限定 diff；其余十二件归原 S4，仍仅 I 操作合并生命周期。原 S2 自身 D helper 的唯一 `tests/s1/server.mjs` 冲突已由原 B 当前安全 ACK 后仅编辑 / stage、本人 STOP 归还，模块核 U0、与 `44dcdead` 完整 diff0；该临时单件范围结束。S2 已继续准确八件及四件消费并把后续逻辑归还 B。
+
+S3 经当前正式答复仅在其原树用文件编辑工具消费 R `2325350` 的 domain/relay_member_evidence.go 与对应测试完整两原件，独立提交 `12f659b7d741a48237ae2230c786d7ac3572590b`，两件完整 diff0、私有序列化检查通过并归还 R；S2 最小契约 `6eedf02d4da0efbaac44221435981b3aca5eb0c3` 精确消费为 `bd08c2b5e20576960f07bdb79a62bada1d4b97f7` 后归还 S2。后继 S3 SOURCE `3d49ed9ad7ac6ff3d26cc722eebcb69f58bd70a8` / REPORT `745d5b489969bd4a8bb4e07f2882fcc1fbf2c4b4` 已普通 push 并独核远端；模块审读实际 Observe 位于自身 WithWorkspaceTx 之前，事务内更新 Used / Concurrency 后 WithObserved。组件 SQL 7.314 秒、HTTP 2.246 秒、领域 / vet / build / 架构通过；真实 owned 两阶段仍未运行，首次 Claim 缺 B 持久 prepare 与原未答门禁保持。
+
+S2 实现 SOURCE `aa0a5d310cbfc5c07063bb22fdc951e6ca549195`、纯格式 `eba9b3c8109ee49e0b1ea3dee5c8776fa1c4e107` / REPORT `1d6238d0dbfb45d5c29fe17e70e3bf5350e02b6e` 已普通 push 并独核远端，Go 两项 6.441 秒、生产 HTTP 两次进程重启一项 20.501 秒、vet / build / 34 包架构及格式通过。准确 S2 / S3 来源已交唯一 I 同源组合；完整资料 Context、owned 正向与 AT12 仍待 H / I 生产装配和合法原生窗口，原 S2 Task 保持活跃等待原产物，不按阶段 worker_done。
+
+B 双完成 SOURCE `5866b5296a5f6ffe253fa5deac632f72d27fe128` / REPORT `3d83095171ba69a01432462ac851453acebb6578`、停止后本机来源 SOURCE `20cff2c10d4ebfe7b9611bc4b08055ab64c9f80f` / REPORT `1fcb9ce8d94d3e36cf4855281fa9b45dc02e7550` 已交 I。规则及真实 SQLite 生命周期通过不代表真实 completion → Interpreter；实际空输入同 controller Stop 观测 1 PASS / 7.784 秒，工具集合 unknown 保留。B 已本人确认全部 app/*_test.go 零 WIP 并停止后续写入，原 `5866` 测试贡献保留，T 唯一接续维护。T SOURCE `2249dabdf0245b7769af3ae2a10c7a07dd8ad5a1` / REPORT `e9ae9080e23b55272178c5d51b0ddd62c3a1ae97` 已核远端并交 I，八项 Taste / Goal、二十五项真实持久化和三项 HTTP 通过；消费 S5 预检八件 S2 / S4 外域冲突时没有进入实际 merge，改等唯一 I 含 T / S5 的准确闭包，十四模型 / unknown 与完整两包仍未完成。
 
 ### 23:51 恢复计划与当前互斥范围
 
