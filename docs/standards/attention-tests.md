@@ -1,6 +1,6 @@
 # Attention 测试整改记录
 
-本轨工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/product-attention-tests-20261014`，分支为 `songconmaisaix31-design/product-attention-tests-20261014`，首次接管基线为 `b470ecd736af261a10e4c4822bdcd3b02d0da454`。2026-10-15 恢复基线为 `5b45b0c2a4c6ca8c33a0a1ae8478ec4481877e04`，接管时工作树干净；当前 Orca 终端为 `term_e39f5608-91dd-4c07-856a-9ebe7b9bb555`，Task `task_5f0a79b6a17a`，Dispatch `ctx_491ad741b3cd`。公开 terminal 元数据和模块 worker-list 均核实实际客户端为 Codex、模型 `gpt-6.1-sol`，终端显示 xhigh fast。
+本轨工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/product-attention-tests-20261014`，分支为 `songconmaisaix31-design/product-attention-tests-20261014`，首次接管基线为 `b470ecd736af261a10e4c4822bdcd3b02d0da454`。2026-10-15 21:54 本次恢复基线为 `94fb0e88de9054720cc1b7c473937afd9d39c80e`，接管时工作树干净；当前 Orca 终端为 `term_d8097c3c-ce20-4d1f-8eb9-b176c72838a9`，Task `task_5f0a79b6a17a`，Dispatch `ctx_97022176991b`。公开 terminal 元数据核实实际客户端为 Codex，终端显示 GPT-6.1-Sol xhigh fast。
 
 本轨唯一写入范围为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 和本文件；生产、依赖、native/relay 与其他测试归原人员。原始错误、实际来源、模型响应和会话证据只保留本树已忽略 `.verification`，不纳入 Git 或产品接口。
 
@@ -116,6 +116,12 @@ go test -mod=readonly ./internal/attention/app -run '^(TestActualPublicGitAdmiss
 ```
 
 ## 仍在执行
+
+2026-10-15 22:01，SOURCE `1a340788bca4c29aef38d24c1c7ed2c1f32e1778` 已普通提交，仅修改 `profiles_service_test.go`。新增实际 RankingProfile 两个独立 SQLite 连接竞争更新检查：只有一个 CAS 更新成功，另一项明确 `version_conflict`，只保留一项新回执、一项新事件和两个不可变版本。两个连接全部关闭后，重新打开同一数据库，完整 head / 历史及原成功请求的回执保持；旧版本更新和 Agent 修改被拒绝，拒绝后完整历史、回执、事件不变，原生 session 为零。输入权重是本测试明确提交的人工参数，没有变更产品默认值；该结果只覆盖现有 RankingProfile。
+
+本次恢复基线 `go test -mod=readonly ./internal/attention/app -run '^TestProfileCASHistoryReceiptAndRollback$' -count=1 -v` 为 EXIT0，日志 `.verification/resume94fb-profile-baseline.log`。新增源码的适用命令 `go test -mod=readonly ./internal/attention/app -run '^(TestProfileCASHistoryReceiptAndRollback|TestRankingProfileConcurrentConnectionsAndReopenKeepHistory)$' -count=1 -v` 首次和补充拒绝后完整状态比较后的运行均 EXIT0 / 两项 PASS，分别见 `.verification/ranking-two-connections-first.log`、`.verification/ranking-two-connections-final.log`。`go build -mod=readonly ./internal/attention/app` 为 EXIT0，日志 `.verification/ranking-app-build.log`；`gofmt -l internal/attention/app/profiles_service_test.go` 与 `git diff --check` 无输出。
+
+该 SOURCE 首次普通 push 发生实际 TLS 连接失败，尚未核实远端包含本次提交；原错误保留 `.verification/ranking-source-push-first.log`，没有改变 DNS / SSL / 代理。B 的完整 TasteProfile 与 S5 同数据库权威 delegation 端口尚未准确交付，rubrics / examples / delegations 的版本变化、旧 cache / proof 拒绝及完整 AT12 仍 NOT_RUN。根新增的 `verified_complete` / `user_confirmed_complete`、独立 started 与释放审计，以及人工确认完成进入经验 draft → quarantine → 人工批准的路径，在生产契约交付后继续真实验证；本轨没有伪造这些终态或执行证据。
 
 剩余 App 共享 MemoryRepo / MemoryObjects、替代模型、provider 目录及 S1 unknown 生命周期继续整改；本轨未完成，未发送 worker_done。已有成功和失败断言、未知状态继续保留，不新增 skip、不删除断言、不替换为伪外部成功。
 
