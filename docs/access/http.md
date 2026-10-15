@@ -1,5 +1,15 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 实际链接检查与待满足的原生正向
+
+SOURCE `c1750e867fb0dbe31dcf083909b0f84c8fca9c83` 只修改原 `relay_workbench_links_test.go`：使用明确 `ASTROCYTE_TEST_OUTPUT_ROOT`，给真实 Windows `mklink /J` 提供原生路径拼写。`go test -mod=readonly -p=1 ./cmd/server -run '^TestRelayWorkbenchActualLinkedGenerationRejected/junction$' -count=1 -v -timeout=120s` 实际 PASS，junction 子项 0.16 秒，package 2.837 秒，零新增 Skip。原件 `production-assembly/junction-recovery-20261015-204719.log`。symlink 子项的实际 OS1314 缺权限没有解决，也没有更改 OS 或将失败记为成功。
+
+旧 `runtime_http` 在 `/events/reconcile` 的 `approval_required` 来自其项目动作缺少独立 `reconcile` 权限，生产拒绝保持。该检查依赖自定义 driver / workspace / sink；旧 `session_git` 则启动本测试可执行文件并用自定义 LaunchPolicy 代替客户端，其 `delivery_unknown` 不产生真实消费证据。本轮没有运行这些替身补成功，没有放宽权限、重发输入或修改状态机；真实正向仍待实际控制器和获准范围。
+
+已有真实服务入口为 `TestRelaySessionActualService`，只使用生产装配、SQLite 和实际 HTTP，F 通过原产品操作。其配置来自 `ASTROCYTE_L1_ACTUAL_ROOT`、`ASTROCYTE_L1_CONFIGURED_ACCESS=1`、`ASTROCYTE_L1_EVIDENCE_DIR`、API / WEB_PORT、PUBLIC_GIT_SOURCE / PUBLIC_GIT_COMMIT、CAPTURE_EXECUTION。固定公开目标 baseline 为 `da3bdddb085808863090a05f60cc1c64415039cf`，配置接入根须与原 `relayRoot()` 完全相符，公开 checkout 须为该根的 `verification/public-project`，本机证据须为 `verification/h-evidence`。已有 goal-live 准备根与当前 shared-product 根分别保留，不能混用身份或数据库，也不据这些参数启动第二服务。
+
+`TestRelaySessionActualCommittedEvidence` 从同一受控根的私有 `service-private.json` 取得原库和来源，`ASTROCYTE_L1_TASK_ID` 明确本次任务，逐原档 origin / SQLite event_id / 六字段 HTTP 核对。宿主应用实际输出与固定目标检查还要求 `ASTROCYTE_L1_GOAL_RECORD=1`、原已接受 `INPUT_OPERATION_ID` 和原固定检查 overlay。旧 nlink2 原档当前拒绝、工具关闭缺口和原生边界待答均未解除；现有本机文件不授权新初始化或模型输入。新窗口继续由模块协调同实例、F observer ready、实际起点与唯一输入，H 只核准确来源和提交结果。
+
 ## 2026-10-16 人工准入、完成经验桥与完整公开契约
 
 SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c`，六件 H 文件，已普通消费 B 完成桥 `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` / REPORT `921e30b56683118a0d22a29cb63161b599395d3a`、完整 human 来源权限 `089a3d276fa186cf41cc8384fb2bc9dad91d9383` / REPORT `c0bfe00456329249e279a4353abe634381656806` 和原 b73 生产依赖组合。
