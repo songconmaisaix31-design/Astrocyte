@@ -588,3 +588,13 @@ SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` 已普通 push 到 `standards-
 | 两个变更 Go 文件的 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
 
 实际 Node 检查显式提供 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third/runtime/` 下 `node/node.exe`、`sdk/node_modules/@colbymchenry/codegraph`、`adapters/codegraph.mjs`。Go 缓存与编译临时文件继续使用 D 盘专属目录。上述 build / vet 含原四件未提交 experience WIP；本 SOURCE 没有提交这些 WIP，原完成来源组合、模型调用、完整 Go / 前端和同实例产品验收没有升级为 PASS。
+
+## 普通目录路径与 OpenCode 实际生命周期
+
+SOURCE `a8d361b1cb4133713e25f1d6c20ea4bfd22d844d` 已普通 push，只有两个测试文件改动。Works HTTP 在创建受控目录后调用现有生产 `CanonicalRoot`，发现结果与断言使用同一实际规范路径。OpenCode 使用明确 `ASTROCYTE_TEST_OUTPUT_ROOT`，缺少配置时使用本树 `.verification/`；绝对路径和全部祖先 reparse 检查保持，实际会话仍由官方 OpenCode 1.18.35 创建。
+
+在 D 盘 TEMP 下，`go test -mod=readonly -p=2 ./internal/adapters/httpapi -run '^TestWorksHTTPActualStoresRegisteredBoundsAndRestart$' -v -count=1` 首次 EXIT 1，原路径拼写断言保留于 `.verification/works-http-recovery-first.log`。修订后同命令 EXIT 0，包 2.983s，`.verification/works-http-recovery-second.log`；原缓存读取、人工请求、目录范围、幂等、权限、metadata、SQLite 重开和审计断言全部保持。
+
+`ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261016/backend/s1-verification` 下执行 `go test -mod=readonly -p=2 ./internal/adapters/agents -run '^TestOpencode(SessionLifecycleOverHTTP|SessionDenyPermissionFailClosed|RejectsUnauthenticatedAndUnknownReply|WaitHealth)$' -v -count=1` EXIT 0，4 PASS、0 SKIP，包 19.992s；`.verification/opencode-owned-output-recovery-first.log`。四个隔离服务使用实际本机 HTTP、原生生成的身份、真实私有 SQLite 和配置；覆盖同一 ID 停止后恢复、权限规则拒绝、认证拒绝、未知会话与实际健康检查，全部进程停止由原清理断言确认，model turns 为 0。变更文件 `gofmt -l` 和 diff 检查通过。
+
+该结果不覆盖受限 Codex 或 Windows Replay 的来源真实性。`native_path_windows_test.go` 原有构造原生文件需要实际获准公开项目的自产原件；B 已向协调者提出准确来源指针依赖，没有运行该虚构来源路径、添加 skip 或削减断言。`text_capacity_test.go` 需要 Codex 初始化的正向检查仍按当前暂停令未运行。H 报告同一数据库的 64505 服务已恢复；B 没有独立操作该共享实例，原启动 exit1 的原因保持 UNKNOWN。
