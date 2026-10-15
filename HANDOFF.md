@@ -2,7 +2,11 @@
 
 ## 当前执行入口（2026-10-15）
 
-用户最新三项决定已登记 [QUESTIONS](docs/QUESTIONS.md)、[v0.3 §2.7](tasks/v0.3-capability-board.md) 和 [认知分层计划](tasks/cognitive-stack-L1-L4.md)。当前顺序改为：四树分支收拢与组合验证 → 集成版 L1 真实验收 → L2 经验管道 → 六步流程端到端首跑（L2 验收，目标 2026-10-22，进入发布包）。M-release 立即安排唯一第三层集成人员，核实四树实际路径、分支与准确来源，先收拢可消费源码，不等待 L1 / L2 或所有后继功能终稿；领域修复由原作者连续交付后普通合入。完成语义为 `done = verified_complete | user_confirmed_complete`；started 证据独立记录永不回填，资源释放独立审计不可跳过，用户确认完成的任务照常进入经验候选及人工批准流程。Astrocyte 管目标 / 批准 / 上下文，Works Relay 后端 A、Morphogenesis 后端 B，同 Mission 的认领 / 预算 / 租约由单一后端独占；自动路由后置 L3。六步具体原文仍待用户答复，调用单位与权限证据覆盖两项也未由本次决定代选。
+用户最新三项决定已登记 [QUESTIONS](docs/QUESTIONS.md)、[v0.3 §2.7](tasks/v0.3-capability-board.md) 和 [认知分层计划](tasks/cognitive-stack-L1-L4.md)。当前顺序为：四树分支收拢与组合验证 → 集成版 L1 真实验收 → L2 经验管道 → 六步流程端到端首跑（L2 工程验收，目标 2026-10-22，进入发布包）。唯一第三层集成人员已沿原工作树实际开始，先收拢可消费源码，不等待 L1 / L2 或所有后继功能终稿；领域修复由原作者连续交付后普通合入。完成语义为 `done = verified_complete | user_confirmed_complete`；started 证据独立记录永不回填，资源释放独立审计不可跳过，用户确认完成的任务照常进入经验候选及人工批准流程。Astrocyte 管目标 / 批准 / 上下文，Works Relay 后端 A、Morphogenesis 后端 B，同 Mission 的认领 / 预算 / 租约由单一后端独占；自动路由后置 L3。调用单位与权限证据覆盖两项仍待用户决定。
+
+用户本轮明确六步：保存验收结果、产物、检查与实际完成通道 → 成败 / 轨迹 / 产物引用可追溯 → Interpreter 起草有证据候选进入 quarantine → 用户审核批准进入 approved 并保存批准记录 → 新任务 get_experiences 获取经验并写入交接上下文 → 保存后续结果，检查实际使用及是否避免重复踩坑。开发执行定义已登记 [认知计划 §3.2.1](tasks/cognitive-stack-L1-L4.md)，三位模块负责人已收到逐步交接；发布负责人同步原发布任务。六步跑通记录为工程闭环，认知是否提升任务表现由 §3.4 独立对照实验判断。六步首跑尚未完成，具体候选的用户批准不能由开发 Agent 代签。
+
+22:05 集成进度：唯一 I 为 `task_2ee44933df72 / ctx_b573b61bb4aa / term_1c79262e-de36-41c2-bdd5-5113e2d3bb87`，原 `works-relay-integration` 工作树与分支，实际 live / working。首次普通合并 B 出现十一处冲突，保持原现场；I 本人 STOP 后由原 B / H 分别处理领域路径，全部归还后仅 I 继续 merge。正式答复 `msg_bae427f5bdbd` 临时授权同一 I 仅处理该树 `HANDOFF.md`、`STATUS.md`、`tasks/Workbench-v01.md` 三份管理文档冲突并 stage，不包含根当前工作树；准确 write_paths 由发布负责人登记。四树组合、集成版 L1、L2 首跑和完整新 release 仍待验收。
 
 21:40 恢复计划：Orca 当前 runtime `50292233-afc2-49fb-bdeb-36dd3b08a033`、app PID 40964；旧模块 Dispatch 已由运行时记录为 abandoned / failed，三个原 Task 均恢复为 ready，旧终端不在公开清单。当前主控 `term_499a85ee-d93d-4385-bad1-5228a2b34146` 已绑定原顶层 Run `run_973808dd6a2f` generation 28。沿原任务、工作树、分支和未提交修改恢复三位模块负责人，禁止重复创建任务或开发轨道。产品负责人恢复 `run_dbf1a68bc692` 的 T / S2 / S3 / UI，并获授权接管旧 `run_7b2ce96bcd13` 中仅 B / F 的恢复及生命周期；Relay 负责人恢复 `run_8bbda1c3974c` 的 R / H / S4；发布负责人恢复 `run_aa4e6a119547` 的 S5 / P。所有恢复先核实际存活和原 Task 状态；ready 使用原 Task，failed 按公开恢复指令处理，无法证明退出的人员保持原状。模块负责人只写原管理文档，领域人员保持原独占 write_paths，不增加第四层。
 
