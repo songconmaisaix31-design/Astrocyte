@@ -22,6 +22,12 @@
 
 ## 独立REPORT
 
+### 2026-10-15 当前许可任务实际启动
+
+组件许可原 Task `task_08d2ca49a825` 当前为 Dispatch `ctx_c9d28891657d` / 终端 `term_63d7be11-6caf-4ad6-9206-8ecab071a370`，在原 `release-research-20261014` 工作树与原分支执行，只新增 `docs/release/components-20261015.md`。本轮先用公开 `opencode --help` 核 `--model` / `--auto`，再通过 `orca terminal create --command 'opencode --model alibaba-cn/deepseek-v4.1-flash --auto'` 显式启动，TUI idle satisfied；有界文字显示实际 `Build auto · DeepSeek V4.1 Flash Alibaba (China)` / OpenCode 1.18.35，之后以原 Task / `worker-start --terminal` 合法接管。input_accepted 已核，provider turn-start observation unsupported，具体工具与原生 assistant 模型元数据等待任务交付核对，不将界面显示冒称 provider wire 实证。本轮未重复 READY 请求。
+
+首次默认 `--agent opencode` 启动的 `ctx_84d744210f8a` 实际界面为 DeepSeek V4 Pro，产生两个入口文件读取与 `Content Exists Risk` 错误，没有修改授权文件。已停止该配置：首次官方 worker-stop 为 stop_unknown / terminal_tab_close_timeout；正常 `/exit` 后准确进程 53332 不存在且终端返回 PowerShell，随后官方 abandoned / failed，资源 retained / identity_unproven。首失败与外部 shell 保留，当前唯一文档执行者为上面的显式 Flash Dispatch；未修改全局模型或 auth。
+
 本模型可用性SOURCE为 `d895ffcd0f4e58389a570a6c8a9197195b826bdd`，已普通push；本文最后一节是该SOURCE后独立报告，只修改此文档，完整REPORT SHA由实际Git回执提供。D1独立REPORT为 `5a1a4b0474013de9f39eebb910166e7c5af4b822`，范围分别登记，不执行额外模型或日采集。
 
 实际 `opencode --version / --help / models / run --help / --pure debug config`、单次固定 `--pure run -m alibaba-cn/deepseek-v4.1-flash --agent availability_probe --format json`、同次原会话 `export --sanitize` 和标准JSON安全字段核查均通过；最后finish=stop、READY1、error0、工具0、真实模型元数据及usage见上文。`git check-ignore`确认临时目录不入Git，`git diff --check`通过。未安装新模型客户端、修改全局默认/认证、发起第二次probe或启动简单开发任务；后续任务的实际TUI配置与业务检查须由其当前owner核实。

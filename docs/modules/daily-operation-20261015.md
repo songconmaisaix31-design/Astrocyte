@@ -1,6 +1,6 @@
 # 2026-10-15 今日采集协调记录
 
-事实源为根当前 HANDOFF / STATUS、[原日运行计划](../../tasks/M6-V4-daily-operation.md)与原正式工作树 `docs/experiment/OPERATIONS.md`。负责人 Task `task_315679474dc4` / Dispatch `ctx_dee6ef251324`，子 Run `run_aa4e6a119547`；只修改本文与 `release.md`。实际管理客户端为 Orca CLI / Codex，终端读取模型为 GPT-6.1-Sol high fast。
+事实源为根当前 HANDOFF / STATUS、[原日运行计划](../../tasks/M6-V4-daily-operation.md)与原正式工作树 `docs/experiment/OPERATIONS.md`。负责人 Task `task_315679474dc4` / 当前 Dispatch `ctx_b80c795a71a4`，原子 Run `run_aa4e6a119547` 已恢复 generation 3；根继续明确管理写域为本文、`release.md`、`opencode-model-20261015.md` 与发布任务。当前实际管理客户端为 Orca CLI / Codex，终端读取模型为 GPT-6.1-Sol xhigh fast。下列日流程由重启前 Dispatch `ctx_dee6ef251324` 协调，原管理客户端为 GPT-6.1-Sol high fast。
 
 上海日期为 2026-10-15，刚闭合自然日为 2026-10-14，即 day0=10-13 的 D1。原V4日采集持续授权，原automation为唯一operator；本模块只读预检、明确未提交输入的单次恢复及结果验收，不执行自己的capture、Sleep、select-native、run-day、judge、import-user或score-predictions。根已转交S0–S6当前系列并行授权，科研与产品功能由各owner推进；working关键规则和额外范围仍保持待答。不补漏日、不重发unknown、不改变日程、协议、正式库结构或模型预算。
 
@@ -83,3 +83,15 @@
 实际检查使用原 `orca automations show / runs`、`terminal read --screen` 进程内安全布尔、标准ConvertFrom-Json / SQLite mode=ro-query_only / python -B只读审计、`git diff --check`。D1原生产capture / Sleep / run-day / judge仅由原automation run50ee执行，原run已completed、独验唯一succeeded并official released/captured。模块文档相对链接、stage范围与白名单写域检查通过；本模块没有新日流程或模型重发。
 
 D1技术验收通过范围为本日60事件/1Sleep/快照、12题臂/独立judge、13真实原件预算和逐事件对账。用户评分、D+3与七日终局保持未完成；实际用户作品/新实验/自由工具与正式冻结没有改变。
+
+## 10:25 Runtime 恢复后的接续
+
+根最新交接 `msg_fe37149e5f6a` 与当前真实子 Run 核实 D1 独验 Task `task_562e59cee9db` / Dispatch `ctx_fee1ce8fd66a` 为 succeeded / completed / released、transcript captured；独立 REPORT `5a1a4b0474013de9f39eebb910166e7c5af4b822` 保持有效。本轮没有派第二 operator、重复 capture / Sleep / 三臂 / judge，也没有改变 root authority、原锁、协议、正式库、预算或日程。
+
+Q 的独立公开工程跨日 SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7` 已完成并释放；它的 1,316 事件、今日 52 / 前日 74 和一次 Sleep 属发布工程验证，不计入正式 D1。该工程来源与正式 V4 分别使用各自原件，不增加新采集或 Sleep。
+
+## 11:03 再次恢复与环境维护边界
+
+本轮完整重读原日运行计划和正式 OPERATIONS，沿原子 Run generation 3 接续。根本轮明确 D1 与 Q 均不得重新采集、Sleep、模型或 judge；本模块没有创建新 operator、读取或迁移正式 SQLite / 原会话 / 原始输入响应，也未修改锁、协议、自动日程、正式库结构或模型预算。D1 已验技术结果、人评空表与未成熟 D+3 保持。
+
+本模块按根临时授权仅维护 `C:/Users/DW/AppData/Local/go-build` 可重建缓存，11:03 实测 C 空余 16,709,656,576 bytes。单次 `go clean -cache` 因一个占用文件返回 EXIT 1，残留 90 文件 / 415,788 bytes 与首错误保留；正式实验与现有外部证据根完全不在维护范围。后续发布开发使用 D 盘独占进程缓存，不迁移或改写正式日流程。
