@@ -102,7 +102,7 @@ func (s *AdmissionService) judgment(ctx context.Context, p Principal, decisionID
 	if proof.WorkflowID != p.ID || proof.DecisionID != decisionID || proof.OwnerID == "" || proof.OpportunityID != candidate.ID || proof.OpportunityRevision != candidate.Revision || proof.ProjectID != projectID || !reflect.DeepEqual(normalizeRefs(proof.Inputs), normalizeRefs(candidate.EvidenceRefs)) {
 		return proof, serviceError(apierrors.ScopeDenied, "Judgment does not bind this fixed opportunity input", "review_judgment_scope")
 	}
-	if proof.Status != "succeeded" || proof.Decision != "admit" || proof.QuestionType != "opportunity_admission" || proof.Refused == nil || *proof.Refused || proof.Truncated == nil || *proof.Truncated || !proof.PolicyActive || !proof.CurrentPermissions || !proof.BudgetVerified {
+	if proof.Status != "succeeded" || proof.Decision != "admit" || !slices.Contains([]string{"choice", "score", "truth"}, proof.QuestionType) || proof.Purpose != "opportunity_admission" || proof.Refused == nil || *proof.Refused || proof.Truncated == nil || *proof.Truncated || !proof.PolicyActive || !proof.CurrentPermissions || !proof.BudgetVerified {
 		return proof, serviceError(apierrors.EvidenceMissing, "Judgment lacks a current authorized complete admission decision", "review_judgment_evidence")
 	}
 	return proof, nil
@@ -161,6 +161,7 @@ func (s *AdmissionService) admit(ctx context.Context, p Principal, id string, co
 		if p.Kind == "delegated_judgment" {
 			value.Authority, value.OwnerID, value.OwnerNamespace = domain.AdmissionDelegatedJudgment, proof.OwnerID, "human:"+proof.OwnerID
 			value.DecisionID, value.PolicyVersion, value.Model, value.ModelVersion, value.Backend, value.QuestionType = proof.DecisionID, proof.PolicyVersion, proof.Model, proof.ModelVersion, proof.Backend, proof.QuestionType
+			value.Purpose = proof.Purpose
 		}
 		admission, err := domain.NewAdmission(domain.AdmissionInput{Admission: value, OpportunityState: row.Opportunity.State}, s.core.options.Clock())
 		if err != nil {
@@ -311,7 +312,7 @@ func (s *AdmissionService) ReadAdmittedOpportunitySnapshot(ctx context.Context, 
 			if err != nil {
 				return err
 			}
-			if proof.OwnerID != admission.OwnerID || proof.PolicyVersion != admission.PolicyVersion || proof.Model != admission.Model || proof.ModelVersion != admission.ModelVersion || proof.Backend != admission.Backend {
+			if proof.OwnerID != admission.OwnerID || proof.PolicyVersion != admission.PolicyVersion || proof.Model != admission.Model || proof.ModelVersion != admission.ModelVersion || proof.Backend != admission.Backend || proof.QuestionType != admission.QuestionType || proof.Purpose != admission.Purpose {
 				return serviceError(apierrors.ContextStale, "Current decision differs from the fixed admission authority", "review_current_judgment_authority")
 			}
 		}

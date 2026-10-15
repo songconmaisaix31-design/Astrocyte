@@ -1,10 +1,23 @@
-import { lstat, mkdir, mkdtemp, realpath } from 'node:fs/promises';
+import { copyFile, lstat, mkdir, mkdtemp, realpath, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, relative, sep } from 'node:path';
 import { createServer } from 'node:net';
 import { createInterface } from 'node:readline';
 import { setTimeout as delay } from 'node:timers/promises';
 import { DatabaseSync } from 'node:sqlite';
 import { findGo, root, run, start, stop, web } from '../../scripts/process.mjs';
+
+let compiledServer;
+
+// 同一验证进程使用同一次真实构建，所有服务仍有独立可执行文件与数据目录。
+async function buildServer(verification) {
+  compiledServer ??= (async () => {
+    const directory = await mkdtemp(join(verification, 'astrocyte-s1-build-'));
+    const executable = join(directory, process.platform === 'win32' ? 'server.exe' : 'server');
+    await run(await findGo(), ['build', '-mod=readonly', '-o', executable, './cmd/server'], { cwd: root });
+    return executable;
+  })();
+  return await compiledServer;
+}
 
 function validatePort(requested, allowZero = false) {
   if (allowZero && requested === 0) return;
@@ -61,19 +74,43 @@ async function actualAPIURL(child, expectedPort) {
 }
 
 async function ready(url, child) {
+  const started = Date.now();
+  let requestStarted;
+  let phase = 'before_request';
+  let status;
+  const failure = (message, cause) => {
+    const readiness = { url, pid: child.pid ?? null, exit_code: child.exitCode, signal_code: child.signalCode,
+      phase, http_status: status ?? null, started_at: new Date(started).toISOString(), elapsed_ms: Date.now() - started,
+      request_started_at: requestStarted === undefined ? null : new Date(requestStarted).toISOString(), request_elapsed_ms: requestStarted === undefined ? null : Date.now() - requestStarted };
+    const error = new Error(`${message}: ${url}; readiness=${JSON.stringify(readiness)}`, { cause });
+    error.readiness = readiness;
+    return error;
+  };
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {
-    if (child.exitCode !== null || child.signalCode !== null) throw new Error(`Server exited before ${url}`);
+    if (child.exitCode !== null || child.signalCode !== null) throw failure('Owned server exited before readiness');
     let response;
-    try { response = await fetch(url, { signal: AbortSignal.timeout(1000) }); }
-    catch (error) { if (error.cause?.code !== 'ECONNREFUSED') throw error; }
+    try {
+      requestStarted = Date.now();
+      phase = 'response_headers';
+      status = undefined;
+      response = await fetch(url, { signal: AbortSignal.timeout(1000) });
+      phase = 'response_body';
+      status = response.status;
+      // 完整消费本次就绪响应，归还实际 HTTP 连接。
+      await response.arrayBuffer();
+      phase = 'response_complete';
+    } catch (error) {
+      if (error.cause?.code !== 'ECONNREFUSED') throw failure('Actual readiness GET failed', error);
+    }
     if (response) {
-      if (!response.ok) throw new Error(`Server readiness failed: ${url} returned ${response.status}`);
+      if (!response.ok) throw failure(`Actual readiness GET returned ${response.status}`);
+      if (child.exitCode !== null || child.signalCode !== null) throw failure('Owned server exited during readiness');
       return;
     }
     await delay(100);
   }
-  throw new Error(`Server readiness timed out: ${url}`);
+  throw failure('Actual readiness GET timed out');
 }
 
 function inside(path, directory) {
@@ -156,15 +193,23 @@ export async function startS1Server({ browser = false, relay = false, env: extra
     }
   }
   try {
-    await run(await findGo(), ['build', '-mod=readonly', '-o', executable, './cmd/server'], { cwd: root });
+    await copyFile(await buildServer(verification), executable);
     await startAPI();
     if (browser) {
       webChild = start(process.execPath, [join(web, 'node_modules/vite/bin/vite.js'), '--host', '127.0.0.1', '--strictPort'], { cwd: web, env, detached: process.platform !== 'win32' });
       await ready(browserURL, webChild);
     }
   } catch (error) {
-    await close({ primaryError: error });
-    throw error;
+    let failure = error;
+    try {
+      const causes = [];
+      for (let cause = error; cause; cause = cause.cause) causes.push({ name: cause.name, message: cause.message, code: cause.code ?? null });
+      await writeFile(join(temporary, 'startup-failure.json'), JSON.stringify({ readiness: error.readiness ?? null, causes }, null, 2));
+    } catch (writeError) {
+      failure = new AggregateError([error, writeError], `Startup failure could not be retained in ${temporary}`, { cause: error });
+    }
+    await close({ primaryError: failure });
+    throw failure;
   }
   return {
     get apiURL() { return apiURL; },

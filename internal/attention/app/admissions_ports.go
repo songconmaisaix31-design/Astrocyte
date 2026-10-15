@@ -86,6 +86,7 @@ type AdmissionJudgmentProof struct {
 	Status              string
 	Decision            string
 	QuestionType        string
+	Purpose             string
 	Backend             string
 	Model               string
 	ModelVersion        string

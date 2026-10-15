@@ -32,7 +32,8 @@ func TestAdmissionExplicitRuleInputs(t *testing.T) {
 		t.Fatal("incomplete judgment input obtained admission")
 	}
 	delegated.DecisionID, delegated.PolicyVersion = "decision-input", "policy-input"
-	delegated.Model, delegated.ModelVersion, delegated.Backend, delegated.QuestionType = "model-input", "model-version-input", "backend-input", "opportunity_admission"
+	delegated.Model, delegated.ModelVersion, delegated.Backend, delegated.QuestionType = "model-input", "model-version-input", "backend-input", "choice"
+	delegated.Purpose = "opportunity_admission"
 	if _, err := NewAdmission(delegated, now); err != nil {
 		t.Fatal("complete explicit judgment metadata was rejected", err)
 	}

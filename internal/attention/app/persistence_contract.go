@@ -85,6 +85,7 @@ type StoredKnowledge struct {
 }
 
 type StoredExperience struct {
+	SourceKind    string            `json:"source_kind,omitempty"`
 	Experience    domain.Experience `json:"experience"`
 	OwnerProject  string            `json:"owner_project"`
 	OriginEventID string            `json:"origin_event_id"`

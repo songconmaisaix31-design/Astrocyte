@@ -119,9 +119,7 @@ func TestActualAdmissionDraftAtomicLifecycle(t *testing.T) {
 	requireCode(t, err, apierrors.ApprovalRequired)
 	// 实际消费者指向另一实际数据库，事务身份检查在生产连接层拒绝它。
 	_, err = admissions.AdmitOpportunity(ctx, human, ready.Opportunity.ID, command)
-	if err == nil {
-		t.Fatal("another database consumed an admission inside the current transaction")
-	}
+	requireCode(t, err, apierrors.InternalError)
 	for table, want := range map[string]int{"attention_admissions": 0, "attention_outbox": beforeEvents, "attention_receipts": beforeReceipts, "workspace_proposals": 0} {
 		if rows(t, db, table) != want {
 			t.Fatalf("failed actual consumer left committed rows in %s", table)
@@ -180,10 +178,35 @@ func TestActualAdmissionDraftAtomicLifecycle(t *testing.T) {
 	if rows(t, db, "workspace_approvals") != 0 || rows(t, db, "local_agent_sessions") != 0 || rows(t, db, "workspace_proposals") != 1 {
 		t.Fatal("admission or its revocation created execution approval or native work")
 	}
+	if err := db.Close(); err != nil {
+		t.Fatal("close actual admission database", err)
+	}
+	db, err = sqlite.Open(filepath.Join(dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("reopen actual admission database", err)
+	}
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	core = attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{})
+	proposals = workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), nil, nil)
+	admissions, err = admissionbridge.Connect(core, sqlite.NewAdmissionRepository(db), proposals, attention.AdmissionOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := admissions.GetAdmission(ctx, human, accepted.Admission.ID)
+	if err != nil || !reflect.DeepEqual(loaded.Admission, revoked.Admission) || rows(t, db, "workspace_proposals") != 1 {
+		t.Fatal("actual restart lost fixed admission, revocation or draft", err)
+	}
+	snapshot, err = admissions.ReadAdmittedOpportunitySnapshot(ctx, accepted.Admission.AdmittedEventID)
+	if err != nil || snapshot.Active || !reflect.DeepEqual(snapshot.Inputs, refs) {
+		t.Fatal("actual restart changed immutable admission evidence", err)
+	}
 	if _, err := core.UpdateMaterial(ctx, human, material.Material.ID, attention.UpdateMaterialCommand{CommandMeta: attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: material.Material.Version}, Lifecycle: "withdrawn"}); err != nil {
 		t.Fatal("withdraw actual source through production lifecycle", err)
 	}
-	if _, err := admissions.ReadAdmittedOpportunitySnapshot(ctx, accepted.Admission.AdmittedEventID); err == nil {
-		t.Fatal("withdrawn source remained readable through admission")
-	}
+	_, err = admissions.ReadAdmittedOpportunitySnapshot(ctx, accepted.Admission.AdmittedEventID)
+	requireCode(t, err, apierrors.ScopeDenied)
 }

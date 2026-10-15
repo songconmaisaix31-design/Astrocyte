@@ -1,6 +1,6 @@
 # 基础后端与导入整改
 
-本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，接管 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39`。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
+本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，本次恢复 HEAD `ddfae290e3b0cf468af9aeaa98c5bdf39ea1604d`。完成收据阶段 SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，实际业务来源、模型解释与人工批准后使用仍未验收。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
 
 后续独立 REPORT `94658c3788fc94db8215df403bea6aab4da1cfbb`、`96618df9b62ed0018182b5cbc1aa626c5bcb8362`，文本目录及实际 Works 发现 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，公开生产认知及祖先路径检查 SOURCE `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，默认时钟/实际 Sleep/真实 nullable 及公开论文输入 SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` 均已普通 push。
 
@@ -228,9 +228,117 @@ SOURCE `dfdd75ed4b245fe462df2ff916728afdae7361cc` 已普通 push，保留现有�
 
 `go test -mod=readonly ./internal/workspace/app -run TestNativeOperationInvalidIdentityDoesNotLaunch -count=1 -v` EXIT 0，1 PASS、0 SKIP，2.712s；证据 `.verification/native-operation-identity-owned.log`。早期实际检查 `.verification/native-operation-identity-first.log` 与 `.verification/native-operation-identity-current.log` 保留。
 
-准确 S2 SOURCE `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` 经普通 merge `cc3ed6887ed6834d691988c040e3b9600b52277c` 消费。当前工作区的 `go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 与 `node scripts/check-architecture.mjs` 均 EXIT 0，架构检查覆盖 33 个包；证据 `.verification/admission-current-build.log`、`.verification/admission-current-vet.log`、`.verification/admission-architecture-first.log`。这些检查包含尚未提交的准入实现，未作为准入真实验收结果。
+准确 S2 SOURCE `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` 经普通 merge `cc3ed6887ed6834d691988c040e3b9600b52277c` 消费。准入阶段 SOURCE `e96f8d78f686f6db0f0a9edb5e15cc57ddb8aa1a` 已普通 push，包含独立领域文件、应用服务、SQLite repository、新业务迁移 `022_attention_admissions.sql`、实际 S2 bridge、HTTP 路由注册函数及实际来源测试；旧领域文件和迁移 001–018没有修改。`go build -mod=readonly ./...`、`go vet -mod=readonly ./...` 与 `node scripts/check-architecture.mjs` 均 EXIT 0，架构检查覆盖 33 个包；证据 `.verification/admission-current-build.log`、`.verification/admission-current-vet.log`、`.verification/admission-architecture-first.log`。编译及静态检查未作为准入真实验收结果。
 
 实际准入验证先经历两次公开 arXiv 来源 `provider_unavailable`，原失败保留于 `.verification/admission-actual-first.log`、`.verification/admission-actual-second.log`。显式使用已经核实的现有匿名系统代理后，实际固定论文导入、人工待审记录和候选创建成功；第三次验证在 S2 消费者因人工准入缺少委托策略版本返回 `evidence_missing`，证据 `.verification/admission-actual-proxy-third.log`。该约束已交原 S2 owner 修正，人工记录不填充委托模型或策略版本，真实事务正向仍为未通过。独立准入领域规则检查 EXIT 0，证据 `.verification/admission-domain-current.log`，不代表真实委托判断或业务组合验收。
+
+`admissionbridge.Connect` 在启动前连接真实 Attention core、`NewAdmissionRepository(db)` 和同一实际数据库的 S2 service，配置实际事件读取和草稿消费。准入记录固定候选 revision、输入、真实操作者及所有者空间；准入 outbox、候选状态、生产者回执和 S2 草稿共用一个 SQLite 事务。撤销保留原固定输入和准入事件 ID，执行批准由既有 Workspace 单独管理。真实委托入口需要实际决策记录、当前问题委托、固定输入、明确拒答与截断状态、模型和策略版本、当前权限及预算；未配置时返回 `approval_required`。对应决策源尚未装配，未执行真实委托正向。
+
+HTTP 新文件提供 `registerAdmissions(mux, service)`，沿用现有严格 JSON、请求元数据、认证主体和错误映射；共享 `server.go` 的 Services 字段与路由调用、`main.go` 的生产装配交 H 原 owner。当前 B 未宣称默认服务已开放准入路由，实际 HTTP 组合和 S2 准入正向仍待完成。S2 消费者、原生控制器和共享装配文件均未由 B 代改。
+
+## S5 共享迁移与成熟 RPC 依赖
+
+SOURCE `b502f5c3dbf0b57f84a937d314df09d94d164f70` 已普通 push。新业务迁移 `024_judgment.sql` 完整采用 S5 SOURCE `48abd1fe134b88cfe8122d2aee5a35090fc6d62b` / REPORT `95871f3f3d77d27136e3f3195742e6290c587b4a` 的 `judgment_results`、`judgment_feedback`、`judgment_policies` 设计、索引及 JSON、角色、固定版本和外键约束；新增 `foundation_schema` 的 judgment 版本 1。迁移 001–018没有修改，该迁移不依赖尚未提交的成功经验来源元数据。
+
+共享 Go 依赖固定 `github.com/sourcegraph/jsonrpc2@v0.2.1`，官方实际 revision `2cc94179e136b565cb9df7d9d0bff9fc06912ac9`，MIT；下载返回的真实 module/GoMod sums 已由文件编辑工具登记，完整 Go module graph 所需 `gorilla/websocket@v1.4.1/go.mod` sum 同样来自实际下载。`go build -mod=readonly github.com/sourcegraph/jsonrpc2`、`go list -mod=readonly -m -json all`、`node scripts/check-dependencies.mjs` 全部 EXIT 0；证据 `.verification/judgment-jsonrpc2-first-build.log`、`.verification/judgment-go-graph-first.json`、`.verification/judgment-dependencies-first.log`。下载首命令参数解析错误保留，修正后的准确下载及 sums 在 `.verification/judgment-jsonrpc2-download-second.log` 和 `.verification/judgment-jsonrpc2-transitive-download.log`。
+
+实际 S5 公共源码安装目录中的 `vscode-jsonrpc@8.2.1`、`onnxruntime-node@1.30.0` 已直接载入，真实 RPC framing API 和 `InferenceSession.create` 存在，runtime 报告 common/node 均为 `1.30.0`；`.verification/judgment-node-actual-import.log`，模型推理 0。完整读取的实际 package/license 元数据登记了官方 Laya SOURCE `432312b36714d8889eba405507b37eda25257d9c` 的 `laya-ts@0.1.0`、固定模型 revision、MIT runtime 及 `adm-zip@0.6.1` MIT、`global-agent@4.1.3` BSD-3-Clause。Laya 使用准确官方源码 build，未登记不存在的 npm 发布包；未改动 S5 安装目录、Python、root package 或 lock。
+
+`go test -mod=readonly ./internal/workspace/app -run TestNativeOperationInvalidIdentityDoesNotLaunch -count=1 -v` 在新建的实际 SQLite 上执行全部当前迁移及生产身份拒绝流程，EXIT 0，1 PASS、0 SKIP，2.583s；`.verification/judgment-migrations-actual-second.log`，自有数据库在 `.verification/native-operation-actual-3851963715/`。该结果证明新迁移可以实际应用，不代表 S5 判断、缓存、反馈、撤销或 HTTP 已验收；这些实际业务检查继续由 S5 原 owner 完成。全部共享依赖和迁移已交付准确 SOURCE，未等待独立报告阻断其消费。
+
+## 完成收据、经验候选与原操作身份
+
+SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，包含恢复时保留的五个 B 文件。`AcceptedExperienceService.CaptureCompletion` 只接收实际业务收据引用，通过 `ExperienceCompletionReader` 重查项目、操作者、完成结果和固定成果，再由 `CompletionExperienceInterpreter` 返回结构化解释。候选始终为 `quarantine`；人工批准、降级、共享和批准后检索复用既有 `ExperienceService`。
+
+实际业务来源保存在新增 `023_experience_completion_sources.sql` 的独立元数据表，与经验候选同一 SQLite 事务提交。业务收据保留 `swarm_artifact_accepted` 或 `relay_task_completed` 类型，原生事件外键留空；没有生成替代原生 Event。来源读取、候选读取、CAS 更新和批准列表均核对不可变的 owner、event、时间与来源类型，查询行读取和关闭错误直接返回。
+
+`CompletionExperienceRequest` 提供 `OperationID`、`Evidence`、`ResumeOnly`。服务沿既有 `attention_receipts`，在调用 Interpreter 前事务保存同 owner/event 的唯一 UUID 和固定输入摘要；该 `prepared` 收据只记录已准备的请求身份。再次请求、并发请求和重启后的请求带同一 UUID 及 `ResumeOnly=true`，适配器只能读取和核对原操作；返回解释必须具有相同的 `Provenance.OperationID`。该接口已交原 R 负责人，实际原生并发、受理后未知与重启对账仍为 NOT_RUN。
+
+本轮所有直接 Go 检查均使用进程级 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`、`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/backend`，测试 TEMP/TMP 为本树 `.verification/go-temp`；没有修改全局环境。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestAcceptedExperience' -v -count=1` | EXIT 0，3 项检查及提交/实际约束回滚两子项通过，最终 2.418s；`.verification/accepted-experience-operation-current-third.log` |
+| `go build -mod=readonly -p=1 ./...` | EXIT 0；`.verification/accepted-experience-operation-build-second.log` |
+| `go vet -mod=readonly -p=1 ./internal/attention/app ./internal/adapters/sqlite` | EXIT 0；`.verification/accepted-experience-operation-vet-second.log` |
+| 同 D 盘 Go 环境下 `node scripts/check-architecture.mjs` | EXIT 0，33 包；`.verification/accepted-experience-current-architecture-second.log`。首次父 Node 未配置 D 环境的实际标准库错误保留在 `accepted-experience-current-architecture-first.log` |
+| `node --test internal/adapters/importers/paper-dom.test.mjs` | EXIT 0，9 PASS、0 SKIP；`.verification/paper-dom-recovery-current.log` |
+| `node tests/s1/paper-dom-public.mjs` | EXIT 0，实际已保存 PLOS/ACL 完整 HTML 共 307910 bytes；正文状态、来源标识和 Node/插件提取全等；`.verification/paper-dom-public-recovery-current.log` |
+| 变更 Go 文件 `gofmt -l` 与 `git diff --check` | 无输出，EXIT 0 |
+
+实际 SQLite 检查覆盖事务提交、真实主键约束引发完整回滚、同数据库连接复用、错误数据库拒绝、关闭存储拒绝及取消后零证据写入。最终数据库分别保留在 `.verification/accepted-experience-actual-{1075054943,1488676106,1864100285,3037321422}/`；这些检查没有创建完成来源、模型输出或经验候选，不作为完成收据正向验收。
+
+经 M-product 明确临时放行，B 在 `release-judgment-20261015` 仅使用文件编辑工具消除 `dependencies.lock.json`、`go.sum` 冲突并 stage 两件。JSON 实际解析及两项 diff 检查 EXIT 0，index blob 分别为 `64c1432f721a6371a5c8e4badce719cd1bbbbd92`、`def74ba382fec897f8f9bc9a0d40f5bb6e1bb88f`；现有 MCP、RPC 和 Laya 依赖内容保留。其余 16 项 S2 冲突及 S5 其他 WIP 未代改，没有执行 merge 生命周期操作；两件临时范围已明确停止写入并归还。
+
+实际 S3 来源桥接、原 R Interpreter、HTTP 装配、原生请求并发与未知对账、人工批准后第二任务引用均未完成，继续由原负责人串行衔接。完整 Go 与产品组合验收继续保持此前未通过状态；没有把阶段源码、静态检查或数据库机制通过登记为业务完成。
+
+## 就绪请求诊断与原生 Go 依赖元数据
+
+SOURCE `efa137eb36177f69643c750c26ad8eb59b446741` 已普通 push，仅修改 `tests/s1/server.mjs`、`scripts/check-dependencies.mjs`。就绪 GET 失败保留实际 URL、自有 PID、`exit_code`、`signal_code` 与原 cause，成功响应完整消费正文；现有请求期限、总期限、启动等待、端口选择与全部生命周期断言保持。Go 依赖检查通过 `go mod edit -json` 比较全部 direct requirements 和工具链，通过 `go list -m -json` 检查实际选择的版本、间接属性和 replace，不解析 go.mod 字符串。
+
+`node --test tests/s1/server-lifecycle.test.mjs` 在原 helper 和当前 helper 上分别 EXIT 0，3 PASS、0 SKIP，164.304s / 87.586s。实际检查包括普通/Relay 自有目录、HTTP、SQLite、session、停止重开、Vite 代理、重复绑定拒绝与原端口重启。证据为 `.verification/server-readiness-recovery-first.log`、`.verification/server-readiness-context-second.log`；本树没有复现 F 的原 `read ECONNRESET`。F 的 `TsIlGq` 日志顺序显示 helper 在启动内部清理、尚未发出会话请求，网页就绪 GET 为当前排查位置，原错误具体请求 URL 和当时子进程退出状态未封存，根因保持 UNKNOWN。新增诊断及响应消费不作为该故障已修复的结论。
+
+`node scripts/check-dependencies.mjs` 在同 D 盘 Go 环境下 EXIT 0，实际依赖、锁文件、安装与 summarize 0.25.1 CLI 版本通过，日志 `.verification/go-dependency-native-json-current.log`。两个变更文件 `node --check` 与 `git diff --check` EXIT 0。
+
+按 M-product 已 push 的 `bbc64c3` 临时计划，B 仅在 H `works-relay-http` 编辑并 stage `go.mod`、`go.sum`、`dependencies.lock.json`。实际全模块 JSON、`go mod verify` 及 8 项 direct pin 原生 JSON 比较均 EXIT 0，diff 检查通过、未合并项为零；原件 `.verification/h-sdk-current-{module-graph.json,verify.log,pins.log}`。index blob 依次为 `e5fe6c301d7f4cb7f62dc46cbe31273bdb1f9433`、`50cb9ecc67890807e03828a3683dc4f6098ce98d`、`3b40e4f8bc1e699e5bb470f7e854a6e8c13db99a`。H 旧检查器对 grouped require 的首 RED 保留于 `.verification/h-sdk-current-dependency.log`；当前成熟元数据检查器的准确 SOURCE 已交 H，由 H 消费。没有修改 H 其他源码或操作其 cherry-pick 生命周期；三件临时范围已停止写入并归还。
+
+根已将 `internal/adapters/httpapi/judgment*.go` 及同前缀测试交唯一原 S5；B 本人确认该前缀无文件/WIP，并已停止写入。B 继续共享依赖、迁移及 `config.go`，S4 可信配置等待其原负责人准确接口与资产交接。冷 Registry 原生会话测试整改等待实际自有项目和原会话来源，真实 Interpreter、人工批准后使用及全部组合验收仍未完成；没有以机制通过替代这些结果。
+
+## 模型身份与独立版本的实际来源
+
+SOURCE `f76e25b84b29495994f2e5877b586d4c22669d3f` 已普通 push。`ExperienceInterpretationProvenance` 新增 `ModelIdentitySource` 和 `ModelVersionSource`；模型身份明确区分 `configured_route` 与 `provider_reported`，独立版本不可观测时两个版本字段均保存 `unknown`。已知独立版本仅接受实际 provider 报告，禁止重复模型 ID。完整响应、明确非拒绝/非截断、原 `OperationID`、policy 与真实完成来源要求保持，候选仍进入 `quarantine`。
+
+`go test -mod=readonly -p=1 ./internal/attention/app ./internal/adapters/sqlite -run '^(TestCompletionInterpretationRules|TestAcceptedExperience)' -v -count=1` EXIT 0，规则检查及三项实际 SQLite 检查通过，日志 `.verification/completion-model-identity-rule-first.log`；SQLite 最终 16.237s。新增规则检查仅使用明确输入和期望值，没有模型调用、控制器或来源收据。`go build -mod=readonly -p=1 ./...`、目标包 `go vet`、两文件 `gofmt -l` 和 `git diff --check` 均 EXIT 0，无格式输出；全部 Go 命令沿进程级 D 盘缓存与临时目录。实际 R Interpreter 与来源桥接仍未运行，不据此宣称原生验收或不可变模型复现。
+
+## 版本化委托规则迁移
+
+SOURCE `491e7f606d8265e9f7e9694f547a91682b305e74` 已普通 push，仅新增 `025_judgment_delegation.sql`。准确采用 S5 SOURCE `5d5922e22ba7d8be3def0f4616a7f576d00162c4` 的 `judgment_delegation_rules`、`judgment_admission_bindings` 两表、JSON/状态/固定版本/唯一性/外键约束与 Opportunity 索引，judgment schema 版本更新为 2，没有默认开启值或阈值。旧迁移没有修改。
+
+进程级 D 盘 Go 环境下 `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestAcceptedExperience' -v -count=1` EXIT 0，3 项检查及实际约束回滚子项通过，2.345s；`.verification/judgment-delegation-migration-first.log`。实际新 SQLite 已应用 001–025，保留在 `.verification/accepted-experience-actual-{1692487502,1939059050,2627136498,3895541726}/`；未创建规则、绑定或判断结果，该检查只证明迁移应用及既有事务机制。实际用户配置、暂停/撤销、同事务固定 Opportunity 与版本复核继续由原 S5 负责人完成，没有登记业务验收通过。
+
+## S4 可信启动配置
+
+SOURCE `e346c40cc9edcbd5b4588e47585f3c0b616b0770` 已普通 push，只含 `cmd/server/config.go` 和 `repository_config_test.go`。`resolveRepositoryContextConfig(ctx, dataDir)` 返回入口私有 DTO，由 H 映射为准确的 `repositorycontext.Options`；没有修改共享 main/server。`EnvironmentID` 仅来自显式稳定的 `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID`，缺失时不启动外部程序，H 注册空 Services 返回既有 `provider_unavailable`。CacheRoot 固定为实际绝对应用数据目录的 `repository-context`，四可信预算上限为 20000 / 134217728 / 200 / 5，可显式降低。
+
+Graph 三路径通过 `ASTROCYTE_CODEGRAPH_NODE/SDK/SCRIPT` 成组提供，全空表示未配置。配置启用时检查绝对现存文件、Node 24.16.0、官方 SDK JSON 版本 1.0.1、实际公开导出和脚本语法；官方源码 SDK 与 npm wrapper 共用真实模块加载契约。工具检查只继承必要系统环境，HOME、APPDATA、TEMP 均在自有运行目录，禁止使用宿主 home 缓存。AOCI 独立来自 `ASTROCYTE_AOCI_EXECUTABLE`，实际 `--version` 核 v0.1.0-rc20 与 source commit `45990a1dcfc4415efdc6fbfa13bc159a415f127c`。本轮直接运行 S4 现有公开工具得到完整版本文本，没有把 S4 测试资产路径设为生产默认。
+
+`go test -mod=readonly -p=1 ./cmd/server -run '^TestRepositoryContextConfig' -v -count=1` EXIT 0，3 项检查、8 个配置拒绝子项通过，2.571s；`.verification/repository-config-second.log`。检查包含缺少环境身份、稳定显式 Git-only 配置、四预算、部分配置、相对数据目录、实际缺失程序和实际 Astrocyte 包冒充 SDK 的拒绝，没有生成第三方元数据或替代程序。全包 build、cmd/server vet、两个 Go 文件 gofmt 检查和 diff 检查通过；日志 `repository-config-build-first.log`、`repository-config-vet-second.log`。首次测试文件格式输出保留，最终格式无输出。
+
+完整 Graph/AOCI 配置正向、同 provider 的 S2/S4 公共 HTTP、实际索引和最终发布资产验收仍为 NOT_RUN，继续由 B/H/S4/P 按准确资产与组装来源执行。本节记录的纯配置与依赖拒绝结果不替代这些业务验收。
+
+## 实际启动前失败的持久化检查
+
+SOURCE `e052a5b265cadf6520ed1f644dec15ada53be350` 已普通 push，只修改 `TestNativeUnavailableLaunchDoesNotLeaveGhostWriter`。测试通过实际 Attention 服务创建空间，注册当前公开工作树，使用真实 SQLite、项目文件读取和 Registry；PATH 明确为空，通过实际可执行程序缺失触发启动前拒绝。两次独立操作仍核原失败状态、无在途操作、明确停止，以及重复相同操作拒绝，并新增重新读取 SQLite 的同样断言；没有写入替代 native ID 或控制器。
+
+进程级 D 盘 Go 环境及本树临时目录下 `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestNativeUnavailableLaunchDoesNotLeaveGhostWriter$' -count=1 -v` EXIT 0，1 PASS，12.866s；`.verification/native-prelaunch-owned-second.log`，实际数据库保留在 `.verification/native-prelaunch-actual-1119547788/`。gofmt 与 diff 检查无输出。该检查没有启动任何原生 CLI 或模型，只覆盖已证明尚未启动时的持久化失败。
+
+`TestProvenUnstartedResumePreservesOwnedOriginalSession` 的既有替代来源仍待替换；R 新 Registry 所有权语义下的该历史断言已有真实 RED，完整原会话恢复验收继续未完成。当前没有删除原正向覆盖、改变其预期错误、增加 skip，或把本节负向结果作为原控制器恢复成功的证明。
+
+## 就绪诊断与本进程共享实际构建
+
+SOURCE `01d28a54bb221e59cf262cbf9941fa418f6e937c` 已普通 push，仅修改 `tests/s1/server.mjs`。就绪失败的实际 URL、PID、退出状态、请求阶段、HTTP 状态和时间进入 Error.message 与 `startup-failure.json`，原 cause 保留。每个验证进程只执行一次真实 Go build，将该可执行文件复制到每个自有服务目录；新进程重新构建，失败的构建直接传播。各服务的实际 HTTP、端口、SQLite、停止重启与独立目录保持，全部请求/测试期限和断言保持。
+
+同 D 盘 Go 环境下 `node --test tests/s1/server-lifecycle.test.mjs` 最终 EXIT 0，3 PASS、0 CANCELLED、0 SKIP，77.307s；`.verification/server-readiness-durable-fourth.log`。实际重复绑定失败的安全记录保存在 `.verification/astrocyte-s1-y6NAiP/startup-failure.json`，构建在 `.verification/astrocyte-s1-build-MhK5KI/`。前一轮因原 120/120/90 秒总测试期限得到 0 PASS、3 CANCELLED，403.245s，保留于 `server-readiness-durable-third.log`；没有增加期限、跳过检查或放宽断言。F 的原 ECONNRESET 与后继 Vite 单次 GET TimeoutError 仍分别保留，根因 UNKNOWN，不能由本次生命周期通过替代完整默认 E2E。
+
+按已 push 计划 `4434c3992ef8cbeb12c60396fef4d30055692090`，B 在 F 树只编辑并 stage 五个授权共享文件。未合并项归零，Go mod/sum 保留真实并集；checker/helper 分别与 `efa137eb` 准确路径 diff 为零。Node 语法与限定差异检查通过；实际 Go module graph EXIT 0，`f-five-shared-module-graph-second.json`。完整依赖检查在 summarize 0.25.1 `--version` 处实际 60 秒 ETIMEDOUT，`f-five-shared-dependency-first.log`；可选全缓存 `go mod verify` 五分钟无输出后，核实本人父/子进程身份并终止，结果为未完成。终止后的 Wait-Process 返回进程不存在，没有写成验证通过。五件 index blob 已交原 F 和模块，临时范围明确停止并归还，没有 commit、continue、abort、reset 或其他路径修改。
+
+随后按已 push 计划 `d9e99333c3f0f2016a288c0474df2ec3fcf0f287`，B 在 H 树仅编辑并 stage `cmd/server/config.go`，保留 H 当前设置和准确 S4 可信配置。没有带入非本 SOURCE 新增的旧发现函数；gofmt 与限定两类差异检查通过、未合并项归零，index `2d7a7bdc1a31b8f97545baed2f74806c2168d796`。目标包测试因 H main 的变参 Reader 调用与旧非变参接口不符而 RED，日志 `h-config-narrow-second.log`；准确 B Reader 来源 `f6491131`、`54ad5d7` 及完整文件闭包已交 H。该单件范围已停止并归还，其他源码和生命周期没有代改，未把冲突消除记为组合验收通过。
+
+## 实际安装的 S4 启动依赖
+
+SOURCE `8a76e9bc2afd7b0b875e9eeb78aeef34b3822c35` 已普通 push，新增 `repository_context_live` 集成检查。该检查要求显式提供真实安装路径，缺少任一依赖直接失败；没有修改或跳过既有检查。运行时调用原生产 `resolveRepositoryContextConfig`，使用自有隔离 profile 验证官方工具，不创建替代可执行文件或 package 元数据。
+
+实际命令为进程级 D 盘 Go 环境下 `go test -mod=readonly -p=1 -tags=repository_context_live ./cmd/server -run '^TestRepositoryContextConfigActualInstalledTools$' -v -count=1`。首次使用 P `runtime-fourth` 的实际 Node/源码 SDK、原 S4 f407 桥和实际外部 AOCI，EXIT 0，4.973s；随后使用 P 准确交付的 `runtime/adapters/codegraph.mjs` 再执行，EXIT 0，5.388s。日志分别为 `.verification/repository-config-actual-installed-first.log`、`repository-config-actual-package-second.log`，实际自有数据目录为 `repository-config-actual-1246314757`、`repository-config-actual-430984171`。
+
+显式 `ASTROCYTE_VERIFY_CODEGRAPH_NODE` 为 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe`，SDK 为同根 `runtime/sdk/node_modules/@colbymchenry/codegraph`，第二次 Script 为同根 `runtime/adapters/codegraph.mjs`。`ASTROCYTE_VERIFY_AOCI_EXECUTABLE` 指向 S4 已核公开二进制程序；该路径只用于集成检查，生产没有默认。真实检查覆盖 Node 24.16.0、SDK 1.0.1 实际公开导出、桥语法及 AOCI 版本/commit，未运行模型、索引、业务 HTTP 或最终包解压验收。
+
+## 蒸馏输出的直接解析失败
+
+SOURCE `ea9225da1c2d98ba890968ded77244a8d28927ef` 已普通 push。固定输出 schema 使用成熟 JSON 解码并立即返回错误；原生 JSONL 使用既有第三方 `olivere/ndjson` 解码，畸形记录、字段类型错误、缺少 type 或读取错误立即失败，不发布部分事件。已启动请求的解析失败保留 `delivery_unknown`，原进程错误同时保留；没有自动重发。该文件注释已使用中文，工具集合的实际观测要求保持明确。
+
+`go test -mod=readonly -p=1 ./internal/adapters/distillers -run '^(TestProcessorEventJSONLRules|TestStructuredOutputDoesNotTrustModelRefsOrProvenance|TestStartedProcessLossIsUnknownAndUnstartedIsUnavailable)' -count=1 -v` EXIT 0，3 PASS、0 SKIP，2.370s；`.verification/distillation-events-rules-fourth.log`。JSONL 新检查仅使用明确格式规则输入，不作为 CLI、模型或来源事实。原进程检查使用实际退出、实际取消与实际不存在的程序；结构化输出检查是明确输入的纯规则。目标包 vet、全包 build、变更文件 gofmt 与 diff 检查均通过，日志 `distillation-events-vet-current.log`、`distillation-events-build-current.log`。
+
+当前没有重复模型调用或生成替代原生协议，完整付费原生处理和选定文本来源验收仍等待原 R/H 准确证据端口与验证窗口，没有把解析规则通过登记为模型或来源链路通过。
 
 ## 真实剩余限制
 
