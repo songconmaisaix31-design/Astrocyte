@@ -4,7 +4,11 @@
 
 用户已明确现在修改语义层、执行实际CLI、运行今日采集，并推进当前S0–S6系列功能。根只委派、协调和最终验收；模块负责人维护计划、跨模块交接与验收，业务实现、实际测试、文档和返修由唯一第三层领域owner完成，禁止第四层。既有互斥工作树、分支和未提交修改保留。
 
-当前M-release为Task `task_315679474dc4` / Dispatch `ctx_b80c795a71a4` / 终端 `term_75d7c09c-0369-40f7-b065-4c59dc9d0c28` / 原子Run `run_aa4e6a119547` generation 3，固定 `module-release-20261014` 与 `songconmaisaix31-design/module-release-20261014`。实际客户端Codex / gpt-6.1-sol，终端xhigh fast；根 `msg_7e7626ebe5c6` 继续明确该模块独占本文、`docs/modules/release.md`、`docs/modules/daily-operation-20261015.md`、`docs/modules/opencode-model-20261015.md` 的管理写入，业务仍由下表原owner负责。精确SOURCE、独立REPORT和阶段实际结果见 [发布模块记录](../docs/modules/release.md)，本入口不重复所有后继结果。
+当前M-release为Task `task_315679474dc4` / Dispatch `ctx_babf16de02e2` / 终端 `term_4b0a1372-6750-47f7-8a99-e7e9d0236130` / 原子Run `run_aa4e6a119547` generation 4，固定 `module-release-20261014` 与 `songconmaisaix31-design/module-release-20261014`。实际客户端Codex / gpt-6.1-sol，终端xhigh fast；根当前 `msg_e947b9ae48de` / `msg_e33689cdd5f6` 继续明确该模块维护本文与原管理文档，业务仍由下表原owner负责。精确SOURCE、独立REPORT和阶段实际结果见 [发布模块记录](../docs/modules/release.md)，本入口不重复所有后继结果。
+
+用户当前优先顺序为：① B / F / R / H 四树收拢与组合验证 → ② 集成版 L1 真实收账 → ③ L2 经验管道 → ④ 六步流程端到端首跑；10-22 是 L2 验收目标日期，相关功能进入发布包。唯一 I 立即准备并普通消费准确已提交阶段来源，原 owner 继续交准确补丁与独立 REPORT，完整组合检查在集成树执行。done 双通道为 `verified_complete | user_confirmed_complete`，started 证据独立且不回填，资源释放独立审计，user_confirmed 任务照常进入经验管道。Astrocyte 管目标 / 批准 / 上下文，Works Relay 后端 A、Morphogenesis 后端 B，Mission 认领 / 预算 / 租约由单一后端独占；v0.3 任务书由根登记，路由自动化后置 L3。
+
+四树当前实际路径 / branch / HEAD：B `standards-backend` / `standards-backend` / `da7227749ea2f361c8b708be8614d3236fe2f04a`，F `standards-frontend` / `standards-frontend` / `9fb9df967dc4253953fe079b21375337608defcd`，R `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` / `b9cb0665f47f4fbe4991c2cbf9f70de0bc129fdc`，H `works-relay-http` / `songconmaisaix31-design/works-relay-http` / `0138c6318dac2aa0e3091b06830ee7842b40f152`；均位于 `C:/Users/DW/orca/workspaces/Astrocyte/`。B/F 当前 clean，R/H 原 WIP 与 H 四冲突保留，具体输入由所属模块核实后交 I。原 I Task 已 completed / succeeded，复用原 `works-relay-integration` 工作树 / 同名分支开展唯一新阶段；基线 `0e5ce82898c3d546f711d1e452dadfabb13b5537`、clean，旧资源 release_unknown 如实保留。
 
 前端继续复用已确认白绿界面与 TypeScript。全部新增大型模型、SDK、构建和解压产物使用 `D:/Astrocyte-agent-assets/20261015/<owner>/` 独占目录，Go 及调用 Go 的 Node / PowerShell 父进程仅设置本进程 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend` 复用现有标准缓存，GOTMPDIR 保持 D 盘各 owner 独占路径，不改变全局 HOME、auth 或系统 TEMP。根授权的精确旧 Go 编译缓存维护已使 C 盘空余超过 12 GiB；一个占用文件导致标准命令 EXIT 1，残留与首错误保留，不扩大清理范围。
 
@@ -16,9 +20,9 @@ P 已完成 PS5.1 / PS7.6.6 真实依赖 ZIP / 新目录解压阶段检查。原
 |---|---|---|
 | M-product / `run_dbf1a68bc692` | `module-product-20261014` / `docs/modules/product.md` | B基础后端、S1、全部共享依赖和迁移；F既有前端；T/V适用导入验证；S2 Goal/Proposal/Grant/Session/Context；S3 Mission/WorkItem/Artifact与S6局部协作；新增UI按已交精确互斥路径安排 |
 | M-relay / `run_8bbda1c3974c` | `module-relay-20261014` / `docs/modules/relay.md` | 原R四语义与控制器；原H实际来源、HTTP/OpenAPI/main组装；S4实际RepositoryMap/CodeSearch/ImpactQuery适配；L经验管道与根明确授予的独立L2适配范围 |
-| M-release / `run_aa4e6a119547` | `module-release-20261014` / `docs/modules/release.md` | Q公开工程认知与跨日快照；S5 Jev/Laya/规则/权限/缓存/feedback；S一手研究；D1独立只读核验；条件完成后的唯一I普通精确集成、P最终同源Windows包、N实际包原生验收 |
+| M-release / `run_aa4e6a119547` | `module-release-20261014` / `docs/modules/release.md` | 当前第一优先唯一I四树普通精确集成及组合验证；Q公开工程认知与跨日快照；S5 Jev/Laya/规则/权限/缓存/feedback；S一手研究；D1独立只读核验；P最终同源Windows包、N实际包原生验收 |
 
-执行顺序为四项语义明确并实现 → 真实CLI端到端 → 三分钟Today与逐event_id/SQLite/HTTP/原自产会话核验 → L1验收；完整默认与各功能适用验证由原owner持续完成。working明确开始证据及无started客户端的人工完成规则保持用户待答，不以PID、stdout或文件变化推断开始，不向unknown操作重发模型。正式V4唯一原automation已完成D1，具体真实运行与独立核查见 [今日运行记录](../docs/modules/daily-operation-20261015.md)；Q的10月15日公开工程跨日更新与正式实验分开，保持原source时间与真实闭日，不改Clock或人工填数据。
+当前先进行四树集成及组合验证，再依次执行集成版 L1 真实 CLI / 三分钟 Today 与逐 event_id / SQLite / HTTP / 原自产会话核验、L2 经验管道和六步首跑；完整默认与各功能适用验证由原 owner 持续完成。started 只按真实独立证据记录，双完成通道与资源释放分别审计，不以 PID、stdout 或文件变化推断开始，不向 unknown 操作重发模型。正式 V4 唯一原 automation 已完成 D1，具体真实运行与独立核查见 [今日运行记录](../docs/modules/daily-operation-20261015.md)；Q 的 10 月 15 日公开工程跨日更新与正式实验分开，保持原 source 时间与真实闭日，不改 Clock 或人工填数据。
 
 独立L2适配只实施明确授权的经验来源、固定证据引用、既有quarantine/人工批准与检索消费接缝；准确实施范围由M-relay当前任务及根决定记录约束。L2工作级对照仍为独立协议草案，未回答的任务、评分、预算、工具与统计口径保持待定，不据适配通过启动正式实验或登记学习收益。正式V4、v0.2冻结、实际私有作品和自由工具边界继续按当前事实源；人评只由用户填写。所有功能、完整默认、实际native/Today及最终包通过前，当前ZIP保持已验候选范围，最终发布由根完成验收后执行。
 

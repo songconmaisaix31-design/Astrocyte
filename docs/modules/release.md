@@ -2,6 +2,23 @@
 
 ## 2026-10-15 当前发布协调
 
+### 21:57 用户决定与当前第一优先集成
+
+根 `msg_e33689cdd5f6` 转达用户最新顺序：① B / F / R / H 四树普通收拢与组合验证 → ② 集成版 L1 真实收账 → ③ L2 经验管道 → ④ 六步流程端到端首跑。10-22 是 L2 验收的目标日期，相关功能进入发布包；实际验收保持逐项完成。当前唯一 I 立即准备并消费已提交的准确阶段来源，未完成领域由原 owner 持续交准确 SOURCE / 独立 REPORT 后普通消费。
+
+用户已确认 done 双通道为 `verified_complete | user_confirmed_complete`，started 证据独立记录且不回填，资源释放独立审计，user_confirmed 任务照常进入经验管道。Astrocyte 管理目标、批准和上下文，Works Relay 为后端 A，Morphogenesis 为后端 B；Mission 认领、预算与租约由单一后端独占，v0.3 任务书由根登记，路由自动化后置 L3。该决定交原领域 owner 实现，本模块不改业务。
+
+| 四树当前检查点 | 实际路径 / branch | 本机准确 HEAD 与工作区 |
+|---|---|---|
+| B | `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend` / `standards-backend` | `da7227749ea2f361c8b708be8614d3236fe2f04a`；clean |
+| F | `C:/Users/DW/orca/workspaces/Astrocyte/standards-frontend` / `standards-frontend` | `9fb9df967dc4253953fe079b21375337608defcd`；clean |
+| R | `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` | `b9cb0665f47f4fbe4991c2cbf9f70de0bc129fdc`；ahead 2，原注册 / S2 闭包 WIP 保留 |
+| H | `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-http` / `songconmaisaix31-design/works-relay-http` | `0138c6318dac2aa0e3091b06830ee7842b40f152`；ahead 4，原 S2 四冲突与装配 WIP 保留 |
+
+上述 HEAD 是实际读取检查点；具体合并输入由原 M-product / M-relay 核准确可消费 SOURCE / REPORT 后交唯一 I，不把 WIP 作为提交。原 I `task_db3080f0a933` / `ctx_ace29bd7baa1` 在 `run_d577f0d3fee1` 已 succeeded / completed、capability 已撤销；其原树 `works-relay-integration` / `songconmaisaix31-design/works-relay-integration` clean，HEAD `0e5ce82898c3d546f711d1e452dadfabb13b5537`。原 Task 已完成，本轮在原树安排唯一新阶段 Task；旧资源官方两次 release_unknown 的准确错误保留，未宣称关闭或归档成功。
+
+I 只普通 `--no-ff` 合并精确已提交输入并补必要导入、类型、路由和配置衔接，领域冲突与失败交原 owner。S5 / P 继续已有准确依赖准备，为当前集成让出优先级。完整 check / build / 默认 E2E 和真实 native / Today 在准确组合执行；最终发布仍须适用 L1 / L2 / 六步及许可验收通过，正式 V4 / v0.2 冻结、人评和未答范围保持。
+
 ### 21:47 Runtime 恢复执行计划
 
 当前 Task `task_315679474dc4` / Dispatch `ctx_babf16de02e2` / 终端 `term_4b0a1372-6750-47f7-8a99-e7e9d0236130`，根当前终端为 `term_499a85ee-d93d-4385-bad1-5228a2b34146`。根 `msg_e947b9ae48de` / `msg_50ac884c4910` 明确恢复原发布 Run；本模块已读取并 ACK，在 `run_aa4e6a119547` generation 4 接续。接管时按旧派发正文创建的 `run_be01327823fb` 没有 Task 或 Worker，保留且不用于派发。管理实际客户端由公开 worker-show 核为 Codex / `gpt-6.1-sol`，终端显示 xhigh fast；本轮只维护原管理文档，业务代码由原第三层领域人员持续负责。
@@ -15,7 +32,7 @@
 
 根已接收的 S5 SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` / REPORT `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73` 的衍生模型服务与六 PID 重启结果复用；S4 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` / REPORT `9907404b8df7f9f4a76dc7c90372e967fd2b33cd` 同样复用。P / H 按准确输入消费，不重复导出或已验模型推理。B 的 026 仅两张完整 TasteProfile 表获准，DDL / 领域持久化由 B 负责，S5 不修改迁移。
 
-唯一 I 的启动条件以根当前答复为准：全部领域 SOURCE / REPORT 准确且可消费后立即普通 `--no-ff` 集成，完整整仓检查、真实 native / Today 在该准确组合上执行。领域失败交回原作者，最终发布仍须全部适用门禁通过。当前 Calls / 权限问题、AOCI 分发、OS 管理员执行尚待用户，Jev 缺 key 维持 NOT_RUN，其他已授权开发继续。正式 D1 与 Q 已完成，不重复采集、Sleep、模型或 judge。新增大型产物全部使用 D 盘独占目录和既有共享 Go 缓存；C 盘维护仅由本模块协调。
+唯一 I 按当前用户顺序立即准备四树普通集成，原 owner 持续补交准确阶段来源，完整整仓检查、真实 native / Today 在准确组合上执行。领域失败交回原作者，最终发布仍须全部适用门禁通过。当前 Calls / 权限问题、AOCI 分发、OS 管理员执行尚待用户，Jev 缺 key 维持 NOT_RUN，其他已授权开发继续。正式 D1 与 Q 已完成，不重复采集、Sleep、模型或 judge。新增大型产物全部使用 D 盘独占目录和既有共享 Go 缓存；C 盘维护仅由本模块协调。
 
 21:53 两条原 Task 已恢复唯一第三层人员：S5 当前 `ctx_8ff0e4770bd8` / `term_c8a6ea08-dc91-45dd-bb66-4eea961ac2b3`，P 当前 `ctx_6cf3f6a0c68f` / `term_c5c89219-2808-4a0d-99d1-893b1bbd9981`。公开 fleet 独核两者实际 `live / working`、Codex / `gpt-6.1-sol`，终端均 xhigh fast；P 已本人报告接管，准确模型、descriptor、S4 与许可输入及原写域已分别通过消息交接。
 
