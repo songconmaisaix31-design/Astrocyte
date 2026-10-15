@@ -509,6 +509,12 @@ R 确认完成记录与最终 transition receipt 的原时间、Actor、Channel�
 
 完整读取获准 R `channels-agents-first.log` 后，实际结果为包 185.806s、180 秒 panic 时 `TestSelectedTextActualOwnedSourceWithoutModel` 仅运行 4 秒，调用停在原 `initialize` 等待。该原件没有 controller 原 PID、启动身份或自产目录，退出状态保持 UNKNOWN；已交 R 沿同次 launch 原件核查，没有猜测进程归属、重复初始化或终止宿主进程。此窗口与 B 的 `thread/start` 首失败分别保留。
 
+## 原准备读取契约的准确消费
+
+SOURCE `442e693d5056e2bb17e1950c62a48de01e977ec6` 已普通 push，原样消费 R SOURCE `8947ff7e36415da07a0eb85c103b722713460356` 的两个 `relay_prepared_input` 文件；实际 Git blob 分别同为 `590f3eb822e493483ef3bb9528adfdf7b4170ab5`、`5df909d640086f22c915477d2ba6109d925e911e`。九字段包含原 `ActorProjectID`，全部隐藏 JSON；读取仅限明确尚未尝试发送的原准备。两个现有 workspace app 文件只翻译注释，执行行为保持。
+
+`go test -mod=readonly -p=2 ./internal/workspace/domain -run '^TestRelayPreparedInputPrivateSerialization$' -v -count=1` EXIT 0，1 PASS、0 SKIP，0.960s，日志 `.verification/prepared-input-private-json-first.log`；`go build -mod=readonly -p=2 ./...` EXIT 0，日志 `prepared-input-type-build-first.log`。格式、diff 检查无输出。该序列化检查仅使用明确隐私标记输入，不作为原生会话、操作者或来源事实；实际准备持久化、当前授权、原子发送占用、S3 Claim 和 H 发送前 live lease 复核均未执行，不登记首次 Claim 或消息发送成功。B 当前旧 Registry 没有原 controller/startup 读取接口，准确 R 源码闭包与既有 ObjectStore 的装配口已交模块协调，尚未按草案固定新接口。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
