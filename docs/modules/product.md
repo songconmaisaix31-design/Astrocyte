@@ -165,6 +165,14 @@ S2 安全 Context DTO / 原持有者工厂 / claim-live 与 submit-same-exited �
 
 产品 UI SOURCE `6a5681f369e2cec114abfa1d70a239ed6d94aab2` / REPORT `c133d9b2daa1e3a2ca34ece92dab93b6372652ff` 已普通 push、模块独立核远端同 REPORT。仅新增已有规格五类反馈受控字段，typecheck/本域 ESLint 通过；尚未挂载页面或运行 S5 真实 HTTP/SQLite/浏览器，不能计作完整功能。全部核心路径、默认组合与 Windows x64 包继续验收，模块未结算或发布。
 
+### 15:56 两个限定返修范围归还独立 REPORT
+
+原 B `msg_9a870db0901f` 明确 F 五件仅文件编辑并 stage、停止写入归还，模块独立核 U0、MERGE_HEAD 仍为 `31256d5d6758daf25892d55df73feffde7a7e573`、working 与 cached diff-check 均 EXIT0，checker/helper 相对 B `efa137e` 两文件完整 diff0。实际 Go modulegraph EXIT0；完整 dependency checker 在 `summarize --version` 的原六十秒期限实际 ETIMEDOUT，可选全 cache verify 未完成，原件保留。`msg_ffa8330f3505` 已正式交原 F 完成普通 merge 及自己的准确客户端 SOURCE / REPORT，无需重复批准。五文件临时写入结束，未将合并冲突解决记为完整依赖或默认核心通过。
+
+原 B `msg_59e0cf4624fd` 随后明确仅 H 的 `cmd/server/config.go` 文件编辑并 stage、停止写入归还。模块独立核 U0、CHERRY_PICK_HEAD 同 `e346c40cc9edcbd5b4588e47585f3c0b616b0770`、index blob `2d7a7bdc1a31b8f97545baed2f74806c2168d796`，限定 working / cached diff-check 均 EXIT0；原 B 报告 gofmt 通过。配置目标测试实际 RED 为 `main.go` 变参 `NewWorkbenchReader` 与现存旧非变参签名不匹配，本机日志 `h-config-narrow-second.log` 保留。原 B 已交准确 Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 与 `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，未越域造 type 或更改 main。`msg_bc1f6ee1c4ad` 已交原 H 继续当前窄消费和真实组装，M-relay 已收到同结果；新冲突再按原 owner 精确处理。
+
+两个临时范围均已结束，仍由原 F/H 持有各自提交和消费序列，B 回到原写域。配置组件、合并检查与实际业务验收分别记录；S4 客户端真实 Go/HTTP 检查、配置后正向 UI、S3 原生和全部默认核心继续，SOURCE 未交付的 WIP 不作为可消费结果。T 另获准对原 QA UID `49683148` 仅执行一次生产只读 metadata 第一页三十项复验，失败即停止；首412与实际100容量要求保留，没有改网络策略或将第一页/total写作容量通过。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
