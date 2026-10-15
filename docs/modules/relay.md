@@ -2,7 +2,33 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md 和 [发布任务](../../tasks/Release-v0.1-20261014.md)。2026-10-14 用户已确认三层组织；总负责人最新授权模块负责人只修改本文件和新增 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)，业务实现、测试、文档和返修由原 R/H 开发人员持续完成。
 
-## 当前执行范围与 v1.4 规格
+## 当前恢复分工（2026-10-15 23:47）
+
+总负责人当前入口为 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 23:47 记录，准确管理 SOURCE `7a3ec93a39f5b37241aa6958dcd2fff6f17ab3d7`。正式消息 `msg_e2e5ac090e87`、`msg_ed40cd6c10c3`、`msg_9fe2e571a471` 确认本模块唯一负责人为 `task_e8c1d01d67ec / ctx_c89f162e6fb7 / term_12d908d5-3027-4bdd-8eae-73a2877b21ca`；总负责人为 `term_24db7f74-f79a-4689-be1d-3f585a38e6b4`，顶层 Run 保持 `run_973808dd6a2f`。
+
+原子 Run `run_8bbda1c3974c` 已按上述明确授权通过普通 `run-use` 恢复至 generation 5。本次先收到旧任务规格，后收到当前恢复指令；此前创建的 `run_f7d72dabdd50` 保持空 Run，不放入任务或人员。原 R / H / S4 Task 的公开状态均为 ready，前次 Dispatch 已由运行时记录 failed / abandoned / terminal_missing；公开终端清单无三位旧终端，进程检查没有三个原工作树的开发进程。全部既有源码、未提交修改、证据和首次失败保留。
+
+| 原人员与 Task | 固定工作树 / 分支 | 当前处理与互斥边界 |
+|---|---|---|
+| R `task_f082d8b36471` | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native 与原报告写域；保留九份已修改文件及两份未跟踪输入结果文件，继续实际证据语义和既有双通道交付，不改 H 装配、B 依赖或迁移 |
+| H `task_3004b636a3ab` | works-relay-http / songconmaisaix31-design/works-relay-http | 原来源、HTTP、契约及薄装配写域；保留五份已修改文件与 relay_public_context.go，完成既有 LaunchContextReader 的真实批准上下文和 B 窄共享事务消费，不改其他领域 |
+| S4 `task_bd209566be37` | works-repository-context-s4-20261015 / 原分支 | 原 Task 保持 ready，工作树干净；待 D 盘入口和集成依赖恢复后继续，不创建替代任务 |
+| 模块负责人 | module-relay-20261014 / songconmaisaix31-design/module-relay-20261014 | 只修改本管理文档，检查当前身份、互斥写入范围、准确交付、实际验收及发布支持 |
+
+当前顺序为四树普通集成与组合验证 → 集成版真实 L1 → L2 经验管道 → 六步端到端首跑。唯一 I 当前仍由发布模块恢复原 Task；R `9021cbaa0dac6321491c9ae86d466749b8a32904` 普通合并的六项 S2 冲突由产品原 S2 处理，模块不修改该现场。R 双通道 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` / REPORT `be0edfca394ac49824185beec2e61c087d33210c` 为后继准确输入，不更换当前 MERGE_HEAD。
+
+原独立 Relay L1 不经过 S3 Claim，Calls 单位和权限证据覆盖两项待答仅约束 S3 所属路径，其 Known=false / Claim 拒绝保持。H 必须先交真实固定批准上下文及准确组合验证；F 仍是唯一实际界面操作者。原同 URL 空登记、observer ready、唯一登记 t0、空输入初始化同一控制器、来源与工具关闭检查、一次首输入、180 秒 Today、逐 event_id SQLite 和独立释放审计均保留。本次尚未登记、初始化或发送模型输入。
+
+新增大型验证等待原 B 完成 D 盘 TEMP / TMP 和产物入口；后续 Go 使用已预热 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，各 owner 独占 D 盘临时目录，仅设置进程环境。十秒 Context 首超时、冷 Registry RED、来源拒绝与历史计时失败保留，不延长产品时限或用未测代码替代实际功能。R / H 各阶段继续 SOURCE 与独立 REPORT 普通 push；模块持续至组合、真实核心路径和 Windows 包支持完成，不因阶段通过结算本模块。
+
+| 当前原 Task | 新 Dispatch / 终端 | 本次开始证据 |
+|---|---|---|
+| R `task_f082d8b36471` | `ctx_c17c6124e9dc` / `term_88610b02-6111-415d-b2a0-9de60ac0a798` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；随后实际读取文件并显示 Working，待本人 ACK |
+| H `task_3004b636a3ab` | `ctx_74e83fb8ed0c` / `term_ffd141be-29a2-4928-8afb-bdcb18dd8487` | 首回执 turn_start_unobserved，纯文本确认 composer 后只补一次 Enter；待实际开始和本人 ACK |
+
+两位均沿原 Task 和原工作树启动 Codex；终端文本显示 0.162.0 / GPT-6.1-Sol xhigh fast，启动参数没有覆盖用户模型配置。已向两个准确 Dispatch 发送当前根入口、双通道完成决定、写入范围、D 盘进程环境和禁止重复模型输入的要求；发送回执只证明入队，不作为本人已读取或已经开始的证据。
+
+## 前次恢复范围与 v1.4 规格
 
 2026-10-15T13:44:28Z 总负责人恢复指令 `msg_dda268e9b152`：模块当前为 `task_e8c1d01d67ec / ctx_533af1fca9b7 / term_2717fa40-9809-4cca-8140-89111b01073d`；总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146`，顶层 Run `run_973808dd6a2f`。已按明确授权恢复原子 Run `run_8bbda1c3974c`，generation 4。本次仅修改本文件，继续原 R / H / S4 Task、工作树、分支及独占写入范围。
 
