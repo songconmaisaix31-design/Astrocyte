@@ -1,6 +1,6 @@
 import { Icon } from './DesignIcons';
 
-// Original assets served locally; sources and failed downloads are public/brands/provenance.json.
+// 使用本地原始素材；来源与下载失败记录见 public/brands/provenance.json。
 const assets: Record<string, string> = {
   "github": "github.svg",
   "arxiv": "arxiv.png",

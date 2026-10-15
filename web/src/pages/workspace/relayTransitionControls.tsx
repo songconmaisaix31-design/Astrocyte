@@ -10,7 +10,7 @@ export function RelayTransitionControls({ view, disabled, transition, onChanged 
   onChanged: () => void;
 }) {
   const [confirmedVersion, setConfirmedVersion] = useState('');
-  const command = useRelayCommand<RelayTaskResult>();
+  const command = useRelayCommand<RelayTaskResult>(`transition:${view.task.task_id}`);
   const version = `${view.task.state}:${view.task.updated_at}`;
   const checked = confirmedVersion === version;
   const canComplete = view.task.state === 'working';

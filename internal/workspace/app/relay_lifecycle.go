@@ -125,11 +125,13 @@ func (s *relayService) ownedAction(ctx context.Context, id, action string) error
 		}
 		current.PendingActions[id] = r.ID
 		current.Receipts[r.ID] = r
+		s.claimFact(current, r)
 		return nil
 	})
 	if err != nil {
 		return err
 	}
+	launch.OperationID = r.OperationID
 	obs, err := driver.Stop(ctx, launch)
 	_, err = s.finish(ctx, domain.Caller{}, r, obs, err, false)
 	return err
@@ -138,6 +140,9 @@ func (s *relayService) ownedAction(ctx context.Context, id, action string) error
 var errRelayObservationUnchanged = errors.New("relay observation unchanged")
 
 func (s *relayService) observationChanged(st RelayState, launch RelayLaunch, obs RelayObservation, git *string) bool {
+	if obs.Evidence != nil && !reflect.DeepEqual(*obs.Evidence, st.ControllerEvidence[st.Workspaces[launch.Workspace.ID].ActiveTaskID]) {
+		return true
+	}
 	t := st.Terminals[launch.Terminal.ID]
 	if obs.ExitConfirmed && t.ExitedAt == nil {
 		return true
@@ -149,6 +154,21 @@ func (s *relayService) observationChanged(st RelayState, launch RelayLaunch, obs
 	}
 	if obs.Session.ID != "" && !reflect.DeepEqual(obs.Session, st.Sessions[t.ID]) {
 		return true
+	}
+	if obs.NativeCapture != nil && !reflect.DeepEqual(obs.NativeCapture, st.OwnedSessions[st.Workspaces[launch.Workspace.ID].ActiveTaskID].NativeCapture) {
+		return true
+	}
+	if obs.Archive != nil {
+		bound := st.OwnedSessions[st.Workspaces[launch.Workspace.ID].ActiveTaskID]
+		if bound.Gap != "session_identity_changed" && bound.Gap != "archive_identity_changed" && (bound.SourceStatus != "available" || bound.ArchivePath != obs.Archive.Path || bound.ArchiveRoot != obs.Archive.Root || bound.ArchiveFormat != obs.Archive.Format || !relayArchiveMatches(*obs.Archive, bound) || obs.Archive.Finalized && bound.ArchiveFinalized != "confirmed" || obs.Archive.AppendOnly && bound.ArchiveAppendOnly != "confirmed") {
+			return true
+		}
+	}
+	if obs.ArchiveGap != "" {
+		bound := st.OwnedSessions[st.Workspaces[launch.Workspace.ID].ActiveTaskID]
+		if bound.SourceStatus == "unknown" && bound.Gap != obs.ArchiveGap {
+			return true
+		}
 	}
 	return git != nil && *git != st.Workspaces[launch.Workspace.ID].GitObservation
 }
@@ -263,7 +283,7 @@ func (s *relayService) ReconcileEvents(ctx context.Context, c domain.Caller, id 
 	}
 	view, err := s.GetTask(ctx, c, id)
 	if err == nil {
-		_, err = s.permission(ctx, c, view.Task, "observe")
+		_, err = s.permission(ctx, c, view.Task, "reconcile")
 	}
 	if err == nil {
 		err = s.store.Update(ctx, func(st *RelayState) error { delete(st.PublicationErrors, id); return nil })

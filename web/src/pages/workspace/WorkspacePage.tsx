@@ -1,31 +1,30 @@
 import { GitHubRepositoriesPanel } from './GitHubRepositoriesPanel';
 import { useState, useCallback, useRef } from 'react';
 import { useProjects, useProposals, useSessions, useLocalAgents } from '../../hooks/useReadApi';
-import { fixtureProjects, fixtureProposals, fixtureSessions } from '../../fixtures';
 import { SectionCard } from '../../components/SectionCard';
 import { StatusBadge } from '../../components/StatusBadge';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
 import { DetailPanel, Field, FieldRow, MutedValue } from '../../components/DetailPanel';
-import { proposalStatusLabel, bindingStatusLabel, contextStateLabel, formatBudget, capabilityLabel } from '../../utils/format';
+import { proposalStatusLabel, bindingStatusLabel, contextStateLabel, capabilityLabel } from '../../utils/format';
 import type { components } from '../../api/schema';
-import { PageFrame, IntroCard, RailSummary } from '../../components/PageFrame';
-import { ResearchRoutes, DesignTimeline } from '../../components/DesignExamples';
+import { PageFrame, RailSummary } from '../../components/PageFrame';
 import { matchesQuery } from '../../utils/search';
 import { Icon } from '../../components/DesignIcons';
 import styles from './WorkspacePage.module.css';
-import { LocalProjectsPanel } from './LocalProjectsPanel';
 import { LocalAgentsPanel } from './LocalAgentsPanel';
 import { ManagedProjectsPanel } from './ManagedProjectsPanel';
 import { ProjectBoardPanel } from './ProjectBoardPanel';
 import { WorksAlbumPanel } from './WorksAlbumPanel';
+import { ProposalWorkspace } from './proposals/ProposalWorkspace';
+import { ProposalRevision } from './proposals/ProposalRevision';
+import { RepositoryContextPanel } from './repositorycontext/RepositoryContextPanel';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
 type Session = components['schemas']['SessionV1'];
 
 interface Props {
-  fixture: boolean;
   query: string;
   onClearQuery: () => void;
 }
@@ -36,26 +35,25 @@ type SelectedItem =
   | { kind: 'session'; data: Session }
   | null;
 
-export function WorkspacePage({ fixture, query, onClearQuery }: Props) {
+export function WorkspacePage({ query, onClearQuery }: Props) {
   const proj = useProjects();
   const prop = useProposals();
   const sess = useSessions();
-  const agents = useLocalAgents(!fixture);
+  const agents = useLocalAgents();
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [boardRefresh, setBoardRefresh] = useState(0);
   const [managed, setManaged] = useState({ root: '', name: '', token: 0 });
   const manageRef = useRef<HTMLDetailsElement>(null);
   const [selected, setSelected] = useState<SelectedItem>(null);
 
-  const projects = fixture ? fixtureProjects : (proj.data?.items ?? []);
-  const proposals = (fixture ? fixtureProposals : (prop.data?.items ?? [])).filter(p => matchesQuery(query, [p.title, p.id, p.goal]));
-  const sessions = (fixture ? fixtureSessions : (sess.data?.items ?? [])).filter(p => matchesQuery(query, [p.adapter, p.id, p.project_id]));
+  const proposals = (prop.data?.items ?? []).filter(p => matchesQuery(query, [p.content.title, p.id, p.content.goal.id]));
+  const sessions = (sess.data?.items ?? []).filter(p => matchesQuery(query, [p.adapter, p.id, p.project_id]));
 
   const handleClose = useCallback(() => setSelected(null), []);
 
   return (
-    <PageFrame section="workspace" title="共同工作区" subtitle="看看各项目做到哪里，记下下一步，再继续。" fixture={fixture} onRefresh={() => { proj.retry(); prop.retry(); sess.retry(); agents.retry(); setBoardRefresh(value => value + 1); }} rail={<><RailSummary title="工作区概览" rows={[{ label: '提案', value: fixture ? proposals.length : prop.loading ? '加载中…' : prop.error && !prop.data ? '无法获取' : proposals.length }, { label: 'Agent 会话', value: fixture ? sessions.length : sess.loading ? '加载中…' : sess.error && !sess.data ? '无法获取' : sessions.length }]} note="批准、原生接续与交接尚未启用，能力未知时不会推断可用。" /><RailSummary title="Agent 上下文" rows={sessions.map(s => ({ id: s.id, label: s.adapter, value: contextStateLabel(s.context_state), onClick: () => setSelected({ kind: 'session', data: s }) }))} note={sessions.length ? '客户端名称不代表底层模型；点击检查来源、绑定与能力。' : '暂无已连接会话；不展示模拟活跃 Agent。'} /></>}>
-      {(!fixture && (proj.stale || prop.stale || sess.stale)) && (
+    <PageFrame section="workspace" title="共同工作区" subtitle="看看各项目做到哪里，记下下一步，再继续。" onRefresh={() => { proj.retry(); prop.retry(); sess.retry(); agents.retry(); setBoardRefresh(value => value + 1); }} rail={<><RailSummary title="工作区概览" rows={[{ label: '提案', value: prop.loading ? '加载中…' : prop.error && !prop.data ? '无法获取' : proposals.length }, { label: 'Agent 会话', value: sess.loading ? '加载中…' : sess.error && !sess.data ? '无法获取' : sessions.length }]} note="批准、原生接续与交接尚未启用，能力未知时不会推断可用。" /><RailSummary title="Agent 上下文" rows={sessions.map(s => ({ id: s.id, label: s.adapter, value: contextStateLabel(s.context_state), onClick: () => setSelected({ kind: 'session', data: s }) }))} note={sessions.length ? '客户端名称不代表底层模型；点击检查来源、绑定与能力。' : '暂无已连接会话。'} /></>}>
+      {(proj.stale || prop.stale || sess.stale) && (
         <div role="alert" style={{
           padding: 'var(--space-3) var(--space-5)', background: 'var(--color-warning-subtle)',
           borderBottom: '1px solid var(--color-warning)', fontSize: 'var(--text-sm)',
@@ -69,36 +67,21 @@ export function WorkspacePage({ fixture, query, onClearQuery }: Props) {
         </div>
       )}
 
-{inventoryOpen && <DetailPanel title="检查本机 Agent" onClose={() => setInventoryOpen(false)}><LocalAgentsPanel state={agents} fixture={fixture} /></DetailPanel>}
+{inventoryOpen && <DetailPanel title="检查本机 Agent" onClose={() => setInventoryOpen(false)}><LocalAgentsPanel state={agents} /></DetailPanel>}
             <div className={styles.grid}>
-        {fixture && !projects.length && <SectionCard title="" tabs={['overview']}><IntroCard section="workspace" /></SectionCard>}
-        {!fixture && <ProjectBoardPanel query={query} onClearQuery={onClearQuery} refreshToken={boardRefresh} onManage={(root, name) => { setManaged(previous => ({ root, name, token: previous.token + 1 })); if (manageRef.current) manageRef.current.open = true; requestAnimationFrame(() => { manageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); manageRef.current?.querySelector('summary')?.focus(); }); }} />}
-        <WorksAlbumPanel fixture={fixture} query={query} onClearQuery={onClearQuery} />
-        {fixture ? <LocalProjectsPanel projects={projects} sessions={fixtureSessions} projectState={proj} sessionState={sess} fixture query={query} onSelect={project => setSelected({ kind: 'project', data: project })} /> : <details ref={manageRef} className="ac-secondary-records"><summary>项目接入、权限与原生操作</summary><ManagedProjectsPanel key={managed.token} initialRoot={managed.root} initialName={managed.name} agents={agents} query={query} /></details>}
-        <GitHubRepositoriesPanel fixture={fixture} query={query} />
+        <ProjectBoardPanel query={query} onClearQuery={onClearQuery} refreshToken={boardRefresh} onManage={(root, name) => { setManaged(previous => ({ root, name, token: previous.token + 1 })); if (manageRef.current) manageRef.current.open = true; requestAnimationFrame(() => { manageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); manageRef.current?.querySelector('summary')?.focus(); }); }} />
+        <WorksAlbumPanel query={query} onClearQuery={onClearQuery} />
+        <details ref={manageRef} className="ac-secondary-records"><summary>项目接入、权限与原生操作</summary><ManagedProjectsPanel key={managed.token} initialRoot={managed.root} initialName={managed.name} agents={agents} query={query} /></details>
+        <GitHubRepositoriesPanel query={query} />
         <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
 
-        {/* ── Proposals ── */}
-        <SectionCard tabs={['proposals']} title="提案" count={proposals.length}>
-          {fixture ? (
-            <ProposalList items={proposals} onSelect={(p) => setSelected({ kind: 'proposal', data: p })} />
-          ) : prop.loading && !prop.data ? (
-            <div className={styles.loadingRow}>加载中…</div>
-          ) : prop.error && !prop.data ? (
-            <ErrorState message={prop.error} onRetry={prop.retry} />
-          ) : proposals.length === 0 ? (
-            <EmptyState icon="📋" title="暂无提案" description="系统生成提案后将在此显示" />
-          ) : (
-            <ProposalList items={proposals} onSelect={(p) => setSelected({ kind: 'proposal', data: p })} />
-          )}
-        </SectionCard>
+        <ProposalWorkspace query={query} onClearQuery={onClearQuery} refreshToken={boardRefresh} onChanged={prop.retry} />
+        <RepositoryContextPanel />
 
-        {/* ── Sessions (full width) ── */}
+        {/* 会话清单。 */}
         <div className={styles.fullWidth}>
-          <SectionCard tabs={fixture || sessions.length || sess.error ? ['overview', 'sessions'] : ['sessions']} title="会话" count={sessions.length}>
-            {fixture ? (
-              <SessionList items={sessions} onSelect={(s) => setSelected({ kind: 'session', data: s })} />
-            ) : sess.loading && !sess.data ? (
+          <SectionCard tabs={sessions.length || sess.error ? ['overview', 'sessions'] : ['sessions']} title="会话" count={sessions.length}>
+            {sess.loading && !sess.data ? (
               <div className={styles.loadingRow}>加载中…</div>
             ) : sess.error && !sess.data ? (
               <ErrorState message={sess.error} onRetry={sess.retry} />
@@ -109,11 +92,9 @@ export function WorkspacePage({ fixture, query, onClearQuery }: Props) {
             )}
           </SectionCard>
         </div>
-        {fixture && <SectionCard title="研究路线" tabs={['proposals']}><ResearchRoutes fixture /></SectionCard>}
-        {fixture && <SectionCard title="研究动态" tabs={['sessions']}><DesignTimeline fixture /></SectionCard>}
       </div>
 
-      {/* ── Detail Panels ── */}
+      {/* 详情面板。 */}
       {selected && (
         <DetailPanel
           title={selected.kind === 'project' ? '项目详情' : selected.kind === 'proposal' ? '提案详情' : '会话详情'}
@@ -128,18 +109,18 @@ export function WorkspacePage({ fixture, query, onClearQuery }: Props) {
                 : '项目编辑操作尚未启用'
           }
         >
-          {selected.kind === 'project' && <ProjectDetail item={selected.data} isFixture={fixture} />}
-          {selected.kind === 'proposal' && <ProposalDetail item={selected.data} isFixture={fixture} />}
-          {selected.kind === 'session' && <SessionDetail item={selected.data} isFixture={fixture} />}
+          {selected.kind === 'project' && <ProjectDetail item={selected.data} />}
+          {selected.kind === 'proposal' && <ProposalDetail item={selected.data} />}
+          {selected.kind === 'session' && <SessionDetail item={selected.data} />}
         </DetailPanel>
       )}
     </PageFrame>
   );
 }
 
-// ── Lists ──
+// 清单显示。
 
-function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Proposal) => void }) {
+export function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Proposal) => void }) {
   if (!items.length) return <EmptyState title="没有匹配的提案" description="尝试其他搜索词" />;
   return (
     <ul className={styles.list} role="list">
@@ -148,14 +129,14 @@ function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Pr
           onClick={() => onSelect(p)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(p); }}}>
           <div className={styles.itemHeader}>
-            <span className={`${styles.itemTitle} line-clamp-2`}>{p.title}</span>
+            <span className={`${styles.itemTitle} line-clamp-2`}>{p.content.title}</span>
             <StatusBadge value={p.status} label={proposalStatusLabel(p.status)} />
           </div>
-          <div className={`${styles.itemDesc} line-clamp-2`}>{p.goal}</div>
+          <div className={`${styles.itemDesc} line-clamp-2`}>目标 {p.content.goal.id} · r{p.content.goal.revision}</div>
           <div className={styles.itemMeta}>
             <span>r{p.revision}</span>
-            <span>{p.deliverables.length} 项交付物</span>
-            <span>{p.scope.project_ids.length} 个项目</span>
+            <span>{p.content.deliverables === null ? '交付数量未提供' : `${p.content.deliverables.length} 项交付物`}</span>
+            <span>项目 {p.content.scope.project_id}</span>
           </div>
           <span className="ac-text-button">查看范围与停止条件<Icon name="arrow" size={14} /></span>
         </li>
@@ -164,7 +145,7 @@ function ProposalList({ items, onSelect }: { items: Proposal[]; onSelect: (p: Pr
   );
 }
 
-function SessionList({ items, onSelect }: { items: Session[]; onSelect: (s: Session) => void }) {
+export function SessionList({ items, onSelect }: { items: Session[]; onSelect: (s: Session) => void }) {
   if (!items.length) return <EmptyState title="没有匹配的会话" description="尝试其他搜索词" />;
   return (
     <ul className={`${styles.list} ac-session-grid`} role="list">
@@ -192,13 +173,12 @@ function SessionList({ items, onSelect }: { items: Session[]; onSelect: (s: Sess
   );
 }
 
-// ── Details ──
+// 项目、提案和会话详情。
 
-function ProjectDetail({ item, isFixture }: { item: Project; isFixture: boolean }) {
+export function ProjectDetail({ item }: { item: Project }) {
   return (
     <>
       <Field label="名称">{item.name}</Field>
-      {isFixture && <FixtureTag />}
       <Field label="环境 ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{item.environment_id}</code></Field>
       <Field label="根路径"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-sm)' }}>{item.root_path}</code></Field>
       <Field label="仓库 ID">{item.repo_id ?? <MutedValue>无</MutedValue>}</Field>
@@ -207,47 +187,13 @@ function ProjectDetail({ item, isFixture }: { item: Project; isFixture: boolean 
     </>
   );
 }
-
-function ProposalDetail({ item, isFixture }: { item: Proposal; isFixture: boolean }) {
-  return (
-    <>
-      <Field label="标题">{item.title}</Field>
-      {isFixture && <FixtureTag />}
-      <Field label="状态"><StatusBadge value={item.status} label={proposalStatusLabel(item.status)} /></Field>
-      <Field label="目标">{item.goal}</Field>
-      <Field label="交付物">
-        {item.deliverables.length > 0
-          ? <ul style={{ paddingLeft: 'var(--space-5)', margin: 0 }}>{item.deliverables.map((d, i) => <li key={i}>{d}</li>)}</ul>
-          : <MutedValue>无</MutedValue>}
-      </Field>
-      <Field label="预算">{formatBudget(item.budget) === '—' ? <MutedValue>未知（未提供预算）</MutedValue> : formatBudget(item.budget)}</Field>
-      <FieldRow>
-        <Field label="调用上限">{item.budget?.calls ?? <MutedValue>未知</MutedValue>}</Field>
-        <Field label="费用上限">{item.budget?.money != null ? `${item.budget.money} ${item.budget.currency ?? '币种未知'}` : <MutedValue>未知</MutedValue>}</Field>
-      </FieldRow>
-      <Field label="停止条件">
-        {item.stop_conditions.length > 0
-          ? item.stop_conditions.join('; ')
-          : <MutedValue>无</MutedValue>}
-      </Field>
-      <Field label="范围">
-        <div style={{ fontSize: 'var(--text-sm)' }}>
-          <div>项目: {item.scope.project_ids.length > 0 ? item.scope.project_ids.join(', ') : '无'}</div>
-          <div>允许操作: {item.scope.allowed_actions.length > 0 ? item.scope.allowed_actions.join(', ') : '无'}</div>
-        </div>
-      </Field>
-      <FieldRow>
-        <Field label="版本">r{item.revision}</Field>
-        <Field label="ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{item.id}</code></Field>
-      </FieldRow>
-    </>
-  );
+export function ProposalDetail({ item }: { item: Proposal }) {
+  return <ProposalRevision proposal={item} />;
 }
 
-function SessionDetail({ item, isFixture }: { item: Session; isFixture: boolean }) {
+export function SessionDetail({ item }: { item: Session }) {
   return (
     <>
-      {isFixture && <FixtureTag />}
       <Field label="适配器">{item.adapter}</Field>
       <FieldRow>
         <Field label="绑定状态"><StatusBadge value={item.binding_status} label={bindingStatusLabel(item.binding_status)} /></Field>
@@ -265,16 +211,5 @@ function SessionDetail({ item, isFixture }: { item: Session; isFixture: boolean 
       </Field>
       <Field label="ID"><code style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--text-xs)' }}>{item.id}</code></Field>
     </>
-  );
-}
-
-function FixtureTag() {
-  return (
-    <div style={{
-      display: 'inline-block', padding: '2px 8px', fontSize: 'var(--text-xs)',
-      fontWeight: 'var(--weight-medium)', background: 'var(--color-warning-subtle)',
-      color: '#e67700', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-warning)',
-      marginBottom: 'var(--space-3)',
-    }}>⚑ 示例数据</div>
   );
 }

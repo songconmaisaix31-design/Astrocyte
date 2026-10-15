@@ -39,7 +39,7 @@ export const initialWorksFilters: WorksFilters = {
   view: 'flat', platform: 'all', group: 'all', attitude: 'all', includeHidden: false, sort: 'recent', search: '',
 };
 
-/** Hide is honored by default; a hidden work only reappears when the user opts in. */
+/** 默认过滤已隐藏作品；用户明确选择后才重新显示。 */
 export function filterWorks(items: WorksWork[], filters: WorksFilters) {
   const query = filters.search.trim().toLocaleLowerCase();
   return items
@@ -56,7 +56,7 @@ export function filterWorks(items: WorksWork[], filters: WorksFilters) {
     });
 }
 
-/** Grouping keyed by the chosen view; flat keeps a single section. */
+/** 根据所选视图分组；平铺时保留一个分组。 */
 export function worksSections(items: WorksWork[], view: WorksFilters['view']) {
   const groups = new Map<string, WorksWork[]>();
   for (const item of items) {
@@ -69,22 +69,5 @@ export function worksSections(items: WorksWork[], view: WorksFilters['view']) {
   return [...groups].map(([label, works]) => ({ label, works }));
 }
 
-/** The "从文件核实" badge is only honest when the scanner read the folder. */
+/** 文件核实标记取自服务明确提供的观察值。 */
 export const fileVerifiedLabel = (fact: WorksFileFact) => fact.verified ? '从文件核实' : fact.reason || '待核实';
-
-export function fixtureWorksSnapshot(): WorksSnapshot {
-  const now = new Date().toISOString();
-  return {
-    works: [
-      { id: 'work-a', platform: 'codex', name: '个人知识库', root: 'C:\\works\\kb', kind: 'folder', source: 'scan', attitude: 'continue', group: '研究', hidden: false, handoff: { content: '下一步：接入检索重排，先跑 M4 复算。', updated_at: now, source: 'human' }, files: { source_path: 'C:\\works\\kb', mtime: now, file_count: 42, verified: true }, updated_at: now, revision: 3 },
-      { id: 'work-b', platform: 'lingxi', name: '短视频脚本生成器', root: 'C:\\works\\video-gen', kind: 'folder', source: 'json', attitude: 'park', group: '媒体', hidden: false, handoff: { content: 'prompt 保留在根目录，输出样例在 samples/。', updated_at: now, source: 'generated' }, files: { source_path: 'C:\\works\\video-gen', mtime: null, file_count: 0, verified: false, reason: '目录尚未接入' }, updated_at: now, revision: 1 },
-      { id: 'work-c', platform: 'claude', name: '周报聚合脚本', root: 'C:\\works\\weekly', kind: 'folder', source: 'scan', attitude: 'done', group: '工具', hidden: true, handoff: { content: '', updated_at: null, source: 'human' }, files: { source_path: 'C:\\works\\weekly', mtime: now, file_count: 8, verified: true }, updated_at: now, revision: 2 },
-    ],
-    platforms: [
-      { platform: 'codex', works: 1, folders: 1, handed_over: 1, recent: 1 },
-      { platform: 'lingxi', works: 1, folders: 1, handed_over: 1, recent: 0 },
-      { platform: 'claude', works: 1, folders: 1, handed_over: 0, recent: 1 },
-    ],
-    status: 'complete', observed_at: now, failures: [],
-  };
-}

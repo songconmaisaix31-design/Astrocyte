@@ -10,20 +10,20 @@ import { SourceRefs } from './SourceFields';
 import type { Material } from './model';
 import styles from './AttentionPage.module.css';
 
-export function SpacesPanel({ fixture, materials, refreshToken, onChanged }: { fixture: boolean; materials: Material[]; refreshToken: number; onChanged: () => void }) {
-  const state = useProjectSpaces(!fixture);
+export function SpacesPanel({ materials, refreshToken, onChanged }: { materials: Material[]; refreshToken: number; onChanged: () => void }) {
+  const state = useProjectSpaces();
   const { retry } = state;
   useEffect(() => { if (refreshToken) retry(); }, [refreshToken, retry]);
   const [selected, setSelected] = useState('');
   const [title, setTitle] = useState('');
-  const command = useCommand(fixture || state.stale || state.loading || !!state.error);
+  const command = useCommand(state.stale || state.loading || !!state.error);
   return <SectionCard title="项目顶层空间" tabs={['overview']} padded>
     <p className={styles.note}>在空间中主动 @ 文件建立固定版本引用，原资料留在原分类。纳入与移除都由你操作，排序不扩大权限，不创建 Mission。</p>
-    {fixture ? <p role="note">示例模式未提供真实项目空间，引用写操作尚未启用。</p> : <>
+    <>
       <QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无项目顶层空间">{data => <div className={styles.form}><SelectField label="当前项目顶层空间" value={selected} onChange={setSelected} options={[{ value: '', label: '选择空间…' }, ...data.items.map(space => ({ value: space.id, label: `${space.title} · v${space.version}` }))]} /></div>}</QueryState>
-      <details><summary>创建项目顶层空间</summary><form className={styles.form} onSubmit={event => { event.preventDefault(); const request = command.prepare({ expected_version: 1, title: title.trim() }); void command.run(() => attentionApi.createProjectSpace(request.body, request.key), result => { state.retry(); setSelected(result.space.id); setTitle(''); }, '已创建项目顶层空间'); }}><TextField label="空间名称" value={title} onChange={setTitle} required disabled={command.pending} /><CommandState {...command} /><button className="ac-button secondary compact" type="submit" disabled={fixture || state.stale || state.loading || !!state.error || command.pending}>创建空间</button></form></details>
+      <details><summary>创建项目顶层空间</summary><form className={styles.form} onSubmit={event => { event.preventDefault(); const request = command.prepare({ expected_version: 1, title: title.trim() }); void command.run(() => attentionApi.createProjectSpace(request.body, request.key), result => { state.retry(); setSelected(result.space.id); setTitle(''); }, '已创建项目顶层空间'); }}><TextField label="空间名称" value={title} onChange={setTitle} required disabled={command.pending} /><CommandState {...command} /><button className="ac-button secondary compact" type="submit" disabled={state.stale || state.loading || !!state.error || command.pending}>创建空间</button></form></details>
       {selected && <SpaceContent key={selected} id={selected} materials={materials} refreshToken={refreshToken} onChanged={() => { state.retry(); onChanged(); }} />}
-    </>}
+    </>
   </SectionCard>;
 }
 function SpaceContent({ id, materials, refreshToken, onChanged }: { id: string; materials: Material[]; refreshToken: number; onChanged: () => void }) {

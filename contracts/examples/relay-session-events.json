@@ -1,0 +1,36 @@
+{
+  "events": [
+    {
+      "event_id": "ae6c15f2-394b-402c-9f53-b75fc2cd0783",
+      "kind": "edit_file",
+      "topic": "relay:cf1497b0-e092-43c0-80a9-33449bb57a40",
+      "tokens": null,
+      "scope": "public-project",
+      "ts": "2026-10-14T01:00:01Z"
+    }
+  ],
+  "coverage": [
+    {
+      "source": "archive",
+      "task_id": "cf1497b0-e092-43c0-80a9-33449bb57a40",
+      "terminal_id": "c48d6c05-3b58-4bdc-8a7b-46a471612a0b",
+      "worktree_id": "0623c675-ddb7-4d62-bd02-831f6cb6d51d",
+      "project_id": "public-project",
+      "status": "partial",
+      "gap": "prefix_unverified",
+      "lines": 2,
+      "projected": 2,
+      "duplicates": 0,
+      "unknown": 0,
+      "errors": 0,
+      "unknown_tokens": 2,
+      "remaining_bytes": 0,
+      "tail_bytes": 0,
+      "snapshot_complete": true,
+      "session_complete": false
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 50
+}

@@ -45,9 +45,11 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
+	RepositoryContext    *RepositoryContextServices
+	WorkspaceS2          *workspaceapp.S2Service
+	RelaySessionEvents   workbenchapp.SessionEventsReader
 	Relay                workspaceapp.RelayRuntime
 	Workbench            workbenchapp.Reader
-	WorkspaceS2          *workspaceapp.S2Service
 	GitHubRepositories   workspaceapp.GitHubRepositories
 	Tracking             attentionapp.TrackingService
 	LocalProjects        workspaceapp.LocalProjects
@@ -116,6 +118,10 @@ func NewServer(cfg Config) *Server {
 	h.registerWorks(mux)
 	h.registerWorkbench(mux)
 	h.registerRelay(mux)
+	if cfg.Services.RepositoryContext != nil {
+		RegisterRepositoryContextRoutes(mux, *cfg.Services.RepositoryContext)
+	}
+	mux.HandleFunc("/api/v1/relay/session-events", h.handleRelaySessionEvents)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {
@@ -153,7 +159,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.WorkspaceS2 != nil || cfg.Services.Relay != nil || cfg.Services.Workbench != nil || cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil || cfg.Services.KnowledgeGovernance != nil || cfg.Services.ExperienceGovernance != nil || cfg.Services.ConflictGate != nil || cfg.Services.Works != nil {
+	if cfg.Services.RepositoryContext != nil || cfg.Services.WorkspaceS2 != nil || cfg.Services.RelaySessionEvents != nil || cfg.Services.Relay != nil || cfg.Services.Workbench != nil || cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil || cfg.Services.KnowledgeGovernance != nil || cfg.Services.ExperienceGovernance != nil || cfg.Services.ConflictGate != nil || cfg.Services.Works != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)

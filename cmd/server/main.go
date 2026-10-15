@@ -84,6 +84,10 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	protectedSources, err := workbenchProtectedSources()
+	if err != nil {
+		return err
+	}
 	// Resolve data directory.
 	dataDir, err := resolveDataDir()
 	if err != nil {
@@ -206,8 +210,9 @@ func run(logger *slog.Logger) error {
 
 	// 组装现有 S1 服务和 S2 提案命令，原生执行由原控制器接口负责。
 	services := httpapi.Services{
-		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot()),
+		RepositoryContext:    &httpapi.RepositoryContextServices{},
 		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),
+		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot(), protectedSources...),
 		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
 		Tracking:             attention,
 		LocalProjects:        localProjects,

@@ -4,7 +4,7 @@ interface EmptyStateProps {
   description?: string;
 }
 
-/** Honest no-data empty state. No fake science, no misleading content. */
+/** 数据为空时显示当前状态与明确说明。 */
 export function EmptyState({ icon = '◇', title, description }: EmptyStateProps) {
   return (
     <div

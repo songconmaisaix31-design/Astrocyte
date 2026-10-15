@@ -3,13 +3,11 @@ package main
 import (
 	"context"
 	"errors"
-	"path/filepath"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/relayworktree"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -29,15 +27,39 @@ func assembleRelay(services *httpapi.Services, db *sqlite.DB, registry workspace
 	if err != nil {
 		return nil, err
 	}
+	deadlineSeconds, err := relayNativeDeadlineSeconds()
+	if err != nil {
+		return nil, err
+	}
 	store, err := sqlite.OpenRelayStore(root)
 	if err != nil {
 		return nil, errors.New("isolated relay store unavailable")
 	}
 	sink := events.NewRelayEventSink(attention.NewPendingEventService(sqlite.NewEventRepository(db)), nil)
-	neutral := relayworktree.New(filepath.Join(root, "worktrees"), relayworktree.Options{AllowCommittedGit: false})
-	structured := agents.NewRelayNativeDriver(registry)
+	neutral, err := relayWorkspaceProvider(root)
+	if err != nil {
+		return nil, errors.Join(err, store.Close())
+	}
+	notifications, err := relayNativeNotifications()
+	if err != nil {
+		return nil, errors.Join(err, store.Close())
+	}
+	structured := agents.NewRelayNativeDriver(registry, agents.RelayNativeDriverOptions{CaptureNativeNotifications: notifications, SessionDeadlineSeconds: deadlineSeconds})
 	terminal := agents.NewRelayTerminalDriver(agents.RelayTerminalOptions{})
-	services.Relay = workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window})
+	runtime := workspace.NewRelayService(store, services.Works, db, neutral, structured, terminal, sink, workspace.RelayServiceOptions{Agents: specs, LivenessWindow: window, OwnedRoots: agents.RelayOwnedRoots{}})
+	owned, ok := runtime.(workspace.RelayOwnedSessionReader)
+	if !ok {
+		_ = store.Close()
+		return nil, errors.New("owned session read port unavailable")
+	}
+	lifecycle, ok := runtime.(workspace.RelayLifecycle)
+	if !ok {
+		_ = store.Close()
+		return nil, errors.New("owned session lifecycle unavailable")
+	}
+	collector := newRelaySessionCollector(owned, events.NewRelaySessionCapture(attention.NewPendingEventService(sqlite.NewEventRepository(db)), nil), relaySessionFileState{root: root}, sqlite.NewAccessSessionReader(db))
+	services.Relay = &relaySessionRuntime{RelayRuntime: runtime, RelayLifecycle: lifecycle, collector: collector}
+	services.RelaySessionEvents = collector
 	return func() error {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()

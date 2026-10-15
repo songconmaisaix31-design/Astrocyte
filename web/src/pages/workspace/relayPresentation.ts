@@ -4,9 +4,9 @@ import type { components } from '../../api/schema';
 export const relayStateLabel = { ready: '等待权限确认', accepted: '已接受', working: '工作中', done: '任务已完成', released: '已释放' };
 export const relayLivenessLabel = { live: '近期活动确证 · live', unverifiable: '活性无法核实 · unverifiable', exited: '终端已退出 · exited' };
 export const relayActionLabel = { intent: '声明意图', dispatch: '派发', send: '发送输入', read: '读取会话', stop: '停止', resume: '原生恢复', transition: '状态迁移', observe: '服务端观察', reconcile_events: '核对事件接入' };
-export const relayReceiptLabel = { pending: '结果待确认', accepted: '动作已确认', rejected: '被拒绝 · 首 RED 保留', delivery_unknown: '交付未知 · 不重试' };
+export const relayReceiptLabel = { pending: '结果待确认', accepted: '动作已接受', rejected: '被拒绝 · 首 RED 保留', delivery_unknown: '交付未知 · 不重试' };
 
-/** Only the HTTP service's known-task conflict hint can offer a read-only lookup. */
+/** 根据服务返回的已有任务冲突提示提供只读核对入口。 */
 export function relayExistingTaskID(error: RelayReceipt['error']) {
   if (error?.code !== 'version_conflict') return '';
   const match = /^view_existing_task:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/.exec(error.required_action);
@@ -24,8 +24,9 @@ export function relayDisplayState(view: RelayTaskView) {
 export function relayElapsed(view: RelayTaskView, now = Date.now()) {
   const start = Date.parse(view.task.created_at);
   const end = ['done', 'released'].includes(view.task.state) ? Date.parse(view.task.updated_at) : now;
-  if (!Number.isFinite(start) || !Number.isFinite(end)) return '未知';
-  const seconds = Math.max(0, Math.floor((end - start) / 1000));
+  if (!Number.isFinite(start) || !Number.isFinite(end)) throw new Error('接力任务时间无效');
+  if (end < start) throw new Error('接力任务时间顺序无法核查');
+  const seconds = Math.floor((end - start) / 1000);
   return `${Math.floor(seconds / 60)} 分 ${seconds % 60} 秒`;
 }
 export function relayProjectMatches(root: string, project: RelayProject) {

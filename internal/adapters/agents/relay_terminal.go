@@ -3,6 +3,7 @@ package agents
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"io"
 	"os"
 	"os/exec"
@@ -38,12 +39,35 @@ type relayTerminalProcess struct {
 	sequence  int
 	lastAt    time.Time
 	exited    bool
+	evidence  domain.RelayControllerEvidence
 }
 
 var _ app.RelayDriver = (*RelayTerminalDriver)(nil)
 
 func NewRelayTerminalDriver(options RelayTerminalOptions) *RelayTerminalDriver {
 	return &RelayTerminalDriver{processes: map[string]*relayTerminalProcess{}, options: options}
+}
+
+func (d *RelayTerminalDriver) CurrentControllerEvidence(ctx context.Context, r app.RelayLaunch) (domain.RelayControllerEvidence, error) {
+	if err := ctx.Err(); err != nil {
+		return domain.RelayControllerEvidence{}, err
+	}
+	p, err := d.owned(r.Terminal.ID)
+	if err != nil {
+		return domain.RelayControllerEvidence{}, err
+	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.evidence.ControllerID == "" || p.evidence.StartupOperationID == "" {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.DeliveryUnknown, "original terminal controller operation is unrecorded")
+	}
+	if p.evidence.ControllerID != r.ControllerID || p.evidence.Provider != r.Spec.Name || !sameRelayMetadataCWD(p.cmd.Dir, r.Workspace.Root) {
+		return domain.RelayControllerEvidence{}, nativeError(apierrors.ScopeDenied, "current terminal controller differs from the requested binding")
+	}
+	evidence := p.evidence
+	evidence.ExitConfirmed = p.exited
+	evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
+	return evidence, nil
 }
 
 // Output is discarded at the boundary. Only the fact and time of actual stdout
@@ -62,6 +86,11 @@ func (p *relayTerminalProcess) observation() app.RelayObservation {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	obs := app.RelayObservation{ExitConfirmed: p.exited, Events: []domain.RelayEvent{}}
+	if p.evidence.ControllerID != "" {
+		evidence := p.evidence
+		evidence.Facts = append([]domain.RelayDriverFact{}, p.evidence.Facts...)
+		obs.Evidence = &evidence
+	}
 	if p.sequence > 0 {
 		obs.Events = append(obs.Events, domain.RelayEvent{Kind: "cli_activity", Source: "terminal", Sequence: p.sequence, TS: p.lastAt})
 	}
@@ -139,6 +168,10 @@ func (d *RelayTerminalDriver) Launch(ctx context.Context, r app.RelayLaunch) (ap
 		return unstarted(err)
 	}
 	d.processes[r.Terminal.ID] = p
+	p.mu.Lock()
+	p.evidence = domain.RelayControllerEvidence{ControllerID: uuid.NewString(), StartupOperationID: r.OperationID, Provider: r.Spec.Name, WorkspaceRoot: r.Workspace.Root, Relation: "new", Facts: []domain.RelayDriverFact{}}
+	p.fact("input_channel_open", "owned_stdin_pipe", r.OperationID)
+	p.mu.Unlock()
 	d.mu.Unlock()
 	go func() {
 		_ = cmd.Wait()
@@ -150,7 +183,11 @@ func (d *RelayTerminalDriver) Launch(ctx context.Context, r app.RelayLaunch) (ap
 		close(p.done)
 	}()
 	if r.Input != "" || mode == "stdin_eof" {
-		return p.submit(ctx, r.Input, mode == "stdin_eof")
+		input := r.Input
+		if r.Packet.ID != "" {
+			input = packetPrompt(r.Packet, input)
+		}
+		return p.submit(ctx, input, mode == "stdin_eof", r.OperationID)
 	}
 	return p.observation(), nil
 }
@@ -165,10 +202,14 @@ func (d *RelayTerminalDriver) Send(ctx context.Context, r app.RelayLaunch, input
 	if p.inputMode == "stdin_eof" {
 		return p.observation(), nativeError(apierrors.UnsupportedCapability, "stdin EOF mode does not support follow-up input")
 	}
-	return p.submit(ctx, input, false)
+	return p.submit(ctx, input, false, r.OperationID)
 }
 
-func (p *relayTerminalProcess) submit(ctx context.Context, input string, closeInput bool) (app.RelayObservation, error) {
+func (p *relayTerminalProcess) fact(kind, source, operation string) {
+	p.evidence.Facts = append(p.evidence.Facts, domain.RelayDriverFact{OperationID: operation, Kind: kind, Status: "confirmed", Source: source, Sequence: int64(len(p.evidence.Facts) + 1), TS: time.Now().UTC()})
+}
+
+func (p *relayTerminalProcess) submit(ctx context.Context, input string, closeInput bool, operation string) (app.RelayObservation, error) {
 	var err error
 	if err = ctx.Err(); err != nil {
 		return p.observation(), nativeError(apierrors.DeliveryUnknown, "owned terminal input deadline elapsed; do not resend")
@@ -184,11 +225,30 @@ func (p *relayTerminalProcess) submit(ctx context.Context, input string, closeIn
 		if !closeInput {
 			data += "\n"
 		}
-		_, e := io.WriteString(p.stdin, data)
+		n, e := io.WriteString(p.stdin, data)
+		if e == nil && n != len(data) {
+			e = io.ErrShortWrite
+		}
+		if e == nil {
+			p.mu.Lock()
+			p.fact("input_written", "stdin_pipe", operation)
+			p.mu.Unlock()
+		}
 		if closeInput {
-			if closeErr := p.stdin.Close(); e == nil {
+			closeErr := p.stdin.Close()
+			if closeErr == nil {
+				p.mu.Lock()
+				p.fact("input_closed", "stdin_eof", operation)
+				p.mu.Unlock()
+			}
+			if e == nil {
 				e = closeErr
 			}
+		}
+		if e == nil {
+			p.mu.Lock()
+			p.evidence.Facts = append(p.evidence.Facts, domain.RelayDriverFact{OperationID: operation, Kind: "input_consumption", Status: "unknown", Source: "stdin_pipe", Reason: "client_consumption_not_acknowledged", Sequence: int64(len(p.evidence.Facts) + 1), TS: time.Now().UTC()})
+			p.mu.Unlock()
 		}
 		written <- e
 	}()

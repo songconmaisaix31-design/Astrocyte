@@ -1,15 +1,4 @@
-/**
- * Project progress presentation (pure).
- *
- * Progress is a human-authored or model-inferred advisory stage read only from
- * approved fixed TASK/STATUS files. The local shapes mirror W0's published
- * `ProjectProgressV1`/`ProgressEvidenceV1` (contracts/openapi.yaml, owned by W0,
- * converged at `e39f8f1`). `source` and `observed_at` are null until a human
- * writes or an Agent inference concludes; an unobserved project is reported as
- * status=unknown with a null observed_at, never a fabricated timestamp. A
- * percent is a human-authored value or an evidence-backed Agent estimate, never
- * invented and never presented as human approval when it is not.
- */
+/** 项目进度的纯显示类型；进度、来源、百分数与观察时间均由服务提供。 */
 
 export interface ProgressEvidence {
   source_path: string;
@@ -37,34 +26,34 @@ export interface ProjectProgressResult {
   progress: ProjectProgress;
 }
 
-/** Human label for a status; unknown/absent is presented as-is, never invented. */
+/** 未知或缺失状态明确显示为未知。 */
 export function progressStatusLabel(status: string | null | undefined): string {
   if (!status || status === 'unknown') return '未知';
   return status;
 }
 
-/** Human label for the evidence source (human-authored vs Agent-inferred). */
+/** 分别显示人工记录与 Agent 推断的来源。 */
 export function progressSourceLabel(source: ProjectProgress['source']): string {
   return source === 'human' ? '人工记录' : source === 'agent_inferred' ? 'Agent 推断' : '尚未记录';
 }
 
-/** Human label for a percent value's provenance; a model estimate is never shown as human input. */
+/** 百分数保留人工记录或 Agent 估计的来源。 */
 export function progressPercentLabel(source: ProjectProgress['source']): string {
   return source === 'human' ? '人工记录' : source === 'agent_inferred' ? 'Agent 估计' : '未知';
 }
 
-/** Readable summary of the evidence's source files (path:version). */
+/** 显示依据文件及其版本。 */
 export function progressSourceSummary(evidence: ProgressEvidence[] | undefined): string {
   if (!evidence || !evidence.length) return '无依据来源';
   return evidence.map(ref => (ref.version ? `${ref.source_path}:${ref.version}` : ref.source_path)).join('、');
 }
 
-/** Whether any progress has been recorded (human or inferred). */
+/** 判断是否已有进度记录。 */
 export function hasProgress(progress: ProjectProgress): boolean {
   return !!progress.source || !!progress.summary || progress.percent != null || progress.evidence.length > 0;
 }
 
-/** Human label for the evidence kind; falls back to the raw value. */
+/** 已知依据类型使用中文标签，其他类型保留原值。 */
 export function progressKindLabel(kind: string): string {
   switch (kind) {
     case 'task': return '任务文件';
@@ -74,17 +63,10 @@ export function progressKindLabel(kind: string): string {
   }
 }
 
-/** Maximum number of human-entered relative paths accepted for one inference. */
+/** 单次推断接受的人工输入文件数量上限。 */
 export const PROGRESS_FILES_LIMIT = 8;
 
-/**
- * Parse a human-entered list of project-relative file paths (one per line) into
- * a raw array. Empty lines are ignored and lines are NOT silently truncated: an
- * over-limit entry is surfaced by the caller (via PROGRESS_FILES_LIMIT) so the
- * human can correct it, rather than dropping a chosen path. The backend
- * re-validates every path against the approved project directory, so no client
- * parsing can widen that permission.
- */
+/** 保留每个非空路径；调用方提示数量超限，服务负责核对已批准目录。 */
 export function parseProgressFiles(text: string): string[] {
   return text.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 }

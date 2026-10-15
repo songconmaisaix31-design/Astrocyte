@@ -90,6 +90,12 @@ func TestRelayControlledCLIFullStateAndGitObservation(t *testing.T) {
 		return nil
 	}})
 	f.service = app.NewRelayService(f.store, f.works, f.projects, workspaces, nil, terminal, f.sink, f.options)
+	lifecycle := f.service.(app.RelayLifecycle)
+	t.Cleanup(func() {
+		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = lifecycle.Shutdown(shutdown)
+	})
 	id := f.intent()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -97,12 +103,6 @@ func TestRelayControlledCLIFullStateAndGitObservation(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	lifecycle := f.service.(app.RelayLifecycle)
-	t.Cleanup(func() {
-		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		_ = lifecycle.Shutdown(shutdown)
-	})
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
 		if e = lifecycle.ObserveOwned(ctx); e != nil {
@@ -224,6 +224,10 @@ func TestRelayControlledEOFFirstInputUnsupportedReceiptAndExplicitExit(t *testin
 	}
 	if counted.updates.Load() != 0 {
 		t.Fatal("real unchanged EOF process rewrote state on background ticks")
+	}
+	owned := findOwned(t, ownedReader(t, f.service), first)
+	if owned.SourceStatus != "gap" || owned.ArchivePath != "" || owned.ArchiveRoot != "" || owned.ArchiveFinalized != "unknown" {
+		t.Fatal("terminal stdout incorrectly became a complete native session source")
 	}
 	op := caller()
 	input := app.RelaySendCommand{Input: "must not resend"}

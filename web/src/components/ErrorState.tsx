@@ -3,7 +3,7 @@ interface ErrorStateProps {
   onRetry?: () => void;
 }
 
-/** Recoverable error with retry. No silent fallback. */
+/** 显示读取失败，并由人工明确重试。 */
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <div
