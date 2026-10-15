@@ -2,6 +2,20 @@
 
 ## 当前执行入口（2026-10-16）
 
+04:04 继续原任务。当前 runtime `835cbad4-6dd7-4574-a161-2c376d967a2c`、app PID27840，根 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669` 已普通绑定原 `run_973808dd6a2f` generation32。旧三个模块 Dispatch 已由运行时结算 abandoned / failed、原 Task ready；当前终端清单没有旧模块或开发终端。只恢复原 Task、原子 Run、原工作树、分支和 WIP，禁止新建 Run 或替代任务；原任务正文中的旧身份、create 子 Run 和旧验收顺序以本入口为准。根继续协调、管理文档、独立检查和最终 Git，领域代码由原作者完成。
+
+当前产品尚未恢复可访问。H 在 F UTC `18:50:28` 安全 ACK 后正常停止旧 PID25048；已复制并核 buildinfo 的准确 `0db5836b7cd466f6a5328bc84ba4530c2bb826ce` 因配置的 CodeGraph Node / SDK 程序检查退出 1，尚未监听，根当前查询64505也没有 listener。原件 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/api-0db-20261015-185255.stderr.log`；原数据库和 F 已保存的真实论文、项目、Goal / Proposal / Grant / ContextPacket 保留。先由 H / B 核 P 已备准确入口与原配置 probe，修实际错误并恢复同一 D 数据与首选64505，不放宽保护、不重置数据、不另起多个共享服务。
+
+| 原模块 / 子 Run | 当前恢复重点 | 原写入边界 |
+|---|---|---|
+| M-relay / `run_8bbda1c3974c` | 先恢复原 H，处理上述启动失败，继续清理生命周期、完成来源和 Q 独立 reader root；S4 / R 按实际依赖恢复 | 模块只写 relay.md；H 原树 `ef1ca4f` 的七件 WIP 保留，config.go 交原 B |
+| M-product / `run_dbf1a68bc692`、`run_7b2ce96bcd13` | 先恢复原 B / F；B 处理启动配置并交已提交 cleanup `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3`，F 先核已成功 / 未知动作后只读继续，同实例恢复后开展必要新操作 | 模块只写 product.md；B 十件 native WIP 和 F 六件检查脚本保留，其他原作者按实际依赖恢复 |
+| M-release / `run_aa4e6a119547` | 恢复唯一 I；当前 `8b0eb882969d972f3f419602c12b5e20f00b79e2` clean，先核中断 check 原件，再普通消费已确认 B / F 与 H 后继、执行必要构建 | 模块只写原发布管理文档；仅 I 合并，领域冲突由原作者新 ACK 精确处理并归还 |
+
+已通过构建的准确阶段仅为 `0db5836b7cd466f6a5328bc84ba4530c2bb826ce`：原 `pnpm build` EXIT0 / `127.2549809` 秒，server / MCP / Sleep / TypeScript / Vite 全部完成，根独读 result / log 核 source_after 同值；其后 I 已普通合 S2 `8ef7219` 得到上述8b。8b 的完整 check 已见 cmd/server 五项首失败，后续 agents / events 也有输出目录、身份、junction 命令和权限失败，完整退出由原 I 核原件，不重跑已知未修问题。默认前端320中断的准确统计为204 PASS / 55 FAIL / 43原SKIP / 18无结果，EXIT UNKNOWN，原件保留；不先重跑全套。
+
+F 已在同一产品完成七页 DOM 可访问检查，并实际写入三份公开论文资料、人工摘录、公开项目 / 目录授权、Goal / Proposal / Grant 和固定上下文，HTTP 成功与首错误断言分列；其后只读 SQLite / DOM 恢复核查尚在进行，不重复成功或未知 mutation。Q 当前真实快照及 P 实际依赖已交 H，认知 root 与产品 dataDir / LOCALAPPDATA 分别配置，保持实际日期和 generation。Laya 问题语言范围、Agent completion action 和原 S3 等问题仍未收到用户选择，见 QUESTIONS；Laya 未配置，受限 Codex 继续明确拒绝，不新增登记 / 初始化 / 模型或重复相同探针。成功模型、OS、Q / D1 / P 准备及正式 D2 partial 不重做；普通产品运行优先，最终功能、适用检查和发布继续按实际结果完成。
+
 02:33 同一普通产品已恢复：`http://127.0.0.1:64505/`，新 PID `25048`，启动 UTC `2026-10-15T18:28:44.7333357Z`。原 H 保持 D 盘稳定二进制、web、配置和同一 `state.sqlite`；M-relay 独核唯一 loopback listener、实际进程与 buildinfo `ad8413e119379c9795bab558a41fe425ea9095ca` / modified=false，根实际 GET 首页 HTTP200 / text/html / 562 bytes，并独核 PID、启动时间、程序路径和 listener。`running.json` 已更新；此结果只确认当前运行状态，Judgment / Taste、S4 清理和提交后通知、完成来源后继与核心业务操作继续实施和验证。
 
 当前模块 Dispatch 为 M-relay `ctx_f967479130c2`、M-release `ctx_4b5bd58b23e1`、M-product `ctx_a3dc3bfa5554`，沿原子 Run 继续；唯一 I `ctx_76c7ff15d7e0` 已实际开始，原树 `d59a10036d1ed18b875ced136f1cf741e320a384` clean；原 H `ctx_7822f0fe0335`、R `ctx_3920346a06ed`、S4 `ctx_f150ca32cf39` 和 F `ctx_fefd1edc052e` 已接当前工作。原 H 继续七件生产装配 WIP，I 后继构建交同一 H 更新同一实例，F 保持唯一核心业务操作；不重启第二共享服务、不重置数据。原 320 项中断结果先核原件，普通产品优先且不先重跑全面测试；未决定权限和受限原生能力缺口保持原边界。

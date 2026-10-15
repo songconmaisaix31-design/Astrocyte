@@ -2,6 +2,8 @@
 
 ## 当前开发与磁盘要求（2026-10-16）
 
+04:04 继续原任务，根已绑定原 Run generation32；当前 runtime 重启后原三个模块 Task ready，沿原 Task / 子 Run / 工作树和 WIP 恢复。64505 当前没有 listener：原 H 停止旧服务并更新准确 `0db5836` 时，CodeGraph Node / SDK 启动校验退出1，原 D 数据及真实业务保存结果保持。先恢复原 H / B 修启动与装配、原 F 核同实例已保存结果，以及唯一 I 的普通集成和必要构建；准确当前 I 为 `8b0eb882` clean。`0db5836` 的完整 build 已真实通过，8b check 与前端320中断均未通过完整验收，具体原件、任务身份和范围见 [HANDOFF](HANDOFF.md)。Laya 语言和 Agent completion action 等未答项保持未决定，产品优先及原生工具关闭、真实来源和未知不重发边界继续。
+
 02:33 同一产品已恢复至 `http://127.0.0.1:64505/`，PID25048，启动 UTC `18:28:44.7333357Z`，原 D 盘数据和配置保持；根实际核首页200、程序路径和唯一 listener，M-relay 独核 buildinfo 为准确 `ad8413e1` / modified=false。原 H / R / S4、F 和唯一 I 已实际接续，继续生产装配、普通集成与同实例核心业务；I 原 `d59a100` clean。当前可访问结果不代替完整产品验收，原 320 项中断、待定权限与受限原生能力缺口继续如实处理，准确身份与运行定位见 [HANDOFF](HANDOFF.md)。
 
 02:21 Orca runtime 重启后继续原任务；根已普通绑定原 Run generation31，先恢复原 H 的产品服务和七件生产装配 WIP、唯一 I 的同源集成，以及原 F / B / S2 的核心运行支持。旧 PID47956 已不存在、64505 无 listener，D 盘运行数据保留，恢复同一服务且不重置数据库。I 当前 `d59a100` clean，H 当前 `bcfb145` 带原 WIP；F 完整 320 项中断于已输出302之后，最终统计待核，不先重跑全面测试。用户当前优先级仍为集成并跑通完整产品，再并行整理与测试；具体恢复身份、固定 Task / Run 与边界见 [HANDOFF](HANDOFF.md)。
