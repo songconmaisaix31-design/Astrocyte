@@ -23,6 +23,30 @@ SOURCE `c5925670311189acc5294f8be58fe014afe8ae55` 已普通 push，包含本树�
 
 当前生产 `cmd/server/main.go` 的 Repository services 为空；原 S4 `ctx_09391d7a7e02` 已交实际 CodeGraph/AOCI 配置和只读公开两个 worktree 指针，但依赖 H 后继安全装配 SOURCE。模块明确禁止消费 `59a7150b1143680b67fe53fdf831fcca5f328660`，本树未消费该提交。安全 Context → S3 → S4/S5 的准确 OpenAPI、生成客户端和入口继续由 H/F 持有；S3 现行准确业务 SOURCE 为 `a5d00e764ffa0266bf34067190f72f3463fe9852`，没有依据私有原生 controller 信息扩展页面字段。Calls 单位和权限证据未答，Claim 拒绝与原生窗口零保持。完整 check、默认 E2E、正向 S4、Context、S3/S5 和 Windows 最终包尚未通过，任务持续支持集成。
 
+## 2026-10-15 22:43 固定目标版本与真实组合验证
+
+本阶段 SOURCE `dbd1018f163e6760cc7806c302fd3aa677706267`。目标列表提供键盘可操作的详情入口，详情显示名称、成功条件、优先级、状态、项目、固定版本及保存时间；支持当前记录、不可变历史版本、相邻版本差分与人工创建新版本。并发版本冲突保留编辑内容，重新读取当前目标后，用户明确核对并选择新版本再保存。目标状态使用现有生成契约的 `active / paused / completed / archived`，已有目标的项目保持固定。未知保存结果沿同一目标作用域保留跨关闭和刷新锁，不自动重发。
+
+提案详情按已经保存的 Goal ID 与 revision 读取固定目标，展开后显示原名称和成功条件。当前目标更新后，历史提案、Grant 与该展开内容继续引用原版本；固定目标读取、历史记录和编辑命令均使用 F 现有 `proposalsApi`，没有新增公共 DTO、共享请求或认证实现。
+
+| 实际命令或路径 | 本阶段结果与本机记录 |
+|---|---|
+| 新 Goal 两场景 × 两 viewport 首轮 | 4 PASS，5.2 分钟；真实 CAS 冲突、人工核对保存 r3、旧 Goal/提案/Grant 引用、SQLite 与进程重启、离线未知跨关闭/刷新锁。`.verification/product-ui/e2e-goal-revisions-first.log` 与报告、真实数据库保留 |
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s2-proposals.spec.ts --workers=1 --retries=0 --output ../.verification/product-ui/e2e-s2-goal-combined-first` | 15 PASS / 1 FAIL，27.6 分钟；全部原 12 项及新增 4 项，无 retry / skip / 断言删减。新增固定目标展开路径在两个 viewport 通过；`.verification/product-ui/e2e-s2-goal-combined-first.log` 与 `e2e-s2-goal-combined-first-report` 保留 |
+| 组合首 FAIL | 第 3 项 1920，在 `realService` 的实际 Vite 就绪 GET `http://127.0.0.1:56087` 发生 `read ECONNRESET`；Go health 已 200、Vite ready 3234ms，尚无 auth 请求及业务交互。真实数据 `astrocyte-s1-UorV8K`、error-context 与 trace 均保留；已交 F，未修改 helper 或降低验收 |
+| 首次 Goal 类型与 lint 检查 | 三处测试访问 `grant` 字段的类型错误及同文件导出常量的 Fast Refresh warning 保留；随后沿生成响应的 `approval` 字段和独立 `goalDraft.ts` 修正 |
+| 最新 `pnpm --dir web typecheck` | PASS；`.verification/product-ui/typecheck-goal-question-second.log` |
+| `pnpm --dir web exec eslint src/pages/attention/delegation src/pages/workspace/proposals e2e/s2-proposals.spec.ts` | PASS，0 errors / 0 warnings |
+| `pnpm build` | PASS：Go 服务、MCP、Sleep 和生产 Web；`.verification/product-ui/build-goal-question-first.log`。Vite 分块提示保留 |
+| `pnpm check` | FAIL：`internal/adapters/httpapi/workspace_context_packets.go` 的 gofmt；`.verification/product-ui/check-repository-goal-first.log`。该文件归原后端负责人，准确 H 安全组合已包含修正，待 F 交完整可消费来源 |
+| `git diff --check`、`git diff --cached --check` | PASS |
+
+同一 SOURCE 的 `JudgmentQuestionFields` 按准确 S5 `d73507a8a26ce49b92ec8504649738f336bcdfd1` 的 Question 与验证规则提供受控编辑：显式题型、完整题目、2–255 个候选选项与固定必要依据、2–10 个有序评分等级、确定性规则选择、重复标识和当前不可用依据提示。切换题型保留输入并提示规则不匹配。该组件仅为本域表单字段，没有 API 保存、委托开启或判断调用；S5 实际功能仍待准确公共客户端，不登记为 HTTP 或业务通过。
+
+本阶段首次及第二次普通 push 发生 `SSL_ERROR_SYSCALL`，第二次后独立远端核为前一 REPORT `47467a886ba6a013df33607f1569afad15ed9cc5`；原错误保留于本 Dispatch 命令记录。后续继续普通 push，不改历史。
+
+模块 `msg_d8f6943bf737` 与原问题 `msg_063afc14de9a` 的准确答复已给 F 入口 SOURCE `d94f6ef2d3188c02e82ccf9cee529833e9f89df5` / REPORT `02a7976d997ef14ac298b2e240da43a9bb423c93`，模块已核远端，并报告 S4 两尺寸未配置/权限恢复 2 PASS。当前 16 项已自然结束，先保存本域 SOURCE / 独立 REPORT，再只读预检并普通消费该精确入口。新的大型验证使用 B 后继显式 D 盘 helper；原证据保留。H 安全 Context `fbf2a4a4752ef2842900b3d3a851f80986734ce9` → F 的生成客户端仍在原负责人组合流程；S3、Context 正向、S4 真实索引与两个 worktree、S5、完整默认检查和最终包继续未完成。
+
 ## S5 委托设置的实际接口依赖
 
 根经模块明确授权按 SPEC §5.3、§7.1、§11 实现逐题型委托。题型、单一后端、语言、外发范围、预算、复核和阈值由用户明确填写；题型为 `choice / score / truth`，资料准入用途为 `opportunity_admission`。未配置时拒绝自动委托；推荐、资料准入和任务批准各自保留服务端边界。
