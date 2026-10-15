@@ -1,5 +1,29 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 01:22 实际 S2 / S3 人工路径与固定上下文验证
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`，分支 `songconmaisaix31-design/product-ui-20261015`。当前准确 SOURCE `471bcc9f34b5ae82375b03fdcf5938d3a127d9b1` 已普通 push 并独核远端同值，工作区 clean。本域页面增量为 `64ab5cadb93067aacfe11c51f5ad0036cf9bb49a`、`32adab9201f44d6a1628da1f02a48d9e4a2ba819`、`614ebc72bf87d8c41bd75be67f659da34a85526b`；原 S3 用例 SOURCE `033557f16b6b806e8a1626fc28bfd34bde13bed7`，后继测试修复为当前 SOURCE。
+
+模块 `msg_ff0a45cfebe9` 放行后，从 clean 检查点只读预检 I `9ce5c2c21b273344e2448bee2ee4b80fa27d5fec`，EXIT0 / 无冲突，tree `81661e49401b14986ffdecd0ed1dda86ff054fd7`。随后普通 no-ff 消费为 `60288aa0d1d2a5b1ceb014497b60ab89ba3620ea`，无冲突；成熟 YAML 完整解析通过，未手改 OpenAPI。前一 REPORT `ba0ed8f` 首次普通 push 的 `remote rejected (failed)` 保留；后续 SOURCE 普通 push 成功，包含该 REPORT 与准确 I 消费。
+
+本轮全部真实服务使用生产 Go、实际 HTTP、独立 SQLite、真实 Git 与已跟踪公开协议资料；原生控制与模型调用均为零。全部浏览器运行 `workers=1 / retries=0`，1920×1080 和 1280×720；没有改原断言、超时或新增 skip。
+
+| 实际运行 | 精确结果与本机证据 |
+|---|---|
+| S3 + Context 两文件、两尺寸共 12 项 | 8 PASS / 4 FAIL，2.5 分钟；`logs/e2e-swarm-context-second.log`、`swarm-context-e2e-second-report` / `-results` 与全部实际数据库保留。S3 四场景两尺寸八项全部 PASS；四个 Context 失败均为测试提案前置未填必需资源上限，被真实服务拒绝 |
+| S3 实际覆盖 | 明确建立 ready Mission、真实固定输入工作项、租约为空和原生执行为零、时间线全部 event_id 在真实 outbox 逐项定位、暂停 / 恢复 / 取消、工作项随任务取消、SQLite 重启、版本冲突保留输入及人工核对、Grant 撤销后的新动作 403、离线未知锁跨关闭 / 刷新保持、读取 403 后快照 / 输入保持与人工恢复、任务 / 工作项 / 时间线 / 产物空集合导航 |
+| 全部原 S2 + Context 两文件、两尺寸共 20 项 | 15 PASS / 5 FAIL，12.2 分钟；`logs/e2e-s2-context-third.log` 与 `s2-context-e2e-third-*` 保留。原 S2 为 13 PASS / 3 FAIL；三个 1280 失败均为 Vite 初始化就绪 GET 在约 1 秒的 response_headers timeout，尚未进入业务，已交唯一 B。另两个 Context 已真实建立原包和后继、展开来源并完成 403 恢复，失败为本域测试查询遗漏事件类型 `workspace.` 前缀；实际两条事件已逐一在原 SQLite 找到 |
+| 修正后的完整 Context 四项 | 4 PASS / EXIT0，1.0 分钟；`logs/e2e-context-fourth.log` 与 `context-e2e-fourth-*`。SOURCE `471bcc9` 使用明确调用上限和准确事件类型，新增按每个 event_id 的独立 SQL 定位，全部断言保留。采用 `GOMAXPROCS=2 / GOFLAGS=-p=2`，其余期限、helper 和断言不变 |
+| Context 实际覆盖 | 建立固定上下文、实际来源与 Goal 版本、相对根和无绝对根快照、实际 HEAD / 两项 digest、原包不可变及显式后继、来源与备注展开、真实 403 快照保持及恢复、两条真实构建事件、服务重启后按 ID 读取、Grant 撤销后新建拒绝、零原生会话、离线未知锁跨关闭 / 刷新保持与零重发 |
+| 原 S2 三个初始化失败的限定资源复验 | 3 PASS / EXIT0，35.8 秒；`logs/e2e-s2-resource-fifth.log` 与 `s2-resource-e2e-fifth-*`。原 `s2-proposals.spec.ts` 未修改，限定原三名称及 chromium-1280，使用同一 Go 资源限制；未修改 ready 1000ms、任何超时、retries 或断言。原 S2 的 16 项成功覆盖来自前轮 13 项加本轮 3 项，未登记成单轮全绿 |
+| 最终 `pnpm --dir web typecheck` | PASS / EXIT0；`logs/typecheck-s2-s3-final.log` |
+| 最终生产 Go 三个目标 | `go build -mod=readonly -trimpath -o D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-s2-s3-final/astrocyte.exe ./cmd/server` 及同目录 MCP / Sleep 对应目标均 PASS / EXIT0；`logs/go-server-final.log`、`go-mcp-final.log`、`go-sleep-final.log` |
+| 最终生产 Web | `pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-s2-s3-final/web` PASS / EXIT0；`logs/web-build-s2-s3-final.log`，保留既有大于 500 kB 分块提示 |
+
+所有路径前缀均为 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`，仅本机指针；数据库、trace、原始失败与凭据不进入 Git 或包。原三次 Vite 超时的具体目录为第三轮 `astrocyte-s1-327UNH/process-logs-YdujCJ`、`astrocyte-s1-DAi6q9/process-logs-BNmHZU`、`astrocyte-s1-rPoQ26/process-logs-LeF7Ak`。限定资源复验成功不构成对原启动失败原因的确定诊断，helper 逻辑继续归 B。
+
+当前只登记以上实际覆盖。S3 原生认领 / 提交、Artifact diff / 采用 / 退回正向、S4 配置后索引及双 worktree、S5 实际客户端、完整默认浏览器与标准 `pnpm check` / `pnpm build`、最终 Windows 包继续待对应准确组合验收。标准 build 固定本树普通 C 盘 dist，本轮使用上表完整生产目标的显式 D 输出，没有将其记为标准命令通过。S3 两项待答和相关认领门禁保持，未开启原生控制。已向模块请求准确 core 检查安排，向 S4 请求当前公开双 worktree / 启动参数；同一任务持续支持集成及返修，未结算整功能。
+
 ## 2026-10-16 00:59 真实 Swarm 集合与导航
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，SOURCE `614ebc72bf87d8c41bd75be67f659da34a85526b` 已普通 push 并独核远端同值，仅修改 Swarm 页面、Mission 详情及新增集合组件 / Hook 和原 S3 用例五件。默认协作现场可展开已有任务、查看任务和工作项；成果与继承显示实际产物引用。工作项、当前租约、产物和事件来自每个真实 Mission 详情，独立读取并保留 loading / empty / error / stale / 人工重试；任务列表权限错误传播至三个集合，未取得记录时数量明确未知。工作项和产物可直接打开原功能详情；建立 Mission 入口在空记录折叠时仍可使用。
