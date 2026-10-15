@@ -236,17 +236,25 @@ func (t *swarmTransaction) SaveWorkItem(w domain.WorkItem, expected int) error {
 	return swarmCAS(t.exec.ExecContext(t.ctx, "UPDATE swarm_work_items SET version=?,fence=?,data=? WHERE id=? AND version=? AND mission_id=? AND fence<=?", w.Version, w.Fence, string(b), w.ID, expected, w.MissionID, w.Fence))
 }
 func (t *swarmTransaction) Lease(id string) (domain.Lease, error) {
-	return swarmDecode[domain.Lease](t.exec.QueryRowContext(t.ctx, "SELECT data FROM swarm_leases WHERE work_item_id=?", id), "lease", id)
+	return swarmLoadLease(t.exec.QueryRowContext(t.ctx, "SELECT data FROM swarm_leases WHERE work_item_id=?", id), id)
 }
 func (t *swarmTransaction) ActiveLeases(project string) ([]domain.Lease, error) {
 	rows, err := t.exec.QueryContext(t.ctx, "SELECT data FROM swarm_leases WHERE project_id=? ORDER BY work_item_id", project)
 	if err != nil {
 		return nil, err
 	}
-	return swarmRows[domain.Lease](rows)
+	stored, err := swarmRows[storedSwarmLease](rows)
+	if err != nil {
+		return nil, err
+	}
+	leases := make([]domain.Lease, 0, len(stored))
+	for _, l := range stored {
+		leases = append(leases, l.restore())
+	}
+	return leases, nil
 }
 func (t *swarmTransaction) SaveLease(l domain.Lease) error {
-	b, err := json.Marshal(l)
+	b, err := json.Marshal(storeSwarmLease(l))
 	if err != nil {
 		return err
 	}

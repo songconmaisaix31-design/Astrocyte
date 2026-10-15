@@ -9,17 +9,19 @@ import (
 )
 
 type AuthorizedBinding struct {
-	ID              string
-	Purpose         string
-	Version         int
-	PacketID        string
-	ProjectID       string
-	MemberID        string
-	SessionID       string
-	NativeSessionID string
-	AdapterID       string
-	WorktreeID      string
-	Root            string
+	ID                 string
+	Purpose            string
+	Version            int
+	PacketID           string
+	ProjectID          string
+	MemberID           string
+	SessionID          string
+	NativeSessionID    string
+	AdapterID          string
+	ControllerID       string
+	StartupOperationID string
+	WorktreeID         string
+	Root               string
 }
 type authorizedBindingKey struct{}
 
