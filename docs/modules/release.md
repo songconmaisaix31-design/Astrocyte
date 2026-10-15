@@ -45,9 +45,17 @@ I 随后普通合入 F REPORT `02a7976d997ef14ac298b2e240da43a9bb423c93`，当�
 | B，经 M-product | `dependencies.lock.json`、`go.sum` |
 | S2，经 M-product | `docs/standards/workspace-s2.md`；`internal/adapters/sqlite/workspace_context_packets.go`、`workspace_proposals.go`、`workspace_session_bindings.go`；`internal/workspace/app/project_policy.go`、`project_policy_test.go`、`proposal_ports.go`、`s2_service.go`；`internal/workspace/domain/proposal_context.go`、`proposals.go`、`session_bindings.go` |
 | H，经 M-relay | `cmd/server/main.go`、`internal/adapters/httpapi/server.go`、`internal/adapters/httpapi/relay_scoped_workspace.go` |
-| 同一 I，根授权待答 | `HANDOFF.md`、`STATUS.md`、`tasks/Workbench-v01.md`；当前没有沿首 B 的一次性授权继续编辑 |
+| 同一 I，根正式回复 `msg_f2e0f3db3f00` / `msg_4be8d2ff453c` | `HANDOFF.md`、`STATUS.md`、`tasks/Workbench-v01.md`；授权覆盖本次 F 及本轮剩余 R/H 普通集成的同类三文档冲突，每次保持准确现场与本人 STOP，其他文档和领域保持原归属 |
 
 各原 owner 只在指定路径使用文件编辑工具解决冲突并 stage，不复制未提交 WIP、不进行整体选边、commit / continue / abort / reset。本人完成后停止 I 树全部写入并归还；本模块核准确现场、U0 和适用 diff，再由唯一 I 继续当前 F 普通合并。完整验证仍在准确组合执行，冲突消除不作为功能通过。
+
+根 `msg_08131884a50c` 另明确最终组合的管理文档同步范围：同一 I 可在 `tasks/cognitive-stack-L1-L4.md`、`docs/QUESTIONS.md`、`tasks/v0.3-capability-board.md` 用文件编辑工具仅同步根 `eb27bd6712b5df92a55ad542026534860726d8ff` 的六步 / 工程与效果验收，以及 `a237123ad681164a9cecb697d5e2fc5ac5ba986d` 的三项已确认决定，保留集成树其他必要记录。发布任务与 M-relay 的 v1.4 管理规格在最终阶段按各原 owner 准确已提交来源同步；领域冲突优先，不因这些文档阻断组合，不普通合入 validation 其他祖先。
+
+根 `msg_ebd1d95065c5` 依据 H 原生产调用链明确独立 Relay L1 不经过 S3 Claim / 预算预留。S3 未答门禁继续约束 S3，独立 L1 按既有授权继续，先由 H 接入原 `LaunchContextReader` 的真实固定批准上下文，再于准确 I 组合验证后使用原 F/H 唯一原生窗口。工具关闭、公开固定任务、真实来源、180 秒原计时、单次输入 / unknown 不重发、逐 event_id 与独立释放审计保持；当前只读范围核查不计为 L1 或模型通过。
+
+管理 SOURCE `bb4c2e1ec3ffb5a2ceb66733d9c3a4ed01b15d8c` 已普通 push 且独立远端同值；后继 F 冲突计划 `4e0c762` 已普通 push。此前多次 OpenSSL TLS 握手失败保留；本次仅命令级使用既有本机代理、Schannel 与 HTTP/1.1 完成两次实际传输，证书验证保留、无全局配置修改，按实际单次结果登记。S5 的单件 S2 测试临时处理已原作者停止写入归还，本模块独核 U0、两种 diff 检查及四件准确 S2 来源后放行 S5 继续；原私域 WIP 保留，实际完整 AT12 继续。
+
+C 盘近期只读检查发现旧 Go cache 仅 809 文件 / 3,052,617 bytes，未执行清理。F 与产品 UI 的 `.verification` 近二十分钟修改文件分别合计 318,459,453 / 187,608,068 bytes，此值属于 mtime 选定集合，不等于新增或删除量；两目录总量分别 8,624,895,757 / 1,993,251,260 bytes。原 `tests/s1/server.mjs` 将新编译程序、各服务独立副本、SQLite 和工具临时目录固定放入工作树 `.verification`，已交原 B / M-product 为后续新检查提供明确 D 盘输出并保原安全限制；现有检查不中断，旧证据、数据库、日志不移动或删除。C 盘本次空余 11,442,434,048 bytes。
 
 ### 22:05 首次集成冲突的互斥处理记录
 
