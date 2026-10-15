@@ -59,6 +59,22 @@ func swarmMatchNativeTuple(e workspace.RelayMemberEvidence, purpose, session, na
 	return nil
 }
 
+func swarmMatchPreparedInput(prepared workspace.RelayPreparedInput, e workspace.RelayMemberEvidence, p domain.Principal) error {
+	if err := swarmMatchNativeTuple(e, "claim_work_item", prepared.Session.ID, prepared.Session.NativeID, prepared.Session.CLI, prepared.ControllerID, prepared.StartupOperationID, prepared.OperationID, prepared.Session.ProjectID, prepared.WorkspaceRoot); err != nil {
+		return err
+	}
+	if p.Kind != "agent" || p.ID == "" || p.ProjectID == "" || prepared.ActorKind != "agent" || prepared.ActorID != p.ID || prepared.ActorProjectID != p.ProjectID || prepared.Session.ProjectID != p.ProjectID {
+		return domain.Failure(apierrors.ScopeDenied, "prepared input actor differs from the current authenticated member")
+	}
+	if prepared.PreparedAt.IsZero() || prepared.Session.Ownership != "owned" || prepared.Session.StopConfirmed {
+		return domain.Failure(apierrors.EvidenceMissing, "actual unattempted preparation and owned session evidence are required")
+	}
+	if e.InputAccepted || e.AcceptedTurnID != nil || e.InputAcceptedAt != nil || e.Outcome != nil || e.FailureCode != nil || e.ResultSource != "" || e.ResultObservedAt != nil {
+		return domain.Failure(apierrors.DeliveryUnknown, "a new lease cannot be added after an original input acceptance or result")
+	}
+	return nil
+}
+
 func (b *SwarmNativeBridge) memberEvidence(ctx context.Context, p domain.Principal, m swarm.Member) (workspace.RelayMemberEvidence, error) {
 	authorized, err := swarm.AuthorizedBindingForMember(ctx, p, m)
 	if err != nil {
@@ -78,7 +94,15 @@ func (b *SwarmNativeBridge) memberEvidence(ctx context.Context, p domain.Princip
 	if m.Purpose == "claim_work_item" {
 		l, err := b.repo.LeaseForOperation(ctx, m.OperationID, m.SessionID)
 		if missingSwarmLease(err) {
-			return e, domain.Failure(apierrors.UnsupportedCapability, "original Registry contract does not verify prepared input identity for a new lease")
+			reader, ok := b.source.(workspace.RelayPreparedInputReader)
+			if !ok {
+				return e, domain.Failure(apierrors.UnsupportedCapability, "actual original Registry prepared input reader is unavailable")
+			}
+			prepared, err := reader.ReadPreparedNativeSession(ctx, m.SessionID, m.OperationID)
+			if err != nil {
+				return e, err
+			}
+			return e, swarmMatchPreparedInput(prepared, e, p)
 		}
 		if err != nil {
 			return e, err

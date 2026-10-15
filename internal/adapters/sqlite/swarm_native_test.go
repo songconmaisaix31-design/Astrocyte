@@ -164,3 +164,68 @@ func TestSwarmNativeIncompleteOrContradictoryResultParametersFail(t *testing.T) 
 		})
 	}
 }
+
+func TestSwarmNativePreparedInputParametersRequireCurrentActorAndUnsentInput(t *testing.T) {
+	p := domain.Principal{Kind: "agent", ID: "member-parameter", ProjectID: "project-parameter"}
+	prepared := workspace.RelayPreparedInput{Session: workspace.NativeSession{ID: "session-parameter", NativeID: "native-parameter", CLI: "codex", ProjectID: p.ProjectID, Ownership: "owned"}, OperationID: "input-parameter", ActorID: p.ID, ActorKind: p.Kind, ActorProjectID: p.ProjectID, ControllerID: "controller-parameter", StartupOperationID: "startup-parameter", WorkspaceRoot: "canonical-root-parameter", PreparedAt: time.Now().UTC()}
+	e := workspace.RelayMemberEvidence{Purpose: "claim_work_item", SessionID: prepared.Session.ID, NativeID: prepared.Session.NativeID, CLI: prepared.Session.CLI, CLIVersion: "version-parameter", ProjectID: prepared.Session.ProjectID, ControllerID: prepared.ControllerID, StartupOperationID: prepared.StartupOperationID, InputOperationID: prepared.OperationID, CWD: prepared.WorkspaceRoot, ControllerHeld: true}
+	if err := swarmMatchPreparedInput(prepared, e, p); err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name   string
+		change func(*workspace.RelayPreparedInput)
+	}{
+		{"actor_kind", func(v *workspace.RelayPreparedInput) { v.ActorKind = "human" }},
+		{"actor_id", func(v *workspace.RelayPreparedInput) { v.ActorID = "other" }},
+		{"actor_project_missing", func(v *workspace.RelayPreparedInput) { v.ActorProjectID = "" }},
+		{"actor_project", func(v *workspace.RelayPreparedInput) { v.ActorProjectID = "other" }},
+		{"prepared_time", func(v *workspace.RelayPreparedInput) { v.PreparedAt = time.Time{} }},
+		{"ownership", func(v *workspace.RelayPreparedInput) { v.Session.Ownership = "discovered" }},
+		{"stopped", func(v *workspace.RelayPreparedInput) { v.Session.StopConfirmed = true }},
+		{"operation", func(v *workspace.RelayPreparedInput) { v.OperationID = "other" }},
+		{"session", func(v *workspace.RelayPreparedInput) { v.Session.ID = "other" }},
+		{"native", func(v *workspace.RelayPreparedInput) { v.Session.NativeID = "other" }},
+		{"controller", func(v *workspace.RelayPreparedInput) { v.ControllerID = "other" }},
+		{"startup", func(v *workspace.RelayPreparedInput) { v.StartupOperationID = "other" }},
+		{"root", func(v *workspace.RelayPreparedInput) { v.WorkspaceRoot = "other" }},
+		{"project", func(v *workspace.RelayPreparedInput) { v.Session.ProjectID = "other" }},
+		{"adapter", func(v *workspace.RelayPreparedInput) { v.Session.CLI = "other" }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			changed := prepared
+			tc.change(&changed)
+			if err := swarmMatchPreparedInput(changed, e, p); err == nil {
+				t.Fatal("changed preparation identity or missing evidence was accepted")
+			}
+		})
+	}
+	turn, outcome, failure := "turn-parameter", "completed", "native_failure"
+	observed := time.Now().UTC()
+	for _, tc := range []struct {
+		name   string
+		change func(*workspace.RelayMemberEvidence)
+	}{
+		{"accepted", func(v *workspace.RelayMemberEvidence) { v.InputAccepted = true }},
+		{"accepted_turn", func(v *workspace.RelayMemberEvidence) { v.AcceptedTurnID = &turn }},
+		{"accepted_time", func(v *workspace.RelayMemberEvidence) { v.InputAcceptedAt = &observed }},
+		{"outcome", func(v *workspace.RelayMemberEvidence) { v.Outcome = &outcome }},
+		{"failure", func(v *workspace.RelayMemberEvidence) { v.FailureCode = &failure }},
+		{"result_source", func(v *workspace.RelayMemberEvidence) { v.ResultSource = "codex_turn_completed" }},
+		{"result_time", func(v *workspace.RelayMemberEvidence) { v.ResultObservedAt = &observed }},
+		{"exited", func(v *workspace.RelayMemberEvidence) { v.ExitConfirmed = true }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			changed := e
+			tc.change(&changed)
+			if err := swarmMatchPreparedInput(prepared, changed, p); err == nil {
+				t.Fatal("accepted or completed input was allowed to claim after execution")
+			}
+		})
+	}
+	for _, current := range []domain.Principal{{Kind: "human", ID: p.ID, ProjectID: p.ProjectID}, {Kind: "agent", ID: "other", ProjectID: p.ProjectID}, {Kind: "agent", ID: p.ID, ProjectID: "other"}, {Kind: "agent", ProjectID: p.ProjectID}} {
+		if err := swarmMatchPreparedInput(prepared, e, current); err == nil {
+			t.Fatal("prepared input was accepted for another current principal")
+		}
+	}
+}
