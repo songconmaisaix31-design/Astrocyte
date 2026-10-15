@@ -2,7 +2,20 @@
 
 ## 责任与事实源
 
-2026-10-14，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa` / 终端 `term_580c19de-0c3d-49db-805e-8637184b9301`，子 Run `run_dbf1a68bc692`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，接管基线 `dd60de11bca85662f5bb4a5b281cc7b42e6ffd2f`，接管时工作区无改动。
+2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_e027eba3e81f` / 终端 `term_b3e20cab-a0dc-4cbf-ae56-a13193a65a73`，原子 Run `run_dbf1a68bc692` 已由当前终端接管至 generation 2。总负责人为 `term_cd5e93fe-8940-4fa1-8be6-ea914f3629ae` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `51b0c79fe867b7e0026cb409aed039e6687d77bb`，接管时工作区无改动。旧模块 Dispatch `ctx_b1cd2e0a39aa` 已因重启登记 failed / terminal_missing，历史记录保留。
+
+### 2026-10-15 10:18 重启恢复计划
+
+根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
+
+| 恢复轨道 | 原 Task / 固定工作树 | 实际恢复基线与首项工作 |
+|---|---|---|
+| T | `task_5f0a79b6a17a` / `product-attention-tests-20261014` | HEAD `da76e66b8850dc1161b0e731a950769958dfe4ca`，clean。原准入 consumer RED 保留；消费 S2 实际修复后继续同 DB 真实完整链，不能填造 PolicyVersion |
+| S2 | `task_6846cdb90c46` / `product-video-20261014` | HEAD `0f16112cd3fd396896f7bdf5323140f104d37cd0`，仅 `tests/s2/approval_test.go` WIP 原样保留。先核当前 SOURCE/REPORT 与实际 Context；收到 S5 STOP 后按下方精确十六文件计划给安全 ACK。`workspace/app/service.go` 仍归 B，S2 只写 `s2_service.go` 等已明确路径 |
+| S3/S6 | `task_da9aebf03f83` / `product-swarm-20261015` | HEAD `fb57f0f31c4e667b050cb26891a891190eaf4c14`，clean。继续实际 policy/source、公开生产端口与真实两 Agent 链，缺原生开始条件保持 NOT_RUN |
+| 产品 UI | `task_d0cee5a583bb` / `product-ui-20261015` | HEAD `f70fadfa8d0645ee342cbf96ff67fc97e6e16079`，clean。保留 S2 十项与资料引用两项成功，继续 Context / S3 / S4；消费 H→F 精确公开契约。S4 已移交的 `repositorycontext/**` 与 `s4-*.spec.ts` 仍由此唯一 owner 负责 |
+
+本模块已向当前 M-release `ctx_744d9ac00043` / `run_aa4e6a119547` 交接 S5 十八冲突 STOP 条件，向当前 M-relay `ctx_e5acf96d0a7d` 交接 Context→S3→S4 公开契约顺序。临时跨树编辑仍须 S5 STOP 与原 B/S2 的明确安全检查点 ACK；无 ACK 不编辑共享冲突。各轨启动后立即以当前模块 Dispatch 汇报新实际终端、模型、WIP、准确源码与下一依赖，后续阶段 SOURCE / 独立 REPORT 普通 push，全部首 RED / UNKNOWN / NOT_RUN 保留。
 
 事实源为 [AGENTS.md](../../AGENTS.md)、[HANDOFF.md](../../HANDOFF.md)、[STATUS.md](../../STATUS.md)、[SPEC](../SPEC.md)、[TASKS](../TASKS.md)、[QUESTIONS](../QUESTIONS.md) 和 [本次发布任务](../../tasks/Release-v0.1-20261014.md)。本模块只修改此文件，负责资料导入、人工沉淀、项目权限、进度与全部既有 Web。用户最新明确按 SPEC 并行实施 S0–S6，根消息 `msg_e83cb8e73578`、`msg_c07e28cb0b8f` 已转交；具体私有外发、自由工具及 `working` 条件仍按待答边界处理。
 
