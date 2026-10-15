@@ -123,6 +123,17 @@ test('真实人工建立任务、添加工作项、时间线、暂停恢复取�
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('button', { name: `查看任务 ${mission.grant.goal}`, exact: true })).toBeFocused();
+    await page.getByRole('button', { name: `查看工作项 ${work.title}`, exact: true }).click();
+    const overviewWork = page.getByRole('dialog', { name: '工作项详情', exact: true });
+    await expect(overviewWork.getByRole('region', { name: '工作项详情', exact: true })).toContainText(work.id);
+    await page.keyboard.press('Escape');
+    await page.getByRole('tab', { name: '任务时间线', exact: true }).click();
+    const firstEvent = detail.timeline?.[0];
+    expect(firstEvent).toBeDefined();
+    if (!firstEvent) throw new Error('实际任务没有已保存事件');
+    await expect(page.getByRole('region', { name: '真实事件时间线', exact: true })).toContainText(firstEvent.event_id);
+    await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
+    await expect(page.getByRole('status', { name: '暂无产物', exact: true })).toBeVisible();
   } finally { await server.close({ preserveData: true }); }
 });
 

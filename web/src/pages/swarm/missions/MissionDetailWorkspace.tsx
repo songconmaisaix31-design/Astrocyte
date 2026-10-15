@@ -15,12 +15,12 @@ import { WorkItemEditor } from './WorkItemEditor';
 import { ArtifactWorkspace } from './ArtifactWorkspace';
 import styles from './MissionWorkspace.module.css';
 
-export function MissionDetailWorkspace({ id, onChanged }: { id: string; onChanged: () => void }) {
+export function MissionDetailWorkspace({ id, initialWorkItemID = '', initialArtifactID = '', onChanged }: { id: string; initialWorkItemID?: string; initialArtifactID?: string; onChanged: () => void }) {
   const current = useReadApi(signal => swarmApi.mission(id, signal), { key: id });
   const grantID = current.data?.mission.grant.id ?? '';
   const grant = useReadApi(signal => proposalsApi.approval(grantID, signal), { key: grantID, enabled: !!grantID });
-  const [workItemID, setWorkItemID] = useState('');
-  const [artifactID, setArtifactID] = useState('');
+  const [workItemID, setWorkItemID] = useState(initialWorkItemID);
+  const [artifactID, setArtifactID] = useState(initialArtifactID);
   const [recoveryReason, setRecoveryReason] = useState('');
   const command = usePersistentCommand<components['schemas']['SwarmMissionEnvelopeV1']>(`swarm:${id}:lifecycle`, () => ({ status: 'succeeded', message: '任务状态已保存' }), { failureMessage: cause => commandError(cause).message });
   const changed = () => { current.retry(); grant.retry(); onChanged(); };
