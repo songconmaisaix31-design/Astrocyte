@@ -63,6 +63,20 @@ R 原输入结果证据 SOURCE `23253502143bb23bf47e1606c38e0158540e328d` / 独�
 
 H 当前纯文档源码为 `8bc21f140c36b77275358e28951e1ca1b7cb7a6d`，模块独立核只修改 HTTP 报告。H 16:10:21Z 明确 `GET / PUT /api/v1/attention-taste-profile` 可使用，保持原 TasteProfileService、JudgmentServices.Taste、session / CSRF / idempotency / CommandMeta CAS；原 S5 交准确 handler SOURCE 后由 H 在同一 I 组合上维护生产注册与 OpenAPI，不另起模型验证或冻结新别名。
 
+### S4 窄接口与当前准确组合
+
+S4 SOURCE `55fd3853a8230da580c01e3bc427a4074ada5553` 已普通 push，模块独立核远端 exact 以及五个原 S4 路径通过，parent 为 `f6c865710375340d528b878bc09b7c3fd4984ee7`。准确端口为 `Service.ValidateProjectSnapshotReference(context.Context, domain.Caller, domain.ProjectContextSnapshot) error` 和独立 `app.ProjectSnapshotReferenceValidator`，没有修改 S2 原接口或新增 DDL / Domain 字段。它沿原同事务 SQLite 连接核固定索引、完整身份 / digests / generation / 版本 / 时间、当前项目根 / revision / grant / roots 和服务环境；stored Root 继续忽略 JSON，根来自当前真实项目记录。模块已审阅实现并交原 S2，独立 REPORT 与最终适用结果由原 S4 继续交付。首组合验证被本人终止的 exit0xffffffff / 171.749 秒保留，最终窄接口实际检查 22.003 秒通过，两者分别记录。
+
+产品后继 `WithAuthorizedSessionBindings` 的 owned 回调仍会在 Grant 事务内调用当前含 Git capture 的 factory。该调用位置和 Packet 固定 snapshot 输入归 S2，factory 归 B，S4 只提供准确 Reference；事务外真实 Git 观察和事务内原 Registry tuple / liveness、当前权限与固定 snapshot 核验均保留，不能借缓存替代。S2 / B 沿各自原写入范围继续，没有冻结未交的后继签名。
+
+唯一 I 四树与 R 后继普通组合 SOURCE `9aa583eb1cc774ed77bd80d14547814363204c99` 已 push，发布负责人已核远端 exact；当前 D 盘 runner 的 pnpm check 在途，尚未确认可构建或完整通过。根 00:03 入口已核 I 的 dist / .verification 为既有 D 盘 Junction，I 在核输出目录后可运行适用检查，不等待其他树的 helper；其他树继续按实际调用入口使用 D 盘。R 已在 clean 自然检查点就绪，H 保留三件后继修改并只读核与 I 的文件关系；只有实际可构建及明确通知后才普通同步同一完整 SHA。
+
+### verified_complete 的实际剩余实现
+
+R 本人 `msg_3c452e963148`、H 正式问题 `msg_894dcaea4d87` 与模块源码检查一致：当前只有 `RelayGoalVerificationReader`、Options.GoalVerification 和完整原 controller / input tuple / accepted receipt 的后置校验，没有生产 ReadRelayGoalVerification 实现、实际注入或前置固定目标检查的持久入口。nil reader 明确返回 evidence_missing；ReadRelayCompletion 仅读已完成记录，不能提供前置检查。R 后继独立 REPORT `5da73e20a971bd3847d3845457f4fc6761bd580f` 已普通 push，模块独立核远端 exact、仅 runtime.md 和 SOURCE2325350 普通祖先通过；代码和既有验证未变。
+
+模块已向根提交唯一问题 `msg_e5abf2d87c3e`：原生文件与命令工具关闭时，无工具模型输出如何形成固定公开 Go 目标的合法产物、由哪个原 owner 经哪个既有入口应用及检查，并注入实际 reader。H 现有登记和只读原档 / SQL 授权未据此扩大，当前职责待明确。答复前 verified_complete 的生产能力保持未实现、实际正向 NOT_RUN；user_confirmed 按已确认通道和原 F 唯一 HTTP 操作规则继续，started 与资源审计独立，不以 DTO、拒绝测试、原档归属或原生结束替代目标核验。其他已授权集成、facts / 安全 DTO 和 S5 衔接继续，本次仍未登记 t0、初始化控制器或发送模型输入。
+
 ## 前次恢复范围与 v1.4 规格
 
 2026-10-15T13:44:28Z 总负责人恢复指令 `msg_dda268e9b152`：模块当前为 `task_e8c1d01d67ec / ctx_533af1fca9b7 / term_2717fa40-9809-4cca-8140-89111b01073d`；总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146`，顶层 Run `run_973808dd6a2f`。已按明确授权恢复原子 Run `run_8bbda1c3974c`，generation 4。本次仅修改本文件，继续原 R / H / S4 Task、工作树、分支及独占写入范围。
