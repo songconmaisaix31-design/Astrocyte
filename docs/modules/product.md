@@ -20,6 +20,51 @@ Agent 完成证据权限、Laya 语言及 S3 两项选择仍待用户答复；�
 
 原产品 Run 已普通绑定 generation32，旧消息逐项处理。H 当前 `ctx_5b3dc511cccd / term_bfb664a5-e843-4d81-b14c-6421c2125f77`、唯一 I 当前 `ctx_4a4234c26f8c`，分别由 M-relay `ctx_7f070ad688f5` 与 M-release `ctx_6256d5837fb3` 管理。H 已将准确公开 CodeGraph Node / SDK / bridge 和 runtime 路径直接交 B；B 独立最小环境三项 probe 实际 EXIT0，尚需核生产实际 runtime 的失败，当前未登记启动恢复。原 8b 普通 OpenCode 验证目录、text capacity 身份及 Windows junction 命令首失败已准确交 B 在产品恢复后处理；R/H 来源、控制器及 HTTP 域仍归 M-relay，保持路径守卫和所有既有断言。
 
+### 04:14 同一服务恢复与实际检查安排
+
+H 本人 `msg_d279da502d69` 交付同一普通产品 ready：SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332`、Go buildinfo `vcs.modified=false`、PID45616、启动 UTC `2026-10-15T20:13:21.8983808Z`，原 `http://127.0.0.1:64505` 首页200、health=ok，沿用原 SQLite / LOCALAPPDATA，`running.json` 已更新。原 P CodeGraph 依赖在实际原 Dir / 白名单环境下三项 probe 均 EXIT0；原 `0db5836` 首次退出1保留，根因 UNKNOWN。当前二进制未含 H 七件后继装配，Jev / Laya / Q 独立 root 尚未配置，不能将运行恢复记为全部功能通过。
+
+B 启动诊断 SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` / REPORT `c563ff9498d4e54f095a1bddf3c46d2cd869ea85` 已普通 push 并交唯一 I。模块独读仅 config 与实际配置测试、报告及远端：保留原15秒、环境、版本与导出守卫，增加明确检查阶段。配置4项主检查 / 8项子检查、实际 Node 格式拒绝、DOM 9项实际通过，build / vet EXIT0 仍含四件未提交 experience WIP；该 SOURCE 不含这些 WIP，不将其结果写为隔离组合验收。
+
+F 只读恢复 SOURCE `6503077885aee63dd97f9642deab66ba57167925` / 独立 REPORT `da692e8dd1a29e5621d127a4bea4fbc9ef7ab21a` 已普通 push，模块独读四件 `readProductPaper / Project / Proposal / Stored`、报告和远端。原 records 与本次独立 output 分开，`wx` 和原断言保持。实际 `node --experimental-strip-types e2e/readProductStored.ts` 在 web 目录 EXIT0，原两资料三版本、human/manual 摘录、项目设置r2、Goal / 已批准 Proposal / Grant / ContextPacket 关系均保留；5个 Attention 与2个 Workspace 事件逐一定位、原生会话0。typecheck / lint / 四文件eslint EXIT0，首类型错误原件保留。模块独读安全 JSON 同值，该结果只记持久化恢复；H ready 已交 F 继续同实例 HTTP / DOM 只读，业务 mutation 不重发。
+
+同一服务恢复后，原 UI `task_d0cee5a583bb` 的键盘 / 异步读取检查具备继续条件：只读 DOM 与导航，零业务 mutation，先前连接拒绝保留；页面接入仍等 H 公共契约 → F 生成类型及客户端 → UI 原域。恢复前实核原 UI 树 HEAD `93654a7466ccd33069ede76a248d5203971a9538`，仅 `docs/standards/product-ui.md` 原 WIP，公开终端为空、原 Task ready。只沿同一 Task / 树 / 分支恢复原作者，F 继续唯一核心业务写入；S2 / S3 / T 按实际生产依赖继续待恢复，不增加同域写入者。
+
+### 04:19 核心恢复、真实来源与 T 连续责任
+
+F 在准确 cffac / PID45616 同实例完成 Core 七页200、零 pageerror / 业务写入，Paper 两资料三版本与 human 摘录及五个实际事件逐一核查，Project r2权限和零原生会话，均 EXIT0。认知 health / Today / filters 三端点实际503保留，Q 独立 root 尚未配置。Proposal 只读首两次失败分别为实际 Grant 已过期的 HTTP 派生状态与 SQL 原 active 记录不同、Context 安全 HTTP 省略固定 root 并将授权目录相对化。模块独读实际 `ReadApproval` 和准确 cffac 的 `workspaceContextPacketDTO`；F 保全部字段、范围、快照断言并显式验证真实时效和安全投影，原 Grant 不续期，原两次失败保留，未进入的 DOM 继续待验。
+
+UI 已沿原任务启动为 `ctx_e366c835cb43 / term_37f0ca3b-ce42-4399-8c47-7bae85efc87a`。首回执 outcome_unknown / turn_start_unobserved 保留；有界文本确认原任务在 composer、没有 Working 后，仅给准确终端一次 bare Enter。随后真实 transcript、公开 projection 和本人 `msg_9960bc8f715a` 确认 Codex / `gpt-6.1-sol`、live / working，已读当前根入口并继续原键盘 / 异步 GET；没有重派或替代人员。
+
+B 普通测试修复 SOURCE `a8d361b1cb4133713e25f1d6c20ea4bfd22d844d` / REPORT `8179cf9c5074ab26a053fe7f1bfd691b153b4084` 已普通 push 并交唯一 I。模块独读仅 `opencode_test.go` 和 `works_test.go`：支持明确绝对输出根并保 reparse 检查，真实目录使用生产 `CanonicalRoot`，其余原断言保持。B 实际报告 Works HTTP / SQLite 重开通过、四项 OpenCode 实际本机 HTTP / 同ID恢复 / 权限 / 认证 / 健康检查通过、model turns0；各自原 RED 保留。旧 Windows Replay 检查含虚构 Codex / Claude 协议文件的缺口已交 M-relay 原 R/H 提供既有获准公开项目自产文件准确指针，缺真实来源保持未通过，不执行同一受限原生探针、扫描私人历史或新增 skip。
+
+H 完成来源 SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 已由 M-release 核九件 H 文件 / 一件报告及远端，交唯一 I。原 `relaySessionRuntime` 实现 `attention.ExperienceCompletionReader` 双方法，来源在事务外读取，当前 human / LocalProject.ID / 同主库权限在事务内复核；Agent 分支保持未授权。公开消费 `services.Relay.(attention.ExperienceCompletionReader)` 已交 B 继续原四件 experience WIP，尚未提交的内容不供集成。
+
+B `msg_379d0cf16dfe` 已明确实际完成来源的 T 测试依赖。恢复原 T `task_5f0a79b6a17a`、原 `product-attention-tests-20261014` 树 / 分支，基线 `059669d603f151aa1f9a21f4cee4201d5ede159d`、clean、公开终端为空、原 Task ready。T 唯一写入仍为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`；先沿已提交 H Judgment / Taste 装配补原404必要复验，随后仅消费 B 准确完成来源 SOURCE，验证 CaptureCompletion / ResolveEvidence 的当前权限、未答 Agent 拒绝、真实事务与重启边界。真实 Reader / Interpreter 未具备时不伪造成功；已成功模型和原十四项受限原生路径不重跑，领域问题继续交 B/H，S2 / S3 仍按实际生产依赖恢复。
+
+### 04:25 当前产品、准入与前端精确消费计划
+
+F 最终只读恢复 SOURCE `1e242e1573b72046adf572bb0874c6f870730636` / REPORT `38acb723bfa04fcb7eed8a69347b8e6c958f6cf7` 已普通 push，模块独读单件 Proposal 检查修改、报告、远端及实际安全结果。准确 cffac 同实例四项 HTTP / DOM / SQLite 全部 EXIT0，七个事件逐一定位，实际过期 Grant 的全部其他字段与原记录相等，Context 固定 root / 相对 roots 的安全投影显式核对，过期显示和禁用动作及原固定包展开通过。首三次失败原件保留，零业务写入 / 新会话 / 模型，原完整320结果保持。
+
+F `msg_a1b69f3cdbca` 与 UI `msg_215eb26fa71c` 本轮本人双安全 ACK 后，H 先核旧 PID45616 退出及 listener 清空，再沿原 SQLite / LOCALAPPDATA 更新。H `msg_5d64749a9e3b` 正式交准确 `b73dc79e7c59a9192ec2bfbd3625a620d8304efb` / modified=false / PID4676 / 启动 UTC `2026-10-15T20:22:58.8651960Z` / 原64505，health=ok、首页200。Q 独立原 root 已配置，current=`snapshot-1711995690`；没有重采、换代或修改日期。F 已接本轮 ready，继续同代独立 SQL、两主题、真实完整分页和历史点的 HTTP / DOM 核查；按真实当前日期记录 Today 范围。该二进制含 H cleanup 生命周期 / 完成来源 Reader，尚未含 B 新 experience 桥；Jev / Laya 未配置，原生与模型保持零。
+
+B 完成经验 SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` / REPORT `921e30b56683118a0d22a29cb63161b599395d3a` 已普通 push、clean，模块独读四件原生产文件与新增实际 HTTP 检查、报告和远端。human 当前 LocalProject.ID / owner / principal、CSRF / Agent 拒绝、缺来源 / 缺证据、实际 SQLite 重开 / 关闭库边界通过；全包 build / 目标 vet通过。准确来源已交 I / H / T，H 继续唯一 main Reader 注入及公共契约。实际 Interpreter 未配置时 `provider_unavailable`，L2 正向、用户批准和六步仍未通过。
+
+T 已沿原 Task 实际启动为 `ctx_7860ae02e15d / term_5ad7b00b-7dd1-4c3f-bee3-1cfe1bb7d749`、turnStart observed，公开本人核 Codex / `gpt-6.1-sol`。零冲突普通消费 I b73 与 B faee 后 HEAD `5c5c8d4ebc799ec029188e9bcfc99b3459d812f7`，原 `TestProductionTasteHTTPKeepsUnconfiguredStateAfterRestart` 在独立真实 cmd/server、HTTP 与同 SQLite 重启 PASS，22.50秒、包25.626秒；模块独读实际日志，原404保留。T 继续唯一应用测试域，原十四项和带模型完整两包未运行。
+
+原 UI 的源码 `f0d27271c15d131aea50012658232f7fa41a142b` / REPORT `7467ddb17ab204172d9656e47c5f82ec0a97d9b2` 已普通 push、clean，仅原 delegation 三件题目参数检查；typecheck / eslint / 七项明确参数 Vitest / Vite build EXIT0。六项真实键盘 / 异步读取另有 REPORT `b3736dc037e6f5f3d6564ed500f5e04048a55eb2`，覆盖准确 cffac，原连接拒绝及两轮失败保持。公共 S5 契约尚未取得，UI 的实际保存和模型未运行。
+
+| 连续原负责人 | 当前必要实现与互斥范围 |
+|---|---|
+| F / 原 Attention 页面与共享客户端 | 复用原 PLOS 固定版本和已保存摘录，完成必要主题 / 项目层人工沉淀、候选反馈与准入界面；`AttentionPage.tsx`、`OpportunityWorkspace.tsx` 及非 delegation Attention 页面仍归 F，API / 生成类型仍归 F。不重发原成功 / 未知操作，不续期原 Grant，不新增执行授权或调用模型 |
+| H / 既有共享薄装配 | `relay_judgment.go` 已构造 `admissionbridge.Connect`，但 server 的 human 准入仍501，OpenAPI仍 S0 future DTO。复用同一已构造 bridge、实际 `AdmissionProjects` 和 S2 已有消费端口，补 Services / registerAdmissions / main / 精确公开契约；不新建领域实现或 store |
+| B / 原准入领域与适配器 | 向 H 交已提交 `e96f8d78f686f6db0f0a9edb5e15cc57ddb8aa1a`、`ddfae290e3b0cf468af9aeaa98c5bdf39ea1604d` 与格式 `53f0bebdfcf311706ee680d48542d9bc46e151a7`。显式 project 继续核当前授权，空 project 按既有语义形成 unassigned 草稿；不得静默移除所选项目 |
+| UI / 原 delegation 及 S2/S3/S4 页面 | 页面实际接入保持 H 精确 OpenAPI → F 生成 client/types → UI 原域；F 不手工改 UI 页面，UI 不改 F Attention 或共享客户端 |
+
+准入保持同主库事务、固定版本、receipt / outbox / 草稿幂等，只有 draft / unassigned，不产生新 Grant 或原生执行。S2 消费端口已经存在，当前无需为该问题启动新的领域轨。H 公共契约未就绪期间，F 可完成不依赖其字段的候选 / 反馈和页面准备，未具备的准入不登记通过。
+
+F 精确消费 UI 原源码的顺序为 `dbd1018f163e6760cc7806c302fd3aa677706267`（九件原 S2 页面 / spec 与 JudgmentQuestionFields）、`0ad83a96bc50747867146a38a80b7a90ecbedc5f`（三件 policy 字段 / 纯参数检查）、`f0d27271c15d131aea50012658232f7fa41a142b`（三件 question 字段 / 纯参数检查）。模块已核 F 当前 clean、原 delegation 六件新增文件尚未消费，前两段精确目标与父基线相容。F 每段在实际安全检查点核目标零 WIP / staged、再普通 cherry-pick；若目标不等父或发生冲突，保留现场交原 UI，不整体选边、覆盖未提交内容或执行 abort / reset。后继完整目标内容须与原 UI 对应 SOURCE 相等，共享生产契约仍单独消费 H 准确提交。
+
 ### 02:29 当前恢复与产品分工
 
 本模块已实际读取根 02:21 入口和当前用户决定，沿原两个 Run 恢复，未创建新的 Run 或 Task。公开清单核两个 Run 的 active worker 均为空、原 B / F / S2 Task 均为 ready；原 B/F Run 已普通绑定 generation56。B 首启动 `ctx_0451d133cc3d / term_8821b14c-2a83-4459-a276-f28f11a7c67c` 实际 turnStart observed，准确基线 `a550cfba2d7e571954bf96bec9a8eb6e3af228a8`，原十件 WIP 保留；本次只继续其既有项目清理通知、原生消息存储和来源接缝，生产装配交 H、提交回调交 S2、应用测试仍唯一 T。F 原树准确 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`、clean，S2 原树准确 `8ef7219b3bd4233b1b16c0a7735c29f4e07673ba`、clean，沿原任务恢复。
