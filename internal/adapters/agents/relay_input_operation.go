@@ -47,7 +47,7 @@ func (r *Registry) ReadOwnedInputOperation(ctx context.Context, sessionID, opera
 		return result, err
 	}
 	native := adapter.(*Native)
-	execution, err := native.OwnedRelayExecution(ctx, original.Session)
+	execution, err := native.ownedRelayMemberExecution(ctx, original.Session)
 	if err != nil {
 		return result, err
 	}
