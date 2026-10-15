@@ -405,6 +405,31 @@ Vite 使用现有实际依赖、原配置和 middlewareMode，外部实际 HTTP 
 
 经新计划 `539e836`、I 本人 STOP 和 B 新安全 ACK，B 本轮只编辑并 stage I 树 `cmd/server/config.go`，保完整显式发现、代理和可信 S4 配置。该文件相对当时 HEAD 完整 diff 为零，stage blob `f8fdeb628de94c0e1c46ded6b4f16abc9b6a835a`；限定 working / cached diff 检查和 gofmt 无输出。最后 HEAD `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87` / MERGE_HEAD `aaaf603a9477e470ff0ce0c269597802a6f25b40` 不变，剩余未合并路径仅原 R 的 `internal/adapters/agents/relay_input_operation.go`。该冲突阻止配置 Go 检查，本次运行保持 NOT_RUN。B 已明确停止 I 全部写入、stage 和进程访问并归还，未操作其提交或合并生命周期。
 
+## 初始化前 HTTP、完整日志与本轮互斥返修
+
+本次恢复起点为 `ec8a97debd79049ba9a346f77544046151d8f3b0`，原分支 `standards-backend`，Codex CLI `0.162.0`，沿现有 YOLO 配置，未指定新模型。格式 SOURCE `53f0bebdfcf311706ee680d48542d9bc46e151a7` 与生命周期 SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872` 已普通 push。前者只修正 `admissions_service.go` 的一处 gofmt 空白；后者保留 Vite 初始化期间已到达的实际 HTTP 请求，初始化成功后交原 middleware，初始化失败时关闭待处理响应。
+
+| 实际命令 | 结果 |
+|---|---|
+| `node --test --test-concurrency=1 tests/s1/process-lifecycle.test.mjs tests/s1/vite-lifecycle.test.mjs tests/s1/server-lifecycle.test.mjs tests/s1/development-lifecycle.test.mjs` | EXIT 0，8 PASS、0 FAIL、0 CANCELLED、0 SKIP，155.584s；`.verification/process-vite-actual-current-first.log` |
+| `node --test --test-concurrency=1 --test-name-pattern='initialization failure' tests/s1/vite-lifecycle.test.mjs` | EXIT 0，1 PASS、0 FAIL、0 SKIP，3.490s；`.verification/vite-initialization-failure-current-first.log` |
+| `go build -mod=readonly ./...` | EXIT 0；`.verification/backend-restored-build-first.log` |
+| `go vet -mod=readonly ./internal/attention/app ./internal/adapters/sqlite ./cmd/server` | EXIT 0；`.verification/backend-restored-vet-first.log` |
+| `node tests/s1/paper-dom-public.mjs` | EXIT 0；`.verification/paper-dom-restored-public-first.log` |
+| 四个变更 Node 文件 `node --check`、gofmt / working 与 cached diff 检查 | EXIT 0，无格式错误 |
+
+八项完整检查包含明确 D 盘产物目录、普通 / Relay 真实 SQLite、实际 HTTP / Vite、端口冲突与进程停止。实际子进程分别在 stdout / stderr 输出当前生产源码的明确重复字节，每个通道超过 1 MB；`drain` 返回前核对全部原字节和实际退出。该数据只验证进程流完整性，不声明外部来源或原生 CLI 结果。真实缺失 executable 返回 ENOENT，双通道文件仍完整保留，重复日志路径返回 EEXIST。初始化失败检查向实际 Vite 发送不允许的 API origin，核对原错误、已到达请求关闭、实际 PID 退出和 HTTP 不可达。
+
+初始化前实际两个 HTTP GET 的首 RED 保留在 `.verification/vite-early-http-current-first.log`，0 PASS / 1 FAIL、23.772s；后继独立检查 1 PASS、20.345s，`.verification/vite-early-http-current-second.log`，请求期限未增加。公开 DOM 检查完整读取已获准 PLOS 260555 bytes 与 ACL 47355 bytes，生产 Node / 扩展输出逐项一致；PLOS 正文 63806 字符，ACL 仅摘要，均保持实际来源状态。
+
+原冷 Registry 测试的未提交整改已用真实空输入 `ProbeNativeCLI` 生成原会话和实际停止，0 模型 turn；同一 Registry 两次缺失 CLI 的 resume 均保留实际 native_id 与 failed 收据。新增冷 Registry 场景实际返回 `provider_unavailable: selected CLI is not on PATH`，原期望 `DeliveryUnknown` 尚未通过；`.verification/native-resume-owned-current-first.log` 保留 EXIT 1，25.239s。该测试继续作为原树 WIP，由 B / R 核准确原生 SOURCE，未删除覆盖、改变断言或添加 skip。
+
+经准确计划 `5ed8933f20ca4653540ee24e774ded1f7bb334ae`、S5 本人 STOP、新 B 安全 ACK 及具体放行，本轮仅编辑并 stage S5 树 `taste_profile.go` 与 SQLite `taste_profile_test.go`。两件相对当时 MERGE_HEAD `6d1d59bf07b008a0969efefceb911e49b6b33db6` 完整 diff 为零，保留完整类型与所有真实断言；gofmt / 限定 diff 检查 EXIT 0，剩余 U0。HEAD `b125268d11322c69c652bce677665001bd47e344` 与 MERGE_HEAD 未变，stage blob 分别为 `36b638b55dbb1383371655905a1fbb37da5eb31d`、`c86f3320dbd313d0466d993988477d3818647cc5`。全部写入和进程访问已经停止并归还，没有操作其合并生命周期。
+
+按本轮 I 新 STOP、模块 00:44 准确范围与 B 新安全 ACK，仅编辑并 stage I 树 `dependencies.lock.json`、`go.sum`。保留完整 S4 / MCP、S5 / JSON-RPC 依赖，两件相对 HEAD 完整 diff 为零，working / cached 限定 diff 检查 EXIT 0；stage blob 仍为 `64c1432f721a6371a5c8e4badce719cd1bbbbd92`、`def74ba382fec897f8f9bc9a0d40f5bb6e1bb88f`。原生 JSON 读取及实际 `go list -mod=readonly -m -json all` EXIT 0，输出 `.verification/i-dependencies-actual-20261016-first.json`；当时 HEAD `0f420b827c3d676c93757893e5d17791a2744b8b`、MERGE_HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da` 不变，剩余 28 U 归原 S2 / S4。已停止目标树全部编辑、stage 和进程访问并归还。
+
+H 的实际产物 / 检查关系与 R 的人工完成经验来源继续在各自原域接续。现有 selected-text `codex exec --ephemeral` 路径只记录实际 thread.started 与 usage，没有同一 R controller / startup / input operation / turn 的持久化正选来源读取端口，原成功结果的有效工具集合保持 unknown。已向 T 交准确生产缺口，没有替代原十四项 unknown 覆盖或重发成功模型。完整默认 E2E、发布和整轨验收仍未通过。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
