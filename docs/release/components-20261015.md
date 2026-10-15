@@ -2,7 +2,7 @@
 
 ## 1. 范围、写入边界与来源
 
-本文由根 `msg_2b7cd779bafa` 授权并按其后的返修指令维护，当前 Task `task_b68c997b0289`。写入范围只有本文件；公开核查原件保存在本树已忽略的 `.verification/components-20261015/`。本文没有修改旧科研报告、业务代码、依赖锁或冻结域，没有读取私人凭据、原会话或正式数据库。本许可工作没有发起产品原生 controller，也没有运行额外的验证模型探针；开发客户端为 OpenCode 1.18.35 / `alibaba-cn/deepseek-v4.1-flash`，单独如实记录，当前 TUI 显示不冒称 provider wire 实证。
+本文由根 `msg_2b7cd779bafa` 授权并按其后的返修指令维护，当前 Task `task_f0b1dca0e6fc`（承接 `task_b68c997b0289`）。写入范围只有本文件；公开核查原件保存在本树已忽略的 `.verification/components-20261015/`。本文没有修改旧科研报告、业务代码、依赖锁或冻结域，没有读取私人凭据、原会话或正式数据库。本许可工作没有发起产品原生 controller，也没有运行额外的验证模型探针；开发客户端为 OpenCode 1.18.35 / `alibaba-cn/deepseek-v4.1-flash`，单独如实记录，当前 TUI 显示不冒称 provider wire 实证。
 
 本文只记录固定组件名、固定版本与一手来源、适用许可、必需运行文件和真正待定的分发项。本文不复制 S4、S5 owner 的动态测试数字或状态表；其功能验收由 M-release 按各 owner 报告管理。本文不提供法律意见，不决定分发方式，不替根选择尚未决定的组件。
 
@@ -36,6 +36,9 @@
 | Laya 模型（multilingual，同仓库 `multilingual` 子目录，mmBERT-base） | 同 HF 修订，subfolder `multilingual` | https://huggingface.co/convaiinnovations/laya/tree/7b928d828b7b0e022f929d9bd2e44165aa270148/multilingual | apache-2.0 | Convai Innovations | 否 |
 | Node.js | 24.16.0 | https://github.com/nodejs/node/blob/v24.16.0/LICENSE | MIT（Node.js 本体）及其链接内列出的捆绑第三方 | Node.js contributors / OpenJS Foundation | 否（运行前置） |
 | onnxruntime-node | npm 1.30.0 | https://www.npmjs.com/package/onnxruntime-node/v/1.30.0 | MIT | Microsoft Corporation | 否 |
+| ONNX Runtime 原生库（onnxruntime.dll，随 onnxruntime-node 1.30.0 附带） | 1.30.0 | https://github.com/microsoft/onnxruntime/blob/v1.30.0/LICENSE | MIT；NOTICE `onnxruntime-ThirdPartyNotices.txt`（捆绑依赖声明） | Microsoft Corporation | 否 |
+| Microsoft DirectML（DirectML.dll，随 onnxruntime-node 1.30.0 附带） | NuGet `Microsoft.AI.DirectML` 1.15.4；DLL 文件版本 `1.15.4+241025-1615.1.dml-1.15.fac7597` | https://www.nuget.org/packages/Microsoft.AI.DirectML/1.15.4 | Microsoft Software License Terms（二进制）`DirectML-LICENSE.txt`；NuGet 源代码 `LICENSE-CODE.txt` 为 MIT；`DirectML-ThirdPartyNotices.txt` | Microsoft Corporation | 否 |
+| DirectXShaderCompiler（dxcompiler.dll，随 onnxruntime-node 1.30.0 附带） | `1.8.2502.8`；官方 tag `v1.8.2502` SOURCE `b4711839eb9a87da7c3436d9b212e0492359fbbd` | https://github.com/microsoft/DirectXShaderCompiler/blob/b4711839eb9a87da7c3436d9b212e0492359fbbd/LICENSE.TXT | LLVM Release License（University of Illinois/NCSA）与复合第三方声明 | University of Illinois at Urbana-Champaign / Microsoft | 否 |
 | vscode-jsonrpc | npm 8.2.1 | https://www.npmjs.com/package/vscode-jsonrpc/v/8.2.1 | MIT | Microsoft Corporation | 否 |
 | sourcegraph/jsonrpc2（Go） | Go 模块 `v0.2.1`，官方 tag SOURCE `2cc94179e136b565cb9df7d9d0bff9fc06912ac9` | https://github.com/sourcegraph/jsonrpc2/blob/v0.2.1/LICENSE | MIT | Copyright (c) 2016 Sourcegraph Inc | 否 |
 | CodeGraph | npm `@colbymchenry/codegraph` 1.0.1，源码标签 `v1.0.1` 对应 `a1489f77a6d69538bfe29020b8366ee034f90860` | https://github.com/colbymchenry/codegraph/tree/v1.0.1 | MIT | Colby McHenry | 否 |
@@ -49,6 +52,9 @@
 - Node.js 根 `LICENSE` 为 MIT，同时按 `deps/` 逐项列出捆绑第三方库（例如 ICU 为 Unicode-3.0、libuv、c-ares、OpenSSL、V8、zlib、nghttp2、brotli、zstd、undici、corepack、npm 等）。分发 Node 运行时应整体保留该 `LICENSE`。
 - `sourcegraph/jsonrpc2@v0.2.1` 的实际 Go sum 为 `h1:2GtljixMQYUYCmIg7W9aF2dFmniq/mOr2T9tFRh6zSQ=`（S5 标准记录）。
 - AOCI 在 GitHub 的自动识别许可为 `other`/`NOASSERTION`；实际 `LICENSE` 文件是 FSL-1.1-MIT，授予在「非竞争用途」下使用、修改、再分发的权利，并在发布满两周年后转为 MIT。
+- `onnxruntime-node` 的 npm 主包为 MIT，但其附带的原生二进制分属不同许可：onnxruntime 原生库为 MIT（`onnxruntime-LICENSE`）；`DirectML.dll` 适用 Microsoft Software License Terms（`DirectML-LICENSE.txt`），NuGet 源代码 `DirectML-LICENSE-CODE.txt` 的 MIT 只针对源码；`dxcompiler.dll` 适用 LLVM NCSA 许可（`DirectXShaderCompiler-LICENSE.txt`）。不能把全部附属 DLL 统称 npm 主包装 MIT。
+- `DirectML-LICENSE.txt` 第 1(a) 条允许在面向 Windows 与 Xbox 的应用/服务中复制与分发该二进制，第 3(c) 条要求保留 Microsoft 声明，第 3(e) 条限制作为独立产品分发；`DirectML-ThirdPartyNotices.txt` 含 Microsoft/GSL、half、Zstandard 声明。精确条款与文件已 Handoff P 与协调端，本文只登记，不批准分发。
+- `DirectXShaderCompiler-LICENSE.txt` 为复合文件：LLVM Release License（University of Illinois/NCSA）加逐文件第三方声明，并单列「仅构建与测试依赖」段（含 GPL-2.0 及 Autoconf 例外）。
 
 ### 3.1 Jev 云服务边界
 
@@ -79,7 +85,9 @@ Jev 是 TypeSafe AI, Inc. 的专有云服务，`jev-1.13.0` 是版本化 API，�
 
 许可保留要求：包内已复制项目 `LICENSE`（AGPL-3.0），当前没有第三方许可文本。每个上游许可要求再分发时保留许可副本与版权声明：MIT 与 Apache-2.0 要求随分发携带许可全文（Apache-2.0 还要求保留源码中的版权、专利、商标与归属声明，若有 `NOTICE` 则须一并保留），FSL-1.1-MIT 要求附带条款副本或链接且不得移除版权声明。凡是把 §3 组件并入最终包的构建，都须把这些组件的许可与版权文本一并纳入包；具体打包方案由 P 按已获授权实施。若最终包含 Node 运行时，须整体保留 Node 根 `LICENSE`（含其逐项捆绑第三方）。
 
-必需运行文件（S4 owner 生产配置）：`runtime/node/node.exe`、`runtime/sdk/node_modules/@colbymchenry/codegraph`、`runtime/sdk/astrocyte/repository-context/codegraph.mjs`。Node 固定 24.16.0；CodeGraph wrapper 与 Windows 平台包 `@colbymchenry/codegraph-win32-x64` 均固定 1.0.1，平台包须作为直接依赖进入运行时，不能被 `--omit=optional` 省略。
+必需运行文件（S4 owner 生产配置）：`runtime/node/node.exe`、`runtime/sdk/node_modules/@colbymchenry/codegraph`（SDK）、`runtime/sdk/astrocyte/repository-context/codegraph.mjs`（adapter 入口）。Node 固定 24.16.0；CodeGraph 固定 1.0.1 与源码 `a1489f77a6d69538bfe29020b8366ee034f90860`。CodeGraph 的实际 SDK 由 P 按官方 Git 源码构建并 npm pack；注册的 npm 包是 `npm-sdk.js` 可选平台包装，可能访问宿主缓存。具体合法安装与打包由 P 按 S4 与 P 报告实施，本文不固定平台包或宿主缓存机制、不臆造新 ENV。
+
+S5 运行时通过 `onnxruntime-node@1.30.0` 携带其原生库与 `DirectML.dll`、`dxcompiler.dll`；相应许可文本随分发携带（P 的 `legal/` 与包内 `runtime/sdk/node_modules/onnxruntime-node`）。
 
 S5 factory 输入：`judgment.NewService(Repository, Authorizer, ...Model)`、`judgmentadapter.NewJev(apiKey)`、`judgmentadapter.NewLaya(ctx, LayaConfig)`；`LayaConfig` 的绝对路径与显式语言、模型修订、预算见 §4.2。Jev 依赖运行环境提供 `TYPESAFE_API_KEY`。
 
@@ -88,22 +96,11 @@ owner 报告链接：[S4 标准文档](https://github.com/songconmaisaix31-desig
 ## 7. 验证记录
 
 - 许可与元数据原件（14 个文件）保存在本树已忽略 `.verification/components-20261015/upstream/`，逐个记录 SHA-256 前 16 位与字节数。
+- ONNX 附属 DLL 许可原件（6 个文件）取自 P 现成真实原件 `D:/Astrocyte-agent-assets/20261015/release-package/onnx-legal-second/legal/`，副本与 SHA-256 前 16 位保存于 `.verification/components-20261015/onnx-legal-second/`：`DirectML-LICENSE.txt`（A05138E3A085FF60）、`DirectML-LICENSE-CODE.txt`（903DF5512F7D0260）、`DirectML-ThirdPartyNotices.txt`（2C95795C13FF48A5）、`DirectXShaderCompiler-LICENSE.txt`（27A49E35D1DA96EB）、`onnxruntime-LICENSE`（2F07C72751AED997）、`onnxruntime-ThirdPartyNotices.txt`（143764B952FDB1A7）。来源、固定版本与 NuGet nuspec 读取过程见 P 原树 `release/Prepare-OnnxLegal.ps1` 与 `Prepare-Runtime.ps1`。
 - 上游核查：Laya 根与 `laya-ts` 的 `LICENSE` @ `432312b3` 均为 Apache-2.0；HF `convaiinnovations/laya` @ `7b928d82` 模型卡为 `apache-2.0`；Node `v24.16.0` 根 `LICENSE` 为 MIT 加逐项第三方；`sourcegraph/jsonrpc2` `v0.2.1` 为 MIT；AOCI `45990a1d` 为 FSL-1.1-MIT；`codegraph` 1.0.1 npm `license: MIT` 且 `gitHead` 为 `a1489f77a6d69538bfe29020b8366ee034f90860`；`onnxruntime-node` 1.30.0 与 `vscode-jsonrpc` 8.2.1 的 npm `license: MIT`；PyPI `laya` 0.4.7 的 `license: Apache-2.0`。
-- 版本标签核查：CodeGraph `v1.0.1` 标签指向提交 `a1489f77a6d69538bfe29020b8366ee034f90860`；AOCI `v0.1.0-rc20` 为标签对象 `7c59b0718780f5fccb65d9f0a3445b0b98fea177`；Laya 提交 `432312b36714d8889eba405507b37eda25257d9c`（2026-10-14T05:25:53Z）存在。
+- 版本标签核查：CodeGraph `v1.0.1` 标签指向提交 `a1489f77a6d69538bfe29020b8366ee034f90860`；AOCI `v0.1.0-rc20` 为标签对象 `7c59b0718780f5fccb65d9f0a3445b0b98fea177`；Laya 提交 `432312b36714d8889eba405507b37eda25257d9c`（2026-10-14T05:25:53Z）存在；DirectXShaderCompiler 标签 `v1.8.2502` 指向提交 `b4711839eb9a87da7c3436d9b212e0492359fbbd`。
 - 候选包内容核查：按 `release/Build-Windows.ps1` 与 `docs/release/package-report.md` 逐项判定的 39 项目录，仅含项目 `LICENSE`，不含 §3 任一组件。
 - 来源核查：S4 SOURCE `f407337f2199d5e49f1ff49862063d964a738a9c`、报告 `0bd2aabf58076960597c1eefca526252857583c7` 与 S5 SOURCE `bc5ffc910b660d6ae9084234ffc8ced8e265cbc5`、独立 REPORT `cd8cb2d36d4640f1d313de67d402cf00779236a2` 均位于各自已 push 的远端分支。
 - 文档校核：`git diff --check` 与写入范围检查。
 
 未执行：产品构建、Go/前端/浏览器/模型/原生控制器验收、正式采集与发布。本文只做许可与来源核对，不重跑 S4、S5 的领域测试。
-
-## 8. 独立 REPORT
-
-本轮 SOURCE `4a130aef860045beb8dedf831192d447693ea281` 已普通 push，远端 `git ls-remote origin refs/heads/songconmaisaix31-design/release-research-20261014` 与实际同完整值；本节是该 SOURCE 之后的独立 REPORT，只修改本文件，REPORT 自身的完整 SHA 由实际 Git 提交与 push 回执提供。
-
-独立核查结果：
-
-- 写入范围：相对基线 `cc4299501d4aecb3619a63529b736112b0cd23b3` 只修改 `docs/release/components-20261015.md`；业务代码、`go.mod`、`go.sum`、`package.json`、`pnpm-lock.yaml`、`dependencies.lock.json` 与冻结域零改动；`.verification/components-20261015/` 由 `.gitignore` 忽略。
-- 内容核对：开头按实际区分开发客户端与产品模型探针；S4 更新为 SOURCE `f407337` 及报告 `0bd2aab`、S5 更新为 SOURCE `bc5ffc9` / 独立 REPORT `cd8cb2d`，删除旧笼统 NOT_RUN 与动态数字汇总，改为用途、构造、许可输入与 owner 报告链接；AOCI 只登记旧 15f 未包含、公开分发方式未答复；删除自行新增的 Jev / Node 打包门禁。
-- 候选包：15f 的 39 项目录只含项目 AGPL-3.0 `LICENSE`，不含任何 S4、S5 固定组件。
-
-真实剩余限制：SemanticIndex 选择与 AOCI 的公开包分发方式仍需用户决定；这些组件尚未进入最终包，具体打包方案由 P 按已获授权实施。
