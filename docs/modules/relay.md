@@ -20,7 +20,7 @@
 
 H 已普通 no-ff 消费 R REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`，原四项 WIP 保留。S4 整分支相对 H merge-base 带有冻结和无关历史，原 S4 已交五个窄 SOURCE：`9eff2edb34058826d302d3a465b7fe7e74797be5` → `263bc7069682ede35af60426140ee6f744b0d472` → `1a55e1630502642324500c3b64853af882962fa4` → `896a7b430c62f9d91aaf5434b11c7653a3d00f36` → `293af633570d6a4f4cf4bbf9c5b651821ab977e7`。必要 B 依赖为单独 021 DDL `98bb9236c68f45ca4ab4114d46eafba5c90cdedf` 和依赖提交 `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646`，S2 原快照端口在 H 已存在。模块逐 commit 路径独立核对 PASS；H 仅准确消费，领域问题交原 owner，最终集成人员仍普通合并原分支。
 
-H 02:57Z 正式问题 `msg_0b4c24f15516` 确认现有 Relay ConfirmIntent 以非空首输入启动，空 Message 初始化属于 LocalProject session，尚无把该 session 接成 Relay task 的公开生产端口。总负责人已通过模块原问题 `msg_e5210d574861` 正式答复 `msg_a1839d29aa46`，授权原 R 优先于 L 实现同控制器两阶段端口；[v1.4 规格](../../tasks/Works-Relay-v1.4.md)第 3 节已经登记完整约束。初始化空 Message、零模型，原身份 / controller 保持；首输入重核权限 revision / CAS / 预算 / input operation / 来源 / 工具关闭及固定上下文，metadata 未就绪真实 NotYetAvailable。原 H 问题已先收到继续独立工作的中间答复，后续正式 reply 返回 answer_conflict；最终决定通过同原 thread 的 `msg_1320601dbef0` 直接交 H，不覆盖原答复。H 的 Context / S3 / S4 契约与真实 HTTP 独立工作继续；两阶段源码和实际初始化尚未通过。
+H 02:57Z 正式问题 `msg_0b4c24f15516` 确认现有 Relay ConfirmIntent 以非空首输入启动，空 Message 初始化属于 LocalProject session，尚无把该 session 接成 Relay task 的公开生产端口。总负责人已通过模块原问题 `msg_e5210d574861` 正式答复 `msg_a1839d29aa46`，授权原 R 优先于 L 实现同控制器两阶段端口；[v1.4 规格](../../tasks/Works-Relay-v1.4.md)第 3 节已经登记完整约束。初始化空 Message、零模型，原身份 / controller 保持；首输入重核权限 revision / CAS / 预算 / input operation / 来源 / 工具关闭及固定上下文，metadata 未就绪真实 NotYetAvailable。原 H 问题已先收到继续独立工作的中间答复，后续正式 reply 返回 answer_conflict；最终决定通过同原 thread 的 `msg_1320601dbef0` 直接交 H，不覆盖原答复。两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` 已经通过模块精确快照检查并交 H；实际原生初始化、首输入和 HTTP / UI 两阶段尚未通过。
 
 CreateIntent / PrepareIntent 的 `s.spec` 与 ListAgents 共用唯一 `options.Agents`。总负责人正式答复 `msg_e8f75be9692e` 确认时序为 F 空登记 observer ready → H 唯一真实登记并保留当刻 t0 → F intent / Prepare 空初始化 → H 同会话来源及工具核查 → F 原 Confirm 首输入，全部准备计入同一三分钟，不重记 t0，不隐藏登记或创建第二 Registry。source guard 先于任何模型输入。模块已直接交 R / H / F 当前 Dispatch，具体执行按 v1.4 第 3 节；当前无登记、初始化或模型，R 独立实现和 H 契约组装继续。
 
@@ -30,6 +30,18 @@ CreateIntent / PrepareIntent 的 `s.spec` 与 ListAgents 共用唯一 `options.A
 
 H 消费 S4 窄闭包时，021 迁移已准确进入本树，依赖提交 `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646` 在 `dependencies.lock.json / go.mod / go.sum` 出现真实冲突。产品负责人已取得 B 安全 ACK 后，临时仅授原 B 在 H 工作树编辑并 stage 三文件；H 明确停止三文件，B 不 commit / continue / abort / reset，归还后仅 H 继续原序列。B 另在自身原 `config.go` 域接收 S4 明确生产 Options / 版本 / 资产路径，H 只消费准确配置做薄组装；测试项目和工具指针不成为生产默认。
 
+### 当前原生门禁与无模型工作
+
+总负责人正式答复 `msg_9e32e1f32ba5` 明确 Calls 计数单位和 Known 覆盖范围已经分别询问用户，当前未决定。保持 Calls / Tools / Targets Known=false 和既有 Claim 拒绝，不以 completed Responses、argv、tool_calls=0 或空数组补完整已知。答复前不开始三分钟登记 t0，不绕 Claim / 预算发送输入，不扩大工具授权。R / H / F 与产品负责人当前 Dispatch 已直接收到该决定；其他真实 HTTP、适配、UI 和包准备继续。
+
+R 基于已安装 0.162 的官方 schema / bespoke 源码核得：thread/start 不提供该 thread 的完整有效工具集合，config/read 与 MCP 状态也不能关闭全体工具和目标分母缺口；modelProvider 表达配置路由。rawResponse/completed 只证明实际完成 response，不能覆盖全部失败 / 重试尝试。nullable usage 可以后继在私有 receiver 内按原 accepted TurnBinding / response 身份记录并去重，不能由六字段事件拼成完整单 input 总量。没有发送额外 RPC、模型或控制器探针。
+
+07:18 UTC 公开 fleet 与执行主机观察确认 R / H / S4 三个原 Dispatch 均 live / working；H 07:32 本人报告继续原 Task，在配置冲突期间完成 Context OpenAPI，原 shared assembly 和 `relay_swarm_assembly.go` 在途。没有依据 stale_status、PTY 单独存活或时钟间隔停止 / 重派。H 实际 S3 HTTP 授权 / 时间线 / 撤销 3.319 秒、审批并发幂等 / 撤销 / 重启 6.830 秒、原 atomicSQLite 组合 2.407 秒与 273 契约例通过；首 selector 未匹配的 NOT_RUN 保留。新公开源码还未交付，先解除 B 单配置文件冲突后发布给 F，再消费准确 R 两阶段和私有输入端口。
+
+S4 在 H `31256d5` 精确归档的生产 NewServer / guard 上使用自身验证入口 Go readonly overlay、真实 SQLite、两原公开 Git 根和 P 实际源码 SDK / Node。第一 search 60 秒等待 headers 超时 RED 原件保留，原因 unknown。原 owner 分别确认 SDK require 151.627ms 与同资产真实 Service 两图 / 重启通过；第二轮保持原 timeout / 断言，实际八组 HTTP 通过：无配置与认证 / CSRF、map / search / impact、安全 DTO / scope / 预算 / 输入拒绝、真实 token 与撤销、A stale / B 不变、显式 sync / refresh、重启 generation / map 持久化。新增十秒等待诊断未触发，没有声称修复未定位问题。SOURCE / 独立 REPORT 尚待原 owner 交付；B 可信配置 / main、SemanticIndex、旧 generation 异步清理、最终 UI / 包仍未通过。
+
+B 可信配置 SOURCE `e346c40cc9edcbd5b4588e47585f3c0b616b0770` 只修改原 `config.go` 与测试，允许实际官方源码 SDK 的 Name / version / 导出检查。H 消费时只有 `config.go` 冲突，H 停写；原 B 按产品已有计划等待 F 原检查归还后串行编辑并 stage 此一文件，不 commit / continue / abort，完成明确归还 H。模块实际核 P `runtime-fourth` 的 Node / SDK 存在，预计 `runtime/sdk/astrocyte/repository-context/codegraph.mjs` 尚不存在，已交原 P 核最终路径；不把测试树脚本指针写成包默认。
+
 ### L 工程适配分工
 
 总负责人 `msg_e6d68fcaf601` 明确由本模块管理原 R 实现 CompletionExperienceInterpreter 适配，新增独占写域仅 `internal/adapters/agents/completion_experience*.go`、同名适用测试和原 `docs/access/runtime.md`。B `ctx_1fd66a8adc28` 保留 Attention interface / DTO、经验 quarantine、SQLite 与迁移；H 保持唯一 main / HTTP 组装。没有新增人员或第四层任务。
@@ -38,7 +50,7 @@ R 先消费 B 精确已提交的完整 interface / DTO / record 来源，沿既�
 
 总负责人正式答复 `msg_c13dc4934394` 明确独立 `ModelVersion` 保持 unknown，不复用 model ID 或 CLI 版本、不伪造 provider snapshot。B 负责将该字段改为可空或明确 unknown 并记录实际来源，R 消费其精确 SOURCE；`Model` 区分 configured_route 与 provider_reported，未回报身份时不将配置写作观测 echo。完整非拒绝响应、原 operation / controller、真实模型或配置路由证据、policy 与真实 evidence 仍全部核验。工程候选可以保留版本未知进入 quarantine，人工批准后按既有范围检索；不据此声称 immutable 复现或启动正式 L2 实验。
 
-该工程适配不启动正式 L2 实验，L3/L4 仍保持原授权边界。实际模型窗口在当前 Median 窗口之后独立安排；R 不另起控制器抢占当前 H/F 窗口。当前接口消费、模型调用、quarantine → 人工批准 → 检索均未通过；源码、独立报告及实际不足分别登记。
+该工程适配不启动正式 L2 实验，L3/L4 仍保持原授权边界。实际模型窗口在当前 Median 窗口之后独立安排；R 不另起控制器抢占当前 H/F 窗口。R 已准确消费 B interface 与未知独立模型版本来源，原 agents 适配 / 拒绝检查通过；完整 L 组合仍因 S2 事务最小闭包缺失保持 RED，原 S2 正在验证准确 11 文件、B attention 同事务桥和 019 前置。模型调用、quarantine → 人工批准 → 检索仍未通过；源码、独立报告及实际不足分别登记。
 
 02:17Z 前次恢复记录：总负责人 `msg_434ec1493231` 要求恢复原 Task，模块为 `ctx_e5acf96d0a7d / term_bc28e48f-4e69-42e3-9112-b32283de01de`，原子 Run generation 2；当时总负责人为 `term_cd5e93fe-8940-4fa1-8be6-ea914f3629ae`。随后 Runtime 再次重启，下面三个 Dispatch 已由恢复流程记为 failed / terminal_missing。
 
@@ -163,6 +175,9 @@ SemanticIndex提出完整本地方案待总负责人决定：TypeScript必要推
 
 ## 当前证据与第一失败
 
+- H 公共 S4 SOURCE `31256d5d6758daf25892d55df73feffde7a7e573` / 独立 REPORT `89d84d55a822e2f0506e18e93adaa1ec02a8342e` 已普通 push，模块独立核 11 个原 H / 原 B 单脚本交接路径、纯文档 REPORT、普通祖先、diffcheck 与远端精确同值。包含 S4 六个准确源码与必要 B 迁移 / 依赖、真实 NewServer / 认证、五路闭合 OpenAPI、三项 Agent 读取白名单与私有 factory；原 H 实际 HTTP / SQLite 两项 15.927 秒 PASS，覆盖无配置 503、CSRF 403、畸形 / 重复 / 未知输入 400、无私有路径、项目不变与 native_sessions=0。构建 / vet 是 P579 精确五文件 readonly overlay 组合，33 包边界 / 284 例 / lint / 依赖检查通过。已交 F / S4 准确消费；配置完整图查询、Context / S3 后继、生产配置、完整 UI / native / Today / 包分别继续，未记整体通过。
+- R 原 input 私有端口 SOURCE `9807d2b6d7f0042bcd59d36ded0b332d74333dc2` / 独立 REPORT `c569c8718e65a6ca50e2e531580b1f2814ad3056` 已普通 push，模块独立核两路径、纯文档 REPORT、diffcheck 和远端精确同值。ReadOwnedInputOperation 区分 claim_work_item 的当前 live / 无其他 input 占用，与 submit_artifact 的实际 accepted turn / 原持有退出 tuple；StopOwnedInputOperation 在原 operation 锁内重核当前 input 后才停止。全部返回内容仅私有且 JSON 排除，不授予 Member，不将缺失 Tools / Targets / Calls / Tokens 标为 Known。原 owner 精确 archive 全 agents 19.212 秒 / vet / build 通过；真实 Claim / Stop 正向仍待实际链路。首次 REPORT push TLS128 保留，随后同 SHA 普通重试远端一致。
+- 本模块独立 REPORT `8778fe6aa275d7bae4669f966dfda4c490ac7d47` 首次普通 push 实际 SSL_ERROR_SYSCALL / exit128，独立远端当时仍为 SOURCE `ce7715e`；同 SHA 有界普通重试成功，随后独立远端精确 `8778fe6`。没有 force、全局代理 / TLS 变更或公共历史覆盖，首失败保留。
 - 本轮单一 Registry 准确时序与源码阶段接纳的管理 SOURCE `ce7715ece63ed17d19398a883b271f89f7f1868e` 已普通 push，独立 `git ls-remote` 精确同值；只修改本文与 v1.4 规格，diffcheck 退出 0。R/H/F 当前 Dispatch 已收到最终 t0 顺序，H/F 本人已确认读取；R 两阶段的代码、独立报告与模块精确快照五项通过分别记录，真实模型与 Today 均尚未执行。H 的 S4 单报告临时冲突写域已获原 S4 停写 ACK 并由模块正式答复，序列结束即撤回。S4 完整生产 Options 原文已经从原消息 `msg_d3cf3405d2a5` 逐字转 B / 产品负责人，等待其实际读取确认，传输回执不当作已读。
 - R 两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / 独立 REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854` 已普通 push，模块独立核远端同 REPORT、SOURCE 普通祖先、13 个 R 允许路径、REPORT 单文档和 diffcheck 全部 PASS。模块在 D 盘由该精确 Git 对象导出独立源码快照，使用共享预热 GOCACHE 与自身独占临时目录实际运行此前三项边界及新 GuardedRegistry / A-B-C 权限检查，五项全部 PASS、exit 0：真实 Git / SQLite 固定上下文 9.26 秒，正文边界 0.01 秒，A/B/C / 两连接 / prepare 拒绝与不可变收据 8.55 秒，原控制器 / operation 与未 armed 首输入拒绝均通过，三包分别 14.446 / 14.966 / 7.977 秒。日志仅本机 `D:/Astrocyte-agent-assets/20261015/relay/M-relay/checks/exact-cc326be-impact.log`。源码阶段已接纳并交 H 准确消费；没有新 native / 模型，真实空初始化、首提交、来源、目标、Today 与最终包继续 NOT_RUN。原 WIP 编译 FAIL 和 B 旧 SQLite 冷 Registry 恢复断言 RED 独立保留，B 原 owner 负责迁移实际拒绝验证，R 不代改 B 测试。
 - S4 readonly 修复 SOURCE `f407337f2199d5e49f1ff49862063d964a738a9c` / 独立 REPORT `0bd2aabf58076960597c1eefca526252857583c7` 已普通 push；模块独立核五个 S4 路径、REPORT 单文档、普通祖先、远端同值与 diffcheck PASS，代码使用 SQLite immutable URI 并拒绝实际非空 WAL。原 S4 报告真实两 worktree readonly / WAL 拒绝 / writer 关闭恢复 / official sync 新 generation 查询通过，原 shm 修改 RED 保留。该源码修复阶段已接纳给 H/P；实际 HTTP / UI / 包尚未验，SPEC9.5 旧 generation 异步清理 Hook / 作用范围已交 B，SemanticIndex 仍待用户决定。

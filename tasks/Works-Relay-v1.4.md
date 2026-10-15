@@ -14,8 +14,12 @@
 |---|---|---|
 | working 是否严格要求明确开始证据 | 不据 stdout、Git、PID、pipe 写入或完成结果产生新的开始证明；不冻结依赖该决定的接口 | 哪些真实客户端证据允许 accepted → working，以及 UI 的具体条件 |
 | 缺少独立 started 信号的客户端如何人工完成 | 保留既有 working → done → released；不自行增加 accepted → done / released | Claude、非交互 CLI 和交互终端的人工完成入口及相应验收 |
+| Calls 的计数单位及 Known 覆盖 | 保持 CallsKnown=false；completed Responses 只作私有独立观察量 | 区分已完成 response 与全部尝试 / 失败 / 重试的分母和预算语义 |
+| 工具与外部目标的完整集合门禁 | 保持 ToolsKnown / TargetsKnown=false 及当前 Claim 拒绝；不以 argv、tool0 或空数组填已知 | 已授权文件 / 命令关闭、外发策略与完整能力集合各自需要的证明范围 |
 
 接口的公共字段由原 R/H 根据已授权证据语义和用户答案在现有契约中共同维护；确定后交原 F 消费。本文中的证据含义明确，未决定的字段名称、枚举及迁移规则不作为冻结契约。
+
+总负责人正式答复 `msg_9e32e1f32ba5` 确认后两项已向用户提问，当前未决定。答复前不开始三分钟登记窗口，不绕过原 Claim / 预算发送输入，也不扩大工具权限；原 R 继续适配与独立检查，H 继续已有 Context / S3 / S4 契约、生产装配和无模型负例，F / UI 继续已交接口。真实完成 response 可以私有记录其实际身份和观测数量，不能转换为全部尝试次数；六字段 session-events 不变。
 
 ## 1. 投递阶段与人工完成
 
