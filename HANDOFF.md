@@ -1,5 +1,17 @@
 # Astrocyte 主控交接
 
+## 当前执行入口（2026-10-15）
+
+用户已授权继续 S0–S6 产品开发、合并与可用 release 包；总负责人维护分工、状态、验收和最终 Git，模块负责人安排第三层开发人员。范围与精确来源以 [发布任务](tasks/Release-v0.1-20261014.md) 和 [产品](docs/modules/product.md)、[Relay](docs/modules/relay.md)、[发布](docs/modules/release.md) 当前模块工作树文档为准。正式 V4、实验锁与尚未解除的实验冻结保持已有要求。
+
+用户最新确认：前端复用之前的设计，可以使用 TypeScript。继续现有 React / TypeScript / Vite，复用 `web/src/styles/preview.css`、`variables.css`、`App`、`Nav`、`PageFrame` 和现有组件；设计来源见 [原设计迁移计划](tasks/UI-preview-plan.md) 与 [迁移记录](web/UI-preview-report.md)。
+
+用户要求 C 盘空余维持约 10 GB，允许使用 D 盘与释放 C 盘。发布模块负责唯一清理执行者；新增大型模型、SDK、编译缓存和临时构建使用 `D:/Astrocyte-agent-assets/20261015/` 下按负责人划分的目录，以进程环境配置。10:36 实测 C 盘空余 5,193,687,040 bytes；Go 编译缓存 `C:/Users/DW/AppData/Local/go-build` 实测 11,524,494,685 bytes，已授权在检查当前使用进程与精确路径后清理。源码、Git 历史、真实数据库、会话、验证证据和凭据保留；清理结果以之后实际磁盘读数为准。
+
+10:31 Orca 重启后，原开发进程退出；原任务、分支、工作树和未提交修改保留。当前主控终端 `term_72a815fc-b97e-433b-b653-5415cf298e1d`，顶层 Run `run_973808dd6a2f`。模块负责人当前 Dispatch：产品 `ctx_9ce12d181768`、Relay `ctx_bc51f7008918`、发布 `ctx_b80c795a71a4`；沿原子 Run `run_dbf1a68bc692`、`run_8bbda1c3974c`、`run_aa4e6a119547` 恢复。B / F 沿原 Run `run_7b2ce96bcd13` 恢复为 `ctx_1fd66a8adc28` / `ctx_4a385bf65390`，业务由产品模块协调。接管时仍需按公开 CLI 核实当前身份和实际运行状态。
+
+今日工程采集 Q 已完成并 released，SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7`；正式 D1 已完成。两者不重复采集、Sleep 或模型调用。现有 Windows 候选包不包含本轮全部新增功能，完整组合、真实 CLI / Today、默认前端检查和最终 release 包继续由原负责人完成。
+
 2026-10-14：已接手 REA 6.5.0 的[调研报告](docs/research/orca-rea-20261014.md)与第 42 版技能。独立 MCP 握手、207 工具、binary_session 成功；Orca 1.4.220 两份静态分析共 18 个 JavaScript 文件解析错误为零。按用户要求，今晚已移除 REA Codex MCP 注册并停止服务，CLI、技能与分析结果保留，10-23 之后重新注册为陌生代码库任务与 L2 经验来源候选。2026-10-15 先完成 Relay v1.4 四项语义规格与修改，再做真实 CLI 端到端、三分钟 Today、L1 关账；产品其他开发和发布候选继续，由原模块负责人管理。
 
 2026-10-14 19:59：继续网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md)。原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 沿新 Dispatch `ctx_5a0a4d492434` 实际继续；新增 B `ctx_e0356fbca4e1` 已 failed 结算并 released，双方修改完整保留。F `ctx_a69aaadfe5b6` 在原工作树继续。主控自己的实际终端为 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f`，已重新绑定原 Run generation 3；接管前必须核实终端实际 Agent 和目录，不能仅按 Orca 工作树元数据推断身份。P REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端且适用独立验证 PASS，旧终端释放状态 unknown。主控只维护状态、验收及最终 Git；完成后交唯一集成人员普通合并。当前正式运行树不接入整改源码；Mission 新业务待定和 V4 冻结保持不变。
