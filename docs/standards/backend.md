@@ -340,6 +340,29 @@ SOURCE `ea9225da1c2d98ba890968ded77244a8d28927ef` 已普通 push。固定输出 
 
 当前没有重复模型调用或生成替代原生协议，完整付费原生处理和选定文本来源验收仍等待原 R/H 准确证据端口与验证窗口，没有把解析规则通过登记为模型或来源链路通过。
 
+## 完整品味的不可变修订与实际存储
+
+SOURCE `41602e6f2a14a75e3765ef0a72f7afadf1856bbb` 已普通 push。根正式批准的唯一 `026_taste_profiles.sql` 只新增完整品味 head 和 revisions 两表；001–025、冻结 `domain/profile.go`、引擎、V4 和权重没有修改。实际启动与升级均不创建品味值。原 S5 `32e701e98604b5c3139c3da61a5cfbe4a63d220e` / REPORT `ac288c54caeae932267c8104e46986ff1fb2b23a` 已交固定 Goal / Ranking reader；本 SOURCE 的准确类型与读取入口已交原 S5 和唯一应用测试负责人 T。
+
+`TasteProfile` 固定 `attention` ID，保存版本、启用状态、rubrics、examples、delegations、UTC 创建时间和已授权配置主体。rubric 保存固定 ID、题型和 criteria；example 保存固定 ID、rubric ID、实际 material/revision/digest 及明确 expected；delegation 仅保存 S5 的 rule ID/revision/workflow ID。调用者必须提供明确数组，delegations 可以为空；启用配置须有 rubric 和 example。未配置返回 `configured=false` 和空指针。
+
+`UpdateTasteProfile` 复用原 Attention 命令 CAS、回执和 outbox；每次实际更改只插入下一条不可变修订。`ReadTasteProfile(ctx, Principal, id, version)` 在同一事务中读取 `Current` 和 `Fixed`，保存及读取均核查例子所引资料的实际修订、digest 和当前撤回状态；原 Workspace 事务的 Context 直接复用同数据库连接，其他数据库的 Context 被拒绝。Delegation 当前授权、暂停和撤销继续由原 S5 权威实现核查；本层不创建授权规则。
+
+进程级环境为 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`、`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/backend`。实际命令和结果如下。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestTasteProfile' -count=1 -v` | EXIT 0，3 PASS、0 SKIP，1.622s；`.verification/taste-profile-actual-second.log` |
+| `go build -mod=readonly -p=1 ./...` | EXIT 0；`.verification/taste-profile-build-first.log` |
+| `go vet -mod=readonly -p=1 ./internal/attention/app ./internal/adapters/sqlite` | EXIT 0；`.verification/taste-profile-vet-first.log` |
+| 三个新增 Go 文件 `gofmt -l`、`git diff --check`、`git diff --cached --check` | 均无输出，EXIT 0 |
+
+检查通过原生产 manual importer 将当前公开仓库的完整 README bytes 导入真实对象存储和 SQLite，配置字段是明确的测试规则输入，不作为用户实际品味、委托批准或模型来源。覆盖两个真实连接的八次竞争只有一个 CAS 成功、固定历史与当前 head、关闭重开、原完整回执重放、Agent 配置拒绝、未知版本、digest 不符、资料撤回、同事务读取、真实主键约束引发配置/修订/回执/outbox 全部回滚、错库 Context 与关闭存储拒绝。升级检查实际应用原 001–025，再应用 026，并核实一致备份、两张新表、零默认配置和重复迁移幂等。
+
+最终自有目录为 `.verification/taste-profile-actual-{447536222,56315726,1270924498}/`。首轮 2 PASS / 1 FAIL 保留于 `taste-profile-actual-first.log`；生产时间统一 UTC 后固定修订与完整回执精确相等，断言没有放宽。没有新增模型或 controller 调用，没有编辑 T 应用测试。S5 完整内容进入缓存、Delegation 同事务授权、HTTP 装配及全部版本变化后的旧 proof 拒绝尚未执行，AT12 继续未完成。
+
+当前冷 Registry 正向恢复测试仍缺真实 controller 所有权来源，原替代构造与首 RED 没有被改期望或跳过。已交模块和原 R/H 请求固定公开原件与准确入口；本轮原生窗口为零。原 S4 清理 pass 所需项目 worker / 持久请求 / wake 在本树不存在，已据 `projects.go` 和 `cmd/server/main.go` 实码交原 S4 及模块；未将资料 Attention 作业用于项目清理。F 最新 Vite `61137` 的 EACCES 及 13 项未运行已交本轨道，真实设施修复继续进行，不能因 Taste 存储通过提升默认 E2E 结论。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
