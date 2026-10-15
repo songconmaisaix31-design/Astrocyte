@@ -2,6 +2,8 @@
 
 ## 当前开发与磁盘要求（2026-10-16）
 
+04:15 同一产品已恢复 `http://127.0.0.1:64505/`，准确 `cffac367`、PID45616，原数据库及公开业务数据保持；根实际核首页200、进程、启动时间和唯一 listener，模块核 buildinfo 同源 / modified=false。准确 cffac 完整 build EXIT0 / 49.3755472秒，根独读原件；当前 I 后继 `79b2de5` 已合检查脚本，构建通过只归原 cffac。F 同实例只读恢复核验，H 清理 / 完成来源 / Q root 继续装配；当前 Q / Jev / Laya 尚未配置。旧 Node probe 首失败根因仍未知，8b 原 check 整体 EXIT UNKNOWN / 四包首失败保留；完整功能与发布仍待完成，具体来源和身份见 [HANDOFF](HANDOFF.md)。
+
 04:04 继续原任务，根已绑定原 Run generation32；当前 runtime 重启后原三个模块 Task ready，沿原 Task / 子 Run / 工作树和 WIP 恢复。64505 当前没有 listener：原 H 停止旧服务并更新准确 `0db5836` 时，CodeGraph Node / SDK 启动校验退出1，原 D 数据及真实业务保存结果保持。先恢复原 H / B 修启动与装配、原 F 核同实例已保存结果，以及唯一 I 的普通集成和必要构建；准确当前 I 为 `8b0eb882` clean。`0db5836` 的完整 build 已真实通过，8b check 与前端320中断均未通过完整验收，具体原件、任务身份和范围见 [HANDOFF](HANDOFF.md)。Laya 语言和 Agent completion action 等未答项保持未决定，产品优先及原生工具关闭、真实来源和未知不重发边界继续。
 
 02:33 同一产品已恢复至 `http://127.0.0.1:64505/`，PID25048，启动 UTC `18:28:44.7333357Z`，原 D 盘数据和配置保持；根实际核首页200、程序路径和唯一 listener，M-relay 独核 buildinfo 为准确 `ad8413e1` / modified=false。原 H / R / S4、F 和唯一 I 已实际接续，继续生产装配、普通集成与同实例核心业务；I 原 `d59a100` clean。当前可访问结果不代替完整产品验收，原 320 项中断、待定权限与受限原生能力缺口继续如实处理，准确身份与运行定位见 [HANDOFF](HANDOFF.md)。

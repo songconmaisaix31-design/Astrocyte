@@ -2,6 +2,12 @@
 
 ## 当前执行入口（2026-10-16）
 
+04:15 同一产品已恢复可访问：`http://127.0.0.1:64505/`，准确 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，PID45616，启动 UTC `2026-10-15T20:13:21.8983808Z`。根实际 GET 首页 HTTP200 / text/html / 562 bytes，独核实际进程路径、启动时间和唯一 loopback listener；M-relay 另核稳定 `versions/cffac367` 的 buildinfo 同 revision / modified=false。原 D 盘 SQLite、LOCALAPPDATA 和 F 已保存的公开业务数据保持，`running.json` 已更新。CodeGraph 已配置；原 `0db` 启动 exit1 的原因仍未知，原件保留，准确原目录及完整白名单环境下三个 probe 当前均退出0，不把当前恢复写为已定位或修复旧原因。
+
+当前 M-relay `ctx_7f070ad688f5`、M-product `ctx_5516f4f55d3b`、M-release `ctx_6256d5837fb3` 均实际 Codex / gpt-6.1-sol live / working，继续原子 Run；原 H `ctx_5b3dc511cccd`、B `ctx_4f388a292a1f`、F `ctx_c22d1dd61be3`、唯一 I `ctx_4a4234c26f8c` 已实际工作，原 R `ctx_1500d65ab213` 接续原拒绝诊断。I 已普通消费 B cleanup `0e6139f` 和 F `a166310` 得到上述 cffac，再合 F 检查脚本 `8bd599c` 得到 `79b2de5`；只有准确 cffac 的 `pnpm build` 已真实 EXIT0 / `49.3755472` 秒，根独读 result / log 核 source_after 同值。8b 原完整 check 没有 result.json、日志止于 httpapi FAIL，整体 EXIT UNKNOWN，四包首失败已退原作者，后继契约 / TypeScript / lint / Vitest 没有完成证据，未重跑已知未修问题。
+
+F 已取得同一地址的唯一 `readProduct*` GET / DOM / SQLite 只读窗口，核先前成功和未知动作，不重发 mutation。H 继续生产清理生命周期和通知装配、完成来源、独立 Q reader root 及其真实检查；当前这些后继尚未部署，Q root、Jev、Laya 均未配置。原生 / 模型产品输入仍为零，语言及权限待答边界保持。产品当前可访问，完整功能、适用检查和最终发布仍在进行；此状态优先于下方04:04停机记录。
+
 04:04 继续原任务。当前 runtime `835cbad4-6dd7-4574-a161-2c376d967a2c`、app PID27840，根 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669` 已普通绑定原 `run_973808dd6a2f` generation32。旧三个模块 Dispatch 已由运行时结算 abandoned / failed、原 Task ready；当前终端清单没有旧模块或开发终端。只恢复原 Task、原子 Run、原工作树、分支和 WIP，禁止新建 Run 或替代任务；原任务正文中的旧身份、create 子 Run 和旧验收顺序以本入口为准。根继续协调、管理文档、独立检查和最终 Git，领域代码由原作者完成。
 
 当前产品尚未恢复可访问。H 在 F UTC `18:50:28` 安全 ACK 后正常停止旧 PID25048；已复制并核 buildinfo 的准确 `0db5836b7cd466f6a5328bc84ba4530c2bb826ce` 因配置的 CodeGraph Node / SDK 程序检查退出 1，尚未监听，根当前查询64505也没有 listener。原件 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/api-0db-20261015-185255.stderr.log`；原数据库和 F 已保存的真实论文、项目、Goal / Proposal / Grant / ContextPacket 保留。先由 H / B 核 P 已备准确入口与原配置 probe，修实际错误并恢复同一 D 数据与首选64505，不放宽保护、不重置数据、不另起多个共享服务。
