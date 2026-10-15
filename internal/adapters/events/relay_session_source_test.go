@@ -32,7 +32,7 @@ func TestRelaySourceIdentityActualFileAndAliasRejection(t *testing.T) {
 	}
 	identity, err := VerifyRelaySessionSource(context.Background(), path, workspace, []string{approved})
 	if err != nil || identity == "" {
-		t.Fatal("合法单链接文件检查失败")
+		t.Fatalf("合法单链接文件检查失败: %v", err)
 	}
 	again, err := VerifyRelaySessionSource(context.Background(), path, workspace, []string{approved})
 	if err != nil || again != identity {
