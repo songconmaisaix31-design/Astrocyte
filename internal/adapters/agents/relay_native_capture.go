@@ -73,7 +73,11 @@ func (c *relayNativeCapture) bind(raw json.RawMessage, request domain.NativeRequ
 	if !resume && c.state.Errors == 0 && c.state.Unknown == 0 {
 		c.state.PrefixComplete = "confirmed"
 	}
-	if source.Path != nil && filepath.IsAbs(*source.Path) && filepath.Ext(*source.Path) == ".jsonl" && !source.Ephemeral {
+	if source.Path != nil && (!filepath.IsAbs(*source.Path) || filepath.Ext(*source.Path) != ".jsonl" || source.Ephemeral) {
+		c.failLocked("native_start_archive_metadata_invalid", false)
+		return nativeError(apierrors.ScopeDenied, "native start archive metadata is invalid")
+	}
+	if source.Path != nil {
 		path := filepath.Clean(*source.Path)
 		if resume && c.previousPath != "" && path != c.previousPath {
 			// 恢复响应可使用 Windows 长路径别名，只核控制器正选的两个文件。
@@ -236,6 +240,28 @@ func (n *Native) StartRelay(ctx context.Context, r domain.NativeRequest) (domain
 }
 
 func (n *Native) StartRelayOperation(ctx context.Context, r domain.NativeRequest, operation string) (domain.NativeSession, error) {
+	return n.startRelayWithGuard(ctx, r, operation, nil)
+}
+
+func (n *Native) StartRelayOperationWithInputGuard(ctx context.Context, r domain.NativeRequest, operation string, guard RelayBeforeFirstInput) (domain.NativeSession, error) {
+	if n.id != "codex" || operation == "" || guard == nil {
+		return r.Session, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.UnsupportedCapability, "first input source checkpoint requires an armed Codex operation")}
+	}
+	return n.startRelayWithGuard(ctx, r, operation, func(ctx context.Context, session domain.NativeSession) error {
+		// armed capture 的路径来自同次 thread/start 响应，此读取不发 RPC。
+		archive, err := n.OwnedRelayArchive(ctx, session)
+		if err != nil {
+			var known *apierrors.ServiceError
+			if errors.As(err, &known) && known.Code == apierrors.EvidenceMissing {
+				return guard(ctx, session, nil, "archive_not_yet_available")
+			}
+			return err
+		}
+		return guard(ctx, session, &archive, "")
+	})
+}
+
+func (n *Native) startRelayWithGuard(ctx context.Context, r domain.NativeRequest, operation string, guard func(context.Context, domain.NativeSession) error) (domain.NativeSession, error) {
 	if n.id != "codex" {
 		return n.start(ctx, r, false, operation)
 	}
@@ -246,7 +272,7 @@ func (n *Native) StartRelayOperation(ctx context.Context, r domain.NativeRequest
 	}
 	n.relayCaptures[r.SessionID] = capture
 	n.mu.Unlock()
-	return n.start(ctx, r, false, operation)
+	return n.startWithInputGuard(ctx, r, false, operation, guard)
 }
 
 func (n *Native) ResumeRelay(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
