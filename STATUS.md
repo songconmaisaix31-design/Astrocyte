@@ -2,6 +2,8 @@
 
 ## 当前开发与磁盘要求（2026-10-15）
 
+21:40 Orca 再次重启后，旧模块进程退出、原 Task 恢复 ready。主控已绑定原顶层 Run generation 28；原任务、分支、工作树与未提交修改保留，恢复分工见 [HANDOFF 当前入口](HANDOFF.md)。产品负责人获授权恢复原产品子 Run 及旧 Run 中 B / F 的生命周期，Relay 与发布负责人各自恢复原子 Run。领域来源准确且可消费后，唯一集成人员即可普通合并并执行完整组合检查；全部适用验收仍是最终发布条件。
+
 继续 S0–S6 产品功能、语义层、真实 CLI / Today 和最终 release；执行范围见 [发布任务](tasks/Release-v0.1-20261014.md)，当前模块分工与恢复身份见 [HANDOFF](HANDOFF.md)。总负责人负责协调与验收，原模块安排第三层开发人员。
 
 前端复用用户之前的白绿三页设计，使用现有 React / TypeScript / Vite 和现有样式、组件、客户端；[原迁移计划](tasks/UI-preview-plan.md) 与 [迁移记录](web/UI-preview-report.md) 为复用入口。
@@ -16,7 +18,7 @@ S3 调用预算单位与执行权限证据的覆盖范围已向用户询问，�
 
 发布负责人已核 S5 后继测试 SOURCE `1e89ef832b77ae31d75d9db920e7186773b75c94` / REPORT `9cbee0686fabed068a6da568021a51d4fa65cb11`，真实 Rule、人工采用 / 拒绝、机会版本变化与原 S1 / S2 同事务准入检查通过。AT12 完整 Goal / 品味依赖读取和完整生产 HTTP 尚待组合。原 B 已获准唯一新增 `migrations/026_taste_profiles.sql`，仅完整品味 head / 不可变 revisions 两表；原 B 与 S5 先核准确结构和事务端口，既有迁移、原排序 profile 与正式 V4 保持冻结，详见 [交接中的正式答复](HANDOFF.md)。
 
-P 固定运行组件与 PowerShell 5.1 / 7.6.6 依赖包解压一致性检查通过。英文 ONNX 原件的私人路径失败保留；发布负责人报告必要元数据处理后的十四项衍生资产扫描零匹配、两 checkpoint 的 CPU encoder / 三 heads 输出与原件逐项一致，完整运行包检查继续。多语言模型启动超时及 Close 回收等待由原 S5 修复，原 60 秒 / 10 秒预算保持，尚未通过模型进程重启检查。完整 release 包尚未完成。
+P 固定运行组件与 PowerShell 5.1 / 7.6.6 依赖包解压一致性检查通过。英文 ONNX 原件的私人路径失败保留；发布负责人报告必要元数据处理后的十四项衍生资产扫描零匹配、两 checkpoint 的 CPU encoder / 三 heads 输出与原件逐项一致。最新 S5 SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` / 独立 REPORT `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73` 已由原发布负责人独核：衍生模型服务 35.412 秒、三路六个 PID 重启与自然截断 147.849 秒通过，原 60 秒启动 / 10 秒关闭预算保持，首失败保留。完整运行包、AT12、HTTP、Jev、OS 与完整 release 验收尚未完成。
 
 H 阶段 SOURCE `59a7150b1143680b67fe53fdf831fcca5f328660` 的限定 HTTP 检查通过，当前 cmd 仍需准确 overlay，Context 仍序列化绝对 Root，阶段未接纳；原 H 优先消费 S2 安全 DTO、验证后再交 F。原 R / H 已获准在同一服务实例内实现可信登记与重载，原 t0 从本次完整登记首次实际写入开始，包含全部激活准备耗时。该实现与真实登记 / 三分钟验收仍待完成。
 

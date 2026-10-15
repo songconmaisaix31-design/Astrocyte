@@ -2,6 +2,10 @@
 
 ## 当前执行入口（2026-10-15）
 
+21:40 恢复计划：Orca 当前 runtime `50292233-afc2-49fb-bdeb-36dd3b08a033`、app PID 40964；旧模块 Dispatch 已由运行时记录为 abandoned / failed，三个原 Task 均恢复为 ready，旧终端不在公开清单。当前主控 `term_499a85ee-d93d-4385-bad1-5228a2b34146` 已绑定原顶层 Run `run_973808dd6a2f` generation 28。沿原任务、工作树、分支和未提交修改恢复三位模块负责人，禁止重复创建任务或开发轨道。产品负责人恢复 `run_dbf1a68bc692` 的 T / S2 / S3 / UI，并获授权接管旧 `run_7b2ce96bcd13` 中仅 B / F 的恢复及生命周期；Relay 负责人恢复 `run_8bbda1c3974c` 的 R / H / S4；发布负责人恢复 `run_aa4e6a119547` 的 S5 / P。所有恢复先核实际存活和原 Task 状态；ready 使用原 Task，failed 按公开恢复指令处理，无法证明退出的人员保持原状。模块负责人只写原管理文档，领域人员保持原独占 write_paths，不增加第四层。
+
+本次恢复的先后关系：产品先处理原 B 在 F / H 工作树的未完成合并冲突并明确归还写入，再由 B / S5 / T 完成已批准的 026 完整 TasteProfile 与 AT12；Relay 先完成 R 同服务可信登记、H 安全 Context DTO 和准确生产装配，再交 F 原界面与实际 CLI / Today；发布复用已通过的模型和依赖准备，继续准确运行包、许可与最终集成输入准备。最新已处理交付 S5 SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` / REPORT `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73`：原发布负责人独核衍生服务、六个实际 PID 重启及退出通过；AT12、完整 HTTP 与最终包仍待完成。S4 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` / REPORT `9907404b8df7f9f4a76dc7c90372e967fd2b33cd` 按原模块准确范围复用。独立集成无需等待只有组合后才能执行的整仓检查；全部领域来源可消费后，由唯一 I 普通合并，在准确组合上执行完整检查，领域失败交原作者。最终发布仍需全部适用验收通过。C 空余实测 `12,477,841,408 bytes`，D `84,291,747,840 bytes`，新增大型产物继续使用 D 盘，由发布负责人唯一协调 C 盘维护。
+
 用户已授权继续 S0–S6 产品开发、合并与可用 release 包；总负责人维护分工、状态、验收和最终 Git，模块负责人安排第三层开发人员。范围与精确来源以 [发布任务](tasks/Release-v0.1-20261014.md) 和 [产品](docs/modules/product.md)、[Relay](docs/modules/relay.md)、[发布](docs/modules/release.md) 当前模块工作树文档为准。正式 V4、实验锁与尚未解除的实验冻结保持已有要求。
 
 用户最新确认：前端复用之前的设计，可以使用 TypeScript。继续现有 React / TypeScript / Vite，复用 `web/src/styles/preview.css`、`variables.css`、`App`、`Nav`、`PageFrame` 和现有组件；设计来源见 [原设计迁移计划](tasks/UI-preview-plan.md) 与 [迁移记录](web/UI-preview-report.md)。
