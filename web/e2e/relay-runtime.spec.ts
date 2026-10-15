@@ -41,6 +41,67 @@ test('实际注册CLI、默认A确认与权限拒绝保留意图和收据', asyn
   } finally { await owned.server.close(); }
 });
 
+test('真实空会话初始化权限拒绝保存prepare收据且不发送首次输入', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    const commands = writes(page), dialog = await declareIntent(page, owned);
+    const prepare = dialog.getByRole('button', { name: '确认资料权限并初始化会话', exact: true });
+    await expect(prepare).toBeDisabled();
+    await dialog.getByRole('checkbox').check();
+    const denied = page.waitForResponse(response => response.url().endsWith('/prepare'));
+    await prepare.click();
+    expect((await denied).status()).toBe(403);
+    await expect(dialog.getByRole('alert')).toContainText('review_project_permissions');
+    expect(commands.map(command => command.action)).toEqual(['intents', 'prepare']);
+    expect(commands[1].body).toEqual({ permission_confirmed: true, permission_level: 'A', project_settings_revision: owned.project.settings.revision });
+    const { tasks } = await owned.api.get('/relay/tasks') as S['RelayTasksV1'];
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].task.state).toBe('ready');
+    expect(tasks[0].terminal).toBeNull();
+    expect(tasks[0].worktree).toBeNull();
+    const { receipts } = await owned.api.get(`/relay/tasks/${tasks[0].task.task_id}/receipts`) as S['RelayReceiptsV1'];
+    expect(receipts.find(receipt => receipt.action === 'prepare')).toMatchObject({ status: 'rejected', operation_id: commands[1].key });
+    expect(receipts.filter(receipt => receipt.action === 'dispatch')).toEqual([]);
+    await page.reload();
+    await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+    await expect(page.getByRole('region', { name: '派发与意图收据', exact: true })).toContainText('初始化会话 · 被拒绝');
+    expect(commands).toHaveLength(2);
+    expect(owned.server.query('SELECT COUNT(*) AS count FROM local_agent_sessions')).toEqual([{ count: 0 }]);
+  } finally { await owned.server.close(); }
+});
+
+test('真实网络断开的初始化未知锁同时阻止prepare和confirm并跨刷新保留', async ({ page, context }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    const commands = writes(page), dialog = await declareIntent(page, owned);
+    await dialog.getByRole('checkbox').check();
+    await context.setOffline(true);
+    await dialog.getByRole('button', { name: '确认资料权限并初始化会话', exact: true }).click();
+    await expect(dialog).toContainText('初始化结果未知，禁止重新初始化或派发');
+    const saved = await page.evaluate(() => Object.entries(sessionStorage).filter(([key]) => key.startsWith('astrocyte:relay:pending:prepare:')));
+    expect(saved).toHaveLength(1);
+    expect(saved[0][1]).toMatch(/^[0-9a-f-]{36}$/);
+    await context.setOffline(false);
+    await dialog.getByRole('button', { name: '读取权限、任务和收据', exact: true }).click();
+    await expect(dialog.getByRole('button', { name: '确认资料权限并初始化会话', exact: true })).toBeDisabled();
+    await expect(dialog.getByRole('button', { name: '确认资料权限并请求接力', exact: true })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+    await expect(page.getByRole('dialog')).toContainText('初始化结果未知，禁止重新初始化或派发');
+    await page.reload();
+    await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+    const reopened = page.getByRole('dialog');
+    await expect(reopened.getByRole('button', { name: '确认资料权限并初始化会话', exact: true })).toBeDisabled();
+    await expect(reopened.getByRole('button', { name: '确认资料权限并请求接力', exact: true })).toBeDisabled();
+    expect(commands.filter(command => ['prepare', 'confirm'].includes(command.action))).toEqual([]);
+    const { tasks } = await owned.api.get('/relay/tasks') as S['RelayTasksV1'];
+    expect(tasks[0].task.state).toBe('ready');
+    expect(tasks[0].terminal).toBeNull();
+  } finally { await context.setOffline(false); await owned.server.close(); }
+});
+
 test('实际HTTP拒绝不成对交接声明，新意图不自动声明交接', async ({ page }) => {
   test.setTimeout(120_000);
   const owned = await relayIntentService();

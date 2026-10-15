@@ -1,5 +1,185 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/relay/intents/{id}/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Initialize the original owned controller with an empty message
+         * @description Human permission confirmation reserves the original workspace and initializes the same controller without a model input. The task remains ready. First input requires a separate Confirm operation; delivery_unknown must never be replayed.
+         */
+        post: operations["prepareRelayIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/context-packets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Build a fixed packet from the current approved project snapshot */
+        post: operations["buildWorkspaceContextPacket"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/context-packets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read a fixed context packet under the current project permission */
+        get: operations["readWorkspaceContextPacket"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/session-bindings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bind a current owned native session to a fixed approved packet
+         * @description Requires the original owned-session provider. An absent provider returns unsupported_capability and creates no binding.
+         */
+        post: operations["bindWorkspaceSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/missions/{id}/work-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read authorized mission work items */
+        get: operations["listSwarmWorkItems"];
+        put?: never;
+        /** Add a work item within the current approved mission */
+        post: operations["addSwarmWorkItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/missions/{id}/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read actual outbox event references for an authorized mission */
+        get: operations["readSwarmTimeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/missions/{id}/recover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconcile original executions before explicitly resuming a mission
+         * @description Human command preserves unknown usage, leases and reservations. It does not start a replacement executor.
+         */
+        post: operations["recoverSwarmMission"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an authorized artifact or its fixed version */
+        get: operations["readSwarmArtifact"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{id}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the verified Git diff object of an authorized artifact */
+        get: operations["readSwarmArtifactDiff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{id}/rejection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record the human rejection of an actual artifact */
+        post: operations["rejectSwarmArtifact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/local-projects/{id}/repository-context/map": {
         parameters: {
             query?: never;
@@ -1495,12 +1675,16 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * list Missions
-         * @description S0 implements this read-only operation.
+         * List missions within current project permissions
+         * @description Reads the actual approved Swarm ledger without creating an executor.
          */
         get: operations["listMissions"];
         put?: never;
-        post?: never;
+        /**
+         * Create or retrieve the unique mission of a current human approval
+         * @description Requires the human session, CSRF and an unchanged approved proposal and project scope. HTTP cannot supply a trusted consumer event.
+         */
+        post: operations["createSwarmMission"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1515,8 +1699,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * get Mission
-         * @description S0 implements this read-only operation.
+         * Read the current authorized mission and execution references
+         * @description Returns the actual ledger, work items, leases, artifacts and safe timeline references.
          */
         get: operations["getMission"];
         put?: never;
@@ -1698,7 +1882,7 @@ export interface paths {
         put?: never;
         /**
          * pause Mission
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Human command preserves the original execution and retains unknown leases until actual reconciliation.
          */
         post: operations["pauseMission"];
         delete?: never;
@@ -1718,7 +1902,7 @@ export interface paths {
         put?: never;
         /**
          * cancel Mission
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Human cancellation persists before stopping original executions; unknown outcomes retain their reservations.
          */
         post: operations["cancelMission"];
         delete?: never;
@@ -1738,7 +1922,7 @@ export interface paths {
         put?: never;
         /**
          * claim Work Item
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Requires a current approved binding and original prepared input operation. Missing verified native dependencies returns 501.
          */
         post: operations["claimWorkItem"];
         delete?: never;
@@ -1758,7 +1942,7 @@ export interface paths {
         put?: never;
         /**
          * submit Artifact
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Saves verified Git and actual project checks under the original lease. Usage remains unknown where evidence is unavailable.
          */
         post: operations["submitArtifact"];
         delete?: never;
@@ -1778,7 +1962,7 @@ export interface paths {
         put?: never;
         /**
          * accept Artifact
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * @description Human adoption records the actual accepted artifact and experience provenance separately from submission.
          */
         post: operations["acceptArtifact"];
         delete?: never;
@@ -2611,6 +2795,293 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        SwarmMetaV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+        };
+        SwarmCreateRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            grant_id: string;
+            epoch: number;
+            proposal_revision: number;
+            project_id: string;
+            root: string;
+            /**
+             * @description Reserved for the trusted event consumer; HTTP rejects nonempty values.
+             * @constant
+             */
+            event_id?: "";
+        };
+        SwarmSourceVersionV1: {
+            id: string;
+            revision: string;
+        };
+        SwarmArtifactReferenceV1: {
+            id: string;
+            version: number;
+            commit: string;
+            object_ref: string;
+        };
+        SwarmResourcesV1: {
+            calls: number;
+            tokens: number;
+            money: number | null;
+            currency: string;
+        };
+        /** @description Actual usage quantities remain null when their evidence is unknown; known zero is preserved as zero. */
+        SwarmUsageV1: {
+            calls: number | null;
+            tokens: number | null;
+            money: number | null;
+            currency: string;
+        };
+        SwarmBudgetV1: {
+            calls: number | null;
+            tokens: number | null;
+            money: number | null;
+            currency: string;
+        };
+        SwarmLimitsV1: {
+            max_work_items: number;
+            max_attempts: number;
+            max_no_progress: number;
+            no_progress_seconds: number;
+            max_active: number;
+            /** Format: date-time */
+            deadline: string;
+        };
+        SwarmGrantV1: {
+            inputs: components["schemas"]["SwarmSourceVersionV1"][] | null;
+            id: string;
+            epoch: number;
+            proposal_id: string;
+            proposal_revision: number;
+            project_id: string;
+            root: string;
+            goal: string;
+            actions: string[] | null;
+            write_paths: string[] | null;
+            budget: components["schemas"]["SwarmBudgetV1"];
+            limits: components["schemas"]["SwarmLimitsV1"];
+            /** Format: date-time */
+            expires_at: string;
+        };
+        SwarmMissionV1: {
+            settled_operations: number;
+            id: string;
+            version: number;
+            grant: components["schemas"]["SwarmGrantV1"];
+            state: string;
+            reason: string;
+            reserved: components["schemas"]["SwarmResourcesV1"];
+            used: components["schemas"]["SwarmUsageV1"];
+            work_item_count: number;
+            no_progress: number;
+            /** Format: date-time */
+            last_progress_at: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        SwarmWorkItemRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            mission_id?: string;
+            title: string;
+            inputs: components["schemas"]["SwarmSourceVersionV1"][];
+            dependencies?: string[];
+            write_paths: string[];
+            required_capabilities?: string[];
+            artifact_inputs?: components["schemas"]["SwarmArtifactReferenceV1"][];
+        };
+        SwarmWorkItemV1: {
+            artifact_inputs: components["schemas"]["SwarmArtifactReferenceV1"][] | null;
+            required_capabilities: string[] | null;
+            id: string;
+            mission_id: string;
+            version: number;
+            state: string;
+            title: string;
+            inputs: components["schemas"]["SwarmSourceVersionV1"][] | null;
+            dependencies: string[] | null;
+            write_paths: string[] | null;
+            attempts: number;
+            fence: number;
+            artifact_id: string;
+            reason: string;
+        };
+        SwarmTransitionRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            mission_id?: string;
+            reason?: string;
+        };
+        SwarmClaimRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            mission_id: string;
+            work_item_id?: string;
+            binding_id: string;
+            session_id: string;
+            member_version: string;
+            worktree: string;
+            /** Format: uuid */
+            operation_id: string;
+            resources: components["schemas"]["SwarmResourcesV1"];
+            /** Format: date-time */
+            expires_at: string;
+        };
+        SwarmLeaseV1: {
+            context_packet_id: string;
+            binding_id: string;
+            policy_version: string;
+            work_item_id: string;
+            mission_id: string;
+            project_id: string;
+            holder_id: string;
+            fence: number;
+            operation_id: string;
+            session_id: string;
+            member_version: string;
+            worktree: string;
+            base_commit: string;
+            write_paths: string[] | null;
+            reserved: components["schemas"]["SwarmResourcesV1"];
+            /** Format: date-time */
+            expires_at: string;
+        };
+        SwarmSubmitRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            mission_id: string;
+            work_item_id?: string;
+            fence: number;
+            commit: string;
+            object_ref: string;
+            checks_ref: string;
+            changed_paths: string[];
+            inputs: components["schemas"]["SwarmSourceVersionV1"][];
+            usage: components["schemas"]["SwarmUsageV1"];
+        };
+        SwarmAcceptRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            mission_id: string;
+            artifact_id?: string;
+        };
+        SwarmRejectRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            mission_id: string;
+            artifact_id?: string;
+            reason: string;
+        };
+        SwarmStopRequestV1: components["schemas"]["SwarmTransitionRequestV1"] & {
+            reason: string;
+        };
+        SwarmArtifactV1: {
+            usage: components["schemas"]["SwarmUsageV1"] | null;
+            accepted_actor_kind: string;
+            execution_outcome: string;
+            execution_failure_code: string;
+            experience_status: string;
+            context_packet_id: string;
+            project_checks_ref: string;
+            base_commit: string;
+            review_reason: string;
+            reviewed_by: string;
+            /** Format: date-time */
+            reviewed_at: string | null;
+            id: string;
+            version: number;
+            work_item_id: string;
+            operation_id: string;
+            session_id: string;
+            fence: number;
+            inputs: components["schemas"]["SwarmSourceVersionV1"][] | null;
+            commit: string;
+            object_ref: string;
+            checks_ref: string;
+            changed_paths: string[] | null;
+            state: string;
+            acceptance_id: string;
+            accepted_by: string;
+            experience_id: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        SwarmTimelineEventV1: {
+            event_id: string;
+            type: string;
+            aggregate_id: string;
+            aggregate_version: number;
+            /** Format: date-time */
+            occurred_at: string;
+        };
+        SwarmToolEventV1: {
+            event_id: string;
+            type: string;
+            tool: string;
+            /** Format: date-time */
+            occurred_at: string;
+        };
+        SwarmExecutionV1: {
+            operation_id: string;
+            session_id: string;
+            work_item_id: string;
+            binding_id: string;
+            fence: number;
+            context_packet_id: string;
+            policy_version: string;
+            events: components["schemas"]["SwarmTimelineEventV1"][] | null;
+            tool_events_status: string;
+            tool_events: components["schemas"]["SwarmToolEventV1"][] | null;
+        };
+        SwarmMissionDetailV1: {
+            /** @constant */
+            schema_version: 1;
+            max_active_executors: number;
+            executions: components["schemas"]["SwarmExecutionV1"][] | null;
+            mission: components["schemas"]["SwarmMissionV1"];
+            work_items: components["schemas"]["SwarmWorkItemV1"][] | null;
+            leases: components["schemas"]["SwarmLeaseV1"][] | null;
+            artifacts: components["schemas"]["SwarmArtifactV1"][] | null;
+            timeline: components["schemas"]["SwarmTimelineEventV1"][] | null;
+        };
+        SwarmMissionEnvelopeV1: {
+            /** @constant */
+            schema_version: 1;
+            mission: components["schemas"]["SwarmMissionV1"];
+        };
+        SwarmWorkItemEnvelopeV1: {
+            /** @constant */
+            schema_version: 1;
+            work_item: components["schemas"]["SwarmWorkItemV1"];
+        };
+        SwarmLeaseEnvelopeV1: {
+            /** @constant */
+            schema_version: 1;
+            lease: components["schemas"]["SwarmLeaseV1"];
+        };
+        SwarmArtifactEnvelopeV1: {
+            /** @constant */
+            schema_version: 1;
+            artifact: components["schemas"]["SwarmArtifactV1"];
+        };
+        SwarmMissionListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["SwarmMissionV1"][];
+            next_cursor: string | null;
+        };
+        SwarmWorkItemListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["SwarmWorkItemV1"][];
+            next_cursor: string | null;
+        };
+        SwarmTimelineListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["SwarmTimelineEventV1"][];
+            next_cursor: string | null;
+        };
+        SwarmArtifactDiffV1: {
+            /** @constant */
+            schema_version: 1;
+            artifact_id: string;
+            commit: string;
+            base_commit: string;
+            diff: string;
+        };
         /** @description Explicit project-relative path. The backend rejects absolute paths, parent traversal, redirects and unauthorized roots. */
         RepositoryRelativeRootV1: string;
         RepositoryBudgetV1: {
@@ -2964,7 +3435,7 @@ export interface components {
             /** Format: uuid */
             operation_id: string;
             /** @enum {string} */
-            action: "intent" | "dispatch" | "send" | "read" | "stop" | "resume" | "transition" | "observe" | "reconcile_events";
+            action: "intent" | "prepare" | "dispatch" | "send" | "read" | "stop" | "resume" | "transition" | "observe" | "reconcile_events";
             operator: string;
             /** @enum {string} */
             status: "pending" | "accepted" | "rejected" | "delivery_unknown";
@@ -3672,6 +4143,105 @@ export interface components {
             updated_at: string;
             /** @enum {string} */
             status: "draft" | "in_review" | "approved" | "declined" | "superseded";
+        };
+        S2ContextNotesV1: {
+            decisions?: string[] | null;
+            results?: string[] | null;
+            checks?: string[] | null;
+            failures?: string[] | null;
+            open_questions?: string[] | null;
+            next_steps?: string[] | null;
+        };
+        S2ContextPacketRequestV1: components["schemas"]["SwarmMetaV1"] & components["schemas"]["S2ContextNotesV1"] & {
+            /** @constant */
+            expected_version?: 0;
+            grant_id: string;
+            grant_epoch: number;
+            predecessor_id?: string;
+            max_bytes: number;
+        };
+        S2ProjectContextSnapshotV1: {
+            environment_id: string;
+            repo_id: string;
+            worktree_id: string;
+            project_id: string;
+            head: string;
+            index_digest: string;
+            worktree_digest: string;
+            generation: string;
+            /** Format: date-time */
+            observed_at: string;
+        };
+        S2PacketSourceV1: {
+            reference: components["schemas"]["FixedReferenceV1"];
+            object_ref: string;
+            title: string;
+            locations: string[] | null;
+        };
+        S2ContextPacketScopeV1: components["schemas"]["S2ExecutionScopeV1"] & {
+            /** @description Project relative roots derived from the fixed private snapshot; absolute source paths remain local. */
+            roots?: string[];
+        };
+        S2ContextPacketV1: components["schemas"]["S2ContextNotesV1"] & {
+            id: string;
+            /** @constant */
+            schema_version: 1;
+            project_id: string;
+            project_settings_revision: number;
+            predecessor_id?: string;
+            grant_id: string;
+            grant_epoch: number;
+            proposal_id: string;
+            proposal_revision: number;
+            goal: components["schemas"]["S2GoalV1"];
+            snapshot: components["schemas"]["S2ProjectContextSnapshotV1"];
+            sources: components["schemas"]["S2PacketSourceV1"][];
+            scope: components["schemas"]["S2ContextPacketScopeV1"];
+            stops: components["schemas"]["S2StopConditionsV1"];
+            object_ref: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        S2SessionBindingRequestV1: components["schemas"]["SwarmMetaV1"] & {
+            /** @constant */
+            expected_version?: 0;
+            session_id: string;
+            packet_id: string;
+            member_id: string;
+        };
+        S2SessionBindingV1: {
+            id: string;
+            version: number;
+            project_id: string;
+            session_id: string;
+            adapter_id: string;
+            worktree_id: string;
+            grant_id: string;
+            grant_epoch: number;
+            packet_id: string;
+            member_id: string;
+            status: string;
+            capabilities: {
+                [key: string]: {
+                    status: string;
+                    /** Format: date-time */
+                    checked_at: string | null;
+                };
+            };
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        S2ContextPacketResultV1: {
+            /** @constant */
+            schema_version: 1;
+            context_packet: components["schemas"]["S2ContextPacketV1"];
+        };
+        S2SessionBindingResultV1: {
+            /** @constant */
+            schema_version: 1;
+            session_binding: components["schemas"]["S2SessionBindingV1"];
         };
         S2GoalReferenceV1: {
             id: string;
@@ -6217,6 +6787,354 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    prepareRelayIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                "X-CSRF-Token": string;
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayConfirmRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Original initialization receipt and current ready task */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayActionResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
+    buildWorkspaceContextPacket: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["S2ContextPacketRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted immutable context packet */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ContextPacketResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            422: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
+    readWorkspaceContextPacket: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Original immutable packet */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2ContextPacketResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
+    bindWorkspaceSession: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["S2SessionBindingRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted current owned binding */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["S2SessionBindingResultV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+        };
+    };
+    listSwarmWorkItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Actual work items */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmWorkItemListV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
+    addSwarmWorkItem: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SwarmWorkItemRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted work item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmWorkItemEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
+    readSwarmTimeline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Safe committed timeline references */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmTimelineListV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
+    recoverSwarmMission: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SwarmTransitionRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current reconciled mission */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmMissionEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
+    readSwarmArtifact: {
+        parameters: {
+            query: {
+                mission_id: string;
+                version?: number;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Actual artifact version */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmArtifactEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
+    readSwarmArtifactDiff: {
+        parameters: {
+            query: {
+                mission_id: string;
+                version?: number;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Verified artifact diff */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmArtifactDiffV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+        };
+    };
+    rejectSwarmArtifact: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SwarmRejectRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Current artifact with human review */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmArtifactEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+        };
+    };
     readRepositoryContextMap: {
         parameters: {
             query: {
@@ -12450,19 +13368,14 @@ export interface operations {
     };
     listMissions: {
         parameters: {
-            query?: {
-                /** @description Opaque continuation cursor */
-                cursor?: string;
-                /** @description Maximum returned items */
-                limit?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description S0 real read view; never populated from fixtures */
+            /** @description Actual missions readable under current project permissions */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -12475,7 +13388,7 @@ export interface operations {
                      *       "next_cursor": null
                      *     }
                      */
-                    "application/json": components["schemas"]["MissionListV1"];
+                    "application/json": components["schemas"]["SwarmMissionListV1"];
                 };
             };
             /** @description Invalid request */
@@ -12585,6 +13498,38 @@ export interface operations {
             };
         };
     };
+    createSwarmMission: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SwarmCreateRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Actual approved mission */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SwarmMissionEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+        };
+    };
     getMission: {
         parameters: {
             query?: never;
@@ -12597,25 +13542,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description S0 real read view; never populated from fixtures */
+            /** @description Current authorized mission and safe execution references */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "mission": {
-                     *         "id": "fixture-mission",
-                     *         "version": 1,
-                     *         "grant_id": "fixture-grant",
-                     *         "goal": "Fixture only",
-                     *         "status": "pending"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["MissionResponseV1"];
+                    "application/json": components["schemas"]["SwarmMissionDetailV1"];
                 };
             };
             /** @description Invalid request */
@@ -14085,32 +15018,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "schema_version": 1,
-                 *       "request_id": "fixture-request",
-                 *       "expected_version": 1,
-                 *       "reason": "Fixture only"
-                 *     }
-                 */
-                "application/json": components["schemas"]["MissionControlRequestV1"];
+                "application/json": components["schemas"]["SwarmStopRequestV1"];
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
+            /** @description Current mission after the human pause command */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "id": "fixture-resource",
-                     *       "version": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["VersionResultV1"];
+                    "application/json": components["schemas"]["SwarmMissionEnvelopeV1"];
                 };
             };
             /** @description Invalid request */
@@ -14256,32 +15174,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "schema_version": 1,
-                 *       "request_id": "fixture-request",
-                 *       "expected_version": 1,
-                 *       "reason": "Fixture only"
-                 *     }
-                 */
-                "application/json": components["schemas"]["MissionControlRequestV1"];
+                "application/json": components["schemas"]["SwarmStopRequestV1"];
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
+            /** @description Current mission after the human cancellation command */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "id": "fixture-resource",
-                     *       "version": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["VersionResultV1"];
+                    "application/json": components["schemas"]["SwarmMissionEnvelopeV1"];
                 };
             };
             /** @description Invalid request */
@@ -14427,36 +15330,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "schema_version": 1,
-                 *       "request_id": "fixture-request",
-                 *       "expected_version": 1,
-                 *       "context_packet_id": "fixture-packet"
-                 *     }
-                 */
-                "application/json": components["schemas"]["ClaimWorkItemRequestV1"];
+                "application/json": components["schemas"]["SwarmClaimRequestV1"];
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
-            201: {
+            /** @description Lease bound to the original authorized input operation */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "work_item_id": "fixture-work",
-                     *       "attempt_id": "fixture-attempt",
-                     *       "holder_id": "fixture-holder",
-                     *       "fence": 1,
-                     *       "lease_token": "fixture-not-valid",
-                     *       "expires_at": "2026-10-09T00:00:00Z"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["LeaseV1"];
+                    "application/json": components["schemas"]["SwarmLeaseEnvelopeV1"];
                 };
             };
             /** @description Invalid request */
@@ -14602,38 +15486,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "schema_version": 1,
-                 *       "request_id": "fixture-request",
-                 *       "expected_version": 1,
-                 *       "attempt_id": "fixture-attempt",
-                 *       "lease_token": "fixture-not-valid",
-                 *       "fence": 1,
-                 *       "object_ref": "fixture-object",
-                 *       "content_digest": "fixture-digest",
-                 *       "snapshot_ref": "fixture-snapshot",
-                 *       "checks_ref": "fixture-checks"
-                 *     }
-                 */
-                "application/json": components["schemas"]["SubmitArtifactRequestV1"];
+                "application/json": components["schemas"]["SwarmSubmitRequestV1"];
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
-            201: {
+            /** @description Actual verified artifact submission */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "artifact_id": "fixture-artifact",
-                     *       "status": "submitted"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ArtifactResultV1"];
+                    "application/json": components["schemas"]["SwarmArtifactEnvelopeV1"];
                 };
             };
             /** @description Invalid request */
@@ -14779,33 +15642,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "schema_version": 1,
-                 *       "request_id": "fixture-request",
-                 *       "expected_version": 1,
-                 *       "reason": "Fixture only"
-                 *     }
-                 */
-                "application/json": components["schemas"]["AcceptArtifactRequestV1"];
+                "application/json": components["schemas"]["SwarmAcceptRequestV1"];
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
-            201: {
+            /** @description Current artifact with the actual human adoption record */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "acceptance_id": "fixture-acceptance",
-                     *       "artifact_id": "fixture-artifact",
-                     *       "experience_id": "fixture-experience"
-                     *     }
-                     */
-                    "application/json": components["schemas"]["AcceptanceV1"];
+                    "application/json": components["schemas"]["SwarmArtifactEnvelopeV1"];
                 };
             };
             /** @description Invalid request */

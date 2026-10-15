@@ -31,6 +31,7 @@ export function createRelayApi(client = api) {
     receipts: (id: string, signal?: AbortSignal) => unwrap(client.GET('/relay/tasks/{id}/receipts', { params: { path: { id } }, signal })),
     facts: (id: string, signal?: AbortSignal) => unwrap(client.GET('/relay/tasks/{id}/facts', { params: { path: { id } }, signal })),
     intent: async (body: components['schemas']['RelayIntentRequestV1'], key: string) => unwrap(client.POST('/relay/intents', { body, params: { header: await headers(key) } })),
+    prepare: async (id: string, body: components['schemas']['RelayConfirmRequestV1'], key: string) => unwrap(client.POST('/relay/intents/{id}/prepare', { body, params: { path: { id }, header: await headers(key) } })),
     confirm: async (id: string, body: components['schemas']['RelayConfirmRequestV1'], key: string) => unwrap(client.POST('/relay/intents/{id}/confirm', { body, params: { path: { id }, header: await headers(key) } })),
     send: async (id: string, input: string, key: string) => unwrap(client.POST('/relay/tasks/{id}/send', { body: { input }, params: { path: { id }, header: await headers(key) } })),
     read: async (id: string, key: string) => unwrap(client.POST('/relay/tasks/{id}/read', { body: {}, params: { path: { id }, header: await headers(key) } })),
