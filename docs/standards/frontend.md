@@ -1,5 +1,18 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:30 原 UI 三段源码消费
+
+按模块精确放行，在每段目标零 WIP / staged、与原父版本完整相容后，依次普通 `cherry-pick -x` 原 UI SOURCE `dbd1018f163e6760cc7806c302fd3aa677706267`、`0ad83a96bc50747867146a38a80b7a90ecbedc5f`、`f0d27271c15d131aea50012658232f7fa41a142b`。本树消费提交为 `bfded1f`、`1d860ab`、`a871d62c6b5ed6b708dfc1b70f938741f0b44081`，均已普通 push；每段目标与原 SOURCE 完整 diff 为零，无冲突。只消费各段明确的 9 / 3 / 3 件前端页面、参数函数和测试，原 UI 领域逻辑继续归原负责人。
+
+| 本次实际命令（在 web 执行） | 结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0 | `typecheck-ui-consumed.log` |
+| `npm run lint` | EXIT0 | `lint-ui-consumed.log` |
+| `npx vitest run src/pages/attention/delegation/policyDraftIssues.test.tsx src/pages/attention/delegation/questionDraftIssues.test.tsx` | 2 文件、7 PASS，EXIT0；仅明确表单参数，不产生后端或模型事实 | `vitest-ui-consumed.log` |
+| `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_c22d1dd61be3/.verification/web-dist-ui-consumed` | EXIT0；保留 612.05 kB 产物提示，新目录没有自动清理 | `build-ui-consumed.log` |
+
+上述检查对应准确本地组合 `a871d62`。同一运行服务仍为下节 H 的 b73 SOURCE，本次没有把新 UI 消费记为已部署或新的浏览器通过，没有重复模型。Human 候选 / 反馈后继在已保存 PLOS 固定来源范围内继续；准入的实际 Service 注册与公开类型差异已交 H / B，等待准确契约，不手写 DTO 或伪造成功。
+
 ## 2026-10-16 04:27 同实例认知真实四视图
 
 本阶段 SOURCE `12a17f7bf7a9fbef273e872516961aa9262b7110` 已普通 push，仅新增 `web/e2e/readProductCognition.ts`。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_c22d1dd61be3`，使用原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。H 实际服务更新为 SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、modified=false、PID4676、启动 UTC `2026-10-15T20:22:58.8651960Z`，URL 和产品 SQLite 保持原值。
