@@ -104,3 +104,15 @@ owner 报告链接：[S4 标准文档](https://github.com/songconmaisaix31-desig
 - 文档校核：`git diff --check` 与写入范围检查。
 
 未执行：产品构建、Go/前端/浏览器/模型/原生控制器验收、正式采集与发布。本文只做许可与来源核对，不重跑 S4、S5 的领域测试。
+
+## 8. 独立 REPORT
+
+本轮 SOURCE `e5d52481fa4a66d66d25497a9c80cc26a82441f1` 已普通 push，远端 `git ls-remote origin refs/heads/songconmaisaix31-design/release-research-20261014` 与实际同完整值；本节是该 SOURCE 之后的独立 REPORT，只修改本文件，REPORT 自身的完整 SHA 由实际 Git 提交与 push 回执提供。
+
+独立核查结果：
+
+- 写入范围：相对基线 `2341b353cdc29ebeae71aa996b5fc1c8d31f859c` 只修改 `docs/release/components-20261015.md`；业务代码、`go.mod`、`go.sum`、`package.json`、`pnpm-lock.yaml`、`dependencies.lock.json` 与冻结域零改动；`.verification/components-20261015/` 由 `.gitignore` 忽略。
+- 路径核对：只读 P SOURCE `8e62c7f99b513115a19fc22569e33587bddcc300` 的 `release/Build-Windows.ps1`，确认其把本次应用源码的 `internal/adapters/repositorycontext/codegraph.mjs` 复制为包内 `runtime/adapters/codegraph.mjs`；据此把第 6 节必需入口由 `runtime/sdk/astrocyte/repository-context/codegraph.mjs` 改为 `runtime/adapters/codegraph.mjs`，并链接该 P SOURCE 便于追溯。
+- 未扩大改动：其余许可、动态 S4/S5 成绩链接与用户未决事项（AOCI、SemanticIndex）保持不变；候选 15f 的 39 项目录仍只含项目 AGPL-3.0 `LICENSE`。
+
+真实剩余限制：SemanticIndex 选择与 AOCI 的公开包分发方式仍需用户决定；CodeGraph 的合法打包实施归 P。
