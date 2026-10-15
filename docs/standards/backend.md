@@ -509,6 +509,26 @@ R 确认完成记录与最终 transition receipt 的原时间、Actor、Channel�
 
 完整读取获准 R `channels-agents-first.log` 后，实际结果为包 185.806s、180 秒 panic 时 `TestSelectedTextActualOwnedSourceWithoutModel` 仅运行 4 秒，调用停在原 `initialize` 等待。该原件没有 controller 原 PID、启动身份或自产目录，退出状态保持 UNKNOWN；已交 R 沿同次 launch 原件核查，没有猜测进程归属、重复初始化或终止宿主进程。此窗口与 B 的 `thread/start` 首失败分别保留。
 
+## 原准备读取契约的准确消费
+
+SOURCE `442e693d5056e2bb17e1950c62a48de01e977ec6` 已普通 push，原样消费 R SOURCE `8947ff7e36415da07a0eb85c103b722713460356` 的两个 `relay_prepared_input` 文件；实际 Git blob 分别同为 `590f3eb822e493483ef3bb9528adfdf7b4170ab5`、`5df909d640086f22c915477d2ba6109d925e911e`。九字段包含原 `ActorProjectID`，全部隐藏 JSON；读取仅限明确尚未尝试发送的原准备。两个现有 workspace app 文件只翻译注释，执行行为保持。
+
+`go test -mod=readonly -p=2 ./internal/workspace/domain -run '^TestRelayPreparedInputPrivateSerialization$' -v -count=1` EXIT 0，1 PASS、0 SKIP，0.960s，日志 `.verification/prepared-input-private-json-first.log`；`go build -mod=readonly -p=2 ./...` EXIT 0，日志 `prepared-input-type-build-first.log`。格式、diff 检查无输出。该序列化检查仅使用明确隐私标记输入，不作为原生会话、操作者或来源事实；实际准备持久化、当前授权、原子发送占用、S3 Claim 和 H 发送前 live lease 复核均未执行，不登记首次 Claim 或消息发送成功。B 当前旧 Registry 没有原 controller/startup 读取接口，准确 R 源码闭包与既有 ObjectStore 的装配口已交模块协调，尚未按草案固定新接口。
+
+## 实际连接竞争下的令牌撤回
+
+SOURCE `ef8f944069996b8b4ff849d8f7f8ab6e48e1a870` 已普通 push，只整改 `TestConcurrentTokenIssuanceCannotResurrectRevokedGrant`。通过原 Attention 服务创建实际空间、注册当前公开工作树并授予原 Grant，再用真实 SQLite 事务占用单连接；签发操作持有原服务锁等待连接，撤回不能越过该锁或产生第二次连接等待。释放事务后，实际签发和撤回完成，原令牌认证拒绝，持久化 Grant 保留 `RevokedAt` 且清空 token digest。没有调用原生控制器或模型。
+
+`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestConcurrentTokenIssuanceCannotResurrectRevokedGrant$' -v -count=1` EXIT 0，1 PASS、0 SKIP，2.973s，日志 `.verification/token-revocation-actual-lock-first.log`；Go 格式与 diff 检查无输出。自有数据库目录为 D 盘 `accepted-experience-actual-2083530046`。保留原竞争、认证拒绝和持久化断言，并增加真实连接等待数量检查；没有替代 Repository、Native 或引用来源。
+
+经 F 最窄只读授权，逐项核对完整默认第 131 / 133 项各自 error-context 和 HTTP 日志，并以 SQLite `readOnly` 仅查询指定两个数据库的资料表 schema、资料数量及人工使用计数汇总。两个原错误均在公开论文目录配置检查处发生；两库分别为 `material_count=0`、`human_usage_count=0`、`human_use_records=0`，HTTP 没有到达资料导入、使用或分类写入。查询 EXIT 0，日志 `.verification/f-two-s1-readonly-first.log`。两项 FAIL 保留，业务断言未运行；没有访问 auth/session 或完整 payload、修改 F 环境或重跑在途套件。
+
+## 可信清理批量配置
+
+SOURCE `da084e44a93adda7c3465a564fb5b63510222b0a` 已普通 push。`repositoryContextConfig.CleanupMaxGenerations` 来自可信环境 `ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS`；未设置时使用程序常量 64，范围沿 S4 既有接口限制为 1–1000，错误值立即失败。该值只限制每次清理删除的 generation 数量，不作为业务权重或用户规则；HTTP 不提供该配置。
+
+`go test -mod=readonly -p=2 ./cmd/server -run '^TestRepository(ContextConfig|CleanupBatchTrustedConfiguration)' -v -count=1` EXIT 0，4 项主检查及原 8 项拒绝子项通过，3.264s；显式 1/64/1000 精确返回，0、负数、超限、非整数和非数字被拒绝，日志 `.verification/repository-cleanup-trusted-config-first.log`。全包 build、cmd/server vet、Go 格式与 diff 检查通过，日志 `repository-cleanup-config-{build,vet}-first.log`。同 provider 的实际清理生命周期由 H 接入；项目修改的成功 commit 后 Wake 仍待原 S2 事务接口确认，当前没有发出唤醒或清理目录，S4 实际撤回清理首 RED 继续保留。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
@@ -525,3 +545,19 @@ R 确认完成记录与最终 transition receipt 的原时间、Actor、Channel�
 ## 未执行操作与后续交付
 
 部分 SOURCE/REPORT 普通 push 遇到 GitHub `SSL_ERROR_SYSCALL`，原件保留；上述已列源码及报告均已普通 push，未 force push。Reader 前四次握手失败保留在 `.verification/workbench-source-push-{first,second,third,fourth}.log`，第五次正常推送成功。本报告作为独立 REPORT 追加提交并推送。阶段 SOURCE/REPORT 不结算整轨，后续源码与报告继续追加；最终精确 SHA 和剩余限制由最后一次报告登记。
+
+## 项目设置成功提交后的清理通知
+
+SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` 已普通 push 到 `standards-backend`，仅修改 `project_cleanup.go` 与 `projects.go`。`ConfigureRepositoryCleanup` 接收原索引、查询共用 provider 的 `WakeRepositoryCleanup`，配置时要求实际 Repository 提供 `AfterWorkspaceCommit(context.Context, func()) error`；nil provider 或缺失回调能力直接失败。项目设置成功保存后登记通知，原 S2 SOURCE `4f875b0f8bffc5740e6a1eee828e7e34833226b8` 的回调负责在外层事务成功提交并释放连接后通知。没有配置清理 provider 时保留当前项目操作。
+
+当前工作树包含仍未提交的原生准备修改；以下 Go 检查针对该工作树执行，不能作为隔离 cleanup SOURCE 或完整产品的实际验收。全部新增大产物放在 `D:/Astrocyte-agent-assets/20261016/backend`，现有原件保留。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go build -mod=readonly -p=2 ./...` | EXIT 0，138.832s；`.verification/backend-product-build-first.log` |
+| `go vet -mod=readonly -p=2 ./internal/workspace/app ./internal/adapters/sqlite` | EXIT 0，86.676s；`.verification/backend-product-vet-first.log` |
+| `go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^(TestNativeMessageActualTransactionBoundaries\|TestPreparedNativeMessageMissingOriginalReaderDoesNotPublish\|TestNativeMessageExplicitJSONRules\|TestLocalProjectUsesActualWorkspaceTransaction\|TestLocalProjectRejectsAnotherActualDatabaseTransaction)$' -v -count=1` | EXIT 0，5 项主检查、2 项提交/实际约束回滚子项，包 13.228s；`.verification/backend-product-test-first.log` |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run '^TestNativeMessageExplicit' -v -count=1` | EXIT 0，2 项主检查、13 项子项，包 9.986s；`.verification/backend-product-rules-first.log` |
+| 变更 Go 格式、working / cached diff 检查 | EXIT 0 |
+
+事务、错误数据库、真实取消和缺失原 Reader 拒绝检查使用自有实际 SQLite、原生产项目服务及 ObjectStore；没有产生原生会话、准备来源或模型输入。JSON、身份和状态检查使用明确纯函数参数，未作为实际来源。原生初始化、正向准备和发送、同源产品与 S4 实际撤回清理仍未运行；H、S4 和唯一集成负责人已收到准确 cleanup SOURCE，继续配对原 S2 提交回调及同 provider 清理生命周期。其余原生 WIP 保留，未包含在本 SOURCE。
