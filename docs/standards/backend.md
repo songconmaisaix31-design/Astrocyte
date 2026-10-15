@@ -561,3 +561,13 @@ SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` 已普通 push 到 `standards-
 | 变更 Go 格式、working / cached diff 检查 | EXIT 0 |
 
 事务、错误数据库、真实取消和缺失原 Reader 拒绝检查使用自有实际 SQLite、原生产项目服务及 ObjectStore；没有产生原生会话、准备来源或模型输入。JSON、身份和状态检查使用明确纯函数参数，未作为实际来源。原生初始化、正向准备和发送、同源产品与 S4 实际撤回清理仍未运行；H、S4 和唯一集成负责人已收到准确 cleanup SOURCE，继续配对原 S2 提交回调及同 provider 清理生命周期。其余原生 WIP 保留，未包含在本 SOURCE。
+
+## 原生固定准备与单次发送接缝
+
+SOURCE `759764900bc45ed4c58efaad79ae9d20d421b834` 已普通 push。项目服务通过 `WithNativeMessageObjects` 复用现有 ObjectStore，通过 `WithOwnedNativeSessions` 只读取原 Registry 持有的原控制器身份。`PrepareNativeMessage` 在事务外检查当前权限、固定上下文和实际控制器，发布原输入对象；短 Workspace 事务固定原 Caller、operation、packet、settings revision、controller、startup、workspace、PreparedAt 与 ObjectRef。`ReadPreparedNativeSession` 不读取正文，只允许当前仍未尝试发送的原准备；在途、未知和已受理状态均拒绝。
+
+`SendNativeMessage` 在事务外读取原对象并严格比较输入，在同一主数据库事务内重查当前权限、原准备、项目和会话，通过原 session JSON 的 CAS 单次转为 `send_attempted`。原生发送在事务外执行，随后短事务记录结果；观察和停止不能删除私有准备或恢复发送资格。相同已受理输入只可观察原会话，在途和未知操作拒绝重发。公共 JSON 不包含正文、对象引用或控制器身份。`domain/relay_facts.go` 与 R `269e95c032b5a64794e6908ca6c40e5ffe5acac4` 的准确文件 blob 同为 `c5c33810795693323213a2e01f8bed989ca69854`，未自行生成另一套原生类型。
+
+上一节记录的 build、vet、5 项 SQLite/JSON 主检查和 2 项纯函数规则主检查覆盖本 SOURCE 的源码内容，全部 EXIT 0；运行目录和原日志保持。身份、上下文版本、Caller、投递状态和 JSON 隐私的明确参数检查不作为控制器来源。真实 SQLite 检查只验证事务、错误数据库、取消和缺失 Reader 时不发布对象、不创建会话。
+
+`TestProvenUnstartedResumePreservesOwnedOriginalSession` 保留原原生身份、两次缺失 CLI 启动前失败及冷 Registry 未知断言，准备来源改由实际空输入探测和明确停止取得；本轮按当前禁止原生初始化的边界未运行该测试。正向 Prepare、实际单次发送、并发 CAS、停止更新保存私有准备、重启后的原控制器拒绝及 H/S3 同 Grant/epoch/member/Lease 组合仍 NOT_RUN。受限 Codex 文件工具无法关闭的路径继续拒绝，不登记会话或模型输入；Claim/Known 未答边界保持。全部 Attention 应用测试继续由 T 维护。
