@@ -9,6 +9,7 @@ import { QueryState } from '../../../components/QueryState';
 import { CommandState } from '../../../components/CommandState';
 import { commandError } from '../../../utils/commandError';
 import { TextField } from '../../attention/FormControls';
+import { ContextPacketWorkspace } from './ContextPacketWorkspace';
 import styles from './ProposalWorkspace.module.css';
 
 const statusLabels = { active: '有效', revoked: '已撤销', expired: '已过期', completed: '已完成' };
@@ -36,6 +37,7 @@ export function ApprovalPanel({ id, onChanged }: { id: string; onChanged: () => 
     <FieldRow><Field label="最大工作项数">{grant.stops.max_work_items}</Field><Field label="最大尝试次数">{grant.stops.max_attempts}</Field></FieldRow>
     <FieldRow><Field label="连续无进展轮数上限">{grant.stops.max_no_progress_rounds}</Field><Field label="无进展时限（秒）">{grant.stops.no_progress_seconds}</Field></FieldRow>
     <Field label="Grant ID"><code>{grant.id}</code></Field>{grant.reason && <Field label="变更原因">{grant.reason}</Field>}
+    <ContextPacketWorkspace key={grant.id} grant={grant} disabled={approval.loading || approval.stale || command.pending || command.uncertain} />
     <form className={styles.formFields} onSubmit={event => {
       event.preventDefault();
       if (!reason.trim() || grant.status !== 'active' || approval.loading || approval.stale || command.pending || command.uncertain) return;
