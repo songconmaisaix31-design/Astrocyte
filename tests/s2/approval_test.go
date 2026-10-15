@@ -224,6 +224,10 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	if err != nil || persisted.Epoch != 1 || persisted.ProposalRevision != 1 {
 		t.Fatalf("restart approval: %v", err)
 	}
+	retained, err = service.ReadContextPacket(ctx, human, packet.ID)
+	if err != nil || retained.ObjectRef != packet.ObjectRef || retained.Goal.Revision != goal.Revision {
+		t.Fatalf("restart fixed context packet: %v", err)
+	}
 	_, err = service.ChangeApproval(ctx, human, grant.ID, workspace.ChangeApprovalCommand{WorkspaceCommandMeta: workspaceMeta(grant.Epoch), Reason: "End actual approval validation"}, "revoked")
 	if err != nil {
 		t.Fatal(err)
@@ -233,5 +237,49 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	old, err := service.ReadProposal(ctx, human, proposal.ID, 1)
 	if err != nil || old.Status != domain.ProposalApproved {
 		t.Fatalf("fixed approved proposal changed: %v", err)
+	}
+	approveCurrent := func(title string, lifetime time.Duration) domain.ApprovalGrant {
+		t.Helper()
+		currentContent := content
+		currentContent.Title = title
+		currentContent.Scope.SettingsRevision = project.Settings.Revision
+		current, err := service.CreateProposal(ctx, human, workspace.CreateProposalCommand{WorkspaceCommandMeta: workspaceMeta(0), Content: currentContent})
+		if err != nil {
+			t.Fatal(err)
+		}
+		current, err = service.TransitionProposal(ctx, human, current.ID, workspaceMeta(current.Version), domain.ProposalInReview)
+		if err != nil {
+			t.Fatal(err)
+		}
+		approved, err := service.ApproveProposal(ctx, human, current.ID, workspace.ApproveProposalCommand{WorkspaceCommandMeta: workspaceMeta(current.Version), ExpectedRevision: current.Revision, ExpiresAt: time.Now().UTC().Add(lifetime)})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return approved
+	}
+	completed := approveCurrent("Finish actual public context review", time.Minute)
+	completed, err = service.ChangeApproval(ctx, human, completed.ID, workspace.ChangeApprovalCommand{WorkspaceCommandMeta: workspaceMeta(completed.Epoch), Reason: "Actual review completed"}, "completed")
+	if err != nil || completed.Status != "completed" || completed.Epoch != 2 {
+		t.Fatalf("complete approval: %v", err)
+	}
+	completedCheck := check
+	completedCheck.GrantID, completedCheck.Epoch = completed.ID, completed.Epoch
+	completedCheck.ProposalRevision = completed.ProposalRevision
+	err = service.WithAuthorizedGrant(ctx, completedCheck, func(context.Context, domain.ApprovalGrant) error { t.Fatal("completed callback executed"); return nil })
+	requireCode(t, err, apierrors.ApprovalRevoked)
+	expiring := approveCurrent("Observe actual approval expiry", 2*time.Second)
+	time.Sleep(time.Until(expiring.ExpiresAt) + time.Millisecond)
+	expired, err := service.ReadApproval(ctx, human, expiring.ID)
+	if err != nil || expired.Status != "expired" {
+		t.Fatalf("read elapsed approval: %v", err)
+	}
+	expiredCheck := check
+	expiredCheck.GrantID, expiredCheck.Epoch = expiring.ID, expiring.Epoch
+	expiredCheck.ProposalRevision = expiring.ProposalRevision
+	err = service.WithAuthorizedGrant(ctx, expiredCheck, func(context.Context, domain.ApprovalGrant) error { t.Fatal("expired callback executed"); return nil })
+	requireCode(t, err, apierrors.ApprovalRevoked)
+	expired, err = service.ChangeApproval(ctx, human, expiring.ID, workspace.ChangeApprovalCommand{WorkspaceCommandMeta: workspaceMeta(expiring.Epoch), Reason: "Actual approval expiry observed"}, "expired")
+	if err != nil || expired.Status != "expired" || expired.Epoch != 2 {
+		t.Fatalf("persist elapsed approval: %v", err)
 	}
 }
