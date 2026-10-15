@@ -2,6 +2,10 @@
 
 ## 当前执行入口（2026-10-16）
 
+02:33 同一普通产品已恢复：`http://127.0.0.1:64505/`，新 PID `25048`，启动 UTC `2026-10-15T18:28:44.7333357Z`。原 H 保持 D 盘稳定二进制、web、配置和同一 `state.sqlite`；M-relay 独核唯一 loopback listener、实际进程与 buildinfo `ad8413e119379c9795bab558a41fe425ea9095ca` / modified=false，根实际 GET 首页 HTTP200 / text/html / 562 bytes，并独核 PID、启动时间、程序路径和 listener。`running.json` 已更新；此结果只确认当前运行状态，Judgment / Taste、S4 清理和提交后通知、完成来源后继与核心业务操作继续实施和验证。
+
+当前模块 Dispatch 为 M-relay `ctx_f967479130c2`、M-release `ctx_4b5bd58b23e1`、M-product `ctx_a3dc3bfa5554`，沿原子 Run 继续；唯一 I `ctx_76c7ff15d7e0` 已实际开始，原树 `d59a10036d1ed18b875ced136f1cf741e320a384` clean；原 H `ctx_7822f0fe0335`、R `ctx_3920346a06ed`、S4 `ctx_f150ca32cf39` 和 F `ctx_fefd1edc052e` 已接当前工作。原 H 继续七件生产装配 WIP，I 后继构建交同一 H 更新同一实例，F 保持唯一核心业务操作；不重启第二共享服务、不重置数据。原 320 项中断结果先核原件，普通产品优先且不先重跑全面测试；未决定权限和受限原生能力缺口保持原边界。
+
 02:21 本轮恢复：用户要求继续，最新优先级仍为先集成并跑通完整产品，随后并行整理代码与测试。当前 runtime `12d011fb-1b8d-4010-b468-0b67ccc75ead`、app PID27532，根 `term_8de37bb3-e73a-4c10-8a7c-5c39156da4e7` 已普通绑定原 `run_973808dd6a2f` generation31。旧三模块 Dispatch 已由运行时标记 abandoned / failed，原三 Task ready，公开终端中没有旧模块或开发终端；沿原 Task / 子 Run / 工作树 / 分支和 WIP 恢复，不创建新 Run 或替代任务，不增加第四层。原 Task 正文的旧身份、create 子 Run 和旧验证顺序由本入口替代，模块先读本入口再执行。
 
 恢复顺序：M-relay 沿原 `run_8bbda1c3974c` 立即恢复原 H，先恢复同一普通产品服务，再完成其七件生产装配 WIP；M-release 沿原 `run_aa4e6a119547` 恢复唯一 I，继续准确普通收拢和运行所需构建；M-product 沿原 `run_dbf1a68bc692` / `run_7b2ce96bcd13` 先恢复原 F / B，以及生产 Wake 所需原 S2，其他原作者按实际依赖恢复，保留原修改。F 原完整 320 项中断，最后已输出至302，最终退出与准确统计待本人核原件，不直接重跑全套；当前优先同一产品页面 / API 核心操作。全部原模型成功、OS 和 Q / D1 结果不重做，正式 D2 partial 及既有待定项保持。
