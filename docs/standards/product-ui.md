@@ -17,7 +17,11 @@
 
 本轮输出和进程临时目录为 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`；GOCACHE 沿原共享 `D:/Astrocyte-agent-assets/20261015/go-build`。新增用例已提交只表示可审核的测试内容；Mission HTTP 正向、原生、Artifact 采用退回、S4 / S5 正向及最终 Windows 包继续未完成，任务持续执行。
 
-当前任务 `task_d0cee5a583bb` / Dispatch `ctx_dcc1247de817`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9b068e2051ff`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`；本次恢复基线 `50751569fe2086178247b1a8aae912d62e5cb5ae`，工作区 clean。当前执行入口采用根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 及产品模块最新记录。
+后继 SOURCE `64ab5cadb93067aacfe11c51f5ad0036cf9bb49a` 已普通 push 并独核远端同值。固定 ContextPacket 引用沿 F 现有公开客户端和查询 Hook 按用户展开动作读取；任务租约、历史执行和产物证据提供入口。展开显示固定来源版本和位置、批准与目标版本、项目快照、两项 digest、工具与外发范围、停止条件、决定、结果、检查、失败和后继关系。读取失败保留快照并提示过期，包 ID 与项目不一致立即失败。本域 lint / diff-check 通过；TypeScript 仍仅 F 原七处错误，原件为 D 专用 `logs/typecheck-context-reference-first.log`。实际 Context HTTP / 浏览器展开尚未运行，不登记为正向通过。
+
+模块准确授权消息 `msg_8c42d042650d` 已允许独立 REPORT 完成后的 clean 检查点普通 no-ff 消费 I `23672247d340e80c233951afdce7155b7fa66b1c`。本域后继来源无在途命令、零 WIP 时重新预检仍 EXIT0 / 无冲突，tree `bf9861645bf45b9db6fe4a7cd155a4f6a671d63d`。F 当前 `ctx_630293cc6778` 负责共享修复，来源待交；本树不复制其 WIP。React 组件按现有 Hook、键盘按钮、展开语义与状态保持检查，未新增依赖。
+
+上阶段任务 `task_d0cee5a583bb` / Dispatch `ctx_dcc1247de817`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9b068e2051ff`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`；该阶段恢复基线 `50751569fe2086178247b1a8aae912d62e5cb5ae`，接管时工作区 clean。执行入口采用根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 及产品模块记录。
 
 只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`；模块计划 `2f609ea484fa690b8f2a2b6a754e1a63e398fe42` 和 F `msg_ea981e24bc0d` 正式追加 `web/src/pages/attention/delegation/**` 与 `web/e2e/s5-*.spec.ts`。全部新增范围继续由同一任务、人员和工作树承担。Workspace/AttentionPage 薄入口、公共客户端（包括 `api/judgment.ts`）、生成类型、查询 Hook、认证、共享组件、RankingPanel 与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
 
