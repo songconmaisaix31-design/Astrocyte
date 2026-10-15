@@ -1,5 +1,276 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/experiences/completions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Draft an experience from one actual completed task
+         * @description Human-only command bound to an actual LocalProject.ID and immutable completion event. Missing Interpreter returns provider_unavailable; unknown model delivery is never replayed. A successful candidate remains quarantine until the user approves it.
+         */
+        post: operations["captureCompletionExperience"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/experiences/{id}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve safe references using current project permissions */
+        get: operations["readExperienceEvidence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admissions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the original human or delegated admission */
+        get: operations["readOpportunityAdmission"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admissions/{id}/revocations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke a current admission with an explicit human reason
+         * @description Does not change a separately issued execution grant.
+         */
+        post: operations["revokeOpportunityAdmission"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/attention-taste-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read current human taste configuration */
+        get: operations["readAttentionTasteProfile"];
+        /** Save an explicit versioned human taste profile */
+        put: operations["updateAttentionTasteProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/judgment-snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture explicitly selected approved files */
+        post: operations["captureJudgmentSnapshot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/judgment-policies/{question_type}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the current question policy under human authority */
+        get: operations["readJudgmentPolicy"];
+        /**
+         * Save an explicit current-project policy
+         * @description Requires an actual snapshot, matching settings revision and approved sources. Public snapshot root is empty; the internal root comes from the authorized project.
+         */
+        put: operations["updateJudgmentPolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/judgments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Evaluate an explicitly authorized fixed-source question
+         * @description The body project must match the path. Context-bound questions use the delegation workflow. Backend, language and budgets are supplied explicitly; unavailable configured models fail without a replacement.
+         */
+        post: operations["submitProjectJudgment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/judgments/{decision_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read an actual judgment under current source permissions */
+        get: operations["readProjectJudgment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/judgments/{decision_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read actual feedback for the fixed judgment */
+        get: operations["readJudgmentFeedback"];
+        put?: never;
+        /** Record explicit human feedback for the exact result version */
+        post: operations["recordJudgmentFeedback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/delegation-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List current project delegation rules */
+        get: operations["listJudgmentDelegationRules"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/delegation-rules/{rule_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the original current-project rule */
+        get: operations["readJudgmentDelegationRule"];
+        /** Save an explicit human delegation rule */
+        put: operations["updateJudgmentDelegationRule"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/delegation-rules/{rule_id}/state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply an explicit current rule state change */
+        post: operations["changeJudgmentDelegationState"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/delegation-rules/{rule_id}/judgments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate a fixed opportunity using its current authorized rule */
+        post: operations["evaluateJudgmentDelegation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{project_id}/judgments/{decision_id}/admissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Consume a complete authorized judgment into a draft proposal */
+        post: operations["admitDelegatedJudgment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/relay/intents/{id}/prepare": {
         parameters: {
             query?: never;
@@ -1761,8 +2032,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * admit Opportunity
-         * @description S0 MUST return HTTP 501 unsupported_capability without side effects. Examples describe future DTOs only.
+         * Admit an actual review-ready opportunity into a draft proposal
+         * @description Human command binds the current opportunity version and fixed revision. An explicit project rechecks current project and selected-source permission. The proposal remains unassigned and creates no execution grant, native session or Mission.
          */
         post: operations["admitOpportunity"];
         delete?: never;
@@ -2795,6 +3066,419 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CaptureCompletionExperienceRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            /** @constant */
+            expected_version: 1;
+            local_project_id: string;
+            event_id: string;
+        };
+        CompletionArtifactReferenceV1: {
+            id: string;
+            version: number;
+            commit?: string;
+            object_refs: string[] | null;
+            inputs: components["schemas"]["SourceRefV1"][] | null;
+        };
+        ExperienceCompletionEvidenceV1: {
+            /** @enum {string} */
+            source_kind: "swarm_artifact_accepted" | "relay_task_completed";
+            event_id: string;
+            version: number;
+            occurred_at: number;
+            local_project_id: string;
+            owner_project: string;
+            actor_id: string;
+            /** @constant */
+            actor_kind: "human";
+            task_id: string;
+            outcome: string;
+            origin_event_ids: string[] | null;
+            artifacts: components["schemas"]["CompletionArtifactReferenceV1"][] | null;
+            /** @enum {string} */
+            completion_channel?: "verified_complete" | "user_confirmed_complete";
+            completion_receipt_id?: string;
+        };
+        SafeExperienceEvidenceV1: {
+            /** @enum {string} */
+            source_kind: "original_event" | "swarm_artifact_accepted" | "relay_task_completed";
+            event_id: string;
+            occurred_at: number;
+            completion?: components["schemas"]["ExperienceCompletionEvidenceV1"];
+        };
+        ExperienceEvidenceResultV1: {
+            /** @constant */
+            schema_version: 1;
+            evidence: components["schemas"]["SafeExperienceEvidenceV1"][];
+        };
+        AdmissionRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            expected_revision: number;
+            /** @description An explicit project requires current permission; omitted or empty keeps the draft unassigned */
+            project_id?: string;
+        };
+        RevokeAdmissionRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            reason: string;
+        };
+        OpportunityAdmissionV1: {
+            id: string;
+            version: number;
+            opportunity_id: string;
+            opportunity_revision: number;
+            opportunity_version: number;
+            project_id?: string;
+            inputs: {
+                kind: string;
+                id: string;
+                revision: number;
+            }[];
+            owner_id: string;
+            owner_namespace: string;
+            actor_id: string;
+            /** @enum {string} */
+            authority: "human" | "delegated_judgment";
+            decision_id?: string;
+            policy_version?: string;
+            model?: string;
+            model_version?: string;
+            backend?: string;
+            question_type?: string;
+            purpose?: string;
+            /** @enum {string} */
+            status: "active" | "revoked";
+            admitted_event_id: string;
+            revoked_event_id?: string;
+            reason?: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        AdmissionResultV1: {
+            /** @constant */
+            schema_version: 1;
+            admission: components["schemas"]["OpportunityAdmissionV1"];
+            draft?: {
+                id: string;
+                version: number;
+            };
+        };
+        JudgmentEvidenceRefV1: {
+            material_id: string;
+            revision: number;
+            digest: string;
+        };
+        JudgmentOptionV1: {
+            id: string;
+            description?: string;
+            required_evidence?: components["schemas"]["JudgmentEvidenceRefV1"][] | null;
+        };
+        JudgmentQuestionV1: {
+            question_id: string;
+            /** @enum {string} */
+            question_type: "choice" | "score" | "truth";
+            instructions: string;
+            options?: components["schemas"]["JudgmentOptionV1"][] | null;
+            levels?: string[] | null;
+            rule?: string;
+        };
+        JudgmentVersionsV1: {
+            goal_version: string;
+            taste_version: string;
+            policy_version: string;
+            model_revision: string;
+            access_epoch: string;
+        };
+        JudgmentBudgetV1: {
+            timeout_ms: number;
+            max_input_bytes: number;
+            max_input_tokens: number;
+            max_output_tokens?: number;
+        };
+        JudgmentProfileReferenceV1: {
+            id: string;
+            version: number;
+        };
+        JudgmentSourceReferencesV1: {
+            goal: {
+                id: string;
+                revision: number;
+            };
+            taste: components["schemas"]["JudgmentProfileReferenceV1"];
+            ranking?: components["schemas"]["JudgmentProfileReferenceV1"];
+        };
+        JudgmentOpportunitySnapshotV1: {
+            id: string;
+            revision: number;
+            version: number;
+            state: string;
+            title: string;
+            next_step: string;
+            goal_refs: string[] | null;
+            missing_evidence: string[] | null;
+            evidence: {
+                reference: components["schemas"]["JudgmentEvidenceRefV1"];
+                locator: string;
+                span: string | null;
+            }[] | null;
+        };
+        JudgmentDecisionContextV1: {
+            purpose: string;
+            rule_id: string;
+            rule_version: number;
+            workflow_id: string;
+            owner_id: string;
+            opportunity: components["schemas"]["JudgmentOpportunitySnapshotV1"];
+        };
+        JudgmentRequestV1: {
+            /** @constant */
+            schema_version: "1.0";
+            project_id: string;
+            worktree_id: string;
+            snapshot_id: string;
+            question: components["schemas"]["JudgmentQuestionV1"];
+            evidence_refs?: components["schemas"]["JudgmentEvidenceRefV1"][] | null;
+            language: string;
+            /** @enum {string} */
+            backend: "rule" | "jev" | "laya";
+            external_scope?: string;
+            versions: components["schemas"]["JudgmentVersionsV1"];
+            budget: components["schemas"]["JudgmentBudgetV1"];
+            /** @description Bound context is produced only by the actual delegation workflow */
+            context?: null;
+            sources?: components["schemas"]["JudgmentSourceReferencesV1"];
+        };
+        JudgmentOptionCoverageV1: {
+            total: number;
+            distinct: number;
+            tokens_per_option: number;
+        };
+        JudgmentUsageV1: {
+            input_tokens: number;
+            output_tokens: number;
+            state_tokens: number | null;
+            state_tokens_dropped: number | null;
+            truncated: boolean | null;
+            truncated_questions: string[] | null;
+            options: {
+                [key: string]: components["schemas"]["JudgmentOptionCoverageV1"];
+            } | null;
+        };
+        JudgmentResultV1: {
+            /** @constant */
+            schema_version: "1.0";
+            decision_id: string;
+            result_version: number;
+            question_id: string;
+            /** @enum {string} */
+            question_type: "choice" | "score" | "truth";
+            selected: string | null;
+            value: number | null;
+            distribution: {
+                [key: string]: number;
+            } | null;
+            provider_confidence: number | null;
+            /** @enum {string} */
+            provider: "rule" | "jev" | "laya";
+            provider_model: string | null;
+            model_revision: string | null;
+            input_digest: string;
+            truncated: boolean;
+            options: {
+                [key: string]: components["schemas"]["JudgmentOptionCoverageV1"];
+            } | null;
+            usage: components["schemas"]["JudgmentUsageV1"] | null;
+            /** @enum {string} */
+            decision: "recommend" | "abstain" | "need_evidence";
+            reason_code: string;
+            versions: components["schemas"]["JudgmentVersionsV1"];
+            evidence_refs: components["schemas"]["JudgmentEvidenceRefV1"][] | null;
+            /** Format: date-time */
+            created_at: string;
+            cache_hit: boolean;
+            context?: components["schemas"]["JudgmentDecisionContextV1"];
+            sources?: components["schemas"]["JudgmentSourceReferencesV1"];
+        };
+        JudgmentPolicyV1: {
+            revision: number;
+            project_id: string;
+            project_settings_revision: number;
+            worktree_id: string;
+            snapshot_id: string;
+            snapshot_files: string[] | null;
+            snapshot: components["schemas"]["JudgmentSnapshotV1"];
+            /** @enum {string} */
+            question_type: "choice" | "score" | "truth";
+            versions: components["schemas"]["JudgmentVersionsV1"];
+            /** @enum {string} */
+            backend: "rule" | "jev" | "laya";
+            languages: string[] | null;
+            external_scope?: string;
+            external_evidence?: components["schemas"]["JudgmentEvidenceRefV1"][] | null;
+            budget: components["schemas"]["JudgmentBudgetV1"];
+            min_confidence?: number | null;
+            truth_accept_min?: number | null;
+            truth_accept_max?: number | null;
+            sources?: components["schemas"]["JudgmentSourceReferencesV1"];
+            external_sources?: components["schemas"]["JudgmentSourceReferencesV1"];
+        };
+        JudgmentFeedbackRequestV1: {
+            result_version: number;
+            /** @enum {string} */
+            kind: "adopt" | "later" | "reject" | "revise" | "already_solved";
+            reason: string;
+        };
+        JudgmentFeedbackV1: {
+            id: string;
+            result_id: string;
+            result_version: number;
+            actor_id: string;
+            actor_kind: string;
+            kind: string;
+            reason: string;
+            /** Format: date-time */
+            created_at: string;
+        };
+        JudgmentResultEnvelopeV1: {
+            /** @constant */
+            schema_version: 1;
+            judgment: components["schemas"]["JudgmentResultV1"];
+        };
+        JudgmentPolicyResultV1: {
+            /** @constant */
+            schema_version: 1;
+            policy: components["schemas"]["JudgmentPolicyV1"];
+        };
+        JudgmentSnapshotV1: {
+            environment_id: string;
+            repo_id: string;
+            worktree_id: string;
+            project_id: string;
+            /** @constant */
+            root: "";
+            head: string;
+            index_digest: string;
+            worktree_digest: string;
+            generation: string;
+            /** Format: date-time */
+            observed_at: string;
+        };
+        JudgmentSnapshotResultV1: {
+            /** @constant */
+            schema_version: 1;
+            snapshot: components["schemas"]["JudgmentSnapshotV1"];
+        };
+        JudgmentFeedbackResultV1: {
+            /** @constant */
+            schema_version: 1;
+            feedback: components["schemas"]["JudgmentFeedbackV1"];
+        };
+        JudgmentFeedbackListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["JudgmentFeedbackV1"][];
+            next_cursor: string | null;
+        };
+        DelegationRuleV1: {
+            id: string;
+            project_id: string;
+            workflow_id: string;
+            owner_id: string;
+            revision: number;
+            state: string;
+            purpose: string;
+            question: components["schemas"]["JudgmentQuestionV1"];
+            policy_revision: number;
+            language: string;
+            materials: components["schemas"]["JudgmentEvidenceRefV1"][] | null;
+            admission_choice: string | null;
+            admission_value_min: number | null;
+            admission_value_max: number | null;
+            allow_opportunity_external: boolean | null;
+            review_conditions: string[] | null;
+        };
+        DelegationRuleResultV1: {
+            /** @constant */
+            schema_version: 1;
+            delegation_rule: components["schemas"]["DelegationRuleV1"];
+        };
+        DelegationRuleListV1: {
+            /** @constant */
+            schema_version: 1;
+            items: components["schemas"]["DelegationRuleV1"][];
+            next_cursor: string | null;
+        };
+        DelegatedAdmissionResultV1: {
+            /** @constant */
+            schema_version: 1;
+            admission: {
+                admission_id: string;
+                admission_version: number;
+                proposal_id: string;
+                proposal_version: number;
+            };
+        };
+        TasteRubricV1: {
+            id: string;
+            /** @enum {string} */
+            question_type: "choice" | "score" | "truth";
+            criteria: string;
+            options: {
+                id: string;
+                description: string;
+            }[];
+            levels: string[];
+        };
+        TasteExampleV1: {
+            id: string;
+            rubric_id: string;
+            material_id: string;
+            revision: number;
+            content_digest: string;
+            expected: string;
+        };
+        TasteDelegationV1: {
+            rule_id: string;
+            revision: number;
+            workflow_id: string;
+        };
+        TasteProfileV1: {
+            /** @constant */
+            id: "attention";
+            version: number;
+            enabled: boolean;
+            rubrics: components["schemas"]["TasteRubricV1"][];
+            examples: components["schemas"]["TasteExampleV1"][];
+            delegations: components["schemas"]["TasteDelegationV1"][];
+            /** Format: date-time */
+            created_at: string;
+            configured_by: string;
+        };
+        TasteProfileResultV1: {
+            /** @constant */
+            schema_version: 1;
+            configured: boolean;
+            profile: components["schemas"]["TasteProfileV1"] | null;
+        };
+        UpdateTasteProfileRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            request_id: string;
+            expected_version: number;
+            enabled: boolean;
+            rubrics: components["schemas"]["TasteRubricV1"][];
+            examples: components["schemas"]["TasteExampleV1"][];
+            delegations: components["schemas"]["TasteDelegationV1"][];
+        };
         SwarmMetaV1: {
             /** @constant */
             schema_version: 1;
@@ -3396,12 +4080,44 @@ export interface components {
             terminal: components["schemas"]["RelayTerminalV1"] | null;
             worktree: components["schemas"]["RelayWorkspaceV1"] | null;
             transitions: components["schemas"]["RelayTransitionV1"][];
+            completion?: components["schemas"]["RelayCompletionV1"];
             event_publication: {
                 /** @enum {string} */
                 status: "none" | "pending" | "published" | "error";
                 pending_events: number;
                 published_events: number;
             };
+        };
+        /** @description Saved completion channel and original human action. Missing on old records means unrecorded. Completion never supplies started evidence or releases resources; release is audited separately. */
+        RelayCompletionV1: {
+            /** Format: uuid */
+            completion_id: string;
+            /** Format: uuid */
+            task_id: string;
+            /** Format: uuid */
+            worktree_id: string;
+            /** Format: uuid */
+            terminal_id: string;
+            /** @enum {string} */
+            channel: "verified_complete" | "user_confirmed_complete";
+            /** @enum {string} */
+            source: "human_confirmation" | "owned_output_and_goal_checks";
+            operator: string;
+            actor_id: string;
+            /** @constant */
+            actor_kind: "human";
+            receipt_id: string;
+            /** Format: uuid */
+            operation_id: string;
+            /** Format: date-time */
+            ts: string;
+            evidence_id?: string;
+            /** Format: uuid */
+            input_operation_id?: string;
+            output_event_ids?: string[];
+            check_evidence_ids?: string[];
+            /** Format: date-time */
+            verified_at?: string;
         };
         /**
          * @example {
@@ -3503,13 +4219,13 @@ export interface components {
             /** Format: uuid */
             operation_id?: string;
             /** @enum {string} */
-            kind: "action_claimed" | "action_result" | "observation_rejected" | "handoff_declared" | "human_target_confirmed" | "controller_initialized" | "session_confirmed" | "input_channel_open" | "input_written" | "input_closed" | "input_accepted" | "turn_started" | "input_consumption";
+            kind: "action_claimed" | "action_result" | "observation_rejected" | "handoff_declared" | "human_target_confirmed" | "resources_released" | "controller_initialized" | "session_confirmed" | "input_channel_open" | "input_written" | "input_closed" | "input_accepted" | "turn_started" | "input_consumption" | "input_result";
             /** @enum {string} */
             status: "confirmed" | "unknown" | "pending" | "accepted" | "rejected" | "delivery_unknown";
             /** @enum {string} */
-            source: "relay_store" | "human_intent" | "human_transition" | "codex_initialize" | "codex_thread_identity" | "claude_initialize" | "claude_system_init" | "pi_get_state" | "native_request_pipe" | "codex_turn_acknowledgement" | "pi_prompt_acknowledgement" | "codex_turn_started" | "pi_agent_start" | "claude_stream_input" | "native_protocol" | "owned_stdin_pipe" | "stdin_pipe" | "stdin_eof";
+            source: "relay_store" | "human_intent" | "human_transition" | "codex_initialize" | "codex_thread_identity" | "claude_initialize" | "claude_system_init" | "pi_get_state" | "native_request_pipe" | "codex_turn_acknowledgement" | "pi_prompt_acknowledgement" | "codex_turn_started" | "codex_turn_completed" | "pi_agent_start" | "claude_stream_input" | "native_protocol" | "owned_stdin_pipe" | "stdin_pipe" | "stdin_eof";
             /** @enum {string} */
-            reason?: "client_consumption_not_acknowledged" | "operation_not_bound" | "controller_evidence_rejected" | "not_found" | "validation_failed" | "unsupported_capability" | "version_conflict" | "context_stale" | "index_stale" | "scope_denied" | "approval_required" | "approval_revoked" | "lease_lost" | "budget_exhausted" | "provider_unavailable" | "evidence_missing" | "delivery_unknown" | "internal_error";
+            reason?: "client_consumption_not_acknowledged" | "operation_not_bound" | "controller_evidence_rejected" | "verified_complete" | "user_confirmed_complete" | "completed" | "failed" | "interrupted" | "not_found" | "validation_failed" | "unsupported_capability" | "version_conflict" | "context_stale" | "index_stale" | "scope_denied" | "approval_required" | "approval_revoked" | "lease_lost" | "budget_exhausted" | "provider_unavailable" | "evidence_missing" | "delivery_unknown" | "internal_error";
             sequence: number;
             /** Format: date-time */
             ts: string;
@@ -3577,10 +4293,12 @@ export interface components {
         /** @example {} */
         RelayEmptyRequestV1: Record<string, never>;
         /**
+         * @description Current permission and explicit human confirmation allow accepted or working to enter done. Omitted channel selects user_confirmed_complete. verified_complete additionally requires a trusted reference to this task's owned output and actual fixed-goal checks; it never creates started evidence. Resource release remains a separate done-to-released action.
          * @example {
-         *       "from": "working",
+         *       "from": "accepted",
          *       "to": "done",
-         *       "completion_confirmed": true
+         *       "completion_confirmed": true,
+         *       "completion_channel": "user_confirmed_complete"
          *     }
          */
         RelayTransitionRequestV1: {
@@ -3589,6 +4307,10 @@ export interface components {
             /** @enum {string} */
             to: "accepted" | "working" | "done" | "released";
             completion_confirmed: boolean;
+            /** @enum {string} */
+            completion_channel?: "verified_complete" | "user_confirmed_complete";
+            /** @description Required only for verified_complete; a safe reference, never raw checks, paths or native identities. */
+            completion_evidence_id?: string;
         };
         RelayActionResultV1: {
             /** @constant */
@@ -4701,23 +5423,7 @@ export interface components {
             reason: string;
             dimensions?: components["schemas"]["DimensionsV1"];
         };
-        /**
-         * @example {
-         *       "schema_version": 1,
-         *       "request_id": "fixture-request",
-         *       "expected_version": 1,
-         *       "reason": "Fixture only",
-         *       "policy_version": null
-         *     }
-         */
-        AdmitOpportunityRequestV1: {
-            /** @constant */
-            schema_version: 1;
-            request_id: string;
-            expected_version: number;
-            reason: string;
-            policy_version: string | null;
-        };
+        AdmitOpportunityRequestV1: components["schemas"]["AdmissionRequestV1"];
         /**
          * @example {
          *       "schema_version": 1,
@@ -6563,6 +7269,8 @@ export interface components {
             actions: components["schemas"]["MemoryActionAuditV1"][];
         };
         StoredExperienceV1: {
+            /** @enum {string} */
+            source_kind?: "swarm_artifact_accepted" | "relay_task_completed";
             experience: components["schemas"]["ExperienceV1"];
             owner_project: string;
             origin_event_id: string;
@@ -6776,6 +7484,12 @@ export interface components {
         };
     };
     parameters: {
+        /** @description Required for authenticated human writes */
+        ProductCSRF: string;
+        JudgmentProjectID: string;
+        JudgmentDecisionID: string;
+        JudgmentRuleID: string;
+        JudgmentQuestionType: "choice" | "score" | "truth";
         S2ID: string;
         S2Revision: number;
         /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
@@ -6787,6 +7501,574 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    captureCompletionExperience: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaptureCompletionExperienceRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Original or newly persisted quarantine candidate */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperienceReadResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readExperienceEvidence: {
+        parameters: {
+            query: {
+                /** @description Actual registered LocalProject.ID */
+                project_id: string;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Safe references without original source payloads */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExperienceEvidenceResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readOpportunityAdmission: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Persisted admission and any original draft reference */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdmissionResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    revokeOpportunityAdmission: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeAdmissionRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted revoked admission */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdmissionResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readAttentionTasteProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current actual profile or configured false and profile null */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TasteProfileResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    updateAttentionTasteProfile: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTasteProfileRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted current profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TasteProfileResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    captureJudgmentSnapshot: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    files: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description Snapshot with an empty public root */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentSnapshotResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readJudgmentPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                question_type: components["parameters"]["JudgmentQuestionType"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current fixed policy */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentPolicyResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    updateJudgmentPolicy: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                question_type: components["parameters"]["JudgmentQuestionType"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_revision: number;
+                    policy: components["schemas"]["JudgmentPolicyV1"];
+                };
+            };
+        };
+        responses: {
+            /** @description Saved policy */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentPolicyResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    submitProjectJudgment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JudgmentRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Actual result with source and usage status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentResultEnvelopeV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readProjectJudgment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                decision_id: components["parameters"]["JudgmentDecisionID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Original judgment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentResultEnvelopeV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readJudgmentFeedback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                decision_id: components["parameters"]["JudgmentDecisionID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Persisted feedback list */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentFeedbackListV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    recordJudgmentFeedback: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                decision_id: components["parameters"]["JudgmentDecisionID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JudgmentFeedbackRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Persisted feedback */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentFeedbackResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    listJudgmentDelegationRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Actual versioned rules */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DelegationRuleListV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    readJudgmentDelegationRule: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                rule_id: components["parameters"]["JudgmentRuleID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Versioned rule */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DelegationRuleResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    updateJudgmentDelegationRule: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                rule_id: components["parameters"]["JudgmentRuleID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_revision: number;
+                    rule: components["schemas"]["DelegationRuleV1"];
+                };
+            };
+        };
+        responses: {
+            /** @description Saved rule */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DelegationRuleResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    changeJudgmentDelegationState: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                rule_id: components["parameters"]["JudgmentRuleID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    expected_revision: number;
+                    state: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved rule state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DelegationRuleResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    evaluateJudgmentDelegation: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                rule_id: components["parameters"]["JudgmentRuleID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    rule_revision: number;
+                    opportunity_id: string;
+                    opportunity_revision: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Actual bound judgment */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JudgmentResultEnvelopeV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
+    admitDelegatedJudgment: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Caller-scoped immutable operation. Human writes also require existing session CSRF. Request ID is transport trace and may differ on replay. */
+                "Idempotency-Key": components["parameters"]["S2Idempotency"];
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
+            };
+            path: {
+                project_id: components["parameters"]["JudgmentProjectID"];
+                decision_id: components["parameters"]["JudgmentDecisionID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @constant */
+                    schema_version: 1;
+                    request_id: string;
+                    expected_opportunity_version: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Original admission and draft proposal references */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DelegatedAdmissionResultV1"];
+                };
+            };
+            403: components["responses"]["S2CommandError"];
+            default: components["responses"]["S2CommandError"];
+        };
+    };
     prepareRelayIntent: {
         parameters: {
             query?: never;
@@ -14008,6 +15290,8 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
+                /** @description Required for authenticated human writes */
+                "X-CSRF-Token": components["parameters"]["ProductCSRF"];
                 /** @description Caller-scoped command deduplication key; never automatic retry */
                 "Idempotency-Key": string;
             };
@@ -14019,161 +15303,25 @@ export interface operations {
         };
         requestBody: {
             content: {
-                /**
-                 * @example {
-                 *       "schema_version": 1,
-                 *       "request_id": "fixture-request",
-                 *       "expected_version": 1,
-                 *       "reason": "Fixture only",
-                 *       "policy_version": null
-                 *     }
-                 */
                 "application/json": components["schemas"]["AdmitOpportunityRequestV1"];
             };
         };
         responses: {
-            /** @description Future capability contract; NOT implemented in S0 */
+            /** @description Original persisted admission and any draft reference */
             201: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "id": "fixture-resource",
-                     *       "version": 1
-                     *     }
-                     */
-                    "application/json": components["schemas"]["VersionResultV1"];
+                    "application/json": components["schemas"]["AdmissionResultV1"];
                 };
             };
-            /** @description Invalid request */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "error": {
-                     *         "code": "validation_failed",
-                     *         "message": "Invalid request",
-                     *         "request_id": "example-request",
-                     *         "retryable": false,
-                     *         "required_action": "Read the current S0 capabilities; choose an implemented operation"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Scope or user-control access denied */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "error": {
-                     *         "code": "scope_denied",
-                     *         "message": "Scope or user-control access denied",
-                     *         "request_id": "example-request",
-                     *         "retryable": false,
-                     *         "required_action": "Read the current S0 capabilities; choose an implemented operation"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Resource not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "error": {
-                     *         "code": "not_found",
-                     *         "message": "Resource not found",
-                     *         "request_id": "example-request",
-                     *         "retryable": false,
-                     *         "required_action": "Read the current S0 capabilities; choose an implemented operation"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Resource version changed */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "error": {
-                     *         "code": "version_conflict",
-                     *         "message": "Resource version changed",
-                     *         "request_id": "example-request",
-                     *         "retryable": false,
-                     *         "required_action": "Read the current S0 capabilities; choose an implemented operation"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Unexpected service failure */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "error": {
-                     *         "code": "internal_error",
-                     *         "message": "Unexpected service failure",
-                     *         "request_id": "example-request",
-                     *         "retryable": false,
-                     *         "required_action": "Read the current S0 capabilities; choose an implemented operation"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
-            /** @description Capability is not implemented in S0 */
-            501: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /**
-                     * @example {
-                     *       "schema_version": 1,
-                     *       "error": {
-                     *         "code": "unsupported_capability",
-                     *         "message": "Capability is not implemented in S0",
-                     *         "request_id": "example-request",
-                     *         "retryable": false,
-                     *         "required_action": "Read the current S0 capabilities; choose an implemented operation"
-                     *       }
-                     *     }
-                     */
-                    "application/json": components["schemas"]["ErrorV1"];
-                };
-            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
         };
     };
     resumeSession: {
