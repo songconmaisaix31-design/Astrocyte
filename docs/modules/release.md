@@ -2,6 +2,14 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:14 同库普通产品已恢复
+
+原 H 本人 `msg_8626e2f63ff6` 确认同一 SQLite / LOCALAPPDATA 和首选 `http://127.0.0.1:64505/` 已恢复，实际 SOURCE 为 `cffac3671f21dbf90df9eaa2804a2eb5e070d332`、Go buildinfo `vcs.modified=false`，PID `45616`，启动 UTC `2026-10-15T20:13:21.8983808Z`。稳定程序为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/cffac367/astrocyte.exe`，原 `running.json` 已更新。H 已停止读取 I 产物并明确归还窗口；本模块已放行后继必要构建。服务持续运行，更新仍由原 H 在 F 安全窗口内进行，不另起共享实例。
+
+本模块实际 `Invoke-WebRequest` 首页得到 HTTP200 / `text/html; charset=utf-8` / `562 bytes`，`Get-NetTCPConnection` 核唯一 `127.0.0.1:64505` listener 属于 PID45616，`Get-Process` 核稳定程序路径和同一启动时间。H 在原 command.Dir 与完整白名单环境执行的三个 CodeGraph probe 均 EXIT0；原0db首次退出1原件保留，原因仍 UNKNOWN，未放宽校验。当前程序尚未包含 H 七件后继生产装配，Jev / Laya / Q 独立根仍未配置，原生登记、初始化、模型输入为零。F 已收到同实例只读 HTTP / DOM / SQLite 继续检查的准确交接，当前可访问结果不代替完整功能验收。
+
+后继已确认输入为 B 启动诊断 SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` / REPORT `c563ff9498d4e54f095a1bddf3c46d2cd869ea85`，保持既有校验阶段、15秒、隔离目录和最小环境，已交唯一 I 普通消费并实际构建。F SOURCE `6503077885aee63dd97f9642deab66ba57167925` / REPORT `da692e8dd1a29e5621d127a4bea4fbc9ef7ab21a` 已普通消费，组合 `deec6c7b27510f2139a910508a268f6d2585dff2` 已 push；准确 `76030ec7846d41b709a0f21d6d3761ba4d7bcae0` 的 typecheck / lint 均 EXIT0且检查前后同源。构建通过范围继续准确归 cffac367，后继检查脚本与文档没有重复构建。
+
 ### 2026-10-16 04:11 准确组合构建与原检查退出
 
 唯一 I 已无冲突普通 `--no-ff` 消费 B REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3` 和 F REPORT `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，准确组合 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332` 已普通 push。本模块独核 HEAD / 远端同值；B 祖先同时包含已提交的 prepared input、token 争用验证与 cleanup 配置，没有复制 native WIP。原 `pnpm build` 实际 EXIT0 / `49.3755472` 秒，`source_after` 同值，server / MCP / Sleep / TypeScript / Vite 全部完成。本模块独读 `D:/Astrocyte-agent-assets/20261015/integration/c16-product-build-cffac367/result.json` 与 `build.log`，原 bundle 提示保留。
