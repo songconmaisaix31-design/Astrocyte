@@ -84,11 +84,6 @@ func projectAccess(tx WorkspaceTx,c domain.Caller,id string) (domain.LocalProjec
 func (s *S2Service) validateInputs(ctx context.Context,c domain.Caller,content domain.ProposalContent) (int,error) {
 	var p domain.LocalProject
 	if err:=s.repo.WithWorkspaceTx(ctx,func(tx WorkspaceTx)error{var err error;p,err=projectAccess(tx,c,content.Scope.ProjectID);return err});err!=nil{return 0,NormalizeWorkspaceError(err)}
-	for _,ref:=range content.Inputs{
-		if s.references==nil{return 0,&apierrors.ServiceError{Code:apierrors.UnsupportedCapability,Message:"project reference reader is not connected"}}
-		material,err:=s.references.ReadSelected(ctx,c,p.SpaceID,ref,false);if err!=nil{return 0,err}
-		if material.Reference!=ref{return 0,&apierrors.ServiceError{Code:apierrors.ContextStale,Message:"reference reader changed the fixed revision"}}
-	}
 	return p.Settings.Revision,nil
 }
 
@@ -108,6 +103,10 @@ func (s *S2Service) validateContent(ctx context.Context,tx WorkspaceTx,c domain.
 	if content.Scope.SettingsRevision!=p.Settings.Revision{return domain.WorkspaceError(apierrors.ContextStale,"proposal fixes another project settings revision")}
 	g,err:=tx.LoadGoal(content.Goal.ID,content.Goal.Revision);if err!=nil{return err}
 	if g.ProjectID!=p.ID{return domain.WorkspaceError(apierrors.ScopeDenied,"goal is outside proposal project")}
+	for _,ref:=range content.Inputs{
+		if s.references==nil{return domain.WorkspaceError(apierrors.UnsupportedCapability,"project reference reader is not connected")}
+		material,err:=s.references.ReadSelected(tx.Context(),c,p.SpaceID,ref,false);if err!=nil{return err};if material.Reference!=ref{return domain.WorkspaceError(apierrors.ContextStale,"reference reader changed the fixed revision")}
+	}
 	for _,root:=range content.Scope.Roots{
 		if err=s.validateProjectRoot(p,root);err!=nil{return err}
 	}
@@ -206,6 +205,11 @@ func (s *S2Service) WithAuthorizedGrant(ctx context.Context,check domain.GrantCh
 		if err=AuthorizeProjectActionCaller(p,check.Caller,member,check.Action,time.Now().UTC());err!=nil{return err}
 		if err=ValidateProjectActionScope(p,ProjectActionScope{ProjectID:p.ID,SettingsRevision:g.Scope.SettingsRevision,Action:check.Action,Roots:[]string{check.Root},Tools:check.Tools,ExternalTargets:check.ExternalTargets});err!=nil{return err}
 		if err=s.validateProjectRoot(p,check.Root);err!=nil{return err}
+		proposal,err:=tx.LoadProposal(g.ProposalID,g.ProposalRevision);if err!=nil{return err}
+		for _,ref:=range proposal.Content.Inputs{
+			if s.references==nil{return domain.WorkspaceError(apierrors.UnsupportedCapability,"current source permission reader is required")}
+			material,err:=s.references.ReadSelected(tx.Context(),check.Caller,p.SpaceID,ref,false);if err!=nil{return err};if material.Reference!=ref{return domain.WorkspaceError(apierrors.ContextStale,"current source reader changed approved revision")}
+		}
 		return fn(tx.Context(),g)
 	})
 }

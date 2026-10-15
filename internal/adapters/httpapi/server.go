@@ -44,6 +44,7 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
+	WorkspaceS2          *workspaceapp.S2Service
 	GitHubRepositories   workspaceapp.GitHubRepositories
 	Tracking             attentionapp.TrackingService
 	LocalProjects        workspaceapp.LocalProjects
@@ -92,7 +93,11 @@ func NewServer(cfg Config) *Server {
 	mux.HandleFunc("GET /api/v1/opportunities", h.handleListOpportunities)
 	mux.HandleFunc("GET /api/v1/projects", h.handleListProjects)
 	mux.HandleFunc("GET /api/v1/local-agents", h.handleListLocalAgents)
-	mux.HandleFunc("GET /api/v1/proposals", h.handleListProposals)
+	if cfg.Services.WorkspaceS2 == nil {
+		mux.HandleFunc("GET /api/v1/proposals", h.handleListProposals)
+	} else {
+		h.registerWorkspaceS2(mux, cfg.Services.WorkspaceS2)
+	}
 	mux.HandleFunc("GET /api/v1/sessions", h.handleListSessions)
 	mux.HandleFunc("GET /api/v1/missions", h.handleListMissions)
 
@@ -118,9 +123,11 @@ func NewServer(cfg Config) *Server {
 	mux.HandleFunc("POST /api/v1/projects", h.notImplemented("project_create"))
 	mux.HandleFunc("POST /api/v1/sessions/{id}/resume", h.notImplemented("session_resume"))
 	mux.HandleFunc("POST /api/v1/sessions/{id}/handoff", h.notImplemented("session_handoff"))
-	mux.HandleFunc("POST /api/v1/proposals/{id}/submit", h.notImplemented("proposal_submit"))
-	mux.HandleFunc("POST /api/v1/proposals/{id}/approvals", h.notImplemented("proposal_approve"))
-	mux.HandleFunc("POST /api/v1/approvals/{id}/revoke", h.notImplemented("approval_revoke"))
+	if cfg.Services.WorkspaceS2 == nil {
+		mux.HandleFunc("POST /api/v1/proposals/{id}/submit", h.notImplemented("proposal_submit"))
+		mux.HandleFunc("POST /api/v1/proposals/{id}/approvals", h.notImplemented("proposal_approve"))
+		mux.HandleFunc("POST /api/v1/approvals/{id}/revoke", h.notImplemented("approval_revoke"))
+	}
 	mux.HandleFunc("POST /api/v1/missions/{id}/pause", h.notImplemented("mission_pause"))
 	mux.HandleFunc("POST /api/v1/missions/{id}/cancel", h.notImplemented("mission_cancel"))
 	mux.HandleFunc("POST /api/v1/work-items/{id}/claims", h.notImplemented("workitem_claim"))
@@ -141,7 +148,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil || cfg.Services.KnowledgeGovernance != nil || cfg.Services.ExperienceGovernance != nil || cfg.Services.ConflictGate != nil || cfg.Services.Works != nil {
+	if cfg.Services.WorkspaceS2 != nil || cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil || cfg.Services.KnowledgeGovernance != nil || cfg.Services.ExperienceGovernance != nil || cfg.Services.ConflictGate != nil || cfg.Services.Works != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)
