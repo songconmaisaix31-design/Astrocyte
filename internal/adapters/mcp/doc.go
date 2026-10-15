@@ -1,7 +1,3 @@
-// Package mcp is the stdio MCP transport for the Astrocyte cognitive interface.
-//
-// It serves the five astrocyte.* tools from the task book §7 as a minimal
-// newline-delimited JSON-RPC 2.0 server. The package carries no persistence and
-// no attention-domain logic; the application layer supplies an MCPBackend that
-// answers each tool with wire-shaped DTOs. It never orchestrates agents.
+// mcp 为任务书第 7 节的五个认知工具提供 stdio JSON-RPC 2.0 传输。
+// 数据处理与持久化通过应用层的 MCPBackend 完成。
 package mcp

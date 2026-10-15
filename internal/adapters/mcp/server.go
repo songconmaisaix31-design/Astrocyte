@@ -14,8 +14,7 @@ const (
 	maxMessageBytes = 16 << 20
 )
 
-// Server is a minimal stdio MCP server: initialize, ping, tools/list and
-// tools/call over newline-delimited JSON-RPC.
+// stdio MCP 服务通过 JSON-RPC 提供初始化、ping 和工具调用。
 type Server struct {
 	name    string
 	version string
@@ -32,8 +31,7 @@ func (s *Server) RegisterTool(t Tool) {
 	s.byName[t.Name] = t
 }
 
-// Serve reads newline-delimited JSON-RPC requests from in and writes one
-// newline-delimited response per request until EOF or a write error.
+// 逐行读取 JSON-RPC，读取、编码或写入失败立即返回错误。
 func (s *Server) Serve(ctx context.Context, in io.Reader, out io.Writer) error {
 	scanner := bufio.NewScanner(in)
 	scanner.Buffer(make([]byte, 0, 64*1024), maxMessageBytes)
@@ -165,20 +163,14 @@ func (s *Server) call(id json.RawMessage, ctx context.Context, params json.RawMe
 	result, err := t.Handler(ctx, p.Arguments)
 	if err != nil {
 		if delivery, ok := result.(interface{ MCPDeliveryState() string }); ok && delivery.MCPDeliveryState() != "" {
-			// Text is authoritative for clients that discard structuredContent
-			// when isError is true. Never drop a committed receipt on this path.
-			payload, marshalErr := json.Marshal(result)
-			var receipt map[string]any
-			if marshalErr == nil && json.Unmarshal(payload, &receipt) == nil && receipt != nil {
-				receipt["error"] = "Tool operation failed"
-				payload, marshalErr = json.Marshal(receipt)
-				if marshalErr == nil {
-					return okResponse(id, toolResult{Content: []contentItem{{Type: "text", Text: string(payload)}}, IsError: true, StructuredContent: receipt})
-				}
+			// 错误结果的文本与结构化字段保留同一实际收据。
+			receipt, formatErr := deliveryErrorResult(result)
+			if formatErr != nil {
+				return errorResponse(id, codeInternalError, "Failed to encode tool delivery receipt")
 			}
+			return okResponse(id, receipt)
 		}
-		// A committed receipt takes precedence even when its cause wraps an
-		// argument error. Classification must never erase delivery uncertainty.
+		// 提交后的错误先保留投递状态，再处理参数错误的分类。
 		var invalid *InvalidParamsError
 		if errors.As(err, &invalid) {
 			return errorResponse(id, codeInvalidParams, "Invalid tool arguments")
@@ -190,6 +182,28 @@ func (s *Server) call(id json.RawMessage, ctx context.Context, params json.RawMe
 		return errorResponse(id, codeInternalError, "Failed to marshal tool result")
 	}
 	return okResponse(id, toolResultText(string(text)))
+}
+
+func deliveryErrorResult(result any) (toolResult, error) {
+	payload, err := json.Marshal(result)
+	if err != nil {
+		return toolResult{}, err
+	}
+	decoder := json.NewDecoder(bytes.NewReader(payload))
+	decoder.UseNumber()
+	var receipt map[string]any
+	if err := decoder.Decode(&receipt); err != nil {
+		return toolResult{}, err
+	}
+	if receipt == nil {
+		return toolResult{}, errors.New("tool delivery receipt must be a JSON object")
+	}
+	receipt["error"] = "Tool operation failed"
+	payload, err = json.Marshal(receipt)
+	if err != nil {
+		return toolResult{}, err
+	}
+	return toolResult{Content: []contentItem{{Type: "text", Text: string(payload)}}, IsError: true, StructuredContent: receipt}, nil
 }
 
 type contentItem struct {

@@ -5,15 +5,14 @@ import (
 	"encoding/json"
 )
 
-// Handler executes one tool call. arguments is the raw JSON object passed to
-// tools/call; it returns any JSON-serializable result.
+// 工具调用接收原 JSON 参数并返回可序列化结果。
 type Handler func(ctx context.Context, arguments json.RawMessage) (any, error)
 
 type InvalidParamsError struct{ Message string }
 
 func (e *InvalidParamsError) Error() string { return e.Message }
 
-// Tool is a single MCP tool definition plus its handler.
+// 工具定义与其处理函数使用同一注册项。
 type Tool struct {
 	Name        string
 	Description string

@@ -665,3 +665,11 @@ SOURCE `d8067aae16acdec89e2bb8cb91ec153f45bf32f4` 已普通 push，只修改 `na
 D 盘 TEMP 下 `go test -mod=readonly -p=2 ./internal/adapters/events -run '^TestReplayJunctionUsesActualWindowsPaths$' -v -count=1` EXIT 0，包 1.641s，`.verification/windows-junction-actual-first.log`；实际空格目录与明确正斜杠输入创建 junction 后 `os.SameFile` 核实通过。目标包 vet、Go 格式和 diff 检查均通过，`.verification/windows-junction-vet-first.log`。
 
 该检查没有创建原生会话或原生格式记录。原 `replayFixture` 的替代 Codex / Claude 文件仍待实际获准公开项目原件替换，本次没有运行该路径、删除其断言、增加 skip 或将目录检查记作实际原生回放通过。原已知 mklink 参数失败与真实原件缺口分别保留。
+
+## MCP 收据格式的直接失败
+
+SOURCE `895ae6a3a879e159e5de2c8629eed3423398cf68` 已普通 push。错误收据的 JSON 编码、对象解码及再次编码任一步失败，当前请求立即返回明确 JSON-RPC internal error；正常对象的文本和 structuredContent 保持相同内容，使用标准 Decoder 的 `UseNumber` 保留准确数字。六个生产文件注释使用中文，后端数据、权限和五项工具定义保持。
+
+`go test -mod=readonly -p=2 ./internal/adapters/mcp -run '^(TestDeliveryErrorFormatRules|TestAstrocyteRegistersFiveTools|TestAstrocyteDispatchGetAttentionState)' -v -count=1` EXIT 0，4 PASS、0 SKIP，包 1.702s；`.verification/mcp-delivery-format-first.log`。两项格式检查只传明确纯函数输入与期望值，不声明业务收据或来源事实；另两项通过真实 SQLite、生产人工主题创建和实际 OS pipe 执行五工具注册与关注查询，没有替代 Backend。实际 postcommit 异常、完整五操作 / 批准经验及原生链路没有因此升级为 PASS。
+
+全包 build、MCP 包 vet、七件 Go 格式及 diff 检查均 EXIT 0，日志 `.verification/mcp-delivery-format-build-first.log`、`mcp-delivery-format-vet-first.log`。正式来源问答已回复：Codex / Claude 原件 locator 的可用性仍 UNKNOWN，由 R/H 仅核既有公开指针，实际回放继续 NOT_RUN；B 转向无需新原生或模型的视频生产配置核查。
