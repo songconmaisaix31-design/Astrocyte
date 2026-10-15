@@ -1,5 +1,13 @@
 # 2026-10-15 今日采集协调记录
 
+## 23:51 恢复后的只读检查
+
+本轮负责人为 `task_315679474dc4` / `ctx_eee578a1b9d8` / `term_835902d6-c7f0-464b-a0f4-38f80ae39164`，实际 Codex / `gpt-6.1-sol`、xhigh fast，按正式根 HANDOFF / STATUS 23:47 接续原发布 Run。标准 JSON 仅选安全字段再次核外部权威锁：authority=root、reviewed=true、day0=2026-10-13、route.status=ACCEPTED，正式 EXPERIMENT 全文 SHA256 与锁同为 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`；本日 capture 与 day 目录均存在。
+
+公开 `automations show / runs` 核原 automation 仍 enabled、Asia/Shanghai、existing / reuseSession=true；nextRunAt 对应 2026-10-16 00:20。D1 原 scheduled run `50ee3508-e5bc-4ace-8fae-4c652bea59da` 为 completed / error=null，D0 completed 与首 skipped_unavailable 保留。本次只核状态、目录存在性和协议 SHA，没有读取正式 SQLite 或原始会话、输入、响应，没有运行任何 capture、Sleep、模型、judge、人评或预测命令，没有修改自动日程。
+
+根明确正式 D1 与 Q 工程采集均已完成；下方既有独验结果及真实剩余项继续有效。后续自然日由原 automation 处理，不创建第二 operator，不补漏日、不重发 unknown；用户评分、D+3 和七日终局仍按原门禁与真实日期执行。
+
 ## 21:53 当前恢复只读核查
 
 当前模块为 `task_315679474dc4` / `ctx_babf16de02e2` / `term_4b0a1372-6750-47f7-8a99-e7e9d0236130`，根明确授权接续原 `run_aa4e6a119547` generation 4。实际管理客户端由公开 fleet 核为 Codex / `gpt-6.1-sol`、终端 xhigh fast。本轮读根当前 HANDOFF / STATUS、原日运行计划和正式 OPERATIONS；根 `msg_e947b9ae48de` / `msg_50ac884c4910` 明确正式 D1 与工程 Q 已完成，不重复运行。

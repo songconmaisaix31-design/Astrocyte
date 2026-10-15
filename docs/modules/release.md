@@ -2,6 +2,22 @@
 
 ## 2026-10-15 当前发布协调
 
+### 23:52 Runtime 恢复与当前一页计划
+
+本轮唯一负责人为 `task_315679474dc4` / `ctx_eee578a1b9d8` / `term_835902d6-c7f0-464b-a0f4-38f80ae39164`，实际客户端 Codex / `gpt-6.1-sol`、终端 xhigh fast。根当前 `term_24db7f74-f79a-4689-be1d-3f585a38e6b4`，正式根工作树 HANDOFF / STATUS 23:47 入口及 `msg_d39d6723a5db`、`msg_226ffab47e31`、`msg_cd02a6754b91` 授权接续原 `run_aa4e6a119547`；旧任务正文的身份、创建子 Run 与先 L1 后集成顺序按当前入口执行。接管时创建的 `run_7ecfa72b8b8b` 保留为空，已读取并 ACK 其中两条根消息，不用于派发。
+
+| 顺序与唯一责任 | 原 Task / 工作树 / 分支 | 当前动作与验收 |
+|---|---|---|
+| I，唯一集成 | `task_2ee44933df72`；`works-relay-integration` / `songconmaisaix31-design/works-relay-integration` | 原 Task 当前 ready，旧 Dispatch 已由运行时 failed / abandoned。保持 HEAD `ebfeda40b37cc516f994e1a4f46f0869a824bd4c` / MERGE_HEAD `9021cbaa0dac6321491c9ae86d466749b8a32904` 与六件 S2 AA；恢复本人先 STOP，M-product 原 S2 新安全 ACK 后仅六件 edit / stage，归还与独核后仅 I 继续当前普通 merge，再消费 H。直接写域仍为 `docs/access/integration.md` 与根本轮明确授予的管理文档同步，领域冲突交原作者。 |
+| S5，原作者继续 | `task_1d3e15a66b2a`；`release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015` | 原 Task ready，原 16 件 WIP 保留，写域沿原计划。先核已有完整 Sources 实际推理、生命周期结果及日志，连续完成 Go / HTTP / 文档和可消费 SOURCE / 独立 REPORT；不重复已验模型或延续旧全局安静等待。 |
+| P / Q / D1 | 原树、原 Task 和原件保留 | P 准备、Q 公开工程与正式 D1 已完成，不重复启动。最终 P / N 等待唯一 I 同源新组合和实际适用验收；正式 V4 仍由原 automation 执行。 |
+
+本轮旧 FIFO 五条已逐项处理：R 双完成 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` / REPORT `be0edfca394ac49824185beec2e61c087d33210c`、S4 后台 SOURCE `054cc5dba765ee211a8e383a09355719d7ecaf7a` / REPORT `f6c865710375340d528b878bc09b7c3fd4984ee7` 为后继准确输入，不更换当前 MERGE_HEAD；四树准确可构建阶段 push 后，各原作者仅在自然检查点普通合入同一 I SOURCE。阶段来源不代替完整默认、L1 / L2 和最终产品验收。
+
+旧 S5 `msg_e490f010c4dd` 已报告完整 Sources 的实际推理和测试取消顺序修正后的 `8.40s / 包10.290s PASS`、Close 确认退出，原两次失败保留；根 23:47 明确旧全局安静窗口不延续。本人不触发模型，原 S5 先核准确原日志与当前阶段。旧终端缺失保持 unverifiable，旧 unknown 资源不擅自释放。
+
+23:51 实测 C / D 空余分别 `10,665,730,048` / `80,765,390,848 bytes`，未清理或移动任何证据。新增验证由原 B helper 提供 D 盘入口，Go / Node / PowerShell 父子进程显式使用 D 盘 GOCACHE / GOTMPDIR / TEMP / TMP；大型 C 盘检查暂不启动。I 现有 `D:/Astrocyte-agent-assets/20261015/integration/run-validation.ps1` 先核实际环境与输出后使用。顺序保持四树组合 → 集成版 L1 → L2 六步，正式锁、日程、预算与人评边界保持。
+
 ### 21:57 用户决定与当前第一优先集成
 
 根 `msg_e33689cdd5f6` 转达用户最新顺序：① B / F / R / H 四树普通收拢与组合验证 → ② 集成版 L1 真实收账 → ③ L2 经验管道 → ④ 六步流程端到端首跑。10-22 是 L2 验收的目标日期，相关功能进入发布包；实际验收保持逐项完成。当前唯一 I 立即准备并消费已提交的准确阶段来源，未完成领域由原 owner 持续交准确 SOURCE / 独立 REPORT 后普通消费。
