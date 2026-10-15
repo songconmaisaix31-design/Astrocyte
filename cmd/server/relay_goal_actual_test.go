@@ -23,9 +23,10 @@ import (
 )
 
 // 仅在受信文件编辑已应用本次原生输出后显式运行，不创建或操作原生控制器。
-func TestRelayGoalActualOwnedOutputAndHostChecks(t *testing.T) {
+func recordRelayGoalActualOwnedOutputAndHostChecks(t *testing.T) {
+	t.Helper()
 	if os.Getenv("ASTROCYTE_L1_GOAL_RECORD") != "1" {
-		t.Skip("NOT_RUN: explicit trusted application and actual goal checks required")
+		t.Fatal("NOT_RUN: explicit trusted application and actual goal checks required")
 	}
 	ctx := context.Background()
 	evidenceDir := os.Getenv("ASTROCYTE_L1_EVIDENCE_DIR")
