@@ -1,5 +1,22 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 00:35 恢复与真实 Mission 用例
+
+当前 Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，产品模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`。当前执行入口为根 HANDOFF / STATUS 与模块 00:34 计划；原工作树、分支和全部证据保留。接管 HEAD `2bfbbe966b6f977e4df241bfae05bd0e7fcd7ba4`，唯一未提交内容为 `web/e2e/s3-missions.spec.ts`，已由同一任务继续完成。B 显式 D 输出八件与 F 生成类型及公开 Swarm / Context 客户端均已准确消费，无重复合入。
+
+本阶段 SOURCE `033557f16b6b806e8a1626fc28bfd34bde13bed7` 已普通 push，独立 `git ls-remote` 核远端同值。新增四个真实服务场景，沿原两 viewport 配置，使用生产 Go / HTTP、真实 SQLite、实际跟踪协议文件的固定资料版本、人工会话与 CSRF；覆盖人工建立 ready Mission、添加工作项、实际事件库逐项定位、暂停恢复取消、版本冲突保留输入、Grant 撤销后新动作拒绝、未知锁跨关闭和刷新保留、403 后快照及输入保持与权限恢复。认领、提交和原生执行没有构造替代身份。
+
+| 本阶段命令 | 实际结果 |
+|---|---|
+| `pnpm --dir web typecheck` 首轮 | FAIL：本域用例一处 Grant 字段错误及原 F 七处旧显示参数 / Prepare 标签错误；全部输出保留于 D 专用 `logs/typecheck-swarm-resume-first.log` |
+| 修正后 `pnpm --dir web typecheck` | FAIL：仅原 F 七处错误，本域零类型错误；`logs/typecheck-swarm-resume-second.log`。已交模块，不修改共享文件 |
+| `pnpm --dir web exec eslint src/pages/swarm/SwarmPage.tsx src/pages/swarm/missions e2e/s3-missions.spec.ts` | PASS，零 errors / warnings |
+| `git diff --check`、`git diff --cached --check`、普通 push / 远端核查 | PASS |
+| clean 检查点只读 `git merge-tree --write-tree --name-only HEAD 23672247d340e80c233951afdce7155b7fa66b1c` | EXIT0，无冲突，结果 tree `ceed51c368d3ca5c9817a882faaa6c451b1cb696`；`logs/merge-tree-I2367224-first.log`。尚未实际 merge，index 与工作区不变 |
+| 新增 S3 两尺寸真实 E2E、完整 `pnpm check` / `pnpm build` | 本轮尚未执行，待准确可消费后端组合及 F 修复来源；I 首 check 格式错误保留并由原 S2 / B 修复 |
+
+本轮输出和进程临时目录为 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`；GOCACHE 沿原共享 `D:/Astrocyte-agent-assets/20261015/go-build`。新增用例已提交只表示可审核的测试内容；Mission HTTP 正向、原生、Artifact 采用退回、S4 / S5 正向及最终 Windows 包继续未完成，任务持续执行。
+
 当前任务 `task_d0cee5a583bb` / Dispatch `ctx_dcc1247de817`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9b068e2051ff`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`；本次恢复基线 `50751569fe2086178247b1a8aae912d62e5cb5ae`，工作区 clean。当前执行入口采用根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 及产品模块最新记录。
 
 只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`；模块计划 `2f609ea484fa690b8f2a2b6a754e1a63e398fe42` 和 F `msg_ea981e24bc0d` 正式追加 `web/src/pages/attention/delegation/**` 与 `web/e2e/s5-*.spec.ts`。全部新增范围继续由同一任务、人员和工作树承担。Workspace/AttentionPage 薄入口、公共客户端（包括 `api/judgment.ts`）、生成类型、查询 Hook、认证、共享组件、RankingPanel 与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
