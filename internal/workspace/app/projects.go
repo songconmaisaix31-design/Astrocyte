@@ -152,8 +152,7 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 			return p, err
 		}
 	}
-	// This adapter currently supplies selected context only. Never accept a tool
-	// setting which the chosen native protocol cannot enforce as a bounded scope.
+	// 当前 adapter 只提供选定上下文，拒绝原生协议无法限制范围的工具配置。
 	if len(cmd.Settings.AllowedTools) > 0 {
 		return p, projectError(apierrors.UnsupportedCapability, "native filesystem and command tools are not scoped by this adapter")
 	}
@@ -676,8 +675,8 @@ func (s *localProjectService) stopOwned(ctx context.Context, session domain.Nati
 	return err
 }
 
-// Shutdown persists positive owned exits before the entrypoint closes SQLite.
-// A stale row from an unclean restart remains unconfirmed; absence is no proof.
+// Shutdown 在入口关闭 SQLite 前保存自有进程的明确退出结果。
+// 异常重启遗留记录继续保持未确认。
 func (s *localProjectService) Shutdown(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -717,8 +716,7 @@ func (s *localProjectService) CheckProjectModel(ctx context.Context, c domain.Ca
 	return p, nil
 }
 
-// Probe is explicit human interaction, never an inventory GET or startup scan.
-// It performs no model turn and stops the owned process before returning.
+// Probe 由人工明确触发，使用空输入启动自有控制器并在返回前停止。
 func (s *localProjectService) ProbeNativeCLI(ctx context.Context, c domain.Caller, projectID, cli string) (domain.NativeSession, error) {
 	if err := human(c); err != nil {
 		return domain.NativeSession{}, err

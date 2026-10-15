@@ -7,20 +7,17 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-// InventoryProvider returns a cached CLI inventory. Snapshot must not execute
-// commands, inspect credentials or scan project/session directories.
+// InventoryProvider 返回 CLI 观察缓存；Snapshot 不执行命令或读取凭据及会话目录。
 type InventoryProvider interface {
 	Snapshot(ctx context.Context) ([]domain.LocalAgent, error)
 }
 
-// Returns cached actual registry observations; querying never starts a CLI.
-// Installation remains supplied independently by the PATH inventory.
+// 查询只返回 Registry 已有的实际观察；安装信息独立来自 PATH。
 type NativeRegistryObservations interface {
 	SnapshotNative(context.Context) ([]domain.LocalAgent, error)
 }
 
-// LocalAgentInventory is a human-readable installation/capability query, not
-// permission to start or resume an Agent or access its private native state.
+// LocalAgentInventory 查询安装与能力观察，不授予原生控制或私有状态读取权限。
 type LocalAgentInventory interface {
 	ListLocalAgents(ctx context.Context) (apierrors.ListResult, error)
 }
@@ -36,8 +33,7 @@ type LocalProjectRepository interface {
 	SaveSession(context.Context, domain.NativeSession) error
 }
 
-// References are consumed from Attention through an entrypoint bridge. Neither
-// app imports the other. Access and active space membership are checked per call.
+// 引用经入口桥接从 Attention 读取；每次调用检查访问权限和当前空间成员关系。
 type ProjectReferences interface {
 	ReadSelected(context.Context, domain.Caller, string, domain.FixedReference, bool) (domain.ContextMaterial, error)
 	Linked(context.Context, domain.Caller, string, domain.FixedReference) ([]domain.FixedReference, error)
@@ -65,8 +61,7 @@ type ProjectFiles interface {
 	DiscoverProjects(context.Context, string) ([]domain.ProjectCandidate, error)
 }
 
-// RegisteredProjectSource observes only registered roots through fixed programs.
-// It never grants project access or starts an Agent. HTTP GET uses the repository.
+// RegisteredProjectSource 通过固定程序观察已注册目录；HTTP GET 使用持久化结果。
 type RegisteredProjectSource interface {
 	DiscoverRegistered(context.Context) (domain.ProjectDiscoverySnapshot, error)
 }
@@ -76,21 +71,18 @@ type RegisteredProjectRepository interface {
 	SaveRegisteredProjectDiscovery(context.Context, domain.ProjectDiscoverySnapshot) error
 }
 
-// Human annotations are stored independently from replaceable observations.
-// expectedRevision is zero for a new annotation; saves use compare-and-swap.
+// 人工注释独立保存；新增时 expectedRevision 为零，保存使用 CAS。
 type RegisteredProjectMetadataRepository interface {
 	LoadProjectMetadata(context.Context, string) (domain.ProjectHumanMetadata, error)
 	SaveProjectMetadata(context.Context, string, domain.ProjectHumanMetadata, int) error
 }
 
-// Kept separate so a discovery-only adapter cannot imply annotation support.
-// The caller is established by the human session, never by command JSON.
+// 注释能力与发现能力分离，调用主体来自已认证的人工会话。
 type RegisteredProjectMetadata interface {
 	SetRegisteredProjectMetadata(context.Context, domain.Caller, string, domain.ProjectHumanMetadata) (domain.ProjectSummary, error)
 }
 
-// Separate from project control so unsupported discovery remains explicit.
-// Refresh is human-only; neither operation registers a space or changes grants.
+// 项目发现与控制分离；仅人工可刷新，发现操作不更改空间或授权。
 type RegisteredProjects interface {
 	ListRegisteredProjects(context.Context, domain.Caller) (domain.ProjectDiscoverySnapshot, error)
 	RefreshRegisteredProjects(context.Context, domain.Caller) (domain.ProjectDiscoverySnapshot, error)
@@ -100,8 +92,7 @@ type TextProcessor interface {
 	ProcessSelectedText(context.Context, domain.TextRequest) (domain.TextResult, error)
 }
 
-// LocalProjects is separate from the S0 project projection so old consumers do
-// not mistake a native project root for an execution/environment identity.
+// LocalProjects 与 S0 项目展示分离，原生目录不充当执行或环境身份。
 type LocalProjects interface {
 	ProbeNativeCLI(context.Context, domain.Caller, string, string) (domain.NativeSession, error)
 	CheckProjectModel(context.Context, domain.Caller, string, string) (domain.LocalProject, error)
@@ -124,15 +115,13 @@ type LocalProjects interface {
 	ObserveNativeSession(context.Context, domain.Caller, string, string) (domain.NativeObservation, error)
 }
 
-// ScopedAgentTokens authenticate only already human-granted project identities.
-// Validation must reload the current grant; a token cannot approve its own scope.
+// ScopedAgentTokens 认证已有人工授权的项目主体，每次验证重新读取当前 Grant。
 type ScopedAgentTokens interface {
 	AuthenticateAgentToken(context.Context, string) (domain.Caller, error)
 }
 
-// Public repository observations do not confer code access or Agent authority.
-// GET lists the durable cache; only a human command syncs metadata or places a
-// repository in an existing top-level space and triggers its managed clone.
+// 公开仓库观察不授予代码访问或 Agent 权限；GET 读取持久化缓存。
+// 仅人工命令同步元数据，或放入已有顶层空间并触发受管理的 clone。
 type GitHubRepositoryStore interface {
 	ListGitHubRepositories(context.Context) ([]domain.GitHubRepository, error)
 	LoadGitHubRepository(context.Context, string) (domain.GitHubRepository, error)
