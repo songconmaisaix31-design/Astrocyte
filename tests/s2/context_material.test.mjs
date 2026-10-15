@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { lstat, mkdir, mkdtemp, readFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import { createInterface } from 'node:readline';
 import { DatabaseSync } from 'node:sqlite';
@@ -71,7 +71,7 @@ async function listenerURL(child) {
   });
 }
 
-async function authenticatedAPI(baseURL, validate) {
+async function authenticatedAPI(baseURL, validate, observe) {
   const bootstrap = await fetch(`${baseURL}/api/v1/auth/session`, { signal: AbortSignal.timeout(5000) });
   const session = await bootstrap.json();
   assert.equal(bootstrap.status, 200);
@@ -81,18 +81,29 @@ async function authenticatedAPI(baseURL, validate) {
   assert.ok(cookie);
   return {
     async request(path, { method = 'GET', body, token, key = randomUUID(), status = 200 } = {}) {
-      const response = await fetch(`${baseURL}/api/v1${path}`, {
-        method, signal: AbortSignal.timeout(10_000),
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : { Cookie: cookie }),
-          ...(method === 'GET' ? {} : { Origin: baseURL, 'Content-Type': 'application/json', 'X-CSRF-Token': session.csrf_token, 'Idempotency-Key': key }),
-        },
-        ...(body === undefined ? {} : { body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 1, ...body }) }),
-      });
-      const result = await response.json();
-      validate(method, path, response.status, result);
-      assert.equal(response.status, status, `${method} ${path} unexpected response status`);
-      return result;
+      const started = performance.now();
+      let actualStatus = null;
+      let failureName = null;
+      try {
+        const response = await fetch(`${baseURL}/api/v1${path}`, {
+          method, signal: AbortSignal.timeout(10_000),
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : { Cookie: cookie }),
+            ...(method === 'GET' ? {} : { Origin: baseURL, 'Content-Type': 'application/json', 'X-CSRF-Token': session.csrf_token, 'Idempotency-Key': key }),
+          },
+          ...(body === undefined ? {} : { body: JSON.stringify({ schema_version: 1, request_id: key, expected_version: 1, ...body }) }),
+        });
+        actualStatus = response.status;
+        const result = await response.json();
+        validate(method, path, response.status, result);
+        assert.equal(response.status, status, `${method} ${path} unexpected response status`);
+        return result;
+      } catch (error) {
+        failureName = error.name;
+        throw error;
+      } finally {
+        observe({ method, path, milliseconds: performance.now() - started, status: actualStatus, failure: failureName });
+      }
     },
     async get(path) { return await this.request(path); },
     async write(path, body, options = {}) { return await this.request(path, { method: 'POST', body, ...options }); },
@@ -132,6 +143,8 @@ test('actual imported public source enters a fixed ContextPacket with current so
   let apiURL;
   let phase = 'startup';
   let failure;
+  const timings = [];
+  const observe = entry => timings.push({ phase, ...entry });
   const launch = async () => {
     child = start(executable, [], { env, stdio: ['ignore', 'pipe', 'pipe'] });
     child.stderr.pipe(stderr, { end: false });
@@ -146,7 +159,7 @@ test('actual imported public source enters a fixed ContextPacket with current so
   };
   try {
     await launch();
-    let api = await authenticatedAPI(apiURL, validate);
+    let api = await authenticatedAPI(apiURL, validate, observe);
     phase = 'public source import and explicit project authorization';
     const importReceipt = await api.write('/materials/imports', {
       kind: 'text', adapter: 'manual', source_key: '', content_digest: '',
@@ -197,7 +210,7 @@ test('actual imported public source enters a fixed ContextPacket with current so
     phase = 'first process restart and immutable object read';
     await stop(child);
     await launch();
-    api = await authenticatedAPI(apiURL, validate);
+    api = await authenticatedAPI(apiURL, validate, observe);
     assert.deepEqual((await api.get(`/context-packets/${packet.id}`)).context_packet, packet);
     assert.ok((await readFile(join(dataDir, 'objects', packet.object_ref))).equals(packetBytes), 'Restart must retain the exact immutable packet object');
     phase = 'current source permission removal and rejection';
@@ -210,7 +223,7 @@ test('actual imported public source enters a fixed ContextPacket with current so
     phase = 'second process restart and persistent source rejection';
     await stop(child);
     await launch();
-    api = await authenticatedAPI(apiURL, validate);
+    api = await authenticatedAPI(apiURL, validate, observe);
     assert.equal((await api.write('/context-packets', build, { status: 403 })).error.code, 'scope_denied');
     assert.ok((await readFile(join(dataDir, 'objects', packet.object_ref))).equals(packetBytes), 'Source permission changes must preserve the original packet object');
     assert.equal(query('SELECT count(*) AS n FROM local_agent_sessions')[0].n, 0);
@@ -222,6 +235,7 @@ test('actual imported public source enters a fixed ContextPacket with current so
   } finally {
     const cleanup = [];
     if (child) cleanup.push(...await Promise.allSettled([stop(child)]));
+    cleanup.push(...await Promise.allSettled([writeFile(join(directory, 'http-timings.json'), JSON.stringify(timings, null, 2), { flag: 'wx', mode: 0o600 })]));
     cleanup.push(...await Promise.allSettled([new Promise((resolve, reject) => { stderr.once('error', reject); stderr.end(resolve); })]));
     const failed = cleanup.filter(value => value.status === 'rejected');
     if (failed.length) throw new AggregateError([...(failure ? [failure] : []), ...failed.map(value => value.reason)], `Actual Context cleanup failed; retained ${directory}`);
