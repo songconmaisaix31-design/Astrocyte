@@ -1,5 +1,22 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:27 同实例认知真实四视图
+
+本阶段 SOURCE `12a17f7bf7a9fbef273e872516961aa9262b7110` 已普通 push，仅新增 `web/e2e/readProductCognition.ts`。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_c22d1dd61be3`，使用原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。H 实际服务更新为 SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、modified=false、PID4676、启动 UTC `2026-10-15T20:22:58.8651960Z`，URL 和产品 SQLite 保持原值。
+
+读取的 Q 独立公开目录为 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/cross-day-20261015-0228/local/astrocyte-workbench/v0.1`，固定 generation `snapshot-1711995690`，快照时间 `2026-10-14T18:48:42.2097174Z`；只读打开该代 `snapshot.sqlite` 与实际 `history.json`，没有采集、改写或重放事件。Q 的原 SQL 预期为同 cross-day 目录下 `main-safe-final/sql-expected.json`，原 day 为 10 月 15 日。本次生产日期保持真实 10 月 16 日；今日 / 近七日 / 近三十日按实际时间边界分别查询同代 SQLite 后与 HTTP / DOM 对比，原预期值和实际值都保存在结果中。
+
+| 本次实际验证（在 web 执行） | 结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0 | `typecheck-cognition-first.log` |
+| `npx eslint e2e/readProductCognition.ts` | EXIT0 | `lint-cognition-first.log` |
+| `node --experimental-strip-types e2e/readProductCognition.ts`，显式传入上述产品 URL / SOURCE 与本次输出目录、原 D 盘浏览器及 TEMP / TMP | EXIT0，四视图十项实际 SQL / HTTP / DOM 数值逐项相等；零写入、零页面异常 | `product-cognition-first.log`、`product-cognition-readonly.json` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+实际来源计数为今日 `0`、近七日 `1076`、近三十日 `1316`；原 SQL 预期同三项为 `52 / 1316 / 1316`，日期和时间窗口差异完整保留。两主题分别显示三条真实历史点。MCP 的 21 个事件共两页、Astrocyte/Attention Engine 的 134 个事件共七页，全部九页通过真实浏览器逐页读取，155 个唯一 `event_id` 均逐项在实际事件库定位并核对完整六字段，分页无重复，末页下一页按钮禁用，关闭抽屉恢复原焦点，generation 前后相等。
+
+本结果确认上述准确 b73 实例的认知读取。原 cff 实例的 503 记录保留；本阶段没有模型 / CLI / 原生登记、采集或新业务写入，完整默认、候选准入后继、L1 / L2 与最终发布继续未通过。原生工具关闭、S3 和 Agent 完成证据权限等未答边界保持。
+
 ## 2026-10-16 04:18 同一运行实例 HTTP / DOM / SQLite 恢复
 
 本阶段 SOURCE `1e242e1573b72046adf572bb0874c6f870730636` 已普通 push，仅修改 `readProductProposal.ts`；沿用前序输入与输出分离 SOURCE `6503077885aee63dd97f9642deab66ba57167925`。Task / Dispatch 为 `task_7cbe30017760` / `ctx_c22d1dd61be3`，客户端与模型仍为原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。
