@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -56,6 +57,7 @@ func main() {
 		}
 	}()
 	assert(*phase != "" && *rootA != "" && *rootB != "" && *evidence != "", "explicit owned roots, phase and evidence are required")
+	assert(slices.Contains([]string{"initial", "updated", "deleted", "deleted-check", "restart", "query-readonly", "uncheckpointed-wal", "sync-current", "expect-stale", "result-bounds", "ambient-git", "same-project-worktrees", "corrupt-rebuild", "permissions", "map", "map-readonly", "map-missing"}, *phase), "unsupported verification phase")
 	must(os.MkdirAll(*evidence, 0700))
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()

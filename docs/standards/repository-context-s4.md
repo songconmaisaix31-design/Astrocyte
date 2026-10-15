@@ -1,6 +1,6 @@
 # S4 仓库上下文
 
-本轨基线为 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，分支 `songconmaisaix31-design/works-repository-context-s4-20261015`。客户端为 Codex API；本会话没有可独立核实的精确模型标识。按模块确认，仅消费 S2 的 `4eec31ddfde39fa3f548691ec6e7f2f34470351a`、`9c5b1619710b576f291d42a5aa641b28639d5a57`、`5d0ba735533f68259b91128dc404c8e4c2f2a535`，以及 B 的单表迁移 `98bb9236c68f45ca4ab4114d46eafba5c90cdedf`，均保留 `cherry-pick -x` 来源。
+本轨基线为 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，分支 `songconmaisaix31-design/works-repository-context-s4-20261015`。客户端为 Orca Codex，Orca 当前 provider 投影记录模型 `gpt-6.1-sol`。按模块确认，仅消费 S2 的 `4eec31ddfde39fa3f548691ec6e7f2f34470351a`、`9c5b1619710b576f291d42a5aa641b28639d5a57`、`5d0ba735533f68259b91128dc404c8e4c2f2a535`，以及 B 的单表迁移 `98bb9236c68f45ca4ab4114d46eafba5c90cdedf`，均保留 `cherry-pick -x` 来源。
 
 ## 设计与接入
 
@@ -46,7 +46,8 @@ SemanticIndex 的具体模型、运行时和向量库仍待用户决定。没有
 | 无初始化的 B 地图 | PASS：真实 `evidence_missing`，没有伪造语义 |
 | 真实 Git 暂存区变化 | PASS：A 的地图和图均 `index_stale`，B 查询保持当前；显式 sync/refresh 恢复 |
 | 查询结果数量预算 | PASS：图与六条地图超限均拒绝，没有静默截断 |
-| SemanticIndex、HTTP/前端/最终包组合 | NOT_RUN |
+| H `31256d5` 实际完整配置 HTTP / SQLite / 官方源码 SDK 组合 | PASS；首轮搜索 timeout 原件保留，原因 UNKNOWN |
+| SemanticIndex、生产 main 配置接线、前端/最终包组合 | NOT_RUN |
 
 适用命令：`go test ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet ./internal/adapters/repositorycontext ./tests/s4/...`、`go build ./...` 已通过。真实操作入口为 `tests/s4/verify.ps1`，各阶段独立进程；本机结果位于 `.verification/s4/actual-first/` 和 `dist/s4/initial-first.log`。`deleted-failure.txt` 保存首 RED，后续 `deleted-check.log` 为准确文件删除验收，不覆盖原件。
 
@@ -142,6 +143,20 @@ SPEC §9.5 的磁盘异步清理尚未接入：当前 Agent grant 撤销会立�
 
 生产 `CacheRoot` 使用实际应用数据目录下的 `repository-context`，独立于源码和发布包。可信预算允许的已有上限为 MaxFiles=20000、MaxBytes=134217728、MaxResults=200、MaxDepth=5；每次 HTTP 查询仍必须提供全部显式预算。Graph 的 Node / SDK / Script 须成组完整，部分配置立即失败；AOCI 可独立显式配置，保存地图的读取不需要其二进制程序。
 
-已交 P 核实的发布路径为 `runtime/node/node.exe`、`runtime/sdk/node_modules/@colbymchenry/codegraph` 和 `runtime/sdk/astrocyte/repository-context/codegraph.mjs`。Node 固定 24.16.0，wrapper 与 Windows 平台包均固定 1.0.1。平台包 `@colbymchenry/codegraph-win32-x64` 必须作为直接依赖进入发布运行时；其 `lib/dist/index.js` 和 `lib/node_modules` 是实际 SDK，不能被 `--omit=optional` 省略，也不能依赖 home 内的缓存。官方 npm 包自身的成熟模块解析保持原样。本机实际加载的公共依赖位于 wrapper 下的 `node_modules/@colbymchenry/codegraph-win32-x64/lib/dist/index.js`。发布方必须运行实际 require 和版本校验，并携带相应第三方许可；本节不把待执行的包验证标记为通过。
+发布路径为 `runtime/node/node.exe`、`runtime/sdk/node_modules/@colbymchenry/codegraph` 和 `runtime/sdk/astrocyte/repository-context/codegraph.mjs`。P 从固定官方 Git `a1489f77a6d69538bfe29020b8366ee034f90860` 实际执行 npm ci、build、标准 npm pack 和生产安装，交付 `version=1.0.1`、`main=dist/index.js` 的 SDK 包。Node 固定 24.16.0。Graph.SDK 指向这个包根目录，真实导出 CodeGraph、QueryBuilder、setLogger 和 silentLogger，包含其生产依赖与 WASM 资产；这份源码 SDK 不需要 npm-wrapper 的平台包。发布方继续承担第三方许可、归档与解压验收。
 
 AOCI 只接受显式外部本机绝对路径，所选版本与源码标识见前文；分发条件未决定前不把其二进制程序放入发布包。`.verification` 与 `dist/s4` 的工具、数据库和日志均不作为生产默认或包内容。上述生产配置、版本和资产约束已直接交 B、H、P 和产品负责人。
+
+## H 生产 HTTP 与发布 SDK 的实际组合
+
+准确生产源码为 H 的 `31256d5d6758daf25892d55df73feffde7a7e573`，独立报告 `89d84d55a822e2f0506e18e93adaa1ec02a8342e`。按模块 `msg_67fc82a35ed3`，使用该精确 Git 归档和成熟 Go overlay，只映射本轨 `tests/s4/_http/main.go` 为验证入口；生产 NewServer、认证 guard、路由与业务源码保持原样。没有在 H 活动工作树编译或合入其旧历史。`tests/s4/http.ps1` 将真实关闭后的本轨 SQLite 和 CodeGraph 投影复制到独立自有目录，核对无非空 WAL，再通过实际 TCP 服务执行操作。验证仅使用原两棵 Agent 创建的公开 Git worktree，没有原生控制器或新模型调用。
+
+实际资产为 P `msg_c77e7d591a08` 明确 ready 的 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe` 与同 runtime 的 `sdk/node_modules/@colbymchenry/codegraph`。版本、入口和实际 API 已读取；SDK require 实测 151.627 毫秒，已有两图的真实符号、调用关系及 adapter 重启读取 PASS。原始 SDK 和 Node 资产只读消费。
+
+首次实际 HTTP 搜索在既有 60 秒 client timeout 下失败，原件为 `D:/Astrocyte-agent-assets/20261015/relay/S4/http-31256d5-first/http-first.log` 和其 `evidence/http-failure-20261015T040514.511460400.txt`，原因仍 UNKNOWN。随后保持原 timeout 和断言，添加仅写本机的 10 秒等待堆栈诊断；完整第二轮 PASS，等待诊断触发数为 0。第二轮日志为 `D:/Astrocyte-agent-assets/20261015/relay/S4/http-31256d5-diagnostics-second/http-first.log`，没有把首失败改记成功或宣称修复其未知原因。
+
+实际通过：缺配置时仍需会话与 CSRF，合法请求明确 503；真实 map/search/impact 及无私有路径投影；未知 DTO、空用途、缺少/超长 query 或 symbol、绝对/逃逸 root、结果预算拒绝；畸形 percent/semicolon、重复标量与未知参数拒绝；真实签发 token、Agent 三种读取、跨项目拒绝、维护仅人类与授权撤销；实际暂存已有功能源文件后 A 的图/地图 stale、B 保持当前，显式 sync/refresh 恢复；HTTP / SQLite 关闭重开后 generation 与地图保持。这个单次状态验证需要尚未暂存的真实 `textstats/stats.go` 功能修改，不制造或重置 Git 状态来重复取得通过。
+
+P 源码 SDK 在 `D:/Astrocyte-agent-assets/20261015/relay/S4/sdk-first` 新建真实 SQLite 与投影，分别从零建立两棵图，实际同 commit / 不同 worktree、同 SQLite 事务快照校验、篡改拒绝及两图真实符号和关系全部 PASS。其图数据库路径长度为 191。此前 `.verification/s4/packaged-source-sdk-first` 的 255 字符图数据库路径在启用 WAL 时失败；标准 Windows 命名空间路径可建库但 SDK 扫描返回空图，两次原件均保留。当前桥使用普通路径，较长 Windows 投影路径仍是已观察到的组件限制；没有修改 SDK 或缩短原公开仓库路径掩盖失败。
+
+本组合验证覆盖真实已配置 Service / HTTP，不覆盖 B 生产配置解析与 main 接线、前端、最终 Windows ZIP、SemanticIndex 或异步旧 generation 清理。这些仍按对应当前状态继续处理。
