@@ -1,5 +1,11 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 真实 HTTP 错误诊断
+
+SOURCE `a77f9b12e84147b8de95f9179d9e03aa170b27e6` 只修改两件原 H 检查的失败诊断：项目注册保留实际错误，监听检查只输出公开错误 code；业务、断言和权限不变。`go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission\|TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown)$' -count=1 -v -timeout=120s` 实际 PASS，两个检查分别 0.43 / 0.16 秒，package 4.010 秒；原件为 H 本机 `production-assembly/http-recovery-20261015-201900.log`。
+
+原 `8b0eb882` 的项目注册失败、HTTP403、source identity 首失败和未知总退出继续保留，本轮不能复现其原因，定向通过不代表完整组合通过。真实 symlink 创建 OS1314 为尚未解决的环境限制；旧自定义 driver / sink 和自生成 CLI 检查未用于真实原生验收。当前运行与未配置能力见下节，尚未更新共享服务。
+
 ## 2026-10-16 清理生命周期、完成来源与独立认知根
 
 SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc`，分支 `songconmaisaix31-design/works-relay-http`，九件 H 文件。已普通消费 B 的 cleanup SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3`。原主入口将项目设置的提交后通知连接到同一个 RepositoryContext provider，并启动其现有清理 worker；错误进入原服务退出流程，退出时取消并等待 worker 返回，再关闭 SQLite。
