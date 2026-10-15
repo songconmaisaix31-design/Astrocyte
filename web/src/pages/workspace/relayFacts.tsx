@@ -5,6 +5,7 @@ import { formatDate } from '../cognition/format';
 const kindLabels: Record<RelayFacts['facts'][number]['kind'], string> = {
   action_claimed: '动作执行权已记录', action_result: '动作结果', observation_rejected: '观察拒绝',
   handoff_declared: '人工上下文交接声明', human_target_confirmed: '人工目标声明',
+  resources_released: '执行资源释放', input_result: '输入交付结果',
   controller_initialized: '控制器初始化', session_confirmed: '原生会话确认',
   input_channel_open: '输入通道开放', input_written: '输入通道写入', input_closed: '输入通道关闭',
   input_accepted: '客户端接受输入', turn_started: '原生回合开始', input_consumption: '客户端消费输入',
