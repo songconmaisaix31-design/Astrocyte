@@ -1,6 +1,6 @@
 # 基础后端与导入整改
 
-本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，接管 HEAD `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39`。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
+本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，本次恢复 HEAD `ddfae290e3b0cf468af9aeaa98c5bdf39ea1604d`。完成收据阶段 SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，实际业务来源、模型解释与人工批准后使用仍未验收。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
 
 后续独立 REPORT `94658c3788fc94db8215df403bea6aab4da1cfbb`、`96618df9b62ed0018182b5cbc1aa626c5bcb8362`，文本目录及实际 Works 发现 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，公开生产认知及祖先路径检查 SOURCE `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，默认时钟/实际 Sleep/真实 nullable 及公开论文输入 SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` 均已普通 push。
 
@@ -245,6 +245,32 @@ SOURCE `b502f5c3dbf0b57f84a937d314df09d94d164f70` 已普通 push。新业务迁�
 实际 S5 公共源码安装目录中的 `vscode-jsonrpc@8.2.1`、`onnxruntime-node@1.30.0` 已直接载入，真实 RPC framing API 和 `InferenceSession.create` 存在，runtime 报告 common/node 均为 `1.30.0`；`.verification/judgment-node-actual-import.log`，模型推理 0。完整读取的实际 package/license 元数据登记了官方 Laya SOURCE `432312b36714d8889eba405507b37eda25257d9c` 的 `laya-ts@0.1.0`、固定模型 revision、MIT runtime 及 `adm-zip@0.6.1` MIT、`global-agent@4.1.3` BSD-3-Clause。Laya 使用准确官方源码 build，未登记不存在的 npm 发布包；未改动 S5 安装目录、Python、root package 或 lock。
 
 `go test -mod=readonly ./internal/workspace/app -run TestNativeOperationInvalidIdentityDoesNotLaunch -count=1 -v` 在新建的实际 SQLite 上执行全部当前迁移及生产身份拒绝流程，EXIT 0，1 PASS、0 SKIP，2.583s；`.verification/judgment-migrations-actual-second.log`，自有数据库在 `.verification/native-operation-actual-3851963715/`。该结果证明新迁移可以实际应用，不代表 S5 判断、缓存、反馈、撤销或 HTTP 已验收；这些实际业务检查继续由 S5 原 owner 完成。全部共享依赖和迁移已交付准确 SOURCE，未等待独立报告阻断其消费。
+
+## 完成收据、经验候选与原操作身份
+
+SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，包含恢复时保留的五个 B 文件。`AcceptedExperienceService.CaptureCompletion` 只接收实际业务收据引用，通过 `ExperienceCompletionReader` 重查项目、操作者、完成结果和固定成果，再由 `CompletionExperienceInterpreter` 返回结构化解释。候选始终为 `quarantine`；人工批准、降级、共享和批准后检索复用既有 `ExperienceService`。
+
+实际业务来源保存在新增 `023_experience_completion_sources.sql` 的独立元数据表，与经验候选同一 SQLite 事务提交。业务收据保留 `swarm_artifact_accepted` 或 `relay_task_completed` 类型，原生事件外键留空；没有生成替代原生 Event。来源读取、候选读取、CAS 更新和批准列表均核对不可变的 owner、event、时间与来源类型，查询行读取和关闭错误直接返回。
+
+`CompletionExperienceRequest` 提供 `OperationID`、`Evidence`、`ResumeOnly`。服务沿既有 `attention_receipts`，在调用 Interpreter 前事务保存同 owner/event 的唯一 UUID 和固定输入摘要；该 `prepared` 收据只记录已准备的请求身份。再次请求、并发请求和重启后的请求带同一 UUID 及 `ResumeOnly=true`，适配器只能读取和核对原操作；返回解释必须具有相同的 `Provenance.OperationID`。该接口已交原 R 负责人，实际原生并发、受理后未知与重启对账仍为 NOT_RUN。
+
+本轮所有直接 Go 检查均使用进程级 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`、`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/backend`，测试 TEMP/TMP 为本树 `.verification/go-temp`；没有修改全局环境。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestAcceptedExperience' -v -count=1` | EXIT 0，3 项检查及提交/实际约束回滚两子项通过，最终 2.418s；`.verification/accepted-experience-operation-current-third.log` |
+| `go build -mod=readonly -p=1 ./...` | EXIT 0；`.verification/accepted-experience-operation-build-second.log` |
+| `go vet -mod=readonly -p=1 ./internal/attention/app ./internal/adapters/sqlite` | EXIT 0；`.verification/accepted-experience-operation-vet-second.log` |
+| 同 D 盘 Go 环境下 `node scripts/check-architecture.mjs` | EXIT 0，33 包；`.verification/accepted-experience-current-architecture-second.log`。首次父 Node 未配置 D 环境的实际标准库错误保留在 `accepted-experience-current-architecture-first.log` |
+| `node --test internal/adapters/importers/paper-dom.test.mjs` | EXIT 0，9 PASS、0 SKIP；`.verification/paper-dom-recovery-current.log` |
+| `node tests/s1/paper-dom-public.mjs` | EXIT 0，实际已保存 PLOS/ACL 完整 HTML 共 307910 bytes；正文状态、来源标识和 Node/插件提取全等；`.verification/paper-dom-public-recovery-current.log` |
+| 变更 Go 文件 `gofmt -l` 与 `git diff --check` | 无输出，EXIT 0 |
+
+实际 SQLite 检查覆盖事务提交、真实主键约束引发完整回滚、同数据库连接复用、错误数据库拒绝、关闭存储拒绝及取消后零证据写入。最终数据库分别保留在 `.verification/accepted-experience-actual-{1075054943,1488676106,1864100285,3037321422}/`；这些检查没有创建完成来源、模型输出或经验候选，不作为完成收据正向验收。
+
+经 M-product 明确临时放行，B 在 `release-judgment-20261015` 仅使用文件编辑工具消除 `dependencies.lock.json`、`go.sum` 冲突并 stage 两件。JSON 实际解析及两项 diff 检查 EXIT 0，index blob 分别为 `64c1432f721a6371a5c8e4badce719cd1bbbbd92`、`def74ba382fec897f8f9bc9a0d40f5bb6e1bb88f`；现有 MCP、RPC 和 Laya 依赖内容保留。其余 16 项 S2 冲突及 S5 其他 WIP 未代改，没有执行 merge 生命周期操作；两件临时范围已明确停止写入并归还。
+
+实际 S3 来源桥接、原 R Interpreter、HTTP 装配、原生请求并发与未知对账、人工批准后第二任务引用均未完成，继续由原负责人串行衔接。完整 Go 与产品组合验收继续保持此前未通过状态；没有把阶段源码、静态检查或数据库机制通过登记为业务完成。
 
 ## 真实剩余限制
 
