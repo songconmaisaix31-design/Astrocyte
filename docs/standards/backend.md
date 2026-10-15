@@ -296,6 +296,16 @@ SOURCE `491e7f606d8265e9f7e9694f547a91682b305e74` 已普通 push，仅新增 `02
 
 进程级 D 盘 Go 环境下 `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestAcceptedExperience' -v -count=1` EXIT 0，3 项检查及实际约束回滚子项通过，2.345s；`.verification/judgment-delegation-migration-first.log`。实际新 SQLite 已应用 001–025，保留在 `.verification/accepted-experience-actual-{1692487502,1939059050,2627136498,3895541726}/`；未创建规则、绑定或判断结果，该检查只证明迁移应用及既有事务机制。实际用户配置、暂停/撤销、同事务固定 Opportunity 与版本复核继续由原 S5 负责人完成，没有登记业务验收通过。
 
+## S4 可信启动配置
+
+SOURCE `e346c40cc9edcbd5b4588e47585f3c0b616b0770` 已普通 push，只含 `cmd/server/config.go` 和 `repository_config_test.go`。`resolveRepositoryContextConfig(ctx, dataDir)` 返回入口私有 DTO，由 H 映射为准确的 `repositorycontext.Options`；没有修改共享 main/server。`EnvironmentID` 仅来自显式稳定的 `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID`，缺失时不启动外部程序，H 注册空 Services 返回既有 `provider_unavailable`。CacheRoot 固定为实际绝对应用数据目录的 `repository-context`，四可信预算上限为 20000 / 134217728 / 200 / 5，可显式降低。
+
+Graph 三路径通过 `ASTROCYTE_CODEGRAPH_NODE/SDK/SCRIPT` 成组提供，全空表示未配置。配置启用时检查绝对现存文件、Node 24.16.0、官方 SDK JSON 版本 1.0.1、实际公开导出和脚本语法；官方源码 SDK 与 npm wrapper 共用真实模块加载契约。工具检查只继承必要系统环境，HOME、APPDATA、TEMP 均在自有运行目录，禁止使用宿主 home 缓存。AOCI 独立来自 `ASTROCYTE_AOCI_EXECUTABLE`，实际 `--version` 核 v0.1.0-rc20 与 source commit `45990a1dcfc4415efdc6fbfa13bc159a415f127c`。本轮直接运行 S4 现有公开工具得到完整版本文本，没有把 S4 测试资产路径设为生产默认。
+
+`go test -mod=readonly -p=1 ./cmd/server -run '^TestRepositoryContextConfig' -v -count=1` EXIT 0，3 项检查、8 个配置拒绝子项通过，2.571s；`.verification/repository-config-second.log`。检查包含缺少环境身份、稳定显式 Git-only 配置、四预算、部分配置、相对数据目录、实际缺失程序和实际 Astrocyte 包冒充 SDK 的拒绝，没有生成第三方元数据或替代程序。全包 build、cmd/server vet、两个 Go 文件 gofmt 检查和 diff 检查通过；日志 `repository-config-build-first.log`、`repository-config-vet-second.log`。首次测试文件格式输出保留，最终格式无输出。
+
+完整 Graph/AOCI 配置正向、同 provider 的 S2/S4 公共 HTTP、实际索引和最终发布资产验收仍为 NOT_RUN，继续由 B/H/S4/P 按准确资产与组装来源执行。本节记录的纯配置与依赖拒绝结果不替代这些业务验收。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
