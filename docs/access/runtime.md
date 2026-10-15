@@ -744,3 +744,22 @@ SOURCE `0740dc3ec6a50421b34c971d30f08287e071fb77` 已普通 push 并经独立 ls
 单独的 model-free、无来源 guard 的普通安装能力初始化保持其原事实范围；不能由此获得受限 Relay 或模型准入。OwnedRelayExecution 的当前标签为 selected_context_command_tools_disabled_v1，原实际 argv、never / readOnly 观察与完整工具未知分别保留。原 B / T text_capacity_test.go 的旧标签断言已交原 owner 处理，R 没有修改该测试。
 
 `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^(TestRelayCodexFileToolRestrictionRejectsBeforeNativeEffects|TestRelayNativeDeadlineRejectsBeforeController|TestRelayFirstInputCheckpointRefusesUnarmedController|TestCompletionExperience.*|TestRelayPreparedMemberRejectsMissingOriginalSources|TestRelayMemberExecutionRejectsUnownedMetadata)$' -count=1 -timeout=90s -v` PASS0.852秒，共9项；日志 codex-file-tools-admission-first.log。agents vet 与 cmd/server 构建 EXIT0，日志 codex-file-tools-admission-vet.log / codex-file-tools-admission-build.log，构建文件未运行。检查没有创建 controller / capture、执行来源 callback 或提交输入，没有构造任何成功协议响应。真实原生路径依原要求暂停，完整包与产品实际运行仍由同源集成验收分别记录。
+
+## 完成来源的当前项目身份与授权
+
+SOURCE `82d89d5b89e30d591d509ed597d513c90f2df682` 只修改 `completion_experience_source.go` 及其原测试，已普通 push 并独立核远端同值。实际客户端为 Orca Codex / gpt-6.1-sol，本轮 Task `task_f082d8b36471` / Dispatch `ctx_3920346a06ed`。
+
+`CompletionExperienceAccess(context.Context, attention.Principal, localProjectID) (string, error)` 保持原签名。H 的可信回调核当前 principal、项目及 owner 许可，并返回实际 `LocalProject.ID`；适配器要求返回值与本次 `LocalProjectID` 精确相等，不接受另一项目或项目路径作为 owner。完整来源读取仍在主数据库事务外，`AuthorizeExperienceCompletion` 仍在 B 的原短事务内复用收到的 context，只核当前权限及固定来源，不读取 Relay、对象、文件或控制器。
+
+Agent completion action 的映射仍待用户决定。Read 与 Authorize 两个入口对 Agent 返回 `scope_denied`，尚未调用权限回调或读取来源。human 保持原可信权限回调与固定来源校验；错误信息不包含原生原文、路径或凭据。原完成通道、时间、收据及输出引用继续只读，无法取得真实完成来源时不会生成完成记录或候选。
+
+本次准确修改使用 GOMAXPROCS=2、Go `-p=1 -mod=readonly`、D 盘共享编译缓存与 R 独占临时目录。证据目录沿用 `D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016`。
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^TestCompletionExperience' -count=1 -timeout=90s -v` | PASS0.404秒，4项；`completion-authority-final.log`。核缺失依赖、Agent 两入口明确拒绝、冷恢复、缺失原回合及不完整输出 |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents` | EXIT0；`completion-authority-vet.log` |
+| `go build -p=1 -mod=readonly -o <证据目录>/completion-authority-server.exe ./cmd/server` | EXIT0；`completion-authority-build.log`，未运行该文件 |
+| `gofmt -l` 两件源码 / `git diff --check` | 无输出 / EXIT0 |
+
+H 的实际回调与 B 的候选装配及完整产品组合尚待同源检查。本轮没有创建 controller、probe、capture 或模型输入，真实 completion → Interpreter → quarantine、用户批准与第二任务消费尚未通过；受限 Codex 的 unsupported 准入、完整包首 RED、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 和原 raw gap 保持原结果。
