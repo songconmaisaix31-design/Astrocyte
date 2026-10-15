@@ -2,7 +2,7 @@
 
 ## 责任与事实源
 
-2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` / 终端 `term_daa6545c-5540-4d8f-b85b-26d56ee71214`，原子 Run `run_dbf1a68bc692` 已按根最新交接由本终端接管至 generation 4。总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `22e7c003bec4c9efd20e996ad44c8f3c27a0ad6f`，接管时工作区无改动。旧模块 Dispatch 因重启的失败记录保留。
+2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` / 终端 `term_daa6545c-5540-4d8f-b85b-26d56ee71214`，按根最新授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`，各次绑定与消费遵守公开 CLI 的 generation。总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `22e7c003bec4c9efd20e996ad44c8f3c27a0ad6f`，接管时工作区无改动。旧模块 Dispatch 因重启的失败记录保留。
 
 ### 21:51 恢复与原负责人返修计划
 
@@ -81,6 +81,16 @@ H 四文件由原 S2 `msg_a1f70e5e4f93` 明确停写归还后，模块独立核 
 | T 排序组件 | `1a340788bca4c29aef38d24c1c7ed2c1f32e1778` / `9991eee115925740718ef33b25eb727330e3b2b8`、后继 `65e7bc3d0018ad55f9326946e5cf667755d8464a` | 模块独核远端后继 REPORT 同值；两独立 SQLite 连接 CAS、历史、重开与回执两个测试 2.493 秒、应用构建通过。原官方与手工准入保持，完整 Taste / 原生十四项及两包全部仍未验收 |
 
 原 B 实核项目服务没有适用 worker / queue / wake 或持久化清理请求，只有 Attention.Run 和一次 discovery。S4 清理触发与恢复方案已交所属 M-relay 处理，不假定既有入口存在，不冒用资料作业或执行批准。冷 Registry 正向原件、H 安全 Context、新完成通道、完整默认和最终 Windows 包继续真实验收，模块未结算。
+
+### 22:15 互斥返修独立 REPORT
+
+本阶段计划 SOURCE `83fd634904680a68534ad51832bf03a670cd028c` 已普通 push，模块独立核远端同值、diff 检查通过。I 本人 STOP `msg_10c3dbb9dc19`、原 B 当前安全 ACK `msg_c1dd07c446e1` 与 M-release 四件最终范围 `msg_6a13bfb628c2` 全部满足，通过 `msg_f61f5aa354d3` 只放行上表四件；`workbench_config.go` 与其余三装配仍归 H。S5 本人 STOP 和原 S2 当前安全 ACK `msg_c566cf352860` 满足，通过 `msg_c474ef4a70d4` 只放行单个测试。此时仍待本人完成、停止写入与归还，不能把已放行登记为已解决。I 实核剩八项分别是 B 四件 / H 四件，原三管理文档由根单次授权原 I 处理。
+
+模块后续独立 `git ls-remote` 核 B Taste REPORT `fbdc89c1b2961d253d0268eff8098e9552a5dfd5`、S2 Goal REPORT `5ade870744ad6d396cca7e268899a19c133ea1ec`、F 新 S4 入口 REPORT `02a7976d997ef14ac298b2e240da43a9bb423c93` 和 UI REPORT `47467a886ba6a013df33607f1569afad15ed9cc5` 均与远端相同。F SOURCE `d94f6ef2d3188c02e82ccf9cee529833e9f89df5` 两尺寸实际 S4 2 PASS / 31.9 秒及 typecheck/lint/build 通过，只覆盖未配置与真实权限恢复；原默认一百项 EACCES 失败完整保留。B 首个 Taste 题型与 S5 契约一致性、F helper 二次监听和冷 Registry 来源继续由原 owner 返修，未新增 skip 或降低覆盖。
+
+H 已本人交安全 Context / Prepare / 同实例登记 SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` / REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`，模块按 H → F 生成客户端 → 原 UI 的顺序交付，S2 同时接实际生产验收入口；H 报告组件通过不代替完整原生与三分钟窗口。S3 后继原 Registry 桥 SOURCE `86e467fb9798faf29b009e45d7c01740c1dac938` / REPORT `f535bb0b45f280a4b28218846007d75e59dbb8a5` 已本人报告普通 push；实际 prepare/outcome 缺证继续拒绝新认领，未开原生窗口。
+
+已按根要求完整读取 `eb27bd6712b5df92a55ad542026534860726d8ff:tasks/cognitive-stack-L1-L4.md` 的 §3.2.1 / §3.4，并向原 B/F/S3 交六步职责。步骤四必须取得具体候选的真实用户批准记录，开发授权不代签；工程复用观察与独立效果实验分别验收。B 原 approved-only `GetExperiences` 的已提交位置已交 S3，当前项目授权、固定映射与同 DB 使用仍须原 B 准确交接。用户确认完成保留真实通道、unknown outcome 和 started 事实，不为进入经验候选补写成功。
 
 ### 2026-10-15 10:41 再次重启后的恢复计划
 
