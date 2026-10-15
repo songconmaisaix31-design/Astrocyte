@@ -1,5 +1,21 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 04:20 同一产品的键盘与异步读取
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_e366c835cb43`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b`。沿原分支 `songconmaisaix31-design/product-ui-20261015`、基线 `93654a7466ccd33069ede76a248d5203971a9538` 接续，原 02:55 连接拒绝记录保留。当前页面 SOURCE 由 H 正式交付为 `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，地址仍为 `http://127.0.0.1:64505/`；本树没有部署、启动或停止共享服务。原本域代码 SOURCE `0ad83a96bc50747867146a38a80b7a90ecbedc5f` 保持，本阶段仅追加实际检查记录。
+
+执行 `node D:/Astrocyte-agent-assets/20261015/product-ui-20261015/live-readonly-keyboard-ctx-e366c835cb43.mjs`，实际 Playwright Chromium、单浏览器顺序检查 `/attention`、`/workspace`、`/swarm` 的 1920×1080 和 1280×720。临时目录与结果均在同一 D 盘目录，未读取或输出响应正文、凭据或模型内容，没有截图、网络替换或业务写入。
+
+| 实际运行 | 结果 |
+|---|---|
+| 第一轮，结果 `live-readonly-keyboard-ctx-e366c835cb43.json` | EXIT1；1920 资料与工作区两项通过，蜂群一项断言失败后停止。原件保留；该轮未记录具体失败请求。 |
+| 第二轮，结果 `live-readonly-keyboard-ctx-e366c835cb43-second.json` | EXIT1；四项通过，1280 工作区三条 GET 为 `net::ERR_ABORTED`：`relay/agents`、`relay/tasks`、`local-projects/registered`。切换页面时读取尚未完成，原件保留。 |
+| 第三轮，结果 `live-readonly-keyboard-ctx-e366c835cb43-third.json` | EXIT0，六项通过。每次键盘切换和打开抽屉后等待 React 绘制与实际网络读取完成，全部原断言保留。 |
+
+第三轮实际覆盖 ArrowRight / Home / End 的选中状态与焦点、Tab 到达创建提案和从批准建立任务的入口、Enter 打开详情、Shift+Tab / Tab 焦点循环、Escape 关闭及恢复触发焦点、键盘触发刷新后新增成功 GET。六项均为 HTTP200 页面、一个 h1、零 pageerror、零失败请求、全部观察到的 API 响应为 2xx、零 alert、无横向溢出，业务写入计数为零。抽屉只打开并关闭，没有提交表单或重发已有操作。
+
+按模块 `msg_1a5484842db5` 继续原 `attention/delegation/**` 范围。已向 H `ctx_5b3dc511cccd` 和 F `ctx_c22d1dd61be3` 交接正式公共契约依赖；当前本树仍缺 Judgment / policy / snapshot / delegation 公开客户端，接入须消费 H 已提交 OpenAPI 和 F 生成的类型与公开调用。S5 实际调用、S3 原生与 Artifact 正向、最终同源检查和 Windows 包保持待验，本阶段结果仅覆盖上述只读交互。
+
 ## 2026-10-16 02:50 判断策略表单与同实例只读导航
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_6e10ec67cf13`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_a3dc3bfa5554`。原分支 `songconmaisaix31-design/product-ui-20261015`，恢复基线 `58e3fc0`，SOURCE `0ad83a96bc50747867146a38a80b7a90ecbedc5f` 已普通 push，远端同值。模块 `msg_d38657b3e079` 确认原 `attention/delegation/**` 独占范围连续；已保留并完成恢复时的 `JudgmentPolicyFields.tsx` 修改。
@@ -16,6 +32,8 @@ Task `task_d0cee5a583bb` / Dispatch `ctx_6e10ec67cf13`，模块 Task `task_b0197
 | `git diff --check`、`git diff --cached --check` | PASS |
 
 本轮新产物、进程 TEMP / TMP 与日志均在 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/`。共享产品仍为 H 持有、F 唯一业务操作的实例；本树未启动第二共享服务，未部署本阶段 SOURCE。上述导航覆盖当前生产 `ad8413e`，表单检查覆盖本树 SOURCE，两者分别记录。
+
+02:55 补充键盘导航与异步读取检查时，首个 `page.goto("http://127.0.0.1:64505/attention")` 实际返回 `net::ERR_CONNECTION_REFUSED`，Node EXIT1，未进入页面和业务断言。02:55:57 本机只读核查 `listener_count=0`，原 PID25048 无进程返回。此前六项导航结果保持原时间含义；本轮没有自动重试、启动替代实例或操作共享进程，已交 H / F / 模块核查当前运行状态。完整键盘和异步读取仍未通过。
 
 H `67fb5f255d52130f5ae30377ab615dd17b7c79ef` 已提交 Judgment / Taste 生产装配；本树公共 OpenAPI 与生成类型尚无对应 Judgment、policy、snapshot、delegation 和完整 Taste 路径。准确缺口已交 H / F，后续继续按 H OpenAPI → F 生成类型和公开客户端 → 本域页面接入，未消费 WIP。S5 实际 HTTP / SQLite / 两尺寸操作、S3 原生和 Artifact 正向、最终同源 `pnpm check` / `pnpm build` / 完整默认 E2E 及 Windows 包继续待验，未将本阶段字段与导航检查计为整功能通过。
 
