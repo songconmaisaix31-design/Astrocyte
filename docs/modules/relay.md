@@ -1,6 +1,6 @@
 # Relay 模块管理与验收
 
-业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md 和 [发布任务](../../tasks/Release-v0.1-20261014.md)。2026-10-14 用户已确认三层组织；总负责人最新授权模块负责人只修改本文件和新增 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)，业务实现、测试、文档和返修由原 R/H 开发人员持续完成。
+业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
 ## 当前恢复分工（2026-10-16 00:30）
 
@@ -10,14 +10,14 @@
 
 | 原人员与 Task | 固定工作树 / 分支 | 本次互斥写入范围与目标 |
 |---|---|---|
-| R `task_f082d8b36471` | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native、已授权 completion_experience 和 runtime.md；最新 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` / REPORT `7713b23e1cfe347bd22f4ae184d57b308840cb28` 已交，clean，继续 H/B 端口及人工完成经验适配 |
-| H `task_3004b636a3ab` | works-relay-http / songconmaisaix31-design/works-relay-http | 原来源、HTTP、契约和薄装配范围；输出读取 SOURCE `1ad92a8e1e647fecf9555b808a35fa90e14cdcbb` 已交，三件 WIP 保留；继续生产 GoalVerificationReader 与 B 既有对象事件关系 |
+| R `task_f082d8b36471` | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native、已授权 completion_experience 和 runtime.md；同步准确 I35cc 的 SOURCE `d9f80c2038f9c178357393ee28e7d072a7bab955` / REPORT `0663ccb9503354d0af974a497489daae56e8c006` 已交，clean，继续 H/B 端口及人工完成经验适配 |
+| H `task_3004b636a3ab` | works-relay-http / songconmaisaix31-design/works-relay-http | 原来源、HTTP、契约和薄装配范围；完整生产 Reader SOURCE `b22395c6eb1eed0be9e87957ae21111b5ce8f782` / REPORT `8893a2080e6dab6e5c3883a998c15df48691a476` 已交、clean，原三件 WIP 已纳入准确源码；继续真实窗口、后继组合与包支持 |
 | S4 `task_bd209566be37` | works-repository-context-s4-20261015 / songconmaisaix31-design/works-repository-context-s4-20261015 | 原 repositorycontext、对应 domain/app/sqlite、tests/s4 和原报告；当前 HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da`、clean，继续事务内纯数据库核验及事务外真实 Git 观察，支持 S2/B 准确组合 |
 | 模块负责人 | module-relay-20261014 / songconmaisaix31-design/module-relay-20261014 | 只修改本管理文档，管理身份、写域、实际验证、准确源码与报告交接和最终发布支持 |
 
 正式决定 `msg_d25b27ea052b` 已授权 H 临时独占原配置 verification 范围内、baseline `da3bdddb085808863090a05f60cc1c64415039cf` 的单一批准公开项目 checkout。H `msg_51a4bfec39ab` 登记的准确目录为 `D:/Astrocyte-agent-assets/20261015/relay/H/goal-live/local/astrocyte-workbench/v0.2-access/verification/public-project`，原 LOCALAPPDATA 入口使用其上层 `goal-live/local`，PUBLIC_GIT_ROOT 指向该目录、commit 为原 baseline、上下文保持四个批准文件。H 的逐项业务 write_paths 仅该目录的 `stats.go` 和 `stats_test.go`，README.md / go.mod 只读；其他人员不得写入。登记时该目录尚未创建，模块独立 Test-Path 为 false。H 只以文件编辑工具逐字应用核实的 owned 原生输出，运行首输入前固定的 Mean / Median 目标检查，不能预实现目标。B 复用原 ObjectStore / EventService / EventRepository 保存产物、检查和真实来源关系，不新增迁移或独立证明库；原生输出与 H 受信应用、宿主检查分别记录。当前未修改目标、初始化控制器、登记 t0 或发送模型输入；目录登记不授权提前开启模型窗口。
 
-当前 I HEAD `2367224` 的实际组合检查待唯一 I 核实，后继按同一准确可构建阶段普通合并。顺序保持四树组合验证 → 集成版真实 L1 → L2 六步首跑 → 同源最终 Windows 包。F 为唯一 HTTP / 界面动作人员，具体经验候选须实际用户批准。全部新检查产物和 TEMP / TMP / GOTMPDIR 使用 D 盘各 owner 独占目录，原 180 秒、未知不重发、独立释放审计及全部 RED / UNKNOWN / NOT_RUN 保留。
+同一 I 最早实际可构建阶段为 `35cc64faac271d43e5f63103a810081b0eb7ac62`，普通 push，build EXIT 0 / 57.3064957 秒；模块已独立读取准确 result.json，source / source_after 同值，其父 2367224 已含 R GoalVerification 字段。H / R 可在自然安全点普通同步该完整阶段，保 WIP，不必等待完整 E2E 或后继报告。后继 `9ce5c2c21b273344e2448bee2ee4b80fa27d5fec` 已合 S4 和去重复契约并 push，但尚未单独 build；其上 S2 合并仍需领域修复，不能借 35cc 的构建结果通过后继。顺序保持四树组合验证 → 集成版真实 L1 → L2 六步首跑 → 同源最终 Windows 包。F 为唯一 HTTP / 界面动作人员，具体经验候选须实际用户批准。全部新检查产物和 TEMP / TMP / GOTMPDIR 使用 D 盘各 owner 独占目录，原 180 秒、未知不重发、独立释放审计及全部 RED / UNKNOWN / NOT_RUN 保留。
 
 | 当前原 Task | 本轮 Dispatch / 终端 | 实际开始证据 |
 |---|---|---|
@@ -57,7 +57,7 @@ H `msg_5246cbfcae0e` 报告私有合法输出读取及 SQL 正选 origin / 实�
 | `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-integration`，HEAD `0f420b827c3d676c93757893e5d17791a2744b8b`，MERGE_HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da` | `docs/standards/repository-context-s4.md`、`internal/adapters/repositorycontext/git.go`、`internal/adapters/repositorycontext/service.go`、`internal/adapters/repositorycontext/snapshot.go`、`internal/adapters/sqlite/repository_context.go`、`internal/workspace/app/repository_context.go`、`internal/workspace/domain/repository_context.go`、`tests/s4/verify.ps1`、`tests/s4/verify/main.go` 九件 | 全部领域归还、发布独核后仅唯一 I 继续普通 merge；B 两件依赖与 S2 十九件由产品分别管理 |
 | 同一 I 现场；发布 `msg_c4ccfbae26e4` 已核原 I 全 STOP、该文件相对 HEAD 无修改 | 仅原 H 临时编辑 `contracts/openapi.yaml`；本人 `msg_e74179161f48` 已安全确认无在途命令、原树保存与停止写入 | 成熟 YAML 核查后本人停止目标写入并归还发布，原 I 负责 stage / commit / merge 生命周期 |
 
-UI 对准确 I236 契约的官方 yaml2.9.1 解析发现重复 `/goals`，首两尺寸八项尚未加载即 EXIT 1。该问题已交 H 唯一 OpenAPI 写入者在本域修复并交最窄 SOURCE，F 随后生成与核漂移；原件和首次失败保留，UI 不代改契约。
+UI 对准确 I236 契约的官方 yaml2.9.1 解析发现重复 `/goals`，首两尺寸八项尚未加载即 EXIT 1。H 作为唯一 OpenAPI 写入者在上述 I 临时单文件范围修复，F 随后消费准确已提交契约并核生成漂移；原件和首次失败保留，UI 不代改契约。
 
 上述全部本模块临时权限已结束。S4 本人 `msg_07807904d05c` 归还 product-video 两件，模块独核 stage 共 11 行、U=0、HEAD / CHERRY_PICK_HEAD 保持，原 S2 其他 WIP 和原 stage 保留，由产品核后仅 S2 继续。S4 本人 `msg_5c877a7491dc` 归还 I 九件，模块独核 stage +204 / -19、cached diff check 通过、保完整 cleanup / Reference / 双观察，剩余 19U 精确为原 S2 范围；本人停止两目标写入并回原树。
 
@@ -66,6 +66,60 @@ H 本人 `msg_27e7bdb7b030` 归还 I 单契约：只删除七组 AST 全等第�
 H 目标准备为原准确 D 盘 checkout 的 baseline 实际 test / build / diff PASS；输入前完整 Mean / Median 宿主契约 overlay 对 baseline 实际因缺 Median 编译拒绝，未预写目标。准备安全记录为 `D:/Astrocyte-agent-assets/20261015/relay/H/goal-live/checks/preparation-derived.json`。源码 `1ad92a8e1e647fecf9555b808a35fa90e14cdcbb` 的四件输出读取及 SQL actual event ID 代码已由模块独核远端、写域和实现并交 I；生产 Reader、合法输出应用和真实正向仍未通过。
 
 R `msg_5d67de5dcf95` 核 S3 的旧契约：Outcome / FailureCode / ResultSource / ResultObservedAt 已由 2325350 进入 I，S3 应消费现有准确字段；R 原 PrepareIntent / 空输入初始化已经存在。新 Claim 所需的持久 send pending 独立 prepare 和同 operation 发送衔接归 B 原 projects，R 只支持真实 Registry 证据口，不用未受理 UUID 产生准备事实。该差异已交产品 / B / S3；Calls 和完整权限 Known=false 保持所属拒绝，不扩大为独立 L1 前置。
+
+### 00:59 S2 普通合并的 S4 临时范围与归还
+
+发布 `msg_d6aa367707ec` 确认唯一 I 新本人 STOP `msg_eebdc5ffdcc5`，准确现场为 HEAD `9ce5c2c21b273344e2448bee2ee4b80fa27d5fec` / MERGE_HEAD `f0fa889742d5e2c4c0bc113fcf857930e2c99122`、15U，模块只读核同一现场。旧临时权限不延续；本轮先取原 S4 新本人安全 ACK，再仅放行 I 树以下十二件 edit / stage：
+
+- `docs/standards/repository-context-s4.md`
+- `internal/adapters/repositorycontext/aoci.go`
+- `internal/adapters/repositorycontext/codegraph.go`
+- `internal/adapters/repositorycontext/codegraph.mjs`
+- `internal/adapters/repositorycontext/git.go`
+- `internal/adapters/repositorycontext/service.go`
+- `internal/adapters/repositorycontext/snapshot.go`
+- `internal/adapters/sqlite/repository_context.go`
+- `internal/workspace/app/repository_context.go`
+- `internal/workspace/domain/repository_context.go`
+- `tests/s4/verify.ps1`
+- `tests/s4/verify/main.go`
+
+保全部当前已提交功能、来源和断言，逐冲突使用文件编辑工具，不整体选边或复制 WIP；原 S2 三件由产品另管，不修改其他路径，不执行 commit / continue / abort / reset。完成本人停止 I 全部写入并归还发布，所有领域归还且发布独核后仅唯一 I 继续。本次管理登记不构成业务继续前置。
+
+本轮临时权限已结束。S4 本人新安全 ACK `msg_6f69502c8610` 后获准确十二件放行，本人 `msg_c603100556fb` 于 17:03:23Z 停止 I 全部写入并归还。模块随后独核 HEAD / MERGE_HEAD 保持、总 U=0、十二件 cached diff 相对 HEAD 为空、cached diff check 通过；原 AOCI 文件协议及安全投影、CodeGraph immutable / WAL 拒绝及私有诊断、Git 取消、cleanup / Reference / 双观察和原断言保留。发布 `msg_fddccaf09032` 已收到模块复核，只有唯一 I 在全部原作者归还后继续，原 S4 回自己工作树。
+
+R 已在 clean 自然点普通无冲突合入准确 I35cc，SOURCE `d9f80c2038f9c178357393ee28e7d072a7bab955` / 独立 REPORT `0663ccb9503354d0af974a497489daae56e8c006` 普通 push。模块核远端 exact、merge 双亲为 7713b23 / 35cc、源码相对 I35cc 只有原报告和两份已审 CompletionExperience 后继；实际新组合全 agents PASS 23.152 秒、server build EXIT 0。该准确输入已交唯一 I，不借该结果通过更后继 S4 / S2 组合。
+
+H 本人 `msg_ea6feeac8eae` 报告原三件 WIP 与生产 Reader 已保存为本域 checkpoint f9b63c8，随后普通合入准确 I35cc，无冲突且原工作保留，正在真实无模型 HTTP / 存储 / Reader 拒绝及契约检查。该 checkpoint 与未完成合并尚不作为可消费生产 SOURCE；真实目标 verified、CLI / Today、L2 六步和最终包仍未通过。H 明确目标记录直接复用既有对象与事件能力，B 无须另建同目标接口，原生输出 / 受信应用 / 实际检查分别保留来源，GET Reader 不执行命令。
+
+### 01:06 eba9 格式后继的 S4 临时范围与归还
+
+发布 `msg_8465cd07aed0` 确认 I 本轮本人 STOP `msg_4e0cd9888613`，模块独核准确 HEAD `5dd2829989dcec3796b5f147cbcb9ea0431bb3a2` / MERGE_HEAD `eba9b3c8109ee49e0b1ea3dee5c8776fa1c4e107`、仅两件 content U。本轮只在原 S4 新本人安全 ACK 后放行 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-integration/internal/workspace/app/repository_context.go` 和同树 `tests/s4/verify/main.go` 两件 edit / stage。保双方全部已提交接口、来源与实际断言，不整体选边或复制 WIP，不修改其他路径、不执行 commit / continue / abort / reset；本人归还并由发布独核后仅唯一 I 继续。前轮临时权限已经结束，不沿用旧 ACK。
+
+本轮权限已结束。S4 本人新安全 ACK `msg_4258c963647d`、模块放行 `msg_b435118702a9` 和本人 17:14:32Z STOP 归还 `msg_def624defdf9` 均保留；模块独立核查同一 HEAD / MERGE_HEAD、总 U=0、两件 cached diff 为空、diff check 通过。发布 `msg_60c8e988396a` 确认已收到本人归还并完成核查，只放行唯一 I 继续；催办与原归还的 FIFO 交错不重复编辑，S4 已回原域。
+
+H `msg_fb04a6baf006` 报告当前 498e798 合并与本域修正后的八项真实无模型检查通过：四项 cmd/server HTTP / SQLite / Context / Origin / CSRF / 同 listener 检查 3.467 秒，三项 events 1.176 秒，SQL 缺输出拒绝 1.846 秒；Token int→int64 首编译 RED 原件保留。实际目标路径仍 NOT_RUN，新增实际验证入口的首 SKIP 已保留并交 H 按禁止新增 Skip 的要求修正；实际目标检查仍须合法 owned 输出与真实宿主检查齐备后执行。修正后的最终可消费 SOURCE、零登记实际服务启动 / 关闭、生产 verified 正向尚待真实结果，不以当前 WIP 检查结果通过未含修正的提交。
+
+### 原 R 精确消费 B 人工完成来源 DTO
+
+产品 `msg_643da3b83bed` 交付准确 B SOURCE `5866b5296a5f6ffe253fa5deac632f72d27fe128` / 独立 REPORT `3d83095171ba69a01432462ac851453acebb6578`，确认对应生产文件零 WIP，可由模块安排原 R 在本人自然安全检查点原样消费准确已提交范围。模块已核 SOURCE 只含以下四件；R 原树 clean，业务目标与 B parent 没有差异。本轮临时范围只在 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-runtime`：
+
+- `internal/attention/app/experience_accepted.go`
+- `internal/attention/app/experience_accepted_rules_test.go`
+- `internal/adapters/sqlite/accepted_experience.go`
+- `internal/adapters/sqlite/accepted_experience_test.go`
+
+R 本人安全 ACK 后仅使用文件编辑工具原样消费四原件，逐文件与准确 B SOURCE 比较必须完全相同，不修改规则或逻辑，不合 B 整分支或复制 WIP。准确独立消费提交后立即向产品 / B / 模块交完整 SHA 和内容 ACK，逻辑写域归还原 B / T；随后 R 只在自己 CompletionExperience / Relay 来源接口实现人工完成无 trace 的映射，保实际完成通道、原 transition 收据和既有当前权限 / quarantine。真实模型、实际正向来源链仍独立待验，不把 DTO / SQL 规则检查记为闭环完成。
+
+该四件临时权限已结束。R 本人 `msg_027af4557174` 安全 ACK 后按 `msg_73f1cbdf70a9` 原样消费，SOURCE `bc3fda0838105acaa1e61f08fb46bc4c4103de01` 普通 push；本人 `msg_f0b1214d3393` STOP 四件并归还。模块独立核查四件范围、与 B5866 逐文件 diff EXIT 0、四件无 WIP 和远端 exact bc3，并由 `msg_65921be44ace` 交产品 / B / T 内容 ACK。R 只继续自己前缀的完成读取与模型输入适配，H / B 保持唯一当前 principal / owner 映射和生产组装。
+
+### H 完整生产 Reader 与真实窗口前状态
+
+H SOURCE `b22395c6eb1eed0be9e87957ae21111b5ce8f782` / 独立 REPORT `8893a2080e6dab6e5c3883a998c15df48691a476` 已普通 push。模块独立核查远端 exact REPORT、SOURCE 普通祖先、clean，以及相对 I35cc 的十六件均在 H 原写域，并审查完整 Reader 和对象事件关系。原三件 WIP 已并入准确源码。Reader 核当前人类权限和 settings revision、实际两文件字节、原完整 controller / startup / input / native / turn 关系、正选 archive 输出及其原 SQL 实际 event_id；GET 只读、不执行命令。现有 ObjectStore / EventService / EventRepository 已足够，没有新增 B 目标接口、DDL 或独立证明库。
+
+最终八项真实无模型 Go 检查零 Skip、四包 vet、Windows 生产 build、273 契约示例均 EXIT 0；配置根实际服务启动 / 关闭 PASS，task / agents / native 三项 SQL 计数均为零。真实目标检查已接原 TestRelaySessionActualCommittedEvidence 的必需 helper，缺合法输入或宿主实际检查明确失败，首 SKIP 和 Token 类型首 RED 原件分别保留。官方 Redocly 两次正式调用在输出 valid / 13 warnings 后发生 Windows libuv assertion，退出 `-1073740791`，该门禁保持 FAIL；原 B / 发布处理实际工具退出，不屏蔽检查。准确源码已交唯一 I 和原 F 生成客户端，不等待无关组终稿。
+
+本次首固定 Mean / Median 窗口保持原 archive 来源；同 URL 空 agents / F observer ready 后才由 H 唯一登记 t0，同控制器空初始化、实际来源与文件 / 命令工具关闭先核，再由 F 一次 Confirm。来源未就绪、拒绝或未知保持真实结果，不换源、不重记起点或重复输入。native_notifications 当前独立模式不产生 archive-origin SQL 引用，不替代该目标来源通过；通知自身覆盖与后继窗口独立验收。当前本次登记、原生初始化和模型输入仍为零，真实 Goal / Today、六步首跑与最终包仍未通过。
 
 ## 23:47 恢复记录（2026-10-15）
 
