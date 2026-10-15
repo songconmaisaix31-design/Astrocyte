@@ -2,6 +2,9 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"slices"
 	"strings"
 	"time"
 
@@ -10,9 +13,16 @@ import (
 )
 
 type TasteRubric struct {
-	ID           string `json:"id"`
-	QuestionType string `json:"question_type"`
-	Criteria     string `json:"criteria"`
+	ID           string        `json:"id"`
+	QuestionType string        `json:"question_type"`
+	Criteria     string        `json:"criteria"`
+	Options      []TasteOption `json:"options"`
+	Levels       []string      `json:"levels"`
+}
+
+type TasteOption struct {
+	ID          string `json:"id"`
+	Description string `json:"description"`
 }
 
 type TasteExample struct {
@@ -183,18 +193,64 @@ func ValidateTasteProfile(profile TasteProfile) error {
 	if profile.Enabled && (len(profile.Rubrics) == 0 || len(profile.Examples) == 0) {
 		return domain.ErrEvidence
 	}
-	rubrics := map[string]bool{}
+	rubrics := map[string]TasteRubric{}
 	for _, rubric := range profile.Rubrics {
-		if strings.TrimSpace(rubric.ID) == "" || strings.TrimSpace(rubric.QuestionType) == "" || strings.TrimSpace(rubric.Criteria) == "" || rubrics[rubric.ID] {
+		if _, exists := rubrics[rubric.ID]; exists || strings.TrimSpace(rubric.ID) == "" || !slices.Contains([]string{"choice", "score", "truth"}, rubric.QuestionType) || strings.TrimSpace(rubric.Criteria) == "" || rubric.Options == nil || rubric.Levels == nil {
 			return domain.ErrInvalid
 		}
-		rubrics[rubric.ID] = true
+		switch rubric.QuestionType {
+		case "choice":
+			if len(rubric.Options) < 2 || len(rubric.Options) > 255 || len(rubric.Levels) != 0 {
+				return domain.ErrInvalid
+			}
+			seen := map[string]bool{}
+			for _, option := range rubric.Options {
+				if strings.TrimSpace(option.ID) == "" || strings.TrimSpace(option.Description) == "" || seen[option.ID] {
+					return domain.ErrInvalid
+				}
+				seen[option.ID] = true
+			}
+		case "score":
+			if len(rubric.Options) != 0 || len(rubric.Levels) < 2 || len(rubric.Levels) > 10 {
+				return domain.ErrInvalid
+			}
+			for _, level := range rubric.Levels {
+				if strings.TrimSpace(level) == "" {
+					return domain.ErrInvalid
+				}
+			}
+		case "truth":
+			if len(rubric.Options) != 0 || len(rubric.Levels) != 0 {
+				return domain.ErrInvalid
+			}
+		}
+		rubrics[rubric.ID] = rubric
 	}
 	examples := map[string]bool{}
 	for _, example := range profile.Examples {
-		if strings.TrimSpace(example.ID) == "" || examples[example.ID] || !rubrics[example.RubricID] || example.MaterialID == "" ||
+		rubric, exists := rubrics[example.RubricID]
+		if strings.TrimSpace(example.ID) == "" || examples[example.ID] || !exists || example.MaterialID == "" ||
 			example.Revision < 1 || strings.TrimSpace(example.ContentDigest) == "" || strings.TrimSpace(example.Expected) == "" {
 			return domain.ErrInvalid
+		}
+		if rubric.QuestionType == "choice" {
+			if !slices.ContainsFunc(rubric.Options, func(option TasteOption) bool { return option.ID == example.Expected }) {
+				return domain.ErrInvalid
+			}
+		} else {
+			// 使用 JSON 库保留数值类型；null、布尔、字符串及越界值均拒绝。
+			var decoded any
+			if err := json.Unmarshal([]byte(example.Expected), &decoded); err != nil {
+				return errors.Join(domain.ErrInvalid, err)
+			}
+			value, ok := decoded.(float64)
+			limit := 1.0
+			if rubric.QuestionType == "score" {
+				limit = float64(len(rubric.Levels) - 1)
+			}
+			if !ok || value < 0 || value > limit {
+				return domain.ErrInvalid
+			}
 		}
 		examples[example.ID] = true
 	}
