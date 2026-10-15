@@ -26,6 +26,10 @@ type swarmProposalReader interface {
 	ReadProposal(context.Context, workspace.Caller, string, int) (workspace.Proposal, error)
 }
 
+type swarmPacketReader interface {
+	ReadContextPacket(context.Context, workspace.Caller, string) (workspace.ImmutableContextPacket, error)
+}
+
 func (b *SwarmApprovalBridge) WithMissionRead(ctx context.Context, p swarm.Principal, id string, fn func(context.Context) error) error {
 	reader, ok := b.grants.(swarmApprovalReader)
 	if !ok {
@@ -151,7 +155,14 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 			}
 			return fn(context.WithValue(ctx, swarmTransactionKey{}, tx), grant)
 		}
-		if c.Action == "claim_work_item" || c.Action == "submit_artifact" {
+		bindingCheck := check
+		if c.BindingPurpose != "" {
+			if c.Action != "read_swarm" || c.BindingPurpose != "claim_work_item" && c.BindingPurpose != "submit_artifact" {
+				return swarm.Failure(apierrors.ValidationFailed, "binding preflight requires one explicit protected member purpose")
+			}
+			bindingCheck.Action = c.BindingPurpose
+		}
+		if c.Action == "claim_work_item" || c.Action == "submit_artifact" || c.BindingPurpose != "" {
 			if len(c.BindingIDs) != 1 || c.BindingIDs[0] == "" {
 				return swarm.Failure(apierrors.EvidenceMissing, "one exact current Workspace member binding is required")
 			}
@@ -159,12 +170,23 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 			if !ok {
 				return swarm.Failure(apierrors.UnsupportedCapability, "actual Workspace member authorization is unavailable")
 			}
-			return authorizer.WithAuthorizedSessionBindings(tx.ctx, check, c.BindingIDs, func(ctx context.Context, g workspace.ApprovalGrant, bindings []workspace.SessionBinding) error {
+			return authorizer.WithAuthorizedSessionBindings(tx.ctx, bindingCheck, c.BindingIDs, func(ctx context.Context, g workspace.ApprovalGrant, bindings []workspace.SessionBinding) error {
 				if len(bindings) != 1 || bindings[0].ID != c.BindingIDs[0] || bindings[0].MemberID != c.Principal.ID {
 					return swarm.Failure(apierrors.ScopeDenied, "binding belongs to another authenticated member")
 				}
 				binding := bindings[0]
-				ctx = swarmapp.WithAuthorizedBinding(ctx, swarmapp.AuthorizedBinding{ID: binding.ID, Version: binding.Version, PacketID: binding.PacketID})
+				reader, ok := b.grants.(swarmPacketReader)
+				if !ok {
+					return swarm.Failure(apierrors.UnsupportedCapability, "actual authorized fixed context reader is unavailable")
+				}
+				packet, err := reader.ReadContextPacket(ctx, check.Caller, binding.PacketID)
+				if err != nil {
+					return err
+				}
+				if packet.ID != binding.PacketID || packet.ProjectID != binding.ProjectID || packet.GrantID != g.ID || packet.GrantEpoch != g.Epoch || packet.Snapshot.ProjectID != binding.ProjectID || packet.Snapshot.WorktreeID != binding.WorktreeID || packet.Snapshot.Root == "" {
+					return swarm.Failure(apierrors.ContextStale, "member binding differs from its actual immutable project snapshot")
+				}
+				ctx = swarmapp.WithAuthorizedBinding(ctx, swarmapp.AuthorizedBinding{ID: binding.ID, Purpose: bindingCheck.Action, Version: binding.Version, PacketID: binding.PacketID, ProjectID: binding.ProjectID, MemberID: binding.MemberID, SessionID: binding.SessionID, NativeSessionID: binding.NativeSessionID, AdapterID: binding.AdapterID, WorktreeID: binding.WorktreeID, Root: packet.Snapshot.Root})
 				return invoke(ctx, g)
 			})
 		}
