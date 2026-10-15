@@ -59,6 +59,14 @@ M-release `msg_bd9dee86ff1c` 已交 I 本人新 STOP `msg_d41719dea525`。模块
 
 `relay_input_operation.go` 由 M-relay 安排原 R，本模块不授权该文件。B / S2 不复制 WIP、不整体选边、不改其他 I 路径、不操作 commit / continue / abort / reset。完成须停止 I 树全部写入、stage 和进程访问，报告限定 diff / 适用检查 / 剩余 U 并明确归还；模块及发布负责人独立核查后，仍仅 I 继续当前普通 merge。当前本人新安全 ACK 和具体放行尚待接收，未登记为已解决。F / UI 两位本人均已给缓存迁移期间无浏览器及不新启动的 ACK，由 M-release 唯一协调迁移；本轮源码、静态检查与原 Go 命令继续。
 
+### 00:12 原 UI 精确消费 F 已提交共享文件计划
+
+根 `msg_7e27e1093abb` 明确共享契约和 client 可先形成准确阶段 SOURCE，由原 UI 根据该来源连续修复页面，再由 F / I 验证真实组合。F 生成 SOURCE `cdf0b5eb4c2b3a1c7b76a335eb01d02dd7f6fee6` 只修改 `web/src/api/schema.d.ts`，独立 REPORT `dfab6bfb5ab7eb436cb4cd7c83033fdc17113e24`；模块核提交范围、远端与原件零 diff。F 本人 `msg_7faa31cb1ba6` 已确认该文件零 WIP 并停止逻辑修改。原 UI `msg_f07ee0f8133c` 确认目标树 `5075156` clean、该文件及原页面零 WIP / 零 staged、无合并生命周期或在途命令，消费前提成立。
+
+本计划普通 push 后，仅原 UI 在其原树用单个 SOURCE 的普通 cherry-pick 消费上述已提交生成文件，保留准确来源 SHA，不导入该提交的其他后端祖先，不手写生成内容或修改 F 逻辑。若出现冲突或触及额外文件，停止该消费现场并交模块，不执行 abort / reset / 整体选边。消费后核与 F SOURCE 的完整文件 diff 为零，提交准确消费记录，将后续 schema 逻辑归还 F；随后只在本人 Swarm 页面范围适配真实字段。
+
+F 后继共享 client SOURCE `4192c26bd77ec70504f286f8ddb75a145779ab58` 仅修改 `web/src/api/relay.ts`、新增 `web/src/api/swarm.ts`、`web/src/api/workspaceContext.ts`，独立 REPORT `e3161bb67ea1edbd3ac7082b8f89eb215efb3555`。这三件按同样精确 SOURCE 消费，由 F 本人确认源文件零 WIP / 停写和 UI 确认目标三件零 WIP 后，单独放行原 UI 的该 SOURCE 普通 cherry-pick；不消费未提交测试或 Prepare 组件 WIP，不引入其他 ancestor。消费不授予 UI 共享 API 的逻辑所有权。阶段仅表明准确类型、生成一致性和定向编译 / lint 通过；完整 HTTP、浏览器与 CLI 未运行，原全域 typecheck 失败记录保留。浏览器是否恢复按发布负责人缓存完成事实与 B D helper 的实际依赖分别处理。
+
 ### 21:51 恢复与原负责人返修计划
 
 根最新 `msg_1bdccb5e8fe6` / `msg_90e98714dbc2` 和根 HANDOFF 21:40 入口明确授权恢复原产品子 Run，以及旧 `run_7b2ce96bcd13` 中仅 B/F 的恢复、问答、结算和终端管理；不创建新 Run 或新 Task，不启动其他已完成任务。公开 Task 列表核四个未完成产品任务均为 ready，原 Dispatch 已 failed / terminal_missing；公开终端清单没有六位旧句柄，与根本次重启及进程退出证据一致。原分支与未提交修改保留。
