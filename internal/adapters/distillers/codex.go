@@ -1,4 +1,4 @@
-// Package distillers runs the existing CLI as a selected-text processor.
+// distillers 使用现有 CLI 处理明确选择的文本。
 package distillers
 
 import (
@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/olivere/ndjson"
 	"github.com/songconmaisaix31-design/Astrocyte/contracts"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -91,9 +92,8 @@ func (c *Codex) ConfigurationID(ctx context.Context) (string, error) {
 	return fmt.Sprintf("codex/0.162.0;model=%s;reasoning=high;policy=%s;output_schema_sha256=%x", c.options.Model, policyVersion, schemaDigest), nil
 }
 
-// Native feature switches remove shell/browser/MCP/plugin/Agent read channels.
-// Code-mode entrypoints can remain advertised; the disabled native host rejects
-// execution. read-only alone does not provide selected-file read isolation.
+// 原生开关显式请求关闭 shell、browser、MCP、plugin 和 Agent 读取能力。
+// 实际有效工具集合须由同一原生控制器观测。
 var disabledFeatures = []string{"shell_tool", "unified_exec", "plugins", "apps", "browser_use", "browser_use_external", "browser_use_full_cdp_access", "computer_use", "view_image", "image_generation", "multi_agent", "multi_agent_v2", "memories", "hooks", "code_mode", "code_mode_host", "skill_search", "tool_suggest", "workspace_dependencies", "realtime_conversation", "remote_plugin", "remote_models", "in_app_browser", "in_app_local_automation", "sleep_tool"}
 
 func (c *Codex) arguments(dir string) []string {
@@ -106,8 +106,7 @@ func (c *Codex) arguments(dir string) []string {
 }
 
 func cliEnvironment() []string {
-	// CLI owns its existing authentication. Do not read/copy credential files or
-	// inherit arbitrary API keys, hooks, proxy variables or client-provided env.
+	// CLI 使用已有鉴权，子进程只继承明确列出的本机系统配置。
 	var result []string
 	for _, key := range []string{"SystemRoot", "WINDIR", "COMSPEC", "PATH", "APPDATA", "LOCALAPPDATA", "USERPROFILE", "HOME", "CODEX_HOME", "TEMP", "TMP"} {
 		if value := os.Getenv(key); value != "" {
@@ -185,16 +184,12 @@ func (c *Codex) Distill(ctx context.Context, input app.DistillationInput) (app.D
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	processorError := runProcessor(ctx, cmd, &stderr)
-	// Log native usage when provided, without inventing monetary cost.
-	for _, line := range bytes.Split(stdout.Bytes(), []byte("\n")) {
-		var event struct {
-			Type     string          `json:"type"`
-			Usage    json.RawMessage `json:"usage"`
-			ThreadID string          `json:"thread_id"`
-		}
-		if json.Unmarshal(line, &event) != nil {
-			continue
-		}
+	// 仅记录原生回复实际提供的 usage，费用保持未知。
+	events, err := decodeProcessorEvents(stdout.Bytes())
+	if err != nil {
+		return output, errors.Join(processorError, deliveryUnknown(), err)
+	}
+	for _, event := range events {
 		if event.Type == "thread.started" && event.ThreadID != "" {
 			slog.Info("Codex selected-text thread started", "job_id", input.JobID, "operation_id", input.OperationID, "native_thread_id", event.ThreadID)
 		}
@@ -217,6 +212,31 @@ func (c *Codex) Distill(ctx context.Context, input app.DistillationInput) (app.D
 	return output, nil
 }
 
+type processorEvent struct {
+	Type     string          `json:"type"`
+	Usage    json.RawMessage `json:"usage"`
+	ThreadID string          `json:"thread_id"`
+}
+
+func decodeProcessorEvents(raw []byte) ([]processorEvent, error) {
+	reader := ndjson.NewReaderSize(bytes.NewReader(raw), selectedOutputLimit)
+	var result []processorEvent
+	for reader.Next() {
+		var event processorEvent
+		if err := reader.Decode(&event); err != nil {
+			return nil, fmt.Errorf("decode native processor event: %w", err)
+		}
+		if event.Type == "" {
+			return nil, errors.New("native processor event has no type")
+		}
+		result = append(result, event)
+	}
+	if err := reader.Err(); err != nil {
+		return nil, fmt.Errorf("read native processor event: %w", err)
+	}
+	return result, nil
+}
+
 func runProcessor(ctx context.Context, cmd *exec.Cmd, stderr *boundedOutput) error {
 	if err := cmd.Start(); err != nil {
 		if ctx.Err() != nil {
@@ -228,7 +248,7 @@ func runProcessor(ctx context.Context, cmd *exec.Cmd, stderr *boundedOutput) err
 		if bytes.Contains(stderr.Bytes(), []byte("Error loading config.toml")) {
 			return unavailable("Codex native configuration validation failed before processing")
 		}
-		// Started requests can lose their result through connection/process loss.
+		// 已启动的请求在连接或进程丢失后保持交付未知。
 		return deliveryUnknown()
 	}
 	return nil
@@ -243,7 +263,9 @@ func decodeOutput(raw []byte, inputs []app.SourceSnapshot) (app.DistillationOutp
 		Required   []string
 		Properties map[string]json.RawMessage
 	}
-	_ = json.Unmarshal(contracts.DistillationOutputSchema, &schema)
+	if err := json.Unmarshal(contracts.DistillationOutputSchema, &schema); err != nil {
+		return output, fmt.Errorf("parse fixed distillation output schema: %w", err)
+	}
 	var fields map[string]json.RawMessage
 	if json.Unmarshal(raw, &fields) != nil {
 		return output, unavailable("Codex output is not valid structured JSON")
