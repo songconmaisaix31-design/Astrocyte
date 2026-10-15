@@ -69,7 +69,16 @@ func actualOpencodeProcess(t *testing.T) (*opencodeNative, domain.NativeRequest,
 	if err != nil {
 		t.Fatal(err)
 	}
-	verification := filepath.Join(root, ".verification")
+	verification := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if verification == "" {
+		verification = filepath.Join(root, ".verification")
+	}
+	if !filepath.IsAbs(verification) {
+		t.Fatal("OpenCode verification requires an absolute output root")
+	}
+	if err := os.MkdirAll(verification, 0700); err != nil {
+		t.Fatal(err)
+	}
 	if hasRedirectedAncestor(verification) {
 		t.Fatal("owned verification directory has a redirected ancestor")
 	}
