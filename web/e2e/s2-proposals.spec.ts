@@ -1,5 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { realService, registerCurrentProject } from './realService';
+import { importTrackedDocument, realService, registerCurrentProject } from './realService';
 import { humanAPI } from '../../tests/s1/api.mjs';
 import { join } from 'node:path';
 import { readdir } from 'node:fs/promises';
@@ -27,6 +27,25 @@ async function fillProposal(form: Locator, goalId: string, projectId: string, ro
   await form.getByLabel('最大尝试次数', { exact: true }).fill('2');
   await form.getByLabel('连续无进展轮数上限', { exact: true }).fill('2');
   await form.getByLabel('无进展时限（秒）', { exact: true }).fill('300');
+}
+
+async function expectGrantSnapshot(panel: Locator, grant: components['schemas']['S2ApprovalGrantV1']) {
+  const fields: [string, string][] = [
+    ['批准提案版本', `r${grant.proposal_revision}`], ['授权 Epoch', String(grant.epoch)],
+    ['批准者', grant.approver_id], ['批准时间', grant.approved_at], ['有效期', grant.expires_at], ['状态变更时间', grant.changed_at],
+    ['批准的固定目标', `${grant.goal.id} · r${grant.goal.revision}`], ['授权项目', grant.scope.project_id],
+    ['批准时的项目权限版本', `r${grant.scope.settings_revision}`],
+    ['允许根目录', grant.scope.roots?.join('；') || '无'], ['允许修改的路径', grant.scope.write_paths?.join('；') || '无'],
+    ['允许动作', grant.scope.actions?.join('；') || '无'], ['允许工具', grant.scope.tools?.join('；') || '无'],
+    ['允许外发目标', grant.scope.external_targets?.join('；') || '无'], ['最大并发数', String(grant.scope.max_concurrency)],
+    ['调用上限', String(grant.budget.calls ?? '未知')], ['Token 上限', String(grant.budget.tokens ?? '未知')],
+    ['费用上限', grant.budget.money_minor === null ? '未知' : `${grant.budget.money_minor} ${grant.budget.currency}（最小货币单位）`],
+    ['执行截止时间', grant.stops.deadline], ['最大工作项数', String(grant.stops.max_work_items)],
+    ['最大尝试次数', String(grant.stops.max_attempts)], ['连续无进展轮数上限', String(grant.stops.max_no_progress_rounds)],
+    ['无进展时限（秒）', String(grant.stops.no_progress_seconds)], ['Grant ID', grant.id],
+  ];
+  for (const [label, value] of fields) await expect(panel.getByText(label, { exact: true }).locator('..')).toContainText(value);
+  for (const condition of grant.stops.conditions ?? []) await expect(panel.getByRole('listitem').filter({ hasText: condition })).toHaveText(condition);
 }
 
 test('真实提案创建、不可变版本、人工批准与撤销通过HTTP及SQLite重启核查', async ({ page }) => {
@@ -63,7 +82,9 @@ test('真实提案创建、不可变版本、人工批准与撤销通过HTTP及S
     expect(original.status).toBe('draft');
     expect(original.content.budget.money_minor).toBeNull();
     expect((await api.get('/missions') as components['schemas']['MissionListV1']).items).toHaveLength(0);
-    await page.getByRole('button', { name: '查看提案 本轨真实记录核查 r1', exact: true }).click();
+    const originalButton = page.getByRole('button', { name: '查看提案 本轨真实记录核查 r1', exact: true });
+    await originalButton.focus();
+    await originalButton.press('Enter');
     dialog = page.getByRole('dialog', { name: '提案详情', exact: true });
     await expect(dialog.getByText('未知', { exact: true }).first()).toBeVisible();
     await dialog.getByRole('button', { name: '编辑新版本', exact: true }).click();
@@ -84,6 +105,12 @@ test('真实提案创建、不可变版本、人工批准与撤销通过HTTP及S
     const { approval } = await approved.json() as components['schemas']['S2ApprovalResultV1'];
     expect(approval.proposal_revision).toBe(2);
     expect(approval.status).toBe('active');
+    expect(approval.scope).toEqual(original.content.scope);
+    expect(approval.budget).toEqual(original.content.budget);
+    expect(approval.stops).toEqual(original.content.stops);
+    const approvalPanel = dialog.getByRole('region', { name: '审批授权', exact: true });
+    await expect(approvalPanel.getByRole('status', { name: '状态: 有效', exact: true })).toBeVisible();
+    await expectGrantSnapshot(approvalPanel, approval);
     const missions = (await api.get('/missions') as components['schemas']['MissionListV1']).items;
     expect(missions.length).toBeLessThanOrEqual(1);
     for (const mission of missions) expect(mission).toMatchObject({ state: 'ready', grant: { id: approval.id } });
@@ -97,12 +124,18 @@ test('真实提案创建、不可变版本、人工批准与撤销通过HTTP及S
     expect(server.query('SELECT revision, json_extract(data, \'$.content.title\') AS title FROM workspace_proposal_revisions WHERE id=? ORDER BY revision', original.id)).toEqual([{ revision: 1, title: original.content.title }, { revision: 2, title: '本轨真实记录核查 r2' }]);
     await server.restart();
     const restarted = await humanAPI(server.apiURL);
-    expect((await restarted.get(`/approvals/${approval.id}`) as components['schemas']['S2ApprovalResultV1']).approval.status).toBe('revoked');
+    const restoredGrant = (await restarted.get(`/approvals/${approval.id}`) as components['schemas']['S2ApprovalResultV1']).approval;
+    expect(restoredGrant).toMatchObject({ status: 'revoked', epoch: 2, scope: approval.scope, budget: approval.budget, stops: approval.stops });
     expect((await restarted.get(`/proposals/${original.id}?revision=1`) as components['schemas']['S2ProposalResultV1']).proposal.content).toEqual(original.content);
     await page.reload();
     await page.getByRole('button', { name: '查看提案 本轨真实记录核查 r2', exact: true }).click();
     await expect(page.getByRole('dialog').getByRole('status', { name: '状态: 已撤销', exact: true })).toBeVisible();
+    await expectGrantSnapshot(page.getByRole('region', { name: '审批授权', exact: true }), restoredGrant);
+    await expect(page.getByRole('button', { name: '撤销批准', exact: true })).toBeDisabled();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.getByRole('dialog').press('Escape');
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(page.getByRole('button', { name: '查看提案 本轨真实记录核查 r2', exact: true })).toBeFocused();
   } finally { await server.close({ preserveData: true }); }
 });
 
@@ -217,4 +250,68 @@ test('实际项目许可拒绝审阅，读取403时保留快照并禁用写入�
     await expect(dialog.getByRole('alert').filter({ hasText: '数据可能已过期' })).not.toBeVisible();
     await expect(dialog.getByRole('button', { name: '提交审阅', exact: true })).toBeEnabled();
   } finally { await context.setExtraHTTPHeaders({}); await server.close({ preserveData: true }); }
+});
+
+test('实际人工拒绝固定提案版本，保留内容且不签发Grant或启动执行', async ({ page }) => {
+  test.setTimeout(180_000);
+  const { server, api } = await realService();
+  try {
+    const { project, proposal } = await prepareDraft(api);
+    const dialog = await openDraft(page, server.webURL, proposal);
+    await dialog.getByRole('button', { name: '提交审阅', exact: true }).click();
+    await expect(dialog.getByRole('status', { name: '状态: 审核中', exact: true })).toBeVisible();
+    const declinedResponse = page.waitForResponse(response => response.url().endsWith(`/proposals/${proposal.id}/decline`));
+    await dialog.getByRole('button', { name: '拒绝当前版本', exact: true }).click();
+    const declined = await declinedResponse;
+    expect(declined.status()).toBe(200);
+    const result = await declined.json() as components['schemas']['S2ProposalResultV1'];
+    expect(result.proposal.status).toBe('declined');
+    expect(result.proposal.revision).toBe(proposal.revision);
+    expect(result.proposal.content).toEqual(proposal.content);
+    await expect(dialog.getByRole('status', { name: '状态: 已拒绝', exact: true })).toBeVisible();
+    expect(server.query('SELECT COUNT(*) AS count FROM workspace_approvals WHERE proposal_id=?', proposal.id)).toEqual([{ count: 0 }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM local_agent_sessions WHERE project_id=?', project.id)).toEqual([{ count: 0 }]);
+    await server.restart();
+    const restarted = await humanAPI(server.apiURL);
+    expect((await restarted.get(`/proposals/${proposal.id}`) as components['schemas']['S2ProposalResultV1']).proposal).toEqual(result.proposal);
+  } finally { await server.close({ preserveData: true }); }
+});
+
+test('真实固定资料引用经界面保存，项目移除引用后保留历史且新审阅拒绝', async ({ page }) => {
+  test.setTimeout(180_000);
+  const { server, api } = await realService();
+  try {
+    const { project, proposal } = await prepareDraft(api);
+    const imported = await importTrackedDocument(api);
+    const material = imported.detail.material;
+    const space = (await api.get(`/project-spaces/${project.space_id}`) as components['schemas']['ProjectSpaceResultV1']).space;
+    const included = (await api.write(`/project-spaces/${project.space_id}/references`, { expected_version: space.version, material_id: material.id, revision: 1 }) as components['schemas']['ProjectSpaceResultV1']).space;
+    expect(included.material_refs).toHaveLength(1);
+    const dialog = await openDraft(page, server.webURL, proposal);
+    await dialog.getByRole('button', { name: '编辑新版本', exact: true }).click();
+    const picker = dialog.getByRole('group', { name: '项目已纳入的固定资料版本', exact: true });
+    await expect(picker).toContainText(included.material_refs[0].locator);
+    await picker.getByRole('checkbox').check();
+    const savedResponse = page.waitForResponse(response => response.url().endsWith(`/proposals/${proposal.id}`) && response.request().method() === 'PUT');
+    await dialog.getByRole('button', { name: '保存新版本', exact: true }).click();
+    const saved = await savedResponse;
+    expect(saved.status()).toBe(200);
+    const fixed = (await saved.json() as components['schemas']['S2ProposalResultV1']).proposal;
+    expect(fixed.content.inputs).toEqual([{ material_id: material.id, revision: 1 }]);
+    expect((await api.get(`/proposals/${proposal.id}?revision=1`) as components['schemas']['S2ProposalResultV1']).proposal.content).toEqual(proposal.content);
+    await api.write(`/project-spaces/${project.space_id}/references/remove`, { expected_version: included.version, material_id: material.id });
+    await page.reload();
+    const reopened = page.getByRole('dialog', { name: '提案详情', exact: true });
+    await page.getByRole('button', { name: `查看提案 ${proposal.content.title}`, exact: true }).click();
+    await reopened.getByRole('button', { name: '编辑新版本', exact: true }).click();
+    await expect(reopened.getByRole('alert').filter({ hasText: '以下已保存引用当前未出现在所选项目空间中' })).toBeVisible();
+    await reopened.getByRole('button', { name: '关闭编辑', exact: true }).click();
+    const deniedResponse = page.waitForResponse(response => response.url().endsWith(`/proposals/${proposal.id}/submit`));
+    await reopened.getByRole('button', { name: '提交审阅', exact: true }).click();
+    const denied = await deniedResponse;
+    expect(denied.status()).toBe(403);
+    expect((await denied.json() as components['schemas']['ErrorV1']).error.code).toBe('scope_denied');
+    expect((await api.get(`/proposals/${proposal.id}?revision=2`) as components['schemas']['S2ProposalResultV1']).proposal).toEqual(fixed);
+    expect(server.query('SELECT COUNT(*) AS count FROM workspace_approvals WHERE proposal_id=?', proposal.id)).toEqual([{ count: 0 }]);
+  } finally { await server.close({ preserveData: true }); }
 });
