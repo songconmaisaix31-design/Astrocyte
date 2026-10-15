@@ -53,6 +53,7 @@ func newAutomaticHTTP(t *testing.T) *automaticHTTP {
 	if err != nil {
 		t.Fatal("create owned verification directory")
 	}
+	t.Logf("owned production server evidence directory=%s", dir)
 	log, err := os.OpenFile(filepath.Join(dir, "server.log"), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		t.Fatal("open local evidence log")
@@ -251,6 +252,34 @@ func TestAutomaticHTTPRejectsUntrustedCallerWithoutSideEffects(t *testing.T) {
 		}
 	}
 	t.Logf("actual HTTP permission refusals=3; zero durable side effects; evidence=%s", s.dir)
+}
+
+func TestProductionTasteHTTPKeepsUnconfiguredStateAfterRestart(t *testing.T) {
+	s := newAutomaticHTTP(t)
+	read := func() {
+		t.Helper()
+		var profile app.TasteProfileDetail
+		s.request(http.MethodGet, "/api/v1/attention-taste-profile", nil, http.StatusOK, &profile)
+		if profile.SchemaVersion != 1 || profile.Configured || profile.Profile != nil {
+			t.Fatal("actual main server invented a configured complete Taste profile")
+		}
+	}
+	read()
+	s.stop()
+	s.start()
+	read()
+	db, err := sqlite.Open(filepath.Join(s.dir, "state.sqlite"))
+	if err != nil {
+		t.Fatal("open actual main server database after Taste restart")
+	}
+	defer db.Close()
+	for _, table := range []string{"attention_taste_profiles", "attention_taste_profile_revisions", "attention_jobs", "local_agent_sessions"} {
+		var rows int
+		if err = db.Conn().QueryRow("SELECT COUNT(*) FROM " + table).Scan(&rows); err != nil || rows != 0 {
+			t.Fatal("unconfigured Taste read or restart created configuration or execution state")
+		}
+	}
+	t.Logf("actual main server complete Taste read and process restart; unconfigured state retained; evidence=%s", s.dir)
 }
 
 func TestReadOnlyImportHTTPProcessExitPreservesDeadline(t *testing.T) {
