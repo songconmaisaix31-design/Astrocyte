@@ -105,6 +105,17 @@ F 本人 `msg_ea981e24bc0d` 已核 `7fecd10` clean、新目录和 S5 spec 均不
 
 该计划普通 push、精确来源与正式移交消息满足后，才由原 UI 开始对应文件。先真实后端契约，再公开客户端，再页面；接口未交付前只读已明确规格和设计，不猜字段、冻结未答签名或填造 proof。H 只公共装配/契约，原 S5 只判断服务/HTTP 前缀；B 保持唯一迁移、依赖、config 及 Attention 准入授权端口。原 S2/S3/S4 和 Relay 真实核心路径继续，S5 UI 阶段通过不会结算模块。
 
+### 11:24 已提交共享文件的限定消费计划
+
+B SOURCE `efa137eb36177f69643c750c26ad8eb59b446741` / 独立 REPORT `fd3dee056736cf43991ce48e39208b057cc12e86` 已普通 push，模块独立核远端 REPORT 一致，并审阅精确两文件差异。`scripts/check-dependencies.mjs` 使用 Go 原生 `mod edit -json` 和模块元数据，验证完整 direct require；`tests/s1/server.mjs` 仅补就绪响应体完整消费与原 URL/PID/exit/cause 安全诊断，原响应、期限和断言不改。B 两轮实际生命周期 3 项通过未复现 F reset，故根因仍 UNKNOWN。
+
+| 原人员与工作树 | 临时准确范围及来源 | 消费条件与归还 |
+|---|---|---|
+| 原 F `ctx_4a385bf65390` / `standards-frontend` | 仅 `tests/s1/server.mjs`，内容严格取 B `efa137e` 同路径 | F 本人 `msg_79fddf80e59f` 核当前差异恰 ready 函数、无 helper WIP，原 B 已授权该单文件消费。计划 push 后，只允许通过文件编辑工具移入精确已提交内容，核与来源文件一致，不自行修改其他 helper 或 check 脚本；记录准确 SOURCE 后归还后续逻辑修改给 B，再按真实配置复验失败路径 |
+| 原 B `ctx_1fd66a8adc28` / H 的 `works-relay-http` | 仅 `scripts/check-dependencies.mjs`，内容严格取本人 B `efa137e` 同路径 | M-relay `msg_421ba1af7dcc` 明确 H 未写该脚本，由原 B 在安全检查点仅文件编辑并明确归还。计划 push 后限定移入该成熟解析文件，核原生依赖检查和 diff，停止写入交 H 自己记录来源并提交；不带入旧 `2644083` 其他三十九文件或冻结域 |
+
+上述限定消费不新增长期文件 owner。原 B 后续所有 helper/parser 返修继续归本人，F 不自行修改逻辑；H 不修改 B 脚本。两人不合入无关祖先、替代接口响应、降低超时/断言或自动重试；代码通过文件编辑工具消费，管理人员不代写。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
