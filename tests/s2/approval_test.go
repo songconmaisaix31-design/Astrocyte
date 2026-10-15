@@ -203,6 +203,7 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	}
 	_, err = service.ReadContextPacket(ctx, otherMember, packet.ID)
 	requireCode(t, err, apierrors.ScopeDenied)
+	verifyActualPacketHTTP(t, service, projects, packet, grant, credential.Token, otherCredential.Token)
 	if _, err = projects.RevokeProjectAgent(ctx, human, project.ID, memberID); err != nil {
 		t.Fatal(err)
 	}
