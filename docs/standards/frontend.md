@@ -1,5 +1,26 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:38 实际人工候选、反馈与版本保留
+
+本阶段 SOURCE `fd7db97d26991ec04937bfb7ecae3208ad339706` 已普通 push，新增三件明确分开创建、后继版本和只读恢复的产品验证脚本。Task / Dispatch 为原 `task_7cbe30017760` / `ctx_c22d1dd61be3`，仍使用原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。实际对象仍为 H 的 b73 SOURCE / PID4676 / URL64505 同一产品库。
+
+复用已保存 PLOS 资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` 的固定 revision1 及原人工摘要 `LD6A7RPZQJIQW6F224QALLQDR5`，通过实际页面新增主题记录 `SNU6QNVCQGGIRU3WTADLRIOU7U`，正文与原已存摘要一致，保留实际效果待查问题。候选 `QILUA3J6WINYVSRKX3CU6FA35A` 当前 r2 / version3 / `ready_for_review`，r1 及其一条 `later` 人工暂缓反馈完整保留。四个维度均为 null，理由为“尚未进行实际任务和效果评估。”；未将未知填零。
+
+用户可审阅的候选标题为“公开论文固定摘要的候选复核”，用途为“保留当前公开摘要及固定版本，在人工审阅后核查资料与本项目的实际适用性。”，下一步为“先核对固定摘要和待查问题，再由人工分别决定资料准入与任务批准。”。当前缺失依据为“人工暂缓记录已保存；实际任务、模型处理与独立效果证据仍未产生。”，固定来源为 `https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514`，关联原 Goal `46a1b8e5-583c-4df0-921a-46ef83660d8a`。具体候选和安全内容已交模块转达；用户的准入决定保持待答，准入和批准请求均未发送。
+
+| 本次实际命令（在 web 执行） | 实际结果 | 本次 `ctx_c22d1dd61be3/.verification` 内记录 |
+| --- | --- | --- |
+| `node --experimental-strip-types e2e/createProductCandidate.ts` | EXIT1，三个实际命令已依次返回 200 / 201 / 201 并保存；页面异常断言原件保留，未重发 | `product-candidate-first.log`、`product-candidate-human.json` |
+| `node --experimental-strip-types e2e/reviseProductCandidate.ts` | EXIT1，仅执行尚未发送的新版本命令并返回 200；r2 已保存后的检查首失败保留，未重发版本命令 | `product-candidate-revision-first.log`、`product-candidate-revision.json` |
+| `node --experimental-strip-types e2e/readProductCandidate.ts` | 首次 EXIT1 原件保留；最终只读核查 EXIT0，HTTP / SQLite / 1280 DOM、两版本和一条反馈、四维 unknown、全部四个收据和四个事件逐项通过 | `product-candidate-readonly-first.log`、`product-candidate-readonly-projection.log`、`product-candidate-readonly.json` |
+| `npm run typecheck` | EXIT0 | `typecheck-candidate-final.log` |
+| `npx eslint e2e/createProductCandidate.ts e2e/reviseProductCandidate.ts e2e/readProductCandidate.ts` | EXIT0 | `lint-candidate-final.log` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+四个实际操作为主题记录、候选创建、人工暂缓反馈和候选新版本，具有四个不同操作标识；生产收据与 `distillation_recorded / opportunity_created / opportunity_reviewed / opportunity_revised` 四个真实事件逐 ID 定位。最终只读核查显式检查实际排序配置未配置，HTTP 当前人工排序说明与其余全部持久化字段相符，原候选内容与版本没有覆盖。审批数量保持原一条，Mission 和原生会话均为零，新增模型调用为零；没有重发旧导入、原摘要、Goal、Grant 或已成功和未知操作。
+
+创建与修改脚本的成功写入不重放，表中两次 EXIT1 继续按实际结果保留；完整浏览器流程由最终只读结果核查已保存的实际对象。准入 UI 等待 H 的真实 human Service 注册和准确公开契约，后继类型由获准生成流程提供，不手写 DTO；候选的实际准入与批准仍等待用户具体决定。当前功能记录不作为完整默认、L1 / L2 或最终发布通过。
+
 ## 2026-10-16 04:30 原 UI 三段源码消费
 
 按模块精确放行，在每段目标零 WIP / staged、与原父版本完整相容后，依次普通 `cherry-pick -x` 原 UI SOURCE `dbd1018f163e6760cc7806c302fd3aa677706267`、`0ad83a96bc50747867146a38a80b7a90ecbedc5f`、`f0d27271c15d131aea50012658232f7fa41a142b`。本树消费提交为 `bfded1f`、`1d860ab`、`a871d62c6b5ed6b708dfc1b70f938741f0b44081`，均已普通 push；每段目标与原 SOURCE 完整 diff 为零，无冲突。只消费各段明确的 9 / 3 / 3 件前端页面、参数函数和测试，原 UI 领域逻辑继续归原负责人。
