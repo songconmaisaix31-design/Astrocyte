@@ -595,6 +595,23 @@ SOURCE `a8d361b1cb4133713e25f1d6c20ea4bfd22d844d` 已普通 push，只有两个�
 
 在 D 盘 TEMP 下，`go test -mod=readonly -p=2 ./internal/adapters/httpapi -run '^TestWorksHTTPActualStoresRegisteredBoundsAndRestart$' -v -count=1` 首次 EXIT 1，原路径拼写断言保留于 `.verification/works-http-recovery-first.log`。修订后同命令 EXIT 0，包 2.983s，`.verification/works-http-recovery-second.log`；原缓存读取、人工请求、目录范围、幂等、权限、metadata、SQLite 重开和审计断言全部保持。
 
-`ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261016/backend/s1-verification` 下执行 `go test -mod=readonly -p=2 ./internal/adapters/agents -run '^TestOpencode(SessionLifecycleOverHTTP|SessionDenyPermissionFailClosed|RejectsUnauthenticatedAndUnknownReply|WaitHealth)$' -v -count=1` EXIT 0，4 PASS、0 SKIP，包 19.992s；`.verification/opencode-owned-output-recovery-first.log`。四个隔离服务使用实际本机 HTTP、原生生成的身份、真实私有 SQLite 和配置；覆盖同一 ID 停止后恢复、权限规则拒绝、认证拒绝、未知会话与实际健康检查，全部进程停止由原清理断言确认，model turns 为 0。变更文件 `gofmt -l` 和 diff 检查通过。
+`ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261016/backend/s1-verification` 下执行 `go test -mod=readonly -p=2 ./internal/adapters/agents -run '^TestOpencode(SessionLifecycleOverHTTP|SessionDenyPermissionFailClosed|RejectsUnauthenticatedAndUnknownReply|WaitHealth)$' -v -count=1` EXIT 0，4 PASS、0 SKIP，包 19.992s；`.verification/opencode-owned-output-recovery-first.log`。四个隔离服务使用实际本机 HTTP、原生生成的身份和独立配置；覆盖同一 ID 停止后恢复、权限规则拒绝、认证拒绝、未知会话与实际健康检查，全部进程停止由原清理断言确认，model turns 为 0。变更文件 `gofmt -l` 和 diff 检查通过。
 
 该结果不覆盖受限 Codex 或 Windows Replay 的来源真实性。`native_path_windows_test.go` 原有构造原生文件需要实际获准公开项目的自产原件；B 已向协调者提出准确来源指针依赖，没有运行该虚构来源路径、添加 skip 或削减断言。`text_capacity_test.go` 需要 Codex 初始化的正向检查仍按当前暂停令未运行。H 报告同一数据库的 64505 服务已恢复；B 没有独立操作该共享实例，原启动 exit1 的原因保持 UNKNOWN。
+
+## 完成经验的 HTTP 与固定请求身份
+
+SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` 已普通 push，包含原四件 experience 修改和新增实际 HTTP 检查。`POST /api/v1/experiences/completions` 接收实际 `local_project_id`、`event_id` 和既有命令字段，要求 schema / expected version 为 1，使用现有 `Idempotency-Key`；原请求键在既有主数据库事务内绑定语义输入，模型操作继续复用原完成事件收据。`GET /api/v1/experiences/{id}/evidence?project_id=...` 返回安全固定引用。桥接只接受当前实际 `LocalProject.ID`；来源读取及解释在事务外进行，当前来源授权在同一主数据库事务内执行。
+
+治理与完成捕获共用 `AcceptedExperienceRepository`，读取、批准和分享时可恢复已存完成来源的真实身份。当前未答的 Agent 完成权限继续明确拒绝，候选仍为 quarantine，由用户批准。原 `ExperienceCompletionReader` / `CompletionExperienceInterpreter` 注入字段只接实际服务；来源缺失返回 unsupported，真实解释器未配置返回 provider unavailable，不产生替代候选。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./cmd/server -run '^TestCompletionExperienceHTTPActualProjectBoundariesAndRestart$' -v -count=1` | EXIT 0，包 3.125s；`.verification/completion-http-actual-first.log` |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0；`.verification/completion-http-build-first.log` |
+| `go vet -mod=readonly -p=2 ./cmd/server ./internal/adapters/httpapi ./internal/attention/app` | EXIT 0；`.verification/completion-http-vet-first.log` |
+| 五个变更 Go 文件 `gofmt -l`、`git diff --check` | EXIT 0，无输出 |
+
+实际检查通过生产服务创建空间、注册本公开工作树、保存人工 Grant 并签发项目 token，然后使用实际 loopback HTTP、自产人类会话和 SQLite；覆盖缺认证、CSRF、Agent 当前权限、目录 / SpaceID / 未注册 ID 替代、版本错误、未接来源、缺少证据、SQLite 重开和实际关闭数据库的失败。未观察 UUID 只用于拒绝请求。SQLite 核经验候选、完成来源和原生会话均为零，没有写入虚构完成记录或模型输出。
+
+H `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 的实际 `services.Relay` 已实现相同 `ExperienceCompletionReader`；准确接口已经通过 Handoff 交 H，在原 main / OpenAPI 写域完成注入和公共契约，B 没有复制 H 源码或修改其工作树。受限 Codex、真实解释器、正向实际完成候选、用户批准、后续经验使用及六步闭环继续 NOT_RUN；上述拒绝和生命周期检查不替代这些验收。
