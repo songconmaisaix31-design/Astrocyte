@@ -8,16 +8,19 @@ F 原 Task `task_7cbe30017760` / Dispatch `ctx_5888aa5adf82`，工作树与分�
 
 窄生成 SOURCE `cdf0b5eb4c2b3a1c7b76a335eb01d02dd7f6fee6` 已普通 push，仅包含 `web/src/api/schema.d.ts`。按当前模块正式授权运行仓库既有 `node scripts/generate-client.mjs`，从已合入的准确 OpenAPI 生成安全 Context、Swarm 及 Relay Prepare 类型；未手写生成内容，生成文件零 WIP，供原产品 UI 负责人消费。
 
+共享客户端阶段 SOURCE `4192c26bd77ec70504f286f8ddb75a145779ab58` 已普通 push，仅包含 `api/swarm.ts`、`api/workspaceContext.ts` 和 `api/relay.ts`。`swarmApi` 提供真实 Mission / WorkItem / timeline / Artifact 读取、人工创建、暂停、取消、恢复、采用与退回；`workspaceContextApi` 提供安全固定 packet 读取 / 构建及原控制器 session binding；`relayApi.prepare` 单独调用准确 Prepare 路径。命令沿既有人工会话传递 CSRF、固定请求身份和版本，Context / Swarm 支持 AbortSignal；网页不切换 Agent 身份。
+
 | 本阶段验证 | 实际结果 |
 | --- | --- |
 | `node scripts/generate-client.mjs --check` | EXIT0，生成内容与已提交共享源完全相等 |
 | 在 web 执行 `npx tsc --ignoreConfig --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM --skipLibCheck src/api/schema.d.ts` | EXIT0；日志 `.verification/f-safe-schema-typecheck.log` |
+| 相同 strict tsc 参数检查 `src/api/swarm.ts src/api/workspaceContext.ts src/api/relay.ts`，随后对三文件执行 `npx eslint` | 均 EXIT0；日志 `.verification/f-safe-client-source-typecheck.log`、`f-safe-client-source-lint.log`；限定共享客户端阶段 |
 | `git diff --check` | EXIT0 |
 | 包含当前 API / Prepare 草稿的全局 `npm run typecheck` | FAIL，原 SwarmPage 仍读取旧 Mission 字段，已交原页面负责人；日志 `.verification/f-safe-shared-typecheck-first.log` |
 | 当前草稿的全域 `npm run lint` 和共享 API / HTTP 测试 / Relay E2E 显式 tsc | EXIT0，限定当前草稿，不能计为未提交接口的实际运行验收；日志 `.verification/f-safe-shared-lint-first.log`、`f-safe-shared-focused-typecheck-fixed.log` |
 | 新 shared API / Prepare 的真实 HTTP、SQLite、Playwright 与正向 CLI | NOT_RUN，等待 B 准确 D 盘 helper、浏览器缓存迁移和后续准确组合；未启动新登记、原生控制器或模型输入 |
 
-新增 Swarm / workspaceContext 客户端、相关真实服务测试、Relay Prepare UI 及其权限拒绝 / 离线锁测试继续保留为原负责人 WIP，未包含在该窄 SOURCE。全部旧默认首失败、未执行项和原生限制仍保留；本阶段生成验证不改变其状态。后续验证进程的 TEMP / TMP 显式使用获准 D 盘 F 独占目录，浏览器迁移完成前不新启动 Playwright。
+相关真实服务测试、Relay Prepare UI 及其权限拒绝 / 离线锁测试继续保留为原负责人 WIP，未包含在以上阶段 SOURCE。全局 typecheck 的旧 Swarm 页面由原产品 UI 负责人消费准确契约后返修；实际 HTTP 和浏览器尚未运行。全部旧默认首失败、未执行项和原生限制仍保留；阶段检查不改变其状态。后续验证进程的 TEMP / TMP 显式使用获准 D 盘 F 独占目录，浏览器迁移完成前不新启动 Playwright。
 
 ## 前序工程与验收
 
