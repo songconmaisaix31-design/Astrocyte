@@ -16,7 +16,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-const completionExperiencePolicy = "completion-experience-fixed-json-v1"
+const completionExperiencePolicy = "completion-experience-fixed-json-v2"
 
 type CompletionExperienceOptions struct {
 	ReadContext      func(context.Context, attention.ExperienceCompletionEvidence) (domain.LocalProject, domain.ContextPacket, error)
@@ -124,7 +124,7 @@ func (i *CompletionExperienceInterpreter) DraftCompletionExperience(ctx context.
 	if err := json.Unmarshal(encoded, &fixed); err != nil {
 		return empty, nativeError(apierrors.ValidationFailed, "completion evidence cannot be retained")
 	}
-	prompt := "Draft one experience for human review from the fixed completion evidence and authorized context. Return JSON only. Fields: pattern, verdict (avoid, prefer, or condition), condition, evidence (the exact original completion EventID), refused (boolean). If the evidence cannot support a draft, set refused=true and leave pattern and condition empty. Do not approve, rank, score, execute tools, or claim that event references contain facts you have not received. Fixed completion evidence:\n" + string(encoded)
+	prompt := "Draft one experience for human review from the fixed completion evidence and authorized context. Return JSON only. Fields: pattern, verdict (avoid, prefer, or condition), condition, evidence (the exact original completion EventID), refused (boolean). Preserve completion_channel and completion_receipt_id as source facts. user_confirmed_complete records the actor's confirmation and does not establish independent goal verification or native success. verified_complete records the source's owned output and goal checks. Missing native trace remains absent; completion and transition receipt references are not native event identities. Do not invent checks, artifacts, usage or improved task performance. If the evidence cannot support a draft, set refused=true and leave pattern and condition empty. Do not approve, rank, score, execute tools, or claim that event references contain facts you have not received. Fixed completion evidence:\n" + string(encoded)
 	wirePrompt := packetPrompt(packet, prompt)
 	if len(wirePrompt) > 512*1024 || !utf8.ValidString(wirePrompt) {
 		return empty, nativeError(apierrors.ValidationFailed, "fixed completion input is invalid UTF-8 or exceeds 512 KiB")
@@ -198,23 +198,5 @@ func completionExperienceCallbackFailure(err error, message string) error {
 }
 
 func validateCompletionExperienceEvidence(evidence attention.ExperienceCompletionEvidence) error {
-	if evidence.EventID == "" || evidence.Version < 1 || evidence.OccurredAt < 1 || evidence.LocalProjectID == "" || evidence.OwnerProject == "" || evidence.ActorID == "" || evidence.TaskID == "" {
-		return nativeError(apierrors.EvidenceMissing, "completion Interpreter requires the fixed actual completion receipt")
-	}
-	if evidence.Outcome != "success" && evidence.Outcome != "failure" {
-		return nativeError(apierrors.DeliveryUnknown, "completion outcome remains unknown")
-	}
-	switch evidence.SourceKind {
-	case attention.ExperienceSourceAcceptedArtifact:
-		if evidence.ActorKind != "human" || evidence.Outcome != "success" || len(evidence.Artifacts) == 0 {
-			return nativeError(apierrors.EvidenceMissing, "artifact completion requires actual human acceptance and fixed artifacts")
-		}
-	case attention.ExperienceSourceRelayCompletion:
-		if evidence.ActorKind != "human" && evidence.ActorKind != "agent" || len(evidence.OriginEventIDs) == 0 {
-			return nativeError(apierrors.EvidenceMissing, "Relay completion requires original trace references and an actual actor")
-		}
-	default:
-		return nativeError(apierrors.ScopeDenied, "completion Interpreter source kind is unsupported")
-	}
-	return nil
+	return attention.ValidateCompletionSource(evidence, evidence.LocalProjectID, evidence.EventID, evidence.OwnerProject)
 }
