@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
 import { join, isAbsolute, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -25,7 +26,9 @@ const expectedNames = ['encoder.onnx', 'encoder.onnx.data', 'head.onnx', 'head.o
 if (expectedNames.some(name => !assets.files[name])) throw new Error('Laya assets require all graphs, sidecars, tokenizer and configuration digests');
 for (const [name, expected] of Object.entries(assets.files)) {
   if (basename(name) !== name) throw new Error('Laya asset path escapes the model directory');
-  const actual = createHash('sha256').update(await readFile(join(values['model-dir'], name))).digest('hex');
+  const hash = createHash('sha256');
+  for await (const chunk of createReadStream(join(values['model-dir'], name))) hash.update(chunk);
+  const actual = hash.digest('hex');
   if (actual !== expected) throw new Error(`Laya asset digest mismatch: ${name}`);
 }
 const { Agent } = await import(pathToFileURL(values['sdk-entry']).href);
@@ -38,7 +41,8 @@ if (!Array.isArray(cfg.temperature) || cfg.temperature.length !== 3 || cfg.tempe
 }
 const agent = await Agent.load(values['model-dir'], { device: 'cpu', expectedSha256: assets.files });
 const assetDigest = createHash('sha256').update(JSON.stringify(Object.fromEntries(Object.entries(assets.files).sort(([left], [right]) => left.localeCompare(right))))).digest('hex');
-const modelRevision = `${assets.model_revision}/${assets.checkpoint}/${assets.source_revision}/${assetDigest}`;
+if (assets.artifact_revision && (assets.artifact_kind !== 'astrocyte_privacy_sanitized_derivative' || assets.derived_from?.model_revision !== assets.model_revision || assets.derived_from?.source_revision !== assets.source_revision)) throw new Error('Derived Laya assets require their own identity and explicit original provenance');
+const modelRevision = `${assets.artifact_revision ? `${assets.artifact_revision}/` : ''}${assets.model_revision}/${assets.checkpoint}/${assets.source_revision}/${assetDigest}`;
 const connection = createMessageConnection(new StreamMessageReader(process.stdin), new StreamMessageWriter(process.stdout));
 let busy = false;
 connection.onRequest('judgment/health', () => ({

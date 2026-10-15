@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	adapter "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/judgment"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -18,7 +19,7 @@ import (
 func TestActualLayaJudgmentServiceSafety(t *testing.T) {
 	root := actualRunDirectory(t)
 	f := newFixture(t, filepath.Join(root, "state.sqlite"), filepath.Join(root, "objects"))
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	config := actualLayaConfig(t, "multilingual", "en", 1)
 	model, err := adapter.NewLaya(ctx, config)
 	if err != nil {
@@ -110,6 +111,51 @@ func TestActualLayaJudgmentServiceSafety(t *testing.T) {
 	if err != nil || !found || coverage.Total != len(options) || coverage.Distinct >= coverage.Total || optionResult.Decision != judgment.Abstain {
 		t.Fatalf("actual collapsed documentation options did not abstain: %+v, %v", optionResult, err)
 	}
+	opportunity := actualOpportunity(t, f, ref, "Verify public CPU export documentation", "How does the documented export verify the local runtime graphs?")
+	delegation, err := judgment.NewDelegationService(f.db, service, f.access, adapter.AttentionOpportunities{Attention: f.attention})
+	if err != nil {
+		t.Fatal(err)
+	}
+	admissionOption := questions[0].Options[0].ID
+	rule := judgment.DelegationRule{ID: uuid.NewString(), ProjectID: project.ID, WorkflowID: uuid.NewString(), OwnerID: f.actor.ID, Revision: 1, State: "active", Purpose: judgment.AdmissionPurpose, Question: questions[0], PolicyRevision: policies[judgment.Choice].Revision, Language: "en", Materials: []judgment.EvidenceRef{ref}, AdmissionChoice: &admissionOption, ReviewConditions: []string{"fixed_inputs"}}
+	if err := delegation.SetRule(ctx, f.actor, rule, 0); err != nil {
+		t.Fatal(err)
+	}
+	bound, err := delegation.Evaluate(ctx, f.actor, rule.ID, rule.Revision, opportunity.ID, opportunity.Revision)
+	if err != nil || bound.ProviderConfidence == nil || *bound.ProviderConfidence >= 1 || bound.Decision != judgment.Abstain {
+		t.Fatal("the actual model did not establish a finite uncertain bound judgment", err)
+	}
+	lowPolicy := policies[judgment.Choice]
+	lowPolicy.Revision++
+	explicitReviewThreshold := (1 + *bound.ProviderConfidence) / 2
+	lowPolicy.MinConfidence = &explicitReviewThreshold
+	if err := f.access.SetPolicy(ctx, f.actor, lowPolicy, lowPolicy.Revision-1); err != nil {
+		t.Fatal(err)
+	}
+	policies[judgment.Choice] = lowPolicy
+	rule.Revision++
+	rule.PolicyRevision = lowPolicy.Revision
+	if err := delegation.SetRule(ctx, f.actor, rule, rule.Revision-1); err != nil {
+		t.Fatal(err)
+	}
+	low, err := delegation.Evaluate(ctx, f.actor, rule.ID, rule.Revision, opportunity.ID, opportunity.Revision)
+	if err != nil || low.ReasonCode != "low_provider_confidence" || low.Decision != judgment.Abstain {
+		t.Fatal("the actual model confidence did not enforce the explicitly submitted review threshold", err)
+	}
+	_, _, _, err = delegation.Authorize(ctx, rule.WorkflowID, low.ID, project.ID, opportunity.ID, opportunity.Revision)
+	requireServiceCode(t, err, apierrors.EvidenceMissing)
+	rule.Revision++
+	rule.Question = optionQuestion
+	rule.AdmissionChoice = &options[0].ID
+	if err := delegation.SetRule(ctx, f.actor, rule, rule.Revision-1); err != nil {
+		t.Fatal(err)
+	}
+	collapsed, err := delegation.Evaluate(ctx, f.actor, rule.ID, rule.Revision, opportunity.ID, opportunity.Revision)
+	if err != nil || collapsed.Decision != judgment.Abstain || len(collapsed.Options) == 0 {
+		t.Fatal("actual collapsed model options did not preserve an unusable bound result", err)
+	}
+	_, _, _, err = delegation.Authorize(ctx, rule.WorkflowID, collapsed.ID, project.ID, opportunity.ID, opportunity.Revision)
+	requireServiceCode(t, err, apierrors.EvidenceMissing)
 	missingRequest := requestForPolicy(policies[judgment.Truth], questions[1])
 	missing, err := service.Evaluate(ctx, f.actor, missingRequest)
 	if err != nil || missing.Decision != judgment.NeedEvidence || missing.Usage != nil || missing.Backend != judgment.RuleBackend {

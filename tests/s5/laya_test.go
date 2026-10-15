@@ -2,7 +2,6 @@ package s5
 
 import (
 	"context"
-	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,24 +32,15 @@ func liveEnabled(t *testing.T) {
 func actualLayaConfig(t *testing.T, checkpoint, language string, round int) adapter.LayaConfig {
 	t.Helper()
 	root := s5Root(t)
-	assetsPath := filepath.Join(root, ".verification", "s5", "laya-"+checkpoint+"-assets.json")
-	data, err := os.ReadFile(assetsPath)
+	metadataRoot := os.Getenv("ASTROCYTE_S5_METADATA_ROOT")
+	if metadataRoot == "" {
+		metadataRoot = filepath.Join(root, ".verification", "s5")
+	}
+	assetsPath := filepath.Join(metadataRoot, "laya-"+checkpoint+"-assets.json")
+	revision, err := adapter.LayaRevision(assetsPath)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var assets struct {
-		ModelRevision  string            `json:"model_revision"`
-		SourceRevision string            `json:"source_revision"`
-		Files          map[string]string `json:"files"`
-	}
-	if err := json.Unmarshal(data, &assets); err != nil {
-		t.Fatal(err)
-	}
-	encoded, err := json.Marshal(assets.Files)
-	if err != nil {
-		t.Fatal(err)
-	}
-	revision := assets.ModelRevision + "/" + checkpoint + "/" + assets.SourceRevision + "/" + judgment.DigestText(string(encoded))
 	assetRoot := os.Getenv("ASTROCYTE_S5_ASSET_ROOT")
 	if !filepath.IsAbs(assetRoot) {
 		t.Fatal("ASTROCYTE_S5_ASSET_ROOT must be an explicit absolute owned asset directory")
@@ -113,6 +103,7 @@ func TestLayaActualCPUThreeTypesAndRestart(t *testing.T) {
 				if health.PID == oldPID {
 					t.Fatal("explicit restart reused the old process")
 				}
+				t.Logf("actual CPU round=%d pid=%d model_revision=%s language=%s", round, health.PID, health.ModelRevision, health.Language)
 				oldPID = health.PID
 				state := strings.Split(string(english), "## Node")[0]
 				if route.language == "zh" {
@@ -137,6 +128,7 @@ func TestLayaActualCPUThreeTypesAndRestart(t *testing.T) {
 					if err != nil || !long.Truncated {
 						t.Fatal("actual full official source did not report truncation", err)
 					}
+					t.Logf("actual type=%s input_tokens=%d long_input_tokens=%d long_truncated=%t confidence_null=%t", question.Type, out.Usage.InputTokens, long.Usage.InputTokens, long.Truncated, out.Confidence == nil)
 					input.Language = "unsupported"
 					if _, err := model.Evaluate(ctx, input); err == nil {
 						t.Fatal("unsupported language silently selected a backend")

@@ -207,8 +207,12 @@ func (l *Laya) close() error {
 	case <-l.processDone:
 	case <-time.After(time.Duration(l.config.ShutdownTimeoutMS) * time.Millisecond):
 		killErr := l.cmd.Process.Kill()
-		<-l.processDone
-		return errors.Join(streamErr, fmt.Errorf("Laya owned process did not exit within explicit shutdown budget"), killErr, l.processErr)
+		select {
+		case <-l.processDone:
+			return errors.Join(streamErr, fmt.Errorf("Laya owned process did not exit within explicit shutdown budget"), killErr, l.processErr)
+		default:
+			return errors.Join(streamErr, fmt.Errorf("Laya owned process %d exceeded shutdown budget; termination requested and exit is unconfirmed", l.cmd.Process.Pid), killErr)
+		}
 	}
 	return errors.Join(streamErr, l.processErr)
 }
