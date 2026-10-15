@@ -306,6 +306,14 @@ Graph 三路径通过 `ASTROCYTE_CODEGRAPH_NODE/SDK/SCRIPT` 成组提供，全�
 
 完整 Graph/AOCI 配置正向、同 provider 的 S2/S4 公共 HTTP、实际索引和最终发布资产验收仍为 NOT_RUN，继续由 B/H/S4/P 按准确资产与组装来源执行。本节记录的纯配置与依赖拒绝结果不替代这些业务验收。
 
+## 实际启动前失败的持久化检查
+
+SOURCE `e052a5b265cadf6520ed1f644dec15ada53be350` 已普通 push，只修改 `TestNativeUnavailableLaunchDoesNotLeaveGhostWriter`。测试通过实际 Attention 服务创建空间，注册当前公开工作树，使用真实 SQLite、项目文件读取和 Registry；PATH 明确为空，通过实际可执行程序缺失触发启动前拒绝。两次独立操作仍核原失败状态、无在途操作、明确停止，以及重复相同操作拒绝，并新增重新读取 SQLite 的同样断言；没有写入替代 native ID 或控制器。
+
+进程级 D 盘 Go 环境及本树临时目录下 `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestNativeUnavailableLaunchDoesNotLeaveGhostWriter$' -count=1 -v` EXIT 0，1 PASS，12.866s；`.verification/native-prelaunch-owned-second.log`，实际数据库保留在 `.verification/native-prelaunch-actual-1119547788/`。gofmt 与 diff 检查无输出。该检查没有启动任何原生 CLI 或模型，只覆盖已证明尚未启动时的持久化失败。
+
+`TestProvenUnstartedResumePreservesOwnedOriginalSession` 的既有替代来源仍待替换；R 新 Registry 所有权语义下的该历史断言已有真实 RED，完整原会话恢复验收继续未完成。当前没有删除原正向覆盖、改变其预期错误、增加 skip，或把本节负向结果作为原控制器恢复成功的证明。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
