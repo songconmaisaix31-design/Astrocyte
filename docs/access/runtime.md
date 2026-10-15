@@ -1,5 +1,33 @@
 # Works Relay runtime
 
+## 2026-10-16 发送前的原控制器归属核查
+
+SOURCE `ce541794d58560747124fea2cf9d08222700587e` 已普通 push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-runtime` 返回相同 SHA。当前 Task `task_f082d8b36471` / Dispatch `ctx_1500d65ab213`，沿原 R 工作树和分支执行；客户端为 Orca Codex，启动模型保持原配置。本阶段仅修改 `native.go`、`relay_native.go`、`relay_facts_test.go` 和 `relay_native_tools_test.go`。
+
+`Native.send` 在输入格式、operation 与 context 检查后，先只读核当前 Registry 实际持有的原 session / native identity，再执行原文件工具能力门禁。缺少原控制器时返回 `delivery_unknown`，不会据当前工具能力把历史输入判为确定未提交，也不会产生 `RelayInputNotSubmitted`。实际 owned Codex 输入继续在取得 operation 锁、改变运行状态、记录输入或执行任何原生写入之前返回 `unsupported_capability`；该门禁仍位于实际 Native 适配器。Relay driver 的 Send 沿原 SendOperation / Send 进入该顺序。启动与恢复的受限能力拒绝继续在原生启动前执行。
+
+原 pending operation、最终收据、权限与来源检查继续使用原记录。新增检查使用实际空 Registry，覆盖 Codex、Claude、Pi 各自的内部 send、pending Send、SendOperation 和 Relay Send 四个入口；逐项要求未知交付、没有输入泄露、不生成 controller / capture、pending 原值保留。没有构造 owned 进程、成功协议回复或模型结果。
+
+准确集成首失败原件为 `D:/Astrocyte-agent-assets/20261015/integration/c16-product-check-8b0eb882/check.log`。本树首次实际运行同一 `TestRelayFactsRejectMissingOriginalControllerAndFork` 仍为 FAIL，日志 `original-controller-first.log` 保留；最终实现对应检查通过。下列日志与未启动的构建文件位于 `D:/Astrocyte-agent-assets/20261015/relay/R/controller-refusal-20261016/`。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/agents -run '^(TestRelayFactsRejectMissingOriginalControllerAndFork\|TestRelaySendRequiresOriginalControllerBeforeRestrictedAdmission\|TestRelayCodexFileToolRestrictionRejectsBeforeNativeEffects)$' -count=1 -timeout=90s -v` | PASS，3 项顶层检查与 12 项实际发送拒绝，包 1.420 秒；`original-controller-final.log` |
+| 下列四包的相关无模型检查 | PASS，26 项顶层检查；agents 1.730 秒、domain 0.874 秒、app 3.739 秒、SQLite 2.655 秒；`related-model-free.log`，包括真实 SQLite 当前事务和生产 HTTP / SQLite A/B/C 权限拒绝 |
+| `go vet -p=1 -mod=readonly ./internal/adapters/agents ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite` | EXIT 0；`controller-vet.log` |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/controller-refusal-20261016/controller-server.exe ./cmd/server` | EXIT 0；`controller-build.log`，产物未运行 |
+| 四份修改源码 `gofmt -l` / `git diff --check` | 无格式差异 / EXIT 0 |
+
+相关检查的准确命令为：
+
+```powershell
+go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/sqlite -run '^(TestRelay(FactsRejectMissingOriginalControllerAndFork|SendRequiresOriginalControllerBeforeRestrictedAdmission|CodexFileToolRestrictionRejectsBeforeNativeEffects|NativeDeadlineRejectsBeforeController|FirstInputCheckpointRefusesUnarmedController|PreparedMemberRejectsMissingOriginalSources|MemberExecutionRejectsUnownedMetadata|InputOperationRejectsColdRegistryAndInvalidPurpose|GuardedRegistryRequiresOriginalOperationAndController|InputOutcomeRejects.*|ExecutionPortableRejects.*|PortableMemberSourceRejectsColdRegistry|NativeDecodeRejectsMalformedValuesWithoutRawLeak|PreparedInputPrivateSerialization|MemberEvidencePrivateSerialization|CompletionEdgesKeepStartAndReleaseIndependent|CompletionMissingGoalEvidenceCannotVerify|CompletionActualReadyCannotCompleteOrRelease|HumanTransitionProductionPermissionGates|CompletionProjectPermissionUsesActualCurrentTransaction)|TestCompletionExperience.*)$' -count=1 -timeout=90s -v
+```
+
+全部 Go 命令使用 `GOMAXPROCS=2` 与 `-p=1 -mod=readonly`。最终检查使用既有 D 盘 backend 编译缓存和 R 独占 TEMP / TMP / GOTMPDIR，`GOPROXY=off`；SQLite 输出根为上述独占证据目录。首次复现使用独立 D 盘缓存和临时目录，同样没有创建原生控制器。
+
+本阶段登记、原生初始化、probe、capture 与模型输入均为零。H 的现有完成来源读取及事务内授权接口没有变化，Agent completion action 仍待用户决定；真实 owned 模型发送、L1 / Today、经验六步及最终产品组合验收尚未通过。原 Codex 文件工具关闭能力缺口、完整包首 RED、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 和原 raw gap 保留。
+
 ## 2026-10-16 完成通道输入与实际事务边界
 
 完成通道输入 SOURCE `1a529ac79a7499b45c3d80d256852f4d598a5754` 和准备读取契约 SOURCE `a165fae709e212be4e98c96b326552da739985d0` 均已普通 push，并分别独立 `git ls-remote` 核实相同 SHA。此前按模块登记及本人安全 ACK，通过文件编辑工具原样消费 B SOURCE `5866b5296a5f6ffe253fa5deac632f72d27fe128` 的四份原件，消费提交为 `bc3fda0838105acaa1e61f08fb46bc4c4103de01`；逐文件内容完全相同，随后已停止全部四件写入并归还 B / T。没有合入 B 整支或未提交内容。
