@@ -21,6 +21,14 @@
 
 实际 verified 的公开 checkout 仅 H 在根准确授权和登记范围内受信应用，B 沿现有存储保存真实来源；F 保持唯一 HTTP / 界面动作。四树组合验证 → 集成版 L1 → L2 六步 → 最终同源包的顺序保持，原生工具关闭、180 秒、未知不重发、started 与独立释放审计保持。用户候选批准不能代签；原 V4 / 日程与 17321 保持。每阶段 SOURCE 与独立 REPORT 普通 push，模块持续到最终发布支持完成。
 
+### 00:38 S5 两件原作者冲突处理计划
+
+M-release `msg_813943b194cd` 已交当前 S5 `task_1d3e15a66b2a / ctx_693200d34a48 / term_afa03a7a-43f0-4f61-a4c1-b7e97d66475e` 本人新 STOP `msg_c8803c8e8609`。本模块独核目标树 `C:/Users/DW/orca/workspaces/Astrocyte/release-judgment-20261015`，HEAD `b125268d11322c69c652bce677665001bd47e344`、MERGE_HEAD `6d1d59bf07b008a0969efefceb911e49b6b33db6`，未合并项严格为 `internal/attention/app/taste_profile.go` 与 `internal/adapters/sqlite/taste_profile_test.go` 两件。S5 本人未编辑或 stage 两件，当前全部写入和合并生命周期停止。
+
+本计划普通 push、原 B `ctx_709b7a125040` 当前本人安全检查点 ACK 和具体放行全部满足后，仅原 B 临时编辑并 stage 上述目标树的两件文件。保留实际完整 Taste 存储、S5 当前类型和所有真实断言；只使用文件编辑工具，不复制未提交内容，不整体选边，不修改其他文件，不执行 commit / continue / abort / reset。完成须停止目标树全部编辑、stage 和进程访问并明确归还，报告限定 diff、格式检查和剩余 U。本模块及 M-release 独核后，仅原 S5 继续当前普通 merge；原 B 的后续生产逻辑仍在其原树完成。
+
+准确失败分别保留：根 `msg_2d5b10bb794d` 核精确 `23672247d340e80c233951afdce7155b7fa66b1c` 的 CI `38768919397` 双平台格式失败，Windows 为 `workspace_proposals.go`，Ubuntu 另含 `admissions_service.go`，后续测试、构建与 E2E 为 NOT_RUN；M-release 实核 `9aa583e` 的 `c16/result.json` 首 check EXIT1、260.4195022 秒，仅 `workspace_proposals.go` 格式失败。两文件分别交原 S2 / B 在各自原树编辑，形成准确后继 SOURCE 供唯一 I 消费，不使用格式程序修改或临时进入 I 树。冲突清除与格式通过均不能计为业务验收。
+
 ### 23:51 恢复计划与当前互斥范围
 
 根当前执行入口位于 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 首段，根管理 SOURCE `7a3ec93` 已 push。公开 Task 列表核 B、F、S2 均为 `ready`；公开终端清单无原六位开发终端，与根记录的重启退出证据一致。沿原 Task、工作树和分支恢复第三层原负责人，不创建替代 Task，不增加第四层。初始任务正文中的旧身份和创建子 Run 要求由当前入口替代；空 Run `run_300ee9112a0f` 不放任务或人员。原产品 Run 已普通绑定 generation 10，B/F 生命周期沿其原 Run 管理。
