@@ -16,6 +16,8 @@ SOURCE `6a5681f369e2cec114abfa1d70a239ed6d94aab2` 已普通 push，独立 `git l
 
 `pnpm --dir web typecheck`、`pnpm --dir web exec eslint src/pages/attention/delegation`、`git diff --check` 均通过。该组件尚未挂入真实判断结果页面，实际表单交互、HTTP、SQLite 与 S5 全链尚未运行；字段编译通过只记录本阶段覆盖。
 
+准入与复核字段 SOURCE `eb4adbceb153d4f5d8799b66a50a9c6d69c39a34` 已普通 push，独立 `git ls-remote` 核远端同 SHA。`DelegationReviewFields` 依据精确 `d73507a` 的 `ValidateDelegationRule` 提供明确的 choice 准入选项、truth 的 0–1 范围、score 的 0 至当前评分等级数减一范围、候选元数据外发三值选择，以及 `fixed_inputs` / `human_adopt` 复核条件。没有默认选项、默认阈值或自动勾选；题目候选被删除时保留原选择并提示核查。`pnpm --dir web typecheck`、本域 ESLint 与 `git diff --check` 通过。该组件仍为受控编辑字段，公共请求、实际交互和 S5 整功能验收继续等待准确客户端，没有将参数字段阶段登记为 HTTP 或业务通过。
+
 当前 S4 的 H SOURCE `31256d5d6758daf25892d55df73feffde7a7e573` / REPORT `89d84d55a822e2f0506e18e93adaa1ec02a8342e` 已由根接受，公开 Repository DTO 已只读核查；F 准确生成客户端 SOURCE 尚未交付。本域仍等待该准确客户端后继续 `RepositoryContextPanel`，真实 Graph 配置、两个实际 worktree 正向与过期恢复输入已向原 S4 请求。原 S2/S3、Context 与 S5 的准确公共契约交付顺序继续有效。
 
 ## 2026-10-15 恢复阶段：批准快照与键盘验证
