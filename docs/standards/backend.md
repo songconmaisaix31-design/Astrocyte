@@ -314,6 +314,16 @@ SOURCE `e052a5b265cadf6520ed1f644dec15ada53be350` 已普通 push，只修改 `Te
 
 `TestProvenUnstartedResumePreservesOwnedOriginalSession` 的既有替代来源仍待替换；R 新 Registry 所有权语义下的该历史断言已有真实 RED，完整原会话恢复验收继续未完成。当前没有删除原正向覆盖、改变其预期错误、增加 skip，或把本节负向结果作为原控制器恢复成功的证明。
 
+## 就绪诊断与本进程共享实际构建
+
+SOURCE `01d28a54bb221e59cf262cbf9941fa418f6e937c` 已普通 push，仅修改 `tests/s1/server.mjs`。就绪失败的实际 URL、PID、退出状态、请求阶段、HTTP 状态和时间进入 Error.message 与 `startup-failure.json`，原 cause 保留。每个验证进程只执行一次真实 Go build，将该可执行文件复制到每个自有服务目录；新进程重新构建，失败的构建直接传播。各服务的实际 HTTP、端口、SQLite、停止重启与独立目录保持，全部请求/测试期限和断言保持。
+
+同 D 盘 Go 环境下 `node --test tests/s1/server-lifecycle.test.mjs` 最终 EXIT 0，3 PASS、0 CANCELLED、0 SKIP，77.307s；`.verification/server-readiness-durable-fourth.log`。实际重复绑定失败的安全记录保存在 `.verification/astrocyte-s1-y6NAiP/startup-failure.json`，构建在 `.verification/astrocyte-s1-build-MhK5KI/`。前一轮因原 120/120/90 秒总测试期限得到 0 PASS、3 CANCELLED，403.245s，保留于 `server-readiness-durable-third.log`；没有增加期限、跳过检查或放宽断言。F 的原 ECONNRESET 与后继 Vite 单次 GET TimeoutError 仍分别保留，根因 UNKNOWN，不能由本次生命周期通过替代完整默认 E2E。
+
+按已 push 计划 `4434c3992ef8cbeb12c60396fef4d30055692090`，B 在 F 树只编辑并 stage 五个授权共享文件。未合并项归零，Go mod/sum 保留真实并集；checker/helper 分别与 `efa137eb` 准确路径 diff 为零。Node 语法与限定差异检查通过；实际 Go module graph EXIT 0，`f-five-shared-module-graph-second.json`。完整依赖检查在 summarize 0.25.1 `--version` 处实际 60 秒 ETIMEDOUT，`f-five-shared-dependency-first.log`；可选全缓存 `go mod verify` 五分钟无输出后，核实本人父/子进程身份并终止，结果为未完成。终止后的 Wait-Process 返回进程不存在，没有写成验证通过。五件 index blob 已交原 F 和模块，临时范围明确停止并归还，没有 commit、continue、abort、reset 或其他路径修改。
+
+随后按已 push 计划 `d9e99333c3f0f2016a288c0474df2ec3fcf0f287`，B 在 H 树仅编辑并 stage `cmd/server/config.go`，保留 H 当前设置和准确 S4 可信配置。没有带入非本 SOURCE 新增的旧发现函数；gofmt 与限定两类差异检查通过、未合并项归零，index `2d7a7bdc1a31b8f97545baed2f74806c2168d796`。目标包测试因 H main 的变参 Reader 调用与旧非变参接口不符而 RED，日志 `h-config-narrow-second.log`；准确 B Reader 来源 `f6491131`、`54ad5d7` 及完整文件闭包已交 H。该单件范围已停止并归还，其他源码和生命周期没有代改，未把冲突消除记为组合验收通过。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
