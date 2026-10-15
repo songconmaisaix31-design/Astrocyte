@@ -273,6 +273,8 @@ func (s *Service) RecoverMission(ctx context.Context, p domain.Principal, c Tran
 	if err != nil || replayed {
 		return out, err
 	}
+	expectedVersion := out.Version
+	cancelled := out.State == "cancelled"
 	for _, l := range leases {
 		if s.ownership == nil {
 			return out, domain.Failure(apierrors.UnsupportedCapability, "actual native ownership is not configured")
@@ -284,12 +286,34 @@ func (s *Service) RecoverMission(ctx context.Context, p domain.Principal, c Tran
 			}
 			return out, err
 		}
-		if err = s.settleExecutor(ctx, l, fact, out.State == "cancelled"); err != nil {
+		if err = s.settleExecutor(ctx, l, fact, cancelled); err != nil {
 			return out, err
 		}
+		expectedVersion++
 	}
-	if out.State == "cancelled" {
-		return s.repo.Load(ctx, out.ID)
+	if cancelled {
+		err = s.readWithin(ctx, p, c.MissionID, func(_ context.Context, tx Transaction) error {
+			cached, found, d, err := replay[domain.Mission](tx, p, "recover_mission", c.Meta, c)
+			if err != nil {
+				return err
+			}
+			if found {
+				out = cached
+				return nil
+			}
+			out, err = tx.Mission(c.MissionID)
+			if err != nil {
+				return err
+			}
+			if err = checkVersion(out.Version, expectedVersion); err != nil {
+				return err
+			}
+			if out.State != "cancelled" {
+				return domain.Failure(apierrors.VersionConflict, "cancelled mission changed during reconciliation")
+			}
+			return finish(tx, p, "recover_mission", c.Meta, d, out, "", out.ID, out.Version)
+		})
+		return out, err
 	}
 	err = s.authorized(ctx, p, c.MissionID, "recover_mission", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
@@ -305,16 +329,9 @@ func (s *Service) RecoverMission(ctx context.Context, p domain.Principal, c Tran
 			if err != nil {
 				return err
 			}
-			if out.State == "completed" {
-				return domain.Failure(apierrors.VersionConflict, "completed mission cannot recover")
-			}
 			old := out.Version
-			out.Version++
-			out.State = "ready"
-			out.Reason = c.Reason
-			if out.StopReached(time.Now().UTC()) {
-				out.State = "blocked"
-				out.Reason = "mission stop condition reached"
+			if err = out.ResumeAfterReconciliation(expectedVersion, c.Reason, time.Now().UTC()); err != nil {
+				return err
 			}
 			if err = tx.SaveMission(out, old); err != nil {
 				return err

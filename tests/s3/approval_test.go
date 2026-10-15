@@ -219,12 +219,55 @@ func TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart(t *testing.T
 	if err != nil || result.ID != mission.ID {
 		t.Fatalf("restart receipt: %v", err)
 	}
+	paused, err := sa.PauseMission(ctx, p, swarm.TransitionCommand{Meta: meta(detail.Mission.Version), MissionID: mission.ID, Reason: "Pause the actual ledger before recovery"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	recovery := swarm.TransitionCommand{Meta: meta(paused.Version), MissionID: mission.ID, Reason: "Recover the paused ledger without a native executor"}
+	recovered, err := sa.RecoverMission(ctx, p, recovery)
+	if err != nil || recovered.State != "ready" || recovered.Version != paused.Version+1 {
+		t.Fatalf("paused recovery: state=%s version=%d error=%v", recovered.State, recovered.Version, err)
+	}
+	replay, err := sa.RecoverMission(ctx, p, recovery)
+	if err != nil || replay.Version != recovered.Version {
+		t.Fatalf("paused recovery replay: %v", err)
+	}
+	changedRecovery := recovery
+	changedRecovery.Reason = "Different recovery input under the same key"
+	_, err = sa.RecoverMission(ctx, p, changedRecovery)
+	code(t, err, apierrors.VersionConflict)
 	_, err = s2.ChangeApproval(ctx, human, grant.ID, workspace.ChangeApprovalCommand{WorkspaceCommandMeta: workspaceMeta(grant.Epoch), Reason: "End current Swarm authorization validation"}, "revoked")
 	if err != nil {
 		t.Fatal(err)
 	}
 	_, err = sa.CreateMission(ctx, p, command)
 	code(t, err, apierrors.ApprovalRevoked)
+	cancelled, err := sa.CancelMission(ctx, p, swarm.TransitionCommand{Meta: meta(recovered.Version), MissionID: mission.ID, Reason: "Cancel after revoking execution approval"})
+	if err != nil || cancelled.State != "cancelled" {
+		t.Fatalf("cancel revoked mission: %v", err)
+	}
+	cancelledRecovery := swarm.TransitionCommand{Meta: meta(cancelled.Version), MissionID: mission.ID, Reason: "Reconcile the cancelled ledger while retaining cancellation"}
+	settled, err := sa.RecoverMission(ctx, p, cancelledRecovery)
+	if err != nil || settled.State != "cancelled" || settled.Version != cancelled.Version {
+		t.Fatalf("cancelled recovery changed terminal state: %v", err)
+	}
+	if err = a.Close(); err != nil {
+		t.Fatal(err)
+	}
+	a, err = sqlite.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer a.Close()
+	sa, _ = ledger(t, a)
+	settled, err = sa.RecoverMission(ctx, p, cancelledRecovery)
+	if err != nil || settled.State != "cancelled" || settled.Version != cancelled.Version {
+		t.Fatalf("cancelled recovery receipt after restart: %v", err)
+	}
+	changedRecovery = cancelledRecovery
+	changedRecovery.Reason = "Conflicting cancelled recovery input"
+	_, err = sa.RecoverMission(ctx, p, changedRecovery)
+	code(t, err, apierrors.VersionConflict)
 	var missions, leases int
 	if err = a.Conn().QueryRowContext(ctx, "SELECT COUNT(*) FROM swarm_missions").Scan(&missions); err != nil {
 		t.Fatal(err)
