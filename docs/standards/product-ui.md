@@ -8,7 +8,15 @@
 
 根经模块明确授权按 SPEC §5.3、§7.1、§11 实现逐题型委托。题型、单一后端、语言、外发范围、预算、复核和阈值由用户明确填写；题型为 `choice / score / truth`，资料准入用途为 `opportunity_admission`。未配置时拒绝自动委托；推荐、资料准入和任务批准各自保留服务端边界。
 
-已完整读取上述规格与 S5 精确 SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 的 `contracts.go`、`validation.go` 和阶段报告。该提交包含当时的私有 Policy/Result，新增 DelegationRule、开启、暂停、复核和受信任同事务准入的公开 DTO 尚未交付，页面接口保持待定。当前原 S5 为 `task_1d3e15a66b2a` / `ctx_0a7797464f02`；准确后继 SOURCE 由原 S5 → H OpenAPI/生产装配 → F 生成客户端 → 本域页面消费。已将接口和真实测试配置需求直接交原 S5、F 及模块，不消费未提交内容或据旧私有类型确定新表单字段。S5 页面与真实浏览器验收尚未开始，原 S2/S3/S4 任务和剩余限制继续有效。
+已完整读取上述规格与 S5 精确 SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 的 `contracts.go`、`validation.go` 和阶段报告，并按模块 `msg_0542e7857e51` 读取后继 SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1` 的完整 `contracts.go`、`delegation_contracts.go` 和 `judgment_delegation.go`。后继源码包含版本化 Rule、规则/策略读取、人类开启或暂停、固定 Opportunity 判断及受信任准入桥接；OpenAPI/生产装配与 F 生成客户端仍待交付。当前原 S5 为 `task_1d3e15a66b2a` / `ctx_0a7797464f02`；准确 SOURCE 按原 S5 → H OpenAPI/生产装配 → F 生成客户端 → 本域页面消费。已将现行配置/后端状态读取、原请求幂等和 unknown 对账及真实测试配置需求直接交原 S5、F 和模块。本树只读准确提交，没有合入 S5 全部历史或未提交内容。S5 规则与 API 页面、真实浏览器验收尚未完成，原 S2/S3/S4 任务和剩余限制继续有效。
+
+### 已确定的人工反馈字段
+
+SOURCE `6a5681f369e2cec114abfa1d70a239ed6d94aab2` 已普通 push，独立 `git ls-remote` 核远端同 SHA。新增本域 `JudgmentFeedbackFields` 与设计变量样式，复用现有 `SelectField` / `TextField`。组件接收明确的编辑状态、禁用状态和变更回调，提供 `adopt / later / reject / revise / already_solved` 五类反馈、空白选择和必填理由；“以后再看”保留独立反馈类型和原判断记录，采用建议、准入和任务批准分别确认。它没有 API 请求、自动选择或委托开启动作。
+
+`pnpm --dir web typecheck`、`pnpm --dir web exec eslint src/pages/attention/delegation`、`git diff --check` 均通过。该组件尚未挂入真实判断结果页面，实际表单交互、HTTP、SQLite 与 S5 全链尚未运行；字段编译通过只记录本阶段覆盖。
+
+当前 S4 的 H SOURCE `31256d5d6758daf25892d55df73feffde7a7e573` / REPORT `89d84d55a822e2f0506e18e93adaa1ec02a8342e` 已由根接受，公开 Repository DTO 已只读核查；F 准确生成客户端 SOURCE 尚未交付。本域仍等待该准确客户端后继续 `RepositoryContextPanel`，真实 Graph 配置、两个实际 worktree 正向与过期恢复输入已向原 S4 请求。原 S2/S3、Context 与 S5 的准确公共契约交付顺序继续有效。
 
 ## 2026-10-15 恢复阶段：批准快照与键盘验证
 
