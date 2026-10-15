@@ -17,6 +17,8 @@ type ProjectAuthorization struct {
 	References workspace.ProjectReferences
 	Policies   judgment.PolicyRepository
 	Snapshots  workspace.ProjectSnapshotProvider
+	Goals      GoalReader
+	Ranking    RankingReader
 }
 
 func authorizationDenied(message string) error {

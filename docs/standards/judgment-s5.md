@@ -1,6 +1,6 @@
 # S5 判断实施与实际验证
 
-固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_0a7797464f02`，接管 HEAD `8914392e22453cefbe14469632f43a6d52ceec69`；当前机制 SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1`，真实委托测试 SOURCE `1e89ef832b77ae31d75d9db920e7186773b75c94`。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；协调者另核实际 projection `codex/gpt-6.1-sol`。
+固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_8ff0e4770bd8`，接管 HEAD `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73`；当前机制 SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1`，真实委托测试 SOURCE `1e89ef832b77ae31d75d9db920e7186773b75c94`。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；协调者另核实际 projection `codex/gpt-6.1-sol`。
 
 仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。当前 S5 handler 前缀归本执行者，开始写入前等待 H/B 本人确认没有现有修改；公共字段仍由 H 确认。正式 V4 与认知冻结域保持原授权边界。
 
@@ -219,3 +219,11 @@ SOURCE `50d9cb299954fa41e381bd5d2d3ce758d00e353b` 已普通提交和 push，远�
 `go vet ./internal/judgment ./internal/adapters/judgment ./internal/adapters/httpapi ./internal/adapters/sqlite ./tests/s5` PASS，`go test -mod=readonly` 同五包 `-run '^$' -count=1` 编译 PASS，Node syntax、gofmt diff、Git diff-check 均通过。上述 Go 命令逐进程使用已授权 D 盘共享 warm GOCACHE 和本任务独占 GOTMPDIR。
 
 AT12 按根 `msg_e1415e3ad447` 继续：固定真实 Goal ID/revision 经 S2 读取固定及当前版本；四维 RankingProfile 使用真实 ID/version/configured/enabled，完整 TasteProfile 的实际 rubric/example/delegation 来源由原 B 补齐；全部实际参与内容进入既有缓存并同事务重核。当前 Policy 五版本测试不算完整 AT12。新依赖 DTO 已交 H 确认，Jev secret、OS 单程序隔离执行许可及 H 生产 HTTP 装配仍待原责任人；没有扩大授权或宣称 S5 完成。
+
+## Goal 与排序来源的真实读取
+
+本次恢复保留三件原 WIP 并完成实际检查。`GoalReader.ReadGoal(context.Context, domain.Caller, string, int) (domain.Goal, error)` 使用原 S2 服务读取明确固定 revision 和 revision=0 的当前版本；项目、内容或 active 状态变化均阻止旧引用使用。`RankingReader.GetRankingProfile(context.Context, attention.Principal) (attention.RankingProfileDetail, error)` 使用原 Attention 服务，未配置、disabled 和旧 ID/version 分别拒绝；没有生成默认权重或完整品味版本。
+
+`ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActualGoalAndRankingSources$' -count=1 -v -timeout 2m` 实际 PASS，测试 `0.15s` / 包 `2.049s`。真实 HTTP human session、原资料导入、原 SQLite migrations 和两个公开项目均由现有 fixture 建立；Goal 通过原 S2 写入真实 revision 1/2，Ranking 通过原 Attention 写入真实 version 1/2/3。检查固定旧 Goal 内容不可变、跨项目拒绝、当前 Goal 改变使旧引用冲突、排序权重改变使旧 version 冲突和 disabled 拒绝。同一 `WithJudgmentTx` 内读取两个真实来源，没有新增 SQLite 连接等待。原件 `.verification/s5/actual-sources-ctx_8ff-first.log` 保留。
+
+当前两个 reader 尚未进入 JudgmentRequest/Policy 的最终 Sources DTO；完整 TasteProfile reader/DTO 正与 B 核实，新公共字段已交 H 确认，未据候选冻结接口。完整内容进入模型输入、既有缓存及同事务重核和 AT12 仍须后续实现与实际运行。没有重复导出或已通过的模型验证，没有使用模型回答替代本节的领域来源检查。
