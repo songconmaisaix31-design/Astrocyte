@@ -10,7 +10,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-// 回调只在当前主数据库读取真实权限及项目 owner，复用收到的事务 context。
+// 回调核查当前主数据库权限，返回真实 LocalProject.ID 并复用收到的事务 context。
 type CompletionExperienceAccess func(context.Context, attention.Principal, string) (string, error)
 
 type RelayCompletionExperienceSource struct {
@@ -34,6 +34,9 @@ func (s *RelayCompletionExperienceSource) currentOwner(ctx context.Context, prin
 	if strings.TrimSpace(principal.ID) == "" || principal.Kind != "human" && principal.Kind != "agent" || strings.TrimSpace(projectID) == "" {
 		return "", nativeError(apierrors.ScopeDenied, "current authenticated completion project principal is required")
 	}
+	if principal.Kind == "agent" {
+		return "", nativeError(apierrors.ScopeDenied, "Agent completion source action has not been authorized")
+	}
 	if s == nil || s.reader == nil || s.access == nil {
 		return "", nativeError(apierrors.EvidenceMissing, "actual completion source authorization is not connected")
 	}
@@ -41,8 +44,8 @@ func (s *RelayCompletionExperienceSource) currentOwner(ctx context.Context, prin
 	if err != nil {
 		return "", completionExperienceCallbackFailure(err, "current completion project authorization failed")
 	}
-	if owner == "" || owner != strings.TrimSpace(owner) {
-		return "", nativeError(apierrors.EvidenceMissing, "actual completion project owner is unrecorded")
+	if owner != projectID {
+		return "", nativeError(apierrors.EvidenceMissing, "completion source owner must be its actual local project")
 	}
 	return owner, nil
 }
