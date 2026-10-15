@@ -4,9 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"log/slog"
 	"net/http"
+	"net/url"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 )
@@ -15,15 +15,16 @@ type contextKey string
 
 const requestIDKey contextKey = "request_id"
 
-// generateRequestID creates a random hex request ID.
+// 生成独立的随机十六进制请求 ID。
 func generateRequestID() string {
 	b := make([]byte, 8)
-	_, _ = rand.Read(b)
+	if _, err := rand.Read(b); err != nil {
+		panic(err)
+	}
 	return hex.EncodeToString(b)
 }
 
-// requestIDMiddleware adds a request ID to every request context.
-// Must run before loopbackMiddleware so rejected requests get an ID.
+// 请求 ID 在回环检查之前生成，拒绝响应也保留同一 ID。
 func requestIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rid := r.Header.Get("X-Request-ID")
@@ -36,7 +37,7 @@ func requestIDMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// loggingMiddleware logs every request with method, path, status and duration.
+// 记录请求方法、路径、状态和请求 ID。
 func loggingMiddleware(logger *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sw := &statusWriter{ResponseWriter: w, status: http.StatusOK}
@@ -50,7 +51,7 @@ func loggingMiddleware(logger *slog.Logger, next http.Handler) http.Handler {
 	})
 }
 
-// statusWriter captures the HTTP status code for logging.
+// 保留实际发送的 HTTP 状态供日志使用。
 type statusWriter struct {
 	http.ResponseWriter
 	status int
@@ -61,7 +62,7 @@ func (sw *statusWriter) WriteHeader(code int) {
 	sw.ResponseWriter.WriteHeader(code)
 }
 
-// writeRejectionError writes an ErrorV1 JSON response for middleware rejections.
+// 拒绝响应复用现有 JSON 写入和错误处理。
 func writeRejectionError(w http.ResponseWriter, r *http.Request, status int, message string) {
 	rid := ""
 	if v, ok := r.Context().Value(requestIDKey).(string); ok {
@@ -83,17 +84,13 @@ func writeRejectionError(w http.ResponseWriter, r *http.Request, status int, mes
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(env) //nolint:errcheck
+	writeJSON(w, status, env)
 }
 
-// loopbackMiddleware rejects requests whose Host or Origin do not
-// resolve to a loopback address. Returns ErrorV1 JSON with
-// nonempty request_id, retryable, and required_action.
+// Host 和完整 Origin 仅接受明确的回环地址，拒绝结果使用 ErrorV1。
 func loopbackMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check Host header.
+		// HTTP Host 与没有 Host 的连接来源分别核实。
 		host := r.Host
 		if host == "" {
 			host = r.RemoteAddr
@@ -103,16 +100,10 @@ func loopbackMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Check Origin header if present.
+		// 标准 URL 解析拒绝凭据、路径和非 origin 字段。
 		if origin := r.Header.Get("Origin"); origin != "" {
-			originHost := origin
-			if idx := findSchemeEnd(originHost); idx >= 0 {
-				originHost = originHost[idx:]
-			}
-			if idx := findPathStart(originHost); idx >= 0 {
-				originHost = originHost[:idx]
-			}
-			if !isLoopbackHost(originHost) {
+			parsed, err := url.Parse(origin)
+			if err != nil || parsed.User != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || origin != parsed.Scheme+"://"+parsed.Host || !isLoopbackHost(parsed.Host) {
 				writeRejectionError(w, r, http.StatusForbidden, "non-loopback origin rejected")
 				return
 			}
@@ -120,24 +111,4 @@ func loopbackMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
-}
-
-// findSchemeEnd returns the index after "://" in a URL, or -1.
-func findSchemeEnd(s string) int {
-	for i := 0; i < len(s)-2; i++ {
-		if s[i] == ':' && s[i+1] == '/' && s[i+2] == '/' {
-			return i + 3
-		}
-	}
-	return -1
-}
-
-// findPathStart returns the index of the first '/' after the host, or -1.
-func findPathStart(s string) int {
-	for i := 0; i < len(s); i++ {
-		if s[i] == '/' {
-			return i
-		}
-	}
-	return -1
 }
