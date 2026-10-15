@@ -1,6 +1,20 @@
 # Workspace S2
 
-当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_b9a5305d8480`，终端 `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_edce6bc4ca6c`，终端 `term_60d83d74-e84f-4a6e-b432-bb13c1b48436`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+
+## 2026-10-15 当前 Goal 与固定历史 REPORT
+
+SOURCE `ee7889cf04383162e160ae30544eb324257ed45c` 提供 `CurrentGoalReader`。`ReadCurrentGoalSnapshot(ctx, caller, projectID, goalID, revision)` 要求用户明确选择的正整数版本，读取实际项目、当前成员授权与 Goal 最新不可变 revision；项目不符、旧 revision、非 active 状态或缺目标依据时立即拒绝。返回 `domain.CurrentGoalSnapshot`，包含真实 Goal、ProjectSettingsRevision、ObservedAt；没有默认 Goal 或推断的目标。历史 `ReadGoal` 与批准继续保留原固定版本。
+
+`WithCurrentGoalSnapshot(ctx, caller, expected, callback)` 在同一 Workspace SQLite 事务内重新读取当前 Goal 与项目访问权限，检查当前 Goal revision 和项目设置 revision，并只把实际重新读取的值交给数据库回调。调用方在模型调用前读取快照，模型调用在事务之外，保存或使用判断结果时再进入此端口；模型、profile、policy、来源版本的检查由对应 owner 在同一回调中完成。SQLite 消费方调用 `WorkspaceTransaction(ctx, db)` 复用现有连接，其他数据库明确拒绝。此端口不签发 Grant、不修改历史批准，也不把 S5 缓存验收登记为已完成。
+
+`go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` PASS，6.26 秒，真实库 `.verification/s2-first/actual-3596023290/state.sqlite`，日志 `current-goal-snapshot-final.log`。实际同数据库事务、未观察快照拒绝、跨项目拒绝、Goal 更新后旧快照拒绝、项目设置变化后拒绝、旧 Goal / ContextPacket 不变及关闭重开检查通过，原批准、幂等、完整回滚、重投递、撤销、完成与自然过期检查保持。初次恢复 WIP 的同一核心测试另为 PASS，5.13 秒，日志 `current-goal-snapshot-first.log`。
+
+`node --test tests/s2/http.test.mjs` PASS，32.423 秒，日志 `current-goal-http-first.log`，实际库 `.verification/astrocyte-s1-fiEro4/data/state.sqlite`。使用实际 `cmd/server` 构建产物、真实 HTTP 与两次进程重启，核 Goal 更新生成新 revision、同键同输入幂等、旧版本修改 409、Agent 修改 403、固定历史与当前查询、重启后两版保留，同时保留批准与事务故障原断言；零原生会话、零 Mission。未增加 skip、延长期限或重发模型。`go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s2`、34 包架构检查、变更 Go 文件的格式检查与 `git diff --check` 全部通过。
+
+依模块 `d0838adbdb3b25ee52c02257fcd3d0d5e0136231` 计划及恢复后 H 本人 STOP，S2 在 H 原树逐块处理并 stage 四件 SessionBinding / ports / 实际测试冲突。全树未合并项为零、四件 working / cached diff 检查通过，原 HEAD / CHERRY_PICK_HEAD 保持；未执行任何 Git 生命周期操作或 H 构建。范围已明确停止并归还，经模块独核后由 H 唯一继续。H 当前基线缺 Admission 的领域快照类型，其端口保持该树原有准确闭包；完整 Admission 另按已交二十件来源消费。
+
+当前 Goal 端口没有新增 HTTP 契约或依赖。S5 完整 AT12 的真实模型 / profile / policy / 来源变化和旧 proof 拒绝，以及 H 生产 Context 与 R 当前 owned 会话成功，继续由原 owner 验证；用户未答的 Calls / 自由工具及具体 working 条件保持原状态，模型和原生窗口调用为零。所有先前 RED / UNKNOWN / NOT_RUN 原件保留。
 
 ## 2026-10-15 公共 Context DTO 与 owned 工厂 REPORT
 
