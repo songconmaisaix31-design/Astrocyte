@@ -8,7 +8,14 @@ import (
 )
 
 func TestRelaySourceIdentityActualFileAndAliasRejection(t *testing.T) {
-	parent, err := filepath.Abs(filepath.Join("..", "..", "..", "dist", "relay-source"))
+	parent := filepath.Join("..", "..", "..", "dist", "relay-source")
+	if outputRoot := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); outputRoot != "" {
+		if !filepath.IsAbs(outputRoot) {
+			t.Fatal("明确的测试输出根必须为绝对目录")
+		}
+		parent = filepath.Join(outputRoot, "relay-source")
+	}
+	parent, err := filepath.Abs(parent)
 	if err != nil || os.MkdirAll(parent, 0700) != nil {
 		t.Fatal("独占来源检查目录不可用")
 	}
