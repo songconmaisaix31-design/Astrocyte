@@ -95,3 +95,15 @@ owner 报告链接：[S4 标准文档](https://github.com/songconmaisaix31-desig
 - 文档校核：`git diff --check` 与写入范围检查。
 
 未执行：产品构建、Go/前端/浏览器/模型/原生控制器验收、正式采集与发布。本文只做许可与来源核对，不重跑 S4、S5 的领域测试。
+
+## 8. 独立 REPORT
+
+本轮 SOURCE `4a130aef860045beb8dedf831192d447693ea281` 已普通 push，远端 `git ls-remote origin refs/heads/songconmaisaix31-design/release-research-20261014` 与实际同完整值；本节是该 SOURCE 之后的独立 REPORT，只修改本文件，REPORT 自身的完整 SHA 由实际 Git 提交与 push 回执提供。
+
+独立核查结果：
+
+- 写入范围：相对基线 `cc4299501d4aecb3619a63529b736112b0cd23b3` 只修改 `docs/release/components-20261015.md`；业务代码、`go.mod`、`go.sum`、`package.json`、`pnpm-lock.yaml`、`dependencies.lock.json` 与冻结域零改动；`.verification/components-20261015/` 由 `.gitignore` 忽略。
+- 内容核对：开头按实际区分开发客户端与产品模型探针；S4 更新为 SOURCE `f407337` 及报告 `0bd2aab`、S5 更新为 SOURCE `bc5ffc9` / 独立 REPORT `cd8cb2d`，删除旧笼统 NOT_RUN 与动态数字汇总，改为用途、构造、许可输入与 owner 报告链接；AOCI 只登记旧 15f 未包含、公开分发方式未答复；删除自行新增的 Jev / Node 打包门禁。
+- 候选包：15f 的 39 项目录只含项目 AGPL-3.0 `LICENSE`，不含任何 S4、S5 固定组件。
+
+真实剩余限制：SemanticIndex 选择与 AOCI 的公开包分发方式仍需用户决定；这些组件尚未进入最终包，具体打包方案由 P 按已获授权实施。
