@@ -1,5 +1,31 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 Prepare 与真实共享客户端阶段
+
+当前 F Task `task_7cbe30017760` / Dispatch `ctx_630293cc6778`，分支 `standards-frontend`。本次沿既有 Codex `--yolo` 配置，模块公开确认实际模型为 `gpt-6.1-sol`；没有另派 Agent，没有新增原生登记、初始化、首次输入或模型调用。
+
+源码 SOURCE `e689e7f5410d977f8cb72df57efbfeb5f490c415` 已普通 push，提交原五件修改和两个真实 HTTP API 测试。前置消费提交 `375469b2fc0a029128c81b63350f3e5ed176d400` 只普通 cherry-pick 原 UI SOURCE `0661b49fd5b29cded5dbf15277fc5abafa20b8c2` 的八件 Swarm 页面文件；消费后八件完整 diff 为零，页面逻辑继续归原 UI 负责人。没有修改共享配置、依赖、schema 或其他负责人的工作树。
+
+Relay 权限页提供单独的 Prepare 操作，初始化与首次输入分别提交。Prepare 收据显示原身份和实际结果；Prepare 或 Dispatch 待定、交付未知、接受但带错误时，两项操作均禁止重发。浏览器持久锁按原任务保存，请求结果未知后，重新读取、关闭重开和刷新均不自动解除。新增两尺寸真实拒绝和离线验证仍保留原断言。
+
+Swarm 客户端测试使用本轨精确已跟踪的 `AGENTS.md`，通过生产资料导入、空间引用、Goal、Proposal、人类批准、Mission 和 WorkItem 接口建立实际记录，逐个 `event_id` 在真实 outbox 中定位，HTTP / SQLite 重启后完整核对固定版本。Context 测试保留实际未配置的 501、实际不存在的 404、权限拒绝 403、CSRF、命令身份、取消和服务断开；没有把未配置来源记为正向成功。显示测试仅验证明确参数，不产生来源或执行事实。
+
+本次进程使用 `GOMODCACHE=C:/Users/DW/go/pkg/mod`、`GOPROXY=off` 和获准共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`。全部新服务数据、构建输出、日志及 TEMP / TMP / GOTMPDIR 位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification`。浏览器使用发布负责人已归还的 `PLAYWRIGHT_BROWSERS_PATH=D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001`，没有移动或下载浏览器。
+
+以下命令在 `web` 执行，记录均位于上述独占 `.verification`：
+
+| 验证命令 | 实际结果 | 记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0，包含准确 Swarm 页面与当前 E2E 类型 | `typecheck-ui-source.log` |
+| `npm run lint` | EXIT0 | `lint-ui-source.log` |
+| `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/web-dist` | EXIT0，保留 594.17 kB 产物提示；新输出目录没有自动清理 | `build.log` |
+| `npx vitest run src/api/swarm.test.ts src/api/workspaceContext.test.ts src/api/relay.test.ts src/pages/workspace/relayPresentation.test.ts --maxWorkers=1` | 4 文件、17 PASS，85.26 秒、EXIT0；真实生产 Go / HTTP / SQLite | `safe-clients-real-http-current.log` |
+| `npx vitest run src/components/displayContract.test.tsx src/pages/workspace/relayPresentation.test.ts src/pages/workspace/relayCommand.test.ts src/pages/workspace/relayFacts.test.tsx src/pages/workspace/relayDisplayContract.test.tsx` | 5 文件、37 PASS，EXIT0；包含与前行重合的收据参数测试，不累加为独立总数 | `display-vitest.log` |
+| `npx tsc --ignoreConfig --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM --types vite/client --jsx react-jsx --skipLibCheck --allowJs src/api/swarm.test.ts src/api/workspaceContext.test.ts src/pages/workspace/relayIntentPanel.tsx e2e/relay-runtime.spec.ts` | EXIT0；原缺少 CSS 类型声明的检查命令首失败保留 | `focused-typecheck-vite-types.log`、`focused-typecheck.log` |
+| `npx playwright test e2e/relay-runtime.spec.ts --grep '真实空会话初始化权限拒绝\|真实网络断开的初始化未知锁' --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/prepare-artifacts` | EXIT1；原 `webServer` 120 秒准备超时，未进入四项测试，零项通过 | `prepare-playwright.log`、`astrocyte-dev-PamDCI` |
+
+默认 Playwright 准备期间，实际 Go 在 `00:44:02+08:00` 的 health 返回 200，Vite 已公告 `vite_listening` 和 `vite_ready`，随后仍未通过默认入口的 HTTP 就绪检查。完整 stdout / stderr 与独立 SQLite 保留，已交唯一 B 负责人调查初始化前 HTTP 生命周期。F 没有修改 helper、端口选择、120 秒期限、断言或重试，没有重复运行同一失败。Prepare 两尺寸四项及默认完整 100 项尚未通过；真实 CLI / 模型正向和最终组合保持未完成。
+
 ## 2026-10-16 恢复后的准确生成契约
 
 F 原 Task `task_7cbe30017760` / Dispatch `ctx_5888aa5adf82`，工作树与分支保持 `standards-frontend`。Orca 公开观测客户端 Codex、模型 `gpt-6.1-sol`，终端显示 xhigh fast，沿既有 `--yolo` 配置；本阶段未启动额外 Agent 或模型请求。
