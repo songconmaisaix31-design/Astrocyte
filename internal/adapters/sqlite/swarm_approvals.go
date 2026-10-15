@@ -186,7 +186,7 @@ func (b *SwarmApprovalBridge) WithAuthorizedGrant(ctx context.Context, c swarmap
 				if packet.ID != binding.PacketID || packet.ProjectID != binding.ProjectID || packet.GrantID != g.ID || packet.GrantEpoch != g.Epoch || packet.Snapshot.ProjectID != binding.ProjectID || packet.Snapshot.WorktreeID != binding.WorktreeID || packet.Snapshot.Root == "" {
 					return swarm.Failure(apierrors.ContextStale, "member binding differs from its actual immutable project snapshot")
 				}
-				ctx = swarmapp.WithAuthorizedBinding(ctx, swarmapp.AuthorizedBinding{ID: binding.ID, Purpose: bindingCheck.Action, Version: binding.Version, PacketID: binding.PacketID, ProjectID: binding.ProjectID, MemberID: binding.MemberID, SessionID: binding.SessionID, NativeSessionID: binding.NativeSessionID, AdapterID: binding.AdapterID, WorktreeID: binding.WorktreeID, Root: packet.Snapshot.Root})
+				ctx = swarmapp.WithAuthorizedBinding(ctx, swarmapp.AuthorizedBinding{ID: binding.ID, Purpose: bindingCheck.Action, Version: binding.Version, PacketID: binding.PacketID, ProjectID: binding.ProjectID, MemberID: binding.MemberID, SessionID: binding.SessionID, NativeSessionID: binding.NativeSessionID, AdapterID: binding.AdapterID, ControllerID: binding.ControllerID, StartupOperationID: binding.StartupOperationID, WorktreeID: binding.WorktreeID, Root: packet.Snapshot.Root})
 				return invoke(ctx, g)
 			})
 		}

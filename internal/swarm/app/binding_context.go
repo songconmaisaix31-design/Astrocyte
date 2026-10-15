@@ -50,7 +50,7 @@ func AuthorizedBindingForMember(ctx context.Context, p domain.Principal, m Membe
 	if p.Kind != "agent" || p.ID == "" || p.ProjectID == "" || p.ID != m.HolderID || p.ID != b.MemberID || p.ProjectID != m.ProjectID || p.ProjectID != b.ProjectID {
 		return b, domain.Failure(apierrors.ScopeDenied, "member binding does not belong to the current authenticated project identity")
 	}
-	if b.SessionID == "" || b.NativeSessionID == "" || b.AdapterID == "" || b.WorktreeID == "" || b.Root == "" || m.SessionID != b.SessionID || m.Worktree != b.Root || m.OperationID == "" {
+	if b.SessionID == "" || b.NativeSessionID == "" || b.AdapterID == "" || b.ControllerID == "" || b.StartupOperationID == "" || b.WorktreeID == "" || b.Root == "" || m.SessionID != b.SessionID || m.Worktree != b.Root || m.OperationID == "" {
 		return b, domain.Failure(apierrors.ContextStale, "current member binding lacks the exact native session and fixed worktree")
 	}
 	return b, nil
