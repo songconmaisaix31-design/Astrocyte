@@ -1,5 +1,25 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:11 同一产品的持久化恢复核查
+
+分支 `standards-frontend`，本阶段 SOURCE `6503077885aee63dd97f9642deab66ba57167925` 已普通 push，父提交 `8bd599c8a34661dc9f4a47398212b387278a483f`。当前 Task / Dispatch 为 `task_7cbe30017760` / `ctx_c22d1dd61be3`；客户端 Codex，Orca 实际观测 `gpt-6.1-sol` / xhigh fast，沿原 `--yolo` 配置。原七件产品检查脚本保留，`inspectProductPaper.ts`、`inspectProductProject.ts`、`inspectProductProposal.ts` 的原写入操作没有重发。
+
+三件 `readProductPaper.ts`、`readProductProject.ts`、`readProductProposal.ts` 通过显式 `ASTROCYTE_TEST_PRODUCT_RECORDS_DIR` 读取原安全记录，输出使用独立 `ASTROCYTE_VERIFICATION_OUTPUT_DIR`；输入与输出相同立即失败，结果继续使用 `wx` 创建。新增 `readProductStored.ts` 只以 `readOnly: true` 打开协调者明确交付的同一产品 SQLite，按原公开 ID 核对已保存内容和实际事件，不发送 HTTP 请求。
+
+原安全记录位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_fefd1edc052e/.verification`。本次实际读取的数据库为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`；本次输出位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_c22d1dd61be3/.verification`，进程 TEMP / TMP 同样使用该目录。
+
+实际恢复核查通过：原 arXiv v1 / v2 与 PLOS 三次导入对应两份资料，人工摘录仍为 `human` / `manual`；项目权限保持 r2 与原明确目录，Goal、已批准 Proposal、Grant 和 ContextPacket 的固定来源及版本关系存在。五个 Attention 事件和两个 Workspace 事件均逐 ID 在原事件库定位，批准事件的 `grant_id` 与实际批准一致。原生会话数量为零。本结果属于持久化恢复核查，产品服务恢复后的 HTTP / DOM 尚待执行。
+
+| 验证命令（在 web 执行） | 实际结果 | 本次输出目录内记录 |
+| --- | --- | --- |
+| `npm run typecheck` | EXIT0，包含当前 E2E 类型 | `typecheck-current.log`；首检查原件为 `typecheck-first.log` |
+| `npm run lint` | EXIT0 | `lint-first.log` |
+| `npx eslint e2e/readProductPaper.ts e2e/readProductProject.ts e2e/readProductProposal.ts e2e/readProductStored.ts` | EXIT0 | `lint-readonly-final.log` |
+| `node --experimental-strip-types e2e/readProductStored.ts`，显式配置上述原记录及输出目录 | EXIT0，真实 SQLite 只读、七个事件逐项核对、零 HTTP / 模型调用 | `product-stored-readonly.log`、`product-stored-readonly.json` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+当前唯一产品服务由原 H 恢复，首选 `http://127.0.0.1:64505`；未收到准确运行 SOURCE 和 ready 前，不执行页面读取，不启动第二共享服务。原完整默认 320 项准确结果为 204 PASS / 55 FAIL / 43 既有 SKIP / 18 无结果，EXIT UNKNOWN，原件保留，本阶段没有重跑。当前 HTTP / DOM 恢复、真实 CLI / 模型、L1 / L2 及最终完整产品仍未通过；受限 Codex、未答 S3、Agent 完成证据权限和 Laya 范围按绝对根最新决定保持现状。
+
 ## 2026-10-16 Swarm 页面组合与设计导航验证
 
 分支 `standards-frontend`，当前业务 SOURCE `ae2f56b257a9f6f880d1e96db26c6470f9966384` 已普通 push。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_630293cc6778`，沿现有 Codex `--yolo` 配置，模块公开核实模型为 `gpt-6.1-sol`。本阶段没有在 H 管理的 L1 服务新增登记，没有新建原生会话、发送模型输入或调用模型。
