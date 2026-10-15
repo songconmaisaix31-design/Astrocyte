@@ -2,6 +2,79 @@
 
 当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_b9a5305d8480`，终端 `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
 
+## 2026-10-15 公共 Context DTO 与 owned 工厂 REPORT
+
+安全 DTO / owned 工厂 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 和后继单文件 SOURCE `02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` 均已普通 push，分别独立 `git ls-remote` 同值。后继只移除组包事务前的一次重复 Git 验证，保存前事务内的当前快照验证保持；H 消费九文件提交后再消费此单文件提交。`go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` 最终 PASS，29.994 秒，真实库 `.verification/s2-first/actual-1996825770/state.sqlite`，日志 `context-safe-dto-final-first.log`。新增 Go 标准 HTTP 实际监听器使用生产 `httpapi.NewServer(...).Handler()`，接真实 S2 服务、SQLite、objects 和 Git snapshot：GET / POST Context、真实 token 允许读取与跨项目 403、固定引用、绝对根不出响应、根目录的相对映射通过；原批准 / 回滚 / 撤销 / 过期 / 重启检查继续通过。原 10 秒请求期限和全部断言保持。此前开发内容运行 PASS 9.600 秒的 `context-safe-dto-first.log` 保留；随后准确源码复验的 Context POST 10 秒超时 FAIL 保留在 `context-safe-dto-source.log` / `actual-4237230458`，不改写。此结果属于生产 Handler 的实际 HTTP / SQLite 组合，主 `cmd/server` 的 Context 配置仍由 H 验证。`go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s2`、34 包架构和 `git diff --check` 均通过。
+
+HTTP 使用四个明确的公有类型：`WorkspaceContextPacketDTO`、`WorkspaceSnapshotDTO`、`WorkspaceSessionBindingDTO`、`WorkspaceCapabilityDTO`。包外层保留固定项目、Goal、Proposal、Grant、scope、stops、sources、用户选择的交接内容及不透明对象引用。snapshot 只有 environment_id、repo_id、worktree_id、project_id、head、index_digest、worktree_digest、generation、observed_at，不含 Root。scope.roots 表示相对于私有 snapshot.Root 的路径，统一使用正斜线，项目根为 `.`；越界或无法转换立即拒绝。此处的 roots 语义与批准界面的绝对执行根不同，H 应使用独立 Context schema。可选交接列表依实际 JSON 为 array 或 null。binding 不公开 native / controller / startup 身份；capabilities 只发布 status 与 checked_at，不发送原始 reason 或额外私有能力键。
+
+`workspace.NewOwnedSessionProvider(reader, snapshots) (OwnedSessionProvider, error)` 要求真实 `OwnedNativeSessionReader` 和真实 `ProjectSnapshotProvider`。H 在同一 Registry 的 `ReadOwnedNativeSession` 原 tuple 外仅作类型映射，实现 `ReadOwnedNativeSessionRecord(ctx, platformSessionID)`。私有 `domain.OwnedNativeSessionRecord` 的字段为 Session、ControllerID、StartupOperationID、EvidenceSessionID、EvidenceNativeID、EvidenceAdapterID、WorkspaceRoot、Liveness、Capabilities；全部 `json:"-"`。原 tuple 的 session / native / adapter 及 controller / startup 身份必须完整一致，Liveness 必须由 R 的当前控制器事实提供为 live 或 exited；unknown 拒绝，不能来自 DB scalar、working 猜测或新建 Registry。R 的三值事实来源已交 `msg_27adfedfdf48` 请求确认，真实 owned 正向仍 NOT_RUN。
+
+工厂先检查原持有 tuple，再以真实 Caller 调用实际 S4 snapshot 捕获和验证项目 / 根目录 / Git worktree 身份；不会使用 Relay workspace UUID 代替 Git identity。H 构造 provider 并处理 error 后，调用 `S2.ConfigureContext(actualSnapshots, actualObjects, owned)`。`OwnedSessionProvider.ReadOwnedSessionFacts(ctx, caller, sessionID, purpose)` 的 purpose 为 bind_session、claim_work_item、submit_artifact。新绑定及认领要求 live；提交可接受同原 Registry 保留的 exited tuple，仍检查 binding / Grant epoch / 当前项目与成员权限，以及私有 controller / startup / native 身份。SQLite JSON 私有保存新身份，未增加迁移。原 input operation 的匹配由 S3 在相同授权回调内调用 R 的实际输入事实端口；startup operation 不能充当 input operation。原生完整认领 / 提交尚未通过，当前未以纯规则或组件运行替代。
+
+H 若缺完整 S2 基线，从同一 SOURCE tree 按以下二十个生产路径消费，不合入整条祖先历史：
+
+```text
+internal/workspace/domain/goals.go
+internal/workspace/domain/proposals.go
+internal/workspace/domain/approvals.go
+internal/workspace/domain/proposal_context.go
+internal/workspace/domain/session_bindings.go
+internal/workspace/app/proposal_ports.go
+internal/workspace/app/s2_service.go
+internal/workspace/app/proposal_context.go
+internal/workspace/app/proposals_admission.go
+internal/workspace/app/session_bindings.go
+internal/workspace/app/session_bindings_owned.go
+internal/adapters/sqlite/workspace_proposals.go
+internal/adapters/sqlite/workspace_goals.go
+internal/adapters/sqlite/workspace_approvals.go
+internal/adapters/sqlite/workspace_context_packets.go
+internal/adapters/sqlite/workspace_session_bindings.go
+internal/adapters/httpapi/workspace_goals.go
+internal/adapters/httpapi/workspace_proposals.go
+internal/adapters/httpapi/workspace_context_packets.go
+internal/adapters/httpapi/workspace_context_packets_dto.go
+```
+
+复用 B 已发布的项目 / 文件 / 来源端口与当前项目策略；策略精确来源为 `4725f0b1c6907ddefb3b1e1dac0f49840031db59` 的 project_policy.go / projects.go 与其测试。事务桥和 Workspace DDL 的来源见下一节。S4 provider、稳定 EnvironmentID / 配置 / 实际资产与 021 索引迁移由原 B / S4 / H 交付，本源码不引入新的 CLI、模型或默认环境身份。
+
+## 2026-10-15 R 最小真实事务来源闭包
+
+原 R `37c3b9de554ebc1f8f7338105cbff024dd540fc9` 的 c715 五件消费后，真实首 RED 为缺 NewWorkspaceRepository、WorkspaceTransaction、workspaceCAS、workspace.WorkspaceTx；原日志 `D:/Astrocyte-agent-assets/20261015/relay/R/completion-components-first.log` 保留。核查及候选编译期间 R 最新已到 `c569c8718e65a6ca50e2e531580b1f2814ad3056`，其原 native WIP 保留，本人没有修改、stage 或提交 R 文件。
+
+当前已发布端口的最小 S2 事务新文件来源为 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 中以下十一件；初次通知的 `ca1193e` 是其已发布前置版本，R 的经验事务入口不使用 owned 工厂。按 Domain → app 端口 → SQLite 顺序窄消费并保留精确源记录：
+
+```text
+internal/workspace/domain/goals.go
+internal/workspace/domain/proposals.go
+internal/workspace/domain/approvals.go
+internal/workspace/domain/proposal_context.go
+internal/workspace/domain/session_bindings.go
+internal/workspace/app/proposal_ports.go
+internal/adapters/sqlite/workspace_proposals.go
+internal/adapters/sqlite/workspace_goals.go
+internal/adapters/sqlite/workspace_approvals.go
+internal/adapters/sqlite/workspace_context_packets.go
+internal/adapters/sqlite/workspace_session_bindings.go
+```
+
+随后使用 B `ce281d003c093ec26e19dfec78e912f20a014787` 的 `internal/adapters/sqlite/attention.go` 和 `attention_workspace_transaction_test.go`。已核原 R attention.go 与该提交的父版本内容相同；此二文件提交提供同数据库事务连接复用、不同数据库拒绝、关闭与回滚错误传播，缺失时真实嵌套 Attention 命令会借第二条连接。完整 Workspace 持久仓库还使用 B `da79452d1735f8fceca103aaf9d10bb53182f1f5` 唯一 `migrations/019_workspace_approvals.sql`；R 的 023 经验来源表原样保留，经验事务本身不需要 020 / 021 / 022，也不修改冻结迁移。无需 s2_service、HTTP、Swarm、原生实现或新依赖来编译该事务入口。
+
+只读验证使用 Go 官方 `-overlay` 映射上述十一件及 B 二文件到 R 源码，JSON 为本机忽略文件 `.verification/s2-first/r-transaction-closure.json`，编译产物只在 `D:/Astrocyte-agent-assets/20261015/product/s2/r-closure/sqlite.test.exe`。`go test -c -mod=readonly -overlay <本机JSON> -o <本机D盘exe> ./internal/adapters/sqlite` EXIT 0，日志 `r-closure-compile-first.log`。该候选编译未改 R 的 Go / SQL 文件。
+
+从本 S2 工作树的 SQLite 包目录运行同一真实测试程序，TEMP / TMP 指向本轨 D 盘，数据库仅落在本 S2 `.verification/accepted-experience-actual-*`。5 个顶层测试全部 PASS：AcceptedExperience 实际提交 / 唯一约束回滚、错误数据库和关闭存储、取消不生成来源、Attention 共用同一 Workspace 连接的实际提交 / 回滚、不同数据库拒绝；日志 `r-closure-sqlite-second.log`。R 既有 001–018 / 023 实际迁移参与该经验事务验证，019 的完整 S2 聚合链已由本树前述实际库覆盖。本次测试程序首次调用因 PowerShell 拆分未引用的点号参数而返回 `flag provided but not defined: -test`，测试未运行；原件 `r-closure-sqlite-first.log` 保留，改为完整引用的参数数组后运行，未改测试或期限。
+
+这些结果证明准确候选来源组合可编译且真实事务可运行；R 原工作树的完整 L 服务结论仍由原 R 消费源码并实际验证，不将 overlay 的结果填写为该完整服务通过。本 Task 继续支持 H / R 的生产集成。
+
+## S3 从 80248d2 消费新 S2 的来源顺序
+
+只读核 S3 当前 `036e05a6b003e510c28f8c9f5db862d087471f41`：已有 B 当前策略 `4725f0b`、事务桥 `ce281d0`、019 / 021 迁移和 production Handler 访问器；缺 `internal/adapters/repositorycontext`，且 server.go 没有 Services.WorkspaceS2 与 registerWorkspaceS2 装配。因此 `aa445ad` 无法在其 80248d2 S2 基线上单独完成编译 / 验证，不能只取生产文件而丢弃新增测试。
+
+S2 业务前置按 `bcc80d08e4bef7f93027a5fd0eb84f2d8f1749d9` → `6cb28208777be8a386bf49bf664b2a233018352e` → `7095732c206bba74018570863f5789502129778d` → `55b48b755d7d9790d5f6f58f53724a0e4f59ce7e` 消费其 Go / 测试变化；仅有独立报告的提交不在闭包中，伴随业务提交的 Worker 报告也可保持 S3 已有内容。S4 真实 Snapshot 实现来自 `0f16112cd3fd396896f7bdf5323140f104d37cd0` 的 repositorycontext 六个 Go/JS 文件、SQLite repository_context.go、Workspace app / domain repository_context.go 与其实际 tests/s4；已有相同 021 迁移无需重复引入，Git snapshot 路径没有新增 Go / Node 依赖需求，AOCI / CodeGraph 实际资产由原 S4 / B 交付。
+
+再按 `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d` → `169c1b37a0342109fb40cb681f8bc4d078647d37` → `ca1193e12bec27d547beac825944a4d35a3c4d1c` → `aa445adf834c3a397a0817bec0593fcf1039420a` → `02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` 消费 S2 代码和测试。独立真实材料 HTTP 测试来自 `04e096c4e03cdc4355b69c86b5ee43a0eae89282`，保持实际权限验收。必要的共享 S2 服务装配来源是原 H 五文件 `ea0c4d262c94c049e636aac5e0a9ada9f1914932`；其中 server.go / main.go / session.go / relay_scoped_workspace.go / OpenAPI 归原 H，只能由 H 在其当前共享组合补相同的类型、路由、token 身份与契约，不能直接覆盖 S3 的后继公共组合。该 H 前置归还前，完整新增 HTTP 测试保持未完成，不以绕过路由或替代认证补成功。
+
 ## 2026-10-15 不可变包当前项目授权 REPORT
 
 测试 SOURCE `ca1193e12bec27d547beac825944a4d35a3c4d1c` 为实际 SQLite / Git Context 检查追加真实项目 token 签发和认证：有当前授权的成员可读既有不可变包，独立另一项目的认证成员返回 scope_denied，撤销原项目成员授权后，原已认证 Caller 读取返回 approval_revoked。使用既有生产项目服务、真实 SQLite 与当前 ProjectGrant，每次操作重查当前状态；没有制造原生会话。
