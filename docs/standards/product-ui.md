@@ -1,8 +1,69 @@
-# S2/S3 产品页面开发记录
+# S2/S3/S4/S5 产品页面开发记录
 
-当前任务 `task_d0cee5a583bb` / Dispatch `ctx_e6aafcccc10a`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，模型 `gpt-6.1-sol`。接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，工作区 clean。
+当前任务 `task_d0cee5a583bb` / Dispatch `ctx_4ac5810bae08`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，当时工作区 clean；本次恢复基线 `71360db458052eea387e4d4f72b303f59d3a4743`，保留并继续完成既有 repositorycontext CSS 及三个新增 TypeScript 文件。
 
-只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`，仍由同一任务、人员和工作树承担。Workspace 入口、公共客户端、生成类型、查询 Hook、认证、共享组件与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`；模块计划 `2f609ea484fa690b8f2a2b6a754e1a63e398fe42` 和 F `msg_ea981e24bc0d` 正式追加 `web/src/pages/attention/delegation/**` 与 `web/e2e/s5-*.spec.ts`。全部新增范围继续由同一任务、人员和工作树承担。Workspace/AttentionPage 薄入口、公共客户端（包括 `api/judgment.ts`）、生成类型、查询 Hook、认证、共享组件、RankingPanel 与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+
+## 2026-10-15 22:00 恢复阶段：仓库上下文实际客户端接入
+
+SOURCE `c5925670311189acc5294f8be58fe014afe8ae55` 已普通 push，包含本树已经普通消费的 F Repository 客户端 `03bbaed523a6d03faba45595dcfb51ab4fcc696f`。`RepositoryContextPanel` 使用该准确生成接口和既有 `useReadApi`、`usePersistentCommand`、人工会话与 CSRF，提供明确选择项目、用途、相对路径与四项预算的仓库说明、代码搜索和改动影响查询。结果显示实际覆盖、缺口、后端、generation、工作树/仓库/环境身份、HEAD、权限版本、两项 digest、源码行号、关系证据和提取器版本。符号可明确选入影响查询，过期结果的符号选择禁用。
+
+维护入口包含建立、同步、重建代码索引及刷新仓库说明。首次查询返回缺少索引或索引过期时显示明确说明，由用户选择维护；当前项目读取失败时保留快照并禁用新动作，支持重新读取实际项目权限。维护结果未知时沿既有公开请求身份保留跨刷新操作锁，查询不会解除该锁，也不会自动重新提交维护。
+
+| 命令或检查 | 本阶段结果 |
+|---|---|
+| 首次 `pnpm --dir web typecheck` | FAIL：页面错误地将 map 的生成结果当作 Index；原 TypeScript 输出保留于本 Dispatch 命令记录 |
+| 修正后的 `pnpm --dir web typecheck` | PASS |
+| `pnpm --dir web exec eslint src/pages/workspace/repositorycontext e2e/s4-repository-context.spec.ts` | PASS，0 errors / 0 warnings |
+| `pnpm build` | PASS，Go 服务、MCP、Sleep 与生产 Web；`.verification/product-ui/build-repository-resume-first.log`。Vite 现有大于 500 kB 的分块提示保留 |
+| `git diff --check`、`git diff --cached --check` | PASS |
+| 新 `s4-repository-context.spec.ts` | 已编译，实际浏览器尚未运行；待 F 共享薄入口 SOURCE |
+
+新增用例使用生产 Go、真实 HTTP/SQLite 和原两 viewport，验证未配置服务的 503、明确查询参数、键盘提交、项目读取 403 保留输入/禁用动作、人工恢复权限和零索引/原生会话。用例不替换网络响应，不将未配置能力登记为正向查询通过。
+
+当前生产 `cmd/server/main.go` 的 Repository services 为空；原 S4 `ctx_09391d7a7e02` 已交实际 CodeGraph/AOCI 配置和只读公开两个 worktree 指针，但依赖 H 后继安全装配 SOURCE。模块明确禁止消费 `59a7150b1143680b67fe53fdf831fcca5f328660`，本树未消费该提交。安全 Context → S3 → S4/S5 的准确 OpenAPI、生成客户端和入口继续由 H/F 持有；S3 现行准确业务 SOURCE 为 `a5d00e764ffa0266bf34067190f72f3463fe9852`，没有依据私有原生 controller 信息扩展页面字段。Calls 单位和权限证据未答，Claim 拒绝与原生窗口零保持。完整 check、默认 E2E、正向 S4、Context、S3/S5 和 Windows 最终包尚未通过，任务持续支持集成。
+
+## S5 委托设置的实际接口依赖
+
+根经模块明确授权按 SPEC §5.3、§7.1、§11 实现逐题型委托。题型、单一后端、语言、外发范围、预算、复核和阈值由用户明确填写；题型为 `choice / score / truth`，资料准入用途为 `opportunity_admission`。未配置时拒绝自动委托；推荐、资料准入和任务批准各自保留服务端边界。
+
+已完整读取上述规格与 S5 精确 SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 的 `contracts.go`、`validation.go` 和阶段报告，并按模块 `msg_0542e7857e51` 读取后继 SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1` 的完整 `contracts.go`、`delegation_contracts.go` 和 `judgment_delegation.go`。后继源码包含版本化 Rule、规则/策略读取、人类开启或暂停、固定 Opportunity 判断及受信任准入桥接；OpenAPI/生产装配与 F 生成客户端仍待交付。当前原 S5 为 `task_1d3e15a66b2a` / `ctx_0a7797464f02`；准确 SOURCE 按原 S5 → H OpenAPI/生产装配 → F 生成客户端 → 本域页面消费。已将现行配置/后端状态读取、原请求幂等和 unknown 对账及真实测试配置需求直接交原 S5、F 和模块。本树只读准确提交，没有合入 S5 全部历史或未提交内容。S5 规则与 API 页面、真实浏览器验收尚未完成，原 S2/S3/S4 任务和剩余限制继续有效。
+
+### 已确定的人工反馈字段
+
+SOURCE `6a5681f369e2cec114abfa1d70a239ed6d94aab2` 已普通 push，独立 `git ls-remote` 核远端同 SHA。新增本域 `JudgmentFeedbackFields` 与设计变量样式，复用现有 `SelectField` / `TextField`。组件接收明确的编辑状态、禁用状态和变更回调，提供 `adopt / later / reject / revise / already_solved` 五类反馈、空白选择和必填理由；“以后再看”保留独立反馈类型和原判断记录，采用建议、准入和任务批准分别确认。它没有 API 请求、自动选择或委托开启动作。
+
+`pnpm --dir web typecheck`、`pnpm --dir web exec eslint src/pages/attention/delegation`、`git diff --check` 均通过。该组件尚未挂入真实判断结果页面，实际表单交互、HTTP、SQLite 与 S5 全链尚未运行；字段编译通过只记录本阶段覆盖。
+
+准入与复核字段 SOURCE `eb4adbceb153d4f5d8799b66a50a9c6d69c39a34` 已普通 push，独立 `git ls-remote` 核远端同 SHA。`DelegationReviewFields` 依据精确 `d73507a` 的 `ValidateDelegationRule` 提供明确的 choice 准入选项、truth 的 0–1 范围、score 的 0 至当前评分等级数减一范围、候选元数据外发三值选择，以及 `fixed_inputs` / `human_adopt` 复核条件。没有默认选项、默认阈值或自动勾选；题目候选被删除时保留原选择并提示核查。`pnpm --dir web typecheck`、本域 ESLint 与 `git diff --check` 通过。该组件仍为受控编辑字段，公共请求、实际交互和 S5 整功能验收继续等待准确客户端，没有将参数字段阶段登记为 HTTP 或业务通过。
+
+当前 S4 的 H SOURCE `31256d5d6758daf25892d55df73feffde7a7e573` / REPORT `89d84d55a822e2f0506e18e93adaa1ec02a8342e` 已由根接受，公开 Repository DTO 已只读核查；F 准确生成客户端 SOURCE 尚未交付。本域仍等待该准确客户端后继续 `RepositoryContextPanel`，真实 Graph 配置、两个实际 worktree 正向与过期恢复输入已向原 S4 请求。原 S2/S3、Context 与 S5 的准确公共契约交付顺序继续有效。
+
+## 2026-10-15 恢复阶段：批准快照与键盘验证
+
+SOURCE `94e21baebbb9c50ee53d03438efe2bab461b2f0b` 已普通 push，独立 `git ls-remote` 核远端同 SHA。仅变更 `ApprovalPanel.tsx`、提案 CSS 和 `s2-proposals.spec.ts` 三个本域文件；本树已包含 F `2f2db3017193bf0572648d90bc7adb88b8d475b1` 的共享字段修正与 `self-service.config.ts`。
+
+Grant 详情使用现有生成 `S2ApprovalGrantV1` 和公共请求接口，显示批准的固定目标、权限版本、项目与根目录、允许修改路径、动作、工具、外发目标、并发、调用及 Token 上限、费用未知、全部停止条件，以及批准时间、有效期、状态变更时间。长路径和停止条件可以换行。Grant 状态直接显示真实读取响应；服务端读取核查过期状态。
+
+真实浏览器用例把批准响应的范围、预算和停止条件与原固定提案比较，并逐项核对批准详情。撤销后实际重启 Go 服务、重读同一 SQLite 和页面，核对相同快照、`revoked` 状态和递增 Epoch，撤销按钮保持禁用；两尺寸均验证 Enter 打开、Escape 关闭、焦点恢复及无横向溢出。原有创建、不可变修订、差分、真实版本冲突、未知请求锁、许可拒绝、人工拒绝和固定资料引用检查均保留。
+
+| 命令或实际路径 | 本阶段结果与本机记录 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS |
+| `pnpm --dir web exec eslint src/pages/workspace/proposals e2e/s2-proposals.spec.ts` | PASS，0 errors / 0 warnings |
+| `pnpm build` | PASS，Go 服务、MCP、Sleep 和生产 Web；`.verification/product-ui/build-grant-resume-first.log` |
+| `pnpm check` | 首 FAIL：`internal/adapters/httpapi/workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go` 的 gofmt；`.verification/product-ui/check-grant-resume-first.log`。已交原 S2/H 处理 |
+| 默认配置首轮 S2 | 首 FAIL：开发服务启动超过既有 120000ms，尚未运行用例；`.verification/product-ui/e2e-s2-grant-resume-first.log` 与原输出目录保留 |
+| 同参数非 trimpath Go 编译 | PASS；`.verification/product-ui/e2e-go-build-resume-first.log`，编译输出位于本任务 D 盘目录 |
+| 默认配置第二轮原 12 项 | 10 PASS / 2 FAIL，7.8 分钟；1920 未知请求用例初始化 `read ECONNRESET`，1280 版本冲突用例初始化读取超时。两次均在真实服务已就绪、尚无 auth 请求日志时发生；`.verification/product-ui/e2e-s2-grant-resume-second.log`、报告、trace 和真实 SQLite 保留 |
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s2-proposals.spec.ts --workers=1 --retries=0 --output ../.verification/product-ui/e2e-s2-grant-resume-third` | 12 PASS，5.6 分钟；1920×1080 / 1280×720，原十项与固定资料引用两项，零重试和零 skip。日志 `.verification/product-ui/e2e-s2-grant-resume-third.log`、报告 `e2e-s2-grant-resume-third-report` 和真实数据库均保留 |
+| `git diff --check` | PASS |
+
+专用配置由每个用例的既有 helper 持有真实 Go、SQLite 和 Vite；它复用原两个 viewport、原断言与原超时。默认配置两项初始化失败已交 F，专用配置通过只登记实际 S2 覆盖。没有执行模型或 ASR 调用，没有操作 F 的原生 Relay 注册、确认、读取或停止接口，没有使用视觉功能。
+
+本轮构建及浏览器复验最初使用独占 D 盘 `go-build/product-ui` 缓存；根经模块 `msg_47928df3f862` 更新决定后，在本轮测试结束的安全检查点，新命令进程级 `GOCACHE` 统一为 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR` 继续为 `D:/Astrocyte-agent-assets/20261015/go-temp/product-ui`。`go env` 已实际核查两路径。自有缓存和全部证据保留，运行配置没有全局修改。既有 helper 的实际 SQLite、服务二进制及 tool-temp 仍位于本树 `.verification`，其 D 盘临时构建参数需求已交 F。
+
+模块 `msg_3000c7656a83` 确认暂不消费 S2 `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d`。只运行的 `git merge-tree --write-tree --name-only` 预检发现 20 处非 UI 冲突，实际工作树没有开始合并或进入冲突；该 SOURCE 的完整后端依赖、装配及公开契约由原 S2/H/F 顺序交付。Context、S3、S4 仍等待 H 已验证完整组装 SOURCE → F 生成类型与公共客户端 → 本域接入；撤销后新的受保护动作及完整默认 E2E 尚未通过。任务继续保持原人员、原树和原写域，阶段结果不作为整任务完成。
 
 ## 首阶段源码
 
