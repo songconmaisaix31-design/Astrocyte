@@ -25,6 +25,18 @@ strict weight loading and the official three CPU parity checks for each export.
 The release step copies those existing outputs; it does not retrain, quantize,
 re-export or replace model files. `assets.json` is the existing S5 worker input.
 
+Assets carrying `artifact_kind=astrocyte_privacy_sanitized_derivative` and
+`artifact_revision=metadata-clean-20261015-ctx_0a7797464f02` are S5's separate
+privacy derivatives. The modified files are English/multilingual `encoder.onnx`
+and `head.onnx`: S5 removed metadata_props values containing the export host's
+private home path using the official ONNX library. Their actual file identities
+are the new descriptor hashes; `derived_from` retains the earlier converted
+artifact's provenance and hashes. They are not official upstream ONNX files.
+The unmodified sidecars, tokenizer and configuration retain their original
+identity. S5's graph and numerical validation accompanies its delivery; the
+release step preserves the supplied derivative descriptor and copies these
+assets without modifying them.
+
 The production npm dependency graph is recorded by standard npm package-lock.json
 under `runtime/sdk`. Its transitive packages retain their own licenses and
 copyright notices. Development tools used to compile Laya are outside the

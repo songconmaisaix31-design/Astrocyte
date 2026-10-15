@@ -6,7 +6,8 @@ param(
     [string]$NodeArchive = '',
     [string]$NodeChecksums = '',
     [string]$NpmCache = '',
-    [string]$DirectMLPackage = ''
+    [string]$DirectMLPackage = '',
+    [string]$RuntimeSource = ''
 )
 
 . (Join-Path $PSScriptRoot 'Release-Common.ps1')
@@ -35,6 +36,16 @@ try {
         if ($LASTEXITCODE -ne 0) { throw ('Official download failed: ' + $URL) }
         Assert-ReleaseSpace
     }
+    if ($RuntimeSource -ne '') {
+        Assert-ReleaseAssetPath $RuntimeSource
+        foreach ($file in @('runtime\node\node.exe', 'runtime\sdk\package-lock.json', 'legal\npm-runtime.cdx.json')) {
+            if (-not (Test-Path -LiteralPath (Join-Path $RuntimeSource $file) -PathType Leaf)) { throw ('Explicit prepared runtime source missing: ' + $file) }
+        }
+        foreach ($dir in @('node', 'sdk')) { Copy-Item -LiteralPath (Join-Path $RuntimeSource ('runtime\' + $dir)) -Destination $runtime -Recurse }
+        foreach ($item in Get-ChildItem -LiteralPath (Join-Path $RuntimeSource 'legal') -Force) { Copy-Item -LiteralPath $item.FullName -Destination $legal -Recurse }
+        $node = Join-Path $runtime 'node\node.exe'
+        Assert-ReleaseSpace
+    } else {
     if (($NodeArchive -eq '') -ne ($NodeChecksums -eq '')) { throw 'Explicit NodeArchive and official NodeChecksums must be supplied together.' }
     $nodeZip = $NodeArchive
     $sums = $NodeChecksums
@@ -116,6 +127,7 @@ try {
     Get-Official 'https://raw.githubusercontent.com/sourcegraph/jsonrpc2/2cc94179e136b565cb9df7d9d0bff9fc06912ac9/LICENSE' (Join-Path $legal 'go-jsonrpc2-LICENSE')
     Get-Official 'https://raw.githubusercontent.com/colbymchenry/codegraph/a1489f77a6d69538bfe29020b8366ee034f90860/LICENSE' (Join-Path $legal 'codegraph-LICENSE')
     & (Join-Path $PSScriptRoot 'Prepare-OnnxLegal.ps1') -Output $legal -Downloads $download -DirectMLPackage $DirectMLPackage
+    }
     foreach ($checkpoint in @('english', 'multilingual')) {
         $descriptor = if ($checkpoint -eq 'english') { $EnglishAssets } else { $MultilingualAssets }
         $metadata = Get-Content -LiteralPath $descriptor -Raw -Encoding UTF8 | ConvertFrom-Json

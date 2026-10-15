@@ -55,9 +55,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Runtim
 
 `-ModelRoot` 默认为 S5 只读共享资产 `D:/Astrocyte-agent-assets/20261015/judgment-s5`。准备程序核对两个 checkpoint 的全部十二项资产与原 S5 metadata，复制到自身目录后再次核对，保持原资产不变。它不重新下载权重、不导出模型、不调用推理。每个模型目录保留 encoder/head ONNX、两份 `.onnx.data`、tokenizer、rl_agent_config 和原 S5 worker 的 `assets.json`。S5 原官方 export 的 strict 加载和 CPU parity 记录是这些资产的来源；模型并非上游直接提供的 ONNX。
 
-当前原始四份 ONNX 图的 metadata 含导出环境私人路径，完整 runtime 隐私扫描实际失败；S5 原 owner 正在接收该领域返修，未交新的合格产物。原始资产保持不变，当前目录中的 Node/SDK 可用于已授权验证，模型尚不能进入可分发包。准备和构建入口均执行完整 runtime 扫描，构建入口在应用源码归档前拒绝此类输入；收到 S5 准确新资产目录、描述和适用数值验证后，显式指定新 `-ModelRoot` 和两个 descriptor 再检查。私人路径规则和模型身份核对继续保留。
+原始四份 ONNX 图的 metadata 含导出环境私人路径，原资产完整 runtime 隐私扫描实际失败并保留。S5 已交独立新产物 `artifact_kind=astrocyte_privacy_sanitized_derivative`、`artifact_revision=metadata-clean-20261015-ctx_0a7797464f02`，带新文件身份和 `derived_from` 来源；P 对该实际目录十四项文件的原扫描为零匹配。S5 的精确后继 runtime SOURCE 与完整组合验证仍须交付。准备与构建入口均执行完整 runtime 扫描，构建入口在应用源码归档前拒绝不合格输入；新产物通过显式 `-ModelRoot` 和两个新 descriptor 消费。原始资产、私人路径规则和身份核对继续保留，净化后的图按 NOTICE 记作衍生文件。
 
 可以显式传入本任务已取得的 `-NodeArchive` / `-NodeChecksums`、`-NpmCache` 和 `-DirectMLPackage`，复用同版本官方 ZIP、标准缓存和 NuGet；这些路径仍须在自身 D 盘范围，校验继续执行。未提供时只从脚本列出的固定官方来源联网准备，失败立即终止，没有自动更换来源或版本。
+
+`-RuntimeSource` 显式指定本任务已经记录过来源的固定构建目录时，复制其中 Node、生产 SDK、标准 npm 锁与许可/SBOM，模型从本次明确的 `-ModelRoot` 和两个 descriptor 装配。复制后重新核对全部实际版本、native binding、十二文件身份和完整 runtime 隐私；该模式使用已提供的固定产物，目录缺失或检查失败立即终止。
 
 | 路径 | 实际组件及配置用途 |
 |---|---|
@@ -74,6 +76,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Runtim
 CodeGraph 同样使用准确源码的 package-lock 实际构建；发布 SDK 根目录直接导出 S4 使用的 API。ONNX 原 npm 包完整保留；其主项目 MIT、固定 v1.30.0 ThirdPartyNotices、随附 DirectML 1.15.4 的 Microsoft 二进制条款/源码许可/第三方通知，以及 DXC 1.8.2502.8 的完整 NCSA 复合通知分别放入 legal。DirectML 条款 §1(a) 允许其随 Windows/Xbox 的 ML 应用和服务分发，§3(c)/(e) 保留通知并限制独立分发；本包保留条款，不把其 DLL 归为 MIT。该 DLL 的存在不启用 GPU，实际 Laya 配置仍为明确 CPU。
 
 S5 `NewLaya` 需要绝对 Node/Worker/ModelDir/AssetsPath/SDKEntry/RPCEntry 路径、明确 Language/ModelRevision/Stderr 和启动/退出预算。S4 `repositorycontext.New` 需要 Git 身份、Node/SDK/Script、投影目录、读取预算和适用 AOCI 路径。语言、模型、预算和准入规则由现有产品策略与原 owner 的生产配置确定；P 不填默认值。H/B 的准确生产配置 SOURCE 未交付前，启动脚本没有新增虚构环境变量，这些字段尚不能通过本包启动参数启用。
+
+配置前可从已提交 owner SOURCE 准备准确 adapter 资产：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Adapter.ps1 -Source f407337f2199d5e49f1ff49862063d964a738a9c -Component repositorycontext -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -Output 'D:\Astrocyte-agent-assets\20261015\release-package\adapter-s4'
+```
+
+该命令只归档准确提交的单个 adapter 文件，标准解压并核对 Git blob、Node syntax 后放入 `runtime/adapters/codegraph.mjs`；不会覆盖已有版本。`-Component judgment` 对应准确 S5 SOURCE 的 `laya-worker.mjs`。最终应用包的两个脚本由 Build 从最终 I 的源码归档复制。S4 已观察到图数据库路径 255 字符时 SQLite WAL 建库失败，191 字符的实际普通路径通过；投影缓存目录须由可信配置在目标环境实际验证，源码目录保持原位，当前没有长路径支持保证。
 
 AOCI 固定 rc20 / `45990a1dcfc4415efdc6fbfa13bc159a415f127c` 的当前许可为 FSL-1.1-MIT；rc20 公布于 2026-10-09，未来 MIT 于 2028-10-09 生效。其 Permitted Purpose 对提供相同或近似功能的商业用途有限制；分发还须保留 LICENSE/NOTICE 等归属。用户尚未决定本产品用途、外置配置或适用作者授权，AOCI 纳包方式保持未决定；当前准备程序没有复制它的二进制。显式配置合法取得的同版本 AOCI 可满足完整地图刷新功能，属于已提交的可行方案，尚未视为用户决定。现有 S4 完整能力验收继续保留。
 
