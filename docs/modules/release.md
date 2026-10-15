@@ -34,7 +34,22 @@ I 只普通 `--no-ff` 合并精确已提交输入并补必要导入、类型、�
 
 最终 P / N 的认知验证使用 Q 当前 SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7` 及其同代输入。最新 main 位于原 Q `.verification/cross-day-20261015-0228`，current 指向 `snapshot-1711995690`，对应 `main-safe-final` 十值与完整六字段；实际 1316 事件 / 今日 52 / 前日 74 / 一次 Sleep，最高排名 MCP 的 21 条与 Astrocyte 134 条分页分别核验。P 已收到准确交接，不重采公开工程或混用旧 1339 人口。N 原树 clean、HEAD `b74b97a44d5a116d090424d78f358fdf520667e2`，后继真实包验收等待 I 同源新包与原 H / F 单一原生窗口，不提前创建第二控制器。
 
-### 22:05 首次集成冲突的互斥处理计划
+### 22:25 首 B 已合并，F 十九冲突处理计划
+
+首 B 普通合并已由唯一 I 完成为 `392bbb17fc56b15a86c9b84349e6e4d6cb884755`。此前 B 本人 `msg_f93e69914ae8`、H 本人 `msg_ed19f4a63af4` 和 I 三文档均已停止写入归还；本模块独核 U0、普通 / cached diff 检查、四件 B 完整内容对 da722 一致、H config 准确 index blob，放行回执为 `msg_0b08a14805b6`，旧临时写域全部收回。
+
+I 随后普通合入 F REPORT `02a7976d997ef14ac298b2e240da43a9bb423c93`，当前 HEAD `392bbb17fc56b15a86c9b84349e6e4d6cb884755` / MERGE_HEAD 为该 F REPORT，实际十九冲突。I 本人 `msg_0dfda0113e89` 明确十九件均未编辑 / stage、全部停止写入，不操作合并生命周期。新临时范围如下，原作者本人安全 ACK 后才分别放行。
+
+| 原 owner | I 树唯一临时 edit / stage 路径 |
+|---|---|
+| B，经 M-product | `dependencies.lock.json`、`go.sum` |
+| S2，经 M-product | `docs/standards/workspace-s2.md`；`internal/adapters/sqlite/workspace_context_packets.go`、`workspace_proposals.go`、`workspace_session_bindings.go`；`internal/workspace/app/project_policy.go`、`project_policy_test.go`、`proposal_ports.go`、`s2_service.go`；`internal/workspace/domain/proposal_context.go`、`proposals.go`、`session_bindings.go` |
+| H，经 M-relay | `cmd/server/main.go`、`internal/adapters/httpapi/server.go`、`internal/adapters/httpapi/relay_scoped_workspace.go` |
+| 同一 I，根授权待答 | `HANDOFF.md`、`STATUS.md`、`tasks/Workbench-v01.md`；当前没有沿首 B 的一次性授权继续编辑 |
+
+各原 owner 只在指定路径使用文件编辑工具解决冲突并 stage，不复制未提交 WIP、不进行整体选边、commit / continue / abort / reset。本人完成后停止 I 树全部写入并归还；本模块核准确现场、U0 和适用 diff，再由唯一 I 继续当前 F 普通合并。完整验证仍在准确组合执行，冲突消除不作为功能通过。
+
+### 22:05 首次集成冲突的互斥处理记录
 
 I 普通合入 B `da7227749ea2f361c8b708be8614d3236fe2f04a` 时实际产生十一项冲突，HEAD 仍为 `0e5ce82898c3d546f711d1e452dadfabb13b5537`，MERGE_HEAD 为该 B REPORT。I 本人 `msg_10c3dbb9dc19` 明确十一冲突文件从未编辑 / stage，现全部停止写入；保持普通合并现场与自动合并内容，不执行 commit / continue / abort / reset。临时处理人员先到本人安全检查点并确认，再按下表明确放行。
 
