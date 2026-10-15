@@ -16,7 +16,11 @@
 
 判断领域 handler 由原 S5 独占 `internal/adapters/httpapi/judgment*.go` 及同名前缀测试；H 保持 `cmd/server/judgment*.go`、共享启动与 OpenAPI 装配，B 保持依赖和迁移。SPEC §5.3 / §7.1 / §11 已授权版本化 DelegationRule 与固定机会准入，按正式答复 `msg_dbd3c3bff5cc` 继续实现完整配置与受信任同事务适配；实际委托开启、范围和必要阈值由用户在产品运行时显式设置，不代填默认值。S5 管理员离线验证及 AOCI 公开包分发方式已向用户提问，尚未答复，其他已授权开发继续。
 
-15:23 当前待办：R 两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` 已通过模块精确快照检查，H 公共 S4 SOURCE `31256d5d6758daf25892d55df73feffde7a7e573` 已交 F。S5 完整 DelegationRule SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1` 已由发布负责人独立核远端并交 H / B / F，完整事务与生产 HTTP 尚待组合。S3 调用预算单位和执行权限证据覆盖范围已另向用户询问，未答前按正式答复 `msg_9e32e1f32ba5` 保持当前 Claim 拒绝，不提前开始登记窗口或发送输入；详见 [当前待定项](docs/QUESTIONS.md)。P 的实际依赖包隐私检查发现英文 ONNX 模型内私人路径，原 S5 负责元数据处理、新产物验证和准确 descriptor，P 复验最终包；原件与首次失败保留，大型产物继续放在 D 盘。最终集成、原生验收与完整 release 尚未完成。
+18:04 当前待办：S3 调用预算单位和执行权限证据覆盖范围仍待用户答复，按正式答复 `msg_9e32e1f32ba5` 保持当前 Claim 拒绝，不提前开始登记窗口或发送输入；详见 [当前待定项](docs/QUESTIONS.md)。H 阶段 SOURCE `59a7150b1143680b67fe53fdf831fcca5f328660` / REPORT `0aab7edd54fb7bb031e9709f752c6240ce7852a9` 已由 Relay 负责人核远端，但 Context 仍输出绝对 Root，当前阶段未接纳；原 H 消费 S2 安全 DTO 后重新验证再交 F。发布负责人报告衍生 ONNX 资产的十四项隐私检查零匹配、CPU 输出与原件一致；完整运行包与模型进程重启回收检查继续。原件与首次失败保留，大型产物继续放在 D 盘。最终集成、原生验收与完整 release 尚未完成。
+
+正式答复 `msg_c818d5461146` 授权原 R 在既有 RelayService / Store / Receipts 内补齐可信登记，原 H 复用固定 `agents.json` 解析器提供同一服务实例的实际重载。完整快照校验后原子发布，登记变更不得改变在途身份或权限；唯一 Registry / controller、现有 schema 和原角色分工保持。F 同 URL 空 agents 且 observer ready 后，H 首次实际写入本次完整登记的开始时刻为唯一 t0；写入、解析、重载与激活全部计入原 180 秒，失败和后继重载不重记起点。当前只实施与独立验证，实际登记窗口尚未开始。
+
+正式答复 `msg_e1415e3ad447` 要求 AT12 读取真实固定 Goal ID / revision、实际排序 profile 及完整品味依赖；现有 `domain/profile.go` 仅代表四维排序部分。正式答复 `msg_384bef3fbfaa` 允许原 B 唯一新增 `migrations/026_taste_profiles.sql`，仅完整 TasteProfile 的 head 与不可变 revisions 两表，以及原独占范围的 `attention/app/taste_profile*.go`、`sqlite/taste_profile*.go`。先登记模块计划与 write_paths，再由原 B 连续实现与验证；T 应用测试独占边界保持。001–025、原 `domain/profile.go`、V4 / engine / mapper / 权重 / 日程继续冻结，正式实验运行树不应用该迁移。rubrics / examples 结构由原 B 与 S5 按 SPEC 核实；Delegation 仅引用 S5 权威版本，当前授权、暂停和撤销由 S5 同事务重核。具体 Goal、权重和委托值由运行时用户配置，不代填；AT12 尚未通过。
 
 2026-10-14：已接手 REA 6.5.0 的[调研报告](docs/research/orca-rea-20261014.md)与第 42 版技能。独立 MCP 握手、207 工具、binary_session 成功；Orca 1.4.220 两份静态分析共 18 个 JavaScript 文件解析错误为零。按用户要求，今晚已移除 REA Codex MCP 注册并停止服务，CLI、技能与分析结果保留，10-23 之后重新注册为陌生代码库任务与 L2 经验来源候选。2026-10-15 先完成 Relay v1.4 四项语义规格与修改，再做真实 CLI 端到端、三分钟 Today、L1 关账；产品其他开发和发布候选继续，由原模块负责人管理。
 
