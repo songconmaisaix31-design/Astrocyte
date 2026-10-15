@@ -1,7 +1,6 @@
 package importers
 
 import (
-	"bytes"
 	"context"
 	"encoding/xml"
 	"errors"
@@ -42,8 +41,7 @@ func NormalizeArxivID(locator string) (string, error) {
 	return id, nil
 }
 
-// Paper preserves the full official PDF and exact version returned by Atom.
-// An abstract is metadata, never reported as the paper's full text.
+// 保存完整官方 PDF 和 Atom 返回的准确版本，摘要保留元数据身份。
 type Paper struct {
 	ID, SourceKey, Title, Abstract, PDFURL string
 	PDF, Metadata                          []byte
@@ -110,7 +108,7 @@ func (a *Arxiv) Read(ctx context.Context, locator string) (Paper, error) {
 	if err != nil {
 		return Paper{}, err
 	}
-	if !bytes.HasPrefix(bytes.TrimSpace(pdf), []byte("%PDF-")) {
+	if http.DetectContentType(pdf) != "application/pdf" {
 		return Paper{}, errors.New("arXiv original response is not a PDF")
 	}
 	p := Paper{ID: fixed, SourceKey: "arxiv:" + revisionSuffix.ReplaceAllString(fixed, ""), Title: strings.Join(strings.Fields(e.Title), " "), Abstract: strings.TrimSpace(e.Summary), PDFURL: pdfURL, PDF: pdf, Metadata: metadata}
@@ -131,7 +129,7 @@ func (a *Arxiv) Read(ctx context.Context, locator string) (Paper, error) {
 	return p, nil
 }
 
-func (a *Arxiv) get(ctx context.Context, locator string, limit int64) ([]byte, error) {
+func (a *Arxiv) get(ctx context.Context, locator string, limit int64) (data []byte, resultErr error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, locator, nil)
 	if err != nil {
 		return nil, err
@@ -141,7 +139,7 @@ func (a *Arxiv) get(ctx context.Context, locator string, limit int64) ([]byte, e
 	if err != nil {
 		return nil, fmt.Errorf("arXiv unavailable: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { resultErr = errors.Join(resultErr, resp.Body.Close()) }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("arXiv HTTP %d", resp.StatusCode)
 	}

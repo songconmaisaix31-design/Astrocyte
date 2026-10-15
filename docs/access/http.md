@@ -1,5 +1,21 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 明确测试目录与当前运行组合
+
+SOURCE `237a95719d18b69063def0323cf35cc3a93b8232` 仅修改原三项真实检查的目录选择，尊重既有 `ASTROCYTE_TEST_OUTPUT_ROOT` 的绝对目录配置。集成环境的 `dist` 是 D 盘 junction；生产路径保护按原规则拒绝其 C 盘重定向拼写。检查现在直接在明确的真实 D 盘输出根创建自有目录，全部成功、权限和硬链接拒绝断言保持，生产 guard、返回码与 Skip 条件没有变更。
+
+在 H 独占 D 盘输出根执行 `go test -mod=readonly -p=1 ./cmd/server ./internal/adapters/events -run '^(TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission\|TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown\|TestRelaySourceIdentityActualFileAndAliasRejection)$' -count=1 -v -timeout=120s`，三项 PASS、零 Skip，两个 package 分别 1.713 / 1.505 秒。原件为本机 `production-assembly/directories-recovery-20261015-202624.log`；原 `7401`、`3edd` 与 `8b` 的首次失败各自保留，后继集成树仍须使用其准确 D 盘环境复验。
+
+当前共享服务为准确 `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、modified=false、PID4676，启动 UTC `2026-10-15T20:22:58.8651960Z`，地址保持 `http://127.0.0.1:64505`。F / UI 双安全 ACK 后，原 PID45616 正常退出用时 0.885 秒，旧监听消失后才启动本服务，原 SQLite 与 LOCALAPPDATA 保持。health / 首页均通过；Q 独立根选择原 `snapshot-1711995690`，没有重新采集。原生初始化、登记、模型输入继续为零，Jev / Laya 未配置，B 新完成经验桥尚未部署。
+
+该运行组合含 S2 `4f875b0f8bffc5740e6a1eee828e7e34833226b8` 的真实 `DB.AfterWorkspaceCommit`。H 已普通消费准确 b73 组合补齐同一依赖；单 H b94 缺此依赖时的生产 main 启动失败继续保留，不能单独作为完整装配输入。S4 正向清理验收以其准确组合来源和独立原件报告为准，当前完整默认、真实 L1 / L2 和最终发布仍未通过。
+
+## 2026-10-16 真实 HTTP 错误诊断
+
+SOURCE `a77f9b12e84147b8de95f9179d9e03aa170b27e6` 只修改两件原 H 检查的失败诊断：项目注册保留实际错误，监听检查只输出公开错误 code；业务、断言和权限不变。`go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission\|TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown)$' -count=1 -v -timeout=120s` 实际 PASS，两个检查分别 0.43 / 0.16 秒，package 4.010 秒；原件为 H 本机 `production-assembly/http-recovery-20261015-201900.log`。
+
+原 `8b0eb882` 的项目注册失败、HTTP403、source identity 首失败和未知总退出继续保留，本轮不能复现其原因，定向通过不代表完整组合通过。真实 symlink 创建 OS1314 为尚未解决的环境限制；旧自定义 driver / sink 和自生成 CLI 检查未用于真实原生验收。当前运行与未配置能力见下节，尚未更新共享服务。
+
 ## 2026-10-16 清理生命周期、完成来源与独立认知根
 
 SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc`，分支 `songconmaisaix31-design/works-relay-http`，九件 H 文件。已普通消费 B 的 cleanup SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3`。原主入口将项目设置的提交后通知连接到同一个 RepositoryContext provider，并启动其现有清理 worker；错误进入原服务退出流程，退出时取消并等待 worker 返回，再关闭 SQLite。

@@ -6,9 +6,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-// pathSpelling expands filesystem 8.3 names without resolving symlinks. Keep
-// this separate from EvalSymlinks: comparing the two still detects redirected
-// native roots and ancestors. No file contents are read or roots authorized.
+// 展开 Windows 8.3 名称，保留原符号链接及目录重定向以供检查。
 func pathSpelling(path string) string {
 	clean := filepath.Clean(path)
 	if !filepath.IsAbs(clean) {
@@ -23,9 +21,7 @@ func pathSpelling(path string) string {
 	if err == nil && n > 0 && n < uint32(len(buf)) {
 		return filepath.Clean(windows.UTF16ToString(buf[:n]))
 	}
-	// Missing checkouts retain their registered association metadata. Expand
-	// only existing ancestors, leaving the missing suffix literal; permission
-	// errors do not authorize a fallback search or a replacement directory.
+	// 已移除的 checkout 保留登记关联，只展开实际存在的祖先目录。
 	if err == windows.ERROR_FILE_NOT_FOUND || err == windows.ERROR_PATH_NOT_FOUND {
 		parent := filepath.Dir(clean)
 		if parent != clean {

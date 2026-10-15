@@ -81,6 +81,15 @@ func assembleRelayJudgment(ctx context.Context, services *httpapi.Services, db *
 		if config.laya != nil || config.jevKey != "" {
 			return nil, errors.New("configured judgment models require the actual repository snapshot provider")
 		}
+		projects, err := admissionbridge.NewHumanProjectAccess(services.LocalProjects, core)
+		if err != nil {
+			return nil, err
+		}
+		admissions, err := admissionbridge.Connect(core, sqlite.NewAdmissionRepository(db), services.WorkspaceS2, attention.AdmissionOptions{Projects: projects})
+		if err != nil {
+			return nil, err
+		}
+		services.OpportunityAdmissions = admissions
 		return func() error { return nil }, nil
 	}
 	models := []judgment.Model{}
@@ -137,6 +146,7 @@ func assembleRelayJudgment(ctx context.Context, services *httpapi.Services, db *
 	if err != nil {
 		return nil, errors.Join(err, closeModels())
 	}
+	services.OpportunityAdmissions = admissions
 	services.Judgment = &httpapi.JudgmentServices{Judgments: judgments, Policies: access, Delegation: delegation, Admissions: judgmentadapter.AdmissionWorkflow{Delegation: delegation, Admissions: admissions}, Taste: core}
 	return closeModels, nil
 }

@@ -69,10 +69,15 @@ func assembleRelayCompletionSource(services *httpapi.Services) error {
 	if !ok {
 		return errors.New("original Relay completion reader is unavailable")
 	}
+	bridge, ok := services.ExperienceGovernance.(*experienceHTTPBridge)
+	if !ok || bridge == nil {
+		return errors.New("completion source requires the original production experience bridge")
+	}
 	source, err := agents.NewRelayCompletionExperienceSource(reader, relayCompletionProjectAccess{projects: services.LocalProjects}.currentOwner)
 	if err != nil {
 		return err
 	}
 	runtime.completionSource = source
+	bridge.completionSources = runtime
 	return nil
 }

@@ -29,7 +29,14 @@ import (
 
 func TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission(t *testing.T) {
 	ctx := context.Background()
-	parent, err := filepath.Abs(filepath.Join("..", "..", "dist", "relay-facts"))
+	parent := filepath.Join("..", "..", "dist", "relay-facts")
+	if outputRoot := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); outputRoot != "" {
+		if !filepath.IsAbs(outputRoot) {
+			t.Fatal("明确的测试输出根必须为绝对目录")
+		}
+		parent = filepath.Join(outputRoot, "relay-facts")
+	}
+	parent, err := filepath.Abs(parent)
 	if err != nil || os.MkdirAll(parent, 0700) != nil {
 		t.Fatal("独占验证目录不可用")
 	}
@@ -73,7 +80,7 @@ func TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission(t *testing.T) {
 	}
 	project, err := projects.RegisterProject(ctx, caller(), domain.RegisterProjectCommand{Name: "Public facts documentation", Root: source, SpaceID: "public"})
 	if err != nil {
-		t.Fatal("公开项目注册失败")
+		t.Fatalf("公开项目注册失败: %v", err)
 	}
 	settings := domain.ProjectSettings{ExternalModelCLI: "codex", AllowedActions: []string{"observe"}}
 	project, err = projects.SetProjectSettings(ctx, caller(), project.ID, domain.SettingsCommand{ExpectedRevision: project.Settings.Revision, Settings: settings})
