@@ -9,16 +9,19 @@
     [string]$CognitionHistory = '',
     [string]$CognitionPublicationRoot = '',
     [string]$CognitionSafeDir = '',
-    [string]$CognitionSourceSha = ''
+    [string]$CognitionSourceSha = '',
+    [string]$Output = ''
 )
 
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
+. (Join-Path $PSScriptRoot 'Release-Common.ps1')
 Add-Type -AssemblyName System.Net.Http
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $repo = Split-Path $PSScriptRoot -Parent
 if ($CognitionSource -ne '') { $RequireCombined = $true }
-$output = Join-Path $repo ('.verification\verify-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+if ($Output -eq '') { $Output = Join-Path 'D:\Astrocyte-agent-assets\20261015\release-package' ('verify-' + (Get-Date -Format 'yyyyMMdd-HHmmss')) }
+Assert-ReleaseAssetPath $Output
+Assert-ReleaseSpace
+$output = [IO.Path]::GetFullPath($Output)
 if (Test-Path -LiteralPath $output) { throw 'Verification directory already exists.' }
 New-Item -ItemType Directory -Path $output | Out-Null
 Start-Transcript -Path (Join-Path $output 'verify.log') | Out-Null
@@ -34,22 +37,11 @@ function Assert-Release([bool]$condition, [string]$name) {
     Write-Output ('PASS: ' + $name)
 }
 function Test-PackagePrivatePaths {
-    $segments = ([Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile) -split '[\\/]') | Where-Object { $_ -ne '' }
-    $homePattern = (($segments | ForEach-Object { [Regex]::Escape($_) }) -join '[\\/]+') + '[\\/]+'
-    $pattern = $homePattern + '|astrocyte-validation[\\/]+v1-20261012|formal-20261013-first|v1r-w1[\\/]+replay-002'
-    $findings = @()
-    # 仅扫描生产文件中的字符串，不解析可执行格式，不输出实际匹配内容。
-    foreach ($file in @(Get-ChildItem -LiteralPath $package -Recurse -File)) {
-        $contents = [Text.Encoding]::UTF8.GetString([IO.File]::ReadAllBytes($file.FullName))
-        $count = [Regex]::Matches($contents, $pattern, [Text.RegularExpressions.RegexOptions]::IgnoreCase).Count
-        if ($count -gt 0) {
-            $relative = $file.FullName.Substring($package.Length + 1)
-            $findings += @{ file = $relative; matches = $count }
-            Write-Output ('PRIVATE_PATH_MATCHES: ' + $relative + ' count=' + $count)
-        }
-    }
-    @{ scope = 'UTF8 production strings; current user home and known formal source constants'; files_with_matches = $findings.Count; findings = $findings } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $output 'private-path-scan.json') -Encoding UTF8
-    Assert-Release ($findings.Count -eq 0) 'production package excludes current personal paths and known formal source constants'
+    $result = & (Join-Path $package 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Inspect-Package.mjs') $package
+    Assert-Release ($LASTEXITCODE -eq 0) 'streaming full production privacy scan passed'
+    $result | Set-Content -LiteralPath (Join-Path $output 'private-path-scan.json') -Encoding UTF8
+    & (Join-Path $package 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Check-Runtime.mjs') (Join-Path $package 'runtime')
+    Assert-Release ($LASTEXITCODE -eq 0) 'fixed packaged S4 S5 runtime and existing model identities passed'
 }
 function New-Client {
     $handler = [Net.Http.HttpClientHandler]::new()
@@ -225,17 +217,16 @@ try {
     $archive = [IO.Compression.ZipFile]::OpenRead([IO.Path]::GetFullPath($Zip))
     $count = 0
     foreach ($entry in $archive.Entries) {
-        $name = $entry.FullName.Replace('\', '/')
+        $name = $entry.FullName
         if ($name.EndsWith('/')) { continue }
         $count++
-        $allowed = $name -match '^Astrocyte-v0\.1-windows-x64/(astrocyte(-mcp|-sleep)?\.exe|workbench-snapshot\.exe|Start-Astrocyte\.(ps1|cmd)|Publish-WorkbenchSnapshot\.ps1|README\.md|LICENSE|web/[^:]+)$'
-        $unsafe = $name -match '(^|/)(\.\.|node_modules|data|test-results|\.git)(/|$)|\.(sqlite|db|log|jsonl)(-|$|\.)'
-        if (-not $allowed -or $unsafe) { throw ('Unexpected ZIP member: ' + $name) }
+        Assert-ReleaseMember $name
     }
     Assert-Release ($count -gt 8) 'ZIP production allowlist excludes data and development dependencies'
     $archive.Dispose()
     $archive = $null
-    Expand-Archive -LiteralPath $Zip -DestinationPath (Join-Path $output 'extracted')
+    [IO.Compression.ZipFile]::ExtractToDirectory([IO.Path]::GetFullPath($Zip), (Join-Path $output 'extracted'))
+    Assert-ReleaseSpace
     Assert-Release (-not (Test-Path -LiteralPath (Join-Path $package 'data'))) 'fresh extraction has no database or user data'
     Test-PackagePrivatePaths
     New-Client
@@ -337,6 +328,7 @@ try {
         }
     }
     Stop-Release 'restart'
+    Assert-ReleaseSpace
     $summary = @{ result = 'PASS'; source_commit = $(if ($Source -eq '') { $null } else { $Source }); scope = $(if ($CognitionSource -ne '') { 'candidate-package-cognition-runtime' } elseif ($RequireCombined) { 'combined-package-runtime' } else { 'candidate-package-runtime' }); zip = [IO.Path]::GetFullPath($Zip); output = $output; checks = $checks; limitations = @('No default browser or native controller acceptance is claimed.', 'Optional summarize/media dependencies were not invoked.', 'Restart exercised owned Windows process termination and SQLite recovery.') }
     $summary | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $output 'result.json') -Encoding UTF8
     Write-Output ('VERIFICATION=' + $output)

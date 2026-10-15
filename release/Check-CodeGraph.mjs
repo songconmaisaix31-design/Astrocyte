@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { join, resolve } from 'node:path';
+
+const root = resolve(process.argv[2]);
+process.env.CODEGRAPH_TELEMETRY = '0';
+process.env.CODEGRAPH_NO_DOWNLOAD = '1';
+assert.equal(process.version, 'v24.16.0');
+const pkg = JSON.parse(await readFile(join(root, 'package.json'), 'utf8'));
+assert.equal(pkg.name, '@colbymchenry/codegraph');
+assert.equal(pkg.version, '1.0.1');
+assert.equal(pkg.main, 'dist/index.js');
+const require = createRequire(join(root, 'package.json'));
+const { CodeGraph, QueryBuilder, setLogger, silentLogger } = require(root);
+assert.equal(typeof setLogger, 'function');
+assert.equal(typeof silentLogger, 'object');
+for (const name of ['init', 'open']) assert.equal(typeof CodeGraph[name], 'function', name);
+for (const name of ['indexAll', 'sync', 'getChangedFiles', 'getStats', 'close']) assert.equal(typeof CodeGraph.prototype[name], 'function', name);
+for (const name of ['searchNodes', 'getNodeById', 'getIncomingEdges']) assert.equal(typeof QueryBuilder.prototype[name], 'function', name);
+console.log('PASS: actual source-built CodeGraph 1.0.1 S4 API, no wrapper/platform/home cache entry.');

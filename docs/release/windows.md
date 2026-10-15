@@ -1,6 +1,6 @@
 # Astrocyte v0.1 Windows x64
 
-完整解压 ZIP 到可写的新目录，双击 `Start-Astrocyte.cmd`，打开 http://127.0.0.1:8787。保持控制台打开，按 Ctrl+C 停止应用。Windows x64、Windows PowerShell 5.1 为基本运行条件；浏览器使用本机回环地址。基本产品包含 Go server、MCP、Sleep、手动快照工具与已编译的 web，运行时无需 Go、Node、pnpm、Python 或开发源码。
+完整解压 ZIP 到可写的新目录，双击 `Start-Astrocyte.cmd`，打开 http://127.0.0.1:8787。保持控制台打开，按 Ctrl+C 停止应用。Windows x64、Windows PowerShell 5.1 为基本运行条件；浏览器使用本机回环地址。产品包含 Go server、MCP、Sleep、手动快照工具与已编译的 web。S4/S5 发布准备包含独立 Node 和生产 SDK；用户无需预装这些 SDK 的开发环境。最终集成源码及生产配置尚未交付，本轮准备结果见 [发布记录](package-report.md)。
 
 修改端口或数据目录：
 
@@ -35,12 +35,56 @@ Node 的构建基线为 24.16.0。视频按实际来源需要 `-YtDlp`、`-FFmpe
 发布人员从完整的精确合并 SOURCE 构建：
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Build-Windows.ps1 -Source <40位SOURCE> -Label final
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Build-Windows.ps1 -Source <最终I的40位SOURCE> -Label final -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared'
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Verify-Windows.ps1 -Zip <ZIP绝对路径> -RequireCombined
 ```
 
 `-RequireCombined` 检查新目录中的空配置、真实 session/CSRF/SQLite 写读、手动快照及进程重启，结果是阶段运行检查。实际非空认知验证还需明确提供 `-Source`（包完整 SOURCE）、`-CognitionSourceSha`（已消费的认知工具源码）、`-CognitionSource`（获准的真实 SQLite）、`-CognitionHistory`、`-CognitionPublicationRoot` 和 `-CognitionSafeDir`。安全输入目录包含对应实际 Sleep 后状态的 `sql-expected.json`、`events-six-fields.json` 与 `admission-safe.json`；脚本核查当前发布代、十项 SQL 数值、全部六字段事件、排名、实际历史、分页与重启。验收数据只放在自己的验证目录，完整默认浏览器和原生控制器正向验收须分别通过才能发布。
 
-构建复用现有 `pnpm install --frozen-lockfile` 和 `pnpm build`，并编译现有 `cmd/workbench-snapshot`，需要 Git、Go 1.27.2、Node 24.16.0、pnpm 11.27.0 与依赖下载网络。精确源码归档、构建输出、ZIP 和验证数据只写入发布工作树 `.verification`。ZIP 只包含四个 Go 程序、生产静态资源、启动与手动快照脚本、此说明和 LICENSE；不包含数据库、开发依赖、测试原件、日志、私人配置、用户资料或正式自动任务。候选包演练与最终合并源码验收分别记录，发布渠道、tag 和 GitHub Release 由主控在最终验收后处理。
+构建复用现有 `pnpm install --frozen-lockfile` 和 `pnpm build`，并编译现有 `cmd/workbench-snapshot`，需要 Git、Go 1.27.2、Node 24.16.0、pnpm 11.27.0 与依赖下载网络。所有新下载、构建、归档、解压和验证目录都在 `D:/Astrocyte-agent-assets/20261015/release-package/`，`-Output` 可指定其中一个尚不存在的子目录；原 `.verification` 证据保留。构建前后检查 C 盘至少 10 GiB 空余。Go 父进程及子进程仅使用 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend` 和 `GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/release-package`；pnpm store 与 npm cache 也在本次 D 盘目录，不改全局配置。
+
+包允许四个 Go 程序、生产静态资源、启动与快照脚本、说明、LICENSE/NOTICE、legal 许可目录，以及 runtime 下的 Node、生产 SDK、准确适配脚本和两个固定模型目录。只有 `runtime/sdk/node_modules` 允许生产 npm 依赖；应用开发 node_modules、数据库、日志、私人配置、用户资料与正式自动任务继续拒绝。标准 .NET ZIP 支持这些大型资产；内容扫描逐块读取全部文件的 UTF8/UTF16LE 字符串，不将大型 sidecar 整体载入内存。扫描只输出相对文件名与检查范围，不输出匹配的私人字符串。最终 I 的适用 check/build、默认浏览器、原生控制器和新包实际核心路径验收仍须全部完成。
+
+## 固定 S4/S5 资产准备
+
+先显式运行联网准备命令；应用启动时没有隐式下载：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Runtime.ps1 -Output 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -EnglishAssets '<S5公开导出english的assets.json绝对路径>' -MultilingualAssets '<S5公开导出multilingual的assets.json绝对路径>'
+```
+
+`-ModelRoot` 默认为 S5 只读共享资产 `D:/Astrocyte-agent-assets/20261015/judgment-s5`。准备程序核对两个 checkpoint 的全部十二项资产与原 S5 metadata，复制到自身目录后再次核对，保持原资产不变。它不重新下载权重、不导出模型、不调用推理。每个模型目录保留 encoder/head ONNX、两份 `.onnx.data`、tokenizer、rl_agent_config 和原 S5 worker 的 `assets.json`。S5 原官方 export 的 strict 加载和 CPU parity 记录是这些资产的来源；模型并非上游直接提供的 ONNX。
+
+当前原始四份 ONNX 图的 metadata 含导出环境私人路径，完整 runtime 隐私扫描实际失败；S5 原 owner 正在接收该领域返修，未交新的合格产物。原始资产保持不变，当前目录中的 Node/SDK 可用于已授权验证，模型尚不能进入可分发包。准备和构建入口均执行完整 runtime 扫描，构建入口在应用源码归档前拒绝此类输入；收到 S5 准确新资产目录、描述和适用数值验证后，显式指定新 `-ModelRoot` 和两个 descriptor 再检查。私人路径规则和模型身份核对继续保留。
+
+可以显式传入本任务已取得的 `-NodeArchive` / `-NodeChecksums`、`-NpmCache` 和 `-DirectMLPackage`，复用同版本官方 ZIP、标准缓存和 NuGet；这些路径仍须在自身 D 盘范围，校验继续执行。未提供时只从脚本列出的固定官方来源联网准备，失败立即终止，没有自动更换来源或版本。
+
+| 路径 | 实际组件及配置用途 |
+|---|---|
+| `runtime/node/node.exe` | 官方 Node 24.16.0 Windows x64；官方 ZIP 的 SHASUMS256 校验 |
+| `runtime/sdk/node_modules/laya-ts/dist/index.js` | 官方 Git `432312b36714d8889eba405507b37eda25257d9c` 的 laya-ts 0.1.0 子目录实际 build、标准 npm pack |
+| `runtime/sdk/node_modules/onnxruntime-node` | 固定 1.30.0 CPU 原生依赖；安装禁用 lifecycle，实际加载原生 binding 检查 |
+| `runtime/sdk/node_modules/vscode-jsonrpc/lib/node/main.js` | 固定 8.2.1，Go 对端为 sourcegraph/jsonrpc2 v0.2.1 / `2cc94179e136b565cb9df7d9d0bff9fc06912ac9` |
+| `runtime/sdk/node_modules/@colbymchenry/codegraph` | 固定 1.0.1 / `a1489f77a6d69538bfe29020b8366ee034f90860` 的源码实际 build/npm pack，main 为 `dist/index.js`，包含生产 JS/WASM；实际 SQLite 能力检查；静态图检索不表示 embedding |
+| `runtime/models/english`、`runtime/models/multilingual` | HF `convaiinnovations/laya` revision `7b928d828b7b0e022f929d9bd2e44165aa270148` 的实际官方转换资产 |
+| `runtime/adapters/laya-worker.mjs`、`codegraph.mjs` | 最终精确应用 SOURCE 中的生产适配脚本，不能复制开发工作树 WIP |
+
+上游 Laya 构建使用它自己的固定 package-lock 和真实 Windows TypeScript 编译器；构建目录不会进入包。生产 SDK 使用独立 package.json 和标准 npm package-lock，固定直接版本，完整传递依赖保留其许可文件，并输出标准 CycloneDX SBOM。Node LICENSE 保留其 bundled third-party notices，Laya Apache-2.0、模型卡、CodeGraph MIT 和 Go JSON-RPC MIT 原件放入 legal。模型格式转换的归属与改变说明在包内 NOTICE。许可文档不替代实际资产加载检查。
+
+CodeGraph 同样使用准确源码的 package-lock 实际构建；发布 SDK 根目录直接导出 S4 使用的 API。ONNX 原 npm 包完整保留；其主项目 MIT、固定 v1.30.0 ThirdPartyNotices、随附 DirectML 1.15.4 的 Microsoft 二进制条款/源码许可/第三方通知，以及 DXC 1.8.2502.8 的完整 NCSA 复合通知分别放入 legal。DirectML 条款 §1(a) 允许其随 Windows/Xbox 的 ML 应用和服务分发，§3(c)/(e) 保留通知并限制独立分发；本包保留条款，不把其 DLL 归为 MIT。该 DLL 的存在不启用 GPU，实际 Laya 配置仍为明确 CPU。
+
+S5 `NewLaya` 需要绝对 Node/Worker/ModelDir/AssetsPath/SDKEntry/RPCEntry 路径、明确 Language/ModelRevision/Stderr 和启动/退出预算。S4 `repositorycontext.New` 需要 Git 身份、Node/SDK/Script、投影目录、读取预算和适用 AOCI 路径。语言、模型、预算和准入规则由现有产品策略与原 owner 的生产配置确定；P 不填默认值。H/B 的准确生产配置 SOURCE 未交付前，启动脚本没有新增虚构环境变量，这些字段尚不能通过本包启动参数启用。
+
+AOCI 固定 rc20 / `45990a1dcfc4415efdc6fbfa13bc159a415f127c` 的当前许可为 FSL-1.1-MIT；rc20 公布于 2026-10-09，未来 MIT 于 2028-10-09 生效。其 Permitted Purpose 对提供相同或近似功能的商业用途有限制；分发还须保留 LICENSE/NOTICE 等归属。用户尚未决定本产品用途、外置配置或适用作者授权，AOCI 纳包方式保持未决定；当前准备程序没有复制它的二进制。显式配置合法取得的同版本 AOCI 可满足完整地图刷新功能，属于已提交的可行方案，尚未视为用户决定。现有 S4 完整能力验收继续保留。
+
+Jev 仅为官方 `jev-1.13.0` 云 REST 模型，不分发本地权重或凭据。真实调用仍须进程 secret 和逐项证据外发授权；缺少 key 时真实 API 验证保持 NOT_RUN。Laya 本轮支持范围仍按 S5 实际结果：English/en、multilingual/en 和 zh；English 无效校准 bucket 在推理前拒绝，不替换模型或语言。OS 隔离、Jev、SemanticIndex 的未完成或未决定状态由原 owner 记录。
+
+准备完成后运行实际依赖的小范围 ZIP/解压检查：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Test-ReleaseTools.ps1 -Runtime 'D:\Astrocyte-agent-assets\20261015\release-package\runtime-prepared' -Output 'D:\Astrocyte-agent-assets\20261015\release-package\dependency-probe'
+```
+
+此命令核全部固定模型身份、真实 SDK/native binding/SQLite，归档实际 Node/SDK/许可并在新目录解压，逐文件检查原字节与完整 privacy 扫描。它不构建应用候选、不运行模型推理，不替代最终 I 同源码包验收。PowerShell 5.1 与 7 的检查分别登记实际结果。
 
 构建进程使用 `GOFLAGS=-p=1`、`GOMAXPROCS=2` 和 `NODE_OPTIONS=--max-old-space-size=512`；退出后恢复原进程配置。这些设置仅限制构建资源，不删减适用检查。
