@@ -272,6 +272,18 @@ SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，包含恢复�
 
 实际 S3 来源桥接、原 R Interpreter、HTTP 装配、原生请求并发与未知对账、人工批准后第二任务引用均未完成，继续由原负责人串行衔接。完整 Go 与产品组合验收继续保持此前未通过状态；没有把阶段源码、静态检查或数据库机制通过登记为业务完成。
 
+## 就绪请求诊断与原生 Go 依赖元数据
+
+SOURCE `efa137eb36177f69643c750c26ad8eb59b446741` 已普通 push，仅修改 `tests/s1/server.mjs`、`scripts/check-dependencies.mjs`。就绪 GET 失败保留实际 URL、自有 PID、`exit_code`、`signal_code` 与原 cause，成功响应完整消费正文；现有请求期限、总期限、启动等待、端口选择与全部生命周期断言保持。Go 依赖检查通过 `go mod edit -json` 比较全部 direct requirements 和工具链，通过 `go list -m -json` 检查实际选择的版本、间接属性和 replace，不解析 go.mod 字符串。
+
+`node --test tests/s1/server-lifecycle.test.mjs` 在原 helper 和当前 helper 上分别 EXIT 0，3 PASS、0 SKIP，164.304s / 87.586s。实际检查包括普通/Relay 自有目录、HTTP、SQLite、session、停止重开、Vite 代理、重复绑定拒绝与原端口重启。证据为 `.verification/server-readiness-recovery-first.log`、`.verification/server-readiness-context-second.log`；本树没有复现 F 的原 `read ECONNRESET`。F 的 `TsIlGq` 日志顺序显示 helper 在启动内部清理、尚未发出会话请求，网页就绪 GET 为当前排查位置，原错误具体请求 URL 和当时子进程退出状态未封存，根因保持 UNKNOWN。新增诊断及响应消费不作为该故障已修复的结论。
+
+`node scripts/check-dependencies.mjs` 在同 D 盘 Go 环境下 EXIT 0，实际依赖、锁文件、安装与 summarize 0.25.1 CLI 版本通过，日志 `.verification/go-dependency-native-json-current.log`。两个变更文件 `node --check` 与 `git diff --check` EXIT 0。
+
+按 M-product 已 push 的 `bbc64c3` 临时计划，B 仅在 H `works-relay-http` 编辑并 stage `go.mod`、`go.sum`、`dependencies.lock.json`。实际全模块 JSON、`go mod verify` 及 8 项 direct pin 原生 JSON 比较均 EXIT 0，diff 检查通过、未合并项为零；原件 `.verification/h-sdk-current-{module-graph.json,verify.log,pins.log}`。index blob 依次为 `e5fe6c301d7f4cb7f62dc46cbe31273bdb1f9433`、`50cb9ecc67890807e03828a3683dc4f6098ce98d`、`3b40e4f8bc1e699e5bb470f7e854a6e8c13db99a`。H 旧检查器对 grouped require 的首 RED 保留于 `.verification/h-sdk-current-dependency.log`；当前成熟元数据检查器的准确 SOURCE 已交 H，由 H 消费。没有修改 H 其他源码或操作其 cherry-pick 生命周期；三件临时范围已停止写入并归还。
+
+根已将 `internal/adapters/httpapi/judgment*.go` 及同前缀测试交唯一原 S5；B 本人确认该前缀无文件/WIP，并已停止写入。B 继续共享依赖、迁移及 `config.go`，S4 可信配置等待其原负责人准确接口与资产交接。冷 Registry 原生会话测试整改等待实际自有项目和原会话来源，真实 Interpreter、人工批准后使用及全部组合验收仍未完成；没有以机制通过替代这些结果。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
