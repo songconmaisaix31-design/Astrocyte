@@ -173,6 +173,21 @@ S2 安全 Context DTO / 原持有者工厂 / claim-live 与 submit-same-exited �
 
 两个临时范围均已结束，仍由原 F/H 持有各自提交和消费序列，B 回到原写域。配置组件、合并检查与实际业务验收分别记录；S4 客户端真实 Go/HTTP 检查、配置后正向 UI、S3 原生和全部默认核心继续，SOURCE 未交付的 WIP 不作为可消费结果。T 另获准对原 QA UID `49683148` 仅执行一次生产只读 metadata 第一页三十项复验，失败即停止；首412与实际100容量要求保留，没有改网络策略或将第一页/total写作容量通过。
 
+### 17:58 S5 AT12 真实版本来源协作计划
+
+总负责人 `msg_9757de4e531e` / 正式答复 `msg_e1415e3ad447` 已确认运行时来源：用户明确选择真实 Goal ID / revision，S2 核当前权限、固定版本和有效性；B 实际 RankingProfile 只代表四维排序部分，未配置保持 false / nil。完整 SPEC 4.1 TasteProfile 包含真实 rubrics、examples、delegations，参与判断的实际内容和版本必须进入原 S5 缓存并在准入同 DB 事务中重新核验，缺失实现继续补齐。AT12 未完成，不将排序版本提升为完整品味版本，不由 Agent 代填 Goal、权重、阈值或委托配置。
+
+| 原负责人 | 既有写域内责任与准确交付 |
+|---|---|
+| 原 B `ctx_1fd66a8adc28` | 原 Attention 应用、SQLite / HTTP 前缀及唯一迁移范围内核实完整品味持久化、不可变版本、读取快照和原准入授权桥；向原 S5 交准确 reader / 同 DB 事务端口、缺失实现及 SOURCE / REPORT。保留原 `domain/profile.go` 与其他冻结文件；涉及冻结例外先交根具体路径。T 独占应用测试保持原 owner |
+| 原 S2 `ctx_b9a5305d8480` | 原 Goal / proposal ports / S2 service 范围提供既有真实 `ReadGoal` 的权限、版本、有效性和同 DB 重核方式，向原 S5 交准确源码及签名；不代填运行时 Goal 或更改 S5 判断规则 |
+| 原 S5 `ctx_0a7797464f02`，M-release 管理 | 自己的判断规则 / 请求 / 缓存 / Admission bridge 使用真实 Goal、完整品味与委托版本，命中缓存和准入均重核；不写 B/S2 代码或造 type。准确公开 DTO 经原 H → F → 产品 UI 串行消费 |
+| 原 T `ctx_491ad741b3cd` | B 精确生产 SOURCE 交付后，继续原 Attention 应用测试域的真实持久化与版本变化验收；不以未配置拒绝替代正向，也不扩大原生调用或原始资料范围 |
+
+此项沿现有三层和原写域实施，不新增人员、公共状态中心或缓存证明系统。原始资料、示例正文、模型输出和凭据仍只保留本机，公开接口与管理报告只含获准安全引用及派生状态。B 的 F 五件、H 单文件临时范围均已归还，不再占用这项桥接的写入权。模块已分别向 B/S2 发 `msg_1590c4b98a5f` / `msg_9932e09a2d6e`，原 R 最小事务闭包的实际 overlay 结果继续作为独立未完成项追踪。
+
+F S4 客户端 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f` / REPORT `1c9f042fca46123e308cc770e323406b17455356` 已普通 push且模块独立核远端 REPORT 同值，普通合并为 `90b2819`。生成器、typecheck/lint/build、本树无 overlay 的实际 Go readonly build均通过；五项真实 HTTP/SQLite Vitest 18.26 秒通过，仅覆盖未配置503、400/403、取消与断开，未把它计作正向地图。准确客户端已交原产品 UI，S4 实际配置后 UI 和完整核心继续。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
