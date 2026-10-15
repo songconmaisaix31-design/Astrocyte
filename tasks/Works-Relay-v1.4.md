@@ -49,6 +49,14 @@ done 必须由原产品界面的人工确认执行。固定目标的实际输出
 
 structured 接入必须取得本次 owned 控制器的初始化和正确会话建立确认，再按对应真实协议提交输入。GET只读已观察的状态，不因页面刷新启动、probe 或恢复控制器。每个客户端的真实协议边界保留来源证据，不能把另一个 provider 的信号迁移成相同的原生身份。
 
+2026-10-15 总负责人正式答复 `msg_a1839d29aa46` 授权原 R 补齐 Relay 同一控制器的两阶段端口，优先于 L Interpreter 工程适配。当前 Relay ConfirmIntent 会携带非空首输入启动，LocalProject 的空 Message session 尚无接入 Relay task 的生产端口；本轮沿既有 Relay service、store、operation、Registry 和真实控制器完成初始化与首次输入的衔接。H 维护唯一生产组装与公共契约，F 继续唯一实际界面操作；接口名称与准确签名由 R/H 随精确 SOURCE 交接。
+
+初始化阶段使用空 Message，不调用模型，记录真实初始化、原 native 身份、原控制器及本次准备 operation 关系。初始化不产生输入已发送、模型已开始、目标完成或人工 done 事实。正选 metadata 尚未可用时如实表示 NotYetAvailable，不另起探针、不更换控制器或档案补齐。初始化失败、来源拒绝、进程退出与恢复后的所有权不足分别保留实际结果；未核实的初始化不能进入首次输入。
+
+首次输入必须复用上述原控制器和原 native 会话，并通过当前权限 revision、CAS、预算、准确 input operation、来源 guard、实际工具关闭及固定上下文检查。空初始化后的 generic Send 同样必须核查首输入来源，并将实际批准的固定上下文交给本次输入；仅配置回调不能作为运行证据。错误在模型请求前明确拒绝时保留该拒绝；已受理后未知继续占用原 operation，不重复发送、不创建替代会话。重复或并发首次输入不能产生第二次提交。
+
+执行时先完成同会话来源准备，由 F 在同 URL 核空登记基线和 observer ready，H 再唯一登记并保存真实计时起点，F 经既有产品 HTTP 发送一次。当前固定目标仍为公开 Go 项目 baseline `da3bdddb085808863090a05f60cc1c64415039cf` 的四个批准文件，保留 Mean 并实现 Median。初始化与首输入之间的身份、授权和来源变化均须重新核查；后继第二 native / handoff 独立记录，不混入首个三分钟窗口。
+
 非交互 stdin 接入必须符合可信启动策略、实际 argv、原工作区和当前 owned 输入通道。pipe 可写、写入完成、EOF 提交完成、客户端接受与客户端消费是不同事实。stdin_eof 只有一次首输入；关闭后的 send 明确拒绝，不改变 framing 重新投递。实际输入消费没有协议证据时保持 unknown。
 
 交互 TUI 的实际就绪仍须由相应客户端提供已验证信号。当前没有通用 TUI / paste-ready 观察端口；缺少证据时不得声称 ready 或利用视觉判断补齐。不新增通用终端组件或自研调度器。
@@ -98,7 +106,8 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 |---|---|---|
 | 语义领域实现 | 唯一执行权与重复操作；独立输入 / 开始 / 人工完成事实；初始化 / 消费分别记录；真实归属和关系拒绝；旧记录 unknown；权限版本与撤销 | 独立事实 / 人工handoff拒绝阶段 SOURCE1a4f120已交且实际领域检查PASS；working / done待用户答案，当前所有权安全口增补及完整真实链路待交 |
 | HTTP 与 UI 组合 | 正确生成契约、六字段、安全错误；真实 SQLite / HTTP 与权限；F 展示和操作；port0地址与Origin / CSRF / 关闭 | port0真实SQLite / HTTP / CSRF / 关闭独立通过，B/F实际helper消费继续；v1.4组合 NOT_RUN |
-| 单次真实 CLI | 新公开 scope、准确 owned 控制器、自有 DB、工具关闭、一次明确输入；初始化、接受、开始、结束与人工目标分开；源码通过后执行 | NOT_RUN |
+| Relay 两阶段初始化与首输入 | 同控制器空 Message 零模型初始化；准确身份 / operation；来源未就绪及拒绝；首输入重新核权限 revision / CAS / 预算 / tools / source / 固定上下文；并发与未知禁止重发 | 原 R 已获授权优先实现，精确 SOURCE / REPORT 与真实组件结果尚待交 |
+| 单次真实 CLI | 新公开 scope、准确 owned 控制器、自有 DB、工具关闭、一次明确输入；初始化、接受、开始、结束与人工目标分开；两阶段源码通过后执行 | NOT_RUN |
 | 三分钟 Today | F observer 先 ready，无登记基线；H一次真实登记并保存原始起点；每 native event_id 逐 SQLite 核；实际六字段 HTTP 与两尺寸 firstDOM 时间 | 新窗口 NOT_RUN，旧591116 / 591117毫秒 FAIL保留 |
 | 生命周期全部核心路径 | 实际 EOF / structured、互斥 / 重复 / 通用冲突、working、unknown send、合法目标完成与释放、alternate / previous、publication error；真实拒绝不制造假状态 | 未满足项 NOT_RUN / FAIL，旧默认203PASS / 41FAIL / 32SKIP / 4NOT_RUN保留 |
 | 最终 Windows x64 包 | 原集成人员消费准确 SOURCE / REPORT，在实际 packaged server 自有端口 / DB / scope 核全部适用功能及原生路径 | v1.4最终包 NOT_RUN |

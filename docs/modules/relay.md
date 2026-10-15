@@ -18,7 +18,9 @@
 
 产品模块当前 `ctx_9ce12d181768`，原 F `ctx_4a385bf65390` 已实际报告并继续唯一 Relay 页面操作；产品 UI `ctx_af3cbd15f128`、S2 `ctx_b9a5305d8480`、S3 `ctx_2e078edf896b`。H 已收到准确 R / S4 SOURCE、当前消费地址及检查顺序：先同 controller 空 Message 初始化、核正选来源和工具关闭，再交 F 同 URL 空登记基线与 observer ready；H 一次登记保存实际起点，F 唯一实际输入。安全初始化检查点后继续 Context → S3 → S4 的准确契约、factory 与实际 HTTP 入口交 F 生成客户端，再交产品 UI。没有新增本次真实初始化、登记、模型或目标通过结果。
 
-H 已普通 no-ff 消费 R REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`，原四项 WIP 保留。S4 整分支相对 H merge-base 带有冻结和无关历史，原 S4 负责交精确窄 SOURCE 闭包及必要 S2/B 依赖；H 仅准确消费，领域问题交原 owner，最终集成人员仍普通合并原分支。H 02:57Z 正式问题 `msg_0b4c24f15516` 确认现有 Relay ConfirmIntent 以非空首输入启动，空 Message 初始化属于 LocalProject session，尚无把该 session 接成 Relay task 的公开生产端口。模块已正式询问总负责人执行路径，未答保持未决定；H 的 Context / S3 / S4 契约与真实 HTTP 独立工作继续。generic Send 的首输入来源检查与实际固定上下文交付也已交 R/H 核查，不能以配置回调存在代替运行证据。
+H 已普通 no-ff 消费 R REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`，原四项 WIP 保留。S4 整分支相对 H merge-base 带有冻结和无关历史，原 S4 已交五个窄 SOURCE：`9eff2edb34058826d302d3a465b7fe7e74797be5` → `263bc7069682ede35af60426140ee6f744b0d472` → `1a55e1630502642324500c3b64853af882962fa4` → `896a7b430c62f9d91aaf5434b11c7653a3d00f36` → `293af633570d6a4f4cf4bbf9c5b651821ab977e7`。必要 B 依赖为单独 021 DDL `98bb9236c68f45ca4ab4114d46eafba5c90cdedf` 和依赖提交 `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646`，S2 原快照端口在 H 已存在。模块逐 commit 路径独立核对 PASS；H 仅准确消费，领域问题交原 owner，最终集成人员仍普通合并原分支。
+
+H 02:57Z 正式问题 `msg_0b4c24f15516` 确认现有 Relay ConfirmIntent 以非空首输入启动，空 Message 初始化属于 LocalProject session，尚无把该 session 接成 Relay task 的公开生产端口。总负责人已通过模块原问题 `msg_e5210d574861` 正式答复 `msg_a1839d29aa46`，授权原 R 优先于 L 实现同控制器两阶段端口；[v1.4 规格](../../tasks/Works-Relay-v1.4.md)第 3 节已经登记完整约束。初始化空 Message、零模型，原身份 / controller 保持；首输入重核权限 revision / CAS / 预算 / input operation / 来源 / 工具关闭及固定上下文，metadata 未就绪真实 NotYetAvailable。F 空登记 observer ready 和同会话来源准备完成后才唯一登记计时和发送。原 H 问题已先收到继续独立工作的中间答复，后续正式 reply 返回 answer_conflict；最终决定通过同原 thread 的 `msg_1320601dbef0` 直接交 H，不覆盖原答复。H 的 Context / S3 / S4 契约与真实 HTTP 独立工作继续；两阶段源码和实际初始化尚未通过。
 
 ### L 工程适配分工
 
