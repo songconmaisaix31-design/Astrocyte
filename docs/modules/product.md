@@ -42,6 +42,12 @@ F `msg_01e963a6311b` 报告生成一致性与 lint 通过，全局 typecheck 的
 
 I 后继实际核三处原 Junction 已指向 D 盘，发布负责人 `msg_e884792a3ea9` 确认其四树阶段完成并核全部实际 D 路径后可执行自身组合检查，不因 F / UI 的 helper 等待增加门槛。B 的显式输出、完整日志和 Vite 生命周期修复继续交准确 SOURCE；其他实际 C 输出树仍待该入口。B 已交独立 REPORT `85dfa88f61c625b2094a0fda432ee14a1f02ab60`，模块核远端同值，当前 helper 首轮真实生命周期在 D 盘运行，尚未交完整新来源。
 
+### 00:07 六件归还与原 UI 恢复独立 REPORT
+
+计划 SOURCE `b59b279` 已普通 push。原 S2 本人 `msg_d28c2bc9f1f5` 明确完成六件逐块编辑和 stage，停止 I 树全部编辑、stage 和进程访问；没有操作 commit / continue / abort / reset，没有编译测试。模块独核原 HEAD / MERGE_HEAD 不变、全树 U0、六件 working / cached diff-check 均 EXIT0，并完整审阅差异，准入与必有 `assignment_status`、严格 ASCII 币种检查、私有 controller / startup 身份和当前 caller / purpose 均保留。S2 独立 REPORT `86a64f5518855dacf2dcaac653b36b7e98d56c0a` 已普通 push并独立核远端同值，业务 SOURCE 仍 `db3f3817dc70990405beb4db7be6c095af2c1c0f`。M-release `msg_29ac5c40b878` 另行独核后只交 I 继续原 R merge，S2 六件临时权限已结束，组合构建与实际 Context 仍待验收。
+
+原 UI Task 已在原树和分支恢复为 `ctx_dcc1247de817 / term_3c0e6052-f817-469c-b5e3-b0c90ac67429`，启动回执 `ready / turn_started observed`。当前先读取事实源和准确合同，原页面范围继续，F 共享源码待交准确可消费阶段。Playwright 缓存迁移由 M-release 唯一协调，F 本人 `msg_eaef57743046` 明确本轮零浏览器且窗口内不新启；原 UI 已收到同一限制，待本人 ACK，不将启动回执作为浏览器安全确认。代码、小型 TypeScript 检查与普通合并继续，真实 CLI / 模型、默认完整 E2E 和包验收均未因此通过。
+
 ### 21:51 恢复与原负责人返修计划
 
 根最新 `msg_1bdccb5e8fe6` / `msg_90e98714dbc2` 和根 HANDOFF 21:40 入口明确授权恢复原产品子 Run，以及旧 `run_7b2ce96bcd13` 中仅 B/F 的恢复、问答、结算和终端管理；不创建新 Run 或新 Task，不启动其他已完成任务。公开 Task 列表核四个未完成产品任务均为 ready，原 Dispatch 已 failed / terminal_missing；公开终端清单没有六位旧句柄，与根本次重启及进程退出证据一致。原分支与未提交修改保留。
