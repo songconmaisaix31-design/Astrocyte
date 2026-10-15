@@ -309,3 +309,11 @@ H 本人已确认字段、路由和原服务语义，准确源码与 `registerJu
 同一入口 `-Phase checks` 五个适用包 `go vet -mod=readonly` 与 Node worker syntax 均 EXIT 0，`checks-20261015T1651589199092.{stdout,stderr}.log` 均空。`gofmt -l` 对两件 Go 修改无输出，普通与 staged Git diff-check 通过。本阶段只修改两件 S5 真实测试和本文；公共装配、共享依赖、迁移及其他领域由各原负责人保持。
 
 本轮沿用既有完整 Sources 的真实 Laya 推理与成功 Close 原件，没有重复模型调用。H 的生产注册与 OpenAPI、实际 Jev API 回执和 OS 全断网仍按各自实际验收要求保留，当前没有宣称完整 S5 通过。
+
+## 第八阶段独立 REPORT
+
+SOURCE `f955fe3c3450200342e8cbf0b0c152e8065a882e` 已普通提交并 push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/release-judgment-20261015` 返回同完整 SHA，工作区无修改。原 B SOURCE `6d1d59bf07b008a0969efefceb911e49b6b33db6` 经普通 merge `158e0a3d4361d410c4d6a8664a48c3abb6741b85` 保持祖先关系。本人本阶段仅修改 `tests/s5/source_policy_test.go`、`internal/adapters/httpapi/judgment_http_test.go` 和本文；B 两件临时冲突域在归还后结束，没有越域修改领域实现。
+
+准确源码对应上述三题型真实 HTTP `37.014s PASS`、八项真实非模型场景 `169.713s PASS / 零 skip`、五包 vet、Node syntax、gofmt 和两类 diff-check。当前 Task 没有增加模型调用，已有固定模型、CPU 推理、usage 与 Close 原件继续按其准确范围保留。合并后首 HTTP 400 / FAIL 原件独立保存，完整默认产品检查、H 生产注册、Jev 和 OS 隔离不计为本阶段通过。
+
+准确源码和装配签名已通过 `msg_f112b8e776ad` 交协调者供 H/I/T 消费；当前 Process 的 `TYPESAFE_API_KEY` 和 `ASTROCYTE_LAYA_MODEL_DIR` 存在性均为 false，没有读取凭据文件。Jev 临时 secret、OS 执行许可及 H 生产源码仍为后续实际输入，完整 S5 Task 持续。本 REPORT 作为随后单文档普通提交。
