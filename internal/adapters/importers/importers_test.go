@@ -6,9 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,27 +39,45 @@ func TestPaperExportIdentityRetainsOfficialVersionAndOriginal(t *testing.T) {
 		{"paper", "https://arxiv.org/html/not-a-paper", "https://arxiv.org/html/not-a-paper"},
 	} {
 		t.Run(tc.kind+tc.locator, func(t *testing.T) {
-			raw := fmt.Sprintf(`{"input":{"url":%q},"extracted":{"title":"contract-local export","content":"different extraction bytes"}}`, tc.locator)
-			source, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: tc.kind, SourceLocator: tc.locator, ExportText: raw})
-			if err != nil || source.SourceKey != tc.expected || source.SourceLocator != tc.locator || source.Provenance.Source != tc.locator || source.Provenance.Mode != "existing_json_export" || source.Provenance.Version != "0.21.8-format" || len(source.Attachments) != 1 || string(source.Attachments[0].Data) != raw {
-				t.Fatal("export identity, version or original provenance changed", source, err)
+			if exportSourceKey(tc.locator, tc.kind) != tc.expected {
+				t.Fatal("official version identity changed", tc.locator)
 			}
 		})
+	}
+	actual, err := installedExtractor(t).Extract(context.Background(), "https://arxiv.org/html/2501.12948v1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	source, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "paper", SourceLocator: actual.URL, ExportText: string(actual.Original)})
+	if err != nil || source.SourceKey != "arxiv:2501.12948" || source.SourceLocator != actual.URL || source.Provenance.Source != actual.URL || source.Provenance.Mode != "existing_json_export" || source.Provenance.Version != "0.21.8-format" || len(source.Attachments) != 1 || string(source.Attachments[0].Data) != string(actual.Original) {
+		t.Fatal("actual export source/version/original changed", err)
 	}
 }
 
 func TestReaderCanonicalDigestOriginalAndFileScope(t *testing.T) {
-	raw := `{"input":{"url":"https://www.youtube.com/watch?v=video&t=22"},"extracted":{"content":"original transcript","title":"real title","transcriptSegments":[{"startMs":22500,"text":"segment","endMs":25000}]},"summary":"actual summary"}`
+	rawBytes, err := os.ReadFile("testdata/summarize-arxiv-manual.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw := string(rawBytes)
+	actual, err := ParseSummarizeJSON(rawBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
 	r := NewReader(nil)
-	s, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", SourceLocator: "https://youtu.be/video", Kind: "video", ExportText: raw})
-	if err != nil || s.SourceKey != "youtube:video" || s.Text != "original transcript" || s.Summary != "actual summary" || len(s.SourceSpans) != 1 || len(s.Attachments) != 1 || string(s.Attachments[0].Data) != raw {
-		t.Fatalf("%+v %v", s, err)
+	s, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", SourceLocator: actual.URL, Kind: "paper", ExportText: raw})
+	if err != nil || s.SourceKey != canonicalWebKey(actual.URL) || s.Text != actual.Text || s.Summary != actual.Summary || len(s.SourceSpans) != len(actual.Segments) || len(s.Attachments) != 1 || string(s.Attachments[0].Data) != raw {
+		t.Fatal("actual reader export, digest source or original changed", err)
+	}
+	timed := videoActualExport(t, true)
+	if len(exportSpans(timed)) != len(timed.Segments) || len(timed.Segments) == 0 {
+		t.Fatal("actual media time spans missing")
 	}
 	sum := sha256.Sum256([]byte(s.Text))
 	for _, digest := range []string{hex.EncodeToString(sum[:]), "caller-made-up-digest"} {
-		_, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "video", ExportText: raw, ContentDigest: digest})
+		_, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "paper", ExportText: raw, ContentDigest: digest})
 		if (err == nil) != (digest == hex.EncodeToString(sum[:])) {
-			t.Fatal(digest, err)
+			t.Fatal("actual digest validation failed", err)
 		}
 	}
 	root := t.TempDir()
@@ -70,21 +85,23 @@ func TestReaderCanonicalDigestOriginalAndFileScope(t *testing.T) {
 	if err := os.WriteFile(path, []byte(raw), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	_, err = r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", LocalFileRef: path})
+	_, err = r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "paper", LocalFileRef: path})
 	var service *apierrors.ServiceError
 	if !errors.As(err, &service) || service.Code != apierrors.ScopeDenied {
 		t.Fatal("default file read allowed", err)
 	}
 	r.AllowedRoots = []string{root}
-	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", LocalFileRef: path}); err != nil {
+	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "paper", LocalFileRef: path}); err != nil {
 		t.Fatal(err)
 	}
 	outside := filepath.Join(t.TempDir(), "export.json")
-	os.WriteFile(outside, []byte(raw), 0o600)
-	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", LocalFileRef: outside}); err == nil {
+	if err := os.WriteFile(outside, []byte(raw), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "paper", LocalFileRef: outside}); err == nil {
 		t.Fatal("out of scope file read")
 	}
-	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize", SourceLocator: "https://youtube.com/watch?v=video"}); err == nil {
+	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize", SourceLocator: "https://www.bilibili.com/video/BV1PReT6EEqR/"}); err == nil {
 		t.Fatal("invented unavailable backend result")
 	}
 }
@@ -148,15 +165,20 @@ func TestArxivLiveOfficialSource(t *testing.T) {
 
 func TestBilibiliTrackingCanonicalSource(t *testing.T) {
 	base := "https://www.bilibili.com/video/BV1PReT6EEqR/"
+	root := os.Getenv("ASTROCYTE_TEST_VIDEO_BASELINE_DIR")
+	file := filepath.Join(root, "video-original-text.txt")
+	if !filepath.IsAbs(file) {
+		t.Fatal("actual video baseline directory required")
+	}
+	reader := NewReader([]string{root})
+	actual := videoActualExport(t, false)
 	for _, alias := range []string{base + "?spm_id_from=333.337.search-card.all.click", base + "?spm=another&p=1#reply", "http://m.bilibili.com/video/BV1PReT6EEqR?spm_id_from=old"} {
 		if canonicalWebKey(alias) != base {
 			t.Fatalf("tracking alias %s creates a distinct source", alias)
 		}
-		// Actual export source is unchanged while callers can use tracked links.
-		raw := fmt.Sprintf(`{"input":{"url":%q},"extracted":{"content":"protocol fixture content"}}`, base)
-		s, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize", Kind: "video", SourceLocator: alias, ExportText: raw})
-		if err != nil || s.SourceKey != base || s.SourceLocator != base || len(s.SourceSpans) != 0 {
-			t.Fatalf("alias mismatch or fake timestamp: %+v %v", s, err)
+		s, err := reader.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_markdown", Kind: "video", SourceLocator: alias, LocalFileRef: file})
+		if err != nil || s.SourceKey != base || canonicalWebKey(s.SourceLocator) != base || s.Text != actual.Text || len(s.SourceSpans) != 0 {
+			t.Fatal("actual alias identity, transcript or missing timeline changed", err)
 		}
 	}
 	for _, different := range []string{base + "?p=2", base + "?meaningful=other", "https://www.bilibili.com/video/BV1111111111/"} {
@@ -171,22 +193,31 @@ func TestBilibiliTrackingCanonicalSource(t *testing.T) {
 }
 
 func TestBilibiliPageOnlyIsNotVideoEvidence(t *testing.T) {
-	base := `{"input":{"url":"https://www.bilibili.com/video/BV1PReT6EEqR/"},"extracted":{"content":"recommended page links","transcriptSource":null,"transcriptSegments":null,"diagnostics":{"strategy":"html","transcript":{"textProvided":false}}},"llm":null,"summary":%s}`
-	for _, summary := range []string{`null`, `"recommended page links"`} {
-		_, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "video", ExportText: fmt.Sprintf(base, summary)})
+	cli, _, _ := videoActualInputs(t, false)
+	for _, samePageSummary := range []bool{false, true} {
+		raw := cli
+		if samePageSummary {
+			var value map[string]any
+			if err := json.Unmarshal(cli, &value); err != nil {
+				t.Fatal(err)
+			}
+			// 显式无字幕页面即使复制页面到 summary 字段，也必须拒绝。
+			value["summary"] = value["extracted"].(map[string]any)["content"]
+			var err error
+			raw, err = json.Marshal(value)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		_, err := NewReader(nil).ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "summarize_json", Kind: "video", ExportText: string(raw)})
 		var service *apierrors.ServiceError
 		if !errors.As(err, &service) || service.Code != apierrors.EvidenceMissing {
 			t.Fatalf("page-only export accepted: %v", err)
 		}
 	}
-	// Missing timestamps do not invalidate a real prior summary.
-	for _, raw := range []string{
-		`{"input":{"url":"https://www.bilibili.com/video/BV1PReT6EEqR/"},"summary":"existing human supplied video summary"}`,
-		fmt.Sprintf(base, `"genuine existing video summary"`),
-	} {
-		if e, err := ParseSummarizeJSON([]byte(raw)); err != nil || len(e.Segments) != 0 {
-			t.Fatalf("genuine summary rejected or timing invented: %+v %v", e, err)
-		}
+	actual := videoActualExport(t, false)
+	if e, err := ParseSummarizeMarkdown(actual.URL, actual.Title, []byte(actual.Text)); err != nil || e.Text != actual.Text || len(e.Segments) != 0 || e.HasOriginal {
+		t.Fatal("actual legacy plain export rejected or claimed verified time/original", err)
 	}
 	// Opt in to the preserved actual installed CLI output, outside this repo.
 	if path := os.Getenv("ASTROCYTE_TEST_BILIBILI_EXPORT"); path != "" {
@@ -203,31 +234,29 @@ func TestBilibiliPageOnlyIsNotVideoEvidence(t *testing.T) {
 }
 
 func TestSummarizeTimingAndMissingOriginal(t *testing.T) {
-	for _, tc := range []struct {
-		raw   string
-		ok    bool
-		count int
-	}{
-		{`{"input":{"url":"https://www.youtube.com/watch?v=x"},"extracted":{"content":"words","transcriptSegments":[{"startMs":1500,"endMs":2900,"text":"words"}]},"summary":"summary"}`, true, 1},
-		{`{"input":{"url":"https://www.youtube.com/watch?v=x"},"summary":"legacy summary"}`, true, 0},
-		{`{"input":{"url":"https://example.org"},"extracted":{"content":"words","transcriptSegments":[{"endMs":2900,"text":"words"}]}}`, false, 0},
-		{`{"input":{"url":"https://example.org"},"extracted":{"content":"words","transcriptSegments":[{"startMs":2900,"endMs":1500,"text":"words"}]}}`, false, 0},
-		{`{"input":{"url":"https://example.org"},"summary":""}`, false, 0},
+	actual := videoActualExport(t, true)
+	if !actual.HasOriginal || len(actual.Segments) != 952 || actual.Segments[0].EndMS == nil || actual.Segments[0].StartMS < 0 || *actual.Segments[0].EndMS < actual.Segments[0].StartMS {
+		t.Fatal("actual native time or original missing")
+	}
+	cli, _, _ := videoActualInputs(t, true)
+	if _, err := ParseSummarizeJSON(cli); err == nil {
+		t.Fatal("actual CLI page-only output accepted as timed video")
+	}
+	// 以下仅为 JSON 字段校验的非法输入，不代表外部成功输出。
+	for _, raw := range []string{
+		`{"input":{"url":"https://example.org"},"extracted":{"content":"words","transcriptSegments":[{"endMs":2900,"text":"words"}]}}`,
+		`{"input":{"url":"https://example.org"},"extracted":{"content":"words","transcriptSegments":[{"startMs":2900,"endMs":1500,"text":"words"}]}}`,
+		`{"input":{"url":"https://example.org"},"summary":""}`,
 	} {
-		v, err := ParseSummarizeJSON([]byte(tc.raw))
-		if (err == nil) != tc.ok || len(v.Segments) != tc.count {
-			t.Fatalf("%s: %v %+v", tc.raw, err, v)
+		if _, err := ParseSummarizeJSON([]byte(raw)); err == nil {
+			t.Fatal("accepted invalid JSON time or empty content")
 		}
 	}
-	v, err := ParseSummarizeMarkdown("https://youtu.be/x", "title", []byte("# Prior summary\n[01:20] not a verified transcript"))
-	if err != nil || len(v.Segments) != 0 {
-		t.Fatal("invented timestamp from markdown")
+	v, err := ParseSummarizeMarkdown(actual.URL, actual.Title, []byte(actual.Text))
+	if err != nil || v.Text != actual.Text || len(v.Segments) != 0 || v.HasOriginal {
+		t.Fatal("plain export fabricated verified timeline/original", err)
 	}
 }
-
-type roundTripFunc func(*http.Request) (*http.Response, error)
-
-func (f roundTripFunc) RoundTrip(r *http.Request) (*http.Response, error) { return f(r) }
 
 func TestArxivRevisionAndOriginal(t *testing.T) {
 	for _, id := range []string{"2501.12345v2", "https://arxiv.org/pdf/2501.12345v2.pdf", "arXiv:hep-th/9901001v1"} {
@@ -240,25 +269,17 @@ func TestArxivRevisionAndOriginal(t *testing.T) {
 			t.Fatal("accepted", id)
 		}
 	}
-	var fetched []string
 	a := NewArxiv()
-	a.Client.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) {
-		fetched = append(fetched, r.URL.String())
-		body := `<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>http://arxiv.org/abs/2501.12345v2</id><title> Actual title </title><summary>Abstract only</summary></entry></feed>`
-		if r.URL.Host == "arxiv.org" {
-			body = "%PDF-1.7\noriginal bytes"
-		}
-		return &http.Response{StatusCode: 200, Body: io.NopCloser(strings.NewReader(body)), Header: make(http.Header)}, nil
-	})
-	p, err := a.Read(context.Background(), "2501.12345")
-	if err != nil || p.ID != "2501.12345v2" || p.SourceKey != "arxiv:2501.12345" || !strings.HasPrefix(string(p.PDF), "%PDF-") || len(fetched) != 2 {
-		t.Fatalf("%+v %v", p, err)
+	p, err := a.Read(context.Background(), "2501.12948v2")
+	if err != nil || p.ID != "2501.12948v2" || p.SourceKey != "arxiv:2501.12948" || p.Title == "" || len(p.Metadata) == 0 || len(p.PDF) < 1000 || !strings.HasPrefix(string(p.PDF), "%PDF-") {
+		t.Fatal("actual fixed official revision or original unavailable", err)
 	}
-	if _, err := a.Read(context.Background(), "2501.12345v1"); err == nil {
-		t.Fatal("accepted changed pinned revision")
+	if _, err := a.Read(context.Background(), "2501.12948v999999"); err == nil {
+		t.Fatal("accepted unpublished fixed revision")
 	}
-	a.Client.Transport = roundTripFunc(func(r *http.Request) (*http.Response, error) { return nil, fmt.Errorf("network down") })
-	if _, err := a.Read(context.Background(), "2501.12345"); err == nil {
-		t.Fatal("hid network failure")
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if _, err := a.Read(ctx, "2501.12948v2"); !errors.Is(err, context.Canceled) {
+		t.Fatal("actual HTTP cancellation failure was hidden", err)
 	}
 }

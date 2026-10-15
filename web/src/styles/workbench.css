@@ -1,4 +1,4 @@
-/* Task flows and adaptive spacing informed by Apple HIG Layout. */
+/* 任务流程与自适应间距参考 Apple HIG Layout。 */
 .ac-workbench { --ac-bg:#f5f7f6; --ac-muted:#68746d; --ac-line:#e3e8e5; --detail-panel-width:720px; }
 .ac-workbench .ac-topbar { background:#fffffff2; backdrop-filter:blur(20px); box-shadow:0 1px 0 #263b2910; }
 .ac-workbench .ac-topbar-inner { max-width:1840px; padding:0 48px; }

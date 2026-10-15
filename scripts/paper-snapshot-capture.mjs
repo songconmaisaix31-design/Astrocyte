@@ -1,25 +1,13 @@
-// Capture a real human-reviewable paper snapshot from the built MV3 extension
-// and save the raw JSON for later paper_snapshot ingest acceptance.
-//
-// This launches an isolated, throwaway Chromium profile (never the personal
-// one) and loads the Astrocyte Paper extension; it then extracts snapshots from
-// real public full-text and abstract-only pages using the extension's own
-// injection files. The raw snapshot JSON is written verbatim to the output
-// directory so it can be pasted into ImportMaterial(adapter=paper_snapshot)
-// without any fixture substitution.
-//
-// Usage:
+// 使用自有 Chromium profile 和已构建 MV3 提取实际公开论文，原 JSON 保存在本树验证目录。
+// 用法：
 //   node scripts/paper-snapshot-capture.mjs [outputDir]
-//
-// Env:
-//   ASTROCYTE_PAPER_SNAPSHOT_DIR  output directory (default: %TEMP%/astrocyte-paper-snapshot)
+// ASTROCYTE_PAPER_SNAPSHOT_DIR 选择本树 .verification 内的专属输出目录。
 import { createRequire } from 'node:module';
-import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve, join } from 'node:path';
+import { readFile, mkdir, writeFile, realpath, lstat } from 'node:fs/promises';
+import { dirname, resolve, join, relative, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { tmpdir } from 'node:os';
 
 const base = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(base, '..');
@@ -33,16 +21,30 @@ if (!existsSync(resolve(dist, 'manifest.json'))) {
 const readability = await readFile(resolve(dist, 'Readability.js'), 'utf8');
 const extract = await readFile(resolve(dist, 'extract.js'), 'utf8');
 
-const outDir = process.argv[2] || process.env.ASTROCYTE_PAPER_SNAPSHOT_DIR || join(tmpdir(), 'astrocyte-paper-snapshot');
-await mkdir(outDir, { recursive: true });
+const verification = await realpath(join(repoRoot, '.verification'));
+const outDir = resolve(process.argv[2] || process.env.ASTROCYTE_PAPER_SNAPSHOT_DIR || join(verification, 'paper-snapshot'));
+const inside = relative(verification, outDir);
+if (!inside || inside === '..' || inside.startsWith(`..${sep}`) || isAbsolute(inside)) throw new Error('Paper snapshot output must stay in a dedicated worktree verification directory');
+const parent = await realpath(dirname(outDir));
+const parentInside = relative(verification, parent);
+if (parentInside === '..' || parentInside.startsWith(`..${sep}`) || isAbsolute(parentInside)) throw new Error('Paper snapshot output parent redirects outside verification');
+try {
+  const info = await lstat(outDir);
+  if (!info.isDirectory() || info.isSymbolicLink()) throw new Error('Paper snapshot output must be an owned ordinary directory');
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+  await mkdir(outDir);
+}
+const canonical = await realpath(outDir);
+if (process.platform === 'win32' ? canonical.toLowerCase() !== outDir.toLowerCase() : canonical !== outDir) throw new Error('Paper snapshot output directory redirects');
 
-// Real public pages verified by W1; no credentials, no login.
+// 本任务已经完整读取的公开出版页面。
 const TARGETS = {
   fulltext: 'https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514',
   abstract: 'https://aclanthology.org/2024.acl-long.1/',
 };
 
-const context = await chromium.launchPersistentContext('', {
+const context = await chromium.launchPersistentContext(join(outDir, 'browser-profile'), {
   headless: false,
   args: [
     `--disable-extensions-except=${dist}`,

@@ -6,8 +6,7 @@ import { join } from 'node:path';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import type { components } from '../src/api/schema';
 
-// Read only the short name of this test's owned temporary project. No TEMP
-// override, alias fabrication, private metadata, or production normalization.
+// 只读取本次验证项目的实际短名称。
 async function windowsFixtureInput(root: string, testInfo: TestInfo): Promise<string> {
   if (process.platform !== 'win32') return root;
   const unavailable = (reason: string) => {
@@ -16,8 +15,7 @@ async function windowsFixtureInput(root: string, testInfo: TestInfo): Promise<st
     console.info(description);
     return root;
   };
-  // CMD metacharacters are never interpolated, even inside quotes. AutoRun and
-  // delayed expansion are disabled; this command only queries an existing name.
+  // 禁止插入 CMD 元字符，关闭 AutoRun 和延迟展开，只查询现有名称。
   if (/["%!^&|<>]/.test(root) || [...root].some(char => char.charCodeAt(0) < 32)) return unavailable('fixture path cannot be safely quoted for CMD');
   const query = spawnSync('cmd.exe', ['/d', '/v:off', '/c', `for %I in ("${root}") do @echo %~sI`], {
     encoding: 'utf8', windowsHide: true, windowsVerbatimArguments: true, timeout: 5000,
@@ -31,8 +29,7 @@ async function windowsFixtureInput(root: string, testInfo: TestInfo): Promise<st
   return short;
 }
 
-// Actual temporary project/API/SQLite operations, no synthetic sessions or page.route.
-// This tests project registration/scoping; public-material AT03 is separate.
+// 使用真实项目、API 和 SQLite 验证登记与权限范围。
 test('human registers a specified project, independently saves B/C, reads only approved files and persists across restart', async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   const server = await startS1Server({ browser: true });
@@ -43,8 +40,7 @@ test('human registers a specified project, independently saves B/C, reads only a
   await writeFile(join(fixtureRoot, filename), text);
   try {
     const projectRoot = await windowsFixtureInput(fixtureRoot, testInfo);
-    // Independent filesystem expectation, established before the POST. The UI
-    // sends the chosen spelling; the API/store persist the canonical directory.
+    // 提交前独立检查实际目录，API 和存储保留其规范路径。
     const canonicalRoot = await realpath(fixtureRoot);
     await page.goto(`${server.webURL}/workspace`);
     await page.getByRole('button', { name: '接入项目', exact: true }).click();

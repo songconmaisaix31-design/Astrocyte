@@ -1,6 +1,6 @@
 import type { WorksSnapshot } from './worksAlbumPresentation';
 
-/** Saved scanner facts and service-projected task evidence have separate meanings. */
+/** 使用已保存扫描观察与服务返回的已派发作品 ID 计算统计。 */
 export function relayAlbumMetrics(snapshot: WorksSnapshot, relayedWorkIDs?: readonly string[]) {
   const known = snapshot.observed_at !== null && snapshot.status !== 'unknown';
   const recentKnown = known && snapshot.works.every(work => work.files.verified && work.files.mtime !== null);

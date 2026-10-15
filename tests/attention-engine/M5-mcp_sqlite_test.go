@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -271,6 +272,14 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 		}
 	}
 	before := mcpReadSnapshot(t, db)
+	expectedExplanation, err := engine.ExplainFocus(ctx, "Agent Swarm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	originalReceipts, err := eventRepo.ListEvents(ctx, 0, mcpFixtureNow+1)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
 	}
@@ -288,19 +297,69 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 		t.Fatalf("focus ordering: %+v", state)
 	}
 	explanation := mcpDecoded[app.FocusExplanation](t, first[3])
-	if len(explanation.Evidence) != 32 || len(explanation.RelatedProjects) != 2 || len(explanation.RelatedAgents) != 2 || len(explanation.Related) != 1 || explanation.Related[0].TS == 0 {
+	if len(explanation.Evidence) != 32 || len(explanation.RelatedProjects) != 2 || len(explanation.Related) != 1 || explanation.Related[0].TS == 0 {
 		t.Fatalf("incomplete explanation: %+v", explanation)
 	}
+	var projected map[string]any
+	if err := json.Unmarshal([]byte(toolText(t, first[3])), &projected); err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := projected["related_agents"]; exists {
+		t.Fatal("native source agents escaped exposure")
+	}
 	kinds := map[string]int{}
-	for _, item := range explanation.Evidence {
+	for i, item := range explanation.Evidence {
 		kinds[item.Kind]++
-		if item.EventID == "" || item.Original.ID != item.EventID || item.TS == 0 || item.Original.Event == nil || item.Original.Event.TS != item.TS || len(item.Original.RawBytes) == 0 || item.Strength != .01 || item.Decay != .1 || math.Abs(item.DecayFactor-math.Exp(-item.Decay*item.ElapsedDays)) > 1e-12 {
+		if item.EventID == "" || item.TS == 0 || item.Strength != .01 || item.Decay != .1 || math.Abs(item.DecayFactor-math.Exp(-item.Decay*item.ElapsedDays)) > 1e-12 {
 			t.Fatalf("evidence path: %+v", item)
+		}
+		wireItem := projected["evidence"].([]any)[i].(map[string]any)
+		if _, exists := wireItem["original"]; exists {
+			t.Fatal("original receipt escaped exposure")
+		}
+		expected := expectedExplanation.Evidence[i]
+		row := expected.Original
+		if row.ID != item.EventID || row.Event == nil || len(row.RawBytes) == 0 {
+			t.Fatalf("local original missing at evidence index %d", i)
+		}
+		if !reflect.DeepEqual(wireItem["event"], map[string]any{"event_id": row.ID, "kind": row.Event.Kind, "topic": row.Event.Topic, "tokens": float64(row.Event.Tokens), "scope": row.Event.Scope, "ts": float64(row.Event.TS)}) {
+			t.Fatalf("event %d lost exact six-field projection", i)
+		}
+		expected.Original = app.StoredEvent{}
+		if !reflect.DeepEqual(item, expected) {
+			t.Fatalf("signal %d lost weight/decay/confidence metrics", i)
 		}
 		if item.Kind == domain.EventKindAgentTask && (!item.ConfidenceOnly || item.AttentionContribution != 0 || item.ConfidenceContribution >= 0) {
 			t.Fatalf("failure path: %+v", item)
 		}
 	}
+	expectedExplanation.RelatedAgents = nil
+	for i := range expectedExplanation.Evidence {
+		expectedExplanation.Evidence[i].Original = app.StoredEvent{}
+	}
+	if !reflect.DeepEqual(explanation, expectedExplanation) {
+		t.Fatal("exposure lost outer attention/momentum/related/timestamp metrics")
+	}
+	checkExposure := func(responses []map[string]any) {
+		t.Helper()
+		for _, response := range responses {
+			for _, key := range []string{"raw", "raw_bytes", "origin_key", "original", "related_agents"} {
+				if strings.Contains(toolText(t, response), `"`+key+`"`) {
+					t.Fatalf("private field %s escaped exposure", key)
+				}
+			}
+			if structured, exists := response["result"].(map[string]any)["structuredContent"]; exists {
+				var text any
+				if err := json.Unmarshal([]byte(toolText(t, response)), &text); err != nil {
+					t.Fatal(err)
+				}
+				if !reflect.DeepEqual(text, structured) {
+					t.Fatal("text and structured content differ")
+				}
+			}
+		}
+	}
+	checkExposure(first[2:])
 	if kinds[domain.EventKindReadPaper] != 18 || kinds[domain.EventKindEditFile] != 12 || kinds[domain.EventKindUserApprove] != 1 {
 		t.Fatalf("explanation references: %v", kinds)
 	}
@@ -327,6 +386,10 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 	if after := mcpReadSnapshot(t, db); after != before {
 		t.Fatal("read tools mutated persisted state")
 	}
+	restartedReceipts, err := sqlite.NewEventRepository(db).ListEvents(ctx, 0, mcpFixtureNow+1)
+	if err != nil || !reflect.DeepEqual(originalReceipts, restartedReceipts) {
+		t.Fatalf("cold restart changed local origin/raw receipts: %v", err)
+	}
 	db.Close()
 	second := mcpSubprocess(t, path, "human", readScript)
 	if !reflect.DeepEqual(first, second) {
@@ -343,6 +406,7 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 	if len(writes) != 6 {
 		t.Fatalf("write responses: %d", len(writes))
 	}
+	checkExposure(writes[1:])
 	reported := mcpDecoded[app.ReportEventResult](t, writes[1])
 	pending := mcpDecoded[app.ReportEventResult](t, writes[2])
 	feedback := mcpDecoded[app.ReportEventResult](t, writes[3])
@@ -360,6 +424,15 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 		}
 		if row.Observation.Scope != "project-a" || row.Observation.Session != "m5-stdio" {
 			t.Fatalf("startup binding: %+v", row)
+		}
+		if row.OriginKey == "" || len(row.RawBytes) == 0 {
+			t.Fatal("local origin/raw receipt absent")
+		}
+		// Reconcile by returned ID locally; replay that same stored origin,
+		// never submit a new MCP operation to resolve an uncertain delivery.
+		replayed, err := app.NewEventService(eventRepo, .01).Record(ctx, []app.StoredEvent{row})
+		if err != nil || len(replayed) != 1 || !reflect.DeepEqual(row, replayed[0]) {
+			t.Fatalf("local receipt idempotency changed origin/raw: %v", err)
 		}
 		var signals int
 		if err := db.Conn().QueryRow("SELECT COUNT(*) FROM attention_engine_signals WHERE event_id=?", id).Scan(&signals); err != nil {
@@ -381,6 +454,10 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 		}
 	}
 	beforeAgent := mcpReadSnapshot(t, db)
+	writeReceipts, err := eventRepo.ListEvents(ctx, 0, mcpFixtureNow+1)
+	if err != nil {
+		t.Fatal(err)
+	}
 	db.Close()
 	agentResponses := mcpSubprocess(t, path, "agent", mcpCall(2, "veto", `{"topic":"Agent Swarm"}`)+
 		mcpCall(3, "report_event", `{"event":{"ts":`+fmt.Sprint(mcpFixtureNow)+`,"kind":"user_approve","topic":"Agent Swarm"}}`)+
@@ -394,6 +471,10 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 	if after := mcpReadSnapshot(t, db); after != beforeAgent {
 		t.Fatal("denied Agent tools modified storage")
 	}
+	coldWriteReceipts, err := sqlite.NewEventRepository(db).ListEvents(ctx, 0, mcpFixtureNow+1)
+	if err != nil || !reflect.DeepEqual(writeReceipts, coldWriteReceipts) {
+		t.Fatalf("cold restart changed written origin/raw receipts: %v", err)
+	}
 	// Apply the persisted human signal through W2 explicitly, outside MCP.
 	eventRepo = sqlite.NewEventRepository(db)
 	postSignals, err := eventRepo.ListSignals(ctx, mcpFixtureNow, mcpFixtureNow)
@@ -406,6 +487,7 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 	}
 	db.Close()
 	afterApply := mcpSubprocess(t, path, "human", mcpCall(2, "explain_focus", `{"topic":"Agent Swarm"}`))
+	checkExposure(afterApply[1:])
 	final := mcpDecoded[app.FocusExplanation](t, afterApply[1])
 	if len(final.Evidence) != 34 {
 		t.Fatalf("cold reread lost applied report/veto chain: %d", len(final.Evidence))
@@ -413,7 +495,16 @@ func TestMCPRealStdioSQLiteFiveOperationsAndRestart(t *testing.T) {
 	var vetoFound bool
 	for _, item := range final.Evidence {
 		if item.EventID == veto.EventID {
-			vetoFound = item.Weight == -.8 && item.TS == mcpFixtureNow && item.Original.ID == veto.EventID
+			var wire map[string]any
+			if err := json.Unmarshal([]byte(toolText(t, afterApply[1])), &wire); err != nil {
+				t.Fatal(err)
+			}
+			for _, value := range wire["evidence"].([]any) {
+				event := value.(map[string]any)["event"].(map[string]any)
+				if event["event_id"] == veto.EventID {
+					vetoFound = item.Weight == -.8 && item.TS == mcpFixtureNow && reflect.DeepEqual(event, map[string]any{"event_id": veto.EventID, "kind": "user_veto", "topic": "Agent Swarm", "tokens": float64(0), "scope": "project-a", "ts": float64(mcpFixtureNow)})
+				}
+			}
 		}
 	}
 	if !vetoFound {

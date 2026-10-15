@@ -187,10 +187,18 @@ func (w *PaperWeb) FetchPDF(ctx context.Context, locator string, limit int64) ([
 	if err != nil {
 		return nil, err
 	}
-	if !bytes.HasPrefix(bytes.TrimSpace(b), []byte("%PDF-")) {
-		return nil, invalid("paper PDF source did not return a PDF document")
+	if err := requirePDFContent(b); err != nil {
+		return nil, err
 	}
 	return b, nil
+}
+
+// 只使用标准 MIME 检查；PDF 正文由已安装的 summarize/markitdown 解析。
+func requirePDFContent(body []byte) error {
+	if http.DetectContentType(bytes.TrimSpace(body)) != "application/pdf" {
+		return invalid("paper PDF source did not return a PDF document")
+	}
+	return nil
 }
 
 func (w *PaperWeb) fetch(ctx context.Context, locator string, limit int64) ([]byte, error) {

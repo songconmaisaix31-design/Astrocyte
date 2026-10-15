@@ -7,7 +7,7 @@ const actions: Record<string, string> = {
   repair_storage_then_retry_cached_result: '模型结果已保存，本地写入尚未完成。请修复资料存储目录后重试原作业；服务会复用已保存结果，不再次调用模型。',
 };
 
-/** Display persisted outcomes; never infer completion or retry unknown delivery. */
+/** 显示已持久保存的结果，保留未知交付并禁止自动重发。 */
 export function jobPresentation(job: Job, now: number) {
   const active = job.status === 'queued' || job.status === 'running';
   const unknown = job.delivery_unknown || job.error?.code === 'delivery_unknown';

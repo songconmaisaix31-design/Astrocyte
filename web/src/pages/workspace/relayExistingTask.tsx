@@ -5,7 +5,7 @@ import { QueryState } from '../../components/QueryState';
 import { Field } from '../../components/DetailPanel';
 import { relayDisplayState, relayLivenessLabel } from './relayPresentation';
 
-/** Opening a conflict target performs only GET; it never changes the saved intent. */
+/** 打开冲突指向的已有任务，使用 GET 读取任务状态。 */
 export function RelayExistingTask({ taskID }: { taskID: string }) {
   const [opened, setOpened] = useState(false);
   const task = useReadApi(signal => relayApi.task(taskID, signal), { enabled: opened, key: taskID });

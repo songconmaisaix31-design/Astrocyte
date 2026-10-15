@@ -103,8 +103,20 @@ func (s *SleepService) Run(ctx context.Context, day time.Time) (SleepResult, err
 		}
 		byTopic := map[string][]StoredEvent{}
 		views := []domain.EventTopic{}
+		candidates := []SleepCandidate{}
 		for _, event := range events {
 			if event.Event == nil || strings.TrimSpace(event.Event.Topic) == "" {
+				ts, kind, note := event.Observation.TS, "unassigned_pending", "topic_candidate_unavailable"
+				if event.Event == nil {
+					kind = "mapping_pending"
+					note = "mapping_pending_bucket_unknown"
+				} else if ts <= 0 {
+					ts = event.Event.TS
+				}
+				if ts <= 0 {
+					note += ";observed_ts_unknown"
+				}
+				candidates = append(candidates, SleepCandidate{ID: fmt.Sprintf("receipt:%q", event.ID), Kind: kind, Sources: []domain.EventRef{{EventID: event.ID, TS: ts}}, Note: note})
 				continue
 			}
 			topic := strings.TrimSpace(event.Event.Topic)
@@ -113,7 +125,6 @@ func (s *SleepService) Run(ctx context.Context, day time.Time) (SleepResult, err
 		}
 		core := domain.Consolidate(views, related)
 		clusters = core.Clusters
-		candidates := []SleepCandidate{}
 		created := map[string]bool{}
 		for _, cluster := range clusters {
 			for _, topic := range cluster.Topics {
@@ -123,19 +134,11 @@ func (s *SleepService) Run(ctx context.Context, day time.Time) (SleepResult, err
 				if existsErr != nil && !dynamicsNotFound(existsErr) {
 					return existsErr
 				}
-				birthRefs, support := refs, []domain.EventRef{}
 				if dynamicsNotFound(existsErr) {
-					birthRefs, support, err = sleepBirthSupport(tx, topic, cluster, byTopic, nodes)
-					if err != nil {
-						return err
-					}
-					if len(birthRefs) == 0 {
-						candidates = append(candidates, SleepCandidate{ID: fmt.Sprintf("concept:%q", topic), Kind: "concept_pending", Topic: topic, Sources: sleepSources(own), Note: "insufficient_known_same_scope_support"})
-						continue
-					}
-					if _, err = s.engine.ConsolidateTopicInTx(tx, topic, birthRefs, nil, started, support...); err != nil {
-						return err
-					}
+					// Current cluster views contain only tagged events. Unlabeled
+					// receipts stay pending until a production candidate exists.
+					candidates = append(candidates, SleepCandidate{ID: fmt.Sprintf("concept:%q", topic), Kind: "concept_pending", Topic: topic, Sources: sleepSources(own), Note: "tagged_birth_disabled_v0_2"})
+					continue
 				}
 				var batch []domain.Signal
 				for _, signal := range signals {

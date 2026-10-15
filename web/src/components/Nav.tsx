@@ -1,6 +1,5 @@
 import { navigate } from '../router';
 import { useFoundation, useProjects } from '../hooks/useReadApi';
-import { fixtureProjects } from '../fixtures';
 import { Icon } from './DesignIcons';
 
 const items = [
@@ -11,13 +10,13 @@ const items = [
   { path: '/cognition', label: '认知', icon: 'spark' },
 ] as const;
 
-export function Nav({ currentPath, fixture, open, onNavigate }: { currentPath: string; fixture: boolean; open: boolean; onNavigate: () => void }) {
+export function Nav({ currentPath, open, onNavigate }: { currentPath: string; open: boolean; onNavigate: () => void }) {
   const foundation = useFoundation();
   const projects = useProjects();
   const caps = foundation.data?.capabilities;
   const cognition = currentPath.startsWith('/cognition');
-  const canImport = !cognition && !fixture && !!caps?.imports && !foundation.stale;
-  const projectItems = fixture ? fixtureProjects : projects.data?.items ?? [];
+  const canImport = !cognition && !!caps?.imports && !foundation.stale && !foundation.error && !foundation.loading;
+  const projectItems = projects.data?.items ?? [];
   const go = (path: string) => { const query = new URLSearchParams(window.location.search); query.delete('tab'); navigate(`${path}${query.size ? `?${query}` : ''}`); onNavigate(); };
   return <aside className={`ac-sidebar ${open ? 'open' : ''}`}>
     <div className="ac-nav-label">我的工作台</div>
@@ -25,15 +24,15 @@ export function Nav({ currentPath, fixture, open, onNavigate }: { currentPath: s
       const active = item.path === '/workspace' ? currentPath === '/workspace' || currentPath === '/workspace/' : currentPath.startsWith(item.path) || (currentPath === '/' && item.path === '/attention');
       return <button key={item.path} type="button" className={active ? 'active' : ''} aria-current={active ? 'page' : undefined} onClick={() => go(item.path === '/cognition' ? '/cognition/today' : item.path)}><Icon name={item.icon} /><span>{item.label}</span></button>;
     })}</nav>
-    {!cognition && <><button type="button" className="ac-new-button" disabled={!canImport} onClick={() => { const query = new URLSearchParams(window.location.search); query.delete('tab'); query.set('import', '1'); navigate(`/attention?${query}`); onNavigate(); }} title={canImport ? '导入 arXiv 或 summarize 既有导出' : '示例模式或服务未提供此写入能力'}><Icon name="plus" size={18} />{canImport ? '添加资料' : '添加资料 · 未启用'}</button>
+    {!cognition && <><button type="button" className="ac-new-button" disabled={!canImport} onClick={() => { const query = new URLSearchParams(window.location.search); query.delete('tab'); query.set('import', '1'); navigate(`/attention?${query}`); onNavigate(); }} title={canImport ? '导入 arXiv 或 summarize 既有导出' : '服务未提供此写入能力'}><Icon name="plus" size={18} />{canImport ? '添加资料' : '添加资料 · 未启用'}</button>
     <div className="ac-disabled-caption">{canImport ? '保存资料不会启动任务' : '写入操作尚未启用'}</div></>}
-    <div className="ac-sidebar-divider" /><div className="ac-nav-label">我的项目{fixture && <span>示例</span>}</div>
+    <div className="ac-sidebar-divider" /><div className="ac-nav-label">我的项目</div>
     {projectItems.map(project => <button type="button" className="ac-project-nav" key={project.id} onClick={() => go('/workspace')}><span className="ac-project-symbol">{project.name.slice(0, 1)}</span><span className="text-truncate">{project.name}</span></button>)}
     {!projectItems.length && <p className="ac-sidebar-empty">{projects.loading ? '加载中…' : projects.error ? '项目列表无法获取' : '暂无已注册项目'}</p>}
-    {!fixture && projects.error && <button type="button" className="ac-text-button" onClick={projects.retry}>重试项目列表</button>}
-    {!fixture && projects.stale && <p className="ac-sidebar-empty" role="status">项目列表已过期</p>}
+    {projects.error && <button type="button" className="ac-text-button" onClick={projects.retry}>重试项目列表</button>}
+    {projects.stale && <p className="ac-sidebar-empty" role="status">项目列表已过期</p>}
     {!cognition && <button type="button" className="ac-register-button" onClick={() => go('/workspace')}><Icon name="plus" size={15} />管理本地项目</button>}
-    <div className="ac-sidebar-bottom">{fixture && <div className="ac-small-quote"><Icon name="branch" size={22} /><p>把一次次探索，<br />连接成可以继承的经验。</p><button type="button" onClick={() => go('/swarm')}>进入开发空间<Icon name="arrow" size={14} /></button></div>}
+    <div className="ac-sidebar-bottom">
       <details className="ac-capabilities" aria-label="系统能力"><summary>系统能力</summary>{caps ? <div>{Object.entries({ 导入: caps.imports, 审核: caps.approvals, 执行: caps.execution, 恢复: caps.native_resume, 交接: caps.handoff }).map(([label, value]) => <span key={label}>{label} · {value ? '可用' : '未启用'}</span>)}</div> : <p>{foundation.loading ? '加载中…' : '无法获取'}</p>}{foundation.stale && <p>能力信息已过期</p>}{foundation.error && <button type="button" className="ac-text-button" onClick={foundation.retry}>重试能力</button>}</details>
     </div>
   </aside>;

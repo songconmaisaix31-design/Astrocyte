@@ -1,88 +1,81 @@
 import { test, expect, type Page } from '@playwright/test';
-
-/**
- * Paper search entry in Attention: clear entry → metadata + availability note →
- * checkbox → batch import (never full-auto). Fixture mode demonstrates the
- * interaction; real mode must surface an honest unavailable/error state and
- * never fabricate results. Real search is a GET /papers/search returning hits
- * with source_key/provider/content_state/pdf_urls.
- */
-
+import type { components } from '../src/api/schema';
+type Search = components['schemas']['PaperSearchResultV1'];
 const panel = (page: Page) => page.locator('section[aria-label="论文检索"]');
 
-async function openSearch(page: Page) {
+async function search(page: Page, query = 'Attention Is All You Need') {
+  await page.goto('/attention');
   await page.getByRole('button', { name: /检索论文/ }).first().click();
-  await expect(panel(page)).toBeVisible();
+  await panel(page).getByLabel('检索论文', { exact: true }).fill(query);
+  const completed = page.waitForResponse(response => response.url().includes('/api/v1/papers/search?'));
+  await panel(page).getByRole('button', { name: '检索论文', exact: true }).click();
+  return completed;
 }
 
-test.describe('论文检索（示例）', () => {
-  test('renders metadata results with an availability note', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await openSearch(page);
-    await expect(panel(page).getByText('示例论文：公开 arXiv 文献（用于验证检索与勾选流程）')).toBeVisible();
-    await expect(panel(page).getByText(/arXiv 2504\.16054/)).toBeVisible();
-    await expect(panel(page).getByText('示例期刊论文：经 DOI 元数据索引')).toBeVisible();
-    await expect(panel(page).getByText(/原文可得状态 · 仅摘要\/元数据/).first()).toBeVisible();
-  });
-
-  test('selects and clears hits explicitly without any write request', async ({ page }) => {
-    const writes: string[] = [];
-    page.on('request', request => {
-      if (request.url().includes('/api/v1/') && !['GET', 'HEAD'].includes(request.method())) writes.push(request.url());
-    });
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await openSearch(page);
-    const fullRow = panel(page).locator('li').filter({ has: page.getByText('示例论文：公开 arXiv 文献（用于验证检索与勾选流程）') });
-    await fullRow.getByRole('checkbox').check();
-    await expect(panel(page).getByRole('button', { name: /批量入库 1 条/ })).toBeDisabled();
-    await panel(page).getByRole('button', { name: '取消全部勾选', exact: true }).click();
-    await expect(panel(page).getByRole('button', { name: /批量入库/ })).toBeDisabled();
-    expect(writes).toEqual([]);
-  });
+test('公开检索元数据和可得状态完整来自实际 HTTP', async ({ page }) => {
+  test.setTimeout(120_000);
+  const response = await search(page);
+  expect(response.status()).toBe(200);
+  const result = await response.json() as Search;
+  expect(result.items.length).toBeGreaterThan(0);
+  for (const [index, hit] of result.items.entries()) {
+    const row = panel(page).locator('li').nth(index);
+    await expect(row).toBeVisible();
+    await expect(row.getByRole('heading')).toHaveText(hit.title);
+    await expect(row).toContainText(hit.provider);
+    await expect(row).toContainText('原文可得状态');
+    expect(hit.source_key).toBeTruthy();
+    expect(URL.canParse(hit.locator)).toBe(true);
+    await expect(row.getByRole('link', { name: '查看原始来源', exact: true })).toHaveAttribute('href', hit.locator);
+  }
 });
 
-test.describe('论文检索（真实不可用）', () => {
-  test('surfaces an honest unavailable state instead of fake results', async ({ page }) => {
-    await page.route('**/api/v1/papers/search**', route => route.fulfill({ status: 501, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, error: { code: 'unsupported_capability', message: 'Not implemented', request_id: 'r', retryable: false, required_action: '论文检索尚未接入' } }) }));
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    await openSearch(page);
-    await panel(page).getByLabel('检索论文', { exact: true }).fill('transformer');
-    await panel(page).getByRole('button', { name: '检索论文', exact: true }).click();
-    await expect(panel(page).getByText(/检索未完成/)).toBeVisible({ timeout: 10000 });
-    await expect(panel(page).getByText('示例论文：公开 arXiv 文献（用于验证检索与勾选流程）')).not.toBeVisible();
+test('勾选和清除实际检索结果均不自动提交导入', async ({ page }) => {
+  test.setTimeout(120_000);
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (request.url().includes('/api/v1/') && !['GET', 'HEAD'].includes(request.method())) writes.push(request.url());
   });
+  expect((await search(page)).status()).toBe(200);
+  const checkbox = panel(page).getByRole('checkbox').first();
+  await expect(checkbox).toBeEnabled();
+  await checkbox.check();
+  await expect(panel(page).getByRole('button', { name: '批量入库 1 条', exact: true })).toBeEnabled();
+  await panel(page).getByRole('button', { name: '取消全部勾选', exact: true }).click();
+  await expect(checkbox).not.toBeChecked();
+  await expect(panel(page).getByRole('button', { name: /批量入库/ })).toBeDisabled();
+  expect(writes).toEqual([]);
 });
 
-test.describe('论文检索（真实契约对接）', () => {
-  test('renders a real PaperSearchResultV1 payload and GETs the search', async ({ page }) => {
-    let searched = false;
-    await page.route('**/api/v1/papers/search**', route => {
-      searched = true;
-      expect(route.request().url()).toContain('q=transformer');
-      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ schema_version: 1, query: 'transformer', items: [{ source_key: 'arxiv:2504.16054', provider: 'arxiv', title: 'Attention 论文', authors: ['甲'], year: 2024, arxiv_id: '2504.16054', abstract: '摘要', locator: 'https://arxiv.org/abs/2504.16054', content_state: 'abstract_only', pdf_urls: [] }], next_cursor: null, has_more: false, warnings: [] }) });
-    });
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    await openSearch(page);
-    await panel(page).getByLabel('检索论文', { exact: true }).fill('transformer');
-    await panel(page).getByRole('button', { name: '检索论文', exact: true }).click();
-    await expect(panel(page).getByText('Attention 论文')).toBeVisible();
-    await expect(panel(page).getByText(/原文可得状态 · 仅摘要\/元数据/)).toBeVisible();
-    expect(searched).toBe(true);
-  });
+test('真实输入校验失败显示错误且不展示检索结果', async ({ page }) => {
+  const response = await search(page, 'x'.repeat(1001));
+  expect(response.status()).toBe(400);
+  await expect(panel(page).getByText(/检索未完成/)).toBeVisible();
+  await expect(panel(page).locator('li')).toHaveCount(0);
 });
 
-test.describe('论文检索（移动布局）', () => {
-  test('renders results without horizontal overflow at 390px', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await openSearch(page);
-    await expect(panel(page).getByText('示例论文：公开 arXiv 文献（用于验证检索与勾选流程）')).toBeVisible();
-    await expect(panel(page).getByText('示例期刊论文：经 DOI 元数据索引')).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  });
+test('公开检索发送完整关键词并保留 HTTP 契约字段', async ({ page }) => {
+  test.setTimeout(120_000);
+  const query = 'Attention Is All You Need';
+  const response = await search(page, query);
+  expect(response.status()).toBe(200);
+  expect(response.request().method()).toBe('GET');
+  expect(new URL(response.url()).searchParams.get('q')).toBe(query);
+  const result = await response.json() as Search;
+  expect(result.schema_version).toBe(1);
+  expect(result.query).toBe(query);
+  expect(result.items.length).toBeGreaterThan(0);
+  expect(result.items.every(hit => hit.content_state === 'abstract_only')).toBe(true);
+  await expect(panel(page).getByText(/原文可得状态 · 仅摘要\/元数据/).first()).toBeVisible();
+});
+
+test('390px 布局完整呈现实际检索结果且没有水平溢出', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await search(page);
+  expect(response.status()).toBe(200);
+  const result = await response.json() as Search;
+  expect(result.items.length).toBeGreaterThan(0);
+  await expect(panel(page).locator('li').first().getByRole('heading')).toHaveText(result.items[0].title);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

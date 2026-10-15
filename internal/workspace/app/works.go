@@ -169,7 +169,7 @@ func (s *worksService) refreshWorks(ctx context.Context, c domain.Caller, cmd Wo
 		if saveErr := s.repo.SaveWorksSnapshot(ctx, old); saveErr != nil {
 			return old, saveErr
 		}
-		return s.withMetadata(ctx, old)
+		return old, err
 	}
 	works = retainAttributedWorks(old.Works, works)
 	snapshot := s.mergeObservations(old, works, failures)

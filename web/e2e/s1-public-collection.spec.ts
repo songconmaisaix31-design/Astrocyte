@@ -11,17 +11,14 @@ const owner = '3494358764489275';
 const folder = '2356677875';
 const approvedStore = 'C:/Users/DW/AppData/Local/Temp/astrocyte-s1-4pmMWO';
 
-// Coordinator-assigned public-network/browser slot. No page.route, model,
-// synthetic metadata or media extraction is used. The optional selection phase
-// submits at most one new metadata-only model job, reusing the approved store.
+// 使用协调端分配的公开来源与浏览器范围，选择阶段单独核对模型许可。
 test('real selected Bilibili public collection persists metadata, gates selection and deduplicates after restart', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_PUBLIC_COLLECTION !== '1', 'Requires coordinator-assigned public/browser slot.');
   test.setTimeout(process.env.ASTROCYTE_TEST_PUBLIC_SELECTION === '1' ? 2_100_000 : 240_000);
   const reusePath = process.env.ASTROCYTE_S1_REUSE_OWNED_TEMP;
   const ownedRoot = process.env.ASTROCYTE_S1_REUSE_APPROVED_ROOT;
   expect(reusePath && ownedRoot && resolve(reusePath) === resolve(approvedStore) && resolve(ownedRoot) === resolve(approvedStore), 'Use only the exact coordinator-approved previously owned store.').toBe(true);
-  // summarize is disabled: selection must reuse the existing actual receipt;
-  // a regression cannot accidentally start another download/transcription.
+  // summarize 保持关闭，选择操作必须复用已保存实际回执。
   const server = await startS1Server({ browser: true, reuseOwnedTemporary: { path: reusePath!, ownedRoot: ownedRoot! } });
   let api = await humanAPI(server.apiURL);
   const readSource = async (id: string) => await api.get(`/tracking-sources/${id}`) as S['TrackingSourceResultV1'];

@@ -107,8 +107,7 @@ test('actual Orca discovery remains a read-only candidate list until human regis
       expect(response.status).toBe(200);
       return await response.json() as Record<string, unknown>;
     }
-    // Temporary API-issued test identity stays in memory; no token is attached,
-    // displayed, logged or placed in browser request traces.
+    // 本次 API 颁发的验证身份只保存在内存，不写入浏览器轨迹或产物。
     const issued = await humanWrite(`/local-projects/${registered.project.id}/agent-token`, { expected_version: settings.project.settings.revision, agent_id: 'actual-project-read-only' }) as unknown as S['ProjectAgentTokenResultV1'];
     const token = issued.credential.token;
     async function agentRequest(endpoint: string, fields?: Record<string, unknown>, method = fields ? 'POST' : 'GET') {

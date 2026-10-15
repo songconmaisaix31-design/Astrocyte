@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"io"
 	"log/slog"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
@@ -564,37 +564,14 @@ func TestStaticServing_TraversalPrevented(t *testing.T) {
 	}
 }
 
-// mockFailingFoundationService is a test-only foundation service that always fails.
-type mockFailingFoundationService struct{}
-
-func (m *mockFailingFoundationService) Health(_ context.Context) (foundation.HealthResponse, error) {
-	return foundation.HealthResponse{}, &apierrors.ServiceError{
-		Code:      apierrors.InternalError,
-		Message:   "simulated storage failure",
-		Retryable: true,
-	}
-}
-
-func (m *mockFailingFoundationService) Foundation(_ context.Context) (foundation.FoundationResponse, error) {
-	return foundation.FoundationResponse{}, &apierrors.ServiceError{
-		Code:      apierrors.InternalError,
-		Message:   "simulated storage failure",
-		Retryable: true,
-	}
-}
-
-// TestHTTP500_ErrorV1_AllFieldsPresent verifies that HTTP 500 errors from real
-// service failures include all required ErrorV1 fields per OpenAPI contract:
-// schema_version, error.code, error.message, error.request_id, error.retryable,
-// and error.required_action.
+// 已取消的真实请求触发生产服务失败，保留 ErrorV1 的全部断言。
 func TestHTTP500_ErrorV1_AllFieldsPresent(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	cfg := Config{
 		Port:   0,
 		Logger: logger,
 		Services: Services{
-			// Inject failing foundation service to trigger real HTTP 500.
-			Foundation:    &mockFailingFoundationService{},
+			Foundation:    foundation.NewService(1),
 			Materials:     attentionapp.NewMaterialService(),
 			Opportunities: attentionapp.NewOpportunityService(),
 			Projects:      workspaceapp.NewProjectService(),
@@ -605,8 +582,13 @@ func TestHTTP500_ErrorV1_AllFieldsPresent(t *testing.T) {
 	}
 	srv := NewServer(cfg)
 
-	// Test health endpoint with failing service.
-	resp := doRequest(srv, "GET", "/api/v1/health")
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	req := httptest.NewRequest("GET", "/api/v1/health", nil).WithContext(ctx)
+	req.Host = "127.0.0.1"
+	w := httptest.NewRecorder()
+	srv.httpServer.Handler.ServeHTTP(w, req)
+	resp := w.Result()
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Fatalf("expected 500, got %d", resp.StatusCode)
 	}
@@ -661,4 +643,28 @@ func TestHTTP500_ErrorV1_AllFieldsPresent(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	os.Exit(m.Run())
+}
+
+// 纯序列化输入触发 encoding/json 的实际错误，保留 HTTP 错误字段。
+func TestJSONEncodingFailureDoesNotSendSuccess(t *testing.T) {
+	w := httptest.NewRecorder()
+	w.Header().Set("X-Request-ID", "encoding-input")
+	writeJSON(w, http.StatusOK, map[string]float64{"value": math.Inf(1)})
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("encoding failure sent success: %d", w.Code)
+	}
+	var result struct {
+		SchemaVersion int `json:"schema_version"`
+		Error         struct {
+			Code, Message  string
+			RequestID      string `json:"request_id"`
+			RequiredAction string `json:"required_action"`
+		} `json:"error"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.SchemaVersion != 1 || result.Error.Code != "internal_error" || result.Error.RequestID != "encoding-input" || result.Error.Message == "" || result.Error.RequiredAction == "" {
+		t.Fatalf("encoding error envelope incomplete: %+v", result)
+	}
 }

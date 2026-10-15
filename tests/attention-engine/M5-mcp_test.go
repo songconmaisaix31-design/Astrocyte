@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -139,9 +140,9 @@ func newBackend() *memoryBackend {
 				Attention: 0.9,
 				Momentum:  0.2,
 				Evidence: []app.EvidenceItem{
-					{EventID: "evt-1", Kind: "read_paper", Weight: 1.0, TS: 1730000001, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 1, Original: app.StoredEvent{ID: "evt-1", RawBytes: []byte(`{"paper":"Agent Swarm"}`)}},
-					{EventID: "evt-2", Kind: "edit_file", Weight: 0.6, TS: 1730000100, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 0.6},
-					{EventID: "evt-3", Kind: "user_approve", Weight: 1.5, TS: 1730000200, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 1.5},
+					{EventID: "evt-1", Kind: "read_paper", Weight: 1.0, TS: 1730000001, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 1, Original: app.StoredEvent{ID: "evt-1", Event: &domain.Event{Kind: "read_paper", Topic: "Agent Swarm", Scope: "astrocyte", TS: 1730000001}, RawBytes: []byte(`{"paper":"Agent Swarm"}`)}},
+					{EventID: "evt-2", Kind: "edit_file", Weight: 0.6, TS: 1730000100, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 0.6, Original: app.StoredEvent{ID: "evt-2", Event: &domain.Event{Kind: "edit_file", Topic: "Agent Swarm", Scope: "astrocyte", TS: 1730000100}}},
+					{EventID: "evt-3", Kind: "user_approve", Weight: 1.5, TS: 1730000200, Strength: 1, Decay: 0.1, DecayFactor: 1, AttentionContribution: 1.5, Original: app.StoredEvent{ID: "evt-3", Event: &domain.Event{Kind: "user_approve", Topic: "Agent Swarm", Scope: "astrocyte", TS: 1730000200}}},
 				},
 				Related: []app.RelatedTopic{
 					{Topic: "Morphogenesis", Strength: 0.7, TS: 1730000200},
@@ -212,8 +213,44 @@ func TestMCPTransportFiveOperationsWithTestBackend(t *testing.T) {
 			t.Fatalf("evidence item missing id/kind/timestamp: %+v", e)
 		}
 	}
-	if len(explain.Related) != 2 || len(explain.RelatedProjects) != 2 || len(explain.RelatedAgents) != 1 || string(explain.Evidence[0].Original.RawBytes) != `{"paper":"Agent Swarm"}` {
+	if len(explain.Related) != 2 || len(explain.RelatedProjects) != 2 {
 		t.Fatalf("related nodes or projects missing: %+v", explain)
+	}
+	var wire map[string]any
+	if err := json.Unmarshal([]byte(toolText(t, lines[3])), &wire); err != nil {
+		t.Fatal(err)
+	}
+	if _, exists := wire["related_agents"]; exists {
+		t.Fatal("source agents escaped exposure")
+	}
+	for i, value := range wire["evidence"].([]any) {
+		item := value.(map[string]any)
+		if _, exists := item["original"]; exists {
+			t.Fatal("original receipt escaped exposure")
+		}
+		event := item["event"].(map[string]any)
+		expected := b.focus["Agent Swarm"].Evidence[i]
+		if !reflect.DeepEqual(event, map[string]any{"event_id": expected.EventID, "kind": expected.Kind, "topic": "Agent Swarm", "tokens": float64(0), "scope": "astrocyte", "ts": float64(expected.TS)}) {
+			t.Fatalf("event %d lost exact six-field projection", i)
+		}
+		expected.Original = app.StoredEvent{}
+		if !reflect.DeepEqual(explain.Evidence[i], expected) {
+			t.Fatalf("signal %d lost weight/decay/confidence metrics", i)
+		}
+	}
+	for _, response := range lines[2:] {
+		for _, key := range []string{"raw", "raw_bytes", "origin_key", "original", "related_agents"} {
+			if strings.Contains(toolText(t, response), `"`+key+`"`) {
+				t.Fatalf("private field %s escaped exposure", key)
+			}
+		}
+		var text any
+		if err := json.Unmarshal([]byte(toolText(t, response)), &text); err != nil {
+			t.Fatal(err)
+		}
+		if structured, exists := response["result"].(map[string]any)["structuredContent"]; exists && !reflect.DeepEqual(text, structured) {
+			t.Fatal("text and structured content differ")
+		}
 	}
 
 	// get_experiences with a scope returns only that scope.

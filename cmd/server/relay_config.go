@@ -23,6 +23,29 @@ func relayEnabled() (bool, error) {
 		return false, errors.New("ASTROCYTE_RELAY must be 0 or 1")
 	}
 }
+
+func relayNativeNotifications() (bool, error) {
+	switch os.Getenv("ASTROCYTE_RELAY_SESSION_SOURCE") {
+	case "", "archive":
+		return false, nil
+	case "native_notifications":
+		return true, nil
+	default:
+		return false, errors.New("relay session source must be archive or native_notifications")
+	}
+}
+
+func relayNativeDeadlineSeconds() (int, error) {
+	raw := os.Getenv("ASTROCYTE_RELAY_SESSION_DEADLINE_SECONDS")
+	if raw == "" {
+		return 0, nil
+	}
+	seconds, err := strconv.Atoi(raw)
+	if err != nil || seconds < 1 || seconds > 1800 {
+		return 0, errors.New("relay native deadline must be explicit 1..1800 seconds")
+	}
+	return seconds, nil
+}
 func relayRoot() (string, error) {
 	local := os.Getenv("LOCALAPPDATA")
 	if !filepath.IsAbs(local) {
@@ -75,8 +98,7 @@ func relayConfiguration() (string, []domain.AgentSpec, time.Duration, error) {
 		}
 		window = time.Duration(seconds) * time.Second
 	}
-	// No default 60s and no inferred Agent command from inventory. Registration
-	// is trusted local data, loaded once; HTTP cannot edit it or supply a command.
+	// 登记只来自固定本机文件；原observer可重载完整快照，HTTP不能写入命令。
 	registryPath, err := workbenchCanonical(filepath.Join(root, "agents.json"))
 	if err != nil || !relayInside(root, registryPath) {
 		return "", nil, 0, errors.New("relay registry must stay under local access root")

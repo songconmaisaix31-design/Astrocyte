@@ -71,7 +71,7 @@ type Proposal struct {
 	OpportunityRevision int             `json:"opportunity_revision,omitempty"`
 	GrantID             string          `json:"grant_id,omitempty"`
 	OwnerNamespace      string          `json:"owner_namespace,omitempty"`
-	AssignmentStatus    string          `json:"assignment_status,omitempty"`
+	AssignmentStatus    string          `json:"assignment_status"`
 	CreatedAt           time.Time       `json:"created_at"`
 	UpdatedAt           time.Time       `json:"updated_at"`
 }

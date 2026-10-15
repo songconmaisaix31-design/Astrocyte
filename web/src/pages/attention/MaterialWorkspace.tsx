@@ -19,11 +19,10 @@ import { stages, type Material, type Opportunity, type Distillation } from './mo
 import styles from './AttentionPage.module.css';
 
 type Detail = components['schemas']['MaterialDetailV1'];
-export function MaterialWorkspace({ item, id, fixture, refreshToken, materials, domains, onChanged, onQueued, onOpportunity }: { item?: Material; id: string; fixture: boolean; refreshToken: number; materials: Material[]; domains: ReturnType<typeof useDomains>; onChanged: () => void; onQueued: () => void; onOpportunity: (opportunity: Opportunity) => void }) {
-  const state = useMaterialDetail(id, !fixture);
+export function MaterialWorkspace({ id, refreshToken, materials, domains, onChanged, onQueued, onOpportunity }: { id: string; refreshToken: number; materials: Material[]; domains: ReturnType<typeof useDomains>; onChanged: () => void; onQueued: () => void; onOpportunity: (opportunity: Opportunity) => void }) {
+  const state = useMaterialDetail(id);
   const { retry } = state;
   useEffect(() => { if (refreshToken) retry(); }, [refreshToken, retry]);
-  if (fixture && item) return <><MaterialSummary item={item} /><p role="note">示例数据 · 不提供真实原文、来源版本或沉淀历史；所有写操作尚未启用。</p></>;
   return <><button type="button" className="ac-button secondary compact" onClick={state.retry} disabled={state.loading}>刷新资料详情</button><QueryState state={state}>{data => <MaterialBody detail={data} materials={materials} domains={domains} disabled={state.loading || state.stale} onChanged={onChanged} onQueued={onQueued} onOpportunity={onOpportunity} />}</QueryState></>;
 }
 
@@ -36,6 +35,7 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
   const [suggestion, setSuggestion] = useState<Distillation | null>(null);
   const candidateRecords = useDistillations(creating);
   const source = detail.revisions.find(entry => entry.revision === revision);
+  const privateObjectRefs = new Set(detail.revisions.flatMap(entry => entry.attachments ?? []).filter(attachment => attachment.media_type === 'application/vnd.astrocyte.private-native+json' || attachment.name === 'whisper-original.json').map(attachment => attachment.object_ref));
   const modelContentRecords = detail.distillations.filter(record => record.stage === 'content' && record.status === 'succeeded' && (record.provenance.mode === 'selected_project_fixed_text' || record.provenance.processor === 'codex-cli') && record.input_refs.some(ref => ref.material_id === item.id && ref.revision === revision));
   const content = useMaterialContent(item.id, revision, item.lifecycle !== 'withdrawn');
   const command = useCommand(disabled || !item.version);
@@ -62,7 +62,7 @@ function MaterialBody({ detail, materials, domains, disabled, onChanged, onQueue
         <ProvenanceFields value={source.provenance} />
         {source.summary && <Field label="导入摘要（独立于原文）">{source.summary}</Field>}
         <Field label="本版本模型内容整理">{modelContentRecords.length ? `已保存 ${modelContentRecords.length} 轮模型整理结果，见各轮沉淀的固定输入与实际输出。` : '尚无此版本的模型内容整理结果。导入正文或既有摘要不会自动完成模型整理。'}</Field>
-        <Field label="原始附件">{source.attachments?.length ? source.attachments.map(attachment => <p key={attachment.name}><a href={`/api/v1/materials/${encodeURIComponent(item.id)}/revisions/${revision}/attachments/${encodeURIComponent(attachment.name)}`} target="_blank" rel="noreferrer">{attachment.name} · {attachment.media_type}</a><br />{attachment.source_locator}</p>) : <MutedValue>未提供附件</MutedValue>}</Field>
+        <Field label="原始附件">{source.attachments?.length ? source.attachments.map(attachment => <p key={attachment.name}>{privateObjectRefs.has(attachment.object_ref) ? <span>{attachment.name} · 仅保存在本机</span> : <a href={`/api/v1/materials/${encodeURIComponent(item.id)}/revisions/${revision}/attachments/${encodeURIComponent(attachment.name)}`} target="_blank" rel="noreferrer">{attachment.name} · {attachment.media_type}</a>}<br />{attachment.source_locator}</p>) : <MutedValue>未提供附件</MutedValue>}</Field>
       </> : <p role="alert">此版本的来源记录缺失，请刷新资料。</p>}
       {item.lifecycle === 'withdrawn' ? <p>资料已撤回，原文分发与新沉淀已停止。</p> : <QueryState state={content}>{data => <><Field label="导入正文状态">{data.text ? '已保存可读文本；内容获取与模型整理分别记录。' : '未提供可读正文，请检查原始附件与导入队列。'}</Field><ProvenanceFields value={data.provenance} /><Field label="保存的原文 / 提取文本"><pre>{data.text || '此版本未提供可读原文；请检查原始附件。'}</pre></Field></>}</QueryState>}
     </section>
@@ -113,7 +113,7 @@ function MetadataForm({ item, disabled, onSaved }: { item: Material; disabled: b
   </form>;
 }
 
-function MaterialSummary({ item }: { item: Material }) {
+export function MaterialSummary({ item }: { item: Material }) {
   return <>
     <Field label="标题">{item.title || <MutedValue>无标题</MutedValue>}</Field>
     <FieldRow><Field label="生命周期"><StatusBadge value={item.lifecycle} label={lifecycleLabel(item.lifecycle)} /></Field><Field label="类型">{materialKindLabel(item.kind)}</Field></FieldRow>

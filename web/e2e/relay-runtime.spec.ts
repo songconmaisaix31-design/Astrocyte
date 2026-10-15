@@ -1,422 +1,350 @@
 /// <reference types="node" />
 import { test, expect, type Page } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import type { components } from '../src/api/schema';
-import { fixtureWorksSnapshot } from '../src/pages/workspace/worksAlbumPresentation';
+import { relayIntentService, declareIntent } from './realRelay';
+import { relayDisplayState, relayLivenessLabel } from '../src/pages/workspace/relayPresentation';
 
 type S = components['schemas'];
-const timestamp = '2026-10-14T00:00:00Z';
-const existingTaskID = 'ae48c13e-86e4-4899-8c20-a618873ea209';
-const capability = { status: 'supported' as const, reason: 'contract-local mock only', checked_at: timestamp };
-
-async function mockRelay(page: Page) {
-  const snapshot = fixtureWorksSnapshot();
-  const project: S['RelayProjectV1'] = { project_id: 'public-project', name: 'Public fixture', root: snapshot.works[0].root, permission_level: 'A', project_settings_revision: 4, allowed_subdirs: ['README.md'], allowed_actions: ['start', 'send', 'observe', 'stop', 'reconcile'], allow_agent_control: false, allow_directory: false, expand_references: false };
-  const spec: S['RelayAgentV1'] = { name: 'new-public-cli', launch_cmd: ['public-cli'], capabilities: { start: capability, send: capability, observe: capability, stop: capability }, drive_mode: 'terminal' };
-  const observation = { status: 'available' as const, reason: 'contract-local mock only', checked_at: timestamp };
-  const inventory: S['LocalAgentV1'] = { id: spec.name, display_name: spec.name, version: null, installed: observation, configured: observation, startable: observation, capabilities: { discover: capability, read_context: capability, start: capability, resume: capability, send: capability, stop: capability, observe: capability, reconcile: capability } };
-  const state = {
-    project, spec, inventory,
-    views: [] as S['RelayTaskViewV1'][],
-    receipts: [] as S['RelayReceiptV1'][],
-    events: [{ event_id: 'derived-newer', kind: 'edit_file', topic: 'public-work', tokens: null, scope: 'public-project', ts: timestamp }, { event_id: 'derived-older', kind: 'agent_task', topic: 'public-work', tokens: 12, scope: 'public-project', ts: '2026-10-13T23:59:00Z' }] as S['WorkbenchEventV1'][],
-    writes: [] as { action: string; body: Record<string, unknown>; key: string }[],
-    reads: [] as string[],
-    conflictAction: `view_existing_task:${existingTaskID}`,
-    confirmMode: 'success' as 'success' | 'denied' | 'duplicate' | 'unknown',
-    sendMode: 'success' as 'success' | 'unknown',
-  };
-  const receipt = (action: S['RelayReceiptV1']['action'], key: string, status: S['RelayReceiptV1']['status'] = 'accepted', code?: S['RelayReceiptErrorV1']['code']): S['RelayReceiptV1'] => {
-    const value: S['RelayReceiptV1'] = { receipt_id: `receipt-${action}-${state.receipts.length}`, task_id: state.views.at(-1)?.task.task_id || 'task-public', operation_id: key, action, operator: 'human', status, created_at: timestamp, finished_at: timestamp, error: code ? { code, message: action === 'dispatch' && code === 'version_conflict' ? 'Relay state or workspace conflict' : `contract-local ${code}`, request_id: key, retryable: false, required_action: action === 'dispatch' && code === 'version_conflict' ? state.conflictAction : 'read_task_receipts' } : null };
-    state.receipts.push(value);
-    return value;
-  };
-  await page.route('**/api/v1/works', route => route.fulfill({ json: { schema_version: 1, snapshot } }));
-  await page.route('**/api/v1/relay/**', async route => {
-    const request = route.request(), path = new URL(request.url()).pathname.replace('/api/v1/relay/', '');
-    if (request.method() === 'GET') {
-      state.reads.push(path);
-      const body = path === 'projects' ? { schema_version: 1, projects: [state.project] }
-        : path === 'agents' ? { schema_version: 1, agents: [state.spec], inventory: [state.inventory] }
-        : path === 'tasks' ? { schema_version: 1, tasks: state.views, dispatched_work_ids: state.receipts.some(item => item.action === 'dispatch' && item.status === 'accepted') ? ['work-a'] : [] }
-        : path.endsWith('/events') ? { schema_version: 1, events: state.events, raw: 'PRIVATE_RAW_CANARY_NEVER_RENDER' }
-        : path.endsWith('/receipts') ? { schema_version: 1, receipts: state.receipts.filter(receipt => receipt.task_id === path.split('/')[1]) }
-        : { schema_version: 1, view: state.views.find(view => view.task.task_id === path.split('/')[1]) };
-      await route.fulfill({ json: body }); return;
-    }
-    const body = request.postDataJSON() as Record<string, unknown>, key = request.headers()['idempotency-key'];
-    expect(key).toMatch(/^[a-f\d-]{36}$/);
-    expect(request.headers()['x-csrf-token']).toBeTruthy();
-    const action = path === 'intents' ? 'intent' : path.split('/').at(-1)!;
-    state.writes.push({ action, body, key });
-    if (path === 'intents') {
-      expect(body).toEqual({ work_id: 'work-a', project_id: 'public-project', agent: state.spec.name, task: 'Continue the public example' });
-      const taskID = state.views.length ? `task-public-${state.views.length + 1}` : 'task-public';
-      state.views.push({ task: { task_id: taskID, work_id: 'work-a', project_id: 'public-project', worktree_id: '', terminal_id: '', agent: state.spec.name, description: String(body.task), state: 'ready', condition: '', permission_level: state.project.permission_level, project_settings_revision: 4, degraded_launch: false, created_at: timestamp, updated_at: timestamp }, terminal: null, worktree: null, transitions: [{ task_id: taskID, from: '', to: 'ready', ts: timestamp, operator: 'human' }], event_publication: { status: 'none', pending_events: 0, published_events: 0 } });
-      receipt('intent', key);
-      await route.fulfill({ json: { schema_version: 1, view: state.views.at(-1) } }); return;
-    }
-    const view = state.views.find(view => view.task.task_id === path.split('/')[1])!;
-    if (action === 'confirm') {
-      expect(body.permission_confirmed).toBe(true);
-      expect(body.permission_level).toBe(state.project.permission_level);
-      expect(body.project_settings_revision).toBe(4);
-      if (state.confirmMode !== 'success') {
-        const code = state.confirmMode === 'denied' ? 'scope_denied' : state.confirmMode === 'duplicate' ? 'version_conflict' : 'delivery_unknown';
-        const failed = receipt('dispatch', key, code === 'delivery_unknown' ? 'delivery_unknown' : 'rejected', code);
-        await route.fulfill({ status: code === 'scope_denied' ? 403 : code === 'version_conflict' ? 409 : 503, json: { schema_version: 1, error: failed.error, raw: 'PRIVATE_PROVIDER_CANARY' } }); return;
-      }
-      view.task.state = 'accepted'; view.task.terminal_id = 'terminal-stable'; view.task.worktree_id = 'worktree-neutral'; view.task.degraded_launch = true;
-      view.terminal = { terminal_id: 'terminal-stable', worktree_id: 'worktree-neutral', agent: view.task.agent, drive_mode: 'terminal', liveness: 'live', last_event_at: timestamp, exited_at: null, last_sequence: 1, created_at: timestamp };
-      view.worktree = { worktree_id: 'worktree-neutral', project_id: 'public-project', root: 'C:/public-neutral-fixture', branch: 'relay/public', prepared: true, active_task_id: view.task.task_id, created_at: timestamp };
-      view.event_publication = { status: 'published', pending_events: 0, published_events: state.events.length };
-      view.transitions.push({ task_id: view.task.task_id, from: 'ready', to: 'accepted', ts: timestamp, operator: 'human' });
-      await route.fulfill({ json: { schema_version: 1, view, receipt: receipt('dispatch', key) } }); return;
-    }
-    if (action === 'transition') {
-      expect(body.from).toBe(view.task.state);
-      if (body.to === 'done') expect(body.completion_confirmed).toBe(true);
-      if (body.to === 'released') {
-        expect(view.terminal?.liveness).toBe('exited'); expect(view.terminal?.exited_at).toBeTruthy();
-        view.worktree!.active_task_id = '';
-      }
-      view.transitions.push({ task_id: view.task.task_id, from: body.from as S['RelayTransitionV1']['from'], to: body.to as S['RelayTransitionV1']['to'], ts: timestamp, operator: 'human' });
-      view.task.state = body.to as S['RelayTaskV1']['state'];
-      receipt('transition', key);
-      await route.fulfill({ json: { schema_version: 1, view } }); return;
-    }
-    if (action === 'reconcile') {
-      view.event_publication = { status: 'published', pending_events: 0, published_events: state.events.length };
-      receipt('reconcile_events', key);
-      await route.fulfill({ json: { schema_version: 1, view } }); return;
-    }
-    if (action === 'send' && state.sendMode === 'unknown') {
-      await route.fulfill({ json: { schema_version: 1, view, receipt: receipt('send', key, 'delivery_unknown', 'delivery_unknown') } }); return;
-    }
-    if (action === 'stop' && view.terminal) { view.terminal.liveness = 'exited'; view.terminal.exited_at = timestamp; if (view.task.state !== 'done') view.task.condition = 'terminal_exited'; }
-    await route.fulfill({ json: { schema_version: 1, view, receipt: receipt(action as S['RelayReceiptV1']['action'], key) } });
+function writes(page: Page) {
+  const commands: { action: string; body: Record<string, unknown>; key: string }[] = [];
+  page.on('request', request => {
+    const path = new URL(request.url()).pathname;
+    if (request.method() === 'POST' && path.startsWith('/api/v1/relay/')) commands.push({ action: path.split('/').at(-1)!, body: request.postDataJSON(), key: request.headers()['idempotency-key'] });
   });
-  return state;
+  return commands;
 }
 
-async function declareIntent(page: Page) {
-  await page.goto('/workspace/works');
-  await page.getByRole('region', { name: '作品寻回册', exact: true }).getByLabel('个人知识库 的操作', { exact: true }).getByRole('button', { name: '接力', exact: true }).click();
-  const dialog = page.getByRole('dialog');
-  await dialog.getByLabel('获准项目', { exact: true }).selectOption('public-project');
-  await dialog.getByLabel('偏好 Agent', { exact: true }).selectOption('new-public-cli');
-  await dialog.getByLabel('任务描述', { exact: true }).fill('Continue the public example');
-  await dialog.getByRole('button', { name: '保存意图并查看权限', exact: true }).click();
-  await expect(dialog.getByRole('region', { name: '权限确认页' })).toBeVisible();
-  return dialog;
-}
-
-function seedProjectedTask(state: Awaited<ReturnType<typeof mockRelay>>, status: 'working' | 'done' | 'released' = 'working') {
-  const exited = status === 'released';
-  state.views.push({
-    task: { task_id: 'task-public', work_id: 'work-a', project_id: 'public-project', worktree_id: 'worktree-neutral', terminal_id: 'terminal-stable', agent: state.spec.name, description: 'Continue the public example', state: status, condition: '', permission_level: state.project.permission_level, project_settings_revision: 4, degraded_launch: false, created_at: timestamp, updated_at: timestamp },
-    terminal: { terminal_id: 'terminal-stable', worktree_id: 'worktree-neutral', agent: state.spec.name, drive_mode: 'terminal', liveness: exited ? 'exited' : 'live', last_event_at: timestamp, exited_at: exited ? timestamp : null, last_sequence: 1, created_at: timestamp },
-    worktree: { worktree_id: 'worktree-neutral', project_id: 'public-project', root: 'C:/public-neutral-fixture', branch: 'relay/public', prepared: true, active_task_id: exited ? '' : 'task-public', created_at: timestamp },
-    transitions: [{ task_id: 'task-public', from: 'accepted', to: 'working', ts: timestamp, operator: 'service' }],
-    event_publication: { status: 'published', pending_events: 0, published_events: 2 },
-  });
-}
-
-test.describe('relay contract-local mock evidence; not CLI or durable acceptance', () => {
-  for (const drive of ['terminal', 'structured'] as const) {
-    test(`EOF registration with actual ${drive} drive keeps its truthful send capability`, async ({ page }) => {
-      const state = await mockRelay(page);
-      state.spec.input_mode = 'stdin_eof';
-      seedProjectedTask(state);
-      state.views[0].terminal!.drive_mode = drive;
-      await page.goto('/workspace/works');
-      await page.getByRole('button', { name: '查看任务、事件和收据', exact: true }).click();
-      const dialog = page.getByRole('dialog');
-      if (drive === 'terminal') {
-        await expect(dialog).toContainText('首条手册与任务发送后关闭标准输入');
-        await expect(dialog.getByLabel('发送输入', { exact: true })).toBeDisabled();
-        await expect(dialog.getByRole('button', { name: '发送输入', exact: true })).toBeDisabled();
-        await dialog.getByRole('button', { name: '读取会话并留收据', exact: true }).click();
-        await expect(dialog.getByRole('status').filter({ hasText: '读取会话收据' })).toBeVisible();
-        await expect(dialog.getByRole('button', { name: '停止 Agent', exact: true })).toBeEnabled();
-        expect(state.writes.map(item => item.action)).toEqual(['read']);
-      } else {
-        await expect(dialog).not.toContainText('当前终端登记为一次性输入');
-        await dialog.getByLabel('发送输入', { exact: true }).fill('Continue the native structured session');
-        await expect(dialog.getByRole('button', { name: '发送输入', exact: true })).toBeEnabled();
-        await dialog.getByRole('button', { name: '发送输入', exact: true }).click();
-        await expect(dialog.getByRole('status').filter({ hasText: '发送输入收据' })).toBeVisible();
-        expect(state.writes.map(item => item.action)).toEqual(['send']);
-      }
-    });
-  }
-
-  for (const [index, stage] of ['initial', 'reopened'].entries()) {
-    test(`actual HTTP ${stage} mutex receipt replay offers only manual GET lookup; not live browser acceptance`, async ({ page }) => {
-      test.skip(process.env.ASTROCYTE_TEST_RELAY_HTTP_SAMPLES !== '1', 'Requires H-owned public HTTP DTO samples in local access evidence; never loads private transcripts.');
-      const samples: { schema: string; body: S['RelayReceiptsV1'] }[] = JSON.parse(await readFile(join(process.env.LOCALAPPDATA!, 'astrocyte-workbench/v0.2-access/verification/http-runtime-contract-samples.json'), 'utf8'));
-      const bodies = samples.filter(sample => sample.schema === 'RelayReceiptsV1' && sample.body.receipts.some(receipt => receipt.status === 'rejected' && receipt.error?.required_action.startsWith('view_existing_task:')));
-      expect(bodies).toHaveLength(2);
-      const rejected = bodies[index].body.receipts.find(receipt => receipt.status === 'rejected' && receipt.error?.required_action.startsWith('view_existing_task:'))!;
-      const id = rejected.error!.required_action.slice('view_existing_task:'.length);
-      expect(rejected.error!.message).toBe('Relay state or workspace conflict');
-      const state = await mockRelay(page);
-      seedProjectedTask(state);
-      state.views[0].task.task_id = id;
-      state.views[0].worktree!.active_task_id = id;
-      state.views.push({ ...state.views[0], task: { ...state.views[0].task, task_id: rejected.task_id, state: 'ready', terminal_id: '', worktree_id: '' }, terminal: null, worktree: null });
-      state.receipts = bodies[index].body.receipts;
-      await page.goto('/workspace/works');
-      await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
-      const existing = page.getByRole('dialog').getByRole('region', { name: '派发与意图收据', exact: true }).getByRole('region', { name: `已有任务 ${id}`, exact: true });
-      await expect(existing).toContainText(id);
-      expect(state.reads).not.toContain(`tasks/${id}`);
-      await existing.getByRole('button', { name: '只读查看已有任务', exact: true }).click();
-      await expect(existing).toContainText('工作中 · working');
-      expect(state.reads).toContain(`tasks/${id}`);
-      expect(state.writes).toEqual([]);
-      await expect(page.locator('body')).not.toContainText('PRIVATE_CANARY');
-    });
-  }
-
-  test('registered CLI, mandatory default A confirmation and permission refusal', async ({ page }) => {
-    const state = await mockRelay(page); state.confirmMode = 'denied';
-    const dialog = await declareIntent(page);
-    expect(state.writes.map(item => item.action)).toEqual(['intent']);
+test('实际注册CLI、默认A确认与权限拒绝保留意图和收据', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    const commands = writes(page), dialog = await declareIntent(page, owned);
     await expect(dialog.getByLabel('权限级别', { exact: true })).toHaveValue('A');
-    await expect(dialog).toContainText(state.project.root);
-    await expect(dialog).toContainText('README.md');
-    await expect(dialog).toContainText('start、send、observe、stop、reconcile');
+    await expect(dialog).toContainText(owned.project.root);
     await expect(dialog.getByRole('button', { name: '确认资料权限并请求接力' })).toBeDisabled();
     await dialog.getByRole('checkbox').check();
+    const denied = page.waitForResponse(response => response.url().endsWith('/confirm'));
     await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('alert')).toContainText('scope_denied');
-    expect(state.writes.map(item => item.action)).toEqual(['intent', 'confirm']);
-    expect(state.views[0].task.state).toBe('ready');
-    await page.keyboard.press('Escape');
-    await expect(page.getByText('new-public-cli', { exact: true }).first()).toBeVisible();
-    expect(state.receipts[1].status).toBe('rejected');
-  });
-
-  test('duplicate dispatch offers manual read-only existing task from 409 and reloaded receipt without another writer', async ({ page }) => {
-    const state = await mockRelay(page); state.confirmMode = 'duplicate';
-    seedProjectedTask(state);
-    state.views[0].task.task_id = existingTaskID;
-    state.views[0].worktree!.active_task_id = existingTaskID;
-    const dialog = await declareIntent(page);
-    await dialog.getByRole('checkbox').check();
-    await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('alert')).toContainText(`view_existing_task:${existingTaskID}`);
-    const existing = dialog.getByRole('region', { name: '派发与意图收据', exact: true }).getByRole('region', { name: `已有任务 ${existingTaskID}`, exact: true });
-    await expect(existing).toContainText(existingTaskID);
-    expect(state.reads).not.toContain(`tasks/${existingTaskID}`);
-    await existing.getByRole('button', { name: '只读查看已有任务', exact: true }).click();
-    await expect(existing).toContainText('工作中 · working');
-    await expect(existing).toContainText(state.spec.name);
-    await expect(existing).toContainText('relay/public');
-    expect(state.reads).toContain(`tasks/${existingTaskID}`);
-    expect(state.writes.filter(item => item.action === 'confirm')).toHaveLength(1);
-    expect(state.views[1].terminal).toBeNull();
-    expect(state.views[1].task.state).toBe('ready');
-    await page.keyboard.press('Escape');
+    expect((await denied).status()).toBe(403);
+    await expect(dialog.getByRole('alert')).toContainText('review_project_permissions');
+    expect(commands.map(command => command.action)).toEqual(['intents', 'confirm']);
+    const data = await owned.api.get('/relay/tasks') as S['RelayTasksV1'];
+    expect(data.tasks).toHaveLength(1);
+    expect(data.tasks[0].task.state).toBe('ready');
+    expect(data.tasks[0].terminal).toBeNull();
+    const receipts = await owned.api.get(`/relay/tasks/${data.tasks[0].task.task_id}/receipts`) as S['RelayReceiptsV1'];
+    expect(receipts.receipts.find(receipt => receipt.action === 'dispatch')?.status).toBe('rejected');
+    await page.reload();
     await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
-    const reloaded = page.getByRole('dialog').getByRole('region', { name: '派发与意图收据', exact: true }).getByRole('region', { name: `已有任务 ${existingTaskID}`, exact: true });
-    await expect(reloaded).toBeVisible();
-    await reloaded.getByRole('button', { name: '只读查看已有任务', exact: true }).click();
-    await expect(reloaded).toContainText('工作中 · working');
-    expect(state.writes.map(item => item.action)).toEqual(['intent', 'confirm']);
-    expect(state.receipts.at(-1)?.status).toBe('rejected');
-    expect(state.views[0].task.state).toBe('working');
-  });
+    await expect(page.getByRole('dialog')).toContainText('被拒绝 · 首 RED 保留');
+    expect(commands).toHaveLength(2);
+  } finally { await owned.server.close(); }
+});
 
-  test('sanitized generic or unknown-task conflict has no lookup or automatic reconfirm', async ({ page }) => {
-    const state = await mockRelay(page); state.confirmMode = 'duplicate';
-    // H's actual HTTP negative cases return this fixed action for unknown UUIDs,
-    // provider canaries, noncanonical IDs and unrelated conflicts.
-    state.conflictAction = 'refresh_relay_state';
-    const dialog = await declareIntent(page);
-    await dialog.getByRole('checkbox').check();
-    await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('alert')).toContainText('Relay state or workspace conflict');
-    await expect(dialog.getByRole('button', { name: '只读查看已有任务', exact: true })).toHaveCount(0);
-    await dialog.getByRole('button', { name: '读取权限、任务和收据' }).click();
-    expect(state.writes.map(item => item.action)).toEqual(['intent', 'confirm']);
-    expect(state.views[0].task.state).toBe('ready');
-    await expect(page.locator('body')).not.toContainText('PRIVATE_PROVIDER_CANARY');
-  });
+test('实际HTTP拒绝不成对交接声明，新意图不自动声明交接', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    const body = { work_id: owned.work.id, project_id: owned.project.id, agent: 'codex', task: '只核成对声明校验，不启动控制器。' };
+    for (const fields of [{ handoff_context_confirmed: true }, { handoff_from_task_id: crypto.randomUUID() }]) {
+      const rejected = await owned.api.request('/relay/intents', { method: 'POST', body: { ...body, ...fields } });
+      expect(rejected.status).toBe(400);
+      expect((await owned.api.get('/relay/tasks') as S['RelayTasksV1']).tasks).toEqual([]);
+    }
+    const commands = writes(page);
+    await declareIntent(page, owned);
+    expect(commands).toHaveLength(1);
+    expect(commands[0].body).not.toHaveProperty('handoff_from_task_id');
+    expect(commands[0].body).not.toHaveProperty('handoff_context_confirmed');
+    const data = await owned.api.get('/relay/tasks') as S['RelayTasksV1'];
+    expect(data.tasks).toHaveLength(1);
+    expect(data.tasks[0].task.state).toBe('ready');
+    expect(data.tasks[0].terminal).toBeNull();
+  } finally { await owned.server.close(); }
+});
 
-  test('existing independent B and C grants confirm their actual service summary', async ({ page }) => {
-    const state = await mockRelay(page);
-    state.project.permission_level = 'C'; state.project.allow_directory = true; state.project.expand_references = true;
-    const dialog = await declareIntent(page);
+test('真实拒绝动作事实逐项对应HTTP和DOM，历史事实不授当前控制器归属', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    await owned.api.write(`/local-projects/${owned.project.id}/settings`, { expected_revision: owned.project.settings.revision, settings: { external_model_cli: 'codex', allowed_actions: ['observe'] } }, { method: 'PUT' });
+    await declareIntent(page, owned);
+    const before = await owned.api.get('/relay/tasks') as S['RelayTasksV1'];
+    const id = before.tasks[0].task.task_id;
+    const rejected = await owned.api.request(`/relay/tasks/${id}/transition`, { method: 'POST', body: { from: 'working', to: 'done', completion_confirmed: true } });
+    expect(rejected.status).toBe(409);
+    const facts = await owned.api.get(`/relay/tasks/${id}/facts`) as S['RelayFactsV1'];
+    expect(facts.current_ownership).toEqual({ status: 'unknown', reason: 'controller_binding_unrecorded' });
+    expect(facts.session_relations).toEqual([]);
+    expect(facts.facts.some(fact => fact.kind === 'action_result' && fact.status === 'rejected' && fact.reason === 'version_conflict')).toBe(true);
+    await page.keyboard.press('Escape');
+    const commands = writes(page);
+    await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+    const region = page.getByRole('region', { name: '动作事实与会话关系', exact: true });
+    await expect(region).toContainText('当前原控制器归属未知');
+    await expect(region).toContainText('controller_binding_unrecorded');
+    await expect(region.getByRole('list', { name: '已记录动作事实' }).locator('li')).toHaveCount(facts.facts.length);
+    for (const fact of facts.facts) {
+      const row = region.getByRole('list', { name: '已记录动作事实' }).locator('li').filter({ hasText: fact.fact_id });
+      await expect(row).toContainText(fact.source);
+      if (fact.receipt_id) await expect(row).toContainText(fact.receipt_id);
+      if (fact.operation_id) await expect(row).toContainText(fact.operation_id);
+      if (fact.reason) await expect(row).toContainText(fact.reason);
+    }
+    await expect(region).toContainText('尚无已记录会话关系');
+    expect(await owned.api.get('/relay/tasks')).toEqual(before);
+    expect(await owned.api.get(`/relay/tasks/${id}/facts`)).toEqual(facts);
+    expect(commands).toEqual([]);
+  } finally { await owned.server.close(); }
+});
+
+test('实际B与C独立设置保留服务权限摘要，未许可原生操作时拒绝', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    await owned.api.write(`/local-projects/${owned.project.id}/settings`, { expected_revision: owned.project.settings.revision, settings: { allow_directory: true, allowed_subdirs: ['AGENTS.md'], expand_references: true, allowed_actions: [] } }, { method: 'PUT' });
+    const commands = writes(page), dialog = await declareIntent(page, owned);
     await expect(dialog.getByLabel('权限级别', { exact: true })).toHaveValue('C');
     await expect(dialog.getByLabel('权限级别', { exact: true })).toHaveAttribute('readonly', '');
+    await expect(dialog).toContainText('B · 明确目录许可');
+    await expect(dialog).toContainText('C · 引用展开许可');
+    await expect(dialog).toContainText('AGENTS.md');
     await dialog.getByRole('checkbox').check();
+    const denied = page.waitForResponse(response => response.url().endsWith('/confirm'));
     await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('status').filter({ hasText: '派发收据' })).toContainText('已确认');
-    expect(state.writes[1].body.permission_level).toBe('C');
-  });
+    expect((await denied).status()).toBe(403);
+    expect(commands[1].body.permission_level).toBe('C');
+  } finally { await owned.server.close(); }
+});
 
-  test('changed project revision blocks confirmation while preserving the intent', async ({ page }) => {
-    const state = await mockRelay(page);
-    const dialog = await declareIntent(page);
+test('真实权限版本变化阻断确认并保留原意图', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    const commands = writes(page), dialog = await declareIntent(page, owned);
     await dialog.getByRole('checkbox').check();
-    state.project.project_settings_revision = 5;
+    await owned.api.write(`/local-projects/${owned.project.id}/settings`, { expected_revision: owned.project.settings.revision, settings: { expand_references: true } }, { method: 'PUT' });
     await dialog.getByRole('button', { name: '读取权限、任务和收据' }).click();
     await expect(dialog.getByRole('alert')).toContainText('任务的权限版本已过期');
     await expect(dialog.getByRole('button', { name: '确认资料权限并请求接力' })).toBeDisabled();
-    expect(state.writes.map(item => item.action)).toEqual(['intent']);
-  });
+    expect(commands.map(command => command.action)).toEqual(['intents']);
+  } finally { await owned.server.close(); }
+});
 
-  test('unknown dispatch stays blocked after reads, closing and reopening', async ({ page }) => {
-    const state = await mockRelay(page); state.confirmMode = 'unknown';
-    const dialog = await declareIntent(page);
+test('真实网络中断后的派发未知锁在读取、重开和刷新后保持', async ({ page, context }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService();
+  try {
+    const commands = writes(page), dialog = await declareIntent(page, owned);
     await dialog.getByRole('checkbox').check();
+    await context.setOffline(true);
     await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByText('派发结果未知，禁止重派。只读取任务和收据核对结果。')).toBeVisible();
+    await expect(dialog).toContainText('派发结果未知，禁止重派');
+    const saved = await page.evaluate(() => Object.entries(sessionStorage).filter(([key]) => key.startsWith('astrocyte:relay:pending:confirm:')));
+    expect(saved).toHaveLength(1);
+    expect(saved[0][1]).toMatch(/^[0-9a-f-]{36}$/);
+    await context.setOffline(false);
     await dialog.getByRole('button', { name: '读取权限、任务和收据' }).click();
     await expect(dialog.getByRole('button', { name: '确认资料权限并请求接力' })).toBeDisabled();
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
     await expect(page.getByRole('dialog').getByRole('button', { name: '确认资料权限并请求接力' })).toBeDisabled();
-    expect(state.writes.filter(item => item.action === 'confirm')).toHaveLength(1);
-  });
-
-  test('service projections retain state across reload and show all three liveness values', async ({ page }) => {
-    const state = await mockRelay(page);
-    const dialog = await declareIntent(page);
-    await dialog.getByRole('checkbox').check();
-    await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('status').filter({ hasText: '派发收据' })).toContainText('已确认');
-    await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: '查看任务、事件和收据' }).click();
-    const taskDialog = page.getByRole('dialog');
-    await expect(taskDialog).toContainText('近期活动确证 · live');
-    await expect(taskDialog).toContainText('已接受 · accepted');
-    await expect(taskDialog).toContainText('degraded_launch');
-    await expect(taskDialog.getByRole('region', { name: '任务事件流' }).locator('tbody tr').first()).toContainText('derived-newer');
-    await expect(page.getByText('PRIVATE_RAW_CANARY_NEVER_RENDER')).toHaveCount(0);
-    state.views[0].terminal!.liveness = 'unverifiable';
-    await taskDialog.getByRole('button', { name: '只读取任务、事件和收据' }).click();
-    await expect(taskDialog).toContainText('活性无法核实 · unverifiable');
-    await expect(taskDialog).toContainText('已接受 · accepted');
-    state.views[0].task.state = 'working';
-    state.views[0].transitions.push({ task_id: 'task-public', from: 'accepted', to: 'working', ts: timestamp, operator: 'service' });
-    await taskDialog.getByRole('button', { name: '只读取任务、事件和收据' }).click();
-    await expect(taskDialog).toContainText('工作中 · working');
-    await taskDialog.getByLabel('发送输入', { exact: true }).fill('public follow-up');
-    await taskDialog.getByRole('button', { name: '发送输入', exact: true }).click();
-    await expect(taskDialog.getByRole('status').filter({ hasText: '发送输入收据' })).toContainText('已确认');
-    await taskDialog.getByRole('button', { name: '读取会话并留收据' }).click();
-    await expect(taskDialog.getByRole('status').filter({ hasText: '读取会话收据' })).toContainText('已确认');
-    await taskDialog.getByRole('button', { name: '停止 Agent' }).click();
-    await expect(taskDialog).toContainText('终端已退出 · exited');
-    await expect(taskDialog).toContainText('terminal_exited');
-    await page.keyboard.press('Escape');
     await page.reload();
-    await expect(page.getByText('terminal_exited · 终端退出，任务未完成', { exact: true })).toBeVisible();
-    expect(state.writes.map(item => item.action)).toEqual(['intent', 'confirm', 'send', 'read', 'stop']);
-    expect(state.views[0].task.state).toBe('working');
-    expect(state.views[0].terminal!.terminal_id).toBe('terminal-stable');
-    expect(state.receipts.map(item => item.action)).toEqual(['intent', 'dispatch', 'send', 'read', 'stop']);
-  });
+    await page.getByRole('button', { name: '查看意图与权限', exact: true }).click();
+    await expect(page.getByRole('dialog')).toContainText('派发结果未知，禁止重派');
+    expect(commands.filter(command => command.action === 'confirm')).toHaveLength(0);
+  } finally { await context.setOffline(false); await owned.server.close(); }
+});
 
-  test('unknown send preserves input, prevents replay and keeps stop available', async ({ page }) => {
-    const state = await mockRelay(page); state.sendMode = 'unknown';
-    const dialog = await declareIntent(page);
-    await dialog.getByRole('checkbox').check();
-    await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('status').filter({ hasText: '派发收据' })).toContainText('已确认');
-    await page.keyboard.press('Escape');
-    await page.getByRole('button', { name: '查看任务、事件和收据' }).click();
-    const taskDialog = page.getByRole('dialog');
-    await taskDialog.getByLabel('发送输入', { exact: true }).fill('retain unknown input');
-    await taskDialog.getByRole('button', { name: '发送输入', exact: true }).click();
-    await expect(taskDialog.getByRole('button', { name: '发送输入', exact: true })).toBeDisabled();
-    await expect(taskDialog.getByLabel('发送输入', { exact: true })).toHaveValue('retain unknown input');
-    await taskDialog.getByRole('button', { name: '只读取任务、事件和收据' }).click();
-    await expect(taskDialog.getByRole('button', { name: '发送输入', exact: true })).toBeDisabled();
-    await expect(taskDialog.getByRole('button', { name: '停止 Agent' })).toBeEnabled();
-    await taskDialog.getByRole('button', { name: '停止 Agent' }).click();
-    await expect(taskDialog).toContainText('terminal_exited');
-    expect(state.writes.filter(item => item.action === 'send')).toHaveLength(1);
-  });
+/** 原生动作只在H明确交付的固定公开任务和单执行人窗口内运行。缺少场景即失败，不伪造状态。 */
+async function nativeTask(page: Page, scenario: string) {
+  const origin = process.env.ASTROCYTE_TEST_RELAY_PUBLIC_URL;
+  const id = process.env[`ASTROCYTE_TEST_RELAY_${scenario}_${page.viewportSize()?.width}_TASK_ID`];
+  expect(origin, '需要H交付当前实际页面URL').toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+  expect(id, `需要H交付${scenario}本次固定公开任务与执行窗口`).toMatch(/^[0-9a-f-]{36}$/);
+  const commands = writes(page);
+  await page.goto(`${origin}/workspace/works`);
+  const card = page.locator('.relay-tasks > li').filter({ hasText: id! });
+  await expect(card).toBeVisible();
+  const response = await page.request.get(`${origin}/api/v1/relay/tasks/${id}`);
+  expect(response.status()).toBe(200);
+  const { view } = await response.json() as S['RelayTaskResultV1'];
+  await card.getByRole('button', { name: view.task.state === 'ready' ? '查看意图与权限' : '查看任务、事件和收据', exact: true }).click();
+  return { origin: origin!, id: id!, view, dialog: page.getByRole('dialog'), commands };
+}
 
-  test('human completion cancellation, done stop/read and exited release are reachable', async ({ page }) => {
-    const state = await mockRelay(page); seedProjectedTask(state);
-    await page.goto('/workspace/works');
-    await page.getByRole('button', { name: '查看任务、事件和收据', exact: true }).click();
-    const dialog = page.getByRole('dialog');
-    const transition = dialog.getByRole('region', { name: '人工完成与交接' });
-    await expect(transition.getByRole('button', { name: '确认任务完成', exact: true })).toBeDisabled();
-    await transition.getByRole('checkbox').check();
-    await transition.getByRole('button', { name: '取消确认', exact: true }).click();
-    await expect(transition.getByRole('checkbox')).not.toBeChecked();
-    expect(state.writes).toEqual([]);
-    await transition.getByRole('checkbox').check();
-    await transition.getByRole('button', { name: '确认任务完成', exact: true }).click();
-    await expect(dialog).toContainText('任务已完成 · done');
+for (const drive of ['terminal', 'structured'] as const) {
+  test(`实际EOF登记与${drive}驱动保留正确发送能力`, async ({ page }) => {
+    const { dialog, view, commands } = await nativeTask(page, `EOF_${drive.toUpperCase()}`);
+    expect(view.terminal?.drive_mode).toBe(drive);
+    if (drive === 'terminal') {
+      await expect(dialog).toContainText('首条手册与任务发送后关闭标准输入');
+      await expect(dialog.getByLabel('发送输入', { exact: true })).toBeDisabled();
+      await expect(dialog.getByRole('button', { name: '发送输入', exact: true })).toBeDisabled();
+      await dialog.getByRole('button', { name: '读取会话并留收据', exact: true }).click();
+      await expect(dialog.getByRole('status').filter({ hasText: '读取会话收据' })).toBeVisible();
+      await expect(dialog.getByRole('button', { name: '停止 Agent', exact: true })).toBeEnabled();
+      expect(commands.map(command => command.action)).toEqual(['read']);
+    } else {
+      await expect(dialog).not.toContainText('当前终端登记为一次性输入');
+      await dialog.getByLabel('发送输入', { exact: true }).fill('只核对既有固定公开任务，不使用文件或命令工具。');
+      await dialog.getByRole('button', { name: '发送输入', exact: true }).click();
+      await expect(dialog.getByRole('status').filter({ hasText: '发送输入收据' })).toBeVisible();
+      expect(commands.map(command => command.action)).toEqual(['send']);
+    }
+  });
+}
+
+for (const stage of ['initial', 'reopened']) {
+  test(`实际${stage}互斥收据只提供人工GET核对`, async ({ page }) => {
+    const { dialog, commands, origin, id } = await nativeTask(page, `CONFLICT_${stage.toUpperCase()}`);
+    const response = await page.request.get(`${origin}/api/v1/relay/tasks/${id}/receipts`);
+    expect(response.status()).toBe(200);
+    const receipts = await response.json() as S['RelayReceiptsV1'];
+    const rejected = receipts.receipts.find(receipt => receipt.status === 'rejected' && receipt.error?.required_action.startsWith('view_existing_task:'));
+    expect(rejected).toBeDefined();
+    const existingID = rejected!.error!.required_action.slice('view_existing_task:'.length);
+    const existing = dialog.getByRole('region', { name: `已有任务 ${existingID}`, exact: true });
+    await expect(existing).toContainText(existingID);
+    await existing.getByRole('button', { name: '只读查看已有任务', exact: true }).click();
+    await expect(existing).toContainText('工作中 · working');
+    expect(commands).toEqual([]);
+  });
+}
+
+test('真实重复派发409保留原任务，刷新后只读核对已有任务', async ({ page }) => {
+  const { dialog, commands, view } = await nativeTask(page, 'DUPLICATE');
+  expect(view.task.state).toBe('ready');
+  await dialog.getByRole('checkbox').check();
+  const refused = page.waitForResponse(response => response.url().endsWith('/confirm'));
+  await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
+  const response = await refused;
+  expect(response.status()).toBe(409);
+  const body = await response.json() as S['ErrorV1'];
+  expect(body.error.required_action).toMatch(/^view_existing_task:[0-9a-f-]{36}$/);
+  const id = body.error.required_action.slice('view_existing_task:'.length);
+  await dialog.getByRole('region', { name: `已有任务 ${id}`, exact: true }).getByRole('button', { name: '只读查看已有任务' }).click();
+  await expect(dialog.getByRole('region', { name: `已有任务 ${id}`, exact: true })).toContainText('工作中 · working');
+  await page.reload();
+  await page.locator('.relay-tasks > li').filter({ hasText: view.task.task_id }).getByRole('button', { name: '查看意图与权限' }).click();
+  await expect(page.getByRole('dialog').getByRole('region', { name: `已有任务 ${id}`, exact: true })).toBeVisible();
+  expect(commands.map(command => command.action)).toEqual(['confirm']);
+});
+
+test('实际通用冲突不显示已有任务入口或自动再次确认', async ({ page }) => {
+  const { dialog, commands } = await nativeTask(page, 'GENERIC_CONFLICT');
+  await dialog.getByRole('checkbox').check();
+  const refused = page.waitForResponse(response => response.url().endsWith('/confirm'));
+  await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
+  const response = await refused;
+  expect(response.status()).toBe(409);
+  expect((await response.json() as S['ErrorV1']).error.required_action).toBe('refresh_relay_state');
+  await expect(dialog.getByRole('button', { name: '只读查看已有任务', exact: true })).toHaveCount(0);
+  await dialog.getByRole('button', { name: '读取权限、任务和收据' }).click();
+  expect(commands.map(command => command.action)).toEqual(['confirm']);
+});
+
+test('真实服务投影在刷新后保留任务、终端、收据及三值活性', async ({ page }) => {
+  const { dialog, view, commands } = await nativeTask(page, 'WORKING');
+  expect(view.task.state).toBe('working');
+  expect(view.terminal).not.toBeNull();
+  await expect(dialog).toContainText(relayLivenessLabel[view.terminal!.liveness]);
+  await expect(dialog).toContainText(relayDisplayState(view));
+  await expect(dialog).toContainText(view.terminal!.terminal_id);
+  await expect(dialog).toContainText(view.worktree!.branch);
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await expect(page.locator('.relay-tasks > li').filter({ hasText: view.task.task_id })).toContainText(view.terminal!.terminal_id);
+  expect(commands).toEqual([]);
+});
+
+test('实际离线发送保留输入、禁止重发且仍允许停止', async ({ page, context }) => {
+  const { dialog, view, commands } = await nativeTask(page, 'UNKNOWN_SEND');
+  expect(view.task.state).toBe('working');
+  const input = '核对既有固定公开任务，保持文件与命令工具关闭。';
+  await dialog.getByLabel('发送输入', { exact: true }).fill(input);
+  await context.setOffline(true);
+  try {
+    await dialog.getByRole('button', { name: '发送输入', exact: true }).click();
+    await expect(dialog).toContainText('动作结果未知');
+    await expect(dialog.getByLabel('发送输入', { exact: true })).toHaveValue(input);
+    await context.setOffline(false);
+    await dialog.getByRole('button', { name: '只读取任务、事件和收据' }).click();
     await expect(dialog.getByRole('button', { name: '发送输入', exact: true })).toBeDisabled();
-    await expect(dialog.getByRole('button', { name: '读取会话并留收据' })).toBeEnabled();
-    await expect(dialog.getByRole('button', { name: '停止 Agent' })).toBeEnabled();
-    await expect(transition.getByRole('button', { name: '确认释放工作区', exact: true })).toBeDisabled();
-    expect(state.writes.map(item => item.action)).toEqual(['transition']);
-    await dialog.getByRole('button', { name: '停止 Agent' }).click();
-    await expect(dialog).toContainText('终端已退出 · exited');
-    await transition.getByRole('checkbox').check();
-    await transition.getByRole('button', { name: '确认释放工作区', exact: true }).click();
-    await expect(dialog).toContainText('已释放 · released');
-    expect(state.writes.map(item => item.action)).toEqual(['transition', 'stop', 'transition']);
-    expect(state.views[0].worktree!.active_task_id).toBe('');
-    expect(state.receipts.filter(receipt => receipt.action === 'transition')).toHaveLength(2);
-  });
+    await expect(dialog.getByRole('button', { name: '停止 Agent', exact: true })).toBeEnabled();
+    await dialog.getByRole('button', { name: '停止 Agent', exact: true }).click();
+    await expect(dialog).toContainText('terminal_exited');
+    expect(commands.filter(command => command.action === 'send')).toHaveLength(0);
+    expect(commands.filter(command => command.action === 'stop')).toHaveLength(1);
+  } finally { await context.setOffline(false); }
+});
 
-  test('released work can pass through a fresh permission page to another registered Agent', async ({ page }) => {
-    const state = await mockRelay(page); seedProjectedTask(state, 'released');
-    const workspace = { ...state.views[0].worktree! };
-    state.spec.name = 'alternate-public-cli'; state.inventory.id = state.spec.name;
-    await page.goto('/workspace/works');
-    const album = page.getByRole('region', { name: '作品寻回册', exact: true });
-    await album.getByLabel('个人知识库 的操作', { exact: true }).getByRole('button', { name: '接力', exact: true }).click();
-    const dialog = page.getByRole('dialog');
-    await dialog.getByLabel('获准项目', { exact: true }).selectOption('public-project');
-    await dialog.getByLabel('偏好 Agent', { exact: true }).selectOption('alternate-public-cli');
-    await dialog.getByLabel('任务描述', { exact: true }).fill('Continue the public example');
-    await dialog.getByRole('button', { name: '保存意图并查看权限' }).click();
-    await expect(dialog.getByRole('region', { name: '权限确认页' })).toBeVisible();
-    expect(state.writes.map(item => item.action)).toEqual(['intent']);
-    await dialog.getByRole('checkbox').check();
-    await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
-    await expect(dialog.getByRole('status').filter({ hasText: '派发收据' })).toContainText('已确认');
-    expect(state.views[1].task.agent).toBe('alternate-public-cli');
-    expect(state.views[1].worktree).toMatchObject({ worktree_id: workspace.worktree_id, root: workspace.root, branch: workspace.branch, created_at: workspace.created_at });
-    expect(state.writes.map(item => item.action)).toEqual(['intent', 'confirm']);
-  });
+test('实际人工完成取消、done读取停止与退出后释放均可达', async ({ page }) => {
+  const { dialog, commands, view } = await nativeTask(page, 'COMPLETE_RELEASE');
+  expect(view.task.state).toBe('working');
+  const controls = dialog.getByRole('region', { name: '人工完成与交接' });
+  await expect(controls.getByRole('button', { name: '确认任务完成' })).toBeDisabled();
+  await controls.getByRole('checkbox').check();
+  await controls.getByRole('button', { name: '取消确认' }).click();
+  await expect(controls.getByRole('checkbox')).not.toBeChecked();
+  expect(commands).toEqual([]);
+  await controls.getByRole('checkbox').check();
+  await controls.getByRole('button', { name: '确认任务完成' }).click();
+  await expect(dialog).toContainText('任务已完成 · done');
+  await expect(dialog.getByRole('button', { name: '发送输入', exact: true })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: '读取会话并留收据' })).toBeEnabled();
+  await expect(controls.getByRole('button', { name: '确认释放工作区' })).toBeDisabled();
+  await dialog.getByRole('button', { name: '读取会话并留收据' }).click();
+  await dialog.getByRole('button', { name: '停止 Agent' }).click();
+  await expect(dialog).toContainText('终端已退出 · exited');
+  await controls.getByRole('checkbox').check();
+  await controls.getByRole('button', { name: '确认释放工作区' }).click();
+  await expect(dialog).toContainText('已释放 · released');
+  expect(commands.map(command => command.action)).toEqual(['transition', 'read', 'stop', 'transition']);
+});
 
-  test('event reconciliation is manual and publication is not presented as cognition refresh', async ({ page }) => {
-    const state = await mockRelay(page); seedProjectedTask(state);
-    state.views[0].event_publication = { status: 'error', pending_events: 2, published_events: 0 };
-    await page.goto('/workspace/works');
-    await page.getByRole('button', { name: '查看任务、事件和收据', exact: true }).click();
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toContainText('事件接入失败');
-    await expect(dialog).toContainText('认知数值仍来自已发布快照');
-    expect(state.writes).toEqual([]);
-    await dialog.getByRole('button', { name: '核对事件接入', exact: true }).click();
-    await expect(dialog).toContainText('已接入本机应用事件');
-    await expect(dialog.getByRole('region', { name: '任务收据' })).toContainText('核对事件接入 · 动作已确认');
-    expect(state.writes.map(item => item.action)).toEqual(['reconcile']);
-    expect(state.views[0].task.state).toBe('working');
-  });
+test('真实释放工作区由另一注册Agent接续，重新经过权限确认', async ({ page }) => {
+  const { dialog, view, commands, origin } = await nativeTask(page, 'ALTERNATE');
+  expect(view.task.state).toBe('ready');
+  const previousID = process.env[`ASTROCYTE_TEST_RELAY_ALTERNATE_PREVIOUS_${page.viewportSize()?.width}_TASK_ID`];
+  expect(previousID).toMatch(/^[0-9a-f-]{36}$/);
+  const previousResponse = await page.request.get(`${origin}/api/v1/relay/tasks/${previousID}`);
+  expect(previousResponse.status()).toBe(200);
+  const previous = (await previousResponse.json() as S['RelayTaskResultV1']).view;
+  expect(previous.task.state).toBe('released');
+  expect(view.task.agent).not.toBe(previous.task.agent);
+  await dialog.getByRole('checkbox').check();
+  await dialog.getByRole('button', { name: '确认资料权限并请求接力' }).click();
+  await expect(dialog.getByRole('status').filter({ hasText: '派发收据' })).toContainText('动作已接受');
+  const currentResponse = await page.request.get(`${origin}/api/v1/relay/tasks/${view.task.task_id}`);
+  expect(currentResponse.status()).toBe(200);
+  const current = (await currentResponse.json() as S['RelayTaskResultV1']).view;
+  expect(current.worktree).toMatchObject({ worktree_id: previous.worktree!.worktree_id, root: previous.worktree!.root, branch: previous.worktree!.branch, created_at: previous.worktree!.created_at });
+  expect(commands.map(command => command.action)).toEqual(['confirm']);
+});
 
-  test('nested project root is not offered as an exact authorized work root', async ({ page }) => {
-    const state = await mockRelay(page); state.project.root = 'C:/works';
-    await page.goto('/workspace/works');
-    await page.getByRole('region', { name: '作品寻回册', exact: true }).getByLabel('个人知识库 的操作', { exact: true }).getByRole('button', { name: '接力', exact: true }).click();
+test('实际事件接入错误由人工核对，发布不表示认知快照更新', async ({ page }) => {
+  const { dialog, view, commands } = await nativeTask(page, 'PUBLICATION_ERROR');
+  expect(view.event_publication.status).toBe('error');
+  await expect(dialog).toContainText('事件接入失败');
+  await expect(dialog).toContainText('认知数值仍来自已发布快照');
+  expect(commands).toEqual([]);
+  await dialog.getByRole('button', { name: '核对事件接入' }).click();
+  await expect(dialog).toContainText('已接入本机应用事件');
+  await expect(dialog.getByRole('region', { name: '任务收据' })).toContainText('核对事件接入 · 动作已接受');
+  expect(commands.map(command => command.action)).toEqual(['reconcile']);
+});
+
+test('真实嵌套项目根目录不会作为作品的完全匹配许可', async ({ page }) => {
+  test.setTimeout(120_000);
+  const owned = await relayIntentService({ nestedRoot: true });
+  try {
+    const commands = writes(page);
+    await page.goto(`${owned.server.webURL}/workspace/works`);
+    await page.getByRole('region', { name: '作品寻回册', exact: true }).getByLabel(`${owned.work.name} 的操作`, { exact: true }).getByRole('button', { name: '接力', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toContainText('作品尚无根目录完全匹配的获准项目');
     await expect(dialog.getByRole('button', { name: '保存意图并查看权限' })).toBeDisabled();
-    expect(state.writes).toEqual([]);
-  });
+    expect(commands).toEqual([]);
+  } finally { await owned.server.close(); }
 });

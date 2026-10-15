@@ -1,9 +1,6 @@
-/**
- * Shared formatting utilities with pure functions (testable).
- * Updated for V1 schema types.
- */
+/** V1 显示数据的共享纯函数。 */
 
-/** Format ISO timestamp to locale display. Returns '—' for null/invalid. */
+/** 将有效 ISO 日期显示为中文日期；空值和无效日期保持缺失。 */
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -15,7 +12,7 @@ export function formatDate(iso: string | null | undefined): string {
   });
 }
 
-/** Format ISO timestamp with time. Returns '—' for null/invalid. */
+/** 将有效 ISO 时间显示为中文日期和时间。 */
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -29,7 +26,7 @@ export function formatDateTime(iso: string | null | undefined): string {
   });
 }
 
-/** Format byte count to human-readable size. Returns '—' for null. */
+/** 将字节数显示为可读大小；空值保持缺失。 */
 export function formatBytes(bytes: number | null | undefined): string {
   if (bytes == null) return '—';
   if (bytes === 0) return '0 B';
@@ -39,19 +36,19 @@ export function formatBytes(bytes: number | null | undefined): string {
   return `${val.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
-/** Format a dimension score value (0-1 or null) to percentage. Returns '—' for null. */
+/** 将 0 到 1 的维度分数显示为百分数；空值保持缺失。 */
 export function formatDimScore(value: number | null | undefined): string {
   if (value == null) return '—';
   return `${Math.round(value * 100)}%`;
 }
 
-/** Format token usage with comma separators. Returns '—' for null. */
+/** 显示 token 用量并添加千位分隔符。 */
 export function formatTokens(tokens: number | null | undefined): string {
   if (tokens == null) return '—';
   return tokens.toLocaleString('zh-CN');
 }
 
-/** Format budget display. */
+/** 显示已有预算。 */
 export function formatBudget(budget: { calls: number | null; tokens: number | null; money: number | null; currency: string | null } | null | undefined): string {
   if (!budget) return '—';
   const parts: string[] = [];
@@ -61,7 +58,7 @@ export function formatBudget(budget: { calls: number | null; tokens: number | nu
   return parts.length > 0 ? parts.join(' / ') : '—';
 }
 
-// ── Status labels for V1 enums ──
+// V1 状态标签。
 
 const LIFECYCLE_LABELS: Record<string, string> = {
   active:    '活跃',
@@ -134,55 +131,52 @@ const MATERIAL_KIND_LABELS: Record<string, string> = {
   file:  '文件',
 };
 
-/** Get lifecycle label. */
+/** 获取生命周期标签。 */
 export function lifecycleLabel(lifecycle: string): string {
   return LIFECYCLE_LABELS[lifecycle] ?? lifecycle;
 }
 
-/** Get import status label. */
+/** 获取导入状态标签。 */
 export function importStatusLabel(status: string): string {
   return IMPORT_STATUS_LABELS[status] ?? status;
 }
 
-/** Get opportunity state label. */
+/** 获取机会状态标签。 */
 export function opportunityStateLabel(state: string): string {
   return OPPORTUNITY_STATE_LABELS[state] ?? state;
 }
 
-/** Get proposal status label. */
+/** 获取提案状态标签。 */
 export function proposalStatusLabel(status: string): string {
   return PROPOSAL_STATUS_LABELS[status] ?? status;
 }
 
-/** Get mission status label. */
+/** 获取任务状态标签。 */
 export function missionStatusLabel(status: string): string {
   return MISSION_STATUS_LABELS[status] ?? status;
 }
 
-/** Get work item status label. */
+/** 获取工作项状态标签。 */
 export function workItemStatusLabel(status: string): string {
   return WORKITEM_STATUS_LABELS[status] ?? status;
 }
 
-/** Get binding status label. */
+/** 获取绑定状态标签。 */
 export function bindingStatusLabel(status: string): string {
   return BINDING_STATUS_LABELS[status] ?? status;
 }
 
-/** Get context state label. */
+/** 获取上下文状态标签。 */
 export function contextStateLabel(state: string): string {
   return CONTEXT_STATE_LABELS[state] ?? state;
 }
 
-/** Get material kind label. */
+/** 获取资料类型标签。 */
 export function materialKindLabel(kind: string): string {
   return MATERIAL_KIND_LABELS[kind] ?? kind;
 }
 
-/**
- * Three-state capability label.
- * null = unprobed / unknown; false = verified unsupported; true = available.
- */
+/** 能力保留三值：null 未知，false 不可用，true 可用。 */
 export function capabilityLabel(value: boolean | null): string {
   if (value === true) return '● 可用';
   if (value === false) return '○ 不可用';

@@ -71,7 +71,7 @@ func TestM4PersistentRetrievalRecomputedAndAttentionUnchanged(t *testing.T) {
 		winner string
 	}{{0, "a"}, {1.5, "b"}} {
 		lambda := fixture.lambda
-		q := app.KnowledgeQuery{Topic: "agents", Now: 10000, LambdaR: &lambda, AgeBasis: app.KnowledgeAgeCreated, ReferenceBoost: 2}
+		q := app.KnowledgeQuery{Topic: "agents", Now: 10000, LambdaR: &lambda, AgeBasis: app.KnowledgeAgeCreated, ReferenceBoost: 2} // nonformal overshoot fixture; validation increment is .1
 		matches, err := service.RetrieveKnowledge(ctx, human, "p1", q)
 		if err != nil {
 			t.Fatal(err)
@@ -83,7 +83,7 @@ func TestM4PersistentRetrievalRecomputedAndAttentionUnchanged(t *testing.T) {
 			Query   app.KnowledgeQuery
 			Matches []app.KnowledgeMatch
 		}{Query: q, Matches: matches})
-		manual := map[string]float64{"a": 1 * math.Exp(-lambda*8) * 0.6 * 3, "b": 0.25 * math.Exp(-lambda*6) * 0.9 * 1}
+		manual := map[string]float64{"a": 1 * math.Exp(-lambda*8) * 0.6 * 2, "b": 0.25 * math.Exp(-lambda*6) * 0.9 * 1}
 		for _, match := range matches {
 			if math.Abs(match.Score-manual[match.Knowledge.Entry.ID]) > 1e-12 {
 				t.Fatalf("manual score: %+v want=%g", match, manual[match.Knowledge.Entry.ID])

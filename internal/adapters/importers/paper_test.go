@@ -12,15 +12,18 @@ func installedPaperExtractor(t *testing.T) *SummarizeExtractor {
 	t.Helper()
 	node, err := exec.LookPath("node")
 	if err != nil {
-		t.Skip("Node unavailable")
+		t.Fatal(err)
 	}
-	node, _ = filepath.Abs(node)
+	node, err = filepath.Abs(node)
+	if err != nil {
+		t.Fatal(err)
+	}
 	cli, err := filepath.Abs("../../../node_modules/@steipete/summarize/dist/cli.js")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(cli); err != nil {
-		t.Skip("install locked project dependencies before installed parser verification")
+		t.Fatal(err)
 	}
 	e, err := NewSummarizeExtractor(node, cli)
 	if err != nil {
@@ -33,13 +36,20 @@ func TestPaperDOMInstalledPinAndIsolation(t *testing.T) {
 	e := installedPaperExtractor(t)
 	t.Setenv("NODE_OPTIONS", "--require nonexisting-sentinel")
 	t.Setenv("OPENAI_API_KEY", "synthetic-unavailable")
-	html := []byte(`<html><head><meta name="citation_title" content="Paper"><meta name="citation_doi" content="10.1000/ABC"><meta name="citation_abstract" content="Only abstract"></head><body><article><p>Only abstract</p></article></body></html>`)
-	result, err := e.InspectPaperHTML(context.Background(), "https://dl.acm.org/doi/10.1000/ABC", html)
+	directory := os.Getenv("ASTROCYTE_TEST_PUBLIC_PAPER_DIR")
+	if directory == "" || !filepath.IsAbs(directory) {
+		t.Fatal("explicit actual public paper originals required")
+	}
+	html, err := os.ReadFile(filepath.Join(directory, "acl-public.html"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.SourceKey != "doi:10.1000/abc" || result.Title != "Paper" || result.Text != "" || result.Provenance.Version == "" {
-		t.Fatalf("metadata lost or misrepresented: %+v", result)
+	result, err := e.InspectPaperHTML(context.Background(), "https://aclanthology.org/2024.acl-long.1/", html)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.SourceKey != "doi:10.18653/v1/2024.acl-long.1" || result.Title == "" || result.Abstract == "" || result.Text != "" || result.Provenance.Version == "" {
+		t.Fatal("actual metadata lost or misrepresented")
 	}
 	for _, locator := range []string{"file:///private/file", "https://user:pass@nature.com/article", "http://nature.com/article"} {
 		if _, err := e.InspectPaperHTML(context.Background(), locator, html); err == nil {

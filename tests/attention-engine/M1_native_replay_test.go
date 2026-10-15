@@ -17,7 +17,11 @@ import (
 
 func TestM1NativeFormatFixtureReplayAccounting(t *testing.T) {
 	ctx := context.Background()
-	project := t.TempDir()
+	// 文件由测试明确写入，只验证格式读取与 SQLite 记账；实际原生会话另行验收。
+	project := filepath.Join(t.TempDir(), "Astrocyte")
+	if err := os.Mkdir(project, 0700); err != nil {
+		t.Fatal(err)
+	}
 	nativeRoot := t.TempDir()
 	input := []app.StoredEvent{}
 	for _, source := range []string{"claude_code", "codex"} {
@@ -38,9 +42,14 @@ func TestM1NativeFormatFixtureReplayAccounting(t *testing.T) {
 			t.Fatalf("contract_local %s native accounting: count=%d partial=%v err=%v", source, len(records), partial, err)
 		}
 		for _, v := range records {
-			if v.Observation.Tokens != nil || v.Observation.Outcome != "unknown" || v.Observation.Depth != "unknown" || v.Event != nil && v.Event.Topic != "" {
-				t.Fatal("native parser invented missing semantics")
+			if v.Observation.Tokens != nil || v.Observation.Outcome != "unknown" || v.Observation.Depth != "unknown" || v.Event != nil && v.Event.Topic != "Astrocyte/Attention Engine" {
+				t.Fatalf("native parser invented missing semantics: source=%s observation=%+v event=%+v", source, v.Observation, v.Event)
 			}
+		}
+		// 显式未知 scope 的纯函数输入仍必须保持主题未知。
+		unknown, err := events.MapNativeRecord(source, "format-input", "/unclassified-project", tool, 1791590400500)
+		if err != nil || unknown.Event == nil || unknown.Event.Topic != "" || unknown.Observation.Tokens != nil || unknown.Observation.Outcome != "unknown" || unknown.Observation.Depth != "unknown" {
+			t.Fatalf("unknown format input acquired semantics: %+v %v", unknown, err)
 		}
 		input = append(input, records...)
 	}
@@ -72,7 +81,7 @@ func TestM1NativeFormatFixtureReplayAccounting(t *testing.T) {
 		t.Fatal("native-format fixture signal accounting failed")
 	}
 	for _, s := range ss {
-		if s.Weight != .6 || s.Strength != 1 || s.Topic != "" {
+		if s.Weight != .6 || s.Strength != 1 || s.Topic != "Astrocyte/Attention Engine" {
 			t.Fatal("native-format fixture weight or unknown topic changed")
 		}
 	}

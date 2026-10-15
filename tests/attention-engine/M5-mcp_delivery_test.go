@@ -1,6 +1,7 @@
 package attention_engine_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -88,8 +89,8 @@ func TestMCPRealStdioDynamicsPendingKeepsReceipt(t *testing.T) {
 		if result["isError"] != true || text["accepted"] != true || text["delivery_state"] != "committed" || text["dynamics_pending"] != true || text["capture_pending"] != false || text["event_id"] == nil || !reflect.DeepEqual(text, result["structuredContent"]) {
 			t.Fatalf("committed dynamics-pending result lost: %v", result)
 		}
-		if !strings.Contains(text["error"].(string), "dynamics pending") {
-			t.Fatal("pending phase absent from error text")
+		if text["error"] != "Tool operation failed" || !strings.Contains(text["recovery"].(string), "event_id") {
+			t.Fatal("fixed error or receipt reconciliation guidance absent")
 		}
 		db = mcpOpen(t, path)
 		var nodes int
@@ -101,8 +102,19 @@ func TestMCPRealStdioDynamicsPendingKeepsReceipt(t *testing.T) {
 		}
 		repo := sqlite.NewEventRepository(db)
 		before, err := repo.GetEvent(context.Background(), text["event_id"].(string))
-		if err != nil || before.OriginKey != text["origin_key"] {
+		if err != nil || before.OriginKey == "" || !bytes.Equal(before.RawBytes, []byte(`{"ts":1770681600000,"kind":"commit","topic":"unborn-topic"}`)) {
 			t.Fatalf("committed original receipt unavailable: %v", err)
+		}
+		if _, exists := text["origin_key"]; exists {
+			t.Fatal("private origin key escaped exposure")
+		}
+		ids, ok := text["receipt_ids"].([]any)
+		if !ok || len(ids) != 1 || !mcpContainsID(ids, before.ID) {
+			t.Fatal("committed dynamics-pending receipt IDs lost")
+		}
+		replayed, err := app.NewEventService(repo, .01).Record(context.Background(), []app.StoredEvent{before})
+		if err != nil || len(replayed) != 1 || !reflect.DeepEqual(before, replayed[0]) {
+			t.Fatalf("local receipt idempotency changed origin/raw: %v", err)
 		}
 		signals, err := repo.ListSignals(context.Background(), 0, mcpFixtureNow+1)
 		if err != nil || len(signals) != 1 || signals[0].EventID != before.ID {
@@ -147,7 +159,9 @@ func TestMCPRealStdioPostcommitDeliveryAndRestart(t *testing.T) {
 				if !reflect.DeepEqual(text, result["structuredContent"]) || text["error"] == "" || !strings.Contains(text["recovery"].(string), "do not resubmit") {
 					t.Fatalf("client-visible recovery instructions missing: %v", result)
 				}
-				origin := text["origin_key"].(string)
+				if _, exists := text["origin_key"]; exists {
+					t.Fatal("private origin key escaped exposure")
+				}
 				db = mcpOpen(t, path)
 				repo := sqlite.NewEventRepository(db)
 				rows, err := repo.ListEvents(context.Background(), 0, mcpFixtureNow+1)
@@ -155,15 +169,45 @@ func TestMCPRealStdioPostcommitDeliveryAndRestart(t *testing.T) {
 					t.Fatal(err)
 				}
 				var original, failure app.StoredEvent
-				for _, row := range rows {
-					if row.OriginKey == origin {
-						original = row
-					} else {
-						failure = row
+				if mode == "capture" {
+					id, ok := text["event_id"].(string)
+					if !ok || id == "" {
+						t.Fatal("known commit lost reconciliation ID")
+					}
+					original, err = repo.GetEvent(context.Background(), id)
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, row := range rows {
+						if row.ID != original.ID {
+							failure = row
+						}
+					}
+				} else {
+					// The isolated fixture database contains exactly one write.
+					// This local audit is not an ID acknowledged by MCP.
+					if len(rows) != 1 {
+						t.Fatal("unknown delivery local receipt count differs")
+					}
+					original, err = repo.GetEvent(context.Background(), rows[0].ID)
+					if err != nil {
+						t.Fatal(err)
 					}
 				}
-				if original.ID == "" {
+				if original.ID == "" || original.OriginKey == "" || len(original.RawBytes) == 0 {
 					t.Fatal("original receipt absent after error")
+				}
+				if operation == "report_event" && !bytes.Equal(original.RawBytes, []byte(`{"ts":1770681600000,"kind":"agent_task","topic":"delivery-fixture","raw":{"outcome":"failed"}}`)) {
+					t.Fatal("report original raw changed locally")
+				}
+				if operation == "veto" {
+					var payload map[string]any
+					if err := json.Unmarshal(original.RawBytes, &payload); err != nil {
+						t.Fatal(err)
+					}
+					if payload["task"] != "unresolved-task" || payload["reason"] != "contract_local veto" || text["target"] != "" {
+						t.Fatal("task veto lost local payload or exposed private target")
+					}
 				}
 				accepted := "accepted"
 				if operation == "veto" {
@@ -192,6 +236,14 @@ func TestMCPRealStdioPostcommitDeliveryAndRestart(t *testing.T) {
 					if _, ok := text["event_id"]; ok {
 						t.Fatalf("unknown delivery fabricated ID: %v", text)
 					}
+					if _, ok := text["receipt_ids"]; ok {
+						t.Fatal("unknown delivery fabricated receipt IDs")
+					}
+				}
+				// Only reconcile the known local origin; do not retry MCP.
+				replayed, err := app.NewEventService(repo, .01).Record(context.Background(), []app.StoredEvent{original})
+				if err != nil || len(replayed) != 1 || !reflect.DeepEqual(original, replayed[0]) {
+					t.Fatalf("local receipt idempotency changed origin/raw: %v", err)
 				}
 				var candidates int
 				if err := db.Conn().QueryRow("SELECT COUNT(*) FROM attention_engine_experiences").Scan(&candidates); err != nil {

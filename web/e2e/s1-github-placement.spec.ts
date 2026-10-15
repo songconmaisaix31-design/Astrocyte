@@ -4,9 +4,10 @@ import { existsSync } from 'node:fs';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import { humanAPI } from '../../tests/s1/api.mjs';
 import type { components } from '../src/api/schema';
+import { repositoryRoot, realService } from './realService';
 
 type Repository = components['schemas']['GitHubRepositoryV1'];
-// Explicit opt-in public reference; never bind a private account or run a model/media job.
+// 仅按明确许可验证公开仓库，保存实际克隆和持久化观察。
 test('actual public repository metadata precedes human placement, clone and cold persistence', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_GITHUB_REPOSITORY !== '1' || testInfo.project.name !== 'chromium-1920', 'Explicit live public GitHub opt-in, once only');
   test.setTimeout(180_000);
@@ -22,7 +23,7 @@ test('actual public repository metadata precedes human placement, clone and cold
     let records = await api.get('/github-repositories');
     if (!reusedPath) {
       expect(records.items).toHaveLength(0);
-      await metadata.getByLabel('公开 GitHub 账号或仓库', { exact: true }).fill('octocat/Hello-World');
+      await metadata.getByLabel('公开 GitHub 账号或仓库', { exact: true }).fill('songconmaisaix31-design/Astrocyte');
       const syncing = page.waitForResponse(response => response.url().endsWith('/api/v1/github-repositories/sync') && response.request().method() === 'POST');
       await metadata.getByRole('button', { name: '同步仓库信息', exact: true }).click();
       const response = await syncing; expect(response.status(), await response.text()).toBe(200);
@@ -30,13 +31,13 @@ test('actual public repository metadata precedes human placement, clone and cold
     }
     expect(records.items).toHaveLength(1);
     const original = records.items[0];
-    expect(original.metadata.full_name).toBe('octocat/Hello-World');
+    expect(original.metadata.full_name).toBe('songconmaisaix31-design/Astrocyte');
     if (!reusedPath) {
       expect(original.clone_status).toBe('not_placed');
       expect(original.root).toBe(''); expect(original.head).toBe(''); expect(original.project_id).toBe('');
       expect((await api.get('/local-projects')).items).toHaveLength(0);
     } else expect(original.clone_status).toBe('ready');
-    await expect(metadata.getByRole('heading', { name: 'octocat/Hello-World', exact: true })).toBeVisible();
+    await expect(metadata.getByRole('heading', { name: 'songconmaisaix31-design/Astrocyte', exact: true })).toBeVisible();
     if (original.metadata.unknown_fields?.includes('stars')) await expect(metadata).toContainText('★ 未知');
     await metadata.getByRole('button', { name: '去蜂群空间纳入代码', exact: true }).click();
     if (!reusedPath) {
@@ -52,7 +53,7 @@ test('actual public repository metadata precedes human placement, clone and cold
     if (!reusedPath) {
       const button = placement.getByRole('button', { name: '纳入所选空间并克隆代码', exact: true });
       await expect(button).toBeDisabled();
-      await placement.getByLabel('为 octocat/Hello-World 选择开发空间', { exact: true }).selectOption(space.id);
+      await placement.getByLabel('为 songconmaisaix31-design/Astrocyte 选择开发空间', { exact: true }).selectOption(space.id);
       const cloning = page.waitForResponse(response => response.url().endsWith(`/api/v1/github-repositories/${original.id}/placement`) && response.request().method() === 'POST');
       await button.click();
       const response = await cloning; expect(response.status(), await response.text()).toBe(200);
@@ -84,35 +85,60 @@ test('actual public repository metadata precedes human placement, clone and cold
   finally { await server.close({ preserveData: true, primaryError }); }
 });
 
-// Transport contract only: no GitHub network, code clone, model or native Agent.
-test('persisted cloning requires human recovery in its original space and unknown results remain disabled', async ({ page }) => {
-  let repository: Repository = { id: 'contract-local-repo', revision: 5, metadata_revision: 1, metadata: { github_id: 0, full_name: 'contract-local/repository', html_url: 'https://github.com/contract-local/repository', clone_url: 'https://github.com/contract-local/repository.git', description: '', default_branch: '', language: '', stars: 0, archived: false, fork: false, updated_at: '2026-10-10T00:00:00Z', pushed_at: '2026-10-10T00:00:00Z', metadata_source: 'github_public_html', unknown_fields: ['stars', 'archived', 'default_branch', 'pushed_at'] }, sync_status: 'synced', synced_at: '2026-10-10T00:00:00Z', space_id: 'contract-local-space', project_id: '', clone_status: 'cloning', root: '', head: '', clone_attempts: 1, last_error: '' };
-  const requests: { body: Record<string, unknown>; key: string }[] = [];
-  await page.route('**/api/v1/github-repositories', route => route.fulfill({ json: { schema_version: 1, items: [repository], next_cursor: null } }));
-  await page.route('**/api/v1/project-spaces', route => route.fulfill({ json: { schema_version: 1, items: [{ id: 'contract-local-space', title: '原纳入空间', version: 1, material_refs: [], created_at: '2026-10-10T00:00:00Z' }], next_cursor: null } }));
-  await page.route('**/api/v1/github-repositories/contract-local-repo/placement', route => {
-    requests.push({ body: route.request().postDataJSON(), key: route.request().headers()['idempotency-key'] });
-    if (requests.length === 1) return route.fulfill({ status: 503, json: { schema_version: 1, error: { code: 'provider_unavailable', message: 'contract_local 核对尚未完成', required_action: '检查原空间后明确重试', retryable: true, request_id: 'contract-local-clone' } } });
-    repository = { ...repository, revision: 6, clone_status: 'ready', project_id: 'contract-local-project', root: '/contract-local/repository', head: 'contract-local-head' };
-    return route.fulfill({ json: { schema_version: 1, repository } });
-  });
-  await page.goto('/swarm');
-  const placement = page.locator('section').filter({ has: page.getByRole('heading', { name: 'GitHub 仓库纳入开发空间', exact: true }) }).last();
-  await expect(placement).toContainText('★ 未知');
-  expect(requests).toEqual([]);
-  await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
-  const select = placement.getByLabel('为 contract-local/repository 选择开发空间', { exact: true });
-  await expect(select).toHaveValue('contract-local-space'); await expect(select).toBeDisabled();
-  const recover = placement.getByRole('button', { name: '核对并恢复此空间克隆', exact: true });
-  await recover.click();
-  await expect(placement.getByRole('alert')).toContainText('检查原空间后明确重试');
-  await recover.click();
-  await expect(placement.getByText('代码已克隆', { exact: true })).toBeVisible();
-  expect(requests).toHaveLength(2); expect(requests[1]).toEqual(requests[0]);
-  expect(requests[0].body).toMatchObject({ expected_version: 5, space_id: 'contract-local-space' });
-  await expect(placement.getByRole('button', { name: '已纳入并克隆', exact: true })).toBeDisabled();
-  repository = { ...repository, revision: 7, clone_status: 'unknown' };
-  await page.reload(); await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
-  await expect(placement.getByRole('button', { name: '结果未知，请先核对原操作', exact: true })).toBeDisabled();
-  expect(requests).toHaveLength(2);
+test('真实克隆进程中断后保留原空间，人工恢复核对实际 HEAD', async ({ page }) => {
+  test.setTimeout(240_000);
+  expect(execFileSync('git', ['remote', 'get-url', 'origin'], { cwd: repositoryRoot, encoding: 'utf8' }).trim()).toBe('https://github.com/songconmaisaix31-design/Astrocyte');
+  const { server, api } = await realService();
+  try {
+    await api.write('/github-repositories/sync', { input: 'songconmaisaix31-design/Astrocyte' });
+    const original = (await api.get('/github-repositories')).items[0];
+    expect(original.metadata.full_name).toBe('songconmaisaix31-design/Astrocyte');
+    const space = await api.write('/project-spaces', { title: '本轨真实克隆恢复空间' }, { status: 201 });
+    const requests: { body: unknown; key: string }[] = [];
+    page.on('request', request => {
+      if (request.method() === 'POST' && request.url().endsWith('/placement')) requests.push({ body: request.postDataJSON(), key: request.headers()['idempotency-key'] });
+    });
+    await page.goto(`${server.webURL}/swarm`);
+    const placement = page.locator('section').filter({ has: page.getByRole('heading', { name: 'GitHub 仓库纳入开发空间', exact: true }) }).last();
+    expect(requests).toEqual([]);
+    await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
+    await placement.getByLabel('为 songconmaisaix31-design/Astrocyte 选择开发空间', { exact: true }).selectOption(space.space.id);
+    await placement.getByRole('button', { name: '纳入所选空间并克隆代码', exact: true }).click();
+    await expect.poll(() => server.query('SELECT json_extract(data,\'$.clone_status\') AS status FROM local_github_repositories WHERE id=?', original.id)[0]?.status, { intervals: [20], timeout: 10_000 }).toBe('cloning');
+    await server.stopAPI();
+    await expect(placement.getByRole('alert')).toBeVisible();
+    expect(requests).toHaveLength(1);
+    await server.startAPI();
+    const reconnected = await humanAPI(server.apiURL);
+    const pending = (await reconnected.get('/github-repositories')).items[0];
+    expect(pending.space_id).toBe(space.space.id);
+    expect(pending.clone_status).toBe('cloning');
+    await page.reload();
+    await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
+    const choice = placement.getByLabel('为 songconmaisaix31-design/Astrocyte 选择开发空间', { exact: true });
+    await expect(choice).toHaveValue(space.space.id);
+    await expect(choice).toBeDisabled();
+    const recovered = page.waitForResponse(value => value.url().endsWith('/placement') && value.request().method() === 'POST');
+    await placement.getByRole('button', { name: '核对并恢复此空间克隆', exact: true }).click();
+    const recoveryResponse = await recovered;
+    expect(recoveryResponse.status()).toBe(200);
+    const recoveryBody = await recoveryResponse.json();
+    await expect(placement.getByText('代码已克隆', { exact: true })).toBeVisible();
+    const ready = (await reconnected.get('/github-repositories')).items[0] as Repository;
+    expect(ready.clone_status).toBe('ready');
+    expect(ready.space_id).toBe(space.space.id);
+    expect(execFileSync('git', ['-C', ready.root, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()).toBe(ready.head);
+    expect(requests).toHaveLength(2);
+    expect(requests[0].body).toMatchObject({ expected_version: original.revision, space_id: space.space.id });
+    expect(requests[1].body).toMatchObject({ expected_version: pending.revision, space_id: space.space.id });
+    const recoveryRequest = recoveryResponse.request();
+    const replay = await page.request.post(recoveryRequest.url(), { headers: recoveryRequest.headers(), data: recoveryRequest.postDataJSON() });
+    expect(replay.status()).toBe(200);
+    expect(await replay.json()).toEqual(recoveryBody);
+    const replayed = (await reconnected.get('/github-repositories')).items[0] as Repository;
+    expect(replayed.clone_attempts).toBe(ready.clone_attempts);
+    expect(replayed.root).toBe(ready.root);
+    expect(replayed.head).toBe(ready.head);
+    await expect(placement.getByRole('button', { name: '已纳入并克隆', exact: true })).toBeDisabled();
+  } finally { await server.close({ preserveData: true }); }
 });

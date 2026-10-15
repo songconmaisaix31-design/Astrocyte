@@ -93,7 +93,7 @@ test('actual approved works UI commands persist in SQLite after owned API restar
     await expect(page.getByRole('dialog').getByRole('button', { name: '隐藏作品', exact: true })).toBeEnabled();
     await page.keyboard.press('Escape');
 
-    // A delivered unregistered path is a clue, never a filesystem read.
+    // 未登记路径只保存为投递线索，不读取文件。
     await album.getByRole('button', { name: 'AI 投递 JSON', exact: true }).click();
     dialog = page.getByRole('dialog');
     await dialog.getByLabel('AI 投递 JSON 内容').fill(JSON.stringify({ works: [{ name: '明确投递线索', platform: 'codex', path: `${server.temporary}/unregistered-clue`, handoff: '生成手册只是线索，未执行任务。' }] }));
@@ -121,7 +121,7 @@ test('actual approved works UI commands persist in SQLite after owned API restar
     expect(requests).toHaveLength(commands.length);
     for (const receipt of requests) expect(receipt).toMatchObject({ status: 'accepted', input_type: 'blob', result_type: 'blob' });
     const albumBytes = server.query('SELECT data FROM works_album');
-    // HTTP rejects missing CSRF and arbitrary roots without changing the store.
+    // HTTP 拒绝缺少 CSRF 或越界目录的输入，存储保持原样。
     const rejected = await api.request('/works/refresh', { method: 'POST', body: { schema_version: 1, request_id: 'scope-rejected', expected_version: 1, roots: [server.temporary] }, key: 'scope-rejected' });
     expect(rejected.status).toBe(403);
     const csrf = await api.request('/works/refresh', { method: 'POST', body: { schema_version: 1, request_id: 'csrf-rejected', expected_version: 1, roots: [work.root] }, key: 'csrf-rejected', headers: { 'X-CSRF-Token': '' } });

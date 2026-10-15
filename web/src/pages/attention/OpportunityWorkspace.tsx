@@ -16,10 +16,9 @@ import styles from './AttentionPage.module.css';
 
 type Feedback = components['schemas']['ReviewOpportunityRequestV1']['feedback'];
 type Detail = components['schemas']['OpportunityDetailV1'];
-export function OpportunityWorkspace({ item, fixture, materials, onChanged }: { item: Opportunity; fixture: boolean; materials: Material[]; onChanged: () => void }) {
-  const state = useOpportunityDetail(item.id, !fixture);
-  const distillations = useDistillations(!fixture);
-  if (fixture) return <><OpportunitySummary item={item} /><p role="note">示例数据 · 所有写操作尚未启用，不提供真实反馈或版本历史。</p></>;
+export function OpportunityWorkspace({ item, materials, onChanged }: { item: Opportunity; materials: Material[]; onChanged: () => void }) {
+  const state = useOpportunityDetail(item.id);
+  const distillations = useDistillations();
   return <><button className="ac-button secondary compact" type="button" onClick={state.retry} disabled={state.loading}>刷新候选详情</button><QueryState state={state}>{data => <OpportunityBody detail={data} materials={materials} distillations={distillations} disabled={state.stale || state.loading} onChanged={() => { state.retry(); onChanged(); }} />}</QueryState></>;
 }
 
