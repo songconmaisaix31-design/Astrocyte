@@ -116,6 +116,20 @@ B SOURCE `efa137eb36177f69643c750c26ad8eb59b446741` / 独立 REPORT `fd3dee05673
 
 上述限定消费不新增长期文件 owner。原 B 后续所有 helper/parser 返修继续归本人，F 不自行修改逻辑；H 不修改 B 脚本。两人不合入无关祖先、替代接口响应、降低超时/断言或自动重试；代码通过文件编辑工具消费，管理人员不代写。
 
+### 11:46 S5 分工与限定消费独立 REPORT
+
+计划 SOURCE `2f609ea` 与 `78cbb0b508080c0aab2008c9d558e4d30f604c4d` 均已普通 push。原 UI 本人 `msg_98ac155e634b` 确认准确新域与 clean，后继文档 REPORT `b9cfccaa1552e203be598037ca6489a641f95696` 只登记 S5 分工，模块独立核远端一致；应用仍为 Grant SOURCE `94e21ba` / 验证 REPORT `580d984`，不将登记文档计为 S5 已实现。原 S5 新规则公开 DTO、H OpenAPI 与 F judgment 客户端尚待交付，页面字段未被猜定。
+
+原 B 本人 `msg_9143c9250d36` 明确 H 单脚本完成并停止写入归还。模块独立核 H 脚本与 B `efa137e` 同路径内容一致，限定 diff 检查通过；其实际 dependency check 为 B 报告 EXIT0。提交权已由 `msg_7f13d6c5cd8c` 明确交还 H，原 B 临时写入结束。原 F 精确消费 `server.mjs` 后也已明确将后续 helper 逻辑归还 B，并普通无冲突合入 UI `94e21ba`；组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6` 普通 push、模块独立核远端同值和 helper 来源一致。typecheck/lint/build 与十七项显示检查为 F 实测通过；默认两文件百项仍在运行，已发现 stale 空集合错误渲染，由原 F 修复共享 QueryState，首次原断言与 trace 保留。
+
+S2 资料权限 SOURCE `04e096c4e03cdc4355b69c86b5ee43a0eae89282` / REPORT `ec9d96950fa001ebd7e0be51b1e6bdf9dcd1adbc`，包权限 SOURCE `ca1193e12bec27d547beac825944a4d35a3c4d1c` / REPORT `4c84d3cf0441b2fff5010f301d49fe73d2ae9f2b` 已普通 push，模块独立核远端 REPORT 同值。实际资料 HTTP 97.254 秒、包当前授权/跨项目/撤销/完成/过期/重开 33.766 秒通过；首次 timeout 和 REPORT TLS 拒绝保留。生产逻辑仍 `b7e3b1c`，主 Context HTTP 和真实原生绑定未因此变成通过。
+
+M-relay 已交原 R 两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854`，其五项适用检查由该模块独验通过；T 只读核接口后仍确认 selected-text 同 job/operation/source/stop/有效工具证据未齐。剩十四个真实模型/unknown/推荐场景继续原要求和 NOT_RUN，没有新 CLI 或模型调用。
+
+后继 R 组合消费 B `c715342` 后缺少实际 S2 事务 Repository/公开接口而编译失败，原首 RED 保留。模块已交原 S2 `msg_0f94d56979b4` 只读 R 准确树并给真实最小已提交闭包，禁止替代 type/Repo 或合入无关历史；独立 R 两阶段不被后继 L 失败覆盖。根确认经验模型独立 snapshot 无可观测值时记录 unknown，B 保留原 operation、policy、实际证据与非拒绝完整结果，区分配置路由与 provider echo；工程候选只进入 quarantine，不宣称正式 L2 或不可变复现。
+
+S4 的完整 Options/资产/预算正文已原文交 B 当前 Dispatch，稳定 EnvironmentID 缺配置时对应能力明确 unavailable、其他服务可启动。来源撤回和权限撤销目前没有通用清理 hook，B/S4 仍需实际 mutation 同事务持久请求及安全主体条件，H 只既有服务接入；不得冒用资料作业或执行批准事件。全部核心与最终 Windows 包继续验收，本模块未结算或自行发布。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
@@ -152,14 +166,16 @@ M-release `msg_c996642abb6e` 已转交恢复后唯一 S5 `ctx_e200fb7cf3c4` 本�
 
 | 开发人员 | 固定工作树 / 分支 | 当前原 Dispatch | 写入范围与下一步 |
 |---|---|---|---|
-| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_7217777c7bf5` / `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef` | 原 `internal/**` 与 `cmd`，排除 R/H/Q 域、全部 Python、冻结核心、下述 T/V 文件与已移交 S2/S3 域；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json`、全部 migrations 与 `cmd/server/config.go` owner。共享输入、配置、实际映射与默认 Go 检查继续；S4/S5 域按具体 ACK 移交其模块 |
-| F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_5bac511ada08` / `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52` | 原 `web/src/**`、`web/e2e/**` 排除下述新产品 UI 精确移交域；`docs/standards/frontend.md`。唯一共享 API/types/auth/router/Hook 与 Relay GUI 操作，消费准确接口和页面 SOURCE、薄接入 Workspace、完成旧功能返修及稳定源码完整 E2E |
-| T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014`，独立 worktree 起点 `b470ecd736af261a10e4c4822bdcd3b02d0da454` | `task_5f0a79b6a17a` / `ctx_8674c456f49f` / `term_c1d90d02-51be-4443-9afe-ddce0615acb4`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。整改替代模型/Repository/ObjectStore 与 S1 未知交付，保留全部成功与失败断言；生产领域、依赖与共享 helper 变更只 Handoff B |
-| S2，复用 V | `product-video-20261014` / `songconmaisaix31-design/product-video-20261014` | 当前 `task_6846cdb90c46` / `ctx_f32b6d92119a` / `term_af4a1bd1-cc0c-4961-aa37-cfecaa26e60c`；旧视频 `ctx_1b382b548db7` 已 succeeded | 当前 S2 精确域见下表；同一人员保留视频 `extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importers_test.go`、`video_*_test.go`、`docs/standards/video.md` 返修。B 保留配置、依赖、paperDOM/Node helpers/native text bridge，T 域不变 |
+| B | `standards-backend` / `standards-backend` | `task_7b4e93c1a3c1` / `ctx_1fd66a8adc28` / `term_ee93800d-69d5-4405-a60d-0c51b1c66f64`，根原 Run | 原 `internal/**` 与 `cmd`，排除 R/H/Q、已移交 S2/S3/S4/S5 域、全部 Python、冻结核心和 T/V 独占文件；`tests/s1` 排除 `automatic_test.go`、`tests/attention-engine`、`scripts/*.mjs`、`docs/standards/backend.md`；唯一 `go.mod/go.sum/dependencies.lock.json`、全部 migrations 与 `cmd/server/config.go`。Judgment HTTP 前缀已停写交原 S5；共享 helper 的后续逻辑仍归 B |
+| F | `standards-frontend` / `standards-frontend` | `task_7cbe30017760` / `ctx_4a385bf65390` / `term_0e565e8d-906a-46c6-a5fd-a61b81674a0d`，根原 Run | 原 `web/src/**`、`web/e2e/**` 排除原产品 UI 的 S2/S3/S4 页面、S5 delegation 和 s2/s3/s4/s5 spec 精确域；`docs/standards/frontend.md`。唯一共享 API/types/auth/router/hooks、Attention/Workspace 薄入口和 Relay GUI；按已提交精确 SOURCE 消费页面及公共组合，完成默认完整 E2E |
+| T Attention 实际测试 | `product-attention-tests-20261014` / `songconmaisaix31-design/product-attention-tests-20261014` | `task_5f0a79b6a17a` / `ctx_491ad741b3cd` / `term_e39f5608-91dd-4c07-856a-9ebe7b9bb555`，本子 Run | 唯一 `internal/attention/app/*_test.go`（含该目录必要专用测试 helper）、`tests/s1/automatic_test.go`、`docs/standards/attention-tests.md`。人工路径已真实 SQLite/ObjectStore；剩十四项实际模型/unknown/推荐前置未满足，保留全部断言和默认未完成状态；生产、依赖与共享 helper 变更只 Handoff B |
+| S2，复用 V | `product-video-20261014` / `songconmaisaix31-design/product-video-20261014` | `task_6846cdb90c46` / `ctx_b9a5305d8480` / `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`，本子 Run | S2 精确域见原实施表；同一人员保留视频 `extractor.go`、`extractor_test.go`、`summarize.go`、`summarize-media.mjs`、`importers_test.go`、`video_*_test.go`、`docs/standards/video.md` 返修。B 保留配置、依赖、paperDOM/Node helpers/native text bridge，T 域不变 |
+| S3/S6 | `product-swarm-20261015` / `songconmaisaix31-design/product-swarm-20261015` | `task_da9aebf03f83` / `ctx_2e078edf896b` / `term_13228de3-0134-4004-8a69-9198b10df86f`，本子 Run | `internal/swarm/**`、`sqlite/swarm_*.go`、`httpapi/swarm_*.go`、`tests/s3/**`、`docs/standards/swarm-s3.md`；实际授权/认领/成果/原 operation 对账/LocalPolicy/后任务经验引用，普通消费准确依赖，真实原生仍待 R/H |
+| 产品 UI | `product-ui-20261015` / `songconmaisaix31-design/product-ui-20261015` | `task_d0cee5a583bb` / `ctx_af3cbd15f128` / `term_0ae8b2eb-b572-4864-9eae-73280b177abb`，本子 Run | 原 `workspace/proposals/**`、SwarmPage 及 CSS、`swarm/missions/**`、`workspace/repositorycontext/**`，新增 `attention/delegation/**`，s2/s3/s4/s5 spec 与 `docs/standards/product-ui.md`。不写共享客户端、生成类型、认证、router 或薄入口；先 H→F 准确契约再实际页面 |
 | 固定逆向 Agent X | `C:/Users/DW/orca/workspaces/Astrocyte/reverse-reference-20261014` / `songconmaisaix31-design/reverse-reference-20261014`，独立基线 `1c026c3e7f9e91c53d1dced6479099668c9162cb` | 用户指定原会话 `01a13ae1-1399-78d2-b329-0ea4fc5eb255` / `term_79eeba93-c810-4a04-a1a0-e27ce0767ab5`；当前为已运行用户提示，普通 Handoff 管理，不注入新 Dispatch | 唯一绝对写域 `C:/Users/DW/orca/workspaces/Astrocyte/reverse-reference-20261014/docs/research/reference-code-20261014/**`；下载与 REA 原件仅本树已忽略 `.verification/reference-code-20261014/**`。先交 CSGHub / 官方 server 代码获取、权限、版本、固定 SHA、许可证与实码文件行号索引，再交研究流程；autoscientist 准确仓库未决定，不自行选择。只向 B/F/R/H 原 owner 提供参考，不扩大产品实现 |
 
 1. 原 B/F 活跃 Dispatch 继续原 Run，本模块已直接发送接管与报告入口，B `msg_165f46e95cbc` 与 F `msg_467dcb9e5795` 已实际回复。公开 worker-list 核实两者均 active/live/working。每阶段源码 SOURCE 与独立 REPORT 普通提交并 push，首 RED / UNKNOWN / NOT_RUN 完整保留。
-2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_e6328a370d56` / `run_8bbda1c3974c`，认知与发布问题交当前 M-release `ctx_dee6ef251324` / `run_aa4e6a119547`。管理人员不代写业务。
+2. 依赖问题由 B 单独处理；跨原生问题交 M-relay `ctx_bc51f7008918` / `run_8bbda1c3974c`，认知与发布问题交 M-release `ctx_b80c795a71a4` / `run_aa4e6a119547`。普通跨 Run Handoff 使用准确 Dispatch 且不附他人生命周期 payload；管理人员不代写业务。
 3. 总负责人接收原 worker_done 并交接已核实终端后，才在本子 Run 复用同一终端、工作树和分支创建后续 Task；不重新绑定总负责人 Run，不增加同写域人员。
 4. 所有实际功能与适用检查通过后，向 M-release 提交精确 SOURCE/REPORT 及覆盖证据供唯一 I 普通合并；最终组合 check/build/默认 E2E、ZIP 新目录启动/读写/重启验收继续由原开发人员支持。模块阶段通过不结算本 Task，最终 GitHub Release 由总负责人接受具体结果后发布。
 
