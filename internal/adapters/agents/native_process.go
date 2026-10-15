@@ -54,6 +54,7 @@ type nativeProcess struct {
 	relayPublishedTurns   map[string]bool
 	originalSession       *domain.NativeSession
 	relayInputGuard       func(context.Context, domain.NativeSession) error
+	completionExperience  *completionExperienceOperation
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -435,6 +436,11 @@ func (p *nativeProcess) addTextDelta(message, text string) {
 func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMessage) error {
 	if p.truncated {
 		return nil
+	}
+	if p.completionExperience != nil {
+		if err := p.observeCompletionExperience(method, r); err != nil {
+			return err
+		}
 	}
 	if (method != "" && method != "item/agentMessage/delta") || (typ != "" && typ != "message_update") {
 		p.textMessage = ""

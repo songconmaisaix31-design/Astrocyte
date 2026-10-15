@@ -87,6 +87,7 @@ func (n *Native) snapshot() domain.LocalAgent {
 type Native struct {
 	mu              sync.Mutex
 	startMu         sync.Mutex
+	completionMu    sync.Mutex
 	id, stateRoot   string
 	processes       map[string]*nativeProcess
 	capabilities    map[string]domain.CapabilityObservation
@@ -646,7 +647,11 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 	}
 	p.mu.Unlock()
 	if n.id == "codex" {
-		response, err := p.call(ctx, "turn/start", map[string]any{"threadId": s.NativeID, "input": []any{map[string]any{"type": "text", "text": message}}, "approvalPolicy": "never", "sandboxPolicy": map[string]any{"type": "readOnly"}}, false)
+		params := map[string]any{"threadId": s.NativeID, "input": []any{map[string]any{"type": "text", "text": message}}, "approvalPolicy": "never", "sandboxPolicy": map[string]any{"type": "readOnly"}}
+		if schema := p.completionExperienceSchema(); schema != nil {
+			params["outputSchema"] = schema
+		}
+		response, err := p.call(ctx, "turn/start", params, false)
 		if err != nil {
 			return p.observe(), err
 		}
