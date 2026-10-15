@@ -5,7 +5,7 @@ import base from '../playwright.config';
 export default defineConfig({
   ...base,
   testDir: '.',
-  testMatch: ['s2-*.spec.ts', 's3-*.spec.ts'],
+  testMatch: ['s2-*.spec.ts', 's3-*.spec.ts', 's4-*.spec.ts'],
   workers: 1,
   retries: 0,
   webServer: undefined,
