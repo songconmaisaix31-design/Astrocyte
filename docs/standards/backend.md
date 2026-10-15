@@ -497,6 +497,18 @@ H 的原 Redocly Windows libuv 终止日志完整保留。针对准确 H OpenAPI
 
 F 下一次自然验证所需公开论文输入目录及四件获准 HTML 已准确交接；没有授予同目录其他原件读取权限。Completion 完整来源读取移到事务外、同事务当前权限复核的方向已获模块授权，准确新增接口仍等待 R/H 确认；原生 Prepare/Claim/Send 继续按 R/S3 原类型协作，当前未创建准备记录或模型请求。上述两项业务组合验收保持 NOT_RUN。
 
+## Completion 事务外来源读取与同事务授权
+
+SOURCE `176742241681a3b00257da33f4f8a69dd308a908` 已普通 push，仅修改生产 `internal/attention/app/experience_accepted.go`。按 R/H 明确确认，`ExperienceCompletionReader` 增加 `AuthorizeExperienceCompletion(context.Context, Principal, ExperienceCompletionEvidence) error`；准备原幂等收据和最终保存候选的两个短事务各调用一次。完整来源读取只在这两个事务之外执行，Interpreter 返回后完整重读并严格 `reflect.DeepEqual`，随后再次复核当前权限和既有幂等记录。候选状态仍为 `quarantine`，`ResolveEvidence` 继续在事务外读取来源。
+
+R 确认完成记录与最终 transition receipt 的原时间、Actor、Channel、ReceiptID、OperationID、输出事件和检查引用不可改写或删除；done 到 released 的独立审计不改变来源值。新增 Authorize 只使用原主数据库同一 `WorkspaceTransaction` 中的当前 project/owner/grant 和固定 Evidence 约束，不读取 Relay、对象、档案、Git 或 CLI。准确 R/H 实现与组合装配尚待原负责人交付，本 SOURCE 不单独证明这项业务约束已经通过真实路径验收。
+
+进程级 D 盘 Go 环境与 `GOMAXPROCS=2` 下，`go build -mod=readonly -p=2 ./...`、`go vet -mod=readonly -p=2 ./internal/attention/app ./internal/adapters/sqlite` 均 EXIT 0，日志 `.verification/completion-authorization-split-{build,vet}-first.log`。`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^(TestAcceptedExperience|TestLocalProjectUsesActualWorkspaceTransaction|TestLocalProjectRejectsAnotherActualDatabaseTransaction)' -v -count=1` EXIT 0，5 项主检查、4 项提交/真实约束回滚子项通过，3.712s，日志 `.verification/completion-authorization-sqlite-first.log`。Go 格式与 diff 检查无输出。该轮没有原生初始化或模型请求；实际完成来源、权限撤回竞争、Interpreter 后变更拒绝与 quarantine 组合验收保持 NOT_RUN，应用测试全部由 T 持续维护。
+
+本轮临时授权的 I `cmd/server/config.go` 单件已编辑并 stage，重复发现函数保留一份，与原 HEAD 该件完整 diff 为零。Go 格式、限定 working / cached diff 检查 EXIT 0，U0，准确 stage blob `f8fdeb628de94c0e1c46ded6b4f16abc9b6a835a`；原 HEAD `85ac31e61c9f0ac9d0b49e45a24b26379bb5b5da`、MERGE_HEAD `91676ad0dbacea6a9f1640e224e2dbfa7cbf8024` 保持，其余 28 件 F stage 文件未修改。全部目标树写入、stage 和进程访问已停止并归还，无 merge 生命周期操作。
+
+完整读取获准 R `channels-agents-first.log` 后，实际结果为包 185.806s、180 秒 panic 时 `TestSelectedTextActualOwnedSourceWithoutModel` 仅运行 4 秒，调用停在原 `initialize` 等待。该原件没有 controller 原 PID、启动身份或自产目录，退出状态保持 UNKNOWN；已交 R 沿同次 launch 原件核查，没有猜测进程归属、重复初始化或终止宿主进程。此窗口与 B 的 `thread/start` 首失败分别保留。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
