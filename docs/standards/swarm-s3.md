@@ -1,5 +1,53 @@
 # Swarm S3 / S6 实施与实际验证
 
+## H 公共装配的最小业务提交与接口
+
+2026-10-15，Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b` 对模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_9ce12d181768`（原 `ctx_b1cd2e0a39aa`）交付以下装配说明。H `ctx_e7abbaf902da` 的核对基线为 `53d9bb107440d27fc74b70609ecddc3c299574ac`。只读比较确认该基线中的 `migrations/019_workspace_approvals.sql`、`020_swarm.sql`、`internal/workspace/app/proposal_ports.go`、`internal/workspace/domain/proposals.go`、`approvals.go`、`internal/adapters/sqlite/workspace_proposals.go` 与本域已验证版本逐文件相同。H 已有真实 `S2Service.ReadProposal`、`ReadApproval`、`WithAuthorizedSessionBindings` 和 `WorkspaceTransaction` 公开端口。原 SHA 不是其祖先，不能由此推断缺少这些文件，也无需重复消费原 S2/B 全部历史。
+
+该 H 基线还需 B 的 `c110201774dd61b8d7e5280526364786c6af4cc2`：只修改 `internal/workspace/app/project_policy.go` 及 `project_policy_test.go`，将 `reject_artifact` 加入已知操作并要求人类身份。019 原始来源为 B `da79452d1735f8fceca103aaf9d10bb53182f1f5`，020 原始来源为 B `da48a114d91181075bd32b62996beadd9c2c0a25`；所需 S2 公开端口原始来源依次为 `4eec31ddfde39fa3f548691ec6e7f2f34470351a`、`5d0ba735533f68259b91128dc404c8e4c2f2a535`、`507be52f4e31759dc8c3765aeea964f1f2efe013`、`80248d2c7177823d4535e7730453481426a27305`。这些前置已经存在于核对过的 H 文件内容中。
+
+随后按下表顺序消费八个已 push 的纯业务提交。每行 `{a,b}.go` 分别表示同一路径下的 `a.go` 与 `b.go`；`git show --format= --name-only <完整 SHA>` 返回该提交实际文件列表。八个提交全部只修改 Swarm、Swarm SQLite/HTTP 与 S3 测试，不含 report-only、共享依赖、冻结领域或其他业务历史。
+
+| 顺序与准确 SOURCE | 实际修改路径 |
+|---|---|
+| 1 `b220ab27c4e57d0bfdfaef224a9d03c1ae92366a` | `internal/swarm/app/{commands,contracts,lifecycle}.go`；`internal/swarm/domain/mission.go`；`internal/adapters/sqlite/swarm_{approvals,evidence,store,store_test}.go` |
+| 2 `3b78fd04dbf758e745e9880297ee1c2d6e58bfc2` | `internal/swarm/app/{commands,contracts,lifecycle,queries}.go`；`internal/swarm/domain/{mission,policy,policy_test}.go`；`internal/adapters/sqlite/swarm_{approvals,evidence,evidence_test,store}.go`；`internal/adapters/httpapi/swarm_{missions,work_items}.go`；`tests/s3/approval_test.go` |
+| 3 `e18c0965708e091b547ca2108579a4b3ca81b72c` | `internal/swarm/app/{binding_context,commands,contracts,experience,queries,review}.go`；`internal/swarm/domain/mission.go`；`internal/adapters/sqlite/swarm_{approvals,evidence,go_checks,go_checks_test,history}.go`；`internal/adapters/httpapi/swarm_{missions_test,work_items}.go`；`tests/s3/testdata/public-stats/{go.mod,stats.go,stats_test.go}` |
+| 4 `3c568c7ec8bb13a88b0abf95d44cbb13fc6422b5` | `internal/swarm/app/{commands,contracts,lifecycle,queries,review}.go`；`internal/swarm/domain/mission.go`；`internal/adapters/sqlite/swarm_{approvals,store}.go`；`internal/adapters/httpapi/swarm_{missions,work_items}.go`；`tests/s3/approval_test.go` |
+| 5 `ec653ddd90a9c91c83af28a8909fb41741116160` | `internal/swarm/app/{commands,contracts,experience}.go`；`internal/swarm/domain/mission.go`；`internal/adapters/sqlite/swarm_history.go` |
+| 6 `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0` | `internal/swarm/app/{commands,contracts,lifecycle,queries,usage_test}.go`；`internal/swarm/domain/{mission,usage,usage_test}.go`；`internal/adapters/sqlite/swarm_{approvals,store,store_test}.go` |
+| 7 `2bd5d26ea6f932d8511afd869ff41f2146c0f94a` | `internal/swarm/domain/{policy,policy_test}.go`；`internal/adapters/sqlite/swarm_{history,store,store_test}.go` |
+| 8 `10fa36cdd68b3247a70da9230453b74c0f5a04fa` | `internal/swarm/app/lifecycle.go`；`internal/swarm/domain/{mission,recovery_test}.go`；`tests/s3/approval_test.go` |
+
+完整工厂为 `swarmapp.NewSwarmService(repo, grants, members, evidence, ownership, options...)`，五个必需依赖均不能为 nil。`repo` 使用 `sqlite.NewSwarmRepository(db)`；`grants` 使用 `sqlite.NewSwarmApprovalBridge(db, actualS2)`，必须为相同 `*DB`；`members` 同时提供 `MemberAuthorizer.CheckMember` 与 `ExecutionDescriptorReader.DescribeExecution`；`evidence` 使用 `sqlite.NewSwarmGitEvidence(actualObjects, actualProjectChecker)`；`ownership` 提供原 operation/session 的 `Reconcile` 和 `Stop`。`ServiceOptions{ProjectMaxActive: n}` 是唯一可选配置，只接受正数，缺省为 2，同时遵守 Grant 更小的上限。
+
+固定获准 Go 项目的实际检查工厂为 `sqlite.NewSwarmGoProjectChecks(canonicalRoot, baseline, actualObjects)`，返回值作为上述 actualProjectChecker。只绑定已获准的 Median 项目原根与完整 baseline `da3bdddb085808863090a05f60cc1c64415039cf`；该检查器拒绝其他仓库，按实际进程结果保存固定 `go test ./...` 与 `go build ./...` 对象回执。缺少实际项目检查时，提交不能获得 `ApplicableChecksVerified`。
+
+`Member` 的准确字段为 Purpose、BindingID、OperationID、HolderID、SessionID、ProjectID、Worktree、Version。Purpose 分别为 `claim_work_item` 或 `submit_artifact`；Version 为实际绑定版本的十进制字符串。执行描述必须给出实际 `Capabilities`、`Tools`、`ExternalTargets` 和 `Known`，未知不能写为已知空集。`ExecutionFact` 返回相同原 OperationID/SessionID、StopConfirmed、Outcome、nullable Usage、CallsKnown/TokensKnown 和允许公开的 FailureCode。真实所有权适配缺失时，已实施的 `NewSwarmLedger(repo, grants)` 可提供实际批准和 SQL 账本；缺少原生能力的入口返回 `unsupported_capability`，不登记为原生验收成功。
+
+H 在同一生产认证 router 内调用 `h.registerSwarmS3(mux, service)`，移除同路径的 S0 占位注册，继续使用现有 session/CSRF 与 Agent token 守卫。Principal 来自 `localCaller(r)`，不能从 JSON 注入。全部写入 Command 的顶层元数据为 `schema_version=1`、`request_id`、`expected_version`，`Idempotency-Key` 只从请求头读取。路径 ID 与正文 ID 不同时拒绝；CreateMission 的 `event_id` 只供内部受信任 consumer，HTTP 传入非空值时拒绝。
+
+| 实际 HTTP 路由（均以 `/api/v1` 开头） | 请求 DTO、预期版本与实际响应 |
+|---|---|
+| `GET /missions` | 经过当前项目权限读取；既有 ListResult |
+| `GET /missions/{id}` | `schema_version` 及展开的 MissionDetail：`max_active_executors`、`mission`、`work_items`、`leases`、`artifacts`、`timeline`、`executions` |
+| `GET /missions/{id}/work-items`、`/timeline` | 当前 Mission 权限；既有 ListResult，空集合为数组 |
+| `POST /missions` | CreateMissionCommand：元数据、grant_id、epoch、proposal_revision、project_id、root；expected_version=0；返回 `{schema_version:1,mission}` |
+| `POST /missions/{id}/work-items` | AddWorkItemCommand：元数据、mission_id、title、inputs、dependencies、write_paths、required_capabilities、artifact_inputs；expected_version 为 Mission.version；返回 `{schema_version:1,work_item}` |
+| `POST /missions/{id}/pause`、`/cancel`、`/recover` | TransitionCommand：元数据、mission_id、reason；expected_version 为 Mission.version；返回 `{schema_version:1,mission}` |
+| `POST /work-items/{id}/claims` | ClaimCommand：元数据、mission_id、work_item_id、binding_id、session_id、member_version、worktree、operation_id、resources、expires_at；expected_version 为 WorkItem.version；返回 `{schema_version:1,lease}` |
+| `POST /work-items/{id}/artifacts` | SubmitCommand：元数据、mission_id、work_item_id、fence、commit、object_ref、checks_ref、changed_paths、inputs、usage；expected_version 为 WorkItem.version；返回 `{schema_version:1,artifact}` |
+| `GET /artifacts/{id}?mission_id=...&version=...` | mission_id 必需；version 可省略，提供时必须是正整数；返回 `{schema_version:1,artifact}` |
+| `GET /artifacts/{id}/diff?mission_id=...&version=...` | 同一读取权限及版本规则；返回 schema_version、artifact_id、commit、base_commit、diff |
+| `POST /artifacts/{id}/acceptance` | AcceptCommand：元数据、mission_id、artifact_id；expected_version 为 Artifact.version；返回 `{schema_version:1,artifact}` |
+| `POST /artifacts/{id}/rejection` | RejectCommand：元数据、mission_id、artifact_id、reason；expected_version 为 Artifact.version；返回 `{schema_version:1,artifact}` |
+
+`inputs` 为 `{id,revision}` 固定来源数组；`artifact_inputs` 为 `{id,version,commit,object_ref}` 的已实际采用快照数组。Resources 为 `{calls,tokens,money,currency}`，calls/tokens 是非负整数，金额未知为 null；Usage 的 calls/tokens/money 分别使用 nullable 整数，未知保持 null。`expires_at` 使用 Go `time.Time` 的 RFC3339 JSON 格式。Claim 的 operation_id 必须是实际已准备的 input operation UUID；不能使用 startup operation 或新造身份。
+
+本域 `swarmResult` 返回 200 成功；NotFound→404；ValidationFailed/EvidenceMissing→400；ScopeDenied/ApprovalRequired/ApprovalRevoked→403；VersionConflict/ContextStale/IndexStale/DeliveryUnknown/LeaseLost/BudgetExhausted→409；UnsupportedCapability→501；ProviderUnavailable→503；其他错误→500，并沿现有 `writeError` 错误 DTO 返回安全摘要。实际源码为 `internal/adapters/httpapi/swarm_missions.go` 和 `swarm_work_items.go`，H 保持 OpenAPI、主 router 与装配的唯一写入范围。
+
+上述清单已先发 H、M-relay 和本模块；当前文档不表示 H 新组合已经测试通过。原生依赖继续由 R 提供，已知两阶段准确 SOURCE 为 `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854`，不依赖其后续 L Interpreter WIP。真实成员、执行描述、ownership 组合与完整 S3 验收仍待实际运行。
+
 ## 第九阶段：固定项目实际公开
 
 Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b`，模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_9ce12d181768`，原模块 Dispatch `ctx_b1cd2e0a39aa`。根决定 `msg_5691824b3258` 经模块 `msg_d264ae90eaf9` 授权本 owner 将必要的固定任务代码与原历史实际公开；M-relay `msg_c43ffea07b79` 确认沿唯一原 Root，没有其他 remote 或竞争项目。
