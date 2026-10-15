@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -30,10 +29,6 @@ func TestRelayTrustedRegistrationActualSQLiteHTTP(t *testing.T) {
 	local, err := os.MkdirTemp(parent, "owned-")
 	if err != nil {
 		t.Fatal("登记独占检查目录不可用")
-	}
-	codex, err := exec.LookPath("codex")
-	if err != nil {
-		t.Fatal("本机实际Codex启动入口不可用")
 	}
 	t.Setenv("LOCALAPPDATA", local)
 	t.Setenv("ASTROCYTE_RELAY", "1")
@@ -100,10 +95,10 @@ func TestRelayTrustedRegistrationActualSQLiteHTTP(t *testing.T) {
 	if len(empty.Agents) != 0 {
 		t.Fatal("同一服务空登记基线不为空")
 	}
-	specs := []domain.AgentSpec{{Name: "codex", LaunchCmd: []string{codex}, DriveMode: "structured"}}
+	specs := []domain.AgentSpec{{Name: "codex", LaunchCmd: []string{"codex"}, DriveMode: "structured"}}
 	encoded, err := json.Marshal(specs)
 	if err != nil || os.WriteFile(registrationPath, encoded, 0600) != nil {
-		t.Fatal("本机实际Codex可信登记写入失败")
+		t.Fatal("本机Codex可信登记写入失败")
 	}
 	// GET只读取旧完整快照，原observer才执行本机可信重载。
 	client.request(t, "GET", "/api/v1/relay/agents", nil, &empty)

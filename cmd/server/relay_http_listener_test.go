@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -88,7 +89,11 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	apiURL := announced["api_url"]
 	webOrigin := "http://127.0.0.1:17345"
 	services := httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), LocalProjects: projects, WorkspaceS2: workspace.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, nil), RepositoryContext: &httpapi.RepositoryContextServices{}}
-	if err := assembleSwarmLedger(&services, db); err != nil {
+	originals, err := objects.New(filepath.Join(root, "objects"))
+	if err != nil {
+		t.Fatal("本次实际原件存储不可用")
+	}
+	if err := assembleSwarmLedger(&services, db, registry, originals); err != nil {
 		t.Fatal("实际同数据库批准桥与Swarm账本装配失败")
 	}
 	server := httpapi.NewServer(httpapi.Config{Port: address.Port, AllowedOrigins: []string{webOrigin}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Services: services})

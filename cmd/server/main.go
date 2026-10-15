@@ -239,13 +239,17 @@ func run(logger *slog.Logger) error {
 	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
 		services.RankingProfile = profile
 	}
-	if err := assembleSwarmLedger(&services, db); err != nil {
+	if err := assembleSwarmLedger(&services, db, registry, objectStore); err != nil {
 		return err
 	}
 	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry); err != nil {
 		return err
 	}
-	closeRelay, err := assembleRelay(&services, db, registry)
+	launchContexts, err := relayPublicLaunchContexts(localProjects)
+	if err != nil {
+		return err
+	}
+	closeRelay, err := assembleRelay(&services, db, registry, launchContexts...)
 	if err != nil {
 		return err
 	}
