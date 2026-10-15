@@ -114,11 +114,9 @@ func (i *CompletionExperienceInterpreter) readCompletionExperience(ctx context.C
 		}
 		operation := *original
 		truncated, status := process.truncated, process.status
-		bound := false
-		for _, turn := range process.relayEvidence.Turns {
-			if turn.OperationID == operationID && turn.TurnID == operation.turnID && turn.NativeID == process.nativeID && turn.ControllerID == process.relayEvidence.ControllerID {
-				bound = true
-			}
+		var bindingError error
+		if operation.completed {
+			bindingError = process.checkCompletionExperienceTurn(operationID, operation)
 		}
 		process.mu.Unlock()
 		if operation.failure != nil {
@@ -128,7 +126,10 @@ func (i *CompletionExperienceInterpreter) readCompletionExperience(ctx context.C
 			return empty, nativeError(apierrors.EvidenceMissing, "original completion stream is incomplete or truncated")
 		}
 		if operation.completed {
-			if !bound || operation.itemID == "" || operation.model == "" || operation.provider == "" || operation.modelVersion == "" {
+			if bindingError != nil {
+				return empty, bindingError
+			}
+			if operation.itemID == "" || operation.model == "" || operation.provider == "" || operation.modelVersion == "" {
 				return empty, nativeError(apierrors.EvidenceMissing, "original completion lacks final message, model provenance or accepted turn binding")
 			}
 			return decodeCompletionExperienceDraft(operation)
@@ -144,6 +145,34 @@ func (i *CompletionExperienceInterpreter) readCompletionExperience(ctx context.C
 		case <-ticker.C:
 		}
 	}
+}
+
+// 在原进程锁内核对完整身份及原终态；固定 JSON 本身不证明输入已经完成。
+func (p *nativeProcess) checkCompletionExperienceTurn(operationID string, operation completionExperienceOperation) error {
+	if operationID == "" || operation.operationID != operationID || p.originalSession == nil || p.relayEvidence.ControllerID == "" || p.relayEvidence.StartupOperationID != operationID {
+		return nativeError(apierrors.EvidenceMissing, "completion lacks its original session and startup operation")
+	}
+	session, controller := p.originalSession, p.relayEvidence
+	if p.cli != "codex" || controller.Provider != p.cli || session.CLI != p.cli || session.Ownership != "owned" || session.Version == "" || session.ID != operationID || session.ID != controller.SessionID || session.NativeID == "" || session.NativeID != p.nativeID || session.ProjectID != p.projectID || session.ProjectID != operation.evidence.LocalProjectID || p.inputOperationID != operationID || p.turnID != operation.turnID {
+		return nativeError(apierrors.ScopeDenied, "completion differs from its original owned session and input")
+	}
+	var matched bool
+	for _, turn := range controller.Turns {
+		if turn.OperationID != operationID {
+			continue
+		}
+		if matched || turn.TurnID == "" || turn.TurnID != operation.turnID || turn.SessionID != session.ID || turn.NativeID != session.NativeID || turn.ControllerID != controller.ControllerID || turn.StartupOperationID != controller.StartupOperationID {
+			return nativeError(apierrors.ScopeDenied, "completion turn differs from its original accepted controller tuple")
+		}
+		if turn.AcceptedAt.IsZero() || turn.ResultObservedAt == nil || turn.ResultObservedAt.IsZero() || turn.Outcome != "completed" || turn.FailureCode != "" || turn.ResultSource != "codex_turn_completed" {
+			return nativeError(apierrors.EvidenceMissing, "completion lacks the original successful native turn result")
+		}
+		matched = true
+	}
+	if !matched {
+		return nativeError(apierrors.EvidenceMissing, "completion has no original accepted input turn")
+	}
+	return nil
 }
 
 func decodeCompletionExperienceDraft(operation completionExperienceOperation) (attention.InterpretedExperienceDraft, error) {
