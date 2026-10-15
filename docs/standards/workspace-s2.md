@@ -2,6 +2,14 @@
 
 当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_b9a5305d8480`，终端 `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
 
+## 2026-10-15 不可变包当前项目授权 REPORT
+
+测试 SOURCE `ca1193e12bec27d547beac825944a4d35a3c4d1c` 为实际 SQLite / Git Context 检查追加真实项目 token 签发和认证：有当前授权的成员可读既有不可变包，独立另一项目的认证成员返回 scope_denied，撤销原项目成员授权后，原已认证 Caller 读取返回 approval_revoked。使用既有生产项目服务、真实 SQLite 与当前 ProjectGrant，每次操作重查当前状态；没有制造原生会话。
+
+`go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` PASS，33.766 秒，库 `.verification/s2-first/actual-954756650/state.sqlite`，日志 `packet-current-access-first.log`，同时保留固定 Goal / Proposal / Git / 对象、successor、权限版本变更拒绝、完成与自然过期、回滚和重启检查。此为实际应用 / 存储组件覆盖；ContextPacket 的生产 HTTP 与原生 owned 成功仍待 H / R 准确装配。
+
+前一资料权限报告 `ec9d96950fa001ebd7e0be51b1e6bdf9dcd1adbc` 的首次普通 push 返回 `OpenSSL SSL_connect: SSL_ERROR_SYSCALL`，随后只读远端仍为 `04e096c`；初次失败保留于本次工具执行记录。再次成功查询远端后，普通 push 相同准确报告 SHA 成功，独立 `git ls-remote` 返回完整 `ec9d969`；日志 `.verification/s2-first/report-push-second.log`。没有修改远端配置或历史。
+
 ## 2026-10-15 真实资料引用与跨项目 HTTP REPORT
 
 测试 SOURCE `04e096c4e03cdc4355b69c86b5ee43a0eae89282` 保存 `tests/s2/material_access.test.mjs`。`node --test tests/s2/material_access.test.mjs` PASS，97.254 秒，原 120 秒测试期限 / 5 秒 bootstrap / 10 秒请求期限保持，无 skip 或自动重试。日志 `.verification/s2-first/material-access-first.log`，实际库 `.verification/astrocyte-s1-2oLR6u/data/state.sqlite`。
