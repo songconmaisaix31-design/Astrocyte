@@ -1,6 +1,27 @@
 # 前端标准整改与合并产品验证
 
-## 2026-10-16 Prepare 与真实共享客户端阶段
+## 2026-10-16 Swarm 页面组合与设计导航验证
+
+分支 `standards-frontend`，当前业务 SOURCE `ae2f56b257a9f6f880d1e96db26c6470f9966384` 已普通 push。Task / Dispatch 仍为 `task_7cbe30017760` / `ctx_630293cc6778`，沿现有 Codex `--yolo` 配置，模块公开核实模型为 `gpt-6.1-sol`。本阶段没有在 H 管理的 L1 服务新增登记，没有新建原生会话、发送模型输入或调用模型。
+
+按模块精确放行，逐段普通 cherry-pick `-x` UI SOURCE `64ab5ca`、`32adab9`、`033557f`、`614ebc7`，本树消费提交分别为 `ad42870`、`1781f7a`、`729ec95`、`b2bbe58`。各段目标文件消费前与父内容相容且无 WIP / staged，消费后完整文件 diff 为零；先核出第三段缺少的已提交测试前置，经准确放行补齐后继续，没有制造或处理冲突。页面逻辑归原 UI 负责人，F 仅修改 `web/e2e/preview-design.spec.ts` 的时间线验证。
+
+时间线验证读取实际 `/missions` HTTP 200 与空集合，在真实 SQLite 核对任务数量为零，再核对时间线明确空状态、零事件时间元素和零写入；原禁止虚构时间与 Codex 动态的断言保留。导航、三类空集合、实际权限拒绝与恢复的原断言全部保留，设计与导航两文件仍为 100 项。
+
+验证继续使用下节登记的 D 盘进程目录、Go 缓存和浏览器入口。以下记录均位于 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification`：
+
+| 本阶段命令 | 实际结果 | 记录 |
+| --- | --- | --- |
+| 在 web 执行 `npm run build -- --outDir D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/web-dist-ui-fixed` | EXIT0，包含全局 `tsc -b`；保留 606.09 kB 产物提示 | `build-ui-fixed.log` |
+| 在 web 执行 `npm run lint` | EXIT0 | `lint-ui-fixed.log` |
+| 在根目录执行 `node scripts/generate-client.mjs --check` | EXIT0，准确生成契约与当前共享源相等；没有修改生成文件 | 实际命令输出 |
+| 在 web 执行 `npx vitest run src/components/displayContract.test.tsx src/pages/workspace/relayPresentation.test.ts src/pages/workspace/relayCommand.test.ts src/pages/workspace/relayFacts.test.tsx src/pages/workspace/relayDisplayContract.test.tsx` | 5 文件、37 PASS，EXIT0 | `display-vitest-ui-fixed.log` |
+| 在 web 执行 `npx playwright test e2e/preview-design.spec.ts e2e/navigation.spec.ts --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/design-navigation-ui-fixed-artifacts` | 两种窗口完整 100 PASS，11.9 分钟、EXIT0、零 skip、零重试，原超时保持 | `design-navigation-ui-fixed-playwright.log`、`design-navigation-ui-fixed-artifacts` |
+| 在 web 执行 `npx playwright test --list --reporter=list` | EXIT0；当前默认清单为 37 文件、320 项，仅收集 | `default-case-list-ui-fixed.log` |
+
+设计与导航 100 项通过不代表全部默认 E2E。前序 308 项清单和原完整 280 项首结果分别保留，当前完整 320 项尚未执行；真实 Relay 场景、来源输入和单人原生窗口等条件见下节。Context 的原预算前置失败由原 UI 负责人继续修复，本阶段没有重复该已知失败场景；正向 Context、真实 CLI / 模型及最终唯一 I 组合仍未完成。前序 Prepare 四项通过与真实 HTTP 17 项结果按各自精确源码登记，不与本阶段重复累加。
+
+## 前序：2026-10-16 Prepare 与真实共享客户端阶段
 
 当前 F Task `task_7cbe30017760` / Dispatch `ctx_630293cc6778`，分支 `standards-frontend`。本次沿既有 Codex `--yolo` 配置，模块公开确认实际模型为 `gpt-6.1-sol`；没有另派 Agent，没有新增原生登记、初始化、首次输入或模型调用。
 
