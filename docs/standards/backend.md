@@ -383,7 +383,27 @@ SOURCE `6d1d59bf07b008a0969efefceb911e49b6b33db6` 将畸形 Expected 的标准 J
 
 按原 F 单件计划 `ddc635bed79dc7a3dca13cddaa731b930468e6da` 与新安全检查点正式放行，B 仅编辑并 stage `standards-frontend/cmd/server/config.go`。保留 F 显式资料发现、代理配置和解析错误传播，以及 H 的 S4 可信配置；与 B 原文件相比只有 `resolveProjectDiscovery` 的定义位置不同。限定 working/cached diff 检查与 gofmt EXIT 0，U0，stage blob `5fa5bf8ead480753c9b9eaa82bdfd31833e0ef8c`。实际 RepositoryContext 三个顶层场景及八个拒绝子项 PASS、1.274s；独立 `TestExplicitProjectDiscoveryConfiguration` 最终 EXIT 0、1 PASS、18.293s。日志为本树 `.verification/f-single-config-{actual,discovery}-first.log`。
 
-F 检查父进程的 GOCACHE、GOTMPDIR、TEMP、TMP 均显式设置为 D 盘本轨目录；原测试 helper 的三个小型 SQLite 目录仍按其现有源码放在 F `.verification/`，没有越域修改这些测试。独立 Discovery 的最终结果与全部进程退出均已实际确认，单件范围已停止写入并归还。本人未操作 F 的 commit 或合并生命周期，没有将这些配置检查登记为完整默认 E2E。后继 helper 的明确 D 盘输出与原子 Vite 正在原独占范围实施，旧证据保持原位。
+F 检查父进程的 GOCACHE、GOTMPDIR、TEMP、TMP 均显式设置为 D 盘本轨目录；原测试 helper 的三个小型 SQLite 目录仍按其现有源码放在 F `.verification/`，没有越域修改这些测试。独立 Discovery 的最终结果与全部进程退出均已实际确认，单件范围已停止写入并归还。本人未操作 F 的 commit 或合并生命周期，没有将这些配置检查登记为完整默认 E2E。后继 helper 的明确 D 盘输出与原子 Vite 已按下节源码完成并验证，旧证据保持原位。
+
+## 显式产物目录与真实开发进程生命周期
+
+前一独立 REPORT `85dfa88f61c625b2094a0fda432ee14a1f02ab60` 与本节 SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` 已普通 push。`scripts/dev.mjs`、S1 server 和非 JSON HTTP 诊断共用 `ASTROCYTE_TEST_OUTPUT_ROOT` 的明确绝对路径；S1 也可传 `outputRoot`。未配置时保留原工作树 `.verification/` 入口。本机后续调用明确设置各负责人自己的 D 盘目录，无需改动系统环境或移动旧数据。原目录重开仍核验实际文件、SQLite、对象目录及批准根，不能把产物根本身作为已有 store 重用。
+
+本轮父 PowerShell / Node / Go 使用 `TEMP=TMP=D:/Astrocyte-agent-assets/20261015/backend/temp`、`GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`、`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/backend`，以及 `ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261015/backend/s1-verification`。helper 和 dev 创建的子进程再明确使用该次实际目录下 `tool-temp` 的 TEMP / TMP / GOTMPDIR、D 盘 GOCACHE 和 `vite-cache`；Windows taskkill 同样接收明确环境。构建、每次 API 启动和 Vite 的 stdout / stderr 分别完整写入独占日志文件，退出后等待流与文件写入完成；失败保存原堆栈、就绪状态和日志路径，清理错误继续导致失败。
+
+Vite 使用现有实际依赖、原配置和 middlewareMode，外部实际 HTTP listener 一次绑定并持有端口。取得其实际端口后，Go 继续执行原正数 WEB_PORT 校验并原子绑定 API；随后 Vite 接收该实际 API origin 完成代理。Vite 配置使用现有 runner，在内存中读取原配置，优化缓存进入明确目录。端口占用直接失败，已有 listener 和权限校验保持；Go 显式重启继续使用原端口。开发入口共用此顺序，并允许自有 IPC 调用者执行正常停止路径。
+
+| 实际命令 | 结果 |
+|---|---|
+| `node --test --test-concurrency=1 tests/s1/server-lifecycle.test.mjs tests/s1/development-lifecycle.test.mjs` | EXIT 0，5 PASS、0 FAIL、0 CANCELLED、0 SKIP，77.169s；`.verification/server-dev-d-output-current-first.log` |
+| `node web/node_modules/typescript/bin/tsc -p web/tsconfig.app.json --incremental --tsBuildInfoFile D:/Astrocyte-agent-assets/20261015/backend/s1-verification/typecheck-helper.tsbuildinfo` | EXIT 0；`.verification/d-helper-types-current-first.log` |
+| 变更 Node 文件 `node --check`、`git diff --check`、`git diff --cached --check` | EXIT 0，无错误 |
+
+五项真实检查覆盖普通 / Relay 的独立 SQLite、当前公开工作树的真实发现和 Works 刷新、相同 store 重开、API 重启、Vite 代理的实际人类会话 / CSRF 写入、实际 API 与 Vite 端口冲突、完整错误日志以及全部所持 PID 退出和 HTTP 不可达。开发命令自身另核 D 盘二进制、SQLite 完整性、Vite 和错误日志；失败的第二次 Vite 绑定没有启动另一个 API，原服务仍可请求。没有使用替代 API、CLI、模型或来源，没有删除覆盖或增加期限。
+
+最终 helper store 为 D 盘 `astrocyte-s1-eceI0w`、`astrocyte-s1-pSZwsX`、`astrocyte-s1-6LqYt5`，失败 store 为同根 `astrocyte-s1-4bWKHH`、`astrocyte-s1-4qe9NC`；构建目录为 `astrocyte-s1-build-LVb9mH`。开发检查的实际 store、父子日志和失败原件保留在同根 `astrocyte-dev-lifecycle-*` 的 `success` / `failure` 子目录。首轮 1 PASS / 3 FAIL 保留于 `.verification/server-d-output-atomic-first.log`，原 Go stderr 明确拒绝 WEB_PORT=0；调整启动顺序后二轮独立 4 PASS / 66.497s 保留于 `server-d-output-atomic-second.log`。这些成功只覆盖本节生命周期，F / UI 默认完整检查仍由原负责人准确消费后执行。
+
+经新计划 `539e836`、I 本人 STOP 和 B 新安全 ACK，B 本轮只编辑并 stage I 树 `cmd/server/config.go`，保完整显式发现、代理和可信 S4 配置。该文件相对当时 HEAD 完整 diff 为零，stage blob `f8fdeb628de94c0e1c46ded6b4f16abc9b6a835a`；限定 working / cached diff 检查和 gofmt 无输出。最后 HEAD `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87` / MERGE_HEAD `aaaf603a9477e470ff0ce0c269597802a6f25b40` 不变，剩余未合并路径仅原 R 的 `internal/adapters/agents/relay_input_operation.go`。该冲突阻止配置 Go 检查，本次运行保持 NOT_RUN。B 已明确停止 I 全部写入、stage 和进程访问并归还，未操作其提交或合并生命周期。
 
 ## 真实剩余限制
 
