@@ -2,7 +2,36 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md 和 [发布任务](../../tasks/Release-v0.1-20261014.md)。2026-10-14 用户已确认三层组织；总负责人最新授权模块负责人只修改本文件和新增 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)，业务实现、测试、文档和返修由原 R/H 开发人员持续完成。
 
-## 当前恢复分工（2026-10-15 23:47）
+## 当前恢复分工（2026-10-16 00:30）
+
+根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 00:30 入口及正式消息 `msg_00aaf93e7172` 为当前恢复依据。总负责人为 `term_325a9aca-4a77-4e2c-93ed-cae95acd628c`，顶层 Run 保持 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_114d68a5f971 / term_b8c2e97f-b3ca-4146-a0a5-4e1fc648cc4a`。原子 Run `run_8bbda1c3974c` 已普通恢复至 generation 6，没有新建 Run 或绑定总负责人 Run。
+
+原 R / H / S4 Task 均为 ready，前次 Dispatch 为运行时记录的 abandoned / failed / terminal_missing；公开终端清单中三个原工作树均为零终端。恢复保留原 Task、分支、源码、WIP 和全部首次失败，只由原领域人员继续，不增加第四层。
+
+| 原人员与 Task | 固定工作树 / 分支 | 本次互斥写入范围与目标 |
+|---|---|---|
+| R `task_f082d8b36471` | works-relay-runtime / songconmaisaix31-design/works-relay-runtime | 原 relay 领域、应用、store、native 和 runtime.md；当前 HEAD `5da73e20a971bd3847d3845457f4fc6761bd580f`、clean，核输入结果和双完成语义，支持 H/B 准确端口及后续经验候选适配 |
+| H `task_3004b636a3ab` | works-relay-http / songconmaisaix31-design/works-relay-http | 原来源、HTTP、契约和薄装配范围；当前 HEAD `8bc21f140c36b77275358e28951e1ca1b7cb7a6d`，三件 WIP 保留，优先实现并生产注入既有 GoalVerificationReader，向 B 交最窄既有对象与事件接缝 |
+| S4 `task_bd209566be37` | works-repository-context-s4-20261015 / songconmaisaix31-design/works-repository-context-s4-20261015 | 原 repositorycontext、对应 domain/app/sqlite、tests/s4 和原报告；当前 HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da`、clean，继续事务内纯数据库核验及事务外真实 Git 观察，支持 S2/B 准确组合 |
+| 模块负责人 | module-relay-20261014 / songconmaisaix31-design/module-relay-20261014 | 只修改本管理文档，管理身份、写域、实际验证、准确源码与报告交接和最终发布支持 |
+
+正式决定 `msg_d25b27ea052b` 已授权 H 临时独占原配置 verification 范围内、baseline `da3bdddb085808863090a05f60cc1c64415039cf` 的单一批准公开项目 checkout。H 必须先交准确绝对路径和逐项 write_paths，由模块登记并通知其他人员；随后仅以文件编辑工具逐字应用核实的 owned 原生输出，并执行首输入前固定的 Mean / Median 目标检查。B 复用原 ObjectStore / EventService / EventRepository 保存产物、检查和真实来源关系，不新增迁移或独立证明库；原生输出与 H 受信应用、宿主检查分别记录。当前尚未登记该 checkout 的准确路径，未修改目标、初始化控制器、登记 t0 或发送模型输入。
+
+当前 I HEAD `2367224` 的实际组合检查待唯一 I 核实，后继按同一准确可构建阶段普通合并。顺序保持四树组合验证 → 集成版真实 L1 → L2 六步首跑 → 同源最终 Windows 包。F 为唯一 HTTP / 界面动作人员，具体经验候选须实际用户批准。全部新检查产物和 TEMP / TMP / GOTMPDIR 使用 D 盘各 owner 独占目录，原 180 秒、未知不重发、独立释放审计及全部 RED / UNKNOWN / NOT_RUN 保留。
+
+| 当前原 Task | 本轮 Dispatch / 终端 | 实际开始证据 |
+|---|---|---|
+| H `task_3004b636a3ab` | `ctx_e492c738e964` / `term_b83d7e3f-4fb3-4075-b797-7d90b850b429` | 启动回执 turnStart observed；本人 `msg_5d7b4b998730` 于 16:34:56Z 报告 actualturnstarted，三件 WIP 保留 |
+| R `task_f082d8b36471` | `ctx_1bc01d1c9ef9` / `term_bfbc83d9-c104-4be1-a6a5-9f66869cc812` | 启动回执 turnStart observed；本人 `msg_8cf8d67793dd` 于 16:35:50Z 报告 actualturnstarted，`msg_e14ad2e8bbee` 确认当前身份与 clean |
+| S4 `task_bd209566be37` | `ctx_75fc3f6b915c` / `term_5175695a-7f82-425f-add8-f16333944701` | 首回执 turn_start_unobserved；纯文本终端证实原输入停在 composer 后仅提交一次 Enter，首 UNKNOWN 保留，等待本人开始确认 |
+
+公开状态已核 R / H 为 live / working。当前使用客户端为 Codex，启动参数没有覆盖用户模型配置；本人尚未提供独立可核具体模型身份时保持 unknown。S4 纯文本启动记录显示 Codex 0.162.0 / GPT-6.1-Sol xhigh fast，未据此声称目标模型已经执行。
+
+模块已独立只读核原批准公开来源 `C:/Users/DW/orca/workspaces/Astrocyte/product-swarm-20261015/.verification/s3-public-stats`：HEAD 精确 `da3bdddb085808863090a05f60cc1c64415039cf`、clean，原四文件为 README.md、go.mod、stats.go、stats_test.go。该目录仍归原 S3，H 只消费来源；H 的独占目标 checkout 路径仍待其依据当前实际服务登记。既定实际检查为 `go test ./...`、`go build ./...`、`git diff --check`，保持 Mean 并为 Median 覆盖空输入、奇偶数量、负数、重复值和输入保持。原固定 brief 的本机指针已向产品原 S3 请求，不另定目标或预实现成果。
+
+发布模块 `msg_619f483f0cf6` 已核唯一 I 本轮为 `ctx_929201185718 / term_38c69f61-0254-4f70-82af-faadcf6efc12`。其 c16 首 check 对准确 9aa583e 为 EXIT 1 / 260.4195022 秒，workspace_proposals.go 的 gofmt 失败；根独核 2367224 的双平台 CI 另有 admissions_service.go 格式失败，均交原 S2 / B。build / 默认前端尚未执行，R / H / S4 不复制 WIP 或单独合入不同旧分支，待唯一 I 可构建准确阶段通知后同步。S5 当前 `ctx_693200d34a48`，其准确 688587f / b125268 阶段与服务父 Context、先 Close 后 cancel 边界已交 H，成功模型不重复。
+
+## 23:47 恢复记录（2026-10-15）
 
 总负责人当前入口为 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 23:47 记录，准确管理 SOURCE `7a3ec93a39f5b37241aa6958dcd2fff6f17ab3d7`。正式消息 `msg_e2e5ac090e87`、`msg_ed40cd6c10c3`、`msg_9fe2e571a471` 确认本模块唯一负责人为 `task_e8c1d01d67ec / ctx_c89f162e6fb7 / term_12d908d5-3027-4bdd-8eae-73a2877b21ca`；总负责人为 `term_24db7f74-f79a-4689-be1d-3f585a38e6b4`，顶层 Run 保持 `run_973808dd6a2f`。
 
