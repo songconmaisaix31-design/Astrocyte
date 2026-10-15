@@ -201,3 +201,7 @@ H 后继主入口 SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` 的既有 S4
 `cleanup-second/cleanup-sql-boundary-20261015T1436121380348.log` 实际通过 SQL 边界：官方 `git hash-object --stdin` 在真实输入管道上等待期间，另一 SQLite 写者在既定十秒上限内提交真实项目目录撤销，读取立即拒绝；Git 释放后，重新核对项目变化，清理提交返回 `version_conflict` 且原索引 generation 保持。另一次取消真实 Git 观察后 SQLite 与当前图仍可读取。Git 使用不写对象的实际命令，未替换程序、输出或协议，也没有新增提交或事件。
 
 Go 生命周期测试使用真实新 SQLite 和已有迁移，验证两个并发 Run 仅一个取得执行权、一千次合并通知、取消等待与实际不合法缓存文件的错误返回。没有合成索引、虚假 SDK 或条件 skip；测试目录位于本树 ignored `.verification/s4/cleanup-worker-tests`。B/H 的生产后继源码仍须消费本次完整窄闭包再验证原主生命周期，未把本组件的运行结果作为整体产品验收。
+
+生命周期与短事务 SOURCE `054cc5dba765ee211a8e383a09355719d7ecaf7a` 已普通 push；前置为清理 pass SOURCE `4ebd777b7b340c717c5311d78a0f26174374bbbf`。准确十一文件闭包仅在本轨原独占域，包含两个 worker 文件、清理 / Git / Service、SQLite 清理、app 窄端口、实际检查与本文档。当前 `go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./internal/adapters/sqlite ./tests/s4/...`、`go build -mod=readonly ./...` 均退出 0，原件为 `cleanup-worker-third/final-{test,vet,build}.log`；PowerShell parser、gofmt 与差分检查通过。完整 sqlite 包中九个独立 Workbench 来源环境缺失的首次失败仍按前文保留，未记为通过。
+
+本次准确窄契约与源码已直接交 B、H 和模块：B 负责原项目事务成功后的 notifier，H 负责同 provider 的主生命周期接线和实际退出；根的 SemanticIndex / AOCI 分发决定、生产完整组合、前端与最终 Windows 包仍待实际结果。没有启动新的原生会话、模型调用或登记 t0，本 Task 按模块要求继续承担后继集成验证与返修。
