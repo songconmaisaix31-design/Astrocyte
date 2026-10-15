@@ -2,23 +2,40 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前恢复分工（2026-10-16 04:08）
+## 当前恢复分工（2026-10-16 04:21）
 
 根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 04:04 入口、当前 `QUESTIONS.md` 和正式消息 `msg_546d9fc03e1c` 为本轮依据。总负责人为 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669`，顶层 Run 保持 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_7f070ad688f5 / term_8d816f16-fefd-45e8-b49a-29c4cf681c47`。模块已普通绑定原子 Run `run_8bbda1c3974c` generation 8，没有创建新 Run 或绑定根 Run。
 
-当前产品尚未恢复可访问。H 在 F 安全 ACK 后停止旧 PID25048，更新准确 `0db5836b7cd466f6a5328bc84ba4530c2bb826ce` 时，配置的 CodeGraph Node / SDK 程序校验退出 1；原件指针为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/api-0db-20261015-185255.stderr.log`。H / B 先核实际 probe 和 P 已备入口，修复后恢复同一 D 盘 SQLite 与首选 `http://127.0.0.1:64505/`；不重置已保存的论文、项目、Goal、Proposal、Grant 或 ContextPacket。F 等待 H 明确 ready 后只读复核，成功和未知 mutation 不重复。
+当前同一产品已恢复：`http://127.0.0.1:64505/`，PID45616，启动 UTC `2026-10-15T20:13:21.8983808Z`，准确 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332`。模块独核唯一 loopback listener、实际程序路径和启动时间、`running.json` 与 Go buildinfo 同 revision / modified=false。H `msg_47287a0de0f1` 报告健康检查和首页200，沿用原 D 盘 SQLite / LOCALAPPDATA，服务持续运行。F 已收到同址唯一 `readProduct*` GET / DOM 只读复核窗口，成功和未知 mutation 不重复。
+
+原 H 在 F 安全 ACK 后停止旧 PID25048，更新准确 `0db5836b7cd466f6a5328bc84ba4530c2bb826ce` 时，配置的 CodeGraph Node / SDK 程序校验退出 1；原件指针为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/api-0db-20261015-185255.stderr.log`。H / B 按原生产 command.Dir 和完整白名单 Env 逐阶段复验，当前三个探针全部 EXIT0；原首错误和根因 UNKNOWN 保留。B 准确阶段诊断 SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` / REPORT `c563ff9498d4e54f095a1bddf3c46d2cd869ea85` 已交唯一 I，不据后继通过改写原结果。运行实例尚未包含 H 七件后继 cleanup / 完成来源 / Q 独立 root 装配，Jev / Laya / Q 独立 root 尚未配置，原生登记、初始化与模型均为零。
 
 公开 CLI 核 H 原 Task 为 ready、旧 `ctx_7822f0fe0335` 已 abandoned / failed / terminal_missing，原 H 树终端数量为零。原树 HEAD `ef1ca4fda22b83342fa5a4b190d79e910a8b2a16` 保留七件 WIP：`cmd/server/main.go`、`cmd/server/relay_judgment_actual_test.go`、`cmd/server/relay_session.go`、`cmd/server/workbench_config.go`，以及新增 `cmd/server/relay_completion_experience.go`、`cmd/server/relay_repository_cleanup.go`、`cmd/server/relay_repository_cleanup_test.go`。原 Task / 工作树 / 分支和互斥写域继续由 H 本人负责。
 
 | 原人员 / Task | 当前状态 | 本轮必要工作 |
 |---|---|---|
 | H `task_3004b636a3ab` | `ctx_5b3dc511cccd / term_bfb664a5-e843-4d81-b14c-6421c2125f77`；首回执 `turn_start_unobserved` 保留，现有输入单次 Enter 后实际 Working，本人 `msg_ad4ae8d3bb55` 已 ACK 当前入口和准确起点；客户端 Codex 0.162.0 / GPT-6.1-Sol xhigh fast | 先恢复同库产品，再完成 cleanup 生命周期、完成来源、Q 独立 reader root 和本域实际失败诊断 |
-| R `task_f082d8b36471` | 旧 `ctx_3920346a06ed` 由运行时结算；原树 / 分支和已交来源保留，按实际依赖恢复 | 原 Relay / native 来源与完成权限；受限模型路径继续拒绝 |
-| S4 `task_bd209566be37` | 旧 `ctx_f150ca32cf39` 由运行时结算；原树 / 分支和生产检查 WIP 保留，待 H / B cleanup 组合后恢复复验 | 沿独立实际生产 SQLite 复验原撤权清理失败，不操作共享64505 |
+| R `task_f082d8b36471` | `ctx_1500d65ab213 / term_28ed0888-03af-4307-83be-e7a4d944c479`；原树 `8f3b7d122dd79f5aded8c826da89fecbf79e2601` clean，首启动 UNKNOWN 保留，原输入单次 Enter 后本人 `msg_29e1e927e488` 确认实际开始，fleet live / working | 诊断准确8b原 `TestRelayFactsRejectMissingOriginalControllerAndFork` 的控制器拒绝差异，支持 H 完成来源装配；原受限模型路径继续拒绝 |
+| S4 `task_bd209566be37` | `ctx_c8f2f955ef28 / term_07740d5c-7804-43c1-a4ba-70b935190eb9`；原树 `91609e5d467d2227f32dfdd8717b773340eaf1da` 三件检查脚本 / 报告 WIP 保留，首启动 UNKNOWN 保留，原输入单次 Enter 后本人 `msg_2c17e2ed20d6` 确认实际开始，文本终端 Working / GPT-6.1-Sol xhigh fast | 沿原独立生产脚本和精确 H 来源，在独占新 D 盘 SQLite 复验撤权清理首 FAIL，不操作共享64505 |
 
 恢复输入 `msg_5077ee024939` 已定向交 H 当前 Dispatch；产品模块已收到 `msg_90a503bb8006`，由原 B 核配置和实际程序入口，`config.go` 不归 H。唯一 I 准确 `8b0eb882969d972f3f419602c12b5e20f00b79e2` 的首 check 失败保留：合法单链接来源拒绝和作品发现 unavailable 已交 H 诊断本域，junction 命令与共享 helper 交产品原 B；不放宽 guard、删除断言或重跑已知未修组合。
 
 产品已恢复原 B `ctx_4f388a292a1f` 和原 F `ctx_c22d1dd61be3`，发布已恢复唯一 I `ctx_4a4234c26f8c`，H 已收到准确身份并直接配对。B cleanup SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3` 经产品模块核远端和祖先后交 H：同 provider 的 Wake 经 S2 成功提交后通知，H 完成其生命周期装配，S4 后续实际复验；B 当时包含 native WIP 的 Go 成功不作为隔离 cleanup 或本次产品同源验收。
+
+准确8b的原完整检查没有 `result.json`，`check.log` 止于 httpapi FAIL，总退出 UNKNOWN，后续契约 / TypeScript / lint / Vitest 没有完成证据。模块已读原日志并按写域交原作者：H 五项 cmd/server 失败与单链接来源拒绝，R 原控制器拒绝顺序差异，B 普通 OpenCode / selected-text、junction 命令和作品发现；不重跑未修组合。R 已定位冷 Registry 的归属读取被新的受限能力拒绝提前覆盖，继续按原语义修复只读核查顺序，受限 owned 输入仍在任何写入前拒绝，没有新建控制器或模型。
+
+唯一 I 后继准确 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332` 已普通 push，原 `pnpm build` EXIT0 / 49.3755472秒，`source_after` 同值。发布明确把 `integration/build/dist/astrocyte.exe` 与 `build/web-dist` 复制窗口交 H；H 使用自身稳定版本，核实际 buildinfo / 静态文件后停止读取并归还 I。该构建结果与服务启动、cleanup 生产复验及真实核心操作分别验收。
+
+### 本轮已交唯一 I 的准确阶段
+
+| 原作者 | SOURCE / 独立 REPORT | 模块实际独立检查与边界 |
+|---|---|---|
+| R | `ce541794d58560747124fea2cf9d08222700587e` / `4f7a041e489ac6d3c56918314ba24679e50e4d3f` | 四件原 agents 文件；`TestRelayFactsRejectMissingOriginalControllerAndFork`、`TestRelaySendRequiresOriginalControllerBeforeRestrictedAdmission`、`TestRelayCodexFileToolRestrictionRejectsBeforeNativeEffects` 三项 PASS，package1.710秒。冷 Registry 保留 delivery_unknown，当前 pending 不变且没有 controller / capture 新建，受限输入写入前继续拒绝 |
+| H | `3569f5da9d4df423916e3cff618f301a070d87cc` / `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` | 九件原 H 文件；`TestRelayRepositoryCleanupActualSQLiteLifecycle`、`TestRelayJudgmentProductionAssemblyActualSQLiteHTTP`、`TestRelayReaderRootActualDirectoriesAndDatabaseAliases` 三项实际 SQLite / HTTP / 同主库事务 / 清理故障及取消 / 两快照根别名拒绝 PASS，cmd/server5.210秒；`TestRelaySourceIdentityActualFileAndAliasRejection` PASS，events1.921秒 |
+
+两组均已逐源码审查、核普通远端 exact SHA、SOURCE 为 REPORT 祖先、原树 clean，独立 REPORT 分别只修改 runtime.md / http.md。模块检查日志位于 `D:/Astrocyte-agent-assets/20261015/relay/module/runtime-ce541794/test.log` 和 `assembly-3569f5d/test.log`。准确交接 `msg_5508f9803910` 已给发布，唯一 I 持续普通集成；B 已收到生产 `services.Relay.(attention.ExperienceCompletionReader)` 的两方法接口，由其原 experience bridge 消费。H 后继只有在 I 同源构建及 F 安全 ACK 后才能更新当前实例；真实完成正向、S4 生产清理、完整默认、L1 / L2 和最终包尚未通过。
+
+原 `runtime_http` 自定义 driver / sink、`session_git` 自生成 CLI helper 不作为真实原生验收，旧首 RED 和正向验收要求保留。B 另发现 native path 测试虚构协议，R / H 只交既有获准公开来源 locator：当前 Codex 原件 metadata regular、nlink2，单链接拒绝保持，append-only / raw gap / event IDs 未核部分继续未知；没有已确认的 Claude 自产 locator，不补造协议、扫描私人历史或重做原生 / 模型。
 
 用户优先产品集成、普通启动和核心操作，再并行整理与全面测试。Laya 语言和 Agent completion action 继续待答；原 60 秒启动 / 10 秒关闭预算保持。受限 Codex 的文件工具要求未满足，登记、初始化、模型输入与本轮 L1 t0 继续为零；成功 OS、Q / D1、P 准备和原模型结果不重做，正式 D2 partial 保留。管理记录集中提交；领域 SOURCE / 独立 REPORT 按精确 SHA 普通 push，模块持续至最终发布支持完成。
 
