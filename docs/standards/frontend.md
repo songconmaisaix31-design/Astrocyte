@@ -1,6 +1,14 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前本域 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f`，QueryState SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3`，前序 helper / Grant 组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前本域 SOURCE `f3f1fbd8670bd28bb7a78b47c58489469a2ed321`，S4 客户端 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f`，QueryState SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3`，前序 helper / Grant 组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+
+恢复 Dispatch `ctx_37e5eab0d417` 后，公开 Orca `worker-show` 实核当前模型为 `gpt-6.1-sol`，沿原 Task 继续，原生登记、初始化、输入和模型调用均为零。模块 `1437afc` 明确许可仅消费 `tests/s1/server.mjs`，原运行及其本树子进程均已结束后，F 使用文件编辑工具移入 B `01d28a54bb221e59cf262cbf9941fa418f6e937c` 同路径完整内容。全文件 diff 为零，Node syntax 和限定差异检查通过；后续 helper 逻辑归还 B。当前 SOURCE 已交 M-product / M-release，供唯一集成人员普通消费，不包含未交付的安全 Context 或原生契约。
+
+该 SOURCE 上，类型检查、lint、构建全部退出 0，构建保留 553.30 kB 提示；`client.test.ts` / `relay.test.ts` / `repositoryContext.test.ts` 三个文件共 15 项真实 Go / HTTP / SQLite 验证通过，103.85 秒。`src/pages` / `src/utils` 完整选集为 21 文件通过、115 项通过；`relaySessionPresentation.test.ts` 的准备阶段缺少获准 `PUBLIC_URL` / GetEvent 事实，1 文件失败、2 项未执行，整体退出 1。没有新增 skip 或伪造原生事实，后者不能登记为通过。
+
+原默认配置的 `preview-design.spec.ts` / `navigation.spec.ts` 全部 100 项在当前 SOURCE 上实际运行，结果为 86 PASS / 1 FAIL / 13 NOT_RUN，3.9 分钟、退出 1、零 skip。导航两尺寸全部 72 项与 1920 尺寸设计 14 项通过。1280 尺寸设计在准备阶段的 Vite `listen 127.0.0.1:61137` 实际 `EACCES`、PID 70448 退出 1，尚未进入页面断言；对应 Go 实际端口 61177 的 health 已返回 200。新 helper 的本机 `startup-failure.json` 保留原 URL / PID / 退出码、`response_headers` 阶段与 432 ms 经过时间，原日志和 trace / SQLite 保留。只读系统排除端口列表当时未包含 61137，根因未确定；已经交唯一 B 诊断，不改 OS、端口选择规则、超时、断言或重试设置。完整默认验收仍未通过，既有所有首失败保持。
+
+产品 UI 当前请求 S4 无参数 `RepositoryContextPanel` 薄入口。等待该 Owner 的准确 SOURCE 后由 F 消费，并在自身既有 `self-service.config.ts` 追加 `s4-*.spec.ts`，继续原两尺寸、单 Worker、零重试和真实 S1 服务。安全 Context / S3 / S5 生成类型与客户端继续等待 H 的准确交付，未猜测 DTO、启动登记或提交模型输入。
 
 ## 完成内容
 
@@ -64,6 +72,10 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| SOURCE `f3f1fbd`：`npx playwright test e2e/preview-design.spec.ts e2e/navigation.spec.ts --workers=1 --output ../.verification/f-exact-helper-default-artifacts` | 完整 100 项：86 PASS / 1 Vite EACCES 准备失败 / 13 NOT_RUN，3.9 分钟、退出 1、零 skip；原配置和全部断言保持 | `.verification/f-exact-helper-default-playwright-first.log`、`f-exact-helper-default-artifacts`、`astrocyte-s1-fHhtkd/startup-failure.json` |
+| SOURCE `f3f1fbd`：`npx vitest run src/api/client.test.ts src/api/relay.test.ts src/api/repositoryContext.test.ts --maxWorkers=1` | 3 文件 15 PASS，103.85 秒、退出 0；生产 Go、HTTP、SQLite | `.verification/f-exact-helper-http-vitest-first.log` |
+| SOURCE `f3f1fbd`：`npx vitest run src/pages src/utils` | 21 文件 / 115 项 PASS；1 文件准备阶段失败、2 项未执行，整体退出 1；缺少获准原生来源 | `.verification/f-exact-helper-pure-vitest-first.log` |
+| SOURCE `f3f1fbd`：`npm run typecheck` / `npm run lint` / `npm run build` | 退出 0，构建 553.30 kB 提示保留 | `.verification/f-exact-helper-{typecheck,lint,build}-first.log` |
 | S4 SOURCE `03bbaed`：`npx playwright test --config e2e/self-service.config.ts e2e/s2-proposals.spec.ts --workers=1` | 既有全部 12 PASS，6.5 分钟、退出 0、零 skip；生产 Go / SQLite / HTTP / Vite，两尺寸原断言保持，无新原生会话和模型 | `.verification/f-s4-stage-s2-playwright-first.log`、`f-s4-stage-s2-artifacts` |
 | 当前 S4 `go build -mod=readonly -p=1 -o D:/…/s4-source-server.exe ./cmd/server` | 退出 0；本树准确源码，无 overlay | `.verification/f-s4-actual-go-build-first.log` |
 | 当前 S4 typecheck / API ESLint / build / generator check | 退出 0；553.30 kB 提示保留 | `.verification/f-s4-client-typecheck-first.log`、`f-s4-client-typecheck-with-http-tests.log`、`f-s4-client-lint-first.log`、`f-s4-client-build-first.log` |
