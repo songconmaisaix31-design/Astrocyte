@@ -329,3 +329,9 @@ SOURCE `f955fe3c3450200342e8cbf0b0c152e8065a882e` 已普通提交并 push，独�
 启动实际 `7470.7873/7632.2908 ms`，关闭 `95.8965/126.0599 ms`；六次推理均在 60 秒内，两个不同 PID 均 EXIT 0。`.verification/s5/offline-os-program-block-{1,2}.json` 保存实际回答/usage/时间，`offline-os-program-block-safe.json` 保存该专用程序 OS 出站检查 PASS。原 PowerShell 运行的 plan/rule/first/cleanup 文件共同前缀为 `os-offline-ctx_0a7797464f02-ea5eba8bfaf24c769e033503a2071a93`；清理原件记录准确规则已删除、专用进程已退出、全部 Process 环境已恢复，cleanup_failures 为空。本人在原进程结束后独立查询准确 Name/Group 规则数、专用程序进程数及管理员 PID 数均为零，三个 profile 仍启用。本阶段新增证据为这些小型本树记录，模型继续只读使用原获准 D 盘资产。
 
 Jev 安全本机注入入口按根 `msg_5ec15ce2eb5a` 仅准备，实际 key 调用仍未授权/未执行；H 生产装配准确源码仍在途。完整 S5 不因本次 OS 检查通过而结算成功。
+
+## 第九阶段独立 REPORT
+
+OS SOURCE `ef20179eb60d986a3d4d93a5232cffa0970382fd` 已普通 push，独立 `git ls-remote` 返回同完整 SHA；该提交仅含 `tests/s5/offline-live.mjs` 与本文。原 PowerShell 文件和准确命令参数保持原值，Node syntax 与两类 diff-check 通过，实际单次管理员进程 EXIT 0 和上述两轮 EACCES / CPU 三题型 / 重启 / 分阶段预算 / 清理原件共同构成本阶段验收；没有另行重复 Execute 或成功模型预检。
+
+本阶段实际结果已通过 `msg_75dcca8abe7d` 交协调者。追加独立查询准确 Name/Group 规则数、专用程序进程数、原管理员 PID 数均为零，全部 profile 仍启用；Process 环境在原脚本内逐项恢复并读回。通用网络修复已由用户取消，本执行者没有开展该事项、变更网络/代理或全局防火墙。Jev 本机安全入口继续准备，实际云端回执与 H 生产组合仍未通过，完整 Task 保持持续。
