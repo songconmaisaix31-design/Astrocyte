@@ -2,6 +2,12 @@
 
 ## 当前执行入口（2026-10-16）
 
+05:02 当前同一产品已安全更新为 `609993b25543a74e64d89a31c99bf3c08b81b44b`、modified=false、PID45132，启动 UTC `2026-10-15T20:58:23.3389720Z`，URL仍为 `http://127.0.0.1:64505/`。H 取得本轮 F / UI 双 ACK，正常停止旧 b73 后再启动，原 SQLite / LOCALAPPDATA / Q generation 均保持。根实际 GET 首页200 / 562bytes，独核唯一 loopback listener、实际程序路径 / 启动时间与 Go buildinfo 同 revision。B 完整媒体白名单已启用，真实 SummarizeExtractor 启动构造通过；配置记录为 B `.verification/video-trusted-config-first/environment.json`。新提取 / ASR / 原生初始化 / 模型输入均为零，当前没有把旧952段原件导入此共享库。
+
+F 两项 Relay 标签修复 SOURCE `9823adb4fa5f4383e4b9f9cd7c1778bcb74471fb` / REPORT `7b67b755c23f7b778922bbf1f02bedb8cc7ccb2f` 已获原经理确认交 I，全局 typecheck、原三项显示参数检查与 lint 均通过，首 EXIT2 保留。I 准确 `f73cd7c93f2d6e2b367a6c7b93222ae8b6a0a871` 的完整 `pnpm check:contracts` EXIT0：Redocly零错误 / 原13警告、264 examples 和生成内容与公开源一致；旧609漂移保留。当前运行609尚未包含后继人工进度 / 生成客户端 / 新页面，I 按新组合继续必要构建，F / UI 实施实际准入与判断页面，具体候选请求未发送。
+
+根已正式答复原问题 `msg_81e8601fd97d`，答复 `msg_cfa70ba18a4c`：按 [S1-final-W2](tasks/S1-final-W2.md) 已有权限修复同项目有效 `read_context` Agent 的精确缓存进度 GET，原服务每次重读 Grant、action、过期及撤销，跨项目拒绝；人工 PUT / infer 与 Agent completion 待答范围保持。M-relay 先核 `session.go` 唯一原写者，B 提供真实 HTTP / SQLite 检查，未同时写入。首403保留，尚不记录为已修复通过。其余未答事项、OS symlink1314、原 runtime / session_git 替身用例限制及完整默认 / L1 / L2 / 最终包状态保持。
+
 04:54 主入口与完整公开契约 SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 已交唯一 I。人工准入连接原 S2 和同库草稿，有快照分支保留完整 selectedrefs / delegated-owner 授权，无快照分支使用 B 最新 `089a3d276fa186cf41cc8384fb2bc9dad91d9383` 的实际项目与逐项固定引用读取；完成 Reader 已注入原经验桥。模块独立三项实际检查零 Skip / 5.824秒，涵盖两配置正向、未注册 / Agent / 跨项目 / 撤回拒绝、未分配且无 Grant 的草稿、读取撤销与空真实 Relay store 的404。根已读准确差异；I 准确组合 `609993b25543a74e64d89a31c99bf3c08b81b44b` 的完整 `pnpm build` EXIT0 / 30.1152367秒、source_after 同值，根独读 result / log。稳定产物已交 H，当前实际服务仍为下述 b73 / PID4676，尚未把构建结果写为共享页面已更新。
 
 F 人工进度 SOURCE `696828478eeaf128309079957234bb78aafbaaf9` / REPORT `963d880e30df4fff0923623c5efa711e6adfed2a` 已交 I，实际两窗口十项首轮8 PASS / 2 FAIL，原两失败修复后定向2 PASS / 59.3秒；保存、权限拒绝、未知请求锁、空百分数和实际重启均使用真实 HTTP / SQLite，未重跑原八项通过场景。共享库另已保存真实项目层人工记录，原论文、摘要和候选 r2 保持。根使用 React 技能复核新增表单、客户端和既有固定请求锁，未发现新增阻断。F 已按 I `ecb29c9593348d409514cc1ddff05ff04affcd87` 生成 SOURCE `4e3c384032ab1671e226a819009d95c366d80361`，生成检查通过，原 global typecheck 新暴露两项 Relay 枚举标签缺失，仍由 F 修复；原 schema drift 与 EXIT2 保留，UI 按准确生成类型继续。

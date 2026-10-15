@@ -14,6 +14,10 @@
 
 已询问 Agent 读取任务完成证据并起草经验候选时，采用当前项目 `read_context` / Grant 授权，还是只允许用户发起；答案尚未收到。未答期间 Agent 该分支未授权，现有 human 操作继续核当前真实项目、principal 和 owner，不以 human 角色跳过项目权限。`OwnerProject` 为实际 `LocalProject.ID`，不使用 Root 或 SpaceID 替代。具体经验候选仍由用户本人批准，共用来源读取和事务内当前授权接口继续实施。
 
+## 既有 Agent 缓存进度读取（2026-10-16）
+
+[S1-final-W2](../tasks/S1-final-W2.md) 与现有 `GetProjectProgress` 已允许具有当前同项目 `read_context` Grant 的 Agent 读取缓存。实际 HTTP 首403定位为入口未列精确 GET；主控已按既有授权答复由唯一原作者修复 `GET /api/v1/local-projects/{id}/progress`。认证项目必须匹配实际 LocalProject.ID，应用服务逐次重读 Grant、action、过期与撤销；缓存读取不写入、不初始化原生或调用模型。人工保存和推断保持原 human 规则，该修复不决定上节 Agent 读取完成证据的权限。
+
 ## 受限 Codex 原生能力现状（2026-10-16）
 
 已安装 Codex 0.162.0 的公开控制器 / CLI 无法单独关闭按模型能力注册的 `apply_patch`；关闭 shell / unified_exec 不能替代文件工具关闭，只读 sandbox 和零工具调用也不能证明该要求已满足。当前保持用户原文件 / 命令工具关闭要求，在原准入明确拒绝相关受限执行，不启动新登记、初始化或模型输入；普通产品集成和原许可操作继续。原生验收、完整有效工具集合和 L1 正向继续保持未通过，不修改原生程序、伪造配置或重复相同入口调查。
