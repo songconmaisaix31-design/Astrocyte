@@ -2,6 +2,22 @@
 
 ## 2026-10-15 当前发布协调
 
+### 15:27 准确委托来源、依赖包验收与模型隐私
+
+S5 完整 Delegation SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1` 共十三件允许文件，包含显式 Rule、固定 Opportunity / workflow / owner / Rule 版本绑定、绑定参与原缓存键、H 已确认的完整 handler / DTO 与可信 Admission 适配。本模块已读取准确 Git 对象，并以公开 HTTPS、进程内禁交互及有界 low-speed 的 `git ls-remote` 独立核实远端同完整 SHA。首普通 push 连接重置保留；后续普通 push 与精确远端读取通过。四项组件实际 `290.250s PASS`，完整公共判断 HTTP 尚待 H 实际装配与运行。
+
+B 两表迁移 SOURCE `491e7f606d8265e9f7e9694f547a91682b305e74` / 独立 REPORT `8da52b2840bae3fc982dd5ba92a98aa652bed195` 只新增 `025_judgment_delegation.sql`，包含固定两表、约束、索引及 judgment schema 版本 2，无默认开启或阈值。B 报告完整 001–025 迁移三项真实 SQLite 检查 `2.345s PASS`。S5 普通 merge 为 `c1f5d99c46082dfe6053583faa0f8bfc992a4f5b`，相对 d735 带入十件原 B 已提交文件；本模块核实差异后，B 本人 `msg_8f83acf262cb` 确认无已知必须撤出的不兼容，保留普通历史，B 持续负责其领域实际失败。
+
+S5 报告真实 `TestActualDelegationBindingsAndAdmission` 首轮 `14.984s PASS`：disabled 拒绝、human 显式开启、同机会缓存、不同机会 / workflow 隔离、暂停拒旧 proof、重新开启换版本、原 S1 同事务与 S2 bridge 持久化准入和 proposal draft、幂等、policy 变化拒绝及过期仍可暂停 / 撤销。新增 human_adopt、后续 reject 和机会版本变化仍在验证，准确测试 SOURCE 尚待提交；该范围不计为完整生产 HTTP 通过。准确 factory 与 handler 已交 H，F / UI 通过原共享 client 分域消费，不猜测字段。
+
+P `runtime-fourth` 实际准备 EXIT 0，固定 Node、Laya 源码构建包、CodeGraph 准确 Git SDK / JS / WASM、ONNX 与 RPC 及十二项模型身份检查通过。PS5.1.26100.9711 的 `probe-ps51-fourth` 真实依赖 ZIP / 新目录解压通过：1,384 文件、470,098,559 bytes 逐文件一致，ZIP 155,404,809 bytes，解压后实际 CodeGraph API 与隐私扫描零匹配；PS7 独立检查及本阶段 SOURCE / REPORT 尚待。此结果仅覆盖依赖包，未构建最终应用 archive。
+
+P 对包含模型的完整 runtime 实际 `Inspect-Package` EXIT 1。成熟 ONNX / Protobuf 只读定位确认四个图的 `onnx.StringStringEntryProto.value` 含 current_home 类：英文 encoder / head 分别 1,633 / 155 项，多语言 encoder / head 分别 1,289 / 155 项；安全派生报告没有匹配值。根 `msg_baad9ee8931d` 已明确由原 S5 唯一模型负责人用成熟 ONNX 库仅处理确认的必要元数据，保留十二原件与首次失败，新 D 盘产物使用自身 descriptor 和来源说明，完成适用权重与数值一致性检查后交 P。P 保持原扫描规则，新准确产物仍需实际复验；当前完整模型隐私门禁未通过。
+
+组件 Flash 前次修订 SOURCE `4a130aef860045beb8dedf831192d447693ea281` / REPORT `2e978a0c9ef2b576cdc3bb803845d363755ddd71` 已完成。本次窄范围追加 Task `task_f0b1dca0e6fc` / Dispatch `ctx_16eab9ed9e91` 复用同终端、原树 / 分支，实际 OpenCode 1.18.35 / `alibaba-cn/deepseek-v4.1-flash`；首轮明确 API socket 关闭且无本任务工具写入，同终端续接后已实际读取 P 现成官方 DirectML / DXC / ONNX 许可原件。只补稳定组件许可和必要运行文件、移除 CodeGraph 安装方式推断，不复制动态产品成绩、不新增批准门禁；准确新 SOURCE / REPORT 尚待。
+
+15:21 本模块实测 C 空余 `14,839,132,160 bytes`、D 空余 `95,105,085,440 bytes`。实际构建继续使用共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，各 owner 的 GOTMPDIR 与新增大型产物独占 D 盘目录。正式 V4 D1、Q 已完成并释放，不重复采集或模型请求。S3 Calls 计数与权限证据覆盖范围由根询问用户，未答前保留原 Claim 门禁；唯一 I / 最终 P / N 继续等待全部准确输入、完整默认、真实 native / Today 与既有用户决定，不提前启动。
+
 ### 11:03 当前恢复与磁盘维护结果
 
 当前 Task `task_315679474dc4` / Dispatch `ctx_b80c795a71a4` / 终端 `term_75d7c09c-0369-40f7-b065-4c59dc9d0c28`，已恢复原子 Run `run_aa4e6a119547` generation 3。读取最新 FIFO 前按旧启动正文创建的 `run_fd095371bf43` 没有 Task 或 Worker，不用于派发；原树 HEAD `fbe2a8e494d58e62769191d1016bfa3a9ac358e9`，两个管理文档原有 WIP 保留。实际管理客户端为 Orca CLI / Codex，终端公开状态为 GPT-6.1-Sol xhigh fast。根当前终端为 `term_72a815fc-b97e-433b-b653-5415cf298e1d`，顶层 Run 保持 `run_973808dd6a2f`。

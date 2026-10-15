@@ -6,9 +6,11 @@
 
 当前M-release为Task `task_315679474dc4` / Dispatch `ctx_b80c795a71a4` / 终端 `term_75d7c09c-0369-40f7-b065-4c59dc9d0c28` / 原子Run `run_aa4e6a119547` generation 3，固定 `module-release-20261014` 与 `songconmaisaix31-design/module-release-20261014`。实际客户端Codex / gpt-6.1-sol，终端xhigh fast；根 `msg_7e7626ebe5c6` 继续明确该模块独占本文、`docs/modules/release.md`、`docs/modules/daily-operation-20261015.md`、`docs/modules/opencode-model-20261015.md` 的管理写入，业务仍由下表原owner负责。精确SOURCE、独立REPORT和阶段实际结果见 [发布模块记录](../docs/modules/release.md)，本入口不重复所有后继结果。
 
-前端继续复用已确认白绿界面与 TypeScript。全部新增大型模型、SDK、构建和解压产物使用 `D:/Astrocyte-agent-assets/20261015/<owner>/` 独占目录，Go 及调用 Go 的 Node / PowerShell 父进程仅设置本进程 GOCACHE / GOTMPDIR 为 D 盘各 owner 路径，不改变全局 HOME、auth 或系统 TEMP。根授权的精确旧 Go 编译缓存维护已使 C 盘空余超过 12 GiB；一个占用文件导致标准命令 EXIT 1，残留与首错误保留，不扩大清理范围。
+前端继续复用已确认白绿界面与 TypeScript。全部新增大型模型、SDK、构建和解压产物使用 `D:/Astrocyte-agent-assets/20261015/<owner>/` 独占目录，Go 及调用 Go 的 Node / PowerShell 父进程仅设置本进程 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend` 复用现有标准缓存，GOTMPDIR 保持 D 盘各 owner 独占路径，不改变全局 HOME、auth 或系统 TEMP。根授权的精确旧 Go 编译缓存维护已使 C 盘空余超过 12 GiB；一个占用文件导致标准命令 EXIT 1，残留与首错误保留，不扩大清理范围。
 
 根已授权在领域返修期间并行准备后继 P 与 Flash 许可文档：在原 P 工作树 / 原分支安排唯一第三层人员，补实际 S4 / S5 与 Node、ONNX、Laya SDK / runtime 的标准打包、许可与配置说明；只做必要实现及适用独立检查。P 自行核准确组件 SOURCE 与实际官方许可，Flash 到达后消费，不以文档未完成为由停止独立准备。最终 I 精确源码未就绪时不构建最终 archive，不以旧候选文件允许项冒称新组件已纳入。实际再分发有未决项时给出准确文件、许可和可行方案，不改变必要功能或加入下载 fallback。
+
+P 已完成 PS5.1 真实依赖 ZIP / 新目录解压阶段检查，包含模型的完整 runtime 隐私扫描仍失败。根已授权原 S5 唯一负责人用成熟 ONNX 库仅处理确认的必要元数据，保留原十二资产及首失败，新 D 盘产物具备自身 descriptor / 来源及适用权重与数值一致性验证后，交原 P 按相同扫描规则复验。准确来源与实际检查范围持续登记在发布模块记录；未通过部分不降低验收要求。
 
 | 第二层负责人 / 子Run | 固定模块树与入口 | 第三层连续责任 |
 |---|---|---|

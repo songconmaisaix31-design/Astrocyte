@@ -24,6 +24,8 @@
 
 ### 2026-10-15 当前许可任务实际启动
 
+当前窄范围追加 Task `task_f0b1dca0e6fc` / Dispatch `ctx_16eab9ed9e91` 复用同一 Flash 终端、原工作树和分支，只修改组件许可文档。此前同作者修订 SOURCE `4a130aef860045beb8dedf831192d447693ea281` / REPORT `2e978a0c9ef2b576cdc3bb803845d363755ddd71` 已合法完成。本追加首轮明确报告 API socket 关闭，没有本任务工具写入；保持同终端 / 同模型续接后，实际文本已显示读取 P 现有 DirectML / DXC / ONNX 官方许可及准备脚本。当前工具执行继续，未重复 READY 请求、未新建 worker 或切换默认模型；该任务精确 SOURCE / REPORT 与终态尚待。
+
 组件许可原 Task `task_08d2ca49a825` 当前为 Dispatch `ctx_c9d28891657d` / 终端 `term_63d7be11-6caf-4ad6-9206-8ecab071a370`，在原 `release-research-20261014` 工作树与原分支执行，只新增 `docs/release/components-20261015.md`。本轮先用公开 `opencode --help` 核 `--model` / `--auto`，再通过 `orca terminal create --command 'opencode --model alibaba-cn/deepseek-v4.1-flash --auto'` 显式启动，TUI idle satisfied；有界文字显示实际 `Build auto · DeepSeek V4.1 Flash Alibaba (China)` / OpenCode 1.18.35，之后以原 Task / `worker-start --terminal` 合法接管。input_accepted 已核，provider turn-start observation unsupported，具体工具与原生 assistant 模型元数据等待任务交付核对，不将界面显示冒称 provider wire 实证。本轮未重复 READY 请求。
 
 首次默认 `--agent opencode` 启动的 `ctx_84d744210f8a` 实际界面为 DeepSeek V4 Pro，产生两个入口文件读取与 `Content Exists Risk` 错误，没有修改授权文件。已停止该配置：首次官方 worker-stop 为 stop_unknown / terminal_tab_close_timeout；正常 `/exit` 后准确进程 53332 不存在且终端返回 PowerShell，随后官方 abandoned / failed，资源 retained / identity_unproven。首失败与外部 shell 保留，当前唯一文档执行者为上面的显式 Flash Dispatch；未修改全局模型或 auth。
