@@ -2,6 +2,23 @@
 
 ## 2026-10-15 当前发布协调
 
+### 18:00 当前准确输入与剩余验收
+
+| 输入 | 准确 SOURCE / 独立 REPORT | 已核范围 |
+|---|---|---|
+| S5 委托机制与真实准入测试 | 机制 `d73507a8a26ce49b92ec8504649738f336bcdfd1`、测试 `1e89ef832b77ae31d75d9db920e7186773b75c94` / `9cbee0686fabed068a6da568021a51d4fa65cb11` | 本模块核远端同 REPORT、两个 SOURCE 祖先、准确测试与单文档报告。真实准入 `13.852s PASS` 含 human_adopt / 后续 reject、机会 revision、原 S1/S2 同事务持久化与幂等；完整判断 HTTP、Jev、OS 与真实 Goal/profile 自身变化未计通过。 |
+| B 委托迁移 | `491e7f606d8265e9f7e9694f547a91682b305e74` / `8da52b2840bae3fc982dd5ba92a98aa652bed195` | 正式 025 两表已进入 S5 普通 merge `c1f5d99c46082dfe6053583faa0f8bfc992a4f5b`。B 确认其十件已提交祖先无已知必须撤出的不兼容；后续领域错误仍归 B。 |
+| P 固定运行依赖工具 | `8e62c7f99b513115a19fc22569e33587bddcc300`；普通消费许可后的组合 `2790488346c0e0b9b28051793ed9d5cc318231dd`，独立 REPORT 待交 | 工具 SOURCE 远端全 SHA 已核。PS5.1 / PS7.6.6 依赖 ZIP 均 1,384 文件 / 470,098,559 bytes 全等、真实 SDK API 与扫描通过；ZIP 分别 155,404,809 / 159,525,724 bytes，模型本体未进入这两个依赖 ZIP。 |
+| 组件许可 | 最新路径修订 `e5d52481fa4a66d66d25497a9c80cc26a82441f1` / `61cad05f13d56d82a1ac916a5f0027b64c429554`；许可补充 `da5bbf28eaa4776b6fa267c22bbf3bdf309df224` / `2341b353cdc29ebeae71aa996b5fc1c8d31f859c` 保留 | 两项均合法 succeeded、单文件、祖先、clean、远端已核，六份许可哈希已核，已交 P。实际入口 `runtime/adapters/codegraph.mjs` 与精确 P 源码一致，已交 H；最新官方 release 为 retained / external_terminal / processAction none，未宣称终端关闭。 |
+| H Context / S3 / S4 限定组合 | `59a7150b1143680b67fe53fdf831fcca5f328660` / `0aab7edd54fb7bb031e9709f752c6240ce7852a9` | H 交付远端 exact / clean，本模块已独核远端同 REPORT。其 atomic SQLite / HTTP / config、S2 Git / 批准重启、S3 权限 / 并发批准重启与 OpenAPI 仅属已报告阶段结果；cmd 依赖精确 P579 五件只读 overlay，旧 Reader RED 保留。根 `msg_f60814f6421a` 明确 Context 序列化绝对 Root 的隐私问题正由原 S2 / H 修正并补实际 HTTP 安全检查，当前 Context 最终阶段未接纳，不算完整自包含应用或最终隐私通过。OwnedSession 仍为 501 / Claim 拒绝，未登记 t0 或调用模型。 |
+| T 官方论文准入 | `41f88230997382ea0972652ab3f15135c75a90f1` / `feb0719e6398116b0d1d00c8848614d474c07826` | 根 `msg_841043eab77f` 转交 M-product 远端独验，本模块完整读取单文档差异。原正常命令包 `25.994s` / 测试 `4.94s PASS`，实际 Atom/PDF 双 200、准入 / 回滚 / 撤销 / 逐事件 / 两次重开通过；十四项模型 / unknown 场景及默认全套仍未通过。不重复论文采集或模型请求。 |
+
+原 S5 必要 ONNX 新产物位于其独占 D 盘 `sanitized-ctx_0a`。本模块已读安全数值报告：两个 checkpoint 的 64 / 192 token 实际公开 README 输入，CPU encoder 与三题型 head 全部输出 `np.array_equal`，最大绝对差均为 0；成熟 ONNX 完整检查及未改 sidecar / tokenizer / config 字节核对由原 owner 完成。新 descriptor 明确衍生身份、独立 artifact revision、准确原件来源和 digest。S5 报告新有效 revision 的真实 Laya 绑定测试 `35.412s PASS`，实际低置信 abstain / 90 选项覆盖不足拒绝准入均实际验证；后继三种 checkpoint / 语言的双 PID 重启仍在验证，准确新实现 SOURCE 尚待。P 原 scanner 对新资产实际 `14 项 / 3,014,649,292 bytes / privacy 0 PASS`，当前重跑完整 `runtime-sanitized-first` 准备；完整 runtime 及最终包尚未验收。原十二项资产和首失败保留。
+
+S5 的 AT12 目前只证明真实持久化 Policy 的五版本变更使缓存失效。根正式答复 `msg_e1415e3ad447` 已交 S5 / M-product：用户在运行时明确选择真实 Goal ID / revision，经 S2 公开 ReadGoal 与当前项目权限读取，在请求、缓存和使用结果前分别核固定引用及当前有效版本；历史批准保留原固定版本。RankingProfile 是四维排序的真实权威，采用实际 ID / version / configured / enabled，未配置保持 false / nil，不造版本或默认权重；它不能代替 SPEC 完整 TasteProfile。实际参与判断的 rubrics / examples / delegations 必须各自包含真实不可变内容 / 版本并纳入既有缓存键，在使用结果的同事务重核；必要缺项交原责任人补齐，不删减 AT12。缺必要 Goal / profile / 策略时明确未配置并拒绝自动使用。S5 只接自身 reader / bridge，B / S2 保持领域与存储，新 DTO 经 H / F / UI 确认；完整真实变化、缓存失效和旧 proof 拒绝尚须实际通过。
+
+根对 Calls / Known 范围的用户问题未答，原 Claim 拒绝、Known=false 和真实输入门禁保持；完整配置、原生 CLI、三分钟 Today 与最终 I / P / N 均未通过。当前表只登记各阶段准确输入，最终集成仍消费全部门禁完成后的精确终稿。本模块管理检查点 `4ee2594baa9c983409fc51ff7f39b7e70d2d73c3` 已普通 push / 远端同值 / clean；后续仅继续授权管理记录，不重复领域测试。
+
 ### 15:27 准确委托来源、依赖包验收与模型隐私
 
 S5 完整 Delegation SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1` 共十三件允许文件，包含显式 Rule、固定 Opportunity / workflow / owner / Rule 版本绑定、绑定参与原缓存键、H 已确认的完整 handler / DTO 与可信 Admission 适配。本模块已读取准确 Git 对象，并以公开 HTTPS、进程内禁交互及有界 low-speed 的 `git ls-remote` 独立核实远端同完整 SHA。首普通 push 连接重置保留；后续普通 push 与精确远端读取通过。四项组件实际 `290.250s PASS`，完整公共判断 HTTP 尚待 H 实际装配与运行。
