@@ -79,9 +79,9 @@ func tasteCommand(t *testing.T, service *attention.Service, principal attention.
 	revision := material.Revisions[*job.MaterialRevision-1]
 	return attention.UpdateTasteProfileCommand{
 		CommandMeta: tasteMeta(), Enabled: true,
-		Rubrics: []attention.TasteRubric{{ID: "readme-rule", QuestionType: "source-check", Criteria: "按固定 README 核查来源"}},
+		Rubrics: []attention.TasteRubric{{ID: "readme-rule", QuestionType: "truth", Criteria: "核查固定 README 是否包含开发入口说明", Options: []attention.TasteOption{}, Levels: []string{}}},
 		Examples: []attention.TasteExample{{ID: "readme-example", RubricID: "readme-rule", MaterialID: material.Material.ID,
-			Revision: revision.Revision, ContentDigest: revision.ContentDigest, Expected: "保留 README 的来源引用"}},
+			Revision: revision.Revision, ContentDigest: revision.ContentDigest, Expected: "1"}},
 		Delegations: []attention.TasteDelegation{},
 	}
 }
@@ -112,6 +112,32 @@ func TestTasteProfileActualServiceHistoryCASAndRestart(t *testing.T) {
 	}
 	if !first.Configured || first.Profile.Version != 1 || first.Profile.ConfiguredBy != principal.ID || first.Profile.CreatedAt.IsZero() || len(first.Profile.Delegations) != 0 {
 		t.Fatal("actual profile configuration or empty delegations changed")
+	}
+	for _, questionType := range []string{"choice", "score", "truth", "source-check", ""} {
+		// 仅验证题型规则，不宣称执行了这些题型的模型判断。
+		rule := *first.Profile
+		rule.Rubrics = append([]attention.TasteRubric(nil), rule.Rubrics...)
+		rule.Examples = append([]attention.TasteExample(nil), rule.Examples...)
+		rule.Rubrics[0].QuestionType = questionType
+		switch questionType {
+		case "choice":
+			rule.Rubrics[0].Options = []attention.TasteOption{{ID: "present", Description: "包含开发入口"}, {ID: "absent", Description: "缺少开发入口"}}
+			rule.Examples[0].Expected = "present"
+		case "score":
+			rule.Rubrics[0].Levels = []string{"缺少开发入口", "包含开发入口"}
+		}
+		err := attention.ValidateTasteProfile(rule)
+		if (err == nil) != (questionType == "choice" || questionType == "score" || questionType == "truth") {
+			t.Fatal("taste question type differs from the three supported judgment types", questionType, err)
+		}
+	}
+	for _, expected := range []string{"null", "true", `"1"`, "-0.1", "1.1", "NaN", "1 2"} {
+		rule := *first.Profile
+		rule.Examples = append([]attention.TasteExample(nil), rule.Examples...)
+		rule.Examples[0].Expected = expected
+		if err := attention.ValidateTasteProfile(rule); err == nil {
+			t.Fatal("truth accepted a nonnumeric or out-of-range expected value", expected)
+		}
 	}
 	otherDB := openAttentionDB(t, path)
 	otherService := tasteService(t, otherDB, directory)
