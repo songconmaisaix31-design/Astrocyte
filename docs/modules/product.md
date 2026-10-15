@@ -2,9 +2,50 @@
 
 ## 责任与事实源
 
-2026-10-16，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349` / 终端 `term_f9466086-7599-4f16-b9d8-a615a4e4a7ba`，按根 00:30 入口及 `msg_9f4bdca6d5b4` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_325a9aca-4a77-4e2c-93ed-cae95acd628c` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `d6ebb6d78c48124d3cf2f51f975ff16d0f690b58`，接管时本文件已有八行 S3 分工修改，完整保留。旧 Dispatch 的失败记录保留。
+2026-10-16，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_a3dc3bfa5554` / 终端 `term_172d7d57-1526-4e21-af3e-144a7f14fc5e`，按根 02:21 入口及 `msg_ddaa2ba3d38b` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_8de37bb3-e73a-4c10-8a7c-5c39156da4e7` / `run_973808dd6a2f` generation31。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `dd5829d1638a7398198e20cd97f768619d04eb0f`，接管时本文件已有 02:05 优先级与 02:02 返修修改，完整保留。原 Task、子 Run、工作树、分支和旧 Dispatch 的失败记录继续保留。
 
-### 00:34 当前恢复计划
+### 02:29 当前恢复与产品分工
+
+本模块已实际读取根 02:21 入口和当前用户决定，沿原两个 Run 恢复，未创建新的 Run 或 Task。公开清单核两个 Run 的 active worker 均为空、原 B / F / S2 Task 均为 ready；原 B/F Run 已普通绑定 generation56。B 首启动 `ctx_0451d133cc3d / term_8821b14c-2a83-4459-a276-f28f11a7c67c` 实际 turnStart observed，准确基线 `a550cfba2d7e571954bf96bec9a8eb6e3af228a8`，原十件 WIP 保留；本次只继续其既有项目清理通知、原生消息存储和来源接缝，生产装配交 H、提交回调交 S2、应用测试仍唯一 T。F 原树准确 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`、clean，S2 原树准确 `8ef7219b3bd4233b1b16c0a7735c29f4e07673ba`、clean，沿原任务恢复。
+
+| 原唯一负责人 | 本次 Dispatch / 实际终端 | 当前继续范围 |
+|---|---|---|
+| B | `ctx_0451d133cc3d / term_8821b14c-2a83-4459-a276-f28f11a7c67c` | 原十件 WIP、成功提交后清理通知及原私有消息准备来源；配置、依赖仍唯一归 B |
+| F | `ctx_fefd1edc052e / term_7c6e3930-6af7-4eb6-b749-c229df5d10da` | 核原320中断原件，同64505唯一业务页面 / HTTP 操作，共享客户端和真实功能检查 |
+| S2 | `ctx_172ff9553370 / term_340713c9-7cfb-4ff9-abfc-6ffa7989fd88` | 原 AfterWorkspaceCommit 已交，继续当前 Context 生产依赖及真实失败返修 |
+| 产品 UI | `ctx_6e10ec67cf13 / term_1660d6fb-233a-4d96-a0c6-d27cec7ac8a1` | 原 `58e3fc0174ac189ef947e6623f628f2cb2536d69` 和未跟踪 `JudgmentPolicyFields.tsx` 保留；同实例只读 DOM / 导航 / 静态资源及原 delegation 域，业务写入交 F |
+| S3 | `ctx_abc104122c04 / term_5d92ec7c-d501-45d5-84fb-baa44ce7be6d` | 原 `51b720f496b42c7ff1356400fe9158b1807e63c7`、clean；按 B/H 准确最窄口补原发送前 Grant / epoch / Mission / Lease 复核，未答执行分支维持拒绝 |
+| T | 原 `task_5f0a79b6a17a`，当前未启动 | 原 `059669d603f151aa1f9a21f4cee4201d5ede159d`、clean；应用测试独占范围保留，按实际生产依赖恢复，不重复原成功模型 |
+
+上述五次 worker-start 均实际 turnStart observed。02:42 公开 projection 核 B / F / S2 / UI 为 Codex / `gpt-6.1-sol`、live / working；S3 当时为 missing_status / unverifiable，保留该观测，不据此推断失败、停止或再次派发。原产品 Run 已普通绑定 generation31，原 B/F Run 仅管理 B / F。当前 M-relay 为 `ctx_f967479130c2`、M-release 为 `ctx_4b5bd58b23e1`，唯一 I 为 `ctx_76c7ff15d7e0`。
+
+当前先运行完整产品。H 沿原 D 盘目录和 SQLite 恢复唯一普通产品服务、首选 `http://127.0.0.1:64505/`；原 PID47956 与 listener 消失由根实核，旧 running.json 保留为历史，不重置数据。本模块不启动第二共享服务，F 继续唯一实际页面和核心 HTTP 操作。F 先核原完整 320 项中断日志、实际退出与准确统计，保留已输出至302的原记录及全部失败 / 未运行，不直接重跑全套；待 H 恢复准确服务后，先完成同 URL 资料、项目、提案和上下文的实际核心检查。原成功模型、OS、Q 与正式实验不重做。
+
+受限 Codex 文件 / 命令工具关闭要求按根 `msg_dfe105fea7e1` 保持明确拒绝，当前产品集成与 human 原许可操作继续；本轮原生登记、初始化与模型输入均零。Agent completion action 的用户答复尚未取得，Agent 分支维持未授权，经验候选仍只由用户批准。仅按实际依赖恢复原 UI / T / S3，不增加第四层、同域写入者或未授权动作。管理记录集中维护，必要 SOURCE / 实际命令 / 独立业务 REPORT 由原作者交唯一 I；最终完整默认、核心功能及 Windows 包仍待验收。
+
+### 02:42 当前实际核心结果与准确来源
+
+F 本人逐项核原 `full-default-a166-playwright.log`，100056 bytes、302项有记录：204 PASS / 55 FAIL / 43 既有 SKIP；剩余18项无完成结果，没有最终汇总或退出记录，EXIT UNKNOWN 保留。两项 S1 首失败均在 `publicPaperDirectory` 的真实缓存前置终止，未进入重读 / 分类断言；Context 两尺寸为240秒提交未返回、页面仍正在提交，交原 S2 核实际事务；第302项为 Vite 实际就绪 GET 失败、业务未执行，交 B。原轮不重跑，不将这些结果迁移为后继源码通过。
+
+H 同一 D 盘二进制 / web / SQLite 已恢复，PID25048、开始 UTC `2026-10-15T18:28:44.7333357Z`，准确源码仍 `ad8413e119379c9795bab558a41fe425ea9095ca`、modified=false；根和 M-relay 分别核真实首页200、进程及唯一 loopback listener。F 在同 `http://127.0.0.1:64505/` 实际 Chromium 只读核七路由均200、DOM标题可见、零 pageerror、无水平溢出、零业务写入；七类资料 / 机会 / 空间 / 项目 / 目标 / 提案 / Mission 集合均空，Today 两个真实 alert 继续交 H / Q 配置。模块独读安全结果 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_fefd1edc052e/.verification/product-core-readonly.json` 核同值；导航通过只记该范围，真实写入和完整功能尚未通过。
+
+原 S2 SOURCE `4f875b0f8bffc5740e6a1eee828e7e34833226b8` / REPORT `8ef7219b3bd4233b1b16c0a7735c29f4e07673ba` 已普通 push，当前本人准确交 B / H / I。仅一个生产文件和两件 S2 测试，`(*DB).AfterWorkspaceCommit(context.Context, func()) error` 在同数据库最外层 COMMIT 成功、连接归还后按序一次通知；事务失败、真实 COMMIT 失败及异库拒绝无通知，原真实 SQLite 检查5.893秒及构建通过。本轮不重复既有成功；B 仅准确消费已提交生产文件，项目 SaveProject 成功后 Wake 与 H 既有 worker 生命周期配对，S4 真实撤权清理仍待后继复验。
+
+原四件获准公开 HTML 已由 B 交 F，模块仅核存在及文件长度：`.verification/arxiv-v1-public.html` 225089 bytes、`arxiv-v2-public.html` 2063382 bytes、`plos-public.html` 260555 bytes、`acl-public.html` 47355 bytes。准确目录为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification`；F 当前 `web/e2e/realService.ts` 使用 `ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR`，四来源映射与现有 `tests/s1/public-inputs.mjs` 一致。只消费这四件，原文不输出、不扩读同目录、不重复媒体提取或模型；真实论文 / 视频验收不以其他本地文件替代。
+
+当前 F 已在同实例通过 UI 建立一个空间与其公开项目，仅原 proposals 文件范围、`read_context` 动作、C 关闭，无原生客户端 / 工具 / 自动控制；真实允许文件预览200、越界文件403、刷新后的 HTTP / SQLite 权限一致，原生会话为零。B 已核该既有路径只持久化 `local_agent_projects`，没有项目 outbox 契约。F 又经既有第三方 parser 与页面完成 arXiv v1 / v2、PLOS 三次真实202导入，两版同资料、revision1 / 2，正文与真实附件逐字核对；ACL `abstract_only` 保持无全文导入选项，人工 PLOS 摘录实际保存200，后继 GET / SQL 正在核查。F 项目事件与保存状态的脚本首 FAIL 保留，不重发已成功创建、导入或沉淀，不将当前进度写成完整验收通过。
+
+H Judgment / Taste 原七件生产注册已交 SOURCE `67fb5f255d52130f5ae30377ab615dd17b7c79ef` / REPORT `2fd1ba1cbbf9190c6f63c1425a93cddbf950f147`，实际 SQLite / HTTP1.860秒、vet / build通过；M-relay 审阅原域和远端后交唯一 I，尚未部署到当前64505。Q 已验同代来源为 `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7`、snapshot-1711995690；现有 `cross-day-20261015-0228/local` 及 `main-safe-final/sql-expected.json` 已由发布负责人交 H 显式配置，F 在同一实例更新后验证，不重采或混用旧1339人口。S2 当前独立报告后继 `81eb88df11f2c69b71290d5bb9ad5b2e2e0f0d9f` 更新真实证据指针，功能 SOURCE4f875不变。
+
+根要求 B 优先交可消费的项目 Wake 阶段，不等待完整原生正向或全包测试；其余原十件 WIP 由本人决定准确拆分并保留。L2 原完成来源已有，但 `AcceptedExperienceService.CaptureCompletion` 的公共消费仍待 B 原 app / experience bridge / governance HTTP 域接通；共享 Services 字段、main、server、OpenAPI 由 H 唯一薄装配，领域类型只精确 Handoff。事务外读取来源、同主库当前 human / project / owner 授权、OwnerProject=LocalProject.ID 及未答 Agent action 拒绝继续，禁止为接通入口选择新模型预算、调用受限模型或伪造完成。
+
+### 02:05 用户当前优先级
+
+根 `msg_78017152698f` 转交用户新明确要求：优先集成并跑通完整产品，产品运行后并行整理代码和全面测试。原六位产品开发人员已分别收到具体接续：B 优先生产配置、提交后清理唤醒与实际原输入接缝；S2 优先提交回调和实际 Context；S3 优先准确生产桥；H 的同源 main / Services / Judgment-Taste / S4 / Relay 公开装配由 M-relay 安排，F / UI 优先接准确客户端、同 URL 页面与真实 API。仅唯一 I 继续原分支集成和唯一产品启动协调，不新增工作树、人员或同域写入者。
+
+准确集成 SOURCE `ad8413e119379c9795bab558a41fe425ea9095ca` 已由根核实际 build EXIT0 / 66.9318724 秒、远端同值，可作为 H 立即消费的阶段来源；运行地址与主服务实际状态尚待 M-release / H 交付。当前 F 冻结 a166 的完整 320 自然完成并保留结果，后续完整默认、独立 REPORT、额外整理均不阻断源码集成与实际启动。必要构建和最窄核心验证继续，产品跑通后并行全面测试；已有功能不删减、mock 不引入、未验不填写完成。原公开范围、R 实际命令 / 文件工具关闭、来源守卫、180 秒和未知不重发等授权边界保持，当前原生登记 / 初始化 / 模型输入均零。
+
+### 00:34 恢复计划
 
 原产品 Run 已普通绑定 generation 18；原 B/F Run 仅管理这两条未完成任务。公开 Task 列表核六项原任务均为 `ready`，两个 Run 的 active worker 均为空；公开终端清单没有原六位开发终端，与根 00:30 的重启退出证据一致。沿原 Task、工作树、分支和未提交修改恢复原负责人，不新建 Run、Task 或第四层。先前临时跨树权限全部结束，后续冲突重新取得当前本人安全检查点和准确停写交接。
 
@@ -78,7 +119,17 @@ S2 单文件格式 SOURCE `83c8b62766b28470fc4fe2514631172ea2f286eb` / REPORT `f
 
 R 已交真实 input Outcome / FailureCode / ResultSource / ResultObservedAt 来源 `23253502143bb23bf47e1606c38e0158540e328d`，I `2367224` 已含；S3 后继消费当前可构建组合处理自身旧字段，不重建同类来源。首次 Claim 前的真实持久准备收据仍属 B projects 与原 R controller 的既有接缝，任意 UUID 不能视为输入已准备，未答 Known / Claim 拒绝保持。T 已核选定文本的现有 bridge / factory / Registry 映射和 send_accepted / TurnID，B `20cff2c` 保存停止后的实际本机观测；有效工具 unknown、正选原档完整度及真实模型组合继续未验，不补造或重发成功推理。H 沿原 ObjectStore / Record / GetEvent 实现自有薄 Reader，不新增重复目标证据存储接口。
 
-### 01:45 当前组合与验收安排
+### 02:02 当前门禁与原作者返修
+
+根正式答复 `msg_bead6efa49a5`：唯一 I 准确同源 check / build 与不依赖新 L1 的真实核心通过 → R 核实际命令和文件工具关闭、同 URL 空 Registry / F observer ready → 唯一登记 t0、F 空 Prepare、H 同实例原选 archive / 当前权限 / 工具 guard 实际通过、F 一次 Confirm → 原 180 秒内 Today、逐 event_id、真实目标产物和检查、实际完成渠道及独立退出 / 释放 → 同源最终完整无 spec / grep 默认验收 → L2 六步及最终包各自门禁。180 秒包含登记和 Prepare，不重置 t0、未知不重发。该顺序已准确交 F / M-relay / M-release；原生文件工具关闭仍待 R 实证，本轮 t0 / 初始化 / 模型输入保持零。当前 F 冻结 a166 的完整 320 自然继续，最终完整验收要求保持。
+
+I 已普通合入 S5 为 SOURCE `ad8413e119379c9795bab558a41fe425ea9095ca`，实际父提交为 `2b77ac6e` / `6fe22340`，无 MERGE_HEAD。原 S2 本轮十一件已本人 `msg_515909ffc516` STOP 归还，发布负责人先独核放行；本模块后续独核上述准确 merge 的限定十一件对 `2b77ac6e` 完整 diff0，不将已结束的合并现场写成当前待归还。I 优先准确 build / push 供 H 消费真实 S4 / S5 库，不等依赖原生场景的最终 E2E。根核 CI `38780870658` 在准确 `2b77` 双平台首 gofmt 失败，仅 `proposals_admission.go`；模块只读核 S2 / I 当前均未格式通过，已交 S2 仅原树文件编辑修复后交 SOURCE，不扩大已结束的 I 临时范围。
+
+F 的两个 S1 首失败已由 B 逐件独核各自 HTTP 与 SQLite：分别在公开论文目录检查失败，两库材料 / 人工使用均零，尚未进入功能断言；实际失败保留，后继沿四件真实 HTML 输入验证。Context 实际 POST 500 / 240 秒首失败已交原 S2 / H：该 a166 旧来源缺少资料读取的当前 WorkspaceTransaction 分支及 aa0 事务前观察，存在单连接内再次借连接的源码阻塞路径；日志没有底层 Go error，原请求具体错误仍 UNKNOWN。当前 I 已含相应共享事务和观察改动，须以准确新二进制实际复验，静态比对不计 PASS。S4 UI 两尺寸真实配置六项已实际 PASS / 2.8 分钟，原六 FAIL 保留，SOURCE / 独立 REPORT 待交；实际生产 main 撤权后的异步清理仍 FAIL，B 原设置成功 commit 后 Wake、S2 最窄事务提交回调、H 同 provider Run / error / cancel / wait 后关闭数据库分别由原作者处理，不扩造 Root / 删除 API 或新调度系统。
+
+R 已原样消费 B176 / c604 三件为 `aad4e228cb8d34b3214d83e5d09f173924ba3709`，M-relay 核原件 diff0 与本人 STOP，三个 blocks 冻结已解除。原 project / grant 三秒超时的准确新组合 0.17 秒 PASS，真实 SQLite 三主四子 2.491 秒 PASS，首 RED 保留。R 对应双方法 SOURCE `269e95c032b5a64794e6908ca6c40e5ffe5acac4` 已交 H / I 成组，真实 completion → Interpreter / quarantine / 模型仍 NOT_RUN。B 对象注入口已获 H 准确 `WithNativeMessageObjects(workspace.ContextObjectStore)` ACK，只注入现有同一个 ObjectStore；原 tuple 读取由 R 交最窄私口、H 注入原 Registry，不推断启动身份。私有 Prepare / Claim / Send 正向和原未答门禁保持。
+
+### 01:45 已交阶段与验收记录
 
 根 `msg_aacc41c978b9` 要求 F 在当前稳定准确源码立即运行全部默认浏览器，不等待 L1 模型正向或管理报告。本模块已交原 F `msg_2eb952c39459`：当前 REPORT `a166310a3c7d7b22806ec74aa4125e9f6c6a2222` clean，沿原完整 testDir、两个 viewport、workers=1 / retries=0，不带 spec / grep 过滤。准确清单 320 项仅为收集结果；全域实际结果尚未产生，旧 203 PASS / 41 FAIL / 32 既有 SKIP / 4 NOT_RUN 保留原版本范围。缺少真实前置按实际首失败交原作者，不新增 skip、伪造输入或擅自启动原生与模型。
 
