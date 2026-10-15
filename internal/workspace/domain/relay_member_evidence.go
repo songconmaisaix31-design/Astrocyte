@@ -26,6 +26,10 @@ type RelayMemberEvidence struct {
 	InputAcceptedAt            *time.Time `json:"-"`
 	TurnStartedAt              *time.Time `json:"-"`
 	ExitObservedAt             *time.Time `json:"-"`
+	Outcome                    *string    `json:"-"`
+	FailureCode                *string    `json:"-"`
+	ResultSource               string     `json:"-"`
+	ResultObservedAt           *time.Time `json:"-"`
 	Capabilities               []string   `json:"-"`
 	Tools                      []string   `json:"-"`
 	ExternalTargets            []string   `json:"-"`
