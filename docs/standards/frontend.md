@@ -1,6 +1,6 @@
 # 前端标准整改与合并产品验证
 
-分支 `standards-frontend`，当前本域 SOURCE `2f2db3017193bf0572648d90bc7adb88b8d475b1`，公共 API 阶段 SOURCE `0657d32760867e735a71fc891c05189a1c216cfd`，前序 Relay SOURCE `fc97cc17945cd496241fe8de36958f5a5df2edfb`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
+分支 `standards-frontend`，当前本域 SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3`，前序 helper / Grant 组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6`，公共 API 阶段 SOURCE `0657d32760867e735a71fc891c05189a1c216cfd`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 ## 完成内容
 
@@ -44,6 +44,12 @@ S5 经零 WIP 核查和停止写入 ACK 后，模块计划 `2f609ea` 已普通 p
 
 本次随后两次完整设计交互运行均为 14 PASS、1 FAIL、13 NOT_RUN、退出 1。第一轮在新 D 盘缓存下遇到原 `beforeAll` 的 120 秒超时；缓存生成后的第二轮，1920 尺寸在生产 Go health 200 与 Vite 就绪后发生实际 `fetch failed / read ECONNRESET`，1280 尺寸 14 项全部通过。第二轮保留独立日志、trace 与实际 SQLite，并交模块转给 B 的唯一共享 helper Owner；根因尚未确定。源码、28 项断言、120 秒准备超时及零重试均未改变，不继续盲目重跑。`GOCACHE`、`GOTMPDIR`、`TEMP`、`TMP` 仅对 F 验证进程设置为上述 D 盘目录下 `ctx_4a385bf65390` 的独立子目录。
 
+模块计划 `78cbb0b` 明确授权本次仅消费 `tests/s1/server.mjs`。F 通过文件编辑工具将该文件与 B `efa137e` 同路径完整内容保持相等，提交 `509126da91b61eb5b0e48609b64e9a8038e1743e`；后续 helper 逻辑写入归还 B。新错误保留实际 readiness URL 与原 cause，完整读取响应正文；原请求 / 总准备期限、端口规则和断言均保留。普通合入 UI `94e21ba` 后形成组合 `67caeae`，完整展示实际 Grant 固定范围与时间，未新增模型操作。
+
+该组合沿原默认配置执行设计与导航全部 100 项，97 PASS / 3 FAIL，12.7 分钟、退出 1、零 skip。28 项设计用例两尺寸均通过；一个导航准备阶段实际 Vite GET `http://127.0.0.1:50258` 发生 `TimeoutError`，与旧 `ECONNRESET` 分别保留，具体进程状态未在 reporter 文本中封存。另两项导航失败来自共享 QueryState 对过期空集合继续显示空结果。当前 SOURCE 已修正该呈现：失败的过期空集合显示读取错误与人工重试；非空旧快照继续显示过期说明并保留禁写条件。原导航两尺寸 2 PASS、原 S2 非空快照 / 权限拒绝 / 恢复两尺寸 2 PASS，全部断言保持。当前完整默认验收仍未通过，S2 全部 12 项与新源码 100 项完整复验尚未执行。
+
+后续 Go 命令按根当前决定使用进程 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR/TEMP/TMP` 使用 F 独占 D 盘目录。S4 H SOURCE `31256d5` / REPORT `89d84d5` 已收到；只读普通合并预检发现五个 B 共享文件冲突，已交模块安排原 Owner，尚未合入或生成 S4 客户端。没有用未配置 503 代表配置图正向、原生或 Today 通过。
+
 ## 精确源码消费
 
 普通消费 Workbench `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b`、Relay 前端 `65ba685ea23e796c1810ff5ec13280dd0dda8f93`、B 实际输入 `e05c013a08ccf372bb884dae5eeb3345f92173af`、私有附件 `cc46b9855775adf70bce74242d08ef84ff4f573b`、真实 URL helper `072628536d325eedbb6b53ffe9ab8fc31c38beeb`、R 人工迁移 `d14b08dc50014baf9ee636543564b040112cf3b5`、H Reader 装配 `b247dfb12b938739f09acc73e6b7582376951a0c` 和真实 listener `1aadeebaba2330bb8b786989f577415da5208fd5`。
@@ -54,6 +60,11 @@ H / B 端口方案由 Go 一次持有真实 port 0 listener，helper 使用自�
 
 | 命令 / 实际验证 | 结果 | 本机记录 |
 | --- | --- | --- |
+| 当前 SOURCE `npm run build`（含 typecheck）/ `npm run lint` / 显示 Vitest | 退出 0；显示 17 PASS，保留 553.30 kB 构建提示 | `.verification/f-stale-empty-build-first.log`、`f-stale-empty-lint-first.log`、`f-stale-empty-vitest-first.log` |
+| 原默认 `navigation.spec.ts` 中提案空集合 / 实际 403 / 人工恢复用例，两尺寸 | 2 PASS，20.9 秒；全部 GET，原断言保持 | `.verification/f-stale-empty-proposals-playwright-first.log` |
+| 原 `self-service.config.ts` 的 S2 非空提案 / 实际 403 / 禁写 / 恢复用例，两尺寸 | 2 PASS，35.4 秒；实际生产服务与 SQLite | `.verification/f-stale-empty-nonempty-playwright-first.log` |
+| 组合 `67caeae` 原默认 `preview-design.spec.ts` + `navigation.spec.ts`，两尺寸 / worker 1 | 完整 100 项，97 PASS / 3 FAIL，退出 1；全部原断言、零 skip | `.verification/f-recovery-helper-grant-default-playwright-first.log`；独立 trace 与 store 保留 |
+| 组合 `67caeae` typecheck / lint / build / generator check / 显示 Vitest | 退出 0；显示 17 PASS | `.verification/f-recovery-helper-grant-{typecheck,lint,build,vitest}-first.log` |
 | 10-15 当前 SOURCE 的 `npm run typecheck` / `npm run lint` / `npm run build` | 退出 0；Vite 产物 551.65 kB，保留大于 500 kB 的提示 | `.verification/f-dispatch-current-typecheck.log`、`f-dispatch-current-lint.log`、`f-dispatch-current-build.log` |
 | 10-15 当前 HTTP / 参数 Vitest 五文件 | 4 文件 36 项 PASS；`relaySession.test.ts` 缺少真实 PUBLIC_URL / GetEvent，beforeAll 失败、2 项未执行，整体 FAIL | `.verification/f-dispatch-current-http-vitest.log`；不使用模拟服务替代缺失原生来源 |
 | 10-15 既有设计 Playwright，两尺寸共 28 项 | PARTIAL：仅第 1 项完成 PASS，Orca 重启中断后续运行，无完整退出结果 | `.verification/f-dispatch-design-current-playwright-first.log` |
