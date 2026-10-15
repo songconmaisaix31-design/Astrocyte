@@ -324,6 +324,14 @@ SOURCE `01d28a54bb221e59cf262cbf9941fa418f6e937c` 已普通 push，仅修改 `te
 
 随后按已 push 计划 `d9e99333c3f0f2016a288c0474df2ec3fcf0f287`，B 在 H 树仅编辑并 stage `cmd/server/config.go`，保留 H 当前设置和准确 S4 可信配置。没有带入非本 SOURCE 新增的旧发现函数；gofmt 与限定两类差异检查通过、未合并项归零，index `2d7a7bdc1a31b8f97545baed2f74806c2168d796`。目标包测试因 H main 的变参 Reader 调用与旧非变参接口不符而 RED，日志 `h-config-narrow-second.log`；准确 B Reader 来源 `f6491131`、`54ad5d7` 及完整文件闭包已交 H。该单件范围已停止并归还，其他源码和生命周期没有代改，未把冲突消除记为组合验收通过。
 
+## 实际安装的 S4 启动依赖
+
+SOURCE `8a76e9bc2afd7b0b875e9eeb78aeef34b3822c35` 已普通 push，新增 `repository_context_live` 集成检查。该检查要求显式提供真实安装路径，缺少任一依赖直接失败；没有修改或跳过既有检查。运行时调用原生产 `resolveRepositoryContextConfig`，使用自有隔离 profile 验证官方工具，不创建替代可执行文件或 package 元数据。
+
+实际命令为进程级 D 盘 Go 环境下 `go test -mod=readonly -p=1 -tags=repository_context_live ./cmd/server -run '^TestRepositoryContextConfigActualInstalledTools$' -v -count=1`。首次使用 P `runtime-fourth` 的实际 Node/源码 SDK、原 S4 f407 桥和实际外部 AOCI，EXIT 0，4.973s；随后使用 P 准确交付的 `runtime/adapters/codegraph.mjs` 再执行，EXIT 0，5.388s。日志分别为 `.verification/repository-config-actual-installed-first.log`、`repository-config-actual-package-second.log`，实际自有数据目录为 `repository-config-actual-1246314757`、`repository-config-actual-430984171`。
+
+显式 `ASTROCYTE_VERIFY_CODEGRAPH_NODE` 为 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe`，SDK 为同根 `runtime/sdk/node_modules/@colbymchenry/codegraph`，第二次 Script 为同根 `runtime/adapters/codegraph.mjs`。`ASTROCYTE_VERIFY_AOCI_EXECUTABLE` 指向 S4 已核公开二进制程序；该路径只用于集成检查，生产没有默认。真实检查覆盖 Node 24.16.0、SDK 1.0.1 实际公开导出、桥语法及 AOCI 版本/commit，未运行模型、索引、业务 HTTP 或最终包解压验收。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
