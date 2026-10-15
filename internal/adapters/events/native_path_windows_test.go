@@ -105,7 +105,7 @@ func TestNativeReplayWindowsShortPathAliases(t *testing.T) {
 
 func replayJunction(t *testing.T, link, target string) {
 	t.Helper()
-	output, err := exec.Command("cmd.exe", "/c", "mklink", "/J", link, target).CombinedOutput()
+	output, err := exec.Command("cmd.exe", "/d", "/c", "mklink", "/J", filepath.FromSlash(link), filepath.FromSlash(target)).CombinedOutput()
 	if err != nil {
 		t.Fatalf("create owned junction: %v: %s", err, output)
 	}
@@ -117,6 +117,17 @@ func replayJunction(t *testing.T, link, target string) {
 	if err != nil || !os.SameFile(linkInfo, targetInfo) {
 		t.Fatalf("owned junction must point at target: %v", err)
 	}
+}
+
+func TestReplayJunctionUsesActualWindowsPaths(t *testing.T) {
+	base := t.TempDir()
+	target := filepath.Join(base, "Owned target with spaces")
+	link := filepath.Join(base, "Owned junction with spaces")
+	if err := os.Mkdir(target, 0700); err != nil {
+		t.Fatal(err)
+	}
+	// 明确的正斜杠参数经过同一 helper，实际创建的 junction 由文件身份核实。
+	replayJunction(t, filepath.ToSlash(link), filepath.ToSlash(target))
 }
 
 func TestNativeReplayWindowsRejectsOwnedJunctions(t *testing.T) {
