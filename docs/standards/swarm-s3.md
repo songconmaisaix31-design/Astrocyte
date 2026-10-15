@@ -1,5 +1,29 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第十五阶段：成员预检查的外层事务边界
+
+2026-10-16，Task `task_da9aebf03f83` / Dispatch `ctx_463188124a36` 对模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_76ef94015349` 交付 SOURCE `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b`，前置 REPORT 为 `08e5fcc165bff1294129347bd35f82e11d921714`。实际客户端和配置模型由本次 Orca worker projection 核实为 Codex / `gpt-6.1-sol`。接管时已有 `commands.go`、`usage_test.go` 的 `interrupted` 终态处理，完整保留并验证；该状态仍须同时具备原 operation/session、实际停止和适用用量证据，未知状态继续保持租约及预算。本阶段没有原生初始化、模型输入、登记或真实用户数据读取。
+
+Claim 与任务选择使用同一个最外层成员授权回调，当前 Grant、成员描述和随后账本读取共用最终 SQLite 事务。Submit 先结束租约读取事务，再执行成员预检查；提交前和最终写入时继续验证当前授权、原租约及预算。成员用途为 `claim_work_item` 或 `submit_artifact`，原 `read_swarm` 权限在同一事务内另行核验。`SwarmApprovalBridge` 遇到调用方已有 Workspace 或 Swarm 写事务时，在成员观察前立即返回 `version_conflict`，不会再等待调用方持有的数据库连接。
+
+真实单连接 SQLite 回归检查的首轮保留为 FAIL：Workspace 分支没有在事务边界拒绝；Swarm 分支等待自身占用连接，三秒后返回 `context deadline exceeded`。修复后相同两个分支均立即返回预期错误，原连接等待期限和断言保持。首失败与修复日志仅存本机 `D:/Astrocyte-agent-assets/20261015/product/s3/member-boundary-{first-red,fixed}.log`。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 ./internal/workspace/domain -count=1 -timeout=120s` | PASS；领域规则、真实 S2 批准、两个连接唯一 Mission、异输入冲突、撤销与重开 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarm(Actual\|Native)' -count=1 -timeout=180s` | PASS，6.684 秒；新增真实事务边界、原两个连接唯一租约和原子预算、Git/Go 组件及私有身份存储 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，2.306 秒；真实 listener、生产 Swarm router、认证及 SQLite |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、六个修改 Go 文件的 `gofmt -l`、`git diff --check` | PASS；33 包，格式检查无输出 |
+| `git push origin HEAD`、`git ls-remote --heads origin songconmaisaix31-design/product-swarm-20261015` | SOURCE 普通 push 成功，远端完整 SHA 相同 |
+
+全部 Go 进程沿原共享 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，本进程及子进程的 `GOTMPDIR`、`TEMP`、`TMP` 均使用 `D:/Astrocyte-agent-assets/20261015/go-temp/product-s3`。本机日志为 `s3-outer-domain-final.log`、`s3-outer-sqlite-final.log`、`s3-outer-http-final.log`；均在上述专用产物目录。
+
+S2 当前 Task `task_6846cdb90c46` / Dispatch `ctx_54302cb333c4` 已确认独立公共契约文件 `internal/workspace/app/session_bindings_observation.go`，包含私有观察值和两阶段授权接口。最外层事务前获取两次真实 Git 观察，最终同数据库事务内复核当前 Grant、成员绑定、固定包与 Registry 身份，继续使用原十秒预算；观察阶段不将空 `Used` 计为实际用量，只有最终事务计算最新 `Used` / `Concurrency`。准确契约 SOURCE 和实现 SOURCE 尚未交付，本阶段桥仍使用当前 S2 接口，双观察的完整生产路径尚未验证。后继消费原负责人已提交的准确契约后，继续完成桥调用和原 H 装配，不能用本阶段组件结果替代验收。
+
+原公开来源 `.verification/s3-public-stats` 只读核实 HEAD 仍为 `da3bdddb085808863090a05f60cc1c64415039cf` 且 clean。原 `.verification/s3-public-stats-context/BRIEF.md` 和固定 `NewSwarmGoProjectChecks` 定义已通过 Orca 直接交当前 H 与 M-relay；原来源没有修改。H 负责登记和操作其自身唯一验证 checkout。Calls 与完整权限两项未答，Claim 拒绝及 `Known=false` 保持；完整 AT08/09/13/16、两个实际 Agent、人工采用和六步经验首跑仍 NOT_RUN，Task 继续。
+
 ## 第十四阶段：当前 S2 私有控制器身份映射
 
 Task `task_da9aebf03f83` / Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` 交付 S3 SOURCE `9266bc043b3eeab1262c0e86e9a689ad20f50630`。实际客户端 Codex / 模型 `gpt-6.1-sol`。H 已有 S2 新绑定类型，消费此 S3 提交即可取得两字段映射及参数检查，不需要重新消费其已有 S2 全部历史。
