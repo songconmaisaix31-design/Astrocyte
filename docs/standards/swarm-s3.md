@@ -6,7 +6,7 @@
 
 该 H 基线还需 B 的 `c110201774dd61b8d7e5280526364786c6af4cc2`：只修改 `internal/workspace/app/project_policy.go` 及 `project_policy_test.go`，将 `reject_artifact` 加入已知操作并要求人类身份。019 原始来源为 B `da79452d1735f8fceca103aaf9d10bb53182f1f5`，020 原始来源为 B `da48a114d91181075bd32b62996beadd9c2c0a25`；所需 S2 公开端口原始来源依次为 `4eec31ddfde39fa3f548691ec6e7f2f34470351a`、`5d0ba735533f68259b91128dc404c8e4c2f2a535`、`507be52f4e31759dc8c3765aeea964f1f2efe013`、`80248d2c7177823d4535e7730453481426a27305`。这些前置已经存在于核对过的 H 文件内容中。
 
-随后按下表顺序消费八个已 push 的纯业务提交。每行 `{a,b}.go` 分别表示同一路径下的 `a.go` 与 `b.go`；`git show --format= --name-only <完整 SHA>` 返回该提交实际文件列表。八个提交全部只修改 Swarm、Swarm SQLite/HTTP 与 S3 测试，不含 report-only、共享依赖、冻结领域或其他业务历史。
+随后按下表顺序消费九个已 push 的纯业务提交。每行 `{a,b}.go` 分别表示同一路径下的 `a.go` 与 `b.go`；`git show --format= --name-only <完整 SHA>` 返回该提交实际文件列表。九个提交全部只修改 Swarm、Swarm SQLite/HTTP 与 S3 测试，不含 report-only、共享依赖、冻结领域或其他业务历史。
 
 | 顺序与准确 SOURCE | 实际修改路径 |
 |---|---|
@@ -18,6 +18,7 @@
 | 6 `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0` | `internal/swarm/app/{commands,contracts,lifecycle,queries,usage_test}.go`；`internal/swarm/domain/{mission,usage,usage_test}.go`；`internal/adapters/sqlite/swarm_{approvals,store,store_test}.go` |
 | 7 `2bd5d26ea6f932d8511afd869ff41f2146c0f94a` | `internal/swarm/domain/{policy,policy_test}.go`；`internal/adapters/sqlite/swarm_{history,store,store_test}.go` |
 | 8 `10fa36cdd68b3247a70da9230453b74c0f5a04fa` | `internal/swarm/app/lifecycle.go`；`internal/swarm/domain/{mission,recovery_test}.go`；`tests/s3/approval_test.go` |
+| 9 `70e6e5a03fca9a19aa0a70e44b23b78337d34714` | `internal/swarm/app/{binding_context,binding_context_test,commands,contracts,queries}.go`；`internal/adapters/sqlite/swarm_approvals.go` |
 
 完整工厂为 `swarmapp.NewSwarmService(repo, grants, members, evidence, ownership, options...)`，五个必需依赖均不能为 nil。`repo` 使用 `sqlite.NewSwarmRepository(db)`；`grants` 使用 `sqlite.NewSwarmApprovalBridge(db, actualS2)`，必须为相同 `*DB`；`members` 同时提供 `MemberAuthorizer.CheckMember` 与 `ExecutionDescriptorReader.DescribeExecution`；`evidence` 使用 `sqlite.NewSwarmGitEvidence(actualObjects, actualProjectChecker)`；`ownership` 提供原 operation/session 的 `Reconcile` 和 `Stop`。`ServiceOptions{ProjectMaxActive: n}` 是唯一可选配置，只接受正数，缺省为 2，同时遵守 Grant 更小的上限。
 
@@ -47,6 +48,31 @@ H 在同一生产认证 router 内调用 `h.registerSwarmS3(mux, service)`，移
 本域 `swarmResult` 返回 200 成功；NotFound→404；ValidationFailed/EvidenceMissing→400；ScopeDenied/ApprovalRequired/ApprovalRevoked→403；VersionConflict/ContextStale/IndexStale/DeliveryUnknown/LeaseLost/BudgetExhausted→409；UnsupportedCapability→501；ProviderUnavailable→503；其他错误→500，并沿现有 `writeError` 错误 DTO 返回安全摘要。实际源码为 `internal/adapters/httpapi/swarm_missions.go` 和 `swarm_work_items.go`，H 保持 OpenAPI、主 router 与装配的唯一写入范围。
 
 上述清单已先发 H、M-relay 和本模块；当前文档不表示 H 新组合已经测试通过。原生依赖继续由 R 提供，已知两阶段准确 SOURCE 为 `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854`，不依赖其后续 L Interpreter WIP。真实成员、执行描述、ownership 组合与完整 S3 验收仍待实际运行。
+
+## 第十阶段：当前成员绑定与原生事实桥接
+
+Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b` 对模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_9ce12d181768`（原 `ctx_b1cd2e0a39aa`）继续实施。模块 `msg_df9afffad744` 已明确：R 只提供原控制器事实，S2 核绑定、epoch、Grant 和当前权限，S3 在自身 `swarm_*` 范围映射 Member/执行描述/ownership，H 只做工厂装配。没有扩大写入范围或派发其他人员。
+
+SOURCE `70e6e5a03fca9a19aa0a70e44b23b78337d34714` 已普通提交并 push，远端同值。Claim、Submit 和局部任务选择在读取实际执行描述前，经 `executionForGrant` 在同一真实授权事务中按 `claim_work_item` / `submit_artifact` 用途重新检查 S2 绑定。该检查使用现有实际账本累计用量；最终认领或提交仍另行重核完整资源、当前工具、授权与 CAS。
+
+`SwarmApprovalBridge` 使用实际 `WithAuthorizedSessionBindings` 和 `ReadContextPacket` 读取授权绑定及不可变上下文包；核对 Packet/Project/Grant/epoch/Worktree 后，向私有 `AuthorizedBinding` context 注入用途、binding ID/version、packet ID、project/member、session/native session、adapter、worktree ID 和固定 Root。`AuthorizedBindingForMember` 将调用方与 Member 逐项匹配；缺少真实授权上下文、用途变化、身份或版本变化、工作树变化和不完整原身份均立即拒绝。请求正文不能填写或覆盖该 context。参数测试仅验证这些规则，没有构造原生 API、Registry 或模型成功。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 -count=1 -timeout=120s` | PASS，包含新的绑定参数检查与真实 S2/SQLite 链 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1 -timeout=180s` | 最终 PASS，7.865 秒；首次完整运行的失败另行保留 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，16.054 秒 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、`git diff --check` | PASS，33 包边界保持 |
+
+首 RED 保留：首次 SQLite 组合运行中，`TestSwarmActualFixedGoChecksApprovedPublicBaseline` 在原两分钟 Lease 窗口内未完成，141.63 秒返回 `context deadline exceeded`，包运行 172.417 秒失败。没有增加 Lease、测试超时、skip 或减少断言。随后相同源与限制的该测试单独运行 6.108 秒 PASS，再运行完整六项组合 7.865 秒 PASS；此前超时的具体原因尚未确认。新 Go 命令已按根当前指令仅对自身进程使用 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR` 继续为本轨独占 `D:/Astrocyte-agent-assets/20261015/go-temp/product-s3`，没有清理或复制缓存。
+
+R 新 SOURCE `9807d2b6d7f0042bcd59d36ded0b332d74333dc2` 提供 `Registry.ReadOwnedInputOperation(ctx, sessionID, inputOperationID, purpose)` 与 `StopOwnedInputOperation`。已只读核其两用途语义：认领要求原 live controller，提交要求原 input 实际已受理并允许原持有退出 tuple；Tools/Targets/Calls/Tokens Known 目前均为 false。该文件依赖完整 cc326 的 Relay 基础，而当前 S3 起点没有整套 Relay 类型与实现；已向 R 交独立可编译通用事实契约和准确最小来源请求，避免重复引入无关历史。未知事实保持未知，不能据此放行认领或释放有上限的预算。
+
+根 `msg_cfd1d9b6090a` 经模块 `msg_ec54aa029bae` 确认已安装 Codex 0.162 原生 schema 实际不提供完整 Tools/Targets 集合和全部尝试调用分母；对应 Known 保持 false。原 `rawResponse/completed` 只支持去重后的已完成 response 计数，nullable token usage 只能按原 accepted turn/response 在私有来源中去重。没有把缺证据写成零或完整成功率，没有修改公开六字段。当前 Swarm 的原生执行守卫仍拒绝未知完整执行描述，有上限的实际 calls 未知时继续保留预算；已将授权政策验证与这些观测指标的区分作为待明确项交模块，不自行变更预算含义。
+
+S2 当前绑定实现对所有操作无条件拒绝 `session.StopConfirmed`，已将这一真实提交阻断交 S2 `ctx_b9a5305d8480`：认领应核当前 live，提交应保留同一原持有退出 tuple 的来源与当前批准；新绑定的 live 条件继续独立核实。S3 没有修改 S2 文件或绕过其授权。完整原生事实桥、两个真实 Agent、实际提交与人类采用、接续/交接和第二任务经验引用尚未通过，本阶段没有模型或原生启动，Task 继续执行。
 
 ## 第九阶段：固定项目实际公开
 
