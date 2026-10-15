@@ -92,6 +92,19 @@ T SOURCE `41f88230997382ea0972652ab3f15135c75a90f1` / REPORT `b6799eb090df2fbb8c
 
 F 只读检查发现 `b7e3` 测试依赖自身未有的 repositorycontext；单点五文件缺依赖，普通合入会带入四十八个未同祖先提交和六十八文件。产品 UI 的 merge-tree 预检亦出现二十处非 UI 冲突，双方均未进入实际 merge。当前消费方式已确定为等待 H 验证完整 S2/S3/S4 依赖与公开契约的组合 SOURCE，再交 F 生成客户端及原 UI；不单独消费 `b7e3`、不删测试或代补后端，当前原分支和 WIP 保留。
 
+### 11:21 原产品 UI 接续 S5 委托设置计划
+
+根 `msg_3725a0f62f83` 与 M-release `msg_dbb96618e5fa` 明确 S5 DelegationRule、固定 Opportunity 版本与受信任同事务准入已属当前 SPEC 实施授权。运行时开启、题型、后端、语言、外发范围、预算、复核与阈值由用户明确配置；未配置时拒绝自动委托，Agent 不代填或开启。`opportunity_admission` 保持 purpose，题型仍为 choice/score/truth；判断推荐不等于资料准入或任务批准。
+
+F 本人 `msg_ea981e24bc0d` 已核 `7fecd10` clean、新目录和 S5 spec 均不存在、零 WIP，从该消息起停止下列新增页面域。现有 RankingPanel 只承担四维排序，仍归 F。产品 UI 已交 SOURCE `94e21baebbb9c50ee53d03438efe2bab461b2f0b` / 独立 REPORT `580d98417c8648686f193a04d2e03092250fdcdd`，本人报告 clean；继续同一 Task、终端、树与分支，不新增写入者或第四层。
+
+| 原负责人 | 接续独占路径 | 实际内容与验收 |
+|---|---|---|
+| 原产品 UI `task_d0cee5a583bb` / `ctx_af3cbd15f128` | 新 `web/src/pages/attention/delegation/**`、`web/e2e/s5-*.spec.ts`；原 `docs/standards/product-ui.md` 与既有 S2/S3/S4 页面域继续 | 复用此前白绿 React/TypeScript 设计与共享组件，实现逐题型显式委托配置、固定规则/机会版本、当前后端状态、有限预算及复核和反馈。真实 HTTP/SQLite 验证人工配置、版本冲突、关闭/撤销、未配置拒绝、拒答/截断/缺证的可见状态；未知费用保持 unknown，模型建议不直接批准或执行 |
+| 原 F `ctx_4a385bf65390` | 共享 `web/src/api/judgment.ts`、生成 DTO、hooks/auth 与 AttentionPage 薄接入；RankingPanel 原域保留 | 只消费 H 准确 OpenAPI SOURCE 生成客户端，将准确请求/响应交原 UI；不写新增页面及 S5 spec，不用网络响应替代验收 |
+
+该计划普通 push、精确来源与正式移交消息满足后，才由原 UI 开始对应文件。先真实后端契约，再公开客户端，再页面；接口未交付前只读已明确规格和设计，不猜字段、冻结未答签名或填造 proof。H 只公共装配/契约，原 S5 只判断服务/HTTP 前缀；B 保持唯一迁移、依赖、config 及 Attention 准入授权端口。原 S2/S3/S4 和 Relay 真实核心路径继续，S5 UI 阶段通过不会结算模块。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
