@@ -1,5 +1,30 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第十六阶段：两阶段成员观察与原 input 终态
+
+Task `task_da9aebf03f83` / Dispatch `ctx_463188124a36` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349` 交付 SOURCE `3d49ed9ad7ac6ff3d26cc722eebcb69f58bd70a8`。客户端和实际配置模型为 Codex / `gpt-6.1-sol`，本阶段模型输入和原生初始化均为零。
+
+S2 原负责人明确许可消费最小 SOURCE `6eedf02d4da0efbaac44221435981b3aca5eb0c3` 的完整 `internal/workspace/app/session_bindings_observation.go`，本树用文件编辑工具原样消费为 `bd08c2b5e20576960f07bdb79a62bada1d4b97f7`。随后按模块正式答复 `msg_8430ba50abb6`，只消费 R SOURCE `23253502143bb23bf47e1606c38e0158540e328d` 的 `internal/workspace/domain/relay_member_evidence.go` 与原私有序列化测试，独立提交为 `12f659b7d741a48237ae2230c786d7ac3572590b`。三件完整文件分别与其准确原件 diff 为零，R 本人独立复核两原件相同；这些文件的临时写入已经结束，后续维护归还原 S2 / R。两次消费均已普通 push，未合入其余实现或祖先。
+
+`SwarmApprovalBridge` 在最外层 `WithWorkspaceTx` 之前调用原 `ObserveSessionBindings`，只将原请求的私有观察值传给最终事务。最终事务根据最新 Mission 与 Lease 计算 `Used` / `Concurrency`，其余授权字段保持一致，再调用原 `WithObservedSessionBindings`。成员用途检查、原 `read_swarm` 权限、当前 Grant、绑定、固定 ContextPacket 和原 Registry 身份复核保持。缺少真实两阶段 S2 服务时直接拒绝。S2 完整实现 SOURCE `aa0a5d310cbfc5c07063bb22fdc951e6ca549195` 已由原负责人交 H；原实现允许正常派生的事务 context，复核原请求取消状态，并保持两次 Git 观察及原十秒预算。该完整实现没有复制进本 S3 树，真实 owned 双观察正向尚未运行。
+
+`SwarmNativeBridge` 核对原租约与完整 controller / startup / native / input tuple 后，只传递原受理 turn 的 `codex_turn_completed` 结果。支持的实际终态为 `completed`、`failed`、`interrupted`，原生失败分类为 `native_failure`。部分观察、来源缺失、缺少原受理 turn、未知终态和矛盾的完成 / 失败组合立即报错。控制器停止确认与 input 终态分别保留；没有完整用量来源的 calls / tokens / money 继续未知，响应数量和退出观察不补充预算数量。既有 `swarm.execution_reconciled` 事件保留安全分类的 `failure_code`，未分类字符串不得写入该事实。
+
+原结果映射的首次参数检查为 FAIL：三个受支持终态均未传递，首日志保留于 `D:/Astrocyte-agent-assets/20261015/product/s3/native-result-first-red.log`。修复后的参数检查覆盖原终态和失败码、结果与停止确认独立、未知用量，以及十四种缺失或矛盾观察。它们只检验参数规则，没有创建 Registry、会话、原生协议或实际执行记录，不表示真实原生生命周期验收通过。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 ./internal/workspace/domain -count=1 -timeout=120s` | PASS；领域、真实 S2 批准 / 撤销 / 幂等 / 重启，以及消费的私有序列化规则 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarm(Actual\|Native)' -count=1 -timeout=180s` | PASS，7.314 秒；原实际两个连接的唯一租约 / 预算事务、Git / Go / 私有存储及上述参数规则 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，2.246 秒；真实 listener、生产 Swarm router、认证与 SQLite |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3`、`go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、四个修改文件的 `gofmt -l`、`git diff --check` | PASS；33 包，格式检查无输出 |
+| `git push origin HEAD`、`git ls-remote --heads origin songconmaisaix31-design/product-swarm-20261015` | SOURCE 普通 push 成功，远端完整 SHA 相同 |
+
+本阶段进程临时目录和共享 Go cache 沿第十五阶段的明确 D 盘路径；实际日志为专用产物目录的 `two-phase-domain.log`、`two-phase-sqlite.log`、`two-phase-http.log`。H 消费本域后继前须具备原 S2 两阶段实现与原 R 四字段契约；已有完整同内容时无需重复消费其余历史。原 S3 最外层事务调整 SOURCE `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b` 仍是本阶段前置。
+
+R 已确认：持久化的新 input 准备 → Claim → 同 operation Send 尚缺 B 既有 projects / operation 收据入口。任意调用者 UUID 不能证明 input 已准备，本桥对无原租约的新 Claim 继续拒绝；该缺口已交模块及原 R，未建立替代执行者。Calls 与完整权限两项未答，`Known=false` 和未知用量保持。真实 owned 双观察、H 完整服务组合、两个实际 Agent、原生接续 / 显式交接、人工采用和六步经验首跑仍 NOT_RUN；完整 AT08/09/13/16 未通过，Task 继续。
+
 ## 第十五阶段：成员预检查的外层事务边界
 
 2026-10-16，Task `task_da9aebf03f83` / Dispatch `ctx_463188124a36` 对模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_76ef94015349` 交付 SOURCE `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b`，前置 REPORT 为 `08e5fcc165bff1294129347bd35f82e11d921714`。实际客户端和配置模型由本次 Orca worker projection 核实为 Codex / `gpt-6.1-sol`。接管时已有 `commands.go`、`usage_test.go` 的 `interrupted` 终态处理，完整保留并验证；该状态仍须同时具备原 operation/session、实际停止和适用用量证据，未知状态继续保持租约及预算。本阶段没有原生初始化、模型输入、登记或真实用户数据读取。
