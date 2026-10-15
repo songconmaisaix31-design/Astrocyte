@@ -243,3 +243,72 @@ test('公开B工作树缺少真实AOCI治理索引时保留失败与空存储', 
     await expect(panel.getByRole('alert').filter({ hasText: '缺少可核查的仓库上下文' })).toBeVisible();
   } finally { await server.close({ preserveData: true }); await owned.unchanged(); }
 });
+
+test('真实同步与预算拒绝保留输入，离线维护未知锁跨重开与刷新且无重发', async ({ page, context }) => {
+  test.setTimeout(240_000);
+  const owned = await configuredService();
+  const { server, api } = owned;
+  try {
+    const project = await register(api, owned.b, '公开工作树 B 的同步与预算核查');
+    const mutations: string[] = [];
+    page.on('request', request => {
+      if (new URL(request.url()).pathname === `/api/v1/local-projects/${project.id}/repository-context/index`) mutations.push(request.method());
+    });
+    let panel = await openPanel(page, server.webURL, project.id, 'search');
+    const first = await indexFromMissing(page, panel, project);
+    const syncing = response(page, project.id, 'index');
+    await panel.getByRole('button', { name: '同步代码索引', exact: true }).click();
+    const synced = await syncing;
+    expect(synced.status()).toBe(200);
+    expect(synced.request().postDataJSON().action).toBe('sync');
+    const current = (await synced.json() as S['RepositoryIndexEnvelopeV1']).repository_context;
+    expect(current.state).toBe('ready');
+    expect(current.generation).not.toBe(first.index.generation);
+    expect((await result(await reread(page, panel, project.id, 'search'))).index.generation).toBe(current.generation);
+    expect(mutations).toEqual(['POST', 'POST']);
+
+    await panel.getByLabel('最多读取文件数', { exact: true }).fill('101');
+    const limited = response(page, project.id, 'search');
+    await panel.getByRole('button', { name: '读取仓库上下文', exact: true }).click();
+    const refused = await limited;
+    expect(refused.status()).toBe(409);
+    expect((await refused.json() as S['ErrorV1']).error.code).toBe('budget_exhausted');
+    await expect(panel.getByLabel('最多读取文件数', { exact: true })).toHaveValue('101');
+    const queriedResult = panel.getByRole('region', { name: '实际仓库上下文结果', exact: true });
+    await expect(queriedResult.getByRole('alert')).toContainText('API 409 [budget_exhausted]');
+    await expect(queriedResult).toContainText('101 个文件');
+    await expect(queriedResult.getByText(first.symbol.id, { exact: true })).toHaveCount(0);
+    await expect(panel.getByRole('region', { name: '已保存的索引结果', exact: true })).toContainText(current.generation);
+    expect(server.query('SELECT generation FROM repository_context_indexes WHERE project_id=? AND backend=?', project.id, 'codegraph')).toEqual([{ generation: current.generation }]);
+    await expect(panel.getByRole('button', { name: '同步代码索引', exact: true })).toBeDisabled();
+    await panel.getByLabel('最多读取文件数', { exact: true }).fill('100');
+    const recovered = response(page, project.id, 'search');
+    await panel.getByRole('button', { name: '读取仓库上下文', exact: true }).click();
+    expect((await result(await recovered)).index.generation).toBe(current.generation);
+    await expect(queriedResult.getByRole('alert')).toHaveCount(0);
+
+    await context.setOffline(true);
+    await panel.getByRole('button', { name: '同步代码索引', exact: true }).click();
+    await expect(panel.getByRole('alert').filter({ hasText: '维护结果未知' })).toBeVisible();
+    await context.setOffline(false);
+    await panel.getByLabel('仓库上下文项目', { exact: true }).selectOption('');
+    await panel.getByLabel('仓库上下文项目', { exact: true }).selectOption(project.id);
+    await expect(panel.getByRole('alert').filter({ hasText: '维护结果未知' })).toBeVisible();
+    await page.reload();
+    panel = page.getByRole('region', { name: '仓库上下文', exact: true });
+    await panel.getByLabel('仓库上下文项目', { exact: true }).selectOption(project.id);
+    await expect(panel.getByRole('alert').filter({ hasText: '维护结果未知' })).toBeVisible();
+    for (const button of await panel.getByRole('group', { name: '明确维护当前项目索引', exact: true }).getByRole('button').all()) await expect(button).toBeDisabled();
+    await fillQuery(panel, 'search');
+    const rereadOnly = response(page, project.id, 'search');
+    await panel.getByRole('button', { name: '读取仓库上下文', exact: true }).click();
+    expect((await result(await rereadOnly)).index.generation).toBe(current.generation);
+    expect(mutations).toEqual(['POST', 'POST']);
+    expect(server.query('SELECT generation FROM repository_context_indexes WHERE project_id=? AND backend=?', project.id, 'codegraph')).toEqual([{ generation: current.generation }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM local_agent_sessions')).toEqual([{ count: 0 }]);
+  } finally {
+    await context.setOffline(false);
+    await server.close({ preserveData: true });
+    await owned.unchanged();
+  }
+});
