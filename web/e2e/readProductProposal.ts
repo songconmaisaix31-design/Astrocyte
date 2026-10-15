@@ -16,7 +16,10 @@ const original = JSON.parse(await readFile(resolve(records, 'product-proposal-hu
 expect(original.context_status).toBe(200);
 const api = await humanAPI(origin);
 const { proposal } = await api.get(`/proposals/${original.proposal_id}`) as S['S2ProposalResultV1'];
+const approvalReadAt = Date.now();
 const { approval } = await api.get(`/approvals/${original.grant_id}`) as S['S2ApprovalResultV1'];
+expect(Date.parse(approval.expires_at)).toBeLessThanOrEqual(approvalReadAt);
+expect(approval.status).toBe('expired');
 const { context_packet: packet } = await api.get(`/context-packets/${original.context_id}`) as S['S2ContextPacketResultV1'];
 const goal = (await api.get('/goals') as S['S2GoalListV1']).items.find(item => item.id === original.goal_id);
 expect(goal?.id).toBe(original.goal_id);
@@ -32,12 +35,22 @@ expect(packet.snapshot.head).toMatch(/^[0-9a-f]{40}$/);
 const database = new DatabaseSync('D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/local/astrocyte-workbench/v0.2-access/app-state/state.sqlite', { readOnly: true });
 const events: { event_id: string; event_type: string; aggregate_id: string }[] = [];
 try {
-  for (const [table, id, expected] of [
-    ['workspace_proposals', proposal.id, proposal], ['workspace_approvals', approval.id, approval], ['workspace_context_packets', packet.id, packet],
-  ] as const) {
-    const row = database.prepare(`SELECT data FROM ${table} WHERE id=?`).get(id) as { data: string };
-    expect(JSON.parse(row.data)).toEqual(expected);
-  }
+  const proposalRow = database.prepare('SELECT data FROM workspace_proposals WHERE id=?').get(proposal.id) as { data: string };
+  expect(JSON.parse(proposalRow.data)).toEqual(proposal);
+  // 到期后的读取视图为 expired，原签发记录保持 active，其他字段完整相等。
+  const approvalRow = database.prepare('SELECT data FROM workspace_approvals WHERE id=?').get(approval.id) as { data: string };
+  const savedApproval = JSON.parse(approvalRow.data) as S['S2ApprovalGrantV1'];
+  expect(savedApproval.status).toBe('active');
+  expect(approval).toEqual({ ...savedApproval, status: 'expired' });
+  // HTTP 快照隐藏本机根目录，允许根显示项目内相对路径；存储中的原身份完整保留。
+  const projectRow = database.prepare('SELECT data FROM local_agent_projects WHERE id=?').get(packet.project_id) as { data: string };
+  const project = JSON.parse(projectRow.data) as S['LocalProjectV1'];
+  const packetRow = database.prepare('SELECT data FROM workspace_context_packets WHERE id=?').get(packet.id) as { data: string };
+  expect(packet.snapshot).not.toHaveProperty('root');
+  expect(packet.scope.roots).toEqual(['web/src/pages/workspace/proposals']);
+  expect(JSON.parse(packetRow.data)).toEqual({ ...packet,
+    snapshot: { ...packet.snapshot, root: project.root }, scope: { ...packet.scope, roots: savedApproval.scope.roots },
+  });
   for (const [id, type] of [[proposal.id, 'workspace.proposal_approved'], [packet.id, 'workspace.context_packet_built']]) {
     const rows = database.prepare('SELECT event_id,event_type,aggregate_id FROM foundation_outbox WHERE aggregate_id=? AND event_type=?').all(id, type) as typeof events;
     expect(rows).toHaveLength(1);
@@ -58,7 +71,11 @@ try {
   await page.goto(`${origin}/workspace?tab=proposals`);
   await page.getByRole('button', { name: `查看提案 ${proposal.content.title}`, exact: true }).click();
   const dialog = page.getByRole('dialog', { name: '提案详情', exact: true });
+  const grantPanel = dialog.getByRole('region', { name: '审批授权', exact: true });
+  await expect(grantPanel.getByRole('status', { name: '状态: 已过期', exact: true })).toBeVisible();
+  await expect(grantPanel.getByRole('button', { name: '撤销批准', exact: true })).toBeDisabled();
   const panel = dialog.getByRole('region', { name: '批准范围内的固定上下文', exact: true });
+  await expect(panel.getByRole('button', { name: '建立固定上下文包', exact: true })).toBeDisabled();
   await panel.getByLabel('读取固定上下文包 ID', { exact: true }).fill(packet.id);
   await panel.getByRole('button', { name: '读取指定上下文包', exact: true }).click();
   const reference = panel.getByRole('region', { name: `固定上下文包 ${packet.id}`, exact: true });
@@ -68,7 +85,9 @@ try {
   await expect(reference).toContainText(original.grant_id);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect(commands).toEqual([]);
-  const result = { source, goal_id: original.goal_id, proposal_id: proposal.id, grant_id: approval.id, context_id: packet.id, events, native_sessions: 0, commands, completed_at: new Date().toISOString() };
+  const result = { source, goal_id: original.goal_id, proposal_id: proposal.id, grant_id: approval.id, context_id: packet.id,
+    stored_grant_status: 'active', effective_grant_status: approval.status, expires_at: approval.expires_at,
+    events, native_sessions: 0, commands, completed_at: new Date().toISOString() };
   await writeFile(resolve(directory, 'product-proposal-readonly.json'), JSON.stringify(result, null, 2), { flag: 'wx' });
   console.log(JSON.stringify(result));
 } finally { await browser.close(); }

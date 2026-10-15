@@ -1,5 +1,29 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:18 同一运行实例 HTTP / DOM / SQLite 恢复
+
+本阶段 SOURCE `1e242e1573b72046adf572bb0874c6f870730636` 已普通 push，仅修改 `readProductProposal.ts`；沿用前序输入与输出分离 SOURCE `6503077885aee63dd97f9642deab66ba57167925`。Task / Dispatch 为 `task_7cbe30017760` / `ctx_c22d1dd61be3`，客户端与模型仍为原 Codex / `gpt-6.1-sol` / xhigh fast / `--yolo`。
+
+H 正式交付的同一产品为 `http://127.0.0.1:64505`，准确运行 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332`、buildinfo modified=false、PID45616、启动 UTC `2026-10-15T20:13:21.8983808Z`。本次使用 H 保留的原 SQLite 与 LOCALAPPDATA，只通过原 human 会话执行读取。原记录仍在前序 `ctx_fefd1edc052e/.verification`，所有新增输出位于本次 `ctx_c22d1dd61be3/.verification`，均在 `D:/Astrocyte-agent-assets/20261015/product/frontend/` 下；浏览器复用 `D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001`。
+
+| 实际命令（在 web 执行，使用下段环境） | 结果 | 本次输出目录内记录 |
+| --- | --- | --- |
+| `node --experimental-strip-types e2e/inspectProductCore.ts` | EXIT0，1920 窗口七页均 HTTP200、零页面异常、零水平溢出；集合为 2 资料 / 1 项目 / 1 Goal / 1 Proposal / 0 Mission；零页面写入 | `product-core-recovery.log`、`product-core-readonly.json` |
+| `node --experimental-strip-types e2e/readProductPaper.ts` | EXIT0，1280 窗口完整显示实际论文和人工摘要摘录；两资料三版本、五个实际事件逐 ID 定位 | `product-paper-recovery.log`、`product-paper-readonly.json` |
+| `node --experimental-strip-types e2e/readProductProject.ts` | EXIT0，1280 窗口显示原 r2 目录权限、读取动作和禁止原生启动状态；HTTP / SQL 权限一致、原生会话零 | `product-project-recovery.log`、`product-project-readonly.json` |
+| `node --experimental-strip-types e2e/readProductProposal.ts` | EXIT0，1280 窗口显示实际过期 Grant，撤销及建立上下文禁用，原固定包仍可读取和展开；两个 Workspace 事件逐 ID 定位 | `product-proposal-safe-view-role.log`、`product-proposal-readonly.json` |
+| `npm run typecheck` | EXIT0 | `typecheck-safe-view-final.log` |
+| `npx eslint e2e/readProductProposal.ts` | EXIT0 | `lint-safe-view-final.log` |
+| `git diff --check` | EXIT0 | 实际命令输出 |
+
+环境明确指定 `ASTROCYTE_TEST_PRODUCT_URL=http://127.0.0.1:64505`、`ASTROCYTE_TEST_PRODUCT_SOURCE=cffac3671f21dbf90df9eaa2804a2eb5e070d332`、上述原记录目录 `ASTROCYTE_TEST_PRODUCT_RECORDS_DIR` 与本次 `ASTROCYTE_VERIFICATION_OUTPUT_DIR`，TEMP / TMP 使用本次输出目录。论文核查只读取原 B 明确交付的四件公开 HTML：`ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification`。
+
+Grant 的实际 `expires_at=2026-10-15T19:48:00Z` 早于本次读取。生产 `ReadApproval` 按真实时间返回 `expired`，原签发记录保持 `active`；测试明确核这两个状态及实际到期时间，其他所有字段完整相等。ContextPacket 的 HTTP 快照明确不含本机 `root`，允许根为 `web/src/pages/workspace/proposals`；测试完整核对 SQL 中原项目根身份、批准的绝对允许根及全部其他字段。原固定来源、Goal、Grant 与 packet 身份不变，没有续期、重建或重发写入。
+
+首失败原件保留：`product-proposal-recovery.log`、`product-proposal-expired-grant.log`、`product-proposal-safe-view.log`；最终通过仅对应本表准确命令。所有页面记录均为零写入，全部七个事件已逐一定位，原生会话和新增模型调用为零。项目原允许读取 200 / 越界 403 记录属于前次实际操作，本次通过读取原结果和持久化权限恢复核查，没有重发原上下文操作。
+
+当前认知 health / today / filters 三个端点仍实际返回 `503 / provider_unavailable / check_filters_or_refresh_local_snapshot`；会话派生事件端点返回 200。H 尚未配置 Q 独立快照根、Jev 或 Laya，后继清理与完成来源装配继续由原作者负责。当前只读核心恢复通过，完整默认仍为原 204 PASS / 55 FAIL / 43 既有 SKIP / 18 无结果、EXIT UNKNOWN；本阶段没有重跑全套或新增 CLI / 模型，完整产品、L1 / L2 与最终发布继续未通过。
+
 ## 2026-10-16 04:11 同一产品的持久化恢复核查
 
 分支 `standards-frontend`，本阶段 SOURCE `6503077885aee63dd97f9642deab66ba57167925` 已普通 push，父提交 `8bd599c8a34661dc9f4a47398212b387278a483f`。当前 Task / Dispatch 为 `task_7cbe30017760` / `ctx_c22d1dd61be3`；客户端 Codex，Orca 实际观测 `gpt-6.1-sol` / xhigh fast，沿原 `--yolo` 配置。原七件产品检查脚本保留，`inspectProductPaper.ts`、`inspectProductProject.ts`、`inspectProductProposal.ts` 的原写入操作没有重发。
