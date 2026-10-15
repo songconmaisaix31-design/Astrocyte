@@ -129,3 +129,7 @@ H 按顺序精确消费以下 SOURCE；仅含报告的提交无须进入其业�
 恢复后在 D 盘进程缓存配置下执行 `tests/s4/verify.ps1 -Phase restart` PASS。`query-readonly` 首次真实运行 FAIL，原件为 `.verification/s4/actual-first/query-readonly-failure-20261015T030418.352154300.txt` 及 `query-readonly-20261015T0304098327094.log`。随后保持同一数量、大小和 mtime 断言，真实两图符号与关系查询、六条作者地图读取全部 PASS，日志为 `query-readonly-20261015T0305549291173.log`；当前查询使用上述 immutable URI。
 
 `uncheckpointed-wal` 也实际 PASS：使用 Node 官方 SQLite 在自有真实图上执行保持原符号名称的 UPDATE，真实事务提交后保持 writer 连接，确认实际 WAL 非空；A 查询返回 `index_stale`，B 查询正常。关闭 writer 完成 checkpoint 后，A 的实际 Count 符号与调用关系再次查询通过。`tests/s4/wal.mjs` 只用于这个 SQLite 并发边界，不创建替代 CodeGraph、API、源码对象或符号。
+
+只读修复 SOURCE `f407337f2199d5e49f1ff49862063d964a738a9c` 已普通 push，并直接交 H 与模块负责人消费。该精确源码的 Node 语法检查、`go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`go build -mod=readonly ./...`、gofmt 检查与 `git diff --check` 均 PASS。Go 日志为 `D:/Astrocyte-agent-assets/20261015/relay/S4/readonly-source-go-{test,vet,build}-final.log`；实际 WAL 验收日志为 `.verification/s4/actual-first/uncheckpointed-wal-20261015T0310375483343.log`。
+
+HTTP 生产组合仍等待 H 的准确注册、认证与构造 SOURCE；现有 `_http` 验证入口没有计为已运行。SemanticIndex 用户决定、HTTP/前端/最终 Windows 包组合及 AOCI 分发条件分别保留待定或 NOT_RUN，本阶段继续同一 Task，不代表 S4 或整个产品验收完成。
