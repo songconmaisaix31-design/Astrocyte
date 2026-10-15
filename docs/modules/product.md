@@ -2,7 +2,22 @@
 
 ## 责任与事实源
 
-2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_e027eba3e81f` / 终端 `term_b3e20cab-a0dc-4cbf-ae56-a13193a65a73`，原子 Run `run_dbf1a68bc692` 已由当前终端接管至 generation 2。总负责人为 `term_cd5e93fe-8940-4fa1-8be6-ea914f3629ae` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `51b0c79fe867b7e0026cb409aed039e6687d77bb`，接管时工作区无改动。旧模块 Dispatch `ctx_b1cd2e0a39aa` 已因重启登记 failed / terminal_missing，历史记录保留。
+2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_9ce12d181768` / 终端 `term_bddcaad2-c49f-4d8e-b769-27448a8cb29e`，原子 Run `run_dbf1a68bc692` 已按根当前交接由本终端接管至 generation 3。总负责人为 `term_72a815fc-b97e-433b-b653-5415cf298e1d` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `4684c3c859845087410a0528898cf852d3f6c023`，接管时工作区无改动。旧模块 Dispatch 因重启的失败记录保留。
+
+### 2026-10-15 10:41 再次重启后的恢复计划
+
+根当前交接 `msg_54ce630eae98` 确认 10:31 运行时再次重启，原人员 OS 进程退出、旧句柄失效；沿原子 Run、原 Task、原工作树和原分支恢复。公开 Task 列表实测 T / S2 / S3 / 产品 UI 均为 `ready`，旧 Dispatch 为 `failed / terminal_missing`。公开终端清单无这四位旧句柄，当前 Codex 进程启动时间均在重启之后；不根据单独的 `missing_status` 判定退出。B/F 生命周期由根在原 Run 恢复，本模块不重复启动。S0–S6 授权和前端复用此前白绿设计、使用 TypeScript 的用户决定保持。
+
+| 原 Task 与唯一写入者 | 当前实际基线 / WIP | 本轮首项工作 |
+|---|---|---|
+| T `task_5f0a79b6a17a` / `product-attention-tests-20261014` | `5b45b0c2a4c6ca8c33a0a1ae8478ec4481877e04`，clean | 继续真实准入 consumer 与同 SQLite 完整链，核原实际 policy/source；保留原 RED，不制造 PolicyVersion |
+| S2 `task_6846cdb90c46` / `product-video-20261014` | `0f16112cd3fd396896f7bdf5323140f104d37cd0`，`tests/s2/approval_test.go` WIP 保留 | 先确认自身安全检查点，再按下方十六文件计划处理 S5 冲突；继续真实 Context / SQLite / Git，缺生产入口交 H |
+| S3/S6 `task_da9aebf03f83` / `product-swarm-20261015` | `fb57f0f31c4e667b050cb26891a891190eaf4c14`，clean | 继续真实两 Agent 与第二任务引用；唯一公开 Go 改进为 `Median`，基线 `da3bdddb085808863090a05f60cc1c64415039cf`，保留 Mean，检查空、奇偶、负数、重复及输入不可变 |
+| 产品 UI `task_d0cee5a583bb` / `product-ui-20261015` | `f70fadfa8d0645ee342cbf96ff67fc97e6e16079`，`ApprovalPanel.tsx` WIP 保留 | 继续原页面、真实 DOM 与键盘路径；消费 H→F 精确公开契约，保持 F 共享 client/auth/hooks/router 与页面域互斥 |
+
+本轮负责人继续只修改此模块文档。每条开发轨道使用 `D:/Astrocyte-agent-assets/20261015/product/<owner>/` 保存新增大型依赖、模型、编译缓存和临时构建，并仅对自身进程设置路径。实测 C 盘空余约 5.2 GB、D 盘约 110 GB；共享缓存不自行清理，可重建且未被使用的自有目录清单交唯一磁盘负责人 M-release `ctx_b80c795a71a4`。
+
+S5 已本人 STOP `msg_4c8ac8b81ac2`；B 旧恢复阶段两项依赖安全 ACK 保留。当前原负责人恢复后重新确认安全检查点；本轮 S2 十六文件安全 ACK 尚未取得，跨树编辑尚未放行。按原计划限定原 B/S2 处理本人冲突后归还 S5，S5 私域 WIP 保留。完整默认 E2E 的已有结果为 203 PASS / 41 FAIL / 32 条件 SKIP / 4 NOT_RUN；本轮未将阶段通过登记为最终通过，模块持续至发布支持完成。
 
 ### 2026-10-15 10:18 重启恢复计划
 
