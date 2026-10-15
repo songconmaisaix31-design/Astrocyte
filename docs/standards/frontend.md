@@ -1,5 +1,21 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 04:53 准入、判断和品味的准确生成契约
+
+本轨已在人工进度 SOURCE `6968284` / 独立 REPORT `963d880` 普通 push、工作区干净后，按模块精确放行，普通 no-ff 合入唯一 I 的 `ecb29c9593348d409514cc1ddff05ff04affcd87`，本树 merge 为 `09a8eab3acabea0fc7533bd8b0194ff504750576`，零冲突。I 的准确阶段含 H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 的真实 human 准入注册、完整 Judgment / Policy / Feedback / Delegation / Taste 及完成经验契约；原负责人提交完整保留，没有手写或覆盖其文件。
+
+显式获准的生成 SOURCE `4e3c384032ab1671e226a819009d95c366d80361` 已普通 push，仅由原 `pnpm generate` 命令生成 `web/src/api/schema.d.ts`，没有手写 DTO 或生成内容；已将完整 SOURCE 直接交原 UI 负责人消费其精确页面范围。后继 F SOURCE `9823adb4fa5f4383e4b9f9cd7c1778bcb74471fb` 已普通 push，仅补全真实 Relay 输入结果和资源释放事实的中文标签，保持生成枚举与未知语义。
+
+| 本次实际命令 | 实际结果 | 记录 |
+| --- | --- | --- |
+| 根目录 `pnpm generate`，随后 `node scripts/generate-client.mjs --check` | 均 EXIT0，生成结果与准确 H 公开源一致 | 实际命令输出 |
+| web 内 `npx tsc --ignoreConfig --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --skipLibCheck src/api/schema.d.ts` | EXIT0，独立生成类型检查 | 本次目录 `typecheck-generated-25b.log` |
+| web 内 `npm run typecheck` | 最终全局 EXIT0；首 EXIT2 原件保留 | `typecheck-integrated-schema-fixed.log`、`typecheck-integrated-schema-first.log` |
+| web 内 `npx vitest run src/pages/workspace/relayFacts.test.tsx` | 1 文件、3 PASS，EXIT0，仅明确显示参数 | `vitest-relay-new-schema.log` |
+| web 内 `npx eslint src/pages/workspace/relayFacts.tsx`，及 `git diff --check` | 均 EXIT0 | `lint-relay-new-schema.log` 与实际命令输出 |
+
+生成的 human 准入请求使用固定候选版本、元数据版本和可选实际项目；201 返回实际 Admission 与草稿引用，读取和撤回路径完整存在。F 继续原 Attention 准入页面，原 UI 继续 Judgment / Delegation / Taste 页面。当前共享产品仍为 b73 / PID4676；上述生成及类型结果不代表新源码已部署或新接口已在该实例验收。固定候选的准入和批准继续等待实际用户决定，没有重发成功或未知操作，没有新增原生会话、CLI 或模型调用。
+
 ## 2026-10-16 04:49 人工项目进度与三层资料
 
 本阶段 SOURCE `696828478eeaf128309079957234bb78aafbaaf9` 已普通 push。新增人工项目状态、说明和可留空的整数完成度表单，使用已有生成 `SetProgressRequestV1`、human 会话、CSRF 与固定操作标识保存；人工保存与模型许可分别控制。读取失败显示过期记录并禁用写入；网络结果未知后保留输入和跨重开持久锁，不因读取而解除。人工保存待定或结果未知期间，进度推断同时禁用。React 组件检查沿既有组件、Hook 与样式完成。
