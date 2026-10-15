@@ -108,7 +108,7 @@ HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确�
 
 ## 生产组合的准确输入
 
-恢复后继续使用同一 Task `task_bd209566be37`、Dispatch `ctx_12ae8872df87`、工作树与分支。Orca 当前 provider 投影记录客户端 `codex`、模型 `gpt-6.1-sol`。新的 Go 进程仅在自身环境中使用 `D:/Astrocyte-agent-assets/20261015/go-build/S4` 和 `D:/Astrocyte-agent-assets/20261015/go-temp/S4`，原始数据库、日志与验证源码继续保留。
+恢复后继续使用同一 Task `task_bd209566be37`、Dispatch `ctx_12ae8872df87`、工作树与分支。Orca 当前 provider 投影记录客户端 `codex`、模型 `gpt-6.1-sol`。本阶段检查实际使用 D 盘 S4 缓存。依模块后续确认，新的 Go 及调用 Go 的父进程仅在自身环境中使用 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR`、`TEMP`、`TMP` 均使用本轨独占的 `D:/Astrocyte-agent-assets/20261015/go-temp/S4`；不修改全局环境，不复制或清理共享缓存。原始数据库、日志与验证源码继续保留。
 
 H 按顺序精确消费以下 SOURCE；仅含报告的提交无须进入其业务组合：
 
@@ -133,3 +133,15 @@ H 按顺序精确消费以下 SOURCE；仅含报告的提交无须进入其业�
 只读修复 SOURCE `f407337f2199d5e49f1ff49862063d964a738a9c` 已普通 push，并直接交 H 与模块负责人消费。该精确源码的 Node 语法检查、`go test -mod=readonly ./internal/workspace/... ./internal/adapters/repositorycontext ./tests/s4/...`、`go vet -mod=readonly ./internal/adapters/repositorycontext ./tests/s4/...`、`go build -mod=readonly ./...`、gofmt 检查与 `git diff --check` 均 PASS。Go 日志为 `D:/Astrocyte-agent-assets/20261015/relay/S4/readonly-source-go-{test,vet,build}-final.log`；实际 WAL 验收日志为 `.verification/s4/actual-first/uncheckpointed-wal-20261015T0310375483343.log`。
 
 HTTP 生产组合仍等待 H 的准确注册、认证与构造 SOURCE；现有 `_http` 验证入口没有计为已运行。SemanticIndex 用户决定、HTTP/前端/最终 Windows 包组合及 AOCI 分发条件分别保留待定或 NOT_RUN，本阶段继续同一 Task，不代表 S4 或整个产品验收完成。
+
+SPEC §9.5 的磁盘异步清理尚未接入：当前 Agent grant 撤销会立即拒绝该主体读取，源码删除后的 sync 会移除当前图中的旧文件与符号；历史 generation 目录仍保留。已交模块协调 B 的现有项目撤销动作、worker 入口及清理作用范围。单个 Agent 的授权撤销不能删除仍供其他授权主体使用的共享项目图，GET 查询保持只读；没有建立新调度器或把该缺口标记为完成。
+
+## 生产配置与发布资产交接
+
+模块 `msg_ba1ff43b111f` 已确认由 B 的可信启动配置显式提供 `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID`，贯穿同一 S4 / S2 快照 provider。身份必须非空并在重启后保持稳定；缺失时相应快照与索引能力明确 unavailable，其他服务可以启动。测试值 `s4-public-windows` 只用于本轨公开项目验证，不作为生产默认。H 负责薄组装，B 负责 config.go，S4 不修改共享入口。
+
+生产 `CacheRoot` 使用实际应用数据目录下的 `repository-context`，独立于源码和发布包。可信预算允许的已有上限为 MaxFiles=20000、MaxBytes=134217728、MaxResults=200、MaxDepth=5；每次 HTTP 查询仍必须提供全部显式预算。Graph 的 Node / SDK / Script 须成组完整，部分配置立即失败；AOCI 可独立显式配置，保存地图的读取不需要其二进制程序。
+
+已交 P 核实的发布路径为 `runtime/node/node.exe`、`runtime/sdk/node_modules/@colbymchenry/codegraph` 和 `runtime/sdk/astrocyte/repository-context/codegraph.mjs`。Node 固定 24.16.0，wrapper 与 Windows 平台包均固定 1.0.1。平台包 `@colbymchenry/codegraph-win32-x64` 必须作为直接依赖进入发布运行时；其 `lib/dist/index.js` 和 `lib/node_modules` 是实际 SDK，不能被 `--omit=optional` 省略，也不能依赖 home 内的缓存。官方 npm 包自身的成熟模块解析保持原样。本机实际加载的公共依赖位于 wrapper 下的 `node_modules/@colbymchenry/codegraph-win32-x64/lib/dist/index.js`。发布方必须运行实际 require 和版本校验，并携带相应第三方许可；本节不把待执行的包验证标记为通过。
+
+AOCI 只接受显式外部本机绝对路径，所选版本与源码标识见前文；分发条件未决定前不把其二进制程序放入发布包。`.verification` 与 `dist/s4` 的工具、数据库和日志均不作为生产默认或包内容。上述生产配置、版本和资产约束已直接交 B、H、P 和产品负责人。
