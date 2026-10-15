@@ -1,5 +1,13 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 空 Prepare 后的同实例来源检查
+
+SOURCE `7037a452a2f7cd61e239a4a054fb2b4d55270f79`，仅修改原实际服务采集入口 `cmd/server/relay_session_live_test.go`。原 `captureActualRelayExecutions` 在原 SQLite 中发现 accepted Prepare、ready 任务和空 pending action 后，读取同一 Registry 持有的原 Session，并核对当前受权限保护的 owned 绑定，再调用生产 `sourceGuard.Check`。原生 controller / startup / session / native 关系与零输入轮次必须一致；档案参数只取原 Prepare 已保存的正选绑定，不发送 RPC、不发现其他来源。
+
+检查状态、实际观察时间、原关系和固定原因仅保存到 H 本机私有文件。空路径、缺档案、链接或 header 身份失败立即保存失败并终止实际服务检查，不能继续 Confirm。通过结果不修改 Prepare 收据或产品状态；首次输入仍执行原生产 guard 的当次检查。HTTP 六字段、游标、原状态机和原生驱动没有变更。
+
+`TestRelaySessionActualService` 开启原执行采集选项，在已登记 D 盘接入根运行空任务真实 SQLite / HTTP 并正常关闭：PASS，检查 1.11 秒、package 4.489 秒；task / registered agent / native session 均为零。`go vet -mod=readonly -p=1 ./cmd/server` 与 `git diff --check` 均 EXIT 0。日志位于原 H D 盘检查目录的 `configured-empty-source-check.log` / `prepared-source-check-vet.log`。本阶段没有原生初始化或模型输入；冷初始化后的实际正选路径、单链接 / header、工具关闭和同实例检查结果仍 NOT_RUN，须在模块授权的唯一真实窗口内核实。
+
 ## 2026-10-16 真实输出与宿主目标检查的生产读取
 
 SOURCE `b22395c6eb1eed0be9e87957ae21111b5ce8f782`，分支 `songconmaisaix31-design/works-relay-http`。当前实际客户端为 Codex，具体模型未获得本轮可独立核实的资料。完整普通历史包含发布指定、实际构建通过的 I 阶段 `35cc64faac271d43e5f63103a810081b0eb7ac62`；没有复制未提交集成内容。
