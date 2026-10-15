@@ -188,6 +188,16 @@ S2 安全 Context DTO / 原持有者工厂 / claim-live 与 submit-same-exited �
 
 F S4 客户端 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f` / REPORT `1c9f042fca46123e308cc770e323406b17455356` 已普通 push且模块独立核远端 REPORT 同值，普通合并为 `90b2819`。生成器、typecheck/lint/build、本树无 overlay 的实际 Go readonly build均通过；五项真实 HTTP/SQLite Vitest 18.26 秒通过，仅覆盖未配置503、400/403、取消与断开，未把它计作正向地图。准确客户端已交原产品 UI，S4 实际配置后 UI 和完整核心继续。
 
+### AT12 计划后继独立 REPORT
+
+计划 SOURCE `ac7222e` 已普通 push，仅修改本管理文档，`git diff --check` 通过。原 B 确认完整品味存储 / reader 当前缺失，拟在本人非冻结应用和 SQLite 范围补不可变修订；新增 `migrations/026_taste_profiles.sql` 两表超出现行 023–025 迁移例外，模块已通过根唯一问答请求该具体例外，当前待答。rubric / example 结构及固定来源继续由原 B / S5 核实，候选依赖 DTO 未冻结，前端未据候选生成代码。原 S2 已收到真实 Goal 的固定版本与同 DB 重核要求，T 保持应用测试原 owner。
+
+S2 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` / 后继 `02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` / 独立 REPORT `b9629a68a3e29f46f394ef1093d99265349dbab7` 已普通 push且模块独立核远端 REPORT 同值。最终真实 Handler/SQLite/Git 29.994 秒通过，原十秒 POST timeout 首失败保留。R 准确 `c569c8718e65a6ca50e2e531580b1f2814ad3056` 的只读 Go overlay 已实际完成：同 aa 的十一 Domain/port/SQLite 文件、B `ce281d003c093ec26e19dfec78e912f20a014787` 两文件编译 EXIT0；真实 SQLite 五顶层 / 七叶场景通过，首参数未引用导致未运行的记录保留。原 R 正常消费及完整服务仍待验证，019 来源仍 `da79452d1735f8fceca103aaf9d10bb53182f1f5`，没有用包级成功替代完整 L。
+
+M-relay / 根明确 H `59a7150b1143680b67fe53fdf831fcca5f328660` / REPORT `0aab7edd54fb7bb031e9709f752c6240ce7852a9` 的旧 Context 绝对 Root 输出未通过安全验收，F/UI 已直接收到停止消费该 Context 的指令；S4 准确 `03bbaed` 继续。原 H 正消费 aa 安全 DTO，实际四 U 已由模块独核，M-relay 已限定原 S2 安全 ACK 后只处理 H 树四件：`internal/adapters/sqlite/workspace_session_bindings.go`、`internal/workspace/app/proposal_ports.go`、`internal/workspace/domain/session_bindings.go`、`tests/s2/approval_test.go`。原 H 对四件停写，S2 仅文件编辑并 stage、不处理生命周期，结束明确归还原 H；模块已接收同范围，无第二写者。
+
+根 `msg_ab0dfdda7d0e` 的原 Service / Store / Receipts 可信登记和同实例 agents.json reload 决定已交唯一 F。F 先同 URL 空 agents / observer ready，H 首次实际写入本次完整目标登记为唯一 t0，写入 / reload / 激活全部计入一百八十秒；Calls 和权限用户待答，当前不提前登记或发送模型输入。旧三分钟失败完整保留，不通过重启实例重计时间。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
