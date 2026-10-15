@@ -8,6 +8,8 @@
 
 按用户最新顺序及模块 `msg_16d49ab01c3a`，先集成并跑通完整产品，再并行全面测试与整理；本轨只做当前主运行缺口所需的无原生核心检查。唯一 I 的准确可构建 SOURCE `ad8413e119379c9795bab558a41fe425ea9095ca` 已包含 S5 `f955fe3`。本轨在干净检查点预检查零冲突，普通 `--no-ff` 消费为 `b1df5ae5c04dbe43cfaf326fde184b4d0de72f32`，保留原七件测试；`go test -mod=readonly ./internal/attention/app -list '^Test'` EXIT0，完整日志为本次 D 根 `i-ad841-app-compile-first.stdout.log` / `.stderr.log`。组合已普通 push 并立即交唯一 I，没有等待本 REPORT 或重复完整构建、旧成功用例、模型推理。
 
+根正式决定 `msg_dfe105fea7e1` / 模块 `msg_da35625d5d1a` 明确：当前 Codex 0.162 公开入口不能满足原生命令 / 文件工具实际关闭，受限原生、L1 及相关真实模型暂不执行。T 不新启动 controller、登记、Send 或模型探针，不重复同入口排查，不以 readOnly 或工具调用零冒称关闭；原十四项和 S1 原生 unknown 检查保留断言及 NOT_RUN。普通 Web / API / 资料 / 项目 / Goal-Proposal / Mission 人工 / 判断认知产品集成继续，具体后续边界由根集中问用户，本轨不重复询问或把该缺口扩大为全部产品停止。
+
 新增核心检查 SOURCE `3bf04993d2895d1b6fea3b01601655b883d51492` 已普通 push，唯一源码改动为 `tests/s1/automatic_test.go`。`TestProductionTasteHTTPKeepsUnconfiguredStateAfterRestart` 启动实际 `cmd/server` 二进制，要求空库的完整 Taste HTTP 读取为 configured=false / profile=nil，随后同库进程重启保持该状态，且不产生 Taste 版本、作业或原生会话。首实际命令 `go test -mod=readonly ./tests/s1 -run '^TestProductionTasteHTTPKeepsUnconfiguredStateAfterRestart$' -count=1 -v -timeout=15m` 在准确组合生产源码上为 RED：服务 health / session bootstrap 已完成，`GET /api/v1/attention-taste-profile` 实际 404，应为 200；测试 9.92s，包 11.695s。后续重启和 SQL 断言因首 GET 失败保持 NOT_RUN，没有修改为接受 404 或增加 skip。
 
 原完整测试输出为本次 D 根 `main-taste-route-first.stdout.log` / `.stderr.log`，实际服务原件为 `s1-native-184671726/server.log` 和 `state.sqlite`。源码核查确认已有 S5 `registerJudgmentTaste`，公共 `httpapi.Services` / `NewServer` 和 `cmd/server` 尚无其装配。准确首失败已通过 `msg_0442560718a0` / `msg_71ab7921892b` 交模块路由原 H 处理，SOURCE 无 REPORT 前置可立即消费。待原 H 的准确新装配 SOURCE 后只做该必要核心复验，保持原成功和未知状态；本次没有发起原生或模型请求，也没有运行全面 Sources 八项检查或新增跨域集成轨道。
