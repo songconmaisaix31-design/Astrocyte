@@ -84,3 +84,10 @@ type RepositoryResult struct {
 	Gaps       []string             `json:"gaps"`
 	MapEntries []RepositoryMapEntry `json:"map_entries,omitempty"`
 }
+
+type RepositoryCleanupResult struct {
+	RetiredIndexes     int  `json:"retired_indexes"`
+	DeletedGenerations int  `json:"deleted_generations"`
+	PreservedEntries   int  `json:"preserved_entries"`
+	HasMore            bool `json:"has_more"`
+}
