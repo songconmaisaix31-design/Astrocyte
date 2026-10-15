@@ -1,4 +1,4 @@
-package app
+package app_test
 
 import (
 	"context"
@@ -7,7 +7,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 func TestClassificationAndSpaceReferenceKeepOriginalAndFixedVersion(t *testing.T) {
@@ -47,7 +50,7 @@ func TestClassificationAndSpaceReferenceKeepOriginalAndFixedVersion(t *testing.T
 		t.Fatal("intentional repeated mention duplicated reference or changed unchanged space")
 	}
 	still, err := s.GetMaterial(context.Background(), human, material.Material.ID)
-	if err != nil || !slices.Equal(still.Material.DomainIDs, []string{d.Domain.ID}) || len(r.state.Materials) != 1 || len(still.Revisions) != 1 || still.Material.HumanUsageCount != 3 {
+	if err != nil || !slices.Equal(still.Material.DomainIDs, []string{d.Domain.ID}) || countRows(t, r, "attention_materials") != 1 || len(still.Revisions) != 1 || still.Material.HumanUsageCount != 3 {
 		t.Fatal("@ copied/moved original or duplicated signal")
 	}
 	updated := importFixture(t, s, "new", "changed bytes")
@@ -60,7 +63,8 @@ func TestClassificationAndSpaceReferenceKeepOriginalAndFixedVersion(t *testing.T
 	_, err = s.GetContent(context.Background(), agent, material.Material.ID, 1)
 	errorCode(t, err, apierrors.ScopeDenied)
 	removed, err := s.RemoveMaterialReference(context.Background(), human, space.Space.ID, RemoveMaterialReferenceCommand{CommandMeta: meta("remove", pinned.Space.Version), MaterialID: material.Material.ID})
-	if err != nil || len(removed.Space.MaterialRefs) != 0 || len(r.state.Materials) != 1 || len(r.state.Domains) != 1 || len(r.state.Materials[material.Material.ID].Revisions) != 2 {
+	persisted, loadErr := s.GetMaterial(context.Background(), human, material.Material.ID)
+	if err != nil || loadErr != nil || len(removed.Space.MaterialRefs) != 0 || countRows(t, r, "attention_materials") != 1 || countRows(t, r, "attention_domains") != 1 || len(persisted.Revisions) != 2 {
 		t.Fatal("reference removal discarded original history or domain")
 	}
 }
@@ -74,13 +78,15 @@ func TestSpaceAndClassificationFailureRollbackSignals(t *testing.T) {
 	}
 	_, err = s.SetMaterialDomains(context.Background(), human, material.Material.ID, SetMaterialDomainsCommand{CommandMeta: meta("missing-domain", 1), DomainIDs: []string{"absent"}})
 	errorCode(t, err, apierrors.NotFound)
-	r.failEvent = true
+	restore := refuseOutbox(t, r)
 	_, err = s.ReferenceMaterial(context.Background(), human, space.Space.ID, ReferenceMaterialCommand{CommandMeta: meta("rollback", 1), MaterialID: material.Material.ID, Revision: 1})
 	errorCode(t, err, apierrors.InternalError)
-	if len(r.state.Spaces[space.Space.ID].MaterialRefs) != 0 || r.state.Spaces[space.Space.ID].Version != 1 || r.state.Materials[material.Material.ID].Material.HumanUsageCount != 0 {
+	persistedSpace, spaceErr := s.GetProjectSpace(context.Background(), human, space.Space.ID)
+	persistedMaterial, materialErr := s.GetMaterial(context.Background(), human, material.Material.ID)
+	if spaceErr != nil || materialErr != nil || len(persistedSpace.Space.MaterialRefs) != 0 || persistedSpace.Space.Version != 1 || persistedMaterial.Material.HumanUsageCount != 0 {
 		t.Fatal("failed reference committed selection or human heat")
 	}
-	r.failEvent = false
+	restore()
 	space, err = s.ReferenceMaterial(context.Background(), human, space.Space.ID, ReferenceMaterialCommand{CommandMeta: meta("valid", 1), MaterialID: material.Material.ID, Revision: 1})
 	if err != nil {
 		t.Fatal(err)
@@ -95,10 +101,9 @@ func TestMaterialListUsesConfiguredActivityRankingAndExplainsDefaults(t *testing
 	s, r, o := fixture(t)
 	old := importFixture(t, s, "old", "old original")
 	c := importCommand("new", "new original")
-	c.SourceKey = "second-source"
-	c.SourceLocator = "https://example.test/second"
-	now := s.options.Clock()
-	s.options.Clock = func() time.Time { return now.Add(time.Hour) }
+	c.SourceLocator = "https://github.com/songconmaisaix31-design/Astrocyte/tree/main/docs"
+	now := time.Date(2026, 10, 9, 13, 0, 0, 0, time.UTC)
+	s = NewAttentionService(sqlite.NewAttentionRepository(r), importers.NewReader(nil), o, ServiceOptions{Clock: func() time.Time { return now }})
 	response, err := s.ImportMaterial(context.Background(), human, c)
 	if err != nil {
 		t.Fatal(err)
@@ -107,7 +112,7 @@ func TestMaterialListUsesConfiguredActivityRankingAndExplainsDefaults(t *testing
 		t.Fatal(err)
 	}
 	newJob, _ := s.GetJob(context.Background(), human, response.JobID)
-	configured := NewAttentionService(r, s.sources, o, ServiceOptions{Clock: s.options.Clock, AttentionHalfLife: time.Hour, AttentionWeights: map[string]float64{"reread": 4}})
+	configured := NewAttentionService(sqlite.NewAttentionRepository(r), importers.NewReader(nil), o, ServiceOptions{Clock: func() time.Time { return now }, AttentionHalfLife: time.Hour, AttentionWeights: map[string]float64{"reread": 4}})
 	_, err = configured.RecordUse(context.Background(), human, old.Material.ID, RecordUseCommand{CommandMeta: meta("active", 1), Action: "reread"})
 	if err != nil {
 		t.Fatal(err)
@@ -121,7 +126,8 @@ func TestMaterialListUsesConfiguredActivityRankingAndExplainsDefaults(t *testing
 		t.Fatal("ranking algorithm or actual configured policy missing")
 	}
 	first.AttentionWeights["reread"] = 999
-	if configured.options.AttentionWeights["reread"] != 4 {
+	independent, err := configured.GetMaterial(context.Background(), human, old.Material.ID)
+	if err != nil || independent.Material.AttentionWeights["reread"] != 4 {
 		t.Fatal("response mutates service policy")
 	}
 	_, err = configured.UpdateMaterial(context.Background(), human, *newJob.MaterialID, UpdateMaterialCommand{CommandMeta: meta("pin-new", 1), Pinned: true, Lifecycle: "active"})
@@ -135,7 +141,7 @@ func TestMaterialListUsesConfiguredActivityRankingAndExplainsDefaults(t *testing
 	if err = ValidateAttentionWeights(map[string]float64{"reread": math.NaN()}); err == nil {
 		t.Fatal("invalid configuration accepted")
 	}
-	invalid := NewAttentionService(r, s.sources, o, ServiceOptions{AttentionWeights: map[string]float64{"reread": -1}})
+	invalid := NewAttentionService(sqlite.NewAttentionRepository(r), importers.NewReader(nil), o, ServiceOptions{AttentionWeights: map[string]float64{"reread": -1}})
 	_, err = invalid.ListMaterials(context.Background())
 	errorCode(t, err, apierrors.ValidationFailed)
 }
@@ -154,7 +160,8 @@ func TestImportReturningKnownContentPreservesHistoryAndReusesWork(t *testing.T) 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if r.state.Materials[a.Material.ID].Material.Version != returned.Material.Version || len(r.state.Jobs) != 2 {
+	persisted, err := s.GetMaterial(context.Background(), human, a.Material.ID)
+	if err != nil || persisted.Material.Version != returned.Material.Version || countRows(t, r, "attention_jobs") != 2 {
 		t.Fatal("unchanged current input created duplicate work")
 	}
 }

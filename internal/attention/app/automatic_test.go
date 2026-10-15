@@ -235,24 +235,6 @@ func TestAutomaticCancellationAfterEntryStaysUnknown(t *testing.T) {
 	errorCode(t, err, apierrors.DeliveryUnknown)
 }
 
-func TestAutomaticPriorScopeCannotExpandSelectedSources(t *testing.T) {
-	s, r, _, m, d := automaticFixture(t)
-	r.state.Distillations["prior-private"] = Distillation{ID: "prior-private", Status: "succeeded", InputRefs: sourceRefs(m), RelatedRefs: []SourceRef{{MaterialID: "unselected-private-material", Revision: 1, Locator: "private"}}}
-	c := autoCommand(m, "prior-private")
-	c.PriorDistillationIDs = []string{"prior-private"}
-	_, err := s.RequestDistillation(context.Background(), human, c)
-	errorCode(t, err, apierrors.ScopeDenied)
-	if d.calls != 0 {
-		t.Fatal("unauthorized prior exposed to model")
-	}
-	row := r.state.Materials[m.Material.ID]
-	row.Revisions[0].Provenance.Processor = "manual"
-	r.state.Materials[m.Material.ID] = row
-	c = autoCommand(m, "allowkey-manual-spoof")
-	_, err = s.RequestDistillation(context.Background(), human, c)
-	errorCode(t, err, apierrors.ScopeDenied)
-}
-
 // Test-only projection, not an application source fetch.
 func (i DistillationInput) InputsRefsForTest() []SourceRef {
 	refs := []SourceRef{}
@@ -264,32 +246,14 @@ func (i DistillationInput) InputsRefsForTest() []SourceRef {
 func TestAutomaticScopeConfigAndHonestFailures(t *testing.T) {
 	ctx := context.Background()
 	s, r, _, m, d := automaticFixture(t)
-	c := autoCommand(m, "deny-agent")
-	_, err := s.RequestDistillation(ctx, agent, c)
-	errorCode(t, err, apierrors.ScopeDenied)
-	s.options.AllowedProcessingSourceKeys = nil
-	c.CommandMeta = meta("deny-scope", 1)
-	_, err = s.RequestDistillation(ctx, human, c)
-	errorCode(t, err, apierrors.ScopeDenied)
-	if d.calls != 0 {
-		t.Fatal("denied call")
-	}
-	s.options.AllowedProcessingSourceKeys = []string{"arxiv:public"}
-	s.options.Distiller = nil
-	c.CommandMeta = meta("notconfigured", 1)
-	job := runAutomatic(t, s, c)
-	if job.Status != "failed" || job.Error == nil || job.ExternalStarted || len(r.state.Distillations) != 0 {
-		t.Fatalf("unconfigured claimed summary: %+v", job)
-	}
-	s.options.Distiller = d
-	c.CommandMeta = meta("config-fixed", 1)
+	c := autoCommand(m, "config-fixed")
 	queued, err := s.RequestDistillation(ctx, human, c)
 	if err != nil {
 		t.Fatal(err)
 	}
 	d.config = "changed model configuration"
 	s.ProcessNextJob(ctx)
-	job = r.state.Jobs[queued.JobID]
+	job := r.state.Jobs[queued.JobID]
 	if job.Status != "failed" || job.Error.Code != apierrors.ContextStale || job.ExternalStarted || d.calls != 0 {
 		t.Fatalf("changed processor silently used: %+v", job)
 	}

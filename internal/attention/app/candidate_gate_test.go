@@ -1,8 +1,10 @@
-package app
+package app_test
 
 import (
 	"context"
 	"testing"
+
+	. "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
 func TestCandidateReadyRequiresRelevantAssociationOrOpenQuestion(t *testing.T) {
