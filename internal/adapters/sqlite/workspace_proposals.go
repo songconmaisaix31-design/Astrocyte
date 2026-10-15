@@ -30,12 +30,12 @@ func WorkspaceTransaction(ctx context.Context, db *DB) (*sql.Conn,error) {
 	return t.conn,nil
 }
 
-func (r *WorkspaceRepository) WithWorkspaceTx(ctx context.Context, fn func(workspace.WorkspaceTx)error) error {
+func (r *WorkspaceRepository) WithWorkspaceTx(ctx context.Context, fn func(workspace.WorkspaceTx)error) (err error) {
 	if existing,ok:=ctx.Value(workspaceTransactionKey{}).(*workspaceTransaction); ok {
 		if existing.db!=r.db { return errors.New("workspace transaction cannot span databases") }
 		return fn(existing)
 	}
-	conn,err:=r.db.conn.Conn(ctx); if err!=nil { return err }; defer conn.Close()
+	conn,err:=r.db.conn.Conn(ctx); if err!=nil { return err }; defer func(){err=errors.Join(err,conn.Close())}()
 	if _,err=conn.ExecContext(ctx,"BEGIN IMMEDIATE"); err!=nil { return err }
 	t:=&workspaceTransaction{conn:conn,db:r.db}; t.ctx=context.WithValue(ctx,workspaceTransactionKey{},t)
 	if err=fn(t); err!=nil {

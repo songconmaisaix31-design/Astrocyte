@@ -1,13 +1,63 @@
 # Astrocyte 当前状态
 
-## 当前合并产品（2026-10-14）
+## 四树集成与组合验证（2026-10-15）
 
-用户已确认合并 Astrocyte 新标准整改与 Workbench / Works Relay，今晚交付可用的 release 包。本分支承担唯一前端实现、测试和返修；当前普通合并进行中，完整稳定源码与实际原生链路仍须验收。下方各线历史 SOURCE / REPORT、首失败和未知状态分别保留，不能由旧结果替代本次组合验收。正式 V4 数据、协议、日程和既有 17321 部署保持当前约束。
+当前为独立集成分支 `songconmaisaix31-design/works-relay-integration`，起点 `0e5ce82898c3d546f711d1e452dadfabb13b5537`。唯一 I 按原模块确认的精确 B / F / R / H 阶段普通合并；领域冲突由原负责人处理，I 获根授权处理本轮合并中本文件、HANDOFF 与 Workbench-v01 三文档。准确组合、验证和首次失败持续登记在 [集成报告](docs/access/integration.md)，当前阶段尚未完成组合验收。
 
+用户确认的后继顺序为集成版 L1 真实验收、L2 经验管道、六步端到端工程首跑，目标日期 2026-10-22。`done = verified_complete | user_confirmed_complete`；started 与释放分别审计，两种完成通道均保留真实出处并进入经验候选。Mission 执行权归一个选定后端独占。六步工程闭环和独立效果实验分别验收；人工批准与人评由用户执行，Calls / 权限覆盖未答项保持。正式 V4 / v0.2、锁定协议、日程、正式库和 17321 部署不变。
+
+## 2026-10-14 Workbench 与 Relay 历史验收记录
+
+### 合并前端阶段记录（2026-10-14）
+
+用户已确认合并 Astrocyte 新标准整改与 Workbench / Works Relay，交付可用的 release 包。当时 F 分支承担唯一前端实现、测试和返修，普通合并进行中，完整源码与实际原生链路尚须验收。下方各线历史 SOURCE / REPORT、首失败和未知状态分别保留。正式 V4 数据、协议、日程和既有 17321 部署保持当前约束。
+
+## Workbench 双平台最终结论（2026-10-14 01:53 +08:00）
+
+测试源码 `d46f9f4cf2fd6e13c8362234746105330356c160` 的 [CI38440379678](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38440379678) 已completed/success。Ubuntu24.04与Windows2025完整check/build/defaultE2E均PASS，分别238PASS/32SKIP（4.0m/5.2m）；Linux race PASS，Windows race沿原工作流条件SKIP。root本机check/build PASS、完整默认238PASS/32SKIP、真实双视口live2与独立十值SQL及常驻静态验收PASS。CI日志仅本机verification/ci-38440379678-{ubuntu,windows}.log，精确归属d46；后续HEAD仅报告/状态/交接文档，业务与d46完全相等。
+
+实现已交付并部署于http://127.0.0.1:17321/cognition/today，Windows Start任务独立常驻。全验收保留两项NOT_RUN：管理员Procmon正式DB/WAL/SHM零写监控；10-15/10-16两日00:30真实自动成功。按后端报告执行并补记结果。validation/V4、引擎、schema、参数、main不变，v0.2仍冻结。
+
+## Workbench 实现与本机验收（2026-10-14 01:51 +08:00）
+
+只读红线：引擎、events/Sleep、迁移、权重、参数及validation/V4零改动。目标分支 `workbench/v0.1-workbench`；测试源码SHA `d46f9f4cf2fd6e13c8362234746105330356c160` 已push，后续集成报告合并 `ecc641f93f4bfe170c5f7bdccb9ca963ba6dc551` 仅文档，与测试业务树完全相等。原attention-engine CI是历史基线，当前新CI见下，不互相替代。未合main，解冻后按裁决与validation一次收敛。
+
+既有web新增认知一级页和今日/焦点/来源/证据四子路由；沿原设计token、组件、session、构建和Playwright。既有server新增七个只读认知GET，事件六字段投影，source仅过滤与聚合标签。在线快照、V1R确证历史拼接、人工刷新、每日00:30和登录任务均落地。没有新前端工程、独立Go工程或引擎逻辑。
+
+| 阶段 | 精确SOURCE | 精确REPORT | 结算 |
+|---|---|---|---|
+| backend | 8635895e40eb022e92a86870861b4d09fd168147 | 51a2102f566718280669eda774d8bb442fb2f1c9 | succeeded，已push/clean |
+| frontend | 8ec40f7633236b80bf12e34aa6468633f96d4072 | ca1bcde736706e1f0ce8a80c6ece65ff2bd9fea1 | succeeded，已push/clean |
+| 唯一集成 | c5da66724d22455fbbf376c2516f91c4bef63d5c | 4adbc3841399f54b68ad65e7f76964d794e9dc5c | succeeded，已push/clean，无胶水 |
+
+全部SOURCE/REPORT均普通no-ff祖先；两轨代码与最终树逐路径相等，REPORT仅各报告文件。三个开发/集成Worker已release并归档，reclaimable=0；旧独立方案与重启中断记录保留，不改成实现通过。
+
+root在d46精确业务树执行 `GOFLAGS=-p=1 GOMAXPROCS=2 NODE_OPTIONS=--max-old-space-size=512 pnpm check` 与 `pnpm build` 均EXIT0：全部Go/vet、28包架构、277契约例、14项S1、96项Vitest及TS/lint/漂移检查通过。`pnpm test:e2e --workers=1` 完整默认双视口238PASS/32SKIP，6.8分钟、EXIT0；32项保持既有与新增live的opt-in条件，真实认知live不以默认SKIP冒称执行。
+
+frontend最终适用组合118PASS（认知12+Nav104+真实live2）。root独立SQL复核两视口各10项未舍入数值及可见四位文本均相等，误差0。root另对脱离Worker的最终静态服务实际浏览四路由，再复核10项数值/文本，零pageerror、零非GET认知请求。3105/3105事件六字段逐值与SQL一致，六主题当前A/M/C及所有唯一历史(ts,A)对保留；完全重复历史点去重不改变数值。backend真实50请求/7248非派生raw字符串零命中，隔离模拟副本实际HTTP13请求canary1零泄漏；真实raw_unique人口0，明确NOT_APPLICABLE。
+
+首Vitest、114PASS/2drawer断言RED、Windows URI RED、旧importer/旧check PARTIAL以及root字符串审计误把derived ts/scope算raw的诊断均保留本机原件。修正审计判定不裁剪合法派生字段，不覆盖首结果。原始数据、快照、配置、截图和UI取证JSON均仅LOCALAPPDATA/astrocyte-workbench/v0.1。
+
+本机地址：http://127.0.0.1:17321/cognition/today。集成Worker退出后其直接启动服务随回收结束；root用已注册 `Start-ScheduledTask -TaskName Astrocyte-Workbench-v01-Start` 脱离Worker重启并复核，PID41892于01:43:50启动、01:51仍在，session/四页/十值SQL均通过。config.web指向集成树web/dist；当前snapshot-hxfipcpr、snapshot_at2026-10-13T17:24:01.253839Z保持不变。每日Snapshot下一次2026-10-15 00:30；登录Start已执行Result0，两个任务Ready。
+
+新[CI38440379678](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38440379678)归属源码d46：01:51 Ubuntu完整success，Windows浏览器阶段仍运行，尚不宣称双平台PASS。最终结论追加记录。
+
+全验收仍未完成：管理员Procmon正式DB/WAL/SHM进程级零写监控NOT_RUN；连续两个真实日期00:30自动成功NOT_RUN，待10-15/10-16实际记录。安装Ready、01:24非准点历史、手动刷新、文件hash、只读SQL测试均不替代这两项。管理员操作步骤见[后端报告](docs/workbench/backend.md)。validation仍229de2f，锁协议SHA5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7不变，v0.2未开工。
+
+## Workbench 修订版续接（2026-10-14 01:22 +08:00）
+
+目标分支 `workbench/v0.1-workbench`，计划/契约见 [执行单](tasks/Workbench-v01.md) 与 [HTTP 契约](tasks/Workbench-api.md)。从 attention-engine/v1-20261011 建立；相对 CI 绿基线100f00cb仅历史文档偏差，复用现有 web/server/鉴权/Playwright。下方 attention-engine CI 是历史基线，不是 Workbench 验收。validation、V4正式库、引擎、迁移与参数零改动；当前不合main，解冻后两分支一次收敛。
+
+Orca重启恢复将旧backend ctx607328b4cef6与frontend ctx8e65c15392e9以terminal_missing结算failed，并将原Task恢复ready；原WIP完整保留。root接管同Run run_a75ccac871c9，旧资源按恢复回执release（processAction=none）。首次携retry-of被task_not_startable拒绝：Task已ready；核对Dispatch和Task后按ready启动同Task、同工作树、同分支，无重复编辑者。backend续接ctx1f5ae09e7cad、frontend续接ctxca3e2f3fcf21，两者turn_started实际observed。职责与写域不变；首RED及中断不改写。
+
+已发布契约SOURCE1ef8f751，前端普通合82c29af。旧轨回报typecheck/lint/build与13客户端测试通过；首认知+Nav两视口116项114PASS/2drawer失败，原owner续修。旧backend定向Go/WAL在线备份通过，首次广Go importer 30s超时保留。均尚无最终SOURCE/REPORT，不宣称集成完成。
+
+本机快照snapshot-990zudfs发布于2026-10-13T08:38:14.539859+00:00，3105事件；root独立mode=ro/immutable SQL生成10-14窗口期望值，文件仅LOCALAPPDATA/astrocyte-workbench/v0.1/verification。UI十值核对、最终check/build/E2E待续接完成。00:30自动任务实际安装与运行待核；当前手动快照不算跨日自动验收。连续两日自动与管理员Procmon正式DB/WAL/SHM零写监控均未通过，保持NOT_RUN。
 ## 历史：validation 开发与验收记录
-## 当前开发入口（2026-10-14）
 
-本工作树为 `validation/v1-20261012`，负责 V4 验证与任务登记。Workbench 开发分支为 `workbench/v0.2-access`，当前状态由 [Workbench 状态入口](../workspaces/Astrocyte/works-relay-coordination/STATUS.md) 持续维护；其当前文件需要从对应工作树读取。本文件下方保留任务要求的历史验证记录。
+### 正式验证工作树开发入口（2026-10-14）
+
+当时的 `validation/v1-20261012` 工作树负责 V4 验证与任务登记。Workbench 开发分支为 `workbench/v0.2-access`，其状态由对应协调工作树维护。本文件下方保留任务要求的历史验证记录，不能据此提升本轮集成验收状态。
 
 Workbench v0.1 验收业务源码 `d46f9f4cf2fd6e13c8362234746105330356c160` 已部署；管理员 Procmon 零写监控和 10-15/10-16 两次真实自动快照仍 NOT_RUN。Works Relay v1.2 工程源码 `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已集成，其 CI 38469944551 在 Linux / Windows 均 success；两平台默认 E2E 各 268 PASS / 38 SKIP。该结果不包含后续 L1 会话采集。
 

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
@@ -84,16 +85,18 @@ func (n *Native) snapshot() domain.LocalAgent {
 }
 
 type Native struct {
-	mu            sync.Mutex
-	startMu       sync.Mutex
-	id, stateRoot string
-	processes     map[string]*nativeProcess
-	capabilities  map[string]domain.CapabilityObservation
-	version       string
-	configID      string
-	configAt      time.Time
-	slots         chan struct{}
-	relayCaptures map[string]*relayNativeCapture
+	mu              sync.Mutex
+	startMu         sync.Mutex
+	completionMu    sync.Mutex
+	id, stateRoot   string
+	processes       map[string]*nativeProcess
+	capabilities    map[string]domain.CapabilityObservation
+	version         string
+	configID        string
+	configAt        time.Time
+	slots           chan struct{}
+	relayCaptures   map[string]*relayNativeCapture
+	relayInputGuard RelayBeforeFirstInput
 }
 
 func (n *Native) ID() string { return n.id }
@@ -294,6 +297,9 @@ func (n *Native) Start(ctx context.Context, r domain.NativeRequest) (domain.Nati
 	if err != nil {
 		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
 	}
+	if n.relayInputGuard != nil {
+		return n.StartRelayOperationWithInputGuard(ctx, r, operation, n.relayInputGuard)
+	}
 	return n.start(ctx, r, false, operation)
 }
 func (n *Native) Resume(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
@@ -303,6 +309,9 @@ func (n *Native) Resume(ctx context.Context, r domain.NativeRequest) (domain.Nat
 	operation, err := nativeRequestOperation(r, "resume")
 	if err != nil {
 		return r.Session, err
+	}
+	if n.relayInputGuard != nil {
+		return n.ResumeRelayOperation(ctx, r, operation)
 	}
 	if operation != "" {
 		return n.ResumeOperation(ctx, r, operation)
@@ -333,6 +342,14 @@ func (n *Native) startWithInputGuard(ctx context.Context, r domain.NativeRequest
 	defer n.startMu.Unlock()
 	if err := ctx.Err(); err != nil {
 		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+	}
+	if n.relayInputGuard != nil {
+		if operation == "" {
+			return r.Session, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.ValidationFailed, "guarded native startup operation is required")}
+		}
+		if guard == nil {
+			guard = n.relaySourceCheckpoint(n.relayInputGuard)
+		}
 	}
 	if operation != "" {
 		if _, err := uuid.Parse(operation); err != nil {
@@ -385,6 +402,7 @@ func (n *Native) startWithInputGuard(ctx context.Context, r domain.NativeRequest
 	go func() { <-p.done; <-n.slots }()
 	p.mu.Lock()
 	p.projectID = r.Project.ID
+	p.relayInputGuard = guard
 	p.relayEvidence.SessionID = s.ID
 	p.relayEvidence.StartupOperationID = operation
 	p.relayEvidence.Relation = "new"
@@ -531,15 +549,10 @@ func (n *Native) startWithInputGuard(ctx context.Context, r domain.NativeRequest
 	} else {
 		n.observed("start")
 	}
+	if err = p.captureOriginalSession(s); err != nil {
+		return fail(err)
+	}
 	if strings.TrimSpace(r.Command.Message) != "" {
-		if guard != nil {
-			if err = p.captureOriginalSession(s); err != nil {
-				return fail(err)
-			}
-			if err = guard(ctx, s); err != nil {
-				return fail(err)
-			}
-		}
 		obs, err := n.send(ctx, s, packetPrompt(r.Packet, r.Command.Message), operation)
 		if err != nil {
 			if captureErr := p.captureOriginalSession(s); captureErr != nil {
@@ -563,10 +576,24 @@ func (n *Native) Send(ctx context.Context, s domain.NativeSession, message strin
 	if operation == "" {
 		return domain.NativeObservation{}, nativeError(apierrors.DeliveryUnknown, "original pending send operation is unrecorded")
 	}
+	if n.relayInputGuard != nil {
+		p, err := n.get(s)
+		if err != nil {
+			return domain.NativeObservation{}, err
+		}
+		original, err := p.relayInputSession(s)
+		if err != nil {
+			return domain.NativeObservation{}, err
+		}
+		message = packetPrompt(original.ContextPacket, message)
+	}
 	return n.send(ctx, s, message, operation)
 }
 
 func (n *Native) send(ctx context.Context, s domain.NativeSession, message, operation string) (domain.NativeObservation, error) {
+	if strings.TrimSpace(message) == "" || len(message) > 512*1024 || !utf8.ValidString(message) {
+		return domain.NativeObservation{}, &domain.RelayInputNotSubmitted{Cause: nativeError(apierrors.ValidationFailed, "native fixed input is empty, invalid UTF-8 or exceeds 512 KiB")}
+	}
 	if operation != "" {
 		if _, err := uuid.Parse(operation); err != nil {
 			return domain.NativeObservation{}, nativeError(apierrors.ValidationFailed, "relay operation must be a UUID")
@@ -599,6 +626,19 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 	if obs.StopConfirmed || obs.Status == "running" || obs.Status == "blocked" {
 		return obs, nativeError(apierrors.VersionConflict, "native session is stopped, occupied or blocked")
 	}
+	if p.relayInputGuard != nil {
+		original, err := p.relayInputSession(s)
+		if err != nil {
+			return p.observe(), err
+		}
+		if err = p.relayInputGuard(ctx, original); err != nil {
+			stopErr := p.stop(context.Background())
+			if stopErr != nil {
+				return p.observe(), errors.Join(err, stopErr)
+			}
+			return p.observe(), &domain.RelayInputNotSubmitted{Cause: err}
+		}
+	}
 	p.mu.Lock()
 	p.status = "running"
 	p.inputOperationID = operation
@@ -607,7 +647,11 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 	}
 	p.mu.Unlock()
 	if n.id == "codex" {
-		response, err := p.call(ctx, "turn/start", map[string]any{"threadId": s.NativeID, "input": []any{map[string]any{"type": "text", "text": message}}, "approvalPolicy": "never", "sandboxPolicy": map[string]any{"type": "readOnly"}}, false)
+		params := map[string]any{"threadId": s.NativeID, "input": []any{map[string]any{"type": "text", "text": message}}, "approvalPolicy": "never", "sandboxPolicy": map[string]any{"type": "readOnly"}}
+		if schema := p.completionExperienceSchema(); schema != nil {
+			params["outputSchema"] = schema
+		}
+		response, err := p.call(ctx, "turn/start", params, false)
 		if err != nil {
 			return p.observe(), err
 		}
@@ -625,8 +669,12 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 			return p.observe(), nativeError(apierrors.DeliveryUnknown, "native turn identity is unavailable; do not replay")
 		}
 		p.mu.Lock()
+		if err := p.bindRelayTurn(s, operation, result.Turn.ID); err != nil {
+			p.mu.Unlock()
+			p.failOutput()
+			return p.observe(), nativeError(apierrors.DeliveryUnknown, "native input was submitted but its original turn binding is unconfirmed; do not replay")
+		}
 		p.turnID = result.Turn.ID
-		p.bindRelayTurn(s, operation, result.Turn.ID)
 		p.relayFact("input_accepted", "codex_turn_acknowledgement", operation)
 		p.consumptionUnknown(operation)
 		if when, exists := p.relayStartedTurns[result.Turn.ID]; exists && operation != "" {

@@ -18,6 +18,10 @@ func copyRuntimeController(evidence domain.RelayControllerEvidence) domain.Relay
 			when := *turn.StartedAt
 			evidence.Turns[i].StartedAt = &when
 		}
+		if turn.ResultObservedAt != nil {
+			when := *turn.ResultObservedAt
+			evidence.Turns[i].ResultObservedAt = &when
+		}
 	}
 	return evidence
 }
@@ -111,7 +115,7 @@ func (s *relayService) observeRuntimeFacts(st *RelayState, task domain.RelayTask
 	}
 	startupBound := false
 	for _, r := range st.Receipts {
-		if r.TaskID == task.ID && r.OperationID == evidence.StartupOperationID && (r.Action == "dispatch" || r.Action == "resume") {
+		if r.TaskID == task.ID && r.OperationID == evidence.StartupOperationID && (r.Action == "dispatch" || r.Action == "prepare" || r.Action == "resume") {
 			startupBound = true
 		}
 	}
@@ -131,6 +135,13 @@ func (s *relayService) observeRuntimeFacts(st *RelayState, task domain.RelayTask
 		}
 		if turn.AcceptedAt.IsZero() || turn.AcceptedAt.After(s.now()) || turn.StartedAt != nil && (turn.StartedAt.IsZero() || turn.StartedAt.After(s.now())) {
 			return relayError(apierrors.EvidenceMissing, "native turn binding time is invalid")
+		}
+		if turn.ResultObservedAt != nil {
+			if evidence.Provider != "codex" || turn.ResultObservedAt.IsZero() || turn.ResultObservedAt.After(s.now()) || turn.ResultSource != "codex_turn_completed" || (turn.Outcome != "completed" && turn.Outcome != "failed" && turn.Outcome != "interrupted") || (turn.FailureCode != "" && turn.FailureCode != "native_failure") || (turn.Outcome == "completed" && turn.FailureCode != "") {
+				return relayError(apierrors.EvidenceMissing, "native turn result lacks its original terminal observation")
+			}
+		} else if turn.Outcome != "" || turn.FailureCode != "" || turn.ResultSource != "" {
+			return relayError(apierrors.EvidenceMissing, "native turn result observation time is missing")
 		}
 		bound := false
 		for _, receipt := range st.Receipts {
@@ -155,8 +166,13 @@ func (s *relayService) observeRuntimeFacts(st *RelayState, task domain.RelayTask
 		for i, old := range previous.Turns {
 			current := evidence.Turns[i]
 			current.StartedAt = old.StartedAt
+			current.ResultObservedAt, current.Outcome, current.FailureCode, current.ResultSource = old.ResultObservedAt, old.Outcome, old.FailureCode, old.ResultSource
 			if !reflect.DeepEqual(old, current) || old.StartedAt != nil && !reflect.DeepEqual(old.StartedAt, evidence.Turns[i].StartedAt) {
 				return relayError(apierrors.ScopeDenied, "native turn binding changed after acceptance")
+			}
+			result := evidence.Turns[i]
+			if old.ResultObservedAt != nil && (!reflect.DeepEqual(old.ResultObservedAt, result.ResultObservedAt) || old.Outcome != result.Outcome || old.FailureCode != result.FailureCode || old.ResultSource != result.ResultSource) {
+				return relayError(apierrors.ScopeDenied, "native turn result changed after observation")
 			}
 		}
 	}
@@ -192,7 +208,7 @@ func (s *relayService) observeRuntimeFacts(st *RelayState, task domain.RelayTask
 		last = f.Sequence
 		var receipt domain.RelayReceipt
 		for _, r := range st.Receipts {
-			if r.TaskID == task.ID && r.OperationID == f.OperationID && (r.Action == "dispatch" || r.Action == "resume" || r.Action == "send") {
+			if r.TaskID == task.ID && r.OperationID == f.OperationID && (r.Action == "dispatch" || r.Action == "prepare" || r.Action == "resume" || r.Action == "send") {
 				receipt = r
 				break
 			}

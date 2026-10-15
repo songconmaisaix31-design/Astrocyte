@@ -30,7 +30,30 @@ func TestProjectMetadataPersistsThroughRefreshArchiveAndProcessRestart(t *testin
 	dbPath := filepath.Join(t.TempDir(), "state.sqlite")
 	db := openAttentionDB(t, dbPath)
 	stamp := time.Now().UTC()
-	source := &registeredSourceFixture{snapshot: domain.ProjectDiscoverySnapshot{Status: "complete", ObservedAt: &stamp, Projects: []domain.RegisteredProject{{ProjectKey: "git:observed-family", Root: t.TempDir(), Name: "main", RepoID: "real-registered-family", Source: "orca_registered"}, {ProjectKey: "git:observed-family", Root: t.TempDir(), Name: "tree", RepoID: "real-registered-family", Source: "git_worktree"}}}}
+	root := filepath.Join(t.TempDir(), "main")
+	if err := os.Mkdir(root, 0700); err != nil {
+		t.Fatal(err)
+	}
+	git := func(args ...string) {
+		t.Helper()
+		command := exec.Command("git", append([]string{"-c", "core.hooksPath=", "-C", root}, args...)...)
+		if output, err := command.CombinedOutput(); err != nil {
+			t.Fatalf("actual owned Git command failed: %v %s", err, output)
+		}
+	}
+	git("init", "--quiet")
+	if err := os.WriteFile(filepath.Join(root, "public-marker.txt"), []byte("owned public project metadata test\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	git("add", "public-marker.txt")
+	git("-c", "user.name=Public project test", "-c", "user.email=public-test@example.invalid", "commit", "--quiet", "-m", "public marker")
+	tree := filepath.Join(t.TempDir(), "tree")
+	git("worktree", "add", "--quiet", "-b", "metadata-test-tree", tree)
+	actual, err := agents.NewScopedRegisteredProjects([]string{root, tree})
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := &observedRegisteredSource{source: actual}
 	service := workspace.NewLocalProjectService(db, nil, nil, nil)
 	service.ConfigureRegisteredDiscovery(db, source)
 	snapshot, err := service.RefreshRegisteredProjects(ctx, human)
@@ -55,16 +78,33 @@ func TestProjectMetadataPersistsThroughRefreshArchiveAndProcessRestart(t *testin
 	if _, err := service.SetRegisteredProjectMetadata(ctx, human, id, metadata); err == nil {
 		t.Fatal("forged timestamp accepted")
 	}
+	renamed := filepath.Join(filepath.Dir(tree), "fresh-observed-name")
+	git("worktree", "move", tree, renamed)
+	actual, err = agents.NewScopedRegisteredProjects([]string{root, renamed})
+	if err != nil {
+		t.Fatal(err)
+	}
+	source.source = actual
 	for i := 0; i < 2; i++ {
-		source.snapshot.Projects[0].Name = "fresh observed name"
-		source.snapshot.Projects[0].ProjectKey = "" // Transient Git identity failure.
+		if i == 1 {
+			// 移走自有 Git 目录，实际触发暂时无法观察身份的情况。
+			if err := os.Rename(filepath.Join(root, ".git"), filepath.Join(root, "git-unavailable")); err != nil {
+				t.Fatal(err)
+			}
+		}
 		snapshot, err = service.RefreshRegisteredProjects(ctx, human)
-		if err != nil || snapshot.Board[0].Human.Notes != "human notes" || !snapshot.Board[0].Human.Archived || snapshot.Board[0].Human.Revision != 1 {
+		if err != nil || len(snapshot.Board) != 1 || len(snapshot.Board[0].Roots) != 2 || snapshot.Board[0].Human.Notes != "human notes" || !snapshot.Board[0].Human.Archived || snapshot.Board[0].Human.Revision != 1 {
 			t.Fatalf("refresh overwrote fields %+v %v", snapshot, err)
 		}
+		if i == 0 && snapshot.Projects[1].Name != "fresh-observed-name" {
+			t.Fatal("actual worktree move did not update the observed name")
+		}
+		if i == 1 && (snapshot.Status != "partial" || snapshot.Projects[0].Git.Status != "unavailable" || snapshot.Projects[1].Git.Status != "unknown") {
+			t.Fatal("actual Git identity failure became a known observation")
+		}
 	}
-	calls := source.calls
-	if _, err := service.ListRegisteredProjects(ctx, human); err != nil || source.calls != calls {
+	calls := source.calls.Load()
+	if _, err := service.ListRegisteredProjects(ctx, human); err != nil || source.calls.Load() != calls {
 		t.Fatal("cached GET scanned")
 	}
 	if err := db.Close(); err != nil {

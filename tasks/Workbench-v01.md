@@ -33,7 +33,6 @@ Focus拼接历史safe A(t)与每次成功快照取得的确证节点标量点，
 
 2026-10-13T16:22+08:00：旧backend task634f/ctxe5a和frontend task1ec/ctx446已按scope_replaced_by_user失败结算，WIP SOURCE0fa17aa6/REPORT3b123fcd与SOURCEf9477f46/REPORT7335ce54均已push并独立核对clean；不算实现失败或验收通过，不进入新分支。原owner/工作树/终端复用为backend branch workbench/v0.1-backend task8922bfc4a097/ctx607328b4cef6，frontend branch workbench/v0.1-frontend task0e13b2d2c00e/ctx8e65c15392e9。换branch后首次preflight agent_unconfigured拒绝未建立新Task/Dispatch；再次派发输入已接受但turn_start_unobserved原回执保留。实读屏幕确认文本停在composer，各仅一次bare Enter提交，backend已观察Working；不重发任务或启重复owner。实际生成器目标schema.d.ts已校正写域，旧schema.ts计划名不创建。
 
-
 ## Backlog（研究情报登记，2026-10-14）
 
 本文件既有正文从协调分支 `workbench/v0.1-workbench` 的 `438f50ec318888badcab6febf23c0ca71851afe2` 原样带入本次文档分支；该正文与集成提交 `c5da66724d22455fbbf376c2516f91c4bef63d5c` 中的版本逐字节一致。上文定稿条款保留；本节仅登记未来工作，不启动实现或提升 v0.1 验收状态。后续合流只应用本追加节。

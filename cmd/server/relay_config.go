@@ -98,8 +98,7 @@ func relayConfiguration() (string, []domain.AgentSpec, time.Duration, error) {
 		}
 		window = time.Duration(seconds) * time.Second
 	}
-	// No default 60s and no inferred Agent command from inventory. Registration
-	// is trusted local data, loaded once; HTTP cannot edit it or supply a command.
+	// 登记只来自固定本机文件；原observer可重载完整快照，HTTP不能写入命令。
 	registryPath, err := workbenchCanonical(filepath.Join(root, "agents.json"))
 	if err != nil || !relayInside(root, registryPath) {
 		return "", nil, 0, errors.New("relay registry must stay under local access root")

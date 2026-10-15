@@ -157,13 +157,18 @@ func TestRelaySessionActualService(t *testing.T) {
 	}
 	t.Setenv("ASTROCYTE_RELAY", "1")
 	t.Setenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT", source)
+	t.Setenv("ASTROCYTE_RELAY_PUBLIC_GIT_COMMIT", os.Getenv("ASTROCYTE_L1_PUBLIC_GIT_COMMIT"))
 	t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "archive")
 	if nativeNotifications {
 		t.Setenv("ASTROCYTE_RELAY_SESSION_SOURCE", "native_notifications")
 		t.Setenv("ASTROCYTE_RELAY_LIVE_SECONDS", "10")
 	}
 	services := httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), Projects: workspace.NewProjectService(), Sessions: workspace.NewSessionService(), Proposals: workspace.NewProposalService(), Works: works, LocalProjects: projects, RegisteredProjects: projects, Progress: workspace.NewProjectProgressService(db, db, agents.ProjectFiles{}, registry, registry), Workbench: sqlite.NewWorkbenchReader(filepath.Join(canonical, "snapshot-unconfigured"))}
-	cleanup, err := assembleRelay(&services, db, registry)
+	launchContexts, err := relayPublicLaunchContexts(projects)
+	if err != nil {
+		t.Fatal("实际固定公开上下文配置失败")
+	}
+	cleanup, err := assembleRelay(&services, db, registry, launchContexts...)
 	if err != nil {
 		t.Fatal("实际生产组装失败")
 	}

@@ -109,6 +109,10 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	repositoryConfig, err := resolveRepositoryContextConfig(ctx, dataDir)
+	if err != nil {
+		return err
+	}
 	distiller, processingSourceKeys, err := resolveDistiller(ctx, dataDir)
 	if err != nil {
 		return err
@@ -208,7 +212,7 @@ func run(logger *slog.Logger) error {
 		logger.Warn("local CLI discovery incomplete; cached partial observations retained")
 	}
 
-	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
+	// 组装现有 S1 服务和 S2 提案命令，原生执行由原控制器接口负责。
 	services := httpapi.Services{
 		RepositoryContext:    &httpapi.RepositoryContextServices{},
 		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),
@@ -239,7 +243,17 @@ func run(logger *slog.Logger) error {
 	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
 		services.RankingProfile = profile
 	}
-	closeRelay, err := assembleRelay(&services, db, registry)
+	if err := assembleSwarmLedger(&services, db, registry, objectStore); err != nil {
+		return err
+	}
+	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry); err != nil {
+		return err
+	}
+	launchContexts, err := relayPublicLaunchContexts(localProjects)
+	if err != nil {
+		return err
+	}
+	closeRelay, err := assembleRelay(&services, db, registry, launchContexts...)
 	if err != nil {
 		return err
 	}

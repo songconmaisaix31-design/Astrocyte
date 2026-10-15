@@ -22,13 +22,38 @@ type RelayConfirmCommand struct {
 	ProjectSettingsRevision int    `json:"project_settings_revision"`
 }
 
+// 初始化持有原控制器和工作区，首输入仍由原 ConfirmIntent 确认。
+type RelayIntentPreparer interface {
+	PrepareIntent(context.Context, domain.Caller, string, RelayConfirmCommand) (domain.RelayActionResult, error)
+}
+
+// 只供受信本机组装更新完整登记；不接受 HTTP 命令或执行策略。
+type RelayTrustedAgentRegistrar interface {
+	RegisterTrustedAgents(context.Context, []domain.AgentSpec) error
+}
+
+type RelayDriverInitializer interface {
+	Initialize(context.Context, RelayLaunch) (RelayObservation, error)
+}
+
 type RelaySendCommand struct {
 	Input string `json:"input"`
 }
 type RelayTransitionCommand struct {
-	From                string `json:"from"`
-	To                  string `json:"to"`
-	CompletionConfirmed bool   `json:"completion_confirmed"`
+	From                 string `json:"from"`
+	To                   string `json:"to"`
+	CompletionConfirmed  bool   `json:"completion_confirmed"`
+	CompletionChannel    string `json:"completion_channel,omitempty"`
+	CompletionEvidenceID string `json:"completion_evidence_id,omitempty"`
+}
+
+type RelayGoalVerificationReader interface {
+	ReadRelayGoalVerification(context.Context, domain.Caller, string, string) (domain.RelayGoalVerification, error)
+}
+
+// 内部经验来源仍须由调用方核当前身份与权限；此读取不调用 Native。
+type RelayCompletionEvidenceReader interface {
+	ReadRelayCompletion(context.Context, string, string) (domain.RelayCompletion, error)
 }
 
 // RelayRuntime is the sole writer. Caller is supplied by session authentication,
@@ -67,6 +92,7 @@ type RelayState struct {
 	ControllerEvidence  map[string]domain.RelayControllerEvidence `json:"-"`
 	HandoffDeclarations map[string]string
 	ControllerHistory   map[string][]domain.RelayControllerEvidence `json:"-"`
+	Completions         map[string]domain.RelayCompletion
 }
 
 type RelayStore interface {
@@ -182,9 +208,10 @@ type RelayOwnedRoots interface {
 }
 
 type RelayServiceOptions struct {
-	Agents        []domain.AgentSpec
-	OwnedRoots    RelayOwnedRoots
-	LaunchContext RelayLaunchContextReader
+	Agents           []domain.AgentSpec
+	OwnedRoots       RelayOwnedRoots
+	LaunchContext    RelayLaunchContextReader
+	GoalVerification RelayGoalVerificationReader
 	// No implicit 60-second decision. Zero means no configured live window.
 	LivenessWindow time.Duration
 	Clock          func() time.Time
