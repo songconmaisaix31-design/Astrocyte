@@ -10,7 +10,7 @@
 
 本次优先顺序：R 完成已授权 `RegisterTrustedAgents` 同服务可信登记并核验 L 最小事务闭包；H 等产品模块处理 S2 四文件冲突并归还写入，再消费安全 Context DTO、准确组装和同实例重载；S4 复用已交 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` / REPORT `9907404b8df7f9f4a76dc7c90372e967fd2b33cd` 并交 H / 发布负责人准确输入。两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854` 已通过的检查继续有效，无新变化不重复运行。
 
-S3 Calls 单位和权限证据覆盖仍未决定，保持当前 Claim 拒绝；本次真实登记 t0、原生初始化和模型输入尚未开始。F 仍是实际页面操作唯一人员。新增大型资产使用 D 盘；最终组合验收和 Windows 包支持继续，模块阶段结果不结算本模块任务。
+S3 Calls 单位和权限证据覆盖仍未决定，保持其所属路径的 Known=false / Claim 拒绝。总负责人正式 `msg_99a867237e30` 核实原独立 Relay L1 不创建 Mission / WorkItem / Member，不经过 S3 Claim 或预算预留，按原授权继续；H 先补现有 LaunchContextReader 的真实固定四文件上下文，唯一 I 准确组合验证通过和 F 同 URL 空登记观察就绪后才开始原窗口。本次 t0、原生初始化和模型输入尚未开始。F 仍是实际页面操作唯一人员。新增大型资产使用 D 盘；最终组合验收和 Windows 包支持继续，模块阶段结果不结算本模块任务。
 
 | 本次开发人员 | 原 Task | 当前 Dispatch / 终端 | 实际开始与原件 |
 |---|---|---|---|
@@ -36,9 +36,23 @@ H SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` / 独立 REPORT `72c0c2d53c1
 
 唯一 I 当前为 `ctx_b573b61bb4aa / term_1c79262e-de36-41c2-bdd5-5113e2d3bb87`。首普通合并有十一份冲突，I 本人 `msg_10c3dbb9dc19` 明确停止且未编辑或 stage。H 本人 14:08:54Z `msg_c0c470f23fa1` 确认原树干净、无运行命令 / 事务 / 编辑并 STOP，发布负责人 `msg_b1be7ca0f4cb` 明确放行 H 临时仅处理 I 树 `cmd/server/main.go`、`cmd/server/workbench_config.go`、`contracts/openapi.yaml`、`internal/adapters/httpapi/server.go`。B 不处理 workbench_config.go，H 仅编辑并 stage，不操作 merge 生命周期；全部原 owner 明确停止并归还后仅 I 继续。
 
-S4 14:07:23Z 报告内部 `CleanupRepositoryContext(ctx, maxGenerations)` 真实公开双 worktree / SQLite / 官方 SDK 检查通过：单 Agent 撤销保留共享图、项目授权收窄立即拒读、真实 junction 拒绝、分批删除、其他项目保护与重启幂等。SOURCE `4ebd777b7b340c717c5311d78a0f26174374bbbf` 首次普通 push TLS 失败，远端交付待核。B 已核项目 service 没有既有 worker / queue / wake 或持久清理请求；生产接入尚未实现。
+H 已完成上述四件并本人 STOP 归还，I 首次普通合并为 `392bbb17fc56b15a86c9b84349e6e4d6cb884755`。随后普通合并 F `02a7976d997ef14ac298b2e240da43a9bb423c93` 产生十九份冲突，I 本人 `msg_0dfda0113e89` 停止且未编辑 / stage。发布新计划 `4e0c762` 指定 H 临时仅处理 `cmd/server/main.go`、`internal/adapters/httpapi/server.go`、`internal/adapters/httpapi/relay_scoped_workspace.go`。H 本人新安全 ACK `msg_12a160759d99` 后，模块 `msg_0888ca4716f4` 明确限三件编辑 / stage，其他十六件与合并生命周期不在 H 范围；原树三份 S3 装配 WIP 不复制到 I。H 14:36:36Z `msg_552a26075813` 本人确认三件格式与限定 diff 检查通过并 STOP 归还，当时剩余十三份 B / S2 冲突；仅 I 可在全部归还后继续原合并。
+
+S4 14:07:23Z 报告内部 `CleanupRepositoryContext(ctx, maxGenerations)` 真实公开双 worktree / SQLite / 官方 SDK 检查通过：单 Agent 撤销保留共享图、项目授权收窄立即拒读、真实 junction 拒绝、分批删除、其他项目保护与重启幂等。SOURCE `4ebd777b7b340c717c5311d78a0f26174374bbbf` / REPORT `c826cd5edb327c2f39e348c4fbbf303684c3dc5a` 最终普通 push 和模块独立远端核实通过，首 TLS 失败保留。B 已核项目 service 没有既有 worker / queue / wake 或持久清理请求；生产接入尚未实现。
 
 总负责人正式答复 `msg_0f397f12b04e` 授权原 S4 在同一 repositorycontext Service 内增加专用 Go 后台清理生命周期。本阶段 S4 精确新增写入路径为 `internal/adapters/repositorycontext/cleanup_worker.go`、同名测试，必要窄端口仅修改已有 `internal/workspace/app/repository_context.go`，真实验证沿 `tests/s4/cleanup*` 与原标准文档；其余原 S4 写入范围不变。B 在项目事务成功提交后调用窄唤醒口，H 在 I 冲突写入归还后独占同实例组装、错误上送与取消退出。启动核真实持久索引 / 项目元数据，每 pass 有上限，仅实际进展且 HasMore 时续行；唤醒可合并，持久待清理事实不可只存内存。失败经原主生命周期终止服务，停止后台清理后才关闭 DB。不修改冻结 engine / 001–025，不新增通用调度器 / 队列 / schema。准确交付逐项核待清理 / 完成 / 撤销的持久事实、可恢复 / 去重 / 并发 / 取消、真实撤销拒读、分批清理、丢唤醒重启和退出；事实不足先交 B 准确差异再报根。SemanticIndex 和分发条件继续未决定。
+
+### 本阶段独立 REPORT
+
+管理 SOURCE `b0439c8360a12f0f1e01ff26b70cfb42051b57bb` 仅修改本模块文档和总负责人正式要求更新的 v1.4 规格。`git diff --check`、提交范围、后继普通 push 和独立 `git ls-remote` exact SHA 均 PASS；首 push TLS 失败保留。
+
+H SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` 的十一个 H 路径、REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60` 的单份文档及远端 exact SHA 已由模块独立核实。精确归档与 P SOURCE `579a1cede98b47b08a3126f5d3974da938348929` 五份 Reader 文件的只读 overlay 上，`TestRelayTrustedRegistrationActualSQLiteHTTP` 独立 PASS，测试 1.98 秒、package 10.537 秒。同命令中 S2 检查因源码归档没有自身 Git 元数据，实际注册根与 Git 父仓库根不同，`approval_test.go:159` 返回 scope_denied 首 FAIL。后在准确提交的独立真实 Git clone / detached checkout 运行原 `TestActualSQLiteApprovalRestartAndRollback`：直接 BuildContextPacket 通过，真实 POST `/api/v1/context-packets` 在 `approval_test.go:206` 等待响应头超时，测试 26.22 秒、package 34.593 秒，结果 FAIL。未修改源码、十秒 HTTP 时限或断言。原件为忽略目录 `dist/relay-module/http-registration/first-context-result.md`，两份验证脚本与快照均保留。
+
+S2 原 owner 对准确生产 binary 的公开 README 实际导入、引用、Goal 和批准成功，随后 Context POST 亦十秒超时且 H 日志最终 503。两个独立失败均已交 H / 产品原 S2 查明安全阶段、实际错误与同库边界；未重复运行或延长限制。源码显示 S2 命令写事务内执行 `ValidateProjectSnapshot` 的真实 Git capture，已交原 owner 按 SPEC §14.2 核事务边界；SQLite RepositoryContext 已借原事务，尚未将该调用位置判定为本次超时原因。真实资料 Context、固定文件 LaunchContext、原生首输入和最终包各自验收。
+
+S4 SOURCE `4ebd777b7b340c717c5311d78a0f26174374bbbf` 九份原域文件、独立 REPORT `c826cd5edb327c2f39e348c4fbbf303684c3dc5a` 单份文档与远端 exact SHA 已独立核实；首次远端 TLS 失败与随后成功分列。源码审查发现 cleanup 的 Git 身份子进程在 `WithWorkspaceTx` 内回调，已按 SPEC §14.2 交原 S4 修正为事务外真实观察和短事务当前身份重核，并实际检查并发变更 / 写入 / 取消；最终生产清理尚未通过。R 双通道适用回归首 deadline 与 B version AccessDenied 均保留，后继准确 SOURCE 尚待交付。
+
+H 对准确 `fbf2a4a / 72c0c2d` 生产链只读核查确认 Relay 独立 store / Registry / driver / guard / collector，不调用 S3 Claim / Mission / Member / 租约 / 预算预留；H 根 Run 地址初投被 fence 拒绝，后以根当前终端送达 `msg_b8b949b43abc`，总负责人已正式接收。main 尚未注入可选 `LaunchContextReader`，实际四批准文件上下文不计通过；原 H 在 I 返修归还后优先补齐，R / B 领域端口由原 owner 交准确源码。来源、实际工具关闭、human / settings revision / grant、占用、原生并发 / 寿命 / 输入限制以及资源释放审计继续保留。根 `msg_99a867237e30` 已明确独立 L1 时序，本模块与 v1.4 当前入口已同步，不能根据 S3 两项未答冻结原 L1。
 
 ### 用户最新完成语义与集成顺序
 

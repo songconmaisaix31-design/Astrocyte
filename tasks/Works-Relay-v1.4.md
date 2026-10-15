@@ -1,6 +1,6 @@
 # Works Relay v1.4 语义修改与真实验收
 
-2026-10-15 当前状态：IMPLEMENTATION_AUTHORIZED_OPEN_GATES。总负责人消息 `msg_0ba76f2d26c3` 授权修改语义层、真实 CLI、今日采集并推进 L/S；`msg_c0b5fd86176f`、`msg_2cf72d3f5ad9` 和正式答复 `msg_3b809b065867` 更新完成通道及验收顺序。当前顺序为四树普通集成与组合验证、集成版真实 L1、L2 经验管道及六步端到端首跑，目标 10-22 并入包。Calls 单位及权限完整覆盖仍待答，不开始登记 t0 或模型输入。L/S 的其他模块和正式 V4 日程由总负责人协调，本模块只交真实安全派生结果。
+2026-10-15 当前状态：IMPLEMENTATION_AUTHORIZED_OPEN_GATES。总负责人消息 `msg_0ba76f2d26c3` 授权修改语义层、真实 CLI、今日采集并推进 L/S；`msg_c0b5fd86176f`、`msg_2cf72d3f5ad9` 和正式答复 `msg_3b809b065867` 更新完成通道及验收顺序。当前顺序为四树普通集成与组合验证、集成版真实 L1、L2 经验管道及六步端到端首跑，目标 10-22 并入包。最新 `msg_99a867237e30` 明确 S3 Calls 单位及权限完整覆盖待答仅约束其所属路径，原独立 Relay L1 按授权继续；先补真实固定上下文入口和准确集成验证，再按唯一 F / H 原时序登记，不提前输入。L/S 的其他模块和正式 V4 日程由总负责人协调，本模块只交真实安全派生结果。
 
 本文是本次四项语义修改的唯一具体规格。业务基线继承 [Works Relay v1.2](Works-Relay-v1.2.md)、[SPEC](../docs/SPEC.md)、[发布任务](Release-v0.1-20261014.md) 和 [REA研究报告](../docs/research/orca-rea-20261014.md)；最新用户决定通过总负责人正式消息更新本文件。模块分工、精确 SHA、运行参数和验收事实记录在 [模块管理文档](../docs/modules/relay.md)。
 
@@ -20,7 +20,7 @@
 
 人工完成已由总负责人正式答复 `msg_3b809b065867`：权限成立且操作者明确确认目标完成时，accepted 或 working 均可进入 done，使用 `user_confirmed_complete`，缺少 started 继续 unknown。`verified_complete` 须关联本任务合法 owned 输出及固定目标实际检查通过的证据，不能由归属或原生回合结束单独产生。user_confirmed 任务正常进入经验管道并保留通道和确认出处；资源释放独立核验，仍沿 done → released，不新增 accepted / working → released。
 
-总负责人正式答复 `msg_9e32e1f32ba5` 确认后两项已向用户提问，当前未决定。答复前不开始三分钟登记窗口，不绕过原 Claim / 预算发送输入，也不扩大工具权限；原 R 继续适配与独立检查，H 继续已有 Context / S3 / S4 契约、生产装配和无模型负例，F / UI 继续已交接口。真实完成 response 可以私有记录其实际身份和观测数量，不能转换为全部尝试次数；六字段 session-events 不变。
+总负责人正式答复 `msg_9e32e1f32ba5` 确认后两项已向用户提问，当前未决定。最新正式范围 `msg_99a867237e30` 明确：S3 Known=false / Claim 拒绝、预算门禁和工具授权保持；不创建 Mission / WorkItem / Member 或 S3 预算预留的原独立 Relay L1 继续，不将该两项待答扩大为 L1 前置。独立 L1 先由 H 注入既有 LaunchContextReader 的真实四批准文件上下文，唯一 I 准确组合验证后再由 F / H 按第 3 节开启同一 180 秒窗口。其他适配、契约、生产装配和无模型检查继续。真实完成 response 可以私有记录其实际身份和观测数量，不能转换为全部尝试次数；六字段 session-events 不变。
 
 ## 1. 投递阶段与人工完成
 
@@ -64,7 +64,7 @@ structured 接入必须取得本次 owned 控制器的初始化和正确会话�
 
 总负责人正式答复 `msg_c818d5461146` 授权原 R 在原 RelayService / Store / Receipts 与原写域内实现内部可信 `RegisterTrustedAgents`，原 H 复用 `relayConfiguration` 的成熟 JSON 解析和固定可信 `agents.json`，提供同一服务实例的实际重载路径。保持唯一 Service / Registry / store / controller；不重启或新建实例替代空登记阶段，不新增 schema、调度器或接受 HTTP 命令 / 路径 / argv 的入口。完整登记快照须先校验和复制，再原子发布并保护并发读取；错误立即返回，不部分激活或沿旧配置声称新登记成功。重登记不得改变在途 operation / intent / controller 的身份、执行策略或权限，冲突沿现有版本和占用规则拒绝。
 
-唯一 t0 为 F 在同 URL 确认空 agents 且 observer ready 后，H 首次实际写入本次目标 Agent 完整可信登记的开始时刻。另保留实际写入完成、解析 / reload 与首次激活时刻，全部耗时计入原 180 秒，失败和重载不重记 t0。空文件创建、文件 mtime、预先写好的登记或激活后新取时间均不能作为起点。R 交准确 SOURCE / 独立 REPORT，H 消费后验证真实 SQLite / HTTP、同实例更新、失败与并发，再交 F 准确契约。Calls / Known 两项用户待答约束保持；当前只开发与独立验证，不提前开始登记窗口或发送模型输入。
+唯一 t0 为 F 在同 URL 确认空 agents 且 observer ready 后，H 首次实际写入本次目标 Agent 完整可信登记的开始时刻。另保留实际写入完成、解析 / reload 与首次激活时刻，全部耗时计入原 180 秒，失败和重载不重记 t0。空文件创建、文件 mtime、预先写好的登记或激活后新取时间均不能作为起点。R 交准确 SOURCE / 独立 REPORT，H 消费后验证真实 SQLite / HTTP、同实例更新、失败与并发，再交 F 准确契约。S3 Calls / Known 两项待答约束继续保持其所属路径；独立 Relay L1 在实际固定上下文入口、准确组合验证与 F 就绪全部成立后按最新授权执行，不提前登记或发送输入。
 
 非交互 stdin 接入必须符合可信启动策略、实际 argv、原工作区和当前 owned 输入通道。pipe 可写、写入完成、EOF 提交完成、客户端接受与客户端消费是不同事实。stdin_eof 只有一次首输入；关闭后的 send 明确拒绝，不改变 framing 重新投递。实际输入消费没有协议证据时保持 unknown。
 
@@ -121,7 +121,7 @@ H 的非原生启动依赖 SOURCE `1aadeebaba2330bb8b786989f577415da5208fd5` 已
 | 生命周期全部核心路径 | 实际 EOF / structured、互斥 / 重复 / 通用冲突、working、unknown send、合法目标完成与释放、alternate / previous、publication error；真实拒绝不制造假状态 | 未满足项 NOT_RUN / FAIL，旧默认203PASS / 41FAIL / 32SKIP / 4NOT_RUN保留 |
 | 最终 Windows x64 包 | 原集成人员消费准确 SOURCE / REPORT，在实际 packaged server 自有端口 / DB / scope 核全部适用功能及原生路径 | v1.4最终包 NOT_RUN |
 
-总负责人 `msg_d807dc7e94d0` 曾授权实际 Codex turn-start 正向链路，后续 `msg_9e32e1f32ba5` 明确 Calls / Known 用户待答期间不开始 t0 或输入，当前继续保持该门禁。允许实际执行且准确源码组合通过后，按第 3 节时序由原 F 先取得空登记 observer ready，H 唯一登记并保存 t0，F 空初始化同一控制器；实际工具关闭与合法来源核实后，经产品 HTTP 单次输入，H 核原档与 SQLite。人工 done 如实保留实际完成通道；verified 须有目标核验事实。未知交付停止重发；旧失败、来源拒绝和每项真实不足独立保留。
+总负责人最新 `msg_99a867237e30` 已按准确生产调用链确认原独立 Relay L1 不涉及 S3 Claim / Mission / Member / 预算预留，沿原授权继续。H 必须补现有可选 LaunchContextReader 的真实生产注入，固定四批准文件上下文不得为空默认。唯一 I 准确组合验证后，按第 3 节由原 F 同 URL 空登记 observer ready、H 唯一登记原 t0、F 空初始化同一控制器、H 核正选来源 / 实际工具关闭 / 固定上下文、F 原 Confirm 单次首输入，随后实际 Today / 每 event_id SQLite；全部准备计入原 180 秒，失败不重记。S3 Known=false / Claim 拒绝与待答维持原所属范围。人工 done 如实保留实际完成通道；verified 须有目标核验事实。未知交付停止重发；旧失败、来源拒绝和每项真实不足独立保留。
 
 verified 固定目标必须能从本次合法来源独立核查，来源拒绝时保留未通过。user_confirmed 保存操作者明确确认及其出处，不冒记独立目标核验。不能用预置短回复、旧成功输出、静态页面、targeted Go通过或 replay 代替实链路、完整默认浏览器或实际发布包。
 
