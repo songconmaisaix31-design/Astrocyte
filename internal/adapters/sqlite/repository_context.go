@@ -64,8 +64,8 @@ func (db *DB) LoadRepositoryIndex(ctx context.Context, projectID, worktreeID, ba
 	if err != nil {
 		return result, err
 	}
-	var data string
-	err = conn.QueryRowContext(ctx, "SELECT metadata_json FROM repository_context_indexes WHERE project_id=? AND worktree_id=? AND backend=?", projectID, worktreeID, backend).Scan(&data)
+	var generation, data string
+	err = conn.QueryRowContext(ctx, "SELECT generation,metadata_json FROM repository_context_indexes WHERE project_id=? AND worktree_id=? AND backend=?", projectID, worktreeID, backend).Scan(&generation, &data)
 	if errors.Is(err, sql.ErrNoRows) {
 		return result, apierrors.NewNotFound("repository index", backend)
 	}
@@ -76,7 +76,7 @@ func (db *DB) LoadRepositoryIndex(ctx context.Context, projectID, worktreeID, ba
 	if err != nil {
 		return result, err
 	}
-	if result.Snapshot.ProjectID != projectID || result.Snapshot.WorktreeID != worktreeID || result.Backend != backend {
+	if result.Generation != generation || result.Snapshot.ProjectID != projectID || result.Snapshot.WorktreeID != worktreeID || result.Backend != backend {
 		return result, conflict("repository index identity changed")
 	}
 	return result, nil

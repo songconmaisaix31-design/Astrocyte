@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -56,6 +57,7 @@ func main() {
 		}
 	}()
 	assert(*phase != "" && *rootA != "" && *rootB != "" && *evidence != "", "explicit owned roots, phase and evidence are required")
+	assert(slices.Contains([]string{"initial", "updated", "deleted", "deleted-check", "restart", "query-readonly", "uncheckpointed-wal", "sync-current", "expect-stale", "result-bounds", "ambient-git", "same-project-worktrees", "corrupt-rebuild", "permissions", "map", "map-readonly", "map-missing", "cleanup", "cleanup-restart", "cleanup-worker", "cleanup-worker-restart", "cleanup-sql-boundary", "snapshot-reference"}, *phase), "unsupported verification phase")
 	must(os.MkdirAll(*evidence, 0700))
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()
@@ -64,6 +66,10 @@ func main() {
 		data, err := cmd.Output()
 		must(err)
 		assert(strings.TrimSpace(string(data)) == "https://github.com/songconmaisaix31-design/astrocyte-s4-public-context-20261015.git", "verification is restricted to the owned public project")
+	}
+	if *phase == "snapshot-reference" {
+		verifySnapshotReference(ctx)
+		return
 	}
 	db, err := sqlite.Open(filepath.Join(*evidence, "state.sqlite"))
 	must(err)
@@ -77,6 +83,21 @@ func main() {
 		return domain.RepositoryQuery{ProjectID: id, Purpose: "verify_owned_public_repository_context", Roots: []string{"."}, Text: "Count", Budget: budget}
 	}
 	qa, qb := query("s4-public-a"), query("s4-public-b")
+	if *phase == "cleanup" {
+		verifyCleanup(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-restart" {
+		verifyCleanupRestart(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-worker" {
+		verifyCleanupWorker(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-worker-restart" {
+		verifyCleanupWorkerRestart(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-sql-boundary" {
+		verifyCleanupSQLBoundary(ctx, db, service, human, qb)
+	}
 	if *phase == "initial" {
 		for id, root := range map[string]string{qa.ProjectID: *rootA, qb.ProjectID: *rootB} {
 			must(db.SaveProject(ctx, domain.LocalProject{ID: id, Name: "Public Unicode statistics", Root: root, Settings: domain.ProjectSettings{Revision: 1, AllowDirectory: true, AllowedSubdirs: []string{"."}, AllowedActions: []string{"read_context"}}, CreatedAt: time.Now().UTC()}, 0))

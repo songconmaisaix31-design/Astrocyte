@@ -108,6 +108,9 @@ func (s *S2Service) BuildContextPacket(ctx context.Context, c domain.Caller, cmd
 	if err != nil {
 		return packet, err
 	}
+	if err = s.snapshots.ValidateProjectSnapshot(ctx, c, snapshot); err != nil {
+		return packet, err
+	}
 	err = s.command(ctx, c, cmd.WorkspaceCommandMeta, "workspace.context.build", cmd, &packet, func(tx WorkspaceTx) error {
 		_, current, err := packetGrant(tx, c, grant.ID, grant.Epoch)
 		if err != nil {
