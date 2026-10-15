@@ -1,5 +1,28 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第十一阶段：恢复检查与固定工作树输入
+
+2026-10-15，Task `task_da9aebf03f83` / 当前 Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_c2889e0e477c` 交付 SOURCE `71af7fde6a0a6d0e2f6f23813626d44e26e144e8`。实际客户端与模型由 Orca 公开 worker projection 核实为 Codex / `gpt-6.1-sol`。恢复基线为 `a5d00e764ffa0266bf34067190f72f3463fe9852`，接管时 clean；没有创建原生会话、发送模型输入或开始登记窗口。
+
+前置 SOURCE `a5d00e764ffa0266bf34067190f72f3463fe9852` 增加 `swarm_lease.go` 与真实 SQLite 测试：私有原 native session、adapter、controller 与 startup operation 引用保存在既有租约 JSON 的私有存储结构中，关闭并重开数据库后保持原值。`SwarmRepository.LeaseForOperation(ctx, operationID, sessionID)` 只供受信任 ownership 桥读取原租约；其他 session 被拒绝。公开 Lease JSON、幂等回执和 outbox 继续不序列化这些私有字段。没有迁移或新增表，没有把参数测试写为原生执行成功。
+
+本阶段认领检查复用实际 Git 的固定快照验证：独立且同仓库的 worktree 必须具有指定完整 HEAD、没有已跟踪变化且没有未跟踪输入。新真实 Git 回归测试先确认未跟踪文件会被接受，保留首 RED；修复后该输入返回 `context_stale`，移除本测试创建的该文件后，同一 worktree 与原 baseline 再次通过。实际项目 test/build 使用相同检查，错误摘要只描述固定快照状态。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 -count=1 -timeout=120s` | PASS；领域、真实 S2 批准、并发唯一 Mission、异输入冲突、撤销与重启 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarmActualGitWorktreeObjectsAndCommittedScope$' -count=1 -timeout=120s` | 首 RED：未跟踪输入获得固定 baseline；没有减少断言或放宽限制 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1 -timeout=180s` | 修复后 PASS，7.123 秒；实际两个 SQLite connection、无半预算、旧 fence、私有 tuple 重启和真实 Git/Go 对象检查 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，2.470 秒；本域生产 router、真实 listener、认证、SQLite 与逐事件核对 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、`git diff --check`、三个修改 Go 文件的 `gofmt -l` | PASS，33 包；格式检查无输出 |
+| `git push origin HEAD`、`git ls-remote --heads origin songconmaisaix31-design/product-swarm-20261015` | SOURCE 已普通 push，远端完整 SHA 相同 |
+
+本阶段所有 Go 命令仅对自身进程设置 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`、`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/product-s3`。首次协调消息用了 CLI 不支持的 `--type progress`，明确拒绝且未入队；读取实际协议后改用 `status`，消息已持久入队。权威模块与发布文件在模块工作树及根工作树读取，没有复制或改写其他负责人的管理文件。
+
+根当前已确认完成双通道、started 事实独立和资源释放独立审计；执行后端单 Mission 独占的抽象归 v0.3，自动路由归 L3，本域没有自行变更这些架构或替代真实 started。Calls 单位与执行工具/外发证据覆盖仍待用户回答，现有 `Known=false`、nullable 实际用量和 Claim 拒绝保持。H 主服务与 OpenAPI 组合、R 同 Registry 事实适配、两个实际 Agent、实际接续/交接、人类采用与第二任务经验引用仍未通过；这些组件 PASS 不代表完整 AT08/09/13/16 或最终 release 通过。Task 继续，阶段 SOURCE 与本独立 REPORT 供唯一集成人员普通消费。
+
 ## H 公共装配的最小业务提交与接口
 
 2026-10-15，Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b` 对模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_9ce12d181768`（原 `ctx_b1cd2e0a39aa`）交付以下装配说明。H `ctx_e7abbaf902da` 的核对基线为 `53d9bb107440d27fc74b70609ecddc3c299574ac`。只读比较确认该基线中的 `migrations/019_workspace_approvals.sql`、`020_swarm.sql`、`internal/workspace/app/proposal_ports.go`、`internal/workspace/domain/proposals.go`、`approvals.go`、`internal/adapters/sqlite/workspace_proposals.go` 与本域已验证版本逐文件相同。H 已有真实 `S2Service.ReadProposal`、`ReadApproval`、`WithAuthorizedSessionBindings` 和 `WorkspaceTransaction` 公开端口。原 SHA 不是其祖先，不能由此推断缺少这些文件，也无需重复消费原 S2/B 全部历史。
