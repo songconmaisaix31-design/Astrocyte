@@ -2,6 +2,19 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 00:34 恢复原任务的一页计划
+
+本轮唯一负责人为 `task_315679474dc4` / `ctx_33f48c269580` / `term_6c9ec2c9-6b29-4745-ad63-6452fa7907df`，实际客户端 Codex；本轮公开 `terminal show` 未暴露具体模型，具体模型保持未核实。根当前 `term_325a9aca-4a77-4e2c-93ed-cae95acd628c` / `run_973808dd6a2f` generation 30，按根 00:30 入口和 `msg_d8378d1317e2` 接续原 `run_aa4e6a119547` generation 8。收到新入口前创建的 `run_9ede59f72848` 保持空，无 Task 或 Worker，不用于后续派发。本模块继续只写本文及 `daily-operation-20261015.md`。
+
+| 唯一责任 / 原任务 | 固定工作树 / 分支 | 本轮接续与验收 |
+|---|---|---|
+| I / `task_2ee44933df72` | `works-relay-integration` / `songconmaisaix31-design/works-relay-integration` | 原 Task ready，旧 Dispatch 已由运行时结算 abandoned / failed；恢复原任务，保持准确 HEAD `23672247d340e80c233951afdce7155b7fa66b1c` 与三份已授权管理 WIP。已独读 `c16/result.json` 和原日志，SOURCE `9aa583e` 的完整 check 实际 EXIT1 / 260.4195022 秒，首失败为 `internal/adapters/sqlite/workspace_proposals.go` 的 gofmt；后续检查未执行。该领域失败交原 S2，经其准确交付后由 I 普通消费；I 核中断状态并继续完整 check / build / 默认 E2E，禁止代改领域。 |
+| S5 / `task_1d3e15a66b2a` | `release-judgment-20261015` / `songconmaisaix31-design/release-judgment-20261015` | 原 Task ready，恢复原作者；当前普通 merge 的两项 TasteProfile add/add 原样保留，先本人 STOP，再经 M-product 取得原 B 本轮安全 ACK，仅准确两件 edit / stage。归还及独核后仅 S5 继续 merge，完成完整 Sources / HTTP / 026 与 Taste 后继；沿用实际模型和关闭原件，不重复成功推理。 |
+| 正式 V4 / 原 automation | 正式根 `C:/Users/DW/orca/Astrocyte` / `validation/v1-20261012` | 唯一协调核 00:20 run4 实际执行；公开状态 completed 的快照只有 Codex 恢复画面，尚无 D2 完成证据。先核原终端、真实锁和输出，不创建第二 operator、不重发 unknown。D1、Q 和 P 准备保持已完成。 |
+| 最终 P / N | 原发布树和原验证树 / 原分支 | 等待 I 准确组合、集成版 L1、L2 六步及全部适用门禁，再安排同源新包和新目录解压验收。原完成准备和成功推理不重复。 |
+
+大型产物继续使用 D 盘，I 两处 dist 和 `.verification` 的既有 junction 保留；原 runner / B helper 的准确 D 环境继续使用。领域冲突和失败回原作者，四树组合 → 集成版 L1 → L2 六步 → 最终同源发布的顺序保持；正式锁、日程、预算、人评和冻结边界保持。
+
 ### 2026-10-16 00:11 浏览器二进制迁移与当前交接
 
 根 `msg_b63815bcc6dc` 明确授权唯一维护者核 Playwright 二进制缓存迁移 D。I `msg_d73c2aac0ec9`、F `msg_e65c5d391d83`、新恢复 UI `msg_18ea54456772` 均本人确认没有本次在途浏览器，迁移窗口不新启；M-product 双人 ACK 同步成立。实际读取 [Playwright 官方浏览器缓存说明](https://playwright.dev/docs/browsers#managing-browser-binaries)及本机 `playwright-core@1.64.0/lib/coreBundle.js`：`PLAYWRIGHT_BROWSERS_PATH` 的绝对值直接作为运行查找根。
