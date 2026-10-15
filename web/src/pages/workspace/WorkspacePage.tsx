@@ -18,6 +18,7 @@ import { ProjectBoardPanel } from './ProjectBoardPanel';
 import { WorksAlbumPanel } from './WorksAlbumPanel';
 import { ProposalWorkspace } from './proposals/ProposalWorkspace';
 import { ProposalRevision } from './proposals/ProposalRevision';
+import { RepositoryContextPanel } from './repositorycontext/RepositoryContextPanel';
 
 type Project = components['schemas']['ProjectV1'];
 type Proposal = components['schemas']['ProposalV1'];
@@ -75,6 +76,7 @@ export function WorkspacePage({ query, onClearQuery }: Props) {
         <SectionCard title="客户端连接" tabs={['overview']}><div className="ac-connect-card"><Icon name="layers" size={24} /><div><h3>按项目选择你的 Agent</h3><p>先检查安装与可用性，再在项目中单独许可动作和模型处理。</p></div><button type="button" className="ac-button secondary" onClick={() => setInventoryOpen(true)}>检查本机 Agent 清单</button></div></SectionCard>
 
         <ProposalWorkspace query={query} onClearQuery={onClearQuery} refreshToken={boardRefresh} onChanged={prop.retry} />
+        <RepositoryContextPanel />
 
         {/* 会话清单。 */}
         <div className={styles.fullWidth}>
