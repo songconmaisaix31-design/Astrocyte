@@ -6,11 +6,13 @@
 
 用户最新确认：前端复用之前的设计，可以使用 TypeScript。继续现有 React / TypeScript / Vite，复用 `web/src/styles/preview.css`、`variables.css`、`App`、`Nav`、`PageFrame` 和现有组件；设计来源见 [原设计迁移计划](tasks/UI-preview-plan.md) 与 [迁移记录](web/UI-preview-report.md)。
 
-用户要求 C 盘空余维持约 10 GB，允许使用 D 盘与释放 C 盘。发布模块负责唯一清理执行者；新增大型模型、SDK、编译缓存和临时构建使用 `D:/Astrocyte-agent-assets/20261015/` 下按负责人划分的目录，以进程环境配置。10:36 实测 C 盘空余 5,193,687,040 bytes；Go 编译缓存 `C:/Users/DW/AppData/Local/go-build` 实测 11,524,494,685 bytes，已授权在检查当前使用进程与精确路径后清理。源码、Git 历史、真实数据库、会话、验证证据和凭据保留；清理结果以之后实际磁盘读数为准。
+用户要求 C 盘空余维持约 10 GB，允许使用 D 盘与释放 C 盘。发布负责人作为唯一执行者检查精确路径和使用进程后，执行一次标准 `go clean -cache`，仅清理 `C:/Users/DW/AppData/Local/go-build`。该缓存从 11,524,494,685 bytes 降到 415,788 bytes；命令因一个文件被占用退出 1，残留保留，没有终止占用进程、强制删除或重试。11:04 主控独立 `Get-Volume` 实测 C 盘空余 16,685,858,816 bytes，约 15.54 GiB，空间目标已达到；D 盘空余 107,935,031,296 bytes。新增大型模型、SDK、编译缓存和临时构建继续使用 `D:/Astrocyte-agent-assets/20261015/` 下按负责人划分的目录，以进程环境配置 `GOCACHE` / `GOTMPDIR` 等。源码、Git 历史、真实数据库、会话、验证证据和凭据保留。
 
 10:31 Orca 重启后，原开发进程退出；原任务、分支、工作树和未提交修改保留。当前主控终端 `term_72a815fc-b97e-433b-b653-5415cf298e1d`，顶层 Run `run_973808dd6a2f`。模块负责人当前 Dispatch：产品 `ctx_9ce12d181768`、Relay `ctx_bc51f7008918`、发布 `ctx_b80c795a71a4`；沿原子 Run `run_dbf1a68bc692`、`run_8bbda1c3974c`、`run_aa4e6a119547` 恢复。B / F 沿原 Run `run_7b2ce96bcd13` 恢复为 `ctx_1fd66a8adc28` / `ctx_4a385bf65390`，业务由产品模块协调。接管时仍需按公开 CLI 核实当前身份和实际运行状态。
 
 今日工程采集 Q 已完成并 released，SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7`；正式 D1 已完成。两者不重复采集、Sleep 或模型调用。现有 Windows 候选包不包含本轮全部新增功能，完整组合、真实 CLI / Today、默认前端检查和最终 release 包继续由原负责人完成。
+
+本轮真实 CLI 接入发现 Relay 确认流程只有携带首输入的启动端口。主控正式答复 `msg_a1839d29aa46` 已授权原 R 在既有 store / operation / controller 内补齐两阶段初始化与首次输入，由 H 唯一装配、F 唯一操作界面。空输入初始化不调用模型，原生归属、来源和工具关闭检查及观察准备完成后再真实注册计时、首次发送；初始化不登记为输入已发送或模型已开始。原 R 随后负责 `agents/completion_experience*.go` 经验候选模型适配，B 保持经验服务、SQLite 和迁移的唯一责任，H 负责生产装配；L2 正式实验与 L3 / L4 仍按既有冻结和待定项执行。
 
 2026-10-14：已接手 REA 6.5.0 的[调研报告](docs/research/orca-rea-20261014.md)与第 42 版技能。独立 MCP 握手、207 工具、binary_session 成功；Orca 1.4.220 两份静态分析共 18 个 JavaScript 文件解析错误为零。按用户要求，今晚已移除 REA Codex MCP 注册并停止服务，CLI、技能与分析结果保留，10-23 之后重新注册为陌生代码库任务与 L2 经验来源候选。2026-10-15 先完成 Relay v1.4 四项语义规格与修改，再做真实 CLI 端到端、三分钟 Today、L1 关账；产品其他开发和发布候选继续，由原模块负责人管理。
 
