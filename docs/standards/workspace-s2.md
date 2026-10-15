@@ -25,6 +25,12 @@ SOURCE `967720e848806eb7b299c4e51468ab7603c3a526` 为现有完整资料 Context 
 
 `node --check tests/s2/context_material.test.mjs` 和 `git diff --check` 均 EXIT 0。SOURCE 已普通 push，独立 `git ls-remote` 返回相同完整 SHA。完整实际运行尚等待包含共享 Attention 事务及准确 S4 / H 装配的可运行产物；当前结果仅为语法通过，原 Context 首 FAIL 保持。本 Task 继续支持原作者集成与真实验证。
 
+## 2026-10-16 I / H 单端口文件 REPORT
+
+依模块新计划 SOURCE `539e836`、正式放行 `msg_2ea1d4e76da1`、I 新 STOP `msg_d41719dea525` 与本人新安全 ACK，S2 只处理 I 树 `internal/workspace/app/proposal_ports.go` 的一处冲突并 stage。保留真实 `AdmittedOpportunityReader`，其余 Caller / purpose / owned / Context 端口完整保留，没有加入尚未交付的 S4 接口。归还时该完整文件与 I 当前 HEAD 相同，stage blob 为 `9875dac88fdc40e0ff13f6e5022a15a239114e7b`；限定 working / cached diff 检查与格式检查无输出。
+
+操作前后 HEAD 为 `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87`、MERGE_HEAD 为 `aaaf603a9477e470ff0ce0c269597802a6f25b40`。剩余两件未合并项为 B 的 `cmd/server/config.go` 和 R 的 `internal/adapters/agents/relay_input_operation.go`。本人于 `msg_58c34b3288a8` 明确停止 I 全部编辑、stage 与进程访问并归还，没有执行合并生命周期或编译验证。组合可构建阶段和完整 Context HTTP 仍由准确后继来源验证。
+
 ## 2026-10-15 当前 Goal 与固定历史 REPORT
 
 SOURCE `ee7889cf04383162e160ae30544eb324257ed45c` 提供 `CurrentGoalReader`。`ReadCurrentGoalSnapshot(ctx, caller, projectID, goalID, revision)` 要求用户明确选择的正整数版本，读取实际项目、当前成员授权与 Goal 最新不可变 revision；项目不符、旧 revision、非 active 状态或缺目标依据时立即拒绝。返回 `domain.CurrentGoalSnapshot`，包含真实 Goal、ProjectSettingsRevision、ObservedAt；没有默认 Goal 或推断的目标。历史 `ReadGoal` 与批准继续保留原固定版本。
