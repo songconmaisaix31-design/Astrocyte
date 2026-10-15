@@ -1,6 +1,6 @@
 # S5 判断实施与实际验证
 
-固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_0a7797464f02`，接管 HEAD `8914392e22453cefbe14469632f43a6d52ceec69`；共享合并已完成，当前阶段 SOURCE 为 `bc5ffc910b660d6ae9084234ffc8ced8e265cbc5`。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；协调者另核实际 projection `codex/gpt-6.1-sol`。
+固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_0a7797464f02`，接管 HEAD `8914392e22453cefbe14469632f43a6d52ceec69`；当前机制 SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1`，真实委托测试 SOURCE `1e89ef832b77ae31d75d9db920e7186773b75c94`。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；协调者另核实际 projection `codex/gpt-6.1-sol`。
 
 仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。当前 S5 handler 前缀归本执行者，开始写入前等待 H/B 本人确认没有现有修改；公共字段仍由 H 确认。正式 V4 与认知冻结域保持原授权边界。
 
@@ -16,7 +16,7 @@ Laya 源码准确 revision `432312b36714d8889eba405507b37eda25257d9c`，`laya-ts
 
 ## 交 B 的迁移设计
 
-以下 DDL 是待 B 安排的迁移内容；本文不执行产品启动迁移、不修改迁移文件。结果与请求为不可变记录，缓存只引用同一记录；反馈保存实际 human 和固定结果版本。
+以下三表已经由 B 的正式 `024_judgment.sql` 创建；S5 只调用原 migrations 执行器，不修改迁移文件。结果与请求为不可变记录，缓存只引用同一记录；反馈保存实际 human 和固定结果版本。
 
 ```sql
 CREATE TABLE judgment_results (
@@ -92,8 +92,8 @@ multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次�
 | Jev 真 API/model/usage | NOT_RUN，缺本进程 secret |
 | 真实 SQLite/撤销/缓存/反馈重启 | PASS；原 HTTP 会话和资料导入实际运行，判断公共 HTTP 尚未运行 |
 | AT10 | 判断接入 PASS：两个实际公开 worktree 与未提交 README 变化隔离；不替代 S4 索引全项 |
-| AT11 | 直接 SDK 截断/options 与进程 HTTP 拒绝已有实际结果；完整判断服务与公共 HTTP 尚待 |
-| AT12 | 显式 goal/taste/policy/model/access 五版本变更使旧缓存失效 PASS |
+| AT11 | 实际 Laya 判断服务的三题型、截断/options、缺证据、未授权外发、worker 故障不缓存 PASS；新增低置信的绑定消费复验中，公共 HTTP 尚待 |
+| AT12 | Policy 中显式五版本变更使旧缓存失效 PASS；实际 Goal/profile 自身接口变更的版本来源待确认，未计通过 |
 
 SOURCE 和独立 REPORT 由各阶段普通提交/push 后登记完整 SHA；当前不能宣称 S5 完成。
 
@@ -185,3 +185,25 @@ CREATE TABLE judgment_admission_bindings (
 CREATE INDEX judgment_admission_bindings_opportunity
     ON judgment_admission_bindings(project_id, opportunity_id, opportunity_revision);
 ```
+
+## 第四阶段独立 REPORT
+
+机制 SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1` 含完整规则 DTO、固定机会 Context、同事务可信 authorizer、已经 H 确认的判断/配置/准入 handler 及真实 Laya 服务测试。第一次普通 push 为实际 `exit 128 / Recv failure: Connection was reset`，保留原工具回执；之后只读确认远端仍为 `5d5922e22ba7d8be3def0f4616a7f576d00162c4`，普通 push 成功，`git ls-remote` 返回准确 d735 全 SHA，模块也已独立核实。没有 force push、变更鉴权或改 TLS。
+
+B 精确两表来源 `491e7f606d8265e9f7e9694f547a91682b305e74` 已普通合为 `c1f5d99c46082dfe6053583faa0f8bfc992a4f5b`，没有冲突。该合并包含十件 B 祖先文件和正式 023/025；B 后续明确确认没有已知必须撤出的不兼容，保留普通历史。新表实际由同一 SQLite 原 migrations 应用，未使用临时 DDL。
+
+`ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActualDelegationBindingsAndAdmission$' -count=1 -v -timeout 6m` 首轮 `14.984s PASS`，补充人工复核和机会修订后 `13.852s PASS`，最终测试源码为 `1e89ef832b77ae31d75d9db920e7186773b75c94`，已普通 push 且远端全 SHA 一致。原 HTTP human session、固定官方文档、原手工沉淀/Opportunity、原 S1/S2 bridge 均实际运行；没有替代服务或模型回答。验证 disabled 拒绝、逐项开启、同一绑定缓存命中、不同机会和 workflow 隔离、机会 revision 变化失效、暂停旧 proof 拒绝、规则复开产生新绑定、`human_adopt` 缺失拒绝/实际采用后允许/再拒绝后阻止、策略变更失效、过期策略仍能暂停撤销及 terminal revoked。实际 S1 事务保存 delegated admission 和 S2 draft，重复命令保留同一回执，SQL 逐项核 `authority/decision_id/purpose/question_type`。日志 `actual-delegation-ctx_0a-{first,review}.log`。
+
+此前四项真实组件组合 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActual' -count=1 -v -timeout 6m` 为 `290.250s PASS`。Laya 三题型实际 input token 为 `205/220/220`，平台 Noul confidence 为 null；全文实际 input `1024`、丢弃 `3006` state token，90 个公开原文候选的 distinct 为 1。缺证据、外发未授权、真实 worker 关闭后的错误持久化及不缓存均通过；该检查使用实际成熟 SDK / ONNX，未训练权重。原 `actual-model-service-ctx_0a-{first,noul,fixed-space}.log` 首 FAIL 与通过的 `reselected`、`actual-combination-ctx_0a-first.log` 保留。
+
+新增低置信和绑定候选消费测试的首次启动为实际 60 秒 startup 超时，随后扩展场景在原三分钟总测试 Context 中到期；两件原日志为 `actual-model-delegation-ctx_0a-first.log`、`actual-model-sanitized-ctx_0a-first.log`。新增场景使用五分钟测试总 Context，产品每次调用预算、startup 60 秒和 shutdown 10 秒保持原值，真实结果继续复验，尚未计通过。
+
+HTTP handler 当前有真实 SOURCE 和编译/vet 结果，生产注册、原 guard 白名单与 `cmd/server` factory 继续由 H 交付；本阶段没有将它们登记为完整 HTTP 验收。Jev API secret 与 OS 单程序隔离许可仍待根处理，未调用云端、未创建防火墙或提权。实际 Goal/taste 来源问题已提交协调者：当前五版本测试作用于真实持久化 Policy；Goal 或 profile 在自身服务变更而 Policy 未更新的情形尚未验收。
+
+## 已授权 ONNX 元数据隐私衍生资产
+
+P 原完整包扫描在四图 `onnx.StringStringEntryProto.value` 检出 current_home 类路径。根确认由唯一 S5 模型 owner 用成熟 ONNX/Protobuf 仅处理这些必要元数据；原十二项资产、导出记录及首 FAIL 保留。新目录为 `D:/Astrocyte-agent-assets/20261015/judgment-s5/sanitized-ctx_0a`。English 删除 encoder `1633` / head `155` 项，multilingual 删除 encoder `1289` / head `155` 项，与 P 独立安全计数准确相同；没有输出匹配值。
+
+两套模型的 `onnx.checker.check_model(..., full_check=True)` 均通过；sidecar、tokenizer、config 实际 SHA 与原件相同，所有其余 Protobuf 字段保存/重新读取后序列相同。实际公开 README 的 64/192 token 输入分别通过 CPU encoder 与三题型 head，原件/新件所有输出 tensor `np.array_equal`，各最大绝对差为 0。安全记录 `.verification/s5/onnx-sanitized-ctx_0a-safe.json`，过程日志 `onnx-sanitized-ctx_0a-first.log`。
+
+新 descriptor 明确 `artifact_kind=astrocyte_privacy_sanitized_derivative` 与自身 `artifact_revision=metadata-clean-20261015-ctx_0a7797464f02`，`derived_from` 保留准确原版与原文件 digest；官方 HF/source revision 仅作来源。新字节、有效 revision 与描述均独立，不能当作官方原件。P 已收到准确新路径作原 scanner 复验；常驻 SDK / 新有效 revision / 模型低置信绑定测试及最终包验收仍在进行。
