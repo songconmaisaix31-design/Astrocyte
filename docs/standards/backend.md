@@ -290,6 +290,12 @@ SOURCE `f76e25b84b29495994f2e5877b586d4c22669d3f` 已普通 push。`ExperienceIn
 
 `go test -mod=readonly -p=1 ./internal/attention/app ./internal/adapters/sqlite -run '^(TestCompletionInterpretationRules|TestAcceptedExperience)' -v -count=1` EXIT 0，规则检查及三项实际 SQLite 检查通过，日志 `.verification/completion-model-identity-rule-first.log`；SQLite 最终 16.237s。新增规则检查仅使用明确输入和期望值，没有模型调用、控制器或来源收据。`go build -mod=readonly -p=1 ./...`、目标包 `go vet`、两文件 `gofmt -l` 和 `git diff --check` 均 EXIT 0，无格式输出；全部 Go 命令沿进程级 D 盘缓存与临时目录。实际 R Interpreter 与来源桥接仍未运行，不据此宣称原生验收或不可变模型复现。
 
+## 版本化委托规则迁移
+
+SOURCE `491e7f606d8265e9f7e9694f547a91682b305e74` 已普通 push，仅新增 `025_judgment_delegation.sql`。准确采用 S5 SOURCE `5d5922e22ba7d8be3def0f4616a7f576d00162c4` 的 `judgment_delegation_rules`、`judgment_admission_bindings` 两表、JSON/状态/固定版本/唯一性/外键约束与 Opportunity 索引，judgment schema 版本更新为 2，没有默认开启值或阈值。旧迁移没有修改。
+
+进程级 D 盘 Go 环境下 `go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestAcceptedExperience' -v -count=1` EXIT 0，3 项检查及实际约束回滚子项通过，2.345s；`.verification/judgment-delegation-migration-first.log`。实际新 SQLite 已应用 001–025，保留在 `.verification/accepted-experience-actual-{1692487502,1939059050,2627136498,3895541726}/`；未创建规则、绑定或判断结果，该检查只证明迁移应用及既有事务机制。实际用户配置、暂停/撤销、同事务固定 Opportunity 与版本复核继续由原 S5 负责人完成，没有登记业务验收通过。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
