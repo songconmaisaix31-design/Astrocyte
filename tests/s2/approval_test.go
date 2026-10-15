@@ -32,6 +32,21 @@ func requireCode(t *testing.T, err error, code apierrors.Code) {
 	}
 }
 
+func s2OutputDirectory(t *testing.T, root string) string {
+	t.Helper()
+	directory := filepath.Join(root, ".verification", "s2-first")
+	if configured := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); configured != "" {
+		if !filepath.IsAbs(configured) {
+			t.Fatal("explicit S2 output directory must be absolute")
+		}
+		directory = configured
+	}
+	if err := os.MkdirAll(directory, 0700); err != nil {
+		t.Fatal(err)
+	}
+	return directory
+}
+
 func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	ctx := context.Background()
 	root, err := filepath.Abs("../..")
@@ -43,10 +58,7 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 		t.Fatal(err)
 	}
 	approvedRoot := filepath.Join(root, "internal", "workspace", "domain")
-	base := filepath.Join(root, ".verification", "s2-first")
-	if err = os.MkdirAll(base, 0700); err != nil {
-		t.Fatal(err)
-	}
+	base := s2OutputDirectory(t, root)
 	dir, err := os.MkdirTemp(base, "actual-")
 	if err != nil {
 		t.Fatal(err)
@@ -188,6 +200,7 @@ func TestActualSQLiteApprovalRestartAndRollback(t *testing.T) {
 	if packet.Goal.Revision != goal.Revision || packet.ProposalRevision != grant.ProposalRevision || packet.Snapshot.Head == "" || packet.ObjectRef == "" {
 		t.Fatal("packet omitted fixed actual context references")
 	}
+	verifyObservationBoundary(t, ctx, repo, service, human, grant)
 	packetObject, err := objectStore.Read(ctx, packet.ObjectRef)
 	if err != nil {
 		t.Fatal(err)

@@ -26,6 +26,13 @@ type workspaceTransaction struct {
 	db   *DB
 }
 
+func (r *WorkspaceRepository) RequireWorkspaceObservation(ctx context.Context) error {
+	if _, ok := ctx.Value(workspaceTransactionKey{}).(*workspaceTransaction); ok {
+		return domain.WorkspaceError(apierrors.ValidationFailed, "actual project observation must precede the outermost Workspace transaction")
+	}
+	return ctx.Err()
+}
+
 // WorkspaceTransaction 仅供同一数据库的跨上下文SQLite adapter复用。
 func WorkspaceTransaction(ctx context.Context, db *DB) (*sql.Conn, error) {
 	t, ok := ctx.Value(workspaceTransactionKey{}).(*workspaceTransaction)

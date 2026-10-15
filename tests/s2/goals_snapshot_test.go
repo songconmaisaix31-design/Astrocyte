@@ -28,10 +28,7 @@ func TestActualCurrentGoalTransactionAndInactiveStates(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	base := filepath.Join(root, ".verification", "s2-first")
-	if err = os.MkdirAll(base, 0700); err != nil {
-		t.Fatal(err)
-	}
+	base := s2OutputDirectory(t, root)
 	dir, err := os.MkdirTemp(base, "current-goal-")
 	if err != nil {
 		t.Fatal(err)
