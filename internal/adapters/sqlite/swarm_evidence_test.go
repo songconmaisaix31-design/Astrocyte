@@ -3,6 +3,7 @@ package sqlite
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -66,6 +67,23 @@ func TestSwarmActualGitWorktreeObjectsAndCommittedScope(t *testing.T) {
 	}
 	if _, err = evidence.VerifyWorktree(ctx, root, root); err == nil {
 		t.Fatal("primary project root accepted as independent worktree")
+	}
+	if err = os.WriteFile(filepath.Join(wt, "claim-input.txt"), []byte("This untracked input is outside the fixed baseline.\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = evidence.VerifyWorktree(ctx, root, canonical); err == nil {
+		t.Fatal("untracked input was accepted for a fixed-baseline claim")
+	} else {
+		var rule *domain.RuleError
+		if !errors.As(err, &rule) || rule.Code != "context_stale" {
+			t.Fatal(err)
+		}
+	}
+	if err = os.Remove(filepath.Join(wt, "claim-input.txt")); err != nil {
+		t.Fatal(err)
+	}
+	if actualBase, err = evidence.VerifyWorktree(ctx, root, canonical); err != nil || actualBase != base {
+		t.Fatal("clean worktree did not retain its fixed baseline", err)
 	}
 	if err = os.WriteFile(filepath.Join(wt, "README.md"), []byte("# Swarm Git verification\n\nThis repository exercises actual worktree evidence.\n\nA committed improvement is independently verified.\n"), 0600); err != nil {
 		t.Fatal(err)

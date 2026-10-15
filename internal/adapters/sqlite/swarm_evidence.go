@@ -164,11 +164,14 @@ func (e *SwarmGitEvidence) VerifyWorktree(ctx context.Context, root, worktree st
 	if !same {
 		return "", domain.Failure(apierrors.ScopeDenied, "worktree does not belong to the approved project repository")
 	}
-	// 使用 Git 自身判定修改，不解析 status 或 diff 格式。
-	if _, err = swarmGit(ctx, w, "diff", "--quiet", "--no-ext-diff", "HEAD", "--"); err != nil {
-		return "", domain.Failure(apierrors.ContextStale, "worktree contains tracked changes before claim")
+	base, err := swarmScalar(ctx, w, "rev-parse", "--verify", "HEAD^{commit}")
+	if err != nil {
+		return "", err
 	}
-	return swarmScalar(ctx, w, "rev-parse", "--verify", "HEAD^{commit}")
+	if err = swarmCleanSnapshot(ctx, w, base); err != nil {
+		return "", err
+	}
+	return base, nil
 }
 
 func swarmExitOne(err error) bool {
