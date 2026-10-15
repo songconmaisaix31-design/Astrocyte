@@ -1,6 +1,8 @@
 # Workspace S2
 
-当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_172ff9553370`，终端 `term_340713c9-7cfb-4ff9-abfc-6ffa7989fd88`。实际客户端 Codex；原 Task、工作树、分支与测试记录保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+当前主责任为 S2 Workspace，沿原 Task `task_6846cdb90c46`、工作树 `product-video-20261014`、分支 `songconmaisaix31-design/product-video-20261014` 继续；当前 Dispatch 为 `ctx_d0d16cb94204`，终端为 `term_468e8fd7-6ac4-42eb-bc98-ede302c182b1`，模块 Run 为 `run_dbf1a68bc692`。实际客户端 Codex。该 Task 按原规格复用 V 的终端、工作树与分支，主责任为 Goal / Proposal / Grant / SessionBinding / ContextPacket 实现、验证和返修，同时保留原视频维护范围；原 Task、分支、历史业务来源及测试记录保持。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+
+已交 S2 提交后通知实现 SOURCE `4f875b0f8bffc5740e6a1eee828e7e34833226b8` 与独立 REPORT `8ef7219b3bd4233b1b16c0a7735c29f4e07673ba`，准确结果见下方对应记录。本轮视频消费核查 SOURCE `d58ce7d5c724e5f165c545a2a1bb1cb9ebfee796`、独立 REPORT `a640c181a6a1cc056be021385c23e71ab6913b6c` 与配置交接补充 `be675621e024ceaa2f239350e596dbdf97f62cda` 仅修改 [视频报告](video.md)：只读核旧实际两版、952 个时间位置和当前组合源码消费，提供 H / B 安全配置白名单，人工复用输入保持未执行。没有新增提取、ASR、模型或共享 HTTP 操作，也没有重复成功 S2 检查。H / F 的运行继续按自身实际依赖推进，原生正向与完整 AT12 保持各自未通过范围。
 
 ## 2026-10-16 准入格式与 Context 失败核查独立 REPORT
 
