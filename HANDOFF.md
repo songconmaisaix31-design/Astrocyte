@@ -16,6 +16,8 @@
 
 判断领域 handler 由原 S5 独占 `internal/adapters/httpapi/judgment*.go` 及同名前缀测试；H 保持 `cmd/server/judgment*.go`、共享启动与 OpenAPI 装配，B 保持依赖和迁移。SPEC §5.3 / §7.1 / §11 已授权版本化 DelegationRule 与固定机会准入，按正式答复 `msg_dbd3c3bff5cc` 继续实现完整配置与受信任同事务适配；实际委托开启、范围和必要阈值由用户在产品运行时显式设置，不代填默认值。S5 管理员离线验证及 AOCI 公开包分发方式已向用户提问，尚未答复，其他已授权开发继续。
 
+15:23 当前待办：R 两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` 已通过模块精确快照检查，H 公共 S4 SOURCE `31256d5d6758daf25892d55df73feffde7a7e573` 已交 F。S5 完整 DelegationRule SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1` 已由发布负责人独立核远端并交 H / B / F，完整事务与生产 HTTP 尚待组合。S3 调用预算单位和执行权限证据覆盖范围已另向用户询问，未答前按正式答复 `msg_9e32e1f32ba5` 保持当前 Claim 拒绝，不提前开始登记窗口或发送输入；详见 [当前待定项](docs/QUESTIONS.md)。P 的实际依赖包隐私检查发现英文 ONNX 模型内私人路径，原 S5 负责元数据处理、新产物验证和准确 descriptor，P 复验最终包；原件与首次失败保留，大型产物继续放在 D 盘。最终集成、原生验收与完整 release 尚未完成。
+
 2026-10-14：已接手 REA 6.5.0 的[调研报告](docs/research/orca-rea-20261014.md)与第 42 版技能。独立 MCP 握手、207 工具、binary_session 成功；Orca 1.4.220 两份静态分析共 18 个 JavaScript 文件解析错误为零。按用户要求，今晚已移除 REA Codex MCP 注册并停止服务，CLI、技能与分析结果保留，10-23 之后重新注册为陌生代码库任务与 L2 经验来源候选。2026-10-15 先完成 Relay v1.4 四项语义规格与修改，再做真实 CLI 端到端、三分钟 Today、L1 关账；产品其他开发和发布候选继续，由原模块负责人管理。
 
 2026-10-14 19:59：继续网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md)。原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 沿新 Dispatch `ctx_5a0a4d492434` 实际继续；新增 B `ctx_e0356fbca4e1` 已 failed 结算并 released，双方修改完整保留。F `ctx_a69aaadfe5b6` 在原工作树继续。主控自己的实际终端为 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f`，已重新绑定原 Run generation 3；接管前必须核实终端实际 Agent 和目录，不能仅按 Orca 工作树元数据推断身份。P REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端且适用独立验证 PASS，旧终端释放状态 unknown。主控只维护状态、验收及最终 Git；完成后交唯一集成人员普通合并。当前正式运行树不接入整改源码；Mission 新业务待定和 V4 冻结保持不变。
