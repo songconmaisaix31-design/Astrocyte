@@ -16,9 +16,16 @@ import (
 
 func acceptedExperienceDirectory(t *testing.T) string {
 	t.Helper()
-	base, err := filepath.Abs(filepath.Join("..", "..", "..", ".verification"))
-	if err != nil {
-		t.Fatal(err)
+	base := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if base == "" {
+		var err error
+		base, err = filepath.Abs(filepath.Join("..", "..", "..", ".verification"))
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if !filepath.IsAbs(base) {
+		t.Fatal("accepted experience verification requires an absolute output root")
 	}
 	if err := os.MkdirAll(base, 0700); err != nil {
 		t.Fatal(err)

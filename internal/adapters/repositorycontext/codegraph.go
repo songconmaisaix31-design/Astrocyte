@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"github.com/google/uuid"
 	"io"
 	"os"
 	"os/exec"
@@ -61,15 +62,22 @@ func (c CodeGraph) invoke(ctx context.Context, root, action string, q domain.Rep
 		return result, err
 	}
 	cmd := exec.CommandContext(ctx, c.Node, "--liftoff-only", c.Script)
-	cmd.Env = append(os.Environ(), "CODEGRAPH_TELEMETRY=0", "CODEGRAPH_DIR=.codegraph")
+	cmd.Env = append(os.Environ(), "CODEGRAPH_TELEMETRY=0", "CODEGRAPH_NO_DOWNLOAD=1", "CODEGRAPH_DIR=.codegraph")
 	cmd.Stdin = bytes.NewReader(payload)
 	output := &boundedOutput{max: q.Budget.MaxBytes}
 	cmd.Stdout = output
-	cmd.Stderr = io.Discard
+	stderr := &boundedOutput{max: 1024 * 1024}
+	cmd.Stderr = stderr
 	if err := cmd.Run(); err != nil {
+		if err := saveGraphDiagnostic(root, append(stderr.Bytes(), []byte("\n"+err.Error())...)); err != nil {
+			return result, err
+		}
 		return result, failure(apierrors.ProviderUnavailable, "CodeGraph operation failed; inspect the local index and runtime")
 	}
 	if err := json.Unmarshal(output.Bytes(), &result); err != nil {
+		if err := saveGraphDiagnostic(root, output.Bytes()); err != nil {
+			return result, err
+		}
 		return result, failure(apierrors.ProviderUnavailable, "CodeGraph response is invalid")
 	}
 	if result.Version != "1.0.1" {
@@ -77,6 +85,9 @@ func (c CodeGraph) invoke(ctx context.Context, root, action string, q domain.Rep
 	}
 	if result.Error == "budget_exhausted" {
 		return result, failure(apierrors.BudgetExhausted, "CodeGraph result count exceeds the approved budget")
+	}
+	if result.Error == "index_stale" {
+		return result, failure(apierrors.IndexStale, "CodeGraph projection has uncheckpointed writes")
 	}
 	if result.Error != "" {
 		return result, failure(apierrors.ProviderUnavailable, "CodeGraph returned an unsupported error")
@@ -87,6 +98,17 @@ func (c CodeGraph) invoke(ctx context.Context, root, action string, q domain.Rep
 		}
 	}
 	return result, nil
+}
+
+func saveGraphDiagnostic(root string, data []byte) error {
+	directory := filepath.Join(root, ".codegraph")
+	if err := os.MkdirAll(directory, 0700); err != nil {
+		return failure(apierrors.InternalError, "repository diagnostic could not be preserved")
+	}
+	if err := os.WriteFile(filepath.Join(directory, "astrocyte-error-"+uuid.NewString()+".log"), data, 0600); err != nil {
+		return failure(apierrors.InternalError, "repository diagnostic could not be preserved")
+	}
+	return nil
 }
 
 // copyFile只在本平台拥有的投影目录写入，源文件由os.Root约束。

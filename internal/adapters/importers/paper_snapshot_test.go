@@ -1,6 +1,7 @@
 package importers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"strings"
@@ -18,19 +19,13 @@ func snap(t *testing.T, s PaperSnapshot) []byte {
 	return b
 }
 
-func prov(p, v, m, s string) struct{ Processor, Version, Mode, Source string } {
-	return struct{ Processor, Version, Mode, Source string }{p, v, m, s}
-}
-
 func TestPaperSnapshotFulltextProvenance(t *testing.T) {
-	raw := snap(t, PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://journals.plos.org/x", HostFamily: "plos",
-		SourceKey: "doi:10.1371/journal.pdig.0000514", Title: "Full Paper", Abstract: "Abs",
-		Authors: []string{"A"}, DOI: "10.1371/journal.pdig.0000514",
-		ContentState: "readable_fulltext", Text: "Introduction Methods Results Discussion",
-		Provenance: prov("summarize-readability-approach", "browser readability", "readable_fulltext", "https://journals.plos.org/x"),
-	})
-	src, err := paperSnapshotSource(raw, "https://journals.plos.org/x")
+	snapshot, _ := actualPublicPaperSnapshot(t, "plos-public.html", "https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514")
+	if snapshot.ContentState != "readable_fulltext" || len(snapshot.Text) < 30000 {
+		t.Fatal("actual public PLOS full text required")
+	}
+	raw := snap(t, snapshot)
+	src, err := paperSnapshotSource(raw, snapshot.SourceURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,24 +35,23 @@ func TestPaperSnapshotFulltextProvenance(t *testing.T) {
 	if src.Provenance.Processor != "paper_snapshot" || src.Provenance.Mode != "browser_snapshot_fulltext" {
 		t.Fatalf("provenance not marked as browser snapshot: %+v", src.Provenance)
 	}
-	if !strings.Contains(src.Text, "Full text (browser snapshot)") || !strings.Contains(src.Text, "Introduction Methods Results Discussion") {
+	if !strings.Contains(src.Text, "Full text (browser snapshot)") || !strings.Contains(src.Text, snapshot.Text) || src.Title != snapshot.Title || src.Summary != snapshot.Abstract {
 		t.Fatalf("full text missing: %q", src.Text)
 	}
-	if len(src.Attachments) != 1 || src.Attachments[0].Name != "paper-snapshot.json" {
+	if len(src.Attachments) != 1 || src.Attachments[0].Name != "paper-snapshot.json" || !bytes.Equal(src.Attachments[0].Data, raw) {
 		t.Fatalf("original snapshot attachment missing: %+v", src.Attachments)
 	}
 }
 
 func TestPaperSnapshotAbstractOnlyNeverFullText(t *testing.T) {
-	// The snapshot's self-reported source_key must not be trusted; a hand-edited
-	// key is ignored in favor of the re-derived ACL URL identity.
-	raw := snap(t, PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://aclanthology.org/2024.acl-long.1/", HostFamily: "acl",
-		SourceKey: "doi:10.9999/fake", Title: "A Paper", Abstract: "Only abstract",
-		DOI: "10.18653/v1/2024.acl-long.1", ContentState: "abstract_only",
-		Provenance: prov("summarize-readability-approach", "browser", "abstract_only", "https://aclanthology.org/2024.acl-long.1/"),
-	})
-	src, err := paperSnapshotSource(raw, "https://aclanthology.org/2024.acl-long.1/")
+	snapshot, _ := actualPublicPaperSnapshot(t, "acl-public.html", "https://aclanthology.org/2024.acl-long.1/")
+	if snapshot.ContentState != "abstract_only" || snapshot.Abstract == "" || snapshot.Text != "" {
+		t.Fatal("actual public ACL abstract-only observation required")
+	}
+	// 冲突 key 是明确规则输入，来源仍由实际 ACL URL 重新计算。
+	snapshot.SourceKey = "explicit-conflicting-source-key-rule-input"
+	raw := snap(t, snapshot)
+	src, err := paperSnapshotSource(raw, snapshot.SourceURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,19 +61,17 @@ func TestPaperSnapshotAbstractOnlyNeverFullText(t *testing.T) {
 	if src.Provenance.Mode != "browser_snapshot_abstract_only" {
 		t.Fatalf("abstract marked as full text: %s", src.Provenance.Mode)
 	}
-	if strings.Contains(src.Text, "Full text") || !strings.Contains(src.Text, "metadata only") {
+	if strings.Contains(src.Text, "Full text") || !strings.Contains(src.Text, "metadata only") || !strings.Contains(src.Text, snapshot.Abstract) {
 		t.Fatalf("metadata misrepresented: %q", src.Text)
 	}
 }
 
 func TestPaperSnapshotTruncatedNeverFullText(t *testing.T) {
-	raw := snap(t, PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://journals.plos.org/x", HostFamily: "plos",
-		Title: "T", Abstract: "A", DOI: "10.1371/journal.pdig.0000514",
-		ContentState: "readable_fulltext", Text: "partial body", Truncated: true,
-		Provenance: prov("x", "v", "readable_fulltext", "https://journals.plos.org/x"),
-	})
-	src, err := paperSnapshotSource(raw, "https://journals.plos.org/x")
+	snapshot, _ := actualPublicPaperSnapshot(t, "plos-public.html", "https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514")
+	// 截断标记是明确规则输入，不声明原始公开页面发生截断。
+	snapshot.Truncated = true
+	raw := snap(t, snapshot)
+	src, err := paperSnapshotSource(raw, snapshot.SourceURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,53 +84,43 @@ func TestPaperSnapshotTruncatedNeverFullText(t *testing.T) {
 }
 
 func TestPaperSnapshotRestrictedRefused(t *testing.T) {
-	raw := snap(t, PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://example.com/a", HostFamily: "generic",
-		Title: "T", Abstract: "A", ContentState: "restricted",
-		Provenance: prov("x", "v", "restricted", "https://example.com/a"),
-	})
-	if _, err := paperSnapshotSource(raw, "https://example.com/a"); err == nil {
+	snapshot, _ := actualPublicPaperSnapshot(t, "acl-public.html", "https://aclanthology.org/2024.acl-long.1/")
+	// 访问限制是拒绝规则输入，不声明实际 ACL 页面受限。
+	snapshot.ContentState = "restricted"
+	raw := snap(t, snapshot)
+	if _, err := paperSnapshotSource(raw, snapshot.SourceURL); err == nil {
 		t.Fatal("restricted snapshot accepted for import")
 	}
 }
 
 func TestPaperSnapshotSourceURLMustMatch(t *testing.T) {
-	raw := snap(t, PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://example.com/a", HostFamily: "generic",
-		Title: "T", Abstract: "A", ContentState: "abstract_only",
-		Provenance: prov("x", "v", "abstract_only", "https://example.com/a"),
-	})
-	if _, err := paperSnapshotSource(raw, "https://example.com/b"); err == nil {
+	snapshot, _ := actualPublicPaperSnapshot(t, "acl-public.html", "https://aclanthology.org/2024.acl-long.1/")
+	raw := snap(t, snapshot)
+	if _, err := paperSnapshotSource(raw, "https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514"); err == nil {
 		t.Fatal("snapshot accepted with mismatched source_url")
 	}
 }
 
 func TestPaperSnapshotArxivIdentity(t *testing.T) {
-	raw := snap(t, PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://arxiv.org/abs/2504.16054v2", HostFamily: "arxiv",
-		SourceKey: "arxiv:2504.16054", Title: "T", Abstract: "A",
-		ArxivID: "2504.16054v2", ObservedVersion: "v2", PDFURLs: []string{"https://arxiv.org/pdf/2504.16054v2"},
-		ContentState: "abstract_only",
-		Provenance:   prov("x", "v", "abstract_only", "https://arxiv.org/abs/2504.16054v2"),
-	})
-	src, err := paperSnapshotSource(raw, "https://arxiv.org/abs/2504.16054v2")
+	snapshot, _ := actualPublicPaperSnapshot(t, "arxiv-v2-public.html", "https://arxiv.org/html/2501.12948v2")
+	if snapshot.ArxivID != "2501.12948v2" || snapshot.ObservedVersion != "v2" {
+		t.Fatal("actual arXiv source revision changed")
+	}
+	raw := snap(t, snapshot)
+	src, err := paperSnapshotSource(raw, snapshot.SourceURL)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if src.SourceKey != "arxiv:2504.16054" {
+	if src.SourceKey != "arxiv:2501.12948" {
 		t.Fatalf("arxiv identity not re-derived: %s", src.SourceKey)
 	}
 }
 
 func TestPaperSnapshotReaderAdapter(t *testing.T) {
 	r := NewReader(nil)
-	raw := snap(t, PaperSnapshot{
-		SchemaVersion: 1, SourceURL: "https://aclanthology.org/2024.acl-long.1/", HostFamily: "acl",
-		Title: "A Paper", Abstract: "Abs", DOI: "10.18653/v1/2024.acl-long.1",
-		ContentState: "abstract_only",
-		Provenance:   prov("x", "v", "abstract_only", "https://aclanthology.org/2024.acl-long.1/"),
-	})
-	cmd := app.ImportMaterialCommand{Adapter: "paper_snapshot", Kind: "paper", SourceLocator: "https://aclanthology.org/2024.acl-long.1/", ExportText: string(raw)}
+	snapshot, _ := actualPublicPaperSnapshot(t, "acl-public.html", "https://aclanthology.org/2024.acl-long.1/")
+	raw := snap(t, snapshot)
+	cmd := app.ImportMaterialCommand{Adapter: "paper_snapshot", Kind: "paper", SourceLocator: snapshot.SourceURL, ExportText: string(raw)}
 	src, err := r.ReadSource(context.Background(), cmd)
 	if err != nil {
 		t.Fatal(err)
@@ -146,12 +128,12 @@ func TestPaperSnapshotReaderAdapter(t *testing.T) {
 	if src.SourceKey != "doi:10.18653/v1/2024.acl-long.1" || src.Kind != "paper" {
 		t.Fatalf("adapter produced wrong source: %+v", src)
 	}
-	// A conflicting caller-supplied source key must be rejected, never merged.
-	cmd.SourceKey = "doi:10.9999/other"
+	// 调用参数中的冲突 key 必须拒绝。
+	cmd.SourceKey = "explicit-conflicting-import-key-rule-input"
 	if _, err := r.ReadSource(context.Background(), cmd); err == nil {
 		t.Fatal("conflicting source key accepted")
 	}
-	// No export and a non-paper kind are rejected up front.
+	// 空导出和非论文类型必须在读取前拒绝。
 	if _, err := r.ReadSource(context.Background(), app.ImportMaterialCommand{Adapter: "paper_snapshot", Kind: "paper", SourceLocator: "https://aclanthology.org/2024.acl-long.1/"}); err == nil {
 		t.Fatal("empty snapshot accepted")
 	}

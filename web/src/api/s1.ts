@@ -12,7 +12,7 @@ async function headers(key: string) {
   const session = await unwrap(api.GET('/auth/session'));
   return { 'Idempotency-Key': key, 'X-CSRF-Token': session.csrf_token };
 }
-// Writes keep the caller's operation identity and never replay failed/unknown effects.
+// 写入保留调用方的操作身份，失败或结果未知时不自动重发。
 export const trackingApi = {
 	 discoverCollections: async (body: components['schemas']['DiscoverSourceCollectionsRequestV1'], key: string, options?: Options) => unwrap(api.POST('/source-collections/discover', { body, params: { header: await headers(key) }, ...options })),
 	listCollections: (platform: string, owner_id: string, options?: Options) => unwrap(api.GET('/source-collections', { params: { query: { platform, owner_id } }, ...options })),

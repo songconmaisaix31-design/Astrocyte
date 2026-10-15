@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -49,12 +51,13 @@ func main() {
 	flag.Parse()
 	defer func() {
 		if failure := recover(); failure != nil {
-			_ = os.WriteFile(filepath.Join(*evidence, *phase+"-failure.txt"), []byte(fmt.Sprint(failure)), 0600)
+			_ = os.WriteFile(filepath.Join(*evidence, *phase+"-failure-"+time.Now().UTC().Format("20060102T150405.000000000")+".txt"), []byte(fmt.Sprint(failure)), 0600)
 			fmt.Fprintln(os.Stderr, "FAIL", *phase, "see ignored evidence directory")
 			os.Exit(1)
 		}
 	}()
 	assert(*phase != "" && *rootA != "" && *rootB != "" && *evidence != "", "explicit owned roots, phase and evidence are required")
+	assert(slices.Contains([]string{"initial", "updated", "deleted", "deleted-check", "restart", "query-readonly", "uncheckpointed-wal", "sync-current", "expect-stale", "result-bounds", "ambient-git", "same-project-worktrees", "corrupt-rebuild", "permissions", "map", "map-readonly", "map-missing", "cleanup", "cleanup-restart", "cleanup-worker", "cleanup-worker-restart", "cleanup-sql-boundary", "snapshot-reference"}, *phase), "unsupported verification phase")
 	must(os.MkdirAll(*evidence, 0700))
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()
@@ -63,6 +66,10 @@ func main() {
 		data, err := cmd.Output()
 		must(err)
 		assert(strings.TrimSpace(string(data)) == "https://github.com/songconmaisaix31-design/astrocyte-s4-public-context-20261015.git", "verification is restricted to the owned public project")
+	}
+	if *phase == "snapshot-reference" {
+		verifySnapshotReference(ctx)
+		return
 	}
 	db, err := sqlite.Open(filepath.Join(*evidence, "state.sqlite"))
 	must(err)
@@ -76,6 +83,21 @@ func main() {
 		return domain.RepositoryQuery{ProjectID: id, Purpose: "verify_owned_public_repository_context", Roots: []string{"."}, Text: "Count", Budget: budget}
 	}
 	qa, qb := query("s4-public-a"), query("s4-public-b")
+	if *phase == "cleanup" {
+		verifyCleanup(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-restart" {
+		verifyCleanupRestart(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-worker" {
+		verifyCleanupWorker(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-worker-restart" {
+		verifyCleanupWorkerRestart(ctx, db, service, human, qa, qb)
+	}
+	if *phase == "cleanup-sql-boundary" {
+		verifyCleanupSQLBoundary(ctx, db, service, human, qb)
+	}
 	if *phase == "initial" {
 		for id, root := range map[string]string{qa.ProjectID: *rootA, qb.ProjectID: *rootB} {
 			must(db.SaveProject(ctx, domain.LocalProject{ID: id, Name: "Public Unicode statistics", Root: root, Settings: domain.ProjectSettings{Revision: 1, AllowDirectory: true, AllowedSubdirs: []string{"."}, AllowedActions: []string{"read_context"}}, CreatedAt: time.Now().UTC()}, 0))
@@ -149,6 +171,141 @@ func main() {
 		checkGraph(ctx, service, human, qa)
 		checkGraph(ctx, service, human, qb)
 		emit("actual_sqlite_and_adapter_restart")
+	}
+	if *phase == "query-readonly" {
+		graphBefore, err := directoryState(filepath.Join(*evidence, "projections"))
+		must(err)
+		mapBefore, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		checkGraph(ctx, service, human, qa)
+		checkGraph(ctx, service, human, qb)
+		result, err := service.ReadRepositoryMap(ctx, human, qa)
+		must(err)
+		assert(len(result.MapEntries) == 6, "actual saved authored map is incomplete")
+		graphAfter, err := directoryState(filepath.Join(*evidence, "projections"))
+		must(err)
+		mapAfter, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		assert(graphBefore == graphAfter, "repository queries changed the actual graph projection")
+		assert(mapBefore == mapAfter, "repository queries changed AOCI runtime files")
+		emit("real_graph_search_impact_and_map_leave_all_projection_files_unchanged")
+	}
+	if *phase == "uncheckpointed-wal" {
+		result, err := service.SearchRepositoryCode(ctx, human, qa)
+		must(err)
+		projection := filepath.Join(*evidence, "projections", result.Index.Snapshot.WorktreeID, result.Index.Generation, ".codegraph", "codegraph.db")
+		writer := exec.CommandContext(ctx, *node, "--liftoff-only", filepath.Join(filepath.Dir(*script), "../../../tests/s4/wal.mjs"), projection)
+		var diagnostics bytes.Buffer
+		writer.Stderr = &diagnostics
+		output, err := writer.StdoutPipe()
+		must(err)
+		input, err := writer.StdinPipe()
+		must(err)
+		must(writer.Start())
+		closed := false
+		defer func() {
+			if !closed {
+				_ = input.Close()
+				_ = writer.Wait()
+			}
+		}()
+		var ready struct {
+			Ready bool `json:"ready"`
+		}
+		must(json.NewDecoder(output).Decode(&ready))
+		assert(ready.Ready, "actual SQLite writer did not become ready")
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.SearchRepositoryCode(ctx, human, qb)
+		must(err)
+		must(input.Close())
+		must(writer.Wait())
+		closed = true
+		checkGraph(ctx, service, human, qa)
+		emit("real_uncheckpointed_wal_rejected_other_worktree_unaffected_and_closed_writer_recovers")
+	}
+	if *phase == "sync-current" {
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "sync")
+		must(err)
+		checkGraph(ctx, service, human, qa)
+		checkGraph(ctx, service, human, qb)
+		emit("explicit_sync_to_current_source_snapshot")
+	}
+	if *phase == "expect-stale" {
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.ReadRepositoryMap(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.SearchRepositoryCode(ctx, human, qb)
+		must(err)
+		emit("changed_git_index_or_head_rejects_saved_map_and_graph_only_in_worktree_a")
+	}
+	if *phase == "result-bounds" {
+		bad := qa
+		bad.Budget.MaxResults = 1
+		_, err = service.SearchRepositoryCode(ctx, human, bad)
+		code(err, apierrors.BudgetExhausted)
+		_, err = service.ReadRepositoryMap(ctx, human, bad)
+		code(err, apierrors.BudgetExhausted)
+		emit("result_count_budget_rejects_without_silent_truncation")
+	}
+	if *phase == "ambient-git" {
+		before, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		cmd := exec.CommandContext(ctx, "git", "-C", *rootB, "rev-parse", "--path-format=absolute", "--git-path", "index")
+		data, err := cmd.Output()
+		must(err)
+		previous, existed := os.LookupEnv("GIT_INDEX_FILE")
+		must(os.Setenv("GIT_INDEX_FILE", strings.TrimSpace(string(data))))
+		defer func() {
+			if existed {
+				_ = os.Setenv("GIT_INDEX_FILE", previous)
+			} else {
+				_ = os.Unsetenv("GIT_INDEX_FILE")
+			}
+		}()
+		after, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		assert(before.IndexDigest == after.IndexDigest && before.WorktreeDigest == after.WorktreeDigest && before.WorktreeID == after.WorktreeID, "ambient Git index redirected the registered repository")
+		must(service.ValidateProjectSnapshot(ctx, human, before))
+		emit("actual_other_worktree_index_environment_cannot_redirect_snapshot")
+	}
+	if *phase == "same-project-worktrees" {
+		p, err := db.LoadProject(ctx, qa.ProjectID)
+		must(err)
+		originalRoot := p.Root
+		original, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		version := p.Settings.Revision
+		p.Settings.Revision++
+		p.Root = *rootB
+		must(db.SaveProject(ctx, p, version))
+		other, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
+		must(err)
+		assert(original.Head == other.Head && original.RepoID == other.RepoID && original.WorktreeID != other.WorktreeID, "same project did not distinguish its changed worktree")
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.NotFound)
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "index")
+		must(err)
+		feature := qa
+		feature.Text = "name:countParagraphs"
+		result, err := service.SearchRepositoryCode(ctx, human, feature)
+		must(err)
+		assert(len(result.Symbols) == 0, "same-project worktree B reused A source")
+		version = p.Settings.Revision
+		p.Settings.Revision++
+		p.Root = originalRoot
+		must(db.SaveProject(ctx, p, version))
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "rebuild")
+		must(err)
+		result, err = service.SearchRepositoryCode(ctx, human, feature)
+		must(err)
+		assert(len(result.Symbols) > 0, "same-project worktree A did not retain its own source")
+		_, err = service.RefreshRepositoryMap(ctx, human, qa)
+		must(err)
+		emit("same_project_same_commit_worktree_switch_never_reuses_other_graph")
 	}
 	if *phase == "corrupt-rebuild" {
 		snapshot, err := service.CaptureProjectSnapshot(ctx, human, qa.ProjectID, qa.Roots)
@@ -229,7 +386,50 @@ func main() {
 		assert(len(result.MapEntries) > 0, "AOCI returned no authored entries")
 		emit("actual_aoci_authored_map_persisted_and_read")
 	}
+	if *phase == "map-readonly" {
+		before, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		withoutAOCI, err := repositorycontext.New(db, db, repositorycontext.Options{Git: repositorycontext.Git{EnvironmentID: "s4-public-windows"}, CacheRoot: filepath.Join(*evidence, "projections"), SnapshotBudget: budget})
+		must(err)
+		result, err := withoutAOCI.ReadRepositoryMap(ctx, human, qa)
+		must(err)
+		assert(len(result.MapEntries) == 6, "saved map did not preserve all actual authored entries")
+		after, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		assert(before == after, "map GET changed AOCI runtime files")
+		_, err = withoutAOCI.ReadRepositoryMap(ctx, human, qb)
+		code(err, apierrors.NotFound)
+		emit("map_get_uses_saved_projection_without_aoci_process_or_ledger_writes")
+	}
+	if *phase == "map-missing" {
+		_, err = service.RefreshRepositoryMap(ctx, human, qb)
+		code(err, apierrors.EvidenceMissing)
+		emit("uninitialized_aoci_map_remains_missing")
+	}
 	fmt.Println("PASS phase", *phase)
+}
+
+func directoryState(root string) (string, error) {
+	state := map[string]string{}
+	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		state[path] = fmt.Sprintf("%d:%d", info.Size(), info.ModTime().UnixNano())
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+	data, err := json.Marshal(state)
+	return string(data), err
 }
 
 func checkGraph(ctx context.Context, service *repositorycontext.Service, caller domain.Caller, q domain.RepositoryQuery) {

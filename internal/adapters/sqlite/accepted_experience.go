@@ -74,6 +74,9 @@ func (t *acceptedExperienceTx) LoadAcceptedExperienceSource(id string) (attentio
 	if source.Completion.SourceKind != kind || source.Completion.EventID != eventID || source.Completion.OwnerProject != project || source.Completion.LocalProjectID != localProject {
 		return source, errors.New("experience source differs from its stored immutable identity")
 	}
+	if err := attention.ValidateCompletionSource(source.Completion, localProject, eventID, project); err != nil {
+		return source, err
+	}
 	return source, nil
 }
 
@@ -196,6 +199,9 @@ func (t *acceptedExperienceTx) SaveAcceptedExperienceSource(id string, source at
 		return err
 	}
 	completion := source.Completion
+	if err := attention.ValidateCompletionSource(completion, completion.LocalProjectID, completion.EventID, record.OwnerProject); err != nil {
+		return err
+	}
 	if record.Experience.Status != domain.StatusQuarantine || record.Version != 1 || record.OriginEventID != "" || completion.EventID == "" || completion.OwnerProject != record.OwnerProject || completion.LocalProjectID == "" || completion.Version < 1 || completion.OccurredAt < 1 || len(record.Experience.Evidence) != 1 || record.Experience.Evidence[0].EventID != completion.EventID || record.Experience.Evidence[0].TS != completion.OccurredAt {
 		return errors.New("completion source must bind the actual new quarantined candidate")
 	}

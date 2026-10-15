@@ -1,21 +1,20 @@
 import { test, expect } from '@playwright/test';
 import { startS1Server } from '../../tests/s1/server.mjs';
-import { humanAPI, importMaterial } from '../../tests/s1/api.mjs';
-import { paperImport } from '../../tests/s1/fixtures.mjs';
+import { humanAPI } from '../../tests/s1/api.mjs';
 import type { components } from '../src/api/schema';
-import { seedCandidate } from '../../tests/s1/scenarios.mjs';
+import { importTrackedDocument, trackedCandidate } from './realService';
 
 type Schemas = components['schemas'];
 
-// Actual HTTP/SQLite with deliberately synthetic contract_local input. No network/model calls.
-// W4 owns AT01–04; this checks the additional editable domain/reference/manual forms.
+// 人工表单保存已跟踪协议的实际摘录，生产 HTTP 与 SQLite 验证分类和版本。
 test('human classification, pinned references, manual layers and candidate edits use real service state', async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   const server = await startS1Server({ browser: true });
   try {
     const api = await humanAPI(server.apiURL);
-    const imported = await importMaterial(api, { ...paperImport('https://example.invalid/contract-local/w3-editing'), title: 'contract_local 长中文交互材料' });
+    const imported = await importTrackedDocument(api);
     const id = imported.detail.material.id;
+    const content = await api.get(`/materials/${id}/revisions/1/content`);
     await page.goto(`${server.webURL}/attention`);
     await page.locator('main summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
     const main = page.locator('main');
@@ -37,7 +36,7 @@ test('human classification, pinned references, manual layers and candidate edits
     for (const stage of ['content', 'topic', 'project']) {
       await dialog.getByLabel('沉淀层次', { exact: true }).selectOption(stage);
       await dialog.getByLabel('本轮问题', { exact: true }).fill(`contract_local ${stage} 问题`);
-      await dialog.getByLabel('人工整理结果', { exact: true }).fill(`contract_local ${stage} 人工结果；没有自动模型调用`);
+      await dialog.getByLabel('人工整理结果', { exact: true }).fill(content.text.split('\n').slice(0, 8).join('\n'));
       await dialog.getByLabel('下一轮问题（可选）', { exact: true }).fill('继续核对来源版本和缺失依据');
       if (stage !== 'content') await dialog.getByLabel('待查问题（每行一项）', { exact: true }).fill('真实科学收益尚未测量');
       if (stage === 'project') {
@@ -98,7 +97,7 @@ test('ranking waits for explicit complete human weights, keeps unknown scores an
   const server = await startS1Server({ browser: true });
   try {
     let api = await humanAPI(server.apiURL);
-    await seedCandidate(api, 'https://example.invalid/contract-local/w3-ranking');
+    await trackedCandidate(api);
     const getProfile = async () => await api.get('/attention-ranking-profile') as Schemas['RankingProfileDetailV1'];
     expect((await getProfile()).configured).toBe(false);
     await page.goto(`${server.webURL}/attention`);

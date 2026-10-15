@@ -1,8 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Real paper_snapshot browser acceptance uses the existing S1 helper to own the
-// assigned API/Vite ports. No simultaneous default webServer, personal browser,
-// model, or media process.
+// paper_snapshot 验收由既有 S1 helper 独占分配的 API/Vite 端口。
 export default defineConfig({
   testDir: '.', testMatch: 's1-paper-snapshot.spec.ts', workers: 1, retries: 0,
   reporter: [['list'], ['html', { open: 'never' }]],

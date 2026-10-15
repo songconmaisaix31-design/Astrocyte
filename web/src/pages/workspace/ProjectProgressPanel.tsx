@@ -22,8 +22,7 @@ export function ProjectProgressPanel({ project, disabled }: { project: Project; 
   const files = overLimit ? [] : parsed;
 
   const infer = () => {
-    // The Idempotency-Key (from prepare's full-payload signature) is the
-    // persisted operation identity; a retry reuses it and never re-charges.
+    // 完整输入确定 Idempotency-Key，人工重试保留同一操作身份。
     const request = command.prepare({ expected_version: 1, files });
     void command.run(
       () => inferProjectProgress(project.id, request.key, files),
@@ -38,7 +37,7 @@ export function ProjectProgressPanel({ project, disabled }: { project: Project; 
     {state.loading && !state.data ? <p role="status">进度加载中…</p> : state.error && !state.data ? <p role="status">进度未获取：{state.error}</p> : progress && <>
       <p className={styles.note}>状态 · {progressStatusLabel(progress.status)}{progress.source ? ` · ${progressSourceLabel(progress.source)}` : ''}</p>
       {progress.percent != null && <p className={styles.note}>完成度 · {progress.percent}%（{progressPercentLabel(progress.source)}）</p>}
-      {progress.summary && <p>{progress.summary}</p>}
+      {progress.summary && <p aria-label="项目进度摘要">{progress.summary}</p>}
       <p className={styles.note}>依据来源 · {progressSourceSummary(progress.evidence)}</p>
       {progress.evidence.length > 0 && <ul className={styles.timeline}>{progress.evidence.map((item, index) => <li key={index}><h5>{item.source_path}</h5><p className={styles.note}>{progressKindLabel(item.kind)} · 版本 {item.version || '未知'}</p>{item.excerpt && <pre>{item.excerpt}</pre>}</li>)}</ul>}
       <p className={styles.note}>{progress.observed_at ? `观察时间 · ${formatDateTime(progress.observed_at)}` : '观察时间未知'}{progress.native_id ? ` · 原生会话 ${progress.native_id}` : ''}{progress.model ? ` · 模型 ${progress.model}` : ''}{progress.revision ? ` · 版本 r${progress.revision}` : ''}</p>

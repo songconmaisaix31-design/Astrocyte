@@ -8,8 +8,7 @@ export type WorksMetadataEdit =
   | { kind: 'handoff'; value: string }
   | { kind: 'hidden'; value: boolean };
 
-// Drafts stay in the dialog if a command fails. The caller owns transport,
-// revision checks and authoritative results; no success is inferred locally.
+// 命令失败时保留草稿；调用方负责传输、版本校验和服务返回结果。
 export function WorksMetadataForm({ item, busy, save }: {
   item: WorksWork;
   busy: boolean;

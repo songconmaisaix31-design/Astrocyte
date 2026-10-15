@@ -20,6 +20,7 @@ import (
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	swarmapp "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
+	workbenchapp "github.com/songconmaisaix31-design/Astrocyte/internal/workbench/app"
 	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 )
 
@@ -44,7 +45,12 @@ type Config struct {
 
 // Services bundles all application services the HTTP layer depends on.
 type Services struct {
+	SwarmS3              *swarmapp.Service
+	RepositoryContext    *RepositoryContextServices
 	WorkspaceS2          *workspaceapp.S2Service
+	RelaySessionEvents   workbenchapp.SessionEventsReader
+	Relay                workspaceapp.RelayRuntime
+	Workbench            workbenchapp.Reader
 	GitHubRepositories   workspaceapp.GitHubRepositories
 	Tracking             attentionapp.TrackingService
 	LocalProjects        workspaceapp.LocalProjects
@@ -99,10 +105,16 @@ func NewServer(cfg Config) *Server {
 		h.registerWorkspaceS2(mux, cfg.Services.WorkspaceS2)
 	}
 	mux.HandleFunc("GET /api/v1/sessions", h.handleListSessions)
-	mux.HandleFunc("GET /api/v1/missions", h.handleListMissions)
+	if cfg.Services.SwarmS3 == nil {
+		mux.HandleFunc("GET /api/v1/missions", h.handleListMissions)
+	} else {
+		h.registerSwarmS3(mux, cfg.Services.SwarmS3)
+	}
 
 	// Single-resource reads
-	mux.HandleFunc("GET /api/v1/missions/{id}", h.handleGetMission)
+	if cfg.Services.SwarmS3 == nil {
+		mux.HandleFunc("GET /api/v1/missions/{id}", h.handleGetMission)
+	}
 	h.registerTracking(mux)
 	h.registerLocalProjects(mux)
 	h.registerRegisteredProjects(mux)
@@ -111,6 +123,12 @@ func NewServer(cfg Config) *Server {
 	h.registerProgress(mux)
 	h.registerEngineGates(mux)
 	h.registerWorks(mux)
+	h.registerWorkbench(mux)
+	h.registerRelay(mux)
+	if cfg.Services.RepositoryContext != nil {
+		RegisterRepositoryContextRoutes(mux, *cfg.Services.RepositoryContext)
+	}
+	mux.HandleFunc("/api/v1/relay/session-events", h.handleRelaySessionEvents)
 
 	// Future write endpoints return 501 unsupported_capability
 	if cfg.Services.Attention == nil {
@@ -128,11 +146,13 @@ func NewServer(cfg Config) *Server {
 		mux.HandleFunc("POST /api/v1/proposals/{id}/approvals", h.notImplemented("proposal_approve"))
 		mux.HandleFunc("POST /api/v1/approvals/{id}/revoke", h.notImplemented("approval_revoke"))
 	}
-	mux.HandleFunc("POST /api/v1/missions/{id}/pause", h.notImplemented("mission_pause"))
-	mux.HandleFunc("POST /api/v1/missions/{id}/cancel", h.notImplemented("mission_cancel"))
-	mux.HandleFunc("POST /api/v1/work-items/{id}/claims", h.notImplemented("workitem_claim"))
-	mux.HandleFunc("POST /api/v1/work-items/{id}/artifacts", h.notImplemented("workitem_submit"))
-	mux.HandleFunc("POST /api/v1/artifacts/{id}/acceptance", h.notImplemented("artifact_accept"))
+	if cfg.Services.SwarmS3 == nil {
+		mux.HandleFunc("POST /api/v1/missions/{id}/pause", h.notImplemented("mission_pause"))
+		mux.HandleFunc("POST /api/v1/missions/{id}/cancel", h.notImplemented("mission_cancel"))
+		mux.HandleFunc("POST /api/v1/work-items/{id}/claims", h.notImplemented("workitem_claim"))
+		mux.HandleFunc("POST /api/v1/work-items/{id}/artifacts", h.notImplemented("workitem_submit"))
+		mux.HandleFunc("POST /api/v1/artifacts/{id}/acceptance", h.notImplemented("artifact_accept"))
+	}
 	mux.HandleFunc("GET /api/v1/events", h.notImplemented("events_sse"))
 
 	// Catch-all for unknown /api/v1/* routes — always JSON 404
@@ -148,7 +168,7 @@ func NewServer(cfg Config) *Server {
 		// Wrap with SPA static file serving for non-/api routes
 		innerHandler = spaHandler(cfg.WebDir, mux)
 	}
-	if cfg.Services.WorkspaceS2 != nil || cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil || cfg.Services.KnowledgeGovernance != nil || cfg.Services.ExperienceGovernance != nil || cfg.Services.ConflictGate != nil || cfg.Services.Works != nil {
+	if cfg.Services.SwarmS3 != nil || cfg.Services.RepositoryContext != nil || cfg.Services.WorkspaceS2 != nil || cfg.Services.RelaySessionEvents != nil || cfg.Services.Relay != nil || cfg.Services.Workbench != nil || cfg.Services.Attention != nil || cfg.Services.LocalAgents != nil || cfg.Services.LocalProjects != nil || cfg.Services.RegisteredProjects != nil || cfg.Services.Tracking != nil || cfg.Services.GitHubRepositories != nil || cfg.Services.PaperSearch != nil || cfg.Services.Progress != nil || cfg.Services.Gates != nil || cfg.Services.KnowledgeGovernance != nil || cfg.Services.ExperienceGovernance != nil || cfg.Services.ConflictGate != nil || cfg.Services.Works != nil {
 		guard := newSessionGuard(cfg)
 		mux.HandleFunc("GET /api/v1/auth/session", guard.bootstrap)
 		innerHandler = guard.middleware(innerHandler)

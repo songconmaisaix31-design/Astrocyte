@@ -21,7 +21,7 @@ export function Icon({ name, size = 20 }: { name: keyof typeof paths; size?: num
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>;
 }
 
-/** Brand SVG from the supplied design, independent of its bundled runtime. */
+/** 使用既有设计中的品牌 SVG。 */
 export function Mark() {
   return <svg className="ac-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
     <path d="M20 6v10M8 12l9 6M8 28l9-6m3 2v10m3-12 9 6m-9-10 9-6" stroke="currentColor" strokeWidth="3" />
@@ -30,7 +30,7 @@ export function Mark() {
   </svg>;
 }
 
-/** Decorative brand illustration from the design; never an execution graph. */
+/** 品牌插图用于页面装饰。 */
 export function NetworkArt() {
   const nodes = [[62, 94], [118, 37], [136, 145], [210, 74], [234, 157], [305, 45], [339, 112], [391, 70], [389, 178]];
   const edges = [[0, 1], [0, 2], [0, 3], [1, 3], [2, 3], [2, 4], [3, 4], [3, 5], [3, 6], [4, 6], [4, 8], [5, 6], [5, 7], [6, 7], [6, 8], [7, 8]];

@@ -2,9 +2,10 @@ import { expect, it } from 'vitest';
 import type { components } from '../../api/schema';
 import { canRecommendSourceItem, canSelectSourceItem, sourceItemKey } from './sourceSelection';
 
+// 本文件仅提供纯函数参数，不声明检索、推荐模型或导入实际完成。
 const item: components['schemas']['SourceItemV1'] = {
   source_id: 's1', external_id: 'BV1public', revision: 2, stale: false, selected: false, import_job_id: null, material_id: null,
-  metadata: { external_id: 'BV1public', locator: 'https://www.bilibili.com/video/BV1public', title: '实际标题', description: '实际简介', author: '公开作者', cover: '', published_at: 0, provider_status: null, unavailable_reason: '' },
+  metadata: { external_id: 'BV1public', locator: 'https://www.bilibili.com/video/BV1public', title: '输入标题', description: '输入简介', author: '输入作者', cover: '', published_at: 0, provider_status: null, unavailable_reason: '' },
   recommendation: { status: 'succeeded', text: '可供人工继续核对', reason: '', metadata_revision: 2, configuration_id: 'approved-cli', error: null, provenance: { processor: 'cli', version: '1', source: 'metadata', mode: 'model' } },
 };
 

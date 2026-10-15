@@ -23,7 +23,35 @@ type RepositoryIndexCommands interface {
 	UpdateRepositoryIndex(context.Context, domain.Caller, domain.RepositoryQuery, string) (domain.RepositoryIndex, error)
 }
 
+type RepositoryMapCommands interface {
+	RefreshRepositoryMap(context.Context, domain.Caller, domain.RepositoryQuery) (domain.RepositoryIndex, error)
+}
+
 type RepositoryProjectReader interface {
 	LoadRepositoryProject(context.Context, string) (domain.LocalProject, error)
 	LoadRepositoryGrant(context.Context, string, string) (domain.ProjectGrant, error)
+}
+
+// 提交事务内只核保存的快照和当前权限；真实Git观察由事务外调用方完成。
+type ProjectSnapshotReferenceValidator interface {
+	ValidateProjectSnapshotReference(context.Context, domain.Caller, domain.ProjectContextSnapshot) error
+}
+
+// 仅供平台后台清理生命周期调用，必须复用索引和查询所用的同一个Service。
+type RepositoryProjectionCleaner interface {
+	CleanupRepositoryContext(context.Context, int) (domain.RepositoryCleanupResult, error)
+}
+
+type RepositoryCleanupNotifier interface {
+	WakeRepositoryCleanup()
+}
+
+type RepositoryCleanupWorker interface {
+	RepositoryCleanupNotifier
+	RunRepositoryCleanup(context.Context, int) error
+}
+
+type RepositoryCleanupState struct {
+	RetiredIndexes int
+	Retained       []domain.RepositoryIndex
 }

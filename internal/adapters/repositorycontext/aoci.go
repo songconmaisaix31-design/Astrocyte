@@ -126,7 +126,7 @@ func observeAOCI(ctx context.Context, binary, root string, b domain.RepositoryBu
 	}
 	result := []domain.RepositoryMapEntry{}
 	for _, entry := range entries.Entries {
-		if entry.Kind != "code" || !safeRelative(entry.Path) || privatePath(entry.Path) {
+		if entry.Kind != "file" || !safeRelative(entry.Path) || privatePath(entry.Path) {
 			return nil, failure(apierrors.ScopeDenied, "AOCI map includes an unsupported or private object")
 		}
 		if strings.Contains(entry.F, root) || strings.Contains(entry.R, root) || strings.Contains(entry.A, root) || strings.Contains(entry.S, root) {
@@ -200,5 +200,6 @@ func (s *Service) ReadRepositoryMap(ctx context.Context, c domain.Caller, q doma
 		return result, failure(apierrors.IndexStale, "repository changed during map query")
 	}
 	result = domain.RepositoryResult{Index: index, MapEntries: index.MapEntries, Symbols: []domain.RepositorySymbol{}, Relations: []domain.RepositoryRelation{}, Coverage: slices.Clone(q.Roots), Gaps: []string{"model_authored_meaning_requires_source_review", "repository_map_is_not_embedding_or_compiler_evidence"}}
+	result.Index.MapEntries = nil
 	return result, nil
 }

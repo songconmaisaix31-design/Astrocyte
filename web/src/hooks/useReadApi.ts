@@ -1,18 +1,4 @@
-/**
- * useReadApi — lightweight data fetching hook.
- * Wraps createReadApi with loading/error/retry/stale states.
- * Does NOT silently fall back to fixtures on error.
- *
- * Lifecycle:
- *   - mountedRef + fetchIdRef guard every setState so that unmounted or
- *     superseded request completions never write state.
- *   - execute() begins with `await Promise.resolve()` so all subsequent
- *     code (including the first setState) runs on the microtask queue,
- *     not synchronously inside the effect body.
- *   - The effect's cleanup sets mounted=false and bumps fetchId to
- *     invalidate any in-flight request from the previous mount cycle
- *     (important under StrictMode double-mount).
- */
+/** 读取请求保留加载、错误与过期状态；已卸载或被取代的请求不再更新页面。 */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createReadApi, ApiError, api } from '../api/client';
 
@@ -45,7 +31,7 @@ export function useReadApi<T>(
     key: string;
   }>({ data: null, loading: true, error: null, stale: false, key });
 
-  // Keep fetcher in a ref so we don't re-run effects when it changes identity.
+  // 保存最新 fetcher，避免函数引用变化触发重复请求。
   const fetcherRef = useRef(fetcher);
   useEffect(() => { fetcherRef.current = fetcher; });
 
@@ -53,16 +39,13 @@ export function useReadApi<T>(
   const mountedRef = useRef(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Stable fetch executor. All setState calls follow an `await` boundary,
-  // so they execute as microtask continuations, not synchronously in the
-  // effect body or useCallback body.
+  // 状态更新在 await 后执行，避免在 effect 内同步更新。
   const execute = useCallback(async () => {
     const id = ++fetchIdRef.current;
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    // True async boundary: ensures all subsequent code runs on the
-    // microtask queue, not synchronously within the caller's frame.
+    // 后续代码进入微任务队列。
     await Promise.resolve();
     if (!mountedRef.current || !enabled || id !== fetchIdRef.current) return;
 
@@ -79,11 +62,11 @@ export function useReadApi<T>(
     }
   }, [enabled, key]);
 
-  // Initial fetch on mount.
+  // 挂载时读取当前资源。
   useEffect(() => {
     mountedRef.current = true;
     if (enabled) {
-      // A different resource must never briefly display the old detail.
+      // 切换资源时先清除先前详情。
       void Promise.resolve().then(() => {
         if (!mountedRef.current) return;
         setState({ data: null, loading: true, error: null, stale: false, key });
@@ -93,7 +76,7 @@ export function useReadApi<T>(
     return () => {
       mountedRef.current = false;
       abortRef.current?.abort();
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- invalidate in-flight requests
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- 使未完成请求失效
       ++fetchIdRef.current;
     };
   }, [execute, enabled, key]);
@@ -113,7 +96,7 @@ export function useReadApi<T>(
   return { data: enabled && state.key === key ? state.data : null, error: enabled && state.key === key ? state.error : null, stale: enabled && state.key === key && state.stale, loading: enabled && (state.key !== key || state.loading), retry };
 }
 
-// ── Pre-bound fetchers for each endpoint ──
+// 各接口复用同一个生成客户端。
 
 export function useHealth() {
   return useReadApi(() => readApi.getHealth());

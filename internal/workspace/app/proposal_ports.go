@@ -107,6 +107,7 @@ type ContextObjectStore interface {
 
 type OwnedSessionProvider interface {
 	ReadOwnedSessionFacts(context.Context, domain.Caller, string, string) (domain.OwnedSessionFacts, error)
+	ValidateOwnedSessionFacts(context.Context, domain.Caller, domain.OwnedSessionFacts, string) error
 }
 
 type OwnedNativeSessionReader interface {

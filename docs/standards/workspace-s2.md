@@ -1,6 +1,95 @@
 # Workspace S2
 
-当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_b9a5305d8480`，终端 `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_54302cb333c4`，终端 `term_721cf30f-a6d2-4a21-abcd-0f73c8b793f5`。实际客户端 Codex，模块公开 worker-list 已核 `gpt-6.1-sol`；原 Task、工作树、分支与测试记录保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+
+## 2026-10-16 最外层事务观察独立 REPORT
+
+单文件契约 SOURCE `6eedf02d4da0efbaac44221435981b3aca5eb0c3` 和实现 SOURCE `aa0a5d310cbfc5c07063bb22fdc951e6ca549195` 已普通 push，独立 `git ls-remote` 核实现完整 SHA 相同。`ObserveSessionBindings` 在最外层 Workspace 事务之前读取实际当前 owned 会话并完成 Git 观察，返回仅含私有字段的原请求观察值；`WithObservedSessionBindings` 在最终同数据库事务内重新检查 Grant epoch、当前项目与成员权限、绑定版本、不可变 Packet 和当前 Registry controller / startup / native 身份。最终检查允许更新实际 Used / Concurrency，其余 Caller、批准、动作和执行范围逐项匹配；原请求取消通道须由事务 context 继承。观察不会进入 HTTP 或持久缓存，零值不能授权。原 `WithAuthorizedSessionBindings` 使用同一实现，已有外层事务时在 Git 观察前明确拒绝。
+
+ContextPacket 与新绑定的实际 Git 校验位于事务外，事务内只调用真实 S4 `ValidateProjectSnapshotReference` 复核已保存快照与当前权限。SQLite `RequireWorkspaceObservation` 拒绝在既有 Workspace 事务内启动观察。实际 SnapshotProvider 继续保持原接口；缺少纯数据库校验能力时明确失败。Owned 工厂保持现有构造和读取签名，新增最终当前身份校验，并只在私有事实中携带该次真实项目快照。没有新增 HTTP DTO、DDL、默认权限、模型或原生启动操作。
+
+`go test -mod=readonly ./tests/s2 -timeout 90s -v` PASS，2 项、包耗时 6.441 秒；日志 `D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/go-first.log`，真实库为同根 `actual-2584233168/state.sqlite` 与 `current-goal-2386056932/state.sqlite`。既有批准、人类与 Agent 权限、幂等、版本、事务失败完整回滚、事件重投递、固定 Context、生产 HTTP Handler、关闭重开、撤销、完成、自然过期和 Goal 状态断言保留；新增检查在真实数据库事务内拒绝 Git 观察与组包、拒绝未观察的授权回调并保留取消状态。`go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s2` EXIT0，变更 Go 格式与 `git diff --check` 通过。首次 D 目录准备命令参数错误发生于检查启动前，未产生测试结果；后续命令使用正确目录参数和 fast-fail，未把该次准备失败登记为通过。
+
+S4 SOURCE `55fd3853a8230da580c01e3bc427a4074ada5553` 经模块许可普通精确消费为 `758b59e`。原 S4 处理两件冲突并明确归还后，仅本人继续 cherry-pick；纯 DB 实现、SQLite 连接选择与新增验证文件同源，app 只增加窄接口，验证 main 保留本树已有阶段并增加 `snapshot-reference`，没有引入缺失的 Cleanup / Map 祖先。当前完整生产资料 Context 与真实 owned 绑定正向仍待 H 同源装配和合法原生窗口；S3 负责把调用移到其最外层事务之前，未答 Claim 条件继续拒绝。完整 AT12 和原生端到端尚未因本轮组件结果登记为通过。
+
+依模块和 M-release 的本轮准确临时范围，本人逐块处理并 stage I 树十九件 S2 冲突后，于 `msg_7c56839f165a` 明确停止 I 树全部编辑、stage 与进程访问并归还。原 HEAD `0f420b827c3d676c93757893e5d17791a2744b8b`、MERGE_HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da` 保持；全树 U0，限定 working / cached diff-check 通过。相对 I 原 HEAD 仅保留 S4 已提交的事务前 Validate 三行，其余已提交的当前权限、准入、固定 Goal、私有身份及完整测试保持，没有带入本树 WIP或执行 Git 生命周期。格式 SOURCE `eba9b3c` 仅通过文件编辑工具应用只读格式化结果，前后完整格式化内容相同，补足 `s2_service.go` 的格式；与下方 `83c8b62` 一同作为可单独消费的纯格式提交。
+
+`go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/server-aa0a5d3.exe ./cmd/server` EXIT0；`node scripts/check-architecture.mjs` PASS，34 个包边界通过。两者日志与产物均在同一本轨 D 盘根，进程 TEMP / TMP / GOTMPDIR 为 `D:/Astrocyte-agent-assets/20261015/go-temp/product-s2`，GOCACHE 为原共享 `D:/Astrocyte-agent-assets/20261015/go-build/backend`。该可执行文件的当前 main 尚未装配完整 Context 提供者，构建结果不代替完整生产资料 Context 的成功检查。
+
+I 下一轮三件冲突依据 00:59 新临时计划处理，准确 HEAD `9ce5c2c21b273344e2448bee2ee4b80fa27d5fec`、MERGE_HEAD `f0fa889742d5e2c4c0bc113fcf857930e2c99122` 保持；仅编辑并 stage `app/proposal_context.go`、`domain/proposals.go`、`tests/s2/approval_test.go`。保留事务外 Validate 与必有 assignment_status，合入原 SOURCE 的固定 CurrentGoal 全部断言；相对原 HEAD 仅测试增加 100 行、删除 1 行，另两件内容相同，限定格式和 working / cached diff-check 通过。本人于 `msg_30191ec1e0c3` / `msg_e8cab6905db1` 明确停止 I 全部编辑、stage 和进程访问并归还，其他十二件 S4 冲突留给原作者，没有复制当前新观察实现或执行合并生命周期。
+
+`node --test tests/s2/http.test.mjs` PASS，1 项、零 skip、20.501 秒；真实生产 `cmd/server` 构建、实际 HTTP 和两次进程重启保持，日志 `D:/Astrocyte-agent-assets/20261015/product/s2-recovery-20261016/http-first.log`，真实库为同根 `astrocyte-s1-L9ldMM/data/state.sqlite`。全部批准、Agent 拒绝、旧 revision、同键同输入与异输入、固定 Goal 历史、事务故障完整回滚、outbox、重启、撤销断言按原入口通过；没有增加重试或放宽预算。B D helper 原 SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` 的一处冲突由原 B 处理并明确归还后，准确消费为 `0fee406`；八件完整内容与原源相同。后继 `837647d5913c739a73a72ec7829d24f78b4ab872` 四件目标在消费前零修改且与源父相同，准确消费为 `1c7f8c64e7116285aecc6664301db98b61e4b6ab`，再核四件内容与原源相同。Helper 逻辑已归还 B，原始检查和全部完整日志进入本轨 D 盘。
+
+完整资料 Context 继续使用现有 `tests/s2/context_material.test.mjs`，要求 H / I 提供准确同源可运行二进制、生产 Context 装配及 S2 / S4 / Attention 共享事务的已提交组合。此次已向 H 交上述八件生产路径及具体前置，等待准确产物后在自身独立 D 库、端口执行。原完整资料首次 TimeoutError / 服务 503 / 安全错误码 UNKNOWN 保留，真实 owned 绑定正向、双 Git 观察端到端和完整 AT12 仍未完成；本轮没有启动原生控制器或新模型。
+
+## 2026-10-16 SQLite 格式独立 REPORT
+
+SOURCE `83c8b62766b28470fc4fe2514631172ea2f286eb` 仅格式化 `internal/adapters/sqlite/workspace_proposals.go`，使用文件编辑工具保留全部 SQL、事务复用、回滚和关闭错误处理。`gofmt -l` 和限定 `git diff --check` 无输出；只读地将提交前内容及当前内容分别经 `gofmt` 比较，完整内容相同。该 SOURCE 已普通 push，独立 `git ls-remote` 返回相同完整 SHA；准确集成源码 `2367224` 的 CI `38768919397` 首次格式失败保留。本次布局变更未重复运行功能检查，四件事务观察 WIP 保留，后继真实 Context、绑定及 S3 最外层事务验证继续实施。
+
+## 2026-10-16 I 六文件冲突处理 REPORT
+
+依模块计划 SOURCE `dae019dbb8df2c196ba46895af845cdb268798ee`、正式放行 `msg_f4b1effcdaad`、新 I 本人 STOP `msg_068eac76c5ae` 与本人的安全 ACK，S2 仅在 I 原树逐块处理并 stage 六个指定文件。操作前后 HEAD 均为 `ebfeda40b37cc516f994e1a4f46f0869a824bd4c`、MERGE_HEAD 均为 `9021cbaa0dac6321491c9ae86d466749b8a32904`。六文件的 Grant epoch / CAS / SQL 与 Goal 固定历史规则保持，准入快照和 `assignment_status` 必有字段保留；合入原生 controller / startup 私有身份、liveness 与 SQLite 保存恢复，以及带 Caller / purpose 的 owned 端口。钱款币种保留严格三个 ASCII 大写字母的校验。
+
+| 指定文件 | 归还时 stage blob |
+|---|---|
+| `internal/adapters/sqlite/workspace_approvals.go` | `1615ce43a94cb5cea2349c88ddf98fc6a222d448` |
+| `internal/adapters/sqlite/workspace_goals.go` | `2cade7995ed6007cfecdad1e9158ee925cc5fff7` |
+| `internal/adapters/sqlite/workspace_session_bindings.go` | `56d50bcc047a94d642af48975f8b6d53fb45e534` |
+| `internal/workspace/app/proposal_ports.go` | `9875dac88fdc40e0ff13f6e5022a15a239114e7b` |
+| `internal/workspace/domain/proposals.go` | `1fdd9709889fb43ed3acb164739e0d1da801ad9d` |
+| `internal/workspace/domain/session_bindings.go` | `d15e21b2399bc61e58e8bb1ed401a518c73676d2` |
+
+全树 `git diff --name-only --diff-filter=U` 无输出；限定六文件的 working / cached `git diff --check`、`gofmt -l` 均无输出。差异为六件 309 行增加、172 行删除，已逐项核对。检查仅使用文件和 Git 状态，没有编译、启动服务或调用模型。本人于 `msg_d28c2bc9f1f5` 明确停止 I 树全部编辑、stage 和进程访问并归还；后续合并生命周期及组合验证仍由唯一 I 负责。本次未改本树业务代码，原完整资料 Context 的首次失败及后续未执行项保留。
+
+该次冲突处理之后，S4 已交付纯数据库快照引用校验，准确来源和本次消费记录见上方。外部真实文件观察、原 10 秒请求期限、最终同数据库授权复核保持；完整生产资料 Context、真实 owned 绑定正向与完整 AT12 按同源实际运行结果继续验收。
+
+## 2026-10-16 Context 请求耗时独立 REPORT
+
+SOURCE `967720e848806eb7b299c4e51468ab7603c3a526` 为现有完整资料 Context 检查增加本地请求耗时记录。原真实请求、认证、OpenAPI 校验、10 秒期限和全部成功及拒绝断言保持；正常或失败后将实际阶段、method、path、耗时、HTTP status 或安全错误名称写入本次独占 D 盘目录的 `http-timings.json`。记录不包含正文、cookie、token 或原始错误内容，写入失败与原检查错误一起报告。没有新增服务、模拟数据或重试。
+
+`node --check tests/s2/context_material.test.mjs` 和 `git diff --check` 均 EXIT 0。SOURCE 已普通 push，独立 `git ls-remote` 返回相同完整 SHA。完整实际运行尚等待包含共享 Attention 事务及准确 S4 / H 装配的可运行产物；当前结果仅为语法通过，原 Context 首 FAIL 保持。本 Task 继续支持原作者集成与真实验证。
+
+## 2026-10-16 I / H 单端口文件 REPORT
+
+依模块新计划 SOURCE `539e836`、正式放行 `msg_2ea1d4e76da1`、I 新 STOP `msg_d41719dea525` 与本人新安全 ACK，S2 只处理 I 树 `internal/workspace/app/proposal_ports.go` 的一处冲突并 stage。保留真实 `AdmittedOpportunityReader`，其余 Caller / purpose / owned / Context 端口完整保留，没有加入尚未交付的 S4 接口。归还时该完整文件与 I 当前 HEAD 相同，stage blob 为 `9875dac88fdc40e0ff13f6e5022a15a239114e7b`；限定 working / cached diff 检查与格式检查无输出。
+
+操作前后 HEAD 为 `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87`、MERGE_HEAD 为 `aaaf603a9477e470ff0ce0c269597802a6f25b40`。剩余两件未合并项为 B 的 `cmd/server/config.go` 和 R 的 `internal/adapters/agents/relay_input_operation.go`。本人于 `msg_58c34b3288a8` 明确停止 I 全部编辑、stage 与进程访问并归还，没有执行合并生命周期或编译验证。组合可构建阶段和完整 Context HTTP 仍由准确后继来源验证。
+
+## 2026-10-15 当前 Goal 与固定历史 REPORT
+
+SOURCE `ee7889cf04383162e160ae30544eb324257ed45c` 提供 `CurrentGoalReader`。`ReadCurrentGoalSnapshot(ctx, caller, projectID, goalID, revision)` 要求用户明确选择的正整数版本，读取实际项目、当前成员授权与 Goal 最新不可变 revision；项目不符、旧 revision、非 active 状态或缺目标依据时立即拒绝。返回 `domain.CurrentGoalSnapshot`，包含真实 Goal、ProjectSettingsRevision、ObservedAt；没有默认 Goal 或推断的目标。历史 `ReadGoal` 与批准继续保留原固定版本。
+
+`WithCurrentGoalSnapshot(ctx, caller, expected, callback)` 在同一 Workspace SQLite 事务内重新读取当前 Goal 与项目访问权限，检查当前 Goal revision 和项目设置 revision，并只把实际重新读取的值交给数据库回调。调用方在模型调用前读取快照，模型调用在事务之外，保存或使用判断结果时再进入此端口；模型、profile、policy、来源版本的检查由对应 owner 在同一回调中完成。SQLite 消费方调用 `WorkspaceTransaction(ctx, db)` 复用现有连接，其他数据库明确拒绝。此端口不签发 Grant、不修改历史批准，也不把 S5 缓存验收登记为已完成。
+
+`go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` PASS，6.26 秒，真实库 `.verification/s2-first/actual-3596023290/state.sqlite`，日志 `current-goal-snapshot-final.log`。实际同数据库事务、未观察快照拒绝、跨项目拒绝、Goal 更新后旧快照拒绝、项目设置变化后拒绝、旧 Goal / ContextPacket 不变及关闭重开检查通过，原批准、幂等、完整回滚、重投递、撤销、完成与自然过期检查保持。初次恢复 WIP 的同一核心测试另为 PASS，5.13 秒，日志 `current-goal-snapshot-first.log`。
+
+`node --test tests/s2/http.test.mjs` PASS，32.423 秒，日志 `current-goal-http-first.log`，实际库 `.verification/astrocyte-s1-fiEro4/data/state.sqlite`。使用实际 `cmd/server` 构建产物、真实 HTTP 与两次进程重启，核 Goal 更新生成新 revision、同键同输入幂等、旧版本修改 409、Agent 修改 403、固定历史与当前查询、重启后两版保留，同时保留批准与事务故障原断言；零原生会话、零 Mission。未增加 skip、延长期限或重发模型。`go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s2`、34 包架构检查、变更 Go 文件的格式检查与 `git diff --check` 全部通过。
+
+依模块 `d0838adbdb3b25ee52c02257fcd3d0d5e0136231` 计划及恢复后 H 本人 STOP，S2 在 H 原树逐块处理并 stage 四件 SessionBinding / ports / 实际测试冲突。全树未合并项为零、四件 working / cached diff 检查通过，原 HEAD / CHERRY_PICK_HEAD 保持；未执行任何 Git 生命周期操作或 H 构建。范围已明确停止并归还，经模块独核后由 H 唯一继续。H 当前基线缺 Admission 的领域快照类型，其端口保持该树原有准确闭包；完整 Admission 另按已交二十件来源消费。
+
+当前 Goal 端口没有新增 HTTP 契约或依赖。S5 完整 AT12 的真实模型 / profile / policy / 来源变化和旧 proof 拒绝，以及 H 生产 Context 与 R 当前 owned 会话成功，继续由原 owner 验证；用户未答的 Calls / 自由工具及具体 working 条件保持原状态，模型和原生窗口调用为零。所有先前 RED / UNKNOWN / NOT_RUN 原件保留。
+
+## 2026-10-15 Goal 状态与回调回滚独立 REPORT
+
+后继测试 SOURCE `885e72a57d2986b7d5962bc846f3f9e6f935f530` 新增实际 SQLite 检查，生产代码保持 `ee7889c`。`go test -mod=readonly ./tests/s2 -run TestActualCurrentGoalTransactionAndInactiveStates -timeout 90s -v` PASS，0.12 秒，真实库 `.verification/s2-first/current-goal-294254805/state.sqlite`，日志 `current-goal-states-first.log`。在当前 Goal 授权回调内调用同一生产 `PutGoal` 写入 paused 新版本，再返回明确事务失败，核实际最新 Goal 完全保持原值；随后以原幂等键执行同一命令成功生成下一 revision，证明版本与成功回执一起回滚。另一个真实数据库在此回调内被 `WorkspaceTransaction` 明确拒绝。
+
+真实 `paused / completed / archived` 各状态的最新 revision 均经生产命令持久化，随后读取当前 Goal 快照与受保护回调全部返回 `scope_denied`；固定原 revision 的全部字段仍与原始值相同。这些检查不调用模型或原生控制器，不修改时钟，也不依赖内存替身。变更文件的 Go 格式与 `git diff --check` 通过。
+
+前一 SOURCE `ee7889c` 和独立 REPORT `649df9c732689cc51706844ec36dfc81817533ba` 已普通 push，独立远端检查最终同 REPORT。首次查询 REPORT 远端时返回 `OpenSSL SSL_connect: SSL_ERROR_SYSCALL`，该失败保留在本次工具执行记录；后续单独 `git ls-remote` 成功返回准确 `649df9c`，没有重新推送或修改历史。当前可消费的 Goal 生产增量只有 `internal/workspace/domain/goals.go` 与新增 `internal/workspace/app/goals_snapshot.go`，必须使用已有完整 S2 / 当前项目权限 / 同数据库事务基线，两个测试提交保留独立覆盖证据。
+
+## 2026-10-15 生产资料 Context 首次检查与集成返修 REPORT
+
+真实生产资料 Context 检查 SOURCE `be255f3c64dd42dc41f0a4be646865e4ae86302b` 保存 `tests/s2/context_material.test.mjs`。它要求显式提供准确生产二进制、对应 SOURCE 和本次独占输出目录，使用该 SOURCE 的真实 OpenAPI、成熟 YAML / JSON Schema 库和现有进程工具；不另建 API 或原生实现。公开 README 来自实际本工程 Git HEAD 的固定对象，经生产人工导入和项目引用后建立 Goal / Proposal / Grant，再核完整 ContextPacket 的真实对象字节、许可移除、不可变引用与两次进程重启。后续输出目录通过 `S2_CONTEXT_OUTPUT_ROOT` 指定至本轨 D 盘；原先证据不移动或删除。
+
+首轮使用 H 允许消费的 `D:/Astrocyte-agent-assets/20261015/relay/H/recovery-context-registration-server.exe`，准确生产 SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` 加 H 已记录的 P `579a1cede98b47b08a3126f5d3974da938348929` 五 Reader 文件只读 overlay，未修改该二进制或 H 工作树。实际 `node --test tests/s2/context_material.test.mjs` 开发内容 FAIL，51.912 秒；日志 `.verification/s2-first/context-material-production-first.log`，真实库 `.verification/s2-first/context-material-WITyJD/data/state.sqlite`，同目录 `server.log`。当时固定公开输入 HEAD 为 `5ade870744ad6d396cca7e268899a19c133ea1ec`。资料导入、项目引用、Goal、提案、提交审阅和人类批准均已完成；Context POST 在原 10 秒读取期限发生 TimeoutError，服务日志随后记录该请求为 503。响应体未被客户端取得，具体安全错误码保持 UNKNOWN。测试自己的服务进程和日志已关闭，原生会话及模型调用为零，后续断言 NOT_RUN。
+
+只读准确 H SOURCE 已确认其 `sqlite/attention.go` 缺少 B `ce281d003c093ec26e19dfec78e912f20a014787` 的共享 `WorkspaceTransaction` 分支，仍独立打开 `BEGIN IMMEDIATE`；组包保存前又在 Workspace 事务内调用真实 `ReadProjectReference`。该准确来源缺口已交 H / 模块，不能只用空来源 Context 的既有成功替代完整资料链。原 I 已在其组合保留 B 的同数据库分支；下一次实际检查等待 I / H 交可运行的准确来源，保持原请求期限、全部断言和首 RED。该 SOURCE 另补显式 D 盘输出与安全阶段错误标注，尚未把新增测试登记为通过。
+
+依模块 SOURCE `83fd634904680a68534ad51832bf03a670cd028c` 和 S5 本人 STOP，S2 仅在 S5 树编辑并 stage `tests/s2/approval_test.go`，保留其已有批准 / 幂等 / 事件重投递 / 唯一约束完整回滚 / 重开 / 撤销断言，并合入本次 Goal 全部权限 / 版本 / 同数据库检查。未引入该树缺失的前序 Context HTTP helper。全树 U0、限定 working / cached diff 与格式检查通过，范围已明确停止并归还；模块与 M-release 独核后仅原 S5 继续。
+
+依模块 SOURCE `9fd45c18e6f4f6343e3ff23c531b384472d037dc`、I 本人 STOP 和本人的安全检查点，S2 仅处理 I 中列明的十一件冲突并 stage。逐项保留真实准入 / 未分配草稿、当前固定来源重查、human-only `reject_artifact` 与原断言、同库事务和连接关闭错误传播、包存储及私有原生字段；十一完整文件相对 I 当时 HEAD `392bbb17fc56b15a86c9b84349e6e4d6cb884755` 内容一致，限定两项 diff 检查通过，原 MERGE_HEAD `02a7976d997ef14ac298b2e240da43a9bb423c93` 保持。未带入本树 WIP、未操作合并生命周期。归还时只剩 B 的两件依赖冲突；模块后续独核全树 U0 并已收回临时权限。此结果只代表冲突处理，不代表完整组合构建或 HTTP 通过。
+
+S3 当前仅需私有 controller / startup 类型及存储映射，准确最小来源为 `aa445adf834c3a397a0817bec0593fcf1039420a` 的 `domain/session_bindings.go` 和 `sqlite/workspace_session_bindings.go` 两个完整原件。S2 已明确二件零 WIP 并停止写入，模块限定由原 S3 在其树消费；不需要 DDL、完整 aa 历史、H 装配或新的 owned 接口。长期语义与后继修订仍归 S2，真实 owned 正向保持未完成。六步经验进入 Context 的独立引用字段与 B 的真实 approved-only / 项目映射 / 来源读取桥正在确认，当前包尚没有此字段，未用资料引用或手填文本代替经验检索。
 
 ## 2026-10-15 公共 Context DTO 与 owned 工厂 REPORT
 

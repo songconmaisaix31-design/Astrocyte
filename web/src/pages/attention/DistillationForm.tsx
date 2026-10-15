@@ -29,7 +29,7 @@ export function DistillationForm({ input, materials, disabled, onSaved }: { inpu
     const request = command.prepare({ expected_version: 1, input_refs: [input], stage, output_text: output.trim(), question: question.trim(), processing_config: 'manual:v1', next_question: nextQuestion.trim() || null, related_refs: relatedRefs, related_ideas: lines(ideas), conflicts: lines(conflicts), pending_questions: lines(pending), goal_refs: lines(goals), existing_assets: lines(assets), expected_improvement: improvement.trim(), minimum_artifact: artifact.trim(), missing_evidence: lines(missing) });
     void command.run(() => attentionApi.recordDistillation(request.body, request.key), result => {
       onSaved();
-      // Keep the completed record and inputs visible for reuse or the next question.
+      // 保留已保存记录和输入，用于复用或下一轮问题。
       if (result.reused) return;
     }, '已保存人工沉淀；相同输入、配置和问题由服务复用结果');
   }}>

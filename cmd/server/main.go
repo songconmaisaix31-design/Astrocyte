@@ -84,10 +84,34 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	protectedSources, err := workbenchProtectedSources()
+	if err != nil {
+		return err
+	}
 	// Resolve data directory.
 	dataDir, err := resolveDataDir()
 	if err != nil {
 		return fmt.Errorf("resolve data dir: %w", err)
+	}
+	dataDir, err = resolveRelayDataDir(dataDir)
+	if err != nil {
+		return err
+	}
+	accessEnabled, e := relayEnabled()
+	if e != nil {
+		return e
+	}
+	if accessEnabled {
+		dataDir, err = guardWorkbenchExplicitDataDir(dataDir)
+	} else {
+		dataDir, err = guardWorkbenchDataDir(dataDir)
+	}
+	if err != nil {
+		return err
+	}
+	repositoryConfig, err := resolveRepositoryContextConfig(ctx, dataDir)
+	if err != nil {
+		return err
 	}
 	distiller, processingSourceKeys, err := resolveDistiller(ctx, dataDir)
 	if err != nil {
@@ -190,7 +214,9 @@ func run(logger *slog.Logger) error {
 
 	// 组装现有 S1 服务和 S2 提案命令，原生执行由原控制器接口负责。
 	services := httpapi.Services{
+		RepositoryContext:    &httpapi.RepositoryContextServices{},
 		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),
+		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot(), protectedSources...),
 		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
 		Tracking:             attention,
 		LocalProjects:        localProjects,
@@ -217,6 +243,25 @@ func run(logger *slog.Logger) error {
 	if profile, ok := any(attention).(attentionapp.RankingProfileService); ok {
 		services.RankingProfile = profile
 	}
+	if err := assembleSwarmLedger(&services, db, registry, objectStore); err != nil {
+		return err
+	}
+	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry); err != nil {
+		return err
+	}
+	launchContexts, err := relayPublicLaunchContexts(localProjects)
+	if err != nil {
+		return err
+	}
+	closeRelay, err := assembleRelay(&services, db, registry, objectStore, launchContexts...)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if closeRelay() != nil {
+			logger.Error("relay shutdown incomplete; unconfirmed state retained")
+		}
+	}()
 
 	// Resolve port — invalid value fails startup.
 	port, err := resolvePort()
@@ -257,6 +302,8 @@ func run(logger *slog.Logger) error {
 	// Graceful shutdown on SIGINT/SIGTERM.
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
 	defer cancelWorkers()
+	stopRelayObserver := startRelayObserver(workerCtx, services.Relay, logger)
+	defer stopRelayObserver()
 	workerErrors := make(chan error, 1)
 	go func() { workerErrors <- attention.Run(workerCtx) }()
 	// One fixed discovery run per service start. Health remains responsive while

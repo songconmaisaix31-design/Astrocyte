@@ -203,7 +203,7 @@ func (s *AdmissionService) RevokeAdmission(ctx context.Context, p Principal, id 
 	}
 	var admission domain.Admission
 	input := struct {
-		ID      string
+		ID string
 		RevokeAdmissionCommand
 	}{id, command}
 	return s.transact(ctx, p, command.CommandMeta, "RevokeAdmission", input, func(tx AdmissionTx) error {

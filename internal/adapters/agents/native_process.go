@@ -2,10 +2,12 @@ package agents
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"log/slog"
 	"os"
@@ -40,6 +42,20 @@ type nativeProcess struct {
 	textMessage           string
 	textBuffer            strings.Builder
 	next                  int
+	relayCapture          *relayNativeCapture
+	projectID             string
+	startedAt, deadlineAt time.Time
+	permissionPolicy      string
+	firstProtocolFailure  *RelayProtocolFailure
+	operationMu           sync.Mutex
+	relayEvidence         domain.RelayControllerEvidence
+	inputOperationID      string
+	relayStartedTurns     map[string]time.Time
+	relayPublishedTurns   map[string]bool
+	relayCompletedTurns   map[string]relayInputOutcome
+	originalSession       *domain.NativeSession
+	relayInputGuard       func(context.Context, domain.NativeSession) error
+	completionExperience  *completionExperienceOperation
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -51,6 +67,15 @@ func (e *nativeOwnershipError) Unwrap() error { return e.cause }
 
 func nativeError(code apierrors.Code, message string) error {
 	return &apierrors.ServiceError{Code: code, Message: message, RequiredAction: "check_native_session_and_project_settings"}
+}
+
+// 解码错误只返回固定安全消息；请求可能已交付，不能据此自动重试。
+func decodeNativeValue(raw json.RawMessage, target any) error {
+	value := bytes.TrimSpace(raw)
+	if len(value) == 0 || bytes.Equal(value, []byte("null")) || json.Unmarshal(value, target) != nil {
+		return nativeError(apierrors.DeliveryUnknown, "native protocol value could not be decoded; do not replay")
+	}
+	return nil
 }
 
 // Installed native entrypoints only. HTTP can select a registry ID, never a
@@ -102,7 +127,7 @@ func installedCommand(id string, args []string) (*exec.Cmd, error) {
 	return exec.Command(entry, args...), nil
 }
 
-func launchNative(id string, args []string, root string, lifetime time.Duration) (*nativeProcess, error) {
+func launchNative(id string, args []string, root string, lifetime time.Duration, relayCaptures ...*relayNativeCapture) (*nativeProcess, error) {
 	cmd, err := installedCommand(id, args)
 	if err != nil {
 		return nil, err
@@ -122,11 +147,17 @@ func launchNative(id string, args []string, root string, lifetime time.Duration)
 	cmd.Stderr = io.Discard // no raw authentication/provider payload enters API logs
 	ctx, cancel := context.WithTimeout(context.Background(), lifetime)
 	p := &nativeProcess{cli: id, cmd: cmd, stdin: in, done: make(chan struct{}), cancel: cancel, pending: map[string]chan map[string]json.RawMessage{}, events: []domain.NativeEvent{}, status: "idle"}
+	if len(relayCaptures) != 0 {
+		p.relayCapture = relayCaptures[0]
+	}
 	cleanup, err := startOwnedNative(cmd)
 	if err != nil {
 		cancel()
 		return nil, err
 	}
+	p.startedAt = time.Now().UTC()
+	p.relayEvidence = domain.RelayControllerEvidence{ControllerID: uuid.NewString(), Provider: id, WorkspaceRoot: root, Facts: []domain.RelayDriverFact{}}
+	p.deadlineAt, _ = ctx.Deadline()
 	go p.read(out)
 	go func() {
 		waitErr := cmd.Wait()
@@ -203,6 +234,11 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 	if err := p.write(request); err != nil {
 		return nil, nativeError(apierrors.DeliveryUnknown, "native request delivery is unknown")
 	}
+	if method == "turn/start" || method == "prompt" {
+		p.mu.Lock()
+		p.relayFact("input_written", "native_request_pipe", p.inputOperationID)
+		p.mu.Unlock()
+	}
 	select {
 	case response := <-ch:
 		if _, ok := response["error"]; ok {
@@ -210,65 +246,120 @@ func (p *nativeProcess) call(ctx context.Context, method string, params map[stri
 				Code    int    `json:"code"`
 				Message string `json:"message"`
 			}
-			_ = json.Unmarshal(response["error"], &failure)
+			if err := decodeNativeValue(response["error"], &failure); err != nil {
+				p.recordProtocolFailure(method, 0, "protocol_error_decode_failed")
+				return nil, err
+			}
+			p.recordProtocolFailure(method, failure.Code, protocolReason(failure.Message))
 			slog.Warn("native protocol rejected operation", "method", method, "protocol_code", failure.Code, "reason", protocolReason(failure.Message))
 			if failure.Code == -32601 {
 				return nil, nativeError(apierrors.UnsupportedCapability, "installed native protocol or thread store does not support this method")
 			}
 			return nil, nativeError(apierrors.ProviderUnavailable, "native protocol rejected the operation")
 		}
-		if raw, ok := response["success"]; ok && string(raw) != "true" {
-			return nil, nativeError(apierrors.ProviderUnavailable, "native operation did not succeed")
+		if raw, ok := response["success"]; ok {
+			var success bool
+			if err := decodeNativeValue(raw, &success); err != nil {
+				p.recordProtocolFailure(method, 0, "protocol_success_decode_failed")
+				return nil, err
+			}
+			if !success {
+				p.recordProtocolFailure(method, 0, "native_operation_not_succeeded")
+				return nil, nativeError(apierrors.ProviderUnavailable, "native operation did not succeed")
+			}
 		}
 		return response, nil
 	case <-ctx.Done():
+		p.recordProtocolFailure(method, 0, "reply_deadline")
 		slog.Warn("native delivery unresolved", "method", method, "reason", "reply_deadline")
 		return nil, nativeError(apierrors.DeliveryUnknown, "native reply deadline elapsed; do not replay automatically")
 	case <-p.done:
+		p.recordProtocolFailure(method, 0, "process_exited_before_reply")
 		return nil, nativeError(apierrors.DeliveryUnknown, "native process exited before reply")
 	}
 }
 
 func (p *nativeProcess) read(out io.Reader) {
+	if p.relayCapture != nil {
+		defer p.relayCapture.readerFinished()
+	}
 	scanner := bufio.NewScanner(out)
 	scanner.Buffer(make([]byte, 4096), 1024*1024)
 	for scanner.Scan() {
 		var record map[string]json.RawMessage
-		if json.Unmarshal(scanner.Bytes(), &record) != nil {
+		if decodeNativeValue(scanner.Bytes(), &record) != nil {
 			p.failOutput()
 			return
 		}
+		if p.relayCapture != nil {
+			if err := p.relayCapture.observe(record); err != nil {
+				p.failOutput()
+				return
+			}
+		}
 		var id string
 		if raw, ok := record["id"]; ok {
-			if json.Unmarshal(raw, &id) != nil {
-				id = string(raw)
+			if decodeNativeValue(raw, &id) != nil {
+				var numericID json.Number
+				if decodeNativeValue(raw, &numericID) != nil {
+					p.failOutput()
+					return
+				}
+				id = numericID.String()
+			}
+			if id == "" {
+				p.failOutput()
+				return
 			}
 		}
 		var method, typ string
-		_ = json.Unmarshal(record["method"], &method)
-		_ = json.Unmarshal(record["type"], &typ)
+		if raw, ok := record["method"]; ok {
+			if decodeNativeValue(raw, &method) != nil {
+				p.failOutput()
+				return
+			}
+		}
+		if raw, ok := record["type"]; ok {
+			if decodeNativeValue(raw, &typ) != nil {
+				p.failOutput()
+				return
+			}
+		}
 		if typ == "control_response" {
 			var response map[string]json.RawMessage
-			_ = json.Unmarshal(record["response"], &response)
-			_ = json.Unmarshal(response["request_id"], &id)
 			var subtype string
-			_ = json.Unmarshal(response["subtype"], &subtype)
+			if decodeNativeValue(record["response"], &response) != nil || decodeNativeValue(response["request_id"], &id) != nil || decodeNativeValue(response["subtype"], &subtype) != nil {
+				p.failOutput()
+				return
+			}
 			if subtype == "error" {
 				record["error"] = json.RawMessage(`{"code":-32600}`)
-			} else {
+			} else if subtype == "success" {
 				record["result"] = response["response"]
+			} else {
+				p.failOutput()
+				return
 			}
 		}
 		if typ == "control_request" {
 			var requestID string
-			_ = json.Unmarshal(record["request_id"], &requestID)
-			_ = p.write(map[string]any{"type": "control_response", "response": map[string]any{"subtype": "success", "request_id": requestID, "response": map[string]any{"behavior": "deny", "message": "controller tool policy denies this request"}}})
+			if decodeNativeValue(record["request_id"], &requestID) != nil {
+				p.failOutput()
+				return
+			}
+			if p.write(map[string]any{"type": "control_response", "response": map[string]any{"subtype": "success", "request_id": requestID, "response": map[string]any{"behavior": "deny", "message": "controller tool policy denies this request"}}}) != nil {
+				p.failOutput()
+				return
+			}
 			continue
 		}
 		// Server requests are denied. Document content cannot approve tools or
 		// grant its own permissions. We do not forward native approval to agents.
 		if method != "" && id != "" {
-			_ = p.write(map[string]any{"id": json.RawMessage(record["id"]), "error": map[string]any{"code": -32601, "message": "operation not permitted by controller"}})
+			if p.write(map[string]any{"id": json.RawMessage(record["id"]), "error": map[string]any{"code": -32601, "message": "operation not permitted by controller"}}) != nil {
+				p.failOutput()
+				return
+			}
 			continue
 		}
 		p.mu.Lock()
@@ -280,8 +371,12 @@ func (p *nativeProcess) read(out io.Reader) {
 				}
 			}
 		}
-		p.handleEvent(method, typ, record)
+		eventErr := p.handleEvent(method, typ, record)
 		p.mu.Unlock()
+		if eventErr != nil {
+			p.failOutput()
+			return
+		}
 	}
 	if scanner.Err() != nil {
 		p.failOutput()
@@ -289,6 +384,9 @@ func (p *nativeProcess) read(out io.Reader) {
 }
 
 func (p *nativeProcess) failOutput() {
+	if p.relayCapture != nil {
+		p.relayCapture.fail("native_stream_decode_or_truncation", false)
+	}
 	p.mu.Lock()
 	p.truncated = true
 	p.status = "blocked"
@@ -336,23 +434,36 @@ func (p *nativeProcess) addTextDelta(message, text string) {
 	}
 }
 
-func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMessage) {
+func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMessage) error {
 	if p.truncated {
-		return
+		return nil
+	}
+	if p.completionExperience != nil {
+		if err := p.observeCompletionExperience(method, r); err != nil {
+			return err
+		}
 	}
 	if (method != "" && method != "item/agentMessage/delta") || (typ != "" && typ != "message_update") {
 		p.textMessage = ""
 	}
 	var params struct {
-		Delta  string `json:"delta"`
-		ItemID string `json:"itemId"`
-		TurnID string `json:"turnId"`
-		Turn   struct {
+		ThreadID string `json:"threadId"`
+		Delta    string `json:"delta"`
+		ItemID   string `json:"itemId"`
+		TurnID   string `json:"turnId"`
+		Turn     struct {
 			ID     string `json:"id"`
 			Status string `json:"status"`
+			Error  *struct {
+				Message *string `json:"message"`
+			} `json:"error"`
 		} `json:"turn"`
 	}
-	_ = json.Unmarshal(r["params"], &params)
+	if method == "item/agentMessage/delta" || method == "turn/started" || method == "turn/completed" {
+		if err := decodeNativeValue(r["params"], &params); err != nil {
+			return err
+		}
+	}
 	switch method {
 	case "item/agentMessage/delta":
 		message := ""
@@ -361,11 +472,68 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		}
 		p.addTextDelta(message, params.Delta)
 	case "turn/started":
-		p.status = "running"
+		if params.Turn.ID == "" {
+			return nativeError(apierrors.DeliveryUnknown, "native turn identity is unavailable")
+		}
+		if p.relayEvidence.StartupOperationID != "" {
+			if params.ThreadID == "" || params.ThreadID != p.nativeID {
+				return nativeError(apierrors.ScopeDenied, "turn start differs from the original thread")
+			}
+			if p.relayPublishedTurns[params.Turn.ID] {
+				break
+			}
+			if p.turnID != "" && p.turnID != params.Turn.ID {
+				return nativeError(apierrors.ScopeDenied, "turn start differs from the original thread or turn")
+			}
+			if p.turnID == "" {
+				if p.relayStartedTurns == nil {
+					p.relayStartedTurns = map[string]time.Time{}
+				}
+				if len(p.relayStartedTurns) >= 256 {
+					return nativeError(apierrors.BudgetExhausted, "unbound turn observations exceed the limit")
+				}
+				if _, exists := p.relayStartedTurns[params.Turn.ID]; !exists {
+					p.relayStartedTurns[params.Turn.ID] = time.Now().UTC()
+				}
+				break
+			}
+		}
+		settled := false
+		for _, binding := range p.relayEvidence.Turns {
+			if binding.TurnID == params.Turn.ID && binding.ResultObservedAt != nil {
+				settled = true
+			}
+		}
+		if !settled {
+			p.status = "running"
+		}
 		p.turnID = params.Turn.ID
 		p.addEvent("turn_started", "")
+		if p.relayEvidence.StartupOperationID != "" {
+			p.relayFact("turn_started", "codex_turn_started", p.inputOperationID)
+			p.markRelayTurnStarted(params.Turn.ID, p.relayEvidence.Facts[len(p.relayEvidence.Facts)-1].TS)
+			if p.relayPublishedTurns == nil {
+				p.relayPublishedTurns = map[string]bool{}
+			}
+			p.relayPublishedTurns[params.Turn.ID] = true
+		}
 	case "turn/completed":
-		p.status = params.Turn.Status
+		if params.Turn.ID == "" || params.Turn.Status == "" {
+			return nativeError(apierrors.DeliveryUnknown, "native turn completion is unavailable")
+		}
+		if params.Turn.Error != nil && params.Turn.Error.Message == nil {
+			return nativeError(apierrors.DeliveryUnknown, "native turn error observation is incomplete")
+		}
+		fresh, current, err := p.recordRelayTurnCompletion(params.ThreadID, params.Turn.ID, params.Turn.Status, params.Turn.Error != nil)
+		if err != nil {
+			return err
+		}
+		if !fresh {
+			break
+		}
+		if current {
+			p.status = params.Turn.Status
+		}
 		p.modelObservedAt = time.Now()
 		p.addEvent("turn_"+params.Turn.Status, "")
 	}
@@ -373,6 +541,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	case "agent_start":
 		p.status = "running"
 		p.addEvent("turn_started", "")
+		p.relayFact("turn_started", "pi_agent_start", p.inputOperationID)
 	case "agent_settled":
 		if p.status != "failed" {
 			p.status = "completed"
@@ -384,7 +553,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			Type  string `json:"type"`
 			Delta string `json:"delta"`
 		}
-		_ = json.Unmarshal(r["assistantMessageEvent"], &e)
+		if err := decodeNativeValue(r["assistantMessageEvent"], &e); err != nil {
+			return err
+		}
 		if e.Type == "text_delta" {
 			// Pi emits message_start/message_end around each message; either
 			// boundary above ends this contiguous delta group.
@@ -396,7 +567,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			StopReason   string `json:"stopReason"`
 			ErrorMessage string `json:"errorMessage"`
 		}
-		_ = json.Unmarshal(r["message"], &m)
+		if err := decodeNativeValue(r["message"], &m); err != nil {
+			return err
+		}
 		if m.Role == "assistant" && (m.StopReason == "error" || m.StopReason == "aborted") {
 			p.status = "failed"
 			p.addEvent("turn_failed", "")
@@ -405,20 +578,30 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		}
 	case "system":
 		var subtype, sessionID, model string
-		_ = json.Unmarshal(r["subtype"], &subtype)
-		_ = json.Unmarshal(r["session_id"], &sessionID)
-		_ = json.Unmarshal(r["model"], &model)
+		if err := decodeNativeValue(r["subtype"], &subtype); err != nil {
+			return err
+		}
 		if subtype == "init" {
+			if err := decodeNativeValue(r["session_id"], &sessionID); err != nil {
+				return err
+			}
+			if err := decodeNativeValue(r["model"], &model); err != nil {
+				return err
+			}
+			if sessionID == "" || model == "" {
+				return nativeError(apierrors.DeliveryUnknown, "native initialization identity is unavailable")
+			}
 			if p.nativeID != "" && sessionID != p.nativeID {
 				p.status = "blocked"
 				go func() { _ = p.cmd.Cancel() }()
-				return
+				return nativeError(apierrors.ScopeDenied, "native initialization identity differs")
 			}
 			p.nativeID = sessionID
 			p.model = model
 			p.provider = "configured_cli_transport"
 			p.modelObservedAt = time.Now()
 			p.addEvent("native_session_initialized", "")
+			p.relayFact("session_confirmed", "claude_system_init", p.relayEvidence.StartupOperationID)
 		}
 	case "assistant":
 		var message struct {
@@ -427,7 +610,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 				Text string `json:"text"`
 			} `json:"content"`
 		}
-		_ = json.Unmarshal(r["message"], &message)
+		if err := decodeNativeValue(r["message"], &message); err != nil {
+			return err
+		}
 		for _, part := range message.Content {
 			if part.Type == "text" {
 				p.addEvent("text", part.Text)
@@ -436,8 +621,12 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	case "result":
 		var subtype string
 		var isError bool
-		_ = json.Unmarshal(r["subtype"], &subtype)
-		_ = json.Unmarshal(r["is_error"], &isError)
+		if err := decodeNativeValue(r["subtype"], &subtype); err != nil {
+			return err
+		}
+		if err := decodeNativeValue(r["is_error"], &isError); err != nil {
+			return err
+		}
 		if isError || subtype != "success" {
 			p.status = "failed"
 			p.addEvent("turn_failed", "")
@@ -447,6 +636,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			p.addEvent("turn_completed", "")
 		}
 	}
+	return nil
 }
 
 func (p *nativeProcess) observe() domain.NativeObservation {

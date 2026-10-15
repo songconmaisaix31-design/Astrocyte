@@ -18,7 +18,7 @@ test('real metadata recommendation precedes human selection and reuses the origi
   const path = process.env.ASTROCYTE_S1_REUSE_OWNED_TEMP;
   const ownedRoot = process.env.ASTROCYTE_S1_REUSE_APPROVED_ROOT;
   expect(path && ownedRoot && resolve(path) === resolve(approvedStore) && resolve(ownedRoot) === resolve(approvedStore)).toBe(true);
-  // Any dedupe regression fails without downloading: summarize remains disabled.
+  // summarize 保持关闭，重复来源未复用时立即失败。
   const server = await startS1Server({ browser: true, reuseOwnedTemporary: { path: path!, ownedRoot: ownedRoot! } });
   let api = await humanAPI(server.apiURL);
   const read = async <T,>(endpoint: string) => await api.get(endpoint) as T;
@@ -48,7 +48,7 @@ test('real metadata recommendation precedes human selection and reuses the origi
     const project = projects.items.find(item => resolve(item.root) === resolve(join(approvedStore, 'explicit-public-material-project')));
     expect(project?.settings.external_model_cli).toBe('codex');
     expect(project?.settings.allowed_actions).toEqual(expect.arrayContaining(['start', 'stop']));
-    // Explicit no-model native connection verification after the cold restart.
+    // 服务重启后明确验证原生连接，不发起模型推断。
     await page.goto(`${server.webURL}/workspace`);
     const panel = page.locator('section').filter({ has: page.getByRole('heading', { name: '本地 Agent 与项目', exact: true }) }).first();
     await panel.getByRole('button').filter({ has: page.getByRole('heading', { name: project!.name, exact: true }) }).click();
@@ -82,8 +82,7 @@ test('real metadata recommendation precedes human selection and reuses the origi
       expect(terminal.delivery_unknown).toBe(false);
       await testInfo.attach('actual-metadata-model-job', { body: JSON.stringify(terminal, null, 2), contentType: 'application/json' });
     } else {
-      // A retry of the browser test consumes the same successful recommendation,
-      // never replays failed/unknown model work under another request identity.
+      // 浏览器重跑复用同一成功建议，失败或未知模型请求不重新发送。
       expect(selectedItem!.recommendation.status).toBe('succeeded');
     }
     listing = await read<S['TrackingSourceResultV1']>(`/tracking-sources/${source!.id}`);

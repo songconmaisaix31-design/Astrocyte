@@ -11,17 +11,17 @@ import { dimensionLabels } from './model';
 import styles from './AttentionPage.module.css';
 
 type Profile = components['schemas']['RankingProfileV1'];
-export function RankingPanel({ fixture, refreshToken, onChanged }: { fixture: boolean; refreshToken: number; onChanged: () => void }) {
-  const state = useRankingProfile(!fixture);
+export function RankingPanel({ refreshToken, onChanged }: { refreshToken: number; onChanged: () => void }) {
+  const state = useRankingProfile();
   const { retry } = state;
   useEffect(() => { if (refreshToken) retry(); }, [refreshToken, retry]);
   return <SectionCard title="候选四维排序" tabs={['overview', 'opportunities']} padded>
     <p className={styles.note}>未配置时保留四维与人工顺序。由你填写完整权重后才启用综合排序；目标进展首要，其余三项必须有效。排序不授权读取或执行。</p>
-    {fixture ? <p role="note">示例模式无真实排序配置，修改尚未启用。</p> : <QueryState state={state}>{data => <>
+    <QueryState state={state}>{data => <>
       <p>{data.configured && data.profile ? `已保存配置 v${data.profile.version} · ${data.profile.enabled ? '启用' : '停用'}` : '尚未配置综合排序，权重留空'}</p>
       <RankingForm initial={data.profile} disabled={state.loading || state.stale} onSaved={() => { retry(); onChanged(); }} />
       <details><summary>排序配置版本历史</summary><ul className={styles.timeline}>{data.versions.map(profile => <li key={profile.version}>v{profile.version} · {profile.enabled ? '启用' : '停用'} · {Object.entries(profile.weights).map(([key, value]) => `${dimensionLabels[key as keyof typeof dimensionLabels]} ${value}`).join('；')}</li>)}</ul>{!data.versions.length && <p>暂无已保存配置</p>}</details>
-    </>}</QueryState>}
+    </>}</QueryState>
   </SectionCard>;
 }
 function RankingForm({ initial, disabled, onSaved }: { initial: Profile | null; disabled: boolean; onSaved: () => void }) {
