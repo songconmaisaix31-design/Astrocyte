@@ -1,5 +1,13 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 04:23 判断题目输入校验
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_e366c835cb43`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b`。本域 SOURCE `f0d27271c15d131aea50012658232f7fa41a142b` 已普通 push 并独核远端同值，改动仅原 `attention/delegation/**` 三件。`JudgmentQuestionFields` 增加空白题目标识与说明、选项数量 / 标识、确定性选项规则缺少依据、评分等级数量与空白说明的检查提示；输入继续保留。约束直接读取现有 `internal/judgment/validation.go`，未构造公共 DTO 或提交来源。
+
+`pnpm --dir web typecheck`、`pnpm --dir web exec eslint src/pages/attention/delegation` 均 EXIT0；`pnpm --dir web exec vitest run src/pages/attention/delegation/policyDraftIssues.test.tsx src/pages/attention/delegation/questionDraftIssues.test.tsx --maxWorkers=1` 为 7 PASS / EXIT0，范围为明确表单参数与静态显示。`pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-question-ctx-e366c835cb43` EXIT0，日志 `logs/build-question-ctx-e366c835cb43.log`；`git diff --check` / `git diff --cached --check` 均通过。上述构建是本树 Web 目标，不登记为最终同源完整 `pnpm check` / `pnpm build` 通过。
+
+模块 `msg_6e2c4fb9634b` 通知更新共享服务后，已在前一检查自然 EXIT0、浏览器关闭且零在途 HTTP / 测试的检查点暂停64505全部读取，并直接交 H / F / 模块安全 ACK。后继等待 H 实际 ready 和正式公共契约、F 的生成类型及公开客户端；本阶段无业务写入、模型或原生操作，没有重试已知或未知动作。原失败、S5 实际客户端、S3 原生与 Artifact 正向和最终发布门禁继续保留。
+
 ## 2026-10-16 04:20 同一产品的键盘与异步读取
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_e366c835cb43`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b`。沿原分支 `songconmaisaix31-design/product-ui-20261015`、基线 `93654a7466ccd33069ede76a248d5203971a9538` 接续，原 02:55 连接拒绝记录保留。当前页面 SOURCE 由 H 正式交付为 `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，地址仍为 `http://127.0.0.1:64505/`；本树没有部署、启动或停止共享服务。原本域代码 SOURCE `0ad83a96bc50747867146a38a80b7a90ecbedc5f` 保持，本阶段仅追加实际检查记录。
