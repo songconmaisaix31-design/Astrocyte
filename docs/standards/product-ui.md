@@ -1,8 +1,14 @@
-# S2/S3/S4 产品页面开发记录
+# S2/S3/S4/S5 产品页面开发记录
 
 当前任务 `task_d0cee5a583bb` / Dispatch `ctx_af3cbd15f128`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9ce12d181768`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，模型 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，当时工作区 clean；本次恢复基线 `f70fadfa8d0645ee342cbf96ff67fc97e6e16079`，保留并继续完成既有 `ApprovalPanel.tsx` 修改。
 
-只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`，仍由同一任务、人员和工作树承担。Workspace 入口、公共客户端、生成类型、查询 Hook、认证、共享组件与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`；模块计划 `2f609ea484fa690b8f2a2b6a754e1a63e398fe42` 和 F `msg_ea981e24bc0d` 正式追加 `web/src/pages/attention/delegation/**` 与 `web/e2e/s5-*.spec.ts`。全部新增范围继续由同一任务、人员和工作树承担。Workspace/AttentionPage 薄入口、公共客户端（包括 `api/judgment.ts`）、生成类型、查询 Hook、认证、共享组件、RankingPanel 与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+
+## S5 委托设置的实际接口依赖
+
+根经模块明确授权按 SPEC §5.3、§7.1、§11 实现逐题型委托。题型、单一后端、语言、外发范围、预算、复核和阈值由用户明确填写；题型为 `choice / score / truth`，资料准入用途为 `opportunity_admission`。未配置时拒绝自动委托；推荐、资料准入和任务批准各自保留服务端边界。
+
+已完整读取上述规格与 S5 精确 SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 的 `contracts.go`、`validation.go` 和阶段报告。该提交包含当时的私有 Policy/Result，新增 DelegationRule、开启、暂停、复核和受信任同事务准入的公开 DTO 尚未交付，页面接口保持待定。当前原 S5 为 `task_1d3e15a66b2a` / `ctx_0a7797464f02`；准确后继 SOURCE 由原 S5 → H OpenAPI/生产装配 → F 生成客户端 → 本域页面消费。已将接口和真实测试配置需求直接交原 S5、F 及模块，不消费未提交内容或据旧私有类型确定新表单字段。S5 页面与真实浏览器验收尚未开始，原 S2/S3/S4 任务和剩余限制继续有效。
 
 ## 2026-10-15 恢复阶段：批准快照与键盘验证
 
