@@ -2,6 +2,20 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 00:11 浏览器二进制迁移与当前交接
+
+根 `msg_b63815bcc6dc` 明确授权唯一维护者核 Playwright 二进制缓存迁移 D。I `msg_d73c2aac0ec9`、F `msg_e65c5d391d83`、新恢复 UI `msg_18ea54456772` 均本人确认没有本次在途浏览器，迁移窗口不新启；M-product 双人 ACK 同步成立。实际读取 [Playwright 官方浏览器缓存说明](https://playwright.dev/docs/browsers#managing-browser-binaries)及本机 `playwright-core@1.64.0/lib/coreBundle.js`：`PLAYWRIGHT_BROWSERS_PATH` 的绝对值直接作为运行查找根。
+
+维护仅移动 `chromium-1223`、`chromium-1248`、`chromium_headless_shell-1223`、`chromium_headless_shell-1248`、`ffmpeg-1011`、`ffmpeg-1013`、`winldd-1007` 七个非活动二进制目录，从 `C:/Users/DW/AppData/Local/ms-playwright/` 到独占 `D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001/`，各旧组件路径建立指向准确目标的 junction。执行前核完整源 / 目标绝对路径位于授权根、目标不存在、无 reparse 子目录、使用进程零；同一 PowerShell 原生 `Move-Item`，没有跨 shell 删除或覆盖。根下 `b`、`daemon`、`.links` 及其他元数据保留原位，原数据库、会话、证据、模型、源码和 Git 保留。
+
+逐组件移动前后计数和字节相等：七组件 / 1,211 文件 / `1,469,060,034 bytes`。C 空余从 `10,045,095,936` 变为 `11,515,195,392 bytes`，后继检查 `11,511,816,192 bytes`，约 10.72 GiB。操作脚本与派生结果位于上述维护根的 `move-playwright-binaries-20261016.ps1`、`playwright-move-20261016-result.json`；根新增维护授权覆盖这两个外部操作文件，仓库继续只写本模块两份管理文档。
+
+使用真实本机 Playwright 1.64、进程级 `PLAYWRIGHT_BROWSERS_PATH` 指向新 D 目录、TEMP / TMP 指向独占 D 目录，实际 headless Chromium `156.0.8078.4` 启动并关闭，EXIT0；没有打开页面或使用视觉。随后目标目录浏览器进程数为零，旧三元数据目录仍在。I 及产品 F / UI 的缓存窗口已明确归还，后继新进程可使用该 D 路径，旧 C 组件路径仍可消费，不修改全局环境或新增下载。
+
+H 本人兼容回执 `msg_f17902dcd7ec` 确认 GET / PUT `/api/v1/attention-taste-profile` 与完整 TasteProfile 独立契约及 B 服务一致，接受 `JudgmentServices.Taste` 薄装配；GET 保原安全详情，PUT 沿原 session / CSRF / Idempotency-Key / CommandMeta / CAS。已转原 S5 连同完整 Sources handler、签名和实际测试交准确 SOURCE；公共 OpenAPI / main 注册仍归 H。S5 八项非模型场景 `41.260s PASS / 零 skip`、增强实际 HTTP `6.415s PASS` 与原模型成功原件分别保留，不扩大为生产装配或 L1 已验。
+
+H 三领域冲突已分别取得原 B / S2 新本人安全 ACK 与 M-product 新计划 `539e836`，原 R 本人 `msg_9e080718b960` 新 ACK 亦成立；各仅按下节单件范围 edit / stage，完成本人归还后再独核。I 自身新增三份已授权管理文档未 stage，已明确记录，领域和 merge 生命周期保持停止。
+
 ### 2026-10-16 00:08 R 已合并，H 三项领域冲突
 
 原 S2 已本人 STOP 归还前六件，本模块核准确 HEAD / MERGE_HEAD、U0、无未暂存路径、普通和 cached diff 检查及六件领域保留后，以 `msg_72807f8868b0` 仅放行 I 继续。R 普通合并形成 `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87`；随后 H 最新 SOURCE `c0526d444e4a6fe798cdd1514b72a303de10b5b4` / REPORT `aaaf603a9477e470ff0ce0c269597802a6f25b40` 普通合入出现三项领域冲突。H 七件源码、单文档 REPORT、SOURCE 祖先和远端同值已由本模块核实，包含真实固定批准上下文读取器；实际 native 输入仍为零。
