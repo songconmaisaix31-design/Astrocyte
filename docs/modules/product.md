@@ -2,7 +2,26 @@
 
 ## 责任与事实源
 
-2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_9ce12d181768` / 终端 `term_bddcaad2-c49f-4d8e-b769-27448a8cb29e`，原子 Run `run_dbf1a68bc692` 已按根当前交接由本终端接管至 generation 3。总负责人为 `term_72a815fc-b97e-433b-b653-5415cf298e1d` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `4684c3c859845087410a0528898cf852d3f6c023`，接管时工作区无改动。旧模块 Dispatch 因重启的失败记录保留。
+2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` / 终端 `term_daa6545c-5540-4d8f-b85b-26d56ee71214`，原子 Run `run_dbf1a68bc692` 已按根最新交接由本终端接管至 generation 4。总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `22e7c003bec4c9efd20e996ad44c8f3c27a0ad6f`，接管时工作区无改动。旧模块 Dispatch 因重启的失败记录保留。
+
+### 21:51 恢复与原负责人返修计划
+
+根最新 `msg_1bdccb5e8fe6` / `msg_90e98714dbc2` 和根 HANDOFF 21:40 入口明确授权恢复原产品子 Run，以及旧 `run_7b2ce96bcd13` 中仅 B/F 的恢复、问答、结算和终端管理；不创建新 Run 或新 Task，不启动其他已完成任务。公开 Task 列表核四个未完成产品任务均为 ready，原 Dispatch 已 failed / terminal_missing；公开终端清单没有六位旧句柄，与根本次重启及进程退出证据一致。原分支与未提交修改保留。
+
+| 原任务与唯一负责人 | 本轮实核基线与 WIP | 连续责任 |
+|---|---|---|
+| S2 `task_6846cdb90c46` / `product-video-20261014` | `b9629a68a3e29f46f394ef1093d99265349dbab7`；`domain/goals.go`、`tests/s2/approval_test.go` 与新增 `app/goals_snapshot.go` WIP | 已恢复 `ctx_edce6bc4ca6c` / `term_60d83d74-e84f-4a6e-b432-bb13c1b48436`，ready / turn_started；先完成下述四文件冲突归还，再完成真实固定 Goal、不变版本与同 DB 重核、Context 生产端口 |
+| T `task_5f0a79b6a17a` / `product-attention-tests-20261014` | `94fb0e88de9054720cc1b7c473937afd9d39c80e`，clean | Attention 应用测试唯一负责人，消费 B 完整 Taste 精确 SOURCE，继续 AT12 实际版本变化和原未完成链 |
+| S3/S6 `task_da9aebf03f83` / `product-swarm-20261015` | `a5d00e764ffa0266bf34067190f72f3463fe9852`，clean | 继续契约、SQLite、权限和经验继承；Calls 单位与权限证据尚待用户回答，保留 Claim 拒绝、Known=false 和原生窗口零 |
+| 产品 UI `task_d0cee5a583bb` / `product-ui-20261015` | `71360db458052eea387e4d4f72b303f59d3a4743`；repositorycontext 样式与三个新增 TS 文件 WIP | 延续唯一页面域和原白绿 React/TypeScript 设计，消费 H→F 的准确安全契约，完成真实 DOM 和键盘路径 |
+| B `task_7b4e93c1a3c1` / `standards-backend` | `da7227749ea2f361c8b708be8614d3236fe2f04a`，clean | 原依赖、导入、应用和存储责任；唯一新增 026 两表与已登记 taste_profile 路径，排除 T 所有应用测试；与 S5 核完整字段、权威版本及事务 |
+| F `task_7cbe30017760` / `standards-frontend` | `9fb9df967dc4253953fe079b21375337608defcd`，clean | 共享 client/auth/hooks/router 与唯一 Relay DOM 操作，准确契约消费、全部默认检查；保持产品 UI 页面互斥域 |
+
+独立核 B/F 原先五文件与 H 单文件临时范围已无未合并项，原归还记录继续有效，本轮不重新放行。H `works-relay-http` 当前 HEAD `0138c6318dac2aa0e3091b06830ee7842b40f152`，未合并项严格为 `internal/adapters/sqlite/workspace_session_bindings.go`、`internal/workspace/app/proposal_ports.go`、`internal/workspace/domain/session_bindings.go`、`tests/s2/approval_test.go`。M-relay `ctx_533af1fca9b7` 负责取得恢复后 H 本人对四件停写及不操作 CHERRY_PICK 的确认；原 S2 提供本人安全检查点 ACK，本计划普通 push 后才发限定放行。S2 仅文件编辑并 stage 四件，不执行 commit / continue / abort / reset / 整体选边，不写其他 H 路径；完成明确停写归还，经模块核 U0 和差异后交 H 唯一继续。
+
+完整 Taste 实施范围沿根正式批准 `msg_384bef3fbfaa` 和下方 026 计划：只新增 head / 不可变 revisions 两表，rubrics / examples / delegations 使用真实用户配置，delegation 引用 S5 权威版本并同事务核当前授权。001–025、原 `domain/profile.go`、正式 V4 与 engine / mapper / 权重 / 日程保持冻结。AT12 全部版本变化和旧缓存 / proof 拒绝尚未通过；模型、登记、三分钟窗口及最终默认检查不因本轮恢复转为通过。
+
+所有原人员只在本人安全检查点对后续进程设置 D 盘资产和独占 GOTMPDIR；共享 GOCACHE 沿 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，C 盘维护仅交 M-release。本模块只修改此文档，继续阶段 SOURCE / 独立 REPORT 普通 push；已提交且可消费的领域来源交唯一集成人员执行组合检查，领域问题返原作者，模块持续至最终发布支持结束。
 
 ### 2026-10-15 10:41 再次重启后的恢复计划
 
