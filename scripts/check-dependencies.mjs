@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 import { execFileSync } from 'node:child_process';
 import { dirname } from 'node:path';
-import { root, web } from './process.mjs';
+import { root, web, findGo } from './process.mjs';
 import { summarizeEnvironment, summarizeVersion } from './summarize.mjs';
 
 const json = async path => JSON.parse(await readFile(path, 'utf8'));
@@ -23,9 +23,17 @@ for (const [name, base, importer] of [['root', root, '.'], ['web', web, 'web']])
     if (installed.version !== version || entry?.specifier !== version) throw new Error(`${dependency} installed/lock version differs from ${version}; run pnpm install --frozen-lockfile`);
   }
 }
-const goMod = await readFile(join(root, 'go.mod'), 'utf8');
-if (!goMod.includes(`require modernc.org/sqlite ${inventory.direct_dependencies.go['modernc.org/sqlite']}`)) throw new Error('SQLite dependency inventory differs from go.mod');
-if (!goMod.includes(`go ${inventory.toolchain.go}`)) throw new Error('Go toolchain inventory differs from go.mod');
+const go = await findGo();
+const goMod = JSON.parse(execFileSync(go, ['mod', 'edit', '-json'], { cwd: root, encoding: 'utf8', windowsHide: true }));
+const direct = Object.fromEntries((goMod.Require ?? []).filter(module => !module.Indirect).map(module => [module.Path, module.Version]));
+if (JSON.stringify(Object.entries(direct).sort()) !== JSON.stringify(Object.entries(inventory.direct_dependencies.go).sort())) {
+  throw new Error('Go direct dependency inventory differs from parsed go.mod requirements');
+}
+for (const [name, version] of Object.entries(inventory.direct_dependencies.go)) {
+  const module = JSON.parse(execFileSync(go, ['list', '-mod=readonly', '-m', '-json', name], { cwd: root, encoding: 'utf8', windowsHide: true }));
+  if (module.Version !== version || module.Indirect || module.Replace) throw new Error(`${name} dependency inventory differs from Go module metadata`);
+}
+if (goMod.Go !== inventory.toolchain.go) throw new Error('Go toolchain inventory differs from parsed go.mod');
 const extraction = await summarizeEnvironment({});
 const version = execFileSync(extraction.ASTROCYTE_NODE, [extraction.ASTROCYTE_SUMMARIZE_CLI, '--version'], {
   encoding: 'utf8', windowsHide: true, timeout: 60000,

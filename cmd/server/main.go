@@ -206,6 +206,7 @@ func run(logger *slog.Logger) error {
 
 	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
 	services := httpapi.Services{
+		RepositoryContext:    &httpapi.RepositoryContextServices{},
 		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),
 		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot(), protectedSources...),
 		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 
@@ -86,7 +87,7 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	}
 	apiURL := announced["api_url"]
 	webOrigin := "http://127.0.0.1:17345"
-	server := httpapi.NewServer(httpapi.Config{Port: address.Port, AllowedOrigins: []string{webOrigin}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Services: httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), LocalProjects: projects}})
+	server := httpapi.NewServer(httpapi.Config{Port: address.Port, AllowedOrigins: []string{webOrigin}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Services: httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), LocalProjects: projects, RepositoryContext: &httpapi.RepositoryContextServices{}}})
 	if err := server.Serve(nil); err == nil {
 		t.Fatal("缺少 listener 没有立即失败")
 	}
@@ -175,6 +176,28 @@ func TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown(t *testing.T) {
 	updated, err := db.LoadProject(ctx, actual.ID)
 	if err != nil || updated.Settings.Revision != actual.Settings.Revision+1 {
 		t.Fatal("实际 API Origin 和 CSRF 写入没有持久化新版本")
+	}
+	repositoryPath := "/api/v1/local-projects/" + actual.ID + "/repository-context"
+	mapQuery := "/map?purpose=inspect-public-project&root=.&max_files=10&max_bytes=4096&max_results=10&max_depth=1"
+	var unavailable map[string]json.RawMessage
+	request("GET", repositoryPath+mapQuery, webOrigin, "", nil, 503, &unavailable)
+	safeError, err := json.Marshal(unavailable)
+	if err != nil || bytes.Contains(safeError, []byte(projectRoot)) || bytes.Contains(safeError, []byte(databasePath)) {
+		t.Fatal("缺配置响应包含本机原始路径")
+	}
+	request("GET", repositoryPath+mapQuery+"&max_files=5", webOrigin, "", nil, 400, nil)
+	request("GET", repositoryPath+mapQuery+"&unknown=value", webOrigin, "", nil, 400, nil)
+	request("GET", repositoryPath+mapQuery+"&%GG=value", webOrigin, "", nil, 400, nil)
+	query := map[string]any{"schema_version": 1, "purpose": "inspect-public-project", "roots": []string{"."}, "budget": map[string]int{"max_files": 10, "max_bytes": 4096, "max_results": 10, "max_depth": 1}}
+	request("POST", repositoryPath+"/search", webOrigin, "", query, 403, nil)
+	request("POST", repositoryPath+"/search", webOrigin, bootstrap.CSRF, query, 503, nil)
+	request("POST", repositoryPath+"/impact", webOrigin, bootstrap.CSRF, query, 503, nil)
+	request("POST", repositoryPath+"/map/refresh", webOrigin, bootstrap.CSRF, query, 503, nil)
+	query["action"] = "index"
+	request("POST", repositoryPath+"/index", webOrigin, bootstrap.CSRF, query, 503, nil)
+	afterRepositoryReads, err := db.LoadProject(ctx, actual.ID)
+	if err != nil || !reflect.DeepEqual(updated, afterRepositoryReads) {
+		t.Fatal("缺配置的仓库上下文请求修改了真实项目")
 	}
 	readonly, err := sql.Open("sqlite", "file:"+filepath.ToSlash(databasePath)+"?mode=ro&_pragma=query_only(1)")
 	if err != nil {

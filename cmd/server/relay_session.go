@@ -37,13 +37,14 @@ type relaySessionState interface {
 
 // Entry-point bridge only: no cross-context app import or second runtime writer.
 type relaySessionCollector struct {
-	mu         sync.Mutex
-	owned      workspace.RelayOwnedSessionReader
-	capture    *events.RelaySessionCapture
-	state      relaySessionState
-	admissions workbench.SessionAdmissions
-	entries    relaySessionCheckpoints
-	blocked    string
+	mu          sync.Mutex
+	owned       workspace.RelayOwnedSessionReader
+	capture     *events.RelaySessionCapture
+	state       relaySessionState
+	admissions  workbench.SessionAdmissions
+	entries     relaySessionCheckpoints
+	blocked     string
+	archiveOnly bool
 }
 
 func newRelaySessionCollector(owned workspace.RelayOwnedSessionReader, capture *events.RelaySessionCapture, state relaySessionState, admissions workbench.SessionAdmissions) *relaySessionCollector {
