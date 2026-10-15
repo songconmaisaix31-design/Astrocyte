@@ -90,6 +90,12 @@ type RelayLaunch struct {
 	Input        string
 	OperationID  string
 	ControllerID string
+	Packet       domain.ContextPacket `json:"-"`
+}
+
+// 受信组装选择固定文件；读取沿用原项目授权，不接受 HTTP 原文或路径。
+type RelayLaunchContextReader interface {
+	ReadRelayLaunchContext(context.Context, domain.Caller, RelayLaunch) (domain.ContextPacket, error)
 }
 
 type RelayObservation struct {
@@ -112,6 +118,10 @@ type RelayControllerHistoryReader interface {
 	ListOwnedControllerHistory(context.Context, string) ([]domain.RelayControllerEvidence, error)
 }
 
+type RelayOwnedTurnBindingReader interface {
+	ListOwnedTurnBindings(context.Context, string) ([]domain.RelayTurnBinding, error)
+}
+
 type RelayCurrentOwnershipReader interface {
 	GetCurrentOwnership(context.Context, domain.Caller, string) (domain.RelayCurrentOwnership, error)
 }
@@ -119,6 +129,10 @@ type RelayCurrentOwnershipReader interface {
 // 只读原持有对象，不执行 Native.Observe、RPC、启动或恢复。
 type RelayControllerEvidenceReader interface {
 	CurrentControllerEvidence(context.Context, RelayLaunch) (domain.RelayControllerEvidence, error)
+}
+
+type RelayOwnedNativeSessionResolver interface {
+	ReadOwnedNativeSession(context.Context, string) (domain.RelayOwnedNativeSession, error)
 }
 
 // RelayDriver is execution only; it cannot authorize, dispatch a task, persist
@@ -168,8 +182,9 @@ type RelayOwnedRoots interface {
 }
 
 type RelayServiceOptions struct {
-	Agents     []domain.AgentSpec
-	OwnedRoots RelayOwnedRoots
+	Agents        []domain.AgentSpec
+	OwnedRoots    RelayOwnedRoots
+	LaunchContext RelayLaunchContextReader
 	// No implicit 60-second decision. Zero means no configured live window.
 	LivenessWindow time.Duration
 	Clock          func() time.Time

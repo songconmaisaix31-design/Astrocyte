@@ -1,5 +1,29 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-15 当前来源与安全契约阶段
+
+本阶段 SOURCE 为 `37156a31478c22480abb7ae64a5f62f20d620b1f`，分支 `songconmaisaix31-design/works-relay-http`；当前 Task `task_3004b636a3ab` / Dispatch `ctx_e7abbaf902da`。已普通合入 R SOURCE `ce0302835cb7477eb606107351a9ab46dd8d4714` / REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`，原四项未提交修改已完整保留并完成适用检查。开发使用当前 Orca Codex 客户端，具体运行模型未独立回显；本轮外部模型调用为零。
+
+`events.VerifyRelaySessionSource` 复用采集器既有的授权根、原工作目录和路径保护，只检查控制器已选中的文件及其单链接身份，不读取正文或创建采集游标。返回的文件身份只用于本机后续核对。多名称来源保持 `source_identity_unverifiable_or_aliased` 拒绝；该检查不能证明档案已完成、永久追加、模型消费或目标完成。实际采集仍须核原绑定、header、CWD、native identity 与真实提交事件。
+
+原服务包装器现转发准确 `ListOwnedTurnBindings` 私有端口。公共 `facts.current_ownership` 接受 R 的 `confirmed / controller_exited`：它只表示原已退出的 controller 对象仍被持有，不能据此执行 Read 或 Send。session-events 继续精确六字段，原生身份、文件身份、路径和原始输出没有进入公开 DTO。
+
+真实服务验证入口支持从明确本机公开 Git 来源以 `--no-hardlinks` 取得准确 baseline，并在启动时重核 HEAD。实际目标仍为获准 S3 公开 Go 项目 baseline `da3bdddb085808863090a05f60cc1c64415039cf`；没有在本轮登记、初始化控制器或发送模型输入。
+
+全部新 Go 命令使用进程环境 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/H`、`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/H`、`GOMAXPROCS=2` 和 `-p=1`。安全日志保存在本机 `D:/Astrocyte-agent-assets/20261015/relay/H`，没有修改全局环境。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server -run '^TestRelay(FactsActualHTTPSQLiteReadOnlyAndPermission\|HTTPAtomicListenerActualSQLiteSessionAndShutdown)$' -count=1 -timeout=120s` | PASS，2.012 秒；真实 HTTP / SQLite、权限、GET 只读、实际 listener 与正常关闭。overlay 仍为已登记 P579 的准确 Reader 五文件；没有宣称 H 单树或全仓通过 |
+| `go test -mod=readonly -p=1 ./internal/adapters/events -run '^TestRelaySourceIdentityActualFileAndAliasRejection$' -count=1 -timeout=90s` | PASS，1.050 秒；实际公开普通文件、稳定身份、检查前后文件不变、未授权根、取消与实际硬链接拒绝 |
+| `node scripts/validate-examples.mjs` | PASS，284 个当前契约示例 |
+| `node node_modules/@redocly/cli/bin/cli.js lint contracts/openapi.yaml --config contracts/redocly.yaml` | EXIT 0，4 项既有警告；`v14-openapi-direct.log` |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，30 个包边界 / EXIT 0 |
+
+首 overlay 参数没有整体引号，Go 将参数路径截断，测试未启动；原件保留 `v14-baseline-composition.log`。`pnpm exec redocly` 完成校验后宿主进程出现 `UV_HANDLE_CLOSING` 并异常退出，保留 `v14-openapi.log`；上表直接运行同一官方 CLI 的 EXIT 0 单独记录。旧单树 Reader 构建 FAIL、旧 nlink2 来源 FAIL 和旧三分钟 FAIL 保持原结果。
+
+ROOT 经模块当前消息 `msg_1320601dbef0` 明确选择由原 R 补充 Relay 同 controller 两阶段入口：空 Message 初始化不触发模型，后续首输入保持原 controller、权限 revision、唯一 operation、source guard 和工具关闭检查。准确 SOURCE 尚待原 R 交付；当前没有用独立 LocalProject 会话代替 Relay / Today。原 F 继续唯一 GUI 操作，后续仍须空注册基线、observer ready、来源实际就绪和模块单窗口授权。新真实 CLI、Today 两尺寸、逐 event_id / 六字段 SQL 核对、合法目标核查及人工完成均未执行，当前 Task 继续。
+
 H 分支：`songconmaisaix31-design/works-relay-http`。当前非原生依赖 SOURCE 为 `4f45a3ab50e6a2863b940915874374f58e65f1da`，生产 listener 接口为 `1aadeebaba2330bb8b786989f577415da5208fd5`；前阶段原生验证准备 SOURCE 为 `b6c67e91555522b3d7515d405c4c69a93d0e0bc8`。主装配保护源接线为 `b247dfb12b938739f09acc73e6b7582376951a0c`，真实 SQLite 配置测试为 `78903848199b915a21e95e42f52cbed64c6d606c`。R 的人工完成权限 SOURCE `d14b08dc50014baf9ee636543564b040112cf3b5` 与 REPORT `fae304b80cb3288b9edd08f10500c6e5af7e4210` 已普通合并。已关闭旧服务的业务版本为 `e5714bb868a6519ec70520bca1c0a1b6c4678fb8`。客户端为 Codex API，工作会话没有暴露精确部署模型名称；旧实际原生控制器为 Codex `0.162.0`，原 `turn_context.model` 为 `gpt-6.1-sol`。
 
 ## 端口 0 与精确配置交接

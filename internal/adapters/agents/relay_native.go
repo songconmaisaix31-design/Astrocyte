@@ -15,12 +15,17 @@ type RelayNativeDriver struct {
 	registry                   app.NativeRegistry
 	captureNativeNotifications bool
 	sessionDeadlineSeconds     int
+	beforeFirstInput           RelayBeforeFirstInput
 }
+
+// 回调只核本次初始化正选的本机来源；不得启动控制器、发送输入或发现其他档案。
+type RelayBeforeFirstInput func(context.Context, domain.NativeSession, *domain.RelaySessionArchive, string) error
 
 type RelayNativeDriverOptions struct {
 	CaptureNativeNotifications bool
 	// 受信组装显式设置进程寿命；零值保留 Native 的既有 180 秒上限。
 	SessionDeadlineSeconds int
+	BeforeFirstInput       RelayBeforeFirstInput
 }
 
 type relayNativeLifecycle interface {
@@ -42,6 +47,10 @@ type relayCaptureOperationNative interface {
 	ResumeRelayOperation(context.Context, domain.NativeRequest, string) (domain.NativeSession, error)
 }
 
+type relayGuardedCaptureNative interface {
+	StartRelayOperationWithInputGuard(context.Context, domain.NativeRequest, string, RelayBeforeFirstInput) (domain.NativeSession, error)
+}
+
 var _ app.RelayDriver = (*RelayNativeDriver)(nil)
 
 func NewRelayNativeDriver(registry app.NativeRegistry, options ...RelayNativeDriverOptions) *RelayNativeDriver {
@@ -49,6 +58,7 @@ func NewRelayNativeDriver(registry app.NativeRegistry, options ...RelayNativeDri
 	if len(options) != 0 {
 		driver.captureNativeNotifications = options[0].CaptureNativeNotifications
 		driver.sessionDeadlineSeconds = options[0].SessionDeadlineSeconds
+		driver.beforeFirstInput = options[0].BeforeFirstInput
 	}
 	return driver
 }
@@ -92,6 +102,9 @@ func (d *RelayNativeDriver) request(r app.RelayLaunch) domain.NativeRequest {
 	session.ProjectID = p.ID
 	session.CLI = r.Spec.Name
 	packet := domain.ContextPacket{ID: uuid.NewString(), SchemaVersion: 1, ProjectID: p.ID, SettingsRevision: p.Settings.Revision, Mode: "selected_context", Materials: []domain.ContextMaterial{}, Files: []domain.ContextFile{}, CreatedAt: time.Now().UTC()}
+	if r.Packet.ID != "" {
+		packet = r.Packet
+	}
 	return domain.NativeRequest{SessionID: session.ID, Project: p, Session: session, Command: domain.NativeCommand{CLI: r.Spec.Name, Message: r.Input, Mode: "native", DeadlineSeconds: d.sessionDeadlineSeconds}, Packet: packet}
 }
 
@@ -110,7 +123,13 @@ func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.
 	}
 	request := d.request(r)
 	var session domain.NativeSession
-	if lifecycle, ok := a.(relayCaptureOperationNative); ok && d.captureNativeNotifications && r.OperationID != "" {
+	if d.beforeFirstInput != nil {
+		guarded, supported := a.(relayGuardedCaptureNative)
+		if !supported || !d.captureNativeNotifications || r.OperationID == "" {
+			return app.RelayObservation{}, &domain.NativePrelaunchFailure{Cause: nativeError(apierrors.UnsupportedCapability, "first input source checkpoint requires the original armed native controller")}
+		}
+		session, err = guarded.StartRelayOperationWithInputGuard(ctx, request, r.OperationID, d.beforeFirstInput)
+	} else if lifecycle, ok := a.(relayCaptureOperationNative); ok && d.captureNativeNotifications && r.OperationID != "" {
 		session, err = lifecycle.StartRelayOperation(ctx, request, r.OperationID)
 	} else if operation, ok := a.(relayOperationNative); ok && !d.captureNativeNotifications && r.OperationID != "" {
 		session, err = operation.StartOperation(ctx, request, r.OperationID)
@@ -121,6 +140,21 @@ func (d *RelayNativeDriver) Launch(ctx context.Context, r app.RelayLaunch) (app.
 	}
 	obs := app.RelayObservation{Session: session}
 	if err != nil {
+		if d.beforeFirstInput != nil && session.Ownership == "owned" && session.ID != "" && session.NativeID != "" {
+			var evidenceErr error
+			obs, evidenceErr = d.withControllerEvidence(context.WithoutCancel(ctx), a, obs)
+			if evidenceErr != nil {
+				return obs, errors.Join(err, evidenceErr)
+			}
+			if obs.Evidence != nil {
+				obs.ExitConfirmed = obs.Evidence.ExitConfirmed
+			}
+			var captureErr error
+			obs, captureErr = d.withNativeCapture(a, obs)
+			if captureErr != nil {
+				return obs, errors.Join(err, captureErr)
+			}
+		}
 		return obs, err
 	}
 	native, err := a.Observe(ctx, session)
@@ -242,6 +276,15 @@ func (d *RelayNativeDriver) Send(ctx context.Context, r app.RelayLaunch, input s
 	return d.withArchive(ctx, a, relayNativeObservation(r.Session, obs))
 }
 func (d *RelayNativeDriver) Read(ctx context.Context, r app.RelayLaunch) (app.RelayObservation, error) {
+	if r.OperationID != "" {
+		evidence, err := d.CurrentControllerEvidence(ctx, r)
+		if err != nil {
+			return app.RelayObservation{}, err
+		}
+		if evidence.ExitConfirmed {
+			return app.RelayObservation{}, nativeError(apierrors.VersionConflict, "native process has exited; read stored history without another control operation")
+		}
+	}
 	a, err := d.adapter(r)
 	if err != nil {
 		return app.RelayObservation{}, err

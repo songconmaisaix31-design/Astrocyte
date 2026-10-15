@@ -56,5 +56,8 @@ func (s *relayService) GetCurrentOwnership(ctx context.Context, caller domain.Ca
 	if evidence.ControllerID != stored.ControllerID || evidence.StartupOperationID != stored.StartupOperationID || evidence.SessionID != stored.SessionID || evidence.NativeID != stored.NativeID || evidence.Provider != task.Agent || !sameRelayRoot(evidence.WorkspaceRoot, workspace.Root) {
 		return domain.RelayCurrentOwnership{}, relayError(apierrors.ScopeDenied, "current controller differs from its original recorded identity")
 	}
+	if evidence.ExitConfirmed {
+		return domain.RelayCurrentOwnership{Status: "confirmed", Reason: "controller_exited"}, nil
+	}
 	return domain.RelayCurrentOwnership{Status: "confirmed"}, nil
 }

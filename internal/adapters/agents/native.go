@@ -290,24 +290,49 @@ func (n *Native) launch(ctx context.Context, r domain.NativeRequest, resume bool
 }
 
 func (n *Native) Start(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
-	return n.start(ctx, r, false)
+	operation, err := nativeRequestOperation(r, "start")
+	if err != nil {
+		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
+	}
+	return n.start(ctx, r, false, operation)
 }
 func (n *Native) Resume(ctx context.Context, r domain.NativeRequest) (domain.NativeSession, error) {
 	if !r.Session.StopConfirmed || r.Session.NativeID == "" {
 		return r.Session, nativeError(apierrors.DeliveryUnknown, "resume requires confirmed stop and an original native ID")
 	}
-	return n.start(ctx, r, true)
+	operation, err := nativeRequestOperation(r, "resume")
+	if err != nil {
+		return r.Session, err
+	}
+	if operation != "" {
+		return n.ResumeOperation(ctx, r, operation)
+	}
+	p, err := n.get(r.Session)
+	if err != nil {
+		return r.Session, err
+	}
+	p.mu.Lock()
+	identity := p.projectID == r.Project.ID && sameRelayMetadataCWD(p.cmd.Dir, r.Project.Root)
+	p.mu.Unlock()
+	if !identity || !p.observe().StopConfirmed {
+		return r.Session, nativeError(apierrors.DeliveryUnknown, "original stopped controller and workspace must be held for resume")
+	}
+	return n.start(ctx, r, true, operation)
 }
 
 func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool, operations ...string) (domain.NativeSession, error) {
+	operation := ""
+	if len(operations) != 0 {
+		operation = operations[0]
+	}
+	return n.startWithInputGuard(ctx, r, resume, operation, nil)
+}
+
+func (n *Native) startWithInputGuard(ctx context.Context, r domain.NativeRequest, resume bool, operation string, guard func(context.Context, domain.NativeSession) error) (domain.NativeSession, error) {
 	n.startMu.Lock()
 	defer n.startMu.Unlock()
 	if err := ctx.Err(); err != nil {
 		return r.Session, &domain.NativePrelaunchFailure{Cause: err}
-	}
-	operation := ""
-	if len(operations) != 0 {
-		operation = operations[0]
 	}
 	if operation != "" {
 		if _, err := uuid.Parse(operation); err != nil {
@@ -507,17 +532,38 @@ func (n *Native) start(ctx context.Context, r domain.NativeRequest, resume bool,
 		n.observed("start")
 	}
 	if strings.TrimSpace(r.Command.Message) != "" {
+		if guard != nil {
+			if err = p.captureOriginalSession(s); err != nil {
+				return fail(err)
+			}
+			if err = guard(ctx, s); err != nil {
+				return fail(err)
+			}
+		}
 		obs, err := n.send(ctx, s, packetPrompt(r.Packet, r.Command.Message), operation)
 		if err != nil {
+			if captureErr := p.captureOriginalSession(s); captureErr != nil {
+				return s, errors.Join(err, captureErr)
+			}
 			return s, err
 		}
 		s.Status = obs.Status
+	}
+	if err := p.captureOriginalSession(s); err != nil {
+		return s, err
 	}
 	return s, nil
 }
 
 func (n *Native) Send(ctx context.Context, s domain.NativeSession, message string) (domain.NativeObservation, error) {
-	return n.send(ctx, s, message, "")
+	operation, err := nativeRequestOperation(domain.NativeRequest{Session: s}, "send")
+	if err != nil {
+		return domain.NativeObservation{}, err
+	}
+	if operation == "" {
+		return domain.NativeObservation{}, nativeError(apierrors.DeliveryUnknown, "original pending send operation is unrecorded")
+	}
+	return n.send(ctx, s, message, operation)
 }
 
 func (n *Native) send(ctx context.Context, s domain.NativeSession, message, operation string) (domain.NativeObservation, error) {
@@ -535,6 +581,20 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 	}
 	p.operationMu.Lock()
 	defer p.operationMu.Unlock()
+	if operation != "" {
+		p.mu.Lock()
+		alreadyWritten := false
+		for _, fact := range p.relayEvidence.Facts {
+			if fact.OperationID == operation && (fact.Kind == "input_written" || fact.Kind == "input_accepted") {
+				alreadyWritten = true
+				break
+			}
+		}
+		p.mu.Unlock()
+		if alreadyWritten {
+			return p.observe(), nativeError(apierrors.VersionConflict, "original input operation was already submitted; do not replay")
+		}
+	}
 	obs := p.observe()
 	if obs.StopConfirmed || obs.Status == "running" || obs.Status == "blocked" {
 		return obs, nativeError(apierrors.VersionConflict, "native session is stopped, occupied or blocked")
@@ -566,12 +626,14 @@ func (n *Native) send(ctx context.Context, s domain.NativeSession, message, oper
 		}
 		p.mu.Lock()
 		p.turnID = result.Turn.ID
+		p.bindRelayTurn(s, operation, result.Turn.ID)
 		p.relayFact("input_accepted", "codex_turn_acknowledgement", operation)
 		p.consumptionUnknown(operation)
 		if when, exists := p.relayStartedTurns[result.Turn.ID]; exists && operation != "" {
 			p.addEvent("turn_started", "")
 			p.relayFact("turn_started", "codex_turn_started", operation)
 			p.relayEvidence.Facts[len(p.relayEvidence.Facts)-1].TS = when
+			p.markRelayTurnStarted(result.Turn.ID, when)
 			if p.relayPublishedTurns == nil {
 				p.relayPublishedTurns = map[string]bool{}
 			}

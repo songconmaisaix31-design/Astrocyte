@@ -1,5 +1,37 @@
 # Works Relay runtime
 
+## 2026-10-15 准确 turn 关系、原 Start resolver 与 Read 前置
+
+追加 SOURCE `014692e644b08b3acb1f76d696afa728362f4591` 已普通 push，独立 ls-remote 同值；此前 `79d9313` / `dbb0fe7` 保留普通祖先。本阶段继续原 Task / Dispatch，没有另起 CLI 或模型。模块已授权准备共同成立的 Codex 真实 started 正向，H 唯一登记、F 唯一实际 UI 操作者；无 started 客户端的迁移规则仍待用户决定。
+
+`RelayOwnedTurnBindingReader.ListOwnedTurnBindings(ctx, taskID)` 从原隔离 store 私有 controller / history 读取 OperationID、原 session / native / controller / startup operation、实际 turn ID、输入受理与开始时间。RPC turn/start 返回 ID 后保存准确关系；turn/started 只匹配同 ID，通知先到时保留其实际时间。接受关系不能改写，开始时间只能由该真实通知补入。旧缺字段返回空 gap，不按相邻时间或最近输入推定。H 只能在正选来源 guard 接纳后，用该 tuple 核对应 turn 的合法输出；不读取被拒绝 alias，不以通知通过覆盖 archive FAIL。全部 tuple 字段 JSON 隐藏，原 six-field events 不变。
+
+`RelayOwnedNativeSessionResolver.ReadOwnedNativeSession(ctx, platformSessionID)` 由当前原 `agents.Registry` 或 `Native` 实现。它只返回实际 n.start 保存的原完整 Start 会话及原 controller 证据，没有从 DB scalar / NativeID 拼会话，没有 RPC 或启动。普通接入从请求中已存在的 PendingOperation / Operations[pending] 的真实 start / resume pending 收据取 operation；start 核 LastOperationID，resume 的 LastOperationID 允许仍为上次完成动作。命令显式 operation 不一致时拒绝；未记录的旧对象仍 unknown。普通冷 Registry 恢复也必须持有原退出控制器，不能只据持久 NativeID 建立 owned。
+
+structured NativeRead 的显式动作核当前准确 controller、无 unresolved delivery、无 pending 和无确认退出；driver 在任何 RPC 前再读原 done 通道。当前 ownership 仍可表示持有已退出对象，safe reason `controller_exited` 明确该事实，不能推 RPC-ready 或 live。terminal Read 保留缓存进程 / Git 观察，EOF 关闭后可记录真实退出；普通 GET 继续只读历史。Send 的 EOF / running / blocked / done / delivery_unknown / 退出拒绝与人工 release 原独立门禁保持。
+
+使用 `GOMAXPROCS=2` / Go `-p=1 -mod=readonly`：app / agents 全包最终 PASS（`v14-turn-resolver-final.log`），agents 在最后普通 resume 原持有检查后再验 PASS（`v14-resolver-native-final.log`）；SQLite Relay 范围 PASS（`v14-turn-store-final.log`）。vet、server build、diff check 均 EXIT 0，产物 `dist/relay-l1/v14-turn-resolver-server.exe` 未启动。空实际 Registry resolver 拒绝、旧无 turn gap、私有 JSON 隐藏与生产 SQLite / HTTP handoff 拒绝通过；实际有 controller 的 resolver / turn 对应仍等待唯一真实窗口。
+
+本阶段两项首失败保留：`v14-turn-read-gates-first.log` 的旧 controlled CLI 用例在派发时 delivery_unknown，耗时 14.91 秒，随后临时目录清理因占用失败；该用例孤立原断言 PASS（`v14-controlled-cli-isolated.log`），R 将清理登记移到 Confirm 之前，原 10 秒期限和成功断言不变，最终 app 全包通过。`v14-turn-resolver-scoped.log` 的 B `local_agents_narrowing_test.go:300` 恢复用例没有本次原 held process，首次错误保留并交 B 原域迁移；R 没有改 B 测试。原 H reconciliation 缺许可的全 Go 403 FAIL 也保留，当前不宣称全套通过。
+
+S3 的 ExternalTargets 批准维按 B / S2 契约是准确 native CLI ID；已核原 Session.CLI / Provider 可提供该维的真实 ID。私有 endpoint 仍未核，与 CLI 维分开。有效工具集合的实际证据仍不足，保持 unknown，不能固定空 Tools；usage 无完整原 operation 实源保持 nil，S3 保留 lease / 预算。S2 的原人类绑定、实际 Agent 身份、grant、绑定版本与私有字段由原 S2 维护，R 不伪造 RelayTask 映射、不将 Agent 改成人类、不修改 Swarm 业务。
+
+当前共同正向的共享公开 Go 基线及 brief 由 S3 交 H/F，R 只提供上述原域接口。实际 tools 关闭、正选来源、模型 started、合法输出目标核查、人工 done / release、Today 与最终包仍须唯一窗口逐项实际核验；所有旧失败和未知不覆盖。完整 raw、原生路径、tuple、credentials 与模型输出不进入 HTTP / Git / 包 / stdout。
+
+## 2026-10-15 当前所有权纯缓存读取
+
+追加 SOURCE `79d93132967de20fb1fda3d8d74b4edff386178c` 已普通 push，独立远端同值；事实阶段 `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` 和独立 REPORT `a455b7f0e39f606576dbc4c859d1862622fc8f0f` 保留普通祖先。当前 Task / Dispatch 继续活跃，working / 人工完成待答规则未改变。
+
+新增 `RelayCurrentOwnershipReader.GetCurrentOwnership(ctx, humanCaller, taskID)` 返回安全 `RelayCurrentOwnership{Status, Reason}`。读取先核当前 observe、项目 revision / A-B-C / grant 和工作区身份；store 中的历史 ControllerID 不产生当前 confirmed。服务把原 `Sessions` 保存的完整 Start 返回会话交原 driver 的 `CurrentControllerEvidence`，由当前 Registry 的原 owned 对象核准确 controller / startup operation / session / native identity / provider / CWD。缺原 map、旧未记录启动关系或缺完整 ID / project / version / 实际 owned process 均保持 unknown；身份冲突在实际位置拒绝。
+
+该方法只读缓存与原持有对象，没有调用 Native.Observe、thread/read 或其他 RPC，没有 CLI probe、启动、恢复、模型调用、store 写入或 live 时间刷新。所有权与活性分开；持有已退出进程的原控制器对象不表示终端 live。私有证据不进入返回 DTO；没有从历史 scalar 重建 NativeSession。
+
+H 对公共 DTO 使用上述 safe status / 固定 reason，并独立展示已持久化历史事实的时间和来源。实际工具配置核查沿原 RelayStore Snapshot 的完整 session 与同 Registry `Native.OwnedRelayExecution`，只交安全本机证据；history reader 的 session / native 标量不能拼成新的 owned session。raw argv、原生 ID、CWD、原档和 credentials 继续不公开。
+
+`GOMAXPROCS=2` / Go `-p=1 -mod=readonly` 下，app / agents 全包 PASS（`v14-current-ownership-first.log`），追加身份缺失 guard 后权限 / handoff / 原 metadata 回归与空 Registry 当前归属拒绝 PASS（`v14-current-ownership-final.log`）。生产 SQLite 检查确认 ready 任务只能得到 controller_binding_unrecorded / unknown，Agent 读取被 ScopeDenied，读取前后 store 全等；没有生成 controller 或开始事实。vet、server build 和 diff check 均 EXIT 0，产物 `dist/relay-l1/v14-current-ownership-server.exe` 未启动。
+
+带真实原生 session 的正向当前所有权、实际服务重启后的冷 Registry 读取、当前来源 / 工具关闭及所有新 CLI / Today / L1 仍 NOT_RUN，等待语义与 H/F 组合门禁。全套 Go 的原 H reconciliation 许可首 FAIL 保留，未因定向检查覆盖；本阶段没有扩大来源权限或重复旧输入。
+
 ## 2026-10-15 v1.4 独立事实阶段
 
 当前 Task `task_f082d8b36471` / Dispatch `ctx_aa83ef2b5087` 延续原 R 工作树、分支及写入范围。已读取模块唯一规格 `tasks/Works-Relay-v1.4.md`，初稿 SOURCE `297d00420f4478dd24805a9ad70ced47fb5b711f` 与人工 handoff 增补 SOURCE `61977021f7babe86205cd23f1b83c23a6627af6c`；此前停止窗口安排已被当前实现授权替代。本阶段 SOURCE `1a4f120beff6a9a8d6033c0eed9c0a748f7f3f7e` 已普通 push，独立 ls-remote 同值。客户端 Codex，模型设置未修改，没有派第四层人员。
@@ -390,3 +422,38 @@ $env:ASTROCYTE_RELAY_L1_EVIDENCE = (Resolve-Path 'dist/relay-l1').Path
 - 当前进程结束的 writer 证据不跨服务重启证明仍有原控制器所有权。持久引用和通知可重载；不能据 PID、terminal pane 或数据库记录接管旧 writer、自动 Resume 或补历史。
 - 实际用户作品、dirty / untracked / non-Git 来源、自由工具、原件留存和产品活性窗口仍未决定。终端 TTY / terminal-only coding、其他 CLI 完整 Session、race detector、正式 Procmon 零写和真实两日 00:30 验收仍未执行。
 - 正式 V4 材料 / 协议 / engine / mapper / 认知 schema / migration / 权重 / 快照流程未修改或读取正式原档。当前部署 17321 保持独立，未合 main、未发布 ZIP、未向外部沟通渠道发送消息。
+
+## v1.4 固定上下文与首输入前来源检查阶段
+
+本阶段 SOURCE 为 `ce0302835cb7477eb606107351a9ab46dd8d4714`，分支 `songconmaisaix31-design/works-relay-runtime`。本阶段沿原 Task `task_f082d8b36471` / Dispatch `ctx_aa83ef2b5087`，没有启动新的原生进程或模型，没有操作旧任务。
+
+`RelayServiceOptions.LaunchContext` 是受信后台组装的可选私有端口。`relayworktree.NewFixedContext` 接收原 `LocalProjects.ReadProjectContext` 实例和明确的 `FixedContextSelection`：实际 ProjectID、批准的绝对项目根、完整 baseline commit、settings revision 和明确相对文件列表。选择在构造时复制，重复项目、重复文件、相对根、不完整 commit 和越界路径立即拒绝。
+
+Confirm 在原唯一 action claim 后核当前 `read_context` 权限和原 Agent grant，再读取一次原项目授权端口。读取前后分别核实际 Git 根身份、准确 HEAD、干净状态和指定文件已被跟踪；packet 的项目、revision、数量、文件名与版本分别核对。读取完成后重新核 `start` 权限，才交原 driver。未配置该端口保留既有任务手册输入；配置后的未选项目拒绝，不能自动改选根或文件。
+
+原项目根是固定源码的读取来源，中性工作区是实际控制器 CWD，两者分别保存。首次公开 Go 候选可使用批准 primary root 的四个固定文件。Swarm 的 actual worktree snapshot / BindSession / Claim 顺序仍由 S2 / S4 / S3 沿原授权端口处理；当前端口不将 primary root 当作新的 worktree snapshot，也不授予自由读取或文件工具。
+
+`RelayLaunch.Packet` 私有传入原 `NativeRequest.Packet`，structured 输入继续使用既有 `packetPrompt`，terminal 首输入使用相同 fixed context framing。正文只在实际输入和原控制器内存中使用；Relay store 保存会话绑定时剔除 `ContextFile.Text` 和 `ContextMaterial.Text`，保留 packet、版本和身份。新增端口没有 HTTP 正文或路径参数，session-events 六字段保持。
+
+H 可在原 `RelayNativeDriverOptions` 同时设置 `CaptureNativeNotifications=true` 与 `BeforeFirstInput`。该回调位于同一个实际 Codex 控制器完成 initialize / thread-start 之后、任何首 turn/start 写入之前。`StartRelayOperationWithInputGuard` 从 armed capture 读取同次官方 Thread.path，不发额外 RPC，不发现其他档案，不另起 CLI。回调收到实际完整 NativeSession、私有正选 archive 和安全 gap；官方尚未提供 path 时传 `nil` 与 `archive_not_yet_available`。提供的 path 非绝对 JSONL 或与 ephemeral 状态冲突时立即拒绝，不能转换为可用路径。
+
+H 在该回调中沿原 source guard 核正选文件的身份和单链接条件。指针已经给出但文件尚未 materialize、实际来源拒绝或身份变化分别保留实际结果；不得删除未知链接、扫描 home 或改用旧档案。回调拒绝会停止原 held controller，保留已经发生的初始化 / session facts、实际退出和 unknown 收据，不发送首输入。未 armed 的控制器、不支持的 provider 和缺失 operation 在进程启动前拒绝该回调。回调通过不证明工具已经有效关闭、整个 session 完整或目标已经完成。
+
+普通 `Native.Send` 现在核原完整会话的 `PendingOperation` 和 `Operations[operation]`，只将实际 `send / pending` operation 传入原发送路径。缺记录返回 `delivery_unknown`，动作或状态不匹配返回 `scope_denied`；不从 SessionID、startup operation 或时间邻近推导新的输入身份。S3 的原 generic Start 空 Message 仍仅初始化 owned / idle，不发送模型首输入；实际 worktree 授权与绑定后 Claim 新 input operation，再沿同一个 Registry / controller Send。
+
+验证共同使用 `GOMAXPROCS=2`、`go -p=1 -mod=readonly`，本机证据均在忽略目录 `dist/relay-l1`：
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/adapters/relayworktree ./internal/adapters/agents ./internal/workspace/app` | 首次 context 阶段 PASS：5.242 / 7.204 / 11.495 秒；`v14-fixed-context-first.log` |
+| 同三个 package 的 checkpoint 回归 | PASS：agents 6.938 / app 18.666 / worktree 9.706 秒；`v14-context-checkpoint-final.log` |
+| 三个 package，限定 `TestRelayStoredSession / TestRelayFirstInputCheckpoint / TestRelayFactsRejectMissing / TestFixedRelayContext`，`-count=1` | PASS：app 2.269 / agents 1.971 / worktree 3.482 秒；`v14-context-boundaries-final.log`。真实 Git / SQLite / 原 ProjectFiles 读取、源根变化、未提交修改和 baseline 变化拒绝均实际运行；拒绝和隐私测试不构造成功模型或 owned 进程 |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/adapters/sqlite -run '^TestRelay' -count=1` | PASS：3.636 / 2.482 秒；`v14-context-relay-final.log` |
+| `go test -p=1 -mod=readonly ./internal/adapters/agents ./internal/workspace/app ./internal/adapters/relayworktree` | 最终源码 PASS：6.497 / 11.039 秒，worktree 使用同源码 cache；`v14-context-source-final.log` |
+| `go vet -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/relayworktree ./internal/adapters/sqlite` | EXIT 0；`v14-context-source-vet.log` |
+| `go build -p=1 -mod=readonly -o dist/relay-l1/v14-context-source-server.exe ./cmd/server` | EXIT 0；产物未启动，`v14-context-source-build.log` |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package 边界 / EXIT 0 |
+
+本阶段第一次普通 SOURCE push 遇到 `SSL_ERROR_SYSCALL`，保留该首失败；同一普通 push 再执行成功，独立 `ls-remote` 精确核得 `ce0302835cb7477eb606107351a9ab46dd8d4714`。此前完整 Go 的 H 权限断言 RED、控制器测试首 RED、旧 nlink2 来源 FAIL、旧未知交付、旧三分钟 firstDOM FAIL 均保留，没有用本阶段 targeted PASS 改写完整验收。
+
+H / F 仍须消费准确 SOURCE 后组装当前新公开项目和 observer，核实际 argv / 自产权限 / 合法来源，唯一登记保存真实计时起点，再执行已授权的共同 Codex started 正向。首输入前 callback、当前新档案单链接、实际上下文消费、模型候选、准确 turn mapping 的 HTTP / SQLite 回查、Today 两尺寸、人工目标完成 / release 和新 provider handoff 仍未实测。working 严格门禁与无开始客户端人工 done 的待答规则保持现有状态机；Swarm usage / actual toolset 不补造。最终 ZIP、L / S 完整默认验收仍由原 owner 持续处理。

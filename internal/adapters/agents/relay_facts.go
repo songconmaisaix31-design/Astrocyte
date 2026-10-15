@@ -2,10 +2,114 @@ package agents
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 	"time"
 )
+
+// 普通接入只认调用方已记录的本次 pending 动作，不从 sessionID 命名推断。
+func nativeRequestOperation(r domain.NativeRequest, action string) (string, error) {
+	operation := r.Session.PendingOperation
+	if operation == "" {
+		return "", nil
+	}
+	receipt, exists := r.Session.Operations[operation]
+	if !exists || receipt.Action != action || receipt.Status != "pending" || action == "start" && r.Session.LastOperationID != operation {
+		return "", nativeError(apierrors.ScopeDenied, "native request operation does not match its original pending receipt")
+	}
+	if r.Command.OperationID != "" && r.Command.OperationID != operation {
+		return "", nativeError(apierrors.ScopeDenied, "native request operation identities differ")
+	}
+	return operation, nil
+}
+
+func cloneOriginalNativeSession(session domain.NativeSession) (domain.NativeSession, error) {
+	data, err := json.Marshal(session)
+	if err != nil {
+		return domain.NativeSession{}, nativeError(apierrors.InternalError, "original native session could not be retained")
+	}
+	var result domain.NativeSession
+	if err = json.Unmarshal(data, &result); err != nil {
+		return domain.NativeSession{}, nativeError(apierrors.InternalError, "original native session could not be retained")
+	}
+	result.HistoryPath = session.HistoryPath
+	return result, nil
+}
+
+func (p *nativeProcess) captureOriginalSession(session domain.NativeSession) error {
+	copy, err := cloneOriginalNativeSession(session)
+	if err != nil {
+		return err
+	}
+	p.mu.Lock()
+	p.originalSession = &copy
+	p.mu.Unlock()
+	return nil
+}
+
+func (n *Native) ReadOwnedNativeSession(ctx context.Context, id string) (domain.RelayOwnedNativeSession, error) {
+	if err := ctx.Err(); err != nil {
+		return domain.RelayOwnedNativeSession{}, err
+	}
+	n.mu.Lock()
+	p := n.processes[id]
+	n.mu.Unlock()
+	if p == nil {
+		return domain.RelayOwnedNativeSession{}, nativeError(apierrors.DeliveryUnknown, "original native session is not held by this controller")
+	}
+	p.mu.Lock()
+	if p.originalSession == nil {
+		p.mu.Unlock()
+		return domain.RelayOwnedNativeSession{}, nativeError(apierrors.DeliveryUnknown, "original Start session was not retained")
+	}
+	session, err := cloneOriginalNativeSession(*p.originalSession)
+	p.mu.Unlock()
+	if err != nil {
+		return domain.RelayOwnedNativeSession{}, err
+	}
+	evidence, err := n.OwnedRelayControllerEvidence(ctx, session)
+	if err != nil {
+		return domain.RelayOwnedNativeSession{}, err
+	}
+	if evidence.ControllerID == "" {
+		return domain.RelayOwnedNativeSession{}, nativeError(apierrors.DeliveryUnknown, "original startup operation was not recorded")
+	}
+	return domain.RelayOwnedNativeSession{Session: session, Evidence: evidence}, nil
+}
+
+func (r *Registry) ReadOwnedNativeSession(ctx context.Context, id string) (domain.RelayOwnedNativeSession, error) {
+	if err := ctx.Err(); err != nil {
+		return domain.RelayOwnedNativeSession{}, err
+	}
+	var result domain.RelayOwnedNativeSession
+	found := false
+	for _, adapter := range r.adapters {
+		native, supported := adapter.(*Native)
+		if !supported {
+			continue
+		}
+		native.mu.Lock()
+		_, held := native.processes[id]
+		native.mu.Unlock()
+		if !held {
+			continue
+		}
+		if found {
+			return domain.RelayOwnedNativeSession{}, nativeError(apierrors.ScopeDenied, "native session identity is ambiguous across current controllers")
+		}
+		var err error
+		result, err = native.ReadOwnedNativeSession(ctx, id)
+		if err != nil {
+			return domain.RelayOwnedNativeSession{}, err
+		}
+		found = true
+	}
+	if !found {
+		return domain.RelayOwnedNativeSession{}, nativeError(apierrors.DeliveryUnknown, "original native session is not held in this Registry")
+	}
+	return result, nil
+}
 
 // 仅在原持有进程锁内追加；时间来自事实产生位置。
 func (p *nativeProcess) relayFact(kind, source, operation string) {
@@ -45,8 +149,43 @@ func (n *Native) OwnedRelayControllerEvidence(ctx context.Context, session domai
 	}
 	result := p.relayEvidence
 	result.NativeID = p.nativeID
+	select {
+	case <-p.done:
+		result.ExitConfirmed = true
+	default:
+		result.ExitConfirmed = false
+	}
 	result.Facts = append([]domain.RelayDriverFact{}, result.Facts...)
+	result.Turns = copyRelayTurns(result.Turns)
 	return result, nil
+}
+
+func copyRelayTurns(turns []domain.RelayTurnBinding) []domain.RelayTurnBinding {
+	result := append([]domain.RelayTurnBinding{}, turns...)
+	for i, turn := range result {
+		if turn.StartedAt != nil {
+			when := *turn.StartedAt
+			result[i].StartedAt = &when
+		}
+	}
+	return result
+}
+
+func (p *nativeProcess) bindRelayTurn(session domain.NativeSession, operation, turn string) {
+	if operation == "" || p.relayEvidence.StartupOperationID == "" {
+		return
+	}
+	p.relayEvidence.Turns = append(p.relayEvidence.Turns, domain.RelayTurnBinding{OperationID: operation, SessionID: session.ID, NativeID: session.NativeID, ControllerID: p.relayEvidence.ControllerID, StartupOperationID: p.relayEvidence.StartupOperationID, TurnID: turn, AcceptedAt: time.Now().UTC()})
+}
+
+func (p *nativeProcess) markRelayTurnStarted(turn string, when time.Time) {
+	for i, binding := range p.relayEvidence.Turns {
+		if binding.TurnID == turn && binding.OperationID == p.inputOperationID && binding.StartedAt == nil {
+			observed := when
+			p.relayEvidence.Turns[i].StartedAt = &observed
+			return
+		}
+	}
 }
 
 func (n *Native) StartOperation(ctx context.Context, request domain.NativeRequest, operation string) (domain.NativeSession, error) {

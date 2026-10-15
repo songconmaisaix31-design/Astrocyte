@@ -107,6 +107,10 @@ func relayFactsAcrossSQLiteConnections(t *testing.T, ctx context.Context, store 
 	if err != nil || len(history) != 0 {
 		t.Fatal("a task without a controller acquired historical ownership")
 	}
+	turns, err := second.(app.RelayOwnedTurnBindingReader).ListOwnedTurnBindings(ctx, id)
+	if err != nil || len(turns) != 0 {
+		t.Fatal("a task without original input acquired a native turn binding")
+	}
 	ownership, err := second.(app.RelayCurrentOwnershipReader).GetCurrentOwnership(ctx, caller(), id)
 	if err != nil || ownership.Status != "unknown" || ownership.Reason != "controller_binding_unrecorded" {
 		t.Fatal("ready task acquired current ownership from persisted state")
@@ -123,6 +127,10 @@ func relayFactsAcrossSQLiteConnections(t *testing.T, ctx context.Context, store 
 	encoded, err := json.Marshal(domain.RelayControllerEvidence{WorkspaceRoot: "private-pointer-canary", NativeID: "private-native-canary"})
 	if err != nil || string(encoded) != "{}" {
 		t.Fatal("private controller evidence was exposed by JSON")
+	}
+	encoded, err = json.Marshal(domain.RelayTurnBinding{TurnID: "private-turn-canary", NativeID: "private-native-canary"})
+	if err != nil || string(encoded) != "{}" {
+		t.Fatal("private native turn binding was exposed by JSON")
 	}
 	t.Log("two SQLite connections: one rejected receipt and one immutable result fact; no controller, start, completion or relationship proof")
 }

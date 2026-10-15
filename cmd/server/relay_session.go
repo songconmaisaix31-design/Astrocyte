@@ -37,13 +37,14 @@ type relaySessionState interface {
 
 // Entry-point bridge only: no cross-context app import or second runtime writer.
 type relaySessionCollector struct {
-	mu         sync.Mutex
-	owned      workspace.RelayOwnedSessionReader
-	capture    *events.RelaySessionCapture
-	state      relaySessionState
-	admissions workbench.SessionAdmissions
-	entries    relaySessionCheckpoints
-	blocked    string
+	mu          sync.Mutex
+	owned       workspace.RelayOwnedSessionReader
+	capture     *events.RelaySessionCapture
+	state       relaySessionState
+	admissions  workbench.SessionAdmissions
+	entries     relaySessionCheckpoints
+	blocked     string
+	archiveOnly bool
 }
 
 func newRelaySessionCollector(owned workspace.RelayOwnedSessionReader, capture *events.RelaySessionCapture, state relaySessionState, admissions workbench.SessionAdmissions) *relaySessionCollector {
@@ -367,6 +368,14 @@ func (s *relaySessionRuntime) GetCurrentOwnership(ctx context.Context, caller do
 		return domain.RelayCurrentOwnership{}, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
 	}
 	return reader.GetCurrentOwnership(ctx, caller, id)
+}
+
+func (s *relaySessionRuntime) ListOwnedTurnBindings(ctx context.Context, id string) ([]domain.RelayTurnBinding, error) {
+	reader, ok := s.RelayRuntime.(workspace.RelayOwnedTurnBindingReader)
+	if !ok {
+		return nil, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
+	}
+	return reader.ListOwnedTurnBindings(ctx, id)
 }
 
 func (s *relaySessionRuntime) ObserveOwned(ctx context.Context) error {

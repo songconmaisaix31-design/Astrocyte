@@ -8,6 +8,12 @@ type RelayCurrentOwnership struct {
 	Reason string `json:"reason,omitempty"`
 }
 
+// 原完整 Start 返回会话只在本机可信闭包中传递，不成为 HTTP DTO。
+type RelayOwnedNativeSession struct {
+	Session  NativeSession           `json:"-"`
+	Evidence RelayControllerEvidence `json:"-"`
+}
+
 // 事实独立于收据和任务状态；后到观察不得重写原动作结果。
 type RelayRuntimeFact struct {
 	ID          string    `json:"fact_id"`
@@ -37,15 +43,29 @@ type RelayDriverFact struct {
 
 // 身份资料只在隔离 store 的私有部分持久化，不序列化到产品视图。
 type RelayControllerEvidence struct {
-	ControllerID         string            `json:"-"`
-	PreviousControllerID string            `json:"-"`
-	StartupOperationID   string            `json:"-"`
-	SessionID            string            `json:"-"`
-	NativeID             string            `json:"-"`
-	Provider             string            `json:"-"`
-	WorkspaceRoot        string            `json:"-"`
-	Relation             string            `json:"-"`
-	Facts                []RelayDriverFact `json:"-"`
+	ControllerID         string             `json:"-"`
+	PreviousControllerID string             `json:"-"`
+	StartupOperationID   string             `json:"-"`
+	SessionID            string             `json:"-"`
+	NativeID             string             `json:"-"`
+	Provider             string             `json:"-"`
+	WorkspaceRoot        string             `json:"-"`
+	Relation             string             `json:"-"`
+	Facts                []RelayDriverFact  `json:"-"`
+	Turns                []RelayTurnBinding `json:"-"`
+	ExitConfirmed        bool               `json:"-"`
+}
+
+// 原生 turn 标识仅供本机按准确输入核输出，不进入公共事实或事件 DTO。
+type RelayTurnBinding struct {
+	OperationID        string     `json:"-"`
+	SessionID          string     `json:"-"`
+	NativeID           string     `json:"-"`
+	ControllerID       string     `json:"-"`
+	StartupOperationID string     `json:"-"`
+	TurnID             string     `json:"-"`
+	AcceptedAt         time.Time  `json:"-"`
+	StartedAt          *time.Time `json:"-"`
 }
 
 type RelaySessionRelation struct {

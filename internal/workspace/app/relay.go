@@ -431,7 +431,7 @@ func (s *relayService) finalize(st *RelayState, r domain.RelayReceipt, obs Relay
 				st.Tasks[t.ID] = t
 				previous := st.Sessions[t.TerminalID]
 				if obs.Session.ID != "" && obs.Session.NativeID != "" && obs.Session.Ownership == "owned" && obs.Session.ProjectID == t.ProjectID && obs.Session.CLI == t.Agent && (previous.ID == "" || previous.ID == obs.Session.ID && previous.NativeID == obs.Session.NativeID) {
-					st.Sessions[t.TerminalID] = obs.Session
+					st.Sessions[t.TerminalID] = relaySessionMetadata(obs.Session)
 					s.observeOwnedSession(st, t, st.Terminals[t.TerminalID], RelayObservation{Session: obs.Session, ArchiveGap: "controller_evidence_rejected"})
 				}
 				reason := "controller_evidence_rejected"
@@ -651,6 +651,21 @@ func (s *relayService) ConfirmIntent(ctx context.Context, c domain.Caller, id st
 	}
 	launch.Input = "HANDOFF_MANUAL:\n" + w.Handoff.Content + "\n\nTASK:\n" + v.Task.Description
 	launch.OperationID = r.OperationID
+	if s.options.LaunchContext != nil {
+		if _, err = s.permission(ctx, c, v.Task, "read_context"); err != nil {
+			return reject(err)
+		}
+		launch.Packet, err = s.options.LaunchContext.ReadRelayLaunchContext(ctx, c, launch)
+		if err != nil {
+			return reject(err)
+		}
+		if launch.Packet.ID == "" || launch.Packet.ProjectID != p.ID || launch.Packet.SettingsRevision != p.Settings.Revision {
+			return reject(relayError(apierrors.ScopeDenied, "launch context differs from the confirmed project revision"))
+		}
+		if _, err = s.permission(ctx, c, v.Task, "start"); err != nil {
+			return reject(err)
+		}
+	}
 	driver := s.structured
 	mode := "structured"
 	if spec.DriveMode == "terminal" {
@@ -733,7 +748,7 @@ func (s *relayService) observe(st *RelayState, t *domain.RelayTask, obs RelayObs
 	}
 	terminal := st.Terminals[t.TerminalID]
 	if obs.Session.ID != "" {
-		st.Sessions[terminal.ID] = obs.Session
+		st.Sessions[terminal.ID] = relaySessionMetadata(obs.Session)
 	}
 	if obs.NativeCapture != nil {
 		previous := st.OwnedSessions[t.ID].NativeCapture
@@ -843,6 +858,9 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 	if view.Task.State == domain.RelayReleased {
 		return reject(relayError(apierrors.VersionConflict, "released task cannot control the terminal"))
 	}
+	if action == "read" && launch.Terminal.DriveMode != "terminal" && (view.Task.Condition == "delivery_unknown" || view.Terminal.ExitedAt != nil) {
+		return reject(relayError(apierrors.VersionConflict, "native read requires a current process without an unresolved delivery or confirmed exit"))
+	}
 	if action == "send" && (view.Task.Condition == "delivery_unknown" || view.Terminal.ExitedAt != nil || view.Task.State == domain.RelayDone) {
 		return reject(relayError(apierrors.VersionConflict, "task cannot accept another input"))
 	}
@@ -862,6 +880,9 @@ func (s *relayService) action(ctx context.Context, c domain.Caller, id, action s
 		}
 		if action == "send" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil || current.State == domain.RelayDone) {
 			return relayError(apierrors.VersionConflict, "task cannot accept another input")
+		}
+		if action == "read" && terminal.DriveMode != "terminal" && (current.Condition == "delivery_unknown" || terminal.ExitedAt != nil) {
+			return relayError(apierrors.VersionConflict, "native read requires a current process without unresolved delivery or confirmed exit")
 		}
 		if action == "resume" && (terminal.ExitedAt == nil || current.State == domain.RelayDone) {
 			return relayError(apierrors.DeliveryUnknown, "resume requires confirmed original exit")
