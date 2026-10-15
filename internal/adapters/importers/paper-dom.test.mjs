@@ -10,6 +10,15 @@ const { parseHTML } = require('linkedom');
 const { Readability } = require('@mozilla/readability');
 const extract = (html, url = 'https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0000001') => paperDOM(parseHTML(html).document, url, Readability);
 
+// 以下为纯函数输入与期望值，HTML 字符串仅用于验证解析规则。
+test('malformed JSON-LD fails at JSON parsing', () => {
+  assert.throws(() => extract('<script type="application/ld+json">{"@type":</script>'), SyntaxError);
+});
+
+test('malformed PDF metadata fails at URL parsing', () => {
+  assert.throws(() => extract('<meta name="citation_pdf_url" content="https://[invalid/">'), TypeError);
+});
+
 test('scholarly title, abstract and DOI are metadata; PDF is not full text', () => {
   const result = extract('<html><head><meta name="citation_title" content="Paper"><meta name="citation_doi" content="10.1371/Journal.Pone.0000001"><meta name="citation_author" content="Author"><meta name="citation_abstract" content="Abstract only"><meta name="citation_pdf_url" content="/paper.pdf"></head><body><article><h1>Paper</h1><p>Abstract only</p></article></body></html>');
   assert.equal(result.source_key, 'doi:10.1371/journal.pone.0000001');

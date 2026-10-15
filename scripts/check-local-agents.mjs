@@ -3,8 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { startS1Server } from '../tests/s1/server.mjs';
 import { humanAPI } from '../tests/s1/api.mjs';
 
-// Actual server/HTTP/schema smoke check in an isolated empty SQLite directory.
-// Reuse the S1 lifecycle helpers; no browser, model request or media extraction.
+// 使用 S1 生命周期 helper，在独立实际空 SQLite 上核查服务、HTTP 和 schema。
 const agentToken = randomUUID();
 const server = await startS1Server({ env: { ASTROCYTE_AGENT_TOKEN: agentToken } });
 try {

@@ -1,0 +1,68 @@
+{
+  "local_run": "C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v2-w0/run-mn895jl6",
+  "status": "PASS",
+  "started_at": "2026-10-12T16:19:20.704591+00:00",
+  "source_sha": "93030768b10549542546178a006507615cdd8ba8",
+  "replay_source": "7d57e06eaeaa1ddc8ddf132af47840acf8f777cc",
+  "cutoff_ts": 1791734399999,
+  "original_database_sha256": "279ffd78ad8cf083b1e279fb8c4ed32ae53a662b52d8a0f220f96d98c9816d4e",
+  "topic_counts": {
+    "Morphogenesis": {
+      "evidence": 887,
+      "related": 0,
+      "kinds": {
+        "commit": 887
+      }
+    },
+    "Astrocyte/Attention Engine": {
+      "evidence": 1096,
+      "related": 0,
+      "kinds": {
+        "commit": 1006,
+        "search": 16,
+        "edit_file": 74
+      }
+    },
+    "McPet": {
+      "evidence": 23,
+      "related": 0,
+      "kinds": {
+        "commit": 23
+      }
+    },
+    "Agent Swarm": {
+      "evidence": 0,
+      "related": 0,
+      "kinds": {}
+    },
+    "Agent Memory": {
+      "evidence": 0,
+      "related": 0,
+      "kinds": {}
+    },
+    "MCP": {
+      "evidence": 0,
+      "related": 0,
+      "kinds": {}
+    }
+  },
+  "audit": {
+    "events": 2855,
+    "raw_unique_strings_per_event": 11956,
+    "raw_unique_distinct_strings": 7611,
+    "raw_unique_distinct_and_full_blob_base64": 10390,
+    "zero_raw_unique_events": 0,
+    "responses": 18,
+    "markdowns": 3,
+    "violations": 0,
+    "collision_indexes": []
+  },
+  "successful_tool_calls": 7,
+  "error_responses": 10,
+  "confidence_source": "sqlite-readonly",
+  "production_copy_unchanged": true,
+  "original_logical_unchanged": true,
+  "original_files_unchanged": true,
+  "ended_at": "2026-10-12T16:19:26.278827+00:00",
+  "elapsed_seconds": 5.574
+}

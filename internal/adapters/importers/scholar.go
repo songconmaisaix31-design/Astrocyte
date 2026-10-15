@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,11 +17,10 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
+	"golang.org/x/net/html"
 )
 
-// ScholarProvider selects one official, credential-free public academic
-// metadata index. A search hit is metadata only; it never carries full text,
-// an entitlement or an import decision.
+// ScholarProvider 选择公开学术元数据索引；查询结果仅包含元数据。
 type ScholarProvider string
 
 const (
@@ -31,8 +29,7 @@ const (
 	ScholarArxiv     ScholarProvider = "arxiv"
 )
 
-// ScholarHit is a search metadata record, not a material revision. ContentState
-// is always abstract_only because providers are metadata indexes.
+// ScholarHit 保存查询元数据，ContentState 固定为 abstract_only。
 type ScholarHit struct {
 	Provider     string   `json:"provider"`
 	Title        string   `json:"title"`
@@ -74,10 +71,7 @@ func scholarHost(host string) bool {
 	return false
 }
 
-// Search performs one bounded query against a single provider. The query must be
-// nonempty and stay within a hard character limit; results are capped at the
-// caller's limit. Providers are contacted over official public HTTPS only, with
-// no credentials, cookies or private network addresses.
+// Search 在官方 HTTPS 索引中执行一次有长度和数量限制的查询。
 func (s *Scholar) Search(ctx context.Context, provider ScholarProvider, query string, limit int) ([]ScholarHit, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
@@ -95,10 +89,7 @@ func (s *Scholar) Search(ctx context.Context, provider ScholarProvider, query st
 		return nil, invalid("unsupported paper search provider")
 	}
 
-	// Exact-identifier routing: a complete DOI or arXiv identifier is looked up
-	// against the authoritative registry instead of being treated as free-text
-	// keywords. This keeps an unknown DOI an explicit 404 rather than surfacing
-	// unrelated works that merely share the identifier as search terms.
+	// 完整 DOI 和 arXiv 标识符查询注册库；未知标识符返回明确的 404。
 	if doi := parseDOIQuery(query); doi != "" {
 		hit, err := s.crossrefWork(ctx, doi)
 		if err != nil {
@@ -164,9 +155,7 @@ func (s *Scholar) get(ctx context.Context, locator string, limit int64) ([]byte,
 	return b, nil
 }
 
-// getStatus performs the same guarded GET as get but returns the HTTP status so
-// exact-identifier lookups can distinguish a definite 404 (unknown DOI/arXiv id)
-// from a transient provider failure.
+// getStatus 保留实际 HTTP 状态，用于区分未知标识符和来源失败。
 func (s *Scholar) getStatus(ctx context.Context, locator string, limit int64) (int, []byte, error) {
 	u, err := url.Parse(locator)
 	if err != nil || u.Scheme != "https" || u.User != nil || u.Port() != "" || !scholarHost(u.Hostname()) {
@@ -192,48 +181,59 @@ func (s *Scholar) getStatus(ctx context.Context, locator string, limit int64) (i
 	return resp.StatusCode, b, nil
 }
 
-// providerUnavailable marks a network/HTTP failure as retryable with a clear
-// required action, preserving the cause for logs instead of masking it.
+// providerUnavailable 保留网络或 HTTP 失败原因和所需操作。
 func providerUnavailable(err error) error {
 	return &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "paper provider request failed: " + err.Error(), Retryable: true, RequiredAction: "retry_paper_request_or_check_network"}
 }
 
 func (s *Scholar) crossref(ctx context.Context, query string, limit int) ([]byte, error) {
+	return s.get(ctx, scholarSearchTarget(ScholarCrossref, query, limit), 8<<20)
+}
+
+func scholarSearchTarget(provider ScholarProvider, query string, limit int) string {
 	q := url.Values{}
-	q.Set("query", query)
-	q.Set("rows", strconv.Itoa(limit))
-	q.Set("select", "DOI,title,author,abstract,URL,published,container-title,type")
-	u := "https://api.crossref.org/works?" + q.Encode()
-	return s.get(ctx, u, 8<<20)
+	switch provider {
+	case ScholarCrossref:
+		q.Set("query", query)
+		q.Set("rows", strconv.Itoa(limit))
+		q.Set("select", "DOI,title,author,abstract,URL,published,container-title,type")
+		return "https://api.crossref.org/works?" + q.Encode()
+	case ScholarEuropePMC:
+		q.Set("query", query)
+		q.Set("resultType", "lite")
+		q.Set("format", "json")
+		q.Set("pageSize", strconv.Itoa(limit))
+		return "https://www.ebi.ac.uk/europepmc/webservices/rest/search?" + q.Encode()
+	case ScholarArxiv:
+		q.Set("search_query", "all:"+query)
+		q.Set("start", "0")
+		q.Set("max_results", strconv.Itoa(limit))
+		return "https://export.arxiv.org/api/query?" + q.Encode()
+	default:
+		panic("validated scholar provider required")
+	}
 }
 
 func (s *Scholar) europepmc(ctx context.Context, query string, limit int) ([]byte, error) {
-	q := url.Values{}
-	q.Set("query", query)
-	q.Set("resultType", "lite")
-	q.Set("format", "json")
-	q.Set("pageSize", strconv.Itoa(limit))
-	u := "https://www.ebi.ac.uk/europepmc/webservices/rest/search?" + q.Encode()
-	return s.get(ctx, u, 8<<20)
+	return s.get(ctx, scholarSearchTarget(ScholarEuropePMC, query, limit), 8<<20)
 }
 
 func (s *Scholar) arxivSearch(ctx context.Context, query string, limit int) ([]byte, error) {
-	q := url.Values{}
-	q.Set("search_query", "all:"+query)
-	q.Set("start", "0")
-	q.Set("max_results", strconv.Itoa(limit))
-	u := "https://export.arxiv.org/api/query?" + q.Encode()
-	return s.get(ctx, u, 8<<20)
+	return s.get(ctx, scholarSearchTarget(ScholarArxiv, query, limit), 8<<20)
 }
 
-// completeDOI matches a fully-formed Crossref DOI: the 10. registrant prefix
-// followed by a nonempty suffix. Anything shorter (e.g. a bare "10.1234") is
-// not routed as an identifier.
+func crossrefWorkTarget(doi string) string {
+	return "https://api.crossref.org/works/" + url.PathEscape(doi)
+}
+
+func arxivIDTarget(id string) string {
+	return "https://export.arxiv.org/api/query?" + url.Values{"id_list": {id}}.Encode()
+}
+
+// completeDOI 要求完整的 10. 注册前缀和非空后缀。
 var completeDOI = regexp.MustCompile(`^10\.[0-9]{4,9}/[^\s]+$`)
 
-// parseDOIQuery recognizes a complete DOI supplied bare, with a doi: prefix, or
-// as a doi.org / dx.doi.org URL. It returns the lowercased DOI, or "" when the
-// query is not an exact DOI so the caller falls back to ordinary keyword search.
+// parseDOIQuery 识别 DOI、doi: 前缀和 doi.org URL；普通关键词返回空字符串。
 func parseDOIQuery(query string) string {
 	q := strings.TrimSpace(query)
 	if q == "" {
@@ -257,11 +257,9 @@ func parseDOIQuery(query string) string {
 	return d
 }
 
-// crossrefWork retrieves one work by its exact DOI using the official single-work
-// endpoint GET /works/{doi}. An unknown DOI stays an explicit NotFound error and
-// is never silently reinterpreted as a keyword query.
+// crossrefWork 使用官方 GET /works/{doi}，未知 DOI 返回 NotFound。
 func (s *Scholar) crossrefWork(ctx context.Context, doi string) (ScholarHit, error) {
-	u := "https://api.crossref.org/works/" + url.PathEscape(doi)
+	u := crossrefWorkTarget(doi)
 	status, body, err := s.getStatus(ctx, u, 8<<20)
 	if err != nil {
 		return ScholarHit{}, err
@@ -279,13 +277,9 @@ func (s *Scholar) crossrefWork(ctx context.Context, doi string) (ScholarHit, err
 	return hit, nil
 }
 
-// arxivIDLookup retrieves one article by its exact arXiv identifier using the
-// official id_list interface, which resolves versions correctly. A requested
-// version is matched exactly; a base identifier returns the latest version.
+// arxivIDLookup 使用官方 id_list 查询，并严格核对请求版本。
 func (s *Scholar) arxivIDLookup(ctx context.Context, id string) (ScholarHit, error) {
-	q := url.Values{}
-	q.Set("id_list", id)
-	u := "https://export.arxiv.org/api/query?" + q.Encode()
+	u := arxivIDTarget(id)
 	raw, err := s.get(ctx, u, 8<<20)
 	if err != nil {
 		return ScholarHit{}, err
@@ -294,6 +288,10 @@ func (s *Scholar) arxivIDLookup(ctx context.Context, id string) (ScholarHit, err
 	if err != nil {
 		return ScholarHit{}, err
 	}
+	return selectArxivHit(id, hits)
+}
+
+func selectArxivHit(id string, hits []ScholarHit) (ScholarHit, error) {
 	if len(hits) != 1 {
 		return ScholarHit{}, arxivNotFound(id)
 	}
@@ -339,13 +337,16 @@ func parseCrossref(raw []byte) ([]ScholarHit, error) {
 	}
 	hits := make([]ScholarHit, 0, len(payload.Message.Items))
 	for _, item := range payload.Message.Items {
-		hits = append(hits, crossrefHit(item))
+		hit, err := crossrefHit(item)
+		if err != nil {
+			return nil, err
+		}
+		hits = append(hits, hit)
 	}
 	return hits, nil
 }
 
-// parseCrossrefWork parses the single-work response returned by GET /works/{doi},
-// whose message is a work object rather than an items array.
+// parseCrossrefWork 解析单篇查询返回的 message 对象。
 func parseCrossrefWork(raw []byte) (ScholarHit, error) {
 	var payload struct {
 		Message crossrefWorkMessage `json:"message"`
@@ -356,15 +357,14 @@ func parseCrossrefWork(raw []byte) (ScholarHit, error) {
 	if normalizeDOIRaw(payload.Message.DOI) == "" {
 		return ScholarHit{}, &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "Crossref work response lacks a DOI", Retryable: true, RequiredAction: "check_paper_search_provider_response"}
 	}
-	return crossrefHit(payload.Message), nil
+	return crossrefHit(payload.Message)
 }
 
 func crossrefParseError(err error) error {
 	return &apierrors.ServiceError{Code: apierrors.ProviderUnavailable, Message: "Crossref search response could not be parsed: " + err.Error(), Retryable: true, RequiredAction: "check_paper_search_provider_response"}
 }
 
-// crossrefWorkMessage is the shared shape of a Crossref work record, used by both
-// the keyword search (items array) and the single-work lookup.
+// crossrefWorkMessage 是关键词查询与单篇查询共用的记录格式。
 type crossrefWorkMessage struct {
 	DOI    string   `json:"DOI"`
 	Title  []string `json:"title"`
@@ -380,32 +380,30 @@ type crossrefWorkMessage struct {
 	ContainerTitle []string `json:"container-title"`
 }
 
-// jatsTagRE matches one XML/JATS element tag (opening, closing or self-closing),
-// with or without a namespace prefix, so Crossref's JATS abstract markup can be
-// reduced to its character text. It is deliberately simple: element tags in a
-// metadata abstract do not carry attribute values containing a raw ">".
-var jatsTagRE = regexp.MustCompile(`<[^>]+>`)
-
-// plainAbstract converts a provider abstract that may carry JATS/XML markup into
-// safe plain text. Element tags are stripped, character references and named
-// entities are decoded, and duplicated whitespace introduced by tag removal is
-// collapsed. The result is always plain text, so a caller renders it without
-// HTML parsing or dangerouslySetInnerHTML and never surfaces raw <jats:p>
-// markup in a summary.
-func plainAbstract(raw string) string {
-	s := strings.TrimSpace(raw)
-	if s == "" {
-		return ""
+// 通过成熟 HTML tokenizer 提取 JATS 摘要的文字和字符引用。
+func plainAbstract(raw string) (string, error) {
+	z := html.NewTokenizer(strings.NewReader(raw))
+	var text strings.Builder
+	for {
+		switch z.Next() {
+		case html.ErrorToken:
+			if err := z.Err(); err != io.EOF {
+				return "", err
+			}
+			return strings.Join(strings.Fields(text.String()), " "), nil
+		case html.TextToken:
+			text.Write(z.Text())
+		case html.StartTagToken, html.EndTagToken, html.SelfClosingTagToken:
+			text.WriteByte(' ')
+		}
 	}
-	if !strings.Contains(s, "<") {
-		return html.UnescapeString(s)
-	}
-	s = jatsTagRE.ReplaceAllString(s, " ")
-	s = html.UnescapeString(s)
-	return strings.Join(strings.Fields(s), " ")
 }
 
-func crossrefHit(msg crossrefWorkMessage) ScholarHit {
+func crossrefHit(msg crossrefWorkMessage) (ScholarHit, error) {
+	abstract, err := plainAbstract(msg.Abstract)
+	if err != nil {
+		return ScholarHit{}, err
+	}
 	doi := normalizeDOIRaw(msg.DOI)
 	authors := []string{}
 	for _, a := range msg.Author {
@@ -424,18 +422,31 @@ func crossrefHit(msg crossrefWorkMessage) ScholarHit {
 		year = msg.Published.DateParts[0][0]
 	}
 	venue := strings.TrimSpace(strings.Join(msg.ContainerTitle, " "))
-	return ScholarHit{Provider: string(ScholarCrossref), Title: title, Authors: authors, DOI: doi, Year: year, Venue: venue, Abstract: plainAbstract(msg.Abstract), Locator: locator, SourceKey: doiKey(doi, locator)}
+	return ScholarHit{Provider: string(ScholarCrossref), Title: title, Authors: authors, DOI: doi, Year: year, Venue: venue, Abstract: abstract, Locator: locator, SourceKey: doiKey(doi, locator)}, nil
 }
 
-// europePMCInt accepts the mixed number/string year representation returned by
-// the lite result type across query styles.
+// europePMCInt 接收 Europe PMC lite 返回的整数或字符串年份。
 type europePMCInt int
 
 func (f *europePMCInt) UnmarshalJSON(b []byte) error {
-	s := strings.Trim(string(b), `"`)
-	if s == "" || s == "null" {
+	var value any
+	decoder := json.NewDecoder(strings.NewReader(string(b)))
+	decoder.UseNumber()
+	if err := decoder.Decode(&value); err != nil {
+		return err
+	}
+	if value == nil || value == "" {
 		*f = 0
 		return nil
+	}
+	var s string
+	switch v := value.(type) {
+	case string:
+		s = v
+	case json.Number:
+		s = v.String()
+	default:
+		return fmt.Errorf("Europe PMC year requires a JSON integer or string")
 	}
 	n, err := strconv.Atoi(s)
 	if err != nil {
@@ -512,7 +523,7 @@ func parseArxivSearch(raw []byte) ([]ScholarHit, error) {
 	for _, e := range feed.Entries {
 		id, err := NormalizeArxivID(e.ID)
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("arXiv search entry identifier: %w", err)
 		}
 		authors := []string{}
 		for _, a := range e.Authors {
@@ -521,8 +532,12 @@ func parseArxivSearch(raw []byte) ([]ScholarHit, error) {
 			}
 		}
 		year := 0
-		if len(e.Published) >= 4 {
-			year, _ = strconv.Atoi(e.Published[:4])
+		if e.Published != "" {
+			published, err := time.Parse(time.RFC3339, e.Published)
+			if err != nil {
+				return nil, fmt.Errorf("arXiv search entry publication: %w", err)
+			}
+			year = published.Year()
 		}
 		base := revisionSuffix.ReplaceAllString(id, "")
 		locator := "https://arxiv.org/abs/" + id
@@ -569,8 +584,7 @@ func splitAuthors(s string) []string {
 	return out
 }
 
-// SortHits stabilizes provider result order by a stable key so identical
-// queries produce deterministic output for tests and dedupe.
+// SortHits 按来源标识和标题稳定排序。
 func SortHits(hits []ScholarHit) {
 	sort.SliceStable(hits, func(i, j int) bool {
 		if hits[i].SourceKey != hits[j].SourceKey {
@@ -580,8 +594,7 @@ func SortHits(hits []ScholarHit) {
 	})
 }
 
-// SearchPapers implements the application PaperSearcher port, mapping the
-// domain query to one bounded provider call. Hits remain metadata only.
+// SearchPapers 实现应用 PaperSearcher 接口，返回公开元数据。
 func (s *Scholar) SearchPapers(ctx context.Context, q domain.PaperSearchQuery) ([]domain.PaperSearchHit, error) {
 	if err := q.Validate(); err != nil {
 		return nil, invalid("invalid paper search query")

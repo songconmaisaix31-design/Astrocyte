@@ -1,163 +1,157 @@
-package app
+package app_test
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"math"
+	"os"
+	"path/filepath"
 	"testing"
-	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
+	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
-
-type fakeWorksRepo struct {
-	snapshot domain.WorksSnapshot
-	metadata map[string]domain.WorkHumanMetadata
-}
-
-func newFakeWorksRepo() *fakeWorksRepo {
-	return &fakeWorksRepo{snapshot: domain.WorksSnapshot{Works: []domain.Work{}}, metadata: map[string]domain.WorkHumanMetadata{}}
-}
-
-func (f *fakeWorksRepo) LoadWorksSnapshot(context.Context) (domain.WorksSnapshot, error) {
-	return f.snapshot, nil
-}
-
-func (f *fakeWorksRepo) SaveWorksSnapshot(_ context.Context, s domain.WorksSnapshot) error {
-	f.snapshot = s
-	return nil
-}
-
-func (f *fakeWorksRepo) LoadWorkMetadata(_ context.Context, id string) (domain.WorkHumanMetadata, error) {
-	return f.metadata[id], nil
-}
-
-func (f *fakeWorksRepo) SaveWorkMetadata(_ context.Context, id string, m domain.WorkHumanMetadata, expected int) error {
-	if m.Revision != expected+1 {
-		return &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "revision mismatch"}
-	}
-	f.metadata[id] = m
-	return nil
-}
-
-type fakeScanSource struct {
-	works    []domain.Work
-	failures []domain.WorkDiscoveryFailure
-	err      error
-}
-
-func (f *fakeScanSource) ScanWorks(context.Context, []string) ([]domain.Work, []domain.WorkDiscoveryFailure, error) {
-	return f.works, f.failures, f.err
-}
-
-type fakeDeliverySource struct {
-	works []domain.Work
-	err   error
-}
-
-func (f *fakeDeliverySource) ParseDelivery(context.Context, []byte) ([]domain.Work, error) {
-	return f.works, f.err
-}
-
-type fakeEventSink struct {
-	events []domain.WorkEvent
-}
-
-func (f *fakeEventSink) EmitWorkEvent(_ context.Context, e domain.WorkEvent) error {
-	f.events = append(f.events, e)
-	return nil
-}
-
-func fixedClock() func() time.Time {
-	now := time.Date(2026, 10, 11, 12, 0, 0, 0, time.UTC)
-	return func() time.Time { return now }
-}
 
 func humanCaller() domain.Caller { return domain.Caller{Kind: "human", ID: "u1"} }
 
-func scanWork(platform, name, root string) domain.Work {
-	mtime := time.Now().Add(-time.Hour)
-	return domain.Work{
-		ID: domain.WorkIdentity(platform, root), Platform: platform, Name: name, Root: root,
-		Kind: domain.WorkKindFolder, Source: domain.WorkSourceScan,
-		Files: domain.WorkFileFact{SourcePath: root, Mtime: &mtime, FileCount: 3, Verified: true},
-	}
-}
-
-func TestWorksListIsEmptyWhenNothingScanned(t *testing.T) {
-	s := NewWorksService(newFakeWorksRepo(), &fakeScanSource{}, &fakeDeliverySource{}, nil, WorksServiceOptions{Clock: fixedClock()})
-	snapshot, err := s.ListWorks(context.Background(), humanCaller())
+func worksApplication(t *testing.T) (app.Works, *sqlite.DB, *sqlite.EventRepository) {
+	t.Helper()
+	db, err := sqlite.Open(filepath.Join(t.TempDir(), "state.sqlite"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(snapshot.Works) != 0 || len(snapshot.Platforms) != 0 {
-		t.Fatalf("fresh album must be empty, got %d works", len(snapshot.Works))
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	if err = db.RunMigrations(context.Background(), migrations.FS); err != nil {
+		t.Fatal(err)
+	}
+	receipts := sqlite.NewEventRepository(db)
+	sink := events.NewWorksEventSink(attention.NewPendingEventService(receipts), nil)
+	return app.NewWorksService(db, worksscan.NewScanner(), worksscan.Delivery{}, sink, app.WorksServiceOptions{}), db, receipts
+}
+
+// 平台标记是调用者实际写入的格式输入，文件数量与 mtime 均从磁盘观察。
+func workDirectory(t *testing.T, platform, name string) string {
+	t.Helper()
+	root := t.TempDir()
+	if platform != "" {
+		data, err := json.Marshal(map[string]string{"name": name, "platform": platform})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = os.WriteFile(filepath.Join(root, ".astrocyte-works.json"), data, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(root, "manual.txt"), []byte("本次实际创建的测试文件"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	return root
+}
+
+func refreshWorks(t *testing.T, service app.Works, roots ...string) domain.WorksSnapshot {
+	t.Helper()
+	snapshot, err := service.RefreshWorks(context.Background(), humanCaller(), app.WorksRefreshCommand{Roots: roots})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return snapshot
+}
+
+func workReceipts(t *testing.T, repository *sqlite.EventRepository) []domain.WorkEvent {
+	t.Helper()
+	rows, err := repository.ListEvents(context.Background(), 0, math.MaxInt64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := make([]domain.WorkEvent, len(rows))
+	for i, row := range rows {
+		if row.Event != nil || row.ID == "" {
+			t.Fatal("作品活动产生了额外认知事实或缺少实际回执")
+		}
+		if err := json.Unmarshal(row.RawBytes, &result[i]); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return result
+}
+
+func deliveryInput(t *testing.T, entries ...domain.WorkDeliveryEntry) app.WorksDeliveryCommand {
+	t.Helper()
+	// JSON 为明确的投递输入，生产 parser 核实文件前必须保持未核实。
+	data, err := json.Marshal(domain.WorkDelivery{Works: entries})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return app.WorksDeliveryCommand{Content: data}
+}
+
+func TestWorksListIsEmptyWhenNothingScanned(t *testing.T) {
+	service, _, _ := worksApplication(t)
+	snapshot, err := service.ListWorks(context.Background(), humanCaller())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(snapshot.Works) != 0 || len(snapshot.Platforms) != 0 || snapshot.Status != "unknown" || snapshot.ObservedAt != nil {
+		t.Fatalf("fresh album invented observations: %+v", snapshot)
 	}
 }
 
 func TestWorksRequiresHumanCaller(t *testing.T) {
-	s := NewWorksService(newFakeWorksRepo(), &fakeScanSource{}, &fakeDeliverySource{}, nil, WorksServiceOptions{Clock: fixedClock()})
-	if _, err := s.ListWorks(context.Background(), domain.Caller{Kind: "agent", ID: "a1"}); err == nil {
+	service, _, _ := worksApplication(t)
+	if _, err := service.ListWorks(context.Background(), domain.Caller{Kind: "agent", ID: "a1"}); err == nil {
 		t.Fatal("agent caller must be rejected")
 	}
 }
 
 func TestRefreshWorksScansAndStats(t *testing.T) {
-	scan := &fakeScanSource{works: []domain.Work{
-		scanWork("codex", "app", "C:\\w\\app"),
-		scanWork("codex", "deck", "C:\\w\\deck"),
-		scanWork("lingxi", "report", "C:\\w\\report"),
-	}}
-	sink := &fakeEventSink{}
-	s := NewWorksService(newFakeWorksRepo(), scan, &fakeDeliverySource{}, sink, WorksServiceOptions{Clock: fixedClock()})
-	snapshot, err := s.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{})
-	if err != nil {
-		t.Fatal(err)
+	service, _, receipts := worksApplication(t)
+	roots := []string{workDirectory(t, "codex", "app"), workDirectory(t, "codex", "deck"), workDirectory(t, "lingxi", "report")}
+	snapshot := refreshWorks(t, service, roots...)
+	if len(snapshot.Works) != 3 || snapshot.Status != "complete" || len(snapshot.Platforms) != 2 {
+		t.Fatalf("actual scan counts: %+v", snapshot)
 	}
-	if len(snapshot.Works) != 3 {
-		t.Fatalf("expected 3 works, got %d", len(snapshot.Works))
+	for _, work := range snapshot.Works {
+		if !work.Files.Verified || work.Files.FileCount != 2 || work.Files.Mtime == nil {
+			t.Fatalf("actual files lost: %+v", work.Files)
+		}
 	}
-	if snapshot.Status != "complete" {
-		t.Fatalf("expected complete, got %q", snapshot.Status)
-	}
-	if len(snapshot.Platforms) != 2 {
-		t.Fatalf("expected 2 platforms, got %d", len(snapshot.Platforms))
-	}
-	if len(sink.events) != 3 {
-		t.Fatalf("expected 3 synced events, got %d", len(sink.events))
+	if rows := workReceipts(t, receipts); len(rows) != 3 {
+		t.Fatalf("expected 3 persisted synced events, got %d", len(rows))
 	}
 }
 
 func TestRefreshPreservesHumanMetadata(t *testing.T) {
-	repo := newFakeWorksRepo()
-	scan := &fakeScanSource{works: []domain.Work{scanWork("codex", "app", "C:\\w\\app")}}
-	s := NewWorksService(repo, scan, &fakeDeliverySource{}, nil, WorksServiceOptions{Clock: fixedClock()})
-	if _, err := s.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{}); err != nil {
+	service, _, _ := worksApplication(t)
+	root := workDirectory(t, "codex", "app")
+	first := refreshWorks(t, service, root)
+	id := first.Works[0].ID
+	if _, err := service.SetWorkAttitude(context.Background(), humanCaller(), id, app.WorkAttitudeCommand{Attitude: domain.AttitudePark}); err != nil {
 		t.Fatal(err)
 	}
-	id := domain.WorkIdentity("codex", "C:\\w\\app")
-	if _, err := s.SetWorkAttitude(context.Background(), humanCaller(), id, WorkAttitudeCommand{Attitude: domain.AttitudePark}); err != nil {
+	if err := os.WriteFile(filepath.Join(root, "new.txt"), []byte("实际新文件"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	// Re-scan with a fresh observation (human fields zeroed) must not lose the park.
-	scan.works = []domain.Work{scanWork("codex", "app", "C:\\w\\app")}
-	snapshot, err := s.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(snapshot.Works) != 1 || snapshot.Works[0].Attitude != domain.AttitudePark {
-		t.Fatalf("attitude lost on refresh: %+v", snapshot.Works[0])
+	snapshot := refreshWorks(t, service, root)
+	if len(snapshot.Works) != 1 || snapshot.Works[0].Attitude != domain.AttitudePark || snapshot.Works[0].Files.FileCount != 3 {
+		t.Fatalf("metadata or new observation lost: %+v", snapshot.Works)
 	}
 }
 
 func TestImportDeliverySeedsGeneratedMetadata(t *testing.T) {
-	delivery := &fakeDeliverySource{works: []domain.Work{{
-		ID: domain.WorkIdentity("workbuddy", "C:\\w\\notes"), Platform: "workbuddy", Name: "notes",
-		Root: "C:\\w\\notes", Kind: domain.WorkKindFolder, Source: domain.WorkSourceJSON,
-		Attitude: domain.AttitudeContinue, Handoff: domain.WorkHandoff{Content: "generated guide"},
-	}}}
-	sink := &fakeEventSink{}
-	s := NewWorksService(newFakeWorksRepo(), &fakeScanSource{}, delivery, sink, WorksServiceOptions{Clock: fixedClock()})
-	snapshot, err := s.ImportWorksDelivery(context.Background(), humanCaller(), WorksDeliveryCommand{Content: []byte(`{"works":[]}`)})
+	service, _, receipts := worksApplication(t)
+	root := workDirectory(t, "", "notes")
+	snapshot, err := service.ImportWorksDelivery(context.Background(), humanCaller(), deliveryInput(t, domain.WorkDeliveryEntry{Name: "notes", Platform: "workbuddy", Path: root, Kind: domain.WorkKindFolder, Attitude: domain.AttitudeContinue, Handoff: "generated guide"}))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,130 +159,136 @@ func TestImportDeliverySeedsGeneratedMetadata(t *testing.T) {
 		t.Fatalf("expected 1 work, got %d", len(snapshot.Works))
 	}
 	work := snapshot.Works[0]
-	if work.Attitude != domain.AttitudeContinue {
-		t.Fatalf("delivered attitude not seeded: %q", work.Attitude)
+	if work.Attitude != domain.AttitudeContinue || work.Handoff.Source != domain.HandoffSourceGenerated || work.Handoff.Content != "generated guide" || work.Files.Verified {
+		t.Fatalf("delivery metadata/uncertainty lost: %+v", work)
 	}
-	if work.Handoff.Source != domain.HandoffSourceGenerated || work.Handoff.Content != "generated guide" {
-		t.Fatalf("delivered handoff not marked generated: %+v", work.Handoff)
-	}
-	if work.Files.Verified {
-		t.Fatal("JSON-delivered work must not be marked file-verified")
-	}
-	if len(sink.events) != 1 || sink.events[0].Kind != domain.WorkEventImported {
-		t.Fatalf("expected one imported event, got %+v", sink.events)
+	if rows := workReceipts(t, receipts); len(rows) != 1 || rows[0].Kind != domain.WorkEventImported {
+		t.Fatalf("import event lost: %+v", rows)
 	}
 }
 
 func TestSetWorkHandoffUpdatesTimestamp(t *testing.T) {
-	repo := newFakeWorksRepo()
-	scan := &fakeScanSource{works: []domain.Work{scanWork("codex", "app", "C:\\w\\app")}}
-	s := NewWorksService(repo, scan, &fakeDeliverySource{}, nil, WorksServiceOptions{Clock: fixedClock()})
-	if _, err := s.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{}); err != nil {
-		t.Fatal(err)
-	}
-	id := domain.WorkIdentity("codex", "C:\\w\\app")
-	work, err := s.SetWorkHandoff(context.Background(), humanCaller(), id, WorkHandoffCommand{Content: "manual notes"})
+	service, _, _ := worksApplication(t)
+	first := refreshWorks(t, service, workDirectory(t, "codex", "app"))
+	work, err := service.SetWorkHandoff(context.Background(), humanCaller(), first.Works[0].ID, app.WorkHandoffCommand{Content: "manual notes"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if work.Handoff.Source != domain.HandoffSourceHuman || work.Handoff.UpdatedAt == nil {
-		t.Fatalf("handoff not marked human with timestamp: %+v", work.Handoff)
+	if work.Handoff.Source != domain.HandoffSourceHuman || work.Handoff.UpdatedAt == nil || work.Handoff.Content != "manual notes" {
+		t.Fatalf("manual handoff lost: %+v", work.Handoff)
 	}
 }
 
 func TestSetWorkMetadataRevisionConflict(t *testing.T) {
-	repo := newFakeWorksRepo()
-	scan := &fakeScanSource{works: []domain.Work{scanWork("codex", "app", "C:\\w\\app")}}
-	s := NewWorksService(repo, scan, &fakeDeliverySource{}, nil, WorksServiceOptions{Clock: fixedClock()})
-	if _, err := s.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{}); err != nil {
+	service, _, _ := worksApplication(t)
+	first := refreshWorks(t, service, workDirectory(t, "codex", "app"))
+	id := first.Works[0].ID
+	if _, err := service.SetWorkAttitude(context.Background(), humanCaller(), id, app.WorkAttitudeCommand{Attitude: domain.AttitudeDone}); err != nil {
 		t.Fatal(err)
 	}
-	id := domain.WorkIdentity("codex", "C:\\w\\app")
-	if _, err := s.SetWorkAttitude(context.Background(), humanCaller(), id, WorkAttitudeCommand{Attitude: domain.AttitudeDone}); err != nil {
-		t.Fatal(err)
-	}
-	// Stale revision must be rejected, not overwritten.
-	if _, err := s.SetWorkAttitude(context.Background(), humanCaller(), id, WorkAttitudeCommand{ExpectedRevision: 0, Attitude: domain.AttitudePark}); err == nil {
-		t.Fatal("stale revision must conflict")
+	_, err := service.SetWorkAttitude(context.Background(), humanCaller(), id, app.WorkAttitudeCommand{ExpectedRevision: 0, Attitude: domain.AttitudePark})
+	var failure *apierrors.ServiceError
+	if !errors.As(err, &failure) || failure.Code != apierrors.VersionConflict {
+		t.Fatalf("stale metadata must conflict: %v", err)
 	}
 }
 
 func TestWorksEventsDoNotInventHumanAttention(t *testing.T) {
-	repo := newFakeWorksRepo()
-	scan := &fakeScanSource{works: []domain.Work{scanWork("codex", "app", "C:\\w\\app")}}
-	sink := &fakeEventSink{}
-	delivery := &fakeDeliverySource{works: []domain.Work{scanWork("claude", "other", "C:\\w\\other")}}
-	s := NewWorksService(repo, scan, delivery, sink, WorksServiceOptions{Clock: fixedClock()})
-	ctx := context.Background()
-	if _, err := s.RefreshWorks(ctx, humanCaller(), WorksRefreshCommand{}); err != nil {
+	service, _, receipts := worksApplication(t)
+	first := refreshWorks(t, service, workDirectory(t, "codex", "app"))
+	rows := workReceipts(t, receipts)
+	if len(rows) != 1 || rows[0].Source != domain.WorkEventSourceMachine || rows[0].Topic != "" {
+		t.Fatalf("machine refresh invented human topic: %+v", rows)
+	}
+	if _, err := service.ListWorks(context.Background(), humanCaller()); err != nil {
 		t.Fatal(err)
 	}
-	if len(sink.events) != 1 || sink.events[0].Source != domain.WorkEventSourceMachine || sink.events[0].Topic != "" {
-		t.Fatalf("refresh must be machine observation with unknown topic: %+v", sink.events)
+	if len(workReceipts(t, receipts)) != 1 {
+		t.Fatal("GET emitted new event")
 	}
-	sink.events = nil
-	if _, err := s.ListWorks(ctx, humanCaller()); err != nil {
-		t.Fatal(err)
-	}
-	if len(sink.events) != 0 {
-		t.Fatal("GET must not emit events")
-	}
-	if _, err := s.ImportWorksDelivery(ctx, humanCaller(), WorksDeliveryCommand{Content: []byte(`{"works":[]}`)}); err != nil {
-		t.Fatal(err)
-	}
-	if len(sink.events) != 1 || sink.events[0].WorkID != delivery.works[0].ID {
-		t.Fatalf("import must not emit unrelated cached works: %+v", sink.events)
-	}
-	sink.events = nil
-	work, err := s.SetWorkGroup(ctx, humanCaller(), scan.works[0].ID, WorkGroupCommand{Group: "research"})
+	root := workDirectory(t, "", "other")
+	imported, err := service.ImportWorksDelivery(context.Background(), humanCaller(), deliveryInput(t, domain.WorkDeliveryEntry{Name: "other", Platform: "claude", Path: root}))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(sink.events) != 1 || sink.events[0].Kind != domain.WorkEventGroupSet {
-		t.Fatalf("group must not become attitude approval: %+v", sink.events)
+	rows = workReceipts(t, receipts)
+	if len(rows) != 2 || rows[1].WorkID != domain.WorkIdentity("claude", root) || rows[1].Kind != domain.WorkEventImported || len(imported.Works) != 2 {
+		t.Fatalf("import emitted unrelated cached work: %+v", rows)
 	}
-	if _, err := s.SetWorkHandoff(ctx, humanCaller(), work.ID, WorkHandoffCommand{ExpectedRevision: work.Revision, Content: "human guide"}); err != nil {
+	work, err := service.SetWorkGroup(context.Background(), humanCaller(), first.Works[0].ID, app.WorkGroupCommand{Group: "research"})
+	if err != nil {
 		t.Fatal(err)
 	}
-	for _, event := range sink.events {
-		if event.Topic != "" {
-			t.Fatalf("platform is not a cognitive topic: %+v", event)
+	rows = workReceipts(t, receipts)
+	if len(rows) != 3 || rows[2].Kind != domain.WorkEventGroupSet {
+		t.Fatalf("group became approval: %+v", rows)
+	}
+	if _, err = service.SetWorkHandoff(context.Background(), humanCaller(), work.ID, app.WorkHandoffCommand{ExpectedRevision: work.Revision, Content: "human guide"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, row := range workReceipts(t, receipts) {
+		if row.Topic != "" {
+			t.Fatalf("platform became topic: %+v", row)
 		}
+	}
+	signals, err := receipts.ListSignals(context.Background(), 0, math.MaxInt64)
+	if err != nil || len(signals) != 0 {
+		t.Fatalf("work metadata created cognitive signals: %+v %v", signals, err)
 	}
 }
 
 func TestWorksScanVerifiesExistingDeliveryWithoutInventingPlatform(t *testing.T) {
-	repo := newFakeWorksRepo()
-	root := "C:\\w\\delivered"
-	delivered := domain.Work{ID: domain.WorkIdentity("codex", root), Platform: "codex", Root: root, Name: "human title", Kind: domain.WorkKindFolder, Source: domain.WorkSourceJSON}
-	repo.snapshot = domain.WorksSnapshot{Works: []domain.Work{delivered}}
-	repo.metadata[delivered.ID] = domain.WorkHumanMetadata{Attitude: domain.AttitudePark, Handoff: domain.WorkHandoff{Content: "manual guide", Source: domain.HandoffSourceHuman}, Revision: 1}
-	scan := &fakeScanSource{works: []domain.Work{scanWork("unknown", "folder name", root)}}
-	service := NewWorksService(repo, scan, nil, nil, WorksServiceOptions{})
-	snapshot, err := service.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{Roots: []string{root}})
+	service, _, _ := worksApplication(t)
+	root := workDirectory(t, "", "delivered")
+	snapshot, err := service.ImportWorksDelivery(context.Background(), humanCaller(), deliveryInput(t, domain.WorkDeliveryEntry{Name: "human title", Platform: "codex", Path: root}))
 	if err != nil {
 		t.Fatal(err)
 	}
+	delivered := snapshot.Works[0]
+	work, err := service.SetWorkAttitude(context.Background(), humanCaller(), delivered.ID, app.WorkAttitudeCommand{Attitude: domain.AttitudePark})
+	if err != nil {
+		t.Fatal(err)
+	}
+	work, err = service.SetWorkHandoff(context.Background(), humanCaller(), delivered.ID, app.WorkHandoffCommand{ExpectedRevision: work.Revision, Content: "manual guide"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	snapshot = refreshWorks(t, service, root)
 	if len(snapshot.Works) != 1 {
-		t.Fatalf("verification invented another platform work: %+v", snapshot.Works)
+		t.Fatalf("scan invented another platform work: %+v", snapshot.Works)
 	}
 	got := snapshot.Works[0]
-	if got.ID != delivered.ID || got.Platform != "codex" || got.Source != domain.WorkSourceJSON || got.Name != delivered.Name || !got.Files.Verified || got.Attitude != domain.AttitudePark || got.Handoff.Content != "manual guide" || got.Revision != 1 {
-		t.Fatalf("scan lost provenance/metadata: %+v", got)
+	if got.ID != delivered.ID || got.Platform != "codex" || got.Source != domain.WorkSourceJSON || got.Name != delivered.Name || !got.Files.Verified || got.Attitude != domain.AttitudePark || got.Handoff.Content != "manual guide" || got.Revision != work.Revision {
+		t.Fatalf("provenance/metadata lost: %+v", got)
 	}
 }
 
 func TestWorksFailedRootNoLongerClaimsCurrentVerification(t *testing.T) {
-	repo := newFakeWorksRepo()
-	root := "C:\\w\\unavailable"
-	repo.snapshot = domain.WorksSnapshot{Works: []domain.Work{scanWork("codex", "app", root)}}
-	scan := &fakeScanSource{failures: []domain.WorkDiscoveryFailure{{Root: root, Reason: "root_unavailable"}}}
-	service := NewWorksService(repo, scan, nil, nil, WorksServiceOptions{})
-	snapshot, err := service.RefreshWorks(context.Background(), humanCaller(), WorksRefreshCommand{Roots: []string{root}})
-	if err != nil {
+	service, _, _ := worksApplication(t)
+	root := workDirectory(t, "codex", "app")
+	refreshWorks(t, service, root)
+	// 实际移动本次自有根，使原授权路径失效；保留全部文件作为证据。
+	if err := os.Rename(root, root+"-unavailable"); err != nil {
 		t.Fatal(err)
 	}
+	snapshot := refreshWorks(t, service, root)
 	if snapshot.Status != "partial" || len(snapshot.Works) != 1 || snapshot.Works[0].Files.Verified || snapshot.Works[0].Files.Reason != "root_unavailable" {
-		t.Fatalf("failed observation masquerades as verified: %+v", snapshot)
+		t.Fatalf("missing root claims current verification: %+v", snapshot)
+	}
+}
+
+func TestWorksMalformedScanReturnsFailureAndPreservesStaleCache(t *testing.T) {
+	service, _, _ := worksApplication(t)
+	root := workDirectory(t, "codex", "app")
+	refreshWorks(t, service, root)
+	if err := os.WriteFile(filepath.Join(root, ".astrocyte-works.json"), []byte("{"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.RefreshWorks(context.Background(), humanCaller(), app.WorksRefreshCommand{Roots: []string{root}}); err == nil {
+		t.Fatal("provided malformed marker became successful refresh")
+	}
+	cached, err := service.ListWorks(context.Background(), humanCaller())
+	if err != nil || cached.Status != "stale" || len(cached.Works) != 1 || len(cached.Failures) != 1 {
+		t.Fatalf("stale original cache lost: %+v %v", cached, err)
 	}
 }

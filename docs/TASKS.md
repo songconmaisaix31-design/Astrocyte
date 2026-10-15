@@ -3,6 +3,8 @@
 版本：v0.1　日期：2026-10-09　对应规格：Workbench_DDD_Spec_v0.1
 用途：把规格第 19 节的切片 S0–S6 展开为可交给多个 Agent 并行执行的任务清单。
 
+当前执行方式以 [AGENTS.md](../AGENTS.md) 为准；本文件中的阶段日期、fixture 和轨道人数是历史规划。当前任务入口见 [STATUS.md](../STATUS.md) 与 [新标准整合任务](../tasks/AGENTS-standard-integration.md)。新开发和整改采用实际接口与获准来源验收，不沿用历史 mock 或虚假数据要求。
+
 ---
 
 ## 0 规划前提与并行原则
@@ -43,7 +45,7 @@
 | W6 | Agent 适配器与 MCP | `internal/adapters/agent`、`internal/adapters/mcp`、共享工具服务 | G1、P0 探测 | 1–2 |
 | W7 | 存储与基础设施 | `internal/adapters/sqlite`、对象存储、作业队列、outbox、迁移 | G1 | 1–2 |
 | W8 | 前端与设计系统 | `web/src`（导航/查询层/设计变量/三页） | G1、OpenAPI | 2（可按下沉/工作区/蜂群分页） |
-| W9 | 质量与验收 | Playwright、AT 场景自动化、fixture、验收目录 | 各切片 | 1 |
+| W9 | 质量与验收 | Playwright、AT 场景自动化、实际接口与验收目录 | 各切片 | 1 |
 
 ---
 
@@ -82,8 +84,8 @@
   - 目标：`state.sqlite` 布局、按上下文前缀建表、依赖检查入口
   - 可改路径：`internal/adapters/sqlite`、`migrations/`
   - 验收：Domain 无 I/O、上下文无循环、传输层不访问 SQL
-- **P0-04 三页 fixture** ｜W8
-  - 目标：资料沉淀页/共同工作区页/蜂群执行页骨架 + fixture
+- **P0-04 三页实际接口交互** ｜W8
+  - 目标：资料沉淀页/共同工作区页/蜂群执行页与实际 Service 交互
   - 可改路径：`web/src`
   - 验收：1920×1080、1280×720、键盘路径；loading/empty/error/stale/disabled 齐备
 - **P0-05 探测：Agent 原生能力矩阵** ｜W6
@@ -95,7 +97,7 @@
   - 验收：选型报告 + 索引 generation/digest 方案
 - **P0-07 探测：视频总结工具导出样本** ｜W1
   - 目标：取得真实导出样本，锁定格式/来源/时间戳字段
-  - 验收：样本 + 字段映射；不足则先建 fixture，不冒充真实导入
+  - 验收：真实样本与字段映射；缺少获准样本时保持 NOT_RUN
 - **P0-08 探测：AOCI/CodeGraph 版本与许可** ｜W5
   - 目标：固定版本、核对 FSL-1.1-MIT 分发条件、验证 worktree 隔离与增量更新
 - **P0-09 探测：Laya ONNX 模型包** ｜W4
@@ -218,16 +220,25 @@
 
 ## 4 依赖图与关键路径
 
-```
-P0-01 基座 → P0-02 契约冻结(G1) ─┬→ P1-01..04 (Attention) → P1-05/07
-                                 ├→ P0-03 存储 → (各上下文 Repository/表)
-                                 ├→ P0-04 三页 fixture → W8 各页
-                                 └→ W2-01 Workspace Domain → P2-03 提案批准
-P0-05 能力探测 ─────────────────────────→ P3-05 两种接续
-P2-03 批准 → P2-05 桥接(G2) → P3-02 CreateMission → P3-03 Claim → P3-04 Submit
-                                              → P3-05 接续 → P3-06 MCP → P3-08 真实样例
-P2-03 批准边界 ─────────────────────────→ W5/W4 适配器不得绕过
-P3 基础账本 → P4/P5 扩展
+```mermaid
+flowchart TD
+    Base["P0-01 基座"] --> Contract["P0-02 契约冻结 G1"]
+    Contract --> Attention["P1-01 至 P1-04 Attention"]
+    Attention --> Material["P1-05 / P1-07"]
+    Contract --> Storage["P0-03 存储与各上下文 Repository"]
+    Contract --> UI["P0-04 三页实际接口交互"]
+    Contract --> Workspace["W2-01 Workspace Domain"]
+    Workspace --> Approval["P2-03 提案批准"]
+    Approval --> Bridge["P2-05 桥接 G2"]
+    Bridge --> Mission["P3-02 CreateMission"]
+    Mission --> Claim["P3-03 Claim"]
+    Claim --> Submit["P3-04 Submit"]
+    Submit --> Resume["P3-05 接续"]
+    Probe["P0-05 能力探测"] --> Resume
+    Resume --> MCP["P3-06 MCP"]
+    MCP --> Example["P3-08 真实样例"]
+    Approval --> Adapters["W5 / W4 适配器批准边界"]
+    Ledger["P3 基础账本"] --> Extension["P4 / P5 扩展"]
 ```
 
 **关键路径（决定总工期）：**

@@ -32,3 +32,17 @@ Focus拼接历史safe A(t)与每次成功快照取得的确证节点标量点，
 开发周期D1快照/Today、D2Focus/Agents、D3Evidence/部署；可在一次会话推进全部实现，时间验收仍按真实日期。validation分支、V4协议/日程/参数/正式库零修改；v0.2仍冻结。解冻后validation与本分支统一向主线收敛，一次合并；当前不向main合并。
 
 2026-10-13T16:22+08:00：旧backend task634f/ctxe5a和frontend task1ec/ctx446已按scope_replaced_by_user失败结算，WIP SOURCE0fa17aa6/REPORT3b123fcd与SOURCEf9477f46/REPORT7335ce54均已push并独立核对clean；不算实现失败或验收通过，不进入新分支。原owner/工作树/终端复用为backend branch workbench/v0.1-backend task8922bfc4a097/ctx607328b4cef6，frontend branch workbench/v0.1-frontend task0e13b2d2c00e/ctx8e65c15392e9。换branch后首次preflight agent_unconfigured拒绝未建立新Task/Dispatch；再次派发输入已接受但turn_start_unobserved原回执保留。实读屏幕确认文本停在composer，各仅一次bare Enter提交，backend已观察Working；不重发任务或启重复owner。实际生成器目标schema.d.ts已校正写域，旧schema.ts计划名不创建。
+## Backlog（研究情报登记，2026-10-14）
+
+本文件既有正文从协调分支 `workbench/v0.1-workbench` 的 `438f50ec318888badcab6febf23c0ca71851afe2` 原样带入本次文档分支；该正文与集成提交 `c5da66724d22455fbbf376c2516f91c4bef63d5c` 中的版本逐字节一致。上文定稿条款保留；本节仅登记未来工作，不启动实现或提升 v0.1 验收状态。后续合流只应用本追加节。
+
+### Agents 视图 v0.2 增强：协作图
+
+- 目标：事件流按 scope 共现恢复 Agent 协作结构，呈现谁与谁在同 scope 工作、重复劳动候选和瓶颈节点候选，供定位协作问题。
+- 依据：[Xinwen Liu 等，Beihang University，2026-10-07，arXiv:2610.10126v1](https://arxiv.org/abs/2610.10126v1)，*Know the Shape, Find the Fault: Topology-Conditioned Diagnosis of Multi-Agent LLM Failures*（MAScope）。拓扑是诊断变量，不仅是性能参数。
+- 范围：纯消费层扩展、零引擎改动，在 workbench v0.2 窗口实施；复用现有快照、只读 API 与六字段事件投影，不增加采集或放宽隐私边界。
+- 证据语义：scope 共现只构成协作线索，不直接等同消息通信、重复劳动或瓶颈事实。图上关联须可回溯到 event_id；重复劳动和瓶颈结论须有额外任务 / 时间证据，缺证据时显示为候选。
+- 身份限制：当前 Agents 按 source 分组，事件六字段中没有独立 Worker 身份；不得把 source 类别当成单个 Agent，尤其不能把 manual 当成人类身份。开工前核对已有获准消费数据是否能关联 Worker；不足时保留“身份未知”，真实逐 Worker 协作图验收保持未通过，不新增引擎字段凑图。
+- 窗口入口：先核对可用数据和判定口径，再在 v0.2 任务书裁决具体消费写域与验收；本登记不占用 v0.1 backend / frontend / integration 的开发 write_paths。
+
+关联：[能力板任务书草案](v0.3-capability-board.md)、[研究叙事素材](../docs/narrative/research-alignment.md)。本节不使用论文数值作为项目指标。

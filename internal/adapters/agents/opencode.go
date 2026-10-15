@@ -24,49 +24,21 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-// opencodeDenyPermission denies every tool explicitly. It is written into the
-// owned config and, as OPENCODE_PERMISSION, merged last by config.ts after
-// managed/well-known/account config. `*` alone is not enough because a deep
-// merge does not erase an inherited specific read/bash allow, so each named key
-// is denied too. Agent-specific permission rules (agent rules take precedence)
-// from a managed/well-known source are still not guaranteed overridden: this
-// adapter never claims that residual path is suppressed and stays fail-closed
-// (Configured=unknown, no model readiness claimed).
+// 自有配置与最后合并的环境权限逐项禁止工具，会话权限继续独立核查。
 const opencodeDenyPermission = `{"*":"deny","read":"deny","edit":"deny","bash":"deny","glob":"deny","grep":"deny","webfetch":"deny","websearch":"deny","task":"deny","skill":"deny","lsp":"deny","question":"deny","external_directory":"deny","doom_loop":"deny"}`
 
-// opencodePermissionRule is the session permission ruleset entry from the
-// official 1.18.35 v2 SDK: SessionCreateData/SessionUpdateData accept
-// permission: PermissionRuleset where each rule is {permission, pattern, action}.
+// 官方 1.18.35 SessionCreateData/SessionUpdateData 的 permission 规则。
 type opencodePermissionRule struct {
 	Permission string `json:"permission"`
 	Pattern    string `json:"pattern"`
 	Action     string `json:"action"`
 }
 
-// opencodeSessionDenyPermission is written into the POST /session body. The
-// prompt/tools/processor paths merge the session ruleset AFTER the agent
-// permission (Permission.merge(agent.permission, session.permission ?? [])) and
-// evaluate with findLast, so this last deny rule overrides any agent-specific
-// allow inherited from config or managed/well-known sources. A single wildcard
-// rule is sufficient here because findLast is order-based, unlike the config
-// OPENCODE_PERMISSION deep-merge that needs per-key denies.
+// 会话规则最后合并，准确的末尾通配 deny 规则禁止所有工具。
 var opencodeSessionDenyPermission = []opencodePermissionRule{{Permission: "*", Pattern: "*", Action: "deny"}}
 
-// opencodeNative drives `opencode serve` over loopback HTTP with Basic auth.
-// It is a distinct session driver from the stdio JSON-RPC Native adapter: the
-// protocol, process lifecycle and event decoding differ, while the ownership,
-// positive-stop and unknown-delivery disciplines are shared by construction.
-//
-// Selected-context isolation is established by launching the server with
-// OPENCODE_CONFIG_DIR pointing at a controller-owned empty config directory, so
-// the user's global AGENTS.md, MCP servers, plugins and instructions are not
-// loaded; `--pure` + OPENCODE_DISABLE_DEFAULT_PLUGINS suppress external and
-// default plugins, and a written `permission: deny` config blocks every tool.
-// Native provider authentication remains read by the CLI itself and is never
-// copied, exported or logged. This does not redirect the platform-managed
-// config directory (e.g. `%ProgramData%\opencode`) or well-known/account remote
-// config, which can still declare MCP/plugins; permission deny still blocks
-// their tool use, and this adapter never claims those sources are suppressed.
+// 固定版本的实际 OpenCode 使用自有来源目录及带 Basic auth 的 loopback HTTP。
+// 原宿主 auth、配置和历史不读取、不复制；当前模型保持未知。
 type opencodeNative struct {
 	mu            sync.Mutex
 	id, stateRoot string
@@ -113,10 +85,7 @@ func (n *opencodeNative) observed(capability string) {
 	n.capabilities[capability] = domain.CapabilityObservation{Status: "supported", Reason: "owned_native_protocol_succeeded", CheckedAt: &now}
 }
 
-// snapshot renders the registry observation for this adapter. Configured stays
-// unknown: OpenCode does not report its current model before a paid turn, and
-// the selected-text processing path requires that observation, so it remains
-// gated rather than invented.
+// 当前模型在付费轮次前没有原生观察，Configured 保持 unknown。
 func (n *opencodeNative) snapshot() domain.LocalAgent {
 	caps := n.Capabilities()
 	item := domain.LocalAgent{
@@ -155,8 +124,7 @@ func (n *opencodeNative) get(s domain.NativeSession) (*opencodeProcess, error) {
 }
 
 func (n *opencodeNative) Discover(ctx context.Context, p domain.LocalProject) ([]domain.NativeSession, error) {
-	// No verified OpenCode history-header scope protocol; global session listing
-	// would read private history without a registered root.
+	// 历史来源范围协议尚未核实，拒绝读取宿主全局历史。
 	return nil, nativeError(apierrors.UnsupportedCapability, "this CLI history header scope protocol has not been verified")
 }
 
@@ -197,7 +165,7 @@ func (n *opencodeNative) start(ctx context.Context, r domain.NativeRequest, resu
 	s.Mode = "native"
 	s.Status = "starting"
 	s.StopConfirmed = false
-	s.Limitations = []string{"cooperative native CLI; no operating-system read isolation guarantee", "tools denied by permission:deny; user global config isolated via empty OPENCODE_CONFIG_DIR", "platform-managed and well-known remote config are not redirected and may still declare MCP/plugins", "existing external sessions are not taken over", "current model is not reported before a paid turn"}
+	s.Limitations = []string{"cooperative native CLI; no operating-system read isolation guarantee", "owned home/config/data/state/cache/temp/managed sources; no host authentication inherited", "tools denied by owned config and verified session permission", "existing external sessions are not taken over", "current model is not reported before a paid turn"}
 	n.mu.Lock()
 	existing, ok := n.processes[s.ID]
 	n.mu.Unlock()
@@ -242,16 +210,14 @@ func (n *opencodeNative) start(ctx context.Context, r domain.NativeRequest, resu
 	n.mu.Unlock()
 
 	fail := func(err error) (domain.NativeSession, error) {
-		_ = p.stop(context.Background())
+		stopErr := p.stop(context.Background())
 		s.Status = "unknown"
 		s.StopConfirmed = p.observe().StopConfirmed
-		return s, err
+		return s, errors.Join(err, stopErr)
 	}
 	var sessionID string
 	if resume {
-		// Same-native-ID resume: the original session is loaded by its opaque ID
-		// from OpenCode's persisted state and messaging continues against it. A
-		// new session would silently change the native identity.
+		// 从自有持久目录读取原生 ID，恢复时保持同一会话身份。
 		sessionID = r.Session.NativeID
 		if err := p.verifySession(ctx, sessionID); err != nil {
 			return fail(err)
@@ -261,8 +227,7 @@ func (n *opencodeNative) start(ctx context.Context, r domain.NativeRequest, resu
 		if err != nil {
 			return fail(err)
 		}
-		// Fail-closed before any message: confirm the session really carries the
-		// deny-all permission ruleset so an inherited agent allow cannot survive.
+		// 发送前核实实际会话返回的 deny 规则。
 		if err := p.verifySession(ctx, sessionID); err != nil {
 			return fail(err)
 		}
@@ -345,7 +310,7 @@ func (n *opencodeNative) Observe(ctx context.Context, s domain.NativeSession) (d
 	return p.observe(), nil
 }
 
-// opencodeProcess owns one `opencode serve` subprocess and its HTTP client.
+// 每个实例持有一个实际 serve 子进程及其 HTTP 客户端。
 type opencodeProcess struct {
 	mu         sync.Mutex
 	cmd        *exec.Cmd
@@ -396,7 +361,7 @@ func (p *opencodeProcess) addEvent(kind, text string) {
 	p.events = append(p.events, domain.NativeEvent{Sequence: p.sequence, Kind: kind, Text: text})
 }
 
-func (p *opencodeProcess) do(ctx context.Context, method, path string, body any) ([]byte, int, error) {
+func (p *opencodeProcess) do(ctx context.Context, method, path string, body any) (data []byte, status int, err error) {
 	var reader io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -417,17 +382,18 @@ func (p *opencodeProcess) do(ctx context.Context, method, path string, body any)
 	if err != nil {
 		return nil, 0, err
 	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(io.LimitReader(resp.Body, 2*1024*1024))
+	defer func() { err = errors.Join(err, resp.Body.Close()) }()
+	data, err = io.ReadAll(io.LimitReader(resp.Body, 2*1024*1024+1))
 	if err != nil {
 		return nil, resp.StatusCode, err
+	}
+	if len(data) > 2*1024*1024 {
+		return nil, resp.StatusCode, nativeError(apierrors.BudgetExhausted, "OpenCode response exceeds the bounded native window")
 	}
 	return data, resp.StatusCode, nil
 }
 
-// createSession POSTs /session with the deny-all permission ruleset and returns
-// the server-assigned session ID, which is the opaque native identity reused for
-// resume and read.
+// 创建会话时提交 deny 规则，后续读取和恢复均使用服务返回的原生 ID。
 func (p *opencodeProcess) createSession(ctx context.Context, title string) (string, error) {
 	data, status, err := p.do(ctx, http.MethodPost, "/session", map[string]any{"title": title, "permission": opencodeSessionDenyPermission})
 	if err != nil {
@@ -445,10 +411,7 @@ func (p *opencodeProcess) createSession(ctx context.Context, title string) (stri
 	return session.ID, nil
 }
 
-// verifySession loads an existing session by its opaque native ID so a resume
-// continues the same session rather than silently creating a new one, and
-// fail-closes unless the session carries the deny-all permission ruleset. If the
-// server dropped or overrode the deny rule, no message is ever sent.
+// 核实同一原生 ID 与实际末尾 deny 规则，缺失即拒绝发送。
 func (p *opencodeProcess) verifySession(ctx context.Context, sessionID string) error {
 	data, status, err := p.do(ctx, http.MethodGet, "/session/"+sessionID, nil)
 	if err != nil {
@@ -467,11 +430,7 @@ func (p *opencodeProcess) verifySession(ctx context.Context, sessionID string) e
 	if json.Unmarshal(data, &session) != nil || session.ID != sessionID {
 		return nativeError(apierrors.ScopeDenied, "native session identity differs")
 	}
-	// The controller creates a session with exactly one deny-all rule, so the
-	// echoed permission array must be non-empty and end with the exact wildcard
-	// deny. A trailing rule (e.g. a specific read allow) would win under the
-	// server's last-match evaluation and is rejected; this check does not
-	// simulate the permission algorithm, it only asserts the owned trailing rule.
+	// 末尾规则按原生 findLast 语义生效，必须准确禁止全部 permission/pattern。
 	if len(session.Permission) == 0 {
 		return nativeError(apierrors.ScopeDenied, "session permission is empty; refusing to send")
 	}
@@ -482,9 +441,7 @@ func (p *opencodeProcess) verifySession(ctx context.Context, sessionID string) e
 	return nil
 }
 
-// sendMessage POSTs /session/:id/message and waits for the synchronous reply.
-// The returned text is the assistant reply; tool use is denied by the isolated
-// permission config, so a text-only reply is the expected shape.
+// 同步发送明确消息，模型与 provider 只从实际回复记录。
 func (p *opencodeProcess) sendMessage(ctx context.Context, sessionID, message string) (string, error) {
 	body := map[string]any{"parts": []map[string]any{{"type": "text", "text": message}}}
 	data, status, err := p.do(ctx, http.MethodPost, "/session/"+sessionID+"/message", body)
@@ -497,6 +454,20 @@ func (p *opencodeProcess) sendMessage(ctx context.Context, sessionID, message st
 	if status < 200 || status >= 300 {
 		return "", nativeError(apierrors.ProviderUnavailable, "OpenCode server rejected the message")
 	}
+	text, model, provider, err := decodeOpencodeReply(data)
+	if err != nil {
+		return "", err
+	}
+	if model != "" {
+		p.mu.Lock()
+		p.model, p.provider, p.observedAt = model, provider, time.Now()
+		p.mu.Unlock()
+	}
+	return text, nil
+}
+
+// 回复投影只解析明确提供的 JSON，不建立模型或交付事实。
+func decodeOpencodeReply(data []byte) (string, string, string, error) {
 	var reply struct {
 		Info struct {
 			Role       string `json:"role"`
@@ -509,12 +480,7 @@ func (p *opencodeProcess) sendMessage(ctx context.Context, sessionID, message st
 		} `json:"parts"`
 	}
 	if json.Unmarshal(data, &reply) != nil {
-		return "", nativeError(apierrors.EvidenceMissing, "OpenCode message schema is unavailable")
-	}
-	if reply.Info.ModelID != "" {
-		p.mu.Lock()
-		p.model, p.provider, p.observedAt = reply.Info.ModelID, reply.Info.ProviderID, time.Now()
-		p.mu.Unlock()
+		return "", "", "", nativeError(apierrors.EvidenceMissing, "OpenCode message schema is unavailable")
 	}
 	var text strings.Builder
 	for _, part := range reply.Parts {
@@ -522,11 +488,10 @@ func (p *opencodeProcess) sendMessage(ctx context.Context, sessionID, message st
 			text.WriteString(part.Text)
 		}
 	}
-	return text.String(), nil
+	return text.String(), reply.Info.ModelID, reply.Info.ProviderID, nil
 }
 
-// readMessages GETs /session/:id/message and projects the transcript text into
-// bounded native events. It performs no model turn and no state mutation.
+// 读取同一自有会话的消息并投影为有界事件，不发起模型轮次。
 func (p *opencodeProcess) readMessages(ctx context.Context, sessionID string) ([]domain.NativeEvent, error) {
 	data, status, err := p.do(ctx, http.MethodGet, "/session/"+sessionID+"/message", nil)
 	if err != nil {
@@ -569,33 +534,59 @@ func (p *opencodeProcess) stop(ctx context.Context) error {
 	p.mu.Lock()
 	p.stopping = true
 	p.mu.Unlock()
-	// Best-effort graceful abort then dispose; only positive process-tree exit
-	// counts as a confirmed stop.
+	// HTTP 清理失败仍执行进程树停止，并保留所有实际失败。
 	short, cancel := context.WithTimeout(ctx, time.Second)
-	_, _, _ = p.do(short, http.MethodPost, "/session/"+p.nativeID+"/abort", nil)
-	_, _, _ = p.do(short, http.MethodPost, "/instance/dispose", nil)
+	var cleanupErr error
+	paths := []string{"/instance/dispose"}
+	if p.nativeID != "" {
+		paths = append([]string{"/session/" + p.nativeID + "/abort"}, paths...)
+	}
+	for _, path := range paths {
+		_, status, err := p.do(short, http.MethodPost, path, nil)
+		if err == nil && (status < 200 || status >= 300) {
+			err = nativeError(apierrors.ProviderUnavailable, "OpenCode rejected native cleanup")
+		}
+		cleanupErr = errors.Join(cleanupErr, err)
+	}
 	cancel()
 	if err := p.cmd.Cancel(); err != nil && !errors.Is(err, os.ErrProcessDone) {
-		return nativeError(apierrors.DeliveryUnknown, "native process tree stop is unconfirmed")
+		return errors.Join(cleanupErr, nativeError(apierrors.DeliveryUnknown, "native process tree stop is unconfirmed"), err)
 	}
 	select {
 	case <-p.done:
-		return nil
+		return cleanupErr
 	case <-ctx.Done():
-		return ctx.Err()
+		return errors.Join(cleanupErr, ctx.Err())
 	case <-time.After(5 * time.Second):
-		return nativeError(apierrors.DeliveryUnknown, "native process exit is unconfirmed")
+		return errors.Join(cleanupErr, nativeError(apierrors.DeliveryUnknown, "native process exit is unconfirmed"))
 	}
 }
 
-// launch starts an isolated `opencode serve` and waits for its health endpoint.
+// 启动使用完整自有来源的实际进程，并核实健康接口。
 func (n *opencodeNative) launch(ctx context.Context, r domain.NativeRequest, resume bool) (*opencodeProcess, error) {
+	if !filepath.IsAbs(n.stateRoot) || !filepath.IsAbs(r.Project.Root) {
+		return nil, nativeError(apierrors.ProviderUnavailable, "controller native state and project roots must be absolute")
+	}
+	dir := filepath.Join(n.stateRoot, r.Project.ID, n.id, r.SessionID)
+	if !inside(n.stateRoot, dir) || filepath.Clean(dir) == filepath.Clean(n.stateRoot) {
+		return nil, nativeError(apierrors.ScopeDenied, "OpenCode isolation root leaves owned state")
+	}
+	username, password, err := randomBasicAuth()
+	if err != nil {
+		return nil, err
+	}
+	env, err := opencodeIsolationEnv(filepath.Join(dir, "isolated"), username, password)
+	if err != nil {
+		return nil, err
+	}
 	probeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 	probe, err := installedCommand(n.id, []string{"--version"})
 	if err != nil {
 		return nil, err
 	}
+	probe.Env = env
+	probe.Dir = r.Project.Root
 	probeOutput := &boundedOutput{}
 	probe.Stdout = probeOutput
 	probe.Stderr = probeOutput
@@ -611,13 +602,19 @@ func (n *opencodeNative) launch(ctx context.Context, r domain.NativeRequest, res
 			return nil, nativeError(apierrors.ProviderUnavailable, "native version probe failed")
 		}
 	case <-probeCtx.Done():
-		_ = probe.Cancel()
-		<-probeDone
-		return nil, nativeError(apierrors.ProviderUnavailable, "native version probe timed out")
+		cancelErr := probe.Cancel()
+		if errors.Is(cancelErr, os.ErrProcessDone) {
+			cancelErr = nil
+		}
+		waitErr := <-probeDone
+		return nil, errors.Join(nativeError(apierrors.ProviderUnavailable, "native version probe timed out"), probeCtx.Err(), cancelErr, waitErr)
 	}
 	version := versionPattern.FindString(string(probeOutput.bytes))
 	if version == "" {
 		return nil, nativeError(apierrors.EvidenceMissing, "native version was not reported")
+	}
+	if version != "1.18.35" {
+		return nil, nativeError(apierrors.UnsupportedCapability, "OpenCode isolation requires the verified native version 1.18.35")
 	}
 	n.mu.Lock()
 	n.version = version
@@ -638,16 +635,8 @@ func (n *opencodeNative) launch(ctx context.Context, r domain.NativeRequest, res
 	if err != nil {
 		return nil, err
 	}
-	dir := filepath.Join(n.stateRoot, r.Project.ID, n.id, r.SessionID)
-	configDir := filepath.Join(dir, "config")
-	if err := os.MkdirAll(configDir, 0700); err != nil {
-		return nil, err
-	}
+	configDir := filepath.Join(dir, "isolated", "config")
 	if err := os.WriteFile(filepath.Join(configDir, "opencode.json"), []byte(`{"$schema":"https://opencode.ai/config.json","permission":`+opencodeDenyPermission+`}`+"\n"), 0600); err != nil {
-		return nil, err
-	}
-	username, password, err := randomBasicAuth()
-	if err != nil {
 		return nil, err
 	}
 	args := []string{"serve", "--hostname", "127.0.0.1", "--port", port, "--pure"}
@@ -656,9 +645,16 @@ func (n *opencodeNative) launch(ctx context.Context, r domain.NativeRequest, res
 		return nil, err
 	}
 	cmd.Dir = r.Project.Root
-	cmd.Env = opencodeIsolationEnv(configDir, username, password)
-	cmd.Stdout = io.Discard
-	cmd.Stderr = io.Discard
+	cmd.Env = env
+	privateLog, err := os.CreateTemp(dir, "native-process-*.log")
+	if err != nil {
+		return nil, err
+	}
+	cmd.Stderr = privateLog
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, errors.Join(err, privateLog.Close())
+	}
 	processCtx, processCancel := context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
 	process := &opencodeProcess{
 		cmd:      cmd,
@@ -673,13 +669,19 @@ func (n *opencodeNative) launch(ctx context.Context, r domain.NativeRequest, res
 	cleanup, err = startOwnedNative(cmd)
 	if err != nil {
 		processCancel()
-		return nil, err
+		return nil, errors.Join(err, privateLog.Close())
 	}
 	process.cleanup = cleanup
+	announcement := make(chan error, 1)
+	outputDone := make(chan error, 1)
+	go func() { outputDone <- readOpencodeAnnouncement(stdout, privateLog, process.baseURL, announcement) }()
 	go func() {
-		waitErr := cmd.Wait()
+		outputErr := <-outputDone
+		waitErr := errors.Join(outputErr, cmd.Wait())
+		if closeErr := privateLog.Close(); closeErr != nil {
+			waitErr = errors.Join(waitErr, closeErr)
+		}
 		cleanup()
-		processCancel()
 		process.mu.Lock()
 		if waitErr != nil && !process.stopping && process.status != "blocked" && process.status != "completed" {
 			process.status = "failed"
@@ -690,18 +692,30 @@ func (n *opencodeNative) launch(ctx context.Context, r domain.NativeRequest, res
 		}
 		process.mu.Unlock()
 		close(process.done)
+		processCancel()
 	}()
 	go func() {
 		select {
 		case <-processCtx.Done():
-			_ = process.stop(context.Background())
+			if err := process.stop(context.Background()); err != nil {
+				slog.Warn("owned OpenCode lifetime stop failed", "error_code", "native_stop_unconfirmed")
+			}
 		case <-process.done:
 		}
 	}()
-	// Wait for the loopback server to report healthy.
-	if err := waitHealth(ctx, process); err != nil {
-		_ = process.stop(context.Background())
-		return nil, err
+	startup, startupCancel := context.WithTimeout(ctx, 20*time.Second)
+	defer startupCancel()
+	select {
+	case err := <-announcement:
+		if err != nil {
+			return nil, errors.Join(err, process.stop(context.Background()))
+		}
+	case <-startup.Done():
+		return nil, errors.Join(startup.Err(), process.stop(context.Background()))
+	}
+	// 只接受已公布 listener 的实际健康响应，失败先停止本实例再返回原错误。
+	if err := waitHealth(startup, process); err != nil {
+		return nil, errors.Join(err, process.stop(context.Background()))
 	}
 	return process, nil
 }
@@ -729,33 +743,23 @@ func exitCode(err error) int {
 }
 
 func waitHealth(ctx context.Context, p *opencodeProcess) error {
-	deadline := time.Now().Add(20 * time.Second)
-	for {
-		// Bound each probe so a half-open connection cannot stall the whole
-		// launch for the client's full timeout.
-		reqCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
-		data, status, err := p.do(reqCtx, http.MethodGet, "/global/health", nil)
-		cancel()
-		if err == nil && status == http.StatusOK {
-			var health struct {
-				Healthy bool `json:"healthy"`
-			}
-			if json.Unmarshal(data, &health) == nil && health.Healthy {
-				return nil
-			}
-		}
-		select {
-		case <-ctx.Done():
-			return nativeError(apierrors.ProviderUnavailable, "OpenCode server did not become healthy")
-		case <-p.done:
-			return nativeError(apierrors.ProviderUnavailable, "OpenCode server exited before becoming healthy")
-		default:
-		}
-		if time.Now().After(deadline) {
-			return nativeError(apierrors.ProviderUnavailable, "OpenCode server did not become healthy in time")
-		}
-		time.Sleep(100 * time.Millisecond)
+	data, status, err := p.do(ctx, http.MethodGet, "/global/health", nil)
+	if err != nil {
+		return errors.Join(nativeError(apierrors.ProviderUnavailable, "OpenCode health transport failed"), err)
 	}
+	if status != http.StatusOK {
+		return nativeError(apierrors.ProviderUnavailable, "OpenCode health endpoint rejected the request")
+	}
+	var health struct {
+		Healthy bool `json:"healthy"`
+	}
+	if err := json.Unmarshal(data, &health); err != nil {
+		return errors.Join(nativeError(apierrors.EvidenceMissing, "OpenCode health schema is unavailable"), err)
+	}
+	if !health.Healthy {
+		return nativeError(apierrors.ProviderUnavailable, "OpenCode server reported unhealthy")
+	}
+	return nil
 }
 
 func freeLoopbackPort() (string, error) {
@@ -763,9 +767,8 @@ func freeLoopbackPort() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer listener.Close()
 	_, port, err := net.SplitHostPort(listener.Addr().String())
-	return port, err
+	return port, errors.Join(err, listener.Close())
 }
 
 func randomBasicAuth() (string, string, error) {
@@ -778,32 +781,4 @@ func randomBasicAuth() (string, string, error) {
 		return "", "", err
 	}
 	return hex.EncodeToString(usernameBytes), hex.EncodeToString(passwordBytes), nil
-}
-
-// opencodeIsolationEnv keeps the user's provider authentication (read natively
-// by the CLI from its own data/state directories) while replacing the config
-// directory so the user's global AGENTS.md, MCP servers and plugins are not
-// loaded. Inherited OpenCode-specific environment is dropped; unrelated
-// environment (including provider credentials the CLI reads itself) is kept.
-func opencodeIsolationEnv(configDir, username, password string) []string {
-	inherited := os.Environ()
-	out := make([]string, 0, len(inherited)+8)
-	for _, kv := range inherited {
-		key, _, _ := strings.Cut(kv, "=")
-		if strings.HasPrefix(key, "OPENCODE_") || key == "XDG_CONFIG_HOME" {
-			continue
-		}
-		out = append(out, kv)
-	}
-	return append(out,
-		"OPENCODE_CONFIG_DIR="+configDir,
-		"XDG_CONFIG_HOME="+configDir,
-		"OPENCODE_DISABLE_PROJECT_CONFIG=1",
-		"OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=1",
-		"OPENCODE_PURE=1",
-		"OPENCODE_DISABLE_DEFAULT_PLUGINS=1",
-		"OPENCODE_PERMISSION="+opencodeDenyPermission,
-		"OPENCODE_SERVER_USERNAME="+username,
-		"OPENCODE_SERVER_PASSWORD="+password,
-	)
 }

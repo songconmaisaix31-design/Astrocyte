@@ -110,8 +110,31 @@ func TestBuiltCommandStdioPersistence(t *testing.T) {
 		t.Fatalf("state: %+v", state)
 	}
 	explanation := decodeTool[app.FocusExplanation](t, responses[4])
-	if len(explanation.Evidence) != 1 || explanation.Evidence[0].EventID != reported.EventID || explanation.Evidence[0].Strength != 0.1 || !bytes.Equal(explanation.Evidence[0].Original.RawBytes, []byte(raw)) {
-		t.Fatalf("explanation: %+v", explanation)
+	if len(explanation.Evidence) != 1 || explanation.Evidence[0].EventID != reported.EventID || explanation.Evidence[0].Strength != 0.1 || len(explanation.Evidence[0].Original.RawBytes) != 0 {
+		t.Fatal("explanation lost derived evidence or exposed original bytes")
+	}
+	var explanationWire struct {
+		Result struct {
+			Content []struct{ Text string }
+		}
+	}
+	if json.Unmarshal(responses[4], &explanationWire) != nil || len(explanationWire.Result.Content) != 1 {
+		t.Fatal("missing explanation wire payload")
+	}
+	var exposure struct {
+		Evidence []struct {
+			Event map[string]any `json:"event"`
+		}
+	}
+	if json.Unmarshal([]byte(explanationWire.Result.Content[0].Text), &exposure) != nil || len(exposure.Evidence) != 1 {
+		t.Fatal("missing projected original event")
+	}
+	original := exposure.Evidence[0].Event
+	if len(original) != 6 || original["event_id"] != reported.EventID || original["kind"] != "edit_file" || original["topic"] != "fixture-topic" || original["scope"] != "fixture-project" || original["tokens"] != float64(0) || original["ts"] != float64(ts) {
+		t.Fatal("original event is not the six-field derived projection")
+	}
+	if reported.OriginKey != "" || pending.OriginKey != "" {
+		t.Fatal("receipt exposed session-bearing origin metadata")
 	}
 	for _, rejected := range responses[5:] {
 		var response map[string]any

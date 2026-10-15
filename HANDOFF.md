@@ -1,6 +1,16 @@
 # Astrocyte 主控交接
 
-## 当前入口：Works Relay v1.2 实施（2026-10-14）
+## 当前入口：四树集成与组合验证（2026-10-15）
+
+本工作树为 `works-relay-integration`，分支 `songconmaisaix31-design/works-relay-integration`，本轮 clean 起点 `0e5ce82898c3d546f711d1e452dadfabb13b5537`。唯一 I 使用 Orca Codex / gpt-6.1-sol，Task `task_2ee44933df72`、Dispatch `ctx_b573b61bb4aa`；按 M-release 核实的准确阶段来源普通合并，领域冲突由原 B / H 在精确互斥路径处理，全部归还后由 I 继续合并。当前合并和验收结果见 [集成报告](docs/access/integration.md)。
+
+当前顺序为四树收拢与组合验证、集成版 L1 真实验收、L2 经验管道、六步工程首跑，目标日期 2026-10-22。六步涵盖真实结果与完成通道保存、轨迹和产物追溯、Interpreter 起草 quarantine 候选、用户批准、下一任务通过 `get_experiences` 消费、后续结果与实际复用核查。人工批准由用户执行，工程闭环与独立效果实验分别验收。
+
+完成语义为 `verified_complete | user_confirmed_complete`，started 独立记录且永不回填，资源释放独立审计；两种完成通道均可进入经验候选。Astrocyte 管目标、批准和上下文，Works Relay 与 Morphogenesis 分别为执行后端 A / B；同一 Mission 的认领、预算、租约由单一后端独占，自动路由后置 L3。Calls 和权限证据覆盖未答项、正式 V4 / v0.2 冻结及现有 17321 部署保持。
+
+## 2026-10-14 Works Relay 与 Workbench 历史交接
+
+### Works Relay v1.2 实施记录
 
 业务目标workbench/v0.2-access，validation登记定稿a429a4d；[三轨计划](tasks/Works-Relay-plan.md)、[决策与owner](tasks/Works-Relay-decisions.md)。起点9d78835与验收d46业务全等，精确CI38440379678已独立核实success。Orca Run run_d577f0d3fee1由term_d7f7e173协调，R-runtime ctx_fd41ff32f67d、H-http ctx_bcc3677fe29c、F-ui ctx_a7f2a326ff24均observed启动。三轨互斥，root只文档/独验/最终Git；领域返修原owner，最后唯一集成普通no-ff合。Today实时接缝/作品当前状态及非Git范围/参考图与活性窗已问人待答，独立开发继续。V4正式源/引擎/schema/权重/快照管道零改，v0.1 Procmon和真实两日收尾不阻塞本切片；未验事项不填绿。
 
@@ -21,6 +31,92 @@
 先读STATUS顶部与tasks/Workbench-v01.md、Workbench-api.md。交付分支workbench/v0.1-workbench基于attention-engine/v1-20261011，复用现有web/server，不采用已封存独立工程；引擎/schema/validation/V4不动。Orca重启后原两个Task在原工作树续接，backend ctx1f5ae09e7cad、frontend ctxca3e2f3fcf21，均已observed启动；旧中断failed与首RED保留。root只计划/状态/独立验收/最终Git，业务返修归owner。
 
 等待精确SOURCE/REPORT、测试与push后，派唯一集成owner普通no-ff合两轨，领域问题退owner。root最终check/build、真实四视图十值SQL复核及push；当前未集成。快照与所有真实证据仅LOCALAPPDATA/astrocyte-workbench/v0.1，正式源只在线备份读取。00:30两日自动和管理员文件监控未通过，不以手动两次或静态检查替代。当前不合main，按用户裁决解冻后validation与本分支一次收敛。
+### 新标准整改与正式验证历史
+2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
+
+Works Relay v1.2 工程 SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已普通集成，CI 38469944551 双平台 success；L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，采集 / HTTP / Today 组合及真实 CLI 闭环尚未最终验收。Workbench v0.1 已部署，Procmon 与两日自动快照仍 NOT_RUN。当时的正式 validation 工作树未包含这些 Workbench 业务提交，其测试不代表 Workbench 验收。
+
+用户 [Works Relay v1.2 自包含定稿](tasks/Works-Relay-v1.2.md) 已取代旧版；v1.0 缺失和实施窗口问题已关闭。原 R/H/F/I owner 持续负责开发、测试及返修，后续业务仍由唯一集成 owner 普通合并。V4 首日技术完成与 Discovery & Split 冻结状态见下方记录。
+
+2026-10-14：用户 Works Relay v1.1 修订已登记 [tasks/Works-Relay-v1.1.md](tasks/Works-Relay-v1.1.md)，状态 REVISION_REGISTERED_REVIEW_PENDING。完整保留三值终端、单一 store、数据注册 Agent、中性 worktree 换手、人工 intent 与双路径降级及四项增补验收。当前未找到 v1.0，已询问原文与实现窗口；未答不补写剩余条款、不冻结接口、不解除 V4 冻结或启动实现。现有 Works “接力过”仅手册统计，固定 Agent 注册表未达新要求；详见任务内实码基线与待裁决项。业务验收全部 NOT_RUN，本轮只文档。
+
+## V4 验证入口：M6 v3.0
+
+2026-10-14 03:13：用户授权首日恢复已完成。D0=10-13新增84 commits（Astro65/McPet19）、1生产Sleep、正式日快照；4题×3臂12 OK、6事实机判、独立judge OK。A聚合误差0/raw0/1280引用可溯，B各1003完整消息，无重发。原scheduled run df055da3的01:18启动补调度missing-project skip保留；手动run59891a05 completed。同一自动任务原提示词/目标/日程/设置逐项全等，next10-15 00:20。Orca启动rendererReady未等待界面项目加载，skip不是仓库删除；未改安装包门禁，后续真正定时运行待观察。授权两客户端根最新10-10，首日原生事件0，未扩源。根STATUS顶部、tasks/M6-V4-first-day-recovery.md及root-v4-start/automation-recovery-20261014-*-safe.json为证据；人评表v4-w2/day-20261013-first/user-sheet.json待用户独立填写，首个预测于10-17闭日采完10-14..16后成熟。day0/协议SHA不变，不重采本日、不重发已成功模型，不代填人评；v0.2仍冻结。
+
+2026-10-13：v0.2 R01–R12全部获用户裁决并入tasks/v0.2-discovery-split.md v1.1，状态SPEC_FINALIZED_IMPLEMENTATION_FROZEN；tasks/v0.2-discovery-split-review.md登记闭环，tasks/v0.2-discovery-split-plan.md给出四轨互斥精确文件，未派发/未建实现与worktree。零证据seed收养ID/confirmed保留；五项derived仅本地不扩MCP六字段；新FilterSplit不退役父；floor clamp+原始继承、双轨D4、发现.05/.15、veto仅未来回流与永久同版本抑制、三连续Sleep merge、author/事件前human origin、论文去重、基础权重不校准均按正文执行。MergeDurationMS单位以三次每日观测两天跨度172800000绑定，Sleep侧管理连续资格，merge实现不改。不重问下方历史待答；V4协议/日程照旧，真实末D+3及人评/对账完成且冻结解除才D0，不能仅到10-23便开工。
+
+2026-10-13 11:57：已接收v0.2 Discovery & Split任务，冻结期只作评审。任务源tasks/v0.2-discovery-split.md、实码差异与12待定项tasks/v0.2-discovery-split-review.md，状态REVIEW_PENDING_DECISIONS，未启动D0。已集中询问实码冲突，不按未答冻结接口；原V4全文SHA/模型/预算/日程不改，V4真实日流程继续。开工条件是末D+3实际完成与冻结解除，不能仅凭10-23日期启动。不要把下方v0.2规划当本期新能力授权或覆盖V1R原回放。
+
+2026-10-13 04:22 root已实际锁V3，day0=10-13，EXPERIMENT全文SHA256=`5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`，权威外部锁v4-w2/locked-protocol-20261013-first.json。正文UNLOCKED是锁前不可改快照，锁后以此条/STATUS/外部锁为准，不再编辑或重锁。CI SOURCE4727f7a新run38300750305双平台完整SUCCESS（各226PASS/30条件SKIP），只Windows worker2→1；REPORT9f69b06已普通合root组合d749ecb并push，冻结业务/协议全等，原owner已结算/release retained。旧两RED和本机PARTIAL149PASS/17SKIP/90未完成保留，不另重跑模型/测试。内置automation f5e3ee7a-ddfe-4abf-b81c-b55a042ab27b已启用，首10-14 00:20；严格按M6-V4-daily-operation处理昨日，正式根formal-20261013-first，不重新init；七日实际答/用户表/末D+3仍待真实日期，末尾10-23完成并禁用。原B豁免已授权、不重新问；用户原因评分不可代填。下方未锁/disabled/PENDING为历史。
+
+03:51 新eb021891 CI两个完整Windows attempt均资源错误（第二次workspace导航直接ERR_NO_BUFFER_SPACE），原件保留。root限定原集成owner仅Windows CI worker2→1薄配置候选，全部256项/断言/超时/retries=0不变，Linux/业务/实验全不动；执行单M6-V4-ci-repair.md。先本机全套与新精确CI，再root锁SHA/day0/日程启用，当前仍未锁/disabled；不要再盲重试旧run或重发完整B。主组合fb3及rootcheck/build绿保持。
+
+03:38 主组合SOURCEfb3ab575已普通合最终W2/唯一集成REPORT并push，root整仓check/build首次PASS，Python53独立/组合91、Go122适用PASS，冻结域零diff。新精确eb021891 CI38297147723 attempt1 Windows225PASS/30SKIP/1FAIL：论文检索页React资源ERR_NO_BUFFER_SPACE、空白页、按钮30秒timeout；首日志/截图/trace已本机保留，正在同SOURCE全Windows job attempt2，不以定向或旧CI替代。两owner已结算/release retained；协议未锁/day0未开始、Orca内置automation仍禁用。全门禁通过后root锁SHA/真实日期并启用既有日计划；不要重新询B授权/模型或重发强B。
+
+03:20 真实1003消息B完整启动答及root独验PASS：28.859787秒/input491479/output495，完整双通道原序可复原，无工具/compact。root已接受gpt-6.1-sol实际配置身份及ABC共同context872000/output4096/byte5094907；原输入拒绝、schema误判首RED及两feature warnings原件保留，同封存响应复核、无重发。原W2收到最终Handoff正在终稿SOURCE/新CI/REPORT；唯一原集成普通合与rootcheck/build后才锁全文SHA/day0。正式live根v4-w1/formal-20261013-first已生产bridge250事件/1Sleep，不计七日。当前具体证据/剩余读STATUS顶部，禁止用下方历史「豁免待答」「强B未过」重新询问或覆盖实际验收。
+
+02:54 本轮原W2 task1dc790d8/ctx01c78599已live续作，窄scope42测试PASS；获授权后真实完整B首调用被native累计1048576字符上限拒绝，实际1505850字符，4.854573秒/无usage/无模型答。root独证stdin1003人口完整、确定性前置拒绝，首unknown保留追加NOT_SENT，不盲重试；同模型官方上下文接缝调查归原W2。root独立正式库10-12 bridge250事件/1Sleep完成，六节点标量及origin匹配后全JSON与已验prelock全等；独立库内部ID不要求相同。具体源/证据读STATUS最新，协议与day0仍未锁，不能用公共探针替强B。
+
+用户2026-10-13已准予V4 B臂raw定向豁免：仅最近七天聊天、仅锁定gpt-6.1-sol路由、仅外部对照harness，实验结束失效；B输入/响应本机封存，不进产品库/MCP。A/C与产品接口零raw保持。下一步原W2按tasks/M6-V4-raw-exemption.md登记协议、收窄旧ABC笼统授权字符串并执行一次真实满预算B门禁；root只验收/状态/最终锁，唯一原集成普通合。下方豁免待答为历史，不重新索取同意。
+
+02:30 最新组合SOURCE18085f4d已普通合唯一原集成REPORT82eaf6d7，W2 SOURCE5e1822b/REPORT3c758a0及集成SOURCEccdf9bdc全保留；两owner已accepted succeeded/release retained，当前无需等待worker。root整仓check/build首次EXIT0，独立Python79 PASS，冻结域零diff。新CI38289430526精确5e1822b双平台check/build/E2E SUCCESS，Linux race PASS/Windows条件SKIP；主组合业务/配置/协议/测试与此源码全等，仅交接Markdown不同。收尾只更新root文档并skip ci普通push，不借旧CI替代新源码。完整SHA/时间/日志见STATUS顶部。
+
+A分层材料已正式激活，本地SQL误差0/2006引用回溯/raw0；B1003原消息四题全量一致。真实强B仍NOT_SENT/0调用：原raw本地条款与ChatGPT外部处理冲突，用户定向豁免问题尚未答。模型gpt-6.1-sol/A表示/1800秒已定，不重新询问。协议UNLOCKED、共同正式byte预算未接受、day0及七日未开始；收到真实豁免后复用原W2启动一次完整B验收，再root确认预算与全文SHA。保持历史600秒delivery_unknown、Windows首RED和原回放，不预填七日/人评/末D+3。
+
+02:16 原W2本轮工程交付SOURCE5e1822b/最终REPORT3c758a0已push并accepted succeeded/release retained，分层A已正式接线，ABC配置gpt-6.1-sol/native同空cwd、1800秒/无compact/无工具。root精确41测试PASS，三主题SQL/全部2006引用/raw0及1003条B原全文四prompt独验全等。实际B首隐私NOT_SENT/0调用保留；原raw本地令的V4定向外部处理豁免问题用户尚未答，没有强B推理、统一正式byte预算或day0。唯一原集成Task70b3fc50/Dispatchaa81de04正在普通合rootff4ec/W2最终REPORT；新5e CI38289430526仍PENDING，root最终check/build与push随后执行。只读首失败与精确证据见STATUS顶部；不重问已定模型/A。
+
+2026-10-13用户V4启动定案：A全状态排序+explain_focus数值头/kind×日聚合/全部event_id+approved经验；ABC同gpt-6.1-sol同预算，B1800秒。执行单tasks/M6-V4-start.md；原W2继续同写域，root验收，原唯一集成owner普通合。新CI38283687781精确c61c841双平台SUCCESS，旧首RED保留。模型/表示已经决定，不再询问；实际路由、A激活、满预算B和协议终稿仍需验收，当前未锁SHA/day0。
+
+2026-10-13 01:22：V1/V1R用户已PASS关账；V2三主题2006条完整证据资产已普通集成，见`docs/evidence/README.md`；V3工具技术交付PASS，EXPERIMENT仍UNLOCKED，V4未开始。最终组合SOURCE `c61c841d3cf70fc4add5e6768cdaa11d47dd4d32`已push，root完整check/build首次EXIT0、组合Python73/Go122适用PASS，冻结业务域零diff；所有原owner/唯一集成Dispatch已succeeded/release retained，原分支/工作树/RED/unknown保留。具体SHA、日志、独立实证、当前CI限制读STATUS顶部。
+
+当前下一步为真实模型+输入表示选择，不重开V1或新增代码能力。原JSON A221700 tokens超过126976上限；可读无损列候选72890，完整往返/原字段/顺序全等但未激活、长A未跑。B1003完整消息最大装载38条126970，首600秒推理Timeout/delivery_unknown，模型PID已核对停止、文件/原输入保留；未接受强B路由，不盲重试。用户模型/表示问题未答，按用户AGENTS关键节点须先问，不能自行定案/锁协议/起day0。原W2固定experimental工作树/分支/terminal70b809cd承担后续领域修订，root不共写EXPERIMENT或runner；其他owner原终端保留。
+
+新组合CI未出结论；精确4fbea9的旧Windows E2E一例30秒侧栏点击超时原RED保留、Linux全套绿/Windows check-build绿，本机最终源码定向同例1PASS不等于远端全绿。新CI与首RED分开，不能借V1基线双平台绿冒充当前。正式锁后用既有live CLI独立formal库与只读日快照，bridge闭日后接续formal；七日/用户评分/末D+3需要真实时间，不预填报告。
+
+2026-10-13：用户已真实终审PASS并关账V1/V1R，基线3e1f6dae；轨迹三锚点/灰区和50样本kind/绑定/ts人工交叉通过，McPet主样本确认。下方人验PENDING为历史，不能重新索取已给的确认。原回放与132认可残余/849无标/零信号三主题保留。现在并行原W0 V2三主题完整Markdown证据与新W2 V3实验工具链，固定互斥写域见执行单/计划；root只状态/决策/独立验收/最终Git，EXPERIMENT草案在W2派发后由W2独占。实现与真实执行路由验收后锁SHA并day0，不伪造未来七日或提前锁不完整协议。
+
+23:22 V1R已完成并普通集成：组合SOURCEeba5c055，W1 SOURCE7d57/REPORTa954、集成SOURCE298e/REPORT3694均保留；root完整check/build、独立Go7/Python17、2855逐事件/30Sleep/2186更新点误差0、SQLite与50机查通过，精确7d57双平台CI38267896603成功（各226PASS/30条件SKIP）。完整记录读STATUS顶部。新三线/覆盖/50人工表在v1r-w1/replay-002，用户轨迹/权重终审仍PENDING。下一步接收两项真实人工结果，V1关账后沿原MCP owner V2三主题资产，再新W2工具链/锁协议/七日V4；不要再询McPet源路径、重抓原冻结源或把机查当人验。当前两Dispatch已结算、外部终端retained，主控term_f327/Run generation5，源/首失败/原工作树不动。
+
+23:12 W1真实V1R已完成并结算：SOURCE7d57e06/REPORTa954905已push，最终v1r-w1/replay-002，新增McPet23、总2855、849无标、30Sleep；root独立2186更新点误差0、SQLite全源匹配、50机查通过（McPet1，专项0）。新三线/覆盖/50人工表在该目录，用户终审PENDING。rootGo7/Python17通过，冻结目录零差异。W1外部终端retained，唯一原集成工作树恢复终端2b81572f/Codex --yolo，下一步普通合本轮root及a954，再root最终check/build/push；不重抓源、不覆盖首次回放、不锁实验。下方NOT_RUN/源询问为历史。
+
+23:00 W1已实际继续：同Task71ba19824f32，新Dispatch5c8ea77f6659/终端0e24b1b6，Codex --yolo / GPT-6.1-Sol high fast。owner已读5152cc7并普通合root源纠错，开始mcpet公共别名和正式捕获。原Dispatch失败和retry-of preflight拒绝保留，Task ready状态按CLI恢复为无retry-of启动，同写域没有第二worker。root下一步核对新增源事实与独立M2，不再询McPet路径；V1用户终审、协议锁及七日实验仍待后续实绩。
+
+22:55继续执行真实V1R。v3.0已有McPet采集授权，root已核实本机唯一Orca McPet登记根/remote/README名称；实际路径C:/Users/DW/orca/mcpet、remote https://github.com/songconmaisaix31-design/mcpet。maimai-monster记为实码偏差，不把此前未答的额外路径询问继续当权限门禁；这是root执行判断纠错，不伪称用户路径确认。先读更新M6-V1R-replay.md，公共repositoryTopic仅追加mcpet，其他冻结不动。Orca重启原W1 Dispatch8dc失败terminal_missing，已推Source5657/Report4fc及工作树保留；root新term_f327ea80-4929-4421-b064-bf386a16ec63绑定原Run generation5，同Task retry恢复同owner真实补源/回放。原失败/首次V1/所有RED保留，完整V1人验仍PENDING，不锁实验。
+
+已收到并核对W1准备REPORT`4fc016614b948f4c6f39d2ab5ca628d6850d4f10`，commit时间22:23:36+08:00，仅本轨报告文件变化、remote一致，SOURCE5657b9c不变。原Task/Dispatch仍在源身份问题处等待；这次编排通知不是用户路径答复，不启动捕获、不结算任务或释放原终端。此前“REPORT尚待”已被本记录更新，真实V1R及后续仍NOT_RUN。
+
+22:22 checkpoint：root最终分支当前仅v3文档，W1候选SOURCE5657b9c已push但未合入；owner完整check/build及Go46/Python16/旧人口与原100 raw回归通过，root新增Go4/Python16独立通过。不是V1R实际完成。源名maimai-monster与本机C:/Users/DW/orca/mcpet/remote mcpet差异仍待用户路径回复；`task_71ba19824f32/ctx_8dc6b111c5f5`保持in_progress且source ask `msg_421ee8e406cd`待答，不能另派重复worker或伪结算。用户答后回复同问题并在同owner补实际身份项/捕获/30Sleep/新版M2及三线/权重，再原集成普通合/root复核/用户终审。未答前实际源、新回放和新版人工表均NOT_RUN，REPORT准备状态尚待W1。首RED原件在v1r-w1，root独立在root-v3。未开V2/V3/V4，不锁协议。
+
+先读STATUS顶层及`tasks/M6-validation-v3.md`/`tasks/M6-V1R-replay.md`。用户补授权McPet仓git，先W1 V1R补源与原会话仓根重分类→root独立复核→用户轨迹/权重终审关账→V2三主题证据资产→V3协议锁→七日V4。McPet本机mcpet与任务maimai-monster身份差异已询问，候选源未确认前不采raw。旧SOURCE12cc/CI38226630789及replay-001/002保留，不能当V1R完成。V1人验PENDING，不代填；引擎/schema/参数/权重冻结，旧P2新增UI撤销。root只文档/协调/独立验收/最终Git，复用原W1和唯一原集成Codex --yolo工作树。
+
+## 历史入口：M6 v2.2（2026-10-12）
+
+17:09最新：源码12cc4ddf3e0a65e18be3bb3bf67f09652d928e46的双平台CI38226630789 completed/success，check/build/default E2E全部PASS，各226PASS/30条件SKIP，Linux race PASS/Windows条件SKIP；root本地完整check/build/Python13及真实回放独立复算均通过。收尾仅文档，不重称源码CI。V0 PASS、V1技术PASS，人验焦点/50权重仍PENDING，正式V2–V4未开、EXPERIMENT未锁；两项人工问题已发，未收到答复不按超时填通过。两当前Dispatch已结算，原工作树/分支/外部终端保留、个人实例/main未动。先读STATUS顶层及真实本机replay-002，收到人验再继续；保留原RED/unknown/旧failed。下方为历史阶段。
+
+16:57交付源码 `12cc4ddf3e0a65e18be3bb3bf67f09652d928e46` 已push，root完整check/build与Python13均通过；普通消费W1 REPORTb4243e4及同一集成REPORT06173e4，当前两个Dispatch已succeeded并retained外部终端/工作树。V0 PASS、V1技术PASS：最终replay-002真实2832单事件/信号、849无标、30Sleep含10空日、2163更新点主控独立误差0、每日signal_ids精确匹配receipt集合。最新CI38226630789对源码12cc4dd正在运行，不借旧CI填绿。人验焦点/50权重两项问题已发、仍PENDING；下一步收到真实结果再决定完整V1验收与正式P2/P3，V2执行单已备但未派，EXPERIMENT未锁、V4未开。Agent Swarm零信号/A=.05不能补假证据；所有旧RED和failed/unknown保留，个人实例/main未动。详见STATUS顶部；下方为此前历史。
+
+16:45 V1已产出两次真实2832逐事件/30生产Sleep回放；SOURCE67cc8f6430ec3f274ac77d28ac7a4cd8c1d084e4已push，待同一集成owner普通合与root最终Git。主控从V0源预先生成独立期望，对2163更新点/30日排名核对A/M/C误差0，SQLite事件/信号2832、无标849、Sleep30、raw全BLOB只读复查通过；owner2169点另含6seed亦0误差。焦点从09-22至10-08 Morph第一，10-09至11 Astro第一；前10天空日种子并列不能当焦点。用户焦点确认/50权重人工核对仍PENDING，机查50/50不替代人验；不锁EXPERIMENT或启动正式V2/V3/V4。原首RED与回执unknown保留。下方为先前阶段记录。
+
+16:25 root批准新V0，源码SOURCE `35f508bb3027e25e58165ecf8ccf613d56640ce5`已push：独立2832/2964=95.5466%、误标0/200、raw1101字符串/2100生产响应泄漏0，八桶160源核对问题0；root完整check/build及精确SOURCE双平台CI38222142954通过。一次本机Redocly退出时Node/libuv RED已保留，定向和完整重跑通过，源码依赖未改。132结构失败保留；主题覆盖70.0212%，849无标需全部入库。消费I报告2524e9e，I完成回执因Orca重启未达，Dispatch保持failed/terminal_missing，不能冒称accepted worker_done。正式V1放行，沿原W1工作树/分支按[tasks/M6-V1-replay.md](tasks/M6-V1-replay.md)执行；root只文档/调度/独立验收/最终Git，源码/权重/参数冻结。实际V1运行及用户焦点/50权重核对另验，不把V0当V1或真实七天实验，EXPERIMENT未锁SHA。下方入口为此前历史。
+
+先读STATUS顶部、[v2.2裁决](tasks/M6-validation-v2.2.md)和[固定写域计划](tasks/M6-validation-plan.md)。全部工具认知人口及N≥5000门槛废止；6016及原RED保留。新人口按预声明语义，动态不可解析留分母失败，topic只报告；≥95% kind/s绑定、误标0、泄漏0才开正式V1。字段/单位/confidence/boost及仓根/McPet范围已裁决，不重问。W1同worktree/branch、Codex --yolo，追加RetrieveKnowledge限定boost写域，schema/domain不改。最终SOURCE c0f6936/REPORT2b8137d已push，数值2832/2964=95.5466%，132结构失败保留；root最终每桶20及全部22新解析调用/50候选命令已独立核对。待原集成owner普通合与root整树check/build/原100 raw_unique/全人口复测，再批准V0。正式V1仍NOT_RUN，EXPERIMENT未锁SHA。
+
+## 当前入口：M6 v2.1（2026-10-12）
+
+05:10 本轮源码/测试已普通合并、独立复验并push，验收SOURCE `245d3f8a2d766ee8695daeae1de87469537fff96`；唯一集成REPORT ffc7c0df及W1/W0所有SOURCE/REPORT普通祖先保留。root完整pnpm check/build PASS，真实100 raw审计1101字符串/2100生产MCP响应零泄漏PASS；人口N6016、kind/topic1971=32.76% RED、随机200误标0。[CI38174450112](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38174450112)对该SOURCE两平台check/build/defaultE2E全部PASS，各226 PASS/30 SKIP（3.8m/4.9m），Linux race PASS、Windows按条件SKIP。收尾仅STATUS/HANDOFF记录变化，源码/测试/配置一致，不能把CI归给未重跑的文档HEAD。当前九个Dispatch全部结算，外部终端retained，原工作树/分支保留。先读STATUS当前指标表和QUESTIONS现有实码缺口，V0未过，不启动正式V1/V2–V4、不锁EXPERIMENT或伪造终局报告。原RED和所有raw只在既定外部证据根，个人运行库未升级。
+
+04:44 继续从validation/v1-20261012的root当前文档与STATUS读状态。原Run仍为run_d09ff3f95ebc，Orca重启后coordinator已绑定term_4766555e-2c8c-4b7b-807c-2cd31fa43fa5；旧终端句柄不可复用。W1 REPORT3020bfd7已push，root独立生产mapper人口结果N6016、kind/topic1971（32.76% RED）、随机非认知200误标0。W0 SOURCE6e7de7e/REPORTb728f23已结算，worker原100/1101字符串/2100MCP响应零泄漏；当前唯一W0 fixture返修ctx_063dce91ac7a只改三份M5测试及自己的报告，保持同worktree/branch，Codex --yolo实际GPT-6.1-Sol high fast。旧raw/origin_key期待首RED保存外部证据根，root须在唯一原集成owner普通合后独立check/build和原100审计。当前V0归一化未达95%，V1–V4未启动，协议未锁SHA；手工主题范围、强度字段绑定、播种confidence和λ_r单位/boost缺口的实码问题见QUESTIONS最新条目，用户未答，不据此改冻结引擎。
+
+先读STATUS顶部和[tasks/M6-validation-v2.1.md](tasks/M6-validation-v2.1.md)。本补丁覆盖旧100行eligible口径、raw同值疑问、参数待答、自动无标出生要求；旧首RED留存，schema零豁免/store raw不变，无自动发现。正式参数已裁决，不再询问。沿原W1全量认知盘点+1893捕获git，原W0仅exposure投影/raw_unique含错误审计，复用原Codex --yolo工作树/分支，完成后同一集成owner普通合。新V0三指标通过再按ts单事件回放全N/30Sleep；N≥5000达数量目标。不把默认CI或合成测试当新V0/V1，EXPERIMENT仍草案未锁SHA。下文v2记录为历史。
+
+## M6 v2 验证期入口（2026-10-12）
+
+交付分支 `validation/v1-20261012`，工程基线 `6b2b91086d87e2173122c3c9f53a36332acffff2`，本次源码验收HEAD `bc594de6c0eb3b6c8c10d1140c30627b2e46d6b2`。冻结令和EX-01读STATUS顶部，任务源 [v2.0](tasks/M6-validation-v2.md)，固定写域/实际身份读 [计划](tasks/M6-validation-plan.md)，本期集成见[M6交接](tasks/M6-integration.md)。继续Codex --yolo；root只计划/状态/决策/验收/最终Git。Run `run_d09ff3f95ebc`，coordinator `term_1adf40a6-ef79-4efa-b602-7b55173624e6`；本期两开发轨/唯一集成及原诊断Dispatch全部completed，外部终端retained idle，原工程分支和工作树保留。
+
+已合kind映射/固定五种子匹配/observed association/git-log adapter和EX-01的Run两处限定接缝：tagged禁生、pending保留，既有更新/去噪/fluid/merge不改。root完整pnpm check/build PASS，原M2随整包绿；同原100独立复测保留100/映射3/unknown97/候选3/正式eligible0，首RED不覆盖。源码已push，[CI38159885208](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38159885208)对bc594de completed/success：Ubuntu/Windows完整check/build/defaultE2E均PASS，各226 PASS/30 SKIP（3.1m/4.9m），Linux race PASS、Windows按条件SKIP。后续仅文档收尾，代码/测试与此SHA一致。EX-01 rollback对象2947454，未执行。EXPERIMENT已补声明但仍草案、未锁SHA。
+
+本轮明确授权最近30天两客户端原生载荷与两仓git log本地验证，覆盖旧metadata范围未答，旧failed不改；raw不外发/不入Git，不动个人库。外部证据根`C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012`。没有schema豁免实施，raw三层/MCP白名单方案尚未落地，审计5 FAIL/4 PASS仍RED。derived同值审计口径与正式运行参数待答；现有unassigned无候选label/provider，正向出生BLOCKED，已询问可复用规则/实现，不新增发现能力。V0未通过，V1–V4/人工抽检及确认/真实三臂未执行，不能抢跑或生成终局报告。
 
 ## 最终交付入口：双平台 CI 已通过（2026-10-12）
 

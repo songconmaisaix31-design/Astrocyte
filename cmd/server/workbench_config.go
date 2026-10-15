@@ -1,20 +1,40 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 )
 
 func workbenchRoot() string {
 	return filepath.Join(os.Getenv("LOCALAPPDATA"), "astrocyte-workbench", "v0.1")
 }
 
-// Resolve existing ancestors before constructing a new directory, including
-// junctions. A source or published copy can never become the migrated app DB.
+func workbenchProtectedSources() ([]string, error) {
+	value := os.Getenv("ASTROCYTE_WORKBENCH_PROTECTED_SOURCES")
+	if value == "" {
+		return []string{}, nil
+	}
+	decoder := json.NewDecoder(strings.NewReader(value))
+	var paths []string
+	if decoder.Decode(&paths) != nil || decoder.Decode(new(any)) != io.EOF || paths == nil {
+		return nil, errors.New("protected workbench sources must be an explicit JSON array")
+	}
+	for _, path := range paths {
+		if !filepath.IsAbs(path) {
+			return nil, errors.New("protected workbench source must be absolute")
+		}
+		if _, err := workbenchCanonical(path); err != nil {
+			return nil, errors.New("protected workbench source unavailable")
+		}
+	}
+	return paths, nil
+}
+
+// 先解析已有祖先及 junction，应用数据库不能使用来源或已发布副本。
 func workbenchCanonical(path string) (string, error) {
 	path, e := filepath.Abs(path)
 	if e != nil {
@@ -41,8 +61,7 @@ func guardWorkbenchDataDir(dir string) (string, error) {
 	return guardWorkbenchExplicitDataDir(dir)
 }
 
-// The relay entrypoint has already selected its isolated data directory. Reuse
-// every protected source/snapshot/identity check without applying v0.1 defaults.
+// 接入入口已选定独立目录；复用保护检查并保持该目录选择。
 func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 	resolved, e := workbenchCanonical(dir)
 	if e != nil {
@@ -52,7 +71,15 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 	if e != nil {
 		return "", errors.New("application database unavailable")
 	}
-	for _, protected := range []string{filepath.Dir(sqlite.WorkbenchFormalSource), filepath.Join(workbenchRoot(), "snapshots")} {
+	sources, e := workbenchProtectedSources()
+	if e != nil {
+		return "", e
+	}
+	directories := []string{filepath.Join(workbenchRoot(), "snapshots")}
+	for _, source := range sources {
+		directories = append(directories, filepath.Dir(source))
+	}
+	for _, protected := range directories {
 		base, e := workbenchCanonical(protected)
 		if e != nil {
 			return "", errors.New("application data directory unavailable")
@@ -65,10 +92,18 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 		if e == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel) {
 			return "", errors.New("application database must be separate from workbench source and snapshots")
 		}
-		// Existing 8.3 aliases and parent identity must also fail closed.
-		if a, e := os.Stat(base); e == nil {
+		// 同时核对已有 8.3 别名和祖先目录的实际身份。
+		a, e := workbenchExistingInfo(base)
+		if e != nil {
+			return "", errors.New("protected workbench directory identity unavailable")
+		}
+		if a != nil {
 			for p := resolved; ; p = filepath.Dir(p) {
-				if b, e := os.Stat(p); e == nil && os.SameFile(a, b) {
+				b, e := workbenchExistingInfo(p)
+				if e != nil {
+					return "", errors.New("application directory identity unavailable")
+				}
+				if b != nil && os.SameFile(a, b) {
 					return "", errors.New("application data directory must be separate from workbench source and snapshots")
 				}
 				if filepath.Dir(p) == p {
@@ -77,17 +112,55 @@ func guardWorkbenchExplicitDataDir(dir string) (string, error) {
 			}
 		}
 	}
-	appDB, e := os.Stat(filepath.Join(resolved, "state.sqlite"))
-	if e == nil {
-		if source, e := os.Stat(sqlite.WorkbenchFormalSource); e == nil && os.SameFile(appDB, source) {
-			return "", errors.New("application database must be independent")
+	appDB, e := workbenchExistingInfo(filepath.Join(resolved, "state.sqlite"))
+	if e != nil {
+		return "", errors.New("application database identity unavailable")
+	}
+	if appDB != nil {
+		for _, path := range sources {
+			source, e := workbenchExistingInfo(path)
+			if e != nil {
+				return "", errors.New("protected workbench source identity unavailable")
+			}
+			if source != nil && os.SameFile(appDB, source) {
+				return "", errors.New("application database must be independent")
+			}
 		}
-		generations, _ := filepath.Glob(filepath.Join(workbenchRoot(), "snapshots", "*", "snapshot.sqlite"))
-		for _, path := range generations {
-			if snapshot, e := os.Stat(path); e == nil && os.SameFile(appDB, snapshot) {
+		snapshotRoot := filepath.Join(workbenchRoot(), "snapshots")
+		generations, e := os.ReadDir(snapshotRoot)
+		if e != nil && !os.IsNotExist(e) {
+			return "", errors.New("workbench publication directory unavailable")
+		}
+		for _, generation := range generations {
+			generationPath := filepath.Join(snapshotRoot, generation.Name())
+			canonical, e := workbenchCanonical(generationPath)
+			if e != nil || !strings.EqualFold(filepath.Clean(generationPath), filepath.Clean(canonical)) {
+				return "", errors.New("workbench snapshot directory redirected")
+			}
+			info, e := workbenchExistingInfo(generationPath)
+			if e != nil || info == nil {
+				return "", errors.New("workbench snapshot directory identity unavailable")
+			}
+			if !info.IsDir() {
+				continue
+			}
+			snapshot, e := workbenchExistingInfo(filepath.Join(generationPath, "snapshot.sqlite"))
+			if e != nil {
+				return "", errors.New("workbench snapshot identity unavailable")
+			}
+			if snapshot != nil && os.SameFile(appDB, snapshot) {
 				return "", errors.New("application database must be independent")
 			}
 		}
 	}
 	return dir, nil
+}
+
+// 首次启动允许目标尚未创建；其他文件系统错误必须立即返回。
+func workbenchExistingInfo(path string) (os.FileInfo, error) {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
+	return info, err
 }

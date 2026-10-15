@@ -15,6 +15,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -156,7 +157,11 @@ func run(logger *slog.Logger) error {
 	registry := agents.NewRegistry(nativeRoot)
 	projectReferences := &projectReferenceBridge{}
 	localProjects := workspaceapp.NewLocalProjectService(db, projectReferences, agents.ProjectFiles{}, registry)
-	localProjects.ConfigureRegisteredDiscovery(db, agents.NewRegisteredProjects())
+	projectDiscovery, err := resolveProjectDiscovery()
+	if err != nil {
+		return fmt.Errorf("configure project discovery: %w", err)
+	}
+	localProjects.ConfigureRegisteredDiscovery(db, projectDiscovery)
 	textProcessor := &selectedTextBridge{projects: localProjects, processor: registry}
 	processingTimeout := min(time.Duration(jobSeconds)*time.Second, 30*time.Minute)
 	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{
@@ -199,9 +204,10 @@ func run(logger *slog.Logger) error {
 		logger.Warn("local CLI discovery incomplete; cached partial observations retained")
 	}
 
-	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
+	// 组装现有 S1 服务和 S2 提案命令，原生执行由原控制器接口负责。
 	services := httpapi.Services{
 		Workbench:            sqlite.NewWorkbenchReader(workbenchRoot()),
+		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),
 		GitHubRepositories:   workspaceapp.NewGitHubRepositoryService(db, db, agents.NewPublicGitHubSource(), agents.NewManagedRepositoryCloner(filepath.Join(dataDir, "repositories")), &repositorySpaceBridge{attention: attention}),
 		Tracking:             attention,
 		LocalProjects:        localProjects,
@@ -255,15 +261,24 @@ func run(logger *slog.Logger) error {
 		logger.Info("static file serving enabled", "dir", webDir)
 	}
 
+	listener, err := bindHTTPListener(port)
+	if err != nil {
+		return fmt.Errorf("bind HTTP listener: %w", err)
+	}
+	defer listener.Close()
+	actualPort := listener.Addr().(*net.TCPAddr).Port
 	// Create and start HTTP server.
 	srv := httpapi.NewServer(httpapi.Config{
 		AgentToken:     os.Getenv("ASTROCYTE_AGENT_TOKEN"),
 		AllowedOrigins: origins,
-		Port:           port,
+		Port:           actualPort,
 		Logger:         logger,
 		Services:       services,
 		WebDir:         webDir,
 	})
+	if err := announceHTTPListener(os.Stdout, listener); err != nil {
+		return fmt.Errorf("announce HTTP listener: %w", err)
+	}
 
 	// Graceful shutdown on SIGINT/SIGTERM.
 	workerCtx, cancelWorkers := context.WithCancel(context.Background())
@@ -290,7 +305,7 @@ func run(logger *slog.Logger) error {
 
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- srv.ListenAndServe()
+		errCh <- srv.Serve(listener)
 	}()
 
 	var runError error
@@ -357,8 +372,8 @@ func resolvePort() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("not a number: %w", err)
 	}
-	if n <= 0 || n >= 65536 {
-		return 0, fmt.Errorf("port %d out of range (1-65535)", n)
+	if n < 0 || n >= 65536 {
+		return 0, fmt.Errorf("port %d out of range (0-65535)", n)
 	}
 	return n, nil
 }

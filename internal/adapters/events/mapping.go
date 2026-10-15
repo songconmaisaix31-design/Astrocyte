@@ -68,12 +68,32 @@ func ReplayNativeFile(ctx context.Context, source, root, path, project string, l
 	for _, line := range lines {
 		kind := str(object(line.raw), "type")
 		origin := "native:" + source + ":" + line.observation.session + ":line:" + strconv.Itoa(line.line)
-		result = append(result, receipt(origin, source, kind, "native:selected_file", line.raw, line.observation, receivedAt))
+		blocks := NativeToolBlocks(source, line.raw)
+		if len(blocks) > 0 {
+			for _, block := range blocks {
+				unitOrigin := origin
+				if len(blocks) > 1 {
+					unitOrigin += ":block:" + strconv.Itoa(block)
+				}
+				row, err := MapNativeToolRecord(source, unitOrigin, project, line.raw, receivedAt, NativeAssociation{Session: line.observation.session, Scope: line.observation.cwd}, block)
+				if err != nil {
+					return nil, partial, err
+				}
+				result = append(result, row)
+			}
+			continue
+		}
+		result = append(result, nativeReceipt(origin, source, kind, "native:selected_file", line.raw, line.observation, receivedAt))
 	}
 	return result, partial, nil
 }
 
 func MapNativeRecord(source, origin, project string, raw json.RawMessage, receivedAt int64) (app.StoredEvent, error) {
+	return MapAssociatedNativeRecord(source, origin, project, raw, receivedAt, NativeAssociation{})
+}
+
+// MapAssociatedNativeRecord accepts only association already observed in this file.
+func MapAssociatedNativeRecord(source, origin, project string, raw json.RawMessage, receivedAt int64, association NativeAssociation) (app.StoredEvent, error) {
 	o, err := nativeRecord(source, raw)
 	if err != nil {
 		return app.StoredEvent{}, err
@@ -81,6 +101,20 @@ func MapNativeRecord(source, origin, project string, raw json.RawMessage, receiv
 	if o.cwd != "" && !sameReplayProject(o.cwd, project) {
 		return app.StoredEvent{}, fmt.Errorf("native record leaves approved project")
 	}
-	o.cwd = project
-	return receipt(origin, source, str(object(raw), "type"), "native:selected_record", raw, o, receivedAt), nil
+	if association.Scope != "" && !sameReplayProject(association.Scope, project) {
+		return app.StoredEvent{}, fmt.Errorf("native association leaves approved project")
+	}
+	if association.Session != "" && o.session != "" && association.Session != o.session {
+		return app.StoredEvent{}, fmt.Errorf("native association changes session")
+	}
+	if o.session == "" {
+		o.session = association.Session
+	}
+	if o.cwd == "" {
+		o.cwd = association.Scope
+	}
+	if o.cwd != "" {
+		o.cwd = project
+	}
+	return nativeReceipt(origin, source, str(object(raw), "type"), "native:selected_record", raw, o, receivedAt), nil
 }

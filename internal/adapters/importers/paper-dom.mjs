@@ -1,7 +1,7 @@
-// DOM clone + Readability approach adapted from steipete/summarize:
-// apps/chrome-extension/src/entrypoints/extract.content.ts, MIT Peter Steinberger.
-// Exact upstream pin and full license are in extensions/paper/THIRD_PARTY.md.
-// This module performs no navigation, network request, import or model call.
+// DOM 克隆与 Readability 提取沿用 steipete/summarize 的实现思路。
+// 上游文件 apps/chrome-extension/src/entrypoints/extract.content.ts，MIT Peter Steinberger。
+// 固定版本及完整许可证见 extensions/paper/THIRD_PARTY.md。
+// 此模块仅解析调用者传入的 DOM。
 
 export function normalizeDOI(raw = '') {
   const value = raw.trim().replace(/^doi:\s*/i, '').replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, '');
@@ -35,11 +35,9 @@ export function paperDOM(document, locator, Readability) {
   const first = (...keys) => keys.map(k => metas.get(k)?.[0]).find(Boolean) || '';
   let scholarly = {};
   for (const script of document.querySelectorAll('script[type="application/ld+json"]')) {
-    try {
-      const root = JSON.parse(script.textContent);
-      const entries = Array.isArray(root) ? root : [...(root['@graph'] || []), root];
-      scholarly = entries.find(v => ['ScholarlyArticle', 'MedicalScholarlyArticle'].includes(v['@type'])) || scholarly;
-    } catch { /* Malformed publisher metadata does not invent identity. */ }
+    const root = JSON.parse(script.textContent);
+    const entries = Array.isArray(root) ? root : [...(root['@graph'] || []), root];
+    scholarly = entries.find(v => ['ScholarlyArticle', 'MedicalScholarlyArticle'].includes(v['@type'])) || scholarly;
   }
   const doi = normalizeDOI(first('citation_doi', 'dc.identifier', 'dc.identifier.doi', 'prism.doi')) ||
     normalizeDOI(typeof scholarly.identifier === 'string' ? scholarly.identifier : scholarly.identifier?.value || '');
@@ -53,16 +51,14 @@ export function paperDOM(document, locator, Readability) {
   const authors = metas.get('citation_author') || metas.get('dc.creator') || [];
   const pdfs = [];
   const addPDF = raw => {
-    try {
-      const parsed = new URL(raw, locator);
-      if (parsed.protocol === 'https:' && !parsed.username && !parsed.password && !parsed.port &&
-          !pdfs.includes(parsed.href)) pdfs.push(parsed.href);
-    } catch { /* Bad metadata remains absent. */ }
+    const parsed = new URL(raw, locator);
+    if (parsed.protocol === 'https:' && !parsed.username && !parsed.password && !parsed.port &&
+        !pdfs.includes(parsed.href)) pdfs.push(parsed.href);
   };
   for (const raw of metas.get('citation_pdf_url') || []) addPDF(raw);
   for (const node of document.querySelectorAll('a[href$=".pdf"], link[type="application/pdf"]')) addPDF(node.getAttribute('href'));
   if (arxiv) addPDF(`https://arxiv.org/pdf/${arxiv}`);
-  // Preserve exact observed source/version separately from cross-host identity.
+  // 分别保留观察到的来源版本和跨域来源标识。
   const sourceKey = arxiv ? `arxiv:${arxiv.replace(/v[1-9]\d*$/, '')}` : doi ? `doi:${doi}` : locator;
   const clone = document.cloneNode(true);
   for (const node of clone.querySelectorAll('script, style, nav, footer, form, aside, [hidden], [aria-hidden="true"], .related-articles, #related-articles, [aria-label="Related articles"]')) node.remove();
@@ -74,12 +70,11 @@ export function paperDOM(document, locator, Readability) {
   const sections = [...retained.querySelectorAll('h1,h2,h3,h4')]
     .filter(n => !n.closest('[id*="abstract"], [id^="Abs"], .abstract, .acl-abstract'))
     .map(n => n.textContent.trim());
-  // Readability returning text is not enough to establish full paper evidence.
+  // 正文状态需要论文结构和足够的文本长度。
   const hasIntro = sections.some(s => /^(?:\d+[.\s]*)?introduction\b/i.test(s));
   const hasBody = sections.some(s => /\b(methods?|results?|experiments?|discussion|conclusions?)\b/i.test(s));
   const fullBody = hasIntro && hasBody && readable.length > 1000;
-  // A login/institution widget is not an access barrier when public body text
-  // is already readable. Hidden scripts/nav never establish a restriction.
+  // 已公开的正文不受旁侧登录组件影响，隐藏内容不用于判断访问限制。
   const paywall = !fullBody && /\b(?:purchase this article|subscribe to access)\b/i.test(visible || readable);
   const restricted = !fullBody && !paywall && /\b(?:access through your institution|sign in to access|checking your browser|verify you are human)\b/i.test(visible || readable);
   const state = fullBody ? 'readable_fulltext' : paywall ? 'paywall' : restricted ? 'restricted' : 'abstract_only';

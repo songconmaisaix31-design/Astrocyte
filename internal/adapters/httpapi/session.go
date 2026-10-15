@@ -153,6 +153,9 @@ func (g *sessionGuard) middleware(next http.Handler) http.Handler {
 // Only resource-scoped reads/control reach Workspace. Its service reloads the
 // action grant on every operation. Settings, grants and token issuance stay human.
 func scopedAgentRoute(r *http.Request, projectID string) bool {
+	if relayScopedWorkspaceRoute(r, projectID) {
+		return true
+	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	if len(parts) < 5 || parts[0] != "api" || parts[1] != "v1" || parts[2] != "local-projects" || parts[3] != projectID {
 		return false
