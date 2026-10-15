@@ -25,7 +25,7 @@ async function approvedContext(api: Awaited<ReturnType<typeof humanAPI>>) {
   const content: S['S2ProposalContentV1'] = {
     title: '真实上下文页面核查', goal: { id: goal.id, revision: goal.revision }, inputs: [{ material_id: material.id, revision: material.current_revision }],
     scope: { project_id: project.id, settings_revision: configured.settings.revision, roots: [join(project.root, relativeRoot)], write_paths: [], actions, tools: [], external_targets: [], max_concurrency: 1 },
-    budget: { calls: null, tokens: null, money_minor: null, currency: '' }, deliverables: ['固定项目上下文记录'], success_criteria: ['真实来源、批准和快照可回查'],
+    budget: { calls: 3, tokens: null, money_minor: null, currency: '' }, deliverables: ['固定项目上下文记录'], success_criteria: ['真实来源、批准和快照可回查'],
     stops: { deadline: new Date(Date.now() + 86400_000).toISOString(), conditions: ['用户撤销后禁止建立新上下文'], max_work_items: 1, max_attempts: 1, no_progress_seconds: 3600, max_no_progress_rounds: 1 },
   };
   const { proposal } = await api.write('/proposals', { expected_version: 0, content }) as S['S2ProposalResultV1'];
@@ -91,8 +91,10 @@ test('真实固定上下文创建、后继重建、403恢复、撤销拒绝及�
     await reference.getByRole('region', { name: `固定上下文包 ${packet.id}`, exact: true }).getByRole('button', { name: '展开固定上下文', exact: true }).click();
     await expect(reference.getByRole('region', { name: `固定上下文包 ${packet.id}`, exact: true })).toContainText(packet.snapshot.head);
     expect(server.query('SELECT COUNT(*) AS count FROM workspace_context_packets')).toEqual([{ count: 2 }]);
-    const events = server.query('SELECT event_id FROM foundation_outbox WHERE event_type=?', 'context_packet_built');
+    const events = server.query('SELECT event_id,aggregate_id FROM foundation_outbox WHERE event_type=?', 'workspace.context_packet_built') as { event_id: string; aggregate_id: string }[];
     expect(events).toHaveLength(2);
+    expect(events.map(event => event.aggregate_id).sort()).toEqual([packet.id, successor.id].sort());
+    for (const event of events) expect(server.query('SELECT event_type,aggregate_id FROM foundation_outbox WHERE event_id=?', event.event_id)).toEqual([{ event_type: 'workspace.context_packet_built', aggregate_id: event.aggregate_id }]);
     expect(server.query('SELECT COUNT(*) AS count FROM local_agent_sessions')).toEqual([{ count: 0 }]);
     await server.restart();
     const restarted = await humanAPI(server.apiURL);
