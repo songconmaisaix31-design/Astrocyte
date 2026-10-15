@@ -54,7 +54,7 @@ func TestRelayTrustedRegistrationActualSQLiteHTTP(t *testing.T) {
 	}
 	registry := agents.NewRegistry(filepath.Join(local, "native-sessions"))
 	services := httpapi.Services{}
-	cleanup, err := assembleRelay(&services, db, registry)
+	cleanup, err := assembleRelay(&services, db, registry, nil)
 	if err != nil {
 		t.Fatal("原生产Relay装配失败")
 	}

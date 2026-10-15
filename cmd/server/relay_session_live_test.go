@@ -23,6 +23,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/events"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/worksscan"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -168,7 +169,11 @@ func TestRelaySessionActualService(t *testing.T) {
 	if err != nil {
 		t.Fatal("实际固定公开上下文配置失败")
 	}
-	cleanup, err := assembleRelay(&services, db, registry, launchContexts...)
+	objectStore, err := objects.New(filepath.Join(appDir, "objects"))
+	if err != nil {
+		t.Fatal("实际对象存储不可用")
+	}
+	cleanup, err := assembleRelay(&services, db, registry, objectStore, launchContexts...)
 	if err != nil {
 		t.Fatal("实际生产组装失败")
 	}
@@ -232,12 +237,14 @@ func TestRelaySessionActualService(t *testing.T) {
 		}
 		settings := project.Settings
 		settings.ExternalModelCLI = "codex"
-		settings.AllowedActions = []string{"start", "observe", "send", "stop", "resume", "reconcile"}
+		settings.AllowDirectory = true
+		settings.AllowedSubdirs = []string{"."}
+		settings.AllowedActions = []string{"read_context", "start", "observe", "send", "stop", "resume", "reconcile"}
 		client.request(t, "PUT", "/api/v1/local-projects/"+project.ID+"/settings", map[string]any{"expected_revision": project.Settings.Revision, "settings": settings}, &response)
 		project = response.Project
 	}
 	if snapshot.Works[0].Handoff.Content == "" {
-		client.request(t, "PUT", "/api/v1/works/"+snapshot.Works[0].ID+"/handoff", map[string]any{"expected_revision": snapshot.Works[0].Revision, "content": "Public L1 project. Only the fixed public task context is authorized. Filesystem and command tools remain disabled. Explain native session capture without inspecting files or history."}, nil)
+		client.request(t, "PUT", "/api/v1/works/"+snapshot.Works[0].ID+"/handoff", map[string]any{"expected_revision": snapshot.Works[0].Revision, "content": "Public Go project. Use only the explicitly supplied fixed files and task. Preserve the existing Mean behavior and implement Median as requested. Native filesystem and command tools remain disabled."}, nil)
 	}
 	deadlineSeconds, err := relayNativeDeadlineSeconds()
 	if err != nil {

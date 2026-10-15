@@ -9522,7 +9522,38 @@ components:
     RelayTerminalV1: {"type":"object","additionalProperties":false,"properties":{"terminal_id":{"type":"string","minLength":1},"worktree_id":{"type":"string","minLength":1},"agent":{"type":"string","minLength":1},"drive_mode":{"type":"string","enum":["structured","terminal","both"]},"liveness":{"type":"string","enum":["live","unverifiable","exited"]},"last_event_at":{"type":["string","null"],"format":"date-time"},"exited_at":{"type":["string","null"],"format":"date-time"},"last_sequence":{"type":"integer","minimum":0},"created_at":{"type":"string","format":"date-time"}},"required":["terminal_id","worktree_id","agent","drive_mode","liveness","last_event_at","exited_at","last_sequence","created_at"]}
     RelayWorkspaceV1: {"type":"object","additionalProperties":false,"properties":{"worktree_id":{"type":"string","minLength":1},"project_id":{"type":"string","minLength":1},"root":{"type":"string"},"branch":{"type":"string"},"prepared":{"type":"boolean"},"active_task_id":{"type":"string"},"created_at":{"type":"string","format":"date-time"}},"required":["worktree_id","project_id","root","branch","prepared","active_task_id","created_at"]}
     RelayTransitionV1: {"type":"object","additionalProperties":false,"properties":{"task_id":{"type":"string","minLength":1},"from":{"type":"string","enum":["","ready","accepted","working","done"]},"to":{"type":"string","enum":["ready","accepted","working","done","released"]},"ts":{"type":"string","format":"date-time"},"operator":{"type":"string","minLength":1}},"required":["task_id","from","to","ts","operator"]}
-    RelayTaskViewV1: {"type":"object","additionalProperties":false,"properties":{"task":{"$ref":"#/components/schemas/RelayTaskV1"},"terminal":{"anyOf":[{"$ref":"#/components/schemas/RelayTerminalV1"},{"type":"null"}]},"worktree":{"anyOf":[{"$ref":"#/components/schemas/RelayWorkspaceV1"},{"type":"null"}]},"transitions":{"type":"array","items":{"$ref":"#/components/schemas/RelayTransitionV1"}},"event_publication":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["none","pending","published","error"]},"pending_events":{"type":"integer","minimum":0},"published_events":{"type":"integer","minimum":0}},"required":["status","pending_events","published_events"]}},"required":["task","terminal","worktree","transitions","event_publication"]}
+    RelayTaskViewV1: {"type":"object","additionalProperties":false,"properties":{"task":{"$ref":"#/components/schemas/RelayTaskV1"},"terminal":{"anyOf":[{"$ref":"#/components/schemas/RelayTerminalV1"},{"type":"null"}]},"worktree":{"anyOf":[{"$ref":"#/components/schemas/RelayWorkspaceV1"},{"type":"null"}]},"transitions":{"type":"array","items":{"$ref":"#/components/schemas/RelayTransitionV1"}},"completion":{"$ref":"#/components/schemas/RelayCompletionV1"},"event_publication":{"type":"object","additionalProperties":false,"properties":{"status":{"type":"string","enum":["none","pending","published","error"]},"pending_events":{"type":"integer","minimum":0},"published_events":{"type":"integer","minimum":0}},"required":["status","pending_events","published_events"]}},"required":["task","terminal","worktree","transitions","event_publication"]}
+    RelayCompletionV1:
+      type: object
+      additionalProperties: false
+      description: 'Saved completion channel and original human action. Missing on old records means unrecorded. Completion never supplies started evidence or releases resources; release is audited separately.'
+      required: [completion_id, task_id, worktree_id, terminal_id, channel, source, operator, actor_id, actor_kind, receipt_id, operation_id, ts]
+      properties:
+        completion_id: {type: string, format: uuid}
+        task_id: {type: string, format: uuid}
+        worktree_id: {type: string, format: uuid}
+        terminal_id: {type: string, format: uuid}
+        channel: {type: string, enum: [verified_complete, user_confirmed_complete]}
+        source: {type: string, enum: [human_confirmation, owned_output_and_goal_checks]}
+        operator: {type: string, minLength: 1}
+        actor_id: {type: string, minLength: 1}
+        actor_kind: {type: string, const: human}
+        receipt_id: {type: string, minLength: 1}
+        operation_id: {type: string, format: uuid}
+        ts: {type: string, format: date-time}
+        evidence_id: {type: string, maxLength: 160, pattern: '^[A-Za-z0-9:_-]+$'}
+        input_operation_id: {type: string, format: uuid}
+        output_event_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: {type: string, maxLength: 160, pattern: '^[A-Za-z0-9:_-]+$'}
+        check_evidence_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: {type: string, maxLength: 160, pattern: '^[A-Za-z0-9:_-]+$'}
+        verified_at: {type: string, format: date-time}
     RelayTasksV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"tasks":{"type":"array","items":{"$ref":"#/components/schemas/RelayTaskViewV1"}},"dispatched_work_ids":{"type":"array","items":{"type":"string"}}},"required":["schema_version","tasks","dispatched_work_ids"],"examples":[{"schema_version":1,"tasks":[],"dispatched_work_ids":[]}]}
     RelayTaskResultV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"view":{"$ref":"#/components/schemas/RelayTaskViewV1"}},"required":["schema_version","view"]}
     RelayReceiptErrorV1: {"type":"object","additionalProperties":false,"properties":{"code":{"type":"string","enum":["validation_failed","unsupported_capability","version_conflict","context_stale","index_stale","scope_denied","approval_required","approval_revoked","lease_lost","budget_exhausted","provider_unavailable","evidence_missing","delivery_unknown","not_found","internal_error"]},"message":{"type":"string"},"request_id":{"type":"string"},"retryable":{"type":"boolean"},"required_action":{"type":"string"}},"required":["code","message","request_id","retryable","required_action"]}
@@ -9541,10 +9572,10 @@ components:
         worktree_id: {type: string, format: uuid}
         receipt_id: {type: string, description: 'Original immutable business receipt identity; not a UUID. Matches a readable receipt of this task.'}
         operation_id: {type: string, format: uuid}
-        kind: {type: string, enum: [action_claimed, action_result, observation_rejected, handoff_declared, human_target_confirmed, controller_initialized, session_confirmed, input_channel_open, input_written, input_closed, input_accepted, turn_started, input_consumption]}
+        kind: {type: string, enum: [action_claimed, action_result, observation_rejected, handoff_declared, human_target_confirmed, resources_released, controller_initialized, session_confirmed, input_channel_open, input_written, input_closed, input_accepted, turn_started, input_consumption, input_result]}
         status: {type: string, enum: [confirmed, unknown, pending, accepted, rejected, delivery_unknown]}
-        source: {type: string, enum: [relay_store, human_intent, human_transition, codex_initialize, codex_thread_identity, claude_initialize, claude_system_init, pi_get_state, native_request_pipe, codex_turn_acknowledgement, pi_prompt_acknowledgement, codex_turn_started, pi_agent_start, claude_stream_input, native_protocol, owned_stdin_pipe, stdin_pipe, stdin_eof]}
-        reason: {type: string, enum: [client_consumption_not_acknowledged, operation_not_bound, controller_evidence_rejected, not_found, validation_failed, unsupported_capability, version_conflict, context_stale, index_stale, scope_denied, approval_required, approval_revoked, lease_lost, budget_exhausted, provider_unavailable, evidence_missing, delivery_unknown, internal_error]}
+        source: {type: string, enum: [relay_store, human_intent, human_transition, codex_initialize, codex_thread_identity, claude_initialize, claude_system_init, pi_get_state, native_request_pipe, codex_turn_acknowledgement, pi_prompt_acknowledgement, codex_turn_started, codex_turn_completed, pi_agent_start, claude_stream_input, native_protocol, owned_stdin_pipe, stdin_pipe, stdin_eof]}
+        reason: {type: string, enum: [client_consumption_not_acknowledged, operation_not_bound, controller_evidence_rejected, verified_complete, user_confirmed_complete, completed, failed, interrupted, not_found, validation_failed, unsupported_capability, version_conflict, context_stale, index_stale, scope_denied, approval_required, approval_revoked, lease_lost, budget_exhausted, provider_unavailable, evidence_missing, delivery_unknown, internal_error]}
         sequence: {type: integer, minimum: 0}
         ts: {type: string, format: date-time}
     RelaySessionRelationV1:
@@ -9581,7 +9612,7 @@ components:
     RelayConfirmRequestV1: {"type":"object","additionalProperties":false,"properties":{"permission_confirmed":{"type":"boolean","const":true},"permission_level":{"type":"string","enum":["A","B","C"]},"project_settings_revision":{"type":"integer","minimum":0}},"required":["permission_confirmed","permission_level","project_settings_revision"],"examples":[{"permission_confirmed":true,"permission_level":"A","project_settings_revision":0}]}
     RelaySendRequestV1: {"type":"object","additionalProperties":false,"properties":{"input":{"type":"string","minLength":1,"maxLength":65536}},"required":["input"],"examples":[{"input":"Fixture human input"}]}
     RelayEmptyRequestV1: {"type":"object","additionalProperties":false,"properties":{},"required":[],"examples":[{}]}
-    RelayTransitionRequestV1: {"type":"object","additionalProperties":false,"properties":{"from":{"type":"string","enum":["ready","accepted","working","done"]},"to":{"type":"string","enum":["accepted","working","done","released"]},"completion_confirmed":{"type":"boolean"}},"required":["from","to","completion_confirmed"],"examples":[{"from":"working","to":"done","completion_confirmed":true}]}
+    RelayTransitionRequestV1: {"type":"object","additionalProperties":false,"description":"Current permission and explicit human confirmation allow accepted or working to enter done. Omitted channel selects user_confirmed_complete. verified_complete additionally requires a trusted reference to this task's owned output and actual fixed-goal checks; it never creates started evidence. Resource release remains a separate done-to-released action.","properties":{"from":{"type":"string","enum":["ready","accepted","working","done"]},"to":{"type":"string","enum":["accepted","working","done","released"]},"completion_confirmed":{"type":"boolean"},"completion_channel":{"type":"string","enum":["verified_complete","user_confirmed_complete"]},"completion_evidence_id":{"type":"string","maxLength":160,"pattern":"^[A-Za-z0-9:_-]+$","description":"Required only for verified_complete; a safe reference, never raw checks, paths or native identities."}},"required":["from","to","completion_confirmed"],"examples":[{"from":"accepted","to":"done","completion_confirmed":true,"completion_channel":"user_confirmed_complete"}]}
     RelayActionResultV1: {"type":"object","additionalProperties":false,"properties":{"schema_version":{"type":"integer","const":1},"view":{"$ref":"#/components/schemas/RelayTaskViewV1"},"receipt":{"$ref":"#/components/schemas/RelayReceiptV1"}},"required":["schema_version","view","receipt"]}
     WorkbenchEventV1: {"type": "object", "additionalProperties": false, "properties": {"event_id": {"type": "string"}, "kind": {"type": "string"}, "topic": {"type": "string"}, "tokens": {"type": ["integer", "null"]}, "scope": {"type": "string"}, "ts": {"type": "string", "format": "date-time"}}, "required": ["event_id", "kind", "topic", "tokens", "scope", "ts"], "examples": [{"event_id": "fixture-event", "kind": "agent_task", "topic": "fixture-topic", "tokens": null, "scope": "fixture-scope", "ts": "2026-10-12T16:00:00Z"}]}
     WorkbenchTopicV1: {"type": "object", "additionalProperties": false, "properties": {"topic": {"type": "string"}, "attention": {"type": "number"}, "momentum": {"type": "number"}, "confidence": {"type": "number"}}, "required": ["topic", "attention", "momentum", "confidence"]}
