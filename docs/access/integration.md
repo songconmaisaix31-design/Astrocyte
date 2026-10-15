@@ -30,6 +30,7 @@
 | B 人工准入的当前项目权限组件 | SOURCE `19ff699f304961d3c9fad6a336163848c923057b` / REPORT `bf8fda3c45b9198a7e7537355d5ba419f9bc87f8` | `8c09088caacaf010c7e541e6c5f432a5b74e5442` |
 | T 完成来源拒绝与实际收据事务检查 | SOURCE `fa5c6e6a2cedcf34b22bf760c24ac6b81c3a7241` / REPORT `41cfefc24792470bd00d25b80b3235142d68e3ee` | SOURCE 合入为 `1284563dff2ff1a28a2ec32e60792b9ea2c48919`，REPORT 合入为 `3c72fa1a9c9f27b881571b7cf82da3edfda6f172` |
 | F 三段原 UI 内容相容消费 | SOURCE `a871d62c6b5ed6b708dfc1b70f938741f0b44081` / REPORT `a4e3dc39350911268fd5cde4f177d2362928e765` | `8ac0e6b7eaf868d198d75071f73820224b1e68d4`；普通合并实际仅增加原 F 报告 13 行，业务差异为零，未重复目标或构建 |
+| B 当前固定资料引用权限与原 PDF 处理 | SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383` / REPORT `c0bfe00456329249e279a4353abe634381656806`，含 SOURCE `25a4ae879ca0a4cd059540bfa5aeddf8cf713dcc` / REPORT `ce4e12aca2f272f7ed5edb48b9cf76fdccddad5e` | `f1fdc35d1b5386749cd10b2f636fa47a5581846c`；两个 agents 文件仅中文注释，其行为差异为零 |
 
 B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约消费、token 撤销争用检查和 cleanup batch 配置；上述范围已核实际合并差异。B 原 native WIP 保持原树。F 的 inspect 写入脚本保留其原成功记录，本阶段没有执行这些脚本；同实例实际 HTTP / DOM / SQLite 操作仍由原 F 独占。每个组合 SOURCE 均已立即普通 push；`deec6c7` 的远端分支已独立读回同值。
 
@@ -58,7 +59,8 @@ B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约�
 | `48793ba`：TypeScript 与定向 ESLint `e2e/readProductCognition.ts` | 均实际 EXIT0，前后 SOURCE 同值；日志 `c16-product-static-48793ba-{typecheck,lint}.log`。没有再次执行 F 的实际认知读取。 |
 | `8c09088`：`go test -mod=readonly -p=1 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` | 实际 EXIT0 / 包 1.585 秒，当前项目、同主库事务零额外连接、错误库事务、取消、角色及 ID 拒绝与零业务记录通过；日志 `c16-product-admission-8c09088.log`。 |
 | `1284563`：`go test -mod=readonly -p=1 ./internal/attention/app -run '^(TestCompletionCaptureActualProjectMissingSourceAndReopen\|TestCompletionRepositorySharesActualCommandReceiptRollbackAndReopen)$' -v -count=1` | 实际 EXIT0 / 包 2.194 秒，两项真实项目 / 来源缺失拒绝、人工收据事务 / 约束回滚 / 重开通过；日志 `c16-product-completion-boundary-1284563.log`。没有将人工命令收据作为实际 completion 正向。 |
-| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合 `8ac0e6b7eaf868d198d75071f73820224b1e68d4` 普通 push 实际 EXIT0，独立远端同值；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
+| `f1fdc35`：更新后的 `TestHumanAdmissionActualProjectAndTransaction` | 显式提供已确认公开 `paper-dom-actual-recovery.snapshot.json`，只核该原件存在及 59,717 字节元数据后执行原目标；实际 EXIT0 / 包 1.174 秒，当前 fixed refs、revision / lifecycle / 撤销、同事务权限通过。日志 `c16-product-admission-refs-f1fdc35.log`，前后 SOURCE 同值。 |
+| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合 `f1fdc35d1b5386749cd10b2f636fa47a5581846c` 普通 push 实际 EXIT0，独立远端同值；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
 
 本轮全部新增验证原件位于 `D:/Astrocyte-agent-assets/20261015/integration/`。构建沿用原 dist、web/dist、.verification 到 D 盘的 junction，Go 缓存与临时编译目录为已确认的 D 盘位置；只设置验证子进程环境。没有改变全局 HOME、身份配置或 TEMP。
 
