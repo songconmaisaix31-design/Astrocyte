@@ -31,6 +31,9 @@
 | T 完成来源拒绝与实际收据事务检查 | SOURCE `fa5c6e6a2cedcf34b22bf760c24ac6b81c3a7241` / REPORT `41cfefc24792470bd00d25b80b3235142d68e3ee` | SOURCE 合入为 `1284563dff2ff1a28a2ec32e60792b9ea2c48919`，REPORT 合入为 `3c72fa1a9c9f27b881571b7cf82da3edfda6f172` |
 | F 三段原 UI 内容相容消费 | SOURCE `a871d62c6b5ed6b708dfc1b70f938741f0b44081` / REPORT `a4e3dc39350911268fd5cde4f177d2362928e765` | `8ac0e6b7eaf868d198d75071f73820224b1e68d4`；普通合并实际仅增加原 F 报告 13 行，业务差异为零，未重复目标或构建 |
 | B 当前固定资料引用权限与原 PDF 处理 | SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383` / REPORT `c0bfe00456329249e279a4353abe634381656806`，含 SOURCE `25a4ae879ca0a4cd059540bfa5aeddf8cf713dcc` / REPORT `ce4e12aca2f272f7ed5edb48b9cf76fdccddad5e` | `f1fdc35d1b5386749cd10b2f636fa47a5581846c`；两个 agents 文件仅中文注释，其行为差异为零 |
+| B 历史公开进度的实际存储与人工 CAS 检查 | SOURCE `82426bab2c405e1a1a2184801a60fa4e98985c2b` / REPORT `c0a7f837fb06f9858e996597e45900dc3c4c4a47` | `fd07ac5f809e9cba8db7efe568112d84da9a61a3`；生产文件仅中文注释，实际新增行为为原测试的真实来源消费 |
+| H 准入、完成经验生产入口与完整公开 Schema | SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` | SOURCE 合入为 `609993b25543a74e64d89a31c99bf3c08b81b44b`，REPORT 合入为 `5ac02b0eca9193ee869081e909cb21e117ee56c6` |
+| F 真实候选已保存操作的恢复检查 | SOURCE `fd7db97d26991ec04937bfb7ecae3208ad339706` / REPORT `3320e0a18b17edc6b6bdba9e4b08ccef6d4966af` | `ecb29c9593348d409514cc1ddff05ff04affcd87`；三脚本和原报告均普通消费，I 没有执行候选 mutation |
 
 B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约消费、token 撤销争用检查和 cleanup batch 配置；上述范围已核实际合并差异。B 原 native WIP 保持原树。F 的 inspect 写入脚本保留其原成功记录，本阶段没有执行这些脚本；同实例实际 HTTP / DOM / SQLite 操作仍由原 F 独占。每个组合 SOURCE 均已立即普通 push；`deec6c7` 的远端分支已独立读回同值。
 
@@ -60,7 +63,12 @@ B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约�
 | `8c09088`：`go test -mod=readonly -p=1 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` | 实际 EXIT0 / 包 1.585 秒，当前项目、同主库事务零额外连接、错误库事务、取消、角色及 ID 拒绝与零业务记录通过；日志 `c16-product-admission-8c09088.log`。 |
 | `1284563`：`go test -mod=readonly -p=1 ./internal/attention/app -run '^(TestCompletionCaptureActualProjectMissingSourceAndReopen\|TestCompletionRepositorySharesActualCommandReceiptRollbackAndReopen)$' -v -count=1` | 实际 EXIT0 / 包 2.194 秒，两项真实项目 / 来源缺失拒绝、人工收据事务 / 约束回滚 / 重开通过；日志 `c16-product-completion-boundary-1284563.log`。没有将人工命令收据作为实际 completion 正向。 |
 | `f1fdc35`：更新后的 `TestHumanAdmissionActualProjectAndTransaction` | 显式提供已确认公开 `paper-dom-actual-recovery.snapshot.json`，只核该原件存在及 59,717 字节元数据后执行原目标；实际 EXIT0 / 包 1.174 秒，当前 fixed refs、revision / lifecycle / 撤销、同事务权限通过。日志 `c16-product-admission-refs-f1fdc35.log`，前后 SOURCE 同值。 |
-| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合 `f1fdc35d1b5386749cd10b2f636fa47a5581846c` 普通 push 实际 EXIT0，独立远端同值；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
+| `fd07ac5`：`go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestProgressStorageRoundTripAndCAS$' -v -count=1` | 明确提供已批准的两项公开输入，实际 EXIT0 / 包 2.489 秒；只读原公开验证库的 progress / project 派生记录，在自有 SQLite 验证真实迁移、完整往返、CAS 拒绝和人工 service 更新。日志 `c16-product-progress-fd07ac5.log`。历史 accepted receipt 保留来源，未作为本轮 infer / 模型结果。 |
+| `609993b`：原 runner `-Step build -RunName c16-product-build-609993b` | 原 `pnpm build` EXIT0 / 30.1152367 秒，source / source_after 同值；server / MCP / Sleep / TypeScript / Vite 全部完成。实际 Go revision 同值、modified=false；原件为该 RunName 目录 `result.json`、`build.log`。 |
+| `609993b`：`pnpm check:contracts` | 实际 EXIT1：Redocly 成功且保留原 13 warnings，264 examples 通过；最后原 `generate-client.mjs --check` 报 `Generated client schema drift`。日志 `c16-product-contracts-609993b.log`，已交 M-product / 原 F 按准确公开契约生成类型，I 未生成或手改客户端。 |
+| `609993b`：`go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayJudgmentProductionAssemblyActualSQLiteHTTP\|TestRelayHumanAdmissionsWithoutJudgmentSnapshotsActualSQLiteHTTP\|TestRelayStaticActualMissingAndInvalidPaths)$' -v -count=1` | 实际 EXIT0 / 包 4.761 秒，新增两模式真实准入、当前权限拒绝、未分配草稿、读取与撤销、实际空完成源404及静态路径错误通过；日志 `c16-product-main-609993b.log`，前后 SOURCE 同值、没有原生或模型输入。 |
+| `ecb29c9`：TypeScript 与三个新增候选脚本的定向 ESLint | 均实际 EXIT0，前后 SOURCE 同值；日志 `c16-product-static-ecb29c9-{typecheck,lint}.log`，I 未重放成功或 unknown 写入。 |
+| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合 `ecb29c9593348d409514cc1ddff05ff04affcd87` 普通 push 实际 EXIT0，独立远端同值；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
 
 本轮全部新增验证原件位于 `D:/Astrocyte-agent-assets/20261015/integration/`。构建沿用原 dist、web/dist、.verification 到 D 盘的 junction，Go 缓存与临时编译目录为已确认的 D 盘位置；只设置验证子进程环境。没有改变全局 HOME、身份配置或 TEMP。
 
@@ -83,13 +91,13 @@ B 后继准确 REPORT `c563ff9` 已无冲突普通消费，其祖先包含原作
 
 `b2333d1` 普通 push 的在途状态单独登记，随后取得同一 session 的实际 EXIT0。`5322e7d` 第一轮普通 push 实际 EXIT1，输出为 `remote rejected` / `failed`，独立查询远端仍为 `b2333d1`；第二轮普通 push 实际 EXIT0，日志 `c16-product-push-5322e7d-second.log`，随后的独立远端精确同值。没有修改网络、全局 Git 或采用强制推送。
 
-同一产品 64505 的 Node / SDK probe 首 EXIT1 原件和原因 UNKNOWN 保留，三个同 Dir / 白名单环境 probe 后继 EXIT0 由原 H 独立登记。H 已在 F / UI 安全 ACK 后更新同一 D 盘 SQLite 为准确 `b73dc79`，回执为 PID4676 / 启动 UTC `2026-10-15T20:22:58.8651960Z`，Q 的原 `snapshot-1711995690` 独立根已配置；M-release 独立核服务 ready。F 保持唯一实际 HTTP / DOM 操作人，已在该来源核全部认知页及真实事件库的 155 个 event_id 六字段。该结果归原 F 准确报告，I 没有重复读取实际库或页面。H 已完成 `b73dc79`、`3edd1f3` 和 `5322e7d` 的稳定复制并明确停止读取、归还 I 产物窗口，当前允许 I 覆盖后继必要构建。当前等待仅为 H 生产 main / 完整公开 Schema 的准确可消费提交。
+同一产品 64505 的 Node / SDK probe 首 EXIT1 原件和原因 UNKNOWN 保留，三个同 Dir / 白名单环境 probe 后继 EXIT0 由原 H 独立登记。H 已在 F / UI 安全 ACK 后更新同一 D 盘 SQLite 为准确 `b73dc79`，回执为 PID4676 / 启动 UTC `2026-10-15T20:22:58.8651960Z`，Q 的原 `snapshot-1711995690` 独立根已配置；M-release 独立核服务 ready。F 保持唯一实际 HTTP / DOM 操作人，已在该来源核全部认知页及真实事件库的 155 个 event_id 六字段。该结果归原 F 准确报告，I 没有重复读取实际库或页面。H 已完成并归还 `b73dc79`、`3edd1f3` 和 `5322e7d` 产物窗口；`609993b` 新构建通过后已交 H 稳定复制，归还前不覆盖。H main / 完整 Schema 已普通消费，当前后继为 F 从准确 `ecb29c9` 组合生成客户端类型。
 
 原 H 已提交明确输出根修复 `237a957`，I 在准确 `6f61369` 与原 D 环境复验三项实际通过。三项生产 guard、全部断言与 Skip 保持，原首次失败准确分列。OpenCode 四项真实控制器检查只保留原 B 报告的实际结果，本阶段 I 未额外启动这些控制器。原 runtime_http 的 approval_required、session_git 的 delivery_unknown、workbench symlink OS1314、events junction 命令 Invalid switch、selected-text 自产身份仍无 I 新通过记录。M-release 明确受限控制器与重复探针暂停，完整 check / 默认保持未通过或未执行，等待根明确可执行范围或实际条件变化；没有修改断言、skip 或原生程序。
 
-H 的原 Relay 完成来源桥与 B 的 AcceptedExperience HTTP bridge 已消费；生产主入口注入与公共契约后继仍由 H 负责。当前 Interpreter 未配置，`provider_unavailable` 和缺失来源拒绝保持，L2 正向与六步未运行。页面、HTTP、清理正向和完成来源的完整结果继续待原作者交付。Jev 密钥、Laya 语言、Agent completion action 等待定项保持原决定状态；受限 Codex 工具关闭要求和 unknown 不重发继续适用。
+H 已在原 main / Services 注入 Relay 完成来源 Reader、真实同数据库准入与完整公共契约。有 snapshots 的准入保留 H 的 selected refs / delegated owner 检查；无 snapshots 模式使用 B `089a3d2` 的当前项目与每条固定引用权限。原 `completionInterpreter` 仍未配置，`provider_unavailable` 和缺失来源拒绝保持，L2 正向与六步未运行。`ecb29c9` 已通过 M-release 和 M-product 当前 Run 交原 F，保护其既有 WIP 后消费本人候选与 H 契约，再按原 generator 交准确 SOURCE / REPORT；I 保留首次漂移原件。实际候选处于 ready_for_review，具体准入及批准仍由用户决定，原 F 创建 / 修改阶段的真实首次失败和成功写入各自保留。Jev 密钥、Laya 语言、Agent completion action 等待定项保持原决定状态；受限 Codex 工具关闭要求和 unknown 不重发继续适用。
 
-S4 最终 REPORT 的生产清理 PASS 准确归 `b73dc79`：真实 main / SQLite / CodeGraph / AOCI、两个公开 worktree、授权撤销、两次重启、十秒清理 A 且保留 B 原代均有原作者实际结果及经理独立核查。先前 f027 清理失败和孤立 H 缺 S2 提交后通知依赖的启动失败仍保留；I 的 b73 已含该准确 S2 依赖。B 新增人工项目准入组件没有替换 H 的完整 AdmissionProjects 权限，selected refs / delegated owner 继续由原 H 维护。
+S4 最终 REPORT 的生产清理 PASS 准确归 `b73dc79`：真实 main / SQLite / CodeGraph / AOCI、两个公开 worktree、授权撤销、两次重启、十秒清理 A 且保留 B 原代均有原作者实际结果及经理独立核查。先前 f027 清理失败和孤立 H 缺 S2 提交后通知依赖的启动失败仍保留；I 的 b73 已含该准确 S2 依赖。准入的两模式与原完整权限均以 H `25b341d` 的实际装配及上述准确组合检查为准。
 
 最终完整 check / 默认 E2E、原生 L1、L2 六步和最终同源发布仍未通过。本次来源组合和构建属于普通产品阶段，正式 V4 / v0.2、17321、原锁、协议、日程、D1 / Q 及成功 OS / 模型结果保持原范围。
 
