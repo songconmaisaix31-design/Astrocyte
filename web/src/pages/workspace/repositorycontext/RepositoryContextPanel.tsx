@@ -38,7 +38,11 @@ function RepositoryWorkspace({ projectID, disabled }: { projectID: string; disab
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [validation, setValidation] = useState('');
   const [readFailure, setReadFailure] = useState<{ sequence: number; code: string | null } | null>(null);
-  const command = usePersistentCommand<RepositoryIndexEnvelope>(`repository:${projectID}:maintain`, () => ({ status: 'succeeded', message: '实际索引结果已保存，请核查快照与生成版本' }), { failureMessage: cause => commandError(cause).message });
+  const command = usePersistentCommand<RepositoryIndexEnvelope>(`repository:${projectID}:maintain`, () => ({ status: 'succeeded', message: '实际索引结果已保存，请核查快照与生成版本' }), {
+    failureMessage: cause => cause instanceof ApiError && cause.code === 'evidence_missing'
+      ? '当前项目缺少可核查的仓库上下文，请检查实际源码、索引与治理说明。'
+      : commandError(cause).message,
+  });
   const query = useReadApi<RepositoryResult>(async signal => {
     if (!submission) throw new Error('仓库查询缺少明确提交的参数');
     const { body } = submission;
