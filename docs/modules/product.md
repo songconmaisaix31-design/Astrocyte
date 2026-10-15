@@ -17,6 +17,23 @@
 
 本模块已向当前 M-release `ctx_744d9ac00043` / `run_aa4e6a119547` 交接 S5 十八冲突 STOP 条件，向当前 M-relay `ctx_e5acf96d0a7d` 交接 Context→S3→S4 公开契约顺序。临时跨树编辑仍须 S5 STOP 与原 B/S2 的明确安全检查点 ACK；无 ACK 不编辑共享冲突。各轨启动后立即以当前模块 Dispatch 汇报新实际终端、模型、WIP、准确源码与下一依赖，后续阶段 SOURCE / 独立 REPORT 普通 push，全部首 RED / UNKNOWN / NOT_RUN 保留。
 
+### 恢复阶段独立 REPORT 与当前人员
+
+本恢复计划 SOURCE `0bb2fe9af19817915f30f0d47bb69c3726d1493e` 已普通 push。四轨继续原 Task / 原树 / 原分支；S2、T 启动回执 ready / turn_started，S3、产品 UI 首回执 turn_start_unobserved 保留。模块按准确终端纯文本读取核原提示停在 composer，各发送一次 bare Enter 提交已有正文，没有重送提示或另派人员。其后公开 `worker-list` 及本人恢复报告均证明四者实际 live / working，公开 projection 模型均为 `gpt-6.1-sol`，终端文本显示 xhigh fast。
+
+| 当前唯一人员 | 新 Dispatch / 实际终端 | 当前实际结果 |
+|---|---|---|
+| B，根恢复原 Run 生命周期 | `ctx_334d41288392` / `term_2376ba5b-75b2-4bda-81cc-629441e94ca2` | 原 `ddfae290` 与 accepted experience 四项 WIP 保留。已安全 ACK S5 两依赖；真实 015 外键要求业务采用收据使用专用新增存储，不能制造认知 Event |
+| F，根恢复原 Run 生命周期 | `ctx_0edef68eae2c` / `term_36ae50f1-9c0e-446f-ac73-a8fab6f0f3af` | SOURCE `2f2db3017193bf0572648d90bc7adb88b8d475b1`，报告 staged WIP 保留；本轮 typecheck / lint / build 与四文件 36 项定向通过，Relay 缺实际 H URL 首 FAIL / 两项未运行保留。默认 280 项旧结果为 203 PASS / 41 FAIL / 32 条件 SKIP / 4 未运行 |
+| T | `ctx_daf09783dc25` / `term_b85293d1-af26-4490-8ee9-e4f6ab10df8f` | clean `da76e66b8850dc1161b0e731a950769958dfe4ca`。已准确获准普通消费 S2 `55b48b755d7d9790d5f6f58f53724a0e4f59ce7e` 修复，继续真实准入完整 consumer，旧 RED 保留 |
+| S2 | `ctx_efb9861f1210` / `term_2c9fdf85-ae4d-46a9-a750-ea0ed2a1614c` | `0f16112` 与原十三行测试 WIP 保留，真实 Context SQLite / Git 检查继续。生产 main 当前缺 ConfigureContext，已交 H 唯一域处理；原生成功仍 NOT_RUN |
+| S3/S6 | `ctx_7c54a629cd46` / `term_d0a1580e-03fa-4206-8329-d1167c51dc00` | 本人核当前 SOURCE `2bd5d26ea6f932d8511afd869ff41f2146c0f94a` / REPORT `fb57f0f31c4e667b050cb26891a891190eaf4c14`，clean，继续实际 policy / source / S6 引用链；完整原生 AT07/08/09/13 未通过 |
+| 产品 UI | `ctx_e9679e684b18` / `term_924e5e05-98ed-4c39-bd58-9bbe7824abb0` | 本人核 clean `f70fadf`，继续已成功 S2 十项及固定资料引用两项；Context / S3 / S4 等 H→F 精确契约，未凭猜测字段实现 |
+
+用户新决定由根 `msg_22fce39dc5a4` 转交：前端复用之前设计，TypeScript 可以使用。已准确发 F 和产品 UI，双方实际接收。既有迁移出处为 `web/UI-preview-report.md`；当前设计代码为 `web/src/styles/preview.css`、`variables.css`、`App.tsx`、`components/Nav.tsx`、`PageFrame.tsx` 与三页，原输入为用户的 `Downloads/Astrocyte-preview.html`。本模块只读取 tracked 文档及源码路径，未打开原 HTML 或使用视觉功能。扩展保持 React / TypeScript / Vite、共享组件、认证与查询层，实际 DOM / CSS / 键盘交互验证继续。
+
+M-release `msg_c996642abb6e` 已转交恢复后唯一 S5 `ctx_e200fb7cf3c4` 本人 STOP ACK `msg_4c8ac8b81ac2`，十八共享件停止编辑和 stage，不继续 merge。B 的安全 ACK 为 `msg_ec6a9f27c346`；S2 具体十六文件与安全 ACK 请求已准确交付，尚待其当前检查完成。三个条件满足前保持临时编辑未放行，随后逐域归还并由原 S5 完成普通合并。
+
 事实源为 [AGENTS.md](../../AGENTS.md)、[HANDOFF.md](../../HANDOFF.md)、[STATUS.md](../../STATUS.md)、[SPEC](../SPEC.md)、[TASKS](../TASKS.md)、[QUESTIONS](../QUESTIONS.md) 和 [本次发布任务](../../tasks/Release-v0.1-20261014.md)。本模块只修改此文件，负责资料导入、人工沉淀、项目权限、进度与全部既有 Web。用户最新明确按 SPEC 并行实施 S0–S6，根消息 `msg_e83cb8e73578`、`msg_c07e28cb0b8f` 已转交；具体私有外发、自由工具及 `working` 条件仍按待答边界处理。
 
 ## 一页执行计划
