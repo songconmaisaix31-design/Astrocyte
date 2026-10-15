@@ -623,3 +623,13 @@ SOURCE `bd18df4c57f41b3c880bb47fba98c0deec5135ce` 已普通 push，仅修改 B �
 `go test -mod=readonly -p=2 ./internal/adapters/httpapi -run '^(TestLoopback|TestIsLoopbackHost|TestRequestIDMiddleware)' -v -count=1` EXIT 0，6 项主检查，包 5.773s；`.verification/origin-standard-url-first.log`。新增检查运行真实 Foundation 服务和实际 loopback HTTP，16 个明确 Origin 输入涵盖正常 IPv4 / IPv6、缺省 Origin、外部地址、错误格式、用户字段、路径、空及非空 query / fragment、错误 scheme；拒绝状态、ErrorV1 和同一请求 ID 全部保持。原 5 项主检查和全部断言保留，没有使用替代服务或来源。
 
 `go build -mod=readonly -p=2 ./...`、`go vet -mod=readonly -p=2 ./internal/adapters/httpapi` 均 EXIT 0，日志分别为 `.verification/origin-standard-build-first.log`、`origin-standard-vet-first.log`；两个变更文件 `gofmt -l` 与 diff 检查无输出。H 独占的 `server.go` 静态路由中 Stat 错误分类与注释整改已单独 Handoff，没有跨域编辑；完整默认、受限原生和实际六步结果继续未通过。
+
+## 人工准入的当前项目权限与实际草稿事务
+
+SOURCE `19ff699f304961d3c9fad6a336163848c923057b` 已普通 push，新增 `admissionbridge.NewHumanProjectAccess(actualLocalProjects)`。H 将该返回值传给 `Connect` 的 `AdmissionOptions.Projects`，使用当前人类身份及实际 `LocalProject.ID`。项目读取复用原 `ListProjects(ctx)` 和同一主数据库事务；固定资料由原准入服务核实。Root、SpaceID、未知 ID、Agent 及未授权判断角色不能代替实际人工项目权限。该构造只提供人工准入能力，委托判断仍使用原明确决策和权限入口。
+
+`ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261016/backend/s1-verification` 下，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` EXIT 0，包 5.282s，`.verification/admission-project-actual-first.log`。实际空间和公开项目注册、同事务零额外连接、错误项目与角色、另一实际数据库事务、取消全部保持预期；准入、草稿、批准及原生会话记录均为零。既有准入检查的输出目录现同样接收明确绝对路径。
+
+明确设置已获准的匿名 `HTTP_PROXY` / `HTTPS_PROXY=http://127.0.0.1:7890` 后，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestActualAdmissionDraftAtomicLifecycle$' -v -count=1` EXIT 0，包 8.859s，`.verification/admission-actual-recovery-first.log`。原检查实际读取固定官方 arXiv `2501.12948v1` Atom / PDF，以人工记录创建候选；覆盖错误数据库消费者的原子回滚、成功准入与唯一草稿、幂等重放、同 revision 冲突、原 outbox / receipt、独立撤销、SQLite 重开及真实资料撤回拒绝。全部原断言保留，执行批准及原生会话始终为零；未调用模型或修改系统网络。
+
+全包 `go build -mod=readonly -p=2 ./...`、目标包 `go vet -mod=readonly -p=2 ./internal/adapters/admissionbridge`、三件 Go 格式及 diff 检查均 EXIT 0；日志为 `.verification/admission-project-build-first.log`、`admission-project-vet-first.log`。生产 HTTP 的 Services 字段、路由和 main / OpenAPI 装配仍由 H 实施，本文实际 service / SQLite 结果不替代同实例 UI / HTTP 验收。
