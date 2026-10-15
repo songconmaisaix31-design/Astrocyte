@@ -1,5 +1,39 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 02:01 真实仓库上下文两尺寸验证
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`。分支 `songconmaisaix31-design/product-ui-20261015`，SOURCE `96fa3e6d6ef5716d8cc3aa0a2180bc600b706b3d` 已普通 push，独立 `git ls-remote` 同值。源码仅两件：新增 `web/e2e/s4-repository-configured.spec.ts`，以及本域 `RepositoryContextPanel.tsx` 在真实 `evidence_missing` 时显示仓库源码、索引与治理说明的核查提示。共享 API、类型、认证、helper 和配置未修改。
+
+按模块 `msg_213a3e36e496` / `msg_04b104e4f465` 的本人当前输入，直接只读使用公开仓库 `astrocyte-s4-public-context-20261015` 的两个真实工作树，HEAD 均为 `4317d610cbe80aa6c4e22ea4da5e8dde013de4ed`。A 的九项现有 WIP 和十件 `.aoci` 文件保持，B 无治理索引；每项已启动服务的用例结束后均核 Git 状态及两树治理文件的路径、大小和修改时间未变。测试没有复制原数据库或投影，没有写入原工作树。CodeGraph 使用实际 Node v24.16.0 / SDK 1.0.1 与本树原适配脚本；AOCI 使用本人交付的实际 v0.1.0-rc20 程序，程序与原始地图仅保留本机，不进入 Git 或发布包。
+
+每个服务使用独立 D 盘 SQLite、objects、projection/cache、TEMP 和空程序 profile。按模块 00:42 已授权的实际缓存，明确设置 `GOMODCACHE=C:/Users/DW/go/pkg/mod` / `GOPROXY=off`；缺少依赖立即失败。其余资源为 `GOMAXPROCS=2`、`GOFLAGS=-p=2`、`workers=1`、`retries=0`，没有新增 skip、放宽业务断言或修改原 helper / 超时。没有调用原生 Agent 或模型。
+
+| 实际命令与运行 | 结果与本机证据 |
+|---|---|
+| `pnpm --dir web typecheck` | PASS / EXIT0 |
+| `pnpm --dir web exec eslint src/pages/workspace/repositorycontext e2e/s4-repository-configured.spec.ts` | PASS / EXIT0，零 errors / warnings |
+| 配置场景首轮，`pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s4-repository-configured.spec.ts --workers=1 --retries=0`，两尺寸 | 6 FAIL / EXIT1，全部保留。两个 CodeGraph 场景实际 index/search、Count snake 字段和来源行号通过后，测试的相对 `has` 定位符错误；1280 AOCI 实际 refresh 200 / 地图六项读取后遇同类定位错误；1920 AOCI 在私有 HOME 的新 Go 模块缓存下载发生 EOF，未到业务；两个 B 缺口场景真实 404 / 400 / 空存储通过后，页面缺少对应领域提示。日志为 `product-ui-20261015/logs/e2e-s4-configured-first.log`，原始数据库、trace 和报告为 `ui-s4-first` / `ui-s4-first-results` / `ui-s4-first-report` |
+| 同一配置场景修正后第二轮，两尺寸 | 6 PASS / EXIT0，2.8 分钟。日志 `product-ui-20261015/logs/e2e-s4-configured-second.log`，数据、trace 和报告为 `ui-s4-second` / `ui-s4-second-results` / `ui-s4-second-report` |
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s4-repository-context.spec.ts --workers=1 --retries=0`，原未配置场景两尺寸 | 2 PASS / EXIT0，50.0 秒。原用例零改动，503 / 明确参数 / 403 快照保留与人工恢复 / 维护禁用 / 零索引和原生会话 / 页面无横向溢出均通过。日志 `product-ui-20261015/logs/e2e-s4-unconfigured-first.log`，数据和报告为 `ui-s4-unconfigured` / `ui-s4-unconfigured-results` / `ui-s4-unconfigured-report` |
+| `git diff --check` | PASS |
+
+上表全部本机路径前缀为 `D:/Astrocyte-agent-assets/20261015/`，原始响应、模型编写的地图说明、认证、SQLite、trace 和工具诊断只保留本机。文档和工具输出只给安全派生结果与指针。八个尺寸用例的成功来自配置六项和未配置两项两次独立运行，没有登记成单轮八项。
+
+配置场景实际覆盖两工作树的同仓库身份与不同 worktree / generation、明确用途 / 根路径 / 四项预算、人工建立索引、真实 Count 搜索和来源位置、选择符号后实际影响查询、全部关系标记 `codegraph_static_heuristic` 与明确 `semantic_embedding_not_available`、目录许可撤销后的新查询 403 / 保留结果 / 禁止维护、恢复权限后的 409 / 人工重建 / 新权限版本、服务进程重启后的实际 SQLite generation、零原生会话和两尺寸无横向溢出。AOCI 实际读取缺失地图 404 后明确刷新、HTTP 200、六项 `aoci_model_authored_fras` 说明与职责 / 约束字段逐项展示均通过；B 的真实缺口拒绝刷新 400 / `evidence_missing`，SQLite 未保存 AOCI 索引，页面显示对应核查提示。地图说明保持模型编写来源，静态关系保持启发式来源。
+
+完整默认浏览器需明确提供以下当前本人输入，正向测试不使用猜测默认值或 skip：
+
+| 环境变量 | 当前实际绝对路径 |
+|---|---|
+| `ASTROCYTE_TEST_S4_WORKTREE_A` | `C:/Users/DW/orca/workspaces/Astrocyte/works-repository-context-s4-20261015/dist/s4/worktree-a` |
+| `ASTROCYTE_TEST_S4_WORKTREE_B` | `C:/Users/DW/orca/workspaces/Astrocyte/works-repository-context-s4-20261015/dist/s4/worktree-b` |
+| `ASTROCYTE_TEST_S4_NODE` | `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe` |
+| `ASTROCYTE_TEST_S4_SDK` | `D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/sdk/node_modules/@colbymchenry/codegraph` |
+| `ASTROCYTE_TEST_S4_AOCI` | `C:/Users/DW/orca/workspaces/Astrocyte/works-repository-context-s4-20261015/dist/s4/tools/aoci.exe` |
+| `GOMODCACHE` | `C:/Users/DW/go/pkg/mod`，同时明确 `GOPROXY=off` |
+
+本轮准确生产组合沿 `60288aa0d1d2a5b1ceb014497b60ab89ba3620ea`。模块 `msg_91406158bd47` 已明确另一个实际 main 的撤权异步清理失败，等待 B/H 原负责人准确 SOURCE；本轮未验收 metadata / generation 的后台清除，不以领域旧检查替代 main 结果。S4 的同步与预算拒绝浏览器检查、S3 认领与 Artifact 正向、S5 H→F 的实际客户端、最终同源标准 `pnpm check` / `pnpm build` / 无过滤默认 E2E 及 Windows 包仍继续。当前未消费任何在途 WIP，未执行 Relay 原生操作，未结算整功能。
+
 ## 2026-10-16 01:22 实际 S2 / S3 人工路径与固定上下文验证
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`，分支 `songconmaisaix31-design/product-ui-20261015`。当前准确 SOURCE `471bcc9f34b5ae82375b03fdcf5938d3a127d9b1` 已普通 push 并独核远端同值，工作区 clean。本域页面增量为 `64ab5cadb93067aacfe11c51f5ad0036cf9bb49a`、`32adab9201f44d6a1628da1f02a48d9e4a2ba819`、`614ebc72bf87d8c41bd75be67f659da34a85526b`；原 S3 用例 SOURCE `033557f16b6b806e8a1626fc28bfd34bde13bed7`，后继测试修复为当前 SOURCE。
