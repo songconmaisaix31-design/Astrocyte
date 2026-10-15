@@ -27,6 +27,7 @@ func clearRepositoryConfig(t *testing.T) {
 	for _, name := range []string{
 		"ASTROCYTE_REPOSITORY_ENVIRONMENT_ID", "ASTROCYTE_CODEGRAPH_NODE", "ASTROCYTE_CODEGRAPH_SDK", "ASTROCYTE_CODEGRAPH_SCRIPT", "ASTROCYTE_AOCI_EXECUTABLE",
 		"ASTROCYTE_REPOSITORY_MAX_FILES", "ASTROCYTE_REPOSITORY_MAX_BYTES", "ASTROCYTE_REPOSITORY_MAX_RESULTS", "ASTROCYTE_REPOSITORY_MAX_DEPTH",
+		"ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS",
 	} {
 		t.Setenv(name, "")
 	}
@@ -116,5 +117,30 @@ func TestRepositoryContextConfigRejectsActualUnavailableDependencies(t *testing.
 	t.Setenv("ASTROCYTE_CODEGRAPH_NODE", missing)
 	if _, err := resolveRepositoryContextConfig(context.Background(), directory); err == nil {
 		t.Fatal("missing actual Node executable was accepted")
+	}
+}
+
+func TestRepositoryCleanupBatchTrustedConfiguration(t *testing.T) {
+	clearRepositoryConfig(t)
+	directory := repositoryConfigDirectory(t)
+	c, err := resolveRepositoryContextConfig(context.Background(), directory)
+	if err != nil || c.CleanupMaxGenerations != 64 {
+		t.Fatal("program-defined repository cleanup batch changed", c.CleanupMaxGenerations, err)
+	}
+	for _, input := range []struct {
+		value string
+		want  int
+	}{{"1", 1}, {"64", 64}, {"1000", 1000}} {
+		t.Setenv("ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS", input.value)
+		c, err := resolveRepositoryContextConfig(context.Background(), directory)
+		if err != nil || c.CleanupMaxGenerations != input.want {
+			t.Fatal("explicit cleanup batch changed or was rejected", input.value, c.CleanupMaxGenerations, err)
+		}
+	}
+	for _, value := range []string{"0", "-1", "1001", "1.5", "unavailable"} {
+		t.Setenv("ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS", value)
+		if _, err := resolveRepositoryContextConfig(context.Background(), directory); err == nil {
+			t.Fatal("invalid trusted cleanup batch accepted", value)
+		}
 	}
 }

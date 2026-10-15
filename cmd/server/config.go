@@ -29,7 +29,12 @@ type repositoryContextConfig struct {
 	MaxBytes      int64
 	MaxResults    int
 	MaxDepth      int
+
+	CleanupMaxGenerations int
 }
+
+// 每次清理最多删除 64 个 generation；可信环境可在 S4 规定的 1..1000 内配置。
+const defaultRepositoryCleanupMaxGenerations = 64
 
 // HTTP 只提交业务请求；程序、环境身份和预算由本地可信启动配置提供。
 func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (repositoryContextConfig, error) {
@@ -56,6 +61,9 @@ func resolveRepositoryContextConfig(ctx context.Context, dataDir string) (reposi
 		return c, err
 	}
 	if c.MaxDepth, err = configuredPositiveInt("ASTROCYTE_REPOSITORY_MAX_DEPTH", 5, 5); err != nil {
+		return c, err
+	}
+	if c.CleanupMaxGenerations, err = configuredPositiveInt("ASTROCYTE_REPOSITORY_CLEANUP_MAX_GENERATIONS", defaultRepositoryCleanupMaxGenerations, 1000); err != nil {
 		return c, err
 	}
 	graphConfigured := c.Node != "" || c.SDK != "" || c.Script != ""
