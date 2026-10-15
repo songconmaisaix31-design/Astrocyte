@@ -8,6 +8,8 @@
 
 用户已确认 done 双通道为 `verified_complete | user_confirmed_complete`，started 证据独立记录且不回填，资源释放独立审计，user_confirmed 任务照常进入经验管道。Astrocyte 管理目标、批准和上下文，Works Relay 为后端 A，Morphogenesis 为后端 B；Mission 认领、预算与租约由单一后端独占，v0.3 任务书由根登记，路由自动化后置 L3。该决定交原领域 owner 实现，本模块不改业务。
 
+用户随后明确的六步工程验收为：1 保存验收结果、产物、检查和实际完成通道；2 成败、轨迹及产物引用可追溯；3 Interpreter 起草有证据候选进入 quarantine；4 用户审核批准进入 approved 并保留批准记录；5 新任务通过 `get_experiences` 获取经验并写入交接上下文；6 保存后续执行结果，核实际复用及是否避免重复踩坑。六步通过登记工程闭环，效果判断由独立对照实验承担，不将当前工程授权扩大为正式实验已通过。
+
 | 四树当前检查点 | 实际路径 / branch | 本机准确 HEAD 与工作区 |
 |---|---|---|
 | B | `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend` / `standards-backend` | `da7227749ea2f361c8b708be8614d3236fe2f04a`；clean |
@@ -38,9 +40,9 @@ I 普通合入 B `da7227749ea2f361c8b708be8614d3236fe2f04a` 时实际产生十�
 
 | 原 owner | I 原工作树内唯一临时 edit / stage 路径 | 归还条件 |
 |---|---|---|
-| B，由 M-product 管理 | `cmd/server/workbench_config.go`、`cmd/server/workbench_config_test.go`、`internal/adapters/sqlite/workbench.go`、`internal/adapters/sqlite/workbench_test.go`、`internal/workbench/app/contracts.go` | 保留准确 B Reader 与既有 Workbench 能力，完成适用解析 / 编译或明确跨域阻塞，只编辑和 stage 五件，本人停止 I 树写入并归还。 |
-| H，由 M-relay 管理 | `cmd/server/main.go`、`contracts/openapi.yaml`、`internal/adapters/httpapi/server.go` | 保留两线真实入口、契约和鉴权，不复制未提交领域实现，只编辑和 stage 三件，本人停止 I 树写入并归还。 |
-| 管理文档临时 owner | `HANDOFF.md`、`STATUS.md`、`tasks/Workbench-v01.md` | 根的明确授权待答，未放行写入；仅正确当前状态与任务要求的验收记录，不写业务。 |
+| B，由 M-product 管理 | `cmd/server/workbench_config_test.go`、`internal/adapters/sqlite/workbench.go`、`internal/adapters/sqlite/workbench_test.go`、`internal/workbench/app/contracts.go` | 保留准确 B Reader 与既有 Workbench 能力，完成适用解析 / 编译或明确跨域阻塞，只编辑和 stage 四件，本人停止 I 树写入并归还。 |
+| H，由 M-relay 管理 | `cmd/server/workbench_config.go`、`cmd/server/main.go`、`contracts/openapi.yaml`、`internal/adapters/httpapi/server.go` | 原 workbench_config.go 继续归 H，保留两线真实入口、契约和鉴权，不复制未提交领域实现，只编辑和 stage 四件，本人停止 I 树写入并归还。 |
+| 同一 I，根单次授权 `msg_bae427f5bdbd` | `HANDOFF.md`、`STATUS.md`、`tasks/Workbench-v01.md` | 仅本次三文档冲突，使用文件编辑工具保留正确当前状态及必要验收记录并 stage，不带入其他 validation 祖先或修改业务；其余 owner 全部归还后仅 I 继续普通合并。 |
 
 以上人员不操作 I 的合并生命周期；全部本人归还后，本模块独核 `git ls-files -u`、普通与 cached diff 检查，再明确放行唯一 I 继续普通合并。B / H 自身工作树 WIP 及原 H / S2 四冲突保留。后续 F 最新独立 REPORT `430d3cbd81801b27b055993aa3a7ad307d6cb641` 已到，源码仍为 `f3f1fbd8670bd28bb7a78b47c58489469a2ed321`；I 后续按准确普通来源连续消费，默认 100 项的 86 PASS / 1 Vite EACCES / 13 未执行按原范围保留。
 

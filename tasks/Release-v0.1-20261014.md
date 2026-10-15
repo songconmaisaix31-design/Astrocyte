@@ -8,7 +8,11 @@
 
 用户当前优先顺序为：① B / F / R / H 四树收拢与组合验证 → ② 集成版 L1 真实收账 → ③ L2 经验管道 → ④ 六步流程端到端首跑；10-22 是 L2 验收目标日期，相关功能进入发布包。唯一 I 立即准备并普通消费准确已提交阶段来源，原 owner 继续交准确补丁与独立 REPORT，完整组合检查在集成树执行。done 双通道为 `verified_complete | user_confirmed_complete`，started 证据独立且不回填，资源释放独立审计，user_confirmed 任务照常进入经验管道。Astrocyte 管目标 / 批准 / 上下文，Works Relay 后端 A、Morphogenesis 后端 B，Mission 认领 / 预算 / 租约由单一后端独占；v0.3 任务书由根登记，路由自动化后置 L3。
 
+用户已明确 L2 六步工程验收：1 保存验收结果、产物、检查和实际完成通道；2 成败、轨迹和产物引用可追溯；3 Interpreter 起草有证据候选进入 quarantine；4 用户审核批准进入 approved 并保留批准记录；5 新任务通过 `get_experiences` 获取经验写入交接上下文；6 保存后续执行结果，核实际复用及是否避免重复踩坑。执行顺序为四树集成与组合验证 → 集成版原生 CLI / Today / L1 → L2 六步，10-22 为目标，相关功能进入发布包。六步通过仅登记工程闭环，效果判断由独立对照实验承担；用户审核与评分由用户本人完成。
+
 四树当前实际路径 / branch / HEAD：B `standards-backend` / `standards-backend` / `da7227749ea2f361c8b708be8614d3236fe2f04a`，F `standards-frontend` / `standards-frontend` / `9fb9df967dc4253953fe079b21375337608defcd`，R `works-relay-runtime` / `songconmaisaix31-design/works-relay-runtime` / `b9cb0665f47f4fbe4991c2cbf9f70de0bc129fdc`，H `works-relay-http` / `songconmaisaix31-design/works-relay-http` / `0138c6318dac2aa0e3091b06830ee7842b40f152`；均位于 `C:/Users/DW/orca/workspaces/Astrocyte/`。B/F 当前 clean，R/H 原 WIP 与 H 四冲突保留，具体输入由所属模块核实后交 I。原 I Task 已 completed / succeeded，复用原 `works-relay-integration` 工作树 / 同名分支开展唯一新阶段；基线 `0e5ce82898c3d546f711d1e452dadfabb13b5537`、clean，旧资源 release_unknown 如实保留。
+
+当前唯一 I 为 `task_2ee44933df72` / `ctx_b573b61bb4aa` / `term_1c79262e-de36-41c2-bdd5-5113e2d3bb87`，公开身份 Codex / gpt-6.1-sol、xhigh fast，已实际开始。初次普通合并 B da722 产生十一冲突，MERGE_HEAD 和全部原件保留；I 本人停止十一件写入后，由原 B 仅处理 workbench_config_test / sqlite workbench 与其 test / workbench contracts 四件，原 H 仅处理 workbench_config / main / OpenAPI / httpapi server 四件。根 `msg_bae427f5bdbd` 单次授权同一 I 仅处理 HANDOFF / STATUS / Workbench-v01 三管理文档冲突。所有临时 owner 只 edit / stage，本人归还且模块独核 U=0 后仅 I 继续普通合并，具体绝对路径及回执见模块计划。
 
 前端继续复用已确认白绿界面与 TypeScript。全部新增大型模型、SDK、构建和解压产物使用 `D:/Astrocyte-agent-assets/20261015/<owner>/` 独占目录，Go 及调用 Go 的 Node / PowerShell 父进程仅设置本进程 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend` 复用现有标准缓存，GOTMPDIR 保持 D 盘各 owner 独占路径，不改变全局 HOME、auth 或系统 TEMP。根授权的精确旧 Go 编译缓存维护已使 C 盘空余超过 12 GiB；一个占用文件导致标准命令 EXIT 1，残留与首错误保留，不扩大清理范围。
 
