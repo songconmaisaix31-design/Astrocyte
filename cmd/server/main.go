@@ -253,7 +253,7 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	closeRelay, err := assembleRelay(&services, db, registry, launchContexts...)
+	closeRelay, err := assembleRelay(&services, db, registry, objectStore, launchContexts...)
 	if err != nil {
 		return err
 	}
