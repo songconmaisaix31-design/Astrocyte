@@ -19,6 +19,48 @@
 
 S5 本人新 STOP `msg_c8803c8e8609` 已核准确 HEAD / MERGE_HEAD、两项 AA 和全部写入及 merge 生命周期停止。临时域仅原 S5 树 `internal/attention/app/taste_profile.go`、`internal/adapters/sqlite/taste_profile_test.go`，经 M-product 取得本轮原 B 本人安全 ACK 后仅 edit / stage；其余路径和所有 merge 生命周期保持 S5 所有。完成本人 STOP 归还后本模块独核，再仅放行 S5 继续。根独核 CI `38768919397` 对准确 `2367224` 的 Windows gofmt 首失败与 Ubuntu `admissions_service.go` 首失败，均已交原 S2 / B；本机 c16 与 CI 分别保留，build / 默认 E2E 尚未执行。
 
+### 00:44 S4 普通合并的三条互斥处理范围
+
+I 准确管理同步 `35cc64faac271d43e5f63103a810081b0eb7ac62` 的首次 build 实际 EXIT0 / 57.3064957 秒，原日志在 D 盘 `integration/c16-recovery-build-35cc64f`。后继 H 单文档 `8bc21f140c36b77275358e28951e1ca1b7cb7a6d` 已普通合入；S4 SOURCE `55fd3853a8230da580c01e3bc427a4074ada5553` / REPORT `91609e5d467d2227f32dfdd8717b773340eaf1da` 经原模块确认可消费后普通合并，出现 30 项领域 / 依赖冲突。当前 I HEAD `0f420b827c3d676c93757893e5d17791a2744b8b`、MERGE_HEAD 为上述 S4 REPORT，I 本人新 STOP `msg_98a73eff9a81` 确认没有编辑或 stage 冲突、全部写入及 merge 生命周期停止，无在途验证。
+
+临时目标树仅 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-integration`。以下准确列表互斥，各原作者本轮安全 ACK 成立后仅编辑并 stage 本组路径；保留已提交领域行为与真实断言，不复制 WIP、不整体选边、不进行 commit / continue / abort / reset。完成本人停止目标树全部写入并归还后，本模块独核 U0、准确来源和差异，再仅 I 继续原普通 merge。管理记录集中维护，不增加单独管理报告或重复远端检查门禁。
+
+- 原 B，经 M-product：`dependencies.lock.json`、`go.sum`。
+- 原 S2，经 M-product：`docs/standards/workspace-s2.md`；`internal/adapters/httpapi/workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go`；`internal/adapters/sqlite/workspace_approvals.go`、`workspace_context_packets.go`、`workspace_goals.go`、`workspace_proposals.go`、`workspace_session_bindings.go`；`internal/workspace/app/proposal_context.go`、`proposal_ports.go`、`s2_service.go`、`session_bindings.go`；`internal/workspace/domain/approvals.go`、`goals.go`、`proposal_context.go`、`proposals.go`、`session_bindings.go`；`tests/s2/approval_test.go`。
+- 原 S4，经 M-relay：`docs/standards/repository-context-s4.md`；`internal/adapters/repositorycontext/git.go`、`service.go`、`snapshot.go`；`internal/adapters/sqlite/repository_context.go`；`internal/workspace/app/repository_context.go`；`internal/workspace/domain/repository_context.go`；`tests/s4/verify.ps1`、`tests/s4/verify/main.go`。
+
+原 UI 的实际 YAML 加载检查发现当前集成契约重复 `/goals` 等路由键；原 H 树没有这些重复。本模块核当前 I `contracts/openapi.yaml` 相对 HEAD 无差异、无工作区或 stage 修改，仍受 I 全树 STOP 约束。按 M-relay `msg_8e2b2dc5a50f` 新增原 H 唯一临时路径 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-integration/contracts/openapi.yaml`；H 本轮自然安全 ACK 成立后仅用文件编辑工具修复准确重复，使用成熟 YAML 工具检查，完整保留各路由、字段、响应和 schema，不整体覆盖。H 不 stage、不操作其他路径或 merge 生命周期，完成本人 STOP 归还；该单件与上述三组互斥，全部归还和本模块独核后，仅 I stage 该已修复契约并继续普通合并。
+
+S2 格式 SOURCE `83c8b62766b28470fc4fe2514631172ea2f286eb` / REPORT `f0fa889742d5e2c4c0bc113fcf857930e2c99122`、B 格式 SOURCE `53f0bebdfcf311706ee680d48542d9bc46e151a7` 已交 I 后续准确普通消费，不更换当前 MERGE_HEAD。F `b369e347c416c8d9821d2967e2b0e3463663cacf` 仅重复准确 B helper，当前 I 已含该来源，无需同件重合；F 新 Prepare 保持原 WIP。
+
+00:50 后继准确消费队列如下。来源均由所属模块核实原作者已提交、远端一致与实际范围，并已交唯一 I；当前 S4 合并结束后按自然检查点普通消费。独立报告在途不增加消费已确认业务源码的前置，未提交内容不进入队列。
+
+| 原作者 | SOURCE / REPORT | 已验范围与剩余 |
+|---|---|---|
+| B 格式 | `53f0bebdfcf311706ee680d48542d9bc46e151a7` / 独立报告在途 | 仅 `admissions_service.go` 格式；与 S2 格式补丁分别消费。当前 I 两依赖已原 B 本人 STOP 归还，临时权限结束。 |
+| S2 格式 | `83c8b62766b28470fc4fe2514631172ea2f286eb` / `f0fa889742d5e2c4c0bc113fcf857930e2c99122` | 仅 `workspace_proposals.go` 格式，不含四件 Context WIP。 |
+| R | `86eceef1cc1af71681d79aee7a6ce53b1abcc855` / `7713b23e1cfe347bd22f4ae184d57b308840cb28` | 精确 tuple / 当前 turn / 实际成功终态拒绝；三项 `TestCompletionExperience` 2.683 秒通过，未调用模型，不覆盖 B 人工无 trace 后继或 L1 正向。 |
+| H 输出读取 | `1ad92a8e1e647fecf9555b808a35fa90e14cdcbb` / 独立报告在途 | 四件 H 原域源码；真实文件身份 / 私有序列化 1.875 秒、空实际 SQLite 拒绝 1.438 秒及 vet 通过。生产 Reader 装配和真实 verified 正向尚未通过。 |
+| S3 | `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b` / `841c147153ebea043542e14d8b09682f1ba93952` | 六件原域源码；真实 S2 批准 SQLite、Swarm SQLite 6.684 秒 / HTTP 2.306 秒、vet / build / 33 包边界通过。最外层 preflight 与已有事务拒绝阶段，不计双 Git 完整生产通过，S2 两阶段公共契约后继和未答 Claim 门禁保持。 |
+| F | `e689e7f5410d977f8cb72df57efbfeb5f490c415` / `72f8ba4e2414ba8cd553e3172e38aa0a6c1de203` | 七件真实客户端 / Prepare 源码，含准确 UI `0661b49` 八页面及已提交共享 / 生成前置；type / lint / web build、四 HTTP 文件 17 PASS 与五显示文件 37 PASS，重合不累加。Prepare 两尺寸四项仍 120 秒 webServer 准备超时 NOT_RUN，B 生命周期后继在途，默认未通过；新 UI WIP 未消费。 |
+
+S5 两件临时域经原 B 本人 STOP 归还，本模块核 U0、working / cached diff 检查与完整文件同 `6d1d59b` 后，仅放行原 S5 继续，普通 merge 为 `158e0a3d4361d410c4d6a8664a48c3abb6741b85`。新 typed Taste 首真实 HTTP 400 保留；补完整选项 / 等级后，三题型实际配置、四种无效 expected 拒绝 / 版本不变、缓存五反馈与 SQLite / HTTP 重启检查实际 37.014 秒通过。八项非模型组合仍在运行，新 SOURCE 待交，本轮模型调用为 0，原成功 Sources 推理复用。
+
+### 00:59 当前准确组合与 S2 普通合并的新临时范围
+
+前轮四组均已原作者本人停止目标树写入并归还：B 两依赖、S2 十九件、S4 九件与 H 单契约。本模块核准确 HEAD / MERGE_HEAD、U0、working / cached diff 检查，B 两件同 HEAD、S4 九件同输入、S2 十九件仅 `proposal_context.go` 在事务前加入原 S4 的 Validate 三行；H 契约独立使用官方 YAML 2.9.1 strict 解析通过、139 路径、修复前后完整语义相等。全部临时权限结束后，仅 I stage 原 H 修复并完成普通合并，SOURCE `9ce5c2c21b273344e2448bee2ee4b80fa27d5fec` 已普通 push / 原 I 独核远端同值，工作树 clean。该新阶段尚未执行 check / build / 默认 E2E，已交 F / UI 在自然检查点消费准确契约。
+
+I 随后普通合入 S2 REPORT `f0fa889742d5e2c4c0bc113fcf857930e2c99122`，出现 15 项领域冲突。当前 HEAD 为上述 `9ce5c2c`、MERGE_HEAD 为 `f0fa889`；I 本人新 STOP `msg_eebdc5ffdcc5` 明确未编辑或 stage 冲突、停止全树写入、merge 生命周期与验证。本轮目标仍只 I 原树，以下两组原作者取得本轮本人安全 ACK 后仅精确 edit / stage，完成本人停止目标树全部写入并归还，本模块独核后仍仅 I 继续原 merge。前轮临时权限不延续，不更换 MERGE_HEAD，不复制 WIP。
+
+- 原 S2，经 M-product：`internal/workspace/app/proposal_context.go`、`internal/workspace/domain/proposals.go`、`tests/s2/approval_test.go`。
+- 原 S4，经 M-relay：`docs/standards/repository-context-s4.md`；`internal/adapters/repositorycontext/aoci.go`、`codegraph.go`、`codegraph.mjs`、`git.go`、`service.go`、`snapshot.go`；`internal/adapters/sqlite/repository_context.go`；`internal/workspace/app/repository_context.go`；`internal/workspace/domain/repository_context.go`；`tests/s4/verify.ps1`、`tests/s4/verify/main.go`。
+
+新增确认输入：S2 第二格式 SOURCE `eba9b3c8109ee49e0b1ea3dee5c8776fa1c4e107`；B 生命周期 SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872` / REPORT `65036a6e210745ed44e9094090fcdd0b8887e469`，包含原 `53f0beb` 祖先，可整体普通消费该后继；T 七测试 SOURCE `2249dabdf0245b7769af3ae2a10c7a07dd8ad5a1` / REPORT `e9ae9080e23b55272178c5d51b0ddd62c3a1ae97`，新增实际验证进程必须显式设置绝对 D 盘 `ASTROCYTE_TEST_OUTPUT_ROOT`；S5 SOURCE `f955fe3c3450200342e8cbf0b0c152e8065a882e` / REPORT `75c7fe1eff22fa8d2951950b2f1687595552d7a2`，八项非模型实际 169.713 秒 / 零 skip 及上述 HTTP 检查通过，首失败保留。源码均已交唯一 I 精确队列，T 不在其原树另开八项跨领域集成。
+
+原 H 的当前编译依赖可使用已实际 build 通过且 push 的同一 I 阶段 `35cc64faac271d43e5f63103a810081b0eb7ac62`，GoalVerification 字段已在其父 `2367224`，准确结果仍只为该来源 57.3064957 秒 / EXIT0。已直接交 M-relay 给原 H / R / S4 自然同步，不等待默认全套或后继报告；`9ce5c2c` 不借该旧构建记通过。原 H 生产装配与真正 verified / L1 正向继续实际验证后交精确 SOURCE。
+
+根 `msg_5ec15ce2eb5a` 确认 Jev 临时密钥和 OS 执行尚无新用户答复，已交原 S5 仅准备具体可审阅的本机注入入口及准确命令：沿既有 `TYPESAFE_API_KEY` 进程环境，仅本次公开任务子进程使用；secret 不进入消息、stdout、Git 或证据文件，不扫描私人凭据。该准备不授予调用或 OS 执行权限，原脚本预览保持，不执行 `-Execute` 或 UAC；完整 S5 不结算成功。
+
 ### 2026-10-16 00:11 浏览器二进制迁移与当前交接
 
 根 `msg_b63815bcc6dc` 明确授权唯一维护者核 Playwright 二进制缓存迁移 D。I `msg_d73c2aac0ec9`、F `msg_e65c5d391d83`、新恢复 UI `msg_18ea54456772` 均本人确认没有本次在途浏览器，迁移窗口不新启；M-product 双人 ACK 同步成立。实际读取 [Playwright 官方浏览器缓存说明](https://playwright.dev/docs/browsers#managing-browser-binaries)及本机 `playwright-core@1.64.0/lib/coreBundle.js`：`PLAYWRIGHT_BROWSERS_PATH` 的绝对值直接作为运行查找根。
