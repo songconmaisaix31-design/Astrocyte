@@ -2,7 +2,24 @@
 
 ## 责任与事实源
 
-2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_9b068e2051ff` / 终端 `term_fbe30b0b-cfe9-4d63-90a1-10ec84b3d02c`，按根 23:47 入口及 `msg_260eaeb5d2f8`、`msg_515be7b3e513`、`msg_22cc4103aa83` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_24db7f74-f79a-4689-be1d-3f585a38e6b4` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `9fd45c18e6f4f6343e3ff23c531b384472d037dc`，接管时工作区无改动。旧 Dispatch 的失败记录保留。
+2026-10-16，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349` / 终端 `term_f9466086-7599-4f16-b9d8-a615a4e4a7ba`，按根 00:30 入口及 `msg_9f4bdca6d5b4` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_325a9aca-4a77-4e2c-93ed-cae95acd628c` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `d6ebb6d78c48124d3cf2f51f975ff16d0f690b58`，接管时本文件已有八行 S3 分工修改，完整保留。旧 Dispatch 的失败记录保留。
+
+### 00:34 当前恢复计划
+
+原产品 Run 已普通绑定 generation 18；原 B/F Run 仅管理这两条未完成任务。公开 Task 列表核六项原任务均为 `ready`，两个 Run 的 active worker 均为空；公开终端清单没有原六位开发终端，与根 00:30 的重启退出证据一致。沿原 Task、工作树、分支和未提交修改恢复原负责人，不新建 Run、Task 或第四层。先前临时跨树权限全部结束，后续冲突重新取得当前本人安全检查点和准确停写交接。
+
+| 原负责人 / 原 Task | 本次实核 HEAD 与现有修改 | 连续责任与首项检查 |
+|---|---|---|
+| B / `task_7b4e93c1a3c1` | `ec8a97debd79049ba9a346f77544046151d8f3b0`；`local_agents_narrowing_test.go` 修改和新增 `tests/s1/vite-lifecycle.test.mjs` | 完成真实 Vite 初始化前 HTTP 到达检查；沿既有 ObjectStore / EventService / EventRepository 与 H 核最窄实际产物和检查关系，保留冷 Registry 原测试。依赖、迁移和配置仍唯一归 B |
+| F / `task_7cbe30017760` | `b369e347c416c8d9821d2967e2b0e3463663cacf`；五件 Relay / 显示测试修改、两件 API 测试新增 | 完成 Prepare 与真实共享客户端检查、默认完整浏览器；先核已消费 D helper 的真实输出和当前命令日志。保持唯一 Relay 界面操作及与产品 UI 的互斥范围 |
+| S2 / `task_6846cdb90c46` | `3ba62b9a08feb0f14ad2b605e6f16c3d91eae67c`；四件 Context / binding 应用文件修改 | 完成最外层事务前实际观察和同数据库最终权限复核；与 S3 / S4 协作，保留双观察与原十秒预算 |
+| 产品 UI / `task_d0cee5a583bb` | `2bfbbe966b6f977e4df241bfae05bd0e7fcd7ba4`；新增 `web/e2e/s3-missions.spec.ts` | 沿准确共享客户端完成 Mission 真实页面与两尺寸检查；核 D helper 八件零修改后按原准确来源消费，不复制 F 未提交内容 |
+| T / `task_5f0a79b6a17a` | `71d31340301eb4787a7bdcc477ec4c696f3485ee`；工作区无改动 | 沿原 Attention 应用测试与 `tests/s1/automatic_test.go` 范围继续真实 Taste / AT12 和完整适用检查；生产问题交 B / S5 |
+| S3 / `task_da9aebf03f83` | `08e5fcc165bff1294129347bd35f82e11d921714`；`commands.go`、`usage_test.go` 修改 | 与 S2 / S4 完成外层事务依赖；保留未答 Claim 拒绝、Known=false 及现有真实失败，不启动依赖未答项的原生执行 |
+
+各人沿下文已登记的长期互斥 write_paths；模块只写本文件。D helper SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` / REPORT `ec8a97debd79049ba9a346f77544046151d8f3b0` 已交，新增大型产物和进程临时目录放各自 D 盘专用目录，共享 GOCACHE 沿原路径；浏览器二进制使用发布负责人已核实的原 Junction。根当前 I `2367224` 的在途中断检查由原 I 核完整日志及实际退出码，不能按提交推断成功。
+
+实际 verified 的公开 checkout 仅 H 在根准确授权和登记范围内受信应用，B 沿现有存储保存真实来源；F 保持唯一 HTTP / 界面动作。四树组合验证 → 集成版 L1 → L2 六步 → 最终同源包的顺序保持，原生工具关闭、180 秒、未知不重发、started 与独立释放审计保持。用户候选批准不能代签；原 V4 / 日程与 17321 保持。每阶段 SOURCE 与独立 REPORT 普通 push，模块持续到最终发布支持完成。
 
 ### 23:51 恢复计划与当前互斥范围
 
@@ -72,6 +89,14 @@ F 后继共享 client SOURCE `4192c26bd77ec70504f286f8ddb75a145779ab58` 仅修�
 B SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` / REPORT `ec8a97debd79049ba9a346f77544046151d8f3b0` 已由本人普通 push并交付，源 clean。只包含八件：`scripts/dev.mjs`、`scripts/process.mjs`、`scripts/vite-server.mjs`、`tests/s1/api.mjs`、`tests/s1/development-lifecycle.test.mjs`、`tests/s1/server-lifecycle.test.mjs`、`tests/s1/server.d.mts`、`tests/s1/server.mjs`。五项真实生命周期 77.169 秒、零 skip 通过，首轮 1 PASS / 3 FAIL 保留；完整默认仍未运行。F 本人 `msg_31679517dcfa` 已核目标八件零 WIP / 零 staged，与 SOURCE 父完整一致；在此安全检查点仅允许原 F 通过单个 SOURCE 普通 cherry-pick 精确消费八件，保其他前端 WIP，不引入 B 其他 ancestor，不修改 helper 逻辑，完成逐件完整 diff0 后明确归还后续逻辑给 B。
 
 同一原 UI 在自己的自然安全检查点确认这八件零 WIP / staged 后，按相同单 SOURCE 方式独立消费；不停止页面命令。任何冲突或额外路径均停止消费并交原 B / 模块，不使用 abort / reset / 整体选边。新调用为每个负责人显式设置独占 D 盘 `ASTROCYTE_TEST_OUTPUT_ROOT`、TEMP / TMP / GOTMPDIR 与共享 D 盘 GOCACHE，源检查证明 SQLite、二进制、Vite 缓存和完整日志进入该根。Playwright 迁移完成按 M-release 准确官方路径消息消费；其完成事实与 D helper 是两个实际条件。I 沿发布负责人安排消费准确来源和执行组合检查，模块管理报告不增加其继续条件。
+
+### 00:24 原 S3 必要事务依赖与真实目标核验分工
+
+D helper 已真实交付，原 S3 Task `task_da9aebf03f83` 现在为处理实际外层事务依赖恢复，沿 `product-swarm-20261015` 原树及分支。实核 HEAD `08e5fcc165bff1294129347bd35f82e11d921714`，`internal/swarm/app/commands.go`、`usage_test.go` 两件 WIP 保留。唯一写域仍为 `internal/swarm/**`、`internal/adapters/sqlite/swarm_*.go`、`internal/adapters/httpapi/swarm_*.go`、`tests/s3/**`、`docs/standards/swarm-s3.md`，没有新增第四层或其他写者。
+
+S2 本人 `msg_da81593cb4f1` 实核 S3 `swarm_approvals.go` 先打开 Workspace 写事务，再调用 S2 保护回调；仅把 S2 内部观察前移仍处于外层锁内。原 S3 与原 S2 / S4 核最外层事务前的实际观察和最终同 DB Grant / binding / Registry tuple 复核，保持原双观察、十秒预算和未答 Claim 拒绝，不预设未交付方法签名。完整原生两 Agent 及第二任务复用仍未运行。
+
+根新正式答复 `msg_d25b27ea052b` / 转交 `msg_2503b27895b2` 明确真实 `verified_complete` 的后继责任：H 临时独占其登记的批准公开 Go 项目唯一 checkout，按真实 owned 输出应用并实际检查；B 使用既有 ObjectStore 和真实事件保存实际检查 / 日志 / 产物关系，B / H 共同核最窄持久交接，H 实现并生产注入现有 `GoalVerificationReader`。原 S3 恢复后先只在其业务写域处理事务依赖，不写这个公开 fixture，待 H 准确路径和归还。B 的必要持久接口接续 D helper 阶段，冷 Registry 测试 WIP 保留；各自不新增 DDL、完成证明系统或 S3 Claim 路径。独立 L1 原始三分钟、工具关闭、一次输入、未知不重发与资源审计均保持。
 
 ### 21:51 恢复与原负责人返修计划
 
