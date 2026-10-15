@@ -2,6 +2,14 @@
 
 ## 当前执行入口（2026-10-16）
 
+04:54 主入口与完整公开契约 SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 已交唯一 I。人工准入连接原 S2 和同库草稿，有快照分支保留完整 selectedrefs / delegated-owner 授权，无快照分支使用 B 最新 `089a3d276fa186cf41cc8384fb2bc9dad91d9383` 的实际项目与逐项固定引用读取；完成 Reader 已注入原经验桥。模块独立三项实际检查零 Skip / 5.824秒，涵盖两配置正向、未注册 / Agent / 跨项目 / 撤回拒绝、未分配且无 Grant 的草稿、读取撤销与空真实 Relay store 的404。根已读准确差异；I 准确组合 `609993b25543a74e64d89a31c99bf3c08b81b44b` 的完整 `pnpm build` EXIT0 / 30.1152367秒、source_after 同值，根独读 result / log。稳定产物已交 H，当前实际服务仍为下述 b73 / PID4676，尚未把构建结果写为共享页面已更新。
+
+F 人工进度 SOURCE `696828478eeaf128309079957234bb78aafbaaf9` / REPORT `963d880e30df4fff0923623c5efa711e6adfed2a` 已交 I，实际两窗口十项首轮8 PASS / 2 FAIL，原两失败修复后定向2 PASS / 59.3秒；保存、权限拒绝、未知请求锁、空百分数和实际重启均使用真实 HTTP / SQLite，未重跑原八项通过场景。共享库另已保存真实项目层人工记录，原论文、摘要和候选 r2 保持。根使用 React 技能复核新增表单、客户端和既有固定请求锁，未发现新增阻断。F 已按 I `ecb29c9593348d409514cc1ddff05ff04affcd87` 生成 SOURCE `4e3c384032ab1671e226a819009d95c366d80361`，生成检查通过，原 global typecheck 新暴露两项 Relay 枚举标签缺失，仍由 F 修复；原 schema drift 与 EXIT2 保留，UI 按准确生成类型继续。
+
+视频方向继续已确认的 summarize。V 已核旧公开 BV 的真实952段与原生产结果，三个相关生产文件在 b73 / I 无差异；当前共享实例显式关闭该工具，B / V 已交真实 CLI / Node / 媒体依赖白名单给 H。根答复 `msg_3d2ad605a0d4` / `msg_ba6ac82a6655` 允许按既定范围配置实际工具，保持原成功 ASR 不重跑、共享库不复制或重置。现存 CLI 原件是无字幕页面，直接 `summarize_json` 会拒绝；media / whisper 原件不能充作 CLI 导出，manual 导入也不恢复原附件和 revision 身份，没有为此新建恢复端口。当前视频配置与实际可用范围继续核实，不写为共享实例已完成时间片段导入。
+
+原 H runtime_http / session_git 的自定义 driver / sink / CLI 正向用例不执行、不计真实原生通过；原 approval_required / delivery_unknown 保留。真实链接检查的 junction 子项通过，symlink 仍受 OS1314 限制，未提升权限或增加 Skip。原生工具边界、语言、Agent action 等用户问题未答；固定 PLOS 候选 r2/v3 已备实际论文标题、原摘要、Goal 与项目审阅内容，等待公共入口和精确请求齐备再提交具体资料准入决定，未发准入 / Grant / 执行或经验批准。完整 check / 默认、真实 L1 / L2 六步和最终包仍未通过。
+
 04:34 当前同一产品为 `http://127.0.0.1:64505/`、准确 SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、modified=false、PID4676，启动 UTC `2026-10-15T20:22:58.8651960Z`。原 SQLite、LOCALAPPDATA 和 F 已保存业务记录保持；H 已接入真实 S2 `DB.AfterWorkspaceCommit`、清理 worker 及独立 Q reader root。Q 使用原 `snapshot-1711995690` / UTC `2026-10-14T18:48:42.2097174Z`，没有重新采集或调整日期。根已独读实际 running.json、准确 b73 构建 result 和日志；其完整 `pnpm build` EXIT0 / `20.8431586` 秒，source_after 同值。Jev / Laya 未配置，新增原生登记、初始化和模型输入仍为零。
 
 实际核心读取已补齐：F SOURCE `12a17f7bf7a9fbef273e872516961aa9262b7110` / REPORT `94d827a34f8cc659de8ab3e051483eb194480d76` 在上述同一 b73 服务验证四个认知视图、十项 SQL / HTTP / DOM 数值、两主题各三条真实历史及九页全部155个事件编号；每个编号的六字段逐一对应真实事件库，分页无重复、零写入和页面异常。生产日期保持实际10月16日，今日 / 七日 / 三十日分别为 `0 / 1076 / 1316`，原10月15日期望另存，没有修改 Clock。根已独读准确源码、报告和实际输出。原四项业务恢复 HTTP / DOM / SQL 及七个真实事件验证已通过；后继准入仍由 H 补公共注册和精确契约，F 完成实际页面连接。
