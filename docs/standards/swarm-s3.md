@@ -2,15 +2,15 @@
 
 ## 第十七阶段：原准备记录的私有读取契约
 
-Task `task_da9aebf03f83` / Dispatch `ctx_463188124a36` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349` 交付准确消费 SOURCE `b28542469473f75ab1813348f773a7873210f20c`。模块 `msg_b2c69d8bcce7` 明确允许在本树消费 R 独立 SOURCE `a165fae709e212be4e98c96b326552da739985d0`；本人在 clean `745d5b489969bd4a8bb4e07f2882fcc1fbf2c4b4` 检查点，用文件编辑工具原样移入 `internal/workspace/domain/relay_prepared_input.go` 和原隐私测试，没有修改原契约逻辑。两文件完整 diff 为零，独立普通提交及 push 成功，远端完整 SHA 相同；临时两文件消费结束，后续维护归还 R。客户端 / 实际配置模型为 Codex / `gpt-6.1-sol`，本阶段没有原生初始化或模型输入。
+Task `task_da9aebf03f83` / Dispatch `ctx_463188124a36` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349` 交付准确消费 SOURCE `4c0fc8332eeb9549be6a7b3dc0b140a3df2f5e79`。首次按模块 `msg_b2c69d8bcce7` 消费 R 独立 SOURCE `a165fae709e212be4e98c96b326552da739985d0` 为 `b28542469473f75ab1813348f773a7873210f20c`，独立报告为 `da5bb21f3d85dcbd2ed261b7cd0639d354535235`。后继按正式答复 `msg_999fe98055ff`，在 clean `da5bb21` 检查点用文件编辑工具原样消费 R SOURCE `8947ff7e36415da07a0eb85c103b722713460356` 的 `internal/workspace/domain/relay_prepared_input.go` 和原隐私测试，保留真实 ActorProjectID 与明确未发送边界。两完整文件与准确原件 diff 为零，普通提交及 push 成功，远端完整 SHA 相同。模块同时授权后继同两文件的 R 已提交 SOURCE 连续原样消费，每次须原树安全、目标无 WIP、完整 diff0 并普通提交 / push，内容冲突或语义不符交原 R / 模块；维护仍归 R，范围不扩大。客户端 / 实际配置模型为 Codex / `gpt-6.1-sol`，本阶段没有原生初始化或模型输入。
 
-`RelayPreparedInput` 保存真实 Session、OperationID、原 ActorID / ActorKind、ControllerID、StartupOperationID、WorkspaceRoot 和 PreparedAt；字段全部为私有 JSON，既有 NativeSession 内保留原 ContextPacket。`RelayPreparedInputReader.ReadPreparedNativeSession(ctx, sessionID, operationID)` 只返回原操作元数据，不返回输入正文或对象引用。B / R 的实际准备和 Registry 核验实现仍待交付，S3 尚未使用类型声明放行首次 Claim。
+`RelayPreparedInput` 保存真实 Session、OperationID、原 ActorID / ActorKind / ActorProjectID、ControllerID、StartupOperationID、WorkspaceRoot 和 PreparedAt；九字段全部为私有 JSON，既有 NativeSession 内保留原 ContextPacket。`RelayPreparedInputReader.ReadPreparedNativeSession(ctx, sessionID, operationID)` 当次核原 actor 权限，只返回明确尚未尝试发送的原准备元数据，发送在途 / 未知 / 已受理均拒绝，不返回输入正文或对象引用。B / R 的实际准备和 Registry 核验实现仍待交付，S3 尚未使用类型声明放行首次 Claim。
 
 S3 已向两原负责人说明实际调用边界：成员检查发生在 S2 最终授权事务内，后继准备读取须复用同数据库 `WorkspaceTransaction` 的连接，原 actor 当前授权、session 和 project 元数据同事务读取；Git / 对象正文读取及原生发送保留在写事务之外。B 已另交 `c60479619b0c992fe3e2fe42fa0ee68b217a5115` 的八个既有方法复用 Workspace 连接，模块报告四项真实事务检查通过，native 首失败单列；该完整 B 实现没有复制进本树。新准备事实须明确尚未尝试发送，pending / delivery_unknown / accepted 不可用作首次准备；同 operation 异输入冲突、发送占用原子取得和未知不重试要求已交 B / R。
 
 原 actor 与 S2 绑定成员仍须有真实关系。同一已授权 Agent 的原 actor 可按实际 ID 与认证 Principal / binding.MemberID 核对；human 代表 member 的关系尚无事实，保持未决定。NativeSession.ContextPacket 与 S2 ImmutableContextPacket 的 ID 不作无依据等同。H 发送前的当前 Grant / epoch、Mission 状态及原 Lease / fence 核验调用点仍待原负责人确认，不能用历史详情读取代替。
 
-本阶段实际 `go test ./internal/workspace/domain -count=1 -timeout=120s` PASS，0.904 秒，包含原隐私序列化规则；两文件 `gofmt -l` 无输出，`git diff --cached --check` 通过。Go cache / 进程临时目录沿前阶段 D 盘配置。没有重复运行未改变的 Swarm / HTTP 或构建检查，没有将参数规则视为真实准备 / 发送 / Claim 成功。首次 Claim、真实 owned 双观察、两实际 Agent、人工采用和六步经验首跑继续 NOT_RUN，Known / Calls 与未答权限保持，Task 继续。
+本阶段最新实际 `go test ./internal/workspace/domain -count=1 -timeout=120s` PASS，1.027 秒，包含九字段隐私序列化规则；前次八字段检查为 0.904 秒。两文件 `gofmt -l` 无输出，`git diff --check` 通过。Go cache / 进程临时目录沿前阶段 D 盘配置。没有重复运行未改变的 Swarm / HTTP 或构建检查，没有将参数规则视为真实准备 / 发送 / Claim 成功。首次 Claim、真实 owned 双观察、两实际 Agent、人工采用和六步经验首跑继续 NOT_RUN，Known / Calls 与未答权限保持，Task 继续。
 
 本轮唯一 I 的十件 Swarm 冲突已按模块正式放行 `msg_e42a97aa3850` 逐块编辑并 stage，未操作其他路径或 Git 合并生命周期。归还时十件完整内容与 `745d5b48` 相同、格式与限定 working / cached diff 检查通过，U0，HEAD `f0277e7ca755792bae394f479b672b11847067d4` / MERGE_HEAD `745d5b489969bd4a8bb4e07f2882fcc1fbf2c4b4` 不变。本人 `msg_afd99df81f66` 已明确停止目标树全部写入和进程访问，模块确认临时范围结束；组合检查由原 I 负责，本阶段没有登记为组合通过。
 
