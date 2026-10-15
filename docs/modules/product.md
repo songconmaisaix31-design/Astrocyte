@@ -102,6 +102,24 @@ I 四文件当前仍由原 B 持有，以上只安排后继串行范围，不中
 
 S5 原 S2 单测试已经本人停写归还，模块与 M-release 分别实核 U0、限定 working / cached diff-check 和原 HEAD / CHERRY_PICK_HEAD 一致；M-release `msg_13a76adda6ce` 已放行原 S5 唯一继续，该临时权限已收回。根 `msg_0f397f12b04e` 已授权 S4 专用清理生命周期，B 仅项目事务成功提交后唤醒；同 Service 后台实现、启动扫描、限量 / 实际进展续行、错误终止与取消等待由原 S4/H 负责，不新建通用调度器、队列或 schema。此准确决定已经转原 B，集成返修归还后接续。
 
+### 22:30 首 B 已合并后的 F 冲突与 S3 精确类型消费
+
+原 B 本人 `msg_c9b0881d19d7` 停写归还首轮 I 四件，模块独立核 HEAD / MERGE_HEAD、全树 U0、限定 working / cached diff-check 与四完整文件相对 `da7227749ea2f361c8b708be8614d3236fe2f04a` 的 diff 均 EXIT0，通过 `msg_e7e34ab3f4cc` 正式交 M-release 唯一放行 I。原 B 四件临时权限已收回。实际 SQLite token projection 一项 6.619 秒通过，未扩大为完整组合通过。
+
+唯一 I 已普通合并首 B 为 `392bbb17fc56b15a86c9b84349e6e4d6cb884755`，再普通合入 F REPORT `02a7976d997ef14ac298b2e240da43a9bb423c93`。模块独核当前 HEAD 为前者、MERGE_HEAD 为后者、十九项冲突与 M-release 22:25 计划完全相同。I 本人 STOP `msg_0dfda0113e89` 保留全部现场；根授权同一 I 处理三管理文档，H 处理其三入口，本模块只安排下表 B/S2 当前安全 ACK 后的临时范围。
+
+| 原人员与目标工作树 | 精确临时 write_paths | 条件与归还 |
+|---|---|---|
+| B `ctx_ed3af07294cf` / `works-relay-integration` | `dependencies.lock.json`、`go.sum` | 本计划普通 push、当前本人安全 ACK 后明确放行；只文件编辑并 stage 两件，保当前实际依赖，不操作合并生命周期。完成本人停止 I 树写入并归还、交限定 diff / 实际依赖检查和剩余 U；此范围结束后才能接 F 单 config |
+| S2 `ctx_edce6bc4ca6c` / `works-relay-integration` | `docs/standards/workspace-s2.md`；`internal/adapters/sqlite/workspace_context_packets.go`、`workspace_proposals.go`、`workspace_session_bindings.go`；`internal/workspace/app/project_policy.go`、`project_policy_test.go`、`proposal_ports.go`、`s2_service.go`；`internal/workspace/domain/proposal_context.go`、`proposals.go`、`session_bindings.go` | 本计划普通 push、当前本人安全 ACK 后明确放行；只文件编辑并 stage 十一件，保双方已提交功能和实际断言，WIP 不带入。完成本人停止 I 树写入并归还、交限定 diff / 实际检查和剩余 U |
+| S3 `ctx_a34aff42e4d2` / `product-swarm-20261015` | 仅精确消费 `aa445adf834c3a397a0817bec0593fcf1039420a` 的 `internal/workspace/domain/session_bindings.go`、`internal/adapters/sqlite/workspace_session_bindings.go` 两个完整原件 | 原 S2 本人 `msg_d5984cac6ad2` 已确认来源一致 / 零 WIP / 停写并允许精确消费。计划普通 push、S3 本人确认目标两件零 WIP 后，只用文件编辑工具移入同源原件，核完整 diff0，再提交准确 SOURCE / 独立 REPORT 并把后续逻辑归还 S2；不导入整段 aa 历史或改变 H 装配 |
+
+三个目标范围互斥，不增加长期逻辑 owner；各人先结束当前实际命令至安全检查点，不中断测试或事务。B/S2 不执行 commit / continue / abort / reset / 整体选边，不改其余 I 文件，全部归还后由 M-release 独核并放行唯一 I 继续。F 现已实际合并安全 H，父 `02a7976` / MERGE_HEAD `72c0c2d`，唯一 `cmd/server/config.go` 冲突且本人 STOP `msg_c367e0cc449e`；该范围仍等待 B 本轮两依赖归还后的新安全 ACK，原单文件计划不扩大。
+
+S3 精确两原件只补 ControllerID / StartupOperationID 的隐藏类型和私有 JSON 存储，原 S2 已核其现有基础依赖齐全、无需 DDL；原 OwnedSessionProvider 接口不变。S3 只在自己的 `swarm_approvals.go` 补实际映射，编译与规则检查不能代表 owned bind / submit 正向，完整来源仍待 H/R/I。T 后继跨 Goal / Attention 实际事务 SOURCE `29830e0917e4096bfd2e4afc48b1438b772a7204` / REPORT `e168b256615097f204e8bf2ec4c016ca40730d57`、补充 `39055280e3db9a0aa1f7cc9dd1aecf6e0a7bee19` 已本人报告普通 push；四项实际回滚 / 重放 / 撤销 / 重开通过，完整 Taste / AT12 / 原生十四项继续未完成。
+
+M-release 唯一磁盘负责人已实核 helper 固定 C 盘 `.verification` 的新增程序、SQLite 与服务副本是当前持续写入来源。已交原 B 在后继 helper 中提供显式 D 盘新验证输出，并与实际 Vite 二次监听问题一起验证；原隔离、来源、复用与证据限制保留，旧证据不移动 / 删除，现有检查不中断，不修改全局 TEMP。B/F/UI 只对后续进程使用各自 D 盘专属目录，准确 helper SOURCE 交付后再启用，不重复已经通过的检查。
+
 ### 2026-10-15 10:41 再次重启后的恢复计划
 
 根当前交接 `msg_54ce630eae98` 确认 10:31 运行时再次重启，原人员 OS 进程退出、旧句柄失效；沿原子 Run、原 Task、原工作树和原分支恢复。公开 Task 列表实测 T / S2 / S3 / 产品 UI 均为 `ready`，旧 Dispatch 为 `failed / terminal_missing`。公开终端清单无这四位旧句柄，当前 Codex 进程启动时间均在重启之后；不根据单独的 `missing_status` 判定退出。B/F 生命周期由根在原 Run 恢复，本模块不重复启动。S0–S6 授权和前端复用此前白绿设计、使用 TypeScript 的用户决定保持。
