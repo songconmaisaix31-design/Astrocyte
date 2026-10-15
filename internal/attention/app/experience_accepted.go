@@ -47,11 +47,13 @@ type ExperienceCompletionReader interface {
 }
 
 type ExperienceInterpretationProvenance struct {
-	Backend       string `json:"backend"`
-	Model         string `json:"model"`
-	ModelVersion  string `json:"model_version"`
-	PolicyVersion string `json:"policy_version"`
-	OperationID   string `json:"operation_id"`
+	Backend             string `json:"backend"`
+	Model               string `json:"model"`
+	ModelIdentitySource string `json:"model_identity_source"`
+	ModelVersion        string `json:"model_version"`
+	ModelVersionSource  string `json:"model_version_source"`
+	PolicyVersion       string `json:"policy_version"`
+	OperationID         string `json:"operation_id"`
 }
 
 type InterpretedExperienceDraft struct {
@@ -159,6 +161,15 @@ func validateExperienceInterpretation(draft InterpretedExperienceDraft) error {
 	p := draft.Provenance
 	if p.Backend == "" || p.Model == "" || p.ModelVersion == "" || p.PolicyVersion == "" || p.OperationID == "" {
 		return serviceError(apierrors.EvidenceMissing, "Interpreter backend, model, policy and original operation must be recorded", "inspect_actual_interpreter_provenance")
+	}
+	if !slices.Contains([]string{"configured_route", "provider_reported"}, p.ModelIdentitySource) {
+		return serviceError(apierrors.EvidenceMissing, "Model identity must distinguish configured routing from provider observation", "inspect_actual_interpreter_provenance")
+	}
+	if p.ModelVersionSource == "unknown" && p.ModelVersion == "unknown" {
+		return nil
+	}
+	if p.ModelVersionSource != "provider_reported" || p.ModelVersion == "unknown" || p.ModelVersion == p.Model {
+		return serviceError(apierrors.EvidenceMissing, "Independent model version must remain unknown until actually reported", "inspect_actual_interpreter_provenance")
 	}
 	return nil
 }
