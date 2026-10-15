@@ -36,7 +36,9 @@ S2 公共 API 阶段普通消费 H `e99ae91d670a835c5de5927163568638fa5f3a61`，
 
 S4 新 `workspace/repositorycontext/**` / `e2e/s4-*.spec.ts` 经 F 核零 WIP、停止写入并 ACK 后，模块已正式交同一产品 UI Owner。共享 `api/repositoryContext.ts` / schema / hooks / auth 与 WorkspacePage 或 localProject 选择入口仍归 F；未收到准确公开契约前不产生模拟视图。
 
-2026-10-15 恢复 Dispatch `ctx_4a385bf65390` 后，用户确认继续复用既有白绿 React / TypeScript / Vite 设计。主控明确 F 保留共享客户端、auth、hooks、router 与唯一真实 Relay DOM 操作观察；页面实现与返修继续由产品 UI Owner 负责。第一 Codex 正向先核明确 started、公开目标、实际退出、pending 为 0 及 release，第二原生客户端与 context_handoff 单独验收。F 等待 H 交付同一控制器、空 Message 初始化、来源守卫和工具关闭证据后，准备空 registry 页面；尚未自行初始化或发送新任务。
+S5 经零 WIP 核查和停止写入 ACK 后，模块计划 `2f609ea` 已普通 push，新增 `pages/attention/delegation/**` 与 `e2e/s5-*.spec.ts` 正式交同一产品 UI Owner `ctx_af3cbd15f128`。共享 `api/judgment.ts` / 生成 DTO / hooks / auth、AttentionPage 薄接入及现有 RankingPanel 继续由 F 负责。委托开关、阈值和范围由用户在运行时明确设置；共享接口等待 H 的准确公开契约。
+
+2026-10-15 恢复 Dispatch `ctx_4a385bf65390` 后，用户确认继续复用既有白绿 React / TypeScript / Vite 设计。主控明确 F 保留共享客户端、auth、hooks、router 与唯一真实 Relay DOM 操作观察；页面实现与返修继续由产品 UI Owner 负责。第一 Codex 正向先核明确 started、公开目标、实际退出、pending 为 0 及 release，第二原生客户端与 context_handoff 单独验收。根最终批准的计时顺序为：F 在同 URL 确认空 agents 与 observer ready，H 唯一登记并保存真实 t0，F 经 CreateIntent / PrepareIntent 完成同一控制器空 Message 初始化，H 核正选来源与工具关闭，再由 F 经原 Confirm 发送首输入。初始化、来源核查和准备均计入原三分钟；尚未收到准确 Prepare 契约及已验证 SOURCE，未开始新登记、初始化或模型调用。
 
 恢复时磁盘查询显示 C 盘可用 5,246,283,776 bytes，已向主控报告；后续大型构建临时目录和缓存按用户指定使用 `D:/Astrocyte-agent-assets/20261015/product/frontend`，F 不执行证据清理。原 10:28 设计浏览器运行在 Orca 重启前只完成 28 项中的第 1 项，结果为 PARTIAL；原日志保留，不记为整套通过。
 
