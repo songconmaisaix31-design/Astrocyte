@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
@@ -21,9 +22,12 @@ func NewWorkspaceRepository(db *DB) *WorkspaceRepository { return &WorkspaceRepo
 
 type workspaceTransactionKey struct{}
 type workspaceTransaction struct {
-	ctx  context.Context
-	conn *sql.Conn
-	db   *DB
+	ctx         context.Context
+	conn        *sql.Conn
+	db          *DB
+	mu          sync.Mutex
+	finished    bool
+	afterCommit []func()
 }
 
 func (r *WorkspaceRepository) RequireWorkspaceObservation(ctx context.Context) error {
@@ -45,6 +49,28 @@ func WorkspaceTransaction(ctx context.Context, db *DB) (*sql.Conn, error) {
 	return t.conn, nil
 }
 
+// AfterWorkspaceCommit 只登记非阻塞通知；没有外层事务时，调用方必须已经成功保存。
+func (db *DB) AfterWorkspaceCommit(ctx context.Context, notify func()) error {
+	if notify == nil {
+		return errors.New("workspace commit notification is required")
+	}
+	t, ok := ctx.Value(workspaceTransactionKey{}).(*workspaceTransaction)
+	if !ok {
+		notify()
+		return nil
+	}
+	if t.db != db {
+		return errors.New("workspace commit notification belongs to another database")
+	}
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.finished {
+		return errors.New("workspace transaction has already finished")
+	}
+	t.afterCommit = append(t.afterCommit, notify)
+	return nil
+}
+
 func (r *WorkspaceRepository) WithWorkspaceTx(ctx context.Context, fn func(workspace.WorkspaceTx) error) (err error) {
 	if existing, ok := ctx.Value(workspaceTransactionKey{}).(*workspaceTransaction); ok {
 		if existing.db != r.db {
@@ -56,11 +82,24 @@ func (r *WorkspaceRepository) WithWorkspaceTx(ctx context.Context, fn func(works
 	if err != nil {
 		return err
 	}
-	defer func() { err = errors.Join(err, conn.Close()) }()
+	t := &workspaceTransaction{conn: conn, db: r.db}
+	committed := false
+	defer func() {
+		t.mu.Lock()
+		t.finished = true
+		notifications := t.afterCommit
+		t.afterCommit = nil
+		t.mu.Unlock()
+		err = errors.Join(err, conn.Close())
+		if committed && err == nil {
+			for _, notify := range notifications {
+				notify()
+			}
+		}
+	}()
 	if _, err = conn.ExecContext(ctx, "BEGIN IMMEDIATE"); err != nil {
 		return err
 	}
-	t := &workspaceTransaction{conn: conn, db: r.db}
 	t.ctx = context.WithValue(ctx, workspaceTransactionKey{}, t)
 	if err = fn(t); err != nil {
 		_, rollbackErr := conn.ExecContext(context.WithoutCancel(ctx), "ROLLBACK")
@@ -70,6 +109,7 @@ func (r *WorkspaceRepository) WithWorkspaceTx(ctx context.Context, fn func(works
 		_, rollbackErr := conn.ExecContext(context.WithoutCancel(ctx), "ROLLBACK")
 		return errors.Join(err, rollbackErr)
 	}
+	committed = true
 	return nil
 }
 

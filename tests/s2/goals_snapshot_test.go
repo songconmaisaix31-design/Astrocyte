@@ -128,4 +128,5 @@ func TestActualCurrentGoalTransactionAndInactiveStates(t *testing.T) {
 	if err != nil || !reflect.DeepEqual(historical, goal) {
 		t.Fatalf("later target states changed the original goal: %v", err)
 	}
+	verifyWorkspaceCommitNotifications(t, ctx, db, otherDB, service, human, project.ID)
 }
