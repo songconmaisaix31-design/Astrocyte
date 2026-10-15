@@ -186,8 +186,12 @@ func validateExperienceInterpretation(draft InterpretedExperienceDraft) error {
 
 // 可信收据消费者传实际 ID；候选始终停留 quarantine，人工批准复用既有服务。
 func (s *AcceptedExperienceService) CaptureCompletion(ctx context.Context, p Principal, localProjectID, eventID string) (StoredExperience, error) {
+	return s.captureCompletion(ctx, p, localProjectID, eventID, nil)
+}
+
+func (s *AcceptedExperienceService) captureCompletion(ctx context.Context, p Principal, localProjectID, eventID string, command *CaptureCompletionExperienceCommand) (StoredExperience, error) {
 	var result StoredExperience
-	if err := experiencePrincipal(p, false); err != nil {
+	if err := experiencePrincipal(p, true); err != nil {
 		return result, err
 	}
 	if s.governance == nil || s.repository == nil || s.sources == nil {
@@ -213,6 +217,11 @@ func (s *AcceptedExperienceService) CaptureCompletion(ctx context.Context, p Pri
 	err = s.repository.WithAcceptedExperienceTx(ctx, func(tx AcceptedExperienceTx) error {
 		if err := s.sources.AuthorizeExperienceCompletion(tx.Context(), p, source); err != nil {
 			return err
+		}
+		if command != nil {
+			if err := bindCompletionExperienceCommand(tx, p, *command); err != nil {
+				return err
+			}
 		}
 		var err error
 		result, found, err = tx.FindExperience(owner, eventID)
@@ -329,6 +338,9 @@ type SafeExperienceEvidence struct {
 
 // 统一安全引用不把业务收据伪装成原生 Event，也不返回原始输入或响应。
 func (s *AcceptedExperienceService) ResolveEvidence(ctx context.Context, p Principal, id, project string) ([]SafeExperienceEvidence, error) {
+	if err := experiencePrincipal(p, true); err != nil {
+		return nil, err
+	}
 	if s.governance == nil || s.repository == nil {
 		return nil, serviceError(apierrors.UnsupportedCapability, "Experience evidence services are not connected", "connect_experience_evidence_services")
 	}
