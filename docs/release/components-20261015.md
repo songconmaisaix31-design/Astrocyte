@@ -101,3 +101,15 @@ S5 工作树 `release-judgment-20261015`，标准 `docs/standards/judgment-s5.md
 - 文档校核：`git diff --check` 与写入范围检查。
 
 未执行：产品构建、Go/前端/浏览器/模型/原生控制器验收、正式采集与发布。本文只做许可与来源核对，不重跑 S4、S5 的领域测试。
+
+## 8. 独立 REPORT
+
+本轮 SOURCE `9be28549ae038f19fe951a249a1b54acf6fa281e` 已普通 push，远端 `git ls-remote origin refs/heads/songconmaisaix31-design/release-research-20261014` 与实际同完整值。本节是该 SOURCE 之后的独立 REPORT，只修改本文件；REPORT 自身的完整 SHA 由实际 Git 提交与 push 回执提供，不在文件内循环引用尚未产生的自身 SHA。
+
+独立核查结果：
+
+- 写入范围：相对基线 `de9ef941adcb550b997b98fa819ba05bcfccfead` 只新增 `docs/release/components-20261015.md`，业务代码、`go.mod`、`go.sum`、`package.json`、`pnpm-lock.yaml`、`dependencies.lock.json` 与冻结域零改动；`.verification/components-20261015/` 已由 `.gitignore` 忽略。
+- 上游许可与版本：Laya、Node、jsonrpc2、CodeGraph、AOCI 与 Jev 的许可名称、版权归属和版本标签均按 §3、§7 的官方主链接核对；S4 SOURCE `1a55e163` / REPORT `a393627f` 与 S5 SOURCE `48abd1fe` / REPORT `95871f3f` 均确认位于各自已 push 的远端分支。
+- 候选包：15f 的 39 项目录只含项目 AGPL-3.0 `LICENSE`，不含任何 S4、S5 固定组件；本文未据此放行发布。
+
+真实剩余限制：SemanticIndex 选择、AOCI 的 FSL 分发方式、Jev 是否作为可选云能力保留、Node 与各 CLI 的捆绑方式均需根或用户决定；这些组件尚未进入最终包，最终打包方式由 P 与根决定。
