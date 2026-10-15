@@ -26,6 +26,8 @@ type localProjectService struct {
 	refs            ProjectReferences
 	files           ProjectFiles
 	registry        NativeRegistry
+
+	repositoryCleanup projectCleanupNotifier
 }
 
 func NewLocalProjectService(repo LocalProjectRepository, refs ProjectReferences, files ProjectFiles, registry NativeRegistry) *localProjectService {
@@ -171,6 +173,9 @@ func (s *localProjectService) SetProjectSettings(ctx context.Context, c domain.C
 	}
 	p.Settings = cmd.Settings
 	if err := s.repo.SaveProject(ctx, p, cmd.ExpectedRevision); err != nil {
+		return p, err
+	}
+	if err := s.wakeRepositoryCleanupAfterCommit(ctx); err != nil {
 		return p, err
 	}
 	sessions, err := s.repo.ListSessions(ctx, id)
