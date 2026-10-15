@@ -151,6 +151,20 @@ H 原负责人 `ctx_e7abbaf902da` 通过 `msg_21eec0926c1b` 报告：在 `works-
 
 本计划普通 push、原 B 到达实际测试安全检查点并 ACK 后，仅允许原 B `ctx_1fd66a8adc28` 在 H 树用文件编辑工具处理并 stage `cmd/server/config.go`。必须保留已提交可信 RepositoryContext 的配置校验及 H 当前真实服务配置，不能复制整文件覆盖其他现行设置。B 不编辑测试文件、main、OpenAPI 或 H 业务路径，不执行 commit、continue、abort、reset 或整体选边；交限定差异、未合并项和配置适用检查结果，明确停止写入归还 H 后，由原 H 继续当前窄消费及组装验证。此单文件与 F 五件分开归还，均只由原 B 串行处理，不中断运行中的测试或新增写者。
 
+### 15:35 当前源码与配置返修独立 REPORT
+
+计划 SOURCE `4434c3992ef8cbeb12c60396fef4d30055692090` 与 `d9e99333c3f0f2016a288c0474df2ec3fcf0f287` 均已普通 push，模块独立核远端最新同 d9e9933。F `msg_a849ed3192c1` 交实际父 `88f9e477839d2c710f1ecc5e8c0e74e10e2005ee` / MERGE_HEAD `31256d5d6758daf25892d55df73feffde7a7e573` 和五件 STOP，模块独立核 U 严格等于计划五件；`msg_168670e6a742` 正式放行原 B，尚待其归还，不登记 merge 或客户端通过。H 单文件配置冲突仍保持原序列与 STOP，待 B 串行安全检查点处理。H 原终端已由 M-relay 在执行主机核实 live/working，未因 stale_status 重派人员。
+
+F QueryState SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3` / REPORT `88f9e477839d2c710f1ecc5e8c0e74e10e2005ee` 已普通 push、模块独立核远端 REPORT 同值。build/lint/十七项显示检查和四项原浏览器断言通过，原默认百项为 97 PASS / 3 FAIL，旧完整默认 203 PASS / 41 FAIL / 32 既有条件 SKIP / 4 NOT_RUN 保留。B 新诊断 helper 的本轮真实生命周期因原 120 / 120 / 90 秒总期限取消，0 PASS / 3 cancelled / 0 SKIP，实际清理自然完成；首日志保持，本轮 WIP 未作为通过源码交 F。
+
+T 保持测试 SOURCE `41f88230997382ea0972652ab3f15135c75a90f1`，独立 REPORT `feb0719e6398116b0d1d00c8848614d474c07826` 已普通 push且模块独立核远端同值。按 `msg_f43eb72cce23`，原官方 Atom429 四小时后只执行一次正常完整论文准入命令 `go test -mod=readonly ./internal/attention/app -run ^TestActualAdmissionServiceAndDraftLifecycle$ -count=1 -v`；既有获准匿名代理、D backend缓存与本轨 GOTMPDIR，实际包 25.994 秒、测试 4.94 秒 EXIT0。官方 Atom/PDF 实际各一次 200，真实准入、全部原成功及失败断言、幂等、回滚、撤销、来源撤回、逐 event_id 和两次 SQLite 关闭重开通过；本机原件为 T `.verification/admission-official-recheck-once-20261015.log`、`.verification/attention-3895065177/state.sqlite` 与 `.verification/public-http-4037936165`。首429原件保留，十四个模型/unknown/推荐及默认两包全跑仍未完成，没有新模型或控制器。
+
+B 已交可信配置 SOURCE `e346c40cc9edcbd5b4588e47585f3c0b616b0770` / REPORT `0db02879d47cd330b3eb42aa7f5759eb3d9ad4f4`，模型来源与版本 unknown SOURCE `f76e25b84b29495994f2e5877b586d4c22669d3f` / REPORT `ce5a86b0cdc27ea9567d1041a7fccc89795d9395`，025迁移 SOURCE `491e7f606d8265e9f7e9694f547a91682b305e74` / REPORT `8da52b2840bae3fc982dd5ba92a98aa652bed195`。对应原 H/R/S5 已收到精确来源，selected-text 实际同 job/operation/session/TurnID/source/Stop/有效工具证据仍未齐。
+
+S2 安全 Context DTO / 原持有者工厂 / claim-live 与 submit-same-exited 分离 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 已普通 push，模块只读审阅实际 provider 核原 session/controller/startup 与授权 Git Root、HTTP DTO 删除绝对 Root 并转项目相对 scope；真实 HTTP/SQLite/Git 与重启适用检查 9.600 秒、vet 和三十四包架构由原 owner 报告通过，独立 REPORT 待交。原生 owned 正向与 R 事务 overlay 尚未完成，不冒填通过。S3 第九个业务 SOURCE `70e6e5a03fca9a19aa0a70e44b23b78337d34714` / REPORT `036e05a6b003e510c28f8c9f5db862d087471f41` 已 push且模块独立核远端 REPORT 同值；用途授权及当前 packet 私有上下文先于执行事实读取，实际组件通过，首次 SQL lease 超时保留。Calls 口径和批准所需权限证据已由根询问用户，答复前全部既有门禁保持，完整 Claim、两 Agent、采用和后任务仍未运行。
+
+产品 UI SOURCE `6a5681f369e2cec114abfa1d70a239ed6d94aab2` / REPORT `c133d9b2daa1e3a2ca34ece92dab93b6372652ff` 已普通 push、模块独立核远端同 REPORT。仅新增已有规格五类反馈受控字段，typecheck/本域 ESLint 通过；尚未挂载页面或运行 S5 真实 HTTP/SQLite/浏览器，不能计作完整功能。全部核心路径、默认组合与 Windows x64 包继续验收，模块未结算或发布。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
