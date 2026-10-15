@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -149,6 +150,58 @@ func main() {
 		checkGraph(ctx, service, human, qa)
 		checkGraph(ctx, service, human, qb)
 		emit("actual_sqlite_and_adapter_restart")
+	}
+	if *phase == "query-readonly" {
+		graphBefore, err := directoryState(filepath.Join(*evidence, "projections"))
+		must(err)
+		mapBefore, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		checkGraph(ctx, service, human, qa)
+		checkGraph(ctx, service, human, qb)
+		result, err := service.ReadRepositoryMap(ctx, human, qa)
+		must(err)
+		assert(len(result.MapEntries) == 6, "actual saved authored map is incomplete")
+		graphAfter, err := directoryState(filepath.Join(*evidence, "projections"))
+		must(err)
+		mapAfter, err := directoryState(filepath.Join(*rootA, ".aoci"))
+		must(err)
+		assert(graphBefore == graphAfter, "repository queries changed the actual graph projection")
+		assert(mapBefore == mapAfter, "repository queries changed AOCI runtime files")
+		emit("real_graph_search_impact_and_map_leave_all_projection_files_unchanged")
+	}
+	if *phase == "uncheckpointed-wal" {
+		result, err := service.SearchRepositoryCode(ctx, human, qa)
+		must(err)
+		projection := filepath.Join(*evidence, "projections", result.Index.Snapshot.WorktreeID, result.Index.Generation, ".codegraph", "codegraph.db")
+		writer := exec.CommandContext(ctx, *node, "--liftoff-only", filepath.Join(filepath.Dir(*script), "../../../tests/s4/wal.mjs"), projection)
+		var diagnostics bytes.Buffer
+		writer.Stderr = &diagnostics
+		output, err := writer.StdoutPipe()
+		must(err)
+		input, err := writer.StdinPipe()
+		must(err)
+		must(writer.Start())
+		closed := false
+		defer func() {
+			if !closed {
+				_ = input.Close()
+				_ = writer.Wait()
+			}
+		}()
+		var ready struct {
+			Ready bool `json:"ready"`
+		}
+		must(json.NewDecoder(output).Decode(&ready))
+		assert(ready.Ready, "actual SQLite writer did not become ready")
+		_, err = service.SearchRepositoryCode(ctx, human, qa)
+		code(err, apierrors.IndexStale)
+		_, err = service.SearchRepositoryCode(ctx, human, qb)
+		must(err)
+		must(input.Close())
+		must(writer.Wait())
+		closed = true
+		checkGraph(ctx, service, human, qa)
+		emit("real_uncheckpointed_wal_rejected_other_worktree_unaffected_and_closed_writer_recovers")
 	}
 	if *phase == "sync-current" {
 		_, err = service.UpdateRepositoryIndex(ctx, human, qa, "sync")

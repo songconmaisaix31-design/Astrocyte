@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 // stdout只承载经筛选的引用和数量，第三方诊断留给本机stderr。
 const input = JSON.parse(fs.readFileSync(0, 'utf8'));
@@ -32,8 +33,14 @@ async function run() {
     } finally { graph.close(); }
   }
 
-  // CodeGraph.open的readOnly参数在1.0.1未生效；官方QueryBuilder使用真正只读的SQLite连接。
-  const db = new DatabaseSync(path.join(input.root, '.codegraph', 'codegraph.db'), { readOnly: true });
+  // generation发布后不再改写；拒绝未checkpoint的WAL，immutable避免只读查询写入shm。
+  const databasePath = path.join(input.root, '.codegraph', 'codegraph.db');
+  const wal = fs.statSync(`${databasePath}-wal`, { throwIfNoEntry: false });
+  if (wal && wal.size > 0) return { version: pkg.version, error: 'index_stale' };
+  const databaseURL = pathToFileURL(databasePath);
+  databaseURL.searchParams.set('mode', 'ro');
+  databaseURL.searchParams.set('immutable', '1');
+  const db = new DatabaseSync(databaseURL.href, { readOnly: true });
   try {
     const queries = new QueryBuilder(db);
     const symbols = [];

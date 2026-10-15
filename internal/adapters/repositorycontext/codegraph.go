@@ -86,6 +86,9 @@ func (c CodeGraph) invoke(ctx context.Context, root, action string, q domain.Rep
 	if result.Error == "budget_exhausted" {
 		return result, failure(apierrors.BudgetExhausted, "CodeGraph result count exceeds the approved budget")
 	}
+	if result.Error == "index_stale" {
+		return result, failure(apierrors.IndexStale, "CodeGraph projection has uncheckpointed writes")
+	}
 	if result.Error != "" {
 		return result, failure(apierrors.ProviderUnavailable, "CodeGraph returned an unsupported error")
 	}

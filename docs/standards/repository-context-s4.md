@@ -16,7 +16,7 @@ CodeGraph 使用官方 npm `@colbymchenry/codegraph` **1.0.1**，MIT，源码标
 
 显式 `index/sync/rebuild` 只把批准范围内的实际源码复制到本平台拥有的独立 generation 目录。版本仍指原 Git repo/worktree；`source_span` 对应原相对文件和行号。sync 复制上次已关闭、已 checkpoint 的真实 SQLite 图，再由官方 SDK 增量识别新增、修改和删除；失败不替换当前已发布 generation，成功后用真实 SQLite generation CAS 发布。受损投影经显式 rebuild 从原源码重建。
 
-CodeGraph 1.0.1 的 `CodeGraph.open` 实现没有使用其声明的 `readOnly` 参数。查询改用官方导出的 `QueryBuilder` 和 Node `DatabaseSync(..., {readOnly:true})`，不触发迁移、自动同步或索引写入。符号搜索使用其真实 FTS/符号检索；关系按官方保存的调用、导入、继承和引用边进行有界展开，标记 `codegraph_static_heuristic` 和提取器版本。动态调用与测试覆盖始终报告缺口。FTS 不标为 embedding。
+CodeGraph 1.0.1 的 `CodeGraph.open` 实现没有使用其声明的 `readOnly` 参数。查询使用官方导出的 `QueryBuilder` 和 Node `DatabaseSync`，以 `mode=ro&immutable=1` 的 SQLite URI 打开已发布的独立 generation，先拒绝非空 WAL，不触发迁移、自动同步、索引或 shm 写入。URI 由标准 `pathToFileURL` 构造；[Node 24.16.0 源码](https://github.com/nodejs/node/blob/v24.16.0/src/node_sqlite.cc) 显式启用 `SQLITE_OPEN_URI`，[SQLite 官方文档](https://www.sqlite.org/uri.html) 规定 immutable 的适用条件。每个 generation 在维护完成、SDK 关闭后发布，后续维护写入新目录。符号搜索使用其真实 FTS/符号检索；关系按官方保存的调用、导入、继承和引用边进行有界展开，标记 `codegraph_static_heuristic` 和提取器版本。动态调用与测试覆盖始终报告缺口。FTS 不标为 embedding。
 
 AOCI 固定 **v0.1.0-rc20**，标签对象 `7c59b0718780f5fccb65d9f0a3445b0b98fea177` 的实际源码提交为 `45990a1dcfc4415efdc6fbfa13bc159a415f127c`。已完整读取官方 README、安装文档、所选版本 LICENSE 与实际 JSON/CLI 源码，并在本机 ignored 工具目录构建；实际二进制报告 `v0.1.0-rc20`、上述 commit、build date unknown。许可为 FSL-1.1-MIT，本轮仅本机适配验证，最终包分发尚未获决定，不携带该 binary。
 
@@ -105,3 +105,27 @@ HTTP SOURCE `896a7b430c62f9d91aaf5434b11c7653a3d00f36` 已普通 push，准确�
 模块独立审读 `msg_1d21efa0bebb` 指出 GET 查询解析应拒绝畸形编码。本轨使用成熟 `net/url.ParseQuery(r.URL.RawQuery)` 并立即拒绝解析错误，避免静默忽略畸形未知参数；HTTP 验收脚本已准备畸形 percent、semicolon、重复标量与未知参数场景，实际执行仍待生产组装，不使用自研 parser。
 
 查询解析修复 SOURCE `293af633570d6a4f4cf4bbf9c5b651821ab977e7` 已普通 push；当前 HTTP 包 build/vet 和差分检查 PASS。真实 HTTP 验收脚本仅在准备目录中，未宣称实际运行成功；H 生产注册/认证准确 SOURCE 是其当前依赖。模块及 H 已收到准确 Services、注册函数、DTO 和权限规则，F/UI 仅按 H 唯一契约生成类型消费。
+
+## 生产组合的准确输入
+
+恢复后继续使用同一 Task `task_bd209566be37`、Dispatch `ctx_12ae8872df87`、工作树与分支。Orca 当前 provider 投影记录客户端 `codex`、模型 `gpt-6.1-sol`。新的 Go 进程仅在自身环境中使用 `D:/Astrocyte-agent-assets/20261015/go-build/S4` 和 `D:/Astrocyte-agent-assets/20261015/go-temp/S4`，原始数据库、日志与验证源码继续保留。
+
+H 按顺序精确消费以下 SOURCE；仅含报告的提交无须进入其业务组合：
+
+| SOURCE | 修改范围 |
+|---|---|
+| `9eff2edb34058826d302d3a465b7fe7e74797be5` | repositorycontext 五个 Go 文件与 codegraph.mjs、sqlite/repository_context.go、workspace app/domain repository_context.go、tests/s4/verify 与 verify.ps1、本标准 |
+| `263bc7069682ede35af60426140ee6f744b0d472` | aoci.go、codegraph.go、app/repository_context.go、tests/s4/aoci、verify、本标准 |
+| `1a55e1630502642324500c3b64853af882962fa4` | git.go、verify、本标准 |
+| `896a7b430c62f9d91aaf5434b11c7653a3d00f36` | httpapi/repository_context.go、verify、本标准 |
+| `293af633570d6a4f4cf4bbf9c5b651821ab977e7` | httpapi/repository_context.go、本标准 |
+
+必要依赖来源分别为 B 的 `98bb9236c68f45ca4ab4114d46eafba5c90cdedf`（仅 migrations/021_repository_context.sql）和 `6b78f641ecb2a3ae53b11df9aeeb837e6c72c646`（仅 dependencies.lock.json、go.mod、go.sum）；本树对应保留来源的提交为 `f25b838738d981f73380f042c2f7940dc3fd3a7e`、`b4e288503868d4e5d1034026f82025444d5b13b9`。S2 接口来源为其原始 `4eec31ddfde39fa3f548691ec6e7f2f34470351a` 与 `5d0ba735533f68259b91128dc404c8e4c2f2a535`；由消费方核实已存在的接口及自身依赖，不合入其他历史。
+
+实际构造为 `repositorycontext.New(db, db, repositorycontext.Options{Git: repositorycontext.Git{EnvironmentID: ...}, Graph: repositorycontext.CodeGraph{Node: ..., SDK: ..., Script: ...}, AOCI: ..., CacheRoot: ..., SnapshotBudget: ...})`。Node 可执行程序、官方 SDK 目录、本轨 codegraph.mjs、AOCI 可执行程序与投影目录均由可信启动配置提供。生产服务使用同一 adapter 实例作为 S2 快照端口和五个 HTTP 能力端口。
+
+`tests/s4/_http/main.go` 当前为未提交的实际 HTTP 验证入口，依赖 H 将 `RepositoryContext` 注册到既有生产 `Services`、认证白名单和 server；生产组装 SOURCE 未到，HTTP 保持 NOT_RUN。`query-readonly` 阶段核对真实 Search、Impact 与保存地图查询前后所有自有图投影和 AOCI 运行文件的数量、大小及 mtime，实际结果另行登记。
+
+恢复后在 D 盘进程缓存配置下执行 `tests/s4/verify.ps1 -Phase restart` PASS。`query-readonly` 首次真实运行 FAIL，原件为 `.verification/s4/actual-first/query-readonly-failure-20261015T030418.352154300.txt` 及 `query-readonly-20261015T0304098327094.log`。随后保持同一数量、大小和 mtime 断言，真实两图符号与关系查询、六条作者地图读取全部 PASS，日志为 `query-readonly-20261015T0305549291173.log`；当前查询使用上述 immutable URI。
+
+`uncheckpointed-wal` 也实际 PASS：使用 Node 官方 SQLite 在自有真实图上执行保持原符号名称的 UPDATE，真实事务提交后保持 writer 连接，确认实际 WAL 非空；A 查询返回 `index_stale`，B 查询正常。关闭 writer 完成 checkpoint 后，A 的实际 Count 符号与调用关系再次查询通过。`tests/s4/wal.mjs` 只用于这个 SQLite 并发边界，不创建替代 CodeGraph、API、源码对象或符号。
