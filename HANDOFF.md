@@ -2,6 +2,14 @@
 
 ## 当前执行入口（2026-10-16）
 
+04:34 当前同一产品为 `http://127.0.0.1:64505/`、准确 SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、modified=false、PID4676，启动 UTC `2026-10-15T20:22:58.8651960Z`。原 SQLite、LOCALAPPDATA 和 F 已保存业务记录保持；H 已接入真实 S2 `DB.AfterWorkspaceCommit`、清理 worker 及独立 Q reader root。Q 使用原 `snapshot-1711995690` / UTC `2026-10-14T18:48:42.2097174Z`，没有重新采集或调整日期。根已独读实际 running.json、准确 b73 构建 result 和日志；其完整 `pnpm build` EXIT0 / `20.8431586` 秒，source_after 同值。Jev / Laya 未配置，新增原生登记、初始化和模型输入仍为零。
+
+实际核心读取已补齐：F SOURCE `12a17f7bf7a9fbef273e872516961aa9262b7110` / REPORT `94d827a34f8cc659de8ab3e051483eb194480d76` 在上述同一 b73 服务验证四个认知视图、十项 SQL / HTTP / DOM 数值、两主题各三条真实历史及九页全部155个事件编号；每个编号的六字段逐一对应真实事件库，分页无重复、零写入和页面异常。生产日期保持实际10月16日，今日 / 七日 / 三十日分别为 `0 / 1076 / 1316`，原10月15日期望另存，没有修改 Clock。根已独读准确源码、报告和实际输出。原四项业务恢复 HTTP / DOM / SQL 及七个真实事件验证已通过；后继准入仍由 H 补公共注册和精确契约，F 完成实际页面连接。
+
+S4 准确完整 b73 组合的实际生产复验已通过，SOURCE `6e441f7a6c14a11492d188a7259106445715700a` / REPORT `7f9c7fa9fc3b23153eb462931924a7782775cacb`。原 `tests/s4/production.ps1` 在独占 D 盘新 SQLite、官方 CodeGraph / AOCI 和两个公开 worktree 上实际验证 HTTP 授权与撤权、两次重启、原十秒内 SQL / 磁盘索引清理及另一 worktree 原 generation 保留；PASS1 / FAIL0 / SKIP0，总 `47.876767` 秒，根已独读原日志和报告。原 f027 清理失败及孤立 H b94 缺 S2 回调的启动失败保持原件，本结果只属于上述完整来源。
+
+唯一 I 后继准确 `5322e7de66945067601868a82b4b7d790f236fef` 的完整 `pnpm build` EXIT0 / `34.1603979` 秒、source_after 同值，根独读原 result；后续原作者交付继续普通合并，其构建结果不能转用于后继 HEAD。H 负责同一运行实例更新，F 保持唯一实际业务写入者。现有 human 机会候选已保存，实际201和首次错误断言分别保留，不重复提交；具体批准前交用户审阅。经验候选尚未形成，Agent 完成证据权限、Laya 语言与原生边界仍待用户答复。完整适用检查、默认前端、真实 L1 / L2 六步和最终包继续实施，当前结果不代表整个产品完成。
+
 04:15 同一产品已恢复可访问：`http://127.0.0.1:64505/`，准确 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，PID45616，启动 UTC `2026-10-15T20:13:21.8983808Z`。根实际 GET 首页 HTTP200 / text/html / 562 bytes，独核实际进程路径、启动时间和唯一 loopback listener；M-relay 另核稳定 `versions/cffac367` 的 buildinfo 同 revision / modified=false。原 D 盘 SQLite、LOCALAPPDATA 和 F 已保存的公开业务数据保持，`running.json` 已更新。CodeGraph 已配置；原 `0db` 启动 exit1 的原因仍未知，原件保留，准确原目录及完整白名单环境下三个 probe 当前均退出0，不把当前恢复写为已定位或修复旧原因。
 
 当前 M-relay `ctx_7f070ad688f5`、M-product `ctx_5516f4f55d3b`、M-release `ctx_6256d5837fb3` 均实际 Codex / gpt-6.1-sol live / working，继续原子 Run；原 H `ctx_5b3dc511cccd`、B `ctx_4f388a292a1f`、F `ctx_c22d1dd61be3`、唯一 I `ctx_4a4234c26f8c` 已实际工作，原 R `ctx_1500d65ab213` 接续原拒绝诊断。I 已普通消费 B cleanup `0e6139f` 和 F `a166310` 得到上述 cffac，再合 F 检查脚本 `8bd599c` 得到 `79b2de5`；只有准确 cffac 的 `pnpm build` 已真实 EXIT0 / `49.3755472` 秒，根独读 result / log 核 source_after 同值。8b 原完整 check 没有 result.json、日志止于 httpapi FAIL，整体 EXIT UNKNOWN，四包首失败已退原作者，后继契约 / TypeScript / lint / Vitest 没有完成证据，未重跑已知未修问题。
