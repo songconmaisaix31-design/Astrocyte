@@ -633,3 +633,11 @@ SOURCE `19ff699f304961d3c9fad6a336163848c923057b` 已普通 push，新增 `admis
 明确设置已获准的匿名 `HTTP_PROXY` / `HTTPS_PROXY=http://127.0.0.1:7890` 后，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestActualAdmissionDraftAtomicLifecycle$' -v -count=1` EXIT 0，包 8.859s，`.verification/admission-actual-recovery-first.log`。原检查实际读取固定官方 arXiv `2501.12948v1` Atom / PDF，以人工记录创建候选；覆盖错误数据库消费者的原子回滚、成功准入与唯一草稿、幂等重放、同 revision 冲突、原 outbox / receipt、独立撤销、SQLite 重开及真实资料撤回拒绝。全部原断言保留，执行批准及原生会话始终为零；未调用模型或修改系统网络。
 
 全包 `go build -mod=readonly -p=2 ./...`、目标包 `go vet -mod=readonly -p=2 ./internal/adapters/admissionbridge`、三件 Go 格式及 diff 检查均 EXIT 0；日志为 `.verification/admission-project-build-first.log`、`admission-project-vet-first.log`。生产 HTTP 的 Services 字段、路由和 main / OpenAPI 装配仍由 H 实施，本文实际 service / SQLite 结果不替代同实例 UI / HTTP 验收。
+
+## arXiv 原件格式与实际 DOM
+
+SOURCE `25a4ae879ca0a4cd059540bfa5aeddf8cf713dcc` 已普通 push。arXiv PDF 类型通过已有标准 `http.DetectContentType` 检查，官方 HTTP 响应的 Close 错误经 `errors.Join` 保留；读取错误会阻止发布来源。四件变更中的原注释使用中文，原固定命令和路径语义保持。
+
+在已授权匿名进程代理下，原完整 `go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestActualAdmissionDraftAtomicLifecycle$' -v -count=1` 再次 EXIT 0，包 5.306s；`.verification/arxiv-mime-actual-first.log`。实际官方 Atom / PDF、完整准入草稿与撤销重启断言保持，模型调用为零。全包 build、importers / agents 两包 vet、Node bridge 语法、Go 格式及 diff 检查均 EXIT 0；日志 `.verification/arxiv-mime-build-first.log`、`arxiv-mime-vet-first.log`。
+
+`node .verification/paper-dom-actual-recovery.mjs` EXIT 0，`.verification/paper-dom-actual-recovery-first.log`。使用本工作树先前完整取得的官方 `2501.12948v1` HTML 原件 225089 bytes，经实际 linkedom / Readability / `paperDOM` 得到 `readable_fulltext`、57465 text bytes、原标题、固定版本、来源 key 及 PDF URL；文档在提取前后相同。实际快照保存在本树 `.verification/paper-dom-actual-recovery.snapshot.json`；这是现有公开原件的实际 DOM 解析，没有声明本次重新获取网页或原生模型。最初空 JSON 与 `fetch failed` 原件继续保留。
