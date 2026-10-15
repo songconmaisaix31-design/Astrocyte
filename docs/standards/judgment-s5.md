@@ -1,8 +1,8 @@
 # S5 判断实施与实际验证
 
-固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，接管 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`，接管工作树 clean。实际 Orca 终端为 Codex / GPT-6.1-Sol high fast；Task `task_1d3e15a66b2a` / Dispatch `ctx_f403dc7813bc`。
+固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_0a7797464f02`，接管 HEAD `8914392e22453cefbe14469632f43a6d52ceec69`；共享合并已完成，当前阶段 SOURCE 为 `bc5ffc910b660d6ae9084234ffc8ced8e265cbc5`。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；协调者另核实际 projection `codex/gpt-6.1-sol`。
 
-仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移交 B；公共 HTTP/OpenAPI/main 装配交 H，Web 与生成客户端交 F。S2 当前未交稳定权限端口，相关集成仍未决定；正式 V4 与认知冻结域保持原授权边界。
+仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。当前 S5 handler 前缀归本执行者，开始写入前等待 H/B 本人确认没有现有修改；公共字段仍由 H 确认。正式 V4 与认知冻结域保持原授权边界。
 
 ## 官方输入与资产
 
@@ -60,9 +60,9 @@ CREATE TABLE judgment_policies (
 
 内部 `JudgmentRequest/Result`、题型规则、单后端路由、完整版本键、使用前复核和 SQLite 记录已经实现。`judgment_policies` 保存实际 human 配置，含 monotonic `revision`、固定 project settings revision、worktree/snapshot、每题型单一 backend/model、明确语言、预算及可空阈值。Jev 外发另外逐条核 `external_evidence` 的 fixed material revision/digest；配置 backend 不扩大资料外发许可。判断服务不产生准入或任务批准。
 
-`ProjectAuthorization` 使用既有 `LocalProjectRepository` 与 `ProjectReferences.ReadSelected`。Agent 每次核实际 project 身份、read_context、revoked/expired；human 才能改策略或反馈。请求不保存 resolved source text，结果不保存原始 provider 回答、prompt 或凭据；产品 usage 只保留规范字段，真实原件仅忽略目录。S2 Grant WIP 不消费。公共 HTTP 字段/路由仍由 H 确认，当前只有私有契约。
+`ProjectAuthorization` 使用既有 `RepositoryProjectReader` 与 `ProjectReferences.ReadSelected`。Agent 每次核实际 project 身份、read_context、revoked/expired；human 才能改策略或反馈。请求不保存 resolved source text，结果不保存原始 provider 回答、prompt 或凭据；产品 usage 只保留规范字段，真实原件仅忽略目录。公共 HTTP 字段/路由仍由 H 确认。
 
-判断适配器读取实际 Git HEAD 和既有 `ProjectFiles` 权限过滤的明确 `snapshot_files`，保存实际文件内容 digest 及 mtime/size 版本。worktree 身份绑定真实 canonical root，snapshot 绑定完整原始 HEAD 输出和选定文件版本；每次 resolve、模型结果使用和缓存命中均重新读取。没有 Git 文件格式 parser。S4 的 RepositoryMap/CodeSearch generation 仍须消费其精确端口，本阶段不替代 S4 索引验收。
+判断适配器通过 S4 `ProjectSnapshotProvider` 捕获并持久化真实 canonical root、worktree、HEAD、index/worktree digest 与 generation。策略保存该完整快照，每次 resolve、模型结果使用和缓存命中均调用现行 S4 provider 复核。SQLite 权限与结果写入共用 `WorkspaceTransaction`；没有本域重复的 Git snapshot 实现。本阶段验证其判断接入，不替代 S4 RepositoryMap/CodeSearch 索引验收。
 
 历史记录读取和反馈单独核当前 caller/project/材料访问与固定结果版本；旧 goal/model/policy 的人工历史反馈可以保留。缓存和后续结果消费仍核全部当前版本，旧版本不会获得执行或准入权限。
 
@@ -80,7 +80,7 @@ multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次�
 
 | 项目 | 当前结果 |
 |---|---|
-| 精确 B 基线与 clean | PASS |
+| 初始精确 B 基线与共享合并 | PASS；S4 普通 merge `512fa692585e3f2b6b848802a356705818ec3c7d` 已推送 |
 | 官方文档完整读取与原件 | PASS；网页首错误保留 |
 | SDK 源码许可与固定模型卡 | PASS；分发仍须保留适用 LICENSE/NOTICE |
 | 官方 SDK build | PASS，忽略目录真实 npm build |
@@ -88,10 +88,12 @@ multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次�
 | multilingual ONNX 导出与 parity | PASS，官方三次 CPU 数值检查；首空间 FAIL 保留 |
 | SDK 三题型本地 CPU / 长截断 / options不足 | PASS；正常短输入未截断，长输入和候选覆盖损失实际记录；首前置 FAIL 保留 |
 | Node/Go 常驻 RPC / 重启 | PASS，English/en、multilingual/en、zh；独占 D 资产实际重载/重启 PASS |
-| 断网 | NOT_RUN，隔离范围裁决待答 |
+| 断网 | 进程 HTTP 出口拒绝、English 三题型与双 PID 重启 PASS；OS 隔离 NOT_RUN |
 | Jev 真 API/model/usage | NOT_RUN，缺本进程 secret |
-| 真实 SQLite/HTTP/撤销/缓存/反馈重启 | NOT_RUN |
-| AT10/AT11/AT12 | NOT_RUN |
+| 真实 SQLite/撤销/缓存/反馈重启 | PASS；原 HTTP 会话和资料导入实际运行，判断公共 HTTP 尚未运行 |
+| AT10 | 判断接入 PASS：两个实际公开 worktree 与未提交 README 变化隔离；不替代 S4 索引全项 |
+| AT11 | 直接 SDK 截断/options 与进程 HTTP 拒绝已有实际结果；完整判断服务与公共 HTTP 尚待 |
+| AT12 | 显式 goal/taste/policy/model/access 五版本变更使旧缓存失效 PASS |
 
 SOURCE 和独立 REPORT 由各阶段普通提交/push 后登记完整 SHA；当前不能宣称 S5 完成。
 
@@ -117,7 +119,7 @@ Go `Laya` 使用准确 `sourcegraph/jsonrpc2@v0.2.1`，官方 tag SOURCE `2cc941
 
 任务 process 显式 `ASTROCYTE_S5_ASSET_ROOT=D:/Astrocyte-agent-assets/20261015/judgment-s5`，同一 Go-RPC 三组每组两次真实加载/重启 PASS，92.65 秒，总命令 93.853 秒；全部 owned 模型关闭。随后检查最终绝对路径仍在本树 `.verification/s5`，逐项删除 C 的已验证可重建六+六模型文件，未递归删除，实际释放 `3,017,906,443` bytes；当次 C 可用 `7,389,450,240` bytes。D 六项模型/配置继续完整保留。实际 copy/reload/release 证据为 `.verification/s5/assets-copy-d-safe.json`、`go-laya-d-reload.log`、`assets-d-released-safe.json`。
 
-当前支持语言验收仅 English/en 和 multilingual/en、zh；其他语言未宣布支持。实际 OS 完全断网尚未执行，独立问题 `msg_d85e334bfdc4` 等待隔离范围裁决；真实 Jev key、B 生产迁移/锁、H 公共字段/装配和同事务委托消费端口继续按准确交接处理。
+当前支持语言验收仅 English/en 和 multilingual/en、zh。根已批准先验证进程 HTTP 出口拒绝，实际结果见后文；OS 隔离尚未获执行或提权授权。真实 Jev key、共享合并、H 公共字段/装配和同事务委托消费端口继续按准确交接处理。
 
 ## 第二阶段独立 REPORT
 
@@ -126,3 +128,27 @@ SOURCE `30ddaa76b19807e78bf6f56421b4461a6b3cd3f4` 已普通提交/push。本阶�
 `go test -modfile=.verification/s5/go.mod -mod=mod ./internal/judgment ./internal/adapters/judgment` PASS，私有核心/适配器编译；`go vet -modfile=.verification/s5/go.mod ./internal/judgment ./internal/adapters/judgment ./tests/s5` PASS；真实 model 测试命令和结果见上节。`git diff --check` / `git diff --cached --check` PASS，root `go.mod/go.sum` 零变动。
 
 root 正常入口首检 `go test -mod=readonly ./internal/adapters/judgment` 为真实 FAIL：`github.com/olivere/ndjson@v1.0.1` 要求 `github.com/google/go-cmp@v0.5.6` 的 go.mod sum 缺失。原件 `.verification/s5/root-dependency-first.log`、安全结果 `root-dependency-first-safe.json` 保留；sourcegraph SDK 同时尚待 B root 依赖集成。该结果已准确交 B/协调者，忽略 module 的组件 PASS 不替代 root 默认 build。公共路由、三表生产迁移、同事务委托消费和实际断网按未决/准确来源继续，不降低验收或宣称整个 S5 完成。
+
+## 恢复阶段：进程出口验证与 OS 清理方案
+
+已封存的 `.verification/s5/offline-http-proxy-safe.json` 记录两个真实 CPU 进程 PID `57796`、`23948`，均对固定官方公开模型 URL 取得 `ECONNREFUSED`，随后完成 English 三题型并退出 0。实际回答、usage、stderr 和网络错误各自保留；该范围为两个进程的 HTTP 出口，OS 全部网络隔离保持 `NOT_RUN`。本轮只读取原件，没有重复模型调用或导出。
+
+当前 `tests/s5/os-offline.ps1` 默认仅生成方案。专用程序为本树 `.verification/s5/os-offline/node.exe`，真实 Node `v24.16.0`，SHA256 `B3094D0B49F9AD602262A9921551737BB97637C05DD357A06AE98188D7290AA3`，与 `C:/Program Files/nodejs/node.exe` 相同。规则名称为 `Astrocyte-S5-ctx_0a7797464f02-owned-node-outbound`，创建时附加本次唯一 Group，限制该专用程序的 Outbound / Block / Any profile / Any protocol。共享 Node 和 Orca 不在该程序规则范围。每次方案及执行证据使用独立文件前缀，保留先前原件。
+
+执行分支要求显式 `-Execute` 与已有 Administrator 身份；不启动提权。嵌套 `finally` 分别尝试清理专用路径全部进程、删除本次规则、恢复每个保存的 Process 环境变量。终止前重查 PID、ExecutablePath 和 CreationDate，等待真实退出；删除前重查 Name、唯一 Group、Program、Direction 和 Action；恢复后逐变量读取确认。每个清理阶段发生错误仍进入其余必要清理阶段，最终保存实际状态与错误并抛出所有异常；原执行异常同时保留。未能确认的清理状态不会写成成功。
+
+Windows PowerShell `5.1` 的第一次读取出现真实解析 FAIL，原件 `.verification/s5/os-offline-ctx_0a7797464f02-ps51-first.log` 保留。当前脚本的默认预览已由 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/s5/os-offline.ps1` 实际通过，只复制或核验专用 runtime 并保存方案，没有创建、删除防火墙规则或调用模型。PowerShell 7 parser、Node 两个 offline 脚本语法检查与私域 `git diff --check` 通过；清理执行分支仍未运行，不宣称 OS 验收通过。当前可审阅方案为 `.verification/s5/os-offline-ctx_0a7797464f02-dad09c7b1de149f1827fc985d22db55d-plan.json`。
+
+本人停止写入确认 `msg_12626069e7c3` 已交 M-release，`msg_512dc4296921` 已交 M-product。原 B/S2 按临时范围处理并归还后，M-release `msg_cc73bde2dce8` 明确放行；独立核 `git ls-files -u`、两类 diff-check 均无错误，普通 merge 为 `512fa692585e3f2b6b848802a356705818ec3c7d`，已 push 并核远端同值。缓存维护权限由 `msg_9083f709e503` 撤回，本执行者没有开始 `go clean` 或删除缓存；后续构建按进程使用 D 盘，最新安全检查点改用共享 warm `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-tmp/judgment-s5` 保持独占。Jev key 与 OS 防火墙/提权仍待根处理，当前 Task 尚未完成。
+
+## 第三阶段独立 REPORT
+
+SOURCE `bc5ffc910b660d6ae9084234ffc8ced8e265cbc5` 已普通提交/push，远端 `refs/heads/songconmaisaix31-design/release-judgment-20261015` 核对为同完整 SHA。该 SOURCE 为 S4 准确快照接入、真实事务复用、权限复核/缓存/反馈与安全方案，共 11 件 S5 允许文件；S4 普通合并独立保留。所有未运行项均保留原验收要求。
+
+实际 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActual' -count=1 -v -timeout 4m` 首轮 PASS，`23.942s`。三个测试使用获准公开 Git 项目的两个真实 worktree、固定官方文档、原 SQLite migrations、原 HTTP human session 与原资料导入服务。已实际核规则结果/cache 命中，goal/taste/policy/model/access 五次持久化策略变更与旧请求拒绝，五类 fixed-version human feedback、错误版本拒绝和关闭/重新打开同一 SQLite，真实 Agent token 撤销后判断/cache/历史拒绝，同 `WorkspaceTransaction` 的真实 SQLite 主键错误完整回滚且没有借用第二个连接，真实未提交 README 变化不影响另一 worktree。模型没有参与这些规则测试，私有作品没有进入输入。
+
+日志为 `.verification/s5/actual-service-ctx_0a-first.log`。适用 `go vet -mod=readonly ./internal/judgment ./internal/adapters/judgment ./tests/s5` PASS，日志 `actual-service-ctx_0a-vet.log`；`gofmt -d tests/s5/service_test.go`、`git diff --check`、`git diff --cached --check` 无输出。此前 root readonly 私域/适配器/fixture 编译 PASS，日志 `root-combination-ctx_0a-first.log`；该编译不计功能测试。
+
+供 H 精确消费的现有构造函数为 `judgment.NewService(Repository, Authorizer, ...Model)`、`judgmentadapter.NewJev(apiKey)`、`judgmentadapter.NewLaya(ctx, LayaConfig)`。`ProjectAuthorization` 使用真实 `RepositoryProjectReader`、`ProjectReferences`、`PolicyRepository` 与 `ProjectSnapshotProvider`；`Snapshot` 返回 `domain.ProjectContextSnapshot`，`SetPolicy` 需要实际 human 与 expected revision。请求、结果、策略、usage、feedback 的准确 JSON tag 均在本 SOURCE 的 `internal/judgment/contracts.go`。Laya 必须提供绝对路径 Node/Worker/ModelDir/AssetsPath/SDKEntry/RPCEntry、明确 Language/ModelRevision/Stderr 和启动/退出预算，不默认选择模型或语言；资产与成熟 SDK 的准确准备路径见前文及真实 `tests/s5/laya_test.go`。
+
+当前阶段没有实现公共判断 HTTP 路由，没有执行 OS 防火墙、提权或 Jev 真 API，没有授予自动准入。S1 的 typed `AdmissionJudgmentAuthorizer` 所需 workflow、固定 opportunity revision、owner、active delegation 绑定尚无当前判断 Policy/Request 中的事实；已向协调者提交真实 human 单独设置版本化 DelegationRule 的具体方案，等待根确认，不制造批准或 proof。本 Task 继续后续真实 Laya 服务验证与已授权 HTTP 接入。
