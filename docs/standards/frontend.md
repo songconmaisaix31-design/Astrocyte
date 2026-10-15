@@ -1,5 +1,26 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 恢复后的准确生成契约
+
+F 原 Task `task_7cbe30017760` / Dispatch `ctx_5888aa5adf82`，工作树与分支保持 `standards-frontend`。Orca 公开观测客户端 Codex、模型 `gpt-6.1-sol`，终端显示 xhigh fast，沿既有 `--yolo` 配置；本阶段未启动额外 Agent 或模型请求。
+
+原普通合并 SOURCE `c1d49b18ea14c3b7106f7f5c8743bbeba547f444` 已 push，双亲为 `02a7976d997ef14ac298b2e240da43a9bb423c93` 与 H REPORT `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`。原 B 归还的单件 `cmd/server/config.go` index blob 为 `5fa5bf8ead480753c9b9eaa82bdfd31833e0ef8c`，工作文件与 index 相等、未合并项零，CHERRY_PICK / REBASE 均不存在后，由 F 唯一完成原 merge。其他暂存内容和前端 API 草稿完整保留。
+
+窄生成 SOURCE `cdf0b5eb4c2b3a1c7b76a335eb01d02dd7f6fee6` 已普通 push，仅包含 `web/src/api/schema.d.ts`。按当前模块正式授权运行仓库既有 `node scripts/generate-client.mjs`，从已合入的准确 OpenAPI 生成安全 Context、Swarm 及 Relay Prepare 类型；未手写生成内容，生成文件零 WIP，供原产品 UI 负责人消费。
+
+| 本阶段验证 | 实际结果 |
+| --- | --- |
+| `node scripts/generate-client.mjs --check` | EXIT0，生成内容与已提交共享源完全相等 |
+| 在 web 执行 `npx tsc --ignoreConfig --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM --skipLibCheck src/api/schema.d.ts` | EXIT0；日志 `.verification/f-safe-schema-typecheck.log` |
+| `git diff --check` | EXIT0 |
+| 包含当前 API / Prepare 草稿的全局 `npm run typecheck` | FAIL，原 SwarmPage 仍读取旧 Mission 字段，已交原页面负责人；日志 `.verification/f-safe-shared-typecheck-first.log` |
+| 当前草稿的全域 `npm run lint` 和共享 API / HTTP 测试 / Relay E2E 显式 tsc | EXIT0，限定当前草稿，不能计为未提交接口的实际运行验收；日志 `.verification/f-safe-shared-lint-first.log`、`f-safe-shared-focused-typecheck-fixed.log` |
+| 新 shared API / Prepare 的真实 HTTP、SQLite、Playwright 与正向 CLI | NOT_RUN，等待 B 准确 D 盘 helper、浏览器缓存迁移和后续准确组合；未启动新登记、原生控制器或模型输入 |
+
+新增 Swarm / workspaceContext 客户端、相关真实服务测试、Relay Prepare UI 及其权限拒绝 / 离线锁测试继续保留为原负责人 WIP，未包含在该窄 SOURCE。全部旧默认首失败、未执行项和原生限制仍保留；本阶段生成验证不改变其状态。后续验证进程的 TEMP / TMP 显式使用获准 D 盘 F 独占目录，浏览器迁移完成前不新启动 Playwright。
+
+## 前序工程与验收
+
 分支 `standards-frontend`，当前本域 SOURCE `d94f6ef2d3188c02e82ccf9cee529833e9f89df5`，helper SOURCE `f3f1fbd8670bd28bb7a78b47c58489469a2ed321`，S4 客户端 SOURCE `03bbaed523a6d03faba45595dcfb51ab4fcc696f`，QueryState SOURCE `21bf54128cbec4a602c34520277dc5c202e9b1b3`，前序 helper / Grant 组合 SOURCE `67caeae5973e8a8c30e7ae0d8ac16f1f12116da6`，均已普通 push。客户端实际为 `codex-cli 0.162.0`，本次 Orca 终端观测 `GPT-6.1-Sol high fast`；沿派发既有 `--yolo` 配置。本轨没有另派 Agent，没有读取凭据、私人原件或正式实验库。
 
 恢复 Dispatch `ctx_37e5eab0d417` 后，公开 Orca `worker-show` 实核当前模型为 `gpt-6.1-sol`，沿原 Task 继续，原生登记、初始化、输入和模型调用均为零。模块 `1437afc` 明确许可仅消费 `tests/s1/server.mjs`，原运行及其本树子进程均已结束后，F 使用文件编辑工具移入 B `01d28a54bb221e59cf262cbf9941fa418f6e937c` 同路径完整内容。全文件 diff 为零，Node syntax 和限定差异检查通过；后续 helper 逻辑归还 B。当前 SOURCE 已交 M-product / M-release，供唯一集成人员普通消费，不包含未交付的安全 Context 或原生契约。
