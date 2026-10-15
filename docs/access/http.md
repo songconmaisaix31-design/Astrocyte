@@ -14,6 +14,10 @@ SOURCE `b22395c6eb1eed0be9e87957ae21111b5ce8f782`，分支 `songconmaisaix31-des
 
 本次实际目标检查沿原 `TestRelaySessionActualCommittedEvidence` 入口调用独立 helper。在明确的本次 configured-access 范围内，缺受信应用确认、合法原输出、准确已接受输入关系或真实检查结果即失败。没有新增 Skip 或静默通过入口。实际窗口尚未执行该核心路径。
 
+本次首固定目标窗口的显式配置为 `ASTROCYTE_RELAY_SESSION_SOURCE=archive`。原 `AgentSpec` 登记没有 archive path / sourceFormat 字段；`Format=codex` 来自同一 Registry 原控制器正选档案。私有 `CaptureNativeNotifications=true` 负责在启动前挂接同控制器元数据，collector 的 `archiveOnly=true` 使实际提交仍只选档案。空 Prepare 经 `initialize` / `initialized` / `thread/start`，只从该响应的 `thread.id`、`cwd` 和可空 `path` 绑定来源；这条已挂接路径的 `OwnedRelayArchive` 不发 `thread/read` 或扫描历史。首次 send 内的既有 guard 在 `turn/start` 写入前核同原 controller / startup / session、实际工具策略、nlink1、文件身份和 header。原 collector 仅在同 EventService 全部成功提交后保存游标，Goal 读取再核同源实际 SQL ID。
+
+本轮空 Prepare 尚未执行，不能预先确认 `thread.path` 非空、文件已创建或 header / 单链接检查已通过；Prepare 返回也不表示该输入前 guard 已通过。只有输入后才能取得的来源不能满足该门禁，必须拒绝输入并保留真实缺口。旧 nlink2 原件不作为本轮来源可用的证明。
+
 | 验证命令 / 操作 | 实际结果 |
 |---|---|
 | `go test -mod=readonly -p=1 ./cmd/server ./internal/adapters/events ./internal/adapters/sqlite -run '^(TestRelayGoal.*\|TestRelayPublicContextActualGitSQLite\|TestRelayTrustedRegistrationActualSQLiteHTTP\|TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission\|TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown)$' -count=1 -v -timeout=120s` | PASS，8 项，零 Skip；三个 package 分别 35.324 / 9.584 / 16.592 秒 |
@@ -22,13 +26,14 @@ SOURCE `b22395c6eb1eed0be9e87957ae21111b5ce8f782`，分支 `songconmaisaix31-des
 | 原 `TestRelaySessionActualService` 在已登记 D 配置根启动并正常关闭 | PASS，实际检查 3.29 秒，package 15.431 秒；实际 SQLite task / registered agent / native session 均 0 |
 | 官方 YAML 2.9.1 严格解析与修复前后完整语义比较 | PASS，139 个唯一路由；保留全部正确路由与 schema 含义 |
 | `node scripts/validate-examples.mjs` | EXIT 0，273 个契约示例及能力边界 |
-| 原 Redocly CLI，经 `pnpm exec` 和原 `bin/cli.js` 直接运行 | 两次均在输出契约有效、13 warnings 后发生 Windows libuv assertion，直接运行退出码 `-1073740791`；命令保持 FAIL |
+| 原 Redocly CLI，经 `pnpm exec` 和原 `bin/cli.js` 直接运行 | 两次均在输出契约有效、13 warnings 后发生 Windows libuv assertion，直接运行退出码 `-1073740791`；首 FAIL 原件保留 |
+| 主控在同一 H 树独立复核同一官方 Redocly 命令，进程 Node 512 MB | EXIT 0，验证 6.838 秒、13 warnings；协调者已转交结果，没有变更依赖或规则，也没有重复成功检查 |
 
 使用 `GOMAXPROCS=2`、Go `-p=1`、Node 512 MB，全部新检查日志、临时文件、对象与产物使用 D 盘。日志指针为 `D:/Astrocyte-agent-assets/20261015/h-http-goal/task-3004b636a3ab/`，最终八项结果为 `goal-production-final-tests.log`，构建和 vet 分别为 `goal-production-build.log` / `goal-production-vet.log`，CLI 原件为 `goal-production-openapi.log` / `goal-production-openapi-direct.log`。首 Token 类型接缝编译失败和首新增实际入口 SKIP 分别保留在 `goal-production-combination-first.log` / `goal-production-combination-second.log`；后继实际入口已按当前要求组织。
 
 临时处理唯一 I 的 OpenAPI 单文件时，仅以文件编辑工具删除 7 组完全相同的第二份路由与 1 个完全相同的第二份 schema；严格 YAML 和全部解析语义相等检查通过。未操作该树的 stage、commit 或 merge，已明确停止写入并归还；本 H 消费 35cc 后执行同样的必要契约修复。
 
-真实剩余限制：本次没有登记控制器、初始化原生会话或提交模型输入；合法自产原档、工具关闭、目标正向验证、F 唯一人工完成、180 秒 Today 与独立释放仍待授权窗口。当前 Goal 读取要求实际 archive SQL 记录；现有 native_notifications 采集选择不同时提交 archive，不能据通知通过登记档案或 Goal 通过。旧 nlink2 来源 FAIL、append-only unknown、raw 恢复 gap、session_complete=false 和首次计时失败保持。Redocly 的实际进程退出问题尚未解决。完整新组合、后继 S2 / S4 / S5 装配与最终包验收分别继续，不以本阶段结果替代。
+真实剩余限制：本次没有登记控制器、初始化原生会话或提交模型输入；合法自产原档、工具关闭、目标正向验证、F 唯一人工完成、180 秒 Today 与独立释放仍待授权窗口。当前 Goal 读取要求实际 archive SQL 记录；现有 native_notifications 采集选择不同时提交 archive，不能据通知通过登记档案或 Goal 通过。旧 nlink2 来源 FAIL、append-only unknown、raw 恢复 gap、session_complete=false 和首次计时失败保持。完整新组合、后继 S2 / S4 / S5 装配与最终包验收分别继续，不以本阶段结果替代。
 
 ## 2026-10-16 固定批准 Git 上下文生产入口
 
