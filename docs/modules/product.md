@@ -19,6 +19,23 @@
 
 S5 已本人 STOP `msg_4c8ac8b81ac2`；B 旧恢复阶段两项依赖安全 ACK 保留。当前原负责人恢复后重新确认安全检查点；本轮 S2 十六文件安全 ACK 尚未取得，跨树编辑尚未放行。按原计划限定原 B/S2 处理本人冲突后归还 S5，S5 私域 WIP 保留。完整默认 E2E 的已有结果为 203 PASS / 41 FAIL / 32 条件 SKIP / 4 NOT_RUN；本轮未将阶段通过登记为最终通过，模块持续至发布支持完成。
 
+### 10:50 恢复阶段独立 REPORT
+
+恢复计划 SOURCE `86a5496bc7650c49a618265416a4bdd958e159a9` 已普通 push，模块独立 `git ls-remote` 核远端同值。`git diff --check` 无输出，七个事实源链接路径均存在。首次启动调用缺少 sender 时 CLI 在派发前明确拒绝；后续显式传本终端恢复四个原 Task。产品 UI 回执 `ready / turn_started`；T / S2 / S3 首回执 `turn_start_unobserved` 保留，逐一纯文本读取确认任务正文在 composer 后，各发送一次 bare Enter 提交原正文，没有重送 Task。后续公开 `worker-list --include-remote` 核四人均 actual `live / working`、客户端 Codex、实际模型 `gpt-6.1-sol`；终端文本为 xhigh fast。
+
+| 当前唯一人员 | 当前 Dispatch / 实际终端 | 本轮已核结果与依赖 |
+|---|---|---|
+| T | `ctx_491ad741b3cd` / `term_e39f5608-91dd-4c07-856a-9ebe7b9bb555` | 本人 `msg_f783f693467f` 核 clean `5b45b0c`；在 D 盘独立 Go 环境继续真实 Admission 同库成功链。足量 Creator 与 Send/stop/source/EffectiveToolSet 证据仍未满足 |
+| S2 | `ctx_b9a5305d8480` / `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae` | 本人 `msg_d4ea3ef90e2d` 核 `0f16112` 与原十三行测试 WIP，明确无事务、构建或文件写入，十六件安全检查点 ACK 已到；当前等待 S5 本轮 STOP 后具体放行 |
+| S3/S6 | `ctx_2e078edf896b` / `term_13228de3-0134-4004-8a69-9198b10df86f` | 已答复 `msg_78bd8fdcb784`：继续当前 `fb57f0f`，只读本模块准确文档，不改变基线。向 B 交实际采用事件读取端口；继续真实两 Agent、Median 改进和第二任务经验引用 |
+| 产品 UI | `ctx_af3cbd15f128` / `term_0ae8b2eb-b572-4864-9eae-73280b177abb` | 原 `ApprovalPanel.tsx` WIP 保留；旧设计、TypeScript、共享与页面互斥范围及 H→F→UI 契约顺序已准确交付 |
+| B，根维护生命周期 | `ctx_1fd66a8adc28` / `term_ee93800d-69d5-4405-a60d-0c51b1c66f64` | 本人核 `ddfae290e3b0cf468af9aeaa98c5bdf39ea1604d` 与五项 accepted experience WIP 保留；`msg_87e03d0bcaab` 明确当前两依赖无 WIP，S5 两件安全 ACK 已到。实际收据/人工批准链、真实来源与 Interpreter 接入继续，模型未运行 |
+| F，根维护生命周期 | `ctx_4a385bf65390` / `term_0e565e8d-906a-46c6-a5fd-a61b81674a0d` | SOURCE `2f2db3017193bf0572648d90bc7adb88b8d475b1` / 独立 REPORT `1a82c0c91718c339d12bd9132b7692865bf9426e` 普通 push，模块独立核远端 REPORT 同值、工作树 clean。本轮 S2 两尺寸 2 PASS、typecheck/lint/build/generator check 通过，完整默认结果仍为 203/41/32/4 |
+
+M-relay 当前 `ctx_bc51f7008918` / 原 `run_8bbda1c3974c`，H `ctx_e7abbaf902da` 与 S4 `ctx_12ae8872df87` 已报告恢复 `turn_started`。F 保持唯一真实 Relay DOM/observer，H 完成同 controller 空 Message 初始化、工具关闭与 source guard 后交同 URL 空 registry 窗口，再按 Context→S3→S4 交准确契约；本轮初始化、登记、模型与 Today 尚无结果。
+
+B 现新 `ExperienceCompletionReader` / `CompletionExperienceInterpreter` 端口和安全业务收据不创建伪认知 Event。S3 当前已有 `ReadAcceptedArtifactEvidence`，实际读取不可变 `artifact_accepted` 并复核项目及当前权限；模块已要求原 S3 直接交 B 精确 SOURCE/类型与同库要求，B 负责 Attention 侧桥接。原 L Interpreter 的准确 SOURCE 与 factory 交 M-relay，未提交 WIP 不作为跨域冻结契约。当前缺来源的模型与完整第二任务引用保持 NOT_RUN。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
