@@ -4,6 +4,46 @@
 
 ## 当前执行范围与 v1.4 规格
 
+2026-10-15T02:40Z 恢复交接 `msg_85124ea68e61` 明确继续 v1.4 和原 Task。当前模块为 `task_e8c1d01d67ec / ctx_bc51f7008918 / term_2d4f3817-2a97-42af-97cf-e3cdfa57c85e`，原子 Run `run_8bbda1c3974c` 已经官方 `run-use` 接管至 generation 3；总负责人为 `term_72a815fc-b97e-433b-b653-5415cf298e1d`，顶层 Run 保持 `run_973808dd6a2f`。本轮只修改本模块管理文档，未创建重复 Run 或 Task。
+
+| 当前开发人员 | 原 Task | 当前 Dispatch / 终端 | 开始证据 |
+|---|---|---|---|
+| R | `task_f082d8b36471` | `ctx_99b96d053325` / `term_4116fac9-31dd-4840-a60a-3990b61c9831` | 首回执 observed 后实际仍在 composer；只补一次 Enter，02:56:15Z、02:57:51Z 自主确认 actualturnstarted |
+| H | `task_3004b636a3ab` | `ctx_e7abbaf902da` / `term_0fb669d6-1e3a-4a0f-aa2a-f43a54273c42` | 官方 ready / turn_started observed，原四项 WIP 保留 |
+| S4 | `task_bd209566be37` | `ctx_12ae8872df87` / `term_c14474fe-1b06-4290-90f7-fcd56189eb64` | 首回执 observed 后实际仍在 composer；只补一次 Enter，02:57:25Z 自主确认 actualturnstarted，`tests/s4/_http/` 保留 |
+
+本轮 R 首 Dispatch `ctx_9872e9dcdd60` 回执为 turn_start_unobserved。公开文本显示任务在 PowerShell 续行输入中；清除未执行输入后，实际显示原 `works-relay-runtime` 的 PowerShell 提示符。模块据此精确 worker-stop / release，再以原 Task、`--retry-of ctx_9872e9dcdd60`、原工作树恢复，没有第二写入者。首 UNKNOWN 和 archive unavailable 保留。原三 Task 启动前均为 ready，原 R 树干净，H 四项修改及 S4 未跟踪目录与前次交接一致；17342–17345 无监听。三位本轮具体模型以各自实际报告为准，启动参数未覆盖模型。
+
+新的 Go 命令仅在各自进程设置 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/{R,H,S4}`、`GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/{R,H,S4}`；其他大产物使用 `D:/Astrocyte-agent-assets/20261015/relay/{R,H,S4}`。不修改全局环境。磁盘维护归发布模块，开发人员只交可重建且未运行的自有目录清单，原件、数据库及未知文件保留。
+
+产品模块当前 `ctx_9ce12d181768`，原 F `ctx_4a385bf65390` 已实际报告并继续唯一 Relay 页面操作；产品 UI `ctx_af3cbd15f128`、S2 `ctx_b9a5305d8480`、S3 `ctx_2e078edf896b`。H 已收到准确 R / S4 SOURCE、当前消费地址及检查顺序：先同 controller 空 Message 初始化、核正选来源和工具关闭，再交 F 同 URL 空登记基线与 observer ready；H 一次登记保存实际起点，F 唯一实际输入。安全初始化检查点后继续 Context → S3 → S4 的准确契约、factory 与实际 HTTP 入口交 F 生成客户端，再交产品 UI。没有新增本次真实初始化、登记、模型或目标通过结果。
+
+H 已普通 no-ff 消费 R REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`，原四项 WIP 保留。S4 整分支相对 H merge-base 带有冻结和无关历史，原 S4 负责交精确窄 SOURCE 闭包及必要 S2/B 依赖；H 仅准确消费，领域问题交原 owner，最终集成人员仍普通合并原分支。H 02:57Z 正式问题 `msg_0b4c24f15516` 确认现有 Relay ConfirmIntent 以非空首输入启动，空 Message 初始化属于 LocalProject session，尚无把该 session 接成 Relay task 的公开生产端口。模块已正式询问总负责人执行路径，未答保持未决定；H 的 Context / S3 / S4 契约与真实 HTTP 独立工作继续。generic Send 的首输入来源检查与实际固定上下文交付也已交 R/H 核查，不能以配置回调存在代替运行证据。
+
+### L 工程适配分工
+
+总负责人 `msg_e6d68fcaf601` 明确由本模块管理原 R 实现 CompletionExperienceInterpreter 适配，新增独占写域仅 `internal/adapters/agents/completion_experience*.go`、同名适用测试和原 `docs/access/runtime.md`。B `ctx_1fd66a8adc28` 保留 Attention interface / DTO、经验 quarantine、SQLite 与迁移；H 保持唯一 main / HTTP 组装。没有新增人员或第四层任务。
+
+R 先消费 B 精确已提交的完整 interface / DTO / record 来源，沿既有已配置 Codex、真实 `gpt-6.1-sol` 与关闭原生工具策略，实现完整非拒绝输出、operation、model / policy provenance 的核查。模型仅起草 pattern / verdict / condition / evidence，人工批准与后续检索由产品链完成。B 负责在既有 attention receipts 中先持久化同 owner / event 的请求 operation，R 复用既有 Registry 和原 operation 核查；并发、已受理后 delivery_unknown 和重启均不得盲目重复发送。准确请求字段由 B/R 原接口维护，不引入调度器或 Attempt 系统。
+
+该工程适配不启动正式 L2 实验，L3/L4 仍保持原授权边界。实际模型窗口在当前 Median 窗口之后独立安排；R 不另起控制器抢占当前 H/F 窗口。当前接口消费、模型调用、quarantine → 人工批准 → 检索均未通过；源码、独立报告及实际不足分别登记。
+
+02:17Z 前次恢复记录：总负责人 `msg_434ec1493231` 要求恢复原 Task，模块为 `ctx_e5acf96d0a7d / term_bc28e48f-4e69-42e3-9112-b32283de01de`，原子 Run generation 2；当时总负责人为 `term_cd5e93fe-8940-4fa1-8be6-ea914f3629ae`。随后 Runtime 再次重启，下面三个 Dispatch 已由恢复流程记为 failed / terminal_missing。
+
+恢复前公开终端列表没有原 R / H / S4 终端，系统进程检查没有匹配三个原工作树的进程，17342–17345 没有监听。原三个 Dispatch 均由恢复流程记录为 failed / terminal_missing，原 Task 为 ready。R 原树干净；H 保留 `relay_session.go`、`relay_session_live_test.go`、`openapi.yaml`、`relay_facts.go` 四个未提交修改；S4 保留 `tests/s4/_http/` 未跟踪目录。没有删除或覆盖任何原有内容。
+
+| 前次开发人员 | 原 Task | 前次 Dispatch / 终端 | 当时开始证据 |
+|---|---|---|---|
+| R | `task_f082d8b36471` | `ctx_41dd0cf82f8a` / `term_636056c1-41d2-4c36-b728-2fb024cad8be` | 首回执 `turn_start_unobserved`；文本读取确认任务仍在输入框后只提交一次 Enter，R 于02:24:29Z、02:25:36Z自主报告 actualturnstarted |
+| H | `task_3004b636a3ab` | `ctx_6e47eb2b5b46` / `term_2e958bf0-9371-4670-afe4-efb249ad3020` | 官方回执 ready / turn_started observed |
+| S4 | `task_bd209566be37` | `ctx_88a7170d4377` / `term_fc91b1b9-d24a-40e1-bc78-d8288d784f24` | 官方回执 ready / turn_started observed |
+
+三者继续原工作树、原分支和原互斥写域。恢复 R 时，ready Task 的 `--retry-of` 首调用被 `task_not_startable` 拒绝且未产生新 Dispatch；按回执核实旧 Dispatch 后，使用原 ready Task 正常启动。保留首拒绝和 R 首 UNKNOWN；没有创建重复 Task 或写入者。新 R 文本状态显示 Codex 0.162.0 / GPT-6.1-Sol xhigh fast，启动请求没有覆盖模型设置；H / S4 具体实际模型仍待各自核实。
+
+重启前 R 已交 SOURCE `ce0302835cb7477eb606107351a9ab46dd8d4714` / 独立 REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`，模块独立 `git ls-remote` 核得远端 REPORT 精确一致。已交 H 消费 `RelayServiceOptions.LaunchContext`、`relayworktree.NewFixedContext`、`BeforeFirstInput` 和真实 generic Send operation；模块独立 Git / SQLite / 来源拒绝检查正在执行，未将该阶段报告记为真实模型通过。S4 最新 HTTP SOURCE `293af633570d6a4f4cf4bbf9c5b651821ab977e7` / REPORT `598fbb608cee623aa3b5160a3a0767eb11a542c9` 保留，H 负责后续准确薄组装。
+
+总负责人 `msg_33ce7e7d0438` 明确本次唯一固定目标为 S3 公开 Go 项目 baseline `da3bdddb085808863090a05f60cc1c64415039cf` 的四个批准文件，保留 Mean 并实现 Median，执行既定真实检查。第二 native / handoff 属于后继独立阶段，不混入首个三分钟计时。F 当前 `ctx_0edef68eae2c` / `term_36ae50f1-9c0e-446f-ac73-a8fab6f0f3af` 仍是唯一页面操作人；产品当前 `ctx_e027eba3e81f`，S2 `ctx_efb9861f1210`，S3 `ctx_7c54a629cd46`，UI `ctx_e9679e684b18`。当前顺序为 H 准确消费 → 同控制器空 Message 初始化且无模型 → 正选来源与工具关闭核实 → F 同 URL 空登记基线和 observer ready → H 一次登记保存原计时 → F 实际输入 → 每个 event_id / 合法目标核查 → 人工 done；随后按 Context → S3 → S4 交准确契约 / factory / URL，F 生成客户端再交原 UI。没有新增本次模型成功或登记计时结果。
+
 2026-10-14T16:03:17Z 总负责人 `msg_0ba76f2d26c3` 转交用户最新授权：现在开始 v1.4 语义实现，验证通过后执行真实 CLI、今日采集并推进 L/S；此前停止新原生 / Today 的时间安排已被替代。完整唯一规格见 [v1.4任务](../../tasks/Works-Relay-v1.4.md)，本节记录模块分工和评审依据。关键 working 严格证据及缺少 started 客户端人工完成规则由总负责人询问用户，答案未到时保留现状态机，独立开发继续。已完整读取[REA研究报告](../research/orca-rea-20261014.md)和主仓 `tasks/Works-Relay-v1.2.md`，并消费原 R 技术稿 REPORT `6cd44177ca8ff5b04ad9fbb90bf9729321cba9da`、原 H 技术稿 REPORT `c130e16d28011f36e9e96a2bf306585611b2fe7e`。
 
 新 API17344 服务曾实际启动，H 核 agents0 / tasks0 / 无注册文件 / 无原生会话文件后正常关闭，服务检查 PASS60.32秒 / exit0；F 未启动17345网页或新 observer，confirm / model 均0。旧 scope 清理释放 HTTP200，operation `ccf54824-6194-4161-81c0-0d6985ee5171`；之后模块只读/query_only SQL 实际核 task released、revision2、Prepared=true、ActiveTaskID为空。服务已关闭后的模块独立 HTTP 检查连接拒绝，未重新启动来补验。旧目标验收不通过、read delivery_unknown、来源 nlink2 FAIL 和原三分钟 FAIL 保留。
