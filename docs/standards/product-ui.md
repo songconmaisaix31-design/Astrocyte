@@ -1,8 +1,33 @@
 # S2/S3/S4/S5 产品页面开发记录
 
-当前任务 `task_d0cee5a583bb` / Dispatch `ctx_4ac5810bae08`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`，当时工作区 clean；本次恢复基线 `71360db458052eea387e4d4f72b303f59d3a4743`，保留并继续完成既有 repositorycontext CSS 及三个新增 TypeScript 文件。
+当前任务 `task_d0cee5a583bb` / Dispatch `ctx_dcc1247de817`，模块负责人任务 `task_b0197ca7ebdf` / Dispatch `ctx_9b068e2051ff`，子 Run `run_dbf1a68bc692`。工作树 `product-ui-20261015`，分支 `songconmaisaix31-design/product-ui-20261015`。实际客户端 Orca Codex，公开运行记录的模型为 `gpt-6.1-sol`。最初接管基线 `6f51df100299274f01740fcac83c8f2cf91d0751`；本次恢复基线 `50751569fe2086178247b1a8aae912d62e5cb5ae`，工作区 clean。当前执行入口采用根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 及产品模块最新记录。
 
 只修改 `web/src/pages/workspace/proposals/**`、`web/src/pages/swarm/SwarmPage.tsx` 与其 CSS、`web/src/pages/swarm/missions/**`、`web/e2e/s2-*.spec.ts`、`web/e2e/s3-*.spec.ts` 和本文件。模块计划 `14141dbd8495c7284c3393b302d416cf14167e53` 及 F 零 WIP 停写确认正式追加 `web/src/pages/workspace/repositorycontext/**` 与 `web/e2e/s4-*.spec.ts`；模块计划 `2f609ea484fa690b8f2a2b6a754e1a63e398fe42` 和 F `msg_ea981e24bc0d` 正式追加 `web/src/pages/attention/delegation/**` 与 `web/e2e/s5-*.spec.ts`。全部新增范围继续由同一任务、人员和工作树承担。Workspace/AttentionPage 薄入口、公共客户端（包括 `api/judgment.ts`）、生成类型、查询 Hook、认证、共享组件、RankingPanel 与真实服务 helper 归 F；OpenAPI 与服务器装配归 H；各领域与存储分别归对应开发人员。
+
+## 2026-10-16 准确 Swarm 契约与人工控制页面
+
+SOURCE `0661b49fd5b29cded5dbf15277fc5abafa20b8c2` 已普通 push，独立 `git ls-remote` 核远端同值。本阶段只修改 Swarm 页面、其 CSS 和 `missions` 域八件。实际列表消费生成的 `SwarmMissionV1`；详情通过准确公共 `swarmApi` 读取 Mission、WorkItem、当前 Lease、历史执行身份、上下文与策略版本、工具事件读取状态、产物和持久化事件引用。列表的工作项数量来自实际账本，产物从所选任务详情读取；未知用量与费用明确保留未知。
+
+人工会话提供从固定 Grant 建立任务、添加固定输入工作项、暂停、取消、原执行核查与恢复、产物当前或固定版本读取、真实 Git diff、人工采用与退回。命令复用现有生成客户端、人类会话、CSRF、版本与幂等键，以及 `usePersistentCommand`；未知请求跨关闭和刷新保持锁定，读取不解除锁或自动重发。工作项输入在版本变化时保留，用户核对当前任务版本后才能再次保存。当前 Grant 状态单独读取，失效或读取失败时禁用新工作项与产物验收。人工停止操作仍由真实服务核查当前状态。
+
+认领和提交接口要求已绑定的 Agent 身份，人工网页显示对应受限入口和实际租约、上下文、执行与产物证据。页面不收集 Agent token 或改变 caller 身份。S3 调用计数单位、权限证据两项待答条件与原生窗口门禁继续有效。本阶段未进行原生注册、确认、读取、停止或模型调用；人工采用产物与批准经验保持分别受控。
+
+| 精确消费输入 | 本地消费 Commit / 实际结果 |
+|---|---|
+| F 生成类型 SOURCE `cdf0b5eb4c2b3a1c7b76a335eb01d02dd7f6fee6` | 模块本人安全 ACK 和临时范围放行后普通 cherry-pick 为 `148ad6d60b8be41e7d6a5b32d7eee2bad7159bef`；仅 `schema.d.ts`，与来源完整 diff0，后续逻辑归还 F |
+| F 人工 Swarm / 固定 Context 客户端 SOURCE `4192c26bd77ec70504f286f8ddb75a145779ab58` | 同条件普通 cherry-pick 为 `fa24ac53a91891fb47c3df6952b7865444226ca4`；仅 `relay.ts`、`swarm.ts`、`workspaceContext.ts`，完整 diff0，后续逻辑归还 F |
+| B D 盘与真实日志 helper SOURCE `44dcdead3ee61dec5e37c7029462c97ca7a06b4f` | 同条件普通 cherry-pick 为 `cded4e70aecfd8a5c13ea19dc95ab36b41e939f2`；仅指定八件，完整 diff0，后续逻辑归还 B |
+
+全部消费均无冲突，没有带入输入的其他后端祖先。后续验证使用独立 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/` 的输出、日志与进程 TEMP/TMP/GOTMPDIR/GOCACHE；官方浏览器二进制路径由发布负责人明确交为 `D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001`，仅作进程配置，不修改全局设置。
+
+| 本阶段命令 | 实际结果 |
+|---|---|
+| `pnpm --dir web typecheck` | 首 FAIL：仅 F 域四个旧 Mission/WorkItem 参数显示测试、`relayReceipts.tsx` 与 `relayTaskPanel.tsx` 的 Prepare 标签未适配；本域零类型错误。原输出保留于 D 盘 `logs/typecheck-swarm-contract-first.log`，已交原 F，不能登记全域通过 |
+| `pnpm --dir web exec eslint src/pages/swarm/SwarmPage.tsx src/pages/swarm/missions` | PASS，0 errors / 0 warnings |
+| `git diff --check`、限定输入完整 diff、源码普通 push / 远端核查 | PASS |
+| 实际 HTTP / SQLite / 两 viewport E2E、`pnpm check`、`pnpm build` | 本轮尚未运行，等待准确可构建集成与 F 参数测试修复；缓存迁移已归还不替代功能验收 |
+
+当前页面阶段只登记以上真实覆盖。S2 原先成功与全部首次失败继续保留；本阶段 HTTP / E2E、Context 正向、S3 原生执行、S4 实际索引、S5、默认完整检查及最终 Windows 包尚未完成，同一任务持续开发与返修。
 
 ## 2026-10-15 22:00 恢复阶段：仓库上下文实际客户端接入
 
