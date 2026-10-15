@@ -16,6 +16,11 @@
 | F 分离旧记录与新输出目录，增加只读 Stored 核查 | SOURCE `6503077885aee63dd97f9642deab66ba57167925` | `76030ec7846d41b709a0f21d6d3761ba4d7bcae0` |
 | F 当前持久化恢复的独立报告 | REPORT `da692e8dd1a29e5621d127a4bea4fbc9ef7ab21a` | `deec6c7b27510f2139a910508a268f6d2585dff2` |
 | B 生产启动检查的阶段与子进程原始错误 | SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` / REPORT `c563ff9498d4e54f095a1bddf3c46d2cd869ea85` | `1c27477272c8d6e8aeb6dac5302bacb65fef614a` |
+| H 清理生命周期、完成来源转发和独立认知根 | SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` | `b73dc79e7c59a9192ec2bfbd3625a620d8304efb` |
+| R 原控制器缺失时保留 delivery_unknown | SOURCE `ce541794d58560747124fea2cf9d08222700587e` / REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f` | `b36c420c51d80cbc2f0d3bd188d6355e6c1467b2` |
+| B OpenCode 明确输出目录与 Works 实际 CanonicalRoot | SOURCE `a8d361b1cb4133713e25f1d6c20ea4bfd22d844d` / REPORT `8179cf9c5074ab26a053fe7f1bfd691b153b4084` | `7401b302275c7ef6c8dc1dcca133ace263527a2f` |
+| H 安全 HTTP 失败诊断 | SOURCE `a77f9b12e84147b8de95f9179d9e03aa170b27e6` / REPORT `a4a9ce37464d1e12880dc65b4e5348c50504131e` | `3edd1f3cb9c3a95ee2c06446af9667e1f3f9a24f` |
+| B 完成经验 HTTP bridge 与固定请求身份 | SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` / REPORT `921e30b56683118a0d22a29cb63161b599395d3a` | `2128fd3177ff4d567eb1f0871945d3ec1cdea121` |
 
 B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约消费、token 撤销争用检查和 cleanup batch 配置；上述范围已核实际合并差异。B 原 native WIP 保持原树。F 的 inspect 写入脚本保留其原成功记录，本阶段没有执行这些脚本；同实例实际 HTTP / DOM / SQLite 操作仍由原 F 独占。每个组合 SOURCE 均已立即普通 push；`deec6c7` 的远端分支已独立读回同值。
 
@@ -30,7 +35,13 @@ B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约�
 | `76030ec`：`pnpm --dir web typecheck`、`pnpm --dir web lint` | 新增四件后另行检查，两命令均实际 EXIT0，检查前后 SOURCE 同值；日志为 `c16-product-static-76030ec-typecheck.log`、`c16-product-static-76030ec-lint.log`。 |
 | `1c274772`：原 runner `-Step build -RunName c16-product-build-1c274772` | 原 `pnpm build` EXIT0 / 31.0071399 秒，source / source_after 同值；server / MCP / Sleep / TypeScript / Vite 完成，实际 Go revision 同值、modified=false。原件为该 RunName 目录 `result.json`、`environment.json`、`build.log`。 |
 | `1c274772`：`go test -mod=readonly -p=2 -tags=repository_context_live ./cmd/server -run '^TestRepository(ContextConfig(ExplicitAndUnavailable\|RejectsAmbiguousConfiguration\|RejectsActualUnavailableDependencies\|ActualNodeSyntaxRefusal)\|CleanupBatchTrustedConfiguration)$' -v -count=1` | 实际 EXIT0，5 项主检查及 8 项配置子检查，包 4.016 秒；实际 Node / SDK 后以原 Go 文件触发 Node 格式拒绝，阶段与原错误断言均通过。检查前后准确 SOURCE 同值，日志 `c16-product-config-1c274772.log`。 |
-| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合已普通 push，远端为 `1c27477272c8d6e8aeb6dac5302bacb65fef614a`；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
+| `b73dc79`：原 runner `-Step build -RunName c16-product-build-b73dc79` | 原 `pnpm build` EXIT0 / 20.8431586 秒，source / source_after 同值；三个 Go 程序、TypeScript 和 Vite 完成。原件为该 RunName 目录 `result.json`、`build.log`。 |
+| `b73dc79`：`go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayRepositoryCleanupActualSQLiteLifecycle\|TestRelayJudgmentProductionAssemblyActualSQLiteHTTP\|TestRelayReaderRootActualDirectoriesAndDatabaseAliases)$' -count=1 -v -timeout=120s` | 实际 EXIT0，三主项与两清理子项，包 4.358 秒；真实 SQLite / HTTP、同主库事务、清理取消等待与实际错误、双快照 hardlink 拒绝通过，原生会话 0。日志 `c16-product-assembly-b73dc79.log`。 |
+| `7401b30`：agents 三项原控制器拒绝 / 未知保留 / 受限工具入场，httpapi 实际 Works 重开，events 实际来源身份目标 | 实际总 EXIT1；agents 三主项 PASS / 0.916 秒，Works 主项 PASS / 3.256 秒；events 合法单链接目标 FAIL / 1.530 秒，错误 `relay session capture: workspace_unverifiable`。日志 `c16-product-target-7401b30.log`，已退原 H / R。 |
+| `3edd1f3`：原 runner `-Step build -RunName c16-product-build-3edd1f3` | 原 `pnpm build` EXIT0 / 37.1029359 秒，source / source_after 同值；原件为该 RunName 目录 `result.json`、`build.log`。 |
+| `3edd1f3`：`go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission\|TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown)$' -count=1 -v` | 新诊断实际 EXIT1 / 包 4.535 秒；facts 第76行为 `scope_denied: project root is unavailable`，listener 第198行为 HTTP403 / 期望200 / `public_code=scope_denied`。日志 `c16-product-http-diagnostic-3edd1f3.log`，已退原 H。 |
+| `2128fd3`：`go test -mod=readonly -p=1 ./cmd/server -run '^TestCompletionExperienceHTTPActualProjectBoundariesAndRestart$' -count=1 -v` | 实际 EXIT0 / 包 2.336 秒；真实 HTTP / SQLite 的项目权限、缺失来源拒绝与重启通过。日志 `c16-product-completion-2128fd3.log`。没有正向完成来源、Interpreter 或模型结果。 |
+| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合 `2128fd3177ff4d567eb1f0871945d3ec1cdea121` 已普通 push；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
 
 本轮全部新增验证原件位于 `D:/Astrocyte-agent-assets/20261015/integration/`。构建沿用原 dist、web/dist、.verification 到 D 盘的 junction，Go 缓存与临时编译目录为已确认的 D 盘位置；只设置验证子进程环境。没有改变全局 HOME、身份配置或 TEMP。
 
@@ -51,7 +62,11 @@ B 后继准确 REPORT `c563ff9` 已无冲突普通消费，其祖先包含原作
 
 `1c274772` 第一轮普通 push 的退出未捕获，结束后远端仍为 `7da8d4c`，该轮保持 EXIT UNKNOWN。确认没有在途同命令进程后，第二轮普通 push 实际 EXIT0，日志 `c16-product-push-1c274772-second.log`；随后的独立远端读回与本地精确同值。`1c274772` 必要生产构建通过后，已交 H 读取同一 I 产物目录，归还前保持不覆盖。以上配置检查显式使用 P 已准备的 `runtime-sanitized-third/runtime` 下 Node、官方 SDK 和桥脚本，没有启动额外模型、登记控制器或修改原依赖。
 
-同一产品 64505 的 Node / SDK probe 首 EXIT1、同一 D 盘 SQLite 及既有业务保存结果保留；H / B 继续修复生产启动与装配，三个同 Dir / 白名单环境 probe 后继 EXIT0 由原 H 独立登记。当前页面、HTTP、清理正向和完成来源的完整结果仍待原作者交付，I 没有另起共享服务、读正式库、登记控制器或发送模型输入。Jev 密钥、Laya 语言、Agent completion action 等待定项保持原决定状态；受限 Codex 工具关闭要求和 unknown 不重发继续适用。
+同一产品 64505 的 Node / SDK probe 首 EXIT1 原件和原因 UNKNOWN 保留，三个同 Dir / 白名单环境 probe 后继 EXIT0 由原 H 独立登记。H 已恢复同一 D 盘 SQLite 的 `cffac367` 普通产品，回执为 PID45616 / 启动 UTC `2026-10-15T20:13:21.8983808Z`、health 正常、首页200；F 保持唯一实际 HTTP / DOM 操作人。H 另已复制准确 `b73dc79` 稳定副本、核 Go revision / modified=false / index 并归还 I 读取窗口，待同实例 F 安全 ACK 后更新。`3edd1f3` 产物读取窗口随后已交 H，归还前不覆盖。
+
+新增 events 和两 HTTP 目标均在准确 I 环境保留首次失败：三者固定从 C 路径下 dist 创建自有目录，该 dist 为既有 D 盘 junction；来源身份与项目根保护拒绝该重定向祖先。准确目录、错误和日志已交 M-release 分派原 H / R 修复自有检查目录，I 未修改领域、保护或断言。OpenCode 四项真实控制器检查只保留原 B 报告的实际结果，本阶段 I 未额外启动这些控制器；其余目标均没有原生或模型输入。没有重复运行已知未修完整检查或默认套件。
+
+H 的原 Relay 完成来源桥与 B 的 AcceptedExperience HTTP bridge 已消费；生产主入口注入与公共契约后继仍由 H 负责。当前 Interpreter 未配置，`provider_unavailable` 和缺失来源拒绝保持，L2 正向与六步未运行。页面、HTTP、清理正向和完成来源的完整结果继续待原作者交付。Jev 密钥、Laya 语言、Agent completion action 等待定项保持原决定状态；受限 Codex 工具关闭要求和 unknown 不重发继续适用。
 
 最终完整 check / 默认 E2E、原生 L1、L2 六步和最终同源发布仍未通过。本次来源组合和构建属于普通产品阶段，正式 V4 / v0.2、17321、原锁、协议、日程、D1 / Q 及成功 OS / 模型结果保持原范围。
 
