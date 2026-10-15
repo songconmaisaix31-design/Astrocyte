@@ -545,3 +545,19 @@ SOURCE `da084e44a93adda7c3465a564fb5b63510222b0a` 已普通 push。`repositoryCo
 ## 未执行操作与后续交付
 
 部分 SOURCE/REPORT 普通 push 遇到 GitHub `SSL_ERROR_SYSCALL`，原件保留；上述已列源码及报告均已普通 push，未 force push。Reader 前四次握手失败保留在 `.verification/workbench-source-push-{first,second,third,fourth}.log`，第五次正常推送成功。本报告作为独立 REPORT 追加提交并推送。阶段 SOURCE/REPORT 不结算整轨，后续源码与报告继续追加；最终精确 SHA 和剩余限制由最后一次报告登记。
+
+## 项目设置成功提交后的清理通知
+
+SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` 已普通 push 到 `standards-backend`，仅修改 `project_cleanup.go` 与 `projects.go`。`ConfigureRepositoryCleanup` 接收原索引、查询共用 provider 的 `WakeRepositoryCleanup`，配置时要求实际 Repository 提供 `AfterWorkspaceCommit(context.Context, func()) error`；nil provider 或缺失回调能力直接失败。项目设置成功保存后登记通知，原 S2 SOURCE `4f875b0f8bffc5740e6a1eee828e7e34833226b8` 的回调负责在外层事务成功提交并释放连接后通知。没有配置清理 provider 时保留当前项目操作。
+
+当前工作树包含仍未提交的原生准备修改；以下 Go 检查针对该工作树执行，不能作为隔离 cleanup SOURCE 或完整产品的实际验收。全部新增大产物放在 `D:/Astrocyte-agent-assets/20261016/backend`，现有原件保留。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go build -mod=readonly -p=2 ./...` | EXIT 0，138.832s；`.verification/backend-product-build-first.log` |
+| `go vet -mod=readonly -p=2 ./internal/workspace/app ./internal/adapters/sqlite` | EXIT 0，86.676s；`.verification/backend-product-vet-first.log` |
+| `go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^(TestNativeMessageActualTransactionBoundaries\|TestPreparedNativeMessageMissingOriginalReaderDoesNotPublish\|TestNativeMessageExplicitJSONRules\|TestLocalProjectUsesActualWorkspaceTransaction\|TestLocalProjectRejectsAnotherActualDatabaseTransaction)$' -v -count=1` | EXIT 0，5 项主检查、2 项提交/实际约束回滚子项，包 13.228s；`.verification/backend-product-test-first.log` |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run '^TestNativeMessageExplicit' -v -count=1` | EXIT 0，2 项主检查、13 项子项，包 9.986s；`.verification/backend-product-rules-first.log` |
+| 变更 Go 格式、working / cached diff 检查 | EXIT 0 |
+
+事务、错误数据库、真实取消和缺失原 Reader 拒绝检查使用自有实际 SQLite、原生产项目服务及 ObjectStore；没有产生原生会话、准备来源或模型输入。JSON、身份和状态检查使用明确纯函数参数，未作为实际来源。原生初始化、正向准备和发送、同源产品与 S4 实际撤回清理仍未运行；H、S4 和唯一集成负责人已收到准确 cleanup SOURCE，继续配对原 S2 提交回调及同 provider 清理生命周期。其余原生 WIP 保留，未包含在本 SOURCE。
