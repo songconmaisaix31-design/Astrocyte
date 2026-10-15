@@ -198,6 +198,14 @@ M-relay / 根明确 H `59a7150b1143680b67fe53fdf831fcca5f328660` / REPORT `0aab7
 
 根 `msg_ab0dfdda7d0e` 的原 Service / Store / Receipts 可信登记和同实例 agents.json reload 决定已交唯一 F。F 先同 URL 空 agents / observer ready，H 首次实际写入本次完整目标登记为唯一 t0，写入 / reload / 激活全部计入一百八十秒；Calls 和权限用户待答，当前不提前登记或发送模型输入。旧三分钟失败完整保留，不通过重启实例重计时间。
 
+### readiness helper 后继单文件消费计划
+
+B SOURCE `01d28a54bb221e59cf262cbf9941fa418f6e937c` / 独立 REPORT `43c9740f9fd5c2c3a2ab4ed6845b920799040af3` 已普通 push，模块独立核远端 `4e944003756916f6c3d25715b92dc0715359f03a` 包含该 REPORT，并完整审阅唯一 helper 差异。每个 Node 验证进程只做一次实际 Go build，随后复制到各自独立服务目录；失败原样传播，新进程重新构建。readiness 错误保留原 URL/PID/exit/阶段/HTTP状态/时间并保存本机 `startup-failure.json`，没有来源正文或认证数据。原一秒 / 三十秒及一百二十 / 一百二十 / 九十秒总期限和全部生命周期断言保持，实际三项 PASS / 77.307 秒，前轮三 cancelled 与旧 ECONNRESET / Vite 原因 UNKNOWN 分别保留。
+
+原 B `msg_a4b03217f62f` 已确认 helper 零 WIP，并授权原 F 只消费准确已提交单文件，后续逻辑 owner 继续 B。F `msg_061c7df4a0f6` 已确认本文件零 WIP、相对准确 `efa137e` 无差异；其当前完整 S2 测试自然结束前不修改源码。本计划普通 push 且该实际运行结束后，原 F 只在 `standards-frontend/tests/s1/server.mjs` 使用文件编辑工具移入 `01d28a5` 精确内容，不自行修改逻辑，不带其他 B 历史或 WIP。模块不再重复请求同一消费授权。
+
+原 F 核对该文件与来源完整 diff0、Node syntax 和限定差异检查后，自行记录精确 SOURCE / 独立 REPORT 普通 push并明确归还后续逻辑给 B；在稳定组合上执行适用真实浏览器回归。当前运行的准确源码、首失败和结果单独保存，不能把 helper 的三项通过写作完整默认 E2E 通过。此消费不包含不安全 Context `59a7150`，不改变三分钟起点、模型权限或其他人员写域。
+
 ### 2026-10-15 10:18 重启恢复计划
 
 根最新交接 `msg_230f8dc0cefd`、`msg_bc81dffd1755` 与已 push 的 `f2a600b` 发布任务优先于旧注入 spec。S0–S6 全部已授权；恢复既有原 Task、原工作树与原分支，不创建重复开发轨或第四层。公开 `worker-list` 核本子 Run 四个未完成 Task 均为 ready，旧 Dispatch 均为 failed / terminal_missing；公开 `terminal list` 无原开发句柄，当前进程时间均在重启之后。原 B/F 属 `run_7b2ce96bcd13`，只由总负责人在合法原 Run 恢复，再交本模块业务管理。
