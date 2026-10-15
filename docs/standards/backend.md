@@ -515,6 +515,14 @@ SOURCE `442e693d5056e2bb17e1950c62a48de01e977ec6` 已普通 push，原样消费 
 
 `go test -mod=readonly -p=2 ./internal/workspace/domain -run '^TestRelayPreparedInputPrivateSerialization$' -v -count=1` EXIT 0，1 PASS、0 SKIP，0.960s，日志 `.verification/prepared-input-private-json-first.log`；`go build -mod=readonly -p=2 ./...` EXIT 0，日志 `prepared-input-type-build-first.log`。格式、diff 检查无输出。该序列化检查仅使用明确隐私标记输入，不作为原生会话、操作者或来源事实；实际准备持久化、当前授权、原子发送占用、S3 Claim 和 H 发送前 live lease 复核均未执行，不登记首次 Claim 或消息发送成功。B 当前旧 Registry 没有原 controller/startup 读取接口，准确 R 源码闭包与既有 ObjectStore 的装配口已交模块协调，尚未按草案固定新接口。
 
+## 实际连接竞争下的令牌撤回
+
+SOURCE `ef8f944069996b8b4ff849d8f7f8ab6e48e1a870` 已普通 push，只整改 `TestConcurrentTokenIssuanceCannotResurrectRevokedGrant`。通过原 Attention 服务创建实际空间、注册当前公开工作树并授予原 Grant，再用真实 SQLite 事务占用单连接；签发操作持有原服务锁等待连接，撤回不能越过该锁或产生第二次连接等待。释放事务后，实际签发和撤回完成，原令牌认证拒绝，持久化 Grant 保留 `RevokedAt` 且清空 token digest。没有调用原生控制器或模型。
+
+`go test -mod=readonly -p=2 ./internal/adapters/sqlite -run '^TestConcurrentTokenIssuanceCannotResurrectRevokedGrant$' -v -count=1` EXIT 0，1 PASS、0 SKIP，2.973s，日志 `.verification/token-revocation-actual-lock-first.log`；Go 格式与 diff 检查无输出。自有数据库目录为 D 盘 `accepted-experience-actual-2083530046`。保留原竞争、认证拒绝和持久化断言，并增加真实连接等待数量检查；没有替代 Repository、Native 或引用来源。
+
+经 F 最窄只读授权，逐项核对完整默认第 131 / 133 项各自 error-context 和 HTTP 日志，并以 SQLite `readOnly` 仅查询指定两个数据库的资料表 schema、资料数量及人工使用计数汇总。两个原错误均在公开论文目录配置检查处发生；两库分别为 `material_count=0`、`human_usage_count=0`、`human_use_records=0`，HTTP 没有到达资料导入、使用或分类写入。查询 EXIT 0，日志 `.verification/f-two-s1-readonly-first.log`。两项 FAIL 保留，业务断言未运行；没有访问 auth/session 或完整 payload、修改 F 环境或重跑在途套件。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
