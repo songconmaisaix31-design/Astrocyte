@@ -18,6 +18,16 @@
 
 根已答的完成来源规则通过 `msg_73c49df9093f` 继续生效：W5 OwnerProject 为真实 LocalProject.ID；Agent completion action 的映射仍待用户选择，当前明确未授权；human 路径继续检查主 DB 当前 principal / project / owner 权限。R 准确实现及 H 生产装配分别交独立 SOURCE / REPORT，未提交代码不供 I 消费。S4 沿 H worker 生命周期和 B 成功提交后 Wake 的准确新组合复验既有撤权清理失败，已通过且源码未变化的检查复用原结果。
 
+### 本轮实际运行与可消费来源
+
+H `msg_ec4bc5c8fb4b` 报告同一产品已于 `2026-10-15T18:28:44.7333357Z` 恢复，实际 URL `http://127.0.0.1:64505/`、PID25048。模块独立核唯一 loopback listener、实际 D 盘二进制路径与启动时间、同一 `running.json`，并用 `go version -m` 核 SOURCE `ad8413e119379c9795bab558a41fe425ea9095ca`、modified=false；原 web、环境配置与 SQLite 目录保持。H 健康检查和首页请求通过，根 `msg_0070c5c8378d` 又独立核首页 HTTP200 / text-html / 562bytes。F `ctx_fefd1edc052e` 已收到同址核心操作交接，唯一 I `ctx_76c7ff15d7e0` 已收到准确来源；H 继续持有该服务，七件后继装配尚未更新到运行实例。
+
+R 本轮 SOURCE `82d89d5b89e30d591d509ed597d513c90f2df682` / 独立 REPORT `8f3b7d122dd79f5aded8c826da89fecbf79e2601` 已普通 push，模块独核远端精确 REPORT、源码仅两件原 completion 来源文件、REPORT 仅 runtime.md、原树 clean。Read 与 Authorize 均对待定 Agent action 返回 scope_denied；human 保持当前可信权限回调，OwnerProject 必须精确等于真实 LocalProject.ID。模块已读实际四项 `TestCompletionExperience` PASS / 0.404 秒原日志，agents vet 与 server build 退出零；没有 controller 或模型输入。准确来源已交发布和唯一 I，H / B 生产回调、真实候选、用户批准及第二任务消费仍待实际组合验收。
+
+H Judgment / Taste 生产装配 SOURCE `67fb5f255d52130f5ae30377ab615dd17b7c79ef` / 独立 REPORT `2fd1ba1cbbf9190c6f63c1425a93cddbf950f147` 已普通 push。模块独核远端精确 REPORT、源码七件已登记路径、报告仅 http.md，逐件读取原主库 / Attention / S2 / provider / 准入桥装配、子 mux 的现有认证保护及实际测试。模块读取 `D:/Astrocyte-agent-assets/20261015/relay/H/production-assembly/` 的原日志与结果：规则判断真实 SQLite / HTTP 检查退出零，命令 91.622 秒 / package 1.860 秒；vet 退出零 / 45.494 秒，生产 build 退出零 / 28.617 秒。真实公开 README 导入、固定资料、当前项目授权、快照、规则判断、同库结果、空 Taste 及原生会话为零均在该检查范围；Jev / Laya 当前未配置、未调用。准确来源已由模块交发布和唯一 I，发布 `msg_949851cafa78` 确认接收；H 继续同实例更新及后继 cleanup / 完成来源装配，全部功能与最终发布尚未验收。
+
+B 的可信 cleanup 配置 SOURCE `da084e44a93adda7c3465a564fb5b63510222b0a` / 独立 REPORT `a550cfba2d7e571954bf96bec9a8eb6e3af228a8` 已由模块独读报告、核远端精确同值并交 H。配置为可信环境变量、程序常量 64、既有合法范围 1–1000；B 原四项主检查及八项拒绝子项、build / vet / diff 通过。成功提交后的 Wake 仍待 B / S2 准确后继。S4 已核原首失败实际 102.668 秒及授权关闭后十秒未清理，保留原件，仅检查了现有 production 脚本语法；后继复验使用自身独占新库，不操作 64505 共享服务。
+
 ## 02:08 业务来源与实际组合检查
 
 当前唯一共享产品地址为 `http://127.0.0.1:64505`，网页与 API 同 URL，原 H 持有。H `msg_0e9be1986bf6` 报告准确 ad8413e 产物于 `2026-10-15T18:08:46.9479236Z` 启动，PID 47956；模块独立 `Get-NetTCPConnection` / `Get-Process` 核 127.0.0.1:64505 唯一监听进程、启动时间及运行路径 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/astrocyte.exe`。H 已核 binary 的 vcs.revision 同值 / modified=false、health 正常与根页面 200。argv 为空，后台 Hidden，产物复制到 H 独占 D 盘，SQLite 与运行指针在同一共享服务目录；没有登记原生、初始化、模型或 t0。根、发布、I、F 和产品已逐正文收到来源、地址与缺口，F 继续唯一实际界面和核心 HTTP 操作。当前产物尚缺 H 在途 Judgment / Taste 公共注册、S4 Run / Wake；S5 / Jev / Laya 未配置调用，Q 本代 snapshot 尚未接。后继由 H 更新同一共享服务，不启动第二个共享 writer。
