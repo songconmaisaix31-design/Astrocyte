@@ -25,6 +25,8 @@ func relayScopedWorkspaceRoute(r *http.Request, projectID string) bool {
 	}
 	if len(parts) == 3 {
 		switch parts[2] {
+		case "missions":
+			return r.Method == http.MethodGet
 		case "goals":
 			return r.Method == http.MethodGet
 		case "proposals":
@@ -35,10 +37,22 @@ func relayScopedWorkspaceRoute(r *http.Request, projectID string) bool {
 	}
 	if len(parts) == 4 && parts[3] != "" {
 		switch parts[2] {
+		case "missions", "artifacts":
+			return r.Method == http.MethodGet
 		case "proposals":
 			return r.Method == http.MethodGet || r.Method == http.MethodPut
 		case "goals", "approvals", "context-packets":
 			return r.Method == http.MethodGet
+		}
+	}
+	if len(parts) == 5 && parts[3] != "" {
+		switch parts[2] {
+		case "missions":
+			return parts[4] == "work-items" && (r.Method == http.MethodGet || r.Method == http.MethodPost) || parts[4] == "timeline" && r.Method == http.MethodGet
+		case "work-items":
+			return (parts[4] == "claims" || parts[4] == "artifacts") && r.Method == http.MethodPost
+		case "artifacts":
+			return parts[4] == "diff" && r.Method == http.MethodGet
 		}
 	}
 	return len(parts) == 5 && parts[2] == "proposals" && parts[3] != "" && parts[4] == "submit" && r.Method == http.MethodPost

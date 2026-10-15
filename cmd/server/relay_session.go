@@ -351,7 +351,17 @@ func (c *relaySessionCollector) ReadSessionEvents(ctx context.Context, q workben
 type relaySessionRuntime struct {
 	workspace.RelayRuntime
 	workspace.RelayLifecycle
-	collector *relaySessionCollector
+	collector    *relaySessionCollector
+	sourceGuard  *relaySourceGuard
+	registration *relayTrustedRegistration
+}
+
+func (s *relaySessionRuntime) PrepareIntent(ctx context.Context, caller domain.Caller, id string, command workspace.RelayConfirmCommand) (domain.RelayActionResult, error) {
+	preparer, ok := s.RelayRuntime.(workspace.RelayIntentPreparer)
+	if !ok {
+		return domain.RelayActionResult{}, &apierrors.ServiceError{Code: apierrors.UnsupportedCapability}
+	}
+	return preparer.PrepareIntent(ctx, caller, id, command)
 }
 
 func (s *relaySessionRuntime) ListRuntimeFacts(ctx context.Context, caller domain.Caller, id string) ([]domain.RelayRuntimeFact, []domain.RelaySessionRelation, error) {
@@ -379,6 +389,11 @@ func (s *relaySessionRuntime) ListOwnedTurnBindings(ctx context.Context, id stri
 }
 
 func (s *relaySessionRuntime) ObserveOwned(ctx context.Context) error {
+	if s.registration != nil {
+		if err := s.ReloadTrustedAgents(ctx); err != nil {
+			return err
+		}
+	}
 	baseErr := s.RelayLifecycle.ObserveOwned(ctx)
 	if baseErr != nil {
 		return baseErr
