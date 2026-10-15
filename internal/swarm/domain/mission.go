@@ -210,6 +210,23 @@ func (m Mission) StopReached(now time.Time) bool {
 	return !now.Before(l.Deadline) || (l.MaxNoProgress > 0 && m.NoProgress >= l.MaxNoProgress) || (l.NoProgressSeconds > 0 && !now.Before(m.LastProgressAt.Add(time.Duration(l.NoProgressSeconds)*time.Second)))
 }
 
+func (m *Mission) ResumeAfterReconciliation(expectedVersion int, reason string, now time.Time) error {
+	if m.Version != expectedVersion {
+		return Failure("version_conflict", "mission changed while reconciling the original executor")
+	}
+	if m.State == "completed" || m.State == "cancelled" {
+		return Failure("version_conflict", "terminal mission cannot resume")
+	}
+	m.Version++
+	m.State = "ready"
+	m.Reason = reason
+	if m.StopReached(now) {
+		m.State = "blocked"
+		m.Reason = "mission stop condition reached"
+	}
+	return nil
+}
+
 func ValidateWritePath(p string) error {
 	if p == "" || strings.ContainsAny(p, "\\:*?[]\x00") || strings.HasPrefix(p, "/") || path.Clean(p) != p || p == ".." || strings.HasPrefix(p, "../") {
 		return Failure("validation_failed", fmt.Sprintf("write path %q must be a normalized relative file or directory", p))
