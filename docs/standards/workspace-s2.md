@@ -1,6 +1,20 @@
 # Workspace S2
 
-当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_f32b6d92119a`。实际客户端 Codex，模块已核模型 `gpt-6.1-sol` / high fast。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_b9a5305d8480`，终端 `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
+
+## 2026-10-15 Context 当前权限与格式修复 REPORT
+
+SOURCE `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d` 已普通 commit / push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同 SHA。创建上下文包和绑定会话先检查当前 Grant 状态、epoch、项目权限版本与 `read_context` 范围；包提交时在同一 SQLite 事务复核来源访问。三个 S2 HTTP 文件使用标准 Go 格式。
+
+`go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` PASS，5.029 秒：真实 Git 快照、SQLite 与 objects，固定 Goal / Proposal revision、旧 Goal 更新后包及对象不变、successor 独立保存、当前项目权限版本改变后拒绝新包，连同既有批准 / 幂等 / 回滚 / 重投递 / 撤销 / 关闭重开检查。实际库 `.verification/s2-first/actual-1911382403/state.sqlite`，日志 `context-current-permission-second.log`。本次输入材料为空；完整资料引用与原生绑定成功仍待生产链路，未以本测试替代。批准目录明确选择本公开工程的 `internal/workspace/domain`。
+
+恢复后的首次全项目目录 Context 检查 PASS，26.777 秒，库 `actual-2504062781`、日志 `context-recovery-first.log`。追加权限断言的全项目目录检查在 successor 的真实 Git 文件观察中达到原 90 秒期限，FAIL 原件 `context-current-permission-first.log`、库 `actual-481844361` 均保留；随后沿显式批准子目录验证，超时值与原断言保持。
+
+`go vet -mod=readonly ./internal/workspace/app ./internal/adapters/httpapi ./tests/s2` 无错误输出，`node scripts/check-architecture.mjs` PASS（34 包），五个变更 Go 文件的 `gofmt -l` 和 `git diff --check` 均无输出。
+
+本轮 `node --test tests/s2/http.test.mjs` FAIL：真实批准、Agent 拒绝、版本冲突、同键重放和 SQLite 事件约束整事务回滚已经运行，首次进程重启的 health 为 200，接续人类 session bootstrap 读取发生 TimeoutError。保留 `.verification/s2-first/http-context-permission.log` 及 `.verification/astrocyte-s1-YckzZ9/data/state.sqlite`；没有调整期限、增加 skip 或沿用旧 HTTP PASS 作为本轮通过。生产 Context 的 main 装配与 OpenAPI 仍等待 H，完整原生 SessionBinding 和 AT12 判断缓存成功保持 NOT_RUN。
+
+依模块 `msg_6688b3a35039` 临时授权，本人在 `release-judgment-20261015` 使用文件编辑工具逐块解决并 stage 原计划十六件 S2 冲突，保留当前权限 / 幂等 / 准入 / 私有原生身份逻辑与实际 S4 provider。最终十六件与该树当前 HEAD 内容相同，`git diff --check` 及未合并项查询均无输出；未执行 commit 或继续合并。已于 `msg_083e1782c9cb` / `msg_9d38835d5ee7` 明确停止跨树写入并归还范围，S5 的组合验证由原 owner 执行。
 
 ## 批准与事务
 
