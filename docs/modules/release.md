@@ -2,6 +2,14 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:11 准确组合构建与原检查退出
+
+唯一 I 已无冲突普通 `--no-ff` 消费 B REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3` 和 F REPORT `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，准确组合 SOURCE `cffac3671f21dbf90df9eaa2804a2eb5e070d332` 已普通 push。本模块独核 HEAD / 远端同值；B 祖先同时包含已提交的 prepared input、token 争用验证与 cleanup 配置，没有复制 native WIP。原 `pnpm build` 实际 EXIT0 / `49.3755472` 秒，`source_after` 同值，server / MCP / Sleep / TypeScript / Vite 全部完成。本模块独读 `D:/Astrocyte-agent-assets/20261015/integration/c16-product-build-cffac367/result.json` 与 `build.log`，原 bundle 提示保留。
+
+I 已暂停覆盖 `integration/build/dist/astrocyte.exe` 与 `build/web-dist`，通过 `msg_9de2d28ecfac` 将准确读取窗口交 M-relay / H；H 复制到自身稳定版本、核 buildinfo 与静态文件并停止读取后归还，归还前 I 不执行后继构建。当前64505启动校验仍由原 H / B 处理，构建通过不代替实际启动与核心功能。M-product `msg_7c9a12727902` 核 F SOURCE `8bd599c8a34661dc9f4a47398212b387278a483f` 仅七件 inspectProduct / readProduct 检查脚本，已交 I 在单一构建窗口后普通消费；其独立 REPORT 尚未核得。已成功 mutation 保留原件，当前 F 仅在同库恢复后读取 HTTP / DOM / SQLite，不重复成功或未知写入。
+
+I 对原 `c16-product-check-8b0eb882` 的核查结果为：没有 `result.json`，`check.log` 实际终止于 httpapi FAIL，总退出 UNKNOWN；cmd/server 五项首失败、agents 六项首失败、events 两项首失败和 httpapi 一项首失败保留，后续检查阶段没有完成证据。具体为项目注册、403 / approval_required、delivery_unknown、OS1314，OpenCode redirected ancestor 与原控制器 / selected-text 来源身份，junction 命令与单链接保护，以及 works `no_project_git_marker`。本模块通过 `msg_e94802cef6b4` / `msg_71a544ec81ff` 按原路径交 M-relay 的 H / R 和 M-product 的 B 连续返修；未重跑已知未修的全面检查、放宽权限或重发未知请求。最终适用检查、完整默认、实际核心操作、L1 / L2 与同源发布仍待完成。
+
 ### 2026-10-16 04:08 恢复原发布 Run 与唯一集成计划
 
 当前负责人为 Task `task_315679474dc4` / Dispatch `ctx_6256d5837fb3` / 终端 `term_956e5a79-f906-42a4-aeea-f2f240d440b0`。公开终端元数据确认实际客户端 Codex / GPT-6.1-Sol xhigh fast；已普通绑定原 `run_aa4e6a119547` generation 10。根 04:04 HANDOFF / STATUS、QUESTIONS 与 `msg_5e583e72cd1c` 是当前执行入口，继续优先恢复可用的完整普通产品。读取 FIFO 前按旧注入正文创建的 `run_6da39d798487` 保持空，没有 Task 或 Worker，不用于派发。
