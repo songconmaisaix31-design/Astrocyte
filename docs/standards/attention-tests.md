@@ -1,8 +1,56 @@
 # Attention 测试整改记录
 
-本轨工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/product-attention-tests-20261014`，分支为 `songconmaisaix31-design/product-attention-tests-20261014`，首次接管基线为 `b470ecd736af261a10e4c4822bdcd3b02d0da454`。2026-10-15 21:54 本次恢复基线为 `94fb0e88de9054720cc1b7c473937afd9d39c80e`，接管时工作树干净；当前 Orca 终端为 `term_d8097c3c-ce20-4d1f-8eb9-b176c72838a9`，Task `task_5f0a79b6a17a`，Dispatch `ctx_97022176991b`。公开 terminal 元数据核实实际客户端为 Codex，终端显示 GPT-6.1-Sol xhigh fast。
+本轨工作树为 `C:/Users/DW/orca/workspaces/Astrocyte/product-attention-tests-20261014`，分支为 `songconmaisaix31-design/product-attention-tests-20261014`，首次接管基线为 `b470ecd736af261a10e4c4822bdcd3b02d0da454`。2026-10-16 00:36 本次恢复基线为 `71d31340301eb4787a7bdcc477ec4c696f3485ee`，接管时工作树干净；当前 Orca 终端为 `term_990812cc-b99b-474f-be16-fb6f8007b237`，Task `task_5f0a79b6a17a`，Dispatch `ctx_1ad6d580f95f`。公开 terminal 元数据核实实际客户端为 Codex，终端显示 GPT-6.1-Sol xhigh fast。
 
-本轨唯一写入范围为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 和本文件；生产、依赖、native/relay 与其他测试归原人员。原始错误、实际来源、模型响应和会话证据只保留本树已忽略 `.verification`，不纳入 Git 或产品接口。
+本轨唯一写入范围为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 和本文件；生产、依赖、native/relay 与其他测试归原人员。旧原件保留本树已忽略 `.verification`；按当前 D 盘产物要求，本次新数据库、对象、二进制、HTTP 原件与日志写入本轨独占 `D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_1ad6d580f95f/.verification`，不纳入 Git 或产品接口。
+
+## 2026-10-16 当前准确 SOURCE 与实际结果
+
+SOURCE `2249dabdf0245b7769af3ae2a10c7a07dd8ad5a1` 已普通 push，`git ls-remote` 独立核远端分支同值，只修改七件原测试范围文件。沿模块连续 Taste 返修授权，普通 `--no-ff` 消费 B 的准确 SOURCE `6d1d59bf07b008a0969efefceb911e49b6b33db6`，合并为 `320ea2569c608120fbc07aaae25682e27bd25f8d`，没有冲突或手工修改生产。原非法 JSON `unknown` 的首 `internal_error` 原件保留，现通过生产 parser 返回 `validation_failed`，拒绝时没有 Taste 版本、回执或事件。
+
+新的 App 共享 fixture、HTTP 原件、可变文件和 S1 server helper 均要求显式绝对 `ASTROCYTE_TEST_OUTPUT_ROOT`。本次值为上节独占 D 盘目录，TEMP / TMP / GOTMPDIR 为同一负责人目录下的 `temp`，共享 GOCACHE 仍为 `D:/Astrocyte-agent-assets/20261015/go-build/backend`。没有 OS 临时目录或个人路径默认值；S1 的实际服务日志、SQLite、对象、构建二进制和 native-temp 均保存在该显式根。
+
+新增 `TestActualTasteProfileConcurrentConnectionsKeepOneVersionAndReceipt` 使用同一实际数据库的两个独立连接，同时提交不同的 rubric / example 更新。一个请求形成 version2，另一个实际 CAS 拒绝；只有一个新增版本、回执和 outbox 事件。关闭并重开数据库后，version1 完整历史、version2 实际成功参数及原成功回执均保持，旧竞争请求继续拒绝。
+
+新增 `TestCurrentGoalGuardSharesTasteCommitRollbackAndReopen` 使用真实 S2 固定 Goal 保护完整 Taste 写入。写入后在同一 WorkspaceTransaction 触发实际 SQLite 唯一约束，Taste head、不可变 revision、事件及回执全部回滚；原请求随后成功一次，无额外连接等待。真实 Goal 更新后，旧 snapshot 在关闭重开数据库前后均拒绝进入消费者；Taste 固定版本、当前版本、原回执和旧 Goal 历史保持完整。两项新增检查均没有模型调用、原生会话、准入或执行。
+
+下表日志均相对于本次 D 盘 `.verification`；每条命令使用上述进程环境。检查时源码与 SOURCE 的七件测试文件相同，构建时生产源码为普通合入后的准确组合。
+
+| 实际命令 | 结果 | 完整本机日志 |
+|---|---|---|
+| `go test -mod=readonly ./internal/attention/app -list '^Test'` | EXIT0；编译及清单 | `resume-compile-first.stdout.log` / `.stderr.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^TestActualTasteProfile' -count=1 -v -timeout=15m` | 原五项全部 PASS，8.289s；包含原首 RED 的合法输入错误分类复验 | `taste-6d1d59b-current-first.stdout.log` / `.stderr.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^Test(ActualTasteProfile\|CurrentGoalGuardShares)' -count=1 -v -timeout=15m` | 八项全部 PASS，5.044s；两项新增真实 SQLite 场景与全部原 Taste / Goal 断言 | `taste-goal-concurrency-first.stdout.log` / `.stderr.log` |
+| `go test -mod=readonly ./internal/attention/app -run '^Test(ImportReceipts\|HumanQueries\|DistillationLayers\|ConcurrentImport\|OutboxFailure\|FeedbackCAS\|WithdrawnSource\|CandidateReady\|MutableImport\|ReadOnlyFailure\|RunningCancel\|CancellationReceipt\|WorkerPool\|CanonicalContract\|ExplicitMention\|ProfileCAS\|RankingProfileConcurrent\|GlobalSelected\|ScopedAgent\|OptionalLinked\|ClassificationAnd\|SpaceAndClassification\|MaterialList\|ImportReturning\|ActualPublicGitAdmission)' -count=1 -v -timeout=15m` | 25 项全部 PASS，29.979s；实际本地持久化、固定公开 Git/manual 准入和原故障 / 权限 / 重开检查 | `app-persistence-d-output-first.stdout.log` / `.stderr.log` |
+| `go test -mod=readonly ./tests/s1 -run '^Test(AutomaticHTTPRejectsUntrustedCallerWithoutSideEffects\|ReadOnlyImportHTTPProcessExitPreservesDeadline\|SelectedProjectMembershipAndRevocationBeforeNativeStart)$' -count=1 -v -timeout=15m` | 三项全部 PASS，65.615s；实际生产 HTTP / SQLite，零新模型 | `s1-d-output-lifecycle-first.stdout.log` / `.stderr.log` |
+| `go vet -mod=readonly ./internal/attention/app` | EXIT0 | `app-vet-current-first.stdout.log` / `.stderr.log` |
+| `go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/attention-tests-ctx_1ad6d580f95f/.verification/astrocyte.exe ./cmd/server` | EXIT0 | `server-build-current-first.stdout.log` / `.stderr.log` |
+| `gofmt -l internal/attention/app/production_fixture_test.go internal/attention/app/http_evidence_test.go internal/attention/app/imports_service_test.go internal/attention/app/jobs_service_test.go tests/s1/automatic_test.go` 及 `gofmt -l internal/attention/app/taste_profile_service_test.go internal/attention/app/goal_transaction_service_test.go`、`git diff --check` | 无输出，EXIT0 | 当前源码检查 |
+
+本次未重复原 Sources 成功推理。S5 准确 SOURCE `688587ffcccafaf80ffe420e08cdaf5848eb36b1` 的 `actualSourcePolicy` 在只读检查时仍提交 nil Options / Levels，choice / score 没有 B 后继所需的完整题型参数；该具体组合差异已交原 S5 `ctx_693200d34a48` 和模块，由原负责人修复并交准确后继 SOURCE。没有消费其 WIP、猜测闭包或将旧 S5 结果提升为当前组合成功。完整 AT12 的权威 delegation、缓存及旧 proof 拒绝仍未验收。
+
+## 原十四项未完成断言与最窄实际依赖
+
+以下函数和全部原断言保留，当前仍含旧替代实现，不作为本次成功证据，也没有再次运行。模型部分共同需要 B 的生产 `SelectedTextBridge` / `SelectedTextFactory` 与 R/H 实际控制器组合；同一 JobID / OperationID 的原生受理、TurnID、正选自产原档、有效工具关闭及实际 Stop 证据必须通过当前生产入口取得。当前 `EffectiveToolSet=unknown` 保持未知；启动 argv 或工具调用零均不单独证明有效工具关闭。
+
+| 原函数名 | 保留的断言与实际依赖 |
+|---|---|
+| `TestAutomaticFixedSnapshotsReuseAndContinuation` | 实际固定 v1 入队后 head 变化仍读取原正文 / 标题；原生配置及真实输出保存；相同输入复用同 Job，明确新问题与 prior 形成新一轮，人类热度不增加、AgentUsageCount=2、不自行形成候选。需要真实两个来源版本与两次不同工作的原生受理；观察 helper 只能委托实际 processor。 |
+| `TestAutomaticRealSuggestionAndLocalFailureRecovery` | 实际 topic 输出中的 candidate suggestion 保留且不自动创建候选；真实 outbox SQL 故障回滚，已交付结果保留，修复后无 processor 仍完成且不重发模型。需要实际模型成功输出和保存结果前的真实持久化故障窗口。 |
+| `TestAutomaticNativeFullTextInputDigest` | 处理器收到实际全文文本的 digest，真实 `arxiv+summarize` provenance 与 revision bundle 身份分别保留，最终成功。需要 B/原导入负责人交实际公开固定来源的全文版本；不得手工改写 provenance 或 digest。 |
+| `TestAutomaticCancellationAfterEntryStaysUnknown` | 实际 Send 受理之后取消，owned controller 停止、DeliveryUnknown 保持、重试拒绝。需要 B/R/H 同 Job / operation 的真实 `send_accepted` / TurnID 和停止前可观察窗口；ExternalStarted 不替代受理证据。 |
+| `TestAutomaticScopeConfigAndHonestFailures` | 入队后真实处理配置变化须 ContextStale、无外部开始；非法输出引用不产生 Distillation 且不伪装为 unknown。需要生产项目配置变化入口；输出引用校验必须区分明确解析输入和真实模型结果，不能伪造模型输出完成作业级断言。 |
+| `TestAutomaticUnknownRecoveryAndExplicitBoundedRetry` | 真实已受理后连接 / 生命周期中断保持 unknown、手动及恢复均不重发；真实未启动失败允许显式有界重试，同 operation / deadline，达到两次后拒绝。需要可实际观察的受理后中断与未启动失败，两种结果分别保留。 |
+| `TestAutomaticUnknownKeepsOriginalServiceCauseWithoutReplay` | 原 unknown 事件不改写，本次真实 ServiceError cause 与安全公开 error 分开保存；恢复后原 Job、attempt、payload、operation / deadline 不变，无结果且无重发。需要原生实际 unknown cause 与真实既有失败事件，不手工插入历史事件。 |
+| `TestCachedResultPublicationWaitsForRepairAndRetainsRetryCeiling` | 实际已交付模型结果在对象发布故障时可明确修复，自动重试不耗尽预算，显式第二次失败达到上限且 paid work 仅一次。需要生产 ObjectStore 的真实目录 / 写入故障以及保留原结果的实际作业；不提供替代 Store 错误。 |
+| `TestProjectAutomaticChecksFixedMembershipBeforeObjectsAndNeverFallsBack` | 未引用固定版本拒绝，真实项目模型成功一次，撤销许可后的新问题拒绝且不再调用模型。未引用 / 撤销的真实 HTTP 边界已有独立 PASS，原模型成功断言继续等待同项目原生入口。 |
+| `TestRecoveryReadOnlyVsUnknownModelAndDeadline` | 实际只读中断可按原预算恢复，已受理模型中断保持 unknown / 原 payload / caller / operation，旧模型拒绝重试，到期只读拒绝。只读生产 HTTP 半段本次实际 PASS；模型半段需要真实受理后的进程生命周期。 |
+| `TestExplicitUnknownReadResultIsPreservedEvenForImport` | 生产 Import Reader 明确产生 DeliveryUnknown 后保留该分类并拒绝重试。当前获准 arXiv / manual Reader 没有已交付的实际 unknown 生产路径，需 B 交最窄获准外部来源 / 生命周期，不能注入错误冒称实际外部结果。 |
+| `TestMetadataCapRecommendationGateAndHumanSelection` | 真实 100 条 metadata，不读取正文；固定选中条目仅推荐一次，新表单键复用，人明确选择后才导入正文。实际收藏 100 截断及选前拒绝已分别 PASS，原 Creator 足量仍失败；推荐 / 正文成功需要实际所选目录的生产模型与导入生命周期，不用收藏结果代替 Creator。 |
+| `TestPartialCacheKnownFailureResumeAndImmutableUnknown` | 真实部分页失败保持缓存 / stale / 错误，同 cursor / operation / deadline 有界恢复；推荐 unknown 后启动恢复和新键均不重发。只读页半段已有真实 PASS；推荐半段仍需实际原生受理后中断。 |
+| `TestUnknownSourceReadIsNotResentByStartupOrNewRequestKey` | 实际目录读取明确 unknown 后，LastError / 原 Job 全量 JSON 保持，启动和新键不再发起读取。当前生产明确 unknown 仅涉及另一个 OpenCLI 目录桥，未取得本轨对应来源授权及准确实际交付入口，保留 NOT_RUN。 |
+
+原 `tests/s1/automatic_test.go::TestAutomaticUnknownSurvivesSQLiteReopenWithoutRetry` 同样保留真实 arXiv Atom / PDF 和全部旧版本、幂等、payload / caller、无结果、无候选及不重发断言；原首次前置 RED 保留。该检查等待上述同 Job / operation 的真实 Send / TurnID / 原档 / 工具关闭及 Stop 证据，尚未再次启动。`go test -mod=readonly ./internal/attention/app ./tests/s1 -count=1` 的整改后完整运行仍为 NOT_RUN；本阶段定向成功不代表全产品验收，Task 持续由同一负责人完成后续组合与返修。
 
 ## 已提交源码阶段
 
