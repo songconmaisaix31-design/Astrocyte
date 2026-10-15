@@ -15,7 +15,11 @@ import (
 var _ judgment.Repository = (*DB)(nil)
 
 func (db *DB) FindCached(ctx context.Context, key string) (judgment.Record, bool, error) {
-	record, err := readJudgmentRow(db.conn.QueryRowContext(ctx, `SELECT actor_id,actor_kind,project_id,cache_key,cacheable,request_json,result_json
+	conn, err := db.judgmentExecutor(ctx)
+	if err != nil {
+		return judgment.Record{}, false, err
+	}
+	record, err := readJudgmentRow(conn.QueryRowContext(ctx, `SELECT actor_id,actor_kind,project_id,cache_key,cacheable,request_json,result_json
 		FROM judgment_results WHERE cache_key=? AND cacheable=1 ORDER BY created_at DESC,id DESC LIMIT 1`, key))
 	if errors.Is(err, sql.ErrNoRows) {
 		return judgment.Record{}, false, nil
@@ -47,6 +51,10 @@ func readJudgmentRow(row *sql.Row) (judgment.Record, error) {
 }
 
 func (db *DB) SaveResult(ctx context.Context, record judgment.Record) error {
+	conn, err := db.judgmentExecutor(ctx)
+	if err != nil {
+		return err
+	}
 	if err := judgment.ValidateRequest(record.Request); err != nil {
 		return err
 	}
@@ -61,13 +69,17 @@ func (db *DB) SaveResult(ctx context.Context, record judgment.Record) error {
 	if err != nil {
 		return err
 	}
-	_, err = db.conn.ExecContext(ctx, `INSERT INTO judgment_results(id,project_id,actor_id,actor_kind,result_version,cache_key,cacheable,request_json,result_json,created_at)
+	_, err = conn.ExecContext(ctx, `INSERT INTO judgment_results(id,project_id,actor_id,actor_kind,result_version,cache_key,cacheable,request_json,result_json,created_at)
 		VALUES(?,?,?,?,?,?,?,?,?,?)`, record.Result.ID, record.Request.ProjectID, record.Actor.ID, record.Actor.Kind, record.Result.Version, record.CacheKey, record.Cacheable, string(request), string(result), record.Result.CreatedAt.Format(time.RFC3339Nano))
 	return err
 }
 
 func (db *DB) LoadResult(ctx context.Context, id string) (judgment.Record, error) {
-	record, err := readJudgmentRow(db.conn.QueryRowContext(ctx, `SELECT actor_id,actor_kind,project_id,cache_key,cacheable,request_json,result_json FROM judgment_results WHERE id=?`, id))
+	conn, err := db.judgmentExecutor(ctx)
+	if err != nil {
+		return judgment.Record{}, err
+	}
+	record, err := readJudgmentRow(conn.QueryRowContext(ctx, `SELECT actor_id,actor_kind,project_id,cache_key,cacheable,request_json,result_json FROM judgment_results WHERE id=?`, id))
 	if errors.Is(err, sql.ErrNoRows) {
 		return record, apierrors.NewNotFound("judgment result", id)
 	}
@@ -78,26 +90,29 @@ func (db *DB) SaveFeedback(ctx context.Context, feedback judgment.Feedback) erro
 	if feedback.ID == "" || feedback.ResultID == "" || feedback.ActorKind != "human" || feedback.ActorID == "" || feedback.CreatedAt.IsZero() || feedback.Reason == "" {
 		return &apierrors.ServiceError{Code: apierrors.ValidationFailed, Message: "feedback requires a real human and fixed judgment result"}
 	}
-	tx, err := db.conn.BeginTx(ctx, nil)
-	if err != nil {
+	return db.WithJudgmentTx(ctx, func(ctx context.Context) error {
+		conn, err := db.judgmentExecutor(ctx)
+		if err != nil {
+			return err
+		}
+		var version int
+		if err := conn.QueryRowContext(ctx, "SELECT result_version FROM judgment_results WHERE id=?", feedback.ResultID).Scan(&version); err != nil {
+			return err
+		}
+		if version != feedback.ResultVersion {
+			return &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "feedback result version changed"}
+		}
+		_, err = conn.ExecContext(ctx, `INSERT INTO judgment_feedback(id,result_id,result_version,actor_id,actor_kind,kind,reason,created_at) VALUES(?,?,?,?,?,?,?,?)`, feedback.ID, feedback.ResultID, feedback.ResultVersion, feedback.ActorID, feedback.ActorKind, feedback.Kind, feedback.Reason, feedback.CreatedAt.Format(time.RFC3339Nano))
 		return err
-	}
-	defer tx.Rollback()
-	var version int
-	if err := tx.QueryRowContext(ctx, "SELECT result_version FROM judgment_results WHERE id=?", feedback.ResultID).Scan(&version); err != nil {
-		return err
-	}
-	if version != feedback.ResultVersion {
-		return &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "feedback result version changed"}
-	}
-	if _, err := tx.ExecContext(ctx, `INSERT INTO judgment_feedback(id,result_id,result_version,actor_id,actor_kind,kind,reason,created_at) VALUES(?,?,?,?,?,?,?,?)`, feedback.ID, feedback.ResultID, feedback.ResultVersion, feedback.ActorID, feedback.ActorKind, feedback.Kind, feedback.Reason, feedback.CreatedAt.Format(time.RFC3339Nano)); err != nil {
-		return err
-	}
-	return tx.Commit()
+	})
 }
 
 func (db *DB) ListFeedback(ctx context.Context, id string) ([]judgment.Feedback, error) {
-	rows, err := db.conn.QueryContext(ctx, `SELECT id,result_id,result_version,actor_id,actor_kind,kind,reason,created_at FROM judgment_feedback WHERE result_id=? ORDER BY created_at,id`, id)
+	conn, err := db.judgmentExecutor(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := conn.QueryContext(ctx, `SELECT id,result_id,result_version,actor_id,actor_kind,kind,reason,created_at FROM judgment_feedback WHERE result_id=? ORDER BY created_at,id`, id)
 	if err != nil {
 		return nil, err
 	}

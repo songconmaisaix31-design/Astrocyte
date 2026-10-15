@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -21,6 +20,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	adapter "github.com/songconmaisaix31-design/Astrocyte/internal/adapters/judgment"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/repositorycontext"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/judgment"
@@ -65,11 +65,15 @@ func newFixture(t *testing.T, path, objectRoot string) *fixture {
 	a := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader([]string{filepath.Join(s5Root(t), ".verification", "s5")}), store, attention.ServiceOptions{})
 	refs := adapter.AttentionReferences{Attention: a}
 	projects := workspace.NewLocalProjectService(db, refs, agents.ProjectFiles{}, nil)
-	git, err := exec.LookPath("git")
+	environment, err := os.Hostname()
 	if err != nil {
 		t.Fatal(err)
 	}
-	access := &adapter.ProjectAuthorization{Projects: db, References: refs, Policies: db, Snapshots: adapter.GitSnapshots{Git: git, Files: agents.ProjectFiles{}}}
+	snapshots, err := repositorycontext.New(db, db, repositorycontext.Options{Git: repositorycontext.Git{EnvironmentID: environment}, CacheRoot: filepath.Join(filepath.Dir(path), "projections"), SnapshotBudget: domain.RepositoryBudget{MaxFiles: 4, MaxBytes: 1024 * 1024, MaxResults: 1, MaxDepth: 1}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	access := &adapter.ProjectAuthorization{Projects: db, References: refs, Policies: db, Snapshots: snapshots}
 	transport := httpapi.NewServer(httpapi.Config{Services: httpapi.Services{Attention: a, LocalProjects: projects}, Logger: slog.New(slog.NewTextHandler(io.Discard, nil))})
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
@@ -192,9 +196,9 @@ func (f *fixture) project(t *testing.T, ref judgment.EvidenceRef, checkout strin
 
 func (f *fixture) policy(t *testing.T, project domain.LocalProject, questionType judgment.QuestionType, backend judgment.Backend, modelRevision string) judgment.Policy {
 	t.Helper()
-	worktree, snapshot, err := f.access.Snapshot(context.Background(), f.actor, project.ID, []string{"README.md"})
+	snapshot, err := f.access.Snapshot(context.Background(), f.actor, project.ID, []string{"README.md"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return judgment.Policy{Revision: 1, ProjectID: project.ID, ProjectSettingsRevision: project.Settings.Revision, WorktreeID: worktree, SnapshotID: snapshot, SnapshotFiles: []string{"README.md"}, QuestionType: questionType, Backend: backend, Languages: []string{"en"}, Versions: judgment.Versions{Goal: "public-goal-v1", Taste: "manual-review-v1", Policy: "policy-v1", Model: modelRevision, AccessEpoch: "public-context-epoch-v1"}, Budget: judgment.Budget{TimeoutMS: 60000, MaxInputBytes: 131072, MaxInputTokens: 2048, MaxOutputTokens: 0}}
+	return judgment.Policy{Revision: 1, ProjectID: project.ID, ProjectSettingsRevision: project.Settings.Revision, WorktreeID: snapshot.WorktreeID, SnapshotID: snapshot.Generation, Snapshot: snapshot, SnapshotFiles: []string{"README.md"}, QuestionType: questionType, Backend: backend, Languages: []string{"en"}, Versions: judgment.Versions{Goal: "public-goal-v1", Taste: "manual-review-v1", Policy: "policy-v1", Model: modelRevision, AccessEpoch: "public-context-epoch-v1"}, Budget: judgment.Budget{TimeoutMS: 60000, MaxInputBytes: 131072, MaxInputTokens: 2048, MaxOutputTokens: 0}}
 }

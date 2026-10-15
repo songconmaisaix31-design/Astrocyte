@@ -16,7 +16,11 @@ func (db *DB) LoadJudgmentPolicy(ctx context.Context, project string, questionTy
 	var policy judgment.Policy
 	var data string
 	var revision int
-	err := db.conn.QueryRowContext(ctx, "SELECT version,data FROM judgment_policies WHERE project_id=? AND question_type=?", project, questionType).Scan(&revision, &data)
+	conn, err := db.judgmentExecutor(ctx)
+	if err != nil {
+		return policy, err
+	}
+	err = conn.QueryRowContext(ctx, "SELECT version,data FROM judgment_policies WHERE project_id=? AND question_type=?", project, questionType).Scan(&revision, &data)
 	if errors.Is(err, sql.ErrNoRows) {
 		return policy, apierrors.NewNotFound("judgment policy", project+":"+string(questionType))
 	}
@@ -33,6 +37,10 @@ func (db *DB) LoadJudgmentPolicy(ctx context.Context, project string, questionTy
 }
 
 func (db *DB) SaveJudgmentPolicy(ctx context.Context, policy judgment.Policy, expected int) error {
+	conn, err := db.judgmentExecutor(ctx)
+	if err != nil {
+		return err
+	}
 	if policy.Revision != expected+1 {
 		return &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "judgment policy requires next revision"}
 	}
@@ -45,9 +53,9 @@ func (db *DB) SaveJudgmentPolicy(ctx context.Context, policy judgment.Policy, ex
 	}
 	var result sql.Result
 	if expected == 0 {
-		result, err = db.conn.ExecContext(ctx, "INSERT INTO judgment_policies(project_id,question_type,version,data) VALUES(?,?,?,?) ON CONFLICT(project_id,question_type) DO NOTHING", policy.ProjectID, policy.QuestionType, policy.Revision, string(data))
+		result, err = conn.ExecContext(ctx, "INSERT INTO judgment_policies(project_id,question_type,version,data) VALUES(?,?,?,?) ON CONFLICT(project_id,question_type) DO NOTHING", policy.ProjectID, policy.QuestionType, policy.Revision, string(data))
 	} else {
-		result, err = db.conn.ExecContext(ctx, "UPDATE judgment_policies SET version=?,data=? WHERE project_id=? AND question_type=? AND version=?", policy.Revision, string(data), policy.ProjectID, policy.QuestionType, expected)
+		result, err = conn.ExecContext(ctx, "UPDATE judgment_policies SET version=?,data=? WHERE project_id=? AND question_type=? AND version=?", policy.Revision, string(data), policy.ProjectID, policy.QuestionType, expected)
 	}
 	if err != nil {
 		return err

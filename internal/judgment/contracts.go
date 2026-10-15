@@ -3,6 +3,8 @@ package judgment
 import (
 	"context"
 	"time"
+
+	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
 type QuestionType string
@@ -125,22 +127,23 @@ type JudgmentResult struct {
 }
 
 type Policy struct {
-	Revision                int           `json:"revision"`
-	ProjectID               string        `json:"project_id"`
-	ProjectSettingsRevision int           `json:"project_settings_revision"`
-	WorktreeID              string        `json:"worktree_id"`
-	SnapshotID              string        `json:"snapshot_id"`
-	SnapshotFiles           []string      `json:"snapshot_files"`
-	QuestionType            QuestionType  `json:"question_type"`
-	Versions                Versions      `json:"versions"`
-	Backend                 Backend       `json:"backend"`
-	Languages               []string      `json:"languages"`
-	ExternalScope           string        `json:"external_scope"`
-	ExternalEvidence        []EvidenceRef `json:"external_evidence"`
-	Budget                  Budget        `json:"budget"`
-	MinConfidence           *float64      `json:"min_confidence"`
-	TruthAcceptMin          *float64      `json:"truth_accept_min"`
-	TruthAcceptMax          *float64      `json:"truth_accept_max"`
+	Revision                int                           `json:"revision"`
+	ProjectID               string                        `json:"project_id"`
+	ProjectSettingsRevision int                           `json:"project_settings_revision"`
+	WorktreeID              string                        `json:"worktree_id"`
+	SnapshotID              string                        `json:"snapshot_id"`
+	SnapshotFiles           []string                      `json:"snapshot_files"`
+	Snapshot                domain.ProjectContextSnapshot `json:"snapshot"`
+	QuestionType            QuestionType                  `json:"question_type"`
+	Versions                Versions                      `json:"versions"`
+	Backend                 Backend                       `json:"backend"`
+	Languages               []string                      `json:"languages"`
+	ExternalScope           string                        `json:"external_scope"`
+	ExternalEvidence        []EvidenceRef                 `json:"external_evidence"`
+	Budget                  Budget                        `json:"budget"`
+	MinConfidence           *float64                      `json:"min_confidence"`
+	TruthAcceptMin          *float64                      `json:"truth_accept_min"`
+	TruthAcceptMax          *float64                      `json:"truth_accept_max"`
 }
 
 type AuthorizedInput struct {
@@ -161,6 +164,7 @@ type RecordAuthorizer interface {
 }
 
 type PolicyRepository interface {
+	WithJudgmentTx(context.Context, func(context.Context) error) error
 	LoadJudgmentPolicy(context.Context, string, QuestionType) (Policy, error)
 	SaveJudgmentPolicy(context.Context, Policy, int) error
 }
@@ -211,6 +215,7 @@ type Feedback struct {
 }
 
 type Repository interface {
+	WithJudgmentTx(context.Context, func(context.Context) error) error
 	FindCached(context.Context, string) (Record, bool, error)
 	SaveResult(context.Context, Record) error
 	LoadResult(context.Context, string) (Record, error)

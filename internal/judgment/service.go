@@ -94,7 +94,10 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		return result, err
 	}
 	if found {
-		if _, err := s.recheck(ctx, actor, request, input); err != nil {
+		if err := s.repo.WithJudgmentTx(ctx, func(ctx context.Context) error {
+			_, err := s.recheck(ctx, actor, request, input)
+			return err
+		}); err != nil {
 			return result, err
 		}
 		if record.Result.ReasonCode == "backend_call_failed" || record.Result.ReasonCode == "backend_unavailable" {
@@ -138,10 +141,12 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		}
 	}
 	// 结果保存与使用前重新读取实际权限和输入，过期结果不可返回。
-	if _, recheckErr := s.recheck(ctx, actor, request, input); recheckErr != nil {
-		return result, recheckErr
-	}
-	if saveErr := s.repo.SaveResult(ctx, Record{Actor: actor, Request: request, Result: result, CacheKey: key, Cacheable: err == nil}); saveErr != nil {
+	if saveErr := s.repo.WithJudgmentTx(ctx, func(ctx context.Context) error {
+		if _, recheckErr := s.recheck(ctx, actor, request, input); recheckErr != nil {
+			return recheckErr
+		}
+		return s.repo.SaveResult(ctx, Record{Actor: actor, Request: request, Result: result, CacheKey: key, Cacheable: err == nil})
+	}); saveErr != nil {
 		return result, saveErr
 	}
 	return result, err
@@ -227,14 +232,19 @@ func incompleteOptions(options map[string]OptionCoverage) bool {
 }
 
 func (s *Service) Read(ctx context.Context, actor Actor, id string) (JudgmentResult, error) {
-	record, err := s.repo.LoadResult(ctx, id)
-	if err != nil {
-		return JudgmentResult{}, err
-	}
-	if err := s.recordAccess(ctx, actor, record); err != nil {
-		return JudgmentResult{}, err
-	}
-	return record.Result, nil
+	var result JudgmentResult
+	err := s.repo.WithJudgmentTx(ctx, func(ctx context.Context) error {
+		record, err := s.repo.LoadResult(ctx, id)
+		if err != nil {
+			return err
+		}
+		if err := s.recordAccess(ctx, actor, record); err != nil {
+			return err
+		}
+		result = record.Result
+		return nil
+	})
+	return result, err
 }
 
 func (s *Service) recordAccess(ctx context.Context, actor Actor, record Record) error {
@@ -259,29 +269,37 @@ func (s *Service) Feedback(ctx context.Context, actor Actor, id string, version 
 	if strings.TrimSpace(reason) == "" {
 		return feedback, invalid("feedback requires a human reason")
 	}
-	record, err := s.repo.LoadResult(ctx, id)
-	if err != nil {
-		return feedback, err
-	}
-	if record.Result.Version != version {
-		return feedback, conflict("feedback targets an old judgment result version")
-	}
-	if err := s.recordAccess(ctx, actor, record); err != nil {
-		return feedback, err
-	}
-	feedback = Feedback{ID: uuid.NewString(), ResultID: id, ResultVersion: version, ActorID: actor.ID, ActorKind: actor.Kind, Kind: kind, Reason: reason, CreatedAt: time.Now().UTC()}
-	return feedback, s.repo.SaveFeedback(ctx, feedback)
+	err := s.repo.WithJudgmentTx(ctx, func(ctx context.Context) error {
+		record, err := s.repo.LoadResult(ctx, id)
+		if err != nil {
+			return err
+		}
+		if record.Result.Version != version {
+			return conflict("feedback targets an old judgment result version")
+		}
+		if err := s.recordAccess(ctx, actor, record); err != nil {
+			return err
+		}
+		feedback = Feedback{ID: uuid.NewString(), ResultID: id, ResultVersion: version, ActorID: actor.ID, ActorKind: actor.Kind, Kind: kind, Reason: reason, CreatedAt: time.Now().UTC()}
+		return s.repo.SaveFeedback(ctx, feedback)
+	})
+	return feedback, err
 }
 
 func (s *Service) FeedbackHistory(ctx context.Context, actor Actor, id string) ([]Feedback, error) {
-	record, err := s.repo.LoadResult(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	if err := s.recordAccess(ctx, actor, record); err != nil {
-		return nil, err
-	}
-	return s.repo.ListFeedback(ctx, id)
+	var history []Feedback
+	err := s.repo.WithJudgmentTx(ctx, func(ctx context.Context) error {
+		record, err := s.repo.LoadResult(ctx, id)
+		if err != nil {
+			return err
+		}
+		if err := s.recordAccess(ctx, actor, record); err != nil {
+			return err
+		}
+		history, err = s.repo.ListFeedback(ctx, id)
+		return err
+	})
+	return history, err
 }
 
 func ValidateModelResult(q Question, out BackendResult) error {

@@ -141,6 +141,9 @@ func ValidatePolicy(p Policy) error {
 	if p.ProjectID == "" || len(p.Languages) == 0 || p.Revision < 1 || p.ProjectSettingsRevision < 1 || p.WorktreeID == "" || p.SnapshotID == "" {
 		return invalid("policy requires project and allowed languages")
 	}
+	if p.Snapshot.ProjectID != p.ProjectID || p.Snapshot.WorktreeID != p.WorktreeID || p.Snapshot.Generation != p.SnapshotID || p.Snapshot.EnvironmentID == "" || p.Snapshot.RepoID == "" || p.Snapshot.Root == "" || p.Snapshot.Head == "" || p.Snapshot.IndexDigest == "" || p.Snapshot.WorktreeDigest == "" || p.Snapshot.ObservedAt.IsZero() || len(p.SnapshotFiles) == 0 {
+		return invalid("policy requires the actual persisted authorized project snapshot")
+	}
 	if p.Backend != RuleBackend && p.Backend != LayaBackend && p.Backend != JevBackend {
 		return invalid("policy requires a single backend")
 	}
