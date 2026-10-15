@@ -457,3 +457,33 @@ H 在该回调中沿原 source guard 核正选文件的身份和单链接条件�
 本阶段第一次普通 SOURCE push 遇到 `SSL_ERROR_SYSCALL`，保留该首失败；同一普通 push 再执行成功，独立 `ls-remote` 精确核得 `ce0302835cb7477eb606107351a9ab46dd8d4714`。此前完整 Go 的 H 权限断言 RED、控制器测试首 RED、旧 nlink2 来源 FAIL、旧未知交付、旧三分钟 firstDOM FAIL 均保留，没有用本阶段 targeted PASS 改写完整验收。
 
 H / F 仍须消费准确 SOURCE 后组装当前新公开项目和 observer，核实际 argv / 自产权限 / 合法来源，唯一登记保存真实计时起点，再执行已授权的共同 Codex started 正向。首输入前 callback、当前新档案单链接、实际上下文消费、模型候选、准确 turn mapping 的 HTTP / SQLite 回查、Today 两尺寸、人工目标完成 / release 和新 provider handoff 仍未实测。working 严格门禁与无开始客户端人工 done 的待答规则保持现有状态机；Swarm usage / actual toolset 不补造。最终 ZIP、L / S 完整默认验收仍由原 owner 持续处理。
+
+## v1.4 同控制器两阶段输入
+
+本阶段 SOURCE 为 `cc326be57a9a5f3bdd45687b0ac23b972adb8cef`，分支 `songconmaisaix31-design/works-relay-runtime`，当前 Task `task_f082d8b36471` / Dispatch `ctx_99b96d053325`。依据模块准确规格 `77bcde45a8981d7c42fbb1020285df176148bad5` 第3节实施。执行客户端为 Codex；本阶段没有运行新的原生进程、模型、旧输入或原档探针。
+
+`RelayIntentPreparer.PrepareIntent(ctx, caller, taskID, RelayConfirmCommand)` 沿原 Relay service、store、operation、工作区、terminal 和 owned binding 保存 prepare 收据。准备动作核人工身份、确认、当前 settings revision、A/B/C 和 start 权限；驱动必须提供实际两阶段初始化能力。Codex 初始化通过原 armed capture 完成 initialize / thread-start，Message 为空，任务保持 ready。初始化不生成输入写入、输入接受、turn_started、人工 done 或 accepted 迁移。原初始化的 controller / native ID / CWD / startup operation 和实际 metadata 沿原私有记录保存。
+
+原 ConfirmIntent 对已有准备会话使用新的 dispatch operation，重新核当前授权、固定上下文版本、原控制器、原 prepare 收据、无既有输入、无 pending 以及当前工作区归属。事务取得动作执行权后，只调用原 driver.Send；成功受理后进入原 accepted 路径。初始化和首输入不能复用同一个 operation ID；不同并发动作受原 PendingActions / CAS 保护。ready 任务的普通 Send 被拒绝，首次输入须经原确认入口。普通一次性 Confirm 的既有行为保留。
+
+RelayNativeDriver.Initialize 需要 Codex、通知观察器及受信 BeforeFirstInput。初始化只观察同次控制器给出的 metadata；路径尚未提供或文件未 materialize，来源状态仍须由 H 如实标记 NotYetAvailable。实际首输入在原 operation 锁内执行来源 callback，H 消费自己的 events.VerifyRelaySessionSource 核正选文件、授权根、CWD、单链接和实际工具关闭。缺少正选 archive 不能由 callback 返回 nil 放行。拒绝后停止本次原 owned controller，不提交模型输入；只有确认停止且输入写入前的明确拒绝使用 RelayInputNotSubmitted，其他不确定结果继续保留 unknown 和占用。
+
+固定正文取自原控制器内存中的完整 ContextPacket，真实首 Send 使用既有 packetPrompt；SQLite 绑定仍剔除正文。最终输入检查 UTF-8 和512KiB上限。受信 NewRelayGuardedRegistry(stateRoot, guard) 同时提供 generic Start / Send 的相同保护：空 Start 自动 armed，同控制器后续 Send 核原 pending send operation 并携带原固定上下文。该 generic 入口不能替代 Relay task / Today 绑定。冷 Registry 无原控制器时拒绝，持久标识不能创建所有权。
+
+真实登记的先后受现有生产入口约束：CreateIntent 和 PrepareIntent 均依赖同一个公开 Agent 注册表。已向模块报告可执行顺序为 F 空登记 observer ready、H 唯一真实登记并保存当刻起点、F 创建 intent / 空初始化、H 核正选来源及工具、F 同控制器 Confirm。准备时间计入该原始登记起点；不隐藏登记、重新计时或更换控制器。最终执行顺序仍须总负责人接收；当前没有登记或三分钟结果。
+
+进程环境为 GOMAXPROCS=2、go -p=1 -mod=readonly；后续缓存按模块指令使用 D:/Astrocyte-agent-assets/20261015/go-build/backend，临时目录为独占 go-temp/R。本机证据位于 D:/Astrocyte-agent-assets/20261015/relay/R：
+
+| 命令 | 结果 |
+|---|---|
+| `go test -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree -run 'TestRelay\|TestNeutral\|TestFixedRelayContext' -count=1 -timeout=150s` | PASS，10.102 / 2.195 / 1.674 / 4.277 秒；two-stage-scoped-final.log |
+| `go test -p=1 -mod=readonly ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/relayworktree -count=1 -timeout=150s` | PASS，8.693 / 5.222 / 4.130 秒；two-stage-full-owned-packages.log |
+| `go test -p=1 -mod=readonly ./internal/workspace/app -run 'TestRelayIntentBindsSQLiteSettingsAcrossReload\|TestRelayStoredSession\|TestRelayHumanTransitionProductionPermissionGates' -count=1 -timeout=90s` | 最终源码 PASS，4.497 秒；two-stage-final-app-boundaries.log。真实 Git / SQLite 的 A/B/C、版本变化、无确认、缺来源 guard、原拒绝收据重读、无输入事实通过 |
+| `go vet -p=1 -mod=readonly ./internal/workspace/domain ./internal/workspace/app ./internal/adapters/agents ./internal/adapters/sqlite ./internal/adapters/relayworktree` | 最终源码 EXIT0 |
+| `go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/two-stage-final-server.exe ./cmd/server` | EXIT0；产物未启动 |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，29 package / EXIT0 |
+| 普通 push 与独立 ls-remote | SOURCE cc326be57a9a5f3bdd45687b0ac23b972adb8cef 远端精确一致 |
+
+首四包完整检查 guarded-registry-components.log 的 SQLite TestProvenUnstartedResumePreservesOwnedOriginalSession 保留 RED：缺原 controller 的恢复实际返回 delivery_unknown，该 B 测试要求 prelaunch。已交 B / 模块核现有断言与所有权约束，没有修改 B 测试或放宽 cold Registry。随后定向通过不改写该完整检查结果。模块读取活动 WIP 中间类型组合的首编译 FAIL 也独立保留，不作为准确已提交 SOURCE 的结果。
+
+H 须准确消费 SOURCE 后增加准备入口及公共契约，F 须通过同一实际服务操作；空初始化正向、来源和工具关闭、首次提交、逐 event_id SQL、真实目标输出、两尺寸 Today、人工 done / release 与实际发布包均尚未执行。原 nlink2、首 UNKNOWN、raw gap、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 保留；working / 无 started 客户端人工完成规则仍待用户。L Interpreter 后继接口为 B SOURCE c715342cff4ccfa1b3198275f981385296fe6641，依赖消费方式和实际模型窗口由模块协调。冻结的 V4 / schema / engine / mapper / weights / schedule / 17321 均未修改。
