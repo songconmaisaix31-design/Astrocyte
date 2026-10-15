@@ -2,6 +2,12 @@
 
 ## 当前执行入口（2026-10-16）
 
+02:21 本轮恢复：用户要求继续，最新优先级仍为先集成并跑通完整产品，随后并行整理代码与测试。当前 runtime `12d011fb-1b8d-4010-b468-0b67ccc75ead`、app PID27532，根 `term_8de37bb3-e73a-4c10-8a7c-5c39156da4e7` 已普通绑定原 `run_973808dd6a2f` generation31。旧三模块 Dispatch 已由运行时标记 abandoned / failed，原三 Task ready，公开终端中没有旧模块或开发终端；沿原 Task / 子 Run / 工作树 / 分支和 WIP 恢复，不创建新 Run 或替代任务，不增加第四层。原 Task 正文的旧身份、create 子 Run 和旧验证顺序由本入口替代，模块先读本入口再执行。
+
+恢复顺序：M-relay 沿原 `run_8bbda1c3974c` 立即恢复原 H，先恢复同一普通产品服务，再完成其七件生产装配 WIP；M-release 沿原 `run_aa4e6a119547` 恢复唯一 I，继续准确普通收拢和运行所需构建；M-product 沿原 `run_dbf1a68bc692` / `run_7b2ce96bcd13` 先恢复原 F / B，以及生产 Wake 所需原 S2，其他原作者按实际依赖恢复，保留原修改。F 原完整 320 项中断，最后已输出至302，最终退出与准确统计待本人核原件，不直接重跑全套；当前优先同一产品页面 / API 核心操作。全部原模型成功、OS 和 Q / D1 结果不重做，正式 D2 partial 及既有待定项保持。
+
+根已实际核旧产品 PID47956 不存在，64505 没有 listener；旧 `running.json` 仅为历史记录。原 D 运行目录、SQLite 和稳定副本保留，H 先沿原配置恢复同一数据与首选 `http://127.0.0.1:64505/`，核真实新进程与当前可访问状态，不重置数据库、复制用户数据或另起多个共享服务。I 当前准确 HEAD `d59a100`、clean、无未合并路径，已含 `0740dc3` 对受限 Codex 执行的明确拒绝；该来源尚无新的整体构建通过记录。H 当前 HEAD `bcfb145`，原 `main.go`、`relay_repository_context.go`、`relay_scoped_workspace.go`、`server.go` 及三个 judgment 新文件 WIP 保留，只由本人继续。根继续只协调、管理文档、独立验收及最终 Git，不实施领域代码。
+
 02:10 唯一普通产品实例已真实运行：`http://127.0.0.1:64505/`，PID `47956`，启动 UTC `2026-10-15T18:08:46.9479236Z`，准确 SOURCE `ad8413e119379c9795bab558a41fe425ea9095ca`。原 H 持有运行与更新，M-release 唯一协调，F 唯一实际界面 / 核心 HTTP 操作；不再启动第二共享实例。原 H 核实际 Go buildinfo revision 同值、modified=false，M-relay 核唯一 loopback listener / 实际进程，根实际 GET 首页 HTTP200 / text/html / 562 bytes。程序和静态文件为 H 独占 D 盘稳定副本，运行根 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413`，SQLite 为其下 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`，状态定位 `running.json`；I 后继构建可继续。产品服务保持运行，不因阶段结束或文档提交停止进程。
 
 当前继续在同一实例打通实际核心操作，并由原作者补 Judgment / Taste 公共注册、既有 S4 清理生命周期和提交后通知、Q 同代真实认知快照及后继完成来源接口；当前地址可访问不等于完整功能已验。Jev / Laya 尚未在该实例配置或调用。本轮原生登记、初始化、模型输入和 L1 t0 均为零。Codex 0.162.0 的公开入口无法按当前要求排除独立 `apply_patch`，正式答复 `msg_dfe105fea7e1` 保持受限模型路径不执行，原 R 沿现有最窄准入返回准确能力原因，不更改模型 catalog / API / 原生程序或重复探针；此缺口不阻普通产品集成。L2 Agent completion action 无既定映射，已就 `read_context` 当前项目 / Grant 授权或仅 human 发起异步询问用户；未答前 Agent 分支明确未授权，human 原许可操作和其余生产装配继续，批准经验仍只由用户完成。
