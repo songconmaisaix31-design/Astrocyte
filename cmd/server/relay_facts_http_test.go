@@ -73,7 +73,7 @@ func TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission(t *testing.T) {
 	}
 	project, err := projects.RegisterProject(ctx, caller(), domain.RegisterProjectCommand{Name: "Public facts documentation", Root: source, SpaceID: "public"})
 	if err != nil {
-		t.Fatal("公开项目注册失败")
+		t.Fatalf("公开项目注册失败: %v", err)
 	}
 	settings := domain.ProjectSettings{ExternalModelCLI: "codex", AllowedActions: []string{"observe"}}
 	project, err = projects.SetProjectSettings(ctx, caller(), project.ID, domain.SettingsCommand{ExpectedRevision: project.Settings.Revision, Settings: settings})
