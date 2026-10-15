@@ -15,7 +15,7 @@
 - `safe-result.json`：准确源码、派生统计、零新提取 / ASR / Agent 模型 / 共享 HTTP 写入结果。
 - `fixed-revision-local.json`：旧材料 `534HWFW7E5GEF75ZY4F7ETPLQ2` 的固定 revision 2、逐字节正文、952 项 SourceSpans、原 provenance 和附件对象指针。正文和原件保持本机。
 - `timeline-offsets.json`：逐项核实的 952 个索引与毫秒区间，不包含正文或 native 配置。
-- `manual-import-review.json`：仅供审阅的现有生产 `manual` 请求，保存固定正文与来源位置；不包含原 native JSON。执行时由唯一 F 按现有客户端创建 request_id / 幂等键和用户会话，实际 provenance 为人工导入。本阶段未提交此请求，普通 UI 当前没有 manual 选项，后续路线由模块协调 F 确认。
+- `manual-import-review.json`：仅供审阅的现有生产 `manual` 输入，保存固定正文与来源位置；不包含原 native JSON。对应 API 接受 `source_spans`，实际 provenance 固定为 processor=`manual`、version=`1`、mode=`manual`、source=原 URL；不会恢复原提取器 provenance、附件和旧 revision 身份。普通 UI 当前没有 manual 选项。负责人已明确保持输入未执行，优先恢复原获准视频提取配置；没有安排 F 变更或提交请求。
 
 运行命令为 `node D:/Astrocyte-agent-assets/20261016/product/V/video-reuse-audit-first/audit.mjs`；第二次运行 EXIT0，安全结果保存在同目录。首次检查误要求旧不可变附件已经使用新的私有 MediaType，断言失败原件 `audit-first.log` 保留；当前检查依据历史真实类型与生产名称保护规则核实，未修改旧库或生产逻辑。`node --check` 通过。本阶段没有运行新提取或重做旧成功验证。
 
@@ -25,7 +25,13 @@
 
 核查 SOURCE `d58ce7d5c724e5f165c545a2a1bb1cb9ebfee796` 已普通 commit / push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同完整 SHA。本阶段只增加本报告中的当前消费记录，生产代码没有变化。原件核查 `audit.mjs` 第二次运行 EXIT0，952 项实际来源比较和两版对象字节检查通过；`node --check` 与 `git diff --check` 通过。首次类型断言失败保留在专属 D 盘目录，没有重跑旧成功 ASR、HTTP、取消或 S2 检查。
 
-准确源码和安全派生指针已通过模块消息 `msg_d2aff4c49dbb` / `msg_3357cc6ec1c6` 交接；H 当前安全配置答复、F 实际复用路线与当前产品界面验证仍待完成。原件、派生正文、native JSON 和本机执行脚本均保留在本机证据目录，Git 仅记录本报告。当前 Task 持续支持模块，未进行阶段 worker_done 或最终发布。
+准确源码和安全派生指针已通过模块消息 `msg_d2aff4c49dbb` / `msg_3357cc6ec1c6` 交接。H 已通过负责人确认当前 enable=false，专用参数均未显式配置；下一步由 H / B 恢复原获准配置，F 保持唯一实际界面和 HTTP 操作人员。原件、派生正文、native JSON 和本机执行脚本均保留在本机证据目录，Git 仅记录本报告。当前 Task 持续支持模块，未进行阶段 worker_done 或最终发布。
+
+依据 `msg_b071016a138c`，本阶段已将 `configuration-whitelist.json` 直接交 H `ctx_5b3dc511cccd` 与 B `ctx_4f388a292a1f`，消息为 `msg_acc0d0509874` / `msg_b025c1df8d3b`。该文件位于上述本机 D 盘专属目录，九个生产变量为 `ASTROCYTE_ENABLE_SUMMARIZE`、`ASTROCYTE_NODE`、`ASTROCYTE_SUMMARIZE_CLI`、`ASTROCYTE_YT_DLP_PATH`、`ASTROCYTE_FFMPEG_PATH`、`ASTROCYTE_WHISPER_BINARY`、`ASTROCYTE_WHISPER_MODEL`、`ASTROCYTE_SUMMARIZE_PROXY_URL`、`ASTROCYTE_JOB_TIMEOUT_SECONDS`。全部六件所需本机文件存在且为普通文件；media 路径及版本沿用下方原成功记录，native JSON 的 `params.model` 逐字确认原 `ggml-base.bin` 路径。旧匿名代理为 `http://127.0.0.1:7890`，原成功 Extract / Job 超时均为 1800 秒、MaxAttempts 为 1。当前代理连通性未重新检查。
+
+本次核实的 Node 为 `C:/Program Files/nodejs/node.exe` / `24.16.0`，CLI 为本树实际 pnpm 安装的 `@steipete/summarize/dist/cli.js` 真实绝对入口，与 core 均为 `0.25.1`，完整路径保存在白名单。旧成功没有另存 Node / CLI 绝对路径的配置快照，当前核实的安装入口保持该证据范围。H 应使用其固定生产 runtime；本阶段未共享开发 node_modules、修改配置或切换服务。视频无需 UVX；既有桥接负责 auto 语言、`-mc 0`、TXT / JSON 同次输出及隔离配置，B 现有配置入口已提供必要字段。`node config-whitelist.mjs` 与其 `node --check` 均 EXIT0，没有提取、ASR 或 Agent 模型调用。
+
+现有 disabled Reader 返回 `provider_unavailable` 与 `enable_project_summarize_or_provide_existing_export`。生产导入先返回 202 作业引用，worker 将该错误持久化为 failed，GET 作业再返回错误；入队响应不证明提取成功。缺少媒体依赖时，真实无字幕分支会明确失败。此结论来自实际配置和实码读取，本阶段未运行共享 HTTP。b73 的 S2 主服务和 Context 工厂已装配，批准、Goal、Context 等已过路径保持原结果；真实 owned 正向及完整 AT12 仍依赖 R / H 原生能力和未答权限。当前生产及集成已保留必有 `assignment_status`，本树未把旧 JSON omitempty 写法覆盖回集成。
 
 ## 执行范围
 
