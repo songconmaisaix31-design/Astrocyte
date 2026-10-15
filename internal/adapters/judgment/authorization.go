@@ -113,11 +113,14 @@ func (a *ProjectAuthorization) setPolicy(ctx context.Context, actor judgment.Act
 	if actor.Kind != "human" || actor.ID == "" {
 		return authorizationDenied("only an authenticated human can change judgment policy")
 	}
-	if err := judgment.ValidatePolicy(policy); err != nil {
-		return err
-	}
 	project, err := a.project(ctx, actor, policy.ProjectID)
 	if err != nil {
+		return err
+	}
+	if policy.Snapshot.Root == "" {
+		policy.Snapshot.Root = project.Root
+	}
+	if err := judgment.ValidatePolicy(policy); err != nil {
 		return err
 	}
 	if project.Settings.Revision != policy.ProjectSettingsRevision {

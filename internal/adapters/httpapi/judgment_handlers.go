@@ -159,6 +159,9 @@ func (h *handler) registerJudgment(mux *http.ServeMux, services JudgmentServices
 		if err == nil && (command.ExpectedRevision < 0 || command.Policy.ProjectID != actor.ProjectID || command.Policy.QuestionType != judgment.QuestionType(r.PathValue("question_type"))) {
 			err = invalid("Policy project, question type and expected revision must match the request path")
 		}
+		if err == nil && command.Policy.Snapshot.Root != "" {
+			err = invalid("Public judgment policies require an empty snapshot root; the authorized project supplies the internal path")
+		}
 		if err == nil {
 			if services.Policies == nil {
 				err = judgmentUnavailable()
@@ -166,7 +169,7 @@ func (h *handler) registerJudgment(mux *http.ServeMux, services JudgmentServices
 				err = services.Policies.SetPolicy(r.Context(), actor, command.Policy, command.ExpectedRevision)
 			}
 		}
-		h.judgmentResult(w, r, localEnvelope("policy", command.Policy), err)
+		h.judgmentResult(w, r, localEnvelope("policy", publicJudgmentPolicy(command.Policy)), err)
 	})
 	mux.HandleFunc("POST "+prefix+"/judgment-snapshots", func(w http.ResponseWriter, r *http.Request) {
 		actor, err := judgmentCaller(r, true)
@@ -182,6 +185,12 @@ func (h *handler) registerJudgment(mux *http.ServeMux, services JudgmentServices
 				snapshot, err = services.Policies.Snapshot(r.Context(), actor, actor.ProjectID, command.Files)
 			}
 		}
+		snapshot.Root = ""
 		h.judgmentResult(w, r, localEnvelope("snapshot", snapshot), err)
 	})
+}
+
+func publicJudgmentPolicy(policy judgment.Policy) judgment.Policy {
+	policy.Snapshot.Root = ""
+	return policy
 }

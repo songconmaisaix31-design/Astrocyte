@@ -233,3 +233,11 @@ AT12 按根 `msg_e1415e3ad447` 继续：固定真实 Goal ID/revision 经 S2 读
 来源读取 SOURCE `32e701e98604b5c3139c3da61a5cfbe4a63d220e` 已普通提交并 push，`git ls-remote origin refs/heads/songconmaisaix31-design/release-judgment-20261015` 读回同完整 SHA。SOURCE 包含两个原域 adapter、一个真实来源测试和本文，共四件允许路径；gofmt、工作区和 staged diff-check 均通过。本节为随后独立报告提交。
 
 H `msg_17b68cf74737` 确认真实 Goal/Taste 及显式 Ranking 引用的语义符合根已定要求，S5 在原域交精确类型 SOURCE 后由 H 同步公共 OpenAPI。H 同时确认当前没有可交付的 Judgment 生产注册 SOURCE，公共 HTTP 完整验证尚未通过。B 完整 Taste 与 S2 新 Goal 来源待准确提交后消费，Jev secret、OS 管理员执行仍未决定；当前 Task 持续，未结算 S5。
+
+## 判断 HTTP handler 的真实运行
+
+`TestJudgmentActualHTTPRulesFeedbackAndRestart` 启动真实 loopback HTTP listener，注册原 Judgment/Attention/LocalProject handler，使用原 session/CSRF/loopback/request-ID middleware、原 SQLite migrations 和公开 Laya README。测试实际运行导入、快照捕获、策略保存与读取、规则判断、同结果缓存命中、五类 fixed-version 人工反馈、错误版本与 CSRF 拒绝，以及服务/SQLite 关闭后重新打开、重新鉴权并读取完整结果和五项反馈。模型调用为零。该测试的注册由包内测试调用原注册函数；H 的生产 `NewServer` 和 `cmd/server` 组装仍须独立消费与验证。
+
+HTTP `snapshot.root` 保持现有字段，值固定为空字符串。PUT 策略拒绝非空 `snapshot.root`；内部策略从已鉴权的实际注册项目取得 Root，再由原 S4 provider 校验完整固定快照。所有测试中的快照、策略、结果和反馈响应逐字节检查实际项目绝对路径没有进入响应；保存的内部快照继续含真实路径。H `msg_fd4aaf71c092` 已确认该边界和字段兼容处理，准确 SOURCE 后同步 schema。
+
+首轮 handler 实际 `2.12s PASS`，安全快照回传策略复验 `1.84s PASS`；两件原日志 `.verification/s5/actual-http-handler-ctx_8ff-first.log`、`actual-http-safe-snapshot-ctx_8ff-first.log` 保留。后续同源码组合命令 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./internal/adapters/httpapi ./tests/s5 -run '^(TestJudgmentActualHTTPRulesFeedbackAndRestart|TestActualGoalAndRankingSources|TestActualDelegationBindingsAndAdmission)$' -count=1 -v -timeout 2m` 全部 PASS，handler `1.93s`、委托 `10.02s`、来源 `0.15s`，日志 `actual-handler-core-ctx_8ff-first.log`。这些规则结果与原完整品味来源的 AT12 分别登记；完整 Sources 接入继续。

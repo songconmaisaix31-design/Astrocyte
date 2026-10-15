@@ -35,7 +35,7 @@ func (h *handler) registerDelegation(mux *http.ServeMux, services JudgmentServic
 				policy, err = services.Policies.ReadPolicy(r.Context(), actor, actor.ProjectID, judgment.QuestionType(r.PathValue("question_type")))
 			}
 		}
-		h.judgmentResult(w, r, localEnvelope("policy", policy), err)
+		h.judgmentResult(w, r, localEnvelope("policy", publicJudgmentPolicy(policy)), err)
 	})
 	mux.HandleFunc("GET "+prefix+"/delegation-rules", func(w http.ResponseWriter, r *http.Request) {
 		actor, err := judgmentCaller(r, true)
