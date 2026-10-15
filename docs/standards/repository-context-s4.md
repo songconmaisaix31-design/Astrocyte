@@ -223,3 +223,27 @@ RepositoryVersion.Root 继续从 JSON 隐藏，保存的 RepositoryIndex 不携�
 本轮组合检查首次的 workspace 两包通过，S4 检查进程经精确身份核实后由本 Agent 终止，最终 `exit status 0xffffffff` / 171.749 秒 / EXIT 1 保留在 `reference-checks/test-final.log`，不记为完整通过。后继准确 Root 语义的独立检查实际 22.003 秒通过，原件 `test-reference-final-first.log` 保留；当前源码的正式入口九组结果另存 `verify-final-first.log`。旧 first RED / UNKNOWN / NOT_RUN 记录继续保留。
 
 本次 SOURCE 已直接交原 S2、H、唯一 I 和模块负责人，未合入其 WIP。S2 的 packet / binding 事务消费、准确组合与原十秒 Context 预算、完整 HTTP / UI / Windows 包仍待其实际验收；本轮未执行这些操作，也未执行新增模型调用或登记原生 t0。
+
+## 生产 main 与新库组合
+
+准确集成 SOURCE `f0277e7ca755792bae394f479b672b11847067d4` 已包含 S2 `aa0a5d310cbfc5c07063bb22fdc951e6ca549195` 和本轨 `91609e5d467d2227f32dfdd8717b773340eaf1da`。原 S2 的实际组件检查与生产 HTTP 双重启结果直接复用。本轨新增 `tests/s4/production.ps1` 和 `production.test.mjs`，只导出准确已提交的生产源码到独占 D 盘，复用既有真实进程 helper 构建、启动和关闭 `cmd/server`，通过实际认证与 HTTP 从新 SQLite 注册两个原公开 worktree、设置真实目录权限并建立官方索引。没有复制旧数据库或投影，没有启动浏览器、原生控制器或模型。
+
+首次实际入口为 `tests/s4/production.ps1 -Source f0277e7ca755792bae394f479b672b11847067d4 -WorkRoot D:/Astrocyte-agent-assets/20261015/relay/S4/production-f027-first -SdkPath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/sdk/node_modules/@colbymchenry/codegraph -NodePath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe`。二进制准确来源为 f027；当时本轨两个验证文件尚未提交，其内容与生产源码分开记录。
+
+实际生产构建、双 worktree 官方图与 Count 调用关系、A 的六条作者地图及 B 的真实 missing、图和 `.aoci` 查询只读、实际进程关闭重开均通过。`source_span` 的 `path/start_line/end_line` 严格符合既有 OpenAPI，Count 实际行号为 15–21。预算超限返回 409，Agent grant 有效时返回 200、撤销后返回 403，人类仍可查询；目录关闭后的读取立即返回 403。
+
+本轮首 RED 为目录授权撤回后的异步清理：十秒内旧投影未清除，完整检查实际 102.668 秒、EXIT 1，日志保存在 `production-f027-first/production-first.log`。真实数据库为同根 `evidence/astrocyte-s1-oz0kq4/data/state.sqlite`；只读核实 A 的 allow_directory=false、revision=3，A 的 codegraph 与 aoci 两条旧元数据和图 generation 目录仍保留，B 的图元数据仍在。失败后独立只读 SQL 核原生会话为 0、Mission 为 0。最后的清理后 B 查询断言尚未执行，未把本轮登记为完整通过。
+
+生产装配由 H 负责同一 provider 的清理主生命周期、错误上送、取消等待及随后关闭 SQLite，B 负责项目设置、根变更或删除成功提交后的窄 notifier；现有 S4 端口与表已足够。准确后继源码的实际结果见下节，原首日志与新库完整保留。SemanticIndex 决定、完整资料 Context、真实原生绑定、UI 和最终 Windows 包验收分别保持其实际状态。
+
+## 准确 H 清理装配复验
+
+验证入口 SOURCE `6e441f7a6c14a11492d188a7259106445715700a` 已普通 push，仅增加上述两个生产验证文件，父提交为 `91609e5d467d2227f32dfdd8717b773340eaf1da`。Node `--check`、PowerShell parser 和 `git diff --check` 均通过。当前 Orca 终端元数据实际显示 Codex / GPT-6.1-Sol xhigh fast，沿原工作树与分支继续。
+
+本轮运行 `tests/s4/production.ps1 -Source b94f2bef2e529de23aaf89f34704d342ffe5c8d9 -WorkRoot D:/Astrocyte-agent-assets/20261015/relay/S4/production-b94-first -SdkPath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/sdk/node_modules/@colbymchenry/codegraph -NodePath D:/Astrocyte-agent-assets/20261015/release-package/runtime-fourth/runtime/node/node.exe`。该准确 H REPORT 包含 SOURCE `3569f5da9d4df423916e3cff618f301a070d87cc`、B `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` 的通知配置、原 S4 provider 和 S2 提交；运行前分别核对所需祖先。源码使用 Git archive 导出到全新独占 D 盘目录，以 `GOMAXPROCS=2` / `-p=1` 构建，Go 模块缓存为本轨独立目录。
+
+实际生产构建成功，SQLite 创建和迁移通过，main 在监听前退出 1：`unsupported_capability: project repository cannot notify after its actual database commit`。Node 用例实际 `89095.3693 ms`、FAIL 1 / PASS 0 / SKIP 0；本轮 HTTP、建图、地图、重启及清理断言均 NOT_RUN。准确 `main.go:172` 把 `db` 传给 `NewLocalProjectService`，`:264` 调用 `ConfigureRepositoryCleanup`；`project_cleanup.go` 要求 repository 实现 `AfterWorkspaceCommit`，本次准确源码的 SQLite 目录没有该实现。
+
+原件完整保存在 `production-b94-first/production-first.log`、`evidence/astrocyte-s1-build-KX0gNp/build.{stdout,stderr}.log` 和 `evidence/astrocyte-s1-GCkMEQ/process-logs-lIsepR/{api-1.stderr.log,startup-failure.json}`。helper 已清理本次进程，独立查询确认原 PID 46308 不存在，失败库保留。该缺口已直接交 H / B 和当前模块，由原作者交完整准确依赖与生产修复后，继续同一入口和原十秒清理断言。
+
+本轮没有访问共享产品的服务或 SQLite，没有新增原生登记、初始化、模型调用或 t0；没有改动其他人员的源码和数据。原 `f027` 异步清理首 RED、本次启动首 RED、旧 UNKNOWN 与 NOT_RUN 分别保留。当前结果供精确集成和返修使用，S4 与最终包均未结算。
