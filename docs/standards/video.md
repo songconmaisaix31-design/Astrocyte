@@ -21,6 +21,12 @@
 
 旧 time0 首缺口、9 个原有其他范围条件 SKIP、CLI 自身 transcriptSegments 正向及 summary-only JSON 的实际原件不足、转写中途结构化进度 NOT_RUN 保持。旧 HTTP 私有附件拒绝、实际重启与取消结果按下方准确源码复用；当前 b73 / 集成组合没有因本次只读核查取得新的 HTTP 或界面通过结论。S2 已通过的 AfterWorkspaceCommit、Context 和 Goal 结果继续按各自准确来源记录，原生工具关闭、未答权限及模型输入限制保持。
 
+## 2026-10-16 消费核查独立 REPORT
+
+核查 SOURCE `d58ce7d5c724e5f165c545a2a1bb1cb9ebfee796` 已普通 commit / push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同完整 SHA。本阶段只增加本报告中的当前消费记录，生产代码没有变化。原件核查 `audit.mjs` 第二次运行 EXIT0，952 项实际来源比较和两版对象字节检查通过；`node --check` 与 `git diff --check` 通过。首次类型断言失败保留在专属 D 盘目录，没有重跑旧成功 ASR、HTTP、取消或 S2 检查。
+
+准确源码和安全派生指针已通过模块消息 `msg_d2aff4c49dbb` / `msg_3357cc6ec1c6` 交接；H 当前安全配置答复、F 实际复用路线与当前产品界面验证仍待完成。原件、派生正文、native JSON 和本机执行脚本均保留在本机证据目录，Git 仅记录本报告。当前 Task 持续支持模块，未进行阶段 worker_done 或最终发布。
+
 ## 执行范围
 
 第三层 V，Task `task_af564cbc003b`，Dispatch `ctx_1b382b548db7`，模块 Run `run_dbf1a68bc692`。实际客户端由模块公开 worker-show 核实为 Codex / GPT-6.1-Sol high fast。工作树 `product-video-20261014`，分支 `songconmaisaix31-design/product-video-20261014`，接管基线 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43`，接管时 clean。
