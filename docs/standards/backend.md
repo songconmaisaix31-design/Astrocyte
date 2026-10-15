@@ -1,6 +1,6 @@
 # 基础后端与导入整改
 
-本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，本次恢复 HEAD `ddfae290e3b0cf468af9aeaa98c5bdf39ea1604d`。完成收据阶段 SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，实际业务来源、模型解释与人工批准后使用仍未验收。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
+本轮状态：阶段源码已提交，整轨验收未完成。分支 `standards-backend`，基线 `4ec19cddb24068e09597357b0aabc6ecb9420930`，2026-10-16 本次恢复 HEAD `9a96c365021c826e90a6271d7a3f8571fb0c780f`。当前启动检查诊断 SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` 已普通 push，准确结果与限制见末节。完成收据阶段 SOURCE `c715342cff4ccfa1b3198275f981385296fe6641` 已普通 push，实际业务来源、模型解释与人工批准后使用仍未验收。第一阶段 SOURCE `2644083960649d7c50262ec69fff730b411241a2` / REPORT `6a4415faaa1e092ae1eab42cffed4f3ffa090434`，第二阶段 SOURCE `7f58adecc41070fbec4f88962cfb6fb1723679c6` / REPORT `a3f093ddd3488df9c71f2ad295724dba06e92efb`，依赖 SOURCE `2a6f03605ebb87f36f7bd56c577aaf4853cb6671`，第三阶段 SOURCE `6cfadb36d94ab372eee1ef1f1f687947cbb771fa` / REPORT `12b82723509d45e2dfd712a74386523e5c38014f`，HTTP 命令及错误编码 SOURCE `b470ecd736af261a10e4c4822bdcd3b02d0da454`，Workbench Reader SOURCE `f6491131d5e5e6eeb889ec82362caf9f1db04e40` 均已普通 push。早期生产服务隔离 SOURCE `86d8f910eb5d6641f84bcc248d86444fb7bd81cb` 与作用域契约 SOURCE `e1d0f28f75a3751da5fa39b7d69f9e0ac4763f39` 保留。
 
 后续独立 REPORT `94658c3788fc94db8215df403bea6aab4da1cfbb`、`96618df9b62ed0018182b5cbc1aa626c5bcb8362`，文本目录及实际 Works 发现 SOURCE `01753cf4fb455f35aa4953bf3eaa9a6388c4be5a`，公开生产认知及祖先路径检查 SOURCE `54ad5d71d20bdd3a1d2e9c6ae55b67e784700344`，默认时钟/实际 Sleep/真实 nullable 及公开论文输入 SOURCE `e914ff9bb845d1e7b3ab13d1b1721e1598bafbe7` 均已普通 push。
 
@@ -561,3 +561,30 @@ SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` 已普通 push 到 `standards-
 | 变更 Go 格式、working / cached diff 检查 | EXIT 0 |
 
 事务、错误数据库、真实取消和缺失原 Reader 拒绝检查使用自有实际 SQLite、原生产项目服务及 ObjectStore；没有产生原生会话、准备来源或模型输入。JSON、身份和状态检查使用明确纯函数参数，未作为实际来源。原生初始化、正向准备和发送、同源产品与 S4 实际撤回清理仍未运行；H、S4 和唯一集成负责人已收到准确 cleanup SOURCE，继续配对原 S2 提交回调及同 provider 清理生命周期。其余原生 WIP 保留，未包含在本 SOURCE。
+
+## 原生固定准备与单次发送接缝
+
+SOURCE `759764900bc45ed4c58efaad79ae9d20d421b834` 已普通 push。项目服务通过 `WithNativeMessageObjects` 复用现有 ObjectStore，通过 `WithOwnedNativeSessions` 只读取原 Registry 持有的原控制器身份。`PrepareNativeMessage` 在事务外检查当前权限、固定上下文和实际控制器，发布原输入对象；短 Workspace 事务固定原 Caller、operation、packet、settings revision、controller、startup、workspace、PreparedAt 与 ObjectRef。`ReadPreparedNativeSession` 不读取正文，只允许当前仍未尝试发送的原准备；在途、未知和已受理状态均拒绝。
+
+`SendNativeMessage` 在事务外读取原对象并严格比较输入，在同一主数据库事务内重查当前权限、原准备、项目和会话，通过原 session JSON 的 CAS 单次转为 `send_attempted`。原生发送在事务外执行，随后短事务记录结果；观察和停止不能删除私有准备或恢复发送资格。相同已受理输入只可观察原会话，在途和未知操作拒绝重发。公共 JSON 不包含正文、对象引用或控制器身份。`domain/relay_facts.go` 与 R `269e95c032b5a64794e6908ca6c40e5ffe5acac4` 的准确文件 blob 同为 `c5c33810795693323213a2e01f8bed989ca69854`，未自行生成另一套原生类型。
+
+上一节记录的 build、vet、5 项 SQLite/JSON 主检查和 2 项纯函数规则主检查覆盖本 SOURCE 的源码内容，全部 EXIT 0；运行目录和原日志保持。身份、上下文版本、Caller、投递状态和 JSON 隐私的明确参数检查不作为控制器来源。真实 SQLite 检查只验证事务、错误数据库、取消和缺失 Reader 时不发布对象、不创建会话。
+
+`TestProvenUnstartedResumePreservesOwnedOriginalSession` 保留原原生身份、两次缺失 CLI 启动前失败及冷 Registry 未知断言，准备来源改由实际空输入探测和明确停止取得；本轮按当前禁止原生初始化的边界未运行该测试。正向 Prepare、实际单次发送、并发 CAS、停止更新保存私有准备、重启后的原控制器拒绝及 H/S3 同 Grant/epoch/member/Lease 组合仍 NOT_RUN。受限 Codex 文件工具无法关闭的路径继续拒绝，不登记会话或模型输入；Claim/Known 未答边界保持。全部 Attention 应用测试继续由 T 维护。
+
+## 配置启动检查的准确失败信息
+
+SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` 已普通 push 到 `standards-backend`，只修改 `cmd/server/config.go` 与 `repository_config_actual_test.go`。生产检查分别标识 Node 版本、CodeGraph SDK 导出、桥脚本语法与 AOCI 版本，实际子进程错误及 `ExitError.Stderr` 一起返回；原 15 秒期限、隔离目录、完整环境白名单、版本要求和公开导出要求保持。
+
+`runtime-sanitized-third` 的实际 Node 24.16.0、CodeGraph 1.0.1 和原桥脚本在 B 自有 `.verification/repository-probe-restored-first/` 分阶段检查均 EXIT 0。该目录的三份 stdout/stderr 分别保留；这次使用准确生产白名单，尚未取得 H 原进程的全部安全配置路径和准确 `command.Dir`，不能判定原服务失败已重现或恢复。共享服务由 H 持续负责，B 没有读取共享数据库、启动第二服务或修改依赖。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./cmd/server -run '^TestRepository(ContextConfig\|CleanupBatch)' -v -count=1` | EXIT 0，4 项主检查及 8 项配置子检查；包 2.136s，`.verification/backend-recovery-config-first.log` |
+| `go test -mod=readonly -p=2 -tags=repository_context_live ./cmd/server -run '^TestRepositoryContextConfigActualNodeSyntaxRefusal$' -v -count=1` | EXIT 0，包 3.461s；实际 Node / SDK 检查后，以原 Go 源文件触发 Node `ERR_UNKNOWN_FILE_EXTENSION`，核阶段及原错误保留，`.verification/repository-probe-syntax-first.log` |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0，9.154s，`.verification/backend-recovery-build-first.log` |
+| `go vet -mod=readonly -p=2 ./cmd/server` | EXIT 0，4.745s，`.verification/backend-recovery-vet-first.log` |
+| `node --test internal/adapters/importers/paper-dom.test.mjs` | EXIT 0，9 PASS、0 SKIP；5.765s，`.verification/backend-recovery-node-first.log` |
+| 两个变更 Go 文件的 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
+
+实际 Node 检查显式提供 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third/runtime/` 下 `node/node.exe`、`sdk/node_modules/@colbymchenry/codegraph`、`adapters/codegraph.mjs`。Go 缓存与编译临时文件继续使用 D 盘专属目录。上述 build / vet 含原四件未提交 experience WIP；本 SOURCE 没有提交这些 WIP，原完成来源组合、模型调用、完整 Go / 前端和同实例产品验收没有升级为 PASS。
