@@ -101,6 +101,9 @@ func (i *CompletionExperienceInterpreter) DraftCompletionExperience(ctx context.
 	if err := validateCompletionExperienceEvidence(request.Evidence); err != nil {
 		return empty, err
 	}
+	if err := relayNativeToolsDisabled(native.id); err != nil {
+		return empty, err
+	}
 	encoded, err := json.Marshal(request.Evidence)
 	if err != nil {
 		return empty, nativeError(apierrors.ValidationFailed, "completion evidence cannot be encoded")

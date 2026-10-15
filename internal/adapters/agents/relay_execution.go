@@ -111,7 +111,7 @@ func (n *Native) OwnedRelayExecution(ctx context.Context, session domain.NativeS
 		if !reflect.DeepEqual(p.cmd.Args, cmd.Args) {
 			return RelayOwnedExecution{}, nativeError(apierrors.ScopeDenied, "owned process launch policy differs")
 		}
-		result.LaunchPolicy = "selected_context_tools_disabled_v1"
+		result.LaunchPolicy = "selected_context_command_tools_disabled_v1"
 		result.DisabledFeatures = append(result.DisabledFeatures, codexDisabledFeatures...)
 	}
 	// 启动策略和权限响应不等于完整有效工具清单，后者保持 unknown。
