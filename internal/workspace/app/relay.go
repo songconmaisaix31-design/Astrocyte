@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -24,6 +25,7 @@ type relayService struct {
 	structured, terminal RelayDriver
 	events               RelayEventSink
 	options              RelayServiceOptions
+	agentsMu             sync.RWMutex
 }
 
 var _ RelayRuntime = (*relayService)(nil)
@@ -32,10 +34,8 @@ func NewRelayService(store RelayStore, works Works, projects LocalProjectReposit
 	if options.Clock == nil {
 		options.Clock = time.Now
 	}
-	// Copy registration data so external mutation cannot change executable policy.
-	data, _ := json.Marshal(options.Agents)
-	_ = json.Unmarshal(data, &options.Agents)
-	return &relayService{store, works, projects, workspaces, structured, terminal, events, options}
+	options.Agents = cloneRelayAgents(options.Agents)
+	return &relayService{store: store, works: works, projects: projects, workspaces: workspaces, structured: structured, terminal: terminal, events: events, options: options}
 }
 
 func relayError(code apierrors.Code, message string) *apierrors.ServiceError {
@@ -60,9 +60,11 @@ func (s *relayService) now() time.Time  { return s.options.Clock().UTC() }
 func relayActor(c domain.Caller) string { return c.Kind + ":" + c.ID }
 
 func (s *relayService) spec(name string) (domain.AgentSpec, error) {
+	s.agentsMu.RLock()
+	defer s.agentsMu.RUnlock()
 	for _, v := range s.options.Agents {
 		if v.Name == name && (v.DriveMode == "structured" || v.DriveMode == "terminal" || v.DriveMode == "both") {
-			return v, nil
+			return cloneRelayAgents([]domain.AgentSpec{v})[0], nil
 		}
 	}
 	return domain.AgentSpec{}, relayError(apierrors.UnsupportedCapability, "selected Agent has no valid relay registration")
@@ -75,10 +77,9 @@ func (s *relayService) ListAgents(ctx context.Context, c domain.Caller) ([]domai
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	items := []domain.AgentSpec{}
-	data, _ := json.Marshal(s.options.Agents)
-	_ = json.Unmarshal(data, &items)
-	return items, nil
+	s.agentsMu.RLock()
+	defer s.agentsMu.RUnlock()
+	return cloneRelayAgents(s.options.Agents), nil
 }
 
 func (s *relayService) snapshot(ctx context.Context, c domain.Caller) (RelayState, error) {

@@ -27,6 +27,11 @@ type RelayIntentPreparer interface {
 	PrepareIntent(context.Context, domain.Caller, string, RelayConfirmCommand) (domain.RelayActionResult, error)
 }
 
+// 只供受信本机组装更新完整登记；不接受 HTTP 命令或执行策略。
+type RelayTrustedAgentRegistrar interface {
+	RegisterTrustedAgents(context.Context, []domain.AgentSpec) error
+}
+
 type RelayDriverInitializer interface {
 	Initialize(context.Context, RelayLaunch) (RelayObservation, error)
 }
