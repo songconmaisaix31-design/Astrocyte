@@ -31,3 +31,15 @@
 - P Python SOURCE：a1089f94a13306e3cd250ed8facbb438d6e75a19；REPORT：91e3e59dcfc8024cd2e4955ac72f627e65c18e71，远端一致，主控独立 29 + 25 测试、36 文件规范 / 14 冻结 AST PASS。Python 实验其余 28 项仍 NOT_RUN。
 
 现有 17321 部署保持独立，release 使用自身配置、数据目录与端口验收。Procmon 与两日自动快照按真实条件继续登记，发布包可用性检查不将其填为通过。
+
+## 20:27 实际派发与进度
+
+主控实际句柄 `term_494acbb9-67a5-4360-82dc-8514ce124990`；标准整改 / 发布包沿 `run_7b2ce96bcd13`，Relay 沿原 `run_d577f0d3fee1`。两个 Run 由同一主控在各自绑定后处理邮箱；每次消费须在切换前处理全部消息并 ACK 当前 Delivery，旧 generation 的 Delivery 不再次 ACK。
+
+- B：原 Task `task_7b4e93c1a3c1` / 当前 Dispatch `ctx_7217777c7bf5` / 终端 `term_dcbad8eb-852c-4bcf-8040-08f32188e3ef`，ready / turnStart observed，已接受互斥的新范围。
+- F：原 Task `task_7cbe30017760` / 当前 Dispatch `ctx_5bac511ada08` / 终端 `term_f9a085aa-aff2-47bd-bc5d-cdc3b87aab52`，ready / turnStart observed。阶段 SOURCE `f534298` / REPORT `521ed5b` 已 push，typecheck / lint / build / 112 Vitest PASS；默认浏览器阶段 PARTIAL。已普通消费 Workbench `67c5713` 与 Relay `6f61d87`，前端继续迁移新增旧模拟测试及稳定源码真实验证。主控已用编辑工具处理三份 Markdown 合并冲突并保留两线历史。
+- R：原 Task `task_a51fab762c01` / 当前 Dispatch `ctx_b4fcb141ca00` / 终端 `term_e0e48c51-2379-4c5e-b0e0-9206b29fcffe`，ready / turnStart observed。首次 `ctx_99b2b8005248` bootstrap 明确 account routing timeout / 返回 shell，按实际退出证据精确 stop 后恢复，原件保留。实际 Codex 0.162.0 新 thread 启动 PASS，完整生命周期继续。
+- H：原 Task `task_cfb7c9bde07d` / 当前 Dispatch `ctx_312d983772a9` / 终端 `term_7a9d814a-d487-4dc3-9708-f6bdc5e1479d`，ready / turnStart observed；本次独立实际服务 API 17342，空 registry 基线与自行持有的公开项目已创建，后续原生链路与 F DOM 继续。
+- P 发布包：Task `task_76c43934b15c` / Dispatch `ctx_6d251e04179d` / 终端 `term_e67c7493-cef5-439e-9687-3197880820d7`，ready / turnStart observed；工作树 release-package-20261014，分支 `songconmaisaix31-design/release-package-20261014`。基线 `9d6f453090f1eaaf635c4b8767cc24820e6a1f32`，实际模型 GPT-6.1-Sol high fast。
+
+主控独立核对 Workbench `5dd4b729` 与 B `e1d0f28` 的核心引擎 / schema / 迁移没有差异；原实验 Python 与文档属于不同父历史，组合仅进入新 release 分支。H 曾在隔离验证目录复制两份 config/auth，收到禁止复制指令后已删除本次副本并确认原文件不变；后续只由官方 CLI 自行鉴权，原始秘密不进入输出、Git、发布包或产品字段。最终认知成功覆盖使用本次自有 DB 与既有只读快照入口，不能读取正式库或旧私密快照替代。
