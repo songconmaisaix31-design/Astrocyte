@@ -227,3 +227,9 @@ AT12 按根 `msg_e1415e3ad447` 继续：固定真实 Goal ID/revision 经 S2 读
 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActualGoalAndRankingSources$' -count=1 -v -timeout 2m` 实际 PASS，测试 `0.15s` / 包 `2.049s`。真实 HTTP human session、原资料导入、原 SQLite migrations 和两个公开项目均由现有 fixture 建立；Goal 通过原 S2 写入真实 revision 1/2，Ranking 通过原 Attention 写入真实 version 1/2/3。检查固定旧 Goal 内容不可变、跨项目拒绝、当前 Goal 改变使旧引用冲突、排序权重改变使旧 version 冲突和 disabled 拒绝。同一 `WithJudgmentTx` 内读取两个真实来源，没有新增 SQLite 连接等待。原件 `.verification/s5/actual-sources-ctx_8ff-first.log` 保留。
 
 当前两个 reader 尚未进入 JudgmentRequest/Policy 的最终 Sources DTO；完整 TasteProfile reader/DTO 正与 B 核实，新公共字段已交 H 确认，未据候选冻结接口。完整内容进入模型输入、既有缓存及同事务重核和 AT12 仍须后续实现与实际运行。没有重复导出或已通过的模型验证，没有使用模型回答替代本节的领域来源检查。
+
+## 第六阶段独立 REPORT
+
+来源读取 SOURCE `32e701e98604b5c3139c3da61a5cfbe4a63d220e` 已普通提交并 push，`git ls-remote origin refs/heads/songconmaisaix31-design/release-judgment-20261015` 读回同完整 SHA。SOURCE 包含两个原域 adapter、一个真实来源测试和本文，共四件允许路径；gofmt、工作区和 staged diff-check 均通过。本节为随后独立报告提交。
+
+H `msg_17b68cf74737` 确认真实 Goal/Taste 及显式 Ranking 引用的语义符合根已定要求，S5 在原域交精确类型 SOURCE 后由 H 同步公共 OpenAPI。H 同时确认当前没有可交付的 Judgment 生产注册 SOURCE，公共 HTTP 完整验证尚未通过。B 完整 Taste 与 S2 新 Goal 来源待准确提交后消费，Jev secret、OS 管理员执行仍未决定；当前 Task 持续，未结算 S5。
