@@ -50,6 +50,34 @@ S2 / UI / S3 / B 首启动均 observed。T / F 首回执 outcome_unknown / turn_
 
 原 UI 已提交页面 SOURCE `0661b49fd5b29cded5dbf15277fc5abafa20b8c2` 恰八件：`SwarmPage.tsx`、`SwarmPage.module.css`，以及 `missions/ArtifactWorkspace.tsx`、`MissionCreateWorkspace.tsx`、`MissionDetailWorkspace.tsx`、`MissionRecords.tsx`、`MissionWorkspace.module.css`、`WorkItemEditor.tsx`，均位于 `web/src/pages/swarm/`。模块独核原 F 目标八件零 WIP / staged。原 F 在当前安全检查点以单 SOURCE 普通 cherry-pick 准确消费，保留其余七件 WIP、不导入 UI 其他后端祖先；遇冲突或额外路径停止交接，不 abort / reset / 整体选边。消费完成核八件完整 diff0，后续页面逻辑仍归原 UI，F 继续共享 Prepare / 客户端修复和真实组合检查。
 
+### 00:46 组合返修、原作者临时范围与实际检查
+
+根 `msg_42a8e3391568` 要求管理记录集中维护，不再为同一次恢复追加管理 REPORT、重复核相同远端或将管理提交作为业务前置。后续业务仍保准确 SOURCE、实际命令 / 结果及必要独立报告，首失败保留。
+
+S5 两件由 B `msg_bc133d0448bc` 停止目标树全部写入并归还；模块独核准确 HEAD / MERGE_HEAD 不变、U0、限定 working / cached diff-check 通过、两件与 `6d1d59b` 完整 diff0，审阅类型和真实断言后交 M-release 继续。此临时范围结束，冲突后业务测试尚未运行。
+
+当前 I 普通消费 S4 的准确现场为 HEAD `0f420b827c3d676c93757893e5d17791a2744b8b`、MERGE_HEAD `91609e5d467d2227f32dfdd8717b773340eaf1da`，初始 30 U；M-release 已在 `release.md` 00:44 登记三组互斥范围并交 I 本人新 STOP `msg_98a73eff9a81`。本模块独核现场与清单后，仅安排原 B 两件 `dependencies.lock.json`、`go.sum`，原 S2 十九件准确列表沿该计划；原 S4 九件由 M-relay 安排。同一人先自然结束命令并报告新安全 ACK，再仅编辑并 stage 本组；不复制 WIP、不整体选边、不操作 commit / continue / abort / reset，完成本人 STOP 归还后独核，仍仅 I 继续。B 两件已本人 STOP 归还，模块独核两件相对 HEAD 完整 diff0、限定 diff-check 通过，剩余 28 U 归 S2 / S4；实际 JSON 读取和 `go list -mod=readonly -m -json all` 通过。S2 已给本轮新安全 ACK并继续十九件。I 前一准确 `35cc64f` 的首次 build 已由发布负责人核 EXIT0 / 57.3065 秒，不代表后继组合通过。
+
+S2 本树普通消费 S4 单 SOURCE `55fd3853a8230da580c01e3bc427a4074ada5553` 后，HEAD `f0fa889742d5e2c4c0bc113fcf857930e2c99122`、CHERRY_PICK_HEAD 为该源，仅 `internal/workspace/app/repository_context.go` 和 `tests/s4/verify/main.go` 冲突。S2 本人 `msg_fb4ad536363c` 对五件 S4 路径和该生命周期 STOP，四件自有 WIP 未 stage 保留。原 S4 取得当前安全 ACK 后仅编辑并 stage 两件，已本人 `msg_3059e553fa60` 停止目标树全部写入并归还；模块独核 U0、准确 HEAD / CHERRY_PICK_HEAD 不变、限定 diff-check 通过并审阅实际差异，保全部阶段和纯数据库 Reference 接口。该临时范围结束，S2 先完成 I 十九件并归还，再唯一继续本树原 cherry-pick。原 S4 顺序处理 I 九件，不增写入者。
+
+产品 UI 已准确合 I 为 `b2f7de9916a5babba831cbf7175326f3a34c2608`。真实 S3 两尺寸首跑在成熟 YAML 库解析阶段因 `/goals` 重复键 EXIT1，八项未加载、HTTP / 原生均未启动；原日志 `D:/Astrocyte-agent-assets/20261015/product-ui-20261015/logs/e2e-swarm-first.log` 保留。模块核 I / UI OpenAPI 全等，I / UI 的 goals、单提案及 decline 各重复，H 原树当前单份。已交原 H 与 M-release 安排准确契约返修，UI / F 不自行修改 OpenAPI；新准确来源后再核生成漂移及实际运行，不放宽解析规则。
+
+F 已单 SOURCE 消费 UI 八件为 `375469b`，本人核八件完整 diff0、原七件 WIP 保留；真实 HTTP 正在 D 盘运行。发布负责人已直接交 F `PLAYWRIGHT_BROWSERS_PATH=D:/Astrocyte-agent-assets/20261015/storage-maintenance/ms-playwright-20261016-001` 与维护窗口归还事实，新大型产物保持 D 盘，不重复迁移或下载。
+
+T 消费 B `6d1d59b` 为 `320ea2569c608120fbc07aaae25682e27bd25f8d` 后，原 Taste 适用检查实际 PASS / 8.289 秒，新增两连接 CAS 与同数据库 Goal 检查共八项 PASS；准确测试 SOURCE / 独立业务 REPORT 待交。S5 typed Sources 用例仍有 nil Options / Levels 差异，已交原 S5 连续处理。十四项旧自动模型 / unknown 测试仍缺 B / R / H 的真实同 Job / operation 受理、turn、正选输出、有效工具关闭与停止入口，保持未完成，不补造模型或新 skip。
+
+### 00:53 当前可消费业务阶段
+
+| 领域 | SOURCE / 独立 REPORT | 实际范围与待验收内容 |
+|---|---|---|
+| S3 成员事务 | `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b` / `841c147153ebea043542e14d8b09682f1ba93952` | 模块已独核远端、原六源码范围和真实报告，交唯一 I。领域 / S2 批准链、SQLite 6.684 秒、HTTP 2.306 秒、vet / build / 架构通过；单连接自锁首 RED 保留。双 Git 观察生产链仍待 S2 最小契约及后继实现，Claim 未答门禁保持 |
+| F 共享 Prepare | `e689e7f5410d977f8cb72df57efbfeb5f490c415` / `72f8ba4e2414ba8cd553e3172e38aa0a6c1de203` | 模块独核远端、七件原 F 域及 source clean，交唯一 I 和原 UI。全局 type / lint / Web build、四真实 HTTP 文件 17 PASS / 85.26 秒、五纯显示文件 37 PASS；测试有重合，不累加。原 Prepare 两尺寸四项在 webServer 120 秒超时未运行，全部首 RED 保留 |
+| B 生命周期 | `837647d5913c739a73a72ec7829d24f78b4ab872` / `65036a6e210745ed44e9094090fcdd0b8887e469` | 模块独核远端、四件实际范围与完整报告，交 I / F / UI。初始化前两 HTTP 首 RED 后 1 PASS / 20.345 秒；完整生命周期 8 PASS、0 FAIL、0 SKIP / 155.584 秒，初始化失败另 1 PASS / 3.490 秒，build / vet / PLOS 与 ACL 真实 DOM 通过。F 准确消费为 `4e52a3a`、四件完整 diff0，正在原配置复验 Prepare 四项；默认 100 项仍待运行 |
+
+S2 单文件格式 SOURCE `83c8b62766b28470fc4fe2514631172ea2f286eb` / REPORT `f0fa889742d5e2c4c0bc113fcf857930e2c99122` 已交 I；B `53f0bebdfcf311706ee680d48542d9bc46e151a7` 格式改动由上述实际业务 REPORT 覆盖。原 `2367224` CI 和 `9aa583e` 本机首格式失败均保留，未据新单件来源填写完整 check 成功。
+
+R 已交真实 input Outcome / FailureCode / ResultSource / ResultObservedAt 来源 `23253502143bb23bf47e1606c38e0158540e328d`，I `2367224` 已含；S3 后继消费当前可构建组合处理自身旧字段，不重建同类来源。首次 Claim 前的真实持久准备收据仍属 B projects 与原 R controller 的既有接缝，任意 UUID 不能视为输入已准备，未答 Known / Claim 拒绝保持。B `selected-text` 的 `codex exec --ephemeral` 现缺同一原控制器持久正选来源读取端口，原有效工具 unknown 不补造；H / B 最窄对象事件关系、双完成经验字段和完整模型路径继续实现，原生成功推理不重复。
+
 ### 23:51 恢复计划与当前互斥范围
 
 根当前执行入口位于 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 首段，根管理 SOURCE `7a3ec93` 已 push。公开 Task 列表核 B、F、S2 均为 `ready`；公开终端清单无原六位开发终端，与根记录的重启退出证据一致。沿原 Task、工作树和分支恢复第三层原负责人，不创建替代 Task，不增加第四层。初始任务正文中的旧身份和创建子 Run 要求由当前入口替代；空 Run `run_300ee9112a0f` 不放任务或人员。原产品 Run 已普通绑定 generation 10，B/F 生命周期沿其原 Run 管理。
