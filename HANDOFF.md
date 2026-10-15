@@ -2,6 +2,10 @@
 
 ## 当前执行入口（2026-10-16）
 
+00:43 原十一位开发人员均已恢复，继续原 Task / 工作树 / 分支：产品 B `ctx_709b7a125040`、F `ctx_630293cc6778`、S2 `ctx_54302cb333c4`、UI `ctx_261b012f1cfd`、T `ctx_1ad6d580f95f`、S3 `ctx_463188124a36`；Relay H `ctx_e492c738e964`、R `ctx_1bc01d1c9ef9`、S4 `ctx_75fc3f6b915c`；发布唯一 I `ctx_929201185718`、S5 `ctx_693200d34a48`。两格式已交准确可消费来源：S2 `83c8b62766b28470fc4fe2514631172ea2f286eb` / `f0fa889742d5e2c4c0bc113fcf857930e2c99122`，B `53f0bebdfcf311706ee680d48542d9bc46e151a7`，原模块核远端后交 I 继续组合。F 消费原 UI 后继，H / B 继续既有对象事件关系和生产目标验证，R / B 补双完成经验字段，S2 / S3 / S4 继续事务边界。管理记录集中提交，不再为同一恢复另加独立 REPORT 或反复核文档；管理报告不作为业务继续的前置。S3 两项选择已通过选项再次呈现，答案未到前仍未决定。
+
+正式 D2（10-15 闭日）的实际结果已由唯一发布负责人核实：57 事件、一次 Sleep 和日快照完成；模型 1 个 C 成功、1 个 A 只有 STARTED 且送达未核实、其余 10 个未运行，用户表和 judge 未生成。原 run 4 `db3b3d79-0159-40c0-8f61-ce50ffff0256` 显示 completed / error=null，不能替代实际验收。主控已读原日计划、首日恢复、OPERATIONS 和 runner；现有 CLI 没有本日 resume，既有 day 目录拒绝重复创建。正式答复 `msg_e64db9e51356` 要求保留 partial、原成功和未知，不重复 capture / Sleep / run-day、不换目录、不改冻结脚本或正式答案；原日程保持。该正式实验缺口独立记录，不增加产品组合和 L1 / L2 工程开发的前置条件。
+
 00:35 三模块已实际恢复并读取当前入口：M-product `ctx_76ef94015349` / `term_f9466086-7599-4f16-b9d8-a615a4e4a7ba`，M-relay `ctx_114d68a5f971` / `term_b8c2e97f-b3ca-4146-a0a5-4e1fc648cc4a`，M-release `ctx_33f48c269580` / `term_6c9ec2c9-6b29-4745-ad63-6452fa7907df`。公开 projection 独核三者均 Codex / `gpt-6.1-sol`、live / working，各继续原子 Run；发布负责人在读取新入口前创建的 `run_9ede59f72848` 保持空，不用于派发。
 
 主控独立读取精确 I SOURCE `23672247d340e80c233951afdce7155b7fa66b1c` 的 CI `38768919397`：Windows 和 Ubuntu 均 completed / failure，`pnpm check` 在 gofmt 阶段失败，Windows 为 `internal/adapters/sqlite/workspace_proposals.go`，Ubuntu 另有 `internal/attention/app/admissions_service.go`。后续测试、构建和浏览器阶段未运行。已交 M-product 安排原 S2 / B 使用文件编辑工具修复，M-release / 唯一 I 核本机中断结果并消费准确后继，不越域修复或重复成功检查。根管理 `31057ea9415c241dc981d2e58a3a0fe512f218ef` 与 I 当前完整 SHA 均已独立核远端同值。
