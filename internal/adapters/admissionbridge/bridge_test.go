@@ -26,8 +26,18 @@ func metadata() attention.CommandMeta {
 
 func ownedDatabase(t *testing.T) (*sqlite.DB, string) {
 	t.Helper()
-	root, err := filepath.Abs("../../../.verification")
-	if err != nil {
+	root := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")
+	if root == "" {
+		var err error
+		root, err = filepath.Abs("../../../.verification")
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if !filepath.IsAbs(root) {
+		t.Fatal("admission verification requires an absolute output root")
+	}
+	if err := os.MkdirAll(root, 0700); err != nil {
 		t.Fatal(err)
 	}
 	dir, err := os.MkdirTemp(root, "admission-actual-")
