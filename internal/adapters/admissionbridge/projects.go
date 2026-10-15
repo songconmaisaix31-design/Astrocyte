@@ -12,20 +12,21 @@ import (
 )
 
 type humanProjectAccess struct {
-	projects workspace.LocalProjects
+	projects   workspace.LocalProjects
+	references attention.AttentionProjectReferences
 }
 
 var _ attention.AdmissionProjectAccess = (*humanProjectAccess)(nil)
 
-func NewHumanProjectAccess(projects workspace.LocalProjects) (attention.AdmissionProjectAccess, error) {
-	if projects == nil {
-		return nil, errors.New("human admission requires the actual local project service")
+func NewHumanProjectAccess(projects workspace.LocalProjects, references attention.AttentionProjectReferences) (attention.AdmissionProjectAccess, error) {
+	if projects == nil || references == nil {
+		return nil, errors.New("human admission requires actual project and fixed reference services")
 	}
-	return &humanProjectAccess{projects: projects}, nil
+	return &humanProjectAccess{projects: projects, references: references}, nil
 }
 
-// 准入服务在同一事务核实固定资料；此端口核实当前人工主体和注册项目。
-func (a *humanProjectAccess) AuthorizeAdmissionProject(ctx context.Context, principal attention.Principal, projectID string, _ []attention.SourceRef) error {
+// 当前人工项目和每项固定资料均通过原生产端口核实。
+func (a *humanProjectAccess) AuthorizeAdmissionProject(ctx context.Context, principal attention.Principal, projectID string, refs []attention.SourceRef) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -39,6 +40,11 @@ func (a *humanProjectAccess) AuthorizeAdmissionProject(ctx context.Context, prin
 	}
 	for _, project := range projects {
 		if project.ID == projectID {
+			for _, ref := range refs {
+				if _, err := a.references.ReadProjectReference(ctx, principal, project.SpaceID, ref, false); err != nil {
+					return err
+				}
+			}
 			return nil
 		}
 	}
