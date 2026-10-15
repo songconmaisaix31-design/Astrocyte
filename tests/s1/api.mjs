@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { validateResponse } from './contracts.mjs';
-import { root } from '../../scripts/process.mjs';
+import { verificationOutputRoot } from '../../scripts/process.mjs';
 
 export function command(body = {}) {
   return { schema_version: 1, request_id: randomUUID(), expected_version: 1, ...body };
@@ -34,7 +34,7 @@ export async function humanAPI(baseURL) {
       let data;
       try { data = JSON.parse(text); }
       catch (cause) {
-        const directory = join(root, '.verification');
+        const directory = verificationOutputRoot();
         await mkdir(directory, { recursive: true });
         const original = join(directory, `http-non-json-${randomUUID()}.txt`);
         await writeFile(original, text, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
