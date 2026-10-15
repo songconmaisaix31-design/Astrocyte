@@ -1,5 +1,25 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第十四阶段：当前 S2 私有控制器身份映射
+
+Task `task_da9aebf03f83` / Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` 交付 S3 SOURCE `9266bc043b3eeab1262c0e86e9a689ad20f50630`。实际客户端 Codex / 模型 `gpt-6.1-sol`。H 已有 S2 新绑定类型，消费此 S3 提交即可取得两字段映射及参数检查，不需要重新消费其已有 S2 全部历史。
+
+模块限定计划 SOURCE `9fd45c18e6f4f6343e3ff23c531b384472d037dc` 和 S2 本人停写确认允许在本树消费两完整原件。本人先确认所有实际检查自然结束、目标两文件零 WIP并发送安全 ACK，随后只用文件编辑工具移入原 S2 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 的 `internal/workspace/domain/session_bindings.go` 与 `internal/adapters/sqlite/workspace_session_bindings.go`，精确消费单独提交为 `753f9e781fcfed2cb5770dc372924500565c5ce0`。完整 `git diff aa445adf834c3a397a0817bec0593fcf1039420a -- <上述两路径>` 无输出，格式检查无输出；这两原件没有语义改动，不需要 DDL 或新依赖，原 OwnedSessionProvider 端口保持。后续 S2 逻辑与维护归还原 S2。
+
+本域 `SwarmApprovalBridge` 将实际已授权 binding 的 ControllerID 与 StartupOperationID 原值写入本次私有 AuthorizedBinding context。`AuthorizedBindingForMember` 对两私有身份缺失立即拒绝；纯参数规则增加了这两项缺失检查，原身份/版本/项目/固定工作树检查保持。Lease 私有存储与原 Registry bridge 消费同一 tuple，不从请求正文、其他 Registry 或退出观察补造身份。旧 S2 服务在完整生产前置尚未接上时仍明确拒绝，没有自动换用其他会话。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 ./internal/workspace/domain -count=1 -timeout=120s` | PASS；原领域/实际 S2 批准与数据库重开、消费的私有契约规则 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarm(Actual\|Native)' -count=1 -timeout=180s` | PASS，85.045 秒；原两个连接原子预算/唯一租约、私有 tuple 重开与 Git/Go 组件 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，23.532 秒；真实生产 router/认证/listener/SQLite 组件 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、`git diff --check`、五个修改文件的 `gofmt -l` | PASS，33 包；格式检查无输出 |
+| `git push origin HEAD` | 两个独立源码提交普通 push 成功 |
+
+本阶段没有新测试 RED、模型、原生初始化、输入或登记窗口。H 完整装配使用 `NewSwarmNativeBridge(repo, sameRegistry)` 同时作为 members 和 ownership，实际 objects 构造 `NewSwarmGitEvidence`；没有固定获准项目 checker 时，提交仍以 `evidence_missing` 拒绝，不能登记为适用项目检查通过。根已明确独立 Relay L1 走自身生产链，不经过 S3 Mission/WorkItem/Member/Claim/预算；其实际验收由原 F/H/R 负责。本 S3 的调用预算及执行权限两项待答仍保持 Claim 拒绝、Known=false 和未知用量，原 input 的准备关系与实际 Outcome 仍待 R，六步经验5/6的真实服务及包来源仍待 B/S2。当前没有真实 owned bind/submit、两个实际 Agent 或六步首跑通过；Task 保持执行，阶段源码和本独立 REPORT 交唯一集成人员。
+
 ## 第十三阶段：本机文件名别名与写域并发规则
 
 Task `task_da9aebf03f83` / Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` 交付 SOURCE `840afa0fa265056cc8f500ab62940f3561b5b30e`，客户端 Codex / 模型 `gpt-6.1-sol`。只修改本域 `mission.go`、新增路径规则测试及 `tests/s3/paths_test.go`。Windows 的范围包含和重叠判断识别大小写别名；相对文件名复用 Go `filepath.IsLocal`，Windows 路径段的尾部句点和空格拒绝为独立写域。其他系统保持本机大小写语义，目录边界仍须完整匹配。
