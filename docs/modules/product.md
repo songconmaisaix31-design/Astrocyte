@@ -29,6 +29,27 @@ M-release `msg_813943b194cd` 已交当前 S5 `task_1d3e15a66b2a / ctx_693200d34a
 
 准确失败分别保留：根 `msg_2d5b10bb794d` 核精确 `23672247d340e80c233951afdce7155b7fa66b1c` 的 CI `38768919397` 双平台格式失败，Windows 为 `workspace_proposals.go`，Ubuntu 另含 `admissions_service.go`，后续测试、构建与 E2E 为 NOT_RUN；M-release 实核 `9aa583e` 的 `c16/result.json` 首 check EXIT1、260.4195022 秒，仅 `workspace_proposals.go` 格式失败。两文件分别交原 S2 / B 在各自原树编辑，形成准确后继 SOURCE 供唯一 I 消费，不使用格式程序修改或临时进入 I 树。冲突清除与格式通过均不能计为业务验收。
 
+### 00:42 六位恢复独立 REPORT 与准确前端消费
+
+恢复 SOURCE `eafc1c8b804e0fcf17144023ef20cb9f94c9bfb7` 和 S5 冲突计划 SOURCE `5ed8933f20ca4653540ee24e774ded1f7bb334ae` 均已普通 push，模块分别独立核远端同值；变更仅本文件，`git diff --check` 通过。原 B/F Run 已普通绑定 generation 44，原产品 Run generation 18 保留；仅管理原六条未完成任务，不启动旧 Run 其他已完成人员。公开 worker-list 已逐一核下表六位实际为 Codex / `gpt-6.1-sol`、live / working，没有把启动参数当模型事实。
+
+| 原唯一负责人 | 当前 Dispatch / 终端 |
+|---|---|
+| B | `ctx_709b7a125040 / term_9735b331-e149-4115-9939-e650fb6d8a9e` |
+| F | `ctx_630293cc6778 / term_180a4dd0-50ba-4c83-a6e4-fc204f60dfd4` |
+| S2 | `ctx_54302cb333c4 / term_721cf30f-a6d2-4a21-abcd-0f73c8b793f5` |
+| 产品 UI | `ctx_261b012f1cfd / term_23d5f357-4b22-40f8-bdc4-487a8759f527` |
+| T | `ctx_1ad6d580f95f / term_990812cc-b99b-474f-be16-fb6f8007b237` |
+| S3 | `ctx_463188124a36 / term_c403079b-29b3-4078-a1d5-4a8f57cf3383` |
+
+S2 / UI / S3 / B 首启动均 observed。T / F 首回执 outcome_unknown / turn_start_unobserved 保留：T 经文本核原任务仍在 composer 后只补一次 Enter，之后本人基线及公开状态确认实际开始；F 已自行开始，公开状态及终端文本确认工作，没有补送或重派。六人现有修改均由本人确认保留。
+
+原 F 完整四文件 HTTP 首轮自然 EXIT1：14 PASS、1 references 多余 purpose 字段导致 400、2 Relay beforeAll 构建 120 秒未执行，原 Context 与 Repository 各五项通过保持。模块用官方 `go env` 实核既有 `GOMODCACHE=C:/Users/DW/go/pkg/mod` 且目录存在，允许后续进程显式复用并设 `GOPROXY=off`，缺少模块立即失败交 B；不移动或清理缓存，新增构建、临时目录和验证产物继续 D 盘，原 120 秒不变。尚无后继默认完整成功。
+
+产品 UI `msg_6ac48b96c8e2` 确认 SOURCE `033557f16b6b806e8a1626fc28bfd34bde13bed7` 已 push、原树 clean，独立 REPORT `b54f8d2f71be8ae6d6404c13ce17ebe5ea18051f`；新 S3 E2E 尚未实际运行。准确 I `23672247d340e80c233951afdce7155b7fa66b1c` 只读 merge-tree EXIT0 无冲突，允许原 UI 在其安全检查点普通 no-ff 消费，遇非本域冲突保留现场交原作者。该消费与已知格式 RED 分别记录，不盲目重复已知失败全套。
+
+原 UI 已提交页面 SOURCE `0661b49fd5b29cded5dbf15277fc5abafa20b8c2` 恰八件：`SwarmPage.tsx`、`SwarmPage.module.css`，以及 `missions/ArtifactWorkspace.tsx`、`MissionCreateWorkspace.tsx`、`MissionDetailWorkspace.tsx`、`MissionRecords.tsx`、`MissionWorkspace.module.css`、`WorkItemEditor.tsx`，均位于 `web/src/pages/swarm/`。模块独核原 F 目标八件零 WIP / staged。原 F 在当前安全检查点以单 SOURCE 普通 cherry-pick 准确消费，保留其余七件 WIP、不导入 UI 其他后端祖先；遇冲突或额外路径停止交接，不 abort / reset / 整体选边。消费完成核八件完整 diff0，后续页面逻辑仍归原 UI，F 继续共享 Prepare / 客户端修复和真实组合检查。
+
 ### 23:51 恢复计划与当前互斥范围
 
 根当前执行入口位于 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 首段，根管理 SOURCE `7a3ec93` 已 push。公开 Task 列表核 B、F、S2 均为 `ready`；公开终端清单无原六位开发终端，与根记录的重启退出证据一致。沿原 Task、工作树和分支恢复第三层原负责人，不创建替代 Task，不增加第四层。初始任务正文中的旧身份和创建子 Run 要求由当前入口替代；空 Run `run_300ee9112a0f` 不放任务或人员。原产品 Run 已普通绑定 generation 10，B/F 生命周期沿其原 Run 管理。
