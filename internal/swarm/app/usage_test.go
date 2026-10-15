@@ -6,6 +6,19 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/swarm/domain"
 )
 
+func TestSettledOutcomeAcceptsOriginalInterruptionAndRejectsUnknown(t *testing.T) {
+	for _, outcome := range []string{"completed", "failed", "interrupted", "cancelled", "stopped", "not_started"} {
+		if !settledOutcome(outcome) {
+			t.Fatalf("terminal input outcome %q was not recognized", outcome)
+		}
+	}
+	for _, outcome := range []string{"", "unknown", "inProgress", "running"} {
+		if settledOutcome(outcome) {
+			t.Fatalf("unresolved input outcome %q was treated as settled", outcome)
+		}
+	}
+}
+
 func TestActualUsageKeepsUnknownAndRejectsContradictoryEvidence(t *testing.T) {
 	for _, fact := range []ExecutionFact{{CallsKnown: true}, {TokensKnown: true}, {CallsKnown: true, Usage: &domain.Usage{}}, {TokensKnown: true, Usage: &domain.Usage{}}} {
 		if _, err := actualUsage(fact); err == nil {

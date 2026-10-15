@@ -85,11 +85,82 @@ func TestSwarmNativeMappingPreservesUnknownInputOutcomeAndBudgetUsage(t *testing
 	if e.Capabilities[0] != "observe" || e.Tools[0] != "tool" || e.ExternalTargets[0] != "target" {
 		t.Fatal("descriptor mutation changed the original source observation")
 	}
-	f := swarmNativeExecutionFact(e)
+	f, err := swarmNativeExecutionFact(e)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if f.OperationID != e.InputOperationID || f.SessionID != e.SessionID || !f.StopConfirmed || f.Outcome != "" || f.FailureCode != "" || f.Usage != nil || f.CallsKnown || f.TokensKnown {
 		t.Fatal("controller exit or response observations changed unknown input outcome or budget usage")
 	}
 	if _, err := NewSwarmNativeBridge(nil, nil); err == nil {
 		t.Fatal("native bridge without its actual dependencies was accepted")
+	}
+}
+
+func TestSwarmNativeKnownResultsPreserveIndependentStopAndUnknownUsage(t *testing.T) {
+	observed := time.Now().UTC()
+	turn := "accepted-turn-parameter"
+	for _, outcome := range []string{"completed", "failed", "interrupted"} {
+		t.Run(outcome, func(t *testing.T) {
+			e := workspace.RelayMemberEvidence{Purpose: "submit_artifact", CLI: "codex", SessionID: "session-parameter", InputOperationID: "input-parameter", InputAccepted: true, AcceptedTurnID: &turn, InputAcceptedAt: &observed, Outcome: &outcome, ResultSource: "codex_turn_completed", ResultObservedAt: &observed}
+			failure := "native_failure"
+			if outcome == "failed" {
+				e.FailureCode = &failure
+			}
+			f, err := swarmNativeExecutionFact(e)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if f.Outcome != outcome || e.FailureCode != nil && f.FailureCode != *e.FailureCode {
+				t.Fatal("original accepted input result was lost")
+			}
+			if f.StopConfirmed || f.Usage != nil || f.CallsKnown || f.TokensKnown {
+				t.Fatal("observed input result changed independent stop or unknown budget facts")
+			}
+			e.ExitConfirmed = true
+			f, err = swarmNativeExecutionFact(e)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !f.StopConfirmed || f.Outcome != outcome || f.Usage != nil || f.CallsKnown || f.TokensKnown {
+				t.Fatal("original confirmed exit and input result were conflated")
+			}
+		})
+	}
+}
+
+func TestSwarmNativeIncompleteOrContradictoryResultParametersFail(t *testing.T) {
+	observed := time.Now().UTC()
+	turn, outcome := "accepted-turn-parameter", "completed"
+	e := workspace.RelayMemberEvidence{Purpose: "submit_artifact", CLI: "codex", SessionID: "session-parameter", InputOperationID: "input-parameter", InputAccepted: true, AcceptedTurnID: &turn, InputAcceptedAt: &observed, Outcome: &outcome, ResultSource: "codex_turn_completed", ResultObservedAt: &observed}
+	for _, tc := range []struct {
+		name   string
+		change func(*workspace.RelayMemberEvidence)
+	}{
+		{"outcome", func(v *workspace.RelayMemberEvidence) { v.Outcome = nil }},
+		{"source", func(v *workspace.RelayMemberEvidence) { v.ResultSource = "" }},
+		{"other_source", func(v *workspace.RelayMemberEvidence) { v.ResultSource = "controller_exit" }},
+		{"observed", func(v *workspace.RelayMemberEvidence) { v.ResultObservedAt = nil }},
+		{"zero_observed", func(v *workspace.RelayMemberEvidence) { v.ResultObservedAt = &time.Time{} }},
+		{"unsupported", func(v *workspace.RelayMemberEvidence) { value := "unknown"; v.Outcome = &value }},
+		{"provider", func(v *workspace.RelayMemberEvidence) { v.CLI = "other" }},
+		{"purpose", func(v *workspace.RelayMemberEvidence) { v.Purpose = "claim_work_item" }},
+		{"unaccepted", func(v *workspace.RelayMemberEvidence) { v.InputAccepted = false }},
+		{"turn", func(v *workspace.RelayMemberEvidence) { v.AcceptedTurnID = nil }},
+		{"accepted_time", func(v *workspace.RelayMemberEvidence) { v.InputAcceptedAt = nil }},
+		{"failure_code", func(v *workspace.RelayMemberEvidence) {
+			value := "unclassified-result-parameter"
+			v.FailureCode = &value
+		}},
+		{"empty_failure_code", func(v *workspace.RelayMemberEvidence) { value := ""; v.FailureCode = &value }},
+		{"completed_failure", func(v *workspace.RelayMemberEvidence) { value := "native_failure"; v.FailureCode = &value }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			changed := e
+			tc.change(&changed)
+			if _, err := swarmNativeExecutionFact(changed); err == nil {
+				t.Fatal("incomplete or contradictory result observation was accepted")
+			}
+		})
 	}
 }

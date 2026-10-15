@@ -143,11 +143,11 @@ func (s *Service) ReadArtifactVersion(ctx context.Context, p domain.Principal, m
 func (s *Service) SelectWorkItems(ctx context.Context, p domain.Principal, missionID string, member Member, inputs []domain.SourceVersion) ([]domain.Candidate, error) {
 	member.Purpose = "claim_work_item"
 	out := []domain.Candidate{}
-	err := s.authorized(ctx, p, missionID, "read_swarm", domain.Resources{}, func(ctx context.Context, g domain.Grant) error {
-		descriptor, err := s.executionForGrant(ctx, p, g, member)
-		if err != nil {
-			return err
-		}
+	m, err := s.repo.Load(ctx, missionID)
+	if err != nil {
+		return out, err
+	}
+	err = s.withExecutionForGrant(ctx, p, m.Grant, member, func(ctx context.Context, g domain.Grant, descriptor ExecutionDescriptor) error {
 		return s.repo.Within(ctx, func(tx Transaction) error {
 			m, err := tx.Mission(missionID)
 			if err != nil {

@@ -160,6 +160,9 @@ func (s *Service) settleExecutor(ctx context.Context, l domain.Lease, fact Execu
 		}
 		return domain.Failure(apierrors.DeliveryUnknown, "original executor must be reconciled; no replacement can claim its scope")
 	}
+	if !safeFailureCode(fact.FailureCode) {
+		return domain.Failure(apierrors.EvidenceMissing, "original execution failure requires a safe classified code")
+	}
 	usage, err := actualUsage(fact)
 	if err != nil {
 		return err
@@ -224,7 +227,7 @@ func (s *Service) settleExecutor(ctx context.Context, l domain.Lease, fact Execu
 		if err = tx.DeleteLease(w.ID, l.Fence); err != nil {
 			return err
 		}
-		return tx.Event(Event{ID: uuid.NewString(), Type: "swarm.execution_reconciled", AggregateID: w.ID, Version: w.Version, At: time.Now().UTC(), Payload: map[string]any{"operation_id": l.OperationID, "session_id": l.SessionID, "outcome": fact.Outcome, "fence": w.Fence, "usage": usage}})
+		return tx.Event(Event{ID: uuid.NewString(), Type: "swarm.execution_reconciled", AggregateID: w.ID, Version: w.Version, At: time.Now().UTC(), Payload: map[string]any{"operation_id": l.OperationID, "session_id": l.SessionID, "outcome": fact.Outcome, "failure_code": fact.FailureCode, "fence": w.Fence, "usage": usage}})
 	})
 }
 

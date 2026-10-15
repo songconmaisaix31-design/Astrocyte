@@ -9,7 +9,7 @@ import (
 
 func TestAuthorizedBindingMemberParametersRejectChangedIdentityAndSnapshot(t *testing.T) {
 	p := domain.Principal{Kind: "agent", ID: "member", ProjectID: "project"}
-	binding := AuthorizedBinding{ID: "binding", Purpose: "claim_work_item", Version: 2, PacketID: "packet", ProjectID: p.ProjectID, MemberID: p.ID, SessionID: "session", NativeSessionID: "native", AdapterID: "adapter", WorktreeID: "worktree", Root: "fixed-canonical-worktree"}
+	binding := AuthorizedBinding{ID: "binding", Purpose: "claim_work_item", Version: 2, PacketID: "packet", ProjectID: p.ProjectID, MemberID: p.ID, SessionID: "session", NativeSessionID: "native", AdapterID: "adapter", ControllerID: "controller", StartupOperationID: "startup", WorktreeID: "worktree", Root: "fixed-canonical-worktree"}
 	member := Member{Purpose: "claim_work_item", BindingID: binding.ID, Version: "2", HolderID: p.ID, ProjectID: p.ProjectID, SessionID: binding.SessionID, Worktree: binding.Root, OperationID: "original-input"}
 	ctx := WithAuthorizedBinding(context.Background(), binding)
 	for _, purpose := range []string{"claim_work_item", "submit_artifact"} {
@@ -44,6 +44,8 @@ func TestAuthorizedBindingMemberParametersRejectChangedIdentityAndSnapshot(t *te
 	for _, change := range []func(*AuthorizedBinding){
 		func(b *AuthorizedBinding) { b.NativeSessionID = "" },
 		func(b *AuthorizedBinding) { b.AdapterID = "" },
+		func(b *AuthorizedBinding) { b.ControllerID = "" },
+		func(b *AuthorizedBinding) { b.StartupOperationID = "" },
 		func(b *AuthorizedBinding) { b.WorktreeID = "" },
 		func(b *AuthorizedBinding) { b.PacketID = "" },
 	} {
