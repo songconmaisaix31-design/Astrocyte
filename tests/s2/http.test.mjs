@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import test from 'node:test';
 import { humanAPI } from '../s1/api.mjs';
 import { startS1Server } from '../s1/server.mjs';
@@ -30,7 +31,7 @@ test('actual production HTTP approval, revision, idempotency, revoke and process
     const content = {
       title: 'Review Astrocyte S2 approval implementation',
       goal: { id: goal.id, revision: goal.revision }, inputs: [],
-      scope: { project_id: project.id, settings_revision: project.settings.revision, roots: [root], actions: ['read_context'], tools: [], external_targets: [], write_paths: [], max_concurrency: 2 },
+      scope: { project_id: project.id, settings_revision: project.settings.revision, roots: [project.root], actions: ['read_context'], tools: [], external_targets: [], write_paths: [], max_concurrency: 2 },
       budget: { calls: 2, tokens: null, money_minor: null, currency: '' },
       stops: { deadline, conditions: ['Stop after verification'], max_work_items: 2, max_attempts: 2, no_progress_seconds: 0, max_no_progress_rounds: 2 },
       deliverables: ['Public approval verification'], success_criteria: ['No executor starts on approval'],
@@ -59,6 +60,29 @@ test('actual production HTTP approval, revision, idempotency, revoke and process
     assert.equal(stale.status, 409);
     assert.equal(stale.data.error.code, 'version_conflict');
     const approvalKey = randomUUID();
+
+    // 真实SQLite约束在Grant写入后拒绝事件，核完整批准事务回滚。
+    const databasePath = join(application.dataDir, 'state.sqlite');
+    let database = new DatabaseSync(databasePath);
+    try {
+      database.exec("CREATE TRIGGER s2_approval_event_constraint BEFORE INSERT ON foundation_outbox WHEN NEW.event_type='workspace.proposal_approved' BEGIN SELECT RAISE(ABORT, 'S2 approval event constraint'); END");
+    } finally {
+      database.close();
+    }
+    const failedApproval = await api.request(`/proposals/${proposal.id}/approvals`, {
+      method: 'POST', key: approvalKey,
+      body: { schema_version: 1, request_id: randomUUID(), expected_version: proposal.version, expected_revision: proposal.revision, expires_at: deadline },
+    });
+    assert.equal(failedApproval.status, 500);
+    assert.equal(application.query('SELECT count(*) AS n FROM workspace_approvals')[0].n, 0);
+    assert.equal(application.query('SELECT count(*) AS n FROM foundation_idempotency WHERE command_type=?', 'workspace.proposal.approve')[0].n, 0);
+    assert.equal((await api.get(`/proposals/${proposal.id}`)).proposal.status, 'in_review');
+    database = new DatabaseSync(databasePath);
+    try {
+      database.exec('DROP TRIGGER s2_approval_event_constraint');
+    } finally {
+      database.close();
+    }
     const approved = await api.write(`/proposals/${proposal.id}/approvals`, { expected_version: proposal.version, expected_revision: proposal.revision, expires_at: deadline }, { key: approvalKey });
     const grant = approved.approval;
     assert.equal(grant.status, 'active');
@@ -71,9 +95,28 @@ test('actual production HTTP approval, revision, idempotency, revoke and process
     assert.equal(JSON.parse(events[0].payload).grant_id, grant.id);
     assert.equal(application.query('SELECT count(*) AS n FROM local_agent_sessions')[0].n, 0);
     assert.equal(application.query('SELECT count(*) AS n FROM swarm_missions')[0].n, 0);
+    const goalKey = randomUUID();
+    const goalUpdate = { expected_version: goal.revision, goal: { ...goal, title: 'Review current public approval and fixed goal history', priority: 2 } };
+    const updatedGoal = (await api.write(`/goals/${goal.id}`, goalUpdate, { method: 'PUT', key: goalKey })).goal;
+    assert.equal(updatedGoal.revision, goal.revision + 1);
+    assert.deepEqual((await api.write(`/goals/${goal.id}`, goalUpdate, { method: 'PUT', key: goalKey })).goal, updatedGoal);
+    assert.deepEqual((await api.get(`/goals/${goal.id}?revision=${goal.revision}`)).goal, goal);
+    assert.deepEqual((await api.get(`/goals/${goal.id}`)).goal, updatedGoal);
+    const staleGoal = await api.request(`/goals/${goal.id}`, { method: 'PUT', body: { schema_version: 1, request_id: randomUUID(), ...goalUpdate } });
+    assert.equal(staleGoal.status, 409);
+    assert.equal(staleGoal.data.error.code, 'version_conflict');
+    const agentGoalResponse = await fetch(`${application.apiURL}/api/v1/goals/${goal.id}`, {
+      method: 'PUT', headers: { Authorization: `Bearer ${issued.credential.token}`, 'Content-Type': 'application/json', 'Idempotency-Key': randomUUID() },
+      body: JSON.stringify({ schema_version: 1, request_id: randomUUID(), expected_version: updatedGoal.revision, goal: { ...updatedGoal, title: 'Request target change without human authorization' } }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    assert.equal(agentGoalResponse.status, 403);
+    assert.equal(application.query('SELECT count(*) AS n FROM workspace_goal_revisions WHERE id=?', goal.id)[0].n, 2);
     await application.restart();
     api = await humanAPI(application.apiURL);
     assert.deepEqual((await api.get(`/approvals/${grant.id}`)).approval, grant);
+    assert.deepEqual((await api.get(`/goals/${goal.id}?revision=${goal.revision}`)).goal, goal);
+    assert.deepEqual((await api.get(`/goals/${goal.id}`)).goal, updatedGoal);
     assert.equal((await api.get(`/proposals/${proposal.id}?revision=1`)).proposal.content.goal.revision, goal.revision);
     const revoked = await api.write(`/approvals/${grant.id}/revoke`, { expected_version: grant.epoch, reason: 'End actual public HTTP validation' });
     assert.equal(revoked.approval.status, 'revoked');
