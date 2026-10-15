@@ -2,13 +2,38 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 02:28 恢复原 Run 与唯一集成的一页计划
+
+本轮负责人为原 Task `task_315679474dc4` / Dispatch `ctx_4b5bd58b23e1` / 终端 `term_1d5e40d7-e5e8-4168-9fb3-fbd6ec7d79df`，实际客户端由 `terminal show` 核为 Codex / GPT-6.1-Sol xhigh fast。根最新入口和 `msg_09e433c4487a` 规定先运行完整普通产品，随后并行整理与全面测试。本模块已普通绑定原 `run_aa4e6a119547` generation 9，仅维护本文及既有日运行记录。首次读取最新信箱前按旧正文创建的 `run_1490193cd9c4` 保持空，没有 Task 或 Worker，不用于派发。
+
+| 唯一责任 | 固定工作树 / 分支 | 当前状态与接续 |
+|---|---|---|
+| 原 I / `task_2ee44933df72` | `works-relay-integration` / `songconmaisaix31-design/works-relay-integration` | 原 Dispatch `ctx_929201185718` 已由运行时结算 abandoned / failed、capability 已撤销，原 Task ready；本模块独核准确 HEAD `d59a10036d1ed18b875ced136f1cf741e320a384`、clean、未合并路径为零，原树终端列表为空。恢复原 Task，先普通消费原作者已确认提交、执行运行所需构建，再交 H 更新同一产品；领域冲突先本人 STOP，经对应经理安排原作者精确处理并归还，仅 I 继续 merge。 |
+| 原 H，经 M-relay | `works-relay-http` / 原分支 | 原 D 盘产品目录和 SQLite 保留；旧 PID47956 已退出，64505 在根恢复检查时没有 listener。原 H 恢复同一数据与首选地址，继续 Judgment / Taste、既有清理 worker 和完成来源装配；本模块不启动第二服务或修改领域代码。 |
+| 原 F / B / S2，经 M-product | 各原工作树 / 原分支 | F 先核原完整 320 项中断于302之后的真实原件，不直接重跑全套；在 H 同一产品实例完成实际页面和核心 HTTP 操作。B / S2 继续运行所需原域修复。 |
+| 正式 V4、Q、P / N、S5 | 各原树 / 原结果 | D2 partial、成功与 unknown 保留，不重复 capture / Sleep / run-day；Q / D1 / P 准备和已通过 OS 不重做。Jev 等待用户安全本机结果；最终同源包在适用功能和真实验收完成后安排，普通产品集成先继续。 |
+
+普通产品不登记原生 Agent 或提交模型输入；当前受限 Codex `apply_patch` 能力拒绝保留，L1 t0 为零。S3 和 Agent completion action 待定项不据未答开放授权。大型构建及验证产物继续使用各原 owner 的 D 盘目录和进程环境，正式锁、协议、日程、预算与人工评分边界保持。
+
+02:34 实际接续：唯一 I 为 `ctx_76c7ff15d7e0` / `term_90894a84-886d-4b2a-b363-23fdb1784bb8`，实际 Codex / GPT-6.1-Sol xhigh fast。正常 ready Task 启动回执显示 turnStart observed，后续有界文本却显示原任务仍在 composer 且没有 Working；只对该准确终端补一次 bare Enter 后，实际 Working 和本人首次进度文字已观察，未重送正文。最新经理身份、普通产品优先级与当前服务事实已通过 `msg_5200828f14a0` / `msg_4ef2edf0d5fa` 投递，仅本人持续该集成轨道。
+
+原 H 已恢复同一 D 盘目录和 SQLite 的 `http://127.0.0.1:64505/`，新 PID `25048`，UTC `2026-10-15T18:28:44.7333357Z`，运行副本仍为准确 `ad8413e119379c9795bab558a41fe425ea9095ca`。根已核进程和首页，本模块另实际 GET 首页为 HTTP 200 / `text/html; charset=utf-8` / 562 bytes。H 持有该唯一产品实例，后继准确构建由 I 交 H 更新；页面和核心业务检查由原 F 在同实例执行。当前产品负责人准确 Dispatch 为 `ctx_a3dc3bfa5554`，实际读取 `run_dbf1a68bc692`；交接 `msg_67c769a9fa05` 已通过准确 Dispatch 路由到该信箱。Relay 原线程回复 `msg_d63e9c27defe` 已确认同一 I 与来源。
+
+### 2026-10-16 02:10 实际共享产品已运行
+
+原 H `msg_2cc5484cc6db` 已启动唯一普通产品，Web / API 同 URL 为 `http://127.0.0.1:64505`，PID `47956`，启动 UTC `2026-10-15T18:08:46.9479236Z`。精确 SOURCE 为 `ad8413e119379c9795bab558a41fe425ea9095ca`，H 读 Go buildinfo 核 `vcs.revision` 同值、`modified=false`，实际 health 正常、GET `/` 为 200 且包含真实 React root；M-relay 另独核唯一 loopback listener / 实际进程及其 D 盘 executable。后台 Hidden、argv 为空，无 secret、原生登记 / 初始化 / 模型 / L1 t0。
+
+运行根为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413`，SQLite 位于其 `local/astrocyte-workbench/v0.2-access/app-state/state.sqlite`，运行定位为同根 `running.json`。I 的实际 binary / static 已复制到该 H 独占目录，H 本人归还复制窗口后已明确仅 I 可继续覆盖自己的构建产物；全部业务普通集成继续。实际地址、精确来源和状态已交根，F / UI 接同 URL 进行唯一实际页面 / 核心 HTTP 操作，不主动打开用户浏览器或使用视觉。
+
+当前运行产物真实缺口为 H 在途 Judgment / Taste 公共注册、S4 cleanup Run / Wake、Q 本代 snapshot 接入；S5 / Jev / Laya 未配置或调用。原 H 在同一产品自然检查点更新后交精确后继 SOURCE / 状态，I 持续收拢各原作者运行修复，产品运行不等于全部功能或最终验收通过。根正式答复 `msg_dfe105fea7e1` 保持当前 Codex 0.162 受限 L1 / 相关模型暂不执行，R 提供最窄 unsupported 准入，普通产品核心继续。
+
 ### 2026-10-16 02:04 用户最新优先级与唯一产品启动
 
 根 `msg_2f20653d5265` 转用户明确要求：优先集成并运行完整产品，运行后并行整理代码和全面测试。唯一 I 立即普通收拢当前可消费业务来源形成同源可启动阶段；H 优先该来源的生产 main / Services / 路由、Judgment / Taste、S4 清理和 Relay 必要装配；F / UI 使用同一实际 URL 完成页面和真实 API 核心操作。B / R / S2 / S3 / S4 / S5 / T 按实际运行缺口连续返修，全面默认、独立报告和额外整理不作为该产品集成与启动的前置。
 
 本模块协调唯一实际产品服务启动和最终同源包：I 交精确 SOURCE / 实际构建产物，原 H 保持唯一共享 HTTP 服务持有者并交实际 URL / 运行状态，F / UI 保持唯一实际界面动作，不另起第二共享产品服务或原生控制器。现有 `ad8413e` 实际构建通过，可立即供 H 消费；尚缺生产装配及核心功能的部分按实际结果列明，不据构建或页面可见宣称完整产品完成。现有 F 全 320 自然完成并保留原结果，产品运行后按实际依赖并行全面测试与代码整理，全部最终验收仍须实际通过。
 
-真实模型继续保持已确认的原生文件 / 命令工具关闭、批准来源、原 180 秒含登记 / Prepare、unknown 不重发及独立释放边界。根 02:07 `msg_975323939682` / 正式答复 `msg_8eda` 确认当前 Codex 0.162 公开 app-server / CLI 没有支持排除 `apply_patch` 的入口；实际受限模型路径不执行。原 R 在最窄准入拒绝旧标签误授，并给 H / F 明确 unsupported 状态，不猜配置、不改 catalog / API / native、不重复调查同一入口。该能力缺口不阻普通 Web / API、完整页面和人工核心操作；本次普通实例不登记原生 Agent 或模型。根在实际整体与准确缺口具备后处理必要用户决定，现有边界保持。Jev 唯一用户本机窗口等待实际结果，OS 已关闭不重复。正式 V4 的 partial、日程、锁、预算和人评边界保持。
+真实模型继续保持已确认的原生文件 / 命令工具关闭、批准来源、原 180 秒含登记 / Prepare、unknown 不重发及独立释放边界。根 02:07 `msg_975323939682` 及正式答复 `msg_dfe105fea7e1` 确认当前 Codex 0.162 公开 app-server / CLI 没有支持排除 `apply_patch` 的入口；实际受限模型路径不执行。原 R 在最窄准入拒绝旧标签误授，并给 H / F 明确 unsupported 状态，不猜配置、不改 catalog / API / native、不重复调查同一入口。该能力缺口不阻普通 Web / API、完整页面和人工核心操作；本次普通实例不登记原生 Agent 或模型。根在实际整体与准确缺口具备后处理必要用户决定，现有边界保持。Jev 唯一用户本机窗口等待实际结果，OS 已关闭不重复。正式 V4 的 partial、日程、锁、预算和人评边界保持。
 
 ### 2026-10-16 02:03 S4 / S5 组合构建实际通过
 
