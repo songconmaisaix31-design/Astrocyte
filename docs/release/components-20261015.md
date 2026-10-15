@@ -85,7 +85,7 @@ Jev 是 TypeSafe AI, Inc. 的专有云服务，`jev-1.13.0` 是版本化 API，�
 
 许可保留要求：包内已复制项目 `LICENSE`（AGPL-3.0），当前没有第三方许可文本。每个上游许可要求再分发时保留许可副本与版权声明：MIT 与 Apache-2.0 要求随分发携带许可全文（Apache-2.0 还要求保留源码中的版权、专利、商标与归属声明，若有 `NOTICE` 则须一并保留），FSL-1.1-MIT 要求附带条款副本或链接且不得移除版权声明。凡是把 §3 组件并入最终包的构建，都须把这些组件的许可与版权文本一并纳入包；具体打包方案由 P 按已获授权实施。若最终包含 Node 运行时，须整体保留 Node 根 `LICENSE`（含其逐项捆绑第三方）。
 
-必需运行文件（S4 owner 生产配置）：`runtime/node/node.exe`、`runtime/sdk/node_modules/@colbymchenry/codegraph`（SDK）、`runtime/sdk/astrocyte/repository-context/codegraph.mjs`（adapter 入口）。Node 固定 24.16.0；CodeGraph 固定 1.0.1 与源码 `a1489f77a6d69538bfe29020b8366ee034f90860`。CodeGraph 的实际 SDK 由 P 按官方 Git 源码构建并 npm pack；注册的 npm 包是 `npm-sdk.js` 可选平台包装，可能访问宿主缓存。具体合法安装与打包由 P 按 S4 与 P 报告实施，本文不固定平台包或宿主缓存机制、不臆造新 ENV。
+必需运行文件（S4 owner 生产配置）：`runtime/node/node.exe`、`runtime/sdk/node_modules/@colbymchenry/codegraph`（SDK）、`runtime/adapters/codegraph.mjs`（adapter 入口）。Node 固定 24.16.0；CodeGraph 固定 1.0.1 与源码 `a1489f77a6d69538bfe29020b8366ee034f90860`。CodeGraph 的实际 SDK 由 P 按官方 Git 源码构建并 npm pack；注册的 npm 包是 `npm-sdk.js` 可选平台包装，可能访问宿主缓存。P 现有 [SOURCE `8e62c7f99b513115a19fc22569e33587bddcc300`](https://github.com/songconmaisaix31-design/Astrocyte/commit/8e62c7f99b513115a19fc22569e33587bddcc300) 的 `release/Build-Windows.ps1` 把本次应用源码的 `internal/adapters/repositorycontext/codegraph.mjs` 复制为包内 `runtime/adapters/codegraph.mjs`；具体合法安装与打包由 P 实施，本文不固定平台包或宿主缓存机制、不臆造新 ENV。
 
 S5 运行时通过 `onnxruntime-node@1.30.0` 携带其原生库与 `DirectML.dll`、`dxcompiler.dll`；相应许可文本随分发携带（P 的 `legal/` 与包内 `runtime/sdk/node_modules/onnxruntime-node`）。
 
@@ -104,15 +104,3 @@ owner 报告链接：[S4 标准文档](https://github.com/songconmaisaix31-desig
 - 文档校核：`git diff --check` 与写入范围检查。
 
 未执行：产品构建、Go/前端/浏览器/模型/原生控制器验收、正式采集与发布。本文只做许可与来源核对，不重跑 S4、S5 的领域测试。
-
-## 8. 独立 REPORT
-
-本轮 SOURCE `da5bbf28eaa4776b6fa267c22bbf3bdf309df224` 已普通 push，远端 `git ls-remote origin refs/heads/songconmaisaix31-design/release-research-20261014` 与实际同完整值；本节是该 SOURCE 之后的独立 REPORT，只修改本文件，REPORT 自身的完整 SHA 由实际 Git 提交与 push 回执提供。
-
-独立核查结果：
-
-- 写入范围：相对基线 `2e978a0c9ef2b576cdc3bb803845d363755ddd71` 只修改 `docs/release/components-20261015.md`；业务代码、`go.mod`、`go.sum`、`package.json`、`pnpm-lock.yaml`、`dependencies.lock.json` 与冻结域零改动；`.verification/components-20261015/` 由 `.gitignore` 忽略。
-- 内容核对：按 P 现成原件补入 onnxruntime 原生库、`DirectML.dll`（Microsoft Software License Terms）与 `dxcompiler.dll`（LLVM NCSA）的稳定组件、固定版本、官方主链接、必要文件与 NOTICE，明确不把附属 DLL 统称 npm 主包装 MIT；移除 CodeGraph 平台包必须直接依赖的断言，改为官方 Git 源码构建的 SDK 与 adapter 入口，安装方式归 P。
-- 候选包：15f 的 39 项目录仍只含项目 AGPL-3.0 `LICENSE`，不含 §3 任一组件。
-
-真实剩余限制：SemanticIndex 选择与 AOCI 的公开包分发方式仍需用户决定；DirectML 二进制的具体再分发条款已 Handoff P 与协调端，未由本文批准；CodeGraph 的合法打包实施归 P。
