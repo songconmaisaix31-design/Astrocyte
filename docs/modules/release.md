@@ -2,6 +2,22 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 00:08 R 已合并，H 三项领域冲突
+
+原 S2 已本人 STOP 归还前六件，本模块核准确 HEAD / MERGE_HEAD、U0、无未暂存路径、普通和 cached diff 检查及六件领域保留后，以 `msg_72807f8868b0` 仅放行 I 继续。R 普通合并形成 `b9bf9d77a11b4c2a22f80a879cd4c4ea400a2e87`；随后 H 最新 SOURCE `c0526d444e4a6fe798cdd1514b72a303de10b5b4` / REPORT `aaaf603a9477e470ff0ce0c269597802a6f25b40` 普通合入出现三项领域冲突。H 七件源码、单文档 REPORT、SOURCE 祖先和远端同值已由本模块核实，包含真实固定批准上下文读取器；实际 native 输入仍为零。
+
+I `ctx_29518fe03538` 本人 `msg_d41719dea525` 确认三件从未编辑 / stage，已停止全部 merge 生命周期。当前 HEAD 为上述 R merge，MERGE_HEAD 为 H REPORT；新临时互斥计划如下，各原作者本轮安全 ACK 成立并明确放行后才编辑和 stage。
+
+| 唯一原作者 | I 树单件临时 edit / stage 范围 |
+|---|---|
+| B，经 M-product | `cmd/server/config.go` |
+| S2，经 M-product | `internal/workspace/app/proposal_ports.go` |
+| R，经 M-relay | `internal/adapters/agents/relay_input_operation.go` |
+
+原六件临时权限已收回。三作者不操作 commit / continue / abort / reset，不复制 WIP，不修改其他路径；完成本人停止 I 树全部写入归还。全部归还后由本模块独核准确现场、U0 和适用差异，再仅 I 继续 H 普通合并。R 双完成后继 `e3982c4 / be0edf` 仍作为随后精确普通输入；完整组合、L1、L2 六步与最终包继续按原门禁验收。
+
+I 实际 `.verification` 也已核为 D 盘 junction，连同两处 dist 和原 D runner 的全部进程环境覆盖本树输出；准确四树阶段普通 push 后，逐项核实际 D 路径即可独立执行完整 check / build / 默认 E2E，其他 F / UI 树仍消费原 B 的准确 D helper。Playwright 二进制缓存迁移窗口只限制新浏览器启动，普通合并和 Go 工作继续。
+
 ### 23:52 Runtime 恢复与当前一页计划
 
 本轮唯一负责人为 `task_315679474dc4` / `ctx_eee578a1b9d8` / `term_835902d6-c7f0-464b-a0f4-38f80ae39164`，实际客户端 Codex / `gpt-6.1-sol`、终端 xhigh fast。根当前 `term_24db7f74-f79a-4689-be1d-3f585a38e6b4`，正式根工作树 HANDOFF / STATUS 23:47 入口及 `msg_d39d6723a5db`、`msg_226ffab47e31`、`msg_cd02a6754b91` 授权接续原 `run_aa4e6a119547`；旧任务正文的身份、创建子 Run 与先 L1 后集成顺序按当前入口执行。接管时创建的 `run_7ecfa72b8b8b` 保留为空，已读取并 ACK 其中两条根消息，不用于派发。
