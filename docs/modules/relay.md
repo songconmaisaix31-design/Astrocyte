@@ -4,6 +4,32 @@
 
 ## 当前执行范围与 v1.4 规格
 
+2026-10-15T13:44:28Z 总负责人恢复指令 `msg_dda268e9b152`：模块当前为 `task_e8c1d01d67ec / ctx_533af1fca9b7 / term_2717fa40-9809-4cca-8140-89111b01073d`；总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146`，顶层 Run `run_973808dd6a2f`。已按明确授权恢复原子 Run `run_8bbda1c3974c`，generation 4。本次仅修改本文件，继续原 R / H / S4 Task、工作树、分支及独占写入范围。
+
+公开 CLI 核得原三个 Task 均为 ready，前次 Dispatch 均已由恢复流程记录 abandoned / failed、原因 terminal_missing；公开终端清单无三个原终端，进程检查无三个原工作树的开发进程。R 保留十一份 S2 窄闭包未跟踪文件及 ahead 2；H 保留四份未合并文件、原组装与契约修改及 ahead 4；S4 工作树干净。未删除或覆盖这些内容。启动原 Task 前由模块核实上述状态，随后由原领域第三层人员继续处理。
+
+本次优先顺序：R 完成已授权 `RegisterTrustedAgents` 同服务可信登记并核验 L 最小事务闭包；H 等产品模块处理 S2 四文件冲突并归还写入，再消费安全 Context DTO、准确组装和同实例重载；S4 复用已交 SOURCE `faab2daf83f6a578773b61077140aff73af9ef9b` / REPORT `9907404b8df7f9f4a76dc7c90372e967fd2b33cd` 并交 H / 发布负责人准确输入。两阶段 SOURCE `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854` 已通过的检查继续有效，无新变化不重复运行。
+
+S3 Calls 单位和权限证据覆盖仍未决定，保持当前 Claim 拒绝；本次真实登记 t0、原生初始化和模型输入尚未开始。F 仍是实际页面操作唯一人员。新增大型资产使用 D 盘；最终组合验收和 Windows 包支持继续，模块阶段结果不结算本模块任务。
+
+| 本次开发人员 | 原 Task | 当前 Dispatch / 终端 | 实际开始与原件 |
+|---|---|---|---|
+| R | `task_f082d8b36471` | `ctx_f17d901de131` / `term_8e589b7d-3e7e-44ba-ad91-25c9a9cf719c` | 首 `turn_start_unobserved`，纯文本确认 composer 后只补一次 Enter；13:50:50Z、13:51:18Z 本人 actual ACK |
+| H | `task_3004b636a3ab` | `ctx_7eb5801f4450` / `term_c93817c5-5c4a-4db5-8b26-10260c99be5f` | 首 `ctx_08bb2c2de1ca` 账号路由超时并实际返回 PowerShell 后官方 stop / release；重试 observed 但仍在 composer，只补一次 Enter，13:52:50Z 本人 actual ACK |
+| S4 | `task_bd209566be37` | `ctx_09391d7a7e02` / `term_671572db-2c69-4faf-a3a8-3332c0ecb081` | 首 `ctx_44918f469105` 任务落入 PowerShell 并 ParserError，官方 stop / release；重试首 UNKNOWN，纯文本确认 composer 后只补一次 Enter，本人 ACK 待收 |
+
+三位终端纯文本显示 Codex 0.162.0 / GPT-6.1-Sol xhigh fast；启动参数未覆盖用户配置。首次读取新恢复消息与创建 Run 在同批命令执行，另生成空 `run_7ec4ed6599d6`；该 Run 未派发任何人员，当前管理使用恢复后的原子 Run。跨 Run 直接 `--to run:` 携带本模块生命周期 ID 被 `dispatch_run_mismatch` 拒绝，改发当前准确 Dispatch 后由运行时重定向到接收者子 Run；没有改变其绑定。
+
+H 当前 `CHERRY_PICK_HEAD=aa445adf834c3a397a0817bec0593fcf1039420a`，四冲突路径为 SQLite workspace_session_bindings、app proposal_ports、domain session_bindings 和 tests/s2/approval_test。产品负责人当前 `ctx_c2889e0e477c`、原 S2 当前 `ctx_edce6bc4ca6c`。原 H 正式问题 `msg_a3a058701f7c` 已答复 `msg_07f181fba39a`：H 本人停写四路径后，由原 S2 在安全检查点仅编辑并 stage，明确归还后仅 H 继续原序列；config.go / 依赖继续归 B。当前 H 其他独占范围继续，无第二 H 写入者。
+
+### 用户最新完成语义与集成顺序
+
+总负责人 13:53:48Z 消息 `msg_c0b5fd86176f` 转交用户决定：done 采用 `verified_complete` 与 `user_confirmed_complete` 两通道，各自保留真实出处；开始证据独立记录，后到完成不得回填 started；资源释放独立审计，不跳过既有权限、对象归属、真实退出及 pending 检查；user_confirmed 任务照常进入经验管道并保留其完成通道。R 在原领域实施，H 维护安全 HTTP / OpenAPI 与薄组装；需要新增持久化或版本变化时先交准确差异，由 B 处理其独占迁移。当前尚未完成新双通道实际验证。
+
+顺序更新为四树分支收拢与组合验证 → 集成版真实 L1 → L2 经验管道 → 六步端到端首跑作为 L2 验收，目标 10-22 并入发布包。当前可消费准确 SOURCE / 独立 REPORT 先交发布负责人 `ctx_babf16de02e2` 的唯一 I，整体检查在准确组合上执行；领域失败继续交原 owner。Astrocyte 管理目标、批准和上下文，Works Relay 后端 A 与 Morphogenesis 后端 B 的 Mission 认领、预算和租约由单一后端独占；v0.3 任务书及 L3 自动路由由总负责人维护，本模块不扩大当前实现范围。
+
+### 前次恢复记录
+
 2026-10-15T02:40Z 恢复交接 `msg_85124ea68e61` 明确继续 v1.4 和原 Task。当前模块为 `task_e8c1d01d67ec / ctx_bc51f7008918 / term_2d4f3817-2a97-42af-97cf-e3cdfa57c85e`，原子 Run `run_8bbda1c3974c` 已经官方 `run-use` 接管至 generation 3；总负责人为 `term_72a815fc-b97e-433b-b653-5415cf298e1d`，顶层 Run 保持 `run_973808dd6a2f`。本轮只修改本模块管理文档，未创建重复 Run 或 Task。
 
 | 当前开发人员 | 原 Task | 当前 Dispatch / 终端 | 开始证据 |
