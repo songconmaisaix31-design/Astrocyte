@@ -244,6 +244,24 @@ RepositoryVersion.Root 继续从 JSON 隐藏，保存的 RepositoryIndex 不携�
 
 实际生产构建成功，SQLite 创建和迁移通过，main 在监听前退出 1：`unsupported_capability: project repository cannot notify after its actual database commit`。Node 用例实际 `89095.3693 ms`、FAIL 1 / PASS 0 / SKIP 0；本轮 HTTP、建图、地图、重启及清理断言均 NOT_RUN。准确 `main.go:172` 把 `db` 传给 `NewLocalProjectService`，`:264` 调用 `ConfigureRepositoryCleanup`；`project_cleanup.go` 要求 repository 实现 `AfterWorkspaceCommit`，本次准确源码的 SQLite 目录没有该实现。
 
-原件完整保存在 `production-b94-first/production-first.log`、`evidence/astrocyte-s1-build-KX0gNp/build.{stdout,stderr}.log` 和 `evidence/astrocyte-s1-GCkMEQ/process-logs-lIsepR/{api-1.stderr.log,startup-failure.json}`。helper 已清理本次进程，独立查询确认原 PID 46308 不存在，失败库保留。该缺口已直接交 H / B 和当前模块，由原作者交完整准确依赖与生产修复后，继续同一入口和原十秒清理断言。
+原件完整保存在 `production-b94-first/production-first.log`、`evidence/astrocyte-s1-build-KX0gNp/build.{stdout,stderr}.log` 和 `evidence/astrocyte-s1-GCkMEQ/process-logs-lIsepR/{api-1.stderr.log,startup-failure.json}`。helper 已清理本次进程，独立查询确认原 PID 46308 不存在，失败库保留。模块与 H 随后分别准确核对完整集成提交 `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`，其中 `internal/adapters/sqlite/workspace_proposals.go:53` 已有真实 `(*DB).AfterWorkspaceCommit`。S4 也独立读取该实现并核 H SOURCE 祖先；本次 b94 失败对应缺少 S2 回调依赖的输入，其结果只适用于该准确来源。
 
 本轮没有访问共享产品的服务或 SQLite，没有新增原生登记、初始化、模型调用或 t0；没有改动其他人员的源码和数据。原 `f027` 异步清理首 RED、本次启动首 RED、旧 UNKNOWN 与 NOT_RUN 分别保留。当前结果供精确集成和返修使用，S4 与最终包均未结算。
+
+## 完整生产组合的撤权清理
+
+实际入口沿用上述 `tests/s4/production.ps1`、固定 Node / SDK / AOCI 与全部断言，仅将 `-Source` 指定为 `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、`-WorkRoot` 指定为 `D:/Astrocyte-agent-assets/20261015/relay/S4/production-b73-first`。准确提交重新归档到新目录，重新构建实际 `cmd/server`、创建全新 SQLite 与投影；没有复用失败数据库或复制 WIP。
+
+该用例实际 `47574.393 ms`，EXIT 0 / PASS 1 / FAIL 0 / SKIP 0，原十秒 HTTP 和清理上限、180 秒用例上限保持。以下断言全部实际通过：
+
+- 同 HEAD 的两个公开 worktree 各自建立官方 CodeGraph 1.0.1 索引，RepoID 相同、WorktreeID 和 generation 不同；Count 的真实调用关系和安全相对 span 成立，A 的段落功能在 B 中不存在。
+- A 的六条实际作者 AOCI 地图可保存和查询，B 返回真实 `evidence_missing`；图投影与 `.aoci` 的文件数量、大小、mtime 在查询前后不变。
+- 实际进程关闭重开后，A 的原图 generation 和六条地图保持；文件预算超限返回 409。
+- 真实签发 Agent token，当前 grant 有效时返回 200、撤销后返回 403，人类仍能查询原图。
+- A 的目录权限实际关闭后立即返回 403；原十秒上限内，A 的图 / 地图元数据与旧 generation 目录全部清除。
+- B 在 A 清理后仍可查询；再次实际关闭重开后，A 元数据和目录保持缺失、读取保持 403，B 保持原 generation 和安全查询结果。
+- 真实 SQLite 的 `local_agent_sessions` 和 `swarm_missions` 数量均为 0。
+
+完整原件为 `production-b73-first/production-first.log`，真实数据库保存在 `evidence/astrocyte-s1-oawMg7/data/state.sqlite`；构建日志在 `evidence/astrocyte-s1-build-Bichxy`，三次生产进程的日志在该证据根对应 `process-logs-*`。helper 正常关闭本次服务后，独立进程查询确认该独占根下没有存活的 `server.exe`。结果已交当前模块、H 和唯一 I，既有两个首 FAIL 及全部原件保留。
+
+当前生产 RepositoryMap / CodeSearch / ImpactQuery、权限与撤权清理组合按上述准确来源通过。SemanticIndex 的具体模型与组件决定、AOCI binary 分发、完整资料 Context、受限原生正向、完整前端与最终 Windows 包仍分别保持待决定或未验状态；本次没有执行这些操作。本 Task 继续承担原 S4 接入与发布支持。
