@@ -1,5 +1,29 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第八阶段当前结果
+
+Task `task_da9aebf03f83` / Dispatch `ctx_2e078edf896b` 继续原分支与工作树，恢复基线为 `fb57f0f31c4e667b050cb26891a891190eaf4c14`。当前模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_9ce12d181768`，原模块 Dispatch `ctx_b1cd2e0a39aa` 保留为历史。模块已明确恢复基线优先于最初的 `391c617` 起点；只读模块准确文档，不将管理文档合入业务分支。公开 `worker-show` 核当前客户端为 Codex、实际模型为 `gpt-6.1-sol`，本阶段外部模型调用数为零。
+
+SOURCE `10fa36cdd68b3247a70da9230453b74c0f5a04fa` 已普通提交并 push，`git ls-remote` 核远端同值。RecoverMission 在外部对账前记录 Mission 版本，每完成一个原执行者的原子对账只增加一个预期版本。最终恢复事务核对该版本，并拒绝从 `completed` 或 `cancelled` 恢复执行；期间发生的暂停、取消或其他更新保留当前状态。截止时间与无进展停止条件仍会使恢复后的 Mission 保持 `blocked`。取消后的对账保留 `cancelled`，在当前项目读取权限内保存幂等回执，不要求重新启用已经撤销的执行批准。
+
+真实 S2 → SQLite 测试实际创建项目空间、LocalProject、Goal、Proposal 和人类 Grant，经两个连接创建唯一 Mission。追加暂停后显式恢复、回执重放、同键异输入冲突，以及撤销后取消、取消后对账、关闭重开后的回执重放和异输入拒绝；没有创建原生会话或租约。Domain 参数检查覆盖较新版本的暂停与其他控制、两个终态、有效当前恢复及停止条件。这些结果不替代在途原生对账验收。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 -count=1 -timeout=120s` | PASS；Domain、App 与实际 S2/SQLite 链 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS；六项实际 SQLite、Git、固定 Go 检查组件 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS；真实 listener、认证、SQLite 与本域生产路由 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs` | PASS，33 包 |
+| `git diff --check`、普通 push、远端 SHA 核对 | PASS |
+
+首 RED 保留：新增真实取消对账测试在 `approval_test.go:270` 得到 `wanted version_conflict, got <nil>`，没有删除或降低断言，修复后通过。首次 Go 运行因指定的 D 盘 `GOTMPDIR` 目录不存在退出 1；创建本轨目录后运行上述检查。Go 进程使用独立 `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/product-s3` 和 `GOTMPDIR=D:/Astrocyte-agent-assets/20261015/go-temp/product-s3`，没有清理共享缓存。一次只读探查指定了不存在的 `workspace_transaction.go`，实际事务实现在 `workspace_proposals.go`，未修改其他人员文件。
+
+B 当前 Dispatch `ctx_1fd66a8adc28` 已收到 `ReadAcceptedArtifactEvidence` 的准确 SOURCE、factory、同数据库事务和真实 outbox 来源要求。采用事实保存 `pending`，实际候选完成后回链 `candidate_created`；没有同步调用经验录入或制造采用事件。M-relay 当前 `ctx_bc51f7008918` 已交 R SOURCE `ce0302835cb7477eb606107351a9ab46dd8d4714` / REPORT `5d145cb148d1cf8d7053e2b2daf650eb32a95ef8`；本阶段只读核接口，未将该源码合入。R 当前 `ctx_99b96d053325` 已收到 Member Purpose、原完整 session/input operation、实际工具/目标与 Reconcile/Stop 适配请求；H 当前 `ctx_e7abbaf902da` 的主装配和实际运行结果尚未交付。
+
+唯一公开改进目标保持本地受控 Go 项目 `Median`，baseline `da3bdddb085808863090a05f60cc1c64415039cf`，保留已有 Mean；当前没有互联网 remote，不宣称互联网发布。本阶段未预先实现 Median、未另起 CLI、未创建原生会话。完整两 Agent、原会话接续、显式交接、在途崩溃对账、人工采用及第二任务真实经验引用仍 `NOT_RUN`；等待原负责人满足有效工具与原生所有权事实并交付实际装配，本 Task 继续执行。
+
 ## 第七阶段当前结果
 
 Task `task_da9aebf03f83` / Dispatch `ctx_d4bf65ca06bf` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_b1cd2e0a39aa` 的后继 SOURCE 为 `2bd5d26ea6f932d8511afd869ff41f2146c0f94a`，前置 SOURCE 为 `93d1f6ba3ebb6ab029ced8ebe7c268a62d5ed2b0`。第六阶段 REPORT `23367b448d28c9780ec84d770548ccf870b4d8dd` 已普通 push，远端完整 SHA 一致。
@@ -116,7 +140,7 @@ HTTP 结果属于本域生产路由组件与真实认证/存储组合；H 的 se
 
 `internal/swarm/domain/mission.go` 定义 Mission、WorkItem、Lease、Artifact、固定来源版本、写域、资源与停止条件。货币使用明确币种和最小单位，空费用保持未知；预算上限与已知资源数量分开，空 calls/tokens 上限保留原值。
 
-`internal/swarm/app/contracts.go` 和 `commands.go` 提供 CreateMission、AddWorkItem、ClaimWorkItem、SubmitArtifact、AcceptArtifact。Command 的 schema_version、request_id、expected_version 位于 JSON 顶层，Idempotency-Key 来自受信任入口。Principal 不能从命令正文反序列化。采用要求人类身份，通过真实 ExperienceRecorder 返回经验候选引用；经验候选的后续批准与分享继续由原治理接口处理。
+`internal/swarm/app/contracts.go` 和 `commands.go` 提供 CreateMission、AddWorkItem、ClaimWorkItem、SubmitArtifact、AcceptArtifact。Command 的 schema_version、request_id、expected_version 位于 JSON 顶层，Idempotency-Key 来自受信任入口。Principal 不能从命令正文反序列化。采用要求人类身份，事务内保存 `accepted` Artifact、WorkItem 状态及真实 `swarm.artifact_accepted` outbox，`experience_id` 为空、`experience_status` 为 `pending`。B 的实际 consumer 读取该不可变事件并录入经验候选，Swarm 使用 `LinkAcceptedExperience` 核对真实候选来源后保存 `candidate_created` 引用；经验批准与分享继续由原治理接口处理。
 
 认领在授权写事务内重新检查成员、依赖、当前任务版本、项目活跃执行者上限、写域占用与预算，然后保存工作项、单调 fence、租约、资源预留、幂等回执和 outbox。过期租约继续占用资源，删除租约必须使用匹配 fence。提交保存独立 Artifact；提交与采用使用不同命令。Git merge、push 和 release 未作为采用副作用。
 
@@ -148,4 +172,4 @@ SQLite 测试中的明确参数仅验证真实数据库与领域规则，未声�
 | AT13 在途崩溃与原 operation 对账 | NOT_RUN；未知占用保留的 SQLite 重启组件通过，原控制器实际在途场景待完成 |
 | S6 LocalPolicy、无进展停止、第二实际任务引用 approved 经验 | NOT_RUN；本 Task 继续负责实现，经验治理/查询走原公开接口，不修改冻结经验内部 |
 
-当前应用服务尚未接入 H 的实际 HTTP 主路由/鉴权/装配、F/UI 页面或 R 的真实成员与生命周期实现。Git/object 验证器已编译，真实 Git 集成测试仍待运行；Artifact 采用需要真实经验候选管道。提交重放及生命周期幂等的完整服务测试仍待 S2/R 接入后实施。完整核心路径、默认检查、构建和真实两 Agent 改进尚未通过，不将此阶段登记为完成，也不发送 worker_done；继续同一 Task 返修和集成。
+本域 HTTP 路由、真实 S2 批准和 SQLite/Git/object 组件已经实施并运行；H 主服务、F/UI 与 R 实际成员及生命周期组合以各原负责人精确 SOURCE 和本轮实际结果为准。Artifact 人类采用与后续经验候选分别提交；经验候选来源从真实采用事件读取。完整原生提交重放、生命周期、两 Agent 改进、人工采用及第二任务经验引用尚未通过，本 Task 继续返修和集成。
