@@ -2,6 +2,23 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 04:08 恢复原发布 Run 与唯一集成计划
+
+当前负责人为 Task `task_315679474dc4` / Dispatch `ctx_6256d5837fb3` / 终端 `term_956e5a79-f906-42a4-aeea-f2f240d440b0`。公开终端元数据确认实际客户端 Codex / GPT-6.1-Sol xhigh fast；已普通绑定原 `run_aa4e6a119547` generation 10。根 04:04 HANDOFF / STATUS、QUESTIONS 与 `msg_5e583e72cd1c` 是当前执行入口，继续优先恢复可用的完整普通产品。读取 FIFO 前按旧注入正文创建的 `run_6da39d798487` 保持空，没有 Task 或 Worker，不用于派发。
+
+| 责任与互斥写入 | 当前实际基线 | 本轮动作与验收 |
+|---|---|---|
+| 唯一 I，原 `task_2ee44933df72`，`works-relay-integration` / `songconmaisaix31-design/works-relay-integration`；直接写入仅原 `docs/access/integration.md` 与必要少量集成衔接 | 原 Dispatch `ctx_76c7ff15d7e0` 已由运行时结算 abandoned / failed，原 Task ready；本模块独核 HEAD `8b0eb882969d972f3f419602c12b5e20f00b79e2`、clean，当前原树终端列表为空 | 恢复原 Task，先核 `c16-product-check-8b0eb882` 原件的准确退出和完整首失败；普通消费已确认 B cleanup `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` 及 F SOURCE `90e69e703f79b81653ea5ccc1e6c9eca4bd781f9` / REPORT `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，普通 push 后执行运行所需构建。领域冲突由原作者精确处理并归还，仅 I 提交 merge。 |
+| H / B，经 M-relay / M-product，各原树和写域 | 原 H 已安全停止旧 PID25048；准确稳定 `0db5836` 因 CodeGraph Node / SDK 启动校验退出1，64505 尚未恢复监听，原 D 盘 SQLite 与 F 保存结果保留 | 核实际 P 依赖与 B probe，修原领域错误并恢复同库同一服务；准确后继交唯一 I。保持配置校验和数据，不另起共享实例。 |
+| F，经 M-product，原前端与实际核心操作范围 | 原完整320中断为204 PASS / 55 FAIL / 43原SKIP / 18无结果、EXIT UNKNOWN | 先核已成功及未知动作，服务恢复后在同一实例继续必要页面 / API 操作；当前不重跑已知未修全套。 |
+| 本模块，当前发布与原日运行管理文档 | 正式 D2 partial、OS / Q / D1 / P 准备及成功模型均有原结果 | 维护精确来源、构建交接与真实剩余项；不重复采集、Sleep、模型或既有成功检查。最终同源包在实际功能与适用验证完成后安排原 P / N。 |
+
+大型输出继续 D 盘各原 owner 的独占目录。受限 Codex 文件 / 命令工具关闭要求、180秒与 unknown 不重发边界保持；Laya 语言和 Agent completion action 等未答项继续未决定。正式 V4 锁、协议、日程、模型预算、人评和 v0.2 冻结不变。本轮只使用原第三层 I，不派第四层。
+
+唯一 I 已恢复为 `ctx_4a4234c26f8c` / `term_9f0b076a-c973-4c86-b073-2c17640750e9`，公开终端确认实际 Codex / GPT-6.1-Sol xhigh fast。首次启动记录为 `start_unknown` / `turn_start_unobserved`；随后有界文本确认原任务停在 composer、没有 Working，仅对准确终端补一次 bare Enter，后续实际 Working 和本人首进度均已观察。当前来源及经理身份通过 `msg_577db120af55` / `msg_a12657f5304f` 交付；首个带 `--wait-submit` 的 bare Enter 在 CLI 参数预检阶段被拒绝，没有写入输入，实际提交仅一次。
+
+M-product `msg_3ae2f0b8e8b2` 独核 B cleanup SOURCE `b68c3537e9bd9ffe3a06d2d8d513408f89d14de3` / REPORT `0e6139f3236c32787719fd1ce23e834ed68723c3`，分别两件生产 Go 文件与一件报告，远端 `9a96c365` 包含两提交；已通过 `msg_6d38b42215bb` 交 I 普通消费。B 此前 build / vet / SQLite 检查运行在含 native WIP 的工作树，其结果保留该范围；准确组合的构建与适用检查由 I 实际执行后登记。M-relay 已确认 H 恢复 `ctx_5b3dc511cccd`，M-product 已确认 B / F 恢复 `ctx_4f388a292a1f` / `ctx_c22d1dd61be3`，领域后继持续由原作者交付。
+
 ### 2026-10-16 02:46 准确组合构建与同一产品更新
 
 唯一 I 已无冲突普通合入 R REPORT `8f3b7d122dd79f5aded8c826da89fecbf79e2601` 与 H REPORT `2fd1ba1cbbf9190c6f63c1425a93cddbf950f147`，准确 SOURCE `0db5836b7cd466f6a5328bc84ba4530c2bb826ce` 已普通 push。`pwsh -NoProfile -File D:/Astrocyte-agent-assets/20261015/integration/run-validation.ps1 -Step build -RunName c16-product-build-0db5836-second` 内原 `pnpm build` 实际 EXIT0 / `127.2549809` 秒，server / MCP / Sleep / TypeScript / Vite 全部完成；本模块独读该目录 `result.json` 和 `build.log`，source / source_after 均为同一准确 SOURCE，保留原 bundle 体积提示。
