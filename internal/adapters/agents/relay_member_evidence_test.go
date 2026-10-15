@@ -20,7 +20,7 @@ func TestRelayPortableMemberSourceRejectsColdRegistry(t *testing.T) {
 			t.Fatal("portable source reconstructed ownership or a known execution descriptor")
 		}
 		body, err := json.Marshal(fact)
-		if err != nil || string(body) != "{}" || fact.ReportedTotalTokens != nil || fact.AcceptedTurnID != nil || fact.ExitObservedAt != nil {
+		if err != nil || string(body) != "{}" || fact.ReportedTotalTokens != nil || fact.AcceptedTurnID != nil || fact.ExitObservedAt != nil || fact.Outcome != nil || fact.FailureCode != nil || fact.ResultObservedAt != nil || fact.ResultSource != "" {
 			t.Fatal("portable source exposed private or invented observation data")
 		}
 	}

@@ -8,7 +8,7 @@ interface DetailPanelProps {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  /** Show disabled notice for unavailable features */
+  /** 显示当前不可用功能的说明。 */
   showDisabledNotice?: boolean;
   disabledNoticeText?: string;
   disabledActions?: string[];
@@ -28,16 +28,7 @@ export function DetailPanel({
     typeof document !== 'undefined' ? document.activeElement : null,
   );
 
-  // Single focus-lifecycle effect: close-button focus on mount, trigger
-  // restoration on final unmount.  Uses one cancellable rAF slot so
-  // StrictMode setup₁→cleanup₁→setup₂ never schedules competing callbacks:
-  //   setup  – cancel any pending rAF from the previous cycle, capture the
-  //            trigger element (lint: refs only read in effects), schedule
-  //            close-button focus.
-  //   cleanup – cancel close-focus rAF, schedule a single-rAF trigger
-  //             restore (no nesting).  The next setup (StrictMode remount)
-  //             cancels this restore before it fires, so only the final
-  //             unmount actually restores focus.
+  // 挂载时聚焦关闭按钮，最终卸载时恢复触发元素；取消前次 rAF，避免 StrictMode 重复回调。
   const rafRef = useRef<number | null>(null);
   useEffect(() => {
     if (rafRef.current !== null) {
@@ -62,7 +53,7 @@ export function DetailPanel({
     };
   }, []);
 
-  // Document-level Escape listener (works regardless of focus position)
+  // 从整个文档接收 Escape，兼容详情外的焦点。
   useEffect(() => {
     const onDocKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -77,7 +68,7 @@ export function DetailPanel({
     return () => { document.body.style.overflow = previous; };
   }, []);
 
-  // Focus trap (Tab/Shift+Tab cycle within dialog)
+  // Tab 和 Shift+Tab 在详情内部循环焦点。
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === 'Tab') {
@@ -145,7 +136,7 @@ export function DetailPanel({
   );
 }
 
-/** Reusable field display within DetailPanel */
+/** 详情面板中复用的字段显示。 */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className={styles.field}>

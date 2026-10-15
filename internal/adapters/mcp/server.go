@@ -115,7 +115,7 @@ func (s *Server) handle(ctx context.Context, line []byte, initialized *bool) *re
 		}
 		return s.call(req.ID, ctx, req.Params)
 	default:
-		return errorResponse(req.ID, codeMethodNotFound, "Method not found: "+req.Method)
+		return errorResponse(req.ID, codeMethodNotFound, "Method not found")
 	}
 }
 
@@ -149,7 +149,7 @@ type callParams struct {
 func (s *Server) call(id json.RawMessage, ctx context.Context, params json.RawMessage) *response {
 	var p callParams
 	if err := json.Unmarshal(params, &p); err != nil {
-		return errorResponse(id, codeInvalidParams, "Invalid params: "+err.Error())
+		return errorResponse(id, codeInvalidParams, "Invalid params")
 	}
 	if len(p.Arguments) == 0 {
 		p.Arguments = json.RawMessage(`{}`)
@@ -160,32 +160,34 @@ func (s *Server) call(id json.RawMessage, ctx context.Context, params json.RawMe
 	}
 	t, ok := s.byName[p.Name]
 	if !ok {
-		return errorResponse(id, codeInvalidParams, "Unknown tool: "+p.Name)
+		return errorResponse(id, codeInvalidParams, "Unknown tool")
 	}
 	result, err := t.Handler(ctx, p.Arguments)
 	if err != nil {
-		var invalid *InvalidParamsError
-		if errors.As(err, &invalid) {
-			return errorResponse(id, codeInvalidParams, invalid.Error())
-		}
 		if delivery, ok := result.(interface{ MCPDeliveryState() string }); ok && delivery.MCPDeliveryState() != "" {
 			// Text is authoritative for clients that discard structuredContent
 			// when isError is true. Never drop a committed receipt on this path.
 			payload, marshalErr := json.Marshal(result)
 			var receipt map[string]any
 			if marshalErr == nil && json.Unmarshal(payload, &receipt) == nil && receipt != nil {
-				receipt["error"] = err.Error()
+				receipt["error"] = "Tool operation failed"
 				payload, marshalErr = json.Marshal(receipt)
 				if marshalErr == nil {
 					return okResponse(id, toolResult{Content: []contentItem{{Type: "text", Text: string(payload)}}, IsError: true, StructuredContent: receipt})
 				}
 			}
 		}
+		// A committed receipt takes precedence even when its cause wraps an
+		// argument error. Classification must never erase delivery uncertainty.
+		var invalid *InvalidParamsError
+		if errors.As(err, &invalid) {
+			return errorResponse(id, codeInvalidParams, "Invalid tool arguments")
+		}
 		return okResponse(id, toolResultError(err))
 	}
 	text, err := json.Marshal(result)
 	if err != nil {
-		return errorResponse(id, codeInternalError, "Failed to marshal tool result: "+err.Error())
+		return errorResponse(id, codeInternalError, "Failed to marshal tool result")
 	}
 	return okResponse(id, toolResultText(string(text)))
 }
@@ -206,5 +208,5 @@ func toolResultText(text string) toolResult {
 }
 
 func toolResultError(err error) toolResult {
-	return toolResult{Content: []contentItem{{Type: "text", Text: err.Error()}}, IsError: true}
+	return toolResult{Content: []contentItem{{Type: "text", Text: "Tool operation failed"}}, IsError: true}
 }

@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -72,13 +73,16 @@ func m3Node(t *testing.T, db *sqlite.DB, topic string) app.StoredAttentionNode {
 	return node
 }
 
-func TestM3PipelineBirthSignalsMetricsDailyReplayAndRestart(t *testing.T) {
+func TestM3PipelineExistingTopicSignalsMetricsDailyReplayAndRestart(t *testing.T) {
 	ctx := context.Background()
 	day := time.Date(2026, 10, 11, 0, 0, 0, 0, time.UTC)
 	now := day.Add(23 * time.Hour)
 	path := filepath.Join(t.TempDir(), "m3.sqlite")
 	db := m3Open(t, path)
 	defer func() { db.Close() }()
+	if _, err := m3Engine(db, now).SeedTopic(ctx, app.Principal{ID: "human", Kind: "human"}, "fresh", day.Add(8*time.Hour).UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
 	first := m3Record(t, db, "fresh-1", "fresh", "project-a", day.Add(9*time.Hour), map[string]string{"method": "邻接聚类"})
 	last := m3Record(t, db, "fresh-2", "fresh", "project-a", day.Add(10*time.Hour), map[string]string{"method": "邻接聚类"})
 	m3Record(t, db, "noise", "noise", "project-a", day.Add(11*time.Hour), map[string]string{"one-off": "discarded"})
@@ -230,6 +234,14 @@ func TestM3PipelineRollsBackGraphFluidAndDailyReceipt(t *testing.T) {
 	day := time.Date(2026, 10, 11, 0, 0, 0, 0, time.UTC)
 	now := day.Add(23 * time.Hour)
 	db := m3Open(t, filepath.Join(t.TempDir(), "rollback.sqlite"))
+	if _, err := m3Engine(db, now).SeedTopic(ctx, app.Principal{ID: "human", Kind: "human"}, "fresh", day.Add(8*time.Hour).UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
+	graphBefore := m3Node(t, db, "fresh")
+	var graphDataBefore string
+	if err := db.Conn().QueryRowContext(ctx, "SELECT data FROM attention_engine_nodes WHERE topic='fresh'").Scan(&graphDataBefore); err != nil {
+		t.Fatal(err)
+	}
 	m3Record(t, db, "a", "fresh", "project-a", day.Add(9*time.Hour), map[string]string{"method": "same"})
 	m3Record(t, db, "b", "fresh", "project-a", day.Add(10*time.Hour), map[string]string{"method": "same"})
 	s := app.NewSleepService(m3FailRepository{sqlite.NewSleepRepository(db)}, m3Engine(db, now), app.SleepOptions{Clock: func() time.Time { return now }, ProjectFacts: app.LiteralSleepFactsMap})
@@ -238,9 +250,20 @@ func TestM3PipelineRollsBackGraphFluidAndDailyReceipt(t *testing.T) {
 	}
 	for _, table := range []string{"attention_engine_nodes", "attention_engine_knowledge", "attention_engine_sleep_runs", "attention_engine_sleep_candidates", "attention_engine_sleep_metrics"} {
 		var count int
-		if err := db.Conn().QueryRowContext(ctx, "SELECT count(*) FROM "+table).Scan(&count); err != nil || count != 0 {
+		want := 0
+		if table == "attention_engine_nodes" {
+			want = 1
+		}
+		if err := db.Conn().QueryRowContext(ctx, "SELECT count(*) FROM "+table).Scan(&count); err != nil || count != want {
 			t.Fatalf("partial %s: %d %v", table, count, err)
 		}
+	}
+	if graphAfter := m3Node(t, db, "fresh"); !reflect.DeepEqual(graphAfter, graphBefore) {
+		t.Fatal("failed daily transaction changed the preexisting graph")
+	}
+	var graphDataAfter string
+	if err := db.Conn().QueryRowContext(ctx, "SELECT data FROM attention_engine_nodes WHERE topic='fresh'").Scan(&graphDataAfter); err != nil || graphDataAfter != graphDataBefore {
+		t.Fatalf("failed daily transaction changed persisted graph bytes: %v", err)
 	}
 	var events int
 	if err := db.Conn().QueryRowContext(ctx, "SELECT count(*) FROM attention_engine_events").Scan(&events); err != nil || events != 2 {
@@ -343,7 +366,7 @@ func TestM3LLMOffMatchesHostileInterpreterPersistedOutput(t *testing.T) {
 	}
 }
 
-func TestM3AdjacentSingleEventBirthKeepsDistinctTopicsAndOwnEvidence(t *testing.T) {
+func TestM3AdjacentTaggedCandidateDoesNotBirthAndKeepsExistingEvidence(t *testing.T) {
 	ctx := context.Background()
 	day := time.Date(2026, 10, 11, 0, 0, 0, 0, time.UTC)
 	now := day.Add(23 * time.Hour)
@@ -368,15 +391,28 @@ func TestM3AdjacentSingleEventBirthKeepsDistinctTopicsAndOwnEvidence(t *testing.
 	}
 	paper := m3Record(t, db, "paper-1", "paper", "project-a", day.Add(11*time.Hour), map[string]string{"paper": "reading"})
 	m3Record(t, db, "one-off", "noise", "project-a", day.Add(12*time.Hour), map[string]string{"noise": "one-off"})
-	if _, err := m3Service(db, now, nil).Run(ctx, day); err != nil {
+	result, err := m3Service(db, now, nil).Run(ctx, day)
+	if err != nil {
 		t.Fatal(err)
 	}
-	p := m3Node(t, db, "paper")
 	swarm := m3Node(t, db, "swarm")
-	if !containsM3Evidence(p.Node.Evidence, paper.ID) || p.Node.RelatedTopics["swarm"] != .9 || swarm.Node.RelatedTopics["paper"] != .9 {
-		t.Fatalf("association or single-topic birth missing: %+v %+v", p, swarm)
+	var paperNodes int
+	if err = db.Conn().QueryRowContext(ctx, "SELECT count(*) FROM attention_engine_nodes WHERE topic='paper'").Scan(&paperNodes); err != nil || paperNodes != 0 {
+		t.Fatalf("tagged candidate promoted: %d %v", paperNodes, err)
 	}
-	for _, node := range []app.StoredAttentionNode{p, swarm} {
+	if len(swarm.Node.Evidence) != 3 || swarm.Node.RelatedTopics["paper"] != .9 {
+		t.Fatal("existing topic lost its own evidence or stored association")
+	}
+	var pending []app.SleepCandidate
+	if err = json.Unmarshal(result.Run.Candidates, &pending); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.ContainsFunc(pending, func(c app.SleepCandidate) bool {
+		return c.Topic == "paper" && c.Kind == "concept_pending" && c.Note == "tagged_birth_disabled_v0_2" && len(c.Sources) == 1 && c.Sources[0].EventID == paper.ID
+	}) {
+		t.Fatal("blocked tagged candidate lost its original reference")
+	}
+	for _, node := range []app.StoredAttentionNode{swarm} {
 		for _, ref := range node.Node.Evidence {
 			event, err := sqlite.NewEventRepository(db).GetEvent(ctx, ref.EventID)
 			if err != nil || event.Event.Topic != node.Node.Topic {
@@ -387,7 +423,7 @@ func TestM3AdjacentSingleEventBirthKeepsDistinctTopicsAndOwnEvidence(t *testing.
 	if _, err := m3Service(db, now.AddDate(0, 0, 1), nil).Run(ctx, day.AddDate(0, 0, 1)); err != nil {
 		t.Fatal(err)
 	}
-	for _, topic := range []string{"paper", "swarm"} {
+	for _, topic := range []string{"swarm"} {
 		if got := m3Node(t, db, topic); got.Lifecycle == "cold" {
 			t.Fatalf("disjoint topics merged: %+v", got)
 		}
@@ -400,6 +436,9 @@ func TestM3KnowledgeConflictRetainsConfirmedSnapshotAndRequiresHuman(t *testing.
 	now := day.Add(23 * time.Hour)
 	path := filepath.Join(t.TempDir(), "conflict.sqlite")
 	db := m3Open(t, path)
+	if _, err := m3Engine(db, now).SeedTopic(ctx, app.Principal{ID: "human", Kind: "human"}, "design", day.Add(8*time.Hour).UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
 	for i := 0; i < 2; i++ {
 		m3Record(t, db, fmt.Sprintf("left-%d", i), "design", "project-a", day.Add(time.Duration(9+i)*time.Hour), map[string]string{"method": "centralized"})
 	}
@@ -504,6 +543,9 @@ func TestM3CompactInputReportsActualStorageGrowth(t *testing.T) {
 	day := time.Date(2026, 10, 11, 0, 0, 0, 0, time.UTC)
 	now := day.Add(23 * time.Hour)
 	db := m3Open(t, filepath.Join(t.TempDir(), "growth.sqlite"))
+	if _, err := m3Engine(db, now).SeedTopic(ctx, app.Principal{ID: "human", Kind: "human"}, "compact", day.Add(8*time.Hour).UnixMilli()); err != nil {
+		t.Fatal(err)
+	}
 	service := app.NewEventService(sqlite.NewEventRepository(db), .2)
 	for i := 0; i < 2; i++ {
 		ts := day.Add(time.Duration(9+i) * time.Hour).UnixMilli()

@@ -15,6 +15,7 @@ func TestRelayMemberEvidencePrivateSerialization(t *testing.T) {
 		ControllerID: "PRIVATE_CONTROLLER_CANARY", StartupOperationID: "PRIVATE_STARTUP_CANARY", InputOperationID: "PRIVATE_INPUT_CANARY",
 		ProjectID: "PRIVATE_PROJECT_CANARY", CWD: "PRIVATE_CWD_CANARY", CLI: "PRIVATE_CLI_CANARY", CLIVersion: "PRIVATE_VERSION_CANARY",
 		AcceptedTurnID: &turn, ControllerStartedAt: &observed, InputAcceptedAt: &observed, TurnStartedAt: &observed, ExitObservedAt: &observed,
+		Outcome: &turn, FailureCode: &turn, ResultSource: "PRIVATE_SOURCE_CANARY", ResultObservedAt: &observed,
 		Capabilities: []string{"PRIVATE_CAPABILITY_CANARY"}, Tools: []string{"PRIVATE_TOOL_CANARY"}, ExternalTargets: []string{"PRIVATE_TARGET_CANARY"},
 	}
 	encoded, err := json.Marshal(fact)

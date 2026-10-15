@@ -18,10 +18,74 @@ import (
 type RegisteredProjects struct {
 	read            func(context.Context, string, string) ([]byte, error)
 	metadataSources func() []projectMetadataSource
+	explicitRoots   []string
 }
 
 func NewRegisteredProjects() *RegisteredProjects {
 	return &RegisteredProjects{read: registeredReadCommand, metadataSources: knownProjectMetadataSources}
+}
+
+// NewScopedRegisteredProjects 只观察调用者明确选择的实际目录及其 Git 状态。
+func NewScopedRegisteredProjects(roots []string) (*RegisteredProjects, error) {
+	if len(roots) > 256 {
+		return nil, errors.New("explicit project discovery exceeds 256 roots")
+	}
+	selected := make([]string, 0, len(roots))
+	seen := map[string]bool{}
+	for _, root := range roots {
+		canonical, err := CanonicalRoot(root)
+		if err != nil {
+			return nil, err
+		}
+		if seen[rootKey(canonical)] {
+			return nil, errors.New("explicit project discovery contains duplicate roots")
+		}
+		seen[rootKey(canonical)] = true
+		selected = append(selected, canonical)
+	}
+	return &RegisteredProjects{read: registeredReadCommand, explicitRoots: selected}, nil
+}
+
+func (s *RegisteredProjects) discoverExplicit(ctx context.Context) (domain.ProjectDiscoverySnapshot, error) {
+	result := emptyRegisteredSnapshot()
+	now := time.Now().UTC()
+	result.ObservedAt, result.Status = &now, "complete"
+	for _, root := range s.explicitRoots {
+		if err := ctx.Err(); err != nil {
+			return result, err
+		}
+		canonical, err := CanonicalRoot(root)
+		if err != nil {
+			return result, err
+		}
+		git := s.observeGit(ctx, canonical)
+		projectKey := ""
+		if git.Status == "known" {
+			raw, err := s.read(ctx, "git_common_dir", canonical)
+			if err != nil {
+				return result, err
+			}
+			if len(raw) >= 4096 {
+				return result, errors.New("Git common directory exceeds bound")
+			}
+			common, err := CanonicalRoot(strings.TrimSpace(string(raw)))
+			if err != nil {
+				return result, err
+			}
+			projectKey = "git:" + rootKey(common)
+		}
+		result.Projects = append(result.Projects, domain.RegisteredProject{
+			Root: canonical, Name: filepath.Base(canonical), Source: "explicit_directory", Git: git, ProjectKey: projectKey,
+			Activity:    domain.ProjectActivityObservation{Status: "unknown", Source: "explicit_directory"},
+			Limitations: []string{"observation_only_no_context_or_execution_permission", "tracked_git_changes_only", "native_session_metadata_not_requested"},
+		})
+		if git.Status == "unknown" {
+			result.Status = "partial"
+			result.Failures = append(result.Failures, domain.ProjectDiscoveryFailure{Root: canonical, Reason: git.Reason})
+		}
+	}
+	result.Board = domain.AggregateProjects(result.Projects)
+	return result, nil
 }
 
 type orcaRegisteredRepo struct {
@@ -57,6 +121,9 @@ func rootKey(root string) string {
 func (s *RegisteredProjects) DiscoverRegistered(ctx context.Context) (domain.ProjectDiscoverySnapshot, error) {
 	ctx, cancel := context.WithTimeout(ctx, 120*time.Second)
 	defer cancel()
+	if s.explicitRoots != nil {
+		return s.discoverExplicit(ctx)
+	}
 	result := emptyRegisteredSnapshot()
 	data, err := s.read(ctx, "orca_repos", "")
 	if err != nil {

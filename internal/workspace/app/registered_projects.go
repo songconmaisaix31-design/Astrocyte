@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"time"
 	"unicode/utf8"
 
@@ -11,8 +12,7 @@ import (
 
 var _ RegisteredProjects = (*localProjectService)(nil)
 
-// ConfigureRegisteredDiscovery is entrypoint-only wiring before concurrent use.
-// Observations use a separate cache, never create a project/space or modify grants.
+// 并发使用前由启动入口装配；观察缓存不会创建项目、空间或改变授权。
 func (s *localProjectService) ConfigureRegisteredDiscovery(repo RegisteredProjectRepository, source RegisteredProjectSource) {
 	s.discoveryRepo, s.discoverySource = repo, source
 }
@@ -38,11 +38,10 @@ func (s *localProjectService) RefreshRegisteredProjects(ctx context.Context, c d
 	if s.discoveryRepo == nil || s.discoverySource == nil {
 		return domain.ProjectDiscoverySnapshot{}, projectError(apierrors.UnsupportedCapability, "registered project discovery is not connected")
 	}
-	// One request budget includes waiting for another refresh. The source's
-	// own deadline alone would otherwise allow an unbounded queue wait.
+	// 请求期限包含等待其他刷新的时间。
 	ctx, cancel := context.WithTimeout(ctx, 120*time.Second)
 	defer cancel()
-	// Serialize refreshes without locking native session/settings operations.
+	// 刷新顺序执行，原生会话和设置操作继续独立处理。
 	select {
 	case s.discoveryGate <- struct{}{}:
 	case <-ctx.Done():
@@ -63,22 +62,20 @@ func (s *localProjectService) RefreshRegisteredProjects(ctx context.Context, c d
 			old.Status = "stale"
 		}
 		old.Failures = []domain.ProjectDiscoveryFailure{{Root: "", Reason: "registered_source_unavailable"}}
-		// A caller cancellation must not lose the prior durable snapshot. Return
-		// the cancellation separately; it is not a completed refresh.
+		// 取消仍保留此前的持久快照，并传播实际错误。
 		if ctx.Err() != nil {
-			return old, ctx.Err()
+			return old, errors.Join(err, ctx.Err())
 		}
 		if saveErr := s.discoveryRepo.SaveRegisteredProjectDiscovery(ctx, old); saveErr != nil {
-			return old, saveErr
+			return old, errors.Join(err, saveErr)
 		}
-		return s.withProjectMetadata(ctx, old)
+		projected, metadataErr := s.withProjectMetadata(ctx, old)
+		return projected, errors.Join(err, metadataErr)
 	}
 	if current.ObservedAt == nil || (current.Status != "complete" && current.Status != "partial") {
 		return old, projectError(apierrors.EvidenceMissing, "registered source did not provide an observation")
 	}
-	// A temporary Git observation failure must not rename an already observed
-	// worktree family and orphan its human annotations. This carries identity
-	// only; current activity/commit unknowns stay unknown.
+	// 暂时无法观察 Git 时保留已经确认的目录身份和人工备注；当前未知字段仍未知。
 	for i := range current.Projects {
 		if current.Projects[i].ProjectKey != "" {
 			continue
@@ -96,8 +93,7 @@ func (s *localProjectService) RefreshRegisteredProjects(ctx context.Context, c d
 	return s.withProjectMetadata(ctx, current)
 }
 
-// Pure cache reads: no source calls, writes or native operations. Rebuild old
-// snapshots' aggregation in memory so upgrading does not require a disk scan.
+// 缓存读取在内存重建聚合，来源调用、写入和原生操作均不发生。
 func (s *localProjectService) withProjectMetadata(ctx context.Context, snapshot domain.ProjectDiscoverySnapshot) (domain.ProjectDiscoverySnapshot, error) {
 	snapshot.Board = domain.AggregateProjects(snapshot.Projects)
 	if snapshot.Sources == nil {
@@ -119,7 +115,7 @@ func (s *localProjectService) SetRegisteredProjectMetadata(ctx context.Context, 
 	if err := human(c); err != nil {
 		return domain.ProjectSummary{}, err
 	}
-	// User content and revisions never grant project permissions or execution.
+	// 人工内容与 revision 不授予项目访问或执行权限。
 	if metadata.Revision < 0 || metadata.UpdatedAt != nil || !utf8.ValidString(metadata.Notes+metadata.Review+metadata.Group+metadata.Intent) || len(metadata.Notes) > 64*1024 || len(metadata.Review) > 64*1024 || len(metadata.Group) > 200 || len(metadata.Intent) > 4096 {
 		return domain.ProjectSummary{}, projectError(apierrors.ValidationFailed, "human project metadata exceeds bounds or supplies server-owned updated_at")
 	}

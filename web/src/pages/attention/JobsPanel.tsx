@@ -12,26 +12,26 @@ import { jobPresentation } from './jobPresentation';
 import styles from './AttentionPage.module.css';
 
 type Job = components['schemas']['JobV1'];
-export function JobsPanel({ fixture, refreshToken, onChanged, onMaterial }: { fixture: boolean; refreshToken: number; onChanged: () => void; onMaterial: (id: string) => void }) {
-  const state = useJobs(!fixture);
+export function JobsPanel({ refreshToken, onChanged, onMaterial }: { refreshToken: number; onChanged: () => void; onMaterial: (id: string) => void }) {
+  const state = useJobs();
   const completedMultiple = state.data?.items.filter(job => job.distillation_id && !job.material_id) ?? [];
-  const results = useDistillations(!fixture && completedMultiple.length > 0);
+  const results = useDistillations(completedMultiple.length > 0);
   const retryResults = results.retry;
   useEffect(() => { retryResults(); }, [state.data, retryResults]);
   const { retry } = state;
   const active = !!state.data?.items.some(job => job.status === 'queued' || job.status === 'running');
   useEffect(() => { if (refreshToken) retry(); }, [refreshToken, retry]);
   useEffect(() => {
-    if (!active || fixture) return;
-    // Bound refresh window; job deadlines and retry limits are backend facts.
+    if (!active) return;
+    // 限定刷新时段；作业截止时间与重试上限由服务提供。
     let ticks = 0;
     const timer = window.setInterval(() => { if (++ticks > 150) { window.clearInterval(timer); return; } retry(); onChanged(); }, 2000);
     return () => window.clearInterval(timer);
-  }, [active, fixture, retry, onChanged]);
+  }, [active, retry, onChanged]);
   return <SectionCard title="导入与沉淀队列" tabs={['overview']} padded>
     <p className={styles.note}>作业由本地服务持久保存；退出网页不停止已提交作业。进行中最多自动刷新五分钟，之后可手动刷新；刷新不会记录人工关注。</p>
-    {fixture ? <p role="note">示例模式不读取真实作业，重试和取消尚未启用。</p> : <><button type="button" className="ac-button secondary compact" onClick={state.retry} disabled={state.loading}>刷新队列</button><QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无作业">{data => <ul className={styles.timeline}>{data.items.map(job => <JobRow key={job.job_id} job={job} onChanged={() => { state.retry(); onChanged(); }} onMaterial={onMaterial} disabled={state.stale} />)}</ul>}</QueryState></>}
-    {!fixture && completedMultiple.length > 0 && <section aria-label="多输入作业沉淀结果"><h4>多输入作业来源</h4><QueryState state={results}>{data => completedMultiple.map(job => {
+    <button type="button" className="ac-button secondary compact" onClick={state.retry} disabled={state.loading}>刷新队列</button><QueryState state={state} empty={data => !data.items.length} emptyTitle="暂无作业">{data => <ul className={styles.timeline}>{data.items.map(job => <JobRow key={job.job_id} job={job} onChanged={() => { state.retry(); onChanged(); }} onMaterial={onMaterial} disabled={state.stale} />)}</ul>}</QueryState>
+    {completedMultiple.length > 0 && <section aria-label="多输入作业沉淀结果"><h4>多输入作业来源</h4><QueryState state={results}>{data => completedMultiple.map(job => {
       const record = data.items.find(entry => entry.id === job.distillation_id);
       return <div className={styles.record} key={job.job_id}><p>作业 {job.job_id} · 记录 {job.distillation_id}</p>{record ? <><p>{record.question}</p><div className={styles.actions}>{record.input_refs.map(ref => <button key={`${ref.material_id}@${ref.revision}`} type="button" className="ac-button secondary compact" onClick={() => onMaterial(ref.material_id)}>查看沉淀来源 · {ref.material_id} · v{ref.revision}</button>)}</div></> : <p>服务暂未返回对应沉淀记录，请刷新队列核对；不猜测代表来源。</p>}</div>;
     })}</QueryState></section>}

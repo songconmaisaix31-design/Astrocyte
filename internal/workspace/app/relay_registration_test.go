@@ -62,6 +62,10 @@ func relayRegistrationService(t *testing.T) (app.RelayRuntime, *sqlite.RelayStor
 	if err != nil {
 		t.Fatal(err)
 	}
+	project, err = projects.SetProjectSettings(ctx, caller(), project.ID, domain.SettingsCommand{ExpectedRevision: project.Settings.Revision, Settings: domain.ProjectSettings{ExternalModelCLI: "codex", AllowedActions: []string{"observe"}}})
+	if err != nil {
+		t.Fatal(err)
+	}
 	works := app.NewWorksService(db, nil, worksscan.Delivery{}, nil, app.WorksServiceOptions{})
 	delivery, err := json.Marshal(map[string]any{"works": []any{map[string]any{"platform": "codex", "name": "Public registration check", "path": project.Root, "kind": "folder", "handoff": "Review the public trusted registration policy."}}})
 	if err != nil {

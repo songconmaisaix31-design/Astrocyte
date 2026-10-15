@@ -1,4 +1,4 @@
-/** Presentation only; HTTP identity and aggregation are supplied by the backend. */
+/** 仅处理显示字段；身份和汇总由服务提供。 */
 export interface BoardProject {
   id: string;
   name: string;
@@ -35,7 +35,7 @@ export function filterBoardProjects(items: BoardProject[], filters: BoardFilters
     filters.sort === 'activity' ? (Date.parse(right.activityAt ?? '') || 0) - (Date.parse(left.activityAt ?? '') || 0) || left.name.localeCompare(right.name, 'zh-CN') : 0);
 }
 
-/** Grouping never duplicates a multi-client project; its complete client list stays on its card. */
+/** 多客户端项目只显示一次，卡片保留完整客户端列表。 */
 export function boardSections(items: BoardProject[], view: string) {
   const groups = new Map<string, BoardProject[]>();
   for (const item of items) {

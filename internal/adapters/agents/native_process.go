@@ -52,8 +52,10 @@ type nativeProcess struct {
 	inputOperationID      string
 	relayStartedTurns     map[string]time.Time
 	relayPublishedTurns   map[string]bool
+	relayCompletedTurns   map[string]relayInputOutcome
 	originalSession       *domain.NativeSession
 	relayInputGuard       func(context.Context, domain.NativeSession) error
+	completionExperience  *completionExperienceOperation
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -436,6 +438,11 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 	if p.truncated {
 		return nil
 	}
+	if p.completionExperience != nil {
+		if err := p.observeCompletionExperience(method, r); err != nil {
+			return err
+		}
+	}
 	if (method != "" && method != "item/agentMessage/delta") || (typ != "" && typ != "message_update") {
 		p.textMessage = ""
 	}
@@ -447,6 +454,9 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		Turn     struct {
 			ID     string `json:"id"`
 			Status string `json:"status"`
+			Error  *struct {
+				Message *string `json:"message"`
+			} `json:"error"`
 		} `json:"turn"`
 	}
 	if method == "item/agentMessage/delta" || method == "turn/started" || method == "turn/completed" {
@@ -466,10 +476,13 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 			return nativeError(apierrors.DeliveryUnknown, "native turn identity is unavailable")
 		}
 		if p.relayEvidence.StartupOperationID != "" {
+			if params.ThreadID == "" || params.ThreadID != p.nativeID {
+				return nativeError(apierrors.ScopeDenied, "turn start differs from the original thread")
+			}
 			if p.relayPublishedTurns[params.Turn.ID] {
 				break
 			}
-			if params.ThreadID == "" || params.ThreadID != p.nativeID || p.turnID != "" && p.turnID != params.Turn.ID {
+			if p.turnID != "" && p.turnID != params.Turn.ID {
 				return nativeError(apierrors.ScopeDenied, "turn start differs from the original thread or turn")
 			}
 			if p.turnID == "" {
@@ -485,7 +498,15 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 				break
 			}
 		}
-		p.status = "running"
+		settled := false
+		for _, binding := range p.relayEvidence.Turns {
+			if binding.TurnID == params.Turn.ID && binding.ResultObservedAt != nil {
+				settled = true
+			}
+		}
+		if !settled {
+			p.status = "running"
+		}
 		p.turnID = params.Turn.ID
 		p.addEvent("turn_started", "")
 		if p.relayEvidence.StartupOperationID != "" {
@@ -500,7 +521,19 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		if params.Turn.ID == "" || params.Turn.Status == "" {
 			return nativeError(apierrors.DeliveryUnknown, "native turn completion is unavailable")
 		}
-		p.status = params.Turn.Status
+		if params.Turn.Error != nil && params.Turn.Error.Message == nil {
+			return nativeError(apierrors.DeliveryUnknown, "native turn error observation is incomplete")
+		}
+		fresh, current, err := p.recordRelayTurnCompletion(params.ThreadID, params.Turn.ID, params.Turn.Status, params.Turn.Error != nil)
+		if err != nil {
+			return err
+		}
+		if !fresh {
+			break
+		}
+		if current {
+			p.status = params.Turn.Status
+		}
 		p.modelObservedAt = time.Now()
 		p.addEvent("turn_"+params.Turn.Status, "")
 	}

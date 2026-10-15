@@ -1,5 +1,4 @@
-// Package app defines the read-only cognitive workbench projection contract.
-// It has no persistence, transport or engine dependency.
+// Package app 定义只读认知工作台的投影接口。
 package app
 
 import (
@@ -97,14 +96,12 @@ type Filters struct {
 	Kinds   []string `json:"kinds"`
 	Sources []string `json:"sources"`
 }
-
 type Query struct {
 	Topic, Kind, Source, Start, End string
 	Page, PageSize                  int
 }
 
-// View is a closed, typed projection union. Exactly one pointer is set for a
-// successful read. Raw payloads cannot enter the shared serialization boundary.
+// View 是封闭的类型投影；成功时只设置一个结果指针。
 type View struct {
 	SnapshotAt string
 	Health     *Health

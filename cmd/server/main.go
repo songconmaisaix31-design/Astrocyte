@@ -165,7 +165,11 @@ func run(logger *slog.Logger) error {
 	registry := agents.NewRegistry(nativeRoot)
 	projectReferences := &projectReferenceBridge{}
 	localProjects := workspaceapp.NewLocalProjectService(db, projectReferences, agents.ProjectFiles{}, registry)
-	localProjects.ConfigureRegisteredDiscovery(db, agents.NewRegisteredProjects())
+	projectDiscovery, err := resolveProjectDiscovery()
+	if err != nil {
+		return fmt.Errorf("configure project discovery: %w", err)
+	}
+	localProjects.ConfigureRegisteredDiscovery(db, projectDiscovery)
 	textProcessor := &selectedTextBridge{projects: localProjects, processor: registry}
 	processingTimeout := min(time.Duration(jobSeconds)*time.Second, 30*time.Minute)
 	attention := attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), sourceReader, objectStore, attentionapp.ServiceOptions{
@@ -208,7 +212,7 @@ func run(logger *slog.Logger) error {
 		logger.Warn("local CLI discovery incomplete; cached partial observations retained")
 	}
 
-	// Assemble S1 reads; project/session control and Swarm retain their S0 boundary.
+	// 组装现有 S1 服务和 S2 提案命令，原生执行由原控制器接口负责。
 	services := httpapi.Services{
 		RepositoryContext:    &httpapi.RepositoryContextServices{},
 		WorkspaceS2:          workspaceapp.NewS2Service(sqlite.NewWorkspaceRepository(db), agents.ProjectFiles{}, projectReferences),

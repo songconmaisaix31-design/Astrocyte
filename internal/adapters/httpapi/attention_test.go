@@ -1,41 +1,74 @@
 package httpapi
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/migrations"
 )
 
 type transportAttention struct {
-	attentionapp.AttentionService
-	calls   int
-	caller  attentionapp.Principal
-	command attentionapp.ImportMaterialCommand
+	*attentionapp.Service
+	db *sqlite.DB
 }
 
-func (s *transportAttention) ImportMaterial(_ context.Context, p attentionapp.Principal, c attentionapp.ImportMaterialCommand) (attentionapp.ImportJobResult, error) {
-	s.calls++
-	s.caller = p
-	s.command = c
-	return attentionapp.ImportJobResult{SchemaVersion: 1, JobID: "actual-job", Status: "queued"}, nil
-}
-func (s *transportAttention) GetAttachment(_ context.Context, _ attentionapp.Principal, _ string, _ int, _ string) (attentionapp.AttachmentContent, error) {
-	return attentionapp.AttachmentContent{Data: []byte("%PDF-original"), Name: "source.pdf", MediaType: "application/pdf"}, nil
-}
-func (s *transportAttention) ReviewOpportunity(_ context.Context, p attentionapp.Principal, id string, _ attentionapp.ReviewOpportunityCommand) (attentionapp.VersionResult, error) {
-	s.caller = p
-	return attentionapp.VersionResult{SchemaVersion: 1, ID: id, Version: 2}, nil
-}
-func secureServer() (*Server, *transportAttention) {
-	s := &transportAttention{}
+func secureServer(t *testing.T) (*Server, *transportAttention) {
+	t.Helper()
+	directory := t.TempDir()
+	db, err := sqlite.Open(filepath.Join(directory, "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	if err = db.RunMigrations(context.Background(), migrations.FS); err != nil {
+		t.Fatal(err)
+	}
+	store, err := objects.New(filepath.Join(directory, "objects"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := &transportAttention{Service: attentionapp.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attentionapp.ServiceOptions{}), db: db}
 	return NewServer(Config{Services: Services{Attention: s}, AgentToken: "test-agent-token", Logger: slog.New(slog.NewTextHandler(io.Discard, nil))}), s
+}
+
+func importPublicPaper(t *testing.T, service *transportAttention) attentionapp.MaterialDetail {
+	t.Helper()
+	ctx := context.Background()
+	human := attentionapp.Principal{ID: "local-human", Kind: "human"}
+	key := rand.Text()
+	receipt, err := service.ImportMaterial(ctx, human, attentionapp.ImportMaterialCommand{CommandMeta: attentionapp.CommandMeta{SchemaVersion: 1, RequestID: key, IdempotencyKey: key, ExpectedVersion: 1}, Adapter: "arxiv", Kind: "paper", SourceLocator: "https://arxiv.org/abs/2501.12948v1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = service.ProcessNextJob(ctx); err != nil {
+		t.Fatal(err)
+	}
+	job, err := service.GetJob(ctx, human, receipt.JobID)
+	if err != nil || job.Status != "succeeded" || job.MaterialID == nil {
+		t.Fatalf("实际公开来源导入失败: %+v %v", job, err)
+	}
+	material, err := service.GetMaterial(ctx, human, *job.MaterialID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return material
 }
 func attentionRequest(s *Server, method, path, body string, cookie *http.Cookie, csrf, bearer, origin string) *httptest.ResponseRecorder {
 	r := httptest.NewRequest(method, path, strings.NewReader(body))
@@ -76,10 +109,10 @@ func bootstrapSession(t *testing.T, s *Server) (*http.Cookie, string) {
 	return w.Result().Cookies()[0], data.CSRF
 }
 
-const importBody = `{"schema_version":1,"request_id":"test-request","expected_version":1,"source_locator":"arxiv:2401.00001v1","source_key":"","content_digest":"","kind":"paper"}`
+const importBody = `{"schema_version":1,"request_id":"test-request","expected_version":1,"source_locator":"https://arxiv.org/abs/2501.12948v1","source_key":"","content_digest":"","kind":"paper"}`
 
 func TestAttentionTrustedIdentityAndCSRF(t *testing.T) {
-	s, app := secureServer()
+	s, service := secureServer(t)
 	cookie, csrf := bootstrapSession(t, s)
 	if !cookie.HttpOnly || cookie.SameSite != http.SameSiteStrictMode {
 		t.Fatal("cookie protection missing")
@@ -108,16 +141,38 @@ func TestAttentionTrustedIdentityAndCSRF(t *testing.T) {
 			}
 		})
 	}
-	if app.calls != 0 {
+	var count int
+	if err := service.db.Conn().QueryRow("SELECT COUNT(*) FROM attention_jobs").Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 0 {
 		t.Fatal("denied calls reached application")
 	}
 	w := attentionRequest(s, "POST", "/api/v1/materials/imports", importBody, cookie, csrf, "", "http://127.0.0.1:8787")
-	if w.Code != 202 || app.calls != 1 || app.caller.Kind != "human" || app.caller.ID != "local-human" || app.command.IdempotencyKey != "caller-request-key" {
-		t.Fatalf("valid command not correctly authenticated: %d %s %+v", w.Code, w.Body.String(), app)
+	if w.Code != 202 {
+		t.Fatalf("valid command not correctly authenticated: %d %s", w.Code, w.Body.String())
+	}
+	var callerJSON, commandJSON string
+	if err := service.db.Conn().QueryRow("SELECT caller,payload FROM attention_jobs").Scan(&callerJSON, &commandJSON); err != nil {
+		t.Fatal(err)
+	}
+	var caller attentionapp.Principal
+	var command attentionapp.ImportMaterialCommand
+	if err := json.Unmarshal([]byte(callerJSON), &caller); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(commandJSON), &command); err != nil {
+		t.Fatal(err)
+	}
+	if caller.Kind != "human" || caller.ID != "local-human" || command.RequestID != "test-request" {
+		t.Fatalf("persistent caller/command incorrect: %+v %+v", caller, command)
+	}
+	if replay := attentionRequest(s, "POST", "/api/v1/materials/imports", importBody, cookie, csrf, "", "http://127.0.0.1:8787"); replay.Code != 202 || !bytes.Equal(replay.Body.Bytes(), w.Body.Bytes()) {
+		t.Fatal("caller idempotency key lost")
 	}
 }
 func TestAttentionAgentCannotBootstrapOrReadAnonymously(t *testing.T) {
-	s, _ := secureServer()
+	s, _ := secureServer(t)
 	if w := attentionRequest(s, "GET", "/api/v1/auth/session", "", nil, "", "Bearer test-agent-token", ""); w.Code != 403 {
 		t.Fatal("Agent bootstrapped human session")
 	}
@@ -139,22 +194,34 @@ func TestAttentionAgentCannotBootstrapOrReadAnonymously(t *testing.T) {
 	}
 }
 func TestAttentionAttachmentOriginalMedia(t *testing.T) {
-	s, _ := secureServer()
+	s, service := secureServer(t)
 	cookie, csrf := bootstrapSession(t, s)
-	w := attentionRequest(s, "GET", "/api/v1/materials/m1/revisions/1/attachments/source.pdf", "", cookie, csrf, "", "")
-	if w.Code != 200 || w.Header().Get("Content-Type") != "application/pdf" || w.Body.String() != "%PDF-original" || !strings.Contains(w.Header().Get("Content-Disposition"), "attachment") {
-		t.Fatalf("wrong attachment response %d %s", w.Code, w.Body.String())
+	material := importPublicPaper(t, service)
+	path := "/api/v1/materials/" + material.Material.ID + "/revisions/1/attachments/2501.12948v1.pdf"
+	original, err := service.GetAttachment(context.Background(), attentionapp.Principal{ID: "local-human", Kind: "human"}, material.Material.ID, 1, "2501.12948v1.pdf")
+	if err != nil {
+		t.Fatal(err)
 	}
-	w = attentionRequest(s, "GET", "/api/v1/materials/m1/revisions/0/attachments/source.pdf", "", cookie, csrf, "", "")
+	w := attentionRequest(s, "GET", path, "", cookie, csrf, "", "")
+	if w.Code != 200 || w.Header().Get("Content-Type") != "application/pdf" || !bytes.Equal(w.Body.Bytes(), original.Data) || !bytes.HasPrefix(original.Data, []byte("%PDF-")) || len(original.Data) < 1000 || !strings.Contains(w.Header().Get("Content-Disposition"), "attachment") {
+		t.Fatalf("wrong attachment response %d bytes=%d", w.Code, w.Body.Len())
+	}
+	w = attentionRequest(s, "GET", strings.Replace(path, "/revisions/1/", "/revisions/0/", 1), "", cookie, csrf, "", "")
 	if w.Code != 400 {
 		t.Fatal("invalid revision accepted")
 	}
 }
 
 func TestAttentionReviewPreservesPublishedCreatedResponse(t *testing.T) {
-	s, _ := secureServer()
+	s, service := secureServer(t)
 	cookie, csrf := bootstrapSession(t, s)
-	w := attentionRequest(s, "POST", "/api/v1/opportunities/o1/reviews", `{"schema_version":1,"request_id":"review-request","expected_version":1,"feedback":"later","reason":"return later"}`, cookie, csrf, "", "")
+	material := importPublicPaper(t, service)
+	unknown := attentionapp.DimensionScore{Reason: "尚未评估"}
+	opportunity, err := service.CreateOpportunity(context.Background(), attentionapp.Principal{ID: "local-human", Kind: "human"}, attentionapp.OpportunityCommand{CommandMeta: attentionapp.CommandMeta{SchemaVersion: 1, RequestID: "create-candidate", IdempotencyKey: "create-candidate", ExpectedVersion: 1}, Title: "人工审阅公开论文", EvidenceRefs: []attentionapp.SourceRef{{MaterialID: material.Material.ID, Revision: 1, Locator: material.Material.SourceLocator}}, Dimensions: attentionapp.Dimensions{GoalProgress: unknown, CurrentInterest: unknown, ProjectImprovement: unknown, Originality: unknown}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := attentionRequest(s, "POST", "/api/v1/opportunities/"+opportunity.Opportunity.ID+"/reviews", `{"schema_version":1,"request_id":"review-request","expected_version":1,"feedback":"later","reason":"return later"}`, cookie, csrf, "", "")
 	if w.Code != http.StatusCreated {
 		t.Fatalf("review must preserve contract 201: %d %s", w.Code, w.Body.String())
 	}

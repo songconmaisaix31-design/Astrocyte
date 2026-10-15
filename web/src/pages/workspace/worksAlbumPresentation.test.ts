@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { attitudeLabel, fileVerifiedLabel, filterWorks, fixtureWorksSnapshot, handoffSourceLabel, initialWorksFilters, worksSections } from './worksAlbumPresentation';
+import { attitudeLabel, fileVerifiedLabel, filterWorks, handoffSourceLabel, initialWorksFilters, worksSections, type WorksWork } from './worksAlbumPresentation';
 
-const snapshot = fixtureWorksSnapshot();
+// 以下参数输入仅验证过滤和分组函数，不构成目录或执行观察。
+const base: WorksWork = { id: 'input', platform: 'codex', name: '输入', root: '输入路径', kind: 'folder', source: 'scan', attitude: 'continue', group: '研究', hidden: false, handoff: { content: '', updated_at: null, source: 'human' }, files: { source_path: '输入路径', mtime: null, file_count: 0, verified: true }, updated_at: '2026-01-01T00:00:00Z', revision: 1 };
+const snapshot = { works: [
+  { ...base, id: 'work-a', name: '个人知识库' },
+  { ...base, id: 'work-b', name: '短视频脚本生成器', platform: 'lingxi', attitude: 'park' as const, group: '媒体', files: { ...base.files, verified: false, reason: '目录尚未接入' } },
+  { ...base, id: 'work-c', name: '周报聚合脚本', platform: 'claude', hidden: true, group: '工具' },
+] };
 
 describe('works album presentation keeps backend facts', () => {
   it('maps the three attitudes to Chinese labels', () => {

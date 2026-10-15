@@ -4,7 +4,7 @@ import { CommandState } from '../../components/CommandState';
 import { TextField, SelectField } from './FormControls';
 import styles from './AttentionPage.module.css';
 
-export function ImportForm({ fixture, draft, onImported }: { fixture: boolean; draft: ReturnType<typeof useImportDraft>; onImported: (jobId: string) => void }) {
+export function ImportForm({ draft, onImported }: { draft: ReturnType<typeof useImportDraft>; onImported: (jobId: string) => void }) {
   const { adapter, setAdapter, locator, setLocator, reason, setReason, title, setTitle, exportText, setExportText, exportKind, setExportKind, refresh, setRefresh, fileError, setFileError, reading, setReading, command } = draft;
   return <form className={styles.form} onSubmit={event => {
     event.preventDefault();
@@ -12,8 +12,7 @@ export function ImportForm({ fixture, draft, onImported }: { fixture: boolean; d
     void command.run(() => attentionApi.importMaterial(request.body, request.key), result => onImported(result.job_id), '已提交正文导入；在持久化队列查看实际进度，可关闭表单继续查看');
   }}>
     <p className={styles.note}>导入保存正文与来源版本。首次模型整理需在资料详情中明确提交；导入成功不表示已完成整理。</p>
-    {fixture && <p role="note">示例模式：写操作尚未启用，请退出示例模式连接真实 API。</p>}
-    <fieldset disabled={fixture || command.pending || reading}>
+    <fieldset disabled={command.pending || reading}>
       <legend>导入来源</legend>
       <SelectField label="导入方式" value={adapter} onChange={value => setAdapter(value as typeof adapter)} options={[{ value: 'arxiv', label: 'arXiv 论文' }, { value: 'summarize_url', label: '视频链接 · summarize 获取正文' }, { value: 'summarize', label: 'summarize 既有导出' }]} />
       {adapter === 'summarize' && <SelectField label="既有导出资料类型" value={exportKind} onChange={value => setExportKind(value as typeof exportKind)} options={[{ value: 'video', label: '视频' }, { value: 'paper', label: '论文' }]} />}
@@ -37,6 +36,6 @@ export function ImportForm({ fixture, draft, onImported }: { fixture: boolean; d
     {fileError && <p role="alert">{fileError}</p>}
     <CommandState {...command} />
     {command.error && adapter === 'summarize_url' && <p className={styles.note}>视频链接和输入已保留。按错误提示处理后再明确提交；也可切换为既有导出。登录内容的获取范围尚待确认。</p>}
-    <button className="ac-button" type="submit" disabled={fixture || command.pending || reading}>导入资料</button>
+    <button className="ac-button" type="submit" disabled={command.pending || reading}>导入资料</button>
   </form>;
 }

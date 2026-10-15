@@ -123,6 +123,7 @@ type RelayTaskView struct {
 	Workspace        *RelayWorkspace   `json:"worktree"`
 	Transitions      []RelayTransition `json:"transitions"`
 	EventPublication RelayPublication  `json:"event_publication"`
+	Completion       *RelayCompletion  `json:"completion,omitempty"`
 }
 
 type RelayPublication struct {
@@ -141,6 +142,7 @@ type RelayActionResult struct {
 func ValidRelayTransition(from, to string) bool {
 	return (from == RelayReady && to == RelayAccepted) ||
 		(from == RelayAccepted && to == RelayWorking) ||
+		(from == RelayAccepted && to == RelayDone) ||
 		(from == RelayWorking && to == RelayDone) ||
 		(from == RelayDone && to == RelayReleased)
 }

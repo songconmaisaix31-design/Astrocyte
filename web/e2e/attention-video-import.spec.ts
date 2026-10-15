@@ -1,17 +1,18 @@
 /// <reference types="node" />
-/** Injected responses verify UI recovery; the opt-in case uses the real URL adapter. */
+/** 使用生产导入器验证已接受作业、真实失败与表单恢复。 */
 import { test, expect } from '@playwright/test';
-import { Buffer } from 'node:buffer';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import process from 'node:process';
 import type { components } from '../src/api/schema';
 import { startS1Server } from '../../tests/s1/server.mjs';
 import { summarizeEnvironment } from '../../scripts/summarize.mjs';
+import { realService, capturedPublicDocument, repositoryRoot } from './realService';
+import { waitJob } from '../../tests/s1/api.mjs';
 
 const videoURL = 'https://www.bilibili.com/video/BV1PReT6EEqR/';
 
-// Explicit negative live check for the current network gate, not video acceptance.
+// 实际网络拒绝验证保留首失败与恢复说明。
 test('real network-blocked video job shows next step and preserves the URL', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_SUMMARIZE_NETWORK_GUARD !== '1', 'Only run with an explicitly confirmed public-source network block.');
   test.setTimeout(180_000);
@@ -57,8 +58,7 @@ test('real network-blocked video job shows next step and preserves the URL', asy
     await expect(row).not.toContainText('configure_public_source_network');
     await page.screenshot({ path: testInfo.outputPath('real-network-failure.png'), fullPage: true });
     await testInfo.attach('actual-failed-job', { body: JSON.stringify(completed, null, 2), contentType: 'application/json' });
-    // Replaying the accepted original command returns its original receipt and
-    // cannot start another extraction; this does not define new-form URL reuse.
+    // 重放已接受的原命令只返回原回执，不启动新的提取。
     const replay = await page.request.post(request.url(), { headers: request.headers(), data: request.postDataJSON() });
     expect(replay.status()).toBe(202);
     expect(await replay.json()).toEqual(job);
@@ -75,60 +75,65 @@ test('real network-blocked video job shows next step and preserves the URL', asy
   } finally { await server.close(); }
 });
 
-test('video URL input and in-flight identity survive keyboard close and reopen', async ({ page }) => {
-  let release!: () => void;
-  const responseReady = new Promise<void>(resolve => { release = resolve; });
-  const writes: { key: string; body: components['schemas']['ImportMaterialRequestV1'] }[] = [];
-  await page.route('**/api/v1/jobs', route => route.fulfill({ json: { schema_version: 1, items: [], next_cursor: null } }));
-  await page.route('**/api/v1/materials/imports', async route => {
-    writes.push({ key: route.request().headers()['idempotency-key'], body: route.request().postDataJSON() });
-    await responseReady;
-    await route.fulfill({ status: 503, json: { schema_version: 1, error: { code: 'evidence_missing', message: '注入：视频需要登录或没有公开字幕', retryable: false, request_id: 'injected-video', required_action: '提供真实 summarize 导出；登录内容范围需先确认' } } });
-  });
-  await page.goto('/attention');
-  const add = page.locator('main').getByRole('button', { name: '添加资料', exact: true });
-  await add.focus();
-  await page.keyboard.press('Enter');
-  const dialog = page.getByRole('dialog', { name: '添加资料' });
-  await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize_url');
-  await expect(dialog.getByLabel('summarize 导出内容')).toHaveCount(0);
-  await dialog.getByLabel('视频链接', { exact: true }).fill(videoURL);
-  await dialog.getByLabel('收藏理由（可选）').fill('保留这份视频输入');
-  await dialog.getByRole('button', { name: '导入资料', exact: true }).focus();
-  await page.keyboard.press('Enter');
-  await expect.poll(() => writes.length).toBe(1);
-  await page.keyboard.press('Escape');
-  await expect(add).toBeFocused();
-  await page.keyboard.press('Enter');
-  await expect(dialog.getByLabel('视频链接', { exact: true })).toHaveValue(videoURL);
-  await expect(dialog.getByRole('button', { name: '导入资料', exact: true })).toBeDisabled();
-  release();
-  await expect(dialog.getByRole('alert')).toContainText('提供真实 summarize 导出');
-  await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
-  await expect.poll(() => writes.length).toBe(2);
-  expect(writes[1]).toEqual(writes[0]);
-  expect(writes[0].body.adapter).toBe('summarize_url');
-  expect(writes[0].body).not.toHaveProperty('export_text');
-  expect(writes[0].body).not.toHaveProperty('local_file_ref');
-  await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize');
-  await dialog.getByLabel('选择既有导出文件').setInputFiles({ name: 'captured.md', mimeType: 'text/markdown', buffer: Buffer.from('# Existing Markdown\n真实导出入口的UI恢复检查。') });
-  await expect(dialog.getByLabel('summarize 导出内容')).toContainText('真实导出入口');
-  await page.keyboard.press('Escape');
-  await add.click();
-  await expect(dialog.getByLabel('summarize 导出内容')).toContainText('真实导出入口');
-  await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
-  await expect.poll(() => writes.length).toBe(3);
-  expect(writes[2].body.adapter).toBe('summarize');
-  expect(writes[2].body.export_text).toContain('真实导出入口');
-  expect(writes[2].key).not.toBe(writes[0].key);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: `test-results/video-import-recovery-${page.viewportSize()?.width}.png`, fullPage: true });
+test('实际视频作业失败后保留输入，既有真实导出通过独立命令导入', async ({ page }) => {
+  test.setTimeout(120_000);
+  const { server, api } = await realService();
+  try {
+    await page.goto(`${server.webURL}/attention`);
+    const add = page.locator('main').getByRole('button', { name: '添加资料', exact: true });
+    await add.focus();
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: '添加资料' });
+    await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize_url');
+    await expect(dialog.getByLabel('summarize 导出内容')).toHaveCount(0);
+    await dialog.getByLabel('视频链接', { exact: true }).fill(videoURL);
+    await dialog.getByLabel('收藏理由（可选）').fill('核查未配置提取器时保留视频输入');
+    const submit = async () => {
+      const response = page.waitForResponse(value => value.url().endsWith('/materials/imports') && value.request().method() === 'POST');
+      await dialog.getByRole('button', { name: '导入资料', exact: true }).click();
+      const accepted = await response;
+      expect(accepted.status()).toBe(202);
+      return accepted;
+    };
+    const first = await submit();
+    const receipt = await first.json();
+    const failed = await waitJob(api, receipt.job_id, 'failed');
+    expect(failed.error?.code).toBe('provider_unavailable');
+    expect(failed.material_id).toBeNull();
+    expect(first.request().postDataJSON()).toMatchObject({ adapter: 'summarize_url', source_locator: videoURL });
+    expect(first.request().postDataJSON()).not.toHaveProperty('export_text');
+    expect(first.request().postDataJSON()).not.toHaveProperty('local_file_ref');
+    await page.keyboard.press('Escape');
+    await expect(add).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(dialog.getByLabel('视频链接', { exact: true })).toHaveValue(videoURL);
+    const replay = await submit();
+    expect((await replay.json()).job_id).toBe(receipt.job_id);
+    expect((await api.get('/jobs')).items).toHaveLength(1);
+    expect((await api.get(`/jobs/${receipt.job_id}`)).attempts).toBe(failed.attempts);
+    const captured = await capturedPublicDocument();
+    await dialog.getByLabel('导入方式', { exact: true }).selectOption('summarize');
+    await dialog.getByLabel('既有导出资料类型', { exact: true }).selectOption('paper');
+    await dialog.getByLabel('论文原始来源', { exact: true }).fill(captured.url);
+    await dialog.getByLabel('选择既有导出文件').setInputFiles(join(repositoryRoot, 'internal/adapters/importers/testdata/summarize-arxiv-manual.json'));
+    await expect(dialog.getByLabel('summarize 导出内容')).toHaveValue(captured.raw);
+    await page.keyboard.press('Escape');
+    await add.click();
+    await expect(dialog.getByLabel('summarize 导出内容')).toHaveValue(captured.raw);
+    const imported = await submit();
+    const job = await waitJob(api, (await imported.json()).job_id);
+    expect(imported.request().postDataJSON().adapter).toBe('summarize');
+    expect(imported.request().postDataJSON().export_text).toBe(captured.raw);
+    expect(imported.request().headers()['idempotency-key']).not.toBe(first.request().headers()['idempotency-key']);
+    const content = await api.get(`/materials/${job.material_id}/revisions/1/content`);
+    expect(content.text).toBe(captured.text);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  } finally { await server.close({ preserveData: true }); }
 });
 
 test('selected public video URL imports through the real service without an export or model request', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_SUMMARIZE_URL !== '1', 'Requires the published summarize runtime; explicit real URL extraction only.');
-  // W0's approved Reader/Service deadline is 1800s; reserve startup/cleanup
-  // separately. Run one project/worker so the selected video is extracted once.
+  // Reader/Service 截止时间为 1800 秒，启动和清理另行预留时间。
   const jobTimeout = 1800_000;
   test.setTimeout(jobTimeout + 120_000);
   const env = await summarizeEnvironment({ LOCALAPPDATA: process.env.LOCALAPPDATA ?? '', ASTROCYTE_ENABLE_SUMMARIZE: 'true', ASTROCYTE_ENABLE_CODEX_DISTILLATION: 'false' });
@@ -136,8 +141,7 @@ test('selected public video URL imports through the real service without an expo
   const modelRequests: string[] = [];
   page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/distillations/jobs')) modelRequests.push(request.url()); });
   try {
-    // The default Playwright dev --ephemeral server disables extraction. The
-    // helper owns a separate temporary SQLite/object store and strips ASTRO env.
+    // helper 使用独立验证库，并排除未明确传入的 ASTRO 配置。
     await page.goto(`${server.webURL}/attention`);
     await page.getByRole('button', { name: /查看处理队列/ }).click();
     await page.locator('main').getByRole('button', { name: '添加资料', exact: true }).click();
@@ -186,8 +190,7 @@ test('selected public video URL imports through the real service without an expo
     expect(modelRequests).toEqual([]);
     await page.screenshot({ path: testInfo.outputPath('video-import-content.png'), fullPage: true });
 
-    // Read only after the page submission succeeds; never seed a material or
-    // replay the import to check persistence. Keep the actual public outputs.
+    // 页面提交成功后读取实际公开结果，重启只核对持久化记录。
     const materialURL = `${server.webURL}/api/v1/materials/${completed!.material_id}`;
     const loadSaved = async () => {
       const detailResponse = await page.request.get(materialURL);

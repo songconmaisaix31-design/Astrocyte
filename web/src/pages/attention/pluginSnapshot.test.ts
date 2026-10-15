@@ -1,22 +1,31 @@
 import { expect, it } from 'vitest';
 import { canImportSnapshot, parsePluginSnapshot, snapshotContentStateLabel, snapshotCaveat, snapshotImportOptions } from './pluginSnapshot';
 
-const snapshot = (fields: Record<string, unknown>): string => JSON.stringify({ source_url: 'https://example.com/p', ...fields });
+// 本文件仅验证明确参数输入，不声明来源获取或插件执行结果。
+const snapshot = (fields: Record<string, unknown>): string => JSON.stringify({ schema_version: 1, source_url: 'https://example.com/p', ...fields });
 
-it('parses a minimal snapshot and requires a source_url', () => {
-  const review = parsePluginSnapshot(JSON.stringify({ source_url: 'https://arxiv.org/abs/2504.16054', title: '标题' }));
+it('纯输入快照保留明确字段，缺少来源或协议版本立即拒绝', () => {
+  const review = parsePluginSnapshot(snapshot({ source_url: 'https://arxiv.org/abs/2504.16054', title: '标题' }));
   expect(review.source_url).toBe('https://arxiv.org/abs/2504.16054');
   expect(review.title).toBe('标题');
-  expect(review.content_state).toBe('abstract_only');
+  expect(review.content_state).toBe('unknown');
   expect(() => parsePluginSnapshot('{}')).toThrow(/缺少来源链接/);
   expect(() => parsePluginSnapshot('not json')).toThrow(/不是有效的 JSON/);
+  expect(() => parsePluginSnapshot(JSON.stringify({ source_url: 'https://example.com/p' }))).toThrow(/协议版本无效/);
+  expect(() => parsePluginSnapshot(snapshot({ schema_version: 2 }))).toThrow(/协议版本无效/);
 });
 
-it('parses the real extension snapshot shape and preserves the raw text', () => {
+it('纯输入快照结构保留完整文本', () => {
   const review = parsePluginSnapshot(snapshot({ host_family: 'plos', source_key: 'doi:10.1/example', title: 'PLOS 论文', authors: ['甲'], doi: '10.1/example', content_state: 'readable_fulltext', text: '这是浏览器提取的完整正文，不能被丢弃。' }));
   expect(review.host_family).toBe('plos');
   expect(review.content_state).toBe('readable_fulltext');
   expect(review.text).toBe('这是浏览器提取的完整正文，不能被丢弃。');
+});
+
+it('纯输入正文完整保留首尾空白，非法字段立即拒绝', () => {
+  const text = '\n  明确输入的原文。\n\n';
+  expect(parsePluginSnapshot(snapshot({ content_state: 'readable_fulltext', text })).text).toBe(text);
+  for (const fields of [{ title: 1 }, { authors: ['作者', 1] }, { pdf_urls: 'https://example.com/p.pdf' }, { content_state: 'invalid' }, { truncated: 'false' }, { text: 1 }]) expect(() => parsePluginSnapshot(snapshot(fields))).toThrow(/无效/);
 });
 
 it('offers the preserved full body as paper_snapshot carrying the whole snapshot JSON (no re-fetch)', () => {
@@ -41,7 +50,7 @@ it('offers both HTML full text and public PDF when both are present', () => {
   expect(options.map(o => o.adapter)).toEqual(['paper_snapshot', 'paper_pdf']);
 });
 
-it('falls back to the arxiv adapter only for an arxiv snapshot with no body or PDF', () => {
+it('纯输入arXiv元数据通过明确选项选择官方导入器', () => {
   const arxiv = snapshot({ source_url: 'https://arxiv.org/abs/2504.16054', arxiv_id: '2504.16054', content_state: 'abstract_only' });
   expect(snapshotImportOptions(parsePluginSnapshot(arxiv), arxiv).map(o => o.adapter)).toEqual(['arxiv']);
   const nonArxiv = snapshot({ content_state: 'abstract_only' });

@@ -1,577 +1,288 @@
-/**
- * Playwright e2e: navigation, fixture display, detail panels, keyboard,
- * focus management, stale data via refresh, and API failure/retry.
- *
- * Replaces former unit fixture tests (constant-existence assertions) and
- * former hook state-transition tests with browser-level assertions.
- *
- * Config (W0-owned) sets baseURL and two viewport projects:
- *   chromium-1920 (1920x1080) and chromium-1280 (1280x720).
- */
 import { test, expect } from '@playwright/test';
+import { realService, importTrackedDocument } from './realService';
 
-// ── 1. Three-page navigation ──
-
-test.describe('Three-page navigation', () => {
-  test('navigates to default page (资料沉淀)', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('资料沉淀');
+for (const [path, title] of [['/', '资料沉淀'], ['/attention', '资料沉淀'], ['/workspace', '共同工作区'], ['/swarm', '蜂群空间']]) {
+  test(`实际页面导航 ${path}`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page.locator('h1')).toHaveText(title);
+    if (path === '/attention') {
+      await expect(page.getByRole('heading', { name: /^素材/ })).toBeVisible();
+      await page.getByRole('tab', { name: '研究机会', exact: true }).click();
+      await expect(page.getByRole('heading', { name: /^机会/ })).toBeVisible();
+    }
+    if (path === '/workspace') {
+      await expect(page.getByRole('heading', { name: '项目总览', exact: true })).toBeVisible();
+      await page.getByRole('button', { name: '接入项目', exact: true }).click();
+      await expect(page.getByRole('heading', { name: '项目接入与设置', exact: true })).toBeVisible();
+      await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
+      await expect(page.getByRole('heading', { name: /^会话/ })).toBeVisible();
+    }
+    if (path === '/swarm') {
+      await expect(page.getByRole('heading', { name: '顶层开发空间', exact: true })).toBeVisible();
+      await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
+      await expect(page.getByRole('heading', { name: /^任务\(/ })).toBeVisible();
+      await expect(page.getByRole('heading', { name: /^工作项\(/ })).toBeVisible();
+      await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
+      await expect(page.getByRole('heading', { name: /^产物引用/ })).toBeVisible();
+    }
   });
+}
 
-  test('navigates to 资料沉淀 page', async ({ page }) => {
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('资料沉淀');
-    await expect(page.getByRole('heading', { name: /素材/ })).toBeVisible();
-    await page.getByRole('tab', { name: '研究机会', exact: true }).click();
-    await expect(page.getByRole('heading', { name: /机会/ })).toBeVisible();
-  });
-
-  test('navigates to 共同工作区 page', async ({ page }) => {
-    await page.goto('/workspace');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('共同工作区');
-    await expect(page.getByRole('heading', { name: '项目总览', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: '接入项目', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '项目接入与设置', exact: true })).toBeVisible();
-    await expect(page.getByRole('tab', { name: '提案与批准' })).toBeVisible();
-    await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
-    await expect(page.getByRole('heading', { name: /^会话/ })).toBeVisible();
-  });
-
-  test('navigates to 蜂群空间 page', async ({ page }) => {
-    await page.goto('/swarm');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('h1')).toContainText('蜂群空间');
-    await expect(page.getByRole('heading', { name: '顶层开发空间', exact: true })).toBeVisible();
-    await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
-    await expect(page.getByRole('heading', { name: /任务/ })).toBeVisible();
-    await expect(page.getByRole('heading', { name: /工作项/ })).toBeVisible();
-    await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
-    await expect(page.getByRole('heading', { name: /产物/ })).toBeVisible();
-  });
-
-  test('sidebar navigation links work', async ({ page }) => {
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '共同工作区', exact: true }).click();
-    await expect(page).toHaveURL(/\/workspace/);
-    await expect(page.locator('h1')).toContainText('共同工作区');
-    await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '蜂群空间', exact: true }).click();
-    await expect(page).toHaveURL(/\/swarm/);
-    await expect(page.locator('h1')).toContainText('蜂群空间');
-    await page.getByRole('navigation', { name: '主导航' }).getByRole('button', { name: '资料沉淀', exact: true }).click();
-    await expect(page).toHaveURL(/\/attention/);
-  });
-
-  test('active nav item is highlighted', async ({ page }) => {
-    await page.goto('/workspace');
-    await page.waitForLoadState('networkidle');
-    const activeLink = page.locator('button[aria-current="page"]');
-    await expect(activeLink).toContainText('共同工作区');
-  });
+test('侧栏导航在三页之间切换', async ({ page }) => {
+  await page.goto('/attention');
+  const nav = page.getByRole('navigation', { name: '主导航' });
+  for (const [path, title] of [['workspace', '共同工作区'], ['swarm', '蜂群空间'], ['attention', '资料沉淀']]) {
+    await nav.getByRole('button', { name: title, exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/${path}`));
+    await expect(page.locator('h1')).toHaveText(title);
+  }
+});
+test('当前导航项目具有 aria-current', async ({ page }) => {
+  await page.goto('/workspace');
+  await expect(page.locator('button[aria-current="page"]')).toHaveText('共同工作区');
 });
 
-// ── 2. Real empty API states (settled — no 加载中) ──
-
-test.describe('Sidebar material import', () => {
-  for (const path of ['/workspace', '/swarm']) {
-    test(`${path} opens the existing import dialog when imports are available`, async ({ page }) => {
+for (const path of ['/workspace', '/swarm']) {
+  for (const query of ['', '?fixture=1']) {
+    test(`${path}${query} 通过既有导入入口读取实际系统能力`, async ({ page }) => {
       const writes: string[] = [];
-      page.on('request', request => {
-        if (request.url().includes('/api/v1/') && !['GET', 'HEAD'].includes(request.method())) writes.push(request.url());
-      });
-      await page.goto(`${path}?tab=overview`);
+      page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/api/v1/')) writes.push(request.url()); });
+      await page.goto(`${path}${query}`);
       const add = page.locator('.ac-sidebar').getByRole('button', { name: '添加资料', exact: true });
       await expect(add).toBeEnabled();
       await add.click();
-      await expect(page).toHaveURL(/\/attention\?import=1$/);
+      await expect(page).toHaveURL(/\/attention\?.*import=1/);
       const dialog = page.getByRole('dialog', { name: '添加资料', exact: true });
       await expect(dialog).toBeVisible();
       await expect(dialog.getByLabel('导入方式', { exact: true })).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
-      await expect(page).toHaveURL(/\/attention$/);
+      expect(new URL(page.url()).searchParams.has('import')).toBe(false);
       expect(writes).toEqual([]);
     });
-
-    test(`${path} keeps fixture import disabled`, async ({ page }) => {
-      await page.goto(`${path}?fixture=1`);
-      await expect(page.locator('.ac-sidebar').getByRole('button', { name: '添加资料 · 未启用', exact: true })).toBeDisabled();
-      await expect(page.getByRole('dialog', { name: '添加资料', exact: true })).not.toBeVisible();
-    });
-
-    for (const capability of ['disabled', 'unknown'] as const) {
-      test(`${path} keeps import disabled when capability is ${capability}`, async ({ page }) => {
-        await page.route('**/api/v1/foundation', async route => {
-          if (capability === 'unknown') { await route.abort(); return; }
-          const response = await route.fetch();
-          const body = await response.json();
-          await route.fulfill({ response, json: { ...body, capabilities: { ...body.capabilities, imports: false } } });
-        });
-        await page.goto(path);
-        const capabilities = page.getByRole('group', { name: '系统能力' });
-        await capabilities.locator('summary').click();
-        await expect(capabilities).toContainText(capability === 'unknown' ? '无法获取' : '导入 · 未启用');
-        await expect(page.locator('.ac-sidebar').getByRole('button', { name: '添加资料 · 未启用', exact: true })).toBeDisabled();
-      });
-    }
   }
+}
+
+test('资料沉淀显示实际空集合', async ({ page }) => {
+  await page.goto('/attention');
+  await expect(page.getByRole('status', { name: '暂无素材', exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: '研究机会', exact: true }).click();
+  await expect(page.getByRole('status', { name: '暂无机会', exact: true })).toBeVisible();
+});
+test('共同工作区显示实际空项目、提案和会话', async ({ page }) => {
+  await page.goto('/workspace');
+  await page.getByRole('button', { name: '接入项目', exact: true }).click();
+  await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
+  await expect(page.getByRole('status', { name: '暂无会话' })).toBeVisible();
+  await page.getByRole('tab', { name: '提案与批准', exact: true }).click();
+  await expect(page.getByRole('status', { name: '暂无提案' })).toBeVisible();
+});
+test('新提案入口读取实际集合，刷新权限拒绝后人工读取恢复', async ({ page, context }) => {
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (request.method() !== 'GET' && new URL(request.url()).pathname.startsWith('/api/v1/')) writes.push(request.method());
+  });
+  const response = page.waitForResponse(value => new URL(value.url()).pathname === '/api/v1/proposals');
+  await page.goto('/workspace');
+  const initial = await response;
+  expect(initial.status()).toBe(200);
+  expect((await initial.json()).items).toEqual([]);
+  await page.getByRole('tab', { name: '提案与批准', exact: true }).click();
+  const proposals = page.locator('section').filter({ has: page.getByRole('heading', { name: /^提案(?:\(|$)/ }) });
+  await expect(proposals.getByRole('status', { name: '暂无提案', exact: true })).toBeVisible();
+  await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+  const denied = page.waitForResponse(value => new URL(value.url()).pathname === '/api/v1/proposals');
+  await page.getByRole('button', { name: '↻ 刷新', exact: true }).click();
+  expect((await denied).status()).toBe(403);
+  await expect(proposals.getByRole('alert')).toBeVisible();
+  await expect(proposals.getByRole('status', { name: '暂无提案', exact: true })).toHaveCount(0);
+  await context.setExtraHTTPHeaders({});
+  const recovered = page.waitForResponse(value => new URL(value.url()).pathname === '/api/v1/proposals');
+  await proposals.getByRole('button', { name: '重试', exact: true }).click();
+  expect((await recovered).status()).toBe(200);
+  await expect(proposals.getByRole('status', { name: '暂无提案', exact: true })).toBeVisible();
+  expect(writes).toEqual([]);
+});
+test('蜂群空间显示实际空任务、工作项和产物', async ({ page }) => {
+  await page.goto('/swarm');
+  await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
+  await expect(page.getByRole('status', { name: '暂无任务' })).toBeVisible();
+  await expect(page.getByRole('status', { name: '暂无工作项' })).toBeVisible();
+  await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
+  await expect(page.getByRole('status', { name: '暂无产物' })).toBeVisible();
 });
 
-test.describe('Empty API states', () => {
-  test('资料沉淀 shows settled empty headings after queries resolve', async ({ page }) => {
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    // Wait for queries to settle, then assert actual 暂无 headings
-    await expect(page.locator('text=暂无素材').first()).toBeVisible({ timeout: 10000 });
-    await page.getByRole('tab', { name: '研究机会', exact: true }).click();
-    await expect(page.locator('text=暂无机会').first()).toBeVisible({ timeout: 10000 });
-  });
-
-  test('共同工作区 shows settled empty headings', async ({ page }) => {
-    await page.goto('/workspace');
-    await page.getByRole('button', { name: '接入项目', exact: true }).click();
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('status', { name: '暂无本地项目' })).toBeVisible({ timeout: 10000 });
-    await page.getByRole('tab', { name: 'Agent 会话', exact: true }).click();
-    await expect(page.locator('text=暂无会话').first()).toBeVisible({ timeout: 10000 });
-    await page.getByRole('tab', { name: '提案与批准' }).click();
-    await expect(page.locator('text=暂无提案').first()).toBeVisible({ timeout: 10000 });
-  });
-
-  test('蜂群空间 shows settled empty headings', async ({ page }) => {
-    await page.goto('/swarm');
-    await page.waitForLoadState('networkidle');
-    await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
-    await expect(page.locator('text=暂无任务').first()).toBeVisible({ timeout: 10000 });
-  });
-});
-
-// ── 3. Fixture mode ──
-
-test.describe('Fixture mode banner', () => {
-  test('banner visible with ?fixture=1', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('[role="alert"]:has-text("示例数据模式")')).toBeVisible();
-  });
-
-  test('banner NOT visible without query param', async ({ page }) => {
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('[role="alert"]:has-text("示例数据模式")')).not.toBeVisible();
-  });
-
-  test('exit fixture mode button works', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('[role="alert"]:has-text("示例数据模式")')).toBeVisible();
-    await page.locator('button:has-text("退出示例模式")').click();
-    await expect(page.locator('[role="alert"]:has-text("示例数据模式")')).not.toBeVisible();
-    expect(page.url()).not.toContain('fixture=1');
-  });
-
-  test('refresh button is NOT visible in fixture mode', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('button:has-text("刷新")')).not.toBeVisible();
-  });
-
-  test('refresh button IS visible in real data mode', async ({ page }) => {
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
+for (const query of ['', '?fixture=1']) {
+  test(`历史查询参数 ${query || '为空'} 保持实际来源和刷新入口`, async ({ page }) => {
+    const response = page.waitForResponse(value => value.url().endsWith('/api/v1/materials'));
+    await page.goto(`/attention${query}`);
+    expect((await response).status()).toBe(200);
+    await expect(page.getByRole('alert').filter({ hasText: '示例数据模式' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '退出示例模式' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: '↻ 刷新', exact: true })).toBeVisible();
   });
+}
+test('品牌入口回到实际资料页并移除历史示例参数', async ({ page }) => {
+  await page.goto('/workspace?fixture=1');
+  await page.getByRole('button', { name: 'Astrocyte 首页', exact: true }).click();
+  await expect(page).toHaveURL(/\/attention$/);
 });
 
-test.describe('Fixture display — materials and opportunities', () => {
-  test('renders fixture materials including video kind', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
+for (const path of ['attention', 'workspace', 'swarm']) {
+  test(`${path} 保存实际页面验证产物`, async ({ page }, testInfo) => {
+    await page.goto(`/${path}`);
+    await expect(page.locator('h1')).toBeVisible();
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=示例论文').first()).toBeVisible();
-    await expect(page.locator('text=示例视频素材').first()).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath(`${path}.png`), fullPage: true });
   });
+}
 
-  test('renders long Chinese title with line-clamp', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    const items = page.locator('[role="button"].line-clamp-2, [role="button"] .line-clamp-2');
-    expect(await items.count()).toBeGreaterThan(0);
+test.describe('实际资料键盘和焦点管理', () => {
+  let owned: Awaited<ReturnType<typeof realService>>;
+  test.beforeAll(async () => {
+    test.setTimeout(120_000);
+    owned = await realService();
+    await importTrackedDocument(owned.api);
+    await importTrackedDocument(owned.api, 'README.md');
   });
-
-  test('renders failed import status badge', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=失败').first()).toBeVisible();
-  });
-
-  test('renders archived lifecycle badge', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=已归档').first()).toBeVisible();
-  });
-
-  test('clicking material opens detail with fixture tag and disabled notice', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例论文")').first().click();
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText('素材详情');
-    await expect(dialog.locator('text=示例数据')).toBeVisible();
-    await expect(dialog).toContainText('尚未启用');
-  });
-
-  test('clicking opportunity opens detail panel', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例机会")').first().click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-    await expect(page.locator('[role="dialog"]')).toContainText('机会详情');
-  });
-});
-
-test.describe('Fixture display — workspace sessions', () => {
-  test('renders projects, proposals, and sessions', async ({ page }) => {
-    await page.goto('/workspace?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=示例项目').first()).toBeVisible();
-    await expect(page.locator('text=fixture-adapter').first()).toBeVisible();
-    await page.getByRole('tab', { name: '提案与批准' }).click();
-    await expect(page.locator('text=示例提案').first()).toBeVisible();
-  });
-
-  test('session capability shows three-state labels (null=未知)', async ({ page }) => {
-    await page.goto('/workspace?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("fixture-adapter")').first().click();
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible();
-    await expect(dialog).toContainText('能力');
-  });
-});
-
-test.describe('Fixture display — swarm missions', () => {
-  test('renders missions including blocked and failed status', async ({ page }) => {
-    await page.goto('/swarm?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=示例运行中任务').first()).toBeVisible();
-    await expect(page.locator('text=已阻塞').first()).toBeVisible();
-  });
-
-  test('mission detail shows work items and artifact references', async ({ page }) => {
-    await page.goto('/swarm?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例运行中任务")').first().click();
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible();
-    await expect(dialog.locator('text=示例数据')).toBeVisible();
-    await expect(dialog).toContainText('工作项');
-  });
-
-  test('work items section displays flattened items from missions', async ({ page }) => {
-    await page.goto('/swarm?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('heading', { name: /工作项/ })).toBeVisible();
-  });
-});
-
-// ── 4. Screenshots ──
-
-test.describe('Screenshots', () => {
-  test('资料沉淀 screenshot', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    const vp = page.viewportSize();
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ animations: 'disabled', path: `test-results/attention-${vp?.width}x${vp?.height}.png`, fullPage: true });
-  });
-
-  test('共同工作区 screenshot', async ({ page }) => {
-    await page.goto('/workspace?fixture=1');
-    await page.waitForLoadState('networkidle');
-    const vp = page.viewportSize();
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ animations: 'disabled', path: `test-results/workspace-${vp?.width}x${vp?.height}.png`, fullPage: true });
-  });
-
-  test('蜂群空间 screenshot', async ({ page }) => {
-    await page.goto('/swarm?fixture=1');
-    await page.waitForLoadState('networkidle');
-    const vp = page.viewportSize();
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ animations: 'disabled', path: `test-results/swarm-${vp?.width}x${vp?.height}.png`, fullPage: true });
-  });
-
-  test('detail panel screenshot', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例论文")').first().click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-    const vp = page.viewportSize();
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ animations: 'disabled', path: `test-results/detail-${vp?.width}x${vp?.height}.png` });
-  });
-});
-
-// ── 5. Keyboard navigation ──
-
-test.describe('Keyboard navigation', () => {
-  test('Enter key opens detail from list item', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    const item = page.locator('[role="button"]:has-text("示例论文")').first();
-    await item.focus();
-    await page.keyboard.press('Enter');
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-  });
-
-  test('Space key opens detail from list item', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    const item = page.locator('[role="button"]:has-text("示例论文")').first();
-    await item.focus();
-    await page.keyboard.press('Space');
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-  });
-
-  test('Tab navigation through list items', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例论文")').first().focus();
+  test.afterAll(async () => { if (owned) await owned.server.close({ preserveData: true }); });
+  async function open(page: import('@playwright/test').Page) {
+    await page.goto(`${owned.server.webURL}/attention`);
+    return page.locator('main [role="button"]').filter({ hasText: 'AGENTS.md' });
+  }
+  for (const key of ['Enter', 'Space']) {
+    test(`${key} 打开实际资料详情`, async ({ page }) => {
+      const trigger = await open(page);
+      await trigger.focus();
+      await page.keyboard.press(key);
+      await expect(page.getByRole('dialog')).toBeVisible();
+    });
+  }
+  test('Tab 按键在真实资料列表中移动', async ({ page }) => {
+    await open(page);
+    const cards = page.locator('main li[role="button"]');
+    await expect(cards).toHaveCount(2);
+    await cards.first().focus();
     await page.keyboard.press('Tab');
-    const focused = page.locator(':focus');
-    await expect(focused).toHaveAttribute('role', 'button');
+    await expect(page.locator(':focus')).toHaveAttribute('role', 'button');
   });
-
-  test('Tab navigation from sidebar to content', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
+  test('侧栏可以通过 Tab 进入正文', async ({ page }) => {
+    await open(page);
     await page.locator('nav button').first().focus();
-    for (let i = 0; i < 5; i++) {
+    for (let index = 0; index < 5; index++) await page.keyboard.press('Tab');
+    await expect(page.locator(':focus')).toHaveCount(1);
+  });
+  test('实际资料详情包含来源和未启用操作说明', async ({ page }, testInfo) => {
+    const trigger = await open(page);
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toContainText('素材详情');
+    await expect(dialog).toContainText('来源定位');
+    await expect(dialog).toContainText('任务执行尚未实现');
+    await expect(dialog.getByText('示例数据', { exact: true })).toHaveCount(0);
+    await page.screenshot({ path: testInfo.outputPath('actual-material-detail.png') });
+  });
+  test('详情打开时关闭按钮获得焦点', async ({ page }) => {
+    await (await open(page)).click();
+    await expect(page.getByRole('dialog').getByRole('button', { name: '关闭', exact: true })).toBeFocused();
+  });
+  test('Escape 关闭资料详情', async ({ page }) => {
+    await (await open(page)).click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
+  test('Tab 和 Shift+Tab 在详情内循环焦点', async ({ page }) => {
+    await (await open(page)).click();
+    const dialog = page.getByRole('dialog');
+    const close = dialog.getByRole('button', { name: '关闭', exact: true });
+    await expect(close).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    expect(await page.locator(':focus').evaluate(element => !!element.closest('[role="dialog"]'))).toBe(true);
+    await page.keyboard.press('Tab');
+    await expect(close).toBeFocused();
+    for (let index = 0; index < 10; index++) {
       await page.keyboard.press('Tab');
+      expect(await page.locator(':focus').evaluate(element => !!element.closest('[role="dialog"]'))).toBe(true);
     }
-    const focused = page.locator(':focus');
-    expect(await focused.count()).toBe(1);
+  });
+  test('Escape 关闭后恢复原资料卡片焦点', async ({ page }) => {
+    const trigger = await open(page);
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Escape');
+    await expect(trigger).toBeFocused();
+  });
+  test('详情外部焦点仍可通过 Escape 关闭详情', async ({ page }) => {
+    await (await open(page)).click();
+    await page.locator('nav button').first().focus();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).not.toBeVisible();
   });
 });
 
-// ── 6. Focus management ──
-
-test.describe('Focus management', () => {
-  test('close button receives focus when dialog opens', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例论文")').first().click();
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible();
-    // useEffect fires asynchronously after mount; poll with string expression
-    await page.waitForFunction(
-      'document.querySelector(\'[role="dialog"] button[aria-label="关闭"]\') === document.activeElement',
-      { timeout: 5000 },
-    );
-  });
-
-  test('Escape closes detail panel', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例论文")').first().click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
-  });
-
-  test('close button retains focus after Tab cycling within dialog', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例论文")').first().click();
-    const dialog = page.locator('[role="dialog"]');
-    await expect(dialog).toBeVisible();
-
-    // Wait for useEffect focus to settle
-    await page.waitForFunction(
-      'document.querySelector(\'[role="dialog"] button[aria-label="关闭"]\') === document.activeElement',
-      { timeout: 5000 },
-    );
-
-    // Tab through all focusable elements and verify focus stays within dialog
-    for (let i = 0; i < 10; i++) {
-      await page.keyboard.press('Tab');
-    }
-    // After cycling, focus must still be inside the dialog
-    const activeElement = page.locator('[role="dialog"] :focus');
-    await expect(activeElement).toBeVisible();
-    expect(await activeElement.count()).toBe(1);
-  });
-
-  test('focus returns to trigger element after Escape closes dialog', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    const item = page.locator('[role="button"]:has-text("示例论文")').first();
-    await item.click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
-    await expect(item).toBeFocused();
-  });
-
-  test('Escape works even when focus is outside the dialog panel', async ({ page }) => {
-    await page.goto('/attention?fixture=1');
-    await page.waitForLoadState('networkidle');
-    await page.locator('[role="button"]:has-text("示例论文")').first().click();
-    await expect(page.locator('[role="dialog"]')).toBeVisible();
-    // Move focus to an element outside the dialog
-    await page.locator('nav button').first().focus();
-    // Escape should still close via document-level listener
-    await page.keyboard.press('Escape');
-    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
-  });
+test('实际权限拒绝显示首次读取错误且没有过期快照', async ({ page, context }) => {
+  await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+  await page.goto('/attention');
+  const sections = page.locator('section').filter({ has: page.getByRole('heading', { name: /^(素材|机会)/ }) });
+  await expect(sections.getByRole('alert').filter({ hasText: '暂未完成' })).toHaveCount(2);
+  await expect(page.getByText(/数据可能已过期/)).toHaveCount(0);
 });
-
-// ── 7. Stale data via refresh button ──
-
-test.describe('Stale data via refresh button', () => {
-  test('first load failure shows error, no stale banner', async ({ page }) => {
-    await page.route('**/api/v1/jobs', route => route.fulfill({ json: { schema_version: 1, items: [], next_cursor: null } }));
-    await page.route('**/materials*', route => route.abort());
-    await page.route('**/opportunities*', route => route.abort());
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    // Both materials and opportunities show error (2 sections)
-    const errorAlerts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^(素材|机会)/ }) }).locator('[role="alert"]:has-text("暂未完成")');
-    await expect(errorAlerts.first()).toBeVisible({ timeout: 10000 });
-    expect(await errorAlerts.count()).toBe(2);
-    // No stale banner (stale only appears when prior data was retained)
-    await expect(page.locator('text=/数据可能已过期/')).not.toBeVisible();
-  });
-
-  test('click refresh → fail → stale banner with retained data → retry succeeds', async ({ page }) => {
-    // MaterialV1 schema-valid items: only required fields plus collection_reason
-    // (the only nullable optional). Optional non-nullable fields are omitted.
-    const initialTitle = '保留的中性素材';
-    const refreshedTitle = '刷新后的新素材';
-    const emptyResp = { schema_version: 1, items: [], next_cursor: null };
-
-    const makeMaterial = (title: string) => ({
-      id: 'retained-mat-1',
-      kind: 'text',
-      source_locator: 'fixture:test-retained',
-      current_revision: 1,
-      lifecycle: 'active',
-      title,
-      collection_reason: null,
-    });
-
-    let materialsResponse = { schema_version: 1, items: [makeMaterial(initialTitle)], next_cursor: null };
-    let failMaterials = false;
-    let failOpportunities = false;
-
-    await page.route('**/materials*', async route => {
-      if (failMaterials) { await route.abort(); return; }
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(materialsResponse),
-      });
-    });
-    await page.route('**/opportunities*', async route => {
-      if (failOpportunities) { await route.abort(); return; }
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(emptyResp),
-      });
-    });
-
-    // 1. Initial load succeeds with neutral item
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator(`text=${initialTitle}`).first()).toBeVisible({ timeout: 10000 });
-
-    // 2. Block subsequent fetches and click refresh
-    failMaterials = true;
-    failOpportunities = true;
+test('刷新遭实际权限拒绝后保留快照，恢复许可后替换为新集合', async ({ page, context }) => {
+  test.setTimeout(120_000);
+  const { server, api } = await realService();
+  try {
+    await importTrackedDocument(api);
+    await page.goto(`${server.webURL}/attention`);
+    await expect(page.locator('main [role="button"]').filter({ hasText: 'AGENTS.md' })).toBeVisible();
+    await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
     await page.getByRole('button', { name: '↻ 刷新', exact: true }).click();
-
-    // 3. Stale banner appears with retained prior item still visible
-    await expect(page.locator('text=/数据可能已过期/')).toBeVisible({ timeout: 10000 });
-    // The neutral item from step 1 is still rendered (retained data)
-    await expect(page.locator(`text=${initialTitle}`).first()).toBeVisible();
-
-    // 4. Swap to a different item so we can prove the fresh response replaced stale data
-    materialsResponse = { schema_version: 1, items: [makeMaterial(refreshedTitle)], next_cursor: null };
-    failMaterials = false;
-    failOpportunities = false;
-    await page.locator('[role="alert"]:has-text("数据可能已过期") button:has-text("重试")').click();
-
-    // 5. Stale banner clears, fresh response replaced stale data (new title visible)
-    await expect(page.locator('text=/数据可能已过期/')).not.toBeVisible({ timeout: 10000 });
-    await expect(page.locator(`text=${refreshedTitle}`).first()).toBeVisible({ timeout: 10000 });
-  });
+    const stale = page.getByRole('alert').filter({ hasText: '数据可能已过期' });
+    await expect(stale).toBeVisible();
+    await expect(page.locator('main [role="button"]').filter({ hasText: 'AGENTS.md' })).toBeVisible();
+    await importTrackedDocument(api, 'README.md');
+    await context.setExtraHTTPHeaders({});
+    await stale.getByRole('button', { name: '重试', exact: true }).click();
+    await expect(stale).not.toBeVisible();
+    await expect(page.locator('main [role="button"]').filter({ hasText: 'README.md' })).toBeVisible();
+    expect((await api.get('/materials')).items).toHaveLength(2);
+  } finally { await context.setExtraHTTPHeaders({}); await server.close({ preserveData: true }); }
 });
-
-// ── 8. API failure and retry ──
-
-test.describe('API failure and retry', () => {
-  test('shows error state and retry button on API failure', async ({ page }) => {
-    await page.route('**/api/v1/jobs', route => route.fulfill({ json: { schema_version: 1, items: [], next_cursor: null } }));
-    await page.route('**/materials*', route => route.abort());
-    await page.route('**/opportunities*', route => route.abort());
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    // Each failed section (materials, opportunities) shows its own error + retry
-    const errorAlerts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^(素材|机会)/ }) }).locator('[role="alert"]:has-text("暂未完成")');
-    await expect(errorAlerts.first()).toBeVisible({ timeout: 10000 });
-    expect(await errorAlerts.count()).toBe(2);
-    const retryButtons = page.locator('[role="alert"] button:has-text("重试")');
-    expect(await retryButtons.count()).toBeGreaterThanOrEqual(2);
-  });
-
-  test('retry button triggers new request', async ({ page }) => {
-    let callCount = 0;
-    await page.route('**/materials*', route => {
-      callCount++;
-      route.abort();
-    });
-    await page.route('**/opportunities*', route => route.abort());
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('button:has-text("重试")').first()).toBeVisible({ timeout: 10000 });
-    const initialCount = callCount;
-    await page.locator('section').filter({ has: page.getByRole('heading', { name: /^素材/ }) }).getByRole('button', { name: '重试', exact: true }).click();
-    await page.waitForTimeout(500);
-    expect(callCount).toBeGreaterThan(initialCount);
-  });
-
-  test('no silent fixture fallback on API failure', async ({ page }) => {
-    await page.route('**/materials*', route => route.abort());
-    await page.route('**/opportunities*', route => route.abort());
-    await page.goto('/attention');
-    await page.waitForLoadState('networkidle');
-    // Error state visible
-    await expect(page.locator('[role="alert"]:has-text("暂未完成")').first()).toBeVisible({ timeout: 10000 });
-    // Fixture data never appears
-    await expect(page.locator('text=示例论文')).not.toBeVisible();
-    await expect(page.locator('text=示例机会')).not.toBeVisible();
-  });
-
-  test('swarm propagates mission error to workitems and artifacts sections', async ({ page }) => {
-    await page.route('**/missions*', route => route.abort());
-    await page.goto('/swarm');
-    await page.waitForLoadState('networkidle');
-    await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
-    // Mission and workitem errors are in records; artifacts are on their own tab.
-    // Check each downstream section visibly rather than counting hidden panels.
-    for (const title of [/^任务\(/, /^工作项\(/]) {
-      const section = page.locator('section').filter({ has: page.getByRole('heading', { name: title }) });
-      await expect(section.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible({ timeout: 10000 });
-    }
-    await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
-    const artifacts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^产物引用\(/ }) });
-    await expect(artifacts.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible({ timeout: 10000 });
-    // No fixture data should appear
-    await expect(page.locator('text=示例运行中任务')).not.toBeVisible();
-  });
+test('实际错误状态提供各自重试入口', async ({ page, context }) => {
+  await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+  await page.goto('/attention');
+  const sections = page.locator('section').filter({ has: page.getByRole('heading', { name: /^(素材|机会)/ }) });
+  await expect(sections.getByRole('alert').filter({ hasText: '暂未完成' })).toHaveCount(2);
+  await expect(sections.getByRole('button', { name: '重试', exact: true })).toHaveCount(2);
+});
+test('人工重试发送新的真实 HTTP 请求', async ({ page, context }) => {
+  await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+  await page.goto('/attention');
+  const materials = page.locator('section').filter({ has: page.getByRole('heading', { name: /^素材/ }) });
+  await expect(materials.getByRole('alert')).toBeVisible();
+  await context.setExtraHTTPHeaders({});
+  const response = page.waitForResponse(value => value.url().endsWith('/materials'));
+  await materials.getByRole('button', { name: '重试', exact: true }).click();
+  expect((await response).status()).toBe(200);
+  await expect(materials.getByRole('status', { name: '暂无素材', exact: true })).toBeVisible();
+});
+test('实际读取失败时没有样本资料回退', async ({ page, context }) => {
+  await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+  await page.goto('/attention');
+  await expect(page.getByRole('alert').filter({ hasText: '暂未完成' }).first()).toBeVisible();
+  await expect(page.getByText('示例论文')).toHaveCount(0);
+  await expect(page.getByText('示例机会')).toHaveCount(0);
+});
+test('实际 Mission 权限拒绝传播到工作项及产物视图', async ({ page, context }) => {
+  await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+  await page.goto('/swarm');
+  await page.locator('summary').filter({ hasText: /^已有任务记录/ }).click();
+  for (const name of [/^任务\(/, /^工作项\(/]) {
+    const section = page.locator('section').filter({ has: page.getByRole('heading', { name }) });
+    await expect(section.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible();
+  }
+  await page.getByRole('tab', { name: '成果与继承', exact: true }).click();
+  const artifacts = page.locator('section').filter({ has: page.getByRole('heading', { name: /^产物引用/ }) });
+  await expect(artifacts.getByRole('alert').filter({ hasText: '暂未完成' })).toBeVisible();
+  await expect(page.getByText('示例运行中任务')).toHaveCount(0);
 });

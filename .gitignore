@@ -4,6 +4,8 @@ dist/
 web/playwright-report/
 web/test-results/
 coverage/
+.verification/
+__pycache__/
 *.tsbuildinfo
 .env
 .env.*

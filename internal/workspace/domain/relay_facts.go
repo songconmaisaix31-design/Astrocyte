@@ -72,6 +72,10 @@ type RelayTurnBinding struct {
 	TurnID             string     `json:"-"`
 	AcceptedAt         time.Time  `json:"-"`
 	StartedAt          *time.Time `json:"-"`
+	Outcome            string     `json:"-"`
+	FailureCode        string     `json:"-"`
+	ResultSource       string     `json:"-"`
+	ResultObservedAt   *time.Time `json:"-"`
 }
 
 type RelaySessionRelation struct {

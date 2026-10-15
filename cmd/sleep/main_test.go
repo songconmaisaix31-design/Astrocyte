@@ -32,6 +32,15 @@ func TestBuiltDailySleepCommandAndReplay(t *testing.T) {
 	}
 	day := time.Now().UTC().AddDate(0, 0, -1)
 	day = time.Date(day.Year(), day.Month(), day.Day(), 0, 0, 0, 0, time.UTC)
+	seed := func(db *sqlite.DB) {
+		t.Helper()
+		decay, confidence := .1, .5
+		engine := app.NewDynamicsEngine(sqlite.NewDynamicsRepository(db), app.DynamicsOptions{Decay: &decay, InitialConfidence: &confidence})
+		if _, err := engine.SeedTopic(ctx, app.Principal{ID: "fixture-human", Kind: "human"}, "fixture-topic", day.Add(8*time.Hour).UnixMilli()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	seed(db)
 	var input []app.StoredEvent
 	for i := 0; i < 2; i++ {
 		ts := day.Add(time.Duration(9+i) * time.Hour).UnixMilli()
@@ -91,6 +100,7 @@ func TestBuiltDailySleepCommandAndReplay(t *testing.T) {
 	if err = literalDB.RunMigrations(ctx, migrations.FS); err != nil {
 		t.Fatal(err)
 	}
+	seed(literalDB)
 	if _, err = app.NewEventService(sqlite.NewEventRepository(literalDB), .2).Record(ctx, input); err != nil {
 		t.Fatal(err)
 	}

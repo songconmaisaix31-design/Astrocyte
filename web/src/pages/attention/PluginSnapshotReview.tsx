@@ -6,11 +6,11 @@ import { TextField } from './FormControls';
 import { canImportSnapshot, parsePluginSnapshot, snapshotContentStateLabel, snapshotCaveat, snapshotImportOptions, type PluginSnapshotReview, type SnapshotImportOption } from './pluginSnapshot';
 import styles from './AttentionPage.module.css';
 
-export function PluginSnapshotReview({ fixture, onImported }: { fixture: boolean; onImported: () => void }) {
+export function PluginSnapshotReview({ onImported }: { onImported: () => void }) {
   const [text, setText] = useState('');
   const [review, setReview] = useState<PluginSnapshotReview | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
-  const command = useCommand(fixture);
+  const command = useCommand();
   const options = review ? snapshotImportOptions(review, text) : [];
   const importable = review ? canImportSnapshot(review, text) : false;
 
@@ -21,10 +21,7 @@ export function PluginSnapshotReview({ fixture, onImported }: { fixture: boolean
 
   const submitOption = (option: SnapshotImportOption) => {
     if (!review) return;
-    // The idempotency key is derived by useCommand.prepare from the FULL payload
-    // signature: a failed retry of the same body keeps the key, while any body
-    // change (a new snapshot text at the same URL, a different PDF link) yields
-    // a new key so a new revision is created instead of a 409. No custom hash.
+    // 相同完整输入保留命令身份；快照或 PDF 地址变化时创建新命令身份。
     const request = command.prepare({
       expected_version: 1,
       adapter: option.adapter,
@@ -47,7 +44,6 @@ export function PluginSnapshotReview({ fixture, onImported }: { fixture: boolean
 
   return <section aria-label="插件快照复核导入" className={styles.record}>
     <p className={styles.note}>从论文扩展复制的 JSON 快照在此复核：保留快照正文与公共 PDF 选项，只读取你粘贴的内容，不读取登录凭据、不做全站读取。{snapshotCaveat}</p>
-    {fixture && <p className={styles.note}>示例模式：写操作尚未启用，请退出示例模式连接真实 API。</p>}
     <form className={styles.form} onSubmit={event => { event.preventDefault(); parse(); }}>
       <TextField label="粘贴插件快照 JSON" value={text} onChange={value => { setText(value); setReview(null); setParseError(null); }} multiline hint="粘贴浏览器论文扩展复制的完整快照；仅用于人工复核，不自动批准。" />
       <button className="ac-button secondary compact" type="submit" disabled={command.pending || !text.trim()}>复核快照</button>
@@ -66,7 +62,7 @@ export function PluginSnapshotReview({ fixture, onImported }: { fixture: boolean
         {review.warning && <p role="status">受限说明 · {review.warning}</p>}
         {review.truncated && <p role="status">快照正文被截断，不能当作全文；将不会按快照正文入库。</p>}
       </div>
-      {options.length > 0 ? <>{options.map(option => <button key={option.label + option.source_locator} className="ac-button" type="button" disabled={fixture || command.pending} onClick={() => submitOption(option)}>{option.label}</button>)}</> : <p role="status">{review.content_state === 'paywall' || review.content_state === 'restricted' ? '此来源受限或付费，正文不可得，无绕过；快照仅用于人工复核，未当作正文。' : '此快照未携带完整正文或公共 PDF，仅用于人工复核，未当作正文。'}</p>}
+      {options.length > 0 ? <>{options.map(option => <button key={option.label + option.source_locator} className="ac-button" type="button" disabled={command.pending} onClick={() => submitOption(option)}>{option.label}</button>)}</> : <p role="status">{review.content_state === 'paywall' || review.content_state === 'restricted' ? '此来源受限或付费，正文不可得，无绕过；快照仅用于人工复核，未当作正文。' : '此快照未携带完整正文或公共 PDF，仅用于人工复核，未当作正文。'}</p>}
       {importable && <p className={styles.note}>以上选项由你明确选择后入库；未选择不会自动写入。</p>}
     </>}
     <CommandState {...command} />

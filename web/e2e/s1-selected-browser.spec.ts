@@ -6,7 +6,7 @@ import { humanAPI, waitJob } from '../../tests/s1/api.mjs';
 import type { components } from '../src/api/schema';
 
 type Detail = components['schemas']['TrackingSourceResultV1'];
-// Explicit app/API acceptance only; the host owns the already connected personal browser.
+// 只在明确交接的浏览器范围内验证实际 app/API。
 test('approved selected Douyin folder is chosen, saved, deduplicated and retained after cold restart', async ({ page }, testInfo) => {
   test.skip(process.env.ASTROCYTE_TEST_SELECTED_BROWSER !== '1' || testInfo.project.name !== 'chromium-1920', 'Approved selected browser metadata only, once');
   test.setTimeout(240_000);

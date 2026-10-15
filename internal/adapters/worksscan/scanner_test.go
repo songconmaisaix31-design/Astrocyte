@@ -60,6 +60,33 @@ func TestScannerReadsMarkerPlatform(t *testing.T) {
 	}
 }
 
+// 字面量是明确的文件格式输入；格式错误不能产生成功的未知平台。
+func TestScannerRejectsProvidedMalformedMarker(t *testing.T) {
+	for _, input := range []string{"{", "null", `{"platform":1}`, `{"name":false}`} {
+		t.Run(input, func(t *testing.T) {
+			root := t.TempDir()
+			if err := os.WriteFile(filepath.Join(root, markerFileName), []byte(input), 0600); err != nil {
+				t.Fatal(err)
+			}
+			works, _, err := NewScanner().ScanWorks(context.Background(), []string{root})
+			if err == nil || len(works) != 0 {
+				t.Fatalf("provided marker error hidden: works=%+v err=%v", works, err)
+			}
+		})
+	}
+}
+
+func TestScannerAcceptsActualSingleFileWithoutMarker(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "manual.txt")
+	if err := os.WriteFile(path, []byte("实际测试文件"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	works, failures, err := NewScanner().ScanWorks(context.Background(), []string{path})
+	if err != nil || len(failures) != 0 || len(works) != 1 || works[0].Kind != "file" || works[0].Files.FileCount != 1 || !works[0].Files.Verified {
+		t.Fatalf("actual single file lost: %+v %+v %v", works, failures, err)
+	}
+}
+
 func TestScannerSkipsNestedAndReportsMissing(t *testing.T) {
 	root := t.TempDir()
 	os.MkdirAll(filepath.Join(root, "node_modules", "pkg"), 0o755)

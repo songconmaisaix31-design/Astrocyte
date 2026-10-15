@@ -66,8 +66,7 @@ func (s *Service) UpdateMaterial(ctx context.Context, p Principal, id string, c 
 		row.Material.CollectionReason = c.CollectionReason
 		row.Material.Lifecycle = c.Lifecycle
 		row.Material.Version++
-		// Pinning and lifecycle are independent metadata, never content versions
-		// or implicit reread events. Collection reasons remain human-authored.
+		// 固定标记和生命周期属于资料属性；收藏原因保留人工输入。
 		if err = tx.SaveMaterial(row, c.ExpectedVersion); err != nil {
 			return MaterialDetail{}, err
 		}
@@ -102,6 +101,10 @@ func (s *Service) GetAttachment(ctx context.Context, p Principal, id string, rev
 			}
 			for _, a := range r.Attachments {
 				if a.Name == name {
+					// 按实际不可变对象及处理类别拒绝，跨 revision 或名称别名也不开放。
+					if privateNativeAttachment(row.Revisions, a) {
+						return serviceError(apierrors.ScopeDenied, "Native transcription metadata is restricted to the local object store", "read_public_material_content")
+					}
 					attachment = a
 					if p.Kind == "agent" {
 						return s.machineRead(tx, &row, p)

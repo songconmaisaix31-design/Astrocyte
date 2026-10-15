@@ -124,6 +124,11 @@ func TestM6MixedWeekRecommendationExplanationAndRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer func() { db.Close() }()
+	for _, topic := range []string{"research", "implementation"} {
+		if _, err = m6Engine(db, now).SeedTopic(ctx, app.Principal{ID: "fixture-human", Kind: "human"}, topic, start.UnixMilli()); err != nil {
+			t.Fatal(err)
+		}
+	}
 	repo := sqlite.NewEventRepository(db)
 	experiences := app.NewExperienceService(sqlite.NewExperienceRepository(db), repo, app.ExperienceOptions{ProjectID: "project-a", Clock: func() time.Time { return now }})
 	recorder := app.NewEventService(repo, .2, experiences.CaptureCommittedFailure)

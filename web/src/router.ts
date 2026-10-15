@@ -1,7 +1,4 @@
-/**
- * Lightweight history-based router.
- * No external deps — uses the native History API.
- */
+/** 使用浏览器 History API 管理页面路由。 */
 import { useState, useEffect, useCallback } from 'react';
 
 export interface Route {

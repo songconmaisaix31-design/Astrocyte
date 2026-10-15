@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/distillers"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/importers"
 	attentionapp "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
@@ -170,11 +171,26 @@ func repositoryPackageVersion(path, expectedName string) error {
 	return nil
 }
 
+// 显式目录模式使用应用级配置；未设置时保持现有注册来源。
+func resolveProjectDiscovery() (*agents.RegisteredProjects, error) {
+	raw, configured := os.LookupEnv("ASTROCYTE_PROJECT_DISCOVERY_ROOTS")
+	if !configured {
+		return agents.NewRegisteredProjects(), nil
+	}
+	var roots []string
+	if err := json.Unmarshal([]byte(raw), &roots); err != nil {
+		return nil, fmt.Errorf("ASTROCYTE_PROJECT_DISCOVERY_ROOTS must be a JSON array: %w", err)
+	}
+	if roots == nil {
+		return nil, fmt.Errorf("ASTROCYTE_PROJECT_DISCOVERY_ROOTS must be an explicit JSON array")
+	}
+	return agents.NewScopedRegisteredProjects(roots)
+}
+
 // Reader 与 Service 共用现有处理期限。
 const defaultJobTimeoutSeconds = 1800
 
-// Only the explicitly configured or pinned project yt-dlp environment is used.
-// No generic Python PATH fallback, history search or dependency install occurs.
+// yt-dlp 只使用明确配置或固定安装的 Python 环境。
 func resolveListingPython() (string, error) {
 	if configured := os.Getenv("ASTROCYTE_LISTING_PYTHON"); configured != "" {
 		info, err := os.Stat(configured)
@@ -204,13 +220,11 @@ func resolveListingPython() (string, error) {
 			return candidate, nil
 		}
 	}
-	// Favorites can still use the public HTTP adapter. Upload jobs retain a
-	// truthful configuration error until the known Python environment is present.
+	// 收藏夹继续使用公开 HTTP；上传列表缺少 Python 时返回明确配置错误。
 	return "", nil
 }
 
-// The source scope is startup-owned and has no implicit public/private defaults.
-// An ordinary test or dev invocation never starts model processing unless opted in.
+// 启动配置明确控制来源范围与模型处理权限。
 func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distiller, []string, error) {
 	raw := os.Getenv("ASTROCYTE_ENABLE_CODEX_DISTILLATION")
 	if raw == "" || raw == "false" {
@@ -252,9 +266,7 @@ func resolveDistiller(ctx context.Context, dataDir string) (attentionapp.Distill
 	return processor, sourceKeys, nil
 }
 
-// Extraction uses the project installation by default. Launch scripts supply
-// absolute paths; direct binary launches can resolve a checkout beside the binary
-// or above the current directory. A missing installation is an actionable error.
+// 提取使用项目固定安装，启动脚本提供绝对路径；缺少安装时明确失败。
 func resolveSourceReader(roots []string) (*importers.Reader, error) {
 	reader := importers.NewReader(roots)
 	enabled := os.Getenv("ASTROCYTE_ENABLE_SUMMARIZE")
@@ -293,8 +305,7 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 			return nil, fmt.Errorf("summarize dependency must be an existing absolute file: %s", path)
 		}
 	}
-	// Node resolves pnpm junctions consistently with the media bridge. Go's
-	// EvalSymlinks does not resolve this Windows installation correctly.
+	// Node 按包管理器实际规则解析 pnpm junction，与媒体处理保持一致。
 	resolveCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	resolved, err := exec.CommandContext(resolveCtx, nodePath, "-e", "process.stdout.write(require('node:fs').realpathSync(process.argv[1]))", cliPath).Output()
@@ -310,7 +321,8 @@ func resolveSourceReader(roots []string) (*importers.Reader, error) {
 		Version: "0.25.1", YtDlpPath: os.Getenv("ASTROCYTE_YT_DLP_PATH"),
 		FFmpegPath: os.Getenv("ASTROCYTE_FFMPEG_PATH"), WhisperBinary: os.Getenv("ASTROCYTE_WHISPER_BINARY"),
 		WhisperModel: os.Getenv("ASTROCYTE_WHISPER_MODEL"), UVXPath: os.Getenv("ASTROCYTE_UVX_PATH"),
-		Timeout: time.Duration(timeoutSeconds) * time.Second,
+		ProxyURL: os.Getenv("ASTROCYTE_SUMMARIZE_PROXY_URL"),
+		Timeout:  time.Duration(timeoutSeconds) * time.Second,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("configure summarize extraction: %w", err)
@@ -326,18 +338,34 @@ func resolveProjectSummarize() (string, error) {
 		return "", fmt.Errorf("resolve project directory: %w", err)
 	}
 	starts := []string{cwd}
-	if executable, err := os.Executable(); err == nil {
-		starts = append(starts, filepath.Dir(executable))
+	executable, err := os.Executable()
+	if err != nil {
+		return "", fmt.Errorf("resolve server executable: %w", err)
 	}
+	starts = append(starts, filepath.Dir(executable))
 	for _, start := range starts {
 		for dir := start; ; dir = filepath.Dir(dir) {
 			var project struct{ Name string }
 			raw, readErr := os.ReadFile(filepath.Join(dir, "package.json"))
-			if readErr == nil && json.Unmarshal(raw, &project) == nil && project.Name == "astrocyte" {
+			if readErr != nil && !os.IsNotExist(readErr) {
+				return "", fmt.Errorf("read project package: %w", readErr)
+			}
+			if readErr == nil {
+				if err := json.Unmarshal(raw, &project); err != nil {
+					return "", fmt.Errorf("parse project package: %w", err)
+				}
+			}
+			if readErr == nil && project.Name == "astrocyte" {
 				packageRoot := filepath.Join(dir, "node_modules", "@steipete", "summarize")
 				var pkg struct{ Version string }
 				raw, err := os.ReadFile(filepath.Join(packageRoot, "package.json"))
-				if err != nil || json.Unmarshal(raw, &pkg) != nil || pkg.Version != "0.25.1" {
+				if err != nil {
+					return "", fmt.Errorf("read summarize package: %w", err)
+				}
+				if err := json.Unmarshal(raw, &pkg); err != nil {
+					return "", fmt.Errorf("parse summarize package: %w", err)
+				}
+				if pkg.Version != "0.25.1" {
 					return "", fmt.Errorf("project summarize 0.25.1 is missing or mismatched; run pnpm install --frozen-lockfile")
 				}
 				return filepath.Join(packageRoot, "dist", "cli.js"), nil
@@ -350,7 +378,7 @@ func resolveProjectSummarize() (string, error) {
 	return "", fmt.Errorf("project summarize not found; launch with pnpm dev/start from an installed checkout, or configure absolute ASTROCYTE_SUMMARIZE_CLI and ASTROCYTE_NODE")
 }
 
-// Runtime bounds are local service configuration, not client-supplied authority.
+// 运行期限来自本地服务配置。
 func configuredPositiveInt(name string, defaultValue, maxValue int) (int, error) {
 	raw := os.Getenv(name)
 	if raw == "" {

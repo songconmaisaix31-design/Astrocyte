@@ -15,8 +15,7 @@ async function headers(key: string) {
 }
 const command = (key: string) => ({ schema_version: 1 as const, request_id: key, expected_version: 1 as const });
 
-// Each human submit has one operation identity. A failed or uncertain write is
-// never automatically retried; reads continue through the existing session client.
+// 人工提交具有唯一操作身份；读取复用既有会话，失败或结果未知的写入不自动重发。
 export const worksAlbumApi = {
   list: (signal?: AbortSignal) => unwrap(api.GET('/works', { signal })),
   refresh: async (roots: string[], key: string) => unwrap(api.POST('/works/refresh', { body: { ...command(key), roots }, params: { header: await headers(key) } })),
