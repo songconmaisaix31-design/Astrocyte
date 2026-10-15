@@ -24,6 +24,20 @@ SOURCE `ee7889cf04383162e160ae30544eb324257ed45c` 提供 `CurrentGoalReader`。`
 
 前一 SOURCE `ee7889c` 和独立 REPORT `649df9c732689cc51706844ec36dfc81817533ba` 已普通 push，独立远端检查最终同 REPORT。首次查询 REPORT 远端时返回 `OpenSSL SSL_connect: SSL_ERROR_SYSCALL`，该失败保留在本次工具执行记录；后续单独 `git ls-remote` 成功返回准确 `649df9c`，没有重新推送或修改历史。当前可消费的 Goal 生产增量只有 `internal/workspace/domain/goals.go` 与新增 `internal/workspace/app/goals_snapshot.go`，必须使用已有完整 S2 / 当前项目权限 / 同数据库事务基线，两个测试提交保留独立覆盖证据。
 
+## 2026-10-15 生产资料 Context 首次检查与集成返修 REPORT
+
+真实生产资料 Context 检查 SOURCE `be255f3c64dd42dc41f0a4be646865e4ae86302b` 保存 `tests/s2/context_material.test.mjs`。它要求显式提供准确生产二进制、对应 SOURCE 和本次独占输出目录，使用该 SOURCE 的真实 OpenAPI、成熟 YAML / JSON Schema 库和现有进程工具；不另建 API 或原生实现。公开 README 来自实际本工程 Git HEAD 的固定对象，经生产人工导入和项目引用后建立 Goal / Proposal / Grant，再核完整 ContextPacket 的真实对象字节、许可移除、不可变引用与两次进程重启。后续输出目录通过 `S2_CONTEXT_OUTPUT_ROOT` 指定至本轨 D 盘；原先证据不移动或删除。
+
+首轮使用 H 允许消费的 `D:/Astrocyte-agent-assets/20261015/relay/H/recovery-context-registration-server.exe`，准确生产 SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9` 加 H 已记录的 P `579a1cede98b47b08a3126f5d3974da938348929` 五 Reader 文件只读 overlay，未修改该二进制或 H 工作树。实际 `node --test tests/s2/context_material.test.mjs` 开发内容 FAIL，51.912 秒；日志 `.verification/s2-first/context-material-production-first.log`，真实库 `.verification/s2-first/context-material-WITyJD/data/state.sqlite`，同目录 `server.log`。当时固定公开输入 HEAD 为 `5ade870744ad6d396cca7e268899a19c133ea1ec`。资料导入、项目引用、Goal、提案、提交审阅和人类批准均已完成；Context POST 在原 10 秒读取期限发生 TimeoutError，服务日志随后记录该请求为 503。响应体未被客户端取得，具体安全错误码保持 UNKNOWN。测试自己的服务进程和日志已关闭，原生会话及模型调用为零，后续断言 NOT_RUN。
+
+只读准确 H SOURCE 已确认其 `sqlite/attention.go` 缺少 B `ce281d003c093ec26e19dfec78e912f20a014787` 的共享 `WorkspaceTransaction` 分支，仍独立打开 `BEGIN IMMEDIATE`；组包保存前又在 Workspace 事务内调用真实 `ReadProjectReference`。该准确来源缺口已交 H / 模块，不能只用空来源 Context 的既有成功替代完整资料链。原 I 已在其组合保留 B 的同数据库分支；下一次实际检查等待 I / H 交可运行的准确来源，保持原请求期限、全部断言和首 RED。该 SOURCE 另补显式 D 盘输出与安全阶段错误标注，尚未把新增测试登记为通过。
+
+依模块 SOURCE `83fd634904680a68534ad51832bf03a670cd028c` 和 S5 本人 STOP，S2 仅在 S5 树编辑并 stage `tests/s2/approval_test.go`，保留其已有批准 / 幂等 / 事件重投递 / 唯一约束完整回滚 / 重开 / 撤销断言，并合入本次 Goal 全部权限 / 版本 / 同数据库检查。未引入该树缺失的前序 Context HTTP helper。全树 U0、限定 working / cached diff 与格式检查通过，范围已明确停止并归还；模块与 M-release 独核后仅原 S5 继续。
+
+依模块 SOURCE `9fd45c18e6f4f6343e3ff23c531b384472d037dc`、I 本人 STOP 和本人的安全检查点，S2 仅处理 I 中列明的十一件冲突并 stage。逐项保留真实准入 / 未分配草稿、当前固定来源重查、human-only `reject_artifact` 与原断言、同库事务和连接关闭错误传播、包存储及私有原生字段；十一完整文件相对 I 当时 HEAD `392bbb17fc56b15a86c9b84349e6e4d6cb884755` 内容一致，限定两项 diff 检查通过，原 MERGE_HEAD `02a7976d997ef14ac298b2e240da43a9bb423c93` 保持。未带入本树 WIP、未操作合并生命周期。归还时只剩 B 的两件依赖冲突；模块后续独核全树 U0 并已收回临时权限。此结果只代表冲突处理，不代表完整组合构建或 HTTP 通过。
+
+S3 当前仅需私有 controller / startup 类型及存储映射，准确最小来源为 `aa445adf834c3a397a0817bec0593fcf1039420a` 的 `domain/session_bindings.go` 和 `sqlite/workspace_session_bindings.go` 两个完整原件。S2 已明确二件零 WIP 并停止写入，模块限定由原 S3 在其树消费；不需要 DDL、完整 aa 历史、H 装配或新的 owned 接口。长期语义与后继修订仍归 S2，真实 owned 正向保持未完成。六步经验进入 Context 的独立引用字段与 B 的真实 approved-only / 项目映射 / 来源读取桥正在确认，当前包尚没有此字段，未用资料引用或手填文本代替经验检索。
+
 ## 2026-10-15 公共 Context DTO 与 owned 工厂 REPORT
 
 安全 DTO / owned 工厂 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 和后继单文件 SOURCE `02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` 均已普通 push，分别独立 `git ls-remote` 同值。后继只移除组包事务前的一次重复 Git 验证，保存前事务内的当前快照验证保持；H 消费九文件提交后再消费此单文件提交。`go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` 最终 PASS，29.994 秒，真实库 `.verification/s2-first/actual-1996825770/state.sqlite`，日志 `context-safe-dto-final-first.log`。新增 Go 标准 HTTP 实际监听器使用生产 `httpapi.NewServer(...).Handler()`，接真实 S2 服务、SQLite、objects 和 Git snapshot：GET / POST Context、真实 token 允许读取与跨项目 403、固定引用、绝对根不出响应、根目录的相对映射通过；原批准 / 回滚 / 撤销 / 过期 / 重启检查继续通过。原 10 秒请求期限和全部断言保持。此前开发内容运行 PASS 9.600 秒的 `context-safe-dto-first.log` 保留；随后准确源码复验的 Context POST 10 秒超时 FAIL 保留在 `context-safe-dto-source.log` / `actual-4237230458`，不改写。此结果属于生产 Handler 的实际 HTTP / SQLite 组合，主 `cmd/server` 的 Context 配置仍由 H 验证。`go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s2`、34 包架构和 `git diff --check` 均通过。
