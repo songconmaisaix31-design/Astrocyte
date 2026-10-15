@@ -32,6 +32,16 @@ T / S3 / 产品 UI 保留原 ready Task、原分支和 WIP，待 D helper 与组
 
 M-release 本轮 `msg_8b4512930a6a` 交新 I 本人 STOP `msg_068eac76c5ae`，准确 I 为 `task_2ee44933df72 / ctx_29518fe03538 / term_3e0c581c-df78-4af4-beb6-92048d95c4a3`，本人六件未 edit / stage，停止全部合并生命周期。结合本计划和 S2 当前安全 ACK，已向原 S2 具体放行上节准确六件，仅编辑并 stage，完成必须停止全部 I 树写入和进程访问并归还。当前返修尚未交结果，六件没有被登记为已解决或组合通过。模块与发布负责人独核后，仅 I 继续原 merge。T / S3 / 产品 UI 的原任务与 WIP 保留，后续按原准确依赖恢复。
 
+### 2026-10-16 00:05 准确共享契约的原 UI 返修计划
+
+F 本人确认 `msg_e9d6beb5b3b0` 后已完成原普通合并，SOURCE `c1d49b18ea14c3b7106f7f5c8743bbeba547f444` 双亲为 `02a7976d997ef14ac298b2e240da43a9bb423c93` 与 `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`，模块独立核远端同值。原配置临时范围结束，原 API 草稿保留。正式答复 `msg_457e01756d3d` 确认沿现有授权由 F 运行既有生成器，仅从准确合入的 OpenAPI 生成 `web/src/api/schema.d.ts`，不手写或修改共享来源。
+
+F `msg_01e963a6311b` 报告生成一致性与 lint 通过，全局 typecheck 的首 RED 为原 UI `SwarmPage.tsx` 仍消费旧 Mission 字段。该已明确页面依赖由原 UI 同一 Task `task_d0cee5a583bb` 恢复处理，工作树 `product-ui-20261015`、原分支、实核 HEAD `50751569fe2086178247b1a8aae912d62e5cb5ae` clean。原独占页面和 spec 范围继续，F 保持全部共享 API / hooks / auth / router / schema 与唯一 Relay UI，不增加同域写者。
+
+恢复后的 UI 先读取准确 OpenAPI 与生成契约、核当前安全检查点及依赖；只消费 F 已验证并提交的准确共享 SOURCE，不复制 WIP 或猜字段。Swarm 页面按真实 `SwarmMissionV1` 与原 Mission / WorkItem / Artifact 生命周期适配，保已有成功断言、明确 unknown 与键盘交互。共享来源尚未交付时，先完成只读核查和交接，不以旧字段兼容对象或替代 HTTP 通过检查。TypeScript / lint 等小型检查使用显式 D 盘进程环境；大型浏览器和会向 C 写入大产物的检查继续等待 B 准确 D helper。后续在自然安全检查点普通合入唯一 I 的已提交可构建阶段，T / S3 的原 Task 与 WIP仍保留。
+
+I 后继实际核三处原 Junction 已指向 D 盘，发布负责人 `msg_e884792a3ea9` 确认其四树阶段完成并核全部实际 D 路径后可执行自身组合检查，不因 F / UI 的 helper 等待增加门槛。B 的显式输出、完整日志和 Vite 生命周期修复继续交准确 SOURCE；其他实际 C 输出树仍待该入口。B 已交独立 REPORT `85dfa88f61c625b2094a0fda432ee14a1f02ab60`，模块核远端同值，当前 helper 首轮真实生命周期在 D 盘运行，尚未交完整新来源。
+
 ### 21:51 恢复与原负责人返修计划
 
 根最新 `msg_1bdccb5e8fe6` / `msg_90e98714dbc2` 和根 HANDOFF 21:40 入口明确授权恢复原产品子 Run，以及旧 `run_7b2ce96bcd13` 中仅 B/F 的恢复、问答、结算和终端管理；不创建新 Run 或新 Task，不启动其他已完成任务。公开 Task 列表核四个未完成产品任务均为 ready，原 Dispatch 已 failed / terminal_missing；公开终端清单没有六位旧句柄，与根本次重启及进程退出证据一致。原分支与未提交修改保留。
