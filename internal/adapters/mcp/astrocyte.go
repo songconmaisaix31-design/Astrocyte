@@ -8,9 +8,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 )
 
-// NewAstrocyteServer wires the five cognitive-interface tools (task book §7)
-// to a backend. The backend owns all attention/experience data flow; this
-// server only decodes arguments, calls the backend and shapes MCP results.
+// 五个认知工具通过现有应用后端处理，适配器负责参数解码和响应转换。
 func NewAstrocyteServer(backend app.MCPBackend, binding app.MCPBinding) (*Server, error) {
 	backend, err := app.BindMCPBackend(backend, binding)
 	if err != nil {

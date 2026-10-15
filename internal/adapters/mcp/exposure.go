@@ -5,8 +5,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/domain"
 )
 
-// Event exposure deliberately has no original bytes, source or session. Keep
-// this adapter whitelist separate from StoredEvent and the core explanation.
+// 对外事件使用固定字段，原 bytes、来源和会话保留在内部存储。
 type exposedEvent struct {
 	EventID string `json:"event_id"`
 	Kind    string `json:"kind"`
@@ -70,8 +69,7 @@ func exposeExplanation(result app.ExplainFocusResult) exposedExplanation {
 	return out
 }
 
-// Human-approved structured experience is a separate derived capability.
-// Internal approval/share audit actors and request metadata are not exposure.
+// 对外提供已经人工批准的结构化经验，批准与分享审计保留在内部。
 type exposedExperience struct {
 	Experience    domain.Experience `json:"experience"`
 	OwnerProject  string            `json:"owner_project"`
@@ -110,7 +108,7 @@ func exposeDelivery(delivery app.MCPReceiptDelivery) exposedDelivery {
 	out := exposedDelivery{EventID: delivery.EventID, DeliveryState: delivery.DeliveryState,
 		CapturePending: delivery.CapturePending, DynamicsPending: delivery.DynamicsPending, ReceiptIDs: delivery.ReceiptIDs}
 	if delivery.Recovery != "" {
-		// Do not interpolate backend text or expose the session-bearing origin.
+		// 恢复说明使用固定安全文本。
 		out.Recovery = "reconcile event_id and receipt_ids; if delivery is unknown, request local reconciliation; do not resubmit with a new origin key"
 	}
 	return out

@@ -2,8 +2,7 @@ package mcp
 
 import "encoding/json"
 
-// JSON-RPC 2.0 message shapes. The MCP stdio transport is newline-delimited
-// JSON-RPC: one message per line, requests carry an id and notifications do not.
+// JSON-RPC 2.0 每行传输一条消息，请求携带 ID，通知省略 ID。
 type request struct {
 	JSONRPC string          `json:"jsonrpc"`
 	ID      json.RawMessage `json:"id,omitempty"`
@@ -24,7 +23,7 @@ type rpcError struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// JSON-RPC 2.0 error codes.
+// JSON-RPC 2.0 的标准错误代码。
 const (
 	codeParseError     = -32700
 	codeInvalidRequest = -32600
