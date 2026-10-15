@@ -1,5 +1,25 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 固定批准 Git 上下文生产入口
+
+SOURCE `c0526d444e4a6fe798cdd1514b72a303de10b5b4`，分支 `songconmaisaix31-design/works-relay-http`。开发使用 Orca Codex 0.162.0 / GPT-6.1-Sol xhigh fast；本轮沿原七个 H 路径提交，没有改 B 配置、依赖或领域实现。
+
+主入口和实际服务入口通过 `relayPublicLaunchContexts` 注入既有 `RelayLaunchContextReader`。可信本机配置须同时提供 `ASTROCYTE_RELAY_PUBLIC_GIT_ROOT`、完整小写 commit `ASTROCYTE_RELAY_PUBLIC_GIT_COMMIT` 和 JSON 文件数组 `ASTROCYTE_RELAY_PUBLIC_CONTEXT_FILES`。文件清单最多 32 项，要求唯一相对路径；配置不进入 HTTP 请求。根限接入目录的 verification 范围，并核规范路径和真实目录身份。读取继续经过原 `LocalProjects.ReadProjectContext`，核当前项目、settings revision、目录授权、固定文件版本及正文与原 commit 的字节一致；读取前后均重核 HEAD。权限撤销、旧 revision、文件或 HEAD 改变立即拒绝，错误只返回固定安全原因。
+
+既有两阶段领域入口在初始化和首次输入前分别消费该读取器。main 的 Swarm 薄装配使用同一 SQLite、S2 批准服务、Registry 和原 object store，转发已消费的原生证据桥；独立 Relay L1 的生产调用链保持不经过 S3 Claim。session-events 精确六字段保持现有契约。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./tests/s2 -run '^TestActualSQLiteApprovalRestartAndRollback$' -count=1 -timeout=120s` | PASS，18.395 秒；原十秒 HTTP client 时限、真实 Git / SQLite / Context 安全 DTO 与批准重启检查保持 |
+| `go test -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server -run '^(TestRelayPublicContextActualGitSQLite\|TestRelayTrustedRegistrationActualSQLiteHTTP\|TestRelayFactsActualHTTPSQLiteReadOnlyAndPermission\|TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown)$' -count=1 -timeout=120s` | PASS，3.585 秒；本仓库四个公开文件建立独立 Git / SQLite 项目，实际授权、撤销、revision、正文和 HEAD 变更拒绝；原三项 HTTP / SQLite / Origin / CSRF / 同服务登记与关闭检查保持 |
+| `go vet -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server ./internal/adapters/httpapi` | EXIT 0 |
+| `go build -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' -o D:/Astrocyte-agent-assets/20261015/relay/H/current/context-server.exe ./cmd/server` | EXIT 0；产物未启动 |
+| `git diff --check` / 暂存范围检查 / 后继普通 push | PASS；SOURCE 七个 H 路径 |
+
+检查使用 `GOMAXPROCS=2 / -p=1`、共享 D 盘 Go cache 与 H 独占 D 盘 TEMP / TMP / GOTMPDIR。日志和产物在 `D:/Astrocyte-agent-assets/20261015/relay/H/current/`，分别为 `context-first.log`、`public-context-and-http-second.log`、`context-vet.log`、`context-build.log`。新增检查首场 SQL 表名错误保存为 `public-context-first.log`；SOURCE 首次 push TLS 失败保留，后继普通 push 成功。原 Context 十秒超时、旧 Reader 单树 build FAIL、P579 五文件只读 overlay 的适用范围、旧来源 nlink2 FAIL、raw 恢复 gap、session_complete=false 和旧计时失败保持各自记录。
+
+本次新检查的实际 `local_agent_sessions` 数量为零，没有原生初始化或模型输入。真实批准目标四文件的原生输入、控制器自产来源、工具关闭、逐 event_id SQLite、六字段 HTTP、Today 180 秒和完整产品验收仍待唯一 I 准确组合及原 F / H 授权窗口；本次定向检查只验证固定上下文读取和现有无模型组合。
+
 ## 2026-10-15 安全 Context、两阶段 HTTP 与同实例可信登记
 
 SOURCE `fbf2a4a4752ef2842900b3d3a851f80986734ce9`，分支 `songconmaisaix31-design/works-relay-http`。本轮沿原 H 工作树恢复，原 S2 按限定四路径编辑和 stage 后明确停止写入，产品模块独立核 U0 后仅 H 继续原消费序列。准确消费 S2 `aa445adf834c3a397a0817bec0593fcf1039420a` 为 `c84cec7`、`02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` 为 `1e6ee32`，S3 `70e6e5a03fca9a19aa0a70e44b23b78337d34714` 为 `688ebb8`，R 登记 SOURCE `4d93a52028e5ea72c705c5c6e7f30d0cb7f016bb` 为 `525288a`。两阶段领域来源仍为 `cc326be57a9a5f3bdd45687b0ac23b972adb8cef` / REPORT `41b4d71452f711f972d3c9836e0484fa94fdb854`。
