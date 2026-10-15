@@ -375,6 +375,16 @@ SOURCE `41602e6f2a14a75e3765ef0a72f7afadf1856bbb` 已普通 push。根正式批�
 
 已向原 S2/S3 交精确 `GetExperiences` approved-only 构造、固定 ownerProject 和同 Workspace 事务 Context 的既有边界。该方法本身不读取当前 LocalProject Grant；新的 Context 经验固定快照、当前映射与来源权限重核入口需要按原负责人准确契约补齐，不能仅凭方法名宣称授权或使用已经完成。根已授权的 S4 专用清理生命周期、R 双完成通道、F 单配置冲突及 helper 原子监听和明确 D 盘产物目录继续按原范围接续，真实模型窗口仍为零。
 
+## Expected 输入错误与两项后继限定返修
+
+SOURCE `6d1d59bf07b008a0969efefceb911e49b6b33db6` 将畸形 Expected 的标准 JSON 解析错误与 `domain.ErrInvalid` 一起返回，服务据此返回 `validation_failed`。成熟 JSON 解码器和直接失败行为保持，原错误没有转成默认期望值。真实服务新增相应错误码断言，原三个 SQLite 场景及全部计数断言保持。`go test -mod=readonly -p=1 ./internal/adapters/sqlite -run '^TestTasteProfile' -count=1 -v` EXIT 0，3 PASS、0 SKIP，1.150s；`.verification/taste-profile-input-error-first.log`。全包 build、目标 App/SQLite vet、变更文件 gofmt 与 diff 检查均 EXIT 0，日志 `taste-profile-input-error-{build,vet}-first.log`。T 在原 41602 和 daf577 的实际首 RED 保留，T 自身原断言复验仍归原负责人。
+
+按模块准确计划 `9fd45c18e6f4f6343e3ff23c531b384472d037dc`，B 第二次仅在 I 树编辑并 stage `dependencies.lock.json`、`go.sum`，保留当前真实 MCP、JSON-RPC、S4 和 S5 依赖。相对当时 HEAD `392bbb17fc56b15a86c9b84349e6e4d6cb884755` 两件完整 diff 为零，JSON 原生解析与限定 working/cached diff 检查 EXIT 0；stage blob 分别为 `64c1432f721a6371a5c8e4badce719cd1bbbbd92`、`def74ba382fec897f8f9bc9a0d40f5bb6e1bb88f`。实际 `go list -mod=readonly -m -json all` EXIT 0，本树 `.verification/i-two-dependencies-module-graph-first.json`。最后观察 U0，其他文件未由 B 修改；两件已明确停止全部写入及进程访问并归还，未操作合并生命周期。
+
+按原 F 单件计划 `ddc635bed79dc7a3dca13cddaa731b930468e6da` 与新安全检查点正式放行，B 仅编辑并 stage `standards-frontend/cmd/server/config.go`。保留 F 显式资料发现、代理配置和解析错误传播，以及 H 的 S4 可信配置；与 B 原文件相比只有 `resolveProjectDiscovery` 的定义位置不同。限定 working/cached diff 检查与 gofmt EXIT 0，U0，stage blob `5fa5bf8ead480753c9b9eaa82bdfd31833e0ef8c`。实际 RepositoryContext 三个顶层场景及八个拒绝子项 PASS、1.274s；独立 `TestExplicitProjectDiscoveryConfiguration` 最终 EXIT 0、1 PASS、18.293s。日志为本树 `.verification/f-single-config-{actual,discovery}-first.log`。
+
+F 检查父进程的 GOCACHE、GOTMPDIR、TEMP、TMP 均显式设置为 D 盘本轨目录；原测试 helper 的三个小型 SQLite 目录仍按其现有源码放在 F `.verification/`，没有越域修改这些测试。独立 Discovery 的最终结果与全部进程退出均已实际确认，单件范围已停止写入并归还。本人未操作 F 的 commit 或合并生命周期，没有将这些配置检查登记为完整默认 E2E。后继 helper 的明确 D 盘输出与原子 Vite 正在原独占范围实施，旧证据保持原位。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
