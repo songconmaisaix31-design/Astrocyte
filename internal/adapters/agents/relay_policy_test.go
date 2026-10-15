@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -32,6 +34,30 @@ func TestRelayNativeDeadlineRejectsBeforeController(t *testing.T) {
 		if request.Command.DeadlineSeconds != seconds {
 			t.Fatal("trusted lifetime was not passed to the existing Native request")
 		}
+	}
+}
+
+func TestRelayFirstInputCheckpointRefusesUnarmedController(t *testing.T) {
+	registry := NewRegistry("unopened-checkpoint-root")
+	callbackCalled := false
+	guard := func(context.Context, domain.NativeSession, *domain.RelaySessionArchive, string) error {
+		callbackCalled = true
+		return nil
+	}
+	driver := NewRelayNativeDriver(registry, RelayNativeDriverOptions{BeforeFirstInput: guard})
+	_, err := driver.Launch(context.Background(), app.RelayLaunch{Spec: domain.AgentSpec{Name: "codex"}, OperationID: uuid.NewString()})
+	var known *apierrors.ServiceError
+	var unstarted *domain.NativePrelaunchFailure
+	if !errors.As(err, &known) || known.Code != apierrors.UnsupportedCapability || !errors.As(err, &unstarted) || callbackCalled {
+		t.Fatal("unarmed controller reached the first input checkpoint")
+	}
+	adapter, err := registry.Adapter("claude")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = adapter.(*Native).StartRelayOperationWithInputGuard(context.Background(), domain.NativeRequest{}, uuid.NewString(), guard)
+	if !errors.As(err, &known) || known.Code != apierrors.UnsupportedCapability || callbackCalled {
+		t.Fatal("unsupported provider fabricated a Codex initialization checkpoint")
 	}
 }
 

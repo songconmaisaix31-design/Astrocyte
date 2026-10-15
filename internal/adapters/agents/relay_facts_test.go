@@ -33,6 +33,19 @@ func TestRelayFactsRejectMissingOriginalControllerAndFork(t *testing.T) {
 	assert(err, apierrors.DeliveryUnknown)
 	_, err = n.SendOperation(ctx, request.Session, "public fixed task", uuid.NewString())
 	assert(err, apierrors.DeliveryUnknown)
+	_, err = n.Send(ctx, request.Session, "public fixed task")
+	assert(err, apierrors.DeliveryUnknown)
+	request.Session.PendingOperation = uuid.NewString()
+	request.Session.Operations = map[string]domain.NativeOperation{request.Session.PendingOperation: {Action: "start", Status: "pending"}}
+	_, err = n.Send(ctx, request.Session, "public fixed task")
+	assert(err, apierrors.ScopeDenied)
+	request.Session.Operations[request.Session.PendingOperation] = domain.NativeOperation{Action: "send", Status: "pending"}
+	operation, operationErr := nativeRequestOperation(request, "send")
+	if operationErr != nil || operation != request.Session.PendingOperation {
+		t.Fatal("original pending send receipt lost its operation identity")
+	}
+	_, err = n.Send(ctx, request.Session, "public fixed task")
+	assert(err, apierrors.DeliveryUnknown)
 	evidence, err := n.OwnedRelayControllerEvidence(ctx, request.Session)
 	assert(err, apierrors.DeliveryUnknown)
 	if evidence.ControllerID != "" || len(evidence.Facts) != 0 {
@@ -42,6 +55,10 @@ func TestRelayFactsRejectMissingOriginalControllerAndFork(t *testing.T) {
 	assert(err, apierrors.UnsupportedCapability)
 	_, err = NewRelayNativeDriver(registry).CurrentControllerEvidence(ctx, app.RelayLaunch{Spec: domain.AgentSpec{Name: "codex"}, Session: request.Session})
 	assert(err, apierrors.DeliveryUnknown)
+	_, err = registry.ReadOwnedNativeSession(ctx, request.Session.ID)
+	assert(err, apierrors.DeliveryUnknown)
+	_, err = nativeRequestOperation(domain.NativeRequest{Session: domain.NativeSession{PendingOperation: uuid.NewString()}}, "start")
+	assert(err, apierrors.ScopeDenied)
 	if len(n.processes) != 0 {
 		t.Fatal("rejection created a controller process")
 	}

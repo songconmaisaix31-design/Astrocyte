@@ -65,6 +65,7 @@ func (d *RelayTerminalDriver) CurrentControllerEvidence(ctx context.Context, r a
 		return domain.RelayControllerEvidence{}, nativeError(apierrors.ScopeDenied, "current terminal controller differs from the requested binding")
 	}
 	evidence := p.evidence
+	evidence.ExitConfirmed = p.exited
 	evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
 	return evidence, nil
 }
@@ -182,7 +183,11 @@ func (d *RelayTerminalDriver) Launch(ctx context.Context, r app.RelayLaunch) (ap
 		close(p.done)
 	}()
 	if r.Input != "" || mode == "stdin_eof" {
-		return p.submit(ctx, r.Input, mode == "stdin_eof", r.OperationID)
+		input := r.Input
+		if r.Packet.ID != "" {
+			input = packetPrompt(r.Packet, input)
+		}
+		return p.submit(ctx, input, mode == "stdin_eof", r.OperationID)
 	}
 	return p.observation(), nil
 }

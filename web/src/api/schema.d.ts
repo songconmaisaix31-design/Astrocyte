@@ -1,5 +1,102 @@
 // Generated from contracts/openapi.yaml. Run pnpm generate; do not edit.
 export interface paths {
+    "/local-projects/{id}/repository-context/map": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the current authorized repository map without rebuilding */
+        get: operations["readRepositoryContextMap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/repository-context/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search the current authorized code index with explicit bounds
+         * @description Human requests require X-CSRF-Token; project Agent tokens require a current read_context grant.
+         */
+        post: operations["searchRepositoryContextCode"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/repository-context/impact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Read bounded impact relationships from the current code index
+         * @description Human requests require X-CSRF-Token; project Agent tokens require a current read_context grant.
+         */
+        post: operations["queryRepositoryContextImpact"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/repository-context/index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explicitly maintain the selected repository index
+         * @description Requires the current human session and X-CSRF-Token. The backend rechecks the authorized source snapshot before publishing a generation.
+         */
+        post: operations["updateRepositoryContextIndex"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/local-projects/{id}/repository-context/map/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explicitly refresh the authored map for the authorized snapshot
+         * @description Requires the current human session and X-CSRF-Token. Reads do not invoke this command.
+         */
+        post: operations["refreshRepositoryContextMap"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/goals": {
         parameters: {
             query?: never;
@@ -2514,6 +2611,112 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Explicit project-relative path. The backend rejects absolute paths, parent traversal, redirects and unauthorized roots. */
+        RepositoryRelativeRootV1: string;
+        RepositoryBudgetV1: {
+            max_files: number;
+            max_bytes: number;
+            max_results: number;
+            max_depth: number;
+        };
+        RepositoryQueryRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            purpose: string;
+            roots: components["schemas"]["RepositoryRelativeRootV1"][];
+            budget: components["schemas"]["RepositoryBudgetV1"];
+            query?: string;
+            symbol_id?: string;
+        };
+        RepositorySearchRequestV1: components["schemas"]["RepositoryQueryRequestV1"] & {
+            /** @description Nonblank search query; the backend also enforces at most 1024 UTF-8 bytes. */
+            query: string;
+        };
+        RepositoryImpactRequestV1: components["schemas"]["RepositoryQueryRequestV1"] & {
+            /** @description Nonblank symbol identity; the backend also enforces at most 512 UTF-8 bytes. */
+            symbol_id: string;
+        };
+        RepositoryIndexRequestV1: {
+            /** @constant */
+            schema_version: 1;
+            purpose: string;
+            roots: components["schemas"]["RepositoryRelativeRootV1"][];
+            budget: components["schemas"]["RepositoryBudgetV1"];
+            query?: string;
+            symbol_id?: string;
+            /** @enum {string} */
+            action: "index" | "sync" | "rebuild";
+        };
+        RepositoryVersionV1: {
+            environment_id: string;
+            repo_id: string;
+            worktree_id: string;
+            project_id: string;
+            head: string;
+            index_digest: string;
+            worktree_digest: string;
+            settings_revision: number;
+            roots: string[] | null;
+            dirty: boolean;
+            /** Format: date-time */
+            observed_at: string;
+        };
+        RepositorySpanV1: {
+            path: string;
+            start_line: number;
+            end_line: number;
+        };
+        RepositorySymbolV1: {
+            id: string;
+            name: string;
+            kind: string;
+            source_span: components["schemas"]["RepositorySpanV1"];
+            score: number;
+        };
+        RepositoryRelationV1: {
+            source: string;
+            target: string;
+            kind: string;
+            evidence_kind: string;
+            source_span: components["schemas"]["RepositorySpanV1"];
+            extractor_version: string;
+        };
+        RepositoryMapEntryV1: {
+            path: string;
+            responsibility: string;
+            relationships: string;
+            api: string;
+            constraints: string;
+            evidence_kind: string;
+        };
+        RepositoryIndexV1: {
+            backend: string;
+            version: string;
+            generation: string;
+            snapshot: components["schemas"]["RepositoryVersionV1"];
+            state: string;
+            /** Format: date-time */
+            built_at: string;
+            map_entries?: components["schemas"]["RepositoryMapEntryV1"][];
+        };
+        RepositoryResultV1: {
+            index: components["schemas"]["RepositoryIndexV1"];
+            symbols: components["schemas"]["RepositorySymbolV1"][] | null;
+            relations: components["schemas"]["RepositoryRelationV1"][] | null;
+            coverage: string[] | null;
+            gaps: string[] | null;
+            map_entries?: components["schemas"]["RepositoryMapEntryV1"][];
+        };
+        RepositoryResultEnvelopeV1: {
+            /** @constant */
+            schema_version: 1;
+            repository_context: components["schemas"]["RepositoryResultV1"];
+        };
+        RepositoryIndexEnvelopeV1: {
+            /** @constant */
+            schema_version: 1;
+            repository_context: components["schemas"]["RepositoryIndexV1"];
+        };
         S2GoalListV1: {
             /** @constant */
             schema_version: 1;
@@ -2871,8 +3074,11 @@ export interface components {
             current_ownership: {
                 /** @enum {string} */
                 status: "confirmed" | "unknown";
-                /** @enum {string} */
-                reason?: "controller_binding_unrecorded" | "workspace_identity_unverified" | "controller_metadata_unsupported" | "controller_not_held";
+                /**
+                 * @description controller_exited with confirmed only means the original exited controller object remains held; it does not authorize RPC Read or Send.
+                 * @enum {string}
+                 */
+                reason?: "controller_binding_unrecorded" | "workspace_identity_unverified" | "controller_metadata_unsupported" | "controller_not_held" | "controller_exited";
             };
         };
         /**
@@ -3453,6 +3659,13 @@ export interface components {
             admission_id?: string;
             opportunity_id?: string;
             opportunity_revision?: number;
+            /** @description Trusted admission owner namespace; optional for existing ordinary drafts. */
+            owner_namespace?: string;
+            /**
+             * @description Empty is an unrecorded legacy assignment. Unassigned admission drafts need a human revision selecting a real project and Goal before approval.
+             * @enum {string}
+             */
+            assignment_status?: "" | "assigned" | "unassigned";
             /** Format: date-time */
             created_at: string;
             /** Format: date-time */
@@ -3462,6 +3675,7 @@ export interface components {
         };
         S2GoalReferenceV1: {
             id: string;
+            /** @description Zero is preserved only for an unassigned admission draft; ordinary proposal commands and approval require a fixed positive revision. */
             revision: number;
         };
         S2ResourceBudgetV1: {
@@ -3547,12 +3761,21 @@ export interface components {
             schema_version: 1;
             approval: components["schemas"]["S2ApprovalGrantV1"];
         };
+        S2ProposalContentInputV1: components["schemas"]["S2ProposalContentV1"] & {
+            goal?: components["schemas"]["S2GoalReferenceV1"] & {
+                id?: string;
+                revision?: number;
+            };
+            scope?: components["schemas"]["S2ExecutionScopeV1"] & {
+                project_id?: string;
+            };
+        };
         S2ProposalRequestV1: {
             /** @constant */
             schema_version: 1;
             request_id: string;
             expected_version: number;
-            content: components["schemas"]["S2ProposalContentV1"];
+            content: components["schemas"]["S2ProposalContentInputV1"];
         };
         S2GoalInputV1: {
             /** @description Assigned by the service; request value does not select an existing goal. */
@@ -5994,6 +6217,174 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    readRepositoryContextMap: {
+        parameters: {
+            query: {
+                purpose: string;
+                root: components["schemas"]["RepositoryRelativeRootV1"][];
+                max_files: number;
+                max_bytes: number;
+                max_results: number;
+                max_depth: number;
+            };
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current map and explicit coverage gaps */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepositoryResultEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
+    searchRepositoryContextCode: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepositorySearchRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Bounded symbols and evidence */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepositoryResultEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
+    queryRepositoryContextImpact: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepositoryImpactRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Bounded relationships with source evidence and gaps */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepositoryResultEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
+    updateRepositoryContextIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepositoryIndexRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Verified index generation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepositoryIndexEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
+    refreshRepositoryContextMap: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["S2ID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepositoryQueryRequestV1"];
+            };
+        };
+        responses: {
+            /** @description Verified map generation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepositoryIndexEnvelopeV1"];
+                };
+            };
+            400: components["responses"]["S2CommandError"];
+            403: components["responses"]["S2CommandError"];
+            404: components["responses"]["S2CommandError"];
+            409: components["responses"]["S2CommandError"];
+            500: components["responses"]["S2CommandError"];
+            501: components["responses"]["S2CommandError"];
+            503: components["responses"]["S2CommandError"];
+        };
+    };
     listWorkspaceGoals: {
         parameters: {
             query?: never;

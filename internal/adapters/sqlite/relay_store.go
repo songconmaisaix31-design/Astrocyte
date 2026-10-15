@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -180,6 +181,32 @@ type relayControllerEvidencePrivate struct {
 	ControllerID, PreviousControllerID, StartupOperationID string
 	SessionID, NativeID, Provider, WorkspaceRoot, Relation string
 	Facts                                                  []domain.RelayDriverFact
+	Turns                                                  []relayTurnBindingPrivate
+	ExitConfirmed                                          bool
+}
+
+type relayTurnBindingPrivate struct {
+	OperationID, SessionID, NativeID, ControllerID, StartupOperationID, TurnID string
+	AcceptedAt                                                                 time.Time
+	StartedAt                                                                  *time.Time
+}
+
+func encodeRelayController(p domain.RelayControllerEvidence) relayControllerEvidencePrivate {
+	result := relayControllerEvidencePrivate{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
+	result.ExitConfirmed = p.ExitConfirmed
+	for _, t := range p.Turns {
+		result.Turns = append(result.Turns, relayTurnBindingPrivate{OperationID: t.OperationID, SessionID: t.SessionID, NativeID: t.NativeID, ControllerID: t.ControllerID, StartupOperationID: t.StartupOperationID, TurnID: t.TurnID, AcceptedAt: t.AcceptedAt, StartedAt: t.StartedAt})
+	}
+	return result
+}
+
+func decodeRelayController(p relayControllerEvidencePrivate) domain.RelayControllerEvidence {
+	result := domain.RelayControllerEvidence{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
+	result.ExitConfirmed = p.ExitConfirmed
+	for _, t := range p.Turns {
+		result.Turns = append(result.Turns, domain.RelayTurnBinding{OperationID: t.OperationID, SessionID: t.SessionID, NativeID: t.NativeID, ControllerID: t.ControllerID, StartupOperationID: t.StartupOperationID, TurnID: t.TurnID, AcceptedAt: t.AcceptedAt, StartedAt: t.StartedAt})
+	}
+	return result
 }
 
 // Only the isolated relay state encodes these references. DTO serialization
@@ -207,12 +234,12 @@ func loadRelayState(ctx context.Context, q relayQuerier) (app.RelayState, error)
 		state = wire.State
 		state.ControllerEvidence = map[string]domain.RelayControllerEvidence{}
 		for id, p := range wire.ControllerEvidence {
-			state.ControllerEvidence[id] = domain.RelayControllerEvidence{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
+			state.ControllerEvidence[id] = decodeRelayController(p)
 		}
 		state.ControllerHistory = map[string][]domain.RelayControllerEvidence{}
 		for id, history := range wire.ControllerHistory {
 			for _, p := range history {
-				state.ControllerHistory[id] = append(state.ControllerHistory[id], domain.RelayControllerEvidence{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts})
+				state.ControllerHistory[id] = append(state.ControllerHistory[id], decodeRelayController(p))
 			}
 		}
 		for id, private := range wire.WorkspaceInternals {
@@ -317,6 +344,13 @@ func (s *RelayStore) Update(ctx context.Context, update func(*app.RelayState) er
 	for id, history := range state.ControllerHistory {
 		for _, evidence := range history {
 			evidence.Facts = append([]domain.RelayDriverFact{}, evidence.Facts...)
+			evidence.Turns = append([]domain.RelayTurnBinding{}, evidence.Turns...)
+			for i, turn := range evidence.Turns {
+				if turn.StartedAt != nil {
+					when := *turn.StartedAt
+					evidence.Turns[i].StartedAt = &when
+				}
+			}
 			oldHistory[id] = append(oldHistory[id], evidence)
 		}
 	}
@@ -393,11 +427,11 @@ ON CONFLICT(id) DO UPDATE SET data=excluded.data,input=excluded.input`, id, stri
 	wire.ControllerHistory = map[string][]relayControllerEvidencePrivate{}
 	for id, history := range state.ControllerHistory {
 		for _, p := range history {
-			wire.ControllerHistory[id] = append(wire.ControllerHistory[id], relayControllerEvidencePrivate{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts})
+			wire.ControllerHistory[id] = append(wire.ControllerHistory[id], encodeRelayController(p))
 		}
 	}
 	for id, p := range state.ControllerEvidence {
-		wire.ControllerEvidence[id] = relayControllerEvidencePrivate{ControllerID: p.ControllerID, PreviousControllerID: p.PreviousControllerID, StartupOperationID: p.StartupOperationID, SessionID: p.SessionID, NativeID: p.NativeID, Provider: p.Provider, WorkspaceRoot: p.WorkspaceRoot, Relation: p.Relation, Facts: p.Facts}
+		wire.ControllerEvidence[id] = encodeRelayController(p)
 	}
 	wire.SessionHistoryPaths = map[string]string{}
 	for id, session := range state.Sessions {

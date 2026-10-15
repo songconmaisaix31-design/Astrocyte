@@ -78,7 +78,7 @@ func (h *handler) relayFacts(r *http.Request) (any, error) {
 	}
 	receiptIDs := map[string]bool{}
 	for _, receipt := range receipts {
-		if receipt.TaskID != id || !relayFactIDs(receipt.OperationID) || !relayFactValue(receipt.Operator, "human:local-human", "service:observer") || !relayFactValue(receipt.Action, "intent", "dispatch", "send", "read", "stop", "resume", "transition", "observe", "reconcile_events") || receipt.ID != receipt.Operator+":"+receipt.Action+":"+receipt.OperationID {
+		if receipt.TaskID != id || !relayFactIDs(receipt.OperationID) || !relayFactValue(receipt.Operator, "human:local-human", "service:observer") || !relayFactValue(receipt.Action, "intent", "prepare", "dispatch", "send", "read", "stop", "resume", "transition", "observe", "reconcile_events") || receipt.ID != receipt.Operator+":"+receipt.Action+":"+receipt.OperationID {
 			return nil, &apierrors.ServiceError{Code: apierrors.EvidenceMissing}
 		}
 		receiptIDs[receipt.ID] = true
@@ -91,7 +91,7 @@ func (h *handler) relayFacts(r *http.Request) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !relayFactValue(ownership.Status, "confirmed", "unknown") || !relayFactValue(ownership.Reason, "", "controller_binding_unrecorded", "workspace_identity_unverified", "controller_metadata_unsupported", "controller_not_held") || ownership.Status == "confirmed" && ownership.Reason != "" {
+	if !relayFactValue(ownership.Status, "confirmed", "unknown") || !relayFactValue(ownership.Reason, "", "controller_binding_unrecorded", "workspace_identity_unverified", "controller_metadata_unsupported", "controller_not_held", "controller_exited") || ownership.Status == "confirmed" && !relayFactValue(ownership.Reason, "", "controller_exited") {
 		return nil, &apierrors.ServiceError{Code: apierrors.EvidenceMissing}
 	}
 	outFacts := make([]relayFact, 0, len(facts))

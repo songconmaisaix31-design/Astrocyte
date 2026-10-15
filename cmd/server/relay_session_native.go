@@ -11,6 +11,9 @@ import (
 
 func (c *relaySessionCollector) nativeSources(ctx context.Context) (map[string]domain.RelayNativeSessionBatch, error) {
 	result := map[string]domain.RelayNativeSessionBatch{}
+	if c.archiveOnly {
+		return result, nil
+	}
 	reader, ok := c.owned.(workspace.RelayOwnedNativeSessionReader)
 	if !ok {
 		return result, nil

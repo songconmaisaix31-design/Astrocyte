@@ -28,7 +28,14 @@ func validateSessionSelection(b RelaySessionBinding) error {
 	if b.ProjectID == "" || b.NativeID == "" || !filepath.IsAbs(b.Path) || !filepath.IsAbs(b.WorkspaceRoot) {
 		return sessionFailure("binding_unverifiable")
 	}
-	workspace, err := unredirectedReplayPath(b.WorkspaceRoot)
+	return validateRelaySessionSource(b.Path, b.WorkspaceRoot, b.ApprovedRoots)
+}
+
+func validateRelaySessionSource(path, workspaceRoot string, approvedRoots []string) error {
+	if !filepath.IsAbs(path) || !filepath.IsAbs(workspaceRoot) {
+		return sessionFailure("binding_unverifiable")
+	}
+	workspace, err := unredirectedReplayPath(workspaceRoot)
 	if err != nil {
 		return sessionFailure("workspace_unverifiable")
 	}
@@ -36,11 +43,11 @@ func validateSessionSelection(b RelaySessionBinding) error {
 	if err != nil || !info.IsDir() {
 		return sessionFailure("workspace_unverifiable")
 	}
-	selected, err := unredirectedReplayPath(b.Path)
+	selected, err := unredirectedReplayPath(path)
 	if err != nil {
 		return sessionFailure("source_unavailable_or_redirected")
 	}
-	for _, root := range b.ApprovedRoots {
+	for _, root := range approvedRoots {
 		if !filepath.IsAbs(root) {
 			return sessionFailure("approved_root_invalid")
 		}

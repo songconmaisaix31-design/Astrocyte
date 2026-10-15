@@ -52,6 +52,7 @@ type nativeProcess struct {
 	inputOperationID      string
 	relayStartedTurns     map[string]time.Time
 	relayPublishedTurns   map[string]bool
+	originalSession       *domain.NativeSession
 }
 
 // An ownership attachment failure happens after a process may have started.
@@ -488,6 +489,7 @@ func (p *nativeProcess) handleEvent(method, typ string, r map[string]json.RawMes
 		p.addEvent("turn_started", "")
 		if p.relayEvidence.StartupOperationID != "" {
 			p.relayFact("turn_started", "codex_turn_started", p.inputOperationID)
+			p.markRelayTurnStarted(params.Turn.ID, p.relayEvidence.Facts[len(p.relayEvidence.Facts)-1].TS)
 			if p.relayPublishedTurns == nil {
 				p.relayPublishedTurns = map[string]bool{}
 			}
