@@ -4,7 +4,7 @@
 
 本阶段 SOURCE `23253502143bb23bf47e1606c38e0158540e328d` 已普通 push，独立 `git ls-remote` 返回同一 SHA。当前 Task 为 `task_f082d8b36471`，Dispatch 为 `ctx_c17c6124e9dc`；使用原 R 工作树、分支和写入范围，客户端为 Codex 0.162.0，模块核实终端配置 GPT-6.1-Sol / xhigh / fast。原双完成 SOURCE `e3982c4304fcf0af4160966a7bae2d8948be8873` 保持普通祖先。
 
-Codex 原接收器将真实 `turn/completed` 的 completed / failed / interrupted 关联到原 input operation、turn、session、native identity、controller 和 startup operation。通知早于 turn/start 回复时仅保留待核观察，取得同一原输入的准确 ACK 后才形成 TurnBinding；冲突身份、重复绑定、不同终态和不完整错误立即拒绝。错误原文不存入结果字段，只保留固定 `native_failure`。ACK 关联失败保留 delivery_unknown 并关闭原控制器输出通道，不能重发输入。重复终态不追加事件、不刷新观察时间；迟到的真实 started 可以补充独立事实，已观察终态保持原值。
+Codex 原接收器将真实 `turn/completed` 的 completed / failed / interrupted 关联到原 input operation、turn、session、native identity、controller 和 startup operation。通知早于 turn/start 回复时仅保留待核观察，取得同一原输入的准确 ACK 后才形成 TurnBinding；冲突身份、重复绑定、不同终态和不完整错误立即拒绝。错误原文不存入结果字段，只保留固定 `native_failure`。ACK 关联失败保留 delivery_unknown，将原控制器标为 blocked 并请求终止，不能重发输入。重复终态不追加事件、不刷新观察时间；迟到的真实 started 可以补充独立事实，已观察终态保持原值。
 
 `RelayTurnBinding` 新增 JSON 隐藏的 Outcome、FailureCode、ResultSource 和 ResultObservedAt。ResultSource 仅为 `codex_turn_completed`，时间取原通知接收时刻；没有通知时四字段保持空。已有 Relay 私有 JSON 保存这些字段，历史复制包含独立时间值，没有 SQL DDL 或认知迁移。应用服务复核 provider、准确动作关系、允许终态和原时间，并拒绝覆盖已经保存的终态。后到事实通过原 RuntimeFacts 追加固定 `input_result`，不重写最终动作收据，不产生目标完成、started、调用预算或资源释放证明。
 
