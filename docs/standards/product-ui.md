@@ -1,5 +1,24 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 00:49 实际 Context 建立入口与契约首失败
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd` 持续执行。模块准确授权后，已从 clean 检查点普通 no-ff 消费唯一 I `23672247d340e80c233951afdce7155b7fa66b1c`，合并为 `b2f7de9916a5babba831cbf7175326f3a34c2608`，无冲突。OpenAPI 与该 I 完整 diff0，未修改共享逻辑。
+
+SOURCE `32adab9201f44d6a1628da1f02a48d9e4a2ba819` 在批准详情接入 ContextPacket 实际建立、后继重建和按 ID 读取。预算必须明确填写 1–2097152 字节；前序包与六类备注由人工填写。调用复用 F `workspaceContextApi`、原人类认证和 CSRF、当前 Grant Epoch 与持久命令 Hook。无 read_context、非有效批准、读取过期或撤销结果未知时禁用建立；未知建立请求跨关闭和刷新保持锁定，读取不重发。服务独立核快照、当前权限和来源预算；页面不生成快照或执行身份。
+
+新增 `s2-context.spec.ts` 两场景沿两 viewport。生产 helper 明确配置本次环境 ID，仅使用真实 Git 快照，不配置 CodeGraph / AOCI，不触发原生操作。用例覆盖实际来源版本、不可变前序包与后继关系、403 快照保持与恢复、撤销后新建拒绝、实际 SQLite 与重启、离线未知锁；当前尚未执行，不能登记 Context 正向通过。
+
+| 命令 | 实际结果 |
+|---|---|
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s3-missions.spec.ts --workers=1 --retries=0 --output D:/Astrocyte-agent-assets/20261015/product-ui-20261015/swarm-e2e-first-results` | 首 FAIL / EXIT1：`tests/s1/contracts.mjs` 使用真实 yaml 2.9.1 解析准确 I OpenAPI，line524 重复 `/goals`，八项尚未加载，服务与原生未启动。原 `logs/e2e-swarm-first.log` / report 保留；已直接交 H 与模块 |
+| `pnpm --dir web typecheck`，Context 表单及用例后 | FAIL：仅 F 原七处显示参数和 Prepare 标签错误，本域零类型错误；`logs/typecheck-context-builder-first.log` / `typecheck-context-e2e-first.log` 保留 |
+| `pnpm --dir web exec eslint src/pages/workspace/proposals e2e/s2-context.spec.ts` | PASS，零 errors / warnings |
+| `git diff --check` / `git diff --cached --check` | PASS |
+
+H 当前 `ctx_e492c738e964` 负责 OpenAPI 修复，F 当前 `ctx_630293cc6778` 负责共享类型与 Prepare；准确后继来源待交。本树只修改自身页面和用例，原 S2 全部成功与首次失败保持；完整 check / build、实际 S3 / Context、S4 / S5、原生与最终包尚未通过，同一任务继续开发和返修。
+
+本阶段 SOURCE 首次普通 push 返回 `remote rejected (failed)` / EXIT1；独立远端仍为前一 REPORT `8c10d42c9b55747974d6588db76524f854d358dc`，错误保留于本 Dispatch 命令记录。继续普通 push，未 force 或改变历史。
+
 ## 2026-10-16 00:35 恢复与真实 Mission 用例
 
 当前 Task `task_d0cee5a583bb` / Dispatch `ctx_261b012f1cfd`，产品模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_76ef94015349`。当前执行入口为根 HANDOFF / STATUS 与模块 00:34 计划；原工作树、分支和全部证据保留。接管 HEAD `2bfbbe966b6f977e4df241bfae05bd0e7fcd7ba4`，唯一未提交内容为 `web/e2e/s3-missions.spec.ts`，已由同一任务继续完成。B 显式 D 输出八件与 F 生成类型及公开 Swarm / Context 客户端均已准确消费，无重复合入。
