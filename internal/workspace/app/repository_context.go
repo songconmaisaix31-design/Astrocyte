@@ -27,3 +27,8 @@ type RepositoryProjectReader interface {
 	LoadRepositoryProject(context.Context, string) (domain.LocalProject, error)
 	LoadRepositoryGrant(context.Context, string, string) (domain.ProjectGrant, error)
 }
+
+// 提交事务内只核保存的快照和当前权限；真实Git观察由事务外调用方完成。
+type ProjectSnapshotReferenceValidator interface {
+	ValidateProjectSnapshotReference(context.Context, domain.Caller, domain.ProjectContextSnapshot) error
+}

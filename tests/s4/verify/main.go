@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -55,6 +56,7 @@ func main() {
 		}
 	}()
 	assert(*phase != "" && *rootA != "" && *rootB != "" && *evidence != "", "explicit owned roots, phase and evidence are required")
+	assert(slices.Contains([]string{"initial", "updated", "deleted", "deleted-check", "restart", "corrupt-rebuild", "permissions", "map", "snapshot-reference"}, *phase), "unsupported verification phase")
 	must(os.MkdirAll(*evidence, 0700))
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()
@@ -63,6 +65,10 @@ func main() {
 		data, err := cmd.Output()
 		must(err)
 		assert(strings.TrimSpace(string(data)) == "https://github.com/songconmaisaix31-design/astrocyte-s4-public-context-20261015.git", "verification is restricted to the owned public project")
+	}
+	if *phase == "snapshot-reference" {
+		verifySnapshotReference(ctx)
+		return
 	}
 	db, err := sqlite.Open(filepath.Join(*evidence, "state.sqlite"))
 	must(err)
