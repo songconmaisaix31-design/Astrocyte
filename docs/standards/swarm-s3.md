@@ -1,5 +1,26 @@
 # Swarm S3 / S6 实施与实际验证
 
+## 第十二阶段：原 Registry 的私有成员与生命周期桥
+
+Task `task_da9aebf03f83` / Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` 交付 SOURCE `86e467fb9798faf29b009e45d7c01740c1dac938`，实际客户端 Codex / 模型 `gpt-6.1-sol`。前置为 R 的独立契约 SOURCE `b2461140be791596242e9a8d13aba49e32d098ee`，已准确 cherry-pick 为本树 `b59843f35e03331e7f763007fa200bcc7213e313`；该原提交只有 `workspace/domain/relay_member_evidence.go` 及私有 JSON 规则测试，依赖仅标准库。没有合入完整 R 业务历史或修改其文件。Registry 的实际生产实现由原 R SOURCE `00dbd9c63dce2311518a1c47002947180d770a2f` 提供，H 只在原同一 Registry 实例装配，不创建替代所有权。
+
+`sqlite.NewSwarmNativeBridge(repo, originalRegistrySource)` 同时实现 MemberAuthorizer、ExecutionDescriptorReader 和 ExecutionOwnership。H 的完整工厂依次使用真实 repo、真实 S2 approval bridge、该 native bridge、真实 Git/object/project evidence、相同 native bridge。源类型是 R 的 `workspace/domain.RelayMemberEvidenceSource`；其 `ReadRelayMemberEvidence` 与 `StopRelayMemberEvidence` 必须来自原 Registry。新桥逐项核对当前 S2 授权绑定的项目、固定根、member、binding version、session、native session、CLI、原 controller、startup operation 与 input operation；startup 身份不得替代 input。提交需要实际 accepted turn 与原受理时间，认领拒绝已退出的控制器。Stop 在调用实际停止端口前读取同一个 SQL 原租约并核对原 tuple，其他 input 正占用原控制器时拒绝；返回后再次核对 tuple。
+
+执行描述只在 ToolsKnown 与 TargetsKnown 均有真实证据时将 Known 置为 true，返回列表复制原观察，调用方不能修改源记录。原契约没有 input 的实际 Outcome/FailureCode，且 Calls 的预算单位待定，桥保留 Outcome 空、Usage 空、CallsKnown/TokensKnown 为 false。ExitConfirmed 只映射停止确认；accepted turn、controller 退出或已完成 response 观测均不提升为 input 完成或预算数量。应用服务因 Outcome 未知继续保留原租约、写域和资源预留。
+
+R 原 claim reader 目前接受尚未实际受理的输入 UUID，尚不能证明其来自已有 operation 的真实准备。桥对没有既有准确租约的新 claim 返回 `unsupported_capability`；已有租约仍必须核同一 binding/member version/holder 及原私有 tuple。该限制已经交 R 原负责人补实际 prepare → 原 input operation → 认领 → send 的来源与端口，不能先发送后补租约。S2 `aa445adf834c3a397a0817bec0593fcf1039420a` 的新私有 tuple 仍需其完整 H/S4 前置组合；本树旧 S2 回调没有 controller/startup 字段时，桥明确以 `evidence_missing` 拒绝，没有从其他来源补造授权事实。上述两项生产依赖尚未完成。
+
+| 本阶段实际命令 | 结果 |
+|---|---|
+| `go test ./internal/swarm/... ./tests/s3 ./internal/workspace/domain -count=1 -timeout=120s` | PASS；包含消费的 R 契约私有 JSON 规则及原真实 S2/SQLite 链 |
+| `go test ./internal/adapters/sqlite -run '^TestSwarm(Actual\|Native)' -count=1 -timeout=180s` | PASS，7.498 秒；原真实 SQL/Git/Go 组件保持，新 tuple/未知映射测试只为明确参数规则，没有替代 Registry 或原生协议 |
+| `go test ./internal/adapters/httpapi -run '^TestSwarmActual' -count=1 -timeout=180s` | PASS，2.479 秒；既有生产 HTTP/认证/SQLite 组件 |
+| `go vet ./internal/swarm/... ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s3` | PASS |
+| `go build -o D:/Astrocyte-agent-assets/20261015/product/s3/astrocyte.exe ./cmd/server` | PASS |
+| `node scripts/check-architecture.mjs`、`git diff --check`、两个新增文件的 `gofmt -l` | PASS，33 包；格式检查无输出 |
+
+SOURCE 的两次普通 push 均返回 `SSL_ERROR_SYSCALL`，保留两次传输失败；后续普通 push 与远端核实分别按真实结果交接。首读取曾使用不存在的 `relay_owned_input.go` 和 PowerShell 不展开的 rg 路径通配符，改为实际 `relay_input_operation.go` 和目录配合 `-g` 完成只读核查，没有改写原 R 文件。一次报告补丁因只匹配了段落开头而被文件编辑工具拒绝，完整读取该行后重新应用。全部构建资产和 Go 环境沿第十一阶段 D 盘配置。新阶段没有实际初始化、模型、输入、登记窗口或原生产 tuple 正向验收；完整 S3/S6 和 AT08/09/13/16 继续 NOT_RUN，任务未结算。
+
 ## 第十一阶段：恢复检查与固定工作树输入
 
 2026-10-15，Task `task_da9aebf03f83` / 当前 Dispatch `ctx_a34aff42e4d2` 对模块 Task `task_b0197ca7ebdf` / 当前 Dispatch `ctx_c2889e0e477c` 交付 SOURCE `71af7fde6a0a6d0e2f6f23813626d44e26e144e8`。实际客户端与模型由 Orca 公开 worker projection 核实为 Codex / `gpt-6.1-sol`。恢复基线为 `a5d00e764ffa0266bf34067190f72f3463fe9852`，接管时 clean；没有创建原生会话、发送模型输入或开始登记窗口。
