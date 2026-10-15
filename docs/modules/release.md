@@ -34,7 +34,13 @@ I 只普通 `--no-ff` 合并精确已提交输入并补必要导入、类型、�
 
 最终 P / N 的认知验证使用 Q 当前 SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7` 及其同代输入。最新 main 位于原 Q `.verification/cross-day-20261015-0228`，current 指向 `snapshot-1711995690`，对应 `main-safe-final` 十值与完整六字段；实际 1316 事件 / 今日 52 / 前日 74 / 一次 Sleep，最高排名 MCP 的 21 条与 Astrocyte 134 条分页分别核验。P 已收到准确交接，不重采公开工程或混用旧 1339 人口。N 原树 clean、HEAD `b74b97a44d5a116d090424d78f358fdf520667e2`，后继真实包验收等待 I 同源新包与原 H / F 单一原生窗口，不提前创建第二控制器。
 
-### 22:25 首 B 已合并，F 十九冲突处理计划
+### 22:44 B / F 已合并，R 六项 S2 冲突处理计划
+
+B / F 普通合并检查点为 `ebfeda40b37cc516f994e1a4f46f0869a824bd4c`，I 已普通 push；当前仅完成 B / F 合入，尚非四树或功能验收通过。此前 F 十九项冲突均经原 B / S2 / H 与 I 本人停止写入归还，本模块独立核查 U0、两种 diff 检查、B/S2 十三件完整内容对本轮基线一致及 H 三个准确暂存对象后，回执 `msg_be4ebfd067b5` 放行唯一 I 继续；全部领域临时范围已收回。
+
+当前 I HEAD `ebfeda40b37cc516f994e1a4f46f0869a824bd4c` / MERGE_HEAD `9021cbaa0dac6321491c9ae86d466749b8a32904`，六项 S2 冲突。I 本人 `msg_c520bfce757f` 明确六件均未编辑 / stage、全部停止写入，不继续合并。新临时 write_paths 仅由原 S2 在本人当前安全 ACK 后处理：`internal/adapters/sqlite/workspace_approvals.go`、`internal/adapters/sqlite/workspace_goals.go`、`internal/adapters/sqlite/workspace_session_bindings.go`、`internal/workspace/app/proposal_ports.go`、`internal/workspace/domain/proposals.go`、`internal/workspace/domain/session_bindings.go`。M-product 取得新安全 ACK 后限六件 edit / stage，不复制 WIP、不 commit / continue / abort / reset；完成本人停止 I 树全部写入归还，本模块核准确现场、U0 与适用差异后仅 I 继续当前 R 普通合并。H 后续仍消费准确 `72c0c2d53c109984d5f81bbe2fe26cf8d70d8b60`，管理文档按已授权范围在最终组合同步。
+
+### 22:25 首次 B 合并完成，F 十九冲突处理记录
 
 首 B 普通合并已由唯一 I 完成为 `392bbb17fc56b15a86c9b84349e6e4d6cb884755`。此前 B 本人 `msg_f93e69914ae8`、H 本人 `msg_ed19f4a63af4` 和 I 三文档均已停止写入归还；本模块独核 U0、普通 / cached diff 检查、四件 B 完整内容对 da722 一致、H config 准确 index blob，放行回执为 `msg_0b08a14805b6`，旧临时写域全部收回。
 
