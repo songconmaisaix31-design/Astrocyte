@@ -1,4 +1,4 @@
-// Reuse exact installed summarize parser dependencies; no new package/lockfile.
+// 复用已安装的准确 summarize 解析依赖。
 import { findPackageJSON, createRequire } from 'node:module';
 import { realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';

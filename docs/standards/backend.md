@@ -615,3 +615,37 @@ SOURCE `faee82ec7a3f4e0c832bb198d1c42393ae88ea02` 已普通 push，包含原四�
 实际检查通过生产服务创建空间、注册本公开工作树、保存人工 Grant 并签发项目 token，然后使用实际 loopback HTTP、自产人类会话和 SQLite；覆盖缺认证、CSRF、Agent 当前权限、目录 / SpaceID / 未注册 ID 替代、版本错误、未接来源、缺少证据、SQLite 重开和实际关闭数据库的失败。未观察 UUID 只用于拒绝请求。SQLite 核经验候选、完成来源和原生会话均为零，没有写入虚构完成记录或模型输出。
 
 H `3569f5da9d4df423916e3cff618f301a070d87cc` / REPORT `b94f2bef2e529de23aaf89f34704d342ffe5c8d9` 的实际 `services.Relay` 已实现相同 `ExperienceCompletionReader`；准确接口已经通过 Handoff 交 H，在原 main / OpenAPI 写域完成注入和公共契约，B 没有复制 H 源码或修改其工作树。受限 Codex、真实解释器、正向实际完成候选、用户批准、后续经验使用及六步闭环继续 NOT_RUN；上述拒绝和生命周期检查不替代这些验收。
+
+## Origin 的标准 URL 解析
+
+SOURCE `bd18df4c57f41b3c880bb47fba98c0deec5135ce` 已普通 push，仅修改 B 的 middleware 与新增实际 HTTP 检查。Origin 使用 `net/url` 完整解析，并核 HTTP(S)、无凭据、纯 origin 和明确回环 Host；拒绝响应复用现有 `writeJSON`，实际写入失败会终止请求。该文件注释使用中文，请求 ID 的随机读取错误立即终止。
+
+`go test -mod=readonly -p=2 ./internal/adapters/httpapi -run '^(TestLoopback|TestIsLoopbackHost|TestRequestIDMiddleware)' -v -count=1` EXIT 0，6 项主检查，包 5.773s；`.verification/origin-standard-url-first.log`。新增检查运行真实 Foundation 服务和实际 loopback HTTP，16 个明确 Origin 输入涵盖正常 IPv4 / IPv6、缺省 Origin、外部地址、错误格式、用户字段、路径、空及非空 query / fragment、错误 scheme；拒绝状态、ErrorV1 和同一请求 ID 全部保持。原 5 项主检查和全部断言保留，没有使用替代服务或来源。
+
+`go build -mod=readonly -p=2 ./...`、`go vet -mod=readonly -p=2 ./internal/adapters/httpapi` 均 EXIT 0，日志分别为 `.verification/origin-standard-build-first.log`、`origin-standard-vet-first.log`；两个变更文件 `gofmt -l` 与 diff 检查无输出。H 独占的 `server.go` 静态路由中 Stat 错误分类与注释整改已单独 Handoff，没有跨域编辑；完整默认、受限原生和实际六步结果继续未通过。
+
+## 人工准入的当前项目权限与实际草稿事务
+
+SOURCE `19ff699f304961d3c9fad6a336163848c923057b` 已普通 push，引入独立人工项目身份检查。当前完整构造与逐项固定引用检查见末节 SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383`；H 的生产装配继续使用其原有完整人工 / 委托判断授权。项目读取复用原 `ListProjects(ctx)` 和同一主数据库事务。Root、SpaceID、未知 ID、Agent 及未授权判断角色不能代替实际人工项目权限。
+
+`ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-agent-assets/20261016/backend/s1-verification` 下，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` EXIT 0，包 5.282s，`.verification/admission-project-actual-first.log`。实际空间和公开项目注册、同事务零额外连接、错误项目与角色、另一实际数据库事务、取消全部保持预期；准入、草稿、批准及原生会话记录均为零。既有准入检查的输出目录现同样接收明确绝对路径。
+
+明确设置已获准的匿名 `HTTP_PROXY` / `HTTPS_PROXY=http://127.0.0.1:7890` 后，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestActualAdmissionDraftAtomicLifecycle$' -v -count=1` EXIT 0，包 8.859s，`.verification/admission-actual-recovery-first.log`。原检查实际读取固定官方 arXiv `2501.12948v1` Atom / PDF，以人工记录创建候选；覆盖错误数据库消费者的原子回滚、成功准入与唯一草稿、幂等重放、同 revision 冲突、原 outbox / receipt、独立撤销、SQLite 重开及真实资料撤回拒绝。全部原断言保留，执行批准及原生会话始终为零；未调用模型或修改系统网络。
+
+全包 `go build -mod=readonly -p=2 ./...`、目标包 `go vet -mod=readonly -p=2 ./internal/adapters/admissionbridge`、三件 Go 格式及 diff 检查均 EXIT 0；日志为 `.verification/admission-project-build-first.log`、`admission-project-vet-first.log`。生产 HTTP 的 Services 字段、路由和 main / OpenAPI 装配仍由 H 实施，本文实际 service / SQLite 结果不替代同实例 UI / HTTP 验收。
+
+## arXiv 原件格式与实际 DOM
+
+SOURCE `25a4ae879ca0a4cd059540bfa5aeddf8cf713dcc` 已普通 push。arXiv PDF 类型通过已有标准 `http.DetectContentType` 检查，官方 HTTP 响应的 Close 错误经 `errors.Join` 保留；读取错误会阻止发布来源。四件变更中的原注释使用中文，原固定命令和路径语义保持。
+
+在已授权匿名进程代理下，原完整 `go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestActualAdmissionDraftAtomicLifecycle$' -v -count=1` 再次 EXIT 0，包 5.306s；`.verification/arxiv-mime-actual-first.log`。实际官方 Atom / PDF、完整准入草稿与撤销重启断言保持，模型调用为零。全包 build、importers / agents 两包 vet、Node bridge 语法、Go 格式及 diff 检查均 EXIT 0；日志 `.verification/arxiv-mime-build-first.log`、`arxiv-mime-vet-first.log`。
+
+`node .verification/paper-dom-actual-recovery.mjs` EXIT 0，`.verification/paper-dom-actual-recovery-first.log`。使用本工作树先前完整取得的官方 `2501.12948v1` HTML 原件 225089 bytes，经实际 linkedom / Readability / `paperDOM` 得到 `readable_fulltext`、57465 text bytes、原标题、固定版本、来源 key 及 PDF URL；文档在提取前后相同。实际快照保存在本树 `.verification/paper-dom-actual-recovery.snapshot.json`；这是现有公开原件的实际 DOM 解析，没有声明本次重新获取网页或原生模型。最初空 JSON 与 `fetch failed` 原件继续保留。
+
+## 人工项目准入的逐项固定引用检查
+
+SOURCE `089a3d276fa186cf41cc8384fb2bc9dad91d9383` 已普通 push。当前构造为 `NewHumanProjectAccess(actualLocalProjects, actualAttentionProjectReferences)`，任一真实端口缺失立即失败。每项来源通过原 `ReadProjectReference` 检查当前所选项目空间、准确 revision 和生命周期。H 的既有 `AdmissionProjects` 保留人工 / delegated 当前 owner 和逐项 `ReadSelected` 的完整检查；B 组件没有替换该生产装配。
+
+显式 `ASTROCYTE_TEST_PUBLIC_PAPER_SNAPSHOT` 选择本树实际 DOM 生成的 `.verification/paper-dom-actual-recovery.snapshot.json` 绝对路径后，`go test -mod=readonly -p=2 ./internal/adapters/admissionbridge -run '^TestHumanAdmissionActualProjectAndTransaction$' -v -count=1` 第二次 EXIT 0，包 2.973s；`.verification/admission-fixed-reference-actual-second.log`。测试通过实际 `paper_snapshot` 生产导入保存公开来源，核未加入空间时拒绝、实际加入后同事务允许、零额外连接和实际撤回后拒绝；之前项目、角色、另一实际数据库和取消检查全部保持。第一轮在实际加入资料使 Material version 前进后，旧 expected version 撤回触发 `version_conflict`，原件保留于 `admission-fixed-reference-actual-first.log`；当前撤回读取实际最新版本。
+
+全包 build、目标包 vet、Go 格式与 diff 检查均 EXIT 0，日志 `.verification/admission-fixed-reference-build-first.log`、`admission-fixed-reference-vet-first.log`。该实际公开输入是默认检查需要明确提供的来源，缺少时直接失败，没有新增 skip、替代资料或模型。原 H 同实例的准入 UI / HTTP 与全部源码的完整默认检查仍待原负责人执行。
