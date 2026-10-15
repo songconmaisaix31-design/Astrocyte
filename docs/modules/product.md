@@ -2,7 +2,21 @@
 
 ## 责任与事实源
 
-2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_c2889e0e477c` / 终端 `term_daa6545c-5540-4d8f-b85b-26d56ee71214`，按根最新授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`，各次绑定与消费遵守公开 CLI 的 generation。总负责人为 `term_499a85ee-d93d-4385-bad1-5228a2b34146` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `22e7c003bec4c9efd20e996ad44c8f3c27a0ad6f`，接管时工作区无改动。旧模块 Dispatch 因重启的失败记录保留。
+2026-10-15，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_9b068e2051ff` / 终端 `term_fbe30b0b-cfe9-4d63-90a1-10ec84b3d02c`，按根 23:47 入口及 `msg_260eaeb5d2f8`、`msg_515be7b3e513`、`msg_22cc4103aa83` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_24db7f74-f79a-4689-be1d-3f585a38e6b4` / `run_973808dd6a2f`。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `9fd45c18e6f4f6343e3ff23c531b384472d037dc`，接管时工作区无改动。旧 Dispatch 的失败记录保留。
+
+### 23:51 恢复计划与当前互斥范围
+
+根当前执行入口位于 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 首段，根管理 SOURCE `7a3ec93` 已 push。公开 Task 列表核 B、F、S2 均为 `ready`；公开终端清单无原六位开发终端，与根记录的重启退出证据一致。沿原 Task、工作树和分支恢复第三层原负责人，不创建替代 Task，不增加第四层。初始任务正文中的旧身份和创建子 Run 要求由当前入口替代；空 Run `run_300ee9112a0f` 不放任务或人员。原产品 Run 已普通绑定 generation 10，B/F 生命周期沿其原 Run 管理。
+
+| 本轮优先恢复的原负责人 | 实核源码与 WIP | 首项工作及验收 |
+|---|---|---|
+| B `task_7b4e93c1a3c1` / `standards-backend` | HEAD `6d1d59bf07b008a0969efefceb911e49b6b33db6`；仅 `docs/standards/backend.md` 有 WIP | 在原 `tests/s1` helper 写域完成显式 D 盘输出及完整子进程日志，所有后续 Go/Node/PowerShell 父子进程仅使用进程级 D 盘 TEMP/TMP；实际启动、失败输出、重启和退出验证后交精确 SOURCE / REPORT 给 F/UI |
+| F `task_7cbe30017760` / `standards-frontend` | HEAD `02a7976d997ef14ac298b2e240da43a9bb423c93`；现有大量 staged 合入内容及 `web/src/api/relay.ts`、新增 swarm / workspaceContext 客户端 WIP；U0 | 先本人确认实际 Git 生命周期和单个 `cmd/server/config.go` 安全归还状态，不覆盖其他暂存。B 只在 F 当前 STOP 和新安全 ACK 后检查并归还此单件。F 完成原消费，使用 B 精确 D helper 后运行真实适用检查；完整默认失败保留 |
+| S2 `task_6846cdb90c46` / `product-video-20261014` | HEAD `db3f3817dc70990405beb4db7be6c095af2c1c0f`，clean | 当前安全 ACK 后，只在新 I 本人 STOP 及发布负责人明确交接满足时处理下述六件，完成停止写入、归还并交限定 diff；原 Goal / Context / 权限实现与验证继续由同一负责人完成 |
+
+唯一 I 当前树 `works-relay-integration` 实核 HEAD `ebfeda40b37cc516f994e1a4f46f0869a824bd4c`、MERGE_HEAD `9021cbaa0dac6321491c9ae86d466749b8a32904`。仅六件未合并：`internal/adapters/sqlite/workspace_approvals.go`、`internal/adapters/sqlite/workspace_goals.go`、`internal/adapters/sqlite/workspace_session_bindings.go`、`internal/workspace/app/proposal_ports.go`、`internal/workspace/domain/proposals.go`、`internal/workspace/domain/session_bindings.go`。恢复后的原 I 本人 STOP、原 S2 当前安全 ACK 和发布负责人放行全部满足后，仅原 S2 使用文件编辑工具处理并 stage 六件；不操作 commit / continue / abort / reset，不复制 WIP 或整体选边，不修改其他路径。明确归还并经独立核查后，仍仅 I 继续原 merge。
+
+T / S3 / 产品 UI 保留原 ready Task、原分支和 WIP，待 D helper 与组合依赖可消费后恢复，不取消已有功能。Q 今日采集和正式 D1 已完成，不重复运行。当前 C 盘约 10.06 GiB，由发布负责人唯一协调维护；新大型验证等待 D 盘入口，旧证据和数据库保留。独立 Relay L1 按根当前授权继续，S3 两项未答只约束涉及 Claim / 预算的路径；独立 L1 不据此停止。执行顺序为四树组合验证 → 集成版 L1 → L2 六步首跑；用户批准、started 事实和资源释放审计保持原要求。阶段 SOURCE 与独立 REPORT 普通 push，模块持续到最终发布支持完成。
 
 ### 21:51 恢复与原负责人返修计划
 
