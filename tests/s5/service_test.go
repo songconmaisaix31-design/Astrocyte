@@ -246,6 +246,10 @@ func TestActualPublicWorktreeIsolationAndUncommittedChange(t *testing.T) {
 	if requests[0].WorktreeID == requests[1].WorktreeID || results[0].ID == results[1].ID || results[1].CacheHit {
 		t.Fatal("actual public Git worktrees shared a snapshot or cached judgment")
 	}
+	otherProject := f.actor
+	otherProject.ProjectID = requests[1].ProjectID
+	_, err := service.Read(ctx, otherProject, results[0].ID)
+	requireServiceCode(t, err, apierrors.ScopeDenied)
 	readme := filepath.Join(s5Root(t), ".verification", "s5", "projects", "astro-a", "README.md")
 	original, err := os.ReadFile(readme)
 	if err != nil {

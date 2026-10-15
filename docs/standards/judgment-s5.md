@@ -151,4 +151,37 @@ SOURCE `bc5ffc910b660d6ae9084234ffc8ced8e265cbc5` 已普通提交/push，远端 
 
 供 H 精确消费的现有构造函数为 `judgment.NewService(Repository, Authorizer, ...Model)`、`judgmentadapter.NewJev(apiKey)`、`judgmentadapter.NewLaya(ctx, LayaConfig)`。`ProjectAuthorization` 使用真实 `RepositoryProjectReader`、`ProjectReferences`、`PolicyRepository` 与 `ProjectSnapshotProvider`；`Snapshot` 返回 `domain.ProjectContextSnapshot`，`SetPolicy` 需要实际 human 与 expected revision。请求、结果、策略、usage、feedback 的准确 JSON tag 均在本 SOURCE 的 `internal/judgment/contracts.go`。Laya 必须提供绝对路径 Node/Worker/ModelDir/AssetsPath/SDKEntry/RPCEntry、明确 Language/ModelRevision/Stderr 和启动/退出预算，不默认选择模型或语言；资产与成熟 SDK 的准确准备路径见前文及真实 `tests/s5/laya_test.go`。
 
-当前阶段没有实现公共判断 HTTP 路由，没有执行 OS 防火墙、提权或 Jev 真 API，没有授予自动准入。S1 的 typed `AdmissionJudgmentAuthorizer` 所需 workflow、固定 opportunity revision、owner、active delegation 绑定尚无当前判断 Policy/Request 中的事实；已向协调者提交真实 human 单独设置版本化 DelegationRule 的具体方案，等待根确认，不制造批准或 proof。本 Task 继续后续真实 Laya 服务验证与已授权 HTTP 接入。
+本阶段 SOURCE 没有公共判断 HTTP 路由，没有执行 OS 防火墙、提权或 Jev 真 API，没有授予自动准入。本 Task 继续后续真实 Laya 服务验证与已授权 HTTP 接入。根已通过 `msg_91a31e8a9410` 明确要求按 SPEC 实现版本化 DelegationRule、实际绑定和配置入口；实际用户逐项开启，范围、backend、语言、预算、复核条件及必要阈值均由运行时用户显式配置，没有配置即拒绝。
+
+## DelegationRule 持久化 Handoff
+
+使用现有 `WorkspaceTransaction` 保存实际 human 创建的版本化规则与不可变判断绑定。规则按 project/workflow 唯一，OwnerID 从实际鉴权调用者取得并保持，JSON 保存明确状态、题型/问题、policy revision、固定允许资料、admit 候选或数值范围、外发许可与复核条件。绑定保存实际判断结果、规则版本、workflow、固定 Opportunity revision、owner 和完整来源引用；来源由现行 Attention 读取，HTTP 不接收替代 proof。暂停、撤销、策略/模型/目标/品味/访问变化后，受信任适配器在 B 同事务 Context 中重新核查并拒绝旧授权。`JudgmentResult.decision` 仍只有 `recommend/abstain/need_evidence`，`opportunity_admission` 只作 purpose。
+
+新增迁移只由 B 编写，准确表结构如下。没有 SQL 默认开启值或阈值。
+
+```sql
+CREATE TABLE judgment_delegation_rules (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    workflow_id TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    revision INTEGER NOT NULL CHECK(revision >= 1),
+    state TEXT NOT NULL CHECK(state IN ('disabled','active','paused','revoked')),
+    data TEXT NOT NULL CHECK(json_valid(data)),
+    UNIQUE(project_id, workflow_id)
+);
+CREATE TABLE judgment_admission_bindings (
+    result_id TEXT PRIMARY KEY REFERENCES judgment_results(id),
+    rule_id TEXT NOT NULL REFERENCES judgment_delegation_rules(id),
+    rule_revision INTEGER NOT NULL CHECK(rule_revision >= 1),
+    project_id TEXT NOT NULL,
+    workflow_id TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    opportunity_id TEXT NOT NULL,
+    opportunity_revision INTEGER NOT NULL CHECK(opportunity_revision >= 1),
+    data TEXT NOT NULL CHECK(json_valid(data)),
+    created_at TEXT NOT NULL
+);
+CREATE INDEX judgment_admission_bindings_opportunity
+    ON judgment_admission_bindings(project_id, opportunity_id, opportunity_revision);
+```

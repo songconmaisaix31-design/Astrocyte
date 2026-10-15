@@ -248,6 +248,9 @@ func (s *Service) Read(ctx context.Context, actor Actor, id string) (JudgmentRes
 }
 
 func (s *Service) recordAccess(ctx context.Context, actor Actor, record Record) error {
+	if actor.ProjectID != "" && actor.ProjectID != record.Request.ProjectID {
+		return &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "judgment record belongs to a different project"}
+	}
 	if actor.Kind != "human" && (actor.ID != record.Actor.ID || actor.Kind != record.Actor.Kind) {
 		return &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "judgment record belongs to a different actor"}
 	}
