@@ -12,7 +12,9 @@
 
 今日工程采集 Q 已完成并 released，SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7`；正式 D1 已完成。两者不重复采集、Sleep 或模型调用。现有 Windows 候选包不包含本轮全部新增功能，完整组合、真实 CLI / Today、默认前端检查和最终 release 包继续由原负责人完成。
 
-本轮真实 CLI 接入发现 Relay 确认流程只有携带首输入的启动端口。主控正式答复 `msg_a1839d29aa46` 已授权原 R 在既有 store / operation / controller 内补齐两阶段初始化与首次输入，由 H 唯一装配、F 唯一操作界面。空输入初始化不调用模型，原生归属、来源和工具关闭检查及观察准备完成后再真实注册计时、首次发送；初始化不登记为输入已发送或模型已开始。原 R 随后负责 `agents/completion_experience*.go` 经验候选模型适配，B 保持经验服务、SQLite 和迁移的唯一责任，H 负责生产装配；L2 正式实验与 L3 / L4 仍按既有冻结和待定项执行。
+本轮真实 CLI 接入发现 Relay 确认流程只有携带首输入的启动端口。主控正式答复 `msg_a1839d29aa46` 已授权原 R 在既有 store / operation / controller 内补齐两阶段初始化与首次输入，由 H 唯一装配、F 唯一操作界面。按单一 Registry 的实际依赖，执行顺序以最终答复 `msg_e8f75be9692e` 为准：F 同 URL 空 agents 且观察准备完成 → H 唯一真实登记并记录原始 t0 → F 创建 intent 并 Prepare 空输入初始化同一 controller → H 检查正选来源、归属与工具关闭 → F Confirm 首次输入。全部准备耗时计入同一个三分钟，初始化不调用模型，也不登记为输入已发送或模型已开始。原 R 随后负责 `agents/completion_experience*.go` 经验候选模型适配，B 保持经验服务、SQLite 和迁移的唯一责任，H 负责生产装配；L2 正式实验与 L3 / L4 仍按既有冻结和待定项执行。
+
+判断领域 handler 由原 S5 独占 `internal/adapters/httpapi/judgment*.go` 及同名前缀测试；H 保持 `cmd/server/judgment*.go`、共享启动与 OpenAPI 装配，B 保持依赖和迁移。SPEC §5.3 / §7.1 / §11 已授权版本化 DelegationRule 与固定机会准入，按正式答复 `msg_dbd3c3bff5cc` 继续实现完整配置与受信任同事务适配；实际委托开启、范围和必要阈值由用户在产品运行时显式设置，不代填默认值。S5 管理员离线验证及 AOCI 公开包分发方式已向用户提问，尚未答复，其他已授权开发继续。
 
 2026-10-14：已接手 REA 6.5.0 的[调研报告](docs/research/orca-rea-20261014.md)与第 42 版技能。独立 MCP 握手、207 工具、binary_session 成功；Orca 1.4.220 两份静态分析共 18 个 JavaScript 文件解析错误为零。按用户要求，今晚已移除 REA Codex MCP 注册并停止服务，CLI、技能与分析结果保留，10-23 之后重新注册为陌生代码库任务与 L2 经验来源候选。2026-10-15 先完成 Relay v1.4 四项语义规格与修改，再做真实 CLI 端到端、三分钟 Today、L1 关账；产品其他开发和发布候选继续，由原模块负责人管理。
 
