@@ -1,4 +1,5 @@
 import { SelectField, TextField } from '../FormControls';
+import { questionDraftIssues } from './questionDraftIssues';
 import styles from './DelegationWorkspace.module.css';
 
 export interface JudgmentQuestionDraft {
@@ -20,8 +21,7 @@ export function JudgmentQuestionFields({ draft, evidence, disabled, onChange }: 
     : draft.type === 'score' ? [{ value: 'evidence_coverage', label: '依据覆盖程度' }]
       : draft.type === 'truth' ? [{ value: 'all_evidence_present', label: '全部必要依据齐全' }] : [];
   const missingRule = !!draft.rule && draft.rule !== 'none' && !rules.some(item => item.value === draft.rule);
-  const optionIDs = draft.options.map(option => option.id.trim()).filter(Boolean);
-  const duplicateIDs = new Set(optionIDs).size !== optionIDs.length;
+  const issues = questionDraftIssues(draft);
   return <fieldset className={styles.fields} disabled={disabled}>
     <legend>委托判断的题目</legend>
     <TextField label="判断题目标识" value={draft.id} onChange={id => onChange({ ...draft, id })} required />
@@ -47,7 +47,6 @@ export function JudgmentQuestionFields({ draft, evidence, disabled, onChange }: 
           <button type="button" className="ac-button secondary compact" onClick={() => onChange({ ...draft, options: draft.options.filter((_, position) => position !== index) })}>移除判断选项 {index + 1}</button>
         </fieldset>;
       })}
-      {duplicateIDs && <p role="alert">判断选项的标识重复，请为各选项填写独立标识。</p>}
       <button type="button" className="ac-button secondary compact" disabled={draft.options.length >= 255} onClick={() => onChange({ ...draft, options: [...draft.options, { id: '', description: '', evidenceKeys: [] }] })}>添加判断选项</button>
     </fieldset>}
     {draft.type === 'score' && <fieldset className={styles.fields}><legend>有序评分等级</legend><p>填写 2 至 10 个完整等级，数值从 0 开始，顺序与准入数值条件对应。</p>
@@ -58,5 +57,6 @@ export function JudgmentQuestionFields({ draft, evidence, disabled, onChange }: 
       { value: '', label: '请选择规则使用方式' }, { value: 'none', label: '不使用确定性规则' }, ...(missingRule ? [{ value: draft.rule, label: `原规则与当前题型不匹配：${draft.rule}` }] : []), ...rules,
     ]} onChange={rule => onChange({ ...draft, rule })} />
     {missingRule && <p role="alert">题型已变化，请重新核对确定性规则。原填写内容继续保留。</p>}
+    {issues.length > 0 && <div role="alert"><p>请核查当前判断题目：</p><ul>{issues.map(issue => <li key={issue}>{issue}</li>)}</ul></div>}
   </fieldset>;
 }
