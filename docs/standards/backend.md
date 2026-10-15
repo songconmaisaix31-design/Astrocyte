@@ -691,3 +691,17 @@ SOURCE `895ae6a3a879e159e5de2c8629eed3423398cf68` 已普通 push。错误收据�
 | `ASTROCYTE_JOB_TIMEOUT_SECONDS=1800` | 原生产默认处理期限 |
 
 完整安全值与准确本机文件指针已直接交 H 并抄送模块协调者，消息 `msg_4f93a6fd1e8d`、`msg_06608d24b7f8`。当前只证明配置生成、实际文件存在和既有固定版本证据；原 `video-source-third` 成功进程的逐项环境由 V 对照，当前共享产品服务重新启用与实际配置消费由 H / F 执行。本轮视频提取、ASR 和模型调用均为零，没有操作共享服务、重新生成来源或把派生 JSON 标记为 summarize 原始输出；实际产品视频功能继续待 H / F 的原实例验收。
+
+## 明确上传列表配置的直接失败
+
+SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定的 listing Python、yt-dlp 同目录 Python 或媒体目录存在错误时，`resolveListingPython` 立即返回错误；实际 Stat 错误通过 `%w` 保留。明确相对 yt-dlp 路径与非 regular Python 文件也直接拒绝。未指定能力且默认安装不存在时保持未配置，不改变原可选上传列表的范围。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./cmd/server -run '^TestListingPython' -v -count=1` | EXIT 0，2 项主检查、7 项明确配置子检查、0 SKIP，包 2.631s；`.verification/listing-config-actual-first.log` |
+| `go test -mod=readonly -p=2 -tags=repository_context_live ./cmd/server -run '^TestVideoSourceConfigActualInstalledTools$' -v -count=1` | EXIT 0，1 PASS、0 SKIP，包 3.467s；`.verification/video-config-production-actual-first.log` |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0；`.verification/listing-config-build-first.log` |
+| `go vet -mod=readonly -p=2 -tags=repository_context_live ./cmd/server` | EXIT 0；`.verification/listing-config-vet-first.log` |
+| 三件变更 Go 文件 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
+
+实际安装检查通过显式 `ASTROCYTE_VERIFY_VIDEO_CONFIG` 消费上一节白名单 JSON，只设置十二个明确配置键，调用原生产 `resolveSourceReader` 与 `resolveListingPython`。生产 Node 执行真实 CLI 路径解析，原实际提取器成功构造并同时接入 video / arXiv Reader，Python 身份逐字保持；关闭开关后两个提取端口保持空值。没有调用提取、ASR、模型、共享服务或原生 Registry。上述源码与实际检查不替代 H / F 在同一产品实例的配置消费与视频业务验收；进度 HTTP 的独立 WIP 和首 403 也未包含在本 SOURCE 内。
