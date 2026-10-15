@@ -1,5 +1,32 @@
 # 视频导入实现与实际验证
 
+## 2026-10-16 当前产品消费与固定视频复用
+
+当前执行人员沿原 S2 Task `task_6846cdb90c46`、Dispatch `ctx_d0d16cb94204`、终端 `term_468e8fd7-6ac4-42eb-bc98-ede302c182b1` 和原分支继续，恢复基线 `81eb88df11f2c69b71290d5bb9ad5b2e2e0f0d9f`。依据模块 `msg_640b20b17de5`，本阶段核查完整产品对旧视频交付的消费，并向唯一界面操作人员提供准确本机指针。
+
+本次只读核查的实际产品为 `http://127.0.0.1:64505`、PID `4676`、SOURCE `b73dc79e7c59a9192ec2bfbd3625a620d8304efb`、modified=false；其运行指针为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`。当次唯一集成 HEAD 为 `609993b25543a74e64d89a31c99bf3c08b81b44b`。二者均包含旧时间 SOURCE `d48a29b6e1744465666edbfa28be919531ca39a4` 与真实输入 SOURCE `a54fe8e238a2e52db98c801012c2ccdfd64edbd5` 的祖先；`extractor.go`、`summarize.go`、`summarize-media.mjs` 与原 V 恢复基线完整内容相同。两个准确组合的 `reader.go`、私有附件检查、配置及锁定依赖也相同。项目锁与本树实际安装的 CLI / core 均为 `0.25.1`，Node 为 `24.16.0`。此处只证明源码消费和原件一致，当前产品视频界面与新导入尚未执行。
+
+核查程序通过 Node 原生 SQLite 的 readOnly、`query_only` 和读取事务，只读取原 V `video-timed-first` 与原 B `video-source-third` 中的明确视频原件。旧实际库仍为材料 1、作业 2、版本 2、沉淀和使用记录均为 0；两版正文逐字节等于原文件，分别为 32908 / 35807 bytes，时间位置为 0 / 952，附件为 1 / 4。新版本全部 952 项的 native 毫秒区间、media segment、正文归属及已保存 SourceSpans 逐项相同。原 native 附件历史 MediaType 为 `application/json`；当前产品按 `whisper-original.json` 的真实名称和相同 ObjectRef 保持私有拒绝，旧固定版本保持不变。
+
+当前 H 启动脚本 `works-relay-http/.verification/h-recovery/start-current-product.ps1` 明确设置 `ASTROCYTE_ENABLE_SUMMARIZE=false`。运行指针未记录各媒体依赖的当前值，已通过模块交 H 核实安全白名单；本阶段没有读取进程完整环境或修改服务。旧 `summarize-cli-original.json` 明确为 HTML 页面、textProvided=false、transcriptSource=null，直接提交为 CLI 导出会缺少视频证据。保存的 media JSON 与 native JSON 各自保留原格式。
+
+本机 D 盘专属目录为 `D:/Astrocyte-agent-assets/20261016/product/V/video-reuse-audit-first`：
+
+- `safe-result.json`：准确源码、派生统计、零新提取 / ASR / Agent 模型 / 共享 HTTP 写入结果。
+- `fixed-revision-local.json`：旧材料 `534HWFW7E5GEF75ZY4F7ETPLQ2` 的固定 revision 2、逐字节正文、952 项 SourceSpans、原 provenance 和附件对象指针。正文和原件保持本机。
+- `timeline-offsets.json`：逐项核实的 952 个索引与毫秒区间，不包含正文或 native 配置。
+- `manual-import-review.json`：仅供审阅的现有生产 `manual` 请求，保存固定正文与来源位置；不包含原 native JSON。执行时由唯一 F 按现有客户端创建 request_id / 幂等键和用户会话，实际 provenance 为人工导入。本阶段未提交此请求，普通 UI 当前没有 manual 选项，后续路线由模块协调 F 确认。
+
+运行命令为 `node D:/Astrocyte-agent-assets/20261016/product/V/video-reuse-audit-first/audit.mjs`；第二次运行 EXIT0，安全结果保存在同目录。首次检查误要求旧不可变附件已经使用新的私有 MediaType，断言失败原件 `audit-first.log` 保留；当前检查依据历史真实类型与生产名称保护规则核实，未修改旧库或生产逻辑。`node --check` 通过。本阶段没有运行新提取或重做旧成功验证。
+
+旧 time0 首缺口、9 个原有其他范围条件 SKIP、CLI 自身 transcriptSegments 正向及 summary-only JSON 的实际原件不足、转写中途结构化进度 NOT_RUN 保持。旧 HTTP 私有附件拒绝、实际重启与取消结果按下方准确源码复用；当前 b73 / 集成组合没有因本次只读核查取得新的 HTTP 或界面通过结论。S2 已通过的 AfterWorkspaceCommit、Context 和 Goal 结果继续按各自准确来源记录，原生工具关闭、未答权限及模型输入限制保持。
+
+## 2026-10-16 消费核查独立 REPORT
+
+核查 SOURCE `d58ce7d5c724e5f165c545a2a1bb1cb9ebfee796` 已普通 commit / push，独立 `git ls-remote origin refs/heads/songconmaisaix31-design/product-video-20261014` 返回相同完整 SHA。本阶段只增加本报告中的当前消费记录，生产代码没有变化。原件核查 `audit.mjs` 第二次运行 EXIT0，952 项实际来源比较和两版对象字节检查通过；`node --check` 与 `git diff --check` 通过。首次类型断言失败保留在专属 D 盘目录，没有重跑旧成功 ASR、HTTP、取消或 S2 检查。
+
+准确源码和安全派生指针已通过模块消息 `msg_d2aff4c49dbb` / `msg_3357cc6ec1c6` 交接；H 当前安全配置答复、F 实际复用路线与当前产品界面验证仍待完成。原件、派生正文、native JSON 和本机执行脚本均保留在本机证据目录，Git 仅记录本报告。当前 Task 持续支持模块，未进行阶段 worker_done 或最终发布。
+
 ## 执行范围
 
 第三层 V，Task `task_af564cbc003b`，Dispatch `ctx_1b382b548db7`，模块 Run `run_dbf1a68bc692`。实际客户端由模块公开 worker-show 核实为 Codex / GPT-6.1-Sol high fast。工作树 `product-video-20261014`，分支 `songconmaisaix31-design/product-video-20261014`，接管基线 `03f92127a74e4d8b49cf5c4bb1010b43349d6d43`，接管时 clean。
