@@ -1,5 +1,32 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-15 Context 与 S3 公共装配阶段
+
+本阶段 SOURCE 为 `59a7150b1143680b67fe53fdf831fcca5f328660`，分支为 `songconmaisaix31-design/works-relay-http`。准确消费 S2 `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d`、S3 的 `b220ab2`、`3b78fd0`、`e18c096`、`3c568c7`、`ec653dd`、`93d1f6b`、`2bd5d26`、`10fa36c` 八项源码，以及 B 的 action 提交 `c110201` 和可信配置 `e346c40cc9edcbd5b4588e47585f3c0b616b0770`。配置冲突仅由原 B 在模块限定范围内编辑并 stage，归还后 H 核实 U=0、完整 index blob `2d7a7bdc1a31b8f97545baed2f74806c2168d796` 和仅两件 staged 文件，再普通继续为 `b535216`；没有消费其他 B 历史。
+
+生产入口将明确的环境身份、工具路径、缓存目录和预算传给同一个 S4 provider，同时把该对象与原 object store 配置给当前 S2 服务。环境身份为空时保留明确的缺配置结果；原生 OwnedSessionProvider 尚未装配，Session Binding 沿原领域接口返回 `unsupported_capability`。HTTP 只提供当前批准下的固定 Context Packet 构建、读取和原生绑定命令；原生 ID 不进入绑定 DTO。OpenAPI 使用现有固定引用、Goal、Scope 和 Stops，闭合描述快照、后继关系、六组上下文记录、能力观察和错误状态。
+
+生产 `SwarmS3` 通过原 SQLite repository、同库批准桥和当前 S2 服务构造原 `NewSwarmLedger`，注册原 S3 全部处理器；原生执行、成员与证据端口缺失时仍由现有领域拒绝。Agent 白名单只增加已鉴权的任务读取、work item、claim、submit 和 diff，人工任务创建、暂停、取消、恢复、验收和拒绝继续经过人类入口。OpenAPI 的任务、lease、artifact、时间线、执行引用、未知用量与命令对应原服务实际字段和 200 响应。
+
+私有 `VerifyRelaySessionArchive` 使用原 NDJSON 库和既有 header 身份 / 工作目录检查，在同一文件句柄上先后检查正选来源与单链接身份。该函数只返回本机文件身份，不产生事件或游标；`relaySourceGuard.Check` 已采用此检查。当前尚未接入新的两阶段实际窗口，新的真实原档正向预查仍为 NOT_RUN，实际调用前不能据编译或文件身份测试宣称来源通过。
+
+本机安全日志在 `D:/Astrocyte-agent-assets/20261015/relay/H`，构建及临时目录使用前述 D 盘专用进程环境；Go `GOMAXPROCS=2 / -p=1`、Node 512 MiB。当前 Orca Codex 客户端的具体模型没有独立回显，本阶段模型调用为零。
+
+| 验证命令 | 实际结果 |
+|---|---|
+| `go test -mod=readonly -p=1 '-overlay=dist/l1-live/reader-overlay/overlay.json' ./cmd/server -run '^(TestRelayHTTPAtomicListenerActualSQLiteSessionAndShutdown\|TestRepositoryContextConfig.*)$' -count=1 -timeout=180s` | PASS，1.998 秒；实际主服务、同库 ledger、空任务读取、缺授权 / CSRF 拒绝、五项缺配置、配置三项和 native sessions=0；`v14-context-s3-main-actual.log` |
+| 原 S3 实际 HTTP 授权、时间线和撤销检查 | PASS，3.319 秒；此前同组 H atomic 检查 PASS，2.407 秒；`v14-s3-http-first.log` |
+| `go test -mod=readonly -p=1 ./tests/s3 -run '^TestActualApprovalMissionConcurrentIdempotencyRevokeAndRestart$' -count=1 -timeout=180s` | PASS，6.830 秒；`v14-s3-approval-actual.log` |
+| `go test -mod=readonly -p=1 ./tests/s2 -run '^TestActualSQLiteApprovalRestartAndRollback$' -count=1 -timeout=180s` | PASS，23.068 秒；真实 SQLite、固定 Git 快照、批准、重启、后继与事务回退；`v14-context-actual.log` |
+| `go test -mod=readonly -p=1 ./internal/adapters/events -run '^TestRelaySourceIdentityActualFileAndAliasRejection$' -count=1 -timeout=90s` | PASS，0.935 秒；实际普通文件身份与 hardlink 拒绝，未使用伪造原生文件；`v14-source-archive-identity.log` |
+| `go vet` 当前 cmd/server、HTTP、events、repositorycontext / `go build` 当前 cmd/server，均带准确 P579 readonly overlay | EXIT 0 / EXIT 0；`v14-context-s3-final-vet.log`、`v14-context-s3-final-build.log`；构建产物未启动 |
+| 官方 Redocly CLI lint / `node scripts/validate-examples.mjs` | EXIT 0，13 项 unused 等警告 / PASS，273 个现有示例；`v14-context-s3-openapi.log`、`v14-context-s3-examples.log` |
+| `node scripts/check-architecture.mjs` / `git diff --check` | PASS，34 个包边界 / EXIT 0 |
+
+此前第一次 S3 正则在 `tests/s3` 未命中测试，保持 NOT_RUN；随后已用上表准确测试名运行实际并发批准检查。原 B 在本树进行配置检查时的旧 Reader 变参编译 RED、H 单树旧 Reader FAIL、S4 首 search 超时 unknown、旧 SQL 表名 FAIL、旧 nlink2 来源 FAIL、旧三分钟 FAIL 和未知交付保留实际记录。当前 build / vet 使用的 overlay 仍为既有 P `579a1ce` 五件准确 Reader 源，尚未将 B 新 Reader 闭包写入本树。
+
+F 是唯一实际 GUI 操作人，生成客户端与当前完整配置 HTTP 正向组合交原 owner 消费准确 SOURCE。Calls、Tools、Targets 的 Known 完整性继续等待根转交的用户决定；Claim 保持原拒绝。当前原生登记、controller、模型输入和新 t0 均为零；R 两阶段 HTTP、S5 薄装配、真实 CLI / Today / 逐 event_id SQL 及最终产品验收继续，不发送阶段 worker_done。
+
 ## 2026-10-15 仓库上下文公共装配阶段
 
 本阶段 SOURCE 为 `31256d5d6758daf25892d55df73feffde7a7e573`。沿原作者准确消费 S4 的 `9eff2ed`、`263bc70`、`1a55e16`、`896a7b4`、`293af63`、`f407337` 六个源码提交，以及 B 的 `98bb923` 迁移和 `6b78f64` 依赖提交。三件依赖冲突由原 B 通过文件编辑工具解决并明确归还；S4 报告冲突先由原 owner 处理，后经模块 `msg_d8d09a25bb0e` 临时授权 H 仅处理该报告的后续冲突。H 已在 `msg_1ef84752900b` 明确停止并归还该单文件范围，S4 业务文件保持准确源码内容。
