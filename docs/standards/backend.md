@@ -430,6 +430,16 @@ Vite 使用现有实际依赖、原配置和 middlewareMode，外部实际 HTTP 
 
 H 的实际产物 / 检查关系与 R 的人工完成经验来源继续在各自原域接续。现有 selected-text `codex exec --ephemeral` 路径只记录实际 thread.started 与 usage，没有同一 R controller / startup / input operation / turn 的持久化正选来源读取端口，原成功结果的有效工具集合保持 unknown。已向 T 交准确生产缺口，没有替代原十四项 unknown 覆盖或重发成功模型。完整默认 E2E、发布和整轨验收仍未通过。
 
+## 经验完成通道与原收据校验
+
+SOURCE `5866b5296a5f6ffe253fa5deac632f72d27fe128` 已普通 push，前一独立 REPORT 为 `65036a6`。`ExperienceCompletionEvidence` 增加 `CompletionChannel`、`CompletionReceiptID`，通过既有 `experience_completion_sources.data` JSON 保存。`ValidateCompletionSource` 由业务服务与 SQLite 保存、读取共用；Relay 来源必须保留实际完成通道和原 accepted transition 收据，`user_confirmed_complete` 允许没有原生轨迹，`verified_complete` 继续要求原输出事件引用。没有将完成 ID 或 transition receipt 写成原生事件，没有新增迁移。
+
+实际 `go test -mod=readonly ./internal/attention/app ./internal/adapters/sqlite -run '^Test(Completion(InterpretationRules|SourceRules)|AcceptedExperience)' -count=1 -v` EXIT 0，5 个顶层 / 15 个含子项 PASS、0 SKIP；两个 package 为 1.585s / 2.359s，`.verification/completion-channels-sqlite-d-output-first.log`。八个通道规则子项仅使用明确函数输入与期望值，覆盖人工有 / 无轨迹、verified 缺轨迹、缺通道 / 原收据、未知通道和空轨迹引用，不声明产生了完成或模型来源。未知模型版本规则保持。实际 SQLite 通过原生产事务执行提交、主键约束回滚、另一数据库拒绝、实际关闭与 context cancellation，所有新测试数据库进入明确 D 盘目录，没有写入替代完成或原生记录。
+
+全包 `go build -mod=readonly ./...`、目标 `go vet -mod=readonly ./internal/attention/app ./internal/adapters/sqlite`、四件 gofmt / diff 检查 EXIT 0，分别为 `.verification/completion-channels-build-first.log`、`.verification/completion-channels-vet-first.log`。早期同逻辑的 SQLite 生命周期检查使用原 helper 的本树目录，原件保留在 `.verification/accepted-experience-actual-*`；后继 helper 已支持明确绝对输出根，不移动旧数据库。
+
+R 已收到精确 SOURCE，沿原真实完成 Reader 更新 Interpreter 输入。H 的当前来源读取、实际完成记录在重启后的字段保存、真实 Interpreter 候选及批准 / 后续使用组合尚未运行，不由上述纯函数或事务检查替代。原 S3 prepare → Claim → 原输入发送缺少独立生产准备入口，已由 R 交准确差异；当前未知预算与新 Claim 拒绝保持，没有据此扩大独立 Relay L1 的阻塞范围。
+
 ## 真实剩余限制
 
 - 当前全包检查为 RED，公开网络存在 TLS `EOF`、`fetch failed`；源请求失败未用本地伪造响应替换，未加 skip 或放宽断言。
