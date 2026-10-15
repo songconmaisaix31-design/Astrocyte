@@ -2,6 +2,14 @@
 
 当前开发入口为 `product-video-20261014`，Task `task_6846cdb90c46`，Dispatch `ctx_b9a5305d8480`，终端 `term_89a4eb85-5605-40c8-b1b4-fa2080c8b9ae`。实际客户端 Codex，沿模块已核 `gpt-6.1-sol` 配置恢复；原 Task、工作树、分支与测试 WIP 保留。基础精确源码 `391c6176145044b099c13a05a926aef2096db170` 已普通合并。
 
+## 2026-10-15 真实资料引用与跨项目 HTTP REPORT
+
+测试 SOURCE `04e096c4e03cdc4355b69c86b5ee43a0eae89282` 保存 `tests/s2/material_access.test.mjs`。`node --test tests/s2/material_access.test.mjs` PASS，97.254 秒，原 120 秒测试期限 / 5 秒 bootstrap / 10 秒请求期限保持，无 skip 或自动重试。日志 `.verification/s2-first/material-access-first.log`，实际库 `.verification/astrocyte-s1-2oLR6u/data/state.sqlite`。
+
+真实输入是本公开工程 Git HEAD `6841378c0ba0702c4798178282847cf2f5bdd5d8` 的完整 `README.md` 对象，经已有生产人工导入 API 保存为 text / revision 1，不使用代表材料或模型。实际创建两个独立项目和空间、固定资料引用、Goal 与 draft Proposal；跨项目 Goal 被 403 拒绝，实际签发的 Agent token 只能读取本项目固定资料，正文与真实 Git 对象相等，跨项目读取返回 403，Agent 读取不增加 human_usage_count。
+
+人类从空间移除引用后，使用原 token 读取返回 403，原 draft 提交审阅返回 403，提案历史 revision 仍保存原固定输入。实际停止 / 重启生产进程后，旧固定引用仍可查询，原 Agent 新读取继续被拒绝。SQLite 核批准、原生会话与 Mission 各为零。此处覆盖现生产 LocalProject Context 与 S2 提案输入边界；新不可变 ContextPacket 的完整资料正路径继续等待 H 的生产主装配和公开契约。
+
 ## 2026-10-15 Grant 结束状态与 HTTP 重启 REPORT
 
 测试 SOURCE `169c1b37a0342109fb40cb681f8bc4d078647d37` 已普通 commit / push，独立远端查询同值；生产内容保持 `b7e3b1c5c9d56c5bf68f67a2fe5b70d8970f191d`。实际 `go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` PASS，5.715 秒，库 `.verification/s2-first/actual-1897772779/state.sqlite`，日志 `grant-completion-expiry-first.log`。新增数据库重开后的固定 ContextPacket 引用、human 完成批准及 epoch 递增、真实时间自然过期、两类状态阻止保护动作，以及人类显式持久化 expired；没有修改时钟或制造状态。`go vet -mod=readonly ./tests/s2` 和 `git diff --check` EXIT 0。
