@@ -2,8 +2,20 @@ import { createServer as createHTTPServer } from 'node:http';
 import { createServer } from '../web/node_modules/vite/dist/node/index.js';
 
 let vite;
-const listener = createHTTPServer();
+let initialized = false;
+const pending = new Map();
+const listener = createHTTPServer((request, response) => {
+  if (initialized) {
+    vite.middlewares(request, response);
+    return;
+  }
+  // listener 先绑定供 API 使用准确端口，期间已经到达的 HTTP 请求保留到初始化完成。
+  pending.set(response, request);
+  response.once('close', () => pending.delete(response));
+});
 async function close() {
+  for (const response of pending.keys()) response.destroy();
+  pending.clear();
   const results = await Promise.allSettled([
     vite?.close(),
     listener.listening ? new Promise((resolve, reject) => listener.close(error => error ? reject(error) : resolve())) : undefined,
@@ -47,7 +59,9 @@ try {
   const apiURL = await configured;
   process.env.ASTROCYTE_PORT = apiURL.port;
   vite = await createServer({ configLoader: 'runner', cacheDir: process.env.ASTROCYTE_TEST_VITE_CACHE, clearScreen: false, server: { middlewareMode: { server: listener } } });
-  listener.on('request', vite.middlewares);
+  initialized = true;
+  for (const [response, request] of pending) vite.middlewares(request, response);
+  pending.clear();
   await announce('vite_ready', webURL);
 } catch (error) {
   console.error(error);
