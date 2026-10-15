@@ -16,6 +16,14 @@ SOURCE `ee7889cf04383162e160ae30544eb324257ed45c` 提供 `CurrentGoalReader`。`
 
 当前 Goal 端口没有新增 HTTP 契约或依赖。S5 完整 AT12 的真实模型 / profile / policy / 来源变化和旧 proof 拒绝，以及 H 生产 Context 与 R 当前 owned 会话成功，继续由原 owner 验证；用户未答的 Calls / 自由工具及具体 working 条件保持原状态，模型和原生窗口调用为零。所有先前 RED / UNKNOWN / NOT_RUN 原件保留。
 
+## 2026-10-15 Goal 状态与回调回滚独立 REPORT
+
+后继测试 SOURCE `885e72a57d2986b7d5962bc846f3f9e6f935f530` 新增实际 SQLite 检查，生产代码保持 `ee7889c`。`go test -mod=readonly ./tests/s2 -run TestActualCurrentGoalTransactionAndInactiveStates -timeout 90s -v` PASS，0.12 秒，真实库 `.verification/s2-first/current-goal-294254805/state.sqlite`，日志 `current-goal-states-first.log`。在当前 Goal 授权回调内调用同一生产 `PutGoal` 写入 paused 新版本，再返回明确事务失败，核实际最新 Goal 完全保持原值；随后以原幂等键执行同一命令成功生成下一 revision，证明版本与成功回执一起回滚。另一个真实数据库在此回调内被 `WorkspaceTransaction` 明确拒绝。
+
+真实 `paused / completed / archived` 各状态的最新 revision 均经生产命令持久化，随后读取当前 Goal 快照与受保护回调全部返回 `scope_denied`；固定原 revision 的全部字段仍与原始值相同。这些检查不调用模型或原生控制器，不修改时钟，也不依赖内存替身。变更文件的 Go 格式与 `git diff --check` 通过。
+
+前一 SOURCE `ee7889c` 和独立 REPORT `649df9c732689cc51706844ec36dfc81817533ba` 已普通 push，独立远端检查最终同 REPORT。首次查询 REPORT 远端时返回 `OpenSSL SSL_connect: SSL_ERROR_SYSCALL`，该失败保留在本次工具执行记录；后续单独 `git ls-remote` 成功返回准确 `649df9c`，没有重新推送或修改历史。当前可消费的 Goal 生产增量只有 `internal/workspace/domain/goals.go` 与新增 `internal/workspace/app/goals_snapshot.go`，必须使用已有完整 S2 / 当前项目权限 / 同数据库事务基线，两个测试提交保留独立覆盖证据。
+
 ## 2026-10-15 公共 Context DTO 与 owned 工厂 REPORT
 
 安全 DTO / owned 工厂 SOURCE `aa445adf834c3a397a0817bec0593fcf1039420a` 和后继单文件 SOURCE `02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` 均已普通 push，分别独立 `git ls-remote` 同值。后继只移除组包事务前的一次重复 Git 验证，保存前事务内的当前快照验证保持；H 消费九文件提交后再消费此单文件提交。`go test -mod=readonly ./tests/s2 -run TestActualSQLiteApprovalRestartAndRollback -timeout 90s -v` 最终 PASS，29.994 秒，真实库 `.verification/s2-first/actual-1996825770/state.sqlite`，日志 `context-safe-dto-final-first.log`。新增 Go 标准 HTTP 实际监听器使用生产 `httpapi.NewServer(...).Handler()`，接真实 S2 服务、SQLite、objects 和 Git snapshot：GET / POST Context、真实 token 允许读取与跨项目 403、固定引用、绝对根不出响应、根目录的相对映射通过；原批准 / 回滚 / 撤销 / 过期 / 重启检查继续通过。原 10 秒请求期限和全部断言保持。此前开发内容运行 PASS 9.600 秒的 `context-safe-dto-first.log` 保留；随后准确源码复验的 Context POST 10 秒超时 FAIL 保留在 `context-safe-dto-source.log` / `actual-4237230458`，不改写。此结果属于生产 Handler 的实际 HTTP / SQLite 组合，主 `cmd/server` 的 Context 配置仍由 H 验证。`go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./tests/s2`、34 包架构和 `git diff --check` 均通过。
