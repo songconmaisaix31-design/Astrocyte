@@ -6,6 +6,8 @@
 
 源码 SOURCE `e689e7f5410d977f8cb72df57efbfeb5f490c415` 已普通 push，提交原五件修改和两个真实 HTTP API 测试。前置消费提交 `375469b2fc0a029128c81b63350f3e5ed176d400` 只普通 cherry-pick 原 UI SOURCE `0661b49fd5b29cded5dbf15277fc5abafa20b8c2` 的八件 Swarm 页面文件；消费后八件完整 diff 为零，页面逻辑继续归原 UI 负责人。没有修改共享配置、依赖、schema 或其他负责人的工作树。
 
+后继组合 SOURCE `4e52a3ab9b8561e58d40719c98a64ab1d03d51f2` 已普通 push，按模块明确授权只 cherry-pick `-x` 原 B SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872`。四件为 `scripts/vite-server.mjs` 与 `tests/s1` 的三个生命周期测试文件，消费前与原 SOURCE 父版本相同且零 WIP / staged，消费后四件完整 diff 为零。初始化期间已到达的 HTTP 请求交给初始化完成后的真实 Vite，后续逻辑仍归 B；原 120 秒期限和零重试保持。
+
 Relay 权限页提供单独的 Prepare 操作，初始化与首次输入分别提交。Prepare 收据显示原身份和实际结果；Prepare 或 Dispatch 待定、交付未知、接受但带错误时，两项操作均禁止重发。浏览器持久锁按原任务保存，请求结果未知后，重新读取、关闭重开和刷新均不自动解除。新增两尺寸真实拒绝和离线验证仍保留原断言。
 
 Swarm 客户端测试使用本轨精确已跟踪的 `AGENTS.md`，通过生产资料导入、空间引用、Goal、Proposal、人类批准、Mission 和 WorkItem 接口建立实际记录，逐个 `event_id` 在真实 outbox 中定位，HTTP / SQLite 重启后完整核对固定版本。Context 测试保留实际未配置的 501、实际不存在的 404、权限拒绝 403、CSRF、命令身份、取消和服务断开；没有把未配置来源记为正向成功。显示测试仅验证明确参数，不产生来源或执行事实。
@@ -23,8 +25,15 @@ Swarm 客户端测试使用本轨精确已跟踪的 `AGENTS.md`，通过生产�
 | `npx vitest run src/components/displayContract.test.tsx src/pages/workspace/relayPresentation.test.ts src/pages/workspace/relayCommand.test.ts src/pages/workspace/relayFacts.test.tsx src/pages/workspace/relayDisplayContract.test.tsx` | 5 文件、37 PASS，EXIT0；包含与前行重合的收据参数测试，不累加为独立总数 | `display-vitest.log` |
 | `npx tsc --ignoreConfig --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --lib ES2022,DOM --types vite/client --jsx react-jsx --skipLibCheck --allowJs src/api/swarm.test.ts src/api/workspaceContext.test.ts src/pages/workspace/relayIntentPanel.tsx e2e/relay-runtime.spec.ts` | EXIT0；原缺少 CSS 类型声明的检查命令首失败保留 | `focused-typecheck-vite-types.log`、`focused-typecheck.log` |
 | `npx playwright test e2e/relay-runtime.spec.ts --grep '真实空会话初始化权限拒绝\|真实网络断开的初始化未知锁' --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/prepare-artifacts` | EXIT1；原 `webServer` 120 秒准备超时，未进入四项测试，零项通过 | `prepare-playwright.log`、`astrocyte-dev-PamDCI` |
+| 同一 Prepare 命令在准确 B 修复组合上执行，输出改为 `prepare-helper-fixed-artifacts` | 两种窗口全部 4 PASS，1.0 分钟、EXIT0、零 skip；真实权限拒绝及离线未知锁，未启动原生会话 | `prepare-helper-fixed-playwright.log` |
+| `npx playwright test e2e/preview-design.spec.ts e2e/navigation.spec.ts --workers=1 --reporter=list --output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/default-helper-fixed-artifacts` | 设计与导航两文件完整 100 项：92 PASS / 8 FAIL，6.0 分钟、EXIT1、零 skip；全部自然完成 | `default-helper-fixed-playwright.log`、`default-helper-fixed-artifacts` |
+| `npx playwright test --list --reporter=list` | EXIT0；仅收集当前默认 35 文件、308 项，没有执行来源、浏览器或模型动作 | `default-case-list.log` |
 
-默认 Playwright 准备期间，实际 Go 在 `00:44:02+08:00` 的 health 返回 200，Vite 已公告 `vite_listening` 和 `vite_ready`，随后仍未通过默认入口的 HTTP 就绪检查。完整 stdout / stderr 与独立 SQLite 保留，已交唯一 B 负责人调查初始化前 HTTP 生命周期。F 没有修改 helper、端口选择、120 秒期限、断言或重试，没有重复运行同一失败。Prepare 两尺寸四项及默认完整 100 项尚未通过；真实 CLI / 模型正向和最终组合保持未完成。
+首次默认 Playwright 准备期间，实际 Go 在 `00:44:02+08:00` 的 health 返回 200，Vite 已公告 `vite_listening` 和 `vite_ready`，随后仍未通过默认入口的 HTTP 就绪检查。完整 stdout / stderr 与独立 SQLite 保留；准确消费 B 修复后的 Prepare 四项已通过，没有重跑未消费修复的旧源码。
+
+设计与导航的八项失败均发生在页面断言。两种窗口各三项涉及 Swarm 的已有任务入口、任务 / 工作项 / 产物空集合及实际 403 逐视图传播，已交原 UI 负责人返修；各一项是时间线旧断言，需在准确 UI 修复提交消费后迁移到真实事件读取与空集合断言。当前公开 `SwarmMissionDetail.timeline` 已支持实际保存的事件，页面不能用失实的未接入说明满足旧断言。无虚构事件、unknown、错误恢复和空状态覆盖继续保留，拓扑数据缺口单独处理。
+
+两文件 100 项结果不能代表全部默认 E2E。原完整 280 项首结果 `203 PASS / 41 FAIL / 32 既有 SKIP / 4 NOT_RUN` 保留。当前默认已增至 308 项，完整运行仍需获准的 Relay 实际 URL / GetEvent / 各场景任务身份与单人执行窗口、真实公开论文输入、当前 progress / video / cognition 来源，以及受控浏览器和元数据目录许可。没有增加 skip，没有隐式启动 CLI 或模型，没有重发已经成功的任务；真实 CLI / 模型正向、当前全部默认 E2E 和最终组合仍未完成。
 
 ## 2026-10-16 恢复后的准确生成契约
 
