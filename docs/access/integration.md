@@ -15,6 +15,7 @@
 | F 同一产品检查辅助脚本，七件 web/e2e 文件 | SOURCE `8bd599c8a34661dc9f4a47398212b387278a483f` | `79b2de5e318e900269230bfc5b12c1a5aea9f16b` |
 | F 分离旧记录与新输出目录，增加只读 Stored 核查 | SOURCE `6503077885aee63dd97f9642deab66ba57167925` | `76030ec7846d41b709a0f21d6d3761ba4d7bcae0` |
 | F 当前持久化恢复的独立报告 | REPORT `da692e8dd1a29e5621d127a4bea4fbc9ef7ab21a` | `deec6c7b27510f2139a910508a268f6d2585dff2` |
+| B 生产启动检查的阶段与子进程原始错误 | SOURCE `fbb32d6520f501d8b1cd5ea38d978e56ac16d41d` / REPORT `c563ff9498d4e54f095a1bddf3c46d2cd869ea85` | `1c27477272c8d6e8aeb6dac5302bacb65fef614a` |
 
 B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约消费、token 撤销争用检查和 cleanup batch 配置；上述范围已核实际合并差异。B 原 native WIP 保持原树。F 的 inspect 写入脚本保留其原成功记录，本阶段没有执行这些脚本；同实例实际 HTTP / DOM / SQLite 操作仍由原 F 独占。每个组合 SOURCE 均已立即普通 push；`deec6c7` 的远端分支已独立读回同值。
 
@@ -27,7 +28,9 @@ B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约�
 | `cffac367`：`go version -m D:/Astrocyte-agent-assets/20261015/integration/build/dist/astrocyte.exe` | 实际 revision 为 `cffac3671f21dbf90df9eaa2804a2eb5e070d332`，`vcs.modified=false`。 |
 | `79b2de5`：`pnpm --dir web typecheck`、`pnpm --dir web lint` | 两命令均实际 EXIT0；日志为 `c16-product-static-79b2de5-typecheck.log`、`c16-product-static-79b2de5-lint.log`。 |
 | `76030ec`：`pnpm --dir web typecheck`、`pnpm --dir web lint` | 新增四件后另行检查，两命令均实际 EXIT0，检查前后 SOURCE 同值；日志为 `c16-product-static-76030ec-typecheck.log`、`c16-product-static-76030ec-lint.log`。 |
-| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合已普通 push，远端为 `deec6c7b27510f2139a910508a268f6d2585dff2`；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
+| `1c274772`：原 runner `-Step build -RunName c16-product-build-1c274772` | 原 `pnpm build` EXIT0 / 31.0071399 秒，source / source_after 同值；server / MCP / Sleep / TypeScript / Vite 完成，实际 Go revision 同值、modified=false。原件为该 RunName 目录 `result.json`、`environment.json`、`build.log`。 |
+| `1c274772`：`go test -mod=readonly -p=2 -tags=repository_context_live ./cmd/server -run '^TestRepository(ContextConfig(ExplicitAndUnavailable\|RejectsAmbiguousConfiguration\|RejectsActualUnavailableDependencies\|ActualNodeSyntaxRefusal)\|CleanupBatchTrustedConfiguration)$' -v -count=1` | 实际 EXIT0，5 项主检查及 8 项配置子检查，包 4.016 秒；实际 Node / SDK 后以原 Go 文件触发 Node 格式拒绝，阶段与原错误断言均通过。检查前后准确 SOURCE 同值，日志 `c16-product-config-1c274772.log`。 |
+| 普通 push、`git ls-remote origin refs/heads/songconmaisaix31-design/works-relay-integration`、工作区与 diff 核查 | 当前组合已普通 push，远端为 `1c27477272c8d6e8aeb6dac5302bacb65fef614a`；各轮消费结束无未合并路径，适用 `git diff --check` 通过。独立报告提交另在交接消息登记。 |
 
 本轮全部新增验证原件位于 `D:/Astrocyte-agent-assets/20261015/integration/`。构建沿用原 dist、web/dist、.verification 到 D 盘的 junction，Go 缓存与临时编译目录为已确认的 D 盘位置；只设置验证子进程环境。没有改变全局 HOME、身份配置或 TEMP。
 
@@ -43,6 +46,10 @@ B 的准确 REPORT 祖先同时带入已提交的 private prepared input 契约�
 ### 运行交接与真实剩余项
 
 `cffac367` 构建产物已通过 M-release 交原 H。H 本人确认复制到其稳定 `shared-product-ad8413/versions/cffac367`，复制前后实际 Go revision 同值、modified=false、index 存在，随后停止读取并归还 I 的产物窗口。后继 F 脚本和文档没有引起重复产品构建，`cffac367` 的 build 结果仅归该准确来源。
+
+B 后继准确 REPORT `c563ff9` 已无冲突普通消费，其祖先包含原作者已提交 fixed native input SOURCE `759764900bc45ed4c58efaad79ae9d20d421b834` / REPORT `9a96c365021c826e90a6271d7a3f8571fb0c780f`。实际 12 件合并差异已核，不含原四件 experience WIP。原生 Prepare / 单次发送和正向模型没有因消费这些已提交代码取得实际通过记录。
+
+`1c274772` 第一轮普通 push 的退出未捕获，结束后远端仍为 `7da8d4c`，该轮保持 EXIT UNKNOWN。确认没有在途同命令进程后，第二轮普通 push 实际 EXIT0，日志 `c16-product-push-1c274772-second.log`；随后的独立远端读回与本地精确同值。`1c274772` 必要生产构建通过后，已交 H 读取同一 I 产物目录，归还前保持不覆盖。以上配置检查显式使用 P 已准备的 `runtime-sanitized-third/runtime` 下 Node、官方 SDK 和桥脚本，没有启动额外模型、登记控制器或修改原依赖。
 
 同一产品 64505 的 Node / SDK probe 首 EXIT1、同一 D 盘 SQLite 及既有业务保存结果保留；H / B 继续修复生产启动与装配，三个同 Dir / 白名单环境 probe 后继 EXIT0 由原 H 独立登记。当前页面、HTTP、清理正向和完成来源的完整结果仍待原作者交付，I 没有另起共享服务、读正式库、登记控制器或发送模型输入。Jev 密钥、Laya 语言、Agent completion action 等待定项保持原决定状态；受限 Codex 工具关闭要求和 unknown 不重发继续适用。
 
