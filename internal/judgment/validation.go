@@ -20,6 +20,11 @@ func conflict(message string) error {
 }
 
 func ValidateRequest(r JudgmentRequest) error {
+	if r.Sources != nil {
+		if err := ValidateSourceReferences(*r.Sources); err != nil {
+			return err
+		}
+	}
 	if r.SchemaVersion != "1.0" || r.ProjectID == "" || r.WorktreeID == "" || r.SnapshotID == "" {
 		return invalid("judgment requires schema 1.0 and explicit project/worktree/snapshot")
 	}
@@ -138,6 +143,13 @@ func ValidateBackendInputBytes(input BackendInput) error {
 }
 
 func ValidatePolicy(p Policy) error {
+	for _, sources := range []*SourceReferences{p.Sources, p.ExternalSources} {
+		if sources != nil {
+			if err := ValidateSourceReferences(*sources); err != nil {
+				return err
+			}
+		}
+	}
 	if p.ProjectID == "" || len(p.Languages) == 0 || p.Revision < 1 || p.ProjectSettingsRevision < 1 || p.WorktreeID == "" || p.SnapshotID == "" {
 		return invalid("policy requires project and allowed languages")
 	}
@@ -181,6 +193,16 @@ func ValidatePolicy(p Policy) error {
 		if err := validRef(ref); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func ValidateSourceReferences(refs SourceReferences) error {
+	if refs.Goal.ID == "" || refs.Goal.Revision < 1 || refs.Taste.ID == "" || refs.Taste.Version < 1 {
+		return invalid("judgment sources require the actual fixed Goal and complete TasteProfile references")
+	}
+	if refs.Ranking != nil && (refs.Ranking.ID == "" || refs.Ranking.Version < 1) {
+		return invalid("an explicitly participating ranking profile requires its actual id and version")
 	}
 	return nil
 }

@@ -112,6 +112,13 @@ func TestActualLayaJudgmentServiceSafety(t *testing.T) {
 		t.Fatalf("actual collapsed documentation options did not abstain: %+v, %v", optionResult, err)
 	}
 	opportunity := actualOpportunity(t, f, ref, "Verify public CPU export documentation", "How does the documented export verify the local runtime graphs?")
+	selectedPolicy := policies[judgment.Choice]
+	selectedPolicy.Revision++
+	selectedPolicy, _, _ = actualSourcePolicy(t, f, selectedPolicy, questions[0], ref, "typescript")
+	if err := f.access.SetPolicy(ctx, f.actor, selectedPolicy, selectedPolicy.Revision-1); err != nil {
+		t.Fatal(err)
+	}
+	policies[judgment.Choice] = selectedPolicy
 	delegation, err := judgment.NewDelegationService(f.db, service, f.access, adapter.AttentionOpportunities{Attention: f.attention})
 	if err != nil {
 		t.Fatal(err)

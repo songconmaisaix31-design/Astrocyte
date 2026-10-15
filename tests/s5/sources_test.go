@@ -12,6 +12,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/judgment"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
@@ -66,7 +67,7 @@ func TestActualGoalAndRankingSources(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = f.access.ReadGoal(ctx, f.actor, project.ID, goalRef)
-	requireServiceCode(t, err, apierrors.VersionConflict)
+	requireServiceCode(t, err, apierrors.ContextStale)
 	historical, err := s2.ReadGoal(ctx, f.caller, goal.ID, goal.Revision)
 	if err != nil || historical.Title == updated.Title {
 		t.Fatal("the original immutable Goal revision was changed", err)
@@ -92,4 +93,54 @@ func TestActualGoalAndRankingSources(t *testing.T) {
 	_, err = f.access.ReadRanking(ctx, f.actor, project.ID, disabled.Profile.ID, disabled.Profile.Version)
 	requireServiceCode(t, err, apierrors.ApprovalRequired)
 	t.Logf("actual Goal revisions=%d/%d ranking versions=%d/%d/%d; immutable history and same transaction checked", goal.Revision, updated.Revision, profile.Profile.Version, changed.Profile.Version, disabled.Profile.Version)
+}
+
+func TestActualDelegationSourceSnapshot(t *testing.T) {
+	root := actualRunDirectory(t)
+	f := newFixture(t, filepath.Join(root, "state.sqlite"), filepath.Join(root, "objects"))
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	ref := f.importOfficialReadme(t)
+	project := f.project(t, ref, "astro-a")
+	policy := f.policy(t, project, judgment.Truth, judgment.RuleBackend, "rule:all_evidence_present/v1")
+	if err := f.access.SetPolicy(ctx, f.actor, policy, 0); err != nil {
+		t.Fatal(err)
+	}
+	f.access.Rules = f.db
+	delegation, err := judgment.NewDelegationService(f.db, actualService(t, f), f.access, adapter.AttentionOpportunities{Attention: f.attention})
+	if err != nil {
+		t.Fatal(err)
+	}
+	accepted := 1.0
+	rule := judgment.DelegationRule{ID: uuid.NewString(), ProjectID: project.ID, WorkflowID: uuid.NewString(), OwnerID: f.actor.ID, Revision: 1, State: "disabled", Purpose: judgment.AdmissionPurpose, Question: judgment.Question{ID: "official-source-availability", Type: judgment.Truth, Instructions: "Are all fixed official source sections available?", Rule: "all_evidence_present"}, PolicyRevision: policy.Revision, Language: "en", Materials: []judgment.EvidenceRef{ref}, AdmissionValueMin: &accepted, AdmissionValueMax: &accepted, ReviewConditions: []string{"fixed_inputs"}}
+	if err := delegation.SetRule(ctx, f.actor, rule, 0); err != nil {
+		t.Fatal(err)
+	}
+	waits := f.db.Conn().Stats().WaitCount
+	err = f.db.WithJudgmentTx(ctx, func(ctx context.Context) error {
+		actual, err := f.access.ReadDelegationSource(ctx, f.actor, project.ID, rule.ID, rule.WorkflowID, rule.Revision)
+		if err != nil {
+			return err
+		}
+		if actual.ID != rule.ID || actual.State != "disabled" || actual.OwnerID != f.actor.ID {
+			t.Fatal("the actual stored disabled delegation source changed")
+		}
+		return nil
+	})
+	if err != nil || f.db.Conn().Stats().WaitCount != waits {
+		t.Fatal("delegation source did not reuse the actual SQLite transaction", err)
+	}
+	_, err = f.access.ReadDelegationSource(ctx, f.actor, project.ID, rule.ID, uuid.NewString(), rule.Revision)
+	requireServiceCode(t, err, apierrors.ScopeDenied)
+	paused, err := delegation.SetState(ctx, f.actor, rule.ID, rule.Revision, "paused")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = f.access.ReadDelegationSource(ctx, f.actor, project.ID, rule.ID, rule.WorkflowID, rule.Revision)
+	requireServiceCode(t, err, apierrors.VersionConflict)
+	actual, err := f.access.ReadDelegationSource(ctx, f.actor, project.ID, paused.ID, paused.WorkflowID, paused.Revision)
+	if err != nil || actual.State != "paused" {
+		t.Fatal("the new explicit paused source did not retain its actual state", err)
+	}
+	t.Log("actual disabled/paused delegation snapshots, fixed workflow, current revision and same SQLite transaction passed; source reads grant no admission")
 }

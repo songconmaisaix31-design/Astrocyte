@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
+	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/judgment"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -19,6 +20,8 @@ type ProjectAuthorization struct {
 	Snapshots  workspace.ProjectSnapshotProvider
 	Goals      GoalReader
 	Ranking    RankingReader
+	Rules      judgment.DelegationRepository
+	Taste      TasteReader
 }
 
 func authorizationDenied(message string) error {
@@ -65,8 +68,15 @@ func (a *ProjectAuthorization) Resolve(ctx context.Context, actor judgment.Actor
 	if project.Settings.Revision != policy.ProjectSettingsRevision {
 		return input, &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "judgment policy targets old project settings"}
 	}
+	if request.Versions != policy.Versions || request.WorktreeID != policy.WorktreeID || request.SnapshotID != policy.SnapshotID {
+		return input, &apierrors.ServiceError{Code: apierrors.VersionConflict, Message: "judgment request targets a superseded policy or snapshot version"}
+	}
 	input.Policy, input.WorktreeID, input.SnapshotID = policy, policy.WorktreeID, policy.SnapshotID
 	caller := domain.Caller{ID: actor.ID, Kind: actor.Kind, ProjectID: actor.ProjectID}
+	input.Sources, err = a.readSources(ctx, actor, policy)
+	if err != nil {
+		return input, err
+	}
 	if err := a.Snapshots.ValidateProjectSnapshot(ctx, caller, policy.Snapshot); err != nil {
 		return input, err
 	}
@@ -129,6 +139,9 @@ func (a *ProjectAuthorization) setPolicy(ctx context.Context, actor judgment.Act
 	if err := a.Snapshots.ValidateProjectSnapshot(ctx, domain.Caller{ID: actor.ID, Kind: actor.Kind}, policy.Snapshot); err != nil {
 		return err
 	}
+	if _, err := a.readSources(ctx, actor, policy); err != nil {
+		return err
+	}
 	// 外发许可逐引用检查当前范围，配置模型名称不会扩大资料权限。
 	for _, ref := range policy.ExternalEvidence {
 		material, err := a.References.ReadSelected(ctx, domain.Caller{ID: actor.ID, Kind: actor.Kind}, project.SpaceID, domain.FixedReference{MaterialID: ref.MaterialID, Revision: ref.Revision}, false)
@@ -155,7 +168,30 @@ func (a *ProjectAuthorization) AuthorizeRecord(ctx context.Context, actor judgme
 	if err != nil {
 		return err
 	}
-	for _, ref := range request.EvidenceRefs {
+	references := append([]judgment.EvidenceRef{}, request.EvidenceRefs...)
+	if request.Sources != nil {
+		if a.Goals == nil || a.Taste == nil {
+			return apierrors.NewUnsupported("historical_judgment_sources")
+		}
+		goal, err := a.Goals.ReadGoal(ctx, domain.Caller{ID: actor.ID, Kind: actor.Kind, ProjectID: actor.ProjectID}, request.Sources.Goal.ID, request.Sources.Goal.Revision)
+		if err != nil {
+			return err
+		}
+		if goal.ProjectID != request.ProjectID || goal.ID != request.Sources.Goal.ID || goal.Revision != request.Sources.Goal.Revision {
+			return authorizationDenied("historical judgment Goal belongs to another project or fixed revision")
+		}
+		taste, err := a.Taste.ReadTasteProfile(ctx, attention.Principal{ID: actor.ID, Kind: actor.Kind}, request.Sources.Taste.ID, request.Sources.Taste.Version)
+		if err != nil {
+			return err
+		}
+		if !taste.Configured || taste.Fixed == nil || taste.Fixed.ID != request.Sources.Taste.ID || taste.Fixed.Version != request.Sources.Taste.Version {
+			return authorizationDenied("historical judgment complete taste source is unavailable")
+		}
+		for _, example := range taste.Fixed.Examples {
+			references = append(references, judgment.EvidenceRef{MaterialID: example.MaterialID, Revision: example.Revision, Digest: example.ContentDigest})
+		}
+	}
+	for _, ref := range references {
 		material, err := a.References.ReadSelected(ctx, domain.Caller{ID: actor.ID, Kind: actor.Kind, ProjectID: actor.ProjectID}, project.SpaceID, domain.FixedReference{MaterialID: ref.MaterialID, Revision: ref.Revision}, false)
 		if err != nil {
 			return err

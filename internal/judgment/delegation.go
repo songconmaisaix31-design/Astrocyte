@@ -96,6 +96,9 @@ func (s *DelegationService) policy(ctx context.Context, actor Actor, rule Delega
 	if policy.Revision != rule.PolicyRevision {
 		return policy, conflict("delegation targets a different judgment policy revision")
 	}
+	if rule.State == "active" && policy.Sources == nil {
+		return policy, &apierrors.ServiceError{Code: apierrors.ApprovalRequired, Message: "automatic use requires the explicitly selected current Goal and complete taste profile"}
+	}
 	if !slices.Contains(policy.Languages, rule.Language) {
 		return policy, &apierrors.ServiceError{Code: apierrors.ScopeDenied, Message: "delegation language is outside the explicitly selected policy"}
 	}
@@ -103,7 +106,7 @@ func (s *DelegationService) policy(ctx context.Context, actor Actor, rule Delega
 }
 
 func delegationRequest(policy Policy, rule DelegationRule, refs []EvidenceRef, binding *DecisionContext) JudgmentRequest {
-	return JudgmentRequest{SchemaVersion: "1.0", ProjectID: rule.ProjectID, WorktreeID: policy.WorktreeID, SnapshotID: policy.SnapshotID, Question: rule.Question, EvidenceRefs: refs, Language: rule.Language, Backend: policy.Backend, ExternalScope: policy.ExternalScope, Versions: policy.Versions, Budget: policy.Budget, Context: binding}
+	return JudgmentRequest{SchemaVersion: "1.0", ProjectID: rule.ProjectID, WorktreeID: policy.WorktreeID, SnapshotID: policy.SnapshotID, Question: rule.Question, EvidenceRefs: refs, Language: rule.Language, Backend: policy.Backend, ExternalScope: policy.ExternalScope, Versions: policy.Versions, Budget: policy.Budget, Context: binding, Sources: policy.Sources}
 }
 
 func (s *DelegationService) SetRule(ctx context.Context, actor Actor, rule DelegationRule, expected int) error {

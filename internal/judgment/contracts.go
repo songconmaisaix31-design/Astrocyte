@@ -2,6 +2,7 @@ package judgment
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
@@ -71,19 +72,41 @@ type Budget struct {
 	MaxOutputTokens int   `json:"max_output_tokens"`
 }
 
+type ProfileReference struct {
+	ID      string `json:"id"`
+	Version int    `json:"version"`
+}
+
+type SourceReferences struct {
+	Goal    domain.GoalReference `json:"goal"`
+	Taste   ProfileReference     `json:"taste"`
+	Ranking *ProfileReference    `json:"ranking,omitempty"`
+}
+
+// 固定内容只从实际领域 reader 取得，调用方不能提交替代快照。
+type SourceSnapshot struct {
+	References  SourceReferences `json:"references"`
+	Goal        domain.Goal      `json:"goal"`
+	Taste       json.RawMessage  `json:"taste"`
+	Ranking     json.RawMessage  `json:"ranking,omitempty"`
+	Delegations []DelegationRule `json:"delegations"`
+	Examples    []Evidence       `json:"examples"`
+}
+
 type JudgmentRequest struct {
-	SchemaVersion string           `json:"schema_version"`
-	ProjectID     string           `json:"project_id"`
-	WorktreeID    string           `json:"worktree_id"`
-	SnapshotID    string           `json:"snapshot_id"`
-	Question      Question         `json:"question"`
-	EvidenceRefs  []EvidenceRef    `json:"evidence_refs"`
-	Language      string           `json:"language"`
-	Backend       Backend          `json:"backend"`
-	ExternalScope string           `json:"external_scope"`
-	Versions      Versions         `json:"versions"`
-	Budget        Budget           `json:"budget"`
-	Context       *DecisionContext `json:"context,omitempty"`
+	SchemaVersion string            `json:"schema_version"`
+	ProjectID     string            `json:"project_id"`
+	WorktreeID    string            `json:"worktree_id"`
+	SnapshotID    string            `json:"snapshot_id"`
+	Question      Question          `json:"question"`
+	EvidenceRefs  []EvidenceRef     `json:"evidence_refs"`
+	Language      string            `json:"language"`
+	Backend       Backend           `json:"backend"`
+	ExternalScope string            `json:"external_scope"`
+	Versions      Versions          `json:"versions"`
+	Budget        Budget            `json:"budget"`
+	Context       *DecisionContext  `json:"context,omitempty"`
+	Sources       *SourceReferences `json:"sources,omitempty"`
 }
 
 type OptionCoverage struct {
@@ -126,6 +149,7 @@ type JudgmentResult struct {
 	CreatedAt          time.Time                 `json:"created_at"`
 	CacheHit           bool                      `json:"cache_hit"`
 	Context            *DecisionContext          `json:"context,omitempty"`
+	Sources            *SourceReferences         `json:"sources,omitempty"`
 }
 
 type Policy struct {
@@ -146,6 +170,8 @@ type Policy struct {
 	MinConfidence           *float64                      `json:"min_confidence"`
 	TruthAcceptMin          *float64                      `json:"truth_accept_min"`
 	TruthAcceptMax          *float64                      `json:"truth_accept_max"`
+	Sources                 *SourceReferences             `json:"sources,omitempty"`
+	ExternalSources         *SourceReferences             `json:"external_sources,omitempty"`
 }
 
 type AuthorizedInput struct {
@@ -154,6 +180,7 @@ type AuthorizedInput struct {
 	Evidence      []Evidence
 	WorktreeID    string
 	SnapshotID    string
+	Sources       *SourceSnapshot
 }
 
 // 权限、固定引用和策略从真实业务来源读取，传输内容不能自行批准。

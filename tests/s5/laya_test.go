@@ -50,7 +50,11 @@ func actualLayaConfig(t *testing.T, checkpoint, language string, round int) adap
 	if err != nil {
 		t.Fatal(err)
 	}
-	stderr, err := os.CreateTemp(filepath.Join(root, ".verification", "s5"), "go-laya-"+checkpoint+"-"+language+"-*.log")
+	evidenceRoot := os.Getenv("ASTROCYTE_S5_RUN_ROOT")
+	if !filepath.IsAbs(evidenceRoot) {
+		t.Fatal("ASTROCYTE_S5_RUN_ROOT must be an explicit absolute owned evidence directory")
+	}
+	stderr, err := os.CreateTemp(evidenceRoot, "go-laya-"+checkpoint+"-"+language+"-*.log")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/judgment"
@@ -21,8 +20,12 @@ import (
 func actualRunDirectory(t *testing.T) string {
 	t.Helper()
 	liveEnabled(t)
-	root := filepath.Join(s5Root(t), ".verification", "s5", "service-"+uuid.NewString())
-	if err := os.Mkdir(root, 0700); err != nil {
+	base := os.Getenv("ASTROCYTE_S5_RUN_ROOT")
+	if !filepath.IsAbs(base) {
+		t.Fatal("ASTROCYTE_S5_RUN_ROOT must be an explicit absolute owned evidence directory")
+	}
+	root, err := os.MkdirTemp(base, "service-")
+	if err != nil {
 		t.Fatal(err)
 	}
 	return root
@@ -38,7 +41,7 @@ func actualService(t *testing.T, f *fixture, models ...judgment.Model) *judgment
 }
 
 func requestForPolicy(policy judgment.Policy, question judgment.Question, refs ...judgment.EvidenceRef) judgment.JudgmentRequest {
-	return judgment.JudgmentRequest{SchemaVersion: "1.0", ProjectID: policy.ProjectID, WorktreeID: policy.WorktreeID, SnapshotID: policy.SnapshotID, Question: question, EvidenceRefs: refs, Language: policy.Languages[0], Backend: policy.Backend, ExternalScope: policy.ExternalScope, Versions: policy.Versions, Budget: policy.Budget}
+	return judgment.JudgmentRequest{SchemaVersion: "1.0", ProjectID: policy.ProjectID, WorktreeID: policy.WorktreeID, SnapshotID: policy.SnapshotID, Question: question, EvidenceRefs: refs, Language: policy.Languages[0], Backend: policy.Backend, ExternalScope: policy.ExternalScope, Versions: policy.Versions, Budget: policy.Budget, Sources: policy.Sources}
 }
 
 func requireServiceCode(t *testing.T, err error, codes ...apierrors.Code) {

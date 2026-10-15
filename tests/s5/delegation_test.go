@@ -49,6 +49,8 @@ func TestActualDelegationBindingsAndAdmission(t *testing.T) {
 	ref := f.importOfficialReadme(t)
 	project := f.project(t, ref, "astro-a")
 	policy := f.policy(t, project, judgment.Truth, judgment.RuleBackend, "rule:all_evidence_present/v1")
+	question := judgment.Question{ID: "fixed-source-availability", Type: judgment.Truth, Instructions: "Are all selected fixed official source sections present?", Rule: "all_evidence_present"}
+	policy, _, _ = actualSourcePolicy(t, f, policy, question, ref, "1")
 	if err := f.access.SetPolicy(ctx, f.actor, policy, 0); err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +62,7 @@ func TestActualDelegationBindingsAndAdmission(t *testing.T) {
 	first := actualOpportunity(t, f, ref, "Verify official ONNX export parity", "Which numerical tolerance does the official export verify?")
 	second := actualOpportunity(t, f, ref, "Verify official local CPU inference", "Which local runtime loads the exported CPU graphs?")
 	accepted := 1.0
-	rule := judgment.DelegationRule{ID: uuid.NewString(), ProjectID: project.ID, WorkflowID: uuid.NewString(), OwnerID: f.actor.ID, Revision: 1, State: "disabled", Purpose: judgment.AdmissionPurpose, Question: judgment.Question{ID: "fixed-source-availability", Type: judgment.Truth, Instructions: "Are all selected fixed official source sections present?", Rule: "all_evidence_present"}, PolicyRevision: policy.Revision, Language: "en", Materials: []judgment.EvidenceRef{ref}, AdmissionValueMin: &accepted, AdmissionValueMax: &accepted, ReviewConditions: []string{"fixed_inputs"}}
+	rule := judgment.DelegationRule{ID: uuid.NewString(), ProjectID: project.ID, WorkflowID: uuid.NewString(), OwnerID: f.actor.ID, Revision: 1, State: "disabled", Purpose: judgment.AdmissionPurpose, Question: question, PolicyRevision: policy.Revision, Language: "en", Materials: []judgment.EvidenceRef{ref}, AdmissionValueMin: &accepted, AdmissionValueMax: &accepted, ReviewConditions: []string{"fixed_inputs"}}
 	if err := delegation.SetRule(ctx, f.actor, rule, 0); err != nil {
 		t.Fatal(err)
 	}

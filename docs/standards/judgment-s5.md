@@ -1,8 +1,8 @@
 # S5 判断实施与实际验证
 
-固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_8ff0e4770bd8`，接管 HEAD `d85fa5e80350ca2d45ec67e6bbc5f7f4c47bbb73`；当前机制 SOURCE `d73507a8a26ce49b92ec8504649738f336bcdfd1`，真实委托测试 SOURCE `1e89ef832b77ae31d75d9db920e7186773b75c94`。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；协调者另核实际 projection `codex/gpt-6.1-sol`。
+固定工作树 `release-judgment-20261015`，分支 `songconmaisaix31-design/release-judgment-20261015`，初始 SOURCE `da79452d1735f8fceca103aaf9d10bb53182f1f5`。2026-10-16 当前恢复 Task `task_1d3e15a66b2a` / Dispatch `ctx_fc76cd365979`，接管 HEAD `03e2e511de290454d3f21a7803f291bbfe7614a7` 及原十六件 S5 修改，协调者 `msg_950aee66a55d` / `msg_68b18070297c` 确认唯一写入者与接续授权。实际 Orca `terminal show` 为 Codex / GPT-6.1-Sol xhigh fast；原机制、委托、模型与各阶段精确来源见对应 REPORT。
 
-仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。当前 S5 handler 前缀归本执行者，开始写入前等待 H/B 本人确认没有现有修改；公共字段仍由 H 确认。正式 V4 与认知冻结域保持原授权边界。
+仅修改 `internal/judgment/**`、`internal/adapters/judgment/**`、`internal/adapters/sqlite/judgment_*.go`、`internal/adapters/httpapi/judgment_*.go`、`tests/s5/**` 与本文。Go/Node 共享依赖、迁移归 B；公共 HTTP/OpenAPI/main 装配归 H，Web 与生成客户端归 F。H/B 已本人确认并归还判断 handler 前缀，原 S5 持续负责；新增公共字段和完整 Taste 路由由 H 确认。正式 V4 与认知冻结域保持原授权边界。
 
 ## 官方输入与资产
 
@@ -90,10 +90,10 @@ multilingual 同精确 HF revision 真实下载并 strict=True 匹配，首次�
 | Node/Go 常驻 RPC / 重启 | PASS，English/en、multilingual/en、zh；独占 D 资产实际重载/重启 PASS |
 | 断网 | 进程 HTTP 出口拒绝、English 三题型与双 PID 重启 PASS；OS 隔离 NOT_RUN |
 | Jev 真 API/model/usage | NOT_RUN，缺本进程 secret |
-| 真实 SQLite/撤销/缓存/反馈重启 | PASS；原 HTTP 会话和资料导入实际运行，判断公共 HTTP 尚未运行 |
+| 真实 SQLite/撤销/缓存/反馈重启 | PASS；原 HTTP 会话、资料导入和判断 handler 实际运行；H 生产组装 NOT_RUN |
 | AT10 | 判断接入 PASS：两个实际公开 worktree 与未提交 README 变化隔离；不替代 S4 索引全项 |
-| AT11 | 实际 Laya 判断服务的三题型、截断/options、缺证据、未授权外发、worker 故障不缓存 PASS；新增低置信的绑定消费复验中，公共 HTTP 尚待 |
-| AT12 | Policy 中显式五版本变更使旧缓存失效 PASS；实际 Goal/profile 自身接口变更的版本来源待确认，未计通过 |
+| AT11 | 既有真实 Laya 三题型、截断/options、低置信、缺证据、未授权外发、worker 故障不缓存 PASS；完整 Sources 的实际模型输入 PASS；Jev、OS 隔离和 H 生产组装按真实剩余分别登记 |
+| AT12 | 实际 Goal、完整 Taste 的 rubric/example/delegation、被引用规则和 Ranking 各自变化后，旧 cache/proof 在 Policy 更新前拒绝 PASS；完整 Sources 的真实模型输入、HTTP 往返/独立失效与 SQLite 重启 PASS；H 生产组装 NOT_RUN |
 
 SOURCE 和独立 REPORT 由各阶段普通提交/push 后登记完整 SHA；当前不能宣称 S5 完成。
 
@@ -241,3 +241,47 @@ H `msg_17b68cf74737` 确认真实 Goal/Taste 及显式 Ranking 引用的语义�
 HTTP `snapshot.root` 保持现有字段，值固定为空字符串。PUT 策略拒绝非空 `snapshot.root`；内部策略从已鉴权的实际注册项目取得 Root，再由原 S4 provider 校验完整固定快照。所有测试中的快照、策略、结果和反馈响应逐字节检查实际项目绝对路径没有进入响应；保存的内部快照继续含真实路径。H `msg_fd4aaf71c092` 已确认该边界和字段兼容处理，准确 SOURCE 后同步 schema。
 
 首轮 handler 实际 `2.12s PASS`，安全快照回传策略复验 `1.84s PASS`；两件原日志 `.verification/s5/actual-http-handler-ctx_8ff-first.log`、`actual-http-safe-snapshot-ctx_8ff-first.log` 保留。后续同源码组合命令 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./internal/adapters/httpapi ./tests/s5 -run '^(TestJudgmentActualHTTPRulesFeedbackAndRestart|TestActualGoalAndRankingSources|TestActualDelegationBindingsAndAdmission)$' -count=1 -v -timeout 2m` 全部 PASS，handler `1.93s`、委托 `10.02s`、来源 `0.15s`，日志 `actual-handler-core-ctx_8ff-first.log`。这些规则结果与原完整品味来源的 AT12 分别登记；完整 Sources 接入继续。
+
+## 完整 Sources、领域来源与实际失效检查
+
+HTTP handler SOURCE `c26c3873f216d75f06c32dca576dab263c3aed68` 已普通 push 并核远端同值；包含 PUT 策略非空 Root 拒绝的最终 handler 复验 `2.63s PASS`，原件 `actual-http-root-reject-ctx_8ff-first.log`。其后精确消费 S2 SOURCE `ee7889cf04383162e160ae30544eb324257ed45c` 为本树 `7d83003`，唯一 `tests/s2/approval_test.go` 冲突由原 S2 在模块批准的单文件范围编辑/stage；其本人停止写入归还、模块独核 U0 后，`msg_3f895002c9db` 放行本人唯一 continue。B SOURCE `41602e6f2a14a75e3765ef0a72f7afadf1856bbb` 消费为 `03e2e51`，新增正式 026 两表与完整 TasteProfile 的领域/存储。没有改写 B/S2 源码、依赖或迁移。
+
+请求、策略与结果增加可空 `sources`：明确 Goal `{id, revision}`、完整 Taste `{id, version}`，以及仅在参与判断时显式提供的 Ranking `{id, version}`。`GoalReader` 使用 S2 的固定历史读取及 `CurrentGoalReader.ReadCurrentGoalSnapshot`，核当前 active Goal 和实际项目 settings revision。`TasteReader.ReadTasteProfile` 读取 B 的固定与当前不可变版本，核 configured/enabled、实际 rubric、固定示例资料和 delegation 引用；当前判断只接受 `choice/score/truth`。原 Ranking reader 使用真实权重及 enabled/version。未配置完整 Goal/Taste 的策略保留人工判断入口，active Delegation 的配置与使用均拒绝。
+
+完整 Goal、Taste JSON、实际 Ranking、S5 权威规则内容和有权限的固定示例正文进入原模型 state、input_digest 与缓存键。没有保存第二份委托权威；`ReadDelegationSource` 从原 S5 表读取当前固定 rule/workflow/revision 和实际 owner/project，disabled/paused 状态作为来源事实保留，读取来源不会产生准入权限。自动使用继续逐项检查绑定规则的当前 active 状态及原授权。所有缓存命中、结果保存和准入在原 WorkspaceTransaction 中重新读取完整内容；使用已有记录时重新计算实际 input_digest，内容不同即拒绝。
+
+Jev 的 `external_sources` 必须与所选完整 Sources 引用逐项相等，固定示例还必须逐条列入 `external_evidence`。模型 backend 配置没有附带 Goal、品味或示例的外发许可。历史结果和人工反馈允许保留原 Goal/Taste 版本，同时重新验证固定 Goal 的项目权限与当时示例的当前资料权限；示例撤回后，缓存、准入、历史读取和新增反馈均拒绝该资料。
+
+真实新 `TestActualCompleteSourcesInvalidateCacheAndAdmission` 依次通过原领域服务更新 Goal、rubric、固定示例、Taste 的 delegation 选择、被引用规则状态和 Ranking 权重。每项更新均在 Policy 版本保持原值时检验旧请求与已绑定准入拒绝，再由真实 human 配置当前版本并检验新的 input_digest 和有效绑定。同一 SQLite 事务授权没有增加连接等待。实际 Goal 最终 revision=2，Taste version=5，Ranking version=2，被引用规则 revision=2；最终撤回示例后四种使用全部拒绝。模型调用为零。
+
+首次完整新测试三分钟期限到达时正在真实 S4 Git 快照校验，`actual-complete-sources-ctx_8ff-first.log` 保留全部 panic/堆栈，未计通过。当前来源错误先于昂贵的 Git 快照检查立即失败；新测试只保留必要的初次同源缓存命中，六组新增场景的测试总 Context 为六分钟，产品预算、S4 快照检查和全部独立失效断言保持。该场景复验 `240.67s PASS`，日志 `actual-complete-sources-ctx_8ff-recheck.log`。
+
+增加历史示例权限/撤回和外发许可检查后的五项组合实际命令为 `ASTROCYTE_S5_LIVE=1 go test -mod=readonly ./tests/s5 -run '^TestActual(CompleteSourcesInvalidateCacheAndAdmission|AutomaticSourcesAndExternalPermission|DelegationBindingsAndAdmission|GoalAndRankingSources|DelegationSourceSnapshot)$' -count=1 -v -timeout 8m`，完整 `389.387s PASS`，日志 `actual-sources-final-ctx_8ff-first.log`。原 Delegation 全链 `120.97s`、完整来源 `217.81s`、未配置自动使用与独立外发许可 `19.76s`、Goal/Ranking `1.72s`、规则来源 `11.42s`，零 skip。该结果属于规则、领域服务与真实 SQL 来源；新 Sources 进入真实 Laya 模型的必要检查和 H 生产组装分别验收。
+
+完整 Taste 的有限选项、评分等级和实际 human expected 对应已向 B 交具体方案 `msg_f8ce1c42a2fa` / `msg_f12f0dc54eed`，准确后继源码待原作者交付；既有存储接受的任意题型不会直接进入 S5 模型。新完整 Taste 的 HTTP 人工配置入口已交 H 核定，候选路由未作为既定契约。Jev secret、OS 隔离执行仍未得到所需输入/许可。两次普通 push 依赖消费提交发生真实 `OpenSSL SSL_connect: SSL_ERROR_SYSCALL`；随后公开 GitHub HTTPS 的 curl 也握手失败，远端当时仍为 c26 全 SHA，未将本地提交登记为已推送。
+
+## 当前 Sources 输入、HTTP 与验收交接
+
+接续原 `TestActualLayaCompleteSourceInput` 与实际原件：`.verification/s5/actual-laya-complete-sources-ctx_8ff-lifecycle.log` 为测试 `8.40s` / 包 `10.290s PASS`。同一真实 CPU 调用包含完整 Goal、Taste 与固定示例，实际 `input_tokens=981 / state_tokens=942 / truncated=false / confidence=null / decision=abstain`，同源再次请求命中 SQLite 缓存，原领域服务变更 Goal 后拒绝旧请求。`t.Cleanup(cancel)` 注册在模型清理之前，真实 `Close` 完成后才取消 Context；成功原件对应当前代码。本次恢复沿用该成功推理，模型调用为零。原 `first` 的启动/关闭超时和 `quiet` 的实际推理后退出 1 原件均保留。
+
+判断请求中的过期 Policy/快照版本在实际授权读取处立即返回 `version_conflict`，随后当前来源与 S4 快照仍逐一核验。原 90 秒规则测试期限保持；五版本更新、固定结果与五类反馈关闭重开后全部通过，重开阶段 `0.01s`。首回归的 `provider_unavailable` 原件 `.verification/s5/actual-sources-http-regression-ctx_8ff-first.log` 保留。
+
+本次 HTTP 使用原 SQLite migrations、loopback listener、session/CSRF 和原领域服务，实际保存完整 Taste，创建固定 Goal，通过 Policy/Request/Result 的 `sources` 往返、同源缓存、五类反馈及 SQLite/HTTP 重启。实际 Taste 更新独立返回 `version_conflict`，实际 Goal 更新独立返回 `context_stale`；旧人工历史仍能按当前资料权限读取，全部响应继续检查项目绝对路径没有泄漏。H 的 `NewServer` 与 `cmd/server` 生产组装单独验收。
+
+协调者对问题 `msg_a8a04885ba5a` 明确要求先交可独立编译的 Sources 核心及测试，完整 Taste HTTP 候选三文件保留原工作区修改，等 H 本人准确回执后继续交付。本阶段 SOURCE 排除 `judgment_handlers.go`、`judgment_http_test.go` 与 `judgment_taste.go`；上面的 HTTP 实测属于对应工作区，分拆 SOURCE 单独验证。
+
+新增运行入口 `tests/s5/verify-sources.ps1` 显式使用本任务独占 `D:/Astrocyte-agent-assets/20261015/judgment-s5/verification-ctx_fc76cd365979`，其 `runs` 保存真实 SQLite/objects/projections，`temp` 同时供 `GOTMPDIR/TEMP/TMP` 使用；共享 warm `GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build`。Go 子进程 stdout/stderr 分别原样保存，非零退出立即失败，`finally` 恢复 Process 环境。S5 模型测试的 stderr 同样要求显式 `ASTROCYTE_S5_RUN_ROOT`。
+
+实际命令均在当前固定工作树执行：
+
+| 命令 | 结果与准确原件 |
+|---|---|
+| `powershell -NoProfile -ExecutionPolicy Bypass -File tests/s5/verify-sources.ps1 -EvidenceRoot D:/Astrocyte-agent-assets/20261015/judgment-s5/verification-ctx_fc76cd365979 -Phase tests` | 八项实际非模型场景全部 PASS、零 skip，包 `41.260s`；`tests-20261015T1605544395993.stdout.log`，stderr 空 |
+| 同入口 `-Phase http` | 判断 handler 完整 Sources、明确来源错误码、缓存/反馈/重启全部 PASS，测试 `4.43s` / 包 `6.415s`；`http-20261015T1607008656898.stdout.log`，stderr 空 |
+| 同入口 `-Phase checks` | 五个适用包 `go vet -mod=readonly` 与 `node --check internal/adapters/judgment/laya-worker.mjs` EXIT 0；`checks-20261015T1607407049704.{stdout,stderr}.log` 均空 |
+
+本次验证入口首次使用的 .NET 方法在 Windows PowerShell 5.1 不可用，真实工具回执保留；当前入口使用其支持的标准路径方法。首次组合另有实际 unused-import 编译失败，完整原件为 `tests-20261015T1605127891197.{stdout,stderr}.log`；当前八项复验通过。测试全部成功断言、原 90 秒 Context、产品 60 秒 startup 和 10 秒 shutdown 预算保持原值。
+
+交 H 的装配输入为 `ProjectAuthorization.Goals` 接实际 S2 `ReadGoal/ReadCurrentGoalSnapshot`，`Taste/Ranking` 接实际 Attention service，`Rules` 接同一 DB；`JudgmentServices.Taste` 使用该 Attention service。公共 `sources` 含固定 `goal{id,revision}`、`taste{id,version}` 和可选 `ranking{id,version}`，Policy 的 `external_sources` 为独立显式外发许可。现有 JSON 列保存这些字段，本阶段没有新增依赖或 DDL 请求。
+
+真实剩余为 H 的公共契约和生产组装、B 的完整 Taste 有限候选/评分等级后继、实际 Jev 回执和 OS 全断网。当前父进程 `TYPESAFE_API_KEY` 存在性仍为 false；Jev 为 NOT_RUN。OS 管理员执行尚未授权，既有进程 HTTP 出口拒绝范围单独保留。S5 完整验收与最终组合/发布尚未完成。

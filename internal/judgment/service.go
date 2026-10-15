@@ -46,6 +46,12 @@ func (s *Service) resolve(ctx context.Context, actor Actor, request JudgmentRequ
 		return input, err
 	}
 	p := input.Policy
+	if !reflect.DeepEqual(p.Sources, request.Sources) {
+		return input, conflict("selected Goal, complete TasteProfile or ranking references changed")
+	}
+	if request.Sources != nil && (input.Sources == nil || !reflect.DeepEqual(*request.Sources, input.Sources.References)) {
+		return input, invalid("authorization must resolve every actual fixed judgment source")
+	}
 	if p.ProjectID != request.ProjectID || p.QuestionType != request.Question.Type || p.Versions != request.Versions || input.WorktreeID != request.WorktreeID || input.SnapshotID != request.SnapshotID {
 		return input, conflict("judgment project snapshot or goal/taste/policy/model/access version changed")
 	}
@@ -86,7 +92,8 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		Request       JudgmentRequest
 		Policy        Policy
 		AccessVersion string
-	}{actor, request, input.Policy, input.AccessVersion})
+		Sources       *SourceSnapshot
+	}{actor, request, input.Policy, input.AccessVersion, input.Sources})
 	if err != nil {
 		return result, err
 	}
@@ -107,26 +114,7 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		record.Result.CacheHit = true
 		return record.Result, nil
 	}
-	stateParts := make([]string, len(input.Evidence))
-	for i, evidence := range input.Evidence {
-		stateParts[i] = evidence.Text
-	}
-	state := strings.Join(stateParts, "\n\n")
-	if request.Context != nil {
-		data, err := json.Marshal(struct {
-			Opportunity OpportunitySnapshot `json:"opportunity"`
-			Evidence    []string            `json:"evidence"`
-		}{request.Context.Opportunity, stateParts})
-		if err != nil {
-			return result, err
-		}
-		state = string(data)
-	}
-	inputDigest, err := digestJSON(struct {
-		Question Question
-		State    string
-		Language string
-	}{request.Question, state, request.Language})
+	state, hasEvidence, inputDigest, err := judgmentInput(request, input)
 	if err != nil {
 		return result, err
 	}
@@ -138,12 +126,13 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		EvidenceRefs: append([]EvidenceRef{}, request.EvidenceRefs...), CreatedAt: time.Now().UTC(),
 		Distribution: map[string]float64{}, Options: map[string]OptionCoverage{},
 		Context: request.Context,
+		Sources: request.Sources,
 	}
 	backendInput := BackendInput{Question: request.Question, State: state, Language: request.Language, ModelRevision: request.Versions.Model, Budget: request.Budget}
 	if budgetErr := ValidateBackendInputBytes(backendInput); budgetErr != nil {
 		result.Decision, result.ReasonCode = Abstain, "input_byte_budget_exceeded"
 		err = budgetErr
-	} else if strings.TrimSpace(state) != "" {
+	} else if hasEvidence {
 		if !applyRule(request.Question, input.Evidence, &result) {
 			if request.Backend == RuleBackend {
 				result.Decision, result.ReasonCode = Abstain, "rule_does_not_determine_answer"
@@ -162,6 +151,36 @@ func (s *Service) Evaluate(ctx context.Context, actor Actor, request JudgmentReq
 		return result, saveErr
 	}
 	return result, err
+}
+
+func judgmentInput(request JudgmentRequest, input AuthorizedInput) (string, bool, string, error) {
+	parts := make([]string, len(input.Evidence))
+	for i, evidence := range input.Evidence {
+		parts[i] = evidence.Text
+	}
+	state := strings.Join(parts, "\n\n")
+	hasEvidence := strings.TrimSpace(state) != ""
+	if request.Context != nil || input.Sources != nil {
+		var opportunity *OpportunitySnapshot
+		if request.Context != nil {
+			opportunity = &request.Context.Opportunity
+		}
+		data, err := json.Marshal(struct {
+			Opportunity *OpportunitySnapshot `json:"opportunity,omitempty"`
+			Sources     *SourceSnapshot      `json:"sources,omitempty"`
+			Evidence    []string             `json:"evidence"`
+		}{opportunity, input.Sources, parts})
+		if err != nil {
+			return "", false, "", err
+		}
+		state = string(data)
+	}
+	digest, err := digestJSON(struct {
+		Question Question
+		State    string
+		Language string
+	}{request.Question, state, request.Language})
+	return state, hasEvidence, digest, err
 }
 
 func (s *Service) recheck(ctx context.Context, actor Actor, request JudgmentRequest, before AuthorizedInput) (AuthorizedInput, error) {
@@ -284,8 +303,18 @@ func (s *Service) Revalidate(ctx context.Context, actor Actor, id string) (Recor
 		if err := s.recordAccess(ctx, actor, record); err != nil {
 			return err
 		}
-		_, err = s.resolve(ctx, actor, record.Request)
-		return err
+		input, err := s.resolve(ctx, actor, record.Request)
+		if err != nil {
+			return err
+		}
+		_, _, digest, err := judgmentInput(record.Request, input)
+		if err != nil {
+			return err
+		}
+		if digest != record.Result.InputDigest {
+			return conflict("actual fixed judgment inputs differ from the immutable result")
+		}
+		return nil
 	})
 	return record, err
 }
