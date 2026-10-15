@@ -104,3 +104,15 @@ owner 报告链接：[S4 标准文档](https://github.com/songconmaisaix31-desig
 - 文档校核：`git diff --check` 与写入范围检查。
 
 未执行：产品构建、Go/前端/浏览器/模型/原生控制器验收、正式采集与发布。本文只做许可与来源核对，不重跑 S4、S5 的领域测试。
+
+## 8. 独立 REPORT
+
+本轮 SOURCE `da5bbf28eaa4776b6fa267c22bbf3bdf309df224` 已普通 push，远端 `git ls-remote origin refs/heads/songconmaisaix31-design/release-research-20261014` 与实际同完整值；本节是该 SOURCE 之后的独立 REPORT，只修改本文件，REPORT 自身的完整 SHA 由实际 Git 提交与 push 回执提供。
+
+独立核查结果：
+
+- 写入范围：相对基线 `2e978a0c9ef2b576cdc3bb803845d363755ddd71` 只修改 `docs/release/components-20261015.md`；业务代码、`go.mod`、`go.sum`、`package.json`、`pnpm-lock.yaml`、`dependencies.lock.json` 与冻结域零改动；`.verification/components-20261015/` 由 `.gitignore` 忽略。
+- 内容核对：按 P 现成原件补入 onnxruntime 原生库、`DirectML.dll`（Microsoft Software License Terms）与 `dxcompiler.dll`（LLVM NCSA）的稳定组件、固定版本、官方主链接、必要文件与 NOTICE，明确不把附属 DLL 统称 npm 主包装 MIT；移除 CodeGraph 平台包必须直接依赖的断言，改为官方 Git 源码构建的 SDK 与 adapter 入口，安装方式归 P。
+- 候选包：15f 的 39 项目录仍只含项目 AGPL-3.0 `LICENSE`，不含 §3 任一组件。
+
+真实剩余限制：SemanticIndex 选择与 AOCI 的公开包分发方式仍需用户决定；DirectML 二进制的具体再分发条款已 Handoff P 与协调端，未由本文批准；CodeGraph 的合法打包实施归 P。
