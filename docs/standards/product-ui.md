@@ -14,10 +14,17 @@ SOURCE `32adab9201f44d6a1628da1f02a48d9e4a2ba819` 在批准详情接入 ContextP
 | `pnpm --dir web typecheck`，Context 表单及用例后 | FAIL：仅 F 原七处显示参数和 Prepare 标签错误，本域零类型错误；`logs/typecheck-context-builder-first.log` / `typecheck-context-e2e-first.log` 保留 |
 | `pnpm --dir web exec eslint src/pages/workspace/proposals e2e/s2-context.spec.ts` | PASS，零 errors / warnings |
 | `git diff --check` / `git diff --cached --check` | PASS |
+| F SOURCE `e689e7f5410d977f8cb72df57efbfeb5f490c415` 七件准确消费 | 模块放行后由 clean 检查点普通 `cherry-pick -x` 为 `6b1fc5e`，无冲突，七件完整 diff0；逻辑归还 F |
+| B SOURCE `837647d5913c739a73a72ec7829d24f78b4ab872` 四件准确消费 | 同条件普通 `cherry-pick -x` 为 `6a52d4d`，无冲突，四件完整 diff0；逻辑归还 B |
+| 消费 F 后 `pnpm --dir web typecheck` | 全域 PASS / EXIT0；`logs/typecheck-F-e689-first.log`。原七处错误与此前首失败日志保留 |
+| `go build -mod=readonly -trimpath -o D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-context-first/astrocyte.exe ./cmd/server` | PASS / EXIT0，`logs/go-build-context-first.log` |
+| `pnpm --dir web exec vite build --outDir D:/Astrocyte-agent-assets/20261015/product-ui-20261015/build-context-first/web` | PASS / EXIT0，`logs/web-build-context-first.log`；保留既有大于 500 kB 分块提示 |
 
-H 当前 `ctx_e492c738e964` 负责 OpenAPI 修复，F 当前 `ctx_630293cc6778` 负责共享类型与 Prepare；准确后继来源待交。本树只修改自身页面和用例，原 S2 全部成功与首次失败保持；完整 check / build、实际 S3 / Context、S4 / S5、原生与最终包尚未通过，同一任务继续开发和返修。
+H 当前 `ctx_e492c738e964` 负责 OpenAPI 修复；原 F / B 精确共享修复已消费。成熟 YAML parser 的只读完整诊断另发现八处重复键，已交 H：line524 `/goals`、549 `/goals/{id}`、576 `/proposals/{id}`、603 `/proposals/{id}/decline`、618 `/approvals/{id}`、630 `/approvals/{id}/complete`、645 `/approvals/{id}/expire`、9732 `S2GoalListV1`。本树只修改自身页面和用例，原 S2 全部成功与首次失败保持；完整 `pnpm check` / `pnpm build`、实际 S3 / Context、S4 / S5、原生与最终包尚未通过，同一任务继续开发和返修。标准 build 仍固定本树普通 dist，本轮使用上表显式 D 输出命令，未将其登记为标准命令通过。
 
 本阶段 SOURCE 首次普通 push 返回 `remote rejected (failed)` / EXIT1；独立远端仍为前一 REPORT `8c10d42c9b55747974d6588db76524f854d358dc`，错误保留于本 Dispatch 命令记录。继续普通 push，未 force 或改变历史。
+
+后续普通 push 成功，独立 `git ls-remote` 核远端 REPORT `3fae7289565505c4be6030f134cbd8bd18e00db2` 同值，包含准确 SOURCE `32adab9` 及 I 消费；首失败保持。可交 F 的本域准确增量为 `64ab5ca` 三件和 `32adab9` 三件，全部目标已停止写入、无 WIP，由模块在本人安全检查点安排精确消费。
 
 ## 2026-10-16 00:35 恢复与真实 Mission 用例
 
