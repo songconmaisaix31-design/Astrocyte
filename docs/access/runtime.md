@@ -1,5 +1,17 @@
 # Works Relay runtime
 
+## 2026-10-16 同一已构建组合消费与 S3 接缝
+
+依据模块正式消息 `msg_6eb47253068c`，本树在 clean 检查点普通 `--no-ff` 合入唯一 I 已实际构建通过的 `35cc64faac271d43e5f63103a810081b0eb7ac62`，形成 SOURCE `d9f80c2038f9c178357393ee28e7d072a7bab955`。合并没有冲突，已普通 push 并独立 `git ls-remote` 核实相同 SHA。相对该 I 来源，原 R 领域、应用、store、native 和 relayworktree 全部相同，仅保留本轮 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` 的两份 CompletionExperience 后继源码；没有消费未验证的 I `9ce5c2c` 或任何 WIP。
+
+合并后的实际 `go test -p=1 -mod=readonly ./internal/adapters/agents -count=1 -timeout=180s` PASS，包 23.152 秒；`go build -p=1 -mod=readonly -o D:/Astrocyte-agent-assets/20261015/relay/R/completion-tuple-20261016/integrated35cc-server.exe ./cmd/server` EXIT 0。日志为同目录 `integrated35cc-agents.log` 和 `integrated35cc-build.log`，产物未启动。Go 缓存和临时目录沿本节后文的 D 盘配置，另仅本进程设置 `GOPROXY=off`，使用已有依赖缓存；本次没有新增依赖下载。`git diff --check` EXIT 0。这是本树的适用组合检查，不代表完整默认浏览器或后继 I 组合通过。
+
+原 S3 SOURCE `68cb3c1639b96f1c6f31a4ce9739b79369b2d92b` 的 portable 契约缺少原 R 已实现的四个结果字段。S3 按产品及模块明确授权，在自身工作树以文件编辑工具完整原样消费 R SOURCE `23253502143bb23bf47e1606c38e0158540e328d` 的 `relay_member_evidence.go` 与同名测试，交 SOURCE `12f659b7d741a48237ae2230c786d7ac3572590b`。R 独立 `git diff --exit-code` 核实两文件完全相同，并接收 S3 本人停止临时写入和归还逻辑维护的记录。S3 仅在自身 bridge 映射实际 accepted input 结果；R 没有重复实现原字段或增加测试。
+
+首次 claim 前的准确剩余接缝已交 B、S3、模块和产品：原 Relay PrepareIntent 与 Native 空 Message 初始化已经存在，generic Native.Send 按当前会话的 `PendingOperation` / `Operations[send,pending]` 校验后立即发送。B 原 `SendNativeMessage` 尚无独立的持久准备与后续同 operation 发送入口；现有 NativeOperation 仅有动作、状态和时间，没有待发送内容的固定关系。原 Registry 保存的 Start 会话不能替代未来输入的真实准备收据，调用者提供 UUID 不产生准备证据。B 负责其原 projects、收据、私有存储及受信调用，R 按准确后继核原完整身份；没有增加控制器、任务状态、DDL、队列或 Attempt。S3 的新 claim unsupported、Calls / 权限集合 Known=false 门禁保持，该依赖不扩大为独立人工 L1 的阻塞。
+
+人工经验两字段及实际来源读取后继仍待 B 准确 SOURCE。本阶段 t0、原生初始化和模型输入均为零；H 目标 reader、集成版 L1 / Today、六步首跑和最终 Windows 包继续由原负责人实施，全部首次失败和 unknown 保留。
+
 ## 2026-10-16 经验候选的原会话与回合结果核验
 
 本阶段 SOURCE `86eceef1cc1af71681d79aee7a6ce53b1abcc855` 已普通 push，独立 `git ls-remote` 返回相同 SHA。当前 Task `task_f082d8b36471` / Dispatch `ctx_1bc01d1c9ef9` / 终端 `term_bfbc83d9-c104-4be1-a6a5-9f66869cc812`，继续原 R 工作树及分支。已读取根 00:30 恢复入口、模块工作树的当前管理文档和 v1.4 任务。实际客户端 `codex-cli 0.162.0`，沿当前模型配置，没有覆盖模型参数。
