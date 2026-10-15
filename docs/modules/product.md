@@ -23,6 +23,38 @@
 
 所有原人员只在本人安全检查点对后续进程设置 D 盘资产和独占 GOTMPDIR；共享 GOCACHE 沿 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，C 盘维护仅交 M-release。本模块只修改此文档，继续阶段 SOURCE / 独立 REPORT 普通 push；已提交且可消费的领域来源交唯一集成人员执行组合检查，领域问题返原作者，模块持续至最终发布支持结束。
 
+### 21:59 恢复独立 REPORT 与集成输入
+
+本轮恢复计划 SOURCE `d0838adbdb3b25ee52c02257fcd3d0d5e0136231` 已普通 push，模块独立核远端同值。当前按根授权管理原产品 Run generation 4 与 B/F 原 Run generation 32；各 Run 在处理全部已投递消息后再切换，不接管顶层 Run，不启动旧 Run 其他已完成任务。首次未绑定 B/F Run 的启动被 CLI 在派发前明确拒绝；绑定合法 Run 后沿原 Task 恢复，没有重复 Task 或写入者。旧 Dispatch 的问题已关闭，当前问题按当前 Dispatch 答复。
+
+公开运行状态已逐一核六人均实际 live / working，provider 为 Codex / `gpt-6.1-sol`；终端文本显示 xhigh fast。T/S3/F 首回执 `turn_start_unobserved` 保留；S2/UI 首回执虽然 observed，随后文本检查仍发现任务正文留在 composer。本模块对这五位各提交一次已有正文，没有重送任务，随后实际状态及本人接管报告确认开始。
+
+| 原唯一人员 | 当前 Dispatch / 终端 |
+|---|---|
+| B | `ctx_ed3af07294cf` / `term_5e7e3724-4305-43bc-827c-c720c6aa61ea` |
+| F | `ctx_37e5eab0d417` / `term_90e6400b-847d-4bee-9f4e-3f255e27e05c` |
+| T | `ctx_97022176991b` / `term_d8097c3c-ce20-4d1f-8eb9-b176c72838a9` |
+| S2 | `ctx_edce6bc4ca6c` / `term_60d83d74-e84f-4a6e-b432-bb13c1b48436` |
+| S3/S6 | `ctx_a34aff42e4d2` / `term_4b1f41d3-8f42-4bc1-97bb-d215db24a110` |
+| 产品 UI | `ctx_4ac5810bae08` / `term_e81fc1c0-3cba-42ea-bfc7-7a7842fc2a23` |
+
+根最新 `msg_a2b52b71bb0a` 转交用户决定：执行顺序为唯一 I 普通集成四树并验证组合、集成版实际 L1、L2 经验管道、六步流程首跑；无需等待全部新增功能终稿才集成，后续继续消费准确补丁。完成分为 `verified_complete` 与 `user_confirmed_complete`，started 证据独立保存且永不回填，资源释放独立审计；用户确认完成同样进入 draft → quarantine → 人工批准的经验流程。Mission 的认领、预算、租约由单一执行后端负责，后端抽象由根登记 v0.3，自动路由留到 L3；当前两项未答权限与调用预算不据此代选。以上已分别交 B/F/T/S3/UI，R/H 由 M-relay 管理。
+
+模块已独立核原分支和远端，并通过 `msg_53d4cb30c97a` 交 M-release 立即供唯一 I 消费：
+
+| 已提交来源 | SOURCE | 独立 REPORT / 可消费 HEAD | 实际范围与限制 |
+|---|---|---|---|
+| B `standards-backend` | `ea9225da1c2d98ba890968ded77244a8d28927ef` | `da7227749ea2f361c8b708be8614d3236fe2f04a` | 严格解析、真实来源与既有后端提交；包含已验 readiness helper，026 尚未实现 |
+| F `standards-frontend` | `03bbaed523a6d03faba45595dcfb51ab4fcc696f` | `9fb9df967dc4253953fe079b21375337608defcd`，另有 `1c9f042fca46123e308cc770e323406b17455356` | S4 未配置真实 HTTP 五项、S2 两尺寸完整十二项通过；默认完整仍未通过 |
+| S2 `product-video-20261014` | `02d16dd05bfb4f944c480ba844dbc2d3a79d63e4` | `b9629a68a3e29f46f394ef1093d99265349dbab7` | 安全 Context 与准确事务依赖；Goal 快照 WIP 不进入消费 |
+| T `product-attention-tests-20261014` | `41f88230997382ea0972652ab3f15135c75a90f1` | `94fb0e88de9054720cc1b7c473937afd9d39c80e` | 既有官方准入成功保留；本轮 `TestProfileCASHistoryReceiptAndRollback` 实际 EXIT0，完整 Taste / 十四原生场景 / 全包未验收 |
+
+S3 `a5d00e764ffa0266bf34067190f72f3463fe9852` 已在远端，后继独立 REPORT 待原 owner；产品 UI 本机合并 `71360db458052eea387e4d4f72b303f59d3a4743` 尚未在远端，远端为 `ae517ab05a7b5e4c9a37f005b96708ce7e020e16`，其页面 WIP 不作为交付。F 已本人确认准确消费 helper、后续逻辑归还 B，新 SOURCE / REPORT 待完整 SHA 和真实回归结果交付。上述来源分别保留覆盖范围，不能合计成默认产品通过。
+
+H 本人 `msg_c60e81a7e588` 与 M-relay `msg_0a57645bf245` 明确四路径停写及 CHERRY_PICK 不变；S2 本人 `msg_e5add6519350` 明确当前安全检查点，模块计划已 push，按 `msg_6179430c2f6e` 限定原 S2 编辑并 stage 四件，完成停止并归还后才由 H 继续。此时返修尚未交结果。原 B/F 旧临时范围均已结束。
+
+B 原 `app/*_test.go` 全部零 WIP 并归还 T，`f76e25b` 已有测试贡献保留。S5 当前 `ctx_8ff0e4770bd8` 已交 Goal/Ranking reader SOURCE `32e701e98604b5c3139c3da61a5cfbe4a63d220e` / REPORT `ac288c54caeae932267c8104e46986ff1fb2b23a`；完整 Taste 与 026 继续由 B/S5 核真实字段和事务后交 T。已将 R 组合的原 B 冷 Registry 测试首 RED、S4 既有 worker 清理入口的真实依赖交回 B，不新增模拟、skip、调度器或绕过授权。完整默认、真实原生、AT12 与最终 Windows 包仍未通过，模块继续支持发布。
+
 ### 2026-10-15 10:41 再次重启后的恢复计划
 
 根当前交接 `msg_54ce630eae98` 确认 10:31 运行时再次重启，原人员 OS 进程退出、旧句柄失效；沿原子 Run、原 Task、原工作树和原分支恢复。公开 Task 列表实测 T / S2 / S3 / 产品 UI 均为 `ready`，旧 Dispatch 为 `failed / terminal_missing`。公开终端清单无这四位旧句柄，当前 Codex 进程启动时间均在重启之后；不根据单独的 `missing_status` 判定退出。B/F 生命周期由根在原 Run 恢复，本模块不重复启动。S0–S6 授权和前端复用此前白绿设计、使用 TypeScript 的用户决定保持。
