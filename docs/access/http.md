@@ -1,5 +1,22 @@
 # Works Relay HTTP 与 L1 会话采集
 
+## 2026-10-16 Judgment 与 Taste 生产装配
+
+SOURCE `67fb5f255d52130f5ae30377ab615dd17b7c79ef`，七件原 H 路径。生产入口使用原主 SQLite、Attention、Workspace S2、Registry、固定快照 provider 和既有准入桥构造 Judgment / Delegation / Admissions；Taste 复用原 Attention 服务。现有 S5 HTTP 在独立子 mux 中注册，继续经过当前 session / CSRF / 项目权限保护；项目 Agent 仅放行原判断提交及结果、反馈读取，策略、快照、反馈写入及完整品味操作继续核人类身份。公共快照保持省略私有 Root。
+
+Jev 仅在可信进程环境提供原密钥时配置。Laya 仅在明确配置全部运行路径、语言、私有 stderr 目录、启动及关闭预算后创建，使用原资产版本核验和原模型接口；缺失或错误立即失败。模型关闭纳入原服务退出与启动错误处理，诊断仅保存本机私有文件。当前没有配置或调用 Jev / Laya，没有启动原生控制器。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./cmd/server -run '^TestRelayJudgmentProductionAssemblyActualSQLiteHTTP$' -count=1 -timeout=120s` | PASS，package 1.860 秒；真实公开 README 导入、固定资料关联、项目授权、生产快照、规则判断、同库结果读取、空 Taste 状态和原生会话数量零 |
+| `go vet -mod=readonly -p=1 ./cmd/server ./internal/adapters/httpapi` | EXIT 0，45.494 秒 |
+| `go build -mod=readonly -p=1 -o D:/Astrocyte-agent-assets/20261015/relay/H/production-assembly/astrocyte.exe ./cmd/server` | EXIT 0，28.617 秒，产物未启动 |
+| 七件 Go 文件 `gofmt -l` / `git diff --check` | 无输出 / EXIT 0 |
+
+检查统一使用 `GOMAXPROCS=2 / -p=1`、Node 512 MiB、共享 D 盘 Go cache 和 H 独占 D 盘 TEMP / TMP / GOTMPDIR。原日志及每次命令的实际结果位于 `D:/Astrocyte-agent-assets/20261015/relay/H/production-assembly/`。开发客户端为当前 Orca Codex，本阶段没有外部模型调用。
+
+普通产品服务继续运行于原 64505 地址、原 D 盘稳定程序 / 静态文件与同一 SQLite，实际运行源码仍为 `ad8413e119379c9795bab558a41fe425ea9095ca`；本段新源码尚未部署到该实例。F 保持唯一实际页面和核心 HTTP 操作人。S4 后台清理、成功提交后唤醒、完成来源生产装配及后继准确组合继续，真实 L1 / L2、Jev / Laya 产品正向和最终发布尚未通过。受限 Codex 文件工具无法满足关闭要求时保持明确拒绝，本轮登记、初始化、模型输入与 L1 t0 均为零；原未知和首次失败记录保留。
+
 ## 2026-10-16 空 Prepare 后的同实例来源检查
 
 SOURCE `7037a452a2f7cd61e239a4a054fb2b4d55270f79`，仅修改原实际服务采集入口 `cmd/server/relay_session_live_test.go`。原 `captureActualRelayExecutions` 在原 SQLite 中发现 accepted Prepare、ready 任务和空 pending action 后，读取同一 Registry 持有的原 Session，并核对当前受权限保护的 owned 绑定，再调用生产 `sourceGuard.Check`。原生 controller / startup / session / native 关系与零输入轮次必须一致；档案参数只取原 Prepare 已保存的正选绑定，不发送 RPC、不发现其他来源。

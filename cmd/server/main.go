@@ -13,6 +13,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -48,7 +49,7 @@ func main() {
 	}
 }
 
-func run(logger *slog.Logger) error {
+func run(logger *slog.Logger) (runErr error) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -110,6 +111,10 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	repositoryConfig, err := resolveRepositoryContextConfig(ctx, dataDir)
+	if err != nil {
+		return err
+	}
+	judgmentConfig, err := resolveRelayJudgmentConfig()
 	if err != nil {
 		return err
 	}
@@ -246,9 +251,23 @@ func run(logger *slog.Logger) error {
 	if err := assembleSwarmLedger(&services, db, registry, objectStore); err != nil {
 		return err
 	}
-	if err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry); err != nil {
+	repositoryProvider, err := assembleConfiguredRepositoryContext(&services, db, objectStore, repositoryConfig, registry)
+	if err != nil {
 		return err
 	}
+	var snapshots workspaceapp.ProjectSnapshotProvider
+	if repositoryProvider != nil {
+		snapshots = repositoryProvider
+	}
+	judgmentCtx, cancelJudgment := context.WithCancel(context.Background())
+	defer cancelJudgment()
+	closeJudgment, err := assembleRelayJudgment(judgmentCtx, &services, db, projectReferences, snapshots, attention, judgmentConfig)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		runErr = errors.Join(runErr, closeJudgment())
+	}()
 	launchContexts, err := relayPublicLaunchContexts(localProjects)
 	if err != nil {
 		return err
