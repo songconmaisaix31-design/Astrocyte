@@ -2,6 +2,27 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 系统重启后的原任务恢复（2026-10-17 02:14）
+
+本轮沿原 `task_e8c1d01d67ec` 恢复，当前 Dispatch 为 `ctx_1bf724fb231b`，实际终端为 `term_4ded8286-65fa-424b-b43e-03f9d82de4d0`；公开 `worker-show` 核实 Codex / gpt-6.1-sol、live / working / exactWorker。总负责人当前终端为 `term_dc198f4c-7a7b-4ad5-8d91-82eb05d625a8`，原顶层 Run 保持 `run_973808dd6a2f`。实际系统 LastBootUpTime 为 2026-10-17 02:07:51，Orca runtime 为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`。
+
+根最新覆盖指令 `msg_b8a42c105302` 与根工作树 HANDOFF 的 02:12 入口要求继续原 Task / Run / 工作树 / 分支。模块依此普通 `run-use` 续接原子 Run `run_8bbda1c3974c`，当前 generation10，没有绑定根 Run。读取覆盖消息前按派发中的历史指令创建了空 `run_12aed3ce1e27`；该 Run 没有 Task、Dispatch 或资源，已经停止使用，原记录保留。当前恢复与后续开发均沿原子 Run。
+
+原 H `task_3004b636a3ab` 的官方状态为 ready，旧 `ctx_d763540bd366` 已因终端缺失结算为 failed / abandoned。模块独立确认原 H 工作树终端清单为空、旧 PID25568 不存在、64505 没有 listener；旧运行记录保留为重启前事实。原 H 树 HEAD `1e25c296ef5b3a7e0a5e3a3b3bb7567e77a926c1` / 同分支 clean。旧 Dispatch 已按官方 release 完成，processAction=none，archive unavailable，未宣称恢复旧终端输出。
+
+首次对 ready Task 使用 `--retry-of ctx_d763540bd366` 返回 `task_not_startable`，request `4ffc8373-bd5b-4421-9020-00903f751436`；未创建开发人员。按返回的官方步骤核实原 Task 和精确 Dispatch 后，以同一 ready Task、原工作树 / 分支及 Codex 启动恢复；启动回执和实际开始另记，不将等待状态记为已开始。
+
+原 H 本轮恢复 Dispatch 为 `ctx_0ae3e6615702`，终端 `term_a16ce8a1-3559-4236-bb54-41acb27f4084`；官方启动回执为 ready / turnStart observed，本人 `msg_d3fc061c9671` 于 UTC `2026-10-16T18:15:12Z` 报告 actualturnstarted。根当前覆盖入口已高优先级交精确新 Dispatch，回执 `msg_903eaa3ad5ec`。产品负责人当前 `ctx_47dffa3cec8b` 已经 `msg_e4a754ec3658` 确认 B 的独占新增范围和 H 的组装范围；模块分别交接两端，等待准确端口及实际服务恢复结果。
+
+| 唯一负责人 | 当前范围与执行顺序 | 适用验收和停止条件 |
+|---|---|---|
+| 原 H / 原 `task_3004b636a3ab` | 先恢复 D 稳定 `versions/172bb445`、64505、原 SQLite / LOCALAPPDATA / Q / media；再处理 `cmd/server/relay_completion_experience.go`、同名前缀装配测试、必要 relay 胶水和 `docs/access/http.md` | 复用已验 binary / web；当前唯一进程、准确 buildinfo、health / 首页及同库持久数据只读核验。经验阶段显式注入必要 Interpreter，检查当前真实上下文及发送前来源 / 工具边界；不启动 Native、Probe 或模型。 |
+| 原 B / 产品模块 | 真实 Swarm 采用事件的经验来源适配、当前 human 项目 / 操作者权限、固定成果引用及事务内授权；普通 agents 领域归 B | 与 H 互交准确接口和 SOURCE；没有实际采用事件的正向保持未验，跨域变更交原负责人。 |
+| 原 R | 当前无活跃 writer；需要准确端口变更才沿原 Task 安排 | 不重做已实现的 CreateIntent revision 绑定，不另派同写域开发人员。 |
+| 模块负责人 | 只修改本文件，接收原 H 开始、SOURCE / REPORT 与实际验证参数，独立审阅后交根集成 | 保留首 RED / UNKNOWN / NOT_RUN，阶段通过后持续最终发布支持；最终发布由根接收具体结果后决定。 |
+
+根 `msg_35e2ba4bf4f1` 已由官方只读 inbox 取得原件：当前生产 `assembleRelayCompletionSource` 仅赋值 `completionSources`，尚未构造 `NewCompletionExperienceInterpreter` 或赋值 `completionInterpreter`。模块已独读 H 现有对应源码核实该接缝，业务修复归原 H / B。Native 文件 / 命令工具关闭、Agent completion action 和具体经验批准仍待用户决定，未新增登记、初始化、工具探测、模型、ASR、索引或 OS 检查；完整默认、L1 / L2 和最终 Windows 包仍未通过。
+
 ## 当前运行与剩余条件（2026-10-17 00:10）
 
 模块在 remote compact 中断后沿原 `task_e8c1d01d67ec / ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`、子 Run `run_8bbda1c3974c`、工作树和分支继续，完整处理原 FIFO，包括根 `msg_21243d2fd941` 和后继 `msg_c095e1458b7e`。没有创建 Task、Run、工作树或第四层人员。原 H `task_3004b636a3ab / ctx_d763540bd366` 仍为唯一 H 写入者，公开 fleet 为 live / working、nextAction=none；模块只修改本文件。
