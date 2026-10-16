@@ -740,9 +740,9 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 
 用户正式决定 `msg_ef2ae7cc0b04`：保持原 1h 到期，短期 ExpiresAt 未授权。`projects.go` 已恢复原语义（`GrantProjectAgent` 清空 ExpiresAt、`IssueProjectAgentToken` 固定当前 UTC+1h），追加修复保历史，未使用 Git 回滚。
 
-按 `msg_3cbf78fccc5f` 及 `msg_569c9e514e8f` 精确授权，原 `progress_expiry_bg_test.go` 通过 `git rm` 移除（非文件编辑工具，此为工具记录不符的实际方法；后续代码修改必须使用文件编辑工具，禁止 Git 恢复）。长验收逻辑迁移至 `tests/s1/progress-expiry.mjs`。新脚本复用 `startS1Server` / `humanAPI`，签发真实 1h token，等待自然到期后验证 HTTP 403 拒绝。token 仅留在内存，不记录内容或片段。显式运行 `node tests/s1/progress-expiry.mjs`，不在默认测试套件中执行；不需要 env 开关、skip 或 fake 到期。按 `msg_b8549b61afdc` 返修：移除 `.catch(()=>null)` 静默吞错误（改为 `await response.json()` 直接传播）、移除无关 `ensureGitRepo` fallback 和未使用的 `execSync`/`command`/`mkdtemp` 导入、移除到期后重复跨项目检查（已由 Go 快检 `TestProgressCrossProjectGetRejected` 覆盖）。
+按 `msg_3cbf78fccc5f` 及 `msg_569c9e514e8f` 精确授权，原 `progress_expiry_bg_test.go` 通过 `git rm` 移除（非文件编辑工具，此为工具记录不符的实际方法；后续代码修改必须使用文件编辑工具，禁止 Git 恢复）。长验收逻辑迁移至 `tests/s1/progress-expiry.mjs`。新脚本复用 `startS1Server` / `humanAPI`，签发真实 1h token，等待自然到期后验证 HTTP 403 拒绝。token 仅留在内存，不记录内容或片段。显式运行 `node tests/s1/progress-expiry.mjs`，不在默认测试套件中执行；不需要 env 开关、skip 或 fake 到期。按 `msg_b8549b61afdc` 返修：移除 `.catch(()=>null)` 静默吞错误（改为 `await response.json()` 直接传播）、移除无关 `ensureGitRepo` fallback 和未使用的 `execSync`/`command`/`mkdtemp` 导入、移除到期后重复跨项目检查（已由 Go 快检 `TestProgressCrossProjectGetRejected` 覆盖）。按 `msg_2922eb81af54` 返修：单次长 `delay()` 替换为轮询循环，每次用真实 `Date.now()` 重算剩余时间，单次 delay ≤ 30s，总等待有界 2h（assert 超限失败）；无假 Clock、无 DB 改时、不启动第二个 1h 进程。
 
-**新 mjs 状态：NOT_RUN**（`node --check` 语法通过不等于实际运行；显式运行验收待后续 dispatch）。SOURCE `c008573` 三个修复已独立核实正确。
+**新 mjs 状态：NOT_RUN**（`node --check` 语法通过不等于实际运行；显式运行验收待后续 dispatch）。SOURCE `c008573`（三违反修复）和 `9674749`（轮询修复）已独立核实正确。
 
 后台进程状态：**RUNNING**（在途 Go 进程，源码已迁移但不影响运行中进程）
 
