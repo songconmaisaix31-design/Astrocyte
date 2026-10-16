@@ -1,5 +1,15 @@
 # 产品模块执行与验收
 
+## 当前必要返修（2026-10-16 12:15）
+
+本模块仅写本文件，业务由原B/F/UI在原Task / 工作树 / 分支继续，根是唯一集成写入者。B当前必须在原 `progress_actual_test.go` 补齐实际跨项目GET拒绝、合法Grant缺少read_context拒绝、自然到期后HTTP拒绝、Agent infer拒绝及实际同库重启；只运行真实HTTP / SQLite检查，八项旧内存外部替身不执行、不计通过、不删除或新增skip。原SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562` 仅三项实际检查，当前不能作为上述完整安全验收。原错误ACK结算及后继提前结束保留，根 `msg_c231eddfb470` 允许核本人实际idle后公开重开同一Task并复用同一终端；无需新Task / Run或重复确认。B仅写原四件progress/session代码及 `docs/standards/backend.md`，不新建其他报告路径、不重做paper-dom或广域审计。
+
+F原SOURCE `d4d6ccfbcb6a6f3578117d76a637624445442f77` / REPORT `7a5fda53d7c3f0fd070c9e1b556c2355ea2fe9af` 已普通push，模块核真实日志为八项通过 / 1.3分钟 / 两worker。当前必须完成根 `msg_8cd3e62da4a8` 的准入确认页修正：保存可读固定候选、资料、项目审阅与unknown请求身份，移出POST路径 / JSON payload / 幂等键实现说明；改动后原八场景使用workers1和真实网络body/header检查。已通过候选不代表新改动已验，后继SOURCE / 独立REPORT齐备才交根消费。
+
+UI继续原delegation十三件新增页面 / helper及原样式，准确生成后端为rule / jev / laya。新测试的heuristic / test-snapshot与不符组件的输入不得作为实际来源或运行结果；必须复用真实项目快照、固定公开文件、实际Goal / Taste及现有规则路径，模型未配置与语言待答保持。新组件实际入口须由UI向F交精确衔接要求；界面不可达或浏览器未运行保持NOT_RUN。原分支已经实际恢复，未提交内容保留，报告仅原product-ui.md，全部状态与时间采用实际结果。
+
+三位开发人员禁止调用内置或Orca子Agent。B本人Explore已有实际TaskStop成功；F报告两个Explore自然结束，仍待运行结果核查。接管 / 窗口ACK只用本人preamble的from、实际Task / Dispatch及status / handoff，不能使用worker_done或模块身份。实际模型没有运行证据时记录UNKNOWN，不能以助手自述opus别名推定。所有后继检查显式设置当前进程D盘GOCACHE / GOTMPDIR / TEMP / TMP / ASTROCYTE_TEST_OUTPUT_ROOT，GOMAXPROCS2 / GOFLAGS=-p=1；不改全局配置、不为清理终止在途检查。
+
 ## 2026-10-16 11:49 原产品任务恢复计划
 
 ### 12:00 原Task沿已配置Claude客户端恢复
