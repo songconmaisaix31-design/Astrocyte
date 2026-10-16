@@ -9,11 +9,25 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
+
+// verificationDir 返回仓库根目录的 .verification 绝对路径。
+func verificationDir(t *testing.T) string {
+	t.Helper()
+	abs, err := filepath.Abs(filepath.Join("..", "..", "..", ".verification"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(abs, 0755); err != nil {
+		t.Fatal(err)
+	}
+	return abs
+}
 
 func TestProgressExpiryBackgroundVerification(t *testing.T) {
 	if os.Getenv("ASTROCYTE_VERIFY_EXPIRY") != "1" {
@@ -45,7 +59,8 @@ func TestProgressExpiryBackgroundVerification(t *testing.T) {
 	logLine := fmt.Sprintf("PID=%d ISSUED=%s EXPIRES=%s PROJECT=%s AGENT=%s TOKEN_PREFIX=%s\n",
 		pid, issuedAt, expiresAt, s.project.ID, agentID, token.Token[:20])
 
-	logFile := ".verification/expiry-bg-token.log"
+	vDir := verificationDir(t)
+	logFile := filepath.Join(vDir, "expiry-bg-token.log")
 	if err := os.WriteFile(logFile, []byte(logLine), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +92,8 @@ func TestProgressExpiryBackgroundVerification(t *testing.T) {
 		"verified_at": time.Now().UTC().Format(time.RFC3339),
 	}
 	encoded, _ := json.MarshalIndent(result, "", "  ")
-	if err := os.WriteFile(".verification/expiry-bg-result.json", encoded, 0644); err != nil {
+	resultFile := filepath.Join(vDir, "expiry-bg-result.json")
+	if err := os.WriteFile(resultFile, encoded, 0644); err != nil {
 		t.Fatal(err)
 	}
 	t.Logf("natural expiry verified: %s", string(encoded))

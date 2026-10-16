@@ -720,7 +720,7 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 
 | 实际命令 | 结果 |
 |---|---|
-| `go test -mod=readonly -p=2 ./internal/workspace/app -run '8项测试' -v -count=1` | EXIT 0，8 PASS，包 5.172s |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGetFillsAuthorizedProjectIdentity\|TestProgressHumanSetAndCacheRead\|TestProgressAgentReadUsesGrant\|TestProgressCrossProjectGetRejected\|TestProgressValidGrantWithoutReadContextRejected\|TestProgressTokenIssuedWithExpiry\|TestProgressAgentInferRejected\|TestProgressRestartPreservesCacheAndPermissions' -v -count=1` | EXIT 0，8 PASS，包 5.172s |
 | `go build -mod=readonly -p=2 ./...` | EXIT 0 |
 | `go vet -mod=readonly -p=2 ./...` | EXIT 0 |
 
@@ -746,13 +746,19 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 
 | 参数 | 值 |
 |---|---|
-| PID | 664 |
-| 启动时间 | 见 `.verification/expiry-bg-full.log` |
-| 预计到期 | 签发后约 1h + 10s |
-| 日志 | `.verification/expiry-bg-full.log` |
-| 签发记录 | `.verification/expiry-bg-token.log` |
-| 结果（完成后） | `.verification/expiry-bg-result.json` |
+| 实际 PID（Go test 进程） | 12768 |
+| 父 nohup PID | 1150 |
+| 签发 UTC | `2026-10-16T04:40:18Z` |
+| 实际 ExpiresAt | `2026-10-16T05:40:18Z` |
+| 等待时长 | 1h0m9.993s |
+| 项目 ID | `2566c4a4-c3bf-4dd7-9dd1-2c382e456cd3` |
+| Token 前缀（脱敏） | `2566c4a4-c3bf-4dd7-9` |
+| D 盘日志 | `.verification/expiry-bg-full.log` |
+| D 盘签发记录 | `.verification/expiry-bg-token.log` |
+| D 盘结果（完成后） | `.verification/expiry-bg-result.json` |
 
-运行命令：`ASTROCYTE_VERIFY_EXPIRY=1 GOCACHE=D:/Astrocyte-go-cache GOTMPDIR=D:/Astrocyte-go-tmp GOMAXPROCS=2 go test -mod=readonly -p=2 ./internal/workspace/app -run TestProgressExpiryBackgroundVerification -v -count=1 -timeout 2h`
+运行命令：`ASTROCYTE_VERIFY_EXPIRY=1 GOCACHE=D:/Astrocyte-go-cache GOTMPDIR=D:/Astrocyte-go-tmp TEMP=D:/Astrocyte-tmp TMP=D:/Astrocyte-tmp ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-test-output GOMAXPROCS=2 GOFLAGS=-p=2 go test -mod=readonly -p=2 ./internal/workspace/app -run TestProgressExpiryBackgroundVerification -v -count=1 -timeout 2h`
 
-到期验证完成后方可计为 PASS。当前 7 项已验测试 + 1 项 token 签发测试已 PASS。到期后台验证结果待补充。
+到期验证完成后方可计为 PASS。当前 8 项已验测试（含 token 签发）已 PASS。到期后台验证结果待补充。
+
+前序首 RED（PID 664 首次启动因 D 盘目录不存在失败）保留于 `.verification/expiry-bg-full.log` 旧内容。PID 1150/12768 为修正后成功启动。
