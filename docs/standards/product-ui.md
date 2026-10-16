@@ -417,3 +417,13 @@ Taste 页面提供完整已保存内容、人工创建及编辑、启停、固�
 首失败保持：`typecheck-first.log` 为材料 title 可空的 EXIT2，`typecheck-second.log` 及首次定向 ESLint 工具回执为未使用类型声明错误。`e2e-first.log` / `playwright-first/` 保留真实新建、并发更新、409 及草稿之后的等待超时；该轮运行中补充人工核查步骤，测试已加载脚本与页面不同。固定源码后的 `e2e-boundaries-second.log` 首项在 Go 冷下载期间 180 秒超时，其余两项真实通过；之后仅定向复验失败的 409。继承 WIP 副本保留在 `s5-inherited-wip.txt`。SOURCE 首次普通 push 被远端以 failed 拒绝、EXIT1，核远端仍为 93223cf 后第二次普通 push EXIT0。
 
 本阶段真实限制：Taste 未知收据缺少按 request_id 的只读查询，页面继续保锁；委托选择使用公开接口当前可读取的规则版本。构建保留主资源 693.43 kB 的既有 500 kB 提示。共享 64505 保持原 2d27 / PID50624，F 为唯一共享业务操作者；本阶段没有写入共享个人 Taste、PLOS 准入或批准。整仓 `pnpm check`、默认完整 E2E、受限 Native / L1 / L2 和最终包不属于以上通过结果，仍由模块及原负责人继续。后继操作为模块审阅该 SOURCE / REPORT 并交根普通集成，最终发布由根接受后处理。
+
+## 保存前资料读取随页面关闭取消
+
+后继 SOURCE `990847571f95198400bc21d77b7b590d5fbc0c27` 已普通 push，仅修改 `TasteProfileEditor.tsx` 和原 S5 spec。资料与规则的保存前读取共用本次 AbortController；页面卸载立即取消读取，开始提交前再检查取消状态。进入原持久命令前清理读取 controller，已发送请求与 unknown 身份、持久锁继续按原语义处理。
+
+实际命令 `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s5-delegation.spec.ts --grep 'Taste保存前真实资料读取' --workers=1 --retries=0 --trace off --reporter list --output D:/Astrocyte-agent-assets/20261015/product/ui/ctx_e921762e5e79/playwright-cancel-first`：两尺寸新场景 2 PASS / EXIT0 / 42.0 秒，实际工具会话 61042 已返回 EXIT0，日志 `e2e-cancel-first.log`。该轮使用真实浏览器 CDP 为本页 transport 设置 2000ms 延迟，观察实际资料 GET 开始后点击共同工作区，原请求报告 `net::ERR_ABORTED`；实际 Taste PUT 为零、SQL 收据数量及实体保持原值，重开后人工保存生成下一版本。finally 恢复浏览器延迟并关闭 CDP 与独立服务。没有响应模拟、全局网络修改或猜测等待；原十个已通过场景未为统一数字重跑。真实库分别保留在 `results/astrocyte-s1-UGyvcw` / `results/astrocyte-s1-QW8sxE`。
+
+`pnpm --dir web exec eslint src/pages/attention/delegation/TasteProfileEditor.tsx e2e/s5-delegation.spec.ts` 实际 EXIT0，原件 `lint-cancel.log`。完整 `pnpm build` 实际 EXIT0，工具会话 27611 返回 EXIT0，原件 `build-cancel.log`，包含 server / MCP / Sleep、完整 tsc-b 与 Vite；产物仍在本树 C 盘 `dist/` / `web/dist/`，缓存与 QA 原件继续使用前节 D 目录。当前主资源为 693.62 kB，原 500 kB 提示保持。上述检查在该 SOURCE 提交前的相同业务与测试内容上运行；`git diff --check` / `git diff --cached --check` 均 EXIT0。
+
+本文件 12:55 章节属于前序未接纳候选历史，其待运行说明不构成当前验收条件。当前有效判断验收要求实际生产 HTTP 200、固定来源及真实持久化结果，以上两阶段按各自实际源码和分次结果记录。原收据能力、共享只读和最终发布边界保持，原 Task 持续负责具体领域返修，不扩展功能范围。

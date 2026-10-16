@@ -372,3 +372,43 @@ test('Taste选择实际较早固定版本，换材料与移除示例后保持草
     expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 2 }]);
   } finally { await server.close(); }
 });
+
+test('Taste保存前真实资料读取随页面关闭取消，不产生延迟提交', async ({ page, context }) => {
+  test.setTimeout(180_000);
+  const { server, api, material, revision } = await setup();
+  const network = await context.newCDPSession(page);
+  const conditions = { offline: false, downloadThroughput: -1, uploadThroughput: -1 };
+  try {
+    let section = await openTaste(page, server.webURL);
+    const profile = await fillTaste(page, section, material.id, revision.revision);
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    for (const example of await section.locator('.ac-taste-example').all()) await expect(example.getByLabel('示例固定版本', { exact: true })).toHaveValue(String(revision.revision));
+    const writes: string[] = [];
+    page.on('request', request => { if (request.method() === 'PUT' && request.url().endsWith(`/api/v1${tastePath}`)) writes.push(request.url()); });
+    await network.send('Network.enable');
+    await network.send('Network.emulateNetworkConditions', { ...conditions, latency: 2000 });
+    const reading = page.waitForRequest(request => request.method() === 'GET' && request.url().endsWith(`/materials/${material.id}`));
+    await section.getByRole('button', { name: '保存配置', exact: true }).click();
+    const request = await reading;
+    const cancelled = page.waitForEvent('requestfailed', { predicate: failed => failed === request });
+    await page.getByRole('button', { name: '共同工作区', exact: true }).click();
+    expect((await cancelled).failure()?.errorText).toBe('net::ERR_ABORTED');
+    await network.send('Network.emulateNetworkConditions', { ...conditions, latency: 0 });
+    expect((await api.get(tastePath) as S['TasteProfileResultV1']).profile).toEqual(profile);
+    expect(server.query("SELECT COUNT(*) AS count FROM attention_receipts WHERE command='UpdateTasteProfile'")).toEqual([{ count: 1 }]);
+    expect(writes).toHaveLength(0);
+    await page.goto(`${server.webURL}/attention`);
+    section = page.getByRole('region', { name: 'Taste 配置', exact: true });
+    await expect(section.getByRole('button', { name: '编辑配置', exact: true })).toBeEnabled();
+    expect(await page.evaluate(() => sessionStorage.getItem('astrocyte:command:pending:attention:taste'))).toBeNull();
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    await section.locator('.ac-taste-rubric').first().getByLabel('评判标准', { exact: true }).fill('人工重新核查固定公开协议的来源');
+    const updated = await saveTaste(page, section);
+    expect(updated.version).toBe(profile.version + 1);
+    expect(writes).toHaveLength(1);
+  } finally {
+    await network.send('Network.emulateNetworkConditions', { ...conditions, latency: 0 });
+    await network.detach();
+    await server.close();
+  }
+});

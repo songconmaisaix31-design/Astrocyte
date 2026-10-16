@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { localProjectsApi } from '../../../api/s1';
 import { useReadApi, formatError } from '../../../hooks/useReadApi';
 import { usePersistentCommand } from '../../../hooks/usePersistentCommand';
@@ -23,6 +23,8 @@ export function TasteProfileEditor() {
   const [validation, setValidation] = useState('');
   const [verifying, setVerifying] = useState(false);
   const verifyingRef = useRef(false);
+  const verification = useRef<AbortController | null>(null);
+  useEffect(() => () => verification.current?.abort(), []);
   const [reviewedVersion, setReviewedVersion] = useState<number | null>(null);
   const [needsPreparation, setNeedsPreparation] = useState(false);
   const [readLatest, setReadLatest] = useState(false);
@@ -44,12 +46,14 @@ export function TasteProfileEditor() {
       frozen = { ...tasteInput(draft, rules), expected_version: expectedVersion };
     } catch (cause) { setValidation(formatError(cause)); return; }
     verifyingRef.current = true;
+    const controller = new AbortController();
+    verification.current = controller;
     setVerifying(true);
     setValidation('');
     try {
       // 固定输入在开始核查时冻结；读取失败或摘要变化立即停止，保留原草稿。
       for (const example of frozen.examples) {
-        const detail = await judgmentApi.materialDetail(example.material_id);
+        const detail = await judgmentApi.materialDetail(example.material_id, controller.signal);
         if (detail.material.lifecycle !== 'active') throw new Error('示例资料当前未处于 active 状态');
         const revision = detail.revisions.find(item => item.revision === example.revision);
         if (!revision) throw new Error('示例固定版本当前不可读取');
@@ -58,15 +62,18 @@ export function TasteProfileEditor() {
       for (const reference of frozen.delegations) {
         const selected = references.data?.find(item => item.rule.id === reference.rule_id);
         if (!selected) throw new Error('原委托规则当前不可读取');
-        const { delegation_rule: rule } = await judgmentApi.rule(selected.project.id, reference.rule_id);
+        const { delegation_rule: rule } = await judgmentApi.rule(selected.project.id, reference.rule_id, controller.signal);
         if (rule.revision !== reference.revision || rule.workflow_id !== reference.workflow_id) throw new Error('原委托规则版本已变化，请核查固定引用');
       }
+      controller.signal.throwIfAborted();
     } catch (cause) {
       setValidation(formatError(cause));
       verifyingRef.current = false;
+      verification.current = null;
       setVerifying(false);
       return;
     }
+    verification.current = null;
     await save.run(key => judgmentApi.saveTaste({ ...frozen, request_id: key }), (_, outcome) => {
       if (outcome.status === 'succeeded') { taste.retry(); setDraft(null); }
     });
