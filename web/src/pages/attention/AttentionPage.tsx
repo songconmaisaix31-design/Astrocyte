@@ -25,6 +25,7 @@ import { RankingPanel } from './RankingPanel';
 import { SelectField } from './FormControls';
 import { MaterialWorkspace } from './MaterialWorkspace';
 import { OpportunityWorkspace, DimensionScores } from './OpportunityWorkspace';
+import { JudgmentDelegationWorkspace } from './delegation/JudgmentDelegationWorkspace';
 import type { Material, Opportunity } from './model';
 import styles from './AttentionPage.module.css';
 
@@ -89,6 +90,7 @@ export function AttentionPage({ query }: { query: string }) {
           <SpacesPanel materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
         </div></details>
       </div></SectionCard>
+      <JudgmentDelegationWorkspace />
     </div>
     {(importing || route.query.get('import') === '1') && <DetailPanel title="添加资料" onClose={handleClose}><ImportForm draft={importDraft} onImported={() => { refreshCollections(); setQueueToken(value => value + 1); }} /></DetailPanel>}
     {(selectedMat || selectedMatId) && <DetailPanel title="素材详情" onClose={handleClose} showDisabledNotice disabledNoticeText="资料准入和任务执行尚未实现，保存不会创建 Mission"><MaterialWorkspace key={selectedMat?.id ?? selectedMatId!} id={selectedMat?.id ?? selectedMatId!} refreshToken={detailToken} materials={allMaterials} domains={domains} onChanged={refreshCollections} onQueued={() => { refreshCollections(); setQueueToken(value => value + 1); }} onOpportunity={selectOpportunity} /></DetailPanel>}
