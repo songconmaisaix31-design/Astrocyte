@@ -2,7 +2,7 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前会话测试整改计划（2026-10-17 02:52）
+## 当前会话测试整改计划（2026-10-17 02:56）
 
 根 `msg_b28486c1ad95` 已接收目录阶段的准确组合4 PASS / vet / runner EXIT0，I报告44a25576已 push；该结果没有消除完整默认或原 Windows具体原因的限制。后续沿同一 H `task_3004b636a3ab / ctx_ad637376ba1d`，模块只维护本文件，不创建人员、Task、Run或工作树。
 
@@ -14,9 +14,9 @@
 
 现有真实来源：当前 c5普通服务及其原主库 / Relay库没有 owned session或原生事件；它可以证明真实空登记、权限 / 查询拒绝和未写入基线，不能提供首次 owned gap或 gap变化。目录阶段新建的公开 Git只提供真实文件上下文，没有生成原生会话。原 Q公开 snapshot是认知派生来源，不能代替原生会话；旧已知来源的 nlink2拒绝、append-only / prefix未知、SessionComplete=false和 raw恢复 gap保持，禁止借整改绕过 guard、扫描自由历史或重发旧输入。
 
-模块已完整读取两份旧测试及生产 collector / FileState / HTTP / SQLite端口：poll旧测试依靠伪造 owned列表、修改 gap和 Save计数；HTTP旧测试依靠固定空结果与 calls计数。本轮必须移除这些替身，复用生产 collector、真实 FileState / SQLite及实际 HTTP。认证 guard / query / error / no-store完整断言保持，读取前拒绝可用实际关闭存储或真实读取失败区分，不能再造 reader计数器。
+模块已完整读取两份旧测试及生产 collector / FileState / HTTP / SQLite端口：poll旧测试依靠伪造 owned列表、修改 gap和 Save计数；HTTP旧测试依靠固定空结果与 calls计数。当前 HTTP替身完整替换，复用生产 collector、真实 FileState / SQLite及实际 HTTP；认证 guard / query / error / no-store完整断言保持，读取前拒绝用实际关闭存储后的真实读取错误区分，不再造 reader计数器。HTTP包无法导入 package main collector，准确授权200 /关闭真实 store后的503及完整拒绝矩阵在原 main测试文件中实施；HTTP包原文件保留实际未配置 provider503及全部等效安全 / 查询 / 错误 / no-store检查，没有新增生产桥接。
 
-首次真实 gap仅写一次、后续静默 poll不写、真实 gap变化仅再写一次三个语义继续逐项保留。缺少实际 owned会话或真实变化时，该具体场景保持未验；真实空登记或拒绝检查须使用准确名称，不能让原完整场景同名 PASS后再写 NOT_RUN，也不能让空子集代表全部。不得伪造 binding、gap、SQL、会话、原档或模型；不新增登记、Probe、Start、工具或来源权限。
+根 `msg_cca90749a51a` 及正式问题 `msg_8fd962bf9f64` 的答复 `msg_63b957aaf6fc` 明确：缺少真实 owned来源时，原 poll同名函数、旧替身和断言暂时原地保留，禁止运行或计为 PASS，不批准删除后改成纯报告；当前没有新增使用 fake。可以另以准确不同名称增加真实空 collector /重开 /未建checkpoint验证，不能用该空基线代表 owned覆盖，也不新增永久 Fatal或 Skip占位。首次真实 gap仅写一次、owned静默 poll不写、真实 gap变化仅再写一次三个门禁继续未通过。最终只能报告 HTTP已完整替换、新真实空基线的实际结果，旧 owned poll仍残余替身、整体部分未完成，并逐项列明实际窗口 /端口前置。不得伪造 binding、gap、SQL、会话、原档或模型；不新增登记、Probe、Start、工具或来源权限。
 
 先由 H核现有端口和已获准来源，直接实施无需新 Native的完整真实部分，明确保留其余场景及具体前置；需要跨包迁移实际断言或额外路径须先准确 Handoff，不能添加生产替身桥接。只运行受影响的真实检查，记录 selector / list / 首次结果、固定 SOURCE与独立 REPORT普通 push并使用 `[skip ci]`。原始源、凭据和模型输出只留本机；模块完整读取准确代码和原件后交根组合，不安排第三遍成功测试。当前 c5 /30420 /610cc与外层 UNKNOWN继续保持。
 
