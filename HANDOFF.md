@@ -1,5 +1,23 @@
 # Astrocyte 主控交接
 
+## 进度前置组合通过与剩余链路（2026-10-17 03:12）
+
+B SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` /独立REPORT `b67f570d58d3b4bd874abf3da7897de735efb5b6` 已普通合原I `a18f66fd5dc4119ae430171b41c16dea489d3001`，根报告 `0cb121ce408fbd2100006ac07d08c82c5bc1b4fa` 已普通push。根独读355行external测试、报告及作者首轮原件，准确组合精确list两项 /2 PASS /0 Skip，各0.12 /0.10秒，包1.404秒，app vet /diff /runner均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-progress-preflight-a18f66f/` 及相邻runner。未Probe配置拒绝后的生产unknown、同key保护 /重启 /人工保留，以及实际READONLY返回内存pending与数据库零持久化分别通过；没有发生Native交付，旧七项覆盖仍未验。
+
+H已按原任务精确核剩余链：archive缺可信PrefixComplete提供及传递，AppendOnly没有正事实；native通知完整性独立，不补archive true，不新R接口。六步第5步已有显式同库MCP /LocalProject /principal /session绑定的approved-only读取、human手册UTF8 /64KiB /CAS持久保存、两条Relay首输入消费构件；当前没有真实执行记录。自动检索装配未由原步骤明确，根已异步问用户自动注入或既有MCP加人工手册方式，待答记入QUESTIONS，不据此开放工具、冻结接口或把已有构件写成缺实现。合法完成 / 采用、候选、具体批准、新输入和后续使用前置分别未满足。
+
+原B当前仅沿准确既有报告 / runner定位95314公开paper原件及既有D视频正文，禁止开旧业务SQL、遍历历史 / Temp或重复原模型；有可实施容量检查时先交准确来源和文件范围。原H保持同Task服务支持及明确剩余Handoff，无新业务写入。产品c5 /PID30420 /64505和外层UNKNOWN保持，完整默认 /CI /L1 /L2及最终包未通过；当前本轮六阶段根真实组合合计14项通过，不是全套验收。
+
+## 选定文本装配已验，继续实际进度前置（2026-10-17 03:08）
+
+B SOURCE `4bb5ec63b2af1c97959bda60cee1ba625a7a79ed` /独立REPORT `dd69f1c2b4f9982364a395d54f8c31baeae6672c` 已普通合原I `dc125d8bc53773aed2d48df3eb7abb423f4c7007`，根报告 `701bc41cc1ae61b6abd93b293729f836b47907e5` 已普通push。根完整独读324行新测试 /报告 /首编译与后继原件，准确组合精确list1、实际1 PASS0.13秒 /包1.907秒，cmd/server vet /diff /runner均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-selected-dc125d8/` 及相邻runner。真实公开paper正文57465bytes、当前项目权限 /未Probe缺配置证据 /撤回 /取消 /关闭库与来源守卫通过；原distillers两件替身、模型正向 /非法响应 /联合容量与超限来源仍未替换或执行。
+
+按原Release目标及SPEC17.3 /17.4，原B同Task接续 `internal/workspace/app/progress_preflight_actual_test.go` 与backend报告，模块已核原S2 /T互斥。使用真实HTTP /公开README /SQLite /ProjectFiles /未ProbeRegistry，验证真实前置拒绝后的unknown持久化、同operation保护 /同库重开 /人工Set保留；另仅自有D库以query_only产生真实READONLY，分别核返回内存pending与数据库未持久化，恢复真实状态。该新增前置覆盖不代替旧七项模型 /在途 /computed /CAS验收，不手工修改receipt，不启动Native或新writer。原五阶段已交付文件保持，根只合准确SOURCE /REPORT后做必要组合，不重建部署。
+
+容量原件继续仅查已有安全记录与准确公开指针；原视频149两正文32908 /35807bytes已获准派生，不能把历史SHM变化当当前禁用。根STATUS保留历史95314+32908 /wire135754的真实联合成功，SOURCE52ff9564、旧公开目录7NybyZ /4pmMWO仅作准确报告线索；不重新打开旧业务库、遍历历史或重复模型，也不把旧成功当当前装配通过。
+
+L1另有源码缺口：archive分支的 `relayCaptureBinding` 没有传入PrefixComplete，原archive领域端口也没有可信前缀字段；native通知端口已有独立PrefixComplete。不能只列工具许可或真实来源不足，不能据退出补true或用native通知证明archive完整。原H继续核原条款、可信提供口和R/H精确衔接Handoff，未定证据语义不自建接口或新R写入者。当前nlink2 /append-only未知保持，产品c5 /PID30420与外层UNKNOWN保持，完整默认 /CI /L1 /L2及最终包未完成。
+
 ## 会话 HTTP 已完成真实替换与组合检查（2026-10-17 03:03）
 
 H SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` /独立REPORT `c4d0e198da59d7ab91af061a4e115c3ad16e8cbb` 已普通合原I `607a9a82e5db7600361bc419fbe7c1852857a4b0`，根报告 `b342cb8154748cd44e0aad3cabd5ff59df8f93d2` 已普通push。根独读全部差异 /报告 /作者日志并仅在准确组合精确list三项，实际3 PASS /0 Skip：空登记重开0.13秒、生产collector HTTP0.12秒，main包1.428秒；未配置provider0.10秒，httpapi包1.582秒。两包vet /diff /runner均EXIT0，原件 `D:/Astrocyte-agent-assets/20261015/integration/root-session-607a9a8/` 及相邻runner。

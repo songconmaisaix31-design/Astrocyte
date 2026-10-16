@@ -1,5 +1,17 @@
 # Astrocyte 当前状态
 
+## 03:12 进度前置两项组合通过（2026-10-17）
+
+B76136841 /REPORTb67f570d已普通合I a18f66fd，根报告0cb121ce已push。准确组合精确list2 /2 PASS /包1.404秒，app vet /diff /runner均EXIT0，真实unknown前置与只读pending保存失败的返回 /持久状态分列；旧七项模型与在途覆盖保持未验。本轮已完成六阶段14项真实组合测试，全部实际原件及范围见HANDOFF /I报告。
+
+H剩余archive完整性缺提供口 /可信字段，六步5现有MCP加人工手册构件可达但未实际验证；自动装配方式已异步问用户，未答不冻结新接口或权限。B只沿准确既有记录定位公开容量输入，无新Native /模型 /采集。产品c5 /PID30420 /64505保持，最终默认 /CI /L1 /L2 /包仍未通过。
+
+## 03:08 选定文本装配通过，进度前置继续（2026-10-17）
+
+B4bb5ec63 /REPORTdd69f1c2已普通合I dc125d8b，根报告701bc41c已push。准确组合1 PASS0.13秒 /包1.907秒，精确list /cmd vet /diff /runner均EXIT0。原公开paper固定来源与当前权限、缺配置证据、撤回 /取消 /关闭库守卫通过，没有Native输入；原完整容量及模型覆盖保留未验。
+
+原B按SPEC17.3 /17.4连续新增progress前置真实检查，内存pending与实际只读库未持久化分别核，旧七项覆盖不替代。原H核L1 archive无可信PrefixComplete提供 /传递字段的源码缺口，archive与native通知分开，未决定证据不填true或新建写入者。具体范围 /原件 /容量旧成功见HANDOFF；产品c5 /PID30420保持，整体和最终包继续未完成。
+
 ## 03:03 会话 HTTP 真实替换组合通过（2026-10-17）
 
 H0a8b3948 /REPORTc4d0e198已普通合I607a9a82，根报告b342cb81已push。准确组合三项实际PASS /0 Skip，main包1.428秒、httpapi包1.582秒，两包vet /diff /runner均EXIT0。HTTP固定reader替身完整移除，原全部拒绝 /授权空200 /no-store /实际关闭store503与独立空登记同库重开均通过；旧owned poll原函数 /断言保持未执行，三项真实owned语义继续未验。

@@ -1,5 +1,11 @@
 # 用户决定与待定项
 
+## 经验检索结果写入交接上下文的方式（2026-10-17，待答）
+
+已确认的六步第5步继续要求新任务通过 `get_experiences` 获取已批准经验，保存实际检索结果、经验引用和交接上下文。当前已有显式启动绑定的 approved-only MCP读取、人工保存 WorkHandoff.Content及两条首输入消费路径；没有本轮真实检索 / 保存 / 后续输入记录，不能登记通过。
+
+已异步询问采用产品自动检索并注入首条输入，还是现有 `get_experiences` 检索后由人写入手册；答案尚未收到。原任务未明确要求自动装配，不能据搜索缺少自动连接判定全部现有构件未实现；未答期间不冻结新字段、默认检索选择、MCP绑定或Agent权限，也不删除现有人工手册路径。具体候选仍须用户本人批准，真实完成 / 采用、同库可信绑定与合法新输入前置分别保持。
+
 ## 固定 PLOS 候选资料准入（2026-10-16，待答）
 
 已向用户询问：将 [Frameworks for procurement, integration, monitoring, and evaluation of artificial intelligence tools in clinical settings: A systematic review](https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514) 的固定资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` r1、候选 `QILUA3J6WINYVSRKX3CU6FA35A` r2/v3，准入“同实例公开前端项目” `98389066-5e5a-4e82-982b-deab3e005273`（settings r2），用于公开论文固定上下文核查并仅生成提案草稿；或暂不准入。对应 Goal 为 `46a1b8e5-583c-4df0-921a-46ef83660d8a` r1，人工摘要 `LD6A7RPZQJIQW6F224QALLQDR5`。
