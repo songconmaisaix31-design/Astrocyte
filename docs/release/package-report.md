@@ -1,5 +1,86 @@
 # Windows x64 发布包记录
 
+## 2026-10-16 Build 环境作用域修正、pwsh 功能验证与 S4 正向构造
+
+本阶段 Task `task_3347b755071e`，Dispatch `ctx_1874978728b8`。固定原树和分支 `songconmaisaix31-design/release-package-20261014`。本轮三项修正：Build-Windows.ps1 环境作用域、pwsh 功能验证的准确进程级报告、一次真实 S4 完整参数正向构造。
+
+### Build-Windows.ps1 Node 检查纳入 D 环境作用域
+
+Check-Runtime.mjs 和 Inspect-Package.mjs 两个真实 Node 调用从 try 块前移至 try 块内，在 D 盘环境变量（GOCACHE/GOTMPDIR/TEMP/TMP/npm_config_cache/NODE_COMPILE_CACHE/ASTROCYTE_TEST_OUTPUT_ROOT/PATH）设置之后、source archive 之前执行。完整保存/设置/try-finally 还原作用域覆盖所有 Node 调用，确保构建环境隔离完整。Output 不复用、路径/space/privacy/fast-fail 守卫保持。本轮只做 Parser 适用检查，不执行 Build/3GB 扫描/最终包。
+
+```diff
+-& (Join-Path $Runtime 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Check-Runtime.mjs') (Join-Path $Runtime 'runtime')
+-if ($LASTEXITCODE -ne 0) { throw 'Prepared real runtime is invalid.' }
+-& (Join-Path $Runtime 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Inspect-Package.mjs') (Join-Path $Runtime 'runtime')
+-if ($LASTEXITCODE -ne 0) { throw 'Prepared runtime privacy check failed before source archive.' }
+ ...
+ try {
+     ... (D env setup) ...
++    & (Join-Path $Runtime 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Check-Runtime.mjs') (Join-Path $Runtime 'runtime')
++    if ($LASTEXITCODE -ne 0) { throw 'Prepared real runtime is invalid.' }
++    & (Join-Path $Runtime 'runtime\node\node.exe') (Join-Path $PSScriptRoot 'Inspect-Package.mjs') (Join-Path $Runtime 'runtime')
++    if ($LASTEXITCODE -ne 0) { throw 'Prepared runtime privacy check failed before source archive.' }
+     Push-Location $repo
+```
+
+### pwsh 功能验证与 Go 子进程退出发现
+
+新增 pwsh (PS7) 功能验证脚本 `functional-test-pwsh.ps1`，独立于既有 PS5.1 七项测试。实际进程级验证：
+
+| 项目 | 实际结果 |
+|---|---|
+| 父 Shell | pwsh 7.6.6 PID 44048 |
+| 子 Shell (wrapper) | pwsh.exe (PS7) PID 49240 |
+| Go 子进程 | astrocyte.exe PID 46912 |
+| 进程树 | pwsh -> pwsh -> astrocyte.exe（实际验证） |
+| 默认无模型启动 | PASS，端口 19882 监听 |
+| HTTP health | PASS，200 |
+| SQLite 创建 | PASS，4096 bytes |
+| 端口释放 | PASS |
+
+**关键发现**：当 pwsh wrapper 被 Kill 时，Go 子进程 astrocyte.exe **不会自动退出**。实际测试中 wrapper PID 49240 退出（code=-1），但 Go 子进程 PID 46912 仍在运行，必须显式 force-kill。这证明旧 harness 的 Stop-TestApp 空 catch 没有证明 Go child 退出。新 harness 在 wrapper kill 后显式检查 Go 子进程状态，若仍在运行则 force-kill 并报告。
+
+新 harness 改进：
+1. Stop-TestApp 不再吞错误（空 catch 改为实际错误报告）
+2. wrapper kill 后通过 Win32_Process CIM 查询确认 Go 子进程是否存在
+3. Go 子进程未退出时显式 force-kill 并记录
+4. 准确报告父/子 Shell 版本和进程树
+
+既有 PS5.1 七项功能测试（默认启动、五拒绝用例、再次验证空默认）不重复。pwsh 测试仅覆盖默认启动/HTTP/SQLite/owned 退出，不与 PS5.1 重复拒绝用例。所有后继运行保持完整进程级 D Go/cache/temp/output-root/npm/Node cache 与 GOMAXPROCS=2/GOFLAGS=-p=1。既有进程 secret 只继承不读取打印复制，不新增 CLI 明文 key。
+
+### S4 CodeGraph 完整参数正向构造
+
+按根 `msg_1a8b11891180` 和模块 `msg_50b7b037d3da` 批准，使用 H 非秘密指针 `s4-config-public.json` 的四项现用值，在新 D staging 独占数据目录仅执行一次 S4 完整参数正向构造：
+
+| 参数 | 值来源 |
+|---|---|
+| `CodeGraphNode` | `runtime-sanitized-third/runtime/node/node.exe`（Node 24.16.0） |
+| `CodeGraphSDK` | `runtime-sanitized-third/runtime/sdk/node_modules/@colbymchenry/codegraph`（1.0.1） |
+| `CodeGraphScript` | `runtime-sanitized-third/runtime/adapters/codegraph.mjs`（已提交同源） |
+| `RepositoryEnvironmentID` | `H-shared-product-20261016-ad8413` |
+
+实际进程级结果：
+
+| 项目 | 结果 |
+|---|---|
+| 父 Shell | pwsh 7.6.6 PID 51016 |
+| 子 Shell (wrapper) | pwsh.exe PID 29888 |
+| Go 子进程 | astrocyte.exe PID 12656 |
+| 进程树 | pwsh -> pwsh -> astrocyte.exe |
+| 端口监听 | PASS，19883 |
+| HTTP health | PASS，200 |
+| SQLite 创建 | PASS，4096 bytes |
+| **repository-context/runtime** | **PASS，实际创建（appdata/localappdata/profile/temp）** |
+| owned 退出 | PASS，Go child 显式 force-kill |
+
+**关键生产配置证明**：`repository-context/runtime/` 目录及其四个子目录（appdata、localappdata、profile、temp）的实际创建，证明 `resolveRepositoryContextConfig` 仅在完整有效 S4 CodeGraph 参数组加有效 RepositoryEnvironmentID 时才执行。无模型配置的默认启动不创建此目录；此效果不可由字符串匹配或模拟替代。AOCI 未配置（`aoci_configured=false`），不影响 S4 路径。
+
+未索引仓库、未初始化 Laya/任何模型、未执行 native/ASR/下载/3GB 扫描/最终包。Node/Go/PS 全 D 环境，原共享 64505 和库不变。真实 runtime SOURCE 38fb2891 仅用于启动参数兼容与 S4 正向检查，不记为最终同源包。
+
+本轮实际修改文件：`release/Build-Windows.ps1`（Node 检查移入 try 块）、`docs/release/package-report.md`（本章节）。pwsh 与 S4 功能验证脚本和日志保留在 D 盘独占 staging `staging-38fb-first`。未执行最终 Build/Verify/archive/Release/tag。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。
+
+本轮实际修改文件：`release/Build-Windows.ps1`（Node 检查移入 try 块）、`docs/release/package-report.md`（本章节）。pwsh 功能验证脚本和日志保留在 D 盘独占 staging `staging-38fb-first`。真实 runtime SOURCE 38fb2891 仅用于启动参数兼容检查。未执行最终 Build/Verify/archive/Release/tag。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。
+
 ## 2026-10-16 S4/S5/Jev 显式启动参数映射
 
 本阶段 Task `task_3347b755071e`，Dispatch `ctx_70c076b66d81`。固定原树和分支 `songconmaisaix31-design/release-package-20261014`。普通消费 H/B 已交付的精确 SOURCE `fc294bee3d4a513d90cca6768d74fd4b90088394` 中 `cmd/server/config.go` 与 `relay_judgment.go` 的完整真实配置。
