@@ -705,3 +705,63 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 | 三件变更 Go 文件 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
 
 实际安装检查通过显式 `ASTROCYTE_VERIFY_VIDEO_CONFIG` 消费上一节白名单 JSON，只设置十二个明确配置键，调用原生产 `resolveSourceReader` 与 `resolveListingPython`。生产 Node 执行真实 CLI 路径解析，原实际提取器成功构造并同时接入 video / arXiv Reader，Python 身份逐字保持；关闭开关后两个提取端口保持空值。没有调用提取、ASR、模型、共享服务或原生 Registry。上述源码与实际检查不替代 H / F 在同一产品实例的配置消费与视频业务验收；进度 HTTP 的独立 WIP 和首 403 也未包含在本 SOURCE 内。
+
+## 进度缓存 GET 读取与 per-request Grant 安全验收
+
+首 SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562`，后继 SOURCE 含五项安全检查。缓存读取 `GET /api/v1/local-projects/{id}/progress` 在每次请求时通过领域服务 `GetProjectProgress` 逐次检查 `read_context` 的 grant/action/expiry/revoke，不触发写入或模型调用。`progressProject()` 对人工调用者直接放行，对 Agent 调用者逐次加载 `LoadGrant` 并验证 action 匹配、过期时间和撤销状态；跨项目请求直接拒绝。`scopedAgentRoute` 仅允许 Agent 持有项目范围 token 访问同一项目的 `progress` GET 路由，PUT/infer 仍仅限人工。
+
+变更文件：
+- `internal/adapters/httpapi/progress.go`：HTTP 适配层，领域 `ProjectProgress` 映射为线格式；缺失状态为 `unknown`，缺失 source/observed_at 为 `null`；501 当服务 nil
+- `internal/adapters/httpapi/session.go`：`scopedAgentRoute` 增加 `parts[4] == "progress" && r.Method == http.MethodGet`，允许 Agent token 读取同项目进度
+- `internal/workspace/app/progress_test.go`：翻译 9 块英文注释为中文，保留 8 项 processor/registry 外部替身测试（诚实记录为不计 PASS）
+- `internal/workspace/app/progress_actual_test.go`：8 项真实 HTTP/SQLite 安全测试
+- `internal/workspace/app/progress_expiry_bg_test.go`：已迁移至 `tests/s1/progress-expiry.mjs`（Node.js 实现），原文件已移除
+- `internal/workspace/app/projects.go`：本轮短期 ExpiresAt 已恢复原语义（GrantProjectAgent 清空、IssueProjectAgentToken 固定 UTC+1h），追加修复保历史
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGetFillsAuthorizedProjectIdentity\|TestProgressHumanSetAndCacheRead\|TestProgressAgentReadUsesGrant\|TestProgressCrossProjectGetRejected\|TestProgressValidGrantWithoutReadContextRejected\|TestProgressTokenIssuedWithExpiry\|TestProgressAgentInferRejected\|TestProgressRestartPreservesCacheAndPermissions' -v -count=1` | EXIT 0，8 PASS，包 5.172s |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0 |
+| `go vet -mod=readonly -p=2 ./...` | EXIT 0 |
+
+八项真实 HTTP/SQLite 测试验证（全部 PASS）：
+1. **TestProgressCacheGetFillsAuthorizedProjectIdentity**：缓存不存在时 GET 返回 identity（status=unknown），不写入行；人工和 Agent 均验证
+2. **TestProgressHumanSetAndCacheRead**：非人工 PUT 被拒绝，CSRF 缺失被拒绝，验证失败被拒绝，人工写入后 SQLite 持久化并通过 GET 读回
+3. **TestProgressAgentReadUsesGrant**：无 grant 的 Agent 被拒绝，有 grant+token 的 Agent 被接受，撤销 grant 后再次被拒绝
+4. **TestProgressCrossProjectGetRejected**：Agent 持有项目 A 的有效 token 访问项目 B 的进度端点返回 403，项目 B 数据未受影响
+5. **TestProgressValidGrantWithoutReadContextRejected**：合法 Grant 仅含 `observe` 不含 `read_context` 时 GET 被拒绝，服务层和 HTTP 层均验证
+6. **TestProgressTokenIssuedWithExpiry**：签发 1h token，验证到期前 GET 成功，ExpiresAt 在未来约一小时
+7. **TestProgressAgentInferRejected**：Agent 的 POST `/progress/infer` 和 PUT `/progress` 均被 scopedAgentRoute 拒绝，原始进度未改变
+8. **TestProgressRestartPreservesCacheAndPermissions**：第一轮真正启动 HTTP1，通过 HTTP 读取人工缓存和验证 Agent token；关闭 HTTP1 和 DB；重新打开同一 SQLite 文件启动 HTTP2，验证缓存和原 token 权限均持久化
+
+八项内存替身测试保留覆盖但诚实记录为不计 PASS：`progressProjects`、`progressStore`、`progressProcessor`、`progressFiles`、`progressRegistry` 替身不能验证真实 HTTP/SQLite/session/permissions/CSRF/Agent-token 边界。`paper-dom.mjs` 的 catch 块移除已在先前 SOURCE `2644083` 完成，不在本轮范围内。
+
+## 自然到期验收迁移与在途进程状态
+
+用户正式决定 `msg_ef2ae7cc0b04`：保持原 1h 到期，短期 ExpiresAt 未授权。`projects.go` 已恢复原语义（`GrantProjectAgent` 清空 ExpiresAt、`IssueProjectAgentToken` 固定当前 UTC+1h），追加修复保历史，未使用 Git 回滚。
+
+按 `msg_3cbf78fccc5f` 及 `msg_569c9e514e8f` 精确授权，原 `progress_expiry_bg_test.go` 通过 `git rm` 移除（非文件编辑工具，此为工具记录不符的实际方法；后续代码修改必须使用文件编辑工具，禁止 Git 恢复）。长验收逻辑迁移至 `tests/s1/progress-expiry.mjs`。新脚本复用 `startS1Server` / `humanAPI`，签发真实 1h token，等待自然到期后验证 HTTP 403 拒绝。token 仅留在内存，不记录内容或片段。显式运行 `node tests/s1/progress-expiry.mjs`，不在默认测试套件中执行；不需要 env 开关、skip 或 fake 到期。按 `msg_b8549b61afdc` 返修：移除 `.catch(()=>null)` 静默吞错误（改为 `await response.json()` 直接传播）、移除无关 `ensureGitRepo` fallback 和未使用的 `execSync`/`command`/`mkdtemp` 导入、移除到期后重复跨项目检查（已由 Go 快检 `TestProgressCrossProjectGetRejected` 覆盖）。按 `msg_2922eb81af54` 返修：单次长 `delay()` 替换为轮询循环，每次用真实 `Date.now()` 重算剩余时间，单次 delay ≤ 30s，总等待有界 2h（assert 超限失败）；无假 Clock、无 DB 改时、不启动第二个 1h 进程。
+
+**新 mjs 状态：NOT_RUN**（`node --check` 语法通过不等于实际运行；显式运行验收待后续 dispatch）。SOURCE `c008573`（三违反修复）和 `9674749`（轮询修复）已独立核实正确。
+
+后台进程状态：**RUNNING**（在途 Go 进程，源码已迁移但不影响运行中进程）
+
+| 参数 | 值 |
+|---|---|
+| 实际 PID（Go test 进程） | 12768 |
+| 进程名 | `app.test.exe` |
+| 父进程 PID（go.exe） | 46696 |
+| 进程路径 | `D:\Astrocyte-go-tmp\go-build3672384736\b001\app.test.exe` |
+| 编译 SOURCE | `88dc9e5`（后续 SOURCE 修复不改变在途二进制） |
+| 启动参数 | `-test.timeout=2h0m0s` |
+| 创建时间（本地） | `2026-10-16 12:40:18`（即 UTC 04:40:18） |
+| 签发 UTC | `2026-10-16T04:40:18Z` |
+| 实际 ExpiresAt | `2026-10-16T05:40:18Z` |
+| 实际 SQLite | `D:/Astrocyte-go-tmp/TestProgressExpiryBackgroundVerification1949551442/001/state.sqlite`（Go `t.TempDir()` 位于 GOTMPDIR 下，非 TEMP/TMP） |
+| 签发记录 | `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/expiry-bg-token.log`（仓库根 C: 盘，原件保留不移动/复制/改 DB/重签） |
+
+原 Go 测试不使用 S1 helper（`startS1Server`），因此不产生 `astrocyte-s1-*` 目录。`D:/Astrocyte-test-output/` 为 `ASTROCYTE_TEST_OUTPUT_ROOT` 声明路径，但 Go `t.TempDir()` 实际跟随 GOTMPDIR（`D:/Astrocyte-go-tmp`），签发记录通过 `verificationDir()` 写入仓库根 `.verification/`。
+
+原 Go 进程在途运行不受源码迁移影响；不盲目启动第二个到期进程。到期验证完成后方可计为 PASS。当前 8 项已验测试（含 token 签发）已 PASS。
+
+前序首 RED（PID 664 首次启动因 D 盘目录不存在失败）保留于旧日志。PID 12768 为修正后成功启动。
