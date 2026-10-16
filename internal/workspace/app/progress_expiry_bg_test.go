@@ -1,6 +1,7 @@
 // 自然到期后台验证程序。
-// 正常运行时通过 ASTROCYTE_VERIFY_EXPIRY=1 激活长等待。
-// 签发真实 1h token，记录签发/到期时间，等待自然到期后验证 HTTP 和服务层拒绝。
+// 仅在 ASTROCYTE_VERIFY_EXPIRY=1 时运行；未设置时直接失败，不新增 skip。
+// 签发真实 1h token，记录派生身份和 UTC 时间（不记录 token 内容），
+// 等待自然到期后验证 HTTP 和服务层拒绝。
 package app_test
 
 import (
@@ -31,7 +32,7 @@ func verificationDir(t *testing.T) string {
 
 func TestProgressExpiryBackgroundVerification(t *testing.T) {
 	if os.Getenv("ASTROCYTE_VERIFY_EXPIRY") != "1" {
-		t.Skip("set ASTROCYTE_VERIFY_EXPIRY=1 to run natural expiry background verification")
+		t.Fatal("ASTROCYTE_VERIFY_EXPIRY=1 required; do not run in normal suite")
 	}
 
 	s := openActualProgressHTTP(t)
@@ -56,15 +57,16 @@ func TestProgressExpiryBackgroundVerification(t *testing.T) {
 	expiresAt := token.ExpiresAt.Format(time.RFC3339)
 	pid := os.Getpid()
 
-	logLine := fmt.Sprintf("PID=%d ISSUED=%s EXPIRES=%s PROJECT=%s AGENT=%s TOKEN_PREFIX=%s\n",
-		pid, issuedAt, expiresAt, s.project.ID, agentID, token.Token[:20])
+	// 仅记录派生身份和 UTC 时间，绝不记录 token 内容或片段。
+	logLine := fmt.Sprintf("PID=%d ISSUED=%s EXPIRES=%s PROJECT=%s AGENT=%s\n",
+		pid, issuedAt, expiresAt, s.project.ID, agentID)
 
 	vDir := verificationDir(t)
 	logFile := filepath.Join(vDir, "expiry-bg-token.log")
 	if err := os.WriteFile(logFile, []byte(logLine), 0644); err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("expiry background: %s", logLine)
+	t.Logf("expiry background: PID=%d ISSUED=%s EXPIRES=%s", pid, issuedAt, expiresAt)
 
 	// 到期前验证
 	s.request(t, http.MethodGet, nil, false, false, token.Token, http.StatusOK)
@@ -91,10 +93,13 @@ func TestProgressExpiryBackgroundVerification(t *testing.T) {
 		"http_rejected": true, "service_rejected": true,
 		"verified_at": time.Now().UTC().Format(time.RFC3339),
 	}
-	encoded, _ := json.MarshalIndent(result, "", "  ")
+	encoded, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
 	resultFile := filepath.Join(vDir, "expiry-bg-result.json")
 	if err := os.WriteFile(resultFile, encoded, 0644); err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("natural expiry verified: %s", string(encoded))
+	t.Logf("natural expiry verified: PID=%d verified_at=%s", pid, time.Now().UTC().Format(time.RFC3339))
 }
