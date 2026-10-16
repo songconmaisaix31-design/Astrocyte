@@ -2,6 +2,23 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 原任务剩余事项与准确责任（2026-10-17 03:10）
+
+根 `msg_520c3be0504e` / `msg_69af118c32e3` 要求按原发布、v1.4、L1和六步核具体缺口。H 本人 `msg_4dcbef1b0ff4` / `msg_d7132c0e6633` 已完整读取根 `C:/Users/DW/orca/Astrocyte/` 当前事实源，保持准确 c4d0 clean、无新增实施或测试。模块独立读取对应生产提供口、状态观察、采集 reader、首输入、ContextPacket、经验服务和 HTTP / MCP 入口后，通过 `msg_71975fc9032c` 将以下准确交接送根；没有用 H 分支的旧问题表覆盖根最新决定。
+
+| 原条款 | 具体缺口与真实前置 | 原负责人及准确路径 |
+|---|---|---|
+| L1计划核心1 /2 /3、停止点第3条；认知计划§2 | archive 私有来源及绑定没有前缀证据字段；实际 controller 提供口没有给出 AppendOnly 正证据。H 现有 PrefixComplete 消费为 false，archive 不能成为完整 Session。缺少提供口 /事实与工具关闭待答分别登记；通知前缀、header、读尽、EOF和进程退出均不能填补 archive 证据。 | R 原 `internal/workspace/domain/relay_owned.go`、`internal/adapters/agents/relay_owned.go` 及必要 `relay_native_capture.go`、`internal/workspace/app/relay_owned.go` / `relay_lifecycle.go`；H 仅在准确领域SOURCE后消费 `cmd/server/relay_session.go`。`events/relay_session*.go` 已有前缀消费，六字段HTTP不扩展。当前没有足以独立实现的真实 archive 证据语义，不新R、不建接口或填 true。 |
+| L1核心1至6、v1.4§1至4 /§7 | 新 owned /合法正选原档 /三分钟Today、非空六字段逐 event_id真实库定位、首次 gap一次 /静默不写 /真实 gap变化一次、实际生命周期仍缺当前获准会话。工具关闭答案未到、nlink2来源 FAIL、append-only unknown、原 SessionComplete=false和恢复 raw gap分别保留。 | 原R控制器 /身份、H原档和SQLite、F唯一产品操作。当前无新登记、Probe、Start、模型、人工采集或重记起点；旧三分钟591116 /591117毫秒 FAIL保持。 |
+| 认知§3.2.1步骤1至4 | 共享真实 Relay完成 /B采用来源和Interpreter生产装配已实施；实际合法完成或采用、模型起草候选和具体候选的用户批准分别缺正向记录。步骤4不能由开发授权或Agent代签补足。 | R真实完成来源，B采用 /经验持久化，H现有生产装配，F用户操作；现有拒绝和装配 PASS不代表六步正向。 |
+| 认知§3.2 /§3.2.1步骤5 | `ExperienceService.GetExperiences` 与MCP approved-only读取存在；MCP显式绑定独立data-dir /project /session /principal，输出保留经验结构、ID /version /origin引用；人工手册经既有PUT保存并进入Relay首输入。M-product `msg_e7cf4804d8a5` 已独读F clean `ac94fa2d794950edb4eab07aa9a56b6224f4116d` /UI `d6318d1c0792f00a8c02d081cc5c89eefce21aaa`：前端仅人工content，经验ID仅产物展示，未提供自动检索装配。当前尚无真实检索结果 /引用写入交接的本轮记录，MCP当前同库 /身份绑定未建立；不能据此把全部经验管道判为不存在。 | H生产装配 /HTTP、R首输入及关系、B既有经验读取权限、F人工交接消费。根 `msg_23edc725c308` 要求分清既有MCP检索后人工写交接与产品自动装配；原第5步未明写自动，模块不自行决定选择策略、权限或自动化必要性。准确剩余连接、写域和消费字段按当前源码核实后交根，不擅改 ContextPacket、手册或权限接口。 |
+| 认知§3.2.1步骤6、§3.4 | 真实后续任务 /执行结果 /使用经验与避坑观察尚缺；工程闭环和独立对照实验分别验收。 | 原S3与原F /B相关交接；当前保持未知，不启动正式实验，不登记认知收益。 |
+| 发布任务最终门禁 | 完整默认 /CI仍未通过，原残余替身及未运行原断言不计 PASS；最终同源Windows包、解压实际验收和Release尚未完成。 | 对应原领域人员、唯一I及P /根；现有磁盘守卫不降低，不重复已通过生产构建、部署和S4检查。 |
+
+archive 准确链为 `RelayOwnedArchiveProvider.OwnedRelayArchive` → 实际 Native提供口 → `RelaySessionArchive` → `observeOwnedSession` → `RelayOwnedSession` → `relayCaptureBinding` → 既有 `RelaySessionBinding` / reader。当前 Finalized 由 capture snapshot提供，AppendOnly未赋值，前缀字段缺失；reader 的 SnapshotComplete只说明固定范围已读完，SessionComplete还要求合法前缀、结束及零未知 /错误，collector另要求 append-only确证。native通知的 PrefixComplete /Finalized仅属于该通知流，当前恢复 raw缺口继续保留。根已独立确认这属于源码 /提供口缺口，后续实际语义和跨域修复由原责任交接，H没有新增生产写入范围。
+
+六步第5步的现有手动构件已逐段核查：`cmd/mcp/main.go` 使用显式启动绑定，默认data-dir属于UserConfig，signal-strength须显式给定，当前没有启动或接入共享产品；`mcp_binding.go` 拒绝改scope，`mcp_engine.go` 读取绑定项目的approved记录，MCP exposure保留结构化经验与版本引用。`WorksCommandForms` 人工textarea经 `worksAlbumApi` 提交 `content`，`SetWorkHandoff` 仅允许human、64KiB内且核原revision，保存手册及来源；Relay两条首输入路径使用该content，Native另包入固定ContextPacket。手动写入和自动装配分别描述，当前没有以Agent身份调用human手册入口、启动新MCP或模型，也没有替用户选择经验或批准候选。
+
 ## 会话 HTTP 实际验证与后续范围（2026-10-17 03:06）
 
 原 H 同一 Task / Dispatch 已普通 push SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` 与独立 REPORT `c4d0e198da59d7ab91af061a4e115c3ad16e8cbb`，均使用 `[skip ci]`。模块完整读取两件源码差异、38行阶段报告与三份作者原日志，核远端精确值及原树 clean；通过 `msg_b10f003eb34d` 交根。根 `msg_8c52e48ed0fb` 已独立读取并接受限定交付，普通合唯一 I；根只组合三项与两包 vet，没有重新构建、部署或运行原 owned 替身测试。
@@ -10,7 +27,7 @@
 
 新增真实空登记 poll / SQLite重开 / 无 checkpoint 检查独立命名，三次 poll与实际重开后事件、原生会话和 binding仍为0。原 `TestRelaySessionFirstGapPersistsOnceAndSilentPollWritesNothing` 及其 owned 替身、状态计数器和断言全部原地保留且本轮未运行；owned 首 gap仅写一次、静默不写和真实 gap变化仅再写一次仍为 NOT_RUN，不能用空基线代替。
 
-作者准确 selector 为 `^(TestRelaySessionActualEmptyRegistrationPollAndReopen|TestRelaySessionHTTPActualCollectorGuardsAndClosedStore|TestRelaySessionHTTPActualUnconfiguredProviderGuards)$`，`list-first.log` 恰列三项。`test-first.log` 实际3 PASS /0 Skip，main 两项0.14 /0.13秒、package1.448秒，HTTP一项0.10秒、package2.016秒；两包 vet / gofmt / diff EXIT0。原件在 `D:/Astrocyte-agent-assets/20261015/relay/H/process-20261016/verification/session-actual-current/`，模块没有第三次运行成功测试。根组合结果待准确回执，完整默认仍未通过。
+作者准确 selector 为 `^(TestRelaySessionActualEmptyRegistrationPollAndReopen|TestRelaySessionHTTPActualCollectorGuardsAndClosedStore|TestRelaySessionHTTPActualUnconfiguredProviderGuards)$`，`list-first.log` 恰列三项。`test-first.log` 实际3 PASS /0 Skip，main 两项0.14 /0.13秒、package1.448秒，HTTP一项0.10秒、package2.016秒；两包 vet / gofmt / diff EXIT0。原件在 `D:/Astrocyte-agent-assets/20261015/relay/H/process-20261016/verification/session-actual-current/`，模块没有第三次运行成功测试。根当前 HANDOFF /STATUS 03:03固定准确组合 `607a9a82e5db7600361bc419fbe7c1852857a4b0`、独立报告 `b342cb8154748cd44e0aad3cabd5ff59df8f93d2`，均已普通 push；组合3 PASS /0 Skip，main1.428秒 /HTTP1.582秒，两包vet /diff /runner EXIT0，原件为 `D:/Astrocyte-agent-assets/20261015/integration/root-session-607a9a8/`。完整默认仍未通过。
 
 根 `msg_520c3be0504e` 要求按当前发布任务、Works Relay v1.4、L1采集计划及认知计划六步核剩余事项。模块已读取认知 §2、§3.2.1 /§3.4、L1全部采集与核心验收及最新问题表，并通过 `msg_2c6d6eba7c2c` 让同一 H 只读核具体条款、真实来源前置与原 owner。没有新增 Task、Run、人员、R写入者或验收输入；不扩展为全仓替身整改。可独立实施的实际缺口须先确认准确写域，其他逐项 Handoff。当前工具关闭限制、实际 owned来源、合法采用 / 完成、在途撤权、具体经验批准和后续使用仍须各自真实前置；当前 c5 /30420 /610cc与外层 UNKNOWN保持。
 
