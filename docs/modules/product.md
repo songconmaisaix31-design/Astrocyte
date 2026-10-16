@@ -26,6 +26,35 @@ F唯一公共runner SOURCE `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` / REPORT `
 
 根已在准确B `237987a594de1055af18c7fffe30fc516cdacaef` 独验当前八项真实HTTP / SQLite安全检查，8 PASS、EXIT0，包1.809秒、总11.88763秒；原件在 `D:/Astrocyte-agent-assets/20261015/integration/root-backend-safety-current/`。普通合并 `affaa7a7d10dcd8956b4a2947c8b149403cdb5bd` 后追加五项PASS、EXIT0，包2.354秒、总5.3473412秒，原件在 `integration/root-safety-affaa7a/`。最终生产Go没有新增差异，不需要为该测试阶段更新共享服务；此前短期Expiry旧日志不作当前八项证据。旧八个fake progress测试仍不符合要求，逐项真实能力映射与整改尚未完成，不能因定向安全通过登记整个B模块完成。
 
+根 `msg_4182c808dc8c` 已对原watch PID51112及47848逐一核创建时间、父进程、精确PowerShell路径、脚本参数及持有句柄的启动时间，只停止这两个自有辅助进程，实际WaitForExit=true。原脚本、日志和自然到期结果保持，没有终止其他PowerShell、复用PID或共享服务。原B仍实际HTTP400 Arrearage，已验证来源和报告由根侧正确登记，不再为重复报告请求欠费模型。
+
+### B原八项替身测试的真实能力缺口
+
+模块已完整读取原 `internal/workspace/app/progress_test.go`、生产 `progress.go`、真实 `progress_actual_test.go`、`progress_sqlite_failure_test.go` 及原生 `agents/text.go`。原八项共用内存项目、存储、文件和处理器，保存序号错误及固定处理器结果不能登记实际推断通过。以下是验收前置映射，已发根 `msg_27e29d412729` 和M-relay `msg_e9c2bc6123b3`；没有执行这些替身测试、修改B代码、启动新原生或调用模型。
+
+| 原测试 | 所需真实条件与当前限制 |
+|---|---|
+| `TestProgressInferRecordsEvidenceAndIsIdempotent` | 实际Registry选定文本链、固定公开文件、原生结果与持久回执，再按原操作身份读取且无第二次发送。真实Agent infer拒绝只覆盖其中身份边界，成功推断与幂等仍未验 |
+| `TestProgressInferRejectsInvalidModelOutput` | 实际原生无效输出及原操作失败锁；当前没有该实际结果，不能向处理器填入错误文本制造通过 |
+| `TestProgressInferPersistsPendingReceiptBeforeModel` | 实际交付未知及SQLite pending / unknown回执，不能用处理器错误值代替未知交付 |
+| `TestProgressInferRechecksConsentBeforePublication` | 实际在途原生窗口中经正式HTTP变更许可，再核发布拒绝；内存撤权回调不能代替 |
+| `TestProgressHumanSetPreservesOperationReceipts` | 实际accepted回执之后人工PUT，再以原身份返回原结果且不调用模型；当前人工进度安全检查没有该accepted前置 |
+| `TestProgressPublicationRecoversFromCASConflictWithoutNewModel` | 实际SQLite版本竞争及沿原结果恢复，不二次发送；保存序号冲突不能代替真实竞争 |
+| `TestProgressPublicationFailureIsNotReportedSuccess` | 实际SQLite失败及pending锁。已有真实取消检查验证错误传播，未执行实际推断，不能覆盖整个场景 |
+| `TestProgressComputedResultRecoveredAfterPublicationFailure` | 实际computed持久化、发布中断、同库重启与原回执恢复；当前没有该自然中断证据，不能使用failAt模拟 |
+
+真实选定文本链还核现有配置身份、原生受理、原生事件和来源，当前工具关闭与注册前置按原生模块保持未满足。原八项整体继续未验，不将静态阅读、实际缓存权限或一小时通过替换其功能验收。
+
+### F公共helper与UI实际后继
+
+F SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 已普通push，仅公共 `realService.ts` 两行，增加可选显式 `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID` 并传至既有启动helper，原relay参数及默认行为保持。完整tsc-b实际EXIT0。模块独读专属D目录 `helper-smoke-fourth.log`：正常模式真实HTTP快照、EnvironmentID / HEAD、SQLite原生会话0、EXIT0；Relay模式同一构造仍在核查，独立frontend.md报告待交。first / second通用CommandMeta导致真实400，third真实200后的SQLite空原型对象比较失败均保留；fourth仍严格核一行和count标量0，没有改schema或绕过响应契约。UI已收到准确SOURCE，当前执行退出后沿原树普通消费，不能把正常模式通过登记为Relay通过。
+
+模块已独读UI `e2e-boundaries-second.log`：1920窗口的真实离线unknown跨页面卸载、重开、刷新仍锁定且零写入通过，真实403后的stale禁写、恢复读取通过；该轮409在构建阶段超时，整轮1 FAIL / 2 PASS、EXIT1。首轮409已到实际并发冲突和草稿保留，运行期间页面与已加载脚本不同导致后继核查等待超时，首RED保持。原作者已明确冻结在途测试源码，复用已存在D盘GOMODCACHE只改变后继进程环境，不重跑两项成功。完整Taste三题型、启停、Goal / Snapshot / Policy / Rule、判断反馈与同库重启仍待实际验收；类型及lint实际EXIT0依据本人工具回执，命令行日志本身不推定退出。
+
+后继同一1920窗口的409单项 `e2e-conflict-third.log` 已由模块独读，实际1 PASS、场景50.1秒、总57.2秒，本人工具回执EXIT0。三个边界场景分别通过，不能转写为同轮三项通过；1280与完整主链仍待验。UI已在所有在途检查退出后接续消费F helper准确SOURCE，不修改正在运行的源码。
+
+原55项中Native runtime22、原事件只读2、会话计时2共26条，缺各自真实task / event / first-visible前置，已精确交M-relay；现有工具关闭未满足时不造confirm / send / stop等场景。既有README进度2条的历史公开指针是B树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite`、项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70`、原生 `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`，历史HTTP53863不能当当前活跃URL，原controller已停止且工具集合 / 来源完整性未知，禁止按旧ID恢复控制器或重推断。旧视频952位置1条与当前0时间证据分别登记，不新ASR或降低断言。余26条包含插件8条既有14 PASS，F继续其余18条及准确逐行来源映射。
+
 ### a166首次55条失败的准确入口
 
 准确源码 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，原件为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/full-default-a166-playwright.log`。模块实际按失败行读取并计数为55条；该原件没有最终summary或EXIT。以下保留原失败入口，后继由F在frontend.md逐行关联当前SOURCE、实际日志、通过 / 缺条件及领域Handoff，不将旧280项 / 41失败映射转写为本轮结果。原编号是原套件的case编号，文件位置是该原件记录的位置。
