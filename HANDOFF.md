@@ -2,6 +2,22 @@
 
 ## 当前执行入口（2026-10-16）
 
+11:38 用户继续要求集成，并明确交由总控负责。沿原三层分工继续，根负责集成协调、最终检查与提交，唯一 I 执行合并，不增加第四层或替代 Task / Run。当前 runtime `e9338aca-3624-49f2-86f0-b8c52b343dce`、app PID40788，根实际终端 `term_a1e70e66-3957-415d-b42c-673f2cc94c26` 已普通绑定原 `run_973808dd6a2f` generation33。原 Task 正文中的旧身份、创建子 Run 和旧顺序以本入口为准；模块继续原子 Run，不能再次创建 Run。
+
+本机实际 `LastBootUpTime=2026-10-16T11:26:45.5+08:00`，晚于三个旧模块本机 Dispatch 创建时间（UTC10月15日20:03–20:04）及最后实际执行记录；这些重启前的本机进程已经结束。根据该实际重启事实对旧 `ctx_7f070ad688f5` / `ctx_5516f4f55d3b` / `ctx_6256d5837fb3` 精确执行 abandon，保留资源记录、全部源码和 WIP；没有从 missing_status 单独推断退出，没有释放旧资源或终止其他终端。原三个 Task 暂为 blocked、旧 Dispatch 已 failed / abandoned / failure_count0，按实际恢复回执处理原 Task 的 retry，不另建任务或手动清空阻塞。
+
+当前64505实际连接拒绝，旧产品 PID45132 已不存在；`running.json` 的609记录是历史定位。原 D 数据库、媒体配置与 Q 快照保持，先由原 H 恢复同一服务。唯一 I 当前准确 `38fb289160ef85f75062f917e861488b95e2a309`、clean；其完整 `pnpm build` 已实际 EXIT0 / 74.0037711秒、source_after 同值，根独读 `integration/c16-product-build-38fb289/result.json` 和原日志，不重复该成功构建。当前适用检查与页面、最终包仍须继续。
+
+本轮三个模块均已实际开始：M-relay `ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`，原子 Run generation9；M-product `ctx_676d773e9f23 / term_898becd9-05d7-464c-91b6-02d1cae8b19b`，继续原两 Run；M-release `ctx_e4bfbfefc7b4 / term_09446359-d75f-471b-84b2-39c472d0ada8`，原子 Run generation11。客户端和实际状态所见模型为 Codex / gpt-6.1-sol / xhigh fast。产品模块首次 `ctx_2e0e0ffea515` 就绪超时、Task 未投递；已将同一实际就绪终端复用于上述唯一有效 Dispatch，不释放复用终端或另起同域写者。原 H 已实际恢复为 `ctx_d763540bd366 / term_c260106e-0d16-498e-aa19-6927247ba978`；38fb 的准确 binary 与30个 web 文件已复制到 H 的 D 稳定 `versions/38fb2891`，buildinfo / modified=false 相符，读取窗口已明确归还 I，服务恢复进行中。
+
+| 原模块 / 子 Run | 本轮恢复与交付 | 原写入边界 |
+|---|---|---|
+| M-relay / `run_8bbda1c3974c` | 先恢复原 H，使用原 D SQLite / 媒体白名单 / Q 根和首选64505恢复唯一服务；旧609稳定副本及38fb新组合按准确来源交接 | 模块只写 relay.md；H 原树 f40680b clean，通用 session.go 仍只归 B |
+| M-product / `run_7b2ce96bcd13`、`run_dbf1a68bc692` | 恢复原 B / F / UI，完成现有进度只读权限、真实准入页面与 Judgment / Delegation 页面；F 仍为共享实例唯一业务操作者 | B 的 progress.go / session.go / progress tests 四件 WIP、F 的准入组件与三件已改文件及 UI 原 delegation 目录 WIP 全部保留，由原作者继续；模块只写 product.md |
+| M-release / `run_aa4e6a119547` | 恢复唯一 I，先核38fb已完成 build / 原中断检查和远端；消费准确已提交来源，领域 WIP 不供合并，再交 H 必要运行产物并继续最终发布支持 | 模块只写既有发布管理文档；仅 I 普通合并，领域返修归原作者 |
+
+本轮普通产品运行与完整功能仍优先。重启不构成新的 Native / 模型 / ASR / OS 验证授权；原已通过模型、OS、Q / D1 和旧视频952段不重跑，正式 D2 partial 不重放。用户的集成授权不代答已有语言、原生工具、Agent completion、S3、AOCI 等选择，不代签具体候选批准。未答边界和全部首失败保持，根已批准的既有缓存进度 GET 精确修复继续按05:02正式答复实施。
+
 05:02 当前同一产品已安全更新为 `609993b25543a74e64d89a31c99bf3c08b81b44b`、modified=false、PID45132，启动 UTC `2026-10-15T20:58:23.3389720Z`，URL仍为 `http://127.0.0.1:64505/`。H 取得本轮 F / UI 双 ACK，正常停止旧 b73 后再启动，原 SQLite / LOCALAPPDATA / Q generation 均保持。根实际 GET 首页200 / 562bytes，独核唯一 loopback listener、实际程序路径 / 启动时间与 Go buildinfo 同 revision。B 完整媒体白名单已启用，真实 SummarizeExtractor 启动构造通过；配置记录为 B `.verification/video-trusted-config-first/environment.json`。新提取 / ASR / 原生初始化 / 模型输入均为零，当前没有把旧952段原件导入此共享库。
 
 F 两项 Relay 标签修复 SOURCE `9823adb4fa5f4383e4b9f9cd7c1778bcb74471fb` / REPORT `7b67b755c23f7b778922bbf1f02bedb8cc7ccb2f` 已获原经理确认交 I，全局 typecheck、原三项显示参数检查与 lint 均通过，首 EXIT2 保留。I 准确 `f73cd7c93f2d6e2b367a6c7b93222ae8b6a0a871` 的完整 `pnpm check:contracts` EXIT0：Redocly零错误 / 原13警告、264 examples 和生成内容与公开源一致；旧609漂移保留。当前运行609尚未包含后继人工进度 / 生成客户端 / 新页面，I 按新组合继续必要构建，F / UI 实施实际准入与判断页面，具体候选请求未发送。
