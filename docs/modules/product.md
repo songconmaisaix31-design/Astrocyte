@@ -1,5 +1,15 @@
 # 产品模块执行与验收
 
+## 2026-10-17 03:14 真实双源容量前置计划
+
+根 `msg_6b735a685f9e` 已接纳准确两公开对象用途和后继方案，原 B 同 Task 精确 write_paths 仅新增 `cmd/server/selected_text_capacity_actual_test.go` 与 `docs/standards/backend.md`。M-relay `msg_a8421e01d734` 当场核 H 原树该新文件不存在、status 为空、diff quiet EXIT0；原 H 本人 `msg_aae29377b1c4` 已确认持续不写，模块收到 `msg_e65bd30961d3`。原 B 独占该新文件，不修改 main / project_bridges / H生产或已交付六件测试，不新增人员。
+
+唯一论文为根已明确的历史公开对象 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-7NybyZ/data/objects/05acdc763e444fa7b9762df6dc2c879867d6a2e38d42884dcf3b80e07cf89d64`，95314bytes，实际来源为 `https://arxiv.org/html/2504.16054v1`；唯一视频为已验新D派生 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-projection-first/data/objects/030165629c4b38e519ec79e97e52b41e3c470ddfb82df268a86aef361d35f5b0`，35807bytes，来源 `https://www.bilibili.com/video/BV1PReT6EEqR/`。两份自然正文合131121bytes。只读这两个准确公开对象，核普通文件、非重定向、Stat身份及原字节 / SHA256前后保持；不打开旧业务SQL、枚举历史目录或读取私有正文，全部新输出使用D专属目录。
+
+通过既有生产manual导入在新D库形成真实的新人工来源，保留实际URL与完整原body，使用实际新MaterialRef、真实加入项目和ReadProjectReference逐份全字节比较；时间取本次实际导入时间，不冒充原Ref / publication / 自动提取provenance。原生产SelectedTextFactory与selectedTextBridge继续使用未Probe Registry，实际返回evidence_missing；标准slog只观察生产实际安全prompt / wire大小，核自然双源进入大于128KiB且小于512KiB的前置。没有processor替身、手写组装、造日志、截断或重复正文；标准日志不能证明全部wire正文或模型接受，完整模型 / 非法响应 / 真实超限来源与原capacityCapture完整断言继续未验、不执行。
+
+原B按本方案实施本项必要验证、保留全部首结果、固定SOURCE / 独立REPORT普通push `[skip ci]` 后交根。没有Probe / Start / 模型输入、重新采集 / ASR、生产部署、构建输入变化或旧成功项目重复运行；当前发布、六步和未答权限边界保持。
+
 ## 2026-10-17 03:07 进度回执的真实前置后继
 
 根 `msg_cb31b64bbaf0` 及阶段接纳 `msg_ecbc6faa66d4` 要求沿当前任务继续可独立事项。B `msg_a3104937827c` 依据 Release 目标与验收、SPEC §17.3 / §17.4、S1 进度错误与恢复条款，提出真实未探测配置失败的持久回执及实际 SQLite 拒写检查。模块已读当前生产 Infer 路径：pending 先保存，实际 Registry 缺配置证据返回原错误，现有服务保存其保守 unknown；重放沿原 operation 拒绝，人工 Set 保留 operations。该路径没有实际原生交付，不将其冒称原在途 unknown / computed / accepted 模型场景。
