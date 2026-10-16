@@ -1,5 +1,21 @@
 # 产品模块执行与验收
 
+## 2026-10-17 02:41 默认 CI 失败归因与原 B 返修计划
+
+根 `msg_9fa9a426f12c` / `msg_30d419ed7f10` 要求保留准确默认 CI 失败，并继续定位可独立修复的问题。产品模块分支实际 `gh run list` 的 in_progress / queued 均为空，本轮管理提交均使用 `[skip ci]`；不使用历史 CI 绿灯代表当前通过。原 B 准确 SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` 的 run `38947301976` 与 REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 的 run `38947405402` 均已 completed / failure / attempt1，双平台失败步骤均为 Run pnpm check，无在途运行需要 cancel，没有 rerun。B 本人保存 before / after metadata 与四件首 attempt 日志，安全结果 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/ci-exact-2b96-a6f8/snapshot-first/summary-safe.json` 已由模块完整读取；日志下载均 EXIT0，大小分别为 136110 / 128798 / 134280 / 126510 bytes。
+
+| 唯一负责人 / 范围 | 当前只读核查与下一步 |
+|---|---|
+| M-product / `docs/modules/product.md` | 只维护归因、精确写域、实际来源与验收；不编写业务，不改根计划、workflow 或队友文件 |
+| 原 B / 原 Task `task_7b4e93c1a3c1`、`ctx_010eaf93bbc0`、原树分支 | 先只读准确 `4b4ec3b2` 源码及根实际首日志，逐项提交归因、无需新 Native / 模型的修复方案、精确文件与定向验证；确认新互斥写域后实施并普通交付 SOURCE / 独立 REPORT |
+| SQLite 目录发现 | 核 `internal/adapters/sqlite/local_agents_discovery_test.go` 的 `TestRegisteredProjectCacheRestartStaleAndNoAuthority`；Windows 断言失败需核真实临时根、CanonicalRoot 与 Git 观察，不从错误提示直接判定生产造假 |
+| SQLite 未知操作 | 核 `internal/adapters/sqlite/local_agents_test.go` 的 `TestLocalProjectPermissionsTokensAndNativeReceiptsSurviveSQLiteRestart`；现有测试使用 localNative / localRegistry / references 替身，错误与 sends 计数的组合失败不能证明实际重发。不得运行或修补替身骗取通过，真实未知现场与可独立权限 / 持久化验证分别登记 |
+| 公开收藏夹分页 | 核 `internal/adapters/importers/public_listing_actual_test.go` 的 `TestPublicListingActualWindowCursorWithUnavailableSlot`；双平台实际 observed60 / requests3 遇到固定 59 断言，需用独立真实 provider 响应事实核窗口和游标，不能直接替换常量或放宽区间；缺少不可用样本的覆盖如实保留 |
+
+根首原件为 `D:/Astrocyte-agent-assets/20261015/integration/root-ci-c5b3b57/4b4ec3b2-failed.log`，模块已读取对应三项的双平台错误及源码，原 B `msg_4d5d47e9840e` 已本人确认接续归因。明确区分输出根 / 原始公开资料 / 安装及隔离前置、外部输入变化和实际生产问题，不把上述三项统称为 Native 阻塞。禁止默认全套、伪来源、Mock、新 Skip、删除业务断言、捕获错误继续、fallback、workflow 或历史修改；后续必要纯报告使用 `[skip ci]`，新输出只写 D 专属目录。原未决定的 Native / 模型权限保持，完整 CI 继续未通过。
+
+M-relay `msg_f6a79219f641` 已归还本次共享更新窗口：其正式记录为准确组合 `c5b3b5715f2e93b82365720914be24c73642bd1e` / modified=false、PID30420、UTC `2026-10-16T18:37:58.6714394Z`，同一 `http://127.0.0.1:64505/`，web 源仍为 172；原 68 表 90 行、Native0、Q generation 保持，根独立核查继续。实际 ready 与尚未返回的外层 pwsh 退出码 UNKNOWN 分列，不为退出码重启服务。产品本轮未恢复 F / UI、没有共享业务操作；B 仅使用隔离库，当前不新开前端人员、原生控制器或模型。
+
 ## 2026-10-17 02:14 系统重启后的原任务接续
 
 当前事实源为根管理树 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 02:12 入口、根提交 `37b77985a084ffb87c68683a1fde7f4f49c6725c` 及本次正式消息 `msg_b20482900a1c`、`msg_251436e5c5ab`、`msg_fe8b1aa0d16b`。根已核实整机于 02:07:51 重启，runtime 为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`；重启前的运行 172 与全部成功结果保持其实际时间含义。产品负责人同 Task `task_b0197ca7ebdf`、当前 Dispatch `ctx_47dffa3cec8b`、终端 `term_d6eca544-939f-4f9a-9923-5b00da4eee3f` 继续，原子 Run `run_7b2ce96bcd13` 已普通绑定为 generation105，没有创建新 Run、Task、工作树或开发轨。
