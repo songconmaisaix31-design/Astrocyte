@@ -47,6 +47,24 @@ B `msg_ae8671307cba` 已确认准确 I `42860d27` 的 ff-only 消费完成；模
 
 原 Capture 没有 source_kind 输入。B `msg_e01e288983aa` 提议在原同名前缀生产文件增加 `HasAcceptedArtifactCompletion(ctx, principal, projectID, eventID) (bool, error)`，模块 `msg_10b9eeb22d10` 在原三件写域内确认，并交 M-relay `msg_1d6a98bf657e`。该端口先核当前 human / 项目权限，沿真实主库事务只用 SELECT EXISTS 定位实际 event_id 与 `swarm.artifact_accepted` 类型，不返回 payload；实际已登记但 schema 不受支持时仍交完整 Read 严格失败。false 仅声明本来源未登记，H 仍须独立核实际 Relay completion 命名空间，双存在、均不存在和未知均拒绝，不捕获某来源 Read 错误再尝试其他来源。未新增 HTTP 字段、schema、来源事实或事件，固定 SOURCE / REPORT 及适用真实验证继续在途。
 
+### 02:28 采用来源固定阶段验收
+
+B SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` / 独立 REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 已普通 push，模块独核远端准确 REPORT 同值、原树 clean、SOURCE 父为准确 I `42860d277df0c0518f58e2a836681d7fa10c50ee`。SOURCE 净改两件新增 adapter / test，共 499 行；REPORT 只追加 `backend.md` 26 行，两源码相对 SOURCE 没有后续差异。模块完整读取源码、报告和下列本机原件，已将本限定阶段交根 `msg_4b6a923ddf00` 及 M-relay `msg_874c3eef233a`；原 H 可普通消费准确交付继续装配。B 保持原 Task / 当前 `ctx_010eaf93bbc0` 支持返修，没有 worker_done 或新增同域人员。
+
+| 实际命令 / 结果 | 本轮准确记录 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/sqlite -list '^TestAcceptedArtifactCompletionActualInterfacesAndLifecycle$'` | corrected 精确一项，EXIT0；5.035 秒 |
+| 同包 `-run '^TestAcceptedArtifactCompletionActualInterfacesAndLifecycle$' -v -count=1 -timeout=1m` | corrected 主项 1 PASS、9 子项通过、0 SKIP，主项 0.19 秒 / 包 2.065 秒，实际 EXIT0 |
+| `go vet -mod=readonly ./internal/adapters/sqlite` | corrected EXIT0，0.962 秒 |
+| `go build -mod=readonly -o <本轮D根>/server-corrected.exe ./cmd/server` | corrected EXIT0，3.015 秒；未启动该二进制 |
+| 两件源码格式及准确 SOURCE 的 `git diff --check` | EXIT0；模块实际 diff 检查无输出 |
+
+原件根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/artifact-completion/`。`commands-corrected.json` 与 `list-corrected.log` / `test-corrected.log` / `vet-corrected.log` / `build-corrected.log` 已逐项读取；实际 runner 整体 EXIT0 按 B 本人工具回执登记，不从日志文字补推启动壳退出。真实 HTTP bootstrap / cookie / CSRF、项目创建 / 注册、真实 SQLite 当前事务读、未提交项目可见与实际回滚、跨库、独立 Swarm 事务、已结束连接、取消、关闭重开均按实际结果核对，单连接 WaitCount 不增；八个执行 / 经验 / 原生相关表保持零行。测试没有创建采用事件、模型输出或原生会话，私密来源和旧正式库没有读取。
+
+首轮 `*-first` 为主项 0.16 秒 / 包 1.821 秒、8 子项通过，list / vet / build 实际 EXIT0，原件保持。后继 `list-final` EXIT0；`test-final` EXIT1 / 主项 0.20 秒，跨库拒绝已实际生效，测试当时预期了另一端口的错误文本。其后 vet / build 未运行；原 `commands-final.json` / `test-final.log` 保留。最终仅按准确完整生产错误文本修正断言并运行受影响项，没有修改生产拒绝语义或删除断言。
+
+本限定阶段完成生产适配和适用拒绝 / 生命周期检查。实际采用事件尚缺，Has=true、采用来源正向、固定来源差异拒绝、实际 Mission 权限变更现场及经验生成 / 发布继续 NOT_RUN；未知 schema 的实际采用事件未运行。H 组合装配、原七项进度替身整改、完整默认 / check、L1 / L2 与 Windows 最终包均未通过，不以本阶段替代其验收。未启动 Probe、Start、模型、ASR、V4、历史成功复测或共享 64505 操作，模块继续发布支持。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
