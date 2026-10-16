@@ -2,6 +2,10 @@
 
 ## 当前开发与磁盘要求（2026-10-16）
 
+23:50 完整Taste配置 / 策略 / Rule真实流程、卸载取消保护和F后继已普通合入准确 `172bb445597193d55f1563ee5d21ac2ec881798d`，已push / clean。根准确组合完整build、全web lint与两尺寸核心 / 取消4 PASS2.0分钟均实际EXIT0，binary172 / modified=false。H已获准确产物复制窗口，取得当前F/UI当次本人ACK后更新同一D库64505；当前仍2d27 / PID50624，待真实ready。F原55失败当前26 PASS /29未满足条件；原B获准同Task强客户端仅完成既有真实进度只读派生托管，原UI继续实际委托引用检查。用户未答边界、完整默认 / Native / L1 / L2及最终包保持，准确来源和原件见 [HANDOFF](HANDOFF.md)。
+
+## 2026-10-16 23:36 进展
+
 23:36 F已在原Task由实际Codex / GPT-6.1-Sol / xhigh fast恢复，当前55失败清单及已验公共测试接口375 / b4bf已普通合入5dfca03并push；根组合tsc-b与测试收集均EXIT0。生产与共享运行仍2d27 / PID50624。UI完整主链、版本冲突、unknown锁和403，以及1280后继已取得实际成功日志，待固定SOURCE / 独立REPORT验收，尚未更新运行版本；F公开论文组8 PASS / EXIT0后继同样待准确提交。两个旧watch已精确停止，原件保留。具体准入与其余用户待答仍保持，完整默认、Native / L1 / L2和最终发布未完成，详情见 [HANDOFF](HANDOFF.md)。
 
 ## 2026-10-16 14:27 及此前进展

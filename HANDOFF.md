@@ -2,6 +2,16 @@
 
 ## 当前执行入口（2026-10-16）
 
+23:50 根已普通合入 UI SOURCE `524ee13dc7fefbc29660b6b5136077f400972bd2` / REPORT `9aa52ecf6199ce819ea6793e6f37481095d63ab4`，组合 `f5872cfffdbb5e6b6ffeb02302804361d44a0376` 的完整build、全web lint与两尺寸真实主链2 PASS55.2秒均EXIT0。随后普通合 F SOURCE `b34ce2b85b2ae9d172a409d622d74aa5797ea414` / REPORT `b1569cabfb5fbd2f23c600788469f80a9a68b849`，以及 UI 保存前读取随卸载取消的 SOURCE `990847571f95198400bc21d77b7b590d5fbc0c27` / REPORT `596c9ff7534cb1325366b7a87e232081e6eab93b`，当前准确组合 `172bb445597193d55f1563ee5d21ac2ec881798d` 已普通push / clean。该组合完整 `pnpm build`、全web lint与核心 / 取消两尺寸4 PASS2.0分钟全部实际EXIT0，Go buildinfo为172 / modified=false。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-taste-{f5872cf,172bb44}/`；全部新编译 / 模块 / Node缓存和临时目录使用D盘，没有模型或原生初始化。
+
+根已通过 `msg_6f521e86c1b9` 正式把当前172的binary / web产物读取窗口交原H，根暂停这些产物写入并保持该分支HEAD至H归还复制窗口。H复制到稳定D版本、取得当前F697与UIe921本人当次共享暂停确认后，按原owned生命周期更新同一64505与原D库。实际运行目前仍2d27 / PID50624，未取得新ready前不写为已更新。M-relay原客户端remote compact中断后，根在同一终端单次继续，公开回执已观察actual turn_started；未新建Task / Run或修网络。
+
+F当前55原失败中26 PASS、29 NOT_RUN：本次18项真实定向通过包括公开论文8、作品布局3、固定上下文2、认知四路由 / 独立SQL4和人工拒绝1；原插件8不重跑。剩余26项H/R条件、2项既有进度只读托管和1项实际视频输入分别保留。认知只读既有Q快照，保留原独立SQL日期和值并按真实上海日期重算窗口，无新采集或时间修改。原误选342已精确终止自有runner及子进程，EXIT1保留，后继精确2项通过，不将误选计作完整默认。截图 / 录屏已关闭，业务断言保持。
+
+产品负责人正式问题 `msg_296b98704870` 已由根答复 `msg_8c56ad950c02`：允许原B沿同Task / Run / 树 / 分支恢复已配置强Codex客户端，仅完成既有真实进度的安全派生托管和两项前端检查。原公开SQLite只读，保留真实项目、NativeID / model / timestamp / evidence / operations；独立D自有库与CAS revision分别说明，不复制Grant / Session、不修改原库、不恢复控制器或重新推断，不新增生产导入API。尚未交新来源或通过结果。Taste未知操作继续保锁；实际委托引用选择 / 保存 / 版本变化的必要定向检查由原UI接续，未把未运行部分计为通过。具体准入、Native工具、语言及其他未答项仍保持。
+
+## 2026-10-16 23:36 执行记录
+
 23:36 原F的公共测试接口 SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` / 独立REPORT `b4bf44453436ba71ce0b88ef0f0e6a300d859d7f` 已由根独读并普通合入 `5dfca03fd23b3218510290fc5a63732df1fd570f`、普通push / clean。最终只有显式环境ID透传、self-service增加s5测试匹配及前端报告；根准确组合完整tsc-b EXIT0、测试收集56项 / 7文件 EXIT0，作者普通与Relay真实构造两份日志均EXIT0，准确原件见集成树 `docs/access/integration.md`。生产无变化，最近完整构建及运行仍2d27 / PID50624；没有更新共享实例。
 
 F已沿原Task实际恢复为 `ctx_697b2f19c010` / `term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60`，Codex0.162.0 / GPT-6.1-Sol / xhigh fast，属于context-only unsupervised续行。旧Claude ctx44已精确停止；无替代Task / Run、全局账号、网络或支付变更。当前报告逐项对应准确320计划的55失败，8个插件旧成功保留，剩余47在该阶段未运行；18个F本域继续、26个Native及2进度 / 1视频实际条件分别交原负责人。后到F公开论文组真实8 PASS /2.7分钟 / EXIT0日志已独读，仍待作者固定提交，不消费当前截图移除等WIP。
