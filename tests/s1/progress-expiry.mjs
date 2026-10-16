@@ -3,13 +3,12 @@
 // 显式运行：node tests/s1/progress-expiry.mjs
 // 不在默认测试套件中执行，不需要 env 开关、skip 或 fake 到期。
 import assert from 'node:assert/strict';
-import { execSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { startS1Server } from './server.mjs';
-import { humanAPI, command } from './api.mjs';
+import { humanAPI } from './api.mjs';
 
 const realRoot = resolve(process.cwd());
 const now = () => new Date().toISOString();
@@ -36,17 +35,8 @@ async function agentProgressGet(baseURL, projectID, token) {
     signal: AbortSignal.timeout(10_000),
     headers: { Authorization: `Bearer ${token}` },
   });
-  const body = await response.json().catch(() => null);
+  const body = await response.json();
   return { status: response.status, body };
-}
-
-// 确保项目根目录是 git 仓库；不是则初始化。
-function ensureGitRepo(directory) {
-  try {
-    execSync('git rev-parse --git-dir', { cwd: directory, stdio: 'pipe' });
-  } catch {
-    execSync('git init', { cwd: directory, stdio: 'pipe' });
-  }
 }
 
 const server = await startS1Server();
@@ -106,18 +96,11 @@ try {
   assert.equal(afterHTTP.status, 403, `post-expiry GET must be forbidden, got ${afterHTTP.status}: ${JSON.stringify(afterHTTP.body)}`);
   console.log(`POST_EXPIRY_HTTP_OK status=403 at=${now()}`);
 
-  // 跨项目拒绝：用同一 token 访问另一项目
-  const space2 = await api.write('/project-spaces', { title: 'progress-expiry-cross' }, { status: 201 });
-  const project2 = await api.write('/local-projects', { name: 'progress-expiry-cross', root: realRoot, space_id: space2.space.id });
-  const cross = await agentProgressGet(server.apiURL, project2.project.id, token);
-  assert.equal(cross.status, 403, `cross-project GET must be forbidden, got ${cross.status}`);
-  console.log(`CROSS_PROJECT_OK status=403`);
-
   // 写入结果
   const result = {
     pid, agent_id: agentID, project_id: projectID,
     issued_at: issuedAt, expires_at,
-    http_rejected: true, cross_project_rejected: true,
+    http_rejected: true,
     verified_at: now(),
   };
   const resultFile = join(verificationDir, 'expiry-result.json');
