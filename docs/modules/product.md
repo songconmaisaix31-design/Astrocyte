@@ -1,5 +1,15 @@
 # 产品模块执行与验收
 
+## 2026-10-17 02:59 selected_text 真实组装后继计划
+
+根 `msg_eb0fbfbdb2c2` 明确批准原 B 同 Task 的后继，精确 write_paths 仅新增 `cmd/server/selected_text_preflight_actual_test.go` 及 `docs/standards/backend.md`。M-relay `msg_29d05f6c8d50` 当场核 H 原树该新文件不存在、status 为空、diff quiet EXIT0，H 没有该路径写域且持续不写；模块据此交原 B 独占，无新 writer。`main.go`、`project_bridges.go` 及 H relay 生产文件归属保持，跨域只交精确 Handoff；前三件返修和 Workbench HTTP 已交唯一集成冻结。
+
+原 B `msg_e9227be14936` 完整只读确认生产 selectedTextBridge 为 cmd/server 的非导出类型；使用同 package main 的实际测试即可直接组装，不复制、导出或伪造 bridge。实际路径使用全新 D SQLite / ProjectFiles、真实 HTTP bootstrap / human / cookie / CSRF、生产 ProjectSpace / 公开项目注册和未 Probe Registry。原获准公开 paper DOM 只使用准确本机指针及原字段正文，经生产 importer 入自有库并读回实际 SourceRef，源只读、原始资料不进 Git / HTTP / stdout；不新采集、不拼造或重复正文、不创建假 CLI / 配置 / processor / 请求捕获器。
+
+本项是新增真实前置覆盖：分别核默认无模型许可拒绝、明确当前 codex 许可后 Resolve 返回真实 space、ConfigurationID / 实际公开输入 Distill 的 evidence_missing、已 Resolve 后实际撤回许可的拒绝、调用者真实取消及实际 SQLite 关闭错误；核 Registry 观测保持、native 目录空、会话零行与未写文本对象。没有 Probe / Start 或实际模型输入。测试名称须明确该真实组装范围，原 `selected_text_test.go` / `capacity_sources_test.go` 及原完整断言保持不执行 / 未验；超限来源、联合容量、推荐正向和真实非法模型输出没有因此替换。固定 SOURCE / 独立 REPORT 均普通 push `[skip ci]` 后交根必要组合，不重建或部署。
+
+前一管理 REPORT `65d3163136709d3879201953d2d7aba35bb641c5` 首次普通 push 曾远端 generic failed / EXIT1，独立远端仍为 SOURCE `83bb70dd`；未改历史，随后同提交普通重试 EXIT0，独立远端准确同 REPORT、工作区 clean。首结果保留在实际工具回执，根已收到 `msg_10d104b80317`。
+
 ## 2026-10-17 02:57 Workbench 真实 HTTP 固定阶段
 
 原 B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` / 独立 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通 push，提交均含 `[skip ci]`；模块独核远端准确 REPORT 同值、原树 clean、限定差异检查 EXIT0。SOURCE 只修改 `internal/adapters/httpapi/workbench_test.go`，净新增 356 行 / 移除 40 行；REPORT 仅追加 `backend.md` 28 行。模块完整读取当前 396 行文件、独立报告及全部命令记录，已交根 `msg_81b4ceb2e3ff`；根 `msg_8577da3270b0` 完整独读后接受准确阶段并普通合唯一集成，仅运行本项真实 HTTP / GetEvent 及 httpapi vet，不重建或部署，也不重复前三项。
