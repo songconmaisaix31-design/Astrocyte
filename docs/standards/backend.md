@@ -743,11 +743,11 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 
 **新 mjs 状态：NOT_RUN**（`node --check` 语法通过不等于实际运行；显式运行验收待后续 dispatch）。SOURCE `c008573`（三违反修复）和 `9674749`（轮询修复）已独立核实正确。
 
-后台进程状态：**RUNNING**（在途 Go 进程，源码已迁移但不影响运行中进程）
+原自然到期检查状态：**PASS**。编译SOURCE为下表88dc9e5，实际签发和ExpiresAt保持；UTC `2026-10-16T06:16:00Z` 的结果记录 `http_rejected=true`、`service_rejected=true`。Go原日志为 `TestProgressExpiryBackgroundVerification` PASS5741.69秒 / 包5745.281秒，两个原进程当前均已不存在。原启动壳的实际EXIT没有保留，记为UNKNOWN；新mjs入口仍NOT_RUN，不重复自然到期检查。
 
 | 参数 | 值 |
 |---|---|
-| 实际 PID（Go test 进程） | 12768 |
+| 原实际 PID（Go test 进程，已退出） | 12768 |
 | 进程名 | `app.test.exe` |
 | 父进程 PID（go.exe） | 46696 |
 | 进程路径 | `D:\Astrocyte-go-tmp\go-build3672384736\b001\app.test.exe` |
@@ -756,11 +756,13 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 | 创建时间（本地） | `2026-10-16 12:40:18`（即 UTC 04:40:18） |
 | 签发 UTC | `2026-10-16T04:40:18Z` |
 | 实际 ExpiresAt | `2026-10-16T05:40:18Z` |
+| 实际拒绝验证 UTC | `2026-10-16T06:16:00Z` |
+| 实际结果与Go日志 | `.verification/expiry-bg-result.json`、`.verification/expiry-bg-full.log`，原位保留 |
 | 实际 SQLite | `D:/Astrocyte-go-tmp/TestProgressExpiryBackgroundVerification1949551442/001/state.sqlite`（Go `t.TempDir()` 位于 GOTMPDIR 下，非 TEMP/TMP） |
 | 签发记录 | `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/expiry-bg-token.log`（仓库根 C: 盘，原件保留不移动/复制/改 DB/重签） |
 
 原 Go 测试不使用 S1 helper（`startS1Server`），因此不产生 `astrocyte-s1-*` 目录。`D:/Astrocyte-test-output/` 为 `ASTROCYTE_TEST_OUTPUT_ROOT` 声明路径，但 Go `t.TempDir()` 实际跟随 GOTMPDIR（`D:/Astrocyte-go-tmp`），签发记录通过 `verificationDir()` 写入仓库根 `.verification/`。
 
-原 Go 进程在途运行不受源码迁移影响；不盲目启动第二个到期进程。到期验证完成后方可计为 PASS。当前 8 项已验测试（含 token 签发）已 PASS。
+原 Go 检查使用真实一小时签发与正式HTTP和服务层检查，未修改数据库、Clock或token，未重签或启动第二个长计时。原结果JSON与Go日志已经实际读取；新mjs没有执行。当前八项安全快检的准确来源及实际结果见上一节。
 
 前序首 RED（PID 664 首次启动因 D 盘目录不存在失败）保留于旧日志。PID 12768 为修正后成功启动。

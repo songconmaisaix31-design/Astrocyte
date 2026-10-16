@@ -2,7 +2,7 @@
 
 ## 根直接集成与组合验证（2026-10-16）
 
-根已普通合入 B 后继237987a，得到affaa7a；最终仅真实安全测试、显式到期入口及后端记录三件净差异，没有改变生产一小时语义。原B当前八项真实HTTP / SQLite检查8 PASS，完整组合新增五项5 PASS / EXIT0；准确命令、来源和原件见 [集成报告](docs/access/integration.md)。新显式入口NOT_RUN，原PID12768自然到期结果仍未收到；运行保持准确2d27 / PID50624，没有重复构建或更新服务。
+根已普通合入 B 后继237987a，得到affaa7a；最终仅真实安全测试、显式到期入口及后端记录三件净差异，没有改变生产一小时语义。原B当前八项真实HTTP / SQLite检查8 PASS，完整组合新增五项5 PASS / EXIT0。原编译SOURCE88dc9e5的一小时自然到期检查已实际记录HTTP及服务层拒绝，Go主项及包PASS，原PID12768和父Go已退出；启动壳EXIT未保留为UNKNOWN，新显式mjs仍NOT_RUN。准确来源和原件见 [集成报告](docs/access/integration.md)。运行保持准确2d27 / PID50624，没有重复构建或更新服务。
 
 当前运行及最近完整构建源码为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`：B 已验缓存 GET、人工准入、判断 / 委托组件与入口、P 显式启动配置及 D 构建作用域均已普通合并。完整 `pnpm build` EXIT0 /15.039582秒、全 web lint EXIT0、实际准入 / 撤销 / HTTP重启两个窗口2 PASS /42.3秒，Go buildinfo 同 revision / modified=false。原 efec 首次类型失败、B / F / Q 各自首失败和准确验证源保留，详见 [集成报告](docs/access/integration.md)。H 在取得当次 F / UI 本人 ACK 后已完成同库更新，实际 PID50624 / UTC05:40:20.6912890Z；稳定副本及原产物读取窗口保持独立。
 
