@@ -8,9 +8,11 @@ H本人 `msg_e25d0df2925b`、根 `msg_cef4d64ac4c9` 及M-relay `msg_df548fd861bc
 
 B正式一小时决定已读且本人确认。原生产语义已通过文件编辑追加恢复；后继SOURCE `c008573f29515ea9ac248ecb9a9b615a1be564e4` 已移除静默JSON处理、无关Git初始化及到期后的重复跨项目检查，显式入口为根授权的 `tests/s1/progress-expiry.mjs`，当前只有语法检查，功能为NOT_RUN。独立报告 `39eb723863cd98bb847e7e59b622ef70341a99d6` 及路径修正报告 `6a6013ca90da34cbbff0e49dee30c46529da7894` 均只更新backend.md，普通历史保留。新增Go长验收文件已移除，原八项真实快检保留；实际移除使用git rm，方法偏离文件编辑要求已如实记录，后继必须使用文件编辑工具，不进行Git恢复。
 
-原自然到期进程仍单独运行：编译SOURCE `88dc9e5715b93a31be6f4e2b11435e862b703e7d`，实际app.test.exe PID12768、父go.exe PID46696，真实超时两小时，签发UTC04:40:18、ExpiresAt UTC05:40:18。模块独立核实脱敏字段、CIM身份和D盘文件 `D:/Astrocyte-go-tmp/TestProgressExpiryBackgroundVerification1949551442/001/state.sqlite` 存在、创建UTC04:40:18.805626；原签发及完整日志在B树C盘 `.verification`，保持原位。UTC05:40:46之后仍无最终结果文件，实际进程仍在、日志仍记录等待，故状态继续RUNNING；达到墙钟期限不等于HTTP拒绝与退出通过。不改DB / Clock / 模型，不重签或启动第二个计时。
+原自然到期链路已实际通过：编译SOURCE `88dc9e5715b93a31be6f4e2b11435e862b703e7d`，原app.test.exe PID12768、父go.exe PID46696，签发UTC04:40:18、ExpiresAt UTC05:40:18，实际验证UTC06:16:00。模块已独读B原 `.verification/expiry-bg-result.json`，HTTP及服务层拒绝均为true；原 `expiry-bg-full.log` 记录 `TestProgressExpiryBackgroundVerification` PASS、5741.69秒，包PASS、5745.281秒。根 `msg_fa20095bcaa3` 独立读取相同原件并核父子进程均已退出；启动壳实际EXIT仍UNKNOWN，不据PASS日志补写退出码。原RUNNING / UNKNOWN记录和首失败保持，未改DB / Clock / 模型、重签或启动第二个计时。该结果属于原88dc9e5二进制，不登记为后继mjs入口功能通过。
 
-F原Task / `ctx_44f61b51d023` 继续默认55失败分类。模块已独读phase3插件快照日志14 PASS、1.2分钟、EXIT0，输入为B既有四件公开HTML，未重新抓取或调用模型；其他调查结论须以准确原件与SOURCE登记。UI原Task / `ctx_5d4bbae2a28d` 已普通消费入口为 `59c0876f71df7a658526d9c54037ec383930ee91`、无视觉配置为 `1d9af6184e75a416add21d740b46212e19b356a1`，原judgmentApi类型行及s5测试WIP保持。上一轮API连接中断返回提示后，已沿同终端续行，不修改账号、网络或增加人员。
+F原Task当前 `ctx_697b2f19c010 / term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60` 继续默认55失败分类，UI原Task当前 `ctx_e921762e5e79 / term_e8bfccfb-5f89-4428-b693-bca4bbe0cf8d` 继续Taste与delegation原写域。根明确授权实际Claude HTTP400 Arrearage后的强Codex开发客户端恢复；原UI与F进程分别于UTC06:11:06、06:20:45公开worker-stop，实际exited且capability revoked后，沿原Task / Run / 工作树 / 分支使用公开terminal-first及return-preamble精确任务续行，没有新增Task、Run或写入者。两终端实际观察Codex 0.162.0、GPT-6.1-Sol xhigh fast，并分别收到本人ACK；这是context_only / unsupervised续行，不声称worker-start托管。F本人核HEAD `6cd0e51098a946c732e3914d94efc59c9aaa4dec`、工作区干净；UI原四件WIP保留，完整tsc-b首个资料标题可空错误已保留并文件编辑修正，后继检查待验。未修改全局账号、网络、支付或原生权限。
+
+插件快照原phase3日志14 PASS、1.2分钟、EXIT0已独读，输入为B既有四件公开HTML，未重新抓取或调用模型。UI已消费入口 `59c0876f71df7a658526d9c54037ec383930ee91` 和无视觉配置 `1d9af6184e75a416add21d740b46212e19b356a1`。其当前S5所需生产Repository EnvironmentID可选配置接缝已交F唯一公共helper写入者：先核真实构造约束，保持 `realService(true)` 默认行为，仅传既有显式生产环境；UI不得越域、伪造快照或把501当通过。源码、实际构造和完整浏览器正向仍待验。
 
 根 `msg_8d69720e498d` 已明确补齐必要Taste功能：原UI在既有delegation域实现完整Taste查看、人工创建 / 编辑 / 启停、版本冲突提示及可达入口，使用真实GET / PUT生成契约和已有Hooks / Fields，不让用户编写API JSON，不预填未决定个人偏好。独立D盘QA必须通过真实页面保存、读取和版本检查，再接实际Goal / Snapshot / 固定引用的rule正向；预置API记录不能代替该入口验收。该路径及原rule正向仍NOT_RUN，共享个人Taste与具体准入未操作。全部首RED / UNKNOWN / NOT_RUN保持，完整默认、其他核心路径与Windows包继续，阶段结果不结算模块任务。
 
@@ -20,7 +22,9 @@ UI候选SOURCE `eb8b49daa50a66d45eb2daa438646917aac086aa` / REPORT `93223cf0044d
 
 F独立REPORT `852a149` 调查的是旧280项，不能替代当前a166的320项 / 55失败。准确55行的分类已交本人逐项记录，原31项或10项的汇总不作当前剩余计数。F首轮真实DOM只到准备前，15 GET / 零非GET未作为确认区验收；随后strict原件已由模块与根完整读取，实际观察固定r2/v3、资料r1、项目r2、本地prepare后确认框可见且未勾、submit disabled和零非GET。根已据该次实际观察询问唯一具体资料准入选择，尚未转交回答，F不提交、不重复成功或未知动作。该脚本含submit缺失的alternative分支，当前实际原件走disabled正向，仅接纳本次观察，不作通用验收框架。F新增第四层Explore `a09d1cfaa56dbf9cf` 已由本人TaskStop，模块通过公开transcript独核Successfully stopped task回执，主线程和WIP保留，禁止再新增内置或Orca子Agent。
 
-F唯一公共runner SOURCE `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` / REPORT `f59a35668996d7911abde515a68cf15b13443f33` 已核普通push，配置只增加s5匹配并保留原s2 / s3 / s4 / progress、workers1和retries0。UI先前同一行越域WIP保留后交F正式消费，后续仅按准确F来源安全同步，不直接把越域WIP交根合并。该配置通过不替代s5功能验收。B未来入口SOURCE `96747490398b68574c5080f30a447d077deaffba` / REPORT `237987a594de1055af18c7fffe30fc516cdacaef` 已核为真实Date.now有界观察、单次等待不超过30秒；新入口NOT_RUN，原12768和原token保持RUNNING / UNKNOWN。
+F唯一公共runner SOURCE `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` / REPORT `f59a35668996d7911abde515a68cf15b13443f33` 已核普通push，配置只增加s5匹配并保留原s2 / s3 / s4 / progress、workers1和retries0。UI先前同一行越域WIP保留后交F正式消费，后续仅按准确F来源安全同步，不直接把越域WIP交根合并。该配置通过不替代s5功能验收。B未来入口SOURCE `96747490398b68574c5080f30a447d077deaffba` / REPORT `237987a594de1055af18c7fffe30fc516cdacaef` 已核为真实Date.now有界观察、单次等待不超过30秒，新入口NOT_RUN。原12768的自然到期链路已有实际PASS，首RUNNING / UNKNOWN保留于前序记录。
+
+根已在准确B `237987a594de1055af18c7fffe30fc516cdacaef` 独验当前八项真实HTTP / SQLite安全检查，8 PASS、EXIT0，包1.809秒、总11.88763秒；原件在 `D:/Astrocyte-agent-assets/20261015/integration/root-backend-safety-current/`。普通合并 `affaa7a7d10dcd8956b4a2947c8b149403cdb5bd` 后追加五项PASS、EXIT0，包2.354秒、总5.3473412秒，原件在 `integration/root-safety-affaa7a/`。最终生产Go没有新增差异，不需要为该测试阶段更新共享服务；此前短期Expiry旧日志不作当前八项证据。旧八个fake progress测试仍不符合要求，逐项真实能力映射与整改尚未完成，不能因定向安全通过登记整个B模块完成。
 
 ### a166首次55条失败的准确入口
 
