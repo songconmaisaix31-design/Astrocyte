@@ -46,7 +46,7 @@
 
 验证逻辑：S4 CodeGraph 三参数不完整组直接失败；S5 Laya 所有路径、语言、stderr 目录和生命周期预算不完整组直接失败；所有路径必须为已存在的绝对路径；语言、路径和生命周期预算由显式参数输入，不设未答默认。`LayaStderrDir` 不存在时自动创建。Jev 仅 cloud REST key，由既有进程环境提供，启动脚本不接受。脚本 parser 和实际功能验证（PS5.1/PS7 各 7 项）全部 PASS。`windows.md` 同步更新使用说明。未修改业务代码、依赖锁、迁移、原生控制器或组件文档。
 
-SOURCE 和独立 REPORT 随后普通 push。实际修改仅 `release/Start-Astrocyte.ps1`、`release/Build-Windows.ps1`、`docs/release/windows.md` 和 `docs/release/package-report.md`。C 盘空余保持 10 GiB 守卫。未执行最终 Build/Verify/archive/Release/tag。旧 runtime/模型/OS/下载/资产扫描已成功，不重复。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。真实剩余：最终 I 精确 SOURCE 的完整 Build/Verify/archive、完整默认浏览器和原生控制器正向验收、C 盘空余恢复至 10 GiB 以上、tag 和 GitHub Releases 发布。
+SOURCE `4106fbf` 已普通 push，远端同 SHA。本 REPORT 随后单独追加提交。实际修改四个文件：`release/Start-Astrocyte.ps1`（删除 TypesafeApiKey、@() StrictMode 修复、中文注释）、`release/Build-Windows.ps1`（TEMP/TMP/npm_config_cache/NODE_COMPILE_CACHE/ASTROCYTE_TEST_OUTPUT_ROOT 完整保存和恢复）、`docs/release/windows.md`（删除 TypesafeApiKey 使用说明，Jev 改为既有进程环境）、`docs/release/package-report.md`（本章节）。D 盘独占 staging `staging-38fb-first` 保留功能测试日志。真实 runtime SOURCE 38fb2891 仅用于启动参数兼容检查，不记为最终同源包。C 盘空余 `9,056,583,680 bytes`（低于 10 GiB 阈值，仅 commit/push 操作）。未执行最终 Build/Verify/archive/Release/tag。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。真实剩余：最终 I 精确 SOURCE 的完整 Build/Verify/archive、完整默认浏览器和原生控制器正向验收、C 盘空余恢复至 10 GiB 以上、tag 和 GitHub Releases 发布。
 
 ## 2026-10-15 固定运行依赖与打包准备
 
