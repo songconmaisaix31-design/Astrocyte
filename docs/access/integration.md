@@ -13,7 +13,11 @@
 
 两次检查前后源码相同，子进程缓存、空身份目录和输出均在 D 盘；`git diff --check` 通过。实际共享服务仍使用 H 的准确 `38fb289` 稳定副本、原 SQLite 和 `http://127.0.0.1:64505/`，上述后继检查不声明运行实例已更新。原 `38fb289` 完整构建成功记录保持；本阶段尚未执行后继完整构建、完整适用检查和最终发布包。
 
-P 的准确准备 REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a` 已完成只读合并预检查，实际冲突为 `HANDOFF.md`、`STATUS.md`，尚未实际合并。发布入口的 S4 / S5 显式配置、C 盘空间守卫及 Q 源码祖先仍须处理。Native 权限、语言、具体候选批准及其他用户待定项按根当前交接与 QUESTIONS 保持。
+P 准备 REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a` 已普通合并为 `eb272504270828429a16cf84e05add5d8824a674`。实际仅 `HANDOFF.md`、`STATUS.md` 两处冲突，根使用文件编辑工具保留当前任务决定及各线历史；`cmd/server/main.go` 无新增差异。Q 后继 REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7` 继续无冲突普通合并为 `fc294bee3d4a513d90cca6768d74fd4b90088394`，两项准确来源均成为普通祖先。
+
+准确 `fc294bee` 的 `go build -mod=readonly -p=1` 分别构建 `./cmd/workbench-snapshot`、`./cmd/workbench-snapshot/verify`，均 EXIT0；`pnpm check:architecture` EXIT0，42 个包满足现有依赖边界；九份 release PowerShell 脚本分别由实际 PowerShell 5.1.26100.9711 / 7.6.6 Parser 读取通过，未执行脚本业务。原件在 `D:/Astrocyte-agent-assets/20261015/integration/root-release-fc294be/`，检查前后源码保持。没有执行认知采集、Sleep、模型、资产准备或最终打包。
+
+新增快照检查中的 directory-alias 当前使用 symlink 失败后再创建 junction，已交原 Q 按明确平台直接调用实际链接接口并保留错误；该检查尚未运行。原独立 symlink 的 OS1314 限制保持。发布入口的 S4 / S5 显式配置与实际最终包仍由原 P 完成，C 盘10GiB空间守卫保持。Native 权限、语言、具体候选批准及其他用户待定项按根当前交接与 QUESTIONS 保持。
 
 ## 2026-10-16 普通产品集成与构建
 
