@@ -706,26 +706,30 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 
 实际安装检查通过显式 `ASTROCYTE_VERIFY_VIDEO_CONFIG` 消费上一节白名单 JSON，只设置十二个明确配置键，调用原生产 `resolveSourceReader` 与 `resolveListingPython`。生产 Node 执行真实 CLI 路径解析，原实际提取器成功构造并同时接入 video / arXiv Reader，Python 身份逐字保持；关闭开关后两个提取端口保持空值。没有调用提取、ASR、模型、共享服务或原生 Registry。上述源码与实际检查不替代 H / F 在同一产品实例的配置消费与视频业务验收；进度 HTTP 的独立 WIP 和首 403 也未包含在本 SOURCE 内。
 
-## 进度缓存 GET 读取与 per-request Grant 检查
+## 进度缓存 GET 读取与 per-request Grant 安全验收
 
-SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562` 已普通 push。缓存读取 `GET /api/v1/local-projects/{id}/progress` 在每次请求时通过领域服务 `GetProjectProgress` 逐次检查 `read_context` 的 grant/action/expiry/revoke，不触发写入或模型调用。`progressProject()` 对人工调用者直接放行，对 Agent 调用者逐次加载 `LoadGrant` 并验证 action 匹配、过期时间和撤销状态；跨项目请求直接拒绝。`scopedAgentRoute` 允许 Agent 持有项目范围 token 访问同一项目的 `progress` GET 路由，PUT/infer 仍仅限人工。
+首 SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562`，后继 SOURCE 含五项安全检查。缓存读取 `GET /api/v1/local-projects/{id}/progress` 在每次请求时通过领域服务 `GetProjectProgress` 逐次检查 `read_context` 的 grant/action/expiry/revoke，不触发写入或模型调用。`progressProject()` 对人工调用者直接放行，对 Agent 调用者逐次加载 `LoadGrant` 并验证 action 匹配、过期时间和撤销状态；跨项目请求直接拒绝。`scopedAgentRoute` 仅允许 Agent 持有项目范围 token 访问同一项目的 `progress` GET 路由，PUT/infer 仍仅限人工。
 
 变更文件：
 - `internal/adapters/httpapi/progress.go`：HTTP 适配层，领域 `ProjectProgress` 映射为线格式；缺失状态为 `unknown`，缺失 source/observed_at 为 `null`；501 当服务 nil
 - `internal/adapters/httpapi/session.go`：`scopedAgentRoute` 增加 `parts[4] == "progress" && r.Method == http.MethodGet`，允许 Agent token 读取同项目进度
 - `internal/workspace/app/progress_test.go`：翻译 9 块英文注释为中文，保留 8 项 processor/registry 外部替身测试（诚实记录为不计 PASS）
-- `internal/workspace/app/progress_actual_test.go`：3 项真实 HTTP/SQLite 测试，使用 `httptest.Server`、真实 `sqlite.DB`、真实迁移、cookie jar、CSRF token、Agent bearer token
+- `internal/workspace/app/progress_actual_test.go`：8 项真实 HTTP/SQLite 安全测试
 
 | 实际命令 | 结果 |
 |---|---|
-| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGetFillsAuthorizedProjectIdentity|TestProgressHumanSetAndCacheRead|TestProgressAgentReadUsesGrant' -v -count=1` | EXIT 0，3 PASS，包 3.395s |
-| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgress' -v -count=1` | EXIT 0，12 PASS（8 内存替身 + 3 真实 + 1 SQLite 失败），包 3.5s |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGet\|TestProgressHumanSet\|TestProgressAgentRead\|TestProgressCrossProject\|TestProgressValidGrant\|TestProgressExpired\|TestProgressAgentInfer\|TestProgressRestart' -v -count=1` | EXIT 0，8 PASS，包 4.351s |
 | `go build -mod=readonly -p=2 ./...` | EXIT 0 |
 | `go vet -mod=readonly -p=2 ./...` | EXIT 0 |
 
-三项真实测试验证：
+八项真实 HTTP/SQLite 测试验证（全部 PASS）：
 1. **TestProgressCacheGetFillsAuthorizedProjectIdentity**：缓存不存在时 GET 返回 identity（status=unknown），不写入行；人工和 Agent 均验证
 2. **TestProgressHumanSetAndCacheRead**：非人工 PUT 被拒绝，CSRF 缺失被拒绝，验证失败被拒绝，人工写入后 SQLite 持久化并通过 GET 读回
 3. **TestProgressAgentReadUsesGrant**：无 grant 的 Agent 被拒绝，有 grant+token 的 Agent 被接受，撤销 grant 后再次被拒绝
+4. **TestProgressCrossProjectGetRejected**：Agent 持有项目 A 的有效 token 访问项目 B 的进度端点返回 403，项目 B 数据未受影响
+5. **TestProgressValidGrantWithoutReadContextRejected**：合法 Grant 仅含 `observe` 不含 `read_context` 时 GET 被拒绝，服务层和 HTTP 层均验证
+6. **TestProgressExpiredGrantGetRejected**：Grant 到期前 GET 成功，通过 SQLite 直接 UPDATE 把 `expires_at` 改到过去后 GET 被拒绝（不修改系统时钟）
+7. **TestProgressAgentInferRejected**：Agent 的 POST `/progress/infer` 和 PUT `/progress` 均被 scopedAgentRoute 拒绝，原始进度未改变
+8. **TestProgressRestartPreservesCacheAndPermissions**：同一 SQLite 文件关闭并重新打开后，缓存进度、Agent grant 和 Agent token 均持久化正确，新 HTTP 服务器验证 token 仍可用
 
 八项内存替身测试保留覆盖但诚实记录为不计 PASS：`progressProjects`、`progressStore`、`progressProcessor`、`progressFiles`、`progressRegistry` 替身不能验证真实 HTTP/SQLite/session/permissions/CSRF/Agent-token 边界。`paper-dom.mjs` 的 catch 块移除已在先前 SOURCE `2644083` 完成，不在本轮范围内。
