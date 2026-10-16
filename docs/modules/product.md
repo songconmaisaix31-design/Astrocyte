@@ -34,6 +34,24 @@ B 本人 `msg_dc1b0c6e49e7` 已核准确 `4b4ec3b26c276d707cbea81e7207dbce9d7582
 
 不新采集、Sleep、Probe、Native 或模型，不删除旧等效覆盖、不新增 Skip；本后继全部提交继续 `[skip ci]`，实际定向验证通过及普通 SOURCE / 独立 REPORT 齐备后再交唯一集成。当前尚未实施这单文件，不登记为 HTTP 通过。
 
+### 02:49 三项定向验证与固定源码审阅
+
+B SOURCE `76011c240766e18ece92d91f4188f8b91882458e` 已普通 push，提交含 `[skip ci]`，模块独核远端同值；净改三件批准测试，共 468 行新增 / 11 行移除，没有修改生产 cursor、旧 localNative、H / R 或冻结代码。模块完整读取最终三件源码；旧 `TestPublicListingActualWindowCursorWithUnavailableSlot` 保留独立 strict59 / 实际省略槽与原游标预算断言，普通 `TestPublicListingActualWindowMatchesProviderResponse` 另行验证。最终预期只读取同次真实响应协议及原字段顺序，不含生产 identity / availability 同构转换器。B 本人已明确读取全部返修指令，独立 backend REPORT 正在固定，模块尚未把该单独 SOURCE 交作完整阶段。
+
+| 实际定向检查 | 最终记录 |
+|---|---|
+| SQLite 精确 list 两项，再以同一两名称正则 `go test -mod=readonly ./internal/adapters/sqlite -run ... -v -count=1 -timeout=1m` | discovery 0.11 秒 PASS；新实际 HTTP 权限 / token / 同库重启 0.14 秒 PASS；包 2.052 秒 / EXIT0 |
+| importer 精确 list 保留新普通入口及旧缺位入口，再仅运行 `^TestPublicListingActualWindowMatchesProviderResponse$` | 普通窗口 0.47 秒 PASS，包 1.546 秒 / EXIT0；没有运行旧缺位入口 |
+| `go vet -mod=readonly ./internal/adapters/sqlite ./internal/adapters/importers` | EXIT0；0.934 秒 |
+| `go build -mod=readonly -o <本轮D根>/server-corrected.exe ./cmd/server` | EXIT0；2.711 秒，未启动该产物 |
+| 三件测试格式及 `git diff --check` | EXIT0；实际源码差异已完整审阅 |
+
+实际原件根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/ci-three-repairs/`，模块完整读取 `commands-corrected.json`、两份 list、`test-sqlite-corrected.log` / `test-listing-corrected.log` 及首失败安全记录。Windows 本次实际 lowercase input 与 canonical 结果不同、SameFile=true，Source / Git / Activity 及全部原缓存 / 权限 / 删除恢复断言通过；这不补写旧 CI 的未知字段。权限检查沿真实 HTTP bootstrap、实际 Registry / SQLite、公开 README、两次实际 HTTP 服务及同库关闭重开，原始内容和 token 没有进入日志；原 Native unknown / stop / resume 仍未验。
+
+本次 `results-corrected/public-listing-actual-2742868121/page-1.json` 至 `page-3.json` 只保存于 D。模块另以成熟 JSON 逐件只读核安全字段：实际 code0、folder_id2356677875、每页 slots20 / has_more=true，共 60 槽，与原请求 0 / 20 / 40、ps20、cursor2 / 3 / 4 保持，没有重新请求上游。旧真实省略槽本次缺前置，继续 NOT_RUN；不能把普通入口通过记为缺位场景通过。
+
+首 `list-sqlite-first` 的启动壳 EXIT1 / NativeCommandError，未进入测试，原文件保持。其精确编译 stderr 当时未保存，`first-shell-failure-safe.json` 如实记录 `exact_compiler_diagnostic=UNKNOWN`，不补造诊断；后继显式组合 LocalProjects / ScopedAgentTokens 接口后必要检查实际通过。原默认 CI 两次 failure、原七项进度替身、旧 Native 全覆盖、Workbench HTTP 后继、完整默认 / L1 / L2 与最终包限制保持。三项实际检查的通过只适用于本轮明确入口。
+
 ## 2026-10-17 02:14 系统重启后的原任务接续
 
 当前事实源为根管理树 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 02:12 入口、根提交 `37b77985a084ffb87c68683a1fde7f4f49c6725c` 及本次正式消息 `msg_b20482900a1c`、`msg_251436e5c5ab`、`msg_fe8b1aa0d16b`。根已核实整机于 02:07:51 重启，runtime 为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`；重启前的运行 172 与全部成功结果保持其实际时间含义。产品负责人同 Task `task_b0197ca7ebdf`、当前 Dispatch `ctx_47dffa3cec8b`、终端 `term_d6eca544-939f-4f9a-9923-5b00da4eee3f` 继续，原子 Run `run_7b2ce96bcd13` 已普通绑定为 generation105，没有创建新 Run、Task、工作树或开发轨。
