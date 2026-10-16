@@ -713,12 +713,13 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 变更文件：
 - `internal/adapters/httpapi/progress.go`：HTTP 适配层，领域 `ProjectProgress` 映射为线格式；缺失状态为 `unknown`，缺失 source/observed_at 为 `null`；501 当服务 nil
 - `internal/adapters/httpapi/session.go`：`scopedAgentRoute` 增加 `parts[4] == "progress" && r.Method == http.MethodGet`，允许 Agent token 读取同项目进度
+- `internal/workspace/app/projects.go`：`GrantProjectAgent` 保留调用者指定的 `ExpiresAt`（不再强制 nil）；`IssueProjectAgentToken` 保留已有到期时间，仅未指定时默认一小时
 - `internal/workspace/app/progress_test.go`：翻译 9 块英文注释为中文，保留 8 项 processor/registry 外部替身测试（诚实记录为不计 PASS）
 - `internal/workspace/app/progress_actual_test.go`：8 项真实 HTTP/SQLite 安全测试
 
 | 实际命令 | 结果 |
 |---|---|
-| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGet\|TestProgressHumanSet\|TestProgressAgentRead\|TestProgressCrossProject\|TestProgressValidGrant\|TestProgressExpired\|TestProgressAgentInfer\|TestProgressRestart' -v -count=1` | EXIT 0，8 PASS，包 4.351s |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGet\|TestProgressHumanSet\|TestProgressAgentRead\|TestProgressCrossProject\|TestProgressValidGrant\|TestProgressExpired\|TestProgressAgentInfer\|TestProgressRestart' -v -count=1` | EXIT 0，8 PASS，包 20.217s |
 | `go build -mod=readonly -p=2 ./...` | EXIT 0 |
 | `go vet -mod=readonly -p=2 ./...` | EXIT 0 |
 
@@ -728,8 +729,8 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 3. **TestProgressAgentReadUsesGrant**：无 grant 的 Agent 被拒绝，有 grant+token 的 Agent 被接受，撤销 grant 后再次被拒绝
 4. **TestProgressCrossProjectGetRejected**：Agent 持有项目 A 的有效 token 访问项目 B 的进度端点返回 403，项目 B 数据未受影响
 5. **TestProgressValidGrantWithoutReadContextRejected**：合法 Grant 仅含 `observe` 不含 `read_context` 时 GET 被拒绝，服务层和 HTTP 层均验证
-6. **TestProgressExpiredGrantGetRejected**：Grant 到期前 GET 成功，通过 SQLite 直接 UPDATE 把 `expires_at` 改到过去后 GET 被拒绝（不修改系统时钟）
+6. **TestProgressExpiredGrantGetRejected**：`GrantProjectAgent` 指定 2 秒短到期，`IssueProjectAgentToken` 保留该期限；到期前 GET 成功，实际时钟等 3 秒后 GET 和服务层均拒绝（不修改系统时钟，不用 SQL UPDATE）
 7. **TestProgressAgentInferRejected**：Agent 的 POST `/progress/infer` 和 PUT `/progress` 均被 scopedAgentRoute 拒绝，原始进度未改变
-8. **TestProgressRestartPreservesCacheAndPermissions**：同一 SQLite 文件关闭并重新打开后，缓存进度、Agent grant 和 Agent token 均持久化正确，新 HTTP 服务器验证 token 仍可用
+8. **TestProgressRestartPreservesCacheAndPermissions**：第一轮真正启动 HTTP1，通过 HTTP 读取人工缓存和验证 Agent token；关闭 HTTP1 和 DB；重新打开同一 SQLite 文件启动 HTTP2，验证缓存和原 token 权限均持久化
 
 八项内存替身测试保留覆盖但诚实记录为不计 PASS：`progressProjects`、`progressStore`、`progressProcessor`、`progressFiles`、`progressRegistry` 替身不能验证真实 HTTP/SQLite/session/permissions/CSRF/Agent-token 边界。`paper-dom.mjs` 的 catch 块移除已在先前 SOURCE `2644083` 完成，不在本轮范围内。

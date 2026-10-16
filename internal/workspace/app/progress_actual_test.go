@@ -363,8 +363,8 @@ func TestProgressValidGrantWithoutReadContextRejected(t *testing.T) {
 }
 
 // 自然到期后的 GET 必须被拒绝。
-// IssueProjectAgentToken 设置 ExpiresAt = now + 1h；通过直接 SQLite UPDATE
-// 把 expires_at 改到过去，模拟到期。不修改系统时钟。
+// GrantProjectAgent 接受 ExpiresAt 短期限，IssueProjectAgentToken 保留该期限；
+// 实际时钟等待到期后验证 HTTP 和服务层均拒绝。不修改系统时钟，不用 SQL UPDATE。
 func TestProgressExpiredGrantGetRejected(t *testing.T) {
 	s := openActualProgressHTTP(t)
 	ctx := context.Background()
@@ -375,7 +375,10 @@ func TestProgressExpiredGrantGetRejected(t *testing.T) {
 	}
 
 	agentID := "expiry-agent"
-	if _, err := s.projects.GrantProjectAgent(ctx, human, s.project.ID, domain.ProjectGrant{AgentID: agentID, Actions: []string{"read_context"}}); err != nil {
+	shortExpiry := time.Now().UTC().Add(2 * time.Second)
+	if _, err := s.projects.GrantProjectAgent(ctx, human, s.project.ID, domain.ProjectGrant{
+		AgentID: agentID, Actions: []string{"read_context"}, ExpiresAt: &shortExpiry,
+	}); err != nil {
 		t.Fatal(err)
 	}
 	token, err := s.projects.IssueProjectAgentToken(ctx, human, s.project.ID, agentID)
@@ -386,15 +389,8 @@ func TestProgressExpiredGrantGetRejected(t *testing.T) {
 	// 到期前 GET 成功
 	s.request(t, http.MethodGet, nil, false, false, token.Token, http.StatusOK)
 
-	// 直接把 expires_at 改到过去
-	past := time.Now().Add(-time.Hour).UTC().Format(time.RFC3339)
-	_, updateErr := s.db.Conn().Exec(
-		`UPDATE local_agent_grants SET data = json_set(data, '$.expires_at', ?) WHERE project_id = ? AND agent_id = ?`,
-		past, s.project.ID, agentID,
-	)
-	if updateErr != nil {
-		t.Fatal(updateErr)
-	}
+	// 实际时钟等待自然到期
+	time.Sleep(3 * time.Second)
 
 	// 到期后 GET 被拒绝
 	s.request(t, http.MethodGet, nil, false, false, token.Token, http.StatusForbidden)
@@ -446,8 +442,9 @@ func TestProgressAgentInferRejected(t *testing.T) {
 }
 
 // 同一 SQLite 文件重启后，缓存进度与 Agent 权限必须仍然正确。
-// 关闭原 DB、重新打开同一文件、重新创建服务和 HTTP 服务器、
-// 验证人工缓存读取和 Agent token 授权均持久化。
+// 第一轮真正启动 HTTP1，通过 HTTP 读取缓存并验证 Agent token；
+// 关闭 HTTP1 和 DB，重新打开同一文件启动 HTTP2，
+// 验证缓存和原 token 权限均持久化。
 func TestProgressRestartPreservesCacheAndPermissions(t *testing.T) {
 	ctx := context.Background()
 	dbDir, err := os.MkdirTemp("", "progress-restart-*")
@@ -458,7 +455,7 @@ func TestProgressRestartPreservesCacheAndPermissions(t *testing.T) {
 	dbPath := filepath.Join(dbDir, "state.sqlite")
 	human := domain.Caller{Kind: "human", ID: "local-human"}
 
-	// === 第一轮：打开、写入、关闭 ===
+	// === 第一轮：打开 DB、写入、启动 HTTP1 ===
 	db1, err := sqlite.Open(dbPath)
 	if err != nil {
 		t.Fatal(err)
@@ -498,11 +495,72 @@ func TestProgressRestartPreservesCacheAndPermissions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// 真正启动 HTTP1
+	api1 := httpapi.NewServer(httpapi.Config{
+		Services: httpapi.Services{LocalProjects: projects1, Progress: progress1},
+		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
+	})
+	server1 := httptest.NewServer(api1.Handler())
+
+	// 通过 HTTP1 读取人工缓存
+	jar1, err := cookiejar.New(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	client1 := &http.Client{Jar: jar1, Timeout: 5 * time.Second}
+	sessionResp, err := client1.Get(server1.URL + "/api/v1/auth/session")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sessionData struct {
+		CSRF string `json:"csrf_token"`
+	}
+	if err := json.NewDecoder(sessionResp.Body).Decode(&sessionData); err != nil || sessionResp.StatusCode != http.StatusOK {
+		t.Fatal("HTTP1 session bootstrap failed", err, sessionResp.StatusCode)
+	}
+	sessionResp.Body.Close()
+
+	getReq1, err := http.NewRequest(http.MethodGet, server1.URL+"/api/v1/local-projects/"+project.ID+"/progress", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp1, err := client1.Do(getReq1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var result1 map[string]any
+	if err := json.NewDecoder(resp1.Body).Decode(&result1); err != nil || resp1.StatusCode != http.StatusOK {
+		t.Fatal("HTTP1 human cache read failed", err, resp1.StatusCode)
+	}
+	resp1.Body.Close()
+	wire1, ok := result1["progress"].(map[string]any)
+	if !ok || wire1["status"] != "in_progress" || wire1["percent"] != float64(percent) {
+		t.Fatalf("HTTP1 human cache wrong %+v", result1)
+	}
+
+	// 通过 HTTP1 验证 Agent token
+	agentReq1, err := http.NewRequest(http.MethodGet, server1.URL+"/api/v1/local-projects/"+project.ID+"/progress", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	agentReq1.Header.Set("Authorization", "Bearer "+token.Token)
+	agentResp1, err := (&http.Client{Timeout: 5 * time.Second}).Do(agentReq1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if agentResp1.StatusCode != http.StatusOK {
+		t.Fatalf("HTTP1 Agent token failed: status=%d", agentResp1.StatusCode)
+	}
+	agentResp1.Body.Close()
+
+	// 关闭 HTTP1 和 DB
+	server1.Close()
 	if err := db1.Close(); err != nil {
 		t.Fatal(err)
 	}
 
-	// === 第二轮：重新打开同一文件 ===
+	// === 第二轮：重新打开同一文件，启动 HTTP2 ===
 	db2, err := sqlite.Open(dbPath)
 	if err != nil {
 		t.Fatal(err)
@@ -511,19 +569,19 @@ func TestProgressRestartPreservesCacheAndPermissions(t *testing.T) {
 	projects2 := workspace.NewLocalProjectService(db2, nil, agents.ProjectFiles{}, nil)
 	progress2 := workspace.NewProjectProgressService(db2, db2, agents.ProjectFiles{}, nil, nil)
 
-	// 缓存读取仍然正确
+	// 服务层缓存读取仍然正确
 	got, err := progress2.GetProjectProgress(ctx, human, project.ID)
 	if err != nil || got.Status != "in_progress" || got.Percent == nil || *got.Percent != percent || got.Source != "human" {
 		t.Fatalf("restart lost cached progress %+v %v", got, err)
 	}
 
-	// Agent 授权仍然有效
+	// 服务层 Agent 授权仍然有效
 	agent := domain.Caller{Kind: "agent", ID: agentID, ProjectID: project.ID}
 	if _, err := progress2.GetProjectProgress(ctx, agent, project.ID); err != nil {
 		t.Fatalf("restart lost Agent grant: %v", err)
 	}
 
-	// Agent token 仍然可用
+	// 真正启动 HTTP2 验证 Agent token 仍可用
 	api2 := httpapi.NewServer(httpapi.Config{
 		Services: httpapi.Services{LocalProjects: projects2, Progress: progress2},
 		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
@@ -531,30 +589,30 @@ func TestProgressRestartPreservesCacheAndPermissions(t *testing.T) {
 	server2 := httptest.NewServer(api2.Handler())
 	t.Cleanup(server2.Close)
 
-	jar, err := cookiejar.New(nil)
+	jar2, err := cookiejar.New(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	client := &http.Client{Jar: jar, Timeout: 5 * time.Second}
-	req, err := http.NewRequest(http.MethodGet, server2.URL+"/api/v1/local-projects/"+project.ID+"/progress", nil)
+	client2 := &http.Client{Jar: jar2, Timeout: 5 * time.Second}
+	req2, err := http.NewRequest(http.MethodGet, server2.URL+"/api/v1/local-projects/"+project.ID+"/progress", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.Header.Set("Authorization", "Bearer "+token.Token)
-	response, err := client.Do(req)
+	req2.Header.Set("Authorization", "Bearer "+token.Token)
+	response2, err := client2.Do(req2)
 	if err != nil {
 		t.Fatal(err)
 	}
-	var result map[string]any
-	if decodeErr := json.NewDecoder(response.Body).Decode(&result); decodeErr != nil {
+	var result2 map[string]any
+	if decodeErr := json.NewDecoder(response2.Body).Decode(&result2); decodeErr != nil {
 		t.Fatal(decodeErr)
 	}
-	response.Body.Close()
-	if response.StatusCode != http.StatusOK {
-		t.Fatalf("restart lost Agent token validity: status=%d body=%+v", response.StatusCode, result)
+	response2.Body.Close()
+	if response2.StatusCode != http.StatusOK {
+		t.Fatalf("HTTP2 restart lost Agent token validity: status=%d body=%+v", response2.StatusCode, result2)
 	}
-	wire, ok := result["progress"].(map[string]any)
-	if !ok || wire["status"] != "in_progress" || wire["percent"] != float64(percent) {
-		t.Fatalf("restart lost cached progress via HTTP %+v", result)
+	wire2, ok := result2["progress"].(map[string]any)
+	if !ok || wire2["status"] != "in_progress" || wire2["percent"] != float64(percent) {
+		t.Fatalf("HTTP2 restart lost cached progress %+v", result2)
 	}
 }
