@@ -79,7 +79,54 @@ Check-Runtime.mjs 和 Inspect-Package.mjs 两个真实 Node 调用从 try 块前
 
 本轮实际修改文件：`release/Build-Windows.ps1`（Node 检查移入 try 块）、`docs/release/package-report.md`（本章节）。pwsh 与 S4 功能验证脚本和日志保留在 D 盘独占 staging `staging-38fb-first`。未执行最终 Build/Verify/archive/Release/tag。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。
 
-本轮实际修改文件：`release/Build-Windows.ps1`（Node 检查移入 try 块）、`docs/release/package-report.md`（本章节）。pwsh 功能验证脚本和日志保留在 D 盘独占 staging `staging-38fb-first`。真实 runtime SOURCE 38fb2891 仅用于启动参数兼容检查。未执行最终 Build/Verify/archive/Release/tag。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。
+## 2026-10-16 Helper 错误处理返修
+
+本阶段 Task `task_3347b755071e`，Dispatch `ctx_39329742a5fc`。固定原树和分支，SOURCE `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d` 已普通 push，远端同 SHA。本 Dispatch 仅返修两个 D 盘外部 helper 脚本的错误处理，不修改任何 Git 跟踪的生产代码，不重跑 S4/新启动/模型/构造/索引/资产扫描。
+
+### 旧 Helper 实际观察与末尾清理错误
+
+两次历史运行的实际日志保留不变：
+
+**pwsh 测试**（`functional-test-pwsh.log`）：pwsh 7.6.6 PID 44048 → wrapper PID 49240 → Go PID 46912，端口 19882 监听/health 200/SQLite 4096 bytes 全部 PASS。杀 wrapper 后 Go 未退出，显式 force-kill。PASS 后 finally 块重复调用 Stop-TestApp，因 `$childProcess = $null` 仅创建函数局部变量而未清除脚本级引用，导致第二次 Stop-TestApp 在已 Dispose 的 Process 对象上执行 Kill/WaitForExit，末尾出现 `Wrapper kill error PID :` / `Wrapper wait error PID :` / `WARNING: Wrapper PID  did not exit within 5s` 三行错误。这些错误来自 finally 重复清理，不代表测试本身失败。
+
+**S4 测试**（`functional-test-s4-positive.log`）：wrapper PID 29888 → Go PID 12656，端口 19883/health/SQLite/repository-context/runtime 四子目录全部 PASS。同样的 finally 重复清理问题，末尾 `Wrapper kill error PID :` / `WARNING: Wrapper PID  did not exit within 5s`。
+
+两次测试的核心 PASS 结果（启动、健康、SQLite、生产配置效果、owned 退出）均为真实观察，末尾清理错误不影响这些结果的有效性。但旧 helper 的干净完成度不准确——PASS 输出后仍有未捕获的异常行。
+
+### 修订后的 Helper 改进（仅 Parser 验证，未重新运行）
+
+两个 helper 已修订，根禁止重跑 S4/新启动，仅做 PS5.1 和 PS7 parser 检查：
+
+| 检查 | PS5.1 | PS7 |
+|---|---|---|
+| `functional-test-pwsh.ps1` | PASS | PASS |
+| `functional-test-s4-positive.ps1` | PASS | PASS |
+
+修正内容：
+1. **`$script:childProcess` 作用域**：Stop-TestApp 内使用 `$script:childProcess = $null` 清除脚本级引用，finally 块不再重复执行清理
+2. **移除空 `catch {}`**：所有 Kill/WaitForExit/Get-Process/Dispose 错误不再静默吞掉；Kill 和 WaitForExit 失败直接 throw，Dispose 错误显式报告
+3. **已退出进程的合法状态**：通过 `$proc.HasExited` 分支显式处理，不依赖空 catch 忽略异常
+4. **进程身份核验**：Go 子进程的 Path 和 StartTime 在查询时记录
+5. **数据目录不复用**：新执行根 `test-data-pwsh-v2` / `test-data-s4-positive-v2` 已存在即 throw，保留旧证据不被覆盖
+6. **中文注释**：全部改为中文
+7. **端口占用改为 throw**：旧 WARNING 改为 throw，SQLite 缺失同样 throw
+
+### 只读端口检查
+
+使用 .NET `GetActiveTcpListeners()` 检查四端口当前状态，不杀任何进程：
+
+| 端口 | 状态 |
+|---|---|
+| 19880 | free |
+| 19881 | free |
+| 19882 | free |
+| 19883 | free |
+
+此前末次四端口 shell 检查实际为 ParserError（PowerShell 字符串变量作用域语法），不能作为验证。本次使用 `-f` 格式化避免了该问题。
+
+### 准确声明范围
+
+本 Dispatch 未重新运行修订后的 helper，因此报告不能声称修订后的 helper 已实际执行通过。历史运行数据（两次 PASS + 末尾清理错误）为旧 helper 的实际观察。修订后的 helper 仅通过 PS5.1/PS7 parser 检查，实际行为验证留待后续授权执行。SOURCE `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d` 仍是代码来源，未修改任何 Git 跟踪文件。Build-Windows.ps1 Node 检查在 D 作用域内已确认正确。未声称新最终包或原生/默认全绿。
 
 ## 2026-10-16 S4/S5/Jev 显式启动参数映射
 
