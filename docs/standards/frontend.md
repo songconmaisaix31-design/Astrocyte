@@ -1,5 +1,16 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 13:15 准入 request_id 实际等值恢复
+
+SOURCE `05886e5` 修复 `s2-admission.spec.ts` 场景 1：从 `response.request().postDataJSON()` 提取实际 `request_id`，恢复 Idempotency-Key header 和 outbox `correlation_id` 与实际 request_id 的逐项等值验证。不再使用 `expect.any(String)` 替代具体 UUID。UI JSON 预览不恢复。
+
+| 本次实际命令 | 实际结果 |
+| --- | --- |
+| `npx tsc --noEmit` | EXIT0 |
+| `npx playwright test e2e/s2-admission.spec.ts --grep '实际准入固定候选与项目资料' --workers=1 --retries=0 --output D:…/pw-output/artifacts`，显式 D 盘 env | 2 PASS（两 viewport）、40.5 秒、EXIT0；无截图视频 |
+
+其他 6 项已成功场景不重跑。实际模型 UNKNOWN。Entry SOURCE `32a52cd` 已交 UI `ctx_5d4bbae2a28d`。
+
 ## 2026-10-16 13:02 Playwright 配置关闭视觉采集
 
 SOURCE `0835d13` 修改 `web/playwright.config.ts`：`screenshot: 'off'`、`video: 'off'`、`trace: { mode: 'retain-on-failure', screenshots: false }`。trace 保留 DOM 事件、网络请求和源码，不采集截图。后续测试使用显式 D 盘 `--output` 目录，不主动视觉采集。
