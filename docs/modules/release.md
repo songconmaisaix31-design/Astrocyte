@@ -2,6 +2,12 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 12:55 组合构建与真实准入原件
+
+本模块只读核根既有原件，没有重复运行。`integration/root-product-build-efec99a/result.json` 与完整 `build.log` 记录准确 `efec99acc4485529e2f6b06c54c82e4c97023e9f` 的首次完整构建 EXIT1 /17.5330032秒，S2 admission 与 judgmentApi 的 TypeScript 类型错误保留。后继 `integration/root-product-build-types-first/result.json` 与完整 `build.log` 记录准确 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`、source_after 同值、EXIT0 /15.039582秒：三件 Go 程序、tsc 与 Vite 完成，685.35kB chunk 警告保留。该成功仅归准确2d27，完整 lint 终态尚未从仅含调用行的 `lint.log` 确认。
+
+`integration/root-admission-2d27b68/admission.log` 记录真实准入固定候选与项目资料、撤销和服务重启保留检查，两宽度 `2 passed (42.3s)`；该定向结果不计为完整默认。上述原件均位于 `D:/Astrocyte-agent-assets/20261015`，已通过 `msg_92d6ed801d0a` 交根。本模块尚未收到最终包精确 SOURCE 与门禁交接，P 的同源 Build / Verify、新目录解压及 N 后继均未启动；共享运行来源仍按 H 的独立交接确认。
+
 ### 2026-10-16 12:47 P 精确源码与报告交接
 
 原 P 已普通追加独立 REPORT `615d3a36e85aef0a5977751f895ee821a5603532`，生产 SOURCE 保持 `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d`。本模块独核远端同 REPORT、原树 clean，以及 `b208ab8ac696fea43ad192648a2e273392f5c99a..615d3a36e85aef0a5977751f895ee821a5603532` 的完整四件差异与 `git diff --check` EXIT0；仅 Start、Build、windows 说明和 P 报告。该输入已通过 `msg_bead4ec3e8b1` 交根普通消费，没有修改集成树。
