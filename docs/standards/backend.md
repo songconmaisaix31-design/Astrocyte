@@ -941,3 +941,29 @@ HTTP1正常 Shutdown、目标 SQLite关闭后重开同一文件，HTTP2 `http://
 | `TestProgressComputedResultRecoveredAfterPublicationFailure` | 缺真实 computed中断 / 发布恢复前置，未制造回执或自然中断 |
 
 以上七项原覆盖保留，仍不计真实 PASS；本次只完成已接纳的1/8完整替换，不宣称原八项全部整改完成。旧安全八项、自然一小时、README展示和视频成功均未重跑；没有改 F / H / R、64505、17321、V4、冻结、依赖或生产接口语义。原首 RED / UNKNOWN及原生权限待定保持，完整默认 / L1 / L2 / 发布包未在本阶段验收，未发布 Release，原 Task / Dispatch继续负责发布支持，不发送 worker_done。
+
+## 实际采用成果的经验完成来源 REPORT（2026-10-17）
+
+SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` 已普通提交并 push，远端同值，分支 `standards-backend`。本次按根 `37b77985a084ffb87c68683a1fde7f4f49c6725c` 及产品模块 `msg_423a95b1060f` / `msg_c5f4d0595410` / `msg_10b9eeb22d10` 执行：原干净 HEAD `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` 核实为精确集成 `42860d277df0c0518f58e2a836681d7fa10c50ee` 的祖先后，仅以 `git merge --ff-only` 消费该依赖。SOURCE 相对该依赖只新增 `internal/adapters/sqlite/accepted_artifact_completion.go` 和同前缀测试；本节为随后独立报告。Codex 0.162.0、现有 `--yolo` 配置保持，公开终端实际显示 GPT-6.1-Sol / xhigh fast；仍用原 Task `task_7b4e93c1a3c1`、当前 Dispatch `ctx_010eaf93bbc0`。
+
+`sqlite.NewAcceptedArtifactCompletionSource(db, reader, projects)` 接受同一实际主数据库、现有 `swarm.AcceptedArtifactEvidenceReader` 和生产 `workspace.LocalProjects`，实现 `attention.ExperienceCompletionReader`。`ReadExperienceCompletion` 在本数据库短 Workspace 事务中，先以当前认证 human 核查可访问的已登记项目，再通过原 `Service.ReadAcceptedArtifactEvidence` 读取真实 `swarm.artifact_accepted` outbox及当前 Mission 读取权限。采用者身份与当前操作者分别保留；来源时间和成果版本取自不可变采用事件，不读取后续经验关联后的当前成果版本。安全引用保留原成果 ID、version、commit、ObjectRef、ChecksRef 和 ProjectChecksRef，TaskID 为原 WorkItemID；通用 SourceVersion 可能包含提案或目标，因此 Inputs 保持空数组，完整来源仍由原事件保管。OriginEventIDs 保持空数组，没有把采用事件登记为原生事件。
+
+`AuthorizeExperienceCompletion` 要求调用者传入当前同主数据库 Workspace 事务，沿该 context 重新核查当前 human、实际项目、Mission 读取权限和原采用事件，再与固定经验来源逐字段全等比较。缺少事务、跨数据库事务、已结束连接、取消及实际读取失败直接返回；独立 Swarm 事务没有 Workspace 事务时立即拒绝，避免重复等待调用者持有的单一连接。该方法不读取 Relay、对象或原生正文，不创建来源、候选或执行收据。
+
+`HasAcceptedArtifactCompletion(ctx, principal, projectID, eventID)` 提供 H 所需的只读来源定位：先核当前 human 与可访问项目，再在本库事务中以 `SELECT EXISTS` 查询准确 event_id 和 `swarm.artifact_accepted` 类型。定位不按 schema 过滤；已登记但不支持的采用事件仍由完整来源读取端口拒绝。false 只表示本来源没有登记该 ID，不能证明 Relay 存在。H 负责独立核查实际 Relay 命名空间并拒绝双命中、均无或未知；完整来源读取失败直接终止，不切换来源。共享组装、Interpreter 注入及当前 Principal 的私有请求 context 均由原 H 持有，本 SOURCE 没有修改其文件或 ordinary agents / attention 接口。
+
+实际验证只创建全新自有 SQLite。生产 `httpapi.NewServer.Serve` 使用本进程实际 loopback listener，真实 bootstrap / cookie / CSRF 创建人工项目空间并登记当前公开工作树；认证身份来自实际 bootstrap，没有手工写入来源事件。随后实际检查空 outbox 的定位 false / 读取 NotFound、缺少当前 human、Agent 拒绝、未知项目、非法参数、缺少事务、同库未提交项目可见及失败事务撤销、跨库拒绝、独立 Swarm 事务拒绝、已结束连接和取消传播。WaitCount 前后相同；HTTP 正常 Shutdown 后关闭 SQLite，关闭状态的读取和定位失败，再打开同一文件核项目持久化及采用来源仍缺失。Mission、Artifact、foundation_outbox、原生 Event、经验、完成来源、Grant 和 Native Session 行数始终为零；没有生成模型结果或采用事实。
+
+全部新输出位于 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/artifact-completion/`。实际 runner 为 `run.ps1`、`run-final.ps1 -RunLabel corrected`，两者整体 EXIT0；`commands.json` / `commands-corrected.json` 保存准确命令及真实退出码。GOMODCACHE 复用已核准的 D 盘目录 `product/ui/ctx_e921762e5e79/results/astrocyte-s1-EhXH3k/profile/go/pkg/mod`，GOCACHE 为 D 盘 `go-build/backend`；GOTMPDIR、TEMP、TMP 和 ASTROCYTE_TEST_OUTPUT_ROOT 均在本次独占根内。`GOPROXY=off`、`GOMAXPROCS=2`、`GOFLAGS=-p=1`、Node 内存上限 512 MiB，没有下载依赖或修改全局配置。
+
+| 实际命令 | 最终结果及原件 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/sqlite -list '^TestAcceptedArtifactCompletionActualInterfacesAndLifecycle$'` | 恰好一项，EXIT0；`list-corrected.log` |
+| `go test -mod=readonly ./internal/adapters/sqlite -run '^TestAcceptedArtifactCompletionActualInterfacesAndLifecycle$' -v -count=1 -timeout=1m` | 主项 1 PASS / 9 子项通过 / 0 SKIP，主项 0.19 秒、包 2.065 秒，EXIT0；`test-corrected.log` |
+| `go vet -mod=readonly ./internal/adapters/sqlite` | EXIT0；`vet-corrected.log` |
+| `go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/artifact-completion/server-corrected.exe ./cmd/server` | EXIT0；`build-corrected.log`；未启动该构建产物 |
+| 两件新增 Go 文件 `gofmt -l`、`git diff --cached --check` | EXIT0，无输出 |
+
+首轮未含定位补充时主项 0.16 秒 / 包 1.821 秒，list / test / vet / build 与启动壳均 EXIT0，原件 `*-first.log` 保留。后继 `list-final.log` EXIT0，`test-final.log` 唯一失败为跨库错误文本断言；生产接口已返回准确的 `workspace transaction cannot span databases`。该轮 test EXIT1、其后 vet / build 未运行，原 `commands-final.json` 和日志保留；最终测试对上述完整生产错误文本作准确断言，没有放宽断言或更改生产拒绝行为。
+
+本阶段未取得真实采用事件，因此定位 true、采用成果的正向读取、固定来源差异拒绝、实际 Mission 权限变更现场、经验生成与发布均为 NOT_RUN，不能以已通过的拒绝和生命周期检查代替。未知 schema 的真实采用事件也未运行。H 组合装配尚待其精确 SOURCE 和实际验证。原进度七项替身、完整 check / 默认、L1 / L2 和最终发布包继续未完成；本阶段没有运行 Node 套件、历史已成功验证、Probe、Start、模型、ASR、V4 或共享 64505 操作。原 Task / Dispatch 按当前模块要求继续发布支持，尚未结算。
