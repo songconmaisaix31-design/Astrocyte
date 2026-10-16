@@ -2,6 +2,24 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 当前 c5 普通产品与默认检查状态（2026-10-17 02:40）
+
+当前服务源码为 `c5b3b5715f2e93b82365720914be24c73642bd1e` / modified=false，PID30420，启动 UTC `2026-10-16T18:37:58.6714394Z`，地址保持 `http://127.0.0.1:64505/`。Web 来源独立记录为 `172bb445597193d55f1563ee5d21ac2ec881798d`；根完整比较确认 Web 生产文件 / 入口 / Vite / 包锁 / 构建配置保持，净差异仅 progress-existing、s5-delegation、video-existing 三件测试 spec，没有重复 Vite 或浏览器成功检查。原 H `task_3004b636a3ab / ctx_ad637376ba1d` 和普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 继续持有服务。
+
+根 `msg_7f0eb2200624` 已对准确 c5 普通组合实际执行三项装配3 PASS / package3.352秒、全仓 Go vet / build、部署 binary、42包架构及差异检查，最终均 EXIT0。首 vet 缺少锁定 SDK 的 EXIT1 已保留，按原授权下载 D 后只续失败阶段，没有重复3 PASS。根据这些具体结果授权原 H 更新同一64505和原库；最终 ZIP / Release 因根检测到 C 空间约5.5GB、低于既有10GiB守卫而未执行，本次普通 D 构建与同库更新已获准。
+
+H `msg_b2d14b88a357` 已记录稳定复制脚本 EXIT0 / parser0：准确 c5 binary26187264字节逐项相等，复制到 H 独占 `versions/c5b3b571`；30个 Web 文件复用自身稳定172，并在 stage.json单列 Web 来源。H 明确停止读取原 I HEAD 与根 D binary，模块已通过 `msg_eb751debd9fd` 归还复制窗口。产品当前本人 `msg_635b1a2f63db` 于 UTC `18:36:26Z` 根据本轮派发 / 源码 / 实际日志确认 F / UI 未恢复、没有共享操作安排，B 仅使用自己 D 新库和随机端口；H `msg_84d882118b2d` 已完整读取并保存该原件，没有以省略宿主的空清单推断退出或重新启动人员索取确认。
+
+H `msg_5542668d55c6` 的本次唯一更新实际结果为：原44080经 CTRL_C 正常退出并释放端口，用时0.9536499秒；随后单次启动上述 c5 /30420，health ok、首页 HTTP200 /562bytes、30静态 HTTP 文件逐项字节相等、唯一 owned listener。原 SQLite / LOCALAPPDATA / Q /媒体12项保持，没有补 deadline / publicGit 配置，没有新增 Native、Probe、模型、ASR、OS 或索引。
+
+模块只读本次 running指针、安全 before / after原件和实际稳定 binary buildinfo，确认 source c5 / modified=false / Windows amd64、Web source172、数据库指针三方一致，68表90行逐表全等 / differences0，Q `snapshot-1711995690`、Native初始化0、模型输入0。没有第三次重复实际测试或 HTTP 主项。原件仍在 H `shared-product-ad8413/running.json`，计数为 `data-{before,after}-c5b3b571-20261016-183757.json`；当前 ready已通过 `msg_4cbd2050120f` 交根最终独立核查，产品原窗口已通过 `msg_f6a79219f641` 归还。
+
+实际 ready 与外层退出分别记录：本次 update内部已保存 running / update / stop原件，普通终端中的外层 PowerShell 子命令尚未返回，command-first.json尚未生成，退出码仍 UNKNOWN。没有重复更新、终止在途命令或停止服务来取得 EXIT0；前次 session89264的 UNKNOWN也继续保留。
+
+默认 CI 未通过。H SOURCE6b334的 Run38947740300和 REPORTa4c1的 Run38947882938均为 completed / failure，准确 SHA及两份 failed.log已由原 H 保留，当前没有 queued / in_progress运行可取消；本模块当前分支的两种在途查询也均为空，本轮管理提交均使用 `[skip ci]`。根已精确取消 c5 Run38948519582，并保留4b4ec3b2首失败，不将取消或历史成功记为完整默认通过，没有修改 workflow、断言、Skip或历史。
+
+根 `msg_20893ddcf33f` 指定原 H 只读区分空 Relay组装、独立接入根和认知根显式配置失败的实际原因。既有 runtime_http 的403须具体核原 reconcile权限语义；需要 R 的内容只交精确 Handoff，当前不恢复新 R。默认仍包含七项未整改进度替身，禁止完整重跑；新发现的无需 Native问题按原负责人处理。原生工具边界、真实采用 / 完成 / Interpreter正向、完整默认、L1 / L2、最终 Windows包和 Release仍未完成，模块与原 H 继续同一 Task支持。
+
 ## 经验生产装配阶段交接（2026-10-17 02:32）
 
 H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3` / 独立 REPORT `a4c1baf6e47e8f449c2f26ce37150780b051df5e` 已普通 push，分支 `songconmaisaix31-design/works-relay-http`。模块独立核远端 REPORT 精确同值、原树 clean、SOURCE 与 B `2b96a9c7a98007af2b57528e288df13b6f2ea122` 均为普通祖先，REPORT 仅修改 `docs/access/http.md`，差异检查通过。B 独立 REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 已由 H 核准确原件后普通消费，B 源码保持原交付。
