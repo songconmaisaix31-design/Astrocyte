@@ -2,25 +2,43 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前更新与剩余条件（2026-10-16 23:53）
+## 当前运行与剩余条件（2026-10-17 00:10）
 
 模块在 remote compact 中断后沿原 `task_e8c1d01d67ec / ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`、子 Run `run_8bbda1c3974c`、工作树和分支继续，完整处理原 FIFO，包括根 `msg_21243d2fd941` 和后继 `msg_c095e1458b7e`。没有创建 Task、Run、工作树或第四层人员。原 H `task_3004b636a3ab / ctx_d763540bd366` 仍为唯一 H 写入者，公开 fleet 为 live / working、nextAction=none；模块只修改本文件。
 
 根最新准确组合 `172bb445597193d55f1563ee5d21ac2ec881798d` 已普通 push / clean，包含 F `375a559b0a451f78446be642b99d8d5e365221fa / b4bf44453436ba71ce0b88ef0f0e6a300d859d7f`、UI `524ee13dc7fefbc29660b6b5136077f400972bd2 / 9aa52ecf6199ce819ea6793e6f37481095d63ab4`、F `b34ce2b85b2ae9d172a409d622d74aa5797ea414 / b1569cabfb5fbd2f23c600788469f80a9a68b849` 和 UI 取消保护 `990847571f95198400bc21d77b7b590d5fbc0c27 / 596c9ff7534cb1325366b7a87e232081e6eab93b`。模块独立读取 `D:/Astrocyte-agent-assets/20261015/integration/root-taste-172bb44/{build,lint,taste}.log`：完整三个 Go 程序、TypeScript、Vite 构建 EXIT0，web lint EXIT0，实际完整 Taste / Goal / Snapshot / Policy / Rule / 判断反馈 / 同库 HTTP 重启及卸载取消两尺寸共4 PASS / 2.0分钟 / EXIT0；没有重跑这些检查。
 
-根 `msg_6f521e86c1b9` 已交准确产物读取窗口并暂停原产物写入；H `msg_2703fb7aebd7` 已实际开始复制到独占 D 稳定 `versions/172bb445`。当前实际服务仍为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5 / PID50624 / http://127.0.0.1:64505/`，原 D 库、配置和 Q generation 保持。H 先核副本、停止读取并归还窗口，再取得本次 F / UI 本人 ACK 后沿原 owned 生命周期更新同一实例；新 ready 尚未收到，不把准确组合构建通过写成部署完成。
+当前实际服务为准确 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false、Windows amd64，PID25568，启动 UTC `2026-10-16T16:06:57.3298644Z`，地址保持 `http://127.0.0.1:64505/`。H 根据根 `msg_6f521e86c1b9` 的产物窗口复制到独占 D 稳定 `versions/172bb445`，30个 web 文件逐项字节 / 大小 / 总数相等，并已停止读取、归还窗口。根后继 `8da025f` 仅 tests / docs，不改变本次准确生产产物，不再构建或复制。
+
+F 本次本人 ACK 为 `msg_e359a65335ba / msg_e690580983c8`，UI 为 `msg_8ec1d72a2d30 / msg_2e2eb762a2e0`，均暂停全部共享操作至 H 本轮172 ready。模块通过官方只读 `orca orchestration inbox --limit 300 --full --json` 精确取得四份原件，实际收件人为产品 `run_7b2ce96bcd13`；H 自身 FIFO / history 的首次匹配0保留。模块使用 `reply --from` 将完整安全 envelope / body 回答原问题 `msg_94ad8ce7931a`，回执 `msg_0701ef8590ce` 为 answered；产品另按原记录转交。没有重索本人确认、改变 Run 绑定或读取内部数据库。
+
+根 `msg_ac532b531862` 明确优先本次既有 owned 更新，独立条件调查放在 ready 后。H `msg_70b58eca113e` 已确认取得原件；原2d27 / PID50624 经 `CTRL_C_EVENT` 正常退出并释放端口，用时1.0807274秒，再启动一次稳定172。H `msg_e0d0b8942374` 已向根、模块及当前 F / UI 交真实新 ready 并归还窗口；本次脚本实际通过 health / 首页200-562bytes、30项静态 HTTP 字节核验、唯一 owned listener及原数据库前后计数。原 D 库、LOCALAPPDATA、媒体12键和 Q generation 保持，原生初始化、模型输入、ASR 和索引均未新增。
 
 当前 F 为 `task_7cbe30017760 / ctx_697b2f19c010 / term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60`，UI 为 `task_d0cee5a583bb / ctx_e921762e5e79 / term_e8bfccfb-5f89-4428-b693-bca4bbe0cf8d`。两者为原 Task 的 Codex0.162.0 / GPT-6.1-Sol / xhigh fast、context-only 续行，不能记作新的 worker-start 托管；原 Claude 的实际400 Arrearage及精确停止记录保留。H `msg_6d647be764fe` 已向当前两人交接原2d27 ready，F 仍唯一共享业务操作者，UI 共享只读；后继更新使用本次本人 ACK，13:45 的旧 ACK 只证明当次更新。
 
 | 当前具体事项 | 可消费来源、实际结果和剩余条件 |
 |---|---|
-| H 同库更新 | 原 H 正在消费准确172；尚需稳定副本、归还窗口、当次本人 ACK、正常停止 / 单次启动和实际新 ready。根已明确授权，没有新增实例或数据库。 |
-| H / R 既有来源 | H REPORT `d5427c705903e9bb69f1f257706f490e1784eea9`、R SOURCE `ce541794d58560747124fea2cf9d08222700587e` / REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f` 均为172祖先，模块三次 `git merge-base --is-ancestor` 全部 EXIT0。没有新增独立 R 源码待合；H 当前另有无独立领域缺口依本人回件确认。 |
+| H 同库更新 | 准确172 / PID25568已在同一64505 ready；本次本人 ACK、正常退出、单次启动和前后计数均有实际原件。原 H 继续支持，独立运行 REPORT 待固定提交。 |
+| H / R 既有来源 | H 既有 REPORT `d5427c705903e9bb69f1f257706f490e1784eea9`、R SOURCE `ce541794d58560747124fea2cf9d08222700587e` / REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f` 均为172祖先，模块三次 `git merge-base --is-ancestor` 全部 EXIT0。没有新增独立 R 源码待合；H 现存安全来源与条件说明随本次报告交付。 |
 | 原 a166 的 Native26 | 产品 `msg_2e064b75f296` 逐项要求真实公开生产 task、原生 event 及 GetEvent facts、first-visible 计时原件；当前没有满足工具关闭边界的控制器正向条件，不构造 EOF / conflict / unknown / complete 等成功场景。原三分钟 FAIL、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 与 raw gap 保持。 |
 | 真实进度 | 产品 `msg_e9c2bc6123b3` 所列八项要求真实 accepted / pending / unknown receipt、在途撤权、CAS 冲突、computed 持久化恢复等事实；原内存替身没有执行或计为验收。根仅授权原 B 安全只读派生托管既有真实进度及两项前端检查，原库 readOnly、不复制 Grant / Session、不 infer；结果尚待原 B 交付。 |
 | 实际视频输入 | 原成功952段及 media / whisper 原件不能作为 `summarize_json` 和原附件 revision 的替代输入；当前真实前置与实际结果分别保留，不重复 ASR。 |
 
 当前未阻塞具体交付与准确来源已交根 `msg_f2a753392301`，并交原 H `msg_a5d07da02eeb`。Native 工具、Agent completion、S3、语言及具体 PLOS 准入仍待用户回答；不新增原生初始化、模型、工具探测、ASR、索引、OS 或 Q 检查。完整默认、L1 / L2 和最终 Windows 包尚未通过，模块与原 H 继续最终发布支持。
+
+### 00:10 模块独立报告
+
+本阶段管理 SOURCE `63a98ee4f7c50bfb645355d3a3cc6daec43daef6` 已普通 push，`git ls-remote` 精确同值，原树 clean、修改范围仅本文件、`git diff --check` EXIT0。模块独立读取172稳定 stage记录及实际 binary buildinfo，确认 source172 / modified=false / stage_complete=true；读取时尚未启动的 stage事实保留，当前运行状态由新进程检查确认。根三份已通过日志只读消费，没有重新执行构建或业务场景。
+
+| 本次模块独立命令与原件检查 | 实际结果 |
+|---|---|
+| `Get-Process -Id 25568`、`Get-CimInstance` 核原50624、`Get-NetTCPConnection -LocalPort 64505 -State Listen` | 新PID / 稳定程序路径 / UTC启动时间准确；原PID不存在，唯一127.0.0.1 listener归新PID |
+| `go version -m` 读取当前稳定 binary | revision准确172 / modified=false / Windows amd64 |
+| `GET /api/v1/health` 与首页 | status=ok，首页HTTP200 / 562bytes |
+| 读取本次 `data-before-172bb445-20261016-160655.json` / `data-after-172bb445-20261016-160655.json` 并逐表比较 | 数据库指针与running指针三方相同，68表90行全等；`local_agent_sessions=0`、`workspace_session_bindings=0` |
+| 读取 `running.json` 的停止收据和安全派生字段 | 旧程序正常退出 / 原ACK / 根授权 / 单次新启动记录齐全，30静态文件已核字节，原Q `snapshot-1711995690`、原生初始化0 / 模型输入0 |
+
+本机安全运行指针继续为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`，其中引用实际停止收据及前后只读计数原件。独立核查已交根 `msg_3994a7b5491f`，并交 H 固定准确运行报告；新 ready 不代替完整默认、受限原生、L1 / L2、实际视频输入或最终包验收。
 
 ## 13:45 同库更新记录
 
