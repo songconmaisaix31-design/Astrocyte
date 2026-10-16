@@ -19,6 +19,8 @@ archive 准确链为 `RelayOwnedArchiveProvider.OwnedRelayArchive` → 实际 Na
 
 六步第5步的现有手动构件已逐段核查：`cmd/mcp/main.go` 使用显式启动绑定，默认data-dir属于UserConfig，signal-strength须显式给定，当前没有启动或接入共享产品；`mcp_binding.go` 拒绝改scope，`mcp_engine.go` 读取绑定项目的approved记录，MCP exposure保留结构化经验与版本引用。`WorksCommandForms` 人工textarea经 `worksAlbumApi` 提交 `content`，`SetWorkHandoff` 仅允许human、64KiB内且核原revision，保存手册及来源；Relay两条首输入路径使用该content，Native另包入固定ContextPacket。手动写入和自动装配分别描述，当前没有以Agent身份调用human手册入口、启动新MCP或模型，也没有替用户选择经验或批准候选。
 
+H 完整后继 `msg_223c69a4b51d` 已补实际 SQL approved /同项目或human分享、原metadata CAS /works_requests /事件持久化与两条首输入重核；模块独读对应源码后通过 `msg_39e5433b04ed` 交根。根 `msg_9290382d4b4d` / `msg_9d4e065ab958` 独立确认现有构件可达但本轮未验，不能把未提供自动装配推断为原步骤5全部缺实现。根已异步询问用户第5步装配方式，答案未到；不冻结选择、字段或权限。MCP固定启动绑定不包含HTTP当前LocalProjects Grant二次核验，受限Codex现有 `mcp_servers={}`，当前不启动服务或扩大工具。H 当前无其他独立可实施项，继续同Task普通服务及真实返修支持；不新增证明测试、生命周期动作、人员或报告替代功能。
+
 ## 会话 HTTP 实际验证与后续范围（2026-10-17 03:06）
 
 原 H 同一 Task / Dispatch 已普通 push SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` 与独立 REPORT `c4d0e198da59d7ab91af061a4e115c3ad16e8cbb`，均使用 `[skip ci]`。模块完整读取两件源码差异、38行阶段报告与三份作者原日志，核远端精确值及原树 clean；通过 `msg_b10f003eb34d` 交根。根 `msg_8c52e48ed0fb` 已独立读取并接受限定交付，普通合唯一 I；根只组合三项与两包 vet，没有重新构建、部署或运行原 owned 替身测试。
