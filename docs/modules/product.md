@@ -10,7 +10,7 @@
 | UI | `524ee13dc7fefbc29660b6b5136077f400972bd2` / `9aa52ecf6199ce819ea6793e6f37481095d63ab4` | Taste、Goal / Snapshot / Policy / Rule、确定性判断 / 反馈 / 重启及边界共两尺寸各5场景分次真实通过；完整tsc-b / lint / pnpm build本人EXIT0，首RED保持 |
 | UI必要取消返修 | `990847571f95198400bc21d77b7b590d5fbc0c27` / `596c9ff7534cb1325366b7a87e232081e6eab93b` | 仅保存前资料 / 规则读取卸载取消，已发送命令的unknown锁保持。真实GET后SPA离开、ERR_ABORTED、PUT0 / SQL不变及明确重开保存，两尺寸2 PASS / 42.0秒 / EXIT0，定向lint及完整pnpm build本人EXIT0；未重复原十项成功 |
 
-根已普通合F helper为 `5dfca03fd23b3218510290fc5a63732df1fd570f`，UI首阶段为 `f5872cfffdbb5e6b6ffeb02302804361d44a0376`，F后继为 `f43ff3dcfa127df73e621162156ead9244ae2a5c`。取消修复后的准确组合 `172bb445597193d55f1563ee5d21ac2ec881798d` 已由根报告完整build / lint / 新核心及取消两尺寸4 PASS、2.0分钟、三项真实EXIT0，已交H复制和同D库更新窗口；当前实际运行仍按下段2d27登记，收到本轮ready后才更新。F / UI已沿各自原终端单次接续，正在本人ACK本轮共享暂停，不由输入accepted推定已暂停或已更新。根另指定UI仅补实际Taste委托引用选择 / 保存 / 固定rule revision变化的独立定向验收，该必要覆盖待验，不阻止172本轮部署。
+根已普通合F helper为 `5dfca03fd23b3218510290fc5a63732df1fd570f`，UI首阶段为 `f5872cfffdbb5e6b6ffeb02302804361d44a0376`，F后继为 `f43ff3dcfa127df73e621162156ead9244ae2a5c`。取消修复后的准确组合 `172bb445597193d55f1563ee5d21ac2ec881798d` 已由根报告完整build / lint / 新核心及取消两尺寸4 PASS、2.0分钟、三项真实EXIT0，已交H复制和同D库更新窗口；当前实际运行仍按下段2d27登记，收到本轮ready后才更新。F / UI已沿各自原终端单次接续，本次本人共享暂停ACK `msg_e359a65335ba` / `msg_8ec1d72a2d30` 均实际到达并直交H，实际零在途，未由输入accepted推定暂停或更新完成。根另指定UI仅补实际Taste委托引用选择 / 保存 / 固定rule revision变化的独立定向验收，该必要覆盖待验，不阻止172本轮部署。
 
 B既有进度2项托管已获正式问题 `msg_296b98704870` / 答复 `msg_8c56ad950c02`：原公开SQLite仅mode=ro读取固定project / progress，沿既有真实存储在全新独占D库安全派生，保持原身份、内容、NativeID / model / timestamp / evidence / operations，区别本库CAS revision；不复制Grant / Session、不改原库 / Clock、不恢复controller或重新infer。原B欠费context `ctx_54129844e8b9` 已先公开fence再按明确授权精确关闭unsupervised终端，ptyKilled及exited / capability revoked均实核，237987a工作区干净、原件保持。同原Task / Run / 树 / 分支现 `ctx_43100892f5f5 / term_ab09fdef-e201-404c-ae87-38acc14453db`，实际Codex 0.162.0 / GPT-6.1-Sol xhigh本人ACK，限定必要验证helper、真实HTTP1关闭再HTTP2同库及只读窗口交F；新托管功能仍NOT_RUN，不重跑已验安全 / 自然到期 / 模型。F后继精确选集先list再实际两窗口读取，源 / target守卫和前后来源一致必须核实。
 
@@ -132,6 +132,10 @@ UI后继 `e2e-full-first.log` 已由模块独读：1920完整DOM主链实际1 PA
 | 302 | chromium-1280 | s2-proposals.spec.ts:255 | 人工拒绝提案且不授权 | 767 |
 
 ### 本轮独立管理REPORT
+
+管理SOURCE `fce8b0b313ee3e8266d0b88888fdaefeea6b10ec` 仅更新本文件，`git diff --check` 通过、普通push成功，模块独立核远端同值。F b34 / b156、UI524 / 9aa及取消990 / 596的源码、独立报告、真实日志和普通远端已逐一审阅并交根；原生、模型、ASR和已成功场景未重跑。根组合172的完整build / lint / 四场景通过按正式来源记录，本轮F / UI共享暂停本人ACK已实际直交H，实际ready未到时仍登记2d27。
+
+B新恢复以正式答复 `msg_8c56ad950c02` 为边界，公开旧context fence与精确终端退出均已核，原237987a干净；新 `ctx_43100892f5f5` 本人ACK与实际文件读取已观察，安全派生托管尚未通过。F只准备其准确已验b34真实静态产物的全新D目录交B既有 `ASTROCYTE_WEB_DIR`，不使用B旧页面冒充当前前端；原构建可确认则只复制，不为目录重复构建或业务。原29条件与8fake真实推断缺口保持；模块继续原Task的领域返修、集成检查和最终发布支持，没有worker_done、终端释放或自行发布。
 
 管理SOURCE `b902413cc5704e5772e1e26c2536ec2fe60ef68f` 仅修改本文件，`git diff --check` 通过、普通push成功，模块独立核远端同值。B旧八项真实前置映射及watch实际停止来源已交根和M-relay，未运行替身、恢复原生或请求欠费模型。F helper精确SOURCE375及独立REPORTb4bf均已独读并核普通远端，两个模式真实构造通过；UI三个1920边界分别通过、1920完整主链另行通过均按原日志和本人工具回执登记，原失败保留。后继1280、固定历史版本、默认其他失败与完整包仍待验，模块持续返修，未发送worker_done或发布Release。
 
