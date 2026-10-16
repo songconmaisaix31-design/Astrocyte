@@ -27,6 +27,9 @@ func TestServerInitializedSnapshot(t *testing.T) {
 		t.Fatal(err)
 	}
 	base := filepath.Join(repo, ".verification", "snapshot-tests")
+	if testRoot := os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT"); testRoot != "" {
+		base = filepath.Join(testRoot, "snapshot-tests")
+	}
 	if err = os.MkdirAll(base, 0700); err != nil {
 		t.Fatal(err)
 	}
