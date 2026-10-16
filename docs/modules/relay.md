@@ -34,7 +34,11 @@ F / UI 仍为共享实例唯一业务操作人员，成功和未知 mutation 不
 
 根 `msg_3586b8d091df` 按用户最新集成授权接管原 `works-relay-integration` 工作树 / 分支，成为该树唯一合并写入者；原 I 两次 bootstrap 明确退出并已精确停止，不重试或另建 I。H 持有当前稳定38fb服务，根后继构建与 H 交准确产物窗口，任何更新仍取得 F / UI 本次安全 ACK；领域业务返修仍归原作者。
 
-H 本次独立运行 REPORT 为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`，只修改 `docs/access/http.md`。模块已审查全部差异、核原25b源码为其祖先、原树 clean、报告中的实际 PID / 时间 / 来源 / 计数与现存安全原件一致；远端核对首次因 TLS 失败，独立远端结果另记，未将失败写为成功。该报告不包含业务变化或重跑成功构建。
+H 本次独立运行 REPORT 为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`，只修改 `docs/access/http.md`。模块已审查全部差异、核原25b源码为其祖先、原树 clean、报告中的实际 PID / 时间 / 来源 / 计数与现存安全原件一致；首次远端核对 TLS 失败保留，后继 `git ls-remote` 实际 EXIT0 / 远端精确同值。该报告不包含业务变化或重跑成功构建。模块独立 REPORT `61d06e90fb88e2c957270f1edcdbcb55ae7ea11e` 已普通 push，远端精确同值，已将两组准确来源交根。
+
+产品模块 `msg_523d5e2d6a7e` 核原 B / F / UI 的本轮 bootstrap 明确退出并精确停止，原 WIP 保留，B 单次后续 retry 在观察；当时没有可交实际 Working 的 F / UI。H 已收到该状态，保持38fb服务，不从无人操作推断安全 ACK。后继具体候选批准、原生工具、Agent completion、Laya 语言与 S3 待答继续保持原边界。
+
+原 R / S4 的明确进程退出通知已接收，fleet 均为 `execution_host / exited`。模块按两行 `nextAction` 精确释放旧终端，运行时均返回 `release_unknown`：旧 recorded terminal 不再解析、`processAction=none`。依恢复回执分别 `worker-show` 核 failed / exited，并各用一个 fresh request 重试，结果仍 unknown；保留两项旧资源记录，没有使用 broad terminal close 或内部 DB。此状态不影响当前 H 服务及根普通集成，不能写为已经释放。
 
 ## 04:45 恢复分工记录
 
