@@ -20,25 +20,67 @@
 
 公开来源认知、并发 WAL 备份与原生产 Reader 的实际结果见下列 REPORT。前端与发布包的组合验收归 F/P/I；正式 V4、旧私人历史、管理员 Procmon、两次真实跨日触发没有在本任务运行。
 
-## REPORT：2026-10-16 directory-alias fast-fail 整改
+## REPORT：2026-10-16 directory-alias fast-fail 与测试输出路径整改
 
-分支 `songconmaisaix31-design/release-cognition-20261014`，基线 `f1110523c584aa7aa59ad07a05fc70cf88e138b7`。实际客户端 Claude Code / `qwen3.7-max`。根 `msg_e0be901882a5` 授权窄返修，经理 `msg_72aa5148db8b` 确认仅改 `cmd/workbench-snapshot/main_test.go` 的 `TestServerInitializedSnapshot/directory-alias` 与本文件，不执行采集/Sleep/重放/模型或历史重算。
+分支 `songconmaisaix31-design/release-cognition-20261014`，基线 `f1110523c584aa7aa59ad07a05fc70cf88e138b7`。实际客户端 Claude Code / `qwen3.7-max`。根 `msg_e0be901882a5` 授权窄返修；经理 `msg_72aa5148db8b` 确认首改 directory-alias，后续根指令扩展处理集成 `b02d1635828eae98ac6b5dac89cd9383d021257d`（普通合 f19）的真实首次 publish 失败。不执行采集/Sleep/重放/模型或历史重算。
 
-原 `directory-alias` 子测试先调用 `os.Symlink`，在 Windows 失败后才通过 PowerShell 创建 Junction 作为降级路径，违反 AGENTS.md 的 fast-fail 约束：错误发生位置必须立即失败，不捕获错误继续执行，不使用 fallback。修正为先按 `runtime.GOOS` 选择实际机制：Windows 直接创建 Junction，非 Windows 直接创建 Symlink；每个创建错误在位置直接 `t.Fatal`/`t.Fatalf`，不以一种机制的失败换取另一种机制的尝试。没有增加 skip、提升权限、削弱断言或修改生产保护代码、引擎、Clock、原数据或 parser。
+### 修改 1：directory-alias fast-fail
 
-生产 `rejectAlias`（`files_windows.go`）通过 `GetFileAttributes` 检查 `FILE_ATTRIBUTE_REPARSE_POINT` 拒绝所有目的祖先的 Windows junction；`files_unix.go` 通过 `os.Lstat` 检查 `os.ModeSymlink` 拒绝 Unix symlink。本轮未修改这两个文件，拒绝行为保持原样。
+`directory-alias` 子测试按 `runtime.GOOS` 选择实际机制：Windows 直接通过 PowerShell 创建 Junction，非 Windows 直接调用 `os.Symlink`；每个创建错误在位置直接 `t.Fatal`/`t.Fatalf`。生产 `rejectAlias`（`files_windows.go`）通过 `GetFileAttributes` 检查 `FILE_ATTRIBUTE_REPARSE_POINT` 拒绝所有目的祖先的 Windows junction；`files_unix.go` 通过 `os.Lstat` 检查 `os.ModeSymlink` 拒绝 Unix symlink。本轮未修改生产文件。
+
+### 修改 2：ASTROCYTE_TEST_OUTPUT_ROOT
+
+根集成 `b02d163` 的 `TestServerInitializedSnapshot` 首次 publish（原 main_test.go:105）报 `The system cannot find the path specified`，EXIT1/16.563s，七子项未开始；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-b02d163/snapshot.log`。根因：集成树的 `repo/.verification` 为 D: junction，测试硬编码输出路径 `repo/.verification/snapshot-tests` 落在 junction 上，生产 `rejectAlias` 正确拒绝该目的根。
+
+修正为支持显式 `ASTROCYTE_TEST_OUTPUT_ROOT` 环境变量：设置时测试输出基目录使用该值的 `snapshot-tests` 子目录，不设时保持原 `repo/.verification/snapshot-tests` 默认。`repo` 仍用于构建 server binary（`build.Dir = repo`），不受影响。没有 fallback、skip、提升权限、削弱断言，不改生产保护、引擎、Clock、原数据或 parser。
 
 ### 命令与结果
 
 ```powershell
+# 首两条命令未设置 D: 环境变量，go vet 使用了默认 C: go-build 缓存
 gofmt -l cmd/workbench-snapshot/main_test.go   # 空输出，格式通过
 go vet ./cmd/workbench-snapshot/...             # 无错误
+
+# 以下测试命令完整设置 D: 环境：
+# GOCACHE=D:/.../go-build/backend
+# GOTMPDIR/TEMP/TMP=D:/.../cognition-Q-alias/go-temp/cognition-Q-alias
+# GOMAXPROCS=2 GOFLAGS=-p=1
+
+# 首轮（f19 源码，修改 2 前）：定向 directory-alias
+go test -mod=readonly -count=1 -v -run TestServerInitializedSnapshot/directory-alias ./cmd/workbench-snapshot/...
+# 15.392s 目标包，directory-alias 子项 0.37s
+
+# 首轮全包
 go test -mod=readonly -count=1 -v ./cmd/workbench-snapshot/...
+# 13.840s，7 子测试全部 PASS
+
+# 第二轮（修改 2 后）：显式 ASTROCYTE_TEST_OUTPUT_ROOT=D:/.../test-output
+go test -mod=readonly -count=1 -v -run ^TestServerInitializedSnapshot$ ./cmd/workbench-snapshot/... -timeout=3m
+# 18.053s，7 子测试全部 PASS
+
+# 第二轮默认（不设 ASTROCYTE_TEST_OUTPUT_ROOT）
+go test -mod=readonly -count=1 -v -run ^TestServerInitializedSnapshot$ ./cmd/workbench-snapshot/... -timeout=3m
+# 11.688s，7 子测试全部 PASS
 ```
 
-全套 7 个子测试 PASS（13.840s）：missing-source、source-in-root、missing-history、hardlink、directory-alias（0.35s，Windows Junction 创建并被生产代码拒绝）、expired、lock。`go build -trimpath -mod=readonly` 通过，`git diff --check` 通过。测试日志 `D:/Astrocyte-agent-assets/20261015/cognition-Q-alias/logs/`；GOCACHE 共享 `go-build/backend`，GOTMPDIR/TEMP/TMP 限定 `cognition-Q-alias` 独占目录，不改全局缓存。
+7 个子测试：missing-source、source-in-root、missing-history、hardlink、directory-alias（Windows Junction 创建并被生产代码拒绝）、expired、lock。测试日志 `D:/Astrocyte-agent-assets/20261015/cognition-Q-alias/logs/`。
 
-旧 Task 的跨日 collect、采集、重放、Sleep、模型调用和历史重算本轮一律不执行；独立 symlink OS1314 原未通过保留，Windows 真实 Junction 拒绝通过不计 symlink 通过。原五个 pub 指针、旧 DB、preSleep、历史和首 FAIL 原件保留不改。
+```powershell
+# 有效 D: build：GOCACHE/GOTMPDIR/TEMP/TMP 完整 D:，GOMAXPROCS=2, GOFLAGS=-p=1
+go build -trimpath -mod=readonly -o D:/.../cognition-Q-alias/build/workbench-snapshot.exe ./cmd/workbench-snapshot
+# exit 0；产物 11,432,448 bytes；go version 报告 go1.27.2
+```
+
+### 实际限制
+
+- 首条 `go vet` 未设 D: 环境变量，C: `go-build` 缓存因此增长约 314.8 MB；后续测试与有效 build 均已完整设置 D: 环境。
+- 独立 symlink OS1314 原未通过保留，Windows 真实 Junction 拒绝通过不计 symlink 通过。
+
+### 根集成首 FAIL 保留
+
+集成 `b02d163` 首次 `TestServerInitializedSnapshot` EXIT1/16.563s，`main_test.go:105` 报 `The system cannot find the path specified`，七子项未开始。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-b02d163/snapshot.log` 保留。本 Q 修复后两轮测试（显式 output root 与默认）均 7/7 PASS，根集成复验待根确认。
+
+旧 Task 的跨日 collect、采集、重放、Sleep、模型调用和历史重算本轮一律不执行。原五个 pub 指针、旧 DB、preSleep、历史和首 FAIL 原件保留不改。
 
 ## REPORT：2026-10-15 公开工程跨日更新
 
