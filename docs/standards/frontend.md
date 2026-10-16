@@ -1,5 +1,270 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 当前 a166 的 55 条失败逐项状态
+
+原始 SOURCE 为 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，原件为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/full-default-a166-playwright.log`。完整计划 320 项，已观察 204 PASS、55 FAIL、43 原有 SKIP、18 无结果；原件没有最终 summary 或 EXIT，整体未通过。以下编号、窗口、文件位置及日志行均逐条对应该原件。当前接管基线 `6cd0e51098a946c732e3914d94efc59c9aaa4dec`，公共 helper SOURCE `375a559` 已普通 push；未完成的行保持 NOT_RUN，不从历史定向通过推断当前通过。
+
+本次身份为 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / terminal `term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60`，实际 Codex 0.162.0 / GPT-6.1-Sol / xhigh fast。沿原任务 context_only / unsupervised 续行，没有新增 Agent。
+
+| 原编号 | 窗口 | 原文件位置 | 原日志行 | 当前状态 | 精确证据或下一责任人 |
+|---|---|---|---|---|---|
+| 4 | 1920 | attention-recovery.spec.ts:34 | 22 | NOT_RUN | F：获准四件公开 HTML 的环境已明确，版本切换定向验证在途 |
+| 11 | 1920 | cognition-live.spec.ts:13 | 44 | NOT_RUN | F：Q 固定 generation；原 SQL 日期与真实上海日期须分别核查 |
+| 12 | 1920 | cognition.spec.ts:37 | 47 | NOT_RUN | F：显式 Q LOCALAPPDATA 下的路由和键盘路径 |
+| 60 | 1920 | plugin-snapshot.spec.ts:27 | 104 | PASS | P：phase3 14 项实际成功，未重复运行 |
+| 61 | 1920 | plugin-snapshot.spec.ts:37 | 111 | PASS | P：同一 14 项成功日志 |
+| 64 | 1920 | plugin-snapshot.spec.ts:76 | 120 | PASS | P：同一 14 项成功日志 |
+| 65 | 1920 | plugin-snapshot.spec.ts:107 | 123 | PASS | P：同一 14 项成功日志 |
+| 80 | 1920 | progress-existing.spec.ts:10 | 144 | NOT_RUN | B：既有结果当前只读托管 URL 未交付；历史两窗口成功保留 |
+| 85 | 1920 | relay-album.spec.ts:6 | 168 | NOT_RUN | F：实际扫描、统计和三尺寸布局；无需原生启动 |
+| 94 | 1920 | relay-runtime.spec.ts:238 | 204 | NOT_RUN | H/R：EOF_TERMINAL 的真实任务及读取窗口 |
+| 95 | 1920 | relay-runtime.spec.ts:238 | 207 | NOT_RUN | H/R：EOF_STRUCTURED 的真实任务、工具关闭和发送许可 |
+| 96 | 1920 | relay-runtime.spec.ts:260 | 210 | NOT_RUN | H/R：CONFLICT_INITIAL 的真实互斥收据及已有任务 |
+| 97 | 1920 | relay-runtime.spec.ts:260 | 213 | NOT_RUN | H/R：CONFLICT_REOPENED 的原收据及重新打开结果 |
+| 98 | 1920 | relay-runtime.spec.ts:276 | 216 | NOT_RUN | H/R：DUPLICATE 的实际工作中任务与待确认任务 |
+| 99 | 1920 | relay-runtime.spec.ts:295 | 219 | NOT_RUN | H/R：GENERIC_CONFLICT 的真实冲突前置条件 |
+| 100 | 1920 | relay-runtime.spec.ts:308 | 222 | NOT_RUN | H/R：WORKING 的确证开始、终端、worktree 及活性 |
+| 101 | 1920 | relay-runtime.spec.ts:322 | 225 | NOT_RUN | H/R：UNKNOWN_SEND 的实际任务及停止权限 |
+| 102 | 1920 | relay-runtime.spec.ts:343 | 228 | NOT_RUN | H/R：COMPLETE_RELEASE 的真实完成、停止及释放范围 |
+| 103 | 1920 | relay-runtime.spec.ts:367 | 231 | NOT_RUN | H/R：ALTERNATE 及原 released task、第二 Agent 与许可 |
+| 104 | 1920 | relay-runtime.spec.ts:387 | 234 | NOT_RUN | H/R：PUBLICATION_ERROR 的实际错误及 reconcile 收据 |
+| 107 | 1920 | relay-session-readonly.spec.ts:9 | 243 | NOT_RUN | H：原任务 18ID / GetEvent 公开事实及当前服务；历史成功保留 |
+| 108 | 1920 | relay-session.spec.ts:91 | 246 | NOT_RUN | H/R：原登记和 first-visible 原件；原三分钟 FAIL 保留 |
+| 131 | 1920 | s1.spec.ts:69 | 294 | NOT_RUN | F：公开原文、人工重读计数，关闭主动截图后验证 |
+| 133 | 1920 | s1.spec.ts:133 | 306 | NOT_RUN | F：公开两版本、人工分类、固定引用及移除后原文 |
+| 136 | 1920 | s2-context.spec.ts:44 | 321 | NOT_RUN | F：固定上下文、403、撤销和同库重启 |
+| 149 | 1920 | video-existing.spec.ts:9 | 377 | NOT_RUN | B/V：原断言要求实际两版本及 952 位置，当前获准来源为 0 segments/spans |
+| 155 | 1920 | works-album.spec.ts:114 | 404 | NOT_RUN | F：内部 1920×1080 的真实 DOM 布局 |
+| 156 | 1920 | works-album.spec.ts:114 | 411 | NOT_RUN | F：内部 1280×720 的真实 DOM 布局 |
+| 157 | 1920 | works-album.spec.ts:114 | 418 | NOT_RUN | F：内部 390×844 的真实 DOM 布局 |
+| 164 | 1280 | attention-recovery.spec.ts:34 | 440 | NOT_RUN | F：同 4，独立窗口结果待取得 |
+| 171 | 1280 | cognition-live.spec.ts:13 | 462 | NOT_RUN | F：同 11，独立窗口结果待取得 |
+| 172 | 1280 | cognition.spec.ts:37 | 465 | NOT_RUN | F：同 12，独立窗口结果待取得 |
+| 220 | 1280 | plugin-snapshot.spec.ts:27 | 522 | PASS | P：phase3 14 项实际成功，未重复运行 |
+| 221 | 1280 | plugin-snapshot.spec.ts:37 | 529 | PASS | P：同一 14 项成功日志 |
+| 224 | 1280 | plugin-snapshot.spec.ts:76 | 538 | PASS | P：同一 14 项成功日志 |
+| 225 | 1280 | plugin-snapshot.spec.ts:107 | 541 | PASS | P：同一 14 项成功日志 |
+| 240 | 1280 | progress-existing.spec.ts:10 | 562 | NOT_RUN | B：同 80，当前 URL 未核实，不能重跑 infer |
+| 245 | 1280 | relay-album.spec.ts:6 | 586 | NOT_RUN | F：同 85，独立窗口结果待取得 |
+| 254 | 1280 | relay-runtime.spec.ts:238 | 622 | NOT_RUN | H/R：本窗口 EOF_TERMINAL 的真实任务及读取窗口 |
+| 255 | 1280 | relay-runtime.spec.ts:238 | 625 | NOT_RUN | H/R：本窗口 EOF_STRUCTURED 的真实任务与发送许可 |
+| 256 | 1280 | relay-runtime.spec.ts:260 | 628 | NOT_RUN | H/R：本窗口 CONFLICT_INITIAL 的真实互斥收据 |
+| 257 | 1280 | relay-runtime.spec.ts:260 | 631 | NOT_RUN | H/R：本窗口 CONFLICT_REOPENED 的真实互斥收据 |
+| 258 | 1280 | relay-runtime.spec.ts:276 | 634 | NOT_RUN | H/R：本窗口 DUPLICATE 的实际任务及确认范围 |
+| 259 | 1280 | relay-runtime.spec.ts:295 | 637 | NOT_RUN | H/R：本窗口 GENERIC_CONFLICT 的真实前置条件 |
+| 260 | 1280 | relay-runtime.spec.ts:308 | 640 | NOT_RUN | H/R：本窗口 WORKING 的确证开始及三值活性 |
+| 261 | 1280 | relay-runtime.spec.ts:322 | 643 | NOT_RUN | H/R：本窗口 UNKNOWN_SEND 的真实任务与停止许可 |
+| 262 | 1280 | relay-runtime.spec.ts:343 | 646 | NOT_RUN | H/R：本窗口 COMPLETE_RELEASE 的真实任务与资源释放 |
+| 263 | 1280 | relay-runtime.spec.ts:367 | 649 | NOT_RUN | H/R：本窗口 ALTERNATE 及原 released task、第二 Agent |
+| 264 | 1280 | relay-runtime.spec.ts:387 | 652 | NOT_RUN | H/R：本窗口 PUBLICATION_ERROR 的实际事件接入错误 |
+| 267 | 1280 | relay-session-readonly.spec.ts:9 | 661 | NOT_RUN | H：原 18ID / GetEvent 事实及当前原服务；历史成功保留 |
+| 268 | 1280 | relay-session.spec.ts:91 | 664 | NOT_RUN | H/R：原登记和本窗口 first-visible；原三分钟 FAIL 保留 |
+| 291 | 1280 | s1.spec.ts:69 | 712 | NOT_RUN | F：同 131，独立窗口结果待取得 |
+| 293 | 1280 | s1.spec.ts:133 | 724 | NOT_RUN | F：同 133，独立窗口结果待取得 |
+| 296 | 1280 | s2-context.spec.ts:44 | 739 | NOT_RUN | F：同 136，独立窗口结果待取得 |
+| 302 | 1280 | s2-proposals.spec.ts:255 | 767 | NOT_RUN | F：人工拒绝的真实 HTTP、Grant 为零及重启 |
+
+P 的准确原件：`D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_44f61b51d023-phase3/plugin-snapshot-with-env.log`，14 PASS / 1.2 分钟 / EXIT0；对应前端 SOURCE `c546f2a`。只读取已授权的 `standards-backend/.verification` 四件公开 HTML，没有重新抓取来源或调用模型。
+
+当前表计数为 8 PASS、47 NOT_RUN。H/R 的 26 行、B 进度 2 行和 B/V 视频 1 行已通过 `msg_42978f46523d` / `msg_b59a70b83ad3` 定向交接；其余 26 行包括已通过的插件 8 行及 F 持续处理的 18 行。原生工具关闭未满足、当前真实任务和权限不足分别记录，不新增任务凑场景。旧两批认知证据分别为全事件 1316 与两主题分页 155，后者已经逐 ID 核查通过，不重复该批。
+
+进度原件指针由协调者 `msg_d4da4a731292` 明确交付：B 树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite`，项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70`、原生 ID `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`、模型 `gpt-6.1-sol`。53863 属历史 URL，当前托管未核实；不启动该旧库写入服务、不复制整库、不恢复控制器或重跑模型。
+
+### 公共 helper 的显式生产环境配置
+
+SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 已普通 push，只修改 `web/e2e/realService.ts` 两行。`realService(relay = false, env?: { ASTROCYTE_REPOSITORY_ENVIRONMENT_ID: string })` 将调用者明确选择的已有生产环境 ID 传给原 `startS1Server`；原 `realService()` 和 `realService(true)` 语义保持。未装配 CodeGraph / AOCI 或模型，没有修改共享服务。
+
+本次原件根为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/`。`helper-typecheck.log` 记录完整 `pnpm --dir web typecheck` / `tsc -b` / EXIT0。`helper-smoke-fourth.log` 是普通模式，`helper-smoke-relay.log` 是 Relay 模式，两者均通过真实 Go / Vite、human HTTP、专用 `{files}` 快照请求、实际环境 ID 和 Git HEAD、SQLite 原生会话数为 0 的检查，均 EXIT0。实际命令为 `pwsh -NoProfile -File <本次原件根>/run-smoke.ps1`，该脚本分别在两次构造时使用 `helper-smoke.mjs` 的默认参数及 `--relay`；两次独立库均保留，不重复已通过的普通模式。
+
+首次 Windows PowerShell 5.1 启动在原生 stderr 重定向处终止，原工具回执保留；后续使用 PowerShell 7。`helper-smoke-first.log` / `helper-smoke-second.log` 均记录真实 HTTP400 / EXIT1，当次 `api.write` 自动加入了该专用 DTO 不接收的 CommandMeta。后续使用原严格 `api.request` 和专用 `{files}` 正文，响应仍经原 `validateResponse`；未使用 rawRequest 或修改契约。`helper-smoke-third.log` 的快照 HTTP 已成功，SQLite 返回 null-prototype 行与普通对象的深比较退出 1；最终按同一单行数量及 count=0 严格检查。先前仅观察到构建启动行时记 UNKNOWN，后到原件已补充为真实失败，不由历时推断成功。
+
+上述成功属于准确 helper SOURCE；当前另有 `web/e2e/s1.spec.ts` 两个失败场景的主动截图移除 WIP，其真实业务断言保持，定向验证在途。该 WIP 不包含在本 helper SOURCE 或本次仅文档的 REPORT。
+
+## 2026-10-16 F 域 41 失败逐行 map（combined-default-first 实际日志）
+
+来源日志 `.verification/playwright-combined-default-first.log`，行 7766：`41 failed, 203 passed, 32 skipped, 4 did not run`（26 分钟）。根提到 a166 的 320/55 分组（msg_f0d1cc29e545），本上下文未获得该消息原文；以下 map 基于实际可用日志 41 项逐行列出。若需对齐 320/55，请根提供 a166 运行日志或 msg 原文。
+
+### 分组 A：F 域已绿（4 项 × 2 viewport = 8，本次复验 PASS）
+
+| 文件 | 测试 | viewport | 本次实际 | 说明 |
+| --- | --- | --- | --- | --- |
+| plugin-snapshot.spec.ts:33 | 真实已捕获正文保留完整文本 | 1920+1280 | PASS（14 项全文件） | 缺 env `ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR`，补后全绿 |
+| plugin-snapshot.spec.ts:69 | 修改人工输入标题产生新命令身份 | 1920+1280 | PASS（同上） | 同上 |
+| progress.spec.ts:14 | 实际人工进度保留本轨 STATUS.md | 1920+1280 | PASS（14.5s） | 前序提交已修 |
+| progress.spec.ts:36 | 纯输入解析完整保留多行路径 | 1920+1280 | PASS（同上） | 前序提交已修 |
+
+### 分组 B：缺原生条件 — relay 需本地 CLI Agent（11 unique × 2 viewport = 22）
+
+所有 relay-runtime 测试需要已注册的原生 CLI Agent（本地二进制 + session 注册 + terminal/structured I/O 驱动），F 写域不具备该条件。
+
+| 文件:行 | 测试 | 1920 | 1280 | 缺条件 |
+| --- | --- | --- | --- | --- |
+| relay-runtime.spec.ts:120 | EOF 登记 terminal 驱动 | ✘ | ✘ | 需本地 CLI binary + Agent 注册 |
+| relay-runtime.spec.ts:120 | EOF 登记 structured 驱动 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:142 | initial 互斥收据 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:142 | reopened 互斥收据 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:158 | 重复派发 409 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:177 | 通用冲突 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:190 | 服务投影刷新保留 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:204 | 离线发送保留 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:225 | 人工完成/取消/done | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:249 | 释放工作区接续 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:269 | 事件接入错误 | ✘ | ✘ | 同上 |
+
+relay-session-readonly.spec.ts:9 和 relay-session.spec.ts:90 同样缺原生条件（2 unique × 2 viewport = 4）。
+
+**小计：13 unique relay 测试 × 2 viewport = 26 项，全缺本地 CLI 原生条件。**
+
+### 分组 C：缺外部服务/连接（1 unique × 2 viewport = 2）
+
+| 文件 | 测试 | 1920 | 1280 | 缺条件 |
+| --- | --- | --- | --- | --- |
+| paper-search.spec.ts:15 | 公开检索元数据和可得状态 | ✘ | ✘ | 外部 paper API 503（official source unavailable） |
+
+### 分组 D：s1 引导/外部依赖（4 unique × 部分 viewport = 5）
+
+| 文件:行 | 测试 | viewport | 缺条件 |
+| --- | --- | --- | --- |
+| s1.spec.ts:18 | fresh browser bootstrap empty collections | 1280 only | 引导时序（1920 PASS） |
+| s1.spec.ts:30 | browser imports summarize export | 1920+1280 | 外部 paper API 依赖 |
+| s1.spec.ts:61 | view and refresh keyboard reread | 1280 only | 同上（1920 PASS） |
+| s1-projects.spec.ts:33 | human registers project B/C | 1280 only | 引导/连接（1920 PASS） |
+
+### 分组 E：F 域待查（1 unique × 2 viewport = 2）
+
+| 文件 | 测试 | 1920 | 1280 | 说明 |
+| --- | --- | --- | --- | --- |
+| works-album.spec.ts:62 | 实际人工分组与态度保存后控制分组和筛选 | ✘ | ✘ | 首 RED 日志保留；后续复验 1 PASS（分组标题测试），但完整场景 78 行 expect heading "标准整改" 失败，需查 DOM 渲染时序 |
+
+### 汇总
+
+| 分组 | 项数 | 状态 | F 可修? |
+| --- | --- | --- | --- |
+| A: 已绿 | 8 | PASS | ✅ 已修 |
+| B: relay 缺 CLI | 26 | 缺原生条件 | ❌ 需 B/R 轨本地 CLI |
+| C: 外部 503 | 2 | 缺外部服务 | ❌ 需 paper API 可用 |
+| D: s1 引导 | 5 | 部分 viewport | ⚠️ 1920 PASS / 1280 FAIL |
+| E: works-album | 2 | 待查 | ⚠️ 需 DOM 时序复查 |
+| **合计** | **41** | — | — |
+
+**F 域可独立修复**：分组 A（8 项已绿）+ 分组 E（2 项待查）= 10 项。
+**需外部条件**：分组 B（26 项需 CLI）+ C（2 项需 paper API）+ D（5 项引导）= 33 项。
+
+**与 a166 320/55 的差异**：本日志为 244 总测试（41 failed + 203 passed），a166 为 320 总测试（55 failed）。差 76 测试 / 14 失败，可能来自 s2-admission（8 项）、s2-proposals、s2-context、s3-missions、s4-repository、cognition、cognition-live、attention-interactions、preview-design 等额外 spec 的包含。本上下文无 msg_f0d1cc29e545 原文，无法精确对齐 55 项。请根提供 a166 运行日志或 msg 原文以完成 320/55 逐行 map。
+
+## 2026-10-16 PLOS 候选严格 DOM 只读审阅（64505，24 项逐项 assert）
+
+针对上一轮 DOM 审阅脚本（852a149/f59a356）使用 `catch(()=>false/N/A)` 静默吞错、未点击准备按钮、条件跳过等问题，重写严格版本脚本 `.verification/dom-review-strict-64505.mjs`。Playwright chromium headless 1280×720，零截图、零视频、零模型。每个断言硬失败——任一缺失立即 exit 1，不 catch 继续。
+
+**实际运行结果**：EXIT0，24 项断言全部 PASS。
+
+**逐项断言清单与实际结果**：
+
+| # | 断言 | 结果 |
+| --- | --- | --- |
+| 1 | 页面 title 包含 Astrocyte | PASS: `"Astrocyte · 研究工作台"` |
+| 2 | PLOS 候选卡片恰好 1 个 | PASS: count=1 |
+| 3 | 对话框可见且有内容 | PASS |
+| 4 | 对话框包含候选 ID `QILUA3J6WINYVSRKX3CU6FA35A` | PASS |
+| 5 | 对话框包含 `r2` | PASS |
+| 6 | 对话框包含 `v3` | PASS |
+| 7 | 对话框包含资料 ID `TN3CEEE5ELGKZBSKY2RIEUW7OH` | PASS |
+| 8 | 对话框包含资料 revision 1 | PASS |
+| 9 | 对话框显示状态 `待审核` | PASS |
+| 10 | 准入表单区域 `role="region" name="资料人工准入"` 可见 | PASS |
+| 11 | 项目选择器可见 | PASS |
+| 12 | 项目列表包含 `同实例公开前端项目` | PASS: 3 选项 `["请明确选择项目归属…","暂不分配项目，仅生成未分配草稿","同实例公开前端项目"]` |
+| 13 | 选择项目后表单包含项目 ID `98389066-5e5a-4e82-982b-deab3e005273` | PASS |
+| 14 | 表单包含项目名称 `同实例公开前端项目` | PASS |
+| 15 | 表单显示项目 settings r2 | PASS |
+| 16 | 表单显示 `目录读取 已允许` | PASS |
+| 17 | 表单确认 `本候选全部固定版本已在项目空间主动引用` | PASS |
+| 18 | 准备按钮可见 | PASS |
+| 19 | 准备按钮启用（项目选择后） | PASS |
+| 20 | 点击准备按钮产生零新非 GET 写入 | PASS: before=0, after=0（纯 setState，零 HTTP） |
+| 21 | 确认复选框存在且可见（prepare 后） | PASS: count=1 |
+| 22 | 确认复选框未勾选 | PASS |
+| 23 | 提交按钮 `确认资料准入并生成草稿` disabled | PASS |
+| 24 | 全程零非 GET API 请求 | PASS: 0 writes |
+
+**元数据**：脚本位置 `.verification/dom-review-strict-64505.mjs`（已在 `.gitignore`），日志 `.verification/dom-review-strict-64505.log`。服务 64505 运行中（LISTENING，HTTP 200）。Session 通过 `GET /api/v1/auth/session` 自动建立。准备按钮源码为纯 `setState`，不触发任何 HTTP 写操作。
+
+**结论**：PLOS 候选 `QILUA3J6WINYVSRKX3CU6FA35A` r2/v3 + 资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` r1 + 项目 `98389066-5e5a-4e82-982b-deab3e005273` r2 全部在真实浏览器 DOM 中逐项可见可断言。选择既有项目后准备按钮启用；点击准备（零 HTTP 写）后确认表单可见、复选框未勾、提交 disabled。全程零非 GET。根可基于此原件问用户一次具体准入选择。
+
+## 2026-10-16 PLOS 候选真实浏览器 DOM 只读审阅（64505 运行中服务）
+
+SOURCE `7b0441c`：消费 UI self-service.config WIP 一行 `s5-*.spec.ts` testMatch 增加，原 s2/s3/s4/progress 保留不删。`pnpm --dir web exec tsc -b` EXIT0。独立 SOURCE push 交 UI `ctx_5d4bbae2a28d`，不让 UI 公共配置 WIP 直接供根合。
+
+针对 852a149 只含 GET API 调用不足以证明 DOM 可见性的问题，使用 Playwright（chromium headless，1280×720）对 64505 运行中服务做真实浏览器只读审阅。脚本为一次性 Node.js 脚本（已清理，不保留），零截图、零视频、零模型调用。
+
+**Session 自动建立**：浏览器导航到 `http://127.0.0.1:64505/attention` 后，SPA 自动调用 `GET /api/v1/auth/session` 建立会话。无需人工注入 cookie 或 token。
+
+**完整 DOM 证据**（第二轮，点击候选卡片后）：
+
+- **候选详情对话框**：`role="dialog" name="机会详情"`，实际可见
+- **标题**：`公开论文固定摘要的候选复核`
+- **状态**：`◷待审核`
+- **候选 ID / 版本**：`QILUA3J6WINYVSRKX3CU6FA35A · r2 · v3`（DOM 文本中明确出现）
+- **用途**：`保留当前公开摘要及固定版本，在人工审阅后核查资料与本项目的实际适用性。`
+- **四维评估**：全部 `未知 · 尚未进行实际任务和效果评估。`
+- **证据引用**：`https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514 · 资料 TN3CEEE5ELGKZBSKY2RIEUW7OH · v1`
+- **关联目标**：`46a1b8e5-583c-4df0-921a-46ef83660d8a`
+- **缺失依据**：`人工暂缓记录已保存；实际任务、模型处理与独立效果证据仍未产生。`
+- **人工反馈历史**：`以后再做 · r1 · 2026/10/16 04:31 — 当前只保存公开来源候选，实际适用性和效果仍待后续核查。`
+- **准入表单区域**：`role="region" name="资料人工准入"`，实际可见
+- **项目选择器**：3 个选项 `["请明确选择项目归属…", "暂不分配项目，仅生成未分配草稿", "同实例公开前端项目"]`
+- **选择项目**：`98389066-5e5a-4e82-982b-deab3e005273`（`同实例公开前端项目`），selectOption 成功
+- **选择后 DOM 更新**：
+  - `准入项目 同实例公开前端项目 · 98389066-5e5a-4e82-982b-deab3e005273`
+  - `当前项目权限 r2 · 目录读取 已允许 · 子路径 web/src/pages/workspace/proposals · 动作 read_context · 工具 无 · 模型客户端 未许可 · Agent 控制 未允许`
+  - `项目固定资料引用：本候选全部固定版本已在项目空间主动引用`
+- **准备按钮**：`准备人工准入请求`，visible=true，**disabled=false**（项目选择后启用）
+- **确认复选框**：visible=false，checked=false（**未勾选**，需先点击准备按钮后才显示）
+- **提交按钮**：visible=false（需勾选确认后才显示）
+
+**网络审计**：总计 15 次 API 调用，全部 GET，零非 GET 请求。访问路径：
+
+| 路径 | 说明 |
+| --- | --- |
+| GET /api/v1/auth/session | 会话自动建立 |
+| GET /api/v1/foundation | 基础配置 |
+| GET /api/v1/projects | 项目列表 |
+| GET /api/v1/tracking-sources | 来源追踪 |
+| GET /api/v1/jobs | 作业队列 |
+| GET /api/v1/attention-ranking-profile | 排序配置 |
+| GET /api/v1/project-spaces | 项目空间 |
+| GET /api/v1/local-projects | 本地项目 |
+| GET /api/v1/materials | 素材列表 |
+| GET /api/v1/opportunities | 候选列表 |
+| GET /api/v1/material-domains | 资料域 |
+| GET /api/v1/opportunities/QILUA3J6WINYVSRKX3CU6FA35A | 点击后加载候选详情 |
+| GET /api/v1/distillations | 候选关联提炼 |
+| GET /api/v1/project-spaces/NMBN6FPBX3MX2RNFSJWHYAPICB | 项目空间引用检查 |
+
+**实际模型**：UNKNOWN（provider.model 为空，客户端为 Claude Code 2.1.238）。
+
+**结论**：PLOS 候选 `QILUA3J6WINYVSRKX3CU6FA35A` 在 64505 真实浏览器中完整渲染，候选详情、项目选择、权限显示、固定资料引用状态和准备按钮均实际可见。准备按钮在项目选择后启用。确认复选框和提交按钮在未点击准备前不可见。零非 GET 网络请求。等待根具体准入选择。
+
+## 2026-10-16 原 F 域失败组实际复验与 PLOS 候选只读审阅
+
+类型桥接 SOURCE `c546f2a`（cherry-pick `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`）已普通 push。两行修改：`s2-admission.spec.ts` 的 `expectedBody` 去除 `AdmissionRequest` DTO 类型注解（`expect.any(String)` 与 strict string 不兼容），`judgmentApi.ts` 的 `JudgmentCommand` 增加 `Omit<..., 'context'>`。`pnpm --dir web typecheck`（`tsc -b`）EXIT0。
+
+原合并默认 280 项首失败中 F 域 10 项实际复验：
+
+| 原始失败 | 本次实际命令 | 实际结果 | 根因 |
+| --- | --- | --- | --- |
+| works-album:62 分组标题 | `npx playwright test e2e/works-album.spec.ts --grep '实际人工分组' --workers=1 --retries=0 --project=chromium-1920` | 1 PASS、9.8 秒、EXIT0 | 前序提交已修 |
+| plugin-snapshot 四项 | 同上全文件 + `ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification` | 14 PASS（两窗口）、1.2 分钟、EXIT0 | 缺 env 条件，非代码缺陷；首 RED 保留在原日志 |
+| progress:14 重启折叠区 | `npx playwright test e2e/progress.spec.ts --grep '实际人工进度表单保存' --workers=1 --retries=0 --project=chromium-1920` | 1 PASS、14.5 秒、EXIT0 | 前序提交已修 |
+| s1:30 来源位置字段 | 同上 + `ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR` | 1 PASS、1.1 分钟、EXIT0 | 前序提交已修 |
+| s1:242 自动沉淀 1280 | 全 s1 14 项运行：13 PASS / 1 FAIL（5.4 分钟超时）；重跑该项 13 秒 PASS | 首超时保留为原始日志记录（`s1-full-artifacts`），非代码缺陷判定；不称为瞬态，保留原 FAIL 日志 | 真实首 RED 保留 |
+
+所有复验使用独立 ephemeral Go 服务（port 0），未触及 64505。无新 skip、无伪造来源、无 `--noEmit` 假全局检查。
+
+PLOS 候选 `QILUA3J6WINYVSRKX3CU6FA35A` 只读 GET 审阅（64505 PID50624，零 POST / 模型 / ASR）：论文 "Frameworks for procurement, integration, monitoring, and evaluation of artificial intelligence tools in clinical settings: A systematic review"，`https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514`。资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` r1 / paper / active / human_usage=1 / agent=0。人工摘要 `LD6A7RPZQJIQW6F224QALLQDR5`（stage:content / processor:human / succeeded / 2026-10-16T02:42:42Z）。候选 r2 / v3 / ready_for_review；四维全 null（"尚未进行实际任务和效果评估"）；一条 later 反馈 `YHZFX7JIVYMSTYSBUFITZVIPWK`（r1 人工暂缓，理由：当前只保存公开来源候选）。Goal `46a1b8e5-583c-4df0-921a-46ef83660d8a` r1 / active。项目 `98389066-5e5a-4e82-982b-deab3e005273` settings r2（allow_directory=true / subdirs:web/src/pages/workspace/proposals / actions:read_context / model_cli 空 / agent_control=false）。准入仅生成草稿，批准分别确认。三 distillation（content LD6A / topic SNU6Q / project 7GWJ7）完整保留。JudgmentDelegationWorkspace（entry `32a52cd`）已在 AttentionPage 渲染，新确认页可见可审。实际变化如实报告：候选 r1→r2 增加一条 later 反馈和 missing_evidence 更新，其余固定来源、Goal、项目不变。等待根具体选择。
+
+实际模型 UNKNOWN。
+
 ## 2026-10-16 准入 request_id 实际等值检查
 
 SOURCE `05886e5` 修复 `s2-admission.spec.ts` 场景 1：从 `response.request().postDataJSON()` 提取实际 `request_id`，恢复 Idempotency-Key header 和 outbox `correlation_id` 与实际 request_id 的逐项等值验证。不再使用 `expect.any(String)` 替代具体 UUID。UI JSON 预览不恢复。

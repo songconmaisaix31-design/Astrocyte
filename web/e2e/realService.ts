@@ -12,8 +12,8 @@ import type { components } from '../src/api/schema';
 export const repositoryRoot = fileURLToPath(new URL('../../', import.meta.url));
 type Schemas = components['schemas'];
 
-export async function realService(relay = false) {
-  const server = await startS1Server({ browser: true, relay });
+export async function realService(relay = false, env?: { ASTROCYTE_REPOSITORY_ENVIRONMENT_ID: string }) {
+  const server = await startS1Server({ browser: true, relay, env });
   const api = await humanAPI(server.apiURL);
   return { server, api };
 }
