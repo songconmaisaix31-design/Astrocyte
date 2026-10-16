@@ -999,3 +999,31 @@ SOURCE `76011c240766e18ece92d91f4188f8b91882458e` 已在 `standards-backend` 普
 本轮首个 list 的 PowerShell 壳在编译阶段返回 NativeCommandError / EXIT1，没有进入测试；完整编译 stderr 当时未保存，确切诊断为 UNKNOWN，原空 first 日志及 `first-shell-failure-safe.json` 保留。最终权限测试声明完整 LocalProjects / ScopedAgentTokens 接口，后继上述全部检查实际通过；没有降低断言、新增 Skip 或重跑默认。
 
 完成范围仅为目录断言整改及新增真实权限、普通公开窗口验证。原省略槽、旧 Native 全覆盖、进度七项替身、完成经验正向、完整 check / 默认、L1 / L2 和最终包均未因此通过；Workbench HTTP 替身为已批准的连续后继任务，本阶段尚未修改。模型、Probe、实际 Native Start、ASR、V4、共享64505及私人原件操作均0。原 Task / Dispatch继续支持后续返修，尚未结算。
+
+## Workbench HTTP 的真实公开事件验证 REPORT（2026-10-17）
+
+SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` 已在 `standards-backend` 普通提交并 push，提交含 `[skip ci]`；相对上一独立 REPORT `463a78cf81d9ebecf544746af314f84ab220cec1` 只修改 `internal/adapters/httpapi/workbench_test.go`。模块 `msg_cc137e9735e8` 已确认该单文件互斥范围和连续授权，`msg_ea8ad0b716b1` 确认真实公开源、副本、独立 SQL与自有文件实际故障方案；本节为随后独立报告。前一阶段三件测试、生产 Reader、Q / H / R、依赖、workflow和冻结范围均未修改。
+
+原 `TestWorkbenchUsesSharedSessionOriginAndErrorV1` 保持同名，完整移除 workbenchStub、手工 Event 和 PRIVATE_CANARY。实际使用生产 `sqlite.NewWorkbenchReader`、`sqlite.NewEventRepository.GetEvent`、`NewServer.Serve` / `Shutdown`、真实人类 bootstrap / cookie及实际 loopback listener。原七路由共享 session、Origin 拒绝、非法 page、HEAD405、未知路径404、非法百分号查询400、ErrorV1、六字段及私有来源不泄漏断言全部保持，并加入真实全事件分页及逐 ID 追溯。
+
+唯一源为已获准 Q 公开跨日发布物 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/cross-day-20261015-0228/local/astrocyte-workbench/v0.1/`，精确 current 为 `snapshot-1711995690`、snapshot_at=`2026-10-14T18:48:42.2097174Z`。已完整读取 Q `docs/release-cognition.md`；原独立 `main-safe-final/sql-expected.json` 与该 snapshot_at严格绑定，事件总数1316。本次不消费历史私人快照或 app-state，不采集、重放或运行 Sleep。
+
+源 pointer、该 generation 的 snapshot.sqlite / history.json 仅读取，并以原字节复制到全新 D 自有 publication，来源与目标路径互不包含。原 snapshot 标准 SQLite 连接使用 `mode=ro`、`immutable=1`、`query_only(1)`，实际 PRAGMA核1；完整独立 SQL读取每条 id / kind / topic / data / ts / 原 Git origin_key / raw_bytes，JSON字段通过 encoding/json解码，真实总数与 Q 独立期望一致。自有副本由实际 SQLite adapter打开供 GetEvent读取，没有调用迁移、Record或来源生成入口；原文件未运行写连接。
+
+实际 HTTP 无 cookie访问 health / today / focus / topics/evidence / agents / events / filters均403且符合共享 ErrorV1，真实 bootstrap后七路由均200并保留准确 X-Snapshot-At。全1316事件分别以20和50页长读取到最后空页，每页 total / page / page_size / 长度和顺序逐项等于独立原 SQL；每条 Event严格仅 event_id、kind、topic、tokens、scope、ts六字段，字段值全等。1316个不同 ID逐一通过生产 GetEvent定位，原 origin / raw bytes / kind / topic / scope / ts逐项相等；raw只在本机内存核查，没有写入 HTTP、Git或 stdout。
+
+原五项错误边界保持准确状态；所有有正文错误同时核 schema_version、code、request_id和required_action。成功读取真实发布物后，正常关闭本次自有 GetEvent连接，仅将新 D副本的 snapshot.sqlite暂移为 offline.sqlite；同一实际 HTTP / Reader随后返回503 / provider_unavailable，消息准确为 `Workbench snapshot unavailable`且 retryable=true，不公开底层路径或来源字段。恢复同一实际文件后再次GET200，HTTP正常 Shutdown。这个失败发生在真实成功来源之后，没有以空目录或手工错误替代。
+
+源 SQL连接关闭之后，cleanup对原 current.json / history.json / snapshot.sqlite分别核身份、大小、mtime及完整字节保持；实际测试整体PASS，所有守卫通过。七路由当前日期投影使用生产实际时钟，没有把 Q旧日的 Today / Agents计数当成当前日期结果。此测试验证 HTTP与来源引用；没有新增主题、信号、完成候选或原生事件。
+
+全部新输出为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/workbench-http/`，runner=`run.ps1`，整体 EXIT0。`ASTROCYTE_TEST_COGNITION_LOCALAPPDATA` 与 `ASTROCYTE_TEST_COGNITION_SQL_EXPECTED_FILE`仅由本次 D runner显式提供，仓库测试没有硬编码上述本机源指针。所有 GOTMPDIR / TEMP / TMP / 测试输出位于本次独占 D 根，沿既有 D GOMODCACHE / GOCACHE，`GOPROXY=off`、`GOMAXPROCS=2`、`GOFLAGS=-p=1`；没有下载依赖或修改全局配置。
+
+| 实际命令 | 结果及 D 原件 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/httpapi -list '^TestWorkbenchUsesSharedSessionOriginAndErrorV1$'` | 恰好一项，EXIT0；`list-first.log` |
+| 同包 `-run '^TestWorkbenchUsesSharedSessionOriginAndErrorV1$' -v -count=1 -timeout=1m` | 首次实际1 PASS / 0 SKIP，主项1.18秒、包2.384秒，EXIT0；`test-first.log` |
+| `go vet -mod=readonly ./internal/adapters/httpapi` | EXIT0；`vet-first.log` |
+| `go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/workbench-http/server-first.exe ./cmd/server` | EXIT0；`build-first.log`；未启动构建产物 |
+| `gofmt -l internal/adapters/httpapi/workbench_test.go`、`git diff --cached --check` | EXIT0，无输出 |
+
+完成范围为此同名 HTTP测试的完整真实替换；所有实际命令及退出码保存于 `commands-first.json`，没有重复本轮已成功的三件验证。原缺位、旧 Native unknown / stop / resume、进度七项替身、完成经验正向、完整 check / 默认、L1 / L2及最终包限制保持；后继 selected_text / capacity整改目前只获准只读分析。Probe、Native Start、模型、ASR、采集、Sleep、V4和共享64505操作均0。原 Task / Dispatch持续返修支持，尚未结算。
