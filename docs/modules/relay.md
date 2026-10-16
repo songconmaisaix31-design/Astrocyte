@@ -2,7 +2,19 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前会话测试整改计划（2026-10-17 02:56）
+## 会话 HTTP 实际验证与后续范围（2026-10-17 03:06）
+
+原 H 同一 Task / Dispatch 已普通 push SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` 与独立 REPORT `c4d0e198da59d7ab91af061a4e115c3ad16e8cbb`，均使用 `[skip ci]`。模块完整读取两件源码差异、38行阶段报告与三份作者原日志，核远端精确值及原树 clean；通过 `msg_b10f003eb34d` 交根。根 `msg_8c52e48ed0fb` 已独立读取并接受限定交付，普通合唯一 I；根只组合三项与两包 vet，没有重新构建、部署或运行原 owned 替身测试。
+
+源码范围仅 `cmd/server/relay_session_poll_test.go` 与 `internal/adapters/httpapi/relay_session_test.go`。固定 HTTP reader / calls 替身已移除，原九项认证 / 查询拒绝、实际授权200、完整错误和 no-store 断言沿真实组装保留。main 中实际 SQLite、Registry、FileState、session reader 和 HTTP 证明空200；实际关闭本次自有 store 后合法读取503，原九项拒绝继续分别403 /405 /400。HTTP 包使用真实 LocalProjects / SQLite，核未配置 provider503及全部等效守卫；没有新增生产桥接或伪造会话。
+
+新增真实空登记 poll / SQLite重开 / 无 checkpoint 检查独立命名，三次 poll与实际重开后事件、原生会话和 binding仍为0。原 `TestRelaySessionFirstGapPersistsOnceAndSilentPollWritesNothing` 及其 owned 替身、状态计数器和断言全部原地保留且本轮未运行；owned 首 gap仅写一次、静默不写和真实 gap变化仅再写一次仍为 NOT_RUN，不能用空基线代替。
+
+作者准确 selector 为 `^(TestRelaySessionActualEmptyRegistrationPollAndReopen|TestRelaySessionHTTPActualCollectorGuardsAndClosedStore|TestRelaySessionHTTPActualUnconfiguredProviderGuards)$`，`list-first.log` 恰列三项。`test-first.log` 实际3 PASS /0 Skip，main 两项0.14 /0.13秒、package1.448秒，HTTP一项0.10秒、package2.016秒；两包 vet / gofmt / diff EXIT0。原件在 `D:/Astrocyte-agent-assets/20261015/relay/H/process-20261016/verification/session-actual-current/`，模块没有第三次运行成功测试。根组合结果待准确回执，完整默认仍未通过。
+
+根 `msg_520c3be0504e` 要求按当前发布任务、Works Relay v1.4、L1采集计划及认知计划六步核剩余事项。模块已读取认知 §2、§3.2.1 /§3.4、L1全部采集与核心验收及最新问题表，并通过 `msg_2c6d6eba7c2c` 让同一 H 只读核具体条款、真实来源前置与原 owner。没有新增 Task、Run、人员、R写入者或验收输入；不扩展为全仓替身整改。可独立实施的实际缺口须先确认准确写域，其他逐项 Handoff。当前工具关闭限制、实际 owned来源、合法采用 / 完成、在途撤权、具体经验批准和后续使用仍须各自真实前置；当前 c5 /30420 /610cc与外层 UNKNOWN保持。
+
+## 会话测试整改范围与决定（2026-10-17 02:56）
 
 根 `msg_b28486c1ad95` 已接收目录阶段的准确组合4 PASS / vet / runner EXIT0，I报告44a25576已 push；该结果没有消除完整默认或原 Windows具体原因的限制。后续沿同一 H `task_3004b636a3ab / ctx_ad637376ba1d`，模块只维护本文件，不创建人员、Task、Run或工作树。
 
@@ -14,7 +26,7 @@
 
 现有真实来源：当前 c5普通服务及其原主库 / Relay库没有 owned session或原生事件；它可以证明真实空登记、权限 / 查询拒绝和未写入基线，不能提供首次 owned gap或 gap变化。目录阶段新建的公开 Git只提供真实文件上下文，没有生成原生会话。原 Q公开 snapshot是认知派生来源，不能代替原生会话；旧已知来源的 nlink2拒绝、append-only / prefix未知、SessionComplete=false和 raw恢复 gap保持，禁止借整改绕过 guard、扫描自由历史或重发旧输入。
 
-模块已完整读取两份旧测试及生产 collector / FileState / HTTP / SQLite端口：poll旧测试依靠伪造 owned列表、修改 gap和 Save计数；HTTP旧测试依靠固定空结果与 calls计数。当前 HTTP替身完整替换，复用生产 collector、真实 FileState / SQLite及实际 HTTP；认证 guard / query / error / no-store完整断言保持，读取前拒绝用实际关闭存储后的真实读取错误区分，不再造 reader计数器。HTTP包无法导入 package main collector，准确授权200 /关闭真实 store后的503及完整拒绝矩阵在原 main测试文件中实施；HTTP包原文件保留实际未配置 provider503及全部等效安全 / 查询 / 错误 / no-store检查，没有新增生产桥接。
+模块已完整读取两份旧测试及生产 collector / FileState / HTTP / SQLite端口：poll旧测试依靠伪造 owned列表、修改 gap和 Save计数；HTTP旧测试依靠固定空结果与 calls计数。HTTP替身已完整替换，复用生产 collector、真实 FileState / SQLite及实际 HTTP；认证 guard / query / error / no-store完整断言保持，读取前拒绝用实际关闭存储后的真实读取错误区分，不再造 reader计数器。HTTP包无法导入 package main collector，准确授权200 /关闭真实 store后的503及完整拒绝矩阵在原 main测试文件中实施；HTTP包原文件保留实际未配置 provider503及全部等效安全 / 查询 / 错误 / no-store检查，没有新增生产桥接。准确交付与实际结果见本文件本次阶段记录。
 
 根 `msg_cca90749a51a` 及正式问题 `msg_8fd962bf9f64` 的答复 `msg_63b957aaf6fc` 明确：缺少真实 owned来源时，原 poll同名函数、旧替身和断言暂时原地保留，禁止运行或计为 PASS，不批准删除后改成纯报告；当前没有新增使用 fake。可以另以准确不同名称增加真实空 collector /重开 /未建checkpoint验证，不能用该空基线代表 owned覆盖，也不新增永久 Fatal或 Skip占位。首次真实 gap仅写一次、owned静默 poll不写、真实 gap变化仅再写一次三个门禁继续未通过。最终只能报告 HTTP已完整替换、新真实空基线的实际结果，旧 owned poll仍残余替身、整体部分未完成，并逐项列明实际窗口 /端口前置。不得伪造 binding、gap、SQL、会话、原档或模型；不新增登记、Probe、Start、工具或来源权限。
 
