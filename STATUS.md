@@ -2,6 +2,10 @@
 
 ## 当前开发与磁盘要求（2026-10-16）
 
+23:36 F已在原Task由实际Codex / GPT-6.1-Sol / xhigh fast恢复，当前55失败清单及已验公共测试接口375 / b4bf已普通合入5dfca03并push；根组合tsc-b与测试收集均EXIT0。生产与共享运行仍2d27 / PID50624。UI完整主链、版本冲突、unknown锁和403，以及1280后继已取得实际成功日志，待固定SOURCE / 独立REPORT验收，尚未更新运行版本；F公开论文组8 PASS / EXIT0后继同样待准确提交。两个旧watch已精确停止，原件保留。具体准入与其余用户待答仍保持，完整默认、Native / L1 / L2和最终发布未完成，详情见 [HANDOFF](HANDOFF.md)。
+
+## 2026-10-16 14:27 及此前进展
+
 14:27 原SOURCE88dc9e5的一小时真实到期结果已读：UTC06:16:00 HTTP与服务层均拒绝，Go主项及包PASS，原12768与父Go均已退出；原启动壳EXIT未知，新mjs未运行，不重复检查。原件保持；已交模块停止不再需要的精确旧监视器。其他当前来源、UI / F接续及待答范围见 [HANDOFF](HANDOFF.md)。
 
 14:21 B安全后继已普通合入affaa7，集成报告ae95b33已push / clean；准确B237八项真实HTTP / SQLite检查8 PASS，完整组合新增五项5 PASS，均实际EXIT0，生产语义和当前运行2d27保持。UI原欠费客户端已精确退出，沿同原Task由实际可用Codex / GPT-6.1-Sol / xhigh fast接续并模型ACK，现正完整读契约返修；F同原Task恢复准备中，未把运行恢复计作功能通过。具体准入仍待用户回答，真实自然到期、完整Taste / Rule、完整默认、Native / L1 / L2及最终包状态见 [HANDOFF](HANDOFF.md)。

@@ -2,6 +2,16 @@
 
 ## 当前执行入口（2026-10-16）
 
+23:36 原F的公共测试接口 SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` / 独立REPORT `b4bf44453436ba71ce0b88ef0f0e6a300d859d7f` 已由根独读并普通合入 `5dfca03fd23b3218510290fc5a63732df1fd570f`、普通push / clean。最终只有显式环境ID透传、self-service增加s5测试匹配及前端报告；根准确组合完整tsc-b EXIT0、测试收集56项 / 7文件 EXIT0，作者普通与Relay真实构造两份日志均EXIT0，准确原件见集成树 `docs/access/integration.md`。生产无变化，最近完整构建及运行仍2d27 / PID50624；没有更新共享实例。
+
+F已沿原Task实际恢复为 `ctx_697b2f19c010` / `term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60`，Codex0.162.0 / GPT-6.1-Sol / xhigh fast，属于context-only unsupervised续行。旧Claude ctx44已精确停止；无替代Task / Run、全局账号、网络或支付变更。当前报告逐项对应准确320计划的55失败，8个插件旧成功保留，剩余47在该阶段未运行；18个F本域继续、26个Native及2进度 / 1视频实际条件分别交原负责人。后到F公开论文组真实8 PASS /2.7分钟 / EXIT0日志已独读，仍待作者固定提交，不消费当前截图移除等WIP。
+
+原UI已消费准确375；根已读1920完整Taste三题型 / 启停 / Goal / Snapshot / Policy / Rule / 判断反馈 / 同库HTTP重启1 PASS52.5秒、版本冲突1 PASS57.2秒，以及unknown跨重开刷新和403读取失效两项成功、1280后继五项1.7分钟成功日志。本人真实EXIT和固定SOURCE / 独立REPORT由产品负责人汇交，尚未合入运行版本；首失败均保留，当前不把在途成功日志计为最终交付。具体PLOS准入、Native文件工具边界、Laya语言等仍未收到用户答复，不据经过时间启动依赖操作。
+
+原自然到期检查完成后，根按实际进程路径、完整命令、精确启动时间和父PID，仅停止两个不再需要且判定有误的旧watch进程51112 / 47848，UTC06:29:43实际退出、EXIT0，源码和验证原件保留。UTC13:57及后继检查确认同一boot / Orca runtime / 原PID50624仍在；实际health200、首页200和唯一loopback listener通过，没有从工具回执间隔推断机器重启。
+
+## 2026-10-16 14:27 及此前执行记录
+
 14:27 根已独读原B `.verification/expiry-bg-result.json` 和Go完整原日志的结果段：原SOURCE `88dc9e5715b93a31be6f4e2b11435e862b703e7d` / PID12768，实际签发UTC04:40:18、ExpiresAt05:40:18，UTC06:16:00验证HTTP及服务层均拒绝。Go主项PASS5741.69秒 / 包5745.281秒，当前原PID及父46696均不存在；原启动壳EXIT未保留，保持UNKNOWN。该真实一小时链路已通过，新mjs仍NOT_RUN，不重跑或修改Clock / DB / token。原件原位保留；两个旧辅助watch不能正确判定CIM空结果，已交原模块仅核精确自有监视进程后停止，当前不再需要监视或新证明步骤。UI强客户端已实际读取契约继续，F恢复中，具体资料准入及其余待答边界保持。
 
 14:21 根已普通合 B 当前 REPORT `237987a594de1055af18c7fffe30fc516cdacaef` 为 `affaa7a7d10dcd8956b4a2947c8b149403cdb5bd`，最新集成 REPORT `ae95b330f8e41dc2689284238323e649f81fa245` 已 push / clean。最终仅真实安全测试、显式到期入口和记录三件净差异，生产一小时语义无变化。根在准确B237实际运行八项安全检查，8 PASS / 包1.809秒 / 总11.88763秒；在完整affaa组合核新增五项，5 PASS / 包2.354秒 / 总5.3473412秒，均EXIT0且前后SOURCE相同。准确原件为 D 盘 integration 的 `root-backend-safety-current/` 与 `root-safety-affaa7a/`；集成侧已登记正确结果。原12:31日志含旧短期限测试，不能计当前签发或自然到期通过。当前运行仍2d27 / PID50624，新mjs未运行，原12768不变。
