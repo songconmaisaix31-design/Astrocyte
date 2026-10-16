@@ -1,5 +1,13 @@
 # Works Relay integration report
 
+## 2026-10-17 会话 HTTP 真实替换与空登记组合验证
+
+H SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` /独立 REPORT `c4d0e198da59d7ab91af061a4e115c3ad16e8cbb` 已普通合到 `607a9a82e5db7600361bc419fbe7c1852857a4b0`。根独读两件完整差异、报告及作者实际 list /test /vet原件和远端；HTTP session固定reader /调用计数替身已完整移除，原九项拒绝矩阵、授权200和no-store由主包真实生产collector /SQLite /FileState /HTTP覆盖。真实关闭原RelayStore后合法GET503，原拒绝仍保持，HTTP包另核实际未配置provider的503。
+
+根在准确607a组合运行 `go test -mod=readonly ./cmd/server ./internal/adapters/httpapi -list` 精确三项；同正则 `-run -v -count=1 -timeout=120s` 实际3 PASS /0 Skip：空登记重开0.13秒、真实collector HTTP0.12秒，main包1.428秒；未配置provider0.10秒，httpapi包1.582秒。两包 `go vet -mod=readonly`、diff和runner整体均EXIT0，源码前后保持。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-session-607a9a8/` 及相邻 `run-root-session-607a9a8.ps1` 保存准确选择器、命令和D输出。
+
+空登记测试在同库重开前后各三次实际poll，checkpoint未创建，FileState及事件 /会话 /binding均为空。原owned首gap一次 /静默不写 /真实变化再写一次缺真实来源，原函数及全部断言原样保留、不运行不计PASS；本阶段只完成HTTP替身替换与独立空基线，非空会话及逐原生event_id正向仍未验证。产品c5 /PID30420 /64505、原服务外层UNKNOWN保持，没有生产修改、构建或部署。原任务剩余项由原模块按具体条款核查，不扩成无任务依据整改；完整默认 /CI /L1 /L2及最终包仍未通过。
+
 ## 2026-10-17 Workbench HTTP 替身完整替换与组合验证
 
 B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` /独立 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通合为 `74e3b79c9ab48233391d6c209ca7d3baf07b5e79`。根独读396行真实测试、报告及实际 list /test /vet /build /commands原件；仅修改原HTTP测试及backend报告，生产路径保持。原同名测试完整移除固定 Event /错误stub，以原Q获准公开发布物的只读SQL、实际WorkbenchReader、SQLite GetEvent及真实HTTP验证全部原断言。
