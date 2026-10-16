@@ -14,6 +14,10 @@
 
 当前 `Start-Astrocyte.ps1` 清理全部继承的 `ASTROCYTE_*`，仅配置 DataDir / Relay / 媒体参数；H 已提交的 CodeGraph / Repository 配置和 Laya 十项路径、语言及生命周期配置尚无包参数。原 P 后继须依据准确生产配置完成必要入口与实际包验收，未答语言及具体模型请求不自行选择。C盘10 GiB门禁、N仅 archive 来源、完整默认和原生边界保持，本轮没有开始最终包。
 
+原 Q 已接受并 released 的后继 SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` / REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7` 已重新独核远端同 REPORT / 原树 clean。相对 P b208 仅这两个提交，修改3件 Q 验证文件和单件报告，快照生产命令与引擎保持；本模块完整读差异后通过 `msg_429887a53c19` 交根准确消费。40880尚非固定7120祖先，P 的 `-CognitionSourceSha` 会核该关系，最终来源须包含选定 Q 交付。
+
+后续 P 使用原 `snapshot-1711995690` 和公开来源，保留10月15日52个今日事件的历史验收。最终验收按当时实际上海日期从同一真实快照只读重算 Today / agents 等动态指标；10月16日已核的今日0不与旧 `main-safe-final` 的15日期望混算，不改变 Clock，不重新采集或执行 Sleep。验证输出仍放独占 D 目录，原输入与首结果不覆盖。
+
 M-product `msg_f83098783eab` 已确认 B SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` / REPORT `9fa97efe8208de85a2251f1ea01008c79ad04945` 原作者 ready / 远端同 REPORT，并直接交根；本模块独读准确三件配置与测试、单文档报告。该来源的明确 listing 配置直接失败及真实工具构造不包含原 progress / session WIP，F 准入 TS2571 和八场景 UNKNOWN 保留。
 
 ### 2026-10-16 11:51 根接管唯一集成写入
