@@ -1,5 +1,46 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 12:25 S5 判断与委托十三件页面实现
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_5d4bbae2a28d`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_676d773e9f23`。分支 `songconmaisaix31-design/product-ui-20261015`，HEAD `e27e95117d30b9f2518bd779d03fe1218038019a`。
+
+本域 SOURCE 包含 14 件 delegation 文件（615 行新增）：
+
+| 文件 | 职责 |
+|---|---|
+| `JudgmentDelegationWorkspace.tsx` | 顶层入口：项目选择、策略/规则管理、判断请求、结果查看。`export function JudgmentDelegationWorkspace()`，无 props，自含 `localProjectsApi.listProjects` 读取 |
+| `JudgmentPolicyEditor.tsx` | 策略编辑：Goal/Taste/Ranking 引用选择、真实快照捕获（`judgmentApi.snapshot`）、预算字段、版本冲突处理、`usePersistentCommand` unknown 锁 |
+| `JudgmentPolicyFields.tsx` | 策略表单字段：backend（`rule`/`jev`/`laya`）、语言、外发范围、预算、置信条件、题型切换保留 |
+| `JudgmentQuestionFields.tsx` | 题目字段：choice 选项 / score 等级 / truth 确定性规则，输入校验来自 `internal/judgment/validation.go` |
+| `DelegationRuleEditor.tsx` | 委托规则创建/编辑：规则标识、题型、指令、工作流、语言、策略版本引用 |
+| `DelegationRuleWorkspace.tsx` | 规则详情：状态变更（开启/暂停）、评估执行、判断结果入口 |
+| `JudgmentRequestEditor.tsx` | 人工判断请求：候选选择、上下文输入、`usePersistentCommand` |
+| `JudgmentResultWorkspace.tsx` | 判断结果与反馈：结果详情、反馈记录（adopt/later/reject/revise/already_solved）、资料准入 |
+| `JudgmentResultDetails.tsx` | 结果详情展示：判断类型、决策、置信、截断、上下文 |
+| `JudgmentEvidencePicker.tsx` | 证据选择：项目证据引用 |
+| `judgmentApi.ts` | API 客户端：session/taste/snapshot/policy/rules/rule/evaluate/judge/result/feedback/admit，CSRF/幂等键/版本 |
+| `judgmentLabels.ts` | UI 标签映射 |
+| `policyDraft.ts` | 策略草稿类型与转换 |
+| `ruleDraft.ts` | 规则草稿类型与转换 |
+| `useProjectEvidence.ts` | 项目证据 Hook |
+| `DelegationWorkspace.module.css` | 样式（6 行新增） |
+
+全部文件使用真实 HTTP 通过共享 `api/client`、`usePersistentCommand` 实现幂等命令与 unknown 锁、`useReadApi` 处理查询状态、CSRF Token 从 `/auth/session` 获取、版本冲突检测与乐观并发控制。不写入共享 api/hooks/auth/router/schema，不派发子 Agent。
+
+| 命令或检查 | 本阶段结果 |
+|---|---|
+| `npx tsc --noEmit --skipLibCheck`（全域） | PASS，本域零类型错误 |
+| `npx eslint src/pages/attention/delegation` | PASS，零 errors / warnings |
+| `git diff --cached --check` | PASS |
+
+**页面入口 / 浏览器 NOT_RUN**：`JudgmentDelegationWorkspace` 尚未接入 `AttentionPage.tsx`。F 需在 `AttentionPage.tsx` 中添加：
+- `import { JudgmentDelegationWorkspace } from './delegation/JudgmentDelegationWorkspace';`（在现有 `import { MaterialWorkspace } from './MaterialWorkspace';` 附近）
+- 在 `<div className={styles.grid}>` 内现有 SectionCard 之后（推荐在"来源与整理"SectionCard 之前）添加 `<SectionCard title="判断与委托" tabs={['overview']}><JudgmentDelegationWorkspace /></SectionCard>`
+
+F 消费本 SOURCE 后仅 F 补 AttentionPage 最少接入，再将准确 F 入口 SOURCE 交本域消费并实际运行完整浏览器路径。
+
+后继待运行：真实 rule 路径保存/读取/规则状态/反馈、权限/冲突/unknown/重启、真实生产 snapshot/Goal/Taste 和固定公开文件的正向功能。当前 s5-delegation.spec.ts 已按真实契约修正（backend 为 `rule`/`jev`/`laya`、完整 JudgmentVersionsV1/JudgmentBudgetV1），但正向路径尚未实现，不能全部降为拒绝测试。
+
 ## 2026-10-16 04:23 判断题目输入校验
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_e366c835cb43`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b`。本域 SOURCE `f0d27271c15d131aea50012658232f7fa41a142b` 已普通 push 并独核远端同值，改动仅原 `attention/delegation/**` 三件。`JudgmentQuestionFields` 增加空白题目标识与说明、选项数量 / 标识、确定性选项规则缺少依据、评分等级数量与空白说明的检查提示；输入继续保留。约束直接读取现有 `internal/judgment/validation.go`，未构造公共 DTO 或提交来源。
