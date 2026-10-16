@@ -50,6 +50,16 @@ H 本次独立运行 REPORT 为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`，只
 
 原 R / S4 的明确进程退出通知已接收，fleet 均为 `execution_host / exited`。模块按两行 `nextAction` 精确释放旧终端，运行时均返回 `release_unknown`：旧 recorded terminal 不再解析、`processAction=none`。依恢复回执分别 `worker-show` 核 failed / exited，并各用一个 fresh request 重试，结果仍 unknown；保留两项旧资源记录，没有使用 broad terminal close 或内部 DB。此状态不影响当前 H 服务及根普通集成，不能写为已经释放。
 
+### 12:32 P 的无模型启动配置交接
+
+发布 `msg_6f711ae11df2` 转根 `msg_1a8b11891180` 明确批准原 P `ctx_1874978728b8` 一次必要启动参数正向：使用准确38fb稳定 binary 和发布 Start 参数，在 P 自己的新 D staging 仅构造 S4、读取 HTTP health 并停止自有进程。不索引仓库，不初始化 Laya，不启动原生、模型、ASR、下载或3GB扫描；不复制共享数据库，H 当前64505服务保持。
+
+H 已给准确 P Dispatch 发送 `msg_0d0c58ff4f38`，抄发布 `msg_e58fac4e356a`。安全本机指针为 `C:/Users/DW/orca/workspaces/Astrocyte/works-relay-http/dist/product-recovery-20261016/s4-config-public.json`，包含准确38fb的稳定 binary / web、四项非秘密环境白名单和 AOCI 未配置事实。模块只读解析核 `environment` 恰为 `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID`、`ASTROCYTE_CODEGRAPH_NODE`、`ASTROCYTE_CODEGRAPH_SDK`、`ASTROCYTE_CODEGRAPH_SCRIPT`；没有全环境或数据库字段。配置值留本机，正文不复制实际环境、凭据或原始数据。
+
+该文件后继 `adapter_source` 记录准确提交 `faab2daf83f6a578773b61077140aff73af9ef9b` 的 `internal/adapters/repositorycontext/codegraph.mjs`，Git blob 为 `d35fff9daa0a20354b7f891706846935ef85823c`。模块独立核该提交与产品38fb的同路径 blob 相同，原 S4 tracked 文件对该提交 `git diff --quiet` EXIT0，tracked 文件与实际稳定副本 `git diff --no-index --quiet` EXIT0。首次在稳定副本目录直接查询 Git 返回 `not a git repository`，保留该检查结果；它不代表运行构造失败，实际来源对应由上述提交与文件比较确认。
+
+H 没有执行 adapter 或复做构造，仅只读核现有文件和 SDK1.0.1。准确来源对应已通过 `msg_4062bbd3b47d` / `msg_8ae4a61fab5d` 交 P 和发布，模块独立结果另交根。P 的一次实际构造 / health / 自有进程停止结果仍待原 P 报告，不以配置交接记录为验收通过，不因来源补核重复已经完成的检查；本项不代表后继源码或最终发布包通过。
+
 ## 04:45 恢复分工记录
 
 根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 04:04 入口、当前 `QUESTIONS.md` 和正式消息 `msg_546d9fc03e1c` 为本轮依据。总负责人为 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669`，顶层 Run 保持 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_7f070ad688f5 / term_8d816f16-fefd-45e8-b49a-29c4cf681c47`。模块已普通绑定原子 Run `run_8bbda1c3974c` generation 8，没有创建新 Run 或绑定根 Run。
