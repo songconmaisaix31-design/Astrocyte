@@ -148,6 +148,10 @@ UI后继 `e2e-full-first.log` 已由模块独读：1920完整DOM主链实际1 PA
 
 ### 本轮独立管理REPORT
 
+管理SOURCE `0f701b30de86025a013f3c6c3fa49bd393981702` 仅更新本文件，`git diff --check` EXIT0、普通push成功，模块独核远端同值及clean。已逐一审B的fc613实际构造、929完整报告、一行注释852d与ac3追加独立报告，并独读最终serve / final、核原PID退出；F准确aed差异、精确list、两项原日志及两份安全派生逐项一致。B阶段已交根merge_ready；后继仅注释未重复功能运行，原SOURCE / REPORT和首失败均保留。
+
+F e6d报告已独读并核远端，原两项真实2 PASS / 4.7秒 / EXIT0保持。完整tsc-b首次主动终止、日志EXIT=-1 / 外层EXIT1及lint未执行如实登记；实际tsconfig包含e2e，原F已本人ACK继续最终aed的必要完整tsc-b和单spec lint，最终静态尚未通过。原55当前28 PASS / 27 NOT_RUN；完整默认首结果、Native26、视频1、B旧八项真实能力、其他用户待答及最终Windows包保持限制。原B已本人ACK阶段接纳后结束模型轮次，保留原Task / Dispatch / 终端发布支持；模块未发送worker_done或发布Release。
+
 管理SOURCE `97ee3b73374ff296a80f8b7f5e089581ffd093a3` 仅修改本文件，`git diff --check` 通过、普通push成功，模块独立核远端同值。UI委托引用的精确list、真实两窗口2 PASS / 54秒及fbe0 / d631普通远端均独读，根已普通合8da并核组合tsc-b EXIT0；生产仍同172，未重复构建或部署。M-relay正式 `msg_567de6757c82` 补充独核PID / 路径 / 时间 / 唯一listener / Go同源 / health / 首页200以及同库68表90行，模块检查EXIT0；H更新脚本准确EXIT仍待其固定报告，未由ready推定脚本退出码。
 
 M-relay `msg_3f17ca18e7f9` 记录H当前真实Relay聚合state / receipt及任务、终端、会话、事件等全部0，无法提供原Native26正向条件；缺条件保持，不把空registry或静态页面作为通过。B de822源码已独读及核push，真实只读源、全新目标、HTTP1关闭再同库HTTP2的原件已读，但整页读服务装配缺口出现后尚未给F窗口，原两项继续NOT_RUN。原作者正常关闭自有窗口后在同helper返修，不修改原库、核心生产API、Registry或模型；SOURCE与独立REPORT齐备及真实前端结果到后再交根。模块持续管理和最终发布支持，本轮没有worker_done或自行发布。
