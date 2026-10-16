@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -25,12 +26,24 @@ func readPublicProgress(t *testing.T) (domain.ProjectProgress, string, int) {
 	if !filepath.IsAbs(publication) {
 		t.Fatal("select the absolute SQLite path of the actual public README progress result")
 	}
+	if err := workbenchPathUnredirected(publication); err != nil {
+		t.Fatal("public progress source contains a redirected path", err)
+	}
+	canonical, err := filepath.EvalSymlinks(publication)
+	if err != nil || !strings.EqualFold(filepath.Clean(canonical), filepath.Clean(publication)) {
+		t.Fatal("public progress source is not its explicit canonical path", err)
+	}
+	info, err := os.Lstat(publication)
+	if err != nil || !info.Mode().IsRegular() {
+		t.Fatal("public progress source must be an existing regular SQLite file", err)
+	}
 	locator := &url.URL{Scheme: "file", Path: filepath.ToSlash(publication)}
 	if filepath.VolumeName(publication) != "" {
 		locator.Path = "/" + locator.Path
 	}
 	query := locator.Query()
 	query.Set("mode", "ro")
+	query.Set("_pragma", "query_only(ON)")
 	locator.RawQuery = query.Encode()
 	conn, err := sql.Open("sqlite", locator.String())
 	if err != nil {
@@ -48,7 +61,7 @@ func readPublicProgress(t *testing.T) (domain.ProjectProgress, string, int) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if record.ProjectID != projectID || record.Source != "agent_inferred" || record.NativeID != "01a13a73-1de2-7761-aaa3-5cbd8fb433cc" || record.Status == "" || len(record.Evidence) == 0 || len(record.Operations) == 0 {
+	if record.ProjectID != projectID || record.Source != "agent_inferred" || record.NativeID != "01a13a73-1de2-7761-aaa3-5cbd8fb433cc" || record.Model == nil || *record.Model != "gpt-6.1-sol" || record.Status == "" || len(record.Evidence) == 0 || len(record.Operations) == 0 {
 		t.Fatal("actual public progress provenance is unavailable")
 	}
 	for _, operation := range record.Operations {
