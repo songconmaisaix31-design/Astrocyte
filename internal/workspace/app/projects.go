@@ -210,6 +210,7 @@ func (s *localProjectService) GrantProjectAgent(ctx context.Context, c domain.Ca
 	g.ProjectID = id
 	g.TokenDigest = ""
 	g.RevokedAt = nil
+	g.ExpiresAt = nil
 	return g, s.repo.SaveGrant(ctx, g)
 }
 func (s *localProjectService) RevokeProjectAgent(ctx context.Context, c domain.Caller, id, agentID string) (domain.ProjectGrant, error) {
@@ -264,14 +265,8 @@ func (s *localProjectService) IssueProjectAgentToken(ctx context.Context, c doma
 	token := id + "." + agentID + "." + base64.RawURLEncoding.EncodeToString(secret)
 	digest := sha256.Sum256([]byte(token))
 	g.TokenDigest = hex.EncodeToString(digest[:])
-	// 保留 GrantProjectAgent 已设置的到期时间；未指定时默认一小时。
-	var expiry time.Time
-	if g.ExpiresAt != nil {
-		expiry = *g.ExpiresAt
-	} else {
-		expiry = time.Now().UTC().Add(time.Hour)
-		g.ExpiresAt = &expiry
-	}
+	expiry := time.Now().UTC().Add(time.Hour)
+	g.ExpiresAt = &expiry
 	if err := s.repo.SaveGrant(ctx, g); err != nil {
 		return result, err
 	}

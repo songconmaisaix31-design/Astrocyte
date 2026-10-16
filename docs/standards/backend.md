@@ -713,13 +713,14 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 变更文件：
 - `internal/adapters/httpapi/progress.go`：HTTP 适配层，领域 `ProjectProgress` 映射为线格式；缺失状态为 `unknown`，缺失 source/observed_at 为 `null`；501 当服务 nil
 - `internal/adapters/httpapi/session.go`：`scopedAgentRoute` 增加 `parts[4] == "progress" && r.Method == http.MethodGet`，允许 Agent token 读取同项目进度
-- `internal/workspace/app/projects.go`：`GrantProjectAgent` 保留调用者指定的 `ExpiresAt`（不再强制 nil）；`IssueProjectAgentToken` 保留已有到期时间，仅未指定时默认一小时
 - `internal/workspace/app/progress_test.go`：翻译 9 块英文注释为中文，保留 8 项 processor/registry 外部替身测试（诚实记录为不计 PASS）
 - `internal/workspace/app/progress_actual_test.go`：8 项真实 HTTP/SQLite 安全测试
+- `internal/workspace/app/progress_expiry_bg_test.go`：自然到期后台验证程序（ASTROCYTE_VERIFY_EXPIRY=1 激活，正常运行 SKIP）
+- `internal/workspace/app/projects.go`：本轮短期 ExpiresAt 已恢复原语义（GrantProjectAgent 清空、IssueProjectAgentToken 固定 UTC+1h），追加修复保历史
 
 | 实际命令 | 结果 |
 |---|---|
-| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGet\|TestProgressHumanSet\|TestProgressAgentRead\|TestProgressCrossProject\|TestProgressValidGrant\|TestProgressExpired\|TestProgressAgentInfer\|TestProgressRestart' -v -count=1` | EXIT 0，8 PASS，包 20.217s |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run '8项测试' -v -count=1` | EXIT 0，8 PASS，包 5.172s |
 | `go build -mod=readonly -p=2 ./...` | EXIT 0 |
 | `go vet -mod=readonly -p=2 ./...` | EXIT 0 |
 
@@ -729,8 +730,29 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 3. **TestProgressAgentReadUsesGrant**：无 grant 的 Agent 被拒绝，有 grant+token 的 Agent 被接受，撤销 grant 后再次被拒绝
 4. **TestProgressCrossProjectGetRejected**：Agent 持有项目 A 的有效 token 访问项目 B 的进度端点返回 403，项目 B 数据未受影响
 5. **TestProgressValidGrantWithoutReadContextRejected**：合法 Grant 仅含 `observe` 不含 `read_context` 时 GET 被拒绝，服务层和 HTTP 层均验证
-6. **TestProgressExpiredGrantGetRejected**：`GrantProjectAgent` 指定 2 秒短到期，`IssueProjectAgentToken` 保留该期限；到期前 GET 成功，实际时钟等 3 秒后 GET 和服务层均拒绝（不修改系统时钟，不用 SQL UPDATE）
+6. **TestProgressTokenIssuedWithExpiry**：签发 1h token，验证到期前 GET 成功，ExpiresAt 在未来约一小时
 7. **TestProgressAgentInferRejected**：Agent 的 POST `/progress/infer` 和 PUT `/progress` 均被 scopedAgentRoute 拒绝，原始进度未改变
 8. **TestProgressRestartPreservesCacheAndPermissions**：第一轮真正启动 HTTP1，通过 HTTP 读取人工缓存和验证 Agent token；关闭 HTTP1 和 DB；重新打开同一 SQLite 文件启动 HTTP2，验证缓存和原 token 权限均持久化
 
 八项内存替身测试保留覆盖但诚实记录为不计 PASS：`progressProjects`、`progressStore`、`progressProcessor`、`progressFiles`、`progressRegistry` 替身不能验证真实 HTTP/SQLite/session/permissions/CSRF/Agent-token 边界。`paper-dom.mjs` 的 catch 块移除已在先前 SOURCE `2644083` 完成，不在本轮范围内。
+
+## 自然到期后台验证（RUNNING）
+
+用户正式决定 `msg_ef2ae7cc0b04`：保持原 1h 到期，短期 ExpiresAt 未授权。`projects.go` 已恢复原语义（`GrantProjectAgent` 清空 ExpiresAt、`IssueProjectAgentToken` 固定当前 UTC+1h），追加修复保历史，未使用 Git 回滚。
+
+`TestProgressExpiryBackgroundVerification` 在 `progress_expiry_bg_test.go` 中通过 `ASTROCYTE_VERIFY_EXPIRY=1` 激活长等待。正常运行 SKIP。激活后签发真实 1h token，读取 ExpiresAt，后台等待自然到期后验证 HTTP 和服务层拒绝。不改 DB、不改时钟、不改模型。
+
+后台进程状态：**RUNNING**
+
+| 参数 | 值 |
+|---|---|
+| PID | 664 |
+| 启动时间 | 见 `.verification/expiry-bg-full.log` |
+| 预计到期 | 签发后约 1h + 10s |
+| 日志 | `.verification/expiry-bg-full.log` |
+| 签发记录 | `.verification/expiry-bg-token.log` |
+| 结果（完成后） | `.verification/expiry-bg-result.json` |
+
+运行命令：`ASTROCYTE_VERIFY_EXPIRY=1 GOCACHE=D:/Astrocyte-go-cache GOTMPDIR=D:/Astrocyte-go-tmp GOMAXPROCS=2 go test -mod=readonly -p=2 ./internal/workspace/app -run TestProgressExpiryBackgroundVerification -v -count=1 -timeout 2h`
+
+到期验证完成后方可计为 PASS。当前 7 项已验测试 + 1 项 token 签发测试已 PASS。到期后台验证结果待补充。

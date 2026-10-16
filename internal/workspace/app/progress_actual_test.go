@@ -362,10 +362,9 @@ func TestProgressValidGrantWithoutReadContextRejected(t *testing.T) {
 	s.assertRows(t, 1)
 }
 
-// 自然到期后的 GET 必须被拒绝。
-// GrantProjectAgent 接受 ExpiresAt 短期限，IssueProjectAgentToken 保留该期限；
-// 实际时钟等待到期后验证 HTTP 和服务层均拒绝。不修改系统时钟，不用 SQL UPDATE。
-func TestProgressExpiredGrantGetRejected(t *testing.T) {
+// 签发 1h token 并验证到期前可用。自然到期后的拒绝由独立后台进程验证（见 backend.md）。
+// 此测试确认 IssueProjectAgentToken 签发有效 token 且 ExpiresAt 在未来约一小时。
+func TestProgressTokenIssuedWithExpiry(t *testing.T) {
 	s := openActualProgressHTTP(t)
 	ctx := context.Background()
 	human := domain.Caller{Kind: "human", ID: "local-human"}
@@ -375,10 +374,7 @@ func TestProgressExpiredGrantGetRejected(t *testing.T) {
 	}
 
 	agentID := "expiry-agent"
-	shortExpiry := time.Now().UTC().Add(2 * time.Second)
-	if _, err := s.projects.GrantProjectAgent(ctx, human, s.project.ID, domain.ProjectGrant{
-		AgentID: agentID, Actions: []string{"read_context"}, ExpiresAt: &shortExpiry,
-	}); err != nil {
+	if _, err := s.projects.GrantProjectAgent(ctx, human, s.project.ID, domain.ProjectGrant{AgentID: agentID, Actions: []string{"read_context"}}); err != nil {
 		t.Fatal(err)
 	}
 	token, err := s.projects.IssueProjectAgentToken(ctx, human, s.project.ID, agentID)
@@ -389,16 +385,16 @@ func TestProgressExpiredGrantGetRejected(t *testing.T) {
 	// 到期前 GET 成功
 	s.request(t, http.MethodGet, nil, false, false, token.Token, http.StatusOK)
 
-	// 实际时钟等待自然到期
-	time.Sleep(3 * time.Second)
+	// ExpiresAt 在未来约一小时
+	now := time.Now().UTC()
+	if token.ExpiresAt.Before(now.Add(59*time.Minute)) || token.ExpiresAt.After(now.Add(61*time.Minute)) {
+		t.Fatalf("token expiry not approximately 1h: %v", token.ExpiresAt)
+	}
 
-	// 到期后 GET 被拒绝
-	s.request(t, http.MethodGet, nil, false, false, token.Token, http.StatusForbidden)
-
-	// 服务层也拒绝
+	// 服务层确认可用
 	agent := domain.Caller{Kind: "agent", ID: agentID, ProjectID: s.project.ID}
-	if _, err := s.progress.GetProjectProgress(ctx, agent, s.project.ID); err == nil {
-		t.Fatal("expired grant still accepted for progress read")
+	if _, err := s.progress.GetProjectProgress(ctx, agent, s.project.ID); err != nil {
+		t.Fatalf("fresh token rejected: %v", err)
 	}
 
 	s.assertRows(t, 1)
