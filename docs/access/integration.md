@@ -1,5 +1,13 @@
 # Works Relay integration report
 
+## 2026-10-17 四项真实测试的目录前置组合检查
+
+H SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` 与独立 REPORT `68c9acc11d991720b9b1562abd2983bdb9af0229` 已普通合为 `0368145b2ca9016170955094436421846f36b7e0`。根独读全部四件测试差异、报告及作者 list / 两次 test / vet 原件，确认生产目录与权限保护没有变化，成功及真实同文件别名拒绝断言保持。新增 helper 在显式绝对输出根或既有 ignored dist 目录下真实创建独占目录，经标准 `filepath.EvalSymlinks` 与 `os.SameFile` 核验后作为可信测试配置；失败详情保留于本次自有目录。
+
+根在准确0368145组合仅运行本次四项：`TestRelayJudgmentProductionAssemblyActualSQLiteHTTP`、`TestRelayHumanAdmissionsWithoutJudgmentSnapshotsActualSQLiteHTTP`、`TestRelayPublicContextActualGitSQLite`、`TestRelayReaderRootActualDirectoriesAndDatabaseAliases`。同包 `go test -mod=readonly ./cmd/server -list <精确四项选择器>` 恰好四项；同选择器 `-run -v -count=1 -timeout=120s` 实际4 PASS / 0 Skip，各1.30 / 0.18 / 0.90 / 0.03秒，包3.528秒。`go vet -mod=readonly ./cmd/server`、`git diff --check` 与整个 runner 均 EXIT0，源码前后保持。原件位于 `D:/Astrocyte-agent-assets/20261015/integration/root-directory-0368145/`，相邻 `run-root-directory-0368145.ps1` 保存完整命令，所有新增临时与输出目录位于 D。
+
+原 Windows CI 四项失败的底层原因仍 UNKNOWN，本次正确目录前置的通过独立记录，完整 CI 保持未通过。原 Relay runtime 测试还含受控 driver / workspace / sink，缺少 reconcile 权限时生产403保持正确；本阶段没有修改或运行该替身。当前产品仍为准确 c5 / PID30420 / 64505，本阶段没有构建或部署，外层运行命令 EXIT UNKNOWN 保持。
+
 ## 2026-10-17 生产经验连接与同库产品更新
 
 H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3`、独立 REPORT `a4c1baf6e47e8f449c2f26ce37150780b051df5e` 已普通合为 `c5b3b5715f2e93b82365720914be24c73642bd1e` 并push，无冲突。根独读三件源码、276行真实测试、作者完整本阶段报告及最终原日志；H已普通消费准确B2b96 /a6，净生产修改为main必要连接和原relay经验组装。
@@ -25,6 +33,8 @@ H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3`、独立 REPORT `a4c1baf6e47
 自动CI原4b4ec3b2 /Run38947762564双平台pnpm check失败，日志保存在 `root-ci-c5b3b57/4b4ec3b2-failed.log`。当前c5 /Run38948519582自动触发仍含七项旧进度替身的默认套件，根精确取消，现实际completed /cancelled；取消前已输出失败、实际首结果保留在 `c5b3b57-cancelled.log`，不计完整默认或真实替身验收。后续纯报告提交暂用 `[skip ci]`，测试、断言和workflow没有新增Skip或修改。缺真实原件 /输出根 /CLI /Q配置与已见非Native疑点分别交原模块按准确源码继续归因和修复，不把全部失败归为Native。
 
 当前实际C空余约5.5GB，低于原包装10GiB守卫；官方三缓存合计约2.27GB且有npx在途，未清理、终止或修改OS。最终Windows包、完整默认 /check、L1 /L2正向及真实经验生成仍未完成，原未答权限和配置选择保持。
+
+完整默认的残余替身还包括Relay受控driver /workspace /sink、原SQLite localNative和HTTP Workbench固定Event /错误stub；缺公开Q配置的Workbench reader测试另行归类。原B /H沿原Task连续整改可独立部分，保持原真实场景断言；缺位列表实际来源、unknown原生收据及未答权限不由新子集结果覆盖。根在纯报告组合9623a924另行执行锁定依赖 `go mod verify`，实际EXIT0 /all modules verified，没有重复成功业务。
 
 ## 2026-10-17 真实采用来源适配组合验证
 
