@@ -2,6 +2,10 @@
 
 ## 2026-10-16 11:49 原产品任务恢复计划
 
+### 12:00 原Task沿已配置Claude客户端恢复
+
+根已在本轮正式阻塞答复中核本机Claude Code `2.1.238`与已登录状态，允许先沿原B Task / 工作树 / 分支 / 写域和现有WIP使用 `worker-start --agent claude`，重试最近已结算失败Dispatch；实际就绪和任务开始核实后，再按同样条件依次恢复原F、UI。保持原两个Run，不创建替代Task或第四层，不再重复Codex相同bootstrap失败，不修改全局账号、网络或Agent配置。客户端及实际模型从运行状态核实，默认配置不作为已核模型。本次只调整开发客户端，原产品Codex控制器验收、未答业务选择、未知不重发和原生 / ASR / OS边界保持。模块继续只写本文件，根继续唯一集成写入。
+
 当前模块为原 Task `task_b0197ca7ebdf` / Dispatch `ctx_676d773e9f23` / 终端 `term_898becd9-05d7-464c-91b6-02d1cae8b19b`，总负责人为 `term_a1e70e66-3957-415d-b42c-673f2cc94c26`。根绝对路径 `HANDOFF.md` / `STATUS.md` 的11:38入口与消息 `msg_5aed5926dccd` 替代原任务的旧身份及新建 Run 指令；继续原 `run_7b2ce96bcd13` 和 `run_dbf1a68bc692`，不增加人员层级。本树准确基线 `c019bdb216c39abd5dc6d812f1bc34ec2ff81f0e`，原05:02十二行管理 WIP完整保留。
 
 本模块实际读取本机 `LastBootUpTime=2026-10-16T03:26:45.5000000Z`。原 B / F / UI 的公开 Dispatch 均明确为 local，创建于重启前，当前公开 observation 为 missing，原三个工作树 terminal list 均为空。以实际主机重启和原 Dispatch 本机归属确认旧进程已经结束，再精确 abandon / retry 原 Task；不从 missing_status 单独推断退出，不释放或终止其他终端。
