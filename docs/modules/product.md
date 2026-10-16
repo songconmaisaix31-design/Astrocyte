@@ -18,11 +18,13 @@ F原Task / `ctx_44f61b51d023` 继续默认55失败分类。模块已独读phase3
 
 UI候选SOURCE `eb8b49daa50a66d45eb2daa438646917aac086aa` / REPORT `93223cf0044d07ed9b280986a50e8f2a62f9fca6` 未获模块接纳：未知请求状态可清空后重发、读取过期仍可写入、默认偏好与版本回填、固定示例digest及真实DOM覆盖不足均已交原作者。后继必须复用持久命令，保留固定版本和草稿，真实材料版本缺失直接失败；异步旧响应不能覆盖新选择或已删除示例。模块已完整读现有ValidateTasteProfile与validateTasteExamples：启用须有至少一个rubric和真实example；choice有2至255个唯一选项且等级为空，score选项为空且有2至10个等级，truth两个数组均为空；示例expected必须分别符合明确选项或对应范围内的JSON数值，固定资料版本与digest精确。源码、测试和页面都按该既有契约返修，不改后端、schema、语言或预算来适应错误。
 
-F独立REPORT `852a149` 调查的是旧280项，不能替代当前a166的320项 / 55失败。准确55行的分类已交本人逐项记录，原31项或10项的汇总不作当前剩余计数。F首轮真实DOM只到准备前，15 GET / 零非GET尚不能证明确认区可审；严格本地prepare、未勾确认、submit disabled及固定r2/v3 / 资料r1 / 项目r2仍待实际断言，缺失不能catch或条件跳过。F新增第四层Explore `a09d1cfaa56dbf9cf` 已由本人TaskStop，模块通过公开transcript独核Successfully stopped task回执，主线程和WIP保留，禁止再新增内置或Orca子Agent。
+F独立REPORT `852a149` 调查的是旧280项，不能替代当前a166的320项 / 55失败。准确55行的分类已交本人逐项记录，原31项或10项的汇总不作当前剩余计数。F首轮真实DOM只到准备前，15 GET / 零非GET未作为确认区验收；随后strict原件已由模块与根完整读取，实际观察固定r2/v3、资料r1、项目r2、本地prepare后确认框可见且未勾、submit disabled和零非GET。根已据该次实际观察询问唯一具体资料准入选择，尚未转交回答，F不提交、不重复成功或未知动作。该脚本含submit缺失的alternative分支，当前实际原件走disabled正向，仅接纳本次观察，不作通用验收框架。F新增第四层Explore `a09d1cfaa56dbf9cf` 已由本人TaskStop，模块通过公开transcript独核Successfully stopped task回执，主线程和WIP保留，禁止再新增内置或Orca子Agent。
 
 F唯一公共runner SOURCE `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` / REPORT `f59a35668996d7911abde515a68cf15b13443f33` 已核普通push，配置只增加s5匹配并保留原s2 / s3 / s4 / progress、workers1和retries0。UI先前同一行越域WIP保留后交F正式消费，后续仅按准确F来源安全同步，不直接把越域WIP交根合并。该配置通过不替代s5功能验收。B未来入口SOURCE `96747490398b68574c5080f30a447d077deaffba` / REPORT `237987a594de1055af18c7fffe30fc516cdacaef` 已核为真实Date.now有界观察、单次等待不超过30秒；新入口NOT_RUN，原12768和原token保持RUNNING / UNKNOWN。
 
 ### 本轮独立管理REPORT
+
+本轮返修记录SOURCE `39cd0aeb364bef2794591577c5d23265d2de3253` 只修改本文件，`git diff --check` 通过并普通push。其后F报告 `f066854` 的strict实际日志 `.verification/dom-review-strict-64505.log` 已完整独读；实际观察包括明确确认框、禁用提交和零HTTP写入，没有重复浏览器操作或代答准入。F对junction使用Bash递归删除并吞错误的偏离已退回，模块只读核web的Playwright `index.mjs` 与实际pnpm包 `index.js` 仍存在、本人新建链接路径当前不存在；未执行任何删除、依赖修复或据此推定整个依赖树完整。根已另报告准确dac4537的Go格式、vet、模块校验和依赖检查全部EXIT0，116.2134755秒；该静态检查不替代默认或业务验收。
 
 SOURCE `d9145d2d3ecc007cf9722ba766012b86897bcafd` 只更新本文件，`git diff --check` 通过、普通push成功，独立 `git ls-remote` 核远端同值。模块实际读取B修复差异、独立核实际进程及脱敏签发字段、D盘SQLite文件存在和创建时间，未修改或复制数据库、读取token秘密或重启计时。F插件快照14项原日志已独读；根完整组合构建与准入、H同库ready均注明正式来源，没有由管理文档检查推定业务通过。
 
