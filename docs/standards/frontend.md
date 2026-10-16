@@ -1,5 +1,54 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-17 aed 完整类型检查与进度 spec lint
+
+本次检查 SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d`，执行时 HEAD 为独立报告 `e6d559ab07f0881bdf5b23b66c82356384ce6ed3`；检查前后 `git diff aed -- web` 均为空，没有修改源码。`web/tsconfig.app.json` 的 `include` 为 `src` 与 `e2e/**/*.ts`，本 spec 属于必要完整类型检查范围。该准确源码的完整 `tsc -b` 和本 spec ESLint 现均已通过，e6d 的首次中断记录及全部首失败原件保持。
+
+先通过 Windows CIM 核实首次自有 PID45256 已不存在，当前本树无在途 tsc。使用已安装 Node v24.16.0、TypeScript 6.0.3 与 ESLint 10.12.0；沿官方 Node CLI 入口执行，工作目录均为本树 `web`，没有改变 tsconfig、规则、断言或依赖。进程级 `NODE_OPTIONS=--max-old-space-size=512`，`NODE_COMPILE_CACHE`、TEMP、TMP、GOTMPDIR 与输出均使用本次独占 D 目录；GOCACHE、GOMAXPROCS2、GOFLAGS=-p=1 保持原配置，没有修改全局环境。
+
+本次原件根：`D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/aed-static-20261017/`。使用原 `scripts/process.mjs` 的 `launchLogged` 保存实际子进程双通道、真实退出与完整命令，顺序执行以下检查：
+
+| 实际命令（cwd：web） | 真实 PID | 实际结果 | 原件 |
+|---|---|---|---|
+| `node node_modules/typescript/bin/tsc -b --pretty false --verbose` | 31852 | EXIT0 / signal=null / 7.430 秒 | `tsc-b.stdout.log`、`tsc-b.stderr.log` |
+| `node node_modules/eslint/bin/eslint.js e2e/progress-existing.spec.ts` | 38668 | EXIT0 / signal=null / 14.733 秒，stdout/stderr 均无诊断 | `eslint-progress.stdout.log`、`eslint-progress.stderr.log` |
+| `node <本次原件根>/check-static.mjs` | 原检查协调进程 | shell EXIT0 | `runner.log`、`result.json` |
+
+完整类型日志列出根 `tsconfig.json` 的两个引用项目，并实际执行 `tsconfig.app.json` 与 `tsconfig.node.json`；app 的缓存早于当前 progress-existing.spec.ts，已重新检查当前输入。`result.json` 保留准确源码、HEAD、完整可执行文件路径、参数、cwd、PID、开始结束 UTC、退出码及耗时；两个检查子进程结束后 CIM 计数为 0。
+
+本轮没有访问任何业务 HTTP，没有重新运行已结束 65404 的两项成功、E2E、build、模型或 Native，没有修改生产、schema 或队友文件。当前累计结果仍为原 55 条关联的 28 PASS / 27 NOT_RUN；完整默认、完整 check、L1 / L2 与最终发布保持原限制。原 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / 终端保持，不发送 worker_done。
+
+## 2026-10-17 既有 README 模型进度的 HTTP2 只读验收
+
+本阶段 SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d` 已普通 push，只修改 `web/e2e/progress-existing.spec.ts` 的必要模块导入与派生输出路径。显式要求 `ASTROCYTE_TEST_OUTPUT_ROOT`，复用 `scripts/process.mjs` 的 `verificationOutputRoot` 校验绝对路径，再写入其 `progress-existing` 子目录；全部原 DOM、HTTP、模型、来源、证据、GET-only、刷新前后等值及布局断言保持。没有修改生产 handler、公共函数或组件。
+
+M-product 交付 B SOURCE `fc6131791c7e287f45ed113892a95ac29fd07b2f` 的新自有 D 目标库、同库 HTTP2 窗口 `http://127.0.0.1:65404`。原公开记录由 B 以 SQLite `mode=ro` 读取，F 只消费获准 HTTP；项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70`、原生 ID `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`。当前实际显示 `agent_inferred` / `gpt-6.1-sol` / revision1 / evidence1，摘要未提供，保留来源完整性与有效工具集合未知。没有新 infer、模型、原生或 ASR 调用，没有访问旧 63886 或共享 64505，没有 PUT / POST。
+
+本次原件根为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/progress-http2-65404-20261017/`。仅本 spec 使用独立临时配置，原 chromium-1920 / chromium-1280、workers1 / retries0，webServer 关闭，截图、录屏与 trace 关闭；不启动额外服务或运行完整默认。实际命令入口为 `pwsh -NoProfile -File <本次原件根>/run-progress.ps1 -Phase <阶段> -RunName <名称>`，参数和完整输出分别保留。
+
+| 实际命令 / 选集 | 结果 | 本次原件 |
+|---|---|---|
+| 首次 `-Phase list`，唯一 progress-existing.spec.ts | 模块加载失败，0 tests / EXIT1；未进入测试或发出业务 HTTP | `list.log` |
+| 修正原公共模块的 ESM 导入后，`-Phase list -RunName second` | 恰好本 spec 两 viewport，Total: 2 tests in 1 file / EXIT0 | `list-second.log` |
+| 同一准确 SOURCE，`-Phase test -RunName first` | chromium-1920 1.3 秒、chromium-1280 1.1 秒；2 PASS / 总 4.7 秒 / shell EXIT0 | `test-first.log`、`playwright-first-artifacts` |
+| 两份实际安全派生输出 | project/native/model/source/revision/evidence 逐项保持；read_only=true / new_model_turns=0 | `progress-existing/chromium-1920-derived.json`、`progress-existing/chromium-1280-derived.json` |
+| 额外启动的完整 `pnpm --dir web typecheck` | 未正常结束；本次主动终止唯一自有 tsc PID45256 后，pnpm 4294967295、日志 EXIT=-1、外层脚本 EXIT1；不计类型通过 | `typecheck.log` |
+
+首次 `createRequire` 在 Playwright 的模块加载过程中触发 `Cannot use import.meta outside a module`，完整首失败原件保留；后继以 Node ESM 文件 URL 导入同一实际公共模块，未增加替身、fallback、空列表或新 API，未改既有断言。先取得准确两项 list，才运行本次真实测试，两项均一次通过，没有重复旧成功组。
+
+额外全局类型检查的 Node 进程在多次实际观察中仍存在、CPU 累计 19.453125 秒、线程等待且没有新输出；没有将这些观察解释为已退出或已通过。为结束本次有限只读验收，核准其 PID45256、父23832、准确本树 TypeScript tsc-b 命令后主动终止该自有检查，后续 CIM 计数为 0；没有终止其他人的进程，也没有以其他命令补写类型成功。该完整类型检查未完成，lint 未执行；本节仅声明原两项真实端到端通过。
+
+F 已通过 `msg_bf6b5ca3d684` 直接通知原 B 本次 HTTP2 读取窗口明确结束，并以 `msg_72f86352ddba` / `msg_29037a6dc4e6` 同步 M-product 和原 Run；B 不再需要为 F 保持该服务。原 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / terminal `term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60` 保持，没有发送 worker_done。
+
+本次通过替换下方 2026-10-16 表中 80 / 240 的当时 NOT_RUN，其余 53 行不变：
+
+| a166 原编号 | 窗口 | 原文件位置 | 原日志行 | 最新状态 | 当前证据 |
+|---|---|---|---|---|---|
+| 80 | 1920 | progress-existing.spec.ts:10 | 144 | PASS | aed SOURCE 的实际 progress-existing:11，test-first.log 两项成功之一 |
+| 240 | 1280 | progress-existing.spec.ts:10 | 562 | PASS | 同一实际 HTTP2、独立 1280 窗口，test-first.log |
+
+准确原 55 条的当前关联结果为 28 PASS / 27 NOT_RUN：Native 场景 22、只读 18ID 两项、三分钟两项及视频一项继续保留真实条件缺口。完整默认、完整 check、L1 / L2 和最终发布未通过；B 的实际其他构造及其生产同源边界由 B 报告，本结果仅确认上述真实进度页面与原完整断言。
+
 ## 2026-10-16 当前 a166 的 55 条失败逐项状态
 
 原始 SOURCE 为 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，原件为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/full-default-a166-playwright.log`。完整计划 320 项，已观察 204 PASS、55 FAIL、43 原有 SKIP、18 无结果；原件没有最终 summary 或 EXIT，整体未通过。以下编号、窗口、文件位置及日志行均逐条对应该原件。接管基线 `6cd0e51098a946c732e3914d94efc59c9aaa4dec`，公共 helper SOURCE `375a559`、后继验证 SOURCE `b34ce2b85b2ae9d172a409d622d74aa5797ea414` 已普通 push；未完成的行保持 NOT_RUN，不从历史定向通过推断当前通过。

@@ -7,6 +7,7 @@ import { progressSourceSummary, progressStatusLabel } from '../src/pages/workspa
 import { formatDateTime } from '../src/utils/format';
 
 type S = components['schemas'];
+const { verificationOutputRoot } = await import(new URL('../../scripts/process.mjs', import.meta.url).href) as { verificationOutputRoot(choice: string): string };
 test('既有实际README模型进度通过当前HTTP完整显示，所有页面操作只发送GET', async ({ page }, info) => {
   const origin = process.env.ASTROCYTE_TEST_PROGRESS_PUBLIC_URL;
   const projectID = process.env.ASTROCYTE_TEST_PROGRESS_PROJECT_ID;
@@ -58,7 +59,9 @@ test('既有实际README模型进度通过当前HTTP完整显示，所有页面�
   expect((await finalResponse.json() as S['ProjectProgressResultV1']).progress).toEqual(initial);
   expect(commands).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  const directory = resolve('../.verification/progress-existing');
+  const outputRoot = process.env.ASTROCYTE_TEST_OUTPUT_ROOT;
+  if (!outputRoot) throw new Error('需要本次显式 ASTROCYTE_TEST_OUTPUT_ROOT');
+  const directory = resolve(verificationOutputRoot(outputRoot), 'progress-existing');
   await mkdir(directory, { recursive: true });
   await writeFile(resolve(directory, `${info.project.name}-derived.json`), JSON.stringify({ project_id: projectID, native_id: nativeID, model: initial.model, source: initial.source, revision: initial.revision, evidence_count: initial.evidence.length, summary_present: !!initial.summary, summary_length: initial.summary ? initial.summary.length : null, read_only: true, new_model_turns: 0, original_source_completeness: 'unknown', effective_tool_set: 'unknown' }, null, 2));
 });
