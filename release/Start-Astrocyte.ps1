@@ -13,7 +13,24 @@
     [ValidateSet('archive', 'native_notifications')]
     [string]$RelaySessionSource = 'archive',
     [ValidateRange(1, 86400)]
-    [Nullable[int]]$RelayLiveSeconds = $null
+    [Nullable[int]]$RelayLiveSeconds = $null,
+    # S4 CodeGraph/Repository 上下文 — 三个路径必须同时提供，或都不提供。
+    [string]$CodeGraphNode = '',
+    [string]$CodeGraphSDK = '',
+    [string]$CodeGraphScript = '',
+    [string]$RepositoryEnvironmentID = '',
+    [string]$AOCIExecutable = '',
+    # S5 Laya 判断 — 提供任一时必须同时提供全部。
+    [string]$LayaNode = '',
+    [string]$LayaWorker = '',
+    [string]$LayaModelDir = '',
+    [string]$LayaAssets = '',
+    [string]$LayaSDKEntry = '',
+    [string]$LayaRPCEntry = '',
+    [string]$LayaLanguage = '',
+    [string]$LayaStderrDir = '',
+    [Nullable[int]]$LayaStartupTimeoutMS = $null,
+    [Nullable[int]]$LayaShutdownTimeoutMS = $null
 )
 
 $ErrorActionPreference = 'Stop'
@@ -25,6 +42,34 @@ if (-not (Test-Path -LiteralPath $binary -PathType Leaf) -or -not (Test-Path -Li
 }
 if ([Environment]::OSVersion.Platform -ne 'Win32NT' -or -not [Environment]::Is64BitOperatingSystem) { throw 'Windows x64 required.' }
 if (($SummarizeCli -eq '') -ne ($NodeExecutable -eq '')) { throw 'SummarizeCli and NodeExecutable must be supplied together.' }
+# S4 CodeGraph/Repository — 不完整组直接失败。
+$codeGraphAny = $CodeGraphNode -ne '' -or $CodeGraphSDK -ne '' -or $CodeGraphScript -ne ''
+if ($codeGraphAny -and ($CodeGraphNode -eq '' -or $CodeGraphSDK -eq '' -or $CodeGraphScript -eq '')) { throw 'CodeGraphNode, CodeGraphSDK and CodeGraphScript must be supplied together.' }
+if ($codeGraphAny) {
+    foreach ($pair in @(@('CodeGraphNode', $CodeGraphNode), @('CodeGraphScript', $CodeGraphScript))) {
+        if (-not [IO.Path]::IsPathRooted($pair[1]) -or -not (Test-Path -LiteralPath $pair[1] -PathType Leaf)) { throw ($pair[0] + ' must be an existing absolute file.') }
+    }
+    if (-not [IO.Path]::IsPathRooted($CodeGraphSDK) -or -not (Test-Path -LiteralPath $CodeGraphSDK -PathType Container)) { throw 'CodeGraphSDK must be an existing absolute directory.' }
+    if (-not (Test-Path -LiteralPath (Join-Path $CodeGraphSDK 'package.json') -PathType Leaf)) { throw 'CodeGraphSDK must contain package.json.' }
+}
+if ($AOCIExecutable -ne '') {
+    if (-not [IO.Path]::IsPathRooted($AOCIExecutable) -or -not (Test-Path -LiteralPath $AOCIExecutable -PathType Leaf)) { throw 'AOCIExecutable must be an existing absolute file.' }
+}
+# S5 Laya — 所有路径、语言、私有 stderr 目录和生命周期预算必须同时提供。
+$layaPaths = @($LayaNode, $LayaWorker, $LayaModelDir, $LayaAssets, $LayaSDKEntry, $LayaRPCEntry, $LayaStderrDir)
+$layaAny = @($layaPaths | Where-Object { $_ -ne '' }).Count -gt 0 -or $LayaLanguage -ne '' -or $null -ne $LayaStartupTimeoutMS -or $null -ne $LayaShutdownTimeoutMS
+if ($layaAny) {
+    foreach ($value in $layaPaths) { if ($value -eq '') { throw 'Laya requires all explicit runtime paths, language, private stderr directory and lifecycle budgets.' } }
+    if ($LayaLanguage -eq '') { throw 'Laya requires an explicit language.' }
+    if ($null -eq $LayaStartupTimeoutMS -or $LayaStartupTimeoutMS -lt 1) { throw 'Laya requires an explicit positive startup timeout in milliseconds.' }
+    if ($null -eq $LayaShutdownTimeoutMS -or $LayaShutdownTimeoutMS -lt 1) { throw 'Laya requires an explicit positive shutdown timeout in milliseconds.' }
+    foreach ($pair in @(@('LayaNode', $LayaNode), @('LayaWorker', $LayaWorker), @('LayaAssets', $LayaAssets), @('LayaSDKEntry', $LayaSDKEntry), @('LayaRPCEntry', $LayaRPCEntry))) {
+        if (-not [IO.Path]::IsPathRooted($pair[1]) -or -not (Test-Path -LiteralPath $pair[1] -PathType Leaf)) { throw ($pair[0] + ' must be an existing absolute file.') }
+    }
+    if (-not [IO.Path]::IsPathRooted($LayaModelDir) -or -not (Test-Path -LiteralPath $LayaModelDir -PathType Container)) { throw 'LayaModelDir must be an existing absolute directory.' }
+    if (-not [IO.Path]::IsPathRooted($LayaStderrDir)) { throw 'LayaStderrDir must be an absolute directory.' }
+    if (-not (Test-Path -LiteralPath $LayaStderrDir -PathType Container)) { New-Item -ItemType Directory -Path $LayaStderrDir -Force | Out-Null }
+}
 if ($DataDir -eq '') { $DataDir = Join-Path $PSScriptRoot 'data' }
 $data = [IO.Path]::GetFullPath($DataDir)
 if ($data -eq [IO.Path]::GetPathRoot($data)) { throw 'DataDir must be a dedicated application directory.' }
@@ -60,6 +105,27 @@ try {
             if (-not [IO.Path]::IsPathRooted($path) -or -not (Test-Path -LiteralPath $path -PathType Leaf)) { throw ($name + ' requires an existing absolute file.') }
             [Environment]::SetEnvironmentVariable($name, $path, 'Process')
         }
+    }
+    # S4 CodeGraph/Repository 上下文 — 显式绝对路径，不设默认值。
+    if ($codeGraphAny) {
+        $env:ASTROCYTE_CODEGRAPH_NODE = $CodeGraphNode
+        $env:ASTROCYTE_CODEGRAPH_SDK = $CodeGraphSDK
+        $env:ASTROCYTE_CODEGRAPH_SCRIPT = $CodeGraphScript
+    }
+    if ($RepositoryEnvironmentID -ne '') { $env:ASTROCYTE_REPOSITORY_ENVIRONMENT_ID = $RepositoryEnvironmentID }
+    if ($AOCIExecutable -ne '') { $env:ASTROCYTE_AOCI_EXECUTABLE = $AOCIExecutable }
+    # S5 Laya 判断 — 所有路径、语言、stderr 和生命周期预算必须同时提供。
+    if ($layaAny) {
+        $env:ASTROCYTE_LAYA_NODE = $LayaNode
+        $env:ASTROCYTE_LAYA_WORKER = $LayaWorker
+        $env:ASTROCYTE_LAYA_MODEL_DIR = $LayaModelDir
+        $env:ASTROCYTE_LAYA_ASSETS = $LayaAssets
+        $env:ASTROCYTE_LAYA_SDK_ENTRY = $LayaSDKEntry
+        $env:ASTROCYTE_LAYA_RPC_ENTRY = $LayaRPCEntry
+        $env:ASTROCYTE_LAYA_LANGUAGE = $LayaLanguage
+        $env:ASTROCYTE_LAYA_STDERR_DIR = $LayaStderrDir
+        $env:ASTROCYTE_LAYA_STARTUP_TIMEOUT_MS = [string]$LayaStartupTimeoutMS
+        $env:ASTROCYTE_LAYA_SHUTDOWN_TIMEOUT_MS = [string]$LayaShutdownTimeoutMS
     }
     New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
     Write-Host ('Astrocyte: http://127.0.0.1:' + $Port)

@@ -1,5 +1,163 @@
 # Windows x64 发布包记录
 
+## 2026-10-16 Build 环境作用域修正、pwsh 功能验证与 S4 正向构造
+
+本阶段 Task `task_3347b755071e`，Dispatch `ctx_1874978728b8`。固定原树和分支 `songconmaisaix31-design/release-package-20261014`。本轮三项修正：Build-Windows.ps1 环境作用域、pwsh 功能验证的准确进程级报告、一次真实 S4 完整参数正向构造。
+
+### Build-Windows.ps1 Node 检查纳入 D 环境作用域
+
+Check-Runtime.mjs 和 Inspect-Package.mjs 两个真实 Node 调用从 try 块前移至 try 块内，在 D 盘环境变量（GOCACHE/GOTMPDIR/TEMP/TMP/npm_config_cache/NODE_COMPILE_CACHE/ASTROCYTE_TEST_OUTPUT_ROOT/PATH）设置之后、source archive 之前执行。完整保存/设置/try-finally 还原作用域覆盖所有 Node 调用。Output 不复用、路径/space/privacy/fast-fail 守卫保持。Parser 检查确认正确，不执行 Build/3GB 扫描/最终包。
+
+### pwsh 功能验证与 Go 子进程退出发现
+
+新增 pwsh (PS7) 功能验证脚本 `functional-test-pwsh.ps1`，独立于既有 PS5.1 七项测试。实际进程级验证：
+
+| 项目 | 实际结果 |
+|---|---|
+| 父 Shell | pwsh 7.6.6 PID 44048 |
+| 子 Shell (wrapper) | pwsh.exe (PS7) PID 49240 |
+| Go 子进程 | astrocyte.exe PID 46912 |
+| 进程树 | pwsh -> pwsh -> astrocyte.exe（实际验证） |
+| 默认无模型启动 | PASS，端口 19882 监听 |
+| HTTP health | PASS，200 |
+| SQLite 创建 | PASS，4096 bytes |
+| 端口释放 | PASS |
+
+**关键发现**：当 pwsh wrapper 被 Kill 时，Go 子进程 astrocyte.exe **不会自动退出**。实际测试中 wrapper PID 49240 退出（code=-1），但 Go 子进程 PID 46912 仍在运行，必须显式 force-kill。旧 helper 的 Stop-TestApp 空 catch 和 `$childProcess = $null` 函数局部赋值未清除脚本级引用，导致 finally 重复清理。
+
+实际 pwsh 子进程测试仅覆盖默认无模型启动/HTTP/SQLite/owned 退出两项（19882 默认正向、19883 S4 正向）。既有 PS5.1 七项功能测试（`functional-test.ps1`）的子进程硬编码 `powershell.exe`（PS5.1），父 Shell 虽可为 pwsh 但子 Shell 仍为 PS5.1，因此不能计为真实 PS7 子进程七项通过。所有后继运行保持完整进程级 D Go/cache/temp/output-root/npm/Node cache 与 GOMAXPROCS=2/GOFLAGS=-p=1。既有进程 secret 只继承不读取打印复制，不新增 CLI 明文 key。
+
+### S4 CodeGraph 完整参数正向构造
+
+按根 `msg_1a8b11891180` 和模块 `msg_50b7b037d3da` 批准，使用 H 非秘密指针 `s4-config-public.json` 的四项现用值，在新 D staging 独占数据目录仅执行一次 S4 完整参数正向构造：
+
+| 参数 | 值来源 |
+|---|---|
+| `CodeGraphNode` | `runtime-sanitized-third/runtime/node/node.exe`（Node 24.16.0） |
+| `CodeGraphSDK` | `runtime-sanitized-third/runtime/sdk/node_modules/@colbymchenry/codegraph`（1.0.1） |
+| `CodeGraphScript` | `runtime-sanitized-third/runtime/adapters/codegraph.mjs`（已提交同源） |
+| `RepositoryEnvironmentID` | `H-shared-product-20261016-ad8413` |
+
+实际进程级结果：
+
+| 项目 | 结果 |
+|---|---|
+| 父 Shell | pwsh 7.6.6 PID 51016 |
+| 子 Shell (wrapper) | pwsh.exe PID 29888 |
+| Go 子进程 | astrocyte.exe PID 12656 |
+| 进程树 | pwsh -> pwsh -> astrocyte.exe |
+| 端口监听 | PASS，19883 |
+| HTTP health | PASS，200 |
+| SQLite 创建 | PASS，4096 bytes |
+| **repository-context/runtime** | **PASS，实际创建（appdata/localappdata/profile/temp）** |
+| owned 退出 | PASS，Go child 显式 force-kill |
+
+**关键生产配置证明**：`repository-context/runtime/` 目录及其四个子目录（appdata、localappdata、profile、temp）的实际创建，证明 `resolveRepositoryContextConfig` 仅在完整有效 S4 CodeGraph 参数组加有效 RepositoryEnvironmentID 时才执行。无模型配置的默认启动不创建此目录；此效果不可由字符串匹配或模拟替代。AOCI 未配置（`aoci_configured=false`），不影响 S4 路径。
+
+未索引仓库、未初始化 Laya/任何模型、未执行 native/ASR/下载/3GB 扫描/最终包。Node/Go/PS 全 D 环境，原共享 64505 和库不变。真实 runtime SOURCE 38fb2891 仅用于启动参数兼容与 S4 正向检查，不记为最终同源包。
+
+本轮实际修改文件：`release/Build-Windows.ps1`（Node 检查移入 try 块）、`docs/release/package-report.md`（本章节）。pwsh 与 S4 功能验证脚本和日志保留在 D 盘独占 staging `staging-38fb-first`。未执行最终 Build/Verify/archive/Release/tag。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。
+
+## 2026-10-16 Helper 错误处理返修
+
+本阶段 Task `task_3347b755071e`，Dispatch `ctx_39329742a5fc`。固定原树和分支，SOURCE `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d` 已普通 push，远端同 SHA。本 Dispatch 仅返修两个 D 盘外部 helper 脚本的错误处理，不修改任何 Git 跟踪的生产代码，不重跑 S4/新启动/模型/构造/索引/资产扫描。
+
+### 旧 Helper 实际观察与末尾清理错误
+
+两次历史运行的实际日志保留不变：
+
+**pwsh 测试**（`functional-test-pwsh.log`）：pwsh 7.6.6 PID 44048 → wrapper PID 49240 → Go PID 46912，端口 19882 监听/health 200/SQLite 4096 bytes 全部 PASS。杀 wrapper 后 Go 未退出，显式 force-kill。PASS 后 finally 块重复调用 Stop-TestApp，因 `$childProcess = $null` 仅创建函数局部变量而未清除脚本级引用，导致第二次 Stop-TestApp 在已 Dispose 的 Process 对象上执行 Kill/WaitForExit，末尾出现 `Wrapper kill error PID :` / `Wrapper wait error PID :` / `WARNING: Wrapper PID  did not exit within 5s` 三行错误。这些错误来自 finally 重复清理，不代表测试本身失败。
+
+**S4 测试**（`functional-test-s4-positive.log`）：wrapper PID 29888 → Go PID 12656，端口 19883/health/SQLite/repository-context/runtime 四子目录全部 PASS。同样的 finally 重复清理问题，末尾 `Wrapper kill error PID :` / `WARNING: Wrapper PID  did not exit within 5s`。
+
+两次测试的核心 PASS 结果（启动、健康、SQLite、生产配置效果、owned 退出）均为真实观察，末尾清理错误不影响这些结果的有效性。但旧 helper 的干净完成度不准确——PASS 输出后仍有未捕获的异常行。
+
+### 修订后的 Helper 改进（仅 Parser 验证，未重新运行）
+
+两个 helper 已修订，根禁止重跑 S4/新启动，仅做 PS5.1 和 PS7 parser 检查：
+
+| 检查 | PS5.1 | PS7 |
+|---|---|---|
+| `functional-test-pwsh.ps1` | PASS | PASS |
+| `functional-test-s4-positive.ps1` | PASS | PASS |
+| `check-ports-readonly.ps1` | PASS | PASS |
+
+修正内容（v4 最终版）：
+1. **`$script:childProcess` 作用域与 `$script:cleaned` 标记**：Stop-TestApp 使用 `$script:childProcess = $null` 和 `$script:cleaned = $true` 清除脚本级状态；Dispose 包在 `try {} finally {}` 中确保清理标记始终设置
+2. **路径不匹配 throw**：Go 子进程 Path 与预期 staging 二进制比较，不匹配立即 throw
+3. **启动时间保存与比较**：`$script:goStartTime` 保存首次查询的启动时间，Stop-TestApp 中与当前查询值比较，不匹配 throw
+4. **移除全部空 `catch {}`**：Kill/WaitForExit 失败直接 throw；Get-CimInstance 不使用 SilentlyContinue；Get-Process 查询存活状态时进程不存在为合法（SilentlyContinue），查询身份时直接 throw
+5. **Find-GoChild helper**：枚举 wrapper 子进程筛选 astrocyte.exe，返回 null 表示合法缺失
+6. **wrapper 退出时检查 Go**：HasExited 分支同样查询 Go 子进程状态，存活则 force-kill
+7. **日志唯一性先于 Transcript**：日志文件存在性检查 + `Start-Transcript -NoClobber`
+8. **数据目录不复用**：已存在即 throw
+9. **check-ports-readonly.ps1**：不使用系统常量 `$PID`，无空 catch，进程查询失败直接 throw
+
+### 只读端口检查
+
+使用 .NET `GetActiveTcpListeners()` 检查四端口当前状态，不杀任何进程：
+
+| 端口 | 状态 |
+|---|---|
+| 19880 | free |
+| 19881 | free |
+| 19882 | free |
+| 19883 | free |
+
+此前末次四端口 shell 检查实际为 ParserError（PowerShell 字符串变量作用域语法），不能作为验证。本次使用 `-f` 格式化避免了该问题。
+
+### 准确声明范围
+
+本 Dispatch 未重新运行修订后的 helper，因此报告不能声称修订后的 helper 已实际执行通过。历史运行数据（两次 PASS + 末尾清理错误）为旧 helper 的实际观察。修订后的 helper（v3）仅通过 PS5.1/PS7 parser 检查，实际行为验证留待后续授权执行。SOURCE `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d` 仍是代码来源，未修改任何 Git 跟踪文件。Build-Windows.ps1 Node 检查在 D 作用域内已确认正确。未声称新最终包或原生/默认全绿。实际 pwsh 子进程测试仅 19882 默认正向和 19883 S4 正向两项；旧 `functional-test.ps1` 子进程为 powershell.exe (PS5.1)，不计为 PS7 child 通过。
+
+## 2026-10-16 S4/S5/Jev 显式启动参数映射
+
+本阶段 Task `task_3347b755071e`，Dispatch `ctx_70c076b66d81`。固定原树和分支 `songconmaisaix31-design/release-package-20261014`。普通消费 H/B 已交付的精确 SOURCE `fc294bee3d4a513d90cca6768d74fd4b90088394` 中 `cmd/server/config.go` 与 `relay_judgment.go` 的完整真实配置。
+
+### 首轮提交 7bec269/3c0f5b2 返修
+
+根 `msg_37028cb014d5` 明确五项返修要求，本轮逐项修复：
+
+1. **删除 TypesafeApiKey 明文 CLI 参数**：移除 `TypesafeApiKey` 参数和 `TYPESAFE_API_KEY` 环境变量写入。Jev 进程 secret 由既有可信环境提供，启动脚本不读取/打印/复制 secret。原写入后未在 finally 还原违反边界。
+2. **修复 StrictMode 下 null.Count**：`($layaPaths | Where-Object { $_ -ne '' }).Count` 在默认空参数下返回 null，StrictMode 访问 null 的属性抛异常。改为 `@($layaPaths | Where-Object { $_ -ne '' }).Count` 确保数组强制。真实默认启动（无模型配置）在 PS5.1 和 PS7 均实际通过。
+3. **新代码注释改用中文**：所有新增注释改为中文。
+4. **Build-Windows.ps1 环境变量完整设置**：`$priorGo` 新增 `TEMP`/`TMP`/`npm_config_cache`/`NODE_COMPILE_CACHE`/`ASTROCYTE_TEST_OUTPUT_ROOT`，均指向 Output 独占 D 子目录；完整保存原环境值，try/finally 恢复。`GOCACHE` 共享 `go-build/backend`，`GOTMPDIR` 独占 D，`GOMAXPROCS=2`/`GOFLAGS=-p=1` 保持。
+5. **真实功能验证**：使用既有准确 D 盘 `relay/H/shared-product-ad8413/versions/38fb2891/astrocyte.exe`（runtime SOURCE 38fb，仅用于启动参数兼容检查，不记为最终同源包）和完整 web 复制到独占 D staging 目录。实际启动默认无模型配置，真实 HTTP 200 health、SQLite 创建、进程停止均通过；不完整 S4/S5 组和非法路径在正确位置拒绝。子进程均硬编码 `powershell.exe`（PS5.1），父 Shell 分别为 PS5.1 和 pwsh 7；PS7 列实际为 PS7 父 + PS5.1 子，不计为真实 PS7 子进程验证。严禁假 exe/伪 CLI/mock 或校验脚本直接重复源码字符串作行为通过。
+
+| 测试 | PS5.1 父+子 | PS7 父 + PS5.1 子 |
+|---|---|---|
+| 默认无模型启动/HTTP health/SQLite/停止 | PASS | PASS |
+| 不完整 CodeGraph 组拒绝 | PASS | PASS |
+| 不完整 Laya 组拒绝 | PASS | PASS |
+| 不存在 CodeGraphNode 路径拒绝 | PASS | PASS |
+| 不存在 LayaNode 路径拒绝 | PASS | PASS |
+| Laya 缺少语言拒绝 | PASS | PASS |
+| 再次验证空默认启动 | PASS | PASS |
+
+本轮实际修改文件：`release/Start-Astrocyte.ps1`（删除 TypesafeApiKey、@() 修复、中文注释）、`release/Build-Windows.ps1`（TEMP/TMP/npm_config_cache/NODE_COMPILE_CACHE/ASTROCYTE_TEST_OUTPUT_ROOT 环境设置和还原）、`docs/release/windows.md`（删除 TypesafeApiKey 使用说明）、`docs/release/package-report.md`（本章节）。
+
+| 参数 | 环境变量 | 来源 |
+|---|---|---|
+| `CodeGraphNode` | `ASTROCYTE_CODEGRAPH_NODE` | config.go 官方 Node 24.16.0 绝对路径 |
+| `CodeGraphSDK` | `ASTROCYTE_CODEGRAPH_SDK` | config.go `@colbymchenry/codegraph@1.0.1` 生产目录 |
+| `CodeGraphScript` | `ASTROCYTE_CODEGRAPH_SCRIPT` | config.go 已提交 `codegraph.mjs` |
+| `RepositoryEnvironmentID` | `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID` | config.go 显式环境身份 |
+| `AOCIExecutable` | `ASTROCYTE_AOCI_EXECUTABLE` | config.go AOCI v0.1.0-rc20 |
+| `LayaNode` | `ASTROCYTE_LAYA_NODE` | relay_judgment.go 官方 Node |
+| `LayaWorker` | `ASTROCYTE_LAYA_WORKER` | relay_judgment.go `laya-worker.mjs` |
+| `LayaModelDir` | `ASTROCYTE_LAYA_MODEL_DIR` | relay_judgment.go 衍生资产目录 |
+| `LayaAssets` | `ASTROCYTE_LAYA_ASSETS` | relay_judgment.go `assets.json` descriptor |
+| `LayaSDKEntry` | `ASTROCYTE_LAYA_SDK_ENTRY` | relay_judgment.go laya-ts 生产入口 |
+| `LayaRPCEntry` | `ASTROCYTE_LAYA_RPC_ENTRY` | relay_judgment.go vscode-jsonrpc 入口 |
+| `LayaLanguage` | `ASTROCYTE_LAYA_LANGUAGE` | relay_judgment.go 显式语言 |
+| `LayaStderrDir` | `ASTROCYTE_LAYA_STDERR_DIR` | relay_judgment.go 私有 stderr 目录 |
+| `LayaStartupTimeoutMS` | `ASTROCYTE_LAYA_STARTUP_TIMEOUT_MS` | relay_judgment.go 正整数毫秒预算 |
+| `LayaShutdownTimeoutMS` | `ASTROCYTE_LAYA_SHUTDOWN_TIMEOUT_MS` | relay_judgment.go 正整数毫秒预算 |
+
+验证逻辑：S4 CodeGraph 三参数不完整组直接失败；S5 Laya 所有路径、语言、stderr 目录和生命周期预算不完整组直接失败；所有路径必须为已存在的绝对路径；语言、路径和生命周期预算由显式参数输入，不设未答默认。`LayaStderrDir` 不存在时自动创建。Jev 仅 cloud REST key，由既有进程环境提供，启动脚本不接受。脚本 parser 和实际功能验证在 PS5.1 子进程（`functional-test.ps1` 硬编码 `powershell.exe` 子进程）7 项全部 PASS；PS7 父 Shell 运行同一脚本时子进程仍为 PS5.1，不计为真实 PS7 子进程验证。真实 pwsh 子进程测试仅后续 19882 默认正向和 19883 S4 正向两项。`windows.md` 同步更新使用说明。未修改业务代码、依赖锁、迁移、原生控制器或组件文档。
+
+SOURCE `4106fbf` 已普通 push，远端同 SHA。本 REPORT 随后单独追加提交。实际修改四个文件：`release/Start-Astrocyte.ps1`（删除 TypesafeApiKey、@() StrictMode 修复、中文注释）、`release/Build-Windows.ps1`（TEMP/TMP/npm_config_cache/NODE_COMPILE_CACHE/ASTROCYTE_TEST_OUTPUT_ROOT 完整保存和恢复）、`docs/release/windows.md`（删除 TypesafeApiKey 使用说明，Jev 改为既有进程环境）、`docs/release/package-report.md`（本章节）。D 盘独占 staging `staging-38fb-first` 保留功能测试日志。真实 runtime SOURCE 38fb2891 仅用于启动参数兼容检查，不记为最终同源包。C 盘空余 `9,056,583,680 bytes`（低于 10 GiB 阈值，仅 commit/push 操作）。未执行最终 Build/Verify/archive/Release/tag。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。真实剩余：最终 I 精确 SOURCE 的完整 Build/Verify/archive、完整默认浏览器和原生控制器正向验收、C 盘空余恢复至 10 GiB 以上、tag 和 GitHub Releases 发布。
+
 ## 2026-10-15 固定运行依赖与打包准备
 
 本阶段 Task `task_3347b755071e`，当前恢复 Dispatch `ctx_6cf3f6a0c68f`，固定原树和分支 `songconmaisaix31-design/release-package-20261014`。原派发 `ctx_d20c14245ccd` 已由运行时记录 abandoned / failed，协调者确认无其他写入者。本次接管 HEAD 为 `a4abbab5a0b095822437237c9216e96b0ffd5be8`，保留本报告原有未提交内容及四件未推送提交；当前终端 `term_c5c89219-2808-4a0d-99d1-893b1bbd9981` 的公开状态显示 Orca Codex / `GPT-6.1-Sol xhigh fast`。没有派发下级 Agent。原 P 工具 SOURCE `8e62c7f99b513115a19fc22569e33587bddcc300`、许可消费组合 `2790488346c0e0b9b28051793ed9d5cc318231dd` 及原来源历史保留。
