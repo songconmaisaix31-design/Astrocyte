@@ -2,9 +2,29 @@
 
 ## 2026-10-16 S4/S5/Jev 显式启动参数映射
 
-本阶段 Task `task_3347b755071e`，Dispatch `ctx_7742fddadba8`。固定原树和分支 `songconmaisaix31-design/release-package-20261014`，HEAD `b208ab8`。普通消费 H/B 已交付的精确 SOURCE `fc294bee3d4a513d90cca6768d74fd4b90088394` 中 `cmd/server/config.go` 与 `relay_judgment.go` 的完整真实配置，补齐 `release/Start-Astrocyte.ps1` 的 S4 CodeGraph/Repository 和 S5 Laya 显式启动参数映射。H/B 已交付完整真实配置，最终 I 也已交付，不再按旧文档称缺失。
+本阶段 Task `task_3347b755071e`，Dispatch `ctx_70c076b66d81`。固定原树和分支 `songconmaisaix31-design/release-package-20261014`。普通消费 H/B 已交付的精确 SOURCE `fc294bee3d4a513d90cca6768d74fd4b90088394` 中 `cmd/server/config.go` 与 `relay_judgment.go` 的完整真实配置。
 
-修改 `Start-Astrocyte.ps1` 新增 16 个显式参数，直接映射 `config.go` 的 `resolveRepositoryContextConfig` 和 `relay_judgment.go` 的 `resolveRelayJudgmentConfig`：
+### 首轮提交 7bec269/3c0f5b2 返修
+
+根 `msg_37028cb014d5` 明确五项返修要求，本轮逐项修复：
+
+1. **删除 TypesafeApiKey 明文 CLI 参数**：移除 `TypesafeApiKey` 参数和 `TYPESAFE_API_KEY` 环境变量写入。Jev 进程 secret 由既有可信环境提供，启动脚本不读取/打印/复制 secret。原写入后未在 finally 还原违反边界。
+2. **修复 StrictMode 下 null.Count**：`($layaPaths | Where-Object { $_ -ne '' }).Count` 在默认空参数下返回 null，StrictMode 访问 null 的属性抛异常。改为 `@($layaPaths | Where-Object { $_ -ne '' }).Count` 确保数组强制。真实默认启动（无模型配置）在 PS5.1 和 PS7 均实际通过。
+3. **新代码注释改用中文**：所有新增注释改为中文。
+4. **Build-Windows.ps1 环境变量完整设置**：`$priorGo` 新增 `TEMP`/`TMP`/`npm_config_cache`/`NODE_COMPILE_CACHE`/`ASTROCYTE_TEST_OUTPUT_ROOT`，均指向 Output 独占 D 子目录；完整保存原环境值，try/finally 恢复。`GOCACHE` 共享 `go-build/backend`，`GOTMPDIR` 独占 D，`GOMAXPROCS=2`/`GOFLAGS=-p=1` 保持。
+5. **真实功能验证**：使用既有准确 D 盘 `relay/H/shared-product-ad8413/versions/38fb2891/astrocyte.exe`（runtime SOURCE 38fb，仅用于启动参数兼容检查，不记为最终同源包）和完整 web 复制到独占 D staging 目录。实际启动默认无模型配置，真实 HTTP 200 health、SQLite 创建、进程停止均通过；不完整 S4/S5 组和非法路径在正确位置拒绝；PS5.1 和 PS7 各 7 项实际执行全部 PASS。严禁假 exe/伪 CLI/mock 或校验脚本直接重复源码字符串作行为通过。
+
+| 测试 | PS5.1 | PS7 |
+|---|---|---|
+| 默认无模型启动/HTTP health/SQLite/停止 | PASS | PASS |
+| 不完整 CodeGraph 组拒绝 | PASS | PASS |
+| 不完整 Laya 组拒绝 | PASS | PASS |
+| 不存在 CodeGraphNode 路径拒绝 | PASS | PASS |
+| 不存在 LayaNode 路径拒绝 | PASS | PASS |
+| Laya 缺少语言拒绝 | PASS | PASS |
+| 再次验证空默认启动 | PASS | PASS |
+
+本轮实际修改文件：`release/Start-Astrocyte.ps1`（删除 TypesafeApiKey、@() 修复、中文注释）、`release/Build-Windows.ps1`（TEMP/TMP/npm_config_cache/NODE_COMPILE_CACHE/ASTROCYTE_TEST_OUTPUT_ROOT 环境设置和还原）、`docs/release/windows.md`（删除 TypesafeApiKey 使用说明）、`docs/release/package-report.md`（本章节）。
 
 | 参数 | 环境变量 | 来源 |
 |---|---|---|
@@ -23,11 +43,10 @@
 | `LayaStderrDir` | `ASTROCYTE_LAYA_STDERR_DIR` | relay_judgment.go 私有 stderr 目录 |
 | `LayaStartupTimeoutMS` | `ASTROCYTE_LAYA_STARTUP_TIMEOUT_MS` | relay_judgment.go 正整数毫秒预算 |
 | `LayaShutdownTimeoutMS` | `ASTROCYTE_LAYA_SHUTDOWN_TIMEOUT_MS` | relay_judgment.go 正整数毫秒预算 |
-| `TypesafeApiKey` | `TYPESAFE_API_KEY` | relay_judgment.go Jev 云 REST key |
 
-验证逻辑：S4 CodeGraph 三参数不完整组直接失败；S5 Laya 所有路径、语言、stderr 目录和生命周期预算不完整组直接失败；所有路径必须为已存在的绝对路径；语言、路径和生命周期预算由显式参数输入，不设未答默认。`LayaStderrDir` 不存在时自动创建。Jev 仅 cloud REST key，不分发本地权重。脚本 parser 和 35 项参数声明/验证逻辑检查全部 PASS。`windows.md` 同步更新使用说明。未修改业务代码、依赖锁、迁移、原生控制器或组件文档。
+验证逻辑：S4 CodeGraph 三参数不完整组直接失败；S5 Laya 所有路径、语言、stderr 目录和生命周期预算不完整组直接失败；所有路径必须为已存在的绝对路径；语言、路径和生命周期预算由显式参数输入，不设未答默认。`LayaStderrDir` 不存在时自动创建。Jev 仅 cloud REST key，由既有进程环境提供，启动脚本不接受。脚本 parser 和实际功能验证（PS5.1/PS7 各 7 项）全部 PASS。`windows.md` 同步更新使用说明。未修改业务代码、依赖锁、迁移、原生控制器或组件文档。
 
-SOURCE `7bec269` 已普通 push，远端同 SHA。本 REPORT 随后单独追加提交。实际修改仅 `release/Start-Astrocyte.ps1`（72 行新增参数声明、验证和映射）、`docs/release/windows.md`（24 行 S4/S5/Jev 使用说明）和 `docs/release/package-report.md`（本章节）。C 盘空余 `10,320,355,328 bytes`。未执行最终 Build/Verify/archive/Release/tag。旧 runtime/模型/OS/下载/资产扫描已成功，不重复。真实剩余：最终 I 精确 SOURCE 的完整 Build/Verify/archive、完整默认浏览器和原生控制器正向验收、C 盘空余恢复至 10 GiB 以上、tag 和 GitHub Releases 发布。
+SOURCE 和独立 REPORT 随后普通 push。实际修改仅 `release/Start-Astrocyte.ps1`、`release/Build-Windows.ps1`、`docs/release/windows.md` 和 `docs/release/package-report.md`。C 盘空余保持 10 GiB 守卫。未执行最终 Build/Verify/archive/Release/tag。旧 runtime/模型/OS/下载/资产扫描已成功，不重复。严禁新 Laya 初始化/模型/ASR/OS/采集/Sleep/native/资产扫描下载。真实剩余：最终 I 精确 SOURCE 的完整 Build/Verify/archive、完整默认浏览器和原生控制器正向验收、C 盘空余恢复至 10 GiB 以上、tag 和 GitHub Releases 发布。
 
 ## 2026-10-15 固定运行依赖与打包准备
 

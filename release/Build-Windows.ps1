@@ -31,11 +31,16 @@ if (Test-Path -LiteralPath $output) { throw 'Output directory already exists.' }
 New-Item -ItemType Directory -Path $output | Out-Null
 Start-Transcript -Path (Join-Path $output 'build.log') | Out-Null
 $priorGo = @{}
-foreach ($name in @('GOOS', 'GOARCH', 'CGO_ENABLED', 'GOFLAGS', 'GOMAXPROCS', 'NODE_OPTIONS', 'GOCACHE', 'GOTMPDIR', 'PATH')) { $priorGo[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
+foreach ($name in @('GOOS', 'GOARCH', 'CGO_ENABLED', 'GOFLAGS', 'GOMAXPROCS', 'NODE_OPTIONS', 'GOCACHE', 'GOTMPDIR', 'TEMP', 'TMP', 'npm_config_cache', 'NODE_COMPILE_CACHE', 'ASTROCYTE_TEST_OUTPUT_ROOT', 'PATH')) { $priorGo[$name] = [Environment]::GetEnvironmentVariable($name, 'Process') }
 try {
     $env:GOCACHE = 'D:\Astrocyte-agent-assets\20261015\go-build\backend'
     $env:GOTMPDIR = 'D:\Astrocyte-agent-assets\20261015\go-temp\release-package'
-    New-Item -ItemType Directory -Force -Path $env:GOTMPDIR | Out-Null
+    $env:TEMP = Join-Path $output 'temp'
+    $env:TMP = $env:TEMP
+    $env:npm_config_cache = Join-Path $output 'npm-cache'
+    $env:NODE_COMPILE_CACHE = Join-Path $output 'node-compile-cache'
+    $env:ASTROCYTE_TEST_OUTPUT_ROOT = Join-Path $output 'test-output'
+    foreach ($dir in @($env:GOTMPDIR, $env:TEMP, $env:npm_config_cache, $env:NODE_COMPILE_CACHE)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
     $env:PATH = (Join-Path $Runtime 'runtime\node') + ';' + $env:PATH
     Push-Location $repo
     try {

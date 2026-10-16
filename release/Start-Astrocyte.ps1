@@ -14,13 +14,13 @@
     [string]$RelaySessionSource = 'archive',
     [ValidateRange(1, 86400)]
     [Nullable[int]]$RelayLiveSeconds = $null,
-    # S4 CodeGraph/Repository context — all three must be supplied together, or none.
+    # S4 CodeGraph/Repository 上下文 — 三个路径必须同时提供，或都不提供。
     [string]$CodeGraphNode = '',
     [string]$CodeGraphSDK = '',
     [string]$CodeGraphScript = '',
     [string]$RepositoryEnvironmentID = '',
     [string]$AOCIExecutable = '',
-    # S5 Laya judgment — all required together when any is supplied.
+    # S5 Laya 判断 — 提供任一时必须同时提供全部。
     [string]$LayaNode = '',
     [string]$LayaWorker = '',
     [string]$LayaModelDir = '',
@@ -30,9 +30,7 @@
     [string]$LayaLanguage = '',
     [string]$LayaStderrDir = '',
     [Nullable[int]]$LayaStartupTimeoutMS = $null,
-    [Nullable[int]]$LayaShutdownTimeoutMS = $null,
-    # Jev cloud REST — only the key, no local model.
-    [string]$TypesafeApiKey = ''
+    [Nullable[int]]$LayaShutdownTimeoutMS = $null
 )
 
 $ErrorActionPreference = 'Stop'
@@ -44,7 +42,7 @@ if (-not (Test-Path -LiteralPath $binary -PathType Leaf) -or -not (Test-Path -Li
 }
 if ([Environment]::OSVersion.Platform -ne 'Win32NT' -or -not [Environment]::Is64BitOperatingSystem) { throw 'Windows x64 required.' }
 if (($SummarizeCli -eq '') -ne ($NodeExecutable -eq '')) { throw 'SummarizeCli and NodeExecutable must be supplied together.' }
-# S4 CodeGraph/Repository — incomplete group fails immediately.
+# S4 CodeGraph/Repository — 不完整组直接失败。
 $codeGraphAny = $CodeGraphNode -ne '' -or $CodeGraphSDK -ne '' -or $CodeGraphScript -ne ''
 if ($codeGraphAny -and ($CodeGraphNode -eq '' -or $CodeGraphSDK -eq '' -or $CodeGraphScript -eq '')) { throw 'CodeGraphNode, CodeGraphSDK and CodeGraphScript must be supplied together.' }
 if ($codeGraphAny) {
@@ -57,9 +55,9 @@ if ($codeGraphAny) {
 if ($AOCIExecutable -ne '') {
     if (-not [IO.Path]::IsPathRooted($AOCIExecutable) -or -not (Test-Path -LiteralPath $AOCIExecutable -PathType Leaf)) { throw 'AOCIExecutable must be an existing absolute file.' }
 }
-# S5 Laya — all paths, language, stderr directory and lifecycle budgets are required together.
+# S5 Laya — 所有路径、语言、私有 stderr 目录和生命周期预算必须同时提供。
 $layaPaths = @($LayaNode, $LayaWorker, $LayaModelDir, $LayaAssets, $LayaSDKEntry, $LayaRPCEntry, $LayaStderrDir)
-$layaAny = ($layaPaths | Where-Object { $_ -ne '' }).Count -gt 0 -or $LayaLanguage -ne '' -or $null -ne $LayaStartupTimeoutMS -or $null -ne $LayaShutdownTimeoutMS
+$layaAny = @($layaPaths | Where-Object { $_ -ne '' }).Count -gt 0 -or $LayaLanguage -ne '' -or $null -ne $LayaStartupTimeoutMS -or $null -ne $LayaShutdownTimeoutMS
 if ($layaAny) {
     foreach ($value in $layaPaths) { if ($value -eq '') { throw 'Laya requires all explicit runtime paths, language, private stderr directory and lifecycle budgets.' } }
     if ($LayaLanguage -eq '') { throw 'Laya requires an explicit language.' }
@@ -108,7 +106,7 @@ try {
             [Environment]::SetEnvironmentVariable($name, $path, 'Process')
         }
     }
-    # S4 CodeGraph/Repository context — explicit absolute paths, no defaults.
+    # S4 CodeGraph/Repository 上下文 — 显式绝对路径，不设默认值。
     if ($codeGraphAny) {
         $env:ASTROCYTE_CODEGRAPH_NODE = $CodeGraphNode
         $env:ASTROCYTE_CODEGRAPH_SDK = $CodeGraphSDK
@@ -116,7 +114,7 @@ try {
     }
     if ($RepositoryEnvironmentID -ne '') { $env:ASTROCYTE_REPOSITORY_ENVIRONMENT_ID = $RepositoryEnvironmentID }
     if ($AOCIExecutable -ne '') { $env:ASTROCYTE_AOCI_EXECUTABLE = $AOCIExecutable }
-    # S5 Laya judgment — all paths, language, stderr and lifecycle budgets required together.
+    # S5 Laya 判断 — 所有路径、语言、stderr 和生命周期预算必须同时提供。
     if ($layaAny) {
         $env:ASTROCYTE_LAYA_NODE = $LayaNode
         $env:ASTROCYTE_LAYA_WORKER = $LayaWorker
@@ -129,8 +127,6 @@ try {
         $env:ASTROCYTE_LAYA_STARTUP_TIMEOUT_MS = [string]$LayaStartupTimeoutMS
         $env:ASTROCYTE_LAYA_SHUTDOWN_TIMEOUT_MS = [string]$LayaShutdownTimeoutMS
     }
-    # Jev cloud REST — only the key, no local model weights.
-    if ($TypesafeApiKey -ne '') { $env:TYPESAFE_API_KEY = $TypesafeApiKey }
     New-Item -ItemType Directory -Path $env:LOCALAPPDATA -Force | Out-Null
     Write-Host ('Astrocyte: http://127.0.0.1:' + $Port)
     Write-Host ('SQLite: ' + (Join-Path $env:ASTROCYTE_DATA_DIR 'state.sqlite'))

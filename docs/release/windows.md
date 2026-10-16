@@ -24,13 +24,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -L
 
 `LayaNode` 为官方 Node 24.16.0，`LayaWorker` 为已提交的 `laya-worker.mjs`，`LayaModelDir` 为 `english` 或 `multilingual` 衍生资产目录，`LayaAssets` 为该目录的 `assets.json` descriptor。`LayaSDKEntry` 和 `LayaRPCEntry` 分别为生产 SDK 和 RPC 入口。`LayaLanguage` 为显式语言（如 `en`、`zh`），`LayaStderrDir` 为私有 stderr 日志的绝对目录（不存在时自动创建）。`LayaStartupTimeoutMS` 和 `LayaShutdownTimeoutMS` 为显式正整数毫秒预算。所有路径必须为绝对路径且存在；不完整组直接失败。Laya 配置使用 `NODE_OPTIONS=--max-old-space-size=512`。
 
-启用 Jev 云 REST 判断（仅 key，不分发本地权重）：
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -TypesafeApiKey 'explicit-process-secret'
-```
-
-`TypesafeApiKey` 为官方 `jev-1.13.0` 云 REST 的进程 secret；缺少 key 时真实 API 验证保持 NOT_RUN。包不包含 Jev 本地模型权重或凭据。
+Jev 仅为官方 `jev-1.13.0` 云 REST 模型，启动脚本不接受其 key 作为 CLI 参数；进程 secret 由既有可信环境提供。缺少 key 时真实 API 验证保持 NOT_RUN。包不包含 Jev 本地模型权重或凭据。
 
 默认数据目录在解压目录的 `data`。SQLite 与对象位于 `data/local/astrocyte-workbench/v0.2-access/app-state`；Relay 注册与本地工作目录在同层 `v0.2-access`。保留整个数据目录，沿用相同 `-DataDir` 重启可继续读取。升级前停止应用并备份整个数据目录，新包解压到另一目录后明确指定原数据目录。不要将正式实验库或认知快照目录作为应用数据目录。
 
