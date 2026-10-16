@@ -6,6 +6,10 @@
 
 根已在本轮正式阻塞答复中核本机Claude Code `2.1.238`与已登录状态，允许先沿原B Task / 工作树 / 分支 / 写域和现有WIP使用 `worker-start --agent claude`，重试最近已结算失败Dispatch；实际就绪和任务开始核实后，再按同样条件依次恢复原F、UI。保持原两个Run，不创建替代Task或第四层，不再重复Codex相同bootstrap失败，不修改全局账号、网络或Agent配置。客户端及实际模型从运行状态核实，默认配置不作为已核模型。本次只调整开发客户端，原产品Codex控制器验收、未答业务选择、未知不重发和原生 / ASR / OS边界保持。模块继续只写本文件，根继续唯一集成写入。
 
+该恢复计划 SOURCE `097f140` 已普通push。B `ctx_547c33103d3f / term_b020982d-82f7-4186-8b71-4735274dec02`、F `ctx_44f61b51d023 / term_7b1918e7-b09e-4009-90e4-beae804a77e8`、UI `ctx_5d4bbae2a28d / term_eb9bed61-6cde-4855-9d95-d9e82a1eaaff` 已依次在原Task和原树实际启动，三个回执均为ready / turn_started observed；公开状态和终端文本核Claude / live / working及实际仓库读取。provider.model当前为空，已要求本人从实际运行状态报告，不将请求参数当实际模型。三人分别收到 `msg_27c47c2a87e4`、`msg_fac56688271f`、`msg_3512535ed65a` 的当前精确责任，旧Task广域与旧客户端文字不扩大现行写域；B的session.go、F的共享客户端及非delegation Attention、UI原delegation及S2/S3/S4页面保持互斥。当前准确身份已交根与原生模块，实际SOURCE / REPORT及本轮功能检查仍待交付。
+
+此前按根要求只读核公开worktree / project setups / repo / terminal与agent-context：B/F/UI、成功H和本模块属于同一项目、local主机和ready的同一setup；成功H与失败启动均为原树默认Agent选项。原B/F/UI树没有可复用空闲终端，agent-context只提供命令registry，公开信息未能解释Codex路由超时。调查结果 `msg_35ef8bf3d4a1` 已交根，没有读取内部DB、凭据、原生程序实现或修改设置；原Codex首失败记录完整保留。
+
 当前模块为原 Task `task_b0197ca7ebdf` / Dispatch `ctx_676d773e9f23` / 终端 `term_898becd9-05d7-464c-91b6-02d1cae8b19b`，总负责人为 `term_a1e70e66-3957-415d-b42c-673f2cc94c26`。根绝对路径 `HANDOFF.md` / `STATUS.md` 的11:38入口与消息 `msg_5aed5926dccd` 替代原任务的旧身份及新建 Run 指令；继续原 `run_7b2ce96bcd13` 和 `run_dbf1a68bc692`，不增加人员层级。本树准确基线 `c019bdb216c39abd5dc6d812f1bc34ec2ff81f0e`，原05:02十二行管理 WIP完整保留。
 
 本模块实际读取本机 `LastBootUpTime=2026-10-16T03:26:45.5000000Z`。原 B / F / UI 的公开 Dispatch 均明确为 local，创建于重启前，当前公开 observation 为 missing，原三个工作树 terminal list 均为空。以实际主机重启和原 Dispatch 本机归属确认旧进程已经结束，再精确 abandon / retry 原 Task；不从 missing_status 单独推断退出，不释放或终止其他终端。
