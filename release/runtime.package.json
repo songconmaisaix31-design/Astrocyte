@@ -1,0 +1,11 @@
+{
+  "name": "astrocyte-release-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@colbymchenry/codegraph": "file:../packages/colbymchenry-codegraph-1.0.1.tgz",
+    "laya-ts": "file:../packages/laya-ts-0.1.0.tgz",
+    "onnxruntime-node": "1.30.0",
+    "vscode-jsonrpc": "8.2.1"
+  }
+}

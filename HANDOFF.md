@@ -1,8 +1,14 @@
 # Astrocyte 主控交接
 
-## 当前入口：四树集成与组合验证（2026-10-15）
+## 当前入口：根直接集成（2026-10-16）
 
-本工作树为 `works-relay-integration`，分支 `songconmaisaix31-design/works-relay-integration`，本轮 clean 起点 `0e5ce82898c3d546f711d1e452dadfabb13b5537`。唯一 I 使用 Orca Codex / gpt-6.1-sol，Task `task_2ee44933df72`、Dispatch `ctx_b573b61bb4aa`；按 M-release 核实的准确阶段来源普通合并，领域冲突由原负责人在精确互斥路径处理，全部归还后由 I 继续合并。当前合并和验收结果见 [集成报告](docs/access/integration.md)。
+本工作树为 `works-relay-integration`，分支 `songconmaisaix31-design/works-relay-integration`。用户已明确“继续集成，集成交给你了”，根为本树唯一集成写入者；原 I 启动失败保持真实记录，不继续启动其他 I。根执行普通合并、必要衔接、检查、构建和提交；领域业务与返修仍归原作者。三个模块继续原 Run、Task、工作树和互斥范围，当前运行身份与用户决定以总控工作树 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md`、`docs/QUESTIONS.md` 为准。当前实际合并与验证见 [集成报告](docs/access/integration.md)。
+
+已从准确 `38fb289160ef85f75062f917e861488b95e2a309` 普通消费 T 完成来源主入口检查、H 运行恢复报告和 B 显式媒体路径错误修复；真实生产缺失来源 HTTP / SQLite / 重启检查、三项媒体配置检查和七项无效配置子项通过，准确来源和原件见报告。H 的共享服务继续使用38fb稳定副本、原 D 盘 SQLite，地址 `http://127.0.0.1:64505/`；F 为唯一共享业务操作者，已成功或未知动作不重复提交。完整适用检查、默认浏览器、受限 Native / L1 / L2 和最终包仍未完成。
+
+本次普通消费 P 准备 REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a`，管理冲突由根按当前决定处理。P 的运行组件准备已有实际通过记录，不重复下载、清理模型元数据或模型推理；最终包必须使用最终准确源码。发布启动 S4 / S5 显式配置由原 P 完成，C 盘10GiB空间守卫保持，Q 仅消费准确已提交来源及原公开快照。
+
+Native 原文件和命令工具关闭要求、语言、Agent completion、S3 调用预算与权限覆盖、AOCI 分发及具体候选批准等未答项保持当前总控 QUESTIONS。普通集成和开发客户端恢复不构成新的原生验证授权；不新增 Native 初始化、模型验收、ASR、OS / UAC 或正式 V4 重放。既有 Agent 同项目缓存进度 GET 修复按已确认范围由原 B 完成。
 
 当前顺序为四树收拢与组合验证、集成版 L1 真实验收、L2 经验管道、六步工程首跑，目标日期 2026-10-22。六步涵盖真实结果与完成通道保存、轨迹和产物追溯、Interpreter 起草 quarantine 候选、用户批准、下一任务通过 `get_experiences` 消费、后续结果与实际复用核查。人工批准由用户执行，工程闭环与独立效果实验分别验收。
 
@@ -35,7 +41,14 @@
 
 当时前端分支由唯一人员普通消费 Astrocyte 整改与 Workbench / Works Relay 交付，准备合并产品和 release 包。正式 V4 运行树与日程继续保持原约束；当时实际组合、原生链路及发布包尚未最终验收。
 
+### 发布包准备历史（2026-10-14）
+
+P 曾普通消费 Q 可分发认知快照 SOURCE `8001a76646f5892bc18d8ccb9e5cd065b51425a6` 及其 Workbench / Works Relay 前端父历史，准备 Windows x64 包，工具阶段 SOURCE 为 `d0fb7ff0bb1e791583cc405f098eb684affce35e`。各准确候选范围和后继准备结果保留在 [发布报告](docs/release/package-report.md)。
+
 ## 历史：validation 接管与验收记录
+
+2026-10-14 19:59：网络中断前的 [新标准整改](tasks/AGENTS-standard-integration.md) 曾由原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 沿 `ctx_5a0a4d492434` 继续；新增 B `ctx_e0356fbca4e1` 已 failed 结算并 released，双方修改完整保留。F 当时沿 `ctx_a69aaadfe5b6` 在原工作树继续。该时点主控终端 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f` / Run generation 3 属于历史身份，接管时核实实际 Agent、终端与目录。Python REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71` 已核对远端且适用独立验证 PASS，旧终端释放状态当时 unknown；后续业务由各原 owner 完成与唯一 I 普通合并，正式运行树不接入整改源码。
+
 2026-10-14：用户要求按当前 [AGENTS.md](AGENTS.md) 整合仓库，执行登记见 [整合任务](tasks/AGENTS-standard-integration.md)。先读 STATUS 当前入口，再到 Workbench 对应工作树核实新交付。validation 继续承担 V4 与文档，Workbench 承担接入开发；正式数据、锁定协议、实验日程及原 owner 写入范围保留已确认边界。
 
 Works Relay v1.2 工程 SOURCE `5dd4b729c2b96d8538f0b5f91ed8fc2678fbf91b` 已普通集成，CI 38469944551 双平台 success；L1 运行时 SOURCE `62c7d99f1d6b180ef19f90a2112e801702d9fffb` 已交付，采集 / HTTP / Today 组合及真实 CLI 闭环尚未最终验收。Workbench v0.1 已部署，Procmon 与两日自动快照仍 NOT_RUN。当时的正式 validation 工作树未包含这些 Workbench 业务提交，其测试不代表 Workbench 验收。

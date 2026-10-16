@@ -24,6 +24,8 @@
 
 共享 Handoff 已处理：开发与 S1 验证的输出目录由 B 改为本树 `.verification/`，失败原件保留；真实服务需要显式限定资料发现根，由 B 在既有配置与组装范围实现并提供早期 SOURCE 给 F。B 已确认 HTML 和 JavaScript 自写 parser；必要的成熟 parser 依赖三文件交 B 单独持有，其余轨道不得修改。用户既有模型调用与获准项目推断授权继续有效：本轮独立技术验证只可使用当前工作树已跟踪资料或明确公开输入，官方 CLI 自行鉴权，不直接读取凭据或私人会话，不启动正式 V4 runner。
 
+当前规则已更新至 `bc5c6aa04e6c92e98091732903328d20a5ac6788`：真实 Codex 验证对象进一步限定为 Agent 创建的公开 Git 项目，原生文件和命令工具关闭，必须使用真实控制器、SQLite / HTTP 及自产会话文件，每个 event_id 逐条定位；全部轨道已收到重读要求。显式目录发现的真实结果被原 OpenAPI source 枚举拒绝，B 追加独占 `contracts/openapi.yaml` 及相关 examples，仅登记真实 `explicit_directory` 来源类型；F 消费该精确契约后在自身写入范围生成 `web/src/api/schema.d.ts`。不修改认知 Event 六字段、数据库 schema、引擎或权重。
+
 P 的非冻结 Git 输出路径保护仍解析 porcelain。该问题继续由原 P 返修：使用成熟 pygit2 仓库 / worktree API，保留所有关联工作树的输出排除，不以仅检查 `.git` 标记缩减布局覆盖。Python 依赖文件只归 P；`dependencies.lock.json` 登记仍只归 B，双方 Handoff。P 已有 SOURCE `55ca989` / REPORT `c592b6a` 保留，下一次源码和报告追加提交。
 
 Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3ad1dddf079e`。三轨工作树均从 `4ec19cddb24068e09597357b0aabc6ecb9420930` 建立，位于 `C:/Users/DW/orca/workspaces/Astrocyte/`；Git 分支分别为 `standards-backend`、`standards-python`、`standards-frontend`。三次回执均 ready / input_accepted / turnStart observed，没有重复派发。
@@ -44,5 +46,13 @@ Orca Run `run_7b2ce96bcd13`，主控自有终端 `term_66b7a627-900a-4604-93e4-3
 4. 最终报告只记录完成内容、分支 / SHA、验证结果、真实限制和未执行操作。
 
 ## 当前状态
+
+2026-10-14 网络中断恢复：继续原 Run `run_7b2ce96bcd13`，主控自己的终端经当前屏幕命令及执行进程身份核实为 `term_c26f9d91-dde4-49ea-a94c-4d472b19929f`，Run 已绑定 generation 3。运行时将 B / F 原 Dispatch 登记为 abandoned / failed、Task 恢复为 ready；后续核查确认原 B 在 `term_1a398364-d5de-42cc-a63c-6fe34c4bc749` 继续运行，其 Orca 工作树元数据为根目录，实际执行目录为 standards-backend。新增 B 已 accepted worker_done failed，并 release / closed_agent_terminal；双方修改完整保留。原 B 同 Task 新 Dispatch `ctx_5a0a4d492434` 继续唯一写入，注入首次停在输入框而 turn_start_unobserved，主控确认输入框后仅补按 Enter，原 B 已实际收到新 preamble 并开始执行。F 在原工作树继续独立开发。两轨完成后，由唯一集成人员普通合并精确 SOURCE / REPORT，执行组合检查并推送独立整改分支。
+
+恢复回执：F Dispatch `ctx_a69aaadfe5b6` / 终端 `term_54201688-6be7-42d0-a42a-15e6ea3b6631`，ready / input_accepted / turnStart observed。新增 B `ctx_e0356fbca4e1` / 终端 `term_37307630-9a25-480e-b6d4-2bc830dbc3d1` 同样实际启动，发现原 B 持续写入后停止修改；其新增 native 格式校验及错误传播仍保留在原工作树，原 B 后续统一审阅，Go 整包首次 RED、Node 12 PASS、events / cmd/validation PASS 和公共来源网络失败证据均保留。P 已结算，但旧终端清理为 `release_unknown`；按回执检查并重试后仍无法证明旧进程状态，未使用批量终端关闭。
+
+P 已完成返修：SOURCE `a1089f94a13306e3cd250ed8facbb438d6e75a19` / REPORT `91e3e59dcfc8024cd2e4955ac72f627e65c18e71`。原 `worker_done` 已被编排接受；报告记载本次 29 项证据测试与 25 项安全测试 PASS、36 文件规范检查及 14 冻结 AST 全等。主控将核对远端、修改路径与适用独立验证，不将该子集计作完整实验验收。Mission 扩展决定仍未收到；V4 / Discovery & Split 冻结、正式数据和日程继续按既有边界处理。
+
+主控已独立核对 P REPORT 远端一致及修改路径在原授权范围；重新执行 `python -m unittest discover -s tests/validation/evidence -v`，29 PASS（16.906 秒），`python tests/validation/experiment/run_safe_tests.py`，25 PASS（0.301 秒），`python tests/validation/experiment/check_python.py 4ec19cddb24068e09597357b0aabc6ecb9420930`，36 文件 / 14 冻结 AST PASS。后续只因新修改、失败或组合疑点追加检查；原完整实验 28 项及真实模型路径仍 NOT_RUN。F 已回执实际终端模型 GPT-6.1-Sol high fast，继续消费 B 精确契约与真实服务，原浏览器首次失败证据保留。
 
 已读取当前交接 / 状态 / 规格 / 规划、原 Workbench 计划及 Orca 编排记录。已核实原 R/H/F/I 轨道存在；本轮未接管或变更其生命周期。规则与入口阶段提交 `4ec19cd` 已 push，链接和 diff 检查 PASS；三条整改轨道已接受任务，源码与组合验收尚未完成。中间结果仅放在各自工作树 `.verification/`；正式原件不读取、不复制、不输出。
