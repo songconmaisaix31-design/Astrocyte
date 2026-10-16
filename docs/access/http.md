@@ -1,8 +1,34 @@
 # Works Relay HTTP 与 L1 会话采集
 
-## 2026-10-17 当前同库产品与媒体配置
+## 2026-10-17 当前运行与经验 Interpreter 装配
 
-当前实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，PID25568，启动 UTC `2026-10-16T16:06:57.3298644Z`，地址为 `http://127.0.0.1:64505`。根已完成该准确组合的完整 build、全 web lint 和真实 S5 主链 / 卸载取消两尺寸4 PASS / 2.0分钟，全部实际 EXIT0；原件在 `integration/root-taste-172bb44/`。H 直接消费这些结果，核对稳定副本与运行程序的 Go buildinfo、实际进程路径和启动身份。64505 只有一个属于该 PID 的 loopback listener，health 返回 `ok`，首页 HTTP200 / 562bytes；全部30个静态文件的实际 HTTP 响应均为200，字节逐项与稳定副本相等。
+当前服务实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，PID44080，启动 UTC `2026-10-16T18:20:54.4306224Z`，地址为 `http://127.0.0.1:64505/`。原 H 保持同一 Task `task_3004b636a3ab`、当前 Dispatch `ctx_ad637376ba1d`、原工作树和分支；本轮实际客户端为 Orca Codex / `gpt-6.1-sol` / xhigh。普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 使用 `pwsh -NoProfile -NoExit` 持有原恢复脚本启动的 Hidden 产品进程，恢复完成后已回到普通 PowerShell 提示符。模块与根分别独立核查准确程序、启动时间、唯一 owned loopback listener、health ok 及首页 HTTP200 / 562bytes；当前没有停止开发人员或服务来验证生命周期。
+
+本轮在实际确认旧 PID44832 不存在且64505没有监听后，只恢复一次原稳定 `versions/172bb445`，没有重建。原 SQLite、LOCALAPPDATA、媒体12项及 Q `snapshot-1711995690` 保持；真实 readOnly / query_only 启动前后68表共90行逐表相同，原生会话与绑定均为0。前次44832在 UTC `2026-10-16T18:17:06.9217586Z` 恢复时的 ready 及随后实际退出分别保留；前次外层工具会话89264的退出码仍为 UNKNOWN。本次普通服务终端保持运行，没有将其记录为已退出的命令 EXIT0。本机 `shared-product-ad8413/running.json` 已指向当前44080，准确原件为同目录的 `launch-sol-reboot-20261017-20261016-182054.json`、`recovery-sol-reboot-20261017-20261016-182054.json` 及其引用的前后计数与私有日志。原恢复命令与参数见 H 已忽略的 `dist/product-recovery-20261016/restore-38fb.ps1` 和 `checkpoint-reboot-20261017.md`。
+
+经验装配 SOURCE 为 `6b334ea62e4cdc359a962ce43586f47089c613d3`，分支 `songconmaisaix31-design/works-relay-http`，仅修改 `cmd/server/main.go`、`relay_completion_experience.go` 及同前缀实际装配测试。本轮先核原树干净及 `1e25c296ef5b3a7e0a5e3a3b3bb7567e77a926c1` 为祖先，普通 `--ff-only` 消费准确集成 `42860d277df0c0518f58e2a836681d7fa10c50ee`，随后普通消费 B SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` / REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26`。B 的两件实际 SQLite 文件保持原交付；其准确接口、真实9子项及 vet / build 原件已只读核查，没有重复其成功检查。
+
+主入口在现有 Swarm 存在而 Relay 关闭时也连接经验来源。共享 reader 先核当前 human 与真实项目，再在事务外定位实际 Relay `Completion.ID` 和 B `HasAcceptedArtifactCompletion` 的固定 outbox 命名空间；均无返回404，双命中拒绝，定位或完整读取的任何错误立即返回。发布候选时只按已固定的 `SourceKind` 交对应原来源授权，要求同一主数据库事务；此时不重新读取 Relay、对象或原档。原应用服务在事务前完整重读来源、事务内核当前授权的顺序保持。
+
+原 Capture 服务外层只从实际认证请求保存当前 Principal 到私有 context。原 Interpreter 回调从同一请求读取身份，缺少身份立即拒绝；历史 ActorID 保持来源事实。配置齐备时，生产组装使用原 Registry、原 `NewCompletionExperienceInterpreter`、固定公开上下文 reader 和来源保护。ReadContext 重新读取固定完成来源、当前项目模型许可及公开文件版本；首次输入前再次核原 operation、项目、全部 settings、固定文件与资料，并执行同一来源和工具关闭检查。Relay 关闭时，来源保护由同一个原 Registry 构造，不创建控制器。
+
+deadline 继续使用明确的 `ASTROCYTE_RELAY_SESSION_DEADLINE_SECONDS=1..1800`，固定公开上下文继续要求原 `ASTROCYTE_RELAY_PUBLIC_GIT_ROOT`、`ASTROCYTE_RELAY_PUBLIC_GIT_COMMIT` 和 `ASTROCYTE_RELAY_PUBLIC_CONTEXT_FILES` 三项实际配置。deadline 和固定 reader 都未配置时，原 Interpreter 保持不可用，原服务返回 `provider_unavailable`，不会为此创建 prepared 解释收据；只配置其中一项立即失败。没有推断默认 deadline，也没有用 CLI 版本补造 ModelVersion，独立模型版本仍为 unknown。当前稳定172没有这些新配置，也未部署本次经验源码。
+
+| 实际命令 / 检查 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./cmd/server -run '^$' -count=1 -timeout=60s` | 新 Interpreter 接缝首轮编译 EXIT0；未运行业务或原生会话 |
+| `go test -mod=readonly -p=1 ./cmd/server -run '^TestRelayCompletionExperienceActualAssemblyAndRequestBoundaries$' -count=1 -v -timeout=120s` | 最终1 PASS / 0 Skip，0.38秒，package 1.375秒，EXIT0；真实 SQLite、公开 Git、原 Registry、Relay / Swarm 与独立 Swarm 配置、实际 HTTP / human session / CSRF、缺来源404、当前身份 / 项目 / 事务边界拒绝均实施；没有经验、完成来源、解释操作收据或原生会话 |
+| `go vet -mod=readonly -p=1 ./cmd/server` | EXIT0 |
+| `go build -mod=readonly -p=1 -o <H 独占检查目录>/completion-assembly-server.exe ./cmd/server` | EXIT0；仅构建，未启动或部署该产物 |
+| 三件 Go 文件 `gofmt -l`、`git diff --check` | 无输出，EXIT0 |
+
+全部本轮检查原件位于 H 本机 `process-20261016/verification/`：`completion-assembly-compile-first.log`、`completion-assembly-actual-first.log`、`completion-assembly-combined-first.log`、`completion-assembly-final.log`、`completion-assembly-vet-first.log`、`completion-assembly-build-first.log`。首轮只有 Relay 接缝时实际用例0.40秒 / package1.677秒；共享来源补齐后0.37秒 / package1.267秒；增加拒绝请求不得创建解释收据的独立 SQL 检查后为表中最终结果。TEMP / TMP / GOTMPDIR、Go / Node 缓存与输出均使用原 H 独占 D 目录，GOMAXPROCS=2、Go `-p=1`、Node 内存512 MiB；没有修改全局环境、凭据或其他人员目录。
+
+本阶段没有真实采用事件或 Relay 完成来源，正向来源读取、双命中现场、来源差异及实际在途撤权、合法完成来源对应的上下文与首次输入、真实 Interpreter 模型生成及经验发布仍为 NOT_RUN。装配通过与真实模型正向分别记录。原生登记、初始化、Probe、模型、ASR、工具 / OS 检查均未新增；session-events 精确六字段保持，原 nlink2 FAIL、ArchiveAppendOnly / PrefixComplete unknown、SessionComplete=false 及 raw 恢复 gap 保持各自实际结果。原 H 继续持有服务与发布支持，完整默认 / check、L1 / L2 和最终 Windows 包尚未完成。
+
+## 2026-10-17 重启前同库产品与媒体配置
+
+重启前实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，PID25568，启动 UTC `2026-10-16T16:06:57.3298644Z`，地址为 `http://127.0.0.1:64505`。根已完成该准确组合的完整 build、全 web lint 和真实 S5 主链 / 卸载取消两尺寸4 PASS / 2.0分钟，全部实际 EXIT0；原件在 `integration/root-taste-172bb44/`。H 直接消费这些结果，核对稳定副本与运行程序的 Go buildinfo、实际进程路径和启动身份。当时64505只有一个属于该 PID 的 loopback listener，health 返回 `ok`，首页 HTTP200 / 562bytes；全部30个静态文件的实际 HTTP 响应均为200，字节逐项与稳定副本相等。
 
 本轮 Task `task_3004b636a3ab` / Dispatch `ctx_d763540bd366` 保持原 H 树和写入范围，报告基线为 `d5427c705903e9bb69f1f257706f490e1784eea9`。根 `msg_6f521e86c1b9` 提供准确产物复制窗口；复制时原集成 HEAD 为172且 clean。H 将 binary 和全部30个 web 文件复制到自身稳定 `versions/172bb445`，核对程序 buildinfo / 大小，以及全部静态文件的大小、字节与总数。H 已停止读取原集成产物，通过 `msg_00a5456a5607` 归还根读取窗口。
 
