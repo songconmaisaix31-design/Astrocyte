@@ -2,7 +2,23 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前恢复分工（2026-10-16 04:45）
+## 当前恢复分工（2026-10-16 11:45）
+
+根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 11:38 入口、当前 `STATUS.md` / `QUESTIONS.md` 与正式消息 `msg_ca0d05e1c4b4` 为本次恢复依据。总负责人为 `term_a1e70e66-3957-415d-b42c-673f2cc94c26`，顶层 Run 保持 `run_973808dd6a2f`；本模块为 `task_e8c1d01d67ec / ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`。模块已普通绑定原子 Run `run_8bbda1c3974c` generation 9，没有创建新 Run，保持原 Task、工作树、分支和全部 WIP。
+
+本机实际 `LastBootUpTime=2026-10-16T11:26:45.5+08:00`；旧 H Dispatch 创建于 UTC `2026-10-15 20:06:28`，早于本次重启，原工作树终端清单为空。模块据实际重启事实精确 abandon `ctx_5b3dc511cccd`，保留旧资源和首 `turn_start_unobserved`；没有从 `missing_status` 单独判定退出。R / S4 的原 Run 另有明确进程退出记录，两者退出码均为 `1073807364`；原已交阶段与剩余待答边界分别保留。
+
+| 原人员 / Task | 当前状态 | 当前工作与验收 |
+|---|---|---|
+| H `task_3004b636a3ab` | `ctx_d763540bd366 / term_c260106e-0d16-498e-aa19-6927247ba978`；原树 `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4` clean；原 Task retry 的 `worker-start` EXIT0、ready / turnStart observed，回执含 `turn_started`，终端实际 Codex Working | 优先使用同一 D 盘 SQLite、LOCALAPPDATA、完整媒体白名单和 Q 原 generation，恢复唯一 `http://127.0.0.1:64505/`。交实际 URL、PID、启动时间、buildinfo、唯一 listener、health / 首页和原数据保持的安全记录；随后继续准确产品装配与发布支持 |
+| R `task_f082d8b36471` | 旧 `ctx_1500d65ab213` 已明确进程退出；原 ce541794 / 4f7a041 阶段保持 | 已确认的控制器拒绝检查保留；原生工具边界未答，不重做调查、登记、初始化或模型输入。有实际领域返修依赖时恢复原 Task / 树 / 分支 |
+| S4 `task_bd209566be37` | 旧 `ctx_c8f2f955ef28` 已明确进程退出；原生产脚本 / b73 实际撤权清理 PASS 保留 | 不重复已通过的生产复验；SemanticIndex、AOCI 分发等未决定范围保持，不预先冻结或替换组件 |
+
+唯一 I 准确 `38fb289160ef85f75062f917e861488b95e2a309` 已完整 build EXIT0 / 74.0037711 秒，根已核 `source_after` 同值；H 与发布负责人交接准确运行产物，不重复成功构建。原 PID45132 已不存在、64505 恢复前不可访问，旧 `running.json` 只作历史定位。当前启动尚未通过，不能沿用05:02的可访问结论。
+
+F / UI 仍为共享实例唯一业务操作人员，成功和未知 mutation 不重发。`session.go` 保持原 B 唯一写入；缓存进度 GET 按根正式答复 `msg_cfa70ba18a4c` 继续，其余 Agent completion、Laya 语言、S3 和原生工具问题保持待答。模型、OS、Q / D1、旧视频952段和正式 D2 不重做。模块只修改本文件，保留原未提交管理记录；本次恢复服务与阶段检查不代替完整核心功能、默认检查、L1 / L2 或最终 Windows 包验收。
+
+## 04:45 恢复分工记录
 
 根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 04:04 入口、当前 `QUESTIONS.md` 和正式消息 `msg_546d9fc03e1c` 为本轮依据。总负责人为 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669`，顶层 Run 保持 `run_973808dd6a2f`；本模块当前为 `task_e8c1d01d67ec / ctx_7f070ad688f5 / term_8d816f16-fefd-45e8-b49a-29c4cf681c47`。模块已普通绑定原子 Run `run_8bbda1c3974c` generation 8，没有创建新 Run 或绑定根 Run。
 
@@ -54,6 +70,16 @@ H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / 独立 REPORT `c7be470c4e7
 模块在精确25b341d独立运行 `go test -mod=readonly -p=1 ./cmd/server -run '^(TestRelayJudgmentProductionAssemblyActualSQLiteHTTP|TestRelayHumanAdmissionsWithoutJudgmentSnapshotsActualSQLiteHTTP|TestRelayStaticActualMissingAndInvalidPaths)$' -count=1 -v -timeout=120s`，三项 PASS、零 Skip、package5.824秒。原日志为 `D:/Astrocyte-agent-assets/20261015/relay/module/product-25b341d/test.log`。H 原五项适用检查、25份真实响应的 YAML / Ajv schema 校验、264个当前契约例、Redocly EXIT0 / 原13 warning、vet / 生产 build 通过；首4xx及空 root schema RED保留。公开判断 root 是空字符串，S2 快照保持自身语义，session-events 仍精确六字段。
 
 当前共享实例仍为 b73 / PID4676 / Q 原 generation，尚未部署25b341d。I 同源构建、F 生成与实际操作、H 安全更新、完整默认、真实 L1 / L2 六步及最终 Windows 包继续；Jev / Laya / Interpreter 尚未配置，阶段检查通过不作为全部功能完成。
+
+### 当前运行配置与真实检查限制
+
+I 准确 `609993b25543a74e64d89a31c99bf3c08b81b44b` 已包含25b，生产 build EXIT0 / 30.1152367秒，`source_after` 同值；H 已保存稳定产物并归还读取窗口，尚未取得本次 F / UI 安全 ACK，不使用旧 ACK 更新。该来源的 `check:contracts` 首 RED 为前端生成 schema 漂移，F 正消费准确契约，I / H 不手改前端类型；后继组合与实际运行 HEAD 分别记录。
+
+H 链接检查 SOURCE `c1750e867fb0dbe31dcf083909b0f84c8fca9c83` / REPORT `cd616d392396978a855da78495942c0b27f93350` 已普通 push，模块核远端精确值、祖先、单原测试文件及独立报告。修改只涉及显式 D 输出根和 Windows 原生路径拼写；真实 junction 子项 PASS0.16秒 / package2.837秒，symlink 原 OS1314 继续 FAIL，不作为完整链接或全 Go 通过。原 `runtime_http` 缺独立 reconcile 前置且含 driver / workspace / sink 替身，原 `session_git` 自制 CLI 缺真实消费证据；这些正向不以替身执行，原拒绝和成功验收要求保留。既有 ActualService / ActualCommittedEvidence 的准确参数已由 H 交接，未答工具边界前不启动。
+
+R 重新交接既有公开来源 locator，并明确登记 public source root 与原 controller 实际 worktree CWD 分别保留。Codex 原件 nlink2，单链接 guard 必须拒绝，不能复制或切换别名补成成功 replay；Claude 没有已确认获准 locator，状态为 NOT_AVAILABLE，不表示全机不存在。原完整度、raw gap 与事件核查未确认字段保持原值；未扫描私人历史、读取原档正文或新建控制器。原生原件路径仅留受控本机指针，不写入本文或发布包。
+
+H 实际核当前启动配置显式关闭 `ASTROCYTE_ENABLE_SUMMARIZE`，视频提取器未构造，视频专用 Node / summarize CLI / yt-dlp / ffmpeg / whisper / 模型 / uvx / 显式代理均未显式配置；这不代表工具未安装。B / V 持续交已验证的准确工具和配置，H 在同库安全窗口装配；原成功 ASR / 952段原件不重跑。F 只按既有真实导出格式生产导入，不把 media JSON 当作 CLI 输出，也不复制旧 DB 替代当前功能验证。
 
 H 三检查目录 SOURCE `237a95719d18b69063def0323cf35cc3a93b8232` / REPORT `a5c05cffdb27c8baba33337bb2dd0c5345ea817b` 已由模块审查并核远端、祖先及独立报告：仅三件原检查文件使用显式绝对 `ASTROCYTE_TEST_OUTPUT_ROOT`，原断言、Skip 和生产 guard 均不改。唯一 I 在准确 `6f613692b8ec3de5f33b9ff56244734bcb24d56f` 的原 D 环境实际复验三项全部 PASS / 零新增 Skip，cmd/server2.376秒、events1.585秒；原7401 workspace_unverifiable及3edd两个 scope_denied首 RED保留。旧替身检查、OS1314、普通 native path / selected-text 剩余分别归原作者与其真实授权边界，不用本次通过覆盖。
 
