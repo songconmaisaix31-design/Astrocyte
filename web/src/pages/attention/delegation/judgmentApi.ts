@@ -11,7 +11,13 @@ export type RuleCommand = paths['/local-projects/{project_id}/delegation-rules/{
 export type RuleStateCommand = paths['/local-projects/{project_id}/delegation-rules/{rule_id}/state']['post']['requestBody']['content']['application/json'];
 export type RuleEvaluationCommand = paths['/local-projects/{project_id}/delegation-rules/{rule_id}/judgments']['post']['requestBody']['content']['application/json'];
 export type AdmissionCommand = paths['/local-projects/{project_id}/judgments/{decision_id}/admissions']['post']['requestBody']['content']['application/json'];
-export type JudgmentCommand = paths['/local-projects/{project_id}/judgments']['post']['requestBody']['content']['application/json'];
+export type JudgmentCommand = Omit<paths['/local-projects/{project_id}/judgments']['post']['requestBody']['content']['application/json'], 'context'>;
+
+export type TasteCommand = paths['/attention-taste-profile']['put']['requestBody']['content']['application/json'];
+export type TasteProfile = components['schemas']['TasteProfileV1'];
+export type TasteRubric = components['schemas']['TasteRubricV1'];
+export type TasteExample = components['schemas']['TasteExampleV1'];
+export type TasteDelegation = components['schemas']['TasteDelegationV1'];
 
 async function unwrap<T>(request: Promise<{ data?: T; error?: ApiErrorBody; response: Response }>): Promise<T> {
   const { data, error, response } = await request;
@@ -29,6 +35,10 @@ async function headers() {
 export const judgmentApi = {
   session: () => unwrap(api.GET('/auth/session')),
   taste: (signal?: AbortSignal) => unwrap(api.GET('/attention-taste-profile', { signal })),
+  saveTaste: async (body: TasteCommand) => {
+    const key = body.request_id;
+    return unwrap(api.PUT('/attention-taste-profile', { params: { header: { ...await headers(), 'Idempotency-Key': key } }, body }));
+  },
   snapshot: async (project_id: string, files: string[]) => unwrap(api.POST('/local-projects/{project_id}/judgment-snapshots', { params: { path: { project_id }, header: await headers() }, body: { files } })),
   policy: (project_id: string, question_type: QuestionType, signal?: AbortSignal) => unwrap(api.GET('/local-projects/{project_id}/judgment-policies/{question_type}', { params: { path: { project_id, question_type } }, signal })),
   savePolicy: async (project_id: string, question_type: QuestionType, body: PolicyCommand) => unwrap(api.PUT('/local-projects/{project_id}/judgment-policies/{question_type}', { params: { path: { project_id, question_type }, header: await headers() }, body })),
