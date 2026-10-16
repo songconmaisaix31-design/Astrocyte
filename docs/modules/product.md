@@ -1,5 +1,15 @@
 # 产品模块执行与验收
 
+## 2026-10-17 03:07 进度回执的真实前置后继
+
+根 `msg_cb31b64bbaf0` 及阶段接纳 `msg_ecbc6faa66d4` 要求沿当前任务继续可独立事项。B `msg_a3104937827c` 依据 Release 目标与验收、SPEC §17.3 / §17.4、S1 进度错误与恢复条款，提出真实未探测配置失败的持久回执及实际 SQLite 拒写检查。模块已读当前生产 Infer 路径：pending 先保存，实际 Registry 缺配置证据返回原错误，现有服务保存其保守 unknown；重放沿原 operation 拒绝，人工 Set 保留 operations。该路径没有实际原生交付，不将其冒称原在途 unknown / computed / accepted 模型场景。
+
+本后继原 B 仍是唯一 progress owner，精确 write_paths 仅新增 `internal/workspace/app/progress_preflight_actual_test.go` 与 `docs/standards/backend.md`。原 S2 长期应用域限定 goals / proposals / approvals / session_bindings / proposal_context / ports 及 s2_service，T 限 Attention 应用测试；该新文件不在其写域。模块当场只读核原 S2 与 H 工作树该路径不存在、status 为空；本轮不恢复这些人员、不新增 writer，既有已交付五件测试冻结。
+
+原 B 直接使用生产 HTTP bootstrap、真实 project / settings、ProjectFiles 和未 Probe Registry，仅读取当前公开工作树 README。实际 Infer 缺配置证据须原样返回错误并保存真实前置回执，核同 operation / 同库重启拒绝、回执固定及人工 Set 保留；Native 观测、目录、会话和模型调用各自保持真实零副作用。第二项在新 D 自有 SQLite 连接使用实际 PRAGMA query_only=ON，使保存 pending 实际遭 READONLY，核没有回执 / 进度行和原生动作；只恢复自有连接的原读写状态，不注入 processor / failAt 或伪造回执。测试名称明确 preflight 范围；原七项完整模型 / 在途 / CAS 恢复要求继续保留不执行、不新增 Skip，不因本项通过声称全部替身已替换。
+
+当前原 B 只读核剩余事项还包括准确双源容量原件、原缺位输入、真实原生 / 成果 / 经验批准及最终默认 / 包等；模块已交既有 video149 与原论文报告线索，先核安全记录与准确获准指针，不重开已禁止来源或重采，具体可执行性继续逐项确认。本阶段仍不调用模型、Probe、Start、ASR、采集、Sleep 或共享服务，不修改生产或其他 owner 路径；SOURCE / 独立 REPORT 普通 push `[skip ci]` 后交根必要组合。
+
 ## 2026-10-17 02:59 selected_text 真实组装后继计划
 
 根 `msg_eb0fbfbdb2c2` 明确批准原 B 同 Task 的后继，精确 write_paths 仅新增 `cmd/server/selected_text_preflight_actual_test.go` 及 `docs/standards/backend.md`。M-relay `msg_29d05f6c8d50` 当场核 H 原树该新文件不存在、status 为空、diff quiet EXIT0，H 没有该路径写域且持续不写；模块据此交原 B 独占，无新 writer。`main.go`、`project_bridges.go` 及 H relay 生产文件归属保持，跨域只交精确 Handoff；前三件返修和 Workbench HTTP 已交唯一集成冻结。
