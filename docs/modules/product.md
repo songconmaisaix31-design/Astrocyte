@@ -1,5 +1,19 @@
 # 产品模块执行与验收
 
+## 2026-10-16 11:49 原产品任务恢复计划
+
+当前模块为原 Task `task_b0197ca7ebdf` / Dispatch `ctx_676d773e9f23` / 终端 `term_898becd9-05d7-464c-91b6-02d1cae8b19b`，总负责人为 `term_a1e70e66-3957-415d-b42c-673f2cc94c26`。根绝对路径 `HANDOFF.md` / `STATUS.md` 的11:38入口与消息 `msg_5aed5926dccd` 替代原任务的旧身份及新建 Run 指令；继续原 `run_7b2ce96bcd13` 和 `run_dbf1a68bc692`，不增加人员层级。本树准确基线 `c019bdb216c39abd5dc6d812f1bc34ec2ff81f0e`，原05:02十二行管理 WIP完整保留。
+
+本模块实际读取本机 `LastBootUpTime=2026-10-16T03:26:45.5000000Z`。原 B / F / UI 的公开 Dispatch 均明确为 local，创建于重启前，当前公开 observation 为 missing，原三个工作树 terminal list 均为空。以实际主机重启和原 Dispatch 本机归属确认旧进程已经结束，再精确 abandon / retry 原 Task；不从 missing_status 单独推断退出，不释放或终止其他终端。
+
+| 原第三层负责人 | 本次实核基线和保留修改 | 本次连续工作与验收 |
+|---|---|---|
+| B / `task_7b4e93c1a3c1` / `standards-backend` | HEAD `9fa97efe8208de85a2251f1ea01008c79ad04945`；`progress.go`、`session.go`、`progress_test.go` 和新增 `progress_actual_test.go` 原 WIP | 按根 `msg_cfa70ba18a4c` 继续精确同项目 `read_context` 缓存 GET；逐请求重读真实 Grant / action / 过期 / 撤销，人工 PUT / infer保持原规则。真实 HTTP / SQLite / 重启检查，首403和原替身检查缺口保留；`session.go`仅由原B写入 |
+| F / `task_7cbe30017760` / `standards-frontend` | HEAD `7b67b755c23f7b778922bbf1f02bedb8cc7ccb2f`；原三件页面 / hook修改及四件准入新文件 | 先核原八场景中断日志和已成功 / unknown操作，不重发 mutation；完成原Attention准入、固定版本、查询、撤销及持久化未知锁，保持用户具体批准未答。继续唯一共享业务界面 / HTTP操作，H正式ready后恢复只读检查 |
+| UI / `task_d0cee5a583bb` / `product-ui-20261015` | HEAD `e27e95117d30b9f2518bd779d03fe1218038019a`；原delegation样式及十三件新增页面 / helper | 继续原Judgment / Policy / Rule / Result页面；仅消费H→F准确公开契约，原delegation域与F共享client / hooks / Attention域互斥。模型、原生初始化、用户具体批准和语言选择保持未答，真实可用human路径继续 |
+
+H由原生模块恢复同一D盘SQLite / LOCALAPPDATA / 媒体白名单 / Q generation及首选64505，产品模块不启动第二共享服务。唯一I准确 `38fb289160ef85f75062f917e861488b95e2a309` 的build已实际通过，沿已核原件复用，不重复成功构建。各轨先读当前根入口、核原WIP及实际日志，提交准确SOURCE与独立REPORT并普通push；模块持续验收和跨模块交接，最终完整适用检查、默认浏览器、L1 / L2及同源Windows包仍未通过，阶段结果不结算模块任务。
+
 ## 责任与事实源
 
 2026-10-16，M-product 当前 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b` / 终端 `term_baf5bb3e-643c-4b3f-92b2-ea607911e155`，按绝对根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md`、`STATUS.md` 的 04:04 入口及 `msg_f6a62afd9256` 授权管理原子 Run `run_dbf1a68bc692` 和原 B/F Run `run_7b2ce96bcd13`。总负责人为 `term_f1e6152e-9efd-4fa1-9e11-7266e9881669` / `run_973808dd6a2f` generation32。工作树 `module-product-20261014`，分支 `songconmaisaix31-design/module-product-20261014`，本次恢复基线 `596710ac0dcf2743726b821f9c6510d371f86ba6`、工作区干净。原 Task、子 Run、工作树、分支、已有修改及旧 Dispatch 的失败记录继续保留。
@@ -94,6 +108,18 @@ V/S2 原 Task 恢复为 `ctx_d0d16cb94204 / term_468e8fd7-6ac4-42eb-bc98-ede302c
 当前 H 启动脚本明确 `ASTROCYTE_ENABLE_SUMMARIZE=false`。已交 B 配置唯一 owner 和 H 服务唯一 owner 核 enable / Node / CLI / yt-dlp / ffmpeg / whisper / 模型 / 显式代理的安全配置白名单，后续同库更新仍需精确 SOURCE 和 F / UI 当前双安全 ACK。缺少 extractor 的实际生产作业会保存 `provider_unavailable`，入队202不算提取成功。现有 manual API 会创建新的人工来源记录，不能恢复旧 summarize provenance / 附件 / revision 身份；已备人工请求保持未执行，不把 media JSON 或 whisper JSON 当 CLI 导出，不重做旧 ASR / 模型或成功作业。
 
 B 实际 Windows junction SOURCE `d8067aae16acdec89e2bb8cb91ec153f45bf32f4` / REPORT `e850414e1b97b91a2e690cfdf62492577dd9cf00` 已普通 push、模块审阅并交 I。标准路径转换、关闭 cmd AutoRun、真实空格目录与文件身份检查1.641秒通过；原虚构协议 replayFixture 未运行，不能算真实原生回放通过。原 R/H 只提供既有获准公开项目原件指针及实际完整度，当前可用性 UNKNOWN，来源缺口和受限探针暂停保持。
+
+### 05:02 同库主入口更新与进度权限衔接
+
+F `msg_bded03583a77` 和 UI `msg_206f83aec43f` 本轮双安全 ACK 后，H 正常停止原 PID4676、核端口清空，启动准确 `609993b25543a74e64d89a31c99bf3c08b81b44b` / modified=false / PID45132 / UTC `2026-10-15T20:58:23.3389720Z`。原64505 / SQLite / Q `snapshot-1711995690` 保持，health=ok、首页200。B/V 已交完整媒体工具白名单，H 实际显式启用并构造 SummarizeExtractor，零新提取 / ASR / 模型 / 原生登记；旧真实 CLI 页面导出缺时间证据、952段无现有原格式恢复端口的限制保持。该运行尚未含后继 F 人工进度与准入新页面。
+
+F 精确普通合入 ecb 后，以原 generator 产生 SOURCE `4e3c384032ab1671e226a819009d95c366d80361`，仅生成 schema；后继 SOURCE `9823adb4fa5f4383e4b9f9cd7c1778bcb74471fb` 仅补 Relay 两种真实事件的显示标签，独立 REPORT `7b67b755c23f7b778922bbf1f02bedb8cc7ccb2f`。均普通 push并交 I / UI；生成一致性、独立严格 schema 类型、完整 typecheck、原三项显示参数 Vitest及eslint通过，首缺枚举标签 EXIT2保留。F继续原Attention准入页面与固定候选具体请求，UI继续原delegation实际接口页面，尚未发送根候选的准入命令。
+
+T SOURCE `5d701bdd7f4d6696a1f730f21c47f84d222dd6cd` / REPORT `149b5261f52e5a33a2172241ce2089ae12fbbcb3` 普通 push、模块审阅并交 I。唯一新增代码在原 `tests/s1/automatic_test.go`：实际 cmd/server、Relay archive、独占 LOCALAPPDATA、主 SQLite 与独立 Relay SQLite 的同库重启，原缺失完成请求始终404 / not_found，项目、全部 Relay 状态、回执与 outbox 不变，候选 / 来源 / 作业 / 原生会话零；实际30.116秒通过。首 readiness 配置 RED 保留，生产 access 根守卫保持；该拒绝回归不代表 Interpreter 或正向完成通过。
+
+B MCP SOURCE `895ae6a3a879e159e5de2c8629eed3423398cf68` / REPORT `cb2b8297ae891ce79b59d8cd2648654440e02f89` 已普通 push、模块审阅并交 I。错误收据标准 JSON 编解码任何一步失败立即返回 internal error，`UseNumber` 保留准确数字；两项格式规则、两项实际 SQLite / OS pipe 注册查询、全包 build / 目标 vet通过。R 已明确原 Codex 文件单链接守卫拒绝、三个完整度 unknown与原raw gap保持；Claude `NOT_AVAILABLE` 仅指没有已确认获准定位，未扫描或伪造来源。
+
+B 将原进度内存替身检查迁到真实 HTTP / SQLite时，缓存 / 人工两项通过，实际 Agent GET 首403保留。模块完整读取原任务、进度服务和 session 路由后，根 `msg_cfa70ba18a4c` 明确这是已有 `read_context` 权限的 HTTP 衔接缺口：仅认证同一 LocalProject.ID 的精确 GET progress 进入原服务，每次重读真实 Grant 并核 action / 过期 / 撤销；跨项目和无效授权仍拒绝，PUT / infer 保持 human，缓存读取零写入 / 初始化 / 模型。M-relay 先确认 `session.go` 唯一原写者，由原 owner 修复；B不越域编辑，后继准确来源到齐再完成实际权限 / 重启检查，不重复询问用户。原八项模型内存替身未作为真实通过，实际原生 / Interpreter 与完整默认限制继续。
 
 ### 02:29 当前恢复与产品分工
 
