@@ -2,13 +2,17 @@
 
 ## 2026-10-16 当前同库产品与媒体配置
 
-当前实际 SOURCE 为 `609993b25543a74e64d89a31c99bf3c08b81b44b`、modified=false，PID45132，启动 UTC `2026-10-15T20:58:23.3389720Z`，地址为 `http://127.0.0.1:64505`。该准确来源的完整 build 已由唯一 I 通过；H 复核稳定副本和运行程序的 Go buildinfo、实际进程路径与启动身份，64505 只有一个属于该 PID 的 loopback listener。健康检查返回 `ok`，首页 HTTP200。
+当前实际 SOURCE 为 `38fb289160ef85f75062f917e861488b95e2a309`、modified=false，PID33808，启动 UTC `2026-10-16T03:48:23.5356234Z`，地址为 `http://127.0.0.1:64505`。唯一 I 的准确完整 build 已实际 EXIT0 / 74.0037711秒、source_after 同值；本轮没有重复构建。H 复核稳定副本和运行程序的 Go buildinfo、实际进程路径与启动身份，64505 只有一个属于该 PID 的 loopback listener。健康检查返回 `ok`，首页 HTTP200 / 562bytes。
 
-本轮使用 F `msg_bded03583a77`、UI `msg_206f83aec43f` 的安全 ACK，以及模块授权 `msg_6a2f3577896c`。旧 b73 / PID4676 收到 `CTRL_C_EVENT` 后正常退出，确认退出与监听释放用时 0.7745635 秒，再启动新实例。原 SQLite、LOCALAPPDATA 和 F 已保存的业务记录保持，Q 继续读取原 `snapshot-1711995690`，没有重新采集或复制快照。准确停机收据、启动结果与私有日志留在原 H 共享运行目录；当前本机指针为 `running.json`。
+本轮 Task `task_3004b636a3ab` / Dispatch `ctx_d763540bd366` 沿原 H 树和写入范围恢复，业务起点 `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4` clean。根11:38入口与模块 `msg_b12e3f613823`、`msg_d200a27246b1` 明确恢复同库服务。启动前实际核旧PID45132不存在、64505没有 listener；发布 `msg_5f8c73016b2a` 放行准确产物读取窗口，H 将 binary 和全部30个 web 文件复制到自身稳定 `versions/38fb2891`，逐项核文件存在、大小及总数，并重新核 buildinfo。H 已停止读取集成输出并通过 `msg_d5ce7948b140` 归还窗口。
+
+原 SQLite、LOCALAPPDATA 和 F 已保存的业务记录保持。Node 内置 `node:sqlite` 以 readOnly / query_only 事务在启动前后逐表计数：68个表、合计90行，所有计数相等，`local_agent_sessions=0`。Q 继续读取原 `snapshot-1711995690`，启动前后 current 的 generation / snapshot_at 完全一致，没有重新采集或复制快照。本轮只执行 health 和首页读取；F 保持唯一业务操作者。准确服务结果已交模块与发布，后继界面验收由原 F / UI 继续。
 
 H 从 B 已核的本机 JSON 显式设置12项媒体白名单，八个工具 / 模型文件和媒体目录在启动前核验，缺失、未知键或已确认选项不符立即失败。`summarize` 0.25.1 的生产 extractor 已实际构造并通过启动检查；没有执行视频提取、ASR 或模型调用。原成功视频的952段不重跑；旧 CLI 原件没有字幕，media / whisper 原件不能作为 `summarize_json` 导出输入，当前接口也没有恢复其原附件与 revision 身份的入口。
 
-该运行来源已包含 H `25b341dd5a6b74cc2588d12544eb955235f9274c` 的人工准入注册、完成来源桥和完整公开契约；后继 F 生成类型与枚举标签修改尚未部署。准确新进程信息已直交 F 和 UI，F 的唯一核心业务操作窗口与 UI 的既定只读窗口已归还。Jev / Laya / 经验 Interpreter 未配置，新增原生登记、初始化和模型输入为零。工具边界与 Agent completion action 待答，真实原生完成正向、完整默认、L1 / L2 六步及最终包仍未通过。
+本机原件位于原 H `shared-product-ad8413/`：`versions/38fb2891/stage.json`、`recovery-38fb-20261016-034822.json`、`data-before-38fb-20261016-034822.json`、`data-after-38fb-20261016-034822.json` 和对应私有 stdout / stderr；当前运行指针为该目录的 `running.json`。本轮脚本位于 H 已忽略的 `dist/product-recovery-20261016/`，通过文件编辑工具创建，实际运行 `stage-38fb.ps1` 和 `restore-38fb.ps1` 均 EXIT0。凭据、私有配置和完整路径只保存在本机原件；公开报告仅保留计数、状态及本机指针。
+
+当前运行来源使用唯一 I 的完整准确组合，页面新功能仍由原 F / UI 通过实际操作验收。Jev / Laya / 经验 Interpreter 未配置，新增原生登记、初始化和模型输入为零。工具边界、Agent completion action 和 Laya 语言待答，真实原生完成正向、完整默认、L1 / L2 六步及最终包仍未通过。原 OS1314、nlink2、append-only unknown、session_complete=false 和 raw 恢复 gap 保持各自实际结果。
 
 ## 2026-10-16 实际链接检查与待满足的原生正向
 
