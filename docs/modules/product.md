@@ -33,6 +33,10 @@ B SOURCE `4bb5ec63b2af1c97959bda60cee1ba625a7a79ed` / 独立 REPORT `dd69f1c2b4f
 
 根 `msg_cb31b64bbaf0` 要求本阶段之后依据当前 Release、规范、认知六步与现任务逐项核剩余产品事项。原 B 继续同 Task 只读给出准确任务条款、未完功能或断言、获准原件与可执行动作、原 owner 及具体前置；模块已完整重读当前入口和对应 AT，不作没有任务依据的全仓整改，不重复成功功能，也不以笼统 Native 阻塞代替逐项检查。没有新增业务写域或人员，产品持续发布支持。
 
+### 实际组装前置独立管理 REPORT
+
+管理 SOURCE `c76765c3fd4cf777aeb8fd43da60707151eefa8e` 已普通 push，独立远端同值、工作区 clean、diff 检查 EXIT0，仅 `docs/modules/product.md` 变更。B 准确 SOURCE / 独立 REPORT、原编译诊断、second / third 实际命令与最终源码均已独立核读；纯函数参数检查、真实装配前置和仍缺完整来源 / 模型的覆盖分别登记。原 B 连续处理根指定的任务剩余核查，既有源码与所有首 RED / UNKNOWN / NOT_RUN 保持，模块未发送 worker_done。
+
 ## 2026-10-17 02:57 Workbench 真实 HTTP 固定阶段
 
 原 B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` / 独立 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通 push，提交均含 `[skip ci]`；模块独核远端准确 REPORT 同值、原树 clean、限定差异检查 EXIT0。SOURCE 只修改 `internal/adapters/httpapi/workbench_test.go`，净新增 356 行 / 移除 40 行；REPORT 仅追加 `backend.md` 28 行。模块完整读取当前 396 行文件、独立报告及全部命令记录，已交根 `msg_81b4ceb2e3ff`；根 `msg_8577da3270b0` 完整独读后接受准确阶段并普通合唯一集成，仅运行本项真实 HTTP / GetEvent 及 httpapi vet，不重建或部署，也不重复前三项。
