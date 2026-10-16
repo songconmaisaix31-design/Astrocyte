@@ -10,6 +10,27 @@
 
 当前原 B 只读核剩余事项还包括准确双源容量原件、原缺位输入、真实原生 / 成果 / 经验批准及最终默认 / 包等；模块已交既有 video149 与原论文报告线索，先核安全记录与准确获准指针，不重开已禁止来源或重采，具体可执行性继续逐项确认。本阶段仍不调用模型、Probe、Start、ASR、采集、Sleep 或共享服务，不修改生产或其他 owner 路径；SOURCE / 独立 REPORT 普通 push `[skip ci]` 后交根必要组合。
 
+### 03:11 进度前置固定阶段独立 REPORT
+
+管理 SOURCE `aef2f028c5c6270d1d9bce3e372627d04f3b7ddd` 已普通 push，模块独核远端同值、工作区 clean、diff 检查 EXIT0。根 `msg_8f5faa3191d3` 正式确认原 B 精确两文件及 external test package 范围，`msg_9073b0c0c5ba` 的返回内存与真实存储边界已完整交 B 并落实。本次管理变化只写本文件，没有编写业务或修改其他 owner 的计划。
+
+B SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` / 独立 REPORT `b67f570d58d3b4bd874abf3da7897de735efb5b6` 已普通 push `[skip ci]`，模块独核远端准确 REPORT、clean、限定差异检查 EXIT0；SOURCE 只新增355行 external 测试，REPORT 只追加 backend.md 27行。完整源码、报告、`commands-first.json` / `list-first.log` / `test-first.log` / vet原件已独读，限定阶段已交根 `msg_b3ee744b56fc`。
+
+| 实际检查 | 首轮准确结果 |
+|---|---|
+| `go test -mod=readonly ./internal/workspace/app -list '^TestProgressPreflightActual'` | 精确两项，EXIT0 |
+| 同包 `-run '^TestProgressPreflightActual' -v -count=1 -timeout=1m` | 配置及重启0.13秒、SQLite拒写0.11秒，2 PASS /0 SKIP，包2.037秒，EXIT0 |
+| `go vet -mod=readonly ./internal/workspace/app` | EXIT0 |
+| 新文件格式、限定diff检查及实际runner | EXIT0；D原件和B本人工具回执分别核实 |
+
+原件根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/progress-preflight/`。实际配置前置错误的保守 unknown 回执、同 key 三次保护、人工保存与同库重启完整记录保持；没有发生原生投递。另一新D连接实际 READONLY 后，返回内存有 pending，独立 SQLite无行 / 无持久回执，两者分别通过；HTTP500 / ErrorV1与仅自有连接恢复可写后的真实人工保存通过。未 Probe Registry、native目录、会话和公开README源守卫均通过。没有生产修改、构建输入变化、新失败运行、默认套件、模型或共享操作；原七项完整在途 / 模型 / computed / CAS / 发布覆盖继续 NOT_RUN。
+
+### 当前剩余来源与跨模块消费核查
+
+B 本机 `remaining-readonly.md` 已按当前 Release / SPEC / TASKS / S1条款逐项登记容量、缺位、进度、原生、完成经验和最终默认 / 包的前置及 owner。当前952来源以已验 `dd3a8b8a` / `1fd89e92` 为准，D派生公开正文32908 /35807bytes存在，正常只读main /WAL及公开bytes保持，SHM变化单列；旧额外三文件门槛不作为当前障碍。与当前57465bytes论文的自然总量90373 /93272不足128KiB。根 `msg_72909af1ed39` 另交历史已验联合 SOURCE `52ff9564c1b40109987668a95ed4ad35946d6847`、原95314+32908 /wire135754及 `S1-W3` 准确记录线索；原B阶段后仅沿该源码 /报告 /runner静态定位明确公开对象。历史联合成功保持其当时范围，当前装配另验；不打开旧业务SQL、遍历Temp历史根、读取私密字段或重发模型。
+
+M-relay `msg_dc5f2926ad64` 的认知六步第5步核查已完成前端部分：模块只读当前F clean HEAD `ac94fa2d794950edb4eab07aa9a56b6224f4116d` 与 UI `d6318d1c0792f00a8c02d081cc5c89eefce21aaa`。RelayIntentPanel只发送任务和交接声明，WorksMetadataForm / worksAlbumApi保存人工content；NativeProjectPanel上下文仅references /files。生产experience命中仅Artifact状态与ID显示，没有找到前端程序化get_experiences读取及写入交接的来源或实际记录。此结论只限定已交付前端，后端自动注入由H继续核；已交M-relay `msg_e7cf4804d8a5` 及根 `msg_c574aee07f3a`。没有恢复F /UI、开业务窗口、调用模型或代为批准，新增接缝须按准确端口和原owner交接，不占用当前B范围。
+
 ## 2026-10-17 02:59 selected_text 真实组装后继计划
 
 根 `msg_eb0fbfbdb2c2` 明确批准原 B 同 Task 的后继，精确 write_paths 仅新增 `cmd/server/selected_text_preflight_actual_test.go` 及 `docs/standards/backend.md`。M-relay `msg_29d05f6c8d50` 当场核 H 原树该新文件不存在、status 为空、diff quiet EXIT0，H 没有该路径写域且持续不写；模块据此交原 B 独占，无新 writer。`main.go`、`project_bridges.go` 及 H relay 生产文件归属保持，跨域只交精确 Handoff；前三件返修和 Workbench HTTP 已交唯一集成冻结。
