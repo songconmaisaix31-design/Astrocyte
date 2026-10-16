@@ -8,6 +8,10 @@
 
 本模块已通过 `run_973808dd6a2f` 将 T SOURCE `5d701bdd7f4d6696a1f730f21c47f84d222dd6cd` / REPORT `149b5261f52e5a33a2172241ce2089ae12fbbcb3` 以及 H 单文档 REPORT `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4` 的实际范围、远端完整 SHA、原经理可消费确认和检查限制交根。原38fb成功构建、H 稳定副本和本轮产物窗口归还保持有效，同库服务继续由 H 维护；后继更新由 H 取得 F 当前安全 ACK 后执行。B / F / UI 继续原 WIP，准确提交及独立报告到达后才交根普通消费。
 
+后续 P / N 恢复输入已通过 `msg_b6b9c473694d` 交根。P 原准备 Task 已 succeeded / completed / released，准确 SOURCE `7431db6451fa759638dedc4aad7687a217d3a6d9` / REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a`、原树 clean / 远端同 REPORT。其完整 `runtime-sanitized-third` 与 PS5 / PS7 依赖包检查保持已通过，不重新下载或推理；该 REPORT 尚非38fb祖先，最终构建须消费准确发布工具。当前 `Build-Windows.ps1` 必须传入最终完整 `-Source`、既有 `-Runtime` 和新独占 D 目录 `-Output`，从最终源码复制 adapter。N 原 SOURCE `7202f07c9c4122f08d760afa88472fb32852b38e` / REPORT `b74b97a44d5a116d090424d78f358fdf520667e2`、原树 clean / 远端同 REPORT；客户端只支持 archive 原件范围，native_notifications 未实现。最终准确组合、适用验收及真实原生工具边界齐备前不启动最终包或原生请求。
+
+本轮实测 C 盘空余 `8,454,471,680 bytes`，低于原 P `Assert-ReleaseSpace` 的10 GiB要求，已向根报告；没有清理任何缓存、数据、日志或模型，也没有降低原脚本门禁。现有完整准备和原失败保留，实际大型操作前按已授权维护范围处理容量。
+
 ### 2026-10-16 11:48 接续原 Run 与唯一集成
 
 根工作树 HANDOFF / STATUS 11:38 和 QUESTIONS 为本轮入口。模块负责人为原 Task `task_315679474dc4` / Dispatch `ctx_e4bfbfefc7b4` / `term_09446359-d75f-471b-84b2-39c472d0ada8`，普通绑定原 `run_aa4e6a119547` generation 11；公开终端身份为 Codex / GPT-6.1-Sol xhigh fast。模块只维护本文和既有日运行记录，业务修改、测试及返修继续由原作者完成。没有创建新 Run 或替代 Task，没有增加第四层。
