@@ -18,9 +18,9 @@ F 本次本人 ACK 为 `msg_e359a65335ba / msg_e690580983c8`，UI 为 `msg_8ec1d
 
 | 当前具体事项 | 可消费来源、实际结果和剩余条件 |
 |---|---|
-| H 同库更新 | 准确172 / PID25568已在同一64505 ready；本次本人 ACK、正常退出、单次启动和前后计数均有实际原件。原 H 继续支持，独立运行 REPORT 待固定提交。 |
-| H / R 既有来源 | H 既有 REPORT `d5427c705903e9bb69f1f257706f490e1784eea9`、R SOURCE `ce541794d58560747124fea2cf9d08222700587e` / REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f` 均为172祖先，模块三次 `git merge-base --is-ancestor` 全部 EXIT0。没有新增独立 R 源码待合；H 现存安全来源与条件说明随本次报告交付。 |
-| 原 a166 的 Native26 | 产品 `msg_2e064b75f296` 逐项要求真实公开生产 task、原生 event 及 GetEvent facts、first-visible 计时原件；当前没有满足工具关闭边界的控制器正向条件，不构造 EOF / conflict / unknown / complete 等成功场景。原三分钟 FAIL、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 与 raw gap 保持。 |
+| H 同库更新 | 准确172 / PID25568已在同一64505 ready；本次本人 ACK、正常退出、单次启动和前后计数均有实际原件。H 独立运行 REPORT `1e25c296ef5b3a7e0a5e3a3b3bb7567e77a926c1` 已普通 push；模块已审查全部差异、独立远端精确同值，原树 clean、diffcheck EXIT0。原 H 继续支持。 |
+| H / R 既有来源 | H 既有 REPORT `d5427c705903e9bb69f1f257706f490e1784eea9`、R SOURCE `ce541794d58560747124fea2cf9d08222700587e` / REPORT `4f7a041e489ac6d3c56918314ba24679e50e4d3f` 均为172祖先，模块三次 `git merge-base --is-ancestor` 全部 EXIT0。没有新增独立 R 源码待合，H 本轮没有定位新的生产错误；新H运行报告仅修改原 `docs/access/http.md`。 |
+| 原 a166 的 Native26 | 产品 `msg_2e064b75f296` 逐项要求真实公开生产 task、原生 event 及 GetEvent facts、first-visible 计时原件。H 在新 ready 后只读现有存储，模块独读安全聚合原件，实际 `store_state_rows=0 / receipt_rows=0`，Tasks / Workspaces / Terminals / Sessions / OwnedSessions / PendingActions / Completions / Events / RuntimeFacts / SessionRelations 均0，不能交所需正向来源。不构造 EOF / conflict / unknown / complete 等成功场景；原三分钟 FAIL、ArchiveAppendOnly / PrefixComplete / SessionComplete unknown 与 raw gap 保持。 |
 | 真实进度 | 产品 `msg_e9c2bc6123b3` 所列八项要求真实 accepted / pending / unknown receipt、在途撤权、CAS 冲突、computed 持久化恢复等事实；原内存替身没有执行或计为验收。根仅授权原 B 安全只读派生托管既有真实进度及两项前端检查，原库 readOnly、不复制 Grant / Session、不 infer；结果尚待原 B 交付。 |
 | 实际视频输入 | 原成功952段及 media / whisper 原件不能作为 `summarize_json` 和原附件 revision 的替代输入；当前真实前置与实际结果分别保留，不重复 ASR。 |
 
@@ -39,6 +39,10 @@ F 本次本人 ACK 为 `msg_e359a65335ba / msg_e690580983c8`，UI 为 `msg_8ec1d
 | 读取 `running.json` 的停止收据和安全派生字段 | 旧程序正常退出 / 原ACK / 根授权 / 单次新启动记录齐全，30静态文件已核字节，原Q `snapshot-1711995690`、原生初始化0 / 模型输入0 |
 
 本机安全运行指针继续为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`，其中引用实际停止收据及前后只读计数原件。独立核查已交根 `msg_3994a7b5491f`，并交 H 固定准确运行报告；新 ready 不代替完整默认、受限原生、L1 / L2、实际视频输入或最终包验收。
+
+H `msg_2340d3a3abbd` 已交独立 REPORT `1e25c296ef5b3a7e0a5e3a3b3bb7567e77a926c1`。模块审查其完整差异，确认只修改 `docs/access/http.md`，运行来源与报告 SHA 分别记录；原树 clean、`git diff --check` EXIT0、`git ls-remote` 精确同值。作者报告 `stage-172bb445.ps1`、`update-172bb445.ps1` 均实际 EXIT0，保存两名操作者原 ACK、正常停止、静态 HTTP、计数与 D 进程目录原件；模块复用上述独立核查结果，没有再次运行脚本。
+
+Native26 安全聚合原件为同一 H 运行目录的 `relay-prerequisites-172bb445-20261016-160655.json`，观察 UTC `2026-10-16T16:09:07.708Z` / source172；模块已实际解析全部安全聚合字段，空任务 / 收据 / 事件事实与来源限制一致。已将准确条件交产品 `msg_3f17ca18e7f9` 和根 `msg_7d5418471627`，真实 README 进度来源仍由原 B 依既有授权独立交付。本模块先前独立 REPORT `ed3a493036757310a51e010013b8cac9437a3386` 已普通 push、远端精确同值；本次补记准确 H 报告，保持连续普通历史与原 Task 支持。
 
 ## 13:45 同库更新记录
 
