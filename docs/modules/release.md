@@ -6,6 +6,8 @@
 
 原 P 已普通追加独立 REPORT `615d3a36e85aef0a5977751f895ee821a5603532`，生产 SOURCE 保持 `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d`。本模块独核远端同 REPORT、原树 clean，以及 `b208ab8ac696fea43ad192648a2e273392f5c99a..615d3a36e85aef0a5977751f895ee821a5603532` 的完整四件差异与 `git diff --check` EXIT0；仅 Start、Build、windows 说明和 P 报告。该输入已通过 `msg_bead4ec3e8b1` 交根普通消费，没有修改集成树。
 
+根 `msg_c80fefdf9ed5` 已确认 P615普通合入准确 `efec99acc4485529e2f6b06c54c82e4c97023e9f`，四件255增7减、无冲突；该组合还含已交 F 准入身份、UI入口及 B 缓存阶段，尚未作为最终包 SOURCE 交接。完整构建和适用检查由根唯一执行，后继 P 沿原 Task / 树 / 分支等待准确最终 SOURCE 及对应验收结果，再执行同源 Build / Verify，不重复资产准备或唯一 S4 构造。共享产品继续准确38fb，未按新合并记录为已更新。
+
 报告已区分真实 Shell：旧七项检查的 child 均为 `powershell.exe`，父进程分别是 PS5.1 与 PS7；实际 pwsh child 仅19882默认正向和19883唯一 S4 正向。原日志的健康、SQLite、S4四目录、显式 Go 停止和随后四端口只读 free 保留，终末重复 cleanup 错误也保留。旧运行准确38fb只用于参数兼容，未计为最终包。原 P 回报三件修订外部 helper 的 PS5.1 / 7 parser 通过，没有重新运行应用、S4或模型；本模块不将 parser 回报视为 helper 行为通过。最终文本仍有忽略进程查询错误的分支，外部 helper 尚未获得再次执行的接纳，未进入 Git 或发布包；当前生产代码消费独立继续。
 
 同一原 Task 的后继 `ctx_8acb218819a0` 已合法 `worker_done`，本模块执行官方 `worker-release` 返回 `retained / no_owned_resource / processAction=none`，未关闭或声明拥有该预创建 Claude 进程。本轮 P 曾用 shell 循环补外部脚本 BOM，已要求后继全部文件修改严格使用文件编辑工具；PS5检查脚本首次 parser 错误和旧验证错误原件保留。本模块未采用这些脚本执行新的检查，不增加证明性运行。最终同源 Build / Verify、新目录解压、完整默认与原生验收、用户未答配置和日操作条件继续保持。
