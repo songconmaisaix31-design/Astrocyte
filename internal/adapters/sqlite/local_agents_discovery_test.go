@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -37,13 +39,30 @@ func actualRegisteredSource(t *testing.T, root string) *observedRegisteredSource
 
 func TestRegisteredProjectCacheRestartStaleAndNoAuthority(t *testing.T) {
 	ctx := context.Background()
-	dbPath := filepath.Join(t.TempDir(), "state.sqlite")
+	directory := acceptedExperienceDirectory(t)
+	dbPath := filepath.Join(directory, "state.sqlite")
 	db := openAttentionDB(t, dbPath)
-	root := filepath.Join(t.TempDir(), "observed-directory")
+	root := filepath.Join(directory, "Observed-Directory")
 	if err := os.Mkdir(root, 0700); err != nil {
 		t.Fatal(err)
 	}
-	source := actualRegisteredSource(t, root)
+	inputRoot := root
+	if runtime.GOOS == "windows" {
+		inputRoot = strings.ToLower(root)
+	}
+	expectedRoot, err := filepath.EvalSymlinks(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	originalInfo, err := os.Stat(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	inputInfo, err := os.Stat(inputRoot)
+	if err != nil || !os.SameFile(originalInfo, inputInfo) {
+		t.Fatal("explicit input must identify the actual owned directory", err)
+	}
+	source := actualRegisteredSource(t, inputRoot)
 	service := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
 	service.ConfigureRegisteredDiscovery(db, source)
 	human := domain.Caller{Kind: "human", ID: "browser-human"}
@@ -66,9 +85,24 @@ func TestRegisteredProjectCacheRestartStaleAndNoAuthority(t *testing.T) {
 	if err != nil || observed.Status != "complete" || observed.ObservedAt == nil || len(observed.Projects) != 1 || source.calls.Load() != 1 {
 		t.Fatal("actual directory discovery failed", err)
 	}
-	if observed.Projects[0].Root != root || observed.Projects[0].Source != "explicit_directory" || observed.Projects[0].Git.Status != "unavailable" || observed.Projects[0].Activity.Status != "unknown" {
-		t.Fatal("actual empty directory observations were invented")
+	actual := observed.Projects[0]
+	if actual.Root != expectedRoot {
+		t.Fatalf("observed root=%q expected canonical=%q input=%q", actual.Root, expectedRoot, inputRoot)
 	}
+	observedInfo, err := os.Stat(actual.Root)
+	if err != nil || !os.SameFile(originalInfo, observedInfo) {
+		t.Fatal("observed root changed the actual directory identity", err)
+	}
+	if actual.Source != "explicit_directory" {
+		t.Fatalf("actual directory source=%q", actual.Source)
+	}
+	if actual.Git.Status != "unavailable" || actual.Git.Reason != "no_project_git_marker" {
+		t.Fatalf("actual empty directory Git observation=%+v", actual.Git)
+	}
+	if actual.Activity.Status != "unknown" || actual.Activity.Source != "explicit_directory" {
+		t.Fatalf("actual directory activity observation=%+v", actual.Activity)
+	}
+	t.Logf("actual input=%q canonical=%q same_directory=true source=%s git=%s activity=%s", inputRoot, actual.Root, actual.Source, actual.Git.Status, actual.Activity.Status)
 	projects, err := service.ListProjects(ctx, human)
 	if err != nil || len(projects) != 0 {
 		t.Fatal("discovery granted project access or created a space")
