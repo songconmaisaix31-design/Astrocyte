@@ -1083,3 +1083,62 @@ SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` 已在原 `standards-backend` 
 本阶段没有新增失败运行；既有各阶段首失败与unknown继续保留。生产及构建输入没有修改，未重复上一阶段已通过的server构建、纯函数边界或其他成功项；没有运行默认check / 浏览器 / CI。原七项正向推断、非法模型响应、在途撤权、computed / CAS / 发布失败恢复仍完整保留且NOT_RUN，本次前置覆盖不替代这些要求。Probe、Native Start、模型、ASR、采集、Sleep、正式V4和共享服务操作均0。
 
 后继容量仅沿已获准报告和安全记录定位：视频当前有效SOURCE为 `dd3a8b8a20e6f8dc30342d1708d4f59b9bec82b6`、REPORT为 `1fd89e92933b67ac6ea3510a9244ad194d6f1ec1`，D自有派生两正文32908 / 35807bytes已存在；正常只读来源main/WAL与公开bytes保持，SHM变化单列，旧额外门槛不作为当前障碍。当前57465paper与它们的自然总量为90373 / 93272bytes，仍不能证明大于128KiB。历史95314paper另有准确已验联合记录，现阶段只获准沿静态报告 / runner定位其确切公开对象，不重开FAkZe5、video-source-third或任何旧SQL，不重发模型。该来源定位、实际联合容量、真实模型与非法响应、完成经验正向、L1 / L2和最终默认 / 发布包保持各自真实前置。原Task / Dispatch持续支持，未结算。
+
+## 双源人工导入的实际容量前置 REPORT（2026-10-17）
+
+SOURCE `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` 已在 `standards-backend` 普通提交并 push，含 `[skip ci]`；相对前一 REPORT `b67f570d58d3b4bd874abf3da7897de735efb5b6` 只新增 `cmd/server/selected_text_capacity_actual_test.go`，322行。模块 `msg_51f1a213f82f` 已转交根6b735的准确公开对象用途、新测试范围和H互斥确认；未修改原两件 distillers、原七项进度或已交付六件测试、生产 bridge、依赖、workflow、冻结范围。
+
+论文静态依据为 `tasks/S1-paper-W0.md:44—56` 与原 `joint-request.json` 的安全引用字段。唯一公开paper对象为 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-7NybyZ/data/objects/05acdc763e444fa7b9762df6dc2c879867d6a2e38d42884dcf3b80e07cf89d64`，95314bytes，原 locator=`https://arxiv.org/html/2504.16054v1`。唯一video对象为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-projection-first/data/objects/030165629c4b38e519ec79e97e52b41e3c470ddfb82df268a86aef361d35f5b0`，35807bytes，原 locator=`https://www.bilibili.com/video/BV1PReT6EEqR/`。两份各读一次作为输入，原文自然总量131121bytes，未重复、拼造、填充或截断正文。
+
+测试通过显式 `ASTROCYTE_TEST_CAPACITY_PAPER_OBJECT` / `ASTROCYTE_TEST_CAPACITY_VIDEO_OBJECT` 读取准确对象，没有在仓库硬编码本机原件路径。生产 `ValidateProjectPath` 从volume root逐分量检查完整原路径，拒绝源及祖先重定向；再以普通读权限打开，核实际普通文件、Stat身份、大小、完整bytes和标准SHA256。cleanup在本次自有HTTP及SQLite关闭后重复相同保护，核原文件身份、大小、mtime及完整原bytes全等。实际测试PASS，所有来源守卫通过。没有枚举来源目录、打开任何旧SQL、读取私有对象或复制旧业务库。
+
+`TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative` 使用新D自有SQLite / objects、生产HTTP人类bootstrap / cookie / CSRF、实际项目空间及当前公开工作树注册。人工明确codex模型许可，目录与工具/控制许可保持关闭。两份获准正文经既有生产manual Reader / ImportMaterial / ProcessNextJob完整入库，原URL作为本次人工标题；每份为本次新Material / revision1 / 当前创建时间，provenance准确为manual / version1 / mode manual / 原URL。没有使用或冒称旧IJNS/3766/534资料ID、旧出版revision、旧自动provenance或原模型结果。
+
+两个实际新版本通过HTTP逐次按当前真实空间Version引用，`ReadProjectReference`逐份核新Ref、URL、全body、原SHA256及manual provenance与实际新存储相同。它们随后进入原 `SelectedTextFactory` / `selectedTextBridge` / 未Probe `Registry`。本次直接调用的UUID仅为参数身份，数据库只保存两个实际人工导入作业，distillation与Native Session均0。
+
+生产预检通过后，真实Registry在配置前置返回evidence_missing。标准slog JSON Handler只观察这次生产既有安全记录，标准JSON Decoder核恰一项INFO、原调用ID、实际prompt139579bytes、完整wire大小139957bytes、output131072bytes。prompt大于128KiB，wire小于512KiB；没有捕获请求正文、复制生产prompt组装、伪造日志或加入计数器。前后真实Registry观察全等，本次自有native目录为空。这个结果证明当前实际组装的容量/配置前置，完整prompt内容保真、原生模型接受和真实超限拒绝在本节仍未验。
+
+所有新输出位于 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-capacity/`，runner=`run.ps1`，首轮整体EXIT0。显式测试输出与GOTMPDIR / TEMP / TMP均在本次D目录，沿既有D缓存、GOPROXY=off、GOMAXPROCS=2、GOFLAGS=-p=1；没有下载依赖或修改全局配置。
+
+| 实际命令 | 结果及D原件 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative$'` | 恰好一项、EXIT0；`list-first.log` |
+| 同包 `-run '^TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative$' -v -count=1 -timeout=1m` | 首轮1 PASS / 0 SKIP、0.17秒、包1.116秒、EXIT0；`test-first.log` |
+| `go vet -mod=readonly ./cmd/server` | EXIT0；`vet-first.log` |
+| 新Go文件 `gofmt -l`、`git diff --cached --check` | EXIT0，无输出 |
+
+本阶段没有新增失败运行，首命令 / 退出 / 时间完整保留于commands-first.json。未运行构建、部署、默认CI或既有成功项，没有新Native / Probe / 模型 / ASR / 采集 / Sleep。历史SOURCE `52ff9564c1b40109987668a95ed4ad35946d6847` 的95314+32908完整来源、135754wire、真实模型成功及同库冷API结果保持为独立历史事实，不将它改为capture，也不计成当前SOURCE的模型验收。
+
+原完整capacity / recommendation / 非法模型响应、原生在途unknown / computed与发布恢复、完成经验正向、完整默认 / L1 / L2 / 发布包仍保留实际限制。根经 `msg_82cb0920d7a3` 已连续授权下一项仅同容量test及backend报告：使用准确已push e907不可变公开commit的STATUS / backend / HANDOFF / SPEC四份不同真实Git文档各一次，先核blob及自然bytes，再独立验证生产超限预检；本节未将该后继填为已运行。原Task / Dispatch继续支持。
+
+## 真实公开 Git 文档的生产超限拒绝 REPORT（2026-10-17）
+
+SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` 已在原 `standards-backend` 普通提交并 push，含 `[skip ci]`；相对前一双源 REPORT `9bb501bb303a9b51cf1acb663fc628353db496ce` 仅在同一 `cmd/server/selected_text_capacity_actual_test.go` 追加独立 `TestSelectedTextCapacityActualGitDocumentsOversize` 和标准库导入，净239行、文件共561行。根经模块 `msg_82cb0920d7a3` / `msg_898ff4990008` 确认自然真实文档输入及同域连续授权。双源实现和来源读取helper没有修改，已通过双源不重复执行；原其他测试、生产接口、依赖、workflow和冻结范围保持。
+
+本次来源固定为已普通push的公开 `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` commit，独立于后续backend REPORT及工作树文档长度变化。四份不同真实跟踪文档各使用一次，完整原bytes来自实际Git对象；没有重复正文、扩充输入、拼造资料或将文档称为论文、视频、元数据。
+
+| 固定commit中的实际文档 | Git blob SHA | 原bytes |
+|---|---|---:|
+| `STATUS.md` | `a4a99c5d2d0de199459f20e44855af98960b2cb3` | 209211 |
+| `docs/standards/backend.md` | `fb634d0763f2b500aaa80f7db2e21fc935e3d2ac` | 230066 |
+| `HANDOFF.md` | `c981e6587e47f80d37c1e5d6bd4b69b5fa4a6721` | 78620 |
+| `docs/SPEC.md` | `5416d20e0d0268073a9a454c635f056f6851d851` | 60277 |
+
+自然总量578174bytes，大于524288bytes。实际成熟Git入口为 `rev-parse --verify` 核完整commit / 文档对象，`cat-file -t` 核commit与blob类型、`cat-file -s`核原长度、`cat-file blob`读完整内容；`hash-object --no-filters --stdin`重新核原blob身份，不带 `-w`，没有写Git对象。标准UTF-8检查核真实原bytes可作为文本。HTTP及自有SQLite正常关闭后再次读取相同commit下的blob身份与全bytes，前后保持。没有解析porcelain、自写Git格式parser或读取工作树文档冒充固定commit。
+
+实际HTTP bootstrap提供本次人类身份；同一身份通过生产服务端口创建真实ProjectSpace、注册当前公开工作树、明确codex模型许可，目录 / 工具 / Agent控制许可保持关闭。每份真实Git文档经既有manual导入服务与实际作业保存为新 `Kind=file` 资料，标题为真实相对路径、URL为该准确commit的GitHub blob URL、provenance为本次manual，创建时间为本次实际时间。原完整bytes摘要与新immutable revision一致；逐份纳入当前空间后，`ReadProjectReference`核新Ref、全body、SHA256与人工provenance准确。没有复造旧资料身份、旧来源时间或自动生成事实。
+
+这四份实际新固定引用进入原 `SelectedTextFactory` / `selectedTextBridge`。真实当前项目许可检查通过，Distill在生产输入预检返回 `validation_failed`，required_action准确为 `review_selected_text_size`；若返回evidence_missing，本项断言会失败。没有注入processor、人工返回错误、假调用计数或复制prompt组装。真实Registry观察前后相同，自有native目录为空，实际SQL核四个作业均仅为本次导入，distillations0、Native Sessions0，没有原生进程或模型调用。
+
+结果仍存放于本次独占 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-capacity/`，后继runner=`run-oversize.ps1`；显式 `ASTROCYTE_TEST_CAPACITY_PUBLIC_COMMIT=e9070a208d2f1704a5e6d2a056d9cbd35d73d324`，所有新输出及Go临时目录沿前节D环境，无依赖下载、构建或部署。
+
+| 实际命令 | 首轮结果与D原件 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextCapacityActualGitDocumentsOversize$'` | 恰好一项、EXIT0；`list-oversize-first.log` |
+| 同包 `-run '^TestSelectedTextCapacityActualGitDocumentsOversize$' -v -count=1 -timeout=1m` | 1 PASS / 0 SKIP，1.04秒、包2.208秒、EXIT0；`test-oversize-first.log` |
+| `go vet -mod=readonly ./cmd/server` | EXIT0；`vet-oversize-first.log` |
+| 该Go文件 `gofmt -l`、`git diff --cached --check` | EXIT0，无输出 |
+
+runner整体EXIT0，命令 / 退出 / 时间完整保留于commands-oversize-first.json。本次没有新增失败运行，双源首轮1 PASS /0.17秒/包1.116秒、真实139579prompt /139957wire及原全部守卫保持为前节独立首结果；没有把两轮改成一次重复运行或覆盖旧首失败。
+
+实际通过范围为公开双源的新人工导入容量/配置前置，以及四份真实公开Git文档的独立distillation超限拒绝。原 `TestOversizeAssembledPromptFailsKnownBeforeSelectedProcess` 整个替身函数、recommendation超限、完整prompt内容保真、模型接受及非法模型响应仍未运行、不计原函数通过；原完整覆盖未删除、未加Skip。Native在途unknown、computed / CAS / 发布恢复、完成经验正向、完整默认 / L1 / L2 / 发布包仍保留各自前置和未验状态。Probe / Native Start / 模型 / ASR / 采集 / Sleep / 共享实例操作均0，未build/deploy或重发旧模型。原Task / Dispatch持续支持，未worker_done。
