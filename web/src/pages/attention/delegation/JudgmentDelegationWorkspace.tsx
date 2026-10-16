@@ -12,6 +12,7 @@ import { DelegationRuleWorkspace } from './DelegationRuleWorkspace';
 import { delegationStates } from './judgmentLabels';
 import { JudgmentRequestEditor } from './JudgmentRequestEditor';
 import { JudgmentResultWorkspace } from './JudgmentResultWorkspace';
+import { TasteProfileEditor } from './TasteProfileEditor';
 import { judgmentApi, type DelegationRule, type JudgmentPolicy, type QuestionType } from './judgmentApi';
 import styles from './DelegationWorkspace.module.css';
 
@@ -24,6 +25,7 @@ export function JudgmentDelegationWorkspace() {
     <div className={styles.result}><p>按项目配置固定判断来源与策略，查看判断、记录人工反馈，分别确认资料准入和任务批准。</p>
       <QueryState state={projects} empty={data => !data.items.length} emptyTitle="请先登记实际项目">{data => <SelectField label="判断与委托的项目" value={projectID} disabled={disabled} onChange={setProjectID} options={[{ value: '', label: '请选择已登记的实际项目' }, ...(projectID && !project ? [{ value: projectID, label: `原项目当前不可用：${projectID}` }] : []), ...data.items.map(item => ({ value: item.id, label: item.name }))]} />}</QueryState>
       {project && <JudgmentProjectWorkspace key={project.id} project={project} disabled={disabled} />}
+      <TasteProfileEditor />
     </div>
   </SectionCard>;
 }

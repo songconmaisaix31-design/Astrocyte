@@ -1,5 +1,43 @@
 # S2/S3/S4/S5 产品页面开发记录
 
+## 2026-10-16 12:55 S5 判断与委托：入口消费、类型接缝与正向测试
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_5d4bbae2a28d`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_676d773e9f23`。分支 `songconmaisaix31-design/product-ui-20261015`。
+
+F 入口 SOURCE `32a52cdf0473b657c1be03a01db54273255d011a` 已普通 cherry-pick 为 `59c0876`（仅 AttentionPage.tsx 增加 import 和直接渲染 JudgmentDelegationWorkspace）。无视觉配置 `0835d1313d731e597f346ef0abfd54aa7af87386` 已普通 cherry-pick 为 `1d9af61`（screenshot: 'off', video: 'off', trace screenshots: false）。根 2d27 类型接缝已同步：`judgmentApi.ts` 第 14 行 `JudgmentCommand` 精确排除公开禁止的 `context` 字段（`Omit<..., 'context'>`），来源 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`。
+
+本域 SOURCE 14 件（615 行新增，bd8a8df3d76cb063a7547577d54e11cfa722cbb6）：
+
+| 文件 | 职责 |
+|---|---|
+| `JudgmentDelegationWorkspace.tsx` | 顶层入口：项目选择、策略/规则管理、判断请求、结果查看。`export function JudgmentDelegationWorkspace()`，无 props，自含 `localProjectsApi.listProjects` 读取 |
+| `JudgmentPolicyEditor.tsx` | 策略编辑：Goal/Taste/Ranking 引用选择、真实快照捕获（`judgmentApi.snapshot`）、预算字段、版本冲突处理、`usePersistentCommand` unknown 锁 |
+| `DelegationRuleEditor.tsx` | 委托规则创建/编辑：规则标识、题型、指令、工作流、语言、策略版本引用 |
+| `DelegationRuleWorkspace.tsx` | 规则详情：状态变更（开启/暂停）、评估执行、判断结果入口 |
+| `JudgmentRequestEditor.tsx` | 人工判断请求：候选选择、上下文输入、`usePersistentCommand` |
+| `JudgmentResultWorkspace.tsx` | 判断结果与反馈：结果详情、反馈记录（adopt/later/reject/revise/already_solved）、资料准入 |
+| `JudgmentResultDetails.tsx` | 结果详情展示：判断类型、决策、置信、截断、上下文 |
+| `JudgmentEvidencePicker.tsx` | 证据选择：项目证据引用 |
+| `judgmentApi.ts` | API 客户端：session/taste/snapshot/policy/rules/rule/evaluate/judge/result/feedback/admit，CSRF/幂等键/版本；JudgmentCommand 使用 `Omit<..., 'context'>` 排除公开禁止字段 |
+| `judgmentLabels.ts` | UI 标签映射 |
+| `policyDraft.ts` | 策略草稿类型与转换 |
+| `ruleDraft.ts` | 规则草稿类型与转换 |
+| `useProjectEvidence.ts` | 项目证据 Hook |
+| `DelegationWorkspace.module.css` | 样式（6 行新增） |
+
+已有字段组件（非本阶段新增，已在前序 SOURCE 交付）：`JudgmentPolicyFields.tsx`、`JudgmentQuestionFields.tsx`。
+
+新增 E2E 测试 `s5-delegation.spec.ts`：独立 D 盘 server/API/SQLite、独立项目（不复制共享 98389066 项目 ID）、真实 snapshot/Goal/Taste。首 RED（5 项拒绝/权限/unknown 测试）保留，正向路径（4 项策略保存读取、规则保存读取状态变更、判断提交反馈、版本冲突）实现。不 mock、不 skip、不四层 Agent。
+
+| 命令或检查 | 本阶段结果 |
+|---|---|
+| `pnpm --dir web typecheck`（tsc -b，含 solution refs） | PASS，EXIT0 |
+| `npx eslint e2e/s5-delegation.spec.ts src/pages/attention/delegation --max-warnings 0` | PASS，零 errors / warnings |
+
+共享 64505 已暂停全部操作，等待 H 正式 2d27 ready。独立 D 盘测试使用 `D:/Astrocyte-agent-assets/20261015/product/ui/ctx_5d4bbae2a28d/` 专属目录，`GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOMAXPROCS=2`/`GOFLAGS=-p=1`。无截图/视频/trace 截图。实际模型 `qwen3.7-max`。
+
+后继待运行：实际 Playwright 浏览器执行 s5-delegation.spec.ts 正向路径（真实 rule 后端可能拒绝执行但保留非 500 状态）。
+
 ## 2026-10-16 04:23 判断题目输入校验
 
 Task `task_d0cee5a583bb` / Dispatch `ctx_e366c835cb43`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_5516f4f55d3b`。本域 SOURCE `f0d27271c15d131aea50012658232f7fa41a142b` 已普通 push 并独核远端同值，改动仅原 `attention/delegation/**` 三件。`JudgmentQuestionFields` 增加空白题目标识与说明、选项数量 / 标识、确定性选项规则缺少依据、评分等级数量与空白说明的检查提示；输入继续保留。约束直接读取现有 `internal/judgment/validation.go`，未构造公共 DTO 或提交来源。
@@ -345,3 +383,37 @@ SOURCE `c0726349a5aca66c548364e2d85c9916056530aa` 已普通 push，独立 `git l
 | `pnpm check` | FAIL：`cmd/server` 的 `TestRelayPersistentRealHTTPReceiptsMutexAndRestart`，`relay_runtime_http_test.go:297` 实际 HTTP 403 `approval_required`，预期 200；另 8 项 importers 测试缺明确视频/PDF目录，9 项 Workbench 测试缺授权实际 publication 环境。日志保留于本机 `.verification/product-ui/check-stage1.log`，已交回原负责人并请求准确公开测试输入指针 |
 
 真实 S2 交互、两尺寸和重启结果见上表。撤销后新受保护动作、Context、S3/S4 正向路径及完整组合仍待继续验证。Relay 实际 GUI 由 F 独占，原始输出与凭据不进入 Git 或 HTTP。
+
+## 2026-10-16 Taste 完整配置与真实判断链
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_e921762e5e79`，开发客户端为 Codex 0.162.0 / GPT-6.1-Sol / xhigh fast。分支 `songconmaisaix31-design/product-ui-20261015`，本阶段 SOURCE `524ee13dc7fefbc29660b6b5136077f400972bd2` 已普通 push。该提交只修改 `TasteProfileEditor.tsx`、`TasteProfileFields.tsx`、`tasteDraft.ts`、`judgmentApi.ts` 和 `web/e2e/s5-delegation.spec.ts`。下列检查在提交前的相同业务与测试文件内容上执行，实际工具退出回执均已取得；集成组合另由模块验收。
+
+F 公共 runner `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` 已普通消费为 `140cf7e`，显式环境参数 `375a559b0a451f78446be642b99d8d5e365221fa` 已普通消费为 `b639d37`。原公共配置 WIP 经精确核对仅有同一行 s5 匹配，使用文件编辑工具恢复该行后才消费 F 提交。本域继续使用原生成客户端、认证、`useReadApi`、`usePersistentCommand` 和 `CommandState`。
+
+Taste 页面提供完整已保存内容、人工创建及编辑、启停、固定资料示例和实际委托引用。新配置不预选启用状态或题型；首次 `expected_version=1`，后继使用实际读取的配置版本。choice 收集 2 至 255 个唯一非空选项并保持空等级；score 收集 2 至 10 个非空等级并保持空选项；truth 两数组均为空。示例的 choice 期望值选自真实选项，score / truth 期望值按 JSON 数值校验对应范围。启用至少需要一个准则和一个固定资料示例。
+
+资料版本由用户明确选择，包含实际较早版本，保存前逐项重新读取 active 资料、固定 revision 与精确 content_digest。示例使用稳定 ID，独立读取由原 Hook 取消和隔离，读取响应只更新展示；父级只修改当前仍存在的示例。委托引用选自实际可读取的规则、revision 和 workflow，保存前再核实际规则版本。
+
+保存前冻结输入和 expected_version，与原 request_id 一次提交。pending / uncertain 禁写，未知身份跨关闭、重开和刷新保持，浏览器 storage 只保留原公开操作 UUID。Taste 当前没有按请求身份读取收据的接口，读取实体版本无法确认原请求，未知锁持续保留。409 保留原草稿与版本，人工重新读取最新配置、核查并明确重新准备后才能发起新命令。403 和 stale 读取期间禁写，恢复后明确重新读取。
+
+完整主链使用 `realService(true, { ASTROCYTE_REPOSITORY_ENVIRONMENT_ID: hostname() })`，正式 Relay 与生产 Snapshot / Judgment 组装均在独立真实 HTTP / SQLite 实例内运行。项目权限以实际 settings.revision 保存，明确允许 STATUS.md / AGENTS.md 和 read_context；owner 取真实 session。Taste、Goal、Snapshot、Policy 和 Rule 均通过真实 DOM 保存，snapshot_id 取实际 generation，worktree_id 独立保存，Policy 固定真实 Goal / Taste 来源及全部版本。Rule 保存为 disabled，再分别人工开启及暂停；确定性规则判断返回 recommend / value=1，人工反馈与固定结果在真实服务同库重启后保持。SQLite 核查三份 Taste 历史、一个判断、一个反馈、零 local_agent_sessions。该链没有原生登记、初始化或模型输入。
+
+全部本轮原件根为 `D:/Astrocyte-agent-assets/20261015/product/ui/ctx_e921762e5e79/`。命令进程级设置：`GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOTMPDIR=<原件根>/gotmp`，`TEMP=TMP=<原件根>/temp`，`ASTROCYTE_TEST_OUTPUT_ROOT=<原件根>/results`，`GOMAXPROCS=2`，`GOFLAGS=-p=1`。后继命令的 GOMODCACHE 显式复用本轮已成功的 D 目录 `results/astrocyte-s1-EhXH3k/profile/go/pkg/mod`，保持全局环境不变。Playwright 固定 `--config e2e/self-service.config.ts --workers=1 --retries=0 --trace off --reporter list`，每轮 `--output` 使用下表同名专属目录。
+
+| 实际命令 | 结果与原件 |
+|---|---|
+| `pnpm --dir web typecheck` | 完整 tsc-b EXIT0，`typecheck-third.log`、`typecheck-fourth.log`；工具会话 19266 / 51170 已返回实际 EXIT0 |
+| `pnpm --dir web lint` | 全 web EXIT0 / 零错误警告，`lint-final.log`；实际工具会话 96251 返回 EXIT0 |
+| `pnpm build` | server / MCP / Sleep、完整 tsc-b 与 Vite 全部 EXIT0，`build-first.log`；实际工具会话 29302 返回 EXIT0。实际产物在本树 `C:/Users/DW/orca/workspaces/Astrocyte/product-ui-20261015/dist/` 与 `web/dist/`；缓存、临时目录和 QA 原件使用上文 D 路径 |
+| `pnpm --dir web exec playwright test e2e/s5-delegation.spec.ts --grep 'Taste实际409\|Taste真实浏览器\|Taste真实403' --project chromium-1920`，加上述公共参数 | 首轮冷下载超时 1 FAIL，unknown / 403 两项 PASS，总 EXIT1 / 5.0 分钟；`e2e-boundaries-second.log` / `playwright-boundaries-second/` |
+| 同一 spec，`--grep 'Taste实际409' --project chromium-1920`，加上述公共参数 | 1 PASS / EXIT0 / 57.2 秒；`e2e-conflict-third.log` / `playwright-conflict-third/`；实际库 `results/astrocyte-s1-HVsINH` |
+| 同一 spec，`--grep '完整真实DOM链' --project chromium-1920`，加上述公共参数 | 1 PASS / EXIT0 / 52.5 秒；`e2e-full-first.log` / `playwright-full-first/`；实际库 `results/astrocyte-s1-rxj1Th` |
+| 同一 spec，`--project chromium-1280`，加上述公共参数 | 全部五项 5 PASS / EXIT0 / 1.7 分钟；`e2e-1280-first.log` / `playwright-1280-first/`；完整链库 `results/astrocyte-s1-Mm8TUt`，历史版本库 `results/astrocyte-s1-CcBoi5` |
+| 同一 spec，`--grep 'Taste选择实际较早' --project chromium-1920`，加上述公共参数 | 1 PASS / EXIT0 / 1.6 分钟；`e2e-history-1920.log` / `playwright-history-1920/`；实际库 `results/astrocyte-s1-4KT8Im` |
+| `git diff --check` / `git diff --cached --check` | 均 EXIT0 |
+
+两尺寸各五项场景已分别实际通过，结果来自表中分次运行。历史版本场景从本仓库两份实际 AGENTS.md Git 版本读取正文，生产手工导入生成同一资料 r1 / r2，保留精确 commit 来源；界面明确选择 r1，切换资料后固定版本清空并要求重新选择，移除示例后保持两项，实际撤回资料后保存前核查拒绝，Taste PUT 为零且历史数量不变。humanAPI 严格契约保持，所有正向保存均要求实际 200。
+
+首失败保持：`typecheck-first.log` 为材料 title 可空的 EXIT2，`typecheck-second.log` 及首次定向 ESLint 工具回执为未使用类型声明错误。`e2e-first.log` / `playwright-first/` 保留真实新建、并发更新、409 及草稿之后的等待超时；该轮运行中补充人工核查步骤，测试已加载脚本与页面不同。固定源码后的 `e2e-boundaries-second.log` 首项在 Go 冷下载期间 180 秒超时，其余两项真实通过；之后仅定向复验失败的 409。继承 WIP 副本保留在 `s5-inherited-wip.txt`。SOURCE 首次普通 push 被远端以 failed 拒绝、EXIT1，核远端仍为 93223cf 后第二次普通 push EXIT0。
+
+本阶段真实限制：Taste 未知收据缺少按 request_id 的只读查询，页面继续保锁；委托选择使用公开接口当前可读取的规则版本。构建保留主资源 693.43 kB 的既有 500 kB 提示。共享 64505 保持原 2d27 / PID50624，F 为唯一共享业务操作者；本阶段没有写入共享个人 Taste、PLOS 准入或批准。整仓 `pnpm check`、默认完整 E2E、受限 Native / L1 / L2 和最终包不属于以上通过结果，仍由模块及原负责人继续。后继操作为模块审阅该 SOURCE / REPORT 并交根普通集成，最终发布由根接受后处理。
