@@ -1,5 +1,11 @@
 # Astrocyte 主控交接
 
+## 四项目录测试已完成组合验证（2026-10-17 02:50）
+
+H准确SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` /独立REPORT `68c9acc11d991720b9b1562abd2983bdb9af0229` 已普通合入原I为 `0368145b2ca9016170955094436421846f36b7e0`，根报告 `44a25576b90be0c2a9590dd41f814cba15c30427` 已普通push。根独读全部差异与作者原件后，准确组合精确list四项、真实4 PASS /0 Skip /包3.528秒；server vet、diff与runner整体均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-directory-0368145/`，相邻runner保存完整命令。只修改测试自有目录前置与失败诊断，生产权限 /目录守卫及原成功 /真实同文件拒绝保持。Windows原CI精确原因仍UNKNOWN，完整CI未通过。
+
+本次没有生产变化、构建或部署，产品继续准确c5 /PID30420 /64505，原H服务终端及外层EXIT UNKNOWN保持。原B继续当前四文件真实测试整改，再连续处理已确认互斥的HTTP Workbench替身；普通真实列表检查与UnavailableSlot缺位场景分为独立入口，缺实际前置时原缺位场景不执行或记PASS，不复制生产过滤算法生成预期。首编译失败保留，尚无本阶段SOURCE /验收。全部沿原Task /Run /树，Native和其他未答权限保持，最终包磁盘守卫仍未满足。
+
 ## 集成经验连接已进入运行产品（2026-10-17 02:40）
 
 原I已普通合入B SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` /REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 为d356；H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3` /REPORT `a4c1baf6e47e8f449c2f26ce37150780b051df5e` 已普通合为准确 `c5b3b5715f2e93b82365720914be24c73642bd1e` 并push。根完整独读源码 /真实测试 /作者报告和原件。根d356真实采用来源1主项 /九子项PASS0.19秒 /包1.943秒；准确c5三项实际装配3 PASS /包3.352秒，最终全Go vet /全Go build /部署binary /42包架构 /diff均EXIT0。首vet因D缺锁定SDK /GOPROXY=off失败保留，按已授权下载D后仅续失败阶段，未重复3 PASS。准确原件在原integration D根的 `root-artifact-d356b4b/`、`root-experience-c5b3b57/` 和 `root-experience-c5b3b57-followup/`。
@@ -9,6 +15,8 @@
 经验连接已实施真实采用来源适配、双来源明确定位、当前请求Principal的私有context、同库事务再授权与显式Interpreter构造。未配置deadline及固定公开Git上下文时保持精确不可用；真实采用 /合法完成来源、双命中现场、在途撤权及模型生成正向尚未验证，Native工具和其他业务选择仍待答，不能写L2已完成。原进度1/8真实替换、余7不可计PASS；原浏览器55失败清单仍29 PASS /26 Native未执行，前端178项仍174分批通过 /4缺L1。
 
 已核自动CI：旧4b4ec3b2 /Run38947762564双平台check失败；c5 /Run38948519582已精确取消并实际completed /cancelled，取消前输出的失败与全部原件在 `integration/root-ci-c5b3b57/` 保留。默认Go仍含七项原进度替身，自动CI已输出结果不计真实替身通过。后续纯报告使用 `[skip ci]` 防重复运行这些旧套件，不改变workflow或测试Skip /断言；完整CI未通过。根 `msg_30d419ed7f10` / `msg_20893ddcf33f` 已交原B /H区分缺实际原件 /输出根 /CLI /Q配置、实际来源变化和可独立修复的非Native疑点，继续原Task及互斥写域，不新Task /Run或controller。
+
+当前已确认的替身限制还包括Relay controlled driver /workspace /sink、SQLite原localNative收据测试，以及 `internal/adapters/httpapi/workbench_test.go` 的固定Event /错误stub，不能只报进度七项。HTTP Workbench stub由原产品模块核单文件互斥后交原B沿同Task真实替换，复用原公开Q /SQLite /HTTP并保留原全部断言；`internal/workbench/workbench_test.go` 缺公开Q配置属于另一份真实reader测试，分别归类。原B当前四件CI测试范围是discovery、permissions_actual、public_listing_actual及backend报告；缺位来源现场与unknown原生收据仍未验，不把实际60 /3请求直接改作59断言的通过。H只规范四项自有测试目录 /补底层错误，生产canonical权限守卫保持；Windows精确别名根因仍未知。锁定Go模块在9623a924的后继检查已实际 `go mod verify` EXIT0，全部模块验证通过，没有重复已成功业务。
 
 最终包装守卫当前不满足：C空余实测5,485,166,592bytes，要求至少10GiB；官方Go /npm /pnpm缓存合计约2.27GB且npx15968在途，未清理缓存、用户数据或证据，未改OS /pagefile /守卫。普通D构建与产品更新已完成，最终ZIP /解压验证 /GitHub Release尚未执行，完整默认 /check /L1 /L2保持未完成。
 

@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 02:50 四项目录测试组合通过（2026-10-17）
+
+原H SOURCE ce90c386 /REPORT68c9acc1已普通合原I为0368145b，根报告44a25576已push。根精确list四项、真实4 PASS /0 Skip /包3.528秒，server vet /diff /runner均EXIT0；原生产保护和拒绝断言保持。准确原件与命令见HANDOFF及I报告。原Windows CI具体原因仍UNKNOWN，完整CI未通过。
+
+当前产品保持c5 /PID30420 /64505，没有重建或更新。原B连续修复四件真实测试并替换HTTP Workbench stub，普通列表与缺位场景独立、缺位前置不足不记PASS；当前尚无最终SOURCE。Native边界 /L1 /L2 /完整默认和最终包继续未完成，原Task与全部证据保留。
+
 ## 02:40 经验连接已集成并更新同库产品（2026-10-17）
 
 当前产品 `http://127.0.0.1:64505/` 已为准确c5b3b571 /modified=false /PID30420 /启动UTC18:37:58.6714394，根独核源码 /程序 /唯一监听 /health /首页通过；68表90行、原库 /Q /媒体保持。原H普通服务终端610cc持有，外层更新命令退出仍UNKNOWN，内部ready和数据原件已保存，不重复更新。binary来源c5，生产Web源码及配置保持172，原30个静态文件复用并单列来源。
@@ -7,6 +13,8 @@
 B真实采用来源与H生产Interpreter连接均已固定SOURCE /独立REPORT普通合入；根精确B组合1主项九子项通过、c5三项真实装配3 PASS /包3.352秒、最终全Go vet /build /准确binary /42包架构 /diff均EXIT0。原D缓存SDK缺失的vet首EXIT1保留，下载锁定依赖后只续未完成阶段。完整来源、命令与原件见HANDOFF及I报告。
 
 自动CI4b4阶段双平台check失败，c5当前Run38948519582实际已cancelled，失败和取消前结果保留，不记完整通过。七项进度原替身仍未整改；原B /H继续对CI缺配置 /真实来源与非Native疑点逐项归因，不将全部失败归为Native，不新增Skip /伪造或降低验收。原55清单29 /26、前端178项174 /4保持，原生 /L1 /L2和实际经验生成仍待真实前置及未答权限。
+
+完整默认的残余替身还含Relay受控driver /workspace /sink、原SQLite localNative及HTTP Workbench固定事件stub，分别交原owner，不只登记进度七项。原B连续整改无需Native的HTTP Workbench，并处理已定的目录 /权限 /实际列表检查；原H继续实际自有目录前置及准确错误信息，保留原成功 /拒绝断言。另已实际完成锁定Go模块校验，EXIT0；具体边界见HANDOFF。
 
 C空余约5.5GB低于原10GiB包装守卫，未清理 /改OS或降低守卫；最终Windows包 /解压验证 /Release尚未执行。当前仅代码与已验产品更新完成，整体任务继续。
 
