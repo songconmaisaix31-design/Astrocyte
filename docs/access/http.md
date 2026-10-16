@@ -1,24 +1,38 @@
 # Works Relay HTTP 与 L1 会话采集
 
-## 2026-10-16 当前同库产品与媒体配置
+## 2026-10-17 当前同库产品与媒体配置
 
-当前实际 SOURCE 为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`、modified=false，PID50624，启动 UTC `2026-10-16T05:40:20.6912890Z`，地址为 `http://127.0.0.1:64505`。根的准确完整 build 已实际 EXIT0 / 15.039582秒、source_after 同值，另有同源 web lint EXIT0 和真实准入首场景两窗口2 PASS / 42.3秒；H 没有重复这些检查。H 复核稳定副本和运行程序的 Go buildinfo、实际进程路径与启动身份，64505 只有一个属于该 PID 的 loopback listener。健康检查返回 `ok`，首页 HTTP200 / 562bytes。
+当前实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，PID25568，启动 UTC `2026-10-16T16:06:57.3298644Z`，地址为 `http://127.0.0.1:64505`。根已完成该准确组合的完整 build、全 web lint 和真实 S5 主链 / 卸载取消两尺寸4 PASS / 2.0分钟，全部实际 EXIT0；原件在 `integration/root-taste-172bb44/`。H 直接消费这些结果，核对稳定副本与运行程序的 Go buildinfo、实际进程路径和启动身份。64505 只有一个属于该 PID 的 loopback listener，health 返回 `ok`，首页 HTTP200 / 562bytes；全部30个静态文件的实际 HTTP 响应均为200，字节逐项与稳定副本相等。
 
-本轮 Task `task_3004b636a3ab` / Dispatch `ctx_d763540bd366` 保持原 H 树和写入范围，报告基线为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`。根 `msg_6aca37abac0a` 提供准确产物复制窗口；H 将 binary 和全部30个 web 文件复制到自身稳定 `versions/2d27b689`，逐项核文件存在、大小及总数，并重新核 buildinfo。H 已停止读取原集成产物，通过 `msg_17168472d734` 归还根读取窗口。
+本轮 Task `task_3004b636a3ab` / Dispatch `ctx_d763540bd366` 保持原 H 树和写入范围，报告基线为 `d5427c705903e9bb69f1f257706f490e1784eea9`。根 `msg_6f521e86c1b9` 提供准确产物复制窗口；复制时原集成 HEAD 为172且 clean。H 将 binary 和全部30个 web 文件复制到自身稳定 `versions/172bb445`，核对程序 buildinfo / 大小，以及全部静态文件的大小、字节与总数。H 已停止读取原集成产物，通过 `msg_00a5456a5607` 归还根读取窗口。
 
-根 `msg_7fb0fed7722d`、直接消息 `msg_0f41b8b5e469` 和模块 `msg_a80a34353244` 明确授权本次同库更新。F 本人当次确认 `msg_483b97ead083`、UI 本人当次确认 `msg_55010e2e80ce` 均明确暂停共享实例至 H 新 ready，模块在更新前再次确认两项当次声明仍有效。H 核旧38fb / PID33808 的准确程序、启动时间和唯一 listener 后，通过原 owned helper 发送 `CTRL_C_EVENT`；正常退出与端口释放实际用时1.1571702秒。仅在退出确认后启动一次稳定2d27副本，保留真实停止收据。
+根上述授权与后续正式 `msg_ac532b531862` 明确本次同库更新。F 本人当次原记录 `msg_e359a65335ba`、UI 本人当次原记录 `msg_8ec1d72a2d30` 均声明全部共享操作暂停至 H 的172正式 ready；原收件人为产品模块 Run，产品通过 `msg_1e4e19b5ee1e` 完整转交原 id / from / to / created_at / body。H 核对两名当前操作者身份和原声明，保存安全原件，再核对旧2d27 / PID50624 的程序、启动时间和唯一 listener。原 owned helper 发送 `CTRL_C_EVENT` 后，实际正常退出与端口释放用时1.0807274秒；确认退出后仅启动一次172稳定副本。
 
-原 SQLite、LOCALAPPDATA 和 F 已保存的业务记录保持。Node 内置 `node:sqlite` 以 readOnly / query_only 事务在新版本启动前后逐表计数：68个表、合计90行，所有计数相等，`local_agent_sessions=0`。Q 继续读取原 `snapshot-1711995690`，启动前后 current 的 generation / snapshot_at 完全一致，没有重新采集或复制快照。本轮只执行 health 和首页读取；F 保持唯一业务操作者。实际新 ready 已直接交根、模块、F 和 UI，F 唯一业务窗口与 UI 既定只读窗口已归还。
+原 SQLite、LOCALAPPDATA 和 F 已保存的业务记录保持。Node 内置 `node:sqlite` 以 readOnly / query_only 事务在新版本启动前后逐表计数：68个表、合计90行，所有计数相等，`local_agent_sessions=0`。Q 继续读取原 `snapshot-1711995690`，启动前后 current 的 generation / snapshot_at 完全一致，没有重新采集或复制快照。本轮 HTTP 只读取 health、首页和静态文件；没有业务 mutation。实际新 ready 已直接交根、模块、当前 F / UI，F 唯一业务窗口与 UI 既定只读窗口已归还；模块另已独立核查新程序、旧进程退出、唯一 listener、数据及 Q 保持。
 
 H 从 B 已核的本机 JSON 显式设置12项媒体白名单，八个工具 / 模型文件和媒体目录在启动前核验，缺失、未知键或已确认选项不符立即失败。`summarize` 0.25.1 的生产 extractor 已实际构造并通过启动检查；没有执行视频提取、ASR 或模型调用。原成功视频的952段不重跑；旧 CLI 原件没有字幕，media / whisper 原件不能作为 `summarize_json` 导出输入，当前接口也没有恢复其原附件与 revision 身份的入口。
 
-本机原件位于原 H `shared-product-ad8413/`：`versions/2d27b689/stage.json`、`stop-38fb-for-2d27-20261016-054018.json`、`update-2d27-20261016-054018.json`、`data-before-2d27-20261016-054018.json`、`data-after-2d27-20261016-054018.json` 和对应私有 stdout / stderr；当前运行指针为该目录的 `running.json`。本轮脚本位于 H 已忽略的 `dist/product-recovery-20261016/`，通过文件编辑工具创建；PowerShell parser 零错误，`stage-2d27.ps1` 与带上述两个当次消息参数的 `update-2d27.ps1` 均实际 EXIT0。后继进程的 TEMP / TMP / GOTMPDIR、Go build / module、npm、Node compile 和 Corepack 缓存均明确使用 H 独占 D 目录，设置仅作用于当前进程及其子进程，没有清理其他缓存。凭据、私有配置和完整路径只保存在本机原件；公开报告仅保留计数、状态及本机指针。
+本机原件位于原 H `shared-product-ad8413/`：`versions/172bb445/stage.json`、`ack-172bb445-msg_1e4e19b5ee1e.json`、`stop-2d27-for-172bb445-20261016-160655.json`、`launch-172bb445-20261016-160655.json`、`update-172bb445-20261016-160655.json`、`data-before-172bb445-20261016-160655.json`、`data-after-172bb445-20261016-160655.json`、`static-172bb445-20261016-160655.json` 和对应私有 stdout / stderr；当前运行指针为该目录的 `running.json`。脚本位于 H 已忽略的 `dist/product-recovery-20261016/`，通过文件编辑工具创建 / 修改；PowerShell parser 零错误，`stage-172bb445.ps1`、带上述两个当次原记录参数的 `update-172bb445.ps1` 均实际 EXIT0。后继进程的 TEMP / TMP / GOTMPDIR、Go build / module、npm、Node compile 和 Corepack 缓存均使用 H 独占 D 目录，仅作用于当前进程及其子进程，没有清理其他缓存。凭据、私有配置和完整路径只保存在本机原件；公开报告仅保留计数、状态及本机指针。
 
 当前运行来源使用根唯一集成的完整准确组合，页面新功能仍由原 F / UI 通过实际操作验收。Jev / Laya / 经验 Interpreter 未配置，新增原生登记、初始化、模型输入、ASR 和索引均为零。工具边界、Agent completion action 和 Laya 语言待答，真实原生完成正向、完整默认、L1 / L2 六步及最终包仍未通过。原 OS1314、nlink2、append-only unknown、session_complete=false 和 raw 恢复 gap 保持各自实际结果。
 
+## 2026-10-17 现存 Native26 与进度检查前置
+
+172正式 ready 后，仅对同一现有 `relay.sqlite` 执行 readOnly / query_only 查询。UTC `2026-10-16T16:09:07.708Z` 的实际结果为 `relay_state=0`、`relay_receipts=0`；Tasks、Workspaces、Terminals、Sessions、OwnedSessions、PendingActions、Completions、Events、RuntimeFacts、SessionRelations 均为0。已有启动后主库计数中，`attention_engine_events`、`local_agent_sessions`、`local_project_progress`、`workspace_session_bindings` 均为0。安全聚合原件为上述 H 运行目录的 `relay-prerequisites-172bb445-20261016-160655.json`；没有创建任务、复制授权 / Session 或写入任何场景资料。
+
+当前实际页面 URL 可消费。原 `relay-runtime.spec.ts` 的正向原生场景还需要每个 scenario / viewport 的真实 `ASTROCYTE_TEST_RELAY_<SCENARIO>_<WIDTH>_TASK_ID` 及其实际状态、收据和恢复关系；原 `relay-session.spec.ts` 需要 `ASTROCYTE_TEST_RELAY_L1_GETEVENT_PUBLIC_FILE` 中由真实 GetEvent 定位的六字段事件、原生 event_id 正向确认、公开固定输入 canary，以及同一窗口的 `first-visible.json`。该共享范围当前没有可提供的上述正向任务 / 收据 / 事件和首次 DOM 证据。原生工具关闭及合法自产来源门禁继续保持，缺失场景不计通过，不新建 Native / 模型或伪造状态补齐。
+
+既有真实 README 推断进度的两项前端检查还需要原 B 交付实际 `ASTROCYTE_TEST_PROGRESS_PUBLIC_URL / PROJECT_ID / NATIVE_ID`。该检查要求已保存的 `agent_inferred`、真实模型 / NativeID / 时间 / evidence / operations 和当前 HTTP；本共享库进度记录为0。原 B 按根已授权的既有公开 SQLite 只读派生托管处理，保持原来源与派生库 revision 的区别，不复制 Grant / Session、不恢复控制器、不重新 infer，也不新增生产导入接口。
+
+本次已完成检查没有定位到新的 H 生产装配或 HTTP 错误。可消费总 SOURCE 为172；H 原生产 SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` 和已验 REPORT `d5427c705903e9bb69f1f257706f490e1784eea9` 均为172普通祖先。本轮没有新增 R 交付或原生动作，原 R 受限原生能力及待答决定保持；当前真实场景前置缺失的结论不代替原生验收。
+
+## 2026-10-16 13:40 同库更新记录
+
+该次 SOURCE 为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`、modified=false，原 PID50624 / UTC `2026-10-16T05:40:20.6912890Z`。根完整 build EXIT0 / 15.039582秒、web lint EXIT0及真实准入首场景两窗口2 PASS / 42.3秒；H 只消费准确产物，取得 F `msg_483b97ead083` 与 UI `msg_55010e2e80ce` 当次确认后正常停止旧38fb，再沿原 D 库和64505启动一次2d27。health / 首页、唯一 listener、68表90行逐表计数与原 Q 均通过；原件 `update-2d27-20261016-054018.json`、`data-before-2d27-20261016-054018.json`、`data-after-2d27-20261016-054018.json` 保持，独立 REPORT 为 `d5427c705903e9bb69f1f257706f490e1784eea9`。该进程已在当前172更新时正常退出。
+
 ## 2026-10-16 11:48 同库恢复记录
 
-恢复 SOURCE 为 `38fb289160ef85f75062f917e861488b95e2a309`、modified=false，原 PID33808 / UTC `2026-10-16T03:48:23.5356234Z`，使用同一64505及原 D 库。唯一 I 的准确完整 build EXIT0 / 74.0037711秒，H 只复制其稳定产物并归还窗口；health / 首页、唯一 listener、68表90行逐表计数与原 Q 均通过。该进程已按首节收据正常退出。原件 `recovery-38fb-20261016-034822.json`、`data-before-38fb-20261016-034822.json`、`data-after-38fb-20261016-034822.json` 保持，独立 REPORT 为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`。
+恢复 SOURCE 为 `38fb289160ef85f75062f917e861488b95e2a309`、modified=false，原 PID33808 / UTC `2026-10-16T03:48:23.5356234Z`，使用同一64505及原 D 库。唯一 I 的准确完整 build EXIT0 / 74.0037711秒，H 只复制其稳定产物并归还窗口；health / 首页、唯一 listener、68表90行逐表计数与原 Q 均通过。该进程已在2d27同库更新时正常退出。原件 `recovery-38fb-20261016-034822.json`、`data-before-38fb-20261016-034822.json`、`data-after-38fb-20261016-034822.json` 保持，独立 REPORT 为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`。
 
 ## 2026-10-16 实际链接检查与待满足的原生正向
 
