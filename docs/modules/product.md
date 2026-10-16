@@ -14,6 +14,25 @@
 
 管理 SOURCE `12a54a0c33628852aaa4c9b2099e504aed63ba53` 已普通 push，模块独立核远端同值、工作区 clean、diff 检查 EXIT0。B `msg_fb26d83dae2c` 补充准确公开原件为原树 `.verification/paper-dom-actual-recovery.snapshot.json`：59717 bytes、mtime=`2026-10-15T20:29:31.9734899Z`，来源 `arxiv:2501.12948` / 官方 HTML `2501.12948v1`，正文 57465 UTF-8 bytes、readable_fulltext、truncated=false。模块独读 `backend.md` 原实际 DOM 解析与生产 paper_snapshot 导入记录，确认该指针及原始字段的授权来源；仅新 D 目标写入，来源文件身份、大小、mtime、完整字节须前后核对。根 `msg_61ef34fdbbfd` 另允许原 B 在 clean 且准确祖先检查成立时 ff-only 消费已 push 集成 `2ab520ad5c275f193270f3c23391451f397e7f3e` 复用真实目录 helper，未要求额外成功复测；模块已将条件和保持 WIP 的边界交原 B `msg_40101d9e3bc5`。本报告只确认计划及实际授权来源，不将尚未运行的新组装检查登记为通过。
 
+### 03:04 实际组装前置固定阶段
+
+B SOURCE `4bb5ec63b2af1c97959bda60cee1ba625a7a79ed` / 独立 REPORT `dd69f1c2b4f9982364a395d54f8c31baeae6672c` 已普通 push `[skip ci]`，父为准确 I `2ab520ad5c275f193270f3c23391451f397e7f3e`。模块独核远端准确 REPORT、clean、限定差异检查 EXIT0；完整读 324 行新测试、29 行报告和全部 D 命令原件，净变化仅批准新测试与 backend 报告，已交根 `msg_b5eaf7201700`。原 B 实际开始前的 clean / 祖先检查 / ff-only 消费均有本人 `msg_292c8cbd7856` 回执，没有复制目录 helper 或带入未提交改动。
+
+最终测试直接复用生产 selectedTextBridge、实际 LocalProject / ProjectSpace / ProjectFiles / 未 Probe Registry、真实 HTTP bootstrap / cookie / CSRF 和当前模型许可；同一生产 Attention.ImportMaterial / ProcessNextJob 导入获准固定 paper_snapshot，仅写新 D 库与对象。实际固定引用与来源、provenance、完整正文和摘要全等；默认拒绝、明确许可后的真实 space、配置及处理 evidence_missing、实际撤回后已解析对象拒绝、调用者真实取消、正常 Shutdown / SQLite 关闭后的原错误关系均通过。Registry 观测保持、native 目录空、对象条目不增，关闭前会话零行；原公开输入关闭后身份、大小、mtime、完整字节保持。实际 prompt65109 / wire65487 / output131072 bytes，仅覆盖本项真实前置。
+
+| 本轮实际命令 | 准确记录 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextActualAssemblyPrerequisitesWithoutNative$'` | second 精确一项，EXIT0 |
+| 同包 `-run '^TestSelectedTextActualAssemblyPrerequisitesWithoutNative$' -v -count=1 -timeout=1m` | 最终 third 1 PASS / 0 SKIP，主项0.14秒 / 包1.250秒，EXIT0 |
+| distillers 精确运行 `TestPromptUTF8ExactCapacityAndOutputIndependent` / `TestNativeEnvelopeIsPreflightedSeparatelyFromOutput` | second 明确纯函数参数边界2 PASS / 包0.858秒，EXIT0；没有来源或模型结果事实 |
+| `go vet -mod=readonly ./cmd/server ./internal/adapters/distillers`，最终改测试后 server 单包 vet | second / third 分别 EXIT0 |
+| `go build -mod=readonly -o <本次D根>/server-second.exe ./cmd/server` | second EXIT0，未启动产物；后续只改测试，没有重复构建 |
+| 格式、限定 diff 检查及实际 runner | EXIT0，原件与 B 本人工具回执分别核实 |
+
+原件根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-preflight/`。首 list 编译 EXIT1，完整四项诊断保留：基础 Distiller 接口没有公开 ProjectSpaceID，database/sql 没有导出 ErrDBClosed；最终使用原已有方法接口及实际已关闭连接 PingContext 的错误关系，没有修改生产。second 的实际组装1 PASS /0.15秒 /包1.914秒使用获准公开材料的合法本机导入 HTTP；根 `msg_626ae40bf6ae` 明确其属于授权范围，该实际结果正常保留。最终采用同样获准的直接业务服务端口，改动后只复验受影响测试和 vet；不将任何一轮推断为私密泄露或生产错误。原两件替身及完整正向 / 非法响应 / 联合容量 / 超限来源断言全部保持未运行、未验，其他默认 / 原生 / L1 / L2 / 最终包限制保持。
+
+根 `msg_cb31b64bbaf0` 要求本阶段之后依据当前 Release、规范、认知六步与现任务逐项核剩余产品事项。原 B 继续同 Task 只读给出准确任务条款、未完功能或断言、获准原件与可执行动作、原 owner 及具体前置；模块已完整重读当前入口和对应 AT，不作没有任务依据的全仓整改，不重复成功功能，也不以笼统 Native 阻塞代替逐项检查。没有新增业务写域或人员，产品持续发布支持。
+
 ## 2026-10-17 02:57 Workbench 真实 HTTP 固定阶段
 
 原 B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` / 独立 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通 push，提交均含 `[skip ci]`；模块独核远端准确 REPORT 同值、原树 clean、限定差异检查 EXIT0。SOURCE 只修改 `internal/adapters/httpapi/workbench_test.go`，净新增 356 行 / 移除 40 行；REPORT 仅追加 `backend.md` 28 行。模块完整读取当前 396 行文件、独立报告及全部命令记录，已交根 `msg_81b4ceb2e3ff`；根 `msg_8577da3270b0` 完整独读后接受准确阶段并普通合唯一集成，仅运行本项真实 HTTP / GetEvent 及 httpapi vet，不重建或部署，也不重复前三项。
