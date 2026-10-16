@@ -2,6 +2,16 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 12:36 Q 组合复验与 P 报告返修
+
+根已普通合入 Q 独立 REPORT `7aa24765f99174245621498bf02d970bfe409fd7`，准确集成 SOURCE `e36650e645cae20e0d142338a0fbd20f168cdbc4` 在显式 D 输出根及空身份下完成同一完整快照测试：主测试69.99秒、包76.864秒、全部七个子项通过，source_after 同值。根原件位于 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-e36650e/snapshot.log`。首次 b02 失败、独立 symlink OS1314、原 Q 首次默认 C vet 记录保留；生产保护、断言和 Skip 未改。本模块接收根 `msg_0f6277a0f088` 的准确组合结果，没有重复运行。
+
+P 生产 SOURCE `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d` 已核远端同值及原树 clean。其 Start 显式配置承接4106，Build 的最早两次 Node 检查已进入 D 环境 try / finally 作用域。本模块独读真实 pwsh 及唯一获准 S4 正向日志：19882 / 19883均有健康200和真实 SQLite4096 bytes，S4 创建 `repository-context/runtime` 四个配置目录；显式停止 Go 后日志记录端口释放。两个旧 helper 随后都重复进入清理并打印 wrapper kill / wait 错误和警告，仍有捕获错误继续执行的分支；上述实际观察不等于整份验证脚本干净完成，原报告尚未接纳。
+
+保持原 P Task / 树 / 分支 / Claude Code2.1.238、实际 `qwen3.7-max`，已绑定后继 `ctx_39329742a5fc`，仅修既有 D 目录外部 helper 的清理状态与错误处理并追加独立准确 REPORT。生产 SOURCE9e保持，不 amend 已发布提交，不重跑两次成功启动或已用的一次 S4，不调用模型、不再构造、索引、扫描大型资产或启动最终包；只允许 PS5.1 / 7 parser 和只读端口状态检查。修订 helper 尚未执行的限制必须如实保留。该 Dispatch 继续公开 `dispatch --return-preamble` 的原终端 lane，没有新 Task / Run / Agent 或第四层。
+
+H 已补稳定 Script 的提交来源：`faab2daf83f6a578773b61077140aff73af9ef9b` 的 `internal/adapters/repositorycontext/codegraph.mjs` blob 为 `d35fff9daa0a20354b7f891706846935ef85823c`，与38fb同路径一致；M-relay独核 tracked 源码与稳定副本 `git diff --no-index --quiet` EXIT0，来源对应完成。该补核未执行 adapter、模型或重复 P 正向。共享服务继续准确38fb / PID33808 /64505，由 H 持有；根继续唯一集成写入，最终包及完整默认、原生和 L1 / L2 均按各自实际条件推进。
+
 ### 2026-10-16 12:28 当前 Q 交付与 P 启动验收
 
 Q SOURCE `8796fb8fbe91712a99d3b2798fd183a3dfe3bbfc` 仅新增三行显式 `ASTROCYTE_TEST_OUTPUT_ROOT` 支持；非空时使用该根的 `snapshot-tests`，省略时保留原默认，生产路径保护和全部断言未改。独立 REPORT `7aa24765f99174245621498bf02d970bfe409fd7` 已普通 push / 远端同值 / clean，本模块独读准确代码与两日志：显式输出根18.053秒、原默认11.688秒，均七子项通过。有效 D 目录 exe 为11,432,448 bytes，Go buildinfo revision 是 `baf9a5d0b5b2cf161e2018b94977d2f904f6df76` / modified=false；该产物不充作新集成来源。根 b02 的首次发布失败与原 Q 首次默认 C vet 保留，独立 symlink OS1314 未通过。Q 检查尚属原 Q 分支，根完整组合仍须实际复验，不沿用旧 PASS。
