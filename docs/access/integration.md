@@ -1,5 +1,28 @@
 # Works Relay integration report
 
+## 2026-10-17 视频原缺失用例与组合检查
+
+B SOURCE `dd3a8b8a20e6f8dc30342d1708d4f59b9bec82b6`、F SOURCE `72d6dcdb557770872dc59c4b18d8b0e8a7245075` 及准备 REPORT `31342f8aafcbf45168717f596f3528005584563f` 已普通合为 `841673ef1acf75b745a6413019a3ffb86162e408`。根独读全部新 helper、原 spec 净差异和实际原件；唯一源码变化为显式 opt-in 的真实视频派生托管 helper 与原 spec 的公共模块导入 / D 输出。B 最终仅后端记录 REPORT `1fd89e92933b67ac6ea3510a9244ad194d6f1ec1`、F 最终仅前端记录 REPORT `ac94fa2d794950edb4eab07aa9a56b6224f4116d` 继续普通合入，准确代码及作者记录组合为 `45cccf0858b0addb4f1d612253d8ef52d6f7faa1`，全部无冲突。
+
+实际来源为原FAkZe5公开视频 material `534HWFW7E5GEF75ZY4F7ETPLQ2`，仅一项材料、两项真实revision及五公开objects派生到全新D库。原aggregate2与目标本地CAS1分列，current2、原locator、时间、全文 / digest及0 /952位置保持；私有Whisper仅metadata，正文读取 /复制0。实际SQLite正常锁、mode=ro /query_only下，源业务行、主文件 /WAL及五公开objects保持，SHM实际修改时间单列，不宣称所有文件不变。原独立D技术查询IOERR10 /EXIT1及0对照首失败 /UNKNOWN保留，不计通过；没有新增探针、ASR、提取、模型或Native。
+
+根独读精确list1 /EXIT0及原149 /chromium-1920首次1 PASS /4.7秒 /EXIT0：两版完整正文和原locator、952位置、公开附件原bytes /SHA256、私有无HTTP链接、GET-only、刷新等值及布局原断言均保持。HTTP1 64429正常关闭并重开同一目标库HTTP2 64432，使用准确172稳定Web静态产物；F本人结束后，B实际主项PASS239.33秒 /壳EXIT0，原PID52372退出、HTTP2正常关闭。根独读 `final.json` 及 `post-close-source-files.json`，source.Close后一次文件元数据核查的main /WAL身份、大小、mtime及birthtime仍与原baseline相同，未再打开源SQL；SHM同一32768bytes文件的mtime变化如实单列。
+
+根在准确841673e执行以下组合检查，全部实际EXIT0，前后源码相同：
+
+| 命令 | 结果 |
+|---|---|
+| `go test -c -mod=readonly -p=1 -tags=public_video_live -o <D目录>/sqlite-video-live.test.exe ./internal/adapters/sqlite` | tagged编译通过，未重复托管业务。 |
+| `go test -mod=readonly -p=1 ./internal/adapters/sqlite -list '^TestServePublic(Video\|Progress)ProjectionActual$'` | 默认零项，没有新增Skip。 |
+| `go vet -mod=readonly -p=1 -tags=public_video_live ./internal/adapters/sqlite` | 通过。 |
+| web目录：`node node_modules/typescript/bin/tsc -b --pretty false` | 完整类型检查通过。 |
+| web目录：`node node_modules/eslint/bin/eslint.js e2e/video-existing.spec.ts` | 通过，无诊断。 |
+| `git diff --check` | 通过；最终作者记录合入后亦通过。 |
+
+组合原件 `D:/Astrocyte-agent-assets/20261015/integration/root-video-841673e/`，相邻 `run-root-video-841673e.ps1` 整体EXIT0。B原件 `product/backend/ctx_43100892f5f5/video149-live-first/`，F原件 `product/frontend/ctx_697b2f19c010/video149-live-64432-20261017/`，均位于同一D资产根。完整准确命令及来源范围见 [后端报告](../standards/backend.md) 与 [前端报告](../standards/frontend.md)。
+
+原55项当前关联结果为29 PASS /26 NOT_RUN，剩余26项均依赖真实Native条件；与前端178项中的174项分批实际通过 /4项待L1分别记录。当前生产运行保持准确172 /PID25568 / `http://127.0.0.1:64505/`，本阶段末实际health返回ok；没有生产代码变化、完整重建或重启共享实例。原B继续无需新Native的进度替身测试整改；旧八项尚未完成真实替换，不运行或计其通过。完整check /默认 /L1 /L2及最终Windows包 /GitHub Release仍未通过，用户未答项保持。
+
 ## 2026-10-17 完整前端测试与公开认知客户端
 
 准确 SOURCE `5963b1238e7a84bc8c5242995b58c72a7191f178` 执行 `node node_modules/vitest/vitest.mjs list`，EXIT0；随后在web目录执行完整 `node node_modules/vitest/vitest.mjs run --maxWorkers=1 --no-file-parallelism`，实际33文件 /178项，30文件 /168项通过，3个suite前置失败，整体EXIT1 /62.22秒。未提供公开认知快照目录与实际L1服务 /GetEvent文件，导致认知6项和Relay会话4项未执行，Vitest显示10 skipped；没有新增Skip、修改断言或将此完整运行记为通过。
