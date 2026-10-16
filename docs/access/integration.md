@@ -1,5 +1,15 @@
 # Works Relay integration report
 
+## 2026-10-17 目录、权限与普通公开列表组合检查
+
+B SOURCE `76011c240766e18ece92d91f4188f8b91882458e` /独立 REPORT `463a78cf81d9ebecf544746af314f84ab220cec1` 已普通合为 `dc1b4a9a162c3c4706d8f29c17969483ea1959f8`。根完整独读三件测试及报告、实际命令 /首失败记录和原日志，再只读核本次三份公开原响应均 code0 /folder2356677875 /20槽 /has_more=true。生产代码未修改；实际目录预期使用标准规范路径与 SameFile，新增真实 HTTP /SQLite 权限、Grant /token 同库重启与撤销验证。
+
+准确 dc1b4a9 的根验证使用 `go test -mod=readonly ./internal/adapters/sqlite -list` 精确发现目录缓存及 `TestLocalProjectActualHTTPPermissionsTokensAndRestartWithoutNative` 两项；同选择器 `-run -v -count=1 -timeout=1m` 实际2 PASS /0 Skip，各0.13 /0.14秒，包1.435秒。公开列表 `-list` 精确保留普通与原缺位两个入口，仅 `-run '^TestPublicListingActualWindowMatchesProviderResponse$' -v -count=1 -timeout=2m` 实际1 PASS /0 Skip /0.46秒，包1.538秒。两包 `go vet -mod=readonly`、diff及runner整体均EXIT0，源码前后保持。根原件 `D:/Astrocyte-agent-assets/20261015/integration/root-permissions-dc1b4a9/`，相邻 runner 保存完整命令和 D 输出配置。
+
+本次实际普通列表60槽 /三请求 /cursor4；同次原响应协议、字段顺序、窗口及预算独立检查，没有复制生产身份或可用性算法。原 `TestPublicListingActualWindowCursorWithUnavailableSlot` 独立保留严格59槽及原断言，缺真实前置时执行会失败，本轮未运行或登记通过。原 SQLite Native 替身全部覆盖保持未验；本次真实权限子集不代替 unknown 交付、stop /resume。首 list 壳编译 EXIT1、未进入测试、具体 stderr 未保存而保持 UNKNOWN，原 CI failure 保留。当前产品c5 /PID30420未重建或部署。
+
+后继仍由原B处理 HTTP Workbench 替身，并核原 `selected_text_test.go`、`capacity_sources_test.go` 的固定 processor /配置 /人为取消替身；原H核会话 poll 的 owned /内存 checkpoint 替身和 HTTP session 固定 reader。此处列出具体已发现文件，不代表全仓总数。真实来源不足、未答 Native边界、完整 check /默认 /L1 /L2及最终包继续未通过。
+
 ## 2026-10-17 四项真实测试的目录前置组合检查
 
 H SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` 与独立 REPORT `68c9acc11d991720b9b1562abd2983bdb9af0229` 已普通合为 `0368145b2ca9016170955094436421846f36b7e0`。根独读全部四件测试差异、报告及作者 list / 两次 test / vet 原件，确认生产目录与权限保护没有变化，成功及真实同文件别名拒绝断言保持。新增 helper 在显式绝对输出根或既有 ignored dist 目录下真实创建独占目录，经标准 `filepath.EvalSymlinks` 与 `os.SameFile` 核验后作为可信测试配置；失败详情保留于本次自有目录。
