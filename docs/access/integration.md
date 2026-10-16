@@ -1,5 +1,24 @@
 # Works Relay integration report
 
+## 2026-10-16 完整品味配置与判断流程
+
+UI SOURCE `524ee13dc7fefbc29660b6b5136077f400972bd2` / 独立 REPORT `9aa52ecf6199ce819ea6793e6f37481095d63ab4` 已普通合并为 `f5872cfffdbb5e6b6ffeb02302804361d44a0376`。文件编辑仅处理三个合并冲突：保留无截图的 trace 配置，接入 Taste 编辑入口，补齐已验 Taste 类型和公共调用。原准入页面、固定 preparedID、根2d类型衔接均保持。最终新增完整 Taste 编辑与字段 / 校验、必要客户端和入口、真实 E2E 及作者记录，没有覆盖其他领域的后继实现。
+
+Taste 支持明确创建 / 编辑 / 启停、choice / score / truth 题型、实际资料固定 revision / digest 示例及已有规则引用，首次 expected_version=1，后继固定实际读取版本。409 保留草稿并要求人工核查和重新准备；403 / stale 禁写；未知结果跨关闭 / 重开 / 刷新保持原身份和写入锁。保存前读取随页面卸载取消的必要后继 SOURCE `990847571f95198400bc21d77b7b590d5fbc0c27` / REPORT `596c9ff7534cb1325366b7a87e232081e6eab93b` 已普通合并，准确组合为 `172bb445597193d55f1563ee5d21ac2ec881798d`。
+
+同一组合也已普通合 F SOURCE `b34ce2b85b2ae9d172a409d622d74aa5797ea414` / REPORT `b1569cabfb5fbd2f23c600788469f80a9a68b849`。F 原55失败中当前26项有真实通过结果、29项仍缺条件；本次18项定向成功和原插件8项分别登记，不代表完整默认通过。认知按真实上海日期从原Q只读SQLite计算窗口，并保留原独立SQL日期及值；显式截图移除保持原功能断言。精确分组、原误选失败及后继结果见 [前端报告](../standards/frontend.md)。
+
+| 准确组合 / 实际命令 | 实际结果 |
+|---|---|
+| `f5872cf`：`pnpm build`、`pnpm --dir web lint` | 完整构建及全web lint分别EXIT0；包含三个Go程序、tsc-b和Vite。 |
+| 同 `f5872cf`：`pnpm --dir web exec playwright test e2e/s5-delegation.spec.ts --config e2e/self-service.config.ts --grep '完整真实DOM链' --workers=1 --retries=0 --trace off --reporter list` | 两尺寸2 PASS /55.2秒 /EXIT0；三题型及启停、真实Goal / Snapshot / Policy / Rule、确定性判断 / 反馈与同库HTTP重启通过。 |
+| `172bb44`：`pnpm build`、`pnpm --dir web lint` | 完整构建及全web lint分别EXIT0，前后源码同值，实际binary的Go buildinfo为172 / modified=false。主资源693.62kB的500kB提示保持。 |
+| 同 `172bb44`：同一spec / config，`--grep '完整真实DOM链\|Taste保存前真实资料读取' --workers=1 --retries=0 --trace off --reporter list` | 两尺寸4 PASS /2.0分钟 /EXIT0；真实HTTP / SQLite主链及实际CDP延迟下页面卸载取消GET、零延迟PUT、收据 / 实体不变、重开后明确保存均通过。 |
+
+准确原件为 `D:/Astrocyte-agent-assets/20261015/integration/root-taste-f5872cf/` 与 `root-taste-172bb44/` 的 `build.log`、`lint.log`、`taste.log`；对应执行脚本保留。构建、模块、npm / Node缓存和临时目录均使用明确D目录。没有伪响应、模型、原生初始化、ASR或共享业务写入。作者原两尺寸五场景及取消两场景按各自源码分次通过，首失败保持，见 [UI报告](../standards/product-ui.md)。
+
+H已将准确172的binary和全部30件web文件复制到D稳定 `versions/172bb445`，核字节及buildinfo后通过 `msg_00a5456a5607` 停止读取并归还原产物窗口。当前运行仍2d27 / PID50624；H须取得当前F / UI本次本人暂停确认后正常更新同一64505与原D库，真实ready另行登记。Taste当前缺按request_id读取收据的公开接口，未知写入保持锁定；实际委托引用选择 / 保存 / 规则版本变化的定向检查由原UI继续。剩余29项真实条件、全部未答边界、完整check / 默认 / Native / L1 / L2及最终包均未通过。
+
 ## 2026-10-16 公共测试接口与准确失败清单
 
 根普通合入 F SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 及独立 REPORT `b4bf44453436ba71ce0b88ef0f0e6a300d859d7f`，组合为 `5dfca03fd23b3218510290fc5a63732df1fd570f`。唯一冲突是 `docs/standards/frontend.md` 的章节标题和新增记录，使用文件编辑工具保留当前 320 项中的 55 条准确失败清单及既有检查记录。最终只有该报告、`realService.ts` 的显式环境 ID 透传和 `self-service.config.ts` 增加 `s5-*.spec.ts`；原 s2 / s3 / s4 / progress 范围、workers=1、retries=0 和根2d27类型衔接保持。
