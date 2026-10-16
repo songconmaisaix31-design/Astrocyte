@@ -7,7 +7,12 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: [['list'], ['html', { open: 'never' }]],
-  use: { baseURL: `http://127.0.0.1:${port}`, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
+  use: {
+    baseURL: `http://127.0.0.1:${port}`,
+    trace: { mode: 'retain-on-failure', screenshots: false, snapshots: true, sources: true },
+    screenshot: 'off',
+    video: 'off',
+  },
   projects: [
     { name: 'chromium-1920', use: { ...devices['Desktop Chrome'], viewport: { width: 1920, height: 1080 } } },
     { name: 'chromium-1280', use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } } },
