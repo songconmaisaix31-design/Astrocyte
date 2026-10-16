@@ -2,21 +2,21 @@
 
 ## 2026-10-16 当前 a166 的 55 条失败逐项状态
 
-原始 SOURCE 为 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，原件为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/full-default-a166-playwright.log`。完整计划 320 项，已观察 204 PASS、55 FAIL、43 原有 SKIP、18 无结果；原件没有最终 summary 或 EXIT，整体未通过。以下编号、窗口、文件位置及日志行均逐条对应该原件。当前接管基线 `6cd0e51098a946c732e3914d94efc59c9aaa4dec`，公共 helper SOURCE `375a559` 已普通 push；未完成的行保持 NOT_RUN，不从历史定向通过推断当前通过。
+原始 SOURCE 为 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，原件为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/full-default-a166-playwright.log`。完整计划 320 项，已观察 204 PASS、55 FAIL、43 原有 SKIP、18 无结果；原件没有最终 summary 或 EXIT，整体未通过。以下编号、窗口、文件位置及日志行均逐条对应该原件。接管基线 `6cd0e51098a946c732e3914d94efc59c9aaa4dec`，公共 helper SOURCE `375a559`、后继验证 SOURCE `b34ce2b85b2ae9d172a409d622d74aa5797ea414` 已普通 push；未完成的行保持 NOT_RUN，不从历史定向通过推断当前通过。
 
 本次身份为 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / terminal `term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60`，实际 Codex 0.162.0 / GPT-6.1-Sol / xhigh fast。沿原任务 context_only / unsupervised 续行，没有新增 Agent。
 
 | 原编号 | 窗口 | 原文件位置 | 原日志行 | 当前状态 | 精确证据或下一责任人 |
 |---|---|---|---|---|---|
-| 4 | 1920 | attention-recovery.spec.ts:34 | 22 | NOT_RUN | F：获准四件公开 HTML 的环境已明确，版本切换定向验证在途 |
-| 11 | 1920 | cognition-live.spec.ts:13 | 44 | NOT_RUN | F：Q 固定 generation；原 SQL 日期与真实上海日期须分别核查 |
-| 12 | 1920 | cognition.spec.ts:37 | 47 | NOT_RUN | F：显式 Q LOCALAPPDATA 下的路由和键盘路径 |
+| 4 | 1920 | attention-recovery.spec.ts:34 | 22 | PASS | A：公开两版本与中性读取，实际断言全部保持 |
+| 11 | 1920 | cognition-live.spec.ts:13 | 44 | PASS | C：只读固定 Q SQLite，十项 SQL / HTTP / DOM、真实上海日期 |
+| 12 | 1920 | cognition.spec.ts:37 | 47 | PASS | C：四路由、刷新、键盘页签 |
 | 60 | 1920 | plugin-snapshot.spec.ts:27 | 104 | PASS | P：phase3 14 项实际成功，未重复运行 |
 | 61 | 1920 | plugin-snapshot.spec.ts:37 | 111 | PASS | P：同一 14 项成功日志 |
 | 64 | 1920 | plugin-snapshot.spec.ts:76 | 120 | PASS | P：同一 14 项成功日志 |
 | 65 | 1920 | plugin-snapshot.spec.ts:107 | 123 | PASS | P：同一 14 项成功日志 |
 | 80 | 1920 | progress-existing.spec.ts:10 | 144 | NOT_RUN | B：既有结果当前只读托管 URL 未交付；历史两窗口成功保留 |
-| 85 | 1920 | relay-album.spec.ts:6 | 168 | NOT_RUN | F：实际扫描、统计和三尺寸布局；无需原生启动 |
+| 85 | 1920 | relay-album.spec.ts:6 | 168 | PASS | A：实际扫描、统计和三尺寸布局；原生会话为零 |
 | 94 | 1920 | relay-runtime.spec.ts:238 | 204 | NOT_RUN | H/R：EOF_TERMINAL 的真实任务及读取窗口 |
 | 95 | 1920 | relay-runtime.spec.ts:238 | 207 | NOT_RUN | H/R：EOF_STRUCTURED 的真实任务、工具关闭和发送许可 |
 | 96 | 1920 | relay-runtime.spec.ts:260 | 210 | NOT_RUN | H/R：CONFLICT_INITIAL 的真实互斥收据及已有任务 |
@@ -30,22 +30,22 @@
 | 104 | 1920 | relay-runtime.spec.ts:387 | 234 | NOT_RUN | H/R：PUBLICATION_ERROR 的实际错误及 reconcile 收据 |
 | 107 | 1920 | relay-session-readonly.spec.ts:9 | 243 | NOT_RUN | H：原任务 18ID / GetEvent 公开事实及当前服务；历史成功保留 |
 | 108 | 1920 | relay-session.spec.ts:91 | 246 | NOT_RUN | H/R：原登记和 first-visible 原件；原三分钟 FAIL 保留 |
-| 131 | 1920 | s1.spec.ts:69 | 294 | NOT_RUN | F：公开原文、人工重读计数，关闭主动截图后验证 |
-| 133 | 1920 | s1.spec.ts:133 | 306 | NOT_RUN | F：公开两版本、人工分类、固定引用及移除后原文 |
-| 136 | 1920 | s2-context.spec.ts:44 | 321 | NOT_RUN | F：固定上下文、403、撤销和同库重启 |
+| 131 | 1920 | s1.spec.ts:69 | 294 | PASS | A：公开原文、键盘主动重读仅增加一次人工计数 |
+| 133 | 1920 | s1.spec.ts:133 | 306 | PASS | A：真实分类、固定引用、两版和移除后原文保留 |
+| 136 | 1920 | s2-context.spec.ts:44 | 321 | PASS | S：固定上下文、后继、403、撤销及同库重启 |
 | 149 | 1920 | video-existing.spec.ts:9 | 377 | NOT_RUN | B/V：原断言要求实际两版本及 952 位置，当前获准来源为 0 segments/spans |
-| 155 | 1920 | works-album.spec.ts:114 | 404 | NOT_RUN | F：内部 1920×1080 的真实 DOM 布局 |
-| 156 | 1920 | works-album.spec.ts:114 | 411 | NOT_RUN | F：内部 1280×720 的真实 DOM 布局 |
-| 157 | 1920 | works-album.spec.ts:114 | 418 | NOT_RUN | F：内部 390×844 的真实 DOM 布局 |
-| 164 | 1280 | attention-recovery.spec.ts:34 | 440 | NOT_RUN | F：同 4，独立窗口结果待取得 |
-| 171 | 1280 | cognition-live.spec.ts:13 | 462 | NOT_RUN | F：同 11，独立窗口结果待取得 |
-| 172 | 1280 | cognition.spec.ts:37 | 465 | NOT_RUN | F：同 12，独立窗口结果待取得 |
+| 155 | 1920 | works-album.spec.ts:114 | 404 | PASS | W：内部 1920×1080 的真实 DOM 布局 |
+| 156 | 1920 | works-album.spec.ts:114 | 411 | PASS | W：内部 1280×720 的真实 DOM 布局 |
+| 157 | 1920 | works-album.spec.ts:114 | 418 | PASS | W：内部 390×844 的真实 DOM 布局 |
+| 164 | 1280 | attention-recovery.spec.ts:34 | 440 | PASS | A：独立 1280 窗口，版本切换与人工计数 |
+| 171 | 1280 | cognition-live.spec.ts:13 | 462 | PASS | C：独立 1280 窗口十项 SQL / HTTP / DOM |
+| 172 | 1280 | cognition.spec.ts:37 | 465 | PASS | C：独立 1280 窗口四路由与键盘页签 |
 | 220 | 1280 | plugin-snapshot.spec.ts:27 | 522 | PASS | P：phase3 14 项实际成功，未重复运行 |
 | 221 | 1280 | plugin-snapshot.spec.ts:37 | 529 | PASS | P：同一 14 项成功日志 |
 | 224 | 1280 | plugin-snapshot.spec.ts:76 | 538 | PASS | P：同一 14 项成功日志 |
 | 225 | 1280 | plugin-snapshot.spec.ts:107 | 541 | PASS | P：同一 14 项成功日志 |
 | 240 | 1280 | progress-existing.spec.ts:10 | 562 | NOT_RUN | B：同 80，当前 URL 未核实，不能重跑 infer |
-| 245 | 1280 | relay-album.spec.ts:6 | 586 | NOT_RUN | F：同 85，独立窗口结果待取得 |
+| 245 | 1280 | relay-album.spec.ts:6 | 586 | PASS | A：独立窗口实际统计、平台筛选与三尺寸 |
 | 254 | 1280 | relay-runtime.spec.ts:238 | 622 | NOT_RUN | H/R：本窗口 EOF_TERMINAL 的真实任务及读取窗口 |
 | 255 | 1280 | relay-runtime.spec.ts:238 | 625 | NOT_RUN | H/R：本窗口 EOF_STRUCTURED 的真实任务与发送许可 |
 | 256 | 1280 | relay-runtime.spec.ts:260 | 628 | NOT_RUN | H/R：本窗口 CONFLICT_INITIAL 的真实互斥收据 |
@@ -59,14 +59,14 @@
 | 264 | 1280 | relay-runtime.spec.ts:387 | 652 | NOT_RUN | H/R：本窗口 PUBLICATION_ERROR 的实际事件接入错误 |
 | 267 | 1280 | relay-session-readonly.spec.ts:9 | 661 | NOT_RUN | H：原 18ID / GetEvent 事实及当前原服务；历史成功保留 |
 | 268 | 1280 | relay-session.spec.ts:91 | 664 | NOT_RUN | H/R：原登记和本窗口 first-visible；原三分钟 FAIL 保留 |
-| 291 | 1280 | s1.spec.ts:69 | 712 | NOT_RUN | F：同 131，独立窗口结果待取得 |
-| 293 | 1280 | s1.spec.ts:133 | 724 | NOT_RUN | F：同 133，独立窗口结果待取得 |
-| 296 | 1280 | s2-context.spec.ts:44 | 739 | NOT_RUN | F：同 136，独立窗口结果待取得 |
-| 302 | 1280 | s2-proposals.spec.ts:255 | 767 | NOT_RUN | F：人工拒绝的真实 HTTP、Grant 为零及重启 |
+| 291 | 1280 | s1.spec.ts:69 | 712 | PASS | A：独立 1280 窗口主动重读与中性刷新 |
+| 293 | 1280 | s1.spec.ts:133 | 724 | PASS | A：独立 1280 窗口分类与固定引用 |
+| 296 | 1280 | s2-context.spec.ts:44 | 739 | PASS | S：独立 1280 窗口全部固定上下文边界 |
+| 302 | 1280 | s2-proposals.spec.ts:255 | 767 | PASS | D：真实人工拒绝、Grant/原生会话为零及同库重启 |
 
 P 的准确原件：`D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_44f61b51d023-phase3/plugin-snapshot-with-env.log`，14 PASS / 1.2 分钟 / EXIT0；对应前端 SOURCE `c546f2a`。只读取已授权的 `standards-backend/.verification` 四件公开 HTML，没有重新抓取来源或调用模型。
 
-当前表计数为 8 PASS、47 NOT_RUN。H/R 的 26 行、B 进度 2 行和 B/V 视频 1 行已通过 `msg_42978f46523d` / `msg_b59a70b83ad3` 定向交接；其余 26 行包括已通过的插件 8 行及 F 持续处理的 18 行。原生工具关闭未满足、当前真实任务和权限不足分别记录，不新增任务凑场景。旧两批认知证据分别为全事件 1316 与两主题分页 155，后者已经逐 ID 核查通过，不重复该批。
+当前表计数为 26 PASS、29 NOT_RUN。H/R 的 26 行、B 进度 2 行和 B/V 视频 1 行已通过 `msg_42978f46523d` / `msg_b59a70b83ad3` 定向交接；其余 26 行包括插件 8 行及本次实际通过的 18 行。原生工具关闭未满足、当前真实任务和权限不足分别记录，不新增任务凑场景。旧两批认知证据分别为全事件 1316 与两主题分页 155，后者已经逐 ID 核查通过，不重复该批。
 
 进度原件指针由协调者 `msg_d4da4a731292` 明确交付：B 树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite`，项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70`、原生 ID `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`、模型 `gpt-6.1-sol`。53863 属历史 URL，当前托管未核实；不启动该旧库写入服务、不复制整库、不恢复控制器或重跑模型。
 
@@ -78,11 +78,36 @@ SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 已普通 push，只修改 `we
 
 首次 Windows PowerShell 5.1 启动在原生 stderr 重定向处终止，原工具回执保留；后续使用 PowerShell 7。`helper-smoke-first.log` / `helper-smoke-second.log` 均记录真实 HTTP400 / EXIT1，当次 `api.write` 自动加入了该专用 DTO 不接收的 CommandMeta。后续使用原严格 `api.request` 和专用 `{files}` 正文，响应仍经原 `validateResponse`；未使用 rawRequest 或修改契约。`helper-smoke-third.log` 的快照 HTTP 已成功，SQLite 返回 null-prototype 行与普通对象的深比较退出 1；最终按同一单行数量及 count=0 严格检查。先前仅观察到构建启动行时记 UNKNOWN，后到原件已补充为真实失败，不由历时推断成功。
 
-上述成功属于准确 helper SOURCE；当前另有 `web/e2e/s1.spec.ts` 两个失败场景的主动截图移除 WIP，其真实业务断言保持，定向验证在途。该 WIP 不包含在本 helper SOURCE 或本次仅文档的 REPORT。
+上述成功属于准确 helper SOURCE；当时 `web/e2e/s1.spec.ts` 两个失败场景的主动截图移除仍为 WIP，未包含在 helper SOURCE 或对应文档 REPORT。该代码已由后继 b34 收录，其真实业务断言保持，实际定向结果见下节。
 
-## 2026-10-16 F 域 41 失败逐行 map（combined-default-first 实际日志）
+### 18 条非 Native 失败的实际验证
 
-来源日志 `.verification/playwright-combined-default-first.log`，行 7766：`41 failed, 203 passed, 32 skipped, 4 did not run`（26 分钟）。根提到 a166 的 320/55 分组（msg_f0d1cc29e545），本上下文未获得该消息原文；以下 map 基于实际可用日志 41 项逐行列出。若需对齐 320/55，请根提供 a166 运行日志或 msg 原文。
+后继 SOURCE `b34ce2b85b2ae9d172a409d622d74aa5797ea414` 已普通 push。认知 SQL 检查只读打开获准 Q `snapshot-1711995690`，核对指针和原独立 SQL 预期的快照时间，按真实上海日期从实际事件表重算来源的今日、七日、三十日计数；静态历史日计数、节点值与总量仍逐项核原独立 SQL。报告同时保存原日期、原值与当前日期和值，HTTP / DOM 与 SQL 逐项相等。没有新采集、Sleep、时间修改、事件回填或分页 155 批次重跑。
+
+同一 SOURCE 移除本域所有显式截图调用，三个专用配置关闭截图、录屏及 trace 中的截图；保留全部功能断言、窗口尺寸、键盘动作及原有成功场景。未修改 UI 专属路径或 `s5-delegation.spec.ts`，未修改默认测试集合、重试或超时。
+
+以下文件均位于本次 D 盘原件根。命令入口为 `pwsh -NoProfile -File <本次原件根>/run-core.ps1 -Group <分组> -RunName <日志前缀>`；实际 Playwright 使用本机既有 1.64.0 CLI、原两种窗口、workers1 / retries0，独立临时配置只取消未使用的默认 webServer，各用例继续通过原 helper 创建真实 Go / HTTP / SQLite / Vite。默认配置没有被该定向配置替换。
+
+| 标记 | 精确选集 / 命令参数 | 实际结果 | 原件 |
+|---|---|---|---|
+| A | `papers`：attention-recovery:34、s1:69、s1:132、relay-album，两窗口 | 8 PASS / 2.7 分钟 / EXIT0 | `papers-first.log`、`papers-first-artifacts` |
+| W | `works`：works-album:114，仅 chromium-1920，内部三尺寸 | 3 PASS / 50.0 秒 / EXIT0 | `works-first.log`、`works-first-artifacts` |
+| S | `context`：s2-context:44，两窗口 | 2 PASS / 1.3 分钟 / EXIT0 | `context-second.log`、`context-second-artifacts` |
+| C | `cognition`：cognition-live 全文件、cognition:37，两窗口 | 4 PASS / 57.5 秒 / EXIT0 | `cognition-first.log`、`cognition-first-artifacts`、`.verification/cognition-ui/*-sql-values.json` |
+| D | `decline`：s2-proposals:255，仅 chromium-1280 | 1 PASS / 30.3 秒 / EXIT0 | `decline-first.log`、`decline-first-artifacts` |
+| — | `run-checks.ps1`：完整 `pnpm --dir web typecheck`、`lint`、`build` | 三项 EXIT0；实际 tsc-b 与 Vite 构建通过，保留 685.35 kB 分块提示 | `current-typecheck.log`、`current-lint.log`、`current-build.log` |
+
+A / W / S 从前序已提交 helper 及本次测试 WIP 开始，C / D 在准确 b34 提交后执行；b34 收录同一批测试代码。A / W / S 后续没有改变已运行用例的功能断言或业务代码，没有为文档提交重复成功项。类型、lint、构建检查时的代码与 b34 收录内容一致；未登记完整默认、根 `pnpm check` 或发布包同源通过。
+
+首次 `context-first.log` 是选集错误，开头实际为 Running342。PowerShell 单个字符串 splat 被拆成逐字符参数，意外选择额外用例；两个旧场景成功、一个依赖默认服务的场景失败，第四项尚在准备。CIM 精确核实自有 runner PID43172、父9836、创建 23:34:29 和实际 argv 后，仅对该进程执行 Windows 进程树终止；日志 EXIT1 保留，当前该 PID 及 `VjHQCf` / `cqvMgB` / `WqKbF6` 原自有路径进程均无 CIM 结果。没有进入视频 / 模型 / 原生场景，没有停止共享 64505、UI 或其他人员进程。后继使用显式 `[string[]]` 数组，context-second 的 argv 是单个完整 `e2e/s2-context.spec.ts:44`，实际 Running2。没有使用该误选结果补成功覆盖。
+
+上述后继执行前没有先运行 `--list`；协调者要求所有后继先 list 的消息 `msg_065f772205bb` 在 C / D 已启动后收到，未将后到的要求写成已执行，也未为补前置重复已成功场景。未来选集先 `--list` 核实数量、名称与完整 argv 后执行。
+
+当前功能限制仍为表中 29 条真实条件：Native 22 条缺对应实际任务、控制器权限及工具关闭证据；只读 18ID 两条缺当前实际服务与获准 facts；原生三分钟两条保留原失败和原起点；进度两条缺既有结果的当前只读托管；视频一条缺满足两版本 / 952 位置的实际来源。具体 PLOS 准入选择仍待用户，未提交准入、批准、Grant 或执行；所有已通过模型、ASR、插件和分页来源未重跑。完整默认、L1 / L2 与最终发布继续未通过。
+
+## 前序 280 项的 41 条失败记录（combined-default-first）
+
+来源日志 `.verification/playwright-combined-default-first.log`，行 7766：`41 failed, 203 passed, 32 skipped, 4 did not run`（26 分钟），合计 280 项。以下只保留该次历史入口与当时定向结果；当前 320 项的 55 条失败逐项状态见本文顶部。
 
 ### 分组 A：F 域已绿（4 项 × 2 viewport = 8，本次复验 PASS）
 
@@ -147,10 +172,7 @@ relay-session-readonly.spec.ts:9 和 relay-session.spec.ts:90 同样缺原生条
 | E: works-album | 2 | 待查 | ⚠️ 需 DOM 时序复查 |
 | **合计** | **41** | — | — |
 
-**F 域可独立修复**：分组 A（8 项已绿）+ 分组 E（2 项待查）= 10 项。
-**需外部条件**：分组 B（26 项需 CLI）+ C（2 项需 paper API）+ D（5 项引导）= 33 项。
-
-**与 a166 320/55 的差异**：本日志为 244 总测试（41 failed + 203 passed），a166 为 320 总测试（55 failed）。差 76 测试 / 14 失败，可能来自 s2-admission（8 项）、s2-proposals、s2-context、s3-missions、s4-repository、cognition、cognition-live、attention-interactions、preview-design 等额外 spec 的包含。本上下文无 msg_f0d1cc29e545 原文，无法精确对齐 55 项。请根提供 a166 运行日志或 msg 原文以完成 320/55 逐行 map。
+该 280 项历史记录与 a166 的 320 项是不同运行。当前按 a166 原编号逐行关联真实来源、实际任务、权限及日期条件，不使用本节分组估计当前剩余数量。
 
 ## 2026-10-16 PLOS 候选严格 DOM 只读审阅（64505，24 项逐项 assert）
 
