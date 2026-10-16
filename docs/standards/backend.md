@@ -715,7 +715,7 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 - `internal/adapters/httpapi/session.go`：`scopedAgentRoute` 增加 `parts[4] == "progress" && r.Method == http.MethodGet`，允许 Agent token 读取同项目进度
 - `internal/workspace/app/progress_test.go`：翻译 9 块英文注释为中文，保留 8 项 processor/registry 外部替身测试（诚实记录为不计 PASS）
 - `internal/workspace/app/progress_actual_test.go`：8 项真实 HTTP/SQLite 安全测试
-- `internal/workspace/app/progress_expiry_bg_test.go`：自然到期后台验证程序（ASTROCYTE_VERIFY_EXPIRY=1 激活，正常运行 SKIP）
+- `internal/workspace/app/progress_expiry_bg_test.go`：已迁移至 `tests/s1/progress-expiry.mjs`（Node.js 实现），原文件已移除
 - `internal/workspace/app/projects.go`：本轮短期 ExpiresAt 已恢复原语义（GrantProjectAgent 清空、IssueProjectAgentToken 固定 UTC+1h），追加修复保历史
 
 | 实际命令 | 结果 |
@@ -736,29 +736,27 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 
 八项内存替身测试保留覆盖但诚实记录为不计 PASS：`progressProjects`、`progressStore`、`progressProcessor`、`progressFiles`、`progressRegistry` 替身不能验证真实 HTTP/SQLite/session/permissions/CSRF/Agent-token 边界。`paper-dom.mjs` 的 catch 块移除已在先前 SOURCE `2644083` 完成，不在本轮范围内。
 
-## 自然到期后台验证（RUNNING）
+## 自然到期验收迁移与在途进程状态
 
 用户正式决定 `msg_ef2ae7cc0b04`：保持原 1h 到期，短期 ExpiresAt 未授权。`projects.go` 已恢复原语义（`GrantProjectAgent` 清空 ExpiresAt、`IssueProjectAgentToken` 固定当前 UTC+1h），追加修复保历史，未使用 Git 回滚。
 
-`TestProgressExpiryBackgroundVerification` 在 `progress_expiry_bg_test.go` 中通过 `ASTROCYTE_VERIFY_EXPIRY=1` 激活长等待。正常运行 SKIP。激活后签发真实 1h token，读取 ExpiresAt，后台等待自然到期后验证 HTTP 和服务层拒绝。不改 DB、不改时钟、不改模型。
+按 `msg_3cbf78fccc5f` 及 `msg_569c9e514e8f` 精确授权，原 `progress_expiry_bg_test.go` 已通过文件编辑移除，长验收逻辑迁移至 `tests/s1/progress-expiry.mjs`。新脚本复用 `startS1Server` / `humanAPI`，签发真实 1h token，等待自然到期后验证 HTTP 403 拒绝和跨项目 403 拒绝。token 仅留在内存，不记录内容或片段。显式运行 `node tests/s1/progress-expiry.mjs`，不在默认测试套件中执行；不需要 env 开关、skip 或 fake 到期。
 
-后台进程状态：**RUNNING**
+后台进程状态：**RUNNING**（在途 Go 进程，源码已迁移但不影响运行中进程）
 
 | 参数 | 值 |
 |---|---|
 | 实际 PID（Go test 进程） | 12768 |
-| 父 nohup PID | 1150 |
+| 进程名 | `app.test.exe` |
+| 父进程 PID（go.exe） | 46696 |
+| 进程路径 | `D:\Astrocyte-go-tmp\go-build3672384736\b001\app.test.exe` |
+| 启动参数 | `-test.timeout=2h0m0s` |
+| 创建时间（本地） | `2026-10-16 12:40:18`（即 UTC 04:40:18） |
 | 签发 UTC | `2026-10-16T04:40:18Z` |
 | 实际 ExpiresAt | `2026-10-16T05:40:18Z` |
-| 等待时长 | 1h0m9.993s |
-| 项目 ID | `2566c4a4-c3bf-4dd7-9dd1-2c382e456cd3` |
-| Token 前缀（脱敏） | `2566c4a4-c3bf-4dd7-9` |
-| D 盘日志 | `.verification/expiry-bg-full.log` |
-| D 盘签发记录 | `.verification/expiry-bg-token.log` |
-| D 盘结果（完成后） | `.verification/expiry-bg-result.json` |
+| D 盘完整日志 | `D:/Astrocyte-test-output/` 下对应 `astrocyte-s1-*` 目录 |
+| D 盘签发记录 | `.verification/expiry-bg-token.log`（仓库根） |
 
-运行命令：`ASTROCYTE_VERIFY_EXPIRY=1 GOCACHE=D:/Astrocyte-go-cache GOTMPDIR=D:/Astrocyte-go-tmp TEMP=D:/Astrocyte-tmp TMP=D:/Astrocyte-tmp ASTROCYTE_TEST_OUTPUT_ROOT=D:/Astrocyte-test-output GOMAXPROCS=2 GOFLAGS=-p=2 go test -mod=readonly -p=2 ./internal/workspace/app -run TestProgressExpiryBackgroundVerification -v -count=1 -timeout 2h`
+原 Go 进程在途运行不受源码迁移影响；不盲目启动第二个到期进程。到期验证完成后方可计为 PASS。当前 8 项已验测试（含 token 签发）已 PASS。
 
-到期验证完成后方可计为 PASS。当前 8 项已验测试（含 token 签发）已 PASS。到期后台验证结果待补充。
-
-前序首 RED（PID 664 首次启动因 D 盘目录不存在失败）保留于 `.verification/expiry-bg-full.log` 旧内容。PID 1150/12768 为修正后成功启动。
+前序首 RED（PID 664 首次启动因 D 盘目录不存在失败）保留于旧日志。PID 12768 为修正后成功启动。
