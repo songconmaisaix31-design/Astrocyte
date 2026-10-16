@@ -36,7 +36,7 @@ B 本人 `msg_dc1b0c6e49e7` 已核准确 `4b4ec3b26c276d707cbea81e7207dbce9d7582
 
 ### 02:49 三项定向验证与固定源码审阅
 
-B SOURCE `76011c240766e18ece92d91f4188f8b91882458e` 已普通 push，提交含 `[skip ci]`，模块独核远端同值；净改三件批准测试，共 468 行新增 / 11 行移除，没有修改生产 cursor、旧 localNative、H / R 或冻结代码。模块完整读取最终三件源码；旧 `TestPublicListingActualWindowCursorWithUnavailableSlot` 保留独立 strict59 / 实际省略槽与原游标预算断言，普通 `TestPublicListingActualWindowMatchesProviderResponse` 另行验证。最终预期只读取同次真实响应协议及原字段顺序，不含生产 identity / availability 同构转换器。B 本人已明确读取全部返修指令，独立 backend REPORT 正在固定，模块尚未把该单独 SOURCE 交作完整阶段。
+B SOURCE `76011c240766e18ece92d91f4188f8b91882458e` / 独立 REPORT `463a78cf81d9ebecf544746af314f84ab220cec1` 均已普通 push，提交均含 `[skip ci]`，模块独核远端准确 REPORT 同值；净改三件批准测试，共 468 行新增 / 11 行移除，REPORT 只追加 backend.md 32 行，没有修改生产 cursor、旧 localNative、H / R 或冻结代码。模块完整读取最终三件源码及报告；旧 `TestPublicListingActualWindowCursorWithUnavailableSlot` 保留独立 strict59 / 实际省略槽与原游标预算断言，普通 `TestPublicListingActualWindowMatchesProviderResponse` 另行验证。最终预期只读取同次真实响应协议及原字段顺序，不含生产 identity / availability 同构转换器。B 本人已明确读取全部返修指令，完整限定阶段已交根 `msg_4cc26673ca75`，原 B 同 Task 连续处理已批准 Workbench HTTP 后继，不结算模块或另派人员。
 
 | 实际定向检查 | 最终记录 |
 |---|---|
@@ -51,6 +51,12 @@ B SOURCE `76011c240766e18ece92d91f4188f8b91882458e` 已普通 push，提交含 `
 本次 `results-corrected/public-listing-actual-2742868121/page-1.json` 至 `page-3.json` 只保存于 D。模块另以成熟 JSON 逐件只读核安全字段：实际 code0、folder_id2356677875、每页 slots20 / has_more=true，共 60 槽，与原请求 0 / 20 / 40、ps20、cursor2 / 3 / 4 保持，没有重新请求上游。旧真实省略槽本次缺前置，继续 NOT_RUN；不能把普通入口通过记为缺位场景通过。
 
 首 `list-sqlite-first` 的启动壳 EXIT1 / NativeCommandError，未进入测试，原文件保持。其精确编译 stderr 当时未保存，`first-shell-failure-safe.json` 如实记录 `exact_compiler_diagnostic=UNKNOWN`，不补造诊断；后继显式组合 LocalProjects / ScopedAgentTokens 接口后必要检查实际通过。原默认 CI 两次 failure、原七项进度替身、旧 Native 全覆盖、Workbench HTTP 后继、完整默认 / L1 / L2 与最终包限制保持。三项实际检查的通过只适用于本轮明确入口。
+
+### 三项限定阶段独立管理 REPORT
+
+管理 SOURCE `c945ea0cac84f85671aac2df0f21cfaf030987a5` 已普通 push，模块独立核远端同值及工作区 clean，`git diff --check` EXIT0。本阶段全部管理变化仅在 `docs/modules/product.md`；B 的准确三件源码、独立 REPORT、实际命令和同次原响应已完整审阅，适用三项 PASS 与原失败 / NOT_RUN 分列，未重跑默认或其他已成功项目。旧首次编译诊断未留存的 UNKNOWN 没有被后继结果覆盖；SOURCE / REPORT 没有触发新默认 CI。
+
+根 `msg_a833aeb984f4` 新增的后继只读归因为 `internal/adapters/distillers/selected_text_test.go`、`capacity_sources_test.go` 的残余处理器替身。模块已核原 T 长期域仅为 `internal/attention/app/*_test.go`、`tests/s1/automatic_test.go` 和其报告；上述两个 adapter 文件归原 B 普通范围。已按 `msg_9d0cf29d8a63` 排在 Workbench HTTP 固定阶段之后，同一 B 先只读生产 selectedTextBridge 与真实 SQLite / ProjectFiles / 未 Probe Registry、公开原件可实施边界；尚未放行其代码修改或额外 cmd/server 文件。保留推荐 / 非法模型响应的原完整覆盖要求与缺真实前置状态，不配置 fake bridge、假 CLI、正文或模型输出；必要装配依赖按精确 Handoff 核唯一 writer，不新建 Task 或人员。
 
 ## 2026-10-17 02:14 系统重启后的原任务接续
 
