@@ -1,16 +1,20 @@
 # 产品模块执行与验收
 
-## 当前必要返修（2026-10-16 12:15）
+## 当前阶段与必要返修（2026-10-16）
 
-本模块仅写本文件，业务由原B/F/UI在原Task / 工作树 / 分支继续，根是唯一集成写入者。B当前必须在原 `progress_actual_test.go` 补齐实际跨项目GET拒绝、合法Grant缺少read_context拒绝、自然到期后HTTP拒绝、Agent infer拒绝及实际同库重启；只运行真实HTTP / SQLite检查，八项旧内存外部替身不执行、不计通过、不删除或新增skip。原SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562` 仅三项实际检查，当前不能作为上述完整安全验收。原错误ACK结算及后继提前结束保留，根 `msg_c231eddfb470` 允许核本人实际idle后公开重开同一Task并复用同一终端；无需新Task / Run或重复确认。B仅写原四件progress/session代码及 `docs/standards/backend.md`，不新建其他报告路径、不重做paper-dom或广域审计。
+本模块仅写本文件，原B/F/UI继续各自Task、工作树和分支，根是唯一集成写入者。正式问题 `msg_3f842bba8861` 的答复 `msg_ef2ae7cc0b04` 已实际读取：保持生产token一小时语义，不授权短期ExpiresAt；通过文件编辑追加恢复，保留普通历史。原B本人 `msg_e58d3db87b34` 已确认收到。只使用正式接口、真实SQLite及实际时钟等待到期，不改DB、Clock或模型；到期前始终记录RUNNING。已验证阶段源码可先交集成，报告仅在 `docs/standards/backend.md` 追加并独立commit，不再新建REPORT文件。
 
-F原SOURCE `d4d6ccfbcb6a6f3578117d76a637624445442f77` / REPORT `7a5fda53d7c3f0fd070c9e1b556c2355ea2fe9af` 已普通push，模块核真实日志为八项通过 / 1.3分钟 / 两worker。当前必须完成根 `msg_8cd3e62da4a8` 的准入确认页修正：保存可读固定候选、资料、项目审阅与unknown请求身份，移出POST路径 / JSON payload / 幂等键实现说明；改动后原八场景使用workers1和真实网络body/header检查。已通过候选不代表新改动已验，后继SOURCE / 独立REPORT齐备才交根消费。
+B原Task `task_7b4e93c1a3c1` 在原终端 `term_b020982d-82f7-4186-8b71-4735274dec02` 继续。根 `msg_c231eddfb470`、`msg_1395852dc699` 已授权同Task恢复及公开return-preamble的精确当前任务；本轮Dispatch为 `ctx_54129844e8b9`，由公开dispatch建立，未声称拥有worker-start的进程托管资源。旧提前结算和失败记录保留。SOURCE `243af0119fce2e633f91658f28280971136db2f5` 已实际恢复 `GrantProjectAgent` 清空ExpiresAt及 `IssueProjectAgentToken` 固定UTC加一小时；独读差异确认，REPORT `bd9b800a0fbb143e4f4eca58afafbe85725f899b` 已提交。该组合尚未获完整验收：后台新增skip、非必要token片段日志、JSON错误忽略及新增REPORT路径已退回原B。所记录token前20字符按实际格式只涉及公开项目UUID，未据此判定随机凭据泄漏；后继日志仍只允许安全派生字段。后台真实Windows进程、独立D盘数据库、签发及到期UTC、准确源码和结果待核，不能用shell PID或前置签发通过替代到期403。旧SQL改期及短期语义候选均不作真实到期证据。
 
-UI继续原delegation十三件新增页面 / helper及原样式，准确生成后端为rule / jev / laya。新测试的heuristic / test-snapshot与不符组件的输入不得作为实际来源或运行结果；必须复用真实项目快照、固定公开文件、实际Goal / Taste及现有规则路径，模型未配置与语言待答保持。新组件实际入口须由UI向F交精确衔接要求；界面不可达或浏览器未运行保持NOT_RUN。原分支已经实际恢复，未提交内容保留，报告仅原product-ui.md，全部状态与时间采用实际结果。
+F有效Dispatch `ctx_44f61b51d023`，准入SOURCE `d4723440c5fb35c53d0c3d361a2b5767d0b7cc4d` / REPORT `879574b633ff99c187d1985fc9d1291ef5f2f889` 已提交。模块独读D盘 `ctx_44f61b51d023-phase2/playwright-admission-run3.log` 为workers1、retries0、两viewport共8 PASS、5.4分钟、EXIT0；首轮4 PASS / 4 FAIL及次轮6 PASS / 2 FAIL保留。根 `msg_3958f7569dcf` 随后要求恢复身份等值断言：从真实请求body取request_id，验证实际幂等header及SQLite outbox correlation_id都等于该ID。仅首个准入、撤销、重启场景的两viewport需要复验，其余六项不重复。确认页移除实现详情的行为保持，不恢复JSON展示，不降低原断言。
 
-三位开发人员禁止调用内置或Orca子Agent。B本人Explore已有实际TaskStop成功；F报告两个Explore自然结束，仍待运行结果核查。接管 / 窗口ACK只用本人preamble的from、实际Task / Dispatch及status / handoff，不能使用worker_done或模块身份。实际模型没有运行证据时记录UNKNOWN，不能以助手自述opus别名推定。所有后继检查显式设置当前进程D盘GOCACHE / GOTMPDIR / TEMP / TMP / ASTROCYTE_TEST_OUTPUT_ROOT，GOMAXPROCS2 / GOFLAGS=-p=1；不改全局配置、不为清理终止在途检查。
+F关闭截图的配置SOURCE `0835d1313d731e597f346ef0abfd54aa7af87386` / REPORT `545824878544343a7dcaef63fde742ffea1078b6` 已先于根最新分工通知提交，差异为screenshot与video关闭、trace保留失败但screenshots=false。根 `msg_5cd06f2ce6b2` 决定在唯一I树处理该薄配置，F暂停该路径，实际提交和差异已交根处理普通集成。后续Playwright显式D盘输出，不主动截图、录屏或视觉检查，不因配置重复已通过场景。
 
-当前管理SOURCE `dadc4263211916256a158e506b5d64672eb6f2b4` 已普通push。B在根授权及本人实际idle核实后继续原Task / 同终端，当前有效Dispatch `ctx_19150385309b`；旧 `ctx_547c33103d3f` 的错误ACK结算与 `ctx_e85083f7cd56` 的不完整阶段结算均保留并retained，原三项SOURCE与新增REPORT未获完整安全验收。F有效 `ctx_44f61b51d023`，已实际消费准入产品修正并修改原组件和测试；UI有效 `ctx_5d4bbae2a28d`，原branch / e27e951及十三件新增与样式保持。UI本人 `msg_3423e6ff07d7` 使用正确终端报告当前64505无mutation / 在途命令、只读DOM / GET；非秘密进程字段 `ANTHROPIC_MODEL` / `ANTHROPIC_DEFAULT_OPUS_MODEL` 均为 `qwen3.7-max`，已交根和M-relay，其他作者实际模型尚待核。原错误from的UI消息不作本人ACK。共享38fb / PID33808保持，尚无新的准确构建产物供更新。模块独核C盘Go缓存UTC04:09:56仍有新写入、当时无Go编译进程及重启后新临时目录，已交原作者核真实进程环境；未删除缓存或修改全局配置。全部功能、完整默认与最终包验收继续。
+UI有效Dispatch `ctx_5d4bbae2a28d`，准确SOURCE `bd8a8df3d76cb063a7547577d54e11cfa722cbb6` / REPORT `e832e805133afbe7f2a0ad3a8600f1e832e486a2` 已普通push。实际14件delegation页面、helper及样式已由F单次普通cherry-pick为 `757d9ff0e9bf8b06d4c80c9fb97e6fb6644a42a1`；入口由F独占的AttentionPage衔接，精确entry SOURCE待交UI。浏览器正向规则、保存读取、状态、反馈、权限、冲突、未知及重启路径仍NOT_RUN；必须使用独立验收库中的真实公开项目、snapshot、Goal、Taste和生产rule路径。共享64505的项目 `98389066-5e5a-4e82-982b-deab3e005273` 仅供UI只读核对，不能硬写进独立空库或修改共享项目，F继续共享业务唯一操作人。UI报告文件列表正在按本阶段14件修正。
+
+三个开发人员均禁止再调用子Agent。B原Explore已有实际TaskStop成功；F两个Explore的自然结束仍待独立核查。接管及操作窗口ACK使用本人准确身份与status或handoff，阶段结果不发送worker_done。UI实际非秘密模型字段为 `qwen3.7-max`，B/F未核实字段记录UNKNOWN。所有新检查使用进程级独占D盘GOCACHE、GOTMPDIR、TEMP、TMP及测试输出，GOMAXPROCS=2、GOFLAGS=-p=1；不改全局配置，不为清理终止在途检查。共享38fb、PID33808和64505保持，尚无本轮新产物的正式ready交接。
+
+原完整默认结果保留204 PASS / 55 FAIL / 43既有SKIP / 18无结果、EXIT UNKNOWN；阶段定向通过不能替代完整适用检查、全部核心功能或同源Windows x64包验收。原生工具关闭、未答业务选择及正式V4冻结边界保持，模块持续返修和最终发布支持。
 
 ## 2026-10-16 11:49 原产品任务恢复计划
 
