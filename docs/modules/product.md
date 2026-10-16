@@ -10,6 +10,8 @@
 
 原B按本方案实施本项必要验证、保留全部首结果、固定SOURCE / 独立REPORT普通push `[skip ci]` 后交根。没有Probe / Start / 模型输入、重新采集 / ASR、生产部署、构建输入变化或旧成功项目重复运行；当前发布、六步和未答权限边界保持。
 
+根 `msg_3dbf302e1aa4` 在同两文件内追加独立名称的真实 distillation 超限前置，双源场景先完成并保持单列。模块只读 `git cat-file -s` 核原B准确已push SOURCE `b67f570d58d3b4bd874abf3da7897de735efb5b6` 的四件不同公开文档：STATUS.md209211、backend.md230066、HANDOFF.md78620、SPEC.md60277bytes，自然总578174大于524288。原B沿成熟Git入口核准确commit / blob /完整原字节与身份，各份只用一次，真实manual新D入库和固定引用明确记为公开项目文档；原Factory / bridge应在预检返回ValidationFailed /review_selected_text_size且无Native。实际未探测下游的evidence_missing不能填为超限拒绝，禁止扩正文、重复内容或伪造计数。准确Git输入与随后REPORT追加的工作树状态分列，不能混淆固定来源；只运行必要新场景，原recommendation、全部wire内容及模型覆盖继续未验。
+
 ## 2026-10-17 03:07 进度回执的真实前置后继
 
 根 `msg_cb31b64bbaf0` 及阶段接纳 `msg_ecbc6faa66d4` 要求沿当前任务继续可独立事项。B `msg_a3104937827c` 依据 Release 目标与验收、SPEC §17.3 / §17.4、S1 进度错误与恢复条款，提出真实未探测配置失败的持久回执及实际 SQLite 拒写检查。模块已读当前生产 Infer 路径：pending 先保存，实际 Registry 缺配置证据返回原错误，现有服务保存其保守 unknown；重放沿原 operation 拒绝，人工 Set 保留 operations。该路径没有实际原生交付，不将其冒称原在途 unknown / computed / accepted 模型场景。
