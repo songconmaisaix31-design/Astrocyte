@@ -1,5 +1,13 @@
 # Works Relay integration report
 
+## 2026-10-17 进度实际前置回执与只读拒写组合检查
+
+B SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` /独立 REPORT `b67f570d58d3b4bd874abf3da7897de735efb5b6` 已普通合为 `a18f66fd5dc4119ae430171b41c16dea489d3001`。仅新增external package的355行真实前置测试及backend报告，根独读全部源码 /作者报告与首轮实际命令 /日志，生产及旧七项覆盖保持。
+
+准确a18组合执行 `go test -mod=readonly ./internal/workspace/app -list '^(TestProgressPreflightActualColdConfigurationAndRestart|TestProgressPreflightActualSQLiteReadOnlyRefusesPending)$'`，精确两项；同选择器 `-run -v -count=1 -timeout=1m` 实际2 PASS /0 Skip，各0.12 /0.10秒，包1.404秒。app的 `go vet -mod=readonly`、diff和runner整体均EXIT0，源码前后保持。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-progress-preflight-a18f66f/` 及相邻runner保留全部命令和D输出配置。
+
+实际HTTP /SQLite /公开README /未ProbeRegistry核前置evidence_missing后的生产保守unknown持久化、同key保护、人工状态保留及同库重开，未发生原生交付。另一自有连接query_only产生真实SQLITE_READONLY，返回内存仍含pending而数据库零持久化行；实际HTTP500及恢复可写后的人工保存均通过。没有fake错误、手工receipt、Native或模型；原七项模型 /在途 /computed /CAS /发布恢复仍未验。产品c5 /PID30420 /64505保持，无新构建或部署。
+
 ## 2026-10-17 选定文本实际装配前置组合检查
 
 B SOURCE `4bb5ec63b2af1c97959bda60cee1ba625a7a79ed` /独立 REPORT `dd69f1c2b4f9982364a395d54f8c31baeae6672c` 已普通合为 `dc125d8bc53773aed2d48df3eb7abb423f4c7007`。仅新增324行真实装配测试及backend报告；根完整独读源码、作者报告、首编译失败与第二 /三轮原日志及命令记录。实际生产 selectedTextBridge /工厂 /SQLite /HTTP身份与许可 /ProjectFiles /未ProbeRegistry直接复用，目录helper来自准确已验I依赖。
