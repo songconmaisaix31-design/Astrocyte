@@ -2,6 +2,12 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 11:51 根接管唯一集成写入
+
+根 `msg_4c88ceb841e0` 转用户最新“继续集成，集成交给你了”，明确由根直接接管原 `works-relay-integration` 工作树 / `songconmaisaix31-design/works-relay-integration`，作为该树唯一集成写入者完成普通合并、必要构建、检查与提交。原 I Task、两次启动失败和原件保留，不再重试 I，不创建替代 Task / Run，不诊断或修改网络与账号路由。此决定替代下节原唯一 I 执行安排；领域业务仍交原作者返修，M-release 继续只维护发布管理文档、准确来源和后续包支持。
+
+本模块已通过 `run_973808dd6a2f` 将 T SOURCE `5d701bdd7f4d6696a1f730f21c47f84d222dd6cd` / REPORT `149b5261f52e5a33a2172241ce2089ae12fbbcb3` 以及 H 单文档 REPORT `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4` 的实际范围、远端完整 SHA、原经理可消费确认和检查限制交根。原38fb成功构建、H 稳定副本和本轮产物窗口归还保持有效，同库服务继续由 H 维护；后继更新由 H 取得 F 当前安全 ACK 后执行。B / F / UI 继续原 WIP，准确提交及独立报告到达后才交根普通消费。
+
 ### 2026-10-16 11:48 接续原 Run 与唯一集成
 
 根工作树 HANDOFF / STATUS 11:38 和 QUESTIONS 为本轮入口。模块负责人为原 Task `task_315679474dc4` / Dispatch `ctx_e4bfbfefc7b4` / `term_09446359-d75f-471b-84b2-39c472d0ada8`，普通绑定原 `run_aa4e6a119547` generation 11；公开终端身份为 Codex / GPT-6.1-Sol xhigh fast。模块只维护本文和既有日运行记录，业务修改、测试及返修继续由原作者完成。没有创建新 Run 或替代 Task，没有增加第四层。
