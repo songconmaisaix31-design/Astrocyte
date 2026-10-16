@@ -2,6 +2,20 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 11:57 P 完整来源与包入口审查
+
+根 `msg_780788014275` 要求只读审查 P 完整合并来源及当前集成兼容范围。固定集成检查点为 `7120a207ee6da0923262bbc6347661d92ac7b285`，准确 P SOURCE `7431db6451fa759638dedc4aad7687a217d3a6d9` / REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a`、远端同 REPORT，原阶段已接受完成并 released。本模块没有执行合并、构建、资产检查或模型推理，没有修改集成树。
+
+两来源具有三个共同祖先：`a8334b79aeb0c3a1b1038d45964d6092dc6cc5de`、`205d2d2ce91091e6add67d637cb65aae33946292` 和 `15c738f88822e553eb228c12c0fdc71ad07b7531`。P 相对该集成检查点有51个独有提交，其中41个非 merge / 10个 merge；不能使用任意单个共同祖先的三点差异推断实际合并结果。非 merge 的32条修改路径为16件 release 工具 / NOTICE / runtime JSON、5件 `cmd/workbench-snapshot`、2件 `tests/release-cognition`、5件发布 / 研究 / 认知文档，以及 HANDOFF / STATUS 和两件任务文档。28条路径在该集成检查点尚不存在，四件现存管理文档须保留根当前决定。历史 `c54bcf3` 仅修改 Start / Verify / windows 三件发布文件。
+
+独有 merge 的组合路径另含 `cmd/server/main.go`。P main 相对 a833 的项目发现装配使用 `resolveProjectDiscovery` 及原位置错误返回；固定7120已存在相同守卫。具体自动合并、实际冲突和最终 main 仍由唯一根用 Git 标准递归合并预检及实际结果核查，本模块没有把历史较旧文件当覆盖来源。未发现独有非 merge 的生产配置、依赖锁、迁移或原生业务修改。
+
+发布准备 REPORT b208 可供根准确普通消费，范围限已完成准备。完整读取当前 Build / Start / Release-Common / Check-Runtime / Verify 原入口后确认：Build 归档精确 SOURCE、冻结依赖、运行现有构建并编译快照命令，复制已核 runtime / 许可及最终 SOURCE adapter，再按原隐私扫描和允许项生成标准 ZIP；Verify 使用新解压目录、空身份与系统 PATH，实际验证 session / CSRF / SQLite 写读、进程重启、手动快照与同代 Q 的 SQL10 / 六字段。该脚本不覆盖默认浏览器、媒体提取或原生控制器正向，旧包124项通过不转用于后继组合。
+
+当前 `Start-Astrocyte.ps1` 清理全部继承的 `ASTROCYTE_*`，仅配置 DataDir / Relay / 媒体参数；H 已提交的 CodeGraph / Repository 配置和 Laya 十项路径、语言及生命周期配置尚无包参数。原 P 后继须依据准确生产配置完成必要入口与实际包验收，未答语言及具体模型请求不自行选择。C盘10 GiB门禁、N仅 archive 来源、完整默认和原生边界保持，本轮没有开始最终包。
+
+M-product `msg_f83098783eab` 已确认 B SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` / REPORT `9fa97efe8208de85a2251f1ea01008c79ad04945` 原作者 ready / 远端同 REPORT，并直接交根；本模块独读准确三件配置与测试、单文档报告。该来源的明确 listing 配置直接失败及真实工具构造不包含原 progress / session WIP，F 准入 TS2571 和八场景 UNKNOWN 保留。
+
 ### 2026-10-16 11:51 根接管唯一集成写入
 
 根 `msg_4c88ceb841e0` 转用户最新“继续集成，集成交给你了”，明确由根直接接管原 `works-relay-integration` 工作树 / `songconmaisaix31-design/works-relay-integration`，作为该树唯一集成写入者完成普通合并、必要构建、检查与提交。原 I Task、两次启动失败和原件保留，不再重试 I，不创建替代 Task / Run，不诊断或修改网络与账号路由。此决定替代下节原唯一 I 执行安排；领域业务仍交原作者返修，M-release 继续只维护发布管理文档、准确来源和后续包支持。
