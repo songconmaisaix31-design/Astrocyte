@@ -22,7 +22,7 @@ B 本人 `msg_dc1b0c6e49e7` 已核准确 `4b4ec3b26c276d707cbea81e7207dbce9d7582
 
 本轮原 B 精确 write_paths 确认为 `internal/adapters/sqlite/local_agents_discovery_test.go`、新增 `internal/adapters/sqlite/local_agents_permissions_actual_test.go`、`internal/adapters/importers/public_listing_actual_test.go`、`docs/standards/backend.md`。目录测试使用标准库独立 canonical 预期及真实 SameFile 目录身份，保留权限、观察状态、重启、删除恢复及调用次数断言，拆分准确错误信息；新实际权限测试以真实 HTTP bootstrap、项目 / 设置 / Grant / token、实际生产 Registry、SQLite 重启及缺发送依赖拒绝验证可独立部分，实际 unknown / stop / resume 继续缺真实前置，旧正向要求完整保留。
 
-分页测试仅观察默认真实 Transport 原响应，使用成熟 JSON 解码独立核实际槽数、可用 / 不可用条目及 has_more，再与每页产品结果严格比较；三请求、起点 0 / 20 / 40、size20、游标 2 / 3 / 4 保持。真实省略槽样本未取得时单列 NOT_RUN，不将当前 60 视为该场景。当前不修改 `public_listing.go` 或抽取仅供测试的 cursor 函数，不以纯规则输入替代实际省略槽来源；无需变更生产或 Native 代码。
+分页测试仅观察默认真实 Transport 同次原响应，使用成熟 JSON 解码独立核原始协议身份、slot 数、has_more、顺序 / 连续性与预算，再与实际请求和每页产品结果严格比较；三请求、起点 0 / 20 / 40、size20、游标 2 / 3 / 4 保持。普通窗口使用独立 `MatchesProviderResponse` 测试入口；原 `WithUnavailableSlot` 入口保留严格 59、真实缺位前置及游标 / 预算的全部原义，没有实际缺位时本次不选运行并单列 NOT_RUN，若执行而缺前置须失败，不能同名条件跳过后 PASS。预期不复制生产 identity / availability 过滤器或同构转换器，不使用过去 JSON 伪装当前响应。当前不修改 `public_listing.go` 或抽取仅供测试的 cursor 函数，不以纯规则输入替代实际省略槽来源；无需变更生产或 Native 代码。
 
 原 B 实施、定向运行并迭代上述真实场景，使用 D 新目录保留所有首结果，SOURCE 与独立 REPORT 普通 push。鉴于默认套件仍包含未整改替身，本阶段后续提交均附 `[skip ci]`，避免自动启动根已禁止的新默认运行；不改 workflow 或添加 test Skip，当前完整 CI 仍未通过。模块只维护本计划、审阅及交接，原 B 持续同 Task / Dispatch / 树 / 分支，未创建新开发人员。
 
