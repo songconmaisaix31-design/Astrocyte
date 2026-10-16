@@ -1056,3 +1056,30 @@ SOURCE `4bb5ec63b2af1c97959bda60cee1ba625a7a79ed` 已在 `standards-backend` 普
 首轮list实际编译EXIT1，完整诊断保留于 `list-first.log` / `commands-first.json`：Distiller基础接口不公开 ProjectSpaceID，database/sql没有导出 ErrDBClosed。最终通过现有项目空间方法接口及实际闭库 PingContext错误验证，无生产修改。第二轮实际前置1 PASS / 0 SKIP，0.15秒、包1.914秒，当时获准公开快照通过本机合法材料导入 HTTP；最终服务端口路径改动后仅复验相关 cmd测试 / vet，第三轮整体EXIT0。`msg_3256d938f27e` / `msg_46a8c6bcd6f3` 明确此公开导入属于授权范围；记录未据此推断泄露或生产缺陷。各轮原命令、退出与时间保留于 commands-first / second / third.json。
 
 完成范围仅为新增实际组装前置覆盖。原 selectedProcessorStub、nativeBoundaryProcessor、capacityCaptureProcessor及原完整正向、非法响应、联合容量断言仍完整保留，本次未运行它们，也未加 Skip、删除覆盖或将其标为已替换。实际论文与视频联合大于128KiB保真、实际来源大于512KiB拒绝、真实推荐成功与 provenance、invented / scored / trailing模型响应拒绝仍 NOT_RUN；需要准确获准原件及真实原生结果，不能拼造、重复正文或手工返回模型输出。原缺位、Native unknown / stop / resume、进度七项替身、完成经验正向、完整默认 check / E2E、L1 / L2及最终包限制保持。Probe、Native Start、模型、ASR、采集、Sleep、正式 V4和共享64505操作均0。原 Task / Dispatch继续支持返修，后继范围按当前Release与规格事实源核查。
+
+## 进度配置与 pending 保存的实际前置 REPORT（2026-10-17）
+
+SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` 已在原 `standards-backend` 分支普通提交并 push，含 `[skip ci]`；相对前一 REPORT `dd69f1c2b4f9982364a395d54f8c31baeae6672c` 仅新增 `internal/workspace/app/progress_preflight_actual_test.go`，355行。模块 `msg_f68da21addb5` 和根经 `msg_f64be2d1b286` 确认该单文件与后续报告的互斥及授权，`msg_b104bbc20643` 明确内存 pending与实际存储分别核查。使用 `app_test` 外部测试包消费生产接口，没有复制业务逻辑或引入依赖。原七项进度替身、原两件 distillers及此前交付五件测试均保持。
+
+事实依据为当前Release目标与验收、SPEC17.3外部未知按原operation处理及17.4持久化生命周期、S1收尾中项目进度错误/结果恢复。测试使用新 D自有 SQLite、实际 loopback `Serve` / `Shutdown`、真实人类 bootstrap / cookie / CSRF、HTTP创建实际 ProjectSpace和当前公开工作树项目、明确目录与 codex模型许可。`ProjectFiles` 仅读取当前公开README，实际全文与直接只读原字节相同且有非空版本，cleanup核原文件身份、大小、mtime和完整字节不变。没有访问私人状态、旧来源库或其他材料。
+
+`TestProgressPreflightActualColdConfigurationAndRestart` 通过实际 HTTP调用 Infer，真实未 Probe Registry返回 evidence_missing / HTTP400。生产按当前保守规则保存 unknown回执，测试逐项核真实 operation、action、时间、Result=null、pending清空、revision2及项目身份；没有输出、native_id、model、evidence或 observed_at。这个 unknown来自配置前置拒绝，没有发生原生投递，不能据此声明已经复现原生交付未知。
+
+同一实际 operation再次POST返回 delivery_unknown / HTTP409，完整实际存储记录保持。人工通过 HTTP写入 review后，原回执与 PendingOperation保持；再次同key请求仍拒绝且不覆盖人工记录。实际服务正常关闭、同一 SQLite文件关闭后重开，再以新 bootstrap与新未 Probe Registry发送原key，仍返回409，项目配置、人工记录及完整回执逐字段保持。每个实际服务周期的 Registry观察与自身起始值相同，原生目录为空、local_agent_sessions=0。这只验证当前回执保护优先于再次到达配置前置错误，配置恢复、实际模型响应和计算/发布恢复未运行。
+
+`TestProgressPreflightActualSQLiteReadOnlyRefusesPending` 只对另一新建 D自有 SQLite连接设置 `PRAGMA query_only=ON`，实际读回1。完整 `InferProjectProgress` 在pending保存处返回真实 modernc SQLite READONLY码；返回值仍包含内存中的project / revision1 / PendingOperation / pending回执 / 创建时间，Result=null、未完成且没有模型观察。另通过实际HTTP同一路径得到500 / internal_error，并核 schema / request_id / required_action。独立实际SQL查询 local_project_progress=0，证明没有持久化行或回执；未把返回内存值写成“无pending”。原生观察、目录与会话零副作用守卫保持。
+
+随后仅将本次连接 query_only恢复OFF，实际读回0，通过真实HTTP人工PUT验证可写，存储为human / review / revision1且Operations为空、无PendingOperation。没有手工写入operation、模拟存储故障、伪造processor或模型结果，没有更改正式数据库、schema或生产配置。错误来自真实连接权限与生产保存路径。
+
+所有新输出位于 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/progress-preflight/`，runner=`run.ps1`，首轮整体EXIT0；commands-first.json逐项记录命令、退出和时间。显式测试输出、GOTMPDIR / TEMP / TMP均为本次D目录，沿既有D缓存，GOPROXY=off、GOMAXPROCS=2、GOFLAGS=-p=1；没有下载依赖。
+
+| 实际命令 | 结果与本次D原件 |
+|---|---|
+| `go test -mod=readonly ./internal/workspace/app -list '^TestProgressPreflightActual'` | 恰好两项、EXIT0；`list-first.log` |
+| 同包 `-run '^TestProgressPreflightActual' -v -count=1 -timeout=1m` | 首轮2 PASS / 0 SKIP，分别0.13 / 0.11秒、包2.037秒、EXIT0；`test-first.log` |
+| `go vet -mod=readonly ./internal/workspace/app` | EXIT0；`vet-first.log` |
+| 新Go文件 `gofmt -l`、`git diff --cached --check` | EXIT0，无输出 |
+
+本阶段没有新增失败运行；既有各阶段首失败与unknown继续保留。生产及构建输入没有修改，未重复上一阶段已通过的server构建、纯函数边界或其他成功项；没有运行默认check / 浏览器 / CI。原七项正向推断、非法模型响应、在途撤权、computed / CAS / 发布失败恢复仍完整保留且NOT_RUN，本次前置覆盖不替代这些要求。Probe、Native Start、模型、ASR、采集、Sleep、正式V4和共享服务操作均0。
+
+后继容量仅沿已获准报告和安全记录定位：视频当前有效SOURCE为 `dd3a8b8a20e6f8dc30342d1708d4f59b9bec82b6`、REPORT为 `1fd89e92933b67ac6ea3510a9244ad194d6f1ec1`，D自有派生两正文32908 / 35807bytes已存在；正常只读来源main/WAL与公开bytes保持，SHM变化单列，旧额外门槛不作为当前障碍。当前57465paper与它们的自然总量为90373 / 93272bytes，仍不能证明大于128KiB。历史95314paper另有准确已验联合记录，现阶段只获准沿静态报告 / runner定位其确切公开对象，不重开FAkZe5、video-source-third或任何旧SQL，不重发模型。该来源定位、实际联合容量、真实模型与非法响应、完成经验正向、L1 / L2和最终默认 / 发布包保持各自真实前置。原Task / Dispatch持续支持，未结算。
