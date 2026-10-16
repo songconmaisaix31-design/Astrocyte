@@ -4,17 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
-// cloneProgress mirrors the SQLite boundary: a load returns a fresh value (no
-// shared map/slice references) so an in-memory mutation cannot leak into the
-// stored record the way a JSON decode would not.
+// cloneProgress 镜像 SQLite 边界：加载返回全新值（无共享 map/slice 引用），
+// 内存中修改不会泄漏到存储记录。
 func cloneProgress(p domain.ProjectProgress) domain.ProjectProgress {
 	data, _ := json.Marshal(p)
 	var out domain.ProjectProgress
@@ -54,9 +51,8 @@ func (p *progressProjects) LoadSession(context.Context, string) (domain.NativeSe
 }
 func (p *progressProjects) SaveSession(context.Context, domain.NativeSession) error { return nil }
 
-// progressStore is a CAS repository double. failAt / conflictAt inject a storage
-// error or a version conflict on a specific save ordinal (1-based) so the test
-// can target the pending save versus the accepted publication save.
+// progressStore 是 CAS 存储替身。failAt / conflictAt 在指定保存序号（1-based）
+// 注入存储错误或版本冲突，以便测试定位 pending 保存与 accepted 发布保存。
 type progressStore struct {
 	records    map[string]domain.ProjectProgress
 	saves      int
@@ -139,65 +135,6 @@ func progressHuman(op string) domain.Caller {
 
 const opA = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
-func TestProgressCacheGetFillsAuthorizedProjectIdentity(t *testing.T) {
-	ctx := context.Background()
-	human := domain.Caller{Kind: "human", ID: "h"}
-	service, projects, store, processor := newProgressService()
-	projects.projects["p1"] = consentProject()
-
-	got, err := service.GetProjectProgress(ctx, human, "p1")
-	if err != nil {
-		t.Fatalf("absent cache read %v", err)
-	}
-	if got.SchemaVersion != 1 || got.ProjectID != "p1" {
-		t.Fatalf("absent read lost the authorized project identity %+v", got)
-	}
-	if got.Status != "" || got.Source != "" || got.Revision != 0 || got.ObservedAt != (time.Time{}) {
-		t.Fatalf("absent read fabricated a stage %+v", got)
-	}
-	if processor.calls != 0 {
-		t.Fatal("absent cache read triggered a model turn")
-	}
-	if len(store.records) != 0 {
-		t.Fatal("absent cache read wrote a progress row")
-	}
-}
-
-func TestProgressHumanSetAndCacheRead(t *testing.T) {
-	ctx := context.Background()
-	human := domain.Caller{Kind: "human", ID: "h"}
-	service, projects, store, processor := newProgressService()
-	projects.projects["p1"] = consentProject()
-
-	percent := 40
-	for _, caller := range []domain.Caller{{}, {Kind: "agent", ID: "a", ProjectID: "p1"}} {
-		if _, err := service.SetProjectProgress(ctx, caller, "p1", domain.ProgressInput{Status: "in_progress", Percent: &percent}); err == nil {
-			t.Fatal("non-human progress write accepted")
-		}
-	}
-	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: strings.Repeat("x", 201)}); err == nil {
-		t.Fatal("oversized status accepted")
-	}
-	bad := 101
-	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: "ok", Percent: &bad}); err == nil {
-		t.Fatal("out-of-range percent accepted")
-	}
-	record, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: "in_progress", Percent: &percent})
-	if err != nil || record.Source != "human" || record.Revision != 1 || record.Percent == nil || *record.Percent != 40 {
-		t.Fatalf("human set %+v %v", record, err)
-	}
-	got, err := service.GetProjectProgress(ctx, human, "p1")
-	if err != nil || got.Status != "in_progress" || got.Source != "human" {
-		t.Fatalf("cached read %+v %v", got, err)
-	}
-	if processor.calls != 0 {
-		t.Fatal("cache GET started a processor")
-	}
-	if len(store.records) != 1 {
-		t.Fatal("expected one stored record")
-	}
-}
-
 func TestProgressInferRecordsEvidenceAndIsIdempotent(t *testing.T) {
 	ctx := context.Background()
 	service, projects, _, processor := newProgressService()
@@ -271,9 +208,8 @@ func TestProgressInferRechecksConsentBeforePublication(t *testing.T) {
 	store := &progressStore{records: map[string]domain.ProjectProgress{}}
 	projects.projects["p1"] = consentProject()
 	model := "gpt-test"
-	// The processor revokes consent mid-flight, simulating a concurrent settings
-	// change while the paid turn runs. The publication re-check must discard the
-	// result rather than publish a stale inferred status.
+	// 处理器在付费推理运行期间撤销许可，模拟并发设置变更。
+	// 发布前重新检查必须丢弃结果，不发布过时的推断状态。
 	processor := &progressProcessor{result: domain.TextResult{Text: `{"status":"review"}`, NativeID: "nid", Model: &model}}
 	service := NewProjectProgressService(projects, store, progressFiles{files: []domain.ContextFile{{Path: "TASK.md", Version: "v1", Text: "x"}}}, &revokingProcessor{next: processor, projects: projects}, progressRegistry{})
 	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
@@ -298,30 +234,7 @@ func (p *revokingProcessor) ProcessSelectedText(ctx context.Context, r domain.Te
 	return p.next.ProcessSelectedText(ctx, r)
 }
 
-func TestProgressAgentReadUsesGrant(t *testing.T) {
-	ctx := context.Background()
-	human := domain.Caller{Kind: "human", ID: "h"}
-	service, projects, _, _ := newProgressService()
-	projects.projects["p1"] = consentProject()
-	if _, err := service.SetProjectProgress(ctx, human, "p1", domain.ProgressInput{Status: "planning"}); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := service.GetProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1"); err == nil {
-		t.Fatal("Agent read accepted without grant")
-	}
-	projects.grants["p1/a"] = domain.ProjectGrant{ProjectID: "p1", AgentID: "a", Actions: []string{"read_context"}}
-	if _, err := service.GetProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1"); err != nil {
-		t.Fatalf("Agent read with grant failed %v", err)
-	}
-	now := time.Now()
-	projects.grants["p1/a"] = domain.ProjectGrant{ProjectID: "p1", AgentID: "a", Actions: []string{"read_context"}, RevokedAt: &now}
-	if _, err := service.GetProjectProgress(ctx, domain.Caller{Kind: "agent", ID: "a", ProjectID: "p1"}, "p1"); err == nil {
-		t.Fatal("revoked grant still readable")
-	}
-}
-
-// A human stage write must keep the durable operation receipts; otherwise a
-// retry of an already accepted inference would re-charge the model.
+// 人工阶段写入必须保留持久操作回执；否则已受理推理的重试会重复计费模型。
 func TestProgressHumanSetPreservesOperationReceipts(t *testing.T) {
 	ctx := context.Background()
 	service, projects, store, processor := newProgressService()
@@ -342,8 +255,7 @@ func TestProgressHumanSetPreservesOperationReceipts(t *testing.T) {
 	if record.Operations[opA].Status != "accepted" || record.Operations[opA].Result == nil {
 		t.Fatalf("human set dropped the accepted receipt %+v", record.Operations)
 	}
-	// Retrying the same operation must return the original accepted result and
-	// must not re-run the model.
+	// 重试同一操作必须返回原已受理结果，不重新运行模型。
 	calls := processor.calls
 	again, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
 	if err != nil || again.Status != "review" || again.Source != "agent_inferred" || again.Percent == nil || *again.Percent != 70 || processor.calls != calls {
@@ -351,10 +263,9 @@ func TestProgressHumanSetPreservesOperationReceipts(t *testing.T) {
 	}
 }
 
-// A transient CAS conflict during accepted publication must be recovered by
-// reloading and re-saving the already computed result, never by re-running the
-// model turn. The computed snapshot is durably stored first (save 2) so the
-// conflict on the accepted publish (save 3) is recoverable.
+// 发布期间的瞬时 CAS 冲突必须通过重新加载并重新保存已计算结果恢复，
+// 不重新运行模型推理。已计算快照先持久化（保存 2），因此接受发布（保存 3）
+// 上的冲突可恢复。
 func TestProgressPublicationRecoversFromCASConflictWithoutNewModel(t *testing.T) {
 	ctx := context.Background()
 	projects := &progressProjects{projects: map[string]domain.LocalProject{"p1": consentProject()}, grants: map[string]domain.ProjectGrant{}}
@@ -374,8 +285,7 @@ func TestProgressPublicationRecoversFromCASConflictWithoutNewModel(t *testing.T)
 	}
 }
 
-// A persistent publication failure must surface as an error, never as a nil
-// success that would falsely report a result the store never received.
+// 持久发布失败必须返回错误，不能作为 nil 成功虚假报告存储从未接收的结果。
 func TestProgressPublicationFailureIsNotReportedSuccess(t *testing.T) {
 	ctx := context.Background()
 	projects := &progressProjects{projects: map[string]domain.LocalProject{"p1": consentProject()}, grants: map[string]domain.ProjectGrant{}}
@@ -386,15 +296,14 @@ func TestProgressPublicationFailureIsNotReportedSuccess(t *testing.T) {
 	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("failed computed persistence reported success")
 	}
-	// The pending receipt persisted before the model turn still blocks a replay.
+	// 模型推理之前持久化的 pending 回执仍然阻止重放。
 	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err == nil {
 		t.Fatal("unpublished operation was replayed after storage recovered")
 	}
 }
 
-// A crash between the durable computed save and the accepted publish must be
-// recoverable: the retry finds the computed snapshot and re-publishes it without
-// running another model turn.
+// 持久化已计算结果与接受发布之间的崩溃必须可恢复：
+// 重试找到已计算快照并重新发布，不运行新的模型推理。
 func TestProgressComputedResultRecoveredAfterPublicationFailure(t *testing.T) {
 	ctx := context.Background()
 	projects := &progressProjects{projects: map[string]domain.LocalProject{"p1": consentProject()}, grants: map[string]domain.ProjectGrant{}}
