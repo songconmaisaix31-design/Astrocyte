@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import type { components } from '../src/api/schema';
 
 type S = components['schemas'];
+const { verificationOutputRoot } = await import(new URL('../../scripts/process.mjs', import.meta.url).href) as { verificationOutputRoot(choice: string): string };
 test('既有实际视频两版原文和952时间位置只读显示，私有原生附件没有HTTP入口', async ({ page }, info) => {
   const origin = process.env.ASTROCYTE_TEST_VIDEO_PUBLIC_URL;
   const id = process.env.ASTROCYTE_TEST_VIDEO_MATERIAL_ID;
@@ -67,7 +68,9 @@ test('既有实际视频两版原文和952时间位置只读显示，私有原�
   expect(finalResponse.status()).toBe(200);
   expect(await finalResponse.json()).toEqual(detail);
   expect(commands).toEqual([]);
-  const directory = resolve('../.verification/video-existing');
+  const outputRoot = process.env.ASTROCYTE_TEST_OUTPUT_ROOT;
+  if (!outputRoot) throw new Error('需要本次显式 ASTROCYTE_TEST_OUTPUT_ROOT');
+  const directory = resolve(verificationOutputRoot(outputRoot), 'video-existing');
   await mkdir(directory, { recursive: true });
   await writeFile(resolve(directory, `${info.project.name}-derived.json`), JSON.stringify({ material_id: id, versions, read_only: true, new_asr_calls: 0, new_model_turns: 0, private_original_requested: false }, null, 2));
 });
