@@ -1,5 +1,19 @@
 # Works Relay integration report
 
+## 2026-10-17 真实公开来源容量与超限组合检查
+
+B双源SOURCE `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` /REPORT `9bb501bb303a9b51cf1acb663fc628353db496ce` 和后继超限SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` /REPORT `3faa336f437b975f946d58cc558c97cb3328695a` 已一次普通合为 `c3116e803839fb2d97728bfedddfb06a7d564cec`。根完整读取最终561行测试、两份独立报告、两轮命令 /list /test /vet原件及准确远端。后继仅追加独立超限测试，已成功双源由作者保留首结果，唯一集成树统一运行本次两项。
+
+根在准确c311组合执行 `go test -mod=readonly ./cmd/server -list '^(TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative|TestSelectedTextCapacityActualGitDocumentsOversize)$'`，精确两项；同选择器 `-run -v -count=1 -timeout=1m` 实际2 PASS /0 Skip，各0.16 /1.14秒，包3.137秒。`go vet -mod=readonly ./cmd/server`、diff及runner整体均EXIT0，源码前后保持。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-capacity-c3116e8/`，相邻runner保存全部命令、准确两公开对象 /固定e907 commit及D输出配置。
+
+获准公开paper95314bytes与既有D视频正文35807bytes仅读，源及祖先路径保护、普通文件身份 /大小 /mtime /完整bytes /SHA256前后保持；没有打开旧SQL。两正文各一次，经真实manual导入保存为准确新人工来源与本次时间 /Ref，固定引用完整比较通过，自然131121bytes。生产工厂与原bridge实际预检日志为prompt139579 /wire139957 /output131072，随后在真实未Probe配置前置返回evidence_missing，未启动Native或模型。
+
+另一项从准确已公开e907的四个不同Git blob读取完整UTF-8原文，各使用一次，自然总578174bytes；真实新manual file来源 /当前时间 /不可变URL /Ref保持，生产工厂返回validation_failed /review_selected_text_size。原blob身份及bytes在关闭HTTP /SQLite后保持，没有重复正文、伪造响应或请求捕获。该结果只覆盖distillation真实超限，原recommendation超限、完整prompt内容及模型接受 /非法响应仍未验，原完整替身函数不运行或计PASS。
+
+本轮七组准确组合共16项真实测试通过，相关vet /diff与各runner均EXIT0；完整默认 /CI未通过。L1 archive仍缺可信前缀及append-only提供事实 /传递，native通知完整性独立；六步5已有显式MCP加human手册到首输入构件，但本轮真实检索 /批准 /后续输入未验，自动装配方式待用户回答。具体来源、工具及人工批准门禁保持。
+
+UTC19:22:54实际核查产品仍为c5 /PID30420，原程序与启动时间保持，唯一127.0.0.1:64505监听及首页200；本阶段无生产变化、构建或部署。C空余实际5433909248bytes，低于10737418240bytes包装守卫，最终Windows包 /解压验证 /Release未执行；原服务外层EXIT UNKNOWN保持。
+
 ## 2026-10-17 进度实际前置回执与只读拒写组合检查
 
 B SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` /独立 REPORT `b67f570d58d3b4bd874abf3da7897de735efb5b6` 已普通合为 `a18f66fd5dc4119ae430171b41c16dea489d3001`。仅新增external package的355行真实前置测试及backend报告，根独读全部源码 /作者报告与首轮实际命令 /日志，生产及旧七项覆盖保持。
