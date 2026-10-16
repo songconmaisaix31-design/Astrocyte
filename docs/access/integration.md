@@ -1,5 +1,24 @@
 # Works Relay integration report
 
+## 2026-10-17 人工进度与原操作回执真实验证
+
+B SOURCE `ae22fc99c195792d951c7adc9b652420bc1fdbb5`、独立 REPORT `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` 已普通合为 `1679d7af9de6033aef1afb0cfb719dde1ab73abb`，没有冲突。根独读两件源码全部差异、作者精确 list / test / vet / HTTP 日志、结果及关闭后来源守卫。同名 HumanSet 测试由 app 的替身迁入现有 SQLite 测试文件，保留原业务断言并检查同库重启；没有新增 tag、Skip 或生产变化。原八项现有一项已完整真实替换，其余七项仍需实际新推断、无效输出、在途撤权或计算结果发布现场，不执行原替身或记为真实通过。
+
+根在准确1679组合实际执行：
+
+| 命令 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite -list '^TestProgressHumanSetPreservesOperationReceipts$'` | EXIT0；app零项、SQLite一项。 |
+| `go test -mod=readonly ./internal/adapters/sqlite -run '^TestProgressHumanSetPreservesOperationReceipts$' -v -count=1 -timeout=2m` | 1 PASS，用例0.12秒、包1.919秒，EXIT0。 |
+| `go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite` | EXIT0，无诊断。 |
+| `git diff --check` | EXIT0。 |
+
+根原件 `D:/Astrocyte-agent-assets/20261015/integration/root-human-1679d7a/`，相邻 `run-root-human-1679d7a.ps1` 整体EXIT0，前后源码相同。仅原获准公开 README 项目及其 accepted 记录从正常锁的只读 SQLite 派生到新D库，源revision3、目标初始CAS1及人工r2分别记录。真实HTTP1 65159保存人工done，再以原operation key返回原结果；正常关闭并重开同库HTTP2 65161后继续保持原回执与人工存储，全部实际200。使用生产未Probe Registry和ProjectFiles，没有伪造处理器或调用计数器；Registry观察保持，原生状态目录为空，Grant / Native Session / 新模型均0。两个HTTP和SQLite均正常关闭。
+
+根独读关闭后 `actual/source-after-close.json`：主文件同身份4096bytes及WAL同身份988832bytes，大小与mtime保持；源项目和进度原JSON / version亦保持。SHM同身份32768bytes、mtime变化单列，没有重开源SQL。生产仍准确172 / PID25568 /64505，没有重建或重启；web及视频未变，不重复174项已成功测试和原视频场景。原55失败仍29 PASS /26 Native未执行，前端178项仍174项分批通过 /4项缺真实L1；完整check/default、L1/L2及最终包未通过。
+
+完整 `scripts/check.mjs` 仍包含全仓Go测试，其余七项原进度替身不得运行计通过；完整Vitest的首次EXIT1保留。原H负责完成经验Interpreter的必要显式生产注入，原B在本阶段后负责真实Swarm采用来源适配，沿原Task / Run及互斥文件范围继续。没有实际采用事件或受限Native许可时，正向经验生成与六步验收保持未验；发布工具已准备，最终精确SOURCE构建、解压验证、archive及Release尚未执行。
+
 ## 2026-10-17 视频原缺失用例与组合检查
 
 B SOURCE `dd3a8b8a20e6f8dc30342d1708d4f59b9bec82b6`、F SOURCE `72d6dcdb557770872dc59c4b18d8b0e8a7245075` 及准备 REPORT `31342f8aafcbf45168717f596f3528005584563f` 已普通合为 `841673ef1acf75b745a6413019a3ffb86162e408`。根独读全部新 helper、原 spec 净差异和实际原件；唯一源码变化为显式 opt-in 的真实视频派生托管 helper 与原 spec 的公共模块导入 / D 输出。B 最终仅后端记录 REPORT `1fd89e92933b67ac6ea3510a9244ad194d6f1ec1`、F 最终仅前端记录 REPORT `ac94fa2d794950edb4eab07aa9a56b6224f4116d` 继续普通合入，准确代码及作者记录组合为 `45cccf0858b0addb4f1d612253d8ef52d6f7faa1`，全部无冲突。
