@@ -8,6 +8,30 @@
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -Port 17887 -DataDir 'D:\AstrocyteData'
 ```
 
+启用 S4 CodeGraph/Repository 上下文（三个路径必须同时提供）：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -CodeGraphNode 'D:\AstrocyteData\runtime\node\node.exe' -CodeGraphSDK 'D:\AstrocyteData\runtime\sdk\node_modules\@colbymchenry\codegraph' -CodeGraphScript 'D:\AstrocyteData\runtime\adapters\codegraph.mjs' -RepositoryEnvironmentID 'stable-environment-identifier'
+```
+
+`CodeGraphNode` 必须是官方 Node 24.16.0 可执行文件的绝对路径，`CodeGraphSDK` 必须是包含 `package.json` 的 `@colbymchenry/codegraph@1.0.1` 生产目录，`CodeGraphScript` 必须是已提交的 `codegraph.mjs` 适配器。`RepositoryEnvironmentID` 为显式环境身份标识；缺少时 S4 注册 unavailable 能力。可选 `AOCIExecutable` 指向合法取得的 AOCI v0.1.0-rc20 可执行文件绝对路径；其 FSL-1.1-MIT 许可的 Permitted Purpose 限制和分发决定仍须用户明确确认。不完整组和非法路径直接失败，不设未答默认。
+
+启用 S5 Laya 判断（所有路径、语言、私有 stderr 目录和生命周期预算必须同时提供）：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -LayaNode 'D:\AstrocyteData\runtime\node\node.exe' -LayaWorker 'D:\AstrocyteData\runtime\adapters\laya-worker.mjs' -LayaModelDir 'D:\AstrocyteData\runtime\models\english' -LayaAssets 'D:\AstrocyteData\runtime\models\english\assets.json' -LayaSDKEntry 'D:\AstrocyteData\runtime\sdk\node_modules\laya-ts\dist\index.js' -LayaRPCEntry 'D:\AstrocyteData\runtime\sdk\node_modules\vscode-jsonrpc\lib\node\main.js' -LayaLanguage 'en' -LayaStderrDir 'D:\AstrocyteData\laya-logs' -LayaStartupTimeoutMS 30000 -LayaShutdownTimeoutMS 10000
+```
+
+`LayaNode` 为官方 Node 24.16.0，`LayaWorker` 为已提交的 `laya-worker.mjs`，`LayaModelDir` 为 `english` 或 `multilingual` 衍生资产目录，`LayaAssets` 为该目录的 `assets.json` descriptor。`LayaSDKEntry` 和 `LayaRPCEntry` 分别为生产 SDK 和 RPC 入口。`LayaLanguage` 为显式语言（如 `en`、`zh`），`LayaStderrDir` 为私有 stderr 日志的绝对目录（不存在时自动创建）。`LayaStartupTimeoutMS` 和 `LayaShutdownTimeoutMS` 为显式正整数毫秒预算。所有路径必须为绝对路径且存在；不完整组直接失败。Laya 配置使用 `NODE_OPTIONS=--max-old-space-size=512`。
+
+启用 Jev 云 REST 判断（仅 key，不分发本地权重）：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Start-Astrocyte.ps1 -TypesafeApiKey 'explicit-process-secret'
+```
+
+`TypesafeApiKey` 为官方 `jev-1.13.0` 云 REST 的进程 secret；缺少 key 时真实 API 验证保持 NOT_RUN。包不包含 Jev 本地模型权重或凭据。
+
 默认数据目录在解压目录的 `data`。SQLite 与对象位于 `data/local/astrocyte-workbench/v0.2-access/app-state`；Relay 注册与本地工作目录在同层 `v0.2-access`。保留整个数据目录，沿用相同 `-DataDir` 重启可继续读取。升级前停止应用并备份整个数据目录，新包解压到另一目录后明确指定原数据目录。不要将正式实验库或认知快照目录作为应用数据目录。
 
 启动脚本为当前进程设置独立 `LOCALAPPDATA` 并清理继承的 `ASTROCYTE_*` 配置。Workbench 使用该目录下 `astrocyte-workbench/v0.1` 的既有只读快照协议；包不携带快照，没有发布快照时返回真实不可用状态。Relay 默认启用，空注册表不会启动 Agent；手动配置使用 `data/local/astrocyte-workbench/v0.2-access/agents.json`。Agent CLI 的安装、登录、控制能力和项目授权需分别成立；原生链路成功以实际控制器及事件证据为准。没有配置的状态、未知交付和生命周期缺口保留原含义。默认启动只运行应用，不安装自动任务、不执行 Sleep、不调用模型。
