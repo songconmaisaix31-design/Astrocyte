@@ -807,3 +807,56 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 注释 SOURCE `852d7ec1a0583ac501f42fa58a3ae8e404ab11ba` 已普通提交并 push，仅将专用 helper 的一行注释写为“核查当前页面所用既有生产服务响应”，无行为差异。`gofmt -l internal/adapters/sqlite/public_progress_projection_actual_test.go` 和 `git diff --check` 均 EXIT 0、无输出。本次未运行功能、HTTP、模型或新的托管窗口；实际运行 SOURCE 保持 `fc6131791c7e287f45ed113892a95ac29fd07b2f`，原 `actual-third` PASS 705.19 秒 / EXIT 0、已退出进程及 REPORT `929db142052079beaa809702a2738dbbee18c777` 与原件保持。
 
 helper 中与 main 相同的 `NewProjectService`、`NewProposalService`、`NewSessionService` 是既有 S0 兼容服务，其实现直接返回 `apierrors.EmptyList()`，不查询新自有 SQLite。`LocalProjectService`、`ProjectProgressService`、使用 `NewWorkspaceRepository(db)` 的 S2，以及使用 `NewAttentionRepository(db)` 的 Attention 才通过实际 SQLite 存储读取状态；其中固定项目与进度记录支持本阶段的 README 展示验收。该装配中的 `WorkspaceS2` 非空，`GET /api/v1/proposals` 由 S2 的 SQLite 路由响应，`NewProposalService` 保留为兼容配置；`GET /api/v1/projects` 与全局 `GET /api/v1/sessions` 使用 S0 兼容 EmptyList。上述页面 GET 的 200 仅记录既有服务的响应情况，不计为项目、提案、会话或其他产品功能通过；本阶段业务通过范围仍为原 README 进度两窗口展示与对应安全派生、同库 HTTP 重启检查。
+
+## 视频149来源审阅与 WAL 只读条件验收 REPORT（2026-10-17）
+
+本阶段沿原 `task_7b4e93c1a3c1` / `ctx_43100892f5f5` / `run_7b2ce96bcd13` / `standards-backend` 执行，由原 B 使用 Codex 0.162.0、GPT-6.1-Sol xhigh fast 处理。审阅基线与行为源码保持 `ac3a1b57aacebe904ec71cd39327e267d8563827`，本次仅追加本节验收报告，没有新增 SOURCE 提交。**根要求的来源主文件 / WAL / SHM 全三文件保护尚未通过，视频149保持 NOT_RUN，业务派生、HTTP 与 F 验收均未执行。**
+
+本机证据根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/`。本轮脚本、技术库、日志与安全派生 JSON 均位于该目录；没有将素材正文、Whisper JSON、凭据或模型原档写入 stdout 或 Git。
+
+### 获准素材的独立审阅
+
+唯一952来源为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/astrocyte-s1-FAkZe5/data/state.sqlite`，对象目录为同一 `data/objects`。查询仅限 material `534HWFW7E5GEF75ZY4F7ETPLQ2` 的一项 `attention_materials` 与两项 `attention_material_revisions`，使用既有 SQLite CLI 的 `-readonly` / `-nofollow`、URI `mode=ro` 与 `PRAGMA query_only=ON`，全路径逐分量检查 canonical / 非 reparse。JSON、文件与 SHA-256 处理使用标准库，未编写格式解析器。
+
+原 `source_key` / `source_locator` 均为 `https://www.bilibili.com/video/BV1PReT6EEqR/`，原 aggregate version 为 2，current revision 为 2，当前 material 保存952个来源位置。aggregate 内的两项 revision 与独立 revision 行逐项相等；两版本的来源位置数分别为0、952，全部位置均指向该公开 locator。版本1公开附件1项、私有0项；版本2公开附件3项、私有1项。
+
+| 公开对象用途 | 实际 bytes | 实际 SHA-256，与原 ObjectRef 相同 |
+|---|---:|---|
+| revision 1 content / `summarize.md` | 32908 | `eb1106b97e3db4ddb6465ae066d1efe29affb809aa4841d52014ede3ab45a3fc` |
+| revision 2 content | 35807 | `030165629c4b38e519ec79e97e52b41e3c470ddfb82df268a86aef361d35f5b0` |
+| `summarize-upstream-media.json` | 114556 | `91427f11b92c2b0926d051d09f916fb39df98944b460a35bf22ad4a99d4b437e` |
+| `summarize-cli-original.json` | 9150 | `015aa8776cf1ebd70e35b61bb602eccdb2d49ab3dbf70d9a18d1991cca208b69` |
+| `summarize-cli.stderr.txt` | 0 | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+
+五个公开对象共192421 bytes，均存在且为普通文件，读取长度与文件大小一致，摘要全部吻合；两个 content 的实际摘要也与各自 `content_digest` 相同。实际 UTF-16 文本长度分别11746、13979，仅记录长度。私有 `whisper-original.json` 仅检查存在性与文件元数据：普通文件、198315 bytes，正文读取0、摘要检查 NOT_RUN、复制0。私有分类按全部 revision 的 ObjectRef 合并，本素材没有发现跨 revision 的私有别名；该规则仍须保持，私有 attachment metadata 不构成复制私有 bytes 的授权。
+
+| 实际命令 | 结果与本机证据 |
+|---|---|
+| `node D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-audit-20261017-first/audit-video.mjs`，根 `msg_ec1ffefeeb86` 授权的一次 FAkZe5 独立审阅 | EXIT 0；同目录 `audit-952-safe.json`、`approved_existing_952-before-files-safe.json`、`approved_existing_952-source-protection-safe.json` |
+
+准确素材与 revision 行前后相同。原主文件 dev `3701204605` / ino `3659174704753597` / 794624 bytes / mtime_ns `1791991922435515500`，原 WAL ino `3096224751332497` / 16512 bytes / mtime_ns `1791993579171315700`，前后 identity / size / mtime / birthtime 保持。**原 SHM 的 ino `2533274797911203` 与32768 bytes保持，但 mtime_ns 从 `1792169846077073600` 变为 `1792171382018807700`。因此该命令 EXIT 0 仅记录已实施的素材与主文件 / WAL 检查；全三文件保护未通过，公开对象完整也不改变此结果。**
+
+### 首次失败与授权顺序
+
+首次执行在 PowerShell 路径数组守卫处 EXIT 1，尚未打开来源。修正该本机守卫后，组合审阅依次读取 FAkZe5 与原获准0位置对照 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/video-source-third/state.sqlite`，最终在0对照的 `Source main file or WAL identity, size or timestamp changed` 守卫处 EXIT 1；全局 JSON 没有写出。原 before / after 快照只存在于当时进程内存，没有持久化，**准确失败字段保持 UNKNOWN**。后续仅通过文件元数据观测到：0对照主文件487424 bytes、mtime UTC `2026-10-14T11:45:10.9216716Z`；0-byte WAL 创建于 UTC `2026-10-16T16:57:27.3685214Z`，32768-byte SHM 创建于同秒，mtime UTC `2026-10-16T16:57:27.7030104Z`。安全记录为上述证据根下 `video149-audit-20261017-first/first-red-safe.json`，没有删除、修复、补时间或恢复侧文件。根 ec1 后，0对照不再打开，也不再作为149的前置。
+
+先前为寻找只读方式提出的空技术库问题已撤回；根 `msg_ce17690fecc6` 明确以撤回为准，该旧问题没有触发技术库创建。根后续 **新决定** `msg_546606a7d748`，经模块 `msg_15f9aad8eb86` 完整转交，针对已确认的 SHM 保护缺口明确授权：先在唯一全新 D 技术目录验证首次 WAL 访问前设置 EXCLUSIVE、同时保持 `mode=ro` / `query_only` 的实际 WAL 读取与全三文件保护；技术成功后才允许对 FAkZe5 一次必要读取并再次通过全三文件保护，随后才能建立唯一业务派生与 HTTP。该新授权的条件没有通过；没有将它解释为无条件启动来源或业务托管的许可。
+
+### 新授权技术条件的实际失败
+
+唯一技术目录为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-wal-tech-first/`，创建前检查全部父目录非 reparse、目录全新；仅在该目录使用既有 `C:/Users/DW/platform-tools/sqlite3.exe`、显式空 `sqlite-init.sql` 与进程级 D 目录 TEMP / TMP，Node 内存上限512 MiB。技术库为 `technical-structures.sqlite`，只创建空 SQL 表结构，业务行数0，没有构造业务结果。
+
+bootstrap 真实事务创建初始空表并正常关闭，原 SQLite 查询确认后续专用表不存在。第二个真实事务以连接级 `.dbconfig no_ckpt_on_close on`、`PRAGMA wal_autocheckpoint=0` 提交空表 `technical_structure_committed_only_to_wal`，同连接实际查询该表成功并确认行数0，CLI EXIT 0。关闭后主文件 SHA-256 与该次事务前完全相同，WAL12392 bytes、SHM32768 bytes保留，证明存在未进入主文件的真实结构事务；没有手写 WAL parser、忽略 WAL、使用 immutable / nolock 或操作原来源。
+
+第三个 SQLite CLI 以 `-batch -bail -nofollow -json -readonly`、URI `mode=ro` 打开该技术库，首次 `PRAGMA locking_mode=EXCLUSIVE` 返回 `exclusive`，随后设置 `PRAGMA query_only=ON`。首次读取该表的 SELECT 返回 **`Parse error near line 5: disk I/O error (10)`**，CLI EXIT 1、stdout为空；**未成功通过只读连接读取 WAL 内容，技术条件为 FAIL**。没有以空 WAL 存在、writer 同连接成功或主文件结构查询代替该失败的读取。
+
+| 实际命令 / 原件 | 结果 |
+|---|---|
+| `node D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-wal-tech-first/verify-wal-read.mjs` | EXIT 1；技术整体 FAIL；`technical-wal-failure-safe.json` |
+| 同目录 `bootstrap-empty-structure-cli-safe.json`、`commit-empty-structure-to-wal-cli-safe.json`、`main-before-wal-transaction-safe.json` | 两个写入自有空技术结构的 CLI 均 EXIT 0；主文件摘要保持，业务行0 |
+| 同目录 `reader-exclusive-mode-safe.json`、`readonly-exclusive-real-wal-read-cli-safe.json` | exclusive 设置结果及实际 IOERR10 / CLI EXIT 1 原件 |
+| 同目录 `three-files-before-read-safe.json`、`three-files-protection-safe.json` | finally 中完整比较技术 main / WAL / SHM 的 dev / ino / bytes / mtime / birthtime / SHA-256，三者全部保持；技术主文件12288 bytes |
+
+技术失败后立即停止，没有重复尝试、清理或修复技术文件，底层错误原因尚未确定。本技术阶段原 FAkZe5 与0对照连接均0、私有正文读取0、新 ASR / 提取 / 模型均0、业务目标库与 HTTP listener 均0；先前独立来源审阅的连接和 SHM 变化已在本节分别记载。`internal/adapters/sqlite/public_video_projection_actual_test.go` 没有创建，拟业务目标 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-projection-first/` 没有创建，未运行 F 的149 / 1920检查，没有触及共享64505、17321、V4、冻结范围或其他 owner 文件。
+
+模块 `msg_631d3996bbb8` 要求仅追加本次真实验收 REPORT 并普通提交 / push；不重跑业务、来源或技术验证，不制造无源码变化的 SOURCE 提交。原素材身份、两版本、公开内容摘要与私有分类事实保持，来源全三文件保护与真实只读 WAL 读取条件仍未满足，视频149持续 NOT_RUN。后继等待根明确范围，不发送 worker_done，不发布 Release，也不宣称完整产品、默认套件或发布包完成。
