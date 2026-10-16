@@ -1,5 +1,26 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-17 视频 149 的 HTTP2 实际只读验收
+
+本次仅验收原 a166 编号 149（chromium-1920，原 `video-existing.spec.ts:9`，原日志行 377）。准确 spec SOURCE 为 `72d6dcdb557770872dc59c4b18d8b0e8a7245075`，执行时 HEAD 为已普通 push 的准备报告 `31342f8aafcbf45168717f596f3528005584563f`；执行前后 `web` 相对 SOURCE 无差异，原全部断言保持。本次后端 SOURCE 为 `dd3a8b8a20e6f8dc30342d1708d4f59b9bec82b6`，服务使用根负责人已核实的现成静态产物 `172bb445597193d55f1563ee5d21ac2ec881798d`；三个来源分别记录，没有将 B 或 F 全树解释为 172。
+
+M-product 正式交付 B 本人 `f5fb18e1475a` ready，确认实际 PID52372 的本次 D 目录 public-video-live.test.exe，HTTP1 64429 正常关闭后，同一目标库 HTTP2 为 `http://127.0.0.1:64432`，唯一 material 为 `534HWFW7E5GEF75ZY4F7ETPLQ2`。按模块交接，来源 FAkZe5 的业务行和 main / WAL 严格保持，SHM 实际变化单列；来源 aggregate2 与目标 CAS1 分开记录，current_revision2、两版 0 / 952 原位置、五个公开 objects 及一个私有 metadata 保留，私有 bytes 未复制，原生、ASR、提取与模型调用均为 0。F 仅使用获准 HTTP，没有打开原 SQLite 或原件。
+
+根负责人恢复原成熟 SQLite `mode=ro` / `query_only`、业务行与 main / WAL 不变、公开 objects 原 bytes / digest 标准，取消额外 SHM 时间不变与空技术库前置；下方 313 报告和当时 IOERR10 / EXIT1 原件保持。F 先通过 `msg_b8886115b6ca` 本人向原 B 确认接收当前窗口，并同步模块及原 Run，才执行以下唯一选集。
+
+本次原件根为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/video149-live-64432-20261017/`。`run-video.ps1` 显式设置获准 URL / material 和 `ASTROCYTE_TEST_OUTPUT_ROOT`，所有临时目录、编译缓存与 Playwright 输出均在该 D 目录；保留进程级内存与并发限制。独占 `video.config.mjs` 仅匹配本 spec，workers1 / retries0，webServer 关闭，截图、录屏与 trace 全部关闭，没有启动额外服务。
+
+| 实际命令入口 | 真实结果 | 本次原件 |
+|---|---|---|
+| `pwsh -NoProfile -File <本次原件根>/run-video.ps1 -Phase list` | 仅 chromium-1920 / 当前 video-existing.spec.ts:10，Total: 1 test in 1 file / shell EXIT0 | `list-first.log` |
+| 同一入口 `-Phase test`，`--project=chromium-1920 --workers=1 --retries=0 e2e/video-existing.spec.ts` | 首次实际运行 1 passed (4.7s) / shell EXIT0 | `test-first.log`、`playwright-first-artifacts` |
+| 实际命令与时间记录 | 外层及 Playwright 完整命令、cwd、开始结束 UTC、实际退出码 | `execution.log`、`run-video.ps1`、`video.config.mjs` |
+| 原 spec 的安全派生输出 | read_only=true、new_asr_calls=0、new_model_turns=0、private_original_requested=false | `video-existing/chromium-1920-derived.json` |
+
+派生记录中，版本 1 为 positions0 / public_attachments1 / private_attachments0 / text_length11746，版本 2 为 positions952 / public_attachments3 / private_attachments1 / text_length13979。两版真实正文与 DOM、原 locator、公开附件原 bytes 的 SHA-256、私有附件仅本机标记且无链接、HTTP 刷新前后等值、GET-only 和布局原断言均实际通过；没有向 stdout、Git 或报告写入正文或原附件。本次 list 与实际运行均首次通过，没有新增失败或重试；原默认首 RED 和前阶段失败原件全部保持。
+
+F 已通过 `msg_9af719e7ce73` 本人直接通知原 B 读取窗口明确结束，并经 `msg_ee4e373a1424` / `msg_402d5034616d` 同步模块和原 Run，此后不再发起 HTTP。没有运行另一 viewport、进度成功、静态检查或 build，也没有 POST / PUT / infer、ASR、模型或 Native。本次只替换原编号 149 的 NOT_RUN，当前原 55 条关联结果为 29 PASS / 26 NOT_RUN；其余 Native 条件保持，完整默认、完整 check、L1 / L2 与最终发布未通过。准确 72d 的既有完整 tsc-b7.472 秒与本 spec lint2.641 秒 EXIT0 见下方准备报告，本轮未重跑。原 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / 终端继续承担发布支持，不发送 worker_done。
+
 ## 2026-10-17 视频 149 输出路径准备与真实前置阻塞
 
 本阶段 SOURCE `72d6dcdb557770872dc59c4b18d8b0e8a7245075` 已普通 push，仅修改 `web/e2e/video-existing.spec.ts` 的公共模块导入与派生输出路径。显式要求 `ASTROCYTE_TEST_OUTPUT_ROOT`，复用原 `scripts/process.mjs` 的 `verificationOutputRoot` 校验后使用其 `video-existing` 子目录。原两版正文、952 个位置、真实 locator、原附件 bytes / SHA-256、私有附件仅本机无链接、HTTP 刷新等值、GET-only 与布局断言全部保持；没有修改组件、生产 API、公共 helper 或 schema，也没有新增 skip。本轮只在本文件补充独立 REPORT。
