@@ -1,5 +1,15 @@
 # Works Relay integration report
 
+## 2026-10-17 Workbench HTTP 替身完整替换与组合验证
+
+B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` /独立 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通合为 `74e3b79c9ab48233391d6c209ca7d3baf07b5e79`。根独读396行真实测试、报告及实际 list /test /vet /build /commands原件；仅修改原HTTP测试及backend报告，生产路径保持。原同名测试完整移除固定 Event /错误stub，以原Q获准公开发布物的只读SQL、实际WorkbenchReader、SQLite GetEvent及真实HTTP验证全部原断言。
+
+根准确组合执行 `go test -mod=readonly ./internal/adapters/httpapi -list '^TestWorkbenchUsesSharedSessionOriginAndErrorV1$'`，精确一项；同包同选择器 `-run -v -count=1 -timeout=1m` 实际1 PASS /0 Skip /1.11秒，包2.201秒。`go vet -mod=readonly ./internal/adapters/httpapi`、diff及runner整体均EXIT0，源码前后保持。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-workbench-74e3b79/`，相邻 runner 保存完整命令与仅本进程的明确D输出 /原Q输入配置。
+
+实际发布物为 snapshot-1711995690，1316个事件分别按20 /50页长逐页比较独立原SQL及准确六字段，每个 event_id 均通过生产 GetEvent定位至原Git收据。七路由认证、Origin、原查询 /方法 /路径错误及隐私全部保持；仅新D副本实际离线产生503 /provider_unavailable，同文件恢复后200，原SQL关闭后原文件身份 /大小 /mtime /字节守卫通过。没有采集、Sleep、模型、Native、修改原Q或共享服务操作；公开Git认知事件不替代Native正向。
+
+产品仍为c5 /PID30420 /64505，本次无生产构建 /部署。原B继续只读核选定文本 /容量测试，原H处理会话HTTP真实迁移与独立空collector；旧owned poll缺真实来源，原函数 /断言保留且不运行，不以空基线替代。完整CI /默认 /L1 /L2和最终包继续未通过。
+
 ## 2026-10-17 目录、权限与普通公开列表组合检查
 
 B SOURCE `76011c240766e18ece92d91f4188f8b91882458e` /独立 REPORT `463a78cf81d9ebecf544746af314f84ab220cec1` 已普通合为 `dc1b4a9a162c3c4706d8f29c17969483ea1959f8`。根完整独读三件测试及报告、实际命令 /首失败记录和原日志，再只读核本次三份公开原响应均 code0 /folder2356677875 /20槽 /has_more=true。生产代码未修改；实际目录预期使用标准规范路径与 SameFile，新增真实 HTTP /SQLite 权限、Grant /token 同库重启与撤销验证。
