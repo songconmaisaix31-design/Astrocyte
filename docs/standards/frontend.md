@@ -1,5 +1,23 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-17 视频 149 输出路径准备与真实前置阻塞
+
+本阶段 SOURCE `72d6dcdb557770872dc59c4b18d8b0e8a7245075` 已普通 push，仅修改 `web/e2e/video-existing.spec.ts` 的公共模块导入与派生输出路径。显式要求 `ASTROCYTE_TEST_OUTPUT_ROOT`，复用原 `scripts/process.mjs` 的 `verificationOutputRoot` 校验后使用其 `video-existing` 子目录。原两版正文、952 个位置、真实 locator、原附件 bytes / SHA-256、私有附件仅本机无链接、HTTP 刷新等值、GET-only 与布局断言全部保持；没有修改组件、生产 API、公共 helper 或 schema，也没有新增 skip。本轮只在本文件补充独立 REPORT。
+
+准确 SOURCE 的必要静态检查已完成，本轮读取既有原件，没有重跑。原件根为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/video149-prepare-20261017/`；`result.json` 记录检查时 SOURCE / HEAD 均为上述 SHA、`web_diff_zero=true`、完整命令、cwd、PID、UTC、真实退出码和耗时。使用已安装的 Node v24.16.0、TypeScript 6.0.3 与 ESLint 10.12.0，资源限制、缓存和临时目录均为进程级配置。
+
+| 已执行命令（前两项 cwd：本树 web） | 实际结果 | 本次原件 |
+|---|---|---|
+| `node node_modules/typescript/bin/tsc -b --pretty false --verbose` | PID26368 / EXIT0 / signal=null / 7.472 秒 | `tsc-b.stdout.log`、`tsc-b.stderr.log` |
+| `node node_modules/eslint/bin/eslint.js e2e/video-existing.spec.ts` | PID23472 / EXIT0 / signal=null / 2.641 秒，stdout / stderr 均无诊断 | `eslint-video.stdout.log`、`eslint-video.stderr.log` |
+| `pwsh -NoProfile -File <本次原件根>/run-static.ps1` | 外层 shell EXIT0，日志末尾 `EXIT=0` | `runner.log`、`result.json`、`check-static.mjs`、`run-static.ps1` |
+
+完整 `tsc -b` 日志列出根配置及 app / node 两个引用项目，并实际检查当前输入；app 缓存早于本次 video spec。两个检查子进程结束后已用 Windows CIM 确认计数为 0。上述结果仅覆盖源码静态检查；当前没有视频用例的派生 JSON，也没有获得业务 HTTP 窗口。
+
+M-product 于 `msg_7fcdbb81cd1d` 转交 B 的真实前置结果：FAkZe5 的两版本、952 个位置和五个公开不可变 objects 已核齐，但 source 的 SHM mtime 实际变化。根负责人随后安排新 D 目录中的真实 WAL 空技术库保护验证；首次实际 WAL SELECT 在 `mode=ro` / EXCLUSIVE / `query_only` 条件下出现 IOERR10 / EXIT1，未读取成功。技术库 main / WAL / SHM 全部保持仍不能使该条件通过；原来源未再打开，没有建立业务派生库或 HTTP。F 仅记录正式交接结果，没有自行打开来源或执行该技术验证。
+
+原 a166 编号 149（chromium-1920，`video-existing.spec.ts:9`，原日志行 377）保持 NOT_RUN。当前原 55 条关联结果仍为 28 PASS / 27 NOT_RUN；完整默认、完整 check、L1 / L2 与最终发布未通过。没有可供 F 接收的新 URL，本阶段没有执行视频 `--list`、视频测试、业务 HTTP、build、模型、ASR 或 Native，也没有重跑旧成功或静态检查。后继仍等待根负责人基于实际失败给出具体指令；原 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / 终端保持，不发送 worker_done。
+
 ## 2026-10-17 aed 完整类型检查与进度 spec lint
 
 本次检查 SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d`，执行时 HEAD 为独立报告 `e6d559ab07f0881bdf5b23b66c82356384ce6ed3`；检查前后 `git diff aed -- web` 均为空，没有修改源码。`web/tsconfig.app.json` 的 `include` 为 `src` 与 `e2e/**/*.ts`，本 spec 属于必要完整类型检查范围。该准确源码的完整 `tsc -b` 和本 spec ESLint 现均已通过，e6d 的首次中断记录及全部首失败原件保持。
