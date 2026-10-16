@@ -1,5 +1,16 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 13:02 Playwright 配置关闭视觉采集
+
+SOURCE `0835d13` 修改 `web/playwright.config.ts`：`screenshot: 'off'`、`video: 'off'`、`trace: { mode: 'retain-on-failure', screenshots: false }`。trace 保留 DOM 事件、网络请求和源码，不采集截图。后续测试使用显式 D 盘 `--output` 目录，不主动视觉采集。
+
+| 本次实际命令 | 实际结果 |
+| --- | --- |
+| `npx tsc --noEmit` | EXIT0 |
+| `npx eslint playwright.config.ts` | EXIT0 |
+
+已绿 8 项准入场景不因配置变更重复跑。实际客户端为 Claude Code 2.1.238，provider.model 为空，模型名称 UNKNOWN。
+
 ## 2026-10-16 12:42 准入界面移除实现细节与网络请求验证
 
 SOURCE `d472344` 在 HEAD `7a5fda5` 上移除 `OpportunityAdmission.tsx` 三项实现细节：POST 路径显示、完整 JSON payload 预览和 Idempotency-Key 说明。保留可读候选 / 固定 revision / 资料 / 项目审阅、人工确认复选框和未知 request_id 锁定机制。
