@@ -2,6 +2,10 @@
 
 ## 当前执行入口（2026-10-16）
 
+14:21 根已普通合 B 当前 REPORT `237987a594de1055af18c7fffe30fc516cdacaef` 为 `affaa7a7d10dcd8956b4a2947c8b149403cdb5bd`，最新集成 REPORT `ae95b330f8e41dc2689284238323e649f81fa245` 已 push / clean。最终仅真实安全测试、显式到期入口和记录三件净差异，生产一小时语义无变化。根在准确B237实际运行八项安全检查，8 PASS / 包1.809秒 / 总11.88763秒；在完整affaa组合核新增五项，5 PASS / 包2.354秒 / 总5.3473412秒，均EXIT0且前后SOURCE相同。准确原件为 D 盘 integration 的 `root-backend-safety-current/` 与 `root-safety-affaa7a/`；集成侧已登记正确结果。原12:31日志含旧短期限测试，不能计当前签发或自然到期通过。当前运行仍2d27 / PID50624，新mjs未运行，原12768不变。
+
+原 UI / F 开发客户端分别实际返回 HTTP400 / Arrearage，最新完整指示进入旧对话后被供应商拒绝，未据此声称已处理。主控允许保留原 Task / Run / 树 / 分支 / WIP，精确退出旧进程后沿本机已配置可用开发客户端接续，不修改网络、全局账号或支付。UI旧 `ctx_5d4bbae2a28d` 已公开 worker-stop / ptyKilled / exited；当前同原Task为 `ctx_e921762e5e79` / `term_e8bfccfb-5f89-4428-b693-bca4bbe0cf8d`，实际 Codex0.162.0 / GPT-6.1-Sol / xhigh fast 已模型ACK并开始读取真实契约与保留的四件WIP。该恢复使用低层 context-only unsupervised，不能写成 worker-start 托管；Taste功能尚未通过。F按同原Task接续准备中，其旧41项汇总仍不能替代当前55；后继准确身份由产品模块交回。该开发客户端恢复不改变产品 Native 工具授权。
+
 14:06 原集成分支当前报告 `8a55dfa4f2f990a18377ffbb601d50347b577230` 已普通 push，工作区干净。业务与运行 SOURCE 保持2d27；准确 `dac4537f10c7391ffc56403eef85b97d0dc73828` 的 Go 格式、全仓 `go vet`、Go 模块校验和实际安装依赖清单核对四项通过，总 EXIT0 /116.2134755秒，前后源码相同。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-static-dac4537-second/{static.log,result.json}`。没有执行历史替身测试，不把静态子集计为完整 check。
 
 根已独读 F 实际 `dom-review-strict-64505.log`：候选r2/v3、固定资料r1、项目权限r2可见，本地准备后确认框可见且未勾选、最终提交按钮实际 disabled，非 GET 为0。14:01 已通过异步问题向用户询问仅该 PLOS 资料 / 候选准入“同实例公开前端项目”并生成提案草稿；尚未收到回答，具体项目、版本及范围见 QUESTIONS，不提交准入、任务批准或启动，不重放该成功只读检查。F 继续准确320项首结果的55失败逐项映射，原280项记录不能替代当前清单。
