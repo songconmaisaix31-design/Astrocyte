@@ -6,6 +6,8 @@
 
 用户已将集成交给根，本树唯一集成写入者为根；固定分支 `songconmaisaix31-design/works-relay-integration`，不恢复其他 I。领域修改和返修由原作者在各自原树继续。当前职责、真实运行身份与用户待定项见 [HANDOFF](HANDOFF.md) 及总控工作树的当前入口，准确组合、检查和首次失败见 [集成报告](docs/access/integration.md)。
 
+准确 `dac4537f10c7391ffc56403eef85b97d0dc73828` 的 Go 格式、全仓 `go vet`、Go 模块校验和实际安装依赖清单核对四项通过，总 EXIT0 /116.2134755秒；没有执行历史替身测试，完整 `pnpm check` 仍未通过。运行业务 SOURCE 保持2d27，文档提交不触发重建或共享实例更新。
+
 当前普通消费了 T 真实生产完成来源检查、H 最新运行恢复和 B 显式媒体配置修复。准确 `7120a207` 的缺失来源 HTTP / SQLite / 重启检查 EXIT0；准确 `f9453c45` 的真实媒体配置三主项及七子项 EXIT0。阶段报告 `997066f4a596d7818f71beaacc540ed07e4ce569` 已普通 push，远端相同。P 准备 REPORT `b208ab8` 已普通合并，其两份管理文档冲突由根处理；Q 后继 REPORT `f111052` 无冲突合并，组合 `fc294bee`。该组合两个 snapshot 命令构建、42包架构检查与实际 PowerShell 5.1 / 7 九份发布脚本语法检查均通过。原 Q 继续修正快照链接检查，原 P 补齐显式配置，最终包分别验收，不重复已完成资产或模型准备。
 
 Q 目录链接检查及明确输出根后继 SOURCE `8796fb8` / REPORT `7aa2476` 已普通合并，完整组合 `e36650e645cae20e0d142338a0fbd20f168cdbc4` 的真实 snapshot 主项和七子项全部通过，包76.864秒，原生产保护保持。原 b02 首次失败和准确日志保留，记录见 [集成报告](docs/access/integration.md)。

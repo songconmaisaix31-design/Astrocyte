@@ -13,6 +13,7 @@
 | `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`：完整 `pnpm build` | EXIT0 /15.039582秒，server / MCP / Sleep / TypeScript / Vite 全部完成，前后源码相同。原件 `root-product-build-types-first/{result.json,build.log}`；实际 Go buildinfo 同 revision / modified=false。原 Vite 大于500kB的 bundle 提示保留。 |
 | 同 `2d27b689`：`pnpm --dir web lint` | 全 web ESLint 实际 EXIT0，原件 `root-product-build-types-first/lint.log`。 |
 | 同 `2d27b689`：`pnpm --dir web exec playwright test e2e/s2-admission.spec.ts --grep '实际准入固定候选与项目资料' --workers=1 --retries=0` | 两个窗口2 PASS /42.3秒 / EXIT0，实际 POST 正文、header 与 outbox 的 request_id 等值、固定资料 / 项目、撤销、同库 HTTP 重启和零执行批准均通过。使用独占 D SQLite 与64565/64566，未操作共享库，未截图或录屏。原件 `root-admission-2d27b68/admission.log`，前后源码相同。 |
+| `dac4537f10c7391ffc56403eef85b97d0dc73828`：原 `checkGofmt`、`go vet -mod=readonly -p=1 ./...`、`go mod verify`、`node scripts/check-dependencies.mjs` | 四项实际通过，总 EXIT0 /116.2134755秒，前后源码相同。模块校验及实际安装版本与依赖清单相符，Summarize 仅加载并返回0.25.1；没有提取、ASR、模型或原生操作。原件 `root-static-dac4537-second/{static.log,result.json}`。首次启动检查前因重复创建已存缓存目录退出，原目录和命令记录保留；后继只修正目录创建。 |
 
 原件路径均位于 `D:/Astrocyte-agent-assets/20261015/integration/`。`2d27b689` 只补两处类型衔接：测试 matcher 作为断言对象，判断命令从生成路径排除公开禁止的 `context` 字段；没有修改生成 schema、运行行为、原断言或调用预算。原 F 的八项功能场景和补强身份后的两项实际结果分别保留，不重跑无关成功场景。
 
