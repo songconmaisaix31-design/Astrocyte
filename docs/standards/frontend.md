@@ -1,5 +1,25 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 原 F 域失败组实际复验与 PLOS 候选只读审阅
+
+类型桥接 SOURCE `c546f2a`（cherry-pick `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`）已普通 push。两行修改：`s2-admission.spec.ts` 的 `expectedBody` 去除 `AdmissionRequest` DTO 类型注解（`expect.any(String)` 与 strict string 不兼容），`judgmentApi.ts` 的 `JudgmentCommand` 增加 `Omit<..., 'context'>`。`pnpm --dir web typecheck`（`tsc -b`）EXIT0。
+
+原合并默认 280 项首失败中 F 域 10 项实际复验：
+
+| 原始失败 | 本次实际命令 | 实际结果 | 根因 |
+| --- | --- | --- | --- |
+| works-album:62 分组标题 | `npx playwright test e2e/works-album.spec.ts --grep '实际人工分组' --workers=1 --retries=0 --project=chromium-1920` | 1 PASS、9.8 秒、EXIT0 | 前序提交已修 |
+| plugin-snapshot 四项 | 同上全文件 + `ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR=C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification` | 14 PASS（两窗口）、1.2 分钟、EXIT0 | 缺 env 条件，非代码缺陷；首 RED 保留在原日志 |
+| progress:14 重启折叠区 | `npx playwright test e2e/progress.spec.ts --grep '实际人工进度表单保存' --workers=1 --retries=0 --project=chromium-1920` | 1 PASS、14.5 秒、EXIT0 | 前序提交已修 |
+| s1:30 来源位置字段 | 同上 + `ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR` | 1 PASS、1.1 分钟、EXIT0 | 前序提交已修 |
+| s1:242 自动沉淀 1280 | 全 s1 14 项运行：13 PASS / 1 FAIL（5.4 分钟超时）；重跑该项 13 秒 PASS | 首超时保留为原始日志记录（`s1-full-artifacts`），非代码缺陷判定；不称为瞬态，保留原 FAIL 日志 | 真实首 RED 保留 |
+
+所有复验使用独立 ephemeral Go 服务（port 0），未触及 64505。无新 skip、无伪造来源、无 `--noEmit` 假全局检查。
+
+PLOS 候选 `QILUA3J6WINYVSRKX3CU6FA35A` 只读 GET 审阅（64505 PID50624，零 POST / 模型 / ASR）：论文 "Frameworks for procurement, integration, monitoring, and evaluation of artificial intelligence tools in clinical settings: A systematic review"，`https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514`。资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` r1 / paper / active / human_usage=1 / agent=0。人工摘要 `LD6A7RPZQJIQW6F224QALLQDR5`（stage:content / processor:human / succeeded / 2026-10-16T02:42:42Z）。候选 r2 / v3 / ready_for_review；四维全 null（"尚未进行实际任务和效果评估"）；一条 later 反馈 `YHZFX7JIVYMSTYSBUFITZVIPWK`（r1 人工暂缓，理由：当前只保存公开来源候选）。Goal `46a1b8e5-583c-4df0-921a-46ef83660d8a` r1 / active。项目 `98389066-5e5a-4e82-982b-deab3e005273` settings r2（allow_directory=true / subdirs:web/src/pages/workspace/proposals / actions:read_context / model_cli 空 / agent_control=false）。准入仅生成草稿，批准分别确认。三 distillation（content LD6A / topic SNU6Q / project 7GWJ7）完整保留。JudgmentDelegationWorkspace（entry `32a52cd`）已在 AttentionPage 渲染，新确认页可见可审。实际变化如实报告：候选 r1→r2 增加一条 later 反馈和 missing_evidence 更新，其余固定来源、Goal、项目不变。等待根具体选择。
+
+实际模型 UNKNOWN。
+
 ## 2026-10-16 准入 request_id 实际等值恢复
 
 SOURCE `05886e5` 修复 `s2-admission.spec.ts` 场景 1：从 `response.request().postDataJSON()` 提取实际 `request_id`，恢复 Idempotency-Key header 和 outbox `correlation_id` 与实际 request_id 的逐项等值验证。不再使用 `expect.any(String)` 替代具体 UUID。UI JSON 预览不恢复。
