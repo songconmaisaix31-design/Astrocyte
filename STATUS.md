@@ -6,6 +6,10 @@
 
 当前产品继续 `http://127.0.0.1:64505/` /准确172 /PID25568，恢复后health正常。原55项当前28 PASS /27 NOT_RUN（Native26 + video1）；原B先核既有视频真实来源，F等待窗口，原Task/Run及写域保持。用户未答权限、语言和具体准入保持待定；完整默认/check、L1/L2、最终Windows包和GitHub Release尚未完成。详细连续分工见 [HANDOFF](HANDOFF.md)。
 
+根在已push的集成报告5963b123执行完整前端Vitest，实际168 PASS、3suite前置失败共10项未执行 /整体EXIT1。显式配置原公开Q后，认知六项6 PASS /EXIT0；当前178项中174项已分批通过，Relay会话四项仍缺真实L1事实，完整Vitest未通过。首次失败原件保留，未新增Skip，未重复原168项成功；不与55项浏览器清单混算。
+
+视频149原两版/952位置及五公开objects已独立核实完整，原资料行/main/WAL保持，但SHM修改时间变化，全三文件保护未通过。原B先在独立D空技术库验证实际WAL读取和文件保护，再决定获准的唯一D派生/HTTP窗口；当前尚未实施该业务窗口，F未运行，0位置对照库不再打开。准确范围与原件见HANDOFF，禁止新增ASR/模型或放宽原断言。
+
 ## V4 日运行（2026-10-17 00:25）：D3 采集失败，预测覆盖不足
 
 仅执行昨日 D3=2026-10-16，automation run 5 `21a40a6a-071c-430c-ad04-cfe3a433860a`。权威 root/reviewed 锁、day0=10-13、EXPERIMENT 全文 SHA256 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`、Codex0.162.0、固定 gpt-6.1-sol/872000/4096/5094907/model_context_split 和运行源码检查通过。
