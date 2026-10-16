@@ -23,6 +23,14 @@ Native 工具边界、Agent 读取完成证据、S3 两项、Laya 语言、具�
 
 M-relay `msg_550d2d324668` 已正式确认互斥范围：原 H 当前 `ctx_0ae3e6615702` / `term_a16ce8a1-3559-4236-bb54-41acb27f4084`，同原 Task / 树 / 分支实际 turn_started，先恢复稳定 172 的原库 / 64505，再负责经验注入及共享来源组合。模块只读核根 I 准确 `42860d277df0c0518f58e2a836681d7fa10c50ee` 已有 `SwarmRepository.ReadAcceptedArtifactEvent` 与 `Service.ReadAcceptedArtifactEvidence`，既有 outbox 来源、当前 human 授权和事务上下文端口可供原 B 分析。没有复制 S3 领域文件、运行采用事件、恢复控制器或调用模型；适配实现与真实正向仍未完成。
 
+### 02:19 指定开发模型与当前调用者权限
+
+根 `msg_365317d8fe00` 明确当前开发人员须使用用户指定的 `gpt-6.1-sol` / xhigh。原恢复 `ctx_5a286bc1dbff` 的实际配置为 Astra，只有只读分析；B 本人 `msg_9ec16eb8ffb7` 和公开终端均确认，原树保持 clean。模块在只读检查点按官方 `worker-stop` 精确终止该 Dispatch，回执 `closed_agent_terminal` / `ptyKilled=true`，随后 `worker-show` 的 observation=exited / exactWorker=true、fleet=exited / worker_stop，UTC `2026-10-16T18:17:24.084Z` 撤销能力；按官方 nextAction release，实际 released / processAction=none。未并发保留同域 writer，没有修改业务或重复成功验证。
+
+同原 Task / Run / 树 / 分支显式 `worker-start --retry-of ctx_5a286bc1dbff --agent codex --model gpt-6.1-sol --effort xhigh` 成功，当前 B 为 `ctx_010eaf93bbc0` / `term_b1dfc64b-0db3-4011-b0b8-e76adb09afb1`。官方 ready / turnStart=observed，requested 与 effective 均为 `gpt-6.1-sol` / xhigh；模块独读终端实际显示 `GPT-6.1-Sol xhigh fast`。B 本人 `msg_ed492efba04d` 已确认读取当前覆盖指令、根绝对 HANDOFF 及 `37b77985`，HEAD `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` clean，只处理实际采用 reader，先报依赖与精确路径再修改。最新完整指令以 `--run run_7b2ce96bcd13` 发入准确子 Run 与 Dispatch；没有以发送回执代替本人已读。
+
+M-relay `msg_e97b8642905d` 转根 `msg_18a51` 当前授权：H 可在实际认证 Capture 入口以请求私有 context 保存当前 Principal，Interpreter 回调沿同请求 context 重读与再授权，缺少该上下文直接拒绝。身份不取 HTTP 正文，不用历史 completion ActorID 代替当前 caller，不使用共享全局可变 caller；事务内不外读 Relay、objects 或 archive。该方向无需 B 修改普通 agents，H 继续持有装配写域；B 仍限定拟议新 SQLite 前缀文件及 backend 报告。deadline 使用既有显式 1..1800 范围，ModelVersion 不用 CLI 版本补造；正向采用、模型与最终发布门禁保持未完成。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
