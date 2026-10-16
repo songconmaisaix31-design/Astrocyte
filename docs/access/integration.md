@@ -1,5 +1,15 @@
 # Works Relay integration report
 
+## 2026-10-17 选定文本实际装配前置组合检查
+
+B SOURCE `4bb5ec63b2af1c97959bda60cee1ba625a7a79ed` /独立 REPORT `dd69f1c2b4f9982364a395d54f8c31baeae6672c` 已普通合为 `dc125d8bc53773aed2d48df3eb7abb423f4c7007`。仅新增324行真实装配测试及backend报告；根完整独读源码、作者报告、首编译失败与第二 /三轮原日志及命令记录。实际生产 selectedTextBridge /工厂 /SQLite /HTTP身份与许可 /ProjectFiles /未ProbeRegistry直接复用，目录helper来自准确已验I依赖。
+
+根在准确dc125d8执行 `go test -mod=readonly ./cmd/server -list '^TestSelectedTextActualAssemblyPrerequisitesWithoutNative$'`，精确一项；同包同选择器 `-run -v -count=1 -timeout=1m` 实际1 PASS /0 Skip /0.13秒，包1.907秒。`go vet -mod=readonly ./cmd/server`、diff及runner整体均EXIT0，源码前后保持。根原件 `D:/Astrocyte-agent-assets/20261015/integration/root-selected-dc125d8/`，相邻 runner 保留完整命令及原公开paper DOM的明确输入指针，新增输出 /临时目录全部D。
+
+实际固定公开论文正文57465 UTF-8 bytes经生产Attention服务导入、加入真实项目空间，原Ref /版本 /provenance /全文 /digest均保持；caller prompt65109 bytes、native wire65487 bytes。默认无许可拒绝、明确许可解析真实空间、未Probe配置缺证据拒绝、解析后撤回、调用者取消和真实SQLite关闭均通过，来源文件关闭后身份 /大小 /mtime /字节保持。没有Probe /Start /实际模型输入；此项是新增真实装配前置，原两件distillers替身、实际联合容量 /超限来源 /推荐正向 /非法模型响应覆盖仍未替换、未运行、未验。
+
+原作者首轮编译EXIT1四条诊断保留；第二轮合法公开材料HTTP导入通过，第三轮直接生产服务调用通过，公开导入未被记为泄露或生产错误。纯函数参数边界两项作者已通过，代码未变，本轮根不重复；生产代码未改，产品c5 /PID30420 /64505未重建或部署。完整CI /默认 /L1 /L2及最终包限制保持，后继只按当前任务的精确剩余事项继续。
+
 ## 2026-10-17 会话 HTTP 真实替换与空登记组合验证
 
 H SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` /独立 REPORT `c4d0e198da59d7ab91af061a4e115c3ad16e8cbb` 已普通合到 `607a9a82e5db7600361bc419fbe7c1852857a4b0`。根独读两件完整差异、报告及作者实际 list /test /vet原件和远端；HTTP session固定reader /调用计数替身已完整移除，原九项拒绝矩阵、授权200和no-store由主包真实生产collector /SQLite /FileState /HTTP覆盖。真实关闭原RelayStore后合法GET503，原拒绝仍保持，HTTP包另核实际未配置provider的503。
