@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 恢复执行与当前集成（2026-10-17）
+
+用户最新明确“继续做”，00:21暂停已解除。根继续原 `works-relay-integration` / `songconmaisaix31-design/works-relay-integration`，保持全部原Task / Run / 树 / 分支 / 证据；不新建开发轨。当前普通合入B `ac3a1b57aacebe904ec71cd39327e267d8563827` 与F `9f58700774bd5ad91b697bba7e21aa8f592c2f33`，准确组合 `42303b59da251b888409d7d62bfa202508060932`。生产代码没有变化，运行继续准确172 / PID25568 / `http://127.0.0.1:64505/`，恢复后实际health正常。
+
+根独读B实际同库HTTP1关闭→HTTP2重开、F两窗口2 PASS4.7秒 /EXIT0、B正常release与主项PASS705.19秒 /壳EXIT0、源和目标保持，以及F最终完整tsc-b /单spec lint EXIT0原件。组合42303b5的tagged Go编译 /vet、默认发现零项、完整web类型检查、进度spec lint和diff检查均实际EXIT0；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-progress-42303b5/`。没有重复已成功功能或新模型。原55项当前28 PASS /27 NOT_RUN（Native26 + video1），首失败及未知全部保留。
+
+本次连续分工：根独占原I普通合并、组合检查和状态；M-product沿原模块只维护计划和交接，原B仅先核 `.verification/astrocyte-s1-FAkZe5` 的真实公开视频两版本/952位置及公开不可变对象，交最小来源保护计划；原F保持原视频断言与D输出，待真实ready和本人窗口后仅验证原缺失场景。全部写域沿原任务，无新ASR、提取、模型或原库修改。根消息 `msg_02e260924102` 已由M-product本人完整读取并转交B，实际原终端turn_started已核。Native工具边界、Laya语言、具体PLOS准入再次异步询问，尚未回答；依赖操作、完整默认/check、L1/L2及最终包仍未完成。正式V4冻结与下述日运行记录保持。
+
 ## V4 日运行交接（2026-10-17 00:25）
 
 本次仅处理刚结束的 D3=2026-10-16，automation run 5 `21a40a6a-071c-430c-ad04-cfe3a433860a`。权威外部锁 `v4-w2/locked-protocol-20261013-first.json` 的 root/reviewed、day0=2026-10-13、全文 SHA256 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`、CLI0.162.0 与相对 d749ecb 的运行源码均核验通过，固定 gpt-6.1-sol/872000/4096/5094907/model_context_split 保持。

@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 恢复执行与进度阶段集成（2026-10-17）
+
+用户最新要求“继续做”，根恢复原集成任务。B ac3 / F9f已普通合入准确 `42303b59da251b888409d7d62bfa202508060932`；仅验证辅助、输出路径和报告，没有生产变化。作者两窗口2 PASS /4.7秒、正常同库HTTP重启和关闭 /源目标保持、最终完整tsc-b /spec lint均已独读。根组合tagged编译/vet、默认零发现、完整web类型、spec lint和diff检查全部实际EXIT0，准确命令与原件见集成树 `docs/access/integration.md`。
+
+当前产品继续 `http://127.0.0.1:64505/` /准确172 /PID25568，恢复后health正常。原55项当前28 PASS /27 NOT_RUN（Native26 + video1）；原B先核既有视频真实来源，F等待窗口，原Task/Run及写域保持。用户未答权限、语言和具体准入保持待定；完整默认/check、L1/L2、最终Windows包和GitHub Release尚未完成。详细连续分工见 [HANDOFF](HANDOFF.md)。
+
 ## V4 日运行（2026-10-17 00:25）：D3 采集失败，预测覆盖不足
 
 仅执行昨日 D3=2026-10-16，automation run 5 `21a40a6a-071c-430c-ad04-cfe3a433860a`。权威 root/reviewed 锁、day0=10-13、EXPERIMENT 全文 SHA256 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`、Codex0.162.0、固定 gpt-6.1-sol/872000/4096/5094907/model_context_split 和运行源码检查通过。
