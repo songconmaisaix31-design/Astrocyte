@@ -1,5 +1,85 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 当前 a166 的 55 条失败逐项状态
+
+原始 SOURCE 为 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，原件为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/full-default-a166-playwright.log`。完整计划 320 项，已观察 204 PASS、55 FAIL、43 原有 SKIP、18 无结果；原件没有最终 summary 或 EXIT，整体未通过。以下编号、窗口、文件位置及日志行均逐条对应该原件。当前接管基线 `6cd0e51098a946c732e3914d94efc59c9aaa4dec`，公共 helper SOURCE `375a559` 已普通 push；未完成的行保持 NOT_RUN，不从历史定向通过推断当前通过。
+
+本次身份为 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / terminal `term_42e31c23-d3ac-4ea0-a3e7-b1ef58cddc60`，实际 Codex 0.162.0 / GPT-6.1-Sol / xhigh fast。沿原任务 context_only / unsupervised 续行，没有新增 Agent。
+
+| 原编号 | 窗口 | 原文件位置 | 原日志行 | 当前状态 | 精确证据或下一责任人 |
+|---|---|---|---|---|---|
+| 4 | 1920 | attention-recovery.spec.ts:34 | 22 | NOT_RUN | F：获准四件公开 HTML 的环境已明确，版本切换定向验证在途 |
+| 11 | 1920 | cognition-live.spec.ts:13 | 44 | NOT_RUN | F：Q 固定 generation；原 SQL 日期与真实上海日期须分别核查 |
+| 12 | 1920 | cognition.spec.ts:37 | 47 | NOT_RUN | F：显式 Q LOCALAPPDATA 下的路由和键盘路径 |
+| 60 | 1920 | plugin-snapshot.spec.ts:27 | 104 | PASS | P：phase3 14 项实际成功，未重复运行 |
+| 61 | 1920 | plugin-snapshot.spec.ts:37 | 111 | PASS | P：同一 14 项成功日志 |
+| 64 | 1920 | plugin-snapshot.spec.ts:76 | 120 | PASS | P：同一 14 项成功日志 |
+| 65 | 1920 | plugin-snapshot.spec.ts:107 | 123 | PASS | P：同一 14 项成功日志 |
+| 80 | 1920 | progress-existing.spec.ts:10 | 144 | NOT_RUN | B：既有结果当前只读托管 URL 未交付；历史两窗口成功保留 |
+| 85 | 1920 | relay-album.spec.ts:6 | 168 | NOT_RUN | F：实际扫描、统计和三尺寸布局；无需原生启动 |
+| 94 | 1920 | relay-runtime.spec.ts:238 | 204 | NOT_RUN | H/R：EOF_TERMINAL 的真实任务及读取窗口 |
+| 95 | 1920 | relay-runtime.spec.ts:238 | 207 | NOT_RUN | H/R：EOF_STRUCTURED 的真实任务、工具关闭和发送许可 |
+| 96 | 1920 | relay-runtime.spec.ts:260 | 210 | NOT_RUN | H/R：CONFLICT_INITIAL 的真实互斥收据及已有任务 |
+| 97 | 1920 | relay-runtime.spec.ts:260 | 213 | NOT_RUN | H/R：CONFLICT_REOPENED 的原收据及重新打开结果 |
+| 98 | 1920 | relay-runtime.spec.ts:276 | 216 | NOT_RUN | H/R：DUPLICATE 的实际工作中任务与待确认任务 |
+| 99 | 1920 | relay-runtime.spec.ts:295 | 219 | NOT_RUN | H/R：GENERIC_CONFLICT 的真实冲突前置条件 |
+| 100 | 1920 | relay-runtime.spec.ts:308 | 222 | NOT_RUN | H/R：WORKING 的确证开始、终端、worktree 及活性 |
+| 101 | 1920 | relay-runtime.spec.ts:322 | 225 | NOT_RUN | H/R：UNKNOWN_SEND 的实际任务及停止权限 |
+| 102 | 1920 | relay-runtime.spec.ts:343 | 228 | NOT_RUN | H/R：COMPLETE_RELEASE 的真实完成、停止及释放范围 |
+| 103 | 1920 | relay-runtime.spec.ts:367 | 231 | NOT_RUN | H/R：ALTERNATE 及原 released task、第二 Agent 与许可 |
+| 104 | 1920 | relay-runtime.spec.ts:387 | 234 | NOT_RUN | H/R：PUBLICATION_ERROR 的实际错误及 reconcile 收据 |
+| 107 | 1920 | relay-session-readonly.spec.ts:9 | 243 | NOT_RUN | H：原任务 18ID / GetEvent 公开事实及当前服务；历史成功保留 |
+| 108 | 1920 | relay-session.spec.ts:91 | 246 | NOT_RUN | H/R：原登记和 first-visible 原件；原三分钟 FAIL 保留 |
+| 131 | 1920 | s1.spec.ts:69 | 294 | NOT_RUN | F：公开原文、人工重读计数，关闭主动截图后验证 |
+| 133 | 1920 | s1.spec.ts:133 | 306 | NOT_RUN | F：公开两版本、人工分类、固定引用及移除后原文 |
+| 136 | 1920 | s2-context.spec.ts:44 | 321 | NOT_RUN | F：固定上下文、403、撤销和同库重启 |
+| 149 | 1920 | video-existing.spec.ts:9 | 377 | NOT_RUN | B/V：原断言要求实际两版本及 952 位置，当前获准来源为 0 segments/spans |
+| 155 | 1920 | works-album.spec.ts:114 | 404 | NOT_RUN | F：内部 1920×1080 的真实 DOM 布局 |
+| 156 | 1920 | works-album.spec.ts:114 | 411 | NOT_RUN | F：内部 1280×720 的真实 DOM 布局 |
+| 157 | 1920 | works-album.spec.ts:114 | 418 | NOT_RUN | F：内部 390×844 的真实 DOM 布局 |
+| 164 | 1280 | attention-recovery.spec.ts:34 | 440 | NOT_RUN | F：同 4，独立窗口结果待取得 |
+| 171 | 1280 | cognition-live.spec.ts:13 | 462 | NOT_RUN | F：同 11，独立窗口结果待取得 |
+| 172 | 1280 | cognition.spec.ts:37 | 465 | NOT_RUN | F：同 12，独立窗口结果待取得 |
+| 220 | 1280 | plugin-snapshot.spec.ts:27 | 522 | PASS | P：phase3 14 项实际成功，未重复运行 |
+| 221 | 1280 | plugin-snapshot.spec.ts:37 | 529 | PASS | P：同一 14 项成功日志 |
+| 224 | 1280 | plugin-snapshot.spec.ts:76 | 538 | PASS | P：同一 14 项成功日志 |
+| 225 | 1280 | plugin-snapshot.spec.ts:107 | 541 | PASS | P：同一 14 项成功日志 |
+| 240 | 1280 | progress-existing.spec.ts:10 | 562 | NOT_RUN | B：同 80，当前 URL 未核实，不能重跑 infer |
+| 245 | 1280 | relay-album.spec.ts:6 | 586 | NOT_RUN | F：同 85，独立窗口结果待取得 |
+| 254 | 1280 | relay-runtime.spec.ts:238 | 622 | NOT_RUN | H/R：本窗口 EOF_TERMINAL 的真实任务及读取窗口 |
+| 255 | 1280 | relay-runtime.spec.ts:238 | 625 | NOT_RUN | H/R：本窗口 EOF_STRUCTURED 的真实任务与发送许可 |
+| 256 | 1280 | relay-runtime.spec.ts:260 | 628 | NOT_RUN | H/R：本窗口 CONFLICT_INITIAL 的真实互斥收据 |
+| 257 | 1280 | relay-runtime.spec.ts:260 | 631 | NOT_RUN | H/R：本窗口 CONFLICT_REOPENED 的真实互斥收据 |
+| 258 | 1280 | relay-runtime.spec.ts:276 | 634 | NOT_RUN | H/R：本窗口 DUPLICATE 的实际任务及确认范围 |
+| 259 | 1280 | relay-runtime.spec.ts:295 | 637 | NOT_RUN | H/R：本窗口 GENERIC_CONFLICT 的真实前置条件 |
+| 260 | 1280 | relay-runtime.spec.ts:308 | 640 | NOT_RUN | H/R：本窗口 WORKING 的确证开始及三值活性 |
+| 261 | 1280 | relay-runtime.spec.ts:322 | 643 | NOT_RUN | H/R：本窗口 UNKNOWN_SEND 的真实任务与停止许可 |
+| 262 | 1280 | relay-runtime.spec.ts:343 | 646 | NOT_RUN | H/R：本窗口 COMPLETE_RELEASE 的真实任务与资源释放 |
+| 263 | 1280 | relay-runtime.spec.ts:367 | 649 | NOT_RUN | H/R：本窗口 ALTERNATE 及原 released task、第二 Agent |
+| 264 | 1280 | relay-runtime.spec.ts:387 | 652 | NOT_RUN | H/R：本窗口 PUBLICATION_ERROR 的实际事件接入错误 |
+| 267 | 1280 | relay-session-readonly.spec.ts:9 | 661 | NOT_RUN | H：原 18ID / GetEvent 事实及当前原服务；历史成功保留 |
+| 268 | 1280 | relay-session.spec.ts:91 | 664 | NOT_RUN | H/R：原登记和本窗口 first-visible；原三分钟 FAIL 保留 |
+| 291 | 1280 | s1.spec.ts:69 | 712 | NOT_RUN | F：同 131，独立窗口结果待取得 |
+| 293 | 1280 | s1.spec.ts:133 | 724 | NOT_RUN | F：同 133，独立窗口结果待取得 |
+| 296 | 1280 | s2-context.spec.ts:44 | 739 | NOT_RUN | F：同 136，独立窗口结果待取得 |
+| 302 | 1280 | s2-proposals.spec.ts:255 | 767 | NOT_RUN | F：人工拒绝的真实 HTTP、Grant 为零及重启 |
+
+P 的准确原件：`D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_44f61b51d023-phase3/plugin-snapshot-with-env.log`，14 PASS / 1.2 分钟 / EXIT0；对应前端 SOURCE `c546f2a`。只读取已授权的 `standards-backend/.verification` 四件公开 HTML，没有重新抓取来源或调用模型。
+
+当前表计数为 8 PASS、47 NOT_RUN。H/R 的 26 行、B 进度 2 行和 B/V 视频 1 行已通过 `msg_42978f46523d` / `msg_b59a70b83ad3` 定向交接；其余 26 行包括已通过的插件 8 行及 F 持续处理的 18 行。原生工具关闭未满足、当前真实任务和权限不足分别记录，不新增任务凑场景。旧两批认知证据分别为全事件 1316 与两主题分页 155，后者已经逐 ID 核查通过，不重复该批。
+
+进度原件指针由协调者 `msg_d4da4a731292` 明确交付：B 树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite`，项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70`、原生 ID `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`、模型 `gpt-6.1-sol`。53863 属历史 URL，当前托管未核实；不启动该旧库写入服务、不复制整库、不恢复控制器或重跑模型。
+
+### 公共 helper 的显式生产环境配置
+
+SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 已普通 push，只修改 `web/e2e/realService.ts` 两行。`realService(relay = false, env?: { ASTROCYTE_REPOSITORY_ENVIRONMENT_ID: string })` 将调用者明确选择的已有生产环境 ID 传给原 `startS1Server`；原 `realService()` 和 `realService(true)` 语义保持。未装配 CodeGraph / AOCI 或模型，没有修改共享服务。
+
+本次原件根为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/`。`helper-typecheck.log` 记录完整 `pnpm --dir web typecheck` / `tsc -b` / EXIT0。`helper-smoke-fourth.log` 是普通模式，`helper-smoke-relay.log` 是 Relay 模式，两者均通过真实 Go / Vite、human HTTP、专用 `{files}` 快照请求、实际环境 ID 和 Git HEAD、SQLite 原生会话数为 0 的检查，均 EXIT0。实际命令为 `pwsh -NoProfile -File <本次原件根>/run-smoke.ps1`，该脚本分别在两次构造时使用 `helper-smoke.mjs` 的默认参数及 `--relay`；两次独立库均保留，不重复已通过的普通模式。
+
+首次 Windows PowerShell 5.1 启动在原生 stderr 重定向处终止，原工具回执保留；后续使用 PowerShell 7。`helper-smoke-first.log` / `helper-smoke-second.log` 均记录真实 HTTP400 / EXIT1，当次 `api.write` 自动加入了该专用 DTO 不接收的 CommandMeta。后续使用原严格 `api.request` 和专用 `{files}` 正文，响应仍经原 `validateResponse`；未使用 rawRequest 或修改契约。`helper-smoke-third.log` 的快照 HTTP 已成功，SQLite 返回 null-prototype 行与普通对象的深比较退出 1；最终按同一单行数量及 count=0 严格检查。先前仅观察到构建启动行时记 UNKNOWN，后到原件已补充为真实失败，不由历时推断成功。
+
+上述成功属于准确 helper SOURCE；当前另有 `web/e2e/s1.spec.ts` 两个失败场景的主动截图移除 WIP，其真实业务断言保持，定向验证在途。该 WIP 不包含在本 helper SOURCE 或本次仅文档的 REPORT。
+
 ## 2026-10-16 F 域 41 失败逐行 map（combined-default-first 实际日志）
 
 来源日志 `.verification/playwright-combined-default-first.log`，行 7766：`41 failed, 203 passed, 32 skipped, 4 did not run`（26 分钟）。根提到 a166 的 320/55 分组（msg_f0d1cc29e545），本上下文未获得该消息原文；以下 map 基于实际可用日志 41 项逐行列出。若需对齐 320/55，请根提供 a166 运行日志或 msg 原文。
