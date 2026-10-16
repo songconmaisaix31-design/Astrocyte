@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 02:53 后端三项真实组合通过（2026-10-17）
+
+原B SOURCE76011c24 /REPORT463a78cf已普通合到I dc1b4a9a，根报告f823f290已push。目录缓存与真实HTTP权限 /token同库重启2 PASS /包1.435秒；普通公开窗口1 PASS /包1.538秒；精确list、两包vet /diff /runner均EXIT0。缺位来源strict59、旧Native全部覆盖与完整CI仍未通过，首编译壳UNKNOWN保留。
+
+原B继续Workbench HTTP真实替换，随后核选定文本 /容量两份残余替身；原H继续两份会话poll /HTTP测试，实际owned缺失的gap场景不计PASS。具体独占范围、其他残余替身及D原件见HANDOFF。产品保持c5 /PID30420，无构建 /部署或新Native；最终包磁盘守卫及未答业务选择保持。
+
 ## 02:50 四项目录测试组合通过（2026-10-17）
 
 原H SOURCE ce90c386 /REPORT68c9acc1已普通合原I为0368145b，根报告44a25576已push。根精确list四项、真实4 PASS /0 Skip /包3.528秒，server vet /diff /runner均EXIT0；原生产保护和拒绝断言保持。准确原件与命令见HANDOFF及I报告。原Windows CI具体原因仍UNKNOWN，完整CI未通过。

@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 三项后端真实检查已集成（2026-10-17 02:53）
+
+B SOURCE `76011c240766e18ece92d91f4188f8b91882458e` /独立REPORT `463a78cf81d9ebecf544746af314f84ab220cec1` 已普通合到原I `dc1b4a9a162c3c4706d8f29c17969483ea1959f8`，根报告 `f823f29028d6966d1704d511c2692615c9996883` 已普通push。根完整独读三件源码 /报告 /原日志及首壳UNKNOWN记录，再只读三份本次实际公开响应。准确组合目录缓存与真实HTTP权限 /token同库重启两项PASS /包1.435秒，独立普通公开列表一项PASS /包1.538秒；精确list、两包vet /diff /runner均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-permissions-dc1b4a9/`，相邻runner保留完整命令。原缺位入口strict59及旧Native全部覆盖保持，本次实际60槽 /三请求不计缺位通过。原首编译壳EXIT1未入测试，未留具体stderr而UNKNOWN保持。
+
+唯一原B继续 `internal/adapters/httpapi/workbench_test.go` 真实替换；模块已核 `distillers/selected_text_test.go` 和 `capacity_sources_test.go` 属B普通adapter域，待Workbench后只读核实际装配与超限拒绝。额外cmd/server尚未授B，不复制私有Bridge或伪配置。原H按模块计划6bdd6fc3沿同Task独占 `cmd/server/relay_session_poll_test.go`、`internal/adapters/httpapi/relay_session_test.go` 及http报告；真实owned来源缺失不能用空基线覆盖原gap语义。另发现 `cmd/server/relay_session_test.go` 的FixtureDriver /StateSpy，尚不在本轮写域，保留未运行。上述为具体残余替身发现，不声称完整总数。
+
+当前产品继续c5 /PID30420 /64505，本阶段没有生产修改、构建或部署。原H服务终端和外层UNKNOWN、未答Native边界及全部其他待定项保持；完整默认 /CI /L1 /L2和最终包未通过，原任务持续。
+
 ## 四项目录测试已完成组合验证（2026-10-17 02:50）
 
 H准确SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` /独立REPORT `68c9acc11d991720b9b1562abd2983bdb9af0229` 已普通合入原I为 `0368145b2ca9016170955094436421846f36b7e0`，根报告 `44a25576b90be0c2a9590dd41f814cba15c30427` 已普通push。根独读全部差异与作者原件后，准确组合精确list四项、真实4 PASS /0 Skip /包3.528秒；server vet、diff与runner整体均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-directory-0368145/`，相邻runner保存完整命令。只修改测试自有目录前置与失败诊断，生产权限 /目录守卫及原成功 /真实同文件拒绝保持。Windows原CI精确原因仍UNKNOWN，完整CI未通过。
