@@ -17,7 +17,9 @@ P 准备 REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a` 已普通合并为 `e
 
 准确 `fc294bee` 的 `go build -mod=readonly -p=1` 分别构建 `./cmd/workbench-snapshot`、`./cmd/workbench-snapshot/verify`，均 EXIT0；`pnpm check:architecture` EXIT0，42 个包满足现有依赖边界；九份 release PowerShell 脚本分别由实际 PowerShell 5.1.26100.9711 / 7.6.6 Parser 读取通过，未执行脚本业务。原件在 `D:/Astrocyte-agent-assets/20261015/integration/root-release-fc294be/`，检查前后源码保持。没有执行认知采集、Sleep、模型、资产准备或最终打包。
 
-新增快照检查中的 directory-alias 当前使用 symlink 失败后再创建 junction，已交原 Q 按明确平台直接调用实际链接接口并保留错误；该检查尚未运行。原独立 symlink 的 OS1314 限制保持。发布入口的 S4 / S5 显式配置与实际最终包仍由原 P 完成，C 盘10GiB空间守卫保持。Native 权限、语言、具体候选批准及其他用户待定项按根当前交接与 QUESTIONS 保持。
+Q 窄返修 SOURCE `f19f99db8a487ae6282c54521f5c82063570abee` 已普通合并为 `b02d1635828eae98ac6b5dac89cd9383d021257d`。directory-alias 按当前平台直接创建 Junction / Symlink，各自错误立即失败，原生产保护和断言保持。根在该完整组合运行 `go test -mod=readonly -p=1 ./cmd/workbench-snapshot/... -run '^TestServerInitializedSnapshot$' -count=1 -v -timeout=3m`，实际 EXIT1 / 包16.563秒：首次 `publish` 在 `main_test.go:105` 返回 `The system cannot find the path specified`，七子项尚未开始。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-b02d163/snapshot.log` 保留，已交原 Q 按明确 D 输出根定位并修复测试路径，生产 guard 不放宽；该组合快照检查仍未通过。
+
+原独立 symlink 的 OS1314 限制保持。发布入口的 S4 / S5 显式配置与实际最终包仍由原 P 完成，C 盘10GiB空间守卫保持。Native 权限、语言、具体候选批准及其他用户待定项按根当前交接与 QUESTIONS 保持。
 
 ## 2026-10-16 普通产品集成与构建
 
