@@ -20,6 +20,9 @@ import (
 
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/httpapi"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/objects"
+	attention "github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	"github.com/songconmaisaix31-design/Astrocyte/internal/foundation"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 	"github.com/songconmaisaix31-design/Astrocyte/migrations"
@@ -184,9 +187,23 @@ func TestServePublicProgressProjectionActual(t *testing.T) {
 	}()
 	logger := slog.New(slog.NewTextHandler(logFile, nil))
 	startHTTP := func() (*httpapi.Server, string, chan error) {
+		schemaVersion, err := db.SchemaVersion(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		objectStore, err := objects.New(filepath.Join(target, "objects"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		materials := attention.NewAttentionService(NewAttentionRepository(db), nil, objectStore, attention.ServiceOptions{})
 		projects := workspace.NewLocalProjectService(db, nil, agents.ProjectFiles{}, nil)
+		projects.ConfigureRegisteredDiscovery(db, nil)
 		progress := workspace.NewProjectProgressService(db, db, agents.ProjectFiles{}, nil, nil)
-		server := httpapi.NewServer(httpapi.Config{WebDir: webDir, Logger: logger, Services: httpapi.Services{LocalProjects: projects, Progress: progress}})
+		services := httpapi.Services{Foundation: foundation.NewAttentionService(schemaVersion), LocalProjects: projects, RegisteredProjects: projects, Progress: progress,
+			Attention: materials, Materials: materials, Opportunities: materials, Tracking: materials,
+			Projects: workspace.NewProjectService(), Proposals: workspace.NewProposalService(), Sessions: workspace.NewSessionService(),
+			WorkspaceS2: workspace.NewS2Service(NewWorkspaceRepository(db), agents.ProjectFiles{}, nil)}
+		server := httpapi.NewServer(httpapi.Config{WebDir: webDir, Logger: logger, Services: services})
 		listener, err := net.Listen("tcp4", "127.0.0.1:0")
 		if err != nil {
 			t.Fatal(err)
@@ -235,6 +252,11 @@ func TestServePublicProgressProjectionActual(t *testing.T) {
 		get("/api/v1/auth/session", &session)
 		if session.ActorKind != "human" || session.CSRF == "" {
 			t.Fatal("real human bootstrap failed")
+		}
+		// 当前页面会同时读取这些既有生产服务，均从新自有库返回真实状态。
+		for _, path := range []string{"/health", "/foundation", "/projects", "/proposals", "/sessions", "/project-spaces", "/goals", "/local-projects/registered"} {
+			var result any
+			get("/api/v1"+path, &result)
 		}
 		var projects struct {
 			Items []domain.LocalProject `json:"items"`
