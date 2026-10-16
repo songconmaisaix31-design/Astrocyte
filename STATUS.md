@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 02:57 Workbench HTTP 真实替换组合通过（2026-10-17）
+
+B e9fd2370 /REPORT04ee84f7已普通合原I 74e3b79c，根报告2ab520ad已push。原HTTP替身完整移除；真实公开Q的1316事件分页及逐GetEvent追溯、原全部拒绝与隐私、自有副本离线503恢复200、原来源保持均实际通过。准确组合精确list1 /1 PASS1.11秒 /包2.201秒，httpapi vet /diff /runner均EXIT0，D命令和原件见HANDOFF。
+
+原B选定文本 /容量仅只读后继，原H会话HTTP迁移和不同名空collector继续；旧owned poll原断言保留未执行，完整默认及Native相关验收未通过。产品保持c5 /PID30420 /64505，无本阶段构建 /部署，最终包及未答权限保持。
+
 ## 02:53 后端三项真实组合通过（2026-10-17）
 
 原B SOURCE76011c24 /REPORT463a78cf已普通合到I dc1b4a9a，根报告f823f290已push。目录缓存与真实HTTP权限 /token同库重启2 PASS /包1.435秒；普通公开窗口1 PASS /包1.538秒；精确list、两包vet /diff /runner均EXIT0。缺位来源strict59、旧Native全部覆盖与完整CI仍未通过，首编译壳UNKNOWN保留。
