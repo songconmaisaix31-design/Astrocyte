@@ -740,9 +740,9 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 
 用户正式决定 `msg_ef2ae7cc0b04`：保持原 1h 到期，短期 ExpiresAt 未授权。`projects.go` 已恢复原语义（`GrantProjectAgent` 清空 ExpiresAt、`IssueProjectAgentToken` 固定当前 UTC+1h），追加修复保历史，未使用 Git 回滚。
 
-按 `msg_3cbf78fccc5f` 及 `msg_569c9e514e8f` 精确授权，原 `progress_expiry_bg_test.go` 已通过文件编辑移除，长验收逻辑迁移至 `tests/s1/progress-expiry.mjs`。新脚本复用 `startS1Server` / `humanAPI`，签发真实 1h token，等待自然到期后验证 HTTP 403 拒绝。token 仅留在内存，不记录内容或片段。显式运行 `node tests/s1/progress-expiry.mjs`，不在默认测试套件中执行；不需要 env 开关、skip 或 fake 到期。按 `msg_b8549b61afdc` 返修：移除 `.catch(()=>null)` 静默吞错误（改为 `await response.json()` 直接传播）、移除无关 `ensureGitRepo` fallback 和未使用的 `execSync`/`command`/`mkdtemp` 导入、移除到期后重复跨项目检查（已由 Go 快检 `TestProgressCrossProjectGetRejected` 覆盖）。
+按 `msg_3cbf78fccc5f` 及 `msg_569c9e514e8f` 精确授权，原 `progress_expiry_bg_test.go` 通过 `git rm` 移除（非文件编辑工具，此为工具记录不符的实际方法；后续代码修改必须使用文件编辑工具，禁止 Git 恢复）。长验收逻辑迁移至 `tests/s1/progress-expiry.mjs`。新脚本复用 `startS1Server` / `humanAPI`，签发真实 1h token，等待自然到期后验证 HTTP 403 拒绝。token 仅留在内存，不记录内容或片段。显式运行 `node tests/s1/progress-expiry.mjs`，不在默认测试套件中执行；不需要 env 开关、skip 或 fake 到期。按 `msg_b8549b61afdc` 返修：移除 `.catch(()=>null)` 静默吞错误（改为 `await response.json()` 直接传播）、移除无关 `ensureGitRepo` fallback 和未使用的 `execSync`/`command`/`mkdtemp` 导入、移除到期后重复跨项目检查（已由 Go 快检 `TestProgressCrossProjectGetRejected` 覆盖）。
 
-**新 mjs 状态：NOT_RUN**（`node --check` 语法通过不等于实际运行；显式运行验收待后续 dispatch）。
+**新 mjs 状态：NOT_RUN**（`node --check` 语法通过不等于实际运行；显式运行验收待后续 dispatch）。SOURCE `c008573` 三个修复已独立核实正确。
 
 后台进程状态：**RUNNING**（在途 Go 进程，源码已迁移但不影响运行中进程）
 
@@ -752,12 +752,15 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 | 进程名 | `app.test.exe` |
 | 父进程 PID（go.exe） | 46696 |
 | 进程路径 | `D:\Astrocyte-go-tmp\go-build3672384736\b001\app.test.exe` |
+| 编译 SOURCE | `88dc9e5`（后续 SOURCE 修复不改变在途二进制） |
 | 启动参数 | `-test.timeout=2h0m0s` |
 | 创建时间（本地） | `2026-10-16 12:40:18`（即 UTC 04:40:18） |
 | 签发 UTC | `2026-10-16T04:40:18Z` |
 | 实际 ExpiresAt | `2026-10-16T05:40:18Z` |
-| D 盘完整日志 | `D:/Astrocyte-test-output/` 下对应 `astrocyte-s1-*` 目录 |
-| D 盘签发记录 | `.verification/expiry-bg-token.log`（仓库根） |
+| 实际 SQLite | `D:/Astrocyte-go-tmp/TestProgressExpiryBackgroundVerification1949551442/001/state.sqlite`（Go `t.TempDir()` 位于 GOTMPDIR 下，非 TEMP/TMP） |
+| 签发记录 | `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/expiry-bg-token.log`（仓库根 C: 盘，原件保留不移动/复制/改 DB/重签） |
+
+原 Go 测试不使用 S1 helper（`startS1Server`），因此不产生 `astrocyte-s1-*` 目录。`D:/Astrocyte-test-output/` 为 `ASTROCYTE_TEST_OUTPUT_ROOT` 声明路径，但 Go `t.TempDir()` 实际跟随 GOTMPDIR（`D:/Astrocyte-go-tmp`），签发记录通过 `verificationDir()` 写入仓库根 `.verification/`。
 
 原 Go 进程在途运行不受源码迁移影响；不盲目启动第二个到期进程。到期验证完成后方可计为 PASS。当前 8 项已验测试（含 token 签发）已 PASS。
 
