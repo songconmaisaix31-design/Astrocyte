@@ -1,5 +1,23 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-17 aed 完整类型检查与进度 spec lint
+
+本次检查 SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d`，执行时 HEAD 为独立报告 `e6d559ab07f0881bdf5b23b66c82356384ce6ed3`；检查前后 `git diff aed -- web` 均为空，没有修改源码。`web/tsconfig.app.json` 的 `include` 为 `src` 与 `e2e/**/*.ts`，本 spec 属于必要完整类型检查范围。该准确源码的完整 `tsc -b` 和本 spec ESLint 现均已通过，e6d 的首次中断记录及全部首失败原件保持。
+
+先通过 Windows CIM 核实首次自有 PID45256 已不存在，当前本树无在途 tsc。使用已安装 Node v24.16.0、TypeScript 6.0.3 与 ESLint 10.12.0；沿官方 Node CLI 入口执行，工作目录均为本树 `web`，没有改变 tsconfig、规则、断言或依赖。进程级 `NODE_OPTIONS=--max-old-space-size=512`，`NODE_COMPILE_CACHE`、TEMP、TMP、GOTMPDIR 与输出均使用本次独占 D 目录；GOCACHE、GOMAXPROCS2、GOFLAGS=-p=1 保持原配置，没有修改全局环境。
+
+本次原件根：`D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/aed-static-20261017/`。使用原 `scripts/process.mjs` 的 `launchLogged` 保存实际子进程双通道、真实退出与完整命令，顺序执行以下检查：
+
+| 实际命令（cwd：web） | 真实 PID | 实际结果 | 原件 |
+|---|---|---|---|
+| `node node_modules/typescript/bin/tsc -b --pretty false --verbose` | 31852 | EXIT0 / signal=null / 7.430 秒 | `tsc-b.stdout.log`、`tsc-b.stderr.log` |
+| `node node_modules/eslint/bin/eslint.js e2e/progress-existing.spec.ts` | 38668 | EXIT0 / signal=null / 14.733 秒，stdout/stderr 均无诊断 | `eslint-progress.stdout.log`、`eslint-progress.stderr.log` |
+| `node <本次原件根>/check-static.mjs` | 原检查协调进程 | shell EXIT0 | `runner.log`、`result.json` |
+
+完整类型日志列出根 `tsconfig.json` 的两个引用项目，并实际执行 `tsconfig.app.json` 与 `tsconfig.node.json`；app 的缓存早于当前 progress-existing.spec.ts，已重新检查当前输入。`result.json` 保留准确源码、HEAD、完整可执行文件路径、参数、cwd、PID、开始结束 UTC、退出码及耗时；两个检查子进程结束后 CIM 计数为 0。
+
+本轮没有访问任何业务 HTTP，没有重新运行已结束 65404 的两项成功、E2E、build、模型或 Native，没有修改生产、schema 或队友文件。当前累计结果仍为原 55 条关联的 28 PASS / 27 NOT_RUN；完整默认、完整 check、L1 / L2 与最终发布保持原限制。原 Task `task_7cbe30017760` / Dispatch `ctx_697b2f19c010` / 终端保持，不发送 worker_done。
+
 ## 2026-10-17 既有 README 模型进度的 HTTP2 只读验收
 
 本阶段 SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d` 已普通 push，只修改 `web/e2e/progress-existing.spec.ts` 的必要模块导入与派生输出路径。显式要求 `ASTROCYTE_TEST_OUTPUT_ROOT`，复用 `scripts/process.mjs` 的 `verificationOutputRoot` 校验绝对路径，再写入其 `progress-existing` 子目录；全部原 DOM、HTTP、模型、来源、证据、GET-only、刷新前后等值及布局断言保持。没有修改生产 handler、公共函数或组件。
