@@ -27,6 +27,8 @@
 
 验证逻辑：S4 CodeGraph 三参数不完整组直接失败；S5 Laya 所有路径、语言、stderr 目录和生命周期预算不完整组直接失败；所有路径必须为已存在的绝对路径；语言、路径和生命周期预算由显式参数输入，不设未答默认。`LayaStderrDir` 不存在时自动创建。Jev 仅 cloud REST key，不分发本地权重。脚本 parser 和 35 项参数声明/验证逻辑检查全部 PASS。`windows.md` 同步更新使用说明。未修改业务代码、依赖锁、迁移、原生控制器或组件文档。
 
+SOURCE `7bec269` 已普通 push，远端同 SHA。本 REPORT 随后单独追加提交。实际修改仅 `release/Start-Astrocyte.ps1`（72 行新增参数声明、验证和映射）、`docs/release/windows.md`（24 行 S4/S5/Jev 使用说明）和 `docs/release/package-report.md`（本章节）。C 盘空余 `10,320,355,328 bytes`。未执行最终 Build/Verify/archive/Release/tag。旧 runtime/模型/OS/下载/资产扫描已成功，不重复。真实剩余：最终 I 精确 SOURCE 的完整 Build/Verify/archive、完整默认浏览器和原生控制器正向验收、C 盘空余恢复至 10 GiB 以上、tag 和 GitHub Releases 发布。
+
 ## 2026-10-15 固定运行依赖与打包准备
 
 本阶段 Task `task_3347b755071e`，当前恢复 Dispatch `ctx_6cf3f6a0c68f`，固定原树和分支 `songconmaisaix31-design/release-package-20261014`。原派发 `ctx_d20c14245ccd` 已由运行时记录 abandoned / failed，协调者确认无其他写入者。本次接管 HEAD 为 `a4abbab5a0b095822437237c9216e96b0ffd5be8`，保留本报告原有未提交内容及四件未推送提交；当前终端 `term_c5c89219-2808-4a0d-99d1-893b1bbd9981` 的公开状态显示 Orca Codex / `GPT-6.1-Sol xhigh fast`。没有派发下级 Agent。原 P 工具 SOURCE `8e62c7f99b513115a19fc22569e33587bddcc300`、许可消费组合 `2790488346c0e0b9b28051793ed9d5cc318231dd` 及原来源历史保留。
