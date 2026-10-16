@@ -1,5 +1,24 @@
 # 产品模块执行与验收
 
+## 2026-10-17 03:25 当前组合与剩余前置
+
+根 `msg_61113abbd15d` 已在准确集成 `c3116e803839fb2d97728bfedddfb06a7d564cec` 完成容量两项组合：双源0.16秒、真实Git文档超限1.14秒，2 PASS /包3.137秒，cmd/server vet、diff及实际runner均EXIT0；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-capacity-c3116e8/`。没有重新构建、部署或启动Native。作者分轮首结果和根准确组合分列，来源及未验范围保持。
+
+模块已完整读取 B 更新后的 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/remaining-readonly.md`，其当前首表与末段为 SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` / REPORT `3faa336f437b975f946d58cc558c97cb3328695a`、正文按精确授权已读及有限场景通过。原 B 本人 `msg_22480fb64ee6` 确认当前 Release / S1 没有新增独立实施事项；七件已交付测试归还冻结，同 Task / Dispatch 继续发布返修支持。根组合已交 B，后续只更正既有状态，不新增任务、验证或写入者。
+
+| 尚未通过的具体事项 | 所缺真实前置与原负责人 |
+|---|---|
+| 当前完整prompt / wire内容、模型接受及合法 / 非法结果 | 当前受控原生输入原件和实际响应；B、T / F各自原域与R / H实际链路。历史52ff成功保持当时范围 |
+| recommendation真实超限 | 同一获准范围1至100条自然超限的固定metadata / provider响应；B。四Git文档只验distillation，原完整stub保留未运行 |
+| 原UnavailableSlot严格59及原请求 / 游标预算 | 指定获准范围的实际缺位响应；B。当前三窗60普通来源已通过，缺位场景继续未验 |
+| 原七项进度模型与在途恢复 | 实际合法 / 非法响应、在途撤权、真实外部交付未知、computed / CAS / 发布失败恢复现场；B及R协作。配置unknown / 实际READONLY前置已通过 |
+| 原生接续、交接、StopConfirmed与逐event_id / Today / 相应浏览器覆盖 | 有效文件 / 命令工具关闭、实际原控制器和自产来源完整性；R / H及F。旧原档保护拒绝与所有原失败保留，不以副本补验 |
+| 两实际Agent、成果采用与六步经验正向 | S3调用预算单位和执行权限证据仍待答；实际产物 / 检查 / 采用事件、Interpreter候选、用户具体批准及后任务实际复用由原S3 / H / T / R / F按各自范围提供。第5步现有手动链可达，自动检索方式由根问用户 |
+| 固定PLOS资料准入与后续操作 | 用户对固定候选 / revision / 项目的具体准入决定；F仍只按获准范围继续。开发授权不代替该批准 |
+| 完整默认 / CI、最终同源Windows包及发布 | 适用全量覆盖与当前真实前置、最终准确SOURCE和包解压后的实际启动 / 写入 / 重启由根 / F / P完成；发布仍归根接纳具体结果后执行 |
+
+上述每项保持其具体来源、结果或决定条件；当前没有新增B依赖。Laya语言及其他模块待答项由原负责人保持，产品模块不代选。原B、F / UI和其他原轨贡献均保留，模块继续最终发布支持，没有worker_done。
+
 ## 2026-10-17 03:14 真实双源容量前置计划
 
 根 `msg_6b735a685f9e` 已接纳准确两公开对象用途和后继方案，原 B 同 Task 精确 write_paths 仅新增 `cmd/server/selected_text_capacity_actual_test.go` 与 `docs/standards/backend.md`。M-relay `msg_a8421e01d734` 当场核 H 原树该新文件不存在、status 为空、diff quiet EXIT0；原 H 本人 `msg_aae29377b1c4` 已确认持续不写，模块收到 `msg_e65bd30961d3`。原 B 独占该新文件，不修改 main / project_bridges / H生产或已交付六件测试，不新增人员。
@@ -14,7 +33,7 @@
 
 ### 03:22 双源与真实超限固定阶段独立 REPORT
 
-管理计划 SOURCE `7d7c12e251379d6244649c5b576601506ea37f03` 与超限后继 SOURCE `b291755856fd0634b905d14687d62e47990b3628` 均已普通 push；模块独核准确远端后继同值、工作区 clean、diff 检查 EXIT0，仅修改本管理文档。B 最终 SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` / 独立 REPORT `3faa336f437b975f946d58cc558c97cb3328695a` 已普通 push `[skip ci]`，前一双源 SOURCE / REPORT 为 `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` / `9bb501bb303a9b51cf1acb663fc628353db496ce`。模块完整审阅最终561行测试、两独立报告共59行、全部本机命令与首日志，远端准确最终REPORT、clean、限定差异检查 EXIT0，净两文件。根 `msg_f7891769a9d8` 已接纳前一双源限定范围，最终准确报告已交根 `msg_bbdbf3c18d8e`，由唯一I一次普通合并并组合两项与cmd vet，当前不把待执行组合记为通过。
+管理计划 SOURCE `7d7c12e251379d6244649c5b576601506ea37f03` 与超限后继 SOURCE `b291755856fd0634b905d14687d62e47990b3628` 均已普通 push；模块独核准确远端后继同值、工作区 clean、diff 检查 EXIT0，仅修改本管理文档。B 最终 SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` / 独立 REPORT `3faa336f437b975f946d58cc558c97cb3328695a` 已普通 push `[skip ci]`，前一双源 SOURCE / REPORT 为 `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` / `9bb501bb303a9b51cf1acb663fc628353db496ce`。模块完整审阅最终561行测试、两独立报告共59行、全部本机命令与首日志，远端准确最终REPORT、clean、限定差异检查 EXIT0，净两文件。根 `msg_f7891769a9d8` 已接纳前一双源限定范围，最终准确报告已交根 `msg_bbdbf3c18d8e`；唯一I一次普通合入后，根准确两项组合与cmd vet实际通过，完整记录见本文件03:25入口。
 
 | 实际检查 | 作者分轮首结果 |
 |---|---|
