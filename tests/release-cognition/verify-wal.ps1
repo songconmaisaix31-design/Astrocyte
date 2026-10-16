@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory=$true)][string]$Repository,
     [Parameter(Mandatory=$true)][string]$PublicRef,
     [Parameter(Mandatory=$true)][string]$ActualScope,
@@ -7,16 +7,27 @@ param(
     [Parameter(Mandatory=$true)][double]$Strength,
     [Parameter(Mandatory=$true)][double]$Decay,
     [Parameter(Mandatory=$true)][double]$InitialConfidence,
-    [Parameter(Mandatory=$true)][switch]$AuthorizedPublicReplay
+    [Parameter(Mandatory=$true)][switch]$AuthorizedPublicReplay,
+    [switch]$CrossDay,
+    [string]$OutputDirectory
 )
 
 $ErrorActionPreference = 'Stop'
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $verification = Join-Path $workspace '.verification'
 $owned = Join-Path $verification ('public-cognition-' + [guid]::NewGuid().ToString('N'))
+if ($OutputDirectory) { $owned = [IO.Path]::GetFullPath($OutputDirectory) }
+if (-not $owned.StartsWith($verification + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Output must remain in this workspace verification directory' }
 $local = Join-Path $owned 'local'
 $root = Join-Path $local 'astrocyte-workbench/v0.1'
 $source = Join-Path $owned 'app-state/state.sqlite'
+if (Test-Path -LiteralPath $source) { throw 'Source must be a new isolated actual server database' }
+if ($CrossDay) {
+    if ($Timezone -ne 'Asia/Shanghai') { throw 'Cross-day verification requires Asia/Shanghai' }
+    $zone = [TimeZoneInfo]::FindSystemTimeZoneById('China Standard Time')
+    $actualDay = [TimeZoneInfo]::ConvertTimeFromUtc([DateTime]::UtcNow, $zone).Date
+    if ($SleepDay -ne $actualDay.AddDays(-1).ToString('yyyy-MM-dd')) { throw 'Cross-day verification requires actual Shanghai yesterday' }
+}
 New-Item -ItemType Directory -Path $owned -Force | Out-Null
 $serverBinary = Join-Path $owned 'server.exe'
 $snapshotBinary = Join-Path $owned 'workbench-snapshot.exe'
@@ -108,13 +119,35 @@ try {
     if ($writer.ExitCode -ne 0) { throw 'Actual public writer failed' }
     & $snapshotBinary --source $source --root $root --timeout 120s > (Join-Path $owned 'complete-publication.json')
     Check-Exit 'complete public snapshot'
+    if ($CrossDay) {
+        $complete = Get-Content -LiteralPath (Join-Path $root 'current.json') -Raw | ConvertFrom-Json
+        $completeHistory = Join-Path $root ('snapshots/' + $complete.generation + '/history.json')
+        $preLocal = Join-Path $owned 'preSleep-local'
+        $preRoot = Join-Path $preLocal 'astrocyte-workbench/v0.1'
+        & $snapshotBinary --source $source --root $preRoot --history $completeHistory --timeout 120s > (Join-Path $owned 'preSleep-publication.json')
+        Check-Exit 'actual preSleep publication'
+        & $collectorBinary --mode inspect --source $source --root $preRoot --output (Join-Path $owned 'preSleep-safe') --minimum-today 2 --repository $Repository --ref $PublicRef
+        Check-Exit 'actual preSleep SQL and Reader'
+    }
     & $sleepBinary --data-dir (Split-Path -Parent $source) --day $SleepDay --timezone $Timezone --decay $Decay --initial-confidence $InitialConfidence --fact-projection none > (Join-Path $owned 'sleep-result-local.json')
     Check-Exit 'actual public Sleep'
     & $snapshotBinary --source $source --root $root --timeout 120s > (Join-Path $owned 'sleep-publication.json')
     Check-Exit 'post Sleep snapshot'
-    & $collectorBinary --mode inspect --source $source --root $root --output (Join-Path $owned 'safe')
+    $inspectArguments = @('--mode','inspect','--source',$source,'--root',$root,'--output',(Join-Path $owned 'safe'),'--repository',$Repository,'--ref',$PublicRef)
+    if ($CrossDay) {
+        $inspectArguments += @('--minimum-today','2','--closed-day',$SleepDay)
+        $mainPublication = Get-Content -LiteralPath (Join-Path $root 'current.json') -Raw | ConvertFrom-Json
+        $mainHistory = Join-Path $root ('snapshots/' + $mainPublication.generation + '/history.json')
+        $closedLocal = Join-Path $owned 'closed-local'
+        $closedRoot = Join-Path $closedLocal 'astrocyte-workbench/v0.1'
+        & $snapshotBinary --source $source --root $closedRoot --history $mainHistory --timeout 120s > (Join-Path $owned 'closed-publication.json')
+        Check-Exit 'actual closed publication'
+        & $collectorBinary --mode inspect --source $source --root $closedRoot --output (Join-Path $owned 'closed-safe') --minimum-today 2 --closed-day $SleepDay --repository $Repository --ref $PublicRef
+        Check-Exit 'actual closed SQL and Reader'
+    }
+    & $collectorBinary @inspectArguments
     Check-Exit 'actual SQL and production Reader'
-    @{ source=$source; snapshot_root=$root; localappdata=$local; safe=(Join-Path $owned 'safe'); public_ref=$PublicRef; actual_scope=$ActualScope; provenance='actual-public-Git-production-replay'; formal_experiment=$false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $owned 'result.json') -Encoding utf8
+    @{ source=$source; snapshot_root=$root; localappdata=$local; safe=(Join-Path $owned 'safe'); public_ref=$PublicRef; actual_scope=$ActualScope; cross_day=[bool]$CrossDay; preSleep_localappdata=$preLocal; closed_localappdata=$closedLocal; provenance='actual-public-Git-production-replay'; formal_experiment=$false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $owned 'result.json') -Encoding utf8
     Write-Output $owned
 } finally {
     foreach ($process in $processes) {

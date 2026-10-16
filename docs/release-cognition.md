@@ -20,6 +20,53 @@
 
 公开来源认知、并发 WAL 备份与原生产 Reader 的实际结果见下列 REPORT。前端与发布包的组合验收归 F/P/I；正式 V4、旧私人历史、管理员 Procmon、两次真实跨日触发没有在本任务运行。
 
+## REPORT：2026-10-15 公开工程跨日更新
+
+实际客户端为 Orca Codex / `gpt-6.1-sol`。本轮基线 `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`，分支 `songconmaisaix31-design/release-cognition-20261014`；SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` 已普通 push，独立 `git ls-remote` 返回相同完整 SHA。本 REPORT 单独追加文档提交。
+
+根 `msg_55f7b29dede5` 授权公开工程跨日更新；本派发协调者在实际 ask 回复中确认完整真实采集 → preSleep → 原 Sleep 关闭 14 日 → closed/main 的顺序。获取时公开 `standards-backend` 最新实际提交为 `b789466ff62f3c9b0e08ec392729f5bbfc5cfaa1`。本次新 bare checkout 共享已存在公开对象，再从获准公开 origin 获取该 ref，没有复制大型来源目录；原 checkout 与五份旧发布产物保留。
+
+新库由真实 server 的 HTTP health 200 确认初始化，随后由原 MapGitLogRecord → EventRecorder → EventService/NormalizeSignal → Dynamics 按原始 commit.ts 完整采集该 ref 的 1,316 个唯一可达提交，产生 1,316 个真实 events 与 signals、两个主题。独立 inspector 逐 event_id 定位 SQL，逐 commit 与真实 Git 可达人口及 commit.ts 核对；没有遗漏、重复或人口外事件。上海 10 月 13 日 65 条、14 日 74 条、15 日 52 条。主题 Astrocyte/Attention Engine 134 条、MCP 21 条；其余 1,161 条保持原 mapper 的未分类结果。strength=1、decay=0.1、initial-confidence=0.5，历史 SeedTopic 初始化沿此前已批准的各主题最早真实 Git 时间。
+
+原生产 Sleep 仅选择上海 `2026-10-14` 的事件窗口，实际于 `2026-10-15T02:48:42.101+08:00` 开始、`2026-10-15T02:48:42.110+08:00` 完成；SQL 开始/完成毫秒值分别为 `1792003722101` / `1792003722110`。新库恰有一条 Sleep，Today 的 yesterday status 与完成时间逐项匹配 SQL。closed 与 main 包含完整已采今日事件，保存同一真实终态；closed 的名称表示已完成 14 日闭日处理，其内容不能作为 14 日纯截面。没有更改 Clock、来源时间、engine、mapper、schema、迁移或权重。
+
+实际 writer PID 66000；WAL 在线备份期间已有 2,101,232 bytes，采集进度从 33 条增至 36 条。实际发布如下，所有路径相对于本 Q 工作树 `.verification/cross-day-20261015-0228/`，数据库及原始日志只留本机 ignored 目录。
+
+| 阶段 | LOCALAPPDATA 子目录 | generation | snapshot_at（UTC） | 每主题实际历史点 |
+|---|---|---|---|---|
+| 空 server 库 | local（保留旧 generation） | snapshot-390490354 | 2026-10-14T18:44:37.6712322Z | 0 |
+| 并发 WAL | local（保留旧 generation） | snapshot-1429914530 | 2026-10-14T18:46:48.9033717Z | 1 |
+| preSleep | preSleep-local | snapshot-1373353207 | 2026-10-14T18:47:35.9453898Z | 2 |
+| main | local | snapshot-1711995690 | 2026-10-14T18:48:42.2097174Z | 3 |
+| closed | closed-local | snapshot-3544892468 | 2026-10-14T18:48:42.3242026Z | 3 |
+
+### 准确来源与消费者输入
+
+- 实际 source：上述新目录 `app-state/state.sqlite`，2,555,904 bytes。
+- 每个发布根：对应 LOCALAPPDATA 子目录的 `astrocyte-workbench/v0.1/`；pub 为其中 `current.json`，明确指向表中 generation。
+- 不可变副本与真实 history：对应发布根 `snapshots/<表中generation>/snapshot.sqlite` 和 `history.json`；P 可以只读选择实际 source 或明确阶段的不可变副本。
+- 最终 main 的独立 SQL expected：`main-safe-final/sql-expected.json`；preSleep 与 closed 分别为 `preSleep-safe-final/sql-expected.json`、`closed-safe-final/sql-expected.json`。各文件严格绑定自身 snapshot_at，恰有十值、覆盖四路由，数值直接与生产 Reader 比较全等。
+- 对应 safe-final 目录均提供 `actual-counts.json`、`events-six-fields.json`、`origin-safe.json`、`privacy-safe.json`、`production-reader-safe.json`、`cross-day-safe.json`、`admission-safe.json`。三个最终 inspector 均 PASS。
+
+全部 1,316 条六字段逐行/逐页/末尾空页与 SQL 全等，两个主题的全部 A/M/C 与真实排名核对通过，Astrocyte 134 条按 20/50 页大小完整分页通过。两个主题的实际历史时间严格递增、至少两点、最新节点 updated_at/attention 与 SQL 全等；历史继承本次实际并发、完整采集和 Sleep 后发布状态。main/closed 最高 attention 为 MCP，A=`0.9956816876459585`、M=`-0.0030228186348930475`、C=`0.5`，其 21 条真实事件独立计数；preSleep 最高排名为 Astrocyte。1,316 个原始公开 subject 在安全 DTO 中泄漏计数为零。生产 Git `tokens=0` 保留原字段，不表示 model usage；验收进程的模型/native/judge 调用全部为零。
+
+### 实际命令与验证结果
+
+```powershell
+./tests/release-cognition/verify-wal.ps1 -Repository .verification/cross-day-20261015-0228/public-source.git -PublicRef b789466ff62f3c9b0e08ec392729f5bbfc5cfaa1 -ActualScope .verification/cross-day-20261015-0228/public-source.git -SleepDay 2026-10-14 -Timezone Asia/Shanghai -Strength 1 -Decay 0.1 -InitialConfidence 0.5 -AuthorizedPublicReplay -CrossDay -OutputDirectory .verification/cross-day-20261015-0228
+./.verification/cross-day-20261015-0228/inspect-final.ps1
+go test -mod=readonly -count=1 -v ./cmd/workbench-snapshot/...
+go vet ./cmd/workbench-snapshot/...
+```
+
+跨日脚本在 PowerShell 7 实际运行 EXIT0，server/collector/snapshot/Sleep 四项构建、原生产采集与闭日全部成功；运行日志 `run-first.log`。最终 inspector 重新构建后，对三个对应不可变 SQLite 副本各自只读验证，`inspect-final-first.log` 记录 preSleep/closed/main 三项 PASS；没有重采事件或再次执行 Sleep。`go-test-source-final.log` 全部 PASS，含真实 server 初始化/Reader、副本保护、路径/锁/超时拒绝；`go-vet-final.log` 无错误。`gofmt -l` 与 `git diff --check` 通过。
+
+Windows PowerShell 5 的首次直接文件解析发现 UTF-8 无 BOM 的中文注释解码问题，原 `powershell5-parser-first.log` 保留。最终脚本采用 UTF-8 BOM，Windows PowerShell 5 `Parser.ParseFile` 解析 PASS，记录 `powershell5-parser-final.log`；完整跨日运行使用 PowerShell 7，不将语法解析登记为 PowerShell 5 完整运行。
+
+原五个 pub 指针只读核对为 5/5 与任务基线一致：Q `snapshot-892856014` / `snapshot-1030107153`，B empty/closed/native 分别 `snapshot-2498450736` / `snapshot-2249990550` / `snapshot-3888376845`。旧 DB、preSleep、历史和首 FAIL 原件保留；B native 的 H 固定公开任务 25 个 null 事件没有修改。准确三阶段来源/SQL/历史指针已通过 Orca Handoff 交协调者转 B/F/UI/P。
+
+本轮完成公开工程认知的跨日工程验证；完整产品 HTTP/UI 组合、最终 I 同源 ZIP 与原生链路由其原 owner 继续验收。正式 V4、自动跨日日程、管理员 Procmon、模型/native/judge、GitHub Release 均未执行；没有锁定或修改任何日程，没有清理共享目录或他人文件。
+
 ## 本次公开来源验证入口
 
 `tests/release-cognition/verify-wal.ps1` 只对新建 `.verification/public-cognition-*` 运行真实 server 初始化，显式关闭可选 summarize 与模型处理；其后启动独立公共 Git writer、在真实 WAL 上执行在线备份，再调用原 `cmd/sleep` 和生产 WorkbenchReader。`cmd/workbench-snapshot/verify` 为该验收入口，不进入可分发 snapshot binary。
