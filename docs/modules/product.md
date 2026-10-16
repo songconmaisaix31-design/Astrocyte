@@ -17,6 +17,12 @@ HumanSet SOURCE `ae22fc99c195792d951c7adc9b652420bc1fdbb5` / REPORT `78ec4fc7e23
 
 Native 工具边界、Agent 读取完成证据、S3 两项、Laya 语言、具体 PLOS 准入及经验批准仍待用户回答。本阶段不启动 Probe、Start、新模型、ASR、V4 采集或网络修理；新输出及缓存均使用 D 盘，原始源、凭据和模型输出只留本机，旧正式库、冻结核心、日程及 17321 保持既有边界。
 
+### 原任务恢复独立 REPORT
+
+管理 SOURCE `134ca52df6a9f7be9d321d8b0b368b6248830159` 已普通提交并 push，独立 `git ls-remote` 核远端同值，`git diff --check` EXIT0。原 B 旧 Dispatch 已公开 abandon，`worker-show` 核实 status=failed、`capabilityRevokedAt=2026-10-16T18:14:46.663Z`；回执 processAction=none，没有将撤销能力描述为进程终止。沿原 Task / Run / 树 / 分支的 `worker-start --retry-of` 实际成功，当前 `ctx_5a286bc1dbff` / `term_a63efa36-df22-4263-be11-ea759db11457`，state=ready、turnStart=observed。公开 `worker-read` 进一步观察 agent live / working、provider=codex、model=`gpt-6-astra`；未通过启动参数自行选择模型。根已收到 `msg_603eae033e30`，覆盖历史任务的 `msg_7ec16a0b652a` 已入 B 精确 Dispatch，实际本人接收与精确路径仍待报告。
+
+M-relay `msg_550d2d324668` 已正式确认互斥范围：原 H 当前 `ctx_0ae3e6615702` / `term_a16ce8a1-3559-4236-bb54-41acb27f4084`，同原 Task / 树 / 分支实际 turn_started，先恢复稳定 172 的原库 / 64505，再负责经验注入及共享来源组合。模块只读核根 I 准确 `42860d277df0c0518f58e2a836681d7fa10c50ee` 已有 `SwarmRepository.ReadAcceptedArtifactEvent` 与 `Service.ReadAcceptedArtifactEvidence`，既有 outbox 来源、当前 human 授权和事务上下文端口可供原 B 分析。没有复制 S3 领域文件、运行采用事件、恢复控制器或调用模型；适配实现与真实正向仍未完成。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
