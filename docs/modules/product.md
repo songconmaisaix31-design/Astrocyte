@@ -7,7 +7,7 @@
 | 原负责人 | SOURCE / 独立REPORT | 实际结果与剩余条件 |
 |---|---|---|
 | F | `b34ce2b85b2ae9d172a409d622d74aa5797ea414` / `b1569cabfb5fbd2f23c600788469f80a9a68b849` | 21件仅E2E独立上海日SQL与无视觉采集修改，18条真实定向分别通过：论文 / 重读 / 分类 / 作品统计8、作品三尺寸3、上下文2、认知4、拒绝提案1，均summary及EXIT0；完整web tsc-b / lint / build EXIT0。加本次既有进度两项后，原55表当前28 PASS / 27条件未运行，原完整320首结果保持 |
-| F既有真实进度 | `aed6e9be106418612668bb8f907dac8e44cccc4d` / `e6d559ab07f0881bdf5b23b66c82356384ce6ed3` | 仅spec显式D输出并调用原路径校验；精确list两项EXIT0后，真实1920 / 1280两项2 PASS、4.7秒、EXIT0，全部原断言保持。模块已独读原日志和两份安全派生，F本人已结束读取窗口；首次完整tsc-b主动终止，日志EXIT=-1 / 外层EXIT1，lint未执行，原作者继续必要最终源码检查，尚未交最终集成ready |
+| F既有真实进度 | `aed6e9be106418612668bb8f907dac8e44cccc4d` / 最终独立REPORT `9f58700774bd5ad91b697bba7e21aa8f592c2f33` | 仅spec显式D输出并调用原路径校验；精确list两项EXIT0后，真实1920 / 1280两项2 PASS、4.7秒、EXIT0，全部原断言保持。最终准确aed完整tsc-b实际两引用Building、7.430秒EXIT0，本spec ESLint14.733秒EXIT0，外层EXIT0；模块独读原件及远端同值 / clean，已交根阶段merge_ready。首次类型中断与e6d报告保持 |
 | B既有进度托管 | 实际运行 `fc6131791c7e287f45ed113892a95ac29fd07b2f`；仅注释SOURCE `852d7ec1a0583ac501f42fa58a3ae8e404ab11ba` / 独立REPORT `ac3a1b57aacebe904ec71cd39327e267d8563827` | 两件真实SQLite验证helper，tagged compile / vet、默认精确list0及格式EXIT0；实际托管705.19秒PASS / 启动壳EXIT0，F两项后正常关闭、源行 / 文件与target行保持、原PID退出。前序REPORT929及首失败保留，已独读diff / 原件 / 普通远端同值并交根阶段merge_ready |
 | UI | `524ee13dc7fefbc29660b6b5136077f400972bd2` / `9aa52ecf6199ce819ea6793e6f37481095d63ab4` | Taste、Goal / Snapshot / Policy / Rule、确定性判断 / 反馈 / 重启及边界共两尺寸各5场景分次真实通过；完整tsc-b / lint / pnpm build本人EXIT0，首RED保持 |
 | UI必要取消返修 | `990847571f95198400bc21d77b7b590d5fbc0c27` / `596c9ff7534cb1325366b7a87e232081e6eab93b` | 仅保存前资料 / 规则读取卸载取消，已发送命令的unknown锁保持。真实GET后SPA离开、ERR_ABORTED、PUT0 / SQL不变及明确重开保存，两尺寸2 PASS / 42.0秒 / EXIT0，定向lint及完整pnpm build本人EXIT0；未重复原十项成功 |
@@ -28,6 +28,8 @@ B后继SOURCE `fc6131791c7e287f45ed113892a95ac29fd07b2f` 已普通push，仅专�
 B后继单行注释SOURCE `852d7ec1a0583ac501f42fa58a3ae8e404ab11ba` 及仅backend.md追加独立REPORT `ac3a1b57aacebe904ec71cd39327e267d8563827` 已由模块独读diff、核普通远端同值 / clean，连同前序独立REPORT `929db142052079beaa809702a2738dbbee18c777` 交根 `msg_d2016b3519d8` 阶段merge_ready。既有S0的三个构造均为空读；本装配的WorkspaceS2非空，实际proposals GET走S2 SQLite，projects与全局sessions保留S0兼容响应，均不据200扩大通过范围。后继仅注释和说明，无行为变化或重复功能运行。B保持原Task / Dispatch / 终端等待具体发布支持，不发送worker_done。
 
 F独立REPORT e6d已普通push且模块独读。其首次完整tsc-b未正常结束，原作者精确核自有PID45256 / 父23832 / 命令后主动终止，后继CIM0；保留pnpm4294967295、日志EXIT=-1及外层EXIT1，lint未执行。模块核实际tsconfig.app包含e2e，已交原F继续准确aed的必要完整tsc-b与本spec lint，禁止将该首次结果计为类型通过；不重复真实两项、构建或访问已结束的65404。最终检查及后继独立REPORT待齐。
+
+F必要检查后继已实际完成，最终独立REPORT `9f58700774bd5ad91b697bba7e21aa8f592c2f33` 仅frontend.md，普通push / 远端同值 / clean，检查前后web与aed无差异。沿已安装官方Node入口在web执行完整 `node node_modules/typescript/bin/tsc -b --pretty false --verbose`：app和node两个引用均实际Building，本spec所属app因输入更新重新检查，7.430秒 / EXIT0 / signal=null；`node node_modules/eslint/bin/eslint.js e2e/progress-existing.spec.ts` 14.733秒 / EXIT0 / 零诊断，外层runner EXIT0。模块已独读D专属 `product/frontend/ctx_697b2f19c010/aed-static-20261017/` 的result、runner及双通道原件；此前类型中断保持。该SOURCE与e6d / 9f报告已交根 `msg_6feb04dd1663` 阶段merge_ready，没有重跑E2E / build / HTTP或模型。F保持原Task / Dispatch / 终端发布支持，不结算模块任务。
 
 根已普通合入F准入、UI十四件页面与Attention入口，完成两行类型衔接SOURCE `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`。根正式报告同SOURCE完整构建EXIT0、15.039582秒，全web lint及实际准入、撤销、HTTP重启两窗口PASS、42.3秒；首efec的完整构建EXIT1和三处TS错误保留。单独 `tsc --noEmit` 未遍历solution references，不能登记为全局类型通过；F/UI后继使用真实 `tsc -b`，按原写域同步根准确类型修改，不改生成schema、运行行为、原断言或预算。
 
