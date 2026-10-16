@@ -16,6 +16,16 @@
 
 M-relay `msg_f6a79219f641` 已归还本次共享更新窗口：其正式记录为准确组合 `c5b3b5715f2e93b82365720914be24c73642bd1e` / modified=false、PID30420、UTC `2026-10-16T18:37:58.6714394Z`，同一 `http://127.0.0.1:64505/`，web 源仍为 172；原 68 表 90 行、Native0、Q generation 保持，根独立核查继续。实际 ready 与尚未返回的外层 pwsh 退出码 UNKNOWN 分列，不为退出码重启服务。产品本轮未恢复 F / UI、没有共享业务操作；B 仅使用隔离库，当前不新开前端人员、原生控制器或模型。
 
+### 02:43 精确归因与本轮互斥返修
+
+B 本人 `msg_dc1b0c6e49e7` 已核准确 `4b4ec3b26c276d707cbea81e7207dbce9d758200` 与 B 当前树七件相关源码全等。目录发现中的 Source / Git / Activity 由显式空目录构造分别得到 `explicit_directory` / `unavailable` / `unknown`；生产 Git 观察先核目录自身 `.git`，不继承父仓。测试直接比较未经 canonical 的临时路径，生产使用 Clean / EvalSymlinks / Stat；Windows 具体短路径或大小写差异属于代码推断，旧日志没有逐字段值，未登记为实测原因。原未知请求测试未配置实际 message / owned / object 服务，生产发送入口第一步即返回 UnsupportedCapability，在任何 adapter.Send 之前失败；旧 localNative.sends 始终为零的组合断言不能证明实际重发，不运行或修补替身。公开分页生产按实际请求 size 推进游标，Observed 为真实 medias 数组长度，固定 59 已不符合当前真实返回，未发现越窗证据。
+
+本轮原 B 精确 write_paths 确认为 `internal/adapters/sqlite/local_agents_discovery_test.go`、新增 `internal/adapters/sqlite/local_agents_permissions_actual_test.go`、`internal/adapters/importers/public_listing_actual_test.go`、`docs/standards/backend.md`。目录测试使用标准库独立 canonical 预期及真实 SameFile 目录身份，保留权限、观察状态、重启、删除恢复及调用次数断言，拆分准确错误信息；新实际权限测试以真实 HTTP bootstrap、项目 / 设置 / Grant / token、实际生产 Registry、SQLite 重启及缺发送依赖拒绝验证可独立部分，实际 unknown / stop / resume 继续缺真实前置，旧正向要求完整保留。
+
+分页测试仅观察默认真实 Transport 原响应，使用成熟 JSON 解码独立核实际槽数、可用 / 不可用条目及 has_more，再与每页产品结果严格比较；三请求、起点 0 / 20 / 40、size20、游标 2 / 3 / 4 保持。真实省略槽样本未取得时单列 NOT_RUN，不将当前 60 视为该场景。当前不修改 `public_listing.go` 或抽取仅供测试的 cursor 函数，不以纯规则输入替代实际省略槽来源；无需变更生产或 Native 代码。
+
+原 B 实施、定向运行并迭代上述真实场景，使用 D 新目录保留所有首结果，SOURCE 与独立 REPORT 普通 push。鉴于默认套件仍包含未整改替身，本阶段后续提交均附 `[skip ci]`，避免自动启动根已禁止的新默认运行；不改 workflow 或添加 test Skip，当前完整 CI 仍未通过。模块只维护本计划、审阅及交接，原 B 持续同 Task / Dispatch / 树 / 分支，未创建新开发人员。
+
 ## 2026-10-17 02:14 系统重启后的原任务接续
 
 当前事实源为根管理树 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 02:12 入口、根提交 `37b77985a084ffb87c68683a1fde7f4f49c6725c` 及本次正式消息 `msg_b20482900a1c`、`msg_251436e5c5ab`、`msg_fe8b1aa0d16b`。根已核实整机于 02:07:51 重启，runtime 为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`；重启前的运行 172 与全部成功结果保持其实际时间含义。产品负责人同 Task `task_b0197ca7ebdf`、当前 Dispatch `ctx_47dffa3cec8b`、终端 `term_d6eca544-939f-4f9a-9923-5b00da4eee3f` 继续，原子 Run `run_7b2ce96bcd13` 已普通绑定为 generation105，没有创建新 Run、Task、工作树或开发轨。
