@@ -1027,3 +1027,32 @@ SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` 已在 `standards-backend` 普
 | `gofmt -l internal/adapters/httpapi/workbench_test.go`、`git diff --cached --check` | EXIT0，无输出 |
 
 完成范围为此同名 HTTP测试的完整真实替换；所有实际命令及退出码保存于 `commands-first.json`，没有重复本轮已成功的三件验证。原缺位、旧 Native unknown / stop / resume、进度七项替身、完成经验正向、完整 check / 默认、L1 / L2及最终包限制保持；后继 selected_text / capacity整改目前只获准只读分析。Probe、Native Start、模型、ASR、采集、Sleep、V4和共享64505操作均0。原 Task / Dispatch持续返修支持，尚未结算。
+
+## 选定文本实际组装前置 REPORT（2026-10-17）
+
+SOURCE `4bb5ec63b2af1c97959bda60cee1ba625a7a79ed` 已在 `standards-backend` 普通提交并 push，含 `[skip ci]`。模块 `msg_aacac43865b4` 批准仅新增 `cmd/server/selected_text_preflight_actual_test.go`，H 已核互斥；`msg_40101d9e3bc5` 准许在开始编辑前从 clean 的上一 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 快进消费准确 I `2ab520ad5c275f193270f3c23391451f397e7f3e`。实际祖先检查与 `git merge --ff-only` 均 EXIT0，本次 SOURCE 相对此准确 I 只新增324行测试；H 的目录 helper直接复用，没有复制。原两件 distillers 测试、已交付四件测试、生产 bridge、main、依赖、workflow及冻结范围均未编辑。
+
+`TestSelectedTextActualAssemblyPrerequisitesWithoutNative` 验证生产组装的前置边界。实际使用 `selectedTextBridge`、`SelectedTextFactory`、`NewLocalProjectService`、`ProjectFiles`、未 Probe 的 `NewRegistry`、自有 SQLite迁移及实际 loopback HTTP。人类身份来自生产 bootstrap / cookie / CSRF；同一身份通过 HTTP创建实际 ProjectSpace、注册当前公开工作树并修改、撤回模型许可，引用实际导入的固定版本。没有假 CLI、配置身份、processor、请求捕获器或手工模型响应。
+
+唯一论文输入为明确获准的本树 `.verification/paper-dom-actual-recovery.snapshot.json`，来源沿前文643/649记录及 `msg_fb26d83dae2c` 的准确指针。原 JSON59717 bytes，URL=`https://arxiv.org/html/2501.12948v1`、key=`arxiv:2501.12948`、observed_version=`v1`、readable_fulltext、truncated=false、正文57465 UTF-8 bytes。测试路径仅从显式 `ASTROCYTE_TEST_PUBLIC_PAPER_SNAPSHOT` 读取，仓库没有硬编码本机盘符或用户名；原文件只以读权限打开。cleanup在实际服务及数据库关闭后核原文件身份、大小、mtime和完整字节保持，最终通过。没有读取旧业务库、私人原件或凭据，也没有重新请求论文网页。
+
+最终通过同一生产 `core.ImportMaterial` 服务端口提交原 `paper_snapshot` JSON，再执行实际 `ProcessNextJob`，写入仅为新建 D自有 SQLite与 objects。随后通过实际 HTTP把该版本加入真实空间，`ReadProjectReference` 返回的实际 Ref / 来源 / provenance / 全文 / digest逐项核查，并与自有对象原字节及标准 SHA256一致；正文完整包含原快照正文。这部分验证固定引用及输入来源，没有把来源读取等同于模型完成。
+
+默认未同意外部模型时 Resolve返回 approval_required；HTTP明确同意 codex后实际 Resolve成功且项目空间准确。ConfigurationID返回 evidence_missing，携带完整实际公开来源的 Distill通过输入预检后同样由未探测的 Registry返回 evidence_missing。日志实际 caller prompt65109 bytes、完整 native wire65487 bytes、output limit131072 bytes；此输入小于128KiB，不声明已经验证论文与视频联合容量或真实超限来源。
+
+实际 HTTP撤回模型许可后，同一已解析 Distill和项目空间查询均再次返回 approval_required。测试调用者真实取消 context之后，Resolve / Distill均保留 `errors.Is(context.Canceled)`；处理器内部没有制造取消。正常 Shutdown实际 HTTP并关闭自有 SQLite后，先从同一已关闭连接的 PingContext取得原始关闭错误，再核 Resolve / Distill均保留该错误关系。每次失败前后真实 Registry观察全等、native目录为空、自有 objects条目保持，关闭前实际查询 local_agent_sessions=0；没有原生配置探测、会话启动、模型或输出。
+
+新结果仅为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-preflight/`，runner=`run.ps1`。显式测试输出根及 GOTMPDIR / TEMP / TMP均在本次 D目录，沿既有 D GOMODCACHE / GOCACHE，GOPROXY=off、GOMAXPROCS=2、GOFLAGS=-p=1；没有下载依赖或修改配置。
+
+| 实际命令 | 结果及 D原件 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextActualAssemblyPrerequisitesWithoutNative$'` | second恰好一项，EXIT0；`list-second.log` |
+| 同包 `-run '^TestSelectedTextActualAssemblyPrerequisitesWithoutNative$' -v -count=1 -timeout=1m` | 最终third为1 PASS / 0 SKIP，主项0.14秒、包1.250秒，EXIT0；`test-third.log` |
+| `go test -mod=readonly ./internal/adapters/distillers -run '^(TestPromptUTF8ExactCapacityAndOutputIndependent\|TestNativeEnvelopeIsPreflightedSeparatelyFromOutput)$' -v -count=1 -timeout=1m` | second为2 PASS / 0 SKIP，包0.858秒，EXIT0；明确字符串为纯函数参数，没有来源事实或模型结果声明；`pure-bounds-second.log` |
+| `go vet -mod=readonly ./cmd/server ./internal/adapters/distillers`；最终改动后 `go vet -mod=readonly ./cmd/server` | second与third分别EXIT0；`vet-second.log` / `vet-third.log` |
+| `go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-preflight/server-second.exe ./cmd/server` | second EXIT0；`build-second.log`，未启动产物；其后只改测试导入调用，没有重复构建 |
+| `gofmt -l cmd/server/selected_text_preflight_actual_test.go`、`git diff --cached --check` | EXIT0，无输出 |
+
+首轮list实际编译EXIT1，完整诊断保留于 `list-first.log` / `commands-first.json`：Distiller基础接口不公开 ProjectSpaceID，database/sql没有导出 ErrDBClosed。最终通过现有项目空间方法接口及实际闭库 PingContext错误验证，无生产修改。第二轮实际前置1 PASS / 0 SKIP，0.15秒、包1.914秒，当时获准公开快照通过本机合法材料导入 HTTP；最终服务端口路径改动后仅复验相关 cmd测试 / vet，第三轮整体EXIT0。`msg_3256d938f27e` / `msg_46a8c6bcd6f3` 明确此公开导入属于授权范围；记录未据此推断泄露或生产缺陷。各轮原命令、退出与时间保留于 commands-first / second / third.json。
+
+完成范围仅为新增实际组装前置覆盖。原 selectedProcessorStub、nativeBoundaryProcessor、capacityCaptureProcessor及原完整正向、非法响应、联合容量断言仍完整保留，本次未运行它们，也未加 Skip、删除覆盖或将其标为已替换。实际论文与视频联合大于128KiB保真、实际来源大于512KiB拒绝、真实推荐成功与 provenance、invented / scored / trailing模型响应拒绝仍 NOT_RUN；需要准确获准原件及真实原生结果，不能拼造、重复正文或手工返回模型输出。原缺位、Native unknown / stop / resume、进度七项替身、完成经验正向、完整默认 check / E2E、L1 / L2及最终包限制保持。Probe、Native Start、模型、ASR、采集、Sleep、正式 V4和共享64505操作均0。原 Task / Dispatch继续支持返修，后继范围按当前Release与规格事实源核查。
