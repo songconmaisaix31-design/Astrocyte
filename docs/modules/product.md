@@ -1,5 +1,23 @@
 # 产品模块执行与验收
 
+## 2026-10-17 02:57 Workbench 真实 HTTP 固定阶段
+
+原 B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` / 独立 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通 push，提交均含 `[skip ci]`；模块独核远端准确 REPORT 同值、原树 clean、限定差异检查 EXIT0。SOURCE 只修改 `internal/adapters/httpapi/workbench_test.go`，净新增 356 行 / 移除 40 行；REPORT 仅追加 `backend.md` 28 行。模块完整读取当前 396 行文件、独立报告及全部命令记录，已交根 `msg_81b4ceb2e3ff`；根 `msg_8577da3270b0` 完整独读后接受准确阶段并普通合唯一集成，仅运行本项真实 HTTP / GetEvent 及 httpapi vet，不重建或部署，也不重复前三项。
+
+同名 `TestWorkbenchUsesSharedSessionOriginAndErrorV1` 完整使用生产 Reader、EventRepository.GetEvent、实际 loopback HTTP Serve / Shutdown 和人类 bootstrap / cookie。原七路由 session、Origin、非法 page、HEAD、未知路径、非法百分号查询、ErrorV1、六字段与隐私断言保留；不使用 workbenchStub、手工 Event 或 PRIVATE_CANARY。唯一来源为已授权 Q 公开跨日发布 `snapshot-1711995690`，snapshot_at=`2026-10-14T18:48:42.2097174Z`；原独立 SQL 期望与原 SQLite 的 query_only=1 读取共同核 1316 个原 Git 事件。原 pointer / history / snapshot 仅读，并以原字节复制到全新 D 目标；来源和目标分开，源连接使用标准 SQLite 的 mode=ro / immutable=1 / query_only(1)。
+
+实际 HTTP 分别以 20 / 50 页长读完整事件及末尾空页，total / page / page_size / 顺序与每条六字段逐项等于独立原 SQL；1316 个 event_id 全部通过生产 GetEvent 定位原 origin / raw bytes 和事件字段，原始正文只在本机内存比较。七路由无 cookie 均 403、bootstrap 后均 200，准确 X-Snapshot-At 保持；原五错误边界准确。成功读取之后，正常关闭目标 GetEvent 连接，暂移本次自有 D snapshot，真实 Reader 返回 503 / provider_unavailable / ErrorV1，再恢复同一文件并读取 200；没有操作 Q 源文件。原 SQL 正常关闭之后，cleanup 核 pointer / history / snapshot 的身份、大小、mtime 与完整字节保持，实际全部通过。
+
+| 实际命令 | 准确结果 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/httpapi -list '^TestWorkbenchUsesSharedSessionOriginAndErrorV1$'` | 精确一项，EXIT0 |
+| 同包 `-run '^TestWorkbenchUsesSharedSessionOriginAndErrorV1$' -v -count=1 -timeout=1m` | 首次主项 1 PASS / 0 SKIP，1.18 秒 / 包 2.384 秒，EXIT0 |
+| `go vet -mod=readonly ./internal/adapters/httpapi` | EXIT0 |
+| `go build -mod=readonly -o <本次D根>/server-first.exe ./cmd/server` | EXIT0，未启动产物 |
+| 源码格式、`git diff --cached --check` 及模块限定差异检查 | EXIT0 |
+
+本机原件为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/workbench-http/` 的 `commands-first.json`、`list-first.log` / `test-first.log` / `vet-first.log` / `build-first.log`；实际 runner 整体 EXIT0 按 B 本人工具回执登记。未重新采集、Sleep、Probe、Native Start、调用模型或操作共享 64505。先前三件返修及本次 HTTP 文件交集成后冻结，原 B 同 Task / Dispatch / 树 / 分支持续后继 selected_text / capacity 的只读精确设计；其代码修改尚未授权，不复制私有 production Bridge。旧省略槽、原 Native unknown / stop / resume、原七项进度替身、完成经验正向、完整默认 / check、L1 / L2 与最终包均未因此通过，产品模块保持发布支持。
+
 ## 2026-10-17 02:41 默认 CI 失败归因与原 B 返修计划
 
 根 `msg_9fa9a426f12c` / `msg_30d419ed7f10` 要求保留准确默认 CI 失败，并继续定位可独立修复的问题。产品模块分支实际 `gh run list` 的 in_progress / queued 均为空，本轮管理提交均使用 `[skip ci]`；不使用历史 CI 绿灯代表当前通过。原 B 准确 SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` 的 run `38947301976` 与 REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 的 run `38947405402` 均已 completed / failure / attempt1，双平台失败步骤均为 Run pnpm check，无在途运行需要 cancel，没有 rerun。B 本人保存 before / after metadata 与四件首 attempt 日志，安全结果 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/ci-exact-2b96-a6f8/snapshot-first/summary-safe.json` 已由模块完整读取；日志下载均 EXIT0，大小分别为 136110 / 128798 / 134280 / 126510 bytes。
@@ -32,7 +50,7 @@ B 本人 `msg_dc1b0c6e49e7` 已核准确 `4b4ec3b26c276d707cbea81e7207dbce9d7582
 
 原 B 先固定上述四件返修 SOURCE / REPORT，再将 `internal/adapters/httpapi/workbench_test.go` 加入同一 Task 的后继精确写域，`backend.md` 继续归 B；本阶段不修改生产 Reader、H 胶水、Q 或冻结核心。复用已授权公开 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/cross-day-20261015-0228/local`，先核原 Q 报告、实际事件库和安全独立 SQL 期望，源只读、新输出为 D 专属目录，不读取 V4 / 私人快照。通过真实 Reader、SQLite 与实际 HTTP 保留共享 session、Origin、ErrorV1、隐私和六字段断言，并核真实 GetEvent / 分页；错误路径须有实际来源或服务生命周期，不能手工返回错误、伪造 Event、用静态响应或空目录代替已成功来源的失败验证。
 
-不新采集、Sleep、Probe、Native 或模型，不删除旧等效覆盖、不新增 Skip；本后继全部提交继续 `[skip ci]`，实际定向验证通过及普通 SOURCE / 独立 REPORT 齐备后再交唯一集成。当前尚未实施这单文件，不登记为 HTTP 通过。
+不新采集、Sleep、Probe、Native 或模型，不删除旧等效覆盖、不新增 Skip；本后继全部提交继续 `[skip ci]`，实际定向验证通过及普通 SOURCE / 独立 REPORT 齐备后交唯一集成。该单文件的最终真实结果与准确提交记录于本文件 02:57 固定阶段。
 
 ### 02:49 三项定向验证与固定源码审阅
 
