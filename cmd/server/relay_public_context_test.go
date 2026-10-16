@@ -24,11 +24,11 @@ import (
 // 使用本仓库公开文件建立独立 Git 项目，所有授权和读取均经过真实 SQLite 服务。
 func TestRelayPublicContextActualGitSQLite(t *testing.T) {
 	ctx := context.Background()
-	local := t.TempDir()
+	local := relayActualTestDirectory(t)
 	t.Setenv("LOCALAPPDATA", local)
 	access, err := relayRoot()
 	if err != nil {
-		t.Fatal("独立接入根不可用")
+		relayActualTestFailure(t, local, "独立接入根不可用", err, map[string]string{"stage": "relayRoot"})
 	}
 	root := filepath.Join(access, "verification", "public-context")
 	if err := os.MkdirAll(root, 0700); err != nil {

@@ -16,6 +16,27 @@
 
 本轮生产经验装配已随 c5 进入当前普通服务；真实采用来源、合法完成来源与模型生成正向仍未运行。完整 check / 默认、L1 / L2 和最终 Windows 包仍未完成；根报告 C 盘空余约5.5GB，最终包低于10GiB守卫，本次普通 D 服务更新独立获准，未执行最终包或 Release。
 
+## 2026-10-17 四项真实检查的目录前置
+
+SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` 已普通 push，分支保持 `songconmaisaix31-design/works-relay-http`。根与模块通过 `msg_07ae23e35367` / `msg_1bf222b45830` 限定本阶段只修改三个 H 测试文件，并新增 `relay_test_output_test.go`。新增 helper 在明确 `ASTROCYTE_TEST_OUTPUT_ROOT` 下创建自有目录；该配置必须为绝对目录，无效配置或文件系统错误立即失败。未配置时使用仓库已忽略的 `dist/relay-actual`。真实创建独占目录后，以 `filepath.EvalSymlinks` 取得物理路径，核 `os.SameFile`，再供本测试设置可信配置；不捕获错误换目录。
+
+三个测试文件原有四项检查和全部成功、非法配置、真实数据库 / 快照同文件别名拒绝断言保持。生产 `relay_config.go`、`workbench_config.go`、来源身份与权限保护均未修改。每个自有目录的 `directory.json` 保留实际请求路径、物理路径和身份结果；相应失败的底层 error、错误类型与必要路径差异只写该目录的 `failure.json`，测试输出只含固定文案、错误类型和布尔结果。没有创建原生来源或替代模型输出。
+
+本次实际选择器为 `^(TestRelayJudgmentProductionAssemblyActualSQLiteHTTP|TestRelayHumanAdmissionsWithoutJudgmentSnapshotsActualSQLiteHTTP|TestRelayPublicContextActualGitSQLite|TestRelayReaderRootActualDirectoriesAndDatabaseAliases)$`。使用原 H 独占 D 进程目录，`ASTROCYTE_TEST_OUTPUT_ROOT` 指向本次 `process-20261016/verification/ci-directory-current`，GOMAXPROCS=2、Go `-p=1`、全部缓存和临时目录保持 D。
+
+| 实际命令 / 检查 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./cmd/server -list <上述完整选择器>` | 恰好4项，EXIT0，`list-first.log` |
+| `go test -mod=readonly -p=1 ./cmd/server -run <上述完整选择器> -count=1 -v -timeout=120s` | 最终4 PASS / 0 Skip，依次1.33 / 0.16 / 0.90 / 0.03秒，package3.593秒，EXIT0，`test-final.log`；真实目录、Git、SQLite / HTTP 及实际同文件拒绝 |
+| `go vet -mod=readonly -p=1 ./cmd/server` | EXIT0，`vet-first.log` |
+| 四件 Go 文件 `gofmt -l`、`git diff --check` | 无输出，EXIT0 |
+
+上述原件均在本次 `ci-directory-current/`。首次四项通过的 `test-first.log` 保留，package4.287秒；按根要求增加本机底层失败原件后，取得表中最终结果。源码与独立报告均使用 `[skip ci]`，没有启动仍含既有替身的默认 workflow，也没有改 workflow、Skip 或原断言。
+
+准确4b4首 CI 原件表明：Windows 上两项空 Relay 装配、公开上下文接入根与独立认知根检查失败，均发生在任何原生调用前；Ubuntu 上这四项未失败。原 CI 没有保留底层错误或实际临时目录差异，8.3、大小写与规范路径差异仍为候选，具体原因保持 UNKNOWN。本阶段正确的物理目录前置与实际 D 通过分别记录，不能据此登记原 Windows CI 已修复或完整 CI 已通过。
+
+同一原件中的 `TestRelayPersistentRealHTTPReceiptsMutexAndRestart` 在两平台均因 `/events/reconcile` 返回403 / `approval_required` 失败。只读代码定位确认 `relay_runtime_http_test.go` 的项目 AllowedActions 没有 `reconcile`，该检查却期待事件对账200；原 `RelayService.ReconcileEvents` 明确要求独立 `reconcile` 权限，生产拒绝保持。该旧检查还使用自定义 driver、workspace、sink 和伪造的 native 身份 / 开始事件，本阶段没有运行、增加权限或修改原 R 语义，准确发现已通过 `msg_ea48ea57e6cf` 交模块。当前 c5 / PID30420、普通服务终端及其外层 UNKNOWN 保持，真实原生、完整默认 / check、L1 / L2 和最终包继续未通过。
+
 ## 2026-10-17 02:20 恢复与经验 Interpreter 装配
 
 本次恢复时服务实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，原 PID44080，启动 UTC `2026-10-16T18:20:54.4306224Z`，地址为 `http://127.0.0.1:64505/`。原 H 保持同一 Task `task_3004b636a3ab`、当前 Dispatch `ctx_ad637376ba1d`、原工作树和分支；本轮实际客户端为 Orca Codex / `gpt-6.1-sol` / xhigh。普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 使用 `pwsh -NoProfile -NoExit` 持有原恢复脚本启动的 Hidden 产品进程，恢复完成后已回到普通 PowerShell 提示符。模块与根分别独立核查准确程序、启动时间、唯一 owned loopback listener、health ok 及首页 HTTP200 / 562bytes；没有停止开发人员或服务来验证生命周期。44080已在上述 c5 更新中正常退出。
