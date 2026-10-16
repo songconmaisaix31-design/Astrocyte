@@ -12,12 +12,16 @@ import (
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/agents"
@@ -319,4 +323,239 @@ func TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative(t *testin
 		t.Fatal(err)
 	}
 	t.Logf("实际新人工双源正文=%d UTF-8 bytes，生产prompt=%d、wire=%d、output=%d；仅容量/配置前置，完整prompt内容保真、模型接受及真实超限来源 NOT_RUN", total, observation.Prompt, observation.Wire, observation.Output)
+}
+
+func TestSelectedTextCapacityActualGitDocumentsOversize(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if !filepath.IsAbs(os.Getenv("ASTROCYTE_TEST_OUTPUT_ROOT")) {
+		t.Fatal("实际Git文档超限检查需要明确自有输出绝对目录")
+	}
+	commit := os.Getenv("ASTROCYTE_TEST_CAPACITY_PUBLIC_COMMIT")
+	decoded, err := hex.DecodeString(commit)
+	if err != nil || len(decoded) != 20 || len(commit) != 40 {
+		t.Fatal("必须明确选择准确已push的完整公开Git commit")
+	}
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, err = agents.CanonicalRoot(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gitPath, err := exec.LookPath("git")
+	if err != nil {
+		t.Fatal(err)
+	}
+	gitRead := func(input []byte, args ...string) []byte {
+		t.Helper()
+		command := exec.CommandContext(ctx, gitPath, args...)
+		command.Dir, command.Stdin = root, bytes.NewReader(input)
+		output, err := command.Output()
+		if err != nil {
+			var failure *exec.ExitError
+			if errors.As(err, &failure) {
+				t.Fatalf("实际Git只读命令失败：%v；stderr=%s", err, failure.Stderr)
+			}
+			t.Fatal(err)
+		}
+		return output
+	}
+	if strings.TrimSpace(string(gitRead(nil, "rev-parse", "--verify", commit+"^{commit}"))) != commit || strings.TrimSpace(string(gitRead(nil, "cat-file", "-t", commit))) != "commit" {
+		t.Fatal("固定公开Git commit身份不符")
+	}
+	documents := []struct {
+		path string
+		size int
+	}{
+		{"STATUS.md", 209211},
+		{"docs/standards/backend.md", 230066},
+		{"HANDOFF.md", 78620},
+		{"docs/SPEC.md", 60277},
+	}
+	bodies := make([][]byte, len(documents))
+	blobs := make([]string, len(documents))
+	total := 0
+	for i, document := range documents {
+		blobs[i] = strings.TrimSpace(string(gitRead(nil, "rev-parse", "--verify", commit+":"+document.path)))
+		if strings.TrimSpace(string(gitRead(nil, "cat-file", "-t", blobs[i]))) != "blob" {
+			t.Fatal("固定文档没有实际Git blob身份", document.path)
+		}
+		size, err := strconv.Atoi(strings.TrimSpace(string(gitRead(nil, "cat-file", "-s", blobs[i]))))
+		if err != nil || size != document.size {
+			t.Fatal("固定公开文档的真实Git大小不符", document.path, err)
+		}
+		bodies[i] = gitRead(nil, "cat-file", "blob", blobs[i])
+		if len(bodies[i]) != size || !utf8.Valid(bodies[i]) || strings.TrimSpace(string(gitRead(bodies[i], "hash-object", "--no-filters", "--stdin"))) != blobs[i] {
+			t.Fatal("固定公开文档的完整UTF-8原bytes或Git blob不符", document.path)
+		}
+		total += size
+	}
+	if total != 578174 || total <= 512*1024 {
+		t.Fatal("四份不同真实Git文档的自然总量未超过512KiB")
+	}
+	directory := relayActualTestDirectory(t)
+	db, err := sqlite.Open(filepath.Join(directory, "state.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Error(err)
+		}
+	})
+	if err := db.RunMigrations(ctx, migrations.FS); err != nil {
+		t.Fatal(err)
+	}
+	store, err := objects.New(filepath.Join(directory, "objects"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	nativeRoot := filepath.Join(directory, "unused-native")
+	if err := os.Mkdir(nativeRoot, 0700); err != nil {
+		t.Fatal(err)
+	}
+	registry := agents.NewRegistry(nativeRoot)
+	baseline, err := registry.SnapshotNative(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	core := attention.NewAttentionService(sqlite.NewAttentionRepository(db), importers.NewReader(nil), store, attention.ServiceOptions{})
+	projects := workspace.NewLocalProjectService(db, &projectReferenceBridge{attention: core}, agents.ProjectFiles{}, registry)
+	server := httpapi.NewServer(httpapi.Config{
+		Logger:   slog.New(slog.NewTextHandler(io.Discard, nil)),
+		Services: httpapi.Services{LocalProjects: projects, Attention: core},
+	})
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan error, 1)
+	go func() { done <- server.Serve(listener) }()
+	stopped := false
+	stop := func() {
+		if stopped {
+			return
+		}
+		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := server.Shutdown(shutdown); err != nil {
+			t.Fatal(err)
+		}
+		if err := <-done; !errors.Is(err, http.ErrServerClosed) {
+			t.Fatal("实际文档超限HTTP服务没有正常退出", err)
+		}
+		stopped = true
+	}
+	t.Cleanup(stop)
+	client := &http.Client{Timeout: 5 * time.Second}
+	t.Cleanup(client.CloseIdleConnections)
+	response, err := client.Get("http://" + listener.Addr().String() + "/api/v1/auth/session")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var session struct {
+		ID   string `json:"actor_id"`
+		Kind string `json:"actor_kind"`
+		CSRF string `json:"csrf_token"`
+	}
+	decodeErr := json.NewDecoder(response.Body).Decode(&session)
+	if err := errors.Join(decodeErr, response.Body.Close()); err != nil || response.StatusCode != http.StatusOK || session.ID == "" || session.Kind != "human" || session.CSRF == "" || len(response.Cookies()) == 0 {
+		t.Fatal("实际bootstrap没有产生完整人类身份", err)
+	}
+	human := attention.Principal{ID: session.ID, Kind: session.Kind}
+	caller := domain.Caller{ID: session.ID, Kind: session.Kind}
+	meta := func() attention.CommandMeta {
+		return attention.CommandMeta{SchemaVersion: 1, RequestID: uuid.NewString(), IdempotencyKey: uuid.NewString(), ExpectedVersion: 1}
+	}
+	space, err := core.CreateProjectSpace(ctx, human, attention.ProjectSpaceCommand{CommandMeta: meta(), Title: "固定公开Git文档实际超限前置"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	project, err := projects.RegisterProject(ctx, caller, domain.RegisterProjectCommand{Name: "实际公开文档输入许可", Root: root, SpaceID: space.Space.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings := project.Settings
+	settings.ExternalModelCLI = "codex"
+	project, err = projects.SetProjectSettings(ctx, caller, project.ID, domain.SettingsCommand{ExpectedRevision: project.Settings.Revision, Settings: settings})
+	if err != nil || project.Settings.ExternalModelCLI != "codex" || project.Settings.AllowDirectory || project.Settings.AllowAgentControl || len(project.Settings.AllowedTools) != 0 {
+		t.Fatal("真实公开项目没有保留当前模型和工具范围", err)
+	}
+	inputs := make([]attention.SourceSnapshot, 0, len(documents))
+	for i, document := range documents {
+		locator, err := url.JoinPath("https://github.com/songconmaisaix31-design/Astrocyte/blob", commit, document.path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		started := time.Now().UTC()
+		// 四份各一次的真实公开Git文档，file分类及manual来源不声明论文或视频。
+		imported, err := core.ImportMaterial(ctx, human, attention.ImportMaterialCommand{CommandMeta: meta(), Kind: "file", Adapter: "manual", Title: document.path, SourceLocator: locator, ExportText: string(bodies[i])})
+		if err != nil {
+			t.Fatal("真实Git文档不能经生产manual端口导入", err)
+		}
+		if processed, err := core.ProcessNextJob(ctx); err != nil || !processed {
+			t.Fatal("实际Git文档导入作业未执行", err)
+		}
+		job, err := core.GetJob(ctx, human, imported.JobID)
+		if err != nil || job.Status != "succeeded" || job.MaterialID == nil {
+			t.Fatal("实际Git文档没有生成新资料", err)
+		}
+		material, err := core.GetMaterial(ctx, human, *job.MaterialID)
+		if err != nil || material.Material.Kind != "file" || material.Material.SourceLocator != locator || material.Material.CurrentRevision != 1 || len(material.Revisions) != 1 {
+			t.Fatal("新Git文档的实际分类/URL/版本不符", err)
+		}
+		revision := material.Revisions[0]
+		sum := sha256.Sum256(bodies[i])
+		if revision.ContentDigest != hex.EncodeToString(sum[:]) || revision.CreatedAt.Before(started) || revision.CreatedAt.After(time.Now().UTC()) || revision.Provenance.Processor != "manual" || revision.Provenance.Mode != "manual" || revision.Provenance.Source != locator {
+			t.Fatal("新Git文档没有保留原bytes摘要和本次人工provenance")
+		}
+		ref := attention.SourceRef{MaterialID: material.Material.ID, Revision: 1, Locator: locator}
+		command := meta()
+		command.ExpectedVersion = space.Space.Version
+		space, err = core.ReferenceMaterial(ctx, human, project.SpaceID, attention.ReferenceMaterialCommand{CommandMeta: command, MaterialID: ref.MaterialID, Revision: ref.Revision})
+		if err != nil {
+			t.Fatal(err)
+		}
+		selected, err := core.ReadProjectReference(ctx, human, project.SpaceID, ref, false)
+		if err != nil || selected.Ref != ref || selected.Text != string(bodies[i]) || selected.ContentDigest != revision.ContentDigest || selected.Provenance != revision.Provenance {
+			t.Fatal("实际新固定引用没有保留完整Git文档", err)
+		}
+		inputs = append(inputs, selected)
+	}
+	bridge := &selectedTextBridge{projects: projects, processor: registry}
+	distiller, err := distillers.NewSelectedTextFactory(bridge, 30*time.Minute).Resolve(ctx, human, project.ID, "codex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = distiller.Distill(ctx, attention.DistillationInput{JobID: uuid.NewString(), OperationID: uuid.NewString(), Stage: "topic", Inputs: inputs})
+	var failure *apierrors.ServiceError
+	if !errors.As(err, &failure) || failure.Code != apierrors.ValidationFailed || failure.RequiredAction != "review_selected_text_size" {
+		t.Fatal("四份完整真实文档未被生产输入超限预检准确拒绝", err)
+	}
+	current, err := registry.SnapshotNative(ctx)
+	if err != nil || !reflect.DeepEqual(current, baseline) {
+		t.Fatal("实际超限预检改变了未探测Registry", err)
+	}
+	entries, err := os.ReadDir(nativeRoot)
+	if err != nil || len(entries) != 0 {
+		t.Fatal("实际超限拒绝创建了原生输入或控制器目录", err)
+	}
+	for table, expected := range map[string]int{"attention_jobs": 4, "attention_distillations": 0, "local_agent_sessions": 0} {
+		var count int
+		if err := db.Conn().QueryRowContext(ctx, "SELECT COUNT(*) FROM "+table).Scan(&count); err != nil || count != expected {
+			t.Fatal("真实文档超限检查增加了模型或原生记录", table, err)
+		}
+	}
+	stop()
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	for i, document := range documents {
+		if strings.TrimSpace(string(gitRead(nil, "rev-parse", "--verify", commit+":"+document.path))) != blobs[i] || !bytes.Equal(gitRead(nil, "cat-file", "blob", blobs[i]), bodies[i]) {
+			t.Fatal("固定commit的原Git blob或全bytes改变", document.path)
+		}
+	}
+	t.Logf("准确公开Git commit=%s，四份不同真实文档各一次，自然正文=%d bytes；实际新manual来源/Ref完整，生产ValidationFailed+review_selected_text_size，Native/模型0；未验证recommendation或模型响应", commit, total)
 }
