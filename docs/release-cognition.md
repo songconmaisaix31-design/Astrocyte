@@ -20,6 +20,26 @@
 
 公开来源认知、并发 WAL 备份与原生产 Reader 的实际结果见下列 REPORT。前端与发布包的组合验收归 F/P/I；正式 V4、旧私人历史、管理员 Procmon、两次真实跨日触发没有在本任务运行。
 
+## REPORT：2026-10-16 directory-alias fast-fail 整改
+
+分支 `songconmaisaix31-design/release-cognition-20261014`，基线 `f1110523c584aa7aa59ad07a05fc70cf88e138b7`。实际客户端 Claude Code / `qwen3.7-max`。根 `msg_e0be901882a5` 授权窄返修，经理 `msg_72aa5148db8b` 确认仅改 `cmd/workbench-snapshot/main_test.go` 的 `TestServerInitializedSnapshot/directory-alias` 与本文件，不执行采集/Sleep/重放/模型或历史重算。
+
+原 `directory-alias` 子测试先调用 `os.Symlink`，在 Windows 失败后才通过 PowerShell 创建 Junction 作为降级路径，违反 AGENTS.md 的 fast-fail 约束：错误发生位置必须立即失败，不捕获错误继续执行，不使用 fallback。修正为先按 `runtime.GOOS` 选择实际机制：Windows 直接创建 Junction，非 Windows 直接创建 Symlink；每个创建错误在位置直接 `t.Fatal`/`t.Fatalf`，不以一种机制的失败换取另一种机制的尝试。没有增加 skip、提升权限、削弱断言或修改生产保护代码、引擎、Clock、原数据或 parser。
+
+生产 `rejectAlias`（`files_windows.go`）通过 `GetFileAttributes` 检查 `FILE_ATTRIBUTE_REPARSE_POINT` 拒绝所有目的祖先的 Windows junction；`files_unix.go` 通过 `os.Lstat` 检查 `os.ModeSymlink` 拒绝 Unix symlink。本轮未修改这两个文件，拒绝行为保持原样。
+
+### 命令与结果
+
+```powershell
+gofmt -l cmd/workbench-snapshot/main_test.go   # 空输出，格式通过
+go vet ./cmd/workbench-snapshot/...             # 无错误
+go test -mod=readonly -count=1 -v ./cmd/workbench-snapshot/...
+```
+
+全套 7 个子测试 PASS（13.840s）：missing-source、source-in-root、missing-history、hardlink、directory-alias（0.35s，Windows Junction 创建并被生产代码拒绝）、expired、lock。`go build -trimpath -mod=readonly` 通过，`git diff --check` 通过。测试日志 `D:/Astrocyte-agent-assets/20261015/cognition-Q-alias/logs/`；GOCACHE 共享 `go-build/backend`，GOTMPDIR/TEMP/TMP 限定 `cognition-Q-alias` 独占目录，不改全局缓存。
+
+旧 Task 的跨日 collect、采集、重放、Sleep、模型调用和历史重算本轮一律不执行；独立 symlink OS1314 原未通过保留，Windows 真实 Junction 拒绝通过不计 symlink 通过。原五个 pub 指针、旧 DB、preSleep、历史和首 FAIL 原件保留不改。
+
 ## REPORT：2026-10-15 公开工程跨日更新
 
 实际客户端为 Orca Codex / `gpt-6.1-sol`。本轮基线 `6ad1dfa1387d5e6a0b81ac1b2ad2887359780658`，分支 `songconmaisaix31-design/release-cognition-20261014`；SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` 已普通 push，独立 `git ls-remote` 返回相同完整 SHA。本 REPORT 单独追加文档提交。
