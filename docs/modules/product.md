@@ -90,6 +90,10 @@ F唯一公共runner SOURCE `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` / REPORT `
 
 ### 本轮独立管理REPORT
 
+准确55条失败表SOURCE `25d5bf1a4b707a9e7b818a9f61a7740f0944283b` 与一小时结果、原开发客户端恢复SOURCE `e0b064500ebe65eb60b308ea47bb22ce224c97ff` 均仅修改本文件，普通push成功，模块独立 `git ls-remote` 核后者远端同值、工作区干净。B原结果JSON已按六个安全字段读取，full.log只读取验证字段及PASS行，没有输出token或原始资料。实际HTTP及服务层自然到期拒绝通过，启动壳EXIT仍UNKNOWN、新mjs功能NOT_RUN、旧八项fake progress整改未完成。原B开发终端当前再次实际Arrearage，模块已向根交两个原watch的精确PID、创建时间、路径和参数，未重复模型请求、重签或自行终止其他进程。
+
+F/UI均通过公开旧进程退出回执、实际新Codex TUI与本人ACK核实恢复，F准确55表、原失败日志及UI的真实生产快照helper缺口已交原写域。原UI s5 WIP副本保留在专属D目录；本人报告旧正向覆盖等效迁移，模块仍需独读新代码与实际浏览器结果，不据该报告登记通过。共享PLOS具体准入仍待根交用户回答，64505无新增业务操作或Native / 模型初始化。本次文档校验不替代默认E2E、完整check / build、其余核心功能及Windows x64包验收，模块持续处理后继返修和发布支持。
+
 本轮返修记录SOURCE `39cd0aeb364bef2794591577c5d23265d2de3253` 只修改本文件，`git diff --check` 通过并普通push。其后F报告 `f066854` 的strict实际日志 `.verification/dom-review-strict-64505.log` 已完整独读；实际观察包括明确确认框、禁用提交和零HTTP写入，没有重复浏览器操作或代答准入。F对junction使用Bash递归删除并吞错误的偏离已退回，模块只读核web的Playwright `index.mjs` 与实际pnpm包 `index.js` 仍存在、本人新建链接路径当前不存在；未执行任何删除、依赖修复或据此推定整个依赖树完整。根已另报告准确dac4537的Go格式、vet、模块校验和依赖检查全部EXIT0，116.2134755秒；该静态检查不替代默认或业务验收。
 
 SOURCE `d9145d2d3ecc007cf9722ba766012b86897bcafd` 只更新本文件，`git diff --check` 通过、普通push成功，独立 `git ls-remote` 核远端同值。模块实际读取B修复差异、独立核实际进程及脱敏签发字段、D盘SQLite文件存在和创建时间，未修改或复制数据库、读取token秘密或重启计时。F插件快照14项原日志已独读；根完整组合构建与准入、H同库ready均注明正式来源，没有由管理文档检查推定业务通过。
