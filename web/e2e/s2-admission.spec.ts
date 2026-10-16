@@ -37,7 +37,9 @@ test('实际准入固定候选与项目资料，原事件和草稿在撤销及�
     const response = await admittedHTTP;
     expect(response.status()).toBe(201);
     expect(response.request().postDataJSON()).toEqual(expectedBody);
-    expect(response.request().headers()['idempotency-key']).toEqual(expect.any(String));
+    const postedBody = response.request().postDataJSON() as AdmissionRequest;
+    expect(postedBody.request_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(response.request().headers()['idempotency-key']).toBe(postedBody.request_id);
     const saved = await response.json() as AdmissionResult;
     expect(saved.admission).toMatchObject({ opportunity_id: candidate.id, opportunity_revision: candidate.revision, opportunity_version: candidate.version, project_id: project.id, authority: 'human', status: 'active', version: 1, inputs: [{ kind: 'material', id: ref.material_id, revision: ref.revision }] });
     expect(saved.draft?.id).toBeTruthy();
@@ -45,7 +47,7 @@ test('实际准入固定候选与项目资料，原事件和草稿在撤销及�
       if (typeof row.data !== 'string') throw new Error('真实准入数据列没有返回 JSON 文本');
       return JSON.parse(row.data);
     })).toEqual([saved.admission]);
-    expect(server.query('SELECT id,type,correlation_id FROM attention_outbox WHERE id=?', saved.admission.admitted_event_id)).toEqual([{ id: saved.admission.admitted_event_id, type: 'attention.opportunity_admitted', correlation_id: expectedBody.request_id }]);
+    expect(server.query('SELECT id,type,correlation_id FROM attention_outbox WHERE id=?', saved.admission.admitted_event_id)).toEqual([{ id: saved.admission.admitted_event_id, type: 'attention.opportunity_admitted', correlation_id: postedBody.request_id }]);
     expect(server.query("SELECT id,json_extract(data,'$.status') AS status,json_extract(data,'$.content.scope.project_id') AS project_id FROM workspace_proposals WHERE id=?", saved.draft!.id)).toEqual([{ id: saved.draft!.id, status: 'draft', project_id: project.id }]);
     await expect(form.getByRole('region', { name: '已保存准入记录', exact: true })).toContainText(saved.admission.id);
     await expect(submit).toBeDisabled();
