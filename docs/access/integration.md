@@ -1,5 +1,20 @@
 # Works Relay integration report
 
+## 2026-10-16 根接管集成
+
+按用户“继续集成，集成交给你了”，根在原 `works-relay-integration`、原 `songconmaisaix31-design/works-relay-integration` 分支直接负责普通合并、检查与提交。原 I 两次 Codex 启动在 `account/read` 路由发现超时后实际退出，失败原件保留；没有替代 Task / Run 或活跃 I 写入者。领域业务修改继续由原作者完成。本节为当前集成入口，后续章节保留各阶段准确来源和结果。
+
+从干净 `38fb289160ef85f75062f917e861488b95e2a309` 普通合并以下准确提交，均无冲突：T REPORT `149b5261f52e5a33a2172241ce2089ae12fbbcb3`（SOURCE `5d701bdd7f4d6696a1f730f21c47f84d222dd6cd`）、H REPORT `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4`、H 运行恢复 REPORT `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`、B REPORT `9fa97efe8208de85a2251f1ea01008c79ad04945`（SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec`）。领域未提交修改均未复制。
+
+| 准确组合与命令 | 实际结果 |
+|---|---|
+| `7120a207ee6da0923262bbc6347661d92ac7b285`：`go test -mod=readonly -p=1 ./tests/s1 -run '^TestProductionCompletionHTTPMissingSourceSurvivesProcessRestart$' -count=1 -v -timeout=15m` | EXIT0，真实生产入口、HTTP、SQLite、实际关闭和重启；来源缺失返回404，原数据库与 Relay store 保持、原生会话和经验记录为零。单项20.73秒，包21.679秒；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-completion-7120a20/completion.log`。仅验证真实拒绝和持久化，不作为 Interpreter 正向结果。 |
+| `f9453c455e13b412e7af252b60e313552d17ec6f`：`go test -mod=readonly -p=1 -tags=repository_context_live ./cmd/server -run '^(TestListingPythonExplicitInputsFailAtConfiguration\|TestListingPythonUnconfiguredCapabilityRemainsAbsent\|TestVideoSourceConfigActualInstalledTools)$' -count=1 -v -timeout=3m` | EXIT0，三主项、七项显式无效配置子项通过，包2.000秒。使用原 B 真实媒体配置构造生产 Reader、核实际 Python 路径和显式禁用状态，未执行提取、ASR、模型或共享业务操作。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-media-f9453c4/media.log`。 |
+
+两次检查前后源码相同，子进程缓存、空身份目录和输出均在 D 盘；`git diff --check` 通过。实际共享服务仍使用 H 的准确 `38fb289` 稳定副本、原 SQLite 和 `http://127.0.0.1:64505/`，上述后继检查不声明运行实例已更新。原 `38fb289` 完整构建成功记录保持；本阶段尚未执行后继完整构建、完整适用检查和最终发布包。
+
+P 的准确准备 REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a` 已完成只读合并预检查，实际冲突为 `HANDOFF.md`、`STATUS.md`，尚未实际合并。发布入口的 S4 / S5 显式配置、C 盘空间守卫及 Q 源码祖先仍须处理。Native 权限、语言、具体候选批准及其他用户待定项按根当前交接与 QUESTIONS 保持。
+
 ## 2026-10-16 普通产品集成与构建
 
 本阶段沿根 04:04 HANDOFF / STATUS、发布模块 04:08 计划及当前经理消息执行。唯一 I 为 Task `task_2ee44933df72` / Dispatch `ctx_4a4234c26f8c` / 终端 `term_9f0b076a-c973-4c86-b073-2c17640750e9`，公开终端核实客户端 Codex / GPT-6.1-Sol xhigh fast。固定工作树 `works-relay-integration`、分支 `songconmaisaix31-design/works-relay-integration`，接管准确 HEAD `8b0eb882969d972f3f419602c12b5e20f00b79e2`，工作区干净。当前优先同一普通产品运行及核心操作；完整默认、L1 / L2 和最终发布继续按实际结果验收。
