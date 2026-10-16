@@ -800,3 +800,9 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 首次本机 build runner 在 PowerShell 5.1 路径方法处 EXIT 1，尚未调用 Go，原件为 `build-script-first-failure.log`。`actual-first` 在 Go 测试参数解析处启动壳 EXIT 1，二进制自身 EXIT 未记录，保持 UNKNOWN；该轮没有创建目标库或 HTTP，原件为 `launch-first-failure.log`。`actual-second` 的进度 HTTP / 同库重启主项 PASS 180.20 秒、实际 EXIT 0，源 / 目标保持，未向 F 开放；后继补齐当前页面必要的现有生产读取服务后才创建最终实例，早期产物均原位保留。
 
 `effective_tool_set` 和 `original_source_completeness` 保持 unknown。该派生展示不构成新的原生成功或工具关闭证明，H / R 的 26 项与视频一项由原 owner 继续；原八项替身测试和已验安全流程未重跑。真实一小时 HTTP / 服务拒绝沿根已核的原 `88dc9e5` 结果保留，原启动壳 EXIT 保持 UNKNOWN，本阶段未重跑。完整产品、默认套件、L1 / L2 与发布包未在本阶段验收，未发布 GitHub Release，本阶段不发送 worker_done。
+
+## 页面读取服务来源说明 REPORT（2026-10-17）
+
+注释 SOURCE `852d7ec1a0583ac501f42fa58a3ae8e404ab11ba` 已普通提交并 push，仅将专用 helper 的一行注释写为“核查当前页面所用既有生产服务响应”，无行为差异。`gofmt -l internal/adapters/sqlite/public_progress_projection_actual_test.go` 和 `git diff --check` 均 EXIT 0、无输出。本次未运行功能、HTTP、模型或新的托管窗口；实际运行 SOURCE 保持 `fc6131791c7e287f45ed113892a95ac29fd07b2f`，原 `actual-third` PASS 705.19 秒 / EXIT 0、已退出进程及 REPORT `929db142052079beaa809702a2738dbbee18c777` 与原件保持。
+
+helper 中与 main 相同的 `NewProjectService`、`NewProposalService`、`NewSessionService` 是既有 S0 兼容服务，其实现直接返回 `apierrors.EmptyList()`，不查询新自有 SQLite。`LocalProjectService`、`ProjectProgressService`、使用 `NewWorkspaceRepository(db)` 的 S2，以及使用 `NewAttentionRepository(db)` 的 Attention 才通过实际 SQLite 存储读取状态；其中固定项目与进度记录支持本阶段的 README 展示验收。该装配中的 `WorkspaceS2` 非空，`GET /api/v1/proposals` 由 S2 的 SQLite 路由响应，`NewProposalService` 保留为兼容配置；`GET /api/v1/projects` 与全局 `GET /api/v1/sessions` 使用 S0 兼容 EmptyList。上述页面 GET 的 200 仅记录既有服务的响应情况，不计为项目、提案、会话或其他产品功能通过；本阶段业务通过范围仍为原 README 进度两窗口展示与对应安全派生、同库 HTTP 重启检查。
