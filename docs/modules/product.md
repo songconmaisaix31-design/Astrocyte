@@ -47,11 +47,13 @@ F唯一公共runner SOURCE `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` / REPORT `
 
 ### F公共helper与UI实际后继
 
-F SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 已普通push，仅公共 `realService.ts` 两行，增加可选显式 `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID` 并传至既有启动helper，原relay参数及默认行为保持。完整tsc-b实际EXIT0。模块独读专属D目录 `helper-smoke-fourth.log`：正常模式真实HTTP快照、EnvironmentID / HEAD、SQLite原生会话0、EXIT0；Relay模式同一构造仍在核查，独立frontend.md报告待交。first / second通用CommandMeta导致真实400，third真实200后的SQLite空原型对象比较失败均保留；fourth仍严格核一行和count标量0，没有改schema或绕过响应契约。UI已收到准确SOURCE，当前执行退出后沿原树普通消费，不能把正常模式通过登记为Relay通过。
+F SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 已普通push，仅公共 `realService.ts` 两行，增加可选显式 `ASTROCYTE_REPOSITORY_ENVIRONMENT_ID` 并传至既有启动helper，原relay参数及默认行为保持。完整tsc-b实际EXIT0。模块独读专属D目录 `helper-smoke-fourth.log` 与 `helper-smoke-relay.log`：正常与Relay模式分别通过真实HTTP快照、EnvironmentID / HEAD、SQLite原生会话0，均EXIT0；独立仅frontend.md REPORT `b4bf44453436ba71ce0b88ef0f0e6a300d859d7f` 已普通push并核远端同值。first / second通用CommandMeta导致真实400，third真实200后的SQLite空原型对象比较失败均保留；fourth仍严格核一行和count标量0，没有改schema或绕过响应契约。该准确SOURCE / REPORT已正式交根唯一集成，UI沿原树普通消费为 `b639d37`。
 
 模块已独读UI `e2e-boundaries-second.log`：1920窗口的真实离线unknown跨页面卸载、重开、刷新仍锁定且零写入通过，真实403后的stale禁写、恢复读取通过；该轮409在构建阶段超时，整轮1 FAIL / 2 PASS、EXIT1。首轮409已到实际并发冲突和草稿保留，运行期间页面与已加载脚本不同导致后继核查等待超时，首RED保持。原作者已明确冻结在途测试源码，复用已存在D盘GOMODCACHE只改变后继进程环境，不重跑两项成功。完整Taste三题型、启停、Goal / Snapshot / Policy / Rule、判断反馈与同库重启仍待实际验收；类型及lint实际EXIT0依据本人工具回执，命令行日志本身不推定退出。
 
 后继同一1920窗口的409单项 `e2e-conflict-third.log` 已由模块独读，实际1 PASS、场景50.1秒、总57.2秒，本人工具回执EXIT0。三个边界场景分别通过，不能转写为同轮三项通过；1280与完整主链仍待验。UI已在所有在途检查退出后接续消费F helper准确SOURCE，不修改正在运行的源码。
+
+UI后继 `e2e-full-first.log` 已由模块独读：1920完整DOM主链实际1 PASS、场景47.9秒、总52.5秒，本人工具回执EXIT0。真实Relay构造及明确hostname环境下，Taste三题型及固定示例、v1创建 / v2停用 / v3启用、Goal / Snapshot / 完整Policy sources、Rule保存及active / paused、确定性rule判断与人工反馈、同库HTTP重启均通过；SQLite核Taste历史3、判断1、反馈1、原生会话0。共享64505零业务写。1280、真实历史资料版本边界、最终build及本次SOURCE / 独立REPORT尚未交付，保持待验，不将一次完整主链通过登记整个产品完成。
 
 原55项中Native runtime22、原事件只读2、会话计时2共26条，缺各自真实task / event / first-visible前置，已精确交M-relay；现有工具关闭未满足时不造confirm / send / stop等场景。既有README进度2条的历史公开指针是B树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite`、项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70`、原生 `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`，历史HTTP53863不能当当前活跃URL，原controller已停止且工具集合 / 来源完整性未知，禁止按旧ID恢复控制器或重推断。旧视频952位置1条与当前0时间证据分别登记，不新ASR或降低断言。余26条包含插件8条既有14 PASS，F继续其余18条及准确逐行来源映射。
 
@@ -118,6 +120,8 @@ F SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 已普通push，仅公共 `r
 | 302 | chromium-1280 | s2-proposals.spec.ts:255 | 人工拒绝提案且不授权 | 767 |
 
 ### 本轮独立管理REPORT
+
+管理SOURCE `b902413cc5704e5772e1e26c2536ec2fe60ef68f` 仅修改本文件，`git diff --check` 通过、普通push成功，模块独立核远端同值。B旧八项真实前置映射及watch实际停止来源已交根和M-relay，未运行替身、恢复原生或请求欠费模型。F helper精确SOURCE375及独立REPORTb4bf均已独读并核普通远端，两个模式真实构造通过；UI三个1920边界分别通过、1920完整主链另行通过均按原日志和本人工具回执登记，原失败保留。后继1280、固定历史版本、默认其他失败与完整包仍待验，模块持续返修，未发送worker_done或发布Release。
 
 准确55条失败表SOURCE `25d5bf1a4b707a9e7b818a9f61a7740f0944283b` 与一小时结果、原开发客户端恢复SOURCE `e0b064500ebe65eb60b308ea47bb22ce224c97ff` 均仅修改本文件，普通push成功，模块独立 `git ls-remote` 核后者远端同值、工作区干净。B原结果JSON已按六个安全字段读取，full.log只读取验证字段及PASS行，没有输出token或原始资料。实际HTTP及服务层自然到期拒绝通过，启动壳EXIT仍UNKNOWN、新mjs功能NOT_RUN、旧八项fake progress整改未完成。原B开发终端当前再次实际Arrearage，模块已向根交两个原watch的精确PID、创建时间、路径和参数，未重复模型请求、重签或自行终止其他进程。
 
