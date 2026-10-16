@@ -11,7 +11,7 @@ export type RuleCommand = paths['/local-projects/{project_id}/delegation-rules/{
 export type RuleStateCommand = paths['/local-projects/{project_id}/delegation-rules/{rule_id}/state']['post']['requestBody']['content']['application/json'];
 export type RuleEvaluationCommand = paths['/local-projects/{project_id}/delegation-rules/{rule_id}/judgments']['post']['requestBody']['content']['application/json'];
 export type AdmissionCommand = paths['/local-projects/{project_id}/judgments/{decision_id}/admissions']['post']['requestBody']['content']['application/json'];
-export type JudgmentCommand = paths['/local-projects/{project_id}/judgments']['post']['requestBody']['content']['application/json'];
+export type JudgmentCommand = Omit<paths['/local-projects/{project_id}/judgments']['post']['requestBody']['content']['application/json'], 'context'>;
 
 async function unwrap<T>(request: Promise<{ data?: T; error?: ApiErrorBody; response: Response }>): Promise<T> {
   const { data, error, response } = await request;
