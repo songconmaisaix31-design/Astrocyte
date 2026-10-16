@@ -1,5 +1,59 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 PLOS 候选真实浏览器 DOM 只读审阅（64505 运行中服务）
+
+SOURCE `7b0441c`：消费 UI self-service.config WIP 一行 `s5-*.spec.ts` testMatch 增加，原 s2/s3/s4/progress 保留不删。`pnpm --dir web exec tsc -b` EXIT0。独立 SOURCE push 交 UI `ctx_5d4bbae2a28d`，不让 UI 公共配置 WIP 直接供根合。
+
+针对 852a149 只含 GET API 调用不足以证明 DOM 可见性的问题，使用 Playwright（chromium headless，1280×720）对 64505 运行中服务做真实浏览器只读审阅。脚本为一次性 Node.js 脚本（已清理，不保留），零截图、零视频、零模型调用。
+
+**Session 自动建立**：浏览器导航到 `http://127.0.0.1:64505/attention` 后，SPA 自动调用 `GET /api/v1/auth/session` 建立会话。无需人工注入 cookie 或 token。
+
+**完整 DOM 证据**（第二轮，点击候选卡片后）：
+
+- **候选详情对话框**：`role="dialog" name="机会详情"`，实际可见
+- **标题**：`公开论文固定摘要的候选复核`
+- **状态**：`◷待审核`
+- **候选 ID / 版本**：`QILUA3J6WINYVSRKX3CU6FA35A · r2 · v3`（DOM 文本中明确出现）
+- **用途**：`保留当前公开摘要及固定版本，在人工审阅后核查资料与本项目的实际适用性。`
+- **四维评估**：全部 `未知 · 尚未进行实际任务和效果评估。`
+- **证据引用**：`https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514 · 资料 TN3CEEE5ELGKZBSKY2RIEUW7OH · v1`
+- **关联目标**：`46a1b8e5-583c-4df0-921a-46ef83660d8a`
+- **缺失依据**：`人工暂缓记录已保存；实际任务、模型处理与独立效果证据仍未产生。`
+- **人工反馈历史**：`以后再做 · r1 · 2026/10/16 04:31 — 当前只保存公开来源候选，实际适用性和效果仍待后续核查。`
+- **准入表单区域**：`role="region" name="资料人工准入"`，实际可见
+- **项目选择器**：3 个选项 `["请明确选择项目归属…", "暂不分配项目，仅生成未分配草稿", "同实例公开前端项目"]`
+- **选择项目**：`98389066-5e5a-4e82-982b-deab3e005273`（`同实例公开前端项目`），selectOption 成功
+- **选择后 DOM 更新**：
+  - `准入项目 同实例公开前端项目 · 98389066-5e5a-4e82-982b-deab3e005273`
+  - `当前项目权限 r2 · 目录读取 已允许 · 子路径 web/src/pages/workspace/proposals · 动作 read_context · 工具 无 · 模型客户端 未许可 · Agent 控制 未允许`
+  - `项目固定资料引用：本候选全部固定版本已在项目空间主动引用`
+- **准备按钮**：`准备人工准入请求`，visible=true，**disabled=false**（项目选择后启用）
+- **确认复选框**：visible=false，checked=false（**未勾选**，需先点击准备按钮后才显示）
+- **提交按钮**：visible=false（需勾选确认后才显示）
+
+**网络审计**：总计 15 次 API 调用，全部 GET，零非 GET 请求。访问路径：
+
+| 路径 | 说明 |
+| --- | --- |
+| GET /api/v1/auth/session | 会话自动建立 |
+| GET /api/v1/foundation | 基础配置 |
+| GET /api/v1/projects | 项目列表 |
+| GET /api/v1/tracking-sources | 来源追踪 |
+| GET /api/v1/jobs | 作业队列 |
+| GET /api/v1/attention-ranking-profile | 排序配置 |
+| GET /api/v1/project-spaces | 项目空间 |
+| GET /api/v1/local-projects | 本地项目 |
+| GET /api/v1/materials | 素材列表 |
+| GET /api/v1/opportunities | 候选列表 |
+| GET /api/v1/material-domains | 资料域 |
+| GET /api/v1/opportunities/QILUA3J6WINYVSRKX3CU6FA35A | 点击后加载候选详情 |
+| GET /api/v1/distillations | 候选关联提炼 |
+| GET /api/v1/project-spaces/NMBN6FPBX3MX2RNFSJWHYAPICB | 项目空间引用检查 |
+
+**实际模型**：UNKNOWN（provider.model 为空，客户端为 Claude Code 2.1.238）。
+
+**结论**：PLOS 候选 `QILUA3J6WINYVSRKX3CU6FA35A` 在 64505 真实浏览器中完整渲染，候选详情、项目选择、权限显示、固定资料引用状态和准备按钮均实际可见。准备按钮在项目选择后启用。确认复选框和提交按钮在未点击准备前不可见。零非 GET 网络请求。等待根具体准入选择。
+
 ## 2026-10-16 原 F 域失败组实际复验与 PLOS 候选只读审阅
 
 类型桥接 SOURCE `c546f2a`（cherry-pick `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`）已普通 push。两行修改：`s2-admission.spec.ts` 的 `expectedBody` 去除 `AdmissionRequest` DTO 类型注解（`expect.any(String)` 与 strict string 不兼容），`judgmentApi.ts` 的 `JudgmentCommand` 增加 `Omit<..., 'context'>`。`pnpm --dir web typecheck`（`tsc -b`）EXIT0。
