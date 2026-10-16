@@ -765,3 +765,38 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 原 Go 进程在途运行不受源码迁移影响；不盲目启动第二个到期进程。到期验证完成后方可计为 PASS。当前 8 项已验测试（含 token 签发）已 PASS。
 
 前序首 RED（PID 664 首次启动因 D 盘目录不存在失败）保留于旧日志。PID 12768 为修正后成功启动。
+
+## 公开 README 既有进度的派生托管 REPORT（2026-10-17）
+
+本阶段沿原 `task_7b4e93c1a3c1` / `ctx_43100892f5f5` / `standards-backend` 执行，实际客户端为 Codex 0.162.0、GPT-6.1-Sol xhigh fast，属于 context-only / unsupervised 续行。SOURCE `de82234371c22eb93ab658efd38fa99fa2062ac8` 和后继 `fc6131791c7e287f45ed113892a95ac29fd07b2f` 已普通提交并 push；本 B 分支的生产代码、共享服务和前端文件均未修改。
+
+仓库 helper 通过显式路径参数读取既有公开结果，复用平台逐分量 reparse 检查与标准 URL / JSON / SQLite 库；准确源、D 盘 owned root、全新 target 和 release 身份仅由本机 D 盘 runner 固定。托管入口使用 `public_progress_live` build tag，默认测试发现不包含长时间托管窗口，没有新增 Skip。
+
+唯一源为本树 `.verification/astrocyte-s1-opvXPA/data/state.sqlite`，只用 `mode=ro` / `query_only(ON)` 读取项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70` 的项目元数据和既有进度。原 `native_id=01a13a73-1de2-7761-aaa3-5cbd8fb433cc`、模型 `gpt-6.1-sol`、状态、摘要、完成度、观察时间、一项 evidence 和一项原 accepted operation 保持；原进度 revision 为 3，新库本地 CAS revision 从 1 开始，项目原 JSON / metadata revision 保持。目标是新自有库中的派生展示，未创建新的推断收据、原生事件或会话；没有读取或复制源 Grant、Session、其他项目或原生原档。
+
+本机产物根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/`。最终目标为 `actual-third/public-readme-projection/state.sqlite`，migrations 仅在这个全新普通目录执行。生产 `httpapi.NewServer` 的真实 Serve / Shutdown、human bootstrap、SQLite LocalProjectService / ProjectProgressService、Attention / S2 与页面必要的现有读取服务直接装配；Registry 和模型处理器未接入。F 提供的真实 Web SOURCE 为 `b34ce2b85b2ae9d172a409d622d74aa5797ea414`，既有 `pnpm --dir web build` 实际 EXIT 0，稳定目录为其 D 盘 `web-static-b34-20261016-1554`，由现有 `WebDir` 配置托管。
+
+| 实际命令 | 结果与原件 |
+|---|---|
+| `go test -c -tags=public_progress_live -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/public-progress-live.test.exe ./internal/adapters/sqlite` | EXIT 0；`build-live.log` |
+| `go test -mod=readonly ./internal/adapters/sqlite -list '^TestServePublicProgressProjectionActual$'` | EXIT 0，默认发现零项；`default-list.log` |
+| `go vet -mod=readonly -tags=public_progress_live ./internal/adapters/sqlite` | EXIT 0；`vet-live.log` |
+| 两件 Go 文件 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
+| `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/public-progress-live.test.exe '-test.run=^TestServePublicProgressProjectionActual$' '-test.v' '-test.timeout=2h1m'` | PASS 705.19 秒，实际启动壳 EXIT 0；`actual-third/serve.log`，包含 F 只读窗口等待时间 |
+
+所有构建 / 运行进程显式使用 D 盘 GOCACHE、既有 D 盘 GOMODCACHE、本次 D 盘 GOTMPDIR / TEMP / TMP / ASTROCYTE_TEST_OUTPUT_ROOT，`GOMAXPROCS=2`、`GOFLAGS=-p=1`、`NODE_OPTIONS=--max-old-space-size=512`、`GOPROXY=off`；没有改变全局配置或重新下载依赖。
+
+最终实例 HTTP1 `http://127.0.0.1:65397` 已正常 Shutdown，listener 拒绝连接，数据库已关闭后重开。同库 HTTP2 在 F 窗口使用 `http://127.0.0.1:65404` / PID 50832；health、foundation、projects、proposals、sessions、project-spaces、goals、registered、local-projects、原 progress 和当前 workspace 均实际 200。两次进度响应保持相同，源必要行前后相等，源主文件 / WAL 的文件身份、大小和修改时间保持；目标只有一项项目、一项进度，Grant 和 Native Session 均为零。F 本人明确结束后，HTTP2 于 UTC `2026-10-16T16:22:42` 正常 Shutdown，实际进程已退出；`actual-third/final.json` 记录 release、HTTP2 关闭及源 / 目标保持。安全计数与本机指针见 `actual-third/ready.json`，请求与生命周期日志见 `actual-third/http.log`，其中非 GET 请求计数为零，没有输出原进度 JSON 正文或 token。
+
+原 F 在 SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d` 仅调整原 `web/e2e/progress-existing.spec.ts` 的显式 D 输出位置，全部原业务断言保持。F 原件根为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/progress-http2-65404-20261017/`，本阶段已独读以下实际结果与两份安全派生 JSON：
+
+| F 实际命令（在其 `web` 目录） | 结果 |
+|---|---|
+| `node ../node_modules/.pnpm/@playwright+test@1.64.0/node_modules/@playwright/test/cli.js test --config D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/progress-http2-65404-20261017/progress.config.mjs --workers=1 --retries=0 e2e/progress-existing.spec.ts --list` | 恰好 1920 / 1280 两个窗口、一个 spec，EXIT 0；`list-second.log` |
+| 同一命令去掉 `--list`，增加 `--output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/progress-http2-65404-20261017/playwright-first-artifacts` | 两项 PASS，总计 4.7 秒，EXIT 0；`test-first.log` |
+
+页面实际核原 project / NativeID、`gpt-6.1-sol`、`agent_inferred`、r1、一项 README evidence、状态 / 完成度 / 原观察时间及重载前后等值；原记录未提供摘要，页面没有编造摘要。页面操作均为 GET，两个窗口均无水平溢出，安全 JSON 在 `progress-existing/`，没有截图、录屏或 trace 图像。F 的首 `list.log` 在 ESM 模块加载处 EXIT 1、零项测试，未发业务 HTTP；修正后的精确收集通过才开始实际两项执行，首原件保留。F 的后继静态检查和独立前端 REPORT 由原 F 继续交付。
+
+首次本机 build runner 在 PowerShell 5.1 路径方法处 EXIT 1，尚未调用 Go，原件为 `build-script-first-failure.log`。`actual-first` 在 Go 测试参数解析处启动壳 EXIT 1，二进制自身 EXIT 未记录，保持 UNKNOWN；该轮没有创建目标库或 HTTP，原件为 `launch-first-failure.log`。`actual-second` 的进度 HTTP / 同库重启主项 PASS 180.20 秒、实际 EXIT 0，源 / 目标保持，未向 F 开放；后继补齐当前页面必要的现有生产读取服务后才创建最终实例，早期产物均原位保留。
+
+`effective_tool_set` 和 `original_source_completeness` 保持 unknown。该派生展示不构成新的原生成功或工具关闭证明，H / R 的 26 项与视频一项由原 owner 继续；原八项替身测试和已验安全流程未重跑。真实一小时 HTTP / 服务拒绝沿根已核的原 `88dc9e5` 结果保留，原启动壳 EXIT 保持 UNKNOWN，本阶段未重跑。完整产品、默认套件、L1 / L2 与发布包未在本阶段验收，未发布 GitHub Release，本阶段不发送 worker_done。
