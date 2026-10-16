@@ -2,6 +2,26 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 经验生产装配阶段交接（2026-10-17 02:32）
+
+H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3` / 独立 REPORT `a4c1baf6e47e8f449c2f26ce37150780b051df5e` 已普通 push，分支 `songconmaisaix31-design/works-relay-http`。模块独立核远端 REPORT 精确同值、原树 clean、SOURCE 与 B `2b96a9c7a98007af2b57528e288df13b6f2ea122` 均为普通祖先，REPORT 仅修改 `docs/access/http.md`，差异检查通过。B 独立 REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 已由 H 核准确原件后普通消费，B 源码保持原交付。
+
+模块完整读取 H 三件源码、276行实际装配测试、本阶段完整报告及六份原件。业务变化仅在 `cmd/server/main.go`、`relay_completion_experience.go` 和同前缀实际测试，未修改 config、session、agents、依赖或 S3。共享 reader 在事务外核当前 human / 项目并定位真实 Relay Completion.ID 与采用事件；缺失、双命中及错误均立即失败。事务内按已固定 SourceKind 调用原来源授权，当前请求身份通过认证 Capture 入口的私有 context 传递，不使用历史 ActorID，也不在事务内读取 Relay、对象或原档。
+
+显式配置齐备时，原 Interpreter 使用同一 Registry、真实固定公开上下文及来源保护完成生产注入；模型前和首次输入前重读固定来源、当前模型许可、settings 和文件 / 资料。独立 Swarm 配置也连接该来源。未提供 deadline 与固定 reader 时保持精确不可用，部分配置立即失败；没有猜默认期限、模型版本或权限，没有创建控制器或自动输入。ModelVersion 仍为 unknown，真实模型正向未验。
+
+| 作者原件与模块独立读取 | 实际结果 |
+|---|---|
+| `completion-assembly-compile-first.log` | 首轮只编译，package1.270秒，无测试运行 |
+| `completion-assembly-actual-first.log` | 首 Relay 接缝1 PASS，0.40秒 / package1.677秒 |
+| `completion-assembly-combined-first.log` | 共享来源及独立 Swarm 1 PASS，0.37秒 / package1.267秒 |
+| `completion-assembly-final.log` | 最终真实 SQLite / Registry / 公开 Git / HTTP 装配1 PASS / 0 Skip，0.38秒 / package1.375秒；增加缺来源请求不得创建解释收据的 SQL 检查 |
+| `completion-assembly-vet-first.log` / `completion-assembly-build-first.log` | 两份原件存在且无输出；作者实际报告 vet / build EXIT0，产物未启动或部署 |
+
+原件根为 `D:/Astrocyte-agent-assets/20261015/relay/H/process-20261016/verification/`。根 `msg_c2f6363e7e9b` 要求模块完整读取准确源码及作者原件，由根负责最终 I 组合复验；本模块没有第三次重复成功主项。已通过 `msg_ad050cc70995` 将精确 SOURCE / REPORT、改动范围、实际命令与上述原件交根唯一集成负责人，并将跨模块结果交产品 `msg_0be5912e491c`。
+
+当前服务继续稳定172 / PID44080 /64505、原 SQLite / Q /媒体与独立普通服务终端610cc，本次经验源码尚未部署。真实采用或合法完成来源的正向读取、双来源现场、来源差异及在途撤权、合法上下文与首输入、真实 Interpreter 生成和经验发布均为 NOT_RUN；完整默认 / check、L1 / L2及最终 Windows 包仍未通过。原 H `task_3004b636a3ab / ctx_ad637376ba1d` 和本模块原 Task 持续服务与发布返修支持，没有发送 worker_done、停止服务或另派同域人员。
+
 ## 当前开发人员与服务恢复（2026-10-17 02:22）
 
 模块保持原 `task_e8c1d01d67ec / ctx_1bf724fb231b`、子 Run `run_8bbda1c3974c` generation10。原 H 当前为同一 `task_3004b636a3ab / ctx_ad637376ba1d / term_fcc8b4c3-cb3f-477d-8f22-e86cbc0a3a00`、同工作树和分支；官方启动回执为 ready / turnStart observed，requested / effective 均为 Codex / gpt-6.1-sol / xhigh。根 `msg_8afeeb72da33` 明确用户指定该模型，后续业务修改由本次 Sol 完成。
