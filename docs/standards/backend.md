@@ -860,3 +860,45 @@ bootstrap 真实事务创建初始空表并正常关闭，原 SQLite 查询确�
 技术失败后立即停止，没有重复尝试、清理或修复技术文件，底层错误原因尚未确定。本技术阶段原 FAkZe5 与0对照连接均0、私有正文读取0、新 ASR / 提取 / 模型均0、业务目标库与 HTTP listener 均0；先前独立来源审阅的连接和 SHM 变化已在本节分别记载。`internal/adapters/sqlite/public_video_projection_actual_test.go` 没有创建，拟业务目标 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-projection-first/` 没有创建，未运行 F 的149 / 1920检查，没有触及共享64505、17321、V4、冻结范围或其他 owner 文件。
 
 模块 `msg_631d3996bbb8` 要求仅追加本次真实验收 REPORT 并普通提交 / push；不重跑业务、来源或技术验证，不制造无源码变化的 SOURCE 提交。原素材身份、两版本、公开内容摘要与私有分类事实保持，来源全三文件保护与真实只读 WAL 读取条件仍未满足，视频149持续 NOT_RUN。后继等待根明确范围，不发送 worker_done，不发布 Release，也不宣称完整产品、默认套件或发布包完成。
+
+## 视频149安全派生托管与原前端实际验收 REPORT（2026-10-17）
+
+**本阶段原视频149 / chromium-1920实际通过：F 精确收集一项后全部原断言1 PASS、总计4.7秒、启动壳 EXIT 0；B 真实派生 / HTTP 重启主项 PASS 239.33秒、启动壳 EXIT 0，自有服务已正常关闭。** SOURCE `dd3a8b8a20e6f8dc30342d1708d4f59b9bec82b6` 已普通提交 / push，唯一源码变更为 `internal/adapters/sqlite/public_video_projection_actual_test.go`。本节沿原 Task / Dispatch / 分支追加独立 REPORT，不修改生产语义、前端或其他 owner 文件。
+
+根最新 `msg_c14e9554c8eb` 经模块 `msg_2b6c2d569c28` 完整转交，明确恢复原来源保护标准：正常 SQLite 锁、`mode=ro` / `query_only`、实际业务行及主文件 / WAL 身份 / 大小 / mtime 不变、公开对象原 bytes / digest 保持；SHM 实际元数据变化单列。此前额外增加的 SHM 时间门槛和技术前置已取消。前节 REPORT `6c8d88ec408f2737e1bfa1ee863b4ad9f32e9a3a`、0对照首 RED / 失败字段 UNKNOWN、EXCLUSIVE 技术 IOERR10 / EXIT 1及其 D 原件均保持为当时事实；6c8 首次普通 push 返回 remote rejected / EXIT 1，随后普通 push EXIT 0，没有 force 或更改网络 / 账号。Windows FileShare 后继仅完整读取了指定的 SQLite 论坛和 Microsoft FileShare 官方页面，未编写或运行探针、未新增句柄；本次直接执行获准的真实业务派生。
+
+唯一源仍是 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/astrocyte-s1-FAkZe5/data/state.sqlite` 中 material `534HWFW7E5GEF75ZY4F7ETPLQ2` 的一项 aggregate 和两项 immutable revision。只读连接使用标准 URL / JSON / SQLite 库及正常锁，显式核实 `query_only=1`；路径逐分量检查 canonical / 非 reparse，原库没有迁移、赋值、checkpoint 或 Clock 修改。0对照没有再次打开。
+
+唯一目标为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-projection-first/data/state.sqlite`，对象目录为同一 `data/objects`。创建前执行全新目录、明确 D 独占 root、原源与目标分离守卫，migrations 仅对新自有库运行。实际 `AttentionRepository.WithTx` / `SaveMaterial(expected=0)` 保存目标材料，原 aggregate version 2与新库本地 CAS version 1分别记录，current revision 2保持。原 material 身份 / metadata，以及两项 revision 的 source key / locator / 内容摘要 / ObjectRef / 时间 / provenance / source spans / attachment metadata 保持；原两个内容对象与952位置均来自既存真实结果。没有导入其他材料、项目、Grant、Native Session、distillation / usage业务记录，没有创建新的原生收据或事件。
+
+前节表内五个公开对象共192421 bytes，沿既有 `objects.Store.Publish` 发布到新目标，源文件的实际 bytes / digest / identity / size / mtime前后保持；两个 content 字节与原 `content_digest` 相同。私有 `whisper-original.json` 仅保留原 attachment metadata及安全存在性记录，正文读取0、复制0，目标中该私有 ObjectRef 文件不存在。私有分类合并全部 revision 的同一 ObjectRef，名称或 revision 别名保持私有；没有复制原 SQLite、私有原档或凭据，没有 ASR、提取、模型调用或原生 Registry 初始化。
+
+本次 B 证据目录为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-live-first/`，启动 / 构建脚本为其父目录的 `video-build.ps1`、`video-serve.ps1`。所有本机源、目标、WebDir和缓存参数只在 D runner 的进程环境中固定，仓库 helper 没有硬编码 C / D 指针。使用根确认的既有 GOMODCACHE `D:/Astrocyte-agent-assets/20261015/product/ui/ctx_e921762e5e79/results/astrocyte-s1-EhXH3k/profile/go/pkg/mod`、GOCACHE `D:/Astrocyte-agent-assets/20261015/go-build/backend`；本次 GOTMPDIR / TEMP / TMP / ASTROCYTE_TEST_OUTPUT_ROOT 位于 B 证据目录，`GOPROXY=off`、`GOMAXPROCS=2`、`GOFLAGS=-p=1`、`NODE_OPTIONS=--max-old-space-size=512`，未下载依赖或更改全局配置。
+
+| 实际命令 | 结果与 B 原件 |
+|---|---|
+| `go test -c -tags=public_video_live -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/public-video-live.test.exe ./internal/adapters/sqlite` | EXIT 0；`build.log` |
+| `go test -mod=readonly ./internal/adapters/sqlite -list '^TestServePublicVideoProjectionActual$'` | 默认发现零项，EXIT 0；`default-list.log` |
+| `go vet -mod=readonly -tags=public_video_live ./internal/adapters/sqlite` | EXIT 0；`vet.log` |
+| 同一 tagged 二进制 `-test.list=^TestServePublicVideoProjectionActual$` | 恰好一项，EXIT 0；`tagged-list.log` |
+| `gofmt -l internal/adapters/sqlite/public_video_projection_actual_test.go` 与 `git diff --cached --check` | EXIT 0，无输出 |
+| `public-video-live.test.exe '-test.run=^TestServePublicVideoProjectionActual$' '-test.v' '-test.timeout=2h1m'`，由 D `video-serve.ps1` 显式启动 | PASS 239.33秒，实际启动壳 EXIT 0；`serve.log`，包含等待 F 窗口的时间 |
+
+托管直接使用生产 `httpapi.NewServer.Serve` / `Shutdown`、真实人类 bootstrap 和既有 Attention / RankingProfile / S2 / LocalProject / Progress SQLite 服务。`NewProjectService` / `NewProposalService` / `NewSessionService` 仍是原 S0 兼容 EmptyList 构造，其中 proposals 实际路由由非空 S2 响应；页面必要 GET 的200不计其他产品功能通过。没有构造 HTTP wrapper、mock API、替代控制器或新的生产导入入口。当前静态页面只读使用根已核准的 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/versions/172bb445/web`，准确**静态 SOURCE为 `172bb445597193d55f1563ee5d21ac2ec881798d`**，B helper SOURCE独立为dd3，F spec SOURCE独立如下；没有把 B / F 全树称为172，没有读取该 WebDir 旁的 env / DB / 配置。
+
+HTTP1 `http://127.0.0.1:64429` 完成实际 GET 后正常 Shutdown，Serve 返回 `http.ErrServerClosed`、listener拒绝连接；目标 SQLite 关闭后重开同一文件，HTTP2 `http://127.0.0.1:64432` / PID52372再次 GET 结果相同。`ready.json` 保存实际 owned URL / PID / 源目标指针 / source2与targetCAS1 / 两 revision 位置数 / 五公开对象及私有 body0；`source-before-target.json`、`source-after-http1.json`、`source-ready-http2.json`记录严格源业务行与主文件 / WAL保护和实际 SHM 变化。模块及原 F 本人接收真实 ready 后才开始窗口。
+
+原 F 实际 spec SOURCE为 `72d6dcdb557770872dc59c4b18d8b0e8a7245075`，仅使用 `ASTROCYTE_TEST_VIDEO_PUBLIC_URL=http://127.0.0.1:64432`、`ASTROCYTE_TEST_VIDEO_MATERIAL_ID=534HWFW7E5GEF75ZY4F7ETPLQ2`。F 原件目录为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/video149-live-64432-20261017/`。本 B 已独读该目录的 `video.config.mjs`、`run-video.ps1`、两份首轮日志与安全派生 JSON：worker1 / retry0、无 webServer、trace / screenshot / video全部off，输出仅本次 D 目录。
+
+| F 在其 `web` 目录的实际命令 | 结果 |
+|---|---|
+| `node ../node_modules/.pnpm/@playwright+test@1.64.0/node_modules/@playwright/test/cli.js test --config D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/video149-live-64432-20261017/video.config.mjs --project=chromium-1920 --workers=1 --retries=0 e2e/video-existing.spec.ts --list` | 恰好一项 / 一个 spec，EXIT 0；`list-first.log` |
+| 同一命令去掉 `--list`，增加 `--output D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_697b2f19c010/video149-live-64432-20261017/playwright-first-artifacts` | 原全部断言实际1 PASS，总计4.7秒，启动壳 EXIT 0；`test-first.log` |
+
+F 实际展示和读取两版本全文、952真实位置、原内容摘要及公开附件 bytes / digest，私有附件仅显示本机说明且没有 HTTP 链接；重载前后等值、GET only及无水平溢出保持原断言。`video-existing/chromium-1920-derived.json`记录 revision1为 positions0 / public1 / private0 / text_length11746，revision2为 positions952 / public3 / private1 / text_length13979，`read_only=true`、`private_original_requested=false`。B 的 `http.log`记录非 GET 请求0、私有 Whisper 附件请求0，没有输出素材正文或 token。没有额外 viewport、重跑、生产写入或新的模型 / ASR / Native 操作；F 自己的独立前端 REPORT由原 F 交付。
+
+F 本人 `msg_9af719e7ce73` 明确窗口结束并停止 HTTP 后，B 用本实例 release identity 正常结束 HTTP2；`final.json`记录目标业务行、源业务行、公开对象保持，正常 Shutdown及私有 body / 复制 / 新模型均0。**`source-after-f-window.json`的业务行与文件检查发生在 defer `source.Close` 之前。** Go helper随后实际 PASS / EXIT 0，所有 defer已执行，UTC `2026-10-16T17:46:19.0013679Z`对准确 PID52372的 CIM 查询确认进程不存在，没有终止其他进程。
+
+按根 `msg_0d6a276dab59`，再仅执行一次 `node D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-live-first/post-close-files.mjs`，EXIT 0。UTC `2026-10-16T17:47:09.367Z`保存 `post-close-source-files.json`，只取原主文件 / WAL / SHM 的文件元数据并与已有安全记录比较，**未重新打开源 SQLite、未读取原件或对象正文**。关闭后的主文件 ino `3659174704753597` / 794624 bytes / mtime_ns `1791991922435515500`，WAL ino `3096224751332497` / 16512 bytes / mtime_ns `1791993579171315700`，identity / size / mtime / birthtime与原 baseline及helper守卫保持。SHM仍为ino `2533274797911203` / 32768 bytes，本次从UTC `17:23:02.0188077Z`变为 `17:42:18.4971854Z`，关闭后mtime_ns为 `1792172538497185400`；变化单列，不宣称来源所有文件不变。
+
+本阶段实际通过范围仅为该既有视频149 / 1920的安全派生、真实 HTTP 同库重启及原前端断言。没有重跑 README进度、自然一小时、安全八项或其他已成功功能，没有触及共享64505、17321、V4或冻结范围；原 H / R 原生限制保持。原始推断 / 工具完整性没有由派生展示升级为新的成功，完整产品、默认套件、L1 / L2和发布包未在本阶段验收，未发布 GitHub Release；原 Task / Dispatch继续承担发布支持，不发送 worker_done。
