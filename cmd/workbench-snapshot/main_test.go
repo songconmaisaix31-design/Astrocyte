@@ -147,13 +147,14 @@ func TestServerInitializedSnapshot(t *testing.T) {
 	})
 	t.Run("directory-alias", func(t *testing.T) {
 		alias := filepath.Join(owned, "linked-root")
-		if err := os.Symlink(root, alias); err != nil {
-			if runtime.GOOS != "windows" {
-				t.Fatal(err)
-			}
+		if runtime.GOOS == "windows" {
 			command := "New-Item -ItemType Junction -Path '" + strings.ReplaceAll(alias, "'", "''") + "' -Target '" + strings.ReplaceAll(root, "'", "''") + "' -ErrorAction Stop"
-			if output, e := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-Command", command).CombinedOutput(); e != nil {
-				t.Fatalf("junction creation: %v %s", e, output)
+			if output, err := exec.CommandContext(ctx, "powershell.exe", "-NoProfile", "-Command", command).CombinedOutput(); err != nil {
+				t.Fatalf("junction creation: %v %s", err, output)
+			}
+		} else {
+			if err := os.Symlink(root, alias); err != nil {
+				t.Fatal(err)
 			}
 		}
 		if _, err := publish(ctx, source, alias, ""); err == nil {
