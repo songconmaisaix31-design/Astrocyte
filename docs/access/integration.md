@@ -1,5 +1,31 @@
 # Works Relay integration report
 
+## 2026-10-17 生产经验连接与同库产品更新
+
+H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3`、独立 REPORT `a4c1baf6e47e8f449c2f26ce37150780b051df5e` 已普通合为 `c5b3b5715f2e93b82365720914be24c73642bd1e` 并push，无冲突。根独读三件源码、276行真实测试、作者完整本阶段报告及最终原日志；H已普通消费准确B2b96 /a6，净生产修改为main必要连接和原relay经验组装。
+
+共享来源在事务外定位真实Relay Completion.ID与Swarm采用事件；缺失、双命中及读取错误直接失败。保存候选时按固定SourceKind在同主数据库事务内再授权，保持事务内不读Relay /对象 /原档。当前Principal由实际认证Capture入口按每请求私有context保存，历史ActorID仍是来源事实。配置齐备时使用原Registry /Interpreter、固定公开Git上下文和原来源 /工具guard；没有显式期限及固定上下文时保留不可用，部分配置失败，不推断业务默认。
+
+准确c5的根验证：
+
+| 命令 / 检查 | 实际结果 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestRelay(CompletionExperienceActualAssemblyAndRequestBoundaries\|JudgmentProductionAssemblyActualSQLiteHTTP\|HumanAdmissionsWithoutJudgmentSnapshotsActualSQLiteHTTP)$'` | 精确三项，EXIT0。 |
+| 同包同选择 `-run`，`-v -count=1 -timeout=3m` | 3 PASS；0.38 /1.23 /0.17秒，包3.352秒，EXIT0。 |
+| `go vet -mod=readonly ./...` | 最终EXIT0；首轮D缓存缺锁定go-sdk /GOPROXY=off失败EXIT1保留。 |
+| `go build -mod=readonly ./...` | EXIT0。 |
+| `go build -mod=readonly -trimpath -o <D后继目录>/astrocyte.exe ./cmd/server` | EXIT0；buildinfo准确c5 /modified=false /windows-amd64。 |
+| `node scripts/check-architecture.mjs`、diff检查 | EXIT0，42包边界通过。 |
+| 172至c5生产Web代码 /入口 /配置 /锁文件差异 | 零；整个web仅三个既有测试spec变化，稳定172的30个生产静态文件复用并单列来源，没有重复Vite构建或已成功浏览器检查。 |
+
+首轮原件 `D:/Astrocyte-agent-assets/20261015/integration/root-experience-c5b3b57/`，后继 `root-experience-c5b3b57-followup/`。后继仅补齐go.mod /go.sum锁定依赖到明确D缓存、继续失败阶段和后续构建，没有重复3 PASS。官方proxy与缓存只作用本进程，未改全局、网络或凭据；模块文件保持。两个runner原件保留，后继整体EXIT0，SOURCE前后保持。
+
+原H已取得本次产品无共享业务操作的实际模块声明，复制准确binary到稳定 `versions/c5b3b571` 并逐字节核实后归还根读取窗口。旧44080由owned CTRL_C正常退出并释放端口0.9536499秒，再单次启动新PID30420 /UTC `2026-10-16T18:37:58.6714394Z`。根独立核当前程序路径 /启动时间 /唯一127.0.0.1:64505监听 /buildinfo准确c5、health ok和首页200 /562bytes；本次前后完整counts对象严格相同，68表90行、原Q `snapshot-1711995690`及媒体保持，新Native /模型输入均0。Web来源为172，业务binary为c5。普通服务终端610cc由H持有；更新内部ready及保存原件已完成，外层pwsh命令尚未返回，EXIT UNKNOWN保持，不停止或重复更新来求退出码。
+
+自动CI原4b4ec3b2 /Run38947762564双平台pnpm check失败，日志保存在 `root-ci-c5b3b57/4b4ec3b2-failed.log`。当前c5 /Run38948519582自动触发仍含七项旧进度替身的默认套件，根精确取消，现实际completed /cancelled；取消前已输出失败、实际首结果保留在 `c5b3b57-cancelled.log`，不计完整默认或真实替身验收。后续纯报告提交暂用 `[skip ci]`，测试、断言和workflow没有新增Skip或修改。缺真实原件 /输出根 /CLI /Q配置与已见非Native疑点分别交原模块按准确源码继续归因和修复，不把全部失败归为Native。
+
+当前实际C空余约5.5GB，低于原包装10GiB守卫；官方三缓存合计约2.27GB且有npx在途，未清理、终止或修改OS。最终Windows包、完整默认 /check、L1 /L2正向及真实经验生成仍未完成，原未答权限和配置选择保持。
+
 ## 2026-10-17 真实采用来源适配组合验证
 
 B SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122`、独立 REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 已普通合为 `d356b4b1e18b80e029ce29193f433ddd6b6e7f04` 并push，无冲突。根完整独读174行生产、325行真实测试、26行报告和原D命令 /list /test /vet /build日志；相对原I42860仅新增两个SQLite文件及作者报告。原B先以ff-only消费准确I依赖，原S3 /H /R文件没有改动。
