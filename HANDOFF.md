@@ -2,6 +2,12 @@
 
 ## 当前执行入口（2026-10-16）
 
+14:06 原集成分支当前报告 `8a55dfa4f2f990a18377ffbb601d50347b577230` 已普通 push，工作区干净。业务与运行 SOURCE 保持2d27；准确 `dac4537f10c7391ffc56403eef85b97d0dc73828` 的 Go 格式、全仓 `go vet`、Go 模块校验和实际安装依赖清单核对四项通过，总 EXIT0 /116.2134755秒，前后源码相同。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-static-dac4537-second/{static.log,result.json}`。没有执行历史替身测试，不把静态子集计为完整 check。
+
+根已独读 F 实际 `dom-review-strict-64505.log`：候选r2/v3、固定资料r1、项目权限r2可见，本地准备后确认框可见且未勾选、最终提交按钮实际 disabled，非 GET 为0。14:01 已通过异步问题向用户询问仅该 PLOS 资料 / 候选准入“同实例公开前端项目”并生成提案草稿；尚未收到回答，具体项目、版本及范围见 QUESTIONS，不提交准入、任务批准或启动，不重放该成功只读检查。F 继续准确320项首结果的55失败逐项映射，原280项记录不能替代当前清单。
+
+原 UI 的完整 Taste 编辑尚未接纳，原作者按已有 TasteProfile / Policy / Rule 契约返修：首次 Taste expected_version=1、后继固定实际版本；启用必须有真实资料固定版本示例；choice / score / truth 字段各自合法。未知请求保留原身份和写入锁，拒绝吞 JSON 错误、替换资料版本或绕过生成契约。实际页面和 Rule 正向尚未通过。原 B 安全快检后继可先交，真实一小时计时仍独立保留；不因在途检查停止其余集成。
+
 13:48 根已完成原 B 已验缓存 GET、F 准入页面和原 UI 判断 / 委托入口、P 显式启动配置的普通集成。业务 SOURCE 为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`；完整 `pnpm build` EXIT0 /15.039582秒、全 web lint 实际 EXIT0、准入 / 撤销 / 同库 HTTP 重启核心场景两个窗口2 PASS /42.3秒。准确命令、首次类型失败和 D 盘原件见集成树 `docs/access/integration.md`；类型衔接只涉及断言对象及公开禁止的 context 字段，没有改变业务或原断言。
 
 H 已在当次 F / UI 本人 ACK 后正常停止旧 owned PID33808，并启动准确2d27 / modified=false / PID50624，启动 UTC `2026-10-16T05:40:20.6912890Z`，地址保持 `http://127.0.0.1:64505/`。根独核首页200、唯一 loopback listener、实际进程和 Go buildinfo；原 D SQLite 的68表90行逐表前后相等、原生会话0，媒体12项配置和原 Q generation 保持。H 独立 REPORT `d5427c705903e9bb69f1f257706f490e1784eea9` 已普通合入，仅更新运行记录；稳定副本已归还原产物读取窗口。F 是共享业务唯一操作者，UI 保持共享只读。

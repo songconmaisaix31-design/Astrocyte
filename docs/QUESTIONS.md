@@ -1,5 +1,11 @@
 # 用户决定与待定项
 
+## 固定 PLOS 候选资料准入（2026-10-16，待答）
+
+已向用户询问：将 [Frameworks for procurement, integration, monitoring, and evaluation of artificial intelligence tools in clinical settings: A systematic review](https://journals.plos.org/digitalhealth/article?id=10.1371/journal.pdig.0000514) 的固定资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` r1、候选 `QILUA3J6WINYVSRKX3CU6FA35A` r2/v3，准入“同实例公开前端项目” `98389066-5e5a-4e82-982b-deab3e005273`（settings r2），用于公开论文固定上下文核查并仅生成提案草稿；或暂不准入。对应 Goal 为 `46a1b8e5-583c-4df0-921a-46ef83660d8a` r1，人工摘要 `LD6A7RPZQJIQW6F224QALLQDR5`。
+
+回答尚未收到。四项效果评分均为未知，实际任务效果未验证；任务批准、执行权限、启动和具体经验批准分别确认。真实2d27页面已只读核固定版本、项目归属及本地准备后的确认区，确认框未勾、最终提交禁用、非 GET 为0；该观察不构成准入授权。仅 F 保持原共享业务窗口，收到明确回答后按该准确范围继续，UNKNOWN 不重发。
+
 ## 产品集成优先（2026-10-16，已确认）
 
 用户明确要求优先集成，把项目跑通并形成完整产品，之后并行整理代码与测试。先使用同一准确源码、现有普通生产入口和真实持久化服务打通完整页面及核心操作；在途测试保留实际结果，全面测试和代码整理随后并行推进。完整默认、L1 / L2 和独立报告不阻止普通产品集成与启动；最终功能、适用验证和发布结果仍须如实报告。原生文件 / 命令工具关闭、实际自产会话来源、未知不重发、正式实验冻结及原待定业务选择保持原边界。
