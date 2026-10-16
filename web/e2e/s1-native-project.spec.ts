@@ -168,7 +168,6 @@ test('human observes, stops, resumes the same actual native session and sends on
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await native.screenshot({ path: testInfo.outputPath(`actual-native-${width}.png`) });
     }
     completed = true;
   } catch (error) { primaryError = error; throw error; } finally {

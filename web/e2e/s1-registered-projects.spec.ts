@@ -132,7 +132,6 @@ test('actual Orca discovery remains a read-only candidate list until human regis
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       await discovery.scrollIntoViewIfNeeded();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-registered-projects-${width}.png`) });
     }
     await testInfo.attach('actual-discovery-snapshot', { body: JSON.stringify(actual, null, 2), contentType: 'application/json' });
     await testInfo.attach('actual-human-project-registration', { body: JSON.stringify(registered, null, 2), contentType: 'application/json' });

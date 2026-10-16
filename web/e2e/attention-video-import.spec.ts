@@ -56,7 +56,6 @@ test('real network-blocked video job shows next step and preserves the URL', asy
     await expect(row).toContainText('真实 DNS 解析与代理配置');
     await expect(row).toContainText('修复后再明确重试');
     await expect(row).not.toContainText('configure_public_source_network');
-    await page.screenshot({ path: testInfo.outputPath('real-network-failure.png'), fullPage: true });
     await testInfo.attach('actual-failed-job', { body: JSON.stringify(completed, null, 2), contentType: 'application/json' });
     // 重放已接受的原命令只返回原回执，不启动新的提取。
     const replay = await page.request.post(request.url(), { headers: request.headers(), data: request.postDataJSON() });
@@ -70,7 +69,6 @@ test('real network-blocked video job shows next step and preserves the URL', asy
     await expect(dialog.getByLabel('视频链接', { exact: true })).toHaveValue(videoURL);
     await expect(dialog.getByLabel('收藏理由（可选）')).toHaveValue('核对公开来源获取失败，保留原链接');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    await page.screenshot({ path: testInfo.outputPath('retained-video-input.png'), fullPage: true });
     expect(modelRequests).toEqual([]);
   } finally { await server.close(); }
 });
@@ -169,7 +167,6 @@ test('selected public video URL imports through the real service without an expo
     }, { timeout: jobTimeout, intervals: [2000] }).toMatch(/succeeded|failed|cancelled/);
     await page.getByRole('button', { name: '刷新队列', exact: true }).click();
     await expect(row).toContainText(completed!.status === 'succeeded' ? '已完成' : '需要你处理');
-    await page.screenshot({ path: testInfo.outputPath('video-import-real.png'), fullPage: true });
     await testInfo.attach('actual-video-job', { body: JSON.stringify(completed, null, 2), contentType: 'application/json' });
     expect(completed!.status, JSON.stringify(completed!.error)).toBe('succeeded');
     await row.getByRole('button', { name: '查看作业资料' }).click();
@@ -188,7 +185,6 @@ test('selected public video URL imports through the real service without an expo
     await detail.getByRole('button', { name: '继续沉淀', exact: true }).click();
     await expect(detail.getByLabel('自动沉淀层次', { exact: true })).toHaveValue('content');
     expect(modelRequests).toEqual([]);
-    await page.screenshot({ path: testInfo.outputPath('video-import-content.png'), fullPage: true });
 
     // 页面提交成功后读取实际公开结果，重启只核对持久化记录。
     const materialURL = `${server.webURL}/api/v1/materials/${completed!.material_id}`;
@@ -264,7 +260,6 @@ test('selected public video URL imports through the real service without an expo
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       await expect(original).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`video-import-restarted-${width}.png`), fullPage: true });
     }
     expect(modelRequests).toEqual([]);
   } finally { await server.close(); }

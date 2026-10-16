@@ -7,7 +7,7 @@ import { importTrackedDocument, trackedCandidate } from './realService';
 type Schemas = components['schemas'];
 
 // 人工表单保存已跟踪协议的实际摘录，生产 HTTP 与 SQLite 验证分类和版本。
-test('human classification, pinned references, manual layers and candidate edits use real service state', async ({ page }, testInfo) => {
+test('human classification, pinned references, manual layers and candidate edits use real service state', async ({ page }) => {
   test.setTimeout(120_000);
   const server = await startS1Server({ browser: true });
   try {
@@ -88,11 +88,10 @@ test('human classification, pinned references, manual layers and candidate edits
     expect((await api.get(`/materials/${id}`)).material.lifecycle).toBe('active');
     expect((await api.get('/missions')).items).toHaveLength(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.screenshot({ path: testInfo.outputPath('attention-classification-space.png'), fullPage: true });
   } finally { await server.close(); }
 });
 
-test('ranking waits for explicit complete human weights, keeps unknown scores and saves immutable profile versions', async ({ page }, testInfo) => {
+test('ranking waits for explicit complete human weights, keeps unknown scores and saves immutable profile versions', async ({ page }) => {
   test.setTimeout(120_000);
   const server = await startS1Server({ browser: true });
   try {
@@ -130,6 +129,5 @@ test('ranking waits for explicit complete human weights, keeps unknown scores an
     expect((await getProfile()).profile?.version).toBe(2);
     expect((await api.get('/missions')).items).toHaveLength(0);
     await section.scrollIntoViewIfNeeded();
-    await page.screenshot({ path: testInfo.outputPath('attention-ranking-profile.png') });
   } finally { await server.close(); }
 });

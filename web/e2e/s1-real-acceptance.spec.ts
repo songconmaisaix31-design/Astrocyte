@@ -344,7 +344,6 @@ test('real selected paper/video, scoped model rounds, ordinary reuse, authorized
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-selected-materials-${width}.png`), fullPage: true });
     }
     await testInfo.attach('actual-public-scope-results', { body: JSON.stringify({ paperOriginal: paperExport, videoOriginal: videoExport, paper: afterReads[0], video: afterReads[1], modelRecords, candidate: reviewed, originalUnknowns, videoStoredRevisionChanged: head > 1, actualExtraPaperRevisions: [versionA.detail.material.id, 1, 2], limits: ['Paper reused genuine existing JSON export; no fresh arXiv URL retrieval.', 'Video export textarea normalizes CRLF; stored revision change does not establish an upstream video-content change.'] }, null, 2), contentType: 'application/json' });
     completed = true;

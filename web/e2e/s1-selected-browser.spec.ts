@@ -79,7 +79,7 @@ test('approved selected Douyin folder is chosen, saved, deduplicated and retaine
     await page.reload(); await page.getByRole('button', { name: '查看来源更新', exact: true }).click();
     await accounts.getByLabel('查看来源', { exact: true }).selectOption(result.source.id);
     await expect(review).toContainText('已保存标题 3 条');
-    for (const width of [1920, 1280, 390]) { await page.setViewportSize({ width, height: width === 390 ? 844 : 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await page.screenshot({ path: testInfo.outputPath(`selected-douyin-${width}.png`), fullPage: true, animations: 'disabled' }); }
+    for (const width of [1920, 1280, 390]) { await page.setViewportSize({ width, height: width === 390 ? 844 : 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); }
     await testInfo.attach('selected-folder-metadata-only', { body: JSON.stringify(first, null, 2), contentType: 'application/json' });
     console.log('Selected-folder metadata retained:', server.temporary, '3 items, no body/model/media selection');
   } catch (error) { primaryError = error; throw error; }

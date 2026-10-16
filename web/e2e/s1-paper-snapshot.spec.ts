@@ -105,7 +105,6 @@ test('real paper_snapshot browser ingest: paste body, source version, dedup, mod
       await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       await expect(sizedPanel).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-paper-snapshot-${width}.png`), fullPage: false, animations: 'disabled' });
     }
     // summary 可获得焦点，Enter 切换展开状态。
     await summary.focus();

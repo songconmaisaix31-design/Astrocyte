@@ -46,7 +46,6 @@ test('actual project overview and human records persist across refresh and owned
       console.log(JSON.stringify({ viewport: width, first_project: firstCard, viewport_height: page.viewportSize()?.height }));
       expect(firstCard).not.toBeNull();
       if (width >= 1280) expect(firstCard!.y + 80).toBeLessThan(page.viewportSize()!.height);
-      await page.screenshot({ path: testInfo.outputPath(`actual-board-${width}.png`), fullPage: false, animations: 'disabled' });
     }
     if (process.env.ASTROCYTE_BOARD_PREVIEW_ONLY === '1') return;
     for (const layout of ['平铺', '按平台', '按分组', '时间线']) {
@@ -132,7 +131,6 @@ test('actual project overview and human records persist across refresh and owned
       await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-project-detail-${width}.png`), fullPage: true, animations: 'disabled' });
     }
     await page.keyboard.press('Escape');
     await board.getByLabel('归档', { exact: true }).selectOption('active');

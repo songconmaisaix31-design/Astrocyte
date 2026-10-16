@@ -78,7 +78,7 @@ test('actual public repository metadata precedes human placement, clone and cold
     await expect(placement.getByText('代码已克隆', { exact: true })).toBeVisible();
     await placement.getByRole('button', { name: '选择空间并纳入', exact: true }).click();
     await expect(placement.getByRole('button', { name: '已纳入并克隆', exact: true })).toBeDisabled();
-    for (const width of [1920, 1280, 390]) { await page.setViewportSize({ width, height: width === 390 ? 844 : 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); await page.screenshot({ path: testInfo.outputPath(`github-placed-${width}.png`), fullPage: true, animations: 'disabled' }); }
+    for (const width of [1920, 1280, 390]) { await page.setViewportSize({ width, height: width === 390 ? 844 : 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true); await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' })); }
     await testInfo.attach('actual-public-repository', { body: JSON.stringify({ continuation: !!reusedPath, repository: ready }, null, 2), contentType: 'application/json' });
     console.log('Actual GitHub repository data retained:', server.temporary, 'HEAD', ready.head, reusedPath ? 'same-store post-clone continuation' : 'complete human placement');
   } catch (error) { primaryError = error; throw error; }

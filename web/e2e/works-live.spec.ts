@@ -139,7 +139,6 @@ test('actual approved works UI commands persist in SQLite after owned API restar
       await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       await expect(card).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-works-${width}.png`), fullPage: false, animations: 'disabled' });
       await card.focus(); await page.keyboard.press('Enter');
       await expect(page.getByRole('dialog')).toContainText('人工编写');
       await page.keyboard.press('Escape');
@@ -182,13 +181,11 @@ test('saved actual works render at three viewports with keyboard and no writes',
       await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1280 ? 720 : 1080 });
       await expect(card).toContainText('从文件核实');
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-      await album.screenshot({ path: testInfo.outputPath(`saved-works-${width}.png`), animations: 'disabled' });
       await card.focus(); await page.keyboard.press('Enter');
       const dialog = page.getByRole('dialog');
       await expect(dialog).toContainText('人工编写');
       await expect(dialog.getByLabel('编辑交接手册')).toHaveValue(actual!.handoff.content);
       await expect(dialog.getByRole('button', { name: '保存交接手册', exact: true })).toBeEnabled();
-      await dialog.screenshot({ path: testInfo.outputPath(`saved-work-detail-${width}.png`), animations: 'disabled' });
       await page.keyboard.press('Tab');
       expect(await dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);
       await page.keyboard.press('Escape');

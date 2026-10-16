@@ -27,7 +27,7 @@ test.describe('S1 实际 API 与持久化', () => {
     expect((await api.get('/materials')).items).toHaveLength(0);
   });
 
-  test('browser imports a summarize representative export and exposes its retained positions', async ({ page }, testInfo) => {
+  test('browser imports a summarize representative export and exposes its retained positions', async ({ page }) => {
     const captured = await capturedPublicDocument();
     const input = { source_locator: captured.url, export_text: captured.raw };
     await page.goto(`${server.webURL}/attention`);
@@ -62,11 +62,10 @@ test.describe('S1 实际 API 与持久化', () => {
     const source = page.getByRole('dialog').getByRole('region', { name: '来源与原文版本' });
     await expect(source.getByText(revision.source_spans.length ? revision.source_spans.join('；') : '未提供真实位置', { exact: true })).toBeVisible();
     await expect(page.getByRole('dialog').getByRole('link', { name: /summarize.json/ })).toBeVisible();
-    await page.screenshot({ path: testInfo.outputPath('s1-import-source.png'), fullPage: true });
     expect((await api.get('/missions')).items).toHaveLength(0);
   });
 
-  test('view and refresh stay neutral; an explicit keyboard reread increments human attention once', async ({ page }, testInfo) => {
+  test('view and refresh stay neutral; an explicit keyboard reread increments human attention once', async ({ page }) => {
     const { second: imported } = await importPublicPaperVersions(api);
     const input = imported.detail.material;
     const id = imported.detail.material.id;
@@ -94,10 +93,9 @@ test.describe('S1 实际 API 与持久化', () => {
     await page.keyboard.press('Enter');
     expect((await rereadResponse).status()).toBe(200);
     await expect.poll(async () => (await api.get(`/materials/${id}`)).material.human_usage_count).toBe(humanCount + 1);
-    await page.screenshot({ path: testInfo.outputPath('s1-human-reread.png'), fullPage: true });
   });
 
-  test('AT04: later records the displayed candidate revision and survives browser/service reconnection', async ({ page }, testInfo) => {
+  test('AT04: later records the displayed candidate revision and survives browser/service reconnection', async ({ page }) => {
     const candidate = await trackedCandidate(api);
     const materialID = candidate.evidence_refs[0].material_id;
     const paperText = (await api.get(`/materials/${materialID}/revisions/1/content`)).text;
@@ -117,7 +115,6 @@ test.describe('S1 实际 API 与持久化', () => {
     expect(saved.reviews[0]).toMatchObject({ revision: candidate.revision, feedback: 'later' });
     expect(saved.reviews.some((review: { feedback: string }) => review.feedback === 'reject')).toBe(false);
     expect((await api.get(`/materials/${materialID}`)).material.lifecycle).toBe('active');
-    await page.screenshot({ path: testInfo.outputPath('s1-later-feedback.png'), fullPage: true });
     await server.restart();
     api = await humanAPI(server.apiURL);
     const reconnectResponse = page.waitForResponse(response => response.url() === `${server.webURL}/api/v1/opportunities`);
@@ -130,7 +127,7 @@ test.describe('S1 实际 API 与持久化', () => {
     expect((await api.get('/missions')).items).toHaveLength(0);
   });
 
-  test('human classification and @ retain the original file and pinned revision; removing the reference keeps the source', async ({ page }, testInfo) => {
+  test('human classification and @ retain the original file and pinned revision; removing the reference keeps the source', async ({ page }) => {
     const inputs = await publicPaperInputs();
     const imported = await importMaterial(api, inputs.original.import, { timeoutMs: 120_000 });
     const input = imported.detail.material;
@@ -196,10 +193,9 @@ test.describe('S1 实际 API 与持久化', () => {
     expect((await api.get(`/materials/${id}`)).material.domain_ids).toEqual([domainID]);
     expect((await api.get(`/materials/${id}/revisions/1/content`)).text).toBe(paperText);
     expect((await api.get('/missions')).items).toHaveLength(0);
-    await page.screenshot({ path: testInfo.outputPath('s1-human-space-reference.png'), fullPage: true });
   });
 
-  test('human ranking settings begin empty, preserve versions and survive reload without inventing unknown scores', async ({ page }, testInfo) => {
+  test('human ranking settings begin empty, preserve versions and survive reload without inventing unknown scores', async ({ page }) => {
     await page.goto(`${server.webURL}/attention`);
     const main = page.getByRole('main');
     await main.locator('summary').filter({ hasText: /^管理资料域、排序与空间引用$/ }).click();
@@ -236,7 +232,6 @@ test.describe('S1 实际 API 与持久化', () => {
     await expect(history).toContainText('v2 · 停用');
     expect(await api.get('/attention-ranking-profile')).toEqual(saved);
     expect((await api.get('/missions')).items).toHaveLength(0);
-    await page.screenshot({ path: testInfo.outputPath('s1-human-ranking-profile.png'), fullPage: true });
   });
 
   test('default automatic processing remains disabled and opening its form never submits a model job', async ({ page }) => {

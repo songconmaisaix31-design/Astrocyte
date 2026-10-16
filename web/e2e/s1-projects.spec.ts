@@ -113,7 +113,6 @@ test('human registers a specified project, independently saves B/C, reads only a
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await panel.screenshot({ path: testInfo.outputPath(`actual-project-${width}.png`) });
     }
   } finally { await server.close(); }
 });
