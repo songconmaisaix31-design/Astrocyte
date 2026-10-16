@@ -1,5 +1,15 @@
 # Astrocyte 主控交接
 
+## 同库产品已恢复，继续经验接缝（2026-10-17 02:22）
+
+当前普通产品已恢复 `http://127.0.0.1:64505/`，准确 `172bb445597193d55f1563ee5d21ac2ec881798d` /modified=false /PID44080，启动UTC `2026-10-16T18:20:54.4306224Z`。根独立核当前running必要指针、真实程序路径 /启动时间、唯一127.0.0.1:64505监听、Go buildinfo与health ok；首页200 /562bytes亦由模块实际核验。根读取本次before /after的完整counts对象并严格比较相等，原Q `snapshot-1711995690`、媒体和同一D库保持。没有新Native初始化、模型、ASR或业务测试重跑。
+
+原H使用同一工作树的独立普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 保有既有D启动脚本，服务父进程44976；普通终端已回PowerShell提示而产品继续存活，H仍是唯一生命周期负责人。未建设守护器、自启或新调度。安全记录在原 `shared-product-ad8413/` 的 `running.json`、`recovery-sol-reboot-20261017-20261016-182054.json`、相同后缀的data-before /after文件。此前44832 ready只属于其当时结果，该进程已随模型切换退出；旧外层89264 EXIT UNKNOWN保留。
+
+两个原业务Task现均使用实际GPT-6.1-Sol /xhigh并已本人读取最新覆盖：B `ctx_010eaf93bbc0` / `term_b1dfc64b-0db3-4011-b0b8-e76adb09afb1`，H `ctx_ad637376ba1d` / `term_fcc8b4c3-cb3f-477d-8f22-e86cbc0a3a00`。原Astra恢复过程只读，无业务修改，已精确停止并按官方流程在同Task接续。B仅新增 `internal/adapters/sqlite/accepted_artifact_completion.go`、对应 `_test.go` 及backend报告；H独占relay完成经验组装及必要薄胶水，原S3 /R /T不修改。两轨可在clean /祖先成立时ff-only消费已push的准确I42860；H已完成消费，B实际SOURCE及新测试待交，不消费WIP。
+
+当前经验注入使用每次真实Capture请求的私有context传递当前Principal，不能从历史ActorID、HTTP正文或全局可变字段取得当前权限；原H继续核实际固定Git上下文、显式期限及输入前再授权。生产没有显式期限和固定public Git配置时保留明确拒绝，不猜默认，不将nil记为注入完成。真实采用事件缺失及Native工具边界仍未解决，正向经验生成、完整check/default、L1 /L2及最终Windows包未通过。
+
 ## 系统重启恢复入口（2026-10-17 02:12）
 
 本机实际LastBootUpTime为2026-10-17 02:07:51，Orca runtime为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`。根同一pty /tab /leaf恢复句柄 `term_dc198f4c-7a7b-4ad5-8d91-82eb05d625a8`，原Run `run_973808dd6a2f` 已普通run-use为generation34。监督新句柄 `term_f70bd1fb-7acc-407f-8eb5-8faab62aeaa2`。原产品PID25568不存在，64505health实际拒绝连接，当前尚未恢复；下方已验运行172属于重启前事实。

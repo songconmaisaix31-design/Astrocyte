@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 02:22 同库产品恢复完成（2026-10-17）
+
+产品当前恢复 `http://127.0.0.1:64505/`，准确172bb445 /modified=false /PID44080，启动UTC18:20:54.4306224。根独立核程序 /启动时间 /唯一监听 /buildinfo /health，before /after完整数据库counts对象严格相等，原Q和同一D库保持。原H独立普通服务终端610cc保有产品，开发Agent与服务分别管理；没有新增Native /模型 /ASR或重跑成功业务。
+
+原B ctx010eaf93、原H ctxad637均已实际Sol/xhigh并读最新范围，同原Task /Run /树 /分支继续真实采用来源与Interpreter生产连接。B限定两个新SQLite前缀文件和报告，H限定原relay组装；新SOURCE /实际验证待交，正向经验、完整默认 /check /L1 /L2 /最终包仍未完成。下方系统重启前和恢复在途记录保留，当前身份与来源见HANDOFF顶部。
+
 ## 02:07:51 系统重启后的恢复（2026-10-17）
 
 本机LastBootUpTime实际为02:07:51，runtime变为ca45f528；原产品PID25568不存在，64505health连接拒绝。当前产品尚未恢复，以下172运行记录属于重启前。根同一pty /tab /leaf新句柄dc198，原Run973已普通绑定generation34；I42860d27与管理37b77985已push，成功验证保留。
