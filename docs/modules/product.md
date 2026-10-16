@@ -26,6 +26,14 @@ B 本人 `msg_dc1b0c6e49e7` 已核准确 `4b4ec3b26c276d707cbea81e7207dbce9d7582
 
 原 B 实施、定向运行并迭代上述真实场景，使用 D 新目录保留所有首结果，SOURCE 与独立 REPORT 普通 push。鉴于默认套件仍包含未整改替身，本阶段后续提交均附 `[skip ci]`，避免自动启动根已禁止的新默认运行；不改 workflow 或添加 test Skip，当前完整 CI 仍未通过。模块只维护本计划、审阅及交接，原 B 持续同 Task / Dispatch / 树 / 分支，未创建新开发人员。
 
+### 连续后继：普通 Workbench HTTP 实际来源替换
+
+根 `msg_ca331b2d8060` 指明 `internal/adapters/httpapi/workbench_test.go` 的 workbenchStub / PRIVATE_CANARY 仍须真实整改，不能只登记原七项进度替身。模块已完整读取现有测试，最后源码来源 `8635895e40eb022e92a86870861b4d09fd168147`；原分工普通 HTTP 属于 B，Q 只持 snapshot CLI / release-cognition 范围，H 为 relay 前缀。M-relay `msg_499fe755ea32` 当场核 H 原树该文件 status 为空、diff --quiet EXIT0，确认没有 WIP 且继续不写。该单文件仅由原 B 连续处理，不恢复 Q 或新增人员。
+
+原 B 先固定上述四件返修 SOURCE / REPORT，再将 `internal/adapters/httpapi/workbench_test.go` 加入同一 Task 的后继精确写域，`backend.md` 继续归 B；本阶段不修改生产 Reader、H 胶水、Q 或冻结核心。复用已授权公开 `C:/Users/DW/orca/workspaces/Astrocyte/release-cognition-20261014/.verification/cross-day-20261015-0228/local`，先核原 Q 报告、实际事件库和安全独立 SQL 期望，源只读、新输出为 D 专属目录，不读取 V4 / 私人快照。通过真实 Reader、SQLite 与实际 HTTP 保留共享 session、Origin、ErrorV1、隐私和六字段断言，并核真实 GetEvent / 分页；错误路径须有实际来源或服务生命周期，不能手工返回错误、伪造 Event、用静态响应或空目录代替已成功来源的失败验证。
+
+不新采集、Sleep、Probe、Native 或模型，不删除旧等效覆盖、不新增 Skip；本后继全部提交继续 `[skip ci]`，实际定向验证通过及普通 SOURCE / 独立 REPORT 齐备后再交唯一集成。当前尚未实施这单文件，不登记为 HTTP 通过。
+
 ## 2026-10-17 02:14 系统重启后的原任务接续
 
 当前事实源为根管理树 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 02:12 入口、根提交 `37b77985a084ffb87c68683a1fde7f4f49c6725c` 及本次正式消息 `msg_b20482900a1c`、`msg_251436e5c5ab`、`msg_fe8b1aa0d16b`。根已核实整机于 02:07:51 重启，runtime 为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`；重启前的运行 172 与全部成功结果保持其实际时间含义。产品负责人同 Task `task_b0197ca7ebdf`、当前 Dispatch `ctx_47dffa3cec8b`、终端 `term_d6eca544-939f-4f9a-9923-5b00da4eee3f` 继续，原子 Run `run_7b2ce96bcd13` 已普通绑定为 generation105，没有创建新 Run、Task、工作树或开发轨。
