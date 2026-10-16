@@ -1,5 +1,24 @@
 # Astrocyte 主控交接
 
+## 会话 HTTP 已完成真实替换与组合检查（2026-10-17 03:03）
+
+H SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` /独立REPORT `c4d0e198da59d7ab91af061a4e115c3ad16e8cbb` 已普通合原I `607a9a82e5db7600361bc419fbe7c1852857a4b0`，根报告 `b342cb8154748cd44e0aad3cabd5ff59df8f93d2` 已普通push。根独读全部差异 /报告 /作者日志并仅在准确组合精确list三项，实际3 PASS /0 Skip：空登记重开0.13秒、生产collector HTTP0.12秒，main包1.428秒；未配置provider0.10秒，httpapi包1.582秒。两包vet /diff /runner均EXIT0，原件 `D:/Astrocyte-agent-assets/20261015/integration/root-session-607a9a8/` 及相邻runner。
+
+HTTP固定reader替身已完整移除；原九项拒绝 /成功空200 /no-store与真实关闭owned store后的503保持，拒绝在关闭后仍按原状态返回。独立空登记同库重开、三次poll不创建checkpoint及零事件 /会话 /binding均已验证。旧owned三gap函数 /全部断言原样保留、不运行不计PASS，不能用空基线说明非空owned静默写入已验。当前产品c5 /PID30420 /64505与原服务外层UNKNOWN保持，无生产改动 /构建 /部署；B的下述实际选定文本装配继续。
+
+根已按监督 `msg_1ef41587d9aa` 重读原Release /AGENTS-standard /cognitive L1L4与六步任务，并交两原模块核当前任务仍可独立实施的具体事项或真实缺口；以条款 /来源前置 /原owner记录，不扩展无任务依据全仓整改。原工具 /批准 /来源 /冻结与最终包磁盘门禁保持，完整默认 /CI /L1 /L2及最终包仍未通过。
+
+## 当前两轨真实测试计划（2026-10-17 03:00）
+
+继续原Task /Run /树，实际客户端均Codex /GPT-6.1-Sol /xhigh，根独占I集成与管理文档，模块只写各自计划。新范围已分别由本人读取，B新文件已由M-relay核不存在 /无WIP并由H确认不写。当前执行如下：
+
+| 原唯一负责人 | 本阶段写入范围 | 真实验收与保留边界 |
+|---|---|---|
+| B /standards-backend /ctx010eaf93 | 新增 `cmd/server/selected_text_preflight_actual_test.go`、`docs/standards/backend.md` | 复用实际selectedTextBridge /HTTP /SQLite /ProjectFiles /未ProbeRegistry，准确原公开paper DOM的57465bytes完整正文；核真实项目许可、缺配置证据拒绝、撤回 /取消 /关闭库。原两distillers容量 /模型正向 /非法响应完整覆盖保留未执行，新增项只验真实装配，不声明原替身全部移除。可仅在clean /准确祖先成立时ff-only消费已push I2ab520ad复用原目录helper，未合WIP。 |
+| H /works-relay-http /ctxad637376 | `cmd/server/relay_session_poll_test.go`、`internal/adapters/httpapi/relay_session_test.go`、`docs/access/http.md` | 原HTTP矩阵移至main真实组装，HTTP包另核未配provider503；可新增不同名真实空collector /重开 /无checkpoint检查。旧owned三gap函数及全部断言原地保持、不运行不计PASS，实际会话前置缺失不由空基线覆盖。 |
+
+生产代码、原生控制器和工具边界不变，不新Task /writer、Probe /Start /模型或采集。公开原件只读，新输出仅D。作者固定SOURCE /独立REPORT及实际适用测试后，根普通合并并只执行必要组合检查，无生产改动不重建 /部署。产品c5 /PID30420及服务外层UNKNOWN保持；完整默认 /CI /L1 /L2和最终包未完成。
+
 ## Workbench HTTP 已完成真实替换（2026-10-17 02:57）
 
 B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` /独立REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通合原I `74e3b79c9ab48233391d6c209ca7d3baf07b5e79`，根报告 `2ab520ad5c275f193270f3c23391451f397e7f3e` 已普通push。原同名HTTP测试完整移除固定Event /错误stub，全部原身份 /查询 /六字段 /隐私断言改为真实HTTP /SQLite。原Q公开snapshot-1711995690的1316事件按20 /50页长核原SQL，每个event_id逐一GetEvent定位原Git收据；仅新D副本真实离线503并恢复200，源只读并在关闭后核文件身份 /大小 /mtime /字节保持。根独读准确全源码 /报告 /作者原件后，仅在准确74e组合精确list1 /实际1 PASS1.11秒 /包2.201秒，httpapi vet /diff /runner均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-workbench-74e3b79/` 及相邻runner。
