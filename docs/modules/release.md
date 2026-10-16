@@ -2,6 +2,26 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 11:48 接续原 Run 与唯一集成
+
+根工作树 HANDOFF / STATUS 11:38 和 QUESTIONS 为本轮入口。模块负责人为原 Task `task_315679474dc4` / Dispatch `ctx_e4bfbfefc7b4` / `term_09446359-d75f-471b-84b2-39c472d0ada8`，普通绑定原 `run_aa4e6a119547` generation 11；公开终端身份为 Codex / GPT-6.1-Sol xhigh fast。模块只维护本文和既有日运行记录，业务修改、测试及返修继续由原作者完成。没有创建新 Run 或替代 Task，没有增加第四层。
+
+| 原轨道 | 本轮计划与准确输入 | 验收与边界 |
+|---|---|---|
+| 唯一 I，原 `task_2ee44933df72` / `works-relay-integration` / 同名发布分支 | 保留准确 `38fb289160ef85f75062f917e861488b95e2a309`、clean；先核远端和原中断检查，再普通消费原经理确认的 T / H 及后继 B / F / UI SOURCE 和独立 REPORT | 仅 I 普通合并及少量集成衔接；领域冲突本人 STOP 后交原作者，独立核查归还后继续。原成功 build、tsc、契约和 vet 不重复，适用检查、页面及最终包继续按实际结果处理 |
+| H，由 M-relay 管理，`ctx_d763540bd366` | 使用本模块已核的38fb完整 binary / web，在自身 D 稳定目录复制后恢复同一 SQLite、LOCALAPPDATA、媒体白名单、Q 原 generation 与首选64505 | H 本人停止读取并归还 I 产物窗口后 I 才可覆盖。共享实例与业务操作保持原唯一作者；不重复成功 ASR、OS、模型或 Q |
+| P / N，原打包与独立验收轨道 | 保留 P SOURCE `7431db6451fa759638dedc4aad7687a217d3a6d9` / REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a` 及已有运行依赖准备 | 最终准确 I、完整适用检查和必要配置齐备后才执行同源包与新目录验收；旧候选不计本轮最终交付，不启动重复准备 |
+
+本模块实际核 `LastBootUpTime=2026-10-16 11:26:45+08:00`、旧 I `ctx_4a4234c26f8c` 的本机创建 UTC `2026-10-15 20:07:14` 及原树终端列表为空，按该实际重启事实精确 abandon，保留资源与全部源码。同 Task / 工作树 / 分支的两次 retry `ctx_b6ab1392316b` 与 `ctx_6e6dadf296eb` 均实际出现 `account/read` workspace routing timeout 并返回 PowerShell；逐一文本核实进程退出后仅精确 stop 对应 Dispatch。当前没有 I 写入者，准确38fb源码保留；第二次同错误已通过 `msg_13c345eb3f91` 升级根处理启动路由，不继续无变化重启。
+
+准确38fb的原 `integration/c16-product-build-38fb289/result.json` 记录 EXIT0 / `74.0037711` 秒，source / source_after 同值，本模块已独读；实际 `go version -m` 核当前 binary 同 revision / modified=false，web index 为562 bytes。H 本人 `msg_d5ce7948b140` 与 M-relay `msg_06d02ba07b88` 确认完整复制至 `versions/38fb2891`，30个 web 文件逐项存在且大小 / 数量一致，已 STOP 读取并归还窗口。
+
+H `msg_0f1a55693daf` 确认稳定38fb已恢复同一 `http://127.0.0.1:64505/`，PID33808、启动 UTC `2026-10-16T03:48:23.5356234Z`；原 SQLite 启动前后68表 / 90行相等，媒体白名单与 Q `snapshot-1711995690` 保持，新初始化 / 模型 / ASR 为零。本模块实际 GET 首页 HTTP200 / text/html / 562 bytes，`/api/v1/health` 为200 / status=ok；另核64505唯一 loopback listener、进程稳定路径 / 启动时间及副本 Go revision / modified=false。当前普通产品可访问，完整功能和最终发布继续按各项实际结果验收。
+
+待普通消费的准确输入为 T SOURCE `5d701bdd7f4d6696a1f730f21c47f84d222dd6cd` / REPORT `149b5261f52e5a33a2172241ce2089ae12fbbcb3` 和 H 运行 REPORT `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4`；本模块已读准确范围并独核两条远端同完整 SHA。T 仅增加真实 main 缺失完成来源404、无副作用与同库进程重启检查，30.116秒通过，readiness 首失败保留；Interpreter 正向未据此通过。原 B / F / UI WIP 等待原经理核准来源，不复制未提交内容。
+
+原生工具、语言、Agent completion、S3 等未答选择和具体候选批准保持。正式 D2 partial、已通过 OS / ASR / 模型 / Q / D1 不重跑。完整默认、L1 / L2 六步及最终同源包仍未通过。
+
 ### 2026-10-16 04:51 生产准入与完成桥已准确集成
 
 H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 已由原作者及 M-relay 确认可消费。本模块独读六件 H 文件的范围与单件 http.md 报告；生产装配接入同 DB human AdmissionService、真实完成来源 Reader，并补完整公开 Schema。无快照时使用 B 完整逐引用权限，有快照时保留原 selectedrefs / delegated-owner；Agent completion 未决定分支继续拒绝，session-events 六字段保持。
