@@ -23,7 +23,7 @@ H 使用原 owned helper 发送 `CTRL_C_EVENT`，旧38fb / PID33808正常退出�
 
 本机安全运行指针仍为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`；其中引用本次 `update-2d27-20261016-054018.json`、前后计数与停止收据。后继进程 TEMP / TMP / GOTMPDIR、Go build / module、npm、Node compile与Corepack缓存均明确使用各自独占D目录，仅进程作用域，不清理既有缓存。生产token保持原一小时，原B独占12768自然到期检查不受共享更新影响；H不修改 `projects.go`、数据库时间或 Clock。
 
-当前完整默认、真实原生完成正向、L1 / L2六步和最终包仍未通过；Jev / Laya / Interpreter未配置，语言、Agent completion action、原生工具边界、S3及具体批准保持未答。P一次无模型构造的局部结果和辅助脚本清理失败分开记录，最终接纳结果待根或当前发布负责人转交。旧发布 `ctx_e4bfbfefc7b4` 已被公开CLI判定completed；转投其Run也因跨Run权限被拒绝，模块已如实交根转发，没有声称消息已送达，没有创建替代Task或更换他人绑定。旧R / S4释放unknown继续保留。
+当前完整默认、真实原生完成正向、L1 / L2六步和最终包仍未通过；Jev / Laya / Interpreter未配置，语言、Agent completion action、原生工具边界、S3及具体批准保持未答。P一次无模型构造的局部结果和辅助脚本清理失败分开记录，最终包结果依其门禁继续验收。根 `msg_d19f0e8c9de8` 已确认普通合入H报告并独立核查当前2d27实例；M-release仅本轮准备阶段按根正式答复结束，原 `ctx_e4bfbfefc7b4` 已completed，根已精确release并归档关闭其owned终端。最终包门禁具备后由根沿原Task / Run恢复，当前不需要新发布身份或跨Run转投。模块两次跨Run交接均未送达的事实已如实提交根，没有创建替代Task或更换他人绑定；模块与H继续当前实例支持，仅在必要源码或生命周期问题出现时操作。旧R / S4释放unknown继续保留。
 
 ## 11:45恢复与后续协作记录
 
