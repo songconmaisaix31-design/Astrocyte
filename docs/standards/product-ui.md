@@ -427,3 +427,25 @@ Taste 页面提供完整已保存内容、人工创建及编辑、启停、固�
 `pnpm --dir web exec eslint src/pages/attention/delegation/TasteProfileEditor.tsx e2e/s5-delegation.spec.ts` 实际 EXIT0，原件 `lint-cancel.log`。完整 `pnpm build` 实际 EXIT0，工具会话 27611 返回 EXIT0，原件 `build-cancel.log`，包含 server / MCP / Sleep、完整 tsc-b 与 Vite；产物仍在本树 C 盘 `dist/` / `web/dist/`，缓存与 QA 原件继续使用前节 D 目录。当前主资源为 693.62 kB，原 500 kB 提示保持。上述检查在该 SOURCE 提交前的相同业务与测试内容上运行；`git diff --check` / `git diff --cached --check` 均 EXIT0。
 
 本文件 12:55 章节属于前序未接纳候选历史，其待运行说明不构成当前验收条件。当前有效判断验收要求实际生产 HTTP 200、固定来源及真实持久化结果，以上两阶段按各自实际源码和分次结果记录。原收据能力、共享只读和最终发布边界保持，原 Task 持续负责具体领域返修，不扩展功能范围。
+
+## Taste 实际委托引用与固定规则版本
+
+Task `task_d0cee5a583bb` / Dispatch `ctx_e921762e5e79` 沿原树及分支继续根指定定向检查。SOURCE `fbe0e34c6eb85d2c3e39492a83bbc9d4a5ac0769` 已普通 push，仅修改 `web/e2e/s5-delegation.spec.ts`，没有修改生产实现或公共配置。以下检查在该提交前的相同测试内容上执行，本人已取得实际工具退出回执。
+
+前置复用原 `setup()` 与正式 Relay 独立 D 实例，通过生产接口保存明确的 Taste 准则及真实固定资料示例、当前项目 Goal、实际 Snapshot、完整 Policy 和 disabled Rule。规则使用实际提交并经 GET 重读的 UUID、revision、非空 workflow 及真实 session owner；Policy 保存实际 settings.revision、snapshot.generation、worktree_id 和 Goal / Taste 来源。该前置只为本次委托引用场景建立真实记录，不重跑原十二项成功场景。
+
+实际 DOM 从已有规则列表选择该 Rule r1 / workflow，保存 Taste v2 并经 HTTP 与真实 SQLite 重读。之后通过生产 state 接口将该实际 Rule 更新为 paused / r2，保持 workflow 与资料引用；页面保留原 r1 固定引用，保存前实际 GET 检出版本变化并拒绝，Taste PUT 为零。人工只读刷新规则后，原 r1 引用继续保留，再次保存仍被拒绝且 PUT 为零。人工移除旧引用、明确选择实际 r2 后，DOM 保存产生 Taste v3；HTTP / SQLite 当前配置固定 r2，历史 Taste v2 继续固定 r1，准则、示例与资料 digest 均保持。真实规则 SQL 为 r2 / paused / 原 workflow，资料详情重读和页面重载后的已保存展示一致，local_agent_sessions 为零。
+
+所有本轮原件位于 `D:/Astrocyte-agent-assets/20261015/product/ui/ctx_e921762e5e79/delegation-reference/`。进程级 GOCACHE 继续为 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，GOMODCACHE 复用同 ctx 已成功的 `results/astrocyte-s1-EhXH3k/profile/go/pkg/mod`；GOTMPDIR、TEMP / TMP、ASTROCYTE_TEST_OUTPUT_ROOT 分别为本轮原件目录的 `gotmp`、`temp`、`results`，GOMAXPROCS=2、GOFLAGS=-p=1。未改全局环境。
+
+| 实际命令 | 结果 |
+|---|---|
+| `pnpm --dir web exec playwright test --config e2e/self-service.config.ts e2e/s5-delegation.spec.ts --grep 'Taste实际委托引用选择、固定版本变化与人工重新选择' --workers=1 --retries=0 --trace off --reporter list --output D:/Astrocyte-agent-assets/20261015/product/ui/ctx_e921762e5e79/delegation-reference/playwright-first --list` | EXIT0，`list-first.log`，确认 chromium-1920 / chromium-1280 恰好两项、一个文件 |
+| 上述同一精确 argv 去掉 `--list` | 两项 2 PASS / 54.0 秒 / EXIT0；`e2e-first.log`，实际工具会话 37976 返回 EXIT0；1920 / 1280 场景分别为 17.6 / 11.7 秒 |
+| `pnpm --dir web typecheck` | 完整 tsc-b EXIT0，`typecheck.log`，实际工具会话 95584 返回 EXIT0 |
+| `pnpm --dir web exec eslint e2e/s5-delegation.spec.ts` | EXIT0，零错误警告，`lint.log`，实际工具会话 6972 返回 EXIT0 |
+| `git diff --check` / `git diff --cached --check` | 均 EXIT0 |
+
+真实数据库及进程原件分别保留在本轮 `results/astrocyte-s1-q6rsyR` / `results/astrocyte-s1-IsCuab`，实际服务和自有 Go 进程均已结束。本阶段仅新增测试，没有重复完整生产 build 或原十二项通过场景；两项自身均通过原 helper 实际构建并启动生产 Go / HTTP / SQLite / Vite。未知操作持久锁与保存前取消实现保持，未进行原生登记、初始化、模型或共享业务操作。
+
+根准确 172 的本轮共享暂停 ACK 已由本人直接发送 H 并抄送模块，消息为 `msg_43735ff3fafb` / `msg_be1369770189`；共享64505仍须等 H 本轮正式 ready 才恢复只读，独立 D 检查不阻止该部署。PLOS 准入、共享个人 Taste 与推断均未操作。此测试阶段已交模块消费，原 Task 继续承担具体集成返修，整仓默认、Native / L1 / L2 和最终发布状态仍依原负责人实际结果。

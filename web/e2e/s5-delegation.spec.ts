@@ -3,7 +3,7 @@ import { realService, registerCurrentProject, importTrackedDocument, repositoryR
 import { humanAPI, importMaterial } from '../../tests/s1/api.mjs';
 import { execFileSync } from 'node:child_process';
 import { hostname } from 'node:os';
-import type { components } from '../src/api/schema';
+import type { components, paths } from '../src/api/schema';
 
 type S = components['schemas'];
 const tastePath = '/attention-taste-profile';
@@ -97,6 +97,53 @@ async function createGoal(page: Page, webURL: string, projectID: string) {
   const result = await saved.json() as S['S2GoalResultV1'];
   if (result.goal.revision < 1) throw new Error('真实目标版本缺失');
   return result.goal;
+}
+
+async function savedDelegationRule({ api, project, material, revision }: Awaited<ReturnType<typeof setup>>) {
+  const rubricID = crypto.randomUUID();
+  const taste = await api.write(tastePath, {
+    enabled: true,
+    rubrics: [{ id: rubricID, question_type: 'truth', criteria: '人工核查公开协议固定版本的来源范围', options: [], levels: [] }],
+    examples: [{ id: crypto.randomUUID(), rubric_id: rubricID, material_id: material.id, revision: revision.revision, content_digest: revision.content_digest, expected: '1' }],
+    delegations: [],
+  }, { method: 'PUT' }) as S['TasteProfileResultV1'];
+  if (!taste.profile || taste.profile.version < 1) throw new Error('真实前置 Taste 版本缺失');
+  const { goal } = await api.write('/goals', {
+    expected_version: 0,
+    goal: { project_id: project.id, title: '核查实际委托固定版本引用', success_criteria: ['人工选择的规则版本与实际保存结果一致'], status: 'active', priority: 1 },
+  }) as S['S2GoalResultV1'];
+  if (goal.revision < 1) throw new Error('真实前置 Goal 版本缺失');
+  const captured = await api.request(`/local-projects/${project.id}/judgment-snapshots`, { method: 'POST', body: { files: ['STATUS.md', 'AGENTS.md'] } });
+  expect(captured.status).toBe(200);
+  const { snapshot } = captured.data as S['JudgmentSnapshotResultV1'];
+  if (!snapshot.generation || !snapshot.worktree_id) throw new Error('真实前置快照身份缺失');
+  const policy: S['JudgmentPolicyV1'] = {
+    revision: 1, project_id: project.id, project_settings_revision: project.settings.revision,
+    worktree_id: snapshot.worktree_id, snapshot_id: snapshot.generation, snapshot_files: ['STATUS.md', 'AGENTS.md'], snapshot,
+    question_type: 'truth', backend: 'rule', languages: ['en'], external_scope: '', external_evidence: [],
+    versions: { goal_version: `${goal.id}@${goal.revision}`, taste_version: `${taste.profile.id}@${taste.profile.version}`, policy_version: 'public-reference-review-v1', model_revision: 'rule:all_evidence_present/v1', access_epoch: String(project.settings.revision) },
+    budget: { timeout_ms: 60000, max_input_bytes: 131072, max_input_tokens: 8192, max_output_tokens: 0 },
+    min_confidence: null, truth_accept_min: null, truth_accept_max: null,
+    sources: { goal: { id: goal.id, revision: goal.revision }, taste: { id: taste.profile.id, version: taste.profile.version } },
+  };
+  const policyCommand: paths['/local-projects/{project_id}/judgment-policies/{question_type}']['put']['requestBody']['content']['application/json'] = { expected_revision: 0, policy };
+  const policySaved = await api.request(`/local-projects/${project.id}/judgment-policies/truth`, { method: 'PUT', body: policyCommand });
+  expect(policySaved.status).toBe(200);
+  expect((await api.get(`/local-projects/${project.id}/judgment-policies/truth`) as S['JudgmentPolicyResultV1']).policy).toEqual(policy);
+  const session = await api.get('/auth/session') as S['LocalSessionV1'];
+  const rule: S['DelegationRuleV1'] = {
+    id: crypto.randomUUID(), project_id: project.id, workflow_id: 'public-taste-reference-review', owner_id: session.actor_id,
+    revision: 1, state: 'disabled', purpose: 'opportunity_admission', policy_revision: policy.revision, language: 'en',
+    question: { question_id: crypto.randomUUID(), question_type: 'truth', instructions: 'Is the fixed public protocol source available?', rule: 'all_evidence_present', options: null, levels: null },
+    materials: [{ material_id: material.id, revision: revision.revision, digest: revision.content_digest }],
+    admission_choice: null, admission_value_min: 1, admission_value_max: 1, allow_opportunity_external: false, review_conditions: ['fixed_inputs'],
+  };
+  const ruleCommand: paths['/local-projects/{project_id}/delegation-rules/{rule_id}']['put']['requestBody']['content']['application/json'] = { expected_revision: 0, rule };
+  const saved = await api.request(`/local-projects/${project.id}/delegation-rules/${rule.id}`, { method: 'PUT', body: ruleCommand });
+  expect(saved.status).toBe(200);
+  const persisted = (await api.get(`/local-projects/${project.id}/delegation-rules/${rule.id}`) as S['DelegationRuleResultV1']).delegation_rule;
+  expect(persisted).toEqual(rule);
+  return { rule: persisted, profile: taste.profile };
 }
 
 test('完整真实DOM链：Taste三题型、启停、Goal、Snapshot、Policy、Rule、判断反馈及重启', async ({ page }) => {
@@ -411,4 +458,80 @@ test('Taste保存前真实资料读取随页面关闭取消，不产生延迟提
     await network.detach();
     await server.close();
   }
+});
+
+test('Taste实际委托引用选择、固定版本变化与人工重新选择', async ({ page }) => {
+  test.setTimeout(180_000);
+  const fixture = await setup();
+  const { server, api, project } = fixture;
+  try {
+    const { rule, profile } = await savedDelegationRule(fixture);
+    const reference = { rule_id: rule.id, revision: rule.revision, workflow_id: rule.workflow_id };
+    await page.goto(`${server.webURL}/attention`);
+    let section = page.getByRole('region', { name: 'Taste 配置', exact: true });
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    let references = section.getByRole('group', { name: 'Taste 委托引用', exact: true });
+    let picker = references.getByLabel('添加实际委托规则引用', { exact: true });
+    await expect(picker.locator(`option[value="${rule.id}"]`)).toHaveText(`${project.name} · ${rule.workflow_id} · r${rule.revision} · ${rule.question.instructions}`);
+    await picker.selectOption(rule.id);
+    await expect(references).toContainText(`规则 ${rule.id} · r${rule.revision} · 工作流 ${rule.workflow_id}`);
+    const first = await saveTaste(page, section);
+    expect(first.version).toBe(profile.version + 1);
+    expect(first.delegations).toEqual([reference]);
+    expect(first.rubrics).toEqual(profile.rubrics);
+    expect(first.examples).toEqual(profile.examples);
+    expect((await api.get(tastePath) as S['TasteProfileResultV1']).profile).toEqual(first);
+    const rows = server.query('SELECT data FROM attention_taste_profile_revisions WHERE profile_id=? AND version=?', first.id, first.version);
+    expect(rows).toHaveLength(1);
+    expect((JSON.parse(String(rows[0].data)) as S['TasteProfileV1']).delegations).toEqual([reference]);
+    await page.reload();
+    section = page.getByRole('region', { name: 'Taste 配置', exact: true });
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    references = section.getByRole('group', { name: 'Taste 委托引用', exact: true });
+    await expect(references).toContainText(`规则 ${rule.id} · r${rule.revision} · 工作流 ${rule.workflow_id}`);
+    await expect(references.getByLabel('添加实际委托规则引用', { exact: true })).toBeEnabled();
+    const changed = await api.request(`/local-projects/${project.id}/delegation-rules/${rule.id}/state`, { method: 'POST', body: { expected_revision: rule.revision, state: 'paused' } });
+    expect(changed.status).toBe(200);
+    const nextRule = (changed.data as S['DelegationRuleResultV1']).delegation_rule;
+    expect(nextRule.revision).toBe(rule.revision + 1);
+    expect(nextRule.workflow_id).toBe(rule.workflow_id);
+    expect(nextRule.materials).toEqual(rule.materials);
+    const writes: string[] = [];
+    page.on('request', request => { if (request.method() === 'PUT' && request.url().endsWith(`/api/v1${tastePath}`)) writes.push(request.url()); });
+    await section.getByRole('button', { name: '保存配置', exact: true }).click();
+    await expect(section.getByRole('alert').filter({ hasText: '原委托规则版本已变化，请核查固定引用' })).toBeVisible();
+    await expect(references).toContainText(`规则 ${rule.id} · r${rule.revision} · 工作流 ${rule.workflow_id}`);
+    expect(writes).toHaveLength(0);
+    expect((await api.get(tastePath) as S['TasteProfileResultV1']).profile).toEqual(first);
+    expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 2 }]);
+    const refreshed = page.waitForResponse(response => response.request().method() === 'GET' && response.url().endsWith(`/local-projects/${project.id}/delegation-rules`));
+    await references.getByRole('button', { name: '只读刷新委托引用', exact: true }).click();
+    expect((await refreshed).status()).toBe(200);
+    await expect(references).toContainText(`规则 ${rule.id} · r${rule.revision} · 工作流 ${rule.workflow_id}`);
+    await section.getByRole('button', { name: '保存配置', exact: true }).click();
+    await expect(section.getByRole('alert').filter({ hasText: '委托引用当前不可读取，请明确选择实际规则版本' })).toBeVisible();
+    expect(writes).toHaveLength(0);
+    await references.getByRole('button', { name: '移除委托引用', exact: true }).click();
+    picker = references.getByLabel('添加实际委托规则引用', { exact: true });
+    await expect(picker.locator(`option[value="${nextRule.id}"]`)).toHaveText(`${project.name} · ${nextRule.workflow_id} · r${nextRule.revision} · ${nextRule.question.instructions}`);
+    await picker.selectOption(nextRule.id);
+    const second = await saveTaste(page, section);
+    expect(second.version).toBe(first.version + 1);
+    expect(second.delegations).toEqual([{ rule_id: nextRule.id, revision: nextRule.revision, workflow_id: nextRule.workflow_id }]);
+    expect(second.examples).toEqual(first.examples);
+    expect(second.rubrics).toEqual(first.rubrics);
+    expect(writes).toHaveLength(1);
+    expect((await api.get(tastePath) as S['TasteProfileResultV1']).profile).toEqual(second);
+    expect((await api.get(`/local-projects/${project.id}/delegation-rules/${rule.id}`) as S['DelegationRuleResultV1']).delegation_rule).toEqual(nextRule);
+    const historical = server.query('SELECT data FROM attention_taste_profile_revisions WHERE profile_id=? AND version=?', first.id, first.version);
+    expect((JSON.parse(String(historical[0].data)) as S['TasteProfileV1']).delegations).toEqual([reference]);
+    const current = server.query('SELECT data FROM attention_taste_profiles WHERE id=?', second.id);
+    expect(JSON.parse(String(current[0].data))).toEqual(second);
+    expect(server.query('SELECT revision, workflow_id, state FROM judgment_delegation_rules WHERE id=?', rule.id)).toEqual([{ revision: nextRule.revision, workflow_id: nextRule.workflow_id, state: 'paused' }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 3 }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM local_agent_sessions')).toEqual([{ count: 0 }]);
+    await page.reload();
+    await section.getByText('查看完整已保存配置', { exact: true }).click();
+    await expect(section.getByText(`委托规则：${nextRule.id} · r${nextRule.revision} · 工作流：${nextRule.workflow_id}`, { exact: true })).toBeVisible();
+  } finally { await server.close(); }
 });
