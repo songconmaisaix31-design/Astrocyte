@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 系统重启恢复入口（2026-10-17 02:12）
+
+本机实际LastBootUpTime为2026-10-17 02:07:51，Orca runtime为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`。根同一pty /tab /leaf恢复句柄 `term_dc198f4c-7a7b-4ad5-8d91-82eb05d625a8`，原Run `run_973808dd6a2f` 已普通run-use为generation34。监督新句柄 `term_f70bd1fb-7acc-407f-8eb5-8faab62aeaa2`。原产品PID25568不存在，64505health实际拒绝连接，当前尚未恢复；下方已验运行172属于重启前事实。
+
+原M-product /M-relay /B /H树当前终端为空，旧模块Dispatch已由Orca恢复为failed /abandoned，Task为ready。先沿原Task /Run /树 /分支及WIP恢复原唯一职责，禁止新建Task /Run /树 /开发轨；模块恢复后绑定自己的原子Run（产品 `run_7b2ce96bcd13`，Relay `run_8bbda1c3974c`），不得绑定根Run。历史Task spec中旧创建子Run和旧终端地址由本入口覆盖。模块只写各自管理文档，原B和H实施业务；业务writer的恢复由各自模块按官方guide核旧Task与原树，不并发创建同域writer。先由原H恢复同一D库 /稳定172 /64505的已验普通产品，无需重复构建、Native、模型、ASR或已成功测试，再继续下方经验接缝；未答权限保持。原I仍由根独占，42860d277df0c0518f58e2a836681d7fa10c50ee已push，HumanSet实际结果保持，不重复运行。
+
+两原模块已在原Task /树实际恢复，官方launch effective均为Codex /gpt-6.1-sol /xhigh，turn_started已观察：M-product `ctx_47dffa3cec8b` / `term_d6eca544-939f-4f9a-9923-5b00da4eee3f`；M-relay `ctx_1bf724fb231b` / `term_4ded8286-65fa-424b-b43e-03f9d82de4d0`。原Task为ready，官方拒绝仅用于failed /blocked Task的retry-of；根核准确dispatch-show /worker-show后直接启动原ready Task，没有更改Task状态或创建替代任务。本人原子Run接续已ACK，H/B实际恢复身份与产品ready尚待回传。空 `run_12aed3ce1e27` 无Task /Dispatch /资源，已停止使用并保留，Relay继续原8bb。
+
 ## 人工进度回执整改与经验管道接续（2026-10-17 02:07）
 
 根已按用户要求读取原Run监督消息 `msg_ce0a54b96161` 并以 `msg_f2e71fc0badf` 回复；监督只读，不争用原文件或Run。B SOURCE `ae22fc99c195792d951c7adc9b652420bc1fdbb5` / REPORT `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` 已普通合入原I为 `1679d7af9de6033aef1afb0cfb719dde1ab73abb`。原HumanSet完整迁至真实HTTP /SQLite /未Probe生产Registry，原业务断言及同库重启保持。根独读源码和作者原件，在准确组合精确list一项、实际1 PASS0.12秒 /包1.919秒、两包vet与diff检查均EXIT0；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-human-1679d7a/`，runner整体EXIT0。源公开项目与原accepted记录只读、新D目标CAS1 /人工r2，原source r3分列；关闭后main /WAL身份 /大小 /mtime保持，SHM变化单列，原生 /模型 /Grant均0。

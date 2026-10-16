@@ -1,5 +1,11 @@
 # Astrocyte 当前状态
 
+## 02:07:51 系统重启后的恢复（2026-10-17）
+
+本机LastBootUpTime实际为02:07:51，runtime变为ca45f528；原产品PID25568不存在，64505health连接拒绝。当前产品尚未恢复，以下172运行记录属于重启前。根同一pty /tab /leaf新句柄dc198，原Run973已普通绑定generation34；I42860d27与管理37b77985已push，成功验证保留。
+
+原M-product /M-relay沿原Task /树分别恢复ctx47dffa /ctx1bf724，实际Codex /GPT-6.1-Sol /xhigh、turn_started observed，已ACK原子Run接续。原H恢复同库稳定172 /64505优先，原B继续经验采用来源，准确writer与ready待回传；没有新Task /开发轨，不重跑成功测试或启动受限Native。完整身份与互斥范围见HANDOFF顶部，待答权限保持。
+
 ## 人工进度回执真实整改与后续经验连接（2026-10-17 02:07）
 
 B准确SOURCE ae22fc99 /独立REPORT78ec4fc7已普通合原I为1679d7af。原八项中HumanSet已完整替换为真实HTTP /SQLite /未Probe Registry；根准确组合独立1 PASS0.12秒 /包1.919秒、精确list一项、两包vet及diff均EXIT0。原回执、人工状态和同库重启保持，源main /WAL保持、SHM变化单列，新模型 /Native /Grant0。余七项真实前置未满足，原替身不运行计通过，完整check未通过；来源及原件见HANDOFF和集成报告。
