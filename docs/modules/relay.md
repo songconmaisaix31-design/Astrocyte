@@ -4,9 +4,11 @@
 
 ## 当前恢复分工（2026-10-16 11:45）
 
-根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 11:38 入口、当前 `STATUS.md` / `QUESTIONS.md` 与正式消息 `msg_ca0d05e1c4b4` 为本次恢复依据。总负责人为 `term_a1e70e66-3957-415d-b42c-673f2cc94c26`，顶层 Run 保持 `run_973808dd6a2f`；本模块为 `task_e8c1d01d67ec / ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`。模块已普通绑定原子 Run `run_8bbda1c3974c` generation 9，没有创建新 Run，保持原 Task、工作树、分支和全部 WIP。
+根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 11:38 入口、当前 `STATUS.md` / `QUESTIONS.md` 与正式消息 `msg_ca0d05e1c4b4` 为本次恢复依据。总负责人为 `term_a1e70e66-3957-415d-b42c-673f2cc94c26`，顶层 Run 保持 `run_973808dd6a2f`；本模块为 `task_e8c1d01d67ec / ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`。模块已普通绑定原有子 Run `run_8bbda1c3974c` generation 9，没有创建新 Run，保持原 Task、工作树、分支和全部 WIP。
 
 本机实际 `LastBootUpTime=2026-10-16T11:26:45.5+08:00`；旧 H Dispatch 创建于 UTC `2026-10-15 20:06:28`，早于本次重启，原工作树终端清单为空。模块据实际重启事实精确 abandon `ctx_5b3dc511cccd`，保留旧资源和首 `turn_start_unobserved`；没有从 `missing_status` 单独判定退出。R / S4 的原 Run 另有明确进程退出记录，两者退出码均为 `1073807364`；原已交阶段与剩余待答边界分别保留。
+
+首次未带 `--from` 的 H 恢复调用在创建 Dispatch 前以 `no_active_sender_terminal` 拒绝；补本模块实际终端 `--from` 后，原 Task 的唯一恢复 Dispatch 为下表所列，没有创建替代 Task。
 
 | 原人员 / Task | 当前状态 | 当前工作与验收 |
 |---|---|---|
@@ -37,6 +39,14 @@ F / UI 仍为共享实例唯一业务操作人员，成功和未知 mutation 不
 H 本次独立运行 REPORT 为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`，只修改 `docs/access/http.md`。模块已审查全部差异、核原25b源码为其祖先、原树 clean、报告中的实际 PID / 时间 / 来源 / 计数与现存安全原件一致；首次远端核对 TLS 失败保留，后继 `git ls-remote` 实际 EXIT0 / 远端精确同值。该报告不包含业务变化或重跑成功构建。模块独立 REPORT `61d06e90fb88e2c957270f1edcdbcb55ae7ea11e` 已普通 push，远端精确同值，已将两组准确来源交根。
 
 产品模块 `msg_523d5e2d6a7e` 核原 B / F / UI 的本轮 bootstrap 明确退出并精确停止，原 WIP 保留，B 单次后续 retry 在观察；当时没有可交实际 Working 的 F / UI。H 已收到该状态，保持38fb服务，不从无人操作推断安全 ACK。后继具体候选批准、原生工具、Agent completion、Laya 语言与 S3 待答继续保持原边界。
+
+12:03 当前配对已恢复。根批准已配置的 Claude 开发客户端后，产品 `msg_6681b314ebf8` 确认原 Task / 树 / 分支 / WIP 保持，B `ctx_547c33103d3f / term_b020982d-82f7-4186-8b71-4735274dec02`、F `ctx_44f61b51d023 / term_7b1918e7-b09e-4009-90e4-beae804a77e8`、UI `ctx_5d4bbae2a28d / term_eb9bed61-6cde-4855-9d95-d9e82a1eaaff` 三项均 ready / turn_started observed。H `msg_49ca99c499af` 已将同库38fb服务、准确 PID / 时间与运行指针分别交当前 F / UI；F 仍唯一业务操作者，UI 只读 DOM / GET 或使用原独立 helper。开发客户端调整不改变产品 Codex 原生工具关闭、零新原生 / 模型 / ASR 及其他未答边界。
+
+根对原问题 `msg_ee257517886b` 的正式答复 `msg_3315c5bc73a3` 已转 H 并获本人 ACK：保持同库38fb / PID33808；根当前集成 `fc294bee3d4a513d90cca6768d74fd4b90088394` 尚未后继完整 build，暂无 H 业务返修。只有根准确已构建产物窗口与 F / UI 本轮本人安全 ACK 均齐备后才更新运行实例，不为等待重复原生、模型或数据验证。
+
+12:17 窗口记录：产品已分别交 F 本人 `msg_dc229adf8769` 和 UI 本人 `msg_3423e6ff07d7`，两者各自确认当时64505没有在途 mutation；UI `task_d0cee5a583bb / ctx_5d4bbae2a28d` 仅 DOM / GET。模块已将准确记录交 H 和根，尚未接到后继准确已构建产物窗口，实际服务仍38fb。需要更新时仍与本人确认本次准确起止，不将 ACK 视作已经更新或具体候选批准。F 实际客户端 Claude Code2.1.238，provider.model 空，模型 UNKNOWN；UI 本人报告非秘密运行字段 `ANTHROPIC_MODEL` / `ANTHROPIC_DEFAULT_OPUS_MODEL` 均为 `qwen3.7-max`，客户端和配置值分别记录，不用 opus 别名代推模型。原 B `ctx_547c33103d3f` 误用完成消息后已停止编辑和测试，根授权原 Task / 终端合法恢复；新有效 Dispatch 尚待产品交接，H 不再向已结算旧 Dispatch 派发指导，`session.go` 继续原 B 唯一写入。
+
+12:18 产品 `msg_df6e270e91c0` 已交原 B 最新有效 `ctx_19150385309b / term_b020982d-82f7-4186-8b71-4735274dec02`，旧547 / e850已结算。模块已直交 H，原 Task / 树 / 分支 / 写域保持；四项安全真实 HTTP / 重启仍待原 B 补全，不把阶段完成消息作为验证通过。当前 H 没有新增领域修改，根后继准确构建窗口尚未交接，运行实例继续38fb。
 
 原 R / S4 的明确进程退出通知已接收，fleet 均为 `execution_host / exited`。模块按两行 `nextAction` 精确释放旧终端，运行时均返回 `release_unknown`：旧 recorded terminal 不再解析、`processAction=none`。依恢复回执分别 `worker-show` 核 failed / exited，并各用一个 fresh request 重试，结果仍 unknown；保留两项旧资源记录，没有使用 broad terminal close 或内部 DB。此状态不影响当前 H 服务及根普通集成，不能写为已经释放。
 
