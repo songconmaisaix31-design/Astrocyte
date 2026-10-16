@@ -2,6 +2,14 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 12:47 P 精确源码与报告交接
+
+原 P 已普通追加独立 REPORT `615d3a36e85aef0a5977751f895ee821a5603532`，生产 SOURCE 保持 `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d`。本模块独核远端同 REPORT、原树 clean，以及 `b208ab8ac696fea43ad192648a2e273392f5c99a..615d3a36e85aef0a5977751f895ee821a5603532` 的完整四件差异与 `git diff --check` EXIT0；仅 Start、Build、windows 说明和 P 报告。该输入已通过 `msg_bead4ec3e8b1` 交根普通消费，没有修改集成树。
+
+报告已区分真实 Shell：旧七项检查的 child 均为 `powershell.exe`，父进程分别是 PS5.1 与 PS7；实际 pwsh child 仅19882默认正向和19883唯一 S4 正向。原日志的健康、SQLite、S4四目录、显式 Go 停止和随后四端口只读 free 保留，终末重复 cleanup 错误也保留。旧运行准确38fb只用于参数兼容，未计为最终包。原 P 回报三件修订外部 helper 的 PS5.1 / 7 parser 通过，没有重新运行应用、S4或模型；本模块不将 parser 回报视为 helper 行为通过。最终文本仍有忽略进程查询错误的分支，外部 helper 尚未获得再次执行的接纳，未进入 Git 或发布包；当前生产代码消费独立继续。
+
+同一原 Task 的后继 `ctx_8acb218819a0` 已合法 `worker_done`，本模块执行官方 `worker-release` 返回 `retained / no_owned_resource / processAction=none`，未关闭或声明拥有该预创建 Claude 进程。本轮 P 曾用 shell 循环补外部脚本 BOM，已要求后继全部文件修改严格使用文件编辑工具；PS5检查脚本首次 parser 错误和旧验证错误原件保留。本模块未采用这些脚本执行新的检查，不增加证明性运行。最终同源 Build / Verify、新目录解压、完整默认与原生验收、用户未答配置和日操作条件继续保持。
+
 ### 2026-10-16 12:36 Q 组合复验与 P 报告返修
 
 根已普通合入 Q 独立 REPORT `7aa24765f99174245621498bf02d970bfe409fd7`，准确集成 SOURCE `e36650e645cae20e0d142338a0fbd20f168cdbc4` 在显式 D 输出根及空身份下完成同一完整快照测试：主测试69.99秒、包76.864秒、全部七个子项通过，source_after 同值。根原件位于 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-e36650e/snapshot.log`。首次 b02 失败、独立 symlink OS1314、原 Q 首次默认 C vet 记录保留；生产保护、断言和 Skip 未改。本模块接收根 `msg_0f6277a0f088` 的准确组合结果，没有重复运行。
