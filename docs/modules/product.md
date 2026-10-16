@@ -6,11 +6,27 @@
 
 唯一论文为根已明确的历史公开对象 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-7NybyZ/data/objects/05acdc763e444fa7b9762df6dc2c879867d6a2e38d42884dcf3b80e07cf89d64`，95314bytes，实际来源为 `https://arxiv.org/html/2504.16054v1`；唯一视频为已验新D派生 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-projection-first/data/objects/030165629c4b38e519ec79e97e52b41e3c470ddfb82df268a86aef361d35f5b0`，35807bytes，来源 `https://www.bilibili.com/video/BV1PReT6EEqR/`。两份自然正文合131121bytes。只读这两个准确公开对象，核普通文件、非重定向、Stat身份及原字节 / SHA256前后保持；不打开旧业务SQL、枚举历史目录或读取私有正文，全部新输出使用D专属目录。
 
-通过既有生产manual导入在新D库形成真实的新人工来源，保留实际URL与完整原body，使用实际新MaterialRef、真实加入项目和ReadProjectReference逐份全字节比较；时间取本次实际导入时间，不冒充原Ref / publication / 自动提取provenance。原生产SelectedTextFactory与selectedTextBridge继续使用未Probe Registry，实际返回evidence_missing；标准slog只观察生产实际安全prompt / wire大小，核自然双源进入大于128KiB且小于512KiB的前置。没有processor替身、手写组装、造日志、截断或重复正文；标准日志不能证明全部wire正文或模型接受，完整模型 / 非法响应 / 真实超限来源与原capacityCapture完整断言继续未验、不执行。
+通过既有生产manual导入在新D库形成真实的新人工来源，保留实际URL与完整原body，使用实际新MaterialRef、真实加入项目和ReadProjectReference逐份全字节比较；时间取本次实际导入时间，不冒充原Ref / publication / 自动提取provenance。原生产SelectedTextFactory与selectedTextBridge继续使用未Probe Registry，实际返回evidence_missing；标准slog只观察生产实际安全prompt / wire大小，核自然双源进入大于128KiB且小于512KiB的前置。没有processor替身、手写组装、造日志、截断或重复正文；标准日志不能证明全部wire正文或模型接受，完整模型 / 非法响应与原capacityCapture完整断言继续未验、不执行。真实四文档distillation超限按下述独立场景验收。
 
 原B按本方案实施本项必要验证、保留全部首结果、固定SOURCE / 独立REPORT普通push `[skip ci]` 后交根。没有Probe / Start / 模型输入、重新采集 / ASR、生产部署、构建输入变化或旧成功项目重复运行；当前发布、六步和未答权限边界保持。
 
 根 `msg_3dbf302e1aa4` 在同两文件内追加独立名称的真实 distillation 超限前置，双源场景先完成并保持单列。模块只读 `git cat-file -s` 核原B准确已push SOURCE `b67f570d58d3b4bd874abf3da7897de735efb5b6` 的四件不同公开文档：STATUS.md209211、backend.md230066、HANDOFF.md78620、SPEC.md60277bytes，自然总578174大于524288。原B沿成熟Git入口核准确commit / blob /完整原字节与身份，各份只用一次，真实manual新D入库和固定引用明确记为公开项目文档；原Factory / bridge应在预检返回ValidationFailed /review_selected_text_size且无Native。实际未探测下游的evidence_missing不能填为超限拒绝，禁止扩正文、重复内容或伪造计数。准确Git输入与随后REPORT追加的工作树状态分列，不能混淆固定来源；只运行必要新场景，原recommendation、全部wire内容及模型覆盖继续未验。
+
+### 03:22 双源与真实超限固定阶段独立 REPORT
+
+管理计划 SOURCE `7d7c12e251379d6244649c5b576601506ea37f03` 与超限后继 SOURCE `b291755856fd0634b905d14687d62e47990b3628` 均已普通 push；模块独核准确远端后继同值、工作区 clean、diff 检查 EXIT0，仅修改本管理文档。B 最终 SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` / 独立 REPORT `3faa336f437b975f946d58cc558c97cb3328695a` 已普通 push `[skip ci]`，前一双源 SOURCE / REPORT 为 `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` / `9bb501bb303a9b51cf1acb663fc628353db496ce`。模块完整审阅最终561行测试、两独立报告共59行、全部本机命令与首日志，远端准确最终REPORT、clean、限定差异检查 EXIT0，净两文件。根 `msg_f7891769a9d8` 已接纳前一双源限定范围，最终准确报告已交根 `msg_bbdbf3c18d8e`，由唯一I一次普通合并并组合两项与cmd vet，当前不把待执行组合记为通过。
+
+| 实际检查 | 作者分轮首结果 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative$'`，再同名 `-run ... -v -count=1 -timeout=1m` | 精确一项；1 PASS /0 SKIP，0.17秒 /包1.116秒，EXIT0 |
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextCapacityActualGitDocumentsOversize$'`，再同名 `-run ... -v -count=1 -timeout=1m` | 精确一项；1 PASS /0 SKIP，1.04秒 /包2.208秒，EXIT0 |
+| 两轮各自 `go vet -mod=readonly ./cmd/server`、实际runner、格式和限定diff | 均EXIT0；未重复未改动的双源场景 |
+
+原件根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-capacity/`，`commands-first.json` / `commands-oversize-first.json`、各自list /test /vet与本人工具runner回执分别核实。双源准确131121bytes，生产prompt139579 /wire139957 /output131072，新manual来源、实际新Ref、当前space.Version、来源完整字节与前后文件守卫全部通过。后继只追加239行和标准库导入，双源逻辑保持；四份不同公开文档固定e907及四个Git blob，578174bytes各用一次，经真实新manual file资料和固定引用，在生产预检准确返回validation_failed /review_selected_text_size。此场景实际HTTP为bootstrap，其余生产服务端口执行；没有将这些服务调用写成全链HTTP验收。
+
+不可变Git输入独立于后续backend报告和工作树变化，成熟Git入口复核原blob及完整UTF-8字节；实际HTTP与新D库关闭后来源保持。两场景均核Registry、native目录、Session与distillation零副作用。没有新增失败运行、生产修改、构建、部署、Probe、Start、模型、采集、ASR、Sleep或共享服务操作。历史52ff真实联合模型成功保持当时独立范围；当前模型接受、全部wire内容保真、recommendation超限和非法模型响应仍未验，原整个stub函数及所有完整覆盖继续保留不执行。当前七件已交付测试归还集成冻结，原B同Task继续发布支持，模块未结算。
+
+M-relay `msg_cdff05d455d4` 已交根确认六步第5步现有完整手动链：显式同库 /project /principal /session的MCP GetExperiences只返回approved，human手册使用64KiB /CAS及既有metadata /requests /事件，两条Relay首输入可消费该人工内容。当前链路尚未实际验收；自动检索注入与现有检索加人工手册由根询问用户，未答不冻结字段、选择或权限。当前没有新增B依赖或写域，不恢复F /UI，也不启动MCP /Native；先前前端限定核查保持其范围，不据搜索缺失推出必须新增自动接口。
 
 ## 2026-10-17 03:07 进度回执的真实前置后继
 
