@@ -44,9 +44,10 @@ export function usePersistentCommand<T>(scope: string, describe: (result: T) => 
     }
     return outcome;
   };
-  const run = async (action: (key: string) => Promise<T>, received?: (response: T, outcome: CommandOutcome) => void) => {
+  const run = async (action: (key: string) => Promise<T>, received?: (response: T, outcome: CommandOutcome) => void, preparedID?: string) => {
     if (busy.current || blocked.current) return;
-    const key = crypto.randomUUID();
+    if (preparedID !== undefined && !preparedID.trim()) throw new Error('已准备命令需要明确的原请求身份');
+    const key = preparedID ?? crypto.randomUUID();
     window.sessionStorage.setItem(storageKey, key);
     busy.current = true;
     setPending(true); setError(null); setNotice(null); setFailure(null); setResult(null); setOperationID(key);

@@ -10,6 +10,7 @@ import { formatDateTime, formatDimScore, opportunityStateLabel } from '../../uti
 import { SourceRefs } from './SourceFields';
 import { TextField, SelectField } from './FormControls';
 import { OpportunityForm, DimensionEditor } from './OpportunityForm';
+import { OpportunityAdmission } from './OpportunityAdmission';
 import { dimensionLabels, feedbacks, type Dimensions, type Material, type Opportunity } from './model';
 import type { components } from '../../api/schema';
 import styles from './AttentionPage.module.css';
@@ -24,17 +25,19 @@ export function OpportunityWorkspace({ item, materials, onChanged }: { item: Opp
 
 function OpportunityBody({ detail, materials, distillations, disabled, onChanged }: { detail: Detail; materials: Material[]; distillations: ReturnType<typeof useDistillations>; disabled: boolean; onChanged: () => void }) {
   const [editing, setEditing] = useState(false);
+  const [admissionBlocked, setAdmissionBlocked] = useState(false);
   const [version, setVersion] = useState(detail.opportunity.revision);
   const item = detail.opportunity;
   const snapshot = detail.revisions.find(entry => entry.revision === version);
   return <>
     <OpportunitySummary item={item} />
     {item.state === 'incubating' && <p className={styles.note}>候选仍在酝酿中。请核对依据、用途与下一步，并在对应来源版本的沉淀中补充主题关联或明确待查问题，再编辑候选引用该记录。</p>}
-    <p className={styles.note}>“以后再做”保留资料与候选，不当作拒绝。采用反馈只记录人工判断；准入、批准和任务执行属于后续切片。</p>
+    <p className={styles.note}>“以后再做”保留资料与候选，不当作拒绝。采用反馈记录人工判断；资料准入和任务批准分别确认。</p>
     {!item.version && <p role="alert">服务未提供候选元数据版本，写操作禁用。</p>}
-    <button className="ac-button secondary compact" type="button" disabled={disabled || !item.version} onClick={() => setEditing(!editing)}>编辑候选</button>
-    {editing && <QueryState state={distillations}>{data => <OpportunityForm initial={item} materials={materials} distillations={data.items} disabled={disabled || distillations.stale || distillations.loading} onSaved={onChanged} />}</QueryState>}
-    <ReviewForm item={item} disabled={disabled || !item.version} onSaved={onChanged} />
+    <button className="ac-button secondary compact" type="button" disabled={disabled || admissionBlocked || !item.version} onClick={() => setEditing(!editing)}>编辑候选</button>
+    {editing && <QueryState state={distillations}>{data => <OpportunityForm initial={item} materials={materials} distillations={data.items} disabled={disabled || admissionBlocked || distillations.stale || distillations.loading} onSaved={onChanged} />}</QueryState>}
+    <ReviewForm item={item} disabled={disabled || admissionBlocked || !item.version} onSaved={onChanged} />
+    <OpportunityAdmission item={item} materials={materials} disabled={disabled} onChanged={onChanged} onBlockedChange={setAdmissionBlocked} />
     <section className={styles.record} aria-label="候选版本历史"><h4>候选版本历史</h4><div className={styles.form}><SelectField label="候选历史版本" value={String(version)} onChange={value => setVersion(Number(value))} options={detail.revisions.map(entry => ({ value: String(entry.revision), label: `r${entry.revision} · ${formatDateTime(entry.created_at)}` }))} /></div>{snapshot ? <OpportunitySummary item={snapshot} /> : <p>此历史版本暂未返回。</p>}</section>
     <Field label="人工反馈历史">{detail.reviews.length ? <ul className={styles.timeline}>{detail.reviews.map(review => <li key={review.id}>{feedbacks.find(feedback => feedback.value === review.feedback)?.label ?? review.feedback} · r{review.revision} · {formatDateTime(review.created_at)}<p>{review.reason || '理由未提供'}</p>{review.dimensions && <DimensionScores value={review.dimensions} />}</li>)}</ul> : <MutedValue>暂无人工反馈</MutedValue>}</Field>
   </>;
