@@ -288,10 +288,11 @@ func run(logger *slog.Logger) (runErr error) {
 			logger.Error("relay shutdown incomplete; unconfirmed state retained")
 		}
 	}()
-	if services.Relay != nil {
-		if err := assembleRelayCompletionSource(&services); err != nil {
-			return err
-		}
+	if err := assembleRelayCompletionSource(&services); err != nil {
+		return err
+	}
+	if err := assembleRelayCompletionInterpreter(&services, registry, launchContexts...); err != nil {
+		return err
 	}
 
 	// Resolve port — invalid value fails startup.
