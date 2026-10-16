@@ -59,9 +59,6 @@ export function OpportunityAdmission({ item, materials, disabled, onChanged, onB
         return response;
       }, response => { setRecordInput(response.admission.id); setRecordID(response.admission.id); setConfirmed(false); onChanged(); }, body.request_id);
     }}>
-      <Field label="准入请求路径">POST /api/v1/opportunities/{item.id}/admissions</Field>
-      <pre aria-label="准入请求预览">{JSON.stringify(prepared.body, null, 2)}</pre>
-      <p className={styles.note}>Idempotency-Key 与请求中的 request_id 相同。</p>
       {changed && <p role="alert">候选版本、项目选择或当前权限已有变化，原请求保留；请重新准备并审阅。</p>}
       <label><input type="checkbox" checked={confirmed} disabled={!canPrepare || changed} onChange={event => setConfirmed(event.target.checked)} />我已核对本次固定候选、资料版本和项目归属，确认人工准入</label>
       <button type="submit" className="ac-button" disabled={!canPrepare || changed || !confirmed}>确认资料准入并生成草稿</button>
