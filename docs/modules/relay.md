@@ -2,6 +2,20 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## H 四项实际检查与限定写域（2026-10-17 02:47）
+
+H 目录前置 SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` / 独立 REPORT `68c9acc11d991720b9b1562abd2983bdb9af0229` 已普通 push，两个提交均为 `[skip ci]`。模块独立核远端 REPORT 精确同值、原树 clean、差异检查通过，完整读取四件测试源码、报告及本机四份实际日志；没有第三次重复成功主项。原 H 与本模块继续各自原 Task，当前服务仍为下面记录的 c5 / PID30420 /610cc，测试整改没有生产部署或重启。
+
+源码只修改 `cmd/server/relay_judgment_actual_test.go`、`relay_public_context_test.go`、`relay_reader_root_test.go`，新增80行 `relay_test_output_test.go`。旧文件的差异仅为实际自有目录取得和失败诊断，原成功、非法配置及真实数据库 / 快照同文件别名拒绝断言均保持；生产 canonical、来源 identity、权限、config、session、依赖和 workflow均未改。helper 使用显式绝对输出根或仓库已忽略的默认 dist，真实创建目录后经 EvalSymlinks / Stat / SameFile确认身份，错误立即失败；原目录和底层错误只写该次自有 directory.json / failure.json，stdout仅含安全类型及布尔结果。
+
+作者在 D `process-20261016/verification/ci-directory-current/` 保存 `list-first.log`、`test-first.log`、`test-final.log` 和 `vet-first.log`。模块实际读取：准确四项 selector / list恰4，首4 PASS / package4.287秒，补充底层失败原件后的最终4 PASS /0 Skip，分别1.33 /0.16 /0.90 /0.03秒，package3.593秒；作者 vet / gofmt / diff EXIT0。四项为 Judgment生产装配、无快照人工准入、真实 Git / SQLite公开上下文，以及实际目录 / 数据库别名检查，没有 Native / 模型或伪造成功。
+
+原 Windows四失败、Ubuntu同项未失败与具体原因 UNKNOWN均保留。8.3、大小写和规范路径差异仍为候选，不能用本次 D 通过宣称原 CI根因已证明或完整 CI已修复。旧 runtime_http的403已只读定位为测试缺少独立 reconcile许可却期待200；该测试还包含自定义 driver / workspace / sink及伪造 native身份，本阶段没有运行、增加权限或修改 R语义，也没有恢复新 R。
+
+当前阶段已通过 `msg_374f7207e643` 将准确 SOURCE / REPORT、原件、范围和限制交根唯一集成负责人，组合复验由根安排。根 `msg_4bc41275fecf` 已独立实际核 c5 /30420 /原库68表90行 /Q及 health，外层退出 UNKNOWN保持；H更新报告 `1765cf57899391e3857dab028752fdc022bf0b2a` 只改 http.md，已由模块完整独读并核远端后交根。没有另做恢复证明或重复服务检查。
+
+产品 `msg_f75c03ba084d` 的普通 `internal/adapters/httpapi/workbench_test.go` 整改继续由原 B独占。模块当场核 H该文件 status空 / diff quiet EXIT0，当前 H只持有上述 relay测试与原报告写域；已通过 `msg_499fe755ea32` 确认互斥并通知 H持续不写。没有新建 Task / Run / Agent，完整默认、真实 Native /采用 /经验正向、L1 / L2、最终包和 Release继续未通过。
+
 ## 当前 c5 普通产品与默认检查状态（2026-10-17 02:40）
 
 当前服务源码为 `c5b3b5715f2e93b82365720914be24c73642bd1e` / modified=false，PID30420，启动 UTC `2026-10-16T18:37:58.6714394Z`，地址保持 `http://127.0.0.1:64505/`。Web 来源独立记录为 `172bb445597193d55f1563ee5d21ac2ec881798d`；根完整比较确认 Web 生产文件 / 入口 / Vite / 包锁 / 构建配置保持，净差异仅 progress-existing、s5-delegation、video-existing 三件测试 spec，没有重复 Vite 或浏览器成功检查。原 H `task_3004b636a3ab / ctx_ad637376ba1d` 和普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 继续持有服务。
