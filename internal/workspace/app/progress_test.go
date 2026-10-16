@@ -234,35 +234,6 @@ func (p *revokingProcessor) ProcessSelectedText(ctx context.Context, r domain.Te
 	return p.next.ProcessSelectedText(ctx, r)
 }
 
-// 人工阶段写入必须保留持久操作回执；否则已受理推理的重试会重复计费模型。
-func TestProgressHumanSetPreservesOperationReceipts(t *testing.T) {
-	ctx := context.Background()
-	service, projects, store, processor := newProgressService()
-	projects.projects["p1"] = consentProject()
-	model := "gpt-test"
-	processor.result = domain.TextResult{Text: `{"status":"review","percent":70}`, NativeID: "nid", Model: &model}
-
-	if _, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}}); err != nil {
-		t.Fatalf("infer %v", err)
-	}
-	if _, err := service.SetProjectProgress(ctx, domain.Caller{Kind: "human", ID: "h"}, "p1", domain.ProgressInput{Status: "done"}); err != nil {
-		t.Fatalf("human set after infer %v", err)
-	}
-	record, _ := store.LoadProjectProgress(ctx, "p1")
-	if record.Source != "human" || record.Status != "done" {
-		t.Fatalf("human set lost its own status %+v", record)
-	}
-	if record.Operations[opA].Status != "accepted" || record.Operations[opA].Result == nil {
-		t.Fatalf("human set dropped the accepted receipt %+v", record.Operations)
-	}
-	// 重试同一操作必须返回原已受理结果，不重新运行模型。
-	calls := processor.calls
-	again, err := service.InferProjectProgress(ctx, progressHuman(opA), "p1", domain.ProgressCommand{Files: []string{"TASK.md"}})
-	if err != nil || again.Status != "review" || again.Source != "agent_inferred" || again.Percent == nil || *again.Percent != 70 || processor.calls != calls {
-		t.Fatalf("accepted retry returned the live human write instead of the original result: %+v %v calls %d->%d", again, err, calls, processor.calls)
-	}
-}
-
 // 发布期间的瞬时 CAS 冲突必须通过重新加载并重新保存已计算结果恢复，
 // 不重新运行模型推理。已计算快照先持久化（保存 2），因此接受发布（保存 3）
 // 上的冲突可恢复。

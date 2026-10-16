@@ -902,3 +902,42 @@ F 本人 `msg_9af719e7ce73` 明确窗口结束并停止 HTTP 后，B 用本实�
 按根 `msg_0d6a276dab59`，再仅执行一次 `node D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-live-first/post-close-files.mjs`，EXIT 0。UTC `2026-10-16T17:47:09.367Z`保存 `post-close-source-files.json`，只取原主文件 / WAL / SHM 的文件元数据并与已有安全记录比较，**未重新打开源 SQLite、未读取原件或对象正文**。关闭后的主文件 ino `3659174704753597` / 794624 bytes / mtime_ns `1791991922435515500`，WAL ino `3096224751332497` / 16512 bytes / mtime_ns `1791993579171315700`，identity / size / mtime / birthtime与原 baseline及helper守卫保持。SHM仍为ino `2533274797911203` / 32768 bytes，本次从UTC `17:23:02.0188077Z`变为 `17:42:18.4971854Z`，关闭后mtime_ns为 `1792172538497185400`；变化单列，不宣称来源所有文件不变。
 
 本阶段实际通过范围仅为该既有视频149 / 1920的安全派生、真实 HTTP 同库重启及原前端断言。没有重跑 README进度、自然一小时、安全八项或其他已成功功能，没有触及共享64505、17321、V4或冻结范围；原 H / R 原生限制保持。原始推断 / 工具完整性没有由派生展示升级为新的成功，完整产品、默认套件、L1 / L2和发布包未在本阶段验收，未发布 GitHub Release；原 Task / Dispatch继续承担发布支持，不发送 worker_done。
+
+## 人工进度保留原收据的真实替换 REPORT（2026-10-17）
+
+根 `msg_11ab84a9a2ad` / `msg_f7b7798d8c90`、模块 `msg_cbc24adac9ef` / `msg_6ff4c4c081f8` 接纳本阶段精确范围：原八项进度替身中，**`TestProgressHumanSetPreservesOperationReceipts` 已完整替换为真实 HTTP / SQLite 检查，实际1 PASS、用例0.15秒、包1.893秒、EXIT 0；余下七项未运行、不计真实通过。** SOURCE `ae22fc99c195792d951c7adc9b652420bc1fdbb5` 已普通提交并 push，分支仍为 `standards-backend`。原 Task / Dispatch和 Codex 0.162.0 / GPT-6.1-Sol xhigh fast保持。
+
+同名测试从 `internal/workspace/app/progress_test.go` 的替身函数迁至既有 `internal/adapters/sqlite/local_agents_progress_test.go`，通过生产 `workspace.NewProjectProgressService` 和 `httpapi.NewServer.Serve` / `Shutdown` 执行业务，避免 app 内部测试包导入 SQLite 的依赖环。原人工阶段写入、accepted收据完整性、同一操作返回原状态 / percent / source及不重新执行模型的等效断言全部保留；原 `p1` / `nid` / `gpt-test` / 固定70期望改为获准真实项目及原 Result 的精确值。没有新增 build tag、Skip、替身、生产 API或语义修改。原 source reader仅拆分只读连接打开与记录读取，保留原包装入口，并让本项在 source.Close之后直接完成文件元数据核实；原已成功检查没有重跑。
+
+唯一来源为 `C:/Users/DW/orca/workspaces/Astrocyte/standards-backend/.verification/astrocyte-s1-opvXPA/data/state.sqlite`，仅查询原项目 `25b3f37a-a96c-4082-9a59-6ed6707fbf70` 的项目 metadata与 progress必要行。原 NativeID `01a13a73-1de2-7761-aaa3-5cbd8fb433cc`、模型 `gpt-6.1-sol`、原身份证据 / 内容 / 时间 / settings / 操作身份和 accepted Result保持。唯一原操作 `3e22fccc-7be7-4d88-960b-25c1849d0692` 经过实际 UUID、accepted、创建 / 完成时间、非空 Result / evidence及原观察记录逐字段前置核实，原模型许可 metadata由真实 Registry.Adapter解析；没有修改原配置来满足前置。
+
+独占产物根为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/progress-receipts-first/`，唯一新目标为其 `projection/state.sqlite`，真实未使用原生状态目录为其 `native-state/`。runner先检查父目录非 reparse并创建全新 root；测试继续检查 canonical / 非 reparse、原源与目标分离、target / native-state全新，migrations仅对新自有目标执行。项目 JSON / settings revision原样保存；原 progress revision 3与新库初始 CAS revision 1分列。没有复制源 SQLite、Grant、Native Session、其他项目或私有原档。
+
+生产 `agents.NewRegistry(nativeRoot)` 仅构造真实协议实现和 unknown观察，同时作为真实 processor / registry，文件端口为 `agents.ProjectFiles{}`；没有 Probe、Start、Resume、配置伪造或新 controller进程。`InferProjectProgress` 先验证现有许可、Adapter、processor / files非空和固定文件数量，随后原 accepted分支在文件读取、ConfigurationID、ProcessSelectedText之前直接返回既有 Result；若错误进入未 Probe 的真实 processor，配置观察缺失会拒绝，测试不会调用 Probe补齐。实际前后 Registry观察相同、`native-state`目录条目0、目标 Grant / Native Session0，没有假调用计数器；本阶段模型调用0，没有新推断或新 accepted收据。
+
+HTTP1 `http://127.0.0.1:53382`通过真实 human bootstrap / cookie / CSRF：先 GET原记录，再 PUT人工 `done` 到目标r2；SQLite核 `Source=human` / `Status=done`，完整 Operations与 PendingOperation逐字段等于原记录。随后一次 POST `/progress/infer`严格使用原操作 key与原 evidence文件名，只重读原 accepted Result。原 status / percent / source / NativeID / model / evidence / 观察时间通过 HTTP契约逐字段比较，完整收据及纳秒时间通过真实 SQLite比较；公开 HTTP保持隐藏 Operations / PendingOperation。重读返回原 `agent_inferred` 结果时，真实 SQLite中最新 `human done/r2`不被覆盖。
+
+HTTP1正常 Shutdown、目标 SQLite关闭后重开同一文件，HTTP2 `http://127.0.0.1:53384`使用新真实未 Probe Registry与人类认证会话，再 GET最新人工状态、再以**同一个原 operation key**重读 accepted Result；人工存储、Operations、PendingOperation和项目 metadata仍保持。两次 POST均为历史收据读取，不记为新 infer成功；两个服务均真实正常 Shutdown，目标与来源连接均已关闭，没有窗口留给其他调用者。
+
+| 实际命令 | 结果与本次 D 根内原件 |
+|---|---|
+| `go test -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite -list '^TestProgressHumanSetPreservesOperationReceipts$'` | 合计恰好一项，旧 app零项、SQLite一项，EXIT 0；`list-first.log` |
+| `go test -mod=readonly ./internal/adapters/sqlite -run '^TestProgressHumanSetPreservesOperationReceipts$' -v -count=1 -timeout=2m` | 实际1 PASS / 0 SKIP，用例0.15秒、包1.893秒，EXIT 0；`test-first.log` |
+| `go vet -mod=readonly ./internal/workspace/app ./internal/adapters/sqlite` | EXIT 0；`vet-first.log` |
+| 两件变更 Go 文件 `gofmt -l`、`git diff --check` | EXIT 0，无输出 |
+
+实际启动为本次 D 根内 `run.ps1`，整体 EXIT 0。所有临时 / 输出目录位于该 root，复用根已核 D GOMODCACHE与 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOPROXY=off`、`GOMAXPROCS=2`、`GOFLAGS=-p=1`、Node内存512 MiB；未下载依赖、改变全局设置或读取凭据。`http.log`只记录实际方法、公开项目路由、状态与请求身份：人工 PUT一次、历史 key POST两次及必要 GET，均200；没有记录 token、原项目 JSON、完整回执或模型输出正文。
+
+来源使用正常 SQLite锁、`mode=ro` / `query_only=1`。source.Close前，原项目 JSON / version、progress原始 JSON / revision及完整领域记录前后相同；`source-before-target.json`、`source-before-close.json`保存必要源文件守卫。**source.Close后** UTC `2026-10-16T18:01:50.1508823Z` 的 `source-after-close.json`仅执行文件元数据查询，没有重开 SQL：主文件同身份4096 bytes / mtime `2026-10-14T12:46:12.737828Z`，WAL同身份988832 bytes / mtime `2026-10-14T15:25:46.1441199Z`，前后保持；SHM同身份32768 bytes，mtime `2026-10-16T16:10:57.3302731Z`→`2026-10-16T18:01:50.0289063Z`，变化单列。`result.json`保存源 / 目标指针、原操作身份、source3 / target1 / human2、收据与人工存储保持、同库重启、两个服务关闭及新模型 / Native Session / Grant0的安全结果。
+
+| 原八项中其余测试 | 本轮真实限制 |
+|---|---|
+| `TestProgressInferRecordsEvidenceAndIsIdempotent` | 新推断实际创建证据部分缺真实新 Native前置；已有收据重读不替代新推断验证 |
+| `TestProgressInferRejectsInvalidModelOutput` | 没有获准的真实无效模型输出，不能制造输出 |
+| `TestProgressInferPersistsPendingReceiptBeforeModel` | 当前源仅有 accepted，缺真实 pending / unknown交付现场 |
+| `TestProgressInferRechecksConsentBeforePublication` | 缺真实在途处理与撤权现场，未代选业务许可 |
+| `TestProgressPublicationRecoversFromCASConflictWithoutNewModel` | 缺真实 computed发布与 CAS冲突现场，不能改原 accepted制造状态 |
+| `TestProgressPublicationFailureIsNotReportedSuccess` | 缺真实计算结果保存失败现场，未注入假存储错误 |
+| `TestProgressComputedResultRecoveredAfterPublicationFailure` | 缺真实 computed中断 / 发布恢复前置，未制造回执或自然中断 |
+
+以上七项原覆盖保留，仍不计真实 PASS；本次只完成已接纳的1/8完整替换，不宣称原八项全部整改完成。旧安全八项、自然一小时、README展示和视频成功均未重跑；没有改 F / H / R、64505、17321、V4、冻结、依赖或生产接口语义。原首 RED / UNKNOWN及原生权限待定保持，完整默认 / L1 / L2 / 发布包未在本阶段验收，未发布 Release，原 Task / Dispatch继续负责发布支持，不发送 worker_done。
