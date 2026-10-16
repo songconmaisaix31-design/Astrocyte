@@ -2,6 +2,18 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 12:03 原 P 显式配置后继计划
+
+根 `msg_3ccb6add57b0` 明确恢复原 P 必要发布入口和真实配置检查。本模块通过公开 CLI 将原 `task_3347b755071e` 重新置为 ready，原已接受的成功 result、SOURCE / REPORT 及 released Dispatch 记录完整保留，没有创建替代 Task、伪造失败或增加第四层。固定原 `release-package-20261014` 工作树 / `songconmaisaix31-design/release-package-20261014`，现有 HEAD b208 / clean；唯一 P 的写域继续为 `release/**`、`docs/release/package-report.md`、`docs/release/windows.md` 及必要同域说明，组件文档与领域业务不改。
+
+本阶段补齐准确 H / B 已有的 CodeGraph / Repository 和 Laya 显式路径、环境身份、语言、日志目录与生命周期参数，保留参数组完整性、缺失或错误配置直接失败及原隔离配置；使用既有 prepared runtime 与真实生产配置解析完成适用检查。语言只作为显式输入，不选择未答语言、不设置全局业务默认，不调用模型、不重复资产准备、下载、OS 或原成功验收。当前 C 空间门禁保持，不运行最终 Build / Verify、正式日流程或原生请求。SOURCE 和独立 REPORT 分别提交、普通 push，领域或接口缺项交原作者。
+
+实际本机 Claude Code 为2.1.238，`auth status` 为 loggedIn=true / firstParty。原树 Claude 终端 `term_ea50e3ea-37d9-4ffd-80bc-119815dfcb96` 已实际 tui-idle，文本启动信息明确模型为 `qwen3.7-max`，不能按 `opus` 别名或父进程变量宣称其他模型。沿该实际客户端和配置的强模型派原 Task，没有修改账号、路由、网络或全局模型配置，没有发送可用性模型探针。
+
+根 `msg_e0be901882a5` 另要求原 Q 修复快照检查中的失败后替代：仅 `cmd/workbench-snapshot/main_test.go` 的 directory-alias 及原 `docs/release-cognition.md` 报告，固定原 `release-cognition-20261014` 树 / 同名分支 / 原 `task_d3bdc107395a`。按平台选择实际 junction / symlink，并直接处理各自创建错误，保留独立 symlink OS1314 未通过，不增加 Skip、提升权限或删减断言；不修改生产、引擎、时间或旧快照，不采集 / Sleep / 模型。该轨与 P 的 release / docs/release 写域互斥，分别持续开发、检查、报告和返修，完成后精确 SOURCE / 独立 REPORT 交根普通消费，没有第四层。
+
+根 `msg_c30c1f24cac7` 确认 P REPORT b208 已普通合为 `eb272504270828429a16cf84e05add5d8824a674`，仅 HANDOFF / STATUS 两冲突由根保留当前决定及两线历史后继续，main 实际无新增差异；再普通合 Q REPORT f111 为 `fc294bee3d4a513d90cca6768d74fd4b90088394`、clean。新增快照和发布脚本的组合检查由根执行，当前没有最终包结果。
+
 ### 2026-10-16 11:57 P 完整来源与包入口审查
 
 根 `msg_780788014275` 要求只读审查 P 完整合并来源及当前集成兼容范围。固定集成检查点为 `7120a207ee6da0923262bbc6347661d92ac7b285`，准确 P SOURCE `7431db6451fa759638dedc4aad7687a217d3a6d9` / REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a`、远端同 REPORT，原阶段已接受完成并 released。本模块没有执行合并、构建、资产检查或模型推理，没有修改集成树。
