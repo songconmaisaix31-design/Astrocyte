@@ -138,6 +138,10 @@ UI后继 `e2e-full-first.log` 已由模块独读：1920完整DOM主链实际1 PA
 
 ### 本轮独立管理REPORT
 
+管理SOURCE `97ee3b73374ff296a80f8b7f5e089581ffd093a3` 仅修改本文件，`git diff --check` 通过、普通push成功，模块独立核远端同值。UI委托引用的精确list、真实两窗口2 PASS / 54秒及fbe0 / d631普通远端均独读，根已普通合8da并核组合tsc-b EXIT0；生产仍同172，未重复构建或部署。M-relay正式 `msg_567de6757c82` 补充独核PID / 路径 / 时间 / 唯一listener / Go同源 / health / 首页200以及同库68表90行，模块检查EXIT0；H更新脚本准确EXIT仍待其固定报告，未由ready推定脚本退出码。
+
+M-relay `msg_3f17ca18e7f9` 记录H当前真实Relay聚合state / receipt及任务、终端、会话、事件等全部0，无法提供原Native26正向条件；缺条件保持，不把空registry或静态页面作为通过。B de822源码已独读及核push，真实只读源、全新目标、HTTP1关闭再同库HTTP2的原件已读，但整页读服务装配缺口出现后尚未给F窗口，原两项继续NOT_RUN。原作者正常关闭自有窗口后在同helper返修，不修改原库、核心生产API、Registry或模型；SOURCE与独立REPORT齐备及真实前端结果到后再交根。模块持续管理和最终发布支持，本轮没有worker_done或自行发布。
+
 管理SOURCE `fce8b0b313ee3e8266d0b88888fdaefeea6b10ec` 仅更新本文件，`git diff --check` 通过、普通push成功，模块独立核远端同值。F b34 / b156、UI524 / 9aa及取消990 / 596的源码、独立报告、真实日志和普通远端已逐一审阅并交根；原生、模型、ASR和已成功场景未重跑。根组合172的完整build / lint / 四场景通过按正式来源记录，本轮F / UI共享暂停本人ACK已实际直交H，实际ready未到时仍登记2d27。
 
 B新恢复以正式答复 `msg_8c56ad950c02` 为边界，公开旧context fence与精确终端退出均已核，原237987a干净；新 `ctx_43100892f5f5` 本人ACK与实际文件读取已观察，安全派生托管尚未通过。F只准备其准确已验b34真实静态产物的全新D目录交B既有 `ASTROCYTE_WEB_DIR`，不使用B旧页面冒充当前前端；原构建可确认则只复制，不为目录重复构建或业务。原29条件与8fake真实推断缺口保持；模块继续原Task的领域返修、集成检查和最终发布支持，没有worker_done、终端释放或自行发布。
