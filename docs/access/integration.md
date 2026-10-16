@@ -1,5 +1,13 @@
 # Works Relay integration report
 
+## 2026-10-16 公共测试接口与准确失败清单
+
+根普通合入 F SOURCE `375a559b0a451f78446be642b99d8d5e365221fa` 及独立 REPORT `b4bf44453436ba71ce0b88ef0f0e6a300d859d7f`，组合为 `5dfca03fd23b3218510290fc5a63732df1fd570f`。唯一冲突是 `docs/standards/frontend.md` 的章节标题和新增记录，使用文件编辑工具保留当前 320 项中的 55 条准确失败清单及既有检查记录。最终只有该报告、`realService.ts` 的显式环境 ID 透传和 `self-service.config.ts` 增加 `s5-*.spec.ts`；原 s2 / s3 / s4 / progress 范围、workers=1、retries=0 和根2d27类型衔接保持。
+
+根独读作者普通与 Relay 模式的实际 Go / Vite / HTTP / SQLite 日志，准确环境 ID、Git HEAD、快照及原生会话数为0的断言均通过，两份日志 EXIT0。首两次 DTO 错误及第三次 SQLite 行原型比较失败原件保持。命令和准确原件见 [前端报告](../standards/frontend.md)。
+
+根在准确 `5dfca03` 执行 `pnpm --dir web typecheck`，完整 `tsc -b` EXIT0；执行 `pnpm --dir web exec playwright test --config e2e/self-service.config.ts --list`，实际收集56项 / 7文件、EXIT0。测试收集没有执行这些业务场景。原件为 `D:/Astrocyte-agent-assets/20261015/integration/root-helper-5dfca03/{typecheck.log,collection.log}`。F 当前未提交的截图移除和其他返修没有合入。生产程序无变化，最近完整构建和实际运行仍为2d27 / PID50624；没有重复构建或重启。
+
 ## 2026-10-16 进度安全后继
 
 根已普通合入 B 当前 REPORT `237987a594de1055af18c7fffe30fc516cdacaef`，合并为 `affaa7a7d10dcd8956b4a2947c8b149403cdb5bd`，无冲突。相对既有7e缓存阶段，最终仅三件净差异：真实安全测试、显式自然到期验证入口和后端记录；`projects.go` 与现有一小时生产语义无差异，历史短期限、修改数据库到期和新增长 Go / Skip 均没有成为本组合的最终实现。
