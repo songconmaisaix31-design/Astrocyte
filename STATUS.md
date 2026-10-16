@@ -2,7 +2,7 @@
 
 ## 根直接集成与组合验证（2026-10-16）
 
-当前完整组合源码为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`：B 已验缓存 GET、人工准入、判断 / 委托组件与入口、P 显式启动配置及 D 构建作用域均已普通合并。完整 `pnpm build` EXIT0 /15.039582秒、全 web lint EXIT0、实际准入 / 撤销 / HTTP重启两个窗口2 PASS /42.3秒，Go buildinfo 同 revision / modified=false。原 efec 首次类型失败、B / F / Q 各自首失败和准确验证源保留，详见 [集成报告](docs/access/integration.md)。H 已完成稳定副本并归还原产物读取窗口，沿同库更新须本轮 F / UI 新 ACK；当前不据准备结果声明已更新。
+当前完整组合源码为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`：B 已验缓存 GET、人工准入、判断 / 委托组件与入口、P 显式启动配置及 D 构建作用域均已普通合并。完整 `pnpm build` EXIT0 /15.039582秒、全 web lint EXIT0、实际准入 / 撤销 / HTTP重启两个窗口2 PASS /42.3秒，Go buildinfo 同 revision / modified=false。原 efec 首次类型失败、B / F / Q 各自首失败和准确验证源保留，详见 [集成报告](docs/access/integration.md)。H 在取得当次 F / UI 本人 ACK 后已完成同库更新，实际 PID50624 / UTC05:40:20.6912890Z；稳定副本及原产物读取窗口保持独立。
 
 用户已将集成交给根，本树唯一集成写入者为根；固定分支 `songconmaisaix31-design/works-relay-integration`，不恢复其他 I。领域修改和返修由原作者在各自原树继续。当前职责、真实运行身份与用户待定项见 [HANDOFF](HANDOFF.md) 及总控工作树的当前入口，准确组合、检查和首次失败见 [集成报告](docs/access/integration.md)。
 
@@ -10,7 +10,7 @@
 
 Q 目录链接检查及明确输出根后继 SOURCE `8796fb8` / REPORT `7aa2476` 已普通合并，完整组合 `e36650e645cae20e0d142338a0fbd20f168cdbc4` 的真实 snapshot 主项和七子项全部通过，包76.864秒，原生产保护保持。原 b02 首次失败和准确日志保留，记录见 [集成报告](docs/access/integration.md)。
 
-共享产品为 H 稳定 `38fb289`，地址 `http://127.0.0.1:64505/`，原 D SQLite、媒体配置和公开 Q 快照保持。当前后继检查不表示运行实例已更新。完整适用检查、完整默认浏览器、受限 Native / L1 / L2 六步和最终包尚未通过；各用户待答权限、语言和具体批准保持。
+共享产品为 H 稳定 `2d27b689`，地址 `http://127.0.0.1:64505/`，根独核首页200、唯一 listener 与准确进程 / buildinfo，原 D SQLite 的68表90行逐表前后相同，媒体配置和公开 Q 快照保持。H 当前运行独立 REPORT d542已普通合并，具体收据见 [HTTP报告](docs/access/http.md)。完整 TasteProfile 编辑及规则正向、完整适用检查、完整默认浏览器、受限 Native / L1 / L2 六步和最终包尚未通过；各用户待答权限、语言和具体批准保持。
 
 用户确认的后继顺序为集成版 L1 真实验收、L2 经验管道、六步端到端工程首跑，目标日期 2026-10-22。`done = verified_complete | user_confirmed_complete`；started 与释放分别审计，两种完成通道均保留真实出处并进入经验候选。Mission 执行权归一个选定后端独占。六步工程闭环和独立效果实验分别验收；人工批准与人评由用户执行，Calls / 权限覆盖未答项保持。正式 V4 / v0.2、锁定协议、日程、正式库和 17321 部署不变。
 
