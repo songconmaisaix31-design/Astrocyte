@@ -1,5 +1,17 @@
 # Works Relay integration report
 
+## 2026-10-17 真实采用来源适配组合验证
+
+B SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122`、独立 REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 已普通合为 `d356b4b1e18b80e029ce29193f433ddd6b6e7f04` 并push，无冲突。根完整独读174行生产、325行真实测试、26行报告和原D命令 /list /test /vet /build日志；相对原I42860仅新增两个SQLite文件及作者报告。原B先以ff-only消费准确I依赖，原S3 /H /R文件没有改动。
+
+新来源使用原Swarm受信任端口和同一主数据库事务，重读当前human项目 /Mission读取权限与不可变采用成果，保留原操作者、时间、成果版本 /commit /对象 /检查引用。候选发布时必须在当前Workspace事务再授权并比较固定来源；未知或关闭连接、跨库、独立Swarm事务及取消直接失败。Has端口只定位真实outbox，不捕获来源读取错误再切换；H继续持有来源组装和每请求Principal传递。
+
+根在准确d356组合运行 `go test -mod=readonly ./internal/adapters/sqlite -list '^TestAcceptedArtifactCompletionActualInterfacesAndLifecycle$'`，实际一项 /EXIT0；再运行同包精确 `-run` /`-v -count=1 -timeout=1m`，主项1 PASS /九子项通过 /0 Skip，主项0.19秒、包1.943秒 /EXIT0。`go vet -mod=readonly ./internal/adapters/sqlite` 与diff检查均EXIT0，相邻runner整体EXIT0，前后源码保持。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-artifact-d356b4b/`，作者最终原件为 `product/backend/ctx_010eaf93bbc0/artifact-completion/*-corrected.*`；原文本断言首失败EXIT1仍保留，不替换为后继结果。
+
+实际检查包含真实HTTP bootstrap /项目登记、同库未提交权限、事务撤销、缺真实采用来源、取消 /跨库 /结束连接拒绝、正常HTTP关闭及同库重开。没有构造采用事件、Native或模型输出；实际定位true、正向成果读取、固定来源差异和Mission权限变更现场仍NOT_RUN。完整check/default、进度其余七项替身、L1 /L2及最终包仍未通过。
+
+当前运行已在系统重启后由原H恢复为准确172 /PID44080 / `http://127.0.0.1:64505/`，启动UTC18:20:54.4306224，普通服务终端610cc独立持有。根独核程序 /启动时间 /唯一监听 /buildinfo /health和首页200 /562bytes，本次数据库完整counts对象前后严格相等；同一D库、媒体与Q原代保持。原H正在完成生产Interpreter /来源组装，尚无最终SOURCE；本阶段未重建或更新稳定生产产物，实际来源范围见当前根HANDOFF与原作者报告。
+
 ## 2026-10-17 人工进度与原操作回执真实验证
 
 B SOURCE `ae22fc99c195792d951c7adc9b652420bc1fdbb5`、独立 REPORT `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` 已普通合为 `1679d7af9de6033aef1afb0cfb719dde1ab73abb`，没有冲突。根独读两件源码全部差异、作者精确 list / test / vet / HTTP 日志、结果及关闭后来源守卫。同名 HumanSet 测试由 app 的替身迁入现有 SQLite 测试文件，保留原业务断言并检查同库重启；没有新增 tag、Skip 或生产变化。原八项现有一项已完整真实替换，其余七项仍需实际新推断、无效输出、在途撤权或计算结果发布现场，不执行原替身或记为真实通过。
