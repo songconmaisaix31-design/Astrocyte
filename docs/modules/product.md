@@ -1,5 +1,22 @@
 # 产品模块执行与验收
 
+## 2026-10-17 02:14 系统重启后的原任务接续
+
+当前事实源为根管理树 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 02:12 入口、根提交 `37b77985a084ffb87c68683a1fde7f4f49c6725c` 及本次正式消息 `msg_b20482900a1c`、`msg_251436e5c5ab`、`msg_fe8b1aa0d16b`。根已核实整机于 02:07:51 重启，runtime 为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`；重启前的运行 172 与全部成功结果保持其实际时间含义。产品负责人同 Task `task_b0197ca7ebdf`、当前 Dispatch `ctx_47dffa3cec8b`、终端 `term_d6eca544-939f-4f9a-9923-5b00da4eee3f` 继续，原子 Run `run_7b2ce96bcd13` 已普通绑定为 generation105，没有创建新 Run、Task、工作树或开发轨。
+
+| 负责人 | 当前责任及互斥范围 | 本阶段验收与交付 |
+|---|---|---|
+| M-product | 只修改 `docs/modules/product.md`；核原 B 公开状态、维护精确来源及跨模块 Handoff | 管理 SOURCE 与独立 REPORT 普通提交并 push；持续负责最终发布支持 |
+| 原 B / `standards-backend` | 同原 Task `task_7b4e93c1a3c1`、原工作树及分支恢复唯一 writer；经验来源拟限定新增 `internal/adapters/sqlite/accepted_artifact_completion.go`、同前缀测试及 `docs/standards/backend.md`，本人开始前须交精确路径与现有公开端口 | 读取实际 `swarm.artifact_accepted`、当前 human 项目与操作者权限、固定成果版本及事务内当前授权；无实际采用事件时保留正向 NOT_RUN，不制造来源或模型结果；SOURCE 与独立 REPORT 普通 push |
+| M-relay / 原 H | 原 `relay_completion_experience.go`、同前缀装配测试、必要 relay 胶水及 `http.md`；共享来源组合装配由 H 持有 | B 只交端口 Handoff；H 先恢复原 172、64505 及同一 D 库，产品模块不另启动共享服务 |
+| 原 F | 保留原报告及发布支持，本阶段不恢复新写入 | 原浏览器失败清单 29 PASS / 26 NOT_RUN；178 项单元清单 174 项分批通过 / 4 项缺实际 L1，分别记录 |
+
+原 B HEAD `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` 工作区干净。公开 `task-list` 仍显示 dispatched；旧 `ctx_43100892f5f5` 为 context_only / unsupervised，`worker-list` 为 unverifiable / missing_status，`worker-show` 为 terminal missing，原工作树终端清单为空。恢复依据包含根已确认的整机重启与明确授权，缺失状态本身不作为进程退出证明；先公开撤销旧 Dispatch 能力，再沿同 Task、Run、树和分支接续，不创建第二位同域 writer。
+
+HumanSet SOURCE `ae22fc99c195792d951c7adc9b652420bc1fdbb5` / REPORT `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` 已由根普通合入 `1679d7af9de6033aef1afb0cfb719dde1ab73abb`，根准确组合真实 1 PASS / 0.12 秒、包 1.919 秒及 list / vet / diff EXIT0、集成 REPORT `42860d277df0c0518f58e2a836681d7fa10c50ee` 保持。模块已读准确源码第 283 行，创建、完成及观察时间均明确检查非零；现有报告对应陈述有源码依据，不作无必要修订或复测。原八项替身仅 1/8 已完成真实替换，其余七项、完整 check / 默认、L1 / L2 与最终包保持未完成。
+
+Native 工具边界、Agent 读取完成证据、S3 两项、Laya 语言、具体 PLOS 准入及经验批准仍待用户回答。本阶段不启动 Probe、Start、新模型、ASR、V4 采集或网络修理；新输出及缓存均使用 D 盘，原始源、凭据和模型输出只留本机，旧正式库、冻结核心、日程及 17321 保持既有边界。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
