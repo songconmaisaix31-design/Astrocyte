@@ -41,6 +41,12 @@ B 本人 `msg_14b192607caf` 已核 `78ec4fc7` 为准确 I `42860d277df0c0518f58e
 
 管理 SOURCE `5a79d8707d4bfb6543658736e97aef769264e581` 与后继计划 SOURCE `f6227754c40bc5e3ba0fc179c60f3ef70713a66a` 均仅修改本管理文档、普通 push；独立 `git ls-remote` 核准确后继远端同值，`git diff --check` EXIT0。B 本人恢复、实际模型及根已授权写域的来源已逐项登记，未将实现或测试写为通过。B 后继 `msg_eedfed2f28b8` 提交构造器 `sqlite.NewAcceptedArtifactCompletionSource(db *sqlite.DB, reader swarmapp.AcceptedArtifactEvidenceReader, projects workspaceapp.LocalProjects) (*sqlite.AcceptedArtifactCompletionSource, error)`，模块 `msg_c5f4d0595410` 已确认并交 M-relay `msg_7b1e923dae9f`，共享组装可按该端口准备；实际实现 SOURCE / REPORT 及新适用验证仍在进行。固定来源的 TaskID 使用原 WorkItemID，非 material 的通用 Inputs 不伪装为资料引用，采用事件不冒称原生事件；旧全部 RED / UNKNOWN / NOT_RUN 及最终包限制保持。
 
+### 02:23 实际来源定位与同域适配
+
+B `msg_ae8671307cba` 已确认准确 I `42860d27` 的 ff-only 消费完成；模块完整只读两件新增文件，生产构造器与已交 H 签名保持。原生产 Read / Authorize 使用同主库事务、当前 human 与固定采用事件；新增测试使用真实 HTTP bootstrap、项目注册、真实 SQLite 与生产 Swarm ledger，尚未交本轮运行结果，不能登记为通过。
+
+原 Capture 没有 source_kind 输入。B `msg_e01e288983aa` 提议在原同名前缀生产文件增加 `HasAcceptedArtifactCompletion(ctx, principal, projectID, eventID) (bool, error)`，模块 `msg_10b9eeb22d10` 在原三件写域内确认，并交 M-relay `msg_1d6a98bf657e`。该端口先核当前 human / 项目权限，沿真实主库事务只用 SELECT EXISTS 定位实际 event_id 与 `swarm.artifact_accepted` 类型，不返回 payload；实际已登记但 schema 不受支持时仍交完整 Read 严格失败。false 仅声明本来源未登记，H 仍须独立核实际 Relay completion 命名空间，双存在、均不存在和未知均拒绝，不捕获某来源 Read 错误再尝试其他来源。未新增 HTTP 字段、schema、来源事实或事件，固定 SOURCE / REPORT 及适用真实验证继续在途。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
