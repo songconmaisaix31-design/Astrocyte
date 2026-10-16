@@ -42,7 +42,7 @@ func relayJudgmentActualAssembly(t *testing.T, withSnapshots bool) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	root := t.TempDir()
+	root := relayActualTestDirectory(t)
 	db, err := sqlite.Open(filepath.Join(root, "state.sqlite"))
 	if err != nil {
 		t.Fatal("实际判断数据库打开失败")
@@ -99,7 +99,7 @@ func relayJudgmentActualAssembly(t *testing.T, withSnapshots bool) {
 	t.Setenv("ASTROCYTE_RELAY_PUBLIC_GIT_ROOT", "")
 	closeRelay, err := assembleRelay(&services, db, registry, store)
 	if err != nil {
-		t.Fatal("实际空 Relay 生产组装失败")
+		relayActualTestFailure(t, root, "实际空 Relay 生产组装失败", err, map[string]string{"stage": "assembleRelay"})
 	}
 	defer func() {
 		if closeRelay() != nil {

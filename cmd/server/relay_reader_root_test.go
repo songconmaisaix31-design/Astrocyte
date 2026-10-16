@@ -7,7 +7,7 @@ import (
 )
 
 func TestRelayReaderRootActualDirectoriesAndDatabaseAliases(t *testing.T) {
-	root := t.TempDir()
+	root := relayActualTestDirectory(t)
 	t.Setenv("LOCALAPPDATA", filepath.Join(root, "local"))
 	t.Setenv("ASTROCYTE_WORKBENCH_PROTECTED_SOURCES", "[]")
 	reader := filepath.Join(root, "cognition")
@@ -16,7 +16,7 @@ func TestRelayReaderRootActualDirectoriesAndDatabaseAliases(t *testing.T) {
 	}
 	t.Setenv("ASTROCYTE_WORKBENCH_READER_ROOT", reader)
 	if selected, err := workbenchReaderRoot(); err != nil || selected != reader {
-		t.Fatal("独立认知根未保留明确配置")
+		relayActualTestFailure(t, root, "独立认知根未保留明确配置", err, map[string]string{"stage": "workbenchReaderRoot", "expected": reader, "selected": selected})
 	}
 	app := filepath.Join(root, "app")
 	if selected, err := guardWorkbenchExplicitDataDir(app); err != nil || selected != app {
