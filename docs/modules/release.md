@@ -2,6 +2,16 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 12:28 当前 Q 交付与 P 启动验收
+
+Q SOURCE `8796fb8fbe91712a99d3b2798fd183a3dfe3bbfc` 仅新增三行显式 `ASTROCYTE_TEST_OUTPUT_ROOT` 支持；非空时使用该根的 `snapshot-tests`，省略时保留原默认，生产路径保护和全部断言未改。独立 REPORT `7aa24765f99174245621498bf02d970bfe409fd7` 已普通 push / 远端同值 / clean，本模块独读准确代码与两日志：显式输出根18.053秒、原默认11.688秒，均七子项通过。有效 D 目录 exe 为11,432,448 bytes，Go buildinfo revision 是 `baf9a5d0b5b2cf161e2018b94977d2f904f6df76` / modified=false；该产物不充作新集成来源。根 b02 的首次发布失败与原 Q 首次默认 C vet 保留，独立 symlink OS1314 未通过。Q 检查尚属原 Q 分支，根完整组合仍须实际复验，不沿用旧 PASS。
+
+Q `ctx_92f25dfec46c` 已合法结算，本模块执行官方 release，结果为 `retained / external_terminal / processAction=none`，不宣称关闭了预创建终端。P 原数次已结算来源和报告保留，本轮继续原 `task_3347b755071e` / 原树 / 原分支 / 同一 Claude 终端。为将当前授权文本与准确生命周期一次交付，使用公开 `dispatch --return-preamble` 绑定 `ctx_1874978728b8`，保留 CLI 生成的生命周期前缀和 IDs，TASK 部分描述当前返修；没有创建新 Task / Run / Agent / 工作树或第四层。该 lane 为 unsupervised，不宣称新建或拥有其原终端进程。
+
+P 正在完成 Build 最早两次 Node 调用的 D 环境作用域及实际 owned 进程退出。原功能检查的默认 child 都是 `powershell.exe`，不能把 `pwsh` 父脚本计为默认实际 PS7 child；旧 teardown 没有证明 Go 子进程退出。本模块实际发现19880 / 19881仍有 listener，已交原 P 先核准确稳定路径与启动时间，仅处理自己的已完成测试遗留。原 P 随后补真实 `pwsh` child 的无模型默认启动、健康、SQLite 及 owned 退出，不重复原拒绝检查；最终准确来源、日志和退出结果仍待独立验收，4106 / 107998当前不计整阶段 ready。
+
+根 `msg_1a8b11891180` 另明确准许一次 S4 完整显式参数正向。原 H 已将安全四项配置及38fb稳定 binary / web 指针写入自身 ignored `dist/product-recovery-20261016/s4-config-public.json`，只含现用 RepositoryEnvironmentID / CodeGraph Node / SDK / Script 与 AOCI 未配置事实，无 secret、共享数据库或原始内容。本模块已将该准确文件及授权交 P：仅在自身新 D 数据目录构造 S4、检查真实配置生效、HTTP health 和 owned 停止，不索引仓库、不初始化 Laya 或调用产品模型、原生控制器、ASR，不下载或扫描旧大型资产。共享64505实例、原数据和未答语言边界保持，最终包仍未启动。
+
 ### 2026-10-16 12:15 P / Q 当前返修与准确验收范围
 
 两轨保持原 Task / 树 / 分支，实际客户端均为 Claude Code2.1.238 / 启动信息 `qwen3.7-max`，没有新增 Task / Run 或第四层。P 当前 `ctx_70c076b66d81` / `term_ea50e3ea-37d9-4ffd-80bc-119815dfcb96` 持续完成启动参数与构建环境返修；Q 当前 `ctx_92f25dfec46c` / `term_a0aa60f6-9dcf-4ae8-9da1-2619833a14a3` 只补精确报告及一次有效 D 目录 exe 构建。两个旧完成回报及源码保留，当前未以旧准备、参数字符串检查或缺产物的构建结果结算本轮需求。
