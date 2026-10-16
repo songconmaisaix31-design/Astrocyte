@@ -1,5 +1,20 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 12:42 准入界面移除实现细节与网络请求验证
+
+SOURCE `d472344` 在 HEAD `7a5fda5` 上移除 `OpportunityAdmission.tsx` 三项实现细节：POST 路径显示、完整 JSON payload 预览和 Idempotency-Key 说明。保留可读候选 / 固定 revision / 资料 / 项目审阅、人工确认复选框和未知 request_id 锁定机制。
+
+`s2-admission.spec.ts` 更新为验证实际网络请求：场景 1 从固定输入构造 `expectedBody`，核对 POST body 和 Idempotency-Key header；场景 4 从 alert 文本提取实际 UUID request_id，验证跨页面重载持久化；场景 2 移除 JSON 预览持久断言，保留复选框和零准入 / 草稿创建。
+
+| 本次实际命令 | 实际结果 | 本次 `.verification` 内记录 |
+| --- | --- | --- |
+| `npx tsc --noEmit` | EXIT0，零错误 | 实际命令输出 |
+| `npx eslint src/pages/attention/OpportunityAdmission.tsx e2e/s2-admission.spec.ts` | EXIT0 | 实际命令输出 |
+| `npx vitest run src/api/admissions.test.ts` | 1 文件、3 PASS、EXIT0 | 实际命令输出 |
+| `npx playwright test e2e/s2-admission.spec.ts --workers=1 --retries=0`，显式 GOCACHE / GOTMPDIR / TEMP / TMP / ASTROCYTE_TEST_OUTPUT_ROOT 在 D 盘独占目录、GOMAXPROCS=2、GOFLAGS=-p=1 | 8 PASS、5.4 分钟、EXIT0；两种窗口、零 skip / 重试 | `playwright-admission-run3.log` |
+
+环境使用 `pipefail` 保留首失败，没有重跑完整 320 项。八场景覆盖实际网络 body / header、版本冲突、权限拒绝、离线锁、撤销、重启后保留，没有 mock、page.route 或 JSON 预览镜像测试。实际客户端为 Claude Code 2.1.238，provider.model 为空，模型名称报告 UNKNOWN。
+
 ## 2026-10-16 12:10 人工准入完整边界与 TS2571 修复
 
 SOURCE `d4d6ccfbcb6a6f3578117d76a637624445442f77` 在 HEAD `7b67b755` 上完成准入界面、类型修复和真实八场景验收。新增 `admissions.ts` 客户端使用既有 `createApiClient` 会话、CSRF 和幂等键，`OpportunityAdmission.tsx` 提供项目选择、固定候选预览、确认复选框、撤销理由和准入记录查询；`usePersistentCommand` 增加 `preparedID` 参数支持调用方提供的原请求身份，离线或未知结果后保持锁定。`AttentionPage` 和 `OpportunityWorkspace` 更新说明文字并接入准入面板的阻塞状态传播。
