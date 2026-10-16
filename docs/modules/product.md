@@ -31,6 +31,12 @@ M-relay `msg_550d2d324668` 已正式确认互斥范围：原 H 当前 `ctx_0ae3e
 
 M-relay `msg_e97b8642905d` 转根 `msg_18a51` 当前授权：H 可在实际认证 Capture 入口以请求私有 context 保存当前 Principal，Interpreter 回调沿同请求 context 重读与再授权，缺少该上下文直接拒绝。身份不取 HTTP 正文，不用历史 completion ActorID 代替当前 caller，不使用共享全局可变 caller；事务内不外读 Relay、objects 或 archive。该方向无需 B 修改普通 agents，H 继续持有装配写域；B 仍限定拟议新 SQLite 前缀文件及 backend 报告。deadline 使用既有显式 1..1800 范围，ModelVersion 不用 CLI 版本补造；正向采用、模型与最终发布门禁保持未完成。
 
+### 02:19 实际采用 reader 实施计划
+
+B 本人 `msg_14b192607caf` 已核 `78ec4fc7` 为准确 I `42860d277df0c0518f58e2a836681d7fa10c50ee` 祖先。根 `msg_9b323f15e766` 明确允许同原树 / 分支在 clean 与祖先检查成立后使用 `git merge --ff-only` 消费该准确已 push 组合；出现 WIP 或非祖先时保持原状并交接。该消费复用已交付 S3、Attention 与事务支持，不复制领域源码，不恢复 S3 人员，不重复已验功能。
+
+模块已通过 `msg_423a95b1060f` 确认原 B 精确三件 write_paths：`internal/adapters/sqlite/accepted_artifact_completion.go`、`internal/adapters/sqlite/accepted_artifact_completion_test.go`、`docs/standards/backend.md`。构造器接真实 DB 与既有 `swarm.AcceptedArtifactEvidenceReader`，复用 `ReadAcceptedArtifactEvidence` 和当前 `WorkspaceTransaction`，读取当前 human 授权与固定成果，事务内重读并与传入来源全等核对；Authorize 要求当前主库事务。新增生产适配须实施并运行适用的真实 SQLite、当前权限、缺事件、取消 / 关闭 / 跨库及持久化检查；无实际采用事件和模型前置时保留正向 NOT_RUN，不制造 outbox 或成功结果。完成构造器签名先交 H，固定 SOURCE 与独立 REPORT 普通 push 后再交根验收。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
