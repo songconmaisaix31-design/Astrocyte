@@ -1,5 +1,15 @@
 # Works Relay integration report
 
+## 2026-10-17 当前运行与委托引用检查
+
+准确172已实际更新到同一 `http://127.0.0.1:64505/`，modified=false / PID25568，启动UTC `2026-10-16T16:06:57.3298644Z`。原2d27 / PID50624通过owned CTRL_C正常退出并释放端口后，仅启动一次D稳定172副本。F本人 `msg_e359a65335ba` 和UI本人 `msg_8ec1d72a2d30` 的本次暂停原文保存在产品Run；经模块完整转交后由根独读确认，H使用既有声明继续更新，没有要求作者重复确认。
+
+H实际 health / 首页 / 全部30个静态资源HTTP字节核查通过；根独读当前指针并核实际程序路径、启动时间、唯一127.0.0.1:64505监听PID、health ok、首页200 /562bytes。根读取本次SQLite计数原件，68表前后完整counts对象严格相同；H记录合计90行、原生会话0。原LOCALAPPDATA、媒体12项和Q `snapshot-1711995690` 保持，没有新增原生初始化、模型、ASR或索引。原件位于H的D稳定目录 `shared-product-ad8413/`：`running.json` 及 `data-{before,after}-172bb445-20261016-160655.json`；H独立固定报告另行普通交付。
+
+UI仅测试 SOURCE `fbe0e34c6eb85d2c3e39492a83bbc9d4a5ac0769` / REPORT `d6318d1c0792f00a8c02d081cc5c89eefce21aaa` 已普通合为 `8da025f03b06bf5d43fe3885d249a1506e794b8e`，没有生产代码变更。实际规则r1 / workflow经生产保存及GET重读后，从DOM选入Taste v2；规则真实变为paused /r2后，旧固定引用及人工刷新均保持原r1，旧保存两次PUT为0。人工移除旧引用并明确选择r2后保存v3，原v2历史继续引用r1，当前v3引用r2，准则、示例和digest保持。
+
+根独读原 `delegation-reference/list-first.log` 精确两尺寸两项，及 `e2e-first.log` 的2 PASS /54.0秒；作者实际工具EXIT0及完整tsc-b / 定向lint结果见 [UI报告](../standards/product-ui.md)。根在准确8da组合执行 `pnpm --dir web typecheck`，实际EXIT0（工具会话64181）；没有重复已通过场景或完整构建，运行来源继续为172。既有真实进度的两项只读托管仍由原B接续，当前26 /29状态及其他未答范围保持。
+
 ## 2026-10-16 完整品味配置与判断流程
 
 UI SOURCE `524ee13dc7fefbc29660b6b5136077f400972bd2` / 独立 REPORT `9aa52ecf6199ce819ea6793e6f37481095d63ab4` 已普通合并为 `f5872cfffdbb5e6b6ffeb02302804361d44a0376`。文件编辑仅处理三个合并冲突：保留无截图的 trace 配置，接入 Taste 编辑入口，补齐已验 Taste 类型和公共调用。原准入页面、固定 preparedID、根2d类型衔接均保持。最终新增完整 Taste 编辑与字段 / 校验、必要客户端和入口、真实 E2E 及作者记录，没有覆盖其他领域的后继实现。
