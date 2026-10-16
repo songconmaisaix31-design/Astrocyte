@@ -1,5 +1,44 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 PLOS 候选严格 DOM 只读审阅（64505，24 项逐项 assert）
+
+针对上一轮 DOM 审阅脚本（852a149/f59a356）使用 `catch(()=>false/N/A)` 静默吞错、未点击准备按钮、条件跳过等问题，重写严格版本脚本 `.verification/dom-review-strict-64505.mjs`。Playwright chromium headless 1280×720，零截图、零视频、零模型。每个断言硬失败——任一缺失立即 exit 1，不 catch 继续。
+
+**实际运行结果**：EXIT0，24 项断言全部 PASS。
+
+**逐项断言清单与实际结果**：
+
+| # | 断言 | 结果 |
+| --- | --- | --- |
+| 1 | 页面 title 包含 Astrocyte | PASS: `"Astrocyte · 研究工作台"` |
+| 2 | PLOS 候选卡片恰好 1 个 | PASS: count=1 |
+| 3 | 对话框可见且有内容 | PASS |
+| 4 | 对话框包含候选 ID `QILUA3J6WINYVSRKX3CU6FA35A` | PASS |
+| 5 | 对话框包含 `r2` | PASS |
+| 6 | 对话框包含 `v3` | PASS |
+| 7 | 对话框包含资料 ID `TN3CEEE5ELGKZBSKY2RIEUW7OH` | PASS |
+| 8 | 对话框包含资料 revision 1 | PASS |
+| 9 | 对话框显示状态 `待审核` | PASS |
+| 10 | 准入表单区域 `role="region" name="资料人工准入"` 可见 | PASS |
+| 11 | 项目选择器可见 | PASS |
+| 12 | 项目列表包含 `同实例公开前端项目` | PASS: 3 选项 `["请明确选择项目归属…","暂不分配项目，仅生成未分配草稿","同实例公开前端项目"]` |
+| 13 | 选择项目后表单包含项目 ID `98389066-5e5a-4e82-982b-deab3e005273` | PASS |
+| 14 | 表单包含项目名称 `同实例公开前端项目` | PASS |
+| 15 | 表单显示项目 settings r2 | PASS |
+| 16 | 表单显示 `目录读取 已允许` | PASS |
+| 17 | 表单确认 `本候选全部固定版本已在项目空间主动引用` | PASS |
+| 18 | 准备按钮可见 | PASS |
+| 19 | 准备按钮启用（项目选择后） | PASS |
+| 20 | 点击准备按钮产生零新非 GET 写入 | PASS: before=0, after=0（纯 setState，零 HTTP） |
+| 21 | 确认复选框存在且可见（prepare 后） | PASS: count=1 |
+| 22 | 确认复选框未勾选 | PASS |
+| 23 | 提交按钮 `确认资料准入并生成草稿` disabled | PASS |
+| 24 | 全程零非 GET API 请求 | PASS: 0 writes |
+
+**元数据**：脚本位置 `.verification/dom-review-strict-64505.mjs`（已在 `.gitignore`），日志 `.verification/dom-review-strict-64505.log`。服务 64505 运行中（LISTENING，HTTP 200）。Session 通过 `GET /api/v1/auth/session` 自动建立。准备按钮源码为纯 `setState`，不触发任何 HTTP 写操作。
+
+**结论**：PLOS 候选 `QILUA3J6WINYVSRKX3CU6FA35A` r2/v3 + 资料 `TN3CEEE5ELGKZBSKY2RIEUW7OH` r1 + 项目 `98389066-5e5a-4e82-982b-deab3e005273` r2 全部在真实浏览器 DOM 中逐项可见可断言。选择既有项目后准备按钮启用；点击准备（零 HTTP 写）后确认表单可见、复选框未勾、提交 disabled。全程零非 GET。根可基于此原件问用户一次具体准入选择。
+
 ## 2026-10-16 PLOS 候选真实浏览器 DOM 只读审阅（64505 运行中服务）
 
 SOURCE `7b0441c`：消费 UI self-service.config WIP 一行 `s5-*.spec.ts` testMatch 增加，原 s2/s3/s4/progress 保留不删。`pnpm --dir web exec tsc -b` EXIT0。独立 SOURCE push 交 UI `ctx_5d4bbae2a28d`，不让 UI 公共配置 WIP 直接供根合。
