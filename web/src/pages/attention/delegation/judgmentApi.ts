@@ -35,6 +35,8 @@ async function headers() {
 export const judgmentApi = {
   session: () => unwrap(api.GET('/auth/session')),
   taste: (signal?: AbortSignal) => unwrap(api.GET('/attention-taste-profile', { signal })),
+  materials: (signal?: AbortSignal) => unwrap(api.GET('/materials', { signal })),
+  materialDetail: (id: string, signal?: AbortSignal) => unwrap(api.GET('/materials/{id}', { params: { path: { id } }, signal })),
   saveTaste: async (body: TasteCommand) => {
     const key = body.request_id;
     return unwrap(api.PUT('/attention-taste-profile', { params: { header: { ...await headers(), 'Idempotency-Key': key } }, body }));

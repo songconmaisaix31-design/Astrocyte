@@ -1,512 +1,374 @@
-import { expect, test } from '@playwright/test';
-import { realService, registerCurrentProject, importTrackedDocument, trackedCandidate } from './realService';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { realService, registerCurrentProject, importTrackedDocument, repositoryRoot } from './realService';
+import { humanAPI, importMaterial } from '../../tests/s1/api.mjs';
+import { execFileSync } from 'node:child_process';
+import { hostname } from 'node:os';
 import type { components } from '../src/api/schema';
 
 type S = components['schemas'];
-type Api = Awaited<ReturnType<typeof realService>>['api'];
+const tastePath = '/attention-taste-profile';
 
-/**
- * 独立实例建立：每次测试启动独立HTTP/SQLite服务、独立项目、独立snapshot/Goal/Taste。
- * 不复制共享98389066项目ID，不修改共享实例。
- */
-
-async function setupJudgmentProject() {
-  const { server, api } = await realService();
-  const project = await registerCurrentProject(api);
+async function setup() {
+  const { server, api } = await realService(true, { ASTROCYTE_REPOSITORY_ENVIRONMENT_ID: hostname() });
+  const registered = await registerCurrentProject(api);
+  const configured = await api.write(`/local-projects/${registered.id}/settings`, {
+    expected_revision: registered.settings.revision,
+    settings: { allow_directory: true, allowed_subdirs: ['STATUS.md', 'AGENTS.md'], allowed_actions: ['read_context'], allowed_tools: [], external_model_cli: '', allow_agent_control: false },
+  }, { method: 'PUT' }) as S['LocalProjectResultV1'];
+  const project = configured.project;
+  expect(project.settings.revision).toBeGreaterThan(registered.settings.revision);
   const imported = await importTrackedDocument(api);
-  const material = imported.detail.material;
-  const candidate = await trackedCandidate(api);
-  return { server, api, project, material, candidate };
+  const material = imported.detail.material as S['MaterialV1'];
+  const revision = (imported.detail.revisions as S['MaterialRevisionV1'][]).find(item => item.revision === material.current_revision);
+  if (!revision || !revision.content_digest) throw new Error('实际导入资料缺少当前固定版本或摘要');
+  const { space } = await api.get(`/project-spaces/${project.space_id}`) as S['ProjectSpaceResultV1'];
+  await api.write(`/project-spaces/${project.space_id}/references`, { expected_version: space.version, material_id: material.id, revision: revision.revision });
+  return { server, api, project, material, revision };
 }
 
-async function captureSnapshot(api: Api, projectId: string) {
-  return api.request(`/local-projects/${projectId}/judgment-snapshots`, {
-    method: 'POST',
-    body: { files: ['STATUS.md', 'AGENTS.md'] },
-  }) as Promise<{ status: number; data: S['JudgmentSnapshotResultV1'] }>;
+async function openTaste(page: Page, webURL: string) {
+  await page.goto(`${webURL}/attention`);
+  const section = page.getByRole('region', { name: 'Taste 配置', exact: true });
+  await expect(section.getByText('当前状态：未配置', { exact: true })).toBeVisible();
+  await section.getByRole('button', { name: '创建配置', exact: true }).click();
+  await expect(section.getByLabel('启用状态', { exact: true })).toHaveValue('');
+  return section;
 }
 
-async function createGoal(api: Api, projectId: string) {
-  const key = crypto.randomUUID();
-  return api.write('/goals', {
-    goal: {
-      project_id: projectId,
-      title: '判断策略正向验证',
-      success_criteria: ['策略保存成功', '规则可读取', '判断可提交'],
-      status: 'active',
-      priority: 1,
-    },
-  }, { key }) as Promise<S['S2GoalResultV1']>;
+async function saveTaste(page: Page, section: Locator) {
+  const response = page.waitForResponse(response => response.url().endsWith(`/api/v1${tastePath}`) && response.request().method() === 'PUT');
+  await section.getByRole('button', { name: '保存配置', exact: true }).click();
+  const result = await response;
+  expect(result.status(), await result.text()).toBe(200);
+  const data = await result.json() as S['TasteProfileResultV1'];
+  if (!data.profile || data.profile.version < 1) throw new Error('Taste 保存响应缺少真实版本');
+  await expect(section.getByRole('button', { name: '编辑配置', exact: true })).toBeEnabled();
+  return data.profile;
 }
 
-async function configureTaste(api: Api) {
-  const key = crypto.randomUUID();
-  return api.request('/attention-taste-profile', {
-    method: 'PUT',
-    key,
-    body: {
-      schema_version: 1,
-      request_id: key,
-      expected_version: 0,
-      enabled: true,
-      rubrics: [{
-        id: 'rubric-choice-001',
-        question_type: 'choice' as const,
-        criteria: '实际验证判断策略的正向路径',
-        options: [
-          { id: 'adopt', description: '采纳判断结果' },
-          { id: 'reject', description: '拒绝判断结果' },
-        ],
-        levels: ['low', 'medium', 'high'],
-      }],
-      examples: [],
-      delegations: [],
-    },
-  }) as Promise<{ status: number; data: S['TasteProfileResultV1'] }>;
-}
-
-async function getSessionInfo(api: Api) {
-  return api.request('/auth/session') as Promise<{ status: number; data: S['LocalSessionV1'] }>;
-}
-
-async function savePolicy(api: Api, projectId: string, questionType: string, csrf: string, body: Record<string, unknown>) {
-  return api.request(`/local-projects/${projectId}/judgment-policies/${questionType}`, {
-    method: 'PUT',
-    body: { expected_revision: 0, policy: body },
-    headers: { 'X-CSRF-Token': csrf },
-  });
-}
-
-async function readPolicy(api: Api, projectId: string, questionType: string) {
-  return api.request(`/local-projects/${projectId}/judgment-policies/${questionType}`);
-}
-
-async function saveRule(api: Api, projectId: string, ruleId: string, csrf: string, body: Record<string, unknown>) {
-  return api.request(`/local-projects/${projectId}/delegation-rules/${ruleId}`, {
-    method: 'PUT',
-    body: { expected_revision: 0, rule: body },
-    headers: { 'X-CSRF-Token': csrf },
-  });
-}
-
-async function readRule(api: Api, projectId: string, ruleId: string) {
-  return api.request(`/local-projects/${projectId}/delegation-rules/${ruleId}`);
-}
-
-function buildVersions(goalRev: string, tasteVer: string) {
-  return {
-    goal_version: goalRev,
-    taste_version: tasteVer,
-    policy_version: '1',
-    model_revision: 'rule-v1',
-    access_epoch: '1',
-  };
-}
-
-function buildBudget() {
-  return { timeout_ms: 10000, max_input_bytes: 4096, max_input_tokens: 500, max_output_tokens: 200 };
-}
-
-// ===== 首RED保留：真实拒绝测试 =====
-
-test('真实判断策略创建需要完整快照和版本引用', async () => {
-  test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
-  try {
-    const session = await getSessionInfo(api);
-    const incompletePolicy = {
-      backend: 'rule' as const,
-      question_type: 'choice' as const,
-      versions: { goal_version: '', taste_version: '', policy_version: '', model_revision: '', access_epoch: '' },
-      budget: { timeout_ms: 5000, max_input_bytes: 1024, max_input_tokens: 100 },
-    };
-
-    const response = await savePolicy(api, project.id, 'choice', session.data.csrf_token, incompletePolicy);
-
-    // 后端应该拒绝不完整的策略
-    expect(response.status).toBeGreaterThanOrEqual(400);
-  } finally {
-    await server.close({ preserveData: true });
-  }
-});
-
-test('真实委托规则创建需要有效策略版本', async () => {
-  test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
-  try {
-    const session = await getSessionInfo(api);
-    const ruleCommand = {
-      id: 'test-rule-001', project_id: project.id, workflow_id: 'workflow-001',
-      owner_id: session.data.actor_id, revision: 0, state: 'active',
-      purpose: '测试委托规则', question: {
-        question_id: 'q-reject-001', question_type: 'choice' as const,
-        instructions: '测试委托规则', options: [{ id: 'yes' }, { id: 'no' }],
-      },
-      policy_revision: 0, language: 'zh-CN',
-      materials: null, admission_choice: null, admission_value_min: null,
-      admission_value_max: null, allow_opportunity_external: null, review_conditions: null,
-    };
-
-    const response = await saveRule(api, project.id, 'test-rule-001', session.data.csrf_token, ruleCommand);
-
-    // 后端应该拒绝无效策略版本的规则
-    expect(response.status).toBeGreaterThanOrEqual(400);
-  } finally {
-    await server.close({ preserveData: true });
-  }
-});
-
-test('真实判断请求需要已配置的策略', async () => {
-  test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
-  try {
-    const session = await getSessionInfo(api);
-    const snapResult = await captureSnapshot(api, project.id);
-    const judgmentCommand = {
-      schema_version: '1.0' as const, project_id: project.id,
-      worktree_id: snapResult.data.snapshot.worktree_id,
-      snapshot_id: snapResult.data.snapshot.worktree_id,
-      question: { question_id: 'q-no-policy', question_type: 'choice' as const, instructions: '无策略', options: [{ id: 'a' }, { id: 'b' }] },
-      language: 'zh-CN', backend: 'rule' as const,
-      versions: { goal_version: '0', taste_version: '0', policy_version: '0', model_revision: '', access_epoch: '0' },
-      budget: buildBudget(), context: null,
-    };
-
-    const response = await api.request(`/local-projects/${project.id}/judgments`, {
-      method: 'POST', body: judgmentCommand,
-      headers: { 'X-CSRF-Token': session.data.csrf_token },
-    });
-
-    // 后端应该拒绝未配置策略的判断请求
-    expect(response.status).toBeGreaterThanOrEqual(400);
-  } finally {
-    await server.close({ preserveData: true });
-  }
-});
-
-test('真实403权限拒绝与恢复', async () => {
-  test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
-  try {
-    // 无认证cookie的请求应被拒绝
-    const denied = await fetch(`${server.apiURL}/api/v1/local-projects/${project.id}/judgment-policies/choice`, {
-      method: 'GET', signal: AbortSignal.timeout(5000),
-    });
-    expect(denied.status).toBe(403);
-
-    // 使用已认证api恢复读取（404=未配置，200=已配置，均正常）
-    const recovered = await readPolicy(api, project.id, 'choice');
-    expect(recovered.status).toBeLessThan(500);
-  } finally {
-    await server.close({ preserveData: true });
-  }
-});
-
-test('真实离线unknown锁与幂等性', async ({ context }) => {
-  test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
-  try {
-    const session = await getSessionInfo(api);
-    const requestId = crypto.randomUUID();
-    const policyBody = {
-      backend: 'rule' as const, question_type: 'choice' as const,
-      versions: { goal_version: '1', taste_version: '1', policy_version: '1', model_revision: 'test', access_epoch: '1' },
-      budget: { timeout_ms: 5000, max_input_bytes: 1024, max_input_tokens: 100 },
-    };
-
-    // 设置离线
-    await context.setOffline(true);
-    const response = await api.request(`/local-projects/${project.id}/judgment-policies/choice`, {
-      method: 'PUT',
-      body: { expected_revision: 0, policy: policyBody },
-      headers: { 'X-CSRF-Token': session.data.csrf_token, 'Idempotency-Key': requestId },
-    }).catch(() => null);
-
-    // 离线时请求应该失败或返回null
-    expect(response).toBeNull();
-
-    // 恢复网络后使用相同request_id重试应该保持幂等
-    await context.setOffline(false);
-    const retry = await api.request(`/local-projects/${project.id}/judgment-policies/choice`, {
-      method: 'PUT',
-      body: { expected_revision: 0, policy: policyBody },
-      headers: { 'X-CSRF-Token': session.data.csrf_token, 'Idempotency-Key': requestId },
-    });
-
-    // 重试应该成功或返回非500
-    expect(retry.status).toBeLessThan(500);
-  } finally {
-    await context.setOffline(false);
-    await server.close({ preserveData: true });
-  }
-});
-
-// ===== 正向路径：真实snapshot/Goal/Taste和rule保存/读取/状态/反馈 =====
-
-test('正向：真实判断策略保存与读取', async () => {
-  test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
-  try {
-    // 建立独立前置条件
-    const goal = await createGoal(api, project.id);
-    const tasteResult = await configureTaste(api);
-    const snapResult = await captureSnapshot(api, project.id);
-    const session = await getSessionInfo(api);
-    const snapshot = snapResult.data.snapshot;
-    expect(snapshot.project_id).toBe(project.id);
-    expect(snapshot.head).toBeTruthy();
-
-    const tasteVersion = String(tasteResult.data.profile?.version ?? 1);
-    const goalRevision = String(goal.goal.revision);
-
-    const policyBody = {
-      revision: 0, project_id: project.id, project_settings_revision: 0,
-      worktree_id: snapshot.worktree_id, snapshot_id: snapshot.worktree_id,
-      snapshot_files: ['STATUS.md', 'AGENTS.md'], snapshot,
-      question_type: 'choice' as const, backend: 'rule' as const,
-      versions: buildVersions(goalRevision, tasteVersion),
-      budget: buildBudget(),
-      languages: ['zh-CN'], external_scope: undefined,
-      external_evidence: null, min_confidence: null,
-      truth_accept_min: null, truth_accept_max: null,
-      sources: null, external_sources: null,
-    };
-
-    // 保存策略
-    const saveResult = await savePolicy(api, project.id, 'choice', session.data.csrf_token, policyBody);
-    expect(saveResult.status).toBe(200);
-    const saved = saveResult.data as S['JudgmentPolicyResultV1'];
-    expect(saved.policy.revision).toBeGreaterThanOrEqual(1);
-    expect(saved.policy.backend).toBe('rule');
-    expect(saved.policy.question_type).toBe('choice');
-    expect(saved.policy.versions.goal_version).toBe(goalRevision);
-    expect(saved.policy.versions.taste_version).toBe(tasteVersion);
-    expect(saved.policy.budget.timeout_ms).toBe(10000);
-    expect(saved.policy.snapshot.head).toBe(snapshot.head);
-
-    // 读取策略并核对
-    const readResult = await readPolicy(api, project.id, 'choice');
-    expect(readResult.status).toBe(200);
-    const read = readResult.data as S['JudgmentPolicyResultV1'];
-    expect(read.policy.revision).toBe(saved.policy.revision);
-    expect(read.policy.backend).toBe('rule');
-    expect(read.policy.budget.max_input_bytes).toBe(4096);
-    expect(read.policy.snapshot_files).toEqual(['STATUS.md', 'AGENTS.md']);
-  } finally {
-    await server.close({ preserveData: true });
-  }
-});
-
-test('正向：真实委托规则保存、读取与状态变更', async () => {
-  test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
-  try {
-    const goal = await createGoal(api, project.id);
-    const tasteResult = await configureTaste(api);
-    const snapResult = await captureSnapshot(api, project.id);
-    const session = await getSessionInfo(api);
-    const snapshot = snapResult.data.snapshot;
-    const tasteVersion = String(tasteResult.data.profile?.version ?? 1);
-
-    // 先保存策略（规则需要有效策略版本）
-    const policyBody = {
-      revision: 0, project_id: project.id, project_settings_revision: 0,
-      worktree_id: snapshot.worktree_id, snapshot_id: snapshot.worktree_id,
-      snapshot_files: ['STATUS.md', 'AGENTS.md'], snapshot,
-      question_type: 'choice' as const, backend: 'rule' as const,
-      versions: buildVersions(String(goal.goal.revision), tasteVersion),
-      budget: buildBudget(), languages: ['zh-CN'],
-      external_scope: undefined, external_evidence: null,
-      min_confidence: null, truth_accept_min: null, truth_accept_max: null,
-      sources: null, external_sources: null,
-    };
-    const policySave = await savePolicy(api, project.id, 'choice', session.data.csrf_token, policyBody);
-    expect(policySave.status).toBe(200);
-    const savedPolicy = (policySave.data as S['JudgmentPolicyResultV1']).policy;
-
-    // 保存规则
-    const ruleId = 'rule-positive-001';
-    const ruleBody = {
-      id: ruleId, project_id: project.id, workflow_id: 'workflow-standard',
-      owner_id: session.data.actor_id, revision: 0, state: 'active',
-      purpose: '正向验证委托规则保存读取状态变更',
-      question: {
-        question_id: 'q-rule-001', question_type: 'choice' as const,
-        instructions: '选择是否采纳当前候选资料',
-        options: [{ id: 'adopt', description: '采纳' }, { id: 'reject', description: '拒绝' }],
-      },
-      policy_revision: savedPolicy.revision, language: 'zh-CN',
-      materials: null, admission_choice: null, admission_value_min: null,
-      admission_value_max: null, allow_opportunity_external: null, review_conditions: null,
-    };
-
-    const ruleSave = await saveRule(api, project.id, ruleId, session.data.csrf_token, ruleBody);
-    expect(ruleSave.status).toBe(200);
-    const savedRule = (ruleSave.data as S['DelegationRuleResultV1']).delegation_rule;
-    expect(savedRule.id).toBe(ruleId);
-    expect(savedRule.revision).toBeGreaterThanOrEqual(1);
-    expect(savedRule.state).toBe('active');
-    expect(savedRule.policy_revision).toBe(savedPolicy.revision);
-    expect(savedRule.language).toBe('zh-CN');
-    expect(savedRule.question.question_type).toBe('choice');
-
-    // 读取规则并核对
-    const ruleRead = await readRule(api, project.id, ruleId);
-    expect(ruleRead.status).toBe(200);
-    const readRuleData = (ruleRead.data as S['DelegationRuleResultV1']).delegation_rule;
-    expect(readRuleData.id).toBe(ruleId);
-    expect(readRuleData.revision).toBe(savedRule.revision);
-    expect(readRuleData.purpose).toBe('正向验证委托规则保存读取状态变更');
-
-    // 状态变更：active → paused
-    const stateChange = await api.request(`/local-projects/${project.id}/delegation-rules/${ruleId}/state`, {
-      method: 'POST',
-      body: { expected_revision: savedRule.revision, state: 'paused' },
-      headers: { 'X-CSRF-Token': session.data.csrf_token },
-    });
-    expect(stateChange.status).toBe(200);
-    const pausedRule = (stateChange.data as S['DelegationRuleResultV1']).delegation_rule;
-    expect(pausedRule.state).toBe('paused');
-    expect(pausedRule.revision).toBe(savedRule.revision + 1);
-
-    // 列表查询并核对
-    const rulesList = await api.request(`/local-projects/${project.id}/delegation-rules`);
-    expect(rulesList.status).toBe(200);
-    const list = rulesList.data as S['DelegationRuleListV1'];
-    expect(list.items.length).toBeGreaterThanOrEqual(1);
-    const found = list.items.find(r => r.id === ruleId);
-    expect(found).toBeDefined();
-    expect(found?.state).toBe('paused');
-  } finally {
-    await server.close({ preserveData: true });
-  }
-});
-
-test('正向：真实判断提交、结果读取与反馈', async () => {
-  test.setTimeout(180_000);
-  const { server, api, project, material } = await setupJudgmentProject();
-  try {
-    const goal = await createGoal(api, project.id);
-    const tasteResult = await configureTaste(api);
-    const snapResult = await captureSnapshot(api, project.id);
-    const session = await getSessionInfo(api);
-    const snapshot = snapResult.data.snapshot;
-    const tasteVersion = String(tasteResult.data.profile?.version ?? 1);
-
-    // 先保存策略
-    const policyBody = {
-      revision: 0, project_id: project.id, project_settings_revision: 0,
-      worktree_id: snapshot.worktree_id, snapshot_id: snapshot.worktree_id,
-      snapshot_files: ['STATUS.md', 'AGENTS.md'], snapshot,
-      question_type: 'choice' as const, backend: 'rule' as const,
-      versions: buildVersions(String(goal.goal.revision), tasteVersion),
-      budget: buildBudget(), languages: ['zh-CN'],
-      external_scope: undefined, external_evidence: null,
-      min_confidence: null, truth_accept_min: null, truth_accept_max: null,
-      sources: null, external_sources: null,
-    };
-    const policySave = await savePolicy(api, project.id, 'choice', session.data.csrf_token, policyBody);
-    expect(policySave.status).toBe(200);
-
-    // 提交判断（rule后端可能不支持实际执行，用raw fetch容忍非200）
-    const judgmentBody = {
-      schema_version: '1.0' as const, project_id: project.id,
-      worktree_id: snapshot.worktree_id, snapshot_id: snapshot.worktree_id,
-      question: {
-        question_id: 'q-judge-001', question_type: 'choice' as const,
-        instructions: '判断当前资料是否值得继续跟踪',
-        options: [{ id: 'yes', description: '值得继续' }, { id: 'no', description: '不值得' }],
-      },
-      evidence_refs: [{ material_id: material.id, revision: 1, digest: '' }],
-      language: 'zh-CN', backend: 'rule' as const,
-      versions: buildVersions(String(goal.goal.revision), tasteVersion),
-      budget: buildBudget(), context: null,
-    };
-
-    const judgmentResponse = await fetch(`${server.apiURL}/api/v1/local-projects/${project.id}/judgments`, {
-      method: 'POST', signal: AbortSignal.timeout(15000),
-      headers: {
-        Cookie: api.cookie, Origin: server.apiURL,
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': session.data.csrf_token,
-        'Idempotency-Key': crypto.randomUUID(),
-      },
-      body: JSON.stringify(judgmentBody),
-    });
-    const judgmentData = await judgmentResponse.json();
-
-    if (judgmentResponse.status === 200) {
-      // 后端实际执行了判断
-      const envelope = judgmentData as S['JudgmentResultEnvelopeV1'];
-      expect(envelope.judgment.decision_id).toBeTruthy();
-      expect(envelope.judgment.question_type).toBe('choice');
-      expect(['recommend', 'abstain', 'need_evidence']).toContain(envelope.judgment.decision);
-      expect(envelope.judgment.provider).toBe('rule');
-
-      // 读取结果
-      const resultResponse = await api.request(
-        `/local-projects/${project.id}/judgments/${envelope.judgment.decision_id}`,
-      );
-      expect(resultResponse.status).toBe(200);
-
-      // 记录反馈
-      const feedbackResponse = await api.request(
-        `/local-projects/${project.id}/judgments/${envelope.judgment.decision_id}/feedback`,
-        {
-          method: 'POST',
-          body: { result_version: envelope.judgment.result_version, kind: 'adopt' as const, reason: '正向验证反馈记录' },
-          headers: { 'X-CSRF-Token': session.data.csrf_token },
-        },
-      );
-      expect(feedbackResponse.status).toBe(200);
-      const feedback = (feedbackResponse.data as S['JudgmentFeedbackResultV1']).feedback;
-      expect(feedback.kind).toBe('adopt');
-      expect(feedback.reason).toBe('正向验证反馈记录');
-
-      // 读取反馈列表
-      const feedbackList = await api.request(
-        `/local-projects/${project.id}/judgments/${envelope.judgment.decision_id}/feedback`,
-      );
-      expect(feedbackList.status).toBe(200);
-      const items = (feedbackList.data as S['JudgmentFeedbackListV1']).items;
-      expect(items.length).toBeGreaterThanOrEqual(1);
-    } else {
-      // rule后端未配置实际执行引擎，验证拒绝不是500
-      expect(judgmentResponse.status).toBeLessThan(500);
-      expect(judgmentResponse.status).toBeGreaterThanOrEqual(400);
+async function fillTaste(page: Page, section: Locator, materialID: string, revision: number) {
+  await section.getByLabel('启用状态', { exact: true }).selectOption('true');
+  for (const kind of ['truth', 'choice', 'score'] as const) {
+    await section.getByRole('button', { name: '添加评判准则', exact: true }).click();
+    const rubric = section.locator('.ac-taste-rubric').last();
+    await expect(rubric.getByLabel('准则题型', { exact: true })).toHaveValue('');
+    await rubric.getByLabel('准则题型', { exact: true }).selectOption(kind);
+    await rubric.getByLabel('评判标准', { exact: true }).fill(`人工核查公开执行协议的固定来源 · ${kind}`);
+    if (kind === 'choice') {
+      for (const option of [{ id: 'review', description: '审阅固定来源' }, { id: 'verify', description: '补充验证证据' }]) {
+        await rubric.getByRole('button', { name: '添加选项', exact: true }).click();
+        const field = rubric.getByRole('group', { name: /^选项 \d+$/ }).last();
+        await field.getByLabel('选项标识', { exact: true }).fill(option.id);
+        await field.getByLabel('选项说明', { exact: true }).fill(option.description);
+      }
     }
-  } finally {
-    await server.close({ preserveData: true });
+    if (kind === 'score') {
+      for (const [i, description] of ['补充来源', '审阅固定来源', '完成实际验证'].entries()) {
+        await rubric.getByRole('button', { name: '添加等级', exact: true }).click();
+        await rubric.getByLabel(`等级 ${i}`, { exact: true }).fill(description);
+      }
+    }
+    await section.getByRole('button', { name: '添加固定资料示例', exact: true }).click();
+    const example = section.locator('.ac-taste-example').last();
+    await example.getByLabel('示例关联准则', { exact: true }).selectOption({ index: (await section.locator('.ac-taste-rubric').count()) });
+    await example.getByLabel('示例资料', { exact: true }).selectOption(materialID);
+    await expect(example.getByLabel('示例固定版本', { exact: true })).toBeEnabled();
+    await expect(example.getByLabel('示例固定版本', { exact: true })).toHaveValue('');
+    await example.getByLabel('示例固定版本', { exact: true }).selectOption(String(revision));
+    if (kind === 'choice') await example.getByLabel('示例预期选项', { exact: true }).selectOption('review');
+    else await example.getByLabel('示例预期数值', { exact: true }).fill('1');
   }
+  return saveTaste(page, section);
+}
+
+async function createGoal(page: Page, webURL: string, projectID: string) {
+  await page.goto(`${webURL}/workspace`);
+  await page.getByRole('tab', { name: '提案与批准', exact: true }).click();
+  await page.getByRole('button', { name: '创建目标', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '创建目标', exact: true });
+  await dialog.getByLabel('目标所属项目', { exact: true }).selectOption(projectID);
+  await dialog.getByLabel('目标名称', { exact: true }).fill('核查公开执行协议的判断与委托记录');
+  await dialog.getByLabel('目标成功条件', { exact: true }).fill('固定来源和人工反馈在实际服务重启后保持');
+  await dialog.getByLabel('目标优先级', { exact: true }).fill('1');
+  const response = page.waitForResponse(response => response.url().endsWith('/api/v1/goals') && response.request().method() === 'POST');
+  await dialog.getByRole('button', { name: '保存目标', exact: true }).click();
+  const saved = await response;
+  expect(saved.status(), await saved.text()).toBe(200);
+  const result = await saved.json() as S['S2GoalResultV1'];
+  if (result.goal.revision < 1) throw new Error('真实目标版本缺失');
+  return result.goal;
+}
+
+test('完整真实DOM链：Taste三题型、启停、Goal、Snapshot、Policy、Rule、判断反馈及重启', async ({ page }) => {
+  test.setTimeout(240_000);
+  const { server, api, project, material, revision } = await setup();
+  try {
+    const session = await api.get('/auth/session') as S['LocalSessionV1'];
+    let section = await openTaste(page, server.webURL);
+    let taste = await fillTaste(page, section, material.id, revision.revision);
+    expect(taste.version).toBe(1);
+    expect(taste.configured_by).toBe(session.actor_id);
+    expect(taste.rubrics.map(rubric => [rubric.question_type, rubric.options.length, rubric.levels.length])).toEqual([['truth', 0, 0], ['choice', 2, 0], ['score', 0, 3]]);
+    expect(taste.examples.map(example => example.expected)).toEqual(['1', 'review', '1']);
+    expect(taste.examples.every(example => example.revision === revision.revision && example.content_digest === revision.content_digest)).toBe(true);
+    await section.getByText('查看完整已保存配置', { exact: true }).click();
+    await expect(section.getByText('人工核查公开执行协议的固定来源 · truth', { exact: true })).toBeVisible();
+    for (const enabled of [false, true]) {
+      await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+      await section.getByLabel('启用状态', { exact: true }).selectOption(String(enabled));
+      const next = await saveTaste(page, section);
+      expect(next.version).toBe(taste.version + 1);
+      expect(next.enabled).toBe(enabled);
+      expect(next.rubrics).toEqual(taste.rubrics);
+      taste = next;
+    }
+    expect((await api.get(tastePath) as S['TasteProfileResultV1']).profile).toEqual(taste);
+    const goal = await createGoal(page, server.webURL, project.id);
+    await page.goto(`${server.webURL}/attention`);
+    await page.getByLabel('判断与委托的项目', { exact: true }).selectOption(project.id);
+    await page.getByLabel('读取或配置策略的题型', { exact: true }).selectOption('truth');
+    await page.getByRole('button', { name: '创建此题型的新策略', exact: true }).click();
+    let dialog = page.getByRole('dialog', { name: '判断策略', exact: true });
+    await dialog.getByLabel('判断固定目标', { exact: true }).selectOption(`${goal.id}@${goal.revision}`);
+    await dialog.getByLabel('判断完整 Taste 来源', { exact: true }).selectOption(`${taste.id}@${taste.version}`);
+    await dialog.getByLabel('判断快照文件范围', { exact: true }).fill('STATUS.md\nAGENTS.md');
+    const snapshotResponse = page.waitForResponse(response => response.url().endsWith('/judgment-snapshots') && response.request().method() === 'POST');
+    await dialog.getByRole('button', { name: '读取当前真实项目快照', exact: true }).click();
+    const captured = await snapshotResponse;
+    expect(captured.status(), await captured.text()).toBe(200);
+    const { snapshot } = await captured.json() as S['JudgmentSnapshotResultV1'];
+    expect(snapshot.project_id).toBe(project.id);
+    expect(snapshot.generation).not.toBe('');
+    expect(snapshot.root).toBe('');
+    await dialog.getByLabel('判断后端', { exact: true }).selectOption('rule');
+    await dialog.getByLabel('允许的判断语言', { exact: true }).fill('en');
+    const values: [string, string][] = [
+      ['判断策略版本标识', 'public-dom-v1'], ['判断模型或规则版本', 'rule:all_evidence_present/v1'],
+      ['判断超时上限（毫秒）', '60000'], ['判断输入字节上限', '131072'], ['判断输入 Token 上限', '8192'], ['判断输出 Token 上限', '0'],
+      ['目标版本标识', `${goal.id}@${goal.revision}`], ['Taste 版本标识', `${taste.id}@${taste.version}`], ['授权版本标识', String(project.settings.revision)],
+    ];
+    for (const [label, value] of values) await dialog.getByLabel(label, { exact: true }).fill(value);
+    const policyResponse = page.waitForResponse(response => response.url().endsWith('/judgment-policies/truth') && response.request().method() === 'PUT');
+    await dialog.getByRole('button', { name: '保存当前题型的判断策略', exact: true }).click();
+    const policySaved = await policyResponse;
+    expect(policySaved.status(), await policySaved.text()).toBe(200);
+    const { policy } = await policySaved.json() as S['JudgmentPolicyResultV1'];
+    expect(policy.snapshot_id).toBe(snapshot.generation);
+    expect(policy.worktree_id).toBe(snapshot.worktree_id);
+    expect(policy.project_settings_revision).toBe(project.settings.revision);
+    expect(policy.sources).toEqual({ goal: { id: goal.id, revision: goal.revision }, taste: { id: taste.id, version: taste.version } });
+    expect((await api.get(`/local-projects/${project.id}/judgment-policies/truth`) as S['JudgmentPolicyResultV1']).policy).toEqual(policy);
+    await page.getByRole('button', { name: '创建未开启的委托规则', exact: true }).click();
+    dialog = page.getByRole('dialog', { name: '委托规则编辑', exact: true });
+    await dialog.getByLabel('委托工作流标识', { exact: true }).fill('public-protocol-review');
+    await dialog.getByLabel('判断题目标识', { exact: true }).fill('public-protocol-evidence');
+    await dialog.getByLabel('判断题型', { exact: true }).selectOption('truth');
+    await dialog.getByLabel('完整判断题目与要求', { exact: true }).fill('Is the selected fixed public protocol evidence available?');
+    await dialog.getByLabel('确定性判断规则', { exact: true }).selectOption('all_evidence_present');
+    await dialog.getByRole('button', { name: `使用已核对的策略 r${policy.revision}`, exact: true }).click();
+    await dialog.getByLabel('本规则允许的判断语言', { exact: true }).selectOption('en');
+    await dialog.getByRole('group', { name: '本规则的固定资料范围', exact: true }).getByRole('checkbox').check();
+    await dialog.getByLabel('资料准入数值下限', { exact: true }).fill('1');
+    await dialog.getByLabel('资料准入数值上限', { exact: true }).fill('1');
+    await dialog.getByLabel('候选元数据外发许可', { exact: true }).selectOption('deny');
+    await dialog.getByRole('checkbox', { name: '准入前重新核对固定资料、候选版本和当前权限（必选）', exact: true }).check();
+    const ruleResponse = page.waitForResponse(response => /\/delegation-rules\/[^/]+$/.test(response.url()) && response.request().method() === 'PUT');
+    await dialog.getByRole('button', { name: '保存为未开启的委托规则', exact: true }).click();
+    const ruleSaved = await ruleResponse;
+    expect(ruleSaved.status(), await ruleSaved.text()).toBe(200);
+    let { delegation_rule: rule } = await ruleSaved.json() as S['DelegationRuleResultV1'];
+    expect(rule.state).toBe('disabled');
+    expect(rule.owner_id).toBe(session.actor_id);
+    expect(rule.materials).toEqual([{ material_id: material.id, revision: revision.revision, digest: revision.content_digest }]);
+    dialog = page.getByRole('dialog', { name: '委托规则详情', exact: true });
+    for (const state of ['active', 'paused']) {
+      await dialog.getByLabel('新的委托状态', { exact: true }).selectOption(state);
+      const response = page.waitForResponse(response => response.url().endsWith(`/delegation-rules/${rule.id}/state`) && response.request().method() === 'POST');
+      await dialog.getByRole('button', { name: '确认变更当前委托状态', exact: true }).click();
+      const changed = await response;
+      expect(changed.status(), await changed.text()).toBe(200);
+      const next = (await changed.json() as S['DelegationRuleResultV1']).delegation_rule;
+      expect(next.revision).toBe(rule.revision + 1);
+      expect(next.state).toBe(state);
+      rule = next;
+      await expect(dialog.getByRole('button', { name: '确认变更当前委托状态', exact: true })).toBeDisabled();
+    }
+    await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+    await page.getByRole('button', { name: '人工发起一次判断', exact: true }).click();
+    dialog = page.getByRole('dialog', { name: '人工判断', exact: true });
+    await dialog.getByLabel('判断题目标识', { exact: true }).fill('public-protocol-manual');
+    await dialog.getByLabel('判断题型', { exact: true }).selectOption('truth');
+    await dialog.getByLabel('完整判断题目与要求', { exact: true }).fill('Is the selected fixed public protocol evidence available?');
+    await dialog.getByLabel('确定性判断规则', { exact: true }).selectOption('all_evidence_present');
+    await dialog.getByRole('button', { name: '确认本次使用该固定策略', exact: true }).click();
+    await dialog.getByLabel('本次判断语言', { exact: true }).selectOption('en');
+    await dialog.getByRole('group', { name: '本次判断的固定资料', exact: true }).getByRole('checkbox').check();
+    const judgmentResponse = page.waitForResponse(response => response.url().endsWith(`/local-projects/${project.id}/judgments`) && response.request().method() === 'POST');
+    await dialog.getByRole('button', { name: '执行这一次明确的判断', exact: true }).click();
+    const judged = await judgmentResponse;
+    expect(judged.status(), await judged.text()).toBe(200);
+    const { judgment } = await judged.json() as S['JudgmentResultEnvelopeV1'];
+    expect(judgment.decision).toBe('recommend');
+    expect(judgment.value).toBe(1);
+    expect(judgment.provider).toBe('rule');
+    expect(judgment.provider_confidence).toBeNull();
+    dialog = page.getByRole('dialog', { name: '判断结果与反馈', exact: true });
+    await dialog.getByLabel('判断反馈类型', { exact: true }).selectOption('adopt');
+    await dialog.getByLabel('判断反馈理由', { exact: true }).fill('人工核查固定公开协议的规则结果');
+    const feedbackResponse = page.waitForResponse(response => response.url().endsWith(`/judgments/${judgment.decision_id}/feedback`) && response.request().method() === 'POST');
+    await dialog.getByRole('button', { name: '保存该固定版本的人工反馈', exact: true }).click();
+    const feedback = await feedbackResponse;
+    expect(feedback.status(), await feedback.text()).toBe(200);
+    expect(server.query('SELECT COUNT(*) AS count FROM judgment_results')).toEqual([{ count: 1 }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM judgment_feedback')).toEqual([{ count: 1 }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 3 }]);
+    expect(server.query('SELECT COUNT(*) AS count FROM local_agent_sessions')).toEqual([{ count: 0 }]);
+    await server.restart();
+    const reopened = await humanAPI(server.apiURL);
+    expect((await reopened.get(tastePath) as S['TasteProfileResultV1']).profile).toEqual(taste);
+    expect((await reopened.get(`/local-projects/${project.id}/delegation-rules/${rule.id}`) as S['DelegationRuleResultV1']).delegation_rule).toEqual(rule);
+    expect((await reopened.get(`/local-projects/${project.id}/judgments/${judgment.decision_id}`) as S['JudgmentResultEnvelopeV1']).judgment).toEqual(judgment);
+    expect((await reopened.get(`/local-projects/${project.id}/judgments/${judgment.decision_id}/feedback`) as S['JudgmentFeedbackListV1']).items).toHaveLength(1);
+    await page.reload();
+    section = page.getByRole('region', { name: 'Taste 配置', exact: true });
+    await expect(section.getByText(`当前状态：已配置（版本 ${taste.version}） · 已启用`, { exact: true })).toBeVisible();
+  } finally { await server.close(); }
 });
 
-test('正向：真实版本冲突检测', async () => {
+test('Taste实际409保留草稿，人工只读核查版本后明确重新准备', async ({ page }) => {
   test.setTimeout(180_000);
-  const { server, api, project } = await setupJudgmentProject();
+  const { server, api } = await realService(true);
   try {
-    // Goal端点文档化409，用实际Goal验证版本冲突
-    const goal1 = await createGoal(api, project.id);
-    expect(goal1.goal.revision).toBe(1);
+    const section = await openTaste(page, server.webURL);
+    await section.getByLabel('启用状态', { exact: true }).selectOption('false');
+    const first = await saveTaste(page, section);
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    await section.getByRole('button', { name: '添加评判准则', exact: true }).click();
+    await section.getByLabel('准则题型', { exact: true }).selectOption('truth');
+    await section.getByLabel('评判标准', { exact: true }).fill('保留人工草稿并核查当前来源');
+    const second = await api.write(tastePath, { expected_version: first.version, enabled: false, rubrics: [], examples: [], delegations: [] }, { method: 'PUT' }) as S['TasteProfileResultV1'];
+    const response = page.waitForResponse(response => response.url().endsWith(`/api/v1${tastePath}`) && response.request().method() === 'PUT');
+    await section.getByRole('button', { name: '保存配置', exact: true }).click();
+    const conflict = await response;
+    expect(conflict.status()).toBe(409);
+    expect((await conflict.json() as S['ErrorV1']).error.code).toBe('version_conflict');
+    await expect(section.getByLabel('评判标准', { exact: true })).toHaveValue('保留人工草稿并核查当前来源');
+    await expect(section.getByRole('button', { name: '保存配置', exact: true })).toBeDisabled();
+    await section.getByRole('button', { name: '只读刷新 Taste 配置', exact: true }).click();
+    await section.getByRole('button', { name: '读取最新配置以核查原草稿', exact: true }).click();
+    const version = second.profile?.version;
+    if (!version) throw new Error('实际并发更新缺少版本');
+    await section.getByRole('button', { name: `已核查当前配置版本 ${version}`, exact: true }).click();
+    await section.getByRole('button', { name: '使用已核查版本重新准备', exact: true }).click();
+    const third = await saveTaste(page, section);
+    expect(third.version).toBe(version + 1);
+    expect(third.rubrics[0].criteria).toBe('保留人工草稿并核查当前来源');
+    expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 3 }]);
+  } finally { await server.close(); }
+});
 
-    // 使用错误的expected_version(0而非1)修改Goal应被拒绝
-    const key = crypto.randomUUID();
-    const conflictResponse = await fetch(`${server.apiURL}/api/v1/goals/${goal1.goal.id}`, {
-      method: 'PUT', signal: AbortSignal.timeout(5000),
-      headers: {
-        Cookie: api.cookie, Origin: server.apiURL,
-        'Content-Type': 'application/json',
-        'Idempotency-Key': key,
-      },
-      body: JSON.stringify({
-        schema_version: 1, request_id: key, expected_version: 0,
-        goal: {
-          project_id: project.id, title: '冲突检测修订',
-          success_criteria: ['版本冲突应被拒绝'], status: 'active', priority: 1,
-        },
-      }),
-    });
-    expect(conflictResponse.status).toBe(409);
-  } finally {
-    await server.close({ preserveData: true });
-  }
+test('Taste真实浏览器离线unknown跨关闭重开刷新保持原身份且不重发', async ({ page, context }) => {
+  test.setTimeout(180_000);
+  const { server, api } = await realService(true);
+  try {
+    let section = await openTaste(page, server.webURL);
+    await section.getByLabel('启用状态', { exact: true }).selectOption('false');
+    const writes: string[] = [];
+    page.on('request', request => { if (request.method() === 'PUT' && request.url().endsWith(`/api/v1${tastePath}`)) writes.push(request.url()); });
+    await context.setOffline(true);
+    await section.getByRole('button', { name: '保存配置', exact: true }).click();
+    await expect(section.getByRole('alert').filter({ hasText: '当前接口没有按请求身份读取收据' })).toBeVisible();
+    await expect(section.getByRole('button', { name: '保存配置', exact: true })).toBeDisabled();
+    await expect(section.getByRole('button', { name: '取消编辑', exact: true })).toBeDisabled();
+    const storageKey = 'astrocyte:command:pending:attention:taste';
+    const original = await page.evaluate(key => sessionStorage.getItem(key), storageKey);
+    expect(original).toMatch(/^[0-9a-f-]{36}$/);
+    // Node HTTP 未断网，用实际库核查浏览器未送达的命令没有产生记录。
+    expect((await api.get(tastePath) as S['TasteProfileResultV1']).configured).toBe(false);
+    expect(server.query("SELECT COUNT(*) AS count FROM attention_receipts WHERE command='UpdateTasteProfile'")).toEqual([{ count: 0 }]);
+    await context.setOffline(false);
+    await page.goto(`${server.webURL}/workspace`);
+    await page.goto(`${server.webURL}/attention`);
+    section = page.getByRole('region', { name: 'Taste 配置', exact: true });
+    await expect(section.getByRole('button', { name: '创建配置', exact: true })).toBeDisabled();
+    await section.getByRole('button', { name: '只读刷新 Taste 配置', exact: true }).click();
+    await expect(section.getByText('当前状态：未配置', { exact: true })).toBeVisible();
+    await page.reload();
+    await expect(section.getByRole('button', { name: '创建配置', exact: true })).toBeDisabled();
+    expect(await page.evaluate(key => sessionStorage.getItem(key), storageKey)).toBe(original);
+    expect(writes).toHaveLength(0);
+    expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 0 }]);
+  } finally { await context.setOffline(false); await server.close(); }
+});
+
+test('Taste真实403读取过期保留数据并禁写，恢复后人工重新读取', async ({ page, context }) => {
+  test.setTimeout(180_000);
+  const { server } = await realService(true);
+  try {
+    const section = await openTaste(page, server.webURL);
+    await section.getByLabel('启用状态', { exact: true }).selectOption('false');
+    const profile = await saveTaste(page, section);
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    await context.setExtraHTTPHeaders({ Authorization: 'Bearer invalid' });
+    const response = page.waitForResponse(response => response.url().endsWith(`/api/v1${tastePath}`) && response.request().method() === 'GET');
+    await section.getByRole('button', { name: '只读刷新 Taste 配置', exact: true }).click();
+    expect((await response).status()).toBe(403);
+    await expect(section.getByRole('alert').filter({ hasText: '数据可能已过期' })).toBeVisible();
+    await expect(section.getByText(`当前状态：已配置（版本 ${profile.version}） · 已停用`, { exact: true })).toBeVisible();
+    await expect(section.getByRole('button', { name: '保存配置', exact: true })).toBeDisabled();
+    await context.setExtraHTTPHeaders({});
+    await section.getByRole('button', { name: '只读刷新 Taste 配置', exact: true }).click();
+    await expect(section.getByRole('button', { name: '保存配置', exact: true })).toBeEnabled();
+    expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 1 }]);
+  } finally { await context.setExtraHTTPHeaders({}); await server.close(); }
+});
+
+test('Taste选择实际较早固定版本，换材料与移除示例后保持草稿，撤回来源阻止保存', async ({ page }) => {
+  test.setTimeout(180_000);
+  const { server, api } = await realService(true);
+  try {
+    const commits = execFileSync('git', ['log', '-n', '2', '--format=%H', '--', 'AGENTS.md'], { cwd: repositoryRoot, encoding: 'utf8' }).trim().split(/\r?\n/).reverse();
+    if (commits.length !== 2) throw new Error('实际公开协议缺少两份历史版本');
+    const originals = commits.map(commit => ({ commit, text: execFileSync('git', ['show', `${commit}:AGENTS.md`], { cwd: repositoryRoot, encoding: 'utf8' }) }));
+    if (originals[0].text === originals[1].text) throw new Error('实际公开协议的两份历史正文相同');
+    const versions = [];
+    for (const original of originals) {
+      versions.push(await importMaterial(api, {
+        kind: 'text', adapter: 'manual', source_key: '', content_digest: '',
+        source_locator: 'https://github.com/songconmaisaix31-design/Astrocyte/blob/main/AGENTS.md',
+        export_text: original.text, title: '实际公开执行协议历史', collection_reason: null,
+        source_spans: [`https://github.com/songconmaisaix31-design/Astrocyte/blob/${original.commit}/AGENTS.md · whole document`],
+      }));
+    }
+    const first = versions[0].detail as S['MaterialDetailV1'];
+    const second = versions[1].detail as S['MaterialDetailV1'];
+    expect(first.material.id).toBe(second.material.id);
+    expect(second.material.current_revision).toBe(2);
+    const fixed = second.revisions.find(revision => revision.revision === 1);
+    if (!fixed) throw new Error('实际旧版本缺失');
+    const other = await importTrackedDocument(api, 'STATUS.md');
+    const section = await openTaste(page, server.webURL);
+    const profile = await fillTaste(page, section, second.material.id, fixed.revision);
+    expect(profile.examples.every(example => example.revision === 1 && example.content_digest === fixed.content_digest)).toBe(true);
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    const example = section.locator('.ac-taste-example').first();
+    await example.getByLabel('示例资料', { exact: true }).selectOption(other.detail.material.id);
+    await example.getByLabel('示例资料', { exact: true }).selectOption(second.material.id);
+    await expect(example.getByLabel('示例固定版本', { exact: true })).toBeEnabled();
+    await expect(example.getByLabel('示例固定版本', { exact: true })).toHaveValue('');
+    await example.getByLabel('示例固定版本', { exact: true }).selectOption('1');
+    await example.getByRole('button', { name: '移除示例', exact: true }).click();
+    await expect(section.locator('.ac-taste-example')).toHaveCount(2);
+    const updated = await saveTaste(page, section);
+    expect(updated.examples).toEqual(profile.examples.slice(1));
+    await section.getByRole('button', { name: '编辑配置', exact: true }).click();
+    const current = await api.get(`/materials/${second.material.id}`) as S['MaterialDetailV1'];
+    await api.write(`/materials/${second.material.id}`, { expected_version: current.material.version, lifecycle: 'withdrawn' }, { method: 'PATCH' });
+    const writes: string[] = [];
+    page.on('request', request => { if (request.method() === 'PUT' && request.url().endsWith(`/api/v1${tastePath}`)) writes.push(request.url()); });
+    await section.getByRole('button', { name: '保存配置', exact: true }).click();
+    await expect(section.getByRole('alert').filter({ hasText: '示例资料当前未处于 active 状态' })).toBeVisible();
+    expect(writes).toHaveLength(0);
+    expect(server.query('SELECT COUNT(*) AS count FROM attention_taste_profile_revisions')).toEqual([{ count: 2 }]);
+  } finally { await server.close(); }
 });

@@ -1,149 +1,139 @@
-import { useState, useCallback } from 'react';
-import { useReadApi } from '../../../hooks/useReadApi';
-import { judgmentApi, type TasteProfile, type TasteRubric, type TasteExample, type TasteDelegation, type QuestionType } from './judgmentApi';
-import { TextField, SelectField } from '../FormControls';
-
-function emptyRubric(id: string): TasteRubric {
-  return { id, question_type: 'choice', criteria: '', options: [{ id: 'opt-1', description: '' }], levels: [] };
-}
-
-function emptyExample(id: string, rubricId: string): TasteExample {
-  return { id, rubric_id: rubricId, material_id: '', revision: 1, content_digest: '', expected: '' };
-}
-
-function emptyDelegation(ruleId: string): TasteDelegation {
-  return { rule_id: ruleId, revision: 1, workflow_id: '' };
-}
-
-function RubricEditor({ rubric, onChange, onRemove }: { rubric: TasteRubric; onChange: (r: TasteRubric) => void; onRemove: () => void }) {
-  const updateOption = (index: number, field: 'id' | 'description', value: string) => {
-    const options = [...rubric.options];
-    options[index] = { ...options[index], [field]: value };
-    onChange({ ...rubric, options });
-  };
-  return <fieldset className="ac-taste-rubric">
-    <legend>评分规则 {rubric.id}</legend>
-    <SelectField label="题型" value={rubric.question_type} onChange={(v: string) => onChange({ ...rubric, question_type: v as QuestionType })} options={[{ value: 'choice', label: '选择' }, { value: 'score', label: '评分' }, { value: 'truth', label: '确定性' }]} />
-    <TextField label="评判标准" value={rubric.criteria} onChange={(v: string) => onChange({ ...rubric, criteria: v })} />
-    <div role="group" aria-label="候选选项">
-      <p>候选选项</p>
-      {rubric.options.map((opt, i) => <div key={i} className="ac-inline-pair">
-        <TextField label={`标识 ${i + 1}`} value={opt.id} onChange={(v: string) => updateOption(i, 'id', v)} />
-        <TextField label="说明" value={opt.description} onChange={(v: string) => updateOption(i, 'description', v)} />
-      </div>)}
-      <button type="button" className="ac-button secondary compact" onClick={() => onChange({ ...rubric, options: [...rubric.options, { id: `opt-${rubric.options.length + 1}`, description: '' }] })}>添加选项</button>
-    </div>
-    <TextField label="等级（逗号分隔）" value={rubric.levels.join(', ')} onChange={(v: string) => onChange({ ...rubric, levels: v.split(',').map((s: string) => s.trim()).filter(Boolean) })} />
-    <button type="button" className="ac-button secondary compact" onClick={onRemove}>移除此规则</button>
-  </fieldset>;
-}
+import { useRef, useState } from 'react';
+import { localProjectsApi } from '../../../api/s1';
+import { useReadApi, formatError } from '../../../hooks/useReadApi';
+import { usePersistentCommand } from '../../../hooks/usePersistentCommand';
+import { CommandState } from '../../../components/CommandState';
+import { QueryState } from '../../../components/QueryState';
+import { SelectField } from '../FormControls';
+import { judgmentApi, type TasteCommand } from './judgmentApi';
+import { TasteExampleFields, TasteRubricFields } from './TasteProfileFields';
+import { profileToDraft, tasteInput, type TasteDraft } from './tasteDraft';
+import styles from './DelegationWorkspace.module.css';
 
 export function TasteProfileEditor() {
-  const tasteState = useReadApi(signal => judgmentApi.taste(signal));
-  const [draft, setDraft] = useState<{ enabled: boolean; rubrics: TasteRubric[]; examples: TasteExample[]; delegations: TasteDelegation[] } | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [unknown, setUnknown] = useState<string | null>(null);
+  const taste = useReadApi(signal => judgmentApi.taste(signal));
+  const materials = useReadApi(signal => judgmentApi.materials(signal));
+  const references = useReadApi(async signal => {
+    const projects = await localProjectsApi.listProjects({ signal });
+    const lists = await Promise.all(projects.items.map(async project => ({ project, rules: await judgmentApi.rules(project.id, signal) })));
+    return lists.flatMap(({ project, rules }) => rules.items.map(rule => ({ project, rule })));
+  });
+  const [draft, setDraft] = useState<TasteDraft | null>(null);
+  const [expectedVersion, setExpectedVersion] = useState(1);
+  const [validation, setValidation] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const verifyingRef = useRef(false);
+  const [reviewedVersion, setReviewedVersion] = useState<number | null>(null);
+  const [needsPreparation, setNeedsPreparation] = useState(false);
+  const [readLatest, setReadLatest] = useState(false);
+  const latest = useReadApi(signal => judgmentApi.taste(signal), { enabled: readLatest });
+  const save = usePersistentCommand<Awaited<ReturnType<typeof judgmentApi.saveTaste>>>('attention:taste', () => ({ status: 'succeeded', message: 'Taste 配置已保存' }));
+  const blocked = verifying || save.pending || save.uncertain;
+  const stale = taste.loading || taste.stale || !taste.data;
+  const unavailable = blocked || stale || !!draft?.examples.length && (materials.loading || materials.stale || !materials.data);
+  const profile = taste.data?.profile ?? null;
+  const rules = references.data?.map(item => item.rule) ?? [];
+  const referencesUnavailable = references.loading || references.stale || !references.data;
+  const update = (action: (draft: TasteDraft) => TasteDraft) => setDraft(current => current ? action(current) : null);
 
-  const current: TasteProfile | null = tasteState.data?.profile ?? null;
-  const configured = tasteState.data?.configured ?? false;
-  const version = current?.version ?? 0;
-
-  const initDraft = useCallback(() => {
-    if (current) {
-      setDraft({ enabled: current.enabled, rubrics: [...current.rubrics], examples: [...current.examples], delegations: [...current.delegations] });
-    } else {
-      setDraft({ enabled: true, rubrics: [], examples: [], delegations: [] });
-    }
-    setError(null);
-    setUnknown(null);
-  }, [current]);
-
-  const handleSave = useCallback(async () => {
-    if (!draft) return;
-    setSaving(true);
-    setError(null);
-    setUnknown(null);
-    const requestId = crypto.randomUUID();
+  const submit = async () => {
+    if (!draft || unavailable || needsPreparation || verifyingRef.current) return;
+    let frozen: Omit<TasteCommand, 'request_id'>;
     try {
-      await judgmentApi.saveTaste({
-        schema_version: 1,
-        request_id: requestId,
-        expected_version: version,
-        enabled: draft.enabled,
-        rubrics: draft.rubrics,
-        examples: draft.examples,
-        delegations: draft.delegations,
-      });
-      tasteState.retry();
-      setDraft(null);
-    } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause);
-      if (message.includes('unknown') || message.includes('网络') || !navigator.onLine) {
-        setUnknown(`保存请求已发送但结果未知（${requestId}）。请核查当前配置后重试。`);
-      } else {
-        setError(message);
+      if (draft.delegations.length && referencesUnavailable) throw new Error('委托规则读取不可用，请先只读刷新引用');
+      frozen = { ...tasteInput(draft, rules), expected_version: expectedVersion };
+    } catch (cause) { setValidation(formatError(cause)); return; }
+    verifyingRef.current = true;
+    setVerifying(true);
+    setValidation('');
+    try {
+      // 固定输入在开始核查时冻结；读取失败或摘要变化立即停止，保留原草稿。
+      for (const example of frozen.examples) {
+        const detail = await judgmentApi.materialDetail(example.material_id);
+        if (detail.material.lifecycle !== 'active') throw new Error('示例资料当前未处于 active 状态');
+        const revision = detail.revisions.find(item => item.revision === example.revision);
+        if (!revision) throw new Error('示例固定版本当前不可读取');
+        if (revision.content_digest !== example.content_digest) throw new Error('示例固定内容摘要已变化，请核查原版本');
       }
-    } finally {
-      setSaving(false);
+      for (const reference of frozen.delegations) {
+        const selected = references.data?.find(item => item.rule.id === reference.rule_id);
+        if (!selected) throw new Error('原委托规则当前不可读取');
+        const { delegation_rule: rule } = await judgmentApi.rule(selected.project.id, reference.rule_id);
+        if (rule.revision !== reference.revision || rule.workflow_id !== reference.workflow_id) throw new Error('原委托规则版本已变化，请核查固定引用');
+      }
+    } catch (cause) {
+      setValidation(formatError(cause));
+      verifyingRef.current = false;
+      setVerifying(false);
+      return;
     }
-  }, [draft, version, tasteState]);
+    await save.run(key => judgmentApi.saveTaste({ ...frozen, request_id: key }), (_, outcome) => {
+      if (outcome.status === 'succeeded') { taste.retry(); setDraft(null); }
+    });
+    // 已拒绝的命令也须明确重新准备；未知命令继续由持久锁阻止写入。
+    setNeedsPreparation(true);
+    verifyingRef.current = false;
+    setVerifying(false);
+    setReviewedVersion(null);
+    setReadLatest(false);
+  };
 
-  if (tasteState.loading && !tasteState.data) return <div role="status">加载 Taste 配置…</div>;
-  if (tasteState.error && !tasteState.data) return <div role="alert">无法读取 Taste 配置：{tasteState.error}<button type="button" className="ac-button secondary compact" onClick={tasteState.retry}>重试</button></div>;
-
-  const editing = draft !== null;
-  return <section className="ac-taste-editor" aria-label="Taste 配置">
+  return <section className={styles.result} aria-label="Taste 配置">
     <h3>判断偏好配置（Taste）</h3>
-    <p>当前状态：{configured ? `已配置（版本 ${version}）` : '未配置'}{current?.enabled === false ? ' · 已停用' : ''}</p>
-
-    {unknown && <div role="status" className="ac-notice">{unknown}</div>}
-    {error && <div role="alert" className="ac-error">{error}</div>}
-
-    {!editing && <button type="button" className="ac-button" onClick={initDraft}>{configured ? '编辑配置' : '创建配置'}</button>}
-
-    {editing && draft && <>
-      <label className="ac-toggle">
-        <input type="checkbox" checked={draft.enabled} onChange={e => setDraft({ ...draft, enabled: e.target.checked })} />
-        启用判断偏好
-      </label>
-
-      <div role="group" aria-label="评分规则">
-        <h4>评分规则（{draft.rubrics.length}）</h4>
-        {draft.rubrics.map((r, i) => <RubricEditor key={i} rubric={r} onChange={updated => { const rubrics = [...draft.rubrics]; rubrics[i] = updated; setDraft({ ...draft, rubrics }); }} onRemove={() => setDraft({ ...draft, rubrics: draft.rubrics.filter((_, j) => j !== i) })} />)}
-        <button type="button" className="ac-button secondary" onClick={() => setDraft({ ...draft, rubrics: [...draft.rubrics, emptyRubric(`rubric-${draft.rubrics.length + 1}`)] })}>添加评分规则</button>
+    <QueryState state={taste}>{data => <>
+      <p>当前状态：{data.configured && data.profile ? `已配置（版本 ${data.profile.version}） · ${data.profile.enabled ? '已启用' : '已停用'}` : '未配置'}</p>
+      {data.profile && <details><summary>查看完整已保存配置</summary>
+        <p>配置版本：{data.profile.version} · 配置人：{data.profile.configured_by} · 保存时间：{data.profile.created_at}</p>
+        {data.profile.rubrics.map((rubric, i) => <div key={rubric.id}><h4>准则 {i + 1} · {rubric.question_type}</h4><p>{rubric.criteria}</p>{rubric.options.map(option => <p key={option.id}>{option.id}：{option.description}</p>)}{rubric.levels.map((level, index) => <p key={index}>等级 {index}：{level}</p>)}</div>)}
+        {data.profile.examples.map(example => <div key={example.id}><h4>固定示例 {example.id}</h4><p>关联准则：{example.rubric_id} · 资料：{example.material_id} · r{example.revision}</p><p>内容摘要：<code>{example.content_digest}</code></p><p>预期结果：{example.expected}</p></div>)}
+        {data.profile.delegations.map(reference => <p key={reference.rule_id}>委托规则：{reference.rule_id} · r{reference.revision} · 工作流：{reference.workflow_id}</p>)}
+      </details>}
+    </>}</QueryState>
+    <button className="ac-button secondary compact" type="button" disabled={save.pending || verifying} onClick={() => { setReviewedVersion(null); taste.retry(); }}>只读刷新 Taste 配置</button>
+    {save.uncertain && <p role="alert">保存请求 {save.operationID} 的结果未知，关闭、重开和刷新后继续禁止重发。当前接口没有按请求身份读取收据的能力，读取配置版本无法确认原请求结果，写入保持锁定。</p>}
+    {stale && <p role="status">Taste 读取当前不可用或已过期，写入已禁用。</p>}
+    {!draft && <button className="ac-button" type="button" disabled={unavailable} onClick={() => {
+      setDraft(profileToDraft(profile)); setExpectedVersion(profile ? profile.version : 1); setValidation(''); setNeedsPreparation(false); setReviewedVersion(null);
+    }}>{profile ? '编辑配置' : '创建配置'}</button>}
+    {draft && <form className={styles.result} onSubmit={event => { event.preventDefault(); void submit(); }}>
+      <p>本次保存使用的配置版本：{expectedVersion}</p>
+      <fieldset className={styles.fields} disabled={unavailable}><legend>人工判断偏好</legend>
+        <SelectField label="启用状态" value={draft.enabled === null ? '' : String(draft.enabled)} onChange={value => update(current => ({ ...current, enabled: value === '' ? null : value === 'true' }))} options={[{ value: '', label: '请明确选择启用或停用' }, { value: 'true', label: '启用判断偏好' }, { value: 'false', label: '停用判断偏好' }]} />
+        {draft.rubrics.map((rubric, index) => <TasteRubricFields key={rubric.id} rubric={rubric} index={index} disabled={unavailable} onChange={next => update(current => ({ ...current, rubrics: current.rubrics.map(item => item.id === rubric.id ? next : item), examples: current.examples.map(example => example.rubric_id === rubric.id && rubric.question_type !== next.question_type ? { ...example, expected: '' } : example) }))} onRemove={() => update(current => ({ ...current, rubrics: current.rubrics.filter(item => item.id !== rubric.id), examples: current.examples.filter(example => example.rubric_id !== rubric.id) }))} />)}
+        <button className="ac-button secondary compact" type="button" disabled={draft.rubrics.length >= 256} onClick={() => update(current => ({ ...current, rubrics: [...current.rubrics, { id: crypto.randomUUID(), question_type: '', criteria: '', options: [], levels: [] }] }))}>添加评判准则</button>
+        <QueryState state={materials}>{data => <>
+          {draft.examples.map((example, index) => <TasteExampleFields key={example.id} example={example} index={index} rubrics={draft.rubrics} materials={data.items} disabled={unavailable || materials.loading || materials.stale} onChange={next => update(current => ({ ...current, examples: current.examples.map(item => item.id === example.id ? next : item) }))} onRemove={() => update(current => ({ ...current, examples: current.examples.filter(item => item.id !== example.id) }))} />)}
+          <button className="ac-button secondary compact" type="button" disabled={materials.loading || materials.stale || !draft.rubrics.length || draft.examples.length >= 256} onClick={() => update(current => ({ ...current, examples: [...current.examples, { id: crypto.randomUUID(), rubric_id: '', material_id: '', revision: 0, content_digest: '', expected: '' }] }))}>添加固定资料示例</button>
+        </>}</QueryState>
+        <button className="ac-button secondary compact" type="button" onClick={materials.retry}>只读刷新示例资料</button>
+        <div role="group" aria-label="Taste 委托引用"><h4>委托规则引用</h4>
+          {draft.delegations.map((reference, index) => <p key={reference.rule_id}>规则 {reference.rule_id} · r{reference.revision} · 工作流 {reference.workflow_id}<button className="ac-button secondary compact" type="button" onClick={() => update(current => ({ ...current, delegations: current.delegations.filter((_, i) => i !== index) }))}>移除委托引用</button></p>)}
+          <QueryState state={references}>{items => <SelectField label="添加实际委托规则引用" value="" disabled={referencesUnavailable} onChange={value => {
+            if (!value) return;
+            const selected = items.find(item => item.rule.id === value);
+            if (!selected) throw new Error('所选实际委托规则不可读取');
+            const rule = selected.rule;
+            update(current => ({ ...current, delegations: [...current.delegations, { rule_id: rule.id, revision: rule.revision, workflow_id: rule.workflow_id }] }));
+          }} options={[{ value: '', label: '请选择已有实际规则版本' }, ...items.filter(item => !draft.delegations.some(reference => reference.rule_id === item.rule.id)).map(({ project, rule }) => ({ value: rule.id, label: `${project.name} · ${rule.workflow_id} · r${rule.revision} · ${rule.question.instructions}` }))]} />}</QueryState>
+          <button className="ac-button secondary compact" type="button" onClick={references.retry}>只读刷新委托引用</button>
+        </div>
+      </fieldset>
+      {validation && <p role="alert">{validation} 输入已保留。</p>}
+      <CommandState {...save} />
+      {save.failure?.status === 409 && <p role="alert">配置版本冲突，原草稿及保存版本已保留。请只读刷新配置，核查后明确重新准备。</p>}
+      {needsPreparation && !save.uncertain && <div><p>请读取最新配置并核查后，明确使用其版本重新准备原草稿。</p>
+        <button className="ac-button secondary compact" type="button" disabled={blocked || latest.loading} onClick={() => { setReviewedVersion(null); if (readLatest) latest.retry(); else setReadLatest(true); }}>读取最新配置以核查原草稿</button>
+        {readLatest && <QueryState state={latest}>{data => <>
+          <p>本次核查的配置版本：{data.profile ? data.profile.version : '首次配置'} · {data.profile?.enabled ? '已启用' : '未启用'}</p>
+          {data.profile?.rubrics.map(rubric => <p key={rubric.id}>{rubric.criteria}</p>)}
+          <button className="ac-button secondary compact" type="button" disabled={blocked || latest.loading || latest.stale} onClick={() => setReviewedVersion(data.profile ? data.profile.version : 1)}>已核查当前配置版本 {data.profile ? data.profile.version : 1}</button>
+          <button className="ac-button secondary compact" type="button" disabled={blocked || latest.loading || latest.stale || reviewedVersion === null || reviewedVersion !== (data.profile ? data.profile.version : 1)} onClick={() => { if (reviewedVersion === null) return; setExpectedVersion(reviewedVersion); setNeedsPreparation(false); setReviewedVersion(null); }}>使用已核查版本重新准备</button>
+        </>}</QueryState>}
+      </div>}
+      <div className={styles.actions}>
+        <button className="ac-button" type="submit" disabled={unavailable || needsPreparation}>保存配置</button>
+        <button className="ac-button secondary" type="button" disabled={blocked} onClick={() => { setDraft(null); setValidation(''); }}>取消编辑</button>
       </div>
-
-      <div role="group" aria-label="示例">
-        <h4>示例（{draft.examples.length}）</h4>
-        {draft.examples.map((ex, i) => <fieldset key={i} className="ac-taste-example">
-          <legend>示例 {i + 1}</legend>
-          <SelectField label="关联规则" value={ex.rubric_id} onChange={(v: string) => { const examples = [...draft.examples]; examples[i] = { ...ex, rubric_id: v }; setDraft({ ...draft, examples }); }} options={draft.rubrics.map(r => ({ value: r.id, label: r.id }))} />
-          <TextField label="资料 ID" value={ex.material_id} onChange={(v: string) => { const examples = [...draft.examples]; examples[i] = { ...ex, material_id: v }; setDraft({ ...draft, examples }); }} />
-          <TextField label="版本" value={String(ex.revision)} onChange={(v: string) => { const examples = [...draft.examples]; examples[i] = { ...ex, revision: Number(v) || 1 }; setDraft({ ...draft, examples }); }} />
-          <TextField label="预期结果" value={ex.expected} onChange={(v: string) => { const examples = [...draft.examples]; examples[i] = { ...ex, expected: v }; setDraft({ ...draft, examples }); }} />
-          <button type="button" className="ac-button secondary compact" onClick={() => setDraft({ ...draft, examples: draft.examples.filter((_, j) => j !== i) })}>移除</button>
-        </fieldset>)}
-        <button type="button" className="ac-button secondary" onClick={() => setDraft({ ...draft, examples: [...draft.examples, emptyExample(`example-${draft.examples.length + 1}`, draft.rubrics[0]?.id ?? '')] })} disabled={!draft.rubrics.length}>添加示例</button>
-      </div>
-
-      <div role="group" aria-label="委托">
-        <h4>委托规则引用（{draft.delegations.length}）</h4>
-        {draft.delegations.map((d, i) => <fieldset key={i} className="ac-taste-delegation">
-          <legend>委托 {i + 1}</legend>
-          <TextField label="规则 ID" value={d.rule_id} onChange={(v: string) => { const delegations = [...draft.delegations]; delegations[i] = { ...d, rule_id: v }; setDraft({ ...draft, delegations }); }} />
-          <TextField label="版本" value={String(d.revision)} onChange={(v: string) => { const delegations = [...draft.delegations]; delegations[i] = { ...d, revision: Number(v) || 1 }; setDraft({ ...draft, delegations }); }} />
-          <TextField label="工作流 ID" value={d.workflow_id} onChange={(v: string) => { const delegations = [...draft.delegations]; delegations[i] = { ...d, workflow_id: v }; setDraft({ ...draft, delegations }); }} />
-          <button type="button" className="ac-button secondary compact" onClick={() => setDraft({ ...draft, delegations: draft.delegations.filter((_, j) => j !== i) })}>移除</button>
-        </fieldset>)}
-        <button type="button" className="ac-button secondary" onClick={() => setDraft({ ...draft, delegations: [...draft.delegations, emptyDelegation(`rule-${draft.delegations.length + 1}`)] })}>添加委托引用</button>
-      </div>
-
-      <div className="ac-form-actions">
-        <button type="button" className="ac-button" onClick={handleSave} disabled={saving}>{saving ? '保存中…' : '保存配置'}</button>
-        <button type="button" className="ac-button secondary" onClick={() => { setDraft(null); setError(null); setUnknown(null); }}>取消</button>
-        {tasteState.stale && <span role="status">数据可能已过期，保存前建议取消并重新读取。</span>}
-      </div>
-    </>}
+    </form>}
   </section>;
 }
