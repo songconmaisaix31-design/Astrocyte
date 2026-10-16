@@ -1,5 +1,13 @@
 # Works Relay integration report
 
+## 2026-10-16 进度安全后继
+
+根已普通合入 B 当前 REPORT `237987a594de1055af18c7fffe30fc516cdacaef`，合并为 `affaa7a7d10dcd8956b4a2947c8b149403cdb5bd`，无冲突。相对既有7e缓存阶段，最终仅三件净差异：真实安全测试、显式自然到期验证入口和后端记录；`projects.go` 与现有一小时生产语义无差异，历史短期限、修改数据库到期和新增长 Go / Skip 均没有成为本组合的最终实现。
+
+准确B237的八项真实 HTTP / SQLite 检查由根实际执行，EXIT0 /8 PASS / 包1.809秒 / 总11.88763秒；随后完整组合affaa7的五项新增检查 EXIT0 /5 PASS / 包2.354秒 / 总5.3473412秒，两个阶段前后源码均同值。跨项目拒绝、缺读取操作拒绝、原一小时签发、Agent推断与写入拒绝、HTTP1关闭和同库HTTP2重新打开后的缓存及原token有效均通过。命令与原件见 [后端报告](../standards/backend.md)。先前12:31短期限日志含已移除的ExpiredGrant检查，不能作为当前TokenIssued或真实自然到期通过记录；原件保留。
+
+新 `tests/s1/progress-expiry.mjs` 是显式入口，功能仍 NOT_RUN；原自然到期进程PID12768仍独立等待实际结果，未修改原token、数据库或Clock，未启动第二个长计时。原八项内存替身测试没有执行或计为PASS。此阶段没有修改生产程序，当前运行继续准确2d27 / PID50624，未重复构建或更新共享服务。完整Taste和规则正向、完整默认、受限Native / L1 / L2及最终包仍未通过。
+
 ## 2026-10-16 新页面组合与实际核心检查
 
 根普通消费 B SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562`、F REPORT `353c8246337f23a24ec74adf9060da6aa14d156b`（准入身份 SOURCE `05886e5a80357db51c40b4632ce4ff500e2daf7e`，含 UI 页面及入口 `32a52cdf0473b657c1be03a01db54273255d011a`）及 P REPORT `615d3a36e85aef0a5977751f895ee821a5603532`，得到 `efec99acc4485529e2f6b06c54c82e4c97023e9f`。唯一冲突为 `web/playwright.config.ts`，根用文件编辑保留关闭截图和录屏、trace 不含截图且保留 DOM / 网络 / 源码。F 报告日期采用实际日期；完整原作者提交和各阶段证据保留。
