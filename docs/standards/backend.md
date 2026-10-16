@@ -1083,3 +1083,30 @@ SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` 已在原 `standards-backend` 
 本阶段没有新增失败运行；既有各阶段首失败与unknown继续保留。生产及构建输入没有修改，未重复上一阶段已通过的server构建、纯函数边界或其他成功项；没有运行默认check / 浏览器 / CI。原七项正向推断、非法模型响应、在途撤权、computed / CAS / 发布失败恢复仍完整保留且NOT_RUN，本次前置覆盖不替代这些要求。Probe、Native Start、模型、ASR、采集、Sleep、正式V4和共享服务操作均0。
 
 后继容量仅沿已获准报告和安全记录定位：视频当前有效SOURCE为 `dd3a8b8a20e6f8dc30342d1708d4f59b9bec82b6`、REPORT为 `1fd89e92933b67ac6ea3510a9244ad194d6f1ec1`，D自有派生两正文32908 / 35807bytes已存在；正常只读来源main/WAL与公开bytes保持，SHM变化单列，旧额外门槛不作为当前障碍。当前57465paper与它们的自然总量为90373 / 93272bytes，仍不能证明大于128KiB。历史95314paper另有准确已验联合记录，现阶段只获准沿静态报告 / runner定位其确切公开对象，不重开FAkZe5、video-source-third或任何旧SQL，不重发模型。该来源定位、实际联合容量、真实模型与非法响应、完成经验正向、L1 / L2和最终默认 / 发布包保持各自真实前置。原Task / Dispatch持续支持，未结算。
+
+## 双源人工导入的实际容量前置 REPORT（2026-10-17）
+
+SOURCE `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` 已在 `standards-backend` 普通提交并 push，含 `[skip ci]`；相对前一 REPORT `b67f570d58d3b4bd874abf3da7897de735efb5b6` 只新增 `cmd/server/selected_text_capacity_actual_test.go`，322行。模块 `msg_51f1a213f82f` 已转交根6b735的准确公开对象用途、新测试范围和H互斥确认；未修改原两件 distillers、原七项进度或已交付六件测试、生产 bridge、依赖、workflow、冻结范围。
+
+论文静态依据为 `tasks/S1-paper-W0.md:44—56` 与原 `joint-request.json` 的安全引用字段。唯一公开paper对象为 `C:/Users/DW/AppData/Local/Temp/astrocyte-s1-7NybyZ/data/objects/05acdc763e444fa7b9762df6dc2c879867d6a2e38d42884dcf3b80e07cf89d64`，95314bytes，原 locator=`https://arxiv.org/html/2504.16054v1`。唯一video对象为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_43100892f5f5/video149-projection-first/data/objects/030165629c4b38e519ec79e97e52b41e3c470ddfb82df268a86aef361d35f5b0`，35807bytes，原 locator=`https://www.bilibili.com/video/BV1PReT6EEqR/`。两份各读一次作为输入，原文自然总量131121bytes，未重复、拼造、填充或截断正文。
+
+测试通过显式 `ASTROCYTE_TEST_CAPACITY_PAPER_OBJECT` / `ASTROCYTE_TEST_CAPACITY_VIDEO_OBJECT` 读取准确对象，没有在仓库硬编码本机原件路径。生产 `ValidateProjectPath` 从volume root逐分量检查完整原路径，拒绝源及祖先重定向；再以普通读权限打开，核实际普通文件、Stat身份、大小、完整bytes和标准SHA256。cleanup在本次自有HTTP及SQLite关闭后重复相同保护，核原文件身份、大小、mtime及完整原bytes全等。实际测试PASS，所有来源守卫通过。没有枚举来源目录、打开任何旧SQL、读取私有对象或复制旧业务库。
+
+`TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative` 使用新D自有SQLite / objects、生产HTTP人类bootstrap / cookie / CSRF、实际项目空间及当前公开工作树注册。人工明确codex模型许可，目录与工具/控制许可保持关闭。两份获准正文经既有生产manual Reader / ImportMaterial / ProcessNextJob完整入库，原URL作为本次人工标题；每份为本次新Material / revision1 / 当前创建时间，provenance准确为manual / version1 / mode manual / 原URL。没有使用或冒称旧IJNS/3766/534资料ID、旧出版revision、旧自动provenance或原模型结果。
+
+两个实际新版本通过HTTP逐次按当前真实空间Version引用，`ReadProjectReference`逐份核新Ref、URL、全body、原SHA256及manual provenance与实际新存储相同。它们随后进入原 `SelectedTextFactory` / `selectedTextBridge` / 未Probe `Registry`。本次直接调用的UUID仅为参数身份，数据库只保存两个实际人工导入作业，distillation与Native Session均0。
+
+生产预检通过后，真实Registry在配置前置返回evidence_missing。标准slog JSON Handler只观察这次生产既有安全记录，标准JSON Decoder核恰一项INFO、原调用ID、实际prompt139579bytes、完整wire大小139957bytes、output131072bytes。prompt大于128KiB，wire小于512KiB；没有捕获请求正文、复制生产prompt组装、伪造日志或加入计数器。前后真实Registry观察全等，本次自有native目录为空。这个结果证明当前实际组装的容量/配置前置，完整prompt内容保真、原生模型接受和真实超限拒绝在本节仍未验。
+
+所有新输出位于 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-capacity/`，runner=`run.ps1`，首轮整体EXIT0。显式测试输出与GOTMPDIR / TEMP / TMP均在本次D目录，沿既有D缓存、GOPROXY=off、GOMAXPROCS=2、GOFLAGS=-p=1；没有下载依赖或修改全局配置。
+
+| 实际命令 | 结果及D原件 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative$'` | 恰好一项、EXIT0；`list-first.log` |
+| 同包 `-run '^TestSelectedTextCapacityActualManualSourcesPreflightWithoutNative$' -v -count=1 -timeout=1m` | 首轮1 PASS / 0 SKIP、0.17秒、包1.116秒、EXIT0；`test-first.log` |
+| `go vet -mod=readonly ./cmd/server` | EXIT0；`vet-first.log` |
+| 新Go文件 `gofmt -l`、`git diff --cached --check` | EXIT0，无输出 |
+
+本阶段没有新增失败运行，首命令 / 退出 / 时间完整保留于commands-first.json。未运行构建、部署、默认CI或既有成功项，没有新Native / Probe / 模型 / ASR / 采集 / Sleep。历史SOURCE `52ff9564c1b40109987668a95ed4ad35946d6847` 的95314+32908完整来源、135754wire、真实模型成功及同库冷API结果保持为独立历史事实，不将它改为capture，也不计成当前SOURCE的模型验收。
+
+原完整capacity / recommendation / 非法模型响应、原生在途unknown / computed与发布恢复、完成经验正向、完整默认 / L1 / L2 / 发布包仍保留实际限制。根经 `msg_82cb0920d7a3` 已连续授权下一项仅同容量test及backend报告：使用准确已push e907不可变公开commit的STATUS / backend / HANDOFF / SPEC四份不同真实Git文档各一次，先核blob及自然bytes，再独立验证生产超限预检；本节未将该后继填为已运行。原Task / Dispatch继续支持。
