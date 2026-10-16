@@ -1,45 +1,42 @@
 # S2/S3/S4/S5 产品页面开发记录
 
-## 2026-10-16 12:25 S5 判断与委托十三件页面实现
+## 2026-10-16 12:55 S5 判断与委托：入口消费、类型接缝与正向测试
 
-Task `task_d0cee5a583bb` / Dispatch `ctx_5d4bbae2a28d`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_676d773e9f23`。分支 `songconmaisaix31-design/product-ui-20261015`，HEAD `e27e95117d30b9f2518bd779d03fe1218038019a`。
+Task `task_d0cee5a583bb` / Dispatch `ctx_5d4bbae2a28d`，模块 Task `task_b0197ca7ebdf` / Dispatch `ctx_676d773e9f23`。分支 `songconmaisaix31-design/product-ui-20261015`。
 
-本域 SOURCE 包含 14 件 delegation 文件（615 行新增）：
+F 入口 SOURCE `32a52cdf0473b657c1be03a01db54273255d011a` 已普通 cherry-pick 为 `59c0876`（仅 AttentionPage.tsx 增加 import 和直接渲染 JudgmentDelegationWorkspace）。无视觉配置 `0835d1313d731e597f346ef0abfd54aa7af87386` 已普通 cherry-pick 为 `1d9af61`（screenshot: 'off', video: 'off', trace screenshots: false）。根 2d27 类型接缝已同步：`judgmentApi.ts` 第 14 行 `JudgmentCommand` 精确排除公开禁止的 `context` 字段（`Omit<..., 'context'>`），来源 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`。
+
+本域 SOURCE 14 件（615 行新增，bd8a8df3d76cb063a7547577d54e11cfa722cbb6）：
 
 | 文件 | 职责 |
 |---|---|
 | `JudgmentDelegationWorkspace.tsx` | 顶层入口：项目选择、策略/规则管理、判断请求、结果查看。`export function JudgmentDelegationWorkspace()`，无 props，自含 `localProjectsApi.listProjects` 读取 |
 | `JudgmentPolicyEditor.tsx` | 策略编辑：Goal/Taste/Ranking 引用选择、真实快照捕获（`judgmentApi.snapshot`）、预算字段、版本冲突处理、`usePersistentCommand` unknown 锁 |
-| `JudgmentPolicyFields.tsx` | 策略表单字段：backend（`rule`/`jev`/`laya`）、语言、外发范围、预算、置信条件、题型切换保留 |
-| `JudgmentQuestionFields.tsx` | 题目字段：choice 选项 / score 等级 / truth 确定性规则，输入校验来自 `internal/judgment/validation.go` |
 | `DelegationRuleEditor.tsx` | 委托规则创建/编辑：规则标识、题型、指令、工作流、语言、策略版本引用 |
 | `DelegationRuleWorkspace.tsx` | 规则详情：状态变更（开启/暂停）、评估执行、判断结果入口 |
 | `JudgmentRequestEditor.tsx` | 人工判断请求：候选选择、上下文输入、`usePersistentCommand` |
 | `JudgmentResultWorkspace.tsx` | 判断结果与反馈：结果详情、反馈记录（adopt/later/reject/revise/already_solved）、资料准入 |
 | `JudgmentResultDetails.tsx` | 结果详情展示：判断类型、决策、置信、截断、上下文 |
 | `JudgmentEvidencePicker.tsx` | 证据选择：项目证据引用 |
-| `judgmentApi.ts` | API 客户端：session/taste/snapshot/policy/rules/rule/evaluate/judge/result/feedback/admit，CSRF/幂等键/版本 |
+| `judgmentApi.ts` | API 客户端：session/taste/snapshot/policy/rules/rule/evaluate/judge/result/feedback/admit，CSRF/幂等键/版本；JudgmentCommand 使用 `Omit<..., 'context'>` 排除公开禁止字段 |
 | `judgmentLabels.ts` | UI 标签映射 |
 | `policyDraft.ts` | 策略草稿类型与转换 |
 | `ruleDraft.ts` | 规则草稿类型与转换 |
 | `useProjectEvidence.ts` | 项目证据 Hook |
 | `DelegationWorkspace.module.css` | 样式（6 行新增） |
 
-全部文件使用真实 HTTP 通过共享 `api/client`、`usePersistentCommand` 实现幂等命令与 unknown 锁、`useReadApi` 处理查询状态、CSRF Token 从 `/auth/session` 获取、版本冲突检测与乐观并发控制。不写入共享 api/hooks/auth/router/schema，不派发子 Agent。
+已有字段组件（非本阶段新增，已在前序 SOURCE 交付）：`JudgmentPolicyFields.tsx`、`JudgmentQuestionFields.tsx`。
+
+新增 E2E 测试 `s5-delegation.spec.ts`：独立 D 盘 server/API/SQLite、独立项目（不复制共享 98389066 项目 ID）、真实 snapshot/Goal/Taste。首 RED（5 项拒绝/权限/unknown 测试）保留，正向路径（4 项策略保存读取、规则保存读取状态变更、判断提交反馈、版本冲突）实现。不 mock、不 skip、不四层 Agent。
 
 | 命令或检查 | 本阶段结果 |
 |---|---|
-| `npx tsc --noEmit --skipLibCheck`（全域） | PASS，本域零类型错误 |
-| `npx eslint src/pages/attention/delegation` | PASS，零 errors / warnings |
-| `git diff --cached --check` | PASS |
+| `pnpm --dir web typecheck`（tsc -b，含 solution refs） | PASS，EXIT0 |
+| `npx eslint e2e/s5-delegation.spec.ts src/pages/attention/delegation --max-warnings 0` | PASS，零 errors / warnings |
 
-**页面入口 / 浏览器 NOT_RUN**：`JudgmentDelegationWorkspace` 尚未接入 `AttentionPage.tsx`。F 需在 `AttentionPage.tsx` 中添加：
-- `import { JudgmentDelegationWorkspace } from './delegation/JudgmentDelegationWorkspace';`（在现有 `import { MaterialWorkspace } from './MaterialWorkspace';` 附近）
-- 在 `<div className={styles.grid}>` 内现有 SectionCard 之后（推荐在"来源与整理"SectionCard 之前）添加 `<SectionCard title="判断与委托" tabs={['overview']}><JudgmentDelegationWorkspace /></SectionCard>`
+共享 64505 已暂停全部操作，等待 H 正式 2d27 ready。独立 D 盘测试使用 `D:/Astrocyte-agent-assets/20261015/product/ui/ctx_5d4bbae2a28d/` 专属目录，`GOCACHE=D:/Astrocyte-agent-assets/20261015/go-build/backend`，`GOMAXPROCS=2`/`GOFLAGS=-p=1`。无截图/视频/trace 截图。实际模型 `qwen3.7-max`。
 
-F 消费本 SOURCE 后仅 F 补 AttentionPage 最少接入，再将准确 F 入口 SOURCE 交本域消费并实际运行完整浏览器路径。
-
-后继待运行：真实 rule 路径保存/读取/规则状态/反馈、权限/冲突/unknown/重启、真实生产 snapshot/Goal/Taste 和固定公开文件的正向功能。当前 s5-delegation.spec.ts 已按真实契约修正（backend 为 `rule`/`jev`/`laya`、完整 JudgmentVersionsV1/JudgmentBudgetV1），但正向路径尚未实现，不能全部降为拒绝测试。
+后继待运行：实际 Playwright 浏览器执行 s5-delegation.spec.ts 正向路径（真实 rule 后端可能拒绝执行但保留非 500 状态）。
 
 ## 2026-10-16 04:23 判断题目输入校验
 
