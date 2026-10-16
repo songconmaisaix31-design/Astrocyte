@@ -85,11 +85,25 @@ try {
   assert.equal(before.status, 200, `pre-expiry GET must succeed, got ${before.status}: ${JSON.stringify(before.body)}`);
   console.log(`PRE_EXPIRY_OK status=200 at=${now()}`);
 
-  // 等待自然到期 + 10s 安全边距
-  const waitMs = expiresAtMs - Date.now() + 10_000;
-  assert.ok(waitMs > 0, `token must not already be expired at issuance; waitMs=${waitMs}`);
-  console.log(`WAITING ${Math.round(waitMs / 1000)}s until natural expiry`);
-  await delay(waitMs);
+  // 轮询等待自然到期：每次用真实 Date.now() 重算，单次 delay ≤ 30s，总等待有界。
+  const safetyMarginMs = 10_000;
+  const targetMs = expiresAtMs + safetyMarginMs;
+  const initialWaitMs = targetMs - Date.now();
+  assert.ok(initialWaitMs > 0, `token must not already be expired at issuance; initialWaitMs=${initialWaitMs}`);
+  // 总期限上限 2h（token 1h + 安全边距 + 缓冲），超出直接失败。
+  const maxTotalMs = 2 * 60 * 60 * 1000;
+  const startMs = Date.now();
+  console.log(`WAITING initial=${Math.round(initialWaitMs / 1000)}s max=${Math.round(maxTotalMs / 1000)}s`);
+  while (true) {
+    const elapsed = Date.now() - startMs;
+    assert.ok(elapsed < maxTotalMs, `total wait exceeded ${maxTotalMs}ms; elapsed=${elapsed}ms`);
+    const remaining = targetMs - Date.now();
+    if (remaining <= 0) break;
+    const sleepMs = Math.min(30_000, remaining);
+    console.log(`POLL remaining=${Math.round(remaining / 1000)}s sleeping=${Math.round(sleepMs / 1000)}s elapsed=${Math.round(elapsed / 1000)}s`);
+    await delay(sleepMs);
+  }
+  console.log(`EXPIRY_REACHED at=${now()} elapsed=${Math.round((Date.now() - startMs) / 1000)}s`);
 
   // 到期后：HTTP 必须返回 403
   const afterHTTP = await agentProgressGet(server.apiURL, projectID, token);
