@@ -672,4 +672,36 @@ SOURCE `895ae6a3a879e159e5de2c8629eed3423398cf68` 已普通 push。错误收据�
 
 `go test -mod=readonly -p=2 ./internal/adapters/mcp -run '^(TestDeliveryErrorFormatRules|TestAstrocyteRegistersFiveTools|TestAstrocyteDispatchGetAttentionState)' -v -count=1` EXIT 0，4 PASS、0 SKIP，包 1.702s；`.verification/mcp-delivery-format-first.log`。两项格式检查只传明确纯函数输入与期望值，不声明业务收据或来源事实；另两项通过真实 SQLite、生产人工主题创建和实际 OS pipe 执行五工具注册与关注查询，没有替代 Backend。实际 postcommit 异常、完整五操作 / 批准经验及原生链路没有因此升级为 PASS。
 
-全包 build、MCP 包 vet、七件 Go 格式及 diff 检查均 EXIT 0，日志 `.verification/mcp-delivery-format-build-first.log`、`mcp-delivery-format-vet-first.log`。正式来源问答已回复：Codex / Claude 原件 locator 的可用性仍 UNKNOWN，由 R/H 仅核既有公开指针，实际回放继续 NOT_RUN；B 转向无需新原生或模型的视频生产配置核查。
+全包 build、MCP 包 vet、七件 Go 格式及 diff 检查均 EXIT 0，日志 `.verification/mcp-delivery-format-build-first.log`、`mcp-delivery-format-vet-first.log`。R 已回复获准公开来源的准确元信息：既存 Codex 原档 nlink 为 2，必须保持单链接保护拒绝，不能通过复制、别名或仅元信息获得成功；AppendOnly / PrefixComplete / SessionComplete 均 unknown，`native_resume_raw_events_unavailable` 保持。Claude 为 NOT_AVAILABLE，范围只限 R 没有已确认且已获准的 locator；实际正向原生回放继续 NOT_RUN。原档路径与内容只用于授权本机核查，不进入 Git、HTTP 或打包内容。
+
+## 视频生产的显式配置核查
+
+`node .verification/video-trusted-config.mjs` EXIT 0。脚本只向现有生产 `summarizeEnvironment` 提供明确安全参数，读取已固定的 `dependencies.lock.json` 和项目实际安装的 summarize 0.25.1；八个绝对文件路径均为非空 regular file。实际配置与文件大小分别保存在 `.verification/video-trusted-config-first/environment.json`、`files.json`，日志 `.verification/video-trusted-config-first.log`。没有读取或输出宿主完整环境、凭据、视频正文或原生原档。
+
+| 显式配置 | 核实内容 |
+|---|---|
+| `ASTROCYTE_ENABLE_SUMMARIZE=true` | 构造实际提取器所需开关；H 原启动白名单为 false |
+| `ASTROCYTE_NODE` / `ASTROCYTE_SUMMARIZE_CLI` | 已安装 Node 与本工作树 pnpm 实际安装的 summarize 0.25.1 CLI，现有 CLI 版本通过记录见 `.verification/go-dependency-native-json-current.log` |
+| `ASTROCYTE_MEDIA_DIR` | 已批准 Astrocyte 媒体资产目录，显式指定后不依赖隔离的 LOCALAPPDATA |
+| `ASTROCYTE_YT_DLP_PATH` / `ASTROCYTE_LISTING_PYTHON` | 同一固定 yt-dlp 2026.08.19 环境的两个实际可执行文件 |
+| `ASTROCYTE_FFMPEG_PATH` | 固定 ffmpeg 9.0.2 实际可执行文件 |
+| `ASTROCYTE_WHISPER_BINARY` / `ASTROCYTE_WHISPER_MODEL` | 固定 whisper.cpp 1.9.2 和既有 `ggml-base.bin`，模型文件 147951465 bytes |
+| `ASTROCYTE_UVX_PATH` | 明确安装的 uvx 可执行文件 |
+| `ASTROCYTE_SUMMARIZE_PROXY_URL` | 原已批准的匿名 `http://127.0.0.1:7890`，没有凭据 |
+| `ASTROCYTE_JOB_TIMEOUT_SECONDS=1800` | 原生产默认处理期限 |
+
+完整安全值与准确本机文件指针已直接交 H 并抄送模块协调者，消息 `msg_4f93a6fd1e8d`、`msg_06608d24b7f8`。当前只证明配置生成、实际文件存在和既有固定版本证据；原 `video-source-third` 成功进程的逐项环境由 V 对照，当前共享产品服务重新启用与实际配置消费由 H / F 执行。本轮视频提取、ASR 和模型调用均为零，没有操作共享服务、重新生成来源或把派生 JSON 标记为 summarize 原始输出；实际产品视频功能继续待 H / F 的原实例验收。
+
+## 明确上传列表配置的直接失败
+
+SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定的 listing Python、yt-dlp 同目录 Python 或媒体目录存在错误时，`resolveListingPython` 立即返回错误；实际 Stat 错误通过 `%w` 保留。明确相对 yt-dlp 路径与非 regular Python 文件也直接拒绝。未指定能力且默认安装不存在时保持未配置，不改变原可选上传列表的范围。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./cmd/server -run '^TestListingPython' -v -count=1` | EXIT 0，2 项主检查、7 项明确配置子检查、0 SKIP，包 2.631s；`.verification/listing-config-actual-first.log` |
+| `go test -mod=readonly -p=2 -tags=repository_context_live ./cmd/server -run '^TestVideoSourceConfigActualInstalledTools$' -v -count=1` | EXIT 0，1 PASS、0 SKIP，包 3.467s；`.verification/video-config-production-actual-first.log` |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0；`.verification/listing-config-build-first.log` |
+| `go vet -mod=readonly -p=2 -tags=repository_context_live ./cmd/server` | EXIT 0；`.verification/listing-config-vet-first.log` |
+| 三件变更 Go 文件 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
+
+实际安装检查通过显式 `ASTROCYTE_VERIFY_VIDEO_CONFIG` 消费上一节白名单 JSON，只设置十二个明确配置键，调用原生产 `resolveSourceReader` 与 `resolveListingPython`。生产 Node 执行真实 CLI 路径解析，原实际提取器成功构造并同时接入 video / arXiv Reader，Python 身份逐字保持；关闭开关后两个提取端口保持空值。没有调用提取、ASR、模型、共享服务或原生 Registry。上述源码与实际检查不替代 H / F 在同一产品实例的配置消费与视频业务验收；进度 HTTP 的独立 WIP 和首 403 也未包含在本 SOURCE 内。
