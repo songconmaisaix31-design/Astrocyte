@@ -1,5 +1,25 @@
 # Works Relay integration report
 
+## 2026-10-16 新页面组合与实际核心检查
+
+根普通消费 B SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562`、F REPORT `353c8246337f23a24ec74adf9060da6aa14d156b`（准入身份 SOURCE `05886e5a80357db51c40b4632ce4ff500e2daf7e`，含 UI 页面及入口 `32a52cdf0473b657c1be03a01db54273255d011a`）及 P REPORT `615d3a36e85aef0a5977751f895ee821a5603532`，得到 `efec99acc4485529e2f6b06c54c82e4c97023e9f`。唯一冲突为 `web/playwright.config.ts`，根用文件编辑保留关闭截图和录屏、trace 不含截图且保留 DOM / 网络 / 源码。F 报告日期采用实际日期；完整原作者提交和各阶段证据保留。
+
+当前人工准入页面审阅固定候选、资料版本和项目归属，分别确认资料准入与任务批准；保存、查询、撤销和未知请求锁使用实际接口。判断 / Policy / 委托规则 / 结果反馈的十四件原组件已接入 Attention 页面，规则实际正向仍由原作者继续，不能据组件构建通过计为该流程通过。P 的启动脚本显式映射 S4 / S5 参数，构建子进程的缓存和临时目录使用 D 盘并恢复原环境；最终包和外部 helper 的行为限制按 P 准确报告保留。
+
+| 准确来源 / 命令 | 实际结果 |
+|---|---|
+| `13f3fb9b12e4498b606e80b4809746ed6f3de677`：`go test -mod=readonly -p=1 ./internal/workspace/app -run '^(TestProgressCacheGetFillsAuthorizedProjectIdentity\|TestProgressHumanSetAndCacheRead\|TestProgressAgentReadUsesGrant)$' -count=1 -v -timeout=3m` | EXIT0，三项真实 HTTP / SQLite 的缓存、人工保存、有效 Grant / Agent PUT 拒绝及撤销后拒绝通过，包1.537秒。原件 `root-progress-13f3fb9/progress.log`；没有执行八项历史内存替身测试。 |
+| `efec99ac`：完整 `pnpm build` | EXIT1 /17.5330032秒，三个 Go 程序完成，`tsc -b` 返回三项类型错误，未生成完整新 web。原件 `root-product-build-efec99a/{result.json,build.log}`。 |
+| `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`：完整 `pnpm build` | EXIT0 /15.039582秒，server / MCP / Sleep / TypeScript / Vite 全部完成，前后源码相同。原件 `root-product-build-types-first/{result.json,build.log}`；实际 Go buildinfo 同 revision / modified=false。原 Vite 大于500kB的 bundle 提示保留。 |
+| 同 `2d27b689`：`pnpm --dir web lint` | 全 web ESLint 实际 EXIT0，原件 `root-product-build-types-first/lint.log`。 |
+| 同 `2d27b689`：`pnpm --dir web exec playwright test e2e/s2-admission.spec.ts --grep '实际准入固定候选与项目资料' --workers=1 --retries=0` | 两个窗口2 PASS /42.3秒 / EXIT0，实际 POST 正文、header 与 outbox 的 request_id 等值、固定资料 / 项目、撤销、同库 HTTP 重启和零执行批准均通过。使用独占 D SQLite 与64565/64566，未操作共享库，未截图或录屏。原件 `root-admission-2d27b68/admission.log`，前后源码相同。 |
+
+原件路径均位于 `D:/Astrocyte-agent-assets/20261015/integration/`。`2d27b689` 只补两处类型衔接：测试 matcher 作为断言对象，判断命令从生成路径排除公开禁止的 `context` 字段；没有修改生成 schema、运行行为、原断言或调用预算。原 F 的八项功能场景和补强身份后的两项实际结果分别保留，不重跑无关成功场景。
+
+H 已把准确 binary / 全部30件 web 文件复制到 D 稳定 `versions/2d27b689`，核源与副本 buildinfo 后归还原产物读取窗口。根已授权在取得 F / UI 当次新安全 ACK 后沿原64505 / 原 SQLite / LOCALAPPDATA / 媒体白名单 / Q generation 更新；实际运行结果单独登记。具体 PLOS 候选仍未提交准入或批准，未答权限和语言保持。
+
+本阶段只消费 B 的上述已验缓存阶段，原一小时 token 语义保持。自然到期验证仍在原 B 的独立实例进行，新增显式入口和其他安全检查未随旧候选整批合入。完整适用检查、默认浏览器、受限 Native / L1 / L2 六步和最终包尚未通过。
+
 ## 2026-10-16 根接管集成
 
 按用户“继续集成，集成交给你了”，根在原 `works-relay-integration`、原 `songconmaisaix31-design/works-relay-integration` 分支直接负责普通合并、检查与提交。原 I 两次 Codex 启动在 `account/read` 路由发现超时后实际退出，失败原件保留；没有替代 Task / Run 或活跃 I 写入者。领域业务修改继续由原作者完成。本节为当前集成入口，后续章节保留各阶段准确来源和结果。
@@ -11,7 +31,7 @@
 | `7120a207ee6da0923262bbc6347661d92ac7b285`：`go test -mod=readonly -p=1 ./tests/s1 -run '^TestProductionCompletionHTTPMissingSourceSurvivesProcessRestart$' -count=1 -v -timeout=15m` | EXIT0，真实生产入口、HTTP、SQLite、实际关闭和重启；来源缺失返回404，原数据库与 Relay store 保持、原生会话和经验记录为零。单项20.73秒，包21.679秒；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-completion-7120a20/completion.log`。仅验证真实拒绝和持久化，不作为 Interpreter 正向结果。 |
 | `f9453c455e13b412e7af252b60e313552d17ec6f`：`go test -mod=readonly -p=1 -tags=repository_context_live ./cmd/server -run '^(TestListingPythonExplicitInputsFailAtConfiguration\|TestListingPythonUnconfiguredCapabilityRemainsAbsent\|TestVideoSourceConfigActualInstalledTools)$' -count=1 -v -timeout=3m` | EXIT0，三主项、七项显式无效配置子项通过，包2.000秒。使用原 B 真实媒体配置构造生产 Reader、核实际 Python 路径和显式禁用状态，未执行提取、ASR、模型或共享业务操作。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-media-f9453c4/media.log`。 |
 
-两次检查前后源码相同，子进程缓存、空身份目录和输出均在 D 盘；`git diff --check` 通过。实际共享服务仍使用 H 的准确 `38fb289` 稳定副本、原 SQLite 和 `http://127.0.0.1:64505/`，上述后继检查不声明运行实例已更新。原 `38fb289` 完整构建成功记录保持；本阶段尚未执行后继完整构建、完整适用检查和最终发布包。
+两次检查前后源码相同，子进程缓存、空身份目录和输出均在 D 盘；`git diff --check` 通过。该阶段共享服务使用 H 的准确 `38fb289` 稳定副本、原 SQLite 和 `http://127.0.0.1:64505/`，两项检查不声明运行实例已更新。原 `38fb289` 完整构建成功记录保持，后继组合和实际结果见本报告顶部。
 
 P 准备 REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a` 已普通合并为 `eb272504270828429a16cf84e05add5d8824a674`。实际仅 `HANDOFF.md`、`STATUS.md` 两处冲突，根使用文件编辑工具保留当前任务决定及各线历史；`cmd/server/main.go` 无新增差异。Q 后继 REPORT `f1110523c584aa7aa59ad07a05fc70cf88e138b7` 继续无冲突普通合并为 `fc294bee3d4a513d90cca6768d74fd4b90088394`，两项准确来源均成为普通祖先。
 

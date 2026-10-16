@@ -2,6 +2,8 @@
 
 ## 根直接集成与组合验证（2026-10-16）
 
+当前完整组合源码为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`：B 已验缓存 GET、人工准入、判断 / 委托组件与入口、P 显式启动配置及 D 构建作用域均已普通合并。完整 `pnpm build` EXIT0 /15.039582秒、全 web lint EXIT0、实际准入 / 撤销 / HTTP重启两个窗口2 PASS /42.3秒，Go buildinfo 同 revision / modified=false。原 efec 首次类型失败、B / F / Q 各自首失败和准确验证源保留，详见 [集成报告](docs/access/integration.md)。H 已完成稳定副本并归还原产物读取窗口，沿同库更新须本轮 F / UI 新 ACK；当前不据准备结果声明已更新。
+
 用户已将集成交给根，本树唯一集成写入者为根；固定分支 `songconmaisaix31-design/works-relay-integration`，不恢复其他 I。领域修改和返修由原作者在各自原树继续。当前职责、真实运行身份与用户待定项见 [HANDOFF](HANDOFF.md) 及总控工作树的当前入口，准确组合、检查和首次失败见 [集成报告](docs/access/integration.md)。
 
 当前普通消费了 T 真实生产完成来源检查、H 最新运行恢复和 B 显式媒体配置修复。准确 `7120a207` 的缺失来源 HTTP / SQLite / 重启检查 EXIT0；准确 `f9453c45` 的真实媒体配置三主项及七子项 EXIT0。阶段报告 `997066f4a596d7818f71beaacc540ed07e4ce569` 已普通 push，远端相同。P 准备 REPORT `b208ab8` 已普通合并，其两份管理文档冲突由根处理；Q 后继 REPORT `f111052` 无冲突合并，组合 `fc294bee`。该组合两个 snapshot 命令构建、42包架构检查与实际 PowerShell 5.1 / 7 九份发布脚本语法检查均通过。原 Q 继续修正快照链接检查，原 P 补齐显式配置，最终包分别验收，不重复已完成资产或模型准备。
