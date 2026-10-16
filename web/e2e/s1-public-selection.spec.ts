@@ -145,7 +145,6 @@ test('real metadata recommendation precedes human selection and reuses the origi
         await testInfo.attach('actual-layout-overflow', { body: JSON.stringify(await page.evaluate(() => ({ width: innerWidth, scroll_width: document.documentElement.scrollWidth, offenders: [...document.querySelectorAll('main *')].filter(element => element.getBoundingClientRect().right > innerWidth + 1).slice(0, 12).map(element => ({ tag: element.tagName, class: element.className, width: element.getBoundingClientRect().width, right: element.getBoundingClientRect().right })) })), null, 2), contentType: 'application/json' });
         throw error;
       }
-      await page.screenshot({ path: testInfo.outputPath(`actual-selected-collection-${width}.png`) });
     }
     await testInfo.attach('actual-selected-source-before-restart', { body: JSON.stringify(final, null, 2), contentType: 'application/json' });
     await server.restart();

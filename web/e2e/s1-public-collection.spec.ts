@@ -97,7 +97,6 @@ test('real selected Bilibili public collection persists metadata, gates selectio
     for (const width of [1280, 1920]) {
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-public-collection-${width}.png`) });
     }
     await testInfo.attach('actual-restarted-source', { body: JSON.stringify(restarted, null, 2), contentType: 'application/json' });
     completed = true;
@@ -155,7 +154,6 @@ test('real public collection keeps the unavailable video visible and prevents re
       await page.setViewportSize({ width, height: width === 1280 ? 720 : 1080 });
       await row.scrollIntoViewIfNeeded();
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await page.screenshot({ path: testInfo.outputPath(`actual-unavailable-content-${width}.png`) });
     }
     const selfBindings: string[] = [];
     page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/tracking-sources')) selfBindings.push(request.url()); });

@@ -13,7 +13,6 @@ test('local overview keeps real empty facts explicit at both sizes', async ({ pa
   await expect(panel).toContainText('暂无本地项目');
   await expect(panel.getByRole('combobox', { name: '项目排序' }).locator('option[value="activity"]')).toHaveJSProperty('disabled', true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await panel.screenshot({ path: `test-results/s1-local-empty-${page.viewportSize()?.width}.png`, animations: 'disabled' });
 });
 
 test('实际登记项目可以筛选和排序，详情保留真实目录与独立默认权限', async ({ page }) => {
@@ -74,5 +73,4 @@ test('real local inventory displays saved independent observations and refreshes
   await panel.getByRole('button', { name: '刷新清单', exact: true }).click();
   expect((await refresh).status()).toBe(200);
   expect(commands).toEqual([]);
-  await panel.screenshot({ path: `test-results/s1-local-inventory-${page.viewportSize()?.width}.png`, animations: 'disabled' });
 });

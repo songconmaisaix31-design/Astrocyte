@@ -130,11 +130,10 @@ test('品牌入口回到实际资料页并移除历史示例参数', async ({ pa
 });
 
 for (const path of ['attention', 'workspace', 'swarm']) {
-  test(`${path} 保存实际页面验证产物`, async ({ page }, testInfo) => {
+  test(`${path} 完成实际导航和页面加载`, async ({ page }) => {
     await page.goto(`/${path}`);
     await expect(page.locator('h1')).toBeVisible();
     await page.waitForLoadState('networkidle');
-    await page.screenshot({ path: testInfo.outputPath(`${path}.png`), fullPage: true });
   });
 }
 
@@ -173,7 +172,7 @@ test.describe('实际资料键盘和焦点管理', () => {
     for (let index = 0; index < 5; index++) await page.keyboard.press('Tab');
     await expect(page.locator(':focus')).toHaveCount(1);
   });
-  test('实际资料详情包含来源和未启用操作说明', async ({ page }, testInfo) => {
+  test('实际资料详情包含来源和未启用操作说明', async ({ page }) => {
     const trigger = await open(page);
     await trigger.click();
     const dialog = page.getByRole('dialog');
@@ -181,7 +180,6 @@ test.describe('实际资料键盘和焦点管理', () => {
     await expect(dialog).toContainText('来源定位');
     await expect(dialog).toContainText('任务执行尚未实现');
     await expect(dialog.getByText('示例数据', { exact: true })).toHaveCount(0);
-    await page.screenshot({ path: testInfo.outputPath('actual-material-detail.png') });
   });
   test('详情打开时关闭按钮获得焦点', async ({ page }) => {
     await (await open(page)).click();

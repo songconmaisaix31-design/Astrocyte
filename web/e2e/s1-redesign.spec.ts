@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 for (const narrow of [false, true]) {
-  test(`redesigned task flows retain live empty states and local assets ${narrow ? 'narrow' : 'desktop'}`, async ({ page }, testInfo) => {
+  test(`redesigned task flows retain live empty states and local assets ${narrow ? 'narrow' : 'desktop'}`, async ({ page }) => {
     if (narrow) await page.setViewportSize({ width: 390, height: 844 });
     const writes: string[] = [];
     page.on('request', request => { if (request.method() !== 'GET' && request.url().includes('/api/v1/')) writes.push(request.url()); });
@@ -12,7 +12,6 @@ for (const narrow of [false, true]) {
       await expect(page.getByRole('alert').filter({ hasText: '示例数据模式' })).toHaveCount(0);
       await expect(page.getByRole('status', { name: path === 'attention' ? '暂无素材' : path === 'workspace' ? '暂无本地项目' : '暂无开发空间', exact: true })).toBeVisible();
       await page.waitForLoadState('networkidle');
-      await page.screenshot({ path: testInfo.outputPath(`${path}-initial-${page.viewportSize()?.width}.png`), fullPage: true, animations: 'disabled' });
       if (path === 'attention') {
         await expect(page.getByRole('status', { name: '暂无素材', exact: true })).toBeVisible();
         await expect(page.getByRole('heading', { name: '账号与更新清单', exact: true })).not.toBeVisible();
@@ -37,7 +36,6 @@ for (const narrow of [false, true]) {
       const images = await page.locator('img[src^="/brands/"]').evaluateAll(elements => elements.map(element => ({ src: (element as HTMLImageElement).src, loaded: (element as HTMLImageElement).complete && (element as HTMLImageElement).naturalWidth > 0 })));
       expect(images.every(image => image.loaded)).toBe(true);
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-      await page.screenshot({ path: testInfo.outputPath(`${path}-${page.viewportSize()?.width}.png`), fullPage: true, animations: 'disabled' });
     }
     expect(writes).toEqual([]);
   });
