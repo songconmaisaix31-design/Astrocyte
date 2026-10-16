@@ -121,8 +121,7 @@ func (g *sessionGuard) middleware(next http.Handler) http.Handler {
 				writeRejectionError(w, r, http.StatusForbidden, "Agent credential is read-only")
 				return
 			}
-			// A credential identifies the agent, it does not grant material access.
-			// Explicit user material scopes are still being specified. Fail closed.
+			// 项目外资料的 Agent 授权范围仍待用户决定，当前明确拒绝。
 			writeRejectionError(w, r, http.StatusForbidden, "Agent material access requires an explicit user scope")
 			return
 		} else {
@@ -150,8 +149,8 @@ func (g *sessionGuard) middleware(next http.Handler) http.Handler {
 	})
 }
 
-// Only resource-scoped reads/control reach Workspace. Its service reloads the
-// action grant on every operation. Settings, grants and token issuance stay human.
+// 资源范围明确的请求交给 Workspace，服务逐次读取当前操作 Grant。
+// 设置、授权与 token 签发仍由人工执行。
 func scopedAgentRoute(r *http.Request, projectID string) bool {
 	if relayScopedWorkspaceRoute(r, projectID) {
 		return true
@@ -161,7 +160,9 @@ func scopedAgentRoute(r *http.Request, projectID string) bool {
 		return false
 	}
 	if len(parts) == 5 {
-		return (parts[4] == "context" && r.Method == http.MethodPost) || (parts[4] == "sessions" && (r.Method == http.MethodGet || r.Method == http.MethodPost))
+		return (parts[4] == "context" && r.Method == http.MethodPost) ||
+			(parts[4] == "sessions" && (r.Method == http.MethodGet || r.Method == http.MethodPost)) ||
+			(parts[4] == "progress" && r.Method == http.MethodGet)
 	}
 	if len(parts) == 6 && parts[4] == "sessions" && parts[5] == "discover" {
 		return r.Method == http.MethodPost

@@ -18,7 +18,7 @@ type progressInferCommand struct {
 	domain.ProgressCommand
 }
 
-// progressEvidenceWire projects domain.ProgressEvidence without fabrication.
+// progressEvidenceWire 投影领域中的实际文件证据。
 type progressEvidenceWire struct {
 	SourcePath string `json:"source_path"`
 	Kind       string `json:"kind"`
@@ -26,9 +26,7 @@ type progressEvidenceWire struct {
 	Excerpt    string `json:"excerpt,omitempty"`
 }
 
-// progressWire is the public projection of domain.ProjectProgress. It never
-// exposes the internal idempotency receipts (operations/pending_operation) and
-// never emits a fabricated zero observed_at for an unobserved project.
+// progressWire 只公开进度字段；内部操作回执保持私有，未观察时间保持空值。
 type progressWire struct {
 	ProjectID  string                 `json:"project_id"`
 	Status     string                 `json:"status"`
@@ -43,9 +41,7 @@ type progressWire struct {
 	Revision   int                    `json:"revision"`
 }
 
-// mapProgress projects a domain record to the public wire. An unobserved
-// project is reported explicitly as status=unknown with null observed_at and
-// null source, never as a fake timestamp or a fabricated stage.
+// mapProgress 将领域记录映射为 HTTP 字段，未观察状态明确为 unknown。
 func mapProgress(p domain.ProjectProgress) progressWire {
 	w := progressWire{
 		ProjectID: p.ProjectID,
@@ -75,13 +71,8 @@ func mapProgress(p domain.ProjectProgress) progressWire {
 	return w
 }
 
-// registerProgress wires project stage reading/writing and model-inferred
-// progress. Reading is a durable-cache GET; human writes and inference are
-// separate human-initiated operations. A missing service is an explicit 501,
-// never an empty success. Evidence is file provenance only; a status never
-// grants or expands project permission. Permission identification and error
-// mapping are owned by the W2 domain service; the transport only projects the
-// result and passes errors through.
+// registerProgress 连接缓存读取、人工写入和人工发起的模型推断。
+// 缺少服务时返回 501，权限和业务错误由领域服务检查后传递。
 func (h *handler) registerProgress(mux *http.ServeMux) {
 	s := h.services.Progress
 	if s == nil {
