@@ -1,5 +1,17 @@
 # Astrocyte 主控交接
 
+## 集成经验连接已进入运行产品（2026-10-17 02:40）
+
+原I已普通合入B SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` /REPORT `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 为d356；H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3` /REPORT `a4c1baf6e47e8f449c2f26ce37150780b051df5e` 已普通合为准确 `c5b3b5715f2e93b82365720914be24c73642bd1e` 并push。根完整独读源码 /真实测试 /作者报告和原件。根d356真实采用来源1主项 /九子项PASS0.19秒 /包1.943秒；准确c5三项实际装配3 PASS /包3.352秒，最终全Go vet /全Go build /部署binary /42包架构 /diff均EXIT0。首vet因D缺锁定SDK /GOPROXY=off失败保留，按已授权下载D后仅续失败阶段，未重复3 PASS。准确原件在原integration D根的 `root-artifact-d356b4b/`、`root-experience-c5b3b57/` 和 `root-experience-c5b3b57-followup/`。
+
+当前产品实际为同一 `http://127.0.0.1:64505/` /准确c5 /modified=false /PID30420，启动UTC `2026-10-16T18:37:58.6714394Z`。原H独立普通服务终端610cc持有本次更新；旧44080经owned CTRL_C正常退出并释放端口0.9536499秒。根已独立核程序 /启动时间 /唯一监听 /buildinfo /health ok /首页200-562bytes，本次counts完整对象严格相同，68表90行，原Q和媒体保持。binary来源c5，Web生产代码及配置保持172，H复用其30个已验静态文件并单列来源。复制窗口已本人归还，根可继续I写入。更新内部ready原件已保存，外层命令未返回、EXIT UNKNOWN保留；不重复更新或停止当前服务求退出码。
+
+经验连接已实施真实采用来源适配、双来源明确定位、当前请求Principal的私有context、同库事务再授权与显式Interpreter构造。未配置deadline及固定公开Git上下文时保持精确不可用；真实采用 /合法完成来源、双命中现场、在途撤权及模型生成正向尚未验证，Native工具和其他业务选择仍待答，不能写L2已完成。原进度1/8真实替换、余7不可计PASS；原浏览器55失败清单仍29 PASS /26 Native未执行，前端178项仍174分批通过 /4缺L1。
+
+已核自动CI：旧4b4ec3b2 /Run38947762564双平台check失败；c5 /Run38948519582已精确取消并实际completed /cancelled，取消前输出的失败与全部原件在 `integration/root-ci-c5b3b57/` 保留。默认Go仍含七项原进度替身，自动CI已输出结果不计真实替身通过。后续纯报告使用 `[skip ci]` 防重复运行这些旧套件，不改变workflow或测试Skip /断言；完整CI未通过。根 `msg_30d419ed7f10` / `msg_20893ddcf33f` 已交原B /H区分缺实际原件 /输出根 /CLI /Q配置、实际来源变化和可独立修复的非Native疑点，继续原Task及互斥写域，不新Task /Run或controller。
+
+最终包装守卫当前不满足：C空余实测5,485,166,592bytes，要求至少10GiB；官方Go /npm /pnpm缓存合计约2.27GB且npx15968在途，未清理缓存、用户数据或证据，未改OS /pagefile /守卫。普通D构建与产品更新已完成，最终ZIP /解压验证 /GitHub Release尚未执行，完整默认 /check /L1 /L2保持未完成。
+
 ## 同库产品已恢复，继续经验接缝（2026-10-17 02:22）
 
 当前普通产品已恢复 `http://127.0.0.1:64505/`，准确 `172bb445597193d55f1563ee5d21ac2ec881798d` /modified=false /PID44080，启动UTC `2026-10-16T18:20:54.4306224Z`。根独立核当前running必要指针、真实程序路径 /启动时间、唯一127.0.0.1:64505监听、Go buildinfo与health ok；首页200 /562bytes亦由模块实际核验。根读取本次before /after的完整counts对象并严格比较相等，原Q `snapshot-1711995690`、媒体和同一D库保持。没有新Native初始化、模型、ASR或业务测试重跑。
