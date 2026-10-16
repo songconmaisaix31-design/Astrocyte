@@ -1,5 +1,23 @@
 # Astrocyte 主控交接
 
+## 人工进度回执整改与经验管道接续（2026-10-17 02:07）
+
+根已按用户要求读取原Run监督消息 `msg_ce0a54b96161` 并以 `msg_f2e71fc0badf` 回复；监督只读，不争用原文件或Run。B SOURCE `ae22fc99c195792d951c7adc9b652420bc1fdbb5` / REPORT `78ec4fc7e23f3fdc151cb7c6e66ede947e97c370` 已普通合入原I为 `1679d7af9de6033aef1afb0cfb719dde1ab73abb`。原HumanSet完整迁至真实HTTP /SQLite /未Probe生产Registry，原业务断言及同库重启保持。根独读源码和作者原件，在准确组合精确list一项、实际1 PASS0.12秒 /包1.919秒、两包vet与diff检查均EXIT0；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-human-1679d7a/`，runner整体EXIT0。源公开项目与原accepted记录只读、新D目标CAS1 /人工r2，原source r3分列；关闭后main /WAL身份 /大小 /mtime保持，SHM变化单列，原生 /模型 /Grant均0。
+
+原八项进度替身当前1/8已真实替换，余7项依赖真实新推断或在途 /computed现场，尚未整改及运行；完整check会执行这些原替身，当前不运行或记PASS。完整前端178项仍174项分批通过 /4项缺真实L1，原55浏览器失败仍29 PASS /26 Native未执行，两个清单分开。运行继续准确172 /PID25568 /64505；本阶段仅测试与报告，无重建或重启。
+
+监督发现的两项实际经验管道缺口已由根源码复核并交原负责人。根 `msg_35e2ba4bf4f1` / `msg_fa87ee5af53f` 已入原模块Run；M-relay同原终端实际turn_started，回执 `msg_1cddd5a4b247` 已明确H接续写域。当前连续计划如下，使用全部原Task /Run，不新建开发轨：
+
+| 唯一负责人 / 原分支 | 本阶段互斥写入范围 | 交付和实际验收 |
+|---|---|---|
+| 根I / `songconmaisaix31-design/works-relay-integration` | 普通合并、必要薄胶水及integration报告；根管理树HANDOFF /STATUS | 固定SOURCE /REPORT独立审阅，准确组合适用验证，普通提交并push。 |
+| 原M-product /B / `standards-backend` | 原B经验来源适配及对应真实测试 /backend报告；开始前明确精确文件，排除H /R和原S3独占域 | 本次固定交付后，继续真实采用事件读取、human项目 /操作者权限、固定成果及事务内当前授权。缺真实采用事件保持正向未验，不伪造前置。 |
+| 原M-relay /H / `songconmaisaix31-design/works-relay-http` | `cmd/server/relay_completion_experience.go`、同名前缀装配测试、必要relay胶水及http报告；config.go /session.go /依赖保持 | 必要Interpreter显式生产注入、实际上下文及发送前来源 /工具检查，无Probe /Start /模型的装配检查。普通agents领域交B；需要R精确端口再沿原Task处理，当前R无活跃writer。 |
+| 原F / `standards-frontend` | 当前无新业务写入，保留默认失败与发布支持 | 原55失败29 /26、178项174 /4分开；真实L1条件具备后继续原断言。 |
+| 原P / `songconmaisaix31-design/release-package-20261014` | 原release /docs/release范围；准备阶段REPORT615d3a3 clean | 最终准确SOURCE及门禁具备后执行Windows构建、新目录解压 /实际运行和重启验证；目前无最终Build /Verify /archive /Release。 |
+
+共享经验组装由H持有，B仅交精确端口Handoff。Native边界、Agent读取完成证据、S3预算 /能力证据、Laya语言、具体PLOS准入和具体经验批准仍待用户回答；没有新登记 /Probe /Start /模型。L2正向、完整默认 /check与最终Windows包未完成。发布工具分支准确REPORT `615d3a36e85aef0a5977751f895ee821a5603532` 的release文件已在I中；本计划不修改发布模块独占的任务文件。
+
 ## 恢复执行与当前集成（2026-10-17）
 
 用户最新明确“继续做”，00:21暂停已解除。根继续原 `works-relay-integration` / `songconmaisaix31-design/works-relay-integration`，保持全部原Task / Run / 树 / 分支 / 证据；不新建开发轨。进度B ac3 /F9f已普通合为 `42303b59da251b888409d7d62bfa202508060932`；视频B dd3 /F72d已普通合为 `841673ef1acf75b745a6413019a3ffb86162e408`，最终B `1fd89e92933b67ac6ea3510a9244ad194d6f1ec1` /F `ac94fa2d794950edb4eab07aa9a56b6224f4116d` 作者记录已普通合为 `45cccf0858b0addb4f1d612253d8ef52d6f7faa1`。生产代码没有变化，运行继续准确172 / PID25568 / `http://127.0.0.1:64505/`，本阶段末实际health正常。
