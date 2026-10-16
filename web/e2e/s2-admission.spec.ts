@@ -29,7 +29,7 @@ test('实际准入固定候选与项目资料，原事件和草稿在撤销及�
     const submit = form.getByRole('button', { name: '确认资料准入并生成草稿', exact: true });
     await expect(submit).toBeDisabled();
     await form.getByRole('checkbox', { name: '我已核对本次固定候选、资料版本和项目归属，确认人工准入', exact: true }).check();
-    const expectedBody: AdmissionRequest = { schema_version: 1, request_id: expect.any(String), expected_version: candidate.version, expected_revision: candidate.revision, project_id: project.id };
+    const expectedBody = { schema_version: 1, request_id: expect.any(String), expected_version: candidate.version, expected_revision: candidate.revision, project_id: project.id };
     const writes: string[] = [];
     page.on('request', request => { if (new URL(request.url()).pathname.startsWith('/api/v1/') && request.method() !== 'GET') writes.push(new URL(request.url()).pathname); });
     const admittedHTTP = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/opportunities/${candidate.id}/admissions`));
