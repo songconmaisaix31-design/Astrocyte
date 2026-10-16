@@ -37,6 +37,44 @@ SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` 已普通 push，分支保持 
 
 同一原件中的 `TestRelayPersistentRealHTTPReceiptsMutexAndRestart` 在两平台均因 `/events/reconcile` 返回403 / `approval_required` 失败。只读代码定位确认 `relay_runtime_http_test.go` 的项目 AllowedActions 没有 `reconcile`，该检查却期待事件对账200；原 `RelayService.ReconcileEvents` 明确要求独立 `reconcile` 权限，生产拒绝保持。该旧检查还使用自定义 driver、workspace、sink 和伪造的 native 身份 / 开始事件，本阶段没有运行、增加权限或修改原 R 语义，准确发现已通过 `msg_ea48ea57e6cf` 交模块。当前 c5 / PID30420、普通服务终端及其外层 UNKNOWN 保持，真实原生、完整默认 / check、L1 / L2 和最终包继续未通过。
 
+## 2026-10-17 会话 HTTP 实际检查与 owned poll 剩余门禁
+
+SOURCE `0a8b39480355df6be51f366c31e69f9b90b241c2` 已普通 push，修改范围只有 `cmd/server/relay_session_poll_test.go` 和 `internal/adapters/httpapi/relay_session_test.go`。模块通过 `msg_34494eaab801` 批准在这两个原文件内迁移断言；根正式答复由 `msg_4b6620c521a2` 转交：旧 `relaySessionOwnedStub`、`relaySessionMemoryState` 和 `TestRelaySessionFirstGapPersistsOnceAndSilentPollWritesNothing` 的全部原代码与断言继续原样保留，本轮不运行、不计 PASS。HTTP 的 `sessionHTTPReadStub` 已完整移除；本阶段完成 HTTP 检查替换，并新增独立命名的真实空登记基线，owned poll 的原三个门禁仍未完成。
+
+`AccessSessionReader` 的生产端口是 `ReadCommittedSessionEvents`，它消费原 collector 选择的 owned scopes；main collector 无法从 httpapi 包直接导入。本轮将原授权读取200、真实 reader 错误和完整 guard / query / no-store 矩阵放入 main 包原 poll 测试文件，通过真实 `assembleRelay` 连接原 Registry、SQLite RelayStore、主数据库、FileState 和 SQLite session reader，再使用真实 HTTP 服务。先验证实际空集合、分页和200 / no-store，正常关闭原 RelayStore 后，同一个有效 GET 真实返回503 / `provider_unavailable`；同一状态下全部原拒绝请求仍返回403 /405 /400，验证拒绝先于实际 reader 失败。没有 reader / Save 计数替身。
+
+httpapi 包中的新 `TestRelaySessionHTTPActualUnconfiguredProviderGuards` 使用真实 SQLite 迁移、原 LocalProjects 和实际人工 bootstrap / cookie，配置真实未接入会话 provider 的 HTTP 服务，验证503 / `provider_unavailable` / no-store及全部原拒绝请求。当前请求的 Authorization header、非法 UUID 与查询参数仅为拒绝输入，没有作为原生身份、来源或会话写入。
+
+| 原 HTTP 断言 | 实际新位置与结果 |
+|---|---|
+| 缺少 human session | 两项新 HTTP 检查均403；main 在实际 store关闭后继续403 |
+| 外部 Origin、Agent Authorization header | 两项新 HTTP 检查均403；main 在 store关闭后继续403 |
+| HEAD | 两项新 HTTP 检查均405，handler响应带 no-store；main 在 store关闭后保持 |
+| raw参数、重复page、page_size=101、非法task UUID、start晚于end | 两项新 HTTP 检查逐项400，安全 ErrorV1 / request_id 及 no-store；main 在 store关闭后保持，错误正文不回显非法 task 值 |
+| 拒绝请求不得进入读取 | main 中同一个已关闭实际 store 对有效请求返回503，全部原拒绝仍保持各自403 /405 /400；使用实际读取失败区分先后顺序 |
+| 授权读取与 no-store | main 中一次有效 GET 使用实际 collector 返回200、空 events / coverage、total0、page1 / page_size1和no-store；后继真实 store关闭使有效读取503。旧人工 calls计数没有作为实际调用次数证据 |
+
+`TestRelaySessionActualEmptyRegistrationPollAndReopen` 使用实际空登记 RelayService。正常关闭主库与 RelayStore后，沿同一个自有目录和 SQLite文件重新构造服务；重开前后各执行三次真实 poll，checkpoint文件始终未创建，真实 FileState读取为空，session reader保留空集合与分页，主库原生事件 / 会话 / binding行数均为0。该检查只覆盖实际空登记基线，不能证明 owned 会话的静默写入行为。没有手工写入 task、binding、gap、event或原档，构造 Registry 没有 Probe / Start或模型输入。
+
+| 原 owned 场景，全部 NOT_RUN | 保留的完整验收语义与真实前置 |
+|---|---|
+| 首个实际 gap只写一次 | 需要获准窗口中的真实 owned task / project / worktree / Agent / terminal / binding及当前控制器、来源和 operation证据；首个实际 gap使生产 FileState新增一次 checkpoint，后继相同观察保持 |
+| owned静默 poll不写 | 在同一已核 owned身份及首次 gap checkpoint之后，真实来源 / gap / 事件不变的连续 poll保持原 FileState身份、内容和写入观察；空登记结果不能提供该前置 |
+| 实际 gap变化仅再写一次 | 需要原控制器产生可核实的真实来源变化及生产 gap变化；FileState只发生一次相应更新，后继相同观察保持。当前没有此实际变化，不修改绑定或 gap制造现场 |
+
+本阶段完整实际选择器为 `^(TestRelaySessionActualEmptyRegistrationPollAndReopen|TestRelaySessionHTTPActualCollectorGuardsAndClosedStore|TestRelaySessionHTTPActualUnconfiguredProviderGuards)$`，只选择新增的三个准确名称；旧 owned函数及其他替身没有运行。
+
+| 实际命令 / 检查 | 首次结果 |
+|---|---|
+| `go test -mod=readonly -p=1 ./cmd/server ./internal/adapters/httpapi -list <上述完整选择器>` | 恰好3项，EXIT0，`list-first.log` |
+| `go test -mod=readonly -p=1 ./cmd/server ./internal/adapters/httpapi -run <上述完整选择器> -count=1 -v -timeout=120s` | 3 PASS / 0 Skip：main空登记重开0.14秒、真实 collector HTTP0.13秒，package1.448秒；httpapi未配置provider0.10秒，package2.016秒，EXIT0，`test-first.log` |
+| `go vet -mod=readonly -p=1 ./cmd/server ./internal/adapters/httpapi` | EXIT0，`vet-first.log` |
+| 两件 Go 文件 `gofmt -l`、`git diff --check` | 无输出，EXIT0 |
+
+全部原件位于 H 本机 `process-20261016/verification/session-actual-current/`，真实数据库和目录原件保留于该根内。进程 TEMP / TMP / GOTMPDIR、Go缓存与输出继续为原 H 独占 D目录，GOMAXPROCS=2、Go `-p=1`；源码和独立报告均使用 `[skip ci]`。生产 collector、FileState、SQLite session reader、权限、来源 guard、配置和生命周期代码均未修改，B 的普通 `httpapi/workbench_test.go` 保持其独占范围。
+
+当前没有获准的真实 owned变化窗口，原 poll残余替身与三个门禁如上保留；非空 session-events / 逐 event_id真实 SQL 与六字段正向仍未运行。旧 nlink2来源拒绝、ArchiveAppendOnly / PrefixComplete unknown、SessionComplete=false及raw恢复 gap保持。共享 c5 / PID30420 /普通服务终端610cc与外层 UNKNOWN保持，本阶段仅使用新自有数据库和随机 HTTP端口；完整默认 / check、L1 / L2及最终包继续未通过。
+
 ## 2026-10-17 02:20 恢复与经验 Interpreter 装配
 
 本次恢复时服务实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，原 PID44080，启动 UTC `2026-10-16T18:20:54.4306224Z`，地址为 `http://127.0.0.1:64505/`。原 H 保持同一 Task `task_3004b636a3ab`、当前 Dispatch `ctx_ad637376ba1d`、原工作树和分支；本轮实际客户端为 Orca Codex / `gpt-6.1-sol` / xhigh。普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 使用 `pwsh -NoProfile -NoExit` 持有原恢复脚本启动的 Hidden 产品进程，恢复完成后已回到普通 PowerShell 提示符。模块与根分别独立核查准确程序、启动时间、唯一 owned loopback listener、health ok 及首页 HTTP200 / 562bytes；没有停止开发人员或服务来验证生命周期。44080已在上述 c5 更新中正常退出。
