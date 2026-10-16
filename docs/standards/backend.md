@@ -967,3 +967,35 @@ SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` 已普通提交并 push，远�
 首轮未含定位补充时主项 0.16 秒 / 包 1.821 秒，list / test / vet / build 与启动壳均 EXIT0，原件 `*-first.log` 保留。后继 `list-final.log` EXIT0，`test-final.log` 唯一失败为跨库错误文本断言；生产接口已返回准确的 `workspace transaction cannot span databases`。该轮 test EXIT1、其后 vet / build 未运行，原 `commands-final.json` 和日志保留；最终测试对上述完整生产错误文本作准确断言，没有放宽断言或更改生产拒绝行为。
 
 本阶段未取得真实采用事件，因此定位 true、采用成果的正向读取、固定来源差异拒绝、实际 Mission 权限变更现场、经验生成与发布均为 NOT_RUN，不能以已通过的拒绝和生命周期检查代替。未知 schema 的真实采用事件也未运行。H 组合装配尚待其精确 SOURCE 和实际验证。原进度七项替身、完整 check / 默认、L1 / L2 和最终发布包继续未完成；本阶段没有运行 Node 套件、历史已成功验证、Probe、Start、模型、ASR、V4 或共享 64505 操作。原 Task / Dispatch 按当前模块要求继续发布支持，尚未结算。
+
+## 默认 CI 实际状态与三项限定检查 REPORT（2026-10-17）
+
+SOURCE `76011c240766e18ece92d91f4188f8b91882458e` 已在 `standards-backend` 普通提交并 push，提交含 `[skip ci]`。相对前一报告 `a6f8f8edd741e4e281d9f24d63c0ec977377fc26` 只修改 `local_agents_discovery_test.go`、`public_listing_actual_test.go`，新增 `local_agents_permissions_actual_test.go`，均在原 SQLite / importers 目录；本节为随后独立报告。模块 `msg_8306d38a741b` 确认四件写域，`msg_1f8bddbf49ab` / `msg_0da399117adf` 明确独立保留缺位场景与原响应预期边界，`msg_c7752b5def91` 已完整审阅最终三件实现。生产 cursor、Native、权限代码、workflow、旧替身、冻结范围和其他 owner 文件没有修改。
+
+根指定 CI 源码为 `4b4ec3b26c276d707cbea81e7207dbce9d758200`，首失败原件为 `D:/Astrocyte-agent-assets/20261015/integration/root-ci-c5b3b57/4b4ec3b2-failed.log`；相关七件代码与本 B 前一报告源码全等。该原件中，目录观察仅 Windows 失败，公开列表两平台均为 observed60 / requests3，旧 Native 测试两平台均报组合断言 `unknown request automatically replayed`。源码核实后，三项分别属于目录预期没有规范化、可变公开 cohort 的固定数量断言，以及旧替身未配置真实消息服务的前置缺失；没有据错误文本认定生产伪造观察或实际重放。
+
+按 `msg_79923353ea7b`，只核本分支准确两次默认 CI：[SOURCE 2b96 的 run38947301976](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38947301976) 与 [REPORT a6f8 的 run38947405402](https://github.com/songconmaisaix31-design/Astrocyte/actions/runs/38947405402) 均已 `completed/failure`、push / attempt1，Windows 与 Linux 都在 `Run pnpm check` 失败；更新时间分别为 UTC `18:30:47Z`、`18:31:32Z`。没有在途运行，因此 cancel 请求为0；没有 rerun。`ci-exact-2b96-a6f8/capture.ps1` 整体 EXIT0，实际状态前后 JSON及四个失败 job 首次日志保存在本 ctx 独占 D 根的 `ci-exact-2b96-a6f8/snapshot-first/`。job117129559964 / 117129560062 / 117129905920 / 117129906168 的日志分别为136110 / 128798 / 134280 / 126510 bytes，下载均 EXIT0；安全汇总为 `summary-safe.json`。没有取消其他任务、修改旧历史或把 failure 记为 PASS。
+
+目录缓存测试保留全部当前 human / Agent 拒绝、观察状态、持久化重启、不授予项目权限、源目录删除后 stale及错误传播、再次重启和目录恢复断言。预期根由标准库 `filepath.EvalSymlinks` 独立计算，再用 `os.SameFile` 核输入与观察结果的真实目录身份，来源、Git、Activity 分字段核查。当前 Windows 实际以小写路径指向本次新建 `Observed-Directory`，输出为规范大小写、SameFile=true；source=`explicit_directory`、Git=`unavailable/no_project_git_marker`、Activity=`unknown/explicit_directory`。Git 只检查该目录自己的 `.git`，没有继承父仓。原 CI 未逐字段记录，原现场的具体拼写差异仍为 UNKNOWN；本次实际别名结果不填回旧日志。
+
+新增 `TestLocalProjectActualHTTPPermissionsTokensAndRestartWithoutNative` 使用生产 `NewServer.Serve` / `Shutdown`、真实 bootstrap / cookie / CSRF、SQLite、未 Probe Registry 和实际对象存储。人工创建两个项目空间并登记当前公开工作树，读取固定 `README.md`；目录读取默认拒绝，人工明确设置后真实 scoped Agent token 可以读取准确原文字节。设置版本冲突、Agent 自改设置 / Grant / token、跨项目读取均拒绝；缺少模型许可的 start 在 Native 调用前拒绝。真实 Grant 和 token 经同库关闭重开、第二 HTTP 服务后仍保持，人工撤销后 HTTP 和服务端读取均拒绝。重复同一显式缺失会话的发送参数两次，均在真实消息依赖守卫返回 UnsupportedCapability，没有到达实际 Send；Registry 前后全等、native-state和对象目录为空、Native Session0。
+
+旧 `TestLocalProjectPermissionsTokensAndNativeReceiptsSurviveSQLiteRestart` 的 localNative / localRegistry / localReferences及全部原覆盖保持，未执行。本次只完成可独立的真实身份、设置、Grant / token、文件权限、持久化和缺消息依赖拒绝。原测试没有配置实际 owned reader / objects，生产 `nativeMessageServices` 在 session / adapter.Send 之前就拒绝，因此其 native.sends=0 的组合断言不能证明实际重放。真实 unknown 回执及 stop / resume 现场仍缺，正向要求保持 NOT_RUN，没有制造回执或修改替身使其通过。
+
+公开列表新增独立 `TestPublicListingActualWindowMatchesProviderResponse`。观察包装仅以 `io.TeeReader` 留存同次真实默认 Transport 响应，成熟 `encoding/json` 独立读取 HTTP状态 / code、真实 folder ID、原始 medias 槽数和 has_more，产品原字段按同次响应顺序匹配；没有重建生产身份或可用性转换器。实际仍为原获准公开收藏夹2356677875，三响应各20槽、累计60；生产 Observed逐页与原数组长度严格全等，三请求起点0 / 20 / 40、size20、cursor2 / 3 / 4和本次剩余预算全部保持。三份公开原 JSON只保存在本次 D 输出目录。原 `TestPublicListingActualWindowCursorWithUnavailableSlot` 使用独立入口并保留真实59槽及完整缺位 / 游标 / 预算断言，缺前置时执行会明确失败；本轮没有运行该入口，当前普通60槽通过不计省略槽通过。
+
+实际 runner 为 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/ci-three-repairs/run.ps1 -RunLabel corrected`，整体 EXIT0。全部新临时 / 结果目录在该独占根内，沿前节同一 D GOMODCACHE / GOCACHE，`GOPROXY=off`、`GOMAXPROCS=2`、`GOFLAGS=-p=1`，没有下载依赖或修改全局配置。`commands-corrected.json`、SQLite及公开列表原日志、`results-corrected/public-listing-actual-2742868121/page-{1,2,3}.json` 保存实际结果。
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly ./internal/adapters/sqlite -list '^(TestRegisteredProjectCacheRestartStaleAndNoAuthority\|TestLocalProjectActualHTTPPermissionsTokensAndRestartWithoutNative)$'` | 准确2项，EXIT0；`list-sqlite-corrected.log` |
+| 同包同正则 `-run`、`-v -count=1 -timeout=1m` | 2 PASS / 0 SKIP，目录0.11秒、真实权限0.14秒、包2.052秒，EXIT0；`test-sqlite-corrected.log` |
+| `go test -mod=readonly ./internal/adapters/importers -list '^TestPublicListingActualWindow(MatchesProviderResponse\|CursorWithUnavailableSlot)$'` | 普通入口与原缺位入口准确2项，EXIT0；`list-listing-corrected.log` |
+| 同包 `-run '^TestPublicListingActualWindowMatchesProviderResponse$' -v -count=1 -timeout=2m` | 仅普通入口1 PASS / 0 SKIP，主项0.47秒、包1.546秒，EXIT0；`test-listing-corrected.log` |
+| `go vet -mod=readonly ./internal/adapters/sqlite ./internal/adapters/importers` | EXIT0；`vet-corrected.log` |
+| `go build -mod=readonly -o D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/ci-three-repairs/server-corrected.exe ./cmd/server` | EXIT0；`build-corrected.log`；未启动构建产物 |
+| 三件 Go 文件 `gofmt -l`、`git diff --cached --check` | EXIT0，无输出 |
+
+本轮首个 list 的 PowerShell 壳在编译阶段返回 NativeCommandError / EXIT1，没有进入测试；完整编译 stderr 当时未保存，确切诊断为 UNKNOWN，原空 first 日志及 `first-shell-failure-safe.json` 保留。最终权限测试声明完整 LocalProjects / ScopedAgentTokens 接口，后继上述全部检查实际通过；没有降低断言、新增 Skip 或重跑默认。
+
+完成范围仅为目录断言整改及新增真实权限、普通公开窗口验证。原省略槽、旧 Native 全覆盖、进度七项替身、完成经验正向、完整 check / 默认、L1 / L2 和最终包均未因此通过；Workbench HTTP 替身为已批准的连续后继任务，本阶段尚未修改。模型、Probe、实际 Native Start、ASR、V4、共享64505及私人原件操作均0。原 Task / Dispatch继续支持后续返修，尚未结算。
