@@ -1,5 +1,26 @@
 # Works Relay integration report
 
+## 2026-10-17 恢复执行与既有进度组合检查
+
+用户明确“继续做”后恢复执行。根沿原集成树与分支普通合入 B REPORT `ac3a1b57aacebe904ec71cd39327e267d8563827`（行为 SOURCE `fc6131791c7e287f45ed113892a95ac29fd07b2f`，后继注释 SOURCE `852d7ec1a0583ac501f42fa58a3ae8e404ab11ba`）与 F REPORT `9f58700774bd5ad91b697bba7e21aa8f592c2f33`（SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d`），均无冲突。准确组合为 `42303b59da251b888409d7d62bfa202508060932`，净修改仅两件 SQLite 验证辅助文件、原进度 spec 输出路径及两份作者报告，没有生产代码变化。
+
+根已独读原 `actual-third/final.json`、`serve.log`、F 精确 `list-second.log`、`test-first.log` 及最终静态检查的 `result.json` / 双通道日志。B 原公开 SQLite 只读，派生 D 库保留真实项目、NativeID、模型、观察时间、evidence 和 operation；源 revision3 与目标 CAS1 分别记录。实际 HTTP1 正常关闭并同库重开 HTTP2，F 两窗口原断言 2 PASS /4.7秒 /EXIT0，随后 B 正常 release、主项 PASS705.19秒 /壳 EXIT0，源与目标保持。原来源完整性和有效工具集合仍 unknown，Grant / Native Session / 新模型均为0。兼容 S0 空集合响应不计为其他业务通过，准确范围见 [后端报告](../standards/backend.md) 与 [前端报告](../standards/frontend.md)。
+
+根在准确42303b5顺序执行必要组合检查：
+
+| 命令 | 实际结果 |
+|---|---|
+| `go test -c -mod=readonly -p=1 -tags=public_progress_live -o <D目录>/sqlite-live.test.exe ./internal/adapters/sqlite` | EXIT0；编译真实托管入口，没有启动托管或运行功能测试。 |
+| `go test -mod=readonly -p=1 ./internal/adapters/sqlite -list '^TestServePublicProgressProjectionActual$'` | EXIT0，默认发现零项，未增加 Skip。 |
+| `go vet -mod=readonly -p=1 -tags=public_progress_live ./internal/adapters/sqlite` | EXIT0。 |
+| web目录：`node node_modules/typescript/bin/tsc -b --pretty false` | 完整类型检查 EXIT0。 |
+| web目录：`node node_modules/eslint/bin/eslint.js e2e/progress-existing.spec.ts` | EXIT0，无诊断。 |
+| `git diff --check` | EXIT0。 |
+
+根原件为 `D:/Astrocyte-agent-assets/20261015/integration/root-progress-42303b5/` 的六份同名日志，执行脚本为相邻 `run-root-progress-42303b5.ps1`，整体实际 EXIT0，检查前后源码相同。复用既有D盘模块缓存，新增构建缓存、临时目录、Node缓存及输出均在D盘；没有重复已成功的两项浏览器测试、模型、ASR或构建生产产物。
+
+当前运行继续为准确172 / PID25568 / `http://127.0.0.1:64505/`；恢复后实际 health 返回 `status=ok`。H独立运行 REPORT `1e25c296ef5b3a7e0a5e3a3b3bb7567e77a926c1` 已普通合入 `f627e1de607509e4559eb48220df840cb35eda7e`。本次原55项当前关联结果为28 PASS /27 NOT_RUN，尚余Native相关26项和视频1项；原B沿既有路径核实视频的真实两版/952位置来源，F尚未执行该场景。完整默认、完整check、L1 / L2、最终Windows包和GitHub Release未完成。具体资料准入、语言及原生权限问题仍待用户回答，不将恢复执行解释为扩大权限。
+
 ## 2026-10-17 当前运行与委托引用检查
 
 准确172已实际更新到同一 `http://127.0.0.1:64505/`，modified=false / PID25568，启动UTC `2026-10-16T16:06:57.3298644Z`。原2d27 / PID50624通过owned CTRL_C正常退出并释放端口后，仅启动一次D稳定172副本。F本人 `msg_e359a65335ba` 和UI本人 `msg_8ec1d72a2d30` 的本次暂停原文保存在产品Run；经模块完整转交后由根独读确认，H使用既有声明继续更新，没有要求作者重复确认。
