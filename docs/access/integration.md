@@ -19,6 +19,8 @@ P 准备 REPORT `b208ab8ac696fea43ad192648a2e273392f5c99a` 已普通合并为 `e
 
 Q 窄返修 SOURCE `f19f99db8a487ae6282c54521f5c82063570abee` 已普通合并为 `b02d1635828eae98ac6b5dac89cd9383d021257d`。directory-alias 按当前平台直接创建 Junction / Symlink，各自错误立即失败，原生产保护和断言保持。根在该完整组合运行 `go test -mod=readonly -p=1 ./cmd/workbench-snapshot/... -run '^TestServerInitializedSnapshot$' -count=1 -v -timeout=3m`，实际 EXIT1 / 包16.563秒：首次 `publish` 在 `main_test.go:105` 返回 `The system cannot find the path specified`，七子项尚未开始。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-b02d163/snapshot.log` 保留，已交原 Q 按明确 D 输出根定位并修复测试路径，生产 guard 不放宽；该组合快照检查仍未通过。
 
+Q 后继 SOURCE `8796fb8fbe91712a99d3b2798fd183a3dfe3bbfc` / REPORT `7aa24765f99174245621498bf02d970bfe409fd7` 已无冲突普通合并为 `e36650e645cae20e0d142338a0fbd20f168cdbc4`。检查通过 `ASTROCYTE_TEST_OUTPUT_ROOT` 明确选择 D 盘实际目录，保持生产拒绝链接的保护。根以相同命令在该完整组合复验，实际 EXIT0，主项69.99秒、包76.864秒，七子项全部通过；真实生产 server / SQLite 在线备份、七个 Reader 视图、Junction / hardlink 拒绝、锁和取消、失败不改发布指针、旧 immutable generation 可读及原生 CLI 输出均通过。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-e36650e/snapshot.log`，前后源码同值；没有采集、Sleep、模型、共享业务操作或新包验收。原 b02 首次失败保持，不记录为该旧来源已通过。
+
 原独立 symlink 的 OS1314 限制保持。发布入口的 S4 / S5 显式配置与实际最终包仍由原 P 完成，C 盘10GiB空间守卫保持。Native 权限、语言、具体候选批准及其他用户待定项按根当前交接与 QUESTIONS 保持。
 
 ## 2026-10-16 普通产品集成与构建

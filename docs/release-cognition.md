@@ -16,7 +16,7 @@
 
 技术用法已核查 [SQLite Online Backup](https://www.sqlite.org/backup.html)、[modernc.org/sqlite Backup](https://pkg.go.dev/modernc.org/sqlite@v1.60.1#Backup)、[database/sql Conn.Raw](https://pkg.go.dev/database/sql#Conn.Raw)、[Windows LockFileEx](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-lockfileex)、[MoveFileEx](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexw)、[GetFileAttributes](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfileattributesw) 与 [reparse 属性](https://learn.microsoft.com/en-us/windows/win32/fileio/file-attribute-constants)，并读取当前依赖版本的 Backup 实现。
 
-生产 Workbench 接口继续投影 event_id、kind、topic、tokens、scope、ts 六个字段，source 只用于过滤和来源聚合。快照为本机完整来源副本，可能包含原始事件，必须放在用户自身数据目录，不能加入 Git 或发布包。测试产物只位于当前工作树 `.verification/`。
+生产 Workbench 接口继续投影 event_id、kind、topic、tokens、scope、ts 六个字段，source 只用于过滤和来源聚合。快照为本机完整来源副本，可能包含原始事件，必须放在用户自身数据目录，不能加入 Git 或发布包。快照检查产物默认位于当前工作树 `.verification/snapshot-tests`；显式设置 `ASTROCYTE_TEST_OUTPUT_ROOT` 时使用该目录的 `snapshot-tests` 子目录。
 
 公开来源认知、并发 WAL 备份与原生产 Reader 的实际结果见下列 REPORT。前端与发布包的组合验收归 F/P/I；正式 V4、旧私人历史、管理员 Procmon、两次真实跨日触发没有在本任务运行。
 
