@@ -1,5 +1,77 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 F 域 41 失败逐行 map（combined-default-first 实际日志）
+
+来源日志 `.verification/playwright-combined-default-first.log`，行 7766：`41 failed, 203 passed, 32 skipped, 4 did not run`（26 分钟）。根提到 a166 的 320/55 分组（msg_f0d1cc29e545），本上下文未获得该消息原文；以下 map 基于实际可用日志 41 项逐行列出。若需对齐 320/55，请根提供 a166 运行日志或 msg 原文。
+
+### 分组 A：F 域已绿（4 项 × 2 viewport = 8，本次复验 PASS）
+
+| 文件 | 测试 | viewport | 本次实际 | 说明 |
+| --- | --- | --- | --- | --- |
+| plugin-snapshot.spec.ts:33 | 真实已捕获正文保留完整文本 | 1920+1280 | PASS（14 项全文件） | 缺 env `ASTROCYTE_TEST_PUBLIC_PAPER_INPUTS_DIR`，补后全绿 |
+| plugin-snapshot.spec.ts:69 | 修改人工输入标题产生新命令身份 | 1920+1280 | PASS（同上） | 同上 |
+| progress.spec.ts:14 | 实际人工进度保留本轨 STATUS.md | 1920+1280 | PASS（14.5s） | 前序提交已修 |
+| progress.spec.ts:36 | 纯输入解析完整保留多行路径 | 1920+1280 | PASS（同上） | 前序提交已修 |
+
+### 分组 B：缺原生条件 — relay 需本地 CLI Agent（11 unique × 2 viewport = 22）
+
+所有 relay-runtime 测试需要已注册的原生 CLI Agent（本地二进制 + session 注册 + terminal/structured I/O 驱动），F 写域不具备该条件。
+
+| 文件:行 | 测试 | 1920 | 1280 | 缺条件 |
+| --- | --- | --- | --- | --- |
+| relay-runtime.spec.ts:120 | EOF 登记 terminal 驱动 | ✘ | ✘ | 需本地 CLI binary + Agent 注册 |
+| relay-runtime.spec.ts:120 | EOF 登记 structured 驱动 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:142 | initial 互斥收据 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:142 | reopened 互斥收据 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:158 | 重复派发 409 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:177 | 通用冲突 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:190 | 服务投影刷新保留 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:204 | 离线发送保留 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:225 | 人工完成/取消/done | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:249 | 释放工作区接续 | ✘ | ✘ | 同上 |
+| relay-runtime.spec.ts:269 | 事件接入错误 | ✘ | ✘ | 同上 |
+
+relay-session-readonly.spec.ts:9 和 relay-session.spec.ts:90 同样缺原生条件（2 unique × 2 viewport = 4）。
+
+**小计：13 unique relay 测试 × 2 viewport = 26 项，全缺本地 CLI 原生条件。**
+
+### 分组 C：缺外部服务/连接（1 unique × 2 viewport = 2）
+
+| 文件 | 测试 | 1920 | 1280 | 缺条件 |
+| --- | --- | --- | --- | --- |
+| paper-search.spec.ts:15 | 公开检索元数据和可得状态 | ✘ | ✘ | 外部 paper API 503（official source unavailable） |
+
+### 分组 D：s1 引导/外部依赖（4 unique × 部分 viewport = 5）
+
+| 文件:行 | 测试 | viewport | 缺条件 |
+| --- | --- | --- | --- |
+| s1.spec.ts:18 | fresh browser bootstrap empty collections | 1280 only | 引导时序（1920 PASS） |
+| s1.spec.ts:30 | browser imports summarize export | 1920+1280 | 外部 paper API 依赖 |
+| s1.spec.ts:61 | view and refresh keyboard reread | 1280 only | 同上（1920 PASS） |
+| s1-projects.spec.ts:33 | human registers project B/C | 1280 only | 引导/连接（1920 PASS） |
+
+### 分组 E：F 域待查（1 unique × 2 viewport = 2）
+
+| 文件 | 测试 | 1920 | 1280 | 说明 |
+| --- | --- | --- | --- | --- |
+| works-album.spec.ts:62 | 实际人工分组与态度保存后控制分组和筛选 | ✘ | ✘ | 首 RED 日志保留；后续复验 1 PASS（分组标题测试），但完整场景 78 行 expect heading "标准整改" 失败，需查 DOM 渲染时序 |
+
+### 汇总
+
+| 分组 | 项数 | 状态 | F 可修? |
+| --- | --- | --- | --- |
+| A: 已绿 | 8 | PASS | ✅ 已修 |
+| B: relay 缺 CLI | 26 | 缺原生条件 | ❌ 需 B/R 轨本地 CLI |
+| C: 外部 503 | 2 | 缺外部服务 | ❌ 需 paper API 可用 |
+| D: s1 引导 | 5 | 部分 viewport | ⚠️ 1920 PASS / 1280 FAIL |
+| E: works-album | 2 | 待查 | ⚠️ 需 DOM 时序复查 |
+| **合计** | **41** | — | — |
+
+**F 域可独立修复**：分组 A（8 项已绿）+ 分组 E（2 项待查）= 10 项。
+**需外部条件**：分组 B（26 项需 CLI）+ C（2 项需 paper API）+ D（5 项引导）= 33 项。
+
+**与 a166 320/55 的差异**：本日志为 244 总测试（41 failed + 203 passed），a166 为 320 总测试（55 failed）。差 76 测试 / 14 失败，可能来自 s2-admission（8 项）、s2-proposals、s2-context、s3-missions、s4-repository、cognition、cognition-live、attention-interactions、preview-design 等额外 spec 的包含。本上下文无 msg_f0d1cc29e545 原文，无法精确对齐 55 项。请根提供 a166 运行日志或 msg 原文以完成 320/55 逐行 map。
+
 ## 2026-10-16 PLOS 候选严格 DOM 只读审阅（64505，24 项逐项 assert）
 
 针对上一轮 DOM 审阅脚本（852a149/f59a356）使用 `catch(()=>false/N/A)` 静默吞错、未点击准备按钮、条件跳过等问题，重写严格版本脚本 `.verification/dom-review-strict-64505.mjs`。Playwright chromium headless 1280×720，零截图、零视频、零模型。每个断言硬失败——任一缺失立即 exit 1，不 catch 继续。
