@@ -1110,3 +1110,35 @@ SOURCE `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` 已在 `standards-backend` 普
 本阶段没有新增失败运行，首命令 / 退出 / 时间完整保留于commands-first.json。未运行构建、部署、默认CI或既有成功项，没有新Native / Probe / 模型 / ASR / 采集 / Sleep。历史SOURCE `52ff9564c1b40109987668a95ed4ad35946d6847` 的95314+32908完整来源、135754wire、真实模型成功及同库冷API结果保持为独立历史事实，不将它改为capture，也不计成当前SOURCE的模型验收。
 
 原完整capacity / recommendation / 非法模型响应、原生在途unknown / computed与发布恢复、完成经验正向、完整默认 / L1 / L2 / 发布包仍保留实际限制。根经 `msg_82cb0920d7a3` 已连续授权下一项仅同容量test及backend报告：使用准确已push e907不可变公开commit的STATUS / backend / HANDOFF / SPEC四份不同真实Git文档各一次，先核blob及自然bytes，再独立验证生产超限预检；本节未将该后继填为已运行。原Task / Dispatch继续支持。
+
+## 真实公开 Git 文档的生产超限拒绝 REPORT（2026-10-17）
+
+SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` 已在原 `standards-backend` 普通提交并 push，含 `[skip ci]`；相对前一双源 REPORT `9bb501bb303a9b51cf1acb663fc628353db496ce` 仅在同一 `cmd/server/selected_text_capacity_actual_test.go` 追加独立 `TestSelectedTextCapacityActualGitDocumentsOversize` 和标准库导入，净239行、文件共561行。根经模块 `msg_82cb0920d7a3` / `msg_898ff4990008` 确认自然真实文档输入及同域连续授权。双源实现和来源读取helper没有修改，已通过双源不重复执行；原其他测试、生产接口、依赖、workflow和冻结范围保持。
+
+本次来源固定为已普通push的公开 `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` commit，独立于后续backend REPORT及工作树文档长度变化。四份不同真实跟踪文档各使用一次，完整原bytes来自实际Git对象；没有重复正文、扩充输入、拼造资料或将文档称为论文、视频、元数据。
+
+| 固定commit中的实际文档 | Git blob SHA | 原bytes |
+|---|---|---:|
+| `STATUS.md` | `a4a99c5d2d0de199459f20e44855af98960b2cb3` | 209211 |
+| `docs/standards/backend.md` | `fb634d0763f2b500aaa80f7db2e21fc935e3d2ac` | 230066 |
+| `HANDOFF.md` | `c981e6587e47f80d37c1e5d6bd4b69b5fa4a6721` | 78620 |
+| `docs/SPEC.md` | `5416d20e0d0268073a9a454c635f056f6851d851` | 60277 |
+
+自然总量578174bytes，大于524288bytes。实际成熟Git入口为 `rev-parse --verify` 核完整commit / 文档对象，`cat-file -t` 核commit与blob类型、`cat-file -s`核原长度、`cat-file blob`读完整内容；`hash-object --no-filters --stdin`重新核原blob身份，不带 `-w`，没有写Git对象。标准UTF-8检查核真实原bytes可作为文本。HTTP及自有SQLite正常关闭后再次读取相同commit下的blob身份与全bytes，前后保持。没有解析porcelain、自写Git格式parser或读取工作树文档冒充固定commit。
+
+实际HTTP bootstrap提供本次人类身份；同一身份通过生产服务端口创建真实ProjectSpace、注册当前公开工作树、明确codex模型许可，目录 / 工具 / Agent控制许可保持关闭。每份真实Git文档经既有manual导入服务与实际作业保存为新 `Kind=file` 资料，标题为真实相对路径、URL为该准确commit的GitHub blob URL、provenance为本次manual，创建时间为本次实际时间。原完整bytes摘要与新immutable revision一致；逐份纳入当前空间后，`ReadProjectReference`核新Ref、全body、SHA256与人工provenance准确。没有复造旧资料身份、旧来源时间或自动生成事实。
+
+这四份实际新固定引用进入原 `SelectedTextFactory` / `selectedTextBridge`。真实当前项目许可检查通过，Distill在生产输入预检返回 `validation_failed`，required_action准确为 `review_selected_text_size`；若返回evidence_missing，本项断言会失败。没有注入processor、人工返回错误、假调用计数或复制prompt组装。真实Registry观察前后相同，自有native目录为空，实际SQL核四个作业均仅为本次导入，distillations0、Native Sessions0，没有原生进程或模型调用。
+
+结果仍存放于本次独占 `D:/Astrocyte-agent-assets/20261015/product/backend/ctx_010eaf93bbc0/selected-text-capacity/`，后继runner=`run-oversize.ps1`；显式 `ASTROCYTE_TEST_CAPACITY_PUBLIC_COMMIT=e9070a208d2f1704a5e6d2a056d9cbd35d73d324`，所有新输出及Go临时目录沿前节D环境，无依赖下载、构建或部署。
+
+| 实际命令 | 首轮结果与D原件 |
+|---|---|
+| `go test -mod=readonly ./cmd/server -list '^TestSelectedTextCapacityActualGitDocumentsOversize$'` | 恰好一项、EXIT0；`list-oversize-first.log` |
+| 同包 `-run '^TestSelectedTextCapacityActualGitDocumentsOversize$' -v -count=1 -timeout=1m` | 1 PASS / 0 SKIP，1.04秒、包2.208秒、EXIT0；`test-oversize-first.log` |
+| `go vet -mod=readonly ./cmd/server` | EXIT0；`vet-oversize-first.log` |
+| 该Go文件 `gofmt -l`、`git diff --cached --check` | EXIT0，无输出 |
+
+runner整体EXIT0，命令 / 退出 / 时间完整保留于commands-oversize-first.json。本次没有新增失败运行，双源首轮1 PASS /0.17秒/包1.116秒、真实139579prompt /139957wire及原全部守卫保持为前节独立首结果；没有把两轮改成一次重复运行或覆盖旧首失败。
+
+实际通过范围为公开双源的新人工导入容量/配置前置，以及四份真实公开Git文档的独立distillation超限拒绝。原 `TestOversizeAssembledPromptFailsKnownBeforeSelectedProcess` 整个替身函数、recommendation超限、完整prompt内容保真、模型接受及非法模型响应仍未运行、不计原函数通过；原完整覆盖未删除、未加Skip。Native在途unknown、computed / CAS / 发布恢复、完成经验正向、完整默认 / L1 / L2 / 发布包仍保留各自前置和未验状态。Probe / Native Start / 模型 / ASR / 采集 / Sleep / 共享实例操作均0，未build/deploy或重发旧模型。原Task / Dispatch持续支持，未worker_done。
