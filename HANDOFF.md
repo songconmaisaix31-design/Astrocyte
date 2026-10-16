@@ -2,6 +2,16 @@
 
 ## 当前执行入口（2026-10-16）
 
+13:48 根已完成原 B 已验缓存 GET、F 准入页面和原 UI 判断 / 委托入口、P 显式启动配置的普通集成。业务 SOURCE 为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`；完整 `pnpm build` EXIT0 /15.039582秒、全 web lint 实际 EXIT0、准入 / 撤销 / 同库 HTTP 重启核心场景两个窗口2 PASS /42.3秒。准确命令、首次类型失败和 D 盘原件见集成树 `docs/access/integration.md`；类型衔接只涉及断言对象及公开禁止的 context 字段，没有改变业务或原断言。
+
+H 已在当次 F / UI 本人 ACK 后正常停止旧 owned PID33808，并启动准确2d27 / modified=false / PID50624，启动 UTC `2026-10-16T05:40:20.6912890Z`，地址保持 `http://127.0.0.1:64505/`。根独核首页200、唯一 loopback listener、实际进程和 Go buildinfo；原 D SQLite 的68表90行逐表前后相等、原生会话0，媒体12项配置和原 Q generation 保持。H 独立 REPORT `d5427c705903e9bb69f1f257706f490e1784eea9` 已普通合入，仅更新运行记录；稳定副本已归还原产物读取窗口。F 是共享业务唯一操作者，UI 保持共享只读。
+
+原 UI 正补完整 TasteProfile 查看、人工创建 / 编辑、启用关闭及版本冲突入口；这是实际 Policy 配置的必要前提。原 F 继续按实际失败组验证默认页面，并为既有 PLOS 候选准备当前运行页面的只读审阅材料；具体资料准入及任务批准仍未授权。生产 token 保持真实一小时：原 B 进程PID12768实际启动 UTC04:40:18.73299，根13:43仍核存活；到期后 HTTP 拒绝的实际结果尚未收到，状态为 RUNNING / UNKNOWN，不按墙钟经过推断通过。新显式验证入口不得伪造到期、增加 Skip 或重复签发一小时任务。
+
+M-release 本轮准备阶段已按根正式答复结算 succeeded，管理提交 `ec518c665dee9ac1dd125703397dfcf75bc275d9` 已 push；原精确 owned 终端已由公开 worker-release 归档并关闭。最终包门禁具备后复用原 Task / Run，当前没有制作或发布最终包。M-product / M-relay 及原领域人员继续。完整默认、受限 Native / L1 / L2 六步与最终发布未通过；语言、Native 工具、Agent completion、S3、AOCI 及具体批准待答。原 OS 成功、模型 / ASR 成功、公开 Q 快照和正式 D2 partial 不重复运行，C 盘10GiB包守卫保持。
+
+## 2026-10-16 12:35 及此前执行记录
+
 12:35 根集成当前 `4f35d0dee07aafeb44e1e18943afc64071d2d2af` 已普通 push、独立远端同值，工作区干净。Q 的平台链接检查和显式测试输出根 SOURCE `8796fb8fbe91712a99d3b2798fd183a3dfe3bbfc` / REPORT `7aa24765f99174245621498bf02d970bfe409fd7` 已普通合入；准确完整组合 `e36650e645cae20e0d142338a0fbd20f168cdbc4` 的 `TestServerInitializedSnapshot` 主项69.99秒 / 包76.864秒 / 七子项全部通过，原生产保护保持。真实 server / SQLite 在线备份、Reader、链接拒绝、锁和取消、旧 generation 保留及命令输出格式已核；原件 `D:/Astrocyte-agent-assets/20261015/integration/root-snapshot-e36650e/snapshot.log`。先前准确 b02 在原 `.verification` junction 路径的首次 publish EXIT1 /16.563秒原件保留，本轮没有采集、Sleep、模型或共享业务操作。
 
 F 原准入八场景已实际通过，移出主流程 HTTP / JSON 实现细节后的真实八场景在独占 D 目录继续返修复验；首次4 PASS /4 FAIL、后继6 PASS /2 FAIL原件保持，当前第三轮在途，尚未交最终后继 SOURCE。无截图、无录屏、trace不含截图的要求已交原 F / UI，未取得实际配置交付前不作已完成。UI 原页面与真实判断 / 委托入口仍由本人修正契约和实际来源后交 F 或根做必要衔接；没有接纳未运行或含虚构身份的用例。当前64505继续由 H 保持38fb / PID33808 / 原 D SQLite。
