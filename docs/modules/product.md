@@ -65,6 +65,10 @@ B SOURCE `2b96a9c7a98007af2b57528e288df13b6f2ea122` / 独立 REPORT `a6f8f8edd74
 
 本限定阶段完成生产适配和适用拒绝 / 生命周期检查。实际采用事件尚缺，Has=true、采用来源正向、固定来源差异拒绝、实际 Mission 权限变更现场及经验生成 / 发布继续 NOT_RUN；未知 schema 的实际采用事件未运行。H 组合装配、原七项进度替身整改、完整默认 / check、L1 / L2 与 Windows 最终包均未通过，不以本阶段替代其验收。未启动 Probe、Start、模型、ASR、V4、历史成功复测或共享 64505 操作，模块继续发布支持。
 
+### 采用来源阶段独立管理 REPORT
+
+管理 SOURCE `392edf3f27b8c8cf1c22975c29af856d372dfb9c` 已普通 push，模块独立 `git ls-remote` 核远端同值，工作区 clean，`git diff --check` EXIT0。相对本次恢复基线 `a21d9d33eb91a21c944168b9847eac404b901f9b` 仅修改 `docs/modules/product.md`，没有编写业务或修改根计划、队友文件。B 准确 SOURCE / 独立 REPORT、实际命令及原件已完整审阅，并分别交根和 M-relay；该阶段管理记录不结算产品模块，后续 H 装配与发布返修继续沿原 Task / Run / 树 / 分支。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
