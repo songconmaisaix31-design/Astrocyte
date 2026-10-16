@@ -1,5 +1,24 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 12:10 人工准入完整边界与 TS2571 修复
+
+SOURCE `d4d6ccfbcb6a6f3578117d76a637624445442f77` 在 HEAD `7b67b755` 上完成准入界面、类型修复和真实八场景验收。新增 `admissions.ts` 客户端使用既有 `createApiClient` 会话、CSRF 和幂等键，`OpportunityAdmission.tsx` 提供项目选择、固定候选预览、确认复选框、撤销理由和准入记录查询；`usePersistentCommand` 增加 `preparedID` 参数支持调用方提供的原请求身份，离线或未知结果后保持锁定。`AttentionPage` 和 `OpportunityWorkspace` 更新说明文字并接入准入面板的阻塞状态传播。
+
+`s2-admission.spec.ts` 第 70 行 TS2571（`Object is of type 'unknown'`）通过 `as AdmissionResult` 类型断言修复；原错误来自 `humanAPI().get()` 返回 `unknown`，访问 `.admission` 属性需要显式类型。没有添加 skip、降低断言或自动重发。
+
+| 本次实际命令（在 web 执行） | 实际结果 | 本次 `.verification` 内记录 |
+| --- | --- | --- |
+| `pnpm typecheck`（`tsc -b`） | EXIT0，零错误 | `typecheck-admission-fix.log` |
+| `pnpm lint`（`eslint .`） | EXIT0 | `lint-admission-fix.log` |
+| `pnpm vitest run src/api/admissions.test.ts` | 1 文件、3 PASS、EXIT0 | `vitest-admission-fix.log` |
+| `npx playwright test e2e/s2-admission.spec.ts --reporter=line` | 8 PASS、1.3 分钟、EXIT0；2 worker 并行、零 skip / 重试 | `playwright-admission-fix.log` |
+
+八场景覆盖：(1) 准入固定候选与项目资料，撤销及服务重启后保留事件和草稿；(2) 候选版本冲突保留原请求和确认输入；(3) 项目读取拒绝后禁用准入，恢复权限重新核查；(4) 离线准入保留未知请求锁，刷新和重新打开不重发且锁定编辑。每个场景使用真实 Go HTTP 服务、实际 SQLite 和 Playwright 浏览器，没有 mock、page.route 或伪造响应。
+
+本轨全仓扫描结果：`web/src` 和 `web/e2e` 无 `vi.fn`/`vi.mock`/`vi.spyOn`、无 `page.route`/`route.fulfill`、无静默 catch 或 fallback；`fixture=1` 仅在测试中验证应用忽略该参数并显示真实数据；注释已全部为中文（生成的 `schema.d.ts` 除外，不在本轨写域内）。`vitest.config.ts` 的 `clearMocks`/`restoreMocks` 为历史遗留配置，无实际 mock 使用，该文件不在本轨写域。
+
+共享产品 H `38fb`/PID33808/64505 安全 ACK 已确认，F 当前无在途共享 mutation。固定候选的 PLOS 准入与批准继续等待实际用户决定，没有重发成功或未知操作。实际客户端为 Claude Code 2.1.238，provider.model 为空，模型名称报告 UNKNOWN。
+
 ## 2026-10-16 04:53 准入、判断和品味的准确生成契约
 
 本轨已在人工进度 SOURCE `6968284` / 独立 REPORT `963d880` 普通 push、工作区干净后，按模块精确放行，普通 no-ff 合入唯一 I 的 `ecb29c9593348d409514cc1ddff05ff04affcd87`，本树 merge 为 `09a8eab3acabea0fc7533bd8b0194ff504750576`，零冲突。I 的准确阶段含 H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 的真实 human 准入注册、完整 Judgment / Policy / Feedback / Delegation / Taste 及完成经验契约；原负责人提交完整保留，没有手写或覆盖其文件。
