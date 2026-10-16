@@ -1,6 +1,20 @@
 # 产品模块执行与验收
 
-## 当前阶段与必要返修（2026-10-16）
+## 当前执行与验收（2026-10-16）
+
+根已普通合入F准入、UI十四件页面与Attention入口，完成两行类型衔接SOURCE `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`。根正式报告同SOURCE完整构建EXIT0、15.039582秒，全web lint及实际准入、撤销、HTTP重启两窗口PASS、42.3秒；首efec的完整构建EXIT1和三处TS错误保留。单独 `tsc --noEmit` 未遍历solution references，不能登记为全局类型通过；F/UI后继使用真实 `tsc -b`，按原写域同步根准确类型修改，不改生成schema、运行行为、原断言或预算。
+
+H本人 `msg_e25d0df2925b`、根 `msg_cef4d64ac4c9` 及M-relay `msg_df548fd861bc` 已交同库正式ready：准确2d27、modified=false、PID50624、启动UTC `2026-10-16T05:40:20.6912890Z`，地址仍为 `http://127.0.0.1:64505`。本轮F / UI本人新ACK均已到H，原38fb正常退出后更新；同一D数据库68表90行逐表保持、原生会话0，媒体十二键与Q generation保持。F继续共享业务唯一操作者，UI只读。根要求F仅对既有PLOS候选、固定资料与摘要、Goal、项目r2和新确认页作一次GET / DOM只读审阅，之后由根向用户提出具体准入选择；当前不POST准入、反馈、Grant、执行或批准，不重放成功或未知动作。
+
+B正式一小时决定已读且本人确认。原生产语义已通过文件编辑追加恢复；后继SOURCE `c008573f29515ea9ac248ecb9a9b615a1be564e4` 已移除静默JSON处理、无关Git初始化及到期后的重复跨项目检查，显式入口为根授权的 `tests/s1/progress-expiry.mjs`，当前只有语法检查，功能为NOT_RUN。独立报告 `39eb723863cd98bb847e7e59b622ef70341a99d6` 及路径修正报告 `6a6013ca90da34cbbff0e49dee30c46529da7894` 均只更新backend.md，普通历史保留。新增Go长验收文件已移除，原八项真实快检保留；实际移除使用git rm，方法偏离文件编辑要求已如实记录，后继必须使用文件编辑工具，不进行Git恢复。
+
+原自然到期进程仍单独运行：编译SOURCE `88dc9e5715b93a31be6f4e2b11435e862b703e7d`，实际app.test.exe PID12768、父go.exe PID46696，真实超时两小时，签发UTC04:40:18、ExpiresAt UTC05:40:18。模块独立核实脱敏字段、CIM身份和D盘文件 `D:/Astrocyte-go-tmp/TestProgressExpiryBackgroundVerification1949551442/001/state.sqlite` 存在、创建UTC04:40:18.805626；原签发及完整日志在B树C盘 `.verification`，保持原位。UTC05:40:46之后仍无最终结果文件，实际进程仍在、日志仍记录等待，故状态继续RUNNING；达到墙钟期限不等于HTTP拒绝与退出通过。不改DB / Clock / 模型，不重签或启动第二个计时。
+
+F原Task / `ctx_44f61b51d023` 继续默认55失败分类。模块已独读phase3插件快照日志14 PASS、1.2分钟、EXIT0，输入为B既有四件公开HTML，未重新抓取或调用模型；其他调查结论须以准确原件与SOURCE登记。UI原Task / `ctx_5d4bbae2a28d` 已普通消费入口为 `59c0876f71df7a658526d9c54037ec383930ee91`、无视觉配置为 `1d9af6184e75a416add21d740b46212e19b356a1`，原judgmentApi类型行及s5测试WIP保持。上一轮API连接中断返回提示后，已沿同终端续行，不修改账号、网络或增加人员。
+
+根 `msg_8d69720e498d` 已明确补齐必要Taste功能：原UI在既有delegation域实现完整Taste查看、人工创建 / 编辑 / 启停、版本冲突提示及可达入口，使用真实GET / PUT生成契约和已有Hooks / Fields，不让用户编写API JSON，不预填未决定个人偏好。独立D盘QA必须通过真实页面保存、读取和版本检查，再接实际Goal / Snapshot / 固定引用的rule正向；预置API记录不能代替该入口验收。该路径及原rule正向仍NOT_RUN，共享个人Taste与具体准入未操作。全部首RED / UNKNOWN / NOT_RUN保持，完整默认、其他核心路径与Windows包继续，阶段结果不结算模块任务。
+
+## 前序阶段与返修记录（2026-10-16）
 
 本模块仅写本文件，原B/F/UI继续各自Task、工作树和分支，根是唯一集成写入者。正式问题 `msg_3f842bba8861` 的答复 `msg_ef2ae7cc0b04` 已实际读取：保持生产token一小时语义，不授权短期ExpiresAt；通过文件编辑追加恢复，保留普通历史。原B本人 `msg_e58d3db87b34` 已确认收到。只使用正式接口、真实SQLite及实际时钟等待到期，不改DB、Clock或模型；到期前始终记录RUNNING。已验证阶段源码可先交集成，报告仅在 `docs/standards/backend.md` 追加并独立commit，不再新建REPORT文件。
 
