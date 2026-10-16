@@ -2,7 +2,30 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
-## 当前恢复分工（2026-10-16 11:45）
+## 当前运行状态（2026-10-16 13:45）
+
+本模块继续 `task_e8c1d01d67ec / ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`，原有子 Run `run_8bbda1c3974c` generation9；只修改本文件。原 H 继续 `task_3004b636a3ab / ctx_d763540bd366 / term_c260106e-0d16-498e-aa19-6927247ba978` 和原工作树 / 分支，负责当前服务及后续原领域返修。总负责人保持唯一集成写入者，模块与 H 继续发布支持。
+
+当前实际产品 SOURCE 为 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`、modified=false，地址 `http://127.0.0.1:64505/`，PID50624，启动 UTC `2026-10-16T05:40:20.6912890Z`。根提供的准确完整 `pnpm build` EXIT0 / 15.039582秒、source_after同值，另有同源 web lint EXIT0和真实准入首场景两窗口2 PASS / 42.3秒；根正式更新授权为 `msg_7fb0fed7722d`，H 直接收件为 `msg_0f41b8b5e469`。这些检查没有重跑。
+
+H 先复制全部30个 web文件和 binary 到自身稳定 `versions/2d27b689`，核查 buildinfo / 文件存在 / 大小 / 总数后，明确停止读取并归还根产物窗口 `msg_17168472d734`。模块独立读取原 build结果、稳定 stage记录及稳定 binary 的 Go buildinfo，确认准确2d27 / modified=false / stage_complete=true；当时 service_started=false。根后继构建不会覆盖该稳定副本。
+
+F 本人当次 ACK 为 `msg_483b97ead083 / ctx_44f61b51d023`，模块收到同次本人抄送 `msg_da9e4a3dedb8`；UI 本人当次 ACK 为 `msg_55010e2e80ce / ctx_5d4bbae2a28d`，模块收到本人抄送 `msg_ce8adaeafefa`。两者均明确暂停共享实例至 H 新 ready。等待期间 functions 宿主出现 timeout / stale generation，H 当时没有执行更新；原 Run FIFO 恢复成功且 Orca runtime仍为e933。H 重新读取当前入口、核查原 PID / 启动时间与没有后继撤销指令后，继续原一次获准更新，没有重复启动或重发业务。
+
+H 使用原 owned helper 发送 `CTRL_C_EVENT`，旧38fb / PID33808正常退出与64505释放用时1.1571702秒，然后启动一次稳定2d27副本。H 实际 `update-2d27.ps1` EXIT0；原 SQLite、LOCALAPPDATA、12项媒体白名单与 Q `snapshot-1711995690` 保持，启动前后68表90行逐表全等、`local_agent_sessions=0`。没有复制或重置数据库，没有新增原生初始化、模型输入、ASR、索引或快照采集。F / UI新 ready分别通过 `msg_397debeb6d84` / `msg_e3877e093889` 归还原许可窗口，具体PLOS准入仍待用户决定。
+
+| 模块实际独立检查 | 结果 |
+|---|---|
+| `Get-Process`、唯一64505 listener、实际程序 `go version -m` | PID50624 / 启动时间 / 稳定程序路径一致，唯一127.0.0.1 listener归该进程，Go revision准确2d27 / modified=false |
+| 实际 `GET /api/v1/health` 与首页 | health=ok，首页HTTP200 / 562bytes |
+| 读取本次启动前后只读 SQLite计数原件并逐表比较 | 同一个数据库，68表90行全部计数一致，原生会话0，原Q generation保持 |
+| 审查 H 独立 REPORT与远端 / 历史 | `d5427c705903e9bb69f1f257706f490e1784eea9` 只修改 `docs/access/http.md`，远端精确同值，原树clean；原H59e既是REPORT祖先，也已包含在产品2d27中 |
+
+本机安全运行指针仍为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`；其中引用本次 `update-2d27-20261016-054018.json`、前后计数与停止收据。后继进程 TEMP / TMP / GOTMPDIR、Go build / module、npm、Node compile与Corepack缓存均明确使用各自独占D目录，仅进程作用域，不清理既有缓存。生产token保持原一小时，原B独占12768自然到期检查不受共享更新影响；H不修改 `projects.go`、数据库时间或 Clock。
+
+当前完整默认、真实原生完成正向、L1 / L2六步和最终包仍未通过；Jev / Laya / Interpreter未配置，语言、Agent completion action、原生工具边界、S3及具体批准保持未答。P一次无模型构造的局部结果和辅助脚本清理失败分开记录，最终接纳结果待根或当前发布负责人转交。旧发布 `ctx_e4bfbfefc7b4` 已被公开CLI判定completed；转投其Run也因跨Run权限被拒绝，模块已如实交根转发，没有声称消息已送达，没有创建替代Task或更换他人绑定。旧R / S4释放unknown继续保留。
+
+## 11:45恢复与后续协作记录
 
 根 `C:/Users/DW/orca/Astrocyte/HANDOFF.md` 的 11:38 入口、当前 `STATUS.md` / `QUESTIONS.md` 与正式消息 `msg_ca0d05e1c4b4` 为本次恢复依据。总负责人为 `term_a1e70e66-3957-415d-b42c-673f2cc94c26`，顶层 Run 保持 `run_973808dd6a2f`；本模块为 `task_e8c1d01d67ec / ctx_fc6d758733e2 / term_249b2e3a-6fb4-4a7c-865f-5884dd96566b`。模块已普通绑定原有子 Run `run_8bbda1c3974c` generation 9，没有创建新 Run，保持原 Task、工作树、分支和全部 WIP。
 
@@ -58,7 +81,11 @@ H 已给准确 P Dispatch 发送 `msg_0d0c58ff4f38`，抄发布 `msg_e58fac4e356
 
 该文件后继 `adapter_source` 记录准确提交 `faab2daf83f6a578773b61077140aff73af9ef9b` 的 `internal/adapters/repositorycontext/codegraph.mjs`，Git blob 为 `d35fff9daa0a20354b7f891706846935ef85823c`。模块独立核该提交与产品38fb的同路径 blob 相同，原 S4 tracked 文件对该提交 `git diff --quiet` EXIT0，tracked 文件与实际稳定副本 `git diff --no-index --quiet` EXIT0。首次在稳定副本目录直接查询 Git 返回 `not a git repository`，保留该检查结果；它不代表运行构造失败，实际来源对应由上述提交与文件比较确认。
 
-H 没有执行 adapter 或复做构造，仅只读核现有文件和 SDK1.0.1。准确来源对应已通过 `msg_4062bbd3b47d` / `msg_8ae4a61fab5d` 交 P 和发布，模块独立结果另交根。P 的一次实际构造 / health / 自有进程停止结果仍待原 P 报告，不以配置交接记录为验收通过，不因来源补核重复已经完成的检查；本项不代表后继源码或最终发布包通过。
+H 没有执行 adapter 或复做构造，仅只读核现有文件和 SDK1.0.1。准确来源对应已通过 `msg_4062bbd3b47d` / `msg_8ae4a61fab5d` 交 P 和发布，模块独立结果另交根。配置交接不作为运行验收通过，不因来源补核重复已经完成的检查。
+
+12:38 发布 `msg_cac3c6175724` 转交 P 的一次实际结果：生产脚本 SOURCE `9e3464ed49f10e4e8e3ebc1d2271cf987850dd9d` 已普通 push / 远端同值；使用准确38fb和 H 配置的新 D staging 实际启动 pwsh7.6.6 / Go 服务，端口19883，HTTP200 / SQLite4096，repository-context、runtime、appdata、LOCALAPPDATA、profile、temp均实际创建，无索引、模型或共享实例操作。该结果归发布转交，原安全日志指针为 `D:/Astrocyte-agent-assets/20261015/release-package/staging-38fb-first/functional-test-s4-positive.log`。
+
+测试辅助脚本停止 wrapper 后 Go 仍在，随后显式停止 Go 并记录端口释放；finally 重复清理又报告 wrapper 错误，旧 helper 含捕获后继续，整份报告尚未接纳。发布已安排原 P 修正外部 helper、独立准确报告及 PowerShell5 / 7 parser 检查，不重跑 S4 或成功启动。H 没有领域错误，保持当前64505服务，不修改 P 文件；本项不代表后继源码或最终发布包通过。
 
 ## 04:45 恢复分工记录
 
