@@ -37,6 +37,10 @@ B 本人 `msg_14b192607caf` 已核 `78ec4fc7` 为准确 I `42860d277df0c0518f58e
 
 模块已通过 `msg_423a95b1060f` 确认原 B 精确三件 write_paths：`internal/adapters/sqlite/accepted_artifact_completion.go`、`internal/adapters/sqlite/accepted_artifact_completion_test.go`、`docs/standards/backend.md`。构造器接真实 DB 与既有 `swarm.AcceptedArtifactEvidenceReader`，复用 `ReadAcceptedArtifactEvidence` 和当前 `WorkspaceTransaction`，读取当前 human 授权与固定成果，事务内重读并与传入来源全等核对；Authorize 要求当前主库事务。新增生产适配须实施并运行适用的真实 SQLite、当前权限、缺事件、取消 / 关闭 / 跨库及持久化检查；无实际采用事件和模型前置时保留正向 NOT_RUN，不制造 outbox 或成功结果。完成构造器签名先交 H，固定 SOURCE 与独立 REPORT 普通 push 后再交根验收。
 
+### 模型恢复及实施计划独立 REPORT
+
+管理 SOURCE `5a79d8707d4bfb6543658736e97aef769264e581` 与后继计划 SOURCE `f6227754c40bc5e3ba0fc179c60f3ef70713a66a` 均仅修改本管理文档、普通 push；独立 `git ls-remote` 核准确后继远端同值，`git diff --check` EXIT0。B 本人恢复、实际模型及根已授权写域的来源已逐项登记，未将实现或测试写为通过。B 后继 `msg_eedfed2f28b8` 提交构造器 `sqlite.NewAcceptedArtifactCompletionSource(db *sqlite.DB, reader swarmapp.AcceptedArtifactEvidenceReader, projects workspaceapp.LocalProjects) (*sqlite.AcceptedArtifactCompletionSource, error)`，模块 `msg_c5f4d0595410` 已确认并交 M-relay `msg_7b1e923dae9f`，共享组装可按该端口准备；实际实现 SOURCE / REPORT 及新适用验证仍在进行。固定来源的 TaskID 使用原 WorkItemID，非 material 的通用 Inputs 不伪装为资料引用，采用事件不冒称原生事件；旧全部 RED / UNKNOWN / NOT_RUN 及最终包限制保持。
+
 ## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表登记当前对应阶段，后续来源记录保留当时的首RED / UNKNOWN / NOT_RUN。完整默认及最终包继续未通过。
