@@ -1,8 +1,24 @@
 # Works Relay HTTP 与 L1 会话采集
 
-## 2026-10-17 当前运行与经验 Interpreter 装配
+## 2026-10-17 当前同库组合 c5 运行
 
-当前服务实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，PID44080，启动 UTC `2026-10-16T18:20:54.4306224Z`，地址为 `http://127.0.0.1:64505/`。原 H 保持同一 Task `task_3004b636a3ab`、当前 Dispatch `ctx_ad637376ba1d`、原工作树和分支；本轮实际客户端为 Orca Codex / `gpt-6.1-sol` / xhigh。普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 使用 `pwsh -NoProfile -NoExit` 持有原恢复脚本启动的 Hidden 产品进程，恢复完成后已回到普通 PowerShell 提示符。模块与根分别独立核查准确程序、启动时间、唯一 owned loopback listener、health ok 及首页 HTTP200 / 562bytes；当前没有停止开发人员或服务来验证生命周期。
+当前实际程序 SOURCE 为 `c5b3b5715f2e93b82365720914be24c73642bd1e`、modified=false / Windows amd64，PID30420，启动 UTC `2026-10-16T18:37:58.6714394Z`，地址保持 `http://127.0.0.1:64505/`。静态文件独立来源为已核稳定 `172bb445597193d55f1563ee5d21ac2ec881798d`，共30件；准确172到c5的 Web 差异只涉及三个既有测试 spec，生产入口、源码和构建配置保持。H 继续原 Task / Dispatch 和普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9`，没有新建 Agent、Task、Run 或守护进程。
+
+根 `msg_7f0eb2200624` 明确本次普通 D 服务更新，交准确已构建程序的只读复制窗口。H 实际 `stage-c5b3b571.ps1` EXIT0，核准确 c5 / modified=false、26,187,264 bytes、源与独占稳定副本逐字节相等。程序保存于 H `versions/c5b3b571`，其 `stage.json` 明确程序 c5 / Web 172 两个来源。H 已通过 `msg_b2d14b88a357` 停止读取根的程序和 I 工作树，归还窗口，后续只使用自身稳定副本；没有重建或重复成功的浏览器 / Vite 检查。
+
+产品当前负责人原件 `msg_635b1a2f63db`（UTC `2026-10-16T18:36:26Z`，当前产品 Dispatch `ctx_47dffa3cec8b`）确认本轮 F / UI 未恢复、没有安排共享业务操作，B 仅在新自有库与随机端口检查。模块经 `msg_5f6174ef3161` 完整转交，H 保存原 envelope / body 后确认读取；本次依据为实际派发与检查记录。H 核原44080程序、启动时间、唯一监听及来源，原 owned helper 发送 `CTRL_C_EVENT`，确认正常退出并释放64505，用时0.9536499秒，再沿同一普通服务终端单次启动稳定 c5。原配置、SQLite、LOCALAPPDATA、媒体12项及 Q 读取根保持，没有补配 deadline 或公开固定上下文。
+
+实际新服务 health ok、首页 HTTP200 / 562bytes、唯一 owned loopback listener均通过；30个静态文件的真实 HTTP 响应为200且逐字节等于原稳定 Web。启动前后 readOnly / query_only 核对68表共90行逐表相同，原生会话及绑定为0，Q 保持 `snapshot-1711995690` 和原 snapshot_at。真实 ready 已通过 `msg_5542668d55c6` 交模块，再由模块转根和产品归还当前许可窗口。原生登记、初始化、Probe、模型、ASR、索引和 OS 检查均未新增。
+
+本次内部脚本已写入实际更新结果及 `running.json`；原普通服务终端中的外层 `pwsh` 命令尚未返回，`update-c5b3b571-command-first.json` 尚未生成，退出码保持 UNKNOWN。命令没有重发，也没有通过终止在途命令取得退出码；实际 ready 与命令退出事实分别记录。原件位于 H 本机 `shared-product-ad8413/`：`stop-172b-for-c5b3b571-20261016-183757.json`、`launch-c5b3b571-20261016-183757.json`、`update-c5b3b571-20261016-183757.json`、`data-before-c5b3b571-20261016-183757.json`、`data-after-c5b3b571-20261016-183757.json`、`static-c5b3b571-20261016-183757.json` 及对应私有日志。文件编辑工具创建或修改的本机脚本为原 `update-2d27.ps1`、新 `update-c5b3b571.ps1` 和 `update-c5b3b571-command.ps1`，三件 PowerShell parser均零错误；本次单一产品模块确认仅适用上述准确 c5 / 旧44080 / 根授权，原双 ACK 检查保留。
+
+根准确组合的三个实际装配检查通过、全 Go vet / build、部署程序与42包边界检查的最终 EXIT0 已由模块交接，H 没有重复运行。完整默认 CI 保持失败：本 H SOURCE `6b334ea62e4cdc359a962ce43586f47089c613d3` 的 Run38947740300、REPORT `a4c1baf6e47e8f449c2f26ce37150780b051df5e` 的 Run38947882938 均为 completed / failure；H 实际查询当前分支81条运行记录，无在途运行可取消。准确元数据与两份 failed 原日志保存在 `process-20261016/verification/h-branch-ci-after-c5.json`、`ci-38947740300-failed.log`、`ci-38947882938-failed.log`。后继纯报告使用 `[skip ci]`；没有更改 workflow、断言或 Skip，也没有把定向通过升级为完整 CI 通过。CI 的准确失败归因由本阶段后续只读检查处理。
+
+本轮生产经验装配已随 c5 进入当前普通服务；真实采用来源、合法完成来源与模型生成正向仍未运行。完整 check / 默认、L1 / L2 和最终 Windows 包仍未完成；根报告 C 盘空余约5.5GB，最终包低于10GiB守卫，本次普通 D 服务更新独立获准，未执行最终包或 Release。
+
+## 2026-10-17 02:20 恢复与经验 Interpreter 装配
+
+本次恢复时服务实际 SOURCE 为 `172bb445597193d55f1563ee5d21ac2ec881798d`、modified=false，原 PID44080，启动 UTC `2026-10-16T18:20:54.4306224Z`，地址为 `http://127.0.0.1:64505/`。原 H 保持同一 Task `task_3004b636a3ab`、当前 Dispatch `ctx_ad637376ba1d`、原工作树和分支；本轮实际客户端为 Orca Codex / `gpt-6.1-sol` / xhigh。普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 使用 `pwsh -NoProfile -NoExit` 持有原恢复脚本启动的 Hidden 产品进程，恢复完成后已回到普通 PowerShell 提示符。模块与根分别独立核查准确程序、启动时间、唯一 owned loopback listener、health ok 及首页 HTTP200 / 562bytes；没有停止开发人员或服务来验证生命周期。44080已在上述 c5 更新中正常退出。
 
 本轮在实际确认旧 PID44832 不存在且64505没有监听后，只恢复一次原稳定 `versions/172bb445`，没有重建。原 SQLite、LOCALAPPDATA、媒体12项及 Q `snapshot-1711995690` 保持；真实 readOnly / query_only 启动前后68表共90行逐表相同，原生会话与绑定均为0。前次44832在 UTC `2026-10-16T18:17:06.9217586Z` 恢复时的 ready 及随后实际退出分别保留；前次外层工具会话89264的退出码仍为 UNKNOWN。本次普通服务终端保持运行，没有将其记录为已退出的命令 EXIT0。本机 `shared-product-ad8413/running.json` 已指向当前44080，准确原件为同目录的 `launch-sol-reboot-20261017-20261016-182054.json`、`recovery-sol-reboot-20261017-20261016-182054.json` 及其引用的前后计数与私有日志。原恢复命令与参数见 H 已忽略的 `dist/product-recovery-20261016/restore-38fb.ps1` 和 `checkpoint-reboot-20261017.md`。
 
