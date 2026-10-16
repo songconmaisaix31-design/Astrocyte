@@ -2,6 +2,24 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 当前会话测试整改计划（2026-10-17 02:52）
+
+根 `msg_b28486c1ad95` 已接收目录阶段的准确组合4 PASS / vet / runner EXIT0，I报告44a25576已 push；该结果没有消除完整默认或原 Windows具体原因的限制。后续沿同一 H `task_3004b636a3ab / ctx_ad637376ba1d`，模块只维护本文件，不创建人员、Task、Run或工作树。
+
+| 唯一写入者 | 本轮精确写域 | 读取与交接边界 |
+|---|---|---|
+| 原 H | `cmd/server/relay_session_poll_test.go`、`internal/adapters/httpapi/relay_session_test.go`、`docs/access/http.md` | 生产 collector、FileState、SQLite session reader、权限和组装只读；实际生产缺陷先 Handoff，不直接修改 |
+| 原 B / 产品模块 | 普通 `internal/adapters/httpapi/workbench_test.go` 及产品已授权范围 | H 无该文件 WIP且持续不写；需要额外胶水或共享文件先交准确路径 |
+| 原 R | 本轮没有新增写域或活跃任务 | 不为旧替身的权限缺失修改 R语义或恢复人员 |
+
+现有真实来源：当前 c5普通服务及其原主库 / Relay库没有 owned session或原生事件；它可以证明真实空登记、权限 / 查询拒绝和未写入基线，不能提供首次 owned gap或 gap变化。目录阶段新建的公开 Git只提供真实文件上下文，没有生成原生会话。原 Q公开 snapshot是认知派生来源，不能代替原生会话；旧已知来源的 nlink2拒绝、append-only / prefix未知、SessionComplete=false和 raw恢复 gap保持，禁止借整改绕过 guard、扫描自由历史或重发旧输入。
+
+模块已完整读取两份旧测试及生产 collector / FileState / HTTP / SQLite端口：poll旧测试依靠伪造 owned列表、修改 gap和 Save计数；HTTP旧测试依靠固定空结果与 calls计数。本轮必须移除这些替身，复用生产 collector、真实 FileState / SQLite及实际 HTTP。认证 guard / query / error / no-store完整断言保持，读取前拒绝可用实际关闭存储或真实读取失败区分，不能再造 reader计数器。
+
+首次真实 gap仅写一次、后续静默 poll不写、真实 gap变化仅再写一次三个语义继续逐项保留。缺少实际 owned会话或真实变化时，该具体场景保持未验；真实空登记或拒绝检查须使用准确名称，不能让原完整场景同名 PASS后再写 NOT_RUN，也不能让空子集代表全部。不得伪造 binding、gap、SQL、会话、原档或模型；不新增登记、Probe、Start、工具或来源权限。
+
+先由 H核现有端口和已获准来源，直接实施无需新 Native的完整真实部分，明确保留其余场景及具体前置；需要跨包迁移实际断言或额外路径须先准确 Handoff，不能添加生产替身桥接。只运行受影响的真实检查，记录 selector / list / 首次结果、固定 SOURCE与独立 REPORT普通 push并使用 `[skip ci]`。原始源、凭据和模型输出只留本机；模块完整读取准确代码和原件后交根组合，不安排第三遍成功测试。当前 c5 /30420 /610cc与外层 UNKNOWN继续保持。
+
 ## H 四项实际检查与限定写域（2026-10-17 02:47）
 
 H 目录前置 SOURCE `ce90c38611b8e94b183fb59119d73ccffe295e9e` / 独立 REPORT `68c9acc11d991720b9b1562abd2983bdb9af0229` 已普通 push，两个提交均为 `[skip ci]`。模块独立核远端 REPORT 精确同值、原树 clean、差异检查通过，完整读取四件测试源码、报告及本机四份实际日志；没有第三次重复成功主项。原 H 与本模块继续各自原 Task，当前服务仍为下面记录的 c5 / PID30420 /610cc，测试整改没有生产部署或重启。
