@@ -10,13 +10,31 @@
 
 | 原人员 / Task | 当前状态 | 当前工作与验收 |
 |---|---|---|
-| H `task_3004b636a3ab` | `ctx_d763540bd366 / term_c260106e-0d16-498e-aa19-6927247ba978`；原树 `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4` clean；原 Task retry 的 `worker-start` EXIT0、ready / turnStart observed，回执含 `turn_started`，终端实际 Codex Working | 优先使用同一 D 盘 SQLite、LOCALAPPDATA、完整媒体白名单和 Q 原 generation，恢复唯一 `http://127.0.0.1:64505/`。交实际 URL、PID、启动时间、buildinfo、唯一 listener、health / 首页和原数据保持的安全记录；随后继续准确产品装配与发布支持 |
+| H `task_3004b636a3ab` | `ctx_d763540bd366 / term_c260106e-0d16-498e-aa19-6927247ba978`；原树起点 `f40680bca1391f7f00b937d8f3bfb43aa0cda1a4` clean；原 Task retry 的 `worker-start` EXIT0、ready / turnStart observed，回执含 `turn_started`，本人已 ACK；实际 Codex / GPT-6.1-Sol xhigh fast，fleet live / working | 已使用同一 D 盘 SQLite、LOCALAPPDATA、完整媒体白名单和 Q 原 generation 恢复唯一 `http://127.0.0.1:64505/`，继续持有服务并支持原 F / UI 核心操作及准确后继交付 |
 | R `task_f082d8b36471` | 旧 `ctx_1500d65ab213` 已明确进程退出；原 ce541794 / 4f7a041 阶段保持 | 已确认的控制器拒绝检查保留；原生工具边界未答，不重做调查、登记、初始化或模型输入。有实际领域返修依赖时恢复原 Task / 树 / 分支 |
 | S4 `task_bd209566be37` | 旧 `ctx_c8f2f955ef28` 已明确进程退出；原生产脚本 / b73 实际撤权清理 PASS 保留 | 不重复已通过的生产复验；SemanticIndex、AOCI 分发等未决定范围保持，不预先冻结或替换组件 |
 
-唯一 I 准确 `38fb289160ef85f75062f917e861488b95e2a309` 已完整 build EXIT0 / 74.0037711 秒，根已核 `source_after` 同值；H 与发布负责人交接准确运行产物，不重复成功构建。原 PID45132 已不存在、64505 恢复前不可访问，旧 `running.json` 只作历史定位。当前启动尚未通过，不能沿用05:02的可访问结论。
+唯一 I 准确 `38fb289160ef85f75062f917e861488b95e2a309` 已完整 build EXIT0 / 74.0037711 秒，模块独读原 `result.json` 核 `source_after` 同值，没有重复构建。H 已复制准确 binary 和30个 web 文件到自身稳定 `versions/38fb2891`，核源与副本 buildinfo、逐项文件存在与大小 / 总数；本人 `msg_2ef08aebd0b2` 明确停止读取并归还 I 产物窗口，发布模块已收到。原 PID45132 随重启结束，旧609运行记录保留历史含义。
+
+H 本人 `msg_2e432a74e18e` 交实际恢复结果：准确38fb / modified=false，PID33808，启动 UTC `2026-10-16T03:48:23.5356234Z`，同一64505，health ok / 首页200。模块独立核实际进程路径和启动时间、唯一 `127.0.0.1:64505` listener 同 PID、Go buildinfo 同 revision / Windows amd64 / modified=false、首页 HTTP200 / text/html / 562bytes。原数据库与 Q generation 保持，零新原生初始化、模型输入和 ASR；已将准确结果交根、产品和发布，由原 F / UI 继续唯一业务窗口。
 
 F / UI 仍为共享实例唯一业务操作人员，成功和未知 mutation 不重发。`session.go` 保持原 B 唯一写入；缓存进度 GET 按根正式答复 `msg_cfa70ba18a4c` 继续，其余 Agent completion、Laya 语言、S3 和原生工具问题保持待答。模型、OS、Q / D1、旧视频952段和正式 D2 不重做。模块只修改本文件，保留原未提交管理记录；本次恢复服务与阶段检查不代替完整核心功能、默认检查、L1 / L2 或最终 Windows 包验收。
+
+### 11:50 阶段独立报告
+
+模块管理 SOURCE `009597c49cdc9e8250328c59c1659eedfd324a3a` 已普通 push，后继 `git ls-remote origin refs/heads/songconmaisaix31-design/module-relay-20261014` EXIT0 / 远端同值；首次读取远端的 `SSL_ERROR_SYSCALL` 保留，没有修改网络配置。`git diff --check` EXIT0，修改范围仅本文件。运行产品 SOURCE 为38fb，管理提交与产品源码分别记录。
+
+| 模块实际独立核查 | 结果 |
+|---|---|
+| 读取 `integration/c16-product-build-38fb289/result.json`、`go version -m` 与静态 index metadata | 原完整 build EXIT0 / 74.0037711秒，source / source_after / binary revision 全等，modified=false，index562bytes |
+| `Get-Process` / `Get-NetTCPConnection -LocalPort 64505 -State Listen` / `Invoke-WebRequest http://127.0.0.1:64505/` | PID33808 / 实际稳定副本 / UTC启动时间一致，唯一 IPv4 loopback listener 同进程，首页200 |
+| 读取 H 本次启动前后两个只读 SQLite 计数原件并逐表比较 | 同一个数据库，68表全部计数相等，共90行；`local_agent_sessions=0`、`workspace_session_bindings=0`，Q保持 `snapshot-1711995690` |
+
+安全运行指针为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`，其中引用本次启动前后计数原件；稳定产物记录为 `versions/38fb2891/stage.json`。没有读取私人正文、凭据或原生历史，没有复制数据库或重做模型。当前完整默认 / L1 / L2 / 最终包保持未通过，原首失败与所有未答问题保留，模块继续原 Task。
+
+根 `msg_3586b8d091df` 按用户最新集成授权接管原 `works-relay-integration` 工作树 / 分支，成为该树唯一合并写入者；原 I 两次 bootstrap 明确退出并已精确停止，不重试或另建 I。H 持有当前稳定38fb服务，根后继构建与 H 交准确产物窗口，任何更新仍取得 F / UI 本次安全 ACK；领域业务返修仍归原作者。
+
+H 本次独立运行 REPORT 为 `59e114a9aa5732a41e1ed9f5773452dac0ecd0cf`，只修改 `docs/access/http.md`。模块已审查全部差异、核原25b源码为其祖先、原树 clean、报告中的实际 PID / 时间 / 来源 / 计数与现存安全原件一致；远端核对首次因 TLS 失败，独立远端结果另记，未将失败写为成功。该报告不包含业务变化或重跑成功构建。
 
 ## 04:45 恢复分工记录
 
