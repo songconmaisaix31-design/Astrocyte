@@ -2,6 +2,28 @@
 
 业务事实源为根 AGENTS.md、HANDOFF.md、STATUS.md、docs/SPEC.md、docs/TASKS.md、docs/QUESTIONS.md、[发布任务](../../tasks/Release-v0.1-20261014.md) 和既有 [v1.4任务规格](../../tasks/Works-Relay-v1.4.md)。用户已确认三层组织；模块负责人本轮只修改本文件，业务实现、测试、文档和返修由原领域开发人员持续完成。
 
+## 当前开发人员与服务恢复（2026-10-17 02:22）
+
+模块保持原 `task_e8c1d01d67ec / ctx_1bf724fb231b`、子 Run `run_8bbda1c3974c` generation10。原 H 当前为同一 `task_3004b636a3ab / ctx_ad637376ba1d / term_fcc8b4c3-cb3f-477d-8f22-e86cbc0a3a00`、同工作树和分支；官方启动回执为 ready / turnStart observed，requested / effective 均为 Codex / gpt-6.1-sol / xhigh。根 `msg_8afeeb72da33` 明确用户指定该模型，后续业务修改由本次 Sol 完成。
+
+前 H `ctx_0ae3e6615702` 本人 `msg_47d8af140db4` 记录单次稳定172恢复当时 ready，PID44832、启动 UTC `2026-10-16T18:17:06.9217586Z`、health ok、首页200 / 562bytes、原库计数与 Q generation保持；外层工具 session89264 尚无退出码，仍为 UNKNOWN。其确认停止新增操作并可停止 Agent 后，模块按根要求精确 `worker-stop` / `worker-release`，结果 stopped / ptyKilled / released。随后模块实际 `Get-Process` 确认44832不存在，64505没有 listener；旧 ready 与实际退出分别保留，当前不沿用旧 ready。
+
+根 `msg_b8fee7f536d4` 已明确允许在精确确认原进程不存在后单次恢复同稳定172与原库。当前完整覆盖 `msg_05a7cb510109` 已交新 H 精确 Dispatch，先读保存的恢复 checkpoint / 原件指针，核当前进程与端口，再恢复服务并保存准确 PID / 启动时间 / 来源 / owned 身份；不重建、不重跑成功测试或原生输入。后续 H 持续持有服务和最终发布支持。
+
+根 `msg_18a51cd7f7a8` 允许 H 在实际认证的 Capture 入口以请求私有 context 保存当前 Principal，并由原 Interpreter 回调读取和再次授权。身份只能来自同一次可信请求，缺少上下文立即拒绝；历史 ActorID、HTTP 正文和全局可变 caller 均不能提供当前身份。固定 evidence / project / settings 和输入前当前许可须再次核实；事务内不外读 Relay、对象或原档。未配置的显式 deadline / 公开固定上下文保持准确不可用，不猜默认值，不将装配通过记为真实模型正向。
+
+根 `msg_b44dba9d3c6d` 允许 H 核实原树 clean 且1e25为祖先后，同树分支普通 `git merge --ff-only 42860d277df0c0518f58e2a836681d7fa10c50ee`，复用已验统一接口；原 B 也消费该基线。产品当前 `ctx_47dffa3cec8b` / 原 B Sol `ctx_010eaf93bbc0`，B / H 写域沿下方计划保持互斥。H 本人 `msg_c828529dd8fe` 于 UTC `2026-10-16T18:20:29Z` 明确完整读取当前覆盖并 actualturnstarted；原生、Probe、模型、ASR 和 OS 检查均不新增。
+
+产品 `msg_7b1e923dae9f` 已确认 B 构造器 `sqlite.NewAcceptedArtifactCompletionSource(db *sqlite.DB, reader swarmapp.AcceptedArtifactEvidenceReader, projects workspaceapp.LocalProjects)` 返回实现 `attention.ExperienceCompletionReader` 的真实适配。读取时在本库短 Workspace 事务核当前 human 项目授权及固定采用证据，事务内授权要求同库 context 并重读全等；缺失真实采用事件的正向仍未验。H 已收到准确端口，B SOURCE 尚在途，不能消费 WIP；共享来源须按真实来源类型分派，不能捕获错误再依次尝试其他 Reader。
+
+根 `msg_78c5132365a4` 已授权 H 在同树使用普通服务终端，复用既有准确 D 启动脚本与配置，H 保持唯一生命周期负责人；服务终端不属于新开发 Agent / Task / Run。不得新增守护器、自启动、计划任务或调度。
+
+H 本人 `msg_5a204ddac22d` 于 UTC `2026-10-16T18:21:13Z` 交本次实际 ready：准确 `172bb445597193d55f1563ee5d21ac2ec881798d` / modified=false，PID44080，启动 UTC `2026-10-16T18:20:54.4306224Z`，同一 `http://127.0.0.1:64505/`。产品由原 H 树独立普通服务终端 `term_610cc1c1-3aa9-4b2c-9fe8-19b922f5dff9` 持有，现有启动脚本 `Start-Process -WindowStyle Hidden` 后已回到 PowerShell prompt，产品进程继续存在。本次普通终端自身未退出，不能据此声称外壳 EXIT0；旧 session89264 的 UNKNOWN 继续保留。
+
+模块独立实时核 `Get-Process` / `Get-NetTCPConnection` / `go version -m`，确认准确 PID / UTC启动 / 稳定 binary、唯一127.0.0.1 listener和 Windows amd64 / source172 / modified=false。实际 health=ok，首页 HTTP200 / 562bytes。另独立解析本次 before / after安全计数原件，前后和 running 的数据库指针三方相同，68表90行逐表全等、differences0，`local_agent_sessions=0`、`workspace_session_bindings=0`；原 Q `snapshot-1711995690`、Native初始化0和模型输入0保持。只核本次恢复必要事实，没有重跑已成功业务或模型。
+
+原件指针仍为 `D:/Astrocyte-agent-assets/20261015/relay/H/shared-product-ad8413/running.json`，引用 `data-{before,after}-sol-reboot-20261017-20261016-182054.json`。当前实际 ready 和模块独验已交根 `msg_510eef39c3a1`，H 两次跨 Run直投的 `dispatch_run_mismatch` 另列，模块正常转交且不改变 Run。H 已核 clean /1e25祖先后 ff-only消费准确42860，当前继续自身经验装配；B固定SOURCE尚未交，不消费其 WIP。
+
 ## 系统重启后的原任务恢复（2026-10-17 02:14）
 
 本轮沿原 `task_e8c1d01d67ec` 恢复，当前 Dispatch 为 `ctx_1bf724fb231b`，实际终端为 `term_4ded8286-65fa-424b-b43e-03f9d82de4d0`；公开 `worker-show` 核实 Codex / gpt-6.1-sol、live / working / exactWorker。总负责人当前终端为 `term_dc198f4c-7a7b-4ad5-8d91-82eb05d625a8`，原顶层 Run 保持 `run_973808dd6a2f`。实际系统 LastBootUpTime 为 2026-10-17 02:07:51，Orca runtime 为 `ca45f528-a7fa-4364-b634-9047b8a2a7d6`。
