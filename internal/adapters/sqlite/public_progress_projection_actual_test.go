@@ -253,7 +253,7 @@ func TestServePublicProgressProjectionActual(t *testing.T) {
 		if session.ActorKind != "human" || session.CSRF == "" {
 			t.Fatal("real human bootstrap failed")
 		}
-		// 当前页面会同时读取这些既有生产服务，均从新自有库返回真实状态。
+		// 核查当前页面所用既有生产服务响应。
 		for _, path := range []string{"/health", "/foundation", "/projects", "/proposals", "/sessions", "/project-spaces", "/goals", "/local-projects/registered"} {
 			var result any
 			get("/api/v1"+path, &result)
