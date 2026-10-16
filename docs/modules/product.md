@@ -1,6 +1,6 @@
 # 产品模块执行与验收
 
-## 当前执行与验收（2026-10-16）
+## 当前执行与验收（2026-10-17）
 
 本轮已接纳的后继均普通push，模块实际读取源码、报告及原日志并核远端；下表只登记对应阶段，完整默认及最终包继续未通过。
 
@@ -9,14 +9,19 @@
 | F | `b34ce2b85b2ae9d172a409d622d74aa5797ea414` / `b1569cabfb5fbd2f23c600788469f80a9a68b849` | 21件仅E2E独立上海日SQL与无视觉采集修改，18条真实定向分别通过：论文 / 重读 / 分类 / 作品统计8、作品三尺寸3、上下文2、认知4、拒绝提案1，均summary及EXIT0；完整web tsc-b / lint / build EXIT0。原55表当前26 PASS / 29条件未运行，原完整320首结果保持 |
 | UI | `524ee13dc7fefbc29660b6b5136077f400972bd2` / `9aa52ecf6199ce819ea6793e6f37481095d63ab4` | Taste、Goal / Snapshot / Policy / Rule、确定性判断 / 反馈 / 重启及边界共两尺寸各5场景分次真实通过；完整tsc-b / lint / pnpm build本人EXIT0，首RED保持 |
 | UI必要取消返修 | `990847571f95198400bc21d77b7b590d5fbc0c27` / `596c9ff7534cb1325366b7a87e232081e6eab93b` | 仅保存前资料 / 规则读取卸载取消，已发送命令的unknown锁保持。真实GET后SPA离开、ERR_ABORTED、PUT0 / SQL不变及明确重开保存，两尺寸2 PASS / 42.0秒 / EXIT0，定向lint及完整pnpm build本人EXIT0；未重复原十项成功 |
+| UI实际委托引用 | `fbe0e34c6eb85d2c3e39492a83bbc9d4a5ac0769` / `d6318d1c0792f00a8c02d081cc5c89eefce21aaa` | 仅原s5测试及独立报告。先list确认两窗口两项，再实际2 PASS / 54.0秒 / EXIT0；完整tsc-b及定向lint本人EXIT0。真实Rule r1选择保存、Rule实际变r2后旧引用保留且两次保存PUT0、人工重选r2保存、历史r1及当前r2分别核HTTP / SQL，无生产修改或重复旧十二项 |
 
-根已普通合F helper为 `5dfca03fd23b3218510290fc5a63732df1fd570f`，UI首阶段为 `f5872cfffdbb5e6b6ffeb02302804361d44a0376`，F后继为 `f43ff3dcfa127df73e621162156ead9244ae2a5c`。取消修复后的准确组合 `172bb445597193d55f1563ee5d21ac2ec881798d` 已由根报告完整build / lint / 新核心及取消两尺寸4 PASS、2.0分钟、三项真实EXIT0，已交H复制和同D库更新窗口；当前实际运行仍按下段2d27登记，收到本轮ready后才更新。F / UI已沿各自原终端单次接续，本次本人共享暂停ACK `msg_e359a65335ba` / `msg_8ec1d72a2d30` 均实际到达并直交H，实际零在途，未由输入accepted推定暂停或更新完成。根另指定UI仅补实际Taste委托引用选择 / 保存 / 固定rule revision变化的独立定向验收，该必要覆盖待验，不阻止172本轮部署。
+根已普通合F helper为 `5dfca03fd23b3218510290fc5a63732df1fd570f`，UI首阶段为 `f5872cfffdbb5e6b6ffeb02302804361d44a0376`，F后继为 `f43ff3dcfa127df73e621162156ead9244ae2a5c`。准确组合 `172bb445597193d55f1563ee5d21ac2ec881798d` 的完整build / lint / 新核心及取消两尺寸4 PASS、2.0分钟、三项真实EXIT0已由根核实。根 `msg_c6782f10ec7c` 已独核H正式ready：当前同一 `http://127.0.0.1:64505/` 实际172 / modified=false / PID25568，启动UTC `2026-10-16T16:06:57.3298644Z`；旧50624正常owned停止后一次启动。H核30静态HTTP字节一致、原SQLite68表90行逐表保持、原生会话0、媒体12键及Q generation不变，根核当前指针 / 进程与health ok。F / UI已各自读本次H ready并接回F唯一业务 / UI只读窗口，未发起新共享请求或业务写入。本人暂停ACK原记录原to为产品Run，模块准确安全转交H及M-relay后获根接纳，没有重索确认或把消息索引当新前置。
+
+UI委托引用仅测试后继已由根普通合为 `8da025f03b06bf5d43fe3885d249a1506e794b8e`、组合tsc-b实际EXIT0，生产仍同172，不重复构建或二次部署。具体PLOS准入、共享个人Taste、Native工具与语言等未答边界保持；该后继定向通过不代替完整默认或最终包。
 
 B既有进度2项托管已获正式问题 `msg_296b98704870` / 答复 `msg_8c56ad950c02`：原公开SQLite仅mode=ro读取固定project / progress，沿既有真实存储在全新独占D库安全派生，保持原身份、内容、NativeID / model / timestamp / evidence / operations，区别本库CAS revision；不复制Grant / Session、不改原库 / Clock、不恢复controller或重新infer。原B欠费context `ctx_54129844e8b9` 已先公开fence再按明确授权精确关闭unsupervised终端，ptyKilled及exited / capability revoked均实核，237987a工作区干净、原件保持。同原Task / Run / 树 / 分支现 `ctx_43100892f5f5 / term_ab09fdef-e201-404c-ae87-38acc14453db`，实际Codex 0.162.0 / GPT-6.1-Sol xhigh本人ACK，限定必要验证helper、真实HTTP1关闭再HTTP2同库及只读窗口交F；新托管功能仍NOT_RUN，不重跑已验安全 / 自然到期 / 模型。F后继精确选集先list再实际两窗口读取，源 / target守卫和前后来源一致必须核实。
 
+B SOURCE `de82234371c22eb93ab658efd38fa99fa2062ac8` 仅两件真实SQLite验证helper已普通push；源 / owned根由本机D runner明确提供，`public_progress_live` 显式隔离新长托管，默认list收集该名称0、tagged build / vet EXIT0。模块已独读真实mode=ro、canonical / 全新目标守卫、原project / progress / operations字段保持、本库CAS3至1、Grant / Native Session0及HTTP1正常关闭再同库HTTP2的安全原件；原生工具集合和原来源完整性继续unknown。63886窗口未向F开放，原作者后续核到页面其他GET所需Foundation / projects / proposals / sessions真实读服务尚缺，已退回仅同helper补既有生产装配；先正常关闭自有窗口并保留首记录，不改源库或生产API、不增加Registry / 模型、不以静态200代替整页功能。两项实际前端继续NOT_RUN，de822尚无完整阶段REPORT，不交集成ready。F实际b34的30文件 / 1041564字节已完整复制至新D稳定目录，D模块缓存已实核并正式答B，均未重复成功构建或业务。
+
 根已普通合入F准入、UI十四件页面与Attention入口，完成两行类型衔接SOURCE `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`。根正式报告同SOURCE完整构建EXIT0、15.039582秒，全web lint及实际准入、撤销、HTTP重启两窗口PASS、42.3秒；首efec的完整构建EXIT1和三处TS错误保留。单独 `tsc --noEmit` 未遍历solution references，不能登记为全局类型通过；F/UI后继使用真实 `tsc -b`，按原写域同步根准确类型修改，不改生成schema、运行行为、原断言或预算。
 
-H本人 `msg_e25d0df2925b`、根 `msg_cef4d64ac4c9` 及M-relay `msg_df548fd861bc` 已交同库正式ready：准确2d27、modified=false、PID50624、启动UTC `2026-10-16T05:40:20.6912890Z`，地址仍为 `http://127.0.0.1:64505`。本轮F / UI本人新ACK均已到H，原38fb正常退出后更新；同一D数据库68表90行逐表保持、原生会话0，媒体十二键与Q generation保持。F继续共享业务唯一操作者，UI只读。根要求F仅对既有PLOS候选、固定资料与摘要、Goal、项目r2和新确认页作一次GET / DOM只读审阅，之后由根向用户提出具体准入选择；当前不POST准入、反馈、Grant、执行或批准，不重放成功或未知动作。
+前序2d27的H本人 `msg_e25d0df2925b`、根 `msg_cef4d64ac4c9` 及M-relay `msg_df548fd861bc` 同库ready记录保持：当时PID50624、启动UTC `2026-10-16T05:40:20.6912890Z`，同一D数据库68表90行、原生会话0、媒体十二键与Q generation均保持。当前172来源及新PID见上段。F继续共享业务唯一操作者，UI只读；既有PLOS候选、固定资料与摘要、Goal、项目r2和确认页实际只读审阅已交根询问具体准入选择，尚无用户答复，不POST准入、反馈、Grant、执行或批准，不重放成功或未知动作。
 
 B正式一小时决定已读且本人确认。原生产语义已通过文件编辑追加恢复；后继SOURCE `c008573f29515ea9ac248ecb9a9b615a1be564e4` 已移除静默JSON处理、无关Git初始化及到期后的重复跨项目检查，显式入口为根授权的 `tests/s1/progress-expiry.mjs`，当前只有语法检查，功能为NOT_RUN。独立报告 `39eb723863cd98bb847e7e59b622ef70341a99d6` 及路径修正报告 `6a6013ca90da34cbbff0e49dee30c46529da7894` 均只更新backend.md，普通历史保留。新增Go长验收文件已移除，原八项真实快检保留；实际移除使用git rm，方法偏离文件编辑要求已如实记录，后继必须使用文件编辑工具，不进行Git恢复。
 
