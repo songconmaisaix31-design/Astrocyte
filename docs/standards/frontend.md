@@ -1,5 +1,61 @@
 # 前端标准整改与合并产品验证
 
+## 2026-10-16 准入 request_id 实际等值检查
+
+SOURCE `05886e5` 修复 `s2-admission.spec.ts` 场景 1：从 `response.request().postDataJSON()` 提取实际 `request_id`，恢复 Idempotency-Key header 和 outbox `correlation_id` 与实际 request_id 的逐项等值验证。不再使用 `expect.any(String)` 替代具体 UUID。UI JSON 预览不恢复。
+
+| 本次实际命令 | 实际结果 |
+| --- | --- |
+| `npx tsc --noEmit` | EXIT0 |
+| `npx playwright test e2e/s2-admission.spec.ts --grep '实际准入固定候选与项目资料' --workers=1 --retries=0 --output D:…/pw-output/artifacts`，显式 D 盘 env | 2 PASS（两 viewport）、40.5 秒、EXIT0；无截图视频 |
+
+其他 6 项已成功场景不重跑。实际模型 UNKNOWN。Entry SOURCE `32a52cd` 已交 UI `ctx_5d4bbae2a28d`。
+
+## 2026-10-16 Playwright 配置关闭视觉采集
+
+SOURCE `0835d13` 修改 `web/playwright.config.ts`：`screenshot: 'off'`、`video: 'off'`、`trace: { mode: 'retain-on-failure', screenshots: false }`。trace 保留 DOM 事件、网络请求和源码，不采集截图。后续测试使用显式 D 盘 `--output` 目录，不主动视觉采集。
+
+| 本次实际命令 | 实际结果 |
+| --- | --- |
+| `npx tsc --noEmit` | EXIT0 |
+| `npx eslint playwright.config.ts` | EXIT0 |
+
+已绿 8 项准入场景不因配置变更重复跑。实际客户端为 Claude Code 2.1.238，provider.model 为空，模型名称 UNKNOWN。
+
+## 2026-10-16 准入界面业务审阅与网络请求验证
+
+SOURCE `d472344` 在 HEAD `7a5fda5` 上移除 `OpportunityAdmission.tsx` 三项实现细节：POST 路径显示、完整 JSON payload 预览和 Idempotency-Key 说明。保留可读候选 / 固定 revision / 资料 / 项目审阅、人工确认复选框和未知 request_id 锁定机制。
+
+`s2-admission.spec.ts` 更新为验证实际网络请求：场景 1 从固定输入构造 `expectedBody`，核对 POST body 和 Idempotency-Key header；场景 4 从 alert 文本提取实际 UUID request_id，验证跨页面重载持久化；场景 2 移除 JSON 预览持久断言，保留复选框和零准入 / 草稿创建。
+
+| 本次实际命令 | 实际结果 | 本次 `.verification` 内记录 |
+| --- | --- | --- |
+| `npx tsc --noEmit` | EXIT0，零错误 | 实际命令输出 |
+| `npx eslint src/pages/attention/OpportunityAdmission.tsx e2e/s2-admission.spec.ts` | EXIT0 | 实际命令输出 |
+| `npx vitest run src/api/admissions.test.ts` | 1 文件、3 PASS、EXIT0 | 实际命令输出 |
+| `npx playwright test e2e/s2-admission.spec.ts --workers=1 --retries=0`，显式 GOCACHE / GOTMPDIR / TEMP / TMP / ASTROCYTE_TEST_OUTPUT_ROOT 在 D 盘独占目录、GOMAXPROCS=2、GOFLAGS=-p=1 | 8 PASS、5.4 分钟、EXIT0；两种窗口、零 skip / 重试 | `playwright-admission-run3.log` |
+
+环境使用 `pipefail` 保留首失败，没有重跑完整 320 项。八场景覆盖实际网络 body / header、版本冲突、权限拒绝、离线锁、撤销、重启后保留，没有 mock、page.route 或 JSON 预览镜像测试。实际客户端为 Claude Code 2.1.238，provider.model 为空，模型名称报告 UNKNOWN。
+
+## 2026-10-16 12:10 人工准入完整边界与 TS2571 修复
+
+SOURCE `d4d6ccfbcb6a6f3578117d76a637624445442f77` 在 HEAD `7b67b755` 上完成准入界面、类型修复和真实八场景验收。新增 `admissions.ts` 客户端使用既有 `createApiClient` 会话、CSRF 和幂等键，`OpportunityAdmission.tsx` 提供项目选择、固定候选预览、确认复选框、撤销理由和准入记录查询；`usePersistentCommand` 增加 `preparedID` 参数支持调用方提供的原请求身份，离线或未知结果后保持锁定。`AttentionPage` 和 `OpportunityWorkspace` 更新说明文字并接入准入面板的阻塞状态传播。
+
+`s2-admission.spec.ts` 第 70 行 TS2571（`Object is of type 'unknown'`）通过 `as AdmissionResult` 类型断言修复；原错误来自 `humanAPI().get()` 返回 `unknown`，访问 `.admission` 属性需要显式类型。没有添加 skip、降低断言或自动重发。
+
+| 本次实际命令（在 web 执行） | 实际结果 | 本次 `.verification` 内记录 |
+| --- | --- | --- |
+| `pnpm typecheck`（`tsc -b`） | EXIT0，零错误 | `typecheck-admission-fix.log` |
+| `pnpm lint`（`eslint .`） | EXIT0 | `lint-admission-fix.log` |
+| `pnpm vitest run src/api/admissions.test.ts` | 1 文件、3 PASS、EXIT0 | `vitest-admission-fix.log` |
+| `npx playwright test e2e/s2-admission.spec.ts --reporter=line` | 8 PASS、1.3 分钟、EXIT0；2 worker 并行、零 skip / 重试 | `playwright-admission-fix.log` |
+
+八场景覆盖：(1) 准入固定候选与项目资料，撤销及服务重启后保留事件和草稿；(2) 候选版本冲突保留原请求和确认输入；(3) 项目读取拒绝后禁用准入，恢复权限重新核查；(4) 离线准入保留未知请求锁，刷新和重新打开不重发且锁定编辑。每个场景使用真实 Go HTTP 服务、实际 SQLite 和 Playwright 浏览器，没有 mock、page.route 或伪造响应。
+
+本轨全仓扫描结果：`web/src` 和 `web/e2e` 无 `vi.fn`/`vi.mock`/`vi.spyOn`、无 `page.route`/`route.fulfill`、无静默 catch 或 fallback；`fixture=1` 仅在测试中验证应用忽略该参数并显示真实数据；注释已全部为中文（生成的 `schema.d.ts` 除外，不在本轨写域内）。`vitest.config.ts` 的 `clearMocks`/`restoreMocks` 为历史遗留配置，无实际 mock 使用，该文件不在本轨写域。
+
+共享产品 H `38fb`/PID33808/64505 安全 ACK 已确认，F 当前无在途共享 mutation。固定候选的 PLOS 准入与批准继续等待实际用户决定，没有重发成功或未知操作。实际客户端为 Claude Code 2.1.238，provider.model 为空，模型名称报告 UNKNOWN。
+
 ## 2026-10-16 04:53 准入、判断和品味的准确生成契约
 
 本轨已在人工进度 SOURCE `6968284` / 独立 REPORT `963d880` 普通 push、工作区干净后，按模块精确放行，普通 no-ff 合入唯一 I 的 `ecb29c9593348d409514cc1ddff05ff04affcd87`，本树 merge 为 `09a8eab3acabea0fc7533bd8b0194ff504750576`，零冲突。I 的准确阶段含 H SOURCE `25b341dd5a6b74cc2588d12544eb955235f9274c` / REPORT `c7be470c4e72fa36128a8db9c230d324dfe8c1f8` 的真实 human 准入注册、完整 Judgment / Policy / Feedback / Delegation / Taste 及完成经验契约；原负责人提交完整保留，没有手写或覆盖其文件。

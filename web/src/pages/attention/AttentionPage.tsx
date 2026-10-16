@@ -25,6 +25,7 @@ import { RankingPanel } from './RankingPanel';
 import { SelectField } from './FormControls';
 import { MaterialWorkspace } from './MaterialWorkspace';
 import { OpportunityWorkspace, DimensionScores } from './OpportunityWorkspace';
+import { JudgmentDelegationWorkspace } from './delegation/JudgmentDelegationWorkspace';
 import type { Material, Opportunity } from './model';
 import styles from './AttentionPage.module.css';
 
@@ -58,7 +59,7 @@ export function AttentionPage({ query }: { query: string }) {
   const handleClose = useCallback(() => { setSelectedMat(null); setSelectedMatId(null); setSelectedOpp(null); setImporting(false); const params = new URLSearchParams(window.location.search); if (params.has('import')) { params.delete('import'); navigate(`/attention${params.size ? `?${params}` : ''}`, true); } }, []);
   const selectOpportunity = (item: Opportunity) => { setSelectedMat(null); setSelectedMatId(null); setSelectedOpp(item); };
   return <PageFrame section="attention" title="资料沉淀" subtitle="每一份关注，都可以长出新的可能。" onRefresh={() => { refreshCollections(); domains.retry(); setQueueToken(value => value + 1); }} rail={<>
-    <RailSummary title="资料概览" rows={[{ label: '素材', value: mat.loading ? '加载中…' : mat.error && !mat.data ? '无法获取' : materials.length }, { label: '候选机会', value: opp.loading ? '加载中…' : opp.error && !opp.data ? '无法获取' : opportunities.length }]} note="保存资料与候选不会自动启动任务；准入和执行尚未实现。" />
+    <RailSummary title="资料概览" rows={[{ label: '素材', value: mat.loading ? '加载中…' : mat.error && !mat.data ? '无法获取' : materials.length }, { label: '候选机会', value: opp.loading ? '加载中…' : opp.error && !opp.data ? '无法获取' : opportunities.length }]} note="保存资料与候选不会自动启动任务；人工准入后可审阅提案草稿。" />
     <RailSummary title="值得继续的问题" rows={opportunities.slice(0, 2).map(o => ({ id: o.id, label: o.title ?? o.id, value: opportunityStateLabel(o.state), onClick: () => selectOpportunity(o) }))} note={opportunities.length ? '查看依据、用途、四维评估、最小下一步与缺失信息。' : '暂无候选机会。'} />
   </>}>
     {(mat.stale || opp.stale) && <div className={styles.stale} role="alert">数据可能已过期（刷新失败），显示的是上次成功加载的数据。<button className="ac-button secondary compact" type="button" onClick={refreshCollections}>重试</button></div>}
@@ -89,10 +90,11 @@ export function AttentionPage({ query }: { query: string }) {
           <SpacesPanel materials={allMaterials} refreshToken={queueToken} onChanged={refreshCollections} />
         </div></details>
       </div></SectionCard>
+      <JudgmentDelegationWorkspace />
     </div>
     {(importing || route.query.get('import') === '1') && <DetailPanel title="添加资料" onClose={handleClose}><ImportForm draft={importDraft} onImported={() => { refreshCollections(); setQueueToken(value => value + 1); }} /></DetailPanel>}
-    {(selectedMat || selectedMatId) && <DetailPanel title="素材详情" onClose={handleClose} showDisabledNotice disabledNoticeText="资料准入和任务执行尚未实现，保存不会创建 Mission"><MaterialWorkspace key={selectedMat?.id ?? selectedMatId!} id={selectedMat?.id ?? selectedMatId!} refreshToken={detailToken} materials={allMaterials} domains={domains} onChanged={refreshCollections} onQueued={() => { refreshCollections(); setQueueToken(value => value + 1); }} onOpportunity={selectOpportunity} /></DetailPanel>}
-    {selectedOpp && <DetailPanel title="机会详情" onClose={handleClose} disabledActions={['准入', '任务执行']} showDisabledNotice disabledNoticeText="准入和任务执行尚未实现；人工反馈不会批准或启动任务"><OpportunityWorkspace key={selectedOpp.id} item={selectedOpp} materials={allMaterials} onChanged={refreshCollections} /></DetailPanel>}
+    {(selectedMat || selectedMatId) && <DetailPanel title="素材详情" onClose={handleClose} showDisabledNotice disabledNoticeText="保存资料后可形成候选，人工准入与任务批准分别确认"><MaterialWorkspace key={selectedMat?.id ?? selectedMatId!} id={selectedMat?.id ?? selectedMatId!} refreshToken={detailToken} materials={allMaterials} domains={domains} onChanged={refreshCollections} onQueued={() => { refreshCollections(); setQueueToken(value => value + 1); }} onOpportunity={selectOpportunity} /></DetailPanel>}
+    {selectedOpp && <DetailPanel title="机会详情" onClose={handleClose} showDisabledNotice disabledNoticeText="人工反馈、资料准入和任务批准分别保存；请核对固定版本与项目范围"><OpportunityWorkspace key={selectedOpp.id} item={selectedOpp} materials={allMaterials} onChanged={refreshCollections} /></DetailPanel>}
   </PageFrame>;
 }
 
