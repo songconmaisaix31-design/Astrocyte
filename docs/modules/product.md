@@ -22,6 +22,68 @@ F独立REPORT `852a149` 调查的是旧280项，不能替代当前a166的320项 
 
 F唯一公共runner SOURCE `7b0441cb6c057d9161f3b6d6fa68abf9c372e3f9` / REPORT `f59a35668996d7911abde515a68cf15b13443f33` 已核普通push，配置只增加s5匹配并保留原s2 / s3 / s4 / progress、workers1和retries0。UI先前同一行越域WIP保留后交F正式消费，后续仅按准确F来源安全同步，不直接把越域WIP交根合并。该配置通过不替代s5功能验收。B未来入口SOURCE `96747490398b68574c5080f30a447d077deaffba` / REPORT `237987a594de1055af18c7fffe30fc516cdacaef` 已核为真实Date.now有界观察、单次等待不超过30秒；新入口NOT_RUN，原12768和原token保持RUNNING / UNKNOWN。
 
+### a166首次55条失败的准确入口
+
+准确源码 `a166310a3c7d7b22806ec74aa4125e9f6c6a2222`，原件为 `D:/Astrocyte-agent-assets/20261015/product/frontend/ctx_630293cc6778/.verification/full-default-a166-playwright.log`。模块实际按失败行读取并计数为55条；该原件没有最终summary或EXIT。以下保留原失败入口，后继由F在frontend.md逐行关联当前SOURCE、实际日志、通过 / 缺条件及领域Handoff，不将旧280项 / 41失败映射转写为本轮结果。原编号是原套件的case编号，文件位置是该原件记录的位置。
+
+| 原编号 | 项目 | 文件位置 | 原场景辨识 | 原日志行 |
+|---|---|---|---|---|
+| 4 | chromium-1920 | attention-recovery.spec.ts:34 | 公开论文版本切换 | 22 |
+| 11 | chromium-1920 | cognition-live.spec.ts:13 | 四视图与独立SQL | 44 |
+| 12 | chromium-1920 | cognition.spec.ts:37 | 四路由和键盘页签 | 47 |
+| 60 | chromium-1920 | plugin-snapshot.spec.ts:27 | 复核公开来源 | 104 |
+| 61 | chromium-1920 | plugin-snapshot.spec.ts:37 | 正文与生产入库 | 111 |
+| 64 | chromium-1920 | plugin-snapshot.spec.ts:76 | 人工标题与新命令身份 | 120 |
+| 65 | chromium-1920 | plugin-snapshot.spec.ts:107 | 390px来源显示 | 123 |
+| 80 | chromium-1920 | progress-existing.spec.ts:10 | 既有README模型进度只读 | 144 |
+| 85 | chromium-1920 | relay-album.spec.ts:6 | 实际扫描统计与布局 | 168 |
+| 94 | chromium-1920 | relay-runtime.spec.ts:238 | EOF / terminal | 204 |
+| 95 | chromium-1920 | relay-runtime.spec.ts:238 | EOF / structured | 207 |
+| 96 | chromium-1920 | relay-runtime.spec.ts:260 | initial互斥收据 | 210 |
+| 97 | chromium-1920 | relay-runtime.spec.ts:260 | reopened互斥收据 | 213 |
+| 98 | chromium-1920 | relay-runtime.spec.ts:276 | 重复派发409 | 216 |
+| 99 | chromium-1920 | relay-runtime.spec.ts:295 | 通用冲突 | 219 |
+| 100 | chromium-1920 | relay-runtime.spec.ts:308 | 任务事实与三值活性 | 222 |
+| 101 | chromium-1920 | relay-runtime.spec.ts:322 | 离线发送未知锁 | 225 |
+| 102 | chromium-1920 | relay-runtime.spec.ts:343 | 完成、停止与释放 | 228 |
+| 103 | chromium-1920 | relay-runtime.spec.ts:367 | 换Agent及权限确认 | 231 |
+| 104 | chromium-1920 | relay-runtime.spec.ts:387 | 事件接入错误 | 234 |
+| 107 | chromium-1920 | relay-session-readonly.spec.ts:9 | 原18个事件只读核查 | 243 |
+| 108 | chromium-1920 | relay-session.spec.ts:91 | 原生会话三分钟窗口 | 246 |
+| 131 | chromium-1920 | s1.spec.ts:69 | 主动重读计数 | 294 |
+| 133 | chromium-1920 | s1.spec.ts:133 | 分类与固定引用 | 306 |
+| 136 | chromium-1920 | s2-context.spec.ts:44 | 固定上下文权限与重启 | 321 |
+| 149 | chromium-1920 | video-existing.spec.ts:9 | 既有两版与952位置只读 | 377 |
+| 155 | chromium-1920 | works-album.spec.ts:114 | 内部1920×1080布局 | 404 |
+| 156 | chromium-1920 | works-album.spec.ts:114 | 内部1280×720布局 | 411 |
+| 157 | chromium-1920 | works-album.spec.ts:114 | 内部390×844布局 | 418 |
+| 164 | chromium-1280 | attention-recovery.spec.ts:34 | 公开论文版本切换 | 440 |
+| 171 | chromium-1280 | cognition-live.spec.ts:13 | 四视图与独立SQL | 462 |
+| 172 | chromium-1280 | cognition.spec.ts:37 | 四路由和键盘页签 | 465 |
+| 220 | chromium-1280 | plugin-snapshot.spec.ts:27 | 复核公开来源 | 522 |
+| 221 | chromium-1280 | plugin-snapshot.spec.ts:37 | 正文与生产入库 | 529 |
+| 224 | chromium-1280 | plugin-snapshot.spec.ts:76 | 人工标题与新命令身份 | 538 |
+| 225 | chromium-1280 | plugin-snapshot.spec.ts:107 | 390px来源显示 | 541 |
+| 240 | chromium-1280 | progress-existing.spec.ts:10 | 既有README模型进度只读 | 562 |
+| 245 | chromium-1280 | relay-album.spec.ts:6 | 实际扫描统计与布局 | 586 |
+| 254 | chromium-1280 | relay-runtime.spec.ts:238 | EOF / terminal | 622 |
+| 255 | chromium-1280 | relay-runtime.spec.ts:238 | EOF / structured | 625 |
+| 256 | chromium-1280 | relay-runtime.spec.ts:260 | initial互斥收据 | 628 |
+| 257 | chromium-1280 | relay-runtime.spec.ts:260 | reopened互斥收据 | 631 |
+| 258 | chromium-1280 | relay-runtime.spec.ts:276 | 重复派发409 | 634 |
+| 259 | chromium-1280 | relay-runtime.spec.ts:295 | 通用冲突 | 637 |
+| 260 | chromium-1280 | relay-runtime.spec.ts:308 | 任务事实与三值活性 | 640 |
+| 261 | chromium-1280 | relay-runtime.spec.ts:322 | 离线发送未知锁 | 643 |
+| 262 | chromium-1280 | relay-runtime.spec.ts:343 | 完成、停止与释放 | 646 |
+| 263 | chromium-1280 | relay-runtime.spec.ts:367 | 换Agent及权限确认 | 649 |
+| 264 | chromium-1280 | relay-runtime.spec.ts:387 | 事件接入错误 | 652 |
+| 267 | chromium-1280 | relay-session-readonly.spec.ts:9 | 原18个事件只读核查 | 661 |
+| 268 | chromium-1280 | relay-session.spec.ts:91 | 原生会话三分钟窗口 | 664 |
+| 291 | chromium-1280 | s1.spec.ts:69 | 主动重读计数 | 712 |
+| 293 | chromium-1280 | s1.spec.ts:133 | 分类与固定引用 | 724 |
+| 296 | chromium-1280 | s2-context.spec.ts:44 | 固定上下文权限与重启 | 739 |
+| 302 | chromium-1280 | s2-proposals.spec.ts:255 | 人工拒绝提案且不授权 | 767 |
+
 ### 本轮独立管理REPORT
 
 本轮返修记录SOURCE `39cd0aeb364bef2794591577c5d23265d2de3253` 只修改本文件，`git diff --check` 通过并普通push。其后F报告 `f066854` 的strict实际日志 `.verification/dom-review-strict-64505.log` 已完整独读；实际观察包括明确确认框、禁用提交和零HTTP写入，没有重复浏览器操作或代答准入。F对junction使用Bash递归删除并吞错误的偏离已退回，模块只读核web的Playwright `index.mjs` 与实际pnpm包 `index.js` 仍存在、本人新建链接路径当前不存在；未执行任何删除、依赖修复或据此推定整个依赖树完整。根已另报告准确dac4537的Go格式、vet、模块校验和依赖检查全部EXIT0，116.2134755秒；该静态检查不替代默认或业务验收。
