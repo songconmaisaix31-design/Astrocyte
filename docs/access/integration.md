@@ -1,5 +1,13 @@
 # Works Relay integration report
 
+## 2026-10-17 完整前端测试与公开认知客户端
+
+准确 SOURCE `5963b1238e7a84bc8c5242995b58c72a7191f178` 执行 `node node_modules/vitest/vitest.mjs list`，EXIT0；随后在web目录执行完整 `node node_modules/vitest/vitest.mjs run --maxWorkers=1 --no-file-parallelism`，实际33文件 /178项，30文件 /168项通过，3个suite前置失败，整体EXIT1 /62.22秒。未提供公开认知快照目录与实际L1服务 /GetEvent文件，导致认知6项和Relay会话4项未执行，Vitest显示10 skipped；没有新增Skip、修改断言或将此完整运行记为通过。
+
+为原认知客户端显式提供既有Q `release-cognition-20261014/.verification/cross-day-20261015-0228/local` 后，在同一准确SOURCE先精确list六项，再仅运行 `node node_modules/vitest/vitest.mjs run src/api/cognition.test.ts --maxWorkers=1 --no-file-parallelism`，实际6 PASS /13.86秒 /EXIT0。使用真实独立HTTP /SQLite、原公开认知快照、会话失效重建、真实取消和权限拒绝；没有新采集、Sleep、模型、Native或共享业务写入。原168项成功未重复。
+
+两批当前累计174项实际通过，余下Relay客户端 /展示4项仍缺实际L1 URL和原GetEvent公开事实。该178项unit清单与原55项浏览器失败清单分别记录；完整Vitest和完整check保持未通过。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-web-5963b12/` 与 `root-cognition-client-5963b12/` 各自的 `list.log` / `vitest.log`，相邻执行脚本保留；独立临时库、新输出与缓存均在D盘。
+
 ## 2026-10-17 恢复执行与既有进度组合检查
 
 用户明确“继续做”后恢复执行。根沿原集成树与分支普通合入 B REPORT `ac3a1b57aacebe904ec71cd39327e267d8563827`（行为 SOURCE `fc6131791c7e287f45ed113892a95ac29fd07b2f`，后继注释 SOURCE `852d7ec1a0583ac501f42fa58a3ae8e404ab11ba`）与 F REPORT `9f58700774bd5ad91b697bba7e21aa8f592c2f33`（SOURCE `aed6e9be106418612668bb8f907dac8e44cccc4d`），均无冲突。准确组合为 `42303b59da251b888409d7d62bfa202508060932`，净修改仅两件 SQLite 验证辅助文件、原进度 spec 输出路径及两份作者报告，没有生产代码变化。
