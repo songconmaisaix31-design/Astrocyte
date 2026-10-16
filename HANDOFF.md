@@ -2,6 +2,8 @@
 
 ## 当前执行入口（2026-10-16）
 
+14:27 根已独读原B `.verification/expiry-bg-result.json` 和Go完整原日志的结果段：原SOURCE `88dc9e5715b93a31be6f4e2b11435e862b703e7d` / PID12768，实际签发UTC04:40:18、ExpiresAt05:40:18，UTC06:16:00验证HTTP及服务层均拒绝。Go主项PASS5741.69秒 / 包5745.281秒，当前原PID及父46696均不存在；原启动壳EXIT未保留，保持UNKNOWN。该真实一小时链路已通过，新mjs仍NOT_RUN，不重跑或修改Clock / DB / token。原件原位保留；两个旧辅助watch不能正确判定CIM空结果，已交原模块仅核精确自有监视进程后停止，当前不再需要监视或新证明步骤。UI强客户端已实际读取契约继续，F恢复中，具体资料准入及其余待答边界保持。
+
 14:21 根已普通合 B 当前 REPORT `237987a594de1055af18c7fffe30fc516cdacaef` 为 `affaa7a7d10dcd8956b4a2947c8b149403cdb5bd`，最新集成 REPORT `ae95b330f8e41dc2689284238323e649f81fa245` 已 push / clean。最终仅真实安全测试、显式到期入口和记录三件净差异，生产一小时语义无变化。根在准确B237实际运行八项安全检查，8 PASS / 包1.809秒 / 总11.88763秒；在完整affaa组合核新增五项，5 PASS / 包2.354秒 / 总5.3473412秒，均EXIT0且前后SOURCE相同。准确原件为 D 盘 integration 的 `root-backend-safety-current/` 与 `root-safety-affaa7a/`；集成侧已登记正确结果。原12:31日志含旧短期限测试，不能计当前签发或自然到期通过。当前运行仍2d27 / PID50624，新mjs未运行，原12768不变。
 
 原 UI / F 开发客户端分别实际返回 HTTP400 / Arrearage，最新完整指示进入旧对话后被供应商拒绝，未据此声称已处理。主控允许保留原 Task / Run / 树 / 分支 / WIP，精确退出旧进程后沿本机已配置可用开发客户端接续，不修改网络、全局账号或支付。UI旧 `ctx_5d4bbae2a28d` 已公开 worker-stop / ptyKilled / exited；当前同原Task为 `ctx_e921762e5e79` / `term_e8bfccfb-5f89-4428-b693-bca4bbe0cf8d`，实际 Codex0.162.0 / GPT-6.1-Sol / xhigh fast 已模型ACK并开始读取真实契约与保留的四件WIP。该恢复使用低层 context-only unsupervised，不能写成 worker-start 托管；Taste功能尚未通过。F按同原Task接续准备中，其旧41项汇总仍不能替代当前55；后继准确身份由产品模块交回。该开发客户端恢复不改变产品 Native 工具授权。
