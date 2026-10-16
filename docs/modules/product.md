@@ -14,6 +14,12 @@ F原Task / `ctx_44f61b51d023` 继续默认55失败分类。模块已独读phase3
 
 根 `msg_8d69720e498d` 已明确补齐必要Taste功能：原UI在既有delegation域实现完整Taste查看、人工创建 / 编辑 / 启停、版本冲突提示及可达入口，使用真实GET / PUT生成契约和已有Hooks / Fields，不让用户编写API JSON，不预填未决定个人偏好。独立D盘QA必须通过真实页面保存、读取和版本检查，再接实际Goal / Snapshot / 固定引用的rule正向；预置API记录不能代替该入口验收。该路径及原rule正向仍NOT_RUN，共享个人Taste与具体准入未操作。全部首RED / UNKNOWN / NOT_RUN保持，完整默认、其他核心路径与Windows包继续，阶段结果不结算模块任务。
 
+### 本轮独立管理REPORT
+
+SOURCE `d9145d2d3ecc007cf9722ba766012b86897bcafd` 只更新本文件，`git diff --check` 通过、普通push成功，独立 `git ls-remote` 核远端同值。模块实际读取B修复差异、独立核实际进程及脱敏签发字段、D盘SQLite文件存在和创建时间，未修改或复制数据库、读取token秘密或重启计时。F插件快照14项原日志已独读；根完整组合构建与准入、H同库ready均注明正式来源，没有由管理文档检查推定业务通过。
+
+根 `msg_2922eb81af54` 进一步要求保留原12768及原token；即使ExpiresAt已过，原一次Sleep尚未实际返回就继续记录RUNNING / UNKNOWN，不杀进程或提取内存。未来显式mjs入口按真实Date.now对实际ExpiresAt作有界观察、单次等待不超过30秒，该精确返修已交原B，不启动第二个一小时流程。原UI连接中断的真实记录及同终端续行保留，Taste入口已由原作者开始写入，实际功能与浏览器结果仍待验。
+
 ## 前序阶段与返修记录（2026-10-16）
 
 本模块仅写本文件，原B/F/UI继续各自Task、工作树和分支，根是唯一集成写入者。正式问题 `msg_3f842bba8861` 的答复 `msg_ef2ae7cc0b04` 已实际读取：保持生产token一小时语义，不授权短期ExpiresAt；通过文件编辑追加恢复，保留普通历史。原B本人 `msg_e58d3db87b34` 已确认收到。只使用正式接口、真实SQLite及实际时钟等待到期，不改DB、Clock或模型；到期前始终记录RUNNING。已验证阶段源码可先交集成，报告仅在 `docs/standards/backend.md` 追加并独立commit，不再新建REPORT文件。
