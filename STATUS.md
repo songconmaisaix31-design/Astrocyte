@@ -1,14 +1,14 @@
 # Astrocyte 当前状态
 
-## 恢复执行与进度阶段集成（2026-10-17）
+## 恢复执行与进度、视频阶段集成（2026-10-17）
 
 用户最新要求“继续做”，根恢复原集成任务。B ac3 / F9f已普通合入准确 `42303b59da251b888409d7d62bfa202508060932`；仅验证辅助、输出路径和报告，没有生产变化。作者两窗口2 PASS /4.7秒、正常同库HTTP重启和关闭 /源目标保持、最终完整tsc-b /spec lint均已独读。根组合tagged编译/vet、默认零发现、完整web类型、spec lint和diff检查全部实际EXIT0，准确命令与原件见集成树 `docs/access/integration.md`。
 
-当前产品继续 `http://127.0.0.1:64505/` /准确172 /PID25568，恢复后health正常。原55项当前28 PASS /27 NOT_RUN（Native26 + video1）；原B先核既有视频真实来源，F等待窗口，原Task/Run及写域保持。用户未答权限、语言和具体准入保持待定；完整默认/check、L1/L2、最终Windows包和GitHub Release尚未完成。详细连续分工见 [HANDOFF](HANDOFF.md)。
+视频B dd3 /F72d已普通合为准确841673ef，B1fd89/F ac94最终记录已合45cccf08；根tagged编译/vet、默认零发现、完整tsc-b、video spec lint及diff均EXIT0。当前产品继续 `http://127.0.0.1:64505/` /准确172 /PID25568，本阶段末health正常，生产代码未变，没有重建或重启。原55项当前29 PASS /26 NOT_RUN，余26项均依赖真实Native条件；用户未答权限、语言和具体准入保持待定。完整默认/check、L1/L2、最终Windows包和GitHub Release尚未完成，详情见 [HANDOFF](HANDOFF.md)。
 
 根在已push的集成报告5963b123执行完整前端Vitest，实际168 PASS、3suite前置失败共10项未执行 /整体EXIT1。显式配置原公开Q后，认知六项6 PASS /EXIT0；当前178项中174项已分批通过，Relay会话四项仍缺真实L1事实，完整Vitest未通过。首次失败原件保留，未新增Skip，未重复原168项成功；不与55项浏览器清单混算。
 
-视频149原两版/952位置及五公开objects已独立核实完整，原资料行/main/WAL保持，SHM修改时间变化单独记录。原B按正常SQLite只读及既有源保护标准实施唯一D派生/HTTP窗口，F仅原149/1920，全部业务断言保持；当前尚未交该业务结果，0位置对照库不再打开。独立D技术查询I/O10/EXIT1的失败原件保留，原源连接0，不计通过或作为业务前置，不新增技术探针。准确范围与原件见HANDOFF，禁止新增ASR/模型或放宽原断言。
+视频149原1920用例精确list1后全部原断言1 PASS /4.7秒 /EXIT0；真实HTTP同库重启及正常关闭PASS239.33秒 /壳EXIT0，原PID52372退出。源两版/952位置/五公开objects及业务行/main-WAL保持，source.Close后metadata亦保持，SHM变化单列；私有正文读取/复制、ASR/模型/Native均0。原0对照及D技术首失败/UNKNOWN保留不重跑。原B继续无需Native的进度替身测试整改，旧八项尚未完成替换，不运行或计通过；F保留发布支持，原Task/Run/写域不变。
 
 ## V4 日运行（2026-10-17 00:25）：D3 采集失败，预测覆盖不足
 
