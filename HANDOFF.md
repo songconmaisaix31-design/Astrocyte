@@ -1,5 +1,17 @@
 # Astrocyte 主控交接
 
+## V4 日运行交接（2026-10-17 00:25）
+
+本次仅处理刚结束的 D3=2026-10-16，automation run 5 `21a40a6a-071c-430c-ad04-cfe3a433860a`。权威外部锁 `v4-w2/locked-protocol-20261013-first.json` 的 root/reviewed、day0=2026-10-13、全文 SHA256 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`、CLI0.162.0 与相对 d749ecb 的运行源码均核验通过，固定 gpt-6.1-sol/872000/4096/5094907/model_context_split 保持。
+
+原生产正式采集 EXIT1。`v4-w1/formal-20261013-first/capture-20261016-first/coverage-safe.jsonl` 实际为 failed、capture_complete=false、selection_complete=false、source_errors=550、structure_failed=12；Claude association_errors=550、timestamp_unknown=2583。recorded=0、Sleep=not_run，没有日快照或 event 回执。独立只读核对正式库四表计数与 D2 日快照全等，D3 实际事件及 Sleep 均0。当前覆盖不完整，未运行本日 select-native/run-day/judge，模型请求0；原 capture/raw/错误原位保留，不重复采集、不补漏日、不改冻结实现。
+
+覆盖汇总 `v4-w2/coverage-through-20261016-safe.jsonl` 保存 D0–D3 四份真实覆盖，包含 D3 失败。既有 score-predictions EXIT0：D0 三臂已到 D+3 日期，但因 D3 采集与 Sleep 缺失，全部 PENDING/future_capture_or_sleep_incomplete，实际评分0。D2 保持1个 C OK、1个 A STARTED/送达未明、10个 NOT_RUN；没有恢复或重发。累计25/84完成回答、2/7独立judge、0/7实际人评，终局门禁未满足，没有交终局报告。
+
+原 W1 `task_e538790026ad` 的 Dispatch 已 completed；只读诊断 Handoff 已实际排入其原 Run `run_d09ff3f95ebc`，消息 `msg_5e7be3523330`，尚无 owner 已读或修复确认。未新建 Agent/Task/Run/工作树/开发轨。外部根仍为 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/`；本次安全摘要 `root-v4-start/daily-20261016-summary-safe.json`，覆盖审计及最终审计均 EXIT0，采集原错误仅留 `root-v4-start/daily-20261016-capture-first-local.log`。原始输入、响应、模型流和错误不进入 Git、产品库或 MCP。
+
+本日没有评分表；实际已有表仅 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/day-20261013-first/user-sheet.json` 与 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/day-20261014-first/user-sheet.json`，未收到用户另存评分，未执行 import-user。当前窗口内 automation 保持 enabled，Asia/Shanghai `20 0 14-23 10 *`，下次10-18处理昨日；最后 D9 处理或任何窗口外唤醒须禁用。机器与 Orca 未实际执行的日程不记成功。
+
 ## 当前执行入口（2026-10-17）
 
 00:21 按用户指示（Codex 额度已用尽，后续工作由新负责人 Hana 接手），根已确认暂停并停在空闲位，回执原文：「收到。已暂停后续操作，保留全部现状，不再检查、合并、轮询或补充记录，等待后续通知。」全部 Task / Run / 树 / 分支 / WIP / 证据原地保留。暂停时集成树最新为 `f627e1d`（含 `8da025f` UI 委托引用、`1e25c29` H 固定报告等）clean / push；运行实例 `172bb445597193d55f1563ee5d21ac2ec881798d` / PID25568 / 64505 ready。在途未完成：F 首次 tsc-b 与独立 frontend.md 报告、B 的 source/target final 与 backend.md 独立报告（两项旧进度托管 F 两窗口 2 PASS 已完成、B 正常 release）；55 表 28 PASS / 27 NOT_RUN（Native26 + video1），320 首失败与全部原件保留。未答边界（PLOS 准入 / Laya 语言 / Agent 读取证据权限 / 受限原生）与完整默认 / L1 / L2 / 最终包保持原状；新负责人沿 `term_a1e70e66` 席位续接消息、验收与合入。

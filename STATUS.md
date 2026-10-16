@@ -1,5 +1,15 @@
 # Astrocyte 当前状态
 
+## V4 日运行（2026-10-17 00:25）：D3 采集失败，预测覆盖不足
+
+仅执行昨日 D3=2026-10-16，automation run 5 `21a40a6a-071c-430c-ad04-cfe3a433860a`。权威 root/reviewed 锁、day0=10-13、EXPERIMENT 全文 SHA256 `5aa238599b6dd59e28d9ca30f71b6b9d547822b46d8dadc477092a46c09ab1b7`、Codex0.162.0、固定 gpt-6.1-sol/872000/4096/5094907/model_context_split 和运行源码检查通过。
+
+`go run ./cmd/validation --live-phase formal` 实际 EXIT1：coverage failed、capture_complete/selection_complete=false、source_errors550、structure_failed12，recorded0、Sleep not_run、没有日快照。本日 ABC/judge 未运行，模型请求0。独立只读核查正式库四表计数与 D2 日快照相同，D3 事件及 Sleep 均0；未重试 capture、重发 unknown 或补写漏日。原 W1 只读诊断 Handoff `msg_5e7be3523330` 已入其原 Run，owner 已读及修复未确认。
+
+`experiment.py score-predictions` 对 D0 到期三臂检查 EXIT0，全部 PENDING/future_capture_or_sleep_incomplete，实际成熟评分0。累计25/84完成回答、2/7独立judge、0/7实际人评；D2 原1 C OK、1 A STARTED/送达未明、10 NOT_RUN保持。本日没有评分表；已有两份实际表为 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/day-20261013-first/user-sheet.json` 和 `C:/Users/DW/AppData/Local/astrocyte-validation/v1-20261012/v4-w2/day-20261014-first/user-sheet.json`，未代填或 import-user，未生成终局报告。
+
+外部安全摘要 `root-v4-start/daily-20261016-summary-safe.json`、覆盖汇总 `v4-w2/coverage-through-20261016-safe.jsonl`；覆盖审计与最终审计均 EXIT0，全部原始文件保留外部既有根。仓库只更新 root 状态/交接；新增业务测试0，未修改冻结业务或协议。automation 当前 enabled、Asia/Shanghai `20 0 14-23 10 *`，下次10-18处理昨日；D9结束或窗口外唤醒须禁用，实际未执行不得登记成功。详情见 [HANDOFF](HANDOFF.md)。
+
 ## 当前开发与磁盘要求（2026-10-17）
 
 00:21 按用户指示（Codex 额度已用尽），后续工作由新负责人（Hana）接手；根已确认暂停并保留全部现状（Task / Run / 树 / 分支 / WIP / 证据），停止轮询与补充记录。当前集成树 `f627e1d` clean / push，运行实例 172 / PID25568 / 64505 ready；在途：F tsc-b 与独立 frontend.md 报告、B final 与 backend.md 报告。55 表 28 PASS / 27 NOT_RUN；未答边界与完整默认 / L1 / L2 / 最终包保持。详情见 [HANDOFF](HANDOFF.md)。
