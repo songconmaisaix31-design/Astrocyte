@@ -2,6 +2,7 @@ package s1_test
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"encoding/json"
 	"net"
@@ -10,14 +11,17 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/adapters/sqlite"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/attention/app"
+	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	workdomain "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
@@ -34,9 +38,15 @@ type automaticHTTP struct {
 	log                               *os.File
 	jobSeconds                        int
 	maxAttempts                       int
+	relayArchive                      bool
 }
 
 func newAutomaticHTTP(t *testing.T) *automaticHTTP {
+	t.Helper()
+	return newAutomaticHTTPWithRelay(t, false)
+}
+
+func newAutomaticHTTPWithRelay(t *testing.T, relayArchive bool) *automaticHTTP {
 	t.Helper()
 	root, err := filepath.Abs("../..")
 	if err != nil {
@@ -65,7 +75,7 @@ func newAutomaticHTTP(t *testing.T) *automaticHTTP {
 		log.Close()
 		t.Fatal("production server build failed; local evidence retained")
 	}
-	server := &automaticHTTP{t: t, dir: dir, executable: executable, root: root, log: log, jobSeconds: 1800, maxAttempts: 1}
+	server := &automaticHTTP{t: t, dir: dir, executable: executable, root: root, log: log, jobSeconds: 1800, maxAttempts: 1, relayArchive: relayArchive}
 	t.Cleanup(func() {
 		server.stop()
 		if err := log.Close(); err != nil {
@@ -92,7 +102,7 @@ func (s *automaticHTTP) start() {
 	var environment []string
 	for _, value := range os.Environ() {
 		key, _, _ := strings.Cut(value, "=")
-		if !strings.HasPrefix(strings.ToUpper(key), "ASTROCYTE_") && !strings.EqualFold(key, "TEMP") && !strings.EqualFold(key, "TMP") {
+		if !strings.HasPrefix(strings.ToUpper(key), "ASTROCYTE_") && !strings.EqualFold(key, "TEMP") && !strings.EqualFold(key, "TMP") && !(s.relayArchive && strings.EqualFold(key, "LOCALAPPDATA")) {
 			environment = append(environment, value)
 		}
 	}
@@ -100,7 +110,10 @@ func (s *automaticHTTP) start() {
 	if err = os.MkdirAll(temp, 0700); err != nil {
 		s.t.Fatal("create owned native temporary directory")
 	}
-	cmd.Env = append(environment, "ASTROCYTE_PORT="+strconv.Itoa(port), "ASTROCYTE_DATA_DIR="+s.dir, "ASTROCYTE_PROJECT_DISCOVERY_ROOTS=[]", "ASTROCYTE_ENABLE_CODEX_DISTILLATION=false", "ASTROCYTE_ENABLE_SUMMARIZE=false", "ASTROCYTE_JOB_CONCURRENCY=1", "ASTROCYTE_JOB_MAX_ATTEMPTS="+strconv.Itoa(s.maxAttempts), "ASTROCYTE_JOB_TIMEOUT_SECONDS="+strconv.Itoa(s.jobSeconds), "TEMP="+temp, "TMP="+temp)
+	cmd.Env = append(environment, "ASTROCYTE_PORT="+strconv.Itoa(port), "ASTROCYTE_DATA_DIR="+s.dataDirectory(), "ASTROCYTE_PROJECT_DISCOVERY_ROOTS=[]", "ASTROCYTE_ENABLE_CODEX_DISTILLATION=false", "ASTROCYTE_ENABLE_SUMMARIZE=false", "ASTROCYTE_JOB_CONCURRENCY=1", "ASTROCYTE_JOB_MAX_ATTEMPTS="+strconv.Itoa(s.maxAttempts), "ASTROCYTE_JOB_TIMEOUT_SECONDS="+strconv.Itoa(s.jobSeconds), "TEMP="+temp, "TMP="+temp)
+	if s.relayArchive {
+		cmd.Env = append(cmd.Env, "ASTROCYTE_RELAY=1", "ASTROCYTE_RELAY_SESSION_SOURCE=archive", "LOCALAPPDATA="+filepath.Join(s.dir, "relay-local"))
+	}
 	if err = cmd.Start(); err != nil {
 		s.t.Fatal("start actual production HTTP server")
 	}
@@ -132,6 +145,13 @@ func (s *automaticHTTP) start() {
 	if s.csrf == "" {
 		s.t.Fatal("production session bootstrap omitted CSRF")
 	}
+}
+
+func (s *automaticHTTP) dataDirectory() string {
+	if s.relayArchive {
+		return filepath.Join(s.dir, "relay-local", "astrocyte-workbench", "v0.2-access", "app-state")
+	}
+	return s.dir
 }
 
 func (s *automaticHTTP) stop() {
@@ -280,6 +300,95 @@ func TestProductionTasteHTTPKeepsUnconfiguredStateAfterRestart(t *testing.T) {
 		}
 	}
 	t.Logf("actual main server complete Taste read and process restart; unconfigured state retained; evidence=%s", s.dir)
+}
+
+func TestProductionCompletionHTTPMissingSourceSurvivesProcessRestart(t *testing.T) {
+	s := newAutomaticHTTPWithRelay(t, true)
+	var space app.ProjectSpaceResult
+	s.request(http.MethodPost, "/api/v1/project-spaces", app.ProjectSpaceCommand{CommandMeta: localCommand(1), Title: "Actual production completion restart verification"}, http.StatusCreated, &space)
+	var registered struct {
+		Project workdomain.LocalProject `json:"project"`
+	}
+	s.request(http.MethodPost, "/api/v1/local-projects", struct {
+		app.CommandMeta
+		workdomain.RegisterProjectCommand
+	}{localCommand(1), workdomain.RegisterProjectCommand{Name: "Actual public completion restart verification", Root: s.root, SpaceID: space.Space.ID}}, http.StatusOK, &registered)
+	project := registered.Project
+	if project.ID == "" || project.ID == project.Root || project.ID == project.SpaceID {
+		t.Fatal("production project registration lost its actual local project identity")
+	}
+	// 明确缺失的 UUID 只验证拒绝，不创建完成事件或 Interpreter 输出。
+	command := app.CaptureCompletionExperienceCommand{CommandMeta: localCommand(1), LocalProjectID: project.ID, EventID: uuid.NewString()}
+	t.Setenv("LOCALAPPDATA", filepath.Join(s.dir, "relay-local"))
+	relayRoot, err := sqlite.RelayStateRoot()
+	if err != nil {
+		t.Fatal("resolve original owned Relay directory")
+	}
+	snapshot := func() workspace.RelayState {
+		t.Helper()
+		store, err := sqlite.OpenRelayStore(relayRoot)
+		if err != nil {
+			t.Fatal("open original owned Relay store for independent inspection")
+		}
+		state, readErr := store.Snapshot(context.Background())
+		closeErr := store.Close()
+		if readErr != nil || closeErr != nil {
+			t.Fatal("read and close original owned Relay store")
+		}
+		return state
+	}
+	originalRelay := snapshot()
+	if len(originalRelay.Tasks) != 0 || len(originalRelay.Completions) != 0 || len(originalRelay.Receipts) != 0 || len(originalRelay.Sessions) != 0 || len(originalRelay.ControllerEvidence) != 0 {
+		t.Fatal("actual fresh Relay store contains completion or execution evidence")
+	}
+	readCounts := func() (int, int) {
+		t.Helper()
+		db, err := sqlite.Open(filepath.Join(s.dataDirectory(), "state.sqlite"))
+		if err != nil {
+			t.Fatal("open original production main database")
+		}
+		defer func() {
+			if err := db.Close(); err != nil {
+				t.Error("close independent main database inspection")
+			}
+		}()
+		stored, err := db.LoadProject(context.Background(), project.ID)
+		if err != nil || !reflect.DeepEqual(project, stored) {
+			t.Fatal("production completion reading changed the actual registered project")
+		}
+		for _, table := range []string{"attention_engine_experiences", "experience_completion_sources", "attention_jobs", "local_agent_sessions"} {
+			var count int
+			if err = db.Conn().QueryRow("SELECT COUNT(*) FROM " + table).Scan(&count); err != nil || count != 0 {
+				t.Fatal("missing completion created experience, source, job or native session")
+			}
+		}
+		var receipts, events int
+		if err = db.Conn().QueryRow("SELECT COUNT(*) FROM attention_receipts").Scan(&receipts); err != nil {
+			t.Fatal("read actual main command receipt count")
+		}
+		if err = db.Conn().QueryRow("SELECT COUNT(*) FROM attention_outbox").Scan(&events); err != nil {
+			t.Fatal("read actual main event count")
+		}
+		return receipts, events
+	}
+	receipts, events := readCounts()
+	verify := func() {
+		t.Helper()
+		var missing apierrors.ErrorEnvelope
+		s.request(http.MethodPost, "/api/v1/experiences/completions", command, http.StatusNotFound, &missing)
+		if missing.Error == nil || missing.Error.Code != apierrors.NotFound || missing.Error.RequestID == "" {
+			t.Fatal("actual main completion command did not reach the original missing Relay source")
+		}
+		afterReceipts, afterEvents := readCounts()
+		if afterReceipts != receipts || afterEvents != events || !reflect.DeepEqual(originalRelay, snapshot()) {
+			t.Fatal("missing completion capture changed an original receipt, event or Relay state")
+		}
+	}
+	verify()
+	s.stop()
+	s.start()
+	verify()
+	t.Logf("actual main completion source reading and same-store process restart; original missing command preserved; evidence=%s", s.dir)
 }
 
 func TestReadOnlyImportHTTPProcessExitPreservesDeadline(t *testing.T) {
