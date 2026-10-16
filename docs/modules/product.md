@@ -10,6 +10,10 @@
 
 前一管理 REPORT `65d3163136709d3879201953d2d7aba35bb641c5` 首次普通 push 曾远端 generic failed / EXIT1，独立远端仍为 SOURCE `83bb70dd`；未改历史，随后同提交普通重试 EXIT0，独立远端准确同 REPORT、工作区 clean。首结果保留在实际工具回执，根已收到 `msg_10d104b80317`。
 
+### selected_text 后继计划独立 REPORT
+
+管理 SOURCE `12a54a0c33628852aaa4c9b2099e504aed63ba53` 已普通 push，模块独立核远端同值、工作区 clean、diff 检查 EXIT0。B `msg_fb26d83dae2c` 补充准确公开原件为原树 `.verification/paper-dom-actual-recovery.snapshot.json`：59717 bytes、mtime=`2026-10-15T20:29:31.9734899Z`，来源 `arxiv:2501.12948` / 官方 HTML `2501.12948v1`，正文 57465 UTF-8 bytes、readable_fulltext、truncated=false。模块独读 `backend.md` 原实际 DOM 解析与生产 paper_snapshot 导入记录，确认该指针及原始字段的授权来源；仅新 D 目标写入，来源文件身份、大小、mtime、完整字节须前后核对。根 `msg_61ef34fdbbfd` 另允许原 B 在 clean 且准确祖先检查成立时 ff-only 消费已 push 集成 `2ab520ad5c275f193270f3c23391451f397e7f3e` 复用真实目录 helper，未要求额外成功复测；模块已将条件和保持 WIP 的边界交原 B `msg_40101d9e3bc5`。本报告只确认计划及实际授权来源，不将尚未运行的新组装检查登记为通过。
+
 ## 2026-10-17 02:57 Workbench 真实 HTTP 固定阶段
 
 原 B SOURCE `e9fd2370e3a9ea71099e99da403656053b6ee968` / 独立 REPORT `04ee84f7371f280b8a0691c7bea09fd9b55ab308` 已普通 push，提交均含 `[skip ci]`；模块独核远端准确 REPORT 同值、原树 clean、限定差异检查 EXIT0。SOURCE 只修改 `internal/adapters/httpapi/workbench_test.go`，净新增 356 行 / 移除 40 行；REPORT 仅追加 `backend.md` 28 行。模块完整读取当前 396 行文件、独立报告及全部命令记录，已交根 `msg_81b4ceb2e3ff`；根 `msg_8577da3270b0` 完整独读后接受准确阶段并普通合唯一集成，仅运行本项真实 HTTP / GetEvent 及 httpapi vet，不重建或部署，也不重复前三项。
