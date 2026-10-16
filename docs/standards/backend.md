@@ -705,3 +705,27 @@ SOURCE `dba9f94d31ab1827fa90f5923e68b77144e8b3ec` 已普通 push。明确指定�
 | 三件变更 Go 文件 `gofmt -l` 与 `git diff --check` | EXIT 0，无输出 |
 
 实际安装检查通过显式 `ASTROCYTE_VERIFY_VIDEO_CONFIG` 消费上一节白名单 JSON，只设置十二个明确配置键，调用原生产 `resolveSourceReader` 与 `resolveListingPython`。生产 Node 执行真实 CLI 路径解析，原实际提取器成功构造并同时接入 video / arXiv Reader，Python 身份逐字保持；关闭开关后两个提取端口保持空值。没有调用提取、ASR、模型、共享服务或原生 Registry。上述源码与实际检查不替代 H / F 在同一产品实例的配置消费与视频业务验收；进度 HTTP 的独立 WIP 和首 403 也未包含在本 SOURCE 内。
+
+## 进度缓存 GET 读取与 per-request Grant 检查
+
+SOURCE `7e3a4fbb5c67bf49f70ac60cfd80a77a7e682562` 已普通 push。缓存读取 `GET /api/v1/local-projects/{id}/progress` 在每次请求时通过领域服务 `GetProjectProgress` 逐次检查 `read_context` 的 grant/action/expiry/revoke，不触发写入或模型调用。`progressProject()` 对人工调用者直接放行，对 Agent 调用者逐次加载 `LoadGrant` 并验证 action 匹配、过期时间和撤销状态；跨项目请求直接拒绝。`scopedAgentRoute` 允许 Agent 持有项目范围 token 访问同一项目的 `progress` GET 路由，PUT/infer 仍仅限人工。
+
+变更文件：
+- `internal/adapters/httpapi/progress.go`：HTTP 适配层，领域 `ProjectProgress` 映射为线格式；缺失状态为 `unknown`，缺失 source/observed_at 为 `null`；501 当服务 nil
+- `internal/adapters/httpapi/session.go`：`scopedAgentRoute` 增加 `parts[4] == "progress" && r.Method == http.MethodGet`，允许 Agent token 读取同项目进度
+- `internal/workspace/app/progress_test.go`：翻译 9 块英文注释为中文，保留 8 项 processor/registry 外部替身测试（诚实记录为不计 PASS）
+- `internal/workspace/app/progress_actual_test.go`：3 项真实 HTTP/SQLite 测试，使用 `httptest.Server`、真实 `sqlite.DB`、真实迁移、cookie jar、CSRF token、Agent bearer token
+
+| 实际命令 | 结果 |
+|---|---|
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgressCacheGetFillsAuthorizedProjectIdentity|TestProgressHumanSetAndCacheRead|TestProgressAgentReadUsesGrant' -v -count=1` | EXIT 0，3 PASS，包 3.395s |
+| `go test -mod=readonly -p=2 ./internal/workspace/app -run 'TestProgress' -v -count=1` | EXIT 0，12 PASS（8 内存替身 + 3 真实 + 1 SQLite 失败），包 3.5s |
+| `go build -mod=readonly -p=2 ./...` | EXIT 0 |
+| `go vet -mod=readonly -p=2 ./...` | EXIT 0 |
+
+三项真实测试验证：
+1. **TestProgressCacheGetFillsAuthorizedProjectIdentity**：缓存不存在时 GET 返回 identity（status=unknown），不写入行；人工和 Agent 均验证
+2. **TestProgressHumanSetAndCacheRead**：非人工 PUT 被拒绝，CSRF 缺失被拒绝，验证失败被拒绝，人工写入后 SQLite 持久化并通过 GET 读回
+3. **TestProgressAgentReadUsesGrant**：无 grant 的 Agent 被拒绝，有 grant+token 的 Agent 被接受，撤销 grant 后再次被拒绝
+
+八项内存替身测试保留覆盖但诚实记录为不计 PASS：`progressProjects`、`progressStore`、`progressProcessor`、`progressFiles`、`progressRegistry` 替身不能验证真实 HTTP/SQLite/session/permissions/CSRF/Agent-token 边界。`paper-dom.mjs` 的 catch 块移除已在先前 SOURCE `2644083` 完成，不在本轮范围内。
