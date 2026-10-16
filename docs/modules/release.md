@@ -2,6 +2,18 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-16 12:15 P / Q 当前返修与准确验收范围
+
+两轨保持原 Task / 树 / 分支，实际客户端均为 Claude Code2.1.238 / 启动信息 `qwen3.7-max`，没有新增 Task / Run 或第四层。P 当前 `ctx_70c076b66d81` / `term_ea50e3ea-37d9-4ffd-80bc-119815dfcb96` 持续完成启动参数与构建环境返修；Q 当前 `ctx_92f25dfec46c` / `term_a0aa60f6-9dcf-4ae8-9da1-2619833a14a3` 只补精确报告及一次有效 D 目录 exe 构建。两个旧完成回报及源码保留，当前未以旧准备、参数字符串检查或缺产物的构建结果结算本轮需求。
+
+Q SOURCE `f19f99db8a487ae6282c54521f5c82063570abee` 仅修改 `main_test.go` 的 directory-alias：Windows 直接创建 Junction，其他平台直接创建 Symlink，各错误在创建处立即失败，原发布拒绝断言、生产保护及 Skip 保持。本模块已完整读差异并交根可消费源码；根 `msg_f90457d8bef1` 独读后确认。实际日志记录定向包15.392秒 / 链接子项0.37秒、全包13.840秒 / 七子项通过。本轮没有重新采集、Sleep、重放、模型或历史重算，独立 symlink OS1314 仍未通过。
+
+Q 原 REPORT `baf9a5d0b5b2cf161e2018b94977d2f904f6df76` 的环境与构建记录待本人精确修订：首 `go vet` 没有 D 环境，`go build -o /dev/null` 没有形成可验的 Windows 产物；两次 test 的真实 D 环境和日志保留，不重复运行。后继每条 Go / Node / PowerShell 父进程显式设置共享 D GOCACHE、独占 D GOTMPDIR / TEMP / TMP / ASTROCYTE_TEST_OUTPUT_ROOT / npm / Node 编译缓存及资源限制，只作用于当前进程。有效 exe 构建在 C 空间门禁满足后执行，原报告不冒称已完成该项。
+
+P SOURCE `7bec269` / REPORT `3c0f5b2` 尚未接纳：当前需要真实默认空参数、不完整组及非法路径行为验证，原35项 AST 名称 / 字符串检查不计功能通过。原作者正在修复空 Laya 组的 StrictMode 行为、保持已有进程 secret 接入、补全 Build 的 D 临时 / npm / Node 编译缓存和原值还原；新增代码注释使用中文。使用真实已构建 binary / web 在 P 独占 D 目录核启动兼容，准确注明其38fb运行来源，不代替最终同源包；新 Laya 初始化、模型、资产准备、正式日流程和最终包均不执行。
+
+本模块只读盘点缓存，清理由根唯一执行。12:10实际 C Go cache 为317,964,214 bytes，较12:00的3,192,231增加314,771,983，与 Q 首次未带 D 环境的 vet 记录一并交根；当前 Node 编译缓存主目录仍有重启后写入和在用 Node24.16，Corepack 仍供 pnpm 使用，均保留。逻辑缓存容量不等于实际回收量，根每次实测可用空间判断原10 GiB门禁；本模块没有删除、移动或修改缓存、安装环境、模型、数据库或旧证据。
+
 ### 2026-10-16 12:03 原 P 显式配置后继计划
 
 根 `msg_3ccb6add57b0` 明确恢复原 P 必要发布入口和真实配置检查。本模块通过公开 CLI 将原 `task_3347b755071e` 重新置为 ready，原已接受的成功 result、SOURCE / REPORT 及 released Dispatch 记录完整保留，没有创建替代 Task、伪造失败或增加第四层。固定原 `release-package-20261014` 工作树 / `songconmaisaix31-design/release-package-20261014`，现有 HEAD b208 / clean；唯一 P 的写域继续为 `release/**`、`docs/release/package-report.md`、`docs/release/windows.md` 及必要同域说明，组件文档与领域业务不改。
