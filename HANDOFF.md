@@ -1,5 +1,26 @@
 # Astrocyte 主控交接
 
+## 本轮16项真实组合通过，保留实际剩余条件（2026-10-17 03:24）
+
+原B双源SOURCEe907 /REPORT9bb5及后继超限SOURCE93a1 /REPORT3faa已一次普通合入准确I `c3116e803839fb2d97728bfedddfb06a7d564cec`，集成报告 `36849a65377e4d339139b278139d18f159954533` 已普通push，分支 `songconmaisaix31-design/works-relay-integration`。总控完整读取最终561行测试、两份报告与两轮作者原件；准确组合精确list2、实际2 PASS /0 Skip，各0.16 /1.14秒、包3.137秒，cmd/server vet /diff /runner均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-capacity-c3116e8/` 及相邻runner保存完整命令。
+
+两准确公开对象仅读，完整原文各一次自然131121bytes，经生产manual导入保存真实新人工来源 /时间 /Ref，原字节、身份、mtime与SHA256保持；实际生产prompt139579 /wire139957 /output131072，随后在未Probe配置边界拒绝。固定已公开e907四个不同Git blob各一次自然578174bytes，经真实file/manual来源及固定引用完整比较后，被生产distillation预检以validation_failed /review_selected_text_size拒绝。没有打开旧SQL、拼造 /重复正文或启动Native /模型。原完整wire内容、模型接受、recommendation超限和非法模型输出仍未验。
+
+本轮七组准确组合合计16项真实测试通过：H目录4、B目录 /权限 /普通列表3、Workbench HTTP1、会话HTTP /空登记3、选定文本装配1、进度前置2、容量2。两个HTTP替身已完整移除，原剩余替身函数和全部原断言保持，不执行或计PASS。当前准确来源与命令以I报告为准，完整默认 /CI未通过。
+
+UTC19:22:54实际程序仍为稳定c5 /PID30420、启动UTC18:37:58.6714390、唯一127.0.0.1:64505监听及首页200；UTC19:23:37实际 `GET /api/v1/health` 为200、schema_version1 /status=ok。生产binary仍为c5，Web来源172，本轮全部后继只改测试 /报告，没有构建或部署，原服务外层EXIT UNKNOWN保持。
+
+| 原任务的真实剩余事项 | 当前缺口及唯一职责 |
+|---|---|
+| L1受限原生与非空Today | 原文件 / 命令工具关闭边界未答；需原R/H实际owned控制器 / 自产来源、真实HTTP /SQLite及逐event_id核查，F原真实界面验收；不由本轮空基线替代。 |
+| L1 archive完整性 | 可信archive PrefixComplete提供 / 传递字段仍缺，AppendOnly没有正事实；R提供事实与领域端口、H消费。native通知前缀不可替代archive，nlink2 /恢复raw gap和unknown保持。 |
+| 进度、推荐与来源完整覆盖 | 原七项模型 /在途 /computed /CAS /发布恢复、推荐真实超限与非法模型结果、同获准范围实际59槽等仍缺各自来源 /结果现场，B沿原领域继续，不改来源数量或制造结果。 |
+| L2六步 | 缺合法完成 /采用、真实候选、具体用户批准、检索 /保存 /新输入 /后任务实际复用。显式同库MCP→human手册→首输入已有构件，当前未执行；自动装配偏好已问待答，不冻结新接口或工具权限。 |
+| 其他已登记配置和权限 | S3预算 /能力证据、Laya语言、Jev本机安全配置、具体PLOS准入及Agent完成证据读取等继续依原QUESTIONS，不把继续执行当答复。 |
+| 完整默认与最终包 | 原默认仍含未替换测试，完整CI /浏览器 /L1 /L2未通过；C实际5433909248bytes低于10737418240bytes守卫，最终Windows包 /解压验证 /Release未执行，不降低守卫或清理用户文件。 |
+
+原M-product /B已直接更新D `remaining-readonly.md`当前首表 /末段为准确SOURCE93a1 /REPORT3faa和已验范围，总控完整读取后确认该文件明确当前无其他B独立实施事项；组合结果已通过msg611交原模块同步。原H也已确认当前无其他独立可实施项并保持同Task服务支持。不新建Task /Run /writer或重复成功测试，全部原树、提交、数据和失败 /UNKNOWN保持；整体任务未完成，等待对应真实前置或用户回答。
+
 ## 进度前置组合通过与剩余链路（2026-10-17 03:12）
 
 B SOURCE `7613684166a8c3ddcb33f441ab56f842d5774836` /独立REPORT `b67f570d58d3b4bd874abf3da7897de735efb5b6` 已普通合原I `a18f66fd5dc4119ae430171b41c16dea489d3001`，根报告 `0cb121ce408fbd2100006ac07d08c82c5bc1b4fa` 已普通push。根独读355行external测试、报告及作者首轮原件，准确组合精确list两项 /2 PASS /0 Skip，各0.12 /0.10秒，包1.404秒，app vet /diff /runner均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-progress-preflight-a18f66f/` 及相邻runner。未Probe配置拒绝后的生产unknown、同key保护 /重启 /人工保留，以及实际READONLY返回内存pending与数据库零持久化分别通过；没有发生Native交付，旧七项覆盖仍未验。
