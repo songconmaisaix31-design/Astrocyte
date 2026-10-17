@@ -1,5 +1,13 @@
 # Astrocyte 主控交接
 
+## 12:18 临时构建清理与同库服务恢复（2026-10-17）
+
+本轮用户要求继续集成并删除已处理临时数据，执行计划为 [integration-cleanup-20261017](tasks/integration-cleanup-20261017.md)。已删除两个前端工作树 `.verification/astrocyte-{dev,s1}-*/server.exe` 的499个旧构建产物，11,689,908,224 bytes；另删除D原go-temp内五个已结束的go-build目录，482件文件、112,230,759 bytes，合计11,802,138,983 bytes。删除前核实际绝对路径、所有祖先无重解析点、早于本次系统启动及无进程引用；递归目录同时核全部后代。业务数据、日志、公开原件、报告、代码与WIP保留。准确清单和实际成功结果位于根已忽略的 `.verification/integration-cleanup-20261017/`。C可用空间从7,148,142,592增至18,838,441,984 bytes，原10GiB包守卫已满足。
+
+本机10:54:14重启后原30420已退出。根运行检查直接调用H既有 `dist/product-recovery-20261016/restore-38fb.ps1`，准确当前和前次来源均c5b3b571、版本c5b3b571、记录名称root-cleanup-20261017，无脚本和业务修改。当前PID40804、启动UTC `2026-10-17T04:17:24.9839094Z`，唯一127.0.0.1:64505监听，health ok、首页200。原SQLite启动前后68表90行逐表计数严格相等，Q仍snapshot-1711995690，Native初始化与模型输入均0。普通服务终端 `term_4b060acd-fec8-45ca-9e56-06b5f3ca60f0` 已回到提示符并保持服务。准确恢复与前后计数记录在H原shared-product-ad8413目录；running.json已指向40804。程序来源c5，静态来源172；c5到当前I36849a65仅测试和报告差异。
+
+原Run973由当前根 `term_4e97222c-b5aa-4ac7-958d-a19b0912b1c0` 接续generation35。M-relay三次客户端启动分别账户路由超时、Claude服务商Arrearage、readiness超时，均未执行业务，已官方结束并释放，不再派替代负责人。M-release沿原Task315 / 子Runaa4接续，本次实际Codex/GPT-6-Astra，原P制作准确I `36849a65377e4d339139b278139d18f159954533` 与原runtime-sanitized-third的同源候选ZIP及解压验证。原完整CI/L1/L2和最终Release仍未通过，本轮不据继续集成扩大Native权限或代选未答事项。
+
 ## 本轮16项真实组合通过，保留实际剩余条件（2026-10-17 03:24）
 
 原B双源SOURCEe907 /REPORT9bb5及后继超限SOURCE93a1 /REPORT3faa已一次普通合入准确I `c3116e803839fb2d97728bfedddfb06a7d564cec`，集成报告 `36849a65377e4d339139b278139d18f159954533` 已普通push，分支 `songconmaisaix31-design/works-relay-integration`。总控完整读取最终561行测试、两份报告与两轮作者原件；准确组合精确list2、实际2 PASS /0 Skip，各0.16 /1.14秒、包3.137秒，cmd/server vet /diff /runner均EXIT0。原件 `D:/Astrocyte-agent-assets/20261015/integration/root-capacity-c3116e8/` 及相邻runner保存完整命令。
