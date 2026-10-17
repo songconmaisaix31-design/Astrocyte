@@ -1,5 +1,17 @@
 # Works Relay integration report
 
+## 2026-10-17 Windows 候选包构建与解压验收
+
+发布入口 SOURCE `8f9d2cab22a904f94fc2ea6436528ed9f33e8c2e`、Windows 说明 `312f1affcf91df3a14185979dff76231ddf58f26` 及阶段报告 `907febc53de6da1158c786ce4e044d6ca5ead96f` 已普通合为 `41cefd00706ae284dbb45f857c2c49d2aebd807f`。Build 通过 pnpm CLI 显式指定官方 registry 和本次 D 目录的 cache/state/store，安装前核对有效 registry；固定锁、完整性与 TLS 检查保持。PS5.1 与 PS7 的实际配置和官方元数据查询通过。
+
+准确41ce完成四个 Go 程序、TypeScript/Vite 和完整运行时打包；Windows PowerShell5.1的 Build / Verify 均 EXIT0，实际解压运行125/125项 PASS。最终独立报告 `d834ce905c27279ce25cf3b91035879297402f4b` 已普通合为 `ea6e8157bbc648c8d3f4a8f84f1b190115c23823`，该后继只修改报告。完整命令和范围见 [发布包记录](../release/package-report.md)。
+
+ZIP 为 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，1,949,217,657 bytes，1439个文件、未压缩3,548,363,700 bytes。归档前与解压后隐私扫描匹配均为0。真实 HTTP/session/CSRF、SQLite写读、终止与同库重启、SQL10、1316事件全部六字段、两主题历史及20/50分页均通过；验收17887监听已关闭。原Q来源保持，未新增Sleep；实际验收库及证据完整保存在 `v1017c`。
+
+根已完整审阅本次发布差异、Build日志、125项检查结果、两个扫描结果与准确远端；没有因报告合并重复整套构建验收。此前16项定向真实组合结果保持，完整默认浏览器/CI、L1/L2及原生控制器验收仍未通过，未发布tag或Release。Vite 702.68kB chunk警告保留。此前两次镜像网络失败的日志保留，成功候选明确使用官方registry。
+
+本机重启后根通过H既有恢复脚本恢复准确c5程序与原SQLite，PID40804、唯一127.0.0.1:64505监听，health和首页200，启动前后68表90行逐表计数一致。普通服务终端保持运行。清理范围与结果由管理分支 `tasks/integration-cleanup-20261017.md` 记录；最终ZIP、整个验收目录、日志、公开来源和现用运行时保留。
+
 ## 2026-10-17 真实公开来源容量与超限组合检查
 
 B双源SOURCE `e9070a208d2f1704a5e6d2a056d9cbd35d73d324` /REPORT `9bb501bb303a9b51cf1acb663fc628353db496ce` 和后继超限SOURCE `93a1feb4e7aaf318e5b1fc09c8437086e50b2f2d` /REPORT `3faa336f437b975f946d58cc558c97cb3328695a` 已一次普通合为 `c3116e803839fb2d97728bfedddfb06a7d564cec`。根完整读取最终561行测试、两份独立报告、两轮命令 /list /test /vet原件及准确远端。后继仅追加独立超限测试，已成功双源由作者保留首结果，唯一集成树统一运行本次两项。
