@@ -1,5 +1,17 @@
 # Astrocyte 主控交接
 
+## Windows 候选包125项验收通过（2026-10-17）
+
+本轮已清理17,227,094,805逻辑bytes，约16.04GiB：499件旧server.exe、五个结束的Go编译目录，以及P本轮21个可再生成目录和3件源码归档。最后一项139,211件文件/5,424,955,822逻辑bytes，2190个只指向批准目录的链接先解除后删除；实际删除命令EXIT0，24个目标均不存在。D可用空间最后从41,333,317,632增至46,207,070,208 bytes，逻辑大小与实际空间变化分列。准确清单、保留检查与结果在根 `.verification/integration-cleanup-20261017/`；最终ZIP、日志、整个v1017c实际验收库/快照、q1017a、公开来源和现用运行时均保留。业务库、工作树源码及原用户文件保持。
+
+当前产品集成分支 `songconmaisaix31-design/works-relay-integration` 为 `8c8510426b828359f4c161f93c1edf1083fd5e88`，已普通push且工作树干净。P发布入口SOURCE `8f9d2cab22a904f94fc2ea6436528ed9f33e8c2e` / 阶段REPORT907已合为候选来源 `41cefd00706ae284dbb45f857c2c49d2aebd807f`；最终验收REPORT `d834ce905c27279ce25cf3b91035879297402f4b` 已普通合为ea6e，8c851只追加集成报告。pnpm11构建入口显式选择官方registry和D缓存/状态/存储目录，并实际核配置；此前两次镜像网络失败的日志保留。
+
+最终ZIP为 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，1,949,217,657 bytes。Windows PowerShell5.1实际Build/Verify均EXIT0、125/125项PASS；四件Go程序与Web构建通过，1439文件/3,548,363,700未压缩bytes，归档前和解压后隐私匹配0。实际HTTP/session/CSRF、SQLite写读/同库重启、SQL10、1316事件逐项六字段、两主题历史及20/50分页通过；独立17887监听已关闭。Vite702.68kB警告保留。完整命令与结果见I `docs/release/package-report.md` 和本轮 [计划](tasks/integration-cleanup-20261017.md)，原件在D发布根b1017c/v1017c及console日志。
+
+64505产品继续由普通服务终端 `term_4b060acd-fec8-45ca-9e56-06b5f3ca60f0` 保持，准确c5程序/PID40804、原SQLite及Q来源不变，最近首页和health200。启动前后68表90行逐表计数相等。P与M-release本阶段均已正式worker_done并官方released/closed_agent_terminal/transcript captured；模块报告 `1a0c5ed3c20cdb7752e22393fce076a823db17e2` 在原模块分支，远端已核。
+
+完整默认浏览器/CI、L1/L2及原生控制器验收仍未通过，tag和正式Release未发布。Native工具关闭条件、archive可信完整性、模型路径真实来源、具体人工批准及原QUESTIONS中未答事项保持；本次125项通过范围以P报告为准。没有新增模型推理、ASR、采集、Sleep或正式V4。后续继续使用原生产集成树，管理分支不承接产品代码。
+
 ## 12:18 临时构建清理与同库服务恢复（2026-10-17）
 
 本轮用户要求继续集成并删除已处理临时数据，执行计划为 [integration-cleanup-20261017](tasks/integration-cleanup-20261017.md)。已删除两个前端工作树 `.verification/astrocyte-{dev,s1}-*/server.exe` 的499个旧构建产物，11,689,908,224 bytes；另删除D原go-temp内五个已结束的go-build目录，482件文件、112,230,759 bytes，合计11,802,138,983 bytes。删除前核实际绝对路径、所有祖先无重解析点、早于本次系统启动及无进程引用；递归目录同时核全部后代。业务数据、日志、公开原件、报告、代码与WIP保留。准确清单和实际成功结果位于根已忽略的 `.verification/integration-cleanup-20261017/`。C可用空间从7,148,142,592增至18,838,441,984 bytes，原10GiB包守卫已满足。
