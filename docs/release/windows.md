@@ -50,6 +50,8 @@ Node 的构建基线为 24.16.0。视频按实际来源需要 `-YtDlp`、`-FFmpe
 
 `astrocyte-mcp.exe -h` 与 `astrocyte-sleep.exe -h` 列出原生参数。MCP 需要明确的项目、会话、调用者与 `signal-strength`；Sleep 需要明确日期、时区、衰减、初始置信度及事实投影。使用时明确传入应用的 `-data-dir`，未确定的参数由使用者决定。包中的启动脚本不调用这两个程序。
 
+构建入口通过 pnpm 11 的 `--config.registry=https://registry.npmjs.org` 显式选择官方源，并在安装前核对实际 registry。`--config.cache-dir`、`--config.state-dir` 与 `--store-dir` 分别指向本次 D 盘输出目录；冻结锁、包完整性及 TLS 检查继续执行。
+
 发布人员从完整的精确合并 SOURCE 构建：
 
 ```powershell

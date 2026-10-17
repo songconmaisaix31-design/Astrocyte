@@ -68,10 +68,14 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Node unavailable.' }
         & pnpm --version
         if ($LASTEXITCODE -ne 0) { throw 'pnpm unavailable.' }
-        & pnpm install --frozen-lockfile --store-dir (Join-Path $output 'pnpm-store')
+        $pnpmConfig = @('--config.registry=https://registry.npmjs.org', ('--config.cache-dir=' + (Join-Path $output 'pnpm-cache')), ('--config.state-dir=' + (Join-Path $output 'pnpm-state')))
+        $registry = & pnpm @pnpmConfig config get registry
+        if ($LASTEXITCODE -ne 0 -or ([string]$registry).TrimEnd('/') -cne 'https://registry.npmjs.org') { throw 'Effective pnpm registry differs from the selected official registry.' }
+        Write-Output ('PNPM_REGISTRY=' + $registry)
+        & pnpm @pnpmConfig install --frozen-lockfile --store-dir (Join-Path $output 'pnpm-store')
         if ($LASTEXITCODE -ne 0) { throw 'Frozen dependency installation failed.' }
         Assert-ReleaseSpace
-        & pnpm build
+        & pnpm @pnpmConfig build
         if ($LASTEXITCODE -ne 0) { throw 'Existing production build failed.' }
         & go build -mod=readonly -trimpath -o (Join-Path $sourceDir 'dist\workbench-snapshot.exe') ./cmd/workbench-snapshot
         if ($LASTEXITCODE -ne 0) { throw 'Portable Workbench snapshot build failed.' }
