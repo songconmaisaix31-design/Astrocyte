@@ -2,7 +2,7 @@
 
 ## 2026-10-15 当前发布协调
 
-### 2026-10-17 12:16 准确组合候选包计划
+### 2026-10-17 准确组合候选包与验收
 
 根当前 `tasks/integration-cleanup-20261017.md` 与正式消息 `msg_1999ffadc7c1` 为本轮范围。模块负责人沿原 Task `task_315679474dc4` / Dispatch `ctx_ba962e49eebe` / `term_5fc6d06c-c4e3-45bc-bf20-5d9c310df2bb` 绑定原 `run_aa4e6a119547` generation 12；实际终端显示 Codex / GPT-6-Astra xhigh fast。本轮只维护发布管理文档，原日流程不重新执行。
 
@@ -25,7 +25,24 @@
 
 原 `b1017b` 实际仍访问镜像并最终EXIT1；pnpm11改用 `pnpm_config_` 前缀的本机与官方说明核查、实际配置查询及首CLI选项错误均保留。根 `msg_5c635e20500a` 要求发布入口修正与准确说明先普通集成，本模块已通过 `msg_af7f6712080a` 交付完整SOURCE/REPORT。
 
-12:29 根 `msg_5faac6184288` 已普通no-ff合入P REPORT907，准确新I为 `41cefd00706ae284dbb45f857c2c49d2aebd807f`，已push。本模块独核两父为36849和907、全部release文件与P当前来源无差异，随即交同一P在新短D `b1017c` / `v1017c` 继续Build/Verify，复用runtime和本日q1017a。候选尚未产出，完整默认、CI、L1/L2各自范围保持。
+12:29 根 `msg_5faac6184288` 已普通no-ff合入P REPORT907，准确新I为 `41cefd00706ae284dbb45f857c2c49d2aebd807f`，已push。本模块独核两父为36849和907、全部release文件与P当前来源无差异，随即交同一P在新短D `b1017c` / `v1017c` 继续Build/Verify，复用runtime和本日q1017a。
+
+12:46 准确41ce完整Build已实际EXIT0，官方源冻结安装353包、378项供应链政策检查通过，四个Go程序和TypeScript/Vite构建完成，702.68kB chunk警告保留。ZIP为 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`、1,949,217,657 bytes。完整包扫描1439文件 / 3,548,363,700 bytes / private_matches=0；本模块用标准.NET ZipFile独核相同条目数、未压缩大小、四个根目录exe及LICENSE，数据库/日志类文件名计数0。该目录检查与P完整内容扫描分别记录。
+
+12:47 原P的新目录 `v1017c` 同ZIP实际Verify已EXIT0，`result.json` 为 `candidate-package-cognition-runtime`、准确Source41ce、125/125 PASS，非通过项0。本模块独读完整检查名称、安全结果、全包扫描与实际Build/Verify日志末段：真实静态资源、session/CSRF、SQLite写读、重启及新session、1316事件逐项六字段、SQL10、两主题历史和20/50分页均通过，initial/restart自有监听均关闭。解压后独立全包扫描仍为1439文件 / 3,548,363,700 bytes / private_matches=0。包内快照命令从原公开Q来源实际发布新测试代 `snapshot-2360291559`，时间为 `2026-10-17T04:46:44.2632065Z`；该测试发布不改变Q原代或新增Sleep。
+
+根 `msg_b9586b96685a` 要求本轮结束后提供可再生成source/cache/stage准确目录及无引用核查，根统一删除；日志、真实SQLite、Q原件、最终ZIP、现用运行时和服务保留，P与本模块不执行删除。根 `msg_7dccbcef1c8c` 已确认当前候选阶段按准确REPORT与清单交付结算，不重复已通过整套验收。完整默认浏览器、CI、L1/L2、可选媒体实际调用及正式Release均不在本次PASS范围。
+
+12:49 P独立最终 REPORT `d834ce905c27279ce25cf3b91035879297402f4b` 已普通push，本模块独核远端同值、原树clean及单报告完整差异。发布代码SOURCE保持8f9d，产品ZIP SOURCE保持41ce。合法 `worker_done` 为 `msg_8396f01bf7ec`，精确Task/Dispatch匹配、outcome=succeeded；本模块随后执行 `orca orchestration worker-release --dispatch ctx_aa50b90c8e52 --json`，返回released / closed_agent_terminal / transcript captured，完成Delivery ACK。本轮唯一P已结算，无本轮在途开发或验收进程。
+
+准确清理交接为 `D:/Astrocyte-agent-assets/20261015/release-package/reclaim-20261017.md` 与 `reclaim-20261017-processes.json`，本模块已完整读取后通过 `msg_e18aa50f4cae` 交根：21个可再生成目录、3件source.zip；12:47收尾记录全部目录存在、可读命令行引用0、17887监听0，P本人不再读取。该记录限定当时命令行观察，根实际清理前继续核路径边界、重解析点及占用；未将其作为所有文件句柄关闭的证明。旧a/b只设置npm_config_cache，pnpm元数据缓存未获D目录保证；成功c采用有效CLI参数将cache/state/store明确放在D。首失败、全部日志和结果按清单保留。
+
+本模块计划及协调 SOURCE 为 `50382c19415d17578bdc7f7afa18e98e690735ac`，最终验收记录随后追加独立提交；仅修改本文。模块实际检查为标准.NET ZipFile读取归档、标准JSON解析125项结果/扫描/SQL10/1316六字段、精确Git差异/祖先/远端与 `git diff --check`。P实际完整命令为下列两项，均EXIT0；报告没有把PS7的配置检查计为PS7完整运行验收：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File D:/Astrocyte-agent-assets/20261015/release-package/run-1017c.ps1 -Source 41cefd00706ae284dbb45f857c2c49d2aebd807f -Phase Build
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File D:/Astrocyte-agent-assets/20261015/release-package/run-1017c.ps1 -Source 41cefd00706ae284dbb45f857c2c49d2aebd807f -Phase Verify
+```
 
 ### 2026-10-16 12:55 组合构建与真实准入原件
 
