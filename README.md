@@ -1,5 +1,13 @@
 # Astrocyte
 
+当前产品集成分支为 `songconmaisaix31-design/works-relay-integration`，提交 `8c8510426b828359f4c161f93c1edf1083fd5e88`。当前 `validation/v1-20261012` 分支保存管理与实验记录，产品开发和后续集成继续使用产品集成分支。
+
+本机现用服务：<http://127.0.0.1:64505/>。Windows x64 候选包位于 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，大小1,949,217,657 bytes，构建来源 `41cefd00706ae284dbb45f857c2c49d2aebd807f`。在可写的新目录完整解压，双击 `Start-Astrocyte.cmd`，打开 <http://127.0.0.1:8787/>；保持控制台打开，按 Ctrl+C 停止应用。详细参数见包内 README。
+
+该包构建、解压及125项实际运行检查通过，包含真实HTTP、SQLite写读/重启与公开来源认知查询。完整默认CI、L1/L2及原生控制器验收仍未通过，正式Release未发布。交付与清理记录见 [本轮记录](tasks/integration-cleanup-20261017.md)，待决定事项见 [QUESTIONS](docs/QUESTIONS.md)。
+
+## 当前分支开发说明
+
 个人研究与创造工作台。Go 模块化单体、React + TypeScript + Vite、SQLite；开发入口见 [AGENTS.md](AGENTS.md)，当前范围见 [STATUS.md](STATUS.md)、[界面替换计划](tasks/UI-preview-plan.md) 与 [S0 计划](tasks/S0-plan.md)。
 
 三页界面采用用户提供的 `Astrocyte-preview.html` 设计，迁入现有 React 应用。顶部搜索筛选当前页已加载数据；资料类型筛选、标签页历史与键盘切换、详情抽屉可操作。默认读取真实 API，`?fixture=1` 才进入显式示例模式。Attention 的 S1 接入见 [公共契约](tasks/S1-contract.md)；批准、接续与执行仍属后续切片。研究路线、固定动态与拓扑示例仅用于设计展示，不代表真实会话或实验结果。
