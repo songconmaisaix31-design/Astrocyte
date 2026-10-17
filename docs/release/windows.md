@@ -1,6 +1,6 @@
 # Astrocyte v0.1 Windows x64
 
-完整解压 ZIP 到可写的新目录，双击 `Start-Astrocyte.cmd`，打开 http://127.0.0.1:8787。保持控制台打开，按 Ctrl+C 停止应用。Windows x64、Windows PowerShell 5.1 为基本运行条件；浏览器使用本机回环地址。产品包含 Go server、MCP、Sleep、手动快照工具与已编译的 web。S4/S5 发布准备包含独立 Node 和生产 SDK；用户无需预装这些 SDK 的开发环境。最终集成源码及生产配置尚未交付，本轮准备结果见 [发布记录](package-report.md)。
+完整解压 ZIP 到可写的新目录，双击 `Start-Astrocyte.cmd`，打开 http://127.0.0.1:8787。保持控制台打开，按 Ctrl+C 停止应用。Windows x64、Windows PowerShell 5.1 为基本运行条件；浏览器使用本机回环地址。产品包含 Go server、MCP、Sleep、手动快照工具与已编译的 web。S4/S5 运行依赖包含独立 Node 和生产 SDK；用户无需预装这些 SDK 的开发环境。启动参数支持下文列出的 S4/S5 显式配置；具体候选的准确源码、实际检查结果和剩余限制由发布记录说明。
 
 修改端口或数据目录：
 
@@ -50,6 +50,8 @@ Node 的构建基线为 24.16.0。视频按实际来源需要 `-YtDlp`、`-FFmpe
 
 `astrocyte-mcp.exe -h` 与 `astrocyte-sleep.exe -h` 列出原生参数。MCP 需要明确的项目、会话、调用者与 `signal-strength`；Sleep 需要明确日期、时区、衰减、初始置信度及事实投影。使用时明确传入应用的 `-data-dir`，未确定的参数由使用者决定。包中的启动脚本不调用这两个程序。
 
+构建入口通过 pnpm 11 的 `--config.registry=https://registry.npmjs.org` 显式选择官方源，并在安装前核对实际 registry。`--config.cache-dir`、`--config.state-dir` 与 `--store-dir` 分别指向本次 D 盘输出目录；冻结锁、包完整性及 TLS 检查继续执行。
+
 发布人员从完整的精确合并 SOURCE 构建：
 
 ```powershell
@@ -93,7 +95,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\release\Prepare-Runtim
 
 CodeGraph 同样使用准确源码的 package-lock 实际构建；发布 SDK 根目录直接导出 S4 使用的 API。ONNX 原 npm 包完整保留；其主项目 MIT、固定 v1.30.0 ThirdPartyNotices、随附 DirectML 1.15.4 的 Microsoft 二进制条款/源码许可/第三方通知，以及 DXC 1.8.2502.8 的完整 NCSA 复合通知分别放入 legal。DirectML 条款 §1(a) 允许其随 Windows/Xbox 的 ML 应用和服务分发，§3(c)/(e) 保留通知并限制独立分发；本包保留条款，不把其 DLL 归为 MIT。该 DLL 的存在不启用 GPU，实际 Laya 配置仍为明确 CPU。
 
-S5 `NewLaya` 需要绝对 Node/Worker/ModelDir/AssetsPath/SDKEntry/RPCEntry 路径、明确 Language/ModelRevision/Stderr 和启动/退出预算。S4 `repositorycontext.New` 需要 Git 身份、Node/SDK/Script、投影目录、读取预算和适用 AOCI 路径。语言、模型、预算和准入规则由现有产品策略与原 owner 的生产配置确定；P 不填默认值。H/B 的准确生产配置 SOURCE 未交付前，启动脚本没有新增虚构环境变量，这些字段尚不能通过本包启动参数启用。
+S5 `NewLaya` 需要绝对 Node/Worker/ModelDir/AssetsPath/SDKEntry/RPCEntry 路径、明确 Language/ModelRevision/Stderr 和启动/退出预算。S4 `repositorycontext.New` 需要 Git 身份、Node/SDK/Script、投影目录、读取预算和适用 AOCI 路径。启动脚本通过本文的 `CodeGraph*`、`RepositoryEnvironmentID`、`AOCIExecutable` 和 `Laya*` 参数传入已有生产配置；模型 revision、投影目录、读取预算及准入规则按生产组装执行。语言和 Laya 生命周期预算由使用者显式提供。
 
 配置前可从已提交 owner SOURCE 准备准确 adapter 资产：
 
