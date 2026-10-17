@@ -1,5 +1,46 @@
 # Windows x64 发布包记录
 
+## 2026-10-17 准确41ce候选包与实际解压验收
+
+候选产品 SOURCE 为 `41cefd00706ae284dbb45f857c2c49d2aebd807f`，由根普通合入发布入口 SOURCE `8f9d2cab22a904f94fc2ea6436528ed9f33e8c2e` 和独立阶段 REPORT `907febc53de6da1158c786ce4e044d6ca5ead96f` 后 push，并通过 `msg_5faac6184288` / `msg_beba9b60013b` 明确交付。本轨分支保持 `songconmaisaix31-design/release-package-20261014`，实际客户端 Codex 0.162.0 / GPT-6-Astra xhigh fast，Task / Dispatch 保持 `task_3347b755071e` / `ctx_aa50b90c8e52`。构建前核对准确41ce中的 `release/**` 与 Windows 说明和本轨已提交版本完全相同。
+
+**Build 与 Verify 均 EXIT 0，实际运行125/125项 PASS。** ZIP 为：
+
+`D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`
+
+ZIP 精确大小 **1,949,217,657 bytes**，1439个文件，未压缩合计 **3,548,363,700 bytes**。包包含四个 Go 程序、生产 web、启动和手动快照入口、准确41ce的两个 adapter、固定 Node/SDK/English与multilingual资产及完整 LICENSE/NOTICE/legal。标准 .NET ZIP 完成后在新 `v1017c` 目录标准解压；归档前与解压后的全部字节隐私扫描均为 private_matches=0，允许项检查通过。验收 SQLite 和公开 Q 来源没有进入 ZIP。
+
+### 实际命令与构建结果
+
+以下 runner 是本次通过文件编辑工具写入的实际外部命令文件，完整设置进程级 D Go/cache/temp/npm/pnpm/Node/test-output 和资源限制，调用已提交的 `Build-Windows.ps1` / `Verify-Windows.ps1`；没有修改开发源码或依赖锁。构建和完整运行验收的 Shell 均为 Windows PowerShell `5.1.26100.9711`。本轮 PS7 `7.6.6` 的实际检查范围为下节 pnpm CLI 配置、官方版本元数据和 parser。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File D:/Astrocyte-agent-assets/20261015/release-package/run-1017c.ps1 -Source 41cefd00706ae284dbb45f857c2c49d2aebd807f -Phase Build
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File D:/Astrocyte-agent-assets/20261015/release-package/run-1017c.ps1 -Source 41cefd00706ae284dbb45f857c2c49d2aebd807f -Phase Verify
+git diff --check
+```
+
+Build 的实际参数为 `-Source 41cefd00706ae284dbb45f857c2c49d2aebd807f -Label candidate -Runtime D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third -Output D:/Astrocyte-agent-assets/20261015/release-package/b1017c`。采用该准确 Git commit 的标准 archive；Go 1.27.2、Node 24.16.0、pnpm 11.27.0、Windows amd64、CGO_ENABLED=0。官方源冻结安装完成353个包及378项供应链政策检查，原三程序构建、TypeScript/Vite 和 `workbench-snapshot` 构建完成。Vite `702.68 kB` chunk 警告保留；官方元数据网络请求的原重试和安装最终成功均保存在 `b1017c-console.log`，没有跳过政策、锁、完整性或 TLS 检查。
+
+### 实际运行结果
+
+Verify 使用同一完整 ZIP 和准确 SOURCE，`-RequireCombined -Port 17887 -Output .../v1017c`，Q SOURCE 为 `40880b67e4a668ec0e19d00eb4f77a76fdf210ab`。SQLite、current、history 继续使用下节明确的原公开 `cross-day-20261015-0228` 同代输入，安全 SQL 期望使用本日只读重算的 `D:/Astrocyte-agent-assets/20261015/release-package/q1017a`。没有更改 Clock、事件或实际历史。
+
+- 新解压目录没有数据库或用户数据；包内固定 Node、ONNX native binding、Laya/CodeGraph/RPC、SQLite、十二个模型资产和两个 descriptor 检查通过，没有执行推理。
+- 空验收身份和系统 PATH 下实际启动成功。健康、九个静态 SPA 路径、两份静态资源通过；未登录读取、缺失 CSRF 写入和错误 Origin 均实际拒绝。真实 bootstrap 后创建分类 HTTP201，随后的实际读取可见。
+- 真实独立 SQLite 位于验收包的 `data`；未配置的 Relay 注册/任务/会话事件均保持真实空状态，未启动原生控制器。缺少认知快照时实际返回不可用。
+- 包内手动快照程序先发布应用自身空认知库 `snapshot-3972508667`，再只读发布原 Q 公开来源 `snapshot-2360291559`，后者时间为 `2026-10-17T04:46:44.2632065Z`。两次均通过实际包内程序完成，没有执行 Sleep。
+- 本日10项 SQL 数值与 HTTP逐项相同；1316个事件经14页逐一核对全部六字段及字段集合，MCP最高排名、两主题各三点真实历史、同主题20/50分页均通过。
+- 实际终止自有进程树、同库重启、新 session 和原分类持久化通过；认知快照、Focus及三项标量保持。initial/restart的自有监听均已关闭，收尾独立查询17887监听为0。
+
+原件为本轨 D 根的 `b1017c-console.log`、`v1017c-console.log`，以及 `b1017c/build.log`、`v1017c/{verify.log,result.json,private-path-scan.json,cognition-input-safe.json,initial-stdout.log,initial-stderr.log,restart-stdout.log,restart-stderr.log}`。`result.json` 明确 scope=`candidate-package-cognition-runtime`、source=完整41ce、checks=125、nonpass=0。大型动作前后 C 空余始终满足10 GiB，构建结束18,810,834,944 bytes、验收结束18,808,516,608 bytes。
+
+### 清理交接与实际剩余
+
+`D:/Astrocyte-agent-assets/20261015/release-package/reclaim-20261017.md` 列明本轮21个可再生成目录和三件源码归档的准确绝对路径、用途及保留项；`reclaim-20261017-processes.json` 记录这些目录的命令行进程引用为0。全部 Build / Verify 已结束，本人不再需要这些可再生成目录；删除由根独占执行。本轨没有删除缓存、旧失败记录、共享资源或验收数据；整个 `v1017c` 因含实际 SQLite/快照/证据继续保留。
+
+本候选完成打包和上述实际运行验收。完整默认浏览器、CI、L1/L2与原生控制器验收不由这125项替代；本轮没有执行模型、ASR、采集、Sleep、V4或修改共享64505服务。AOCI分发用途、S5/Jev与其他领域的未完成或未决定项继续按原 owner 的准确报告处理。未发布 tag 或 Release，后续发布决定由根负责。本节为最终候选验收的独立 REPORT，发布代码 SOURCE 仍为8f9d，产品包 SOURCE 仍为41ce。
+
 ## 2026-10-17 pnpm 官方源与 D 盘构建配置
 
 本轮沿 Task `task_3347b755071e` / Dispatch `ctx_aa50b90c8e52`、原工作树及分支执行。接管 HEAD `615d3a36e85aef0a5977751f895ee821a5603532`，工作树干净；Orca 公开终端确认 Codex 0.162.0 / GPT-6-Astra xhigh fast。根当前 `tasks/integration-cleanup-20261017.md` 与模块 12:16 计划授权准确 `36849a65377e4d339139b278139d18f159954533` 的候选 Build / Verify，复用 `runtime-sanitized-third`，禁止新增 Native、模型、ASR、采集、Sleep、V4 与缓存清理。
@@ -24,7 +65,7 @@ PS5.1 `5.1.26100.9711` 与 PS7 `7.6.6` 均 EXIT 0：实际 registry 为 `https:/
 
 `run-1017a.ps1 -Phase Build` 与 `run-1017b.ps1 -Phase Build` 均调用原 Build，准确 SOURCE 为 `36849a65377e4d339139b278139d18f159954533`，输出分别为 `b1017a` / `b1017b`。两次均完成固定 runtime 检查、1,388 文件 / 3,484,313,396 bytes / private_matches=0 扫描及标准源码归档解压；Go 1.27.2、Node 24.16.0、pnpm 11.27.0 已确认。冻结安装在 mirror 请求出现 ECONNRESET / 超时并耗尽工具自身重试后 EXIT 1，尚未执行生产构建，没有 ZIP。
 
-第二次仅设置进程级 `npm_config_registry`，实际请求仍到 mirror；该事实推动上述 CLI 修正。两次目录和 `build.log` 保留，第二次完整 stdout/stderr 为 `b1017b-console.log`；首次 transcript 未完整包含 native stdout，具体终端错误为 `TypeError: fetch failed` 和 `Frozen dependency installation failed`。没有用重试覆盖原目录，没有更换锁或自动下载替代版本。
+第二次仅设置进程级 `npm_config_registry`，实际请求仍到 mirror；该事实推动上述 CLI 修正。a/b 同样只设置了 `npm_config_cache`，其 pnpm 元数据缓存和状态目录没有得到 D 目录保证，不能计为 pnpm 全部缓存位于 D；c 已使用有效 CLI 参数显式指定 cache/state/store。两次目录和 `build.log` 保留，第二次完整 stdout/stderr 为 `b1017b-console.log`；首次 transcript 未完整包含 native stdout，具体终端错误为 `TypeError: fetch failed` 和 `Frozen dependency installation failed`。没有用重试覆盖原目录，没有更换锁或自动下载替代版本。
 
 ### 公开 Q 来源的本日只读期望
 
