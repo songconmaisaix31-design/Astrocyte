@@ -6,16 +6,26 @@
 
 根当前 `tasks/integration-cleanup-20261017.md` 与正式消息 `msg_1999ffadc7c1` 为本轮范围。模块负责人沿原 Task `task_315679474dc4` / Dispatch `ctx_ba962e49eebe` / `term_5fc6d06c-c4e3-45bc-bf20-5d9c310df2bb` 绑定原 `run_aa4e6a119547` generation 12；实际终端显示 Codex / GPT-6-Astra xhigh fast。本轮只维护发布管理文档，原日流程不重新执行。
 
-唯一 P 沿原 `task_3347b755071e`、`release-package-20261014` 工作树和 `songconmaisaix31-design/release-package-20261014` 分支接续。原阶段已 completed / succeeded，当前工作树 clean、HEAD `615d3a36e85aef0a5977751f895ee821a5603532`，公开终端清单为空；后继实际 Dispatch 和模型按启动回执登记。写域为 `release/**`、`docs/release/package-report.md`、`docs/release/windows.md` 及本轨独占 D 输出，其他领域问题交原作者，禁止第四层。
+唯一 P 沿原 `task_3347b755071e`、`release-package-20261014` 工作树和 `songconmaisaix31-design/release-package-20261014` 分支接续。原阶段已 completed / succeeded，接管工作树 clean、HEAD `615d3a36e85aef0a5977751f895ee821a5603532`，启动前公开终端清单为空。本次 Dispatch `ctx_aa50b90c8e52` / `term_5628dcac-f809-4eb4-958f-91c7553cd0f3` 已真实 ready / turn_started / live，depth=2；实际 Codex0.162.0 / GPT-6-Astra xhigh fast。写域为 `release/**`、`docs/release/package-report.md`、`docs/release/windows.md` 及本轨独占 D 输出，其他领域问题交原作者，禁止第四层。
 
 | 本轮准确输入与动作 | 验收与边界 |
 |---|---|
-| 产品 SOURCE `36849a65377e4d339139b278139d18f159954533`，已有 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third` | 使用标准 Git archive 与原 Build-Windows 入口制作同源候选 ZIP；不重新准备运行时、下载或调用模型 |
+| 当前候选 SOURCE `41cefd00706ae284dbb45f857c2c49d2aebd807f`，已有 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third` | 根已普通合入下述P修订；使用标准 Git archive 与原 Build-Windows 入口制作同源候选 ZIP，不重新准备运行时或调用模型 |
 | 在新的独占 D 目录构建、扫描、解压及启动 | 原10 GiB守卫保持；所有 Go / Node / PowerShell 父进程缓存及临时输出使用明确 D 目录。根已报告 C 空余18,838,441,984 bytes，P 在大型动作前后实际检查 |
 | 原 Verify-Windows 及已有公开 Q 快照 | 实际隐私扫描、静态资源、HTTP session / CSRF、SQLite写读、同库重启及适用认知检查；动态日期指标从同一真实来源只读重算，不改变 Clock或采集数据 |
 | 固定 SOURCE、完整命令、ZIP路径 / 字节大小及独立 REPORT | 保留全部首次失败；脚本返修由 P 提交准确 SOURCE / REPORT，根普通消费后才能改变候选源码。完整默认、CI、L1 / L2保持各自未通过范围，不发布 tag 或 Release |
 
-本轮禁止新 Native、产品模型、ASR、采集、Sleep、V4操作及缓存清理，清理由根独占。64505与原 SQLite、公开来源及配置由 H 恢复，P 使用自身新数据目录与独立端口。旧 Task 中运行时准备及“没有最终 I”的阶段指示已由本轮准确 SOURCE 与候选授权更新，原成功准备和适用检查不重复执行。
+本轮禁止新 Native、产品模型、ASR、采集、Sleep、V4操作及缓存清理，清理由根独占。根 `msg_c6c9c83dfdd8` 接管调用原 H 已有恢复脚本恢复64505与原 SQLite、公开来源及配置；P 使用自身新数据目录与独立端口。旧 Task 中运行时准备及“没有最终 I”的阶段指示已由本轮准确 SOURCE 与候选授权更新，原成功准备和适用检查不重复执行。
+
+12:21 原 Build 的固定运行时检查1388文件 / 3,484,313,396 bytes、private_matches=0，标准36849源码归档与解压完成；冻结安装在327/353包后因默认镜像连接重置 / headers timeout返回EXIT1，未产生ZIP。首输出 `D:/Astrocyte-agent-assets/20261015/release-package/b1017a` 保留。根 `msg_b37b9e4abca1` 已核仓库.npmrc与锁没有固化镜像URL，明确选择本次进程级官方 npm registry、保持frozen-lockfile / integrity / TLS与准确SOURCE，全局配置不变；P在新独占 `b1017b` 继续原Build。
+
+原 Q 只读检查程序对已有公开Git及同代SQLite重算本日结果，实际EXIT0。新安全结果目录为 `D:/Astrocyte-agent-assets/20261015/release-package/q1017a`，本模块独读SQL10、admission与1316行六字段：day=2026-10-17、snapshot_at与原代一致，三日计数52/0/0，manual当天0 / 七日590 / 三十日1316，两个主题各3个历史点、最高MCP21事件，Astrocyte134事件支持20/50分页。该检查没有新增采集或Sleep，原正式V4不在范围。
+
+12:28 P 已交可消费 SOURCE `8f9d2cab22a904f94fc2ea6436528ed9f33e8c2e` / 独立 REPORT `907febc53de6da1158c786ce4e044d6ca5ead96f`，含 Windows 配置说明提交 `312f1affcf91df3a14185979dff76231ddf58f26`。本模块独核远端同REPORT、原树clean、SOURCE祖先、完整三件差异与diff检查。Build通过已安装pnpm支持的 `--config.registry` 显式选择官方源，同参数查询实际值并严格检查；cache/state/store均指向本次D输出。PS5.1/PS7实际配置与官方TypeScript元数据查询成功，原件 `registry-cli-ps51-second.log` / `registry-cli-ps7.log` 及runner已完整独读。
+
+原 `b1017b` 实际仍访问镜像并最终EXIT1；pnpm11改用 `pnpm_config_` 前缀的本机与官方说明核查、实际配置查询及首CLI选项错误均保留。根 `msg_5c635e20500a` 要求发布入口修正与准确说明先普通集成，本模块已通过 `msg_af7f6712080a` 交付完整SOURCE/REPORT。
+
+12:29 根 `msg_5faac6184288` 已普通no-ff合入P REPORT907，准确新I为 `41cefd00706ae284dbb45f857c2c49d2aebd807f`，已push。本模块独核两父为36849和907、全部release文件与P当前来源无差异，随即交同一P在新短D `b1017c` / `v1017c` 继续Build/Verify，复用runtime和本日q1017a。候选尚未产出，完整默认、CI、L1/L2各自范围保持。
 
 ### 2026-10-16 12:55 组合构建与真实准入原件
 
