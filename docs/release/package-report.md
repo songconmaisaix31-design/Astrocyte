@@ -1,5 +1,41 @@
 # Windows x64 发布包记录
 
+## 2026-10-17 pnpm 官方源与 D 盘构建配置
+
+本轮沿 Task `task_3347b755071e` / Dispatch `ctx_aa50b90c8e52`、原工作树及分支执行。接管 HEAD `615d3a36e85aef0a5977751f895ee821a5603532`，工作树干净；Orca 公开终端确认 Codex 0.162.0 / GPT-6-Astra xhigh fast。根当前 `tasks/integration-cleanup-20261017.md` 与模块 12:16 计划授权准确 `36849a65377e4d339139b278139d18f159954533` 的候选 Build / Verify，复用 `runtime-sanitized-third`，禁止新增 Native、模型、ASR、采集、Sleep、V4 与缓存清理。
+
+修正 SOURCE `8f9d2cab22a904f94fc2ea6436528ed9f33e8c2e` 已普通 push，`git ls-remote` 返回相同完整 SHA；父提交 `312f1affcf91df3a14185979dff76231ddf58f26` 修正 Windows 说明中的 S4/S5 配置状态。当前 Build 通过 `--config.registry=https://registry.npmjs.org` 显式选择官方源，安装前以相同 CLI 参数查询实际 registry 并严格检查；`--config.cache-dir`、`--config.state-dir` 和原 `--store-dir` 均在本次 D 输出目录。安装保持 `--frozen-lockfile`，生产构建继续原 `pnpm build`，锁、业务代码、全局配置、凭据与 TLS 设置没有修改。
+
+### 实际配置检查
+
+根 `msg_b37b9e4abca1` 选择官方源，`msg_5c635e20500a` 要求修正发布入口。官方 registry 的实际 HTTPS 检查返回 200。pnpm 11.27.0 本机代码的配置前缀为 `pnpm_config_`；[官方 pnpm 11 迁移说明](https://github.com/pnpm/pnpm.io/blob/main/blog/releases/11.0.md) 同样记录该环境变量变化。实际单项配置查询确认 `npm_config_registry` 未改变有效 mirror，`pnpm_config_registry` 可选择官方源；发布入口使用 CLI 显式配置。
+
+外部检查文件和日志均在 `D:/Astrocyte-agent-assets/20261015/release-package/`，通过文件编辑工具写入。实际命令：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File D:/Astrocyte-agent-assets/20261015/release-package/registry-probe-1017.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File D:/Astrocyte-agent-assets/20261015/release-package/registry-probe-1017.ps1
+git diff --check
+```
+
+PS5.1 `5.1.26100.9711` 与 PS7 `7.6.6` 均 EXIT 0：实际 registry 为 `https://registry.npmjs.org/`，cache/state 为 `env-1017b/pnpm-cache` 与 `env-1017b/pnpm-state`，实际官方 `pnpm view typescript@5.9.3 version` 返回 `5.9.3`；Build parser 通过。成功原件 `registry-cli-ps51-second.log`、`registry-cli-ps7.log`；首次 `registry-cli-ps51.log` 记录 `config get` 不接受无 `config.` 前缀的三个选项，EXIT 1，完整保留。该阶段未将配置检查计作完整依赖安装或候选包通过。
+
+### 36849 两次网络失败
+
+`run-1017a.ps1 -Phase Build` 与 `run-1017b.ps1 -Phase Build` 均调用原 Build，准确 SOURCE 为 `36849a65377e4d339139b278139d18f159954533`，输出分别为 `b1017a` / `b1017b`。两次均完成固定 runtime 检查、1,388 文件 / 3,484,313,396 bytes / private_matches=0 扫描及标准源码归档解压；Go 1.27.2、Node 24.16.0、pnpm 11.27.0 已确认。冻结安装在 mirror 请求出现 ECONNRESET / 超时并耗尽工具自身重试后 EXIT 1，尚未执行生产构建，没有 ZIP。
+
+第二次仅设置进程级 `npm_config_registry`，实际请求仍到 mirror；该事实推动上述 CLI 修正。两次目录和 `build.log` 保留，第二次完整 stdout/stderr 为 `b1017b-console.log`；首次 transcript 未完整包含 native stdout，具体终端错误为 `TypeError: fetch failed` 和 `Frozen dependency installation failed`。没有用重试覆盖原目录，没有更换锁或自动下载替代版本。
+
+### 公开 Q 来源的本日只读期望
+
+`run-1017a.ps1 -Phase Cognition` 实际 EXIT 0，仅调用 Q 已有 `actual-public-cognition-final.exe --mode inspect`。原来源根为 `release-cognition-20261014/.verification/cross-day-20261015-0228`，SQLite 为 `app-state/state.sqlite`，公开 bare Git 为 `public-source.git`、ref `b789466ff62f3c9b0e08ec392729f5bbfc5cfaa1`。原发布根 `local/astrocyte-workbench/v0.1` 的 current 为 `snapshot-1711995690` / `2026-10-14T18:48:42.2097174Z`；Q SOURCE `40880b67e4a668ec0e19d00eb4f77a76fdf210ab` 已在准确候选历史内。
+
+新安全结果在本轨 D `q1017a`，SQL 日期为真实上海时间 `2026-10-17`。三个日计数为 10-15 的 52、10-16 的 0、10-17 的 0；manual today=0、days7=590、days30=1316。其余标量来自相同库；1316 个事件逐一核对实际公开 Git origin、时间与六字段，两个主题各三点历史、分页20/50、排名和原始文本零泄漏通过。新旧六字段 JSON 的 `git diff --no-index --quiet` 为 EXIT 0。实际库仍为1316事件、1316信号、2节点和原有1次 Sleep，未生成事件或执行新的 Sleep。
+
+该阶段所有工具进程继承 D 的 GOCACHE/GOTMPDIR、TEMP/TMP、npm/Node 编译缓存、测试输出以及 GOMAXPROCS=2 / GOFLAGS=-p=1。GOCACHE 沿当前根确认的共享 `D:/Astrocyte-agent-assets/20261015/go-build/backend`，GOTMPDIR 为独占 `go-temp/release-package`。C 空余每次大型动作前后均满足10 GiB，第二次开始实测18,818,416,640 bytes。未修改共享64505服务及其库。
+
+本节为可消费发布入口修正及只读输入报告；新精确候选 SOURCE 须由根普通合入后明确交付，再执行完整 Build / Verify。完整默认浏览器、CI、L1/L2、原生控制器及正式发布各自保留未完成范围，未发布 tag 或 Release。
+
 ## 2026-10-16 Build 环境作用域修正、pwsh 功能验证与 S4 正向构造
 
 本阶段 Task `task_3347b755071e`，Dispatch `ctx_1874978728b8`。固定原树和分支 `songconmaisaix31-design/release-package-20261014`。本轮三项修正：Build-Windows.ps1 环境作用域、pwsh 功能验证的准确进程级报告、一次真实 S4 完整参数正向构造。
