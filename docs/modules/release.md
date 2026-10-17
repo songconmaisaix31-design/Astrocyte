@@ -2,6 +2,21 @@
 
 ## 2026-10-15 当前发布协调
 
+### 2026-10-17 12:16 准确组合候选包计划
+
+根当前 `tasks/integration-cleanup-20261017.md` 与正式消息 `msg_1999ffadc7c1` 为本轮范围。模块负责人沿原 Task `task_315679474dc4` / Dispatch `ctx_ba962e49eebe` / `term_5fc6d06c-c4e3-45bc-bf20-5d9c310df2bb` 绑定原 `run_aa4e6a119547` generation 12；实际终端显示 Codex / GPT-6-Astra xhigh fast。本轮只维护发布管理文档，原日流程不重新执行。
+
+唯一 P 沿原 `task_3347b755071e`、`release-package-20261014` 工作树和 `songconmaisaix31-design/release-package-20261014` 分支接续。原阶段已 completed / succeeded，当前工作树 clean、HEAD `615d3a36e85aef0a5977751f895ee821a5603532`，公开终端清单为空；后继实际 Dispatch 和模型按启动回执登记。写域为 `release/**`、`docs/release/package-report.md`、`docs/release/windows.md` 及本轨独占 D 输出，其他领域问题交原作者，禁止第四层。
+
+| 本轮准确输入与动作 | 验收与边界 |
+|---|---|
+| 产品 SOURCE `36849a65377e4d339139b278139d18f159954533`，已有 `D:/Astrocyte-agent-assets/20261015/release-package/runtime-sanitized-third` | 使用标准 Git archive 与原 Build-Windows 入口制作同源候选 ZIP；不重新准备运行时、下载或调用模型 |
+| 在新的独占 D 目录构建、扫描、解压及启动 | 原10 GiB守卫保持；所有 Go / Node / PowerShell 父进程缓存及临时输出使用明确 D 目录。根已报告 C 空余18,838,441,984 bytes，P 在大型动作前后实际检查 |
+| 原 Verify-Windows 及已有公开 Q 快照 | 实际隐私扫描、静态资源、HTTP session / CSRF、SQLite写读、同库重启及适用认知检查；动态日期指标从同一真实来源只读重算，不改变 Clock或采集数据 |
+| 固定 SOURCE、完整命令、ZIP路径 / 字节大小及独立 REPORT | 保留全部首次失败；脚本返修由 P 提交准确 SOURCE / REPORT，根普通消费后才能改变候选源码。完整默认、CI、L1 / L2保持各自未通过范围，不发布 tag 或 Release |
+
+本轮禁止新 Native、产品模型、ASR、采集、Sleep、V4操作及缓存清理，清理由根独占。64505与原 SQLite、公开来源及配置由 H 恢复，P 使用自身新数据目录与独立端口。旧 Task 中运行时准备及“没有最终 I”的阶段指示已由本轮准确 SOURCE 与候选授权更新，原成功准备和适用检查不重复执行。
+
 ### 2026-10-16 12:55 组合构建与真实准入原件
 
 本模块只读核根既有原件，没有重复运行。`integration/root-product-build-efec99a/result.json` 与完整 `build.log` 记录准确 `efec99acc4485529e2f6b06c54c82e4c97023e9f` 的首次完整构建 EXIT1 /17.5330032秒，S2 admission 与 judgmentApi 的 TypeScript 类型错误保留。后继 `integration/root-product-build-types-first/result.json` 与完整 `build.log` 记录准确 `2d27b6898e3ae49d3420ef8ad8441a65506cd1f5`、source_after 同值、EXIT0 /15.039582秒：三件 Go 程序、tsc 与 Vite 完成，685.35kB chunk 警告保留。该成功仅归准确2d27，完整 lint 终态尚未从仅含调用行的 `lint.log` 确认。
