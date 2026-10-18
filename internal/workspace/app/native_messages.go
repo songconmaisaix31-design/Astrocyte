@@ -22,6 +22,8 @@ type NativeMessagePreparation struct {
 	Input     domain.RelayPreparedInput `json:"-"`
 	ObjectRef string                    `json:"-"`
 	Phase     string                    `json:"-"`
+	Scope     NativeMessageScope        `json:"-"`
+	Lease     NativeMessageLease        `json:"-"`
 }
 
 type NativeMessageRepository interface {
@@ -32,8 +34,9 @@ type NativeMessageRepository interface {
 }
 
 type nativeMessageOptions struct {
-	objects ContextObjectStore
-	owned   nativeMessageOwnedReader
+	objects    ContextObjectStore
+	owned      nativeMessageOwnedReader
+	authorizer NativeMessageAuthorizer
 }
 
 func (s *localProjectService) WithNativeMessageObjects(objects ContextObjectStore) *localProjectService {
@@ -55,8 +58,8 @@ func (s *localProjectService) nativeMessageServices() (NativeMessageRepository, 
 	options := s.nativeMessageOptions
 	s.nativeMessageMu.RUnlock()
 	repository, ok := s.repo.(NativeMessageRepository)
-	if !ok || options.objects == nil || options.owned == nil {
-		return nil, options, projectError(apierrors.UnsupportedCapability, "actual native message repository, original controller reader and object store are required")
+	if !ok || options.objects == nil || options.owned == nil || options.authorizer == nil {
+		return nil, options, projectError(apierrors.UnsupportedCapability, "actual native message repository, original controller reader, object store and send authorizer are required")
 	}
 	return repository, options, nil
 }
@@ -83,12 +86,19 @@ func (s *localProjectService) PrepareNativeMessage(ctx context.Context, caller d
 }
 
 func (s *localProjectService) prepareNativeMessage(ctx context.Context, caller domain.Caller, projectID, sessionID, message string) (domain.NativeSession, error) {
+	return s.prepareNativeMessageForScope(ctx, caller, projectID, sessionID, message, NativeMessageScope{Kind: "project"})
+}
+
+func (s *localProjectService) prepareNativeMessageForScope(ctx context.Context, caller domain.Caller, projectID, sessionID, message string, scope NativeMessageScope) (domain.NativeSession, error) {
 	var result domain.NativeSession
 	repository, options, err := s.nativeMessageServices()
 	if err != nil {
 		return result, err
 	}
 	if err := repository.RequireNativeMessageOutsideTx(ctx); err != nil {
+		return result, err
+	}
+	if err := ValidateNativeMessageScope(scope); err != nil {
 		return result, err
 	}
 	op, err := operationID(caller, domain.NativeCommand{})
@@ -123,6 +133,9 @@ func (s *localProjectService) prepareNativeMessage(ctx context.Context, caller d
 		if err := preparedNativeMessageCaller(previous, caller); err != nil {
 			return result, err
 		}
+		if previous.Scope != scope {
+			return result, projectError(apierrors.ScopeDenied, "original native input has a different fixed purpose")
+		}
 		if err := validatePreparedNativeMessage(project, session, previous, owned); err != nil {
 			return result, err
 		}
@@ -133,7 +146,28 @@ func (s *localProjectService) prepareNativeMessage(ctx context.Context, caller d
 		if !bytes.Equal(original, []byte(message)) {
 			return result, projectError(apierrors.VersionConflict, "operation identity already binds a different fixed native input")
 		}
-		return session, nil
+		err = options.authorizer.WithNativeMessagePreparation(ctx, NativeMessageAuthorization{Caller: caller, Preparation: previous}, func(txContext context.Context) error {
+			currentProject, current, _, err := s.session(txContext, caller, projectID, sessionID, "send")
+			if err != nil {
+				return err
+			}
+			if err := s.nativePermission(txContext, caller, currentProject, current.CLI, "send"); err != nil {
+				return err
+			}
+			currentPrepared, err := repository.LoadNativeMessagePreparation(txContext, sessionID, op)
+			if err != nil {
+				return err
+			}
+			if !reflect.DeepEqual(currentPrepared, previous) || !reflect.DeepEqual(current, session) || !reflect.DeepEqual(currentProject, project) {
+				return projectError(apierrors.ContextStale, "original native preparation, project or session changed during authorization")
+			}
+			if err := validatePreparedNativeMessage(currentProject, current, currentPrepared, owned); err != nil {
+				return err
+			}
+			result = current
+			return nil
+		})
+		return result, err
 	}
 	if session.PendingOperation != "" || len(session.Operations) >= 64 {
 		return result, projectError(apierrors.DeliveryUnknown, "native session has pending delivery or exhausted operation receipts")
@@ -142,7 +176,13 @@ func (s *localProjectService) prepareNativeMessage(ctx context.Context, caller d
 	if err != nil {
 		return result, err
 	}
-	err = repository.WithNativeMessageTx(ctx, func(txContext context.Context) error {
+	now := time.Now().UTC()
+	candidate := NativeMessagePreparation{Input: domain.RelayPreparedInput{
+		Session: session, OperationID: op, ActorID: caller.ID, ActorKind: caller.Kind, ActorProjectID: caller.ProjectID,
+		ControllerID: owned.Evidence.ControllerID, StartupOperationID: owned.Evidence.StartupOperationID,
+		WorkspaceRoot: owned.Evidence.WorkspaceRoot, PreparedAt: now,
+	}, ObjectRef: object, Phase: "prepared", Scope: scope}
+	err = options.authorizer.WithNativeMessagePreparation(ctx, NativeMessageAuthorization{Caller: caller, Preparation: candidate}, func(txContext context.Context) error {
 		currentProject, current, _, err := s.session(txContext, caller, projectID, sessionID, "send")
 		if err != nil {
 			return err
@@ -158,7 +198,7 @@ func (s *localProjectService) prepareNativeMessage(ctx context.Context, caller d
 			if err != nil {
 				return err
 			}
-			if previous.Phase != "prepared" || previous.ObjectRef != object || previous.Input.ActorID != caller.ID || previous.Input.ActorKind != caller.Kind || previous.Input.ActorProjectID != caller.ProjectID {
+			if previous.Phase != "prepared" || previous.ObjectRef != object || previous.Scope != scope || previous.Input.ActorID != caller.ID || previous.Input.ActorKind != caller.Kind || previous.Input.ActorProjectID != caller.ProjectID {
 				return projectError(apierrors.DeliveryUnknown, "original native input is already attempted or binds different fixed input")
 			}
 			if err := validatePreparedNativeMessage(currentProject, current, previous, owned); err != nil {
@@ -173,17 +213,13 @@ func (s *localProjectService) prepareNativeMessage(ctx context.Context, caller d
 		if current.PendingOperation != "" || len(current.Operations) >= 64 {
 			return projectError(apierrors.DeliveryUnknown, "native session has pending delivery or exhausted operation receipts")
 		}
-		now := time.Now().UTC()
 		current.PendingOperation, current.LastOperationID, current.UpdatedAt = op, op, now
 		if current.Operations == nil {
 			current.Operations = map[string]domain.NativeOperation{}
 		}
 		current.Operations[op] = domain.NativeOperation{Action: "send", Status: "pending", CreatedAt: now}
-		prepared := NativeMessagePreparation{Input: domain.RelayPreparedInput{
-			Session: current, OperationID: op, ActorID: caller.ID, ActorKind: caller.Kind, ActorProjectID: caller.ProjectID,
-			ControllerID: owned.Evidence.ControllerID, StartupOperationID: owned.Evidence.StartupOperationID,
-			WorkspaceRoot: owned.Evidence.WorkspaceRoot, PreparedAt: now,
-		}, ObjectRef: object, Phase: "prepared"}
+		prepared := candidate
+		prepared.Input.Session = current
 		if err := repository.SaveNativeMessagePreparation(txContext, current, prepared, ""); err != nil {
 			return err
 		}
@@ -263,7 +299,11 @@ func (s *localProjectService) sendPreparedNativeMessage(ctx context.Context, cal
 	if err := validatePreparedNativeMessage(project, session, prepared, owned); err != nil {
 		return domain.NativeObservation{}, err
 	}
-	err = repository.WithNativeMessageTx(ctx, func(txContext context.Context) error {
+	var sendDeadline time.Time
+	err = options.authorizer.WithNativeMessageSend(ctx, NativeMessageAuthorization{Caller: caller, Preparation: prepared}, func(txContext context.Context) error {
+		if err := txContext.Err(); err != nil {
+			return err
+		}
 		currentProject, current, _, err := s.session(txContext, caller, projectID, sessionID, "send")
 		if err != nil {
 			return err
@@ -282,12 +322,22 @@ func (s *localProjectService) sendPreparedNativeMessage(ctx context.Context, cal
 			return err
 		}
 		currentPrepared.Phase = "send_attempted"
+		sendDeadline, _ = txContext.Deadline()
 		return repository.SaveNativeMessagePreparation(txContext, current, currentPrepared, "prepared")
 	})
 	if err != nil {
 		return domain.NativeObservation{}, err
 	}
-	observation, sendErr := adapter.Send(ctx, session, string(input))
+	sendContext := ctx
+	if !sendDeadline.IsZero() {
+		var cancel context.CancelFunc
+		sendContext, cancel = context.WithDeadline(ctx, sendDeadline)
+		defer cancel()
+	}
+	if err := sendContext.Err(); err != nil {
+		return domain.NativeObservation{}, err
+	}
+	observation, sendErr := adapter.Send(sendContext, session, string(input))
 	finishErr := repository.WithNativeMessageTx(context.WithoutCancel(ctx), func(txContext context.Context) error {
 		current, err := s.repo.LoadSession(txContext, sessionID)
 		if err != nil {

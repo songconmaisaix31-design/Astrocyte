@@ -8,6 +8,7 @@ import (
 	"github.com/songconmaisaix31-design/Astrocyte/internal/apierrors"
 	swarm "github.com/songconmaisaix31-design/Astrocyte/internal/swarm/app"
 	"github.com/songconmaisaix31-design/Astrocyte/internal/swarm/domain"
+	workspaceapp "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/app"
 	workspace "github.com/songconmaisaix31-design/Astrocyte/internal/workspace/domain"
 )
 
@@ -20,6 +21,11 @@ type SwarmNativeBridge struct {
 var _ swarm.MemberAuthorizer = (*SwarmNativeBridge)(nil)
 var _ swarm.ExecutionDescriptorReader = (*SwarmNativeBridge)(nil)
 var _ swarm.ExecutionOwnership = (*SwarmNativeBridge)(nil)
+var _ swarm.PreparedMemberLeaseBinder = (*SwarmNativeBridge)(nil)
+
+func (b *SwarmNativeBridge) BindPreparedMemberLease(ctx context.Context, lease domain.Lease) error {
+	return b.repo.db.BindSwarmNativeMessageLease(ctx, lease.SessionID, lease.OperationID, workspaceapp.NativeMessageLease{WorkItemID: lease.WorkItemID, MissionID: lease.MissionID, Fence: lease.Fence})
+}
 
 func missingSwarmLease(err error) bool {
 	var missing *apierrors.ServiceError

@@ -29,6 +29,10 @@ type PreparedMemberInputReader interface {
 	ReadPreparedMemberInput(context.Context, string, string) (PreparedMemberInput, error)
 }
 
+type PreparedMemberLeaseBinder interface {
+	BindPreparedMemberLease(context.Context, domain.Lease) error
+}
+
 func ValidatePreparedMemberInput(ctx context.Context, p domain.Principal, m Member, input PreparedMemberInput) error {
 	b, err := AuthorizedBindingForMember(ctx, p, m)
 	if err != nil {
