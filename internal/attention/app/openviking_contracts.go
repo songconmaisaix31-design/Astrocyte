@@ -75,5 +75,5 @@ type OpenVikingSearchCommand struct {
 
 type OpenVikingContentCommand struct {
 	URI   string `json:"uri"`
-	Level int    `json:"level"`
+	Level *int   `json:"level"`
 }

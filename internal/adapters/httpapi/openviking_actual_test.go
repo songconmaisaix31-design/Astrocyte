@@ -178,6 +178,15 @@ func TestOpenVikingActualHTTPUnconfiguredAndRefused(t *testing.T) {
 				t.Fatal("未配置或真实连接拒绝的远端动作应返回503", status)
 			}
 		}
+		for _, body := range []map[string]any{
+			{"uri": "viking://resources/astrocyte/projects/" + space.ID + "/README.md"},
+			{"uri": "viking://resources/astrocyte/projects/" + space.ID + "/README.md", "level": nil},
+		} {
+			status, _ = request("POST", "/project-spaces/"+space.ID+"/openviking/content", body, session.CSRF, server.URL)
+			if status != 400 {
+				t.Fatal("缺失或null层级必须在远端请求前拒绝", status)
+			}
+		}
 		var count int
 		if err := db.Conn().QueryRowContext(ctx, "SELECT count(*) FROM attention_openviking_submissions").Scan(&count); err != nil || count != 0 {
 			t.Fatal("拒绝路径产生了提交记录", count, err)

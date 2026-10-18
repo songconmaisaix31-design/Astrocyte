@@ -22,3 +22,30 @@ func TestOpenVikingURIParameterRules(t *testing.T) {
 		}
 	}
 }
+
+func TestOpenVikingResourceBindingRules(t *testing.T) {
+	root := "viking://user/alice/resources/astrocyte/projects/project"
+	for _, input := range []struct{ bound, observed, want string }{
+		{"", root + "/source-a", root + "/source-a"},
+		{root + "/source-a", root + "/source-a", root + "/source-a"},
+		{root + "/source-a", "", root + "/source-a"},
+		{root + "/中文 笔记", root + "/%E4%B8%AD%E6%96%87%20%E7%AC%94%E8%AE%B0", root + "/%E4%B8%AD%E6%96%87%20%E7%AC%94%E8%AE%B0"},
+	} {
+		got, err := BindVikingResource(root, input.bound, input.observed)
+		if err != nil || got != input.want {
+			t.Fatal("资源绑定参数不一致", got, err)
+		}
+	}
+	for _, input := range []struct{ bound, observed string }{
+		{"", root},
+		{root + "/source-a", root},
+		{root + "/source-a", root + "/source-b"},
+		{root + "/source-a", root + "/source-a/child"},
+		{root + "/source-a", root + "-other/source-a"},
+		{root, ""},
+	} {
+		if _, err := BindVikingResource(root, input.bound, input.observed); err == nil {
+			t.Fatal("资源扩大或改绑参数未拒绝", input)
+		}
+	}
+}

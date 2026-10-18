@@ -226,15 +226,11 @@ func (s *OpenVikingService) Refresh(ctx context.Context, p Principal, id string)
 	if task.TaskID != row.TaskID || !slices.Contains([]string{"pending", "running", "cancelling", "completed", "failed", "cancelled"}, task.Status) {
 		return row, nil, serviceError(apierrors.ProviderUnavailable, "上游任务身份或状态无效", "inspect_upstream_task")
 	}
-	if task.ResourceID != "" {
-		if err := domain.VikingWithin(task.ResourceID, root); err != nil {
-			return row, nil, serviceError(apierrors.ScopeDenied, "上游任务资源超出项目范围", "inspect_upstream_scope")
-		}
-		row.RootURI, err = domain.CanonicalVikingURI(task.ResourceID)
-		if err != nil {
-			return row, nil, err
-		}
+	boundURI, err := domain.BindVikingResource(root, row.RootURI, task.ResourceID)
+	if err != nil {
+		return row, nil, serviceError(apierrors.ScopeDenied, "上游任务资源与原提交的固定范围不一致", "inspect_original_submission_resource")
 	}
+	row.RootURI = boundURI
 	if task.Status == "completed" && row.RootURI == "" {
 		return row, nil, serviceError(apierrors.ProviderUnavailable, "已完成任务缺少资源 URI", "inspect_upstream_task")
 	}
@@ -267,7 +263,11 @@ func (s *OpenVikingService) permittedURI(ctx context.Context, spaceID, uri, root
 		if row.BaseURL != status.BaseURL || row.Account != status.Account || row.User != status.User || row.Destination != root || row.Status != "completed" || row.RootURI == "" {
 			continue
 		}
-		if err := domain.VikingWithin(uri, row.RootURI); err == nil {
+		bound, err := domain.BindVikingResource(root, row.RootURI, "")
+		if err != nil {
+			return serviceError(apierrors.ContextStale, "已保存资源范围无效，需要核实原提交", "inspect_original_submission_resource")
+		}
+		if err := domain.VikingWithin(uri, bound); err == nil {
 			return s.currentReference(ctx, SourceRef{MaterialID: row.MaterialID, Revision: row.Revision}, spaceID)
 		}
 	}
@@ -304,7 +304,7 @@ func (s *OpenVikingService) Content(ctx context.Context, p Principal, spaceID st
 	if err := authorize(p, true); err != nil {
 		return "", err
 	}
-	if c.Level < 0 || c.Level > 2 {
+	if c.Level == nil || *c.Level < 0 || *c.Level > 2 {
 		return "", serviceError(apierrors.ValidationFailed, "内容层级必须是 0、1 或 2", "choose_supported_level")
 	}
 	canonical, err := domain.CanonicalVikingURI(c.URI)
@@ -312,6 +312,7 @@ func (s *OpenVikingService) Content(ctx context.Context, p Principal, spaceID st
 		return "", serviceError(apierrors.ValidationFailed, "内容 URI 无效", "select_project_resource")
 	}
 	c.URI = canonical
+	level := *c.Level
 	status, root, err := s.scope(ctx, p, spaceID)
 	if err != nil {
 		return "", err
@@ -320,10 +321,10 @@ func (s *OpenVikingService) Content(ctx context.Context, p Principal, spaceID st
 		return "", err
 	}
 	uri := c.URI
-	if c.Level < 2 && (strings.HasSuffix(uri, "/.abstract.md") || strings.HasSuffix(uri, "/.overview.md")) {
+	if level < 2 && (strings.HasSuffix(uri, "/.abstract.md") || strings.HasSuffix(uri, "/.overview.md")) {
 		uri = uri[:strings.LastIndex(uri, "/")]
 	}
-	content, err := s.gateway.Read(ctx, uri, c.Level)
+	content, err := s.gateway.Read(ctx, uri, level)
 	if err != nil {
 		return "", err
 	}

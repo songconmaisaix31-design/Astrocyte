@@ -73,3 +73,42 @@ func VikingWithin(raw, root string) error {
 	}
 	return nil
 }
+
+// 上游资源首次固定后只能核实同一规范 URI。
+func BindVikingResource(projectRoot, boundURI, observedURI string) (string, error) {
+	root, err := CanonicalVikingURI(projectRoot)
+	if err != nil {
+		return "", err
+	}
+	strict := func(raw string) (string, error) {
+		canonical, err := CanonicalVikingURI(raw)
+		if err != nil {
+			return "", err
+		}
+		if canonical == root {
+			return "", fmt.Errorf("resource must be strictly below the project root")
+		}
+		if err := VikingWithin(canonical, root); err != nil {
+			return "", err
+		}
+		return canonical, nil
+	}
+	bound := ""
+	if boundURI != "" {
+		bound, err = strict(boundURI)
+		if err != nil {
+			return "", err
+		}
+	}
+	if observedURI == "" {
+		return bound, nil
+	}
+	observed, err := strict(observedURI)
+	if err != nil {
+		return "", err
+	}
+	if bound != "" && bound != observed {
+		return "", fmt.Errorf("task resource differs from the fixed submission resource")
+	}
+	return observed, nil
+}

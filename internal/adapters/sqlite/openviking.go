@@ -86,7 +86,7 @@ func (db *DB) SaveOpenViking(ctx context.Context, row domain.OpenVikingSubmissio
 	if err != nil {
 		return err
 	}
-	result, err := db.conn.ExecContext(ctx, `UPDATE attention_openviking_submissions SET version=?,status=?,data=? WHERE id=? AND version=? AND request_id=? AND space_id=? AND material_id=? AND revision=? AND base_url=? AND account=? AND user_id=? AND space_version=? AND destination=? AND json_extract(data,'$.actor_id')=? AND json_extract(data,'$.approved_at')=? AND json_extract(data,'$.locator')=? AND json_extract(data,'$.title')=?`, row.Version, row.Status, string(data), row.ID, expected, row.RequestID, row.SpaceID, row.MaterialID, row.Revision, row.BaseURL, row.Account, row.User, row.SpaceVersion, row.Destination, row.ActorID, row.ApprovedAt.Format(time.RFC3339Nano), row.Locator, row.Title)
+	result, err := db.conn.ExecContext(ctx, `UPDATE attention_openviking_submissions SET version=?,status=?,data=? WHERE id=? AND version=? AND request_id=? AND space_id=? AND material_id=? AND revision=? AND base_url=? AND account=? AND user_id=? AND space_version=? AND destination=? AND json_extract(data,'$.actor_id')=? AND json_extract(data,'$.approved_at')=? AND json_extract(data,'$.locator')=? AND json_extract(data,'$.title')=? AND (json_extract(data,'$.root_uri')='' OR json_extract(data,'$.root_uri')=?) AND (json_extract(data,'$.task_id')='' OR json_extract(data,'$.task_id')=?)`, row.Version, row.Status, string(data), row.ID, expected, row.RequestID, row.SpaceID, row.MaterialID, row.Revision, row.BaseURL, row.Account, row.User, row.SpaceVersion, row.Destination, row.ActorID, row.ApprovedAt.Format(time.RFC3339Nano), row.Locator, row.Title, row.RootURI, row.TaskID)
 	if err != nil {
 		return err
 	}

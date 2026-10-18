@@ -6,6 +6,7 @@
 - Run：`run_73578b70c449`；Task：`task_006c2800099b`；Dispatch：`ctx_06a3baf3e8db`。
 - 工作树：`frontend-observatory-20261018`；分支：`songconmaisaix31-design/frontend-observatory-20261018`。
 - 产品基线：`f17a491cdd6392829094c95a3e5efb6011362bc0`；PR 目标：`songconmaisaix31-design/works-relay-integration`。
+- 交付 PR：[Draft #2](https://github.com/songconmaisaix31-design/Astrocyte/pull/2)，持续更新同一分支，由主控 review，不合并。
 - 已授权写入：`web/**`、必要的根依赖锁文件、本报告和产品 `AGENTS.md`；主控于2026-10-19批准本文后端设计及精确路径，见主控 `tasks/frontend-observatory-pr-20261018.md`。
 
 ## 提交包与生产映射
@@ -62,6 +63,8 @@
 
 提交不启动原生 Agent，不创建 Mission，不改引擎和注意力值。只有实际 completed 及有效来源才可显示“已入库”。任务缺失或过期显示实际错误，保留原记录。
 
+资源 URI 必须严格位于项目根以下；首次取得后固定为同一规范 URI。任务刷新只核实原绑定，项目根、同项目其他资源或其子路径均不能替换已固定资源。SQLite CAS 同时限制已知 `root_uri` 和 `task_id` 不能改绑，检索/内容授权也逐次核验已保存资源绑定。内容请求的 `level` 必须明确存在，缺失和 null 在远端调用前返回400；L0显式值0保留。
+
 ### 上游适配
 
 `internal/adapters/openviking/client.go` 实现上述 Gateway：
@@ -115,13 +118,13 @@
 | `pnpm --dir web typecheck` | 修复后 PASS | `typecheck-20261019-002957-801.log` |
 | `pnpm --dir web lint` | 最终 PASS，零诊断 | `lint-20261019-004452-134.log` |
 | `pnpm --dir web build` | 最终 PASS；生产 JS 717.36kB，保留既有大于500kB提示；包含最终类型检查 | `build-20261019-004411-378.log` |
-| `go test -mod=readonly ./internal/attention/domain ./internal/adapters/openviking ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./cmd/server -run '^TestOpenViking' -count=1 -timeout=2m` | 最终 PASS；URI/配置两个参数规则测试及一个实际 HTTP/SQLite 未配置、连接拒绝、空集合、Origin/CSRF、核心读取测试；无测试函数的包只计编译 | `go-20261019-004316-813.log` |
+| `go test -mod=readonly ./internal/attention/domain ./internal/adapters/openviking ./internal/attention/app ./internal/adapters/sqlite ./internal/adapters/httpapi ./cmd/server -run '^TestOpenViking' -count=1 -timeout=2m` | 最终 PASS；URI、资源绑定、配置三个参数规则测试及一个实际 HTTP/SQLite 未配置、连接拒绝、空集合、Origin/CSRF、核心读取、缺失/null层级拒绝测试；无测试函数的包只计编译 | `go-20261019-005013-674.log` |
 | 两视口正式页面、可选仓库与26件品牌 | 6项 PASS；首次 Ctrl K 两项失败原件保留 | `browser-20261019-003523-603.log` 及对应 Playwright错误上下文 |
 | 实际资料加载后 Ctrl K、Escape、侧栏、批准页签与作品入口 | 两视口2项 PASS | `keyboard-*.log` |
 | 公开 Q 历史的真实 A/M/C、两主题各3点、时间轴筛选、证据入口及事件ID逐项对应 | 两视口2项 PASS，页面 GET-only | `focus-*.log` |
 | `pnpm check:contracts` | PASS，OpenAPI lint、264件既有契约示例与生成一致性；保留13项既有未引用组件警告 | `contracts-20261019-004045-677.log` |
-| `go vet -mod=readonly ./...` | EXIT0，无诊断 | `vet-20261019-004116-352-resource.json`，实际工具退出回执 |
-| `go build -mod=readonly ./...` | EXIT0，无诊断 | `go-build-20261019-004204-848-resource.json`，实际工具退出回执 |
+| `go vet -mod=readonly ./...` | 最终 EXIT0，无诊断 | `vet-20261019-005109-201-resource.json`，实际工具退出回执 |
+| `go build -mod=readonly ./...` | 最终 EXIT0，无诊断 | `go-build-20261019-005144-904-resource.json`，实际工具退出回执 |
 | `node scripts/check-architecture.mjs` | PASS，43包满足 Domain/app/上下文/传输边界 | `architecture-20261019-004250-244.log` |
 | `pnpm --dir web exec vitest run --maxWorkers=1 src/components/displayContract.test.tsx src/utils/__tests__/format.test.ts src/utils/__tests__/commandError.test.ts` | 3文件 / 53项 PASS；仅显示、格式与错误参数规则，不计真实 API 或 Native | `test-20261019-004536-391.log` |
 | `pnpm --dir web exec playwright test --config observatory.config.ts --list` | 当前两个 `.check.ts` 文件、两视口共10项，EXIT0 | `list-*.log` |
