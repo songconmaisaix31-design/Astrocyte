@@ -32,6 +32,19 @@ Jev 仅为官方 `jev-1.13.0` 云 REST 模型，启动脚本不接受其 key 作
 
 Relay 会话来源可显式指定 `-RelaySessionSource native_notifications`，使用原生控制器的实际通知；默认 `archive` 使用既有受控归档读取。活性窗口保持未配置，可由用户明确提供 `-RelayLiveSeconds`（1 到 86400 秒），不会自动选择数值。注册表沿用现有 JSON 数组格式：`name`、可信直接 argv 的 `launch_cmd`、`drive_mode`（structured、terminal、both）、实际观测的 `capabilities`，可选 `input_mode`（line、stdin_eof）。不要用脚本或命令行字符串替代直接 argv，不凭已安装或帮助输出填充成功能力。配置后仍需产品内的人工项目授权，当前未授权范围继续拒绝派发。
 
+经验 Interpreter 的显式启动参数须同时提供：
+
+| 参数 | 内容 |
+|---|---|
+| `RelaySessionDeadlineSeconds` | 1 到 1800 秒的原生会话 deadline；不设置默认数值 |
+| `RelayPublicGitRoot` | 已获准公开 Git 项目的绝对目录，位于本次 `DataDir/local/astrocyte-workbench/v0.2-access/verification/` 内；不能通过重定向改变身份 |
+| `RelayPublicGitCommit` | 当前固定提交的 40 位小写 Git SHA |
+| `RelayPublicContextFiles` | 包含 1 到 32 个唯一相对文件路径的 JSON 数组，路径使用 `/`；例如 `'["README.md","docs/SPEC.md"]'` |
+
+在 PowerShell 会话中直接调用 `& .\Start-Astrocyte.ps1`，将四个参数与本次 `-DataDir` 一起传入。`Start-Astrocyte.cmd` 保留参数透传；从 CMD 传 JSON 时使用 Windows argv 转义，例如 `-RelayPublicContextFiles "[\"README.md\"]"`。脚本使用标准 JSON 解析器，拒绝不完整参数组、非法 deadline、根目录、提交格式和文件数组。
+
+四个参数分别映射到既有 `ASTROCYTE_RELAY_SESSION_DEADLINE_SECONDS`、`ASTROCYTE_RELAY_PUBLIC_GIT_ROOT`、`ASTROCYTE_RELAY_PUBLIC_GIT_COMMIT`、`ASTROCYTE_RELAY_PUBLIC_CONTEXT_FILES`。应用继续校验目录身份、隔离范围及文件选择，读取上下文时继续核当前项目权限、固定提交和文件原文。启动配置不批准具体经验、不放开 Agent 工具，也不触发原生初始化或模型调用；首次实际解释仍须满足原控制器来源与执行许可。
+
 手动发布自己的实际认知 SQLite：
 
 ```powershell
