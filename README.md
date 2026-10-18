@@ -2,7 +2,7 @@
 
 当前产品集成分支为 `songconmaisaix31-design/works-relay-integration`，提交 `8c8510426b828359f4c161f93c1edf1083fd5e88`。当前 `validation/v1-20261012` 分支保存管理与实验记录，产品开发和后续集成继续使用产品集成分支。
 
-本机现用服务：<http://127.0.0.1:64505/>。Windows x64 候选包位于 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，大小1,949,217,657 bytes，构建来源 `41cefd00706ae284dbb45f857c2c49d2aebd807f`。在可写的新目录完整解压，双击 `Start-Astrocyte.cmd`，打开 <http://127.0.0.1:8787/>；保持控制台打开，按 Ctrl+C 停止应用。详细参数见包内 README。
+2026-10-18 检查时本机64505服务已停止。Windows x64 候选包位于 `D:/Astrocyte-agent-assets/20261015/release-package/b1017c/Astrocyte-v0.1-windows-x64-41cefd00706a.zip`，大小1,949,217,657 bytes，构建来源 `41cefd00706ae284dbb45f857c2c49d2aebd807f`。在可写的新目录完整解压，双击 `Start-Astrocyte.cmd`，打开 <http://127.0.0.1:8787/>；保持控制台打开，按 Ctrl+C 停止应用。详细参数见包内 README。
 
 该包构建、解压及125项实际运行检查通过，包含真实HTTP、SQLite写读/重启与公开来源认知查询。完整默认CI、L1/L2及原生控制器验收仍未通过，正式Release未发布。交付与清理记录见 [本轮记录](tasks/integration-cleanup-20261017.md)，待决定事项见 [QUESTIONS](docs/QUESTIONS.md)。
 
