@@ -55,15 +55,24 @@
 | `git status --porcelain=v1`（普通合并后、编写本报告前） | EXIT 0，工作树干净 |
 | `git diff --cached --check`（本报告）、`git diff --check` | EXIT 0，无输出 |
 
-## 待主控执行的最终集成验证
+## 主控最终集成验证
 
-本集成阶段未运行 Go 编译、架构包加载、实际服务、模型、原生控制器、前端构建、完整 CI 或模型打包。主控将在本 Worker 完成并释放后，对包含本报告的准确最终 HEAD 执行管理树既有入口：
+集成 Agent 的报告提交为 `11326d98ca0ebf6f5b1ed8f217d1ca3949fa88bb`，普通 push 成功，工作树干净；该 Worker 已正式交付并官方释放，transcript 已捕获。主控在该准确 HEAD 执行管理树入口：
 
 ```powershell
 & 'C:/Users/DW/orca/Astrocyte/.verification/ddd-20261018/verify-integration.ps1' -Phase all
 ```
 
-该入口依次执行全 Go vet/build、扩展架构检查及以下八项现有真实检查；本报告中全部保持未执行：
+全仓 `go vet -mod=readonly -p=1 ./...` 已实际 EXIT 0，`go-vet.log` 没有错误输出。进入构建前资源采样 CPU 达到 70%，运行器在调用 Go 前拒绝；后续构建尝试的 CPU 采样仍达到 72%、90%、73% 和 94%，均未调用构建。可用内存约 4.75–5.72 GiB。资源拒绝不计为功能通过或功能失败，未重复已通过的 vet。当前剩余状态如下：
+
+| 主控命令 | 当前结果 |
+|---|---|
+| `go vet -mod=readonly -p=1 ./...` | EXIT 0，准确集成 HEAD `11326d98` |
+| `go build -mod=readonly -p=1 ./...` | 本次主控未执行，资源守卫拒绝启动；作者同代码 SOURCE 已通过 |
+| `node scripts/check-architecture.mjs` | 本次主控未执行；作者同脚本 SOURCE 已通过 |
+| 八项精确 SQLite/HTTP 组合测试 | 本次主控未执行 |
+
+运行器为 `.verification/ddd-20261018/verify-integration.ps1`，已通过的 vet 输出保存在管理树同目录 `go-vet.log`，资源拒绝保存在本次主控命令记录。尚待执行的八项现有真实检查为：
 
 ```text
 TestRelaySessionActualEmptyRegistrationPollAndReopen
@@ -76,7 +85,7 @@ TestRelayPreparedMemberRejectsMissingOriginalSources
 TestRelayMemberExecutionRejectsUnownedMetadata
 ```
 
-最终组合检查使用 `GOMAXPROCS=1`、`GOFLAGS=-p=1`、`GOMEMLIMIT=256MiB` 和 BelowNormal；每项重操作前两次核 CPU 低于 70%、可用内存至少 4 GiB，间隔 2–5 秒，串行执行。资源不足时保持对应命令未执行。作者通过结果不替代准确集成 HEAD 的复验。
+最终组合检查使用 `GOMAXPROCS=1`、`GOFLAGS=-p=1`、`GOMEMLIMIT=256MiB` 和 BelowNormal；每项重操作前两次核 CPU 低于 70%、可用内存至少 4 GiB，间隔 2–5 秒，串行执行。实际 vet 期间已观察到 Go 父进程为 BelowNormal；单次 Go 与 vet 子进程工作集约 112 MiB，该采样不代表全过程峰值，256 MiB 为 Go 软目标。资源不足时保持对应命令未执行，作者通过结果不替代准确集成 HEAD 的复验。资源恢复后依次续行 `-Phase build`、`-Phase architecture`、`-Phase tests`，无需重复 vet。
 
 ## 真实剩余限制与未执行操作
 
@@ -86,4 +95,4 @@ TestRelayMemberExecutionRejectsUnownedMetadata
 - 完整默认 `pnpm check`、双平台 CI、默认浏览器、L1/L2、当前源码完整前端及模型包、最终包与正式 Release 均未完成。正式实验未运行。
 - 当前共享 64505 服务没有恢复。作者的公开固定 Git、SQLite 和 HTTP 检查只覆盖报告中的实际范围；非空原生会话、首次 Claim、发送和后续经验复用仍未通过。
 
-本报告记录普通合并与来源核查结果；最终报告提交 SHA、普通 push 及工作树状态随本 Dispatch 的 `worker_done` 交付主控。
+本报告的后继提交仅更新实际验收状态，不改变上述已审查业务代码。当前没有本轮编译或验证服务进程，尚未完成的最终组合检查继续保留。
